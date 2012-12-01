@@ -1,0 +1,8 @@
+Forest Bear Studios
+Project: Univursa
+Directory: /Project
+
+This is the location of all project files. NO build files will go in here
+as there is a separate directory for said files. Makefiles, as necessary,
+would go on the outside here. Please consult before filling with the garbage
+that gets spewed out from the automated QT program.
