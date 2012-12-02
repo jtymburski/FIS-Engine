@@ -1,18 +1,18 @@
-/********************************************************************************
+/*******************************************************************************
 * Class Name: Inventory
 * Date Created: Nov 04 2012
 * Inheritance: QWidget
 * Description: The Inventory class
-********************************************************************************/
+*******************************************************************************/
 #ifndef INVENTORY_H
 #define INVENTORY_H
+
 #include <QtGui/QWidget>
-#include <QVector>
 #include <QImage>
 #include <QString>
-#include "InventoryUnit.h"
-#include "Equipment.h"
+#include <QVector>
 #include "Bubby.h"
+#include "Equipment.h"
 #include "Item.h"
 
 class Inventory : public QWidget
@@ -25,13 +25,13 @@ public:
   ~Inventory();
 private:
   /*Equipment in Inventory*/
-  QVector<InventoryUnit> equipment;
+  QVector<Item> equipment;
 
   /*Items in Inventory*/
-  QVector<InventoryUnit> items;
+  QVector<Item> items;
 
   /*Bubbies in Inventory*/
-  QVector<InventoryUnit> bubbies;
+  QVector<Item> bubbies;
 
   /*Maximum equipment allowed in Inventory (Can be increased)*/
   int equipment_limit;

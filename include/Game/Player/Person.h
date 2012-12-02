@@ -12,10 +12,10 @@
 #define PERSON_H
 
 #include <QtGui/QWidget>
-//#include "Equipment.h"
-#include "BattleClass.h"
-#include "BattleRace.h"
 #include "Action.h"
+#include "Category.h"
+//#include "Equipment.h"
+#include "Race.h"
 #include "Sprite.h"
 
 class Person : public QWidget
@@ -136,10 +136,10 @@ class Person : public QWidget
     int level, exp;
 
     /* The person's class */
-    BattleClass* c; 
+    Category* character_class; 
 
     /* The person's race */
-    BattleRace* r; 
+    Race* character_race; 
 
     /* Person's word ranking */
     QString rank;
@@ -151,7 +151,7 @@ class Person : public QWidget
     QVector <int>  action_available;
 
     /* List of status ailment Strings */
-    QVector<QString> statusAilmentList;
+    QVector<QString> status_ailment_list;
 
     /* The person's name */
     QString name;  
@@ -465,4 +465,4 @@ class Person : public QWidget
 
 };
 
-#endif
+#endif // PERSON_H

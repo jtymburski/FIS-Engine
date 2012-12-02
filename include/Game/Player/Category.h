@@ -1,25 +1,26 @@
- /*****************************************************************************w
-* Class Name: BattleClass
+/******************************************************************************
+* Class Name: Category
 * Date Created: Sunday, October 28th, 2012
 * Inheritance: Parent class: Person 
-* Description: Class for the BattleClass for Battle
+* Description: Header that defines the category for the person class. This
+*              category is like Warrior, Clerk, etc.
 *
 *  TODO: CONSTRUCTORS TO BE FINISHED
 ******************************************************************************/
 
-#ifndef BATTLECLASS_H
-#define BATTLECLASS_H
+#ifndef CATEGORY_H
+#define CATEGORY_H
 
 #include <QtGui/QWidget>
 #include "Action.h"
 
-class BattleClass : public QWidget
+class Category : public QWidget
 
 {
   public:
 
-     BattleClass(QWidget *parent = 0);
-     ~BattleClass();
+     Category(QWidget *parent = 0);
+     ~Category();
 
   private:
 
@@ -191,4 +192,4 @@ class BattleClass : public QWidget
    int getUnbearability();   
 };
 
-#endif
+#endif // CATEGORY_H

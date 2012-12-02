@@ -1,18 +1,19 @@
- /*****************************************************************************w
-* Class Name: BattleRace
+/******************************************************************************
+* Class Name: Race
 * Date Created: Sunday, October 28th, 2012
-* Inheritance: Parent class: 
-* Description: 
+* Inheritance: Parent class - Person
+* Description: Header for Race that defines the race for the particular person.
+*              Some examples includes Bears, Humans, etc.
 *
 *  TODO: CONSTRUCTORS TO BE FINISHED
 ******************************************************************************/
 
-#ifndef BATTLERACE_H
-#define BATTLERACE_H
+#ifndef RACE_H
+#define RACE_H
 
 #include <QtGui/QWidget>
 
-class BattleRace : public QWidget
+class Race : public QWidget
 {
   public:
 
@@ -187,4 +188,4 @@ class BattleRace : public QWidget
    int getUnbearability();   
 };
 
-#endif
+#endif // RACE_H

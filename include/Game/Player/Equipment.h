@@ -1,17 +1,19 @@
-/********************************************************************************
+/*******************************************************************************
 * Class Name: Equipment
 * Date Created: Nov 04 2012
-* Inheritance: InventoryUnit
-* Description: The Equipment class
-********************************************************************************/
+* Inheritance: Item
+* Description: Equipment that categorizes under Item in an Inventory unit. Gets
+*              called by Person as well for attached Equipment.
+*******************************************************************************/
 #ifndef EQUIPMENT_H
 #define EQUIPMENT_H
+
 #include <QVector>
 #include "Action.h"
 #include "Person.h"
 #include "Bubby.h"
 
-class Equipment : public InventoryUnit
+class Equipment : public Item
 {
 public:
   /*Constructor function*/
