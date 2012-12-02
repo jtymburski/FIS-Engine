@@ -4,7 +4,7 @@
 * Inheritance: MapThing
 * Description: The MapInteractiveObject class, right now this is just for
 *              categorization
-******************************************************************************/ */
+******************************************************************************/
 #ifndef MAPINTERACTIVEOBJECT_H
 #define MAPINTERACTIVEOBJECT_H
 

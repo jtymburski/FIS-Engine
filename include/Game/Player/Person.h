@@ -14,7 +14,7 @@
 
 #include "Game/Player/Action.h"
 #include "Game/Player/Category.h"
-//#include "Game/Player/Equipment.h"
+#include "Game/Player/Equipment.h"
 #include "Game/Player/Race.h"
 #include "Game/Sprite.h"
 
@@ -128,7 +128,7 @@ private:
   int temp_unbearability;
 
   /* Currently equipped equipment */
-//  Equipment* head, left_arm,right_arm,legs,torso;
+  Equipment* head, left_arm,right_arm,legs,torso;
 
   /* Person's level and experience */
   int level, exp;
@@ -189,19 +189,19 @@ private:
   Race* getRace();
 
   /* Gets the head equipment */
-//  Equipment* getHeadEquipment();
+  Equipment* getHeadEquipment();
 
   /* Gets the left arm equipment */
-//  Equipment* getLeftArmEquipment();
+  Equipment* getLeftArmEquipment();
 
   /* Gets the right arm equipment */
-//  Equipment* getRightArmEquipment();
+  Equipment* getRightArmEquipment();
 
   /* Gets the leg equipment */
-//  Equipment* getLegEquipment();
+  Equipment* getLegEquipment();
 
   /* Gets the torso equpiment */
-//  Equipment* getTorsoEquipment();
+  Equipment* getTorsoEquipment();
 
   /* Gets the person's experience */
   int getExp();
@@ -324,19 +324,19 @@ private:
   int getTempUnbearability();
 
   /* Sets the head equipment */
-//  bool setHeadEquipment(Equipment* e);
+  bool setHeadEquipment(Equipment* e);
 
   /* Sets the left arm equipmet */
-//  bool setLeftArmEquipment(Equipment* e);
+  bool setLeftArmEquipment(Equipment* e);
 
   /* Sets the right arm equipment */
-//  bool setRightArmEquipment(Equipment* e);
+  bool setRightArmEquipment(Equipment* e);
 
   /* Sets the leg equipment */
-//  bool setLegEquipment(Equipment* e);
+  bool setLegEquipment(Equipment* e);
 
   /* Sets the torso equipment */
-//  bool setTorsoEquipment(Equipment* e);
+  bool setTorsoEquipment(Equipment* e);
 
   /* Sets the person's category */
   void setCategory(Category* c);
