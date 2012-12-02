@@ -1,19 +1,19 @@
- /*****************************************************************************
+/******************************************************************************
 * Class Name: Party
 * Date Created: Sunday, November 4th, 2012
 * Inheritance: None?
 * Description: Party is an object holding the five members (Person class) of 
-               a sleuth
+*              a sleuth
 *  
 * TODO: CONSTRUCTORS TO BE FINISHED
 * TODO: CHANGE SPEED (CONSTANT) ?
 ******************************************************************************/
-
 #ifndef PARTY_H
 #define PARTY_H
 
 #include <QtGUI/QWidget>
-#include "Inventory.h"
+
+#include "Game/Player/Inventory.h"
 
 class Party : public QWidget
 {
@@ -23,8 +23,8 @@ public:
 
 protected:
 
-private:
 
+private:
   /* The shared inventory of the party */
   Inventory* inven; 
 
@@ -41,7 +41,6 @@ private:
   int max_size;
 
 public:
-
   /* Adds a person to party, returns false if no space or failure */
   bool addMember(Person* p); 
 
@@ -56,7 +55,6 @@ public:
 
   /* Sets the temp max size of the party (max 5) */
   int setMaxSize();
-
 };
 
-#endif
+#endif // PARTY_H

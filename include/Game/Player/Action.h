@@ -7,8 +7,8 @@
 * TODO: CONSTRUCTORS TO BE FINISHED
 *
 * Notes: - Possibility to target person with most skills
-*       - num_targets could be that value or less based on the number of 
-*         legal targets or user option
+*     - num_targets could be that value or less based on the number of 
+*     legal targets or user option
 *
 * Parse layout: IF{[Element Type], [Greater/Lesser Qualifier], [Value]} : 
 * [Upper/Lower or GIVE/TAKE] , [Skill Element 1] , [Skill Element 2] ,
@@ -24,7 +24,6 @@
 * }
 *
 ******************************************************************************/
-
 #ifndef ACTION_H
 #define ACTION_H
 
@@ -39,100 +38,84 @@
   NIHIL,NIHIL_AGGRESSION,NIHIL_FORTITUDE,
   VITALITY,QUANTUM_DRIVE,AGILITY,LIMBERTUDE,UNBEARABILITY */
 enum ActionType {SELF, SINGLE, SINGLEIGNOREUSER, PARTY,
-                 PARTYIGNOREUSER, EVERYONE, EVERYONEIGNOREUSER};
-class Action : public QWidget 
+         PARTYIGNOREUSER, EVERYONE, EVERYONEIGNOREUSER};
 
+class Action : public QWidget 
 {
-  public:
-  
+public:
   	Action(QWidget *pointer = 0);
   	~Action();
 
-  private:
+private:
+  /* The action's type (defined by enumerator) */
+  ActionType type; 
 
-    /* The action's type (defined by enumerator) */
-    ActionType type; 
+  /* The health shift this action will cause (damage or healing) */
+  int vitality_shift; 
 
-    /* The health shift this action will cause (damage or healing) */
-    int vitality_shift; 
+  /* The action's use description */
+  QString description,brief_description; 
 
-    /* The action's use description */
-    QString description,brief_description; 
+  /* The actions name */
+  QString name; //The actions name
 
-    /* The actions name */
-    QString name; //The actions name
+  /* The sequence that defines an action */
+  QVector<QString> sequence;
 
-    /* The sequence that defines an action */
-    QVector<QString> sequence;
+  /* The QD payment htat must be made to use this action */
+  unsigned int cost; 
 
-    /* The QD payment htat must be made to use this action */
-    unsigned int cost; 
+  /* The number of targets this acftion can target */
+  unsigned int num_targtes; 
 
-    /* The number of targets this acftion can target */
-    unsigned int num_targtes; 
+  /* Flag to determine if action is beneficial to you or party member */
+  bool FRIENDLY;
 
+  /* The language used to create actions, more can be added */
+  QVector<QString> language;
 
-    /* Flag to determine if action is beneficial to you or party member */
-    bool FRIENDLY;
-
-    /* The language used to create actions, more can be added */
-    QVector<QString> language;
-
-  protected:
+protected:
 
 
+public:
+  /* Evaluates the FRIENDLY flag */
+  bool isFriendly();
 
-  public:
+  /* Attempts to perform the action as defined by sequence, return false if it is invalid */
+  bool use(); 
 
-    /* Evaluates the FRIENDLY flag */
-  	bool isFriendly();
+  /* Returns the brief description */
+  QString getBriefDescription(); 
 
-  	/* Attempts to perform the action as defined by sequence, return false if it is invalid */
-    bool use(); 
+  /* Returns the category (for menu grouping) */
+  QString getCategory(); 
 
-    /* Returns the brief description */
-    QString getBriefDescription(); 
+  /* Returns the actions cost */
+  unsigned int getCost(); 
 
-  	/* Returns the category (for menu grouping) */
-    QString getCategory(); 
+  /* Returns the description */
+  QString getDescription();
 
-    /* Returns the actions cost */
-    unsigned int getCost(); 
+  /* Returns the action type */
+  ActionType getMode(); 
 
-    /* Returns the description */
-    QString getDescription();
+  /* Returns the name */
+  QString getName();
 
-  	/* Returns the action type */
-    ActionType getMode(); 
+  /* Returns the number of targets this will require */
+  unsigned int getNumTargets(); 
 
-  	/* Returns the name */
-    QString getName();
+  /* Sets the action's cost */
+  void setCost(unsigned int);
 
-    /* Returns the number of targets this will require */
-    unsigned int getNumTargets(); 
+  /* Sets the action's mode */
+  void setMode(ActionType a);
 
-    /* Sets the action's cost */
-    void setCost(unsigned int);
+  /* Sets the action name */
+  void setName(QString); 
 
-    /* Sets the action's mode */
-    void setMode(ActionType a);
-
-    /* Sets the action name */
-    void setName(QString); 
-
-    /* Sets the number of targets */
-    void setNumTargets(unsigned int i); 
+  /* Sets the number of targets */
+  void setNumTargets(unsigned int i); 
 };
 
-#endif
-
-
-
-
-
-
-
-
-
-
-
+#endif // ACTION_H

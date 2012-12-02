@@ -1,90 +1,89 @@
-/********************************************************************************
+/******************************************************************************
 * Class Name: Tile
 * Date Created: Oct 28 2012
 * Inheritance: QWidget
 * Description: The Tile class
-********************************************************************************/
+******************************************************************************/
 #ifndef TILE_H
 #define TILE_H
+
 #include <QtGui/QWidget>
-#include "Sprite.h"
-#include "MapWalkOver.h"
-#include "MapInteractiveObject.h"
 
-/*Off - Not rendered at all
+#include "Game/Map/MapInteractiveObject.h"
+#include "Game/Map/MapWalkOver.h"
+#include "Game/Sprite.h"
+
+/* Off - Not rendered at all
   Active - Rendered
-  Inactive - Blacked out (sector past a door)*/
+  Inactive - Blacked out (sector past a door) */
 enum Status{STATUSOFF,ACTIVE,INACTIVE};
-
 
 class Tile : public QWidget
 {
 public:
-  /*Constructor function*/
+  /* Constructor function */
   Tile(QWidget *parent = 0);
 
-  /*Destructor function*/
+  /* Destructor function */
   ~Tile();
 
 protected:
   void paintEvent(QPaintEvent *);
 
 private:
-  /*The lowest level of sprite on tile, passibility varies based on tile
-    (eg. Grass, lava, water)*/
+  /* The lowest level of sprite on tile, passibility varies based on tile
+    (eg. Grass, lava, water) */
   Sprite* base;
 
-  /*The lower sprite, impassible (eg. Tree trunk)*/
+  /* The lower sprite, impassible (eg. Tree trunk) */
   Sprite* lower;
 
-  /*Player or NPC or impassible item (Causes the passibility of all directions
-    to be false if not null)*/
+  /* Player or NPC or impassible item (Causes the passibility of all directions
+    to be false if not null) */
   MapInteractiveObject* thing;
 
-  /*The status of the tile*/
+  /* The status of the tile */
   Status tile_status;
 
-  /*The upper sprite, fully passible (eg. Treetop)*/
+  /* The upper sprite, fully passible (eg. Treetop) */
   Sprite* upper;
 
-  /*The lower sprite, passible (eg. Bubby, tall grass)*/
+  /* The lower sprite, passible (eg. Bubby, tall grass) */
   MapWalkOver* walkover;
 
-  /*The passibility of each direction of the tile*/
+  /* The passibility of each direction of the tile */
   bool north_passibility,east_passibliilty,south_passibliilty,west_passibliilty;
 
 public:
-  /*Animates all sprites on tile (Including thing and walkover sprites)*/
+  /* Animates all sprites on tile (Including thing and walkover sprites) */
   void animate();
 
-  /*gets east passiblity*/
+  /* gets east passiblity */
   bool getPassibilityEast();
 
-  /*gets north passiblity*/
+  /* gets north passiblity */
   bool getPassibilityNorth();
 
-  /*gets south passiblity*/
+  /* gets south passiblity */
   bool getPassibilitySouth();
 
-  /*gets west passiblity*/
+  /* gets west passiblity */
   bool getPassibilityWest();
 
-  /*Sets all passibility*/
+  /* Sets all passibility */
   void setPassibility(bool yorn);
 
-  /*Sets east passiblity*/
+  /* Sets east passiblity */
   void setPassibilityEast(bool yorn);
 
-  /*Sets north passiblity*/
+  /* Sets north passiblity */
   void setPassibilityNorth(bool yorn);
 
-  /*Sets south passiblity*/
+  /* Sets south passiblity */
   void setPassibilitySouth(bool yorn);
 
-  /*Sets west passiblity*/
+  /* Sets west passiblity */
   void setPassibilityWest(bool yorn);
-
 };
-
 
 #endif // TILE_H

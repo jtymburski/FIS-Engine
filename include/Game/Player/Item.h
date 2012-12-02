@@ -1,16 +1,17 @@
-/*******************************************************************************
+/******************************************************************************
 * Class Name: Item
 * Date Created: Oct 28 2012
 * Inheritance: InventoryUnit
 * Description: The Item Header that defines all elements within Inventory.
 *              This includes Equipment and Bubby.
-*******************************************************************************/
+******************************************************************************/
 #ifndef ITEM_H
 #define ITEM_H
 
 #include <QImage>
 #include <QString>
-#include "Person.h"
+
+#include "Game/Player/Person.h"
 
 class Item
 {

@@ -1,4 +1,4 @@
- /*****************************************************************************
+/******************************************************************************
 * Class Name: Options
 * Date Created: Sunday, November 4th, 2012
 * Inheritance: None?
@@ -6,7 +6,6 @@
 *  
 * TODO: CONSTRUCTORS TO BE FINISHED
 ******************************************************************************/
-
 #ifndef OPTIONS_H
 #define OPTIONS_H
 
@@ -14,7 +13,6 @@
 
 class Options : public QWidget
 {
-
 public:
 
   Options(QWidget *parent =0);
@@ -48,7 +46,6 @@ public:
 
   /* Sets the given option ot the give value (may require reimplementation) */
   void setOption(QString s, int value); 
-
 };
 
-#endif
+#endif // OPTIONS_H

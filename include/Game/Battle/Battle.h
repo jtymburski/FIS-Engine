@@ -1,11 +1,10 @@
- /*****************************************************************************
+/******************************************************************************
 * Class Name: Battle
 * Date Created: Sunday, October 28th, 2012
 * Inheritance: Parent class: Game
 * Description: 
 *
 *  TODO: CONSTRUCTORS TO BE FINISHED
-*
 *
 * Notes: Turn Progression:
 *
@@ -29,7 +28,8 @@
 * performActions() is then called.
 *
 * 6. performAction() takes the first Action on the stack and loads it into 
-* action_animate which then shows the Actions animation.  The Action is then removed from the stack.
+* action_animate which then shows the Actions animation.  The Action is then 
+* removed from the stack.
 *
 * 7. action_animate emits a finished(Action *) signal which is connected to
 * changeStats(Action *), changeStats(Action *) alters each Person's stats 
@@ -41,7 +41,8 @@
 * is cleared, and battleWon() or battleLost() is called.  If the stack is not
 * empty, (Step 6) else reset party_index and (Step 1).
 *   
-* Note: Animation has changed since this design and requires some alteration in terms of these steps
+* Note: Animation has changed since this design and requires some alteration 
+*     in terms of these steps.
 *  
 * In Battle Action Animations
 * ----------------------------
@@ -59,169 +60,163 @@
 * to that sequence to include frames or generate generic ones that everyone 
 * has to share.
 ******************************************************************************/
-
 #ifndef BATTLE_H
 #define BATTLE_H
 
 #include <QtGui/QWidget>
-#include "BattleInfoBar.h"
-#include "BattleStatusBar.h"
-#include "BattleMenu.h"
-#include "Party.h"
-#include "Weather.h"
-#include "Action.h"
+
+#include "Game/Battle/BattleInfoBar.h"
+#include "Game/Battle/BattleMenu.h"
+#include "Game/Battle/BattleStatusBar.h"
+#include "Game/Player/Action.h"
+#include "Game/Player/Party.h"
+#include "Game/Weather.h"
 
 class Battle: public QWidget
-
 {
-  public:
+public:
+  Battle(QWidget *pointer = 0);
+  ~Battle();
 
-    Battle(QWidget *pointer = 0);
-    ~Battle();
+private:
+  /* Pointer to the battle info bar */
+  BattleInfoBar* current_battle_info_bar; 
 
-  private:
+  /* Person 1's Status bar */
+  BattleStatusBar* person1_status_bar; 
 
-    /* Pointer to the battle info bar */
-    BattleInfoBar* current_battle_info_bar; 
+  /* Person 2's Status bar */
+  BattleStatusBar* person2_status_bar; 
 
-    /* Person 1's Status bar */
-    BattleStatusBar* person1_status_bar; 
+  /* Person 3's Status bar */
+  BattleStatusBar* person3_status_bar; 
 
-    /* Person 2's Status bar */
-    BattleStatusBar* person2_status_bar; 
+  /* Person 4's Status Bar */
+  BattleStatusBar* person4_status_bar;
 
-    /* Person 3's Status bar */
-    BattleStatusBar* person3_status_bar; 
+  /* Person 5's Status Bar */
+  BattleStatusBar* person5_status_bar; 
 
-    /* Person 4's Status Bar */
-    BattleStatusBar* person4_status_bar;
+  /* The Battle menu pointer (for selecting actions), off by default */
+  BattleMenu* current_battle_menu;
 
-    /* Person 5's Status Bar */
-    BattleStatusBar* person5_status_bar; 
+  /* Checks if targeting mode is active */
+  bool target_mode; //Checks if targeting mode is active
 
-    /* The Battle menu pointer (for selecting actions), off by default */
-    BattleMenu* current_battle_menu;
+  /* Which party is currently selected */
+  int party_index;
 
-    /* Checks if targeting mode is active */
-    bool target_mode; //Checks if targeting mode is active
+  /* Current target selected */
+  int target_index; 
 
-    /* Which party is currently selected */
-    int party_index;
+  /* Current turn count */
+  int turn_count; 
 
-    /* Current target selected */
-    int target_index; 
+  /* The enemy party */
+  Party* foes; 
 
-    /* Current turn count */
-    int turn_count; 
+  /* Allied party */
+  Party* friends;
 
-    /* The enemy party */
-    Party* foes; 
+  /* Backdrop for the battle */
+  QImage* battlebg; 
 
-    /* Allied party */
-    Party* friends;
+  /* Enemy 1's sprite bounding box */
+  QRect* enemy1_bound; 
 
-    /* Backdrop for the battle */
-    QImage* battlebg; 
+  /* Enemy 2's sprite bounding box */
+  QRect* enemy2_bound; 
 
-    /* Enemy 1's sprite bounding box */
-    QRect* enemy1_bound; 
-
-    /* Enemy 2's sprite bounding box */
-    QRect* enemy2_bound; 
-
-    /* Enemy 3's sprite bounding box */
-    QRect* enemy3_bound; 
+  /* Enemy 3's sprite bounding box */
+  QRect* enemy3_bound; 
  
-    /* Enemy 4's sprite bounding box */
-    QRect* enemy4_bound; 
+  /* Enemy 4's sprite bounding box */
+  QRect* enemy4_bound; 
 
-    /* Enemy 5's sprite bounding box */
-    QRect* enemy5_bound; 
+  /* Enemy 5's sprite bounding box */
+  QRect* enemy5_bound; 
 
-    /* Ally 1's sprite bounding box */
-    QRect* ally1_bound; 
+  /* Ally 1's sprite bounding box */
+  QRect* ally1_bound; 
 
-    /* Ally 2's sprite bounding box */
-    QRect* ally2_bound; 
+  /* Ally 2's sprite bounding box */
+  QRect* ally2_bound; 
 
-    /* Ally 3's sprite bounding box */
-    QRect* ally3_bound; 
+  /* Ally 3's sprite bounding box */
+  QRect* ally3_bound; 
 
-    /* Ally 4's sprite bounding box */
-    QRect* ally4_bound; 
+  /* Ally 4's sprite bounding box */
+  QRect* ally4_bound; 
 
-    /* Ally 5's sprite bounding box */
-    QRect* ally5_bound; 
+  /* Ally 5's sprite bounding box */
+  QRect* ally5_bound; 
 
-    /* The targeting box for action/inventory target selection */
-    QRect * target_box; 
+  /* The targeting box for action/inventory target selection */
+  QRect * target_box; 
 
-    /* The action buffer */
-    QVector<Action *> action_buffer; 
+  /* The action buffer */
+  QVector<Action *> action_buffer; 
 
-    /* The inventory use buffer */
-    QVector<Action *> inventory_buffer; 
+  /* The inventory use buffer */
+  QVector<Action *> inventory_buffer; 
 
-    /* Weather condition during battle */
-    Weather* weather_conditions; 
+  /* Weather condition during battle */
+  Weather* weather_conditions; 
 
-    /* Flag for whether this is a boss battle (special code if it is)*/
-    bool BOSS; 
+  /* Flag for whether this is a boss battle (special code if it is)*/
+  bool BOSS; 
    
-
-  protected:
-
-
-  signals:
+protected:
 
 
-  public slots:
+signals:
 
 
-  public:
+public slots:
 
-    /* Checks for deaths, pops current action off stack, calls performAction();*/
-    void actionOutcome(); 
 
-    /* Ends battle with win message */
-    void battleWon(); 
+public:
+  /* Checks for deaths, pops current action off stack, calls performAction();*/
+  void actionOutcome(); 
 
-    /* Ends Battle with loss message, and reverts game to last save point */
-    void battleLost(); 
+  /* Ends battle with win message */
+  void battleWon(); 
 
-    /* Arranges and paints static image */
-    void buildScene(); 
+  /* Ends Battle with loss message, and reverts game to last save point */
+  void battleLost(); 
 
-    /* Sets temporary stats */
-    void buildStats(); 
+  /* Arranges and paints static image */
+  void buildScene(); 
 
-    /* Alters stats, updates scene */
-    void changeStats(Action *); 
+  /* Sets temporary stats */
+  void buildStats(); 
 
-    /* Non-character events */
-    void generalUpkeep(); 
+  /* Alters stats, updates scene */
+  void changeStats(Action *); 
 
-    /* Reorders stack (speed based)*/
-    void orderActions(); 
+  /* Non-character events */
+  void generalUpkeep(); 
 
-    /* Performs current action animation */
-    void performAction(); 
+  /* Reorders stack (speed based)*/
+  void orderActions(); 
 
-    /* Character events */
-    void personalUpkeep();
+  /* Performs current action animation */
+  void performAction(); 
 
-    /* Increment party index for next Battle Menu */
-    void processAction(); 
+  /* Character events */
+  void personalUpkeep();
 
-    /* Gets all enemy actions, adds to stack */
-    void processEnemyActions(); 
+  /* Increment party index for next Battle Menu */
+  void processAction(); 
 
-    /* Paints dynamic images */
-    void updateScene();
+  /* Gets all enemy actions, adds to stack */
+  void processEnemyActions(); 
 
-    /* Sets the targeting mode (slot) */
-    void setTargetMode(bool);
+  /* Paints dynamic images */
+  void updateScene();
 
+  /* Sets the targeting mode (slot) */
+  void setTargetMode(bool);
 };
 
-#endif
+#endif // BATTLE_H

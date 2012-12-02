@@ -1,58 +1,58 @@
-/********************************************************************************
+/*********************************************************************************
 * Class Name: MapNPC
 * Date Created: Oct 28 2012
 * Inheritance: MapPerson
 * Description: The MapNPC class, this covers all AI found on the map in game
 * TODO: Reimplement the movement functions based on NPC scripts
-********************************************************************************/
+******************************************************************************/
 #ifndef MAPNPC_H
 #define MAPNPC_H
-#include <QVector>
+
 #include <QString>
-#include "MapPerson.h"
+#include <QVector>
 
+#include "Game/Map/MapPerson.h"
 
-/*Path node struct*/
-struct Path
+/* Path node struct */
+struct Path // TODO: Struct in here?! [12-02-12]
 {
   int xpos,intypos;
   Path* next;
 };
 
-
 class MapNPC : public MapPerson
 {
 public:
-  /*Constructor function*/
+  /* Constructor function */
   MapNPC();
 
-  /*Destructor function*/
+  /* Destructor function */
   ~MapNPC();
 
 private:
-  /*The object given by the NPC, can be NULL*/
+  /* The object given by the NPC, can be NULL */
   MapThing* gift;
 
-  /*The starting node of the NPCs Path*/
+  /* The starting node of the NPCs Path */
   Path* head;
 
-  /*The nodes for the NPCs path*/
+  /* The nodes for the NPCs path */
   Path* nodes;
 
-  /*The dialog sequence for the NPC and the Player*/
+  /* The dialog sequence for the NPC and the Player */
   QVector<QString*> talking_points; //The dialog sequence
 
-  /*The dialog sources for each talking point*/
+  /* The dialog sources for each talking point */
   QVector<bool> talking_sources;
 
-  /*The other dialog person (usually the player)*/
+  /* The other dialog person (usually the player) */
   MapPerson* target;
 
 public:
-  /*Gets a pointer to the Persons conversation*/
+  /* Gets a pointer to the Persons conversation */
   QVector<QString*>* getConversation();
 
-  /*Gets a pointer to the gift the NPC has*/
+  /* Gets a pointer to the gift the NPC has */
   MapThing* getGift();
 
 };

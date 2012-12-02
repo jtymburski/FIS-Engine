@@ -1,4 +1,4 @@
-/*******************************************************************************
+/******************************************************************************
 * Class Name: Bubby
 * Date Created: Nov 04 2012
 * Inheritance: Item
@@ -6,16 +6,16 @@
 *              details to define experience, level cap, etc.
 * Notes : This uses the following formula: Exp(Level) = 50 + Exp(Level – 1)
 *         x [1 + Multiplier / 100] Multiplier: 10-25
-*******************************************************************************/
+******************************************************************************/
 #ifndef BUBBY_H
 #define BUBBY_H
 
-#include <QtGui/QWidget>
 #include <QImage>
+#include <QtGui/QWidget>
 #include <QVector>
-#include "Action.h"
-#include "Item.h"
 
+#include "Game/Player/Action.h"
+#include "Game/Player/Item.h"
 
 class Bubby : public Item
 {
@@ -72,6 +72,5 @@ public:
   /* Sets the tier of the bubby based on leveling */
   void setTier(int tier_num);
 };
-
 
 #endif // BUBBY_H

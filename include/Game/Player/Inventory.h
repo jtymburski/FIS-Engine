@@ -1,115 +1,115 @@
-/*******************************************************************************
+/******************************************************************************
 * Class Name: Inventory
 * Date Created: Nov 04 2012
 * Inheritance: QWidget
 * Description: The Inventory class
-*******************************************************************************/
+******************************************************************************/
 #ifndef INVENTORY_H
 #define INVENTORY_H
 
-#include <QtGui/QWidget>
 #include <QImage>
 #include <QString>
+#include <QtGui/QWidget>
 #include <QVector>
-#include "Bubby.h"
-#include "Equipment.h"
-#include "Item.h"
+
+#include "Game/Player/Bubby.h"
+#include "Game/Player/Equipment.h"
+#include "Game/Player/Item.h"
 
 class Inventory : public QWidget
 {
 public:
-  /*Constructor function*/
+  /* Constructor function */
   Inventory(QWidget *parent = 0);
 
-  /*Destructor function*/
+  /* Destructor function */
   ~Inventory();
+  
 private:
-  /*Equipment in Inventory*/
+  /* Equipment in Inventory */
   QVector<Item> equipment;
 
-  /*Items in Inventory*/
+  /* Items in Inventory */
   QVector<Item> items;
 
-  /*Bubbies in Inventory*/
+  /* Bubbies in Inventory */
   QVector<Item> bubbies;
 
-  /*Maximum equipment allowed in Inventory (Can be increased)*/
+  /* Maximum equipment allowed in Inventory (Can be increased) */
   int equipment_limit;
 
-  /*Current amount*/
+  /* Current amount */
   int equipment_count; //0
 
-  /*Maximum items allowed in Inventory (Can be increased)*/
+  /* Maximum items allowed in Inventory (Can be increased) */
   int item_limit; //10
 
-  /*Current amount*/
+  /* Current amount */
   int item_count; //0
 
-  /*Maximum bubbies allowed in Inventory (Can be increased)*/
+  /* Maximum bubbies allowed in Inventory (Can be increased) */
   int bubby_limit; //10
 
-  /*Current amount*/
+  /* Current amount */
   int bubby_count; //0
 
-  /*Storage level*/
+  /* Storage level */
   int level; //0
 
-  /*Name of Inventory storage unit*/
+  /* Name of Inventory storage unit */
   QString name;
 
-  /*Image of storage unit*/
+  /* Image of storage unit */
   QImage thumbnail;
 
 public:
-
-  /*Attempts to add equipment, returns true if there is room to add*/
+  /* Attempts to add equipment, returns true if there is room to add */
   bool addTo(Equipment e);
 
-  /*Attempts to add item, returns true if there is room to add*/
+  /* Attempts to add item, returns true if there is room to add */
   bool addTo(Item i);
 
-  /*Attempts to add bubby, returns true if there is room to add*/
+  /* Attempts to add bubby, returns true if there is room to add */
   bool addTo(Bubby b);
 
-  /*Attemots to remove equipment*/
+  /* Attemots to remove equipment */
   bool removeFrom(Equipment e);
 
-  /*Attempts to remove item*/
+  /* Attempts to remove item */
   bool removeFrom(Item i);
 
-  /*Attempts to remove bubby*/
+  /* Attempts to remove bubby */
   bool removeFrom(Bubby b);
 
-  /*Upgrades the storage unit*/
+  /* Upgrades the storage unit */
   void upgrade(QString name, QImage thumbnail, int equipment_limit, int item_limit, int bubby_limit);
 
-  /*Gets bubby current amount*/
+  /* Gets bubby current amount */
   int getBubbyCount();
 
-  /*Gets bubby limit*/
+  /* Gets bubby limit */
   int getBubbyLimit();
 
-  /*Gets equipment limit*/
+  /* Gets equipment limit */
   int getEquipmentLimit();
 
-  /*Gets equipment current amount*/
+  /* Gets equipment current amount */
   int getEquipmentCount();
 
-  /*Gets item limit*/
+  /* Gets item limit */
   int getItemLimit();
 
-  /*Gets item current amount*/
+  /* Gets item current amount */
   int getItemCount();
 
-  /*Gets storage level*/
+  /* Gets storage level */
   int getLevel();
 
-  /*Gets storage unit name*/
+  /* Gets storage unit name */
   QString getName();
 
-  /*Gets thumbnail image*/
+  /* Gets thumbnail image */
   QImage getThumbnail();
 };
-
 
 #endif // INVENTORY_H

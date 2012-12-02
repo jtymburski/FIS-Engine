@@ -1,17 +1,18 @@
-/*******************************************************************************
+/******************************************************************************
 * Class Name: Equipment
 * Date Created: Nov 04 2012
 * Inheritance: Item
 * Description: Equipment that categorizes under Item in an Inventory unit. Gets
 *              called by Person as well for attached Equipment.
-*******************************************************************************/
+******************************************************************************/
 #ifndef EQUIPMENT_H
 #define EQUIPMENT_H
 
 #include <QVector>
-#include "Action.h"
-#include "Person.h"
-#include "Bubby.h"
+
+#include "Game/Player/Action.h"
+#include "Game/Player/Bubby.h"
+#include "Game/Player/Person.h"
 
 class Equipment : public Item
 {
@@ -49,6 +50,5 @@ public:
   /*Gets the list of equipment actions (Used for total action lists in battle)*/
   QVector<Action*> getActionList();
 };
-
 
 #endif // EQUIPMENT_H

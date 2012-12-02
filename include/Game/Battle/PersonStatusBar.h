@@ -1,4 +1,4 @@
- /*****************************************************************************w
+/******************************************************************************
 * Class Name: PersonStatusBar
 * Date Created: Sunday, October 28th, 2012
 * Inheritance: Parent class: BattleStatusBar
@@ -6,73 +6,69 @@
 *
 *  TODO: CONSTRUCTORS TO BE FINISHED
 ******************************************************************************/
-
 #ifndef PERSONSTATUSBAR_H
 #define PERSONSTATUSBAR_H
 
 #include <QtGui/QWidget>
 
 class PersonStatusBar : public QWidget
-
 {
-  public:
-
-    PersonStatusBar(QWidget *parent = 0);
+public:
+  PersonStatusBar(QWidget *parent = 0);
 	~PersonStatusBar();
 
-  private:
-    
-    /* Bar width (screen_width * 0.06) */
-    int bar_width;
+private:
+  /* Bar width (screen_width * 0.06) */
+  int bar_width;
 
-    /* Bar height (screen_height * 0.16) */
-    int bar_height;
+  /* Bar height (screen_height * 0.16) */
+  int bar_height;
 
-    /* Person's health */
-    int health;
+  /* Person's health */
+  int health;
 
-    /* Person's max health */
-    int health_max;
+  /* Person's max health */
+  int health_max;
 
-    /* The qd bar bounding box (scales with usage) */
-    int qd;
+  /* The qd bar bounding box (scales with usage) */
+  int qd;
 
-    /* Person's maximum qd */
-    int qd_max;
+  /* Person's maximum qd */
+  int qd_max;
 
-    /* HP Bounding box */
-    QRect health_outline; 
+  /* HP Bounding box */
+  QRect health_outline; 
 
-    /* HP Bar bounding box (scales with health shift) */
-    QRect health_bar; 
+  /* HP Bar bounding box (scales with health shift) */
+  QRect health_bar; 
 
-    /* QD Bounding box */
-    QRect qd_outline; 
+  /* QD Bounding box */
+  QRect qd_outline; 
 
-    /* QD Bar Bounding box (scales with usage) */
-    QRect qd_bar;
+  /* QD Bar Bounding box (scales with usage) */
+  QRect qd_bar;
 
-    /* Bounding box for Person's name */
-    QRect name_box; 
+  /* Bounding box for Person's name */
+  QRect name_box; 
 
-    /* Person's name */
-    QString name;
+  /* Person's name */
+  QString name;
 
+protected:
 
+  
+signals:
 
-  protected:
+  
+public slots:
 
-  signals:
+  
+public:
+  /* Sets current HP for display */
+  void setDisplayHP(int amount); 
 
-  public slots:
-
-  public:
-
-    /* Sets current HP for display */
-    void setDisplayHP(int amount); 
-
-    /* Sets current QD for display */
-    void setDisplayQD(int amount);
+  /* Sets current QD for display */
+  void setDisplayQD(int amount);
 };
 
-#endif
+#endif // PERSONSTATUSBAR_H

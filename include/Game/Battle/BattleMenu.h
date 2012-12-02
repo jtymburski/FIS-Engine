@@ -1,9 +1,9 @@
- /*****************************************************************************
+/******************************************************************************
 * Class Name: BattleMenu
 * Date Created: Sunday, October 28th, 2012
 * Inheritance: Parent class: Battle <-- Game <-- Application
 * Description: BattleMenu displays an interactive menu for the player to 
-*              utilize commands while in a Battle.
+*        utilize commands while in a Battle.
 *
 *  TODO: CONSTRUCTORS TO BE FINISHED
 *
@@ -17,79 +17,74 @@
 * a new Qvector<Action *> actions. This is then rendered in layer 3 to be 
 * ready for selection. 
 ******************************************************************************/
-
 #ifndef BATTLEMENU_H
 #define BATTLEMENU_H
 
 #include <QtGui/QWidget>
-#include "Action.h"
-#include "BattleInfoBar.h"
-#include "Inventory.h"
-#include "Party.h"
-#include "Person.h"
+
+#include "Game/Battle/BattleInfoBar.h"
+#include "Game/Player/Action.h"
+#include "Game/Player/Inventory.h"
+#include "Game/Player/Party.h"
+#include "Game/Player/Person.h"
 
 class BattleMenu : public QWidget
 {
-  Q_OBJECT
+  Q_OBJECT // TODO: What is this for? [12-02-12]
 
-  public: 
+public: 
+  BattleMenu(QWidget *pointer = 0);
+  ~BattleMenu();
 
-    BattleMenu(QWidget *pointer = 0);
-    ~BattleMenu();
-
-  private:
-
+private:
   	/* Current action that is selected */
-    Action* current_action;
+  Action* current_action;
 
-    /* Menu active? */
-    bool active;
+  /* Menu active? */
+  bool active;
   
-    /* Pointer to Battle Info Bar (top bar describing battle events) */
-    BattleInfoBar * bar;
+  /* Pointer to Battle Info Bar (top bar describing battle events) */
+  BattleInfoBar * bar;
 
-    /* Inventory that the sleuth has access to */
-    Inventory* inven;
+  /* Inventory that the sleuth has access to */
+  Inventory* inven;
 
-    /* Allied party */
-    Party* friends;
-    
-    /* Enemy party */
-    Party* foes;
+  /* Allied party */
+  Party* friends;
+  
+  /* Enemy party */
+  Party* foes;
 
-    /* Person currently selecting action */
+  /* Person currently selecting action */
   	Person* active_person;
 
-    /* Actions currently available for active person (compiled from 
-    equipment, bubbies, race, class etc.) */
-    QVector<Action*> actions;
+  /* Actions currently available for active person (compiled from 
+  equipment, bubbies, race, class etc.) */
+  QVector<Action*> actions;
 
-    /* Action buffer in battle */
-    QVector<Action*>* action_buffer;
+  /* Action buffer in battle */
+  QVector<Action*>* action_buffer;
 
-    /* The buffer of inventory items from battle */
-    QVector<InventoryUnit*>* inventory_buffer;
+  /* The buffer of inventory items from battle */
+  QVector<Item*>* inventory_buffer;
 
   signals:
+  /* Emitted when the action is selected and verified as correct,
+     connected to processAction() in battle */
+  void actionSelected();
 
-    /* Emitted when the action is selected and verified as correct,
-       connected to processAction() in battle */
-    void actionSelected();
-
-  public:
-
-    /* Selects the target PARTY for the action. Also adds the action to the action buffer. */
+public:
+  /* Selects the target PARTY for the action. Also adds the action to the action buffer. */
   	void selectedTarget (Party *);
 
   	/* Selects the target PERSON for the action. Also adds the action to the action buffer. */
-    void selectedTarget (Person *); 
+  void selectedTarget (Person *); 
 
-    /* Returns TRUE if menu is active */
-    bool getActive();
+  /* Returns TRUE if menu is active */
+  bool getActive();
 
-    /* Sets menu activity */
-    void setActive(bool active);
-
+  /* Sets menu activity */
+  void setActive(bool active);
 };
 
-#endif
+#endif // BATTLEMENU_H

@@ -1,4 +1,4 @@
- /*****************************************************************************
+/******************************************************************************
 * Class Name: Player
 * Date Created: Sunday, November 4th, 2012
 * Inheritance: None?
@@ -7,7 +7,6 @@
 * TODO: CONSTRUCTORS TO BE FINISHED
 * TODO: CHANGE SPEED (CONSTANT) ?
 ******************************************************************************/
-
 #ifndef PLAYER_H
 #define PLAYER_H
 
@@ -15,14 +14,11 @@
 
 class Player
 {
-
 public:
-
   Player();
   ~Player(); 
 
 private:
-
   /* Tick speed for the maps */
   int kMAPSPEED; //TODO: Change speed ?
 
@@ -33,8 +29,8 @@ private:
   int xpos, ypos; //Your position on the current map
 
 public:
-
-  /* Gets the number of frames in the main persons sprite multiplied by the kMAPSPEED */
+  /* Gets the number of frames in the main persons sprite multiplied by the 
+   * kMAPSPEED */
   int getSpeed(); 
 
   /* Gets the x-position on the map */
@@ -50,4 +46,4 @@ public:
   void setYPos(int);
 };
 
-#endif
+#endif // PLAYER_H
