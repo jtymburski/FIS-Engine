@@ -32,8 +32,9 @@
 * removed from the stack.
 *
 * 7. action_animate emits a finished(Action *) signal which is connected to
-* changeStats(Action *), changeStats(Action *) alters each Person's stats 
-* based off its parameter Action.  UpdateScene() is then called.
+* changeStats(Action* battle_action), changeStats(Action* battle_action) 
+* alters each Person's stats based off its parameter Action.  UpdateScene() 
+* is then called.
 *
 * 8. updateScene() emits a finished() signal which is connected to 
 * actionOutcome(). ActionOutcome() checks for deaths and animates 
@@ -75,7 +76,7 @@
 class Battle: public QWidget
 {
 public:
-  Battle(QWidget *pointer = 0);
+  Battle(QWidget* pointer = 0);
   ~Battle();
 
 private:
@@ -155,10 +156,10 @@ private:
   QRect * target_box; 
 
   /* The action buffer */
-  QVector<Action *> action_buffer; 
+  QVector<Action*> action_buffer; 
 
   /* The inventory use buffer */
-  QVector<Action *> inventory_buffer; 
+  QVector<Action*> inventory_buffer; 
 
   /* Weather condition during battle */
   Weather* weather_conditions; 
@@ -192,7 +193,7 @@ public:
   void buildStats(); 
 
   /* Alters stats, updates scene */
-  void changeStats(Action *); 
+  void changeStats(Action* battle_action); 
 
   /* Non-character events */
   void generalUpkeep(); 
@@ -216,7 +217,7 @@ public:
   void updateScene();
 
   /* Sets the targeting mode (slot) */
-  void setTargetMode(bool);
+  void setTargetMode(bool targeting);
 };
 
 #endif // BATTLE_H
