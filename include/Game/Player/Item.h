@@ -74,13 +74,13 @@ public:
   bool isIndefinite();
 
   /*Gets category of unit*/
-  QImage getCategory();
+  QString getCategory();
 
   /*Gets unit count*/
   int getCount();
 
   /*Gets description of unit*/
-  QImage getDescription();
+  QString getDescription();
 
   /*Gets name of unit*/
   QString getName();
