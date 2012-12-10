@@ -3,6 +3,9 @@
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
-    return a.exec();
+    QApplication app(argc, argv);
+
+    Application* game_app = new Application();
+
+    return app.exec();
 }

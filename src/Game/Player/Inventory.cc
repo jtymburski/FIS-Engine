@@ -7,7 +7,7 @@
 #include "Game/Player/Inventory.h"
 
 /* Constructor function */
-Inventory::Inventory(QWidget *parent = 0)
+Inventory::Inventory(QWidget* parent)
 {
 }
 
@@ -19,37 +19,37 @@ Inventory::~Inventory()
 /* Attempts to add equipment, returns true if there is room to add */
 bool Inventory::addTo(Equipment equipment)
 {
-    return;
+  return TRUE;
 }
 
 /* Attempts to add item, returns true if there is room to add */
 bool Inventory::addTo(Item item)
 {
-    return;
+  return TRUE;
 }
 
 /* Attempts to add bubby, returns true if there is room to add */
 bool Inventory::addTo(Bubby bubby)
 {
-    return;
+  return TRUE;
 }
 
 /* Attempts to remove equipment */
 bool Inventory::removeFrom(Equipment equipment)
 {
-    return;
+    return TRUE;
 }
 
 /* Attempts to remove item */
 bool Inventory::removeFrom(Item item)
 {
-    return;
+    return TRUE;
 }
 
 /* Attempts to remove bubby */
 bool Inventory::removeFrom(Bubby bubby)
 {
-    return;
+    return TRUE;
 }
 
 /* Upgrades the storage unit */

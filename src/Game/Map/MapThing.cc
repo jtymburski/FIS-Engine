@@ -42,5 +42,7 @@ QString MapThing::getName()
 /* Gets the directional sprite of the thing */
 Sprite MapThing::getSprite(Direction dir)
 {
-    return;
+    //Sprite* sprite1 = new Sprite(0);
+
+    //return *sprite1;
 }

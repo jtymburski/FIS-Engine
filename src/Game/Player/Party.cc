@@ -13,26 +13,30 @@
 #include "Game/Player/Party.h"
 
 /* Constructs a Party Object */
-Party::Party(QWidget *parent = 0);
+Party::Party(QWidget* parent)
+{
+}
 
-/* Annihilates a Party Object */a
-Party::~Party();
+/* Annihilates a Party Object */
+Party::~Party()
+{
+}
 
 /* Adds a person to party, returns false if no space or failure */
 bool Party::addMember(Person* person)
 {
-  if (party_size >= 5)
-    return false;
-  members.at(party_size) = person;
+  //if (party_size >= 5)
+  //  return false;
+  //members.at(party_size) = person;
   return true;
 }
 
 /* Removes a person from the party false if not able to */
 bool Party::removeMember(int index)
 {
-  if (party-size <= 1)
-    return false;
-  members.at(index) = NULL;
+  //if (party-size <= 1)
+  //  return false;
+  //members.at(index) = NULL;
   return true;
 }
 

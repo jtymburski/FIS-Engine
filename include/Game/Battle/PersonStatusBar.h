@@ -14,8 +14,8 @@
 class PersonStatusBar : public QWidget
 {
 public:
-  PersonStatusBar(QWidget *parent = 0);
-	~PersonStatusBar();
+  PersonStatusBar(QWidget* parent = 0);
+  ~PersonStatusBar();
 
 private:
   /* Bar width (screen_width * 0.06) */
@@ -65,10 +65,16 @@ public slots:
   
 public:
   /* Sets current HP for display */
-  void setDisplayHP(int amount); 
+  void setDisplayHP(int amount);
 
   /* Sets current QD for display */
   void setDisplayQD(int amount);
+
+  /* Sets the max HP for display */
+  void setDisplayMaxHP(int amount);
+
+  /* Sets the max QD for display */
+  void setDisplayMaxQD(int amount);
 };
 
 #endif // PERSONSTATUSBAR_H

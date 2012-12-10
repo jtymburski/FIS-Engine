@@ -6,10 +6,10 @@
 *
 * TODO: CONSTRUCTORS TO BE FINISHED
 ******************************************************************************/
-#include "Game/Player/VictoryScreen.h"
+#include "Game/VictoryScreen.h"
 
 /* Constructor function */
-VictoryScreen::VictoryScreen(QWidget *pointer = 0)
+VictoryScreen::VictoryScreen(QWidget* pointer)
 {
 }
 

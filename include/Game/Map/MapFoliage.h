@@ -7,6 +7,8 @@
 #ifndef MAPFOLIAGE_H
 #define MAPFOLIAGE_H
 
+#include "Game/Map/MapWalkOver.h"
+
 class MapFoliage : public MapWalkOver
 {
 public:

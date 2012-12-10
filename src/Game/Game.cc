@@ -4,7 +4,7 @@
 * Inheritance: QWidget
 * Description: The Game class
 ******************************************************************************/
-#include "Game/Player/Game.h"
+#include "Game/Game.h"
 
 /* Constructor function */
 Game::Game()

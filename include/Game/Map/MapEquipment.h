@@ -8,6 +8,8 @@
 #ifndef MAPEQUIPMENT_H
 #define MAPEQUIPMENT_H
 
+#include "Game/Map/MapInteractiveObject.h"
+
 class MapEquipment : public MapInteractiveObject
 {
 public:

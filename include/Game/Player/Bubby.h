@@ -39,7 +39,7 @@ private:
 
   /* The maximum level a bubby can reach, Tier-1: Level 1-10, Tier-2: Level
     11-20, Tier-3: Level 20 */
-  const int kLEVELCAP; // 20
+  const static int kLEVELCAP = 20; // 20
 
   /* The bubbies level */
   int level;

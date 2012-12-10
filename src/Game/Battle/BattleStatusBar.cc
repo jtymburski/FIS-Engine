@@ -7,10 +7,10 @@
 * TODO: CONSTRUCTORS TO BE FINISHED
 ******************************************************************************/
 
-#include "Game/Battle/PersonStatusBar.h"
+#include "Game/Battle/BattleStatusBar.h"
 
 /* Creates a BattleStatusBar object */
-BattleStatusBar::BattleStatusBar(QWidget *pointer = 0)
+BattleStatusBar::BattleStatusBar(QWidget* pointer)
 {
 }
 
@@ -40,17 +40,21 @@ int BattleStatusBar::getWidth()
 int BattleStatusBar::setHeight(int new_height)
 {
   bar_height = new_height;
+
+  return 0;
 }
 
 /* Sets displayed HP of person in the vector bars by given amount */
-void BattleStausBar::setDisplayHP(int new_HP, int person_num)
+void BattleStatusBar::setDisplayHP(int new_HP, int person_num)
 {
-  if (person_num <= party_size)
-    bars.at(person_num).setDisplayHP(new_HP)
+  //if (person_num <= party_size)
+  //  bars.at(person_num).setDisplayHP(new_HP);
 }
 
 /* Sets width of the bar */
 int BattleStatusBar::setWidth(int new_width)
 {
   bar_width = new_width;
+
+  return 0;
 }

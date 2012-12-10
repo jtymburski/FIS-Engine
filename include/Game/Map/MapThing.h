@@ -9,7 +9,7 @@
 
 #include <QtGui/QWidget>
 
-//#include "Game/EnumDatabase.h" // TODO: Remove? [12-02-12]
+#include "EnumDatabase.h"
 #include "Game/Sprite.h"
 
 class MapThing : public QWidget

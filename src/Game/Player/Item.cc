@@ -8,19 +8,13 @@
 #include "Game/Player/Person.h"
 
 /*Constructor function*/
-Item::Item(QWidget *parent = 0)
+Item::Item(QWidget* parent)
 {
 }
 
 /*Destructor function*/
 Item::~Item()
 {
-}
-
-/*Attempts to use the item on the chosen Person, false if fails*/
-bool Item::use(Person* target)
-{
-    return;
 }
 
 /*Evaulates BATTLEREADY flag*/

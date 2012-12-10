@@ -12,7 +12,7 @@
 
 #include "Game/Player/Action.h"
 #include "Game/Player/Bubby.h"
-#include "Game/Player/Person.h"
+//#include "Game/Player/Item.h"
 
 class Equipment : public Item
 {
@@ -28,7 +28,7 @@ private:
   Bubby* bubby_signature[9][9];
 
   /*The list of actions offered by the equipment*/
-  QVector<Action *> action_list;
+  QVector<Action*> action_list;
 
   /*A parallel list that shows when actions become available (Based on level)*/
   QVector<int> action_available;
@@ -43,9 +43,6 @@ public:
    * X is the left most coordinate, Y is the top most coordinate
    * Returns status of attachment */
   bool attachBubby(Bubby* b, int x, int y);
-
-  /*Attempts to attach the equipment to the given Person*/
-  bool attachToPerson(Person* p);
 
   /*Gets the list of equipment actions (Used for total action lists in battle)*/
   QVector<Action*> getActionList();

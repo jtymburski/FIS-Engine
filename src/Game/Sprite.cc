@@ -4,10 +4,10 @@
 * Inheritance: QWidget
 * Description: The Sprite class
 ******************************************************************************/
-#include "Game/Player/Sprite.h"
+#include "Game/Sprite.h"
 
 /* Constructor function */
-Sprite::Sprite(QWidget *parent = 0)
+Sprite::Sprite(QWidget* parent)
 {
 }
 
@@ -49,13 +49,17 @@ void Sprite::shift(int pos)
 /* Gets the current frame */
 QImage Sprite::getCurrent()
 {
-    return;
+    QImage* image = new QImage();
+
+    return *image;
 }
 
 /* Gets the current frame and then shifts to the next one */
 QImage Sprite::getCurrentAndShift()
 {
-    return;
+    QImage* image = new QImage();
+
+    return *image;
 }
 
 /* Returns the size of the sequence */

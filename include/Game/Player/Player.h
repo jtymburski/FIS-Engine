@@ -12,6 +12,8 @@
 
 #include <QtGUI/QWidget>
 
+#include "Game/Player/Party.h"
+
 class Player
 {
 public:
@@ -23,7 +25,7 @@ private:
   int kMAPSPEED; //TODO: Change speed ?
 
   /* Current party (Sleuth) object */
-  Party* sleuth; 
+  Party* sleuth;
 
   /* Your position on the current map */
   int xpos, ypos; //Your position on the current map

@@ -19,7 +19,7 @@ class Application : public QWidget
 {
 public:
   /* Constructor function */
-  Application(QWidget *parent=0);
+  Application(QWidget* parent=0);
 
   /* Destructor function */
   ~Application();

@@ -66,7 +66,7 @@ private:
   unsigned int cost; 
 
   /* The number of targets this acftion can target */
-  unsigned int num_targtes; 
+  unsigned int num_targets;
 
   /* Flag to determine if action is beneficial to you or party member */
   bool FRIENDLY;

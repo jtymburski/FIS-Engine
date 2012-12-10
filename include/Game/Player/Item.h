@@ -11,8 +11,6 @@
 #include <QImage>
 #include <QString>
 
-#include "Game/Player/Person.h"
-
 class Item
 {
 public:
@@ -61,9 +59,6 @@ private:
   bool STACKABLE;
 
 public:
-  /*Attempts to use the item on the chosen Person, false if fails*/
-  bool use(Person* target);
-
   /*Evaulates BATTLEREADY flag*/
   bool isBattleReady();
 

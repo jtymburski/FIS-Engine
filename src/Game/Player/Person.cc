@@ -11,13 +11,19 @@
 #include "Game/Player/Person.h"
 
 /* Constructs a Person object */
-Person::Person(QWidget *pointer = 0)
+Person::Person(QWidget* pointer)
 {
 }
 
 /* Annihilates a Person object */
 Person::~Person()
 {
+}
+
+/* Add equipment to the current person */
+bool Person::addEquipment(Equipment* equipment)
+{
+    return TRUE;
 }
 
 /* Adds experience of a given amount */
@@ -52,20 +58,24 @@ void Person::initiateForBattle()
   temp_unbearability         = unbearability;
 }
 
-
-/* Returns the available actions of the person */
-QVector<Action*>* Person::getAvailableActions()
-{
-  return action_list;
-}
-
-
 /* Checks the given status ailment status */
 bool Person::isStatusAilment(QString s)
 {
   //TODO: Finish status ailments [12-02-12]
+  return TRUE;
 }
 
+/* Use a given item */
+bool useItem(Item* used_item)
+{
+    return TRUE;
+}
+
+/* Returns the available actions of the person */
+QVector<Action*>* Person::getAvailableActions()
+{
+  //return action_list;
+}
 
 /* Evaluates the RENDERING flag */
 bool Person::getRendering()
@@ -84,7 +94,7 @@ Category* Person::getCategory()
 /* Gets the person's race */
 Race* Person::getRace()
 {
-  return race;
+  return character_race;
 }
 
 
@@ -98,28 +108,28 @@ Equipment* Person::getHeadEquipment()
 /* Gets the left arm equipment */
 Equipment* Person::getLeftArmEquipment()
 {
-  return left_arm;
+  return &left_arm;
 }
 
 
 /* Gets the right arm equipment */
 Equipment* Person::getRightArmEquipment()
 {
-  return right_arm;
+  return &right_arm;
 }
 
 
 /* Gets the leg equipment */
 Equipment* Person::getLegEquipment()
 {
-  return legs;
+  return &legs;
 }
 
 
 /* Gets the torso equpiment */
 Equipment* Person::getTorsoEquipment()
 {
-  return torso;
+  return &torso;
 }
 
 
@@ -145,7 +155,7 @@ QString Person::getName()
 
 
 /* Gets the person's word rank */
-Qstring Person::getRank()
+QString Person::getRank()
 {
   return rank;
 }
@@ -154,14 +164,14 @@ Qstring Person::getRank()
 /* Gets the first person sprite */
 Sprite Person::getFirstPerson()
 {
-  return first_person;
+  //return first_person;
 }
 
 
 /* Gets the third person person sprite */
 Sprite Person::getThirdPerson()
 {
-  return third_person;
+  //return third_person;
 }
 
 
@@ -416,9 +426,10 @@ bool Person::setHeadEquipment(Equipment* new_equipment)
 /* Sets the left arm equipmet */
 bool Person::setLeftArmEquipment(Equipment* new_equipment)
 {
-  if (left_arm != NULL)
-    return false;
-  left_arm = new_equipment;
+  //if (left_arm != NULL)
+  //  return false;
+  //left_arm = new_equipment;
+
   return true;
 }
 
@@ -426,9 +437,9 @@ bool Person::setLeftArmEquipment(Equipment* new_equipment)
 /* Sets the right arm equipment */
 bool Person::setRightArmEquipment(Equipment* new_equipment)
 {
-  if (right_arm != NULL)
-    return false;
-  right_arm = new_equipment;
+  //if (right_arm != NULL)
+  //  return false;
+  //right_arm = new_equipment;
   return true;
 }
 
@@ -436,9 +447,9 @@ bool Person::setRightArmEquipment(Equipment* new_equipment)
 /* Sets the leg equipment */
 bool Person::setLegEquipment(Equipment* new_equipment)
 {
-  if (legs != NULL)
-    return false;
-  legs = new_equipment;
+  //if (legs != NULL)
+  //  return false;
+  //legs = new_equipment;
   return true;
 }
 
@@ -446,9 +457,9 @@ bool Person::setLegEquipment(Equipment* new_equipment)
 /* Sets the torso equipment */
 bool Person::setTorsoEquipment(Equipment* new_equipment)
 {
-  if (torso != NULL)
-    return false;
-  torso = new_equipment;
+  //if (torso != NULL)
+  //  return false;
+  //torso = new_equipment;
   return true;
 }
 
@@ -472,7 +483,7 @@ void Person::setExp(int exp)
 /* Sets (or resets) the given status ailment */
 void Person::setStatusAilment(bool b, int ailment_index)
 {
- //TODO: FINISH STATUS AILMENTS
+  //TODO: FINISH STATUS AILMENTS
 }
 
 
@@ -487,7 +498,7 @@ void Person::setLevel(int new_level)
 /* Sets the person's race */
 void Person::setRace(Race* new_race)
 {
-  race = new_race;
+  character_race = new_race;
 }
 
 
@@ -646,7 +657,7 @@ void Person::setTempPolarFortitude(int value)
 /* Sets the temp forest atk stat */
 void Person::setTempPrimalAggression(int value)
 {
-  temp_primal_aggrssion = value;
+  temp_primal_aggression = value;
 }
 
 /* Sets the temp forest def stat */

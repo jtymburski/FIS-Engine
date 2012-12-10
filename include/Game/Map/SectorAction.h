@@ -7,6 +7,8 @@
 #ifndef SECTORACTION_H
 #define SECTORACTION_H
 
+#include <QtGui/QWidget>
+
 /* The types of actions available(Will be added as needed) */
 enum SectorActionType{CUTSCENE,DIALOG};
 

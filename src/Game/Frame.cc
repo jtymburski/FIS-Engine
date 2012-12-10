@@ -6,10 +6,10 @@
 *              Sprite class. It acts as a linked list node, in that it contains
 *              a pointer to the next Frame in the sequence.
 ******************************************************************************/
-#include "Game/Player/Frame.h"
+#include "Game/Frame.h"
 
 /* Constructor function */
-Frame::Frame(QWidget *parent = 0)
+Frame::Frame(QWidget* parent)
 {
 }
 
@@ -19,6 +19,6 @@ Frame::~Frame()
 }
 
 /* Painter function */
-void Frame::paintEvent(QPaintEvent *event)
+void Frame::paintEvent(QPaintEvent* event)
 {
 }

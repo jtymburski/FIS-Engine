@@ -14,11 +14,12 @@
 #include <QtGUI/QWidget>
 
 #include "Game/Player/Inventory.h"
+#include "Game/Player/Person.h"
 
 class Party : public QWidget
 {
 public:
-  Party(QWidget *parent = 0);
+  Party(QWidget* parent = 0);
   ~Party();
 
 protected:

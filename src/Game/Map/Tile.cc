@@ -7,7 +7,7 @@
 #include "Game/Map/Tile.h"
 
 /* Constructor function */
-Tile::Tile(QWidget *parent = 0)
+Tile::Tile(QWidget* parent)
 {
 }
 
@@ -18,6 +18,11 @@ Tile::~Tile()
 
 /* Animates all sprites on tile (Including thing and walkover sprites) */
 void Tile::animate()
+{
+}
+
+/* Paint event for the tile */
+void Tile::paintEvent(QPaintEvent* e)
 {
 }
 
