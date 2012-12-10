@@ -13,6 +13,7 @@
 /* Constructor function */
 Map::Map(QWidget* parent)
 {
+    this->show();
 }
 
 /* Destructor function */
