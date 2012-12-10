@@ -65,7 +65,7 @@
 
 
 /* Creates a battle object */
-Battle::Battle(QWidget* pointer = 0)
+Battle::Battle(QWidget* pointer)
 {
 }
 

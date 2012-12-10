@@ -11,7 +11,7 @@
 #include "Game/Player/Category.h"
 
 /* Creates a Category object */
-Category::Category(QWidget *parent = 0)
+Category::Category(QWidget* parent)
 {
 }
 
@@ -23,7 +23,7 @@ Category::~Category()
 /* Sets name of the race */
 void Category::setName(QString new_name)
 {
-  name = new_name
+  name = new_name;
 }
 
 /* Sets the description of the race */
@@ -63,7 +63,7 @@ void Category::setPrimalAggression(int value)
 }
 
 /* Sets the Forest defense stat */
-void Categoy::setPrimalFortitude(int value)
+void Category::setPrimalFortitude(int value)
 {
   primal_fortitude = value;
 }
@@ -89,7 +89,7 @@ void Category::setCyberneticAggression(int value)
 /* Sets the Digital defence stat*/
 void Category::setCyberneticFortitude(int value)
 {
-  cybernetics_fortitude = value;
+  cybernetic_fortitude = value;
 }
 
 /* Sets the Void attack stat */
@@ -203,7 +203,7 @@ int Category::getNihilAggression()
 /* Gets the Void defence stat */
 int Category::getNihilFortitude()
 {
-  return nihil_fortiude;
+  return nihil_fortitude;
 }
 
 /* Gets the Health stat */

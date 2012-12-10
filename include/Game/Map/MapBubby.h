@@ -7,6 +7,8 @@
 #ifndef MAPBUBBY_H
 #define MAPBUBBY_H
 
+#include "Game/Map/MapWalkOver.h"
+
 class MapBubby : public MapWalkOver
 {
 public:

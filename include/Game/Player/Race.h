@@ -12,6 +12,8 @@
 
 #include <QtGui/QWidget>
 
+#include "Game/Player/Action.h"
+
 class Race : public QWidget
 {
 public:
@@ -19,6 +21,12 @@ public:
    ~Race();
   
 private:
+  /* Description */
+  QString description;
+
+  /* Name */
+  QString name;
+
   /* Fire atk stat */
   int thermal_aggression; 
 

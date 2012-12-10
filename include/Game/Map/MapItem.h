@@ -7,6 +7,8 @@
 #ifndef MAPITEM_H
 #define MAPITEM_H
 
+#include "Game/Map/MapInteractiveObject.h"
+
 class MapItem : public MapInteractiveObject
 {
 public:

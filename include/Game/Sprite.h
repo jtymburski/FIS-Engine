@@ -16,7 +16,7 @@ class Sprite : public QWidget
 {
 public:
   /* Constructor function */
-  Sprite(QWidget *parent = 0);
+  Sprite(QWidget* parent = 0);
 
   /* Destructor function */
   ~Sprite();

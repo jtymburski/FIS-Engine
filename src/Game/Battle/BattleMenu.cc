@@ -20,10 +20,8 @@
 
 #include "Game/Battle/BattleMenu.h"
 
-  Q_OBJECT // TODO: What is this for? [12-02-12]
-
 /* Creates a BattleMenu object */
-BattleMenu::BattleMenu(QWidget *pointer = 0)
+BattleMenu::BattleMenu(QWidget* pointer)
 {
 }
 

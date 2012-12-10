@@ -132,7 +132,7 @@ bool MapPerson::isRendering()
 /* Returns true if the player is wall moving */
 bool MapPerson::isWallMoving()
 {
-    return;
+    return TRUE;
 }
 
 /* Sets the person to be moving east */
@@ -163,7 +163,7 @@ void MapPerson::stopMoving()
 /* Gets the battle version of the person */
 Person* MapPerson::getBattlePerson()
 {
-    return battle_person;
+    //return battle_person;
 }
 
 /* Gets the persons direction */
@@ -181,7 +181,7 @@ QString MapPerson::getName()
 /* Gets the persons facing sprite */
 Sprite* MapPerson::getSprite()
 {
-    return;
+    //return;
 }
 
 /* Gets the persons step length */

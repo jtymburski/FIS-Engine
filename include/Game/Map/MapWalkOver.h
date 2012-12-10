@@ -7,6 +7,8 @@
 #ifndef MAPWALKOVER_H
 #define MAPWALKOVER_H
 
+#include "Game/Map/MapThing.h"
+
 class MapWalkOver : public MapThing
 {
 public:

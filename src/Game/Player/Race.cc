@@ -11,7 +11,7 @@
 #include "Game/Player/Race.h"
 
 /* Creates a Race object */
-Race::Race(QWidget *parent = 0)
+Race::Race(QWidget* parent)
 {
 }
 
@@ -23,7 +23,7 @@ Race::~Race()
 /* Sets name of the race */
 void Race::setName(QString new_name)
 {
-  name = new_name
+  name = new_name;
 }
 
 /* Sets the description of the race */
@@ -63,7 +63,7 @@ void Race::setPrimalAggression(int value)
 }
 
 /* Sets the Forest defense stat */
-void Categoy::setPrimalFortitude(int value)
+void Race::setPrimalFortitude(int value)
 {
   primal_fortitude = value;
 }
@@ -89,7 +89,7 @@ void Race::setCyberneticAggression(int value)
 /* Sets the Digital defence stat*/
 void Race::setCyberneticFortitude(int value)
 {
-  cybernetics_fortitude = value;
+  cybernetic_fortitude = value;
 }
 
 /* Sets the Void attack stat */
@@ -203,7 +203,7 @@ int Race::getNihilAggression()
 /* Gets the Void defence stat */
 int Race::getNihilFortitude()
 {
-  return nihil_fortiude;
+  return nihil_fortitude;
 }
 
 /* Gets the Health stat */

@@ -16,7 +16,7 @@ Player::Player()
 }
 
 /* Annihilates a Player object */
-Player::~Player();
+Player::~Player()
 {
 }
 
@@ -24,7 +24,7 @@ Player::~Player();
    * kMAPSPEED */
 int Player::getSpeed()
 {
-  return kMAPSPEED
+  return kMAPSPEED;
 }
 
 /* Gets the x-position on the map */

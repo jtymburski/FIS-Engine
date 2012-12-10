@@ -7,8 +7,7 @@
 * Notes : This uses the following formula: Exp(Level) = 50 + Exp(Level – 1)
 *         x [1 + Multiplier / 100] Multiplier: 10-25
 ******************************************************************************/
-#include "Game/Player/Action.h"
-#include "Game/Player/Item.h"
+#include "Game/Player/Bubby.h"
 
 /* Constructor function */
 Bubby::Bubby()
@@ -29,7 +28,7 @@ QVector<Action*> Bubby::getActionList()
 /* Gets the bubbies exp */
 int Bubby::getExp()
 {
-  return exp;
+  return experience;
 }
 
 /* Gets the bubbies level */
@@ -45,9 +44,9 @@ int Bubby::getTier()
 }
 
 /* Sets the exp of the bubby based on use in battle */
-void Bubby::setExperience(int exp)
+void Bubby::setExperience(int new_experience)
 {
-  return experience;
+    experience = new_experience;
 }
 
 /* Sets the level of the bubby based on exp amounts */
@@ -61,4 +60,3 @@ void Bubby::setTier(int tier_num)
 {
   tier = tier_num;
 }
-

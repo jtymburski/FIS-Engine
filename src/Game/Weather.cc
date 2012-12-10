@@ -4,10 +4,10 @@
 * Inheritance: QWidget
 * Description: The Weather class
 ******************************************************************************/
-#include "Game/Player/Weather.h"
+#include "Game/Weather.h"
 
 /* Constructor function */
-Weather::Weather(QWidget *parent = 0)
+Weather::Weather(QWidget* parent)
 {
 }
 

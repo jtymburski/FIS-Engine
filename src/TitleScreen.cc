@@ -8,7 +8,7 @@
 
 
 /* Constructor function */
-TitleScreen::TitleScreen(QWidget *parent = 0)
+TitleScreen::TitleScreen(QWidget *parent)
 {
 }
 

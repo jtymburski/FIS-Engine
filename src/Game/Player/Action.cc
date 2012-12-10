@@ -26,10 +26,10 @@
 *
 ******************************************************************************/
 
-#include "/Game/Battle/Action.h"
+#include "Game/Player/Action.h"
 
 /* Creates an Action object */
-Action::Action(QWidget *pointer = 0)
+Action::Action(QWidget* pointer)
 {
 }
 
@@ -64,7 +64,7 @@ QString Action::getCategory()
 /* Returns the actions cost */
 unsigned int Action::getCost()
 {
-  return cots;
+  return cost;
 }
 
 /* Returns the description */
@@ -88,29 +88,29 @@ QString Action::getName()
 /* Returns the number of targets this will require */
 unsigned int Action::getNumTargets()
 {
-  return number_targets;
+  return num_targets;
 }
 
 /* Sets the action's cost */
-void setCost(unsigned int new_cost)
+void Action::setCost(unsigned int new_cost)
 {
   cost = new_cost;
 }
 
 /* Sets the action's mode */
-void setMode(ActionType new_type)
+void Action::setMode(ActionType new_type)
 {
   type = new_type;
 }
 
 /* Sets the action name */
-void setName(QString new_name)
+void Action::setName(QString new_name)
 {
   name = new_name;
 }
 
 /* Sets the number of targets */
-void setNumTargets(unsigned int new_number_targets)
+void Action::setNumTargets(unsigned int new_number_targets)
 {
-  number_targets = new_number_targets
+  num_targets = new_number_targets;
 }

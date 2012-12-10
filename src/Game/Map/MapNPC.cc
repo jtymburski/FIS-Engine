@@ -20,7 +20,7 @@ MapNPC::~MapNPC()
 /* Gets a pointer to the Persons conversation */
 QVector<QString*>* MapNPC::getConversation()
 {
-    return talking_points;
+    //return talking_points;
 }
 
 /* Gets a pointer to the gift the NPC has */

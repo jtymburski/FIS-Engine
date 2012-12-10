@@ -7,7 +7,7 @@
 #include "Game/Map/SectorAction.h"
 
 /* Constructor function */
-SectorAction::SectorAction(QWidget *parent = 0)
+SectorAction::SectorAction(QWidget* parent)
 {
 }
 
@@ -19,7 +19,7 @@ SectorAction::~SectorAction()
 /* True if the action can be performed */
 bool SectorAction::isValid()
 {
-    return;
+    return TRUE;
 }
 
 /* Performs the sector action */

@@ -14,6 +14,7 @@
 
 #include "Game/Player/Action.h"
 #include "Game/Player/Category.h"
+#include "Game/Player/Item.h"
 #include "Game/Player/Equipment.h"
 #include "Game/Player/Race.h"
 #include "Game/Sprite.h"
@@ -21,7 +22,7 @@
 class Person : public QWidget
 {
 public:
-  Person(QWidget *pointer = 0); //TODO: FINISH
+  Person(QWidget* pointer = 0); //TODO: FINISH
   ~Person();
 
 private:
@@ -131,7 +132,7 @@ private:
   Equipment* head, left_arm,right_arm,legs,torso;
 
   /* Person's level and experience */
-  int level, exp;
+  int level, experience;
 
   /* The person's class */
   Category* character_class; 
@@ -165,7 +166,9 @@ private:
   /* Flag for if the person is rendering or not */
   bool RENDERING; 
 
-  public:
+public:
+  /* Adds an equipment to the given person */
+  bool addEquipment(Equipment* equipment);
 
   /* Adds experience of a given amount */
   void addExperience(int n);
@@ -173,11 +176,14 @@ private:
   /* Sets up total and temporary stats */
   void initiateForBattle(); //Sets up temp stats and total stats
 
-  /* Returns the available actions of the person */
-  QVector<Action*>* getAvailableActions();
-
   /* Checks the given status ailment status */
   bool isStatusAilment(QString s);
+
+  /* Use a given item */
+  bool useItem(Item* used_item);
+
+  /* Returns the available actions of the person */
+  QVector<Action*>* getAvailableActions();
 
   /* Evaluates the RENDERING flag */
   bool getRendering();
@@ -345,7 +351,7 @@ private:
   void setExp(int);
 
   /* Sets the given status ailment */
-  void setStatusAilment(bool b, QString s);
+  void setStatusAilment(bool b, int ailment_index);
 
   /* Sets the person's level */
   void setLevel(int);
@@ -460,7 +466,6 @@ private:
 
   /* Sets the temp critical chance stat */
   void setTempUnbearability(int value);
-
 };
 
 #endif // PERSON_H

@@ -8,7 +8,7 @@
 #include "Game/Map/MapStatusBar.h"
 
 /* Constructor function */
-MapStatusBar::MapStatusBar(QWidget *parent = 0)
+MapStatusBar::MapStatusBar(QWidget* parent)
 {
 }
 

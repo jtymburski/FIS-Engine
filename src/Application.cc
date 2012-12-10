@@ -7,8 +7,9 @@
 #include "Application.h"
 
 /* Constructor function */
-Application::Application(QWidget *parent=0)
+Application::Application(QWidget* parent)
 {
+    this->show();
 }
 
 /* Destructor function */

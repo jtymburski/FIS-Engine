@@ -22,13 +22,13 @@ class Tile : public QWidget
 {
 public:
   /* Constructor function */
-  Tile(QWidget *parent = 0);
+  Tile(QWidget* parent = 0);
 
   /* Destructor function */
   ~Tile();
 
 protected:
-  void paintEvent(QPaintEvent *);
+  void paintEvent(QPaintEvent*);
 
 private:
   /* The lowest level of sprite on tile, passibility varies based on tile
@@ -52,7 +52,7 @@ private:
   MapWalkOver* walkover;
 
   /* The passibility of each direction of the tile */
-  bool north_passibility,east_passibliilty,south_passibliilty,west_passibliilty;
+  bool north_passibility,east_passibility,south_passibility,west_passibility;
 
 public:
   /* Animates all sprites on tile (Including thing and walkover sprites) */

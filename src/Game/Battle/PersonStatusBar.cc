@@ -10,7 +10,7 @@
 #include "Game/Battle/PersonStatusBar.h"
 
 /* Creates a PersonStatusBar Obect */
-PersonStatusBar::PersonStatusBar(QWidget *parent = 0);
+PersonStatusBar::PersonStatusBar(QWidget* parent)
 {
 }
 
@@ -34,7 +34,7 @@ void PersonStatusBar::setDisplayQD(int new_qd)
 /* Sets current max HP for display */
 void PersonStatusBar::setDisplayMaxHP(int new_max_health)
 {
-  heatlh_max = new_max_health;
+  health_max = new_max_health;
 }
 
 /* Sets current max QD for display */

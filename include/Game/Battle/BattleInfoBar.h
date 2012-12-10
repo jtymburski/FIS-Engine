@@ -14,35 +14,34 @@
 
 class BattleInfoBar : public QWidget
 {
-  public:
-    BattleInfoBar(QWidget *parent = 0);
-    ~BattleInfoBar();
+public:
+  BattleInfoBar(QWidget *parent = 0);
+  ~BattleInfoBar();
 
-  private:
+private:
+  /* Bar's height (screen_height * 0.05) */
+  int bar_height;
 
-    /* Bar's height (screen_height * 0.05) */
-    int bar_height;
+  /* Bar's width (screen width) */
+  int bar_width;
 
-    /* Bar's width (screen width) */
-    int bar_width;
-
-    /* Information currently being displayed */
-    QString info;
+  /* Information currently being displayed */
+  QString info;
     
-    /* The bar's border (may be coded instead of image) */
-    QImage border;
+  /* The bar's border (may be coded instead of image) */
+  QImage border;
 
-    /* Bounding box for the string */
-    QRect string_border; 
+  /* Bounding box for the string */
+  QRect string_border;
 
-    /* String's style */
-    //QPen string_style;
+  /* String's style */
+  //QPen string_style;
 
-    /* Time the string is displayed for */
-    int display_time;
+  /* Time the string is displayed for */
+  int display_time;
 
-    /* Timer that runs how long a string will be on the bar for */
-    QTimer display_timer;
+  /* Timer that runs how long a string will be on the bar for */
+  QTimer display_timer;
 
   signals:
 
@@ -56,10 +55,10 @@ class BattleInfoBar : public QWidget
     int getDisplayTime();
 
     /* Returns the height fo the bar */
-    void getHeight();
+    int getHeight();
 
     /* Returns the width of the bar */
-    void getWidth();
+    int getWidth();
     
     /* Sets the display time for the string */
     void setDisplayTime(int t);
@@ -71,7 +70,8 @@ class BattleInfoBar : public QWidget
     void setInfo(QString str);
 
     /* Sets the pen style of the string */
-    void setStringStyle(QPen p);
+    //void setStringStyle(QPen p);
+    void setStringStyle();
 
     /* Sets the string with regard to the timer */
     void setTimedInfo(QString str);

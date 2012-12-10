@@ -21,6 +21,12 @@ public:
    ~Category();
 
 private:
+  /* Description for the category */
+  QString description;
+
+  /* Name for the category */
+  QString name;
+
   /* Fire atk stat */
   int thermal_aggression; 
 

@@ -9,6 +9,8 @@
 #ifndef VICTORYSCREEN_H
 #define VICTORYSCREEN_H
 
+#include <QImage>
+#include <QTimer>
 #include <QtGui/QWidget>
 
 #include "Game/Player/Party.h"
