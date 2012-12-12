@@ -11,7 +11,7 @@
 #ifndef PARTY_H
 #define PARTY_H
 
-#include <QtGUI/QWidget>
+#include <QtGui/QWidget>
 
 #include "Game/Player/Inventory.h"
 #include "Game/Player/Person.h"
