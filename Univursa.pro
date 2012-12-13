@@ -9,6 +9,7 @@ TEMPLATE = app
 CONFIG += qt
 DESTDIR = ./bin
 # QT += network xml # core and gui are default
+RESOURCES = Resources.qrc
 
 SOURCES += \
     ./src/Main.cc \

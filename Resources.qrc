@@ -1,0 +1,9 @@
+<!-- Link: http://doc.qt.digia.com/qt/resources.html -->
+<!-- To address: ":/sprites/Tiles/test_grass.png" -->
+<!-- Aliases possible -->
+
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+  <file>sprites/Tiles/test_grass.png</file>
+</qresource>
+</RCC>
