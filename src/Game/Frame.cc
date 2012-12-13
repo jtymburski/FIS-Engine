@@ -8,9 +8,17 @@
 ******************************************************************************/
 #include "Game/Frame.h"
 
-/* Constructor function */
-Frame::Frame(QWidget* parent)
+/* 
+ * Description: Constructor for this class. Takes path and next pointer.
+ *              Next pointer is defaulted to 0 if not given.
+ * Input: QString path - the path to the image to create
+ *        Frame* next - pointer to next frame, default to 0
+ * Output: none
+ */
+Frame::Frame(QString path, Frame* next)
 {
+  setImage(path);
+  setNext(next);
 }
 
 /* Destructor function */
@@ -18,7 +26,52 @@ Frame::~Frame()
 {
 }
 
-/* Painter function */
-void Frame::paintEvent(QPaintEvent* event)
+/* 
+ * Description: Gets image stored in this node
+ * Input: none
+ * Output: QImage - Returns a QImage initialized with the stored picture
+ */
+QImage Frame::getImage()
 {
+  return image;
+}
+
+/* 
+ * Description: Gets next frame pointed to by this node
+ * Input: none
+ * Output: Frame* - pointer to next node
+ */
+Frame* Frame::getNext()
+{
+  return next;
+}
+
+/* 
+ * Description: Sets stored image in the frame
+ * Input: QString path - the path to the image to create
+ * Output: Bool - true if successful
+ */
+bool Frame::setImage(QString path)
+{
+  QFile new_file(path);
+
+  if(new_file.exists())
+  {
+    (this->image).load(path);
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+/* 
+ * Description: Sets next frame pointer
+ * Input: Frame* next - pointer to next frame, can be 0
+ * Output: Bool - true if successful
+ */
+bool Frame::setNext(Frame* next)
+{
+  this->next = next;
+
+  return TRUE; // Can't fail so always true
 }

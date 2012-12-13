@@ -7,8 +7,9 @@
 #include "Game/Sprite.h"
 
 /* Constructor function */
-Sprite::Sprite(QWidget* parent)
+Sprite::Sprite()
 {
+    size = 0;
 }
 
 /* Destructor function */
@@ -16,33 +17,28 @@ Sprite::~Sprite()
 {
 }
 
-/* Painting event */
-void Sprite::paintEvent(QPaintEvent* event)
-{
-}
-
 /* Inserts the image into the sprite sequence at the given position */
-void Sprite::insert(int pos, QImage img)
+bool Sprite::insert(int pos, QImage img)
 {
 }
 
 /* Inserts the image at the end of the sprite sequence */
-void Sprite::insertTail(QImage img)
+bool Sprite::insertTail(QImage img)
 {
 }
 
 /* Removes the frame in the sequence at the given position */
-void Sprite::remove(int pos)
+bool Sprite::remove(int pos)
 {
 }
 
 /* Removes the last frame in the sequence */
-void Sprite::removeTail()
+bool Sprite::removeTail()
 {
 }
 
 /* Shifts to the given position in the sequence */
-void Sprite::shift(int pos)
+bool Sprite::shift(int pos)
 {
 }
 

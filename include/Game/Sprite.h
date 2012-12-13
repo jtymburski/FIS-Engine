@@ -8,15 +8,14 @@
 #define SPRITE_H
 
 #include <QImage>
-#include <QtGui/QWidget>
 
 #include "Game/Frame.h"
 
-class Sprite : public QWidget
+class Sprite
 {
 public:
   /* Constructor function */
-  Sprite(QWidget* parent = 0);
+  Sprite();
 
   /* Destructor function */
   ~Sprite();
@@ -31,24 +30,21 @@ private:
   /* The number of frames */
   int size;
 
-protected:
-  void paintEvent(QPaintEvent *);
-
 public:
   /* Inserts the image into the sprite sequence at the given position */
-  void insert(int pos, QImage img);
+  bool insert(int pos, QImage img);
 
   /* Inserts the image at the end of the sprite sequence */
-  void insertTail(QImage img);
+  bool insertTail(QImage img);
 
   /* Removes the frame in the sequence at the given position */
-  void remove(int pos);
+  bool remove(int pos);
 
   /* Removes the last frame in the sequence */
-  void removeTail();
+  bool removeTail();
 
   /* Shifts to the given position in the sequence */
-  void shift(int pos);
+  bool shift(int pos);
 
   /* Gets the current frame */
   QImage getCurrent();
@@ -58,7 +54,6 @@ public:
 
   /* Returns the size of the sequence */
   int getSize();
-
 };
 
 #endif // SPRITE_H
