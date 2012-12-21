@@ -24,6 +24,7 @@ Frame::Frame(QString path, Frame* next)
 /* Destructor function */
 Frame::~Frame()
 {
+  next = 0;
 }
 
 /* 
