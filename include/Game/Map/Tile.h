@@ -8,6 +8,10 @@
 #define TILE_H
 
 #include <QtGui/QWidget>
+#include <QtGui/QPainter>
+#include <QTimer> // TEMP
+#include <QDebug> // TEMP
+#include <QKeyEvent> // TEMP
 
 #include "Game/Map/MapInteractiveObject.h"
 #include "Game/Map/MapWalkOver.h"
@@ -29,6 +33,7 @@ public:
 
 protected:
   void paintEvent(QPaintEvent*);
+  void keyPressEvent(QKeyEvent*);
 
 private:
   /* The lowest level of sprite on tile, passibility varies based on tile
@@ -54,6 +59,9 @@ private:
   /* The passibility of each direction of the tile */
   bool north_passibility,east_passibility,south_passibility,west_passibility;
 
+  // TEMP
+  QTimer* timer;
+  
 public:
   /* Animates all sprites on tile (Including thing and walkover sprites) */
   void animate();

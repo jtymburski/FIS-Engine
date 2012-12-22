@@ -9,11 +9,19 @@
 /* Constructor function */
 Tile::Tile(QWidget* parent)
 {
+  base = new Sprite(":/zipper_", 15, "png");
+
+  timer = new QTimer(this);
+  connect(timer, SIGNAL(timeout()), this, SLOT(update()));
+  timer->start(100);
+
+  show();
 }
 
 /* Destructor function */
 Tile::~Tile()
 {
+  delete base;
 }
 
 /* Animates all sprites on tile (Including thing and walkover sprites) */
@@ -22,8 +30,23 @@ void Tile::animate()
 }
 
 /* Paint event for the tile */
-void Tile::paintEvent(QPaintEvent* e)
+void Tile::paintEvent(QPaintEvent* event)
 {
+  QPainter painter(this);
+  painter.drawPixmap(0, 0, base->getCurrentAndShift());
+}
+
+/* Paint event for the tile */
+void Tile::keyPressEvent(QKeyEvent* event)
+{
+  if(event->key() == Qt::Key_Up)
+  {
+    timer->setInterval(timer->interval() - 10);
+  }
+  else if(event->key() == Qt::Key_Down)
+  {
+    timer->setInterval(timer->interval() + 10);
+  }
 }
 
 /* gets east passiblity */

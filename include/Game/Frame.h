@@ -10,7 +10,7 @@
 #define FRAME_H
 
 #include <QFile>
-#include <QImage>
+#include <QPixmap>
 
 class Frame
 {
@@ -26,17 +26,23 @@ public:
  *------------------------------------------------------*/
 private:
   /* The image for this frame */
-  QImage image;
+  QPixmap image;
 
   /* The next element in the linked list */
   Frame* next;
+
+  /* Asserts that the image has been set */
+  bool image_set;
 
 /*--------------------------------------------------------
  * Methods
  *------------------------------------------------------*/
 public:
+  /* Returns if an image is set */
+  bool isImageSet();
+
   /* Get stored image */
-  QImage getImage();
+  QPixmap getImage();
 
   /* Get next frame */
   Frame* getNext();

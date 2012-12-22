@@ -16,8 +16,14 @@
 class Sprite
 {
 public:
-  /* Constructor function */
+  /* Constructor: Set up no images */
   Sprite();
+
+  /* Constructor: Set up one image */
+  Sprite(QString image_path);
+
+  /* Constructor: Set up sequence of images */
+  Sprite(QString path_mask, int num_frames, QString file_type);
 
   /* Destructor function */
   ~Sprite();
@@ -44,7 +50,7 @@ public:
    * quick insertion of stored frames
    * For example: path_mask = ":/animation/image_"
    *              num_frames = 5
-   *              file_type = ".png"
+   *              file_type = "png"
    *   This will allow for image_0.png -> image_4.png to be added into
    *   a sequence */
   bool insertSequence(QString path_mask, int num_frames, QString file_type);
@@ -65,10 +71,10 @@ public:
   bool shiftNext();
 
   /* Gets the current frame */
-  QImage getCurrent();
+  QPixmap getCurrent();
 
   /* Gets the current frame and then shifts to the next one */
-  QImage getCurrentAndShift();
+  QPixmap getCurrentAndShift();
 
   /* Returns the size of the sequence */
   int getSize();

@@ -8,7 +8,11 @@
 ******************************************************************************/
 #include "Game/Sprite.h"
 
-/* Constructor function */
+/* 
+ * Description: Constructor function - Set up no images
+ *
+ * Input: none
+ */
 Sprite::Sprite()
 {
   head = 0;
@@ -16,14 +20,49 @@ Sprite::Sprite()
   size = 0;
 }
 
-/* Destructor function */
+/* 
+ * Description: Constructor function - Set up one image
+ *
+ * Input: none
+ */
+Sprite::Sprite(QString image_path)
+{
+  head = 0;
+  current = 0;
+  size = 0;
+  insertFirst(image_path);
+}
+
+/* 
+ * Description: Constructor function - Set up sequence of images
+ *
+ * Input: none
+ */
+Sprite::Sprite(QString path_mask, int num_frames, QString file_type)
+{
+  head = 0;
+  current = 0;
+  size = 0;
+  insertSequence(path_mask, num_frames, file_type);  
+}
+
+/* 
+ * Description: Destructor function 
+ */
 Sprite::~Sprite()
 {
   while(size > 0)
     removeTail();
 }
 
-/* Inserts the image into the sprite sequence at the given position */
+/* 
+ * Description: Inserts the image into the sprite sequence at the given 
+ *              position.
+ *
+ * Inputs: QString image_path - the path to the image to add
+ *         int position - the location in the linked list sequence
+ * Output: bool - status if insert is successful
+ */
 bool Sprite::insert(QString image_path, int position)
 {
   Frame* new_frame;
@@ -58,28 +97,45 @@ bool Sprite::insert(QString image_path, int position)
     }
 
     size++;
-    return TRUE;
+    return new_frame->isImageSet();
   }
 
   return FALSE;
 }
-/* Inserts the first image if the frame sequence is empty
- * Note: This isn't for inserting the head, just the first one */
+
+/* 
+ * Description: Inserts the first image if the frame sequence is empty.
+ * Note: This isn't for inserting the head, just the first one in an empty
+ *       list.
+ *
+ * Inputs: QString image_path - the path to the image to insert
+ * Output: bool - status if insertion was successful
+ */
 bool Sprite::insertFirst(QString image_path)
 {
-  head = new Frame(image_path);
-  current = head;
-  size = 1;
-  return TRUE;
+  if(size == 0)
+  {
+    head = new Frame(image_path);
+    head->setNext(head);
+    current = head;
+    size = 1;
+    return TRUE;
+  }
+  return FALSE;
 }
 
-/* Inserts a sequence of images that are stored. This allows for 
- * quick insertion of stored frames
+/* 
+ * Description: Inserts a sequence of images that are stored. This allows for 
+ * quick insertion of stored frames.
  * For example: path_mask = ":/animation/image_"
  *              num_frames = 5
- *              file_type = ".png"
+ *              file_type = "png"
  *   This will allow for image_0.png -> image_4.png to be added into
- *   a sequence */
+ *   a sequence 
+ *
+ * Inputs: See the above example.
+ * Output: bool - status if insertion was succesful
+ */
 bool Sprite::insertSequence(QString path_mask, int num_frames, 
 		                               QString file_type)
 {
@@ -87,22 +143,35 @@ bool Sprite::insertSequence(QString path_mask, int num_frames,
 
   for(int i = 0; i < num_frames; i++)
   {
-    if(num_frames < 10 || (i >= 10))
-      status = status & insertTail(path_mask + i + file_type);
+    if(i >= 10)
+      status = status & insertTail(path_mask + QString::number(i) + 
+		                               "." + file_type);
     else
-      status = status & insertTail(path_mask + "0" + i + file_type);
+      status = status & insertTail(path_mask + "0" + QString::number(i) + 
+		                                     "." + file_type);
   }
 
   return status;
 }
 
-/* Inserts the image at the end of the sprite sequence */
+/* 
+ * Description: Inserts the image at the end of the sprite sequence 
+ *
+ * Inputs: QString image_path - the path to the image to insert
+ * Output: bool - status if insertion was successful
+ */
 bool Sprite::insertTail(QString image_path)
 {
   return insert(image_path, size);
 }
 
-/* Removes the frame in the sequence at the given position */
+/* 
+ * Description: Removes the frame in the sequence at the given position 
+ *
+ * Inputs: int position - the position of the frame to remove in the linked
+ *                        list.
+ * Output: bool - status if removal was successful
+ */
 bool Sprite::remove(int position)
 {
   Frame* old_frame;
@@ -153,13 +222,23 @@ bool Sprite::remove(int position)
   return FALSE;
 }
 
-/* Removes the last frame in the sequence */
+/* 
+ * Description: Removes the last frame in the sequence 
+ *
+ * Inputs: none
+ * Output: bool - status if tail removal was successful
+ */
 bool Sprite::removeTail()
 {
   return remove(size-1);
 }
 
-/* Shifts to the given position in the sequence */
+/* 
+ * Description: Shifts to the given position in the sequence 
+ *
+ * Inputs: int position - position to shift to in the linked list
+ * Output: bool - status if moving in the linked list was successful
+ */
 bool Sprite::shift(int position)
 {
   /* Only shift if the position is within the bounds of the sprite */
@@ -179,28 +258,48 @@ bool Sprite::shift(int position)
   }  
 }
 
-/* Shifts to the next frame in the sprite */
+/* 
+ * Description: Shifts to the next frame in the sprite 
+ *
+ * Inputs: none
+ * Output: bool - status if shift to next was successful
+ */
 bool Sprite::shiftNext()
 {
   current = current->getNext();
   return TRUE;
 }
 
-/* Gets the current frame */
-QImage Sprite::getCurrent()
+/* 
+ * Description: Gets the current frame 
+ *
+ * Inputs: none
+ * Output: QPixmap - the current image in the list
+ */
+QPixmap Sprite::getCurrent()
 {
   return current->getImage();
 }
 
-/* Gets the current frame and then shifts to the next one */
-QImage Sprite::getCurrentAndShift()
+/* 
+ * Description: Gets the current frame and then shifts to the next one 
+ *
+ * Inputs: none
+ * Output: QPixmap - the current image in the list 
+ */
+QPixmap Sprite::getCurrentAndShift()
 {
-  QImage image = current->getImage();
+  QPixmap image = current->getImage();
   current = current->getNext();
   return image;
 }
 
-/* Returns the size of the sequence */
+/* 
+ * Description: Returns the size of the sequence 
+ *
+ * Inputs: none
+ * Output: int - the size of the sprite list
+ */
 int Sprite::getSize()
 {
     return size;
