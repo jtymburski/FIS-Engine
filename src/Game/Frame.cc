@@ -14,10 +14,12 @@
  *
  * Inputs: QString path - the path to the image to create
  *         Frame* next - pointer to next frame, default to 0
+ *         Frame* previous - pointer to previous frame, default to 0
  */
-Frame::Frame(QString path, Frame* next)
+Frame::Frame(QString path, Frame* next, Frame* previous)
 {
   setImage(path);
+  setPrevious(previous);
   setNext(next);
 }
 
@@ -26,6 +28,7 @@ Frame::Frame(QString path, Frame* next)
  */
 Frame::~Frame()
 {
+  previous = 0;
   next = 0;
 }
 
@@ -63,6 +66,17 @@ Frame* Frame::getNext()
 }
 
 /* 
+ * Description: Gets previous frame pointed to by this node
+ *
+ * Inputs: none
+ * Output: Frame* - pointer to previous node
+ */
+Frame* Frame::getPrevious()
+{
+  return previous;
+}
+
+/* 
  * Description: Sets stored image in the frame
  *
  * Inputs: QString path - the path to the image to create
@@ -83,14 +97,27 @@ bool Frame::setImage(QString path)
 }
 
 /* 
- * Description: Sets next frame pointer
+ * Description: sets next frame pointer
  *
  * Inputs: Frame* next - pointer to next frame, can be 0
- * Output: Bool - true if successful
+ * Output: bool - true if successful
  */
 bool Frame::setNext(Frame* next)
 {
   this->next = next;
 
-  return TRUE; // Can't fail so always true
+  return TRUE; // can't fail so always true
+}
+
+/* 
+ * Description: sets next frame pointer
+ *
+ * Inputs: Frame* previous - pointer to previous frame, can be 0
+ * Output: bool - true if successful
+ */
+bool Frame::setPrevious(Frame* previous)
+{
+  this->previous = previous;
+
+  return TRUE; // can't fail so always true
 }

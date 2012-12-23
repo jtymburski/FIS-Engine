@@ -16,7 +16,7 @@ class Frame
 {
 public:
   /* Constructor function (path and next pointer initialization) */
-  Frame(QString path, Frame* next = 0);
+  Frame(QString path, Frame* next = 0, Frame* previous = 0);
 
   /* Destructor function */
   ~Frame();
@@ -27,6 +27,9 @@ public:
 private:
   /* The image for this frame */
   QPixmap image;
+
+  /* The previous element in the linked list */
+  Frame* previous;
 
   /* The next element in the linked list */
   Frame* next;
@@ -47,11 +50,17 @@ public:
   /* Get next frame */
   Frame* getNext();
 
+  /* Get previous frame */
+  Frame* getPrevious();
+
   /* Set stored image */
   bool setImage(QString path);
 
   /* Set next frame */
   bool setNext(Frame* next);
+
+  /* Set previous frame */
+  bool setPrevious(Frame* previous);
 };
 
 #endif // FRAME_H

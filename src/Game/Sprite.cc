@@ -18,6 +18,7 @@ Sprite::Sprite()
   head = 0;
   current = 0;
   size = 0;
+  direction = FORWARD;
 }
 
 /* 
@@ -65,8 +66,9 @@ Sprite::~Sprite()
  */
 bool Sprite::insert(QString image_path, int position)
 {
+  Frame* next_frame;
   Frame* new_frame;
-  Frame* temp_frame;
+  Frame* previous_frame;
 
   /* Only add if the size is within the bounds of the sprite */
   if(size == 0)
@@ -76,25 +78,22 @@ bool Sprite::insert(QString image_path, int position)
   else if(position <= size)
   {
     new_frame = new Frame(image_path);
-    temp_frame = head;
+    next_frame = head;
 
-    /* If position is 0, redefining the head
-     * Otherwise, just inserting in the middle or end */
+    /* Parse through to find where to insert */
+    for(int i = 0; i < position; i++)
+      next_frame = next_frame->getNext();
+    previous_frame = next_frame->getPrevious();
+
+    /* Reassign linked list pointers */
+    previous_frame->setNext(new_frame);
+    next_frame->setPrevious(new_frame);
+    new_frame->setNext(next_frame);
+    new_frame->setPrevious(previous_frame);
+
+    /* If inserting to the front, reset the head pointer */
     if(position == 0)
-    {
-      for(int i = 1; i < size; i++)
-        temp_frame = temp_frame->getNext();
-      new_frame->setNext(temp_frame->getNext());
-      temp_frame->setNext(new_frame);
       head = new_frame;
-    }
-    else
-    {
-      for(int i = 1; i < position; i++)
-        temp_frame = temp_frame->getNext();
-      new_frame->setNext(temp_frame->getNext());
-      temp_frame->setNext(new_frame);
-    }
 
     size++;
     return new_frame->isImageSet();
@@ -117,6 +116,7 @@ bool Sprite::insertFirst(QString image_path)
   {
     head = new Frame(image_path);
     head->setNext(head);
+    head->setPrevious(head);
     current = head;
     size = 1;
     return TRUE;
@@ -175,34 +175,30 @@ bool Sprite::insertTail(QString image_path)
 bool Sprite::remove(int position)
 {
   Frame* old_frame;
-  Frame* temp_frame;
+  Frame* next_frame;
+  Frame* previous_frame;
 
   /* Only remove if the position exists within the size boundaries */
   if(position < size)
   {
-    temp_frame = head;
+    old_frame = head;
 
-    /* If position is 0, redefining the head
-     * Otherwise, just inserting in the middle or end */
+    /* Find the location to delete */
+    for(int i = 0; i < position; i++)
+      old_frame = old_frame->getNext();
+    next_frame = old_frame->getNext();
+    previous_frame = old_frame->getPrevious();
+
+    /* Reset linked list pointers */
+    next_frame->setPrevious(previous_frame);
+    previous_frame->setNext(next_frame);
+
+    /* If at the front of the list, shift list backwards for new head */
     if(position == 0)
-    {
-      for(int i = 1; i < size; i++)
-        temp_frame = temp_frame->getNext();
-      old_frame = temp_frame->getNext();
-      head = old_frame->getNext();
-      temp_frame->setNext(head);
-      delete old_frame;
-    }
-    else
-    {
-      for(int i = 1; i < position; i++)
-        temp_frame = temp_frame->getNext();
-      old_frame = temp_frame->getNext();
-      temp_frame->setNext(old_frame->getNext());
-      delete old_frame;
-    }
+      head = next_frame;
 
-    /* Reduce the size after deletion */
+    /* Delete frame and reduce the size after deletion */
+    delete old_frame;
     size--;
 
     /* Reset the current frame based on deletion of frame */
@@ -266,8 +262,27 @@ bool Sprite::shift(int position)
  */
 bool Sprite::shiftNext()
 {
-  current = current->getNext();
+  if(direction == FORWARD)
+    current = current->getNext();
+  else
+    current = current->getPrevious();
+
   return TRUE;
+}
+
+/* 
+ * Description: Sets the direction that the linked list is navigated to
+ *              opposite of what it was before. FORWARD -> REVERSE or
+ *              REVERSE -> FORWARD.
+ *
+ * Inputs: none
+ * Output: bool - status if direction set was successful
+ */
+bool Sprite::switchDirection()
+{
+  if(direction == FORWARD)
+    return setDirectionReverse();
+  return setDirectionForward();
 }
 
 /* 
@@ -290,7 +305,8 @@ QPixmap Sprite::getCurrent()
 QPixmap Sprite::getCurrentAndShift()
 {
   QPixmap image = current->getImage();
-  current = current->getNext();
+  shiftNext();
+
   return image;
 }
 
@@ -303,4 +319,32 @@ QPixmap Sprite::getCurrentAndShift()
 int Sprite::getSize()
 {
     return size;
+}
+
+/* 
+ * Description: Sets the direction that the linked list is navigated to
+ *              FORWARD. In other words, accessing the *next pointer when
+ *              parsing it.
+ *
+ * Inputs: none
+ * Output: bool - status if direction set was successful
+ */
+bool Sprite::setDirectionForward()
+{
+  direction = FORWARD;
+  return TRUE;
+}
+
+/* 
+ * Description: Sets the direction that the linked list is navigated to
+ *              REVERSE. In other words, accessing the *previous pointer when
+ *              parsing it.
+ *
+ * Inputs: none
+ * Output: bool - status if direction set was successful
+ */
+bool Sprite::setDirectionReverse()
+{
+  direction = REVERSE;
+  return TRUE;
 }

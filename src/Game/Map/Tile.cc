@@ -41,12 +41,22 @@ void Tile::keyPressEvent(QKeyEvent* event)
 {
   if(event->key() == Qt::Key_Up)
   {
-    timer->setInterval(timer->interval() - 10);
+    timer->setInterval(timer->interval() - 1);
   }
   else if(event->key() == Qt::Key_Down)
   {
-    timer->setInterval(timer->interval() + 10);
+    timer->setInterval(timer->interval() + 1);
   }
+  else if(event->key() == Qt::Key_Left)
+  {
+    base->setDirectionReverse();
+  }
+  else if(event->key() == Qt::Key_Right)
+  {
+    base->setDirectionForward();
+  }
+
+  qDebug() << timer->interval();
 }
 
 /* gets east passiblity */

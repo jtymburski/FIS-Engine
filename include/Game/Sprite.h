@@ -13,6 +13,9 @@
 
 #include "Game/Frame.h"
 
+/* Enum declaration for direction of linked list */
+enum { REVERSE, FORWARD };
+
 class Sprite
 {
 public:
@@ -37,6 +40,9 @@ private:
 
   /* The number of frames */
   int size;
+
+  /* Direction */
+  bool direction;
 
 public:
   /* Inserts the image into the sprite sequence at the given position */
@@ -70,6 +76,9 @@ public:
   /* Shifts to the next frame in the sprite */
   bool shiftNext();
 
+  /* Switches the direction that the linked list is parsed in */
+  bool switchDirection();
+
   /* Gets the current frame */
   QPixmap getCurrent();
 
@@ -78,6 +87,12 @@ public:
 
   /* Returns the size of the sequence */
   int getSize();
+
+  /* Asserts the direction is forward for when accessing the linked list */
+  bool setDirectionForward();
+
+  /* Asserts the direction is reverse for when accessing the linked list */
+  bool setDirectionReverse();
 };
 
 #endif // SPRITE_H
