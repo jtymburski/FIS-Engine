@@ -13,7 +13,20 @@
 /* Constructor function */
 Map::Map(QWidget* parent)
 {
-    this->show();
+  for(int i = 0; i < 11; i++)
+  {
+    QVector<Tile*> row;
+
+    for(int j = 0; j < 19; j++)
+    {
+      Tile* t = new Tile(64, 64, j*64, i*64, this);
+      t->setBase(":/grass.png");
+      row.append(t);
+    }
+    geography.append(row);
+  }
+
+  show();
 }
 
 /* Destructor function */

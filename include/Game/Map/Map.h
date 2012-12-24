@@ -37,7 +37,7 @@ private:
   QVector <MapNPC*> ai;
 
   /* The actual tiles that comprise a map, dynamically sized */
-  QVector <QVector<Tile> > geography;
+  QVector <QVector <Tile*> > geography;
 
   /* The menu on the map */
   MapMenu map_menu;
@@ -46,7 +46,7 @@ private:
   MapStatusBar map_status_bar;
 
   /* The players position on the map */
-  int playerx,playery;
+  int playerx, playery;
 
   /* The sectors on the map (for rooms, caves, houses etc) */
   QVector <Sector> sectors;
@@ -54,7 +54,8 @@ private:
   /* The viewoport for the map, also dynamically sized */
   QVector <QVector<Tile*> > viewport;
 
-  /* Weather effect on the overall map (May be pushed to the sector level at a later time) */
+  /* Weather effect on the overall map (May be pushed to the sector level at 
+   * a later time) */
   Weather* weather_effect;
 
 protected:
@@ -86,7 +87,8 @@ public:
   /* Returns a vector of the indexes of the NPC's who are in the viewport */
   QVector<int> visibleNPCs();
 
-  /* Checks if the NPC at the given index in the NPC vector is in the current viewport */
+  /* Checks if the NPC at the given index in the NPC vector is in the current 
+   * viewport */
   bool zNPCInViewport(int index);
 
   /* Gets a pointer to the NPC in the given position in the NPC vector */

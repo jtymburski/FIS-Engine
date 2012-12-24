@@ -7,14 +7,10 @@
 #include "Game/Map/Tile.h"
 
 /* Constructor function */
-Tile::Tile(QWidget* parent)
+Tile::Tile(int width, int height, int x, int y, QWidget* parent)
 {
-  base = new Sprite(":/zipper_", 15, "png");
-
-  timer = new QTimer(this);
-  connect(timer, SIGNAL(timeout()), this, SLOT(update()));
-  timer->start(100);
-
+  setParent(parent);
+  setGeometry(x, y, width, height);
   show();
 }
 
@@ -27,36 +23,14 @@ Tile::~Tile()
 /* Animates all sprites on tile (Including thing and walkover sprites) */
 void Tile::animate()
 {
+  //update();
 }
 
 /* Paint event for the tile */
 void Tile::paintEvent(QPaintEvent* event)
 {
   QPainter painter(this);
-  painter.drawPixmap(0, 0, base->getCurrentAndShift());
-}
-
-/* Paint event for the tile */
-void Tile::keyPressEvent(QKeyEvent* event)
-{
-  if(event->key() == Qt::Key_Up)
-  {
-    timer->setInterval(timer->interval() - 1);
-  }
-  else if(event->key() == Qt::Key_Down)
-  {
-    timer->setInterval(timer->interval() + 1);
-  }
-  else if(event->key() == Qt::Key_Left)
-  {
-    base->setDirectionReverse();
-  }
-  else if(event->key() == Qt::Key_Right)
-  {
-    base->setDirectionForward();
-  }
-
-  qDebug() << timer->interval();
+  painter.drawPixmap(0, 0, base->getCurrent());
 }
 
 /* gets east passiblity */
@@ -81,6 +55,12 @@ bool Tile::getPassibilitySouth()
 bool Tile::getPassibilityWest()
 {
     return west_passibility;
+}
+
+/* Sets the base tile */
+bool Tile::setBase(QString path)
+{
+  base = new Sprite(path);
 }
 
 /* Sets all passibility */

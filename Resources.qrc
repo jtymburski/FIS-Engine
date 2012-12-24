@@ -4,6 +4,6 @@
 
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
-  <file>sprites/Tiles/test_grass.png</file>
+  <file alias="grass.png">sprites/Map/Tiles/test_grass.png</file>
 </qresource>
 </RCC>

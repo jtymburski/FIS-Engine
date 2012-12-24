@@ -9,9 +9,6 @@
 
 #include <QtGui/QWidget>
 #include <QtGui/QPainter>
-#include <QTimer> // TEMP
-#include <QDebug> // TEMP
-#include <QKeyEvent> // TEMP
 
 #include "Game/Map/MapInteractiveObject.h"
 #include "Game/Map/MapWalkOver.h"
@@ -26,14 +23,13 @@ class Tile : public QWidget
 {
 public:
   /* Constructor function */
-  Tile(QWidget* parent = 0);
+  Tile(int width, int height, int x = 0, int y = 0, QWidget* parent = 0);
 
   /* Destructor function */
   ~Tile();
 
 protected:
   void paintEvent(QPaintEvent*);
-  void keyPressEvent(QKeyEvent*);
 
 private:
   /* The lowest level of sprite on tile, passibility varies based on tile
@@ -59,9 +55,6 @@ private:
   /* The passibility of each direction of the tile */
   bool north_passibility,east_passibility,south_passibility,west_passibility;
 
-  // TEMP
-  QTimer* timer;
-  
 public:
   /* Animates all sprites on tile (Including thing and walkover sprites) */
   void animate();
@@ -77,6 +70,9 @@ public:
 
   /* gets west passiblity */
   bool getPassibilityWest();
+
+  /* Sets the base sprite */
+  bool setBase(QString path);
 
   /* Sets all passibility */
   void setPassibility(bool yorn);
