@@ -143,7 +143,7 @@ bool Sprite::insertSequence(QString path_mask, int num_frames,
 
   for(int i = 0; i < num_frames; i++)
   {
-    if(i >= 10)
+    if(i >= kDOUBLE_DIGITS)
       status = status & insertTail(path_mask + QString::number(i) + 
 		                               "." + file_type);
     else

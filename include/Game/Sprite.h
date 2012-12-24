@@ -44,6 +44,9 @@ private:
   /* Direction */
   bool direction;
 
+  /* ------------------ Constants ------------------ */
+  static const int kDOUBLE_DIGITS = 10;
+
 public:
   /* Inserts the image into the sprite sequence at the given position */
   bool insert(QString image_path, int position);
