@@ -64,6 +64,9 @@ public:
   /* Inserts the image at the end of the sprite sequence */
   bool insertTail(QString image_path);
 
+  /* Returns if the linked list pointer is currently at the head */
+  bool isAtFirst();
+
   /* Removes the frame in the sequence at the given position */
   bool remove(int position);
 
@@ -85,6 +88,9 @@ public:
   /* Gets the current frame and then shifts to the next one */
   QPixmap getCurrentAndShift();
 
+  /* Returns the position that the linked list pointer is at */
+  int getPosition();
+
   /* Returns the size of the sequence */
   int getSize();
 
@@ -93,6 +99,9 @@ public:
 
   /* Asserts the direction is reverse for when accessing the linked list */
   bool setDirectionReverse();
+
+  /* Asserts that the current pointer in the linked list is at the head */
+  bool setAtFirst();
 };
 
 #endif // SPRITE_H

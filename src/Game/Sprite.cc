@@ -166,6 +166,19 @@ bool Sprite::insertTail(QString image_path)
 }
 
 /* 
+ * Description: Checks if the linked list pointer is at the head of the list 
+ *
+ * Inputs: none
+ * Output: bool - returns TRUE if the current pointer is at the head
+ */
+bool Sprite::isAtFirst()
+{
+  if(head == current)
+    return TRUE;
+  return FALSE;
+}
+
+/* 
  * Description: Removes the frame in the sequence at the given position 
  *
  * Inputs: int position - the position of the frame to remove in the linked
@@ -311,6 +324,26 @@ QPixmap Sprite::getCurrentAndShift()
 }
 
 /* 
+ * Description: Returns the position that the linked list is currently at
+ *
+ * Inputs: none
+ * Output: int - the position in the linked list from the head
+ */
+int Sprite::getPosition()
+{
+  int location = 0;
+  Frame* shifted = head;
+
+  while(shifted != current)
+  {
+    shifted = shifted->getNext();
+    location++;
+  }
+    
+  return location;
+}
+
+/* 
  * Description: Returns the size of the sequence 
  *
  * Inputs: none
@@ -318,7 +351,7 @@ QPixmap Sprite::getCurrentAndShift()
  */
 int Sprite::getSize()
 {
-    return size;
+  return size;
 }
 
 /* 
@@ -346,5 +379,18 @@ bool Sprite::setDirectionForward()
 bool Sprite::setDirectionReverse()
 {
   direction = REVERSE;
+  return TRUE;
+}
+
+/* 
+ * Description: Set the linked list current pointer to the head of the list 
+ *
+ * Inputs: none
+ * Output: bool - status if resetting the linked list to the first element
+ *                was successful.
+ */
+bool Sprite::setAtFirst()
+{
+  current = head;
   return TRUE;
 }
