@@ -22,9 +22,12 @@ Map::Map(QWidget* parent)
       Tile* t = new Tile(64, 64, j*64, i*64, this);
       t->setBase(":/grass.png");
 
+      if(i > 3 && i < 8 && j > 3 && j < 8)
+        t->setEnhancer(":/water.png");
+
       if(i == 5 && j == 5)
         t->setEnhancer(":/water_NW.png", ":/water_NE.png", 
-                       ":/water_SW.png", ":/water_SE.png");
+                       "", ":/water_SE.png");
 
       row.append(t);
     }
@@ -37,6 +40,14 @@ Map::Map(QWidget* parent)
 /* Destructor function */
 Map::~Map()
 {
+  for(int i = 0; i < geography.size(); i++)
+  {
+    for(int j = 0; j < geography[i].size(); j++)
+    {
+      delete geography[i][j];
+      geography[i][j] = NULL;
+    }
+  }
 }
 
 /* Painting function */

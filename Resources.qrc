@@ -9,5 +9,6 @@
   <file alias="water_NW.png">sprites/Map/Tiles/test_water_NW.png</file>
   <file alias="water_SE.png">sprites/Map/Tiles/test_water_SE.png</file>
   <file alias="water_SW.png">sprites/Map/Tiles/test_water_SW.png</file>
+  <file alias="water.png">sprites/Map/Tiles/test_water.png</file>
 </qresource>
 </RCC>

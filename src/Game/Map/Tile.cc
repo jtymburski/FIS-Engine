@@ -54,10 +54,14 @@ void Tile::paintEvent(QPaintEvent* event)
     }
     else
     {
-      painter.drawPixmap(0,0,enhancer[0]->getCurrent());
-      painter.drawPixmap(32,0,enhancer[1]->getCurrent());
-      painter.drawPixmap(0,32,enhancer[2]->getCurrent());
-      painter.drawPixmap(32,32,enhancer[3]->getCurrent());
+      if(enhancer[0] != NULL)
+        painter.drawPixmap(0,0,enhancer[0]->getCurrent());
+      if(enhancer[1] != NULL)
+        painter.drawPixmap(32,0,enhancer[1]->getCurrent());
+      if(enhancer[2] != NULL)
+        painter.drawPixmap(0,32,enhancer[2]->getCurrent());
+      if(enhancer[3] != NULL)
+        painter.drawPixmap(32,32,enhancer[3]->getCurrent());
     }
   }
 }
@@ -146,10 +150,16 @@ bool Tile::setBase(QString path)
 bool Tile::setEnhancer(QString path)
 {
   bool was_enhancer_set = unsetEnhancer();
-
-  /* Sets the new enhancer tile */
   Sprite* new_enhancer = new Sprite(path);
-  enhancer.append(new_enhancer);
+
+  /* If the image size is half of the tile or less, call the function
+   * that puts 4 in one instead of a just single one. Allows for 4 32x32
+   * identical tiles to be assembled by just sending one path */
+  if(new_enhancer->getCurrent().width() <= this->width() / 2)
+    setEnhancer(path, path, path, path);
+  else
+    enhancer.append(new_enhancer);
+
   enhancer_set = TRUE;
 
   return was_enhancer_set;
@@ -160,6 +170,8 @@ bool Tile::setEnhancer(QString path)
  *              the 4 corners of the standard tile size. The corners are: 
  *              NW NE
  *              SW SE
+ *              Set the path to "" if you don't want to use that corner of
+ *              the Enhancer set in the Tile.
  *
  * Inputs: QString nw_path - the NW corner path for the sprite
  *         QString ne_path - the NE corner path for the sprite
@@ -173,14 +185,26 @@ bool Tile::setEnhancer(QString nw_path, QString ne_path,
   bool was_enhancer_set = unsetEnhancer();
 
   /* Sets the new enhancer tile with 4 1/4 portions of a tile */
-  Sprite* nw_enhancer = new Sprite(nw_path);
-  Sprite* ne_enhancer = new Sprite(ne_path);
-  Sprite* sw_enhancer = new Sprite(sw_path);
-  Sprite* se_enhancer = new Sprite(se_path);
-  enhancer.append(nw_enhancer);
-  enhancer.append(ne_enhancer);
-  enhancer.append(sw_enhancer);
-  enhancer.append(se_enhancer);
+  if(!nw_path.isEmpty())
+    enhancer.append(new Sprite(nw_path));
+  else
+    enhancer.append(NULL);
+
+  if(!ne_path.isEmpty())
+    enhancer.append(new Sprite(ne_path));
+  else
+    enhancer.append(NULL);
+
+  if(!sw_path.isEmpty())
+    enhancer.append(new Sprite(sw_path));
+  else
+    enhancer.append(NULL);
+
+  if(!se_path.isEmpty())
+    enhancer.append(new Sprite(se_path));
+  else
+    enhancer.append(NULL);
+
   enhancer_set = TRUE;
 
   return was_enhancer_set;
