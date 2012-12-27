@@ -9,25 +9,58 @@
 #ifndef FRAME_H
 #define FRAME_H
 
-#include <QImage>
-#include <QtGui/QWidget>
+#include <QFile>
+#include <QPixmap>
 
-class Frame : public QWidget
+class Frame
 {
 public:
-  /* Constructor function */
-  Frame(QWidget *parent = 0);
+  /* Constructor function (path and next pointer initialization) */
+  Frame(QString path, Frame* next = 0, Frame* previous = 0);
 
   /* Destructor function */
   ~Frame();
 
-protected: // TODO: Paint Event Here?? [12-02-12]
-  void paintEvent(QPaintEvent *); 
-
+/*--------------------------------------------------------
+ * Variables
+ *------------------------------------------------------*/
 private:
   /* The image for this frame */
-  QImage img;
+  QPixmap image;
 
+  /* The previous element in the linked list */
+  Frame* previous;
+
+  /* The next element in the linked list */
+  Frame* next;
+
+  /* Asserts that the image has been set */
+  bool image_set;
+
+/*--------------------------------------------------------
+ * Methods
+ *------------------------------------------------------*/
+public:
+  /* Returns if an image is set */
+  bool isImageSet();
+
+  /* Get stored image */
+  QPixmap getImage();
+
+  /* Get next frame */
+  Frame* getNext();
+
+  /* Get previous frame */
+  Frame* getPrevious();
+
+  /* Set stored image */
+  bool setImage(QString path);
+
+  /* Set next frame */
+  bool setNext(Frame* next);
+
+  /* Set previous frame */
+  bool setPrevious(Frame* previous);
 };
 
 #endif // FRAME_H
