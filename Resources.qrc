@@ -5,5 +5,9 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
   <file alias="grass.png">sprites/Map/Tiles/test_grass.png</file>
+  <file alias="water_NE.png">sprites/Map/Tiles/test_water_NE.png</file>
+  <file alias="water_NW.png">sprites/Map/Tiles/test_water_NW.png</file>
+  <file alias="water_SE.png">sprites/Map/Tiles/test_water_SE.png</file>
+  <file alias="water_SW.png">sprites/Map/Tiles/test_water_SW.png</file>
 </qresource>
 </RCC>

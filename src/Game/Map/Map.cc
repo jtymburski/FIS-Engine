@@ -21,6 +21,11 @@ Map::Map(QWidget* parent)
     {
       Tile* t = new Tile(64, 64, j*64, i*64, this);
       t->setBase(":/grass.png");
+
+      if(i == 5 && j == 5)
+        t->setEnhancer(":/water_NW.png", ":/water_NE.png", 
+                       ":/water_SW.png", ":/water_SE.png");
+
       row.append(t);
     }
     geography.append(row);

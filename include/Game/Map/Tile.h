@@ -33,24 +33,34 @@ protected:
 
 private:
   /* The lowest level of sprite on tile, passibility varies based on tile
-    (eg. Grass, lava, water) */
+   * (eg. Grass, lava, water) */
   Sprite* base;
+  bool base_set;
+
+  /* The enhancment layer on the base. This is things like water bodies, 
+   * ground enhancers, etc. */
+  QVector <Sprite*> enhancer;
+  bool enhancer_set;
 
   /* The lower sprite, impassible (eg. Tree trunk) */
   Sprite* lower;
+  bool lower_set;
 
   /* Player or NPC or impassible item (Causes the passibility of all directions
-    to be false if not null) */
+   * to be false if not null) */
   MapInteractiveObject* thing;
+  bool thing_set;
 
   /* The status of the tile */
   Status tile_status;
 
   /* The upper sprite, fully passible (eg. Treetop) */
   Sprite* upper;
+  bool upper_set;
 
   /* The lower sprite, passible (eg. Bubby, tall grass) */
   MapWalkOver* walkover;
+  bool walkover_set;
 
   /* The passibility of each direction of the tile */
   bool north_passibility,east_passibility,south_passibility,west_passibility;
@@ -71,23 +81,52 @@ public:
   /* gets west passiblity */
   bool getPassibilityWest();
 
+  /* Returns if the Base Sprite is set */
+  bool isBaseSet();
+
+  /* Returns if the Enhancer Sprite(s) is set */
+  bool isEnhancerSet();
+
+  /* Returns if the Lower Sprite is set */
+  bool isLowerSet();
+
+  /* Returns if the Thing Sprite is set */
+  bool isThingSet();
+
+  /* Returns if the Upper Sprite is set */
+  bool isUpperSet();
+
+  /* Returns if the Walkover Sprite is set */
+  bool isWalkoverSet();
+
   /* Sets the base sprite */
   bool setBase(QString path);
 
+  /* Set the enhancer sprite */
+  bool setEnhancer(QString path);
+  bool setEnhancer(QString nw_path, QString ne_path, 
+                   QString sw_path, QString se_path);
+
   /* Sets all passibility */
-  void setPassibility(bool yorn);
+  void setPassibility(bool is_passable);
 
   /* Sets east passiblity */
-  void setPassibilityEast(bool yorn);
+  void setPassibilityEast(bool is_passable);
 
   /* Sets north passiblity */
-  void setPassibilityNorth(bool yorn);
+  void setPassibilityNorth(bool is_passable);
 
   /* Sets south passiblity */
-  void setPassibilitySouth(bool yorn);
+  void setPassibilitySouth(bool is_passable);
 
   /* Sets west passiblity */
-  void setPassibilityWest(bool yorn);
+  void setPassibilityWest(bool is_passable);
+
+  /* Unsets the base sprite */
+  bool unsetBase();
+
+  /* Unsets the enhancer sprite(s) */
+  bool unsetEnhancer();
 };
 
 #endif // TILE_H
