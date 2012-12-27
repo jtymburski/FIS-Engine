@@ -107,6 +107,9 @@ public:
   bool setEnhancer(QString nw_path, QString ne_path, 
                    QString sw_path, QString se_path);
 
+  /* Sets the lower sprite */
+  bool setLower(QString path);
+
   /* Sets all passibility */
   void setPassibility(bool is_passable);
 
@@ -122,11 +125,20 @@ public:
   /* Sets west passiblity */
   void setPassibilityWest(bool is_passable);
 
+  /* Sets the upper sprite */
+  bool setUpper(QString path);
+
   /* Unsets the base sprite */
   bool unsetBase();
 
   /* Unsets the enhancer sprite(s) */
   bool unsetEnhancer();
+
+  /* Unsets the lower sprite */
+  bool unsetLower();
+
+  /* Unsets the upper sprite */
+  bool unsetUpper();
 };
 
 #endif // TILE_H

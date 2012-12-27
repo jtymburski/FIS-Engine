@@ -20,8 +20,11 @@ Map::Map(QWidget* parent)
     for(int j = 0; j < 19; j++)
     {
       Tile* t = new Tile(64, 64, j*64, i*64, this);
+
+      /* Setup the base sprites */
       t->setBase(":/grass.png");
 
+      /* Setup the enhancer sprites */
       if(i > 3 && i < 8 && j > 3 && j < 8)
       {
         if(i == 4 && j == 4)
@@ -45,6 +48,18 @@ Map::Map(QWidget* parent)
         else
           t->setEnhancer(":/water.png");
       }
+
+      /* Setup the lower sprites */
+      if((i == 5 && j == 8) || (i == 6 && j == 8) || (i == 8 && j == 5))
+        t->setLower(":/tree_BA.png");
+      else if((i == 5 && j == 9) || (i == 6 && j == 9) || (i == 8 && j == 6))
+        t->setLower(":/tree_BB.png");
+
+      /* Setup the upper sprites */
+      if((i == 4 && j == 8) || (i == 5 && j == 8) || (i == 7 && j == 5))
+        t->setUpper(":/tree_AA.png");
+      else if((i == 4 && j == 9) || (i == 5 && j == 9) || (i == 7 && j == 6))
+        t->setUpper(":/tree_AB.png");
 
       row.append(t);
     }

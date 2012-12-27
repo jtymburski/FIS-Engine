@@ -28,6 +28,8 @@ Tile::~Tile()
 {
   unsetBase();
   unsetEnhancer();
+  unsetLower();
+  unsetUpper();
 }
 
 /* Animates all sprites on tile (Including thing and walkover sprites) */
@@ -41,11 +43,11 @@ void Tile::paintEvent(QPaintEvent* event)
 {
   QPainter painter(this);
 
-  /* Print the base if it exists */
+  /* Print the base, if it exists */
   if(base_set)
     painter.drawPixmap(0, 0, base->getCurrent());
 
-  /* Print the enhancer if it exists */
+  /* Print the enhancer, if it exists */
   if(enhancer_set)
   {
     if(enhancer.size() == 1)
@@ -64,6 +66,14 @@ void Tile::paintEvent(QPaintEvent* event)
         painter.drawPixmap(32,32,enhancer[3]->getCurrent());
     }
   }
+
+  /* Print the lower sprite, if it exists */
+  if(lower_set)
+    painter.drawPixmap(0, 0, lower->getCurrent());
+
+  /* Print the upper sprite, if it exists */
+  if(upper_set)
+    painter.drawPixmap(0, 0, upper->getCurrent());
 }
 
 /* gets east passiblity */
@@ -124,10 +134,11 @@ bool Tile::isUpperSet()
 bool isWalkoverSet();
 
 /* 
- * Description: Sets the base tile using a path to the sprite image file.
+ * Description: Sets the base sprite in the tile using a path to the sprite 
+ *              image file.
  *
  * Inputs: QString path - the path to the image to load in
- * Output: bool - returns TRUE if the base was set before
+ * Output: bool - returns TRUE if the base sprite was set before
  */
 bool Tile::setBase(QString path)
 {
@@ -210,6 +221,24 @@ bool Tile::setEnhancer(QString nw_path, QString ne_path,
   return was_enhancer_set;
 }
 
+/* 
+ * Description: Sets the lower sprite in the tile using a path to the sprite 
+ *              image file.
+ *
+ * Inputs: QString path - the path to the image to load in
+ * Output: bool - returns TRUE if the lower sprite was set before
+ */
+bool Tile::setLower(QString path)
+{
+  bool was_lower_set = unsetLower();
+
+  /* Set the new lower sprite */
+  lower = new Sprite(path);
+  lower_set = TRUE;
+
+  return was_lower_set;
+}
+
 /* Sets all passibility */
 void Tile::setPassibility(bool is_passable)
 {
@@ -241,6 +270,24 @@ void Tile::setPassibilitySouth(bool is_passable)
 void Tile::setPassibilityWest(bool is_passable)
 {
   west_passibility = is_passable;
+}
+
+/* 
+ * Description: Sets the upper sprite in the tile using a path to the sprite 
+ *              image file.
+ *
+ * Inputs: QString path - the path to the image to load in
+ * Output: bool - returns TRUE if the upper sprite was set before
+ */
+bool Tile::setUpper(QString path)
+{
+  bool was_upper_set = unsetUpper();
+
+  /* Set the new upper sprite */
+  upper = new Sprite(path);
+  upper_set = TRUE;
+
+  return was_upper_set;
 }
 
 /* 
@@ -281,6 +328,44 @@ bool Tile::unsetEnhancer()
       enhancer.remove(0);
     
     enhancer_set = FALSE;
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/* 
+ * Description: Unsets the lower sprite in the tile. Deletes the pointer, if 
+ *              applicable, and sets the internal variable to notify the class 
+ *              so the lower isn't repainted.
+ *
+ * Inputs: none
+ * Output: bool - returns TRUE if the lower was set before being unset
+ */
+bool Tile::unsetLower()
+{
+  if(lower_set)
+  {
+    delete lower;
+    lower_set = FALSE;
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/* 
+ * Description: Unsets the upper sprite in the tile. Deletes the pointer, if 
+ *              applicable, and sets the internal variable to notify the class 
+ *              so the upper isn't repainted.
+ *
+ * Inputs: none
+ * Output: bool - returns TRUE if the upper was set before being unset
+ */
+bool Tile::unsetUpper()
+{
+  if(upper_set)
+  {
+    delete upper;
+    upper_set = FALSE;
     return TRUE;
   }
   return FALSE;
