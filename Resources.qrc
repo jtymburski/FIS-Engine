@@ -5,10 +5,15 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
   <file alias="grass.png">sprites/Map/Tiles/test_grass.png</file>
-  <file alias="water_NE.png">sprites/Map/Tiles/test_water_NE.png</file>
-  <file alias="water_NW.png">sprites/Map/Tiles/test_water_NW.png</file>
-  <file alias="water_SE.png">sprites/Map/Tiles/test_water_SE.png</file>
-  <file alias="water_SW.png">sprites/Map/Tiles/test_water_SW.png</file>
-  <file alias="water.png">sprites/Map/Tiles/test_water.png</file>
+  <file alias="water_N.png">sprites/Map/Tiles/WaterTile_EdgeN.png</file>
+  <file alias="water_E.png">sprites/Map/Tiles/WaterTile_EdgeE.png</file>
+  <file alias="water_W.png">sprites/Map/Tiles/WaterTile_EdgeW.png</file>
+  <file alias="water_S.png">sprites/Map/Tiles/WaterTile_EdgeS.png</file>
+  <file alias="water_NE.png">sprites/Map/Tiles/WaterTile_CornerNE.png</file>
+  <file alias="water_NW.png">sprites/Map/Tiles/WaterTile_CornerNW.png</file>
+  <file alias="water_SE.png">sprites/Map/Tiles/WaterTile_CornerSE.png</file>
+  <file alias="water_SW.png">sprites/Map/Tiles/WaterTile_CornerSW.png</file>
+  <file alias="water_corner.png">sprites/Map/Tiles/WaterTile_CornerInside.png</file>
+  <file alias="water.png">sprites/Map/Tiles/WaterTile_Main.png</file>
 </qresource>
 </RCC>
