@@ -32,13 +32,16 @@ Map::Map(QWidget* parent)
         else if(i == 4 && j == 7)
           t->setEnhancer("", "", ":/water_N.png", ":/water_NE.png");
         else if(i == 7 && j == 4)
-          t->setEnhancer(":/water_SW.png", ":/water_S.png", "", "");
+          t->setEnhancer(":/water_W.png", ":/water.png", 
+                         ":/water_SW.png", ":/water_S.png");
         else if(i == 7 && j == 7)
-          t->setEnhancer(":/water_S.png", ":/water_SE.png", "", "");
+          t->setEnhancer(":/water.png", ":/water_E.png", 
+                         ":/water_S.png", ":/water_SE.png");
         else if(i == 4)
           t->setEnhancer("", "", ":/water_N.png", ":/water_N.png");
         else if(i == 7)
-          t->setEnhancer(":/water_S.png", ":/water_S.png", "", "");
+          t->setEnhancer(":/water.png", ":/water.png", 
+                         ":/water_S.png", ":/water_S.png");
         else if(j == 4)
           t->setEnhancer(":/water_W.png", ":/water.png", 
                          ":/water_W.png", ":/water.png");
@@ -54,6 +57,12 @@ Map::Map(QWidget* parent)
         t->setLower(":/tree_BA.png");
       else if((i == 5 && j == 9) || (i == 6 && j == 9) || (i == 8 && j == 6))
         t->setLower(":/tree_BB.png");
+      else if(i == 8 && j == 7)
+        t->setLower(":/plant.png");
+      else if(i == 8 && j == 4)
+        t->setLower(":/shrub.png");
+      else if(i == 9 && j == 7)
+        t->setLower(":/cloud.png");
 
       /* Setup the upper sprites */
       if((i == 4 && j == 8) || (i == 5 && j == 8) || (i == 7 && j == 5))
