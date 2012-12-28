@@ -19,5 +19,8 @@
   <file alias="tree_AB.png">sprites/Map/Map_Things/tree_AB_A00.png</file>
   <file alias="tree_BA.png">sprites/Map/Map_Things/tree_BA_A00.png</file>
   <file alias="tree_BB.png">sprites/Map/Map_Things/tree_BB_A00.png</file>
+  <file alias="cloud.png">sprites/Map/Map_Things/test_cloud.png</file>
+  <file alias="shrub.png">sprites/Map/Map_Things/shrub_AA_A00.png</file>
+  <file alias="plant.png">sprites/Map/Map_Things/plant_AA_A00.png</file>
 </qresource>
 </RCC>

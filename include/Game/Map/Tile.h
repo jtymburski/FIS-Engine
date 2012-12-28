@@ -10,7 +10,7 @@
 #include <QtGui/QWidget>
 #include <QtGui/QPainter>
 
-#include "Game/Map/MapInteractiveObject.h"
+#include "Game/Map/MapThing.h"
 #include "Game/Map/MapWalkOver.h"
 #include "Game/Sprite.h"
 
@@ -48,7 +48,7 @@ private:
 
   /* Player or NPC or impassible item (Causes the passibility of all directions
    * to be false if not null) */
-  MapInteractiveObject* thing;
+  MapThing* thing;
   bool thing_set;
 
   /* The status of the tile */
@@ -58,7 +58,7 @@ private:
   Sprite* upper;
   bool upper_set;
 
-  /* The lower sprite, passible (eg. Bubby, tall grass) */
+  /* The lower sprite, passible (eg. Bubby, equipment) */
   MapWalkOver* walkover;
   bool walkover_set;
 
@@ -112,6 +112,8 @@ public:
 
   /* Sets all passibility */
   void setPassibility(bool is_passable);
+  void setPassibility(bool north_is_passable, bool east_is_passable,
+                      bool south_is_passable, bool west_is_passable);
 
   /* Sets east passiblity */
   void setPassibilityEast(bool is_passable);

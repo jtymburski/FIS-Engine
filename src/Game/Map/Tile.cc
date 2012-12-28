@@ -6,13 +6,24 @@
 ******************************************************************************/
 #include "Game/Map/Tile.h"
 
-/* Constructor function */
+/* 
+ * Description: Constructor for this class. Takes information on the tile 
+ *              such as size, location and the parent and sets up the given
+ *              tile. This will be framed by an upper class that handles 
+ *              overall control (Map).
+ *
+ * Inputs: int width - the width of the tile in pixels
+ *         int height - the height of the tile in pixels
+ *         int x - the x location respective to the parent (in pixels)
+ *         int y - the y location respective to the parent (in pixels)
+ *         QWidget* parent - the parent widget to be set in the tile
+ */
 Tile::Tile(int width, int height, int x, int y, QWidget* parent)
 {
   base_set = FALSE;
   enhancer_set = FALSE;
   lower_set = FALSE;
-  thing_set = FALSE;
+  thing_set = FALSE; 
   upper_set = FALSE;
   walkover_set = FALSE;
 
@@ -23,7 +34,9 @@ Tile::Tile(int width, int height, int x, int y, QWidget* parent)
   show();
 }
 
-/* Destructor function */
+/* 
+ * Description: Destructor function
+ */
 Tile::~Tile()
 {
   unsetBase();
@@ -32,106 +45,175 @@ Tile::~Tile()
   unsetUpper();
 }
 
-/* Animates all sprites on tile (Including thing and walkover sprites) */
+/* 
+ * Description: Animates all sprites on tile. This allows for the fine control
+ *              of the QWidget update and if any special conditions need to be
+ *              done for animation.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void Tile::animate()
 {
+  // TODO
   //update();
 }
 
-/* Paint event for the tile */
+/* 
+ * Description: Paint event for the tile that gets called when the QWidget
+ *              gets updated. Handles all the printing of sprites and 
+ *              assembling the tile into one. Note: this is an override
+ *              function.
+ *
+ * Inputs: QPaintEvent* event - the event that results in the call
+ * Output: none
+ */
 void Tile::paintEvent(QPaintEvent* event)
 {
   QPainter painter(this);
 
   /* Print the base, if it exists */
   if(base_set)
-    painter.drawPixmap(0, 0, base->getCurrent());
+    painter.drawPixmap(0, 0, base->getCurrentAndShift());
 
   /* Print the enhancer, if it exists */
   if(enhancer_set)
   {
     if(enhancer.size() == 1)
     {
-      painter.drawPixmap(0,0,enhancer[0]->getCurrent());
+      painter.drawPixmap(0,0,enhancer[0]->getCurrentAndShift());
     }
     else
     {
       if(enhancer[0] != NULL)
-        painter.drawPixmap(0,0,enhancer[0]->getCurrent());
+        painter.drawPixmap(0,0,enhancer[0]->getCurrentAndShift());
       if(enhancer[1] != NULL)
-        painter.drawPixmap(32,0,enhancer[1]->getCurrent());
+        painter.drawPixmap(32,0,enhancer[1]->getCurrentAndShift());
       if(enhancer[2] != NULL)
-        painter.drawPixmap(0,32,enhancer[2]->getCurrent());
+        painter.drawPixmap(0,32,enhancer[2]->getCurrentAndShift());
       if(enhancer[3] != NULL)
-        painter.drawPixmap(32,32,enhancer[3]->getCurrent());
+        painter.drawPixmap(32,32,enhancer[3]->getCurrentAndShift());
     }
   }
 
   /* Print the lower sprite, if it exists */
   if(lower_set)
-    painter.drawPixmap(0, 0, lower->getCurrent());
+    painter.drawPixmap(0, 0, width(), height(), lower->getCurrentAndShift());
 
   /* Print the upper sprite, if it exists */
   if(upper_set)
-    painter.drawPixmap(0, 0, upper->getCurrent());
+    painter.drawPixmap(0, 0, upper->getCurrentAndShift());
 }
 
-/* gets east passiblity */
+/* 
+ * Description: Gets if the tile is passable from the East
+ *
+ * Inputs: none
+ * Output: bool - status if the tile is accessable from the east
+ */
 bool Tile::getPassibilityEast()
 {
     return east_passibility;
 }
 
-/* gets north passiblity */
+/* 
+ * Description: Gets if the tile is passable from the North
+ *
+ * Inputs: none
+ * Output: bool - status if the tile is accessable from the north
+ */
 bool Tile::getPassibilityNorth()
 {
     return north_passibility;
 }
 
-/* gets south passiblity */
+/* 
+ * Description: Gets if the tile is passable from the South
+ *
+ * Inputs: none
+ * Output: bool - status if the tile is accessable from the south
+ */
 bool Tile::getPassibilitySouth()
 {
     return south_passibility;
 }
 
-/* gets west passiblity */
+/* 
+ * Description: Gets if the tile is passable from the West
+ *
+ * Inputs: none
+ * Output: bool - status if the tile is accessable from the west
+ */
 bool Tile::getPassibilityWest()
 {
     return west_passibility;
 }
 
-/* Returns if the Base Sprite is set */
+/* 
+ * Description: Returns if the Base Sprite is set 
+ *
+ * Inputs: none
+ * Output: bool - status if the base sprite is set
+ */
 bool Tile::isBaseSet()
 {
   return base_set;
 }
 
-/* Returns if the Enhancer Sprite(s) is set */
+/* 
+ * Description: Returns if the Enhancer Sprite(s) is set 
+ *
+ * Inputs: none
+ * Output: bool - status if the enhancer sprite is set
+ */
 bool Tile::isEnhancerSet()
 {
   return enhancer_set;
 }
 
-/* Returns if the Lower Sprite is set */
+/* 
+ * Description: Returns if the Lower Sprite is set 
+ *
+ * Inputs: none
+ * Output: bool - status if the lower sprite is set
+ */
 bool Tile::isLowerSet()
 {
   return lower_set;
 }
 
-/* Returns if the Thing Sprite is set */
+/* 
+ * Description: Returns if the Thing Sprite is set 
+ *
+ * Inputs: none
+ * Output: bool - status if the thing sprite is set
+ */
 bool Tile::isThingSet()
 {
   return thing_set;
 }
 
-/* Returns if the Upper Sprite is set */
+/* 
+ * Description: Returns if the Upper Sprite is set 
+ *
+ * Inputs: none
+ * Output: bool - status if the upper sprite is set
+ */
 bool Tile::isUpperSet()
 {
   return upper_set;
 }
 
-/* Returns if the Walkover Sprite is set */
-bool isWalkoverSet();
+/* 
+ * Description: Returns if the Walkover Sprite is set 
+ *
+ * Inputs: none
+ * Output: bool - status if the walkover sprite is set
+ */
+bool Tile::isWalkoverSet()
+{
+  return walkover_set;
+}
 
 /* 
  * Description: Sets the base sprite in the tile using a path to the sprite 
@@ -239,7 +321,12 @@ bool Tile::setLower(QString path)
   return was_lower_set;
 }
 
-/* Sets all passibility */
+/* 
+ * Description: Sets into the tile from all directions
+ *
+ * Inputs: bool is_passable - is the tile passable from all directions
+ * Output: none
+ */
 void Tile::setPassibility(bool is_passable)
 {
   north_passibility = is_passable;
@@ -248,25 +335,63 @@ void Tile::setPassibility(bool is_passable)
   west_passibility = is_passable;
 }
 
-/* Sets east passiblity */
+/* 
+ * Description: Sets the passibility into the tile from all directions.
+ * 
+ * Inputs: bool north_is_passable - is the tile passable from the north
+ *         bool east_is_passable - is the tile passable from the east
+ *         bool south_is_passable - is the tile passable from the south
+ *         bool west_is_passable - is the tile passable from the west
+ * Output: none
+ */
+void Tile::setPassibility(bool north_is_passable, bool east_is_passable,
+                          bool south_is_passable, bool west_is_passable)
+{
+  north_passibility = north_is_passable;
+  east_passibility = east_is_passable;
+  south_passibility = south_is_passable;
+  west_passibility = west_is_passable;
+}
+
+/* 
+ * Description: Sets if the tile is passable from the East
+ * 
+ * Inputs: bool is_passable - is the tile passable
+ * Output: none
+ */
 void Tile::setPassibilityEast(bool is_passable)
 {
   east_passibility = is_passable;
 }
 
-/* Sets north passiblity */
+/* 
+ * Description: Sets if the tile is passable from the North
+ * 
+ * Inputs: bool is_passable - is the tile passable
+ * Output: none
+ */
 void Tile::setPassibilityNorth(bool is_passable)
 {
   north_passibility = is_passable;
 }
 
-/* Sets south passiblity */
+/* 
+ * Description: Sets if the tile is passable from the South
+ * 
+ * Inputs: bool is_passable - is the tile passable
+ * Output: none
+ */
 void Tile::setPassibilitySouth(bool is_passable)
 {
   south_passibility = is_passable;
 }
 
-/* Sets west passiblity */
+/* 
+ * Description: Sets if the tile is passable from the West
+ * 
+ * Inputs: bool is_passable - is the tile passable
+ * Output: none
+ */
 void Tile::setPassibilityWest(bool is_passable)
 {
   west_passibility = is_passable;

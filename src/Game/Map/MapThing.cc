@@ -16,11 +16,6 @@ MapThing::~MapThing()
 {
 }
 
-/* Painting function */
-void MapThing::paintEvent(QPaintEvent* event)
-{
-}
-
 /* Starts inteaction (conversation, giving something etc, reimplemented in
   subclasses polymorphically, called from Map class) */
 void MapThing::interaction()

@@ -7,12 +7,10 @@
 #ifndef MAPTHING_H
 #define MAPTHING_H
 
-#include <QtGui/QWidget>
-
 #include "EnumDatabase.h"
 #include "Game/Sprite.h"
 
-class MapThing : public QWidget
+class MapThing
 {
 public:
   /* Constructor function */
@@ -33,9 +31,6 @@ private:
 
   /* The facing sprites for the thing */
   Sprite* north,east,south,west;
-
-protected:
-  void paintEvent(QPaintEvent*);
 
 public:
   /* Starts inteaction (conversation, giving something etc, reimplemented in
