@@ -20,7 +20,47 @@ Map::Map(QWidget* parent)
     for(int j = 0; j < 19; j++)
     {
       Tile* t = new Tile(64, 64, j*64, i*64, this);
+
+      /* Setup the base sprites */
       t->setBase(":/grass.png");
+
+      /* Setup the enhancer sprites */
+      if(i > 3 && i < 8 && j > 3 && j < 8)
+      {
+        if(i == 4 && j == 4)
+          t->setEnhancer("", "", ":/water_NW.png", ":/water_N.png");
+        else if(i == 4 && j == 7)
+          t->setEnhancer("", "", ":/water_N.png", ":/water_NE.png");
+        else if(i == 7 && j == 4)
+          t->setEnhancer(":/water_SW.png", ":/water_S.png", "", "");
+        else if(i == 7 && j == 7)
+          t->setEnhancer(":/water_S.png", ":/water_SE.png", "", "");
+        else if(i == 4)
+          t->setEnhancer("", "", ":/water_N.png", ":/water_N.png");
+        else if(i == 7)
+          t->setEnhancer(":/water_S.png", ":/water_S.png", "", "");
+        else if(j == 4)
+          t->setEnhancer(":/water_W.png", ":/water.png", 
+                         ":/water_W.png", ":/water.png");
+        else if(j == 7)
+          t->setEnhancer(":/water.png", ":/water_E.png",
+                         ":/water.png", ":/water_E.png");
+        else
+          t->setEnhancer(":/water.png");
+      }
+
+      /* Setup the lower sprites */
+      if((i == 5 && j == 8) || (i == 6 && j == 8) || (i == 8 && j == 5))
+        t->setLower(":/tree_BA.png");
+      else if((i == 5 && j == 9) || (i == 6 && j == 9) || (i == 8 && j == 6))
+        t->setLower(":/tree_BB.png");
+
+      /* Setup the upper sprites */
+      if((i == 4 && j == 8) || (i == 5 && j == 8) || (i == 7 && j == 5))
+        t->setUpper(":/tree_AA.png");
+      else if((i == 4 && j == 9) || (i == 5 && j == 9) || (i == 7 && j == 6))
+        t->setUpper(":/tree_AB.png");
+
       row.append(t);
     }
     geography.append(row);
@@ -32,6 +72,14 @@ Map::Map(QWidget* parent)
 /* Destructor function */
 Map::~Map()
 {
+  for(int i = 0; i < geography.size(); i++)
+  {
+    for(int j = 0; j < geography[i].size(); j++)
+    {
+      delete geography[i][j];
+      geography[i][j] = NULL;
+    }
+  }
 }
 
 /* Painting function */
