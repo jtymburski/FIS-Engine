@@ -10,7 +10,8 @@
 #include <QtGui/QWidget>
 #include <QtGui/QPainter>
 
-#include "Game/Map/MapThing.h"
+#include "Game/Map/MapInteractiveObject.h"
+#include "Game/Map/MapPerson.h"
 #include "Game/Map/MapWalkOver.h"
 #include "Game/Sprite.h"
 
@@ -48,8 +49,13 @@ private:
 
   /* Player or NPC or impassible item (Causes the passibility of all directions
    * to be false if not null) */
-  MapThing* thing;
-  bool thing_set;
+  MapPerson* person;
+  MapInteractiveObject* impassable_object;
+  bool impassable_set;
+  
+  /* The lower sprite, passible (eg. Bubby, equipment) */
+  MapWalkOver* passable_object;
+  bool passable_set;
 
   /* The status of the tile */
   Status tile_status;
@@ -57,10 +63,6 @@ private:
   /* The upper sprite, fully passible (eg. Treetop) */
   Sprite* upper;
   bool upper_set;
-
-  /* The lower sprite, passible (eg. Bubby, equipment) */
-  MapWalkOver* walkover;
-  bool walkover_set;
 
   /* The passibility of each direction of the tile */
   bool north_passibility,east_passibility,south_passibility,west_passibility;
@@ -86,18 +88,18 @@ public:
 
   /* Returns if the Enhancer Sprite(s) is set */
   bool isEnhancerSet();
+  
+  /* Returns if the Impassable Sprite is set */
+  bool isImpassableObjectSet();
 
   /* Returns if the Lower Sprite is set */
   bool isLowerSet();
 
-  /* Returns if the Thing Sprite is set */
-  bool isThingSet();
+  /* Returns if the Passable Sprite is set */
+  bool isPassableObjectSet();
 
   /* Returns if the Upper Sprite is set */
   bool isUpperSet();
-
-  /* Returns if the Walkover Sprite is set */
-  bool isWalkoverSet();
 
   /* Sets the base sprite */
   bool setBase(QString path);
