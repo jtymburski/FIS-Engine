@@ -9,7 +9,7 @@
 
 #include <QtGui/QWidget>
 
-//#include "EnumDatabase.h" // TODO: Commented Out? [12-02-12]
+#include "EnumDatabase.h" // TODO: Commented Out? [12-02-12]
 #include "Game/Map/MapThing.h"
 #include "Game/Player/Person.h"
 #include "Game/Sprite.h"

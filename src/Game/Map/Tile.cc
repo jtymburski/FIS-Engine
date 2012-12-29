@@ -23,9 +23,9 @@ Tile::Tile(int width, int height, int x, int y, QWidget* parent)
   base_set = FALSE;
   enhancer_set = FALSE;
   lower_set = FALSE;
-  thing_set = FALSE; 
+  impassable_set = FALSE; 
   upper_set = FALSE;
-  walkover_set = FALSE;
+  passable_set = FALSE;
 
   setPassibility(TRUE);
 
@@ -113,7 +113,7 @@ void Tile::paintEvent(QPaintEvent* event)
  */
 bool Tile::getPassibilityEast()
 {
-    return east_passibility;
+    return east_passibility && !impassable_set;
 }
 
 /* 
@@ -172,6 +172,17 @@ bool Tile::isEnhancerSet()
 }
 
 /* 
+ * Description: Returns if the Impassable Sprite (object or person) is set 
+ *
+ * Inputs: none
+ * Output: bool - status if the impassable sprite is set
+ */
+bool Tile::isImpassableObjectSet()
+{
+  return impassable_set;
+}
+
+/* 
  * Description: Returns if the Lower Sprite is set 
  *
  * Inputs: none
@@ -183,14 +194,14 @@ bool Tile::isLowerSet()
 }
 
 /* 
- * Description: Returns if the Thing Sprite is set 
+ * Description: Returns if the Passable Sprite(s) is(are) set 
  *
  * Inputs: none
- * Output: bool - status if the thing sprite is set
+ * Output: bool - status if the passable sprite(s) is(are) set
  */
-bool Tile::isThingSet()
+bool Tile::isPassableObjectSet()
 {
-  return thing_set;
+  return passable_set;
 }
 
 /* 
@@ -202,17 +213,6 @@ bool Tile::isThingSet()
 bool Tile::isUpperSet()
 {
   return upper_set;
-}
-
-/* 
- * Description: Returns if the Walkover Sprite is set 
- *
- * Inputs: none
- * Output: bool - status if the walkover sprite is set
- */
-bool Tile::isWalkoverSet()
-{
-  return walkover_set;
 }
 
 /* 
