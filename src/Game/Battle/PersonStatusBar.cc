@@ -19,6 +19,11 @@ PersonStatusBar::~PersonStatusBar()
 {
 }
 
+void PersonStatusBar::paintEvent(QPaintEvent*)
+{
+    QPainter painter(this);
+}
+
 /* Sets current HP for display */
 void PersonStatusBar::setDisplayHP(int new_health)
 {

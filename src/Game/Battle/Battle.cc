@@ -4,7 +4,8 @@
 * Inheritance:
 * Description: 
 *
-*  TODO: CONSTRUCTORS TO BE FINISHED
+*  TODO [12-28-12]: Write algorithm to determine enemy placement
+*  TODO [12-28-12]: Pass in Parties to determine if enemies/allies exist first
 *
 * Notes: Turn Progression:
 *
@@ -63,16 +64,106 @@
 
 #include "Game/Battle/Battle.h"
 
-
 /* Creates a battle object */
 Battle::Battle(QWidget* pointer)
 {
+   int max_width = 1216;
+   int max_height = 704;
+
+   setFixedSize(1216,704);
+   battle_bg = new QPixmap();
+   battle_bg->load(":/temp_bg.png");
+
+   /* Temporary placement of enemy bounding boxes
+    * Should be determined with algorithm as per
+    * Jordan (also enemies should include
+    * only if they exist)
+    */
+
+   enemy1_bound = new QRect(100,170,180,230);
+   enemy2_bound = new QRect(300,165,180,230);
+   enemy3_bound = new QRect(500,160,180,230);
+   enemy4_bound = new QRect(700,155,180,230);
+   enemy5_bound = new QRect(900,150,180,230);
+
+   int top_d  = floor(0.7 * max_height);
+   int ally_w = floor(0.12 * max_width);
+   int ally_h = floor(0.3 * max_height);
+
+   /* Ally bounding boxes */
+   ally1_bound = new QRect(0,top_d,ally_w,ally_h);
+   ally2_bound = new QRect(ally_w,top_d,ally_w,ally_h);
+   ally3_bound = new QRect(ally_w * 2,top_d,ally_w,ally_h);
+   ally4_bound = new QRect(ally_w * 3,top_d,ally_w,ally_h);
+   ally5_bound = new QRect(ally_w * 4,top_d,ally_w,ally_h);
+
+
+   /* Call paint event */
+   update();
+   show();
 }
 
 
 /* Annihilates a battle object */
 Battle::~Battle()
 {
+}
+
+void Battle::paintEvent(QPaintEvent*)
+{
+  QPainter painter(this);
+  painter.setPen(QColor(Qt::black));
+
+  int max_width = 1216;
+  int max_height = 704;
+
+  painter.drawPixmap(0,0,1216,704,*battle_bg);
+
+  /* Temp paint drawings for battleinfo bar */
+  int info_height = 0.05 * max_height;
+  painter.drawRect(0,0,max_width,info_height);
+
+  /* Temp paint for battle menu */
+  int menu_height = floor(0.21 * max_height);
+  int menu_width = max_width - floor(5 * 0.12 * max_width);
+  painter.drawRect(729, 704-menu_height, menu_width, menu_height);
+
+  /* Temp paint for battle status bars */
+  menu_height = floor(0.18 * max_height);
+  painter.drawRect(729, 540-menu_height, menu_width, menu_height);
+
+  /* Temp paint drawings for allies/foes */
+  painter.drawRect(*ally1_bound);
+  painter.drawRect(*ally2_bound);
+  painter.drawRect(*ally3_bound);
+  painter.drawRect(*ally4_bound);
+  painter.drawRect(*ally5_bound);
+  painter.drawRect(*enemy1_bound);
+  painter.drawRect(*enemy2_bound);
+  painter.drawRect(*enemy3_bound);
+  painter.drawRect(*enemy4_bound);
+  painter.drawRect(*enemy5_bound);
+
+  // if (foes->getMember(0))
+  // painter.drawPixmap(enemy1_bound,foes->getMember(0)->getThirdPerson());
+  // if (foes->getMember(1))
+  // painter.drawPixmap(enemy2_bound,foes->getMember(1)->getThirdPerson());
+  // if (foes->getMember(2))
+  // painter.drawPixmap(enemy3_bound,foes->getMember(2)->getThirdPerson());
+  // if (foes->getMember(3))
+  // painter.drawPixmap(enemy4_bound,foes->getMember(3)->getThirdPerson());
+  // if (foes->getMember(4))
+  // painter.drawPixmap(enemy5_bound,foes->getMember(4)->getThirdPerson());
+  // if (friends->getMember(0))
+  // painter.drawPixmap(ally1_bound,foes->getMember(0)->getThirdPerson());
+  // if (friends->getMember(1))
+  // painter.drawPixmap(ally2_bound,foes->getMember(1)->getThirdPerson());
+  // if (friends->getMember(2))
+  // painter.drawPixmap(ally3_bound,foes->getMember(2)->getThirdPerson());
+  // if (friends->getMember(3))
+  // painter.drawPixmap(ally4_bound,foes->getMember(3)->getThirdPerson());
+  // if (friends->getMember(4))
+  // painter.drawPixmap(ally5_bound,foes->getMember(4)->getThirdPerson());
 }
 
 /* Checks for deaths, pops current action off stack, calls performAction();*/

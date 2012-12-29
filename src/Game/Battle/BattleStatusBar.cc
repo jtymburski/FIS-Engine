@@ -19,6 +19,11 @@ BattleStatusBar::~BattleStatusBar()
 {
 }
 
+void BattleStatusBar::paintEvent(QPaintEvent*)
+{
+    QPainter painter(this);
+}
+
 /* Adds a person to the vector of bars */
 void BattleStatusBar::addPerson(QString name, int health, int health_max, int qd, int qd_max)
 {

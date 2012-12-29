@@ -65,6 +65,9 @@
 #define BATTLE_H
 
 #include <QtGui/QWidget>
+#include <QtGui/QPaintEvent>
+#include <QtGui/QPainter>
+#include <cmath>
 
 #include "Game/Battle/BattleInfoBar.h"
 #include "Game/Battle/BattleMenu.h"
@@ -84,19 +87,7 @@ private:
   BattleInfoBar* current_battle_info_bar; 
 
   /* Person 1's Status bar */
-  BattleStatusBar* person1_status_bar; 
-
-  /* Person 2's Status bar */
-  BattleStatusBar* person2_status_bar; 
-
-  /* Person 3's Status bar */
-  BattleStatusBar* person3_status_bar; 
-
-  /* Person 4's Status Bar */
-  BattleStatusBar* person4_status_bar;
-
-  /* Person 5's Status Bar */
-  BattleStatusBar* person5_status_bar; 
+  BattleStatusBar* battle_status_bar;
 
   /* The Battle menu pointer (for selecting actions), off by default */
   BattleMenu* current_battle_menu;
@@ -120,9 +111,9 @@ private:
   Party* friends;
 
   /* Backdrop for the battle */
-  QImage* battlebg; 
+  QPixmap* battle_bg;
 
-  /* Enemy 1's sprite bounding box */
+  /* Enemy 1's sprite boundweing box */
   QRect* enemy1_bound; 
 
   /* Enemy 2's sprite bounding box */
@@ -168,6 +159,9 @@ private:
   bool BOSS; 
    
 protected:
+
+  /* Paint event for the class */
+  void paintEvent(QPaintEvent*);
 
 
 signals:

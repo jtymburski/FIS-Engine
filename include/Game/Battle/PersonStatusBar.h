@@ -10,6 +10,8 @@
 #define PERSONSTATUSBAR_H
 
 #include <QtGui/QWidget>
+#include <QtGui/QPaintEvent>
+#include <QtGui/QPainter>
 
 class PersonStatusBar : public QWidget
 {
@@ -55,13 +57,8 @@ private:
   QString name;
 
 protected:
-
-  
-signals:
-
-  
-public slots:
-
+  /* Paint event for the class */
+  void paintEvent(QPaintEvent*);
   
 public:
   /* Sets current HP for display */

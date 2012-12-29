@@ -42,6 +42,8 @@ private:
   int max_size;
 
 public:
+
+
   /* Adds a person to party, returns false if no space or failure */
   bool addMember(Person* p); 
 
@@ -50,6 +52,9 @@ public:
 
   /* Clears everyone but hte main character from the party */
   void clearParty(); 
+
+  /* Returns a person at a certain index */
+  Person* getMember(int index);
 
   /* Returns the party size */
   int getPartySize();

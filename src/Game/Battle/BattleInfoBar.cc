@@ -19,6 +19,12 @@ BattleInfoBar::~BattleInfoBar()
 {
 }
 
+void BattleInfoBar::paintEvent(QPaintEvent*)
+{
+    QPainter painter(this);
+}
+
+
 /* Gets the display time for the string */
 int BattleInfoBar::getDisplayTime()
 {

@@ -10,6 +10,8 @@
 #define BATTLEINFOBAR_H
 
 #include <QtGui/QWidget>
+#include <QtGui/QPaintEvent>
+#include <QtGui/QPainter>
 #include <QTimer>
 
 class BattleInfoBar : public QWidget
@@ -43,41 +45,44 @@ private:
   /* Timer that runs how long a string will be on the bar for */
   QTimer display_timer;
 
-  signals:
+protected:
+  /* Paint event for the class */
+  void paintEvent(QPaintEvent*);
 
-    /* Emitted after message is on the bar for display_time
-    (connects to personalUpkeep() in battle) */
-    void finished();
+signals:
+  /* Emitted after message is on the bar for display_time
+  (connects to personalUpkeep() in battle) */
+  void finished();
 
-  public:
+public:
 
-    /* Gets the display time for the string */
-    int getDisplayTime();
+  /* Gets the display time for the string */
+  int getDisplayTime();
 
-    /* Returns the height fo the bar */
-    int getHeight();
+  /* Returns the height fo the bar */
+  int getHeight();
 
-    /* Returns the width of the bar */
-    int getWidth();
+  /* Returns the width of the bar */
+  int getWidth();
     
-    /* Sets the display time for the string */
-    void setDisplayTime(int t);
+  /* Sets the display time for the string */
+  void setDisplayTime(int t);
 
-    /* Sets the height of the bar */
-    void setHeight(int h);
+  /* Sets the height of the bar */
+  void setHeight(int h);
 
-    /* Sets the string on the bar */
-    void setInfo(QString str);
+  /* Sets the string on the bar */
+  void setInfo(QString str);
 
-    /* Sets the pen style of the string */
-    //void setStringStyle(QPen p);
-    void setStringStyle();
+  /* Sets the pen style of the string */
+  //void setStringStyle(QPen p);
+  void setStringStyle();
 
-    /* Sets the string with regard to the timer */
-    void setTimedInfo(QString str);
+  /* Sets the string with regard to the timer */
+  void setTimedInfo(QString str);
 
-    /* Sets the width of the bar */
-    void setWidth(int w);
+  /* Sets the width of the bar */
+  void setWidth(int w);
 };
 
 #endif

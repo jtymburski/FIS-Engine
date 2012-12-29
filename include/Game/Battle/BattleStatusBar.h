@@ -10,6 +10,8 @@
 #define BATTLESTATUSBAR_H
 
 #include <QtGui/QWidget>
+#include <QtGui/QPaintEvent>
+#include <QtGui/QPainter>
 
 #include "Game/Battle/PersonStatusBar.h"
 
@@ -32,7 +34,11 @@ private:
   /* Width of the bar (screen_width * 0.35) */
   int bar_width;
 
-  public: 
+protected:
+  /* Paint event for the class */
+  void paintEvent(QPaintEvent*);
+
+public:
   	/* Adds a person to the vector of bars */
   void addPerson(QString name, int health, int health_max, int qd, int qd_max);
 

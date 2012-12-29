@@ -30,6 +30,12 @@ BattleMenu::~BattleMenu()
 {
 }
 
+void BattleMenu::paintEvent(QPaintEvent*)
+{
+    QPainter painter(this);
+}
+
+
 /* Selects the target PARTY for the action. Also adds the action to the action buffer. */
 void BattleMenu::selectedTarget (Party *)
 {

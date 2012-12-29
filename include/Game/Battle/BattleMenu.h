@@ -21,6 +21,8 @@
 #define BATTLEMENU_H
 
 #include <QtGui/QWidget>
+#include <QtGui/QPaintEvent>
+#include <QtGui/QPainter>
 
 #include "Game/Battle/BattleInfoBar.h"
 #include "Game/Player/Action.h"
@@ -72,6 +74,10 @@ private:
   /* Emitted when the action is selected and verified as correct,
      connected to processAction() in battle */
   void actionSelected();
+
+protected:
+  /* Paint event for the class */
+  void paintEvent(QPaintEvent*);
 
 public:
   /* Selects the target PARTY for the action. Also adds the action to the action buffer. */
