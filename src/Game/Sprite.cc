@@ -31,6 +31,7 @@ Sprite::Sprite(QString image_path)
   head = 0;
   current = 0;
   size = 0;
+  direction = FORWARD;
   insertFirst(image_path);
 }
 
@@ -44,6 +45,7 @@ Sprite::Sprite(QString path_mask, int num_frames, QString file_type)
   head = 0;
   current = 0;
   size = 0;
+  direction = FORWARD;
   insertSequence(path_mask, num_frames, file_type);  
 }
 
@@ -75,28 +77,33 @@ bool Sprite::insert(QString image_path, int position)
   {
     return insertFirst(image_path);
   }
-  else if(position <= size)
+  else if(position <= size && position >= 0)
   {
     new_frame = new Frame(image_path);
-    next_frame = head;
 
-    /* Parse through to find where to insert */
-    for(int i = 0; i < position; i++)
-      next_frame = next_frame->getNext();
-    previous_frame = next_frame->getPrevious();
+    if(new_frame->isImageSet())
+    {
+      next_frame = head;
 
-    /* Reassign linked list pointers */
-    previous_frame->setNext(new_frame);
-    next_frame->setPrevious(new_frame);
-    new_frame->setNext(next_frame);
-    new_frame->setPrevious(previous_frame);
+      /* Parse through to find where to insert */
+      for(int i = 0; i < position; i++)
+        next_frame = next_frame->getNext();
+      previous_frame = next_frame->getPrevious();
 
-    /* If inserting to the front, reset the head pointer */
-    if(position == 0)
-      head = new_frame;
+      /* Reassign linked list pointers */
+      previous_frame->setNext(new_frame);
+      next_frame->setPrevious(new_frame);
+      new_frame->setNext(next_frame);
+      new_frame->setPrevious(previous_frame);
 
-    size++;
-    return new_frame->isImageSet();
+      /* If inserting to the front, reset the head pointer */
+      if(position == 0)
+        head = new_frame;
+
+      size++;
+      return TRUE;
+    }
+    delete new_frame;
   }
 
   return FALSE;
@@ -115,11 +122,15 @@ bool Sprite::insertFirst(QString image_path)
   if(size == 0)
   {
     head = new Frame(image_path);
-    head->setNext(head);
-    head->setPrevious(head);
-    current = head;
-    size = 1;
-    return TRUE;
+    if(head->isImageSet())
+    {
+      head->setNext(head);
+      head->setPrevious(head);
+      current = head;
+      size = 1;
+      return TRUE;
+    }
+    delete head;
   }
   return FALSE;
 }
@@ -141,6 +152,14 @@ bool Sprite::insertSequence(QString path_mask, int num_frames,
 {
   bool status = TRUE;
 
+  /* Test if there are sufficient frames */
+  if(num_frames <= 0)
+    status = FALSE;
+
+  /* Store the initial condition */
+  int old_size = size;
+
+  /* Parse all the frames in the sequence */
   for(int i = 0; i < num_frames; i++)
   {
     if(i >= kDOUBLE_DIGITS)
@@ -149,6 +168,13 @@ bool Sprite::insertSequence(QString path_mask, int num_frames,
     else
       status = status & insertTail(path_mask + "0" + QString::number(i) + 
 		                                     "." + file_type);
+  }
+
+  /* If the sequence failed, delete the created pointers */
+  if(!status)
+  {
+    while(size != old_size)
+      removeTail();
   }
 
   return status;
@@ -192,7 +218,7 @@ bool Sprite::remove(int position)
   Frame* previous_frame;
 
   /* Only remove if the position exists within the size boundaries */
-  if(position < size)
+  if(position < size && position >= 0)
   {
     old_frame = head;
 
@@ -251,7 +277,7 @@ bool Sprite::removeTail()
 bool Sprite::shift(int position)
 {
   /* Only shift if the position is within the bounds of the sprite */
-  if(position < size)
+  if(position < size && position >= 0)
   {
     Frame* new_current_frame = head;
 
@@ -261,10 +287,8 @@ bool Sprite::shift(int position)
 
     return TRUE;
   }
-  else
-  {
-    return FALSE;
-  }  
+
+  return FALSE;
 }
 
 /* 
@@ -275,12 +299,15 @@ bool Sprite::shift(int position)
  */
 bool Sprite::shiftNext()
 {
-  if(direction == FORWARD)
-    current = current->getNext();
-  else
-    current = current->getPrevious();
-
-  return TRUE;
+  if(size > 0)
+  {
+    if(direction == FORWARD)
+      current = current->getNext();
+    else
+      current = current->getPrevious();
+    return TRUE;
+  }
+  return FALSE;
 }
 
 /* 
@@ -306,7 +333,9 @@ bool Sprite::switchDirection()
  */
 QPixmap Sprite::getCurrent()
 {
-  return current->getImage();
+  if(size > 0)
+    return current->getImage();
+  return NULL;
 }
 
 /* 
@@ -317,10 +346,13 @@ QPixmap Sprite::getCurrent()
  */
 QPixmap Sprite::getCurrentAndShift()
 {
-  QPixmap image = current->getImage();
-  shiftNext();
-
-  return image;
+  if(size > 0)
+  {
+    QPixmap image = current->getImage();
+    shiftNext();
+    return image;
+  }
+  return NULL;
 }
 
 /* 
