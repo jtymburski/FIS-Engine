@@ -220,17 +220,26 @@ bool Tile::isUpperSet()
  *              image file.
  *
  * Inputs: QString path - the path to the image to load in
- * Output: bool - returns TRUE if the base sprite was set before
+ * Output: bool - returns TRUE if the base sprite was set
  */
 bool Tile::setBase(QString path)
 {
-  bool was_base_set = unsetBase();
-
-  /* Set the new base */
+  /* Deletes the old base and sets the new base */
+  unsetBase();
   base = new Sprite(path);
-  base_set = TRUE;
 
-  return was_base_set;
+  /* Determine if the base was set */
+  if(base->getSize() == 0)
+  {
+    delete base;
+    base_set = FALSE;
+  }
+  else
+  {
+    base_set = TRUE;  
+  }
+
+  return base_set;
 }
 
 /*
@@ -238,24 +247,32 @@ bool Tile::setBase(QString path)
  *              file to cover the tile.
  *
  * Inputs: QString path - the path to the image to load in
- * Output: bool - returns TRUE if the enhancer was set before
+ * Output: bool - returns TRUE if the enhancer was set successfully.
  */
 bool Tile::setEnhancer(QString path)
 {
-  bool was_enhancer_set = unsetEnhancer();
+  unsetEnhancer();
   Sprite* new_enhancer = new Sprite(path);
 
-  /* If the image size is half of the tile or less, call the function
-   * that puts 4 in one instead of a just single one. Allows for 4 32x32
-   * identical tiles to be assembled by just sending one path */
-  if(new_enhancer->getCurrent().width() <= this->width() / 2)
-    setEnhancer(path, path, path, path);
+  if(new_enhancer->getSize() != 0)
+  {
+    /* If the image size is half of the tile or less, call the function
+     * that puts 4 in one instead of a just single one. Allows for 4 32x32
+     * identical tiles to be assembled by just sending one path */
+    if(new_enhancer->getCurrent().width() <= this->width() / 2)
+      setEnhancer(path, path, path, path);
+    else
+      enhancer.append(new_enhancer);
+
+    enhancer_set = TRUE;
+  }
   else
-    enhancer.append(new_enhancer);
+  {
+    delete new_enhancer;
+    enhancer_set = FALSE;
+  }
 
-  enhancer_set = TRUE;
-
-  return was_enhancer_set;
+  return enhancer_set;
 }
 
 /*
@@ -270,37 +287,65 @@ bool Tile::setEnhancer(QString path)
  *         QString ne_path - the NE corner path for the sprite
  *         QString sw_path - the SW corner path for the sprite
  *         QString se_path - the SE corner path for the sprite
- * Output: bool - returns TRUE if the enhancer was set before
+ * Output: bool - returns TRUE if the enhancer was successfuly set.
  */
 bool Tile::setEnhancer(QString nw_path, QString ne_path, 
                        QString sw_path, QString se_path)
 {
-  bool was_enhancer_set = unsetEnhancer();
+  unsetEnhancer();
+  enhancer_set = TRUE;
+  Sprite test_sprite;
 
   /* Sets the new enhancer tile with 4 1/4 portions of a tile */
   if(!nw_path.isEmpty())
-    enhancer.append(new Sprite(nw_path));
+  {
+    if(test_sprite.insertTail(nw_path))
+      enhancer.append(new Sprite(nw_path));
+    else
+      enhancer_set = FALSE;
+  }
   else
+  {
     enhancer.append(NULL);
+  }
 
-  if(!ne_path.isEmpty())
-    enhancer.append(new Sprite(ne_path));
+  if(!ne_path.isEmpty() && enhancer_set)
+  {
+    if(test_sprite.insertTail(ne_path))
+      enhancer.append(new Sprite(ne_path));
+    else
+      enhancer_set = FALSE;
+  }
   else
+  {
     enhancer.append(NULL);
+  }
 
-  if(!sw_path.isEmpty())
-    enhancer.append(new Sprite(sw_path));
+  if(!sw_path.isEmpty() && enhancer_set)
+  {
+    if(test_sprite.insertTail(sw_path))
+      enhancer.append(new Sprite(sw_path));
+    else
+      enhancer_set = FALSE;
+  }
   else
+  {
     enhancer.append(NULL);
+  }
 
-  if(!se_path.isEmpty())
-    enhancer.append(new Sprite(se_path));
+  if(!se_path.isEmpty() && enhancer_set)
+  {
+    if(test_sprite.insertTail(se_path))
+      enhancer.append(new Sprite(se_path));
+    else
+      enhancer_set = FALSE;
+  }
   else
+  {
     enhancer.append(NULL);
+  }
 
-  enhancer_set = TRUE;
-
-  return was_enhancer_set;
+  return enhancer_set;
 }
 
 /* 
@@ -308,17 +353,26 @@ bool Tile::setEnhancer(QString nw_path, QString ne_path,
  *              image file.
  *
  * Inputs: QString path - the path to the image to load in
- * Output: bool - returns TRUE if the lower sprite was set before
+ * Output: bool - returns TRUE if the lower sprite was successfuly set
  */
 bool Tile::setLower(QString path)
 {
-  bool was_lower_set = unsetLower();
-
-  /* Set the new lower sprite */
+  /* Unset the sprite if it exists and try and set the new one */
+  unsetLower();
   lower = new Sprite(path);
-  lower_set = TRUE;
 
-  return was_lower_set;
+  /* Determine if the base was set */
+  if(lower->getSize() == 0)
+  {
+    delete lower;
+    lower_set = FALSE;
+  }
+  else
+  {
+    lower_set = TRUE;  
+  }
+
+  return lower_set;
 }
 
 /* 
