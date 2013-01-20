@@ -52,7 +52,7 @@ void Bubby::setExperience(int new_experience)
 /* Sets the level of the bubby based on exp amounts */
 void Bubby::setLevel(int lvl)
 {
-  level = lvl;;
+  level = lvl;
 }
 
 /* Sets the tier of the bubby based on leveling */

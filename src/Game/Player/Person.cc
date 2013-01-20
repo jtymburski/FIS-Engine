@@ -72,9 +72,9 @@ bool useItem(Item* used_item)
 }
 
 /* Returns the available actions of the person */
-QVector<Action*>* Person::getAvailableActions()
+QVector<Action*>& Person::getAvailableActions()
 {
-  //return action_list;
+  return action_list;
 }
 
 /* Evaluates the RENDERING flag */
@@ -164,14 +164,14 @@ QString Person::getRank()
 /* Gets the first person sprite */
 Sprite Person::getFirstPerson()
 {
-  //return first_person;
+  return first_person;
 }
 
 
 /* Gets the third person person sprite */
 Sprite Person::getThirdPerson()
 {
-  //return third_person;
+  return third_person;
 }
 
 

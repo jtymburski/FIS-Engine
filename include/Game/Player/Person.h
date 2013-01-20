@@ -144,7 +144,7 @@ private:
   QString rank;
 
   /* List of actions that the person has */
-  QVector <Action*> action_list; 
+  QVector<Action*> action_list;
 
   /* Parallel list of when person's actions become available */
   QVector <int>  action_available;
@@ -183,7 +183,7 @@ public:
   bool useItem(Item* used_item);
 
   /* Returns the available actions of the person */
-  QVector<Action*>* getAvailableActions();
+  QVector<Action*>& getAvailableActions();
 
   /* Evaluates the RENDERING flag */
   bool getRendering();
