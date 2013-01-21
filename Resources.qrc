@@ -19,5 +19,9 @@
     <file alias="shrub.png">sprites/Map/Map_Things/shrub_AA_A00.png</file>
     <file alias="plant.png">sprites/Map/Map_Things/plant_AA_A00.png</file>
     <file alias="temp_bg.png">sprites/Map/Map_Things/plant_AA_A00.png</file>
+	<file alias="arcadius_U.png">sprites/Map/Map_Things/arcadius_AA_U00.png</file>
+	<file alias="arcadius_D.png">sprites/Map/Map_Things/arcadius_AA_D00.png</file>
+	<file alias="arcadius_L.png">sprites/Map/Map_Things/arcadius_AA_L00.png</file>
+	<file alias="arcadius_R.png">sprites/Map/Map_Things/arcadius_AA_R00.png</file>
   </qresource>
 </RCC>

@@ -9,9 +9,9 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     //Application* game_app = new Application();
-    // Map m;
+    Map m;
 
-    Battle b;
+    //Battle b;
 
     return app.exec();
 }

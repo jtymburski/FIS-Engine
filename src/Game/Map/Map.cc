@@ -63,6 +63,14 @@ Map::Map(QWidget* parent)
         t->setLower(":/shrub.png");
       else if(i == 9 && j == 7)
         t->setLower(":/cloud.png");
+      else if(i == 9 && j == 6)
+        t->setLower(":/arcadius_U.png");
+      else if(i == 9 && j == 5)
+        t->setLower(":/arcadius_D.png");
+      else if(i == 9 && j == 4)
+        t->setLower(":/arcadius_L.png");
+      else if(i == 9 && j == 3)
+        t->setLower(":/arcadius_R.png");
 
       /* Setup the upper sprites */
       if((i == 4 && j == 8) || (i == 5 && j == 8) || (i == 7 && j == 5))
