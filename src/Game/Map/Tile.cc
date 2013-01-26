@@ -23,7 +23,7 @@ Tile::Tile(int width, int height, int x, int y, QWidget* parent)
   base_set = FALSE;
   enhancer_set = FALSE;
   lower_set = FALSE;
-  impassable_set = FALSE; 
+  impassable_set = UNSET; 
   upper_set = FALSE;
   passable_set = FALSE;
 
@@ -43,20 +43,6 @@ Tile::~Tile()
   unsetEnhancer();
   unsetLower();
   unsetUpper();
-}
-
-/* 
- * Description: Animates all sprites on tile. This allows for the fine control
- *              of the QWidget update and if any special conditions need to be
- *              done for animation.
- *
- * Inputs: none
- * Output: none
- */
-void Tile::animate()
-{
-  // TODO
-  //update();
 }
 
 /* 
@@ -106,6 +92,87 @@ void Tile::paintEvent(QPaintEvent* event)
 }
 
 /* 
+ * Description: Animates all sprites on tile. This allows for the fine control
+ *              of the QWidget update and if any special conditions need to be
+ *              done for animation.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Tile::animate()
+{
+  // TODO
+  //update();
+}
+
+/* 
+ * Description: Gets the base sprite and returns it, if set.
+ *
+ * Inputs: none
+ * Output: Sprite* - the base sprite pointer
+ */
+Sprite* Tile::getBase()
+{
+  if(base_set)
+    return base;
+  return NULL;
+}
+
+/* 
+ * Description: Gets the enhancer sprite(s) and returns it(them), if set.
+ *
+ * Inputs: none
+ * Output: QVector<Sprite*> - the enhancer sprite QVector pointer
+ */
+QVector<Sprite*> Tile::getEnhancer()
+{
+  if(enhancer_set)
+    return enhancer;
+
+  QVector<Sprite*> temp_vector;
+  return temp_vector;
+}
+
+/* 
+ * Description: Gets the impassable object sprite that is stored, if set
+ *
+ * Inputs: none
+ * Output: MapThing* - the MapThing pointer, could be a person or object
+ */
+MapThing* Tile::getImpassableObject()
+{
+  if(impassable_set == OBJECT)
+    return impassable_object;
+  else if(impassable_set == PERSON)
+    return person;
+  return NULL;
+}
+
+/* 
+ * Description: Gets the lower sprite and returns it, if set.
+ *
+ * Inputs: none
+ * Output: Sprite* - the lower sprite pointer
+ */
+Sprite* Tile::getLower()
+{
+  if(lower_set)
+    return lower;
+  return NULL;
+}
+
+/* 
+ * Description: Gets the passable object sprite and returns it, if set.
+ *
+ * Inputs: none
+ * Output: MapThing* - the passable object MapThing pointer
+ */
+MapThing* Tile::getPassableObject()
+{
+  return passable_object;
+}
+
+/* 
  * Description: Gets if the tile is passable from the East
  *
  * Inputs: none
@@ -147,6 +214,19 @@ bool Tile::getPassibilitySouth()
 bool Tile::getPassibilityWest()
 {
     return west_passibility;
+}
+
+/* 
+ * Description: Gets the upper sprite and returns it, if set.
+ *
+ * Inputs: none
+ * Output: Sprite* - the upper sprite pointer
+ */
+Sprite* Tile::getUpper()
+{
+  if(upper_set)
+    return upper;
+  return NULL;
 }
 
 /* 
@@ -228,7 +308,7 @@ bool Tile::setBase(QString path)
   unsetBase();
   base = new Sprite(path);
 
-  /* Determine if the base was set */
+  /* Determine if the base was set successfully */
   if(base->getSize() == 0)
   {
     delete base;
@@ -349,6 +429,20 @@ bool Tile::setEnhancer(QString nw_path, QString ne_path,
 }
 
 /* 
+ * Description: Sets the impassable object sprite in the tile using a path to 
+ *              the sprite image file.
+ *
+ * Inputs: QString path - the path to the image to load in
+ * Output: bool - returns TRUE if the impassable object sprite was successfuly 
+ *                set.
+ */
+bool Tile::setImpassableObject(QString path)
+{
+  // TODO
+  return TRUE;
+}
+
+/* 
  * Description: Sets the lower sprite in the tile using a path to the sprite 
  *              image file.
  *
@@ -361,7 +455,7 @@ bool Tile::setLower(QString path)
   unsetLower();
   lower = new Sprite(path);
 
-  /* Determine if the base was set */
+  /* Determine if the lower was set successfully */
   if(lower->getSize() == 0)
   {
     delete lower;
@@ -373,6 +467,19 @@ bool Tile::setLower(QString path)
   }
 
   return lower_set;
+}
+
+/* 
+ * Description: Sets the passable object sprite in the tile using a path to 
+ *              the sprite image file.
+ *
+ * Inputs: QString path - the path to the image to load in
+ * Output: bool - returns TRUE if the passable object sprite was successfuly set
+ */
+bool Tile::setPassableObject(QString path)
+{
+  // TODO
+  return TRUE;
 }
 
 /* 
@@ -460,13 +567,22 @@ void Tile::setPassibilityWest(bool is_passable)
  */
 bool Tile::setUpper(QString path)
 {
-  bool was_upper_set = unsetUpper();
-
-  /* Set the new upper sprite */
+  /* Unset the sprite if it exists and try and set the new one */
+  unsetUpper();
   upper = new Sprite(path);
-  upper_set = TRUE;
 
-  return was_upper_set;
+  /* Determine if the upper was set successfully */
+  if(upper->getSize() == 0)
+  {
+    delete upper;
+    upper_set = FALSE;
+  }
+  else
+  {
+    upper_set = TRUE;  
+  }
+
+  return upper_set;
 }
 
 /* 
@@ -512,6 +628,21 @@ bool Tile::unsetEnhancer()
   return FALSE;
 }
 
+/*
+ * Description: Unsets the impassable object sprite in the tile. Deletes the 
+ *              pointer, if applicable, and sets the internal variable to 
+ *              notify the class so the impassable object isn't repainted.
+ *
+ * Inputs: none
+ * Output: bool - returns TRUE if the impassable object was set before being
+ *                unset.
+ */
+bool Tile::unsetImpassableObject()
+{
+  // TODO
+  return FALSE;
+}
+
 /* 
  * Description: Unsets the lower sprite in the tile. Deletes the pointer, if 
  *              applicable, and sets the internal variable to notify the class 
@@ -528,6 +659,20 @@ bool Tile::unsetLower()
     lower_set = FALSE;
     return TRUE;
   }
+  return FALSE;
+}
+
+/*
+ * Description: Unsets the passable object sprite in the tile. Deletes the
+ *              pointer, if applicable, and sets the internal variable to
+ *              notify the class so the passable object isn't repainted.
+ *
+ * Inputs: none
+ * Output: bool - returns TRUE if the passable object was set before being unset
+ */
+bool Tile::unsetPassableObject()
+{
+  // TODO
   return FALSE;
 }
 

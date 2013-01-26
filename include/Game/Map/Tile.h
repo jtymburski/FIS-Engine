@@ -15,10 +15,15 @@
 #include "Game/Map/MapWalkOver.h"
 #include "Game/Sprite.h"
 
-/* Off - Not rendered at all
-  Active - Rendered
-  Inactive - Blacked out (sector past a door) */
-enum Status{STATUSOFF,ACTIVE,INACTIVE};
+/* STATUSOFF - Not rendered at all
+ * ACTIVE - Rendered
+ * INACTIVE - Blacked out (sector past a door) */
+enum Status{STATUSOFF, ACTIVE, INACTIVE};
+
+/* UNSET - The impassable object is unused
+ * OBJECT - The impassable object is an object (Tree, etc)
+ * PERSON - The impassable object is a person (player, npc) */
+enum ImpassableObjectState{UNSET, OBJECT, PERSON};
 
 class Tile : public QWidget
 {
@@ -40,19 +45,19 @@ private:
 
   /* The enhancment layer on the base. This is things like water bodies, 
    * ground enhancers, etc. */
-  QVector <Sprite*> enhancer;
+  QVector<Sprite*> enhancer;
   bool enhancer_set;
 
+  /* Player or NPC or impassible item (Causes the passibility of all directions
+   * to be false if not null) */
+  MapInteractiveObject* impassable_object;
+  MapPerson* person;
+  bool impassable_set;
+  
   /* The lower sprite, impassible (eg. Tree trunk) */
   Sprite* lower;
   bool lower_set;
 
-  /* Player or NPC or impassible item (Causes the passibility of all directions
-   * to be false if not null) */
-  MapPerson* person;
-  MapInteractiveObject* impassable_object;
-  bool impassable_set;
-  
   /* The lower sprite, passible (eg. Bubby, equipment) */
   MapWalkOver* passable_object;
   bool passable_set;
@@ -71,17 +76,35 @@ public:
   /* Animates all sprites on tile (Including thing and walkover sprites) */
   void animate();
 
-  /* gets east passiblity */
+  /* Gets the base sprite */
+  Sprite* getBase();
+
+  /* Gets the enhancer sprite qvector */
+  QVector<Sprite*> getEnhancer();
+
+  /* Gets the impassable object sprite */
+  MapThing* getImpassableObject();
+
+  /* Gets the lower sprite */
+  Sprite* getLower();
+
+  /* Gets the passable object sprite */
+  MapThing* getPassableObject();
+
+  /* Gets east passiblity */
   bool getPassibilityEast();
 
-  /* gets north passiblity */
+  /* Gets north passiblity */
   bool getPassibilityNorth();
 
-  /* gets south passiblity */
+  /* Gets south passiblity */
   bool getPassibilitySouth();
 
-  /* gets west passiblity */
+  /* Gets west passiblity */
   bool getPassibilityWest();
+
+  /* Gets the upper sprite */
+  Sprite* getUpper();
 
   /* Returns if the Base Sprite is set */
   bool isBaseSet();
@@ -109,8 +132,14 @@ public:
   bool setEnhancer(QString nw_path, QString ne_path, 
                    QString sw_path, QString se_path);
 
+  /* Sets the impassable object sprite */
+  bool setImpassableObject(QString path);
+
   /* Sets the lower sprite */
   bool setLower(QString path);
+
+  /* Sets the passable object sprite */
+  bool setPassableObject(QString path);
 
   /* Sets all passibility */
   void setPassibility(bool is_passable);
@@ -138,8 +167,14 @@ public:
   /* Unsets the enhancer sprite(s) */
   bool unsetEnhancer();
 
+  /* Unsets the impassable object sprite */
+  bool unsetImpassableObject();
+
   /* Unsets the lower sprite */
   bool unsetLower();
+
+  /* Unsets the passable object sprite */
+  bool unsetPassableObject();
 
   /* Unsets the upper sprite */
   bool unsetUpper();
