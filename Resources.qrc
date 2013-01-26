@@ -1,6 +1,6 @@
 <RCC>
   <qresource prefix="/">
-    <file alias="grass.png">sprites/Map/Tiles/#test_grass.png</file>
+    <file alias="grass.png">sprites/Map/Tiles/test_grass.png</file>
     <file alias="water_N.png">sprites/Map/Tiles/WaterTile001/WaterTile_EdgeNorth.png</file>
     <file alias="water_E.png">sprites/Map/Tiles/WaterTile001/WaterTile_EdgeEast.png</file>
     <file alias="water_W.png">sprites/Map/Tiles/WaterTile001/WaterTile_EdgeWest.png</file>
