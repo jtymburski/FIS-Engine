@@ -141,7 +141,7 @@ QVector<Sprite*> Tile::getEnhancer()
  */
 MapThing* Tile::getImpassableObject()
 {
-  if(impassable_set == OBJECT)
+  if(impassable_set == DECOR)
     return impassable_object;
   else if(impassable_set == PERSON)
     return person;
@@ -169,7 +169,9 @@ Sprite* Tile::getLower()
  */
 MapThing* Tile::getPassableObject()
 {
-  return passable_object;
+  if(passable_set)
+    return passable_object;
+  return NULL;
 }
 
 /* 
@@ -180,7 +182,7 @@ MapThing* Tile::getPassableObject()
  */
 bool Tile::getPassibilityEast()
 {
-    return east_passibility && !impassable_set;
+  return east_passibility && !impassable_set;
 }
 
 /* 
@@ -191,7 +193,7 @@ bool Tile::getPassibilityEast()
  */
 bool Tile::getPassibilityNorth()
 {
-    return north_passibility;
+  return north_passibility;
 }
 
 /* 
@@ -202,7 +204,7 @@ bool Tile::getPassibilityNorth()
  */
 bool Tile::getPassibilitySouth()
 {
-    return south_passibility;
+  return south_passibility;
 }
 
 /* 
@@ -213,7 +215,7 @@ bool Tile::getPassibilitySouth()
  */
 bool Tile::getPassibilityWest()
 {
-    return west_passibility;
+  return west_passibility;
 }
 
 /* 
@@ -255,9 +257,10 @@ bool Tile::isEnhancerSet()
  * Description: Returns if the Impassable Sprite (object or person) is set 
  *
  * Inputs: none
- * Output: bool - status if the impassable sprite is set
+ * Output: ImpassableObjectState - Enumerator that handles the impassable 
+ *                                 object state: UNSET, OBJECT, PERSON.
  */
-bool Tile::isImpassableObjectSet()
+ImpassableObjectState Tile::isImpassableObjectSet()
 {
   return impassable_set;
 }
@@ -325,6 +328,8 @@ bool Tile::setBase(QString path)
 /*
  * Description: Sets the enhancer tile using a path to a single sprite image
  *              file to cover the tile.
+ * Warning: This will unset the enhancer no matter what, even if the call
+ *          fails to set the enhancer with the new sprites. 
  *
  * Inputs: QString path - the path to the image to load in
  * Output: bool - returns TRUE if the enhancer was set successfully.
@@ -362,6 +367,8 @@ bool Tile::setEnhancer(QString path)
  *              SW SE
  *              Set the path to "" if you don't want to use that corner of
  *              the Enhancer set in the Tile.
+ * Warning: This will unset the enhancer no matter what, even if the call
+ *          fails to set the enhancer with the new sprites.
  *
  * Inputs: QString nw_path - the NW corner path for the sprite
  *         QString ne_path - the NE corner path for the sprite
@@ -425,6 +432,10 @@ bool Tile::setEnhancer(QString nw_path, QString ne_path,
     enhancer.append(NULL);
   }
 
+  /* Unset if it failed during the process */
+  if(!enhancer_set)
+    unsetEnhancer();
+
   return enhancer_set;
 }
 
@@ -436,7 +447,7 @@ bool Tile::setEnhancer(QString nw_path, QString ne_path,
  * Output: bool - returns TRUE if the impassable object sprite was successfuly 
  *                set.
  */
-bool Tile::setImpassableObject(QString path)
+bool Tile::setImpassableObject(QString path, ImpassableObjectState type)
 {
   // TODO
   return TRUE;

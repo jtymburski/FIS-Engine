@@ -21,9 +21,9 @@
 enum Status{STATUSOFF, ACTIVE, INACTIVE};
 
 /* UNSET - The impassable object is unused
- * OBJECT - The impassable object is an object (Tree, etc)
+ * DECOR - The impassable object is an object (Tree, etc)
  * PERSON - The impassable object is a person (player, npc) */
-enum ImpassableObjectState{UNSET, OBJECT, PERSON};
+enum ImpassableObjectState{UNSET, DECOR, PERSON};
 
 class Tile : public QWidget
 {
@@ -52,7 +52,7 @@ private:
    * to be false if not null) */
   MapInteractiveObject* impassable_object;
   MapPerson* person;
-  bool impassable_set;
+  ImpassableObjectState impassable_set;
   
   /* The lower sprite, impassible (eg. Tree trunk) */
   Sprite* lower;
@@ -113,7 +113,7 @@ public:
   bool isEnhancerSet();
   
   /* Returns if the Impassable Sprite is set */
-  bool isImpassableObjectSet();
+  ImpassableObjectState isImpassableObjectSet();
 
   /* Returns if the Lower Sprite is set */
   bool isLowerSet();
@@ -133,7 +133,7 @@ public:
                    QString sw_path, QString se_path);
 
   /* Sets the impassable object sprite */
-  bool setImpassableObject(QString path);
+  bool setImpassableObject(QString path, ImpassableObjectState type);
 
   /* Sets the lower sprite */
   bool setLower(QString path);
