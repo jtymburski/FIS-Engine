@@ -1,17 +1,15 @@
 /******************************************************************************
 * Class Name: Person
 * Date Created: Sunday, October 28th, 2012
-* Inheritance: QWidget
+* Inheritance : QWidget
 * Description: Holder for all the info describing a person (character)
 *  
-* TODO: CONSTRUCTORS TO BE FINISHED
-* TODO: FLAGS FOR STATUS AILMENTS
+* TODO: FLAGS FOR STATUS AILMENTS [01-20-13]
 ******************************************************************************/
 #ifndef PERSON_H
 #define PERSON_H
 
 #include <QtGui/QWidget>
-
 #include "Game/Player/Action.h"
 #include "Game/Player/Category.h"
 #include "Game/Player/Item.h"
@@ -22,7 +20,18 @@
 class Person : public QWidget
 {
 public:
-  Person(QWidget* pointer = 0); //TODO: FINISH
+
+  /* Creates a default person object */
+  Person(QWidget* pointer = 0);
+
+  /* Creates a person object */
+  Person(int th_a, int th_f, int po_ag, int po_f, int pr_a, int pr_f,
+         int ch_a, int ch_f, int cy_a,  int cy_f, int ni_a, int ni_f,
+         int vit,  int qd,   int ag,    int lim,  int unb,  int lev,
+         int exp, QString nam, QString prim, QString secd, QString rank,
+         QWidget* pointer = 0);
+
+  /* Annihilates a person object */
   ~Person();
 
 private:
@@ -128,8 +137,71 @@ private:
   /* Temporary crit chance stat */
   int temp_unbearability;
 
-  /* Currently equipped equipment */
-  Equipment* head, left_arm,right_arm,legs,torso;
+  /* Base fire atk stat */
+  int base_thermal_aggression;
+
+  /* Base def stat */
+  int base_thermal_fortitude;
+
+  /* Base ice atk stat */
+  int base_polar_aggression;
+
+  /* Base ice def stat */
+  int base_polar_fortitude;
+
+  /* Base forest atk stat */
+  int base_primal_aggression;
+
+  /* Base forest def stat */
+  int base_primal_fortitude;
+
+  /* Base electric atk stat */
+  int base_charged_aggression;
+
+  /* Base electri def stat */
+  int base_charged_fortitude;
+
+  /* Base digital atk stat */
+  int base_cybernetic_aggression;
+
+  /* Base digital def stat */
+  int base_cybernetic_fortitude;
+
+  /* Base void atk stat */
+  int base_nihil_aggression;
+
+  /* Base void def stat */
+  int base_nihil_fortitude;
+
+  /* Base health stat */
+  int base_vitality;
+
+  /* Base power points (MP) stat */
+  int base_quantum_drive;
+
+  /* Base speed stat */
+  int base_agility;
+
+  /* Base dodge_chance stat */
+  int base_limbertude;
+
+  /* Base crit chance stat */
+  int base_unbearability;
+
+  /* Currently equipped head piece */
+  Equipment* head;
+
+  /* Currently equipped left arm piece */
+  Equipment* left_arm;
+
+  /* Currently equipped right arm piece */
+  Equipment* right_arm;
+
+  /* Currently equipped leg piece */
+  Equipment* legs;
+
+  /* Currently equipped torso piece */
+  Equipment* torso;
 
   /* Person's level and experience */
   int level, experience;
@@ -147,7 +219,7 @@ private:
   QVector<Action*> action_list;
 
   /* Parallel list of when person's actions become available */
-  QVector <int>  action_available;
+  QVector<int>  action_available;
 
   /* List of status ailment Strings */
   QVector<QString> status_ailment_list;
@@ -155,8 +227,26 @@ private:
   /* The person's name */
   QString name;  
 
+  /* The person's primary elemental strength */
+  QString primary;
+
+  /* The person's secondary elemental strength */
+  QString secondary;
+
+  /* The person's primary elemental strength curve */
+  QChar primary_curve;
+
+  /* The persons' secondary elemental strenth curve */
+  QChar secondary_curve;
+
   /* First and third person sprites */
-  Sprite first_person, third_person; 
+  Sprite first_person, third_person;
+
+  /* Set up stats for constructor */
+  void setupStats(int th_a, int th_f, int po_ag, int po_f, int pr_a, int pr_f,
+                  int ch_a, int ch_f, int cy_a,  int cy_f, int ni_a, int ni_f,
+                  int vit,  int qd,   int ag,    int lim,  int unb,  int lev,
+                  int exp, QString nam, QString prim, QString secd, QString rank);
 
   /* Flags */
 
@@ -217,6 +307,18 @@ public:
 
   /* Gets the persons name (set in construction and never again) */
   QString getName();
+
+  /* Gets the person's primary elemental strength */
+  QString getPrimary();
+
+  /* Gets the person's curve level for their primary elemental strength */
+  QString getPrimaryCurve();
+
+  /* Gets the person's secondary elemental strength */
+  QString getSecondary();
+
+  /* Gets the person's curve level for their primary elemental strength */
+  QString getSecondaryCurve();
 
   /* Gets the person's word rank */
   QString getRank();
@@ -329,20 +431,71 @@ public:
   /* Gets the critcial chance stat */
   int getTempUnbearability();
 
+  /* Gets the fire atk stat */
+  int getBaseThermalAggression();
+
+  /* Gets the fire def stat */
+  int getBaseThermalFortitude();
+
+  /* Gets the ice atk stat */
+  int getBasePolarAggression();
+
+  /* Gets the ice def stat */
+  int getBasePolarFortitude();
+
+  /* Gets the forest atk stat */
+  int getBasePrimalAggression();
+
+  /* Gets the forest def stat */
+  int getBasePrimalFortitude();
+
+  /* Gets the electric atk stat */
+  int getBaseChargedAggression();
+
+  /* Gets the electric def stat */
+  int getBaseChargedFortitude();
+
+  /* Gets the digital atk stat */
+  int getBaseCyberneticAggression();
+
+  /* Gets the digital def stat */
+  int getBaseCyberneticFortitude();
+
+  /* Gets the void atk stat */
+  int getBaseNihilAggression();
+
+  /* Gets the void def stat */
+  int getBaseNihilFortitude();
+
+  /* Gets the health stat */
+  int getBaseVitality();
+
+  /* Gets the power points (shown as a percentage) */
+  int getBaseQuantumDrive();
+
+  /* Gets the speed stat */
+  int getBaseAgility();
+
+  /* Gets the avoidance stat */
+  int getBaseLimbertude();
+
+  /* Gets the critcial chance stat */
+  int getBaseUnbearability();
+
   /* Sets the head equipment */
-  bool setHeadEquipment(Equipment* e);
+  bool setHeadEquipment(Equipment* e = NULL);
 
   /* Sets the left arm equipmet */
-  bool setLeftArmEquipment(Equipment* e);
+  bool setLeftArmEquipment(Equipment* e = NULL);
 
   /* Sets the right arm equipment */
-  bool setRightArmEquipment(Equipment* e);
+  bool setRightArmEquipment(Equipment* e = NULL);
 
   /* Sets the leg equipment */
-  bool setLegEquipment(Equipment* e);
+  bool setLegEquipment(Equipment* e = NULL);
 
   /* Sets the torso equipment */
-  bool setTorsoEquipment(Equipment* e);
+  bool setTorsoEquipment(Equipment* e = NULL);
 
   /* Sets the person's category */
   void setCategory(Category* c);
@@ -350,11 +503,26 @@ public:
   /* Set's the person's experience */
   void setExp(int);
 
-  /* Sets the given status ailment */
-  void setStatusAilment(bool b, int ailment_index);
-
   /* Sets the person's level */
   void setLevel(int);
+
+  /* Sets the person's level */
+  void setName(QString value);
+
+  /* Sets the person's primary elemental strength */
+  void setPrimary(QString value);
+
+  /* Sets the person's curve level for their primary elemental strength */
+  void setPrimaryCurve(QChar value);
+
+  /* Sets the person's secondary elemental strength */
+  void setSecondary(QString value);
+
+  /* Sets the person's curve level for their secondary elemental strength */
+  void setSecondaryCurve(QChar value);
+
+  /* Sets the given status ailment */
+  void setStatusAilment(bool b, int ailment_index);
 
   /* Sets the person's race */
   void setRace(Race* r);
@@ -466,6 +634,57 @@ public:
 
   /* Sets the temp critical chance stat */
   void setTempUnbearability(int value);
+
+  /* Sets the Base fire attack stat */
+  void setBaseThermalAggression(int value);
+
+  /* Sets the Base fire def stat */
+  void setBaseThermalFortitude(int value);
+
+  /* Sets the Base ice atk stat */
+  void setBasePolarAggression(int value);
+
+   /* Sets the Base ice def stat */
+  void setBasePolarFortitude(int value);
+
+  /* Sets the Base forest atk stat */
+  void setBasePrimalAggression(int value);
+
+  /* Sets the Base forest def stat */
+  void setBasePrimalFortitude(int value);
+
+  /* Sets the Base electric atk stat */
+  void setBaseChargedAggression(int value);
+
+  /* Sets the Base electric def stat */
+  void setBaseChargedFortitude(int value);
+
+  /* Sets the Base digital atk stat */
+  void setBaseCyberneticAggression(int value);
+
+  /* Sets the Base digital def stat */
+  void setBaseCyberneticFortitude(int value);
+
+  /* Setst the Base void atk stat */
+  void setBaseNihilAggression(int value);
+
+  /* Sets the Base void def stat */
+  void setBaseNihilFortitude(int value);
+
+  /* Sets the Base health stat */
+  void setBaseVitality(int value);
+
+  /* Sets the Base power points (shown as percentage) */
+  void setBaseQuantumDrive(int value);
+
+  /* Sets the Base speed stat */
+  void setBaseAgility(int value);
+
+  /* Sets the Base avoidance stat */
+  void setBaseLimbertude(int value);
+
+  /* Sets the Base critical chance stat */
+  void setBaseUnbearability(int value);
 };
 
 #endif // PERSON_H
