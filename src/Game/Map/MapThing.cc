@@ -2,7 +2,12 @@
 * Class Name: MapThing
 * Date Created: Dec 2 2012
 * Inheritance: none
-* Description: The MapThing class
+* Description: This class handles the generic MapThing. It contains things on
+*              the map that don't fall under general scenary. It acts as the
+*              parent class to a sequence of others, for example, MapPerson,
+*              MapWalkOver, MapInteractiveObject, etc. Also handles the 
+*              basic setup for name, description, id, sprite. No interaction
+*              is handled in this class since its a generic parent.
 ******************************************************************************/
 #include "Game/Map/MapThing.h"
 
@@ -16,10 +21,12 @@
  */
 MapThing::MapThing(Sprite* frames, QString name, QString description, int id)
 {
-  this->thing = frames;
-  this->name = name;
-  this->description = description;
-  this->id = id;
+  thing_set = FALSE;
+
+  setSprite(frames);
+  setName(name);
+  setDescription(description);
+  setID(id);
 }
 
 /* 
@@ -30,10 +37,12 @@ MapThing::MapThing(Sprite* frames, QString name, QString description, int id)
  */
 MapThing::MapThing()
 {
-  this->thing = NULL;
-  this->name = "";
-  this->description = "";
-  this->id = -1;
+  thing_set = FALSE;
+
+  setSprite(NULL);
+  setName("");
+  setDescription("");
+  setID(kUNSET_ID); 
 }
 
 /* 
@@ -47,8 +56,8 @@ MapThing::~MapThing()
 }
 
 /* 
- * Description: Starts interaction (conversation, giving something, etc) 
- *              TODO?
+ * Description: Starts interaction. In map thing, this isn't of use and is
+ *              only used by its children classes.
  *
  * Inputs: none
  * Output: none
@@ -69,7 +78,8 @@ QString MapThing::getDescription()
 }
 
 /* 
- * Description: Gets the things ID.
+ * Description: Gets the things ID. If the ID is not set, it will be an
+ *              out of range number (-1)
  *
  * Inputs: none
  * Output: int - the ID for the thing, as an integer
@@ -91,7 +101,8 @@ QString MapThing::getName()
 }
 
 /* 
- * Description: Gets the sprite data of the thing.
+ * Description: Gets the sprite data of the thing. If sprite isn't set, returns
+ *              NULL.
  *
  * Inputs: none
  * Output: Sprite* - the pointer to the data for the thing, as a Sprite
@@ -99,6 +110,17 @@ QString MapThing::getName()
 Sprite* MapThing::getSprite()
 {
   return thing;
+}
+
+/*
+ * Description: Returns if the thing is set.
+ *
+ * Inputs: none
+ * Output: bool - returns if the thing is set
+ */
+bool MapThing::isSet()
+{
+  return thing_set;
 }
 
 /* 
@@ -113,14 +135,24 @@ void MapThing::setDescription(QString new_description)
 }
 
 /*
- * Description: Sets the ID for the thing.
+ * Description: Sets the ID for the thing. If out of the allowable range, 
+ *              the value is set to an minimum storage value. (Out of range)
  *
  * Inputs: int new_id - the new integer ID to define the thing
- * Output: none
+ * Output: bool - status if the new_id is within the allowable range.
  */
-void MapThing::setID(int new_id)
+bool MapThing::setID(int new_id)
 {
+  /* If the ID is out of range */
+  if(new_id < kMINIMUM_ID)
+  {
+    id = kUNSET_ID;
+    return FALSE;
+  }
+
+  /* Otherwise, the ID is good */
   id = new_id;
+  return TRUE;
 }
 
 /*
@@ -139,14 +171,37 @@ void MapThing::setName(QString new_name)
  *
  * Inputs: Sprite* new_frames - the new frame data to use for representing
  *                              the thing.
- * Output: bool - returns if the thing was set before
+ * Output: bool - returns if the thing was set successfuly
  */
 bool MapThing::setSprite(Sprite* new_frames)
 {
-  bool sprite_set = FALSE;
-  if(thing != NULL)
-    sprite_set = TRUE;
+  unsetSprite();
 
-  thing = new_frames;
-  return sprite_set;
+  /* Check if the frames are valid */
+  if(new_frames != NULL && new_frames->getSize() > 0)
+  {
+    thing = new_frames;
+    thing_set = TRUE;
+  }
+
+  return thing_set;
+}
+
+/*
+ * Description: Unsets the sprite that's embedded in this as the Map Thing
+ *
+ * Inputs: none
+ * Output: bool - returns TRUE if the Map Thing was set before this was called 
+ */
+bool MapThing::unsetSprite()
+{
+  bool was_thing_set = thing_set;
+
+  if(thing_set)
+    delete thing;
+
+  this->thing = NULL;
+  thing_set = FALSE;
+
+  return was_thing_set;
 }

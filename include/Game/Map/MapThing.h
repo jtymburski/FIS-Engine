@@ -14,7 +14,7 @@ class MapThing
 public:
   /* Constructor functions */
   MapThing(Sprite* frames, QString name = "", 
-           QString description = "", int id = -1);
+           QString description = "", int id = kUNSET_ID);
   MapThing();
 
   /* Destructor function */
@@ -32,6 +32,11 @@ private:
 
   /* The sprite object for the thing */
   Sprite* thing;
+  bool thing_set;
+
+  /* -------------------------- Constants ------------------------- */
+  static const int kMINIMUM_ID = 0;
+  static const int kUNSET_ID = -1;
 
 public:
   /* Starts inteaction (conversation, giving something, etc) */
@@ -49,17 +54,23 @@ public:
   /* Gets the sprite of the thing */
   Sprite* getSprite();
 
+  /* Returns if the thing is set */
+  bool isSet();
+
   /* Sets the things description */
   void setDescription(QString new_description);
 
   /* Sets the things ID */
-  void setID(int new_id);
+  bool setID(int new_id);
 
   /* Sets the things name */
   void setName(QString new_name);
 
   /* Sets the sprite of the thing */
   bool setSprite(Sprite* new_frames);
+
+  /* Unsets the sprite of the thing */
+  bool unsetSprite();
 };
 
 #endif // MAPTHING_H

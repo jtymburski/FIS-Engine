@@ -40,13 +40,13 @@ Sprite::Sprite(QString image_path)
  *
  * Input: none
  */
-Sprite::Sprite(QString path_mask, int num_frames, QString file_type)
+Sprite::Sprite(QString head_path, int num_frames, QString tail_path)
 {
   head = 0;
   current = 0;
   size = 0;
   direction = FORWARD;
-  insertSequence(path_mask, num_frames, file_type);  
+  insertSequence(head_path, num_frames, tail_path);  
 }
 
 /* 
@@ -138,17 +138,17 @@ bool Sprite::insertFirst(QString image_path)
 /* 
  * Description: Inserts a sequence of images that are stored. This allows for 
  * quick insertion of stored frames.
- * For example: path_mask = ":/animation/image_"
+ * For example: head_path = ":/animation/image_"
  *              num_frames = 5
- *              file_type = "png"
- *   This will allow for image_0.png -> image_4.png to be added into
+ *              tail_path = ".png"
+ *   This will allow for image_00.png -> image_04.png to be added into
  *   a sequence 
  *
  * Inputs: See the above example.
  * Output: bool - status if insertion was succesful
  */
-bool Sprite::insertSequence(QString path_mask, int num_frames, 
-		                               QString file_type)
+bool Sprite::insertSequence(QString head_path, int num_frames, 
+		                        QString tail_path)
 {
   bool status = TRUE;
 
@@ -163,11 +163,10 @@ bool Sprite::insertSequence(QString path_mask, int num_frames,
   for(int i = 0; i < num_frames; i++)
   {
     if(i >= kDOUBLE_DIGITS)
-      status = status & insertTail(path_mask + QString::number(i) + 
-		                               "." + file_type);
+      status = status & insertTail(head_path + QString::number(i) + tail_path);
     else
-      status = status & insertTail(path_mask + "0" + QString::number(i) + 
-		                                     "." + file_type);
+      status = status & insertTail(head_path + "0" + QString::number(i) + 
+		                               tail_path);
   }
 
   /* If the sequence failed, delete the created pointers */
@@ -255,6 +254,27 @@ bool Sprite::remove(int position)
   }
   
   return FALSE;
+}
+
+/* 
+ * Description: Removes all the frames in the sequence. Empties the sprite.
+ *
+ * Inputs: none
+ * Output: bool - status if process was successful. If any faults, will return
+ *                false. Also, if the sprite is already empty, it will return
+ *                false.
+ */
+bool Sprite::removeAll()
+{
+  bool status = TRUE;
+
+  if(size == 0)
+    status = FALSE;
+
+  while(size > 0)
+    status = status & removeTail();
+
+  return status;
 }
 
 /* 

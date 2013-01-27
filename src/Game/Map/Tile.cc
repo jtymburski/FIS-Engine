@@ -2,7 +2,13 @@
 * Class Name: Tile
 * Date Created: Dec 2 2012
 * Inheritance: QWidget
-* Description: The Tile class
+* Description: This class handles the basic tile that is set up on the map.
+*              It is the overall structure. The tile class creates a base, 
+*              enhancer, lower, upper, passable, and impassable to define
+*              all the possibilities on the tile. This also handles printing
+*              its own tile data and ensuring that movement isn't entered 
+*              through the tile. For additional information, read the comments
+*              below for each function.
 ******************************************************************************/
 #include "Game/Map/Tile.h"
 

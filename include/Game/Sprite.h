@@ -26,7 +26,7 @@ public:
   Sprite(QString image_path);
 
   /* Constructor: Set up sequence of images */
-  Sprite(QString path_mask, int num_frames, QString file_type);
+  Sprite(QString head_path, int num_frames, QString tail_path);
 
   /* Destructor function */
   ~Sprite();
@@ -57,12 +57,12 @@ public:
 
   /* Inserts a sequence of images that are stored. This allows for 
    * quick insertion of stored frames
-   * For example: path_mask = ":/animation/image_"
+   * For example: head_path = ":/animation/image_"
    *              num_frames = 5
-   *              file_type = "png"
-   *   This will allow for image_0.png -> image_4.png to be added into
+   *              file_type = ".png"
+   *   This will allow for image_00.png -> image_04.png to be added into
    *   a sequence */
-  bool insertSequence(QString path_mask, int num_frames, QString file_type);
+  bool insertSequence(QString head_path, int num_frames, QString tail_path);
 
   /* Inserts the image at the end of the sprite sequence */
   bool insertTail(QString image_path);
@@ -72,6 +72,9 @@ public:
 
   /* Removes the frame in the sequence at the given position */
   bool remove(int position);
+
+  /* Removes all the frames in the sequence */
+  bool removeAll();
 
   /* Removes the last frame in the sequence */
   bool removeTail();
