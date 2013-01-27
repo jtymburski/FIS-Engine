@@ -63,7 +63,7 @@ Map::Map(QWidget* parent)
       else if((i == 5 && j == 9) || (i == 6 && j == 9) || (i == 8 && j == 6))
         t->setLower(":/tree_BB_A00");
       else if(i == 8 && j == 7)
-        t->setLower(":/plant_AA_A00");
+        t->setLower(":/bubby_AA_A00");
       else if(i == 8 && j == 4)
         t->setLower(":/shrub_AA_A00");
       else if(i == 9 && j == 7)
@@ -71,11 +71,15 @@ Map::Map(QWidget* parent)
       else if(i == 9 && j == 6)
         t->setLower(":/arcadius_AA_U00");
       else if(i == 9 && j == 5)
-        t->setLower(":/arcadius_AA_D00");
+        t->setLower(":/ulterius_AA_U00");
       else if(i == 9 && j == 4)
-        t->setLower(":/arcadius_AA_L00");
-      else if(i == 9 && j == 3)
-        t->setLower(":/arcadius_AA_R00");
+        t->setLower(":/main_AA_U00");
+      else if(i == 10 && j == 6)
+        t->setLower(":/ulterius_AA_D00");
+      else if(i == 10 && j == 5)
+        t->setLower(":/arcadius_AA_D00");
+      else if(i == 10 && j == 4)
+        t->setLower(":/main_AA_D00");
 
       /* Setup the upper sprites */
       if((i == 4 && j == 8) || (i == 5 && j == 8) || (i == 7 && j == 5))

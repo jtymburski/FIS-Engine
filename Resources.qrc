@@ -40,5 +40,27 @@
         <file alias="TreePlatform_FB_A00">sprites/Map/Tiles/Scenery/TreePlatform/TreePlatform_FB_A00.png</file>
         <file alias="TreePlatform_FC_A00">sprites/Map/Tiles/Scenery/TreePlatform/TreePlatform_FC_A00.png</file>
         <file alias="TreePlatform_FD_A00">sprites/Map/Tiles/Scenery/TreePlatform/TreePlatform_FD_A00.png</file>
+        <file alias="main_AA_D01">sprites/Map/Map_Things/main_AA_D01.png</file>
+        <file alias="main_AA_D02">sprites/Map/Map_Things/main_AA_D02.png</file>
+        <file alias="main_AA_S00">sprites/Map/Map_Things/main_AA_S00.png</file>
+        <file alias="main_AA_S01">sprites/Map/Map_Things/main_AA_S01.png</file>
+        <file alias="main_AA_S02">sprites/Map/Map_Things/main_AA_S02.png</file>
+        <file alias="main_AA_U00">sprites/Map/Map_Things/main_AA_U00.png</file>
+        <file alias="main_AA_U01">sprites/Map/Map_Things/main_AA_U01.png</file>
+        <file alias="main_AA_U02">sprites/Map/Map_Things/main_AA_U02.png</file>
+        <file alias="ulterius_AA_D00">sprites/Map/Map_Things/ulterius_AA_D00.png</file>
+        <file alias="ulterius_AA_L00">sprites/Map/Map_Things/ulterius_AA_L00.png</file>
+        <file alias="ulterius_AA_R00">sprites/Map/Map_Things/ulterius_AA_R00.png</file>
+        <file alias="ulterius_AA_U00">sprites/Map/Map_Things/ulterius_AA_U00.png</file>
+        <file alias="arcadius_AA_D01">sprites/Map/Map_Things/arcadius_AA_D01.png</file>
+        <file alias="arcadius_AA_D02">sprites/Map/Map_Things/arcadius_AA_D02.png</file>
+        <file alias="arcadius_AA_L01">sprites/Map/Map_Things/arcadius_AA_L01.png</file>
+        <file alias="arcadius_AA_L02">sprites/Map/Map_Things/arcadius_AA_L02.png</file>
+        <file alias="arcadius_AA_R01">sprites/Map/Map_Things/arcadius_AA_R01.png</file>
+        <file alias="arcadius_AA_R02">sprites/Map/Map_Things/arcadius_AA_R02.png</file>
+        <file alias="arcadius_AA_U01">sprites/Map/Map_Things/arcadius_AA_U01.png</file>
+        <file alias="arcadius_AA_U02">sprites/Map/Map_Things/arcadius_AA_U02.png</file>
+        <file alias="bubby_AA_A00">sprites/Map/Map_Things/bubby_AA_A00.png</file>
+        <file alias="main_AA_D00">sprites/Map/Map_Things/main_AA_D00.png</file>
     </qresource>
 </RCC>
