@@ -95,6 +95,15 @@ private:
   /* Checks if targeting mode is active */
   bool target_mode; //Checks if targeting mode is active
 
+  /* Maximum size of the battle window */
+  int max_width;
+  int max_height;
+
+  /* Bounding box dimensions */
+  int ally_width;
+  int ally_height;
+
+
   /* Which party is currently selected */
   int party_index;
 
@@ -141,10 +150,10 @@ private:
   QRect* ally4_bound; 
 
   /* Ally 5's sprite bounding box */
-  QRect* ally5_bound; 
+  QRect* ally5_bound;
 
   /* The targeting box for action/inventory target selection */
-  QRect * target_box; 
+  QRect * target_box;
 
   /* The action buffer */
   QVector<Action*> action_buffer; 
@@ -159,16 +168,20 @@ private:
   bool BOSS; 
    
 protected:
-
   /* Paint event for the class */
   void paintEvent(QPaintEvent*);
 
+  /* Gets the x-length of the ally's bounding box */
+  void setAllyWidth(int value);
 
-signals:
+  /* Gets the y-length of the ally's bounding box */
+  void setAllyHeight(int value);
 
+  /* Sets the maximum x-length of the battle window */
+  void setMaxWidth(int value);
 
-public slots:
-
+  /* Sets the maximum y-length of the battle window */
+  void setMaxHeight(int value);
 
 public:
   /* Checks for deaths, pops current action off stack, calls performAction();*/
@@ -209,6 +222,12 @@ public:
 
   /* Paints dynamic images */
   void updateScene();
+
+  /* Gets the maximum x-length of the battle window */
+  int getMaxWidth();
+
+  /* Gets the maximum y-length of the battle window */
+  int getMaxHeight();
 
   /* Sets the targeting mode (slot) */
   void setTargetMode(bool targeting);

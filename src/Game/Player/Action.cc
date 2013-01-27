@@ -28,12 +28,16 @@
 
 #include "Game/Player/Action.h"
 
-/* Creates an Action object */
+/* Description: Constructor for an action object
+ *
+ * Inputs: none
+ */
 Action::Action(QWidget* pointer)
 {
 }
 
-/* Annihilates an Action object */
+/* Description: Annihilates an action object
+ */
 Action::~Action()
 {
 }

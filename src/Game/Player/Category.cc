@@ -10,226 +10,413 @@
 
 #include "Game/Player/Category.h"
 
-/* Creates a Category object */
+/*
+ * Description: Constructor for a category object.
+ *
+ * Inputs: none
+ */
 Category::Category(QWidget* parent)
 {
 }
 
-/* Annihilate a Category object */
+/*
+ * Description: Annihilates a category object
+ */
 Category::~Category()
 {
 }
 
-/* Sets name of the race */
+/*
+ * Description: Sets the name of the category
+ *
+ * Inputs: QString - new value of the category
+ * Output: none
+ */
 void Category::setName(QString new_name)
 {
   name = new_name;
 }
 
-/* Sets the description of the race */
+/*
+ * Description: Sets the description of the category
+ *
+ * Inputs: QString - new value of the description
+ * Output: none
+ */
 void Category::setDescription(QString new_description)
 {
   description = new_description;
 }
 
-/* Sets the Fire atk stat */
+/*
+ * Description: Sets the class bonus value of the thermal attack stat
+ *
+ * Inputs: int - value of the bonus
+ * Output: none
+ */
 void Category::setThermalAggression(int value)
 {
   thermal_aggression = value; 
 }
 
-/* Sets the Fire def stat */
+/*
+ * Description: Sets the class bonus value of the thermal attack stat
+ *
+ * Inputs: int - value of the bonus
+ * Output: none
+ */
 void Category::setThermalFortitude(int value)
 {
    thermal_fortitude = value;
 }
 
-/* Sets the Ice attack stat */
+/*
+ * Description: Sets the class bonus value of the polar attack stat
+ *
+ * Inputs: int - value of the bonus
+ * Output: none
+ */
 void Category::setPolarAggression(int value)
 {
   polar_aggression = value;
 }
 
-/* Sets the Ice defense stat */ 
+/*
+ * Description: Sets the class bonus value of the polar defense stat
+ *
+ * Inputs: int - value of the bonus
+ * Output: none
+ */
 void Category::setPolarFortitude(int value)
 {
   polar_fortitude = value;
 }
 
-/* Sets the Forest attack stat */
+/*
+ * Description: Sets the class bonus value of the primal attack stat
+ *
+ * Inputs: int - value of the bonus
+ * Output: none
+ */
 void Category::setPrimalAggression(int value)
 {
   primal_aggression = value;
 }
 
-/* Sets the Forest defense stat */
+/*
+ * Description: Sets the class bonus value of the primal defense stat
+ *
+ * Inputs: int - value of the bonus
+ * Output: none
+ */
 void Category::setPrimalFortitude(int value)
 {
   primal_fortitude = value;
 }
 
-/* Sets the Electric attack stat */
+/*
+ * Description: Sets the class bonus value of the charged attack stat
+ *
+ * Inputs: int - value of the bonus
+ * Output: none
+ */
 void Category::setChargedAggression(int value)
 {
   charged_aggression = value;
 }
 
-/* Sets the Electric defence stat */
+/*
+ * Description: Sets the class bonus value of the charged defense stat
+ *
+ * Inputs: int - value of the bonus
+ * Output: none
+ */
 void Category::setChargedFortitude(int value)
 {
   charged_fortitude = value;
 }
 
-/* Sets the Digital attack stat */
+/*
+ * Description: Sets the class bonus of the cybernetic attack stat
+ *
+ * Inputs: int - value of the bonus
+ * Output: none
+ */
 void Category::setCyberneticAggression(int value)
 {
   cybernetic_aggression = value;
 }
 
-/* Sets the Digital defence stat*/
+/*
+ * Description: Sets the class bonus of the cybernetic defense stat
+ *
+ * Inputs: int - value of the bonus
+ * Output: none
+ */
 void Category::setCyberneticFortitude(int value)
 {
   cybernetic_fortitude = value;
 }
 
-/* Sets the Void attack stat */
+/*
+ * Description: Sets the class bonus of the nihil attack stat
+ *
+ * Inputs: int - value of the bonus
+ * Output: none
+ */
 void Category::setNihilAggression(int value)
 {
   nihil_aggression = value;
 }
 
-/* Sets the Void defence stat */
+/*
+ * Description: Sets the class bonus of the nihil fortitude stat
+ *
+ * Inputs: int - value of the bonus
+ * Output: none
+ */
 void Category::setNihilFortitude(int value)
 {
   nihil_fortitude = value;
 }
 
-/* Sets the Health stat */
+/*
+ * Description: Sets the class bonus of the vitality stat
+ *
+ * Inputs: int - value of the bonus
+ * Output: none
+ */
 void Category::setVitality(int value)
 {
   vitality = value;
 }
 
-/* Sets the Power points (shown as a percentage) */
+/*
+ * Description: Sets the class bonus of the quantum drive stat
+ *
+ * Inputs: int - value of the bonus
+ * Output: none
+ */
 void Category::setQuantumDrive(int value)
 {
   quantum_drive = value;
 }
 
-/* Sets the Speed stat */
+/*
+ * Description: Sets the class bonus of the quantum drive stat
+ *
+ * Inputs: int - value of the bonus
+ * Output: none
+ */
 void Category::setAgility(int value)
 {
   agility = value;
 }
 
-/* Sets the Avoidance stat */
+/*
+ * Description: Sets the class bonus of the limbertude stat
+ *
+ * Inputs: int - value of the bonus
+ * Output: none
+ */
 void Category::setLimbertude(int value)
 {
   limbertude = value;
 }
 
-/* Sets the Critical chance stat */
+/*
+ * Description: Sets the class bonus of the unbearability stat
+ *
+ * Inputs: int - value of the bonus
+ * Output: none
+ */
 void Category::setUnbearability(int value)
 {
   unbearability = value;
 }
 
-/* Gets the Fire attack stat */
+/*
+ * Description: Returns the class bonus of the thermal attack stat
+ *
+ * Inputs: none
+ * Output: int - value of the class bonus
+ */
 int Category::getThermalAggression()
 {
   return thermal_aggression;
 }
 
-/* Gets the Fire defense stat */
+/*
+ * Description: Returns the class bonus of the thermal defense stat
+ *
+ * Inputs: none
+ * Output: int - value of the class bonus
+ */
 int Category::getThermalFortitude()
 {
   return thermal_fortitude;
 }
 
-/*Gets the Ice attack stat */
+/*
+ * Description: Returns the class bonus of the polar attack stat
+ *
+ * Inputs: none
+ * Output: int - value of the class bonus
+ */
 int Category::getPolarAggression() 
 {
   return polar_aggression;
 }
 
-/* Gets the Ice defense stat */
+/*
+ * Description: Returns the class bonus of the polar defense stat
+ *
+ * Inputs: none
+ * Output: int - value of the class bonus
+ */
 int Category::getPolarFortitude()
 {
   return polar_fortitude;
 }
 
-/* Gets the Forest attack stat */
+/*
+ * Description: Returns the class bonus of the primal attack stat
+ *
+ * Inputs: none
+ * Output: int - value of the class bonus
+ */
 int Category::getPrimalAggression()
 {
   return primal_aggression;
 }
 
-/* Gets the Forest defense stat */
- int Category::getPrimalFortitude()
- {
-   return primal_fortitude;
- }
+/*
+ * Description: Returns the class bonus of the primal defense stat
+ *
+ * Inputs: none
+ * Output: int - value of the class bonus
+ */
+int Category::getPrimalFortitude()
+{
+  return primal_fortitude;
+}
 
-/* Gets the Electric attack stat */
+/*
+ * Description: Returns the class bonus of the charged defense stat
+ *
+ * Inputs: none
+ * Output: int - value of the class bonus
+ */
 int Category::getChargedAggression()
 {
   return charged_aggression;
 }
 
-/* Gets the Electric defence stat */
+/*
+ * Description: Returns the class bonus of the charged defense stat
+ *
+ * Inputs: none
+ * Output: int - value of the class bonus
+ */
 int Category::getChargedFortitude()
 {
   return charged_fortitude;
 }
 
-/* Gets the Digital attack stat */
+/*
+ * Description: Returns the class bonus of the cybernetic attack stat
+ *
+ * Inputs: none
+ * Output: int - value of the class bonus
+ */
 int Category::getCyberneticAggression()
 {
   return cybernetic_aggression;
 }
 
-/* Gets the Digital defence stat */
- int Category::getCyberneticFortitude()
- {
-   return cybernetic_fortitude;
- }
+/*
+ * Description: Returns the class bonus of the cybernetic defense stat
+ *
+ * Inputs: none
+ * Output: int - value of the class bonus
+ */
+int Category::getCyberneticFortitude()
+{
+  return cybernetic_fortitude;
+}
 
-/* Gets the Void attack stat */
+/*
+ * Description: Returns the class bonus
+ *
+ * Inputs: none
+ * Output: int - value of the bonus
+ */
 int Category::getNihilAggression()
 {
   return nihil_aggression;
 }
 
-/* Gets the Void defence stat */
+/*
+ * Description: Returns the class bonus of the nihil defense stat
+ *
+ * Inputs: none
+ * Output: int - value of the class bonus
+ */
 int Category::getNihilFortitude()
 {
   return nihil_fortitude;
 }
 
-/* Gets the Health stat */
-int Category::getVitality() {
+/*
+ * Description: Returns the class bonus of the vitality stat
+ *
+ * Inputs: none
+ * Output: int - value of the class bonus
+ */
+int Category::getVitality()
+{
   return vitality;
 }
 
-/* Gets the Power points (shown as a percentage) */
+/*
+ * Description: Returns the class bonus of the quantum drive stat
+ *
+ * Inputs: none
+ * Output: int - value of the class bonus
+ */
 int Category::getQuantumDrive()
 {
   return quantum_drive;
 }
 
-/* Gets the Speed stat */
+/*
+ * Description: Returns the class bonus of the agility stat
+ *
+ * Inputs: none
+ * Output: int - value of the class bonus
+ */
 int Category::getAgility()
 {
   return agility;
 }
 
-/* Gets the Avoidance stat */
+/*
+ * Description: Returns the class bonus of the limbertude stat
+ *
+ * Inputs: none
+ * Output: int - value of the class bonus
+ */
 int Category::getLimbertude()
 {
   return limbertude;
 }
 
-/* Gets the Critical chance stat */
+/*
+ * Description: Returns the class bonus of the unbearability stat
+ *
+ * Inputs: none
+ * Output: int - value of the class bonus
+ */
 int Category::getUnbearability()
 {
   return unbearability;

@@ -43,7 +43,10 @@ enum ActionType {SELF, SINGLE, SINGLEIGNOREUSER, PARTY,
 class Action : public QWidget 
 {
 public:
+    /* Action constructor object */
   	Action(QWidget *pointer = 0);
+
+    /* Annihilates an action object */
   	~Action();
 
 private:
@@ -73,9 +76,6 @@ private:
 
   /* The language used to create actions, more can be added */
   QVector<QString> language;
-
-protected:
-
 
 public:
   /* Evaluates the FRIENDLY flag */

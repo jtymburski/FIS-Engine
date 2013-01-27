@@ -64,60 +64,69 @@
 
 #include "Game/Battle/Battle.h"
 
-/* Creates a battle object */
+/* TODO: Pass in two points to parties for battle constructor [01-26-23]
+ * Description: Constructor for the battle class
+ *
+ * Inputs: none
+ */
 Battle::Battle(QWidget* pointer)
 {
-   int max_width = 1216;
-   int max_height = 704;
+  /* Basic settings for battle window sizing and backdrop */
+  setMaxWidth(1216);
+  setMaxHeight(704);
 
-   setFixedSize(1216,704);
-   battle_bg = new QPixmap();
-   battle_bg->load(":/temp_bg.png");
+  setFixedSize(getMaxWidth(), getMaxHeight());
+  battle_bg = new QPixmap();
+  battle_bg->load(":/temp_bg.png");
 
-   /* Temporary placement of enemy bounding boxes
-    * Should be determined with algorithm as per
-    * Jordan (also enemies should include
-    * only if they exist)
-    */
+  /* Temporary placement of enemy bounding boxes
+   * Should be determined with algorithm as per
+   * Jordan (also enemies should include
+   * only if they exist)
+   */
 
-   enemy1_bound = new QRect(100,170,180,230);
-   enemy2_bound = new QRect(300,165,180,230);
-   enemy3_bound = new QRect(500,160,180,230);
-   enemy4_bound = new QRect(700,155,180,230);
-   enemy5_bound = new QRect(900,150,180,230);
+  enemy1_bound = new QRect(100,170,180,230);
+  enemy2_bound = new QRect(300,165,180,230);
+  enemy3_bound = new QRect(500,160,180,230);
+  enemy4_bound = new QRect(700,155,180,230);
+  enemy5_bound = new QRect(900,150,180,230);
 
-   int top_d  = floor(0.7 * max_height);
-   int ally_w = floor(0.12 * max_width);
-   int ally_h = floor(0.3 * max_height);
+  int top_d  = floor(0.7 * getMaxHeight());
+  int ally_w = floor(0.12 * getMaxWidth());
+  int ally_h = floor(0.3 * getMaxHeight());
 
-   /* Ally bounding boxes */
-   ally1_bound = new QRect(0,top_d,ally_w,ally_h);
-   ally2_bound = new QRect(ally_w,top_d,ally_w,ally_h);
-   ally3_bound = new QRect(ally_w * 2,top_d,ally_w,ally_h);
-   ally4_bound = new QRect(ally_w * 3,top_d,ally_w,ally_h);
-   ally5_bound = new QRect(ally_w * 4,top_d,ally_w,ally_h);
+  /* Ally bounding boxes */
+  ally1_bound = new QRect(0,top_d,ally_w,ally_h);
+  ally2_bound = new QRect(ally_w,top_d,ally_w,ally_h);
+  ally3_bound = new QRect(ally_w * 2,top_d,ally_w,ally_h);
+  ally4_bound = new QRect(ally_w * 3,top_d,ally_w,ally_h);
+  ally5_bound = new QRect(ally_w * 4,top_d,ally_w,ally_h);
 
-
-   /* Call paint event */
-   update();
-   show();
+  /* Call paint event */
+  update();
+  show();
 }
 
 
-/* Annihilates a battle object */
+/*
+ * Description:
+ */
 Battle::~Battle()
 {
 }
 
+/*
+ * Description: Paint event for the battle class
+ *
+ * Inputs: none
+ * Output: none
+ */
 void Battle::paintEvent(QPaintEvent*)
 {
   QPainter painter(this);
   painter.setPen(QColor(Qt::black));
 
-  int max_width = 1216;
-  int max_height = 704;
-
-  painter.drawPixmap(0,0,1216,704,*battle_bg);
+  painter.drawPixmap(0,0,getMaxWidth(),getMaxHeight(),*battle_bg);
 
   /* Temp paint drawings for battleinfo bar */
   int info_height = 0.05 * max_height;
@@ -166,73 +175,186 @@ void Battle::paintEvent(QPaintEvent*)
   // painter.drawPixmap(ally5_bound,foes->getMember(4)->getThirdPerson());
 }
 
-/* Checks for deaths, pops current action off stack, calls performAction();*/
+/*
+ * Description: Checks for deaths, pops current action off stack, calls
+ *              performAction()
+ *
+ * Inputs:
+ * Output:
+ */
 void Battle::actionOutcome()
 {
 }
 
-/* Ends battle with win message */
+/*
+ * Description: Ends battle with win message
+ *
+ * Inputs:
+ * Output:
+ */
 void Battle::battleWon()
 {
 }
 
-/* Ends Battle with loss message, and reverts game to last save point */
+/*
+ * Description: Ends battle with loss message, and reverts game to last save
+ *              point.
+ *
+ * Inputs:
+ * Output:
+ */
 void Battle::battleLost()
 {
 }
-
-/* Arranges and paints static image */
+/*
+ * Description: Arranges and paints static image
+ *
+ * Inputs:
+ * Output:
+ */
 void Battle::buildScene()
 {
 }
 
-/* Sets temporary stats */
+/*
+ * Description: Sets temporary stats
+ *
+ * Inputs:
+ * Output:
+ */
 void Battle::buildStats()
 {
 }
 
-/* Alters stats, updates scene */
+/*
+ * Description: Alters stats, updates scene
+ *
+ * Inputs:
+ * Output:
+ */
 void Battle::changeStats(Action* battle_action)
 {
 }
 
-/* Non-character events */
+/*
+ * Description: Non-charactr events
+ *
+ * Inputs:
+ * Output:
+ */
 void Battle::generalUpkeep()
 {
 }
-
-/* Reorders stack (speed based)*/
+/*
+ * Description: Reorders stack (speed based)
+ *
+ * Inputs:
+ * Output:
+ */
 void Battle::orderActions()
 {
 }
-
-/* Performs current action animation */
+/*
+ * Description: Performs current action animation
+ *
+ * Inputs:
+ * Output:
+ */
 void Battle::performAction()
 {
 }
 
-/* Character events */
+/*
+ * Description: Character events
+ *
+ * Inputs:
+ * Output:
+ */
 void Battle::personalUpkeep()
 {
 }
 
-/* Increment party index for next Battle Menu */
+/*
+ * Description: Increments party index for the next battle menu
+ *
+ * Inputs:
+ * Output:
+ */
 void Battle::processAction()
 {
 }
 
-/* Gets all enemy actions, adds to stack */
+/*
+ * Description: Gets all enemy actions, adds to stack
+ *
+ * Inputs:
+ * Output:
+ */
 void Battle::processEnemyActions()
 {
 }
 
-/* Paints dynamic images */
+/*
+ * Description: Paints dynamic images
+ *
+ * Inputs:
+ * Output:
+ */
 void Battle::updateScene()
 {
 }
 
-/* Sets the targeting mode (slot) */
+/*
+ * Description: Returns the max_width of the battle window
+ *
+ * Inputs: none
+ * Output: int - max_width
+ */
+int Battle::getMaxWidth()
+{
+  return max_width;
+}
+
+/*
+ * Description: Returns the max_height of the battle window
+ *
+ * Inputs: none
+ * Output: int - max_height
+ */
+int Battle::getMaxHeight()
+{
+  return max_height;
+}
+
+/*
+ * Description: Sets the maximum width of the battle window
+ *
+ * Inputs: int - new value of width
+ * Output: none
+ */
+void Battle::setMaxWidth(int value)
+{
+  max_width = value;
+}
+
+/*
+ * Description: Sets the maximum height of the battle window
+ *
+ * Inputs: int - new value of height
+ * Output: none
+ */
+void Battle::setMaxHeight(int value)
+{
+  max_height = value;
+}
+
+/*
+ * Description: Sets the targeting mode (slot)
+ *
+ * Inputs: bool -
+ * Output: none
+ */
 void Battle::setTargetMode(bool targeting)
 {
-   target_mode = targeting;
+  target_mode = targeting;
 }

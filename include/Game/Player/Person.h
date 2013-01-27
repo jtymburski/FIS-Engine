@@ -20,7 +20,6 @@
 class Person : public QWidget
 {
 public:
-
   /* Creates a default person object */
   Person(QWidget* pointer = 0);
 
