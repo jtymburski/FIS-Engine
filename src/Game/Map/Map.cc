@@ -10,6 +10,11 @@
 
 #include "Game/Map/Map.h"
 
+#define STARTX 7
+#define STARTY 0
+bool turn_on_platform = 1;
+
+
 /* Constructor function */
 Map::Map(QWidget* parent)
 {
@@ -22,61 +27,399 @@ Map::Map(QWidget* parent)
       Tile* t = new Tile(64, 64, j*64, i*64, this);
 
       /* Setup the base sprites */
-      t->setBase(":/grass.png");
+      t->setBase(":/Grass_AA_A00");
 
       /* Setup the enhancer sprites */
       if(i > 3 && i < 8 && j > 3 && j < 8)
       {
         if(i == 4 && j == 4)
-          t->setEnhancer("", "", ":/water_NW.png", ":/water_N.png");
+          t->setEnhancer("", "", ":/WaterTile_AA_A00", ":/WaterTile_AB_A00");
         else if(i == 4 && j == 7)
-          t->setEnhancer("", "", ":/water_N.png", ":/water_NE.png");
+          t->setEnhancer("", "", ":/WaterTile_AB_A00", ":/WaterTile_AC_A00");
         else if(i == 7 && j == 4)
-          t->setEnhancer(":/water_W.png", ":/water.png", 
-                         ":/water_SW.png", ":/water_S.png");
+          t->setEnhancer(":/WaterTile_BA_A00", ":/WaterTile_BB_A00",
+                         ":/WaterTile_CA_A00", ":/WaterTile_CB_A00");
         else if(i == 7 && j == 7)
-          t->setEnhancer(":/water.png", ":/water_E.png", 
-                         ":/water_S.png", ":/water_SE.png");
+          t->setEnhancer(":/WaterTile_BB_A00", ":/WaterTile_BC_A00",
+                         ":/WaterTile_CB_A00", ":/WaterTile_CC_A00");
         else if(i == 4)
-          t->setEnhancer("", "", ":/water_N.png", ":/water_N.png");
+          t->setEnhancer("", "", ":/WaterTile_AB_A00", ":/WaterTile_AB_A00");
         else if(i == 7)
-          t->setEnhancer(":/water.png", ":/water.png", 
-                         ":/water_S.png", ":/water_S.png");
+          t->setEnhancer(":/WaterTile_BB_A00", ":/WaterTile_BB_A00",
+                         ":/WaterTile_CB_A00", ":/WaterTile_CB_A00");
         else if(j == 4)
-          t->setEnhancer(":/water_W.png", ":/water.png", 
-                         ":/water_W.png", ":/water.png");
+          t->setEnhancer(":/WaterTile_BA_A00", ":/WaterTile_BB_A00",
+                         ":/WaterTile_BA_A00", ":/WaterTile_BB_A00");
         else if(j == 7)
-          t->setEnhancer(":/water.png", ":/water_E.png",
-                         ":/water.png", ":/water_E.png");
+          t->setEnhancer(":/WaterTile_BB_A00", ":/WaterTile_BC_A00",
+                         ":/WaterTile_BB_A00", ":/WaterTile_BC_A00");
         else
-          t->setEnhancer(":/water.png");
+          t->setEnhancer(":/WaterTile_BB_A00");
       }
 
       /* Setup the lower sprites */
       if((i == 5 && j == 8) || (i == 6 && j == 8) || (i == 8 && j == 5))
-        t->setLower(":/tree_BA.png");
+        t->setLower(":/tree_BA_A00");
       else if((i == 5 && j == 9) || (i == 6 && j == 9) || (i == 8 && j == 6))
-        t->setLower(":/tree_BB.png");
+        t->setLower(":/tree_BB_A00");
       else if(i == 8 && j == 7)
-        t->setLower(":/plant.png");
+        t->setLower(":/plant_AA_A00");
       else if(i == 8 && j == 4)
-        t->setLower(":/shrub.png");
+        t->setLower(":/shrub_AA_A00");
       else if(i == 9 && j == 7)
-        t->setLower(":/cloud.png");
+        t->setLower(":/cloud_AA_D00");
       else if(i == 9 && j == 6)
-        t->setLower(":/arcadius_U.png");
+        t->setLower(":/arcadius_AA_U00");
       else if(i == 9 && j == 5)
-        t->setLower(":/arcadius_D.png");
+        t->setLower(":/arcadius_AA_D00");
       else if(i == 9 && j == 4)
-        t->setLower(":/arcadius_L.png");
+        t->setLower(":/arcadius_AA_L00");
       else if(i == 9 && j == 3)
-        t->setLower(":/arcadius_R.png");
+        t->setLower(":/arcadius_AA_R00");
 
       /* Setup the upper sprites */
       if((i == 4 && j == 8) || (i == 5 && j == 8) || (i == 7 && j == 5))
-        t->setUpper(":/tree_AA.png");
+        t->setUpper(":/tree_AA_A00");
       else if((i == 4 && j == 9) || (i == 5 && j == 9) || (i == 7 && j == 6))
-        t->setUpper(":/tree_AB.png");
+        t->setUpper(":/tree_AB_A00");
+
+
+      if(turn_on_platform)
+      {
+          if((i == STARTY && j == STARTX+1))
+              t->setUpper(":/TreePlatform_AB_A00");
+
+          if((i == STARTY && j == STARTX+2))
+              t->setUpper(":/TreePlatform_AC_A00");
+
+          if((i == STARTY && j == STARTX+3))
+              t->setUpper(":/TreePlatform_AC_A00");
+
+          if((i == STARTY && j == STARTX+4))
+              t->setUpper(":/TreePlatform_AC_A00");
+
+          if((i == STARTY && j == STARTX+5))
+              t->setUpper(":/TreePlatform_AC_A00");
+
+          if((i == STARTY && j == STARTX+6))
+              t->setUpper(":/TreePlatform_AC_A00");
+
+          if((i == STARTY && j == STARTX+7))
+              t->setUpper(":/TreePlatform_AC_A00");
+
+          if((i == STARTY && j == STARTX+8))
+              t->setUpper(":/TreePlatform_AC_A00");
+
+          if((i == STARTY && j == STARTX+9))
+              t->setUpper(":/TreePlatform_AC_A00");
+
+          if((i == STARTY && j == STARTX+10))
+              t->setUpper(":/TreePlatform_AD_A00");
+
+
+
+          if((i == STARTY+1 && j == STARTX))
+              t->setUpper(":/TreePlatform_AB_A00");
+
+          if((i == STARTY+1 && j == STARTX+1))
+              t->setUpper(":/TreePlatform_BB_A00");
+
+          if((i == STARTY+1 && j == STARTX+2))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+1 && j == STARTX+3))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+1 && j == STARTX+4))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+1 && j == STARTX+5))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+1 && j == STARTX+6))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+1 && j == STARTX+7))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+1 && j == STARTX+8))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+1 && j == STARTX+9))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+1 && j == STARTX+10))
+              t->setUpper(":/TreePlatform_BD_A00");
+
+          if((i == STARTY+1 && j == STARTX+11))
+              t->setUpper(":/TreePlatform_AD_A00");
+
+
+
+
+          if((i == STARTY+2 && j == STARTX))
+              t->setUpper(":/TreePlatform_CA_A00");
+
+          if((i == STARTY+2 && j == STARTX+1))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+2 && j == STARTX+2))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+2 && j == STARTX+3))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+2 && j == STARTX+4))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+2 && j == STARTX+5))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+2 && j == STARTX+6))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+2 && j == STARTX+7))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+2 && j == STARTX+8))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+2 && j == STARTX+9))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+2 && j == STARTX+10))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+2 && j == STARTX+11))
+              t->setUpper(":/TreePlatform_CE_A00");
+
+
+
+
+          if((i == STARTY+3 && j == STARTX))
+              t->setUpper(":/TreePlatform_DA_A00");
+
+          if((i == STARTY+3 && j == STARTX+1))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+3 && j == STARTX+2))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+3 && j == STARTX+3))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+3 && j == STARTX+4))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+3 && j == STARTX+5))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+3 && j == STARTX+6))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+3 && j == STARTX+7))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+3 && j == STARTX+8))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+3 && j == STARTX+9))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+3 && j == STARTX+10))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+3 && j == STARTX+11))
+              t->setUpper(":/TreePlatform_DE_A00");
+
+
+
+          if((i == STARTY+4 && j == STARTX))
+              t->setUpper(":/TreePlatform_DA_A00");
+
+          if((i == STARTY+4 && j == STARTX+1))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+4 && j == STARTX+2))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+4 && j == STARTX+3))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+4 && j == STARTX+4))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+4 && j == STARTX+5))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+4 && j == STARTX+6))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+4 && j == STARTX+7))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+4 && j == STARTX+8))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+4 && j == STARTX+9))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+4 && j == STARTX+10))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+4 && j == STARTX+11))
+              t->setUpper(":/TreePlatform_DE_A00");
+
+
+
+          if((i == STARTY+5 && j == STARTX))
+              t->setUpper(":/TreePlatform_DA_A00");
+
+          if((i == STARTY+5 && j == STARTX+1))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+5 && j == STARTX+2))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+5 && j == STARTX+3))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+5 && j == STARTX+4))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+5 && j == STARTX+5))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+5 && j == STARTX+6))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+5 && j == STARTX+7))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+5 && j == STARTX+8))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+5 && j == STARTX+9))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+5 && j == STARTX+10))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+5 && j == STARTX+11))
+              t->setUpper(":/TreePlatform_DE_A00");
+
+
+          if((i == STARTY+6 && j == STARTX))
+              t->setUpper(":/TreePlatform_DA_A00");
+
+          if((i == STARTY+6 && j == STARTX+1))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+6 && j == STARTX+2))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+6 && j == STARTX+3))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+6 && j == STARTX+4))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+6 && j == STARTX+5))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+6 && j == STARTX+6))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+6 && j == STARTX+7))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+6 && j == STARTX+8))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+6 && j == STARTX+9))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+6 && j == STARTX+10))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+6 && j == STARTX+11))
+              t->setUpper(":/TreePlatform_DE_A00");
+
+
+
+
+          if((i == STARTY+7 && j == STARTX))
+              t->setUpper(":/TreePlatform_EA_A00");
+
+          if((i == STARTY+7 && j == STARTX+1))
+              t->setUpper(":/TreePlatform_EB_A00");
+
+          if((i == STARTY+7 && j == STARTX+2))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+7 && j == STARTX+3))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+7 && j == STARTX+4))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+7 && j == STARTX+5))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+7 && j == STARTX+6))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+7 && j == STARTX+7))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+7 && j == STARTX+8))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+7 && j == STARTX+9))
+              t->setUpper(":/TreePlatform_BC_A00");
+
+          if((i == STARTY+7 && j == STARTX+10))
+              t->setUpper(":/TreePlatform_ED_A00");
+
+          if((i == STARTY+7 && j == STARTX+11))
+              t->setUpper(":/TreePlatform_EE_A00");
+
+
+
+
+          if((i == STARTY+8 && j == STARTX+1))
+              t->setUpper(":/TreePlatform_FB_A00");
+
+          if((i == STARTY+8 && j == STARTX+2))
+              t->setUpper(":/TreePlatform_FC_A00");
+
+          if((i == STARTY+8 && j == STARTX+3))
+              t->setUpper(":/TreePlatform_FC_A00");
+
+          if((i == STARTY+8 && j == STARTX+4))
+              t->setUpper(":/TreePlatform_FC_A00");
+
+          if((i == STARTY+8 && j == STARTX+5))
+              t->setUpper(":/TreePlatform_FC_A00");
+
+          if((i == STARTY+8 && j == STARTX+6))
+              t->setUpper(":/TreePlatform_FC_A00");
+
+          if((i == STARTY+8 && j == STARTX+7))
+              t->setUpper(":/TreePlatform_FC_A00");
+
+          if((i == STARTY+8 && j == STARTX+8))
+              t->setUpper(":/TreePlatform_FC_A00");
+
+          if((i == STARTY+8 && j == STARTX+9))
+              t->setUpper(":/TreePlatform_FC_A00");
+
+          if((i == STARTY+8 && j == STARTX+10))
+              t->setUpper(":/TreePlatform_FD_A00");
+      }
+
+
+
 
       row.append(t);
     }
@@ -98,6 +441,8 @@ Map::~Map()
     }
   }
 }
+
+
 
 /* Painting function */
 void Map::paintEvent(QPaintEvent *event)
