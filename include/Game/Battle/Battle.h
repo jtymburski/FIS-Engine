@@ -125,35 +125,11 @@ private:
   /* Backdrop for the battle */
   QPixmap* battle_bg;
 
-  /* Enemy 1's sprite boundweing box */
-  QRect* enemy1_bound; 
+  /* Ally Bounding Boxes */
+  QVector<QRect*> ally_box;
 
-  /* Enemy 2's sprite bounding box */
-  QRect* enemy2_bound; 
-
-  /* Enemy 3's sprite bounding box */
-  QRect* enemy3_bound; 
- 
-  /* Enemy 4's sprite bounding box */
-  QRect* enemy4_bound; 
-
-  /* Enemy 5's sprite bounding box */
-  QRect* enemy5_bound; 
-
-  /* Ally 1's sprite bounding box */
-  QRect* ally1_bound; 
-
-  /* Ally 2's sprite bounding box */
-  QRect* ally2_bound; 
-
-  /* Ally 3's sprite bounding box */
-  QRect* ally3_bound; 
-
-  /* Ally 4's sprite bounding box */
-  QRect* ally4_bound; 
-
-  /* Ally 5's sprite bounding box */
-  QRect* ally5_bound;
+  /* Enemy Bounding Boxes */
+  QVector<QRect*> enemy_box;
 
   /* The targeting box for action/inventory target selection */
   QRect * target_box;
@@ -178,10 +154,10 @@ protected:
   void actionOutcome();
 
   /* Sets the allies pointer */
-  void setFriends(Party* p_friends);
+  void setFriends(Party* p_friends = NULL);
 
   /* Sets the foes pointer */
-  void setFoes(Party* p_foes);
+  void setFoes(Party* p_foes = NULL);
 
   /* Sets the maximum x-length of the battle window */
   void setMaxWidth(int value);

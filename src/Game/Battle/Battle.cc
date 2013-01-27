@@ -4,9 +4,9 @@
 * Inheritance:
 * Description: 
 *
-*  TODO [12-28-12]: Write algorithm to determine enemy placement
-*  TODO [12-28-12]: Pass in Parties to determine if enemies/allies exist first
-*
+*  FUTURE [12-28-12]: Write algorithm to determine enemy placement
+*  TODO [01-27-13]: Write battle progression steps
+*  TODO [01-27-13]: Menu designs, displaying information, etc.
 * Notes: Turn Progression:
 *
 * 1. generalUpkeep() adjusts all values based on Weather.  BattleInfoBar
@@ -65,72 +65,60 @@
 #include "Game/Battle/Battle.h"
 #include <QDebug>
 
-/* TODO: Pass in two points to parties for battle constructor [01-26-23]
+/*
  * Description: Constructor for the battle class
  *
- * Inputs: p_ally - pointer to allied party
+ * Inputs: p_friends - pointer to allied party
  *         p_foes - pointer to foes party
  */
 Battle::Battle(Party* p_friends, Party* p_foes, QWidget* pointer)
 {
-
+  /* Setup for pointers */
   setFriends(p_friends);
   setFoes(p_foes);
 
   /* Basic settings for battle window sizing and backdrop */
   setMaxWidth(1216);
   setMaxHeight(704);
-
   setFixedSize(getMaxWidth(), getMaxHeight());
   battle_bg = new QPixmap();
-  battle_bg->load(":/temp_bg.png");
+  battle_bg->load(":/bbd_sewers");
 
-  /* Temporary placement of enemy bounding boxes
-   * Should be determined with algorithm as per
-   * Jordan (also enemies should include
-   * only if they exist)
-   */
+  /* Create and place enemy bounding boxes */
+  for (int i = 0; i < 5; i++)
+    enemy_box.push_back(new QRect(100 + 200 * i,170 - 5 * i, 200, 200));
 
-  enemy1_bound = new QRect(100,170,250,250);
-  enemy2_bound = new QRect(300,165,180,230);
-  enemy3_bound = new QRect(500,160,180,230);
-  enemy4_bound = new QRect(700,155,180,230);
-  enemy5_bound = new QRect(900,150,180,230);
-
+  /* Create and place ally bounding boxes */
   int top_d  = floor(0.7 * getMaxHeight());
-  int ally_w = floor(0.12 * getMaxWidth());
+  int ally_w = floor(0.13 * getMaxWidth());
   int ally_h = floor(0.3 * getMaxHeight());
 
-  /* Ally bounding boxes */
-  ally1_bound = new QRect(0,top_d,ally_w,ally_h);
-  ally2_bound = new QRect(ally_w,top_d,ally_w,ally_h);
-  ally3_bound = new QRect(ally_w * 2,top_d,ally_w,ally_h);
-  ally4_bound = new QRect(ally_w * 3,top_d,ally_w,ally_h);
-  ally5_bound = new QRect(ally_w * 4,top_d,ally_w,ally_h);
+  for (int i = 0; i < 5; i++)
+    ally_box.push_back(new QRect((ally_w * i) - 10 * i,top_d,ally_w,ally_h));
 
-  /* Call paint event */
+  /* Call paint event and show screen */
   update();
   show();
 }
 
 
 /*
- * Description:
+ * Description: Annihilates a battle object
  */
 Battle::~Battle()
 {
+  setFriends();
+  setFoes();
 }
 
 /*
  * Description: Paint event for the battle class
- *
- * Inputs: none
- * Output: none
  */
 void Battle::paintEvent(QPaintEvent*)
 {
   QPainter painter(this);
-  painter.setPen(QColor(Qt::black));
+  painter.setPen(QColor(Qt::blue));
+  painter.setOpacity(1);
 
   painter.drawPixmap(0,0,getMaxWidth(),getMaxHeight(),*battle_bg);
 
@@ -147,40 +135,23 @@ void Battle::paintEvent(QPaintEvent*)
   menu_height = floor(0.18 * max_height);
   painter.drawRect(729, 540-menu_height, menu_width, menu_height);
 
-  /* Temp paint drawings for allies/foes */
-  painter.drawRect(*ally1_bound);
-  painter.drawRect(*ally2_bound);
-  painter.drawRect(*ally3_bound);
-  painter.drawRect(*ally4_bound);
-  painter.drawRect(*ally5_bound);
-  painter.drawRect(*enemy1_bound);
-  painter.drawRect(*enemy2_bound);
-  painter.drawRect(*enemy3_bound);
-  painter.drawRect(*enemy4_bound);
-  painter.drawRect(*enemy5_bound);
+  /* Draw sprites for allies and foes (if they exist) */
+  for (int i = 0; i < 5; i++)
+  {
+    Person* p = NULL;
+    if (i < friends->getPartySize() && friends->getMember(i))
+    {
+      p = friends->getMember(i);
+      painter.drawPixmap(*ally_box[i],p->getFirstPerson()->getCurrent());
+    }
+    if (i < foes->getPartySize() && foes->getMember(i))
+    {
+      p = foes->getMember(i);
+      painter.drawPixmap(*enemy_box[i],p->getThirdPerson()->getCurrent());
+    }
+  }
 
-  // qDebug() << foes->getPartySize();
 
-  if (foes->getMember(0))
-    painter.drawPixmap(*enemy1_bound,foes->getMember(0)->getThirdPerson()->getCurrent());
-  // if (foes->getMember(1))
-  // painter.drawPixmap(enemy2_bound,foes->getMember(1)->getThirdPerson());
-  // if (foes->getMember(2))
-  // painter.drawPixmap(enemy3_bound,foes->getMember(2)->getThirdPerson());
-  // if (foes->getMember(3))
-  // painter.drawPixmap(enemy4_bound,foes->getMember(3)->getThirdPerson());
-  // if (foes->getMember(4))
-  // painter.drawPixmap(enemy5_bound,foes->getMember(4)->getThirdPerson());
-  if (friends->getMember(0))
-     painter.drawPixmap(*ally1_bound,friends->getMember(0)->getFirstPerson()->getCurrent());
-  // if (friends->getMember(1))
-  // painter.drawPixmap(ally2_bound,foes->getMember(1)->getThirdPerson());
-  // if (friends->getMember(2))
-  // painter.drawPixmap(ally3_bound,foes->getMember(2)->getThirdPerson());
-  // if (friends->getMember(3))
-  // painter.drawPixmap(ally4_bound,foes->getMember(3)->getThirdPerson());
-  // if (friends->getMember(4))
-  // painter.drawPixmap(ally5_bound,foes->getMember(4)->getThirdPerson());
 }
 
 /*

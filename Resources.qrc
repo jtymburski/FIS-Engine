@@ -67,5 +67,10 @@
         <file alias="E_cloud_thing">sprites/Battle/Battle_Persons/cloudthing.png</file>
         <file alias="E_ulterius">sprites/Battle/Battle_Persons/ulterius.png</file>
         <file alias="A_ladybear">sprites/Battle/Backs/ladybear.png</file>
+        <file alias="E_turbo_fish">sprites/Battle/Battle_Persons/turbofish.png</file>
+        <file alias="A_bsian">sprites/Battle/Backs/bsian.png</file>
+        <file alias="A_aurumba">sprites/Battle/Backs/aurumba.png</file>
+        <file alias="A_berfriegg">sprites/Battle/Backs/berfriegg.png</file>
+        <file alias="bbd_sewers">pictures/Battle Backdrops/sewers.jpg</file>
     </qresource>
 </RCC>

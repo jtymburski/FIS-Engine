@@ -20,15 +20,13 @@
 class Person : public QWidget
 {
 public:
-  /* Creates a default person object */
-  Person(QWidget* pointer = 0);
-
-  /* Creates a person object */
-  Person(int th_a, int th_f, int po_ag, int po_f, int pr_a, int pr_f,
-         int ch_a, int ch_f, int cy_a,  int cy_f, int ni_a, int ni_f,
-         int vit,  int qd,   int ag,    int lim,  int unb,  int lev,
-         int exp, QString name, QString prim, QString secd, QString rank,
-         QWidget* pointer = 0);
+  /* Constructor for a person object */
+  Person(int th_a = 5, int th_f = 2, int po_a = 5, int po_f = 2, int pr_a = 5,
+         int pr_f = 2, int ch_a = 5, int ch_f = 2, int cy_a = 5, int cy_f = 2,
+         int ni_a = 5, int ni_f = 2, int vit = 300, int qd = 15, int ag = 7,
+         int lim = 7,  int unb = 7,  int lev = 5, int exp = 200,
+         QString name = "Person", QString prim = "cyberneticA",
+         QString secd = "polarB", QString rank = "Recruit", QWidget* pointer = 0);
 
   /* Annihilates a person object */
   ~Person();
@@ -243,10 +241,13 @@ private:
   Sprite* third_person;
 
   /* Set up stats for constructor */
-  void setupStats(int th_a, int th_f, int po_ag, int po_f, int pr_a, int pr_f,
-                  int ch_a, int ch_f, int cy_a,  int cy_f, int ni_a, int ni_f,
-                  int vit,  int qd,   int ag,    int lim,  int unb,  int lev,
-                  int exp, QString nam, QString prim, QString secd, QString rank);
+  void setupStats(int th_a = 5, int th_f = 2, int po_a = 5, int po_f = 2,
+                  int pr_a = 5, int pr_f = 2, int ch_a = 5, int ch_f = 2,
+                  int cy_a = 5, int cy_f = 2, int ni_a = 5, int ni_f = 2,
+                  int vit = 300, int qd = 15, int ag = 7, int lim = 7,
+                  int unb = 7,  int lev = 5, int exp = 200,
+                  QString name = "Person", QString prim = "cyberneticA",
+                  QString secd = "polarB", QString rank = "Recruit");
 
   /* Flags */
 

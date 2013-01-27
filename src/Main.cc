@@ -12,24 +12,77 @@ int main(int argc, char *argv[])
   //Application* game_app = new Application();
   // Map m;
 
-  Person* main_character = new Person(5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5, 2,
-                                      500, 100, 7, 7, 7, 12, 180,
-                                      "Malgidus", "cyberneticA", "nihilB",
-                                      "Sleuthmaster");
-  Person* cloud_dude = new Person(5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5, 2,
-                                  300, 80, 6, 6, 6, 11, 160,
-                                  "Cloud Guy 1", "primalB", "polarC",
-                                  "Enemy");
-  Sprite* main_char_fp = new Sprite(":/A_ladybear");
-  Sprite* cloud_dude_tp = new Sprite(":E_cloud_thing");
+
+  Person* main_character = new Person(5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 500,
+                                      100, 7, 7, 7, 12, 180,  "Malgidus",
+                                      "cyberneticA", "nihilB", "Sleuthmaster");
+
+  Person* arcadius = new Person(5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 9500,
+                                      100, 7, 7, 7, 12, 180,  "Arcadius",
+                                      "cyberneticA", "nihilB", "Sleuthmaster");
+
+  Person* ladybear = new Person(5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 500,
+                                      100, 7, 7, 7, 12, 180,  "Ladybear",
+                                      "cyberneticA", "nihilB", "Sleuthmaster");
+
+  Person* aurumba = new Person(5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 175,
+                                      100, 7, 7, 7, 12, 180,  "Aurumba",
+                                      "cyberneticA", "nihilB", "Sleuthmaster");
+
+  Person* berfriegg = new Person(5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 2000,
+                                      100, 7, 7, 7, 12, 180,  "Berfriegg",
+                                      "cyberneticA", "nihilB", "Sleuthmaster");
+
+  Person* cloud_dude = new Person(5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 300, 80,
+                                  6, 6, 6, 11, 160,"Cloud Guy 1", "primalB",
+                                  "polarC", "Enemy");
+
+  Person* cloud_dude2 = new Person(5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 300, 80,
+                                  6, 6, 6, 11, 160,"Cloud Guy 2", "primalB",
+                                  "polarC", "Enemy");
+
+  Person* cloud_dude3 = new Person(5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 300, 80,
+                                  6, 6, 6, 11, 160,"Cloud Guy 3", "primalB",
+                                  "polarC", "Enemy");
+
+  Person* cloud_dude4 = new Person(5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 300, 80,
+                                  6, 6, 6, 11, 160,"Cloud Guy 4", "primalB",
+                                  "polarC", "Enemy");
+
+  Person* turbo_fish = new Person(5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 300, 80,
+                                  6, 6, 6, 11, 160,"Turbofish 1", "primalB",
+                                  "polarC", "Enemy");
+
+  Sprite* main_char_fp = new Sprite(":/A_player");
+  Sprite* arcadius_fp = new Sprite(":/A_arcadius");
+  Sprite* ladybear_fp = new Sprite(":/A_ladybear");
+  Sprite* aurumba_fp = new Sprite(":/A_aurumba");
+  Sprite* berfriegg_fp = new Sprite(":/A_berfriegg");
+  Sprite* cloud_dude_tp = new Sprite(":/E_cloud_thing");
+  Sprite* turbo_fish_tp = new Sprite(":/E_turbo_fish");
   main_character->setFirstPerson(main_char_fp);
+  arcadius->setFirstPerson(arcadius_fp);
+  ladybear->setFirstPerson(ladybear_fp);
+  aurumba->setFirstPerson(aurumba_fp);
+  berfriegg->setFirstPerson(berfriegg_fp);
   cloud_dude->setThirdPerson(cloud_dude_tp);
+  cloud_dude2->setThirdPerson(cloud_dude_tp);
+  cloud_dude3->setThirdPerson(cloud_dude_tp);
+  cloud_dude4->setThirdPerson(cloud_dude_tp);
+  turbo_fish->setThirdPerson(turbo_fish_tp);
 
   Party* friend_clan = new Party(main_character);
+  friend_clan->addMember(arcadius);
+  friend_clan->addMember(ladybear);
+  friend_clan->addMember(aurumba);
+  friend_clan->addMember(berfriegg);
   Party* enemy_clan = new Party(cloud_dude);
-
+  enemy_clan->addMember(cloud_dude2);
+  enemy_clan->addMember(cloud_dude3);
+  enemy_clan->addMember(cloud_dude4);
+  enemy_clan->addMember(turbo_fish);
   new Battle(friend_clan, enemy_clan);
 
 
-    return app.exec();
+  return app.exec();
 }

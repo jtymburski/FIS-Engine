@@ -161,10 +161,12 @@ void MapPerson::stopMoving()
 }
 
 /* Gets the battle version of the person */
+/* TODO: Battle version of person is not needed
 Person* MapPerson::getBattlePerson()
 {
     //return battle_person;
 }
+*/
 
 /* Gets the persons direction */
 Direction MapPerson::getDirection()

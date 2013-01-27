@@ -14,22 +14,6 @@
 #include <cmath>
 
 /*
- * Description: Default person constructor (generic values)
- *
- */
-Person::Person(QWidget* pointer)
-{
-  /* Set up the normal statistics for a person
-   * th_a, th_f, po_a, po_f, pr_a, pr_f,
-   * ch_a, ch_f, cy_a,  cy_f, ni_a, ni_f,
-   * vit, qd, ag, lim, unb, lev, exp, nam,
-   * prim, secd, rank */
-  setupStats(5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5, 2,
-               100, 50, 5, 5, 5, 5, 300, "Arcadius",
-               "polar", "cybernetic", "Recruit");
-}
-
-/*
  * Description: Primary person constructor (requires all values)
  *
  * Inputs: int th_a - base thermal aggression statistic
@@ -80,29 +64,7 @@ Person::~Person()
 /*
  * Description:
  *
- * Inputs: int th_a - base thermal aggression statistic
- *         int th_f - base thermal fortitude statistic
- *         int po_a - base polar aggression statistic
- *         int po_f - base polar fortitude statistic
- *         int pr_a - base primal aggression statistic
- *         int pr_f - base primal fortitude statistic
- *         int ch_a - base charged aggression statistic
- *         int ch_f - base charged fortitude statistic
- *         int cy_a - base cybernetic aggression statistic
- *         int cy_f - base cybernetic fortitude statistic
- *         int ni_a - base nihil aggression statistic
- *         int ni_f - base nihil fortitude statistic
- *         int vit - base vitality statistic
- *         int qd - base quantum drive statisti
- *         int ag - base agility statistic
- *         int lim - base limbertude statistic
- *         int unb - base unbearability statistic
- *         int lev - person's starting level
- *         int exp - person's starting experience
- *         QString nam - name of person
- *         QString prim - person's primary elemental ability
- *         QString secd - person's secondary elemental ability
- *         QString rank - person's rank [recruit, sleuthmaster, etc.]
+ * Inputs: * See constructor above for full input list *
  * Output: none
  */
 void Person::setupStats(int th_a, int th_f, int po_a, int po_f, int pr_a,

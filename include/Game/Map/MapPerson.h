@@ -3,6 +3,7 @@
 * Date Created: Oct 28 2012
 * Inheritance: MapThing
 * Description: The MapPerson class, this covers all Persons in the map
+* TODO: An in-battle version of a person is not needed [01-27-13]
 ******************************************************************************/
 #ifndef MAPPERSON_H
 #define MAPPERSON_H
@@ -25,7 +26,8 @@ public:
 
 private:
   /* The in-battle version of this person */
-  Person battle_person;
+  /* TODO: An in-battle version of this person is NOT needed */
+  // Person battle_person;
 
   /* The current movement direction */
   Direction movement_direction;
@@ -136,7 +138,7 @@ public:
   void stopMoving();
 
   /* Gets the battle version of the person */
-  Person* getBattlePerson();
+  // Person* getBattlePerson();
 
   /* Gets the persons direction */
   Direction getDirection();
