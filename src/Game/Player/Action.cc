@@ -28,10 +28,9 @@
 
 #include "Game/Player/Action.h"
 
-/* Description:
+/* Description: Constructor for an action object
  *
- * Inputs:
- * Output:
+ * Inputs: none
  */
 Action::Action(QWidget* pointer)
 {

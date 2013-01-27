@@ -25,6 +25,59 @@ Player::~Player()
 }
 
 /*
+ * Description: Removes a sleuth member by index by
+ *              calling party's remove member function
+ *
+ * Inputs: int - index of sleuth member to be removed
+ * Output: bool - true if member was removed successfully
+ */
+bool Player::removeSleuthMember(int index)
+{
+    if (sleuth->removeMember(index))
+        return true;
+    return false;
+}
+
+/*
+ * Description: Removes a member from the sleuth by name
+ *
+ * Inputs: QString - name of person to be removed from the bearacks
+ * Output: bool - true if member was removed succesfully
+ */
+bool Player::removeSleuthMember(QString value)
+{
+    if (sleuth->removeMember(value))
+      return true;
+    return false;
+}
+
+/*
+ * Description: Removes a member from the bearacks at a given index
+ *
+ * Inputs: int - index at which to remove the member
+ * Output: bool - true if removal was successful
+ */
+bool Player::removeRacksMember(int index)
+{
+    if (bearacks->removeMember(index))
+      return true;
+    return false;
+}
+
+/*
+ * Description: Removes a member from the bearacks by name
+ *
+ * Inputs: QString - name of member to remove
+ * Output: bool - true if removal was successful
+ */
+bool Player::removeRacksMember(QString value)
+{
+    if (bearacks->removeMember(value))
+      return true;
+    return false;
+}
+
+/*
  * Description: Gets the number of frames in the main person's sprite
  *              multiplied by the kMAPSPEED
  * Inputs: none
