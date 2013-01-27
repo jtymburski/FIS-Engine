@@ -42,16 +42,16 @@ QVector<Action*> Equipment::getActionList()
 
 bool Equipment::canEquip(QString location)
 {
-  if (location == "head")
-    return equip_locations[0];
-  if (location == "left arm")
+   if (location == "head")
+     return equip_locations[0];
+  /*if (location == "left arm")
     return equip_locations[1];
   if (location == "right arm")
     return equip_locations[2];
   if (location == "torso")
     return equip_locations[3];
   if (location == "legs")
-    return equip_locations[4];
+    return equip_locations[4]; */
   return 0;
 }
 

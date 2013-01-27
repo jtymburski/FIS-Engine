@@ -4,6 +4,7 @@
 * Inheritance: InventoryUnit
 * Description: The Item Header that defines all elements within Inventory.
 *              This includes Equipment and Bubby.
+* TODO: Gets / Sets for stats [01-26-13]
 ******************************************************************************/
 #ifndef ITEM_H
 #define ITEM_H
@@ -14,79 +15,137 @@
 class Item
 {
 public:
-  /*Constructor function*/
+  /* Constructor function*/
   Item(QWidget *parent = 0);
 
-  /*Destructor function*/
+  /* Destructor function*/
   ~Item();
 
 private:
-  /*Category unit belongs to*/
+  /* Category unit belongs to*/
   QString category;
 
-  /*Number of these that exist in inventory*/
+  /* Number of these that exist in inventory*/
   int count;
 
-  /*Description of unit*/
+  /* Description of unit*/
   QString description;
 
-  /*Name of unit*/
+  /* Name of unit*/
   QString name;
 
-  /*Thumbnail of unit*/
+  /* Thumbnail of unit*/
   QImage thumbnail;
 
-  /*Number of turns this will last in battle*/
+  /* Number of turns this will last in battle*/
   int turn_count;
 
-  /*Stat alteration values*/
-  int stamina, quantumdrive, momentum, limbertude, unbearability;
-  int aggression, fortitude;
-  int thermal_aggression, thermal_fortitude;
-  int polar_aggression, polar_fortitude;
-  int primal_aggression, primal_fortitude;
-  int charged_aggression, charged_fortitude;
-  int cybernetic_aggression, cybernetic_fortitude;
-  int nihil_aggression, nihil_fortitude;
+  /* Thermal aggression alteration values */
+  int thermal_aggression;
+  int temp_thermal_aggression;
 
-  /*Appears in battle as usable*/
+  /* Thermal fortitude alteration values */
+  int thermal_fortitude;
+  int temp_thermal_fortitude;
+
+  /* Polar aggression alteration values */
+  int polar_aggression;
+  int temp_polar_aggression;
+
+  /* Polar fortitude alteration values */
+  int polar_fortitude;
+  int temp_polar_fortitude;
+
+  /* Primal aggression alteration values */
+  int primal_aggression;
+  int temp_primal_aggression;
+
+  /* Primal fortitude alteration values */
+  int primal_fortitude;
+  int temp_primal_fortitde;
+
+  /* Charged aggression alteration values */
+  int charged_aggression;
+  int temp_charged_aggression;
+
+  /* Charged fortitude alteration values */
+  int charged_fortitude;
+  int temp_charged_fortitude;
+
+  /* Cybernetic aggression alteration values */
+  int cybernetic_aggression;
+  int temp_cybernetic_aggression;
+
+  /* Cybernetic fortitude alteration values */
+  int cybernetic_fortitude;
+  int temp_cybernetic_fortitude;
+
+  /* Nihil aggression alteration values */
+  int nihil_aggression;
+  int temp_nihil_aggression;
+
+  /* Nihil fortitude alteration values */
+  int nihil_fortitude;
+  int temp_nihil_fortitude;
+
+  /* Vitality alteration values */
+  int vitality;
+  int temp_vitality;
+
+  /* Quantum Drive alteration values */
+  int quantum_drive;
+  int temp_quantum_drive;
+
+  /* Agility alteration values */
+  int agility;
+  int temp_agility;
+
+  /* Limbertude alteration values */
+  int limbertude;
+  int temp_limbertude;
+
+  /* Unbearability alteration values */
+  int unbearability;
+  int temp_unbearability;
+
+  /* Appears in battle as usable*/
   bool BATTLEREADY;
 
-  /*In battle, lasts forever*/
+  /* In battle, lasts forever*/
   bool INDEFINITE;
 
-  /*Can be grouped together with others*/
+  /* Can be grouped together with others*/
   bool STACKABLE;
 
 public:
-  /*Evaulates BATTLEREADY flag*/
+  /* Evaulates BATTLEREADY flag*/
   bool isBattleReady();
 
-  /*Evaluates STACKABLE flag*/
+  /* Evaluates STACKABLE flag*/
   bool isStackable();
 
-  /*Evaluates INDEFINITE flag*/
+  /* Evaluates INDEFINITE flag*/
   bool isIndefinite();
 
-  /*Gets category of unit*/
+  /* Gets category of unit*/
   QString getCategory();
 
-  /*Gets unit count*/
+  /* Gets unit count*/
   int getCount();
 
-  /*Gets description of unit*/
+  /* Gets description of unit*/
   QString getDescription();
 
-  /*Gets name of unit*/
+  /* Gets name of unit*/
   QString getName();
 
-  /*Gets thumbnail of unit*/
+  /* Gets thumbnail of unit*/
   QImage getThumbnail();
 
-  /*Gets the turn count*/
+  /* Gets the turn count*/
   int getTurnCount();
 
-  /*Sets unit count*/
+  /* Sets unit count*/
   void setCount(int i);
 };
 

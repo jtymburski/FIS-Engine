@@ -19,11 +19,11 @@
 class Party : public QWidget
 {
 public:
+  /* Creates a party object */
   Party(QWidget* parent = 0);
+
+  /* Annihilates a party object */
   ~Party();
-
-protected:
-
 
 private:
   /* The shared inventory of the party */
@@ -42,8 +42,6 @@ private:
   int max_size;
 
 public:
-
-
   /* Adds a person to party, returns false if no space or failure */
   bool addMember(Person* p); 
 

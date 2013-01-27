@@ -10,42 +10,69 @@
 
 #include "Game/Player/Player.h"
 
-/* Constructs a Player Object */
+/*
+ * Description: Player constructor object
+ */
 Player::Player()
 {
 }
 
-/* Annihilates a Player object */
+/*
+ * Description: Annihilates a player object
+ */
 Player::~Player()
 {
 }
 
-/* Gets the number of frames in the main persons sprite multiplied by the 
-   * kMAPSPEED */
+/*
+ * Description: Gets the number of frames in the main person's sprite
+ *              multiplied by the kMAPSPEED
+ * Inputs: none
+ * Output: int - speed of the player
+ */
 int Player::getSpeed()
 {
   return kMAPSPEED;
 }
 
-/* Gets the x-position on the map */
+/*
+ * Description: Gets the x-position on the map
+ *
+ * Inputs: none
+ * Output: int - x-position of the player
+ */
 int Player::getXPos()
 {
   return xpos;
 }
 
-/* Gets the y-position on the map */
+/*
+ * Description: Gets the y-position on the map
+ *
+ * Inputs: none
+ * Output: int - y-position on the map
+ */
 int Player::getYPos()
 {
   return ypos;
 }
 
-/* Sets the x-position on the map */
+/*
+ * Description: Sets the x-position of the player
+ *
+ * Inputs: int - new x-position
+ * Output: none
+ */
 void Player::setXPos(int new_xpos)
 {
   xpos = new_xpos;
 }
-
-/* Sets the y-position on the map */
+/*
+ * Description: Sets the y-position of the player
+ *
+ * Inputs: int - new y-position
+ * Output: none
+ */
 void Player::setYPos(int new_ypos)
 {
   ypos = new_ypos;

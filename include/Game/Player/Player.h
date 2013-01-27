@@ -17,7 +17,10 @@
 class Player
 {
 public:
+  /* Player constructor object */
   Player();
+
+  /* Annihilates a player object */
   ~Player(); 
 
 private:
