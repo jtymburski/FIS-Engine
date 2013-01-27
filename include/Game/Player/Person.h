@@ -27,7 +27,7 @@ public:
   Person(int th_a, int th_f, int po_ag, int po_f, int pr_a, int pr_f,
          int ch_a, int ch_f, int cy_a,  int cy_f, int ni_a, int ni_f,
          int vit,  int qd,   int ag,    int lim,  int unb,  int lev,
-         int exp, QString nam, QString prim, QString secd, QString rank,
+         int exp, QString name, QString prim, QString secd, QString rank,
          QWidget* pointer = 0);
 
   /* Annihilates a person object */
@@ -239,7 +239,8 @@ private:
   QChar secondary_curve;
 
   /* First and third person sprites */
-  Sprite first_person, third_person;
+  Sprite* first_person;
+  Sprite* third_person;
 
   /* Set up stats for constructor */
   void setupStats(int th_a, int th_f, int po_ag, int po_f, int pr_a, int pr_f,
@@ -323,10 +324,10 @@ public:
   QString getRank();
 
   /* Gets the first person sprite */
-  Sprite getFirstPerson();
+  Sprite* getFirstPerson();
 
   /* Gets the third person person sprite */
-  Sprite getThirdPerson();
+  Sprite* getThirdPerson();
 
   /* Gets the fire attack stat */
   int getThermalAggression();
@@ -528,6 +529,12 @@ public:
 
   /* Sets the persons word rank */
   void setRank(QString rank);
+
+  /* Sets the first person sprite */
+  void setFirstPerson(Sprite* s);
+
+  /* Sets the third person sprite */
+  void setThirdPerson(Sprite* s);
 
   /* Sets the RENDERING flag */
   void setRendering(bool b);

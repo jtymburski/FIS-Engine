@@ -79,7 +79,10 @@
 class Battle: public QWidget
 {
 public:
-  Battle(QWidget* pointer = 0);
+  /* Constructor for a Battle class */
+  Battle(Party* p_friends, Party* p_foes, QWidget* pointer = 0);
+
+  /* Annihilates a battle object */
   ~Battle();
 
 private:
@@ -171,11 +174,14 @@ protected:
   /* Paint event for the class */
   void paintEvent(QPaintEvent*);
 
-  /* Gets the x-length of the ally's bounding box */
-  void setAllyWidth(int value);
+  /* Checks for deaths, pops current action off stack, calls performAction();*/
+  void actionOutcome();
 
-  /* Gets the y-length of the ally's bounding box */
-  void setAllyHeight(int value);
+  /* Sets the allies pointer */
+  void setFriends(Party* p_friends);
+
+  /* Sets the foes pointer */
+  void setFoes(Party* p_foes);
 
   /* Sets the maximum x-length of the battle window */
   void setMaxWidth(int value);
@@ -183,9 +189,7 @@ protected:
   /* Sets the maximum y-length of the battle window */
   void setMaxHeight(int value);
 
-public:
-  /* Checks for deaths, pops current action off stack, calls performAction();*/
-  void actionOutcome(); 
+public: 
 
   /* Ends battle with win message */
   void battleWon(); 

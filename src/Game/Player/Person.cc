@@ -452,7 +452,7 @@ QString Person::getRank()
  * Inputs: none
  * Output: Sprite - first person view of the sprite of the person
  */
-Sprite Person::getFirstPerson()
+Sprite* Person::getFirstPerson()
 {
   return first_person;
 }
@@ -463,7 +463,7 @@ Sprite Person::getFirstPerson()
  * Inputs: none
  * Output: Sprite - third person view of the sprite of the person
  */
-Sprite Person::getThirdPerson()
+Sprite* Person::getThirdPerson()
 {
   return third_person;
 }
@@ -1318,6 +1318,28 @@ void Person::setRace(Race* new_race)
 void Person::setRank(QString new_rank)
 {
   rank = new_rank;
+}
+
+/*
+ * Description: Sets the first person view sprite for the person
+ *
+ * Inputs: Sprite* - pointer to the sprite to be set
+ * Output: none
+ */
+void Person::setFirstPerson(Sprite* s)
+{
+  first_person = s;
+}
+
+/*
+ * Description: Sets the third person view sprite for the person
+ *
+ * Inputs: Sprite* - pointer to the sprite to be set
+ * Output: none
+ */
+void Person::setThirdPerson(Sprite* s)
+{
+  third_person = s;
 }
 
 /*

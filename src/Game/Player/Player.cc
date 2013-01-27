@@ -2,19 +2,28 @@
 * Class Name: Player
 * Date Created: December 2nd, 2012
 * Inheritance:
-* Description: Person object on map
-*  
-* TODO: CONSTRUCTORS TO BE FINISHED
-* TODO: CHANGE SPEED (CONSTANT) ?
+* Description: Abstract player class, containing the two parties -- sleuth and
+*              bearacks, and also represents the player's position and speed
+*              on the map
 ******************************************************************************/
 
 #include "Game/Player/Player.h"
 
 /*
  * Description: Player constructor object
+ *
+ * Inputs: p_sleuth - pointer to sleuth party
+ *         p_bearacks - pointer to bearacks party
+ *         x, y - initial position of player on map
  */
-Player::Player()
+Player::Player(Party* p_sleuth, Party* p_racks, int x, int y)
 {
+    /* Set the sleuth and bearacks parties. */
+    setSleuth(p_sleuth);
+    setBearacks(p_racks);
+
+    setXPos(x);
+    setYPos(y);
 }
 
 /*
@@ -22,6 +31,9 @@ Player::Player()
  */
 Player::~Player()
 {
+    /* Set party pointers to NULL */
+    setSleuth();
+    setBearacks();
 }
 
 /*
@@ -89,6 +101,27 @@ int Player::getSpeed()
 }
 
 /*
+ * Description: Gets the pointer to the sleuth party
+ *
+ * Inputs: none
+ * Output: Party* - pointer to the sleuth party
+ */
+Party* Player::getSleuth()
+{
+    return sleuth;
+}
+
+/*
+ * Description: Gets the pointer to the bearacks party
+ * Inputs: none
+ * Output: Party* - pointe to the bearacks party
+ */
+Party* Player::getBearacks()
+{
+  return bearacks;
+}
+
+/*
  * Description: Gets the x-position on the map
  *
  * Inputs: none
@@ -96,7 +129,7 @@ int Player::getSpeed()
  */
 int Player::getXPos()
 {
-  return xpos;
+  return x_pos;
 }
 
 /*
@@ -107,7 +140,29 @@ int Player::getXPos()
  */
 int Player::getYPos()
 {
-  return ypos;
+  return y_pos;
+}
+
+/*
+ * Description: Sets the pointer to the sleuth party
+ *
+ * Inputs: Party* - pointer to new sleuth party
+ * Output: none
+ */
+void Player::setSleuth(Party* p)
+{
+   sleuth = p;
+}
+
+/*
+ * Description: Sets the pointer to the bearacks party
+ *
+ * Inputs: Party* - pointer to the new bearacks party
+ * Output: none
+ */
+void Player::setBearacks(Party* p)
+{
+  bearacks = p;
 }
 
 /*
@@ -116,9 +171,9 @@ int Player::getYPos()
  * Inputs: int - new x-position
  * Output: none
  */
-void Player::setXPos(int new_xpos)
+void Player::setXPos(int new_x_pos)
 {
-  xpos = new_xpos;
+  x_pos = new_x_pos;
 }
 /*
  * Description: Sets the y-position of the player
@@ -126,7 +181,7 @@ void Player::setXPos(int new_xpos)
  * Inputs: int - new y-position
  * Output: none
  */
-void Player::setYPos(int new_ypos)
+void Player::setYPos(int new_y_pos)
 {
-  ypos = new_ypos;
+  y_pos = new_y_pos;
 }

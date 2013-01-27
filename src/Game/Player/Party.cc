@@ -16,9 +16,12 @@
  * Inputs: none
  * Output: none
  */
-Party::Party(QWidget* parent, int max)
+Party::Party(Person* p_main, int max, Inventory* inventory, QWidget* parent)
 {
+    members.push_back(p_main);
+
     setMaxSize(max);
+    setInventory(inventory);
 }
 
 /*
@@ -26,6 +29,7 @@ Party::Party(QWidget* parent, int max)
  */
 Party::~Party()
 {
+    setInventory();
 }
 
 /*
@@ -36,9 +40,9 @@ Party::~Party()
  */
 bool Party::addMember(Person* person)
 {
-  if (members.size() > 4)
-    return false;
-  members.append(person);
+  //if (members.size() < getMaxSize())
+  //  return false;
+  members.push_back(person);
   return true;
 }
 

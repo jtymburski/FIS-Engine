@@ -63,14 +63,20 @@
 ******************************************************************************/
 
 #include "Game/Battle/Battle.h"
+#include <QDebug>
 
 /* TODO: Pass in two points to parties for battle constructor [01-26-23]
  * Description: Constructor for the battle class
  *
- * Inputs: none
+ * Inputs: p_ally - pointer to allied party
+ *         p_foes - pointer to foes party
  */
-Battle::Battle(QWidget* pointer)
+Battle::Battle(Party* p_friends, Party* p_foes, QWidget* pointer)
 {
+
+  setFriends(p_friends);
+  setFoes(p_foes);
+
   /* Basic settings for battle window sizing and backdrop */
   setMaxWidth(1216);
   setMaxHeight(704);
@@ -85,7 +91,7 @@ Battle::Battle(QWidget* pointer)
    * only if they exist)
    */
 
-  enemy1_bound = new QRect(100,170,180,230);
+  enemy1_bound = new QRect(100,170,250,250);
   enemy2_bound = new QRect(300,165,180,230);
   enemy3_bound = new QRect(500,160,180,230);
   enemy4_bound = new QRect(700,155,180,230);
@@ -153,8 +159,10 @@ void Battle::paintEvent(QPaintEvent*)
   painter.drawRect(*enemy4_bound);
   painter.drawRect(*enemy5_bound);
 
-  // if (foes->getMember(0))
-  // painter.drawPixmap(enemy1_bound,foes->getMember(0)->getThirdPerson());
+  // qDebug() << foes->getPartySize();
+
+  if (foes->getMember(0))
+    painter.drawPixmap(*enemy1_bound,foes->getMember(0)->getThirdPerson()->getCurrent());
   // if (foes->getMember(1))
   // painter.drawPixmap(enemy2_bound,foes->getMember(1)->getThirdPerson());
   // if (foes->getMember(2))
@@ -163,8 +171,8 @@ void Battle::paintEvent(QPaintEvent*)
   // painter.drawPixmap(enemy4_bound,foes->getMember(3)->getThirdPerson());
   // if (foes->getMember(4))
   // painter.drawPixmap(enemy5_bound,foes->getMember(4)->getThirdPerson());
-  // if (friends->getMember(0))
-  // painter.drawPixmap(ally1_bound,foes->getMember(0)->getThirdPerson());
+  if (friends->getMember(0))
+     painter.drawPixmap(*ally1_bound,friends->getMember(0)->getFirstPerson()->getCurrent());
   // if (friends->getMember(1))
   // painter.drawPixmap(ally2_bound,foes->getMember(1)->getThirdPerson());
   // if (friends->getMember(2))
@@ -184,6 +192,28 @@ void Battle::paintEvent(QPaintEvent*)
  */
 void Battle::actionOutcome()
 {
+}
+
+/*
+ * Description: Set the friends pointer
+ *
+ * Inputs: Party* - party to set friends pointer to
+ * Output: none
+ */
+void Battle::setFriends(Party* p_friends)
+{
+  friends = p_friends;
+}
+
+/*
+ * Description: Sets the foes pointer
+ *
+ * Inputs: Party* - party to set foes pointer to
+ * Output: none
+ */
+void Battle::setFoes(Party* p_foes)
+{
+  foes = p_foes;
 }
 
 /*

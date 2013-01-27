@@ -6,7 +6,6 @@
 *              your sleuth (maximum of five members) or the members of your
 *              barracks on the ship, or a group of foes you will face in battle
 *  
-* TODO: CONSTRUCTORS TO BE FINISHED
 ******************************************************************************/
 #ifndef PARTY_H
 #define PARTY_H
@@ -20,7 +19,7 @@ class Party : public QWidget
 {
 public:
   /* Creates a party object */
-  Party(QWidget* parent = 0, int max = 5);
+  Party(Person* p_main, int max = 5, Inventory* = NULL, QWidget* parent = 0);
 
   /* Annihilates a party object */
   ~Party();

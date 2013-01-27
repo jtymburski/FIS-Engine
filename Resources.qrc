@@ -62,5 +62,10 @@
         <file alias="arcadius_AA_U02">sprites/Map/Map_Things/arcadius_AA_U02.png</file>
         <file alias="bubby_AA_A00">sprites/Map/Map_Things/bubby_AA_A00.png</file>
         <file alias="main_AA_D00">sprites/Map/Map_Things/main_AA_D00.png</file>
+        <file alias="A_arcadius">sprites/Battle/Backs/arcadius.png</file>
+        <file alias="A_player">sprites/Battle/Backs/player.png</file>
+        <file alias="E_cloud_thing">sprites/Battle/Battle_Persons/cloudthing.png</file>
+        <file alias="E_ulterius">sprites/Battle/Battle_Persons/ulterius.png</file>
+        <file alias="A_ladybear">sprites/Battle/Backs/ladybear.png</file>
     </qresource>
 </RCC>

@@ -1,11 +1,10 @@
 /******************************************************************************
 * Class Name: Player
-* Date Created: Sunday, November 4th, 2012
-* Inheritance: None?
-* Description: Person object on map
-*  
-* TODO: CONSTRUCTORS TO BE FINISHED
-* TODO: CHANGE SPEED (CONSTANT) ?
+* Date Created: December 2nd, 2012
+* Inheritance: none
+* Description: Abstract player class, containing the two parties -- sleuth and
+*              bearacks, and also represents the player's position and speed
+*              on the map
 ******************************************************************************/
 #ifndef PLAYER_H
 #define PLAYER_H
@@ -18,14 +17,14 @@ class Player
 {
 public:
   /* Player constructor object */
-  Player();
+  Player(Party* p_sleth = NULL, Party* p_racks = NULL, int x = 0, int y = 0);
 
   /* Annihilates a player object */
   ~Player(); 
 
 private:
   /* Tick speed for the maps */
-  int kMAPSPEED; //TODO: Change speed ?
+  int kMAPSPEED;
 
   /* Current party (Sleuth) object */
   Party* sleuth;
@@ -34,8 +33,8 @@ private:
   Party* bearacks;
 
   /* Your position on the current map */
-  int xpos;
-  int ypos;
+  int x_pos;
+  int y_pos;
 
 public:
   /* Removes a sleuth member by index by calling Party's remove function */
@@ -53,17 +52,29 @@ public:
   /* Gets # of frames in the main persons sprite multiplied by kMAPSPEED */
   int getSpeed(); 
 
+  /* Gets the sleuth party */
+  Party* getSleuth();
+
+  /* Gets the bearacks party */
+  Party* getBearacks();
+
   /* Gets the x-position on the map */
   int getXPos(); 
 
   /* Gets the y-position on the map */
   int getYPos();
 
+  /* Sets the sleuth party */
+  void setSleuth(Party* p = NULL);
+
+  /* Sets the bearcks party */
+  void setBearacks(Party* p = NULL);
+
   /* Sets the x-position on the map */
-  void setXPos(int);
+  void setXPos(int new_x_pos);
 
   /* Sets the y-position on the map */
-  void setYPos(int);
+  void setYPos(int new_y_pos);
 };
 
 #endif // PLAYER_H
