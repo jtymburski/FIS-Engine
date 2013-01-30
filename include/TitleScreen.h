@@ -10,6 +10,7 @@
 #include <QImage>
 #include <QString>
 #include <QtGui/QWidget>
+#include <QtGui/QPainter>
 #include <QVector>
 
 #include "Options.h"
@@ -26,6 +27,9 @@ public:
 
   /* Destructor function */
   ~TitleScreen();
+
+protected:
+  void paintEvent(QPaintEvent*);
 
 private:
   /* For the first menu level's position */

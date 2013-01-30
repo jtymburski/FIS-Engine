@@ -8,13 +8,28 @@
 
 
 /* Constructor function */
-TitleScreen::TitleScreen(QWidget *parent)
+TitleScreen::TitleScreen(QWidget* parent)
 {
+  setFixedSize(1216, 704);
+
+  QPalette pal(palette());
+  pal.setColor(QPalette::Background, Qt::black);
+  setAutoFillBackground(true);
+  setPalette(pal);
+
+  show();
 }
 
 /* Destructor function */
 TitleScreen::~TitleScreen()
 {
+}
+
+void TitleScreen::paintEvent(QPaintEvent* event)
+{
+  QPainter painter(this);
+
+  painter.drawPixmap(520, 100, QPixmap(":/FBS_Logo"));
 }
 
 /* Changes the menu to state s and the given index */
