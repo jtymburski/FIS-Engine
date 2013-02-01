@@ -1113,139 +1113,108 @@ void Person::setStatusAilment(bool b, int ailment_index)
 
 /*
  * Description: Sets the level of the person, then based off the base stats,
- *              resets the person's current stats to new, correct values
+ *              resets the person's current stats to newer, correct values
+ *              Battle stats may be updated three times to correspond to
+ *              the proper values based on their primary and secondary
+ *              growth curve level.
+ * Note [1]: All temporary statistics are unchanged int this function, thus
+ *       the difference between the regular value of a given statistic and
+ *       the temporary value of such a statistic will correctly correspond
+ *       to the value it has been increased by, for purposes of displaying
+ *       to a level up screen, etc.
+ * Note [2]: This function does nothing about actions or skills the person
+ *           has available to her.
  *
  * Inputs: int - level to set person to
  * Output: none
  */
 void Person::setLevel(int new_level)
 {
-  /* Update display value of the level (should be 0-126) */
+  unsigned int   clsb =      1; /* Class bonus to a stat based on class */
+  unsigned int   rceb =      1; /* Race bonus to a stat based on race */
+  unsigned int   addr =      0; /* Temp variable used in formulae (value dm) */
+  float mulr =  1.050; /* Basic D rate of increase of statistics */
+  float defm =  0.670; /* D Mod - ratio of def increase to offense */
+  float difm =  0.100; /* Difference between curve level multiplier */
+  float sinc = mulr + 4 * difm; /* S-Level increase multiplier */
+  float ainc = mulr + 3 * difm; /* A-Level increase multiplier */
+  float binc = mulr + 2 * difm; /* B-Level increase multiplier */
+  float cinc = mulr + 1 * difm; /* C-Level increase multiplier */
+
+  /* Iteratively update all elem stats, then update them based upon the level
+   * of the person's primary curve statistic, then update them based on the
+   * level of the person's secondary statistic.
+   */
+  // TODO: CLASS BONUSES [01-31-13]
+  // TODO: RACE BONUSES [01-31-13]
+  for (int i = 0; i < 3; i++)
+  {
+    if (i == 1)
+    {
+      if (primary_curve == 'S') mulr = sinc + difm;
+      if (primary_curve == 'A') mulr = ainc + difm;
+      if (primary_curve == 'B') mulr = binc + difm;
+      if (primary_curve == 'C') mulr = cinc + difm;
+    }
+    if (i == 2)
+    {
+      if (secondary_curve == 'S') mulr = sinc;
+      if (secondary_curve == 'A') mulr = ainc;
+      if (secondary_curve == 'B') mulr = binc;
+      if (secondary_curve == 'C') mulr = cinc;
+    }
+    addr = floor(pow(getLevel(), mulr));
+
+    if (i == 0 || (i == 1 && primary == "TH") || (i == 2 && secondary == "TH"))
+    {
+      setThermalAggression(getBaseThermalAggression() + addr);
+      setThermalFortitude((getBaseThermalFortitude() + addr) * defm);
+    }
+    if (i == 0 || (i == 1 && primary == "PO") || (i == 2 && secondary == "PO"))
+    {
+      setPolarAggression(getBasePolarAggression() + addr);
+      setPolarFortitude((getBasePolarFortitude() + addr) * defm);
+    }
+    if (i == 0 || (i == 1 && primary == "PR") || (i == 2 && secondary == "PR"))
+    {
+      setPrimalAggression(getBasePrimalAggression() + addr);
+      setPrimalFortitude((getBasePrimalFortitude() + addr) * defm);
+    }
+    if (i == 0 || (i == 1 && primary == "CH") || (i == 2 && secondary == "CH"))
+    {
+      setChargedAggression(getBaseChargedAggression() + addr);
+      setChargedFortitude((getBaseChargedFortitude() + addr) * defm);
+    }
+    if (i == 0 || (i == 1 && primary == "CY") || (i == 2 && secondary == "CY"))
+    {
+      setCyberneticAggression(getBaseCyberneticAggression() + addr);
+      setCyberneticFortitude((getBaseCyberneticFortitude() + addr) * defm);
+    }
+    if (i == 0 || (i == 1 && primary == "NI") || (i == 2 && secondary == "NI"))
+    {
+      setNihilAggression(getBaseNihilAggression() + addr);
+      setNihilFortitude((getBaseNihilFortitude() + addr) * defm);
+    }
+  }
+
+  /* Sets all other non-elemenal statistics to correspond to the level */
+  // TODO: Class bonuses [01-31-13]
+  // TODO: Race bonuses [01-31-13]
+  mulr = 1.100;
+  addr = floor(pow(getLevel(), mulr));
+
+  setAgility(getBaseAgility() + addr);
+  setLimbertude(getBaseLimbertude() + addr);
+  setUnbearability(getBaseUnbearability() + addr);
+
+  mulr = 1.300;
+  addr = floor(pow(getLevel(), mulr));
+
+  setVitality(getBaseVitality() + addr);
+  setQuantumDrive(getBaseQuantumDrive()+ addr);
+
+  /* Set the person's new level value */
   level = new_level;
-
-  /* TODO: Future class bonus? */
-  int class_bonus = 0;
-
-
-  /* Set basic combat stats */
-  // TODO: Future class multipliers [01-25-13]
-  float multiplier = 1.20;
-  float dm         = 0.67;
-  int adder = floor(pow(getLevel(), multiplier));
-
-  setThermalFortitude(getBaseThermalAggression() + adder);
-  setThermalFortitude((getBaseThermalFortitude() + adder) * dm);
-  setPolarAggression(getBasePolarAggression() + adder);
-  setPolarFortitude((getBasePolarFortitude() + adder) * dm);
-  setPrimalAggression(getBasePrimalAggression() + adder);
-  setPrimalFortitude((getBasePrimalFortitude() + adder) * dm);
-  setChargedAggression(getBaseChargedAggression() + adder);
-  setChargedFortitude((getBaseChargedFortitude() + adder) * dm);
-  setCyberneticAggression(getBaseCyberneticAggression() + adder);
-  setCyberneticFortitude((getBaseCyberneticFortitude() + adder) * dm);
-  setNihilAggression(getBaseNihilAggression() + adder);
-  setNihilFortitude((getBaseNihilFortitude() + adder) * dm);
-
-  /* Set other stats */
-  multiplier = 1.10;
-  adder = floor(pow(getLevel(), multiplier));
-
-  setAgility(getBaseAgility() + adder);
-  setLimbertude(getBaseLimbertude() + adder);
-  setUnbearability(getBaseUnbearability() + adder);
-
-  multiplier = 1.30;
-  adder = floor(pow(getLevel(), multiplier));
-
-  setVitality(getBaseVitality() + adder);
-  setQuantumDrive(getBaseQuantumDrive()+ adder);
-
-  /* Re-update stats for primary curve */
-  if (primary_curve == 'A')
-    multiplier = 1.80;
-  else if (primary_curve == 'B')
-    multiplier = 1.60;
-  else if (primary_curve == 'C')
-    multiplier = 1.40;
-  else if (primary_curve == 'D')
-    multiplier = 1.20;
-
-  adder = floor(pow(getLevel(), multiplier));
-
-  if (primary == "Thermal")
-  {
-      setThermalAggression(getBaseThermalAggression() + adder);
-      setThermalFortitude((getBaseThermalFortitude() + adder) * dm);
-  }
-  else if (primary == "Polar")
-  {
-      setPolarAggression(getBasePolarAggression() + adder);
-      setPolarFortitude((getBasePolarFortitude() + adder) * dm);
-  }
-  else if (primary == "Primal")
-  {
-      setPrimalAggression(getBasePrimalAggression() + adder);
-      setPrimalFortitude((getBasePrimalFortitude() + adder) * dm);
-  }
-  else if (primary == "Charged")
-  {
-      setChargedAggression(getBaseChargedAggression() + adder);
-      setChargedFortitude((getBaseChargedFortitude() + adder) * dm);
-  }
-  else if (primary == "Cybernetic")
-  {
-      setCyberneticAggression(getBaseCyberneticAggression() + adder);
-      setCyberneticFortitude((getBaseCyberneticFortitude() + adder) * dm);
-  }
-  else if (primary == "Nihil")
-  {
-      setNihilAggression(getBaseNihilAggression() + adder);
-      setNihilFortitude((getBaseNihilFortitude() + adder) * dm);
-  }
-
-  /* Re-updates stats for secondary curve */
-  if (secondary_curve == 'A')
-    multiplier = 1.60;
-  else if (secondary_curve == 'C')
-    multiplier = 1.40;
-  else if (secondary_curve == 'D')
-    multiplier = 1.20;
-  else if (secondary_curve == 'E')
-    multiplier = 1.10;
-
-  adder = floor(pow(getLevel(), multiplier));
-
-  if (secondary == "Thermal")
-  {
-      setThermalAggression(getBaseThermalAggression() + adder);
-      setThermalFortitude((getBaseThermalFortitude() + adder) * dm);
-  }
-  else if (secondary == "Polar")
-  {
-      setPolarAggression(getBasePolarAggression() + adder);
-      setPolarFortitude((getBasePolarFortitude() + adder) * dm);
-  }
-  else if (secondary == "Primal")
-  {
-      setPrimalAggression(getBasePrimalAggression() + adder);
-      setPrimalFortitude((getBasePrimalFortitude() + adder) * dm);
-  }
-  else if (secondary == "Charged")
-  {
-      setChargedAggression(getBaseChargedAggression() + adder);
-      setChargedFortitude((getBaseChargedFortitude() + adder) * dm);
-  }
-  else if (secondary == "Cybernetic")
-  {
-      setCyberneticAggression(getBaseCyberneticAggression() + adder);
-      setCyberneticFortitude((getBaseCyberneticFortitude() + adder) * dm);
-  }
-  else if (secondary == "Nihil")
-  {
-      setNihilAggression(getBaseNihilAggression() + adder);
-      setNihilFortitude((getBaseNihilFortitude() + adder) * dm);
-  }
-
 }
 
 /*
@@ -1272,7 +1241,7 @@ void Person::setRace(Race* new_race)
 
 /*
  * Description: Sets the person's primary elemental strength and curve
- *              Template "<Element><Curve(A-F)>"
+ *              Template "<2-Letter Element Code><Curve(S,A-D)>"
  *
  * Inputs: QString - string representing the strength and curve
  * Output: none
@@ -1306,7 +1275,7 @@ void Person::setThirdPerson(Sprite* s)
 
 /*
  * Description: Sets the person's primary elemental strength and curve
- *              Template "<Element><Curve(A-F)>"
+ *              Template "<2 Letter Element Code><Curve(S,A-D)>"
  *
  * Inputs: QString - string representing the strength and curve
  * Output: none

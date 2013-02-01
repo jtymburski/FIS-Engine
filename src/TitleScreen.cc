@@ -24,7 +24,7 @@ TitleScreen::TitleScreen(QWidget* parent)
   current_font.setWeight(QFont::Bold);
   setFont(current_font);
 
-  QLabel* label = new QLabel("Hello sunshine...", this);
+  QLabel* label = new QLabel("My name is not fucking 'Sunshine' you li'l bitch.", this); /* OH FUCK THIS LINE IS MORE THAN 80 CHARACTRES LONG. WHAT IS GOING TO HAPPEN.                                 REMEMBER JESUS */
   QPalette pal2(label->palette());
   pal2.setColor(QPalette::Foreground, Qt::white);
   pal2.setColor(QPalette::Background, QColor(28,76,46,64)); // R,G,B,A

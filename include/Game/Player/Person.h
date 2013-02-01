@@ -25,8 +25,8 @@ public:
          int pr_f = 2, int ch_a = 5, int ch_f = 2, int cy_a = 5, int cy_f = 2,
          int ni_a = 5, int ni_f = 2, int vit = 300, int qd = 15, int ag = 7,
          int lim = 7,  int unb = 7,  int lev = 5, int exp = 200,
-         QString name = "Person", QString prim = "cyberneticA",
-         QString secd = "polarB", QString rank = "Recruit", QWidget* pointer = 0);
+         QString name = "Person", QString prim = "CYA",
+         QString secd = "POB", QString rank = "Recruit", QWidget* pointer = 0);
 
   /* Annihilates a person object */
   ~Person();
@@ -246,8 +246,8 @@ private:
                   int cy_a = 5, int cy_f = 2, int ni_a = 5, int ni_f = 2,
                   int vit = 300, int qd = 15, int ag = 7, int lim = 7,
                   int unb = 7,  int lev = 5, int exp = 200,
-                  QString name = "Person", QString prim = "cyberneticA",
-                  QString secd = "polarB", QString rank = "Recruit");
+                  QString name = "Person", QString prim = "CYA",
+                  QString secd = "POB", QString rank = "Recruit");
 
   /* Flags */
 
