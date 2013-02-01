@@ -9,26 +9,27 @@
 #ifndef ITEM_H
 #define ITEM_H
 
+#include "EnumDatabase.h"
 #include <QImage>
 #include <QString>
 
 class Item
 {
 public:
-  /* Constructor function*/
+  /* Constructor function */
   Item(QWidget *parent = 0);
 
-  /* Destructor function*/
+  /* Destructor function */
   ~Item();
 
 private:
-  /* Category unit belongs to*/
-  QString category;
+  /* Category unit belongs to */
+  QString item_category;
 
-  /* Number of these that exist in inventory*/
+  /* Number of these that exist in inventory */
   int count;
 
-  /* Description of unit*/
+  /* Description of unit */
   QString description;
 
   /* Name of unit*/
@@ -37,7 +38,7 @@ private:
   /* Thumbnail of unit*/
   QImage thumbnail;
 
-  /* Number of turns this will last in battle*/
+  /* Number of turns the item will last in battle */
   int turn_count;
 
   /* Thermal aggression alteration values */
@@ -108,44 +109,35 @@ private:
   int unbearability;
   int temp_unbearability;
 
-  /* Appears in battle as usable*/
-  bool BATTLEREADY;
-
-  /* In battle, lasts forever*/
-  bool INDEFINITE;
-
-  /* Can be grouped together with others*/
-  bool STACKABLE;
-
 public:
-  /* Evaulates BATTLEREADY flag*/
+  /* Evaulates BATTLEREADY flag */
   bool isBattleReady();
 
-  /* Evaluates STACKABLE flag*/
+  /* Evaluates STACKABLE flag */
   bool isStackable();
 
-  /* Evaluates INDEFINITE flag*/
+  /* Evaluates INDEFINITE flag */
   bool isIndefinite();
 
-  /* Gets category of unit*/
+  /* Gets category of unit */
   QString getCategory();
 
-  /* Gets unit count*/
+  /* Gets unit count */
   int getCount();
 
-  /* Gets description of unit*/
+  /* Gets description of unit */
   QString getDescription();
 
-  /* Gets name of unit*/
+  /* Gets name of unit */
   QString getName();
 
-  /* Gets thumbnail of unit*/
+  /* Gets thumbnail of unit */
   QImage getThumbnail();
 
-  /* Gets the turn count*/
+  /* Gets the turn count */
   int getTurnCount();
 
-  /* Sets unit count*/
+  /* Sets unit count */
   void setCount(int i);
 };
 

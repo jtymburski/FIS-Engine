@@ -27,9 +27,9 @@
 #ifndef ACTION_H
 #define ACTION_H
 
+#include "EnumDatabase.h"
 #include <QtGui/QWidget>
-
-/*LOWER,RAISE,INFLICT,CURE,IGNORE,CHANCE,<,<=,>,>=,==,!=,
+/* LOWER,RAISE,INFLICT,CURE,IGNORE,CHANCE,<,<=,>,>=,==,!=,
   THERMAL,THERMAL_AGGRESSION,THERMAL_FORTITUDE,
   POLAR,POLAR_AGGRESSION,POLAR_FORTITUDE,
   PRIMAL,PRIMAL_AGGRESSION,PRIMAL_FORTITUDE,
@@ -37,8 +37,6 @@
   CYBERNETIC,CYBERNETIC_AGGRESSION,CYBERNETIC_FORTITUDE,
   NIHIL,NIHIL_AGGRESSION,NIHIL_FORTITUDE,
   VITALITY,QUANTUM_DRIVE,AGILITY,LIMBERTUDE,UNBEARABILITY */
-enum ActionType {SELF, SINGLE, SINGLEIGNOREUSER, PARTY,
-         PARTYIGNOREUSER, EVERYONE, EVERYONEIGNOREUSER};
 
 class Action : public QWidget 
 {
@@ -71,11 +69,11 @@ private:
   /* The number of targets this acftion can target */
   unsigned int num_targets;
 
-  /* Flag to determine if action is beneficial to you or party member */
-  bool FRIENDLY;
-
   /* The language used to create actions, more can be added */
   QVector<QString> language;
+
+  /* ActionType flags */
+  unsigned int action_flags;
 
 public:
   /* Evaluates the FRIENDLY flag */

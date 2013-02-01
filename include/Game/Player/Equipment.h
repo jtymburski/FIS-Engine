@@ -12,6 +12,7 @@
 
 #include <QVector>
 
+#include "EnumDatabase.h"
 #include "Game/Player/Action.h"
 #include "Game/Player/Bubby.h"
 //#include "Game/Player/Item.h"
@@ -26,19 +27,22 @@ public:
   ~Equipment();
 
 private:
-  /* 2D 9x9 array for bubby signiture*/
+  /* 2D 9x9 array for bubby signature*/
   Bubby* bubby_signature[9][9];
 
   /* The list of actions offered by the equipment*/
   QVector<Action*> action_list;
 
   /* A parallel list that shows when actions become available (Based on level)*/
-  QVector<int> action_available;
+  QVector<unsigned short> action_available;
 
-  /* A list that shows useable locations of equipment */
-  QVector<bool> equip_locations;
+  /* Equipment flags */
+  unsigned int flags;
 
 public:
+  /* Clears the action list */
+  void clearActionList();
+
   /* Checks if the bubby will fit into the bubby signature
    * X is the left most coordinate, Y is the top most coordinate
    * Returns if space is available for attachment */

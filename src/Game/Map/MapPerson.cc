@@ -161,7 +161,7 @@ void MapPerson::stopMoving()
 }
 
 /* Gets the battle version of the person */
-/* TODO: Battle version of person is not needed
+/* TODO: Battle version of person is not needed, regular would suffice?
 Person* MapPerson::getBattlePerson()
 {
     //return battle_person;

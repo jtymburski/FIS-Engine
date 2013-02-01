@@ -12,6 +12,7 @@
 ******************************************************************************/
 #include "Game/Player/Person.h"
 #include <cmath>
+#include <QDebug>
 
 /*
  * Description: Primary person constructor (requires all values)
@@ -59,6 +60,24 @@ Person::Person(int th_a, int th_f, int po_a,  int po_f, int pr_a,
  */
 Person::~Person()
 {
+    delete head;
+    delete left_arm;
+    delete right_arm;
+    delete torso;
+    delete legs;
+    delete character_class;
+    delete character_race;
+    delete first_person;
+    delete third_person;
+    setHeadEquipment();
+    setLeftArmEquipment();
+    setRightArmEquipment();
+    setTorsoEquipment();
+    setLegEquipment();
+    setCategory(NULL);
+    setRace(NULL);
+    setFirstPerson(NULL);
+    setThirdPerson(NULL);
 }
 
 /*
@@ -127,7 +146,7 @@ void Person::setupStats(int th_a, int th_f, int po_a, int po_f, int pr_a,
     setTempAgility(ag);
     setTempLimbertude(lim);
 
-    /* Sets up temporary stats as base stats (intiially) */
+    /* Set up other stats */
     setExp(exp);
     setLevel(lev);
     setName(nam);
@@ -136,11 +155,11 @@ void Person::setupStats(int th_a, int th_f, int po_a, int po_f, int pr_a,
     setRank(rank);
 
     /* Sets equipment pointers to NULL initially */
-    // setHeadEquipment();
-    // setLeftArmEquipment();
-    // setRightArmEquipment();
-    // setTorsoEquipment();
-    // setLegEquipment();
+    setHeadEquipment();
+    setLeftArmEquipment();
+    setRightArmEquipment();
+    setTorsoEquipment();
+    setLegEquipment();
 }
 
 /*
@@ -994,16 +1013,17 @@ int Person::getBaseUnbearability()
 /*
  * Description: Sets a given equipment on to the head of a person
  *
- * Inputs: none
+ * Inputs: Equipment* - set of head equipment to be equipped
  * Output: bool - true on successful equip
  */
 bool Person::setHeadEquipment(Equipment* new_equipment)
 {
-  if (new_equipment != NULL || new_equipment->canEquip("head"))
+  if (new_equipment == NULL)
+      return false;
+  if (new_equipment->canEquip("head"))
   {
     head = new_equipment;
-    if (head != NULL)
-      return true;
+    return true;
   }
   return false;
 }
@@ -1011,34 +1031,35 @@ bool Person::setHeadEquipment(Equipment* new_equipment)
 /*
  * Description: Sets a given equipment on to the left arm of a person
  *
- * Inputs: none
+ * Inputs: Equipment* - set of left arm equipment to be equipped
  * Output: bool - true on successful equip
  */
 bool Person::setLeftArmEquipment(Equipment* new_equipment)
 {
+  if (new_equipment == NULL)
+    return false;
   if (new_equipment->canEquip("left arm"))
   {
     left_arm = new_equipment;
-    if (legs != NULL)
-      return true;
+    return true;
   }
   return false;
-
 }
 
 /*
  * Description: Sets a given equipment on to the right arm of a person
  *
- * Inputs: none
+ * Inputs: Equipment* - set of right arm equipment to be equipped
  * Output: bool - true if equip successful
  */
 bool Person::setRightArmEquipment(Equipment* new_equipment)
 {
+  if (new_equipment == NULL)
+    return false;
   if (new_equipment->canEquip("right arm"))
   {
     right_arm = new_equipment;
-    if (right_arm != NULL)
-      return true;
+    return true;
     }
   return false;
 }
@@ -1046,15 +1067,16 @@ bool Person::setRightArmEquipment(Equipment* new_equipment)
 /*
  * Description: Sets a given equipment on to the torso of a person
  *
- * Inputs: none
+ * Inputs: Equipment* - set of torso equipment to be equipped
  * Output: bool - true if equip successful
  */
 bool Person::setTorsoEquipment(Equipment* new_equipment)
 {
+  if (new_equipment == NULL)
+    return false;
   if (new_equipment->canEquip("torso"))
   {
-  torso = new_equipment;
-  if (torso != NULL)
+    torso = new_equipment;
     return true;
   }
   return false;
@@ -1063,15 +1085,16 @@ bool Person::setTorsoEquipment(Equipment* new_equipment)
 /*
  * Description: Sets a given equipment on to the leg of a person
  *
- * Inputs: none
+ * Inputs: Equipment* - piece of leg equipment to be equipped
  * Output: bool - true if equip successful
  */
 bool Person::setLegEquipment(Equipment* new_equipment)
 {
+  if (new_equipment == NULL)
+    return false;
   if (new_equipment->canEquip("torso"))
   {
-  legs = new_equipment;
-  if (legs != NULL)
+    legs = new_equipment;
     return true;
   }
   return false;
