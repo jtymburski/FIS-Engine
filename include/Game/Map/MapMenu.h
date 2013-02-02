@@ -13,7 +13,7 @@
 #include "Game/Player/Party.h"
 
 /* The menu items */
-enum MenuItems { SLEUTH, EQUIPMENT, ITEM, STATS, SAVE, OPTIONS, EXIT};
+enum MenuItems { SLEUTH, /*EQUIPMENT,*/ ITEM, STATS, SAVE, OPTIONS, EXIT};
 
 class MapMenu : public QWidget
 {

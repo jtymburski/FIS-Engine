@@ -83,11 +83,96 @@ bool Equipment::attachBubby(Bubby* bubby, int x, int y)
  * Inputs: none
  * Output: QVector of Action pointers - the built action list
  */
-
 QVector<Action*> Equipment::getActionList()
 {
    // TODO: Actions! [01-31-13]
     return action_list;
+}
+
+/*
+ * Description: Obtains the list of actions the equipment allows the person
+ *              to perform (used for a total action list calculation in the
+ *              battle class
+ *
+ * Inputs: none
+ * Output: QVector of Action pointers - the built action list
+ */
+bool isBroken()
+{
+
+}
+
+/*
+ * Description: Obtains the list of actions the equipment allows the person
+ *              to perform (used for a total action list calculation in the
+ *              battle class
+ *
+ * Inputs: none
+ * Output: QVector of Action pointers - the built action list
+ */
+bool isMetal()
+{
+
+}
+
+/*
+ * Description: Obtains the list of actions the equipment allows the person
+ *              to perform (used for a total action list calculation in the
+ *              battle class
+ *
+ * Inputs: none
+ * Output: QVector of Action pointers - the built action list
+ */
+bool isWeapon()
+{
+    return TRUE;
+    /* return ((flags & WEAPON) == WEAPON); */
+}
+
+/*
+ * Description: Obtains the list of actions the equipment allows the person
+ *              to perform (used for a total action list calculation in the
+ *              battle class
+ *
+ * Inputs: none
+ * Output: QVector of Action pointers - the built action list
+ */
+void setBroken(bool b)
+{
+
+}
+
+/*
+ * Description: Sets the METAL flag
+ *
+ * Inputs: bool b - new value of METAL flag
+ * Output: none
+ */
+void setMetal(bool b)
+{
+    return;
+    /*
+    if (b)
+        flags = WEAPON;
+    else
+        flags = ~WEAPON;
+    */
+}
+
+/*
+ * Description: Sets the WEAPON flag
+ *
+ * Inputs: bool b - new value of WEAPON flag
+ * Output: none
+ */
+void setWeapon(bool b)
+{
+  /*
+  if (b)
+    flags = WEAPON;
+  else
+    flags = ~WEAPON;
+  */
 }
 
 /*
@@ -101,17 +186,18 @@ bool Equipment::canEquip(QString location)
 {
   if ((flags & BROKEN) == BROKEN)
     return FALSE;
-  if ((flags & HEAD) == HEAD)
+  if (location == "head" && ((flags & HEAD) == HEAD))
     return TRUE;
-  if ((flags & TORSO) == TORSO)
+  if (location == "torso" && ((flags & TORSO) == TORSO))
     return TRUE;
-  if ((flags & LEGS) == LEGS)
+  if (location == "legs" && ((flags & LEGS) == LEGS))
     return TRUE;
-  if ((flags & (TWOHAND | LEFTARM | RIGHTARM)) == (TWOHAND | LEFTARM | RIGHTARM))
+  if (location == "twohand" && ((flags & (TWOHAND | LEFTARM | RIGHTARM))
+                                     == (TWOHAND | LEFTARM | RIGHTARM)))
      return TRUE;
-  if ((flags & LEFTARM) == LEFTARM)
+  if (location == "leftarm" && ((flags & LEFTARM) == LEFTARM))
     return TRUE;
-  if ((flags & RIGHTARM) == RIGHTARM)
+  if (location == "rightarm" && ((flags & RIGHTARM) == RIGHTARM))
     return TRUE;
   return FALSE;
 }
@@ -122,7 +208,7 @@ bool Equipment::canEquip(QString location)
  * Inputs: 5 * bool - values of can be equipped at each location
  * Output: none
  */
-void Equipment::setEquipLocations(bool hd, bool la, bool ra, bool to, bool lg)
+void Equipment::setEquipLocations(bool hd, bool la, bool ra, bool to, bool lg, bool th)
 {
-  flags = HEAD | LEFTARM | RIGHTARM | TORSO | LEGS;
+  flags = HEAD | LEFTARM | RIGHTARM | TORSO | LEGS | TWOHAND;
 }

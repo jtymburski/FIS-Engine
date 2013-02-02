@@ -38,7 +38,7 @@ bool Item::isIndefinite()
 /*Gets category of unit*/
 QString Item::getCategory()
 {
-    return category;
+    return  "";
 }
 
 /*Gets unit count*/

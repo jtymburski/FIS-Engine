@@ -22,7 +22,7 @@ MainWindow::MainWindow(QWidget* parent)
   widget_stack->addWidget(test_map);
   widget_stack->addWidget(title_screen);
 
-  widget_stack->setCurrentIndex(2); // TODO (0=battle, 1=map, 2=titlescreen)
+  widget_stack->setCurrentIndex(0); // TODO (0=battle, 1=map, 2=titlescreen)
 
   setCentralWidget(widget_stack);
   show();

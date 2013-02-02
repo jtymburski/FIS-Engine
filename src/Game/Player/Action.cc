@@ -45,7 +45,7 @@ Action::~Action()
 /* Evaluates the FRIENDLY flag */
 bool Action::isFriendly()
 {
-  return FRIENDLY;
+    return TRUE;
 }
 
 /* Attempts to perform the action as defined by sequence, return false if it is invalid */

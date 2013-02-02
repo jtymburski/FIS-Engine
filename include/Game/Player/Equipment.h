@@ -59,9 +59,28 @@ public:
   /* Gets the list of useable locations of equipment */
   bool canEquip(QString location);
 
+  /* Evaluates the BROKEN flag */
+  bool isBroken();
+
+  /* Evaluates the METAL flag */
+  bool isMetal();
+
+  /* Evaluates the WEAPON flag */
+  bool isWeapon();
+
+  /* Sets the BROKEN flag */
+  void setBroken(bool b);
+
+  /* Sets the metal flag */
+  void setMetal(bool b);
+
+  /* Sets the weapon flag */
+  void setWeapon(bool b);
+
   /* Sets the list of useable locations of equipment */
   void setEquipLocations(bool hd = 0, bool la = 0, bool ra = 0,
-                         bool to = 0, bool lg = 0);
+                         bool to = 0, bool lg = 0, bool th = 0);
 };
+
 
 #endif // EQUIPMENT_H

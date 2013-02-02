@@ -71,4 +71,5 @@ enum ItemFlags
   PARTYTITEM    = 1ul << 10 /* Does the item effect all members of a party? */
 };
 
+
 #endif // ENUMDATABASE_H
