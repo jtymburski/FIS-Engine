@@ -21,3 +21,4 @@ Application::~Application()
 void Application::swapModes()
 {
 }
+

@@ -76,5 +76,14 @@
     <file alias="E_draganaraven">sprites/Battle/Battle_Persons/draganaraven.png</file>
     <file alias="E_draganaraven_M">sprites/Battle/Battle_Persons/draganaraven_modulated.png</file>
     <file alias="E_ember">sprites/Battle/Battle_Persons/ember.png</file>
+    <file alias="aurumba_AA_D00">sprites/Map/Map_Things/aurumba_AA_D00.png</file>
+    <file alias="aurumba_AA_D01">sprites/Map/Map_Things/aurumba_AA_D01.png</file>
+    <file alias="aurumba_AA_D02">sprites/Map/Map_Things/aurumba_AA_D02.png</file>
+    <file alias="aurumba_AA_S00">sprites/Map/Map_Things/aurumba_AA_S00.png</file>
+    <file alias="aurumba_AA_S01">sprites/Map/Map_Things/aurumba_AA_S01.png</file>
+    <file alias="aurumba_AA_S02">sprites/Map/Map_Things/aurumba_AA_S02.png</file>
+    <file alias="aurumba_AA_U00">sprites/Map/Map_Things/aurumba_AA_U00.png</file>
+    <file alias="aurumba_AA_U01">sprites/Map/Map_Things/aurumba_AA_U01.png</file>
+    <file alias="aurumba_AA_U02">sprites/Map/Map_Things/aurumba_AA_U02.png</file>
   </qresource>
 </RCC>
