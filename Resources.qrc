@@ -86,5 +86,6 @@
         <file alias="aurumba_AA_U01">sprites/Map/Map_Things/aurumba_AA_U01.png</file>
         <file alias="aurumba_AA_U02">sprites/Map/Map_Things/aurumba_AA_U02.png</file>
         <file alias="statusbar">sprites/Battle/statusbar.png</file>
+        <file alias="A_turbo_fish">sprites/Battle/Backs/turbofish.png</file>
     </qresource>
 </RCC>
