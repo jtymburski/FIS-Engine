@@ -62,7 +62,7 @@ void MainWindow::setupBattle()
 
   Sprite* main_char_fp = new Sprite(":/A_player");
   Sprite* arcadius_fp = new Sprite(":/A_arcadius");
-  Sprite* ladybear_fp = new Sprite(":/A_ladybear");
+  Sprite* ladybear_fp = new Sprite(":/A_turbo_fish");
   Sprite* aurumba_fp = new Sprite(":/A_aurumba");
   Sprite* berfriegg_fp = new Sprite(":/A_berfriegg");
   Sprite* cloud_dude_tp = new Sprite(":/E_cloud_thing");

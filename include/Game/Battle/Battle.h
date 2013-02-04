@@ -125,6 +125,9 @@ private:
   /* Backdrop for the battle */
   QPixmap* battle_bg;
 
+  /* Battle Status Bar Image */
+  QPixmap* battle_status_bar_image;
+
   /* Ally Bounding Boxes */
   QVector<QRect*> ally_box;
 

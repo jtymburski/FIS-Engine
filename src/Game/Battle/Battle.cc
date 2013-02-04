@@ -84,17 +84,20 @@ Battle::Battle(Party* p_friends, Party* p_foes, QWidget* pointer)
   battle_bg = new QPixmap();
   battle_bg->load(":/bbd_sewers");
 
+  battle_status_bar_image = new QPixmap();
+  battle_status_bar_image->load(":/statusbar");
+
   /* Create and place enemy bounding boxes */
   for (int i = 0; i < 5; i++)
-    enemy_box.push_back(new QRect(100 + 200 * i,170 - 5 * i, 500,500));
+    enemy_box.push_back(new QRect(64 + 224 * i,64, 256, 256));
 
   /* Create and place ally bounding boxes */
-  int top_d  = floor(0.7 * getMaxHeight());
-  int ally_w = floor(0.13 * getMaxWidth());
-  int ally_h = floor(0.3 * getMaxHeight());
+  int top_d  = floor(0.52 * getMaxHeight());
+  int ally_w = floor(0.21 * getMaxWidth());
+  int ally_h = floor(0.3636 * getMaxHeight());
 
   for (int i = 0; i < 5; i++)
-    ally_box.push_back(new QRect((ally_w * i) - 10 * i,top_d,ally_w,ally_h));
+    ally_box.push_back(new QRect((ally_w * i) - 32 * i,top_d,ally_w,ally_h));
 
   /* Call paint event and show screen */
   update();
@@ -126,15 +129,6 @@ void Battle::paintEvent(QPaintEvent*)
   int info_height = 0.05 * max_height;
   painter.drawRect(0,0,max_width,info_height);
 
-  /* Temp paint for battle menu */
-  int menu_height = floor(0.21 * max_height);
-  int menu_width = max_width - floor(5 * 0.12 * max_width);
-  painter.drawRect(729, 704-menu_height, menu_width, menu_height);
-
-  /* Temp paint for battle status bars */
-  menu_height = floor(0.18 * max_height);
-  painter.drawRect(729, 540-menu_height, menu_width, menu_height);
-
   /* Draw sprites for allies and foes (if they exist) */
   for (int i = 0; i < 5; i++)
   {
@@ -150,8 +144,7 @@ void Battle::paintEvent(QPaintEvent*)
       painter.drawPixmap(*enemy_box[i],p->getThirdPerson()->getCurrent());
     }
   }
-
-
+  painter.drawPixmap(0,576,*battle_status_bar_image);
 }
 
 /*

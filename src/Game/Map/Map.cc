@@ -73,13 +73,17 @@ Map::Map(QWidget* parent)
       else if(i == 9 && j == 5)
         t->setLower(":/ulterius_AA_U00");
       else if(i == 9 && j == 4)
+        t->setLower(":/aurumba_AA_U00");
+      else if(i == 9 && j == 3)
         t->setLower(":/main_AA_U00");
       else if(i == 10 && j == 6)
         t->setLower(":/ulterius_AA_D00");
       else if(i == 10 && j == 5)
-        t->setLower(":/arcadius_AA_D00");
+        t->setLower(":/aurumba_AA_D00");
       else if(i == 10 && j == 4)
         t->setLower(":/main_AA_D00");
+      else if(i == 10 && j == 3)
+        t->setLower(":/arcadius_AA_D00");
 
       /* Setup the upper sprites */
       if((i == 4 && j == 8) || (i == 5 && j == 8) || (i == 7 && j == 5))
