@@ -11,7 +11,6 @@
 #define EQUIPMENT_H
 
 #include <QVector>
-
 #include "EnumDatabase.h"
 #include "Game/Player/Action.h"
 #include "Game/Player/Bubby.h"
@@ -26,6 +25,24 @@ public:
   /* Destructor function*/
   ~Equipment();
 
+  /* Enumerated flags for Equipment */
+  enum EquipmentState
+  {
+    WEAPON     = 1ul << 0, /* Is the item a weapon? */
+    METAL      = 1ul << 1, /* Is the equipment metal? */
+    BROKEN     = 1ul << 2, /* Is the item currently equippable? */
+    HEAD       = 1ul << 3, /* Can be attached to the head */
+    LEFTARM    = 1ul << 4, /* Can be attached to the left arm */
+    RIGHTARM   = 1ul << 5, /* Can be attached to the right arm */
+    TORSO      = 1ul << 6, /* Can be attached to torso */
+    LEGS       = 1ul << 7, /* Can be attached to legs slot */
+    TWOHAND    = 1ul << 8, /* Does the item require both hands? */
+    EQUIPPED   = 1ul << 9  /* Is the item currently equipped to a person? */
+  };
+  Q_DECLARE_FLAGS(EquipmentFlags, EquipmentState);
+  EquipmentFlags flagset;
+
+
 private:
   /* 2D 9x9 array for bubby signature*/
   Bubby* bubby_signature[9][9];
@@ -36,51 +53,36 @@ private:
   /* A parallel list that shows when actions become available (Based on level)*/
   QVector<unsigned short> action_available;
 
-  /* Equipment flags */
-  unsigned int flags;
-
 public:
-  /* Clears the action list */
-  void clearActionList();
-
   /* Checks if the bubby will fit into the bubby signature
    * X is the left most coordinate, Y is the top most coordinate
    * Returns if space is available for attachment */
-  bool isBubbyAttachable(Bubby* b, int x, int y);
+  bool isBubbyAttachable(Bubby* b, uint x, uint y);
 
   /* Attempt to attach bubby into the signature
    * X is the left most coordinate, Y is the top most coordinate
    * Returns status of attachment */
-  bool attachBubby(Bubby* b, int x, int y);
-
-  /* Gets the list of equipment actions (Used for total action lists in battle)*/
-  QVector<Action*> getActionList();
+  bool attachBubby(Bubby* b, uint x, uint y);
 
   /* Gets the list of useable locations of equipment */
   bool canEquip(QString location);
 
-  /* Evaluates the BROKEN flag */
-  bool isBroken();
+  /* Gets the list of equipment actions (Used for total action lists in battle)*/
+  QVector<Action*> getActionList();
 
-  /* Evaluates the METAL flag */
-  bool isMetal();
+  /* Clears the action list */
+  void clearActionList();
 
-  /* Evaluates the WEAPON flag */
-  bool isWeapon();
+  /* Toggles an EquipmentState flag */
+  void toggleEquipmentFlag(EquipmentState flags);
 
-  /* Sets the BROKEN flag */
-  void setBroken(bool b);
+  /* Gets the boolean value of flag */
+  const bool getEquipmentFlag(EquipmentState flags);
 
-  /* Sets the metal flag */
-  void setMetal(bool b);
-
-  /* Sets the weapon flag */
-  void setWeapon(bool b);
-
-  /* Sets the list of useable locations of equipment */
-  void setEquipLocations(bool hd = 0, bool la = 0, bool ra = 0,
-                         bool to = 0, bool lg = 0, bool th = 0);
+  /* Sets the value of a flag */
+  void setEquipmentFlag(EquipmentState flags, const bool set_value);
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(Equipment::EquipmentFlags);
 
 
 #endif // EQUIPMENT_H

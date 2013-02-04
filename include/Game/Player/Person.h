@@ -19,171 +19,239 @@
 
 class Person : public QWidget
 {
+
+
 public:
   /* Constructor for a person object */
-  Person(int th_a = 5, int th_f = 2, int po_a = 5, int po_f = 2, int pr_a = 5,
-         int pr_f = 2, int ch_a = 5, int ch_f = 2, int cy_a = 5, int cy_f = 2,
-         int ni_a = 5, int ni_f = 2, int vit = 300, int qd = 15, int ag = 7,
-         int lim = 7,  int unb = 7,  int lev = 5, int exp = 200,
-         QString name = "Person", QString prim = "CYA",
+  Person(uint ph_a = 5, uint ph_d = 2, uint th_a = 5, uint th_f = 2, uint po_a = 5,
+         uint po_f = 2, uint pr_a = 5, uint pr_f = 2, uint ch_a = 5, uint ch_f = 2,
+         uint cy_a = 5, uint cy_f = 2, uint ni_a = 5, uint ni_f = 2, uint vit = 300,
+         uint qd = 15,  uint ag = 7,   uint lim = 7,  uint unb = 7,  uint lev = 5,
+         uint exp = 200, QString name = "Person", QString prim = "CYA",
          QString secd = "POB", QString rank = "Recruit", QWidget* pointer = 0);
 
   /* Annihilates a person object */
   ~Person();
 
+  /* Enumerated flags for states of a person */
+  enum PersonState
+  {
+    ALIVE     = 1 << 0, /* Is the person alive? */
+    INBATTLE  = 1 << 1,  /* Is the person in a battle? */
+    SLEUTH    = 1 << 2,
+    BEARACKS  = 1 << 3,
+    RENDERING = 1 << 4
+  };
+  Q_DECLARE_FLAGS(PersonFlags, PersonState);
+
+  /* Enumerated flags for status ailments */
+  enum StatusAilment
+  {
+    CLEAR            = 1 << 0,  /* Is the person to be clear of all status ailments? */
+    POISONED         = 1 << 1,
+    BURNED1          = 1 << 2,  /* 1st Degree Burn */
+    BURNED2          = 1 << 3,  /* 2nd Degree Burn */
+    BURNED3          = 1 << 4,  /* 3rd Degree Burn */
+    BERSERK          = 1 << 5,
+    CONFUSE          = 1 << 6,
+    SILENCE          = 1 << 7,
+    SLOW             = 1 << 8,
+    BUBBIFY          = 1 << 9,
+    DEATHTIMER       = 1 << 10,
+    PARALYSIS        = 1 << 11,
+    BLINDNESS        = 1 << 12,
+    DREADSTRUCK      = 1 << 13,
+    DREAMSNARED      = 1 << 14,
+    HELLBOUND        = 1 << 15,
+    BONDED           = 1 << 16,
+    PHYSICALATKBUFF  = 1 << 17,
+    PHYSICALDEFBUFF  = 1 << 18,
+    PRIMARYATKBUFF   = 1 << 19,
+    PRIMARYDEFBUFF   = 1 << 20,
+    SECONDARYATKBUFF = 1 << 21,
+    SECONDARYDEFBUFF = 1 << 22,
+    ALLDEFBUFF       = 1 << 23,
+    HEALTHBUFF       = 1 << 24,
+    QDBUFF           = 1 << 25,
+    ROOTBOUND        = 1 << 26,
+    DOUBLECAST       = 1 << 27,
+    TRIPLECAST       = 1 << 28,
+    HALFCOST         = 1 << 29
+  };
+  Q_DECLARE_FLAGS(StatusFlags, StatusAilment);
+
 private:
+
+  /* Physical atk stat */
+  uint physical_aggression;
+
+  /* Physical def stat */
+  uint physical_fortitude;
+
   /* Fire atk stat */
-  int thermal_aggression; 
+  uint thermal_aggression;
 
   /* Fire def stat */
-  int thermal_fortitude;
+  uint thermal_fortitude;
 
   /* Ice atk stat */
-  int polar_aggression; 
+  uint polar_aggression;
 
   /* Ice def stat */
-  int polar_fortitude; 
+  uint polar_fortitude;
 
   /* Forest atk stat */
-  int primal_aggression; 
+  uint primal_aggression;
 
   /* Forest def stat */
-  int primal_fortitude; 
+  uint primal_fortitude;
 
   /* Electric atk stat */
-  int charged_aggression; 
+  uint charged_aggression;
 
   /* Electric def stat */
-  int charged_fortitude;
+  uint charged_fortitude;
 
   /* Digital atk stat */
-  int cybernetic_aggression; 
+  uint cybernetic_aggression;
 
   /* Digital def stat */
-  int cybernetic_fortitude; 
+  uint cybernetic_fortitude;
 
   /* Void atk stat */
-  int nihil_aggression; 
+  uint nihil_aggression;
 
   /* Void def stat */
-  int nihil_fortitude; 
+  uint nihil_fortitude;
 
   /* Health stat */
-  int vitality; 
+  uint vitality;
 
   /* Quantum drive (MP), shown as percentage */
-  int quantum_drive;
+  uint quantum_drive;
 
   /* Speed stat */
-  int agility; 
+  uint agility;
 
   /* Dodge stat */
-  int limbertude;
+  uint limbertude;
 
   /* Critical chance stat */
-  int unbearability; 
+  uint unbearability;
+
+  /* Temporary physical atk stat */
+  uint temp_physical_aggression;
+
+  /* Temporary physical def stat */
+  uint temp_physical_fortitude;
 
   /* Temporary fire atk stat */
-  int temp_thermal_aggression;
+  uint temp_thermal_aggression;
 
   /* Temporaryfire def stat */
-  int temp_thermal_fortitude;
+  uint temp_thermal_fortitude;
 
   /* Temporary ice atk stat */
-  int temp_polar_aggression;
+  uint temp_polar_aggression;
 
   /* Temporary ice def stat */
-  int temp_polar_fortitude;
+  uint temp_polar_fortitude;
 
   /* Temporary forest atk stat */
-  int temp_primal_aggression;
+  uint temp_primal_aggression;
 
   /* Temporary forest def stat */
-  int temp_primal_fortitude;
+  uint temp_primal_fortitude;
 
   /* Temporary electric atk stat */
-  int temp_charged_aggression;
+  uint temp_charged_aggression;
 
   /* Temporary electri def stat */
-  int temp_charged_fortitude;
+  uint temp_charged_fortitude;
 
   /* Temporary digital atk stat */
-  int temp_cybernetic_aggression;
+  uint temp_cybernetic_aggression;
 
   /* Temporary digital def stat */
-  int temp_cybernetic_fortitude;
+  uint temp_cybernetic_fortitude;
 
   /* Temporary void atk stat */
-  int temp_nihil_aggression;
+  uint temp_nihil_aggression;
 
   /* Temporary void def stat */
-  int temp_nihil_fortitude;
+  uint temp_nihil_fortitude;
 
   /* Temporary health stat */
-  int temp_vitality;
+  uint temp_vitality;
 
   /* Temporary power points (MP) stat */
-  int temp_quantum_drive;
+  uint temp_quantum_drive;
 
   /* Temporary speed stat */
-  int temp_agility;
+  uint temp_agility;
 
   /* Temporary dodge_chance stat */
-  int temp_limbertude;
+  uint temp_limbertude;
 
   /* Temporary crit chance stat */
-  int temp_unbearability;
+  uint temp_unbearability;
+
+  /* Base physical atk stat */
+  uint base_physical_aggression;
+
+  /* Base physical def stat */
+  uint base_physical_fortitude;
 
   /* Base fire atk stat */
-  int base_thermal_aggression;
+  uint base_thermal_aggression;
 
   /* Base def stat */
-  int base_thermal_fortitude;
+  uint base_thermal_fortitude;
 
   /* Base ice atk stat */
-  int base_polar_aggression;
+  uint base_polar_aggression;
 
   /* Base ice def stat */
-  int base_polar_fortitude;
+  uint base_polar_fortitude;
 
   /* Base forest atk stat */
-  int base_primal_aggression;
+  uint base_primal_aggression;
 
   /* Base forest def stat */
-  int base_primal_fortitude;
+  uint base_primal_fortitude;
 
   /* Base electric atk stat */
-  int base_charged_aggression;
+  uint base_charged_aggression;
 
   /* Base electri def stat */
-  int base_charged_fortitude;
+  uint base_charged_fortitude;
 
   /* Base digital atk stat */
-  int base_cybernetic_aggression;
+  uint base_cybernetic_aggression;
 
   /* Base digital def stat */
-  int base_cybernetic_fortitude;
+  uint base_cybernetic_fortitude;
 
   /* Base void atk stat */
-  int base_nihil_aggression;
+  uint base_nihil_aggression;
 
   /* Base void def stat */
-  int base_nihil_fortitude;
+  uint base_nihil_fortitude;
 
   /* Base health stat */
-  int base_vitality;
+  uint base_vitality;
 
   /* Base power points (MP) stat */
-  int base_quantum_drive;
+  uint base_quantum_drive;
 
   /* Base speed stat */
-  int base_agility;
+  uint base_agility;
 
   /* Base dodge_chance stat */
-  int base_limbertude;
+  uint base_limbertude;
 
   /* Base crit chance stat */
-  int base_unbearability;
+  uint base_unbearability;
 
   /* Currently equipped head piece */
   Equipment* head;
@@ -201,7 +269,7 @@ private:
   Equipment* torso;
 
   /* Person's level and experience */
-  int level, experience;
+  uint level, experience;
 
   /* The person's class */
   Category* character_class; 
@@ -212,13 +280,19 @@ private:
   /* Person's word ranking */
   QString rank;
 
+  /* Set of flags for the person */
+  PersonFlags state_set;
+
+  /* Set the status ailment flags for the person */
+  StatusFlags ailment_set;
+
   /* List of actions that the person has */
   QVector<Action*> action_list;
 
   /* Parallel list of when person's actions become available */
   QVector<int>  action_available;
 
-  /* List of status ailment Strings */
+  /* List of status ailment strings */
   QVector<QString> status_ailment_list;
 
   /* The person's name */
@@ -236,48 +310,43 @@ private:
   /* The persons' secondary elemental strenth curve */
   QChar secondary_curve;
 
-  /* First and third person sprites */
+  /* Sprites for the person, first person and third person versions */
   Sprite* first_person;
   Sprite* third_person;
 
   /* Set up stats for constructor */
-  void setupStats(int th_a = 5, int th_f = 2, int po_a = 5, int po_f = 2,
-                  int pr_a = 5, int pr_f = 2, int ch_a = 5, int ch_f = 2,
-                  int cy_a = 5, int cy_f = 2, int ni_a = 5, int ni_f = 2,
-                  int vit = 300, int qd = 15, int ag = 7, int lim = 7,
-                  int unb = 7,  int lev = 5, int exp = 200,
+  void setupStats(uint ph_a = 5, uint ph_f = 2, uint th_a = 5, uint th_f = 2, uint po_a = 5, uint po_f = 2,
+                  uint pr_a = 5, uint pr_f = 2, uint ch_a = 5, uint ch_f = 2,
+                  uint cy_a = 5, uint cy_f = 2, uint ni_a = 5, uint ni_f = 2,
+                  uint vit = 300, uint qd = 15, uint ag = 7, uint lim = 7,
+                  uint unb = 7,  uint lev = 5, uint exp = 200,
                   QString name = "Person", QString prim = "CYA",
-                  QString secd = "POB", QString rank = "Recruit");
-
-  /* Flags */
-
-  /* The status ailments the person can have (not complete) */
-  bool status_ailment; //TODO: NOT FINISHED
-
-  /* Flag for if the person is rendering or not */
-  bool RENDERING; 
+                  QString secd = "POB", QString rank = "Recruit", QWidget* pointer = 0);
 
 public:
   /* Adds an equipment to the given person */
   bool addEquipment(Equipment* equipment);
 
   /* Adds experience of a given amount */
-  void addExperience(int n);
-
-  /* Sets up total and temporary stats */
-  void initiateForBattle(); //Sets up temp stats and total stats
-
-  /* Checks the given status ailment status */
-  bool isStatusAilment(QString s);
+  void addExperience(uint n);
 
   /* Use a given item */
   bool useItem(Item* used_item);
 
+  /* Toggles a StatusAilments flag */
+  void toggleAilment(StatusAilment flags);
+
+  /* Toggles a PersonState flag */
+  void togglePersonFlag(PersonState flags);
+
+  /* Evaluates the boolean value of a StatusAilment */
+  const bool getAilment(StatusAilment flags);
+
+  /* Gets the boolean value of PersonState flag */
+  const bool getPersonFlag(PersonState flags);
+
   /* Returns the available actions of the person */
   QVector<Action*>& getAvailableActions();
-
-  /* Evaluates the RENDERING flag */
-  bool getRendering();
 
   /* Gets the person's category */
   Category* getCategory();
@@ -301,10 +370,10 @@ public:
   Equipment* getTorsoEquipment();
 
   /* Gets the person's experience */
-  int getExp();
+  uint getExp();
 
   /* Gets the person's level */
-  int getLevel();
+  uint getLevel();
 
   /* Gets the persons name (set in construction and never again) */
   QString getName();
@@ -330,182 +399,206 @@ public:
   /* Gets the third person person sprite */
   Sprite* getThirdPerson();
 
+  /* Gets the physical atk stat */
+  uint getPhysicalAggression();
+
+  /* Sets the physical def stat */
+  uint getPhysicalFortitude();
+
   /* Gets the fire attack stat */
-  int getThermalAggression();
+  uint getThermalAggression();
 
   /* Gets the fire defense stat */
-  int getThermalFortitude();
+  uint getThermalFortitude();
 
   /* Gets the ice attack stat */
-  int getPolarAggression();
+  uint getPolarAggression();
 
   /* Gets the ice defense stat */
-  int getPolarFortitude();
+  uint getPolarFortitude();
 
   /* Gets the forest attack stat */
-  int getPrimalAggression();
+  uint getPrimalAggression();
 
   /* Gets the forest defense stat */
-  int getPrimalFortitude();
+  uint getPrimalFortitude();
 
   /* Gets the electric attack stat */
-  int getChargedAggression();
+  uint getChargedAggression();
 
   /* Gets the electric defense stat */
-  int getChargedFortitude();
+  uint getChargedFortitude();
 
   /* Gets the digital attack stat */
-  int getCyberneticAggression();
+  uint getCyberneticAggression();
 
   /* Gets the digital defense stat */
-  int getCyberneticFortitude();
+  uint getCyberneticFortitude();
 
   /* Gets the void attack stat */
-  int getNihilAggression();
+  uint getNihilAggression();
 
   /* Gets the void defense stat */
-  int getNihilFortitude();
+  uint getNihilFortitude();
 
   /* Gets the health stat */
-  int getVitality();
+  uint getVitality();
 
   /* Gets the power points (shown as a percentage) */
-  int getQuantumDrive();
+  uint getQuantumDrive();
 
   /* Gets the speed stat */
-  int getAgility();
+  uint getAgility();
 
   /* Gets the dodge stat */
-  int getLimbertude();
+  uint getLimbertude();
 
    /* Gets the critical chance stat */
-  int getUnbearability();
+  uint getUnbearability();
+
+  /* Sets the temp physical atk stat */
+  uint getTempPhysicalAggression();
+
+  /* Sets the temp physical def stat */
+  uint getTempPhysicalFortitude();
 
   /* Gets the fire atk stat */
-  int getTempThermalAggression();
+  uint getTempThermalAggression();
 
   /* Gets the fire def stat */
-  int getTempThermalFortitude();
+  uint getTempThermalFortitude();
 
   /* Gets the ice atk stat */
-  int getTempPolarAggression();
+  uint getTempPolarAggression();
 
   /* Gets the ice def stat */
-  int getTempPolarFortitude();
+  uint getTempPolarFortitude();
 
   /* Gets the forest atk stat */
-  int getTempPrimalAggression();
+  uint getTempPrimalAggression();
 
   /* Gets the forest def stat */
-  int getTempPrimalFortitude();
+  uint getTempPrimalFortitude();
 
   /* Gets the electric atk stat */
-  int getTempChargedAggression();
+  uint getTempChargedAggression();
 
   /* Gets the electric def stat */
-  int getTempChargedFortitude();
+  uint getTempChargedFortitude();
 
   /* Gets the digital atk stat */
-  int getTempCyberneticAggression();
+  uint getTempCyberneticAggression();
 
   /* Gets the digital def stat */
-  int getTempCyberneticFortitude();
+  uint getTempCyberneticFortitude();
 
   /* Gets the void atk stat */
-  int getTempNihilAggression();
+  uint getTempNihilAggression();
 
   /* Gets the void def stat */
-  int getTempNihilFortitude();
+  uint getTempNihilFortitude();
 
   /* Gets the health stat */
-  int getTempVitality();
+  uint getTempVitality();
 
   /* Gets the power points (shown as a percentage) */
-  int getTempQuantumDrive();
+  uint getTempQuantumDrive();
 
   /* Gets the speed stat */
-  int getTempAgility();
+  uint getTempAgility();
 
   /* Gets the avoidance stat */
-  int getTempLimbertude();
+  uint getTempLimbertude();
 
   /* Gets the critcial chance stat */
-  int getTempUnbearability();
+  uint getTempUnbearability();
+
+  /* Sets the base physical atk stat */
+  uint getBasePhysicalAggression();
+
+  /* Sets the base physical def stat */
+  uint getBasePhysicalFortitude();
 
   /* Gets the fire atk stat */
-  int getBaseThermalAggression();
+  uint getBaseThermalAggression();
 
   /* Gets the fire def stat */
-  int getBaseThermalFortitude();
+  uint getBaseThermalFortitude();
 
   /* Gets the ice atk stat */
-  int getBasePolarAggression();
+  uint getBasePolarAggression();
 
   /* Gets the ice def stat */
-  int getBasePolarFortitude();
+  uint getBasePolarFortitude();
 
   /* Gets the forest atk stat */
-  int getBasePrimalAggression();
+  uint getBasePrimalAggression();
 
   /* Gets the forest def stat */
-  int getBasePrimalFortitude();
+  uint getBasePrimalFortitude();
 
   /* Gets the electric atk stat */
-  int getBaseChargedAggression();
+  uint getBaseChargedAggression();
 
   /* Gets the electric def stat */
-  int getBaseChargedFortitude();
+  uint getBaseChargedFortitude();
 
   /* Gets the digital atk stat */
-  int getBaseCyberneticAggression();
+  uint getBaseCyberneticAggression();
 
   /* Gets the digital def stat */
-  int getBaseCyberneticFortitude();
+  uint getBaseCyberneticFortitude();
 
   /* Gets the void atk stat */
-  int getBaseNihilAggression();
+  uint getBaseNihilAggression();
 
   /* Gets the void def stat */
-  int getBaseNihilFortitude();
+  uint getBaseNihilFortitude();
 
   /* Gets the health stat */
-  int getBaseVitality();
+  uint getBaseVitality();
 
   /* Gets the power points (shown as a percentage) */
-  int getBaseQuantumDrive();
+  uint getBaseQuantumDrive();
 
   /* Gets the speed stat */
-  int getBaseAgility();
+  uint getBaseAgility();
 
   /* Gets the avoidance stat */
-  int getBaseLimbertude();
+  uint getBaseLimbertude();
 
   /* Gets the critcial chance stat */
-  int getBaseUnbearability();
+  uint getBaseUnbearability();
+
+  /* Sets the value of a status ailment */
+  void setAilment(StatusAilment flags, const bool set_value);
+
+  /* Sets the value of a PersonState flag */
+  void setPersonFlag(PersonState flags, const bool set_value);
 
   /* Sets the head equipment */
-  bool setHeadEquipment(Equipment* e = NULL);
+  const bool setHeadEquipment(Equipment* e = NULL);
 
   /* Sets the left arm equipmet */
-  bool setLeftArmEquipment(Equipment* e = NULL);
+  const bool setLeftArmEquipment(Equipment* e = NULL);
 
   /* Sets the right arm equipment */
-  bool setRightArmEquipment(Equipment* e = NULL);
+  const bool setRightArmEquipment(Equipment* e = NULL);
 
   /* Sets the leg equipment */
-  bool setLegEquipment(Equipment* e = NULL);
+  const bool setLegEquipment(Equipment* e = NULL);
 
   /* Sets the torso equipment */
-  bool setTorsoEquipment(Equipment* e = NULL);
+  const bool setTorsoEquipment(Equipment* e = NULL);
 
   /* Sets the person's category */
   void setCategory(Category* c);
 
   /* Set's the person's experience */
-  void setExp(int);
+  void setExp(uint value);
 
   /* Sets the person's level */
-  void setLevel(int);
+  void setLevel(uint new_level);
 
   /* Sets the person's level */
   void setName(QString value);
@@ -522,9 +615,6 @@ public:
   /* Sets the person's curve level for their secondary elemental strength */
   void setSecondaryCurve(QChar value);
 
-  /* Sets the given status ailment */
-  void setStatusAilment(bool b, int ailment_index);
-
   /* Sets the person's race */
   void setRace(Race* r);
 
@@ -532,166 +622,187 @@ public:
   void setRank(QString rank);
 
   /* Sets the first person sprite */
-  void setFirstPerson(Sprite* s);
+  void setFirstPerson(Sprite* s = NULL);
 
   /* Sets the third person sprite */
-  void setThirdPerson(Sprite* s);
+  void setThirdPerson(Sprite* s = NULL);
 
-  /* Sets the RENDERING flag */
-  void setRendering(bool b);
+  /* Sets temporary stats as current stats */
+  void setTemporaryStats();
+
+  /* Sets the base stats as current stats */
+  void setBaseStats();
+
+  /* Sets the physical atk stat */
+  void setPhysicalAggression(uint value);
+
+  /* Sets the physical def stat */
+  void setPhysicalFortitude(uint value);
 
   /* Sets the fire attack stat */
-  void setThermalAggression(int value);
+  void setThermalAggression(uint value);
 
   /* Sets the fire defense stat */
-  void setThermalFortitude(int value);
+  void setThermalFortitude(uint value);
 
   /* Sets the ice attack stat */
-  void setPolarAggression(int value);
+  void setPolarAggression(uint value);
 
   /* Sets the ice defense stat */
-  void setPolarFortitude(int value);
+  void setPolarFortitude(uint value);
 
   /* Sets the forest attack stat */
-  void setPrimalAggression(int value);
+  void setPrimalAggression(uint value);
 
   /* Sets the forest defense stat */
-  void setPrimalFortitude(int value);
+  void setPrimalFortitude(uint value);
 
   /* Sets the electric attack stat */
-  void setChargedAggression(int value);
+  void setChargedAggression(uint value);
 
   /* Sets the electric defense stat */
-  void setChargedFortitude(int value);
+  void setChargedFortitude(uint value);
 
   /* Sets the digital attack stat */
-  void setCyberneticAggression(int value);
+  void setCyberneticAggression(uint value);
 
   /* Sets the digital defense stat */
-  void setCyberneticFortitude(int value);
+  void setCyberneticFortitude(uint value);
 
   /* Sets the void attack stat */
-  void setNihilAggression(int value);
+  void setNihilAggression(uint value);
 
   /* Sets the void defense stat */
-  void setNihilFortitude(int value);
+  void setNihilFortitude(uint value);
 
   /* Sets the health stat */
-  void setVitality(int value);
+  void setVitality(uint value);
 
   /* Sets the power points (shown as percentage) */
-  void setQuantumDrive(int value);
+  void setQuantumDrive(uint value);
 
   /* Sets the speed stat */
-  void setAgility(int value);
+  void setAgility(uint value);
 
   /* Sets the dodge stat */
-  void setLimbertude(int value);
+  void setLimbertude(uint value);
 
   /* Sets the critical chance stat */
-  void setUnbearability(int value);
+  void setUnbearability(uint value);
+
+  /* Sets the temp physical atk stat */
+  void setTempPhysicalAggression(uint value);
+
+  /* Sets the temp physical def stat */
+  void setTempPhysicalFortitude(uint vaule);
 
   /* Sets the temp fire attack stat */
-  void setTempThermalAggression(int value);
+  void setTempThermalAggression(uint value);
 
   /* Sets the temp fire def stat */
-  void setTempThermalFortitude(int value);
+  void setTempThermalFortitude(uint value);
 
   /* Sets the temp ice atk stat */
-  void setTempPolarAggression(int value);
+  void setTempPolarAggression(uint value);
 
    /* Sets the temp ice def stat */
-  void setTempPolarFortitude(int value);
+  void setTempPolarFortitude(uint value);
 
   /* Sets the temp forest atk stat */
-  void setTempPrimalAggression(int value);
+  void setTempPrimalAggression(uint value);
 
   /* Sets the temp forest def stat */
-  void setTempPrimalFortitude(int value);
+  void setTempPrimalFortitude(uint value);
 
   /* Sets the temp electric atk stat */
-  void setTempChargedAggression(int value);
+  void setTempChargedAggression(uint value);
 
   /* Sets the temp electric def stat */
-  void setTempChargedFortitude(int value);
+  void setTempChargedFortitude(uint value);
 
   /* Sets the temp digital atk stat */
-  void setTempCyberneticAggression(int value);
+  void setTempCyberneticAggression(uint value);
 
   /* Sets the temp digital def stat */
-  void setTempCyberneticFortitude(int value);
+  void setTempCyberneticFortitude(uint value);
 
   /* Setst the temp void atk stat */
-  void setTempNihilAggression(int value);
+  void setTempNihilAggression(uint value);
 
   /* Sets the temp void def stat */
-  void setTempNihilFortitude(int value);
+  void setTempNihilFortitude(uint value);
 
   /* Sets the temp health stat */
-  void setTempVitality(int value);
+  void setTempVitality(uint value);
 
   /* Sets the temp power points (shown as percentage) */
-  void setTempQuantumDrive(int value);
+  void setTempQuantumDrive(uint value);
 
   /* Sets the temp speed stat */
-  void setTempAgility(int value);
+  void setTempAgility(uint value);
 
   /* Sets the temp avoidance stat */
-  void setTempLimbertude(int value);
+  void setTempLimbertude(uint value);
 
   /* Sets the temp critical chance stat */
-  void setTempUnbearability(int value);
+  void setTempUnbearability(uint value);
+
+  /* Sets the base physical atk stat */
+  void setBasePhysicalAggression(uint value);
+
+  /* Sets the base physical def stat */
+  void setBasePhysicalFortitude(uint value);
 
   /* Sets the Base fire attack stat */
-  void setBaseThermalAggression(int value);
+  void setBaseThermalAggression(uint value);
 
   /* Sets the Base fire def stat */
-  void setBaseThermalFortitude(int value);
+  void setBaseThermalFortitude(uint value);
 
   /* Sets the Base ice atk stat */
-  void setBasePolarAggression(int value);
+  void setBasePolarAggression(uint value);
 
    /* Sets the Base ice def stat */
-  void setBasePolarFortitude(int value);
+  void setBasePolarFortitude(uint value);
 
   /* Sets the Base forest atk stat */
-  void setBasePrimalAggression(int value);
+  void setBasePrimalAggression(uint value);
 
   /* Sets the Base forest def stat */
-  void setBasePrimalFortitude(int value);
+  void setBasePrimalFortitude(uint value);
 
   /* Sets the Base electric atk stat */
-  void setBaseChargedAggression(int value);
+  void setBaseChargedAggression(uint value);
 
   /* Sets the Base electric def stat */
-  void setBaseChargedFortitude(int value);
+  void setBaseChargedFortitude(uint value);
 
   /* Sets the Base digital atk stat */
-  void setBaseCyberneticAggression(int value);
+  void setBaseCyberneticAggression(uint value);
 
   /* Sets the Base digital def stat */
-  void setBaseCyberneticFortitude(int value);
+  void setBaseCyberneticFortitude(uint value);
 
   /* Setst the Base void atk stat */
-  void setBaseNihilAggression(int value);
+  void setBaseNihilAggression(uint value);
 
   /* Sets the Base void def stat */
-  void setBaseNihilFortitude(int value);
+  void setBaseNihilFortitude(uint value);
 
   /* Sets the Base health stat */
-  void setBaseVitality(int value);
+  void setBaseVitality(uint value);
 
   /* Sets the Base power points (shown as percentage) */
-  void setBaseQuantumDrive(int value);
+  void setBaseQuantumDrive(uint value);
 
   /* Sets the Base speed stat */
-  void setBaseAgility(int value);
+  void setBaseAgility(uint value);
 
   /* Sets the Base avoidance stat */
-  void setBaseLimbertude(int value);
+  void setBaseLimbertude(uint value);
 
   /* Sets the Base critical chance stat */
-  void setBaseUnbearability(int value);
+  void setBaseUnbearability(uint value);
 };
 
 #endif // PERSON_H

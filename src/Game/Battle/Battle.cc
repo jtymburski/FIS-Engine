@@ -86,7 +86,7 @@ Battle::Battle(Party* p_friends, Party* p_foes, QWidget* pointer)
 
   /* Create and place enemy bounding boxes */
   for (int i = 0; i < 5; i++)
-    enemy_box.push_back(new QRect(100 + 200 * i,170 - 5 * i, 200, 200));
+    enemy_box.push_back(new QRect(100 + 200 * i,170 - 5 * i, 500,500));
 
   /* Create and place ally bounding boxes */
   int top_d  = floor(0.7 * getMaxHeight());

@@ -18,7 +18,7 @@
  */
 Equipment::Equipment()
 {
-    setEquipLocations();
+
 }
 
 /*
@@ -27,12 +27,12 @@ Equipment::Equipment()
 Equipment::~Equipment()
 {
   clearActionList();
-  for (int i = 0; i < 9; i++)
+  for (uint x = 0; x < 9; x++)
   {
-    for (int j = 0; j < 9; i++)
+    for (uint y = 0; y < 9; y++)
     {
-      delete bubby_signature[i][j];
-      bubby_signature[i][j] = NULL;
+      delete bubby_signature[x][y];
+      bubby_signature[x][y] = NULL;
       }
   }
 }
@@ -45,7 +45,7 @@ Equipment::~Equipment()
  */
 void Equipment::clearActionList()
 {
-    action_list.clear();
+  action_list.clear();
 }
 
 /*
@@ -57,9 +57,9 @@ void Equipment::clearActionList()
  * Output: bool - boolean if the bubby can be attached
  */
 // TODO: Bubby attachment algorithm [01-31-13]
-bool Equipment::isBubbyAttachable(Bubby* bubby, int x, int y)
+bool Equipment::isBubbyAttachable(Bubby* bubby, uint x, uint y)
 {
-    return TRUE;
+  return TRUE;
 }
 
 /*
@@ -70,9 +70,10 @@ bool Equipment::isBubbyAttachable(Bubby* bubby, int x, int y)
  *         int y - the top most coordinate
  * Output: bool - true if the attachment was successful
  */
-bool Equipment::attachBubby(Bubby* bubby, int x, int y)
+bool Equipment::attachBubby(Bubby* bubby, uint x, uint y)
 {
-    return TRUE;
+  // TODO: Bubby attachments! [02-01-13]
+  return TRUE;
 }
 
 /*
@@ -85,130 +86,43 @@ bool Equipment::attachBubby(Bubby* bubby, int x, int y)
  */
 QVector<Action*> Equipment::getActionList()
 {
-   // TODO: Actions! [01-31-13]
-    return action_list;
+  // TODO: Actions! [01-31-13]
+  return action_list;
 }
 
 /*
- * Description: Obtains the list of actions the equipment allows the person
- *              to perform (used for a total action list calculation in the
- *              battle class
+ * Description: Toggles a given EquipmentState flag
  *
- * Inputs: none
- * Output: QVector of Action pointers - the built action list
- */
-bool isBroken()
-{
-
-}
-
-/*
- * Description: Obtains the list of actions the equipment allows the person
- *              to perform (used for a total action list calculation in the
- *              battle class
- *
- * Inputs: none
- * Output: QVector of Action pointers - the built action list
- */
-bool isMetal()
-{
-
-}
-
-/*
- * Description: Obtains the list of actions the equipment allows the person
- *              to perform (used for a total action list calculation in the
- *              battle class
- *
- * Inputs: none
- * Output: QVector of Action pointers - the built action list
- */
-bool isWeapon()
-{
-    return TRUE;
-    /* return ((flags & WEAPON) == WEAPON); */
-}
-
-/*
- * Description: Obtains the list of actions the equipment allows the person
- *              to perform (used for a total action list calculation in the
- *              battle class
- *
- * Inputs: none
- * Output: QVector of Action pointers - the built action list
- */
-void setBroken(bool b)
-{
-
-}
-
-/*
- * Description: Sets the METAL flag
- *
- * Inputs: bool b - new value of METAL flag
+ * Inputs: EquipmentState flag to be toggled
  * Output: none
  */
-void setMetal(bool b)
+void Equipment::toggleEquipmentFlag(EquipmentState flag)
 {
-    return;
-    /*
-    if (b)
-        flags = WEAPON;
-    else
-        flags = ~WEAPON;
-    */
+    setEquipmentFlag(flag, !getEquipmentFlag(flag));
+}
+
+
+/*
+ * Description: Evaluates a given EquipmentState flag
+ *
+ * Inputs: EquipmentState flag to be evaluated
+ * Output: boolean value of the flag
+ */
+const bool Equipment::getEquipmentFlag(EquipmentState flag)
+{
+    return (flagset.testFlag(flag));
 }
 
 /*
- * Description: Sets the WEAPON flag
+ * Description: Given an EquipmentFlags object and a bool, sets the flags
+ *              contained in the object to the boolean value.
  *
- * Inputs: bool b - new value of WEAPON flag
+ * Inputs: EquipmentState flag to be set
+ *         set_value - boolean value to set flags to
  * Output: none
  */
-void setWeapon(bool b)
+void Equipment::setEquipmentFlag(EquipmentState flag, const bool set_value)
 {
-  /*
-  if (b)
-    flags = WEAPON;
-  else
-    flags = ~WEAPON;
-  */
+    (set_value) ? (flagset |= flag) : (flagset ^= flag);
 }
 
-/*
- * Description: Returns a bool based if the equipment can be equipped
- *              on a certain slot on a person
- *
- * Inputs: QString - string of location to be checked
- * Output: bool - true if item can be equipped at location
- */
-bool Equipment::canEquip(QString location)
-{
-  if ((flags & BROKEN) == BROKEN)
-    return FALSE;
-  if (location == "head" && ((flags & HEAD) == HEAD))
-    return TRUE;
-  if (location == "torso" && ((flags & TORSO) == TORSO))
-    return TRUE;
-  if (location == "legs" && ((flags & LEGS) == LEGS))
-    return TRUE;
-  if (location == "twohand" && ((flags & (TWOHAND | LEFTARM | RIGHTARM))
-                                     == (TWOHAND | LEFTARM | RIGHTARM)))
-     return TRUE;
-  if (location == "leftarm" && ((flags & LEFTARM) == LEFTARM))
-    return TRUE;
-  if (location == "rightarm" && ((flags & RIGHTARM) == RIGHTARM))
-    return TRUE;
-  return FALSE;
-}
-
-/*
- * Description: Sets the equip locations of the equipment
- *
- * Inputs: 5 * bool - values of can be equipped at each location
- * Output: none
- */
-void Equipment::setEquipLocations(bool hd, bool la, bool ra, bool to, bool lg, bool th)
-{
-  flags = HEAD | LEFTARM | RIGHTARM | TORSO | LEGS | TWOHAND;
-}

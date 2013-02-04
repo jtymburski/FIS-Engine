@@ -17,42 +17,42 @@
 /*
  * Description: Primary person constructor (requires all values)
  *
- * Inputs: int th_a - base thermal aggression statistic
- *         int th_f - base thermal fortitude statistic
- *         int po_a - base polar aggression statistic
- *         int po_f - base polar fortitude statistic
- *         int pr_a - base primal aggression statistic
- *         int pr_f - base primal fortitude statistic
- *         int ch_a - base charged aggression statistic
- *         int ch_f - base charged fortitude statistic
- *         int cy_a - base cybernetic aggression statistic
- *         int cy_f - base cybernetic fortitude statistic
- *         int ni_a - base nihil aggression statistic
- *         int ni_f - base nihil fortitude statistic
- *         int vit - base vitality statistic
- *         int qd - base quantum drive statisti
- *         int ag - base agility statistic
- *         int lim - base limbertude statistic
- *         int unb - base unbearability statistic
- *         int lev - person's starting level
- *         int exp - person's starting experience
+ * Inputs: uint ph_a - base physical aggression statistic
+ *         uint ph_f - base physical fortitude statistic
+ *         uint th_a - base thermal aggression statistic
+ *         uint th_f - base thermal fortitude statistic
+ *         uint po_a - base polar aggression statistic
+ *         uint po_f - base polar fortitude statistic
+ *         uint pr_a - base primal aggression statistic
+ *         uint pr_f - base primal fortitude statistic
+ *         uint ch_a - base charged aggression statistic
+ *         uint ch_f - base charged fortitude statistic
+ *         uint cy_a - base cybernetic aggression statistic
+ *         uint cy_f - base cybernetic fortitude statistic
+ *         uint ni_a - base nihil aggression statistic
+ *         uint ni_f - base nihil fortitude statistic
+ *         uint vit - base vitality statistic
+ *         uint qd - base quantum drive statistic
+ *         uint ag - base agility statistic
+ *         uint lim - base limbertude statistic
+ *         uint unb - base unbearability statistic
+ *         uint lev - person's starting level
+ *         uint exp - person's starting experience
  *         QString nam - name of person
  *         QString prim - person's primary elemental ability
  *         QString secd - person's secondary elemental ability
  *         QString rank - person's rank [recruit, sleuthmaster, etc.]
  */
-Person::Person(int th_a, int th_f, int po_a,  int po_f, int pr_a,
-               int pr_f, int ch_a, int ch_f,  int cy_a, int cy_f,
-               int ni_a, int ni_f, int vit,   int qd,   int ag,
-               int lim,  int unb,  int lev,   int exp,  QString nam,
+Person::Person(uint ph_a, uint ph_f, uint th_a, uint th_f, uint po_a,  uint po_f, uint pr_a,
+               uint pr_f, uint ch_a, uint ch_f,  uint cy_a, uint cy_f,
+               uint ni_a, uint ni_f, uint vit,   uint qd,   uint ag,
+               uint lim,  uint unb,  uint lev,   uint exp,  QString nam,
                QString prim, QString secd, QString rank, QWidget* pointer)
 {
   /* Sets up the starting statistics for the person */
-  setupStats(th_a, th_f, po_a, po_f, pr_a, pr_f, ch_a, ch_f, cy_a,
+  setupStats(ph_a, ph_f, th_a, th_f, po_a, po_f, pr_a, pr_f, ch_a, ch_f, cy_a,
              cy_f, ni_a, ni_f, vit, qd, ag, lim, unb, lev, exp, nam,
              prim, secd, rank);
-
-
 }
 
 /*
@@ -86,31 +86,15 @@ Person::~Person()
  * Inputs: * See constructor above for full input list *
  * Output: none
  */
-void Person::setupStats(int th_a, int th_f, int po_a, int po_f, int pr_a,
-                        int pr_f, int ch_a, int ch_f,  int cy_a,  int cy_f,
-                        int ni_a, int ni_f, int vit,   int qd,   int ag,
-                        int lim,  int unb,  int lev,   int exp, QString nam,
-                        QString prim, QString secd, QString rank)
+void Person::setupStats(uint ph_a, uint ph_f, uint th_a, uint th_f, uint po_a,  uint po_f, uint pr_a,
+                        uint pr_f, uint ch_a, uint ch_f,  uint cy_a, uint cy_f,
+                        uint ni_a, uint ni_f, uint vit,   uint qd,   uint ag,
+                        uint lim,  uint unb,  uint lev,   uint exp,  QString nam,
+                        QString prim, QString secd, QString rank, QWidget* pointer)
 {
-    /* Sets up base stats */
-    setBaseThermalAggression(th_a);
-    setBaseThermalFortitude(th_f);
-    setBasePolarAggression(po_a);
-    setBasePolarFortitude(po_f);
-    setBasePrimalAggression(pr_a);
-    setBasePrimalFortitude(pr_f);
-    setBaseChargedAggression(ch_a);
-    setBaseChargedFortitude(ch_f);
-    setBaseCyberneticAggression(cy_a);
-    setBaseCyberneticFortitude(cy_f);
-    setBaseNihilAggression(ni_a);
-    setBaseNihilFortitude(ni_f);
-    setBaseVitality(vit);
-    setBaseQuantumDrive(qd);
-    setBaseAgility(ag);
-    setBaseLimbertude(lim);
-
-    /* Sets up current stas as base stats (initially) */
+    /* Sets up current stats*/
+    setPhysicalAggression(ph_a);
+    setPhysicalFortitude(ph_f);
     setThermalAggression(th_a);
     setThermalFortitude(th_f);
     setPolarAggression(po_a);
@@ -128,23 +112,9 @@ void Person::setupStats(int th_a, int th_f, int po_a, int po_f, int pr_a,
     setAgility(ag);
     setLimbertude(lim);
 
-    /* Sets up temporary stats */
-    setTempThermalAggression(th_a);
-    setTempThermalFortitude(th_f);
-    setTempPolarAggression(po_a);
-    setTempPolarFortitude(po_f);
-    setTempPrimalAggression(pr_a);
-    setTempPrimalFortitude(pr_f);
-    setTempChargedAggression(ch_a);
-    setTempChargedFortitude(ch_f);
-    setTempCyberneticAggression(cy_a);
-    setTempCyberneticFortitude(cy_f);
-    setTempNihilAggression(ni_a);
-    setTempNihilFortitude(ni_f);
-    setTempVitality(vit);
-    setTempQuantumDrive(qd);
-    setTempAgility(ag);
-    setTempLimbertude(lim);
+    /* Sets up temporary and base stats as current stats, initially */
+    setTemporaryStats();
+    setBaseStats();
 
     /* Set up other stats */
     setExp(exp);
@@ -154,23 +124,14 @@ void Person::setupStats(int th_a, int th_f, int po_a, int po_f, int pr_a,
     setSecondary(secd);
     setRank(rank);
 
-    /* Sets equipment pointers to NULL initially */
+    /* Sets equipment & sprite pointers to NULL initially */
     setHeadEquipment();
     setLeftArmEquipment();
     setRightArmEquipment();
     setTorsoEquipment();
     setLegEquipment();
-}
-
-/*
- * Description:
- *
- * Inputs:
- * Output:
- */
-bool Person::addEquipment(Equipment* equipment)
-{
-  return TRUE;
+    setFirstPerson();
+    setThirdPerson();
 }
 
 /*
@@ -188,14 +149,14 @@ bool Person::addEquipment(Equipment* equipment)
  * Inputs: value - amount of experience to be added
  * Output: none
  */
-void Person::addExperience(int value)
+void Person::addExperience(uint value)
 {
  /* Finds the experience value of next level and if the current
    * experience value of the person exceeds this, level up the
    * character until its experience matches the correct level */
 
-  int l = getLevel();
-  int y = 0;
+  uint l = getLevel();
+  uint y = 0;
   experience += value;
 
   do
@@ -208,43 +169,64 @@ void Person::addExperience(int value)
 }
 
 /*
- * Description: Sets up temporary statistics for a battle, and
+ * Description: Sets up temporary statistics: for a battle, and
  *              other preparations
  *
  * Inputs: none
  * Output: none
  */
-void Person::initiateForBattle()
+void Person::setBaseStats()
 {
-  temp_thermal_aggression    = thermal_aggression;
-  temp_thermal_fortitude     = thermal_fortitude;
-  temp_polar_aggression      = polar_aggression;
-  temp_polar_fortitude       = polar_fortitude;
-  temp_primal_aggression     = primal_aggression;
-  temp_primal_fortitude      = primal_fortitude;
-  temp_charged_aggression    = charged_aggression;
-  temp_charged_fortitude     = charged_fortitude;
-  temp_cybernetic_aggression = cybernetic_aggression;
-  temp_cybernetic_fortitude  = cybernetic_fortitude;
-  temp_nihil_aggression      = nihil_aggression;
-  temp_nihil_fortitude       = nihil_fortitude;
-  temp_vitality              = vitality;
-  temp_quantum_drive         = quantum_drive;
-  temp_agility               = agility;
-  temp_limbertude            = limbertude;
-  temp_unbearability         = unbearability;
+    /* Sets up temporary stats */
+    setBasePhysicalAggression(getPhysicalAggression());
+    setBasePhysicalFortitude(getPhysicalFortitude());
+    setBaseThermalAggression(getThermalAggression());
+    setBaseThermalFortitude(getThermalFortitude());
+    setBasePolarAggression(getPolarAggression());
+    setBasePolarFortitude(getPolarFortitude());
+    setBasePrimalAggression(getPrimalAggression());
+    setBasePrimalFortitude(getPrimalFortitude());
+    setBaseChargedAggression(getChargedAggression());
+    setBaseChargedFortitude(getChargedFortitude());
+    setBaseCyberneticAggression(getCyberneticAggression());
+    setBaseCyberneticFortitude(getCyberneticFortitude());
+    setBaseNihilAggression(getNihilAggression());
+    setBaseNihilFortitude(getNihilFortitude());
+    setBaseVitality(getVitality());
+    setBaseQuantumDrive(getQuantumDrive());
+    setBaseAgility(getAgility());
+    setBaseLimbertude(getLimbertude());
 }
 
+
 /*
- * Description:
+ * Description: Sets up temporary statistics: for a battle, and
+ *              other preparations
  *
  * Inputs: none
  * Output: none
  */
-bool Person::isStatusAilment(QString s)
+void Person::setTemporaryStats()
 {
-  //TODO: Finish status ailments [12-02-12]
-  return TRUE;
+    /* Sets up temporary stats */
+    setTempPhysicalAggression(getPhysicalAggression());
+    setTempPhysicalFortitude(getPhysicalFortitude());
+    setTempThermalAggression(getThermalAggression());
+    setTempThermalFortitude(getThermalFortitude());
+    setBasePolarAggression(getPolarAggression());
+    setBasePolarFortitude(getPolarFortitude());
+    setTempPrimalAggression(getPrimalAggression());
+    setTempPrimalFortitude(getPrimalFortitude());
+    setTempChargedAggression(getChargedAggression());
+    setTempChargedFortitude(getChargedFortitude());
+    setTempCyberneticAggression(getCyberneticAggression());
+    setTempCyberneticFortitude(getCyberneticFortitude());
+    setTempNihilAggression(getNihilAggression());
+    setTempNihilFortitude(getNihilFortitude());
+    setTempVitality(getVitality());
+    setTempQuantumDrive(getQuantumDrive());
+    setTempAgility(getAgility());
+    setTempLimbertude(getLimbertude());
 }
 
 /*
@@ -253,9 +235,31 @@ bool Person::isStatusAilment(QString s)
  * Inputs: used_item - pointer of an item to be used
  * Output: bool - tue if item used successfully
  */
-bool useItem(Item* used_item)
+bool Person::useItem(Item* used_item)
 {
     return TRUE;
+}
+
+/*
+ * Description: Toggles the value of a status ailment flag
+ *
+ * Inputs: StatusAilment flag
+ * Output: none
+ */
+void Person::toggleAilment(StatusAilment flags)
+{
+    setAilment(flags, !getAilment(flags));
+}
+
+/*
+ * Description: Togges the value of a person ailment
+ *
+ * Inputs: PersonState flag
+ * Output: none
+ */
+void Person::togglePersonFlag(PersonState flags)
+{
+    setPersonFlag(flags, !getPersonFlag(flags));
 }
 
 /*
@@ -269,18 +273,6 @@ QVector<Action*>& Person::getAvailableActions()
   // TODO: Setup list of actions for person [01-25-13]
   return action_list;
 }
-
-/*
- * Description: Evaluates the rendering flag
- *
- * Inputs: none
- * Output: bool - value of RENDERING flag
- */
-bool Person::getRendering()
-{
-  return RENDERING;
-}
-
 
 /*
  * Description: Returns the person's class
@@ -366,7 +358,7 @@ Equipment* Person::getTorsoEquipment()
  * Inputs: none
  * Output: int - value of person's current experience
  */
-int Person::getExp()
+uint Person::getExp()
 {
   return experience;
 }
@@ -375,9 +367,9 @@ int Person::getExp()
  * Description: Returns value of the person's current level
  *
  * Inputs: none
- * Output: int - value of person's level
+ * Output: uint - value of person's level
  */
-int Person::getLevel()
+uint Person::getLevel()
 {
   return level;
 }
@@ -450,12 +442,56 @@ Sprite* Person::getThirdPerson()
 }
 
 /*
+ * Description: Evaluates a given status ailment flag
+ *
+ * Inputs: Status ailment flag
+ * Output: Boolean evaluation of the flag
+ */
+const bool Person::getAilment(StatusAilment flags)
+{
+  return ailment_set.testFlag(flags);
+}
+
+/*
+ * Description: Evaluates a given person state flag
+ *
+ * Inputs: Person state flag
+ * Output: Boolean evaluation of the flag
+ */
+const bool Person::getPersonFlag(PersonState flags)
+{
+  return state_set.testFlag(flags);
+}
+
+/*
+ * Description: Returns value of the physical attack stat
+ *
+ * Inputs: none
+ * Output: uint - value of the physical attack stat
+ */
+uint Person::getPhysicalAggression()
+{
+  return physical_aggression;
+}
+
+/*
+ * Description: Returns value of the physical defens stat
+ *
+ * Inputs: none
+ * Output: uint - value of the physical attack stat
+ */
+uint Person::getPhysicalFortitude()
+{
+  return physical_fortitude;
+}
+
+/*
  * Description: Returns value of the thermal attack stat
  *
  * Inputs: none
- * Output: int - value of the thermal attack stat
+ * Output: uint - value of the thermal attack stat
  */
-int Person::getThermalAggression()
+uint Person::getThermalAggression()
 {
   return thermal_aggression;
 }
@@ -464,9 +500,9 @@ int Person::getThermalAggression()
  * Description: Returns value of the thermal fortitude stat
  *
  * Inputs: none
- * Output: int - value of the thermal defense stat
+ * Output: uint - value of the thermal defense stat
  */
-int Person::getThermalFortitude()
+uint Person::getThermalFortitude()
 {
   return thermal_fortitude;
 }
@@ -475,9 +511,9 @@ int Person::getThermalFortitude()
  * Description: Returns value of the polar attack stat
  *
  * Inputs: none
- * Output: int - value of polar attack stat
+ * Output: uint - value of polar attack stat
  */
-int Person::getPolarAggression()
+uint Person::getPolarAggression()
 {
   return polar_aggression;
 }
@@ -486,9 +522,9 @@ int Person::getPolarAggression()
  * Description: Returns value of the polar defense stat
  *
  * Inputs: none
- * Output: int - value of the polar defense stat
+ * Output: uint - value of the polar defense stat
  */
-int Person::getPolarFortitude()
+uint Person::getPolarFortitude()
 {
   return polar_fortitude;
 }
@@ -497,9 +533,9 @@ int Person::getPolarFortitude()
  * Description: Returns value of the primal attack stat
  *
  * Inputs: none
- * Output: int - value of the primal attack stat
+ * Output: uint - value of the primal attack stat
  */
-int Person::getPrimalAggression()
+uint Person::getPrimalAggression()
 {
   return primal_aggression;
 }
@@ -508,9 +544,9 @@ int Person::getPrimalAggression()
  * Description: Returns value of the primal defense stat
  *
  * Inputs: none
- * Output: int - vaue of the primal attack stat
+ * Output: uint - vaue of the primal attack stat
  */
-int Person::getPrimalFortitude()
+uint Person::getPrimalFortitude()
 {
   return primal_fortitude;
 }
@@ -519,9 +555,9 @@ int Person::getPrimalFortitude()
  * Description: Returns value of the charged attack stat
  *
  * Inputs: none
- * Output: int - value of the charged attack stat
+ * Output: uint - value of the charged attack stat
  */
-int Person::getChargedAggression()
+uint Person::getChargedAggression()
 {
   return charged_aggression;
 }
@@ -530,9 +566,9 @@ int Person::getChargedAggression()
  * Description: Returns value of the charged defense stat
  *
  * Inputs: none
- * Output: int - value of the charged defense stat
+ * Output: uint - value of the charged defense stat
  */
-int Person::getChargedFortitude()
+uint Person::getChargedFortitude()
 {
   return charged_fortitude;
 }
@@ -541,9 +577,9 @@ int Person::getChargedFortitude()
  * Description: Returns value of the cybernetic attack stat
  *
  * Inputs: none
- * Output: int - value of the cybernetic attack stat
+ * Output: uint - value of the cybernetic attack stat
  */
-int Person::getCyberneticAggression()
+uint Person::getCyberneticAggression()
 {
   return cybernetic_aggression;
 }
@@ -552,9 +588,9 @@ int Person::getCyberneticAggression()
  * Description: Returns value of the cybernetic defense stat
  *
  * Inputs: none
- * Output: int - value of the cybernetic defense stat
+ * Output: uint - value of the cybernetic defense stat
  */
-int Person::getCyberneticFortitude()
+uint Person::getCyberneticFortitude()
 {
   return cybernetic_fortitude;
 }
@@ -563,9 +599,9 @@ int Person::getCyberneticFortitude()
  * Description: Returns value of the nihil attack stat
  *
  * Inputs: none
- * Output: int - value of the nihil attack stat
+ * Output: uint - value of the nihil attack stat
  */
-int Person::getNihilAggression()
+uint Person::getNihilAggression()
 {
   return nihil_aggression;
 }
@@ -574,9 +610,9 @@ int Person::getNihilAggression()
  * Description: Returns value of the nihil defense stat
  *
  * Inputs: none
- * Output: int - value of the nihil defense stat
+ * Output: uint - value of the nihil defense stat
  */
-int Person::getNihilFortitude()
+uint Person::getNihilFortitude()
 {
   return nihil_fortitude;
 }
@@ -585,9 +621,9 @@ int Person::getNihilFortitude()
  * Description: Returns value of the vitality stat
  *
  * Inputs: none
- * Output: int - value of the vitality stat
+ * Output: uint - value of the vitality stat
  */
-int Person::getVitality()
+uint Person::getVitality()
 {
   return vitality;
 }
@@ -596,9 +632,9 @@ int Person::getVitality()
  * Description: Returns value of quantum drive stat
  *
  * Inputs: none
- * Output: int - value of the quantum drive stat
+ * Output: uint - value of the quantum drive stat
  */
-int Person::getQuantumDrive()
+uint Person::getQuantumDrive()
 {
   return quantum_drive;
 }
@@ -607,9 +643,9 @@ int Person::getQuantumDrive()
  * Description: Returns value of agility stat
  *
  * Inputs: none
- * Output: int - value of the agility stat
+ * Output: uint - value of the agility stat
  */
-int Person::getAgility()
+uint Person::getAgility()
 {
   return agility;
 }
@@ -618,9 +654,9 @@ int Person::getAgility()
  * Description: Returns value of the limbertude stat
  *
  * Inputs: none
- * Output: int - value of the limbertude stat
+ * Output: uint - value of the limbertude stat
  */
-int Person::getLimbertude()
+uint Person::getLimbertude()
 {
   return limbertude;
 }
@@ -629,20 +665,43 @@ int Person::getLimbertude()
  * Description: Returns value of the unbearability stat
  *
  * Inputs: none
- * Output: int - value of the unbearability stat
+ * Output: uint - value of the unbearability stat
  */
-int Person::getUnbearability()
+uint Person::getUnbearability()
 {
   return unbearability;
 }
 
 /*
+ * Description: Returns value of the temp phys atk stat
+ *
+ * Inputs: none
+ * Output: uint - value of the temp phys atk stat
+ */
+uint Person::getTempPhysicalAggression()
+{
+  return temp_physical_aggression;
+}
+
+/*
+ * Description: Returns value of the temp phys def stat
+ *
+ * Inputs: none
+ * Output: uint - value of the temp phys atk stat
+ */
+uint Person::getTempPhysicalFortitude()
+{
+  return temp_physical_fortitude;
+}
+
+
+/*
  * Description: Returns value of the temp thermal attack stat
  *
  * Inputs: none
- * Output: int - value of the temp thermal attack stat
+ * Output: uint - value of the temp thermal attack stat
  */
-int Person::getTempThermalAggression()
+uint Person::getTempThermalAggression()
 {
   return temp_thermal_aggression;
 }
@@ -651,9 +710,9 @@ int Person::getTempThermalAggression()
  * Description: Returns value of the temp thermal defense stat
  *
  * Inputs: none
- * Output: int - value of the temp thermal fortitude stat
+ * Output: uint - value of the temp thermal fortitude stat
  */
-int Person::getTempThermalFortitude()
+uint Person::getTempThermalFortitude()
 {
   return temp_thermal_fortitude;
 }
@@ -662,9 +721,9 @@ int Person::getTempThermalFortitude()
  * Description: Returns value of the temp polar attack stat
  *
  * Inputs: none
- * Output: int - value of the temp polar attack stat
+ * Output: uint - value of the temp polar attack stat
  */
-int Person::getTempPolarAggression()
+uint Person::getTempPolarAggression()
 {
   return temp_polar_aggression;
 }
@@ -673,9 +732,9 @@ int Person::getTempPolarAggression()
  * Description: Returns value of the temp polar defense stat
  *
  * Inputs: none
- * Output: int - value of the temp polar defense stat
+ * Output: uint - value of the temp polar defense stat
  */
-int Person::getTempPolarFortitude()
+uint Person::getTempPolarFortitude()
 {
   return temp_polar_fortitude;
 }
@@ -684,9 +743,9 @@ int Person::getTempPolarFortitude()
  * Description: Returns value of the temp primal attack stat
  *
  * Inputs: none
- * Output: int - value of the temp primal attack stat
+ * Output: uint - value of the temp primal attack stat
  */
-int Person::getTempPrimalAggression()
+uint Person::getTempPrimalAggression()
 {
   return temp_primal_aggression;
 }
@@ -695,9 +754,9 @@ int Person::getTempPrimalAggression()
  * Description: Returns value of the temp primal defene stat
  *
  * Inputs: none
- * Output: int - value of the temp primal defense stat
+ * Output: uint - value of the temp primal defense stat
  */
-int Person::getTempPrimalFortitude()
+uint Person::getTempPrimalFortitude()
 {
   return temp_primal_fortitude;
 }
@@ -706,9 +765,9 @@ int Person::getTempPrimalFortitude()
  * Description: Returns vlue of the temp charged attack stat
  *
  * Inputs: none
- * Output: int - value of the temp charged attack stat
+ * Output: uint - value of the temp charged attack stat
  */
-int Person::getTempChargedAggression()
+uint Person::getTempChargedAggression()
 {
   return temp_charged_aggression;
 }
@@ -717,9 +776,9 @@ int Person::getTempChargedAggression()
  * Description: Returns value of the temp charged defense stat
  *
  * Inputs: none
- * Output: int - value of the temp charged defense stat
+ * Output: uint - value of the temp charged defense stat
  */
-int Person::getTempChargedFortitude()
+uint Person::getTempChargedFortitude()
 {
   return temp_charged_fortitude;
 }
@@ -728,9 +787,9 @@ int Person::getTempChargedFortitude()
  * Description: Returns value of the temp cybernetic attack stat
  *
  * Inputs: none
- * Output: int - value of the temp charged attack stat
+ * Output: uint - value of the temp charged attack stat
  */
-int Person::getTempCyberneticAggression()
+uint Person::getTempCyberneticAggression()
 {
   return temp_cybernetic_aggression;
 }
@@ -739,9 +798,9 @@ int Person::getTempCyberneticAggression()
  * Description: Returns value of the temp cybernetic defense stat
  *
  * Inputs: none
- * Output: int - value of the temp cybernetc defense stat
+ * Output: uint - value of the temp cybernetc defense stat
  */
-int Person::getTempCyberneticFortitude()
+uint Person::getTempCyberneticFortitude()
 {
   return temp_cybernetic_fortitude;
 }
@@ -750,9 +809,9 @@ int Person::getTempCyberneticFortitude()
  * Description: Returns value of the temp nihil attack stat
  *
  * Inputs: none
- * Output: int - value of the temp nihil attack stat
+ * Output: uint - value of the temp nihil attack stat
  */
-int Person::getTempNihilAggression()
+uint Person::getTempNihilAggression()
 {
   return temp_nihil_aggression;
 }
@@ -761,9 +820,9 @@ int Person::getTempNihilAggression()
  * Description: Returns value of the temp nihil defense stat
  *
  * Inputs: none
- * Output: int - value of the temp nihil defense stat
+ * Output: uint - value of the temp nihil defense stat
  */
-int Person::getTempNihilFortitude()
+uint Person::getTempNihilFortitude()
 {
   return temp_nihil_fortitude;
 }
@@ -772,9 +831,9 @@ int Person::getTempNihilFortitude()
  * Description: Returns value of the temp vitality stat
  *
  * Inputs: none
- * Output: int - value of the temp vitality stat
+ * Output: uint - value of the temp vitality stat
  */
-int Person::getTempVitality()
+uint Person::getTempVitality()
 {
   return temp_vitality;
 }
@@ -783,9 +842,9 @@ int Person::getTempVitality()
  * Description: Returns value of the temp quantum drive stat
  *
  * Inputs: none
- * Output: int - value of the temp quantum drive sta
+ * Output: uint - value of the temp quantum drive sta
  */
-int Person::getTempQuantumDrive()
+uint Person::getTempQuantumDrive()
 {
   return temp_quantum_drive;
 }
@@ -794,9 +853,9 @@ int Person::getTempQuantumDrive()
  * Description: Returns value of the temp agility stat
  *
  * Inputs: none
- * Output: int - value of the temp agility stat
+ * Output: uint - value of the temp agility stat
  */
-int Person::getTempAgility()
+uint Person::getTempAgility()
 {
   return temp_agility;
 }
@@ -805,9 +864,9 @@ int Person::getTempAgility()
  * Description: Returns value of the temp limbertude stat
  *
  * Inputs: none
- * Output: int - value of the temp limbertude stat
+ * Output: uint - value of the temp limbertude stat
  */
-int Person::getTempLimbertude()
+uint Person::getTempLimbertude()
 {
   return temp_limbertude;
 }
@@ -816,20 +875,42 @@ int Person::getTempLimbertude()
  * Description: Returns value of the temp unbearability stat
  *
  * Inputs: none
- * Output: int - value of the temp unbearability stat
+ * Output: uint - value of the temp unbearability stat
  */
-int Person::getTempUnbearability()
+uint Person::getTempUnbearability()
 {
   return temp_unbearability;
+}
+
+/*
+ * Description: Returns value of the base physical attack stat
+ *
+ * Inputs: none
+ * Output: uint - value of the base physical attack stat
+ */
+uint Person::getBasePhysicalAggression()
+{
+  return base_physical_aggression;
+}
+
+/*
+ * Description: Returns value of the base physical defense stat
+ *
+ * Inputs: none
+ * Output: uint - value of the base physical defense stat
+ */
+uint Person::getBasePhysicalFortitude()
+{
+  return base_physical_fortitude;
 }
 
 /*
  * Description: Returns value of the base thermal attack stat
  *
  * Inputs: none
- * Output: int - value of the base thermal defense stat
+ * Output: uint - value of the base thermal defense stat
  */
-int Person::getBaseThermalAggression()
+uint Person::getBaseThermalAggression()
 {
   return base_thermal_aggression;
 }
@@ -838,9 +919,9 @@ int Person::getBaseThermalAggression()
  * Description: Returns value of the base thermal defense stat
  *
  * Inputs: none
- * Output: int - value of the base thermal defense stat
+ * Output: uint - value of the base thermal defense stat
  */
-int Person::getBaseThermalFortitude()
+uint Person::getBaseThermalFortitude()
 {
   return base_thermal_fortitude;
 }
@@ -849,9 +930,9 @@ int Person::getBaseThermalFortitude()
  * Description: Returns value of the base polar attack stat
  *
  * Inputs: none
- * Output: int - value of the base polar attack stat
+ * Output: uint - value of the base polar attack stat
  */
-int Person::getBasePolarAggression()
+uint Person::getBasePolarAggression()
 {
   return base_polar_aggression;
 }
@@ -860,9 +941,9 @@ int Person::getBasePolarAggression()
  * Description: Returns value of the base polar defense stat
  *
  * Inputs: none
- * Output: int - value of the base polar defense stat
+ * Output: uint - value of the base polar defense stat
  */
-int Person::getBasePolarFortitude()
+uint Person::getBasePolarFortitude()
 {
   return base_polar_fortitude;
 }
@@ -871,9 +952,9 @@ int Person::getBasePolarFortitude()
  * Description: Returns value of the base primal attack stat
  *
  * Inputs: none
- * Output: int - value of the base primal attack stat
+ * Output: uint - value of the base primal attack stat
  */
-int Person::getBasePrimalAggression()
+uint Person::getBasePrimalAggression()
 {
   return base_primal_aggression;
 }
@@ -882,9 +963,9 @@ int Person::getBasePrimalAggression()
  * Description: Returns value of the base primal defense stat
  *
  * Inputs: none
- * Output: int - value of the base primal defense stat
+ * Output: uint - value of the base primal defense stat
  */
-int Person::getBasePrimalFortitude()
+uint Person::getBasePrimalFortitude()
 {
   return base_primal_fortitude;
 }
@@ -893,9 +974,9 @@ int Person::getBasePrimalFortitude()
  * Description: Returns value of the base charged attack stat
  *
  * Inputs: none
- * Output: int - value of the base charged attack stat
+ * Output: uint - value of the base charged attack stat
  */
-int Person::getBaseChargedAggression()
+uint Person::getBaseChargedAggression()
 {
   return base_charged_aggression;
 }
@@ -904,9 +985,9 @@ int Person::getBaseChargedAggression()
  * Description: Returns value of the base charged defense stat
  *
  * Inputs: none
- * Output: int - value of the base charged defense stat
+ * Output: uint - value of the base charged defense stat
  */
-int Person::getBaseChargedFortitude()
+uint Person::getBaseChargedFortitude()
 {
   return base_charged_fortitude;
 }
@@ -915,9 +996,9 @@ int Person::getBaseChargedFortitude()
  * Description: Returns value of the base cybernetic attack stat
  *
  * Inputs: none
- * Output: int - value of the base cybnetic attack stat
+ * Output: uint - value of the base cybnetic attack stat
  */
-int Person::getBaseCyberneticAggression()
+uint Person::getBaseCyberneticAggression()
 {
   return base_cybernetic_aggression;
 }
@@ -926,9 +1007,9 @@ int Person::getBaseCyberneticAggression()
  * Description: Returns value of the base cybernetic defense stat
  *
  * Inputs: none
- * Output: int - vale of the base cybernetic defense stat
+ * Output: uint - vale of the base cybernetic defense stat
  */
-int Person::getBaseCyberneticFortitude()
+uint Person::getBaseCyberneticFortitude()
 {
   return base_cybernetic_fortitude;
 }
@@ -937,9 +1018,9 @@ int Person::getBaseCyberneticFortitude()
  * Description: Returns value of the base nihil attack stat
  *
  * Inputs: none
- * Output: int - value of the base nihil attack stat
+ * Output: uint - value of the base nihil attack stat
  */
-int Person::getBaseNihilAggression()
+uint Person::getBaseNihilAggression()
 {
   return base_nihil_aggression;
 }
@@ -948,9 +1029,9 @@ int Person::getBaseNihilAggression()
  * Description: Returns value of the base nihil defense stat
  *
  * Inputs: none
- * Output: int - value of the base nihil defense stat
+ * Output: uint - value of the base nihil defense stat
  */
-int Person::getBaseNihilFortitude()
+uint Person::getBaseNihilFortitude()
 {
   return base_nihil_fortitude;
 }
@@ -959,9 +1040,9 @@ int Person::getBaseNihilFortitude()
  * Description: Returns value of the base vitality stat
  *
  * Inputs: none
- * Output: int - value of the base vitality stat
+ * Output: uint - value of the base vitality stat
  */
-int Person::getBaseVitality()
+uint Person::getBaseVitality()
 {
   return base_vitality;
 }
@@ -970,9 +1051,9 @@ int Person::getBaseVitality()
  * Description: Returns value of the base quantum drive stat
  *
  * Inputs: none
- * Output: int - value of the base quantum drive stat
+ * Output: uint - value of the base quantum drive stat
  */
-int Person::getBaseQuantumDrive()
+uint Person::getBaseQuantumDrive()
 {
   return base_quantum_drive;
 }
@@ -981,9 +1062,9 @@ int Person::getBaseQuantumDrive()
  * Description: Returns value of the base agility stat
  *
  * Inputs: none
- * Output: int - value of the base agility stat
+ * Output: uint - value of the base agility stat
  */
-int Person::getBaseAgility()
+uint Person::getBaseAgility()
 {
   return base_agility;
 }
@@ -992,9 +1073,9 @@ int Person::getBaseAgility()
  * Description: Returns value of the base limbertude stat
  *
  * Inputs: none
- * Output: int - value of the base limbertude stat
+ * Output: uint - value of the base limbertude stat
  */
-int Person::getBaseLimbertude()
+uint Person::getBaseLimbertude()
 {
   return base_limbertude;
 }
@@ -1003,9 +1084,9 @@ int Person::getBaseLimbertude()
  * Description: Returns value of the base unbearability stat
  *
  * Inputs: none
- * Output: int - value of the base unbearability stat
+ * Output: uint - value of the base unbearability stat
  */
-int Person::getBaseUnbearability()
+uint Person::getBaseUnbearability()
 {
   return base_unbearability;
 }
@@ -1016,16 +1097,16 @@ int Person::getBaseUnbearability()
  * Inputs: Equipment* - set of head equipment to be equipped
  * Output: bool - true on successful equip
  */
-bool Person::setHeadEquipment(Equipment* new_equipment)
+const bool Person::setHeadEquipment(Equipment* new_equipment)
 {
   if (new_equipment == NULL)
-      return false;
-  if (new_equipment->canEquip("head"))
+      return FALSE;
+  if (new_equipment->getEquipmentFlag(Equipment::HEAD))
   {
     head = new_equipment;
-    return true;
+    return TRUE;
   }
-  return false;
+  return FALSE;
 }
 
 /*
@@ -1034,16 +1115,15 @@ bool Person::setHeadEquipment(Equipment* new_equipment)
  * Inputs: Equipment* - set of left arm equipment to be equipped
  * Output: bool - true on successful equip
  */
-bool Person::setLeftArmEquipment(Equipment* new_equipment)
+const bool Person::setLeftArmEquipment(Equipment* new_equipment)
 {
   if (new_equipment == NULL)
-    return false;
-  if (new_equipment->canEquip("left arm"))
-  {
+    return FALSE;
+  if (new_equipment->getEquipmentFlag(Equipment::LEFTARM))  {
     left_arm = new_equipment;
-    return true;
+    return TRUE;
   }
-  return false;
+  return FALSE;
 }
 
 /*
@@ -1052,16 +1132,16 @@ bool Person::setLeftArmEquipment(Equipment* new_equipment)
  * Inputs: Equipment* - set of right arm equipment to be equipped
  * Output: bool - true if equip successful
  */
-bool Person::setRightArmEquipment(Equipment* new_equipment)
+const bool Person::setRightArmEquipment(Equipment* new_equipment)
 {
   if (new_equipment == NULL)
-    return false;
-  if (new_equipment->canEquip("right arm"))
+    return FALSE;
+  if (new_equipment->getEquipmentFlag(Equipment::RIGHTARM))
   {
     right_arm = new_equipment;
-    return true;
+    return TRUE;
     }
-  return false;
+  return TRUE;
 }
 
 /*
@@ -1070,16 +1150,16 @@ bool Person::setRightArmEquipment(Equipment* new_equipment)
  * Inputs: Equipment* - set of torso equipment to be equipped
  * Output: bool - true if equip successful
  */
-bool Person::setTorsoEquipment(Equipment* new_equipment)
+const bool Person::setTorsoEquipment(Equipment* new_equipment)
 {
   if (new_equipment == NULL)
-    return false;
-  if (new_equipment->canEquip("torso"))
+    return FALSE;
+  if (new_equipment->getEquipmentFlag(Equipment::TORSO))
   {
     torso = new_equipment;
-    return true;
+    return TRUE;
   }
-  return false;
+  return FALSE;
 }
 
 /*
@@ -1088,16 +1168,16 @@ bool Person::setTorsoEquipment(Equipment* new_equipment)
  * Inputs: Equipment* - piece of leg equipment to be equipped
  * Output: bool - true if equip successful
  */
-bool Person::setLegEquipment(Equipment* new_equipment)
+const bool Person::setLegEquipment(Equipment* new_equipment)
 {
   if (new_equipment == NULL)
-    return false;
-  if (new_equipment->canEquip("torso"))
+    return FALSE;
+  if (new_equipment->getEquipmentFlag(Equipment::LEGS))
   {
     legs = new_equipment;
-    return true;
+    return TRUE;
   }
-  return false;
+  return FALSE;
 }
 
 /*
@@ -1115,23 +1195,36 @@ void Person::setCategory(Category* new_category)
  * Description: Sets the experience of the person
  * Note: Does NOT level the character, use addExp(int) for that
  *
- * Inputs: int - value of experience to be set
+ * Inputs: uint - value of experience to be set
  * Output: none
  */
-void Person::setExp(int exp)
+void Person::setExp(uint value)
 {
-  experience = exp;
+  experience = value;
 }
 
 /*
- * Description:
+ * Description: Sets a status ailment flag to a given boolean value
  *
- * Inputs:
- * Output:
+ * Inputs: StatusAilment flag
+ *         Boolean value to set the flag to
+ * Output: none
  */
-void Person::setStatusAilment(bool b, int ailment_index)
+void Person::setAilment(StatusAilment flags, const bool set_value)
 {
-  //TODO: FINISH STATUS AILMENTS
+  (set_value) ? (ailment_set |= flags) : (ailment_set ^= flags);
+}
+
+/*
+ * Description: Sets a person state flag to a given boolean value
+ *
+ * Inputs: PersonState flag
+ *         Boolean value to set the flag to
+ * Output: none
+ */
+void Person::setPersonFlag(PersonState flags, const bool set_value)
+{
+  (set_value) ? (state_set |= flags) : (state_set ^= flags);
 }
 
 /*
@@ -1140,7 +1233,7 @@ void Person::setStatusAilment(bool b, int ailment_index)
  *              Battle stats may be updated three times to correspond to
  *              the proper values based on their primary and secondary
  *              growth curve level.
- * Note [1]: All temporary statistics are unchanged int this function, thus
+ * Note [1]: All temporary statistics are unchanged in this function, thus
  *       the difference between the regular value of a given statistic and
  *       the temporary value of such a statistic will correctly correspond
  *       to the value it has been increased by, for purposes of displaying
@@ -1151,11 +1244,13 @@ void Person::setStatusAilment(bool b, int ailment_index)
  * Inputs: int - level to set person to
  * Output: none
  */
-void Person::setLevel(int new_level)
+
+
+void Person::setLevel(uint new_level)
 {
-  unsigned int   clsb =      1; /* Class bonus to a stat based on class */
-  unsigned int   rceb =      1; /* Race bonus to a stat based on race */
-  unsigned int   addr =      0; /* Temp variable used in formulae (value dm) */
+  uint  clsb =      1; /* Class bonus to a stat based on class */
+  uint  rceb =      1; /* Race bonus to a stat based on race */
+  uint  addr =      0; /* Temp variable used in formulae (value dm) */
   float mulr =  1.050; /* Basic D rate of increase of statistics */
   float defm =  0.670; /* D Mod - ratio of def increase to offense */
   float difm =  0.100; /* Difference between curve level multiplier */
@@ -1168,9 +1263,10 @@ void Person::setLevel(int new_level)
    * of the person's primary curve statistic, then update them based on the
    * level of the person's secondary statistic.
    */
+
   // TODO: CLASS BONUSES [01-31-13]
   // TODO: RACE BONUSES [01-31-13]
-  for (int i = 0; i < 3; i++)
+  for (uint i = 0; i < 3; i++)
   {
     if (i == 1)
     {
@@ -1348,23 +1444,34 @@ void Person::setSecondaryCurve(QChar value)
 }
 
 /*
- * Description: Sets the value of the RENDERING flag
+ * Description: Sets the value of the physical attack stat
  *
- * Inputs: bool - new RENDERING value
+ * Inputs: uint - new value of the physical attack stat
  * Output: none
  */
-void Person::setRendering(bool b)
+void Person::setPhysicalAggression(uint value)
 {
-  RENDERING = b;
+  physical_aggression = value;
+}
+
+/*
+ * Description: Sets the value of the physical defense stat
+ *
+ * Inputs: uint - new value of the physical defense stat
+ * Output: none
+ */
+void Person::setPhysicalFortitude(uint value)
+{
+  physical_fortitude = value;
 }
 
 /*
  * Description: Sets the value of the thermal attack stat
  *
- * Inputs: int - new value of thermal attack stat
+ * Inputs: uint - new value of thermal attack stat
  * Output: none
  */
-void Person::setThermalAggression(int value)
+void Person::setThermalAggression(uint value)
 {
   thermal_aggression = value;
 }
@@ -1372,10 +1479,10 @@ void Person::setThermalAggression(int value)
 /*
  * Description: Sets the value of the thermal defense stat
  *
- * Inputs: int - new value of the thermal defense stat
+ * Inputs: uint - new value of the thermal defense stat
  * Output: none
  */
-void Person::setThermalFortitude(int value)
+void Person::setThermalFortitude(uint value)
 {
   thermal_fortitude = value;
 }
@@ -1383,10 +1490,10 @@ void Person::setThermalFortitude(int value)
 /*
  * Description: Sets the value of the polar attack stat
  *
- * Inputs: int - new value of the polar attack stat
+ * Inputs: uint - new value of the polar attack stat
  * Output: none
  */
-void Person::setPolarAggression(int value)
+void Person::setPolarAggression(uint value)
 {
   polar_aggression = value;
 }
@@ -1394,10 +1501,10 @@ void Person::setPolarAggression(int value)
 /*
  * Description: Sets the value of the polar defense stat
  *
- * Inputs: int - new value of the polar defense stat
+ * Inputs: uint - new value of the polar defense stat
  * Output: none
  */
-void Person::setPolarFortitude(int value)
+void Person::setPolarFortitude(uint value)
 {
   polar_fortitude = value;
 }
@@ -1405,10 +1512,10 @@ void Person::setPolarFortitude(int value)
 /*
  * Description: Sets the value of the primal attack stat
  *
- * Inputs: int - new value of the polar attack stat
+ * Inputs: uint - new value of the polar attack stat
  * Output: none
  */
-void Person::setPrimalAggression(int value)
+void Person::setPrimalAggression(uint value)
 {
   primal_aggression = value;
 }
@@ -1416,10 +1523,10 @@ void Person::setPrimalAggression(int value)
 /*
  * Description: Sets the value of the primal defense stat
  *
- * Inputs: int - new value of the primal defense stat
+ * Inputs: uint - new value of the primal defense stat
  * Output: none
  */
-void Person::setPrimalFortitude(int value)
+void Person::setPrimalFortitude(uint value)
 {
   primal_fortitude = value;
 }
@@ -1427,10 +1534,10 @@ void Person::setPrimalFortitude(int value)
 /*
  * Description: Sets the value of the charged attack stat
  *
- * Inputs: int - new value of the primal attack stat
+ * Inputs: uint - new value of the primal attack stat
  * Output: none
  */
-void Person::setChargedAggression(int value)
+void Person::setChargedAggression(uint value)
 {
   charged_aggression = value;
 }
@@ -1438,10 +1545,10 @@ void Person::setChargedAggression(int value)
 /*
  * Description: Sets the value of the charged defense stat
  *
- * Inputs: int - new value of the charged defense stat
+ * Inputs: uint - new value of the charged defense stat
  * Output: none
  */
-void Person::setChargedFortitude(int value)
+void Person::setChargedFortitude(uint value)
 {
   charged_fortitude = value;
 }
@@ -1449,10 +1556,10 @@ void Person::setChargedFortitude(int value)
 /*
  * Description: Sets the value of the cybernetic attack stat
  *
- * Inputs: int - new value of the cybernetic attack stat
+ * Inputs: uint - new value of the cybernetic attack stat
  * Output: none
  */
-void Person::setCyberneticAggression(int value)
+void Person::setCyberneticAggression(uint value)
 {
   cybernetic_aggression = value;
 }
@@ -1460,10 +1567,10 @@ void Person::setCyberneticAggression(int value)
 /*
  * Description: Sets the value of the cybernetic defense stat
  *
- * Inputs: int - new value of the cybernetic defense stat
+ * Inputs: uint - new value of the cybernetic defense stat
  * Output: none
  */
-void Person::setCyberneticFortitude(int value)
+void Person::setCyberneticFortitude(uint value)
 {
   cybernetic_fortitude = value;
 }
@@ -1471,10 +1578,10 @@ void Person::setCyberneticFortitude(int value)
 /*
  * Description: Sets the value of the nihil attack stat
  *
- * Inputs: int - new value of the nihil attack stat
+ * Inputs: uint - new value of the nihil attack stat
  * Output: none
  */
-void Person::setNihilAggression(int value)
+void Person::setNihilAggression(uint value)
 {
   nihil_aggression = value;
 }
@@ -1482,10 +1589,10 @@ void Person::setNihilAggression(int value)
 /*
  * Description: Sets the value of the nihil defense stat
  *
- * Inputs: int - new value of the nihil defense stat
+ * Inputs: uint - new value of the nihil defense stat
  * Output: none
  */
-void Person::setNihilFortitude(int value)
+void Person::setNihilFortitude(uint value)
 {
   nihil_fortitude = value;
 }
@@ -1493,10 +1600,10 @@ void Person::setNihilFortitude(int value)
 /*
  * Description: Sets the value of the vitality stat
  *
- * Inputs: int - new value of the vitaltiy stat
+ * Inputs: uint - new value of the vitaltiy stat
  * Output: none
  */
-void Person::setVitality(int value)
+void Person::setVitality(uint value)
 {
   vitality = value;
 }
@@ -1504,10 +1611,10 @@ void Person::setVitality(int value)
 /*
  * Description: Sets the value of the quantum drive stat
  *
- * Inputs: int - new value of the quantum drive stat
+ * Inputs: uint - new value of the quantum drive stat
  * Output: none
  */
-void Person::setQuantumDrive(int value)
+void Person::setQuantumDrive(uint value)
 {
   quantum_drive = value;
 }
@@ -1515,10 +1622,10 @@ void Person::setQuantumDrive(int value)
 /*
  * Description: Sets the value of the agility stat
  *
- * Inputs: int - new value of the agility stat
+ * Inputs: uint - new value of the agility stat
  * Output: none
  */
-void Person::setAgility(int value)
+void Person::setAgility(uint value)
 {
   agility = value;
 }
@@ -1526,10 +1633,10 @@ void Person::setAgility(int value)
 /*
  * Description: Sets the value of the limbertude stat
  *
- * Inputs: int - new value of the limbertude stat
+ * Inputs: uint - new value of the limbertude stat
  * Output: noe
  */
-void Person::setLimbertude(int value)
+void Person::setLimbertude(uint value)
 {
   limbertude = value;
 }
@@ -1537,21 +1644,43 @@ void Person::setLimbertude(int value)
 /*
  * Description: Sets the value of the unbearability stat
  *
- * Inputs: int - new value of the unbearability stat
+ * Inputs: uint - new value of the unbearability stat
  * Output: none
  */
-void Person::setUnbearability(int value)
+void Person::setUnbearability(uint value)
 {
   unbearability = value;
 }
 
 /*
- * Description: Sets the value of the temp thermal attack stat
+ * Description: Sets the value of the temp physical aggression stat
  *
- * Inputs: int - new value of the temp thermal attack stat
+ * Inputs: uint - new value of the physical aggression stat
  * Output: none
  */
-void Person::setTempThermalAggression(int value)
+void Person::setTempPhysicalAggression(uint value)
+{
+  temp_physical_aggression = value;
+}
+
+/*
+ * Description: Sets the value of the temp physical defense stat
+ *
+ * Inputs: uint - new value of the temp physical defense stat
+ * Output: none
+ */
+void Person::setTempPhysicalFortitude(uint value)
+{
+  temp_physical_fortitude = value;
+}
+
+/*
+ * Description: Sets the value of the temp thermal attack stat
+ *
+ * Inputs: uint - new value of the temp thermal attack stat
+ * Output: none
+ */
+void Person::setTempThermalAggression(uint value)
 {
   temp_thermal_aggression = value;
 }
@@ -1559,10 +1688,10 @@ void Person::setTempThermalAggression(int value)
 /*
  * Description: Sets the value of the temp thermal defense stat
  *
- * Inputs: int - new value of the temp thermal defense stat
+ * Inputs: uint - new value of the temp thermal defense stat
  * Output: none
  */
-void Person::setTempThermalFortitude(int value)
+void Person::setTempThermalFortitude(uint value)
 {
   temp_thermal_fortitude = value;
 }
@@ -1570,10 +1699,10 @@ void Person::setTempThermalFortitude(int value)
 /*
  * Description: Sets the value of the temp polar attack stat
  *
- * Inputs: int - new value of the temp polar attack stat
+ * Inputs: uint - new value of the temp polar attack stat
  * Output: none
  */
-void Person::setTempPolarAggression(int value)
+void Person::setTempPolarAggression(uint value)
 {
   temp_polar_aggression = value;
 }
@@ -1581,10 +1710,10 @@ void Person::setTempPolarAggression(int value)
 /*
  * Description: Sets the value of the temp polar defense stat
  *
- * Inputs: int - new value of the temp polar defense stat
+ * Inputs: uint - new value of the temp polar defense stat
  * Output: none
  */
-void Person::setTempPolarFortitude(int value)
+void Person::setTempPolarFortitude(uint value)
 {
   temp_polar_fortitude = value;
 }
@@ -1592,10 +1721,10 @@ void Person::setTempPolarFortitude(int value)
 /*
  * Description: Sets the value of the temp primal attack stat
  *
- * Inputs: int - new value of the temp primal attack stat
+ * Inputs: uint - new value of the temp primal attack stat
  * Output: none
  */
-void Person::setTempPrimalAggression(int value)
+void Person::setTempPrimalAggression(uint value)
 {
   temp_primal_aggression = value;
 }
@@ -1603,10 +1732,10 @@ void Person::setTempPrimalAggression(int value)
 /*
  * Description: Sets the value of the temp primal defense stat
  *
- * Inputs: int - new value of the temp primal defense stat
+ * Inputs: uint - new value of the temp primal defense stat
  * Output: none
  */
-void Person::setTempPrimalFortitude(int value)
+void Person::setTempPrimalFortitude(uint value)
 {
   temp_primal_fortitude = value;
 }
@@ -1614,10 +1743,10 @@ void Person::setTempPrimalFortitude(int value)
 /*
  * Description: Sets the value of the temp charged attack stat
  *
- * Inputs: int - new value of the temp charged attack stat
+ * Inputs: uint - new value of the temp charged attack stat
  * Output: none
  */
-void Person::setTempChargedAggression(int value)
+void Person::setTempChargedAggression(uint value)
 {
   temp_charged_aggression = value;
 }
@@ -1625,10 +1754,10 @@ void Person::setTempChargedAggression(int value)
 /*
  * Description: Sets the value of the temp charged defense stat
  *
- * Inputs: int - new value of the temp charged defense stat
+ * Inputs: uint - new value of the temp charged defense stat
  * Output: none
  */
-void Person::setTempChargedFortitude(int value)
+void Person::setTempChargedFortitude(uint value)
 {
   temp_charged_fortitude = value;
 }
@@ -1636,10 +1765,10 @@ void Person::setTempChargedFortitude(int value)
 /*
  * Description: Sets the value of the temp cybernetic attack stat
  *
- * Inputs: int - new value of the temp cybernetic attack
+ * Inputs: uint - new value of the temp cybernetic attack
  * Output: none
  */
-void Person::setTempCyberneticAggression(int value)
+void Person::setTempCyberneticAggression(uint value)
 {
   temp_cybernetic_aggression = value;
 }
@@ -1647,10 +1776,10 @@ void Person::setTempCyberneticAggression(int value)
 /*
  * Description: Sets the value of the temp cybernetic defense stat
  *
- * Inputs: int - new value of the cybernetic defense stat
+ * Inputs: uint - new value of the cybernetic defense stat
  * Output: none
  */
-void Person::setTempCyberneticFortitude(int value)
+void Person::setTempCyberneticFortitude(uint value)
 {
   temp_cybernetic_aggression = value;
 }
@@ -1658,10 +1787,10 @@ void Person::setTempCyberneticFortitude(int value)
 /*
  * Description: Sets the value of the temp nihil attack stat
  *
- * Inputs: int - new value of the temp nihil attack stat
+ * Inputs: uuint - new value of the temp nihil attack stat
  * Output: none
  */
-void Person::setTempNihilAggression(int value)
+void Person::setTempNihilAggression(uint value)
 {
   temp_nihil_aggression = value;
 }
@@ -1669,10 +1798,10 @@ void Person::setTempNihilAggression(int value)
 /*
  * Description: Sets the value of the temp nihil defense stat
  *
- * Inputs: int - new value of the temp nihil defense stat
+ * Inputs: uint - new value of the temp nihil defense stat
  * Output: none
  */
-void Person::setTempNihilFortitude(int value)
+void Person::setTempNihilFortitude(uint value)
 {
   temp_nihil_fortitude = value;
 }
@@ -1680,10 +1809,10 @@ void Person::setTempNihilFortitude(int value)
 /*
  * Description: Sets the value of the temp vitality stat
  *
- * Inputs: int - new value of the temp vitality stat
+ * Inputs: uint - new value of the temp vitality stat
  * Output: none
  */
-void Person::setTempVitality(int value)
+void Person::setTempVitality(uint value)
 {
   temp_vitality = value;
 }
@@ -1691,10 +1820,10 @@ void Person::setTempVitality(int value)
 /*
  * Description: Sets the value of the temp quantum drive stat
  *
- * Inputs: int - new value of the temp quantum drive stat
+ * Inputs: uint - new value of the temp quantum drive stat
  * Output: none
  */
-void Person::setTempQuantumDrive(int value)
+void Person::setTempQuantumDrive(uint value)
 {
   temp_quantum_drive = value;
 }
@@ -1702,10 +1831,10 @@ void Person::setTempQuantumDrive(int value)
 /*
  * Description: Sets the value of the temp agility stat
  *
- * Inputs: int - new value of the temp agility stat
+ * Inputs: uint - new value of the temp agility stat
  * Output: none
  */
-void Person::setTempAgility(int value)
+void Person::setTempAgility(uint value)
 {
   temp_agility = value;
 }
@@ -1713,10 +1842,10 @@ void Person::setTempAgility(int value)
 /*
  * Description: Sets the value of the temp limbertude stat
  *
- * Inputs: int - new value of the temp limbertude stat
+ * Inputs: uint - new value of the temp limbertude stat
  * Output: none
  */
-void Person::setTempLimbertude(int value)
+void Person::setTempLimbertude(uint value)
 {
   temp_limbertude = value;
 }
@@ -1724,10 +1853,10 @@ void Person::setTempLimbertude(int value)
 /*
  * Description: Sets the value of the temp unbearability stat
  *
- * Inputs: int - new value of the temp unbearability stat
+ * Inputs: uint - new value of the temp unbearability stat
  * Output: none
  */
-void Person::setTempUnbearability(int value)
+void Person::setTempUnbearability(uint value)
 {
   temp_unbearability = value;
 }
@@ -1735,10 +1864,33 @@ void Person::setTempUnbearability(int value)
 /*
  * Description: Sets the value of the base thermal attack stat
  *
- * Inputs: int - new value of the base thermal attack stat
+ * Inputs: uint - new value of the base thermal attack stat
  * Output: none
  */
-void Person::setBaseThermalAggression(int value)
+void Person::setBasePhysicalAggression(uint value)
+{
+  base_physical_aggression = value;
+}
+
+
+/*
+ * Description: Sets the value of the temp unbearability stat
+ *
+ * Inputs: uint - new value of the temp unbearability stat
+ * Output: none
+ */
+void Person::setBasePhysicalFortitude(uint value)
+{
+  base_physical_fortitude = value;
+}
+
+/*
+ * Description: Sets the value of the base thermal attack stat
+ *
+ * Inputs: uint - new value of the base thermal attack stat
+ * Output: none
+ */
+void Person::setBaseThermalAggression(uint value)
 {
   base_thermal_aggression = value;
 }
@@ -1746,10 +1898,10 @@ void Person::setBaseThermalAggression(int value)
 /*
  * Description: Sets the value of the base thermal defense stat
  *
- * Inputs: int - new value of te base thermal defense stat
+ * Inputs: uint - new value of te base thermal defense stat
  * Output: none
  */
-void Person::setBaseThermalFortitude(int value)
+void Person::setBaseThermalFortitude(uint value)
 {
   base_thermal_fortitude = value;
 }
@@ -1757,10 +1909,10 @@ void Person::setBaseThermalFortitude(int value)
 /*
  * Description: Sets the value of the base polar attack stat
  *
- * Inputs: int - new value of the base polar attack stat
+ * Inputs: uint - new value of the base polar attack stat
  * Output: none
  */
-void Person::setBasePolarAggression(int value)
+void Person::setBasePolarAggression(uint value)
 {
   base_polar_aggression = value;
 }
@@ -1768,10 +1920,10 @@ void Person::setBasePolarAggression(int value)
 /*
  * Description: Sets the value of te base polar defense stat
  *
- * Inputs: int - new value of the base polar defense stat
+ * Inputs: uint - new value of the base polar defense stat
  * Output: none
  */
-void Person::setBasePolarFortitude(int value)
+void Person::setBasePolarFortitude(uint value)
 {
   base_polar_fortitude = value;
 }
@@ -1779,10 +1931,10 @@ void Person::setBasePolarFortitude(int value)
 /*
  * Description: Sets the value of the base primal attack stat
  *
- * Inputs: int - new value of the base primal attack stat
+ * Inputs: uint - new value of the base primal attack stat
  * Output: none
  */
-void Person::setBasePrimalAggression(int value)
+void Person::setBasePrimalAggression(uint value)
 {
   base_primal_aggression = value;
 }
@@ -1790,10 +1942,10 @@ void Person::setBasePrimalAggression(int value)
 /*
  * Description: Sets the value of the base primal defense stat
  *
- * Inputs: int - new value of the base primal defense stat
+ * Inputs: uint - new value of the base primal defense stat
  * Output: none
  */
-void Person::setBasePrimalFortitude(int value)
+void Person::setBasePrimalFortitude(uint value)
 {
   base_primal_fortitude = value;
 }
@@ -1801,10 +1953,10 @@ void Person::setBasePrimalFortitude(int value)
 /*
  * Description: Sets the value of the base charged attack stat
  *
- * Inputs: int - new value of the base charged attack stat
+ * Inputs: uint - new value of the base charged attack stat
  * Output: none
  */
-void Person::setBaseChargedAggression(int value)
+void Person::setBaseChargedAggression(uint value)
 {
   base_charged_aggression = value;
 }
@@ -1812,10 +1964,10 @@ void Person::setBaseChargedAggression(int value)
 /*
  * Description: Sets the value of the base charged defense stat
  *
- * Inputs: int - new value of the base charged defense stat
+ * Inputs: uint - new value of the base charged defense stat
  * Output: none
  */
-void Person::setBaseChargedFortitude(int value)
+void Person::setBaseChargedFortitude(uint value)
 {
   base_charged_fortitude = value;
 }
@@ -1823,10 +1975,10 @@ void Person::setBaseChargedFortitude(int value)
 /*
  * Description: Sets the value of the base cybernetic attack stat
  *
- * Inputs: int - new value of the base cybernetic defense stat
+ * Inputs: uint - new value of the base cybernetic defense stat
  * Output: none
  */
-void Person::setBaseCyberneticAggression(int value)
+void Person::setBaseCyberneticAggression(uint value)
 {
   base_cybernetic_aggression = value;
 }
@@ -1834,10 +1986,10 @@ void Person::setBaseCyberneticAggression(int value)
 /*
  * Description: Sets the value of the base cybernetic defense stat
  *
- * Inputs: int - new value of the base cybernetic defense stat
+ * Inputs: uint - new value of the base cybernetic defense stat
  * Output: none
  */
-void Person::setBaseCyberneticFortitude(int value)
+void Person::setBaseCyberneticFortitude(uint value)
 {
   base_cybernetic_aggression = value;
 }
@@ -1845,10 +1997,10 @@ void Person::setBaseCyberneticFortitude(int value)
 /*
  * Description: Sets the value of the base nihil attack stat
  *
- * Inputs: int - new value of the base nihil attack stat
+ * Inputs: uint - new value of the base nihil attack stat
  * Output: none
  */
-void Person::setBaseNihilAggression(int value)
+void Person::setBaseNihilAggression(uint value)
 {
   base_nihil_aggression = value;
 }
@@ -1856,10 +2008,10 @@ void Person::setBaseNihilAggression(int value)
 /*
  * Description: Sets the value of the base nihil defense stat
  *
- * Inputs: int - new value of the base nihil defense stat
+ * Inputs: uint - new value of the base nihil defense stat
  * Output: none
  */
-void Person::setBaseNihilFortitude(int value)
+void Person::setBaseNihilFortitude(uint value)
 {
   base_nihil_fortitude = value;
 }
@@ -1867,10 +2019,10 @@ void Person::setBaseNihilFortitude(int value)
 /*
  * Description: Sets the value of the base vitality stat
  *
- * Inputs: int - new value of the base vitality stat
+ * Inputs: uint - new value of the base vitality stat
  * Output: none
  */
-void Person::setBaseVitality(int value)
+void Person::setBaseVitality(uint value)
 {
   base_vitality = value;
 }
@@ -1878,10 +2030,10 @@ void Person::setBaseVitality(int value)
 /*
  * Description: Sets the value of the base quantum drive stat
  *
- * Inputs: int - new value of the base quantum drive stat
+ * Inputs: uint - new value of the base quantum drive stat
  * Output: none
  */
-void Person::setBaseQuantumDrive(int value)
+void Person::setBaseQuantumDrive(uint value)
 {
   base_quantum_drive = value;
 }
@@ -1889,10 +2041,10 @@ void Person::setBaseQuantumDrive(int value)
 /*
  * Description: Sets the value of the base agility stat
  *
- * Inputs: int - new value of the base agility stat
+ * Inputs: uint - new value of the base agility stat
  * Output: none
  */
-void Person::setBaseAgility(int value)
+void Person::setBaseAgility(uint value)
 {
   base_agility = value;
 }
@@ -1900,10 +2052,10 @@ void Person::setBaseAgility(int value)
 /*
  * Description: Sets the value of the base limbertude stat
  *
- * Inputs: int - new value of the base limbertude stat
+ * Inputs: uint - new value of the base limbertude stat
  * Output: none
  */
-void Person::setBaseLimbertude(int value)
+void Person::setBaseLimbertude(uint value)
 {
   base_limbertude = value;
 }
@@ -1911,10 +2063,10 @@ void Person::setBaseLimbertude(int value)
 /*
  * Description: Sets the value of the base unbearability stat
  *
- * Inputs: int - new value of the base unbearability stat
+ * Inputs: uint - new value of the base unbearability stat
  * Output: none
  */
-void Person::setBaseUnbearability(int value)
+void Person::setBaseUnbearability(uint value)
 {
   base_unbearability = value;
 }
