@@ -32,7 +32,7 @@ private:
   ApplicationMode current_application_mode;
 
   /* The applications title screen */
-  TitleScreen application_titlescreen;
+  TitleScreen* application_titlescreen;
 
   /* The applications options */
   Options application_options;

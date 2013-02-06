@@ -8,6 +8,8 @@
 #define TITLESCREEN_H
 
 #include <QImage>
+#include <QKeyEvent>
+#include <QLabel>
 #include <QString>
 #include <QtGui/QWidget>
 #include <QtGui/QPainter>
@@ -23,13 +25,15 @@ class TitleScreen : public QWidget
 {
 public:
   /* Constructor function */
-  TitleScreen(QWidget *parent = 0);
+  TitleScreen(int width, int height, QWidget* parent = 0);
 
   /* Destructor function */
   ~TitleScreen();
 
 protected:
   void paintEvent(QPaintEvent*);
+  void keyPressEvent(QKeyEvent*);
+  void keyReleaseEvent(QKeyEvent*);
 
 private:
   /* For the first menu level's position */
@@ -37,6 +41,7 @@ private:
 
   /* The options at the first menu level */
   QVector<QString> title_options;
+  QVector<QLabel*> option_labels;
 
   /* The selection cursor */
   QImage cursor;
@@ -63,6 +68,8 @@ private:
 
   /* Changes the menu to state s and the given index */
   void iterate(State s, int index);
+
+  void setup();
 };
 
 
