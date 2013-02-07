@@ -19,10 +19,13 @@
 //#include "SavedGame.h"
 
 /* The available menu options, and another one for potential easter eggs */
-enum State{OFF,MAIN,CONTINUE,INOPTIONS,INEXIT,SECRET};
+//enum State{OFF,MAIN,CONTINUE,INOPTIONS,INEXIT,SECRET};
+enum State{TESTMAP,TESTBATTLE,MAINEXIT};
 
 class TitleScreen : public QWidget
 {
+  Q_OBJECT
+
 public:
   /* Constructor function */
   TitleScreen(int width, int height, QWidget* parent = 0);
@@ -40,7 +43,6 @@ private:
   int cursor_index;
 
   /* The options at the first menu level */
-  QVector<QString> title_options;
   QVector<QLabel*> option_labels;
 
   /* The selection cursor */
@@ -64,7 +66,15 @@ private:
   /* The options names for menu building */
   QVector<QString> option_names;
 
+  /* ------------------ Constants ------------------ */
+  const static int kNUM_MENU_ITEMS = 3;
+  const static QString kMENU_ITEMS[];
+
 //public: // TODO: Why is this commented out? [December 2, 2012]
+ 
+  void decrementState();
+
+  void incrementState();
 
   /* Changes the menu to state s and the given index */
   void iterate(State s, int index);
