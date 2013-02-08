@@ -6,6 +6,8 @@
 ******************************************************************************/
 #include "TitleScreen.h"
 
+#include <QApplication>
+
 /* ------------------------- Constant Definitions -------------------------- */
 const QString TitleScreen::kMENU_ITEMS[] = {"Map Test", "Battle Test", "Exit"};
 
@@ -39,6 +41,10 @@ TitleScreen::~TitleScreen()
 {
 }
 
+void TitleScreen::closing()
+{
+}
+
 void TitleScreen::paintEvent(QPaintEvent* event)
 {
   QPainter painter(this);
@@ -46,18 +52,6 @@ void TitleScreen::paintEvent(QPaintEvent* event)
   QPixmap image(":/FBS_Logo");
   painter.drawPixmap((this->width() - image.width()) / 2, 100, 
                       QPixmap(":/FBS_Logo"));
-
-  for(int i = 0; i < kNUM_MENU_ITEMS; i++)
-  {
-    QPalette pal(option_labels[i]->palette());
-    
-    if(i == cursor_index)
-      pal.setColor(QPalette::Background, QColor(28,76,46,64)); // R,G,B,A
-    else
-      pal.setColor(QPalette::Background, Qt::black);
-    
-    option_labels[i]->setPalette(pal);
-  }
 }
 
 void TitleScreen::keyPressEvent(QKeyEvent* event)
@@ -70,63 +64,55 @@ void TitleScreen::keyPressEvent(QKeyEvent* event)
   {
     incrementState();
   }
+  else if(event->key() == Qt::Key_Enter)
+  {
+    closing();
+  }
 }
 
 void TitleScreen::keyReleaseEvent(QKeyEvent* event)
 {
-  //if(event->key == Qt::Key_Enter)
-  //{
-  //  // Enter was released
-  //}
 }
 
 void TitleScreen::decrementState()
 {
+  unsetSelectedMenu(cursor_index);
+
   if(cursor_index == 0)
     cursor_index = kNUM_MENU_ITEMS - 1;
   else
     cursor_index--;
 
-  for(int i = 0; i < kNUM_MENU_ITEMS; i++)
-  {
-    QPalette pal(option_labels[i]->palette());
-    
-    if(i == cursor_index)
-      pal.setColor(QPalette::Background, QColor(28,76,46,64)); // R,G,B,A
-    else
-      pal.setColor(QPalette::Background, Qt::black);
-    
-    option_labels[i]->setPalette(pal);
-  }
-
-  update();
+  setSelectedMenu(cursor_index);
 }
 
 void TitleScreen::incrementState()
 {
-  cursor_index++;
+  unsetSelectedMenu(cursor_index);
 
+  cursor_index++;
   if(cursor_index == kNUM_MENU_ITEMS)
     cursor_index = 0;
 
-  for(int i = 0; i < kNUM_MENU_ITEMS; i++)
-  {
-    QPalette pal(option_labels[i]->palette());
-    
-    if(i == cursor_index)
-      pal.setColor(QPalette::Background, QColor(28,76,46,64)); // R,G,B,A
-    else
-      pal.setColor(QPalette::Background, Qt::black);
-    
-    option_labels[i]->setPalette(pal);
-  }
-
-  update();
+  setSelectedMenu(cursor_index);
 }
 
 /* Changes the menu to state s and the given index */
 void TitleScreen::iterate(State titlestate, int index)
 {
+}
+
+bool TitleScreen::setSelectedMenu(int menu_count)
+{
+  if(menu_count < kNUM_MENU_ITEMS)
+  {
+    QPalette pal(option_labels[menu_count]->palette());
+    pal.setColor(QPalette::Background, QColor(28,76,46,64)); // R,G,B,A
+    option_labels[menu_count]->setPalette(pal);
+    return TRUE;
+  }
+
+  return FALSE;
 }
 
 void TitleScreen::setup()
@@ -150,4 +136,19 @@ void TitleScreen::setup()
 
     option_labels.append(new_label);
   }
+
+  setSelectedMenu(0);
+}
+
+bool TitleScreen::unsetSelectedMenu(int menu_count)
+{
+  if(menu_count < kNUM_MENU_ITEMS)
+  {
+    QPalette pal(option_labels[menu_count]->palette());
+    pal.setColor(QPalette::Background, QColor(Qt::black));
+    option_labels[menu_count]->setPalette(pal);
+    return TRUE;
+  }
+
+  return FALSE; 
 }

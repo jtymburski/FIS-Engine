@@ -21,12 +21,17 @@
 
 class MainWindow : public QMainWindow
 {
+  Q_OBJECT
+
 public:
   /* Constructor function */
   MainWindow(QWidget* parent = 0);
 
   /* Destructor function */
   ~MainWindow();
+
+public slots:
+  void closing();
 
 private:
   QStackedWidget* widget_stack;

@@ -33,6 +33,9 @@ public:
   /* Destructor function */
   ~TitleScreen();
 
+public slots:
+  void closing();
+
 protected:
   void paintEvent(QPaintEvent*);
   void keyPressEvent(QKeyEvent*);
@@ -79,7 +82,11 @@ private:
   /* Changes the menu to state s and the given index */
   void iterate(State s, int index);
 
+  bool setSelectedMenu(int menu_count);
+
   void setup();
+
+  bool unsetSelectedMenu(int menu_count);
 };
 
 

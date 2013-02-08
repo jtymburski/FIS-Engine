@@ -9,6 +9,7 @@
 ******************************************************************************/
 #include "MainWindow.h"
 
+#include <QDebug>
 
 /* Constructor function */
 MainWindow::MainWindow(QWidget* parent)
@@ -25,11 +26,20 @@ MainWindow::MainWindow(QWidget* parent)
   widget_stack->setCurrentIndex(2); // TODO (0=battle, 1=map, 2=titlescreen)
 
   setCentralWidget(widget_stack);
+  setFocus(Qt::OtherFocusReason);
+  setFocusProxy(title_screen);
+
+  QObject::connect(this, SIGNAL(closing()), title_screen, SLOT(closing()));
+
   show();
 }
 
 /* Destructor function */
 MainWindow::~MainWindow()
+{
+}
+
+void MainWindow::closing()
 {
 }
 
