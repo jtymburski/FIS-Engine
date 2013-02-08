@@ -11,7 +11,6 @@
 #define EQUIPMENT_H
 
 #include <QVector>
-#include "EnumDatabase.h"
 #include "Game/Player/Action.h"
 #include "Game/Player/Bubby.h"
 //#include "Game/Player/Item.h"
@@ -40,7 +39,7 @@ public:
     EQUIPPED   = 1ul << 9  /* Is the item currently equipped to a person? */
   };
   Q_DECLARE_FLAGS(EquipmentFlags, EquipmentState);
-  EquipmentFlags flagset;
+  EquipmentFlags eflag_set;
 
 
 private:

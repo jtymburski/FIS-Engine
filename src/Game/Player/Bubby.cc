@@ -6,57 +6,123 @@
 *              details to define experience, level cap, etc.
 * Notes : This uses the following formula: Exp(Level) = 50 + Exp(Level – 1)
 *         x [1 + Multiplier / 100] Multiplier: 10-25
+* TODO: Finish constructor
 ******************************************************************************/
 #include "Game/Player/Bubby.h"
 
-/* Constructor function */
+/*
+ * Description: Constructs a Bubby object
+ *
+ * Inputs:
+ * Output:
+ *
+ * TODO: FINISH CONSTRUCTOR
+ */
+
 Bubby::Bubby()
 {
-}
+  setLevel(1);
+  setTier(0);
+  setExperience(0);
 
-/* Destructor function */
+  /* Increment the Bubby's ID counter */}
+
+/*
+ * Description: Destroy a Bubby object
+ */
 Bubby::~Bubby()
 {
+  //for (uint i = 0; i < action_list.size(); i++)
+  // {
+  //  delete action_list.at(i);
+  //    action_list.at(i) = NULL;
+  //}
 }
 
-/* Gets the list of bubby actions (Used for total action lists in battle)*/
+/*
+ * Description: Gets a list of actions that the Bubby can offer
+ *
+ * Inputs: none
+ * Output: QVector of action pointers
+ */
 QVector<Action*> Bubby::getActionList()
 {
   return action_list;
 }
 
-/* Gets the bubbies exp */
-int Bubby::getExp()
+/*
+ * Description: Returns the experience of the Bubby
+ *
+ * Inputs: none
+ * Output: uint - experience value of the Bubby
+ */
+uint Bubby::getExp()
 {
   return experience;
 }
 
-/* Gets the bubbies level */
-int Bubby::getLevel()
+/*
+ * Description: Returns the ID of the Bubby
+ *
+ * Inputs: none
+ * Output: uint - the ID of the Bubby
+ */
+//uint Bubby::getId()
+//{
+//  return id;
+//}
+
+/*
+ * Description: Returns the level of the Bubby
+ *
+ * Inputs: none
+ * Output: uint - level of the Bubby
+ */
+uint Bubby::getLevel()
 {
   return level;
 }
 
-/* Gets the bubbies tier */
-int Bubby::getTier()
+/*
+ * Description: Returns the tier of the Bubby
+ *
+ * Inputs: none
+ * Output: uint - tier of the Bubby
+ */
+uint Bubby::getTier()
 {
   return tier;
 }
 
-/* Sets the exp of the bubby based on use in battle */
-void Bubby::setExperience(int new_experience)
+/*
+ * Description: Sets the experience of the Bubby
+ *
+ * Inputs: uint - new value for experience of the Bubby
+ * Output: none
+ */
+void Bubby::setExperience(uint new_experience)
 {
     experience = new_experience;
 }
 
-/* Sets the level of the bubby based on exp amounts */
-void Bubby::setLevel(int lvl)
+/*
+ * Description: Sets the level of the Bubby
+ *
+ * Inputs: uint - new value for level of the Bubby
+ * Output: none
+ */
+void Bubby::setLevel(uint new_level)
 {
-  level = lvl;
+  level = new_level;
 }
 
-/* Sets the tier of the bubby based on leveling */
-void Bubby::setTier(int tier_num)
+/*
+ * Description: Sets the tier of the Bubby
+ *
+ * Inputs: uint - new value of Tier of the Bubby
+ * Output: none
+ */
+void Bubby::setTier(uint new_tier)
 {
-  tier = tier_num;
+  tier = new_tier;
 }

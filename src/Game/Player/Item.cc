@@ -7,72 +7,119 @@
 ******************************************************************************/
 #include "Game/Player/Person.h"
 
-/*Constructor function*/
+/*
+ * Description: Constructor for Item class
+ *
+ * Inputs: QWidget
+ */
 Item::Item(QWidget* parent)
 {
 }
 
-/*Destructor function*/
+/*
+ * Description: Annihilates an Item class object
+ */
 Item::~Item()
 {
 }
 
-/*Evaulates BATTLEREADY flag*/
-bool Item::isBattleReady()
-{
-    return BATTLEREADY;
-}
-
-/*Evaluates STACKABLE flag*/
-bool Item::isStackable()
-{
-    return STACKABLE;
-}
-
-/*Evaluates INDEFINITE flag*/
-bool Item::isIndefinite()
-{
-    return INDEFINITE;
-}
-
-/*Gets category of unit*/
+/*
+ * Description: Returns the category of an item
+ *
+ * Inputs: ItemState flag to be toggled
+ * Output: none
+ */
 QString Item::getCategory()
 {
-    return  "";
+    return item_category;
 }
 
-/*Gets unit count*/
-int Item::getCount()
-{
-    return count;
-}
-
-/*Gets description of unit*/
+/*
+ * Description: Returns the description of an item
+ *
+ * Inputs: none
+ * Output: QString - description of the item
+ */
 QString Item::getDescription()
 {
     return description;
 }
 
-/*Gets name of unit*/
+/*
+ * Description: Returns the name of the item
+ *
+ * Inputs: QString - name of the item
+ * Output: none
+ */
 QString Item::getName()
 {
     return name;
 }
 
-/*Gets thumbnail of unit*/
+/*
+ * Description: Gets the image thumbnail of the item
+ *
+ * Inputs: none
+ * Output: QImage - image thumbnail of the item
+ */
 QImage Item::getThumbnail()
 {
     return thumbnail;
 }
 
-/*Gets the turn count*/
-int Item::getTurnCount()
+/*
+ * Description: Returns the duration of an item (turns that it can be used)
+ *
+ * Inputs: none
+ * Output: uint - # of turns it can be used in battle
+ */
+uint Item::getDuration()
 {
-    return turn_count;
+    return duration;
 }
 
-/*Sets unit count*/
-void Item::setCount(int count)
+/*
+ * Description: Toggles a given ItemState flag
+ *
+ * Inputs: ItemState flag to be toggled
+ * Output: none
+ */
+void Item::toggleItemFlag(ItemState flag)
 {
-    turn_count = count;
+    setItemFlag(flag, !getItemFlag(flag));
+}
+
+/*
+ * Description: Evaluates a given ItemState flag
+ *
+ * Inputs: ITemState flag to be evaluated
+ * Output: boolean value of the flag
+ */
+const bool Item::getItemFlag(ItemState flag)
+{
+    return (iflag_set.testFlag(flag));
+}
+
+/*
+ * Description: Given an ItemState object and a bool, sets the flags
+ *              contained in the object to the boolean value.
+ *
+ * Inputs: ItemSTate flag to be set
+ *         set_value - boolean value to set flags to
+ * Output: none
+ */
+void Item::setItemFlag(ItemState flag, const bool set_value)
+{
+    (set_value) ? (iflag_set |= flag) : (iflag_set ^= flag);
+}
+
+/*
+ * Description: Sets the value of duration (time the item lasts in battle)
+ *
+ * Input: int - value to set the duration of the item too
+ * Output: none
+ */
+void Item::setDuration(uint value)
+{
+    duration = value;
 }

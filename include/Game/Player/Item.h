@@ -8,8 +8,6 @@
 ******************************************************************************/
 #ifndef ITEM_H
 #define ITEM_H
-
-#include "EnumDatabase.h"
 #include <QImage>
 #include <QString>
 
@@ -22,12 +20,28 @@ public:
   /* Destructor function */
   ~Item();
 
+  /* Enumerated flags for item class */
+  enum ItemState
+  {
+    BATTLEREADY   = 1ul << 0, /* Can the item be used in battle */
+    MENUREADY     = 1ul << 1, /* Can the item be used in the menu? */
+    CONSUMABLE    = 1ul << 2, /* (BATTLEREADY || MENUREADY) && !INDEFINITE */
+    HEALITEM      = 1ul << 3, /* Does the item heal vitality? */
+    CURE          = 1ul << 4, /* Does the item cure ailments? */
+    OFFENSIVE     = 1ul << 5, /* Does the item have an offensive battle use? */
+    INDEFINITE    = 1ul << 5, /* If item has infinite uses */
+    STACKABLE     = 1ul << 6, /* If item can be grouped with others */
+    EQUIPMENT     = 1ul << 7, /* Is the item a piece of equipment? */
+    KEYITEM       = 1ul << 8, /* is the item a unique quest item? */
+    MULTIITEM     = 1ul << 9,  /* Does the item hit more than one target? */
+    PARTYTITEM    = 1ul << 10 /* Does the item effect all members of a party? */
+  };
+  Q_DECLARE_FLAGS(ItemFlags, ItemState)
+  ItemFlags iflag_set;
+
 private:
   /* Category unit belongs to */
   QString item_category;
-
-  /* Number of these that exist in inventory */
-  int count;
 
   /* Description of unit */
   QString description;
@@ -39,91 +53,11 @@ private:
   QImage thumbnail;
 
   /* Number of turns the item will last in battle */
-  int turn_count;
-
-  /* Thermal aggression alteration values */
-  int thermal_aggression;
-  int temp_thermal_aggression;
-
-  /* Thermal fortitude alteration values */
-  int thermal_fortitude;
-  int temp_thermal_fortitude;
-
-  /* Polar aggression alteration values */
-  int polar_aggression;
-  int temp_polar_aggression;
-
-  /* Polar fortitude alteration values */
-  int polar_fortitude;
-  int temp_polar_fortitude;
-
-  /* Primal aggression alteration values */
-  int primal_aggression;
-  int temp_primal_aggression;
-
-  /* Primal fortitude alteration values */
-  int primal_fortitude;
-  int temp_primal_fortitde;
-
-  /* Charged aggression alteration values */
-  int charged_aggression;
-  int temp_charged_aggression;
-
-  /* Charged fortitude alteration values */
-  int charged_fortitude;
-  int temp_charged_fortitude;
-
-  /* Cybernetic aggression alteration values */
-  int cybernetic_aggression;
-  int temp_cybernetic_aggression;
-
-  /* Cybernetic fortitude alteration values */
-  int cybernetic_fortitude;
-  int temp_cybernetic_fortitude;
-
-  /* Nihil aggression alteration values */
-  int nihil_aggression;
-  int temp_nihil_aggression;
-
-  /* Nihil fortitude alteration values */
-  int nihil_fortitude;
-  int temp_nihil_fortitude;
-
-  /* Vitality alteration values */
-  int vitality;
-  int temp_vitality;
-
-  /* Quantum Drive alteration values */
-  int quantum_drive;
-  int temp_quantum_drive;
-
-  /* Agility alteration values */
-  int agility;
-  int temp_agility;
-
-  /* Limbertude alteration values */
-  int limbertude;
-  int temp_limbertude;
-
-  /* Unbearability alteration values */
-  int unbearability;
-  int temp_unbearability;
+  uint duration;
 
 public:
-  /* Evaulates BATTLEREADY flag */
-  bool isBattleReady();
-
-  /* Evaluates STACKABLE flag */
-  bool isStackable();
-
-  /* Evaluates INDEFINITE flag */
-  bool isIndefinite();
-
   /* Gets category of unit */
   QString getCategory();
-
-  /* Gets unit count */
-  int getCount();
 
   /* Gets description of unit */
   QString getDescription();
@@ -134,12 +68,22 @@ public:
   /* Gets thumbnail of unit */
   QImage getThumbnail();
 
+  /* Toggles an ItemFlag */
+  void toggleItemFlag(ItemState flag);
+
+  /* Gets the value of an ItemFlag */
+  const bool getItemFlag(ItemState flag);
+
   /* Gets the turn count */
-  int getTurnCount();
+  uint getDuration();
 
   /* Sets unit count */
-  void setCount(int i);
+  void setDuration(uint value);
+
+  /* Sets an ItemFlag */
+  void setItemFlag(ItemState flag, const bool);
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(Item::ItemFlags);
 
 #endif // ITEM_H
 

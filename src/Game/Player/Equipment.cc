@@ -9,7 +9,6 @@
 * TODO: Bubby signature bonus algorithm [01-31-13]
 ******************************************************************************/
 #include "Game/Player/Equipment.h"
-#include <QDebug>
 
 /*
  * Description: Equipment class consructor
@@ -110,7 +109,7 @@ void Equipment::toggleEquipmentFlag(EquipmentState flag)
  */
 const bool Equipment::getEquipmentFlag(EquipmentState flag)
 {
-    return (flagset.testFlag(flag));
+    return (eflag_set.testFlag(flag));
 }
 
 /*
@@ -123,6 +122,6 @@ const bool Equipment::getEquipmentFlag(EquipmentState flag)
  */
 void Equipment::setEquipmentFlag(EquipmentState flag, const bool set_value)
 {
-    (set_value) ? (flagset |= flag) : (flagset ^= flag);
+    (set_value) ? (eflag_set |= flag) : (eflag_set ^= flag);
 }
 

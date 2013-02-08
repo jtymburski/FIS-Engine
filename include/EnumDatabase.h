@@ -45,21 +45,4 @@ enum ActionType
   MULTISTRIKE     = 1ul << 26 /* Does the action have more than one strike? */
 };
 
-/* Flags for Item class */
-enum ItemFlags
-{
-  BATTLEREADY   = 1ul << 0, /* Can the item be used in battle */
-  MENUREADY     = 1ul << 1, /* Can the item be used in the menu? */
-  CONSUMABLE    = 1ul << 2, /* (BATTLEREADY || MENUREADY) && !INDEFINITE */
-  HEALITEM      = 1ul << 3, /* Does the item heal vitality? */
-  CURE          = 1ul << 4, /* Does the item cure ailments? */
-  OFFENSIVE     = 1ul << 5, /* Does the item have an offensive battle use? */
-  INDEFINITE    = 1ul << 5, /* If item has infinite uses */
-  STACKABLE     = 1ul << 6, /* If item can be grouped with others */
-  EQUIPMENT     = 1ul << 7, /* Is the item a piece of equipment? */
-  KEYITEM       = 1ul << 8, /* is the item a unique quest item? */
-  MULTIITEM     = 1ul << 9,  /* Does the item hit more than one target? */
-  PARTYTITEM    = 1ul << 10 /* Does the item effect all members of a party? */
-};
-
 #endif // ENUMDATABASE_H
