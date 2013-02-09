@@ -114,6 +114,12 @@ Battle::~Battle()
   setFoes();
 }
 
+void Battle::keyPressEvent(QKeyEvent* event)
+{
+  if(event->key() == Qt::Key_Escape)
+    closeBattle();
+}
+
 /*
  * Description: Paint event for the battle class
  */
@@ -178,6 +184,11 @@ void Battle::setFriends(Party* p_friends)
 void Battle::setFoes(Party* p_foes)
 {
   foes = p_foes;
+}
+
+void Battle::closeBattle()
+{
+  emit closingBattle(2);
 }
 
 /*

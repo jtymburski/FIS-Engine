@@ -64,6 +64,7 @@
 #ifndef BATTLE_H
 #define BATTLE_H
 
+#include <QKeyEvent>
 #include <QtGui/QWidget>
 #include <QtGui/QPaintEvent>
 #include <QtGui/QPainter>
@@ -78,6 +79,8 @@
 
 class Battle: public QWidget
 {
+  Q_OBJECT
+
 public:
   /* Constructor for a Battle class */
   Battle(Party* p_friends, Party* p_foes, QWidget* pointer = 0);
@@ -150,6 +153,9 @@ private:
   bool BOSS; 
    
 protected:
+  /* Handles all key entries */
+  void keyPressEvent(QKeyEvent*);
+
   /* Paint event for the class */
   void paintEvent(QPaintEvent*);
 
@@ -167,6 +173,12 @@ protected:
 
   /* Sets the maximum y-length of the battle window */
   void setMaxHeight(int value);
+
+public slots:
+  void closeBattle();
+
+signals:
+  void closingBattle(int index);
 
 public: 
 

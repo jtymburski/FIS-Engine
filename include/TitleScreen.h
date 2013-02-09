@@ -68,13 +68,16 @@ private:
 protected:
   void paintEvent(QPaintEvent*);
   void keyPressEvent(QKeyEvent*);
-  void keyReleaseEvent(QKeyEvent*);
 
 public slots:
   void close();
+  void openBattle();
+  void openMap();
 
 signals:
   void closing();
+  void openingBattle(int index);
+  void openingMap(int index);
 
 public:
   void decrementState();
@@ -85,6 +88,8 @@ public:
   void iterate(State s, int index);
 
   bool setSelectedMenu(int menu_count);
+
+  bool setState(int index);
 
   void setup();
 

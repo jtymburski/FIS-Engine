@@ -40,6 +40,7 @@ private:
 
 public slots:
   void close();
+  void switchWidget(int index);
 
 signals:
   void closing();

@@ -10,6 +10,7 @@
 #ifndef MAP_H
 #define MAP_H
 
+#include <QKeyEvent>
 #include <QtGui/QWidget>
 
 #include "EnumDatabase.h"
@@ -59,7 +60,14 @@ private:
   Weather* weather_effect;
 
 protected:
-  void paintEvent(QPaintEvent *);
+  void paintEvent(QPaintEvent*);
+  void keyPressEvent(QKeyEvent*);
+
+public slots:
+  void closeMap();
+
+signals:
+  void closingMap(int index);
 
 public:
   /* Causes the thing you are facing and next to start its interactive action */

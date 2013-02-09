@@ -58,19 +58,34 @@ void TitleScreen::keyPressEvent(QKeyEvent* event)
   {
     incrementState();
   }
+  else if(event->key() == Qt::Key_Escape)
+  {
+    setState(MAINEXIT);
+  }
   else if(event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)
   {
-    close();
+    if(cursor_index == TESTMAP)
+      openMap();
+    else if(cursor_index == TESTBATTLE)
+      openBattle();
+    else
+      close();
   }
-}
-
-void TitleScreen::keyReleaseEvent(QKeyEvent* event)
-{
 }
 
 void TitleScreen::close()
 {
   emit closing();
+}
+
+void TitleScreen::openBattle()
+{
+  emit openingBattle(0);
+}
+
+void TitleScreen::openMap()
+{
+  emit openingMap(1);
 }
 
 void TitleScreen::decrementState()
@@ -111,6 +126,18 @@ bool TitleScreen::setSelectedMenu(int menu_count)
     return TRUE;
   }
 
+  return FALSE;
+}
+
+bool TitleScreen::setState(int index)
+{
+  if(index >= 0 && index < kNUM_MENU_ITEMS)
+  {
+    unsetSelectedMenu(cursor_index);
+    cursor_index = index;
+    setSelectedMenu(cursor_index);
+    return TRUE;
+  }
   return FALSE;
 }
 
