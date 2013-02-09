@@ -3,7 +3,7 @@
 * Date Created: Sunday, October 28th, 2012
 * Inheritance : QWidget
 * Description: Holder for all the info describing a person (character)
-*  
+*
 * TODO: FLAGS FOR STATUS AILMENTS [01-20-13]
 ******************************************************************************/
 #ifndef PERSON_H
@@ -19,16 +19,10 @@
 
 class Person : public QWidget
 {
-
-
 public:
   /* Constructor for a person object */
-  Person(uint ph_a = 5, uint ph_d = 2, uint th_a = 5, uint th_f = 2, uint po_a = 5,
-         uint po_f = 2, uint pr_a = 5, uint pr_f = 2, uint ch_a = 5, uint ch_f = 2,
-         uint cy_a = 5, uint cy_f = 2, uint ni_a = 5, uint ni_f = 2, uint vit = 300,
-         uint qd = 15,  uint ag = 7,   uint lim = 7,  uint unb = 7,  uint lev = 5,
-         uint exp = 200, QString name = "Person", QString prim = "CYA",
-         QString secd = "POB", QString rank = "Recruit", QWidget* pointer = 0);
+    Person(QString name, Race* race, Category* category, QString prim,
+           QString secd, QWidget* pointer = 0);
 
   /* Annihilates a person object */
   ~Person();
@@ -81,6 +75,9 @@ public:
   Q_DECLARE_FLAGS(StatusFlags, StatusAilment);
 
 private:
+
+  /* Set up stats for constructor */
+  void setupStats();
 
   /* Physical atk stat */
   uint physical_aggression;
@@ -272,10 +269,10 @@ private:
   uint level, experience;
 
   /* The person's class */
-  Category* character_class; 
+  Category* cat;
 
   /* The person's race */
-  Race* character_race; 
+  Race* race;
 
   /* Person's word ranking */
   QString rank;
@@ -296,7 +293,7 @@ private:
   QVector<QString> status_ailment_list;
 
   /* The person's name */
-  QString name;  
+  QString name;
 
   /* The person's primary elemental strength */
   QString primary;
@@ -313,15 +310,6 @@ private:
   /* Sprites for the person, first person and third person versions */
   Sprite* first_person;
   Sprite* third_person;
-
-  /* Set up stats for constructor */
-  void setupStats(uint ph_a = 5, uint ph_f = 2, uint th_a = 5, uint th_f = 2, uint po_a = 5, uint po_f = 2,
-                  uint pr_a = 5, uint pr_f = 2, uint ch_a = 5, uint ch_f = 2,
-                  uint cy_a = 5, uint cy_f = 2, uint ni_a = 5, uint ni_f = 2,
-                  uint vit = 300, uint qd = 15, uint ag = 7, uint lim = 7,
-                  uint unb = 7,  uint lev = 5, uint exp = 200,
-                  QString name = "Person", QString prim = "CYA",
-                  QString secd = "POB", QString rank = "Recruit", QWidget* pointer = 0);
 
 public:
   /* Adds an equipment to the given person */

@@ -4,8 +4,7 @@
 * Inheritance: QWidget
 * Description: Holder for all the info describing a person (character)
 *
-* TODO: FLAGS FOR STATUS AILMENTS [01-20-13]
-* TODO: STATS INCREASE ON LEVEL UP [01-21-13]
+* TODO: FINISH STATUS AILMENTS [02-08-13]
 * TODO: ?? addEquipment function [01-21-13]
 * TODO: action_list actions, [01-25-13]
 * TODO: Future class multiplier for level ups [01-25-13]
@@ -17,42 +16,31 @@
 /*
  * Description: Primary person constructor (requires all values)
  *
- * Inputs: uint ph_a - base physical aggression statistic
- *         uint ph_f - base physical fortitude statistic
- *         uint th_a - base thermal aggression statistic
- *         uint th_f - base thermal fortitude statistic
- *         uint po_a - base polar aggression statistic
- *         uint po_f - base polar fortitude statistic
- *         uint pr_a - base primal aggression statistic
- *         uint pr_f - base primal fortitude statistic
- *         uint ch_a - base charged aggression statistic
- *         uint ch_f - base charged fortitude statistic
- *         uint cy_a - base cybernetic aggression statistic
- *         uint cy_f - base cybernetic fortitude statistic
- *         uint ni_a - base nihil aggression statistic
- *         uint ni_f - base nihil fortitude statistic
- *         uint vit - base vitality statistic
- *         uint qd - base quantum drive statistic
- *         uint ag - base agility statistic
- *         uint lim - base limbertude statistic
- *         uint unb - base unbearability statistic
- *         uint lev - person's starting level
- *         uint exp - person's starting experience
- *         QString nam - name of person
- *         QString prim - person's primary elemental ability
- *         QString secd - person's secondary elemental ability
- *         QString rank - person's rank [recruit, sleuthmaster, etc.]
+ * Inputs:
  */
-Person::Person(uint ph_a, uint ph_f, uint th_a, uint th_f, uint po_a,  uint po_f, uint pr_a,
-               uint pr_f, uint ch_a, uint ch_f,  uint cy_a, uint cy_f,
-               uint ni_a, uint ni_f, uint vit,   uint qd,   uint ag,
-               uint lim,  uint unb,  uint lev,   uint exp,  QString nam,
-               QString prim, QString secd, QString rank, QWidget* pointer)
+Person::Person(QString name, Race* race, Category* category, QString prim,
+                QString secd, QWidget* pointer)
 {
-  /* Sets up the starting statistics for the person */
-  setupStats(ph_a, ph_f, th_a, th_f, po_a, po_f, pr_a, pr_f, ch_a, ch_f, cy_a,
-             cy_f, ni_a, ni_f, vit, qd, ag, lim, unb, lev, exp, nam,
-             prim, secd, rank);
+    /* Prepares non-battle related statistics for the person */
+    setName(name);
+    setRace(race);
+    setCategory(category);
+    setPrimary(prim);
+    setSecondary(secd);
+
+    /* Prepares all the battle-related statistics for the person */
+    setBaseStats();
+    setupStats();
+    setTemporaryStats();
+
+    /* Sets equipment & sprite pointers to NULL initially */
+    setHeadEquipment();
+    setLeftArmEquipment();
+    setRightArmEquipment();
+    setTorsoEquipment();
+    setLegEquipment();
+    setFirstPerson();
+    setThirdPerson();
 }
 
 /*
@@ -65,8 +53,8 @@ Person::~Person()
     delete right_arm;
     delete torso;
     delete legs;
-    delete character_class;
-    delete character_race;
+    delete cat;
+    delete race;
     delete first_person;
     delete third_person;
     setHeadEquipment();
@@ -81,57 +69,32 @@ Person::~Person()
 }
 
 /*
- * Description:
+ * Description: Sets up the regular stats of the person, for initial
+ *              construction, based off the base stats
  *
- * Inputs: * See constructor above for full input list *
+ * Inputs: none
  * Output: none
  */
-void Person::setupStats(uint ph_a, uint ph_f, uint th_a, uint th_f, uint po_a,  uint po_f, uint pr_a,
-                        uint pr_f, uint ch_a, uint ch_f,  uint cy_a, uint cy_f,
-                        uint ni_a, uint ni_f, uint vit,   uint qd,   uint ag,
-                        uint lim,  uint unb,  uint lev,   uint exp,  QString nam,
-                        QString prim, QString secd, QString rank, QWidget* pointer)
+void Person::setupStats()
 {
-    /* Sets up current stats*/
-    setPhysicalAggression(ph_a);
-    setPhysicalFortitude(ph_f);
-    setThermalAggression(th_a);
-    setThermalFortitude(th_f);
-    setPolarAggression(po_a);
-    setPolarFortitude(po_f);
-    setPrimalAggression(pr_a);
-    setPrimalFortitude(pr_f);
-    setChargedAggression(ch_a);
-    setChargedFortitude(ch_f);
-    setCyberneticAggression(cy_a);
-    setCyberneticFortitude(cy_f);
-    setNihilAggression(ni_a);
-    setNihilFortitude(ni_f);
-    setVitality(vit);
-    setQuantumDrive(qd);
-    setAgility(ag);
-    setLimbertude(lim);
-
-    /* Sets up temporary and base stats as current stats, initially */
-    setTemporaryStats();
-    setBaseStats();
-
-    /* Set up other stats */
-    setExp(exp);
-    setLevel(lev);
-    setName(nam);
-    setPrimary(prim);
-    setSecondary(secd);
-    setRank(rank);
-
-    /* Sets equipment & sprite pointers to NULL initially */
-    setHeadEquipment();
-    setLeftArmEquipment();
-    setRightArmEquipment();
-    setTorsoEquipment();
-    setLegEquipment();
-    setFirstPerson();
-    setThirdPerson();
+    setPhysicalAggression(getBasePhysicalAggression());
+    setPhysicalFortitude(getBasePhysicalFortitude());
+    setThermalAggression(getBaseThermalAggression());
+    setThermalFortitude(getBaseThermalFortitude());
+    setPolarAggression(getBasePolarAggression());
+    setPolarFortitude(getBasePolarFortitude());
+    setPrimalAggression(getBasePrimalAggression());
+    setPrimalFortitude(getBasePrimalFortitude());
+    setChargedAggression(getBaseChargedAggression());
+    setChargedFortitude(getBaseChargedFortitude());
+    setCyberneticAggression(getBaseCyberneticAggression());
+    setCyberneticFortitude(getBaseCyberneticFortitude());
+    setNihilAggression(getBaseNihilAggression());
+    setNihilFortitude(getBaseNihilFortitude());
+    setVitality(getBaseVitality());
+    setQuantumDrive(getBaseQuantumDrive());
+    setAgility(getBaseAgility());
+    setLimbertude(getBaseLimbertude());
 }
 
 /*
@@ -169,33 +132,47 @@ void Person::addExperience(uint value)
 }
 
 /*
- * Description: Sets up temporary statistics: for a battle, and
- *              other preparations
+ * Description: Sets up the base statistics based on the character class
+ *              which the character is set to, plus the additional bonuses
+ *              from the Race class.
  *
  * Inputs: none
  * Output: none
  */
 void Person::setBaseStats()
 {
-    /* Sets up temporary stats */
-    setBasePhysicalAggression(getPhysicalAggression());
-    setBasePhysicalFortitude(getPhysicalFortitude());
-    setBaseThermalAggression(getThermalAggression());
-    setBaseThermalFortitude(getThermalFortitude());
-    setBasePolarAggression(getPolarAggression());
-    setBasePolarFortitude(getPolarFortitude());
-    setBasePrimalAggression(getPrimalAggression());
-    setBasePrimalFortitude(getPrimalFortitude());
-    setBaseChargedAggression(getChargedAggression());
-    setBaseChargedFortitude(getChargedFortitude());
-    setBaseCyberneticAggression(getCyberneticAggression());
-    setBaseCyberneticFortitude(getCyberneticFortitude());
-    setBaseNihilAggression(getNihilAggression());
-    setBaseNihilFortitude(getNihilFortitude());
-    setBaseVitality(getVitality());
-    setBaseQuantumDrive(getQuantumDrive());
-    setBaseAgility(getAgility());
-    setBaseLimbertude(getLimbertude());
+    setBasePhysicalAggression(cat->getPhysicalAggression() +
+                              race->getPhysicalAggression());
+    setBasePhysicalFortitude(cat->getPhysicalFortitude() +
+                             race->getPhysicalFortitude());
+    setBaseThermalAggression(cat->getThermalAggression() +
+                             race->getThermalAggression());
+    setBaseThermalFortitude(cat->getThermalFortitude() +
+                            race->getThermalFortitude());
+    setBasePolarAggression(cat->getPolarAggression() +
+                           race->getPolarAggression());
+    setBasePolarFortitude(cat->getPolarFortitude() +
+                          race->getPolarFortitude());
+    setBasePrimalAggression(cat->getPrimalAggression() +
+                            race->getPrimalAggression());
+    setBasePrimalFortitude(cat->getPrimalFortitude() +
+                           race->getPrimalFortitude());
+    setBaseChargedAggression(cat->getChargedAggression() +
+                             race->getChargedAggression());
+    setBaseChargedFortitude(cat->getChargedFortitude() +
+                            race->getChargedFortitude());
+    setBaseCyberneticAggression(cat->getCyberneticAggression() +
+                                race->getCyberneticAggression());
+    setBaseCyberneticFortitude(cat->getCyberneticFortitude() +
+                               race->getCyberneticFortitude());
+    setBaseNihilAggression(cat->getNihilAggression() +
+                           race->getNihilAggression());
+    setBaseNihilFortitude(cat->getNihilFortitude() +
+                          race->getNihilFortitude());
+    setBaseVitality(cat->getVitality() + race->getVitality());
+    setBaseQuantumDrive(cat->getQuantumDrive() + race->getQuantumDrive());
+    setBaseAgility(cat->getAgility() + race->getAgility());
+    setBaseLimbertude(cat->getLimbertude() + race->getLimbertude());
 }
 
 
@@ -213,8 +190,8 @@ void Person::setTemporaryStats()
     setTempPhysicalFortitude(getPhysicalFortitude());
     setTempThermalAggression(getThermalAggression());
     setTempThermalFortitude(getThermalFortitude());
-    setBasePolarAggression(getPolarAggression());
-    setBasePolarFortitude(getPolarFortitude());
+    setTempPolarAggression(getPolarAggression());
+    setTempPolarFortitude(getPolarFortitude());
     setTempPrimalAggression(getPrimalAggression());
     setTempPrimalFortitude(getPrimalFortitude());
     setTempChargedAggression(getChargedAggression());
@@ -282,7 +259,7 @@ QVector<Action*>& Person::getAvailableActions()
  */
 Category* Person::getCategory()
 {
-  return character_class;
+  return cat;
 }
 
 
@@ -294,7 +271,7 @@ Category* Person::getCategory()
  */
 Race* Person::getRace()
 {
-  return character_race;
+  return race;
 }
 
 /*
@@ -1188,7 +1165,7 @@ const bool Person::setLegEquipment(Equipment* new_equipment)
  */
 void Person::setCategory(Category* new_category)
 {
-  character_class = new_category;
+  cat = new_category;
 }
 
 /*
@@ -1355,7 +1332,7 @@ void Person::setName(QString value)
  */
 void Person::setRace(Race* new_race)
 {
-  character_race = new_race;
+  race = new_race;
 }
 
 /*
