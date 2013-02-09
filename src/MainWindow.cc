@@ -9,8 +9,6 @@
 ******************************************************************************/
 #include "MainWindow.h"
 
-#include <QDebug>
-
 /* Constructor function */
 MainWindow::MainWindow(QWidget* parent)
 {
@@ -29,7 +27,16 @@ MainWindow::MainWindow(QWidget* parent)
   setFocus(Qt::OtherFocusReason);
   setFocusProxy(title_screen);
 
-  QObject::connect(this, SIGNAL(closing()), title_screen, SLOT(closing()));
+  QObject::connect(title_screen, SIGNAL(closing()), 
+                   this,         SLOT(close()));
+  QObject::connect(title_screen, SIGNAL(openingBattle(int)), 
+                   this,         SLOT(switchWidget(int)));
+  QObject::connect(title_screen, SIGNAL(openingMap(int)), 
+                   this,         SLOT(switchWidget(int)));
+  QObject::connect(test_map, SIGNAL(closingMap(int)), 
+                   this,     SLOT(switchWidget(int)));
+  QObject::connect(test_battle, SIGNAL(closingBattle(int)), 
+                   this,        SLOT(switchWidget(int)));
 
   show();
 }
@@ -39,8 +46,14 @@ MainWindow::~MainWindow()
 {
 }
 
-void MainWindow::closing()
+void MainWindow::close()
 {
+  emit closing();
+}
+
+void MainWindow::switchWidget(int index)
+{
+  widget_stack->setCurrentIndex(index);
 }
 
 /* 

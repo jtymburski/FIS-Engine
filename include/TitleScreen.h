@@ -33,14 +33,6 @@ public:
   /* Destructor function */
   ~TitleScreen();
 
-public slots:
-  void closing();
-
-protected:
-  void paintEvent(QPaintEvent*);
-  void keyPressEvent(QKeyEvent*);
-  void keyReleaseEvent(QKeyEvent*);
-
 private:
   /* For the first menu level's position */
   int cursor_index;
@@ -73,8 +65,21 @@ private:
   const static int kNUM_MENU_ITEMS = 3;
   const static QString kMENU_ITEMS[];
 
-//public: // TODO: Why is this commented out? [December 2, 2012]
- 
+protected:
+  void paintEvent(QPaintEvent*);
+  void keyPressEvent(QKeyEvent*);
+
+public slots:
+  void close();
+  void openBattle();
+  void openMap();
+
+signals:
+  void closing();
+  void openingBattle(int index);
+  void openingMap(int index);
+
+public:
   void decrementState();
 
   void incrementState();
@@ -83,6 +88,8 @@ private:
   void iterate(State s, int index);
 
   bool setSelectedMenu(int menu_count);
+
+  bool setState(int index);
 
   void setup();
 

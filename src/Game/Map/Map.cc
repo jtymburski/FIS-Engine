@@ -453,8 +453,19 @@ Map::~Map()
 
 
 /* Painting function */
-void Map::paintEvent(QPaintEvent *event)
+void Map::paintEvent(QPaintEvent* event)
 {
+}
+
+void Map::keyPressEvent(QKeyEvent* event)
+{
+  if(event->key() == Qt::Key_Escape)
+    closeMap();
+}
+
+void Map::closeMap()
+{
+  emit closingMap(2);
 }
 
 /* Causes the thing you are facing and next to start its interactive action */
