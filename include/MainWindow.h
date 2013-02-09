@@ -30,9 +30,6 @@ public:
   /* Destructor function */
   ~MainWindow();
 
-public slots:
-  void closing();
-
 private:
   QStackedWidget* widget_stack;
   TitleScreen* title_screen;
@@ -40,6 +37,12 @@ private:
   /* DELETE two pointers below. Currently here for testing */
   Battle* test_battle;
   Map* test_map;
+
+public slots:
+  void close();
+
+signals:
+  void closing();
 
 public:
   /* DELETE two functions below. Currently here for testing */

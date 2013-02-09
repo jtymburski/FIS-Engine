@@ -33,14 +33,6 @@ public:
   /* Destructor function */
   ~TitleScreen();
 
-public slots:
-  void closing();
-
-protected:
-  void paintEvent(QPaintEvent*);
-  void keyPressEvent(QKeyEvent*);
-  void keyReleaseEvent(QKeyEvent*);
-
 private:
   /* For the first menu level's position */
   int cursor_index;
@@ -73,8 +65,18 @@ private:
   const static int kNUM_MENU_ITEMS = 3;
   const static QString kMENU_ITEMS[];
 
-//public: // TODO: Why is this commented out? [December 2, 2012]
- 
+protected:
+  void paintEvent(QPaintEvent*);
+  void keyPressEvent(QKeyEvent*);
+  void keyReleaseEvent(QKeyEvent*);
+
+public slots:
+  void close();
+
+signals:
+  void closing();
+
+public:
   void decrementState();
 
   void incrementState();

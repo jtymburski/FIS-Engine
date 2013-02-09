@@ -6,8 +6,6 @@
 ******************************************************************************/
 #include "TitleScreen.h"
 
-#include <QApplication>
-
 /* ------------------------- Constant Definitions -------------------------- */
 const QString TitleScreen::kMENU_ITEMS[] = {"Map Test", "Battle Test", "Exit"};
 
@@ -41,10 +39,6 @@ TitleScreen::~TitleScreen()
 {
 }
 
-void TitleScreen::closing()
-{
-}
-
 void TitleScreen::paintEvent(QPaintEvent* event)
 {
   QPainter painter(this);
@@ -64,14 +58,19 @@ void TitleScreen::keyPressEvent(QKeyEvent* event)
   {
     incrementState();
   }
-  else if(event->key() == Qt::Key_Enter)
+  else if(event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)
   {
-    closing();
+    close();
   }
 }
 
 void TitleScreen::keyReleaseEvent(QKeyEvent* event)
 {
+}
+
+void TitleScreen::close()
+{
+  emit closing();
 }
 
 void TitleScreen::decrementState()

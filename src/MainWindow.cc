@@ -9,8 +9,6 @@
 ******************************************************************************/
 #include "MainWindow.h"
 
-#include <QDebug>
-
 /* Constructor function */
 MainWindow::MainWindow(QWidget* parent)
 {
@@ -29,7 +27,7 @@ MainWindow::MainWindow(QWidget* parent)
   setFocus(Qt::OtherFocusReason);
   setFocusProxy(title_screen);
 
-  QObject::connect(this, SIGNAL(closing()), title_screen, SLOT(closing()));
+  QObject::connect(title_screen, SIGNAL(closing()), this, SLOT(close()));
 
   show();
 }
@@ -39,8 +37,9 @@ MainWindow::~MainWindow()
 {
 }
 
-void MainWindow::closing()
+void MainWindow::close()
 {
+  emit closing();
 }
 
 /* 
