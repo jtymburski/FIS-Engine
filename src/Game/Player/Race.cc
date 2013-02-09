@@ -11,12 +11,51 @@
 #include "Game/Player/Race.h"
 
 /*
- * Description: Race constructor object
+ * Description: Race constructor object. Constructs a race given a string and
+ *              a full set of base stat values. None of the race constructors
+ *              set the description of the race, or the actions available.
+ *              These must be set up afterwards.
  *
- * Inputs: none
+ * Inputs: n - name of the Race
+ *      ph_a - base physical aggression
+ *      ph_f - base physical fortitude
+ *      th_a - base thermal aggression
+ *      th-f - base thermal fortitude
+ *      po_a - base polar aggression
+ *      po_f - base polar fortitude
+ *      pr_a - base primal aggresion
+ *      pr_f - base primal fortitude
+ *      ch_a - base charged aggression
+ *      ch_f - base charged fortitue
+ *      cy_a - base cybernetic aggression
+ *      cy_f - base cybernetic fortitude
+ *      ni_a - base nihil aggression
+ *      ni_f - base nihil fortitude
+ *      vit  - base vitality
+ *      qd   - base quantum drive
+ *      agi  - base agility
+ *      lim  - base limbertude
+ *      unb  - base unbearability
  */
-Race::Race(QWidget* parent)
+Race::Race(QString n, uint ph_a, uint ph_f, uint th_a,uint th_f, uint po_a,
+           uint po_f, uint pr_a, uint pr_f, uint ch_a,uint ch_f, uint cy_a,
+           uint cy_f, uint ni_a, uint ni_f, uint vit, uint qd, uint agi,
+           uint lim, uint unb, QWidget *parent)
 {
+    setName(n);
+    setUpStats(ph_a,ph_f,th_a,th_f,po_a,po_f,pr_a,pr_f,ch_a,ch_f,cy_a,cy_f,
+               ni_a,ni_f,vit,qd,agi,lim,unb);
+}
+
+/*
+ * Description: Default Race object constructor
+ *
+ * Inputs: n - name of the Race
+ */
+Race::Race(QString n, QWidget *parent)
+{
+    setName(n);
+    setUpStats(10,7,8,5,8,5,8,5,8,5,8,5,8,5,200,100,10,12,3);
 }
 
 /*
@@ -24,6 +63,37 @@ Race::Race(QWidget* parent)
  */
 Race::~Race()
 {
+}
+
+/*
+ * Description: Set up stats function (for constructors)
+ *
+ * Inputs: See list in constructor.
+ */
+void Race::setUpStats(uint ph_a, uint ph_f, uint th_a, uint th_f, uint po_a,
+                      uint po_f, uint pr_a, uint pr_f, uint ch_a,uint ch_f, uint cy_a,
+                      uint cy_f, uint ni_a, uint ni_f, uint vit, uint qd, uint agi,
+                      uint lim, uint unb)
+{
+    setPhysicalAggression(ph_a);
+    setPhysicalFortitude(ph_f);
+    setThermalAggression(th_a);
+    setThermalFortitude(th_f);
+    setPolarAggression(po_a);
+    setPolarFortitude(po_f);
+    setPrimalAggression(pr_a);
+    setPrimalFortitude(pr_f);
+    setChargedAggression(ch_a);
+    setChargedFortitude(ch_f);
+    setCyberneticAggression(cy_a);
+    setCyberneticFortitude(cy_f);
+    setNihilAggression(ni_a);
+    setNihilFortitude(ni_f);
+    setVitality(vit);
+    setQuantumDrive(qd);
+    setAgility(agi);
+    setLimbertude(lim);
+    setUnbearability(unb);
 }
 
 /*
@@ -49,12 +119,34 @@ void Race::setDescription(QString new_description)
 }
 
 /*
+ * Description: Sets the physical aggression bonus stat
+ *
+ * Inputs: int - value of the bonus
+ * Output: none
+ */
+void Race::setPhysicalAggression(uint value)
+{
+  physical_aggression = value;
+}
+
+/*
+ * Description: Sets the physical fortitude bonus stat
+ *
+ * Inputs: int - value of the bonus
+ * Output: none
+ */
+void Race::setPhysicalFortitude(uint value)
+{
+  physical_fortitude = value;
+}
+
+/*
  * Description: Sets the race bonus value of the thermal attack stat
  *
  * Inputs: int - value of the bonus
  * Output: none
  */
-void Race::setThermalAggression(int value)
+void Race::setThermalAggression(uint value)
 {
   thermal_aggression = value;
 }
@@ -65,7 +157,7 @@ void Race::setThermalAggression(int value)
  * Inputs: int - value of the bonus
  * Output: none
  */
-void Race::setThermalFortitude(int value)
+void Race::setThermalFortitude(uint value)
 {
    thermal_fortitude = value;
 }
@@ -76,7 +168,7 @@ void Race::setThermalFortitude(int value)
  * Inputs: int - value of the bonus
  * Output: none
  */
-void Race::setPolarAggression(int value)
+void Race::setPolarAggression(uint value)
 {
   polar_aggression = value;
 }
@@ -87,7 +179,7 @@ void Race::setPolarAggression(int value)
  * Inputs: int - value of the bonus
  * Output: none
  */
-void Race::setPolarFortitude(int value)
+void Race::setPolarFortitude(uint value)
 {
   polar_fortitude = value;
 }
@@ -98,7 +190,7 @@ void Race::setPolarFortitude(int value)
  * Inputs: int - value of the bonus
  * Output: none
  */
-void Race::setPrimalAggression(int value)
+void Race::setPrimalAggression(uint value)
 {
   primal_aggression = value;
 }
@@ -109,7 +201,7 @@ void Race::setPrimalAggression(int value)
  * Inputs: int - value of the bonus
  * Output: none
  */
-void Race::setPrimalFortitude(int value)
+void Race::setPrimalFortitude(uint value)
 {
   primal_fortitude = value;
 }
@@ -120,7 +212,7 @@ void Race::setPrimalFortitude(int value)
  * Inputs: int - value of the bonus
  * Output: none
  */
-void Race::setChargedAggression(int value)
+void Race::setChargedAggression(uint value)
 {
   charged_aggression = value;
 }
@@ -131,7 +223,7 @@ void Race::setChargedAggression(int value)
  * Inputs: int - value of the bonus
  * Output: none
  */
-void Race::setChargedFortitude(int value)
+void Race::setChargedFortitude(uint value)
 {
   charged_fortitude = value;
 }
@@ -142,7 +234,7 @@ void Race::setChargedFortitude(int value)
  * Inputs: int - value of the bonus
  * Output: none
  */
-void Race::setCyberneticAggression(int value)
+void Race::setCyberneticAggression(uint value)
 {
   cybernetic_aggression = value;
 }
@@ -153,7 +245,7 @@ void Race::setCyberneticAggression(int value)
  * Inputs: int - value of the bonus
  * Output: none
  */
-void Race::setCyberneticFortitude(int value)
+void Race::setCyberneticFortitude(uint value)
 {
   cybernetic_fortitude = value;
 }
@@ -164,7 +256,7 @@ void Race::setCyberneticFortitude(int value)
  * Inputs: int - value of the bonus
  * Output: none
  */
-void Race::setNihilAggression(int value)
+void Race::setNihilAggression(uint value)
 {
   nihil_aggression = value;
 }
@@ -175,7 +267,7 @@ void Race::setNihilAggression(int value)
  * Inputs: int - value of the bonus
  * Output: none
  */
-void Race::setNihilFortitude(int value)
+void Race::setNihilFortitude(uint value)
 {
   nihil_fortitude = value;
 }
@@ -186,7 +278,7 @@ void Race::setNihilFortitude(int value)
  * Inputs: int - value of the bonus
  * Output: none
  */
-void Race::setVitality(int value)
+void Race::setVitality(uint value)
 {
   vitality = value;
 }
@@ -197,7 +289,7 @@ void Race::setVitality(int value)
  * Inputs: int - value of the bonus
  * Output: none
  */
-void Race::setQuantumDrive(int value)
+void Race::setQuantumDrive(uint value)
 {
   quantum_drive = value;
 }
@@ -208,7 +300,7 @@ void Race::setQuantumDrive(int value)
  * Inputs: int - value of the bonus
  * Output: none
  */
-void Race::setAgility(int value)
+void Race::setAgility(uint value)
 {
   agility = value;
 }
@@ -219,7 +311,7 @@ void Race::setAgility(int value)
  * Inputs: int - value of the bonus
  * Output: none
  */
-void Race::setLimbertude(int value)
+void Race::setLimbertude(uint value)
 {
   limbertude = value;
 }
@@ -230,9 +322,55 @@ void Race::setLimbertude(int value)
  * Inputs: int - value of the bonus
  * Output: none
  */
-void Race::setUnbearability(int value)
+void Race::setUnbearability(uint value)
 {
   unbearability = value;
+}
+
+/*
+ * Description: Returns the name of the Race
+ *
+ * Inputs: none
+ * Output: QString - name of the race
+ */
+QString Race::getName()
+{
+  return name;
+}
+
+
+/*
+ * Description: Returns the description of the Race
+ *
+ * Inputs: none
+ * Output: QString - description of the race
+ */
+QString Race::getDescription()
+{
+  return description;
+}
+
+
+/*
+ * Description: Returns the physical atk bonus
+ *
+ * Inputs: none
+ * Output: int - value of the race bonus
+ */
+uint Race::getPhysicalAggression()
+{
+  return physical_aggression;
+}
+
+/*
+ * Description: Returns the physical def bonus
+ *
+ * Inputs: none
+ * Output: int - value of the race bonus
+ */
+uint Race::getPhysicalFortitude()
+{
+  return physical_fortitude;
 }
 
 /*
@@ -241,7 +379,7 @@ void Race::setUnbearability(int value)
  * Inputs: none
  * Output: int - value of the race bonus
  */
-int Race::getThermalAggression()
+uint Race::getThermalAggression()
 {
   return thermal_aggression;
 }
@@ -252,7 +390,7 @@ int Race::getThermalAggression()
  * Inputs: none
  * Output: int - value of the race bonus
  */
-int Race::getThermalFortitude()
+uint Race::getThermalFortitude()
 {
   return thermal_fortitude;
 }
@@ -263,7 +401,7 @@ int Race::getThermalFortitude()
  * Inputs: none
  * Output: int - value of the race bonus
  */
-int Race::getPolarAggression()
+uint Race::getPolarAggression()
 {
   return polar_aggression;
 }
@@ -274,7 +412,7 @@ int Race::getPolarAggression()
  * Inputs: none
  * Output: int - value of the race bonus
  */
-int Race::getPolarFortitude()
+uint Race::getPolarFortitude()
 {
   return polar_fortitude;
 }
@@ -285,7 +423,7 @@ int Race::getPolarFortitude()
  * Inputs: none
  * Output: int - value of the race bonus
  */
-int Race::getPrimalAggression()
+uint Race::getPrimalAggression()
 {
   return primal_aggression;
 }
@@ -296,7 +434,7 @@ int Race::getPrimalAggression()
  * Inputs: none
  * Output: int - value of the race bonus
  */
-int Race::getPrimalFortitude()
+uint Race::getPrimalFortitude()
 {
   return primal_fortitude;
 }
@@ -307,7 +445,7 @@ int Race::getPrimalFortitude()
  * Inputs: none
  * Output: int - value of the race bonus
  */
-int Race::getChargedAggression()
+uint Race::getChargedAggression()
 {
   return charged_aggression;
 }
@@ -318,7 +456,7 @@ int Race::getChargedAggression()
  * Inputs: none
  * Output: int - value of the race bonus
  */
-int Race::getChargedFortitude()
+uint Race::getChargedFortitude()
 {
   return charged_fortitude;
 }
@@ -329,7 +467,7 @@ int Race::getChargedFortitude()
  * Inputs: none
  * Output: int - value of the race bonus
  */
-int Race::getCyberneticAggression()
+uint Race::getCyberneticAggression()
 {
   return cybernetic_aggression;
 }
@@ -340,7 +478,7 @@ int Race::getCyberneticAggression()
  * Inputs: none
  * Output: int - value of the race bonus
  */
-int Race::getCyberneticFortitude()
+uint Race::getCyberneticFortitude()
 {
   return cybernetic_fortitude;
 }
@@ -351,7 +489,7 @@ int Race::getCyberneticFortitude()
  * Inputs: none
  * Output: int - value of the bonus
  */
-int Race::getNihilAggression()
+uint Race::getNihilAggression()
 {
   return nihil_aggression;
 }
@@ -362,7 +500,7 @@ int Race::getNihilAggression()
  * Inputs: none
  * Output: int - value of the race bonus
  */
-int Race::getNihilFortitude()
+uint Race::getNihilFortitude()
 {
   return nihil_fortitude;
 }
@@ -373,7 +511,7 @@ int Race::getNihilFortitude()
  * Inputs: none
  * Output: int - value of the race bonus
  */
-int Race::getVitality()
+uint Race::getVitality()
 {
   return vitality;
 }
@@ -384,7 +522,7 @@ int Race::getVitality()
  * Inputs: none
  * Output: int - value of the race bonus
  */
-int Race::getQuantumDrive()
+uint Race::getQuantumDrive()
 {
   return quantum_drive;
 }
@@ -395,7 +533,7 @@ int Race::getQuantumDrive()
  * Inputs: none
  * Output: int - value of the race bonus
  */
-int Race::getAgility()
+uint Race::getAgility()
 {
   return agility;
 }
@@ -406,7 +544,7 @@ int Race::getAgility()
  * Inputs: none
  * Output: int - value of the race bonus
  */
-int Race::getLimbertude()
+uint Race::getLimbertude()
 {
   return limbertude;
 }
@@ -417,7 +555,7 @@ int Race::getLimbertude()
  * Inputs: none
  * Output: int - value of the race bonus
  */
-int Race::getUnbearability()
+uint Race::getUnbearability()
 {
   return unbearability;
 }

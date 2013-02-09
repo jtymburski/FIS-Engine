@@ -33,7 +33,7 @@ public:
     STACKABLE     = 1ul << 6, /* If item can be grouped with others */
     EQUIPMENT     = 1ul << 7, /* Is the item a piece of equipment? */
     KEYITEM       = 1ul << 8, /* is the item a unique quest item? */
-    MULTIITEM     = 1ul << 9,  /* Does the item hit more than one target? */
+    MULTIITEM     = 1ul << 9, /* Does the item hit more than one target? */
     PARTYTITEM    = 1ul << 10 /* Does the item effect all members of a party? */
   };
   Q_DECLARE_FLAGS(ItemFlags, ItemState)
@@ -54,6 +54,9 @@ private:
 
   /* Number of turns the item will last in battle */
   uint duration;
+
+  /* Value of currency in the shop */
+  uint value;
 
 public:
   /* Gets category of unit */

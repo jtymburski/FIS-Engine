@@ -46,13 +46,13 @@ private:
   uint level; //0
 
   /* Storage and level limits */
-  static const uint kBASIC_ITEM_LIMIT    = 50;
-  static const uint kMAX_EQUIP_LIMIT = 10000;
-  static const uint kMAX_ITEM_LIMIT      = 10000;
-  static const uint kMAX_BUBBY_LIMIT     = 10000;
-  static const uint kMAX_LEVEL           = 25;
-  static const uint kMAX_EQUIP_STACK     = 10;
-  static const uint kMAX_ITEM_STACK      = 50;
+  static const uint kBASIC_ITEM_LIMIT = 50;
+  static const uint kMAX_EQUIP_LIMIT  = 10000;
+  static const uint kMAX_ITEM_LIMIT   = 10000;
+  static const uint kMAX_BUBBY_LIMIT  = 10000;
+  static const uint kMAX_LEVEL        = 25;
+  static const uint kMAX_EQUIP_STACK  = 10;
+  static const uint kMAX_ITEM_STACK   = 50;
 
   /* Name of Inventory storage unit */
   QString name;

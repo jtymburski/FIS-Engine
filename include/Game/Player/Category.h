@@ -18,183 +18,219 @@ class Category : public QWidget
 {
 public:
    /* Category constructor */
-   Category(QWidget *parent = 0);
+   Category(QString n, uint ph_a, uint ph_f, uint th_a, uint th_f, uint po_a,
+            uint po_f, uint pr_a, uint pr_f, uint ch_a,uint ch_f, uint cy_a,
+            uint cy_f, uint ni_a, uint ni_f, uint vit, uint qd, uint agi,
+            uint lim, uint unb, QWidget *parent = 0);
 
-   /* Annihilates a category object */
+   /* Default Category Constructor given a name */
+   Category(QString n, QWidget *parent = 0);
+
+   /* Annihilates a Category object */
    ~Category();
 
 private:
-  /* Description for the category */
+   /* Set up stats function for the constructor */
+   void setUpStats(uint ph_a, uint ph_f, uint th_a, uint th_f, uint po_a,
+                   uint po_f, uint pr_a, uint pr_f, uint ch_a, uint ch_f,
+                   uint cy_a, uint cy_f, uint ni_a, uint ni_f, uint vit,
+                   uint qd, uint agi, uint lim, uint unb);
+
+  /* Description */
   QString description;
 
-  /* Name for the category */
+  /* Name */
   QString name;
 
+  /* Physical atk stat */
+  uint physical_aggression;
+
+  /* Physical def stat */
+  uint physical_fortitude;
+
   /* Fire atk stat */
-  int thermal_aggression;
+  uint thermal_aggression;
 
   /* Fire def stat */
-  int thermal_fortitude;
+  uint thermal_fortitude;
 
   /* Ice atk stat */
-  int polar_aggression;
+  uint polar_aggression;
 
   /* Ice def stat */
-  int polar_fortitude;
+  uint polar_fortitude;
 
   /* Forest atk stat */
-  int primal_aggression;
+  uint primal_aggression;
 
   /* Forest def stat */
-  int primal_fortitude;
+  uint primal_fortitude;
 
   /* Electric atk stat */
-  int charged_aggression;
+  uint charged_aggression;
 
   /* Electric def stat */
-  int charged_fortitude;
+  uint charged_fortitude;
 
   /* Digital atk stat */
-  int cybernetic_aggression;
+  uint cybernetic_aggression;
 
   /* Digital def stat */
-  int cybernetic_fortitude;
+  uint cybernetic_fortitude;
 
   /* Void atk stat */
-  int nihil_aggression;
+  uint nihil_aggression;
 
   /* Void def stat */
-  int nihil_fortitude;
+  uint nihil_fortitude;
 
   /* Health stat */
-  int vitality;
+  uint vitality;
 
   /* Quantum drive (MP), shown as percentage */
-  int quantum_drive;
+  uint quantum_drive;
 
   /* Speed stat */
-  int agility;
+  uint agility;
 
   /* Dodge stat */
-  int limbertude;
+  uint limbertude;
 
   /* Critical chance stat */
   int unbearability;
 
   /* When the actions become available (based on level) */
-  QVector<int> action_available; 
+  QVector<uint> action_available;
 
-  /* Actions available for this race */
-  QVector<Action*> action_list; 
+  /* Actions available for this Category */
+  QVector<Action*> action_list;
 
 public:
-  /* Sets name of the race */
-  void setName(QString s); 
+  /* Sets name of the Category */
+  void setName(QString s);
 
-  /* Sets the description of the race */
-  void setDescription(QString s); 
+  /* Sets the description of the Category */
+  void setDescription(QString s);
+
+  /* Sets the physical attack stat */
+  void setPhysicalAggression(uint value);
+
+  /* Sets the physical defense stat */
+  void setPhysicalFortitude(uint value);
 
   /* Sets the fire attack stat */
-  void setThermalAggression(int value);
+  void setThermalAggression(uint value);
 
   /* Sets the fire defense stat */
-  void setThermalFortitude(int value);
+  void setThermalFortitude(uint value);
 
   /* Sets the ice attack stat */
-  void setPolarAggression(int value);
+  void setPolarAggression(uint value);
 
   /* Sets the ice defense stat */
-  void setPolarFortitude(int value);
+  void setPolarFortitude(uint value);
 
   /* Sets the forest attack stat */
-  void setPrimalAggression(int value);
+  void setPrimalAggression(uint value);
 
   /* Sets the forest defense stat */
-  void setPrimalFortitude(int value);
+  void setPrimalFortitude(uint value);
 
   /* Sets the electric attack stat */
-  void setChargedAggression(int value);
+  void setChargedAggression(uint value);
 
   /* Sets the electric defense stat */
-  void setChargedFortitude(int value);
+  void setChargedFortitude(uint value);
 
   /* Sets the digital attack stat */
-  void setCyberneticAggression(int value);
+  void setCyberneticAggression(uint value);
 
   /* Sets the digital defense stat */
-  void setCyberneticFortitude(int value);
+  void setCyberneticFortitude(uint value);
 
   /* Sets the void attack stat */
-  void setNihilAggression(int value);
+  void setNihilAggression(uint value);
 
   /* Sets the void defense stat */
-  void setNihilFortitude(int value);
+  void setNihilFortitude(uint value);
 
   /* Sets the health stat */
-  void setVitality(int value);
+  void setVitality(uint value);
 
   /* Sets the power points (shown as percentage) */
-  void setQuantumDrive(int value);
+  void setQuantumDrive(uint value);
 
   /* Sets the speed stat */
-  void setAgility(int value);
+  void setAgility(uint value);
 
   /* Sets the dodge stat */
-  void setLimbertude(int value);
+  void setLimbertude(uint value);
 
   /* Sets the critical chance stat */
-  void setUnbearability(int value);
+  void setUnbearability(uint value);
+
+  /* Gets the name of the class */
+  QString getName();
+
+  /* Gets the description of the class */
+  QString getDescription();
+
+  /* Sets the physical attack stat */
+  uint getPhysicalAggression();
+
+  /* Sets the physical defense stat */
+  uint getPhysicalFortitude();
 
   /* Gets the fire attack stat */
-  int getThermalAggression();
+  uint getThermalAggression();
 
   /* Gets the fire defense stat */
-  int getThermalFortitude();
+  uint getThermalFortitude();
 
   /* Gets the ice attack stat */
-  int getPolarAggression();
+  uint getPolarAggression();
 
   /* Gets the ice defense stat */
-  int getPolarFortitude();
+  uint getPolarFortitude();
 
   /* Gets the forest attack stat */
-  int getPrimalAggression();
+  uint getPrimalAggression();
 
   /* Gets the forest defense stat */
-  int getPrimalFortitude();
+  uint getPrimalFortitude();
 
   /* Gets the electric attack stat */
-  int getChargedAggression();
+  uint getChargedAggression();
 
   /* Gets the electric defense stat */
-  int getChargedFortitude();
+  uint getChargedFortitude();
 
   /* Gets the digital attack stat */
-  int getCyberneticAggression();
+  uint getCyberneticAggression();
 
   /* Gets the digital defense stat */
-  int getCyberneticFortitude();
+  uint getCyberneticFortitude();
 
   /* Gets the void attack stat */
-  int getNihilAggression();
+  uint getNihilAggression();
 
   /* Gets the void defense stat */
-  int getNihilFortitude();
+  uint getNihilFortitude();
 
   /* Gets the health stat */
-  int getVitality();
+  uint getVitality();
 
   /* Gets the power points (shown as a percentage) */
-  int getQuantumDrive();
+  uint getQuantumDrive();
 
   /* Gets the speed stat */
-  int getAgility();
+  uint getAgility();
 
   /* Gets the dodge stat */
-  int getLimbertude();
+  uint getLimbertude();
 
    /* Gets the critical chance stat */
-  int getUnbearability();
+  uint getUnbearability();
 };
 
 #endif // CATEGORY_H

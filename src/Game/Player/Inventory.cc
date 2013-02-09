@@ -3,6 +3,7 @@
 * Date Created: Dec 2 2012
 * Inheritance: QWidget
 * Description: The Inventory class
+* TODO: CHECK FOR FLAGS (Stackable, etc.)
 ******************************************************************************/
 #include "Game/Player/Inventory.h"
 
@@ -176,7 +177,7 @@ const bool Inventory::removeFrom(Item terminal_item)
  */
 const bool Inventory::removeFrom(Bubby bubby)
 {
-  return FALSE;
+
 }
 
 /*
