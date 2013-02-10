@@ -16,6 +16,7 @@
 #include <QVector>
 
 #include "Options.h"
+#include "Sound.h"
 //#include "SavedGame.h"
 
 /* The available menu options, and another one for potential easter eggs */
@@ -61,6 +62,8 @@ private:
   /* The options names for menu building */
   QVector<QString> option_names;
 
+  Sound* background_sound;
+
   /* ------------------ Constants ------------------ */
   const static int kNUM_MENU_ITEMS = 3;
   const static QString kMENU_ITEMS[];
@@ -86,6 +89,8 @@ public:
 
   /* Changes the menu to state s and the given index */
   void iterate(State s, int index);
+
+  void playBackground();
 
   bool setSelectedMenu(int menu_count);
 

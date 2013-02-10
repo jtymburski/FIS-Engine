@@ -27,6 +27,10 @@ TitleScreen::TitleScreen(int width, int height, QWidget* parent)
   current_font.setWeight(QFont::Bold);
   setFont(current_font);
 
+  /* Sound setup */
+  background_sound = new Sound(":/SOUND_titlescreen",-1);
+  background_sound->play();
+
   /* Setup the internals of the screen */
   setup();
   cursor_index = 0;
@@ -64,6 +68,8 @@ void TitleScreen::keyPressEvent(QKeyEvent* event)
   }
   else if(event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)
   {
+    background_sound->stop();
+
     if(cursor_index == TESTMAP)
       openMap();
     else if(cursor_index == TESTBATTLE)
@@ -114,6 +120,11 @@ void TitleScreen::incrementState()
 /* Changes the menu to state s and the given index */
 void TitleScreen::iterate(State titlestate, int index)
 {
+}
+
+void TitleScreen::playBackground()
+{
+  background_sound->play();
 }
 
 bool TitleScreen::setSelectedMenu(int menu_count)
