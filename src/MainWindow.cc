@@ -74,8 +74,8 @@ void MainWindow::setupBattle()
   Person* cloud_dude = new Person("Arcadius", human, bloodclaw_scion, "CYA", "POB");
   Person* cloud_dude2 = new Person("Arcadius", human, bloodclaw_scion, "CYA", "POB");
   Person* cloud_dude3 = new Person("Arcadius", human, bloodclaw_scion, "CYA", "POB");
-  Person* cloud_dude4 = new Person("Arcadius", human, bloodclaw_scion, "CYA", "POB");
-  Person* turbo_fish = new Person("Arcadius", human, bloodclaw_scion, "CYA", "POB");
+  Person* ember = new Person("Ember", human, bloodclaw_scion, "CYA", "POB");
+  Person* raven = new Person("raven", human, bloodclaw_scion, "CYA", "POB");
 
   Sprite* main_char_fp = new Sprite(":/A_player");
   Sprite* arcadius_fp = new Sprite(":/A_arcadius");
@@ -83,7 +83,8 @@ void MainWindow::setupBattle()
   Sprite* aurumba_fp = new Sprite(":/A_aurumba");
   Sprite* berfriegg_fp = new Sprite(":/A_berfriegg");
   Sprite* cloud_dude_tp = new Sprite(":/E_cloud_thing");
-  Sprite* turbo_fish_tp = new Sprite(":/E_turbo_fish");
+  Sprite* ember_tp = new Sprite(":/E_ember");
+  Sprite* raven_tp = new Sprite(":/E_draganaraven");
   main_character->setFirstPerson(main_char_fp);
   arcadius->setFirstPerson(arcadius_fp);
   ladybear->setFirstPerson(ladybear_fp);
@@ -92,8 +93,8 @@ void MainWindow::setupBattle()
   cloud_dude->setThirdPerson(cloud_dude_tp);
   cloud_dude2->setThirdPerson(cloud_dude_tp);
   cloud_dude3->setThirdPerson(cloud_dude_tp);
-  cloud_dude4->setThirdPerson(cloud_dude_tp);
-  turbo_fish->setThirdPerson(turbo_fish_tp);
+  ember->setThirdPerson(ember_tp);
+  raven->setThirdPerson(raven_tp);
 
   Party* friend_clan = new Party(main_character);
   friend_clan->addMember(arcadius);
@@ -101,10 +102,11 @@ void MainWindow::setupBattle()
   friend_clan->addMember(aurumba);
   friend_clan->addMember(berfriegg);
   Party* enemy_clan = new Party(cloud_dude);
+  enemy_clan->addMember(ember);
+  enemy_clan->addMember(raven);
   enemy_clan->addMember(cloud_dude2);
   enemy_clan->addMember(cloud_dude3);
-  enemy_clan->addMember(cloud_dude4);
-  enemy_clan->addMember(turbo_fish);
+
   
   test_battle = new Battle(friend_clan, enemy_clan);
 }
