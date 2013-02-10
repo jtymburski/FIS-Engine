@@ -3,8 +3,6 @@
 * Date Created: Sunday, October 28th, 2012
 * Inheritance : QWidget
 * Description: Holder for all the info describing a person (character)
-*
-* TODO: FLAGS FOR STATUS AILMENTS [01-20-13]
 ******************************************************************************/
 #ifndef PERSON_H
 #define PERSON_H
@@ -75,7 +73,6 @@ public:
   Q_DECLARE_FLAGS(StatusFlags, StatusAilment);
 
 private:
-
   /* Set up stats for constructor */
   void setupStats();
 
@@ -287,7 +284,7 @@ private:
   QVector<Action*> action_list;
 
   /* Parallel list of when person's actions become available */
-  QVector<int>  action_available;
+  QVector<uint>  action_available;
 
   /* List of status ailment strings */
   QVector<QString> status_ailment_list;
@@ -312,9 +309,6 @@ private:
   Sprite* third_person;
 
 public:
-  /* Adds an equipment to the given person */
-  bool addEquipment(Equipment* equipment);
-
   /* Adds experience of a given amount */
   void addExperience(uint n);
 

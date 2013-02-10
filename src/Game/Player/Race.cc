@@ -4,8 +4,6 @@
 * Inheritance: Parent class - Person
 * Description: Header for Race that defines the race for the particular person.
 *              Some examples includes Bears, Humans, etc.
-*
-*  TODO: CONSTRUCTORS TO BE FINISHED
 ******************************************************************************/
 
 #include "Game/Player/Race.h"

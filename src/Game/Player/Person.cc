@@ -5,7 +5,6 @@
 * Description: Holder for all the info describing a person (character)
 *
 * TODO: FINISH STATUS AILMENTS [02-08-13]
-* TODO: ?? addEquipment function [01-21-13]
 * TODO: action_list actions, [01-25-13]
 * TODO: Future class multiplier for level ups [01-25-13]
 ******************************************************************************/
@@ -174,7 +173,6 @@ void Person::setBaseStats()
     setBaseAgility(cat->getAgility() + race->getAgility());
     setBaseLimbertude(cat->getLimbertude() + race->getLimbertude());
 }
-
 
 /*
  * Description: Sets up temporary statistics: for a battle, and
@@ -1078,7 +1076,8 @@ const bool Person::setHeadEquipment(Equipment* new_equipment)
 {
   if (new_equipment == NULL)
       return FALSE;
-  if (new_equipment->getEquipmentFlag(Equipment::HEAD))
+  if (new_equipment->getEquipmentFlag(Equipment::HEAD) &&
+      new_equipment->getEquipmentFlag(Equipment::EQUIPPED))
   {
     head = new_equipment;
     return TRUE;
@@ -1096,7 +1095,13 @@ const bool Person::setLeftArmEquipment(Equipment* new_equipment)
 {
   if (new_equipment == NULL)
     return FALSE;
-  if (new_equipment->getEquipmentFlag(Equipment::LEFTARM))  {
+  if (new_equipment->getEquipmentFlag(Equipment::TWOHAND) && right_arm == NULL)
+  {
+    left_arm = new_equipment;
+    return TRUE;
+  }
+  if (new_equipment->getEquipmentFlag(Equipment::LEFTARM))
+  {
     left_arm = new_equipment;
     return TRUE;
   }
@@ -1113,11 +1118,16 @@ const bool Person::setRightArmEquipment(Equipment* new_equipment)
 {
   if (new_equipment == NULL)
     return FALSE;
+  if (new_equipment->getEquipmentFlag(Equipment::TWOHAND) && left_arm == NULL)
+  {
+    right_arm = new_equipment;
+    return TRUE;
+  }
   if (new_equipment->getEquipmentFlag(Equipment::RIGHTARM))
   {
     right_arm = new_equipment;
     return TRUE;
-    }
+  }
   return TRUE;
 }
 
@@ -1410,7 +1420,7 @@ void Person::setSecondary(QString value)
 }
 
 /*
- * Description: Sets the person's secondary curve (also set from setSecondary())
+ * Description: Sets the person's secd curve (also set from setSecondary())
  *
  * Inputs: QString - string representing the strength and curve
  * Output: none
@@ -1428,7 +1438,8 @@ void Person::setSecondaryCurve(QChar value)
  */
 void Person::setPhysicalAggression(uint value)
 {
-  physical_aggression = value;
+  (value <= cat->getMaxPhysicalAggression()) ? (physical_aggression = value)
+                  : (physical_aggression = cat->getMaxPhysicalAggression());
 }
 
 /*
@@ -1439,7 +1450,8 @@ void Person::setPhysicalAggression(uint value)
  */
 void Person::setPhysicalFortitude(uint value)
 {
-  physical_fortitude = value;
+  (value <= cat->getMaxPhysicalFortitude()) ? (physical_fortitude = value)
+                  : (physical_fortitude = cat->getMaxPhysicalFortitude());
 }
 
 /*
@@ -1450,7 +1462,8 @@ void Person::setPhysicalFortitude(uint value)
  */
 void Person::setThermalAggression(uint value)
 {
-  thermal_aggression = value;
+  (value <= cat->getMaxThermalAggression()) ? (thermal_aggression = value)
+                  : (thermal_aggression = cat->getMaxThermalAggression());
 }
 
 /*
@@ -1461,7 +1474,8 @@ void Person::setThermalAggression(uint value)
  */
 void Person::setThermalFortitude(uint value)
 {
-  thermal_fortitude = value;
+  (value <= cat->getMaxThermalFortitude()) ? (thermal_fortitude = value)
+                  : (thermal_fortitude = cat->getMaxThermalFortitude());
 }
 
 /*
@@ -1472,7 +1486,8 @@ void Person::setThermalFortitude(uint value)
  */
 void Person::setPolarAggression(uint value)
 {
-  polar_aggression = value;
+  (value <= cat->getMaxPolarAggression()) ? (polar_aggression = value)
+                  : (polar_aggression = cat->getMaxPolarAggression());
 }
 
 /*
@@ -1483,7 +1498,8 @@ void Person::setPolarAggression(uint value)
  */
 void Person::setPolarFortitude(uint value)
 {
-  polar_fortitude = value;
+  (value <= cat->getMaxPolarFortitude()) ? (polar_fortitude = value)
+                    : (polar_fortitude = cat->getMaxPolarFortitude());
 }
 
 /*
@@ -1494,7 +1510,8 @@ void Person::setPolarFortitude(uint value)
  */
 void Person::setPrimalAggression(uint value)
 {
-  primal_aggression = value;
+  (value <= cat->getMaxPrimalAggression()) ? (primal_aggression = value)
+                  : (primal_aggression = cat->getMaxPrimalAggression());
 }
 
 /*
@@ -1505,7 +1522,8 @@ void Person::setPrimalAggression(uint value)
  */
 void Person::setPrimalFortitude(uint value)
 {
-  primal_fortitude = value;
+  (value <= cat->getPrimalFortitude()) ? (primal_fortitude = value)
+               : (primal_fortitude = cat->getMaxPrimalFortitude());
 }
 
 /*
@@ -1516,7 +1534,8 @@ void Person::setPrimalFortitude(uint value)
  */
 void Person::setChargedAggression(uint value)
 {
-  charged_aggression = value;
+  (value <= cat->getMaxChargedAggression()) ? (charged_aggression = value)
+                  : (charged_aggression = cat->getMaxChargedAggression());
 }
 
 /*
@@ -1527,7 +1546,8 @@ void Person::setChargedAggression(uint value)
  */
 void Person::setChargedFortitude(uint value)
 {
-  charged_fortitude = value;
+  (value <= cat->getMaxChargedFortitude()) ? (charged_fortitude = value)
+                 : (charged_fortitude = cat->getMaxChargedFortitude());
 }
 
 /*
@@ -1538,7 +1558,8 @@ void Person::setChargedFortitude(uint value)
  */
 void Person::setCyberneticAggression(uint value)
 {
-  cybernetic_aggression = value;
+  (value <= cat->getMaxCyberneticAggression()) ? (cybernetic_aggression =value)
+                 : (cybernetic_aggression = cat->getMaxCyberneticAggression());
 }
 
 /*
@@ -1549,7 +1570,8 @@ void Person::setCyberneticAggression(uint value)
  */
 void Person::setCyberneticFortitude(uint value)
 {
-  cybernetic_fortitude = value;
+  (value <= cat->getMaxCyberneticFortitude()) ? (cybernetic_fortitude = value)
+                  : (cybernetic_fortitude = cat->getMaxCyberneticFortitude());
 }
 
 /*
@@ -1560,7 +1582,8 @@ void Person::setCyberneticFortitude(uint value)
  */
 void Person::setNihilAggression(uint value)
 {
-  nihil_aggression = value;
+  (value <= cat->getMaxNihilAggression()) ? (nihil_aggression = value)
+                  : (nihil_aggression = cat->getMaxNihilAggression());
 }
 
 /*
@@ -1571,7 +1594,8 @@ void Person::setNihilAggression(uint value)
  */
 void Person::setNihilFortitude(uint value)
 {
-  nihil_fortitude = value;
+  (value <= cat->getMaxNihilFortitude()) ? (nihil_fortitude = value)
+                  : (nihil_fortitude = cat->getMaxNihilFortitude());
 }
 
 /*
@@ -1582,7 +1606,8 @@ void Person::setNihilFortitude(uint value)
  */
 void Person::setVitality(uint value)
 {
-  vitality = value;
+  (value <= cat->getMaxVitality()) ? (vitality = value)
+                  : (vitality = cat->getMaxVitality());
 }
 
 /*
@@ -1593,7 +1618,8 @@ void Person::setVitality(uint value)
  */
 void Person::setQuantumDrive(uint value)
 {
-  quantum_drive = value;
+  (value <= cat->getMaxQuantumDrive()) ? (quantum_drive = value)
+                  : (quantum_drive = cat->getMaxQuantumDrive());
 }
 
 /*
@@ -1604,7 +1630,8 @@ void Person::setQuantumDrive(uint value)
  */
 void Person::setAgility(uint value)
 {
-  agility = value;
+  (value <= cat->getMaxAgility()) ? (agility = value)
+                  : (agility = cat->getMaxAgility());
 }
 
 /*
@@ -1615,7 +1642,8 @@ void Person::setAgility(uint value)
  */
 void Person::setLimbertude(uint value)
 {
-  limbertude = value;
+  (value <= cat->getMaxLimbertude()) ? (limbertude = value)
+                  : (limbertude = cat->getMaxLimbertude());
 }
 
 /*
@@ -1626,7 +1654,8 @@ void Person::setLimbertude(uint value)
  */
 void Person::setUnbearability(uint value)
 {
-  unbearability = value;
+  (value <= cat->getMaxUnbearability()) ? (unbearability = value)
+                  : (unbearability = cat->getMaxUnbearability());
 }
 
 /*

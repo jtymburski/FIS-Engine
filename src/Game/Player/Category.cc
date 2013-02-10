@@ -4,17 +4,16 @@
 * Inheritance: Parent Category - Person
 * Description: Header for Category that defines the Category for a person.
 *              This is a battle class like Warrior, etc.
-*
-*  TODO: CONSTRUCTORS TO BE FINISHED
 ******************************************************************************/
 
 #include "Game/Player/Category.h"
 
 /*
- * Description: Category constructor object. Constructs a Category given a string and
- *              a full set of base stat values. None of the Category constructors
+ * Description: Constructor object. Constructs a Category given a string and
+ *              a full set of base stat values. None of the Category const.
  *              set the description of the Category, or the actions available.
- *              These must be set up afterwards.
+ *              These must be set up afterwards. The maximum values have
+ *              default values that will default to the maximum allowable.
  *
  * Inputs: n - name of the Category
  *      ph_a - base physical aggression
@@ -36,15 +35,25 @@
  *      agi  - base agility
  *      lim  - base limbertude
  *      unb  - base unbearability
+ *      x_max - the maximum value for all the stats listed above
  */
-Category::Category(QString n, uint ph_a, uint ph_f, uint th_a,uint th_f, uint po_a,
-           uint po_f, uint pr_a, uint pr_f, uint ch_a,uint ch_f, uint cy_a,
-           uint cy_f, uint ni_a, uint ni_f, uint vit, uint qd, uint agi,
-           uint lim, uint unb, QWidget *parent)
+Category::Category(QString n, uint ph_a, uint ph_f, uint th_a, uint th_f, uint po_a,
+                   uint po_f, uint pr_a, uint pr_f, uint ch_a, uint ch_f,
+                   uint cy_a, uint cy_f, uint ni_a, uint ni_f, uint vit,
+                   uint qd, uint agi, uint lim, uint unb, uint ph_a_max,
+                   uint ph_f_max, uint th_a_max, uint th_f_max,
+                   uint po_a_max, uint po_f_max, uint pr_a_max,
+                   uint pr_f_max, uint ch_a_max, uint ch_f_max,
+                   uint cy_a_max, uint cy_f_max, uint ni_a_max,
+                   uint ni_f_max, uint vit_max, uint qd_max,
+                   uint agi_max, uint lim_max, uint unb_max, QWidget *parent)
 {
     setName(n);
     setUp(ph_a,ph_f,th_a,th_f,po_a,po_f,pr_a,pr_f,ch_a,ch_f,cy_a,cy_f,
-               ni_a,ni_f,vit,qd,agi,lim,unb);
+          ni_a,ni_f,vit,qd,agi,lim,unb,ph_a_max,ph_f_max,th_a_max,
+          th_f_max,po_a_max,po_f_max,pr_a_max,pr_f_max,ch_a_max,
+          ch_f_max,cy_a_max,cy_f_max,ni_a_max,ni_f_max,vit_max,qd_max,
+          agi_max,lim_max,unb_max);
 }
 
 /*

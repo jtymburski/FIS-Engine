@@ -6,7 +6,6 @@
 *              Which holds the values for their bonus stats for battle, and
 *              determines their new stats when they level up. A person's race
 *              will give them a bonus in addition to what these stats provide.
-*
 ******************************************************************************/
 #ifndef CATEGORY_H
 #define CATEGORY_H
@@ -20,9 +19,16 @@ class Category : public QWidget
 public:
    /* Category constructor */
    Category(QString n, uint ph_a, uint ph_f, uint th_a, uint th_f, uint po_a,
-            uint po_f, uint pr_a, uint pr_f, uint ch_a,uint ch_f, uint cy_a,
-            uint cy_f, uint ni_a, uint ni_f, uint vit, uint qd, uint agi,
-            uint lim, uint unb, QWidget *parent = 0);
+            uint po_f, uint pr_a, uint pr_f, uint ch_a, uint ch_f,
+            uint cy_a, uint cy_f, uint ni_a, uint ni_f, uint vit,
+            uint qd, uint agi, uint lim, uint unb, uint ph_a_max = 0,
+            uint ph_f_max = 0, uint th_a_max = 0, uint th_f_max = 0,
+            uint po_a_max = 0, uint po_f_max = 0, uint pr_a_max = 0,
+            uint pr_f_max = 0, uint ch_a_max = 0, uint ch_f_max = 0,
+            uint cy_a_max = 0, uint cy_f_max = 0, uint ni_a_max = 0,
+            uint ni_f_max = 0, uint vit_max = 0, uint qd_max = 0,
+            uint agi_max = 0, uint lim_max = 0, uint unb_max = 0,
+            QWidget* parent = 0);
 
    /* Default Category Constructor given a name */
    Category(QString n, QWidget *parent = 0);

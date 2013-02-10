@@ -48,7 +48,7 @@ bool Inventory::addTo(Equipment equipment)
     return FALSE;
 
   /* Increment counter if an equipment with the same name already exists */
-  for (int i = 0; i < equipments.size(); i++)
+  for (uint i = 0; i < equipments.size(); i++)
   {
     if (equipments.value(i).getName() == equipment.getName())
     {

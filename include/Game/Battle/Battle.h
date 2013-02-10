@@ -82,6 +82,15 @@ class Battle: public QWidget
   Q_OBJECT
 
 public:
+    /* Enumerated flags for battle class */
+    enum BattleState
+    {
+      BOSS     = 1ul << 0, /* Is this a boss battle? */
+      MINIBOSS = 1ul << 1 /* Is this a mini-boss battle? */
+    };
+    Q_DECLARE_FLAGS(BattleFlags, BattleState)
+    BattleFlags flag_set;
+
   /* Constructor for a Battle class */
   Battle(Party* p_friends, Party* p_foes, QWidget* pointer = 0);
 
@@ -90,13 +99,13 @@ public:
 
 private:
   /* Pointer to the battle info bar */
-  BattleInfoBar* current_battle_info_bar; 
+  BattleInfoBar* info_bar;
 
   /* Person 1's Status bar */
-  BattleStatusBar* battle_status_bar;
+  BattleStatusBar* status_bar;
 
   /* The Battle menu pointer (for selecting actions), off by default */
-  BattleMenu* current_battle_menu;
+  BattleMenu* menu;
 
   /* Checks if targeting mode is active */
   bool target_mode; //Checks if targeting mode is active
@@ -108,7 +117,6 @@ private:
   /* Bounding box dimensions */
   int ally_width;
   int ally_height;
-
 
   /* Which party is currently selected */
   int party_index;
@@ -148,9 +156,6 @@ private:
 
   /* Weather condition during battle */
   Weather* weather_conditions; 
-
-  /* Flag for whether this is a boss battle (special code if it is)*/
-  bool BOSS; 
    
 protected:
   /* Handles all key entries */
@@ -179,6 +184,7 @@ public slots:
 
 signals:
   void closingBattle(int index);
+  void finished();
 
 public: 
 
@@ -227,5 +233,6 @@ public:
   /* Sets the targeting mode (slot) */
   void setTargetMode(bool targeting);
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(Battle::BattleFlags)
 
 #endif // BATTLE_H
