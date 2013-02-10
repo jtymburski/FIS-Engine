@@ -41,7 +41,6 @@ public:
   Q_DECLARE_FLAGS(EquipmentFlags, EquipmentState);
   EquipmentFlags eflag_set;
 
-
 private:
   /* 2D 9x9 array for bubby signature*/
   Bubby* bubby_signature[9][9];

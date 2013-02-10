@@ -33,9 +33,11 @@ public:
     SLEUTH        = 1 << 2, /* Person is currently in your sleuth */
     BEARACKS      = 1 << 3, /* Person is currently in your RESERVE */
     RENDERING     = 1 << 4, /* Person is rendering on the map */
-    MAINCHARACTER = 1 << 5  /* Is this person the main character? */
+    MAINCHARACTER = 1 << 5, /* Is this person the main character? */
+    BOSS          = 1 << 6, /* Is this person a Boss character? */
+    MINIBOSS      = 1 << 7  /* Is this person a miniboss? */
   };
-  Q_DECLARE_FLAGS(PersonFlags, PersonState);
+  Q_DECLARE_FLAGS(PersonFlags, PersonState)
 
   /* Enumerated flags for status ailments */
   enum StatusAilment
@@ -57,21 +59,40 @@ public:
     DREAMSNARED      = 1 << 14,
     HELLBOUND        = 1 << 15,
     BONDED           = 1 << 16,
-    PHYSICALATKBUFF  = 1 << 17,
-    PHYSICALDEFBUFF  = 1 << 18,
-    PRIMARYATKBUFF   = 1 << 19,
-    PRIMARYDEFBUFF   = 1 << 20,
-    SECONDARYATKBUFF = 1 << 21,
-    SECONDARYDEFBUFF = 1 << 22,
-    ALLDEFBUFF       = 1 << 23,
-    HEALTHBUFF       = 1 << 24,
-    QDBUFF           = 1 << 25,
-    ROOTBOUND        = 1 << 26,
-    DOUBLECAST       = 1 << 27,
-    TRIPLECAST       = 1 << 28,
-    HALFCOST         = 1 << 29
   };
-  Q_DECLARE_FLAGS(StatusFlags, StatusAilment);
+  Q_DECLARE_FLAGS(StatusFlags, StatusAilment)
+
+  enum StatusBuff
+  {
+    ALLATKBUFF        = 1 << 0,
+    ALLDEFBUFF        = 1 << 1,
+    PHYSICALATKBUFF   = 1 << 2,
+    PHYSICALDEFBUFF   = 1 << 3,
+    THERMALATKBUFF    = 1 << 4,
+    THERMALDEFBUFF    = 1 << 5,
+    POLARATKBUFF      = 1 << 6,
+    POLARDEFBUFF      = 1 << 7,
+    PRIMALATKBUFF     = 1 << 8,
+    PRIMALDEFBUFF     = 1 << 9,
+    CHARGEDATKBUFF    = 1 << 10,
+    CHARGEDDEFBUFF    = 1 << 11,
+    CYBERNETICATKBUFF = 1 << 12,
+    CYBERNETICDEFBUFF = 1 << 13,
+    NIHILATKBUFF      = 1 << 14,
+    NIHILDEFBUFF      = 1 << 15,
+    LIMBERTUDEBUFF    = 1 << 16,
+    UNBEARBUFF        = 1 << 17,
+    AGILITYBUFF       = 1 << 18,
+    VITALITYBUFF      = 1 << 19,
+    QDBUFF            = 1 << 20,
+    HEALTHBUFF        = 1 << 21,
+    ROOTBOUND         = 1 << 22,
+    DOUBLECAST        = 1 << 23,
+    TRIPLECAST        = 1 << 24,
+    HALFCOST          = 1 << 25
+  };
+  Q_DECLARE_FLAGS(StatusBuffFlags, StatusBuff)
+
 
 private:
   /* Const maximum limits for any stat */
@@ -306,6 +327,9 @@ private:
   /* Set the status ailment flags for the person */
   StatusFlags ailment_set;
 
+  /* Set the status buff flags for the person */
+  StatusBuffFlags buff_set;
+
   /* List of actions that the person has */
   QVector<Action*> action_list;
 
@@ -344,11 +368,17 @@ public:
   /* Toggles a StatusAilments flag */
   void toggleAilment(StatusAilment flags);
 
+  /* Toggles a StatusBuff flag */
+  void toggleBuff(StatusBuff flags);
+
   /* Toggles a PersonState flag */
   void togglePersonFlag(PersonState flags);
 
   /* Evaluates the boolean value of a StatusAilment */
   const bool getAilment(StatusAilment flags);
+
+  /* Evaluates the boolean value of StatusBuff */
+  const bool getBuff(StatusBuff flag);
 
   /* Gets the boolean value of PersonState flag */
   const bool getPersonFlag(PersonState flags);
@@ -581,6 +611,9 @@ public:
   /* Sets the value of a status ailment */
   void setAilment(StatusAilment flags, const bool set_value);
 
+  /* Sets the value of a status buff */
+  void setBuff(StatusBuff flags, const bool set_value);
+
   /* Sets the value of a PersonState flag */
   void setPersonFlag(PersonState flags, const bool set_value);
 
@@ -812,5 +845,9 @@ public:
   /* Sets the Base critical chance stat */
   void setBaseUnbearability(uint value);
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(Person::);
+Q_DECLARE_OPERATORS_FOR_FLAGS(Person::);
+Q_DECLARE_OPERATORS_FOR_FLAGS(Person::);
+
 
 #endif // PERSON_H

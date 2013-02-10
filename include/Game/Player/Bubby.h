@@ -41,6 +41,10 @@ private:
      Tier-1: Level 1-10, Tier-2: Level 11-20, Tier-3: Level 20 */
   const static uint kLEVELCAP = 20; // 20
 
+  /* Bubby's Id */
+  static int id;
+  int myId;
+
   /* ID of the Bubby (for deleting purposes) */
   // static uint id;
 
@@ -57,12 +61,16 @@ private:
   QImage tier_0, tier_1, tier_2, tier_3;
 
 
+
 public:
   /* Gets the list of bubby actions (Used for total action lists in battle)*/
   QVector<Action*> getActionList();
 
-  /* Gets the ID of the bubby */
-  //uint getId();
+  /* Increments the bubbie's Id */
+  static int setId();
+
+  /* Gets the bubbies Id */
+  int getId();
 
   /* Gets the bubbies exp */
   uint getExp();

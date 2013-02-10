@@ -235,6 +235,17 @@ void Person::toggleAilment(StatusAilment flags)
 }
 
 /*
+ * Description: Toggles the value of a status buff flag
+ *
+ * Inputs: StatusBuff flag
+ * Output: none
+ */
+void Person::toggleBuff(StatusBuff flags)
+{
+    setBuff(flags, !getBuff(flags));
+}
+
+/*
  * Description: Togges the value of a person ailment
  *
  * Inputs: PersonState flag
@@ -256,6 +267,7 @@ QVector<Action*>& Person::getAvailableActions()
   // TODO: Setup list of actions for person [01-25-13]
   return action_list;
 }
+
 
 /*
  * Description: Returns the person's class
@@ -433,6 +445,17 @@ Sprite* Person::getThirdPerson()
 const bool Person::getAilment(StatusAilment flags)
 {
   return ailment_set.testFlag(flags);
+}
+
+/*
+ * Description: Evaluates a given status buff flag
+ *
+ * Inputs: Status buff flag
+ * Output: Boolean evaluation of the flag
+ */
+const bool Person::getBuff(StatusBuff flags)
+{
+  return buff_set.testFlag(flags);
 }
 
 /*
@@ -1214,6 +1237,19 @@ void Person::setAilment(StatusAilment flags, const bool set_value)
 }
 
 /*
+ * Description: Sets a status buff flag to a given boolean value
+ *
+ * Inputs: StatusBuff flag
+ *         Boolean value to set the flag to
+ * Output: none
+ */
+void Person::setBuff(StatusBuff flags, const bool set_value)
+{
+  (set_value) ? (buff_set |= flags) : (buff_set ^= flags);
+}
+
+
+/*
  * Description: Sets a person state flag to a given boolean value
  *
  * Inputs: PersonState flag
@@ -1244,14 +1280,14 @@ const bool Person::setLevel(const uint &new_level)
 {
   uint temp =      0;
   uint addr =      0; /* Temp variable used in formulae (value dm) */
-  int agil = 0.10000;  /* Difference for mulr for agility */
-  int limb = 0.10000;  /* Difference for mulr for limbertude */
-  int unbr = 0.10000;  /* Difference for mulr for unbearability */
-  int vita = 0.30000;  /* Difference  for mulr for vitality */
-  int qtmn = 0.10000;  /* Difference for mulr for quantum_drive */
+  long double agil = 0.10000;  /* Difference for mulr for agility */
+  long double limb = 0.10000;  /* Difference for mulr for limbertude */
+  long double unbr = 0.10000;  /* Difference for mulr for unbearability */
+  long double vita = 0.50000;  /* Difference  for mulr for vitality */
+  long double qtmn = 0.10000;  /* Difference for mulr for quantum_drive */
   long double mulr =  1.15000; /* Basic D rate of increase of statistics */
   long double defm =  0.74000; /* Def Mod - ratio of def increase to offense */
-  long double difm =  0.03000; /* Difference between curve level multiplier */
+  long double difm =  0.08000; /* Difference between curve level multiplier */
   long double sinc = mulr + 4 * difm; /* S-Level increase multiplier */
   long double ainc = mulr + 3 * difm; /* A-Level increase multiplier */
   long double binc = mulr + 2 * difm; /* B-Level increase multiplier */
@@ -1686,7 +1722,7 @@ void Person::setChargedFortitude(uint value)
  */
 void Person::setCyberneticAggression(uint value)
 {
-  (value <= cat->getMaxCyberneticAggression()) ? (cybernetic_aggression =value)
+  (value <= cat->getMaxCyberneticAggression()) ? (cybernetic_aggression = value)
                  : (cybernetic_aggression = cat->getMaxCyberneticAggression());
 }
 

@@ -19,8 +19,11 @@
  * TODO: FINISH CONSTRUCTOR
  */
 
-Bubby::Bubby()
+int Bubby::id = 0;
+
+Bubby::Bubby() : myId(setId())
 {
+
   setLevel(1);
   setTier(0);
   setExperience(0);
@@ -32,11 +35,11 @@ Bubby::Bubby()
  */
 Bubby::~Bubby()
 {
-  //for (uint i = 0; i < action_list.size(); i++)
-  // {
-  //  delete action_list.at(i);
-  //    action_list.at(i) = NULL;
-  //}
+  for (uint i = 0; i < action_list.size(); i++)
+  {
+    delete action_list[i];
+    action_list[i] = NULL;
+  }
 }
 
 /*
@@ -62,15 +65,26 @@ uint Bubby::getExp()
 }
 
 /*
+ * Description: Returns the ID of the Bubby and increments it
+ *
+ * Inputs: none
+ * Output: static int - the ID of the Bubby
+ */
+int Bubby::setId()
+{
+  return id++;
+}
+
+/*
  * Description: Returns the ID of the Bubby
  *
  * Inputs: none
- * Output: uint - the ID of the Bubby
+ * outputs: int - the ID of the Bubby
  */
-//uint Bubby::getId()
-//{
-//  return id;
-//}
+int Bubby::getId()
+{
+  return id;
+}
 
 /*
  * Description: Returns the level of the Bubby

@@ -111,7 +111,7 @@ void MainWindow::setupBattle()
   enemy_clan->addMember(cloud_dude2);
   enemy_clan->addMember(cloud_dude3);
 
-  for (int i = 1; i < 5; i++)
+  for (int i = 1; i < 125; i++)
   {
     arcadius->setLevel(i);
     qDebug() << "Level" << arcadius->getLevel();
@@ -126,7 +126,6 @@ void MainWindow::setupBattle()
     qDebug() << "Pola Atk: " << arcadius->getPolarAggression();
     qDebug() << "Pola Def: " << arcadius->getPolarFortitude() << endl;
   }
-
   test_battle = new Battle(friend_clan, enemy_clan);
 }
 

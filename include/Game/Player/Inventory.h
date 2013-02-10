@@ -45,6 +45,9 @@ private:
   /* Storage level */
   uint level; //0
 
+  /* Bubby ID counter */
+  uint bubby_id;
+
   /* Storage and level limits */
   static const uint kBASIC_ITEM_LIMIT = 50;
   static const uint kMAX_EQUIP_LIMIT  = 10000;
@@ -93,6 +96,9 @@ public:
   /* Gets bubby current amount */
   uint getBubbyCount();
 
+  /* Returns the current index of Bubby ID*/
+  uint getBubbyId();
+
   /* Gets bubby limit */
   uint getBubbyLimit();
 
@@ -116,6 +122,10 @@ public:
 
   /* Gets thumbnail image */
   QImage getThumbnail();
+
+  /* Increment the Bubby Count */
+  uint incBubbyCount();
+
 };
 
 #endif // INVENTORY_H

@@ -17,6 +17,7 @@
  */
 Inventory::Inventory(QString name, QImage thumbnail, uint limit, QWidget* parent)
 {
+  bubby_id = 0;
   upgrade(name, thumbnail, limit, limit, limit);
   resetLevel(0);
 }
@@ -250,6 +251,17 @@ uint Inventory::getCount(Item item)
 }
 
 /*
+ * Description: Returns the current count of Bubby IDs
+ *
+ * Inputs: none
+ * Output: uint - count of bubby ID
+ */
+uint Inventory::getBubbyId()
+{
+    return bubby_id;
+}
+
+/*
  * Description: Returns the current number of bubby items.
  *
  * Inputs: none
@@ -352,4 +364,15 @@ QString Inventory::getName()
 QImage Inventory::getThumbnail()
 {
     return thumb;
+}
+
+/*
+ * Description: Increments the Bubby ID count
+ *
+ * Inputs: none
+ * Output: none
+ */
+uint Inventory::incBubbyCount()
+{
+  return ++bubby_id;
 }
