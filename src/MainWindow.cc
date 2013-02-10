@@ -9,6 +9,7 @@
 ******************************************************************************/
 #include "MainWindow.h"
 
+
 /* Constructor function */
 MainWindow::MainWindow(QWidget* parent)
 {
@@ -62,26 +63,19 @@ void MainWindow::switchWidget(int index)
  */
 void MainWindow::setupBattle()
 {
-  Person* main_character = new Person(5, 2,5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 500,
-                                      100, 7, 7, 7, 12, 180,  "Malgidus");
-  Person* arcadius = new Person(5,2,5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 9500,
-                                      100, 7, 7, 7, 12, 180,  "Arcadius");
-  Person* ladybear = new Person(5,2,5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 500,
-                                      100, 7, 7, 7, 12, 180,  "Ladybear");
-  Person* aurumba = new Person(5,2,5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 175,
-                                      100, 7, 7, 7, 12, 180,  "Aurumba");
-  Person* berfriegg = new Person(5,2,5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 2000,
-                                      100, 7, 7, 7, 12, 180,  "Berfriegg");
-  Person* cloud_dude = new Person(5,2,5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 300, 80,
-                                  6, 6, 6, 11, 160,"Cloud Guy 1");
-  Person* cloud_dude2 = new Person(5,2,5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 300, 80,
-                                  6, 6, 6, 11, 160,"Cloud Guy 2");
-  Person* cloud_dude3 = new Person(5,2,5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 300, 80,
-                                  6, 6, 6, 11, 160,"Cloud Guy 3");
-  Person* cloud_dude4 = new Person(5,2,5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 300, 80,
-                                  6, 6, 6, 11, 160,"Cloud Guy 4");
-  Person* turbo_fish = new Person(5,2,5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 300, 80,
-                                  6, 6, 6, 11, 160,"Turbofish 1");
+  Race* human = new Race("Humans");
+  Category* bloodclaw_scion = new Category("Blooclaw Scion");
+
+  Person* main_character = new Person("Main Character", human, bloodclaw_scion, "CYA", "POB");
+  Person* arcadius = new Person("Arcadius", human, bloodclaw_scion, "CYA", "POB");
+  Person* ladybear = new Person("Arcadius", human, bloodclaw_scion, "CYA", "POB");
+  Person* aurumba = new Person("Arcadius", human, bloodclaw_scion, "CYA", "POB");
+  Person* berfriegg = new Person("Arcadius", human, bloodclaw_scion, "CYA", "POB");
+  Person* cloud_dude = new Person("Arcadius", human, bloodclaw_scion, "CYA", "POB");
+  Person* cloud_dude2 = new Person("Arcadius", human, bloodclaw_scion, "CYA", "POB");
+  Person* cloud_dude3 = new Person("Arcadius", human, bloodclaw_scion, "CYA", "POB");
+  Person* cloud_dude4 = new Person("Arcadius", human, bloodclaw_scion, "CYA", "POB");
+  Person* turbo_fish = new Person("Arcadius", human, bloodclaw_scion, "CYA", "POB");
 
   Sprite* main_char_fp = new Sprite(":/A_player");
   Sprite* arcadius_fp = new Sprite(":/A_arcadius");
