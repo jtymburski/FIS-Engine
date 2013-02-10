@@ -7,6 +7,7 @@
 ******************************************************************************/
 
 #include "Game/Player/Category.h"
+#include <qDebug>
 
 /*
  * Description: Constructor object. Constructs a Category given a string and
@@ -49,6 +50,7 @@ Category::Category(QString n, uint ph_a, uint ph_f, uint th_a, uint th_f, uint p
                    uint agi_max, uint lim_max, uint unb_max, QWidget *parent)
 {
     setName(n);
+
     setUp(ph_a,ph_f,th_a,th_f,po_a,po_f,pr_a,pr_f,ch_a,ch_f,cy_a,cy_f,
           ni_a,ni_f,vit,qd,agi,lim,unb,ph_a_max,ph_f_max,th_a_max,
           th_f_max,po_a_max,po_f_max,pr_a_max,pr_f_max,ch_a_max,
@@ -234,7 +236,7 @@ void Category::setPolarFortitude(uint value, uint max_value)
   if (max_value == 0)
     max_polar_fortitude = kPOLA_DEF_MAX;
   if (value < max_polar_aggression)
-    polar_aggression = value;
+    polar_fortitude = value;
 }
 
 /*
@@ -317,7 +319,7 @@ void Category::setCyberneticAggression(uint value, uint max_value)
   if (max_value < kCYBE_ATK_MAX && max_value != 0)
     max_cybernetic_aggression = max_value;
   if (max_value == 0)
-    max_cybernetic_aggression = kCHAR_ATK_MAX;
+    max_cybernetic_aggression = kCYBE_ATK_MAX;
   if (value < max_cybernetic_aggression)
     cybernetic_aggression = value;
 }
@@ -333,7 +335,7 @@ void Category::setCyberneticFortitude(uint value, uint max_value)
   if (max_value < kCYBE_DEF_MAX && max_value != 0)
     max_cybernetic_fortitude = max_value;
   if (max_value == 0)
-    max_charged_fortitude = kCHAR_DEF_MAX;
+    max_cybernetic_fortitude = kCYBE_DEF_MAX;
   if ( value < max_cybernetic_fortitude)
     cybernetic_fortitude = value;
 }

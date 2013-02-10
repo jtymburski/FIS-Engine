@@ -8,10 +8,17 @@
 * TODO: action_list actions, [01-25-13]
 * TODO: Future class multiplier for level ups [01-25-13]
 ******************************************************************************/
-#include "Game/Player/Person.h"
-#include <cmath>
-#include <algorithm>
 #include <QDebug>
+#include <cmath>
+
+#include "Game/Player/Person.h"
+
+int max(int a, int b)
+{
+    int x = 0;
+    (a < b) ? (x = b) : (x = a);
+    return x;
+}
 
 /*
  * Description: Primary person constructor (requires all values)
@@ -21,26 +28,26 @@
 Person::Person(QString name, Race* race, Category* category, QString prim,
                 QString secd, QWidget* pointer)
 {
-    /* Prepares non-battle related statistics for the person */
-    setName(name);
-    setRace(race);
-    setCategory(category);
-    setPrimary(prim);
-    setSecondary(secd);
+  /* Prepares non-battle related statistics for the person */
+  setName(name);
+  setRace(race);
+  setCategory(category);
+  setPrimary(prim);
+  setSecondary(secd);
 
-    /* Prepares all the battle-related statistics for the person */
-    setBaseStats();
-    setupStats();
-    setTemporaryStats();
+  /* Prepares all the battle-related statistics for the person */
+  setBaseStats();
+  setupStats();
+  setTemporaryStats();
 
-    /* Sets equipment & sprite pointers to NULL initially */
-    setHeadEquipment();
-    setLeftArmEquipment();
-    setRightArmEquipment();
-    setTorsoEquipment();
-    setLegEquipment();
-    setFirstPerson();
-    setThirdPerson();
+  /* Sets equipment & sprite pointers to NULL initially */
+  setHeadEquipment();
+  setLeftArmEquipment();
+  setRightArmEquipment();
+  setTorsoEquipment();
+  setLegEquipment();
+  setFirstPerson();
+  setThirdPerson();
 }
 
 /*
@@ -1182,7 +1189,8 @@ void Person::setCategory(Category* new_category)
 /*
  * Description: Sets the experience of the person
  * Note: Does NOT level the character, use addExp(int) for that.
- *       Use setLevel(getLevel()) to adjust the level accordingly!
+ *       Use
+(getLevel()) to adjust the level accordingly!
  *
  * Inputs: uint - value of experience to be set
  * Output: none
@@ -1281,16 +1289,16 @@ const bool Person::setLevel(const uint &new_level)
       temp = floor(getBasePhysicalAggression() + addr + cat->getPhysicalAggression());
       if (temp < kMAX_PHYS_ATK && temp < cat->getMaxPhysicalAggression())
         setPhysicalAggression(temp);
-      //else
-      //  setPhysicalAggression( min(kMAX_PHYS_ATK,cat->getMaxPhysicalAggression()) );
+      else
+        setPhysicalAggression(max(kMAX_PHYS_ATK,cat->getMaxPhysicalAggression()) );
 
       /* Calculate the physical defense statistic */
       addr = floor(pow(race->getPhysicalFortitude() + getLevel(), mulr));
-      temp = getBasePhysicalFortitude() + addr + cat->getPhysicalFortitude();
+      temp = (getBasePhysicalFortitude() + addr + cat->getPhysicalFortitude()) * defm;
       if (temp < kMAX_PHYS_DEF && temp < cat->getMaxPhysicalFortitude())
         setPhysicalFortitude(temp * defm);
-      //else
-      //  setPhysicalFortitude(max(kMAX_PHYS_DEF,cat->getMaxPhysicalFortitude()));
+      else
+        setPhysicalFortitude(max(kMAX_PHYS_DEF,cat->getMaxPhysicalFortitude()));
     }
     if (i == 0 || (i == 1 && primary == "TH") || (i == 2 && secondary == "TH"))
     {
@@ -1299,16 +1307,16 @@ const bool Person::setLevel(const uint &new_level)
       temp = getBaseThermalAggression() + addr + cat->getThermalAggression();
       if (temp < kMAX_THER_ATK && temp < cat->getMaxThermalAggression())
         setThermalAggression(temp);
-      //else
-      //  setThermalAggression(max(kMAX_THER_ATK,cat->getMaxThermalAggression()));
+      else
+        setThermalAggression(max(kMAX_THER_ATK,cat->getMaxThermalAggression()));
 
       /* Calculate the thermal defense statistic */
       addr = floor(pow(race->getThermalFortitude() + getLevel(), mulr));
-      temp = getThermalFortitude() + addr + cat->getThermalFortitude();
+      temp = (getBaseThermalFortitude() + addr + cat->getThermalFortitude()) * defm;
       if (temp < kMAX_THER_DEF && temp < cat->getMaxThermalFortitude())
         setThermalFortitude(temp);
-      //else
-      //  setThermalFortitude(max(kMAX_THER_DEF,cat->getMaxThermalFortitude()));
+      else
+        setThermalFortitude(max(kMAX_THER_DEF,cat->getMaxThermalFortitude()));
     }
     if (i == 0 || (i == 1 && primary == "PO") || (i == 2 && secondary == "PO"))
     {
@@ -1317,16 +1325,16 @@ const bool Person::setLevel(const uint &new_level)
       temp = getBasePolarAggression() + addr + cat->getPolarAggression();
       if (temp < kMAX_POLA_ATK && temp < cat->getMaxPolarAggression())
         setPolarAggression(temp);
-      //else
-      //  setPolarAggression(max(kMAX_THER_ATK,cat->getMaxThermalAggression()));
+      else
+        setPolarAggression(max(kMAX_THER_ATK,cat->getMaxThermalAggression()));
 
       /* Calculate the polar defense statistic */
       addr = floor(pow(race->getPolarFortitude() + getLevel(), mulr));
-      temp = getPolarFortitude() + addr + cat->getPolarFortitude();
+      temp = (getBasePolarFortitude() + addr + cat->getPolarFortitude()) * defm;
       if (temp < kMAX_POLA_DEF && temp < cat->getMaxPolarFortitude())
         setPolarFortitude(temp);
-      //else
-      //  setPolarFortitude(max(kMAX_POLA_DEF,cat->getMaxPolarFortitude()));
+      else
+        setPolarFortitude(max(kMAX_POLA_DEF,cat->getMaxPolarFortitude()));
     }
     if (i == 0 || (i == 1 && primary == "PR") || (i == 2 && secondary == "PR"))
     {
@@ -1335,16 +1343,16 @@ const bool Person::setLevel(const uint &new_level)
       temp = getBasePrimalAggression() + addr + cat->getPrimalAggression();
       if (temp < kMAX_PRIM_ATK && temp < cat->getMaxPrimalAggression())
         setPrimalAggression(temp);
-      //else
-      //  setPrimalAggression(max(kMAX_PRIM_ATK,cat->getMaxPrimalAggression()));
+      else
+        setPrimalAggression(max(kMAX_PRIM_ATK,cat->getMaxPrimalAggression()));
 
       /* Calculate the primal defense statistic */
       addr = floor(pow(race->getPrimalFortitude() + getLevel(), mulr));
-      temp = getPrimalFortitude() + addr + cat->getPrimalFortitude();
+      temp = (getBasePrimalFortitude() + addr + cat->getPrimalFortitude()) * defm;
       if (temp < kMAX_PRIM_DEF && temp < cat->getMaxPrimalFortitude())
         setPrimalFortitude(temp);
-      //else
-      //  setPrimalFortitude(max(kMAX_PRIM_DEF,cat->getMaxPrimalFortitude()));
+      else
+        setPrimalFortitude(max(kMAX_PRIM_DEF,cat->getMaxPrimalFortitude()));
     }
     if (i == 0 || (i == 1 && primary == "CH") || (i == 2 && secondary == "CH"))
     {
@@ -1353,16 +1361,16 @@ const bool Person::setLevel(const uint &new_level)
       temp = getBaseChargedAggression() + addr + cat->getChargedAggression();
       if (temp < kMAX_CHAR_ATK && temp < cat->getMaxChargedAggression())
         setChargedAggression(temp);
-      //else
-      //  setChargedAggression(max(kMAX_CHAR_ATK,cat->getMaxThermalAggression()));
+      else
+        setChargedAggression(max(kMAX_CHAR_ATK,cat->getMaxThermalAggression()));
 
       /* Calculate the charged defense statistic */
       addr = floor(pow(race->getChargedFortitude() + getLevel(), mulr));
-      temp = getChargedFortitude() + addr + cat->getChargedFortitude();
+      temp = (getBaseChargedFortitude() + addr + cat->getChargedFortitude()) * defm;
       if (temp < kMAX_CHAR_DEF && temp < cat->getMaxChargedFortitude())
         setChargedFortitude(temp);
-      //else
-      //  setChargedFortitude(max(kMAX_CHAR_DEF,cat->getMaxChargedFortitude()));
+      else
+        setChargedFortitude(max(kMAX_CHAR_DEF,cat->getMaxChargedFortitude()));
     }
     if (i == 0 || (i == 1 && primary == "CY") || (i == 2 && secondary == "CY"))
     {
@@ -1371,16 +1379,16 @@ const bool Person::setLevel(const uint &new_level)
       temp = getBaseCyberneticAggression() + addr + cat->getCyberneticAggression();
       if (temp < kMAX_CYBE_ATK && temp < cat->getMaxCyberneticAggression())
         setCyberneticAggression(temp);
-      //else
-      //  setCyberneticAggression(max(kMAX_CYBE_ATK,cat->getMaxCyberneticAggression()));
+      else
+        setCyberneticAggression(max(kMAX_CYBE_ATK,cat->getMaxCyberneticAggression()));
 
       /* Calculate the Cybernetic defense statistic */
       addr = floor(pow(race->getCyberneticFortitude() + getLevel(), mulr));
-      temp = getCyberneticFortitude() + addr + cat->getCyberneticFortitude();
+      temp = (getBaseCyberneticFortitude() + addr + cat->getCyberneticFortitude()) * defm;
       if (temp < kMAX_CYBE_DEF && temp < cat->getMaxCyberneticFortitude())
         setCyberneticFortitude(temp);
-      //else
-      //  setCyberneticFortitude(max(kMAX_CYBE_DEF,cat->getMaxCyberneticFortitude()));
+      else
+        setCyberneticFortitude(max(kMAX_CYBE_DEF,cat->getMaxCyberneticFortitude()));
     }
     if (i == 0 || (i == 1 && primary == "NI") || (i == 2 && secondary == "NI"))
     {
@@ -1389,16 +1397,16 @@ const bool Person::setLevel(const uint &new_level)
       temp = getBaseNihilAggression() + addr + cat->getNihilAggression();
       if (temp < kMAX_NIHI_ATK && temp < cat->getMaxNihilAggression())
         setNihilAggression(temp);
-      //else
-      //  setNihilAggression(max(kMAX_NIHI_ATK,cat->getMaxNihilAggression()));
+      else
+        setNihilAggression(max(kMAX_NIHI_ATK,cat->getMaxNihilAggression()));
 
       /* Calculate the Nihil defense statistic */
       addr = floor(pow(race->getNihilFortitude() + getLevel(), mulr));
-      temp = getNihilFortitude() + addr + cat->getNihilFortitude();
+      temp = getBaseNihilFortitude() + addr + cat->getNihilFortitude() * defm;
       if (temp < kMAX_NIHI_DEF && temp < cat->getMaxNihilFortitude())
         setNihilFortitude(temp);
-      //else
-      //  setNihilFortitude(max(kMAX_NIHI_DEF,cat->getMaxNihilFortitude()));
+      else
+        setNihilFortitude(max(kMAX_NIHI_DEF,cat->getMaxNihilFortitude()));
     }
   }
 
@@ -1407,37 +1415,37 @@ const bool Person::setLevel(const uint &new_level)
   addr = floor(pow(race->getAgility() + getLevel(), mulr + agil));
   temp = getBaseAgility() + addr + cat->getAgility();
   if (temp < kMAX_AGIL && temp < cat->getMaxAgility())
-      setAgility(temp);
-  //else
-  //    setAgility(max(kMAX_AGIL,cat->getMaxAgility()));
+    setAgility(temp);
+  else
+    setAgility(max(kMAX_AGIL,cat->getMaxAgility()));
 
   addr = floor(pow(race->getLimbertude() + getLevel(), mulr + limb));
   temp = getBaseLimbertude() + addr + cat->getLimbertude();
   if (temp < kMAX_LIMB && temp < cat->getMaxLimbertude())
     setLimbertude(temp);
-  //else
-  //  setLimbertude(max(kMAX_LIMB,cat->getMaxLimbertude());
+  else
+    setLimbertude(max(kMAX_LIMB,cat->getMaxLimbertude()));
 
   addr = floor(pow(race->getUnbearability() + getLevel(), mulr + unbr));
   temp = getBaseUnbearability() + addr + cat->getUnbearability();
   if (temp < kMAX_UNBR && temp < cat->getMaxUnbearability())
     setUnbearability(temp);
-  //else
-  //  setUnbearability(max(kMAX_UNBR,cat->getMaxUnbearability());
+  else
+    setUnbearability(max(kMAX_UNBR,cat->getMaxUnbearability()));
 
   addr = floor(pow(race->getVitality() + getLevel(), mulr + vita));
   temp = getBaseVitality() + addr + cat->getVitality();
   if (temp < kMAX_VITA && temp < cat->getMaxVitality())
     setVitality(temp);
-  //else
-  //  setVitality(max(kMAX_VITA,cat->getMaxVitality());
+  else
+    setVitality(max(kMAX_VITA,cat->getMaxVitality()));
 
   addr = floor(pow(race->getQuantumDrive() + getLevel(), mulr + qtmn));
   temp = getBaseQuantumDrive() + addr + cat->getQuantumDrive();
   if (temp < kMAX_QNTM && temp < cat->getMaxQuantumDrive())
     setQuantumDrive(temp);
-  //else
-  //  setQuantumDrive(max(kMAX_QNTM,cat->getMaxQuantumDrive());
+  else
+    setQuantumDrive(max(kMAX_QNTM,cat->getMaxQuantumDrive()));
 
   /* Set the person's new level value */
   level = new_level;
@@ -2117,7 +2125,7 @@ void Person::setBaseCyberneticAggression(uint value)
  */
 void Person::setBaseCyberneticFortitude(uint value)
 {
-  base_cybernetic_aggression = value;
+  base_cybernetic_fortitude = value;
 }
 
 /*

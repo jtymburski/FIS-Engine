@@ -37,6 +37,18 @@ Player::~Player()
 }
 
 /*
+ * Description: Adds an amount of credits (money) to the player
+ *
+ * Inputs: unsigned long - value of money to be added
+ * Output: none
+ */
+void Player::addCredits(unsigned long value)
+{
+    (credits + value < kMAX_CREDITS) ? (credits += value) :
+                                       (credits = kMAX_CREDITS);
+}
+
+/*
  * Description: Removes a sleuth member by index by
  *              calling party's remove member function
  *
@@ -87,6 +99,17 @@ bool Player::removeRacksMember(QString value)
     if (bearacks->removeMember(value))
       return true;
     return false;
+}
+
+/*
+ * Description: Returns the value of credits
+ *
+ * Inputs: none
+ * Output: unsigned int - value of credits returned
+ */
+unsigned long Player::getCredits()
+{
+  return credits;
 }
 
 /*
@@ -141,6 +164,17 @@ int Player::getXPos()
 int Player::getYPos()
 {
   return y_pos;
+}
+
+/*
+ * Description: Sets an amount of credits
+ *
+ * Inputs: unsigned long - value of money to be set
+ * Output: none
+ */
+void Player::setCredits(unsigned long value)
+{
+  (value < kMAX_CREDITS) ? (credits = value) : (credits = kMAX_CREDITS);
 }
 
 /*

@@ -8,6 +8,7 @@
 *              screen.
 ******************************************************************************/
 #include "MainWindow.h"
+#include <qDebug>
 
 
 /* Constructor function */
@@ -67,10 +68,10 @@ void MainWindow::switchWidget(int index)
 void MainWindow::setupBattle()
 {
   Race* human = new Race("Humans");
-  Category* bloodclaw_scion = new Category("Blooclaw Scion");
+  Category* bloodclaw_scion = new Category("Blooclaw Scion", 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 300, 30, 5, 5, 2, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 15000, 286, 150, 150, 75);
 
   Person* main_character = new Person("Main Character", human, bloodclaw_scion, "CYA", "POB");
-  Person* arcadius = new Person("Arcadius", human, bloodclaw_scion, "CYA", "POB");
+  Person* arcadius = new Person("Arcadius", human, bloodclaw_scion, "CYB", "POS");
   Person* ladybear = new Person("Arcadius", human, bloodclaw_scion, "CYA", "POB");
   Person* aurumba = new Person("Arcadius", human, bloodclaw_scion, "CYA", "POB");
   Person* berfriegg = new Person("Arcadius", human, bloodclaw_scion, "CYA", "POB");
@@ -110,7 +111,22 @@ void MainWindow::setupBattle()
   enemy_clan->addMember(cloud_dude2);
   enemy_clan->addMember(cloud_dude3);
 
-  
+  for (int i = 1; i < 5; i++)
+  {
+    arcadius->setLevel(i);
+    qDebug() << "Level" << arcadius->getLevel();
+    qDebug() << "Vitality: " << arcadius->getVitality();
+    qDebug() << "Quantum Drive: " << arcadius->getQuantumDrive();
+    qDebug() << "Phys Atk: " << arcadius->getPhysicalAggression();
+    qDebug() << "Phys Def: " << arcadius->getPhysicalFortitude();
+    qDebug() << "Ther Atk: " << arcadius->getThermalAggression();
+    qDebug() << "Ther Def: " << arcadius->getThermalFortitude();
+    qDebug() << "Cybe Atk: " << arcadius->getCyberneticAggression();
+    qDebug() << "Cybe Def: " << arcadius->getCyberneticFortitude();
+    qDebug() << "Pola Atk: " << arcadius->getPolarAggression();
+    qDebug() << "Pola Def: " << arcadius->getPolarFortitude() << endl;
+  }
+
   test_battle = new Battle(friend_clan, enemy_clan);
 }
 

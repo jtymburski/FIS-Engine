@@ -23,6 +23,9 @@ public:
   ~Player(); 
 
 private:
+  /* Player class constants */
+  static const unsigned long kMAX_CREDITS = 999999999999;
+
   /* Tick speed for the maps */
   int kMAPSPEED;
 
@@ -36,7 +39,13 @@ private:
   int x_pos;
   int y_pos;
 
+  /* Money */
+  unsigned long credits;
+
 public:
+  /* Adds an amount of money to credits */
+  void addCredits(unsigned long value);
+
   /* Removes a sleuth member by index by calling Party's remove function */
   bool removeSleuthMember(int index);
 
@@ -48,6 +57,9 @@ public:
 
   /* Removes a bearacks member by name by calling Party's remove function */
   bool removeRacksMember(QString value);
+
+  /* Returns the amount of credits (money) the player has */
+  unsigned long getCredits();
 
   /* Gets # of frames in the main persons sprite multiplied by kMAPSPEED */
   int getSpeed(); 
@@ -63,6 +75,9 @@ public:
 
   /* Gets the y-position on the map */
   int getYPos();
+
+  /* Sets the amount of money the player has */
+  void setCredits(unsigned long value);
 
   /* Sets the sleuth party */
   void setSleuth(Party* p = NULL);
