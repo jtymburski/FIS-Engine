@@ -55,6 +55,9 @@ void MainWindow::close()
 void MainWindow::switchWidget(int index)
 {
   widget_stack->setCurrentIndex(index);
+
+  if(index == 2)
+    title_screen->playBackground();
 }
 
 /* 

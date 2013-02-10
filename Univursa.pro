@@ -8,7 +8,7 @@ TEMPLATE = app
 
 CONFIG += qt
 DESTDIR = ./bin
-# QT += network xml # core and gui are default
+QT += phonon # network xml, core and gui are default
 RESOURCES = Resources.qrc
 
 SOURCES += \
@@ -16,6 +16,7 @@ SOURCES += \
     ./src/MainWindow.cc \
     ./src/Application.cc \
     ./src/Options.cc \
+    ./src/Sound.cc \
     ./src/TitleScreen.cc \
     ./src/Game/Game.cc \
     ./src/Game/Frame.cc \
@@ -58,6 +59,7 @@ HEADERS += \
     ./include/MainWindow.h \
     ./include/EnumDatabase.h \
     ./include/Options.h \
+    ./include/Sound.h \
     ./include/TitleScreen.h \
     ./include/Game/Game.h \
     ./include/Game/Frame.h \
