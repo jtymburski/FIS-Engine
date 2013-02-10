@@ -5,10 +5,8 @@
 * Description: 
 *
 *  FUTURE [12-28-12]: Write algorithm to determine enemy placement
-*  FUTURE [02-09-13]: Battle Music
 *  TODO [01-27-13]: Write battle progression steps
 *  TODO [01-27-13]: Menu designs, displaying information, etc.
-*
 * Notes: Turn Progression:
 *
 * 1. generalUpkeep() adjusts all values based on Weather.  BattleInfoBar
@@ -91,7 +89,7 @@ Battle::Battle(Party* p_friends, Party* p_foes, QWidget* pointer)
 
   /* Create and place enemy bounding boxes */
   for (int i = 0; i < 5; i++)
-    enemy_box.push_back(new QRect(64 + 224 * i,96, 256, 256));
+      enemy_box.push_back(new QRect(64 + 224 * i,96, 256, 256));
 
   /* Create and place ally bounding boxes */
   int top_d  = floor(0.52 * getMaxHeight());
@@ -112,15 +110,8 @@ Battle::Battle(Party* p_friends, Party* p_foes, QWidget* pointer)
  */
 Battle::~Battle()
 {
-  delete info_bar;
-  delete status_bar;
-  delete menu;
-  info_bar = NULL;
-  status_bar = NULL;
-  menu = NULL;
   setFriends();
   setFoes();
-
 }
 
 void Battle::keyPressEvent(QKeyEvent* event)

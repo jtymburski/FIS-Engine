@@ -37,7 +37,7 @@ public:
    ~Category();
 
 private:
-   /* Const maximum limits for any stat */
+   /* Const maximum limits for any stat given by a class */
    static const uint kPHYS_ATK_MAX = 2000;
    static const uint kPHYS_DEF_MAX = 2000;
    static const uint kTHER_ATK_MAX = 2000;

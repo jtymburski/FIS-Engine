@@ -28,11 +28,12 @@ public:
   /* Enumerated flags for states of a person */
   enum PersonState
   {
-    ALIVE     = 1 << 0, /* Is the person alive? */
-    INBATTLE  = 1 << 1,  /* Is the person in a battle? */
-    SLEUTH    = 1 << 2,
-    BEARACKS  = 1 << 3,
-    RENDERING = 1 << 4
+    ALIVE         = 1 << 0, /* Is the person alive? */
+    INBATTLE      = 1 << 1, /* Is the person in a battle? */
+    SLEUTH        = 1 << 2, /* Person is currently in your sleuth */
+    BEARACKS      = 1 << 3, /* Person is currently in your RESERVE */
+    RENDERING     = 1 << 4, /* Person is rendering on the map */
+    MAINCHARACTER = 1 << 5  /* Is this person the main character? */
   };
   Q_DECLARE_FLAGS(PersonFlags, PersonState);
 
@@ -73,7 +74,32 @@ public:
   Q_DECLARE_FLAGS(StatusFlags, StatusAilment);
 
 private:
-  /* Set up stats for constructor */
+  /* Const maximum limits for any stat */
+  static const uint kMAX_PHYS_ATK = 2000;
+  static const uint kMAX_PHYS_DEF = 2000;
+  static const uint kMAX_THER_ATK = 2000;
+  static const uint kMAX_THER_DEF = 2000;
+  static const uint kMAX_POLA_ATK = 2000;
+  static const uint kMAX_POLA_DEF = 2000;
+  static const uint kMAX_PRIM_ATK = 2000;
+  static const uint kMAX_PRIM_DEF = 2000;
+  static const uint kMAX_CHAR_ATK = 2000;
+  static const uint kMAX_CHAR_DEF = 2000;
+  static const uint kMAX_CYBE_ATK = 2000;
+  static const uint kMAX_CYBE_DEF = 2000;
+  static const uint kMAX_NIHI_ATK = 2000;
+  static const uint kMAX_NIHI_DEF = 2000;
+  static const uint kMAX_VITA = 20000;
+  static const uint kMAX_QNTM = 300;
+  static const uint kMAX_AGIL = 2000;
+  static const uint kMAX_LIMB = 2000;
+  static const uint kMAX_UNBR = 200;
+
+  /* Person class constants */
+  static const uint kTOTAL_MAX_LEVEL = 127;
+  static const uint kMAX_EXPERIENCE = 1000000000; /* 10 ^ 9 */
+
+  /* Set up normal stats for constructor */
   void setupStats();
 
   /* Physical atk stat */
@@ -580,7 +606,7 @@ public:
   void setExp(uint value);
 
   /* Sets the person's level */
-  void setLevel(uint new_level);
+  const bool setLevel(const uint &new_level);
 
   /* Sets the person's level */
   void setName(QString value);
