@@ -9,22 +9,24 @@
 #ifndef PERSONSTATUSBAR_H
 #define PERSONSTATUSBAR_H
 
+#include <QLabel>
 #include <QtGui/QWidget>
 #include <QtGui/QPaintEvent>
 #include <QtGui/QPainter>
 #include "Game/Sprite.h"
+#include "Game/Player/Person.h"
 
 class PersonStatusBar : public QWidget
 {
 public:
-  PersonStatusBar(QWidget* parent = 0);
+  PersonStatusBar(Person* charcter, uint max_width, uint max_height, QWidget* parent = 0);
   ~PersonStatusBar();
 
 private:
-  /* Bar width (screen_width * 0.06) */
+  /* Bar width  */
   int bar_width;
 
-  /* Bar height (screen_height * 0.16) */
+  /* Bar height */
   int bar_height;
 
   /* Person's health */
@@ -38,6 +40,9 @@ private:
 
   /* Person's maximum qd */
   int qd_max;
+
+  /* Name text label */
+  QLabel name_label;
 
   /* HP Bounding box */
   QRect health_outline; 
@@ -57,6 +62,9 @@ private:
   /* Person's name */
   QString name;
 
+  /* Person pointer the status bar is constructed for */
+  Person* character;
+
   /* Sprite pointers to status_thumbnails */
   QVector<Sprite* > status_thumbs;
 
@@ -65,6 +73,10 @@ protected:
   void paintEvent(QPaintEvent*);
   
 public:
+
+  /* Gets the name of the character for the box */
+  QString getName();
+
   /* Sets current HP for display */
   void setDisplayHP(int amount);
 
@@ -76,6 +88,9 @@ public:
 
   /* Sets the max QD for display */
   void setDisplayMaxQD(int amount);
+
+  /* Sets the name of the Person */
+  void setName(QString name);
 };
 
 #endif // PERSONSTATUSBAR_H

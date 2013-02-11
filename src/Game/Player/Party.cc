@@ -4,19 +4,14 @@
 * Inheritance: None?
 * Description: Party is an object holding the five members (Person class) of 
 *              a sleuth
-*  
-* TODO: For clearing, removing party members -- where do they go? [12-02-12]
 ******************************************************************************/
 
 #include "Game/Player/Party.h"
 
 /*
  * Description: Constructor for a party object.
- *
- * Inputs: none
- * Output: none
  */
-Party::Party(Person* p_main, int max, Inventory* inventory, QWidget* parent)
+Party::Party(Person* p_main, uint max, Inventory* inventory, QWidget* parent)
 {
     members.push_back(p_main);
 
@@ -40,10 +35,12 @@ Party::~Party()
  */
 bool Party::addMember(Person* person)
 {
-  //if (members.size() < getMaxSize())
-  //  return false;
-  members.push_back(person);
-  return true;
+  if (members.size() < getMaxSize())
+  {
+    members.push_back(person);
+    return TRUE;
+  }
+  return FALSE;
 }
 
 /*
@@ -53,15 +50,16 @@ bool Party::addMember(Person* person)
  * Inputs: int - index of party member needing to be removed
  * Output: bool - true if person was able to be removed
  */
-bool Party::removeMember(int index)
+bool Party::removeMember(uint index)
 {
   if (members.size() < 2)
-    return false;
+    return FALSE;
   if (members.at(index))
   {
     members.remove(index);
-    return true;
+    return TRUE;
   }
+  return FALSE;
 }
 
 /*
@@ -75,7 +73,7 @@ bool Party::removeMember(QString value)
 {
     if (members.size() < 2)
         return false;
-    for (int i = 1; i < 5; i++)
+    for (uint i = 1; i < 5; i++)
     {
         if (members.at(i)->getName() == value)
         {
@@ -94,7 +92,7 @@ bool Party::removeMember(QString value)
  */
 void Party::clearParty()
 {
-    for (int i = 1; i < 5; i++)
+    for (uint i = 1; i < 5; i++)
       members.remove(i);
 }
 
@@ -115,7 +113,7 @@ Inventory* Party::getInventory()
  * Inputs: int - index of party member to obtain
  * Output: Person* - pointer to a party member at given index
  */
-Person* Party::getMember(int index)
+Person* Party::getMember(uint index)
 {
   if (members.at(index))
     return members.at(index);
@@ -128,7 +126,7 @@ Person* Party::getMember(int index)
  * Inputs: none
  * Output: int - current size of the party
  */
-int Party::getPartySize()
+uint Party::getPartySize()
 {
     return members.size();
 }
@@ -139,7 +137,7 @@ int Party::getPartySize()
  * Inputs: int - index of party member to return name of
  * Output: QString - name of party member at index
  */
-QString Party::getMemberName(int index)
+QString Party::getMemberName(uint index)
 {
   if (members.at(index))
     return members.at(index)->getName();
@@ -152,7 +150,7 @@ QString Party::getMemberName(int index)
  * Inputs: none
  * Outputs: int - maximum size of the party
  */
-int Party::getMaxSize()
+uint Party::getMaxSize()
 {
   return max_size;
 }
@@ -186,7 +184,7 @@ void Party::setMainMember(Person* p)
  * Inputs: int - new max size of the party
  * Output: bool - true if party size was successfully changed
  */
-bool Party::setMaxSize(int value)
+bool Party::setMaxSize(uint value)
 {
   if (value > 0 && value < 6)
   {

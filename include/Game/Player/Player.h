@@ -24,7 +24,7 @@ public:
 
 private:
   /* Player class constants */
-  static const unsigned long kMAX_CREDITS = 999999999999;
+  static const unsigned long long kMAX_CREDITS = 999999999999;
 
   /* Tick speed for the maps */
   int kMAPSPEED;

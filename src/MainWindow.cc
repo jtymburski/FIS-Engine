@@ -126,6 +126,9 @@ void MainWindow::setupBattle()
     qDebug() << "Pola Atk: " << arcadius->getPolarAggression();
     qDebug() << "Pola Def: " << arcadius->getPolarFortitude() << endl;
   }
+
+  qDebug() << "Party sizes: " << enemy_clan->getPartySize() << " " << friend_clan->getPartySize();
+  qDebug() << "Party max sizes: " << enemy_clan->getMaxSize() << " " << friend_clan->getMaxSize();
   test_battle = new Battle(friend_clan, enemy_clan);
 }
 

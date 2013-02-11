@@ -167,7 +167,7 @@ void TitleScreen::setup()
     new_label->setPalette(pal);
 
     new_label->setMargin(marginWidth);
-    new_label->move((this->width() - pixelWidth) / 2 - marginWidth, 
+    new_label->move((this->width() - pixelWidth) / 2 - marginWidth,
                     400 + i*75);
     new_label->setAutoFillBackground(true);
 
