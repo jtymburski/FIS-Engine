@@ -63,6 +63,7 @@ private:
   QVector<QString> option_names;
 
   Sound* background_sound;
+  //Sound* menu_click_sound;
 
   /* ------------------ Constants ------------------ */
   const static int kNUM_MENU_ITEMS = 3;

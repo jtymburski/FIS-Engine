@@ -9,12 +9,12 @@
 #ifndef SOUND_H
 #define SOUND_H
 
-#include <QCoreApplication>
-#include <phonon/AudioOutput>
-#include <phonon/MediaObject>
-#include <phonon/MediaSource>
+#include <QDebug>
+#include <QObject>
+#include <SDL/SDL.h>
+#include <SDL/SDL_mixer.h>
 
-class Sound : public Phonon::MediaObject
+class Sound : public QObject
 {
   Q_OBJECT
 
@@ -24,28 +24,24 @@ public:
   ~Sound();
 
 private:
-  Phonon::AudioOutput* audio_ctrl;
+  int channel;
   int loop_count;
-  QString source_path;
-  bool source_set;
+  Mix_Chunk* sound;
+  bool sound_set;
 
   /* --------------------- CONSTANTS --------------------- */
   static const int kINFINITE_LOOP = -1;
+  static const int kUNSET_CHANNEL = -1;
 
 public slots:
-  void queueSong();
-  void stopSong();
-
-signals:
-  void finishedSequence();
-
-private:
-  void setup();
+  void play();
+  void stop();
 
 public:
   int getLoopCount();
-  bool setSourceFile(QString path);
+  bool setSoundFile(QString path);
   void setLoopCount(int loop_count);
+  bool unsetSoundFile();
 };
 
 #endif // SOUND_H

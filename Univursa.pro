@@ -8,6 +8,10 @@ TEMPLATE = app
 
 CONFIG += qt
 DESTDIR = ./bin
+win32 {
+  LIBS += -lmingw32 -l SDLmain
+}
+LIBS += -lSDL -lSDL_mixer
 QT += phonon # network xml, core and gui are default
 RESOURCES = Resources.qrc
 

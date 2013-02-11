@@ -8,8 +8,8 @@
 *              screen.
 ******************************************************************************/
 #include "MainWindow.h"
-#include <qDebug>
 
+#include <QDebug>
 
 /* Constructor function */
 MainWindow::MainWindow(QWidget* parent)

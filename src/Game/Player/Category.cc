@@ -7,7 +7,7 @@
 ******************************************************************************/
 
 #include "Game/Player/Category.h"
-#include <qDebug>
+#include <QDebug>
 
 /*
  * Description: Constructor object. Constructs a Category given a string and

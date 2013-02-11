@@ -10,53 +10,43 @@
 
 Sound::Sound(QString path, int loop_count)
 {
-  setup();
-  setSourceFile(path);
+  sound = NULL;
+  sound_set = FALSE;
+  channel = kUNSET_CHANNEL;
+
+  setSoundFile(path);
   setLoopCount(loop_count);
 }
 
 Sound::Sound()
 {
-  setup();
+  sound = NULL;
+  sound_set = FALSE;
+  channel = kUNSET_CHANNEL;
+
   setLoopCount(0);
 }
 
 Sound::~Sound()
 {
-  delete audio_ctrl;
+  if(sound_set)
+    Mix_FreeChunk(sound);
 }
 
-void Sound::queueSong()
+void Sound::play()
 {
-  if(loop_count != 0)
+  channel = Mix_PlayChannel(-1, sound, loop_count);
+  if(channel == kUNSET_CHANNEL)
   {
-    enqueue(Phonon::MediaSource(source_path));
-    setLoopCount(loop_count-1);
+    qDebug() << "[ERROR]Unable to play WAV file " << Mix_GetError();
   }
 }
 
-void Sound::stopSong()
+void Sound::stop()
 {
-  if(loop_count == 0)
-  {
-    emit finishedSequence();
-  }
-}
-
-void Sound::setup()
-{
-  audio_ctrl = new Phonon::AudioOutput();
-  Phonon::createPath(this, audio_ctrl);
-
-  source_path = "";
-  source_set = FALSE;
-
-  QObject::connect(this, SIGNAL(aboutToFinish()), 
-                   this, SLOT(queueSong()));
-  QObject::connect(this, SIGNAL(currentSourceChanged(Phonon::MediaSource)), 
-                   this, SLOT(stopSong()));
-  QObject::connect(this, SIGNAL(finishedSequence()), 
-                   this, SLOT(clear()));
+  if(channel != kUNSET_CHANNEL)
+    Mix_HaltChannel(channel);
+  channel = kUNSET_CHANNEL;
 }
 
 int Sound::getLoopCount()
@@ -64,16 +54,25 @@ int Sound::getLoopCount()
   return loop_count;
 }
 
-bool Sound::setSourceFile(QString path)
+bool Sound::setSoundFile(QString path)
 {
   if(!path.isEmpty())
   {
-    setCurrentSource(Phonon::MediaSource(path));
-    source_path = path;
-    source_set = TRUE;
+    unsetSoundFile();
+    sound = Mix_LoadWAV(path.toStdString().c_str());
 
+    /* Determine if the setting of the sound was valid */
+    if(sound == NULL)
+    {
+      qDebug() << "[ERROR]Unable to load WAV file: " << Mix_GetError();
+      return FALSE;
+    }
+
+    sound_set = TRUE;
     return TRUE;
   }
+
+  qDebug() << "[ERROR]Unable to load empty WAV file path";
   return FALSE;
 }
 
@@ -83,4 +82,17 @@ void Sound::setLoopCount(int loop_count)
     this->loop_count = kINFINITE_LOOP;
   else
     this->loop_count = loop_count;
+}
+
+bool Sound::unsetSoundFile()
+{
+  Mix_FreeChunk(sound);
+  sound = NULL;
+
+  if(sound_set)
+  {
+    sound_set = FALSE;
+    return TRUE;
+  }
+  return FALSE;
 }

@@ -28,8 +28,9 @@ TitleScreen::TitleScreen(int width, int height, QWidget* parent)
   setFont(current_font);
 
   /* Sound setup */
-  background_sound = new Sound(":/SOUND_titlescreen",-1);
+  background_sound = new Sound("sound/ambience/background_menu_sound.wav", -1);
   background_sound->play();
+  //menu_click_sound = new Sound("./sound/functional/menu_click.wav");
 
   /* Setup the internals of the screen */
   setup();
@@ -57,6 +58,8 @@ void TitleScreen::keyPressEvent(QKeyEvent* event)
   if(event->key() == Qt::Key_Up)
   {
     decrementState();
+    //menu_click_sound->setLoopCount(1);
+    //menu_click_sound->play();
   }
   else if(event->key() == Qt::Key_Down)
   {
@@ -68,7 +71,7 @@ void TitleScreen::keyPressEvent(QKeyEvent* event)
   }
   else if(event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)
   {
-    background_sound->stop();
+    //background_sound->stop();
 
     if(cursor_index == TESTMAP)
       openMap();

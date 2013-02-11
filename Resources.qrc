@@ -89,6 +89,7 @@
     <file alias="A_turbo_fish">sprites/Battle/Backs/turbofish.png</file>
     <file alias="bbd_sewers">pictures/Battle Backdrops/battlebg/battlebg2.png</file>
 
+    <file alias="SOUND_menuclick">sound/functional/menu_click.wav</file>
     <file alias="SOUND_titlescreen">sound/ambience/background_menu_sound.wav</file>
   </qresource>
 </RCC>
