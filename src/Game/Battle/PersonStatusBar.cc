@@ -22,6 +22,14 @@ PersonStatusBar::~PersonStatusBar()
 void PersonStatusBar::paintEvent(QPaintEvent*)
 {
     QPainter painter(this);
+
+    /* Print character name */
+
+    /* Print status thumbs */
+
+    /* Print Health */
+
+    /* Print QD */
 }
 
 /* Sets current HP for display */

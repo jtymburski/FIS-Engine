@@ -88,16 +88,23 @@ Battle::Battle(Party* p_friends, Party* p_foes, QWidget* pointer)
   battle_status_bar_image->load(":/statusbar");
 
   /* Create and place enemy bounding boxes */
+  int left_d  = floor(0.1290 * getMaxHeight());
+  int top_d   = floor(0.1464 * getMaxHeight());
+  int enemy_w = floor(0.2105 * getMaxWidth());
+  int enemy_h = enemy_w;
+  int spacing = floor(0.0226 * getMaxWidth());
+
   for (int i = 0; i < 5; i++)
-      enemy_box.push_back(new QRect(64 + 224 * i,96, 256, 256));
+      enemy_box.push_back(new QRect(left_d + (enemy_w * i) - spacing * i,top_d, enemy_w, enemy_h));
 
   /* Create and place ally bounding boxes */
-  int top_d  = floor(0.52 * getMaxHeight());
-  int ally_w = floor(0.21 * getMaxWidth());
+  top_d      = floor(0.5200 * getMaxHeight());
+  int ally_w = floor(0.2100 * getMaxWidth());
   int ally_h = floor(0.3636 * getMaxHeight());
+  spacing    = floor(0.0263 * getMaxWidth());
 
   for (int i = 0; i < 5; i++)
-    ally_box.push_back(new QRect((ally_w * i) - 32 * i,top_d,ally_w,ally_h));
+    ally_box.push_back(new QRect((ally_w * i) - spacing * i,top_d,ally_w,ally_h));
 
   /* Call paint event and show screen */
   update();
@@ -114,6 +121,7 @@ Battle::~Battle()
   setFoes();
 }
 
+// TODO
 void Battle::keyPressEvent(QKeyEvent* event)
 {
   if(event->key() == Qt::Key_Escape)

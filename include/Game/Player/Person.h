@@ -845,9 +845,9 @@ public:
   /* Sets the Base critical chance stat */
   void setBaseUnbearability(uint value);
 };
-Q_DECLARE_OPERATORS_FOR_FLAGS(Person::);
-Q_DECLARE_OPERATORS_FOR_FLAGS(Person::);
-Q_DECLARE_OPERATORS_FOR_FLAGS(Person::);
+Q_DECLARE_OPERATORS_FOR_FLAGS(Person::PersonFlags)
+Q_DECLARE_OPERATORS_FOR_FLAGS(Person::StatusBuffFlags)
+Q_DECLARE_OPERATORS_FOR_FLAGS(Person::StatusFlags)
 
 
 #endif // PERSON_H

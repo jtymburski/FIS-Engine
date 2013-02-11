@@ -11,14 +11,18 @@
 #include <QDebug>
 #include <cmath>
 
-#include "Game/Player/Person.h"
-
+// TODO: THIS SHOULD NOT BE NECESSARY [02-10-13]
+// ************************ TODO
 int max(int a, int b)
 {
-    int x = 0;
-    (a < b) ? (x = b) : (x = a);
-    return x;
+  int x = 0;
+  (a < b) ? (x = b) : (x = a);
+  return x;
 }
+//
+// TODO **********************************
+
+#include "Game/Player/Person.h"
 
 /*
  * Description: Primary person constructor (requires all values)

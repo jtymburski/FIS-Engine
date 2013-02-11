@@ -12,6 +12,7 @@
 #include <QtGui/QWidget>
 #include <QtGui/QPaintEvent>
 #include <QtGui/QPainter>
+#include "Game/Sprite.h"
 
 class PersonStatusBar : public QWidget
 {
@@ -55,6 +56,9 @@ private:
 
   /* Person's name */
   QString name;
+
+  /* Sprite pointers to status_thumbnails */
+  QVector<Sprite* > status_thumbs;
 
 protected:
   /* Paint event for the class */
