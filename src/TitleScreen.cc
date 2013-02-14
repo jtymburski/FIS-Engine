@@ -28,7 +28,8 @@ TitleScreen::TitleScreen(int width, int height, QWidget* parent)
   setFont(current_font);
 
   /* Sound setup */
-  background_sound = new Sound("sound/ambience/background_menu_sound.wav", -1);
+  //background_sound =new Sound("sound/ambience/background_menu_sound.wav",-1);
+  background_sound = new Sound("music/nightsongs.ogg", -1);
   background_sound->play();
   menu_click_sound = new Sound("sound/functional/menu_click.wav", 1);
 
