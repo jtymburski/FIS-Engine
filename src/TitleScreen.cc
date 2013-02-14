@@ -30,7 +30,7 @@ TitleScreen::TitleScreen(int width, int height, QWidget* parent)
   /* Sound setup */
   background_sound = new Sound("sound/ambience/background_menu_sound.wav", -1);
   background_sound->play();
-  //menu_click_sound = new Sound("./sound/functional/menu_click.wav");
+  menu_click_sound = new Sound("sound/functional/menu_click.wav", 1);
 
   /* Setup the internals of the screen */
   setup();
@@ -42,6 +42,8 @@ TitleScreen::TitleScreen(int width, int height, QWidget* parent)
 /* Destructor function */
 TitleScreen::~TitleScreen()
 {
+  delete background_sound;
+  delete menu_click_sound;
 }
 
 void TitleScreen::paintEvent(QPaintEvent* event)
@@ -58,20 +60,21 @@ void TitleScreen::keyPressEvent(QKeyEvent* event)
   if(event->key() == Qt::Key_Up)
   {
     decrementState();
-    //menu_click_sound->setLoopCount(1);
-    //menu_click_sound->play();
+    menu_click_sound->play();
   }
   else if(event->key() == Qt::Key_Down)
   {
     incrementState();
+    menu_click_sound->play();
   }
   else if(event->key() == Qt::Key_Escape)
   {
     setState(MAINEXIT);
+    menu_click_sound->play();
   }
   else if(event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)
   {
-    //background_sound->stop();
+    background_sound->stop();
 
     if(cursor_index == TESTMAP)
       openMap();

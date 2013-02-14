@@ -9,7 +9,6 @@
 int main(int argc, char *argv[])
 {
   QApplication app(argc, argv);
-  //app.setApplicationName("Univursa Game");
 
   /* Frequency of Audio Playback */
 	int audio_rate = 22050;
@@ -35,31 +34,17 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-/*
-	//Load our WAV file from disk
-	sound = Mix_LoadWAV("alarm.wav");
-  sound2 = Mix_LoadWAV("background_menu_sound.wav");
-	if(sound == NULL) {
-		printf("Unable to load WAV file: %s\n", Mix_GetError());
-	}
-	
-	//Play our sound file, and capture the channel on which it is played
-	channel = Mix_PlayChannel(-1, sound, 0);
-  channel2 = Mix_PlayChannel(-1, sound2, 0);
-	if(channel == -1) {
-		printf("Unable to play WAV file: %s\n", Mix_GetError());
-	}
-*/
-  MainWindow mw;
-  QObject::connect(&mw, SIGNAL(closing()), &app, SLOT(quit()));
+  /* Setup QT */
+  MainWindow* mw = new MainWindow();
+  QObject::connect(mw, SIGNAL(closing()), &app, SLOT(quit()));
 
+  /* Run QT App */
   int qt_result = app.exec();
+  
+  /* Clean up QT */
+  delete mw;
 
-/*
-	//Release the memory allocated to our sound
-	Mix_FreeChunk(sound);
-*/
-	//Need to make sure that SDL_mixer and SDL have a chance to clean up
+	/* Clean up SDL */
 	Mix_CloseAudio();
 	SDL_Quit();	
 
