@@ -2,7 +2,7 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_mixer.h>
 
-#include "MainWindow.h"
+#include "Application.h"
 
 #undef main
 
@@ -35,14 +35,14 @@ int main(int argc, char *argv[])
 	}
 
   /* Setup QT */
-  MainWindow* mw = new MainWindow();
-  QObject::connect(mw, SIGNAL(closing()), &app, SLOT(quit()));
+  Application* game = new Application();
+  QObject::connect(game, SIGNAL(closing()), &app, SLOT(quit()));
 
   /* Run QT App */
   int qt_result = app.exec();
   
   /* Clean up QT */
-  delete mw;
+  delete game;
 
 	/* Clean up SDL */
 	Mix_CloseAudio();

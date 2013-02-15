@@ -1,51 +1,56 @@
 /******************************************************************************
 * Class Name: Application
-* Date Created: Nov 4 2012
-* Inheritance: QWidget
-* Description: The Application class
+* Date Created: Jan 29, 2013
+* Inheritance: QMainWindow
+* Description: The Main Application that handles all the displays for the 
+*              entire game. This includes the primary switching mechanism to 
+*              switch between widgets as needed according to the selection on 
+*              the screen.
 ******************************************************************************/
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
-#include <QtGui/QWidget>
+#include <QDesktopWidget>
+#include <QStackedWidget>
+#include <QtGui/QMainWindow>
 
-#include "EnumDatabase.h"
-#include "Game/Game.h"
-#include "Options.h"
-//#include "SavedGame.h"
 #include "TitleScreen.h"
 
-class Application : public QWidget
+/* DELETE: Temporary header access for testing */
+#include "Game/Map/Map.h"
+#include "Game/Battle/Battle.h"
+
+class Application : public QMainWindow
 {
+  Q_OBJECT
+
 public:
   /* Constructor function */
-  Application(QWidget* parent=0);
+  Application(QWidget* parent = 0);
 
   /* Destructor function */
   ~Application();
 
 private:
-  /* Keys used in the application (Key is qt enum) */
-  int enter, esc, space, up, down, left, right, shift, F1;
+  QStackedWidget* widget_stack;
+  TitleScreen* title_screen;
+  
+  /* DELETE two pointers below. Currently here for testing */
+  Battle* test_battle;
+  Map* test_map;
 
-  /* The current application mode */
-  ApplicationMode current_application_mode;
+public slots:
+  void close();
+  void switchWidget(int index);
 
-  /* The applications title screen */
-  TitleScreen* application_titlescreen;
-
-  /* The applications options */
-  Options application_options;
-
-  /* The applications saved games */
-//  SavedGame application_savedgame;
-
-  /* The game */
-  Game application_game;
+signals:
+  void closing();
 
 public:
-  /* Switches the current_application_mode */
-  void swapModes();
+  /* DELETE two functions below. Currently here for testing */
+  void setupBattle();
+  void setupMap();
 };
 
-#endif // APPLICATION_H
+
+#endif // MAINWINDOW_H
