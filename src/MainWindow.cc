@@ -9,8 +9,6 @@
 ******************************************************************************/
 #include "MainWindow.h"
 
-#include <QDebug>
-
 /* Constructor function */
 MainWindow::MainWindow(QWidget* parent)
 {
@@ -40,6 +38,12 @@ MainWindow::MainWindow(QWidget* parent)
   QObject::connect(test_battle, SIGNAL(closingBattle(int)), 
                    this,        SLOT(switchWidget(int)));
 
+  /* Set the widget location (center of the screen) */
+  QDesktopWidget desk;
+  setGeometry((desk.width() - 1216) / 2, 
+              (desk.height() - 704) / 2, 1216, 704);
+
+  /* Show the final product */
   show();
 }
 

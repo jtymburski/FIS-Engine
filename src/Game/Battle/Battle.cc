@@ -105,10 +105,6 @@ Battle::Battle(Party* p_friends, Party* p_foes, QWidget* pointer)
 
   for (int i = 0; i < 5; i++)
     ally_box.push_back(new QRect((ally_w * i) - spacing * i,top_d,ally_w,ally_h));
-
-  /* Call paint event and show screen */
-  update();
-  show();
 }
 
 

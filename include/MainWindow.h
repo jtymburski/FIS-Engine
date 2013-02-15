@@ -10,8 +10,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QtGui/QMainWindow>
+#include <QDesktopWidget>
 #include <QStackedWidget>
+#include <QtGui/QMainWindow>
 
 #include "TitleScreen.h"
 

@@ -433,8 +433,6 @@ Map::Map(QWidget* parent)
     }
     geography.append(row);
   }
-
-  show();
 }
 
 /* Destructor function */

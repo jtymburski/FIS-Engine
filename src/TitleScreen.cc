@@ -36,8 +36,6 @@ TitleScreen::TitleScreen(int width, int height, QWidget* parent)
   /* Setup the internals of the screen */
   setup();
   cursor_index = 0;
-
-  show();
 }
 
 /* Destructor function */
