@@ -10,7 +10,9 @@
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
+#include <QCloseEvent>
 #include <QDesktopWidget>
+#include <QLayout>
 #include <QStackedWidget>
 #include <QtGui/QMainWindow>
 
@@ -38,6 +40,9 @@ private:
   /* DELETE two pointers below. Currently here for testing */
   Battle* test_battle;
   Map* test_map;
+
+protected:
+  void closeEvent(QCloseEvent* event);
 
 public slots:
   void close();

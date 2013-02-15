@@ -9,8 +9,6 @@
 ******************************************************************************/
 #include "Application.h"
 
-#include <QDebug>
-
 /* Constructor function */
 Application::Application(QWidget* parent)
 {
@@ -43,16 +41,26 @@ Application::Application(QWidget* parent)
   /* Set the widget location (center of the screen) */
   QDesktopWidget desktopWidget;
   QRect desktopRect(desktopWidget
-						.availableGeometry(desktopWidget.primaryScreen()));
+                      .availableGeometry(desktopWidget.primaryScreen()));
   setGeometry((desktopRect.width() - 1216) / 2, 
               (desktopRect.height() - 704) / 2, 1216, 704);
 
+  /* Enforce a fixed size and remove close button */
+  layout()->setSizeConstraint(QLayout::SetFixedSize);
+
+  /* Do the final show once everything is set up */
   show();
 }
 
 /* Destructor function */
 Application::~Application()
 {
+}
+
+void Application::closeEvent(QCloseEvent* event)
+{
+  close();
+  event->ignore();
 }
 
 void Application::close()
