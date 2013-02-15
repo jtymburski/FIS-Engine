@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
   /* 1 channel = mono, 2 channels = stereo */
 	int audio_channels = 2;			//2 channels = stereo
   /* Size of the audio buffers in memory */
-	int audio_buffers = 4096;
+	int audio_buffers = 1024;
 	
 	/* Initialize the SDL audio */
 	if (SDL_Init(SDL_INIT_AUDIO) != 0) 
