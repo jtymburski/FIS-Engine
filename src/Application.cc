@@ -9,6 +9,8 @@
 ******************************************************************************/
 #include "Application.h"
 
+#include <QDebug>
+
 /* Constructor function */
 Application::Application(QWidget* parent)
 {
@@ -39,11 +41,12 @@ Application::Application(QWidget* parent)
                    this,        SLOT(switchWidget(int)));
 
   /* Set the widget location (center of the screen) */
-  QDesktopWidget desk;
-  setGeometry((desk.width() - 1216) / 2, 
-              (desk.height() - 704) / 2, 1216, 704);
+  QDesktopWidget desktopWidget;
+  QRect desktopRect(desktopWidget
+						.availableGeometry(desktopWidget.primaryScreen()));
+  setGeometry((desktopRect.width() - 1216) / 2, 
+              (desktopRect.height() - 704) / 2, 1216, 704);
 
-  /* Show the final product */
   show();
 }
 
