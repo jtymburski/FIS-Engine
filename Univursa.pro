@@ -56,7 +56,8 @@ SOURCES += \
     ./src/Game/Player/Item.cc \
     ./src/Game/Player/Party.cc \
     ./src/Game/Player/Person.cc \
-    ./src/Game/Player/Race.cc
+    ./src/Game/Player/Race.cc \
+    ./src/Game/Player/Skill.cc
 
 HEADERS += \
     ./include/Application.h \
@@ -99,6 +100,8 @@ HEADERS += \
     ./include/Game/Player/Item.h \
     ./include/Game/Player/Party.h \
     ./include/Game/Player/Person.h \
-    ./include/Game/Player/Race.h
+    ./include/Game/Player/Race.h \
+    ./include/Game/Player/Skill.h \
+    ./include/Game/Player/skill.h
 
 INCLUDEPATH += ./include
