@@ -4,12 +4,11 @@
 * Inheritance:
 * Description:  EnumDatabase holds non-flag Enums and QFlag include for
 *               classes which use flags.
-* TODO:
  *****************************************************************************/
-#include <QFlags>
-
 #ifndef ENUMDATABASE_H
 #define ENUMDATABASE_H
+
+#include <QFlag>
 
 enum ApplicationMode {TITLESCREEN, GAME};
 enum Direction {NORTH,EAST,SOUTH,WEST};
@@ -44,5 +43,4 @@ enum ActionType
   ALLIGNOREUSER   = 1ul << 25, /* Does the action strike all except user? */
   MULTISTRIKE     = 1ul << 26 /* Does the action have more than one strike? */
 };
-
 #endif // ENUMDATABASE_H

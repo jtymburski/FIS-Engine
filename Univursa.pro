@@ -18,6 +18,7 @@ RESOURCES = Resources.qrc
 SOURCES += \
     ./src/Main.cc \
     ./src/Application.cc \
+    ./src/FileHandler.cc \
     ./src/Options.cc \
     ./src/Sound.cc \
     ./src/TitleScreen.cc \
@@ -60,6 +61,7 @@ SOURCES += \
 HEADERS += \
     ./include/Application.h \
     ./include/EnumDatabase.h \
+    ./include/FileHandler.h \
     ./include/Options.h \
     ./include/Sound.h \
     ./include/TitleScreen.h \
