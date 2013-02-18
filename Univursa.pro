@@ -102,6 +102,7 @@ HEADERS += \
     ./include/Game/Player/Person.h \
     ./include/Game/Player/Race.h \
     ./include/Game/Player/Skill.h \
-    ./include/Game/Player/skill.h
+    ./include/Game/Player/skill.h \
+    src/Game/Player/statet.h
 
 INCLUDEPATH += ./include

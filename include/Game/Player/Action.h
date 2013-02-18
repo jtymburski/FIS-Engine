@@ -2,118 +2,148 @@
 * Class Name: Action
 * Date Created: Sunday, October 28th, 2012
 * Inheritance: 
-* Description: Display information on the screen about battle events
+* Description: Action is an element of a skill (skill can have up to 10 actions
+* that will do alter stats, flip flags of a person, etc., or do damage to them.
 *
-* TODO: CONSTRUCTORS TO BE FINISHED
-*
-* Notes: - Possibility to target person with most skills
-*     - num_targets could be that value or less based on the number of 
-*     legal targets or user option
-*
-* Parse layout: IF{[Element Type], [Greater/Lesser Qualifier], [Value]} : 
-* [Upper/Lower or GIVE/TAKE] , [Skill Element 1] , [Skill Element 2] ,
-* [Ignore Attack], [Ignore Atk Elm] . [Ignore Atk Elm 2] . [Etc.] , 
-* [Ignore Def Elm 1] . [Ignore Def Elm 2] . [Etc.] , [Base Damage Value] , 
-* [Variance] , [Chance]
-*
-* while (line available)
-* { 
-* string 1: string 2
-* if (switch) boolean valid
-* effect
-* }
-*
+* TODO: Constructors to be finished [02-17-13]
+* TODO: Need to write action parser [02-17-13]
 ******************************************************************************/
 #ifndef ACTION_H
 #define ACTION_H
 
 #include "EnumDatabase.h"
 #include <QtGui/QWidget>
-/* LOWER,RAISE,INFLICT,CURE,IGNORE,CHANCE,<,<=,>,>=,==,!=,
-  THERMAL,THERMAL_AGGRESSION,THERMAL_FORTITUDE,
-  POLAR,POLAR_AGGRESSION,POLAR_FORTITUDE,
-  PRIMAL,PRIMAL_AGGRESSION,PRIMAL_FORTITUDE,
-  CHARGED,CHARGED_AGGRESSION,CHARGED_FORTITUDE,
-  CYBERNETIC,CYBERNETIC_AGGRESSION,CYBERNETIC_FORTITUDE,
-  NIHIL,NIHIL_AGGRESSION,NIHIL_FORTITUDE,
-  VITALITY,QUANTUM_DRIVE,AGILITY,LIMBERTUDE,UNBEARABILITY */
 
-class Action : public QWidget 
+
+class Action : public QWidget
 {
 public:
-    /* Action constructor object */
-  	Action(QWidget *pointer = 0);
+    /* Action constructor object (requires a QString of raw input) */
+    Action(QString raw_language, QWidget *pointer = 0);
 
     /* Annihilates an action object */
   	~Action();
 
+  enum ActionType
+  {
+    RAISE         = 1 <<  0, /* Does the action raise a stat? */
+    LOWER         = 1 <<  1, /* Does the action lower a stat? */
+    GIVE          = 1 <<  2, /* Does the action give a status ailment? */
+    TAKE          = 1 <<  3, /* Does the action take a status ailment away? */
+    OFFENSIVE     = 1 <<  4, /* Does the action affect offensive stats? */
+    DEFENSIVE     = 1 <<  5, /* Does the action affect defensive stats? */
+    PHYSICAL      = 1 <<  6, /* Does the action affect physical stats? */
+    THERMAL       = 1 <<  7, /* Does the action affect thermal stats? */
+    POLAR         = 1 <<  8, /* " polar stats? */
+    PRIMAL        = 1 <<  9, /* " primal stats? */
+    CHARGED       = 1 << 10, /* " charged stats? */
+    CYBERNETIC    = 1 << 11, /* " cybernetic stats? */
+    NIHIL         = 1 << 12, /* " nihil stats? */
+    VITALITY      = 1 << 13, /* " vitality stat? */
+    QUANTUM_DRIVE = 1 << 14, /* " quantum drive stat? */
+    MOMENTUM      = 1 << 15, /* " speed stat? */
+    LIMBERTUDE    = 1 << 16, /* " dodge chance stats? */
+    UNBEARABILITY = 1 << 17  /* " unbearability stat? */
+  };
+  Q_DECLARE_FLAGS(ActionFlags, ActionType)
+
+  enum IgnoreAttack
+  {
+    IGNORE_ELMN_ATK = 1 << 0,
+    IGNORE_PHYS_ATK = 1 << 1,
+    IGNORE_THER_ATK = 1 << 2,
+    IGNORE_POLA_ATK = 1 << 3,
+    IGNORE_PRIM_ATK = 1 << 4,
+    IGNORE_CHAR_ATK = 1 << 5,
+    IGNORE_CYBE_ATK = 1 << 6,
+    IGNORE_NIHI_ATK = 1 << 7,
+    IGNORE_ATK = 1 << 8
+  };
+  Q_DECLARE_FLAGS(IgnoreAtkFlags, IgnoreAttack)
+
+  enum IgnoreDefense
+  {
+    IGNORE_ELMN_DEF = 1 << 0,
+    IGNORE_PHYS_DEF = 1 << 1,
+    IGNORE_THER_DEF = 1 << 2,
+    IGNORE_POLA_DEF = 1 << 3,
+    IGNORE_PRIM_DEF = 1 << 4,
+    IGNORE_CHAR_DEF = 1 << 5,
+    IGNORE_CYBE_DEF = 1 << 6,
+    IGNORE_NIHI_DEF = 1 << 7,
+    IGNORE_DEF = 1 << 8
+  };
+  Q_DECLARE_FLAGS(IgnoreDefFlags, IgnoreDefense)
+
 private:
-  /* The action's type (defined by enumerator) */
-  ActionType type; 
 
-  /* The health shift this action will cause (damage or healing) */
-  int vitality_shift; 
+  /* Enumerated flag sets */
+  ActionFlags action_flags;
+  IgnoreAtkFlags ignore_atk_flags;
+  IgnoreDefFlags ignore_def_flags;
 
-  /* The action's use description */
-  QString description,brief_description; 
+  /* ID of the action: Positive for status effects, negative for others */
+  int id;
 
-  /* The actions name */
-  QString name; //The actions name
+  /* Minimum duration the action will take */
+  uint min_duration;
 
-  /* The sequence that defines an action */
-  QVector<QString> sequence;
+  /* Maximum duration the action will take */
+  uint max_duration;
 
-  /* The QD payment htat must be made to use this action */
-  unsigned int cost; 
+  /* Value the effected stat will alter temporarily */
+  uint base_change;
 
-  /* The number of targets this acftion can target */
-  unsigned int num_targets;
+  /* Variance of base change (percentage) */
+  float variance;
 
-  /* The language used to create actions, more can be added */
-  QVector<QString> language;
+  /* Sets the *UNIQUE* ID of the action */
+  void setId(int id);
 
-  /* ActionType flags */
-  unsigned int action_flags;
+  /* Sets the duration of the action (min 1, max 1 means single turn action) */
+  void setDuration(uint min, uint max);
+
+  /* Sets the base change value that will effect the given stat */
+  void setBaseChange(uint new_value);
+
+  /* Variance of the base change (percentage) */
+  void setVariance(float new_value);
 
 public:
-  /* Evaluates the FRIENDLY flag */
-  bool isFriendly();
 
-  /* Attempts to perform the action as defined by sequence, return false if it is invalid */
-  bool use(); 
+  /* Toggles an Ignore Atk Flag */
+  void toggleIgnoreAtkFlag(IgnoreAttack flags);
 
-  /* Returns the brief description */
-  QString getBriefDescription(); 
+  /* Toggles an Ignore Def Flag */
+  void toggleIgnoreDefFlag(IgnoreDefense flags);
 
-  /* Returns the category (for menu grouping) */
-  QString getCategory(); 
+  /* Toggles an Action Type flag */
+  void toggleActionFlag(ActionType flags);
 
-  /* Returns the actions cost */
-  unsigned int getCost(); 
+  /* Sets the ID of an action NOTE: Ensure Unique */
+  uint getId();
 
-  /* Returns the description */
-  QString getDescription();
+  /* Gets the value of an Ignore Atk Flag */
+  const bool getIgnoreAtkFlag(IgnoreAttack flags);
 
-  /* Returns the action type */
-  ActionType getMode(); 
+  /* Gets the value of an Ignore Def Flag */
+  const bool getIgnoreDefFlag(IgnoreDefense flags);
 
-  /* Returns the name */
-  QString getName();
+  /* Gets the value of an Action Type Flag */
+  const bool getActionFlag(ActionType flags);
 
-  /* Returns the number of targets this will require */
-  unsigned int getNumTargets(); 
+  /* Sets the value of an Ignore Atk Flag */
+  void setIgnoreAtkFlag(IgnoreAttack flags, const bool set_value);
 
-  /* Sets the action's cost */
-  void setCost(unsigned int);
+  /* Sets the valueof an Ignore Def Flag */
+  void setIgnoreDefFlag(IgnoreDefense flags, const bool set_value);
 
-  /* Sets the action's mode */
-  void setMode(ActionType a);
+  /* Sets the value of an Action Type Flag */
+  void setActionFlag(ActionType flags, const bool set_value);
 
-  /* Sets the action name */
-  void setName(QString); 
-
-  /* Sets the number of targets */
-  void setNumTargets(unsigned int i); 
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(Action::IgnoreAtkFlags)
+Q_DECLARE_OPERATORS_FOR_FLAGS(Action::IgnoreDefFlags)
+Q_DECLARE_OPERATORS_FOR_FLAGS(Action::ActionFlags)
 
 #endif // ACTION_H

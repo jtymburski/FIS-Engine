@@ -1,119 +1,102 @@
 /******************************************************************************
-* Class Name: Action Implementation
-* Date Created: December 2nd, 2012
-* Inheritance: 
-* Description: Display information on the screen about battle events
+* Class Name: Action
+* Date Created: Sunday, October 28th, 2012
+* Inheritance:
+* Description: Action is an element of a skill (skill can have up to 10 actions
+* that will do alter stats, flip flags of a person, etc., or do damage to them.
 *
-* TODO: CONSTRUCTORS TO BE FINISHED
-* TODO: ACTION CATEGORY? (+ getFunction) [12-02-12]
-*
-* Notes: - Possibility to target person with most skills
-*     - num_targets could be that value or less based on the number of 
-*     legal targets or user option
-*
-* Parse layout: IF{[Element Type], [Greater/Lesser Qualifier], [Value]} : 
-* [Upper/Lower or GIVE/TAKE] , [Skill Element 1] , [Skill Element 2] ,
-* [Ignore Attack], [Ignore Atk Elm] . [Ignore Atk Elm 2] . [Etc.] , 
-* [Ignore Def Elm 1] . [Ignore Def Elm 2] . [Etc.] , [Base Damage Value] , 
-* [Variance] , [Chance]
-*
-* while (line available)
-* { 
-* string 1: string 2
-* if (switch) boolean valid
-* effect
-* }
-*
+* TODO: Constructors to be finished [02-17-13]
+* TODO: Need to write action parser [02-17-13]
 ******************************************************************************/
 
 #include "Game/Player/Action.h"
 
-/*
- * Description: Constructor for an action object
- */
-Action::Action(QWidget* pointer)
+/*============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *===========================================================================*/
+
+Action::Action(QString raw_language, QWidget *pointer)
 {
 }
 
-/* Description: Annihilates an action object
- */
 Action::~Action()
 {
 }
 
-/* Evaluates the FRIENDLY flag */
-bool Action::isFriendly()
+/*============================================================================
+ * FUNCTIONS
+ *===========================================================================*/
+
+void Action::setId(int id)
 {
-    return TRUE;
+  this->id = id;
 }
 
-/* Attempts to perform the action as defined by sequence, return false if it is invalid */
-bool Action::use()
+void Action::setDuration(uint min, uint max)
 {
+  min_duration = min;
+  max_duration = max;
 }
 
-/* Returns the brief description */
-QString Action::getBriefDescription()
+void Action::setBaseChange(uint new_value)
 {
-  return brief_description;
+  base_change = new_value;
 }
 
-/* Returns the category (for menu grouping) */
-/* TODO: Category data member? [12-02-12] */
-QString Action::getCategory()
+void Action::setVariance(float new_value)
 {
+  if (new_value <= 1)
+    variance = new_value;
+  else
+    variance = 1;
 }
 
-/* Returns the actions cost */
-unsigned int Action::getCost()
+void Action::toggleIgnoreAtkFlag(IgnoreAttack flags)
 {
-  return cost;
+  setIgnoreAtkFlag(flags, !getIgnoreAtkFlag(flags));
 }
 
-/* Returns the description */
-QString Action::getDescription()
+void Action::toggleIgnoreDefFlag(IgnoreDefense flags)
 {
-  return description;
+  setIgnoreDefFlag(flags, !getIgnoreDefFlag(flags));
 }
 
-/* Returns the action type */
-ActionType Action::getMode()
+void Action::toggleActionFlag(ActionType flags)
 {
-  return type;
+  setActionFlag(flags, !getActionFlag(flags));
 }
 
-/* Returns the name */
-QString Action::getName()
+uint Action::getId()
 {
-  return name;
+  return id;
 }
 
-/* Returns the number of targets this will require */
-unsigned int Action::getNumTargets()
+const bool Action::getIgnoreAtkFlag(IgnoreAttack flags)
 {
-  return num_targets;
+  return ignore_atk_flags.testFlag(flags);
 }
 
-/* Sets the action's cost */
-void Action::setCost(unsigned int new_cost)
+const bool Action::getIgnoreDefFlag(IgnoreDefense flags)
 {
-  cost = new_cost;
+  return ignore_def_flags.testFlag(flags);
 }
 
-/* Sets the action's mode */
-void Action::setMode(ActionType new_type)
+const bool Action::getActionFlag(ActionType flags)
 {
-  type = new_type;
+  return action_flags.testFlag(flags);
 }
 
-/* Sets the action name */
-void Action::setName(QString new_name)
+void Action::setIgnoreAtkFlag(IgnoreAttack flags, const bool set_value)
 {
-  name = new_name;
+  (set_value) ? (ignore_atk_flags |= flags) : (ignore_atk_flags ^= flags);
 }
 
-/* Sets the number of targets */
-void Action::setNumTargets(unsigned int new_number_targets)
+void Action::setIgnoreDefFlag(IgnoreDefense flags, const bool set_value)
 {
-  num_targets = new_number_targets;
+  (set_value) ? (ignore_def_flags |= flags) : (ignore_def_flags ^= flags);
+}
+
+void Action::setActionFlag(ActionType flags, const bool set_value)
+{
+  (set_value) ? (action_flags |= flags) : (action_flags ^= flags);
 }

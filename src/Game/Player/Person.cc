@@ -1284,18 +1284,18 @@ const bool Person::setLevel(const uint &new_level)
 {
   uint temp =      0;
   uint addr =      0; /* Temp variable used in formulae (value dm) */
-  long double agil = 0.10000;  /* Difference for mulr for agility */
-  long double limb = 0.10000;  /* Difference for mulr for limbertude */
-  long double unbr = 0.10000;  /* Difference for mulr for unbearability */
-  long double vita = 0.50000;  /* Difference  for mulr for vitality */
-  long double qtmn = 0.10000;  /* Difference for mulr for quantum_drive */
-  long double mulr =  1.15000; /* Basic D rate of increase of statistics */
-  long double defm =  0.74000; /* Def Mod - ratio of def increase to offense */
-  long double difm =  0.08000; /* Difference between curve level multiplier */
-  long double sinc = mulr + 4 * difm; /* S-Level increase multiplier */
-  long double ainc = mulr + 3 * difm; /* A-Level increase multiplier */
-  long double binc = mulr + 2 * difm; /* B-Level increase multiplier */
-  long double cinc = mulr + 1 * difm; /* C-Level increase multiplier */
+  double agil =  0.10000; /* Difference for mulr for agility */
+  double limb =  0.10000; /* Difference for mulr for limbertude */
+  double unbr =  0.10000; /* Difference for mulr for unbearability */
+  double vita =  0.50000; /* Difference  for mulr for vitality */
+  double qtmn =  0.10000; /* Difference for mulr for quantum_drive */
+  double mulr =  1.15000; /* Basic D rate of increase of statistics */
+  double defm =  0.74000; /* Def Mod - ratio of def increase to offense */
+  double difm =  0.08000; /* Difference between curve level multiplier */
+  double sinc = mulr + 4 * difm; /* S-Level increase multiplier */
+  double ainc = mulr + 3 * difm; /* A-Level increase multiplier */
+  double binc = mulr + 2 * difm; /* B-Level increase multiplier */
+  double cinc = mulr + 1 * difm; /* C-Level increase multiplier */
 
   /* Iteratively update all elem stats, then update them based upon the level
    * of the person's primary curve statistic, then update them based on the
