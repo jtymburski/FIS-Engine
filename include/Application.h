@@ -21,6 +21,7 @@
 /* DELETE: Temporary header access for testing */
 #include "Game/Map/Map.h"
 #include "Game/Battle/Battle.h"
+#include "Game/Player/Action.h"
 
 class Application : public QMainWindow
 {

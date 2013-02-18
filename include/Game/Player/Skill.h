@@ -15,7 +15,7 @@
 #ifndef SKILL_H
 #define SKILL_H
 
-#include <QtGui>
+#include <QtGui/QWidget>
 #include "Game/Player/Action.h"
 #include "Game/Sprite.h"
 #include "Sound.h"

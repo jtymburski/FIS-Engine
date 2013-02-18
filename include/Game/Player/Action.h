@@ -19,7 +19,7 @@ class Action : public QWidget
 {
 public:
     /* Action constructor object (requires a QString of raw input) */
-    Action(QString raw_language, QWidget *pointer = 0);
+    Action(QString raw, QWidget *pointer = 0);
 
     /* Annihilates an action object */
   	~Action();
@@ -82,6 +82,9 @@ private:
   IgnoreAtkFlags ignore_atk_flags;
   IgnoreDefFlags ignore_def_flags;
 
+  /* String of Ailment (if exists) the action inflicts */
+  QString ailment;
+
   /* ID of the action: Positive for status effects, negative for others */
   int id;
 
@@ -96,6 +99,9 @@ private:
 
   /* Variance of base change (percentage) */
   float variance;
+
+  /* The raw language parser! */
+  void parse(QString raw);
 
   /* Sets the *UNIQUE* ID of the action */
   void setId(int id);
@@ -120,8 +126,14 @@ public:
   /* Toggles an Action Type flag */
   void toggleActionFlag(ActionType flags);
 
-  /* Sets the ID of an action NOTE: Ensure Unique */
+  /* Gets the base change of the action */
+  uint getBaseChange();
+
+  /* Gets the ID of an action NOTE: Ensure Unique */
   uint getId();
+
+  /* Returns the affected status ailment */
+  QString getAilment();
 
   /* Gets the value of an Ignore Atk Flag */
   const bool getIgnoreAtkFlag(IgnoreAttack flags);
@@ -132,14 +144,26 @@ public:
   /* Gets the value of an Action Type Flag */
   const bool getActionFlag(ActionType flags);
 
+  /* Returns the maximum # of turns */
+  uint getMaximum();
+
+  /* Returns the minimum # of turns */
+  uint getMinimum();
+
+  /* Returns the variance of the action */
+  float getVariance();
+
+  /* Sets the ailment string */
+  void setAilment(QString ailment);
+
   /* Sets the value of an Ignore Atk Flag */
-  void setIgnoreAtkFlag(IgnoreAttack flags, const bool set_value);
+  void setIgnoreAtkFlag(IgnoreAttack flags, const bool set_value = 1);
 
   /* Sets the valueof an Ignore Def Flag */
-  void setIgnoreDefFlag(IgnoreDefense flags, const bool set_value);
+  void setIgnoreDefFlag(IgnoreDefense flags, const bool set_value = 1);
 
   /* Sets the value of an Action Type Flag */
-  void setActionFlag(ActionType flags, const bool set_value);
+  void setActionFlag(ActionType flags, const bool set_value = 1);
 
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Action::IgnoreAtkFlags)
