@@ -14,16 +14,16 @@
 #include "EnumDatabase.h"
 #include <QtGui/QWidget>
 
-
 class Action : public QWidget
 {
 public:
-    /* Action constructor object (requires a QString of raw input) */
-    Action(QString raw, QWidget *pointer = 0);
+  /* Action constructor object (requires a QString of raw input) */
+  Action(QString raw, QWidget *pointer = 0);
 
-    /* Annihilates an action object */
-  	~Action();
+  /* Annihilates an action object */
+  ~Action();
 
+  /* Enumerated ActionType flags */
   enum ActionType
   {
     RAISE         = 1 <<  0, /* Does the action raise a stat? */
@@ -47,6 +47,7 @@ public:
   };
   Q_DECLARE_FLAGS(ActionFlags, ActionType)
 
+  /* Enumerated IgnoreAttack flags */
   enum IgnoreAttack
   {
     IGNORE_ELMN_ATK = 1 << 0,
@@ -61,6 +62,7 @@ public:
   };
   Q_DECLARE_FLAGS(IgnoreAtkFlags, IgnoreAttack)
 
+  /* Enumerated IgnoreDefense flags */
   enum IgnoreDefense
   {
     IGNORE_ELMN_DEF = 1 << 0,
@@ -76,7 +78,6 @@ public:
   Q_DECLARE_FLAGS(IgnoreDefFlags, IgnoreDefense)
 
 private:
-
   /* Enumerated flag sets */
   ActionFlags action_flags;
   IgnoreAtkFlags ignore_atk_flags;
@@ -116,7 +117,6 @@ private:
   void setVariance(float new_value);
 
 public:
-
   /* Toggles an Ignore Atk Flag */
   void toggleIgnoreAtkFlag(IgnoreAttack flags);
 
@@ -130,7 +130,7 @@ public:
   uint getBaseChange();
 
   /* Gets the ID of an action NOTE: Ensure Unique */
-  uint getId();
+  int getId();
 
   /* Returns the affected status ailment */
   QString getAilment();
@@ -164,7 +164,6 @@ public:
 
   /* Sets the value of an Action Type Flag */
   void setActionFlag(ActionType flags, const bool set_value = 1);
-
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Action::IgnoreAtkFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Action::IgnoreDefFlags)

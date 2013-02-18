@@ -42,38 +42,38 @@ public:
   /* Enumerated flags for status ailments */
   enum StatusAilment
   {
-    CLEAR            = 1 << 0,  /* Is the person to be clear of all status ailments? */
-    POISONED         = 1 << 1,
-    BURNED1          = 1 << 2,  /* 1st Degree Burn */
-    BURNED2          = 1 << 3,  /* 2nd Degree Burn */
-    BURNED3          = 1 << 4,  /* 3rd Degree Burn */
-    BERSERK          = 1 << 5,
-    CONFUSE          = 1 << 6,
-    SILENCE          = 1 << 7,
-    SLOW             = 1 << 8,
-    BUBBIFY          = 1 << 9,
+    CLEAR            = 1 <<  0,  /* Is the person to be clear of all status ailments? */
+    POISONED         = 1 <<  1,
+    BURNED1          = 1 <<  2,  /* 1st Degree Burn */
+    BURNED2          = 1 <<  3,  /* 2nd Degree Burn */
+    BURNED3          = 1 <<  4,  /* 3rd Degree Burn */
+    BERSERK          = 1 <<  5,
+    CONFUSE          = 1 <<  6,
+    SILENCE          = 1 <<  7,
+    SLOW             = 1 <<  8,
+    BUBBIFY          = 1 <<  9,
     DEATHTIMER       = 1 << 10,
     PARALYSIS        = 1 << 11,
     BLINDNESS        = 1 << 12,
     DREADSTRUCK      = 1 << 13,
     DREAMSNARED      = 1 << 14,
     HELLBOUND        = 1 << 15,
-    BONDED           = 1 << 16,
+    BONDED           = 1 << 16
   };
   Q_DECLARE_FLAGS(StatusFlags, StatusAilment)
 
   enum StatusBuff
   {
-    ALLATKBUFF        = 1 << 0,
-    ALLDEFBUFF        = 1 << 1,
-    PHYSICALATKBUFF   = 1 << 2,
-    PHYSICALDEFBUFF   = 1 << 3,
-    THERMALATKBUFF    = 1 << 4,
-    THERMALDEFBUFF    = 1 << 5,
-    POLARATKBUFF      = 1 << 6,
-    POLARDEFBUFF      = 1 << 7,
-    PRIMALATKBUFF     = 1 << 8,
-    PRIMALDEFBUFF     = 1 << 9,
+    ALLATKBUFF        = 1 <<  0,
+    ALLDEFBUFF        = 1 <<  1,
+    PHYSICALATKBUFF   = 1 <<  2,
+    PHYSICALDEFBUFF   = 1 <<  3,
+    THERMALATKBUFF    = 1 <<  4,
+    THERMALDEFBUFF    = 1 <<  5,
+    POLARATKBUFF      = 1 <<  6,
+    POLARDEFBUFF      = 1 <<  7,
+    PRIMALATKBUFF     = 1 <<  8,
+    PRIMALDEFBUFF     = 1 <<  9,
     CHARGEDATKBUFF    = 1 << 10,
     CHARGEDDEFBUFF    = 1 << 11,
     CYBERNETICATKBUFF = 1 << 12,

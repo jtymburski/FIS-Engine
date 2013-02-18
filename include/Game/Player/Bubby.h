@@ -60,8 +60,6 @@ private:
   /* The sprite image for each tier */
   QImage tier_0, tier_1, tier_2, tier_3;
 
-
-
 public:
   /* Gets the list of bubby actions (Used for total action lists in battle)*/
   QVector<Action*> getActionList();

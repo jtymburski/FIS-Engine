@@ -9,6 +9,10 @@
 
 #include "Game/Player/Player.h"
 
+/*============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *===========================================================================*/
+
 /*
  * Description: Player constructor object
  *
@@ -35,6 +39,10 @@ Player::~Player()
     setSleuth();
     setBearacks();
 }
+
+/*============================================================================
+ * FUNCTION
+ *===========================================================================*/
 
 /*
  * Description: Adds an amount of credits (money) to the player

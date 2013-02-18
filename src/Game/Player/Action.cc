@@ -5,12 +5,17 @@
 * Description: Action is an element of a skill (skill can have up to 10 actions
 * that will do alter stats, flip flags of a person, etc., or do damage to them.
 *
-* TODO: Constructors to be finished [02-17-13]
-* TODO: Need to write action parser [02-17-13]
+*
+*  Notes: Language Syntax Below:
+* [AILMENT ID],[LOWER/UPPER/GIVE/TAKE],[STATISTIC/AILMENT],
+* [MIN DURATION].[MAX DURATION],[IGNORE ATK],[IGNORE ATK ELM 1]...,
+* [IGNORE DEF],[IGNORE DEF ELM 1]...,[BASECHANGE],[VARIANCE];
+*
+* [int]:[string][string][uint].[uint],[bool],[string]...,
+* [bool],[string]...,[uint],[float];
 ******************************************************************************/
 
 #include "Game/Player/Action.h"
-#include <QDebug>
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -19,15 +24,7 @@
 /*
  * Description: Action constructor object
  *
- * Notes: Language Syntax Below:
- * [AILMENT ID],[LOWER/UPPER/GIVE/TAKE],[STATISTIC/AILMENT],
- * [MIN DURATION].[MAX DURATION],[IGNORE ATK],[IGNORE ATK ELM 1]...,
- * [IGNORE DEF],[IGNORE DEF ELM 1]...,[BASECHANGE],[VARIANCE];
- *
- * [int]:[string][string][uint].[uint],[bool],[string]...,
- * [bool],[string]...,[uint],[float];
- *
- * Inputs: QString - the raw language to be parsed
+ * Inputs: QString raw - the raw language to be parsed
  */
 Action::Action(QString raw, QWidget *pointer)
 {
@@ -48,6 +45,13 @@ Action::~Action()
 /*
  * Description: Parses the raw language into something we can have skills use
  *
+ * Notes: Language Syntax Below:
+ * [AILMENT ID],[LOWER/UPPER/GIVE/TAKE],[STATISTIC/AILMENT],
+ * [MIN DURATION].[MAX DURATION],[IGNORE ATK],[IGNORE ATK ELM 1]...,
+ * [IGNORE DEF],[IGNORE DEF ELM 1]...,[BASECHANGE],[VARIANCE];
+ *
+ * [int]:[string][string][uint].[uint],[bool],[string]...,
+ * [bool],[string]...,[uint],[float];
  * Inputs: QString - the raw string of the input
  * Output: none
  */
@@ -191,8 +195,8 @@ void Action::setDuration(uint min, uint max)
 /*
  * Description: Sets the base change describing the specified stat
  *
- * Inputs:
- * Output:
+ * Inputs: uint - new value of base change
+ * Output: none
  */
 void Action::setBaseChange(uint new_value)
 {
@@ -200,10 +204,10 @@ void Action::setBaseChange(uint new_value)
 }
 
 /*
- * Description:
+ * Description: Sets the variance of the action
  *
- * Inputs:
- * Output:
+ * Inputs: float - new value of the variance
+ * Output: none
  */
 void Action::setVariance(float new_value)
 {
@@ -214,10 +218,10 @@ void Action::setVariance(float new_value)
 }
 
 /*
- * Description:
+ * Description: Toggles an IgnoreAttack flag
  *
- * Inputs:
- * Output:
+ * Inputs: IgnoreAttack flag to be flipped
+ * Output: none
  */
 void Action::toggleIgnoreAtkFlag(IgnoreAttack flags)
 {
@@ -225,10 +229,10 @@ void Action::toggleIgnoreAtkFlag(IgnoreAttack flags)
 }
 
 /*
- * Description:
+ * Description: Toggles an IgnoreDefense flag
  *
- * Inputs:
- * Output:
+ * Inputs: IgnoreDefense flag to be flipped
+ * Output: none
  */
 void Action::toggleIgnoreDefFlag(IgnoreDefense flags)
 {
@@ -236,10 +240,10 @@ void Action::toggleIgnoreDefFlag(IgnoreDefense flags)
 }
 
 /*
- * Description:
+ * Description: Toggles an ActionType flag
  *
- * Inputs:
- * Output:
+ * Inputs: ActionType flag to be flippe
+ * Output: none
  */
 void Action::toggleActionFlag(ActionType flags)
 {
@@ -247,10 +251,10 @@ void Action::toggleActionFlag(ActionType flags)
 }
 
 /*
- * Description:
+ * Description: Returns the base change of the action
  *
- * Inputs:
- * Output:
+ * Inputs: None
+ * Output: uint - base change value
  */
 uint Action::getBaseChange()
 {
@@ -258,21 +262,21 @@ uint Action::getBaseChange()
 }
 
 /*
- * Description:
+ * Description: Returns the ID of the action
  *
- * Inputs:
- * Output:
+ * Inputs: None
+ * Output: int - Action ID
  */
-uint Action::getId()
+int Action::getId()
 {
   return id;
 }
 
 /*
- * Description:
+ * Description: Returns the string of the ailment
  *
- * Inputs:
- * Output:
+ * Inputs: None
+ * Output: QString - string of the ailment to be set/checked
  */
 QString Action::getAilment()
 {
@@ -280,10 +284,10 @@ QString Action::getAilment()
 }
 
 /*
- * Description:
+ * Description: Evaluates an IgnoreAttack flag
  *
- * Inputs:
- * Output:
+ * Inputs: IgnoreAttack flag to be evaluated
+ * Output: Evaluation of the flag
  */
 const bool Action::getIgnoreAtkFlag(IgnoreAttack flags)
 {
@@ -291,10 +295,10 @@ const bool Action::getIgnoreAtkFlag(IgnoreAttack flags)
 }
 
 /*
- * Description:
+ * Description: Evaluates an IgnoreDefense flag
  *
- * Inputs:
- * Output:
+ * Inputs: IgnoreDefese flag to be evaluated
+ * Output: Evaluation of the flag
  */
 const bool Action::getIgnoreDefFlag(IgnoreDefense flags)
 {
@@ -302,10 +306,10 @@ const bool Action::getIgnoreDefFlag(IgnoreDefense flags)
 }
 
 /*
- * Description:
+ * Description: Evaluates an ActionType flag
  *
- * Inputs:
- * Output:
+ * Inputs: ActionType flag to be evaluated
+ * Output: Evaluation of the flag
  */
 const bool Action::getActionFlag(ActionType flags)
 {
@@ -313,10 +317,10 @@ const bool Action::getActionFlag(ActionType flags)
 }
 
 /*
- * Description:
+ * Description: Returns the maximum duration of an infliction
  *
- * Inputs:
- * Output:
+ * Inputs: None
+ * Output: uint - maximum duration of infliction
  */
 uint Action::getMaximum()
 {
@@ -324,10 +328,10 @@ uint Action::getMaximum()
 }
 
 /*
- * Description:
+ * Description: Returns the minimum duration of an infliction
  *
- * Inputs:
- * Output:
+ * Inputs: None
+ * Output: uint - minimum duration of infliction
  */
 uint Action::getMinimum()
 {
@@ -335,10 +339,10 @@ uint Action::getMinimum()
 }
 
 /*
- * Description:
+ * Description: Returns the variance of the action
  *
- * Inputs:
- * Output:
+ * Inputs: None
+ * Output: float - variance of the action
  */
 float Action::getVariance()
 {
@@ -346,10 +350,10 @@ float Action::getVariance()
 }
 
 /*
- * Description:
+ * Description: Sets the string of the ailment to be inflicted
  *
- * Inputs:
- * Output:
+ * Inputs: QString - string to set the infliction to
+ * Output: none
  */
 void Action::setAilment(QString ailment)
 {
@@ -357,10 +361,11 @@ void Action::setAilment(QString ailment)
 }
 
 /*
- * Description:
+ * Description: Sets an IgnoreAttack flag to a boolean
  *
- * Inputs:
- * Output:
+ * Inputs: IgnoreAttack flag to be set
+ *         Boolean value to set the flag to
+ * Output: none
  */
 void Action::setIgnoreAtkFlag(IgnoreAttack flags, const bool set_value)
 {
@@ -368,10 +373,11 @@ void Action::setIgnoreAtkFlag(IgnoreAttack flags, const bool set_value)
 }
 
 /*
- * Description:
+ * Description: Sets an IgnoreDefnse flag to a boolean
  *
- * Inputs:
- * Output:
+ * Inputs: IgnoreDefense flag to be set
+ *         Boolean value to set the flag to
+ * Output: none
  */
 void Action::setIgnoreDefFlag(IgnoreDefense flags, const bool set_value)
 {
@@ -379,10 +385,11 @@ void Action::setIgnoreDefFlag(IgnoreDefense flags, const bool set_value)
 }
 
 /*
- * Description:
+ * Description: Sets an ActionType flag to a boolean
  *
- * Inputs:
- * Output:
+ * Inputs: ActionType flag to be set
+ *         Boolean value to set the flag to
+ * Output: none
  */
 void Action::setActionFlag(ActionType flags, const bool set_value)
 {

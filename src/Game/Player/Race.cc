@@ -8,6 +8,10 @@
 
 #include "Game/Player/Race.h"
 
+/*============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *===========================================================================*/
+
 /*
  * Description: Race constructor object. Constructs a race given a string and
  *              a full set of base stat values. None of the race constructors
@@ -62,6 +66,10 @@ Race::Race(QString n, QWidget *parent)
 Race::~Race()
 {
 }
+
+/*============================================================================
+ * FUNCTIONS
+ *===========================================================================*/
 
 /*
  * Description: Set up stats function (for constructors)

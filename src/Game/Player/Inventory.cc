@@ -7,6 +7,10 @@
 ******************************************************************************/
 #include "Game/Player/Inventory.h"
 
+/*============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *===========================================================================*/
+
 /*
  * Description: Constructs an inventory object with a name, based on given
  *              values or on a basic limit (kBASIC_LIMIT). The inventory
@@ -33,6 +37,10 @@ Inventory::~Inventory()
     equip_count.clear();
     item_count.clear();
 }
+
+/*============================================================================
+ * FUNCTIONS
+ *===========================================================================*/
 
 /*
  * Description: Attempts to add an equipment to the equipments QVector.

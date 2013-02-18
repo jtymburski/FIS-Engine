@@ -24,6 +24,10 @@ int max(int a, int b)
 
 #include "Game/Player/Person.h"
 
+/*=============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *============================================================================*/
+
 /*
  * Description: Primary person constructor (requires all values)
  *
@@ -78,6 +82,10 @@ Person::~Person()
     setFirstPerson(NULL);
     setThirdPerson(NULL);
 }
+
+/*=============================================================================
+ * FUNCTIONS
+ *============================================================================*/
 
 /*
  * Description: Sets up the regular stats of the person, for initial

@@ -9,6 +9,10 @@
 #include "Game/Player/Category.h"
 #include <QDebug>
 
+/*============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *===========================================================================*/
+
 /*
  * Description: Constructor object. Constructs a Category given a string and
  *              a full set of base stat values. None of the Category const.
@@ -75,6 +79,10 @@ Category::Category(QString n, QWidget *parent)
 Category::~Category()
 {
 }
+
+/*============================================================================
+ * FUNCTIONS
+ *===========================================================================*/
 
 /*
  * Description: Set up stats function (for constructors)
