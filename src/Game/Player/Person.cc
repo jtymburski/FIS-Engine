@@ -5,22 +5,12 @@
 * Description: Holder for all the info describing a person (character)
 *
 * TODO: FINISH STATUS AILMENTS [02-08-13]
-* TODO: action_list actions, [01-25-13]
+* TODO: skill_list skills, [01-25-13]
 * TODO: Future class multiplier for level ups [01-25-13]
 ******************************************************************************/
 #include <QDebug>
 #include <cmath>
-
-// TODO: THIS SHOULD NOT BE NECESSARY [02-10-13]
-// ************************ TODO
-int max(int a, int b)
-{
-  int x = 0;
-  (a < b) ? (x = b) : (x = a);
-  return x;
-}
-//
-// TODO **********************************
+#include <algorithm>
 
 #include "Game/Player/Person.h"
 
@@ -88,6 +78,18 @@ Person::~Person()
  *============================================================================*/
 
 /*
+ * Descriptions: Max function for level up routine
+ *
+ * Inputs: a, b - two values
+ * Output: int - larger of the values
+ */
+int Person::personMax(int a, int b)
+{
+    if (a < b) return b;
+    return a;
+}
+
+/*
  * Description: Sets up the regular stats of the person, for initial
  *              construction, based off the base stats
  *
@@ -112,7 +114,7 @@ void Person::setupStats()
     setNihilFortitude(getBaseNihilFortitude());
     setVitality(getBaseVitality());
     setQuantumDrive(getBaseQuantumDrive());
-    setAgility(getBaseAgility());
+    setMomentum(getBaseMomentum());
     setLimbertude(getBaseLimbertude());
 }
 
@@ -190,7 +192,7 @@ void Person::setBaseStats()
                           race->getNihilFortitude());
     setBaseVitality(cat->getVitality() + race->getVitality());
     setBaseQuantumDrive(cat->getQuantumDrive() + race->getQuantumDrive());
-    setBaseAgility(cat->getAgility() + race->getAgility());
+    setBaseMomentum(cat->getMomentum() + race->getMomentum());
     setBaseLimbertude(cat->getLimbertude() + race->getLimbertude());
 }
 
@@ -220,7 +222,7 @@ void Person::setTemporaryStats()
     setTempNihilFortitude(getNihilFortitude());
     setTempVitality(getVitality());
     setTempQuantumDrive(getQuantumDrive());
-    setTempAgility(getAgility());
+    setTempMomentum(getMomentum());
     setTempLimbertude(getLimbertude());
 }
 
@@ -269,15 +271,15 @@ void Person::togglePersonFlag(PersonState flags)
 }
 
 /*
- * Description: Gets a list of available actions for current person
+ * Description: Gets a list of available skills for current person
  *
  * Inputs: none
- * Output: vector of action pointers - pointers to action the player can take
+ * Output: vector of skill pointers - pointers to skill the player can take
  */
-QVector<Action*>& Person::getAvailableActions()
+QVector<Skill*>& Person::getAvailableSkills()
 {
-  // TODO: Setup list of actions for person [01-25-13]
-  return action_list;
+  // TODO: Setup list of skills for person [01-25-13]
+  return skill_list;
 }
 
 
@@ -368,6 +370,41 @@ Equipment* Person::getTorsoEquipment()
 uint Person::getExp()
 {
   return experience;
+}
+
+/*
+ * Description: Returns the awarded experience on defeat of person
+ *
+ * Inputs: none
+ * Output: int - value of person's exp drop
+ */
+uint Person::getExpLoot()
+{
+  return experience_drop;
+}
+
+
+/*
+ * Description: Returns the awarded credits on defeat of a person
+ *
+ * Inputs: none
+ * Output: int - value of person's credit drop
+ */
+uint Person::getCreditLoot()
+{
+  return credit_drop;
+}
+
+
+/*
+ * Description: Returns the items on defeat of a person
+ *
+ * Inputs: none
+ * Output: QVector<Item> - vector of item drops.
+ */
+QVector<Item> Person::getItemLoot()
+{
+  return item_drops;
 }
 
 /*
@@ -658,14 +695,14 @@ uint Person::getQuantumDrive()
 }
 
 /*
- * Description: Returns value of agility stat
+ * Description: Returns value of momentum stat
  *
  * Inputs: none
- * Output: uint - value of the agility stat
+ * Output: uint - value of the momentum stat
  */
-uint Person::getAgility()
+uint Person::getMomentum()
 {
-  return agility;
+  return momentum;
 }
 
 /*
@@ -868,14 +905,14 @@ uint Person::getTempQuantumDrive()
 }
 
 /*
- * Description: Returns value of the temp agility stat
+ * Description: Returns value of the temp momentum stat
  *
  * Inputs: none
- * Output: uint - value of the temp agility stat
+ * Output: uint - value of the temp momentum stat
  */
-uint Person::getTempAgility()
+uint Person::getTempMomentum()
 {
-  return temp_agility;
+  return temp_momentum;
 }
 
 /*
@@ -1077,14 +1114,14 @@ uint Person::getBaseQuantumDrive()
 }
 
 /*
- * Description: Returns value of the base agility stat
+ * Description: Returns value of the base momentum stat
  *
  * Inputs: none
- * Output: uint - value of the base agility stat
+ * Output: uint - value of the base momentum stat
  */
-uint Person::getBaseAgility()
+uint Person::getBaseMomentum()
 {
-  return base_agility;
+  return base_momentum;
 }
 
 /*
@@ -1224,16 +1261,52 @@ void Person::setCategory(Category* new_category)
 /*
  * Description: Sets the experience of the person
  * Note: Does NOT level the character, use addExp(int) for that.
- *       Use
-(getLevel()) to adjust the level accordingly!
+ *       Use (getLevel()) to adjust the level accordingly!
  *
  * Inputs: uint - value of experience to be set
  * Output: none
  */
 void Person::setExp(uint value)
 {
-    (value < kMAX_EXPERIENCE) ? (experience = value) :
-                                (experience = kMAX_EXPERIENCE);
+  (value < kMAX_EXPERIENCE) ? (experience = value) :
+                              (experience = kMAX_EXPERIENCE);
+}
+
+/*
+ * Description: Sets the experience loot of the person
+ *
+ * Inputs: uint - value of experience loot to be set
+ * Output: none
+ */
+void Person::setExpLoot(uint value)
+{
+  (value < kMAX_EXP_DROP) ? (experience_drop = value) :
+                            (experience_drop = kMAX_EXP_DROP);
+}
+
+/*
+ * Description: Sets the credit loot of a person
+ *
+ * Inputs: uint - value of credit loot to be set
+ * Output: none
+ */
+void Person::setCreditLoot(uint value)
+{
+    (value < kMAX_CREDIT_DROP) ? (credit_drop = value) :
+                                 (credit_drop = kMAX_CREDIT_DROP);
+}
+
+/*
+ * Description: Sets the item drops of the person
+ *
+ * Inputs: QVector<Item> - vector of items the loot is to be set to.
+ * Output: none
+ */
+void Person::setItemLoot(QVector<Item> items)
+{
+    item_drops.clear();
+    for (uint i = 0; i < items.size(); i++)
+        item_drops.push_back(items[i]);
 }
 
 /*
@@ -1282,7 +1355,7 @@ void Person::setPersonFlag(PersonState flags, const bool set_value)
  *       the temporary value of such a statistic will correctly correspond
  *       to the value it has been increased by, for purposes of displaying
  *       to a level up screen, etc.
- * Note [2]: This function does nothing about actions or skills the person
+ * Note [2]: This function does nothing about skills or skills the person
  *           has available to her.
  *
  * Inputs: int new_level- level to set person to
@@ -1292,7 +1365,7 @@ const bool Person::setLevel(const uint &new_level)
 {
   uint temp =      0;
   uint addr =      0; /* Temp variable used in formulae (value dm) */
-  double agil =  0.10000; /* Difference for mulr for agility */
+  double mome =  0.10000; /* Difference for mulr for momentum */
   double limb =  0.10000; /* Difference for mulr for limbertude */
   double unbr =  0.10000; /* Difference for mulr for unbearability */
   double vita =  0.50000; /* Difference  for mulr for vitality */
@@ -1338,7 +1411,7 @@ const bool Person::setLevel(const uint &new_level)
       if (temp < kMAX_PHYS_ATK && temp < cat->getMaxPhysicalAggression())
         setPhysicalAggression(temp);
       else
-        setPhysicalAggression(max(kMAX_PHYS_ATK,cat->getMaxPhysicalAggression()) );
+        setPhysicalAggression(personMax(kMAX_PHYS_ATK,cat->getMaxPhysicalAggression()) );
 
       /* Calculate the physical defense statistic */
       addr = floor(pow(race->getPhysicalFortitude() + getLevel(), mulr));
@@ -1346,7 +1419,7 @@ const bool Person::setLevel(const uint &new_level)
       if (temp < kMAX_PHYS_DEF && temp < cat->getMaxPhysicalFortitude())
         setPhysicalFortitude(temp * defm);
       else
-        setPhysicalFortitude(max(kMAX_PHYS_DEF,cat->getMaxPhysicalFortitude()));
+        setPhysicalFortitude(personMax(kMAX_PHYS_DEF,cat->getMaxPhysicalFortitude()));
     }
     if (i == 0 || (i == 1 && primary == "TH") || (i == 2 && secondary == "TH"))
     {
@@ -1356,7 +1429,7 @@ const bool Person::setLevel(const uint &new_level)
       if (temp < kMAX_THER_ATK && temp < cat->getMaxThermalAggression())
         setThermalAggression(temp);
       else
-        setThermalAggression(max(kMAX_THER_ATK,cat->getMaxThermalAggression()));
+        setThermalAggression(personMax(kMAX_THER_ATK,cat->getMaxThermalAggression()));
 
       /* Calculate the thermal defense statistic */
       addr = floor(pow(race->getThermalFortitude() + getLevel(), mulr));
@@ -1364,7 +1437,7 @@ const bool Person::setLevel(const uint &new_level)
       if (temp < kMAX_THER_DEF && temp < cat->getMaxThermalFortitude())
         setThermalFortitude(temp);
       else
-        setThermalFortitude(max(kMAX_THER_DEF,cat->getMaxThermalFortitude()));
+        setThermalFortitude(personMax(kMAX_THER_DEF,cat->getMaxThermalFortitude()));
     }
     if (i == 0 || (i == 1 && primary == "PO") || (i == 2 && secondary == "PO"))
     {
@@ -1374,7 +1447,7 @@ const bool Person::setLevel(const uint &new_level)
       if (temp < kMAX_POLA_ATK && temp < cat->getMaxPolarAggression())
         setPolarAggression(temp);
       else
-        setPolarAggression(max(kMAX_THER_ATK,cat->getMaxThermalAggression()));
+        setPolarAggression(personMax(kMAX_THER_ATK,cat->getMaxThermalAggression()));
 
       /* Calculate the polar defense statistic */
       addr = floor(pow(race->getPolarFortitude() + getLevel(), mulr));
@@ -1382,7 +1455,7 @@ const bool Person::setLevel(const uint &new_level)
       if (temp < kMAX_POLA_DEF && temp < cat->getMaxPolarFortitude())
         setPolarFortitude(temp);
       else
-        setPolarFortitude(max(kMAX_POLA_DEF,cat->getMaxPolarFortitude()));
+        setPolarFortitude(personMax(kMAX_POLA_DEF,cat->getMaxPolarFortitude()));
     }
     if (i == 0 || (i == 1 && primary == "PR") || (i == 2 && secondary == "PR"))
     {
@@ -1392,7 +1465,7 @@ const bool Person::setLevel(const uint &new_level)
       if (temp < kMAX_PRIM_ATK && temp < cat->getMaxPrimalAggression())
         setPrimalAggression(temp);
       else
-        setPrimalAggression(max(kMAX_PRIM_ATK,cat->getMaxPrimalAggression()));
+        setPrimalAggression(personMax(kMAX_PRIM_ATK,cat->getMaxPrimalAggression()));
 
       /* Calculate the primal defense statistic */
       addr = floor(pow(race->getPrimalFortitude() + getLevel(), mulr));
@@ -1400,7 +1473,7 @@ const bool Person::setLevel(const uint &new_level)
       if (temp < kMAX_PRIM_DEF && temp < cat->getMaxPrimalFortitude())
         setPrimalFortitude(temp);
       else
-        setPrimalFortitude(max(kMAX_PRIM_DEF,cat->getMaxPrimalFortitude()));
+        setPrimalFortitude(personMax(kMAX_PRIM_DEF,cat->getMaxPrimalFortitude()));
     }
     if (i == 0 || (i == 1 && primary == "CH") || (i == 2 && secondary == "CH"))
     {
@@ -1410,7 +1483,7 @@ const bool Person::setLevel(const uint &new_level)
       if (temp < kMAX_CHAR_ATK && temp < cat->getMaxChargedAggression())
         setChargedAggression(temp);
       else
-        setChargedAggression(max(kMAX_CHAR_ATK,cat->getMaxThermalAggression()));
+        setChargedAggression(personMax(kMAX_CHAR_ATK,cat->getMaxThermalAggression()));
 
       /* Calculate the charged defense statistic */
       addr = floor(pow(race->getChargedFortitude() + getLevel(), mulr));
@@ -1418,7 +1491,7 @@ const bool Person::setLevel(const uint &new_level)
       if (temp < kMAX_CHAR_DEF && temp < cat->getMaxChargedFortitude())
         setChargedFortitude(temp);
       else
-        setChargedFortitude(max(kMAX_CHAR_DEF,cat->getMaxChargedFortitude()));
+        setChargedFortitude(personMax(kMAX_CHAR_DEF,cat->getMaxChargedFortitude()));
     }
     if (i == 0 || (i == 1 && primary == "CY") || (i == 2 && secondary == "CY"))
     {
@@ -1428,7 +1501,7 @@ const bool Person::setLevel(const uint &new_level)
       if (temp < kMAX_CYBE_ATK && temp < cat->getMaxCyberneticAggression())
         setCyberneticAggression(temp);
       else
-        setCyberneticAggression(max(kMAX_CYBE_ATK,cat->getMaxCyberneticAggression()));
+        setCyberneticAggression(personMax(kMAX_CYBE_ATK,cat->getMaxCyberneticAggression()));
 
       /* Calculate the Cybernetic defense statistic */
       addr = floor(pow(race->getCyberneticFortitude() + getLevel(), mulr));
@@ -1436,7 +1509,7 @@ const bool Person::setLevel(const uint &new_level)
       if (temp < kMAX_CYBE_DEF && temp < cat->getMaxCyberneticFortitude())
         setCyberneticFortitude(temp);
       else
-        setCyberneticFortitude(max(kMAX_CYBE_DEF,cat->getMaxCyberneticFortitude()));
+        setCyberneticFortitude(personMax(kMAX_CYBE_DEF,cat->getMaxCyberneticFortitude()));
     }
     if (i == 0 || (i == 1 && primary == "NI") || (i == 2 && secondary == "NI"))
     {
@@ -1446,7 +1519,7 @@ const bool Person::setLevel(const uint &new_level)
       if (temp < kMAX_NIHI_ATK && temp < cat->getMaxNihilAggression())
         setNihilAggression(temp);
       else
-        setNihilAggression(max(kMAX_NIHI_ATK,cat->getMaxNihilAggression()));
+        setNihilAggression(personMax(kMAX_NIHI_ATK,cat->getMaxNihilAggression()));
 
       /* Calculate the Nihil defense statistic */
       addr = floor(pow(race->getNihilFortitude() + getLevel(), mulr));
@@ -1454,46 +1527,46 @@ const bool Person::setLevel(const uint &new_level)
       if (temp < kMAX_NIHI_DEF && temp < cat->getMaxNihilFortitude())
         setNihilFortitude(temp);
       else
-        setNihilFortitude(max(kMAX_NIHI_DEF,cat->getMaxNihilFortitude()));
+        setNihilFortitude(personMax(kMAX_NIHI_DEF,cat->getMaxNihilFortitude()));
     }
   }
 
   mulr = cinc - difm;
 
-  addr = floor(pow(race->getAgility() + getLevel(), mulr + agil));
-  temp = getBaseAgility() + addr + cat->getAgility();
-  if (temp < kMAX_AGIL && temp < cat->getMaxAgility())
-    setAgility(temp);
+  addr = floor(pow(race->getMomentum() + getLevel(), mulr + mome));
+  temp = getBaseMomentum() + addr + cat->getMomentum();
+  if (temp < kMAX_MOME && temp < cat->getMaxMomentum())
+    setMomentum(temp);
   else
-    setAgility(max(kMAX_AGIL,cat->getMaxAgility()));
+    setMomentum(personMax(kMAX_MOME,cat->getMaxMomentum()));
 
   addr = floor(pow(race->getLimbertude() + getLevel(), mulr + limb));
   temp = getBaseLimbertude() + addr + cat->getLimbertude();
   if (temp < kMAX_LIMB && temp < cat->getMaxLimbertude())
     setLimbertude(temp);
   else
-    setLimbertude(max(kMAX_LIMB,cat->getMaxLimbertude()));
+    setLimbertude(personMax(kMAX_LIMB,cat->getMaxLimbertude()));
 
   addr = floor(pow(race->getUnbearability() + getLevel(), mulr + unbr));
   temp = getBaseUnbearability() + addr + cat->getUnbearability();
   if (temp < kMAX_UNBR && temp < cat->getMaxUnbearability())
     setUnbearability(temp);
   else
-    setUnbearability(max(kMAX_UNBR,cat->getMaxUnbearability()));
+    setUnbearability(personMax(kMAX_UNBR,cat->getMaxUnbearability()));
 
   addr = floor(pow(race->getVitality() + getLevel(), mulr + vita));
   temp = getBaseVitality() + addr + cat->getVitality();
   if (temp < kMAX_VITA && temp < cat->getMaxVitality())
     setVitality(temp);
   else
-    setVitality(max(kMAX_VITA,cat->getMaxVitality()));
+    setVitality(personMax(kMAX_VITA,cat->getMaxVitality()));
 
   addr = floor(pow(race->getQuantumDrive() + getLevel(), mulr + qtmn));
   temp = getBaseQuantumDrive() + addr + cat->getQuantumDrive();
   if (temp < kMAX_QNTM && temp < cat->getMaxQuantumDrive())
     setQuantumDrive(temp);
   else
-    setQuantumDrive(max(kMAX_QNTM,cat->getMaxQuantumDrive()));
+    setQuantumDrive(personMax(kMAX_QNTM,cat->getMaxQuantumDrive()));
 
   /* Set the person's new level value */
   level = new_level;
@@ -1799,15 +1872,15 @@ void Person::setQuantumDrive(uint value)
 }
 
 /*
- * Description: Sets the value of the agility stat
+ * Description: Sets the value of the momentum stat
  *
- * Inputs: uint - new value of the agility stat
+ * Inputs: uint - new value of the momentum stat
  * Output: none
  */
-void Person::setAgility(uint value)
+void Person::setMomentum(uint value)
 {
-  (value <= cat->getMaxAgility()) ? (agility = value)
-                  : (agility = cat->getMaxAgility());
+  (value <= cat->getMaxMomentum()) ? (momentum = value)
+                  : (momentum = cat->getMaxMomentum());
 }
 
 /*
@@ -2011,14 +2084,14 @@ void Person::setTempQuantumDrive(uint value)
 }
 
 /*
- * Description: Sets the value of the temp agility stat
+ * Description: Sets the value of the temp momentum stat
  *
- * Inputs: uint - new value of the temp agility stat
+ * Inputs: uint - new value of the temp momentum stat
  * Output: none
  */
-void Person::setTempAgility(uint value)
+void Person::setTempMomentum(uint value)
 {
-  temp_agility = value;
+  temp_momentum = value;
 }
 
 /*
@@ -2221,14 +2294,14 @@ void Person::setBaseQuantumDrive(uint value)
 }
 
 /*
- * Description: Sets the value of the base agility stat
+ * Description: Sets the value of the base momentum stat
  *
- * Inputs: uint - new value of the base agility stat
+ * Inputs: uint - new value of the base momentum stat
  * Output: none
  */
-void Person::setBaseAgility(uint value)
+void Person::setBaseMomentum(uint value)
 {
-  base_agility = value;
+  base_momentum = value;
 }
 
 /*

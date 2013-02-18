@@ -21,7 +21,7 @@ public:
    Category(QString n, uint ph_a, uint ph_f, uint th_a, uint th_f, uint po_a,
             uint po_f, uint pr_a, uint pr_f, uint ch_a, uint ch_f,
             uint cy_a, uint cy_f, uint ni_a, uint ni_f, uint vit,
-            uint qd, uint agi, uint lim, uint unb, uint ph_a_max = 0,
+            uint qd, uint mom, uint lim, uint unb, uint ph_a_max = 0,
             uint ph_f_max = 0, uint th_a_max = 0, uint th_f_max = 0,
             uint po_a_max = 0, uint po_f_max = 0, uint pr_a_max = 0,
             uint pr_f_max = 0, uint ch_a_max = 0, uint ch_f_max = 0,
@@ -54,7 +54,7 @@ private:
    static const uint kNIHI_DEF_MAX = 2000;
    static const uint kVITA_MAX = 20000;
    static const uint kQTMN_MAX = 300;
-   static const uint kAGIL_MAX = 2000;
+   static const uint kMOME_MAX = 2000;
    static const uint kLIMB_MAX = 2000;
    static const uint kUNBR_MAX = 200;
 
@@ -62,7 +62,7 @@ private:
    void setUp(uint ph_a, uint ph_f, uint th_a, uint th_f, uint po_a,
               uint po_f, uint pr_a, uint pr_f, uint ch_a, uint ch_f,
               uint cy_a, uint cy_f, uint ni_a, uint ni_f, uint vit,
-              uint qd, uint agi, uint lim, uint unb, uint ph_a_max = 0,
+              uint qd, uint mom, uint lim, uint unb, uint ph_a_max = 0,
               uint ph_f_max = 0, uint th_a_max = 0, uint th_f_max = 0,
               uint po_a_max = 0, uint po_f_max = 0, uint pr_a_max = 0,
               uint pr_f_max = 0, uint ch_a_max = 0, uint ch_f_max = 0,
@@ -141,8 +141,8 @@ private:
   uint max_quantum_drive;
 
   /* Speed stat */
-  uint agility;
-  uint max_agility;
+  uint momentum;
+  uint max_momentum;
 
   /* Dodge stat */
   uint limbertude;
@@ -214,7 +214,7 @@ public:
   void setQuantumDrive(uint value, uint max_value = 0);
 
   /* Sets the speed stat */
-  void setAgility(uint value, uint max_value = 0);
+  void setMomentum(uint value, uint max_value = 0);
 
   /* Sets the dodge stat */
   void setLimbertude(uint value, uint max_value = 0);
@@ -293,8 +293,8 @@ public:
   uint getMaxQuantumDrive();
 
   /* Gets the speed stat */
-  uint getAgility();
-  uint getMaxAgility();
+  uint getMomentum();
+  uint getMaxMomentum();
 
   /* Gets the dodge stat */
   uint getLimbertude();

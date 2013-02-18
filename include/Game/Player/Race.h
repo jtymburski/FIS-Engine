@@ -21,7 +21,7 @@ public:
    /* Race constructor */
    Race(QString n, uint ph_a, uint ph_f, uint th_a, uint th_f, uint po_a,
         uint po_f, uint pr_a, uint pr_f, uint ch_a,uint ch_f, uint cy_a,
-        uint cy_f, uint ni_a, uint ni_f, uint vit, uint qd, uint agi,
+        uint cy_f, uint ni_a, uint ni_f, uint vit, uint qd, uint mom,
         uint lim, uint unb, QWidget *parent = 0);
 
    /* Default Race Constructor given a name */
@@ -35,7 +35,7 @@ private:
    void setUpStats(uint ph_a, uint ph_f, uint th_a, uint th_f, uint po_a,
                    uint po_f, uint pr_a, uint pr_f, uint ch_a, uint ch_f,
                    uint cy_a, uint cy_f, uint ni_a, uint ni_f, uint vit,
-                   uint qd, uint agi, uint lim, uint unb);
+                   uint qd, uint mom, uint lim, uint unb);
 
   /* Description */
   QString description;
@@ -92,7 +92,7 @@ private:
   uint quantum_drive;
 
   /* Speed stat */
-  uint agility;
+  uint momentum;
 
   /* Dodge stat */
   uint limbertude;
@@ -162,7 +162,7 @@ public:
   void setQuantumDrive(uint value);
 
   /* Sets the speed stat */
-  void setAgility(uint value);
+  void setMomentum(uint value);
 
   /* Sets the dodge stat */
   void setLimbertude(uint value);
@@ -225,7 +225,7 @@ public:
   uint getQuantumDrive();
 
   /* Gets the speed stat */
-  uint getAgility();
+  uint getMomentum();
 
   /* Gets the dodge stat */
   uint getLimbertude();

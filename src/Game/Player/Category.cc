@@ -37,7 +37,7 @@
  *      ni_f - base nihil fortitude
  *      vit  - base vitality
  *      qd   - base quantum drive
- *      agi  - base agility
+ *      mom  - base momentum
  *      lim  - base limbertude
  *      unb  - base unbearability
  *      x_max - the maximum value for all the stats listed above
@@ -45,21 +45,21 @@
 Category::Category(QString n, uint ph_a, uint ph_f, uint th_a, uint th_f, uint po_a,
                    uint po_f, uint pr_a, uint pr_f, uint ch_a, uint ch_f,
                    uint cy_a, uint cy_f, uint ni_a, uint ni_f, uint vit,
-                   uint qd, uint agi, uint lim, uint unb, uint ph_a_max,
+                   uint qd, uint mom, uint lim, uint unb, uint ph_a_max,
                    uint ph_f_max, uint th_a_max, uint th_f_max,
                    uint po_a_max, uint po_f_max, uint pr_a_max,
                    uint pr_f_max, uint ch_a_max, uint ch_f_max,
                    uint cy_a_max, uint cy_f_max, uint ni_a_max,
                    uint ni_f_max, uint vit_max, uint qd_max,
-                   uint agi_max, uint lim_max, uint unb_max, QWidget *parent)
+                   uint mom_max, uint lim_max, uint unb_max, QWidget *parent)
 {
     setName(n);
 
     setUp(ph_a,ph_f,th_a,th_f,po_a,po_f,pr_a,pr_f,ch_a,ch_f,cy_a,cy_f,
-          ni_a,ni_f,vit,qd,agi,lim,unb,ph_a_max,ph_f_max,th_a_max,
+          ni_a,ni_f,vit,qd,mom,lim,unb,ph_a_max,ph_f_max,th_a_max,
           th_f_max,po_a_max,po_f_max,pr_a_max,pr_f_max,ch_a_max,
           ch_f_max,cy_a_max,cy_f_max,ni_a_max,ni_f_max,vit_max,qd_max,
-          agi_max,lim_max,unb_max);
+          mom_max,lim_max,unb_max);
 }
 
 /*
@@ -92,13 +92,13 @@ Category::~Category()
 void Category::setUp(uint ph_a, uint ph_f, uint th_a, uint th_f, uint po_a,
                      uint po_f, uint pr_a, uint pr_f, uint ch_a, uint ch_f,
                      uint cy_a, uint cy_f, uint ni_a, uint ni_f, uint vit,
-                     uint qd, uint agi, uint lim, uint unb, uint ph_a_max,
+                     uint qd, uint mom, uint lim, uint unb, uint ph_a_max,
                      uint ph_f_max, uint th_a_max, uint th_f_max,
                      uint po_a_max, uint po_f_max, uint pr_a_max,
                      uint pr_f_max, uint ch_a_max, uint ch_f_max,
                      uint cy_a_max, uint cy_f_max, uint ni_a_max,
                      uint ni_f_max, uint vit_max, uint qd_max,
-                     uint agi_max, uint lim_max, uint unb_max)
+                     uint mom_max, uint lim_max, uint unb_max)
 {
     setPhysicalAggression(ph_a, ph_a_max);
     setPhysicalFortitude(ph_f, ph_f_max);
@@ -116,7 +116,7 @@ void Category::setUp(uint ph_a, uint ph_f, uint th_a, uint th_f, uint po_a,
     setNihilFortitude(ni_f, ni_f_max);
     setVitality(vit, vit_max);
     setQuantumDrive(qd, qd_max);
-    setAgility(agi, agi_max);
+    setMomentum(mom, mom_max);
     setLimbertude(lim, lim_max);
     setUnbearability(unb, unb_max);
 }
@@ -417,20 +417,20 @@ void Category::setQuantumDrive(uint value, uint max_value)
 }
 
 /*
- * Description: Sets the Category min and max agility stat
+ * Description: Sets the Category min and max momentum stat
  *
  * Inputs: uint - starting value of the stat
  *         uint - max value of the stat
  * Output: none
  */
-void Category::setAgility(uint value, uint max_value)
+void Category::setMomentum(uint value, uint max_value)
 {
-  if (max_value < kAGIL_MAX && max_value != 0)
-    max_agility = max_value;
+  if (max_value < kMOME_MAX && max_value != 0)
+    max_momentum = max_value;
   if (max_value == 0)
-    max_agility = kAGIL_MAX;
-  if (value < max_agility)
-    agility = value;
+    max_momentum = kMOME_MAX;
+  if (value < max_momentum)
+    momentum = value;
 }
 
 /*
@@ -845,25 +845,25 @@ uint Category::getMaxQuantumDrive()
 }
 
 /*
- * Description: Returns the Category bonus of the agility stat
+ * Description: Returns the Category bonus of the momentum stat
  *
  * Inputs: none
  * Output: int - value of the Category bonus
  */
-uint Category::getAgility()
+uint Category::getMomentum()
 {
-  return agility;
+  return momentum;
 }
 
 /*
- * Description: Returns the maximum agility stat
+ * Description: Returns the maximum momentum stat
  *
  * Inputs: none
  * Output: int - value of the category's max of the stat
  */
-uint Category::getMaxAgility()
+uint Category::getMaxMomentum()
 {
-  return max_agility;
+  return max_momentum;
 }
 
 /*

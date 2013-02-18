@@ -35,18 +35,18 @@
  *      ni_f - base nihil fortitude
  *      vit  - base vitality
  *      qd   - base quantum drive
- *      agi  - base agility
+ *      mom  - base momentum
  *      lim  - base limbertude
  *      unb  - base unbearability
  */
 Race::Race(QString n, uint ph_a, uint ph_f, uint th_a,uint th_f, uint po_a,
            uint po_f, uint pr_a, uint pr_f, uint ch_a,uint ch_f, uint cy_a,
-           uint cy_f, uint ni_a, uint ni_f, uint vit, uint qd, uint agi,
+           uint cy_f, uint ni_a, uint ni_f, uint vit, uint qd, uint mom,
            uint lim, uint unb, QWidget *parent)
 {
     setName(n);
     setUpStats(ph_a,ph_f,th_a,th_f,po_a,po_f,pr_a,pr_f,ch_a,ch_f,cy_a,cy_f,
-               ni_a,ni_f,vit,qd,agi,lim,unb);
+               ni_a,ni_f,vit,qd,mom,lim,unb);
 }
 
 /*
@@ -78,7 +78,7 @@ Race::~Race()
  */
 void Race::setUpStats(uint ph_a, uint ph_f, uint th_a, uint th_f, uint po_a,
                       uint po_f, uint pr_a, uint pr_f, uint ch_a,uint ch_f, uint cy_a,
-                      uint cy_f, uint ni_a, uint ni_f, uint vit, uint qd, uint agi,
+                      uint cy_f, uint ni_a, uint ni_f, uint vit, uint qd, uint mom,
                       uint lim, uint unb)
 {
     setPhysicalAggression(ph_a);
@@ -97,7 +97,7 @@ void Race::setUpStats(uint ph_a, uint ph_f, uint th_a, uint th_f, uint po_a,
     setNihilFortitude(ni_f);
     setVitality(vit);
     setQuantumDrive(qd);
-    setAgility(agi);
+    setMomentum(mom);
     setLimbertude(lim);
     setUnbearability(unb);
 }
@@ -306,9 +306,9 @@ void Race::setQuantumDrive(uint value)
  * Inputs: int - value of the bonus
  * Output: none
  */
-void Race::setAgility(uint value)
+void Race::setMomentum(uint value)
 {
-  agility = value;
+  momentum = value;
 }
 
 /*
@@ -534,14 +534,14 @@ uint Race::getQuantumDrive()
 }
 
 /*
- * Description: Returns the race bonus of the agility stat
+ * Description: Returns the race bonus of the momentum stat
  *
  * Inputs: none
  * Output: int - value of the race bonus
  */
-uint Race::getAgility()
+uint Race::getMomentum()
 {
-  return agility;
+  return momentum;
 }
 
 /*

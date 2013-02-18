@@ -8,7 +8,7 @@
 #define PERSON_H
 
 #include <QtGui/QWidget>
-#include "Game/Player/Action.h"
+#include "Game/Player/Skill.h"
 #include "Game/Player/Category.h"
 #include "Game/Player/Item.h"
 #include "Game/Player/Equipment.h"
@@ -82,7 +82,7 @@ public:
     NIHILDEFBUFF      = 1 << 15,
     LIMBERTUDEBUFF    = 1 << 16,
     UNBEARBUFF        = 1 << 17,
-    AGILITYBUFF       = 1 << 18,
+    MOMENTUMBUFF       = 1 << 18,
     VITALITYBUFF      = 1 << 19,
     QDBUFF            = 1 << 20,
     HEALTHBUFF        = 1 << 21,
@@ -95,6 +95,9 @@ public:
 
 
 private:
+  /* For level-up function */
+  int personMax(int a, int b);
+
   /* Const maximum limits for any stat */
   static const uint kMAX_PHYS_ATK = 2000;
   static const uint kMAX_PHYS_DEF = 2000;
@@ -112,13 +115,15 @@ private:
   static const uint kMAX_NIHI_DEF = 2000;
   static const uint kMAX_VITA = 20000;
   static const uint kMAX_QNTM = 300;
-  static const uint kMAX_AGIL = 2000;
+  static const uint kMAX_MOME = 2000;
   static const uint kMAX_LIMB = 2000;
   static const uint kMAX_UNBR = 200;
 
   /* Person class constants */
-  static const uint kTOTAL_MAX_LEVEL = 127;
-  static const uint kMAX_EXPERIENCE = 1000000000; /* 10 ^ 9 */
+  static const uint kTOTAL_MAX_LEVEL =        127;
+  static const uint kMAX_EXPERIENCE  = 1000000000; /* Billion */
+  static const uint kMAX_EXP_DROP    =    1000000; /* Million */
+  static const uint kMAX_CREDIT_DROP =   10000000; /* Ten Million */
 
   /* Set up normal stats for constructor */
   void setupStats();
@@ -172,7 +177,7 @@ private:
   uint quantum_drive;
 
   /* Speed stat */
-  uint agility;
+  uint momentum;
 
   /* Dodge stat */
   uint limbertude;
@@ -229,7 +234,7 @@ private:
   uint temp_quantum_drive;
 
   /* Temporary speed stat */
-  uint temp_agility;
+  uint temp_momentum;
 
   /* Temporary dodge_chance stat */
   uint temp_limbertude;
@@ -286,13 +291,17 @@ private:
   uint base_quantum_drive;
 
   /* Base speed stat */
-  uint base_agility;
+  uint base_momentum;
 
   /* Base dodge_chance stat */
   uint base_limbertude;
 
   /* Base crit chance stat */
   uint base_unbearability;
+
+  /* Status ailment vectors */
+  QVector<short> effect_duration;
+  QVector<short> max_effect_duration;
 
   /* Currently equipped head piece */
   Equipment* head;
@@ -312,6 +321,11 @@ private:
   /* Person's level and experience */
   uint level, experience;
 
+  /* Person's loot when killed */
+  QVector<Item> item_drops;
+  uint experience_drop;
+  uint credit_drop;
+
   /* The person's class */
   Category* cat;
 
@@ -330,11 +344,11 @@ private:
   /* Set the status buff flags for the person */
   StatusBuffFlags buff_set;
 
-  /* List of actions that the person has */
-  QVector<Action*> action_list;
+  /* List of skills that the person has */
+  QVector<Skill*> skill_list;
 
-  /* Parallel list of when person's actions become available */
-  QVector<uint>  action_available;
+  /* Parallel list of when person's skills become available */
+  QVector<uint>  skill_available;
 
   /* List of status ailment strings */
   QVector<QString> status_ailment_list;
@@ -383,8 +397,8 @@ public:
   /* Gets the boolean value of PersonState flag */
   const bool getPersonFlag(PersonState flags);
 
-  /* Returns the available actions of the person */
-  QVector<Action*>& getAvailableActions();
+  /* Returns the available skills of the person */
+  QVector<Skill*>& getAvailableSkills();
 
   /* Gets the person's category */
   Category* getCategory();
@@ -409,6 +423,15 @@ public:
 
   /* Gets the person's experience */
   uint getExp();
+
+  /* Exp drop of the person */
+  uint getExpLoot();
+
+  /* Credit drop of the person */
+  uint getCreditLoot();
+
+  /* Item drops of the person */
+  QVector<Item> getItemLoot();
 
   /* Gets the person's level */
   uint getLevel();
@@ -486,7 +509,7 @@ public:
   uint getQuantumDrive();
 
   /* Gets the speed stat */
-  uint getAgility();
+  uint getMomentum();
 
   /* Gets the dodge stat */
   uint getLimbertude();
@@ -543,7 +566,7 @@ public:
   uint getTempQuantumDrive();
 
   /* Gets the speed stat */
-  uint getTempAgility();
+  uint getTempMomentum();
 
   /* Gets the avoidance stat */
   uint getTempLimbertude();
@@ -600,7 +623,7 @@ public:
   uint getBaseQuantumDrive();
 
   /* Gets the speed stat */
-  uint getBaseAgility();
+  uint getBaseMomentum();
 
   /* Gets the avoidance stat */
   uint getBaseLimbertude();
@@ -637,6 +660,15 @@ public:
 
   /* Set's the person's experience */
   void setExp(uint value);
+
+  /* Set's the person's experience drop */
+  void setExpLoot(uint value);
+
+  /* Set's the person's credit drop */
+  void setCreditLoot(uint value);
+
+  /* Set's the person's item drops. */
+  void setItemLoot(QVector<Item> items);
 
   /* Sets the person's level */
   const bool setLevel(const uint &new_level);
@@ -723,7 +755,7 @@ public:
   void setQuantumDrive(uint value);
 
   /* Sets the speed stat */
-  void setAgility(uint value);
+  void setMomentum(uint value);
 
   /* Sets the dodge stat */
   void setLimbertude(uint value);
@@ -780,7 +812,7 @@ public:
   void setTempQuantumDrive(uint value);
 
   /* Sets the temp speed stat */
-  void setTempAgility(uint value);
+  void setTempMomentum(uint value);
 
   /* Sets the temp avoidance stat */
   void setTempLimbertude(uint value);
@@ -837,7 +869,7 @@ public:
   void setBaseQuantumDrive(uint value);
 
   /* Sets the Base speed stat */
-  void setBaseAgility(uint value);
+  void setBaseMomentum(uint value);
 
   /* Sets the Base avoidance stat */
   void setBaseLimbertude(uint value);
