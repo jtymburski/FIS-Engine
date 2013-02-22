@@ -122,6 +122,13 @@ void Battle::keyPressEvent(QKeyEvent* event)
 {
   if(event->key() == Qt::Key_Escape)
     closeBattle();
+  /* Temporary swapping for background image testing */
+  if(event->key() == Qt::Key_1)
+    battle_bg->load(":/bbd_sewers");
+  if(event->key() == Qt::Key_2)
+    battle_bg->load(":/bbd_sewers2");
+  update();
+
 }
 
 /*
