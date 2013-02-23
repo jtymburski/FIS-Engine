@@ -120,13 +120,21 @@ Battle::~Battle()
 // TODO
 void Battle::keyPressEvent(QKeyEvent* event)
 {
-  if(event->key() == Qt::Key_Escape)
-    closeBattle();
-  /* Temporary swapping for background image testing */
-  if(event->key() == Qt::Key_1)
-    battle_bg->load(":/bbd_sewers");
-  if(event->key() == Qt::Key_2)
-    battle_bg->load(":/bbd_sewers2");
+  switch(event->key())
+  {
+    case Qt::Key_Escape:
+      closeBattle();
+      break;
+    /* Temporary swapping for background image testing */
+    case Qt::Key_1:
+      battle_bg->load(":/bbd_sewers");
+      break;
+    case Qt::Key_2:
+      battle_bg->load(":/bbd_sewers2");
+      break;
+    default:
+      break;
+  }
   update();
 
 }
