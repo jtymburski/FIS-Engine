@@ -231,6 +231,8 @@ float Skill::getEffectChance(uint index)
 {
   if (effect_chance.at(index))
     return effect_chance[index];
+  else
+    return 0;
 }
 
 /*
@@ -264,7 +266,7 @@ void Skill::setAnimation(Sprite* new_sprite)
 void Skill::setEffectChances(QVector<float> new_value)
 {
   effect_chance.clear();
-  for (uint i = 0; i < effect_chance.size(); i++)
+  for (int i = 0; i < effect_chance.size(); i++)
     effect_chance.push_back(new_value[i]);
 }
 

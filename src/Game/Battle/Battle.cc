@@ -65,6 +65,10 @@
 #include "Game/Battle/Battle.h"
 #include <QDebug>
 
+/*=============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *===========================================================================*/
+
 /*
  * Description: Constructor for the battle class
  *
@@ -77,36 +81,54 @@ Battle::Battle(Party* p_friends, Party* p_foes, QWidget* pointer)
   setFriends(p_friends);
   setFoes(p_foes);
 
-  /* Basic settings for battle window sizing and backdrop */
-  setMaxWidth(1216);
-  setMaxHeight(704);
+  /* Basic settings for battle window sizing and backdrops */
+  setMaxWidth(1216);  // TODO: Obtain from options [02-24-13]
+  setMaxHeight(704);  // TODO: Obtain from options [02-24-13]
   setFixedSize(getMaxWidth(), getMaxHeight());
   battle_bg = new QPixmap();
   battle_bg->load(":/bbd_sewers");
-
   battle_status_bar_image = new QPixmap();
   battle_status_bar_image->load(":/statusbar");
 
-  /* Create and place enemy bounding boxes */
-  int left_d  = floor(0.1290 * getMaxHeight());
-  int top_d   = floor(0.1464 * getMaxHeight());
-  int enemy_w = floor(0.2105 * getMaxWidth());
-  int enemy_h = enemy_w;
-  int spacing = floor(0.0226 * getMaxWidth());
+  /* Create and place enemy & ally bounding boxes */
+  uint left_d   = floor(0.1290 * getMaxHeight());
+  uint top_d    = floor(0.1464 * getMaxHeight());
+  uint enemy_w  = floor(0.2105 * getMaxWidth());
+  uint enemy_h  = enemy_w;
+  uint spacing  = floor(0.0226 * getMaxWidth());
+  uint atop_d   = floor(0.5200 * getMaxHeight());
+  uint ally_w   = floor(0.2100 * getMaxWidth());
+  uint ally_h   = floor(0.3636 * getMaxHeight());
+  uint aspacing = floor(0.0263 * getMaxWidth());
 
-  for (int i = 0; i < 5; i++)
-      enemy_box.push_back(new QRect(left_d + (enemy_w * i) - spacing * i,top_d, enemy_w, enemy_h));
+  for (uint i = 0; i < kMAX_PARTY_SIZE; i++)
+  {
+    uint left_margin = left_d + (enemy_w * i) - spacing * i;
+    enemy_box.push_back(new QRect(left_margin,top_d, enemy_w, enemy_h));
+    left_margin = (ally_w * i) - aspacing * i;
+    ally_box.push_back(new QRect(left_margin,atop_d,ally_w,ally_h));
+  }
 
-  /* Create and place ally bounding boxes */
-  top_d      = floor(0.5200 * getMaxHeight());
-  int ally_w = floor(0.2100 * getMaxWidth());
-  int ally_h = floor(0.3636 * getMaxHeight());
-  spacing    = floor(0.0263 * getMaxWidth());
+  /* Battle status bar setup */
+  uint bar_width  = (ally_w * 5) - aspacing * 4;
+  uint bar_height = getMaxHeight() * 0.1200;
+  status_box = new QRect(0, getMaxHeight() - bar_height, bar_width, bar_height);
+  status_bar = new BattleStatusBar(friends, bar_width, bar_height, this);
+  status_bar->setGeometry(*status_box);
 
-  for (int i = 0; i < 5; i++)
-    ally_box.push_back(new QRect((ally_w * i) - spacing * i,top_d,ally_w,ally_h));
+  /* Battle extra bar set up */
+  bar_width  = 1 - (getMaxWidth() * bar_width);
+  extra_box = new QRect(0, getMaxHeight() - bar_height, bar_width, bar_height);
+  // TODO: Create an extra bar [02-24-13]
+
+  /* Battle info bar set up */
+  bar_width  = getMaxWidth()   * 1.0000;
+  bar_height = getMaxHeight()  * 0.0500;
+  info_box = new QRect(0, 0, bar_width, bar_height);
+  info_bar = new BattleInfoBar();
+
+  paintAll();
 }
-
 
 /*
  * Description: Annihilates a battle object
@@ -117,7 +139,79 @@ Battle::~Battle()
   setFoes();
 }
 
-// TODO
+/*============================================================================
+ * PAINT EVENTS
+ *===========================================================================*/
+
+/*
+ * Description: Paint event for the battle class
+ */
+void Battle::paintEvent(QPaintEvent*)
+{
+  /* Preparation */
+  QPainter painter(this);
+  painter.setPen(QColor(Qt::black));
+  painter.setBrush(QColor(Qt::black));
+  painter.setOpacity(1.00);
+
+  /* Paint the current backdrop */
+  painter.drawPixmap(0,0,getMaxWidth(),getMaxHeight(),*battle_bg);
+
+  /* Draw sprites for allies and foes (if they exist) */
+  painter.setOpacity(1.0);
+  for (uint i = 0; i < kMAX_PARTY_SIZE; i++)
+  {
+    Person* p = NULL;
+    if (i < friends->getPartySize() && friends->getMember(i))
+    {
+      p = friends->getMember(i);
+      painter.drawPixmap(*ally_box[i],p->getFirstPerson()->getCurrent());
+    }
+    if (i < foes->getPartySize() && foes->getMember(i))
+    {
+      p = foes->getMember(i);
+      painter.drawPixmap(*enemy_box[i],p->getThirdPerson()->getCurrent());
+    }
+  }
+  painter.drawPixmap(0,getMaxHeight() * 0.8181,*battle_status_bar_image);
+
+
+  /* Paint drawings for info,status,extra bars */
+  painter.setOpacity(0.70); //TODO: Get opacity form somewhere [02-23-13]
+  painter.drawRect(*info_box);
+
+  /* Temp painting of status bar bounding box */
+  painter.setOpacity(0.70);
+}
+
+/*
+ * Description: Function which calls all the normally displayed elements
+ */
+void Battle::paintAll()
+{
+  /* Calls all objects paint events */
+  update();
+
+  /* Paints stats bar */
+  status_bar->update();
+
+
+  info_bar->update();
+}
+
+/*
+ * Description: Paint event for the menu
+ */
+void Battle::paintMenu()
+{
+
+}
+
+/*==============================================================================
+ * PAINT EVENTS
+ *============================================================================*/
+
+/* TODO: Temporary change of battle background [02-20-13] */
 void Battle::keyPressEvent(QKeyEvent* event)
 {
   switch(event->key())
@@ -132,45 +226,20 @@ void Battle::keyPressEvent(QKeyEvent* event)
     case Qt::Key_2:
       battle_bg->load(":/bbd_sewers2");
       break;
+    case Qt::Key_3:
+      battle_bg->load(":/bbd_sewers3");
+      break;
     default:
       break;
   }
   update();
-
+  paintAll();
+  status_bar->update();
 }
 
-/*
- * Description: Paint event for the battle class
- */
-void Battle::paintEvent(QPaintEvent*)
-{
-  QPainter painter(this);
-  painter.setPen(QColor(Qt::blue));
-  painter.setOpacity(1);
-
-  painter.drawPixmap(0,0,getMaxWidth(),getMaxHeight(),*battle_bg);
-
-  /* Temp paint drawings for battleinfo bar */
-  int info_height = 0.05 * max_height;
-  painter.drawRect(0,0,max_width,info_height);
-
-  /* Draw sprites for allies and foes (if they exist) */
-  for (int i = 0; i < 5; i++)
-  {
-    Person* p = NULL;
-    if (i < friends->getPartySize() && friends->getMember(i))
-    {
-      p = friends->getMember(i);
-      painter.drawPixmap(*ally_box[i],p->getFirstPerson()->getCurrent());
-    }
-    if (i < foes->getPartySize() && foes->getMember(i))
-    {
-      p = foes->getMember(i);
-      painter.drawPixmap(*enemy_box[i],p->getThirdPerson()->getCurrent());
-    }
-  }
-  painter.drawPixmap(0,576,*battle_status_bar_image);
-}
+/*============================================================================
+ * FUNCTIONS
+ *===========================================================================*/
 
 /*
  * Description: Checks for deaths, pops current action off stack, calls

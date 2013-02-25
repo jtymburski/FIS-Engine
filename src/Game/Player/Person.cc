@@ -1305,7 +1305,7 @@ void Person::setCreditLoot(uint value)
 void Person::setItemLoot(QVector<Item> items)
 {
     item_drops.clear();
-    for (uint i = 0; i < items.size(); i++)
+    for (int i = 0; i < items.size(); i++)
         item_drops.push_back(items[i]);
 }
 

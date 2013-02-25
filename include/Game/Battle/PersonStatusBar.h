@@ -19,45 +19,46 @@
 class PersonStatusBar : public QWidget
 {
 public:
-  PersonStatusBar(Person* charcter, uint max_width, uint max_height, QWidget* parent = 0);
+  /* Constructo for PersonStatusBar object */
+  PersonStatusBar(Person* charcter, uint w, uint h, QWidget* parent = 0);
+
+  /* Annihilates a PersonStatusBar object */
   ~PersonStatusBar();
 
 private:
-  /* Bar width  */
-  int bar_width;
+  /* Static const max limits */
+  static const uint kMAX_WIDTH  = 1920 / 5;
+  static const uint kMAX_HEIGHT = 180;
 
-  /* Bar height */
-  int bar_height;
+  /* Setup */
+  void setup();
+
+  /* Dimensions and size of box */
+  uint bar_width;
+  uint bar_height;
 
   /* Person's health */
-  int health;
+  uint health;
 
   /* Person's max health */
-  int health_max;
+  uint health_max;
 
   /* The qd bar bounding box (scales with usage) */
-  int qd;
+  uint qd;
 
   /* Person's maximum qd */
-  int qd_max;
+  uint qd_max;
 
   /* Name text label */
-  QLabel name_label;
+  QLabel* name_label;
 
-  /* HP Bounding box */
-  QRect health_outline; 
-
-  /* HP Bar bounding box (scales with health shift) */
-  QRect health_bar; 
-
-  /* QD Bounding box */
-  QRect qd_outline; 
-
-  /* QD Bar Bounding box (scales with usage) */
-  QRect qd_bar;
-
-  /* Bounding box for Person's name */
-  QRect name_box; 
+  /* Object Bounding Boxes */
+  QVector<QRect*> status_thumbs;
+  QRect* health_outline;
+  QRect* health_bar;
+  QRect* qd_outline;
+  QRect* qd_bar;
+  QRect* name_box;
 
   /* Person's name */
   QString name;
@@ -66,31 +67,40 @@ private:
   Person* character;
 
   /* Sprite pointers to status_thumbnails */
-  QVector<Sprite* > status_thumbs;
+  QVector<Sprite*> status_thumb_sprites;
 
 protected:
   /* Paint event for the class */
   void paintEvent(QPaintEvent*);
   
 public:
+  /* Gets for Stat displays */
+  uint getDisplayHP();
+  uint getDisplayMaxHP();
+  uint getDisplayQD();
+  uint getDisplayMaxQD();
+
+  /* Get size of box */
+  uint getWidth();
+  uint getHeight();
 
   /* Gets the name of the character for the box */
   QString getName();
+  void setBox(QRect* box);
+  void setCharacter(Person* character);
 
   /* Sets current HP for display */
-  void setDisplayHP(int amount);
-
-  /* Sets current QD for display */
-  void setDisplayQD(int amount);
-
-  /* Sets the max HP for display */
-  void setDisplayMaxHP(int amount);
-
-  /* Sets the max QD for display */
-  void setDisplayMaxQD(int amount);
+  void setDisplayHP(uint amount);
+  void setDisplayMaxHP(uint amount);
+  void setDisplayQD(uint amount);
+  void setDisplayMaxQD(uint amount);
 
   /* Sets the name of the Person */
   void setName(QString name);
+
+  /* Size of the box */
+  void setWidth(uint new_value);
+  void setHeight(uint new_value);
 };
 
 #endif // PERSONSTATUSBAR_H

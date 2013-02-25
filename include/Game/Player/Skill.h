@@ -49,9 +49,9 @@ public:
 
 private:
   /* Constant skill class */
-  static const uint kMAX_ACTIONS = 10;
+  static const int kMAX_ACTIONS = 10;
   static const uint kMAX_QD_COST = 1000;
-  static const uint kMAX_NAME_LENGTH = 80;
+  static const int kMAX_NAME_LENGTH = 80;
 
   /* Int value for Quantum Drive cost */
   uint qd_cost;

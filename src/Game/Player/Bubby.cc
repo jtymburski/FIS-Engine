@@ -39,7 +39,7 @@ Bubby::Bubby() : myId(setId())
  */
 Bubby::~Bubby()
 {
-  for (uint i = 0; i < action_list.size(); i++)
+  for (int i = 0; i < action_list.size(); i++)
   {
     delete action_list[i];
     action_list[i] = NULL;

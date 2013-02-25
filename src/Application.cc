@@ -83,18 +83,23 @@ void Application::switchWidget(int index)
 void Application::setupBattle()
 {
   Race* human = new Race("Humans");
-  Category* bloodclaw_scion = new Category("Blooclaw Scion", 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 300, 30, 5, 5, 2, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 15000, 286, 150, 150, 75);
+  Category* bloodclaw_scion = new Category("Blooclaw Scion", 30, 30, 30, 30, 30,
+                                           30, 30, 30, 30, 30, 30, 30, 30, 30,
+                                           300, 30, 5, 5, 2, 1500, 1500, 1500,
+                                           1500, 1500, 1500, 1500, 1500, 1500,
+                                           1500, 1500, 1500, 1500, 1500, 15000,
+                                           286, 150, 150, 75);
 
-  Person* main_character = new Person("Main Character", human, bloodclaw_scion, "CYA", "POB");
+  Person* main_character = new Person("Malgidus", human, bloodclaw_scion, "CYA", "POB");
   Person* arcadius = new Person("Arcadius", human, bloodclaw_scion, "CYB", "POS");
-  Person* ladybear = new Person("Arcadius", human, bloodclaw_scion, "CYA", "POB");
-  Person* aurumba = new Person("Arcadius", human, bloodclaw_scion, "CYA", "POB");
-  Person* berfriegg = new Person("Arcadius", human, bloodclaw_scion, "CYA", "POB");
-  Person* cloud_dude = new Person("Arcadius", human, bloodclaw_scion, "CYA", "POB");
-  Person* cloud_dude2 = new Person("Arcadius", human, bloodclaw_scion, "CYA", "POB");
-  Person* cloud_dude3 = new Person("Arcadius", human, bloodclaw_scion, "CYA", "POB");
+  Person* ladybear = new Person("RT Guy", human, bloodclaw_scion, "CYA", "POB");
+  Person* aurumba = new Person("Jesze", human, bloodclaw_scion, "CYA", "POB");
+  Person* berfriegg = new Person("Atkst", human, bloodclaw_scion, "CYA", "POB");
+  Person* cloud_dude = new Person("Cloud Dude", human, bloodclaw_scion, "CYA", "POB");
+  Person* cloud_dude2 = new Person("Cloud Dude", human, bloodclaw_scion, "CYA", "POB");
+  Person* cloud_dude3 = new Person("Cloud Dude", human, bloodclaw_scion, "CYA", "POB");
   Person* ember = new Person("Ember", human, bloodclaw_scion, "CYA", "POB");
-  Person* raven = new Person("raven", human, bloodclaw_scion, "CYA", "POB");
+  Person* raven = new Person("Raven", human, bloodclaw_scion, "CYA", "POB");
 
   Sprite* main_char_fp = new Sprite(":/A_player");
   Sprite* arcadius_fp = new Sprite(":/A_arcadius");
@@ -147,7 +152,7 @@ void Application::setupBattle()
   qDebug() << "Party max sizes: " << enemy_clan->getMaxSize() << " " << friend_clan->getMaxSize();
   */
 
-  /* Action Test */
+  /* Action Test
   Action* test = new Action("1,RAISE,THERMAL AGGRESSION,2.7,1,THERMAL,1,POLAR,1,0.76;");
   qDebug() << "Action ID:  " << test->getId();
   qDebug() << "Ailment:    " << test->getAilment();
@@ -189,8 +194,8 @@ void Application::setupBattle()
   qDebug() << "I CYBE DEF: " << test->getIgnoreDefFlag(Action::IGNORE_CYBE_DEF);
   qDebug() << "I NIHI DEF: " << test->getIgnoreDefFlag(Action::IGNORE_NIHI_DEF);
   qDebug() << "I  DEF:     " << test->getIgnoreDefFlag(Action::IGNORE_DEF);
-
-  test_battle = new Battle(friend_clan, enemy_clan);
+  */
+  test_battle = new Battle(friend_clan, enemy_clan); //TODO PARENTLESS =(
 
 }
 
