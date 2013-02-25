@@ -56,7 +56,7 @@ bool Inventory::addTo(Equipment equipment)
     return FALSE;
 
   /* Increment counter if an equipment with the same name already exists */
-  for (uint i = 0; i < equipments.size(); i++)
+  for (int i = 0; i < equipments.size(); i++)
   {
     if (equipments.value(i).getName() == equipment.getName())
     {
@@ -90,7 +90,7 @@ bool Inventory::addTo(Item item)
     return FALSE;
 
   /* Increment counter if an item with the same name already exists */
-  for (uint i = 0; i < items.size(); i++)
+  for (int i = 0; i < items.size(); i++)
   {
     if (items.value(i).getName() == item.getName())
     {
@@ -135,7 +135,7 @@ bool Inventory::addTo(Bubby bubby)
  */
 const bool Inventory::removeFrom(Equipment terminal_equipment)
 {
-  for (uint i = 0; i < items.size(); i++)
+  for (int i = 0; i < items.size(); i++)
   {
     if (equipments.value(i).getName() == terminal_equipment.getName())
     {
@@ -236,7 +236,7 @@ const bool Inventory::resetLevel(const uint new_level)
  */
 uint Inventory::getCount(Equipment e)
 {
-  for (uint i = 0; i < equipments.size(); i++)
+  for (int i = 0; i < equipments.size(); i++)
     if (equipments.value(i).getName() == e.getName())
       return equip_count.at(i);
   return 0;

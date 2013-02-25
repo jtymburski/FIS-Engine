@@ -8,10 +8,12 @@
 ******************************************************************************/
 
 #include "Game/Battle/BattleInfoBar.h"
+#include <QDebug>
 
 /* Creates a BattleInfoBar object */
 BattleInfoBar::BattleInfoBar(QWidget* parent)
 {
+
 }
 
 /* Annihilates a BattleInfoBar objet */
@@ -22,6 +24,7 @@ BattleInfoBar::~BattleInfoBar()
 void BattleInfoBar::paintEvent(QPaintEvent*)
 {
     QPainter painter(this);
+
 }
 
 

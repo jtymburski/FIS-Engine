@@ -34,7 +34,7 @@ private:
   QVector<Person*> members;
 
   /* Temporary maximum size of the party (max 5) */
-  uint max_size;
+  int max_size;
 
 public:
   /* Adds a person to party, returns false if no space or failure */
@@ -62,7 +62,7 @@ public:
   QString getMemberName(uint index);
 
   /* Returns the currently set max size of the party */
-  uint getMaxSize();
+  int getMaxSize();
 
   /* Sets the inventory of the party */
   void setInventory(Inventory* i = NULL);

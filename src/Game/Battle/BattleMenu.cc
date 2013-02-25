@@ -21,8 +21,9 @@
 #include "Game/Battle/BattleMenu.h"
 
 /* Creates a BattleMenu object */
-BattleMenu::BattleMenu(QWidget* pointer)
+BattleMenu::BattleMenu(QWidget* parent)
 {
+  setParent(parent);
 }
 
 /* Annihilates a BattleMenu object */
@@ -32,7 +33,7 @@ BattleMenu::~BattleMenu()
 
 void BattleMenu::paintEvent(QPaintEvent*)
 {
-    QPainter painter(this);
+  QPainter painter(this);
 }
 
 

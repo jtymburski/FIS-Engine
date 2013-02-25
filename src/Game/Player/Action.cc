@@ -121,7 +121,7 @@ void Action::parse(QString raw)
 
   /* Parse Ignore Atk Elements */
   QStringList atk_split = split.at(5).split('.');
-  for (uint i = 0; i < atk_split.size(); i++)
+  for (int i = 0; i < atk_split.size(); i++)
   {
     if (atk_split.at(i) == "PHYSICAL")
       setIgnoreAtkFlag(Action::IGNORE_PHYS_ATK);
@@ -144,7 +144,7 @@ void Action::parse(QString raw)
 
   /* Parse Ignore Def Elements */
   QStringList def_split = split.at(7).split('.');
-  for (uint i = 0; i < def_split.size(); i++)
+  for (int i = 0; i < def_split.size(); i++)
   {
     if (def_split.at(i) == "PHYSICAL")
       setIgnoreDefFlag(Action::IGNORE_PHYS_DEF);

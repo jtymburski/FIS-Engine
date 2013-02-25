@@ -35,7 +35,7 @@ class BattleMenu : public QWidget
   Q_OBJECT // TODO: What is this for? [12-02-12]
 
 public: 
-  BattleMenu(QWidget *pointer = 0);
+  BattleMenu(QWidget *parent = 0);
   ~BattleMenu();
 
 private:

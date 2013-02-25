@@ -158,7 +158,7 @@ QString Party::getMemberName(uint index)
  * Inputs: none
  * Outputs: int - maximum size of the party
  */
-uint Party::getMaxSize()
+int Party::getMaxSize()
 {
   return max_size;
 }

@@ -1,65 +1,174 @@
 /******************************************************************************
 * Class Name: BattleStatusBar Implementation
 * Date Created: December 2nd, 2012
-* Inheritance: 
-* Description: Larger box display the BattleStatus
-*
-* TODO: CONSTRUCTORS TO BE FINISHED
+* Inheritance: QWidet
+* Description: BattleStatusBar is a class which represents a box holding
+*              all of the friend Party's individual status boxes (PStautsBar)
 ******************************************************************************/
 
 #include "Game/Battle/BattleStatusBar.h"
+#include <QDebug>
 
-/* Creates a BattleStatusBar object */
-BattleStatusBar::BattleStatusBar(QWidget* pointer)
+/*=============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *===========================================================================*/
+
+/*
+ * Description: BattleStatusBar object
+ *
+ * Inputs: Party* - pointer to a party to create the bar for
+ *         uint width - full useable width of the bar
+ *         uint height - full useable height of the bar
+ */
+BattleStatusBar::BattleStatusBar(Party* persons, uint width, uint height, QWidget* parent)
 {
+  setParent(parent);
+  setWidth(width);
+  setHeight(height);
+  for (uint i = 0; i < persons->getPartySize(); i++)
+    addPerson(persons->getMember(i), i);
+  update();
 }
 
-/* Annihilates a BattleStatusBar object */
+/*
+ * Description: Annihilates a BattleStatusBar object
+ */
 BattleStatusBar::~BattleStatusBar()
 {
+    for (int i = 0; i < bars.size(); i++)
+    {
+        delete bars.at(i);
+        bars[i] = NULL;
+    }
+    for (int i = 0; i < boxes.size(); i++)
+    {
+        delete boxes.at(i);
+        boxes[i] = NULL;
+    }
+    bars.clear();
+    boxes.clear();
 }
 
+/*
+ * Description: Paint even for the BattleStatusBar class
+ */
 void BattleStatusBar::paintEvent(QPaintEvent*)
 {
-    QPainter painter(this);
 }
 
-/* Adds a person to the vector of bars */
-void BattleStatusBar::addPerson(QString name, int health, int health_max, int qd, int qd_max)
+/*
+ * Description: Adds a person to the BattlStatusBar
+ *
+ * Inputs: Person* - pointer to the person to be added
+ *            uint - index of the person to be added
+ * Output: none
+ */
+void BattleStatusBar::addPerson(Person* character, uint person_index)
 {
+  uint left_m = (getWidth() / 5) * person_index;
+  uint width  = getWidth() / 5;
+  uint height = getHeight();
+  boxes.push_back(new QRect(left_m, 0, width, height));
+  bars.push_back(new PersonStatusBar(character,width,height,this));
+  bars.at(person_index)->setGeometry(*boxes.at(person_index));
 }
 
-/* Retunrs height of the bar */
-int BattleStatusBar::getHeight()
+/*
+ * Description: Gets the height of the BattleStatusBar
+ *
+ * Inputs: none
+ * Output:
+ */
+uint BattleStatusBar::getHeight()
 {
-  return bar_height;
+  return height;
 }
 
-/* Returns width of the bar */
-int BattleStatusBar::getWidth()
+uint BattleStatusBar::getWidth()
 {
-  return bar_width;
+  return width;
 }
 
-/* Sets height of the bar */
-int BattleStatusBar::setHeight(int new_height)
+uint BattleStatusBar::getDisplayHP(int person_index)
 {
-  bar_height = new_height;
-
-  return 0;
+  if (person_index <= bars.size())
+    return bars.at(person_index)->getDisplayHP();
+  else
+    return bars.at(bars.size() - 1)->getDisplayHP();
 }
 
-/* Sets displayed HP of person in the vector bars by given amount */
-void BattleStatusBar::setDisplayHP(int new_HP, int person_num)
+uint BattleStatusBar::getDisplayMaxHP(int person_index)
 {
-  //if (person_num <= party_size)
-  //  bars.at(person_num).setDisplayHP(new_HP);
+  if (person_index <= bars.size())
+    return bars.at(person_index)->getDisplayMaxHP();
+  else
+    return bars.at(bars.size() - 1)->getDisplayMaxHP();
 }
 
-/* Sets width of the bar */
-int BattleStatusBar::setWidth(int new_width)
+uint BattleStatusBar::getDisplayQD(int person_index)
 {
-  bar_width = new_width;
+  if (person_index <= bars.size())
+    return bars.at(person_index)->getDisplayQD();
+  else
+    return bars.at(bars.size() - 1)->getDisplayQD();
+}
 
-  return 0;
+uint BattleStatusBar::getDisplayMaxQD(int person_index)
+{
+  if (person_index <= bars.size())
+    return bars.at(person_index)->getDisplayMaxQD();
+  else
+    return bars.at(bars.size() - 1)->getDisplayMaxQD();
+}
+
+void BattleStatusBar::setDisplayHP(uint vitality, int person_index)
+{
+  if (person_index <= bars.size())
+      bars.at(person_index)->setDisplayHP(vitality);
+}
+
+void BattleStatusBar::setDisplayMaxHP(uint max_vitality, int person_index)
+{
+  if (person_index <= bars.size())
+      bars.at(person_index)->setDisplayMaxHP(max_vitality);
+}
+
+void BattleStatusBar::setDisplayQD(uint qd, int person_index)
+{
+  if (person_index <= bars.size())
+      bars.at(person_index)->setDisplayQD(qd);
+}
+
+void BattleStatusBar::setDisplayMaxQD(uint max_qd, int person_index)
+{
+  if (person_index <= bars.size())
+      bars.at(person_index)->setDisplayMaxQD(max_qd);
+}
+
+void BattleStatusBar::setSize(QRect* box)
+{
+  setLeftMargin(box->left());
+  setTopDistance(box->top());
+  setWidth(box->width());
+  setHeight(box->height());
+}
+
+void BattleStatusBar::setLeftMargin(uint left_margin)
+{
+  this->left_margin = left_margin;
+}
+
+void BattleStatusBar::setTopDistance(uint top_distance)
+{
+  this->top_distance = top_distance;
+}
+
+void BattleStatusBar::setWidth(uint new_width)
+{
+  (new_width < kMAX_WIDTH) ? (width = new_width) : (width = kMAX_WIDTH);
+}
+
+void BattleStatusBar::setHeight(uint new_height)
+{
+  (new_height < kMAX_HEIGHT) ? (height = new_height) : (height = kMAX_HEIGHT);
 }

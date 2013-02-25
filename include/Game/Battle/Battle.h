@@ -1,4 +1,4 @@
-/******************************************************************************
+/*******************************************************************************
 * Class Name: Battle
 * Date Created: Sunday, October 28th, 2012
 * Inheritance: Parent class: Game
@@ -82,14 +82,14 @@ class Battle: public QWidget
   Q_OBJECT
 
 public:
-    /* Enumerated flags for battle class */
-    enum BattleState
-    {
-      BOSS     = 1ul << 0, /* Is this a boss battle? */
-      MINIBOSS = 1ul << 1 /* Is this a mini-boss battle? */
-    };
-    Q_DECLARE_FLAGS(BattleFlags, BattleState)
-    BattleFlags flag_set;
+  /* Enumerated flags for battle class */
+  enum BattleState
+  {
+    BOSS     = 1ul << 0, /* Is this a boss battle? */
+    MINIBOSS = 1ul << 1  /* Is this a mini-boss battle? */
+  };
+  Q_DECLARE_FLAGS(BattleFlags, BattleState)
+  BattleFlags flag_set;
 
   /* Constructor for a Battle class */
   Battle(Party* p_friends, Party* p_foes, QWidget* pointer = 0);
@@ -98,6 +98,13 @@ public:
   ~Battle();
 
 private:
+  /* Print functions */
+  void paintAll();
+  void paintMenu();
+
+  /* Constant max limits */
+  static const uint kMAX_PARTY_SIZE = 5;
+
   /* Pointer to the battle info bar */
   BattleInfoBar* info_bar;
 
@@ -111,21 +118,21 @@ private:
   bool target_mode; //Checks if targeting mode is active
 
   /* Maximum size of the battle window */
-  int max_width;
-  int max_height;
+  uint max_width;
+  uint max_height;
 
   /* Bounding box dimensions */
-  int ally_width;
-  int ally_height;
+  uint ally_width;
+  uint ally_height;
 
   /* Which party is currently selected */
-  int party_index;
+  uint party_index;
 
   /* Current target selected */
-  int target_index; 
+  uint target_index;
 
   /* Current turn count */
-  int turn_count; 
+  uint turn_count;
 
   /* The enemy party */
   Party* foes; 
@@ -145,8 +152,11 @@ private:
   /* Enemy Bounding Boxes */
   QVector<QRect*> enemy_box;
 
-  /* The targeting box for action/inventory target selection */
-  QRect * target_box;
+  /* Bounding boxes */
+  QRect* target_box; /* Skill/inventory target selection */
+  QRect* status_box;
+  QRect* info_box;
+  QRect* extra_box;
 
   /* The action buffer */
   QVector<Action*> action_buffer; 

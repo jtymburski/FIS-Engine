@@ -14,48 +14,61 @@
 #include <QtGui/QPainter>
 
 #include "Game/Battle/PersonStatusBar.h"
+#include "Game/Player/Party.h"
 
 class BattleStatusBar : public QWidget
 {
 public:
-  BattleStatusBar(QWidget *pointer = 0);
+  BattleStatusBar(Party* persons, uint width, uint height, QWidget *parent = 0);
   ~BattleStatusBar();
 
 private:
-  /* Party's size (1-5) */
-  int party_Size;
+  /* Static const max limits */
+  static const uint kMAX_WIDTH = 1920;
+  static const uint kMAX_HEIGHT = 180;
 
   /* All status bars */
-  QVector<PersonStatusBar> bars;
+  QVector<PersonStatusBar*> bars;
+  QVector<QRect*> boxes;
 
-  /* Height of the bar (screen_height * 0.20) */
-  int bar_height;
-
-  /* Width of the bar (screen_width * 0.35) */
-  int bar_width;
+  /* Box Dimensions and Coordinates */
+  uint left_margin;
+  uint top_distance;
+  uint height;
+  uint width;
 
 protected:
   /* Paint event for the class */
   void paintEvent(QPaintEvent*);
 
 public:
-  	/* Adds a person to the vector of bars */
-  void addPerson(QString name, int health, int health_max, int qd, int qd_max);
+  /* Adds a person to the vector of bars */
+  void addPerson(Person* character, uint person_index);
 
-  /* Retunrs height of the bar */
-  int getHeight();
+  /* Returns the dimensions of the box */
+  uint getLeftMargin();
+  uint getTopDistance();
+  uint getWidth();
+  uint getHeight();
 
-  /* Returns width of the bar */
-  int getWidth();
+  /* Gets displayed values of a person in the vector given an amount */
+  uint getDisplayHP(int person_index);
+  uint getDisplayQD(int person_index);
+  uint getDisplayMaxHP(int person_index);
+  uint getDisplayMaxQD(int person_index);
 
-  /* Sets height of the bar */
-  int setHeight(int h);
+  /* Sets displayed values of a person in the vector given an amount */
+  void setDisplayHP(uint vitality, int person_index);
+  void setDisplayQD(uint qd, int person_index);
+  void setDisplayMaxHP(uint max_vitality, int person_index);
+  void setDisplayMaxQD(uint max_qd, int person_index);
 
-  /* Sets displayed HP of person in the vector bars by given amount */
-  void setDisplayHP(int amount, int person_num);
-
-  /* Sets width of the bar */
-  int setWidth(int w);
+  /* Sets thse size of the box */
+  void setSize(QRect* box);
+  void setLeftMargin(uint left_margin);
+  void setTopDistance(uint top_distance);
+  void setWidth(uint new_width);
+  void setHeight(uint new_height);
 };
 
 #endif // BATTLESTATUSBAR_H
