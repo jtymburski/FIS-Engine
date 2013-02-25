@@ -57,7 +57,8 @@ SOURCES += \
     ./src/Game/Player/Party.cc \
     ./src/Game/Player/Person.cc \
     ./src/Game/Player/Race.cc \
-    ./src/Game/Player/Skill.cc
+    ./src/Game/Player/Skill.cc \
+    ./src/GridShifter.cc
 
 HEADERS += \
     ./include/Application.h \
@@ -101,6 +102,7 @@ HEADERS += \
     ./include/Game/Player/Party.h \
     ./include/Game/Player/Person.h \
     ./include/Game/Player/Race.h \
-    ./include/Game/Player/Skill.h
+    ./include/Game/Player/Skill.h \
+    ./include/GridShifter.h
 
 INCLUDEPATH += ./include

@@ -26,6 +26,7 @@
  */
 Tile::Tile(int width, int height, int x, int y, QWidget* parent)
 {
+  setParent(parent);
   base_set = FALSE;
   enhancer_set = FALSE;
   lower_set = FALSE;
@@ -34,8 +35,11 @@ Tile::Tile(int width, int height, int x, int y, QWidget* parent)
   passable_set = FALSE;
 
   setPassibility(TRUE);
-
-  setParent(parent);
+  tileselector = new GridShifter(this);
+  hover = FALSE;
+  connect(tileselector->getBase(),SIGNAL(textChanged(QString)),this,SLOT(setBase(QString)));
+  connect(tileselector->getLower(),SIGNAL(textChanged(QString)),this,SLOT(setLower(QString)));
+  connect(tileselector->getUpper(),SIGNAL(textChanged(QString)),this,SLOT(setUpper(QString)));
   setGeometry(x, y, width, height);
   show();
 }
@@ -95,6 +99,37 @@ void Tile::paintEvent(QPaintEvent* event)
   /* Print the upper sprite, if it exists */
   if(upper_set)
     painter.drawPixmap(0, 0, upper->getCurrentAndShift());
+
+  /* Bounding box if the mouse is hovered over the tile */
+  if(hover)
+  {
+    painter.setPen(QColor(Qt::red));
+    painter.drawRect(1,1,width()-2,height()-2);
+  }
+
+}
+
+/*
+ * Description: Mouse Press event that handles setting map tiles on the fly for
+ *              easy testing of textures in different places, this will be
+ *              removed once either Map starts working, or the Map Editor is
+ *              implemented, this is just a temporary method
+ * Inputs: QMouseEvent*
+ * Output: none
+ */
+void Tile::mousePressEvent(QMouseEvent *)
+{
+    tileselector->show();
+}
+void Tile::enterEvent(QEvent *)
+{
+    hover = TRUE;
+    update();
+}
+void Tile::leaveEvent(QEvent *)
+{
+    hover = FALSE;
+    update();
 }
 
 /* 

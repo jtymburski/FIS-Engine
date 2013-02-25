@@ -1,17 +1,6 @@
 <RCC>
   <qresource prefix="/">
     <file alias="FBS_Logo">pictures/logo.png</file>
-    <file alias="Grass_AA_A00">sprites/Map/Tiles/Ground/Grass_AA_A00.png</file>
-    <file alias="WaterTile_AB_A00">sprites/Map/Tiles/Water/WaterTile/WaterTile_AB_A00.png</file>
-    <file alias="WaterTile_BC_A00">sprites/Map/Tiles/Water/WaterTile/WaterTile_BC_A00.png</file>
-    <file alias="WaterTile_BA_A00">sprites/Map/Tiles/Water/WaterTile/WaterTile_BA_A00.png</file>
-    <file alias="WaterTile_CB_A00">sprites/Map/Tiles/Water/WaterTile/WaterTile_CB_A00.png</file>
-    <file alias="WaterTile_AC_A00">sprites/Map/Tiles/Water/WaterTile/WaterTile_AC_A00.png</file>
-    <file alias="WaterTile_AA_A00">sprites/Map/Tiles/Water/WaterTile/WaterTile_AA_A00.png</file>
-    <file alias="WaterTile_CC_A00">sprites/Map/Tiles/Water/WaterTile/WaterTile_CC_A00.png</file>
-    <file alias="WaterTile_CA_A00">sprites/Map/Tiles/Water/WaterTile/WaterTile_CA_A00.png</file>
-    <file alias="WaterTile_AD_A00">sprites/Map/Tiles/Water/WaterTile/WaterTile_AD_A00.png</file>
-    <file alias="WaterTile_BB_A00">sprites/Map/Tiles/Water/WaterTile/WaterTile_BB_A00.png</file>
     <file alias="tree_AA_A00">sprites/Map/Map_Things/tree_AA_A00.png</file>
     <file alias="tree_AB_A00">sprites/Map/Map_Things/tree_AB_A00.png</file>
     <file alias="tree_BA_A00">sprites/Map/Map_Things/tree_BA_A00.png</file>
@@ -89,5 +78,29 @@
     <file alias="A_turbo_fish">sprites/Battle/Backs/turbofish.png</file>
     <file alias="bbd_sewers2">pictures/Battle Backdrops/battlebg/battlebg2.png</file>
     <file alias="bbd_sewers">pictures/Battle Backdrops/battlebg/battlebg.png</file>
+    <file alias="GreyCliffs_AB_A00">sprites/Map/Tiles/Cliffs/GreyCliffs_AB_A00.png</file>
+    <file alias="GreyCliffs_AC_A00">sprites/Map/Tiles/Cliffs/GreyCliffs_AC_A00.png</file>
+    <file alias="GreyCliffs_BB_A00">sprites/Map/Tiles/Cliffs/GreyCliffs_BB_A00.png</file>
+    <file alias="GreyCliffs_BC_A00">sprites/Map/Tiles/Cliffs/GreyCliffs_BC_A00.png</file>
+    <file alias="GreyCliffs_CB_A00">sprites/Map/Tiles/Cliffs/GreyCliffs_CB_A00.png</file>
+    <file alias="GreyCliffs_CC_A00">sprites/Map/Tiles/Cliffs/GreyCliffs_CC_A00.png</file>
+    <file alias="DesertTile01_AA_A00">sprites/Map/Tiles/Ground/DesertTile01_AA_A00.png</file>
+    <file alias="GrassTile01_AA_A00">sprites/Map/Tiles/Ground/GrassTile01_AA_A00.png</file>
+    <file alias="RockTile01_AA_A00">sprites/Map/Tiles/Ground/RockTile01_AA_A00.png</file>
+    <file alias="WoodTile01_AA_A00">sprites/Map/Tiles/Ground/WoodTile01_AA_A00.png</file>
+    <file alias="GrassEdge01_AA_A00">sprites/Map/Tiles/Ground/GrassTile01_Edges/GrassEdge01_AA_A00.png</file>
+    <file alias="GrassEdge01_AB_A00">sprites/Map/Tiles/Ground/GrassTile01_Edges/GrassEdge01_AB_A00.png</file>
+    <file alias="GrassEdge01_AC_A00">sprites/Map/Tiles/Ground/GrassTile01_Edges/GrassEdge01_AC_A00.png</file>
+    <file alias="Bridge01_AA_A00">sprites/Map/Tiles/Scenery/Bridges/Bridge01_AA_A00.png</file>
+    <file alias="Bridge01_BA_A00">sprites/Map/Tiles/Scenery/Bridges/Bridge01_BA_A00.png</file>
+    <file alias="Bridge01_CA_A00">sprites/Map/Tiles/Scenery/Bridges/Bridge01_CA_A00.png</file>
+    <file alias="BurnDecal01_AA_A00">sprites/Map/Tiles/Scenery/Burn Decals/BurnDecal01_AA_A00.png</file>
+    <file alias="BurnDecal02_AA_A00">sprites/Map/Tiles/Scenery/Burn Decals/BurnDecal02_AA_A00.png</file>
+    <file alias="BurnDecal03_AA_A00">sprites/Map/Tiles/Scenery/Burn Decals/BurnDecal03_AA_A00.png</file>
+    <file alias="BurnDecal04_AA_A00">sprites/Map/Tiles/Scenery/Burn Decals/BurnDecal04_AA_A00.png</file>
+    <file alias="BurnDecal04_AB_A00">sprites/Map/Tiles/Scenery/Burn Decals/BurnDecal04_AB_A00.png</file>
+    <file alias="BurnDecal05_AA_A00">sprites/Map/Tiles/Scenery/Burn Decals/BurnDecal05_AA_A00.png</file>
+    <file alias="BurnDecal05_AB_A00">sprites/Map/Tiles/Scenery/Burn Decals/BurnDecal05_AB_A00.png</file>
+    <file alias="WaterTile01_AA_A00">sprites/Map/Tiles/Water/WaterTile01_AA_A00.png</file>
   </qresource>
 </RCC>

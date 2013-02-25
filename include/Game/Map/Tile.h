@@ -14,6 +14,7 @@
 #include "Game/Map/MapPerson.h"
 #include "Game/Map/MapWalkOver.h"
 #include "Game/Sprite.h"
+#include "GridShifter.h"
 
 /* STATUSOFF - Not rendered at all
  * ACTIVE - Rendered
@@ -27,6 +28,7 @@ enum ImpassableObjectState{UNSET, DECOR, PERSON};
 
 class Tile : public QWidget
 {
+    Q_OBJECT
 public:
   /* Constructor function */
   Tile(int width, int height, int x = 0, int y = 0, QWidget* parent = 0);
@@ -37,7 +39,16 @@ public:
 protected:
   void paintEvent(QPaintEvent*);
 
-private:
+  //TODO: Get rid of this once the map editor is complete
+  void mousePressEvent(QMouseEvent *);
+  void enterEvent(QEvent *);
+  void leaveEvent(QEvent *);
+
+private: 
+  //TODO: Get rid of this once the map editor is complete
+  GridShifter* tileselector;
+  bool hover;
+
   /* The lowest level of sprite on tile, passibility varies based on tile
    * (eg. Grass, lava, water) */
   Sprite* base;
@@ -72,7 +83,7 @@ private:
   /* The passibility of each direction of the tile */
   bool north_passibility,east_passibility,south_passibility,west_passibility;
 
-public:
+public slots:
   /* Animates all sprites on tile (Including thing and walkover sprites) */
   void animate();
 

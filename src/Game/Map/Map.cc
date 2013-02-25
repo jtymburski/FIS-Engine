@@ -16,7 +16,7 @@ bool turn_on_platform = 1;
 
 
 /* Constructor function */
-Map::Map(QWidget* parent)
+Map::Map(QWidget* parent) : QWidget(parent)
 {
   for(int i = 0; i < 11; i++)
   {
@@ -27,7 +27,7 @@ Map::Map(QWidget* parent)
       Tile* t = new Tile(64, 64, j*64, i*64, this);
 
       /* Setup the base sprites */
-      t->setBase(":/Grass_AA_A00");
+      t->setBase(":/GrassTile01_AA_A00");
 
       /* Setup the enhancer sprites */
       if(i > 3 && i < 8 && j > 3 && j < 8)
