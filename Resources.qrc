@@ -102,5 +102,11 @@
     <file alias="BurnDecal05_AA_A00">sprites/Map/Tiles/Scenery/Burn Decals/BurnDecal05_AA_A00.png</file>
     <file alias="BurnDecal05_AB_A00">sprites/Map/Tiles/Scenery/Burn Decals/BurnDecal05_AB_A00.png</file>
     <file alias="WaterTile01_AA_A00">sprites/Map/Tiles/Water/WaterTile01_AA_A00.png</file>
+    <file alias="GrassBeach01_AA_A00">sprites/Map/Tiles/Water/GrassBeach01/GrassBeach01_AA_A00.png</file>
+    <file alias="GrassBeach01_AB_A00">sprites/Map/Tiles/Water/GrassBeach01/GrassBeach01_AB_A00.png</file>
+    <file alias="GrassBeach01_AC_A00">sprites/Map/Tiles/Water/GrassBeach01/GrassBeach01_AC_A00.png</file>
+    <file alias="GrassEdge01_AD_A00">sprites/Map/Tiles/Ground/GrassTile01_Edges/GrassEdge01_AD_A00.png</file>
+    <file alias="GrassEdge01_BA_A00">sprites/Map/Tiles/Ground/GrassTile01_Edges/GrassEdge01_BA_A00.png</file>
+    <file alias="bbd_sewers3">pictures/Battle Backdrops/battlebg/battlebg3.png</file>
   </qresource>
 </RCC>
