@@ -23,7 +23,7 @@
  *===========================================================================*/
 FileHandler::FileHandler()
 {
-  available = TRUE;
+  available = FALSE;
   depth = 0;
 
   setEncryptionEnabled(FALSE);
@@ -39,6 +39,24 @@ FileHandler::~FileHandler()
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
+QString FileHandler::decryptLine(QString line, bool* success)
+{
+  if(success != 0)
+    *success = FALSE;
+
+  // TODO
+  return line.replace('b', "o");
+}
+
+QString FileHandler::encryptLine(QString line, bool* success)
+{
+  if(success != 0)
+    *success = FALSE;
+
+  // TODO
+  return line.replace('o', "b");
+}
+
 bool FileHandler::fileClose()
 {
   file_stream.close();
@@ -94,9 +112,35 @@ bool FileHandler::isWriteEnabled()
   return file_write;
 }
 
-QString FileHandler::readLine(bool* fail)
+QString FileHandler::readLine(bool* done, bool* success)
 {
+  std::string line;
+  
+  if(done != 0)
+    *done = FALSE;
+  if(success != 0)
+    *success = TRUE;
 
+  if(available && !file_write && file_type == REGULAR)
+  {
+    if(getline(file_stream, line))
+    {
+      if(encryption_enabled)
+      {
+        return decryptLine(QString::fromStdString(line), success);
+      }
+
+      return QString::fromStdString(line);
+    }
+
+    if(done != 0)
+      *done = TRUE;
+    return "";
+  }
+
+  if(success != 0)
+    *success = FALSE;
+  return "";
 }
 
 void FileHandler::setEncryptionEnabled(bool enable)
@@ -123,12 +167,16 @@ bool FileHandler::start()
 {
   bool success = TRUE;
 
+  /* Stop the system first if it's already running */
+  if(available)
+    success &= stop();
+
   /* Open the file stream */
   success &= fileOpen();
 
   /* Determine the class availablility based on the success status */
   if(success)
-    available = FALSE;
+    available = TRUE;
 
   return success;
 }
@@ -142,12 +190,24 @@ bool FileHandler::stop()
 
   /* If success, reopen the class availability */
   if(success)
-    available = TRUE;
+    available = FALSE;
 
   return success;
 }
 
 bool FileHandler::writeLine(QString line)
 {
+  bool success = TRUE;
 
+  if(available && file_write && file_type == REGULAR)
+  {
+    if(encryption_enabled)
+      file_stream << encryptLine(line, &success).toStdString() << std::endl;
+    else
+      file_stream << line.toStdString() << std::endl;
+
+    return success;
+  }
+
+  return FALSE;
 }

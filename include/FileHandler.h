@@ -61,6 +61,12 @@ private:
   QXmlStreamReader* xml_reader;
   QXmlStreamWriter* xml_writer;
 
+  /* Decrypt line of data */
+  QString decryptLine(QString line, bool* success = 0);
+
+  /* Encrypt line of data */
+  QString encryptLine(QString line, bool* success = 0);
+
   /* Close the file using fstream in the class */
   bool fileClose();
 
@@ -74,7 +80,7 @@ public:
   /* Returns the file type that's used for reading from and writing to */
   FileType getFileType();
 
-  /* Determines if the class is available for using (ie. no open streams) */
+  /* Determines if the class is available for using (ie. stream opened) */
   bool isAvailable();
 
   /* Determines if encryption is enabled for reading and writing */
@@ -84,7 +90,7 @@ public:
   bool isWriteEnabled();
 
   /* Reads the following line as a string. Only valid for REGULAR files */
-  QString readLine(bool* fail = 0);
+  QString readLine(bool* done = 0, bool* success = 0);
 
   /* Sets if encryption is enabled for reading and writing */
   void setEncryptionEnabled(bool enable);

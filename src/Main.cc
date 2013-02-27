@@ -4,6 +4,9 @@
 
 #include "Application.h"
 
+/* Test - to delete */
+#include "FileHandler.h"
+
 #undef main
 
 int main(int argc, char *argv[])
@@ -47,6 +50,25 @@ int main(int argc, char *argv[])
 	/* Clean up SDL */
 	Mix_CloseAudio();
 	SDL_Quit();	
+
+  /* Testing code for file handler */
+  FileHandler fh;
+  fh.setEncryptionEnabled(TRUE);
+  fh.setFilename("TEST.log");
+  fh.setWriteEnabled(TRUE);
+  fh.start();
+  fh.writeLine("Hello sunshine.");
+  fh.writeLine("Goodbye.");
+  fh.stop();
+  fh.setWriteEnabled(FALSE);
+  fh.start();
+
+  bool done = FALSE;
+
+  while(!done)
+    qDebug() << fh.readLine(&done);
+
+  fh.stop();
 
   return qt_result;
 }
