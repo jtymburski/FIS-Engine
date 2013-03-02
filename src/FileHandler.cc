@@ -18,6 +18,9 @@
  *****************************************************************************/
 #include "FileHandler.h"
 
+/* Constant Declarations */
+const uint32_t FileHandler::kKEY[] = {1073676287,27644437,2971215073,94418953};
+
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
@@ -39,13 +42,100 @@ FileHandler::~FileHandler()
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
+bool FileHandler::decryptData(uint32_t* data)
+{
+  uint32_t y, z, sum;
+  unsigned p, rounds, e;
+
+  if(data != 0)
+  {
+    rounds = kXXTEA_ROUNDS;
+    sum = rounds * kDELTA;
+    y = data[0];
+
+    do
+    {
+      e = (sum >> 2) & 3;
+
+      for (p=3; p>0; p--) 
+      {
+        z = data[p-1];
+        y = data[p] -= MX;
+      }
+
+      z = data[3];
+      y = data[0] -= MX;
+
+    } while((sum -= kDELTA) != 0);
+    
+    return TRUE;
+  }
+  return FALSE;
+}
+
 QString FileHandler::decryptLine(QString line, bool* success)
 {
-  if(success != 0)
-    *success = FALSE;
+  int length = line.length();
+  int* line_data;
 
-  // TODO
+  /* Set the success status if bool pointer is set */
+  if(success != 0)
+    *success = TRUE;
+
+  /* Get the individual character data in the string */ 
+  line_data = StringToInt(line);
+
+  uint32_t* data = new uint32_t[4];
+  data[0] = 12;
+  data[1] = 13;
+  data[2] = 14;
+  data[3] = 15;
+
+  qDebug() << encryptData(data);
+  qDebug() << data[0] << " " << data[1] << " " << data[2] << " " << data[3];
+
+  qDebug() << decryptData(data);
+  qDebug() << data[0] << " " << data[1] << " " << data[2] << " " << data[3];
+
+  /* Test code */
+  delete[] data;
+
+  /* Clean Up */
+  delete[] line_data;
+
   return line.replace('b', "o");
+}
+
+bool FileHandler::encryptData(uint32_t* data)
+{
+  uint32_t y, z, sum;
+  unsigned p, rounds, e;
+
+  if(data != 0)
+  {
+    rounds = kXXTEA_ROUNDS;
+    sum = 0;
+    z = data[3];
+
+    do
+    {
+      sum += kDELTA;
+      e = (sum >> 2) & 3;
+
+      for(p=0; p < 3; p++)
+      {
+        y = data[p+1];
+        z = data[p] += MX;
+      }
+    
+      y = data[0];
+      z = data[3] += MX;
+
+    } while(--rounds);
+    
+    return TRUE;
+  }
+  return FALSE;
 }
 
 QString FileHandler::encryptLine(QString line, bool* success)
@@ -53,7 +143,12 @@ QString FileHandler::encryptLine(QString line, bool* success)
   if(success != 0)
     *success = FALSE;
 
+  /* Get the line raw data in individual integers */
+  int* line_data = StringToInt(line);
   // TODO
+
+  encryptData(0);
+
   return line.replace('o', "b");
 }
 
@@ -81,6 +176,31 @@ bool FileHandler::fileOpen()
   qDebug() << "[ERROR] File open with \"" << file_name << "\" failed.";
   fileClose();
   return FALSE;
+}
+
+QString FileHandler::IntToString(int* data, int length)
+{
+  QString line = "";
+
+  for(int i = 0; i < length; i++)
+  {
+    char c = (char)data[i];
+    line.append(QChar(c));
+  }
+
+  return line;
+}
+
+int* FileHandler::StringToInt(QString line)
+{
+  int* line_data = new int[line.length()];
+
+  for(int i = 0; i < line.length(); i++)
+  {
+    line_data[i] = line.at(i).unicode();
+  }
+
+  return line_data;
 }
 
 /*============================================================================

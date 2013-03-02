@@ -13,6 +13,9 @@
 
 #include "Game/Frame.h"
 
+/* Constants */
+#define kDOUBLE_DIGITS 10
+
 /* Enum declaration for direction of linked list */
 enum { REVERSE, FORWARD };
 
@@ -43,9 +46,6 @@ private:
 
   /* Direction */
   bool direction;
-
-  /* ------------------ Constants ------------------ */
-  static const int kDOUBLE_DIGITS = 10;
 
 public:
   /* Inserts the image into the sprite sequence at the given position */

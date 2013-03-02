@@ -20,10 +20,19 @@
 #define FILEHANDLER_H
 
 #include <fstream>
+#include <stdint.h>
 #include <QByteArray>
 #include <QDebug>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
+
+/* Macros */
+#define MX (((z>>5^y<<2) + (y>>3^z<<4)) ^ ((sum^y) + (kKEY[(p&3)^e] ^ z)))
+
+/* Constants */
+#define DELTA 0x9e3779b9
+#define kDELTA 0x9e3779b9
+#define kXXTEA_ROUNDS 19
 
 class FileHandler
 {
@@ -61,8 +70,18 @@ private:
   QXmlStreamReader* xml_reader;
   QXmlStreamWriter* xml_writer;
 
+  /*------------------- Constants -----------------------*/
+  const static uint32_t kKEY[];
+
+private:
+    /* Decrypt raw data in an array of ints */
+  bool decryptData(uint32_t* data);
+
   /* Decrypt line of data */
   QString decryptLine(QString line, bool* success = 0);
+
+  /* Encrypt raw data in an array of ints */
+  bool encryptData(uint32_t* data);
 
   /* Encrypt line of data */
   QString encryptLine(QString line, bool* success = 0);
@@ -72,6 +91,12 @@ private:
 
   /* Open the file using fstream in the class */
   bool fileOpen();
+
+  /* Converts an array of ints to a string line, representing the characters */
+  QString IntToString(int* data, int length);
+
+  /* Convert a string to an array of ints, each representing a character */
+  int* StringToInt(QString line);
 
 public:
   /* Returns the filename that's used for reading from and writing to */
