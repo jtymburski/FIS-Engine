@@ -19,7 +19,18 @@ enum GameMode {MAP, BATTLE, VICTORY_SCREEN };
 
 class Game : public QWidget
 {
+  Q_OBJECT
+
 public:
+  /* Game Options */
+  enum BattleOption
+  {
+    SHOWLEVELS    = 1ul << 0, /* Show levels of friends/foes on Battle? */
+    SHOWENEMYINFO = 1ul << 1, /* Show enemy info on Battle Screen? */
+  };
+  Q_DECLARE_FLAGS(BattleOptions, BattleOption)
+  BattleOptions bo_flag_set;
+
   /* Constructor function */
   Game();
 
@@ -60,6 +71,11 @@ public:
 
   /* Updates the game state */
   void updateGame();
-};
 
+  /* Battle Option Flags */
+  const bool getBattleFlag(BattleOption flags);
+  void toggleBattleFlag(BattleOption flags);
+  void setBattleFlag(BattleOption flags, const bool set_value);
+};
+Q_DECLARE_OPERATORS_FOR_FLAGS(Game::BattleOptions)
 #endif // GAME_H
