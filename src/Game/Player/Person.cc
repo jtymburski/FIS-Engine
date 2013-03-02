@@ -1261,7 +1261,7 @@ void Person::setCategory(Category* new_category)
 /*
  * Description: Sets the experience of the person
  * Note: Does NOT level the character, use addExp(int) for that.
- *       Use (getLevel()) to adjust the level accordingly!
+ *       Use (setLevel()) to adjust the level accordingly!
  *
  * Inputs: uint - value of experience to be set
  * Output: none

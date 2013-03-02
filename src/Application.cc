@@ -100,6 +100,16 @@ void Application::setupBattle()
   Person* cloud_dude3 = new Person("Cloud Dude", human, bloodclaw_scion, "CYA", "POB");
   Person* ember = new Person("Ember", human, bloodclaw_scion, "CYA", "POB");
   Person* raven = new Person("Raven", human, bloodclaw_scion, "CYA", "POB");
+  main_character->setLevel(14);
+  arcadius->setLevel(121);
+  ladybear->setLevel(22);
+  aurumba->setLevel(1);
+  berfriegg->setLevel(3);
+  cloud_dude->setLevel(4);
+  cloud_dude2->setLevel(14);
+  cloud_dude3->setLevel(1);
+  ember->setLevel(14);
+  raven->setLevel(17);
 
   Sprite* main_char_fp = new Sprite(":/A_player");
   Sprite* arcadius_fp = new Sprite(":/A_arcadius");

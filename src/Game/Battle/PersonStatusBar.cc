@@ -21,25 +21,14 @@
  *         width   - width of the status bar
  *         height  - height of the status bar
  */
-PersonStatusBar::PersonStatusBar(Person* character, uint width, uint height, QWidget* parent)
+PersonStatusBar::PersonStatusBar(Person* character, uint width, uint height,
+                                 QWidget* parent)
 {
   /* Initial Preparation */
   setParent(parent);
   setCharacter(character);
   setWidth(width);
   setHeight(height);
-
-  /* Palette Set Up */
-  QPalette pal(palette());
-  pal.setColor(QPalette::Background, Qt::transparent);
-  pal.setColor(QPalette::Foreground, Qt::white);
-  setAutoFillBackground(true);
-  setPalette(pal);
-
-  /* Font setup */
-  QFont current_font = font(); //TODO: Grab fonts from?
-  current_font.setPixelSize(17);
-  setFont(current_font);
 
   setup();
   update();
@@ -110,16 +99,36 @@ void PersonStatusBar::setup()
   }
 
   /* Initial Name box set up */
-  name_box = new QRect(pad, pad, character->getName().size(), font_size);
-  setDisplayMaxHP(character->getBaseVitality());
-  setDisplayMaxQD(character->getBaseQuantumDrive());
-  setDisplayHP(character->getTempVitality());
-  setDisplayQD(character->getTempQuantumDrive());
+  //name_box = new QRect(pad, pad, character->getName().size(), font_size);
+  //setDisplayHP(character->getTempVitality());
+  //setDisplayQD(character->getTempQuantumDrive());
 
+  /* Palette& Font  Set Up */
   QPalette pal(palette());
-  name_label = new QLabel(getName(), this);
+  pal.setColor(QPalette::Background, Qt::transparent);
+  pal.setColor(QPalette::Foreground, Qt::white);
+  setAutoFillBackground(true);
+  setPalette(pal);
+  QFont current_font = font(); //TODO: Grab fonts from?
+  current_font.setPixelSize(17);
+  setFont(current_font);
+
+  name_label = new QLabel(character->getName(), this);
   name_label->move(5,1);
   name_label->setPalette(pal);
+
+  // TODO if (show level enabled)
+  pal.setColor(QPalette::Foreground, Qt::blue);
+  setPalette(pal);
+  current_font.setPixelSize(17);
+  setFont(current_font);
+
+  QString level;
+  level.setNum(character->getLevel());
+  level_label = new QLabel(level, this);
+  level_label->move(getWidth() - (level.size() * 10),1);
+  level_label->setPalette(pal);
+  // TODO end if
 
   /* HP & QD */
   uint left_d = pad;
@@ -129,6 +138,7 @@ void PersonStatusBar::setup()
 
   health_bar = new QRect(left_d, top_d, width, height);
   health_outline = new QRect(left_d, top_d, width, height);
+  health_label = new QLabel(getDisplayHP());
   health_grad = new QLinearGradient(QPointF(0,0), QPointF(width,height));
   health_grad->setColorAt(0, QColor("#E30004"));
   health_grad->setColorAt(1, QColor("#6E0002"));
@@ -140,19 +150,6 @@ void PersonStatusBar::setup()
   qd_grad = new QLinearGradient(QPointF(0,0), QPointF(width,height));
   qd_grad->setColorAt(0, QColor("#0C2B36"));
   qd_grad->setColorAt(1, QColor("#2D9FC4"));
-
-
-}
-
-/*
- * Description: Returs the name of the character for the status bar
- *
- * Inputs: none
- * Output: QString - name of the character
- */
-QString PersonStatusBar::getName()
-{
-  return name;
 }
 
 /*
@@ -164,51 +161,24 @@ QString PersonStatusBar::getName()
 void PersonStatusBar::setCharacter(Person* character)
 {
   this->character = character;
-  setName(character->getName());
 }
 
-/*
- * Description: Gets the current health displayed on the status bar
- *
- * Inputs: none
- * Output: uint - value of health
- */
-uint PersonStatusBar::getDisplayHP()
+QString PersonStatusBar::getDisplayHP()
 {
-  return health;
+  QString display_hp;
+  return display_hp.setNum(character->getVitality());
 }
 
-/*
- * Description: Gets the currently displayed quantum drive of the status bar
- *
- * Inputs: none
- * Output: uint - value of quantum drive
- */
-uint PersonStatusBar::getDisplayQD()
+QString PersonStatusBar::getDisplayQD()
 {
-  return qd;
+  QString display_qd;
+  return display_qd.setNum(character->getQuantumDrive());
 }
 
-/*
- * Description: Gets the currently displayed max HP of the status bar
- *
- * Inputs: none
- * Output: uint - value of max health
- */
-uint PersonStatusBar::getDisplayMaxHP()
+QString PersonStatusBar::getDisplayLevel()
 {
-  return health_max;
-}
-
-/*
- * Description: Gets the currently displayed max quantum drive of the status bar
- *
- * Inputs: none
- * Output: uint - value of max quantum drive
- */
-uint PersonStatusBar::getDisplayMaxQD()
-{
-  return qd_max;
+ QString display_level;
+ return display_level.setNum(character->getLevel());
 }
 
 /*
@@ -234,63 +204,6 @@ uint PersonStatusBar::getHeight()
 }
 
 /*
- * Description: Sets the display HP of the status bar
- *
- * Inputs: uint - new displayed HP value
- * Output: none
- */
-void PersonStatusBar::setDisplayHP(uint amount)
-{
-  health = amount;
-  update();
-}
-
-/*
- * Description: Sets the display max HP of the status bar
- *
- * Inputs: uint - new displayed max HP value
- * Output: none
- */
-void PersonStatusBar::setDisplayMaxHP(uint amount)
-{
-  health_max = amount;
-}
-
-/*
- * Description: Sets the display QD of the status bar
- *
- * Inputs: uint - new displayed QD value
- * Output: none
- */
-void PersonStatusBar::setDisplayQD(uint amount)
-{
-  qd = amount;
-  update();
-}
-
-/*
- * Description: Sets the display max QD of the status bar
- *
- * Inputs: uint - new displayed max QD value
- * Output: none
- */
-void PersonStatusBar::setDisplayMaxQD(uint amount)
-{
-  qd_max = amount;
-}
-
-/*
- * Description: Sets the name to be displayed on the label
- *
- * Inputs: QString - name of the character displayed
- * Output: none
- */
-void PersonStatusBar::setName(QString name)
-{
-  this->name = name;
-}
-
-/*
  * Description: Sets the width of the status bar
  *
  * Inputs: uint - new width of the bar
@@ -309,5 +222,6 @@ void PersonStatusBar::setWidth(uint new_value)
  */
 void PersonStatusBar::setHeight(uint new_value)
 {
-  (new_value < kMAX_HEIGHT) ? (bar_height = new_value) : (bar_height = kMAX_HEIGHT);
+  (new_value < kMAX_HEIGHT) ? (bar_height = new_value) :
+                              (bar_height = kMAX_HEIGHT);
 }

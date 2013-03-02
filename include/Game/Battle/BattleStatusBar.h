@@ -51,18 +51,6 @@ public:
   uint getWidth();
   uint getHeight();
 
-  /* Gets displayed values of a person in the vector given an amount */
-  uint getDisplayHP(int person_index);
-  uint getDisplayQD(int person_index);
-  uint getDisplayMaxHP(int person_index);
-  uint getDisplayMaxQD(int person_index);
-
-  /* Sets displayed values of a person in the vector given an amount */
-  void setDisplayHP(uint vitality, int person_index);
-  void setDisplayQD(uint qd, int person_index);
-  void setDisplayMaxHP(uint max_vitality, int person_index);
-  void setDisplayMaxQD(uint max_qd, int person_index);
-
   /* Sets thse size of the box */
   void setSize(QRect* box);
   void setLeftMargin(uint left_margin);

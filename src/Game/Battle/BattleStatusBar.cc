@@ -89,62 +89,6 @@ uint BattleStatusBar::getWidth()
   return width;
 }
 
-uint BattleStatusBar::getDisplayHP(int person_index)
-{
-  if (person_index <= bars.size())
-    return bars.at(person_index)->getDisplayHP();
-  else
-    return bars.at(bars.size() - 1)->getDisplayHP();
-}
-
-uint BattleStatusBar::getDisplayMaxHP(int person_index)
-{
-  if (person_index <= bars.size())
-    return bars.at(person_index)->getDisplayMaxHP();
-  else
-    return bars.at(bars.size() - 1)->getDisplayMaxHP();
-}
-
-uint BattleStatusBar::getDisplayQD(int person_index)
-{
-  if (person_index <= bars.size())
-    return bars.at(person_index)->getDisplayQD();
-  else
-    return bars.at(bars.size() - 1)->getDisplayQD();
-}
-
-uint BattleStatusBar::getDisplayMaxQD(int person_index)
-{
-  if (person_index <= bars.size())
-    return bars.at(person_index)->getDisplayMaxQD();
-  else
-    return bars.at(bars.size() - 1)->getDisplayMaxQD();
-}
-
-void BattleStatusBar::setDisplayHP(uint vitality, int person_index)
-{
-  if (person_index <= bars.size())
-      bars.at(person_index)->setDisplayHP(vitality);
-}
-
-void BattleStatusBar::setDisplayMaxHP(uint max_vitality, int person_index)
-{
-  if (person_index <= bars.size())
-      bars.at(person_index)->setDisplayMaxHP(max_vitality);
-}
-
-void BattleStatusBar::setDisplayQD(uint qd, int person_index)
-{
-  if (person_index <= bars.size())
-      bars.at(person_index)->setDisplayQD(qd);
-}
-
-void BattleStatusBar::setDisplayMaxQD(uint max_qd, int person_index)
-{
-  if (person_index <= bars.size())
-      bars.at(person_index)->setDisplayMaxQD(max_qd);
-}
-
 void BattleStatusBar::setSize(QRect* box)
 {
   setLeftMargin(box->left());

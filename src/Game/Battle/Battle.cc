@@ -81,6 +81,11 @@ Battle::Battle(Party* p_friends, Party* p_foes, QWidget* pointer)
   setFriends(p_friends);
   setFoes(p_foes);
 
+  for (uint i = 0; i < p_friends->getPartySize(); i++)
+      p_friends->getMember(i)->setTemporaryStats();
+  for (uint i = 0; i < p_foes->getPartySize(); i++)
+      p_foes->getMember(i)->setTemporaryStats();
+
   /* Basic settings for battle window sizing and backdrops */
   setMaxWidth(1216);  // TODO: Obtain from options [02-24-13]
   setMaxHeight(704);  // TODO: Obtain from options [02-24-13]
