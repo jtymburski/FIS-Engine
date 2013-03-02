@@ -229,6 +229,12 @@ void Battle::keyPressEvent(QKeyEvent* event)
     case Qt::Key_3:
       battle_bg->load(":/bbd_sewers3");
       break;
+    case Qt::Key_4:
+      friends->getMember(0)->setVitality(friends->getMember(0)->getVitality() - 5);
+      break;
+    case Qt::Key_5:
+      friends->getMember(1)->setQuantumDrive(friends->getMember(1)->getQuantumDrive() - 5);
+      break;
     default:
       break;
   }

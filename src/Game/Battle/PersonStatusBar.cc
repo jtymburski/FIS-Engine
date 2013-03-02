@@ -38,8 +38,7 @@ PersonStatusBar::PersonStatusBar(Person* character, uint width, uint height, QWi
 
   /* Font setup */
   QFont current_font = font(); //TODO: Grab fonts from?
-  current_font.setPixelSize(18);
-  current_font.setWeight(QFont::Bold);
+  current_font.setPixelSize(17);
   setFont(current_font);
 
   setup();
@@ -70,8 +69,24 @@ void PersonStatusBar::paintEvent(QPaintEvent*)
   for (int i = 0; i < 5; i++)
       painter.drawRect(*status_thumbs.at(i));
 
+  /* Draw HP & QD Bars */
+  painter.setPen(QColor(Qt::black));
+  painter.setBrush(Qt::transparent);
+  painter.drawRect(*health_outline);
+  painter.setPen(Qt::transparent);
+  painter.setBrush(*health_grad);
+  float pc = character->getVitality() * 1.0 / character->getTempVitality();
+  health_bar->setWidth(health_outline->width() * pc);
+  painter.drawRect(*health_bar);
 
-
+  painter.setPen(QColor(Qt::black));
+  painter.setBrush(Qt::transparent);
+  painter.drawRect(*qd_outline);
+  painter.setPen(Qt::transparent);
+  painter.setBrush(*qd_grad);
+  pc = character->getQuantumDrive() * 1.0 / character->getTempQuantumDrive();
+  qd_bar->setWidth(qd_outline->width() * pc);
+  painter.drawRect(*qd_bar);
 }
 
 /*
@@ -82,20 +97,20 @@ void PersonStatusBar::paintEvent(QPaintEvent*)
  */
 void PersonStatusBar::setup()
 {
-  /* Create bounding boxes for status thumbs */
-  uint font_size = 12;
-  uint pad = 8;
-  uint length  = (getHeight() / 4) - 4;
-  uint spacing = 5;
+  uint font_size = 17;   /* FONT SIZE DETERMINATION? */
+  uint pad = 5;                         /* L & T Padding */
+  uint length  = (getHeight() / 4) - 6; /* Length of the status boxes */
+  uint spacing = 4;                     /* Spacing of the Status Boxes */
 
+  /* Set up the spacing on the status boxes */
   for (uint i = 0; i < 5; i++) //TODO: STATUS FROM PERSON [02-23-13]
   {
     uint left_d  = i * (length + spacing) + pad;
-    status_thumbs.push_back(new QRect(left_d, pad + length, length, length));
+    status_thumbs.push_back(new QRect(left_d, pad + font_size, length, length));
   }
 
   /* Initial Name box set up */
-  //name_box = new QRect(pad, pad, character->getName().size(), font_size);
+  name_box = new QRect(pad, pad, character->getName().size(), font_size);
   setDisplayMaxHP(character->getBaseVitality());
   setDisplayMaxQD(character->getBaseQuantumDrive());
   setDisplayHP(character->getTempVitality());
@@ -106,13 +121,27 @@ void PersonStatusBar::setup()
   name_label->move(5,1);
   name_label->setPalette(pal);
 
-  /* HP */
-  health_bar = new QRect();
-  health_outline = new QRect();
+  /* HP & QD */
+  uint left_d = pad;
+  uint top_d  = 2 * pad + length + font_size;
+  uint width  = getWidth() - 2 * pad;
+  uint height = getHeight() / 4 - 6;
 
-  /* QD */
-  qd_bar = new QRect();
-  qd_outline = new QRect();
+  health_bar = new QRect(left_d, top_d, width, height);
+  health_outline = new QRect(left_d, top_d, width, height);
+  health_grad = new QLinearGradient(QPointF(0,0), QPointF(width,height));
+  health_grad->setColorAt(0, QColor("#E30004"));
+  health_grad->setColorAt(1, QColor("#6E0002"));
+
+  top_d += pad + height;
+
+  qd_bar = new QRect(left_d, top_d, width, height);
+  qd_outline = new QRect(left_d, top_d, width, height);
+  qd_grad = new QLinearGradient(QPointF(0,0), QPointF(width,height));
+  qd_grad->setColorAt(0, QColor("#0C2B36"));
+  qd_grad->setColorAt(1, QColor("#2D9FC4"));
+
+
 }
 
 /*

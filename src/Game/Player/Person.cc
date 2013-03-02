@@ -1857,6 +1857,7 @@ void Person::setVitality(uint value)
 {
   (value <= cat->getMaxVitality()) ? (vitality = value)
                   : (vitality = cat->getMaxVitality());
+
 }
 
 /*

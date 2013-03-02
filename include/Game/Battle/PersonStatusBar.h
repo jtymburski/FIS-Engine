@@ -60,6 +60,10 @@ private:
   QRect* qd_bar;
   QRect* name_box;
 
+  /* Gradients */
+  QLinearGradient* health_grad;
+  QLinearGradient* qd_grad;
+
   /* Person's name */
   QString name;
 
