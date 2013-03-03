@@ -75,35 +75,44 @@ bool FileHandler::decryptData(uint32_t* data)
 
 QString FileHandler::decryptLine(QString line, bool* success)
 {
-  int length = line.length();
+  uint32_t* compressed_data;
+  int compressed_length;
+  uint32_t decrypt_data [4];
   int* line_data;
+  int line_length;
+  QString decrypted_line;
 
   /* Set the success status if bool pointer is set */
   if(success != 0)
     *success = TRUE;
 
-  /* Get the individual character data in the string */ 
-  line_data = StringToInt(line);
+  /* Convert line data into long to be decrypted */
+  line_length = stringToInt(line, &line_data);
+  compressed_data = intToLong(line_data, line_length);
+  compressed_length = line_length / 4;
 
-  uint32_t* data = new uint32_t[4];
-  data[0] = 12;
-  data[1] = 13;
-  data[2] = 14;
-  data[3] = 15;
+  /* Begin to decrypt the data, reverse access (opposite of encrypt) */
+  for(int i = compressed_length - 1; i >= 0; i--)
+  {
+    for(int j = 0; j < 4; j++)
+      decrypt_data[j] = compressed_data[wrapNumber(i+j, compressed_length)];
 
-  qDebug() << encryptData(data);
-  qDebug() << data[0] << " " << data[1] << " " << data[2] << " " << data[3];
+    decryptData(decrypt_data); // TODO: Has return
+   
+    for(int j = 0; j < 4; j++)
+      compressed_data[wrapNumber(i+j, compressed_length)] = decrypt_data[j];
+  }
 
-  qDebug() << decryptData(data);
-  qDebug() << data[0] << " " << data[1] << " " << data[2] << " " << data[3];
-
-  /* Test code */
-  delete[] data;
+  /* Convert the line back to a string */
+  delete[] line_data;
+  line_data = longToInt(compressed_data, compressed_length);
+  decrypted_line = intToString(line_data, line_length, TRUE);
 
   /* Clean Up */
+  delete[] compressed_data;
   delete[] line_data;
 
-  return line.replace('b', "o");
+  return decrypted_line;
 }
 
 bool FileHandler::encryptData(uint32_t* data)
@@ -140,16 +149,44 @@ bool FileHandler::encryptData(uint32_t* data)
 
 QString FileHandler::encryptLine(QString line, bool* success)
 {
+  uint32_t* compressed_data;
+  int compressed_length;
+  uint32_t encrypt_data [4];
+  int* line_data;
+  int line_length;
+  QString encrypted_line;
+
+  /* Set the success status if bool pointer is set */
   if(success != 0)
-    *success = FALSE;
+    *success = TRUE;
 
-  /* Get the line raw data in individual integers */
-  int* line_data = StringToInt(line);
-  // TODO
+  /* Convert line data into long to be encrypted */
+  line_length = stringToInt(line, &line_data, TRUE);
+  compressed_data = intToLong(line_data, line_length);
+  compressed_length = line_length / 4;
 
-  encryptData(0);
+  /* Begin to encrypt the data, reverse access (opposite of encrypt) */
+  for(int i = 0; i < compressed_length; i++)
+  {
+    for(int j = 0; j < 4; j++)
+      encrypt_data[j] = compressed_data[wrapNumber(i+j, compressed_length)];
 
-  return line.replace('o', "b");
+    encryptData(encrypt_data); // TODO: Has return
+   
+    for(int j = 0; j < 4; j++)
+      compressed_data[wrapNumber(i+j, compressed_length)] = encrypt_data[j];
+  }
+
+  /* Convert the line back to a string */
+  delete[] line_data;
+  line_data = longToInt(compressed_data, compressed_length);
+  encrypted_line = intToString(line_data, line_length);
+
+  /* Clean Up */
+  delete[] compressed_data;
+  delete[] line_data;
+
+  return encrypted_line;
 }
 
 bool FileHandler::fileClose()
@@ -177,30 +214,122 @@ bool FileHandler::fileOpen()
   fileClose();
   return FALSE;
 }
-
-QString FileHandler::IntToString(int* data, int length)
+  
+uint32_t* FileHandler::intToLong(int* line_data, int length)
 {
-  QString line = "";
+  /* Only move forward if the data is legitimate */
+  if(line_data != 0 && length > 0 && length % 4 == 0)
+  {
+    uint32_t* long_data = new uint32_t[length / kASCII_IN_LONG];
 
+    /* Convert all ints into length / 4 longs */
+    for(int i = 0; i < length / kASCII_IN_LONG; i++)
+    {
+      long_data[i] = 0;
+
+      /* Run through the sets of 4 ASCII in the int array */
+      for(int j = 0; j < kASCII_IN_LONG; j++)
+      {
+        long_data[i] = long_data[i] << 8;
+        long_data[i] |= line_data[i*kASCII_IN_LONG + j] & kMAX_ASCII;
+      }
+    }
+
+    return long_data;
+  }
+  return 0;
+}
+
+QString FileHandler::intToString(int* line_data, int length, bool decrypting)
+{
+  bool end_reached = FALSE;
+  QString line = "";
+  int line_count = length - 1;
+
+  /* Check for padding at the end, only if the data was encrypted */
+  if(encryption_enabled && decrypting)
+  {
+    do
+    {
+      if(line_data[line_count] >= kPADDING_ASCII)
+        line_data[line_count] = kMAX_ASCII+1;
+      else
+        end_reached = TRUE;
+    } while(!end_reached && --line_count >= 0);
+  }
+
+  /* Get the string from the integer data, remove padding if needed */
   for(int i = 0; i < length; i++)
   {
-    char c = (char)data[i];
-    line.append(QChar(c));
+    if(line_data[i] <= kMAX_ASCII)
+    {
+      char c = (char)line_data[i];
+      line.append(QChar(c));
+    }
   }
 
   return line;
 }
 
-int* FileHandler::StringToInt(QString line)
+int* FileHandler::longToInt(uint32_t* line_data, int length)
 {
-  int* line_data = new int[line.length()];
-
-  for(int i = 0; i < line.length(); i++)
+  /* Only move forward if the data is legitimate */
+  if(line_data != 0 && length > 0)
   {
-    line_data[i] = line.at(i).unicode();
+    int* int_data = new int[length * kASCII_IN_LONG];
+
+    /* Convert all longs into an array of ints */
+    for(int i = 0; i < length; i++)
+    {
+      uint32_t temp_long = line_data[i];
+
+      /* Run through the one long and convert to 4 ints */
+      for(int j = kASCII_IN_LONG - 1; j >= 0; j--)
+      {
+        int_data[i*kASCII_IN_LONG + j] = temp_long & 0xFF;
+        temp_long = temp_long >> 8;
+      }
+    }
+
+    return int_data;
+  }
+  return 0;
+}
+
+int FileHandler::stringToInt(QString line, int** line_data, bool encrypting)
+{
+  int padding_length = 0;
+  int final_length = line.length();
+
+  /* Check if additional padding is needed, only if data will be encrypted */
+  if(encryption_enabled && encrypting)
+  {
+    if(final_length < kMIN_LINE)
+      padding_length = kMIN_LINE - final_length;
+    else if(final_length % kASCII_IN_LONG != 0)
+      padding_length = kASCII_IN_LONG - final_length % kASCII_IN_LONG;
   }
 
-  return line_data;
+  /* Add the additional padding */
+  for(int i = 0; i < padding_length; i++)
+    line.append(QChar(kPADDING_ASCII + i));
+  final_length += padding_length;
+
+  /* Allocate appropriate space */
+  *line_data = new int[final_length];
+
+  /* Convert the line */
+  for(int i = 0; i < final_length; i++)
+    (*line_data)[i] = line.at(i).unicode();
+
+  return final_length;
+}
+
+int FileHandler::wrapNumber(int value, int limit)
+{
+  if(value >= limit)
+    return value - (value / limit) * limit;
+  return value;
 }
 
 /*============================================================================
