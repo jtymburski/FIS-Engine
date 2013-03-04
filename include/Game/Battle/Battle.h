@@ -108,7 +108,7 @@ private:
   /* Pointer to the battle info bar */
   BattleInfoBar* info_bar;
 
-  /* Person 1's Status bar */
+  /* Battle Status bar */
   BattleStatusBar* status_bar;
 
   /* The Battle menu pointer (for selecting actions), off by default */

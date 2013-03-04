@@ -1,18 +1,15 @@
-/******************************************************************************
-* Class Name: PersonStatusBar Implementation
-* Date Created: December 2nd, 2012
-* Inheritance: 
-* Description: Person status bar displays five thumbnails displaying the
-*              ailments or buffs affecting the character, her health current
-*              and maximum values, her quantum drive curretn and maximum values
-*              and the character's name.
-*
-* Notes [1]: In Battle, Base Stats are the curent maximum values, and Temp
-*            stats are current value, and the Normal stat set act as the Normal
-*            Maximum values (without buffs and debuffs, etc.)
-******************************************************************************/
+/*******************************************************************************
+* Class Name: Status Bar
+* Date Created: Saturday, March 2nd, 2013
+* Inheritance: Parent class: QWidget (Contained within BattleStatusBar)
+* Description: Superclass of Enemy and Person Status Class
+*******************************************************************************/
 
 #include "Game/Battle/PersonStatusBar.h"
+
+/*============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *===========================================================================*/
 
 /*
  * Description: Constructs a PersonStatusBar object
@@ -22,134 +19,66 @@
  *         height  - height of the status bar
  */
 PersonStatusBar::PersonStatusBar(Person* character, uint width, uint height,
-                                 QWidget* parent)
+                           QWidget* parent)
 {
-  /* Initial Preparation */
   setParent(parent);
   setCharacter(character);
   setWidth(width);
   setHeight(height);
-
   setup();
-  update();
 }
 
 /*
- * Description: Annihilates a PersonStatusBar
+ * Description: Annihilates a PersonStatusBar object
  */
-PersonStatusBar::~PersonStatusBar()
+ PersonStatusBar::~PersonStatusBar()
 {
-    // TODO FINISH DESTRUCTOR [02-23-13]
+  delete character;
+  delete level_label;
+  delete health_label;
+  delete health_grad;
+  delete health_outline;
+  delete health_bar;
+  character = NULL;
+  level_label = NULL;
+  health_label = NULL;
+  health_grad = NULL;
+  health_outline = NULL;
+  health_bar = NULL;
+  for (int i = 0; i < status_thumb_sprites.size(); i++)
+  {
+      delete status_thumb_sprites.at(i);
+      delete status_thumbs.at(i);
+      status_thumb_sprites[i] = NULL;
+      status_thumbs[i] = NULL;
+  }
 }
 
-void PersonStatusBar::paintEvent(QPaintEvent*)
-{
-  QPainter painter(this);
-  painter.setPen(QColor(Qt::black));
-  painter.setBrush(QColor(Qt::black));
-  painter.setOpacity(0.70);
+/*============================================================================
+ * FUNCTIONS
+ *===========================================================================*/
 
-  /* Temp draw person status bar */
-  // painter.drawRect(0,0,bar_width,bar_height);
-
-  /* Temp draw Status thumbs */
-  painter.setOpacity(0.80);
-  painter.setBrush(QColor(Qt::red));
-  for (int i = 0; i < 5; i++)
-      painter.drawRect(*status_thumbs.at(i));
-
-  /* Draw HP & QD Bars */
-  painter.setPen(QColor(Qt::black));
-  painter.setBrush(Qt::transparent);
-  painter.drawRect(*health_outline);
-  painter.setPen(Qt::transparent);
-  painter.setBrush(*health_grad);
-  float pc = character->getVitality() * 1.0 / character->getTempVitality();
-  health_bar->setWidth(health_outline->width() * pc);
-  painter.drawRect(*health_bar);
-
-  painter.setPen(QColor(Qt::black));
-  painter.setBrush(Qt::transparent);
-  painter.drawRect(*qd_outline);
-  painter.setPen(Qt::transparent);
-  painter.setBrush(*qd_grad);
-  pc = character->getQuantumDrive() * 1.0 / character->getTempQuantumDrive();
-  qd_bar->setWidth(qd_outline->width() * pc);
-  painter.drawRect(*qd_bar);
-}
-
-/*
- * Description: Initial set up code for bounding boxes, etc.
- *
- * Inputs: none
- * Output: none
- */
 void PersonStatusBar::setup()
 {
-  uint font_size = 17;   /* FONT SIZE DETERMINATION? */
-  uint pad = 5;                         /* L & T Padding */
-  uint length  = (getHeight() / 4) - 6; /* Length of the status boxes */
-  uint spacing = 4;                     /* Spacing of the Status Boxes */
-
-  /* Set up the spacing on the status boxes */
-  for (uint i = 0; i < 5; i++) //TODO: STATUS FROM PERSON [02-23-13]
-  {
-    uint left_d  = i * (length + spacing) + pad;
-    status_thumbs.push_back(new QRect(left_d, pad + font_size, length, length));
-  }
-
-  /* Initial Name box set up */
-  //name_box = new QRect(pad, pad, character->getName().size(), font_size);
-  //setDisplayHP(character->getTempVitality());
-  //setDisplayQD(character->getTempQuantumDrive());
-
-  /* Palette& Font  Set Up */
+  /* Palette & Font Setup */
   QPalette pal(palette());
   pal.setColor(QPalette::Background, Qt::transparent);
   pal.setColor(QPalette::Foreground, Qt::white);
   setAutoFillBackground(true);
   setPalette(pal);
-  QFont current_font = font(); //TODO: Grab fonts from?
+  QFont current_font = font(); //TODO: Grab fonts from? [02-03-13]
   current_font.setPixelSize(17);
   setFont(current_font);
 
-  name_label = new QLabel(character->getName(), this);
-  name_label->move(5,1);
-  name_label->setPalette(pal);
-
-  // TODO if (show level enabled)
-  pal.setColor(QPalette::Foreground, Qt::blue);
-  setPalette(pal);
+  // TODO -- IF show levels enabled - [03-03-13]
   current_font.setPixelSize(17);
   setFont(current_font);
 
-  QString level;
-  level.setNum(character->getLevel());
-  level_label = new QLabel(level, this);
-  level_label->move(getWidth() - (level.size() * 10),1);
+  level_label = new QLabel(getDisplayLevel(), this);
   level_label->setPalette(pal);
-  // TODO end if
+  // END IF
 
-  /* HP & QD */
-  uint left_d = pad;
-  uint top_d  = 2 * pad + length + font_size;
-  uint width  = getWidth() - 2 * pad;
-  uint height = getHeight() / 4 - 6;
 
-  health_bar = new QRect(left_d, top_d, width, height);
-  health_outline = new QRect(left_d, top_d, width, height);
-  health_label = new QLabel(getDisplayHP());
-  health_grad = new QLinearGradient(QPointF(0,0), QPointF(width,height));
-  health_grad->setColorAt(0, QColor("#E30004"));
-  health_grad->setColorAt(1, QColor("#6E0002"));
-
-  top_d += pad + height;
-
-  qd_bar = new QRect(left_d, top_d, width, height);
-  qd_outline = new QRect(left_d, top_d, width, height);
-  qd_grad = new QLinearGradient(QPointF(0,0), QPointF(width,height));
-  qd_grad->setColorAt(0, QColor("#0C2B36"));
-  qd_grad->setColorAt(1, QColor("#2D9FC4"));
 }
 
 /*
@@ -158,27 +87,33 @@ void PersonStatusBar::setup()
  * Inputs: Person* - character to set members to
  * Output: none
  */
-void PersonStatusBar::setCharacter(Person* character)
+void PersonStatusBar::setCharacter(Person* new_character)
 {
-  this->character = character;
+  character = new_character;
 }
 
+/*
+ * Description: Gets a QString of the displayed HP value.
+ *
+ * Inputs: none
+ * Output: QString - string of the vitality uint.
+ */
 QString PersonStatusBar::getDisplayHP()
 {
   QString display_hp;
   return display_hp.setNum(character->getVitality());
 }
 
-QString PersonStatusBar::getDisplayQD()
-{
-  QString display_qd;
-  return display_qd.setNum(character->getQuantumDrive());
-}
-
+/*
+ * Description: Gets a QString of the displayed level value.
+ *
+ * Inputs: none
+ * Output: QString - string of the level uint.
+ */
 QString PersonStatusBar::getDisplayLevel()
 {
- QString display_level;
- return display_level.setNum(character->getLevel());
+  QString display_level;
+  return display_level.setNum(character->getLevel());
 }
 
 /*
@@ -225,3 +160,6 @@ void PersonStatusBar::setHeight(uint new_value)
   (new_value < kMAX_HEIGHT) ? (bar_height = new_value) :
                               (bar_height = kMAX_HEIGHT);
 }
+
+
+

@@ -82,7 +82,7 @@ public:
     NIHILDEFBUFF      = 1 << 15,
     LIMBERTUDEBUFF    = 1 << 16,
     UNBEARBUFF        = 1 << 17,
-    MOMENTUMBUFF       = 1 << 18,
+    MOMENTUMBUFF      = 1 << 18,
     VITALITYBUFF      = 1 << 19,
     QDBUFF            = 1 << 20,
     HEALTHBUFF        = 1 << 21,
@@ -124,6 +124,8 @@ private:
   static const uint kMAX_EXPERIENCE  = 1000000000; /* Billion */
   static const uint kMAX_EXP_DROP    =    1000000; /* Million */
   static const uint kMAX_CREDIT_DROP =   10000000; /* Ten Million */
+  static const uint kMAX_AILMENTS    =          5;
+  static const uint kMAX_AIL_DURA    =         20;
 
   /* Set up normal stats for constructor */
   void setupStats();
@@ -351,7 +353,8 @@ private:
   QVector<uint>  skill_available;
 
   /* List of status ailment strings */
-  QVector<QString> status_ailment_list;
+  // static const QVector<QString> status_ailment_list = {"Hey", "Dude"};
+  QVector<QString> inflicted_ailments;
 
   /* The person's name */
   QString name;
@@ -373,6 +376,34 @@ private:
   Sprite* third_person;
 
 public:
+  /* Inflicts a Status ailment */
+  const bool inflictAilment(QString ailment_name, short max);
+
+  /* Converts a StatusAilment to a String */
+  static QString ailmentToString(StatusAilment flag);
+
+  /* Converts a Buff to a String */
+  static QString buffToString(StatusBuff flag);
+
+  /* Converts a String to a StatusAilment enum */
+  static StatusAilment stringToAilment(QString ailment);
+
+  /* Converts a String to a StatusAilment buff */
+ static StatusBuff stringToBuff(QString buff);
+
+  /* Removes a Status ailment */
+  const bool removeAilment(QString ailment_name);
+  const bool removeAilment(uint index);
+
+  /* Returns a String of all the status ailments currently inflicted */
+  QVector<QString> getAilmentList();
+
+  /* Returns a Vector of the durations of inflicted status ailments */
+  QVector<short> getAilmentDuration();
+
+  /* Returns a vector of the maximum durations of inflicted status ailments */
+  QVector<short> getMaxAilmentDurations();
+
   /* Adds experience of a given amount */
   void addExperience(uint n);
 
@@ -749,10 +780,10 @@ public:
   void setNihilFortitude(uint value);
 
   /* Sets the health stat */
-  void setVitality(uint value);
+  void setVitality(int value);
 
   /* Sets the power points (shown as percentage) */
-  void setQuantumDrive(uint value);
+  void setQuantumDrive(int value);
 
   /* Sets the speed stat */
   void setMomentum(uint value);

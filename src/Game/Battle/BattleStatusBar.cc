@@ -20,13 +20,15 @@
  *         uint width - full useable width of the bar
  *         uint height - full useable height of the bar
  */
-BattleStatusBar::BattleStatusBar(Party* persons, uint width, uint height, QWidget* parent)
+BattleStatusBar::BattleStatusBar(Party* persons, uint width,
+                                 uint height, QWidget* parent)
 {
   setParent(parent);
   setWidth(width);
   setHeight(height);
   for (uint i = 0; i < persons->getPartySize(); i++)
     addPerson(persons->getMember(i), i);
+
   update();
 }
 
@@ -35,25 +37,18 @@ BattleStatusBar::BattleStatusBar(Party* persons, uint width, uint height, QWidge
  */
 BattleStatusBar::~BattleStatusBar()
 {
-    for (int i = 0; i < bars.size(); i++)
-    {
-        delete bars.at(i);
-        bars[i] = NULL;
-    }
-    for (int i = 0; i < boxes.size(); i++)
-    {
-        delete boxes.at(i);
-        boxes[i] = NULL;
-    }
-    bars.clear();
-    boxes.clear();
-}
-
-/*
- * Description: Paint even for the BattleStatusBar class
- */
-void BattleStatusBar::paintEvent(QPaintEvent*)
-{
+  for (int i = 0; i < bars.size(); i++)
+  {
+    delete bars.at(i);
+    bars[i] = NULL;
+  }
+  for (int i = 0; i < boxes.size(); i++)
+  {
+    delete boxes.at(i);
+    boxes[i] = NULL;
+  }
+  boxes.clear();
+  bars.clear();
 }
 
 /*
@@ -63,14 +58,21 @@ void BattleStatusBar::paintEvent(QPaintEvent*)
  *            uint - index of the person to be added
  * Output: none
  */
-void BattleStatusBar::addPerson(Person* character, uint person_index)
+void BattleStatusBar::addPerson(Person* character, int person_index)
 {
-  uint left_m = (getWidth() / 5) * person_index;
-  uint width  = getWidth() / 5;
-  uint height = getHeight();
-  boxes.push_back(new QRect(left_m, 0, width, height));
-  bars.push_back(new PersonStatusBar(character,width,height,this));
-  bars.at(person_index)->setGeometry(*boxes.at(person_index));
+  if (person_index < 0)
+  {
+    bars.push_back(new EnemyStatusBar(character,width,height,this));
+  }
+  else
+  {
+    uint left_d = (getWidth() / 5) * person_index;
+    uint width  = getWidth() / 5;
+    uint height = getHeight();
+    boxes.push_back(new QRect(left_d, 0, width, height));
+    bars.push_back(new AllyStatusBar(character,width,height,this));
+    bars.at(person_index)->setGeometry(*boxes.at(person_index));
+  }
 }
 
 /*

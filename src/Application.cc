@@ -85,7 +85,7 @@ void Application::setupBattle()
   Race* human = new Race("Humans");
   Category* bloodclaw_scion = new Category("Blooclaw Scion", 30, 30, 30, 30, 30,
                                            30, 30, 30, 30, 30, 30, 30, 30, 30,
-                                           300, 30, 5, 5, 2, 1500, 1500, 1500,
+                                           300, 30, 5, 5, 2, 300, 1500, 1500,
                                            1500, 1500, 1500, 1500, 1500, 1500,
                                            1500, 1500, 1500, 1500, 1500, 15000,
                                            286, 150, 150, 75);
@@ -141,7 +141,7 @@ void Application::setupBattle()
   enemy_clan->addMember(cloud_dude2);
   enemy_clan->addMember(cloud_dude3);
 
-  /* LEVEL UP TEST
+  /* Level test
   for (int i = 1; i < 125; i++)
   {
     arcadius->setLevel(i);
@@ -158,8 +158,8 @@ void Application::setupBattle()
     qDebug() << "Pola Def: " << arcadius->getPolarFortitude() << endl;
   }
 
-  qDebug() << "Party sizes: " << enemy_clan->getPartySize() << " " << friend_clan->getPartySize();
-  qDebug() << "Party max sizes: " << enemy_clan->getMaxSize() << " " << friend_clan->getMaxSize();
+  // qDebug() << "Party sizes: " << enemy_clan->getPartySize() << " " << friend_clan->getPartySize();
+  // qDebug() << "Party max sizes: " << enemy_clan->getMaxSize() << " " << friend_clan->getMaxSize();
   */
 
   /* Action Test

@@ -13,13 +13,15 @@
 #include <QtGui/QPaintEvent>
 #include <QtGui/QPainter>
 
-#include "Game/Battle/PersonStatusBar.h"
+#include "Game/Battle/AllyStatusBar.h"
+#include "Game/Battle/EnemyStatusBar.h"
 #include "Game/Player/Party.h"
 
 class BattleStatusBar : public QWidget
 {
 public:
-  BattleStatusBar(Party* persons, uint width, uint height, QWidget *parent = 0);
+  BattleStatusBar(Party* persons, uint width, uint height,
+                  QWidget *parent = 0);
   ~BattleStatusBar();
 
 private:
@@ -37,13 +39,9 @@ private:
   uint height;
   uint width;
 
-protected:
-  /* Paint event for the class */
-  void paintEvent(QPaintEvent*);
-
 public:
   /* Adds a person to the vector of bars */
-  void addPerson(Person* character, uint person_index);
+  void addPerson(Person* character, int person_index);
 
   /* Returns the dimensions of the box */
   uint getLeftMargin();

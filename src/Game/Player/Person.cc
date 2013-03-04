@@ -53,24 +53,24 @@ Person::Person(QString name, Race* race, Category* category, QString prim,
  */
 Person::~Person()
 {
-    delete head;
-    delete left_arm;
-    delete right_arm;
-    delete torso;
-    delete legs;
-    delete cat;
-    delete race;
-    delete first_person;
-    delete third_person;
-    setHeadEquipment();
-    setLeftArmEquipment();
-    setRightArmEquipment();
-    setTorsoEquipment();
-    setLegEquipment();
-    setCategory(NULL);
-    setRace(NULL);
-    setFirstPerson(NULL);
-    setThirdPerson(NULL);
+  delete head;
+  delete left_arm;
+  delete right_arm;
+  delete torso;
+  delete legs;
+  delete cat;
+  delete race;
+  delete first_person;
+  delete third_person;
+  setHeadEquipment();
+  setLeftArmEquipment();
+  setRightArmEquipment();
+  setTorsoEquipment();
+  setLegEquipment();
+  setCategory(NULL);
+  setRace(NULL);
+  setFirstPerson(NULL);
+  setThirdPerson(NULL);
 }
 
 /*=============================================================================
@@ -116,6 +116,121 @@ void Person::setupStats()
     setQuantumDrive(getBaseQuantumDrive());
     setMomentum(getBaseMomentum());
     setLimbertude(getBaseLimbertude());
+}
+
+/*
+ * Description: Inflicts a status ailment on a person, given a string of the
+ *              status ailments name, and a short of the maximum turn durations
+ *              that the ailment can take place for.
+ * Notes [1]: Inflicting a person with a status ailment they are already
+ *            inflicted with will renew their durations vectors and move it to
+ *            the end of the vector.
+ * Notes [1]: A person may only have five status ailments at a time. Currently,
+ *            inflicting a sixth status ailment will override the status ailment
+ *            that was first inflicted (index 0).
+ *
+ * Inputs: ailment - name of the ailment to be inflicted
+ *         max     - short value of the turns to be inflicted for
+ * Output: none
+ */
+const bool Person::inflictAilment(QString ailment, short max)
+{
+
+}
+
+/*
+ * Description: Converts a StatusAilment flag to a string
+ *
+ * Inputs: StatusAilment - flag to be converted to a string
+ * Output: QString - string of the ailment flag given
+ */
+QString Person::ailmentToString(StatusAilment flag)
+{
+
+}
+
+/*
+ * Description: Converts a StatusBuff flag to a string
+ *
+ * Inputs: StatusBuff - flag to be converted to a string
+ * Output: QString - string of the buff flag given
+ */
+QString Person::buffToString(StatusBuff flag)
+{
+
+}
+
+/*
+ * Description: Converts a StatusBuff flag to a string
+ *
+ * Inputs: StatusBuff - flag to be converted to a string
+ * Output: QString - string of the buff flag given
+ */
+// StatusAilment Person::stringToAilment(QString ailment){}
+
+/*
+ * Description: Converts a StatusBuff flag to a string
+ *
+ * Inputs: StatusBuff - flag to be converted to a string
+ * Output: QString - string of the buff flag given
+ */
+// StatusBuff Person::stringToBuff(QString buff){}
+
+/*
+ * Description: Sets up the regular stats of the person, for initial
+ *              construction, based off the base stats
+ *
+ * Inputs: none
+ * Output: none
+ */
+const bool Person::removeAilment(QString ailment_name)
+{
+
+}
+
+/*
+ * Description: Sets up the regular stats of the person, for initial
+ *              construction, based off the base stats
+ *
+ * Inputs: none
+ * Output: none
+ */
+const bool Person::removeAilment(uint index)
+{
+
+}
+
+/*
+ * Description: Returns the string list of currently inflicted ailments.
+ *
+ * Inputs: none
+ * Output: QVector<QString> compiled list of currently inflicted ailments.
+ */
+QVector<QString> Person::getAilmentList()
+{
+  return inflicted_ailments;
+}
+
+/*
+ * Description: Returns the QVector of shorts of the current ailment durations
+ *
+ * Inputs: none
+ * Output: QVector<short> - vector of current ailment durations
+ */
+QVector<short> Person::getAilmentDuration()
+{
+  return effect_duration;
+}
+
+/*
+ * Description: Returns the QVector of shorts of the maximum ailment durations.
+ *
+ * Inputs: none
+ * Output: QVector<short> - vector of max ailment durations
+ */
+QVector<short> Person::getMaxAilmentDurations()
+{
+  return max_effect_duration;
 }
 
 /*
@@ -1368,7 +1483,7 @@ const bool Person::setLevel(const uint &new_level)
   double mome =  0.10000; /* Difference for mulr for momentum */
   double limb =  0.10000; /* Difference for mulr for limbertude */
   double unbr =  0.10000; /* Difference for mulr for unbearability */
-  double vita =  0.50000; /* Difference  for mulr for vitality */
+  double vita =  0.35000; /* Difference  for mulr for vitality */
   double qtmn =  0.10000; /* Difference for mulr for quantum_drive */
   double mulr =  1.15000; /* Basic D rate of increase of statistics */
   double defm =  0.74000; /* Def Mod - ratio of def increase to offense */
@@ -1848,28 +1963,42 @@ void Person::setNihilFortitude(uint value)
 }
 
 /*
- * Description: Sets the value of the vitality stat
+ * Description: Sets the value of vitality or does damage to a person.
  *
  * Inputs: uint - new value of the vitaltiy stat
  * Output: none
  */
-void Person::setVitality(uint value)
+void Person::setVitality(int value)
 {
-  (value <= cat->getMaxVitality()) ? (vitality = value)
-                  : (vitality = cat->getMaxVitality());
-
+    if (value < 0 && -value >= vitality)
+        vitality = 0;
+    else if (value < 0)
+        vitality += value;
+    else if (value >= cat->getMaxVitality())
+        vitality = cat->getMaxVitality();
+    else
+        vitality = value;
+    if (vitality == 0)
+        setPersonFlag(Person::ALIVE, FALSE);
+    // TODO -- emit dead signal? [03 - 02 - 13]
 }
 
-/*
+/*f
  * Description: Sets the value of the quantum drive stat
  *
  * Inputs: uint - new value of the quantum drive stat
  * Output: none
  */
-void Person::setQuantumDrive(uint value)
+void Person::setQuantumDrive(int value)
 {
-  (value <= cat->getMaxQuantumDrive()) ? (quantum_drive = value)
-                  : (quantum_drive = cat->getMaxQuantumDrive());
+    if (value < 0 && -value >= quantum_drive)
+        quantum_drive = 0;
+    else if (value < 0)
+        quantum_drive += value;
+    else if (value >= cat->getMaxQuantumDrive())
+        quantum_drive = cat->getMaxQuantumDrive();
+    else
+        quantum_drive = value;
 }
 
 /*

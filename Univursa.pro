@@ -33,6 +33,7 @@ SOURCES += \
     ./src/Game/Battle/BattleStatusBar.cc \
     ./src/Game/Battle/PersonStatusBar.cc \
     ./src/Game/Battle/EnemyStatusBar.cc \
+    ./src/Game/Battle/AllyStatusBar.cc \
     ./src/Game/Map/Map.cc \
     ./src/Game/Map/MapBubby.cc \
     ./src/Game/Map/MapEquipment.cc \
@@ -80,6 +81,7 @@ HEADERS += \
     ./include/Game/Battle/BattleStatusBar.h \
     ./include/Game/Battle/PersonStatusBar.h \
     ./include/Game/Battle/EnemyStatusBar.h \
+    ./include/Game/Battle/AllyStatusBar.h \
     ./include/Game/Map/Map.h \
     ./include/Game/Map/MapBubby.h \
     ./include/Game/Map/MapEquipment.h \
@@ -106,7 +108,8 @@ HEADERS += \
     ./include/Game/Player/Person.h \
     ./include/Game/Player/Race.h \
     ./include/Game/Player/Skill.h \
-    ./include/GridShifter.h
+    ./include/GridShifter.h \
+    include/Game/Battle/PersonStatusBar.h
 
 
 INCLUDEPATH += ./include

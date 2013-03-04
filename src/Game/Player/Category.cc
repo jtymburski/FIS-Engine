@@ -808,6 +808,7 @@ uint Category::getMaxNihilFortitude()
  */
 uint Category::getVitality()
 {
+    qDebug() << vitality;
   return vitality;
 }
 

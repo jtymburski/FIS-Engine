@@ -1,9 +1,10 @@
-/******************************************************************************
-* Class Name: PersonStatusBar
-* Date Created: Sunday, October 28th, 2012
-* Inheritance: Parent class: BattleStatusBar
-* Description: Displays iformation for health and QD to the screen
-******************************************************************************/
+/*******************************************************************************
+* Class Name: Status Bar
+* Date Created: Saturday, March 2nd, 2013
+* Inheritance: Parent class: QWidget (Contained within BattleStatusBar)
+* Description: Superclass of Enemy and Person Status Class
+*******************************************************************************/
+
 #ifndef PERSONSTATUSBAR_H
 #define PERSONSTATUSBAR_H
 
@@ -17,69 +18,59 @@
 class PersonStatusBar : public QWidget
 {
 public:
-  /* Constructo for PersonStatusBar object */
+  /* Creates a StatusBar object */
   PersonStatusBar(Person* charcter, uint w, uint h, QWidget* parent = 0);
 
-  /* Annihilates a PersonStatusBar object */
-  ~PersonStatusBar();
+  /* Annihilates a StatusBar object */
+  virtual ~PersonStatusBar();
 
-private:
-  /* Static const max limits */
+protected:
+
+
+  // virtual void paintEvent(QPaintEvent*);
+  virtual void setup();
+  virtual void additionalSetup() = 0;
+
+  void setCharacter(Person* character);
+
+  /* Static const limits */
   static const uint kMAX_WIDTH  = 1920 / 5;
-  static const uint kMAX_HEIGHT = 180;
+  static const uint kMAX_HEIGHT = 200;
 
-  /* Setup */
-  void setup();
+  /* Person the status bar is constructed for */
+  Person* character;
 
-  /* Dimensions and size of box */
-  uint bar_width;
-  uint bar_height;
-
-  /* Name text label */
-  QLabel* name_label;
+  /* Level and Health Labels */
   QLabel* level_label;
   QLabel* health_label;
-  QLabel* qd_label;
-
-  /* Object Bounding Boxes */
-  QVector<QRect*> status_thumbs;
-  QRect* health_outline;
-  QRect* health_bar;
-  QRect* qd_outline;
-  QRect* qd_bar;
-  QRect* name_box;
 
   /* Gradients */
   QLinearGradient* health_grad;
-  QLinearGradient* qd_grad;
 
-  /* Person pointer the status bar is constructed for */
-  Person* character;
+  /* Object Bounding Boxes */
+  QRect* health_outline;
+  QRect* health_bar;
 
-  /* Sprite pointers to status_thumbnails */
+  /* Vectors for status thumbnails */
   QVector<Sprite*> status_thumb_sprites;
+  QVector<QRect*> status_thumbs;
 
-protected:
-  /* Paint event for the class */
-  void paintEvent(QPaintEvent*);
-  
+  /* Dimensions of the Bar */
+  uint bar_height;
+  uint bar_width;
+
 public:
-  /* Gets for Stat displays */
+  /* Virtual Display functions */
   QString getDisplayHP();
-  QString getDisplayQD();
   QString getDisplayLevel();
 
   /* Get size of box */
   uint getWidth();
   uint getHeight();
 
-  /* Gets the name of the character for the box */
-  void setBox(QRect* box);
-  void setCharacter(Person* character);
-
-  /* Size of the box */
+  /* Set size of box */
   void setWidth(uint new_value);
   void setHeight(uint new_value);
 };
 
-#endif // PERSONSTATUSBAR_H
+#endif // STATUSBAR_H
