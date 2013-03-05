@@ -26,7 +26,6 @@ public:
 
 protected:
 
-
   // virtual void paintEvent(QPaintEvent*);
   virtual void setup();
   virtual void additionalSetup() = 0;

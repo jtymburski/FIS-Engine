@@ -53,6 +53,7 @@ Person::Person(QString name, Race* race, Category* category, QString prim,
  */
 Person::~Person()
 {
+  /*
   delete head;
   delete left_arm;
   delete right_arm;
@@ -70,7 +71,7 @@ Person::~Person()
   setCategory(NULL);
   setRace(NULL);
   setFirstPerson(NULL);
-  setThirdPerson(NULL);
+  setThirdPerson(NULL); */
 }
 
 /*=============================================================================
@@ -225,27 +226,8 @@ const bool Person::inflictAilment(QString ailment, short min, short max)
 
   inflicted_ailments.push_back(ailment);
   setAilmentDuration(min, max);
+  return TRUE;
 
-  /*
-
-    CLEAR            = 1 <<  0,
-    POISON           = 1 <<  1,
-    BURN1            = 1 <<  2,
-    BURN2            = 1 <<  3,
-    BURN3            = 1 <<  4,
-    BERSERK          = 1 <<  5,
-    CONFUSE          = 1 <<  6,
-    SILENCE          = 1 <<  7,
-    SLOW             = 1 <<  8,
-    BUBBIFY          = 1 <<  9,
-    DEATHTIMER       = 1 << 10,
-    PARALYSIS        = 1 << 11,
-    BLINDNESS        = 1 << 12,
-    DREADSTRUCK      = 1 << 13,
-    DREAMSNARE       = 1 << 14,
-    HELLBOUND        = 1 << 15,
-    BOND             = 1 << 16
- */
 }
 /*
  * Description: Sets up the ailment starting duration (0) and min and max
@@ -262,12 +244,11 @@ void Person::setAilmentDuration(short min, short max)
 }
 
 const bool Person::isValidAilment(QString ailment)
-{ /*
-  QVector<QString> status_ailments["POISON", "BURN1", "BURN2", "BURN3",
-          "BERSERK", "CONFUSE", "SILENCE", "SLOW", "BUBBIFY", "DEATHTIMER",
-          "PARALYSIS", "BLINDNESS", "DREADSTRUCK", "DREAMSNARE", "HELLBOUND",
-          "BOND", "ALLATKBUFF", "ALLDEFBUFF", "PHYSICALATKBUFF", "PHYSICALDEFBUFF",
-          "ROOTBOUND", "DOUBLECAST", "TRIPLECAST", "HALFCOST"];*/
+{
+  /*QVector<QString> status_ailments["POISON", "BURN1", "BURN2", "BURN3", "BERSERK", "CONFUSE", "SILENCE", "SLOW", "BUBBIFY", "DEATHTIMER", "PARALYSIS", "BLINDNESS", "DREADSTRUCK", "DREAMSNARE", "HELLBOUND",
+          "BOND", "ALLATKBUFF", "ALLDEFBUFF", "PHYSICALATKBUFF", "PHYSICALDEFBUFF","ROOTBOUND", "DOUBLECAST",
+          "TRIPLECAST",
+          "HALFCOST"]; */
   return TRUE;
 }
 
@@ -318,7 +299,7 @@ QString Person::buffToString(StatusBuff flag)
  */
 const bool Person::removeAilment(QString ailment_name)
 {
-
+ return TRUE;
 }
 
 /*
@@ -330,7 +311,7 @@ const bool Person::removeAilment(QString ailment_name)
  */
 const bool Person::removeAilment(uint index)
 {
-
+  return TRUE;
 }
 
 /*
@@ -524,7 +505,7 @@ void Person::togglePersonFlag(PersonState flags)
  * Inputs: none
  * Output: vector of skill pointers - pointers to skill the player can take
  */
-QVector<Skill*>& Person::getAvailableSkills()
+QVector<Skill*> Person::getAvailableSkills()
 {
   // TODO: Setup list of skills for person [01-25-13]
   return skill_list;

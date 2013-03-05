@@ -40,14 +40,31 @@ AllyStatusBar::AllyStatusBar(Person* character, uint width, uint height,
  */
 AllyStatusBar::~AllyStatusBar()
 {
+    delete level_label;
+    delete health_label;
+    delete health_grad;
+    delete health_outline;
+    delete health_bar;
+    level_label = NULL;
+    health_label = NULL;
+    health_outline = NULL;
+    health_outline = NULL;
+    health_bar = NULL;
+    for (int i = 0; i < status_thumb_sprites.size(); i++)
+    {
+        delete status_thumb_sprites.at(i);
+        status_thumb_sprites[i] = NULL;
+        delete status_thumbs.at(i);
+        status_thumbs[i] = NULL;
+    }
   delete name_label;
-  //delete qd_label;
+  delete qd_label;
   delete qd_outline;
   delete qd_bar;
   delete name_box;
   delete qd_grad;
   name_label = NULL;
-  //qd_label = NULL;
+  qd_label = NULL;
   qd_outline = NULL;
   qd_bar = NULL;
   name_box = NULL;
@@ -90,6 +107,8 @@ void AllyStatusBar::paintEvent(QPaintEvent*)
   pc = character->getQuantumDrive() * 1.0 / character->getTempQuantumDrive();
   qd_bar->setWidth(qd_outline->width() * pc);
   painter.drawRect(*qd_bar);
+
+
 }
 
 /*
@@ -114,8 +133,9 @@ void AllyStatusBar::additionalSetup()
   }
 
   QPalette pal(palette());
-  pal.setColor(QPalette::Foreground, Qt::blue);
+  pal.setColor(QPalette::Foreground, QColor(10,10,10,255));
   setPalette(pal);
+
 
   name_label = new QLabel(character->getName(), this);
   name_label->move(5,1);
@@ -131,7 +151,15 @@ void AllyStatusBar::additionalSetup()
 
   health_bar = new QRect(left_d, top_d, width, height);
   health_outline = new QRect(left_d, top_d, width, height);
-  health_label = new QLabel(getDisplayHP());
+
+  QFont current_font(font());
+  current_font.setPixelSize(15);
+  setFont(current_font);
+  pal.setColor(QPalette::Foreground, QColor(200,100,100,255));
+  health_label = new QLabel(getDisplayHP(), this);
+  health_label->move(left_d + 2, top_d - 2);
+  health_label->setPalette(pal);
+
   health_grad = new QLinearGradient(QPointF(0,0), QPointF(width,height));
   health_grad->setColorAt(0, QColor("#E30004"));
   health_grad->setColorAt(1, QColor("#6E0002"));
@@ -140,6 +168,12 @@ void AllyStatusBar::additionalSetup()
 
   qd_bar     = new QRect(left_d, top_d, width, height);
   qd_outline = new QRect(left_d, top_d, width, height);
+
+  pal.setColor(QPalette::Foreground, QColor(200,100,100,255));
+  qd_label = new QLabel(getDisplayQD(), this);
+  qd_label->move(left_d + 2, top_d - 2);
+  qd_label->setPalette(pal);
+
   qd_grad = new QLinearGradient(QPointF(0,0), QPointF(width,height));
   qd_grad->setColorAt(0, QColor("#0C2B36"));
   qd_grad->setColorAt(1, QColor("#2D9FC4"));

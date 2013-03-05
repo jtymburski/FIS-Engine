@@ -22,7 +22,26 @@ EnemyStatusBar::EnemyStatusBar(Person* character, uint width, uint height,
 /*
  * Description: Annihilates an EnemyStatusBar object
  */
-
+EnemyStatusBar::~EnemyStatusBar()
+{
+    delete level_label;
+    delete health_label;
+    delete health_grad;
+    delete health_outline;
+    delete health_bar;
+    level_label = NULL;
+    health_label = NULL;
+    health_outline = NULL;
+    health_outline = NULL;
+    health_bar = NULL;
+    for (int i = 0; i < status_thumb_sprites.size(); i++)
+    {
+        delete status_thumb_sprites.at(i);
+        status_thumb_sprites[i] = NULL;
+        delete status_thumbs.at(i);
+        status_thumbs[i] = NULL;
+    }
+}
 
 /*============================================================================
  * PAINT EVENTS

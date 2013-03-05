@@ -45,8 +45,6 @@ BattleStatusBar::~BattleStatusBar()
     delete boxes.at(i);
     boxes[i] = NULL;
   }
-  boxes.clear();
-  bars.clear();
 }
 
 /*

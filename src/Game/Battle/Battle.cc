@@ -140,8 +140,10 @@ Battle::Battle(Party* p_friends, Party* p_foes, QWidget* pointer)
  */
 Battle::~Battle()
 {
-  setFriends();
-  setFoes();
+  // delete friends;
+  // delete foes;
+  // setFriends();
+  // setFoes();
 }
 
 /*============================================================================

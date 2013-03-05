@@ -25,7 +25,7 @@ public:
   AllyStatusBar(Person*, uint width, uint height, QWidget* parent);
 
   /* Annihilates an AllyStatusBar object */
-  ~AllyStatusBar();
+  virtual ~AllyStatusBar();
 
 protected:
   /* Paint event for the class */

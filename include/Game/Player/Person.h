@@ -433,7 +433,7 @@ public:
   const bool getPersonFlag(PersonState flags);
 
   /* Returns the available skills of the person */
-  QVector<Skill*>& getAvailableSkills();
+  QVector<Skill*> getAvailableSkills();
 
   /* Gets the person's category */
   Category* getCategory();

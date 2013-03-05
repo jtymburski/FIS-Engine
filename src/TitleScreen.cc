@@ -49,9 +49,10 @@ void TitleScreen::paintEvent(QPaintEvent* event)
 {
   QPainter painter(this);
 
-  QPixmap image(":/FBS_Logo");
-  painter.drawPixmap((this->width() - image.width()) / 2, 100, 
-                      QPixmap(":/FBS_Logo"));
+  painter.drawPixmap(0,0,1216,704,QPixmap(":/title_Screen"));
+  //QPixmap image(":/FBS_Logo");
+  //painter.drawPixmap((this->width() - image.width()) / 2, 100,
+  //                    QPixmap(":/FBS_Logo"));
 }
 
 void TitleScreen::keyPressEvent(QKeyEvent* event)
