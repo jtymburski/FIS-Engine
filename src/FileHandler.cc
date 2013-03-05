@@ -28,7 +28,7 @@ FileHandler::FileHandler()
 {
   available = FALSE;
   depth = 0;
-
+  
   setEncryptionEnabled(FALSE);
   setFilename("");
   setFileType(REGULAR);
@@ -336,6 +336,17 @@ int FileHandler::wrapNumber(int value, int limit)
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
+QByteArray FileHandler::computeMd5()
+{
+  if(available && file_write)
+  {
+    return QCryptographicHash::hash(file_data, 
+                                    QCryptographicHash::Md5).toHex();
+  }
+
+  return "";
+}
+
 QString FileHandler::getFilename()
 {
   return file_name;
@@ -420,6 +431,9 @@ bool FileHandler::start()
   if(available)
     success &= stop();
 
+  /* Clear the file data array */
+  file_data.clear();
+
   /* Open the file stream */
   success &= fileOpen();
 
@@ -434,6 +448,13 @@ bool FileHandler::stop()
 {
   bool success = TRUE;
 
+  /* MD5 Test */
+  if(file_write)
+  {
+    qDebug() << file_data;
+    qDebug() << computeMd5();
+  }
+
   /* Close the file stream */
   success &= fileClose();
 
@@ -447,13 +468,21 @@ bool FileHandler::stop()
 bool FileHandler::writeLine(QString line)
 {
   bool success = TRUE;
+  QString new_line;
 
   if(available && file_write && file_type == REGULAR)
   {
+    /* Add to the QByteArray of currently written data */
+    file_data.append(line);
+
+    /* Determine if the line should be encrypted or not */
     if(encryption_enabled)
-      file_stream << encryptLine(line, &success).toStdString() << std::endl;
+      new_line = encryptLine(line, &success);
     else
-      file_stream << line.toStdString() << std::endl;
+      new_line = line;
+   
+    /* Write the line to the file */
+    file_stream << new_line.toStdString() << std::endl;
 
     return success;
   }

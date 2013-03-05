@@ -22,6 +22,7 @@
 #include <fstream>
 #include <stdint.h>
 #include <QByteArray>
+#include <QCryptographicHash>
 #include <QDebug>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
@@ -53,6 +54,7 @@ private:
   bool encryption_enabled;
 
   /* The filename information */
+  QByteArray file_data;
   QString file_name;
   std::fstream file_stream; // is_open()
   FileType file_type;
@@ -75,7 +77,7 @@ private:
   const static int kXXTEA_ROUNDS = 19; /* Number of rounds for encryption */
 
 private:
-    /* Decrypt raw data in an array of ints */
+  /* Decrypt raw data in an array of ints */
   bool decryptData(uint32_t* data);
 
   /* Decrypt line of data */
@@ -109,6 +111,10 @@ private:
   int wrapNumber(int value, int limit);
 
 public:
+  /* Returns the hash for the data that has currently been written. Returns
+   * nothing if the function is uninitialized or set on read */
+  QByteArray computeMd5();
+
   /* Returns the filename that's used for reading from and writing to */
   QString getFilename();
 
