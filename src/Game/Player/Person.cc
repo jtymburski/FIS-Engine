@@ -135,20 +135,104 @@ void Person::setupStats()
  */
 const bool Person::inflictAilment(QString ailment, short min, short max)
 {
+  // TODO: CHECK FOR DUPLICATES [03-05-13]
   if (inflicted_ailments.size() > kMAX_AILMENTS || max > kMAX_AIL_DURA)
     return false;
   if (ailment == "POISON")
     setAilment(Person::POISON, TRUE);
-  if (ailment == "BURN1")
+  else if (ailment == "BURN1")
     setAilment(Person::BURN1, TRUE);
+  else if (ailment == "BURN2")
+    setAilment(Person::BURN2, TRUE);
+  else if (ailment == "BURN3")
+    setAilment(Person::BURN3, TRUE);
+  else if (ailment == "BERSERK")
+    setAilment(Person::BERSERK, TRUE);
+  else if (ailment == "CONFUSE")
+    setAilment(Person::CONFUSE, TRUE);
+  else if (ailment == "SILENCE")
+    setAilment(Person::SILENCE, TRUE);
+  else if (ailment == "SLOW")
+   setAilment(Person::SLOW, TRUE);
+  else if (ailment == "BUBBIFY")
+    setAilment(Person::BUBBIFY, TRUE);
+  else if (ailment == "DEATHTIMER")
+    setAilment(Person::DEATHTIMER, TRUE);
+  else if (ailment == "PARALYSIS")
+    setAilment(Person::PARALYSIS, TRUE);
+  else if (ailment == "BLINDNESS")
+    setAilment(Person::BLINDNESS, TRUE);
+  else if (ailment == "DREADSTRUCK")
+    setAilment(Person::DREADSTRUCK,TRUE);
+  else if (ailment == "DREAMSNARE")
+    setAilment(Person::DREAMSNARE, TRUE);
+  else if (ailment == "HELLBOUND")
+    setAilment(Person::HELLBOUND, TRUE);
+  else if (ailment == "BOND")
+    setAilment(Person::BOND, TRUE);
+  else if(ailment == "ALLATKBUFF")
+    setBuff(Person::ALLATKBUFF, TRUE);
+  else if (ailment == "ALLDEFBUFF")
+    setBuff(Person::ALLDEFBUFF, TRUE);
+  else if (ailment == "PHYSICALATKBUFF")
+    setBuff(Person::PHYSICALATKBUFF, TRUE);
+  else if (ailment == "PHYSICALDEFBUFF")
+    setBuff(Person::PHYSICALDEFBUFF, TRUE);
+  else if (ailment == "THERMALATKBUFF")
+    setBuff(Person::THERMALATKBUFF, TRUE);
+  else if (ailment == "THERMALDEFBUFF")
+    setBuff(Person::THERMALDEFBUFF, TRUE);
+  else if (ailment == "POLARATKBUFF")
+    setBuff(Person::POLARATKBUFF, TRUE);
+  else if (ailment == "POLARDEFBUFF")
+    setBuff(Person::POLARDEFBUFF, TRUE);
+  else if (ailment == "PRIMALATKBUFF")
+   setBuff(Person::PRIMALATKBUFF, TRUE);
+  else if (ailment == "PRIMALDEFBUFF")
+    setBuff(Person::PRIMALDEFBUFF, TRUE);
+  else if (ailment == "CHARGEDATKBUFF")
+    setBuff(Person::CHARGEDATKBUFF, TRUE);
+  else if (ailment == "CHARGEDDEFBUFF")
+    setBuff(Person::CHARGEDDEFBUFF, TRUE);
+  else if (ailment == "CYBERNETICATKBUFF")
+    setBuff(Person::CYBERNETICATKBUFF, TRUE);
+  else if (ailment == "CYBERNETICDEFBUFF")
+   setBuff(Person::CYBERNETICDEFBUFF, TRUE);
+  else if (ailment == "NIHILATKBUFF")
+   setBuff(Person::NIHILATKBUFF, TRUE);
+  else if (ailment == "NIHILDEFBUFF")
+    setBuff(Person::NIHILDEFBUFF, TRUE);
+  else if (ailment == "LIMBERTUDEBUFF")
+    setBuff(Person::LIMBERTUDEBUFF, TRUE);
+  else if (ailment == "UNBEARBUFF")
+    setBuff(Person::UNBEARBUFF, TRUE);
+  else if (ailment == "MOMENTUMBUFF")
+    setBuff(Person::MOMENTUMBUFF, TRUE);
+  else if (ailment == "VITALITYBUFF")
+    setBuff(Person::VITALITYBUFF, TRUE);
+  else if (ailment == "QDBUFF")
+    setBuff(Person::QDBUFF, TRUE);
+  else if (ailment == "ROOTBOUND")
+    setBuff(Person::ROOTBOUND, TRUE);
+  else if (ailment == "DOUBLECAST")
+    setBuff(Person::DOUBLECAST, TRUE);
+  else if (ailment == "TRIPLECAST")
+    setBuff(Person::TRIPLECAST, TRUE);
+  else if (ailment == "HALF COST")
+    setBuff(Person::HALFCOST, TRUE);
+  if (ailment == "POISON" || ailment == "BURN1" || ailment == "BURN2" ||
+          ailment == "BURN3" || ailment == "BERSERK" || ailment == "CONFUSE")
+
   inflicted_ailments.push_back(ailment);
   setAilmentDuration(min, max);
-    /*
+
+  /*
+
     CLEAR            = 1 <<  0,
-    POISONED         = 1 <<  1,
-    BURNED1          = 1 <<  2,
-    BURNED2          = 1 <<  3,
-    BURNED3          = 1 <<  4,
+    POISON           = 1 <<  1,
+    BURN1            = 1 <<  2,
+    BURN2            = 1 <<  3,
+    BURN3            = 1 <<  4,
     BERSERK          = 1 <<  5,
     CONFUSE          = 1 <<  6,
     SILENCE          = 1 <<  7,
@@ -158,38 +242,11 @@ const bool Person::inflictAilment(QString ailment, short min, short max)
     PARALYSIS        = 1 << 11,
     BLINDNESS        = 1 << 12,
     DREADSTRUCK      = 1 << 13,
-    DREAMSNARED      = 1 << 14,
+    DREAMSNARE       = 1 << 14,
     HELLBOUND        = 1 << 15,
-    BONDED           = 1 << 16
-    ALLATKBUFF        = 1 <<  0
-    ALLDEFBUFF        = 1 <<  1
-    PHYSICALATKBUFF   = 1 <<  2
-    PHYSICALDEFBUFF   = 1 <<  3
-    THERMALATKBUFF    = 1 <<  4
-    THERMALDEFBUFF    = 1 <<  5
-    POLARATKBUFF      = 1 <<  6
-    POLARDEFBUFF      = 1 <<  7
-    PRIMALATKBUFF     = 1 <<  8
-    PRIMALDEFBUFF     = 1 <<  9
-    CHARGEDATKBUFF    = 1 << 10
-    CHARGEDDEFBUFF    = 1 << 11
-    CYBERNETICATKBUFF = 1 << 12
-    CYBERNETICDEFBUFF = 1 << 13
-    NIHILATKBUFF      = 1 << 14
-    NIHILDEFBUFF      = 1 << 15
-    LIMBERTUDEBUFF    = 1 << 16
-    UNBEARBUFF        = 1 << 17
-    MOMENTUMBUFF      = 1 << 18
-    VITALITYBUFF      = 1 << 19
-    QDBUFF            = 1 << 20
-    HEALTHBUFF        = 1 << 21
-    ROOTBOUND         = 1 << 22
-    DOUBLECAST        = 1 << 23
-    TRIPLECAST        = 1 << 24
-    HALFCOST          = 1 << 25 */
+    BOND             = 1 << 16
+ */
 }
-
-
 /*
  * Description: Sets up the ailment starting duration (0) and min and max
  *              duration when an ailment is initially inflicted.
@@ -202,6 +259,16 @@ void Person::setAilmentDuration(short min, short max)
   effect_duration.push_back(0);
   QPair<short,short> temp(min,max);
   min_max_durations.push_back(temp);
+}
+
+const bool Person::isValidAilment(QString ailment)
+{ /*
+  QVector<QString> status_ailments["POISON", "BURN1", "BURN2", "BURN3",
+          "BERSERK", "CONFUSE", "SILENCE", "SLOW", "BUBBIFY", "DEATHTIMER",
+          "PARALYSIS", "BLINDNESS", "DREADSTRUCK", "DREAMSNARE", "HELLBOUND",
+          "BOND", "ALLATKBUFF", "ALLDEFBUFF", "PHYSICALATKBUFF", "PHYSICALDEFBUFF",
+          "ROOTBOUND", "DOUBLECAST", "TRIPLECAST", "HALFCOST"];*/
+  return TRUE;
 }
 
 /*

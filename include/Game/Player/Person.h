@@ -85,11 +85,10 @@ public:
     MOMENTUMBUFF      = 1 << 18,
     VITALITYBUFF      = 1 << 19,
     QDBUFF            = 1 << 20,
-    HEALTHBUFF        = 1 << 21,
-    ROOTBOUND         = 1 << 22,
-    DOUBLECAST        = 1 << 23,
-    TRIPLECAST        = 1 << 24,
-    HALFCOST          = 1 << 25
+    ROOTBOUND         = 1 << 21,
+    DOUBLECAST        = 1 << 22,
+    TRIPLECAST        = 1 << 23,
+    HALFCOST          = 1 << 24
   };
   Q_DECLARE_FLAGS(StatusBuffFlags, StatusBuff)
 
@@ -381,6 +380,8 @@ public:
 
   /* Sets up the ailment durations */
   void setAilmentDuration(short min, short max);
+
+  const bool isValidAilment(QString ailment);
 
   /* Converts a StatusAilment to a String */
   static QString ailmentToString(StatusAilment flag);
