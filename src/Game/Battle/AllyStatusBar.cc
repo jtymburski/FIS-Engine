@@ -39,29 +39,19 @@ AllyStatusBar::AllyStatusBar(Person* character, uint width, uint height,
  */
 AllyStatusBar::~AllyStatusBar()
 {
-  delete level_label;
-  delete health_label;
-  delete health_grad;
-  delete health_outline;
-  delete health_bar;
   delete name_label;
   delete qd_label;
   delete qd_outline;
   delete qd_bar;
   delete name_box;
   delete qd_grad;
-  level_label = NULL;
-  health_label = NULL;
-  health_outline = NULL;
-  health_outline = NULL;
-  health_bar = NULL;
   name_label = NULL;
   qd_label = NULL;
   qd_outline = NULL;
   qd_bar = NULL;
   name_box = NULL;
   qd_grad = NULL;
-  clearStatusBoxes();
+  cleanUp();
 }
 
 /*==============================================================================
@@ -105,13 +95,8 @@ void AllyStatusBar::paintEvent(QPaintEvent*)
   pc = character->getQuantumDrive() * 1.0 / character->getTempQuantumDrive();
   qd_bar->setWidth(qd_outline->width() * pc);
   painter.drawRect(*qd_bar);
-
   health_label->setText(getDisplayHP());
   qd_label->setText(getDisplayQD());
-
-
-
-
 }
 
 /*
@@ -123,18 +108,6 @@ void AllyStatusBar::paintEvent(QPaintEvent*)
  */
 void AllyStatusBar::additionalSetup()
 {
-  uint font_size = 17;    // TODO: Font size determination
-  uint pad = 5;                         /* L & T Padding */
-  uint length  = (getHeight() / 4) - 6; /* Length of the status boxes */
-  uint spacing = 4;                     /* Spacing of the Status Boxes */
-
-  /* Set up the spacing on the status boxes */
-  for (uint i = 0; i < character->getAilmentList().size(); i++)
-  {
-    uint left_d  = i * (length + spacing) + pad;
-    status_thumbs.push_back(new QRect(left_d, pad + font_size, length, length));
-  }
-
   QPalette pal(palette());
   pal.setColor(QPalette::Foreground, QColor(10,10,10,255));
   setPalette(pal);
@@ -148,6 +121,8 @@ void AllyStatusBar::additionalSetup()
   level_label->move(getWidth() - (getDisplayLevel().size() * 10),1);
 
   /* HP & QD */
+  uint length  = (getHeight() / 4) - 6; /* Length of the status boxes */
+  uint pad = 5;
   uint left_d = pad;
   uint top_d  = 2 * pad + length + font_size;
   uint width  = getWidth() - 2 * pad;
@@ -183,15 +158,11 @@ void AllyStatusBar::additionalSetup()
 void AllyStatusBar::rebuildStatusBoxes()
 {
   clearStatusBoxes();
-  uint font_size = 17;    // TODO: Font size determination
-  uint pad = 5;                         /* L & T Padding */
-  uint length  = (getHeight() / 4) - 6; /* Length of the status boxes */
-  uint spacing = 4;                     /* Spacing of the Status Boxes */
-
-  for (uint i = 0; i < character->getAilmentList().size(); i++)
+  uint length  = (getHeight() / 4) - 6;
+  for (int i = 0; i < character->getAilmentList().size(); i++)
   {
-    uint left_d  = i * (length + spacing) + pad;
-    status_thumbs.push_back(new QRect(left_d, pad + font_size, length, length));
+    uint left_d  = i * (length + 4) + 5;
+    status_thumbs.push_back(new QRect(left_d, 5 + font_size, length, length));
   }
 }
 

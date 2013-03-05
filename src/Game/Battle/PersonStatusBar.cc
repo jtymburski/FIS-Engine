@@ -25,13 +25,11 @@ PersonStatusBar::PersonStatusBar(Person* character, uint width, uint height,
   setCharacter(character);
   setWidth(width);
   setHeight(height);
+  setFontSize(17);
   setup();
 }
 
-PersonStatusBar::~PersonStatusBar()
-{
-
-}
+PersonStatusBar::~PersonStatusBar() {}
 
 /*============================================================================
  * FUNCTIONS
@@ -45,12 +43,10 @@ void PersonStatusBar::setup()
   pal.setColor(QPalette::Foreground, Qt::white);
   setAutoFillBackground(true);
   setPalette(pal);
-  QFont current_font = font(); //TODO: Grab fonts from? [02-03-13]
-  current_font.setPixelSize(17);
-  setFont(current_font);
+  QFont current_font = font();
 
   // TODO -- IF show levels enabled - [03-03-13]
-  current_font.setPixelSize(17);
+  current_font.setPixelSize(font_size);
   setFont(current_font);
 
   level_label = new QLabel(getDisplayLevel(), this);
@@ -92,6 +88,27 @@ void PersonStatusBar::clearStatusBoxes()
 }
 
 /*
+ * Description: Cleans up PersonStatusBar data
+ *
+ * Inputs: none
+ * Output: QString - string of the vitality uint.
+ */
+void PersonStatusBar::cleanUp()
+{
+  delete level_label;
+  delete health_label;
+  delete health_grad;
+  delete health_outline;
+  delete health_bar;
+  level_label = NULL;
+  health_label = NULL;
+  health_grad = NULL;
+  health_outline = NULL;
+  health_bar = NULL;
+  clearStatusBoxes();
+}
+
+/*
  * Description: Gets a QString of the displayed HP value.
  *
  * Inputs: none
@@ -113,6 +130,17 @@ QString PersonStatusBar::getDisplayLevel()
 {
   QString display_level;
   return display_level.setNum(character->getLevel());
+}
+
+/*
+ * Description: Returns the current font size of the status bar
+ *
+ * Inputs: no
+ * Output: uint - value of font_size
+ */
+uint PersonStatusBar::getFontSize()
+{
+  return font_size;
 }
 
 /*
@@ -138,6 +166,18 @@ uint PersonStatusBar::getHeight()
 }
 
 /*
+ * Description: Sets the size of the font for a PersonStatusBar
+ *
+ * Inputs: uint - value of the new font size
+ * Output: none
+ */
+void PersonStatusBar::setFontSize(uint new_value)
+{
+  (new_value < kMAX_FONT_SIZE) ? (font_size = new_value) :
+                                 (font_size = kMAX_FONT_SIZE);
+}
+
+/*
  * Description: Sets the width of the status bar
  *
  * Inputs: uint - new width of the bar
@@ -159,6 +199,3 @@ void PersonStatusBar::setHeight(uint new_value)
   (new_value < kMAX_HEIGHT) ? (bar_height = new_value) :
                               (bar_height = kMAX_HEIGHT);
 }
-
-
-

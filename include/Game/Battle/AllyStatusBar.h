@@ -49,8 +49,6 @@ protected:
   /* Additional Gradients */
   QLinearGradient* qd_grad;
 
-
-
 public:
   /* Gets for Stat displays */
   QString getDisplayQD();

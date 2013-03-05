@@ -25,18 +25,27 @@ public:
   virtual ~PersonStatusBar();
 
 protected:
-
-  // virtual void paintEvent(QPaintEvent*);
+  /* Initial setup of a PersonStatusBar */
   virtual void setup();
-  virtual void additionalSetup() = 0;
+
+  /* Pure virtual extra implementations */
+  virtual void additionalSetup()    = 0;
   virtual void rebuildStatusBoxes() = 0;
 
+  /* Sets the character pointer */
   void setCharacter(Person* character);
+
+  /* Clean up functions */
   void clearStatusBoxes();
+  void cleanUp();
 
   /* Static const limits */
-  static const uint kMAX_WIDTH  = 1920 / 5;
-  static const uint kMAX_HEIGHT = 200;
+  static const uint kMAX_FONT_SIZE = 25;
+  static const uint kMAX_WIDTH     = 1920 / 5;
+  static const uint kMAX_HEIGHT    = 200;
+
+  /* Font size */
+  int font_size;
 
   /* Person the status bar is constructed for */
   Person* character;
@@ -65,9 +74,15 @@ public:
   QString getDisplayHP();
   QString getDisplayLevel();
 
-  /* Get size of box */
+  /* Get the current font size */
+  uint getFontSize();
+
+  /* Get the size of the box */
   uint getWidth();
   uint getHeight();
+
+  /* Set the current font size */
+  void setFontSize(uint new_value);
 
   /* Set size of box */
   void setWidth(uint new_value);

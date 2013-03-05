@@ -4,9 +4,7 @@
 * Inheritance: QWidget
 * Description: Holder for all the info describing a person (character)
 *
-* TODO: FINISH STATUS AILMENTS [02-08-13]
 * TODO: skill_list skills, [01-25-13]
-* TODO: Future class multiplier for level ups [01-25-13]
 ******************************************************************************/
 #include <QDebug>
 #include <cmath>
@@ -147,96 +145,13 @@ const bool Person::inflictAilment(QString ailment, short min, short max)
   if (inflicted_ailments.size() >= kMAX_AILMENTS )
     removeAilment(0);
 
-  /* Turn the flag for the corresponding ailment on */
-  if (ailment == "POISON")
-    setAilment(Person::POISON, TRUE);
-  else if (ailment == "BURN1")
-    setAilment(Person::BURN1, TRUE);
-  else if (ailment == "BURN2")
-    setAilment(Person::BURN2, TRUE);
-  else if (ailment == "BURN3")
-    setAilment(Person::BURN3, TRUE);
-  else if (ailment == "BERSERK")
-    setAilment(Person::BERSERK, TRUE);
-  else if (ailment == "CONFUSE")
-    setAilment(Person::CONFUSE, TRUE);
-  else if (ailment == "SILENCE")
-    setAilment(Person::SILENCE, TRUE);
-  else if (ailment == "SLOW")
-   setAilment(Person::SLOW, TRUE);
-  else if (ailment == "BUBBIFY")
-    setAilment(Person::BUBBIFY, TRUE);
-  else if (ailment == "DEATHTIMER")
-    setAilment(Person::DEATHTIMER, TRUE);
-  else if (ailment == "PARALYSIS")
-    setAilment(Person::PARALYSIS, TRUE);
-  else if (ailment == "BLINDNESS")
-    setAilment(Person::BLINDNESS, TRUE);
-  else if (ailment == "DREADSTRUCK")
-    setAilment(Person::DREADSTRUCK,TRUE);
-  else if (ailment == "DREAMSNARE")
-    setAilment(Person::DREAMSNARE, TRUE);
-  else if (ailment == "HELLBOUND")
-    setAilment(Person::HELLBOUND, TRUE);
-  else if (ailment == "BOND")
-    setAilment(Person::BOND, TRUE);
-  else if(ailment == "ALLATKBUFF")
-    setBuff(Person::ALLATKBUFF, TRUE);
-  else if (ailment == "ALLDEFBUFF")
-    setBuff(Person::ALLDEFBUFF, TRUE);
-  else if (ailment == "PHYSICALATKBUFF")
-    setBuff(Person::PHYSICALATKBUFF, TRUE);
-  else if (ailment == "PHYSICALDEFBUFF")
-    setBuff(Person::PHYSICALDEFBUFF, TRUE);
-  else if (ailment == "THERMALATKBUFF")
-    setBuff(Person::THERMALATKBUFF, TRUE);
-  else if (ailment == "THERMALDEFBUFF")
-    setBuff(Person::THERMALDEFBUFF, TRUE);
-  else if (ailment == "POLARATKBUFF")
-    setBuff(Person::POLARATKBUFF, TRUE);
-  else if (ailment == "POLARDEFBUFF")
-    setBuff(Person::POLARDEFBUFF, TRUE);
-  else if (ailment == "PRIMALATKBUFF")
-   setBuff(Person::PRIMALATKBUFF, TRUE);
-  else if (ailment == "PRIMALDEFBUFF")
-    setBuff(Person::PRIMALDEFBUFF, TRUE);
-  else if (ailment == "CHARGEDATKBUFF")
-    setBuff(Person::CHARGEDATKBUFF, TRUE);
-  else if (ailment == "CHARGEDDEFBUFF")
-    setBuff(Person::CHARGEDDEFBUFF, TRUE);
-  else if (ailment == "CYBERNETICATKBUFF")
-    setBuff(Person::CYBERNETICATKBUFF, TRUE);
-  else if (ailment == "CYBERNETICDEFBUFF")
-   setBuff(Person::CYBERNETICDEFBUFF, TRUE);
-  else if (ailment == "NIHILATKBUFF")
-   setBuff(Person::NIHILATKBUFF, TRUE);
-  else if (ailment == "NIHILDEFBUFF")
-    setBuff(Person::NIHILDEFBUFF, TRUE);
-  else if (ailment == "LIMBERTUDEBUFF")
-    setBuff(Person::LIMBERTUDEBUFF, TRUE);
-  else if (ailment == "UNBEARBUFF")
-    setBuff(Person::UNBEARBUFF, TRUE);
-  else if (ailment == "MOMENTUMBUFF")
-    setBuff(Person::MOMENTUMBUFF, TRUE);
-  else if (ailment == "VITALITYBUFF")
-    setBuff(Person::VITALITYBUFF, TRUE);
-  else if (ailment == "QDBUFF")
-    setBuff(Person::QDBUFF, TRUE);
-  else if (ailment == "ROOTBOUND")
-    setBuff(Person::ROOTBOUND, TRUE);
-  else if (ailment == "DOUBLECAST")
-    setBuff(Person::DOUBLECAST, TRUE);
-  else if (ailment == "TRIPLECAST")
-    setBuff(Person::TRIPLECAST, TRUE);
-  else if (ailment == "HALF COST")
-    setBuff(Person::HALFCOST, TRUE);
-
   /* Add the inflicted ailment to a vector of strings storing all the
      infected ailments and set the ailment durations up */
   inflicted_ailments.push_back(ailment);
   setAilmentDuration(min, max);
   return TRUE;
 }
+
 /*
  * Description: Sets up the ailment starting duration (0) and min and max
  *              duration when an ailment is initially inflicted.
@@ -251,6 +166,12 @@ void Person::setAilmentDuration(short min, short max)
   min_max_durations.push_back(temp);
 }
 
+/*
+ * Description: Checks if the ailment is actually a valid ailment
+ *
+ * Inputs: QString - potentially valid ailment
+ * Output: bool    - evaluation whether ailment is valid
+ */
 const bool Person::isValidAilment(QString ailment)
 {
   QVector<QString> status_ailments;
@@ -310,90 +231,6 @@ const bool Person::removeAilment(QString ailment)
   if (!inflicted_ailments.contains(ailment) || !isValidAilment(ailment))
     return FALSE;
 
-  /* Turn off the flag corresponing to the ailment */
-  if (ailment == "POISON")
-      setAilment(Person::POISON, FALSE);
-  else if (ailment == "BURN1")
-      setAilment(Person::BURN1, FALSE);
-  else if (ailment == "BURN2")
-      setAilment(Person::BURN2, FALSE);
-  else if (ailment == "BURN3")
-      setAilment(Person::BURN3, FALSE);
-  else if (ailment == "BERSERK")
-      setAilment(Person::BERSERK, FALSE);
-  else if (ailment == "CONFUSE")
-      setAilment(Person::CONFUSE, FALSE);
-  else if (ailment == "SILENCE")
-      setAilment(Person::SILENCE, FALSE);
-  else if (ailment == "SLOW")
-     setAilment(Person::SLOW, FALSE);
-  else if (ailment == "BUBBIFY")
-      setAilment(Person::BUBBIFY, FALSE);
-  else if (ailment == "DEATHTIMER")
-      setAilment(Person::DEATHTIMER, FALSE);
-  else if (ailment == "PARALYSIS")
-      setAilment(Person::PARALYSIS, FALSE);
-  else if (ailment == "BLINDNESS")
-      setAilment(Person::BLINDNESS, FALSE);
-  else if (ailment == "DREADSTRUCK")
-      setAilment(Person::DREADSTRUCK,FALSE);
-  else if (ailment == "DREAMSNARE")
-      setAilment(Person::DREAMSNARE, FALSE);
-  else if (ailment == "HELLBOUND")
-      setAilment(Person::HELLBOUND, FALSE);
-  else if (ailment == "BOND")
-      setAilment(Person::BOND, FALSE);
-  else if(ailment == "ALLATKBUFF")
-      setBuff(Person::ALLATKBUFF, FALSE);
-  else if (ailment == "ALLDEFBUFF")
-      setBuff(Person::ALLDEFBUFF, FALSE);
-  else if (ailment == "PHYSICALATKBUFF")
-      setBuff(Person::PHYSICALATKBUFF, FALSE);
-  else if (ailment == "PHYSICALDEFBUFF")
-      setBuff(Person::PHYSICALDEFBUFF, FALSE);
-  else if (ailment == "THERMALATKBUFF")
-      setBuff(Person::THERMALATKBUFF, FALSE);
-  else if (ailment == "THERMALDEFBUFF")
-      setBuff(Person::THERMALDEFBUFF, FALSE);
-  else if (ailment == "POLARATKBUFF")
-      setBuff(Person::POLARATKBUFF, FALSE);
-  else if (ailment == "POLARDEFBUFF")
-      setBuff(Person::POLARDEFBUFF, FALSE);
-  else if (ailment == "PRIMALATKBUFF")
-     setBuff(Person::PRIMALATKBUFF, FALSE);
-  else if (ailment == "PRIMALDEFBUFF")
-      setBuff(Person::PRIMALDEFBUFF, FALSE);
-  else if (ailment == "CHARGEDATKBUFF")
-      setBuff(Person::CHARGEDATKBUFF, FALSE);
-  else if (ailment == "CHARGEDDEFBUFF")
-      setBuff(Person::CHARGEDDEFBUFF, FALSE);
-  else if (ailment == "CYBERNETICATKBUFF")
-      setBuff(Person::CYBERNETICATKBUFF, FALSE);
-  else if (ailment == "CYBERNETICDEFBUFF")
-     setBuff(Person::CYBERNETICDEFBUFF, FALSE);
-  else if (ailment == "NIHILATKBUFF")
-     setBuff(Person::NIHILATKBUFF, FALSE);
-  else if (ailment == "NIHILDEFBUFF")
-      setBuff(Person::NIHILDEFBUFF, FALSE);
-  else if (ailment == "LIMBERTUDEBUFF")
-      setBuff(Person::LIMBERTUDEBUFF, FALSE);
-  else if (ailment == "UNBEARBUFF")
-      setBuff(Person::UNBEARBUFF, FALSE);
-  else if (ailment == "MOMENTUMBUFF")
-      setBuff(Person::MOMENTUMBUFF, FALSE);
-  else if (ailment == "VITALITYBUFF")
-      setBuff(Person::VITALITYBUFF, FALSE);
-  else if (ailment == "QDBUFF")
-      setBuff(Person::QDBUFF, FALSE);
-  else if (ailment == "ROOTBOUND")
-      setBuff(Person::ROOTBOUND, FALSE);
-  else if (ailment == "DOUBLECAST")
-      setBuff(Person::DOUBLECAST, FALSE);
-    else if (ailment == "TRIPLECAST")
-      setBuff(Person::TRIPLECAST, FALSE);
-    else if (ailment == "HALF COST")
-      setBuff(Person::HALFCOST, FALSE);
-
   /* Remove the ailment from the inflicted_ailments vector and the
      stored duration and min, max durations */
   int i = indexOfAilment(ailment);
@@ -411,10 +248,10 @@ const bool Person::removeAilment(QString ailment)
  */
 int Person::indexOfAilment(QString ailment)
 {
-    for (int i = 0; i < inflicted_ailments.size(); i++)
-        if (inflicted_ailments.at(i) == ailment)
-            return i;
-    return -1;
+  for (int i = 0; i < inflicted_ailments.size(); i++)
+    if (inflicted_ailments.at(i) == ailment)
+      return i;
+  return -1;
 }
 
 /*
@@ -579,28 +416,6 @@ void Person::setTemporaryStats()
 bool Person::useItem(Item* used_item)
 {
     return TRUE;
-}
-
-/*
- * Description: Toggles the value of a status ailment flag
- *
- * Inputs: StatusAilment flag
- * Output: none
- */
-void Person::toggleAilment(StatusAilment flags)
-{
-    setAilment(flags, !getAilment(flags));
-}
-
-/*
- * Description: Toggles the value of a status buff flag
- *
- * Inputs: StatusBuff flag
- * Output: none
- */
-void Person::toggleBuff(StatusBuff flags)
-{
-    setBuff(flags, !getBuff(flags));
 }
 
 /*
@@ -827,28 +642,6 @@ Sprite* Person::getFirstPerson()
 Sprite* Person::getThirdPerson()
 {
   return third_person;
-}
-
-/*
- * Description: Evaluates a given status ailment flag
- *
- * Inputs: Status ailment flag
- * Output: Boolean evaluation of the flag
- */
-const bool Person::getAilment(StatusAilment flags)
-{
-  return ailment_set.testFlag(flags);
-}
-
-/*
- * Description: Evaluates a given status buff flag
- *
- * Inputs: Status buff flag
- * Output: Boolean evaluation of the flag
- */
-const bool Person::getBuff(StatusBuff flags)
-{
-  return buff_set.testFlag(flags);
 }
 
 /*
@@ -1652,31 +1445,6 @@ void Person::setItemLoot(QVector<Item> items)
     for (int i = 0; i < items.size(); i++)
         item_drops.push_back(items[i]);
 }
-
-/*
- * Description: Sets a status ailment flag to a given boolean value
- *
- * Inputs: StatusAilment flag
- *         Boolean value to set the flag to
- * Output: none
- */
-void Person::setAilment(StatusAilment flags, const bool set_value)
-{
-  (set_value) ? (ailment_set |= flags) : (ailment_set ^= flags);
-}
-
-/*
- * Description: Sets a status buff flag to a given boolean value
- *
- * Inputs: StatusBuff flag
- *         Boolean value to set the flag to
- * Output: none
- */
-void Person::setBuff(StatusBuff flags, const bool set_value)
-{
-  (set_value) ? (buff_set |= flags) : (buff_set ^= flags);
-}
-
 
 /*
  * Description: Sets a person state flag to a given boolean value

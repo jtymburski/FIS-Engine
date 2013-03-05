@@ -39,59 +39,6 @@ public:
   };
   Q_DECLARE_FLAGS(PersonFlags, PersonState)
 
-  /* Enumerated flags for status ailments */
-  enum StatusAilment
-  {
-    CLEAR            = 1 <<  0,  /* Is the person to be clear of all status ailments? */
-    POISON           = 1 <<  1,
-    BURN1            = 1 <<  2,  /* 1st Degree Burn */
-    BURN2            = 1 <<  3,  /* 2nd Degree Burn */
-    BURN3            = 1 <<  4,  /* 3rd Degree Burn */
-    BERSERK          = 1 <<  5,
-    CONFUSE          = 1 <<  6,
-    SILENCE          = 1 <<  7,
-    SLOW             = 1 <<  8,
-    BUBBIFY          = 1 <<  9,
-    DEATHTIMER       = 1 << 10,
-    PARALYSIS        = 1 << 11,
-    BLINDNESS        = 1 << 12,
-    DREADSTRUCK      = 1 << 13,
-    DREAMSNARE       = 1 << 14,
-    HELLBOUND        = 1 << 15,
-    BOND             = 1 << 16
-  };
-  Q_DECLARE_FLAGS(StatusFlags, StatusAilment)
-
-  enum StatusBuff
-  {
-    ALLATKBUFF        = 1 <<  0,
-    ALLDEFBUFF        = 1 <<  1,
-    PHYSICALATKBUFF   = 1 <<  2,
-    PHYSICALDEFBUFF   = 1 <<  3,
-    THERMALATKBUFF    = 1 <<  4,
-    THERMALDEFBUFF    = 1 <<  5,
-    POLARATKBUFF      = 1 <<  6,
-    POLARDEFBUFF      = 1 <<  7,
-    PRIMALATKBUFF     = 1 <<  8,
-    PRIMALDEFBUFF     = 1 <<  9,
-    CHARGEDATKBUFF    = 1 << 10,
-    CHARGEDDEFBUFF    = 1 << 11,
-    CYBERNETICATKBUFF = 1 << 12,
-    CYBERNETICDEFBUFF = 1 << 13,
-    NIHILATKBUFF      = 1 << 14,
-    NIHILDEFBUFF      = 1 << 15,
-    LIMBERTUDEBUFF    = 1 << 16,
-    UNBEARBUFF        = 1 << 17,
-    MOMENTUMBUFF      = 1 << 18,
-    VITALITYBUFF      = 1 << 19,
-    QDBUFF            = 1 << 20,
-    ROOTBOUND         = 1 << 21,
-    DOUBLECAST        = 1 << 22,
-    TRIPLECAST        = 1 << 23,
-    HALFCOST          = 1 << 24
-  };
-  Q_DECLARE_FLAGS(StatusBuffFlags, StatusBuff)
-
 private:
   /* For level-up function */
   int personMax(int a, int b);
@@ -338,20 +285,13 @@ private:
   /* Set of flags for the person */
   PersonFlags state_set;
 
-  /* Set the status ailment flags for the person */
-  StatusFlags ailment_set;
-
-  /* Set the status buff flags for the person */
-  StatusBuffFlags buff_set;
-
   /* List of skills that the person has */
   QVector<Skill*> skill_list;
 
   /* Parallel list of when person's skills become available */
-  QVector<uint>  skill_available;
+  QVector<QPair<Skill*, uint> >  skills_available;
 
   /* List of status ailment strings */
-  // static const QVector<QString> status_ailment_list = {"Hey", "Dude"};
   QVector<QString> inflicted_ailments;
 
   /* The person's name */
@@ -396,7 +336,7 @@ public:
   /* Returns a Vector of the durations of inflicted status ailments */
   QVector<short> getAilmentDuration();
 
-  /* Returns a vector of the maximum durations of inflicted status ailments */
+  /* Returns a vector of the min/max durations of inflicted status ailments */
   QVector<QPair<short, short> > getMinMaxDurations();
 
   /* Adds experience of a given amount */
@@ -405,20 +345,8 @@ public:
   /* Use a given item */
   bool useItem(Item* used_item);
 
-  /* Toggles a StatusAilments flag */
-  void toggleAilment(StatusAilment flags);
-
-  /* Toggles a StatusBuff flag */
-  void toggleBuff(StatusBuff flags);
-
   /* Toggles a PersonState flag */
   void togglePersonFlag(PersonState flags);
-
-  /* Evaluates the boolean value of a StatusAilment */
-  const bool getAilment(StatusAilment flags);
-
-  /* Evaluates the boolean value of StatusBuff */
-  const bool getBuff(StatusBuff flag);
 
   /* Gets the boolean value of PersonState flag */
   const bool getPersonFlag(PersonState flags);
@@ -656,12 +584,6 @@ public:
 
   /* Gets the critcial chance stat */
   uint getBaseUnbearability();
-
-  /* Sets the value of a status ailment */
-  void setAilment(StatusAilment flags, const bool set_value);
-
-  /* Sets the value of a status buff */
-  void setBuff(StatusBuff flags, const bool set_value);
 
   /* Sets the value of a PersonState flag */
   void setPersonFlag(PersonState flags, const bool set_value);
@@ -904,8 +826,5 @@ public:
   void setBaseUnbearability(uint value);
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Person::PersonFlags)
-Q_DECLARE_OPERATORS_FOR_FLAGS(Person::StatusBuffFlags)
-Q_DECLARE_OPERATORS_FOR_FLAGS(Person::StatusFlags)
-
 
 #endif // PERSON_H

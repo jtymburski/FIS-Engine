@@ -12,7 +12,7 @@
 
 #include <QtGui/QWidget>
 
-#include "Game/Player/Action.h"
+#include "Game/Player/Skill.h"
 
 class Category : public QWidget
 {
@@ -155,8 +155,8 @@ private:
   /* When the actions become available (based on level) */
   QVector<uint> action_available;
 
-  /* Actions available for this Category */
-  QVector<Action*> action_list;
+  /* Skills available for this category */
+  QVector<Skill*> action_list;
 
 public:
   /* Sets name of the Category */
