@@ -28,8 +28,6 @@ BattleStatusBar::BattleStatusBar(Party* persons, uint width,
   setHeight(height);
   for (uint i = 0; i < persons->getPartySize(); i++)
     addPerson(persons->getMember(i), i);
-
-  update();
 }
 
 /*
@@ -66,6 +64,7 @@ void BattleStatusBar::addPerson(Person* character, int person_index)
   }
   else
   {
+    qDebug() << "Person Index:" << person_index;
     uint left_d = (getWidth() / 5) * person_index;
     uint width  = getWidth() / 5;
     uint height = getHeight();

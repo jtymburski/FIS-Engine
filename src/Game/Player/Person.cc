@@ -133,9 +133,75 @@ void Person::setupStats()
  *         max     - short value of the turns to be inflicted for
  * Output: none
  */
-const bool Person::inflictAilment(QString ailment, short max)
+const bool Person::inflictAilment(QString ailment, short min, short max)
 {
+  if (inflicted_ailments.size() > kMAX_AILMENTS || max > kMAX_AIL_DURA)
+    return false;
+  if (ailment == "POISON")
+    setAilment(Person::POISON, TRUE);
+  if (ailment == "BURN1")
+    setAilment(Person::BURN1, TRUE);
+  inflicted_ailments.push_back(ailment);
+  setAilmentDuration(min, max);
+    /*
+    CLEAR            = 1 <<  0,
+    POISONED         = 1 <<  1,
+    BURNED1          = 1 <<  2,
+    BURNED2          = 1 <<  3,
+    BURNED3          = 1 <<  4,
+    BERSERK          = 1 <<  5,
+    CONFUSE          = 1 <<  6,
+    SILENCE          = 1 <<  7,
+    SLOW             = 1 <<  8,
+    BUBBIFY          = 1 <<  9,
+    DEATHTIMER       = 1 << 10,
+    PARALYSIS        = 1 << 11,
+    BLINDNESS        = 1 << 12,
+    DREADSTRUCK      = 1 << 13,
+    DREAMSNARED      = 1 << 14,
+    HELLBOUND        = 1 << 15,
+    BONDED           = 1 << 16
+    ALLATKBUFF        = 1 <<  0
+    ALLDEFBUFF        = 1 <<  1
+    PHYSICALATKBUFF   = 1 <<  2
+    PHYSICALDEFBUFF   = 1 <<  3
+    THERMALATKBUFF    = 1 <<  4
+    THERMALDEFBUFF    = 1 <<  5
+    POLARATKBUFF      = 1 <<  6
+    POLARDEFBUFF      = 1 <<  7
+    PRIMALATKBUFF     = 1 <<  8
+    PRIMALDEFBUFF     = 1 <<  9
+    CHARGEDATKBUFF    = 1 << 10
+    CHARGEDDEFBUFF    = 1 << 11
+    CYBERNETICATKBUFF = 1 << 12
+    CYBERNETICDEFBUFF = 1 << 13
+    NIHILATKBUFF      = 1 << 14
+    NIHILDEFBUFF      = 1 << 15
+    LIMBERTUDEBUFF    = 1 << 16
+    UNBEARBUFF        = 1 << 17
+    MOMENTUMBUFF      = 1 << 18
+    VITALITYBUFF      = 1 << 19
+    QDBUFF            = 1 << 20
+    HEALTHBUFF        = 1 << 21
+    ROOTBOUND         = 1 << 22
+    DOUBLECAST        = 1 << 23
+    TRIPLECAST        = 1 << 24
+    HALFCOST          = 1 << 25 */
+}
 
+
+/*
+ * Description: Sets up the ailment starting duration (0) and min and max
+ *              duration when an ailment is initially inflicted.
+ *
+ * Inputs: max - maximum duration the status ailment can be inflicted for
+ * Output:
+ */
+void Person::setAilmentDuration(short min, short max)
+{
+  effect_duration.push_back(0);
+  QPair<short,short> temp(min,max);
+  min_max_durations.push_back(temp);
 }
 
 /*
@@ -146,7 +212,7 @@ const bool Person::inflictAilment(QString ailment, short max)
  */
 QString Person::ailmentToString(StatusAilment flag)
 {
-
+    return "";
 }
 
 /*
@@ -157,7 +223,7 @@ QString Person::ailmentToString(StatusAilment flag)
  */
 QString Person::buffToString(StatusBuff flag)
 {
-
+    return "";
 }
 
 /*
@@ -228,9 +294,9 @@ QVector<short> Person::getAilmentDuration()
  * Inputs: none
  * Output: QVector<short> - vector of max ailment durations
  */
-QVector<short> Person::getMaxAilmentDurations()
+QVector<QPair<short, short> > Person::getMinMaxDurations()
 {
-  return max_effect_duration;
+  return min_max_durations;
 }
 
 /*
@@ -1970,7 +2036,8 @@ void Person::setNihilFortitude(uint value)
  */
 void Person::setVitality(int value)
 {
-    if (value < 0 && -value >= vitality)
+    vitality = value;
+    /* if (value < 0 && -value >= vitality)
         vitality = 0;
     else if (value < 0)
         vitality += value;
@@ -1980,7 +2047,7 @@ void Person::setVitality(int value)
         vitality = value;
     if (vitality == 0)
         setPersonFlag(Person::ALIVE, FALSE);
-    // TODO -- emit dead signal? [03 - 02 - 13]
+    // TODO -- emit dead signal? [03 - 02 - 13] */
 }
 
 /*f
@@ -1991,6 +2058,8 @@ void Person::setVitality(int value)
  */
 void Person::setQuantumDrive(int value)
 {
+    quantum_drive = value;
+    /*
     if (value < 0 && -value >= quantum_drive)
         quantum_drive = 0;
     else if (value < 0)
@@ -1998,7 +2067,7 @@ void Person::setQuantumDrive(int value)
     else if (value >= cat->getMaxQuantumDrive())
         quantum_drive = cat->getMaxQuantumDrive();
     else
-        quantum_drive = value;
+        quantum_drive = value; */
 }
 
 /*

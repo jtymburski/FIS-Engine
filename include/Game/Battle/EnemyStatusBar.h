@@ -23,7 +23,7 @@ public:
   EnemyStatusBar(Person* character, uint width, uint height, QWidget* parent);
 
   /* Annihilates an EnemyStatusBar object */
-  ~EnemyStatusBar();
+  // ~EnemyStatusBar();
 
 protected:
   /* Paint event for the class */

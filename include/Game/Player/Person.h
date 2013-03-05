@@ -43,10 +43,10 @@ public:
   enum StatusAilment
   {
     CLEAR            = 1 <<  0,  /* Is the person to be clear of all status ailments? */
-    POISONED         = 1 <<  1,
-    BURNED1          = 1 <<  2,  /* 1st Degree Burn */
-    BURNED2          = 1 <<  3,  /* 2nd Degree Burn */
-    BURNED3          = 1 <<  4,  /* 3rd Degree Burn */
+    POISON           = 1 <<  1,
+    BURN1            = 1 <<  2,  /* 1st Degree Burn */
+    BURN2            = 1 <<  3,  /* 2nd Degree Burn */
+    BURN3            = 1 <<  4,  /* 3rd Degree Burn */
     BERSERK          = 1 <<  5,
     CONFUSE          = 1 <<  6,
     SILENCE          = 1 <<  7,
@@ -56,9 +56,9 @@ public:
     PARALYSIS        = 1 << 11,
     BLINDNESS        = 1 << 12,
     DREADSTRUCK      = 1 << 13,
-    DREAMSNARED      = 1 << 14,
+    DREAMSNARE       = 1 << 14,
     HELLBOUND        = 1 << 15,
-    BONDED           = 1 << 16
+    BOND             = 1 << 16
   };
   Q_DECLARE_FLAGS(StatusFlags, StatusAilment)
 
@@ -124,8 +124,8 @@ private:
   static const uint kMAX_EXPERIENCE  = 1000000000; /* Billion */
   static const uint kMAX_EXP_DROP    =    1000000; /* Million */
   static const uint kMAX_CREDIT_DROP =   10000000; /* Ten Million */
-  static const uint kMAX_AILMENTS    =          5;
-  static const uint kMAX_AIL_DURA    =         20;
+  static const int kMAX_AILMENTS    =          5;
+  static const int kMAX_AIL_DURA    =         20;
 
   /* Set up normal stats for constructor */
   void setupStats();
@@ -303,7 +303,7 @@ private:
 
   /* Status ailment vectors */
   QVector<short> effect_duration;
-  QVector<short> max_effect_duration;
+  QVector<QPair<short,short> > min_max_durations;
 
   /* Currently equipped head piece */
   Equipment* head;
@@ -377,7 +377,10 @@ private:
 
 public:
   /* Inflicts a Status ailment */
-  const bool inflictAilment(QString ailment_name, short max);
+  const bool inflictAilment(QString ailment_name, short min, short max);
+
+  /* Sets up the ailment durations */
+  void setAilmentDuration(short min, short max);
 
   /* Converts a StatusAilment to a String */
   static QString ailmentToString(StatusAilment flag);
@@ -389,7 +392,7 @@ public:
   static StatusAilment stringToAilment(QString ailment);
 
   /* Converts a String to a StatusAilment buff */
- static StatusBuff stringToBuff(QString buff);
+  static StatusBuff stringToBuff(QString buff);
 
   /* Removes a Status ailment */
   const bool removeAilment(QString ailment_name);
@@ -402,7 +405,7 @@ public:
   QVector<short> getAilmentDuration();
 
   /* Returns a vector of the maximum durations of inflicted status ailments */
-  QVector<short> getMaxAilmentDurations();
+  QVector<QPair<short, short> > getMinMaxDurations();
 
   /* Adds experience of a given amount */
   void addExperience(uint n);

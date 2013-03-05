@@ -82,6 +82,7 @@ void Application::switchWidget(int index)
  */
 void Application::setupBattle()
 {
+
   Race* human = new Race("Humans");
   Category* bloodclaw_scion = new Category("Blooclaw Scion", 30, 30, 30, 30, 30,
                                            30, 30, 30, 30, 30, 30, 30, 30, 30,

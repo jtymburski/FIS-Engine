@@ -41,13 +41,13 @@ AllyStatusBar::AllyStatusBar(Person* character, uint width, uint height,
 AllyStatusBar::~AllyStatusBar()
 {
   delete name_label;
-  delete qd_label;
+  //delete qd_label;
   delete qd_outline;
   delete qd_bar;
   delete name_box;
   delete qd_grad;
   name_label = NULL;
-  qd_label = NULL;
+  //qd_label = NULL;
   qd_outline = NULL;
   qd_bar = NULL;
   name_box = NULL;
@@ -138,7 +138,7 @@ void AllyStatusBar::additionalSetup()
 
   top_d += pad + height;
 
-  qd_bar = new QRect(left_d, top_d, width, height);
+  qd_bar     = new QRect(left_d, top_d, width, height);
   qd_outline = new QRect(left_d, top_d, width, height);
   qd_grad = new QLinearGradient(QPointF(0,0), QPointF(width,height));
   qd_grad->setColorAt(0, QColor("#0C2B36"));

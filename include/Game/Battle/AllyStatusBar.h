@@ -16,6 +16,8 @@
 #include "Game/Battle/PersonStatusBar.h"
 #include "Game/Player/Person.h"
 
+#include <QDebug>
+
 class AllyStatusBar : public PersonStatusBar
 {
 public:

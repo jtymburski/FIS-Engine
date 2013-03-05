@@ -22,10 +22,7 @@ EnemyStatusBar::EnemyStatusBar(Person* character, uint width, uint height,
 /*
  * Description: Annihilates an EnemyStatusBar object
  */
-EnemyStatusBar::~EnemyStatusBar()
-{
 
-}
 
 /*============================================================================
  * PAINT EVENTS
