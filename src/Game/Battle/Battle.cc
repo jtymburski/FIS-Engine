@@ -240,10 +240,10 @@ void Battle::keyPressEvent(QKeyEvent* event)
       battle_bg->load(":/bbd_sewers4");
       break;
     case Qt::Key_F1:
-      friends->getMember(0)->setVitality(-5);
+      friends->getMember(0)->setVitality(-50);
       break;
     case Qt::Key_F2:
-      friends->getMember(1)->setVitality(-5);
+      friends->getMember(1)->setQuantumDrive(-30);
       break;
     default:
       break;

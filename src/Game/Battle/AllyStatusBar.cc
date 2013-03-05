@@ -82,6 +82,8 @@ void AllyStatusBar::paintEvent(QPaintEvent*)
 {
   /* Initial paint preparation */
   QPainter painter(this);
+  QPalette pal(palette());
+
   painter.setPen(QColor(Qt::black));
 
   // Status thumbs TODO: Get Status from Person [02-03-31]
@@ -108,6 +110,20 @@ void AllyStatusBar::paintEvent(QPaintEvent*)
   qd_bar->setWidth(qd_outline->width() * pc);
   painter.drawRect(*qd_bar);
 
+  delete health_label;
+  QFont current_font(font());
+  current_font.setPixelSize(15);
+  setFont(current_font);
+  pal.setColor(QPalette::Foreground, QColor(200,100,100,255));
+  health_label = new QLabel(getDisplayHP(), this);
+  health_label->move(health_bar->left() + 2, health_bar->top() - 2);
+  health_label->setPalette(pal);
+
+  delete qd_label;
+  pal.setColor(QPalette::Foreground, QColor(200,100,100,255));
+  qd_label = new QLabel(getDisplayQD(), this);
+  qd_label->move(qd_bar->left() + 2, qd_bar->top() - 2);
+  qd_label->setPalette(pal);
 
 }
 
@@ -152,13 +168,7 @@ void AllyStatusBar::additionalSetup()
   health_bar = new QRect(left_d, top_d, width, height);
   health_outline = new QRect(left_d, top_d, width, height);
 
-  QFont current_font(font());
-  current_font.setPixelSize(15);
-  setFont(current_font);
-  pal.setColor(QPalette::Foreground, QColor(200,100,100,255));
   health_label = new QLabel(getDisplayHP(), this);
-  health_label->move(left_d + 2, top_d - 2);
-  health_label->setPalette(pal);
 
   health_grad = new QLinearGradient(QPointF(0,0), QPointF(width,height));
   health_grad->setColorAt(0, QColor("#E30004"));
@@ -169,10 +179,7 @@ void AllyStatusBar::additionalSetup()
   qd_bar     = new QRect(left_d, top_d, width, height);
   qd_outline = new QRect(left_d, top_d, width, height);
 
-  pal.setColor(QPalette::Foreground, QColor(200,100,100,255));
   qd_label = new QLabel(getDisplayQD(), this);
-  qd_label->move(left_d + 2, top_d - 2);
-  qd_label->setPalette(pal);
 
   qd_grad = new QLinearGradient(QPointF(0,0), QPointF(width,height));
   qd_grad->setColorAt(0, QColor("#0C2B36"));

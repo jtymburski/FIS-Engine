@@ -2084,21 +2084,20 @@ void Person::setNihilFortitude(uint value)
  */
 void Person::setVitality(int value)
 {
+  if (value < 0 && -value >= vitality)
+    vitality = 0;
+  else if (value < 0)
+    vitality += value;
+  else if (value >= cat->getMaxVitality())
+    vitality = cat->getMaxVitality();
+  else
     vitality = value;
-    /* if (value < 0 && -value >= vitality)
-        vitality = 0;
-    else if (value < 0)
-        vitality += value;
-    else if (value >= cat->getMaxVitality())
-        vitality = cat->getMaxVitality();
-    else
-        vitality = value;
-    if (vitality == 0)
-        setPersonFlag(Person::ALIVE, FALSE);
-    // TODO -- emit dead signal? [03 - 02 - 13] */
+  if (vitality == 0)
+    setPersonFlag(Person::ALIVE, FALSE);
+  // TODO -- emit dead signal? [03 - 02 - 13] */
 }
 
-/*f
+/*
  * Description: Sets the value of the quantum drive stat
  *
  * Inputs: uint - new value of the quantum drive stat
@@ -2106,16 +2105,14 @@ void Person::setVitality(int value)
  */
 void Person::setQuantumDrive(int value)
 {
+  if (value < 0 && -value >= quantum_drive)
+    quantum_drive = 0;
+  else if (value < 0)
+    quantum_drive += value;
+  else if (value >= cat->getMaxQuantumDrive())
+    quantum_drive = cat->getMaxQuantumDrive();
+  else
     quantum_drive = value;
-    /*
-    if (value < 0 && -value >= quantum_drive)
-        quantum_drive = 0;
-    else if (value < 0)
-        quantum_drive += value;
-    else if (value >= cat->getMaxQuantumDrive())
-        quantum_drive = cat->getMaxQuantumDrive();
-    else
-        quantum_drive = value; */
 }
 
 /*
