@@ -53,7 +53,6 @@ Person::Person(QString name, Race* race, Category* category, QString prim,
  */
 Person::~Person()
 {
-  /*
   delete head;
   delete left_arm;
   delete right_arm;
@@ -71,7 +70,7 @@ Person::~Person()
   setCategory(NULL);
   setRace(NULL);
   setFirstPerson(NULL);
-  setThirdPerson(NULL); */
+  setThirdPerson(NULL);
 }
 
 /*=============================================================================
@@ -136,9 +135,19 @@ void Person::setupStats()
  */
 const bool Person::inflictAilment(QString ailment, short min, short max)
 {
-  // TODO: CHECK FOR DUPLICATES [03-05-13]
-  if (inflicted_ailments.size() > kMAX_AILMENTS || max > kMAX_AIL_DURA)
-    return false;
+  /* First, test if the ailment is valid */
+  if (!isValidAilment(ailment) || max >kMAX_AIL_DURA || min > max)
+    return FALSE;
+
+  /* If the ailment is already set, we need to remove it, then readd it */
+  if (inflicted_ailments.contains(ailment))
+      removeAilment(ailment);
+
+  /* If the ailment is the kMAX_AILMENTSth, remove the first inflicted one */
+  if (inflicted_ailments.size() >= kMAX_AILMENTS )
+    removeAilment(0);
+
+  /* Turn the flag for the corresponding ailment on */
   if (ailment == "POISON")
     setAilment(Person::POISON, TRUE);
   else if (ailment == "BURN1")
@@ -221,13 +230,12 @@ const bool Person::inflictAilment(QString ailment, short min, short max)
     setBuff(Person::TRIPLECAST, TRUE);
   else if (ailment == "HALF COST")
     setBuff(Person::HALFCOST, TRUE);
-  if (ailment == "POISON" || ailment == "BURN1" || ailment == "BURN2" ||
-          ailment == "BURN3" || ailment == "BERSERK" || ailment == "CONFUSE")
 
+  /* Add the inflicted ailment to a vector of strings storing all the
+     infected ailments and set the ailment durations up */
   inflicted_ailments.push_back(ailment);
   setAilmentDuration(min, max);
   return TRUE;
-
 }
 /*
  * Description: Sets up the ailment starting duration (0) and min and max
@@ -245,61 +253,47 @@ void Person::setAilmentDuration(short min, short max)
 
 const bool Person::isValidAilment(QString ailment)
 {
-  /*QVector<QString> status_ailments["POISON", "BURN1", "BURN2", "BURN3", "BERSERK", "CONFUSE", "SILENCE", "SLOW", "BUBBIFY", "DEATHTIMER", "PARALYSIS", "BLINDNESS", "DREADSTRUCK", "DREAMSNARE", "HELLBOUND",
-          "BOND", "ALLATKBUFF", "ALLDEFBUFF", "PHYSICALATKBUFF", "PHYSICALDEFBUFF","ROOTBOUND", "DOUBLECAST",
-          "TRIPLECAST",
-          "HALFCOST"]; */
-  return TRUE;
-}
-
-/*
- * Description: Converts a StatusAilment flag to a string
- *
- * Inputs: StatusAilment - flag to be converted to a string
- * Output: QString - string of the ailment flag given
- */
-QString Person::ailmentToString(StatusAilment flag)
-{
-    return "";
-}
-
-/*
- * Description: Converts a StatusBuff flag to a string
- *
- * Inputs: StatusBuff - flag to be converted to a string
- * Output: QString - string of the buff flag given
- */
-QString Person::buffToString(StatusBuff flag)
-{
-    return "";
-}
-
-/*
- * Description: Converts a StatusBuff flag to a string
- *
- * Inputs: StatusBuff - flag to be converted to a string
- * Output: QString - string of the buff flag given
- */
-// StatusAilment Person::stringToAilment(QString ailment){}
-
-/*
- * Description: Converts a StatusBuff flag to a string
- *
- * Inputs: StatusBuff - flag to be converted to a string
- * Output: QString - string of the buff flag given
- */
-// StatusBuff Person::stringToBuff(QString buff){}
-
-/*
- * Description: Sets up the regular stats of the person, for initial
- *              construction, based off the base stats
- *
- * Inputs: none
- * Output: none
- */
-const bool Person::removeAilment(QString ailment_name)
-{
- return TRUE;
+  QVector<QString> status_ailments;
+  status_ailments.push_back("POISON");
+  status_ailments.push_back("BURN1");
+  status_ailments.push_back("BURN2");
+  status_ailments.push_back("BURN3");
+  status_ailments.push_back("BERSERK");
+  status_ailments.push_back("CONFUSE");
+  status_ailments.push_back("SILENCE");
+  status_ailments.push_back("BUBBIFY");
+  status_ailments.push_back("DEATHTIMER");
+  status_ailments.push_back("PARALYSIS");
+  status_ailments.push_back("BLINDNESS");
+  status_ailments.push_back("DREADSTRUCK");
+  status_ailments.push_back("DREAMSNARE");
+  status_ailments.push_back("HELLBOUND");
+  status_ailments.push_back("BOND");
+  status_ailments.push_back("ALLATKBUFF");
+  status_ailments.push_back("ALLDEFBUFF");
+  status_ailments.push_back("PHYSICALATKBUFF");
+  status_ailments.push_back("PHYSICALDEFBUFF");
+  status_ailments.push_back("THERMALATKBUFF");
+  status_ailments.push_back("THERMALDEFBUFF");
+  status_ailments.push_back("POLARATKBUFF");
+  status_ailments.push_back("POLARDEFBUFF");
+  status_ailments.push_back("PRIMALATKBUFF");
+  status_ailments.push_back("CHARGEDATKBUFF");
+  status_ailments.push_back("CHARGEDDEFBUFF");
+  status_ailments.push_back("CYBERNETICATKBUFF");
+  status_ailments.push_back("CYBERNETICDEFBUFF");
+  status_ailments.push_back("NIHILATKBUFF");
+  status_ailments.push_back("NIHILDEFBUFF");
+  status_ailments.push_back("LIMBERTUDEBUFF");
+  status_ailments.push_back("UNBEARBUFF");
+  status_ailments.push_back("MOMENTUMBUFF");
+  status_ailments.push_back("VITALITYBUFF");
+  status_ailments.push_back("QDBUFF");
+  status_ailments.push_back("ROOTBOUND");
+  status_ailments.push_back("DOUBLECAST");
+  status_ailments.push_back("TRIPLECAST");
+  status_ailments.push_back("HALFCOST");
+  return status_ailments.contains(ailment);
 }
 
 /*
@@ -308,10 +302,131 @@ const bool Person::removeAilment(QString ailment_name)
  *
  * Inputs: none
  * Output: none
+ */
+const bool Person::removeAilment(QString ailment)
+{
+  /* First check if the ailment is actualy inflicted and then check that
+     it is a valid ailment */
+  if (!inflicted_ailments.contains(ailment) || !isValidAilment(ailment))
+    return FALSE;
+
+  /* Turn off the flag corresponing to the ailment */
+  if (ailment == "POISON")
+      setAilment(Person::POISON, FALSE);
+  else if (ailment == "BURN1")
+      setAilment(Person::BURN1, FALSE);
+  else if (ailment == "BURN2")
+      setAilment(Person::BURN2, FALSE);
+  else if (ailment == "BURN3")
+      setAilment(Person::BURN3, FALSE);
+  else if (ailment == "BERSERK")
+      setAilment(Person::BERSERK, FALSE);
+  else if (ailment == "CONFUSE")
+      setAilment(Person::CONFUSE, FALSE);
+  else if (ailment == "SILENCE")
+      setAilment(Person::SILENCE, FALSE);
+  else if (ailment == "SLOW")
+     setAilment(Person::SLOW, FALSE);
+  else if (ailment == "BUBBIFY")
+      setAilment(Person::BUBBIFY, FALSE);
+  else if (ailment == "DEATHTIMER")
+      setAilment(Person::DEATHTIMER, FALSE);
+  else if (ailment == "PARALYSIS")
+      setAilment(Person::PARALYSIS, FALSE);
+  else if (ailment == "BLINDNESS")
+      setAilment(Person::BLINDNESS, FALSE);
+  else if (ailment == "DREADSTRUCK")
+      setAilment(Person::DREADSTRUCK,FALSE);
+  else if (ailment == "DREAMSNARE")
+      setAilment(Person::DREAMSNARE, FALSE);
+  else if (ailment == "HELLBOUND")
+      setAilment(Person::HELLBOUND, FALSE);
+  else if (ailment == "BOND")
+      setAilment(Person::BOND, FALSE);
+  else if(ailment == "ALLATKBUFF")
+      setBuff(Person::ALLATKBUFF, FALSE);
+  else if (ailment == "ALLDEFBUFF")
+      setBuff(Person::ALLDEFBUFF, FALSE);
+  else if (ailment == "PHYSICALATKBUFF")
+      setBuff(Person::PHYSICALATKBUFF, FALSE);
+  else if (ailment == "PHYSICALDEFBUFF")
+      setBuff(Person::PHYSICALDEFBUFF, FALSE);
+  else if (ailment == "THERMALATKBUFF")
+      setBuff(Person::THERMALATKBUFF, FALSE);
+  else if (ailment == "THERMALDEFBUFF")
+      setBuff(Person::THERMALDEFBUFF, FALSE);
+  else if (ailment == "POLARATKBUFF")
+      setBuff(Person::POLARATKBUFF, FALSE);
+  else if (ailment == "POLARDEFBUFF")
+      setBuff(Person::POLARDEFBUFF, FALSE);
+  else if (ailment == "PRIMALATKBUFF")
+     setBuff(Person::PRIMALATKBUFF, FALSE);
+  else if (ailment == "PRIMALDEFBUFF")
+      setBuff(Person::PRIMALDEFBUFF, FALSE);
+  else if (ailment == "CHARGEDATKBUFF")
+      setBuff(Person::CHARGEDATKBUFF, FALSE);
+  else if (ailment == "CHARGEDDEFBUFF")
+      setBuff(Person::CHARGEDDEFBUFF, FALSE);
+  else if (ailment == "CYBERNETICATKBUFF")
+      setBuff(Person::CYBERNETICATKBUFF, FALSE);
+  else if (ailment == "CYBERNETICDEFBUFF")
+     setBuff(Person::CYBERNETICDEFBUFF, FALSE);
+  else if (ailment == "NIHILATKBUFF")
+     setBuff(Person::NIHILATKBUFF, FALSE);
+  else if (ailment == "NIHILDEFBUFF")
+      setBuff(Person::NIHILDEFBUFF, FALSE);
+  else if (ailment == "LIMBERTUDEBUFF")
+      setBuff(Person::LIMBERTUDEBUFF, FALSE);
+  else if (ailment == "UNBEARBUFF")
+      setBuff(Person::UNBEARBUFF, FALSE);
+  else if (ailment == "MOMENTUMBUFF")
+      setBuff(Person::MOMENTUMBUFF, FALSE);
+  else if (ailment == "VITALITYBUFF")
+      setBuff(Person::VITALITYBUFF, FALSE);
+  else if (ailment == "QDBUFF")
+      setBuff(Person::QDBUFF, FALSE);
+  else if (ailment == "ROOTBOUND")
+      setBuff(Person::ROOTBOUND, FALSE);
+  else if (ailment == "DOUBLECAST")
+      setBuff(Person::DOUBLECAST, FALSE);
+    else if (ailment == "TRIPLECAST")
+      setBuff(Person::TRIPLECAST, FALSE);
+    else if (ailment == "HALF COST")
+      setBuff(Person::HALFCOST, FALSE);
+
+  /* Remove the ailment from the inflicted_ailments vector and the
+     stored duration and min, max durations */
+  int i = indexOfAilment(ailment);
+  inflicted_ailments.remove(i);
+  effect_duration.remove(i);
+  min_max_durations.remove(i);
+}
+
+/*
+ * Description: Returns the index a potentially inflicted ailment is stored
+ *              in a person, or -1 if the ailment is not inflicted.
+ *
+ * Inputs: QString - ailment to check for
+ * Outputs: int - index the ailment infliction is stored in
+ */
+int Person::indexOfAilment(QString ailment)
+{
+    for (int i = 0; i < inflicted_ailments.size(); i++)
+        if (inflicted_ailments.at(i) == ailment)
+            return i;
+    return -1;
+}
+
+/*
+ * Description: Removes an ailment known to be stored at a given index
+ *              **Calls removeAilment(QString)**
+ *
+ * Inputs: uint - index of the ailment to be removed
+ * Output: bool - TRUE if the ailment was removed successfully
  */
 const bool Person::removeAilment(uint index)
 {
-  return TRUE;
+  return removeAilment(inflicted_ailments.at(index));
 }
 
 /*

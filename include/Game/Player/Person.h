@@ -92,7 +92,6 @@ public:
   };
   Q_DECLARE_FLAGS(StatusBuffFlags, StatusBuff)
 
-
 private:
   /* For level-up function */
   int personMax(int a, int b);
@@ -381,19 +380,11 @@ public:
   /* Sets up the ailment durations */
   void setAilmentDuration(short min, short max);
 
-  const bool isValidAilment(QString ailment);
+  /* Returns the index of a stored ailment */
+  int indexOfAilment(QString ailment);
 
-  /* Converts a StatusAilment to a String */
-  static QString ailmentToString(StatusAilment flag);
-
-  /* Converts a Buff to a String */
-  static QString buffToString(StatusBuff flag);
-
-  /* Converts a String to a StatusAilment enum */
-  static StatusAilment stringToAilment(QString ailment);
-
-  /* Converts a String to a StatusAilment buff */
-  static StatusBuff stringToBuff(QString buff);
+  /* Checks if an ailment is valid */
+  static const bool isValidAilment(QString ailment);
 
   /* Removes a Status ailment */
   const bool removeAilment(QString ailment_name);

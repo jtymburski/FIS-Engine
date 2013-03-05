@@ -34,6 +34,9 @@ protected:
   /* Setup */
   void additionalSetup();
 
+  /* Rebuild the status boxes */
+  void rebuildStatusBoxes();
+
   /* Name & QD Labels */
   QLabel* name_label;
   QLabel* qd_label;

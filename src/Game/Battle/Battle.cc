@@ -245,6 +245,19 @@ void Battle::keyPressEvent(QKeyEvent* event)
     case Qt::Key_F2:
       friends->getMember(1)->setQuantumDrive(-30);
       break;
+    case Qt::Key_F3:
+      friends->getMember(1)->inflictAilment("POISON", 1, 3);
+      break;
+    case Qt::Key_F4:
+      friends->getMember(1)->inflictAilment("HELLBOUND", 1, 3);
+      break;
+  case Qt::Key_F5:
+      friends->getMember(1)->removeAilment("POISON");
+      break;
+  case Qt::Key_F6:
+      if (friends->getMember(1)->getAilmentList().size() > 0)
+        friends->getMember(1)->removeAilment(0);
+      break;
     default:
       break;
   }

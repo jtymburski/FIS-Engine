@@ -29,8 +29,10 @@ protected:
   // virtual void paintEvent(QPaintEvent*);
   virtual void setup();
   virtual void additionalSetup() = 0;
+  virtual void rebuildStatusBoxes() = 0;
 
   void setCharacter(Person* character);
+  void clearStatusBoxes();
 
   /* Static const limits */
   static const uint kMAX_WIDTH  = 1920 / 5;

@@ -56,8 +56,6 @@ void PersonStatusBar::setup()
   level_label = new QLabel(getDisplayLevel(), this);
   level_label->setPalette(pal);
   // END IF
-
-
 }
 
 /*
@@ -69,6 +67,28 @@ void PersonStatusBar::setup()
 void PersonStatusBar::setCharacter(Person* new_character)
 {
   character = new_character;
+}
+
+/*
+ * Description: Clears the status boxes and status sprites vectors
+ *
+ * Inputs: none
+ * Output: none
+ */
+void PersonStatusBar::clearStatusBoxes()
+{
+  for (int i = 0; i < status_thumb_sprites.size(); i++)
+  {
+    delete status_thumb_sprites.at(i);
+    status_thumb_sprites[i] = NULL;
+  }
+  for (int i = 0; i < status_thumbs.size(); i++)
+  {
+    delete status_thumbs.at(i);
+    status_thumbs[i] = NULL;
+  }
+  status_thumb_sprites.clear();
+  status_thumbs.clear();
 }
 
 /*
