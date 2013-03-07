@@ -11,8 +11,8 @@
 #ifndef ACTION_H
 #define ACTION_H
 
-#include "EnumDatabase.h"
 #include <QtGui/QWidget>
+#include "Game/Player/Ailment.h"
 
 class Action : public QWidget
 {
@@ -84,7 +84,7 @@ private:
   IgnoreDefFlags ignore_def_flags;
 
   /* String of Ailment (if exists) the action inflicts */
-  QString ailment;
+  QString action_ailment;
 
   /* ID of the action: Positive for status effects, negative for others */
   int id;

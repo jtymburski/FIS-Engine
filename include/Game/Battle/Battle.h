@@ -70,9 +70,11 @@
 #include <QtGui/QPainter>
 #include <cmath>
 
+
 #include "Game/Battle/BattleInfoBar.h"
 #include "Game/Battle/BattleMenu.h"
 #include "Game/Battle/BattleStatusBar.h"
+#include "Game/Player/AttributeSet.h"
 #include "Game/Player/Action.h"
 #include "Game/Player/Party.h"
 #include "Game/Weather.h"
@@ -82,6 +84,12 @@ class Battle: public QWidget
   Q_OBJECT
 
 public:
+  /* Constructor for a Battle class */
+  Battle(Party* p_friends, Party* p_foes, QWidget* pointer = 0);
+
+  /* Annihilates a battle object */
+  ~Battle();
+
   /* Enumerated flags for battle class */
   enum BattleState
   {
@@ -91,16 +99,15 @@ public:
   Q_DECLARE_FLAGS(BattleFlags, BattleState)
   BattleFlags flag_set;
 
-  /* Constructor for a Battle class */
-  Battle(Party* p_friends, Party* p_foes, QWidget* pointer = 0);
-
-  /* Annihilates a battle object */
-  ~Battle();
-
 private:
-  /* Print functions */
-  void paintAll();
-  void paintMenu();
+  /* Sets up bounding boxes */
+  void setUpBoxes();
+
+  /* Sets the maximum x-length of the battle window */
+  void setMaxWidth(int value);
+
+  /* Sets the maximum y-length of the battle window */
+  void setMaxHeight(int value);
 
   /* Constant max limits */
   static const uint kMAX_PARTY_SIZE = 5;
@@ -173,6 +180,8 @@ protected:
 
   /* Paint event for the class */
   void paintEvent(QPaintEvent*);
+  void paintAll();
+  void paintMenu();
 
   /* Checks for deaths, pops current action off stack, calls performAction();*/
   void actionOutcome();
@@ -182,12 +191,6 @@ protected:
 
   /* Sets the foes pointer */
   void setFoes(Party* p_foes = NULL);
-
-  /* Sets the maximum x-length of the battle window */
-  void setMaxWidth(int value);
-
-  /* Sets the maximum y-length of the battle window */
-  void setMaxHeight(int value);
 
 public slots:
   void closeBattle();

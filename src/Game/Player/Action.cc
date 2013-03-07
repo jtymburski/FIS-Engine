@@ -280,7 +280,7 @@ int Action::getId()
  */
 QString Action::getAilment()
 {
-  return ailment;
+  return action_ailment;
 }
 
 /*
@@ -355,9 +355,9 @@ float Action::getVariance()
  * Inputs: QString - string to set the infliction to
  * Output: none
  */
-void Action::setAilment(QString ailment)
+void Action::setAilment(QString new_ailment)
 {
-  this->ailment = ailment;
+  action_ailment = new_ailment;
 }
 
 /*

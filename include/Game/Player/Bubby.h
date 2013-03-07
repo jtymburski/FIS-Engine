@@ -45,9 +45,6 @@ private:
   static int id;
   int myId;
 
-  /* ID of the Bubby (for deleting purposes) */
-  // static uint id;
-
   /* The bubby's experience */
   uint experience;
 

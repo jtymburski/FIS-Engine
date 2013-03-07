@@ -84,16 +84,19 @@ void AllyStatusBar::paintEvent(QPaintEvent*)
   painter.drawRect(*health_outline);
   painter.setPen(Qt::transparent);
   painter.setBrush(*health_grad);
-  float pc = character->getVitality() * 1.0 / character->getTempVitality();
-  health_bar->setWidth(health_outline->width() * pc);
+  short num = character->tempStats().getStat("VITA");
+  short den = character->tempStats().getMax("VITA");
+  health_bar->setWidth(health_outline->width() * num * 1.0 / den);
+
   painter.drawRect(*health_bar);
   painter.setPen(QColor(Qt::black));
   painter.setBrush(Qt::transparent);
   painter.drawRect(*qd_outline);
   painter.setPen(Qt::transparent);
   painter.setBrush(*qd_grad);
-  pc = character->getQuantumDrive() * 1.0 / character->getTempQuantumDrive();
-  qd_bar->setWidth(qd_outline->width() * pc);
+  num = character->tempStats().getStat("QD");
+  den = character->tempStats().getMax("QD");
+  qd_bar->setWidth(qd_outline->width() * 1.0 * num / den);
   painter.drawRect(*qd_bar);
   health_label->setText(getDisplayHP());
   qd_label->setText(getDisplayQD());
@@ -159,7 +162,7 @@ void AllyStatusBar::rebuildStatusBoxes()
 {
   clearStatusBoxes();
   uint length  = (getHeight() / 4) - 6;
-  for (int i = 0; i < character->getAilmentList().size(); i++)
+  for (int i = 0; i < character->getAilments().size(); i++)
   {
     uint left_d  = i * (length + 4) + 5;
     status_thumbs.push_back(new QRect(left_d, 5 + font_size, length, length));
@@ -175,7 +178,7 @@ void AllyStatusBar::rebuildStatusBoxes()
 QString AllyStatusBar::getDisplayQD()
 {
   QString display_qd;
-  return display_qd.setNum(character->getQuantumDrive());
+  return display_qd.setNum(character->tempStats().getStat("QD"));
 }
 
 

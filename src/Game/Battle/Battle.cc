@@ -7,6 +7,8 @@
 *  FUTURE [12-28-12]: Write algorithm to determine enemy placement
 *  TODO [01-27-13]: Write battle progression steps
 *  TODO [01-27-13]: Menu designs, displaying information, etc.
+*  TODO [03-06-13]:
+*
 * Notes: Turn Progression:
 *
 * 1. generalUpkeep() adjusts all values based on Weather.  BattleInfoBar
@@ -72,23 +74,23 @@
 /*
  * Description: Constructor for the battle class
  *
- * Inputs: p_friends - pointer to allied party
- *         p_foes - pointer to foes party
+ * Inputs: friends - pointer to allied party
+ *         foes - pointer to foes party
  */
-Battle::Battle(Party* p_friends, Party* p_foes, QWidget* pointer)
+Battle::Battle(Party* friends, Party* foes, QWidget* pointer)
 {
-  /* Setup for pointers */
-  setFriends(p_friends);
-  setFoes(p_foes);
+  setFriends(friends);
+  setFoes(foes);
 
-  for (uint i = 0; i < p_friends->getPartySize(); i++)
-      p_friends->getMember(i)->setTemporaryStats();
-  for (uint i = 0; i < p_foes->getPartySize(); i++)
-      p_foes->getMember(i)->setTemporaryStats();
+  /* Set up each friend's and each foe's temporary statistics */
+  for (uint i = 0; i < friends->getPartySize(); i++)
+    friends->getMember(i)->setTempStats(friends->getMember(i)->getStats());
+  for (uint i = 0; i < foes->getPartySize(); i++)
+      foes->getMember(i)->setTempStats(foes->getMember(i)->getStats());
 
   /* Basic settings for battle window sizing and backdrops */
-  setMaxWidth(1216);  // TODO: Obtain from options [02-24-13]
-  setMaxHeight(704);  // TODO: Obtain from options [02-24-13]
+  setMaxWidth(1216);
+  setMaxHeight(704);
   setFixedSize(getMaxWidth(), getMaxHeight());
   battle_bg = new QPixmap();
   battle_bg->load(":/bbd_sewers");
@@ -238,25 +240,6 @@ void Battle::keyPressEvent(QKeyEvent* event)
       break;
     case Qt::Key_4:
       battle_bg->load(":/bbd_sewers4");
-      break;
-    case Qt::Key_F1:
-      friends->getMember(0)->setVitality(-50);
-      break;
-    case Qt::Key_F2:
-      friends->getMember(1)->setQuantumDrive(-30);
-      break;
-    case Qt::Key_F3:
-      friends->getMember(1)->inflictAilment("POISON", 1, 3);
-      break;
-    case Qt::Key_F4:
-      friends->getMember(1)->inflictAilment("HELLBOUND", 1, 3);
-      break;
-  case Qt::Key_F5:
-      friends->getMember(1)->removeAilment("POISON");
-      break;
-  case Qt::Key_F6:
-      if (friends->getMember(1)->getAilmentList().size() > 0)
-        friends->getMember(1)->removeAilment(0);
       break;
     default:
       break;

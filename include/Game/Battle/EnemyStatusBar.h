@@ -31,7 +31,7 @@ protected:
 
   /* Additional Setup after Parent's */
   void additionalSetup();
-
+  void rebuildStatusBoxes() {}
 };
 
 #endif // ENEMYSTATUSBAR_H

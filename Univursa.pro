@@ -49,6 +49,9 @@ SOURCES += \
     ./src/Game/Map/Sector.cc \
     ./src/Game/Map/SectorAction.cc \
     ./src/Game/Map/Tile.cc \
+    ./src/Game/Player/Ailment.cc \
+    ./src/Game/Player/SkillSet.cc \
+    ./src/Game/Player/AttributeSet.cc \
     ./src/Game/Player/Player.cc \
     ./src/Game/Player/Action.cc \
     ./src/Game/Player/Bubby.cc \
@@ -61,7 +64,6 @@ SOURCES += \
     ./src/Game/Player/Race.cc \
     ./src/Game/Player/Skill.cc \
     ./src/GridShifter.cc
-
 
 HEADERS += \
     ./include/Application.h \
@@ -97,6 +99,9 @@ HEADERS += \
     ./include/Game/Map/Sector.h \
     ./include/Game/Map/SectorAction.h \
     ./include/Game/Map/Tile.h \
+    ./include/Game/Player/Ailment.h \
+    ./include/Game/Player/AttributeSet.h \
+    ./include/Game/Player/SkillSet.h \
     ./include/Game/Player/Player.h \
     ./include/Game/Player/Action.h \
     ./include/Game/Player/Bubby.h \
@@ -108,8 +113,6 @@ HEADERS += \
     ./include/Game/Player/Person.h \
     ./include/Game/Player/Race.h \
     ./include/Game/Player/Skill.h \
-    ./include/GridShifter.h \
-    include/Game/Battle/PersonStatusBar.h
-
+    ./include/GridShifter.h
 
 INCLUDEPATH += ./include
