@@ -84,9 +84,9 @@ Battle::Battle(Party* friends, Party* foes, QWidget* pointer)
 
   /* Set up each friend's and each foe's temporary statistics */
   for (uint i = 0; i < friends->getPartySize(); i++)
-    friends->getMember(i)->setTempStats(friends->getMember(i)->getStats());
+      friends->getMember(i)->battlePrep();
   for (uint i = 0; i < foes->getPartySize(); i++)
-      foes->getMember(i)->setTempStats(foes->getMember(i)->getStats());
+      foes->getMember(i)->battlePrep();
 
   /* Basic settings for battle window sizing and backdrops */
   setMaxWidth(1216);
@@ -240,6 +240,10 @@ void Battle::keyPressEvent(QKeyEvent* event)
       break;
     case Qt::Key_4:
       battle_bg->load(":/bbd_sewers4");
+      break;
+  case Qt::Key_F1:
+      friends->getMember(0)->tempStats().changeStat("VITA", -50);
+      friends->getMember(0)->tempStats().changeStat("QTDR", -15);
       break;
     default:
       break;

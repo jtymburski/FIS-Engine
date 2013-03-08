@@ -48,7 +48,7 @@ private:
   static const uint kMAX_EXPERIENCE  = 1000000000; /* Billion */
   static const uint kMAX_EXP_DROP    =    1000000; /* Million */
   static const uint kMAX_CREDIT_DROP =   10000000; /* Ten Million */
-  static const int kMAX_AILMENTS     =          5;  /* Ailments at one time */
+  static const int kMAX_AILMENTS     =          5; /* Ailments at one time */
   static const int kEQUIP_SLOTS      =          5;
 
   /* Equipment names and slots */
@@ -104,6 +104,12 @@ public:
   /* Adds experience of a given amount --> level up */
   void addExperience(uint n);
 
+  /* Prepare temp_stats to be used for a battle */
+  void battlePrep();
+
+  /* Calculates the usable skill set */
+  void calcSkills();
+
   /* Clears status ailments */
   const bool removeAilment(Infliction remove_ailment);
   void removeAilment(int index);
@@ -154,9 +160,9 @@ public:
 
   /* Gets the person's primary and secondary elemental strengths */
   QString getPrimary();
-  QChar getPrimaryCurve();
+  QChar   getPrimaryCurve();
   QString getSecondary();
-  QChar getSecondaryCurve();
+  QChar   getSecondaryCurve();
 
   /* Gets the person's word rank */
   QString getRank();

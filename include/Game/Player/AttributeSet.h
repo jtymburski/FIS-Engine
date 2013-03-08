@@ -11,8 +11,7 @@
 #define ATTRIBUTESET_H
 
 #include <QtGui/QWidget>
-#include <QVector>
-#include <QString>
+#include <QDebug>
 
 class AttributeSet
 {
@@ -21,11 +20,11 @@ public:
   AttributeSet();
 
   /* Annihilates an AttributeSet object */
-  ~AttributeSet();
+  ~AttributeSet() {}
 
 private:
   /* Absolute maximum value of an attribute */
-  static const ushort kMAX_VALUE = 50001;
+  static const ushort kMAX_VALUE = 25000;
 
   /* Containers for names and values */
   QVector<QString> names;
@@ -37,6 +36,9 @@ public:
   /* Alters a given stat by a certain amount {Damage, Buff} */
   const bool changeStat(QString name, int amount);
   const bool changeStat(int index, int amount);
+
+  /* Initial setup for constructor */
+  void setUpNames();
 
   /* Gets the string names of statistics */
   QString getName(int index);
@@ -55,6 +57,12 @@ public:
   /* Returns the normal values of a given stat */
   short getStat(QString name);
   short getStat(int index);
+
+  /* Sets all the stats as a plethora of values */
+  void setAll(ushort a, ushort b, ushort c, ushort d, ushort e, ushort f,
+              ushort g, ushort h, ushort i, ushort j, ushort k, ushort l,
+              ushort m, ushort n, ushort o, ushort p, ushort q, ushort r,
+              ushort s, bool max = FALSE);
 
   /* Sets the maximum and normal values of a given stat */
   const bool setMax(QString name, ushort value);

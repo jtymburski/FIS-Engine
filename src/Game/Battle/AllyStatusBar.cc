@@ -84,9 +84,10 @@ void AllyStatusBar::paintEvent(QPaintEvent*)
   painter.drawRect(*health_outline);
   painter.setPen(Qt::transparent);
   painter.setBrush(*health_grad);
+
   short num = character->tempStats().getStat("VITA");
   short den = character->tempStats().getMax("VITA");
-  health_bar->setWidth(health_outline->width() * num * 1.0 / den);
+  health_bar->setWidth(health_outline->width() * 1.0 * num / den);
 
   painter.drawRect(*health_bar);
   painter.setPen(QColor(Qt::black));
@@ -94,8 +95,8 @@ void AllyStatusBar::paintEvent(QPaintEvent*)
   painter.drawRect(*qd_outline);
   painter.setPen(Qt::transparent);
   painter.setBrush(*qd_grad);
-  num = character->tempStats().getStat("QD");
-  den = character->tempStats().getMax("QD");
+  num = character->tempStats().getStat("QTDR");
+  den = character->tempStats().getMax("QTDR");
   qd_bar->setWidth(qd_outline->width() * 1.0 * num / den);
   painter.drawRect(*qd_bar);
   health_label->setText(getDisplayHP());
@@ -178,7 +179,7 @@ void AllyStatusBar::rebuildStatusBoxes()
 QString AllyStatusBar::getDisplayQD()
 {
   QString display_qd;
-  return display_qd.setNum(character->tempStats().getStat("QD"));
+  return display_qd.setNum(character->tempStats().getStat("QTDR"));
 }
 
 

@@ -63,7 +63,7 @@ Category::~Category()
 
 void Category::cleanUp()
 {
-  // getSkillSet()->cleanUp();
+  getSkillSet()->cleanUp();
   if (stat_set.getMax("VITALITY") > kMAX_VITALITY)
       stat_set.setMax("VITALITY", kMAX_VITALITY);
   if (stat_set.getMax("QUANTUM DRIVE") > kMAX_QD)

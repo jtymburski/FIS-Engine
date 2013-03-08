@@ -83,21 +83,34 @@ void Application::switchWidget(int index)
  */
 void Application::setupBattle()
 {
-  AttributeSet* attributes = new AttributeSet();
-  Category* battle_class   = new Category("Bloodclaw", *attributes);
-  Race* the_bears          = new Race("Bears", *attributes);
+  AttributeSet bloodclaw_attr;
+  AttributeSet bear_attr;
+  bloodclaw_attr.setAll(1000, 125, 200, 150, 10, 8, 10, 8, 10, 8, 10, 8, 10,
+                        8, 10, 8, 5, 5, 5);
+  bloodclaw_attr.setAll(10000, 1250, 2000, 1500, 1000, 800, 1000, 800, 1000,
+                        800, 1000, 800, 1000, 800, 1000, 800, 500, 500, 500,
+                        TRUE);
+  bear_attr.setAll(100, 12, 20, 15, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+  bear_attr.setAll(300, 120, 150, 100, 80, 100, 80, 100, 80, 100, 80, 100, 80,
+                   100, 80, 100, 50, 50, 50, TRUE);
+
+  Category* battle_class   = new Category("Bloodclaw", bloodclaw_attr);
+  Race* the_bears          = new Race("Bears", bear_attr);
+
   Person* main = new Person("Malgidus", the_bears, battle_class, "THA", "PRB");
   Person* secd = new Person("CloudGuy", the_bears, battle_class, "THA", "PRC");
+
   Sprite* one = new Sprite(":/A_arcadius");
   Sprite* two = new Sprite(":/E_ulterius");
+
   main->setFirstPerson(one);
   secd->setThirdPerson(two);
+
   Party* friends = new Party(main);
-  friends->addMember(main);
   Party* foes = new Party(secd);
-  foes->addMember(secd);
 
   test_battle = new Battle(friends, foes, this);
+
 }
 
 /*

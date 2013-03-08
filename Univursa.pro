@@ -10,6 +10,7 @@ CONFIG += qt
 DESTDIR = ./bin
 win32 {
   LIBS += -lmingw32 -l SDLmain
+  win32:QMAKE_CXX_FLAGS_WARN_ON += -Wextra
 }
 LIBS += -lSDL -lSDL_mixer
 #QT += phonon # network xml, core and gui are default

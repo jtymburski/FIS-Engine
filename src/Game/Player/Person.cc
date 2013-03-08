@@ -28,18 +28,30 @@
  */
 Person::Person(QString name, Race *race, Category* cat, QString p, QString s)
 {
+  /* Initial preparation */
   setName(name);
   setRace(race);
   setCategory(cat);
   setPrimary(p);
   setSecondary(s);
 
+  setExp(0);
+  setLevel(1);
+
+  /* Set up all three attribute sets */
   setUpBaseStats();
   setStats(base_stats);
   setTempStats(base_stats);
 
+  /* Initially gather all usable skills */
+  calcSkills();
+
+  /* Append kEQUIP_SLOTS of NULL equipment initially */
   for (int i = 0; i < kEQUIP_SLOTS; i++)
     equipment.append(NULL);
+
+  setFirstPerson();
+  setThirdPerson();
 }
 
 /*
@@ -112,6 +124,35 @@ void Person::addExperience(uint value)
 }
 
 /*
+ * Description: Prepares the Person for a battle, by assigning his temp min and
+ *              max stats as the current stats value.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Person::battlePrep()
+{
+  for (int i = 0 ; i < temp_stats.getSize(); i++)
+  {
+    temp_stats.setStat(i, stats.getStat(i));
+    temp_stats.setMax(i, stats.getStat(i));
+  }
+}
+
+/* // TODO NOT FINISHED
+ * Description: This function calculates the currently usable skills of the
+ *              person, based on the skills allowed by their Race and Category.
+ *
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Person::calcSkills()
+{
+
+}
+
+/*
  * Description: Removes an ailment of a given type
  *
  * Inputs: Infliction - ailment type to be removed from the Person
@@ -166,9 +207,8 @@ void Person::setUpBaseStats()
   {
     base_stats.setStat(i, cat->getAttrSet().getStat(i) +
                        race->getAttrSet().getStat(i));
-    base_stats.setMax(i, cat->getAttrSet().getStat(i) +
-                      race->getAttrSet().getStat(i));
-
+    base_stats.setMax(i, cat->getAttrSet().getMax(i) +
+                      race->getAttrSet().getMax(i));
   }
 }
 
@@ -616,7 +656,8 @@ void Person::setItemLoot(QVector<Item> items)
 
 const bool Person::setLevel(const uint &new_level)
 {
- // TODO: Finish level-up function
+  level = new_level;
+  // TODO: Finish level-up function
 }
 
 /*
