@@ -34,7 +34,7 @@ Person::Person(QString name, Race *race, Category* cat, QString p, QString s)
   setCategory(cat);
   setPrimary(p);
   setSecondary(s);
-
+  skills = NULL;
   setExp(0);
   setLevel(1);
 
@@ -64,14 +64,17 @@ Person::~Person()
     delete equipment.at(i);
     equipment[i] = NULL;
   }
-  delete cat;
-  delete race;
-  delete skills;
+  // delete cat;
+  // delete race;
+  if (skills != NULL)
+  {
+    delete skills;
+    skills = NULL;
+  }
   delete first_person;
   delete third_person;
-  cat = NULL;
-  race = NULL;
-  skills = NULL;
+  // cat = NULL;
+  // race = NULL;
   first_person = NULL;
   third_person = NULL;
 }

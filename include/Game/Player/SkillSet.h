@@ -24,6 +24,8 @@ public:
   ~SkillSet();
 
 private:
+  bool isEmpty;
+
   /* Maximum number of skills allowed */
   static const int kMAX_SKILLS = 100;
 

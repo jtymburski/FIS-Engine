@@ -26,7 +26,10 @@ BattleStatusBar::BattleStatusBar(Party* persons, uint width,
   setParent(parent);
   setWidth(width);
   setHeight(height);
-  for (uint i = 0; i < persons->getPartySize(); i++)
+  addPerson(persons->getMember(0), 1);
+  if (persons->getPartySize() > 1)
+    addPerson(persons->getMember(1), 0);
+  for (int i = 2; i < persons->getPartySize();i ++)
     addPerson(persons->getMember(i), i);
 }
 
@@ -56,19 +59,12 @@ BattleStatusBar::~BattleStatusBar()
  */
 void BattleStatusBar::addPerson(Person* character, int person_index)
 {
-  if (person_index < 0)
-  {
-    bars.push_back(new EnemyStatusBar(character,width,height,this));
-  }
-  else
-  {
-    uint left_d = (getWidth() / 5) * person_index;
-    uint width  = getWidth() / 5;
-    uint height = getHeight();
-    boxes.push_back(new QRect(left_d, 0, width, height));
-    bars.push_back(new AllyStatusBar(character,width,height,this));
-    bars.at(person_index)->setGeometry(*boxes.at(person_index));
-  }
+  uint left_d = (getWidth() / 5) * person_index;
+  uint width  = getWidth() / 5;
+  uint height = getHeight();
+  boxes.push_back(new QRect(left_d, 0, width, height));
+  bars.push_back(new AllyStatusBar(character,width,height,this));
+  bars.at(bars.size() - 1)->setGeometry(*boxes.at(boxes.size() - 1));
 }
 
 /*

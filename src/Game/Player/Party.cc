@@ -1,7 +1,7 @@
 /******************************************************************************
 * Class Name: Party Implementation
 * Date Created: December 2nd, 2012
-* Inheritance: None?
+* Inheritance:
 * Description: Party is an object holding the five members (Person class) of 
 *              a sleuth
 ******************************************************************************/
@@ -15,10 +15,9 @@
 /*
  * Description: Constructor for a party object.
  */
-Party::Party(Person* p_main, uint max, Inventory* inventory, QWidget* parent)
+Party::Party(Person* p_main, ushort max, Inventory* inventory, QWidget* parent)
 {
     members.push_back(p_main);
-
     setMaxSize(max);
     setInventory(inventory);
 }
@@ -28,7 +27,18 @@ Party::Party(Person* p_main, uint max, Inventory* inventory, QWidget* parent)
  */
 Party::~Party()
 {
-    setInventory();
+  delete pouch;
+  pouch = NULL;
+  if (getPartyFlag(Party::MAIN))
+  {
+    delete main;
+    main = NULL;
+  }
+  for (int i = 0; i < members.size(); i++)
+  {
+    delete members.at(i);
+    members[i] = NULL;
+  }
 }
 
 /*============================================================================
@@ -80,16 +90,16 @@ bool Party::removeMember(uint index)
 bool Party::removeMember(QString value)
 {
     if (members.size() < 2)
-        return false;
+        return FALSE;
     for (uint i = 1; i < 5; i++)
     {
         if (members.at(i)->getName() == value)
         {
           members.remove(i);
-          return true;
+          return TRUE;
         }
     }
-    return false;
+    return FALSE;
 }
 
 /*
@@ -126,6 +136,17 @@ Person* Party::getMember(uint index)
   if (members.at(index))
     return members.at(index);
   return NULL;
+}
+
+/*
+ * Description: Returns the value of a certain Party flag
+ *
+ * Inputs: PartyFlag - flag to evaluate
+ * Output: bool      - evaluation of the flag
+ */
+const bool Party::getPartyFlag(PartyFlag flag)
+{
+  return (pflag_set.testFlag(flag));
 }
 
 /*
@@ -182,6 +203,7 @@ void Party::setInventory(Inventory* i)
  */
 void Party::setMainMember(Person* p)
 {
+  setPartyFlag(Party::MAIN, TRUE);
   main = p;
 }
 
@@ -197,7 +219,19 @@ bool Party::setMaxSize(uint value)
   if (value > 0 && value < 6)
   {
     max_size = value;
-    return true;
+    return TRUE;
   }
-  return false;
+  return FALSE;
+}
+
+/*
+ * Description: Sets the value of a PartyFlag flag
+ *
+ * Inputs: PartyFlag - flag to be set
+ *         bool      - value to set the flag to
+ * Output: none
+ */
+void Party::setPartyFlag(PartyFlag flag, const bool set_value)
+{
+  (set_value) ? (pflag_set |= flag) : (pflag_set ^= flag);
 }

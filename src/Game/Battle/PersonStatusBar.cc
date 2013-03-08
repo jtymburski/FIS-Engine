@@ -32,7 +32,7 @@ PersonStatusBar::PersonStatusBar(Person* character, uint width, uint height,
 PersonStatusBar::~PersonStatusBar() {}
 
 /*============================================================================
- * FUNCTIONS
+ * PROTECTED FUNCTIONS
  *===========================================================================*/
 
 void PersonStatusBar::setup()
@@ -83,6 +83,8 @@ void PersonStatusBar::clearStatusBoxes()
     delete status_thumbs.at(i);
     status_thumbs[i] = NULL;
   }
+  status_thumbs.clear();
+  status_thumb_sprites.clear();
 }
 
 /*
@@ -105,6 +107,10 @@ void PersonStatusBar::cleanUp()
   health_bar = NULL;
   clearStatusBoxes();
 }
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 
 /*
  * Description: Gets a QString of the displayed HP value.

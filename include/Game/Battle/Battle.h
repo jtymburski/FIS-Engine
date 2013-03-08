@@ -4,8 +4,6 @@
 * Inheritance: Parent class: Game
 * Description: 
 *
-*  TODO: CONSTRUCTORS TO BE FINISHED
-*
 * Notes: Turn Progression:
 *
 * 1. generalUpkeep() adjusts all values based on Weather.  BattleInfoBar
@@ -69,13 +67,10 @@
 #include <QtGui/QPaintEvent>
 #include <QtGui/QPainter>
 #include <cmath>
-
-
 #include "Game/Battle/BattleInfoBar.h"
 #include "Game/Battle/BattleMenu.h"
 #include "Game/Battle/BattleStatusBar.h"
-#include "Game/Player/AttributeSet.h"
-#include "Game/Player/Action.h"
+#include "Game/Player/SkillSet.h"
 #include "Game/Player/Party.h"
 #include "Game/Weather.h"
 
@@ -100,6 +95,15 @@ public:
   BattleFlags flag_set;
 
 private:
+  /* Constant max limits */
+  static const int kMAX_PARTY_SIZE = 5;
+
+  /* Sets the allies pointer */
+  void setFriends(Party* p_friends = NULL);
+
+  /* Sets the foes pointer */
+  void setFoes(Party* p_foes = NULL);
+
   /* Sets up bounding boxes */
   void setUpBoxes();
 
@@ -109,14 +113,12 @@ private:
   /* Sets the maximum y-length of the battle window */
   void setMaxHeight(int value);
 
-  /* Constant max limits */
-  static const uint kMAX_PARTY_SIZE = 5;
-
   /* Pointer to the battle info bar */
   BattleInfoBar* info_bar;
 
   /* Battle Status bar */
   BattleStatusBar* status_bar;
+  QVector<EnemyStatusBar*> enemy_status_bar;
 
   /* The Battle menu pointer (for selecting actions), off by default */
   // BattleMenu* menu;
@@ -156,20 +158,21 @@ private:
   /* Ally Bounding Boxes */
   QVector<QRect*> ally_box;
 
-  /* Enemy Bounding Boxes */
+  /* Enemy Bounding Boxes & StatusBar Boxes */
   QVector<QRect*> enemy_box;
+  QVector<QRect*> enemy_status_boxes;
 
   /* Bounding boxes */
-  // QRect* target_box; /* Skill/inventory target selection */
+  // QRect* target_box;
   QRect* status_box;
   QRect* info_box;
   QRect* extra_box;
 
-  /* The action buffer */
-  // QVector<Action*> action_buffer;
+  /* The skill buffer */
+  QVector<Skill*> skill_buffer;
 
-  /* The inventory use buffer */
-  // QVector<Action*> inventory_buffer;
+  /* The items use buffer */
+  QVector<Item*> items_buffer;
 
   /* Weather condition during battle */
   // Weather* weather_conditions;
@@ -185,12 +188,6 @@ protected:
 
   /* Checks for deaths, pops current action off stack, calls performAction();*/
   void actionOutcome();
-
-  /* Sets the allies pointer */
-  void setFriends(Party* p_friends = NULL);
-
-  /* Sets the foes pointer */
-  void setFoes(Party* p_foes = NULL);
 
 public slots:
   void closeBattle();
@@ -219,7 +216,7 @@ public:
   /* Non-character events */
   void generalUpkeep(); 
 
-  /* Reorders stack (speed based)*/
+  /* Reorders stack (speed based) */
   void orderActions(); 
 
   /* Performs current action animation */

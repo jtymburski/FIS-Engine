@@ -16,21 +16,25 @@
 
 SkillSet::SkillSet()
 {
-
+  isEmpty = TRUE;
 }
 
 SkillSet::SkillSet(QVector<Skill*> new_skills, QVector<ushort> new_levels)
 {
     addSkills(new_skills, new_levels);
     cleanUp();
+    isEmpty = FALSE;
 }
 
 SkillSet::~SkillSet()
 {
-  for (int i = 0; i < skills.size(); i++)
+  if (!isEmpty)
   {
-    delete skills.at(i);
-    skills[i] = NULL;
+    for (int i = 0; i < skills.size(); i++)
+    {
+      delete skills.at(i);
+      skills[i] = NULL;
+    }
   }
 }
 

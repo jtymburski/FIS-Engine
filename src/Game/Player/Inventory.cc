@@ -19,7 +19,7 @@
  * Inputs: none
  * Output: uint - limit of bubby items.
  */
-Inventory::Inventory(QString name, QImage thumbnail, uint limit, QWidget* parent)
+Inventory::Inventory(QString name, QPixmap* thumbnail, uint limit, QWidget* parent)
 {
   upgrade(name, thumbnail, limit, limit, limit);
   resetLevel(0);
@@ -197,7 +197,7 @@ const bool Inventory::removeFrom(Bubby bubby)
  * Inputs: none
  * Output: none
  */
-void Inventory::upgrade(QString name, QImage thumbnail, uint equipment_limit,
+void Inventory::upgrade(QString name, QPixmap* thumbnail, uint equipment_limit,
                         uint item_limit, uint bubby_limit)
 {
   this->name = name;
@@ -221,10 +221,10 @@ void Inventory::upgrade(QString name, QImage thumbnail, uint equipment_limit,
  */
 const bool Inventory::resetLevel(const uint new_level)
 {
-    if (level >= kMAX_LEVEL)
-      return FALSE;
-    level = new_level;
-    return true;
+  if (level >= kMAX_LEVEL)
+    return FALSE;
+  level = new_level;
+  return TRUE;
 }
 
 /*
@@ -357,7 +357,7 @@ QString Inventory::getName()
  * Inputs: none
  * Output: QImage of the inventory's thumbnail
  */
-QImage Inventory::getThumbnail()
+QPixmap* Inventory::getThumbnail()
 {
     return thumb;
 }
