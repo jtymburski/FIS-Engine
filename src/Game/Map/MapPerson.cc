@@ -184,7 +184,7 @@ QString MapPerson::getName()
 Sprite* MapPerson::getSprite()
 {
     //return;
-}
+\}
 
 /* Gets the persons step length */
 int MapPerson::getStepLength()
