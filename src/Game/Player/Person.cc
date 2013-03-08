@@ -502,9 +502,9 @@ Sprite* Person::getFirstPerson()
  * Inputs: none
  * Output: AttributeSet - the base stat AttributeSet
  */
-AttributeSet Person::baseStats()
+AttributeSet* Person::baseStats()
 {
-  return base_stats;
+  return &base_stats;
 }
 
 /*
@@ -513,9 +513,9 @@ AttributeSet Person::baseStats()
  * Inputs: none
  * Output: AttributeSet - the standard stat AttributeSet
  */
-AttributeSet Person::getStats()
+AttributeSet* Person::getStats()
 {
-  return stats;
+  return &stats;
 }
 
 /*
@@ -524,9 +524,9 @@ AttributeSet Person::getStats()
  * Inputs: none
  * Output: AttributeSet - the temporary AttributeSet
  */
-AttributeSet Person::tempStats()
+AttributeSet* Person::tempStats()
 {
-  return temp_stats;
+  return &temp_stats;
 }
 
 /*

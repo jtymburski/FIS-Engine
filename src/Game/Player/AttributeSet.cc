@@ -33,10 +33,7 @@ const bool AttributeSet::changeStat(QString name, int amount)
       else if (amount > 0 && amount >= max_values.at(i))
         values[i] = max_values.at(i);
       else
-      {
-        values[i] = amount;
-        qDebug() << amount;
-      }
+        values[i] += amount;
       return TRUE;
     }
   }
@@ -175,7 +172,7 @@ const bool AttributeSet::setMax(QString name, ushort value)
   {
     if (name == names.at(i) || name == short_names.at(i))
     {
-      if (value < kMAX_VALUE && value >= values.at(i))
+      if (value <= kMAX_VALUE && value >= values.at(i))
         max_values[i] = value;
       else
         max_values[i] = kMAX_VALUE;
@@ -196,10 +193,10 @@ const bool AttributeSet::setStat(QString name, ushort value)
   {
     if (name == names.at(i) || name == short_names.at(i))
     {
-      if (value < max_values.at(i) && value < kMAX_VALUE)
+      if (value <= max_values.at(i) && value < kMAX_VALUE)
       {
-          values[i] = value;
-          return TRUE;
+        values[i] = value;
+        return TRUE;
       }
       else
         return FALSE;

@@ -117,7 +117,7 @@ void PersonStatusBar::cleanUp()
 QString PersonStatusBar::getDisplayHP()
 {
   QString display_hp;
-  return display_hp.setNum(character->tempStats().getStat("VITA"));
+  return display_hp.setNum(character->tempStats()->getStat("VITA"));
 }
 
 /*

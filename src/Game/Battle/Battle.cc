@@ -242,8 +242,8 @@ void Battle::keyPressEvent(QKeyEvent* event)
       battle_bg->load(":/bbd_sewers4");
       break;
   case Qt::Key_F1:
-      friends->getMember(0)->tempStats().changeStat("VITA", -50);
-      friends->getMember(0)->tempStats().changeStat("QTDR", -15);
+      friends->getMember(0)->tempStats()->changeStat("VITA", -50);
+      friends->getMember(0)->tempStats()->changeStat("QTDR", -15);
       break;
     default:
       break;

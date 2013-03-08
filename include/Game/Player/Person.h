@@ -172,9 +172,9 @@ public:
   Sprite* getThirdPerson();
 
   /* Methods for obtaining stat sets */
-  AttributeSet baseStats();
-  AttributeSet getStats();
-  AttributeSet tempStats();
+  AttributeSet* baseStats();
+  AttributeSet* getStats();
+  AttributeSet* tempStats();
 
   /* Sets an equipment to a slot */
   const bool setEquipment(QString slot, Equipment* e = NULL);
