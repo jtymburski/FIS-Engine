@@ -43,13 +43,13 @@ AllyStatusBar::~AllyStatusBar()
   delete qd_label;
   delete qd_outline;
   delete qd_bar;
-  delete name_box;
+  //delete name_box; // Problematic delete
   delete qd_grad;
   name_label = NULL;
   qd_label = NULL;
   qd_outline = NULL;
   qd_bar = NULL;
-  name_box = NULL;
+//  name_box = NULL; // Corresponding NULL statement
   qd_grad = NULL;
   cleanUp();
 }
