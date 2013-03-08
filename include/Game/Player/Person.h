@@ -11,6 +11,8 @@
 #define PERSON_H
 
 #include <QtGui/QWidget>
+#include <cmath>
+#include <algorithm>
 #include "EnumDatabase.h"
 #include "Game/Player/Ailment.h"
 #include "Game/Player/Category.h"
@@ -38,25 +40,33 @@ public:
     RENDERING     = 1 << 4, /* Person is rendering on the map */
     MAINCHARACTER = 1 << 5, /* Is this person the main character? */
     BOSS          = 1 << 6, /* Is this person a Boss character? */
-    MINIBOSS      = 1 << 7  /* Is this person a miniboss? */
+    MINIBOSS      = 1 << 7,  /* Is this person a miniboss? */
+    MAXLVL        = 1 << 8  /* Is this person the max level? */
   };
   Q_DECLARE_FLAGS(PersonFlags, PersonState)
 
 private:
   /* Person class constants */
-  static const uint kTOTAL_MAX_LEVEL =        127;
+  static const uint kMAX_LEVEL       =        127;
+  static const uint kMIN_LVL_EXP     =        156;
+  static const uint kMAX_LVL_EXP     =    5327426;
   static const uint kMAX_EXPERIENCE  = 1000000000; /* Billion */
   static const uint kMAX_EXP_DROP    =    1000000; /* Million */
   static const uint kMAX_CREDIT_DROP =   10000000; /* Ten Million */
   static const int kMAX_AILMENTS     =          5; /* Ailments at one time */
-  static const int kEQUIP_SLOTS      =          5;
+
+  /* Calculate the experience table */
+  static void calcExpTable();
 
   /* Equipment names and slots */
   QVector<Equipment*> equipment;
 
   /* Person's level and experience */
   uint level;
-  uint experience;
+  uint total_exp;
+
+  /* Table of experience */
+  static QVector<uint> exp_table;
 
   /* Person's loot when killed */
   QVector<Item> item_drops;
@@ -137,6 +147,9 @@ public:
   QVector<Equipment*> getEquipment();
   Equipment* getEquipSlot(int index);
   Equipment* getEquipSlot(QString name);
+
+  /* Gets the experience at a given level */
+  static uint getExpAt(ushort level);
 
   /* Gets the person's race */
   Race* getRace();

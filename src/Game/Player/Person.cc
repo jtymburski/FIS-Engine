@@ -12,7 +12,8 @@
 ******************************************************************************/
 
 #include "Game/Player/Person.h"
-#include <algorithm>
+
+QVector<uint> Person::exp_table;
 
 /*
  * Description: Constructs a Person object gievn a name, race and category
@@ -43,15 +44,19 @@ Person::Person(QString name, Race *race, Category* cat, QString p, QString s)
   setStats(base_stats);
   setTempStats(base_stats);
 
-  /* Initially gather all usable skills */
-  calcSkills();
-
   /* Append kEQUIP_SLOTS of NULL equipment initially */
-  for (int i = 0; i < kEQUIP_SLOTS; i++)
+  for (int i = 0; i < 5; i++)
     equipment.append(NULL);
 
   setFirstPerson();
   setThirdPerson();
+
+  if (exp_table.isEmpty())
+    calcExpTable();
+
+  /* Initially gather all usable skills */
+  calcSkills();
+
 }
 
 /*
@@ -59,24 +64,56 @@ Person::Person(QString name, Race *race, Category* cat, QString p, QString s)
  */
 Person::~Person()
 {
-  for (int i = 0; i < equipment.size(); i++)
-  {
-    delete equipment.at(i);
-    equipment[i] = NULL;
-  }
+  // for (int i = 0; i < equipment.size(); i++)
+  // {
+    // delete equipment.at(i);
+    // equipment[i] = NULL;
+  // }
   // delete cat;
   // delete race;
-  if (skills != NULL)
-  {
-    delete skills;
-    skills = NULL;
-  }
+  // if (skills != NULL)
+  // {
+    // delete skills;
+    // skills = NULL;
+  // }
   delete first_person;
   delete third_person;
   // cat = NULL;
   // race = NULL;
   first_person = NULL;
   third_person = NULL;
+}
+
+/*
+ * Description: Calculates the experience table
+ *
+ * Inputs: none
+ * Output: none
+ *
+ */
+void Person::calcExpTable()
+{
+  double b = log((double)kMAX_LVL_EXP / kMIN_LVL_EXP) / (kMAX_LEVEL - 1);
+  double a = (double)kMIN_LVL_EXP / (exp(b) - 1.0);
+  for (uint i = 1; i <= kMAX_LEVEL + 1; i++)
+  {
+    int old_exp = round(a * exp(b * (i - 1)));
+    int new_exp = round(a * exp(b * i));
+    exp_table.push_back(new_exp - old_exp);
+  }
+}
+
+/*
+ * Description: Returns the value of the experience table at a given point
+ *
+ * Inputs: ushort - level to look up on the table
+ * Output: uint   - total experience required for given level
+ */
+uint Person::getExpAt(ushort level)
+{
+  if (level < exp_table.size())
+    return exp_table.at(level);
+  return 0;
 }
 
 /*
@@ -96,34 +133,21 @@ void Person::addAilment(Ailment new_ailment)
 /*
  * Description: Adds an amount to the experience of the person and calls
  *              setLevel() if necessary to deal with level ups accordingly
- *              Will deal with multiple level ups.
- *
- * Note: The formula for experience in mathematical form is currently:
- *
- *       let x = player's level + 1
- *        f(x) = minimum experience needed to reach level x
- *
- *        f(x) = floor(x + 300 * 2 ^ 1/7), 0 < x <= 126
+ *              Will deal with multiple level ups. 
  *
  * Inputs: value - amount of experience to be added
  * Output: none
  */
 void Person::addExperience(uint value)
 {
- /* Finds the experience value of next level and if the current
-   * experience value of the person exceeds this, level up the
-   * character until its experience matches the correct level */
-  uint l = getLevel();
-  uint y = 0;
-  experience += value;
+  if (total_exp + value > kMAX_EXPERIENCE)
+    total_exp = kMAX_EXPERIENCE;
+  else
+    total_exp += value;
 
-  do
-  {
-    y = floor(l + 300 * pow(2, l / 7));
-    if (experience >= y)
-      if ((l + 1 > 0) && (l + 1 < 126))
-              setLevel(l++);
-  } while (experience >= y);
+  /* Level the character to the proper value (if necessary) */
+  while (total_exp >= getExpAt(getLevel()+1) && !getPersonFlag(Person::MAXLVL))
+    setLevel(getLevel() + 1);
 }
 
 /*
@@ -364,7 +388,7 @@ SkillSet* Person::getSkills()
  */
 uint Person::getExp()
 {
-  return experience;
+  return total_exp;
 }
 
 /*
@@ -616,8 +640,8 @@ void Person::setCategory(Category* c)
  */
 void Person::setExp(uint value)
 {
-  (value < kMAX_EXPERIENCE) ? (experience = value) :
-                              (experience = kMAX_EXPERIENCE);
+  (value < kMAX_EXPERIENCE) ? (total_exp = value) :
+                              (total_exp = kMAX_EXPERIENCE);
 }
 
 /*
@@ -657,10 +681,65 @@ void Person::setItemLoot(QVector<Item> items)
         item_drops.push_back(items[i]);
 }
 
+/*
+ * Description: Sets the level of the Person. Will account for higher levels,
+ *              and sets the MAXLVL flag if the Person has reached kMAX_LEVEL.
+ *              This function will calculate their new stat attributes.
+ *
+ * Notes [1]: The difference between old_stat(i) and new_stat(i) is
+ *            curr_stat(i) and temp_stat(i)
+ *
+ * Inputs: new_level - the level to change the person to.
+ * Output: bool      - true if the level was changed
+ */
 const bool Person::setLevel(const uint &new_level)
 {
-  level = new_level;
-  // TODO: Finish level-up function
+  /* Assign the proper level value */
+  if (new_level == getLevel())
+    return FALSE;
+  if (new_level < kMAX_LEVEL)
+    level = new_level;
+  else
+  {
+    level = kMAX_LEVEL;
+    setPersonFlag(Person::MAXLVL, TRUE);
+  }
+
+  /* Calculate the stats for the person based on their maximum values */
+  setUpBaseStats();
+  setTempStats(*getStats());
+
+  for (int i = 0; i < stats.getSize(); i++)
+  {
+    int base = base_stats.getStat(i);
+    int max  = base_stats.getMax(i);
+    QString test = stats.getShortName(i);
+    test.chop(2);
+
+    if (primary == test)
+    {
+      if (primary_curve == 'S') base = floor(base * 1.200);
+      if (primary_curve == 'A') base = floor(base * 1.150);
+      if (primary_curve == 'B') base = floor(base * 1.100);
+      if (primary_curve == 'C') base = floor(base * 1.050);
+    }
+    else if (secondary == test)
+    {
+      if (secondary_curve == 'S') base = floor(base * 1.120);
+      if (secondary_curve == 'A') base = floor(base * 1.090);
+      if (secondary_curve == 'B') base = floor(base * 1.060);
+      if (secondary_curve == 'C') base = floor(base * 1.030);
+    }
+
+    double b = log((double)max / base) / (kMAX_LEVEL - 1);
+    double a = (double)base / (exp(b) - 1.0);
+
+    int old_values = round(a * exp(b * (new_level - 1)));
+    int new_values = round(a * exp(b * new_level));
+
+    stats.setStat(i, new_values - old_values);
+  }
+  return TRUE;
 }
 
 /*

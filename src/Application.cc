@@ -107,7 +107,21 @@ void Application::setupBattle()
   secd->setThirdPerson(two);
 
   Party* friends = new Party(main);
+  friends->setPartyFlag(Party::MAIN, TRUE);
+
   Party* foes = new Party(secd);
+  friends->setPartyFlag(Party::FOE, TRUE);
+
+  /* Level Up Test
+  for (int i = 1; i < 128; i++)
+  {
+    main->setLevel(i);
+    qDebug() << "LEVEL: " << main->getLevel();
+    for (int j = 0; j < main->getStats()->getSize(); j++)
+        qDebug() << main->getStats()->getStat(j) << " MAX: " << main->baseStats()->getMax(j);
+    qDebug() << endl << endl;
+
+  } */
 
   test_battle = new Battle(friends, foes, this);
 }

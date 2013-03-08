@@ -31,8 +31,8 @@ Party::~Party()
   pouch = NULL;
   if (getPartyFlag(Party::MAIN))
   {
-    delete main;
-    main = NULL;
+    // delete main;
+    // main = NULL;
   }
   for (int i = 0; i < members.size(); i++)
   {
