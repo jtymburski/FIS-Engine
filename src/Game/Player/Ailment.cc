@@ -13,10 +13,7 @@ Ailment::Ailment(Infliction t, ushort max, float ch)
   setDuration(max, ch);
 }
 
-Ailment::Ailment()
-{
-
-}
+Ailment::Ailment() {}
 
 const bool Ailment::update()
 {

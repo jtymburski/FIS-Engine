@@ -142,10 +142,34 @@ Battle::Battle(Party* friends, Party* foes, QWidget* pointer)
  */
 Battle::~Battle()
 {
-  // delete friends;
-  // delete foes;
-  // setFriends();
-  // setFoes();
+  delete info_bar;
+  delete status_bar;
+  delete foes;
+  delete friends;
+  delete battle_bg;
+  delete battle_status_bar_image;
+  delete status_box;
+  delete info_box;
+  delete extra_box;
+  for (int i = 0; i < ally_box.size(); i++)
+  {
+    delete ally_box.at(i);
+    ally_box[i] = NULL;
+  }
+  for (int i = 0; i < enemy_box.size(); i++)
+  {
+    delete enemy_box.at(i);
+    enemy_box[i] = NULL;
+  }
+  info_bar = NULL;
+  status_bar = NULL;
+  friends = NULL;
+  foes = NULL;
+  battle_bg = NULL;
+  battle_status_bar_image = NULL;
+  status_box = NULL;
+  info_box = NULL;
+  extra_box = NULL;
 }
 
 /*============================================================================

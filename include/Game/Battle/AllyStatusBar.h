@@ -44,7 +44,6 @@ protected:
   /* Additional Bounding Boxes */
   QRect* qd_outline;
   QRect* qd_bar;
-  QRect* name_box;
 
   /* Additional Gradients */
   QLinearGradient* qd_grad;

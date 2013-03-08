@@ -20,7 +20,7 @@ public:
   AttributeSet();
 
   /* Annihilates an AttributeSet object */
-  ~AttributeSet() {}
+  ~AttributeSet();
 
 private:
   /* Absolute maximum value of an attribute */

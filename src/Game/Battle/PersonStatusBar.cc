@@ -83,8 +83,6 @@ void PersonStatusBar::clearStatusBoxes()
     delete status_thumbs.at(i);
     status_thumbs[i] = NULL;
   }
-  status_thumb_sprites.clear();
-  status_thumbs.clear();
 }
 
 /*

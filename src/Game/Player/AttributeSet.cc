@@ -23,6 +23,8 @@ AttributeSet::AttributeSet()
   max_values.squeeze();
 }
 
+AttributeSet::~AttributeSet() {}
+
 const bool AttributeSet::changeStat(QString name, int amount)
 {  for (int i = 0; i < names.size(); i++)
   {

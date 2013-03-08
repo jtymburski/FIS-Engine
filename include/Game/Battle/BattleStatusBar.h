@@ -12,7 +12,6 @@
 #include <QtGui/QWidget>
 #include <QtGui/QPaintEvent>
 #include <QtGui/QPainter>
-
 #include "Game/Battle/AllyStatusBar.h"
 #include "Game/Battle/EnemyStatusBar.h"
 #include "Game/Player/Party.h"

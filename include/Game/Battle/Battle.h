@@ -119,7 +119,7 @@ private:
   BattleStatusBar* status_bar;
 
   /* The Battle menu pointer (for selecting actions), off by default */
-  BattleMenu* menu;
+  // BattleMenu* menu;
 
   /* Checks if targeting mode is active */
   bool target_mode; //Checks if targeting mode is active
@@ -160,19 +160,19 @@ private:
   QVector<QRect*> enemy_box;
 
   /* Bounding boxes */
-  QRect* target_box; /* Skill/inventory target selection */
+  // QRect* target_box; /* Skill/inventory target selection */
   QRect* status_box;
   QRect* info_box;
   QRect* extra_box;
 
   /* The action buffer */
-  QVector<Action*> action_buffer; 
+  // QVector<Action*> action_buffer;
 
   /* The inventory use buffer */
-  QVector<Action*> inventory_buffer; 
+  // QVector<Action*> inventory_buffer;
 
   /* Weather condition during battle */
-  Weather* weather_conditions; 
+  // Weather* weather_conditions;
    
 protected:
   /* Handles all key entries */

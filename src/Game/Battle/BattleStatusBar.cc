@@ -62,7 +62,6 @@ void BattleStatusBar::addPerson(Person* character, int person_index)
   }
   else
   {
-    qDebug() << "Person Index:" << person_index;
     uint left_d = (getWidth() / 5) * person_index;
     uint width  = getWidth() / 5;
     uint height = getHeight();

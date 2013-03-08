@@ -15,8 +15,8 @@ EnemyStatusBar::EnemyStatusBar(Person* character, uint width, uint height,
                                QWidget* parent)
     : PersonStatusBar(character, width, height, parent)
 {
-    additionalSetup();
-    update();
+  additionalSetup();
+  update();
 }
 
 /*

@@ -110,7 +110,6 @@ void Application::setupBattle()
   Party* foes = new Party(secd);
 
   test_battle = new Battle(friends, foes, this);
-
 }
 
 /*

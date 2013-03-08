@@ -56,6 +56,7 @@ SOURCES += \
     ./src/Game/Player/Player.cc \
     ./src/Game/Player/Action.cc \
     ./src/Game/Player/Bubby.cc \
+    ./src/Game/Player/BubbyFlavour.cc \
     ./src/Game/Player/Category.cc \
     ./src/Game/Player/Equipment.cc \
     ./src/Game/Player/Inventory.cc \
@@ -106,6 +107,7 @@ HEADERS += \
     ./include/Game/Player/Player.h \
     ./include/Game/Player/Action.h \
     ./include/Game/Player/Bubby.h \
+    ./include/Game/Player/BubbyFlavour.h \
     ./include/Game/Player/Category.h \
     ./include/Game/Player/Equipment.h \
     ./include/Game/Player/Inventory.h \
@@ -115,5 +117,5 @@ HEADERS += \
     ./include/Game/Player/Race.h \
     ./include/Game/Player/Skill.h \
     ./include/GridShifter.h
-
+ 
 INCLUDEPATH += ./include

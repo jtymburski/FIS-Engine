@@ -34,9 +34,7 @@ Action::Action(QString raw, QWidget *pointer)
 /*
  * Description: Annihilates an action object
  */
-Action::~Action()
-{
-}
+Action::~Action() {}
 
 /*============================================================================
  * FUNCTIONS
