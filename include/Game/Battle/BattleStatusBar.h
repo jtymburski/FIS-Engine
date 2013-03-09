@@ -12,14 +12,15 @@
 #include <QtGui/QWidget>
 #include <QtGui/QPaintEvent>
 #include <QtGui/QPainter>
-
-#include "Game/Battle/PersonStatusBar.h"
+#include "Game/Battle/AllyStatusBar.h"
+#include "Game/Battle/EnemyStatusBar.h"
 #include "Game/Player/Party.h"
 
 class BattleStatusBar : public QWidget
 {
 public:
-  BattleStatusBar(Party* persons, uint width, uint height, QWidget *parent = 0);
+  BattleStatusBar(Party* persons, uint width, uint height,
+                  QWidget *parent = 0);
   ~BattleStatusBar();
 
 private:
@@ -37,31 +38,15 @@ private:
   uint height;
   uint width;
 
-protected:
-  /* Paint event for the class */
-  void paintEvent(QPaintEvent*);
-
 public:
   /* Adds a person to the vector of bars */
-  void addPerson(Person* character, uint person_index);
+  void addPerson(Person* character, int person_index);
 
   /* Returns the dimensions of the box */
   uint getLeftMargin();
   uint getTopDistance();
   uint getWidth();
   uint getHeight();
-
-  /* Gets displayed values of a person in the vector given an amount */
-  uint getDisplayHP(int person_index);
-  uint getDisplayQD(int person_index);
-  uint getDisplayMaxHP(int person_index);
-  uint getDisplayMaxQD(int person_index);
-
-  /* Sets displayed values of a person in the vector given an amount */
-  void setDisplayHP(uint vitality, int person_index);
-  void setDisplayQD(uint qd, int person_index);
-  void setDisplayMaxHP(uint max_vitality, int person_index);
-  void setDisplayMaxQD(uint max_qd, int person_index);
 
   /* Sets thse size of the box */
   void setSize(QRect* box);

@@ -11,6 +11,31 @@
 
 int main(int argc, char *argv[])
 {
+  /* Testing code for file handler */
+  FileHandler fh;
+  fh.setEncryptionEnabled(TRUE);
+  fh.setFilename("TEST.log");
+  fh.setWriteEnabled(TRUE);
+  fh.start();
+  //fh.writeLine("Hello friend two");
+  //fh.writeLine("Hello foe I hate");
+  fh.writeLine("Let's write a little story today.");
+  fh.writeLine("What's it going to be about you say?");
+  fh.writeLine("Well it will be interesting, I tell you.");
+  fh.writeLine("Let's begin?");
+  fh.stop();
+  fh.setWriteEnabled(FALSE);
+  fh.start();
+
+  bool done = FALSE;
+
+  while(!done)
+    qDebug() << fh.readLine(&done);
+
+  fh.stop();
+
+  /* End Test */
+
   QApplication app(argc, argv);
 
   /* Frequency of Audio Playback */
@@ -50,25 +75,6 @@ int main(int argc, char *argv[])
 	/* Clean up SDL */
 	Mix_CloseAudio();
 	SDL_Quit();	
-
-  /* Testing code for file handler */
-  FileHandler fh;
-  fh.setEncryptionEnabled(TRUE);
-  fh.setFilename("TEST.log");
-  fh.setWriteEnabled(TRUE);
-  fh.start();
-  fh.writeLine("Hello sunshine.");
-  fh.writeLine("Goodbye.");
-  fh.stop();
-  fh.setWriteEnabled(FALSE);
-  fh.start();
-
-  bool done = FALSE;
-
-  while(!done)
-    qDebug() << fh.readLine(&done);
-
-  fh.stop();
 
   return qt_result;
 }

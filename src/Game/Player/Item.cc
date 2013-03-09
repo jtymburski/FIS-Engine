@@ -87,17 +87,6 @@ uint Item::getDuration()
 }
 
 /*
- * Description: Toggles a given ItemState flag
- *
- * Inputs: ItemState flag to be toggled
- * Output: none
- */
-void Item::toggleItemFlag(ItemState flag)
-{
-    setItemFlag(flag, !getItemFlag(flag));
-}
-
-/*
  * Description: Evaluates a given ItemState flag
  *
  * Inputs: ITemState flag to be evaluated

@@ -71,9 +71,6 @@ public:
   /* Gets thumbnail of unit */
   QImage getThumbnail();
 
-  /* Toggles an ItemFlag */
-  void toggleItemFlag(ItemState flag);
-
   /* Gets the value of an ItemFlag */
   const bool getItemFlag(ItemState flag);
 
@@ -84,7 +81,7 @@ public:
   void setDuration(uint value);
 
   /* Sets an ItemFlag */
-  void setItemFlag(ItemState flag, const bool);
+  void setItemFlag(ItemState flag, const bool set_value);
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Item::ItemFlags);
 

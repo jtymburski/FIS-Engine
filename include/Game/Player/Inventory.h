@@ -17,34 +17,12 @@ class Inventory : public QWidget
 {
 public:
   /* Constructor function */
-  Inventory(QString name, QImage thumbnail, uint limit = 0, QWidget *parent = 0);
+  Inventory(QString name, QPixmap* thumbnail, uint limit = 0, QWidget *parent = 0);
 
   /* Destructor function */
   ~Inventory();
   
 private:
-  /* Data structures holding the item objects */
-  QVector<Item> equipments;
-  QVector<Item> items;
-  QVector<Item> key_items;
-  QVector<Item> bubbies;
-
-  /* Data structures holding the item counts */
-  QVector<uint> equip_count;
-  QVector<uint> item_count;
-
-  /* Maximum equipment allowed in Inventory (Can be increased) */
-  uint equip_limit;
-
-  /* Maximum items allowed in Inventory (Can be increased) */
-  uint item_limit; //10
-
-  /* Maximum bubbies allowed in Inventory (Can be increased) */
-  uint bubby_limit; //10
-
-  /* Storage level */
-  uint level; //0
-
   /* Storage and level limits */
   static const uint kBASIC_ITEM_LIMIT = 50;
   static const uint kMAX_EQUIP_LIMIT  = 10000;
@@ -54,11 +32,29 @@ private:
   static const uint kMAX_EQUIP_STACK  = 10;
   static const uint kMAX_ITEM_STACK   = 50;
 
+  /* Data structures holding the item objects */
+  QVector<Item> bubbies;
+  QVector<Item> equipments;
+  QVector<Item> items;
+  QVector<Item> key_items;
+
+  /* Data structures holding the item counts */
+  QVector<uint> equip_count;
+  QVector<uint> item_count;
+
+  /* Maximum equipment allowed in vectors */
+  uint equip_limit;
+  uint item_limit;
+  uint bubby_limit;
+
+  /* Storage level */
+  uint level;
+
   /* Name of Inventory storage unit */
   QString name;
 
   /* Image of storage unit */
-  QImage thumb;
+  QPixmap* thumb;
 
 public:
   /* Attempts to reset the level of the inventory */
@@ -83,7 +79,7 @@ public:
   const bool removeFrom(Bubby b);
 
   /* Attempts to upgrade the storage unit */
-  void upgrade(QString name, QImage thumbnail, uint equipment_limit,
+  void upgrade(QString name, QPixmap* thumbnail, uint equipment_limit,
                      uint item_limit, uint bubby_limit);
 
   /* Gets the count of equipment or items */
@@ -115,7 +111,7 @@ public:
   QString getName();
 
   /* Gets thumbnail image */
-  QImage getThumbnail();
+  QPixmap* getThumbnail();
 };
 
 #endif // INVENTORY_H

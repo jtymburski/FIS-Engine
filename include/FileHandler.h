@@ -22,17 +22,13 @@
 #include <fstream>
 #include <stdint.h>
 #include <QByteArray>
+#include <QCryptographicHash>
 #include <QDebug>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 
 /* Macros */
 #define MX (((z>>5^y<<2) + (y>>3^z<<4)) ^ ((sum^y) + (kKEY[(p&3)^e] ^ z)))
-
-/* Constants */
-#define DELTA 0x9e3779b9
-#define kDELTA 0x9e3779b9
-#define kXXTEA_ROUNDS 19
 
 class FileHandler
 {
@@ -58,6 +54,7 @@ private:
   bool encryption_enabled;
 
   /* The filename information */
+  QByteArray file_data;
   QString file_name;
   std::fstream file_stream; // is_open()
   FileType file_type;
@@ -71,10 +68,20 @@ private:
   QXmlStreamWriter* xml_writer;
 
   /*------------------- Constants -----------------------*/
-  const static uint32_t kKEY[];
+  const static int kASCII_IN_LONG = 4; /* # of ascii's that will fit in long */
+  const static int kDELTA = 2654435769; /* Sum bias for encryption */
+  const static int kENCRYPTION_MIN = 4; /* Min line length for encryption */
+  const static uint32_t kKEY[]; /* Key array for encryption */
+  const static int kLONG_BIT_SHIFT = 8; /* Number of bits to shift long to 
+                                           next spot */
+  const static int kLONG_BUFFER = 0xFF; /* Only use most significant long */
+  const static int kMAX_ASCII = 255; /* Max ascii out of bounds */
+  const static int kMIN_LINE = 16; /* Minimum line length for encryption */
+  const static int kPADDING_ASCII = 200; /* Start of padding characters */
+  const static int kXXTEA_ROUNDS = 19; /* Number of rounds for encryption */
 
 private:
-    /* Decrypt raw data in an array of ints */
+  /* Decrypt raw data in an array of ints */
   bool decryptData(uint32_t* data);
 
   /* Decrypt line of data */
@@ -92,13 +99,26 @@ private:
   /* Open the file using fstream in the class */
   bool fileOpen();
 
+  /* Converts an array of ints into an array of longs -> 4 ints in one long */
+  uint32_t* intToLong(int* line_data, int length);
+
   /* Converts an array of ints to a string line, representing the characters */
-  QString IntToString(int* data, int length);
+  QString intToString(int* line_data, int length, bool decrypting = 0);
+
+  /* Converts an array of longs into an array of ints -> one long -> 4 ints */
+  int* longToInt(uint32_t* line_data, int length);
 
   /* Convert a string to an array of ints, each representing a character */
-  int* StringToInt(QString line);
+  int stringToInt(QString line, int** line_data, bool encrypting = 0);
+
+  /* Takes a number and wraps it around, if it exceeds the limit */
+  int wrapNumber(int value, int limit);
 
 public:
+  /* Returns the hash for the data that has currently been written. Returns
+   * nothing if the function is uninitialized or set on read */
+  QByteArray computeMd5();
+
   /* Returns the filename that's used for reading from and writing to */
   QString getFilename();
 

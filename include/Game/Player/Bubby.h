@@ -1,71 +1,64 @@
-/******************************************************************************
+/*******************************************************************************
 * Class Name: Bubby
-* Date Created: Nov 04 2012
+* Date Created: November 4th, 2012 (Rewritten March 6th, 2013)
 * Inheritance: Item
 * Description: The Bubby specification under Item that adds the extra
-*              details to define experience, level cap, etc.
-* Notes : This uses the following formula: Exp(Level) = 50 + Exp(Level – 1)
-*         x [1 + Multiplier / 100] Multiplier: 10-25
-* TODO: Method of "storing" and creating different types of Bubby [02-07-13]
-******************************************************************************/
+*              details to define experience, level cap, BubbyFlavour, etc.
+*******************************************************************************/
 #ifndef BUBBY_H
 #define BUBBY_H
 
-#include <QImage>
 #include <QtGui/QWidget>
-#include <QVector>
-
-#include "Game/Player/Action.h"
+#include "Game/Player/BubbyFlavour.h"
+#include "Game/Player/SkillSet.h"
 #include "Game/Player/Item.h"
 
 class Bubby : public Item
 {
 public:
   /* Constructor function */
-  Bubby();
+  Bubby(BubbyFlavour* type);
 
   /* Destructor function */
   ~Bubby();
 
 private:
-  /* Sets the tier of the bubby based on leveling */
-  void setTier(uint new_tier);
+  /* ------------ Constants --------------- */
+  const static ushort kTIER_CAP  =  3;
+  const static ushort kTIER1_LVL =  9;
+  const static ushort kTIER2_LVL = 19;
+  const static ushort kLEVEL_CAP = 20;
+  const static uint kMIN_LVL_EXP =       75;
+  const static uint kMAX_LVL_EXP =   450000;
+  const static uint kMAX_EXPERIENCE = 1000000;
 
-  /* A parallel list that shows when actions become available */
-  QVector<uint> action_available;
+  /* Calculate the experience table for Bubbies */
+  static void calcExpTable();
 
-  /* The list of actions offered by the bubby */
-  QVector<Action*> action_list;
+  /* Updates the Bubby to the appropriate sprite (on tier level up) */
+  const bool setSprite();
 
-  /* The maximum level a bubby can reach,
-     Tier-1: Level 1-10, Tier-2: Level 11-20, Tier-3: Level 20 */
-  const static uint kLEVELCAP = 20; // 20
+  /* Bubby Type */
+  BubbyFlavour* type;
 
-  /* Bubby's Id */
+  /* Static ID data, and current object's ID */
   static int id;
-  int myId;
+  int my_id;
 
-  /* ID of the Bubby (for deleting purposes) */
-  // static uint id;
+  /* The experience table for Bubbies */
+  static QVector<uint> exp_table;
 
-  /* The bubby's experience */
-  uint experience;
+  /* Bubby's Experience, Level, and Tier */
+  uint total_exp;
+  ushort level;
+  ushort tier;
 
-  /* The bubby's level */
-  uint level;
-
-  /* The bubbies tier classification, the tier level can vary between 0 to 3 */
-  uint tier;
-
-  /* The sprite image for each tier */
-  QImage tier_0, tier_1, tier_2, tier_3;
+  /* Pointer to the current sprite */
+  Sprite* current_sprite;
 
 public:
-  /* Gets the list of bubby actions (Used for total action lists in battle)*/
-  QVector<Action*> getActionList();
-
-  /* Increments the bubbie's Id */
-  static int setId();
+  /* Adds experience to the Bubby */
+  void addExperience(uint amount);
 
   /* Gets the bubbies Id */
   int getId();
@@ -73,17 +66,35 @@ public:
   /* Gets the bubbies exp */
   uint getExp();
 
+  /* Gets the exp required at a given Bubby level */
+  uint getExpAt(ushort level);
+
   /* Gets the bubbies level */
-  uint getLevel();
+  ushort getLevel();
+
+  /* Gets the current sprite for the tier */
+  Sprite* getSprite();
 
   /* Gets the bubbies tier */
-  uint getTier();
+  ushort getTier();
+
+  /* Gets the type of the Bubby */
+  BubbyFlavour* getType();
+
+  /* Increments the bubbie's Id */
+  static int setId();
 
   /* Sets the exp of the bubby based on use in battle */
   void setExperience(uint new_experience);
 
   /* Sets the level of the bubby based on exp amounts */
-  void setLevel(uint new_level);
+  void setLevel(ushort new_level);
+
+  /* Sets the tier of the bubby based on leveling */
+  void setTier(ushort new_tier);
+
+  /* Sets the type of the Bubby */
+  void setType(BubbyFlavour* new_type);
 };
 
 #endif // BUBBY_H

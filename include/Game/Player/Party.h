@@ -1,7 +1,7 @@
 /******************************************************************************
 * Class Name: Party
 * Date Created: Sunday, November 4th, 2012
-* Inheritance: None?
+* Inheritance:
 * Description: Party is an object designed to hold a number of persons, such as
 *              your sleuth (maximum of five members) or the members of your
 *              barracks on the ship, or a group of foes you will face in battle
@@ -10,7 +10,6 @@
 #define PARTY_H
 
 #include <QtGui/QWidget>
-
 #include "Game/Player/Inventory.h"
 #include "Game/Player/Person.h"
 
@@ -18,10 +17,23 @@ class Party : public QWidget
 {
 public:
   /* Creates a party object */
-  Party(Person* p_main, uint max = 5, Inventory* = NULL, QWidget* parent = 0);
+  Party(Person* p_main, ushort max, Inventory* = NULL, QWidget* parent = 0);
 
   /* Annihilates a party object */
   ~Party();
+
+  /* Enumerated flags for party */
+  enum PartyFlag
+  {
+    MAIN      = 1ul << 0, /* This is the main character's party */
+    BEARACKS  = 1ul << 1, /* This is the bearacks party */
+    FOE       = 1ul << 2, /* This is an enemy troop */
+    MINIBOSS  = 1ul << 3, /* This party is a miniboss */
+    BOSS      = 1ul << 4, /* This party is a boss */
+    FINALBOSS = 1ul << 5  /* This party is the final boss */
+  };
+  Q_DECLARE_FLAGS(PartyFlags, PartyFlag)
+  PartyFlags pflag_set;
 
 private:
   /* The shared inventory of the party */
@@ -34,9 +46,12 @@ private:
   QVector<Person*> members;
 
   /* Temporary maximum size of the party (max 5) */
-  int max_size;
+  ushort max_size;
 
 public:
+  /* Constants*/
+  static const ushort kMAX_MEMBERS = 5;
+
   /* Adds a person to party, returns false if no space or failure */
   bool addMember(Person* p); 
 
@@ -55,6 +70,9 @@ public:
   /* Returns a person at a certain index */
   Person* getMember(uint index);
 
+  /* Gets a party flag */
+  const bool getPartyFlag(PartyFlag flag);
+
   /* Returns the party size */
   uint getPartySize();
 
@@ -72,6 +90,10 @@ public:
 
   /* Sets the temp max size of the party (max 5) */
   bool setMaxSize(uint value);
+
+  /* Sets a party flag */
+  void setPartyFlag(PartyFlag flag, const bool set_value);
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(Party::PartyFlags)
 
 #endif // PARTY_H

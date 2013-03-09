@@ -10,6 +10,7 @@ CONFIG += qt
 DESTDIR = ./bin
 win32 {
   LIBS += -lmingw32 -l SDLmain
+  win32:QMAKE_CXX_FLAGS_WARN_ON += -Wextra
 }
 LIBS += -lSDL -lSDL_mixer
 #QT += phonon # network xml, core and gui are default
@@ -32,6 +33,8 @@ SOURCES += \
     ./src/Game/Battle/BattleMenu.cc \
     ./src/Game/Battle/BattleStatusBar.cc \
     ./src/Game/Battle/PersonStatusBar.cc \
+    ./src/Game/Battle/EnemyStatusBar.cc \
+    ./src/Game/Battle/AllyStatusBar.cc \
     ./src/Game/Map/Map.cc \
     ./src/Game/Map/MapBubby.cc \
     ./src/Game/Map/MapEquipment.cc \
@@ -47,9 +50,13 @@ SOURCES += \
     ./src/Game/Map/Sector.cc \
     ./src/Game/Map/SectorAction.cc \
     ./src/Game/Map/Tile.cc \
+    ./src/Game/Player/Ailment.cc \
+    ./src/Game/Player/SkillSet.cc \
+    ./src/Game/Player/AttributeSet.cc \
     ./src/Game/Player/Player.cc \
     ./src/Game/Player/Action.cc \
     ./src/Game/Player/Bubby.cc \
+    ./src/Game/Player/BubbyFlavour.cc \
     ./src/Game/Player/Category.cc \
     ./src/Game/Player/Equipment.cc \
     ./src/Game/Player/Inventory.cc \
@@ -77,6 +84,8 @@ HEADERS += \
     ./include/Game/Battle/BattleMenu.h \
     ./include/Game/Battle/BattleStatusBar.h \
     ./include/Game/Battle/PersonStatusBar.h \
+    ./include/Game/Battle/EnemyStatusBar.h \
+    ./include/Game/Battle/AllyStatusBar.h \
     ./include/Game/Map/Map.h \
     ./include/Game/Map/MapBubby.h \
     ./include/Game/Map/MapEquipment.h \
@@ -92,9 +101,13 @@ HEADERS += \
     ./include/Game/Map/Sector.h \
     ./include/Game/Map/SectorAction.h \
     ./include/Game/Map/Tile.h \
+    ./include/Game/Player/Ailment.h \
+    ./include/Game/Player/AttributeSet.h \
+    ./include/Game/Player/SkillSet.h \
     ./include/Game/Player/Player.h \
     ./include/Game/Player/Action.h \
     ./include/Game/Player/Bubby.h \
+    ./include/Game/Player/BubbyFlavour.h \
     ./include/Game/Player/Category.h \
     ./include/Game/Player/Equipment.h \
     ./include/Game/Player/Inventory.h \
@@ -104,5 +117,5 @@ HEADERS += \
     ./include/Game/Player/Race.h \
     ./include/Game/Player/Skill.h \
     ./include/GridShifter.h
-
+ 
 INCLUDEPATH += ./include

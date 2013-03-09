@@ -56,16 +56,16 @@ Skill::Skill(QString name, QVector<Action*> effect_list, QVector<float> effect_c
  */
 Skill::~Skill()
 {
-  delete animation;
-  delete sound_effect;
-  for (int i = 0; i < effects.size(); i++)
-      effects.remove(i);
-  animation = NULL;
-  sound_effect = NULL;
+  qDeleteAll(effects);
+  effects.clear();
+  // delete animation;
+  // animation = NULL;
+  // delete sound_effect;
+  // sound_effect = NULL;
 }
 
 /*============================================================================
- * FUNCTIONS
+ * PUBLIC FUNCTIONS
  *===========================================================================*/
 
 /*
@@ -254,7 +254,7 @@ uint Skill::getQdValue()
  */
 void Skill::setAnimation(Sprite* new_sprite)
 {
-  animation = new_sprite;
+  // animation = new_sprite;
 }
 
 /*
@@ -329,7 +329,7 @@ void Skill::setQdCost(uint new_value)
  */
 void Skill::setSoundEffect(Sound* new_sound)
 {
-  sound_effect = new_sound;
+  // sound_effect = new_sound;
 }
 
 /*

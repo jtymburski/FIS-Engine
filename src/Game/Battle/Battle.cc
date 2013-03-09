@@ -6,7 +6,7 @@
 *
 *  FUTURE [12-28-12]: Write algorithm to determine enemy placement
 *  TODO [01-27-13]: Write battle progression steps
-*  TODO [01-27-13]: Menu designs, displaying information, etc.
+*
 * Notes: Turn Progression:
 *
 * 1. generalUpkeep() adjusts all values based on Weather.  BattleInfoBar
@@ -72,23 +72,28 @@
 /*
  * Description: Constructor for the battle class
  *
- * Inputs: p_friends - pointer to allied party
- *         p_foes - pointer to foes party
+ * Inputs: friends - pointer to allied party
+ *         foes - pointer to foes party
  */
-Battle::Battle(Party* p_friends, Party* p_foes, QWidget* pointer)
+Battle::Battle(Party* friends, Party* foes, QWidget* pointer)
 {
-  /* Setup for pointers */
-  setFriends(p_friends);
-  setFoes(p_foes);
-
   /* Basic settings for battle window sizing and backdrops */
-  setMaxWidth(1216);  // TODO: Obtain from options [02-24-13]
-  setMaxHeight(704);  // TODO: Obtain from options [02-24-13]
+  setMaxWidth(1216);
+  setMaxHeight(704);
   setFixedSize(getMaxWidth(), getMaxHeight());
   battle_bg = new QPixmap();
   battle_bg->load(":/bbd_sewers");
   battle_status_bar_image = new QPixmap();
   battle_status_bar_image->load(":/statusbar");
+
+  setFriends(friends);
+  setFoes(foes);
+
+  /* Set up each friend's and each foe's temporary statistics */
+  for (uint i = 0; i < friends->getPartySize(); i++)
+      friends->getMember((int)i)->battlePrep();
+  for (uint i = 0; i < foes->getPartySize(); i++)
+      foes->getMember((int)i)->battlePrep();
 
   /* Create and place enemy & ally bounding boxes */
   uint left_d   = floor(0.1290 * getMaxHeight());
@@ -101,7 +106,7 @@ Battle::Battle(Party* p_friends, Party* p_foes, QWidget* pointer)
   uint ally_h   = floor(0.3636 * getMaxHeight());
   uint aspacing = floor(0.0263 * getMaxWidth());
 
-  for (uint i = 0; i < kMAX_PARTY_SIZE; i++)
+  for (int i = 0; i < kMAX_PARTY_SIZE; i++)
   {
     uint left_margin = left_d + (enemy_w * i) - spacing * i;
     enemy_box.push_back(new QRect(left_margin,top_d, enemy_w, enemy_h));
@@ -116,16 +121,26 @@ Battle::Battle(Party* p_friends, Party* p_foes, QWidget* pointer)
   status_bar = new BattleStatusBar(friends, bar_width, bar_height, this);
   status_bar->setGeometry(*status_box);
 
-  /* Battle extra bar set up */
-  bar_width  = 1 - (getMaxWidth() * bar_width);
-  extra_box = new QRect(0, getMaxHeight() - bar_height, bar_width, bar_height);
-  // TODO: Create an extra bar [02-24-13]
-
   /* Battle info bar set up */
   bar_width  = getMaxWidth()   * 1.0000;
   bar_height = getMaxHeight()  * 0.0500;
   info_box = new QRect(0, 0, bar_width, bar_height);
   info_bar = new BattleInfoBar();
+
+  /* Enemy status bars setup */
+  bar_width  = enemy_w        * 0.75000;
+  bar_height = getMaxHeight() * 0.07500;
+  top_d      = top_d - bar_height;
+  for (int i = 0; i < kMAX_PARTY_SIZE; i++)
+  {
+    uint left_m = left_d + (enemy_w * 1) - spacing * i;
+    enemy_status_boxes.push_back(new QRect(left_m,top_d,bar_width,bar_height));
+  }
+
+  /* Battle extra bar set up */
+  bar_width  = 1 - (getMaxWidth() * bar_width);
+  extra_box = new QRect(0, getMaxHeight() - bar_height, bar_width, bar_height);
+  // TODO: Create an extra bar [02-24-13]
 
   paintAll();
 }
@@ -135,8 +150,32 @@ Battle::Battle(Party* p_friends, Party* p_foes, QWidget* pointer)
  */
 Battle::~Battle()
 {
-  setFriends();
-  setFoes();
+  delete info_bar;
+  info_bar = NULL;
+  delete status_bar;
+  status_bar = NULL;
+  qDeleteAll(enemy_status_bar);
+  // delete foes;
+  // foes = NULL;
+  // delete friends;
+  // friends = NULL;
+  delete battle_bg;
+  battle_bg = NULL;
+  delete battle_status_bar_image;
+  battle_status_bar_image = NULL;
+  qDeleteAll(ally_box);
+  qDeleteAll(enemy_box);
+  qDeleteAll(enemy_status_boxes);
+  delete status_box;
+  status_box = NULL;
+  delete info_box;
+  info_box = NULL;
+  delete extra_box;
+  extra_box = NULL;
+  // qDeleteAll(skill_buffer);
+  // qDeleteAll(items_buffer);
+  // delete weather_cond;
+  // weather_cond = NULL;
 }
 
 /*============================================================================
@@ -159,22 +198,32 @@ void Battle::paintEvent(QPaintEvent*)
 
   /* Draw sprites for allies and foes (if they exist) */
   painter.setOpacity(1.0);
-  for (uint i = 0; i < kMAX_PARTY_SIZE; i++)
+  Person* p = friends->getMember(0);
+  painter.drawPixmap(*ally_box[1],p->getFirstPerson()->getCurrent());
+  p = foes->getMember(0);
+  painter.drawPixmap(*enemy_box[3],p->getThirdPerson()->getCurrent());
+  if (friends->getPartySize() > 1)
   {
-    Person* p = NULL;
-    if (i < friends->getPartySize() && friends->getMember(i))
-    {
+      p = friends->getMember(1);
+      painter.drawPixmap(*ally_box[0],p->getFirstPerson()->getCurrent());
+  }
+  if (friends->getPartySize() > 1)
+  {
+      p = foes->getMember(1);
+      painter.drawPixmap(*enemy_box[4],p->getFirstPerson()->getCurrent());
+  }
+  for (uint i = 2; i < friends->getPartySize(); i++)
+  {
       p = friends->getMember(i);
       painter.drawPixmap(*ally_box[i],p->getFirstPerson()->getCurrent());
-    }
-    if (i < foes->getPartySize() && foes->getMember(i))
-    {
+  }
+  for (uint i = 2; i < foes->getPartySize(); i++)
+  {
       p = foes->getMember(i);
-      painter.drawPixmap(*enemy_box[i],p->getThirdPerson()->getCurrent());
-    }
+      ushort index = foes->getMaxSize() - i - 1;
+      painter.drawPixmap(*enemy_box[index],p->getFirstPerson()->getCurrent());
   }
   painter.drawPixmap(0,getMaxHeight() * 0.8181,*battle_status_bar_image);
-
 
   /* Paint drawings for info,status,extra bars */
   painter.setOpacity(0.70); //TODO: Get opacity form somewhere [02-23-13]
@@ -207,13 +256,26 @@ void Battle::paintMenu()
 
 }
 
-/*==============================================================================
- * PAINT EVENTS
- *============================================================================*/
+/*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+
+/*============================================================================
+ * PROTECTED FUNCTIONS
+ *===========================================================================*/
+
+/*============================================================================
+ * PUBLIC SLOTS
+ *===========================================================================*/
+
+/*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
 
 /* TODO: Temporary change of battle background [02-20-13] */
 void Battle::keyPressEvent(QKeyEvent* event)
 {
+  Ailment new_poison(POISON, 14);
   switch(event->key())
   {
     case Qt::Key_Escape:
@@ -230,22 +292,20 @@ void Battle::keyPressEvent(QKeyEvent* event)
       battle_bg->load(":/bbd_sewers3");
       break;
     case Qt::Key_4:
-      friends->getMember(0)->setVitality(friends->getMember(0)->getVitality() - 5);
+      battle_bg->load(":/bbd_sewers4");
       break;
-    case Qt::Key_5:
-      friends->getMember(1)->setQuantumDrive(friends->getMember(1)->getQuantumDrive() - 5);
+    case Qt::Key_F1:
+      friends->getMember(0)->tempStats()->changeStat("VITA", -50);
+      friends->getMember(0)->tempStats()->changeStat("QTDR", -15);
+      break;
+    case Qt::Key_F2:
+      friends->getMember(0)->addAilment(new_poison);
       break;
     default:
       break;
   }
-  update();
   paintAll();
-  status_bar->update();
 }
-
-/*============================================================================
- * FUNCTIONS
- *===========================================================================*/
 
 /*
  * Description: Checks for deaths, pops current action off stack, calls
@@ -269,6 +329,8 @@ void Battle::setFriends(Party* p_friends)
   friends = p_friends;
 }
 
+
+
 /*
  * Description: Sets the foes pointer
  *
@@ -284,6 +346,8 @@ void Battle::closeBattle()
 {
   emit closingBattle(2);
 }
+
+
 
 /*
  * Description: Ends battle with win message

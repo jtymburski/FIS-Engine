@@ -35,9 +35,10 @@ Player::Player(Party* p_sleuth, Party* p_racks, int x, int y)
  */
 Player::~Player()
 {
-    /* Set party pointers to NULL */
-    setSleuth();
-    setBearacks();
+  delete sleuth;
+  delete bearacks;
+  setSleuth();
+  setBearacks();
 }
 
 /*============================================================================
