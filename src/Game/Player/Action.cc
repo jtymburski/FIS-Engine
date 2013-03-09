@@ -1,25 +1,15 @@
-/******************************************************************************
+/*******************************************************************************
 * Class Name: Action
 * Date Created: Sunday, October 28th, 2012
 * Inheritance:
 * Description: Action is an element of a skill (skill can have up to 10 actions
 * that will do alter stats, flip flags of a person, etc., or do damage to them.
-*
-*
-*  Notes: Language Syntax Below:
-* [AILMENT ID],[LOWER/UPPER/GIVE/TAKE],[STATISTIC/AILMENT],
-* [MIN DURATION].[MAX DURATION],[IGNORE ATK],[IGNORE ATK ELM 1]...,
-* [IGNORE DEF],[IGNORE DEF ELM 1]...,[BASECHANGE],[VARIANCE];
-*
-* [int]:[string][string][uint].[uint],[bool],[string]...,
-* [bool],[string]...,[uint],[float];
-******************************************************************************/
-
+*******************************************************************************/
 #include "Game/Player/Action.h"
 
-/*============================================================================
+/*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
- *===========================================================================*/
+ *============================================================================*/
 
 /*
  * Description: Action constructor object
@@ -36,20 +26,33 @@ Action::Action(QString raw, QWidget *pointer)
  */
 Action::~Action() {}
 
-/*============================================================================
- * FUNCTIONS
- *===========================================================================*/
+/*=============================================================================
+ * PRIVATE FUNCTIONS
+ *============================================================================*/
+
+/*
+ * Description: Sets the string of the ailment to be inflicted
+ *
+ * Inputs: QString - string to set the infliction to
+ * Output: none
+ */
+void Action::setAilment(QString new_ailment)
+{
+  action_ailment = new_ailment;
+}
 
 /*
  * Description: Parses the raw language into something we can have skills use
  *
  * Notes: Language Syntax Below:
+ *
  * [AILMENT ID],[LOWER/UPPER/GIVE/TAKE],[STATISTIC/AILMENT],
  * [MIN DURATION].[MAX DURATION],[IGNORE ATK],[IGNORE ATK ELM 1]...,
  * [IGNORE DEF],[IGNORE DEF ELM 1]...,[BASECHANGE],[VARIANCE];
  *
  * [int]:[string][string][uint].[uint],[bool],[string]...,
  * [bool],[string]...,[uint],[float];
+ *
  * Inputs: QString - the raw string of the input
  * Output: none
  */
@@ -115,49 +118,49 @@ void Action::parse(QString raw)
   setDuration(duration_split.at(0).toInt(),duration_split.at(1).toInt());
 
   /* Parse Ignore Atk */
-  setIgnoreAtkFlag(Action::IGNORE_ATK, split.at(4).toInt());
+  setIgnoreFlag(Action::IGNORE_ATK, split.at(4).toInt());
 
   /* Parse Ignore Atk Elements */
   QStringList atk_split = split.at(5).split('.');
   for (int i = 0; i < atk_split.size(); i++)
   {
     if (atk_split.at(i) == "PHYSICAL")
-      setIgnoreAtkFlag(Action::IGNORE_PHYS_ATK);
+      setIgnoreFlag(Action::IGNORE_PHYS_ATK);
     else if (atk_split.at(i) == "THERMAL")
-      setIgnoreAtkFlag(Action::IGNORE_THER_ATK);
+      setIgnoreFlag(Action::IGNORE_THER_ATK);
     else if (atk_split.at(i) == "POLAR")
-      setIgnoreAtkFlag(Action::IGNORE_POLA_ATK);
+      setIgnoreFlag(Action::IGNORE_POLA_ATK);
     else if (atk_split.at(i) == "PRIMAL")
-      setIgnoreAtkFlag(Action::IGNORE_PRIM_ATK);
+      setIgnoreFlag(Action::IGNORE_PRIM_ATK);
     else if (atk_split.at(i) == "CHARGED")
-      setIgnoreAtkFlag(Action::IGNORE_CHAR_ATK);
+      setIgnoreFlag(Action::IGNORE_CHAR_ATK);
     else if (atk_split.at(i) == "CYBERNETIC")
-      setIgnoreAtkFlag(Action::IGNORE_CYBE_ATK);
+      setIgnoreFlag(Action::IGNORE_CYBE_ATK);
     else if (atk_split.at(i) == "NIHIL")
-      setIgnoreAtkFlag(Action::IGNORE_NIHI_ATK);
+      setIgnoreFlag(Action::IGNORE_NIHI_ATK);
   }
 
   /* Parse Ignore Def */
-  setIgnoreDefFlag(Action::IGNORE_DEF, split.at(6).toInt());
+  setIgnoreFlag(Action::IGNORE_DEF, split.at(6).toInt());
 
   /* Parse Ignore Def Elements */
   QStringList def_split = split.at(7).split('.');
   for (int i = 0; i < def_split.size(); i++)
   {
     if (def_split.at(i) == "PHYSICAL")
-      setIgnoreDefFlag(Action::IGNORE_PHYS_DEF);
+      setIgnoreFlag(Action::IGNORE_PHYS_DEF);
     else if (def_split.at(i) == "THERMAL")
-      setIgnoreDefFlag(Action::IGNORE_THER_DEF);
+      setIgnoreFlag(Action::IGNORE_THER_DEF);
     else if (def_split.at(i) == "POLAR")
-      setIgnoreDefFlag(Action::IGNORE_POLA_DEF);
+      setIgnoreFlag(Action::IGNORE_POLA_DEF);
     else if (def_split.at(i) == "PRIMAL")
-      setIgnoreDefFlag(Action::IGNORE_PRIM_DEF);
+      setIgnoreFlag(Action::IGNORE_PRIM_DEF);
     else if (def_split.at(i) == "CHARGED")
-      setIgnoreDefFlag(Action::IGNORE_CHAR_DEF);
+      setIgnoreFlag(Action::IGNORE_CHAR_DEF);
     else if (def_split.at(i) == "CYBERNETIC")
-      setIgnoreDefFlag(Action::IGNORE_CYBE_DEF);
+      setIgnoreFlag(Action::IGNORE_CYBE_DEF);
     else if (def_split.at(i) == "NIHIL")
-      setIgnoreDefFlag(Action::IGNORE_NIHI_DEF);
+      setIgnoreFlag(Action::IGNORE_NIHI_DEF);
   }
 
   /* Parse Base Change & Variance */
@@ -216,37 +219,32 @@ void Action::setVariance(float new_value)
 }
 
 /*
- * Description: Toggles an IgnoreAttack flag
+ * Description: Sets an IgnoreAttack flag to a boolean
  *
- * Inputs: IgnoreAttack flag to be flipped
+ * Inputs: IgnoreAttack flag to be set
+ *         Boolean value to set the flag to
  * Output: none
  */
-void Action::toggleIgnoreAtkFlag(IgnoreAttack flags)
+void Action::setIgnoreFlag(IgnoreFlag flags, const bool set_value)
 {
-  setIgnoreAtkFlag(flags, !getIgnoreAtkFlag(flags));
+  (set_value) ? (ignore_flags |= flags) : (ignore_flags ^= flags);
 }
 
 /*
- * Description: Toggles an IgnoreDefense flag
+ * Description: Sets an ActionType flag to a boolean
  *
- * Inputs: IgnoreDefense flag to be flipped
+ * Inputs: ActionType flag to be set
+ *         Boolean value to set the flag to
  * Output: none
  */
-void Action::toggleIgnoreDefFlag(IgnoreDefense flags)
+void Action::setActionFlag(ActionType flags, const bool set_value)
 {
-  setIgnoreDefFlag(flags, !getIgnoreDefFlag(flags));
+  (set_value) ? (action_flags |= flags) : (action_flags ^= flags);
 }
 
-/*
- * Description: Toggles an ActionType flag
- *
- * Inputs: ActionType flag to be flippe
- * Output: none
- */
-void Action::toggleActionFlag(ActionType flags)
-{
-  setActionFlag(flags, !getActionFlag(flags));
-}
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
 
 /*
  * Description: Returns the base change of the action
@@ -287,20 +285,9 @@ QString Action::getAilment()
  * Inputs: IgnoreAttack flag to be evaluated
  * Output: Evaluation of the flag
  */
-const bool Action::getIgnoreAtkFlag(IgnoreAttack flags)
+const bool Action::getIgnoreFlag(IgnoreFlag flags)
 {
-  return ignore_atk_flags.testFlag(flags);
-}
-
-/*
- * Description: Evaluates an IgnoreDefense flag
- *
- * Inputs: IgnoreDefese flag to be evaluated
- * Output: Evaluation of the flag
- */
-const bool Action::getIgnoreDefFlag(IgnoreDefense flags)
-{
-  return ignore_def_flags.testFlag(flags);
+  return ignore_flags.testFlag(flags);
 }
 
 /*
@@ -345,51 +332,4 @@ uint Action::getMinimum()
 float Action::getVariance()
 {
   return variance;
-}
-
-/*
- * Description: Sets the string of the ailment to be inflicted
- *
- * Inputs: QString - string to set the infliction to
- * Output: none
- */
-void Action::setAilment(QString new_ailment)
-{
-  action_ailment = new_ailment;
-}
-
-/*
- * Description: Sets an IgnoreAttack flag to a boolean
- *
- * Inputs: IgnoreAttack flag to be set
- *         Boolean value to set the flag to
- * Output: none
- */
-void Action::setIgnoreAtkFlag(IgnoreAttack flags, const bool set_value)
-{
-  (set_value) ? (ignore_atk_flags |= flags) : (ignore_atk_flags ^= flags);
-}
-
-/*
- * Description: Sets an IgnoreDefnse flag to a boolean
- *
- * Inputs: IgnoreDefense flag to be set
- *         Boolean value to set the flag to
- * Output: none
- */
-void Action::setIgnoreDefFlag(IgnoreDefense flags, const bool set_value)
-{
-  (set_value) ? (ignore_def_flags |= flags) : (ignore_def_flags ^= flags);
-}
-
-/*
- * Description: Sets an ActionType flag to a boolean
- *
- * Inputs: ActionType flag to be set
- *         Boolean value to set the flag to
- * Output: none
- */
-void Action::setActionFlag(ActionType flags, const bool set_value)
-{
-  (set_value) ? (action_flags |= flags) : (action_flags ^= flags);
 }

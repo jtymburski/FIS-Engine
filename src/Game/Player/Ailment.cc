@@ -3,21 +3,70 @@
 * Date Created: March 6th, 2013
 * Inheritance: None
 * Description: The ailment class represents a Status Ailment or Debuff
-* // TODO: RANDOM CHANCE [03-06-13]
+* // TODO: finish updateAndApply() function [03-09-13]
 ******************************************************************************/
 #include "Game/Player/Ailment.h"
 
-Ailment::Ailment(Infliction t, ushort max, float ch)
+/*=============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *============================================================================*/
+
+/*
+ * Description: Constructs an Ailment object given an Infliction type,
+ *              a maximum duration and a % chance that will cure the ailment
+ *              every turn.
+ *
+ * Inputs: Infliction - The type of the ailment being created
+ *         ushort max - the maximum duration the ailment will take place,
+ *                      (the ailment will last forever if max is greater than
+ *                       kMAX_TURNS)
+ *         double ch  - % value the ailment will be cured per turn, >= 1 = 100%
+ */
+Ailment::Ailment(Infliction t, ushort max, double ch)
 {
   setType(t);
   setDuration(max, ch);
 }
 
-Ailment::Ailment() {}
+/*
+ * Description: Default ailment constructor (constructs a NOAILMENT type)
+ *
+ * Inputs: none
+ */
+Ailment::Ailment()
+{
+  setType(NOAILMENT);
+  setDuration(1);
+}
 
+/*
+ * Description: Annihilates a Status Ailment object
+ */
+Ailment::~Ailment() {}
+
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
+
+/*
+ * Description: Updates the turn counter on the status ailment based off
+ *              the random chance to cure each turn (if not zero). Returns true
+ *              if the ailment will be cured after this update, false otherwise.
+ *
+ * Inputs: none
+ * Output: bool - TRUE if the ailment is to be cured
+ */
 const bool Ailment::update()
 {
-  // TOOD: INCORPORATE CHANCE [03-06-13]
+  if (max_turns_left <= kMAX_TURNS && chance != 0)
+  {
+    // QTime zero(0, 0, 0);
+    // qsrand(zero.secsTo(QTime::currentTime()));
+    // int random = qsrand() % 99;
+
+    //if ((int)(chance * 100) > random)
+      max_turns_left = 1;
+  }
   if (max_turns_left == 1)
     return TRUE;
   if (max_turns_left <= kMAX_TURNS)
@@ -25,7 +74,15 @@ const bool Ailment::update()
   return FALSE;
 }
 
-const bool Ailment::updateAndApply(AttributeSet* stats)
+/*
+ * Description: Updates the turn increment counter on the status ailment after
+ *              applying the status ailments effect on a Person. Returns true
+ *              if the status ailment is to be cured, false otherwise.
+ *
+ * Inputs: Person* - pointer to the person to apply the ailment to
+ * Output: bool - TRUE if the ailment is to be cured
+ */
+const bool Ailment::updateAndApply(AttributeSet *attr_set, SkillSet *skill_set)
 {
   switch (ailment_type)
   {
@@ -112,20 +169,40 @@ const bool Ailment::updateAndApply(AttributeSet* stats)
       break;
     case HALFCOST:
       break;
+  case NOAILMENT:
+      break;
   }
   return TRUE;
 }
 
+/*
+ * Description: Returns the number (max number) of turns left on the ailment
+ *
+ * Inputs: none
+ * Output: ushort - maximum number of turns left on the ailment
+ */
 ushort Ailment::getTurnsLeft()
 {
   return max_turns_left;
 }
 
+/*
+ * Description: Returns the Infliction type of the ailment
+ *
+ * Inputs: none
+ * Output: Infliction - type of Ailment
+ */
 Infliction Ailment::getType()
 {
   return ailment_type;
 }
 
+/*
+ * Description: Returns the string value of a given infliction
+ *
+ * Inputs: Infliction - type of Infliction to be checked.
+ * Output: QString - string of the infliction
+ */
 QString Ailment::getName(Infliction type)
 {
   switch (type)
@@ -170,10 +247,17 @@ QString Ailment::getName(Infliction type)
     case DOUBLECAST:  return "DOUBLECAST";
     case TRIPLECAST:  return "TRIPLECAST";
     case HALFCOST:    return "HALFCOST";
+    case NOAILMENT:   return "ERROR";
   }
   return "";
 }
 
+/*
+ * Description: Returns the Infliction of a given string (if one exists)
+ *
+ * Inputs: QString - name of Infliction to be checked for
+ * Output: Infliction - the corresponding Infliction (NOAILMENT for default)
+ */
 Infliction Ailment::getInfliction(QString name)
 {
   if (name == "POISON")       return POISON;
@@ -214,15 +298,28 @@ Infliction Ailment::getInfliction(QString name)
   if (name == "DOUBLECAST")   return DOUBLECAST;
   if (name == "TRIPLECAST")   return TRIPLECAST;
   if (name == "HALFCOST")     return HALFCOST;
-  return POISON;
+  return NOAILMENT;
 }
 
-void Ailment::setDuration(ushort max, float ch)
+/*
+ * Description: Sets the maximum duration of the ailment as well as the chance
+ *
+ * Inputs: ushort max - maximum number of turns the ailment will persist
+ *         float ch   - chance the ailment has to be cured per turn
+ * Output: none
+ */
+void Ailment::setDuration(ushort max, double ch)
 {
   max_turns_left = max;
   chance = chance;
 }
 
+/*
+ * Description: Sets the type of Infliction of the ailment
+ *
+ * Inputs: Infliction - type of Infliction to be set.
+ * Output: none
+ */
 void Ailment::setType(Infliction t)
 {
   ailment_type = t;

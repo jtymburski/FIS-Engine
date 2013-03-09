@@ -16,13 +16,17 @@ class BubbyFlavour
 {
 public:
   /* Constructs a BubbyFlavour object */
-  BubbyFlavour(QString name, AttributeSet stats, SkillSet* skills);
+  BubbyFlavour(QString name, AttributeSet stats, SkillSet* skills = NULL);
 
   /* Annihilates a BubbyFlavour object */
  ~BubbyFlavour();
 
 private:
+  /* Constants */
   const static ushort kTIER_CAP  =  3;
+
+  /* Adding, checking flavour functions */
+  static const bool addFlavour(QString new_flavour);
 
   /* Stat set for the Bubby (bonuses) */
   AttributeSet stats;
@@ -31,6 +35,9 @@ private:
   QString name;
   QString description;
 
+  /* The list of bubby flavours */
+  static QVector<QString> flavour_list;
+
   /* The list of actions offered by the bubby */
   SkillSet* skill_list;
 
@@ -38,8 +45,13 @@ private:
   QVector<Sprite*> sprites;
 
 public:
+  static int isFlavour(QString flavour_name);
+
   /* Gets the set of attributes for the Bubby */
   AttributeSet* getAttr();
+
+  /* Returns the list of instantiated flavours */
+  static QVector<QString> getFlavourList();
 
   /* Gets the name and description */
   QString getName();
@@ -62,7 +74,7 @@ public:
   void setSkillSet(SkillSet* new_skill_list);
 
   /* Sets the sprites */
-  void setSprites(QVector<Sprite*> new_sprites);
+  const bool setSprites(QVector<Sprite*> new_sprites);
 };
 
 #endif //BUBBYFLAVOUR_H

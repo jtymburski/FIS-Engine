@@ -12,7 +12,6 @@
 #define ACTION_H
 
 #include <QtGui/QWidget>
-#include "Game/Player/Ailment.h"
 
 class Action : public QWidget
 {
@@ -23,7 +22,7 @@ public:
   /* Annihilates an action object */
   ~Action();
 
-  /* Enumerated ActionType flags */
+  /* Enumerated ActionType * IgnoreFlag flags */
   enum ActionType
   {
     RAISE         = 1 <<  0, /* Does the action raise a stat? */
@@ -46,42 +45,33 @@ public:
     UNBEARABILITY = 1 << 17  /* " unbearability stat? */
   };
   Q_DECLARE_FLAGS(ActionFlags, ActionType)
-
-  /* Enumerated IgnoreAttack flags */
-  enum IgnoreAttack
+  enum IgnoreFlag
   {
-    IGNORE_ELMN_ATK = 1 << 0,
-    IGNORE_PHYS_ATK = 1 << 1,
-    IGNORE_THER_ATK = 1 << 2,
-    IGNORE_POLA_ATK = 1 << 3,
-    IGNORE_PRIM_ATK = 1 << 4,
-    IGNORE_CHAR_ATK = 1 << 5,
-    IGNORE_CYBE_ATK = 1 << 6,
-    IGNORE_NIHI_ATK = 1 << 7,
-    IGNORE_ATK = 1 << 8
+    IGNORE_ELMN_ATK = 1 <<  0,
+    IGNORE_PHYS_ATK = 1 <<  1,
+    IGNORE_THER_ATK = 1 <<  2,
+    IGNORE_POLA_ATK = 1 <<  3,
+    IGNORE_PRIM_ATK = 1 <<  4,
+    IGNORE_CHAR_ATK = 1 <<  5,
+    IGNORE_CYBE_ATK = 1 <<  6,
+    IGNORE_NIHI_ATK = 1 <<  7,
+    IGNORE_ATK      = 1 <<  8,
+    IGNORE_ELMN_DEF = 1 <<  9,
+    IGNORE_PHYS_DEF = 1 << 10,
+    IGNORE_THER_DEF = 1 << 11,
+    IGNORE_POLA_DEF = 1 << 12,
+    IGNORE_PRIM_DEF = 1 << 13,
+    IGNORE_CHAR_DEF = 1 << 14,
+    IGNORE_CYBE_DEF = 1 << 15,
+    IGNORE_NIHI_DEF = 1 << 16,
+    IGNORE_DEF      = 1 << 17
   };
-  Q_DECLARE_FLAGS(IgnoreAtkFlags, IgnoreAttack)
-
-  /* Enumerated IgnoreDefense flags */
-  enum IgnoreDefense
-  {
-    IGNORE_ELMN_DEF = 1 << 0,
-    IGNORE_PHYS_DEF = 1 << 1,
-    IGNORE_THER_DEF = 1 << 2,
-    IGNORE_POLA_DEF = 1 << 3,
-    IGNORE_PRIM_DEF = 1 << 4,
-    IGNORE_CHAR_DEF = 1 << 5,
-    IGNORE_CYBE_DEF = 1 << 6,
-    IGNORE_NIHI_DEF = 1 << 7,
-    IGNORE_DEF = 1 << 8
-  };
-  Q_DECLARE_FLAGS(IgnoreDefFlags, IgnoreDefense)
+  Q_DECLARE_FLAGS(IgnoreFlags, IgnoreFlag)
 
 private:
   /* Enumerated flag sets */
   ActionFlags action_flags;
-  IgnoreAtkFlags ignore_atk_flags;
-  IgnoreDefFlags ignore_def_flags;
+  IgnoreFlags ignore_flags;
 
   /* String of Ailment (if exists) the action inflicts */
   QString action_ailment;
@@ -101,6 +91,15 @@ private:
   /* Variance of base change (percentage) */
   float variance;
 
+  /* Sets the ailment string */
+  void setAilment(QString ailment);
+
+  /* Sets the value of an Ignore Atk Flag */
+  void setIgnoreFlag(IgnoreFlag flags, const bool set_value = TRUE);
+
+  /* Sets the value of an Action Type Flag */
+  void setActionFlag(ActionType flags, const bool set_value = TRUE);
+
   /* The raw language parser! */
   void parse(QString raw);
 
@@ -117,15 +116,6 @@ private:
   void setVariance(float new_value);
 
 public:
-  /* Toggles an Ignore Atk Flag */
-  void toggleIgnoreAtkFlag(IgnoreAttack flags);
-
-  /* Toggles an Ignore Def Flag */
-  void toggleIgnoreDefFlag(IgnoreDefense flags);
-
-  /* Toggles an Action Type flag */
-  void toggleActionFlag(ActionType flags);
-
   /* Gets the base change of the action */
   uint getBaseChange();
 
@@ -136,10 +126,7 @@ public:
   QString getAilment();
 
   /* Gets the value of an Ignore Atk Flag */
-  const bool getIgnoreAtkFlag(IgnoreAttack flags);
-
-  /* Gets the value of an Ignore Def Flag */
-  const bool getIgnoreDefFlag(IgnoreDefense flags);
+  const bool getIgnoreFlag(IgnoreFlag flags);
 
   /* Gets the value of an Action Type Flag */
   const bool getActionFlag(ActionType flags);
@@ -152,21 +139,8 @@ public:
 
   /* Returns the variance of the action */
   float getVariance();
-
-  /* Sets the ailment string */
-  void setAilment(QString ailment);
-
-  /* Sets the value of an Ignore Atk Flag */
-  void setIgnoreAtkFlag(IgnoreAttack flags, const bool set_value = 1);
-
-  /* Sets the valueof an Ignore Def Flag */
-  void setIgnoreDefFlag(IgnoreDefense flags, const bool set_value = 1);
-
-  /* Sets the value of an Action Type Flag */
-  void setActionFlag(ActionType flags, const bool set_value = 1);
 };
-Q_DECLARE_OPERATORS_FOR_FLAGS(Action::IgnoreAtkFlags)
-Q_DECLARE_OPERATORS_FOR_FLAGS(Action::IgnoreDefFlags)
+Q_DECLARE_OPERATORS_FOR_FLAGS(Action::IgnoreFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Action::ActionFlags)
 
 #endif // ACTION_H

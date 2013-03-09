@@ -5,37 +5,55 @@
 * Description: Container class for Skills. Contains all methods needed ot hold
 *              a list of skills and levels required to use them. Removes
 *              duplicates, etc.
+// TODO: Remove duplicates from Skills. [03-09-13]
 ******************************************************************************/
-
 #include "Game/Player/SkillSet.h"
-#include <algorithm>
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
 
-SkillSet::SkillSet()
+/*
+ * Description: Default SkillSet constructor
+ *
+ * Inputs: none
+ */
+SkillSet::SkillSet() {}
+
+/*
+ * Description: Constructs a SkillSet object given a single Skill* and a value
+ *              at which point that skill becomes available (defaulted to 1)
+ *
+ * Inputs: Skill* - pointer to skill to be added
+ *         ushort - value that the skill becomes available
+ */
+SkillSet::SkillSet(Skill *skill, ushort level)
 {
-  isEmpty = TRUE;
+  addSkill(skill, level);
+  cleanUp();
 }
 
-SkillSet::SkillSet(QVector<Skill*> new_skills, QVector<ushort> new_levels)
+/*
+ * Description: Constructs a SkillSet object given a vector of skill pointers
+ *              and a vector of ushorts describing at which level those skills
+ *              become available.
+ *
+ * Inputs: QVector<Skill*> - the vector of skill pointers
+ *         QVector<ushort> - corresponding vector of levels required for skills
+ */
+SkillSet::SkillSet(QVector<Skill*> skills, QVector<ushort> levels)
 {
-    addSkills(new_skills, new_levels);
-    cleanUp();
-    isEmpty = FALSE;
+  addSkills(skills, levels);
+  cleanUp();
 }
 
+/*
+ * Description: Annihilates a SkillSet object
+ */
 SkillSet::~SkillSet()
 {
-  if (!isEmpty)
-  {
-    for (int i = 0; i < skills.size(); i++)
-    {
-      delete skills.at(i);
-      skills[i] = NULL;
-    }
-  }
+  qDeleteAll(skills);
+  skills.clear();
 }
 
 /*=============================================================================
@@ -86,20 +104,22 @@ const bool SkillSet::addSkills(QVector<Skill* > new_skills,
   return FALSE;
 }
 
+/*
+ * Description: Cleans up the SkillSet by calling Sort, then by removing
+ *              duplicates (by taking the lowest level value for skills of the
+ *              same name).
+ *
+ * Inputs: none
+ * Output: none
+ */
 void SkillSet::cleanUp()
 {
-  sortSkills();
-  /* TODO [03-07-13] for (int i = 1; i < skills.size(); i++)
+  if (skills.size() > 1)
   {
-    // If duplicate exists, take the lower level and remove duplicate
-    if (skills.at(i - 1)->getName() == skills.at(i)->getName())
-    {
-      skills_available[i] = std::min(skills_available.at(i - 1),
-                                    skills_available.at(i));
-      removeSkill(i);
-    }
+    sortSkills();
+
+    // TODO: Remove duplicates from Skills. [03-09-13]
   }
-  */
 }
 
 /*
@@ -127,6 +147,8 @@ const bool SkillSet::removeSkill(QString name)
   {
     if (skills.at(i)->getName() == name)
     {
+      delete skills.at(i);
+      skills[i] = NULL;
       skills.remove(i);
       skills_available.remove(i);
       return TRUE;
@@ -164,6 +186,7 @@ const bool SkillSet::sortSkills(QString sort_type)
           index = j;
         }
       }
+
       temp_skills.append(skills.at(index));
       temp_levels.append(skills_available.at(index));
       removeSkill(index);
@@ -183,12 +206,20 @@ const bool SkillSet::sortSkills(QString sort_type)
           index = j;
         }
       }
+
       temp_skills.append(skills.at(index));
       temp_levels.append(skills_available.at(index));
       removeSkill(index);
     }
   }
+
+  /* Cleanup */
+  qDeleteAll(skills.begin(), skills.end());
+  skills.clear();
+
   skills = temp_skills;
+  qDeleteAll(temp_skills.begin(), skills.end());
+  temp_skills.clear();
   skills_available = temp_levels;
 }
 

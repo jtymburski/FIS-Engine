@@ -16,10 +16,13 @@
  * Description: Constructor for a party object.
  */
 Party::Party(Person* p_main, ushort max, Inventory* inventory, QWidget* parent)
+    : max_size(kMAX_MEMBERS)
 {
-    members.push_back(p_main);
+  main = p_main;
+  members.push_back(p_main);
+  if (max < kMAX_MEMBERS)
     setMaxSize(max);
-    setInventory(inventory);
+  setInventory(inventory);
 }
 
 /*
@@ -29,16 +32,14 @@ Party::~Party()
 {
   delete pouch;
   pouch = NULL;
-  if (getPartyFlag(Party::MAIN))
-  {
-    // delete main;
-    // main = NULL;
-  }
+  delete main;
+  main = NULL;
   for (int i = 0; i < members.size(); i++)
   {
     delete members.at(i);
     members[i] = NULL;
   }
+  members.clear();
 }
 
 /*============================================================================
@@ -53,7 +54,7 @@ Party::~Party()
  */
 bool Party::addMember(Person* person)
 {
-  if (members.size() < getMaxSize())
+  if ((int)getPartySize() < getMaxSize())
   {
     members.push_back(person);
     return TRUE;
@@ -66,7 +67,7 @@ bool Party::addMember(Person* person)
  * Note: cleanUp() should be called after this function is called
  *
  * Inputs: int - index of party member needing to be removed
- * Output: bool - true if person was able to be removed
+ * Output: bool - TRUE if person was able to be removed
  */
 bool Party::removeMember(uint index)
 {
@@ -74,6 +75,8 @@ bool Party::removeMember(uint index)
     return FALSE;
   if (members.at(index))
   {
+    delete members.at(index);
+    members[index] = NULL;
     members.remove(index);
     return TRUE;
   }
@@ -82,24 +85,25 @@ bool Party::removeMember(uint index)
 
 /*
  * Description: Removes a person from the party from a given name
- * Note: cleanUp() should be called after this function is called
  *
  * Inputs: QString - name of the person to be removed
- * Output: bool - true if person was removed succesfully
+ * Output: bool - TRUE if person was removed succesfully
  */
 bool Party::removeMember(QString value)
 {
-    if (members.size() < 2)
-        return FALSE;
-    for (uint i = 1; i < 5; i++)
-    {
-        if (members.at(i)->getName() == value)
-        {
-          members.remove(i);
-          return TRUE;
-        }
-    }
+  if (members.size() < 2)
     return FALSE;
+  for (ushort i = 1; i < kMAX_MEMBERS; i++)
+  {
+    if (members.at(i)->getName() == value)
+    {
+      delete members.at(i);
+      members[i] = NULL;
+      members.remove(i);
+      return TRUE;
+    }
+  }
+  return FALSE;
 }
 
 /*
@@ -110,8 +114,8 @@ bool Party::removeMember(QString value)
  */
 void Party::clearParty()
 {
-    for (uint i = 1; i < 5; i++)
-      members.remove(i);
+  for (uint i = 1; i < kMAX_MEMBERS; i++)
+    members.remove(i);
 }
 
 /*
@@ -133,7 +137,7 @@ Inventory* Party::getInventory()
  */
 Person* Party::getMember(uint index)
 {
-  if (members.at(index))
+  if ((int)index < members.size())
     return members.at(index);
   return NULL;
 }
@@ -157,7 +161,7 @@ const bool Party::getPartyFlag(PartyFlag flag)
  */
 uint Party::getPartySize()
 {
-    return members.size();
+  return members.size();
 }
 
 /*
@@ -168,8 +172,8 @@ uint Party::getPartySize()
  */
 QString Party::getMemberName(uint index)
 {
-  if (members.at(index))
-    return members.at(index)->getName();
+  if ((int)index < members.size())
+    return members.at((int)index)->getName();
   return "";
 }
 
@@ -203,20 +207,18 @@ void Party::setInventory(Inventory* i)
  */
 void Party::setMainMember(Person* p)
 {
-  setPartyFlag(Party::MAIN, TRUE);
   main = p;
 }
 
 /*
  * Description: Sets the temporary maximmum size of the party (sleuth)
- * Note: Maximum party size is five, minimum party size is 1.
  *
  * Inputs: int - new max size of the party
- * Output: bool - true if party size was successfully changed
+ * Output: bool - TRUE if party size was successfully changed
  */
 bool Party::setMaxSize(uint value)
 {
-  if (value > 0 && value < 6)
+  if (value > 0 && value <= kMAX_MEMBERS)
   {
     max_size = value;
     return TRUE;

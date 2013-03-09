@@ -3,26 +3,26 @@
 * Date Created: March 6th, 2013
 * Inheritance: None
 * Description: The ailment class represents a Status Ailment or Debuff
-* // TODO: RANDOM CHANCE [03-06-13]
 ******************************************************************************/
-
 #ifndef AILMENT_H
 #define AILMENT_H
 
 #include <QtGui/QWidget>
 #include "Game/Player/AttributeSet.h"
+#include "Game/Player/SkillSet.h"
 #include "EnumDatabase.h"
 
 class Ailment
 {
 public:
   /* Constructs an AttributeSet object */
-  Ailment(Infliction t, ushort max, float ch = 0);
+  Ailment(Infliction t, ushort max, double ch = 0);
 
+  /* Default ailment constructor */
   Ailment();
 
   /* Annihilates an AttributeSet object */
-  ~Ailment() {}
+  ~Ailment();
 
 private:
   /* Absolute maximum number of turns */
@@ -42,7 +42,7 @@ public:
   const bool update();
 
   /* Updates the ailment and appllies the effect */
-  const bool updateAndApply(AttributeSet* stats);
+  const bool updateAndApply(AttributeSet* attr_set, SkillSet* skill_set = NULL);
 
   /* Returns the number of turns left (assuming 0%) */
   ushort getTurnsLeft();
@@ -55,7 +55,7 @@ public:
   static Infliction getInfliction(QString name);
 
   /* Sets the duration of the ailment */
-  void setDuration(ushort max, float ch = 0);
+  void setDuration(ushort max, double ch = 0);
 
   /* Sets the Inflinction of the Status Ailment */
   void setType(Infliction t);

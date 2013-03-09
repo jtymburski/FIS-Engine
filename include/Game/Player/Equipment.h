@@ -42,6 +42,10 @@ public:
   EquipmentFlags eflag_set;
 
 private:
+  /* Equipment Constants */
+  const static uint kSIG_X = 9;
+  const static uint kMAX_SIG_Y = 9;
+
   /* 2D 9x9 array for bubby signature*/
   Bubby* bubby_signature[9][9];
 

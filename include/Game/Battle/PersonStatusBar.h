@@ -25,6 +25,14 @@ public:
   virtual ~PersonStatusBar();
 
 protected:
+  /* Static const limits */
+  static const uint kMAX_FONT_SIZE = 25;
+  static const uint kMAX_WIDTH     = 1920 / 5;
+  static const uint kMAX_HEIGHT    = 200;
+
+  /* Sets up the vector of sprites for the ailments */
+  // void calcAilments();
+
   /* Initial setup of a PersonStatusBar */
   virtual void setup();
 
@@ -38,11 +46,6 @@ protected:
   /* Clean up functions */
   void clearStatusBoxes();
   void cleanUp();
-
-  /* Static const limits */
-  static const uint kMAX_FONT_SIZE = 25;
-  static const uint kMAX_WIDTH     = 1920 / 5;
-  static const uint kMAX_HEIGHT    = 200;
 
   /* Font size */
   int font_size;

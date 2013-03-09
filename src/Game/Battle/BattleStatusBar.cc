@@ -29,7 +29,7 @@ BattleStatusBar::BattleStatusBar(Party* persons, uint width,
   addPerson(persons->getMember(0), 1);
   if (persons->getPartySize() > 1)
     addPerson(persons->getMember(1), 0);
-  for (int i = 2; i < persons->getPartySize();i ++)
+  for (uint i = 2; i < persons->getPartySize();i ++)
     addPerson(persons->getMember(i), i);
 }
 

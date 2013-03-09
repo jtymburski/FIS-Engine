@@ -29,11 +29,37 @@ PersonStatusBar::PersonStatusBar(Person* character, uint width, uint height,
   setup();
 }
 
+/*
+ * Description: Annihilates a Person status Bar.
+ */
 PersonStatusBar::~PersonStatusBar() {}
 
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
+
+/*
+ * Description: Constructs the vector of thumb sprites for status ailments that
+ *              are currently inflicted . This should be called after
+ *              clearStatusBoxes() so the vector is clear.
+ *
+ * Inputs: none
+ * Output: none
+
+void PersonStatusBar::calcAilments()
+{
+
+  QVector<Ailment> temp = character->getAilments();
+  for (int i = 0; i < temp.size(); i++)
+  {
+    QString type = temp[i].getName(temp[i].getType());
+    type = ":/" + type.toLower();
+    // TODO: [03-08-13] QPixmap sprite(type);
+    // Push_back type's status ailment  status_thumb_sprites.push_back(&sprite);
+  }
+
+}
+*/
 
 void PersonStatusBar::setup()
 {

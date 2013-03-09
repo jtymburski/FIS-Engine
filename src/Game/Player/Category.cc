@@ -30,11 +30,9 @@ Category::Category(QString name, AttributeSet attributes, SkillSet* skills)
 {
   setName(name);
   setAttrSet(attributes);
+  setSkillSet(skills);
   if (skills != NULL)
-      setSkillSet(skills);
-  else
-      skill_set = NULL;
-  cleanUp();
+    cleanUp();
 }
 
 /*
@@ -55,11 +53,8 @@ Category::Category(QString name)
  */
 Category::~Category()
 {
-  if (skill_set != NULL)
-  {
-    delete skill_set;
-    skill_set = NULL;
-  }
+  delete skill_set;
+  skill_set = NULL;
 }
 
 /*============================================================================
@@ -159,7 +154,6 @@ void Category::setName(QString new_name)
 void Category::setAttrSet(AttributeSet new_stat_set)
 {
   stat_set = new_stat_set;
-  cleanUp();
 }
 
 /*
@@ -171,5 +165,4 @@ void Category::setAttrSet(AttributeSet new_stat_set)
 void Category::setSkillSet(SkillSet* new_skill_set)
 {
   skill_set = new_skill_set;
-  cleanUp();
 }

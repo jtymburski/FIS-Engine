@@ -6,11 +6,12 @@
 *              a list of skills and levels required to use them. Removes
 *              duplicates, etc.
 ******************************************************************************/
-
 #ifndef SKILLSET_H
 #define SKILLSET_H
 
 #include <Qt/QtGui>
+#include <algorithm>
+#include <QtAlgorithms>
 #include "Game/Player/Skill.h"
 
 class SkillSet
@@ -18,14 +19,13 @@ class SkillSet
 public:
   /* Constructs a skill set object */
   SkillSet();
-  SkillSet(QVector<Skill*> new_skills, QVector<ushort> new_levels);
+  SkillSet(Skill* skill, ushort level = 1);
+  SkillSet(QVector<Skill*> skills, QVector<ushort> levels);
 
   /* Annihilates a SkillSet object */
   ~SkillSet();
 
 private:
-  bool isEmpty;
-
   /* Maximum number of skills allowed */
   static const int kMAX_SKILLS = 100;
 
@@ -35,7 +35,7 @@ private:
 
 public:
   /* Methods to add skills */
-  const bool addSkill(Skill* skill, ushort req_level);
+  const bool addSkill(Skill* skill, ushort req_level = 1);
   const bool addSkills(QVector<Skill*> new_skills, QVector<ushort> new_levels);
 
   /* Removes duplicates and cleans up vectors */

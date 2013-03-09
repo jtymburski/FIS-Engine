@@ -6,7 +6,6 @@
 *              by race, category, person, etc. It holds vectors of their:
 *              names, abbreviations, values, and maximum values.
 ******************************************************************************/
-
 #ifndef ATTRIBUTESET_H
 #define ATTRIBUTESET_H
 
@@ -24,28 +23,28 @@ public:
 
 private:
   /* Absolute maximum value of an attribute */
-  static const ushort kMAX_VALUE = 25000;
+  static const ushort kMAX_VALUE = 60000;
 
   /* Containers for names and values */
-  QVector<QString> names;
-  QVector<QString> short_names;
+  static QVector<QString> names;
+  static QVector<QString> short_names;
   QVector<ushort> values;
   QVector<ushort> max_values;
+
+  /* Initial setup for constructor */
+  static void setUpNames();
 
 public:
   /* Alters a given stat by a certain amount {Damage, Buff} */
   const bool changeStat(QString name, int amount);
   const bool changeStat(int index, int amount);
 
-  /* Initial setup for constructor */
-  void setUpNames();
-
   /* Gets the string names of statistics */
-  QString getName(int index);
-  QString getShortName(int index);
+  static QString getName(int index);
+  static QString getShortName(int index);
 
   /* Returns the number of attributes */
-  int getSize();
+  static int getSize();
 
   /* Returns the maximum values of a given stat */
   short getMax(QString name);

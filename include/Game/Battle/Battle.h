@@ -169,13 +169,13 @@ private:
   QRect* extra_box;
 
   /* The skill buffer */
-  QVector<Skill*> skill_buffer;
+  // QVector<Skill*> skill_buffer;
 
   /* The items use buffer */
-  QVector<Item*> items_buffer;
+  // QVector<Item*> items_buffer;
 
   /* Weather condition during battle */
-  // Weather* weather_conditions;
+  // Weather* weather_cond;
    
 protected:
   /* Handles all key entries */

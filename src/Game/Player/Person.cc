@@ -13,6 +13,10 @@
 
 #include "Game/Player/Person.h"
 
+/*=============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *============================================================================*/
+
 QVector<uint> Person::exp_table;
 
 /*
@@ -64,28 +68,30 @@ Person::Person(QString name, Race *race, Category* cat, QString p, QString s)
  */
 Person::~Person()
 {
-  // for (int i = 0; i < equipment.size(); i++)
-  // {
-    // delete equipment.at(i);
-    // equipment[i] = NULL;
-  // }
-  // delete cat;
-  // delete race;
-  // if (skills != NULL)
-  // {
-    // delete skills;
-    // skills = NULL;
-  // }
+  for (int i = 0; i < equipment.size(); i++)
+  {
+      delete equipment.at(i);
+      equipment[i] = NULL;
+  }
+  equipment.clear();
+  delete cat;
+  cat = NULL;
+  delete race;
+  race = NULL;
+  delete skills;
+  skills = NULL;
   delete first_person;
-  delete third_person;
-  // cat = NULL;
-  // race = NULL;
   first_person = NULL;
+  delete third_person;
   third_person = NULL;
 }
 
+/*=============================================================================
+ * PRIVATE FUNCTIONS
+ *============================================================================*/
+
 /*
- * Description: Calculates the experience table
+ * Description: Calculates and builds the experience table for a person
  *
  * Inputs: none
  * Output: none
@@ -102,6 +108,10 @@ void Person::calcExpTable()
     exp_table.push_back(new_exp - old_exp);
   }
 }
+
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
 
 /*
  * Description: Returns the value of the experience table at a given point
@@ -146,7 +156,7 @@ void Person::addExperience(uint value)
     total_exp += value;
 
   /* Level the character to the proper value (if necessary) */
-  while (total_exp >= getExpAt(getLevel()+1) && !getPersonFlag(Person::MAXLVL))
+  while (!getPersonFlag(Person::MAXLVL) && total_exp >= getExpAt(getLevel()+1))
     setLevel(getLevel() + 1);
 }
 

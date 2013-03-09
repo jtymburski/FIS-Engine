@@ -29,7 +29,7 @@ Equipment::Equipment()
  */
 Equipment::~Equipment()
 {
-  clearActionList();
+  // clearActionList();
   for (uint x = 0; x < 9; x++)
   {
     for (uint y = 0; y < 9; y++)
@@ -52,7 +52,7 @@ Equipment::~Equipment()
  */
 void Equipment::clearActionList()
 {
-  action_list.clear();
+  // action_list.clear();
 }
 
 /*

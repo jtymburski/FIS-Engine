@@ -91,9 +91,9 @@ Battle::Battle(Party* friends, Party* foes, QWidget* pointer)
 
   /* Set up each friend's and each foe's temporary statistics */
   for (uint i = 0; i < friends->getPartySize(); i++)
-      friends->getMember(i)->battlePrep();
+      friends->getMember((int)i)->battlePrep();
   for (uint i = 0; i < foes->getPartySize(); i++)
-      foes->getMember(i)->battlePrep();
+      foes->getMember((int)i)->battlePrep();
 
   /* Create and place enemy & ally bounding boxes */
   uint left_d   = floor(0.1290 * getMaxHeight());
@@ -151,38 +151,31 @@ Battle::Battle(Party* friends, Party* foes, QWidget* pointer)
 Battle::~Battle()
 {
   delete info_bar;
-  delete status_bar;
-  delete foes;
-  delete friends;
-  delete battle_bg;
-  delete battle_status_bar_image;
-  delete status_box;
-  delete info_box;
-  delete extra_box;
-  for (int i = 0; i < ally_box.size(); i++)
-  {
-    delete ally_box.at(i);
-    ally_box[i] = NULL;
-  }
-  for (int i = 0; i < enemy_box.size(); i++)
-  {
-    delete enemy_box.at(i);
-    enemy_box[i] = NULL;
-  }
-  for (int i = 0; i < enemy_status_boxes.size(); i++)
-  {
-    delete enemy_status_boxes.at(i);
-    enemy_status_boxes[i] = NULL;
-  }
   info_bar = NULL;
+  delete status_bar;
   status_bar = NULL;
-  friends = NULL;
-  foes = NULL;
+  qDeleteAll(enemy_status_bar);
+  // delete foes;
+  // foes = NULL;
+  // delete friends;
+  // friends = NULL;
+  delete battle_bg;
   battle_bg = NULL;
+  delete battle_status_bar_image;
   battle_status_bar_image = NULL;
+  qDeleteAll(ally_box);
+  qDeleteAll(enemy_box);
+  qDeleteAll(enemy_status_boxes);
+  delete status_box;
   status_box = NULL;
+  delete info_box;
   info_box = NULL;
+  delete extra_box;
   extra_box = NULL;
+  // qDeleteAll(skill_buffer);
+  // qDeleteAll(items_buffer);
+  // delete weather_cond;
+  // weather_cond = NULL;
 }
 
 /*============================================================================

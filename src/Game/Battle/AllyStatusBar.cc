@@ -166,6 +166,7 @@ void AllyStatusBar::rebuildStatusBoxes()
     uint left_d  = i * (length + 4) + 5;
     status_thumbs.push_back(new QRect(left_d, 5 + font_size, length, length));
   }
+  // calcAilments();
 }
 
 /*

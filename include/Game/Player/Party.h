@@ -17,7 +17,7 @@ class Party : public QWidget
 {
 public:
   /* Creates a party object */
-  Party(Person* p_main, ushort max = 5, Inventory* = NULL, QWidget* parent = 0);
+  Party(Person* p_main, ushort max, Inventory* = NULL, QWidget* parent = 0);
 
   /* Annihilates a party object */
   ~Party();
@@ -49,6 +49,9 @@ private:
   ushort max_size;
 
 public:
+  /* Constants*/
+  static const ushort kMAX_MEMBERS = 5;
+
   /* Adds a person to party, returns false if no space or failure */
   bool addMember(Person* p); 
 

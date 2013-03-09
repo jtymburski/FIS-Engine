@@ -106,10 +106,10 @@ void Application::setupBattle()
   main->setFirstPerson(one);
   secd->setThirdPerson(two);
 
-  Party* friends = new Party(main);
+  Party* friends = new Party(main, 5);
   friends->setPartyFlag(Party::MAIN, TRUE);
 
-  Party* foes = new Party(secd);
+  Party* foes = new Party(secd, 5);
   friends->setPartyFlag(Party::FOE, TRUE);
 
   /* Level Up Test

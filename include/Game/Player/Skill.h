@@ -68,12 +68,12 @@ private:
   /* Vector of action pointers */
   QVector<Action*> effects;
 
-  /* effect_chanc[i] of effect[i] */
+  /* effect_chance[i] of effect[i] */
   QVector<float> effect_chance;
 
-  /* TODO: Discuss animations and sound effects [02-07-13] */
-  Sprite* animation;
-  Sound* sound_effect;
+  // TODO: Discuss animations and sound effects [02-07-13] */
+  // Sprite* animation;
+  // Sound* sound_effect;
 
   SkillFlags skill_flags;
 

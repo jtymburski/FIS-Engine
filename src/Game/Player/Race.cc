@@ -30,11 +30,9 @@ Race::Race(QString name, AttributeSet attributes, SkillSet* skills)
 {
   setName(name);
   setAttrSet(attributes);
+  setSkillSet(skills);
   if (skills != NULL)
-      setSkillSet(skills);
-  else
-      skill_set = NULL;
-  cleanUp();
+    cleanUp();
 }
 
 /*
@@ -55,11 +53,8 @@ Race::Race(QString name)
  */
 Race::~Race()
 {
-  if (skill_set != NULL)
-  {
-    delete skill_set;
-    skill_set = NULL;
-  }
+  delete skill_set;
+  skill_set = NULL;
 }
 
 /*============================================================================
@@ -167,7 +162,6 @@ void Race::setName(QString new_name)
 void Race::setAttrSet(AttributeSet new_stat_set)
 {
   stat_set = new_stat_set;
-  cleanUp();
 }
 
 /*
@@ -179,7 +173,6 @@ void Race::setAttrSet(AttributeSet new_stat_set)
 void Race::setSkillSet(SkillSet* new_skill_set)
 {
   skill_set = new_skill_set;
-  cleanUp();
 }
 
 

@@ -1,9 +1,9 @@
 /******************************************************************************
 * Class Name: Inventory
-* Date Created: Dec 2 2012
+* Date Created: December 2, 2012
 * Inheritance: QWidget
 * Description: The Inventory class
-* TODO: CHECK FOR FLAGS (Stackable, etc.)
+* // TODO: CHECK FOR FLAGS (Stackable, etc.) [03-09-13]
 ******************************************************************************/
 #include "Game/Player/Inventory.h"
 
@@ -28,18 +28,10 @@ Inventory::Inventory(QString name, QPixmap* thumbnail, uint limit, QWidget* pare
 /*
  * Description: Destroys an Inventory object
  */
-Inventory::~Inventory()
-{
-    equipments.clear();
-    items.clear();
-    key_items.clear();
-    bubbies.clear();
-    equip_count.clear();
-    item_count.clear();
-}
+Inventory::~Inventory() { }
 
 /*============================================================================
- * FUNCTIONS
+ * PUBLIC
  *===========================================================================*/
 
 /*
