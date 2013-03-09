@@ -70,7 +70,11 @@ private:
   /*------------------- Constants -----------------------*/
   const static int kASCII_IN_LONG = 4; /* # of ascii's that will fit in long */
   const static int kDELTA = 2654435769; /* Sum bias for encryption */
+  const static int kENCRYPTION_MIN = 4; /* Min line length for encryption */
   const static uint32_t kKEY[]; /* Key array for encryption */
+  const static int kLONG_BIT_SHIFT = 8; /* Number of bits to shift long to 
+                                           next spot */
+  const static int kLONG_BUFFER = 0xFF; /* Only use most significant long */
   const static int kMAX_ASCII = 255; /* Max ascii out of bounds */
   const static int kMIN_LINE = 16; /* Minimum line length for encryption */
   const static int kPADDING_ASCII = 200; /* Start of padding characters */

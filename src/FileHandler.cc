@@ -42,6 +42,10 @@ FileHandler::~FileHandler()
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
+/*
+ * CHECKED:
+ * Returns FALSE only if data is unset
+ */
 bool FileHandler::decryptData(uint32_t* data)
 {
   uint32_t y, z, sum;
@@ -70,51 +74,92 @@ bool FileHandler::decryptData(uint32_t* data)
     
     return TRUE;
   }
+
+  qDebug() << "[ERROR] File block decryption failed on null data";
   return FALSE;
 }
 
+/* 
+ * CHECKED:
+ * Success status will determine if this call worked. If failed, it will
+ *  typically be an empty string ("")
+ */
 QString FileHandler::decryptLine(QString line, bool* success)
 {
   uint32_t* compressed_data;
   int compressed_length;
-  uint32_t decrypt_data [4];
+  uint32_t decrypt_data [kENCRYPTION_MIN];
+  QString decrypted_line;
   int* line_data;
   int line_length;
-  QString decrypted_line;
-
-  /* Set the success status if bool pointer is set */
-  if(success != 0)
-    *success = TRUE;
+  bool status = TRUE;
 
   /* Convert line data into long to be decrypted */
   line_length = stringToInt(line, &line_data);
   compressed_data = intToLong(line_data, line_length);
-  compressed_length = line_length / 4;
+  compressed_length = line_length / kASCII_IN_LONG;
 
-  /* Begin to decrypt the data, reverse access (opposite of encrypt) */
-  for(int i = compressed_length - 1; i >= 0; i--)
+  if(compressed_data != 0 && compressed_length >= kENCRYPTION_MIN)
   {
-    for(int j = 0; j < 4; j++)
-      decrypt_data[j] = compressed_data[wrapNumber(i+j, compressed_length)];
+    /* Begin to decrypt the data, reverse access (opposite of encrypt) */
+    for(int i = compressed_length - 1; i >= 0; i--)
+    {
+      /* Assemble array to decrypt */
+      for(int j = 0; j < kENCRYPTION_MIN; j++)
+        decrypt_data[j] = compressed_data[wrapNumber(i+j, compressed_length)];
 
-    decryptData(decrypt_data); // TODO: Has return
+      /* Decrypt snapshot of data */
+      status &= decryptData(decrypt_data);
    
-    for(int j = 0; j < 4; j++)
-      compressed_data[wrapNumber(i+j, compressed_length)] = decrypt_data[j];
+      /* Dump the decrypted data back into the array */
+      for(int j = 0; j < kENCRYPTION_MIN; j++)
+        compressed_data[wrapNumber(i+j, compressed_length)] = decrypt_data[j];
+    }
+
+    /* Convert the line back to a string, as long as status was succesful */
+    if(status)
+    {
+      delete[] line_data;
+      line_data = longToInt(compressed_data, compressed_length);
+      decrypted_line = intToString(line_data, line_length, TRUE);
+    }
+    else
+    {
+      decrypted_line = "";
+    }
+  }
+  else
+  {
+    status = FALSE;
+    decrypted_line = "";
+    qDebug() << "[ERROR] Invalid data into file decrypt line function.";
   }
 
-  /* Convert the line back to a string */
-  delete[] line_data;
-  line_data = longToInt(compressed_data, compressed_length);
-  decrypted_line = intToString(line_data, line_length, TRUE);
+  /* Clean up compressed pointer, if set */
+  if(compressed_data != 0 || compressed_length > 0)
+  {
+    delete[] compressed_data;
+    compressed_data = NULL;
+  }
 
-  /* Clean Up */
-  delete[] compressed_data;
-  delete[] line_data;
+  /* Delete final pointer only if line length was set */
+  if(line_data != 0 || line_length > 0)
+  {
+    delete[] line_data;
+    line_data = NULL;
+  }
+
+  /* Set the success status determined above */
+  if(success != 0)
+    *success = status;
 
   return decrypted_line;
 }
 
+/*
+ * CHECKED:
+ * Returns false only if data is unset
+ */
 bool FileHandler::encryptData(uint32_t* data)
 {
   uint32_t y, z, sum;
@@ -144,57 +189,110 @@ bool FileHandler::encryptData(uint32_t* data)
     
     return TRUE;
   }
+  
+  qDebug() << "[ERROR] File block encryption failed on null data";
   return FALSE;
 }
 
+/* 
+ * CHECKED:
+ * Returns success status based on encryption. TRUE is success.
+ *  Often, the string will be empty if it fails
+ */
 QString FileHandler::encryptLine(QString line, bool* success)
 {
   uint32_t* compressed_data;
   int compressed_length;
-  uint32_t encrypt_data [4];
+  uint32_t encrypt_data [kENCRYPTION_MIN];
+  QString encrypted_line;
   int* line_data;
   int line_length;
-  QString encrypted_line;
-
-  /* Set the success status if bool pointer is set */
-  if(success != 0)
-    *success = TRUE;
+  bool status = TRUE;
 
   /* Convert line data into long to be encrypted */
   line_length = stringToInt(line, &line_data, TRUE);
   compressed_data = intToLong(line_data, line_length);
-  compressed_length = line_length / 4;
+  compressed_length = line_length / kASCII_IN_LONG;
 
-  /* Begin to encrypt the data, reverse access (opposite of encrypt) */
-  for(int i = 0; i < compressed_length; i++)
+  if(compressed_data != 0 && compressed_length >= kENCRYPTION_MIN)
   {
-    for(int j = 0; j < 4; j++)
-      encrypt_data[j] = compressed_data[wrapNumber(i+j, compressed_length)];
+    /* Begin to encrypt the data, reverse access (opposite of encrypt) */
+    for(int i = 0; i < compressed_length; i++)
+    {
+      /* Assemble array to encrypt */
+      for(int j = 0; j < kENCRYPTION_MIN; j++)
+        encrypt_data[j] = compressed_data[wrapNumber(i+j, compressed_length)];
 
-    encryptData(encrypt_data); // TODO: Has return
+      /* Encrypt snapshot of data */
+      status &= encryptData(encrypt_data);
    
-    for(int j = 0; j < 4; j++)
-      compressed_data[wrapNumber(i+j, compressed_length)] = encrypt_data[j];
+      /* Dump the encrypted data back into the array */
+      for(int j = 0; j < kENCRYPTION_MIN; j++)
+        compressed_data[wrapNumber(i+j, compressed_length)] = encrypt_data[j];
+    }
+
+    /* Convert the line back to a string, as long as status was succesful */
+    if(status)
+    {
+      delete[] line_data;
+      line_data = NULL;
+      line_data = longToInt(compressed_data, compressed_length);
+      encrypted_line = intToString(line_data, line_length);
+    }
+    else
+    {
+      encrypted_line = "";
+      qDebug() << "[ERROR] Invalid data into file encrypt line function.";
+    }
+  }
+  else
+  {
+    status = FALSE;
+    encrypted_line = "";
   }
 
-  /* Convert the line back to a string */
-  delete[] line_data;
-  line_data = longToInt(compressed_data, compressed_length);
-  encrypted_line = intToString(line_data, line_length);
+  /* Clean up compressed data */
+  if(compressed_data != 0 || compressed_length > 0)
+  {
+    delete[] compressed_data;
+    compressed_data = NULL;
+  }
 
-  /* Clean Up */
-  delete[] compressed_data;
-  delete[] line_data;
+  /* Clean up line pointer only if line length was set */
+  if(line_data != 0 || line_length > 0)
+  {
+    delete[] line_data;
+    line_data = NULL;
+  }
 
+  /* Set the success status determined above */
+  if(success != 0)
+    *success = status;
+  
   return encrypted_line;
 }
 
+/*
+ * CHECKED:
+ * Returns TRUE if file closed successfuly.
+ */
 bool FileHandler::fileClose()
 {
   file_stream.close();
-  return !file_stream.is_open();
+
+  /* Determine if close was successful */
+  if(!file_stream.is_open())
+    return TRUE;
+
+  /* If the strema close fails, notify the user */
+  qDebug() << "[ERROR] File close with \"" << file_name << "\" failed.";
+  return FALSE;
 }
 
+/*
+ * CHECKED:
+ * Returns TRUE if open stream was successful and stream is good
+ */
 bool FileHandler::fileOpen()
 {
   /* Attempt to open the file stream (for either open or close) */
@@ -214,7 +312,14 @@ bool FileHandler::fileOpen()
   fileClose();
   return FALSE;
 }
-  
+
+/* 
+ * CHECKED:
+ * Requires the line_data set to a memory location, length > 0 on line_data
+ *  and length to be a factor of 4. Otherwise, 0 is returned.
+ *
+ * Data uninitialized otherwise. Ie. no free required
+ */
 uint32_t* FileHandler::intToLong(int* line_data, int length)
 {
   /* Only move forward if the data is legitimate */
@@ -237,9 +342,15 @@ uint32_t* FileHandler::intToLong(int* line_data, int length)
 
     return long_data;
   }
+
+  qDebug() << "[ERROR] IntToLong conversion in FileHandler failed.";
   return 0;
 }
 
+/* 
+ * CHECKED:
+ * Returns empty string if length is 0 or line_data is uninitialized
+ */
 QString FileHandler::intToString(int* line_data, int length, bool decrypting)
 {
   bool end_reached = FALSE;
@@ -247,7 +358,7 @@ QString FileHandler::intToString(int* line_data, int length, bool decrypting)
   int line_count = length - 1;
 
   /* Check for padding at the end, only if the data was encrypted */
-  if(encryption_enabled && decrypting)
+  if(encryption_enabled && decrypting && length > 0)
   {
     do
     {
@@ -259,18 +370,25 @@ QString FileHandler::intToString(int* line_data, int length, bool decrypting)
   }
 
   /* Get the string from the integer data, remove padding if needed */
-  for(int i = 0; i < length; i++)
+  if(line_data != 0)
   {
-    if(line_data[i] <= kMAX_ASCII)
+    for(int i = 0; i < length; i++)
     {
-      char c = (char)line_data[i];
-      line.append(QChar(c));
+      if(line_data[i] <= kMAX_ASCII)
+      {
+        char c = (char)line_data[i];
+        line.append(QChar(c));
+      }
     }
   }
 
   return line;
 }
 
+/*
+ * CHECKED:
+ * Does not allocate memory if line_data unset or length is <= 0
+ */
 int* FileHandler::longToInt(uint32_t* line_data, int length)
 {
   /* Only move forward if the data is legitimate */
@@ -286,16 +404,22 @@ int* FileHandler::longToInt(uint32_t* line_data, int length)
       /* Run through the one long and convert to 4 ints */
       for(int j = kASCII_IN_LONG - 1; j >= 0; j--)
       {
-        int_data[i*kASCII_IN_LONG + j] = temp_long & 0xFF;
-        temp_long = temp_long >> 8;
+        int_data[i*kASCII_IN_LONG + j] = temp_long & kLONG_BUFFER;
+        temp_long = temp_long >> kLONG_BIT_SHIFT;
       }
     }
 
     return int_data;
   }
+  
+  qDebug() << "[ERROR] LongToInt conversion in FileHandler failed.";
   return 0;
 }
 
+/*
+ * CHECKED:
+ * Does not allocate memory if the length of line is 0 and not encrypting
+ */
 int FileHandler::stringToInt(QString line, int** line_data, bool encrypting)
 {
   int padding_length = 0;
@@ -315,20 +439,43 @@ int FileHandler::stringToInt(QString line, int** line_data, bool encrypting)
     line.append(QChar(kPADDING_ASCII + i));
   final_length += padding_length;
 
-  /* Allocate appropriate space */
-  *line_data = new int[final_length];
+  /* Allocate appropriate space, if size is greater than 0 */
+  if(final_length > 0)
+  {
+    *line_data = new int[final_length];
 
-  /* Convert the line */
-  for(int i = 0; i < final_length; i++)
-    (*line_data)[i] = line.at(i).unicode();
+    /* Convert the line */
+    for(int i = 0; i < final_length; i++)
+      (*line_data)[i] = line.at(i).unicode();
 
-  return final_length;
+    return final_length;
+  }
+
+  qDebug() << "[ERROR] StringToInt conversion in FileHandler failed.";
+  return 0;
 }
 
+/*
+ * CHECKED:
+ * Only fails if value or limit is less than 0. Failure is indicated by a
+ *  -1 in the return call.
+ */
 int FileHandler::wrapNumber(int value, int limit)
 {
-  if(value >= limit)
+  if(limit <= 0)
+  {
+    qDebug() << "[ERROR] Invalid limit (" << limit << ") in wrapping call.";
+    return -1;
+  }
+  else if(value < 0)
+  {
+    qDebug() << "[ERROR] Invalid value (" << value << ") in wrapping call.";
+    return -1;
+  }
+  else if(value >= limit)
+  {
     return value - (value / limit) * limit;
+  }
   return value;
 }
 
@@ -449,7 +596,7 @@ bool FileHandler::stop()
   bool success = TRUE;
 
   /* MD5 Test */
-  if(file_write)
+  if(file_write && encryption_enabled)
   {
     qDebug() << file_data;
     qDebug() << computeMd5();
