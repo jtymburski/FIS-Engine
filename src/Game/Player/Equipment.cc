@@ -21,28 +21,27 @@
  */
 Equipment::Equipment()
 {
+  // INITIALIZE SIGNATURE
 
+  for (int i = 0; i < kMAX_X; i++)
+      for (int j = 0; j < kMAX_Y; j++)
+          bubby_signature[i][j] = NULL;
 }
 
 /*
  * Description: Equipment class destructor
  */
-Equipment::~Equipment() {}
+Equipment::~Equipment()
+{
+  for (int i = 0; i < kMAX_X; i++)
+    for (int j = 0; j < kMAX_Y; j++)
+      if (bubby_signature[i][j] != NULL)
+        qDebug() << "WARNING: DELETING EQUIPMENT WITHOUT REMOVING BUBBIES";
+}
 
 /*============================================================================
  * FUNCTIONS
  *===========================================================================*/
-
-/*
- * Description: Clears the list of actions
- *
- * Inputs: none
- * Output: none
- */
-void Equipment::clearActionList()
-{
-  // action_list.clear();
-}
 
 /*
  * Description: Checks if the bubby will fit into the bubby signature
@@ -52,51 +51,113 @@ void Equipment::clearActionList()
  *         int y - the top most coordinate of the proposed location
  * Output: bool - boolean if the bubby can be attached
  */
-// TODO: Bubby attachment algorithm [01-31-13]
-bool Equipment::isBubbyAttachable(Bubby* bubby, uint x, uint y)
+const bool Equipment::canAttach(Bubby* new_bubby, ushort x, ushort y)
 {
-  return TRUE;
+  if (new_bubby->getTier() == 0)
+    return FALSE;
+  if (signature[x][y] == 'O')
+  {
+    if (new_bubby->getTier() == 2 && signature[x][y - 1] == 'O')
+      return TRUE;
+    if (new_bubby->getTier() == 3)
+      if (signature[x + 1][y] == 'O' && signature[x + 1][y - 1] == 'O')
+        return TRUE;
+    return TRUE;
+  }
+  return FALSE;
 }
 
 /*
- * Description: Attempt to attach the bubby into the signature.
+ * Description: Attempts to attach the bubby into the signature. WARNING:
+ *              Only give it the left most and top most coordinate!
  *
  * Inputs: Bubby* - pointer of the bubby to be attached
  *         int x - the left most coordinate
  *         int y - the top most coordinate
  * Output: bool - true if the attachment was successful
  */
-bool Equipment::attachBubby(Bubby* bubby, uint x, uint y)
+const bool Equipment::attachBubby(Bubby* new_bubby, ushort x, ushort y)
 {
-  // TODO: Bubby attachments! [02-01-13]
+  if (new_bubby->getTier() == 0)
+    return FALSE;
+
+  bubby_signature[x][y] = new_bubby;
+  signature[x][y] = 'B';
+
+  if (new_bubby->getTier() > 1)
+      signature[x][y - 1] = 'C';
+  if (new_bubby->getTier() == 3)
+  {
+      signature[x + 1][y] = 'C';
+      signature[x + 1][y - 1] = 'C';
+  }
   return TRUE;
 }
 
 /*
- * Description: Obtains the list of actions the equipment allows the person
- *              to perform (used for a total action list calculation in the
- *              battle class
+ * Description: Checks if a Bubby at a given index can be unattached
  *
- * Inputs: none
- * Output: QVector of Action pointers - the built action list
+ * Inputs: ushort x - x coordinate of the Bubby
+ *         ushort y - y coordinate of the Bubby
+ * Output: bool - TRUE if the Bubby can be unattached
  */
-QVector<Action*> Equipment::getActionList()
+const bool Equipment::canUnattach(ushort x, ushort y)
 {
-  // TODO: Actions! [01-31-13]
-  return action_list;
+  int left_x = getLeftX(x, y, FALSE);
+  int left_y = getLeftY(y, y, FALSE);
+
+  if (left_x == -1 || left_y == -1)
+    return FALSE;
+
+  if (signature[left_x][left_y] == 'B')
+    return TRUE;
+  return FALSE;
 }
 
 /*
- * Description: Toggles a given EquipmentState flag
+ * Description: Checks if a Bubby of a given ID can be unattached
  *
- * Inputs: EquipmentState flag to be toggled
- * Output: none
+ * Inputs: ushort x - x coordinate of the Bubby
+ *         ushort y - y coordinate of the Bubby
+ * Output: bool - TRUE if the Bubby can be unattached
  */
-void Equipment::toggleEquipmentFlag(EquipmentState flag)
+const bool Equipment::canUnattach(uint id)
 {
-    setEquipmentFlag(flag, !getEquipmentFlag(flag));
+  // TODO: FIND X AND Y
+  // int left_x = getLeftX(x, y, TRUE);
+  // int left_y = getLeftY(y, y TRUE);
+
+  //if (left_x == -1 || left_y == -1)
+    return FALSE;
+
+  //if (signature[left_x][left_y] == 'B')
+    return TRUE;
+  return FALSE;
 }
 
+/*
+ * Description: Unattaches a Bubby at a given (leftmost x, leftmost y) coord
+ *
+ * Inputs: ushort x - leftmost x coordinate of the Bubby
+ *         ushort y - leftmost y coordinate of the Bubby
+ * Output: Bubby - the (now) unattached Bubby
+ */
+Bubby Equipment::unattach(ushort x, ushort y)
+{
+  int left_x = getLeftX(x, y, FALSE);
+  int left_y = getLeftY(y, y, FALSE);
+
+  if (bubby_signature[left_x][left_y]->getTier() > 0)
+      signature[left_x][left_y] = 'O';
+  if (bubby_signature[left_x][left_y]->getTier() > 1)
+    signature[left_x][left_y - 1] = 'O';
+  if (bubby_signature[left_x][left_y]->getTier() > 2)
+  {
+    signature[left_x + 1][left_y] = 'O';
+    signature[left_x + 1][left_y - 1] = 'O';
+  }
+  return *bubby_signature[left_x][left_y];
+}
 
 /*
  * Description: Evaluates a given EquipmentState flag
@@ -107,6 +168,48 @@ void Equipment::toggleEquipmentFlag(EquipmentState flag)
 const bool Equipment::getEquipmentFlag(EquipmentState flag)
 {
     return (eflag_set.testFlag(flag));
+}
+
+/*
+ * Description: Gets the X-coordinate on the signature of a Bubby given its
+ *              unique ID. Returns -1 if not found.
+ *
+ * Inputs: uint - unique ID or x-value of Bubby to be checked
+ *         bool - TRUE if passing an ID rather than an x-coordinate
+ * Output: int - the leftmost x-coordinate of the Bubby if found, -1 otherwise
+ // TODO: CORNER CASES
+ */
+int Equipment::getLeftX(uint x, uint y, bool passingID)
+{
+  if (signature[x][y] == 'B')
+    return x;
+  if (signature[x][y - 1] == 'B')
+    return x;
+  if (signature[x - 1][y] == 'B')
+    return x - 1;
+  if (signature[x - 1][y - 1] == 'B')
+    return x - 1;
+}
+
+/*
+ * Description: Gets the X-coordinate on the signature of a Bubby given its
+ *              unique ID. Returns -1 if not found.
+ *
+ * Inputs: uint - unique ID or y-value of Bubby to be checked
+ *         bool - TRUE if passing an ID rather than a y-coordinate
+ * Output: int - the leftmost y-coordinate of the Bubby if found, -1 otherwise
+ // TODO: CORNER CASES
+ */
+int Equipment::getLeftY(uint x, uint y, bool passingID)
+{
+    if (signature[x][y] == 'B')
+      return y;
+    if (signature[x - 1][y] == 'B')
+        return y;
+    if (signature[x][y + 1] == 'B')
+        return y + 1;
+    if (signature[x -1][y + 1] == 'B')
+        return y + 1;
 }
 
 /*
