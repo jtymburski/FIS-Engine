@@ -6,7 +6,6 @@
 *              bearacks, and also represents the player's position and speed
 *              on the map
 ******************************************************************************/
-
 #include "Game/Player/Player.h"
 
 /*============================================================================
@@ -33,13 +32,7 @@ Player::Player(Party* p_sleuth, Party* p_racks, int x, int y)
 /*
  * Description: Annihilates a player object
  */
-Player::~Player()
-{
-  delete sleuth;
-  delete bearacks;
-  setSleuth();
-  setBearacks();
-}
+Player::~Player() {}
 
 /*============================================================================
  * FUNCTION

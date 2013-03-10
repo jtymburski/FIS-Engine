@@ -55,7 +55,6 @@ signals:
   void finished();
 
 public:
-
   /* Gets the display time for the string */
   int getDisplayTime();
 

@@ -11,6 +11,7 @@
 #define EQUIPMENT_H
 
 #include <QVector>
+#include <QDebug>
 #include "Game/Player/Action.h"
 #include "Game/Player/Bubby.h"
 //#include "Game/Player/Item.h"
@@ -42,41 +43,41 @@ public:
   EquipmentFlags eflag_set;
 
 private:
-  /* Equipment Constants */
-  const static uint kSIG_X = 9;
-  const static uint kMAX_SIG_Y = 9;
+  /* -------------------- Constants ----------------- */
+  const static ushort kMAX_X = 9;
+  const static ushort kMAX_Y = 9;
 
   /* 2D 9x9 array for bubby signature*/
+  QVector<QVector<char> > signature;
   Bubby* bubby_signature[9][9];
 
   /* The list of actions offered by the equipment*/
   QVector<Action*> action_list;
 
   /* A parallel list that shows when actions become available (Based on level)*/
-  QVector<unsigned short> action_available;
+  QVector<ushort> action_available;
 
 public:
   /* Checks if the bubby will fit into the bubby signature
    * X is the left most coordinate, Y is the top most coordinate
    * Returns if space is available for attachment */
-  bool isBubbyAttachable(Bubby* b, uint x, uint y);
+  const bool canAttach(Bubby* new_bubby, ushort x, ushort y);
 
   /* Attempt to attach bubby into the signature
    * X is the left most coordinate, Y is the top most coordinate
    * Returns status of attachment */
-  bool attachBubby(Bubby* b, uint x, uint y);
+  const bool attachBubby(Bubby* new_bubby, ushort x, ushort y);
 
-  /* Gets the list of useable locations of equipment */
-  bool canEquip(QString location);
+  /* Checks if a Bubby at a given index can be unattached */
+  const bool canUnattach(ushort x, ushort y);
+  const bool canUnattach(uint id);
 
-  /* Gets the list of equipment actions (Used for total action lists in battle)*/
-  QVector<Action*> getActionList();
+  /* Removes a Bubby at a given x and y value (checks adjacent values) */
+  Bubby unattach(ushort x, ushort y);
 
-  /* Clears the action list */
-  void clearActionList();
-
-  /* Toggles an EquipmentState flag */
-  void toggleEquipmentFlag(EquipmentState flags);
+  /* Gets the Leftmost X and Leftmost Y coordinates of a Bubby (+given an ID) */
+  int getLeftX(uint x, uint y, bool passingID = TRUE);
+  int getLeftY(uint x, uint y, bool passingID = TRUE);
 
   /* Gets the boolean value of flag */
   const bool getEquipmentFlag(EquipmentState flags);

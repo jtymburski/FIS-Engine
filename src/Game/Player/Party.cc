@@ -18,29 +18,18 @@
 Party::Party(Person* p_main, ushort max, Inventory* inventory, QWidget* parent)
     : max_size(kMAX_MEMBERS)
 {
-  main = p_main;
+  /* Pointer setup */
+  setInventory(inventory);
+
   members.push_back(p_main);
   if (max < kMAX_MEMBERS)
     setMaxSize(max);
-  setInventory(inventory);
 }
 
 /*
  * Description: Annihilates a party object
  */
-Party::~Party()
-{
-  delete pouch;
-  pouch = NULL;
-  delete main;
-  main = NULL;
-  for (int i = 0; i < members.size(); i++)
-  {
-    delete members.at(i);
-    members[i] = NULL;
-  }
-  members.clear();
-}
+Party::~Party() {}
 
 /*============================================================================
  * FUNCTIONS
@@ -197,17 +186,6 @@ int Party::getMaxSize()
 void Party::setInventory(Inventory* i)
 {
   pouch = i;
-}
-
-/*
- * Description: Sets the main member of the party
- *
- * Inputs: Person* - pointer to new main person
- * Output: none
- */
-void Party::setMainMember(Person* p)
-{
-  main = p;
 }
 
 /*

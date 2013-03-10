@@ -10,7 +10,6 @@
 * // TODO: Rewrite LEVEL UP
 * // TODO: Setup Functions
 ******************************************************************************/
-
 #include "Game/Player/Person.h"
 
 /*=============================================================================
@@ -33,58 +32,35 @@ QVector<uint> Person::exp_table;
  */
 Person::Person(QString name, Race *race, Category* cat, QString p, QString s)
 {
-  /* Initial preparation */
-  setName(name);
+  /* Pointer setup */
   setRace(race);
   setCategory(cat);
-  setPrimary(p);
-  setSecondary(s);
   skills = NULL;
+  setFirstPerson();
+  setThirdPerson();
+
   setExp(0);
   setLevel(1);
+  setName(name);
+  setPrimary(p);
+  setSecondary(s);
 
   /* Set up all three attribute sets */
   setUpBaseStats();
   setStats(base_stats);
   setTempStats(base_stats);
 
-  /* Append kEQUIP_SLOTS of NULL equipment initially */
-  for (int i = 0; i < 5; i++)
-    equipment.append(NULL);
-
-  setFirstPerson();
-  setThirdPerson();
-
   if (exp_table.isEmpty())
     calcExpTable();
 
   /* Initially gather all usable skills */
   calcSkills();
-
 }
 
 /*
  * Description: Annihilates a Person object
  */
-Person::~Person()
-{
-  for (int i = 0; i < equipment.size(); i++)
-  {
-      delete equipment.at(i);
-      equipment[i] = NULL;
-  }
-  equipment.clear();
-  delete cat;
-  cat = NULL;
-  delete race;
-  race = NULL;
-  delete skills;
-  skills = NULL;
-  delete first_person;
-  first_person = NULL;
-  delete third_person;
-  third_person = NULL;
-}
+Person::~Person() {}
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -336,7 +312,7 @@ Category* Person::getCategory()
  * Inputs: None
  * Output: QVector<Equipment*> - the equipment of the person
  */
-QVector<Equipment*> Person::getEquipment()
+QVector<Equipment> Person::getEquipment()
 {
   return equipment;
 }
@@ -349,7 +325,7 @@ QVector<Equipment*> Person::getEquipment()
  */
 Equipment* Person::getEquipSlot(int index)
 {
-  return equipment.at(index);
+ return &equipment[index];
 }
 
 /*
@@ -573,11 +549,9 @@ AttributeSet* Person::tempStats()
  *         Equipment* - pointer to the equipment to attach
  * Output: bool - TRUE if the equip took place
  */
-const bool Person::setEquipment(QString slot, Equipment* e)
+const bool Person::setEquipment(QString slot, Equipment e)
 {
-  if (e == NULL)
-    return FALSE;
-  if (slot == "TWOHAND" && e->getEquipmentFlag(Equipment::TWOHAND))
+  if (slot == "TWOHAND" && e.getEquipmentFlag(Equipment::TWOHAND))
   {
     if (getEquipSlot("LEFTARM") == NULL && getEquipSlot("RIGHTARM") == NULL)
     {
@@ -586,7 +560,7 @@ const bool Person::setEquipment(QString slot, Equipment* e)
       return TRUE;
     }
   }
-  if (slot == "HEAD" && e->getEquipmentFlag(Equipment::HEAD))
+  if (slot == "HEAD" && e.getEquipmentFlag(Equipment::HEAD))
   {
     if (getEquipSlot("HEAD") == NULL && getEquipSlot("HEAD") == NULL)
     {
@@ -594,7 +568,7 @@ const bool Person::setEquipment(QString slot, Equipment* e)
       return TRUE;
     }
   }
-  if (slot == "LEFTARM" && e->getEquipmentFlag(Equipment::LEFTARM))
+  if (slot == "LEFTARM" && e.getEquipmentFlag(Equipment::LEFTARM))
   {
     if (getEquipSlot("LEFTARM") == NULL)
     {
@@ -602,7 +576,7 @@ const bool Person::setEquipment(QString slot, Equipment* e)
       return TRUE;
     }
   }
-  if (slot == "RIGHTARM" && e->getEquipmentFlag(Equipment::RIGHTARM))
+  if (slot == "RIGHTARM" && e.getEquipmentFlag(Equipment::RIGHTARM))
   {
     if (getEquipSlot("RIGHTARM") == NULL)
     {
@@ -610,7 +584,7 @@ const bool Person::setEquipment(QString slot, Equipment* e)
       return TRUE;
     }
   }
-  if (slot == "TORSO" && e->getEquipmentFlag(Equipment::TORSO))
+  if (slot == "TORSO" && e.getEquipmentFlag(Equipment::TORSO))
   {
     if (getEquipSlot("TORSO") == NULL)
     {
@@ -618,7 +592,7 @@ const bool Person::setEquipment(QString slot, Equipment* e)
       return TRUE;
     }
   }
-  if (slot == "LEGS" && e->getEquipmentFlag(Equipment::LEGS))
+  if (slot == "LEGS" && e.getEquipmentFlag(Equipment::LEGS))
   {
     if (getEquipSlot("LEGS") == NULL)
     {

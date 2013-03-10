@@ -54,12 +54,13 @@ private:
   static const uint kMAX_EXP_DROP    =    1000000; /* Million */
   static const uint kMAX_CREDIT_DROP =   10000000; /* Ten Million */
   static const int kMAX_AILMENTS     =          5; /* Ailments at one time */
+  static const uint kMAX_EQUIP_SLOTS =          5;
 
   /* Calculate the experience table */
   static void calcExpTable();
 
   /* Equipment names and slots */
-  QVector<Equipment*> equipment;
+  QVector<Equipment> equipment;
 
   /* Person's level and experience */
   uint level;
@@ -144,7 +145,7 @@ public:
   Category* getCategory();
 
   /* Methods for returning equipments */
-  QVector<Equipment*> getEquipment();
+  QVector<Equipment> getEquipment();
   Equipment* getEquipSlot(int index);
   Equipment* getEquipSlot(QString name);
 
@@ -190,7 +191,7 @@ public:
   AttributeSet* tempStats();
 
   /* Sets an equipment to a slot */
-  const bool setEquipment(QString slot, Equipment* e = NULL);
+  const bool setEquipment(QString slot, Equipment e);
 
   /* Sets the person's category */
   void setCategory(Category* c);

@@ -39,16 +39,32 @@ AllyStatusBar::AllyStatusBar(Person* character, uint width, uint height,
  */
 AllyStatusBar::~AllyStatusBar()
 {
-  delete name_label;
-  delete qd_label;
-  delete qd_outline;
-  delete qd_bar;
-  delete qd_grad;
-  name_label = NULL;
-  qd_label = NULL;
-  qd_outline = NULL;
-  qd_bar = NULL;
-  qd_grad = NULL;
+  if (name_label != NULL)
+  {
+    delete name_label;
+    name_label = NULL;
+  }
+  if (qd_label != NULL)
+  {
+    delete qd_label;
+    qd_label = NULL;
+  }
+  if (qd_outline != NULL)
+  {
+    delete qd_outline;
+    qd_outline = NULL;
+  }
+  if (qd_bar != NULL)
+  {
+    delete qd_bar;
+    qd_bar = NULL;
+  }
+  if (qd_grad != NULL)
+  {
+    delete qd_grad;
+    qd_grad = NULL;
+  }
+
   cleanUp();
 }
 

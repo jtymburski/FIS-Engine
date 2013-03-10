@@ -26,6 +26,10 @@
  */
 Skill::Skill(QString name)
 {
+  /* Pointer setup */
+  animation = NULL;
+  sound_effect = NULL;
+
   setName(name);
   qd_cost = 0;
   description = "";
@@ -37,32 +41,31 @@ Skill::Skill(QString name)
  *
  * Inputs: QString - name of the skill
  *         QVector<Action> - vector of actions to base the skill off
+ *         QVector<float> - chance_list -
  */
-Skill::Skill(QString name, QVector<Action*> effect_list, QVector<float> effect_chance_list)
+Skill::Skill(QString name, QVector<Action*> effect_list,
+             QVector<float> chance_list)
 {
-    setName(name);
-    setQdCost(0);
-    setDescription("");
-    setUsingMessage("");
-    for (int i = 0; i < effect_list.size(); i++)
-    {
-        addEffect(effect_list[i]);
-        addEffectChance(effect_chance_list[i]);
-    }
+  /* Pointer setup */
+  // assert(effect_list.size() == chance_list.size());
+  for (int i = 0; i < effect_list.size(); i++)
+  {
+    addEffect(effect_list[i]);
+    addEffectChance(chance_list[i]);
+  }
+  animation = NULL;
+  sound_effect = NULL;
+
+  setName(name);
+  setQdCost(0);
+  setDescription("");
+  setUsingMessage("");
 }
 
 /*
  * Description: Annihilates a Skill object
  */
-Skill::~Skill()
-{
-  qDeleteAll(effects);
-  effects.clear();
-  // delete animation;
-  // animation = NULL;
-  // delete sound_effect;
-  // sound_effect = NULL;
-}
+Skill::~Skill() {}
 
 /*============================================================================
  * PUBLIC FUNCTIONS

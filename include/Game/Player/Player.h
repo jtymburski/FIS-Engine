@@ -10,7 +10,6 @@
 #define PLAYER_H
 
 #include <QtGui/QWidget>
-
 #include "Game/Player/Party.h"
 
 class Player

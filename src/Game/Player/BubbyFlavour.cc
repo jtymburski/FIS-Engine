@@ -36,13 +36,7 @@ BubbyFlavour::BubbyFlavour(QString name, AttributeSet stats, SkillSet* skills)
 /*
  * Description: Annihilates a Bubby object
  */
-BubbyFlavour::~BubbyFlavour()
-{
-  delete skill_list;
-  skill_list = NULL;
-  qDeleteAll(sprites.begin(), sprites.end());
-  sprites.clear();
-}
+BubbyFlavour::~BubbyFlavour() {}
 
 /*============================================================================
  * PRIVATE FUNCTIONS

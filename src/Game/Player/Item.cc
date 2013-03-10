@@ -23,9 +23,7 @@ Item::Item(QWidget* parent)
 /*
  * Description: Annihilates an Item class object
  */
-Item::~Item()
-{
-}
+Item::~Item() {}
 
 /*============================================================================
  * FUNCTIONS
