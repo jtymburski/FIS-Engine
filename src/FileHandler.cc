@@ -268,7 +268,7 @@ QString FileHandler::encryptLine(QString line, bool* success)
   /* Set the success status determined above */
   if(success != 0)
     *success = status;
-  
+
   return encrypted_line;
 }
 
@@ -372,12 +372,27 @@ QString FileHandler::intToString(int* line_data, int length, bool decrypting)
   /* Get the string from the integer data, remove padding if needed */
   if(line_data != 0)
   {
-    for(int i = 0; i < length; i++)
+    if(encryption_enabled && decrypting)
     {
-      if(line_data[i] <= kMAX_ASCII)
+      for(int i = 0; i < length; i++)
       {
-        char c = (char)line_data[i];
-        line.append(QChar(c));
+        if(line_data[i] <= kMAX_ASCII)
+        {
+          char c = (char)line_data[i];
+          line.append(QChar(c));
+        }
+      }
+    }
+    else
+    {
+      for(int i = 0; i < length; i++)
+      {
+        int val = ((line_data[i] >> kINT_BIT_SHIFT) & kINT_BUFFER) 
+                                                    + kENCRYPTION_PAD;
+        line.append(QChar((char)val));
+
+        val = (line_data[i] & kINT_BUFFER) + kENCRYPTION_PAD;
+        line.append(QChar((char)val));
       }
     }
   }
@@ -442,11 +457,28 @@ int FileHandler::stringToInt(QString line, int** line_data, bool encrypting)
   /* Allocate appropriate space, if size is greater than 0 */
   if(final_length > 0)
   {
-    *line_data = new int[final_length];
-
     /* Convert the line */
-    for(int i = 0; i < final_length; i++)
-      (*line_data)[i] = line.at(i).unicode();
+    if(encryption_enabled && !encrypting) 
+    {
+      final_length /= 2; /* Half length since combining two ints to one */
+
+      *line_data = new int[final_length];
+      
+      for(int i = 0; i < final_length; i++)
+      {
+        (*line_data)[i] = ((line.at(i*2).unicode() - kENCRYPTION_PAD) 
+                                            & kINT_BUFFER) << kINT_BIT_SHIFT;
+        (*line_data)[i] |= (line.at(i*2+1).unicode() - kENCRYPTION_PAD)
+                                            & kINT_BUFFER;
+      }
+    }
+    else
+    {
+      *line_data = new int[final_length];
+
+      for(int i = 0; i < final_length; i++)
+        (*line_data)[i] = line.at(i).unicode();
+    }
 
     return final_length;
   }
@@ -483,15 +515,10 @@ int FileHandler::wrapNumber(int value, int limit)
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
-QByteArray FileHandler::computeMd5()
+QByteArray FileHandler::computeMd5(QByteArray data)
 {
-  if(available && file_write)
-  {
-    return QCryptographicHash::hash(file_data, 
+  return QCryptographicHash::hash(data, 
                                     QCryptographicHash::Md5).toHex();
-  }
-
-  return "";
 }
 
 QString FileHandler::getFilename()
@@ -570,6 +597,10 @@ void FileHandler::setWriteEnabled(bool enable)
   file_write = enable;
 }
 
+/*
+ * CHECKED:
+ * Now will fail, and close file if open is unsuccessful
+ */
 bool FileHandler::start()
 {
   bool success = TRUE;
@@ -584,13 +615,24 @@ bool FileHandler::start()
   /* Open the file stream */
   success &= fileOpen();
 
-  /* Determine the class availablility based on the success status */
+  /* Determine the class availability based on the success status */
   if(success)
+  {
     available = TRUE;
+    //file_stream << std::endl;
+  }
+  else
+  {
+    stop();
+  }
 
   return success;
 }
 
+/*
+ * CHECKED:
+ * Will return false if stop fails.
+ */
 bool FileHandler::stop()
 {
   bool success = TRUE;
@@ -598,8 +640,11 @@ bool FileHandler::stop()
   /* MD5 Test */
   if(file_write && encryption_enabled)
   {
-    qDebug() << file_data;
-    qDebug() << computeMd5();
+    //file_stream.seekg(0);
+    //file_stream << std::endl;
+    //qDebug() << computeMd5(file_data);
+    //qDebug() << "";
+    //writeLine(QString(computeMd5(file_data)));
   }
 
   /* Close the file stream */

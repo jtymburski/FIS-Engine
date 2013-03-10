@@ -71,6 +71,9 @@ private:
   const static int kASCII_IN_LONG = 4; /* # of ascii's that will fit in long */
   const static int kDELTA = 2654435769; /* Sum bias for encryption */
   const static int kENCRYPTION_MIN = 4; /* Min line length for encryption */
+  const static int kENCRYPTION_PAD = 150; /* Padding for encrypted values */
+  const static int kINT_BIT_SHIFT = 4; /* Shift int to next spot */
+  const static int kINT_BUFFER = 0xF; /* Only use most significant int */
   const static uint32_t kKEY[]; /* Key array for encryption */
   const static int kLONG_BIT_SHIFT = 8; /* Number of bits to shift long to 
                                            next spot */
@@ -117,7 +120,7 @@ private:
 public:
   /* Returns the hash for the data that has currently been written. Returns
    * nothing if the function is uninitialized or set on read */
-  QByteArray computeMd5();
+  QByteArray computeMd5(QByteArray data);
 
   /* Returns the filename that's used for reading from and writing to */
   QString getFilename();
