@@ -24,7 +24,10 @@ Bubby::Bubby(BubbyFlavour* type) : my_id(setId())  // increment Bubby's id#
   if (exp_table.isEmpty())
     calcExpTable();
 
+  /* Pointer setup */
   setType(type);
+  current_sprite = NULL;
+
   setLevel(0);
   setTier(0);
   setExperience(0);
@@ -34,14 +37,7 @@ Bubby::Bubby(BubbyFlavour* type) : my_id(setId())  // increment Bubby's id#
 /*
  * Description: Destroy a Bubby object
  */
-Bubby::~Bubby()
-{
-  delete type;
-  type = NULL;
-  delete current_sprite;
-  current_sprite = NULL;
-
-}
+Bubby::~Bubby() {}
 
 /*=============================================================================
  * PRIVATE FUNCTIONS

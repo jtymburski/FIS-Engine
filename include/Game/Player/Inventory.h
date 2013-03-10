@@ -17,7 +17,8 @@ class Inventory : public QWidget
 {
 public:
   /* Constructor function */
-  Inventory(QString name, QPixmap* thumbnail, uint limit = 0, QWidget *parent = 0);
+  Inventory(QString name, QPixmap* thumbnail = NULL, uint limit = 0,
+            QWidget *parent = 0);
 
   /* Destructor function */
   ~Inventory();

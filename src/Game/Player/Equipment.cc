@@ -27,18 +27,7 @@ Equipment::Equipment()
 /*
  * Description: Equipment class destructor
  */
-Equipment::~Equipment()
-{
-  // clearActionList();
-  for (uint x = 0; x < 9; x++)
-  {
-    for (uint y = 0; y < 9; y++)
-    {
-      delete bubby_signature[x][y];
-      bubby_signature[x][y] = NULL;
-      }
-  }
-}
+Equipment::~Equipment() {}
 
 /*============================================================================
  * FUNCTIONS

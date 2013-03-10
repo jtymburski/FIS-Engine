@@ -77,6 +77,20 @@
  */
 Battle::Battle(Party* friends, Party* foes, QWidget* pointer)
 {
+  /* Pointer setup */
+  setFriends(friends);
+  setFoes(foes);
+  info_bar = NULL;
+  status_bar = NULL;
+  menu = NULL;
+  battle_bg = NULL;
+  battle_status_bar_image = NULL;
+  target_box = NULL;
+  status_box = NULL;
+  info_box = NULL;
+  extra_box = NULL;
+  weather_cond = NULL;
+
   /* Basic settings for battle window sizing and backdrops */
   setMaxWidth(1216);
   setMaxHeight(704);
@@ -86,14 +100,11 @@ Battle::Battle(Party* friends, Party* foes, QWidget* pointer)
   battle_status_bar_image = new QPixmap();
   battle_status_bar_image->load(":/statusbar");
 
-  setFriends(friends);
-  setFoes(foes);
-
   /* Set up each friend's and each foe's temporary statistics */
   for (uint i = 0; i < friends->getPartySize(); i++)
-      friends->getMember((int)i)->battlePrep();
+    friends->getMember((int)i)->battlePrep();
   for (uint i = 0; i < foes->getPartySize(); i++)
-      foes->getMember((int)i)->battlePrep();
+    foes->getMember((int)i)->battlePrep();
 
   /* Create and place enemy & ally bounding boxes */
   uint left_d   = floor(0.1290 * getMaxHeight());
@@ -150,32 +161,62 @@ Battle::Battle(Party* friends, Party* foes, QWidget* pointer)
  */
 Battle::~Battle()
 {
-  delete info_bar;
-  info_bar = NULL;
-  delete status_bar;
-  status_bar = NULL;
+  if (info_bar != NULL)
+  {
+    delete info_bar;
+    info_bar = NULL;
+  }
+  if (status_bar != NULL)
+  {
+    delete status_bar;
+    status_bar = NULL;
+  }
   qDeleteAll(enemy_status_bar);
-  // delete foes;
-  // foes = NULL;
-  // delete friends;
-  // friends = NULL;
-  delete battle_bg;
-  battle_bg = NULL;
-  delete battle_status_bar_image;
-  battle_status_bar_image = NULL;
+  if (menu != NULL)
+  {
+    delete menu;
+    menu = NULL;
+  }
+  if (battle_bg != NULL)
+  {
+    delete battle_bg;
+    battle_bg = NULL;
+  }
+  if  (battle_status_bar_image != NULL)
+  {
+    delete battle_status_bar_image;
+    battle_status_bar_image = NULL;
+  }
   qDeleteAll(ally_box);
   qDeleteAll(enemy_box);
   qDeleteAll(enemy_status_boxes);
-  delete status_box;
-  status_box = NULL;
-  delete info_box;
-  info_box = NULL;
-  delete extra_box;
-  extra_box = NULL;
-  // qDeleteAll(skill_buffer);
-  // qDeleteAll(items_buffer);
-  // delete weather_cond;
-  // weather_cond = NULL;
+  if (target_box != NULL)
+  {
+    delete target_box;
+    target_box = NULL;
+  }
+  if (status_box != NULL)
+  {
+    delete status_box;
+    status_box = NULL;
+  }
+  if (info_box != NULL)
+  {
+    delete info_box;
+    info_box = NULL;
+  }
+  if (extra_box != NULL)
+  {
+    delete extra_box;
+    extra_box = NULL;
+  }
+  qDeleteAll(skill_buffer);
+  qDeleteAll(items_buffer);
+  if (weather_cond != NULL)
+  {
+    delete weather_cond;
+    weather_cond = NULL;
+  }
 }
 
 /*============================================================================

@@ -43,6 +43,7 @@ SkillSet::SkillSet(Skill *skill, ushort level)
  */
 SkillSet::SkillSet(QVector<Skill*> skills, QVector<ushort> levels)
 {
+  // assert(skills.size() == levels.size());
   addSkills(skills, levels);
   cleanUp();
 }
@@ -50,11 +51,7 @@ SkillSet::SkillSet(QVector<Skill*> skills, QVector<ushort> levels)
 /*
  * Description: Annihilates a SkillSet object
  */
-SkillSet::~SkillSet()
-{
-  qDeleteAll(skills);
-  skills.clear();
-}
+SkillSet::~SkillSet() {}
 
 /*=============================================================================
  * Functions

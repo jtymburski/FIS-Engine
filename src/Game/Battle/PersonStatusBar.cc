@@ -99,16 +99,8 @@ void PersonStatusBar::setCharacter(Person* new_character)
  */
 void PersonStatusBar::clearStatusBoxes()
 {
-  for (int i = 0; i < status_thumb_sprites.size(); i++)
-  {
-    delete status_thumb_sprites.at(i);
-    status_thumb_sprites[i] = NULL;
-  }
-  for (int i = 0; i < status_thumbs.size(); i++)
-  {
-    delete status_thumbs.at(i);
-    status_thumbs[i] = NULL;
-  }
+  qDeleteAll(status_thumbs);
+  qDeleteAll(status_thumb_sprites);
   status_thumbs.clear();
   status_thumb_sprites.clear();
 }
@@ -121,16 +113,32 @@ void PersonStatusBar::clearStatusBoxes()
  */
 void PersonStatusBar::cleanUp()
 {
-  delete level_label;
-  delete health_label;
-  delete health_grad;
-  delete health_outline;
-  delete health_bar;
-  level_label = NULL;
-  health_label = NULL;
-  health_grad = NULL;
-  health_outline = NULL;
-  health_bar = NULL;
+  if (level_label != NULL)
+  {
+    delete level_label;
+    level_label = NULL;
+  }
+  if  (health_label != NULL)
+  {
+    delete health_label;
+    health_label = NULL;
+  }
+  if (health_grad != NULL)
+  {
+    delete health_grad;
+    health_grad = NULL;
+  }
+  if (health_outline != NULL)
+  {
+    delete health_outline;
+    health_outline = NULL;
+  }
+  if (health_bar != NULL)
+  {
+    delete health_bar;
+    health_bar = NULL;
+  }
+
   clearStatusBoxes();
 }
 

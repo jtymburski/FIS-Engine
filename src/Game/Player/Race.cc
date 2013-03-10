@@ -10,7 +10,6 @@
 * // TODO: SKILL SORTING [03-05-13]
 * // TODO: ADD Race FLAGS [03-05-13]
 *******************************************************************************/
-
 #include "Game/Player/Race.h"
 #include <QDebug>
 
@@ -30,7 +29,10 @@ Race::Race(QString name, AttributeSet attributes, SkillSet* skills)
 {
   setName(name);
   setAttrSet(attributes);
-  setSkillSet(skills);
+  if (skills != NULL)
+    setSkillSet(skills);
+  else
+    skill_set = NULL;
   if (skills != NULL)
     cleanUp();
 }
@@ -51,11 +53,7 @@ Race::Race(QString name)
 /*
  * Description: Destroys a Race object
  */
-Race::~Race()
-{
-  delete skill_set;
-  skill_set = NULL;
-}
+Race::~Race() {}
 
 /*============================================================================
  * FUNCTIONS

@@ -28,7 +28,7 @@ Inventory::Inventory(QString name, QPixmap* thumbnail, uint limit, QWidget* pare
 /*
  * Description: Destroys an Inventory object
  */
-Inventory::~Inventory() { }
+Inventory::~Inventory() {}
 
 /*============================================================================
  * PUBLIC

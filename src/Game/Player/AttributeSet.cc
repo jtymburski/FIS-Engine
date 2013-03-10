@@ -254,7 +254,7 @@ void AttributeSet::setAll(ushort a, ushort b, ushort c, ushort d, ushort e,
    setMax(11, l);
    setMax(12, m);
    setMax(13, n);
-   setStat(14, o);
+   setMax(14, o);
    setMax(15, p);
    setMax(16, q);
    setMax(17, r);

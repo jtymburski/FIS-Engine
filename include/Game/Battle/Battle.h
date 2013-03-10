@@ -114,14 +114,14 @@ private:
   void setMaxHeight(int value);
 
   /* Pointer to the battle info bar */
-  BattleInfoBar* info_bar;
+  BattleInfoBar* info_bar;  // Q_OBJECT
 
   /* Battle Status bar */
-  BattleStatusBar* status_bar;
-  QVector<EnemyStatusBar*> enemy_status_bar;
+  BattleStatusBar* status_bar; // Q_OBJECT
+   QVector<EnemyStatusBar*> enemy_status_bar; // Q_OBJECT
 
   /* The Battle menu pointer (for selecting actions), off by default */
-  // BattleMenu* menu;
+  BattleMenu* menu;
 
   /* Checks if targeting mode is active */
   bool target_mode; //Checks if targeting mode is active
@@ -163,19 +163,19 @@ private:
   QVector<QRect*> enemy_status_boxes;
 
   /* Bounding boxes */
-  // QRect* target_box;
+  QRect* target_box;
   QRect* status_box;
   QRect* info_box;
   QRect* extra_box;
 
   /* The skill buffer */
-  // QVector<Skill*> skill_buffer;
+  QVector<Skill*> skill_buffer;
 
   /* The items use buffer */
-  // QVector<Item*> items_buffer;
+  QVector<Item*> items_buffer;
 
   /* Weather condition during battle */
-  // Weather* weather_cond;
+  Weather* weather_cond;
    
 protected:
   /* Handles all key entries */

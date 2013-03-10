@@ -26,7 +26,7 @@ public:
   /* Constructor for a skill object */
   Skill(QString name);
 
-  Skill(QString name, QVector<Action*> effect_list, QVector<float> effect_chance_list);
+  Skill(QString name, QVector<Action*> effect_list, QVector<float> chance_list);
 
   /* Annihilates a skill object */
   ~Skill();
@@ -72,9 +72,10 @@ private:
   QVector<float> effect_chance;
 
   // TODO: Discuss animations and sound effects [02-07-13] */
-  // Sprite* animation;
-  // Sound* sound_effect;
+  Sprite* animation;
+  Sound* sound_effect;
 
+  /* SKill flags variable */
   SkillFlags skill_flags;
 
 public:

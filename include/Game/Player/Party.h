@@ -39,9 +39,6 @@ private:
   /* The shared inventory of the party */
   Inventory* pouch;
 
-  /* The main party member (rendered on the map */
-  Person* main; 
-
   /* The party members */
   QVector<Person*> members;
 

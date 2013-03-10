@@ -30,9 +30,9 @@ Category::Category(QString name, AttributeSet attributes, SkillSet* skills)
 {
   setName(name);
   setAttrSet(attributes);
-  setSkillSet(skills);
-  if (skills != NULL)
-    cleanUp();
+  skill_set = NULL;
+  // if (skills != NULL)
+  //  cleanUp();
 }
 
 /*
@@ -51,11 +51,7 @@ Category::Category(QString name)
 /*
  * Description: Destroys a Category object
  */
-Category::~Category()
-{
-  delete skill_set;
-  skill_set = NULL;
-}
+Category::~Category() {}
 
 /*============================================================================
  * FUNCTIONS
