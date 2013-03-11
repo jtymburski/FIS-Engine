@@ -15,6 +15,10 @@
  *               </tile>
  *             </row>
  *           </map>
+ *
+ * TODO: add MD5 confirmation that file hasn't changed. Start should fail
+ *        to open if said is true.
+ *       add date and time that file is created to top of file.
  *****************************************************************************/
 #include "FileHandler.h"
 /* Constant Declarations */
@@ -249,6 +253,7 @@ QString FileHandler::encryptLine(QString line, bool* success)
   {
     status = FALSE;
     encrypted_line = "";
+    qDebug() << "[ERROR] Data compression size encrypt computation failed.";
   }
 
   /* Clean up compressed data */
@@ -511,15 +516,27 @@ int FileHandler::wrapNumber(int value, int limit)
   return value;
 }
 
+bool FileHandler::writeMd5(QByteArray data)
+{
+  bool success = TRUE;
+
+  /* Take the initial hash */
+  QByteArray hash = QCryptographicHash::hash(data, 
+                                    QCryptographicHash::Md5).toHex();
+
+  /* Get the string encrypted result */
+  QString result = encryptLine(QString(hash), &success);
+
+  /* If successful, print to file */
+  if(success)
+    file_stream << result.toStdString() << std::endl;
+
+  return success;
+}
+
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
-
-QByteArray FileHandler::computeMd5(QByteArray data)
-{
-  return QCryptographicHash::hash(data, 
-                                    QCryptographicHash::Md5).toHex();
-}
 
 QString FileHandler::getFilename()
 {
@@ -615,16 +632,16 @@ bool FileHandler::start()
   /* Open the file stream */
   success &= fileOpen();
 
+  /* Write starting data */
+  if(file_write && encryption_enabled)
+    success &= writeMd5(file_data);
+  // TODO: write date on top
+
   /* Determine the class availability based on the success status */
   if(success)
-  {
     available = TRUE;
-    //file_stream << std::endl;
-  }
   else
-  {
     stop();
-  }
 
   return success;
 }
@@ -638,13 +655,10 @@ bool FileHandler::stop()
   bool success = TRUE;
 
   /* MD5 Test */
-  if(file_write && encryption_enabled)
+  if(file_write && encryption_enabled && available)
   {
-    //file_stream.seekg(0);
-    //file_stream << std::endl;
-    //qDebug() << computeMd5(file_data);
-    //qDebug() << "";
-    //writeLine(QString(computeMd5(file_data)));
+    file_stream.seekg(0);
+    success &= writeMd5(file_data);
   }
 
   /* Close the file stream */

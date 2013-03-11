@@ -117,11 +117,11 @@ private:
   /* Takes a number and wraps it around, if it exceeds the limit */
   int wrapNumber(int value, int limit);
 
-public:
   /* Returns the hash for the data that has currently been written. Returns
    * nothing if the function is uninitialized or set on read */
-  QByteArray computeMd5(QByteArray data);
+  bool writeMd5(QByteArray data);
 
+public:
   /* Returns the filename that's used for reading from and writing to */
   QString getFilename();
 
