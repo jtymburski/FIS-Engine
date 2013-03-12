@@ -1,10 +1,24 @@
-/******************************************************************************
+/*******************************************************************************
 * Class Name: Ailment
 * Date Created: March 6th, 2013
-* Inheritance: None
-* Description: The ailment class represents a Status Ailment or Debuff
-* // TODO: finish updateAndApply() function [03-09-13]
-******************************************************************************/
+* Inheritance: N/A
+* Description: The ailment class represents a Status Ailment or Debuff. Ailments
+*              use the Infliction enumerated type to store their type as well
+*              as the EnumString class to conver the enumerations to strings
+*              instead of doing string compare (note that these are std::strings
+*
+* Note [1]: To add, remove or change a status ailment:
+*              1 - (Add) an enumerated value to Infliction enum EnumDatabase.h
+*              2 - (Add) a registered string to BEGIN_ENUM_STRING( Infliction )
+*              3 - [(Add)] const static values to be used if necessary to class
+*              4 - (Add) the Ailment's effect to updateAndApply()
+*
+* // TODO: Add effects of apply() [03-12-13]
+* // TODO: Add immunities to everything [03-12-13]
+* // TODO: Finalize chance to wear off per turn [03-11-13]
+* // TODO: Rigorous testing for class [03-11-13]
+* // TODO: Setup temporary skills for person [03-12-13]
+*******************************************************************************/
 #include "Game/Player/Ailment.h"
 
 /*=============================================================================
@@ -13,30 +27,82 @@
 
 /*
  * Description: Constructs an Ailment object given an Infliction type,
- *              a maximum duration and a % chance that will cure the ailment
- *              every turn.
+ *              a maximum duration and a double.
  *
- * Inputs: Infliction - The type of the ailment being created
+ * Inputs: Person* victim - pointer to the Victim (owner) of the Ailment
+ *         Infliction type - The Enumerated type of the ailment being created
  *         ushort max - the maximum duration the ailment will take place,
  *                      (the ailment will last forever if max is greater than
  *                       kMAX_TURNS)
  *         double ch  - % value the ailment will be cured per turn, >= 1 = 100%
+ *         QWidget* parent - parent the Ailment was created from
  */
-Ailment::Ailment(Infliction t, ushort max, double ch)
+Ailment::Ailment(Person* victim, Infliction type, short max_turns,
+                 double chance, QWidget* parent) : QWidget(parent)
 {
-  setType(t);
-  setDuration(max, ch);
+  setVictim(victim);
+  setType(type);
+
+  /* NOAILMENT cannot have a turn length or a chance */
+  if (type == NOAILMENT)
+  {
+    setDuration(-1, -1);
+    setFlag(Ailment::TOBEUPDATED, FALSE);
+  }
+  else if (max_turns > kMAX_TURNS)
+    setDuration(kMAX_TURNS, chance);
+  else if (max_turns < kMIN_TURNS)
+    setDuration(kMIN_TURNS, chance);
+  else
+    setDuration(max_turns, chance);
+}
+
+/*
+ * Description: Constructs an Ailment object given a QString instead of an
+ *              Infliction type (grabs the Infliction type with this class'
+ *              getInfliction(QString) function.
+ *
+ * Inputs: Person* victim - pointer to the Victim (owner) of the Ailment
+ *         infliction_name - QString representing the enumerated Infliction
+ *         ushort max - the maximum duration the ailment will take place,
+ *                      (the ailment will last forever if max is greater than
+ *                       kMAX_TURNS)
+ *         double ch  - % value the ailment will be cured per turn, >= 1 = 100%
+ *         QWidget* parent - parent the ailment was created from
+ */
+Ailment::Ailment(Person* victim, QString name, short max_turns,
+                 double chance, QWidget* parent) : QWidget(parent)
+{
+  setVictim(victim);
+  /* Grabs the Enumeration of the given QString, then sets the type */
+  setType(getInfliction(name));
+
+  /* NOAILMENT cannot have a turn length or a chance */
+  if (getType() == NOAILMENT)
+  {
+    setDuration(-1, -1);
+    setFlag(Ailment::TOBEUPDATED, FALSE);
+  }
+  else if (max_turns > kMAX_TURNS)
+    setDuration(kMAX_TURNS, chance);
+  else if (max_turns < kMIN_TURNS)
+    setDuration(kMIN_TURNS, chance);
+  else
+    setDuration(max_turns, chance);
 }
 
 /*
  * Description: Default ailment constructor (constructs a NOAILMENT type)
  *
- * Inputs: none
+ * Inputs: Person* victim - pointer to the Victim (owner) of the Ailment
+ *         QWidget* parent - parent the Ailment was created from
  */
-Ailment::Ailment()
+Ailment::Ailment(Person* victim, QWidget* parent) : QWidget(parent)
 {
+  setVictim(victim);
   setType(NOAILMENT);
-  setDuration(1);
+  setFlag(Ailment::TOBEUPDATED, FALSE);
+  setDuration(-1,-1);
 }
 
 /*
@@ -45,49 +111,22 @@ Ailment::Ailment()
 Ailment::~Ailment() {}
 
 /*=============================================================================
- * PUBLIC FUNCTIONS
+ * PRIVATE FUNCTIONS
  *============================================================================*/
 
 /*
- * Description: Updates the turn counter on the status ailment based off
- *              the random chance to cure each turn (if not zero). Returns true
- *              if the ailment will be cured after this update, false otherwise.
+ * Description: Applies the effect of the status ailment to the Person (victim)
+ *              if one so exists, checking for recurring effects, etc.
  *
  * Inputs: none
  * Output: bool - TRUE if the ailment is to be cured
  */
-const bool Ailment::update()
-{
-  if (max_turns_left <= kMAX_TURNS && chance != 0)
-  {
-    // QTime zero(0, 0, 0);
-    // qsrand(zero.secsTo(QTime::currentTime()));
-    // int random = qsrand() % 99;
-
-    //if ((int)(chance * 100) > random)
-      max_turns_left = 1;
-  }
-  if (max_turns_left == 1)
-    return TRUE;
-  if (max_turns_left <= kMAX_TURNS)
-    max_turns_left--;
-  return FALSE;
-}
-
-/*
- * Description: Updates the turn increment counter on the status ailment after
- *              applying the status ailments effect on a Person. Returns true
- *              if the status ailment is to be cured, false otherwise.
- *
- * Inputs: Person* - pointer to the person to apply the ailment to
- * Output: bool - TRUE if the ailment is to be cured
- */
-const bool Ailment::updateAndApply(AttributeSet *attr_set, SkillSet *skill_set)
+const bool Ailment::apply()
 {
   switch (ailment_type)
   {
+    /* Poison: Ailed actor takes logarithmic hit to HP every turn */
     case POISON:
-      /* Do Poison damage */
       break;
     case BURN:
       /* Do Burn damage */
@@ -169,10 +208,292 @@ const bool Ailment::updateAndApply(AttributeSet *attr_set, SkillSet *skill_set)
       break;
     case HALFCOST:
       break;
-  case NOAILMENT:
+    case REFLECT:
+      break;
+    case HIBERNATION:
+      break;
+    case CURSE:
+      break;
+    case NOAILMENT:
       break;
   }
   return TRUE;
+}
+
+/*
+ * Description: Checks the immunity of a potential victim given the type of the
+ * ailment.
+ *
+ * Inputs: none
+ * Output: bool - evaluation of the immunity check
+ */
+const bool Ailment::checkImmunity(Person* new_victim)
+{
+  /* Immunity for semi-bosses */
+
+  /* Immunity for bosses */
+
+  /* Immunity for final boss */
+
+  /* Racial immunity */
+
+  /* Class immunity */
+
+  /* Other immunity */
+  return TRUE;
+}
+
+/*
+ * Description: Updates the turn counter on the status ailment based off
+ *              the random chance to cure each turn (if not zero). Returns true
+ *              if the ailment will be cured after this update, false otherwise.
+ *
+ * Inputs: none
+ * Output: bool - TRUE if the ailment is to be cured after the update of Fn.
+ */
+const bool Ailment::updateTurns()
+{
+  /* If the ailment is finite, cure it based on chance */;
+  if (max_turns_left <= kMAX_TURNS && chance != 0)
+  {
+    qsrand(QTime::currentTime().msec());
+    if (floor(chance * 1000) > rand()%(1000))
+        max_turns_left = 1;
+  }
+  /* If the ailment currently has one turn left, it's cured! */
+  if (max_turns_left == 1)
+    return TRUE;
+  /* If the ailment doesn't have one turn left, if it's finite, decrement it */
+  if (max_turns_left <= kMAX_TURNS)
+    max_turns_left--;
+  return FALSE;
+}
+
+/*
+ * Description: Sets the type of Infliction of the ailment
+ *
+ * Inputs: Infliction - type of Infliction to be set.
+ * Output: none
+ */
+void Ailment::setType(Infliction t)
+{
+  ailment_type = t;
+}
+
+/*
+ * Description: Sets the victim of the status ailment.
+ *
+ * Inputs: Infliction - type of Infliction to be set.
+ * Output: none
+ */
+void Ailment::setVictim(Person* set_victim)
+{
+  victim = set_victim;
+}
+
+/*=============================================================================
+ * SIGNALS
+ *============================================================================*/
+
+/*=============================================================================
+ * PUBLIC SLOTS
+ *============================================================================*/
+
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
+
+/*
+ * Description: Public update function. This function will handle calling the
+ *              apply function if the status ailment applies an effect (new or
+ *              recurring) every turn, and also will handle calling the update
+ *              turn function. This function will flip the TOBECURED flag if
+ *               the ailment is to be removed immediately.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Ailment::update()
+{
+  /* The ailment may not be updated */
+  if (getFlag(Ailment::TOBEUPDATED))
+  {
+    /* Update the turn count and set the TOBECURED flag if neccessary */
+    bool cure_value = FALSE;
+    if (!getFlag(Ailment::INFINITE))
+        cure_value = updateTurns();
+    setFlag(Ailment::TOBECURED, cure_value);
+
+    /* If the ailment is not to be cured, apply an effect (if there is one) */
+    if (!getFlag(Ailment::TOBECURED))
+    {
+      if (getFlag(Ailment::TOBEAPPLIED))
+        apply();
+    }
+  }
+  if (getFlag(Ailment::TOBECURED))
+      unapply();
+}
+
+/*
+ * Description: Unapplies the effects of the status ailment to the victim.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Ailment::unapply()
+{
+  if (getType() == BERSERK)
+  {
+
+  }
+  if (getType() == SILENCE)
+  {
+
+  }
+  if (getType() == BUBBIFY)
+  {
+
+  }
+  if (getType() == PARALYSIS)
+  {
+
+  }
+  if (getType() == BLINDNESS)
+  {
+
+  }
+  if (getType() == DREADSTRUCK)
+  {
+
+  }
+  if (getType() == DREAMSNARE)
+  {
+
+  }
+  if (getType() == HELLBOUND)
+  {
+
+  }
+  if (getType() == ALLATKBUFF)
+  {
+
+  }
+  if (getType() == ALLDEFBUFF)
+  {
+
+  }
+  if (getType() == PHYATKBUFF)
+  {
+
+  }
+  else if (getType() == PHYDEFBUFF)
+  {
+
+  }
+  else if (getType() == THRATKBUFF)
+  {
+
+  }
+  else if (getType() == THRDEFBUFF)
+  {
+
+  }
+  else if (getType() == POLATKBUFF)
+  {
+
+  }
+  else if (getType() == POLDEFBUFF)
+  {
+
+  }
+  else if (getType() == PRIATKBUFF)
+  {
+
+  }
+  else if (getType() == PRIDEFBUFF)
+  {
+
+  }
+  else if (getType() == CHGATKBUFF)
+  {
+
+  }
+  else if (getType() == CHGDEFBUFF)
+  {
+
+  }
+  else if (getType() == CYBATKBUFF)
+  {
+
+  }
+  else if (getType() == CYBDEFBUFF)
+  {
+
+  }
+  else if (getType() == NIHATKBUFF)
+  {
+
+  }
+  else if (getType() == NIHDEFBUFF)
+  {
+
+  }
+  else if (getType() == LIMBUFF)
+  {
+
+  }
+  else if (getType() == UNBBUFF)
+  {
+
+  }
+  else if (getType() == MOMBUFF)
+  {
+
+  }
+  else if (getType() == VITBUFF)
+  {
+
+  }
+  else if (getType() == QDBUFF)
+  {
+
+  }
+  else if (getType() == DOUBLECAST)
+  {
+
+  }
+  else if (getType() == TRIPLECAST)
+  {
+
+  }
+  else if (getType() == HALFCOST)
+  {
+
+  }
+  else if (getType() == REFLECT)
+  {
+
+  }
+  else if (getType() == HIBERNATION)
+  {
+
+  }
+  else if (getType() == CURSE)
+  {
+
+  }
+}
+
+/*
+ * Description: Evaluates a given status Ailment flag.
+ *
+ * Inputs: AilmentFlag flags - the flags to be evaluated
+ * Output: const bool - the boolean evaluation of the given flag
+ */
+const bool Ailment::getFlag(AilmentFlag flags)
+{
+  return flag_set.testFlag(flags);
 }
 
 /*
@@ -198,58 +519,32 @@ Infliction Ailment::getType()
 }
 
 /*
- * Description: Returns the string value of a given infliction
+ * Description: Returns the string value of the current object's enumerated
+ *              value.
  *
- * Inputs: Infliction - type of Infliction to be checked.
+ * Inputs: none
  * Output: QString - string of the infliction
  */
-QString Ailment::getName(Infliction type)
+QString Ailment::getName()
 {
-  switch (type)
-  {
-    case POISON:      return "POISON";
-    case BURN:        return "BURN";
-    case SCALD:       return "SCALD";
-    case CHAR:        return "CHAR";
-    case BERSERK:     return "BERSERK";
-    case CONFUSE:     return "CONFUSE";
-    case SILENCE:     return "SILENCE";
-    case BUBBIFY:     return "BUBBIFY";
-    case DEATHTIMER:  return "DEATHTIMER";
-    case PARALYSIS:   return "PARALYSIS";
-    case BLINDNESS:   return "BLINDNESS";
-    case DREADSTRUCK: return "DREADSTRUCK";
-    case DREAMSNARE:  return "DREAMSNARE";
-    case HELLBOUND:   return "HELLBOUND";
-    case BOND:        return "BOND";
-    case ALLATKBUFF:  return "ALLATKBUFF";
-    case ALLDEFBUFF:  return "ALLEFBUFF";
-    case PHYATKBUFF:  return "PHYATKBUFF";
-    case PHYDEFBUFF:  return "PHYDEFBUFF";
-    case THRATKBUFF:  return "THRATKBUFF";
-    case THRDEFBUFF:  return "THRDEFBUFF";
-    case POLATKBUFF:  return "POLATKBUFF";
-    case POLDEFBUFF:  return "POLDEFBUFF";
-    case PRIATKBUFF:  return "PRIATKBUFF";
-    case PRIDEFBUFF:  return "PRIDEFBUFF";
-    case CHGATKBUFF:  return "CHGATKBUFF";
-    case CHGDEFBUFF:  return "CHGDEFBUFF";
-    case CYBATKBUFF:  return "CYBATKBUFF";
-    case CYBDEFBUFF:  return "CYBDEFBUFF";
-    case NIHATKBUFF:  return "NIHATKBUFF";
-    case NIHDEFBUFF:  return "NIHDEFBUFF";
-    case LIMBUFF:     return "LIMBUFF";
-    case UNBBUFF:     return "UNBBUFF";
-    case MOMBUFF:     return "MOMBUFF";
-    case VITBUFF:     return "VITBUFF";
-    case QDBUFF:      return "QDBUFF";
-    case ROOTBOUND:   return "ROOTBOUND";
-    case DOUBLECAST:  return "DOUBLECAST";
-    case TRIPLECAST:  return "TRIPLECAST";
-    case HALFCOST:    return "HALFCOST";
-    case NOAILMENT:   return "ERROR";
-  }
-  return "";
+  const std::string &string = EnumString<Infliction>::From( ailment_type );
+  QString ailment_qstring(string.c_str());
+  return ailment_qstring;
+}
+
+/*
+ * Description: Returns the string value of a given infliction. Uses the
+ *              EnumString class which generates std::strings, the actual
+ *              registered strings are in EnumDatabase
+ *
+ * Inputs: Infliction - type of Infliction to be evaluated.
+ * Output: QString - A QString of the given Infliction type.
+ */
+QString Ailment::getAilmentStr(Infliction type)
+{
+  const std::string &ailment_string = EnumString<Infliction>::From( type );
+  QString ailment_qstring(ailment_string.c_str());
+  return ailment_qstring;
 }
 
 /*
@@ -260,45 +555,10 @@ QString Ailment::getName(Infliction type)
  */
 Infliction Ailment::getInfliction(QString name)
 {
-  if (name == "POISON")       return POISON;
-  if (name == "SCALD")        return SCALD;
-  if (name == "CHAR")         return CHAR;
-  if (name == "BERSERK")      return BERSERK;
-  if (name == "SILENCE")      return SILENCE;
-  if (name == "BUBBIFY")      return BUBBIFY;
-  if (name == "DEATHTIMER")   return DEATHTIMER;
-  if (name == "PARALYSIS")    return PARALYSIS;
-  if (name == "BLINDNESS")    return BLINDNESS;
-  if (name == "DREADSTRUCK")  return DREADSTRUCK;
-  if (name == "DREAMSNARE")   return DREAMSNARE;
-  if (name == "HELLBOUND")    return HELLBOUND;
-  if (name == "BOND")         return BOND;
-  if (name == "ALLATKBUFF")   return ALLATKBUFF;
-  if (name == "ALLEFBUFF")    return ALLDEFBUFF;
-  if (name == "PHYATKBUFF")   return PHYATKBUFF;
-  if (name == "PHYDEFBUFF")   return PHYDEFBUFF;
-  if (name == "THRATKBUFF")   return THRATKBUFF;
-  if (name == "THRDEFBUFF")   return THRDEFBUFF;
-  if (name == "POLATKBUFF")   return POLATKBUFF;
-  if (name == "POLDEFBUFF")   return POLDEFBUFF;
-  if (name == "PRIATKBUFF")   return PRIATKBUFF;
-  if (name == "PRIDEFBUFF")   return PRIDEFBUFF;
-  if (name == "CHGATKBUFF")   return CHGATKBUFF;
-  if (name == "CHGDEFBUFF")   return CHGDEFBUFF;
-  if (name == "CYBATKBUFF")   return CYBATKBUFF;
-  if (name == "CYBDEFBUFF")   return CYBDEFBUFF;
-  if (name == "NIHATKBUFF")   return NIHATKBUFF;
-  if (name == "NIHDEFBUFF")   return NIHDEFBUFF;
-  if (name == "LIMBUFF")      return LIMBUFF;
-  if (name == "UNBUFFF")      return UNBBUFF;
-  if (name == "MOMBUFF")      return MOMBUFF;
-  if (name == "VITBUFF")      return VITBUFF;
-  if (name == "QDBUFF")       return QDBUFF;
-  if (name == "ROOTBOUND")    return ROOTBOUND;
-  if (name == "DOUBLECAST")   return DOUBLECAST;
-  if (name == "TRIPLECAST")   return TRIPLECAST;
-  if (name == "HALFCOST")     return HALFCOST;
-  return NOAILMENT;
+  const std::string &ailment_string = name.toUtf8().constData();
+  Infliction ailment_type;
+  EnumString<Infliction>::To(ailment_type, ailment_string);
+  return ailment_type;
 }
 
 /*
@@ -308,21 +568,49 @@ Infliction Ailment::getInfliction(QString name)
  *         float ch   - chance the ailment has to be cured per turn
  * Output: none
  */
-void Ailment::setDuration(ushort max, double ch)
+void Ailment::setDuration(ushort max_turns, double chance)
 {
-  max_turns_left = max;
-  chance = chance;
+  if (max_turns > kMAX_TURNS)
+    setFlag(Ailment::INFINITE);
+  else
+    setFlag(Ailment::INFINITE, FALSE);
+
+  max_turns_left = max_turns;
+  this->chance = chance;
 }
 
 /*
- * Description: Sets the type of Infliction of the ailment
+ * Description: Assigns a PersonState flag or flags to (a) given value(s)
  *
- * Inputs: Infliction - type of Infliction to be set.
+ * Inputs: AilmentFlag flags - enumerated flag to be assigned
+ *         set_value - the value to assign the flag(s) to (default: TRUE)
  * Output: none
  */
-void Ailment::setType(Infliction t)
+void Ailment::setFlag(AilmentFlag flags, const bool set_value)
 {
-  ailment_type = t;
+  (set_value) ? (flag_set |= flags) : (flag_set ^= flags);
 }
 
+/*
+ * Description: Assigns a PersonState flag or flags to (a) given value(s)
+ *
+ * Inputs: Perosn* new_victim - Potential new victim of the status ailment.
+ *         const bool refresh_turns - Whether to reset the turn count
+ * Output: Returns TRUE if the new victim was set successfully.
+ */
+const bool Ailment::setNewVictim(Person* new_victim, const bool refresh_turns)
+{
+  /* The ailment cannot be assigned if the new victim is immune */
+  if (checkImmunity(new_victim))
+    return FALSE;
 
+  if (refresh_turns)
+  {
+    max_turns_left += turns_occured;
+    turns_occured = 0;
+  }
+
+  setFlag(Ailment::TOBEAPPLIED);
+  setVictim(new_victim);
+  update();
+}

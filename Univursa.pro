@@ -116,6 +116,7 @@ HEADERS += \
     ./include/Game/Player/Person.h \
     ./include/Game/Player/Race.h \
     ./include/Game/Player/Skill.h \
-    ./include/GridShifter.h
+    ./include/GridShifter.h \
+    ./include/EnumString.h
  
 INCLUDEPATH += ./include

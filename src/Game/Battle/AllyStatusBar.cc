@@ -11,6 +11,7 @@
 *            stats are current value, and the Normal stat set act as the Normal
 *            Maximum values (without buffs and debuffs, etc.)
 * // TODO: Options such as viewable flags, Fonts [03-03-13]
+* // TODO: Redo status ailment checks.
 *******************************************************************************/
 
 #include "Game/Battle/AllyStatusBar.h"
@@ -39,6 +40,16 @@ AllyStatusBar::AllyStatusBar(Person* character, uint width, uint height,
  */
 AllyStatusBar::~AllyStatusBar()
 {
+  if (health_bar != NULL)
+  {
+    delete health_bar;
+    health_bar = NULL;
+  }
+  if (health_label != NULL)
+  {
+    delete health_label;
+    health_label = NULL;
+  }
   if (name_label != NULL)
   {
     delete name_label;
@@ -177,11 +188,9 @@ void AllyStatusBar::rebuildStatusBoxes()
 {
   clearStatusBoxes();
   uint length  = (getHeight() / 4) - 6;
-  for (int i = 0; i < character->getAilments().size(); i++)
-  {
-    uint left_d  = i * (length + 4) + 5;
-    status_thumbs.push_back(new QRect(left_d, 5 + font_size, length, length));
-  }
+  // uint left_d  = i * (length + 4) + 5;
+  //  status_thumbs.push_back(new QRect(left_d, 5 + font_size, length, length));
+
   // calcAilments();
 }
 

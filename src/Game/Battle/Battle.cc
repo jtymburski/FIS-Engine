@@ -316,7 +316,6 @@ void Battle::paintMenu()
 /* TODO: Temporary change of battle background [02-20-13] */
 void Battle::keyPressEvent(QKeyEvent* event)
 {
-  Ailment new_poison(POISON, 14);
   switch(event->key())
   {
     case Qt::Key_Escape:
@@ -338,9 +337,6 @@ void Battle::keyPressEvent(QKeyEvent* event)
     case Qt::Key_F1:
       friends->getMember(0)->tempStats()->changeStat("VITA", -50);
       friends->getMember(0)->tempStats()->changeStat("QTDR", -15);
-      break;
-    case Qt::Key_F2:
-      friends->getMember(0)->addAilment(new_poison);
       break;
     default:
       break;

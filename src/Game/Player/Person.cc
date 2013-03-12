@@ -4,7 +4,7 @@
 * Inheritance: None
 * Description: Head for Person class. Container for all the info describing
 *              a character in the game, including their statistics for battle,
-*              status ailments, flags, etc.
+*              flags, etc.
 * // TODO: Race and category equip item types [03-06-13]
 * // TODO: Finish use item
 * // TODO: Rewrite LEVEL UP
@@ -103,20 +103,6 @@ uint Person::getExpAt(ushort level)
 }
 
 /*
- * Description: Adds an ailment to to the Person.
- *
- * Inputs: Ailment - new ailment to be inflicted
- * Output: none
- * // TODO: Check for duplicates [03-06-13]
- */
-void Person::addAilment(Ailment new_ailment)
-{
-  if (ailments.size() > 4)
-    removeAilment(0);
-  ailments.push_back(new_ailment);
-}
-
-/*
  * Description: Adds an amount to the experience of the person and calls
  *              setLevel() if necessary to deal with level ups accordingly
  *              Will deal with multiple level ups. 
@@ -163,48 +149,6 @@ void Person::battlePrep()
 void Person::calcSkills()
 {
 
-}
-
-/*
- * Description: Removes an ailment of a given type
- *
- * Inputs: Infliction - ailment type to be removed from the Person
- * Output: bool - TRUE if the ailment was removed successfully
- */
-const bool Person::removeAilment(Infliction r_ailment)
-{
-  for (int i = 0; i < ailments.size(); i++)
-  {
-      if (ailments[i].getType() == r_ailment)
-    {
-      ailments.remove(i);
-      return TRUE;
-    }
-  }
-  return FALSE;
-}
-
-/*
- * Description: Removes an ailment at a given index
- *
- * Inputs: int - index of ailment to be removed
- * Output: none
- */
-void Person::removeAilment(int index)
-{
-  if (index > 0 && index < ailments.size())
-    ailments.remove(index);
-}
-
-/*
- * Description: Clears all the ailments.
- *
- * Inputs: none
- * Output: none
- */
-void Person::clearAll()
-{
-  ailments.clear();
 }
 
 /*
@@ -259,41 +203,6 @@ void Person::setPersonFlag(PersonState flags, const bool set_value)
   (set_value) ? (state_set |= flags) : (state_set ^= flags);
 }
 
-/*
- * Description: Returns the vector of ailments of a person.
- *
- * Inputs: None
- * Output: QVector<Ailment> - vector of ailments a person has
- */
-QVector<Ailment> Person::getAilments()
-{
-  return ailments;
-}
-
-/*
- * Description: Returns an Ailment by type of a person.
- *
- * Inputs: Infliction - type of the Ailment to be checked for
- * Output: Ailment - ailment of the given type
- */
-Ailment Person::getAilment(Infliction type)
-{
-  for (int i = 0; i < ailments.size(); i++)
-    if (ailments[i].getType() == type)
-      return ailments.at(i);
-  return ailments.at(0);
-}
-
-/*
- * Description: Returns an Ailment at a given index
- *
- * Inputs: int - index of ailment to be checked
- * Output: Ailment - ailment at the given index
- */
-Ailment Person::getAilByIndex(int index)
-{
-  return ailments.at(index);
-}
 
 /*
  * Description: Returns a pointer to the category of the Person.

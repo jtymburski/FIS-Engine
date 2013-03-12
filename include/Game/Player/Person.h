@@ -4,7 +4,7 @@
 * Inheritance: None
 * Description: Head for Person class. Container for all the info describing
 *              a character in the game, including their statistics for battle,
-*              status ailments, flags, etc.
+*              flags, etc.
 * // TODO: Race and category equip item types [03-06-13]
 ******************************************************************************/
 #ifndef PERSON_H
@@ -14,7 +14,6 @@
 #include <cmath>
 #include <algorithm>
 #include "EnumDatabase.h"
-#include "Game/Player/Ailment.h"
 #include "Game/Player/Category.h"
 #include "Game/Player/Race.h"
 #include "Game/Player/Item.h"
@@ -53,7 +52,6 @@ private:
   static const uint kMAX_EXPERIENCE  = 1000000000; /* Billion */
   static const uint kMAX_EXP_DROP    =    1000000; /* Million */
   static const uint kMAX_CREDIT_DROP =   10000000; /* Ten Million */
-  static const int kMAX_AILMENTS     =          5; /* Ailments at one time */
   static const uint kMAX_EQUIP_SLOTS =          5;
 
   /* Calculate the experience table */
@@ -95,9 +93,6 @@ private:
   /* List of currently available skills */
   SkillSet* skills;
 
-  /* List of status ailment strings */
-  QVector<Ailment> ailments;
-
   /* Person's primary and secondary curves */
   QString primary;
   QString secondary;
@@ -109,9 +104,6 @@ private:
   Sprite* third_person;
 
 public:
-  /* Inflicts a Status ailment */
-  void addAilment(Ailment new_ailment);
-
   /* Adds experience of a given amount --> level up */
   void addExperience(uint n);
 
@@ -121,11 +113,6 @@ public:
   /* Calculates the usable skill set */
   void calcSkills();
 
-  /* Clears status ailments */
-  const bool removeAilment(Infliction remove_ailment);
-  void removeAilment(int index);
-  void clearAll();
-
   /* Stat set up functions */
   void setUpBaseStats();
 
@@ -134,12 +121,7 @@ public:
 
   /* PersonState flag functions */
   const bool getPersonFlag(PersonState flags);
-  void setPersonFlag(PersonState flags, const bool set_value);
-
-  /* Methods for returning ailments */
-  QVector<Ailment> getAilments();
-  Ailment getAilment(Infliction type);
-  Ailment getAilByIndex(int index);
+  void setPersonFlag(PersonState flags, const bool set_value = TRUE);
 
   /* Gets the person's category */
   Category* getCategory();
