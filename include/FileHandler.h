@@ -71,7 +71,7 @@ private:
 
   /*------------------- Constants -----------------------*/
   const static int kASCII_IN_LONG = 4; /* # of ascii's that will fit in long */
-  const static int kDELTA = 2654435769; /* Sum bias for encryption */
+  const static uint32_t kDELTA = 2654435769u; /* Sum bias for encryption */
   const static int kENCRYPTION_MIN = 4; /* Min line length for encryption */
   const static int kENCRYPTION_PAD = 150; /* Padding for encrypted values */
   const static int kINT_BIT_SHIFT = 4; /* Shift int to next spot */

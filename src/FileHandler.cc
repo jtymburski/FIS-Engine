@@ -21,7 +21,7 @@
 #include "FileHandler.h"
 /* Constant Declarations */
 
-const uint32_t FileHandler::kKEY[] = {1073676287,27644437,2971215073,94418953};
+const uint32_t FileHandler::kKEY[] = {1073676287u,27644437u,2971215073u,94418953u};
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS

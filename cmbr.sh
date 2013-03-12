@@ -3,6 +3,15 @@
 make clean
 rm -f Makefile
 rm -f bin/Univursa
-qmake Univursa.pro
-make
-./bin/Univursa
+rm -f TEST.log
+
+# Only recompile if parameter one is b(uild)
+if [ -n "$1" ]
+then
+  if [ $1 = 'b' -o $1 = 'B' ] 
+  then
+    qmake Univursa.pro
+    make
+    ./bin/Univursa
+  fi
+fi
