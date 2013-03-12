@@ -84,6 +84,9 @@ private:
   const static int kXXTEA_ROUNDS = 19; /* Number of rounds for encryption */
 
 private:
+  /* Compute Md5 for byte array of data */
+  QByteArray computeMd5(QByteArray data);
+
   /* Decrypt raw data in an array of ints */
   bool decryptData(uint32_t* data);
 
@@ -111,8 +114,14 @@ private:
   /* Converts an array of longs into an array of ints -> one long -> 4 ints */
   int* longToInt(uint32_t* line_data, int length);
 
+  /* Confirms if the MD5 matches the file */
+  bool readMd5();
+
   /* Convert a string to an array of ints, each representing a character */
   int stringToInt(QString line, int** line_data, bool encrypting = 0);
+
+  /* Returns the control to the top of the file */
+  bool topOfFile();
 
   /* Takes a number and wraps it around, if it exceeds the limit */
   int wrapNumber(int value, int limit);

@@ -16,24 +16,30 @@ int main(int argc, char *argv[])
   fh.setEncryptionEnabled(TRUE);
   fh.setFilename("TEST.log");
   fh.setWriteEnabled(TRUE);
-  fh.start();
-  //fh.writeLine("Hello friend two");
-  //fh.writeLine("Hello foe I hate");
-  //fh.writeLine("88967822874b0d7fd7eed96df75dc67f");
-  fh.writeLine("Let's write a little story today.");
-  fh.writeLine("What's it going to be about you say?");
-  fh.writeLine("Well it will be interesting, I tell you.");
-  fh.writeLine("Let's begin?");
-  fh.stop();
-  fh.setWriteEnabled(FALSE);
-  fh.start();
+  
+  if(fh.start())
+  {
+    fh.writeLine("Let's write a little story today.");
+    fh.writeLine("What's it going to be about you say?");
+    fh.writeLine("Well it will be interesting, I tell you.");
+    fh.writeLine("Let's begin?");
+    fh.stop();
+  }
 
   bool done = FALSE;
+  fh.setWriteEnabled(FALSE);
 
-  while(!done)
-    qDebug() << fh.readLine(&done);
+  if(fh.start())
+  {
+    while(!done)
+      qDebug() << fh.readLine(&done);
 
-  fh.stop();
+    fh.stop();
+  }
+  else
+  {
+    qDebug() << "File invalid.";
+  }
 
   /* End Test */
 

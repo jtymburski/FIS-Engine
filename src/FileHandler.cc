@@ -16,9 +16,7 @@
  *             </row>
  *           </map>
  *
- * TODO: add MD5 confirmation that file hasn't changed. Start should fail
- *        to open if said is true.
- *       add date and time that file is created to top of file.
+ * TODO: add date and time that file is created to top of file.
  *****************************************************************************/
 #include "FileHandler.h"
 /* Constant Declarations */
@@ -46,6 +44,15 @@ FileHandler::~FileHandler()
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
+/*
+ * CHECKED:
+ * Pretty foolproof
+ */
+QByteArray FileHandler::computeMd5(QByteArray data)
+{
+  return QCryptographicHash::hash(data, QCryptographicHash::Md5).toHex();
+}
+
 /*
  * CHECKED:
  * Returns FALSE only if data is unset
@@ -283,7 +290,8 @@ QString FileHandler::encryptLine(QString line, bool* success)
  */
 bool FileHandler::fileClose()
 {
-  file_stream.close();
+  if(file_stream.is_open())
+    file_stream.close();
 
   /* Determine if close was successful */
   if(!file_stream.is_open())
@@ -436,6 +444,58 @@ int* FileHandler::longToInt(uint32_t* line_data, int length)
   return 0;
 }
 
+bool FileHandler::readMd5()
+{
+  bool complete = FALSE;
+  QString md5_value = "";
+  bool success = TRUE;
+
+  /* Only proceed if file is in read mode and encryption is enabled */
+  if(!file_write && encryption_enabled)
+  {
+    /* Clear pertinent data storage */
+    file_data.clear();
+
+    /* If the file was open, close it */
+    if(available)
+    {
+      success &= fileClose();
+      available = FALSE;
+    }
+
+    /* Proceed to open the file for parsing */
+    if(success)
+      success &= fileOpen();
+
+    /* Parse the file */
+    if(success)
+    {
+      available = TRUE;
+      md5_value = readLine(&complete, &success);
+      
+      while(!complete && success)
+        file_data.append(readLine(&complete, &success));
+    }
+
+    /* Check the MD5 */
+    if(success && (QString(computeMd5(file_data)) == md5_value))
+      success = TRUE;
+    else
+      success = FALSE;
+    
+    /* Close the file */
+    success &= fileClose();
+    available = FALSE;
+  }
+  else
+  {
+    qDebug() << "[ERROR] Md5 read failed due to system not in read mode.";
+    return FALSE;
+  }
+
+  return success;
+}
+
 /*
  * CHECKED:
  * Does not allocate memory if the length of line is 0 and not encrypting
@@ -494,6 +554,20 @@ int FileHandler::stringToInt(QString line, int** line_data, bool encrypting)
 
 /*
  * CHECKED:
+ * Returns TRUE if file available only
+ */
+bool FileHandler::topOfFile()
+{
+  if(available)
+  {
+    file_stream.seekg(0);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/*
+ * CHECKED:
  * Only fails if value or limit is less than 0. Failure is indicated by a
  *  -1 in the return call.
  */
@@ -521,13 +595,13 @@ bool FileHandler::writeMd5(QByteArray data)
   bool success = TRUE;
 
   /* Take the initial hash */
-  QByteArray hash = QCryptographicHash::hash(data, 
-                                    QCryptographicHash::Md5).toHex();
+  QByteArray hash = computeMd5(file_data);
 
   /* Get the string encrypted result */
   QString result = encryptLine(QString(hash), &success);
+  success &= available && file_write;
 
-  /* If successful, print to file */
+  /* If successful and available, print to file */
   if(success)
     file_stream << result.toStdString() << std::endl;
 
@@ -566,7 +640,7 @@ bool FileHandler::isWriteEnabled()
 QString FileHandler::readLine(bool* done, bool* success)
 {
   std::string line;
-  
+
   if(done != 0)
     *done = FALSE;
   if(success != 0)
@@ -629,18 +703,31 @@ bool FileHandler::start()
   /* Clear the file data array */
   file_data.clear();
 
-  /* Open the file stream */
-  success &= fileOpen();
+  /* If the system is in read and encryption, check validity of file */
+  if(!file_write && encryption_enabled)
+    success &= readMd5();
 
-  /* Write starting data */
-  if(file_write && encryption_enabled)
+  /* Open the file stream */
+  if(success)
+    success &= fileOpen();
+
+  /* Write the success status, if available */
+  if(success)
+  {
+    available = TRUE;
+
+    /* For a readable file with encryption, first line is Md5 -> throw away */
+    if(!file_write && encryption_enabled)
+      readLine();
+  }
+
+  /* Write starting data, if applicable */
+  if(success && file_write && encryption_enabled)
     success &= writeMd5(file_data);
   // TODO: write date on top
 
-  /* Determine the class availability based on the success status */
-  if(success)
-    available = TRUE;
-  else
+  /* Stop the program if there is any problems and halt operation */
+  if(!success)
     stop();
 
   return success;
@@ -657,7 +744,7 @@ bool FileHandler::stop()
   /* MD5 Test */
   if(file_write && encryption_enabled && available)
   {
-    file_stream.seekg(0);
+    topOfFile();
     success &= writeMd5(file_data);
   }
 
@@ -692,6 +779,5 @@ bool FileHandler::writeLine(QString line)
 
     return success;
   }
-
   return FALSE;
 }
