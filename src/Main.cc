@@ -19,10 +19,13 @@ int main(int argc, char *argv[])
   
   if(fh.start())
   {
+    qDebug() << "Writing: " << fh.getDate();
+
     fh.writeLine("Let's write a little story today.");
     fh.writeLine("What's it going to be about you say?");
     fh.writeLine("Well it will be interesting, I tell you.");
     fh.writeLine("Let's begin?");
+
     fh.stop();
   }
 
@@ -31,6 +34,8 @@ int main(int argc, char *argv[])
 
   if(fh.start())
   {
+    qDebug() << "Reading: " << fh.getDate();
+
     while(!done)
       qDebug() << fh.readLine(&done);
 

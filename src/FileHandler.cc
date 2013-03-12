@@ -16,7 +16,7 @@
  *             </row>
  *           </map>
  *
- * TODO: add date and time that file is created to top of file.
+ * TODO: warning about unsigned values. Only on laptop? C90 vs C11
  *****************************************************************************/
 #include "FileHandler.h"
 /* Constant Declarations */
@@ -30,7 +30,8 @@ FileHandler::FileHandler()
 {
   available = FALSE;
   depth = 0;
-  
+  file_date = "";
+
   setEncryptionEnabled(FALSE);
   setFilename("");
   setFileType(REGULAR);
@@ -595,7 +596,7 @@ bool FileHandler::writeMd5(QByteArray data)
   bool success = TRUE;
 
   /* Take the initial hash */
-  QByteArray hash = computeMd5(file_data);
+  QByteArray hash = computeMd5(data);
 
   /* Get the string encrypted result */
   QString result = encryptLine(QString(hash), &success);
@@ -611,6 +612,10 @@ bool FileHandler::writeMd5(QByteArray data)
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
+QString FileHandler::getDate()
+{
+  return file_date;
+}
 
 QString FileHandler::getFilename()
 {
@@ -721,10 +726,20 @@ bool FileHandler::start()
       readLine();
   }
 
-  /* Write starting data, if applicable */
+  /* Write MD5 data, if applicable */
   if(success && file_write && encryption_enabled)
     success &= writeMd5(file_data);
-  // TODO: write date on top
+
+  /* Write starting date, if applicable */
+  if(success && file_write)
+  {
+    file_date = QDateTime::currentDateTime().toString("MM.dd.yyyy hh:mm");
+    success &= writeLine(file_date);
+  }
+
+  /* Read off starting date, if applicable */
+  if(success && !file_write)
+    file_date = readLine();
 
   /* Stop the program if there is any problems and halt operation */
   if(!success)
@@ -750,6 +765,7 @@ bool FileHandler::stop()
 
   /* Close the file stream */
   success &= fileClose();
+  file_date = "";
 
   /* If success, reopen the class availability */
   if(success)

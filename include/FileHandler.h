@@ -23,6 +23,7 @@
 #include <stdint.h>
 #include <QByteArray>
 #include <QCryptographicHash>
+#include <QDateTime>
 #include <QDebug>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
@@ -55,6 +56,7 @@ private:
 
   /* The filename information */
   QByteArray file_data;
+  QString file_date;
   QString file_name;
   std::fstream file_stream; // is_open()
   FileType file_type;
@@ -131,6 +133,9 @@ private:
   bool writeMd5(QByteArray data);
 
 public:
+  /* Returns the date that was acquired/set */
+  QString getDate();
+
   /* Returns the filename that's used for reading from and writing to */
   QString getFilename();
 
