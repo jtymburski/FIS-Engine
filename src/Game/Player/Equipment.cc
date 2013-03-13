@@ -189,6 +189,7 @@ int Equipment::getLeftX(uint x, uint y, bool passingID)
     return x - 1;
   if (signature[x - 1][y - 1] == 'B')
     return x - 1;
+  return -1;
 }
 
 /*
@@ -210,6 +211,7 @@ int Equipment::getLeftY(uint x, uint y, bool passingID)
         return y + 1;
     if (signature[x -1][y + 1] == 'B')
         return y + 1;
+    return -1;
 }
 
 /*

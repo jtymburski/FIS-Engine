@@ -606,7 +606,7 @@ const bool Person::setLevel(const uint &new_level)
   {
     int base = base_stats.getStat(i);
     int max  = base_stats.getMax(i);
-    QString test = stats.getShortName(i);
+    QString test = stats.getName(i);
     test.chop(2);
 
     if (primary == test)

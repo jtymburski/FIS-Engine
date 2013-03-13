@@ -57,8 +57,8 @@ public:
 
 private:
   /*------------------- Constants -----------------------*/
-  const static ushort kMAX_TURNS = 25; /* Maximum # turns ailments will last */
-  const static ushort kMIN_TURNS =  1; /* The minimum # turns ailments last */
+  static const ushort kMAX_TURNS = 25; /* Maximum # turns ailments will last */
+  static const ushort kMIN_TURNS =  1; /* The minimum # turns ailments last */
 
   /* Inflinction of the Ailment */
   Infliction ailment_type;
@@ -88,7 +88,7 @@ private:
   /* Sets the Inflinction of the Status Ailment */
   void setType(Infliction t);
 
-  /* Assigns the Victom of the object */
+  /* Assigns the victim of the object */
   void setVictim(Person* set_victim);
 
 signals:

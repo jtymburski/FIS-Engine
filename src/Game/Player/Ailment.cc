@@ -542,7 +542,7 @@ QString Ailment::getName()
  */
 QString Ailment::getAilmentStr(Infliction type)
 {
-  const std::string &ailment_string = EnumString<Infliction>::From( type );
+  const std::string &ailment_string = EnumString<Infliction>::From(type);
   QString ailment_qstring(ailment_string.c_str());
   return ailment_qstring;
 }

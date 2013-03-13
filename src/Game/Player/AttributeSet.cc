@@ -1,18 +1,21 @@
 /******************************************************************************
-* Class Name: PersonStatusBar
-* Date Created: Sunday, October 28th, 2012
-* Inheritance: Parent class: StatusBar
-* Description: Displays information on persons on the main battle menu,
-*              including their health, thumbnails of inflicted statu ailments,
-*              and their level.
+* Class Name: AttributeSet
+* Date Created: March 5th, 2013
+* Inheritance: QWidget
+* Description: The attribute set is a container for all the statistics used
+*              by race, category, person, etc. It holds vectors of their values,
+*              maximum values, short names. The class also holds data for
+*              AttributeSet presets.
 ******************************************************************************/
 #include "Game/Player/AttributeSet.h"
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
-QVector<QString> AttributeSet::names;
 QVector<QString> AttributeSet::short_names;
+const ushort AttributeSet::kDEFAULT_MIN =     0;
+const ushort AttributeSet::kDEFAULT_MAX = 20000;
+const ushort AttributeSet::kMAX_VALUE   = 50000;
 
 /*
  * Description: Constructs an attribute set (default min 0 stats and max kMAX)
@@ -21,15 +24,38 @@ QVector<QString> AttributeSet::short_names;
  */
 AttributeSet::AttributeSet()
 {
-  if (names.empty())
+  if (short_names.empty())
     setUpNames();
-  for (int i = 0; i < names.size(); i++)
+
+  for (int i = 0; i < short_names.size(); i++)
   {
-      values.append(0);
-      max_values.append(kMAX_VALUE - 1);
+      values.append(kDEFAULT_MIN);
+      max_values.append(kDEFAULT_MAX);
   }
+
   values.squeeze();
   max_values.squeeze();
+}
+
+/*
+ * Description: Constructor: Constructs an attribute set given a vector of
+ *              values. The constructor will assign values for each name, then
+ *              will assign max values for each name, or use default values
+ *              when needed. The constructor will only use the first size x 2
+ *              values.
+ *
+ * Inputs: QVector<ushort> stat_values - values of stats to be set.
+ *         QWidget* parent - the parent of the object
+ */
+AttributeSet::AttributeSet(QVector<ushort> stat_values)
+{
+  if (short_names.empty())
+    setUpNames();
+
+  setAll(stat_values);
+
+ values.squeeze();
+ max_values.squeeze();
 }
 
 /*
@@ -42,7 +68,7 @@ AttributeSet::~AttributeSet() {}
  *============================================================================*/
 
 /*
- * Description: Instantiates the names and short_names vectors on the first
+ * Description: Instantiates the short_names lsit on the first
  *              initialization of an AttributeSet
  *
  * Inputs: none
@@ -50,19 +76,10 @@ AttributeSet::~AttributeSet() {}
  */
 void AttributeSet::setUpNames()
 {
-  names << "Vitality" << "Quantum Drive" << "Physical Aggression"
-        << "Physical Fortitude" << "Thermal Aggression" << "Thermal Fortitude"
-        << "Primal Aggression" << "Primal Fortitude" << "Polar Aggression"
-        << "Polar Fortitude" << "Charged Aggression" << "Charged Fortitude"
-        << "Cybernetic Aggression" << "Cybernetic Fortitude"
-        << "Nihil Aggression" << "Nihil Fortitude" << "Limbertude"
-        << "Momentum" << "Unbearability";
   short_names << "VITA" << "QTDR" << "PHAG" << "PHFD" << "THAG" << "THFD"
               << "POAG" << "POFD" << "PRAG" << "PRFD" << "CHAG" << "CHFD"
               << "CYAG" << "CYFD" << "NIAG" << "NIFD" << "LIMB" << "MMTM"
               << "UNBR";
-  names.squeeze();
-  short_names.squeeze();
 }
 
 /*=============================================================================
@@ -70,7 +87,26 @@ void AttributeSet::setUpNames()
  *============================================================================*/
 
 /*
- * Description: Changes a given stat name by a given value
+ * Description: Changes a givne AttributeStat given an enumerated stat to change
+ *              and amount to change it by. Finds the index of the given
+ *              enumerated type and calls overloaded changeStat(int, int) to
+ *              minimize string compares.
+ *
+ * Inputs: Attribute type - the type of
+ * Output: bool - TRUE if the stat was found and changed, FALSE otherwise
+ */
+const bool AttributeSet::changeStat(Attribute type, int amount)
+{
+  int attr_index = getIndex(type);
+  if (attr_index != -1)
+    return changeStat(attr_index, amount);
+  return FALSE;
+}
+
+/*
+ * Description: Changes a given stat name by a given value. Finds the index
+ *              of the given QString and calls overloaded changeStat(int, int)
+ *              to minimize string compares.
  *
  * Inputs: QString - the name or short name of the stat to be changed
  *         int     - the value by which to change the stat
@@ -78,16 +114,9 @@ void AttributeSet::setUpNames()
  */
 const bool AttributeSet::changeStat(QString name, int amount)
 {
-  if (getIndex(name) != -1)
-  {
-    if (amount < 0 && -amount >= values.at(getIndex(name)))
-        values[getIndex(name)] = 0;
-    else if (amount > 0 && amount >= max_values.at(getIndex(name)))
-        values[getIndex(name)] = max_values.at(getIndex(name));
-    else
-        values[getIndex(name)] += amount;
-    return TRUE;
-  }
+  int attr_index = getIndex(name);
+  if (attr_index != -1)
+    return changeStat(attr_index, amount);
   return FALSE;
 }
 
@@ -100,8 +129,104 @@ const bool AttributeSet::changeStat(QString name, int amount)
  */
 const bool AttributeSet::changeStat(int index, int amount)
 {
-  if (index < names.size())
-    return changeStat(names.at(index), amount);
+  if (index < getSize() && index > 0)
+  {
+    if (amount < 0 && -amount >= values.at(index))
+      values[index] = 0;
+    else if (amount > 0 && amount >= max_values.at(index))
+      values[index] = max_values.at(index);
+    else
+      values[index] += amount;
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/*
+ * Description: Converts an enumerated Attribute value to a QString using
+ *              EnumString instead of string compares.
+ *
+ * Inputs: Attribute type - enumerated Attribute type to get the QString for
+ * Output: QString - the QString value of the enumerated Attribute type
+ */
+QString AttributeSet::getAttrStr(Attribute type)
+{
+  const std::string &attribute_string = EnumString<Attribute>::From(type);
+  QString attribute_qstring(attribute_string.c_str());
+  return attribute_qstring;
+}
+
+/*
+ * Description: Converts a QString to an enumerated Attribute value using
+ *              EnumString instead of string compare.
+ *
+ * Inputs: Qstring name - the string to be converted to an enumerated Attribute
+ * Output: Attribute - the enumerated type corresponding to the QString given
+ */
+Attribute AttributeSet::getAttr(QString name)
+{
+  const std::string &attribute_string = name.toUtf8().constData();
+  Attribute attribute_type;
+  EnumString<Attribute>::To(attribute_type, attribute_string);
+  return attribute_type;
+}
+
+/*
+ * Description: Gets the index of a stat given an enumerated type
+ *
+ * Inputs: Attribute type - enumerated attribute to be checked
+ * Output: int - the index of the enumerated if found, -1 otherwise
+ */
+int AttributeSet::getIndex(Attribute type)
+{
+  switch (type)
+  {
+    case VITALITY:  return 0;
+    case QUANTUMDRIVE: return 1;
+    case PHYSICALAGGRESSION: return 2;
+    case PHYSICALFORTITUDE: return 3;
+    case THERMALAGGRESSION: return 4;
+    case THERMALFORTITUDE: return 5;
+    case POLARAGGRESSION: return 6;
+    case POLARFORTITUDE: return 7;
+    case PRIMALAGGRESSION: return 8;
+    case PRIMALFORTITUDE: return 9;
+    case CHARGEDAGGRESSION: return 10;
+    case CHARGEDFORTITUDE: return 11;
+    case CYBERNETICAGGRESSION: return 12;
+    case CYBERNETICFORTITUDE: return 13;
+    case NIHILAGGRESSION: return 14;
+    case NIHILFORTITUDE: return 15;
+    case MOMENTUM: return 16;
+    case LIMBERTUDE: return 17;
+    case UNBEARABILITY: return 18;
+  }
+  return -1;
+}
+
+/*
+ * Description: Gets the index of a stat given a name
+ *
+ * Inputs: QString - name (or short name) to be checked
+ * Output: int - the index of the stat if found in either name vector, or -1
+ */
+int AttributeSet::getIndex(QString name)
+{
+  for (int i = 0; i < getSize(); i++)
+    if (name == short_names.at(i))
+      return i;
+  return -1;
+}
+
+/*
+ * Description: Gets the long name of an attribute of a given Enumerated type.
+ *
+ * Inputs:
+ * Output: QString - name of the attribute at the given index
+ */
+QString AttributeSet::getName(Attribute type)
+{
+  return getAttrStr(type);
 }
 
 /*
@@ -112,33 +237,34 @@ const bool AttributeSet::changeStat(int index, int amount)
  */
 QString AttributeSet::getName(int index)
 {
-  if (index < names.size())
-    return names.at(index);
+  if (index < getSize())
+      return short_names.at(index);
   return "";
-}
-
-/*
- * Description: Gets the short name of an attribute at a give index
- *
- * Inputs: int - index of the short names to be checked
- * Output: QString - short name of the attribute at a given index
- */
-QString AttributeSet::getShortName(int index)
-{
- if (index < short_names.size())
-   return short_names.at(index);
- return "";
 }
 
 /*
  * Description: Returns the size of the AttributeSet
  *
- * Inputs: int - index of the short names to be checked
- * Output: QString - short name of the attribute at a given index
+ * Inputs: none
+ * Output: int - the number of attributes in short_name
  */
 int AttributeSet::getSize()
 {
-  return names.size();
+  return short_names.size();
+}
+
+/*
+ * Description: Returns the maximum value of a given enumerated Attribute type
+ *
+ * Inputs: Attribute type - enumerated attribute to be checked for
+ * Output: shot - +value of the maximum stat (if exists), -1 otherwise
+ */
+short AttributeSet::getMax(Attribute type)
+{
+  int attr_index = getIndex(type);
+  if (attr_index != -1)
+    return max_values.at(attr_index);
+  return -1;
 }
 
 /*
@@ -162,20 +288,22 @@ short AttributeSet::getMax(QString name)
  */
 short AttributeSet::getMax(int index)
 {
-  return getMax(names.at(index));
+  if (index > 0 && index < values.size())
+    return max_values.at(index);
+  return -1;
 }
 
 /*
- * Description: Gets the index of a stat given a name
+ * Description: Returns the value of a regular stat given an enumerated Attr.
  *
- * Inputs: QString - name (or short name) to be checked
- * Output: int - the index of the stat if found in either name vector, or -1
+ * Inputs: Attribute type - enumerated attribute to be checked
+ * Output: short - value of the normal value stat if found, -1 otherwise
  */
-int AttributeSet::getIndex(QString name)
+short AttributeSet::getStat(Attribute type)
 {
-  for (int i = 0; i < names.size(); i++)
-    if (name == names.at(i) || name == short_names.at(i))
-      return i;
+  int attr_index = getIndex(type);
+  if (attr_index != -1)
+    return values.at(attr_index);
   return -1;
 }
 
@@ -200,7 +328,55 @@ short AttributeSet::getStat(QString name)
  */
 short AttributeSet::getStat(int index)
 {
-  return getStat(names.at(index));
+  if (index > 0 && index < values.size())
+    return values.at(index);
+  return -1;
+}
+
+/*
+ * Description: Sets all values of stats given a vector of ushorts, and a bool
+ *              whether you are starting from setting max stats or not.
+ *
+ * Inputs: QVector<ushort> - vector of ushorts for stats to add.
+ *         bool max - if true, start setting only max values.
+ *
+ * Output: none
+ */
+void AttributeSet::setAll(QVector<ushort> stat_values, bool max)
+{
+  if (!max)
+  {
+    int index = 0;
+    while (values.size() < short_names.size())
+    {
+      if (values.size() < stat_values.size())
+        values.append(stat_values.at(index));
+      else
+        values.append(kDEFAULT_MIN);
+      index++;
+    }
+
+    while (max_values.size() < short_names.size())
+    {
+      if (max_values.size() < stat_values.size() + values.size())
+        max_values.append(stat_values.at(index));
+      else
+        max_values.append(kDEFAULT_MAX);
+      index++;
+    }
+  }
+  else
+  {
+    int index = 0;
+    while (max_values.size() < short_names.size())
+    {
+      if (max_values.size() < stat_values.size())
+        max_values.append(stat_values.at(index));
+      else
+        max_values.append(kDEFAULT_MAX);
+      index++;
+    }
+  }
 }
 
 /*
@@ -263,7 +439,21 @@ void AttributeSet::setAll(ushort a, ushort b, ushort c, ushort d, ushort e,
 }
 
 /*
- * Description: Sets the maximum value of an Attribute of a given name
+ * Description: Sets the maximum value of an Attribute of a enumerated type.
+ *?             Calls the overloaded setMax(int, ushort) to min. string compares
+ *
+ * Inputs: Attribute type - type of attribute to be set
+ *         ushort - value to set the attribute
+ * Output: bool - TRUE if the attribute was set, FALSE otherwise
+ */
+const bool AttributeSet::setMax(Attribute type, ushort value)
+{
+  return setMax(getIndex(type), value);
+}
+
+/*
+ * Description: Sets the maximum value of an Attribute of a given name. Calls
+ *              the overloaded setMax(int, ushort) to minimize string compares.
  *
  * Inputs: QString - name of the attribute to be set
  *         ushort - value to set the attribute
@@ -271,15 +461,7 @@ void AttributeSet::setAll(ushort a, ushort b, ushort c, ushort d, ushort e,
  */
 const bool AttributeSet::setMax(QString name, ushort value)
 {
-  if (getIndex(name) != -1)
-  {
-    if (value <= kMAX_VALUE && value >= values.at(getIndex(name)))
-      max_values[getIndex(name)] = value;
-    else
-      max_values[getIndex(name)] = kMAX_VALUE;
-    return TRUE;
-  }
-  return FALSE;
+  return setMax(getIndex(name), value);
 }
 
 /*
@@ -291,11 +473,35 @@ const bool AttributeSet::setMax(QString name, ushort value)
  */
 const bool AttributeSet::setMax(int index, ushort value)
 {
- return setMax(names.at(index), value);
+  if (index != -1)
+  {
+    if (value <= kMAX_VALUE && value >= values.at(index))
+      max_values[index] = value;
+    else
+      max_values[index] = kMAX_VALUE;
+    return TRUE;
+  }
+  return FALSE;
 }
 
 /*
- * Description: Sets the value of an AttributeSet of a given name
+ * Description: Sets the value of a regular stat given an Attribute enumerated
+ *              type. Calls the overloaded setStat(int, ushort) to minimize
+ *              string compares.
+ *
+ * Inputs: Attribute type - the Attribute enumerated to be checked
+ *         ushort - value to set the attribute
+ * Output: bool - TRUE if the attribute was set, FALSE otherwise
+ */
+const bool AttributeSet::setStat(Attribute type, ushort value)
+{
+  return (getIndex(type), value);
+}
+
+/*
+ * Description: Sets the value of a regular stat given a string of the
+ *              attribute. Calls the overloaded setStat(int, ushort) to minimize
+ *              string compares.
  *
  * Inputs: QString - name of the attribute to be set
  *         ushort - value to set the attribute
@@ -303,15 +509,7 @@ const bool AttributeSet::setMax(int index, ushort value)
  */
 const bool AttributeSet::setStat(QString name, ushort value)
 {
-  if (getIndex(name) != -1)
-  {
-    if (value <= max_values.at(getIndex(name)) && value < kMAX_VALUE)
-    {
-      values[getIndex(name)] = value;
-      return TRUE;
-    }
-  }
-  return FALSE;
+  return (getIndex(name), value);
 }
 
 /*
@@ -323,5 +521,10 @@ const bool AttributeSet::setStat(QString name, ushort value)
  */
 const bool AttributeSet::setStat(int index, ushort value)
 {
-  return setStat(names.at(index), value);
+  if (index != -1 && value <= max_values.at(index) && value < kMAX_VALUE)
+  {
+    values[index] = value;
+    return TRUE;
+  }
+  return FALSE;
 }

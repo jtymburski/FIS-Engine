@@ -15,7 +15,7 @@ enum Direction {NORTH,EAST,SOUTH,WEST};
 
 /*
  * Description: Infliction enumeration represents a Status ailment or a Status
- *              Buff. String conversions are listed blow.||||||||||
+ *              Buff. String conversions are listed blow.
  */
 enum Infliction
 {
@@ -83,33 +83,33 @@ End_Enum_String;
  */
 enum Attribute
 {
-  VITALITY, QUANTUM_DRIVE, PHYSICAL_AGGRESSION, PHYSICAL_FORTITUDE,
-  THERMAL_AGGRESSION, THERMAL_FORTITUDE, PRIMAL_AGGRESSION, PRIMAL_FORTITUDE,
-  POLAR_AGGRESSION, POLAR_FORTITUDE, CHARGED_AGGRESSION, CHARGED_FORTITUDE,
-  CYBERNETIC_AGGRESSION, CYBERNETIC_FORTITUDE, NIHIL_AGGRESSION,
-  NIHIL_FORTITUDE, MOMENTUM, LIMBERTUDE, UNBEARABILITY
+  VITALITY, QUANTUMDRIVE, PHYSICALAGGRESSION, PHYSICALFORTITUDE,
+  THERMALAGGRESSION, THERMALFORTITUDE, PRIMALAGGRESSION, PRIMALFORTITUDE,
+  POLARAGGRESSION, POLARFORTITUDE, CHARGEDAGGRESSION, CHARGEDFORTITUDE,
+  CYBERNETICAGGRESSION, CYBERNETICFORTITUDE, NIHILAGGRESSION,
+  NIHILFORTITUDE, MOMENTUM, LIMBERTUDE, UNBEARABILITY
 };
 
 Begin_Enum_String( Attribute )
 {
   RegisterEnumerator(VITALITY, "Vitality");
-  RegisterEnumerator(QUANTUM_DRIVE, "Quantum Drive");
-  RegisterEnumerator(PHYSICAL_AGGRESSION, "Physical Aggression");
-  RegisterEnumerator(PHYSICAL_AGGRESSION, "Physical Aggression");
-  RegisterEnumerator(PHYSICAL_FORTITUDE, "Physical Fortitude");
-  RegisterEnumerator(THERMAL_AGGRESSION, "Thermal Aggression");
-  RegisterEnumerator(THERMAL_FORTITUDE, "Thermal Fortitude");
-  RegisterEnumerator(PRIMAL_AGGRESSION, "Primal Aggression");
-  RegisterEnumerator(PRIMAL_FORTITUDE, "Primal Fortitude");
-  RegisterEnumerator(POLAR_AGGRESSION, "Polar Aggression");
-  RegisterEnumerator(POLAR_FORTITUDE, "POLAR_FORTITUDE");
-  RegisterEnumerator(CHARGED_AGGRESSION, "Charged Aggression");
-  RegisterEnumerator(CHARGED_FORTITUDE, "Charged Fortitude");
-  RegisterEnumerator(CYBERNETIC_FORTITUDE, "Cybernetic Fortitude");
-  RegisterEnumerator(CYBERNETIC_FORTITUDE, "Cybernetic Fortitude");
-  RegisterEnumerator(CYBERNETIC_AGGRESSION, "Cybernetic Fortitude");
-  RegisterEnumerator(NIHIL_AGGRESSION, "Nihil Aggression");
-  RegisterEnumerator(NIHIL_FORTITUDE, "Nihil Fortitude");
+  RegisterEnumerator(QUANTUMDRIVE, "Quantum Drive");
+  RegisterEnumerator(PHYSICALAGGRESSION, "Physical Aggression");
+  RegisterEnumerator(PHYSICALAGGRESSION, "Physical Aggression");
+  RegisterEnumerator(PHYSICALFORTITUDE, "Physical Fortitude");
+  RegisterEnumerator(THERMALAGGRESSION, "Thermal Aggression");
+  RegisterEnumerator(THERMALFORTITUDE, "Thermal Fortitude");
+  RegisterEnumerator(PRIMALAGGRESSION, "Primal Aggression");
+  RegisterEnumerator(PRIMALFORTITUDE, "Primal Fortitude");
+  RegisterEnumerator(POLARAGGRESSION, "Polar Aggression");
+  RegisterEnumerator(POLARFORTITUDE, "Polar Fortitude");
+  RegisterEnumerator(CHARGEDAGGRESSION, "Charged Aggression");
+  RegisterEnumerator(CHARGEDFORTITUDE, "Charged Fortitude");
+  RegisterEnumerator(CYBERNETICFORTITUDE, "Cybernetic Fortitude");
+  RegisterEnumerator(CYBERNETICFORTITUDE, "Cybernetic Fortitude");
+  RegisterEnumerator(CYBERNETICAGGRESSION, "Cybernetic Fortitude");
+  RegisterEnumerator(NIHILAGGRESSION, "Nihil Aggression");
+  RegisterEnumerator(NIHILFORTITUDE, "Nihil Fortitude");
   RegisterEnumerator(MOMENTUM, "Momentum");
   RegisterEnumerator(LIMBERTUDE, "Limbertude");
   RegisterEnumerator(UNBEARABILITY, "Unbearability");

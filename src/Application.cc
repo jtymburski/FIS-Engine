@@ -83,8 +83,9 @@ void Application::switchWidget(int index)
  */
 void Application::setupBattle()
 {
-  AttributeSet bloodclaw_attr;
-  AttributeSet bear_attr;
+  AttributeSet bloodclaw_attr = AttributeSet();
+  AttributeSet bear_attr = AttributeSet();
+
   bloodclaw_attr.setAll(1000, 125, 200, 150, 10, 8, 10, 8, 10, 8, 10, 8, 10,
                         8, 10, 8, 5, 5, 5);
   bloodclaw_attr.setAll(10000, 1250, 2000, 1500, 1000, 800, 1000, 800, 1000,
