@@ -9,7 +9,7 @@
 #ifndef SKILLSET_H
 #define SKILLSET_H
 
-#include <Qt/QtGui>
+#include <QtGui>
 #include <algorithm>
 #include <QtAlgorithms>
 #include "Game/Player/Skill.h"
