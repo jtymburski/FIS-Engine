@@ -121,7 +121,7 @@ Ailment::~Ailment() {}
  * Inputs: none
  * Output: bool - TRUE if the ailment is to be cured
  */
-const bool Ailment::apply()
+bool Ailment::apply()
 {
   switch (ailment_type)
   {
@@ -227,7 +227,7 @@ const bool Ailment::apply()
  * Inputs: none
  * Output: bool - evaluation of the immunity check
  */
-const bool Ailment::checkImmunity(Person* new_victim)
+bool Ailment::checkImmunity(Person* new_victim)
 {
   /* Immunity for semi-bosses */
 
@@ -251,7 +251,7 @@ const bool Ailment::checkImmunity(Person* new_victim)
  * Inputs: none
  * Output: bool - TRUE if the ailment is to be cured after the update of Fn.
  */
-const bool Ailment::updateTurns()
+bool Ailment::updateTurns()
 {
   /* If the ailment is finite, cure it based on chance */;
   if (max_turns_left <= kMAX_TURNS && chance != 0)
@@ -489,9 +489,9 @@ void Ailment::unapply()
  * Description: Evaluates a given status Ailment flag.
  *
  * Inputs: AilmentFlag flags - the flags to be evaluated
- * Output: const bool - the boolean evaluation of the given flag
+ * Output: bool - the boolean evaluation of the given flag
  */
-const bool Ailment::getFlag(AilmentFlag flags)
+bool Ailment::getFlag(AilmentFlag flags)
 {
   return flag_set.testFlag(flags);
 }
@@ -586,7 +586,7 @@ void Ailment::setDuration(ushort max_turns, double chance)
  *         set_value - the value to assign the flag(s) to (default: TRUE)
  * Output: none
  */
-void Ailment::setFlag(AilmentFlag flags, const bool set_value)
+void Ailment::setFlag(AilmentFlag flags, bool set_value)
 {
   (set_value) ? (flag_set |= flags) : (flag_set ^= flags);
 }
@@ -595,10 +595,10 @@ void Ailment::setFlag(AilmentFlag flags, const bool set_value)
  * Description: Assigns a PersonState flag or flags to (a) given value(s)
  *
  * Inputs: Perosn* new_victim - Potential new victim of the status ailment.
- *         const bool refresh_turns - Whether to reset the turn count
+ *         bool refresh_turns - Whether to reset the turn count
  * Output: Returns TRUE if the new victim was set successfully.
  */
-const bool Ailment::setNewVictim(Person* new_victim, const bool refresh_turns)
+bool Ailment::setNewVictim(Person* new_victim, bool refresh_turns)
 {
   /* The ailment cannot be assigned if the new victim is immune */
   if (checkImmunity(new_victim))
@@ -613,4 +613,5 @@ const bool Ailment::setNewVictim(Person* new_victim, const bool refresh_turns)
   setFlag(Ailment::TOBEAPPLIED);
   setVictim(new_victim);
   update();
+  return TRUE;
 }

@@ -225,7 +225,7 @@ void Action::setVariance(float new_value)
  *         Boolean value to set the flag to
  * Output: none
  */
-void Action::setIgnoreFlag(IgnoreFlag flags, const bool set_value)
+void Action::setIgnoreFlag(IgnoreFlag flags, bool set_value)
 {
   (set_value) ? (ignore_flags |= flags) : (ignore_flags ^= flags);
 }
@@ -237,7 +237,7 @@ void Action::setIgnoreFlag(IgnoreFlag flags, const bool set_value)
  *         Boolean value to set the flag to
  * Output: none
  */
-void Action::setActionFlag(ActionType flags, const bool set_value)
+void Action::setActionFlag(ActionType flags, bool set_value)
 {
   (set_value) ? (action_flags |= flags) : (action_flags ^= flags);
 }
@@ -285,7 +285,7 @@ QString Action::getAilment()
  * Inputs: IgnoreAttack flag to be evaluated
  * Output: Evaluation of the flag
  */
-const bool Action::getIgnoreFlag(IgnoreFlag flags)
+bool Action::getIgnoreFlag(IgnoreFlag flags)
 {
   return ignore_flags.testFlag(flags);
 }
@@ -296,7 +296,7 @@ const bool Action::getIgnoreFlag(IgnoreFlag flags)
  * Inputs: ActionType flag to be evaluated
  * Output: Evaluation of the flag
  */
-const bool Action::getActionFlag(ActionType flags)
+bool Action::getActionFlag(ActionType flags)
 {
   return action_flags.testFlag(flags);
 }

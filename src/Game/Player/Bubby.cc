@@ -70,7 +70,7 @@ void Bubby::calcExpTable()
  * Inputs: none
  * Output: bool - TRUE if a sprite was actually set
  */
-const bool Bubby::setSprite()
+bool Bubby::setSprite()
 {
   int size = getType()->getSprites().size();
   if (size >= getTier())

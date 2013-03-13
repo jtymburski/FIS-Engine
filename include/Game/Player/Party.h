@@ -68,7 +68,7 @@ public:
   Person* getMember(uint index);
 
   /* Gets a party flag */
-  const bool getPartyFlag(PartyFlag flag);
+  bool getPartyFlag(PartyFlag flag);
 
   /* Returns the party size */
   uint getPartySize();
@@ -89,7 +89,7 @@ public:
   bool setMaxSize(uint value);
 
   /* Sets a party flag */
-  void setPartyFlag(PartyFlag flag, const bool set_value);
+  void setPartyFlag(PartyFlag flag, bool set_value);
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Party::PartyFlags)
 

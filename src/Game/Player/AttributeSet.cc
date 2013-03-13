@@ -95,7 +95,7 @@ void AttributeSet::setUpNames()
  * Inputs: Attribute type - the type of
  * Output: bool - TRUE if the stat was found and changed, FALSE otherwise
  */
-const bool AttributeSet::changeStat(Attribute type, int amount)
+bool AttributeSet::changeStat(Attribute type, int amount)
 {
   int attr_index = getIndex(type);
   if (attr_index != -1)
@@ -112,7 +112,7 @@ const bool AttributeSet::changeStat(Attribute type, int amount)
  *         int     - the value by which to change the stat
  * Output: bool - TRUE if the stat was found and changed, FALSE otherwise
  */
-const bool AttributeSet::changeStat(QString name, int amount)
+bool AttributeSet::changeStat(QString name, int amount)
 {
   int attr_index = getIndex(name);
   if (attr_index != -1)
@@ -127,7 +127,7 @@ const bool AttributeSet::changeStat(QString name, int amount)
  *         int amount - amount by which to change the stat
  * Output: bool - TRUE if the stat was found and changed, FALSE otherwise
  */
-const bool AttributeSet::changeStat(int index, int amount)
+bool AttributeSet::changeStat(int index, int amount)
 {
   if (index < getSize() && index > 0)
   {
@@ -446,7 +446,7 @@ void AttributeSet::setAll(ushort a, ushort b, ushort c, ushort d, ushort e,
  *         ushort - value to set the attribute
  * Output: bool - TRUE if the attribute was set, FALSE otherwise
  */
-const bool AttributeSet::setMax(Attribute type, ushort value)
+bool AttributeSet::setMax(Attribute type, ushort value)
 {
   return setMax(getIndex(type), value);
 }
@@ -459,7 +459,7 @@ const bool AttributeSet::setMax(Attribute type, ushort value)
  *         ushort - value to set the attribute
  * Output: bool - TRUE if the attribute was set, FALSE otherwise
  */
-const bool AttributeSet::setMax(QString name, ushort value)
+bool AttributeSet::setMax(QString name, ushort value)
 {
   return setMax(getIndex(name), value);
 }
@@ -471,7 +471,7 @@ const bool AttributeSet::setMax(QString name, ushort value)
  *         ushort - value to set the attribute
  * Output: bool - TRUE if the attribute was set, FALSE otherwise
  */
-const bool AttributeSet::setMax(int index, ushort value)
+bool AttributeSet::setMax(int index, ushort value)
 {
   if (index != -1)
   {
@@ -493,7 +493,7 @@ const bool AttributeSet::setMax(int index, ushort value)
  *         ushort - value to set the attribute
  * Output: bool - TRUE if the attribute was set, FALSE otherwise
  */
-const bool AttributeSet::setStat(Attribute type, ushort value)
+bool AttributeSet::setStat(Attribute type, ushort value)
 {
   return (getIndex(type), value);
 }
@@ -507,7 +507,7 @@ const bool AttributeSet::setStat(Attribute type, ushort value)
  *         ushort - value to set the attribute
  * Output: bool - TRUE if the attribute was set, FALSE otherwise
  */
-const bool AttributeSet::setStat(QString name, ushort value)
+bool AttributeSet::setStat(QString name, ushort value)
 {
   return (getIndex(name), value);
 }
@@ -519,7 +519,7 @@ const bool AttributeSet::setStat(QString name, ushort value)
  *         ushort - value to set the attribute
  * Output: bool - TRUE if the attribute was set, FALSE otherwise
  */
-const bool AttributeSet::setStat(int index, ushort value)
+bool AttributeSet::setStat(int index, ushort value)
 {
   if (index != -1 && value <= max_values.at(index) && value < kMAX_VALUE)
   {

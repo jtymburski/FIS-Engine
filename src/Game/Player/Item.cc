@@ -90,7 +90,7 @@ uint Item::getDuration()
  * Inputs: ITemState flag to be evaluated
  * Output: boolean value of the flag
  */
-const bool Item::getItemFlag(ItemState flag)
+bool Item::getItemFlag(ItemState flag)
 {
     return (iflag_set.testFlag(flag));
 }
@@ -103,7 +103,7 @@ const bool Item::getItemFlag(ItemState flag)
  *         set_value - boolean value to set flags to
  * Output: none
  */
-void Item::setItemFlag(ItemState flag, const bool set_value)
+void Item::setItemFlag(ItemState flag, bool set_value)
 {
     (set_value) ? (iflag_set |= flag) : (iflag_set ^= flag);
 }

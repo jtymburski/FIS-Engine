@@ -30,7 +30,7 @@ private:
   /*------------------- Constants -----------------------*/
   static const ushort kDEFAULT_MIN; /* Default value for a min stat */
   static const ushort kDEFAULT_MAX; /* Default value for a max stat */
-  static const ushort kMAX_VALUE;    /* The maximum value of any stat */
+  static const ushort kMAX_VALUE;   /* The maximum value of any stat */
 
   /* Container for short names of Attributes */
   static QVector<QString> short_names;
@@ -47,9 +47,9 @@ private:
 
 public:
   /* Alters a given stat by a certain amount {Damage, Buff} */
-  const bool changeStat(Attribute type, int amount);
-  const bool changeStat(QString name, int amount);
-  const bool changeStat(int index, int amount);
+  bool changeStat(Attribute type, int amount);
+  bool changeStat(QString name, int amount);
+  bool changeStat(int index, int amount);
 
   /* Enum to String and vice versa functions for Attributes */
   static QString getAttrStr(Attribute type);
@@ -84,14 +84,14 @@ public:
               ushort s, bool max = FALSE);
 
   /* Sets the maximum values of the Attribute Set */
-  const bool setMax(Attribute type, ushort value);
-  const bool setMax(QString name, ushort value);
-  const bool setMax(int index, ushort value);
+  bool setMax(Attribute type, ushort value);
+  bool setMax(QString name, ushort value);
+  bool setMax(int index, ushort value);
 
   /* Sets the normal stat values of the AttributeSet */
-  const bool setStat(Attribute type, ushort value);
-  const bool setStat(QString name, ushort value);
-  const bool setStat(int index, ushort value);
+  bool setStat(Attribute type, ushort value);
+  bool setStat(QString name, ushort value);
+  bool setStat(int index, ushort value);
 };
 
 #endif // ATTRIBUTESET_H

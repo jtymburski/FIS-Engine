@@ -125,7 +125,7 @@ bool Inventory::addTo(Bubby bubby)
  * Inputs: none
  * Output: uint - limit of bubby items.
  */
-const bool Inventory::removeFrom(Equipment terminal_equipment)
+bool Inventory::removeFrom(Equipment terminal_equipment)
 {
   for (int i = 0; i < items.size(); i++)
   {
@@ -151,7 +151,7 @@ const bool Inventory::removeFrom(Equipment terminal_equipment)
  * Inputs: none
  * Output: uint - limit of bubby items.
  */
-const bool Inventory::removeFrom(Item terminal_item)
+bool Inventory::removeFrom(Item terminal_item)
 {
   for (int i = 0; i < items.size(); i++)
   {
@@ -172,12 +172,13 @@ const bool Inventory::removeFrom(Item terminal_item)
 /*
  * Description: Attempts to remove a bubby from the vector of bubby items
  *
- * Inputs(
+ * Inputs:
  * Output: uint - limit of bubby items.
+ * //TODO: Unfinished
  */
-const bool Inventory::removeFrom(Bubby bubby)
+bool Inventory::removeFrom(Bubby bubby)
 {
-
+  return FALSE;
 }
 
 /*
@@ -211,7 +212,7 @@ void Inventory::upgrade(QString name, QPixmap* thumbnail, uint equipment_limit,
  * Inputs: new_level = value to change level to
  * Output: none
  */
-const bool Inventory::resetLevel(const uint new_level)
+bool Inventory::resetLevel(const uint new_level)
 {
   if (level >= kMAX_LEVEL)
     return FALSE;

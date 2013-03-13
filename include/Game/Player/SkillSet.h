@@ -35,18 +35,18 @@ private:
 
 public:
   /* Methods to add skills */
-  const bool addSkill(Skill* skill, ushort req_level = 1);
-  const bool addSkills(QVector<Skill*> new_skills, QVector<ushort> new_levels);
+  bool addSkill(Skill* skill, ushort req_level = 1);
+  bool addSkills(QVector<Skill*> new_skills, QVector<ushort> new_levels);
 
   /* Removes duplicates and cleans up vectors */
   void cleanUp();
 
   /* Methods to remove skills */
-  const bool removeSkill(int index);
-  const bool removeSkill(QString name);
+  bool removeSkill(int index);
+  bool removeSkill(QString name);
 
   /* Sorts the skill vector */
-  const bool sortSkills(QString sort_type = "NAME");
+  bool sortSkills(QString sort_type = "NAME");
 
   /* Methods to obtain skills */
   QVector<Skill*> getSkills();

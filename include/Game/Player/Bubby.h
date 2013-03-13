@@ -36,7 +36,7 @@ private:
   static void calcExpTable();
 
   /* Updates the Bubby to the appropriate sprite (on tier level up) */
-  const bool setSprite();
+  bool setSprite();
 
   /* Bubby Type */
   BubbyFlavour* type;

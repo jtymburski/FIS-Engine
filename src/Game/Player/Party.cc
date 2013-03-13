@@ -1,3 +1,4 @@
+
 /******************************************************************************
 * Class Name: Party Implementation
 * Date Created: December 2nd, 2012
@@ -137,7 +138,7 @@ Person* Party::getMember(uint index)
  * Inputs: PartyFlag - flag to evaluate
  * Output: bool      - evaluation of the flag
  */
-const bool Party::getPartyFlag(PartyFlag flag)
+bool Party::getPartyFlag(PartyFlag flag)
 {
   return (pflag_set.testFlag(flag));
 }
@@ -211,7 +212,7 @@ bool Party::setMaxSize(uint value)
  *         bool      - value to set the flag to
  * Output: none
  */
-void Party::setPartyFlag(PartyFlag flag, const bool set_value)
+void Party::setPartyFlag(PartyFlag flag, bool set_value)
 {
   (set_value) ? (pflag_set |= flag) : (pflag_set ^= flag);
 }

@@ -95,10 +95,10 @@ private:
   void setAilment(QString ailment);
 
   /* Sets the value of an Ignore Atk Flag */
-  void setIgnoreFlag(IgnoreFlag flags, const bool set_value = TRUE);
+  void setIgnoreFlag(IgnoreFlag flags, bool set_value = TRUE);
 
   /* Sets the value of an Action Type Flag */
-  void setActionFlag(ActionType flags, const bool set_value = TRUE);
+  void setActionFlag(ActionType flags, bool set_value = TRUE);
 
   /* The raw language parser! */
   void parse(QString raw);
@@ -126,10 +126,10 @@ public:
   QString getAilment();
 
   /* Gets the value of an Ignore Atk Flag */
-  const bool getIgnoreFlag(IgnoreFlag flags);
+  bool getIgnoreFlag(IgnoreFlag flags);
 
   /* Gets the value of an Action Type Flag */
-  const bool getActionFlag(ActionType flags);
+  bool getActionFlag(ActionType flags);
 
   /* Returns the maximum # of turns */
   uint getMaximum();

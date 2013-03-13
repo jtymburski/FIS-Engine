@@ -64,7 +64,7 @@ SkillSet::~SkillSet() {}
  *         ushort - level that the skill is required at
  * Output: bool   - TRUE if successful
  */
-const bool SkillSet::addSkill(Skill* new_skill, ushort req_level)
+bool SkillSet::addSkill(Skill* new_skill, ushort req_level)
 {
   if (skills_available.size() < kMAX_SKILLS)
   {
@@ -83,7 +83,7 @@ const bool SkillSet::addSkill(Skill* new_skill, ushort req_level)
  *         QVector<ushort>  - vector of levels corresponding
  * Output: bool             - TRUE is successful
  */
-const bool SkillSet::addSkills(QVector<Skill* > new_skills,
+bool SkillSet::addSkills(QVector<Skill* > new_skills,
                                QVector<ushort> new_levels)
 {
   if (new_skills.size() != new_levels.size())
@@ -125,7 +125,7 @@ void SkillSet::cleanUp()
  * Inputs: int - index of the skill to be removed
  * Output: bool - TRUE is removal was successful
  */
-const bool SkillSet::removeSkill(int index)
+bool SkillSet::removeSkill(int index)
 {
   if (index > -1 && index < skills.size())
     return removeSkill(skills.at(index)->getName());
@@ -138,7 +138,7 @@ const bool SkillSet::removeSkill(int index)
  * Inputs: QString - name of the skill to be removed.
  * Output: bool -  TRUE if the removal was successful.
  */
-const bool SkillSet::removeSkill(QString name)
+bool SkillSet::removeSkill(QString name)
 {
   for (int i = 0; i < skills.size(); i++)
   {
@@ -160,7 +160,7 @@ const bool SkillSet::removeSkill(QString name)
  * Inputs: QString - type of sort to be performed
  * Output: bool    - TRUE if sort took place
  */
-const bool SkillSet::sortSkills(QString sort_type)
+bool SkillSet::sortSkills(QString sort_type)
 {
   if (!(sort_type == "NAME" && sort_type == "LEVEL") || skills.size() < 2)
     return FALSE;
@@ -218,6 +218,7 @@ const bool SkillSet::sortSkills(QString sort_type)
   qDeleteAll(temp_skills.begin(), skills.end());
   temp_skills.clear();
   skills_available = temp_levels;
+  return TRUE;
 }
 
 /*

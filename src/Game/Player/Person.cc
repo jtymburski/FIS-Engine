@@ -175,7 +175,7 @@ void Person::setUpBaseStats()
  * Inputs: used_item - pointer of an item to be used
  * Output: bool - tue if item used successfully
  */
-const bool Person::useItem(Item* used_item)
+bool Person::useItem(Item* used_item)
 {
     return TRUE;
 }
@@ -186,7 +186,7 @@ const bool Person::useItem(Item* used_item)
  * Inputs: Person state flag
  * Output: Boolean evaluation of the flag
  */
-const bool Person::getPersonFlag(PersonState flags)
+bool Person::getPersonFlag(PersonState flags)
 {
   return state_set.testFlag(flags);
 }
@@ -198,7 +198,7 @@ const bool Person::getPersonFlag(PersonState flags)
  *         Boolean value to set the flag to
  * Output: none
  */
-void Person::setPersonFlag(PersonState flags, const bool set_value)
+void Person::setPersonFlag(PersonState flags, bool set_value)
 {
   (set_value) ? (state_set |= flags) : (state_set ^= flags);
 }
@@ -458,7 +458,7 @@ AttributeSet* Person::tempStats()
  *         Equipment* - pointer to the equipment to attach
  * Output: bool - TRUE if the equip took place
  */
-const bool Person::setEquipment(QString slot, Equipment e)
+bool Person::setEquipment(QString slot, Equipment e)
 {
   if (slot == "TWOHAND" && e.getEquipmentFlag(Equipment::TWOHAND))
   {
@@ -585,7 +585,7 @@ void Person::setItemLoot(QVector<Item> items)
  * Inputs: new_level - the level to change the person to.
  * Output: bool      - true if the level was changed
  */
-const bool Person::setLevel(const uint &new_level)
+bool Person::setLevel(const uint &new_level)
 {
   /* Assign the proper level value */
   if (new_level == getLevel())

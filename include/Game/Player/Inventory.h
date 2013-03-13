@@ -59,7 +59,7 @@ private:
 
 public:
   /* Attempts to reset the level of the inventory */
-  const bool resetLevel(const uint new_level);
+  bool resetLevel(const uint new_level);
 
   /* Attempts to add equipment, returns true if there is room to add */
   bool addTo(Equipment equipment);
@@ -71,13 +71,13 @@ public:
   bool addTo(Bubby bubby);
 
   /* Attemots to remove equipment */
-  const bool removeFrom(Equipment equipment);
+  bool removeFrom(Equipment equipment);
 
   /* Attempts to remove item */
-  const bool removeFrom(Item item);
+  bool removeFrom(Item item);
 
   /* Attempts to remove bubby */
-  const bool removeFrom(Bubby b);
+  bool removeFrom(Bubby b);
 
   /* Attempts to upgrade the storage unit */
   void upgrade(QString name, QPixmap* thumbnail, uint equipment_limit,

@@ -117,11 +117,11 @@ public:
   void setUpBaseStats();
 
   /* Uses a given item on a person */
-  const bool useItem(Item* used_item);
+  bool useItem(Item* used_item);
 
   /* PersonState flag functions */
-  const bool getPersonFlag(PersonState flags);
-  void setPersonFlag(PersonState flags, const bool set_value = TRUE);
+  bool getPersonFlag(PersonState flags);
+  void setPersonFlag(PersonState flags, bool set_value = TRUE);
 
   /* Gets the person's category */
   Category* getCategory();
@@ -173,7 +173,7 @@ public:
   AttributeSet* tempStats();
 
   /* Sets an equipment to a slot */
-  const bool setEquipment(QString slot, Equipment e);
+  bool setEquipment(QString slot, Equipment e);
 
   /* Sets the person's category */
   void setCategory(Category* c);
@@ -191,7 +191,7 @@ public:
   void setItemLoot(QVector<Item> items);
 
   /* Sets the person's level */
-  const bool setLevel(const uint &new_level);
+  bool setLevel(const uint &new_level);
 
   /* Sets the person's level */
   void setName(QString new_name);

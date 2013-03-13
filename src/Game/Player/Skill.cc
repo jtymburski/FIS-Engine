@@ -77,7 +77,7 @@ Skill::~Skill() {}
  * Inputs: float - new value of chance (1 = 100%)
  * Output: none
  */
-const bool Skill::addEffectChance(float new_value)
+bool Skill::addEffectChance(float new_value)
 {
   if (effect_chance.size() + 1 < kMAX_ACTIONS)
   {
@@ -94,7 +94,7 @@ const bool Skill::addEffectChance(float new_value)
  * Inputs: uint - index of effect to be removed.
  * Output: none
  */
-const bool Skill::removeEffectChance(uint index)
+bool Skill::removeEffectChance(uint index)
 {
   if (effect_chance.at(index))
   {
@@ -110,7 +110,7 @@ const bool Skill::removeEffectChance(uint index)
  * Inputs: Action* - action to be added
  * Output: none
  */
-const bool Skill::addEffect(Action* new_action)
+bool Skill::addEffect(Action* new_action)
 {
   if (effects.size() + 1 < kMAX_ACTIONS)
   {
@@ -126,7 +126,7 @@ const bool Skill::addEffect(Action* new_action)
  * Inputs: uint - index of the effect to be removed
  * Output: none
  */
-const bool Skill::removeEffect(uint index)
+bool Skill::removeEffect(uint index)
 {
   if (effects.at(index))
   {
@@ -153,7 +153,7 @@ void Skill::toggleFlag(SkillType flags)
  * Inputs: SkillType - flag to be returned
  * Output: Boolean evaluation of the flag
  */
-const bool Skill::getFlag(SkillType flags)
+bool Skill::getFlag(SkillType flags)
 {
   return skill_flags.testFlag(flags);
 }
@@ -291,7 +291,7 @@ void Skill::setDescription(QString new_value)
  *         set_value - value flag is to be set to
  * Output: none
  */
-void Skill::setFlag(SkillFlags flags, const bool set_value)
+void Skill::setFlag(SkillFlags flags, bool set_value)
 {
   (set_value) ? (skill_flags |= flags) : (skill_flags ^= flags);
 }

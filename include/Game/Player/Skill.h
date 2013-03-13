@@ -80,22 +80,22 @@ private:
 
 public:
   /* Appends an effect chance to the vector */
-  const bool addEffectChance(float new_value);
+  bool addEffectChance(float new_value);
 
   /* Removes an effect chance from the vector */
-  const bool removeEffectChance(uint index);
+  bool removeEffectChance(uint index);
 
   /* Appends an effect to the vector */
-  const bool addEffect(Action* new_action);
+  bool addEffect(Action* new_action);
 
   /* Removes an effect from the vector */
-  const bool removeEffect(uint index);
+  bool removeEffect(uint index);
 
   /* Toggle a SkillType flag */
   void toggleFlag(SkillType flags);
 
   /* Get a skill flag */
-  const bool getFlag(SkillType flags);
+  bool getFlag(SkillType flags);
 
   /* Return the description of the skill */
   QString getDescription();
@@ -131,7 +131,7 @@ public:
   void setDescription(QString new_value);
 
   /* Set a skill flag */
-  void setFlag(SkillFlags flags, const bool set_value);
+  void setFlag(SkillFlags flags, bool set_value);
 
   /* Sets the name of the skill */
   void setName(QString new_value);

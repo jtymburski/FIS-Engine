@@ -1,3 +1,4 @@
+
 /******************************************************************************
 * Class Name: Equipment
 * Date Created: Dec 2 2012
@@ -51,7 +52,7 @@ Equipment::~Equipment()
  *         int y - the top most coordinate of the proposed location
  * Output: bool - boolean if the bubby can be attached
  */
-const bool Equipment::canAttach(Bubby* new_bubby, ushort x, ushort y)
+bool Equipment::canAttach(Bubby* new_bubby, ushort x, ushort y)
 {
   if (new_bubby->getTier() == 0)
     return FALSE;
@@ -76,7 +77,7 @@ const bool Equipment::canAttach(Bubby* new_bubby, ushort x, ushort y)
  *         int y - the top most coordinate
  * Output: bool - true if the attachment was successful
  */
-const bool Equipment::attachBubby(Bubby* new_bubby, ushort x, ushort y)
+bool Equipment::attachBubby(Bubby* new_bubby, ushort x, ushort y)
 {
   if (new_bubby->getTier() == 0)
     return FALSE;
@@ -101,7 +102,7 @@ const bool Equipment::attachBubby(Bubby* new_bubby, ushort x, ushort y)
  *         ushort y - y coordinate of the Bubby
  * Output: bool - TRUE if the Bubby can be unattached
  */
-const bool Equipment::canUnattach(ushort x, ushort y)
+bool Equipment::canUnattach(ushort x, ushort y)
 {
   int left_x = getLeftX(x, y, FALSE);
   int left_y = getLeftY(y, y, FALSE);
@@ -121,7 +122,7 @@ const bool Equipment::canUnattach(ushort x, ushort y)
  *         ushort y - y coordinate of the Bubby
  * Output: bool - TRUE if the Bubby can be unattached
  */
-const bool Equipment::canUnattach(uint id)
+bool Equipment::canUnattach(uint id)
 {
   // TODO: FIND X AND Y
   // int left_x = getLeftX(x, y, TRUE);
@@ -165,7 +166,7 @@ Bubby Equipment::unattach(ushort x, ushort y)
  * Inputs: EquipmentState flag to be evaluated
  * Output: boolean value of the flag
  */
-const bool Equipment::getEquipmentFlag(EquipmentState flag)
+bool Equipment::getEquipmentFlag(EquipmentState flag)
 {
     return (eflag_set.testFlag(flag));
 }
@@ -222,7 +223,7 @@ int Equipment::getLeftY(uint x, uint y, bool passingID)
  *         set_value - boolean value to set flags to
  * Output: none
  */
-void Equipment::setEquipmentFlag(EquipmentState flag, const bool set_value)
+void Equipment::setEquipmentFlag(EquipmentState flag, bool set_value)
 {
     (set_value) ? (eflag_set |= flag) : (eflag_set ^= flag);
 }

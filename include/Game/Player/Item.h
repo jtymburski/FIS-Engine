@@ -72,7 +72,7 @@ public:
   QImage getThumbnail();
 
   /* Gets the value of an ItemFlag */
-  const bool getItemFlag(ItemState flag);
+  bool getItemFlag(ItemState flag);
 
   /* Gets the turn count */
   uint getDuration();
@@ -81,7 +81,7 @@ public:
   void setDuration(uint value);
 
   /* Sets an ItemFlag */
-  void setItemFlag(ItemState flag, const bool set_value);
+  void setItemFlag(ItemState flag, bool set_value);
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Item::ItemFlags);
 

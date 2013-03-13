@@ -77,13 +77,13 @@ private:
   Person* victim;
 
   /* Applies the effect of the ailment */
-  const bool apply();
+  bool apply();
 
   /* Checks the immunity of the ailment */
-  const bool checkImmunity(Person* new_victim);
+  bool checkImmunity(Person* new_victim);
 
   /* Updates the ailment by decrementing the turn counter if necessary */
-  const bool updateTurns();
+  bool updateTurns();
 
   /* Sets the Inflinction of the Status Ailment */
   void setType(Infliction t);
@@ -103,7 +103,7 @@ public:
   void unapply();
 
   /* Evaluates an ailment flag or flags */
-  const bool getFlag(AilmentFlag flags);
+  bool getFlag(AilmentFlag flags);
 
   /* Returns the number of turns left (assuming 0%) */
   ushort getTurnsLeft();
@@ -125,10 +125,10 @@ public:
   void setDuration(ushort max_turns, double chance = 0);
 
   /* Sets the value of an AilmentFlag to a set_value, defaulting to TRUE */
-  void setFlag(AilmentFlag flags, const bool set_value = TRUE);
+  void setFlag(AilmentFlag flags, bool set_value = TRUE);
 
   /* Public function to assign a new victom for the status ailment */
-  const bool setNewVictim(Person* new_victim, const bool refresh_turns = FALSE);
+  bool setNewVictim(Person* new_victim, bool refresh_turns = FALSE);
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Ailment::AilmentFlags)
 

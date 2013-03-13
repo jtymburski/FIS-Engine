@@ -61,16 +61,16 @@ public:
   /* Checks if the bubby will fit into the bubby signature
    * X is the left most coordinate, Y is the top most coordinate
    * Returns if space is available for attachment */
-  const bool canAttach(Bubby* new_bubby, ushort x, ushort y);
+  bool canAttach(Bubby* new_bubby, ushort x, ushort y);
 
   /* Attempt to attach bubby into the signature
    * X is the left most coordinate, Y is the top most coordinate
    * Returns status of attachment */
-  const bool attachBubby(Bubby* new_bubby, ushort x, ushort y);
+  bool attachBubby(Bubby* new_bubby, ushort x, ushort y);
 
   /* Checks if a Bubby at a given index can be unattached */
-  const bool canUnattach(ushort x, ushort y);
-  const bool canUnattach(uint id);
+  bool canUnattach(ushort x, ushort y);
+  bool canUnattach(uint id);
 
   /* Removes a Bubby at a given x and y value (checks adjacent values) */
   Bubby unattach(ushort x, ushort y);
@@ -80,10 +80,10 @@ public:
   int getLeftY(uint x, uint y, bool passingID = TRUE);
 
   /* Gets the boolean value of flag */
-  const bool getEquipmentFlag(EquipmentState flags);
+  bool getEquipmentFlag(EquipmentState flags);
 
   /* Sets the value of a flag */
-  void setEquipmentFlag(EquipmentState flags, const bool set_value);
+  void setEquipmentFlag(EquipmentState flags, bool set_value);
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Equipment::EquipmentFlags);
 
