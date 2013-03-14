@@ -144,7 +144,7 @@ QString FileHandler::decryptLine(QString line, bool* success)
   {
     status = FALSE;
     decrypted_line = "";
-    qDebug() << "[ERROR] Invalid data into file decrypt line function.";
+    qDebug() << "[ERROR] Invalid data from file for line decrypt.";
   }
 
   /* Clean up compressed pointer, if set */
@@ -254,7 +254,7 @@ QString FileHandler::encryptLine(QString line, bool* success)
     else
     {
       encrypted_line = "";
-      qDebug() << "[ERROR] Invalid data into file encrypt line function.";
+      qDebug() << "[ERROR] Invalid data from file for line encrypt.";
     }
   }
   else
@@ -357,7 +357,7 @@ uint32_t* FileHandler::intToLong(int* line_data, int length)
     return long_data;
   }
 
-  qDebug() << "[ERROR] IntToLong conversion in FileHandler failed.";
+  qDebug() << "[ERROR] IntToLong conversion of file data line failed.";
   return 0;
 }
 
@@ -441,7 +441,7 @@ int* FileHandler::longToInt(uint32_t* line_data, int length)
     return int_data;
   }
   
-  qDebug() << "[ERROR] LongToInt conversion in FileHandler failed.";
+  qDebug() << "[ERROR] LongToInt conversion of file data line failed.";
   return 0;
 }
 
@@ -549,7 +549,7 @@ int FileHandler::stringToInt(QString line, int** line_data, bool encrypting)
     return final_length;
   }
 
-  qDebug() << "[ERROR] StringToInt conversion in FileHandler failed.";
+  qDebug() << "[ERROR] StringToInt conversion of file data line failed.";
   return 0;
 }
 
@@ -795,5 +795,29 @@ bool FileHandler::writeLine(QString line)
 
     return success;
   }
+  return FALSE;
+}
+
+/*============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *===========================================================================*/
+bool FileHandler::fileDelete(QString filename)
+{
+  if(fileExists(filename))
+    return !std::remove(filename.toStdString().c_str());
+  return FALSE;
+}
+
+bool FileHandler::fileExists(QString filename)
+{
+  std::ifstream test_file(filename.toStdString().c_str());
+  return test_file;
+}
+
+bool FileHandler::fileRename(QString old_filename, QString new_filename)
+{
+  if(fileExists(old_filename) && !fileExists(new_filename))
+    return !std::rename(old_filename.toStdString().c_str(),
+                        new_filename.toStdString().c_str());
   return FALSE;
 }

@@ -85,6 +85,9 @@ private:
   const static int kPADDING_ASCII = 200; /* Start of padding characters */
   const static int kXXTEA_ROUNDS = 19; /* Number of rounds for encryption */
 
+/*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
 private:
   /* Compute Md5 for byte array of data */
   QByteArray computeMd5(QByteArray data);
@@ -132,6 +135,9 @@ private:
    * nothing if the function is uninitialized or set on read */
   bool writeMd5(QByteArray data);
 
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 public:
   /* Returns the date that was acquired/set */
   QString getDate();
@@ -174,6 +180,19 @@ public:
 
   /* Writes the following line to the file. Only valid for REGULAR files */
   bool writeLine(QString line);
+
+/*============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *===========================================================================*/
+public:
+  /* Deletes the said file, if it exists */
+  static bool fileDelete(QString filename);
+
+  /* Check if the file exists */
+  static bool fileExists(QString filename);
+
+  /* Rename the file, if it exists and the new name doesn't */
+  static bool fileRename(QString old_filename, QString new_filename);
 };
 
 #endif // FILEHANDLER_H
