@@ -17,7 +17,7 @@ class Action : public QWidget
 {
 public:
   /* Action constructor object (requires a QString of raw input) */
-  Action(QString raw, QWidget *pointer = 0);
+  Action(QString raw, QWidget *parent = NULL);
 
   /* Annihilates an action object */
   ~Action();

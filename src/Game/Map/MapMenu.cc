@@ -20,7 +20,9 @@ MapMenu::~MapMenu()
 /* Painting function */
 void MapMenu::paintEvent(QPaintEvent *event)
 {
+    (void)event;//WARNING
 }
+
 
 /* Deselects a submenu, esc key calls this */
 void MapMenu::deselectSubMenu()
@@ -30,6 +32,7 @@ void MapMenu::deselectSubMenu()
 /* Initializes the menu with the given party data */
 void MapMenu::initMenu (Party* party)
 {
+    (void)party;//warning
 }
 
 /* Evaluates INSUBMENU flag */

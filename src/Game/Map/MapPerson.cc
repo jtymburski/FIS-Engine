@@ -183,7 +183,7 @@ QString MapPerson::getName()
 /* Gets the persons facing sprite */
 Sprite* MapPerson::getSprite()
 {
-    //return;
+    return NULL;//warning
 }
 
 /* Gets the persons step length */

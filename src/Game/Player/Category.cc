@@ -30,9 +30,9 @@ Category::Category(QString name, AttributeSet attributes, SkillSet* skills)
 {
   setName(name);
   setAttrSet(attributes);
-  skill_set = NULL;
-  // if (skills != NULL)
-  //  cleanUp();
+  setSkillSet(skills);
+  if (getSkillSet() != NULL)
+    cleanUp();
 }
 
 /*

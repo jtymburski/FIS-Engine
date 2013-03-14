@@ -73,9 +73,9 @@ public:
   void updateGame();
 
   /* Battle Option Flags */
-  const bool getBattleFlag(BattleOption flags);
+  bool getBattleFlag(BattleOption flags);
   void toggleBattleFlag(BattleOption flags);
-  void setBattleFlag(BattleOption flags, const bool set_value);
+  void setBattleFlag(BattleOption flags, bool set_value);
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Game::BattleOptions)
 #endif // GAME_H

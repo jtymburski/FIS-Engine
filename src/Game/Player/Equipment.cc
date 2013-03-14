@@ -124,6 +124,7 @@ bool Equipment::canUnattach(ushort x, ushort y)
  */
 bool Equipment::canUnattach(uint id)
 {
+    (void)id;//warning
   // TODO: FIND X AND Y
   // int left_x = getLeftX(x, y, TRUE);
   // int left_y = getLeftY(y, y TRUE);
@@ -182,6 +183,7 @@ bool Equipment::getEquipmentFlag(EquipmentState flag)
  */
 int Equipment::getLeftX(uint x, uint y, bool passingID)
 {
+    (void)passingID;//warning
   if (signature[x][y] == 'B')
     return x;
   if (signature[x][y - 1] == 'B')
@@ -204,6 +206,7 @@ int Equipment::getLeftX(uint x, uint y, bool passingID)
  */
 int Equipment::getLeftY(uint x, uint y, bool passingID)
 {
+    (void)passingID;//warning
     if (signature[x][y] == 'B')
       return y;
     if (signature[x - 1][y] == 'B')

@@ -16,7 +16,7 @@
  *
  * Inputs: QWidget
  */
-Item::Item(QWidget* parent)
+Item::Item()
 {
 }
 

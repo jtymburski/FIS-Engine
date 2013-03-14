@@ -7,7 +7,7 @@
 #include "Game/Weather.h"
 
 /* Constructor function */
-Weather::Weather(QWidget* parent)
+Weather::Weather(QWidget* parent) : QWidget(parent)
 {
 }
 
@@ -19,6 +19,7 @@ Weather::~Weather()
 /* Painting function */
 void Weather::paintEvent(QPaintEvent* event)
 {
+  (void)event;//warning
 }
 
 /* Flips the weather bit */

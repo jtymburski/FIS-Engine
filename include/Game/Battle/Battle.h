@@ -80,7 +80,7 @@ class Battle: public QWidget
 
 public:
   /* Constructor for a Battle class */
-  Battle(Party* p_friends, Party* p_foes, QWidget* pointer = 0);
+  Battle(Party* p_friends, Party* p_foes, QWidget* parent = NULL);
 
   /* Annihilates a battle object */
   ~Battle();

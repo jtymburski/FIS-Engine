@@ -7,7 +7,7 @@
 #include "Game/Map/Sector.h"
 
 /* Constructor function */
-Sector::Sector(QWidget* parent)
+Sector::Sector(QWidget* parent) : QWidget(parent)
 {
 }
 
@@ -19,9 +19,11 @@ Sector::~Sector()
 /* Painting function */
 void Sector::paintEvent(QPaintEvent* event)
 {
+    (void)event;//warning
 }
 
 /* Sets all tiles in the sector to the given Status */
 void Sector::setStatus(Status status)
 {
+    (void)status;
 }

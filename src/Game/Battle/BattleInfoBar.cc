@@ -11,7 +11,7 @@
 #include <QDebug>
 
 /* Creates a BattleInfoBar object */
-BattleInfoBar::BattleInfoBar(QWidget* parent)
+BattleInfoBar::BattleInfoBar(QWidget* parent) : QWidget(parent)
 {
 
 }

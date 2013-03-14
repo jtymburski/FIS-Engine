@@ -16,7 +16,7 @@ class Weather : public QWidget
 {
 public:
   /* Constructor function */
-  Weather(QWidget *parent = 0);
+  Weather(QWidget *parent = NULL);
 
   /* Destructor function */
   ~Weather();

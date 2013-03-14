@@ -17,7 +17,7 @@
  * Description: Constructor for a party object.
  */
 Party::Party(Person* p_main, ushort max, Inventory* inventory, QWidget* parent)
-    : max_size(kMAX_MEMBERS)
+    : QWidget(parent), max_size(kMAX_MEMBERS)
 {
   /* Pointer setup */
   setInventory(inventory);

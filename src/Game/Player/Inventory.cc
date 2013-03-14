@@ -19,7 +19,8 @@
  * Inputs: none
  * Output: uint - limit of bubby items.
  */
-Inventory::Inventory(QString name, QPixmap* thumbnail, uint limit, QWidget* parent)
+Inventory::Inventory(QString name, QPixmap* thumbnail, uint limit,
+                     QWidget* parent) : QWidget(parent)
 {
   upgrade(name, thumbnail, limit, limit, limit);
   resetLevel(0);
@@ -178,6 +179,7 @@ bool Inventory::removeFrom(Item terminal_item)
  */
 bool Inventory::removeFrom(Bubby bubby)
 {
+    (void)bubby;//warning
   return FALSE;
 }
 

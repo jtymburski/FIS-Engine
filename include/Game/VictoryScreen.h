@@ -18,7 +18,7 @@
 class VictoryScreen : public QWidget
 {
 public:
-  VictoryScreen(QWidget *pointer = 0);
+  VictoryScreen(QWidget *parent = NULL);
   ~VictoryScreen();
 
 private:

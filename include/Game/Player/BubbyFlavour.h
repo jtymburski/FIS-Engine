@@ -26,7 +26,7 @@ private:
   const static ushort kTIER_CAP  =  3;
 
   /* Adding, checking flavour functions */
-  static const bool addFlavour(QString new_flavour);
+  static bool addFlavour(QString new_flavour);
 
   /* Stat set for the Bubby (bonuses) */
   AttributeSet stats;
@@ -74,7 +74,7 @@ public:
   void setSkillSet(SkillSet* new_skill_list);
 
   /* Sets the sprites */
-  const bool setSprites(QVector<Sprite*> new_sprites);
+  bool setSprites(QVector<Sprite*> new_sprites);
 };
 
 #endif //BUBBYFLAVOUR_H

@@ -66,6 +66,7 @@ Tile::~Tile()
  */
 void Tile::paintEvent(QPaintEvent* event)
 {
+  (void)event;//warning
   QPainter painter(this);
 
   /* Print the base, if it exists */
@@ -491,6 +492,8 @@ bool Tile::setEnhancer(QString nw_path, QString ne_path,
 bool Tile::setImpassableObject(QString path, ImpassableObjectState type)
 {
   // TODO
+    (void)path;//warning
+    (void)type; //warning
   return TRUE;
 }
 
@@ -531,6 +534,7 @@ bool Tile::setLower(QString path)
 bool Tile::setPassableObject(QString path)
 {
   // TODO
+  (void)path;//warning
   return TRUE;
 }
 

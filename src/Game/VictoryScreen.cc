@@ -9,7 +9,7 @@
 #include "Game/VictoryScreen.h"
 
 /* Constructor function */
-VictoryScreen::VictoryScreen(QWidget* pointer)
+VictoryScreen::VictoryScreen(QWidget* parent) : QWidget(parent)
 {
 }
 

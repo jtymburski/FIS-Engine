@@ -15,7 +15,7 @@ class Item
 {
 public:
   /* Constructor function */
-  Item(QWidget *parent = 0);
+  Item();
 
   /* Destructor function */
   ~Item();

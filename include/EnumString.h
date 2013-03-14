@@ -95,7 +95,7 @@ public:
 
     // Converts from a string to an enumerator.
     // Returns true if the conversion is successful; false otherwise.
-    static const bool To(EnumType &e, const std::string &str);
+    static bool To(EnumType &e, const std::string &str);
 };
 
 // The EnumString class
@@ -130,7 +130,7 @@ typename EnumStringBase<D,E>::AssocMap &EnumStringBase<D,E>::GetMap()
 template <class D, class E>
 void EnumStringBase<D,E>::RegisterEnumerator(const E e, const std::string &eStr)
 {
-    const bool bRegistered = GetMap().insert( typename AssocMap::value_type( eStr, e ) ).second;
+    bool bRegistered = GetMap().insert( typename AssocMap::value_type( eStr, e ) ).second;
     assert( bRegistered );
     (void)sizeof( bRegistered ); // This is to avoid the pesky 'unused variable' warning in Release Builds.
 }
@@ -170,7 +170,7 @@ const std::string &EnumStringBase<D,E>::From(const E e)
 }
 
 template <class D, class E>
-const bool EnumStringBase<D,E>::To(E &e, const std::string &str)
+bool EnumStringBase<D,E>::To(E &e, const std::string &str)
 {
     // Search for the string in our map.
     const typename AssocMap::const_iterator itr( GetMap().find( str ) );

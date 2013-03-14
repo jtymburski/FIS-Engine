@@ -13,6 +13,7 @@
 /* Constructor function */
 Application::Application(QWidget* parent)
 {
+  setParent(parent);
   title_screen = new TitleScreen(1216, 704);
   setupBattle();
   setupMap();

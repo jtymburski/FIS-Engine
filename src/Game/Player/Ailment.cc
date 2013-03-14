@@ -229,6 +229,7 @@ bool Ailment::apply()
  */
 bool Ailment::checkImmunity(Person* new_victim)
 {
+    (void)new_victim;//warning
   /* Immunity for semi-bosses */
 
   /* Immunity for bosses */

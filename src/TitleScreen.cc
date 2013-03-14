@@ -10,7 +10,7 @@
 const QString TitleScreen::kMENU_ITEMS[] = {"Map Test", "Battle Test", "Exit"};
 
 /* Constructor function */
-TitleScreen::TitleScreen(int width, int height, QWidget* parent)
+TitleScreen::TitleScreen(int width, int height, QWidget* parent) : QWidget(parent)
 {
   setFixedSize(width, height);
 
@@ -47,6 +47,7 @@ TitleScreen::~TitleScreen()
 
 void TitleScreen::paintEvent(QPaintEvent* event)
 {
+  (void)event; //warning
   QPainter painter(this);
 
   painter.drawPixmap(0,0,1216,704,QPixmap(":/title_Screen"));
@@ -126,6 +127,8 @@ void TitleScreen::incrementState()
 /* Changes the menu to state s and the given index */
 void TitleScreen::iterate(State titlestate, int index)
 {
+    (void)titlestate; //warning
+    (void)index; //warning
 }
 
 void TitleScreen::playBackground()

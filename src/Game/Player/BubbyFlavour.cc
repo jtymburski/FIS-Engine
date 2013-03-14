@@ -48,12 +48,13 @@ BubbyFlavour::~BubbyFlavour() {}
  * Inputs: QString new_flavour - new flavour to add to the vector.
  * Output: bool - TRUE if the flavour was added.
  */
-const bool BubbyFlavour::addFlavour(QString new_flavour)
+bool BubbyFlavour::addFlavour(QString new_flavour)
 {
   if (isFlavour(new_flavour) + 1)
     return FALSE;
   else
     flavour_list.push_back(new_flavour);
+  return TRUE;
 }
 
 /*============================================================================
@@ -70,7 +71,7 @@ const bool BubbyFlavour::addFlavour(QString new_flavour)
  */
 int BubbyFlavour::isFlavour(QString flavour_name)
 {
-  if (flavour_list.contains(flavour_name));
+  if (flavour_list.contains(flavour_name))
     return flavour_list.indexOf(flavour_name);
   return -1;
 }
@@ -194,7 +195,7 @@ void BubbyFlavour::setSkillSet(SkillSet* new_skill_list)
  * Inputs: none
  * Output: bool - TRUE if the sprites were assigned
  */
-const bool BubbyFlavour::setSprites(QVector<Sprite*> new_sprites)
+bool BubbyFlavour::setSprites(QVector<Sprite*> new_sprites)
 {
   if (new_sprites.isEmpty())
     return FALSE;

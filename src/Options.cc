@@ -9,7 +9,7 @@
 #include "Options.h"
 
 /* Constructor function */
-Options::Options(QWidget *parent)
+Options::Options(QWidget *parent) : QWidget(parent)
 {
 }
 
@@ -22,10 +22,13 @@ Options::~Options()
 /* Gets the value of the given option */
 int Options::getOption(QString option)
 {
+    (void)option; //warning
     return 0;
 }
 
 /* Sets the given option ot the give value (may require reimplementation) */
 void Options::setOption(QString option, int value)
 {
+    (void)option; //warning
+    (void)value; //warning
 }

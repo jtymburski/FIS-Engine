@@ -177,6 +177,7 @@ void Person::setUpBaseStats()
  */
 bool Person::useItem(Item* used_item)
 {
+    (void)used_item;//warning
     return TRUE;
 }
 

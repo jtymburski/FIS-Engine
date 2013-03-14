@@ -75,7 +75,7 @@
  * Inputs: friends - pointer to allied party
  *         foes - pointer to foes party
  */
-Battle::Battle(Party* friends, Party* foes, QWidget* pointer)
+Battle::Battle(Party* friends, Party* foes, QWidget* parent) : QWidget(parent)
 {
   /* Pointer setup */
   setFriends(friends);
@@ -434,6 +434,7 @@ void Battle::buildStats()
  */
 void Battle::changeStats(Action* battle_action)
 {
+    (void)battle_action;
 }
 
 /*

@@ -257,6 +257,7 @@ uint Skill::getQdValue()
  */
 void Skill::setAnimation(Sprite* new_sprite)
 {
+    (void)new_sprite;//warning
   // animation = new_sprite;
 }
 
@@ -332,6 +333,7 @@ void Skill::setQdCost(uint new_value)
  */
 void Skill::setSoundEffect(Sound* new_sound)
 {
+    (void)new_sound;//warning
   // sound_effect = new_sound;
 }
 

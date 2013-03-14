@@ -31,9 +31,9 @@ void Game::updateGame()
  * Description: Evaluates a given BattleOption flag
  *
  * Inputs: BattleOption - flag to be evaluated
- * Output: const bool   - evaluation of the flag
+ * Output: bool   - evaluation of the flag
  */
-const bool Game::getBattleFlag(BattleOption flags)
+bool Game::getBattleFlag(BattleOption flags)
 {
   return bo_flag_set.testFlag(flags);
 }
@@ -53,10 +53,10 @@ void Game::toggleBattleFlag(BattleOption flags)
  * Description: Sets ta given BattleOption flag
  *
  * Inputs: BattleOption - flag to be set
- *         const bool   - value to set flag to
+ *         bool   - value to set flag to
  * Output: none
  */
-void Game::setBattleFlag(BattleOption flags, const bool set_value)
+void Game::setBattleFlag(BattleOption flags, bool set_value)
 {
   (set_value) ? (bo_flag_set |= flags) : (bo_flag_set ^= flags);
 }

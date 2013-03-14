@@ -7,7 +7,7 @@
 #include "Game/Map/SectorAction.h"
 
 /* Constructor function */
-SectorAction::SectorAction(QWidget* parent)
+SectorAction::SectorAction(QWidget* parent) : QWidget(parent)
 {
 }
 
