@@ -28,12 +28,12 @@ class Ailment : public QWidget
 
 public:
   /* Constructor: Sets up ailment with type, turn and chance durations */
-  Ailment(Person* victim, Infliction type, short max_turns = 0, double chance = 0,
-          QWidget* parent = NULL);
+  Ailment(Person* victim, Infliction type, short max_turns = 0,
+          double chance = 0, QWidget* parent = NULL);
 
   /* Constructor: Sets up an ailment with a QString instead of an enum */
-  Ailment(Person* victim, QString name, short max_turns = 0, double chance = 0,
-          QWidget* parent = NULL);
+  Ailment(Person* victim, QString name, short max_turns = 0,
+          double chance = 0, QWidget* parent = NULL);
 
   /* Default constructor: Sets up a blank NOAILMENT type */
   Ailment(Person* victim, QWidget* parent = NULL);
@@ -41,6 +41,7 @@ public:
   /* Annihilates an AttributeSet object */
   ~Ailment();
 
+  /*------------------- Enumerated QFlags -----------------------*/
   enum AilmentFlag
   {
     INFINITE    = 1 << 0, /* Ailment does not alleviate by time? >kMAX_TURNS */
@@ -56,10 +57,6 @@ public:
   Q_DECLARE_FLAGS(AilmentFlags, AilmentFlag)
 
 private:
-  /*------------------- Constants -----------------------*/
-  static const ushort kMAX_TURNS = 25; /* Maximum # turns ailments will last */
-  static const ushort kMIN_TURNS =  1; /* The minimum # turns ailments last */
-
   /* Inflinction of the Ailment */
   Infliction ailment_type;
 
@@ -82,6 +79,14 @@ private:
   /* Checks the immunity of the ailment */
   bool checkImmunity(Person* new_victim);
 
+  /*------------------- Constants -----------------------*/
+  static const ushort kMAX_TURNS; /* Maximum # turns ailments will last */
+  static const ushort kMIN_TURNS; /* The minimum # turns ailments last */
+
+/*============================================================================
+ * PRIVATE FUNCTIONS
+ *============================================================================*/
+private:
   /* Updates the ailment by decrementing the turn counter if necessary */
   bool updateTurns();
 
@@ -95,6 +100,9 @@ signals:
 
 public slots:
 
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
 public:
   /* Updates the ailment (will call apply and updateTurns() */
   void update();
@@ -114,10 +122,6 @@ public:
   /* Gets a QString of the current ailment's enumerated value */
   QString getName();
 
-  /* Gets an infliction from a QString */
-  static QString getAilmentStr(Infliction type);
-  static Infliction getInfliction(QString name);
-
   /* Obtains the victim of the Status Ailment */
   Person* getVictim();
 
@@ -129,6 +133,16 @@ public:
 
   /* Public function to assign a new victom for the status ailment */
   bool setNewVictim(Person* new_victim, bool refresh_turns = FALSE);
+
+/*============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
+public:
+  /* Converts enum. Infliction to the corresponding QString (as per EnumDB) */
+  static QString getAilmentStr(Infliction type);
+
+  /* Converts a QString to the corresponding enum. Infliction (default NOAIL) */
+  static Infliction getInfliction(QString name);
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Ailment::AilmentFlags)
 

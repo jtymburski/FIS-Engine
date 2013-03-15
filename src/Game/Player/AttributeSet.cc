@@ -1,7 +1,7 @@
 /******************************************************************************
 * Class Name: AttributeSet
 * Date Created: March 5th, 2013
-* Inheritance: QWidget
+* Inheritance: None
 * Description: The attribute set is a container for all the statistics used
 *              by race, category, person, etc. It holds vectors of their values,
 *              maximum values, short names. The class also holds data for
@@ -140,106 +140,6 @@ bool AttributeSet::changeStat(int index, int amount)
     return TRUE;
   }
   return FALSE;
-}
-
-/*
- * Description: Converts an enumerated Attribute value to a QString using
- *              EnumString instead of string compares.
- *
- * Inputs: Attribute type - enumerated Attribute type to get the QString for
- * Output: QString - the QString value of the enumerated Attribute type
- */
-QString AttributeSet::getAttrStr(Attribute type)
-{
-  const std::string &attribute_string = EnumString<Attribute>::From(type);
-  QString attribute_qstring(attribute_string.c_str());
-  return attribute_qstring;
-}
-
-/*
- * Description: Converts a QString to an enumerated Attribute value using
- *              EnumString instead of string compare.
- *
- * Inputs: Qstring name - the string to be converted to an enumerated Attribute
- * Output: Attribute - the enumerated type corresponding to the QString given
- */
-Attribute AttributeSet::getAttr(QString name)
-{
-  const std::string &attribute_string = name.toUtf8().constData();
-  Attribute attribute_type;
-  EnumString<Attribute>::To(attribute_type, attribute_string);
-  return attribute_type;
-}
-
-/*
- * Description: Gets the index of a stat given an enumerated type
- *
- * Inputs: Attribute type - enumerated attribute to be checked
- * Output: int - the index of the enumerated if found, -1 otherwise
- */
-int AttributeSet::getIndex(Attribute type)
-{
-  switch (type)
-  {
-    case VITALITY:  return 0;
-    case QUANTUMDRIVE: return 1;
-    case PHYSICALAGGRESSION: return 2;
-    case PHYSICALFORTITUDE: return 3;
-    case THERMALAGGRESSION: return 4;
-    case THERMALFORTITUDE: return 5;
-    case POLARAGGRESSION: return 6;
-    case POLARFORTITUDE: return 7;
-    case PRIMALAGGRESSION: return 8;
-    case PRIMALFORTITUDE: return 9;
-    case CHARGEDAGGRESSION: return 10;
-    case CHARGEDFORTITUDE: return 11;
-    case CYBERNETICAGGRESSION: return 12;
-    case CYBERNETICFORTITUDE: return 13;
-    case NIHILAGGRESSION: return 14;
-    case NIHILFORTITUDE: return 15;
-    case MOMENTUM: return 16;
-    case LIMBERTUDE: return 17;
-    case UNBEARABILITY: return 18;
-  }
-  return -1;
-}
-
-/*
- * Description: Gets the index of a stat given a name
- *
- * Inputs: QString - name (or short name) to be checked
- * Output: int - the index of the stat if found in either name vector, or -1
- */
-int AttributeSet::getIndex(QString name)
-{
-  for (int i = 0; i < getSize(); i++)
-    if (name == short_names.at(i))
-      return i;
-  return -1;
-}
-
-/*
- * Description: Gets the long name of an attribute of a given Enumerated type.
- *
- * Inputs:
- * Output: QString - name of the attribute at the given index
- */
-QString AttributeSet::getName(Attribute type)
-{
-  return getAttrStr(type);
-}
-
-/*
- * Description: Gets the name of an attribute at a given index
- *
- * Inputs: int - index of the names to be checked
- * Output: QString - name of the attribute at the given index
- */
-QString AttributeSet::getName(int index)
-{
-  if (index < getSize())
-      return short_names.at(index);
-  return "";
 }
 
 /*
@@ -527,4 +427,108 @@ bool AttributeSet::setStat(int index, ushort value)
     return TRUE;
   }
   return FALSE;
+}
+
+/*=============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
+
+/*
+ * Description: Converts an enumerated Attribute value to a QString using
+ *              EnumString instead of string compares.
+ *
+ * Inputs: Attribute type - enumerated Attribute type to get the QString for
+ * Output: QString - the QString value of the enumerated Attribute type
+ */
+QString AttributeSet::getAttrStr(Attribute type)
+{
+  const std::string &attribute_string = EnumString<Attribute>::From(type);
+  QString attribute_qstring(attribute_string.c_str());
+  return attribute_qstring;
+}
+
+/*
+ * Description: Converts a QString to an enumerated Attribute value using
+ *              EnumString instead of string compare.
+ *
+ * Inputs: Qstring name - the string to be converted to an enumerated Attribute
+ * Output: Attribute - the enumerated type corresponding to the QString given
+ */
+Attribute AttributeSet::getAttr(QString name)
+{
+  const std::string &attribute_string = name.toUtf8().constData();
+  Attribute attribute_type;
+  EnumString<Attribute>::To(attribute_type, attribute_string);
+  return attribute_type;
+}
+
+/*
+ * Description: Gets the index of a stat given an enumerated type
+ *
+ * Inputs: Attribute type - enumerated attribute to be checked
+ * Output: int - the index of the enumerated if found, -1 otherwise
+ */
+int AttributeSet::getIndex(Attribute type)
+{
+  switch (type)
+  {
+    case VITALITY:  return 0;
+    case QUANTUMDRIVE: return 1;
+    case PHYSICALAGGRESSION: return 2;
+    case PHYSICALFORTITUDE: return 3;
+    case THERMALAGGRESSION: return 4;
+    case THERMALFORTITUDE: return 5;
+    case POLARAGGRESSION: return 6;
+    case POLARFORTITUDE: return 7;
+    case PRIMALAGGRESSION: return 8;
+    case PRIMALFORTITUDE: return 9;
+    case CHARGEDAGGRESSION: return 10;
+    case CHARGEDFORTITUDE: return 11;
+    case CYBERNETICAGGRESSION: return 12;
+    case CYBERNETICFORTITUDE: return 13;
+    case NIHILAGGRESSION: return 14;
+    case NIHILFORTITUDE: return 15;
+    case MOMENTUM: return 16;
+    case LIMBERTUDE: return 17;
+    case UNBEARABILITY: return 18;
+  }
+  return -1;
+}
+
+/*
+ * Description: Gets the index of a stat given a name
+ *
+ * Inputs: QString - name (or short name) to be checked
+ * Output: int - the index of the stat if found in either name vector, or -1
+ */
+int AttributeSet::getIndex(QString name)
+{
+  for (int i = 0; i < getSize(); i++)
+    if (name == short_names.at(i))
+      return i;
+  return -1;
+}
+
+/*
+ * Description: Gets the long name of an attribute of a given Enumerated type.
+ *
+ * Inputs:
+ * Output: QString - name of the attribute at the given index
+ */
+QString AttributeSet::getName(Attribute type)
+{
+  return getAttrStr(type);
+}
+
+/*
+ * Description: Gets the name of an attribute at a given index
+ *
+ * Inputs: int - index of the names to be checked
+ * Output: QString - name of the attribute at the given index
+ */
+QString AttributeSet::getName(int index)
+{
+  if (index < getSize())
+      return short_names.at(index);
+  return "";
 }

@@ -21,9 +21,11 @@
 *******************************************************************************/
 #include "Game/Player/Ailment.h"
 
-/*=============================================================================
+/*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
+const ushort Ailment::kMAX_TURNS = 25; /* 25 turns is a lengthy ailment */
+const ushort Ailment::kMIN_TURNS =  1; /* 1 turn will cure on next update() */
 
 /*
  * Description: Constructs an Ailment object given an Infliction type,

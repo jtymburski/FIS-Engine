@@ -1,7 +1,7 @@
 /******************************************************************************
 * Class Name: AttributeSet
 * Date Created: March 5th, 2013
-* Inheritance: QWidget
+* Inheritance: None
 * Description: The attribute set is a container for all the statistics used
 *              by race, category, person, etc. It holds vectors of their values,
 *              maximum values, short names. The class also holds data for
@@ -27,11 +27,6 @@ public:
   ~AttributeSet();
 
 private:
-  /*------------------- Constants -----------------------*/
-  static const ushort kDEFAULT_MIN; /* Default value for a min stat */
-  static const ushort kDEFAULT_MAX; /* Default value for a max stat */
-  static const ushort kMAX_VALUE;   /* The maximum value of any stat */
-
   /* Container for short names of Attributes */
   static QVector<QString> short_names;
 
@@ -39,39 +34,36 @@ private:
   QVector<ushort> values;
   QVector<ushort> max_values;
 
-  /* Initial setup for presets -- builds preset vectors of stats */
-  static void buildPresets();
+  /*------------------- Constants -----------------------*/
+  static const ushort kDEFAULT_MIN; /* Default value for a min stat */
+  static const ushort kDEFAULT_MAX; /* Default value for a max stat */
+  static const ushort kMAX_VALUE;   /* The maximum value of any stat */
 
+/*=============================================================================
+ * PRIVATE FUNCTIONS
+ *============================================================================*/
+private:
   /* Initial setup of short name vectors */
   static void setUpNames();
 
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
 public:
   /* Alters a given stat by a certain amount {Damage, Buff} */
   bool changeStat(Attribute type, int amount);
   bool changeStat(QString name, int amount);
   bool changeStat(int index, int amount);
 
-  /* Enum to String and vice versa functions for Attributes */
-  static QString getAttrStr(Attribute type);
-  static Attribute getAttr(QString name);
-
-  /* Returns the index of a given stat */
-  int getIndex(Attribute type);
+  /* Returns the index of a statistic given the 4-character QString */
   int getIndex(QString name);
 
-  /* Gets the string names of statistics */
-  static QString getName(Attribute type);
-  static QString getName(int index);
-
-  /* Returns the maximum values of a given stat */
+  /* Returns the maximum values of a given stat given an enum, string, or int */
   short getMax(Attribute type);
   short getMax(QString name);
   short getMax(int index);
 
-  /* Returns the number of attributes */
-  static int getSize();
-
-  /* Returns the normal values of a given stat */
+  /* Returns the normal values of a given stat give an enum, string, or int*/
   short getStat(Attribute type);
   short getStat(QString name);
   short getStat(int index);
@@ -92,6 +84,28 @@ public:
   bool setStat(Attribute type, ushort value);
   bool setStat(QString name, ushort value);
   bool setStat(int index, ushort value);
+
+/*=============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
+public:
+  /* Converts an Attribute enumeration to a QString (full name of attribute) */
+  static QString getAttrStr(Attribute type);
+
+  /* Converts a QString to the corresponding Attribute enumeration */
+  static Attribute getAttr(QString name);
+
+  /* Returns the index of a statistic given an Attribute enumeration */
+  static int getIndex(Attribute type);
+
+  /* Obtains the 4-character QString corresponding to an Attribute enum */
+  static QString getName(Attribute type);
+
+  /* Obtains the 4-character QString corresponding to the index of attributes */
+  static QString getName(int index);
+
+  /* Returns the number of attributes */
+  static int getSize();
 };
 
 #endif // ATTRIBUTESET_H
