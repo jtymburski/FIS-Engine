@@ -813,7 +813,7 @@ bool FileHandler::stop(bool failed)
 
     /* If on write and successful, remove temporary file */
     if(file_write && !failed)
-      fileRename(file_name_temp, file_name);
+      fileRename(file_name_temp, file_name, TRUE);
     else if(file_write)
       fileDelete(file_name_temp);
   }
@@ -860,10 +860,12 @@ bool FileHandler::fileExists(QString filename)
   return test_file;
 }
 
-bool FileHandler::fileRename(QString old_filename, QString new_filename)
+bool FileHandler::fileRename(QString old_filename, QString new_filename, 
+                             bool overwrite)
 {
-  if(fileExists(old_filename))
-    return !std::rename(old_filename.toStdString().c_str(),
-                        new_filename.toStdString().c_str());
+  if(overwrite || (!overwrite && !fileExists(new_filename)))
+    if(fileExists(old_filename))
+      return !std::rename(old_filename.toStdString().c_str(),
+                          new_filename.toStdString().c_str());
   return FALSE;
 }

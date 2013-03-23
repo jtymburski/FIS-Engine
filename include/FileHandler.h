@@ -198,7 +198,8 @@ public:
   static bool fileExists(QString filename);
 
   /* Rename the file, if it exists and the new name doesn't */
-  static bool fileRename(QString old_filename, QString new_filename);
+  static bool fileRename(QString old_filename, QString new_filename, 
+                         bool overwrite = FALSE);
 };
 
 #endif // FILEHANDLER_H
