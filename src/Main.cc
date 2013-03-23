@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
   FileHandler fh;
   fh.setEncryptionEnabled(TRUE);
   fh.setFilename("TEST.log");
-  fh.setFileType(FileHandler::XML);
+  fh.setFileType(FileHandler::REGULAR);
   
   /* Read */
   fh.setWriteEnabled(FALSE);
@@ -31,24 +31,8 @@ int main(int argc, char *argv[])
   }
   else
   {
-    qDebug() << "File invalid.";
+    qDebug() << "Reading file fail.";
   }
-
-  /* Public static functions */
-  qDebug() << "File 'Test.log' exists: " << FileHandler::fileExists("Test.log");
-  qDebug() << "File 'TEST.log' exists: " << FileHandler::fileExists("TEST.log");
-
-  qDebug() << "File 'TEMP'->'TEST.log': " 
-           << FileHandler::fileRename("TEMP", "TEST.log");
-  qDebug() << "File 'BLAH'->'BLAH2': " 
-           << FileHandler::fileRename("BLAH", "BLAH2");
-  qDebug() << "File 'TEST.log'->'D.log': " 
-           << FileHandler::fileRename("TEST.log", "D.log");
-
-  qDebug() << "File 'Test.log' delete: " << FileHandler::fileDelete("Test.log");
-  qDebug() << "File 'D.log' delete: " << FileHandler::fileDelete("D.log");
-  qDebug() << "File 'D.log' delete: " << FileHandler::fileDelete("D.log");
-  
 
   /* Write */
   fh.setWriteEnabled(TRUE);
@@ -61,7 +45,11 @@ int main(int argc, char *argv[])
     fh.writeLine("Well it will be interesting, I tell you.");
     fh.writeLine("Let's begin?");
 
-    fh.stop();
+    fh.stop(FALSE);
+  }
+  else
+  {
+    qDebug() << "Writing file fail.";
   }
 
   /* End Test */

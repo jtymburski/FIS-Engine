@@ -15,13 +15,12 @@
  *               </tile>
  *             </row>
  *           </map>
- *
- * TODO: warning about unsigned values. Only on laptop? C90 vs C11
  *****************************************************************************/
 #include "FileHandler.h"
 /* Constant Declarations */
 
-const uint32_t FileHandler::kKEY[] = {1073676287u,27644437u,2971215073u,94418953u};
+const uint32_t FileHandler::kKEY[] = {1073676287u,27644437u,
+                                      2971215073u,94418953u};
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -40,6 +39,7 @@ FileHandler::FileHandler()
 
 FileHandler::~FileHandler()
 {
+  stop(TRUE);
 }
 
 /*============================================================================
@@ -311,7 +311,7 @@ bool FileHandler::fileOpen()
 {
   /* Attempt to open the file stream (for either open or close) */
   if(file_write)
-    file_stream.open(file_name.toStdString().c_str(), 
+    file_stream.open(file_name_temp.toStdString().c_str(), 
                      std::ios::out | std::ios::binary | std::ios::trunc);
   else
     file_stream.open(file_name.toStdString().c_str(), 
@@ -497,6 +497,34 @@ bool FileHandler::readMd5()
   return success;
 }
 
+bool FileHandler::setTempFileName()
+{
+  if(!available)
+  {
+    bool complete = FALSE;
+    int i = 0;
+    QString name;
+  
+    while(!complete && i < kFILE_NAME_LIMIT)
+    {
+      name = QString::number(kFILE_START) + 
+             QString::number(kFILE_NAME_LIMIT + i);
+
+      if(!fileExists(name))
+        complete = TRUE;
+    
+      i++;
+    }
+
+    if(i < kFILE_NAME_LIMIT)
+    {
+      file_name_temp = name;
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
 /*
  * CHECKED:
  * Does not allocate memory if the length of line is 0 and not encrypting
@@ -680,7 +708,8 @@ void FileHandler::setEncryptionEnabled(bool enable)
 
 void FileHandler::setFilename(QString path)
 {
-  file_name = path;
+  if(!path.isEmpty())
+    file_name = path;
 }
 
 void FileHandler::setFileType(FileType type)
@@ -701,62 +730,72 @@ bool FileHandler::start()
 {
   bool success = TRUE;
 
-  /* Stop the system first if it's already running */
-  if(available)
-    success &= stop();
-
-  /* Clear the file data array */
-  file_data.clear();
-
-  /* If the system is in read and encryption, check validity of file */
-  if(!file_write && encryption_enabled)
-    success &= readMd5();
-
-  /* Open the file stream */
-  if(success)
-    success &= fileOpen();
-
-  /* Write the success status, if available */
-  if(success)
+  if(!file_name.isEmpty())
   {
-    available = TRUE;
-
-    /* For a readable file with encryption, first line is Md5 -> throw away */
+    /* Stop the system first if it's already running */
+    if(available)
+      success &= stop(TRUE);
+  
+    /* Clear the file data array */
+    file_data.clear();
+   
+    /* If file_write, determine temporary file name */
+    if(file_write)
+      success &= setTempFileName();
+  
+    /* If the system is in read and encryption, check validity of file */
     if(!file_write && encryption_enabled)
-      readLine();
+      success &= readMd5();
+    
+    /* Open the file stream */
+    if(success)
+      success &= fileOpen();
+  
+    /* Write the success status, if available */
+    if(success)
+    {
+      available = TRUE;
+  
+      /* For a readable file with encryption, first line is Md5 -> throw away */
+      if(!file_write && encryption_enabled)
+        readLine();
+    }
+  
+    /* Write MD5 data, if applicable */
+    if(success && file_write && encryption_enabled)
+      success &= writeMd5(file_data);
+  
+    /* Write starting date, if applicable */
+    if(success && file_write)
+    {
+      file_date = QDateTime::currentDateTime().toString("MM.dd.yyyy hh:mm");
+      success &= writeLine(file_date);
+    }
+
+    /* Read off starting date, if applicable */
+    if(success && !file_write)
+      file_date = readLine();
+
+    /* Stop the program if there is any problems and halt operation */
+    if(!success)
+      stop(TRUE);
+
+    return success;
   }
 
-  /* Write MD5 data, if applicable */
-  if(success && file_write && encryption_enabled)
-    success &= writeMd5(file_data);
-
-  /* Write starting date, if applicable */
-  if(success && file_write)
-  {
-    file_date = QDateTime::currentDateTime().toString("MM.dd.yyyy hh:mm");
-    success &= writeLine(file_date);
-  }
-
-  /* Read off starting date, if applicable */
-  if(success && !file_write)
-    file_date = readLine();
-
-  /* Stop the program if there is any problems and halt operation */
-  if(!success)
-    stop();
-
-  return success;
+  qDebug() << "[ERROR] Filename is empty and unset";
+  return FALSE;
 }
 
 /*
  * CHECKED:
  * Will return false if stop fails.
  */
-bool FileHandler::stop()
+bool FileHandler::stop(bool failed)
 {
   bool success = TRUE;
 
-  /* MD5 Test */
+  /* MD5 write - if encryption is enabled */
   if(file_write && encryption_enabled && available)
   {
     topOfFile();
@@ -769,8 +808,15 @@ bool FileHandler::stop()
 
   /* If success, reopen the class availability */
   if(success)
+  {
     available = FALSE;
 
+    /* If on write and successful, remove temporary file */
+    if(file_write && !failed)
+      fileRename(file_name_temp, file_name);
+    else if(file_write)
+      fileDelete(file_name_temp);
+  }
   return success;
 }
 
@@ -816,7 +862,7 @@ bool FileHandler::fileExists(QString filename)
 
 bool FileHandler::fileRename(QString old_filename, QString new_filename)
 {
-  if(fileExists(old_filename) && !fileExists(new_filename))
+  if(fileExists(old_filename))
     return !std::rename(old_filename.toStdString().c_str(),
                         new_filename.toStdString().c_str());
   return FALSE;
