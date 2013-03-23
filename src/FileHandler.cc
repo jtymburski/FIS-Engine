@@ -15,13 +15,12 @@
  *               </tile>
  *             </row>
  *           </map>
- *
- * TODO: warning about unsigned values. Only on laptop? C90 vs C11
  *****************************************************************************/
 #include "FileHandler.h"
 /* Constant Declarations */
 
-const uint32_t FileHandler::kKEY[] = {1073676287u,27644437u,2971215073u,94418953u};
+const uint32_t FileHandler::kKEY[] = {1073676287u,27644437u,
+                                      2971215073u,94418953u};
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -497,6 +496,11 @@ bool FileHandler::readMd5()
   return success;
 }
 
+bool FileHandler::setTempFileName()
+{
+  
+}
+
 /*
  * CHECKED:
  * Does not allocate memory if the length of line is 0 and not encrypting
@@ -707,11 +711,11 @@ bool FileHandler::start()
 
   /* Clear the file data array */
   file_data.clear();
-
+  
   /* If the system is in read and encryption, check validity of file */
   if(!file_write && encryption_enabled)
     success &= readMd5();
-
+  
   /* Open the file stream */
   if(success)
     success &= fileOpen();

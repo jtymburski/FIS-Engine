@@ -14,9 +14,9 @@ int main(int argc, char *argv[])
   /* Testing code for file handler */
   bool done = FALSE;
   FileHandler fh;
-  fh.setEncryptionEnabled(TRUE);
+  fh.setEncryptionEnabled(FALSE);
   fh.setFilename("TEST.log");
-  fh.setFileType(FileHandler::XML);
+  fh.setFileType(FileHandler::REGULAR);
   
   /* Read */
   fh.setWriteEnabled(FALSE);
@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
   }
   else
   {
-    qDebug() << "File invalid.";
+    qDebug() << "Reading file fail.";
   }
 
   /* Public static functions */
@@ -62,6 +62,10 @@ int main(int argc, char *argv[])
     fh.writeLine("Let's begin?");
 
     fh.stop();
+  }
+  else
+  {
+    qDebug() << "Writing file fail.";
   }
 
   /* End Test */
