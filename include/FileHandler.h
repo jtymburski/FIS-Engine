@@ -75,7 +75,7 @@ private:
   const static uint32_t kDELTA = 2654435769u; /* Sum bias for encryption */
   const static int kENCRYPTION_MIN = 4; /* Min line length for encryption */
   const static int kENCRYPTION_PAD = 150; /* Padding for encrypted values */
-  const static int kFILE_NAME_LIMIT = 6; /* File end limit (number of digits */
+  const static int kFILE_NAME_LIMIT = 1000000; /* File end number limit */
   const static int kFILE_START = 5728; /* File start for temp data */
   const static int kINT_BIT_SHIFT = 4; /* Shift int to next spot */
   const static int kINT_BUFFER = 0xF; /* Only use most significant int */
@@ -182,7 +182,7 @@ public:
   bool start();
 
   /* Stops the whole process, to end access to the file stream */
-  bool stop();
+  bool stop(bool failed = FALSE);
 
   /* Writes the following line to the file. Only valid for REGULAR files */
   bool writeLine(QString line);
