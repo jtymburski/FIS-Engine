@@ -152,6 +152,21 @@ void Person::calcSkills()
 }
 
 /*
+ * Description: Quick function for dealing damage to a Person with much nicer
+ *              looking code lines.
+ *
+ * Inputs: ushort - amount of damage to do to the Person
+ * Output: bool - returns TRUE If the Person is now dead
+ */
+bool Person::damage(ushort amount)
+{
+  tempStats()->changeStat(0, -amount);
+  if (tempStats()->getStat(0) == 0)
+    return TRUE;
+  return FALSE;
+}
+
+/*
  * Description: Sets up the base stats (grabs Category min and max values
  *              and adds them to the Race bonuses)
  *

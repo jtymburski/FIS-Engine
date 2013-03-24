@@ -24,8 +24,18 @@
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
-const ushort Ailment::kMAX_TURNS = 25; /* 25 turns is a lengthy ailment */
-const ushort Ailment::kMIN_TURNS =  1; /* 1 turn will cure on next update() */
+const ushort Ailment::kMAX_TURNS          = 25;
+const ushort Ailment::kMIN_TURNS          =  1;
+const ushort Ailment::kPOISON_DMG_MAX     = 5000;
+const ushort Ailment::kPOISON_DMG_MIN     = 50;
+const double Ailment::kPOISON_DMG_INCR    = 1.05;
+const double Ailment::kPOISON_DMG_INIT    = 1.08;
+const ushort Ailment::kBURN_DMG_MAX       = 5000;
+const ushort Ailment::kBURN_DMG_MIN       = 100;
+const double Ailment::kBURN_DMG_INCR      = 1.02;
+const double Ailment::kBURN_DMG_PC        = 1.05;
+// const double Ailment::kBERSERK_DMG_INCR   = 1.75;
+// const double Ailment::kBERSERK_HITBACK_PC = 0.35;
 
 /*
  * Description: Constructs an Ailment object given an Infliction type,
@@ -125,99 +135,243 @@ Ailment::~Ailment() {}
  */
 bool Ailment::apply()
 {
-  switch (ailment_type)
+  /* Helper variables */
+  const ushort kHEALTH = victim->tempStats()->getStat(0);
+  ushort damage = 0;
+
+  /* Poison: Ailed actor takes increasing hit to HP every turn
+   * Constants: kPOISON_DMG_MAX -- maximum amount poison damage can do
+   *            kPOISON_DMG_MIN -- minimum amount poison damage can do
+   *            kPOISON_DMG_INCR -- % increase poison damage does
+   *            kPOISON_DMG_INIT -- % dmg incurred by poison initially
+   */
+  if (ailment_type == POISON)
   {
-    /* Poison: Ailed actor takes logarithmic hit to HP every turn */
-    case POISON:
-      break;
-    case BURN:
-      /* Do Burn damage */
-      break;
-    case SCALD:
-      /* Do scald damage */
-      break;
-    case CHAR:
-      break;
-    case BERSERK:
-      break;
-    case CONFUSE:
-      break;
-    case SILENCE:
-      break;
-    case BUBBIFY:
-      break;
-    case DEATHTIMER:
-      break;
-    case PARALYSIS:
-      break;
-    case BLINDNESS:
-      break;
-    case DREADSTRUCK:
-      break;
-    case DREAMSNARE:
-      break;
-    case HELLBOUND:
-      break;
-    case BOND:
-      break;
-    case ALLATKBUFF:
-      break;
-    case ALLDEFBUFF:
-      break;
-    case PHYATKBUFF:
-      break;
-    case PHYDEFBUFF:
-      break;
-    case THRATKBUFF:
-      break;
-    case THRDEFBUFF:
-      break;
-    case POLATKBUFF:
-      break;
-    case POLDEFBUFF:
-      break;
-    case PRIATKBUFF:
-      break;
-    case PRIDEFBUFF:
-      break;
-    case CHGATKBUFF:
-      break;
-    case CHGDEFBUFF:
-      break;
-    case CYBATKBUFF:
-      break;
-    case CYBDEFBUFF:
-      break;
-    case NIHATKBUFF:
-      break;
-    case NIHDEFBUFF:
-      break;
-    case LIMBUFF:
-      break;
-    case UNBBUFF:
-      break;
-    case MOMBUFF:
-      break;
-    case VITBUFF:
-      break;
-    case QDBUFF:
-      break;
-    case ROOTBOUND:
-      break;
-    case DOUBLECAST:
-      break;
-    case TRIPLECAST:
-      break;
-    case HALFCOST:
-      break;
-    case REFLECT:
-      break;
-    case HIBERNATION:
-      break;
-    case CURSE:
-      break;
-    case NOAILMENT:
-      break;
+    damage = kPOISON_DMG_MIN;
+    if (damage < (kPOISON_DMG_INIT * kHEALTH))
+      damage = kPOISON_DMG_INIT * kHEALTH;
+    if (turns_occured > 0)
+        for (int i = 0; i < turns_occured; i++)
+          damage *= kPOISON_DMG_INCR;
+    if (damage > kPOISON_DMG_MAX)
+      damage = kPOISON_DMG_MAX;
+  }
+
+  /* Burn/Scald/Char - The three increasing levels of Burn
+   * Burn - light damage over a few turns
+   * Scald - moderate damage over a few more turns
+   * Char - heavy damage over a long period
+   * Constant: kBURN_DMG_MIN - minimum amt of burn damage
+   *           kBURN_DMG_MAX - maximum amt of burn damage
+   *           kBURN_DMG_INCR - % incr burn damage per additional lvl
+   *           kBURN_DMG_INIT - % dmg incurred by level 1 burn
+   */
+  else if (ailment_type == BURN || ailment_type == SCALD || ailment_type == CHAR)
+  {
+    damage = kBURN_DMG_MIN;
+    ushort burn_damage = kHEALTH * kBURN_DMG_PC;
+
+    /* Compute basic damage */
+    if (damage < burn_damage)
+      damage = burn_damage;
+
+    /* Increase the damage if the burn is level 2 or level 3 */
+    if (ailment_type == SCALD)
+    {
+      ushort scald_damage = kHEALTH * (kBURN_DMG_PC + kBURN_DMG_INCR - 1);
+      if (damage < scald_damage)
+        damage = scald_damage;
+    }
+    else if (ailment_type == CHAR)
+    {
+      ushort char_damage = kHEALTH * (kBURN_DMG_PC + (2 * kBURN_DMG_INCR) - 2);
+      if (damage < char_damage)
+        damage = char_damage;
+    }
+    if (damage > kBURN_DMG_MAX)
+      damage = kBURN_DMG_MAX;
+  }
+
+  /* Do the damage and if the actor is dead, set the Ailment to be cured */
+  if (getFlag(Ailment::CUREONDEATH) && victim->damage(damage))
+    setFlag(Ailment::TOBECURED);
+
+  /* Berserk - Ailed actor physically attacks enemy target for extreme damage
+   *           while receiving damage themselves.
+   * Constants: kBERSERK_DMG_INCR - multiplier for normal damage on target
+   *            kBERSERK_HITBACK_PC - multiplier for damage done to self.
+   */
+  else if (ailment_type == BERSERK)
+  {
+    /* On initial application, limit skills to Physical, disable run, items */
+    /* Update effect handled in Battle -- damage calculations. */
+  }
+
+  /* Confuse - ailed actor attacks a random target with a random skills */
+  else if (ailment_type == CONFUSE)
+  {
+    /* Find all useable skills */
+    /* Find all valid targets */
+    /* Pick a useable skill */
+    /* Pick a valid target */
+  }
+
+  /* Ailed actor cannot use skills if they require QD */
+  else if (ailment_type == SILENCE)
+  {
+    /* On application, remove skills which have a QD cost > 0 from useable */
+  }
+
+  /* Bubbify - ailed actor is turned into a near-useless Bubby */
+  else if (ailment_type == BUBBIFY)
+  {
+
+  }
+
+  /* Death Timer - Ailed actor KOs upon reaching max_turns */
+  else if (ailment_type == DEATHTIMER)
+  {
+    /* Update death clock */
+    /* On reaching max_turns, actor dies */
+  }
+
+  /* Ailed actor has a 70% chance of skipping their turn */
+  else if (ailment_type == PARALYSIS)
+  {
+    /* 1-100, if >30, set skip next turn flag */
+  }
+
+  /* Ailed actor has a much higher chance of missing targets */
+  else if (ailment_type == BLINDNESS)
+  {
+
+  }
+
+  else if (ailment_type == DREADSTRUCK)
+  {
+
+  }
+  else if (ailment_type == DREAMSNARE)
+  {
+
+  }
+  else if (ailment_type == HELLBOUND)
+  {
+
+  }
+  else if (ailment_type == BOND)
+  {
+
+  }
+  else if (ailment_type == ALLATKBUFF)
+  {
+
+  }
+  else if (ailment_type == ALLDEFBUFF)
+  {
+
+  }
+  else if (ailment_type == PHYATKBUFF)
+  {
+
+  }
+  else if (ailment_type == PHYDEFBUFF)
+  {
+
+  }
+  else if (ailment_type == THRATKBUFF)
+  {
+
+  }
+  else if (ailment_type == THRDEFBUFF)
+  {
+
+  }
+  else if (ailment_type == POLATKBUFF)
+  {
+
+  }
+  else if (ailment_type == POLDEFBUFF)
+  {
+
+  }
+  else if (ailment_type == PRIATKBUFF)
+  {
+
+  }
+
+  else if (ailment_type == PRIDEFBUFF)
+  {
+
+  }
+  else if (ailment_type == CHGATKBUFF)
+  {
+
+  }
+  else if (ailment_type == CHGDEFBUFF)
+  {
+
+  }
+  else if (ailment_type == CYBATKBUFF)
+  {
+
+  }
+  else if (ailment_type == CYBDEFBUFF)
+  {
+
+  }
+  else if (ailment_type == NIHATKBUFF)
+  {
+
+  }
+  else if (ailment_type == NIHDEFBUFF)
+  {
+
+  }
+  else if (ailment_type == LIMBUFF)
+  {
+
+  }
+  else if (ailment_type == UNBBUFF)
+  {
+
+  }
+  else if (ailment_type == MOMBUFF)
+  {
+
+  }
+  else if (ailment_type == VITBUFF)
+  {
+
+  }
+  else if (ailment_type == QDBUFF)
+  {
+  }
+  else if (ailment_type == ROOTBOUND)
+  {
+  }
+  else if (ailment_type == DOUBLECAST)
+  {
+  }
+  else if (ailment_type == TRIPLECAST)
+  {
+  }
+  else if (ailment_type == HALFCOST)
+  {
+  }
+  else if (ailment_type == REFLECT)
+  {
+  }
+  else if (ailment_type == HIBERNATION)
+  {
+  }
+  else if (ailment_type == CURSE)
+  {
+
+  }
+  else
+  {
+    throw("Error: Unrecognized Ailment");
   }
   return TRUE;
 }

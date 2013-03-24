@@ -45,18 +45,6 @@ public:
   Q_DECLARE_FLAGS(PersonFlags, PersonState)
 
 private:
-  /* Person class constants */
-  static const uint kMAX_LEVEL       =        127;
-  static const uint kMIN_LVL_EXP     =        156;
-  static const uint kMAX_LVL_EXP     =    5327426;
-  static const uint kMAX_EXPERIENCE  = 1000000000; /* Billion */
-  static const uint kMAX_EXP_DROP    =    1000000; /* Million */
-  static const uint kMAX_CREDIT_DROP =   10000000; /* Ten Million */
-  static const uint kMAX_EQUIP_SLOTS =          5;
-
-  /* Calculate the experience table */
-  static void calcExpTable();
-
   /* Equipment names and slots */
   QVector<Equipment> equipment;
 
@@ -103,6 +91,25 @@ private:
   Sprite* first_person;
   Sprite* third_person;
 
+  /*------------------- Constants -----------------------*/
+  static const uint kMAX_LEVEL       =        127;
+  static const uint kMIN_LVL_EXP     =        156;
+  static const uint kMAX_LVL_EXP     =    5327426;
+  static const uint kMAX_EXPERIENCE  = 1000000000; /* Billion */
+  static const uint kMAX_EXP_DROP    =    1000000; /* Million */
+  static const uint kMAX_CREDIT_DROP =   10000000; /* Ten Million */
+  static const uint kMAX_EQUIP_SLOTS =          5;
+
+/*============================================================================
+ * PRIVATE STATIC FUNCTIONS
+ *============================================================================*/
+private:
+  /* Calculate the experience table */
+  static void calcExpTable();
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
 public:
   /* Adds experience of a given amount --> level up */
   void addExperience(uint n);
@@ -112,6 +119,9 @@ public:
 
   /* Calculates the usable skill set */
   void calcSkills();
+
+  /* Quick function for dealing Vitality damage */
+  bool damage(ushort amount);
 
   /* Stat set up functions */
   void setUpBaseStats();
@@ -130,9 +140,6 @@ public:
   QVector<Equipment> getEquipment();
   Equipment* getEquipSlot(int index);
   Equipment* getEquipSlot(QString name);
-
-  /* Gets the experience at a given level */
-  static uint getExpAt(ushort level);
 
   /* Gets the person's race */
   Race* getRace();
@@ -218,6 +225,13 @@ public:
   void setBaseStats(AttributeSet new_stat_set);
   void setStats(AttributeSet new_stat_set);
   void setTempStats(AttributeSet new_stat_set);
+
+/*============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
+public:
+  /* Gets the experience at a given level */
+  static uint getExpAt(ushort level);
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Person::PersonFlags)
 

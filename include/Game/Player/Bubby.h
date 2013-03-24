@@ -23,6 +23,30 @@ public:
   ~Bubby();
 
 private:
+  /* Bubby Type */
+  BubbyFlavour* type;
+
+  /* Static ID of the Bubby (current value) */
+  static int id;
+
+  /* The ID of the current Bubby */
+  int my_id;
+
+  /* The experience table for Bubbies */
+  static QVector<uint> exp_table;
+
+  /* Bubby's totaly experience gained */
+  uint total_exp;
+
+  /* The Bubby's current level */
+  ushort level;
+
+  /* The Bubby's current tier */
+  ushort tier;
+
+  /* Pointer to the current sprite */
+  Sprite* current_sprite;
+
   /* ------------ Constants --------------- */
   const static ushort kTIER_CAP  =  3;
   const static ushort kTIER1_LVL =  9;
@@ -32,30 +56,26 @@ private:
   const static uint kMAX_LVL_EXP =   450000;
   const static uint kMAX_EXPERIENCE = 1000000;
 
-  /* Calculate the experience table for Bubbies */
-  static void calcExpTable();
+/*============================================================================
+ * PRIVATE FUNCTIONS
+ *============================================================================*/
+private:
+  /* Increments the bubbie's Id */
+  int setId();
 
   /* Updates the Bubby to the appropriate sprite (on tier level up) */
   bool setSprite();
 
-  /* Bubby Type */
-  BubbyFlavour* type;
+/*============================================================================
+ * PRIVATE STATIC FUNCTIONS
+ *============================================================================*/
+private:
+  /* Calculate the experience table for Bubbies */
+  static void calcExpTable();
 
-  /* Static ID data, and current object's ID */
-  static int id;
-  int my_id;
-
-  /* The experience table for Bubbies */
-  static QVector<uint> exp_table;
-
-  /* Bubby's Experience, Level, and Tier */
-  uint total_exp;
-  ushort level;
-  ushort tier;
-
-  /* Pointer to the current sprite */
-  Sprite* current_sprite;
-
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
 public:
   /* Adds experience to the Bubby */
   void addExperience(uint amount);
@@ -80,9 +100,6 @@ public:
 
   /* Gets the type of the Bubby */
   BubbyFlavour* getType();
-
-  /* Increments the bubbie's Id */
-  static int setId();
 
   /* Sets the exp of the bubby based on use in battle */
   void setExperience(uint new_experience);

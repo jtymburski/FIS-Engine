@@ -52,7 +52,8 @@ public:
     FAVORABLE   = 1 << 4, /* Is this ailment a favorable ailment? */
     ADVERSE     = 1 << 5, /* Is this ailment an adverse ailment? */
     NEUTRAL     = 1 << 6, /* (!FAVORABLE && !ADVERSE) */
-    IMMUNITY    = 1 << 7  /* Is the inflicted person immune to this ailment? */
+    IMMUNITY    = 1 << 7, /* Is the inflicted person immune to this ailment? */
+    CUREONDEATH = 1 << 8  /* Does the ailment persist death? */
   };
   Q_DECLARE_FLAGS(AilmentFlags, AilmentFlag)
 
@@ -82,6 +83,17 @@ private:
   /*------------------- Constants -----------------------*/
   static const ushort kMAX_TURNS; /* Maximum # turns ailments will last */
   static const ushort kMIN_TURNS; /* The minimum # turns ailments last */
+  static const ushort kPOISON_DMG_MAX; /* The max. daamge from Poison ailment */
+  static const ushort kPOISON_DMG_MIN; /* The min. damage from Poison ailment */
+  static const double kPOISON_DMG_INCR; /* Additional % per turn for Poison */
+  static const double kPOISON_DMG_INIT; /* Initial % per turn for Poison */
+  static const ushort kBURN_DMG_MAX; /* The max. damage from Burn */
+  static const ushort kBURN_DMG_MIN; /* The min. damage from Burn */
+  static const double kBURN_DMG_INCR; /* The increment (amt) for Burn lvls */
+  static const double kBURN_DMG_INIT; /* The inital dmg caused by Burn */
+  static const double kBURN_DMG_PC; /* Additional % dmg causedby Burn */
+  // static const double kBERSERK_DMG_INCR; /* % incr in damage against target */
+  // static const double kBERSERK_HITBACK_PC; /* % hitback on victim */
 
 /*============================================================================
  * PRIVATE FUNCTIONS
