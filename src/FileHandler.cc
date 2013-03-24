@@ -28,8 +28,9 @@ const uint32_t FileHandler::kKEY[] = {1073676287u,27644437u,
 FileHandler::FileHandler()
 {
   available = FALSE;
-  depth = 0;
   file_date = "";
+  file_name_temp = "";
+  xml_depth = 0;
 
   setEncryptionEnabled(FALSE);
   setFilename("");
@@ -844,6 +845,21 @@ bool FileHandler::writeLine(QString line)
   return FALSE;
 }
 
+bool FileHandler::writeXmlData(QString data)
+{
+
+}
+
+bool FileHandler::writeXmlElement(QString element, QString key, QString value)
+{
+
+}
+
+bool FileHandler::writeXmlElementEnd(bool all)
+{
+
+}
+
 /*============================================================================
  * PUBLIC STATIC FUNCTIONS
  *===========================================================================*/
@@ -863,9 +879,11 @@ bool FileHandler::fileExists(QString filename)
 bool FileHandler::fileRename(QString old_filename, QString new_filename, 
                              bool overwrite)
 {
-  if(overwrite || (!overwrite && !fileExists(new_filename)))
-    if(fileExists(old_filename))
-      return !std::rename(old_filename.toStdString().c_str(),
-                          new_filename.toStdString().c_str());
+  if(overwrite)
+    fileDelete(new_filename);
+
+  if(fileExists(old_filename) && !fileExists(new_filename))
+    return !std::rename(old_filename.toStdString().c_str(),
+                        new_filename.toStdString().c_str());
   return FALSE;
 }

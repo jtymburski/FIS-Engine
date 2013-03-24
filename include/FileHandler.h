@@ -48,9 +48,6 @@ private:
   /* Flag for if the class is available for usage */
   bool available;
 
-  /* The depth that the XML file reader/writer is currently at */
-  int depth;
-
   /* Set if the encryption system is enabled */
   bool encryption_enabled;
 
@@ -63,10 +60,9 @@ private:
   FileType file_type;
   bool file_write;
 
-  /* XML data that offers as a buffer between XML parser and encryption */
-  QByteArray xml_data;
-
   /* XML handlers for reading/writing */
+  QString xml_data;
+  int xml_depth;
   QXmlStreamReader* xml_reader;
   QXmlStreamWriter* xml_writer;
 
@@ -186,6 +182,15 @@ public:
 
   /* Writes the following line to the file. Only valid for REGULAR files */
   bool writeLine(QString line);
+
+  /* Writes the data encapsulated by element(s) */
+  bool writeXmlData(QString data);
+
+  /* Writes a starting XML element */
+  bool writeXmlElement(QString element, QString key = "", QString value = "");
+
+  /* Writes an ending XML element or elements */
+  bool writeXmlElementEnd(bool all = FALSE);
 
 /*============================================================================
  * PUBLIC STATIC FUNCTIONS
