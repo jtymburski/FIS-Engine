@@ -30,7 +30,10 @@ FileHandler::FileHandler()
   available = FALSE;
   file_date = "";
   file_name_temp = "";
+  xml_data = "";
   xml_depth = 0;
+  xml_reader = 0;
+  xml_writer = 0;
 
   setEncryptionEnabled(FALSE);
   setFilename("");
@@ -41,6 +44,11 @@ FileHandler::FileHandler()
 FileHandler::~FileHandler()
 {
   stop(TRUE);
+
+  delete xml_reader;
+  xml_reader = 0;
+  delete xml_writer;
+  xml_writer = 0;
 }
 
 /*============================================================================
@@ -743,11 +751,20 @@ bool FileHandler::start()
     /* If file_write, determine temporary file name */
     if(file_write)
       success &= setTempFileName();
-  
+ 
+    /* If the file type is XML, open the QXmlStreams */
+    if(file_type == XML)
+    {
+      if(file_write)
+        xml_writer = new QXmlStreamWriter(&xml_data);
+      else
+        xml_reader = new QXmlStreamReader(xml_data);
+    }
+
     /* If the system is in read and encryption, check validity of file */
     if(!file_write && encryption_enabled)
       success &= readMd5();
-    
+   
     /* Open the file stream */
     if(success)
       success &= fileOpen();
@@ -845,7 +862,7 @@ bool FileHandler::writeLine(QString line)
   return FALSE;
 }
 
-bool FileHandler::writeXmlData(QString data)
+bool FileHandler::writeXmlData(QString element, VarType type, QString data)
 {
 
 }

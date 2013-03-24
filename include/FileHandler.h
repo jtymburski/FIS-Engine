@@ -184,7 +184,7 @@ public:
   bool writeLine(QString line);
 
   /* Writes the data encapsulated by element(s) */
-  bool writeXmlData(QString data);
+  bool writeXmlData(QString element, VarType type, QString data);
 
   /* Writes a starting XML element */
   bool writeXmlElement(QString element, QString key = "", QString value = "");
