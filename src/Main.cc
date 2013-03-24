@@ -14,9 +14,9 @@ int main(int argc, char *argv[])
   /* Testing code for file handler */
   bool done = FALSE;
   FileHandler fh;
-  fh.setEncryptionEnabled(TRUE);
+  fh.setEncryptionEnabled(FALSE);
   fh.setFilename("TEST.log");
-  fh.setFileType(FileHandler::REGULAR);
+  fh.setFileType(FileHandler::XML);
   
   /* Read */
   fh.setWriteEnabled(FALSE);
@@ -24,8 +24,9 @@ int main(int argc, char *argv[])
   {
     qDebug() << "Reading: " << fh.getDate();
 
-    while(!done)
-      qDebug() << fh.readLine(&done);
+    /* REGULAR */
+    /*while(!done) 
+      qDebug() << fh.readLine(&done);*/
 
     fh.stop();
   }
@@ -40,10 +41,11 @@ int main(int argc, char *argv[])
   {
     qDebug() << "Writing: " << fh.getDate();
 
-    fh.writeLine("Let's write a little story today.");
+    /* REGULAR */
+    /*fh.writeLine("Let's write a little story today.");
     fh.writeLine("What's it going to be about you say?");
     fh.writeLine("Well it will be interesting, I tell you.");
-    fh.writeLine("Let's begin?");
+    fh.writeLine("Let's begin?");*/
 
     fh.stop(FALSE);
   }

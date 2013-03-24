@@ -28,8 +28,12 @@ const uint32_t FileHandler::kKEY[] = {1073676287u,27644437u,
 FileHandler::FileHandler()
 {
   available = FALSE;
-  depth = 0;
   file_date = "";
+  file_name_temp = "";
+  xml_data = "";
+  xml_depth = 0;
+  xml_reader = 0;
+  xml_writer = 0;
 
   setEncryptionEnabled(FALSE);
   setFilename("");
@@ -40,6 +44,11 @@ FileHandler::FileHandler()
 FileHandler::~FileHandler()
 {
   stop(TRUE);
+
+  delete xml_reader;
+  xml_reader = 0;
+  delete xml_writer;
+  xml_writer = 0;
 }
 
 /*============================================================================
@@ -742,11 +751,20 @@ bool FileHandler::start()
     /* If file_write, determine temporary file name */
     if(file_write)
       success &= setTempFileName();
-  
+ 
+    /* If the file type is XML, open the QXmlStreams */
+    if(file_type == XML)
+    {
+      if(file_write)
+        xml_writer = new QXmlStreamWriter(&xml_data);
+      else
+        xml_reader = new QXmlStreamReader(xml_data);
+    }
+
     /* If the system is in read and encryption, check validity of file */
     if(!file_write && encryption_enabled)
       success &= readMd5();
-    
+   
     /* Open the file stream */
     if(success)
       success &= fileOpen();
@@ -813,7 +831,7 @@ bool FileHandler::stop(bool failed)
 
     /* If on write and successful, remove temporary file */
     if(file_write && !failed)
-      fileRename(file_name_temp, file_name);
+      fileRename(file_name_temp, file_name, TRUE);
     else if(file_write)
       fileDelete(file_name_temp);
   }
@@ -844,6 +862,21 @@ bool FileHandler::writeLine(QString line)
   return FALSE;
 }
 
+bool FileHandler::writeXmlData(QString element, VarType type, QString data)
+{
+
+}
+
+bool FileHandler::writeXmlElement(QString element, QString key, QString value)
+{
+
+}
+
+bool FileHandler::writeXmlElementEnd(bool all)
+{
+
+}
+
 /*============================================================================
  * PUBLIC STATIC FUNCTIONS
  *===========================================================================*/
@@ -860,9 +893,13 @@ bool FileHandler::fileExists(QString filename)
   return test_file;
 }
 
-bool FileHandler::fileRename(QString old_filename, QString new_filename)
+bool FileHandler::fileRename(QString old_filename, QString new_filename, 
+                             bool overwrite)
 {
-  if(fileExists(old_filename))
+  if(overwrite)
+    fileDelete(new_filename);
+
+  if(fileExists(old_filename) && !fileExists(new_filename))
     return !std::rename(old_filename.toStdString().c_str(),
                         new_filename.toStdString().c_str());
   return FALSE;
