@@ -454,6 +454,37 @@ int* FileHandler::longToInt(uint32_t* line_data, int length)
   return 0;
 }
 
+QString FileHandler::readLine(bool* done, bool* success)
+{
+  std::string line;
+
+  if(done != 0)
+    *done = FALSE;
+  if(success != 0)
+    *success = TRUE;
+
+  if(available && !file_write)
+  {
+    if(getline(file_stream, line))
+    {
+      if(encryption_enabled)
+      {
+        return decryptLine(QString::fromStdString(line), success);
+      }
+
+      return QString::fromStdString(line);
+    }
+
+    if(done != 0)
+      *done = TRUE;
+    return "";
+  }
+
+  if(success != 0)
+    *success = FALSE;
+  return "";
+}
+
 bool FileHandler::readMd5()
 {
   bool complete = FALSE;
@@ -481,10 +512,10 @@ bool FileHandler::readMd5()
     if(success)
     {
       available = TRUE;
-      md5_value = readLine(&complete, &success);
+      md5_value = readRegularLine(&complete, &success);
       
       while(!complete && success)
-        file_data.append(readLine(&complete, &success));
+        file_data.append(readRegularLine(&complete, &success));
     }
 
     /* Check the MD5 */
@@ -604,6 +635,30 @@ bool FileHandler::topOfFile()
   return FALSE;
 }
 
+bool FileHandler::writeLine(QString line)
+{
+  bool success = TRUE;
+  QString new_line;
+
+  if(available && file_write)
+  {
+    /* Add to the QByteArray of currently written data */
+    file_data.append(line);
+
+    /* Determine if the line should be encrypted or not */
+    if(encryption_enabled)
+      new_line = encryptLine(line, &success);
+    else
+      new_line = line;
+   
+    /* Write the line to the file */
+    file_stream << new_line.toStdString() << std::endl;
+
+    return success;
+  }
+  return FALSE;
+}
+
 /*
  * CHECKED:
  * Only fails if value or limit is less than 0. Failure is indicated by a
@@ -646,6 +701,25 @@ bool FileHandler::writeMd5(QByteArray data)
   return success;
 }
 
+bool FileHandler::xmlStart()
+{
+  xml_writer->setAutoFormatting(TRUE);
+  xml_writer->setAutoFormattingIndent(2);
+  xml_depth = 0;
+  xml_writer->writeStartDocument();
+
+  return TRUE;
+}
+
+bool FileHandler::xmlEnd()
+{
+  xml_writer->writeEndDocument();
+
+  qDebug() << xml_data;
+
+  return TRUE;
+}
+
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
@@ -679,31 +753,13 @@ bool FileHandler::isWriteEnabled()
   return file_write;
 }
 
-QString FileHandler::readLine(bool* done, bool* success)
+QString FileHandler::readRegularLine(bool* done, bool* success)
 {
-  std::string line;
-
   if(done != 0)
     *done = FALSE;
-  if(success != 0)
-    *success = TRUE;
 
-  if(available && !file_write && file_type == REGULAR)
-  {
-    if(getline(file_stream, line))
-    {
-      if(encryption_enabled)
-      {
-        return decryptLine(QString::fromStdString(line), success);
-      }
-
-      return QString::fromStdString(line);
-    }
-
-    if(done != 0)
-      *done = TRUE;
-    return "";
-  }
+  if(file_type == REGULAR)
+    return readLine(done, success);
 
   if(success != 0)
     *success = FALSE;
@@ -756,9 +812,14 @@ bool FileHandler::start()
     if(file_type == XML)
     {
       if(file_write)
+      {
         xml_writer = new QXmlStreamWriter(&xml_data);
+        xmlStart();
+      }
       else
+      {
         xml_reader = new QXmlStreamReader(xml_data);
+      }
     }
 
     /* If the system is in read and encryption, check validity of file */
@@ -776,7 +837,7 @@ bool FileHandler::start()
   
       /* For a readable file with encryption, first line is Md5 -> throw away */
       if(!file_write && encryption_enabled)
-        readLine();
+        readRegularLine();
     }
   
     /* Write MD5 data, if applicable */
@@ -787,12 +848,15 @@ bool FileHandler::start()
     if(success && file_write)
     {
       file_date = QDateTime::currentDateTime().toString("MM.dd.yyyy hh:mm");
-      success &= writeLine(file_date);
+      if(file_type == REGULAR)
+        success &= writeRegularLine(file_date);
+      else
+        success &= writeXmlData("date", STRING, file_date);
     }
 
     /* Read off starting date, if applicable */
     if(success && !file_write)
-      file_date = readLine();
+      file_date = readRegularLine();
 
     /* Stop the program if there is any problems and halt operation */
     if(!success)
@@ -812,6 +876,10 @@ bool FileHandler::start()
 bool FileHandler::stop(bool failed)
 {
   bool success = TRUE;
+  qDebug() << "Here.";
+
+  if(file_write && file_type == XML)
+    xmlEnd();
 
   /* MD5 write - if encryption is enabled */
   if(file_write && encryption_enabled && available)
@@ -819,7 +887,7 @@ bool FileHandler::stop(bool failed)
     topOfFile();
     success &= writeMd5(file_data);
   }
-
+  
   /* Close the file stream */
   success &= fileClose();
   file_date = "";
@@ -838,43 +906,64 @@ bool FileHandler::stop(bool failed)
   return success;
 }
 
-bool FileHandler::writeLine(QString line)
+bool FileHandler::writeRegularLine(QString line)
 {
-  bool success = TRUE;
-  QString new_line;
-
-  if(available && file_write && file_type == REGULAR)
-  {
-    /* Add to the QByteArray of currently written data */
-    file_data.append(line);
-
-    /* Determine if the line should be encrypted or not */
-    if(encryption_enabled)
-      new_line = encryptLine(line, &success);
-    else
-      new_line = line;
-   
-    /* Write the line to the file */
-    file_stream << new_line.toStdString() << std::endl;
-
-    return success;
-  }
+  if(file_type == REGULAR)
+    return writeLine(line);
   return FALSE;
 }
 
 bool FileHandler::writeXmlData(QString element, VarType type, QString data)
 {
+  /* Only move foward if element string isn't empty */
+  if(!element.isEmpty())
+  {
+    xml_writer->writeStartElement(element);
+    xml_writer->writeAttribute("type", QString::number(type));
+    xml_writer->writeCharacters(data);
+    xml_writer->writeEndElement();
 
+    return TRUE;
+  }
+  return FALSE;
 }
 
 bool FileHandler::writeXmlElement(QString element, QString key, QString value)
 {
+  /* Only move forward if element string isn't empty */
+  if(!element.isEmpty())
+  {
+    xml_writer->writeStartElement(element);
 
+    if(!key.isEmpty())
+      xml_writer->writeAttribute(key, value);
+
+    xml_depth++;
+
+    return TRUE;
+  }
+  return FALSE;
 }
 
 bool FileHandler::writeXmlElementEnd(bool all)
 {
+  int limit = 1;
 
+  /* If all, up the limit */
+  if(all)
+    limit = xml_depth;
+
+  /* If xml_depth isn't 0, allow elements to end */
+  if(xml_depth > 0)
+  {
+    for(int i = 0; i < limit; i++)
+    {
+      xml_writer->writeEndElement();
+      xml_depth--;
+    }
+    return TRUE;
+  }
+  return FALSE;
 }
 
 /*============================================================================

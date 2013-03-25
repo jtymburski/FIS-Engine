@@ -118,6 +118,9 @@ private:
   /* Converts an array of longs into an array of ints -> one long -> 4 ints */
   int* longToInt(uint32_t* line_data, int length);
 
+  /* The base read line class, reads data from the file */
+  QString readLine(bool* done = 0, bool* success = 0);
+
   /* Confirms if the MD5 matches the file */
   bool readMd5();
 
@@ -130,12 +133,21 @@ private:
   /* Returns the control to the top of the file */
   bool topOfFile();
 
+  /* The base write line class, pushes data to the file */
+  bool writeLine(QString line);
+
   /* Takes a number and wraps it around, if it exceeds the limit */
   int wrapNumber(int value, int limit);
 
   /* Returns the hash for the data that has currently been written. Returns
    * nothing if the function is uninitialized or set on read */
   bool writeMd5(QByteArray data);
+
+  /* Starts the XML writing procedure */
+  bool xmlStart();
+
+  /* Finishes the XML writing procedure */
+  bool xmlEnd();
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -160,7 +172,7 @@ public:
   bool isWriteEnabled();
 
   /* Reads the following line as a string. Only valid for REGULAR files */
-  QString readLine(bool* done = 0, bool* success = 0);
+  QString readRegularLine(bool* done = 0, bool* success = 0);
 
   /* Sets if encryption is enabled for reading and writing */
   void setEncryptionEnabled(bool enable);
@@ -181,7 +193,7 @@ public:
   bool stop(bool failed = FALSE);
 
   /* Writes the following line to the file. Only valid for REGULAR files */
-  bool writeLine(QString line);
+  bool writeRegularLine(QString line);
 
   /* Writes the data encapsulated by element(s) */
   bool writeXmlData(QString element, VarType type, QString data);

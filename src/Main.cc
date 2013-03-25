@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
 
     /* REGULAR */
     /*while(!done) 
-      qDebug() << fh.readLine(&done);*/
+      qDebug() << fh.readRegularLine(&done);*/
 
     fh.stop();
   }
@@ -42,10 +42,10 @@ int main(int argc, char *argv[])
     qDebug() << "Writing: " << fh.getDate();
 
     /* REGULAR */
-    /*fh.writeLine("Let's write a little story today.");
-    fh.writeLine("What's it going to be about you say?");
-    fh.writeLine("Well it will be interesting, I tell you.");
-    fh.writeLine("Let's begin?");*/
+    /*fh.writeRegularLine("Let's write a little story today.");
+    fh.writeRegularLine("What's it going to be about you say?");
+    fh.writeRegularLine("Well it will be interesting, I tell you.");
+    fh.writeRegularLine("Let's begin?");*/
 
     fh.stop(FALSE);
   }
