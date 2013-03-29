@@ -25,6 +25,7 @@
 #include <QCryptographicHash>
 #include <QDateTime>
 #include <QDebug>
+#include <QStringList>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 
@@ -68,6 +69,7 @@ private:
 
   /*------------------- Constants -----------------------*/
   const static int kASCII_IN_LONG = 4; /* # of ascii's that will fit in long */
+  const static int kCHAR_NEW_LINE = 10;
   const static uint32_t kDELTA = 2654435769u; /* Sum bias for encryption */
   const static int kENCRYPTION_MIN = 4; /* Min line length for encryption */
   const static int kENCRYPTION_PAD = 150; /* Padding for encrypted values */

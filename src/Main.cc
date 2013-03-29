@@ -47,6 +47,11 @@ int main(int argc, char *argv[])
     fh.writeRegularLine("Well it will be interesting, I tell you.");
     fh.writeRegularLine("Let's begin?");*/
 
+    /* XML */
+    fh.writeXmlElement("persons");
+    fh.writeXmlElement("person");
+    fh.writeXmlData("name", FileHandler::STRING, "john");
+
     fh.stop(FALSE);
   }
   else

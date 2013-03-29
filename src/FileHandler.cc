@@ -715,7 +715,12 @@ bool FileHandler::xmlEnd()
 {
   xml_writer->writeEndDocument();
 
-  qDebug() << xml_data;
+  /* Write the data accumulated by the file handler into the file */
+  QStringList list = xml_data.split(QChar(kCHAR_NEW_LINE));
+  foreach(const QString &str, list)
+    if(!str.isEmpty())
+      writeLine(str);
+
 
   return TRUE;
 }
@@ -876,7 +881,6 @@ bool FileHandler::start()
 bool FileHandler::stop(bool failed)
 {
   bool success = TRUE;
-  qDebug() << "Here.";
 
   if(file_write && file_type == XML)
     xmlEnd();
@@ -887,7 +891,7 @@ bool FileHandler::stop(bool failed)
     topOfFile();
     success &= writeMd5(file_data);
   }
-  
+
   /* Close the file stream */
   success &= fileClose();
   file_date = "";

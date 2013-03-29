@@ -23,6 +23,7 @@ SOURCES += \
     ./src/Options.cc \
     ./src/Sound.cc \
     ./src/TitleScreen.cc \
+    ./src/XmlLine.cc \
     ./src/Game/Game.cc \
     ./src/Game/Frame.cc \
     ./src/Game/Sprite.cc \
@@ -74,6 +75,7 @@ HEADERS += \
     ./include/Options.h \
     ./include/Sound.h \
     ./include/TitleScreen.h \
+    ./include/XmlLine.h \
     ./include/Game/Game.h \
     ./include/Game/Frame.h \
     ./include/Game/Sprite.h \
