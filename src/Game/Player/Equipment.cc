@@ -11,6 +11,12 @@
 ******************************************************************************/
 #include "Game/Player/Equipment.h"
 
+/*=============================================================================
+ * CONSTANTS
+ *============================================================================*/
+const ushort Equipment::kMAX_X = 9;
+const ushort Equipment::kMAX_Y = 9;
+
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
@@ -41,7 +47,7 @@ Equipment::~Equipment()
 }
 
 /*============================================================================
- * FUNCTIONS
+ * PUBLIC FUNCTIONS
  *===========================================================================*/
 
 /*
@@ -55,7 +61,7 @@ Equipment::~Equipment()
 bool Equipment::canAttach(Bubby* new_bubby, ushort x, ushort y)
 {
   if (new_bubby->getTier() == 0)
-    return FALSE;
+    return false;
   if (signature[x][y] == 'O')
   {
     if (new_bubby->getTier() == 2 && signature[x][y - 1] == 'O')
@@ -65,7 +71,7 @@ bool Equipment::canAttach(Bubby* new_bubby, ushort x, ushort y)
         return TRUE;
     return TRUE;
   }
-  return FALSE;
+  return false;
 }
 
 /*
@@ -80,7 +86,7 @@ bool Equipment::canAttach(Bubby* new_bubby, ushort x, ushort y)
 bool Equipment::attachBubby(Bubby* new_bubby, ushort x, ushort y)
 {
   if (new_bubby->getTier() == 0)
-    return FALSE;
+    return false;
 
   bubby_signature[x][y] = new_bubby;
   signature[x][y] = 'B';
@@ -104,15 +110,15 @@ bool Equipment::attachBubby(Bubby* new_bubby, ushort x, ushort y)
  */
 bool Equipment::canUnattach(ushort x, ushort y)
 {
-  int left_x = getLeftX(x, y, FALSE);
-  int left_y = getLeftY(y, y, FALSE);
+  int left_x = getLeftX(x, y, false);
+  int left_y = getLeftY(y, y, false);
 
   if (left_x == -1 || left_y == -1)
-    return FALSE;
+    return false;
 
   if (signature[left_x][left_y] == 'B')
     return TRUE;
-  return FALSE;
+  return false;
 }
 
 /*
@@ -130,11 +136,11 @@ bool Equipment::canUnattach(uint id)
   // int left_y = getLeftY(y, y TRUE);
 
   //if (left_x == -1 || left_y == -1)
-    return FALSE;
+    return false;
 
   //if (signature[left_x][left_y] == 'B')
     return TRUE;
-  return FALSE;
+  return false;
 }
 
 /*
@@ -146,8 +152,8 @@ bool Equipment::canUnattach(uint id)
  */
 Bubby Equipment::unattach(ushort x, ushort y)
 {
-  int left_x = getLeftX(x, y, FALSE);
-  int left_y = getLeftY(y, y, FALSE);
+  int left_x = getLeftX(x, y, false);
+  int left_y = getLeftY(y, y, false);
 
   if (bubby_signature[left_x][left_y]->getTier() > 0)
       signature[left_x][left_y] = 'O';

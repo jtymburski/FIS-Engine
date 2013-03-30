@@ -22,12 +22,6 @@ public:
  ~BubbyFlavour();
 
 private:
-  /* Constants */
-  const static ushort kTIER_CAP  =  3;
-
-  /* Adding, checking flavour functions */
-  static bool addFlavour(QString new_flavour);
-
   /* Stat set for the Bubby (bonuses) */
   AttributeSet stats;
 
@@ -36,7 +30,6 @@ private:
   QString description;
 
   /* The list of bubby flavours */
-  static QVector<QString> flavour_list;
 
   /* The list of actions offered by the bubby */
   SkillSet* skill_list;
@@ -44,9 +37,21 @@ private:
   /* The sprite image for each tier */
   QVector<Sprite*> sprites;
 
-public:
-  static int isFlavour(QString flavour_name);
+  /* ------------ Constants --------------- */
+  const static ushort kTIER_CAP;        /* Max # of Bubby Tiers */
+  static QVector<QString> flavour_list; /* Vector of Flavour names */
 
+/*============================================================================
+ * PRIVATE FUNCTIONS
+ *============================================================================*/
+private:
+  /* Adding, checking flavour functions */
+  static bool addFlavour(QString new_flavour);
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
+public:
   /* Gets the set of attributes for the Bubby */
   AttributeSet* getAttr();
 
@@ -75,6 +80,13 @@ public:
 
   /* Sets the sprites */
   bool setSprites(QVector<Sprite*> new_sprites);
+
+/*============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
+public:
+  /* Returns true if a given flavour of Bubby already exists */
+  static int isFlavour(QString flavour_name);
 };
 
 #endif //BUBBYFLAVOUR_H

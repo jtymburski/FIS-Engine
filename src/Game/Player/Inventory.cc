@@ -10,6 +10,17 @@
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
+const uint Inventory::kBASIC_ITEM_LIMIT = 50;
+const uint Inventory::kMAX_EQUIP_LIMIT  = 10000;
+const uint Inventory::kMAX_ITEM_LIMIT   = 10000;
+const uint Inventory::kMAX_BUBBY_LIMIT  = 10000;
+const uint Inventory::kMAX_LEVEL        = 25;
+const uint Inventory::kMAX_EQUIP_STACK  = 10;
+const uint Inventory::kMAX_ITEM_STACK   = 50;
+
+/*============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *===========================================================================*/
 
 /*
  * Description: Constructs an inventory object with a name, based on given
@@ -32,7 +43,7 @@ Inventory::Inventory(QString name, QPixmap* thumbnail, uint limit,
 Inventory::~Inventory() {}
 
 /*============================================================================
- * PUBLIC
+ * PUBLIC FUNCTIONS
  *===========================================================================*/
 
 /*
@@ -41,12 +52,12 @@ Inventory::~Inventory() {}
  *              inventory or if there would be too many total equipments.
  *
  * Inputs: Equipment - the piece to be added
- * Output: bool - TRUE if the equipment can be added
+ * Output: bool - true if the equipment can be added
  */
 bool Inventory::addTo(Equipment equipment)
 {
   if (getEquipmentCount() >= equip_limit)
-    return FALSE;
+    return false;
 
   /* Increment counter if an equipment with the same name already exists */
   for (int i = 0; i < equipments.size(); i++)
@@ -56,17 +67,17 @@ bool Inventory::addTo(Equipment equipment)
       if (equip_count[i] < kMAX_EQUIP_STACK)
       {
         equip_count[i]++;
-        return TRUE;
+        return true;
       }
       else
-        return FALSE;
+        return false;
       }
   }
 
   /* Append the item to the QVector if it was not found */
   equipments.push_back(equipment);
   equip_count.push_back(1);
-  return TRUE;
+  return true;
 }
 
 /*
@@ -80,7 +91,7 @@ bool Inventory::addTo(Equipment equipment)
 bool Inventory::addTo(Item item)
 {
   if (getItemCount() >= item_limit)
-    return FALSE;
+    return false;
 
   /* Increment counter if an item with the same name already exists */
   for (int i = 0; i < items.size(); i++)
@@ -90,17 +101,17 @@ bool Inventory::addTo(Item item)
       if (item_count[i] < kMAX_ITEM_STACK)
       {
         item_count[i]++;
-        return TRUE;
+        return true;
       }
       else
-      return FALSE;
+      return false;
     }
   }
 
   /* Append the item to the QVector if it was not found */
   items.push_back(item);
   item_count.push_back(1);
-  return TRUE;
+  return true;
 }
 
 /*
@@ -108,14 +119,14 @@ bool Inventory::addTo(Item item)
  *              the total amount of bubbies permitted would be exceeded.
  *
  * Inputs: Bubby to be added to inventory.
- * Output: bool - TRUE if the addition was successful
+ * Output: bool - true if the addition was successful
  */
 bool Inventory::addTo(Bubby bubby)
 {
     if (getBubbyCount() >= bubby_limit)
-      return FALSE;
+      return false;
     bubbies.push_back(bubby);
-    return TRUE;
+    return true;
 }
 
 /*
@@ -137,11 +148,11 @@ bool Inventory::removeFrom(Equipment terminal_equipment)
       {
         equipments.remove(i);
         equip_count.remove(i);
-        return TRUE;
+        return true;
       }
     }
   }
-  return FALSE;
+  return false;
 }
 
 /*
@@ -163,11 +174,11 @@ bool Inventory::removeFrom(Item terminal_item)
       {
         items.remove(i);
         item_count.remove(i);
-        return TRUE;
+        return true;
       }
     }
   }
-  return FALSE;
+  return false;
 }
 
 /*
@@ -180,7 +191,7 @@ bool Inventory::removeFrom(Item terminal_item)
 bool Inventory::removeFrom(Bubby bubby)
 {
     (void)bubby;//warning
-  return FALSE;
+  return false;
 }
 
 /*
@@ -217,9 +228,9 @@ void Inventory::upgrade(QString name, QPixmap* thumbnail, uint equipment_limit,
 bool Inventory::resetLevel(const uint new_level)
 {
   if (level >= kMAX_LEVEL)
-    return FALSE;
+    return false;
   level = new_level;
-  return TRUE;
+  return true;
 }
 
 /*

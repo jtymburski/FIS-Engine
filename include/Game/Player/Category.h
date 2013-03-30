@@ -31,13 +31,6 @@ public:
   ~Category();
 
 private:
-  /* Maximum limits for attributes in a Category */
-  static const ushort kMAX_VITALITY  = 20000;
-  static const ushort kMAX_QD        =  5000;
-  static const ushort kMAX_PHYSICAL  =  5000;
-  static const ushort kMAX_ELEMENTAL =  3500;
-  static const ushort kMAX_SPECIAL   =  1000;
-
   /* Name & description */
   QString description;
   QString name;
@@ -46,6 +39,16 @@ private:
   AttributeSet stat_set;
   SkillSet* skill_set;
 
+  /* ------------ Constants --------------- */
+  static const ushort kMAX_VITALITY;
+  static const ushort kMAX_QD;
+  static const ushort kMAX_PHYSICAL;
+  static const ushort kMAX_ELEMENTAL;
+  static const ushort kMAX_SPECIAL;
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
 public:
   /* Cleans up the attributes and stat set */
   void cleanUp();

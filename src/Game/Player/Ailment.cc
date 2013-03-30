@@ -13,29 +13,50 @@
 *              3 - [(Add)] const static values to be used if necessary to class
 *              4 - (Add) the Ailment's effect to updateAndApply()
 *
-* // TODO: Add effects of apply() [03-12-13]
 * // TODO: Add immunities to everything [03-12-13]
 * // TODO: Finalize chance to wear off per turn [03-11-13]
 * // TODO: Rigorous testing for class [03-11-13]
 * // TODO: Setup temporary skills for person [03-12-13]
+* // TODO: Finish Curse apply effect [03-30-13]
 *******************************************************************************/
 #include "Game/Player/Ailment.h"
 
 /*============================================================================
+ * CONSTANTS
+ *============================================================================*/
+const ushort Ailment::kMAX_TURNS           =   25;
+const ushort Ailment::kMIN_TURNS           =    1;
+const ushort Ailment::kPOISON_DMG_MAX      = 5000;
+const ushort Ailment::kPOISON_DMG_MIN      =   50;
+const double Ailment::kPOISON_DMG_INCR     = 1.05;
+const double Ailment::kPOISON_DMG_INIT     = 1.08;
+const ushort Ailment::kBURN_DMG_MAX        = 5000;
+const ushort Ailment::kBURN_DMG_MIN        =  100;
+const double Ailment::kBURN_DMG_INCR       = 1.02;
+const double Ailment::kBURN_DMG_PC         = 1.05;
+const double Ailment::kBERSERK_DMG_INCR    = 1.75;
+const double Ailment::kBERSERK_HITBACK_PC  = 0.35;
+const ushort Ailment::kBUBBIFY_MAX_QD      =   10;
+const double Ailment::kBUBBIFY_STAT_MULR   = 0.68;
+const double Ailment::kBLIND_PC            = 0.50;
+const double Ailment::kDREADSTRUCK_PC      = 0.75;
+const double Ailment::kDREAMSNARE_PC       = 0.50;
+const double Ailment::kALLBUFF_PC          = 1.05;
+const double Ailment::kPHYSBUFF_PC         = 1.08;
+const double Ailment::kELMBUFF_PC          = 1.07;
+const double Ailment::kLIMBUFF_PC          = 1.10;
+const double Ailment::kUNBBUFF_PC          = 1.05;
+const double Ailment::kMOMBUFF_PC          = 1.01;
+const double Ailment::kVITBUFF_PC          = 1.20;
+const double Ailment::kQTMNBUFF_PC         = 1.15;
+const double Ailment::kROOTBOUND_PC        = 0.15;
+const double Ailment::kHIBERNATION_INIT    = 0.15;
+const double Ailment::kHIBERNATION_INCR    = 0.05;
+
+/*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
-const ushort Ailment::kMAX_TURNS          = 25;
-const ushort Ailment::kMIN_TURNS          =  1;
-const ushort Ailment::kPOISON_DMG_MAX     = 5000;
-const ushort Ailment::kPOISON_DMG_MIN     = 50;
-const double Ailment::kPOISON_DMG_INCR    = 1.05;
-const double Ailment::kPOISON_DMG_INIT    = 1.08;
-const ushort Ailment::kBURN_DMG_MAX       = 5000;
-const ushort Ailment::kBURN_DMG_MIN       = 100;
-const double Ailment::kBURN_DMG_INCR      = 1.02;
-const double Ailment::kBURN_DMG_PC        = 1.05;
-// const double Ailment::kBERSERK_DMG_INCR   = 1.75;
-// const double Ailment::kBERSERK_HITBACK_PC = 0.35;
+
 
 /*
  * Description: Constructs an Ailment object given an Infliction type,
@@ -59,7 +80,7 @@ Ailment::Ailment(Person* victim, Infliction type, short max_turns,
   if (type == NOAILMENT)
   {
     setDuration(-1, -1);
-    setFlag(Ailment::TOBEUPDATED, FALSE);
+    setFlag(Ailment::TOBEUPDATED, false);
   }
   else if (max_turns > kMAX_TURNS)
     setDuration(kMAX_TURNS, chance);
@@ -93,7 +114,7 @@ Ailment::Ailment(Person* victim, QString name, short max_turns,
   if (getType() == NOAILMENT)
   {
     setDuration(-1, -1);
-    setFlag(Ailment::TOBEUPDATED, FALSE);
+    setFlag(Ailment::TOBEUPDATED, false);
   }
   else if (max_turns > kMAX_TURNS)
     setDuration(kMAX_TURNS, chance);
@@ -113,7 +134,7 @@ Ailment::Ailment(Person* victim, QWidget* parent) : QWidget(parent)
 {
   setVictim(victim);
   setType(NOAILMENT);
-  setFlag(Ailment::TOBEUPDATED, FALSE);
+  setFlag(Ailment::TOBEUPDATED, false);
   setDuration(-1,-1);
 }
 
@@ -131,12 +152,13 @@ Ailment::~Ailment() {}
  *              if one so exists, checking for recurring effects, etc.
  *
  * Inputs: none
- * Output: bool - TRUE if the ailment is to be cured
+ * Output: bool - true if the ailment is to be cured
  */
 bool Ailment::apply()
 {
   /* Helper variables */
   const ushort kHEALTH = victim->tempStats()->getStat(0);
+  AttributeSet* stats = victim->tempStats();
   ushort damage = 0;
 
   /* Poison: Ailed actor takes increasing hit to HP every turn
@@ -222,158 +244,177 @@ bool Ailment::apply()
     /* On application, remove skills which have a QD cost > 0 from useable */
   }
 
-  /* Bubbify - ailed actor is turned into a near-useless Bubby */
+  /* Bubbify - ailed actor is turned into a near-useless Bubby
+   */
   else if (ailment_type == BUBBIFY)
   {
 
   }
 
-  /* Death Timer - Ailed actor KOs upon reaching max_turns */
+  /* Death Timer - Ailed actor KOs upon reaching max_turns
+   */
   else if (ailment_type == DEATHTIMER)
   {
     /* Update death clock */
     /* On reaching max_turns, actor dies */
   }
 
-  /* Ailed actor has a 70% chance of skipping their turn */
+  /* Ailed actor has a 70% chance of skipping their turn
+   */
   else if (ailment_type == PARALYSIS)
   {
     /* 1-100, if >30, set skip next turn flag */
   }
 
-  /* Ailed actor has a much higher chance of missing targets */
+  /* Blindness - Ailed actor has a much higher chance of missing targets
+   */
   else if (ailment_type == BLINDNESS)
   {
 
   }
 
+  /* Dreadstruck - formerly "Stun": Ailed actor has an extreme chance of
+   *               skipping just one turn
+   */
   else if (ailment_type == DREADSTRUCK)
   {
 
   }
+
+  /* Dreamsnare - Ailed actor's actions have a 50% chance of being benign
+   *              illusions (no effect
+   */
   else if (ailment_type == DREAMSNARE)
   {
-
+    /* Ailed actor's next turn has a 50% chance to miss */
+    /* Handle illusion in Battle */
   }
+
+  /* Hellbound - If this actor dies, another living actor on the same team
+   *             (if one exists) dies with them.
+   */
   else if (ailment_type == HELLBOUND)
   {
 
   }
+
+  /* Bond - Two actors are afflicted simultaneously. Affected actor's stats are
+  *  combined, damage dealt to one is also dealt to the other, as with status
+  *  ailments and other effects (ex. death)
+  */
   else if (ailment_type == BOND)
   {
 
   }
-  else if (ailment_type == ALLATKBUFF)
+
+  /* Buffs -- Increases the user's stats by a specified amount on application
+   * Constants: kALLBUFF_PC  - % to incr all values
+   *            kPHYSBUFF_PC - % to incr phys values
+   *            kELMBUFF_PC  - % to incr elemental values
+   */
+  if (getFlag(Ailment::TOBEAPPLIED) && getFlag(Ailment::BUFF))
   {
 
-  }
-  else if (ailment_type == ALLDEFBUFF)
-  {
+    if (ailment_type == ALLATKBUFF)
+    {
+      for (int i = 0; i < stats->getSize(); i++)
+      {
+        QStringList split_stats = stats->getName(i).split("");
+        if (split_stats.at(2) == "A" && split_stats.at(3) == "G")
+          stats->setStat(i, stats->getStat(i) * kALLBUFF_PC);
+      }
+      setFlag(Ailment::TOBEAPPLIED, false);
+    }
+    else if (ailment_type == ALLDEFBUFF)
+    {
+      for (int i = 0; i < stats->getSize(); i++)
+      {
+        QStringList split_stats = stats->getName(i).split("");
+        if (split_stats.at(2) == "F" && split_stats.at(3) == "D")
+          stats->setStat(i, stats->getStat(i) * kALLBUFF_PC);
+      }
+      setFlag(Ailment::TOBEAPPLIED, false);
+    }
+    else if (ailment_type == PHYATKBUFF)
+      stats->setStat("PHAG", stats->getStat("PHAG") * kPHYSBUFF_PC);
+    else if (ailment_type == PHYDEFBUFF)
+      stats->setStat("PHFD", stats->getStat("PHFD") * kPHYSBUFF_PC);
+    else if (ailment_type == THRATKBUFF)
+      stats->setStat("THAG", stats->getStat("THAG") * kELMBUFF_PC);
+    else if (ailment_type == THRDEFBUFF)
+      stats->setStat("THFD", stats->getStat("THFD") * kELMBUFF_PC);
+    else if (ailment_type == POLATKBUFF)
+      stats->setStat("POAG", stats->getStat("POAG") * kELMBUFF_PC);
+    else if (ailment_type == POLDEFBUFF)
+      stats->setStat("POFD", stats->getStat("POFD") * kELMBUFF_PC);
+    else if (ailment_type == PRIATKBUFF)
+      stats->setStat("PRAG", stats->getStat("PRAG") * kELMBUFF_PC);
+    else if (ailment_type == PRIDEFBUFF)
+      stats->setStat("PRFD", stats->getStat("PRFD") * kELMBUFF_PC);
+    else if (ailment_type == CHGATKBUFF)
+      stats->setStat("CHAG", stats->getStat("CHAG") * kELMBUFF_PC);
+    else if (ailment_type == CHGDEFBUFF)
+     stats->setStat("CHFD", stats->getStat("CHFD") * kELMBUFF_PC);
+    else if (ailment_type == CYBATKBUFF)
+      stats->setStat("CYAG", stats->getStat("CYAG") * kELMBUFF_PC);
+    else if (ailment_type == CYBDEFBUFF)
+      stats->setStat("CYFD", stats->getStat("CYFD") * kELMBUFF_PC);
+    else if (ailment_type == NIHATKBUFF)
+      stats->setStat("NIAG", stats->getStat("NIAG") * kELMBUFF_PC);
+    else if (ailment_type == NIHDEFBUFF)
+      stats->setStat("NIAG", stats->getStat("NIFD") * kELMBUFF_PC);
+    else if (ailment_type == UNBBUFF)
+      stats->setStat("UNBR", stats->getStat("UNBR") * kELMBUFF_PC);
+    else if (ailment_type == LIMBUFF)
+      stats->setStat("NIFD", stats->getStat("LIMB") * kLIMBUFF_PC);
+    else if (ailment_type == MOMBUFF)
+      stats->setStat("MMTM", stats->getStat("MMTM") * kELMBUFF_PC);
+    else if (ailment_type == VITBUFF)
+      stats->setStat("VITA", stats->getStat("VITA") * kVITBUFF_PC);
+    else if (ailment_type == QDBUFF)
+      stats->setStat("QTMN", stats->getStat("QTMN") * kQTMNBUFF_PC);
 
   }
-  else if (ailment_type == PHYATKBUFF)
-  {
 
-  }
-  else if (ailment_type == PHYDEFBUFF)
-  {
-
-  }
-  else if (ailment_type == THRATKBUFF)
-  {
-
-  }
-  else if (ailment_type == THRDEFBUFF)
-  {
-
-  }
-  else if (ailment_type == POLATKBUFF)
-  {
-
-  }
-  else if (ailment_type == POLDEFBUFF)
-  {
-
-  }
-  else if (ailment_type == PRIATKBUFF)
-  {
-
-  }
-
-  else if (ailment_type == PRIDEFBUFF)
-  {
-
-  }
-  else if (ailment_type == CHGATKBUFF)
-  {
-
-  }
-  else if (ailment_type == CHGDEFBUFF)
-  {
-
-  }
-  else if (ailment_type == CYBATKBUFF)
-  {
-
-  }
-  else if (ailment_type == CYBDEFBUFF)
-  {
-
-  }
-  else if (ailment_type == NIHATKBUFF)
-  {
-
-  }
-  else if (ailment_type == NIHDEFBUFF)
-  {
-
-  }
-  else if (ailment_type == LIMBUFF)
-  {
-
-  }
-  else if (ailment_type == UNBBUFF)
-  {
-
-  }
-  else if (ailment_type == MOMBUFF)
-  {
-
-  }
-  else if (ailment_type == VITBUFF)
-  {
-
-  }
-  else if (ailment_type == QDBUFF)
-  {
-  }
+  /* Rootbound - Ailed actor (if biological in nature) gains a % HP / turn
+   * Constats - kROOTBOUND_PC - % vitality to be gained each turn */
   else if (ailment_type == ROOTBOUND)
   {
+    ushort value = stats->getStat("VITA") * kROOTBOUND_PC;
+    stats->setStat("VITA", value);
   }
-  else if (ailment_type == DOUBLECAST)
-  {
-  }
-  else if (ailment_type == TRIPLECAST)
-  {
-  }
+
+  /* Half Cost - On application, the user's useable skill costs are halved */
   else if (ailment_type == HALFCOST)
   {
+    /* Find users currently useable skills */
+    /* Half their cost (temporarily) */
   }
-  else if (ailment_type == REFLECT)
-  {
-  }
+
+  /* Hibernation - Gain a % health back per turn in exchange for skipping it,
+   *               but the % gain grows
+   * Constants - kHIBERNATION_INIT - Initial % (of cur value) hibernation adds
+   *             kHIBERNATION_INCR - Increasing % for each turn
+   */
   else if (ailment_type == HIBERNATION)
   {
+    ushort gain_pc = kHIBERNATION_INIT;
+    for (int i = 0; i < turns_occured; i++)
+      gain_pc += kHIBERNATION_INCR;
+    stats->setStat("VITA", stats->getMax("VITA") * (1 + gain_pc));
   }
+
+  /* Curse - Character is inflicted with a random ailment every turn.
+   *         (Curse can inflict a new Curse--in which case just the remaining
+   *         turns is reset.) Curse may also reset curse if
+   *
+   * //TODO: Unfinished [03-30-13]
+   */
   else if (ailment_type == CURSE)
   {
 
   }
-  else
-  {
-    throw("Error: Unrecognized Ailment");
-  }
-  return TRUE;
+  return true;
 }
 
 /*
@@ -397,7 +438,7 @@ bool Ailment::checkImmunity(Person* new_victim)
   /* Class immunity */
 
   /* Other immunity */
-  return TRUE;
+  return true;
 }
 
 /*
@@ -406,7 +447,7 @@ bool Ailment::checkImmunity(Person* new_victim)
  *              if the ailment will be cured after this update, false otherwise.
  *
  * Inputs: none
- * Output: bool - TRUE if the ailment is to be cured after the update of Fn.
+ * Output: bool - true if the ailment is to be cured after the update of Fn.
  */
 bool Ailment::updateTurns()
 {
@@ -419,11 +460,11 @@ bool Ailment::updateTurns()
   }
   /* If the ailment currently has one turn left, it's cured! */
   if (max_turns_left == 1)
-    return TRUE;
+    return true;
   /* If the ailment doesn't have one turn left, if it's finite, decrement it */
   if (max_turns_left <= kMAX_TURNS)
     max_turns_left--;
-  return FALSE;
+  return false;
 }
 
 /*
@@ -476,7 +517,7 @@ void Ailment::update()
   if (getFlag(Ailment::TOBEUPDATED))
   {
     /* Update the turn count and set the TOBECURED flag if neccessary */
-    bool cure_value = FALSE;
+    bool cure_value = false;
     if (!getFlag(Ailment::INFINITE))
         cure_value = updateTurns();
     setFlag(Ailment::TOBECURED, cure_value);
@@ -730,7 +771,7 @@ void Ailment::setDuration(ushort max_turns, double chance)
   if (max_turns > kMAX_TURNS)
     setFlag(Ailment::INFINITE);
   else
-    setFlag(Ailment::INFINITE, FALSE);
+    setFlag(Ailment::INFINITE, false);
 
   max_turns_left = max_turns;
   this->chance = chance;
@@ -740,7 +781,7 @@ void Ailment::setDuration(ushort max_turns, double chance)
  * Description: Assigns a PersonState flag or flags to (a) given value(s)
  *
  * Inputs: AilmentFlag flags - enumerated flag to be assigned
- *         set_value - the value to assign the flag(s) to (default: TRUE)
+ *         set_value - the value to assign the flag(s) to (default: true)
  * Output: none
  */
 void Ailment::setFlag(AilmentFlag flags, bool set_value)
@@ -753,13 +794,13 @@ void Ailment::setFlag(AilmentFlag flags, bool set_value)
  *
  * Inputs: Perosn* new_victim - Potential new victim of the status ailment.
  *         bool refresh_turns - Whether to reset the turn count
- * Output: Returns TRUE if the new victim was set successfully.
+ * Output: Returns true if the new victim was set successfully.
  */
 bool Ailment::setNewVictim(Person* new_victim, bool refresh_turns)
 {
   /* The ailment cannot be assigned if the new victim is immune */
   if (checkImmunity(new_victim))
-    return FALSE;
+    return false;
 
   if (refresh_turns)
   {
@@ -770,5 +811,5 @@ bool Ailment::setNewVictim(Person* new_victim, bool refresh_turns)
   setFlag(Ailment::TOBEAPPLIED);
   setVictim(new_victim);
   update();
-  return TRUE;
+  return true;
 }

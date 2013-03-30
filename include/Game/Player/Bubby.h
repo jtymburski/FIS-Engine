@@ -48,12 +48,12 @@ private:
   Sprite* current_sprite;
 
   /* ------------ Constants --------------- */
-  const static ushort kTIER_CAP  =  3;
-  const static ushort kTIER1_LVL =  9;
-  const static ushort kTIER2_LVL = 19;
-  const static ushort kLEVEL_CAP = 20;
-  const static uint kMIN_LVL_EXP =       75;
-  const static uint kMAX_LVL_EXP =   450000;
+  const static ushort kTIER_CAP     =       3;
+  const static ushort kTIER1_LVL    =       9;
+  const static ushort kTIER2_LVL    =      19;
+  const static ushort kLEVEL_CAP    =      20;
+  const static uint kMIN_LVL_EXP    =      75;
+  const static uint kMAX_LVL_EXP    =  450000;
   const static uint kMAX_EXPERIENCE = 1000000;
 
 /*============================================================================

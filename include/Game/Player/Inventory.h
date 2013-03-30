@@ -24,15 +24,6 @@ public:
   ~Inventory();
   
 private:
-  /* Storage and level limits */
-  static const uint kBASIC_ITEM_LIMIT = 50;
-  static const uint kMAX_EQUIP_LIMIT  = 10000;
-  static const uint kMAX_ITEM_LIMIT   = 10000;
-  static const uint kMAX_BUBBY_LIMIT  = 10000;
-  static const uint kMAX_LEVEL        = 25;
-  static const uint kMAX_EQUIP_STACK  = 10;
-  static const uint kMAX_ITEM_STACK   = 50;
-
   /* Data structures holding the item objects */
   QVector<Item> bubbies;
   QVector<Item> equipments;
@@ -57,6 +48,18 @@ private:
   /* Image of storage unit */
   QPixmap* thumb;
 
+  /* ------------ Constants --------------- */
+  static const uint kBASIC_ITEM_LIMIT;
+  static const uint kMAX_EQUIP_LIMIT;
+  static const uint kMAX_ITEM_LIMIT;
+  static const uint kMAX_BUBBY_LIMIT;
+  static const uint kMAX_LEVEL;
+  static const uint kMAX_EQUIP_STACK;
+  static const uint kMAX_ITEM_STACK;
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
 public:
   /* Attempts to reset the level of the inventory */
   bool resetLevel(const uint new_level);

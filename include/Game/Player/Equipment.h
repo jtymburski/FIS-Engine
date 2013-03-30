@@ -43,10 +43,6 @@ public:
   EquipmentFlags eflag_set;
 
 private:
-  /* -------------------- Constants ----------------- */
-  const static ushort kMAX_X = 9;
-  const static ushort kMAX_Y = 9;
-
   /* 2D 9x9 array for bubby signature*/
   QVector<QVector<char> > signature;
   Bubby* bubby_signature[9][9];
@@ -57,6 +53,13 @@ private:
   /* A parallel list that shows when actions become available (Based on level)*/
   QVector<ushort> action_available;
 
+  /* -------------------- Constants ----------------- */
+  static const ushort kMAX_X;
+  static const ushort kMAX_Y;
+
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
 public:
   /* Checks if the bubby will fit into the bubby signature
    * X is the left most coordinate, Y is the top most coordinate

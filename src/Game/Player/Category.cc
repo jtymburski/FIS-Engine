@@ -15,6 +15,15 @@
 #include <QDebug>
 
 /*============================================================================
+ * CONSTANTS
+ *============================================================================*/
+const ushort Category::kMAX_VITALITY  = 20000;
+const ushort Category::kMAX_QD        =  5000;
+const ushort Category::kMAX_PHYSICAL  =  5000;
+const ushort Category::kMAX_ELEMENTAL =  3500;
+const ushort Category::kMAX_SPECIAL   =  1000;
+
+/*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
 
@@ -54,7 +63,7 @@ Category::Category(QString name)
 Category::~Category() {}
 
 /*============================================================================
- * FUNCTIONS
+ * PUBLIC FUNCTIONS
  *===========================================================================*/
 
 void Category::cleanUp()

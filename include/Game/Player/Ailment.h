@@ -49,7 +49,7 @@ public:
     TOBECURED   = 1 << 1, /* The ailment is to be cured immediately */
     TOBEUPDATED = 1 << 2, /* Ailment set to be updated on new turn */
     TOBEAPPLIED = 1 << 3, /* Ailment effects set to be applied on new turn */
-    FAVORABLE   = 1 << 4, /* Is this ailment a favorable ailment? */
+    BUFF        = 1 << 4, /* Is this ailment a favorable ailment? */
     ADVERSE     = 1 << 5, /* Is this ailment an adverse ailment? */
     NEUTRAL     = 1 << 6, /* (!FAVORABLE && !ADVERSE) */
     IMMUNITY    = 1 << 7, /* Is the inflicted person immune to this ailment? */
@@ -92,8 +92,24 @@ private:
   static const double kBURN_DMG_INCR; /* The increment (amt) for Burn lvls */
   static const double kBURN_DMG_INIT; /* The inital dmg caused by Burn */
   static const double kBURN_DMG_PC; /* Additional % dmg causedby Burn */
-  // static const double kBERSERK_DMG_INCR; /* % incr in damage against target */
-  // static const double kBERSERK_HITBACK_PC; /* % hitback on victim */
+  static const double kBERSERK_DMG_INCR; /* % incr in damage against target */
+  static const double kBERSERK_HITBACK_PC; /* % hitback on victim */
+  static const ushort kBUBBIFY_MAX_QD; /* Maximum skill's QD cost when Bubby */
+  static const double kBUBBIFY_STAT_MULR; /* % mod for stats while a Bubby */
+  static const double kBLIND_PC; /* % chance Blind will miss attacks */
+  static const double kDREADSTRUCK_PC; /* % Dreadstruck will miss attacks */
+  static const double kDREAMSNARE_PC; /* % Dreamsnare causes attacks to miss */
+  static const double kALLBUFF_PC; /* % by which all buffs will raise stats */
+  static const double kPHYSBUFF_PC; /* % by which phys buffs will raise stats */
+  static const double kELMBUFF_PC; /* % by which elm buffs will raise stats */
+  static const double kLIMBUFF_PC; /* % value by which to incr limb stats */
+  static const double kUNBBUFF_PC; /* % value by which to incr unbbuff stats */
+  static const double kMOMBUFF_PC; /* % value by which to incr momuff stats */
+  static const double kVITBUFF_PC; /* %  by which to incr vitality stats */
+  static const double kQTMNBUFF_PC; /* % values by which to incr QD stats */
+  static const double kROOTBOUND_PC; /* % values by which rootbound increases */
+  static const double kHIBERNATION_INIT; /* % value for initial hibernation */
+  static const double kHIBERNATION_INCR; /* % value by which to increase Hib */
 
 /*============================================================================
  * PRIVATE FUNCTIONS

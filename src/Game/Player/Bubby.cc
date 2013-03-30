@@ -68,7 +68,7 @@ void Bubby::calcExpTable()
  *              sets the pointer to null.
  *
  * Inputs: none
- * Output: bool - TRUE if a sprite was actually set
+ * Output: bool - true if a sprite was actually set
  */
 bool Bubby::setSprite()
 {
@@ -76,15 +76,15 @@ bool Bubby::setSprite()
   if (size >= getTier())
   {
     current_sprite = getType()->getSprites().at(getTier() - 1);
-    return TRUE;
+    return true;
   }
   else if (!getType()->getSprites().isEmpty())
   {
     current_sprite = getType()->getSprites().at(size - 1);
-    return TRUE;
+    return true;
   }
   current_sprite = NULL;
-  return FALSE;
+  return false;
 }
 
 

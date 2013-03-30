@@ -10,12 +10,16 @@
 #include "Game/Player/AttributeSet.h"
 
 /*=============================================================================
+ * CONSTANTS
+ *============================================================================*/
+QVector<QString> AttributeSet::short_names;      /* Vector of Stat names */
+const ushort AttributeSet::kDEFAULT_MIN =     0; /* Default min of a stat */
+const ushort AttributeSet::kDEFAULT_MAX = 20000; /* Default max of a stat */
+const ushort AttributeSet::kMAX_VALUE   = 50000; /* Abs. max value of a stat */
+
+/*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
-QVector<QString> AttributeSet::short_names;
-const ushort AttributeSet::kDEFAULT_MIN =     0;
-const ushort AttributeSet::kDEFAULT_MAX = 20000;
-const ushort AttributeSet::kMAX_VALUE   = 50000;
 
 /*
  * Description: Constructs an attribute set (default min 0 stats and max kMAX)
@@ -93,14 +97,14 @@ void AttributeSet::setUpNames()
  *              minimize string compares.
  *
  * Inputs: Attribute type - the type of
- * Output: bool - TRUE if the stat was found and changed, FALSE otherwise
+ * Output: bool - true if the stat was found and changed, false otherwise
  */
 bool AttributeSet::changeStat(Attribute type, int amount)
 {
   int attr_index = getIndex(type);
   if (attr_index != -1)
     return changeStat(attr_index, amount);
-  return FALSE;
+  return false;
 }
 
 /*
@@ -110,14 +114,14 @@ bool AttributeSet::changeStat(Attribute type, int amount)
  *
  * Inputs: QString - the name or short name of the stat to be changed
  *         int     - the value by which to change the stat
- * Output: bool - TRUE if the stat was found and changed, FALSE otherwise
+ * Output: bool - true if the stat was found and changed, false otherwise
  */
 bool AttributeSet::changeStat(QString name, int amount)
 {
   int attr_index = getIndex(name);
   if (attr_index != -1)
     return changeStat(attr_index, amount);
-  return FALSE;
+  return false;
 }
 
 /*
@@ -125,7 +129,7 @@ bool AttributeSet::changeStat(QString name, int amount)
  *
  * Inputs: int index - index of the stat to be changed.
  *         int amount - amount by which to change the stat
- * Output: bool - TRUE if the stat was found and changed, FALSE otherwise
+ * Output: bool - true if the stat was found and changed, false otherwise
  */
 bool AttributeSet::changeStat(int index, int amount)
 {
@@ -137,9 +141,9 @@ bool AttributeSet::changeStat(int index, int amount)
       values[index] = max_values.at(index);
     else
       values[index] += amount;
-    return TRUE;
+    return true;
   }
-  return FALSE;
+  return false;
 }
 
 /*
@@ -284,7 +288,7 @@ void AttributeSet::setAll(QVector<ushort> stat_values, bool max)
  *              whether you are setting the max stats or regular
  *
  * Inputs: ushort a through s - shorts describing the attributes
- *         bool max - whether setting the max or normal stats (default FALSE)
+ *         bool max - whether setting the max or normal stats (default false)
  * Output: none
  */
 void AttributeSet::setAll(ushort a, ushort b, ushort c, ushort d, ushort e,
@@ -344,7 +348,7 @@ void AttributeSet::setAll(ushort a, ushort b, ushort c, ushort d, ushort e,
  *
  * Inputs: Attribute type - type of attribute to be set
  *         ushort - value to set the attribute
- * Output: bool - TRUE if the attribute was set, FALSE otherwise
+ * Output: bool - true if the attribute was set, false otherwise
  */
 bool AttributeSet::setMax(Attribute type, ushort value)
 {
@@ -357,7 +361,7 @@ bool AttributeSet::setMax(Attribute type, ushort value)
  *
  * Inputs: QString - name of the attribute to be set
  *         ushort - value to set the attribute
- * Output: bool - TRUE if the attribute was set, FALSE otherwise
+ * Output: bool - true if the attribute was set, false otherwise
  */
 bool AttributeSet::setMax(QString name, ushort value)
 {
@@ -369,7 +373,7 @@ bool AttributeSet::setMax(QString name, ushort value)
  *
  * Inputs: int - index of the stat to be set
  *         ushort - value to set the attribute
- * Output: bool - TRUE if the attribute was set, FALSE otherwise
+ * Output: bool - true if the attribute was set, false otherwise
  */
 bool AttributeSet::setMax(int index, ushort value)
 {
@@ -379,9 +383,9 @@ bool AttributeSet::setMax(int index, ushort value)
       max_values[index] = value;
     else
       max_values[index] = kMAX_VALUE;
-    return TRUE;
+    return true;
   }
-  return FALSE;
+  return false;
 }
 
 /*
@@ -391,7 +395,7 @@ bool AttributeSet::setMax(int index, ushort value)
  *
  * Inputs: Attribute type - the Attribute enumerated to be checked
  *         ushort - value to set the attribute
- * Output: bool - TRUE if the attribute was set, FALSE otherwise
+ * Output: bool - true if the attribute was set, false otherwise
  */
 bool AttributeSet::setStat(Attribute type, ushort value)
 {
@@ -405,7 +409,7 @@ bool AttributeSet::setStat(Attribute type, ushort value)
  *
  * Inputs: QString - name of the attribute to be set
  *         ushort - value to set the attribute
- * Output: bool - TRUE if the attribute was set, FALSE otherwise
+ * Output: bool - true if the attribute was set, false otherwise
  */
 bool AttributeSet::setStat(QString name, ushort value)
 {
@@ -417,16 +421,16 @@ bool AttributeSet::setStat(QString name, ushort value)
  *
  * Inputs: int - index of the Attribute to be checked
  *         ushort - value to set the attribute
- * Output: bool - TRUE if the attribute was set, FALSE otherwise
+ * Output: bool - true if the attribute was set, false otherwise
  */
 bool AttributeSet::setStat(int index, ushort value)
 {
   if (index != -1 && value <= max_values.at(index) && value < kMAX_VALUE)
   {
     values[index] = value;
-    return TRUE;
+    return true;
   }
-  return FALSE;
+  return false;
 }
 
 /*=============================================================================

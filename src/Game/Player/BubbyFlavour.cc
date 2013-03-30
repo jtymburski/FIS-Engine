@@ -9,9 +9,14 @@
 #include "Game/Player/BubbyFlavour.h"
 
 /*============================================================================
+ * CONSTANTS
+ *===========================================================================*/
+const ushort BubbyFlavour::kTIER_CAP    = 3; /* Max # of Bubby Tiers */
+QVector<QString> BubbyFlavour::flavour_list; /* Vector of Flavour names */
+
+/*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
-QVector<QString> BubbyFlavour::flavour_list;
 
 /*
  * Description: Constructs a BubbyFlavour object (representing a type of bubby)
@@ -46,35 +51,20 @@ BubbyFlavour::~BubbyFlavour() {}
  * Description: Adds a flavour to the vector.
  *
  * Inputs: QString new_flavour - new flavour to add to the vector.
- * Output: bool - TRUE if the flavour was added.
+ * Output: bool - true if the flavour was added.
  */
 bool BubbyFlavour::addFlavour(QString new_flavour)
 {
   if (isFlavour(new_flavour) + 1)
-    return FALSE;
+    return false;
   else
     flavour_list.push_back(new_flavour);
-  return TRUE;
+  return true;
 }
 
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
-
-/*
- * Description: Checks if a flavour with a given name has already been
- *              instantiated.
- *
- * Inputs: QString - name of the flavour to check.
- * Output: int - returned as -1 if the flavour does not exist, otherwise its
- *               index
- */
-int BubbyFlavour::isFlavour(QString flavour_name)
-{
-  if (flavour_list.contains(flavour_name))
-    return flavour_list.indexOf(flavour_name);
-  return -1;
-}
 
 /*
  * Description: Returns the pointer to the attribute set of the BubbyFlavour.
@@ -193,12 +183,12 @@ void BubbyFlavour::setSkillSet(SkillSet* new_skill_list)
  *              just add the first #oftiers of sprite pointers.
  *
  * Inputs: none
- * Output: bool - TRUE if the sprites were assigned
+ * Output: bool - true if the sprites were assigned
  */
 bool BubbyFlavour::setSprites(QVector<Sprite*> new_sprites)
 {
   if (new_sprites.isEmpty())
-    return FALSE;
+    return false;
 
   /* Clear the sprite vectors before adding */
   qDeleteAll(sprites.begin(), sprites.end());
@@ -211,5 +201,24 @@ bool BubbyFlavour::setSprites(QVector<Sprite*> new_sprites)
         sprites.push_back(new_sprites.at(i));
 
   sprites.squeeze();
-  return TRUE;
+  return true;
+}
+
+/*============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
+
+/*
+ * Description: Checks if a flavour with a given name has already been
+ *              instantiated.
+ *
+ * Inputs: QString - name of the flavour to check.
+ * Output: int - returned as -1 if the flavour does not exist, otherwise its
+ *               index
+ */
+int BubbyFlavour::isFlavour(QString flavour_name)
+{
+  if (flavour_list.contains(flavour_name))
+    return flavour_list.indexOf(flavour_name);
+  return -1;
 }

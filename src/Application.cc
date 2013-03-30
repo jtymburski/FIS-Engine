@@ -29,7 +29,7 @@ Application::Application(QWidget* parent)
   setFocus(Qt::OtherFocusReason);
   setFocusProxy(title_screen);
 
-  QObject::connect(title_screen, SIGNAL(closing()), 
+  QObject::connect(title_screen, SIGNAL(closing()),
                    this,         SLOT(close()));
   QObject::connect(title_screen, SIGNAL(openingBattle(int)), 
                    this,         SLOT(switchWidget(int)));
