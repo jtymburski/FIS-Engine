@@ -920,7 +920,7 @@ bool FileHandler::writeRegularLine(QString line)
 bool FileHandler::writeXmlData(QString element, VarType type, QString data)
 {
   /* Only move foward if element string isn't empty */
-  if(!element.isEmpty())
+  if(!element.isEmpty() && !data.isEmpty())
   {
     xml_writer->writeStartElement(element);
     xml_writer->writeAttribute("type", QString::number(type));
