@@ -16,9 +16,6 @@
 /* Constants */
 #define kDOUBLE_DIGITS 10
 
-/* Enum declaration for direction of linked list */
-enum { REVERSE, FORWARD };
-
 class Sprite
 {
 public:
@@ -34,6 +31,9 @@ public:
   /* Destructor function */
   ~Sprite();
 
+  /* Public enumerators */
+  enum { REVERSE, FORWARD };
+
 private:
   /* The current frame */
   Frame* current;
@@ -47,6 +47,9 @@ private:
   /* Direction */
   bool direction;
 
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 public:
   /* Inserts the image into the sprite sequence at the given position */
   bool insert(QString image_path, int position);

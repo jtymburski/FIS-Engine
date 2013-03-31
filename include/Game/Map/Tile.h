@@ -16,33 +16,26 @@
 #include "Game/Sprite.h"
 #include "GridShifter.h"
 
-/* STATUSOFF - Not rendered at all
- * ACTIVE - Rendered
- * INACTIVE - Blacked out (sector past a door) */
-enum Status{STATUSOFF, ACTIVE, INACTIVE};
-
-/* UNSET - The impassable object is unused
- * DECOR - The impassable object is an object (Tree, etc)
- * PERSON - The impassable object is a person (player, npc) */
-enum ImpassableObjectState{UNSET, DECOR, PERSON};
-
 class Tile : public QWidget
 {
     Q_OBJECT
+
 public:
   /* Constructor function */
   Tile(int width, int height, int x = 0, int y = 0, QWidget* parent = 0);
 
   /* Destructor function */
   ~Tile();
+  
+  /* UNSET - The impassable object is unused
+   * DECOR - The impassable object is an object (Tree, etc)
+   * PERSON - The impassable object is a person (player, npc) */
+  enum ImpassableObjectState{UNSET, DECOR, PERSON};
 
-protected:
-  void paintEvent(QPaintEvent*);
-
-  //TODO: Get rid of this once the map editor is complete
-  void mousePressEvent(QMouseEvent *);
-  void enterEvent(QEvent *);
-  void leaveEvent(QEvent *);
+  /* STATUSOFF - Not rendered at all
+   * ACTIVE - Rendered
+   * INACTIVE - Blacked out (sector past a door) */
+  enum Status{STATUSOFF, ACTIVE, INACTIVE};
 
 private: 
   //TODO: Get rid of this once the map editor is complete
@@ -83,6 +76,20 @@ private:
   /* The passibility of each direction of the tile */
   bool north_passibility,east_passibility,south_passibility,west_passibility;
 
+/*============================================================================
+ * PROTECTED FUNCTIONS
+ *===========================================================================*/
+protected:
+  void paintEvent(QPaintEvent*);
+
+  //TODO: Get rid of this once the map editor is complete
+  void mousePressEvent(QMouseEvent *);
+  void enterEvent(QEvent *);
+  void leaveEvent(QEvent *);
+
+/*============================================================================
+ * PUBLIC FUNCTIONS (SLOTS? - not all!)
+ *===========================================================================*/
 public slots:
   /* Animates all sprites on tile (Including thing and walkover sprites) */
   void animate();

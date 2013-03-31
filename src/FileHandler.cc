@@ -27,7 +27,7 @@ const uint32_t FileHandler::kKEY[] = {1073676287u,27644437u,
  *===========================================================================*/
 FileHandler::FileHandler()
 {
-  available = FALSE;
+  available = false;
   file_date = "";
   file_name_temp = "";
   xml_data = "";
@@ -35,15 +35,15 @@ FileHandler::FileHandler()
   xml_reader = 0;
   xml_writer = 0;
 
-  setEncryptionEnabled(FALSE);
+  setEncryptionEnabled(false);
   setFilename("");
   setFileType(REGULAR);
-  setWriteEnabled(FALSE);
+  setWriteEnabled(false);
 }
 
 FileHandler::~FileHandler()
 {
-  stop(TRUE);
+  stop(true);
 
   delete xml_reader;
   xml_reader = 0;
@@ -65,7 +65,7 @@ QByteArray FileHandler::computeMd5(QByteArray data)
 
 /*
  * CHECKED:
- * Returns FALSE only if data is unset
+ * Returns false only if data is unset
  */
 bool FileHandler::decryptData(uint32_t* data)
 {
@@ -93,11 +93,11 @@ bool FileHandler::decryptData(uint32_t* data)
 
     } while((sum -= kDELTA) != 0);
     
-    return TRUE;
+    return true;
   }
 
   qDebug() << "[ERROR] File block decryption failed on null data";
-  return FALSE;
+  return false;
 }
 
 /* 
@@ -113,7 +113,7 @@ QString FileHandler::decryptLine(QString line, bool* success)
   QString decrypted_line;
   int* line_data;
   int line_length;
-  bool status = TRUE;
+  bool status = true;
 
   /* Convert line data into long to be decrypted */
   line_length = stringToInt(line, &line_data);
@@ -142,7 +142,7 @@ QString FileHandler::decryptLine(QString line, bool* success)
     {
       delete[] line_data;
       line_data = longToInt(compressed_data, compressed_length);
-      decrypted_line = intToString(line_data, line_length, TRUE);
+      decrypted_line = intToString(line_data, line_length, true);
     }
     else
     {
@@ -151,7 +151,7 @@ QString FileHandler::decryptLine(QString line, bool* success)
   }
   else
   {
-    status = FALSE;
+    status = false;
     decrypted_line = "";
     qDebug() << "[ERROR] Invalid data from file for line decrypt.";
   }
@@ -208,16 +208,16 @@ bool FileHandler::encryptData(uint32_t* data)
 
     } while(--rounds);
     
-    return TRUE;
+    return true;
   }
   
   qDebug() << "[ERROR] File block encryption failed on null data";
-  return FALSE;
+  return false;
 }
 
 /* 
  * CHECKED:
- * Returns success status based on encryption. TRUE is success.
+ * Returns success status based on encryption. true is success.
  *  Often, the string will be empty if it fails
  */
 QString FileHandler::encryptLine(QString line, bool* success)
@@ -228,10 +228,10 @@ QString FileHandler::encryptLine(QString line, bool* success)
   QString encrypted_line;
   int* line_data;
   int line_length;
-  bool status = TRUE;
+  bool status = true;
 
   /* Convert line data into long to be encrypted */
-  line_length = stringToInt(line, &line_data, TRUE);
+  line_length = stringToInt(line, &line_data, true);
   compressed_data = intToLong(line_data, line_length);
   compressed_length = line_length / kASCII_IN_LONG;
 
@@ -268,7 +268,7 @@ QString FileHandler::encryptLine(QString line, bool* success)
   }
   else
   {
-    status = FALSE;
+    status = false;
     encrypted_line = "";
     qDebug() << "[ERROR] Data compression size encrypt computation failed.";
   }
@@ -296,7 +296,7 @@ QString FileHandler::encryptLine(QString line, bool* success)
 
 /*
  * CHECKED:
- * Returns TRUE if file closed successfuly.
+ * Returns true if file closed successfuly.
  */
 bool FileHandler::fileClose()
 {
@@ -305,16 +305,16 @@ bool FileHandler::fileClose()
 
   /* Determine if close was successful */
   if(!file_stream.is_open())
-    return TRUE;
+    return true;
 
   /* If the strema close fails, notify the user */
   qDebug() << "[ERROR] File close with \"" << file_name << "\" failed.";
-  return FALSE;
+  return false;
 }
 
 /*
  * CHECKED:
- * Returns TRUE if open stream was successful and stream is good
+ * Returns true if open stream was successful and stream is good
  */
 bool FileHandler::fileOpen()
 {
@@ -328,12 +328,12 @@ bool FileHandler::fileOpen()
 
   /* Determine if the open was successful */
   if(file_stream.good())
-    return TRUE;
+    return true;
 
-  /* If the stream isn't good, reclose and return FALSE */
+  /* If the stream isn't good, reclose and return false */
   qDebug() << "[ERROR] File open with \"" << file_name << "\" failed.";
   fileClose();
-  return FALSE;
+  return false;
 }
 
 /* 
@@ -376,7 +376,7 @@ uint32_t* FileHandler::intToLong(int* line_data, int length)
  */
 QString FileHandler::intToString(int* line_data, int length, bool decrypting)
 {
-  bool end_reached = FALSE;
+  bool end_reached = false;
   QString line = "";
   int line_count = length - 1;
 
@@ -388,7 +388,7 @@ QString FileHandler::intToString(int* line_data, int length, bool decrypting)
       if(line_data[line_count] >= kPADDING_ASCII)
         line_data[line_count] = kMAX_ASCII+1;
       else
-        end_reached = TRUE;
+        end_reached = true;
     } while(!end_reached && --line_count >= 0);
   }
 
@@ -459,9 +459,9 @@ QString FileHandler::readLine(bool* done, bool* success)
   std::string line;
 
   if(done != 0)
-    *done = FALSE;
+    *done = false;
   if(success != 0)
-    *success = TRUE;
+    *success = true;
 
   if(available && !file_write)
   {
@@ -476,20 +476,20 @@ QString FileHandler::readLine(bool* done, bool* success)
     }
 
     if(done != 0)
-      *done = TRUE;
+      *done = true;
     return "";
   }
 
   if(success != 0)
-    *success = FALSE;
+    *success = false;
   return "";
 }
 
 bool FileHandler::readMd5()
 {
-  bool complete = FALSE;
+  bool complete = false;
   QString md5_value = "";
-  bool success = TRUE;
+  bool success = true;
 
   /* Only proceed if file is in read mode and encryption is enabled */
   if(!file_write && encryption_enabled)
@@ -501,7 +501,7 @@ bool FileHandler::readMd5()
     if(available)
     {
       success &= fileClose();
-      available = FALSE;
+      available = false;
     }
 
     /* Proceed to open the file for parsing */
@@ -511,7 +511,7 @@ bool FileHandler::readMd5()
     /* Parse the file */
     if(success)
     {
-      available = TRUE;
+      available = true;
       md5_value = readRegularLine(&complete, &success);
       
       while(!complete && success)
@@ -520,18 +520,18 @@ bool FileHandler::readMd5()
 
     /* Check the MD5 */
     if(success && (QString(computeMd5(file_data)) == md5_value))
-      success = TRUE;
+      success = true;
     else
-      success = FALSE;
+      success = false;
     
     /* Close the file */
     success &= fileClose();
-    available = FALSE;
+    available = false;
   }
   else
   {
     qDebug() << "[ERROR] Md5 read failed due to system not in read mode.";
-    return FALSE;
+    return false;
   }
 
   return success;
@@ -541,7 +541,7 @@ bool FileHandler::setTempFileName()
 {
   if(!available)
   {
-    bool complete = FALSE;
+    bool complete = false;
     int i = 0;
     QString name;
   
@@ -551,7 +551,7 @@ bool FileHandler::setTempFileName()
              QString::number(kFILE_NAME_LIMIT + i);
 
       if(!fileExists(name))
-        complete = TRUE;
+        complete = true;
     
       i++;
     }
@@ -559,10 +559,10 @@ bool FileHandler::setTempFileName()
     if(i < kFILE_NAME_LIMIT)
     {
       file_name_temp = name;
-      return TRUE;
+      return true;
     }
   }
-  return FALSE;
+  return false;
 }
 
 /*
@@ -623,21 +623,21 @@ int FileHandler::stringToInt(QString line, int** line_data, bool encrypting)
 
 /*
  * CHECKED:
- * Returns TRUE if file available only
+ * Returns true if file available only
  */
 bool FileHandler::topOfFile()
 {
   if(available)
   {
     file_stream.seekg(0);
-    return TRUE;
+    return true;
   }
-  return FALSE;
+  return false;
 }
 
 bool FileHandler::writeLine(QString line)
 {
-  bool success = TRUE;
+  bool success = true;
   QString new_line;
 
   if(available && file_write)
@@ -656,7 +656,7 @@ bool FileHandler::writeLine(QString line)
 
     return success;
   }
-  return FALSE;
+  return false;
 }
 
 /*
@@ -685,7 +685,7 @@ int FileHandler::wrapNumber(int value, int limit)
 
 bool FileHandler::writeMd5(QByteArray data)
 {
-  bool success = TRUE;
+  bool success = true;
 
   /* Take the initial hash */
   QByteArray hash = computeMd5(data);
@@ -703,12 +703,12 @@ bool FileHandler::writeMd5(QByteArray data)
 
 bool FileHandler::xmlStart()
 {
-  xml_writer->setAutoFormatting(TRUE);
+  xml_writer->setAutoFormatting(true);
   xml_writer->setAutoFormattingIndent(2);
   xml_depth = 0;
   xml_writer->writeStartDocument();
 
-  return TRUE;
+  return true;
 }
 
 bool FileHandler::xmlEnd()
@@ -722,7 +722,7 @@ bool FileHandler::xmlEnd()
       writeLine(str);
 
 
-  return TRUE;
+  return true;
 }
 
 /*============================================================================
@@ -761,13 +761,13 @@ bool FileHandler::isWriteEnabled()
 QString FileHandler::readRegularLine(bool* done, bool* success)
 {
   if(done != 0)
-    *done = FALSE;
+    *done = false;
 
   if(file_type == REGULAR)
     return readLine(done, success);
 
   if(success != 0)
-    *success = FALSE;
+    *success = false;
   return "";
 }
 
@@ -798,13 +798,13 @@ void FileHandler::setWriteEnabled(bool enable)
  */
 bool FileHandler::start()
 {
-  bool success = TRUE;
+  bool success = true;
 
   if(!file_name.isEmpty())
   {
     /* Stop the system first if it's already running */
     if(available)
-      success &= stop(TRUE);
+      success &= stop(true);
   
     /* Clear the file data array */
     file_data.clear();
@@ -838,7 +838,7 @@ bool FileHandler::start()
     /* Write the success status, if available */
     if(success)
     {
-      available = TRUE;
+      available = true;
   
       /* For a readable file with encryption, first line is Md5 -> throw away */
       if(!file_write && encryption_enabled)
@@ -865,13 +865,13 @@ bool FileHandler::start()
 
     /* Stop the program if there is any problems and halt operation */
     if(!success)
-      stop(TRUE);
+      stop(true);
 
     return success;
   }
 
   qDebug() << "[ERROR] Filename is empty and unset";
-  return FALSE;
+  return false;
 }
 
 /*
@@ -880,7 +880,7 @@ bool FileHandler::start()
  */
 bool FileHandler::stop(bool failed)
 {
-  bool success = TRUE;
+  bool success = true;
 
   if(file_write && file_type == XML)
     xmlEnd();
@@ -899,11 +899,11 @@ bool FileHandler::stop(bool failed)
   /* If success, reopen the class availability */
   if(success)
   {
-    available = FALSE;
+    available = false;
 
     /* If on write and successful, remove temporary file */
     if(file_write && !failed)
-      fileRename(file_name_temp, file_name, TRUE);
+      fileRename(file_name_temp, file_name, true);
     else if(file_write)
       fileDelete(file_name_temp);
   }
@@ -914,7 +914,7 @@ bool FileHandler::writeRegularLine(QString line)
 {
   if(file_type == REGULAR)
     return writeLine(line);
-  return FALSE;
+  return false;
 }
 
 bool FileHandler::writeXmlData(QString element, VarType type, QString data)
@@ -927,9 +927,9 @@ bool FileHandler::writeXmlData(QString element, VarType type, QString data)
     xml_writer->writeCharacters(data);
     xml_writer->writeEndElement();
 
-    return TRUE;
+    return true;
   }
-  return FALSE;
+  return false;
 }
 
 bool FileHandler::writeXmlElement(QString element, QString key, QString value)
@@ -944,9 +944,9 @@ bool FileHandler::writeXmlElement(QString element, QString key, QString value)
 
     xml_depth++;
 
-    return TRUE;
+    return true;
   }
-  return FALSE;
+  return false;
 }
 
 bool FileHandler::writeXmlElementEnd(bool all)
@@ -965,9 +965,9 @@ bool FileHandler::writeXmlElementEnd(bool all)
       xml_writer->writeEndElement();
       xml_depth--;
     }
-    return TRUE;
+    return true;
   }
-  return FALSE;
+  return false;
 }
 
 /*============================================================================
@@ -977,7 +977,7 @@ bool FileHandler::fileDelete(QString filename)
 {
   if(fileExists(filename))
     return !std::remove(filename.toStdString().c_str());
-  return FALSE;
+  return false;
 }
 
 bool FileHandler::fileExists(QString filename)
@@ -995,5 +995,5 @@ bool FileHandler::fileRename(QString old_filename, QString new_filename,
   if(fileExists(old_filename) && !fileExists(new_filename))
     return !std::rename(old_filename.toStdString().c_str(),
                         new_filename.toStdString().c_str());
-  return FALSE;
+  return false;
 }

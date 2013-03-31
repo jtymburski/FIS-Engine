@@ -9,17 +9,17 @@
 
 #include <QtGui/QWidget>
 
-/* The types of actions available(Will be added as needed) */
-enum SectorActionType{CUTSCENE,DIALOG};
-
 class SectorAction : public QWidget
 {
 public:
   /* Constructor function */
-  SectorAction(QWidget *parent = 0);
+  SectorAction(QWidget* parent = 0);
 
   /* Destructor function */
   ~SectorAction();
+
+  /* Public enumerators */
+  enum SectorActionType{CUTSCENE, DIALOG};
 
 private:
   /* Maximum number of times this action can be triggered */
@@ -37,6 +37,9 @@ private:
   /* Flag for if this is a leave trigger */
   bool LEAVE;
 
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 public:
   /* True if the action can be performed */
   bool isValid();

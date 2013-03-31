@@ -101,12 +101,12 @@ bool Sprite::insert(QString image_path, int position)
         head = new_frame;
 
       size++;
-      return TRUE;
+      return true;
     }
     delete new_frame;
   }
 
-  return FALSE;
+  return false;
 }
 
 /* 
@@ -128,11 +128,11 @@ bool Sprite::insertFirst(QString image_path)
       head->setPrevious(head);
       current = head;
       size = 1;
-      return TRUE;
+      return true;
     }
     delete head;
   }
-  return FALSE;
+  return false;
 }
 
 /* 
@@ -150,11 +150,11 @@ bool Sprite::insertFirst(QString image_path)
 bool Sprite::insertSequence(QString head_path, int num_frames, 
 		                        QString tail_path)
 {
-  bool status = TRUE;
+  bool status = true;
 
   /* Test if there are sufficient frames */
   if(num_frames <= 0)
-    status = FALSE;
+    status = false;
 
   /* Store the initial condition */
   int old_size = size;
@@ -194,13 +194,13 @@ bool Sprite::insertTail(QString image_path)
  * Description: Checks if the linked list pointer is at the head of the list 
  *
  * Inputs: none
- * Output: bool - returns TRUE if the current pointer is at the head
+ * Output: bool - returns true if the current pointer is at the head
  */
 bool Sprite::isAtFirst()
 {
   if(head == current)
-    return TRUE;
-  return FALSE;
+    return true;
+  return false;
 }
 
 /* 
@@ -250,10 +250,10 @@ bool Sprite::remove(int position)
       current = head;
     }
 
-    return TRUE;
+    return true;
   }
   
-  return FALSE;
+  return false;
 }
 
 /* 
@@ -266,10 +266,10 @@ bool Sprite::remove(int position)
  */
 bool Sprite::removeAll()
 {
-  bool status = TRUE;
+  bool status = true;
 
   if(size == 0)
-    status = FALSE;
+    status = false;
 
   while(size > 0)
     status = status & removeTail();
@@ -305,10 +305,10 @@ bool Sprite::shift(int position)
       new_current_frame = new_current_frame->getNext();
     current = new_current_frame;
 
-    return TRUE;
+    return true;
   }
 
-  return FALSE;
+  return false;
 }
 
 /* 
@@ -325,9 +325,9 @@ bool Sprite::shiftNext()
       current = current->getNext();
     else
       current = current->getPrevious();
-    return TRUE;
+    return true;
   }
-  return FALSE;
+  return false;
 }
 
 /* 
@@ -417,7 +417,7 @@ int Sprite::getSize()
 bool Sprite::setDirectionForward()
 {
   direction = FORWARD;
-  return TRUE;
+  return true;
 }
 
 /* 
@@ -431,7 +431,7 @@ bool Sprite::setDirectionForward()
 bool Sprite::setDirectionReverse()
 {
   direction = REVERSE;
-  return TRUE;
+  return true;
 }
 
 /* 
@@ -444,5 +444,5 @@ bool Sprite::setDirectionReverse()
 bool Sprite::setAtFirst()
 {
   current = head;
-  return TRUE;
+  return true;
 }

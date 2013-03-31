@@ -31,7 +31,7 @@
 Sound::Sound(QString path, int loop_count)
 {
   sound = NULL;
-  sound_set = FALSE;
+  sound_set = false;
   channel = kUNSET_CHANNEL;
 
   setSoundFile(path);
@@ -47,7 +47,7 @@ Sound::Sound(QString path, int loop_count)
 Sound::Sound()
 {
   sound = NULL;
-  sound_set = FALSE;
+  sound_set = false;
   channel = kUNSET_CHANNEL;
 
   setPlayCount(0);
@@ -145,15 +145,15 @@ bool Sound::setSoundFile(QString path)
     if(sound == NULL)
     {
       qDebug() << "[ERROR]Unable to load WAV file: " << Mix_GetError();
-      return FALSE;
+      return false;
     }
 
-    sound_set = TRUE;
-    return TRUE;
+    sound_set = true;
+    return true;
   }
 
   qDebug() << "[ERROR]Unable to load empty WAV file path";
-  return FALSE;
+  return false;
 }
 
 /* 
@@ -177,9 +177,9 @@ bool Sound::setPlayCount(int play_count)
   else
   {
     loop_count = 0;
-    return FALSE;
+    return false;
   }
-  return TRUE;
+  return true;
 }
 
 /* 
@@ -199,10 +199,10 @@ bool Sound::unsetSoundFile()
   {
     Mix_FreeChunk(sound);
     sound = NULL;
-    sound_set = FALSE;
-    return TRUE;
+    sound_set = false;
+    return true;
   }
 
   sound = NULL;
-  return FALSE;
+  return false;
 }

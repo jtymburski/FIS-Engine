@@ -477,7 +477,7 @@ void Map::interact(Direction dir)
 bool Map::isInSector(int index)
 {
     (void)index;//warning
-    return TRUE;
+    return true;
 }
 
 /* Shifts the viewport */
@@ -495,7 +495,7 @@ bool Map::passible(Direction dir, int x, int y)
     (void)dir;//warning
     (void)x;//warning
     (void)y;//warning
-    return TRUE;
+    return true;
 }
 
 /* Causes the thing you are moving into to start its interactive action */
@@ -526,7 +526,7 @@ QVector<int> Map::visibleNPCs()
 bool Map::zNPCInViewport(int index)
 {
     (void)index;//warning
-    return TRUE;
+    return true;
 }
 
 /* Gets a pointer to the NPC in the given position in the NPC vector */

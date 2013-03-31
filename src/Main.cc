@@ -12,14 +12,14 @@
 int main(int argc, char *argv[])
 {
   /* Testing code for file handler */
-  bool done = FALSE;
+  bool done = false;
   FileHandler fh;
-  fh.setEncryptionEnabled(FALSE);
+  fh.setEncryptionEnabled(false);
   fh.setFilename("TEST.log");
   fh.setFileType(FileHandler::XML);
   
   /* Read */
-  fh.setWriteEnabled(FALSE);
+  fh.setWriteEnabled(false);
   if(fh.start())
   {
     qDebug() << "Reading: " << fh.getDate();
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
   }
 
   /* Write */
-  fh.setWriteEnabled(TRUE);
+  fh.setWriteEnabled(true);
   if(fh.start())
   {
     qDebug() << "Writing: " << fh.getDate();
@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
     fh.writeXmlElement("person");
     fh.writeXmlData("name", FileHandler::STRING, "john");
 
-    fh.stop(FALSE);
+    fh.stop(false);
   }
   else
   {

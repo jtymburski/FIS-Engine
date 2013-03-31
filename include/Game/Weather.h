@@ -16,13 +16,10 @@ class Weather : public QWidget
 {
 public:
   /* Constructor function */
-  Weather(QWidget *parent = NULL);
+  Weather(QWidget* parent = NULL);
 
   /* Destructor function */
   ~Weather();
-
-protected:
-  void paintEvent(QPaintEvent *);
 
 private:
   /* Whether the weather is enabled or not */
@@ -37,6 +34,15 @@ private:
   /* The seamless texture that represents the weather condition */
   Sprite* texture_overlay;
 
+/*============================================================================
+ * PROTECTED FUNCTIONS
+ *===========================================================================*/
+protected:
+  void paintEvent(QPaintEvent *);
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 public:
   /* Flips the weather bit */
   void toggleEnabled();

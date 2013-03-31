@@ -17,9 +17,6 @@ public:
 
   /* Destructor function */
   ~MapBubby();
-
-private:
-
 };
 
 #endif // MAPBUBBY_H

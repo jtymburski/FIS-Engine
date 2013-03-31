@@ -19,7 +19,7 @@ SectorAction::~SectorAction()
 /* True if the action can be performed */
 bool SectorAction::isValid()
 {
-    return TRUE;
+    return true;
 }
 
 /* Performs the sector action */

@@ -125,7 +125,7 @@ void TitleScreen::incrementState()
 }
 
 /* Changes the menu to state s and the given index */
-void TitleScreen::iterate(State titlestate, int index)
+void TitleScreen::iterate(MenuState titlestate, int index)
 {
     (void)titlestate; //warning
     (void)index; //warning
@@ -143,10 +143,10 @@ bool TitleScreen::setSelectedMenu(int menu_count)
     QPalette pal(option_labels[menu_count]->palette());
     pal.setColor(QPalette::Background, QColor(28,76,46,64)); // R,G,B,A
     option_labels[menu_count]->setPalette(pal);
-    return TRUE;
+    return true;
   }
 
-  return FALSE;
+  return false;
 }
 
 bool TitleScreen::setState(int index)
@@ -156,9 +156,9 @@ bool TitleScreen::setState(int index)
     unsetSelectedMenu(cursor_index);
     cursor_index = index;
     setSelectedMenu(cursor_index);
-    return TRUE;
+    return true;
   }
-  return FALSE;
+  return false;
 }
 
 void TitleScreen::setup()
@@ -193,8 +193,8 @@ bool TitleScreen::unsetSelectedMenu(int menu_count)
     QPalette pal(option_labels[menu_count]->palette());
     pal.setColor(QPalette::Background, QColor(Qt::black));
     option_labels[menu_count]->setPalette(pal);
-    return TRUE;
+    return true;
   }
 
-  return FALSE; 
+  return false; 
 }

@@ -28,7 +28,7 @@ class Map : public QWidget
 
 public:
   /* Constructor function */
-  Map(QWidget *parent = 0);
+  Map(QWidget* parent = 0);
 
   /* Destructor function */
   ~Map();
@@ -59,17 +59,44 @@ private:
    * a later time) */
   Weather* weather_effect;
 
+/*============================================================================
+ * PROTECTED FUNCTIONS
+ *===========================================================================*/
 protected:
   void paintEvent(QPaintEvent*);
   void keyPressEvent(QKeyEvent*);
 
+/*============================================================================
+ * SLOTS
+ *===========================================================================*/
 public slots:
   void closeMap();
 
+/*============================================================================
+ * SIGNALS
+ *===========================================================================*/
 signals:
   void closingMap(int index);
 
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 public:
+  /* Gets a pointer to the NPC in the given position in the NPC vector */
+  Person* getNPC(int index);
+
+  /* Gets x position of NPC in the given position in the NPC vector */
+  int getNPCx(int index);
+
+  /* Gets y position of NPC in the given position in the NPC vector */
+  int getNPCy(int index);
+
+   /* Gets players x position */
+  int getPlayerX();
+
+  /* Gets players y position */
+  int getPlayerY();
+
   /* Causes the thing you are facing and next to start its interactive action */
   void interact(Direction dir);
 
@@ -98,21 +125,6 @@ public:
   /* Checks if the NPC at the given index in the NPC vector is in the current 
    * viewport */
   bool zNPCInViewport(int index);
-
-  /* Gets a pointer to the NPC in the given position in the NPC vector */
-  Person* getNPC(int index);
-
-  /* Gets x position of NPC in the given position in the NPC vector */
-  int getNPCx(int index);
-
-  /* Gets y position of NPC in the given position in the NPC vector */
-  int getNPCy(int index);
-
-   /* Gets players x position */
-  int getPlayerX();
-
-  /* Gets players y position */
-  int getPlayerY();
 };
 
 #endif

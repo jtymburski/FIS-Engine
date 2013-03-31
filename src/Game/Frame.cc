@@ -92,8 +92,8 @@ bool Frame::setImage(QString path)
     return image_set;
   }
 
-  image_set = FALSE;
-  return FALSE;
+  image_set = false;
+  return false;
 }
 
 /* 
@@ -106,7 +106,7 @@ bool Frame::setNext(Frame* next)
 {
   this->next = next;
 
-  return TRUE; // can't fail so always true
+  return true; // can't fail so always true
 }
 
 /* 
@@ -119,5 +119,5 @@ bool Frame::setPrevious(Frame* previous)
 {
   this->previous = previous;
 
-  return TRUE; // can't fail so always true
+  return true; // can't fail so always true
 }

@@ -15,7 +15,7 @@ class Options : public QWidget
 {
 public:
 
-  Options(QWidget *parent =0);
+  Options(QWidget* parent =0);
   ~Options();
 
 private:
@@ -39,8 +39,10 @@ private:
   /* Flag for battle animations */
   bool ANIMATIONS; 
 
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 public:
-
   /* Gets the value of the given option */
   int getOption(QString s); 
 

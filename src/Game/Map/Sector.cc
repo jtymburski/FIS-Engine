@@ -23,7 +23,7 @@ void Sector::paintEvent(QPaintEvent* event)
 }
 
 /* Sets all tiles in the sector to the given Status */
-void Sector::setStatus(Status status)
+void Sector::setStatus(Tile::Status status)
 {
     (void)status;
 }

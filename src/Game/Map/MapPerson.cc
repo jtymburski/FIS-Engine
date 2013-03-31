@@ -118,9 +118,9 @@ bool MapPerson::isMirrored()
 bool MapPerson::isMoving()
 {
     if(MOVING_EAST || MOVING_NORTH || MOVING_SOUTH || MOVING_WEST)
-        return TRUE;
+        return true;
     else
-        return FALSE;
+        return false;
 }
 
 /* Gets the RENDERING evaluation */
@@ -132,7 +132,7 @@ bool MapPerson::isRendering()
 /* Returns true if the player is wall moving */
 bool MapPerson::isWallMoving()
 {
-    return TRUE;
+    return true;
 }
 
 /* Sets the person to be moving east */

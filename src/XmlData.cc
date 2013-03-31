@@ -111,10 +111,10 @@ bool XmlData::addElement(QString element, QString key, QString value)
       this->value.append("");
     }
 
-    return TRUE;
+    return true;
   }
 
-  return FALSE;
+  return false;
 }
 
 bool XmlData::clearElements()
@@ -124,20 +124,20 @@ bool XmlData::clearElements()
     element.clear();
     key.clear();
     value.clear();
-    return TRUE;
+    return true;
   }
-  return FALSE;
+  return false;
 }
 
 bool XmlData::clearData()
 {
   data_type = NONE;
-  bool_data = FALSE;
+  bool_data = false;
   double_data = 0.0;
   int_data = 0;
   string_data.clear();
   
-  return TRUE;
+  return true;
 }
 
 bool XmlData::getDataBool(bool* success)
@@ -146,14 +146,14 @@ bool XmlData::getDataBool(bool* success)
   if(data_type == BOOLEAN)
   {
     if(success != 0)
-      *success = TRUE;
+      *success = true;
     return bool_data;
   }
 
   /* Otherwise, return fail status */
   if(success != 0)
-    *success = FALSE;
-  return FALSE;
+    *success = false;
+  return false;
 }
 
 double XmlData::getDataFloat(bool* success)
@@ -162,13 +162,13 @@ double XmlData::getDataFloat(bool* success)
   if(data_type == FLOAT)
   {
     if(success != 0)
-      *success = TRUE;
+      *success = true;
     return double_data;
   }
 
   /* Otherwise, return fail status */
   if(success != 0)
-    *success = FALSE;
+    *success = false;
   return 0.0;
 }
 
@@ -178,13 +178,13 @@ int XmlData::getDataInteger(bool* success)
   if(data_type == INTEGER)
   {
     if(success != 0)
-      *success = TRUE;
+      *success = true;
     return int_data;
   }
 
   /* Otherwise, return fail status */
   if(success != 0)
-    *success = FALSE;
+    *success = false;
   return 0;
 }
 
@@ -194,13 +194,13 @@ QString XmlData::getDataString(bool* success)
   if(data_type == STRING)
   {
     if(success != 0)
-      *success = TRUE;
+      *success = true;
     return string_data;
   }
 
   /* Otherwise, return fail status */
   if(success != 0)
-    *success = FALSE;
+    *success = false;
   return "";
 }
   
@@ -277,7 +277,7 @@ bool XmlData::removeLastElement()
     element.remove(element.size() - 1);
     key.remove(key.size() - 1);
     value.remove(value.size() - 1);
-    return TRUE;
+    return true;
   }
-  return FALSE;
+  return false;
 };
