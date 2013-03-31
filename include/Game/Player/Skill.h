@@ -48,10 +48,10 @@ public:
   Q_DECLARE_FLAGS(SkillFlags, SkillType)
 
 private:
-  /* Constant skill class */
-  static const int kMAX_ACTIONS = 10;
-  static const uint kMAX_QD_COST = 1000;
-  static const int kMAX_NAME_LENGTH = 80;
+  /* ------------ Constants --------------- */
+  static const int kMAX_ACTIONS;
+  static const uint kMAX_QD_COST;
+  static const int kMAX_NAME_LENGTH;
 
   /* Int value for Quantum Drive cost */
   uint qd_cost;

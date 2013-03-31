@@ -92,13 +92,13 @@ private:
   Sprite* third_person;
 
   /*------------------- Constants -----------------------*/
-  static const uint kMAX_LEVEL       =        127;
-  static const uint kMIN_LVL_EXP     =        156;
-  static const uint kMAX_LVL_EXP     =    5327426;
-  static const uint kMAX_EXPERIENCE  = 1000000000; /* Billion */
-  static const uint kMAX_EXP_DROP    =    1000000; /* Million */
-  static const uint kMAX_CREDIT_DROP =   10000000; /* Ten Million */
-  static const uint kMAX_EQUIP_SLOTS =          5;
+  static const uint kMAX_LEVEL;
+  static const uint kMIN_LVL_EXP;
+  static const uint kMAX_LVL_EXP;
+  static const uint kMAX_EXPERIENCE;  /* Billion */
+  static const uint kMAX_EXP_DROP;    /* Million */
+  static const uint kMAX_CREDIT_DROP; /* Ten Million */
+  static const uint kMAX_EQUIP_SLOTS;
 
 /*============================================================================
  * PRIVATE STATIC FUNCTIONS

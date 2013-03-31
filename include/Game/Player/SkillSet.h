@@ -33,6 +33,9 @@ private:
   QVector<Skill*> skills;
   QVector<ushort> skills_available;
 
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
 public:
   /* Methods to add skills */
   bool addSkill(Skill* skill, ushort req_level = 1);

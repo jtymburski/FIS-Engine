@@ -156,11 +156,11 @@ public:
   /* Sets the duration of the ailment */
   void setDuration(ushort max_turns, double chance = 0);
 
-  /* Sets the value of an AilmentFlag to a set_value, defaulting to TRUE */
-  void setFlag(AilmentFlag flags, bool set_value = TRUE);
+  /* Sets the value of an AilmentFlag to a set_value, defaulting to true */
+  void setFlag(AilmentFlag flags, bool set_value = true);
 
   /* Public function to assign a new victom for the status ailment */
-  bool setNewVictim(Person* new_victim, bool refresh_turns = FALSE);
+  bool setNewVictim(Person* new_victim, bool refresh_turns = false);
 
 /*============================================================================
  * PUBLIC STATIC FUNCTIONS

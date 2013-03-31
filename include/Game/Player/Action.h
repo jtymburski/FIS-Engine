@@ -91,45 +91,52 @@ private:
   /* Variance of base change (percentage) */
   float variance;
 
+/*=============================================================================
+ * PRIVATE FUNCTIONS
+ *============================================================================*/
+private:
+  /* The raw language parser! */
+  void parse(QString raw);
+
   /* Sets the ailment string */
   void setAilment(QString ailment);
-
-  /* Sets the value of an Ignore Atk Flag */
-  void setIgnoreFlag(IgnoreFlag flags, bool set_value = TRUE);
 
   /* Sets the value of an Action Type Flag */
   void setActionFlag(ActionType flags, bool set_value = TRUE);
 
-  /* The raw language parser! */
-  void parse(QString raw);
-
-  /* Sets the *UNIQUE* ID of the action */
-  void setId(int id);
+  /* Sets the base change value that will effect the given stat */
+  void setBaseChange(uint new_value);
 
   /* Sets the duration of the action (min 1, max 1 means single turn action) */
   void setDuration(uint min, uint max);
 
-  /* Sets the base change value that will effect the given stat */
-  void setBaseChange(uint new_value);
+  /* Sets the *UNIQUE* ID of the action */
+  void setId(int id);
+
+  /* Sets the value of an Ignore Atk Flag */
+  void setIgnoreFlag(IgnoreFlag flags, bool set_value = TRUE);
 
   /* Variance of the base change (percentage) */
   void setVariance(float new_value);
 
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
 public:
+  /* Gets the value of an Action Type Flag */
+  bool getActionFlag(ActionType flags);
+
+  /* Returns the affected status ailment */
+  QString getAilment();
+
   /* Gets the base change of the action */
   uint getBaseChange();
 
   /* Gets the ID of an action NOTE: Ensure Unique */
   int getId();
 
-  /* Returns the affected status ailment */
-  QString getAilment();
-
   /* Gets the value of an Ignore Atk Flag */
   bool getIgnoreFlag(IgnoreFlag flags);
-
-  /* Gets the value of an Action Type Flag */
-  bool getActionFlag(ActionType flags);
 
   /* Returns the maximum # of turns */
   uint getMaximum();

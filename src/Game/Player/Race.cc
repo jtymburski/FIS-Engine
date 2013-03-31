@@ -14,6 +14,15 @@
 #include <QDebug>
 
 /*============================================================================
+ * CONSTANTS
+ *===========================================================================*/
+const ushort Race::kMAX_VITALITY  = 5000;
+const ushort Race::kMAX_QD        = 1250;
+const ushort Race::kMAX_PHYSICAL  = 1250;
+const ushort Race::kMAX_ELEMENTAL =  750;
+const ushort Race::kMAX_SPECIAL   =  250;
+
+/*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
 

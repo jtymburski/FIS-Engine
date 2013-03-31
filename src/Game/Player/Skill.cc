@@ -11,9 +11,14 @@
 *              different names but similar purposes to create more than one
 *              action that does the same thing.
 ******************************************************************************/
-
-
 #include "Game/Player/Skill.h"
+
+/*============================================================================
+ * CONSTANTS
+ *============================================================================*/
+const int  Skill::kMAX_ACTIONS = 10;
+const uint Skill::kMAX_QD_COST = 1000;
+const int  Skill::kMAX_NAME_LENGTH = 80;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS

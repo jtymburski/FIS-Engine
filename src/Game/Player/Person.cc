@@ -15,8 +15,18 @@
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
-
+const uint Person::kMAX_LEVEL       =        127;
+const uint Person::kMIN_LVL_EXP     =        156;
+const uint Person::kMAX_LVL_EXP     =    5327426;
+const uint Person::kMAX_EXPERIENCE  = 1000000000; /* Billion */
+const uint Person::kMAX_EXP_DROP    =    1000000; /* Million */
+const uint Person::kMAX_CREDIT_DROP =   10000000; /* Ten Million */
+const uint Person::kMAX_EQUIP_SLOTS =          5;
 QVector<uint> Person::exp_table;
+
+/*=============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *============================================================================*/
 
 /*
  * Description: Constructs a Person object gievn a name, race and category
@@ -156,14 +166,14 @@ void Person::calcSkills()
  *              looking code lines.
  *
  * Inputs: ushort - amount of damage to do to the Person
- * Output: bool - returns TRUE If the Person is now dead
+ * Output: bool - returns true If the Person is now dead
  */
 bool Person::damage(ushort amount)
 {
   tempStats()->changeStat(0, -amount);
   if (tempStats()->getStat(0) == 0)
-    return TRUE;
-  return FALSE;
+    return true;
+  return false;
 }
 
 /*
@@ -193,7 +203,7 @@ void Person::setUpBaseStats()
 bool Person::useItem(Item* used_item)
 {
     (void)used_item;//warning
-    return TRUE;
+    return true;
 }
 
 /*
@@ -472,7 +482,7 @@ AttributeSet* Person::tempStats()
  *
  * Inputs: QString - slot to equip the item to.
  *         Equipment* - pointer to the equipment to attach
- * Output: bool - TRUE if the equip took place
+ * Output: bool - true if the equip took place
  */
 bool Person::setEquipment(QString slot, Equipment e)
 {
@@ -482,7 +492,7 @@ bool Person::setEquipment(QString slot, Equipment e)
     {
       equipment[1] = e;
       equipment[2] = e;
-      return TRUE;
+      return true;
     }
   }
   if (slot == "HEAD" && e.getEquipmentFlag(Equipment::HEAD))
@@ -490,7 +500,7 @@ bool Person::setEquipment(QString slot, Equipment e)
     if (getEquipSlot("HEAD") == NULL && getEquipSlot("HEAD") == NULL)
     {
       equipment[0] = e;
-      return TRUE;
+      return true;
     }
   }
   if (slot == "LEFTARM" && e.getEquipmentFlag(Equipment::LEFTARM))
@@ -498,7 +508,7 @@ bool Person::setEquipment(QString slot, Equipment e)
     if (getEquipSlot("LEFTARM") == NULL)
     {
       equipment[1] = e;
-      return TRUE;
+      return true;
     }
   }
   if (slot == "RIGHTARM" && e.getEquipmentFlag(Equipment::RIGHTARM))
@@ -506,7 +516,7 @@ bool Person::setEquipment(QString slot, Equipment e)
     if (getEquipSlot("RIGHTARM") == NULL)
     {
       equipment[2] = e;
-      return TRUE;
+      return true;
     }
   }
   if (slot == "TORSO" && e.getEquipmentFlag(Equipment::TORSO))
@@ -514,7 +524,7 @@ bool Person::setEquipment(QString slot, Equipment e)
     if (getEquipSlot("TORSO") == NULL)
     {
       equipment[3] = e;
-      return TRUE;
+      return true;
     }
   }
   if (slot == "LEGS" && e.getEquipmentFlag(Equipment::LEGS))
@@ -522,10 +532,10 @@ bool Person::setEquipment(QString slot, Equipment e)
     if (getEquipSlot("LEGS") == NULL)
     {
       equipment[4] = e;
-      return TRUE;
+      return true;
     }
   }
-  return FALSE;
+  return false;
 }
 
 /*
@@ -605,13 +615,13 @@ bool Person::setLevel(const uint &new_level)
 {
   /* Assign the proper level value */
   if (new_level == getLevel())
-    return FALSE;
+    return false;
   if (new_level < kMAX_LEVEL)
     level = new_level;
   else
   {
     level = kMAX_LEVEL;
-    setPersonFlag(Person::MAXLVL, TRUE);
+    setPersonFlag(Person::MAXLVL, true);
   }
 
   /* Calculate the stats for the person based on their maximum values */
@@ -648,7 +658,7 @@ bool Person::setLevel(const uint &new_level)
 
     stats.setStat(i, new_values - old_values);
   }
-  return TRUE;
+  return true;
 }
 
 /*

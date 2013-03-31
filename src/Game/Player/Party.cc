@@ -47,9 +47,9 @@ bool Party::addMember(Person* person)
   if ((int)getPartySize() < getMaxSize())
   {
     members.push_back(person);
-    return TRUE;
+    return true;
   }
-  return FALSE;
+  return false;
 }
 
 /*
@@ -57,32 +57,32 @@ bool Party::addMember(Person* person)
  * Note: cleanUp() should be called after this function is called
  *
  * Inputs: int - index of party member needing to be removed
- * Output: bool - TRUE if person was able to be removed
+ * Output: bool - true if person was able to be removed
  */
 bool Party::removeMember(uint index)
 {
   if (members.size() < 2)
-    return FALSE;
+    return false;
   if (members.at(index))
   {
     delete members.at(index);
     members[index] = NULL;
     members.remove(index);
-    return TRUE;
+    return true;
   }
-  return FALSE;
+  return false;
 }
 
 /*
  * Description: Removes a person from the party from a given name
  *
  * Inputs: QString - name of the person to be removed
- * Output: bool - TRUE if person was removed succesfully
+ * Output: bool - true if person was removed succesfully
  */
 bool Party::removeMember(QString value)
 {
   if (members.size() < 2)
-    return FALSE;
+    return false;
   for (ushort i = 1; i < kMAX_MEMBERS; i++)
   {
     if (members.at(i)->getName() == value)
@@ -90,10 +90,10 @@ bool Party::removeMember(QString value)
       delete members.at(i);
       members[i] = NULL;
       members.remove(i);
-      return TRUE;
+      return true;
     }
   }
-  return FALSE;
+  return false;
 }
 
 /*
@@ -193,16 +193,16 @@ void Party::setInventory(Inventory* i)
  * Description: Sets the temporary maximmum size of the party (sleuth)
  *
  * Inputs: int - new max size of the party
- * Output: bool - TRUE if party size was successfully changed
+ * Output: bool - true if party size was successfully changed
  */
 bool Party::setMaxSize(uint value)
 {
   if (value > 0 && value <= kMAX_MEMBERS)
   {
     max_size = value;
-    return TRUE;
+    return true;
   }
-  return FALSE;
+  return false;
 }
 
 /*

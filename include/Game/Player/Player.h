@@ -22,9 +22,6 @@ public:
   ~Player(); 
 
 private:
-  /* Player class constants */
-  static const unsigned long kMAX_CREDITS = 999999999;
-
   /* Tick speed for the maps */
   int kMAPSPEED;
 
@@ -39,8 +36,14 @@ private:
   int y_pos;
 
   /* Money */
-  unsigned long credits;
+  uint32_t credits;
 
+  /* ------------ Constants --------------- */
+  static const uint32_t kMAX_CREDITS;
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ w*===========================================================================*/
 public:
   /* Adds an amount of money to credits */
   void addCredits(unsigned long value);

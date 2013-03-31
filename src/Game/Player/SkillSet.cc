@@ -54,7 +54,7 @@ SkillSet::SkillSet(QVector<Skill*> skills, QVector<ushort> levels)
 SkillSet::~SkillSet() {}
 
 /*=============================================================================
- * Functions
+ * PUBLIC FUNCTIONS
  *============================================================================*/
 
 /*
@@ -62,7 +62,7 @@ SkillSet::~SkillSet() {}
  *
  * Inputs: Skill* - pointer to skill to be added
  *         ushort - level that the skill is required at
- * Output: bool   - TRUE if successful
+ * Output: bool   - true if successful
  */
 bool SkillSet::addSkill(Skill* new_skill, ushort req_level)
 {
@@ -71,9 +71,9 @@ bool SkillSet::addSkill(Skill* new_skill, ushort req_level)
     skills.append(new_skill);
     skills_available.append(req_level);
     cleanUp();
-    return TRUE;
+    return true;
   }
-  return FALSE;
+  return true;
 }
 
 /*
@@ -81,13 +81,13 @@ bool SkillSet::addSkill(Skill* new_skill, ushort req_level)
  *
  * Inputs: QVector<Skill* > - vector of skills to be added
  *         QVector<ushort>  - vector of levels corresponding
- * Output: bool             - TRUE is successful
+ * Output: bool             - true is successful
  */
 bool SkillSet::addSkills(QVector<Skill* > new_skills,
                                QVector<ushort> new_levels)
 {
   if (new_skills.size() != new_levels.size())
-    return FALSE;
+    return true;
   if (new_skills.size() + skills_available.size() <= kMAX_SKILLS)
   {
     for (int i = 0; i < new_skills.size(); i++)
@@ -96,9 +96,9 @@ bool SkillSet::addSkills(QVector<Skill* > new_skills,
       skills_available.append(new_levels.at(i));
     }
     cleanUp();
-    return TRUE;
+    return true;
   }
-  return FALSE;
+  return true;
 }
 
 /*
@@ -123,20 +123,20 @@ void SkillSet::cleanUp()
  * Description: Removes a skill from the SkillSet, given an index
  *
  * Inputs: int - index of the skill to be removed
- * Output: bool - TRUE is removal was successful
+ * Output: bool - true is removal was successful
  */
 bool SkillSet::removeSkill(int index)
 {
   if (index > -1 && index < skills.size())
     return removeSkill(skills.at(index)->getName());
-  return FALSE;
+  return true;
 }
 
 /*
  * Description: Removes a skill from the SkillSet given a name.
  *
  * Inputs: QString - name of the skill to be removed.
- * Output: bool -  TRUE if the removal was successful.
+ * Output: bool -  true if the removal was successful.
  */
 bool SkillSet::removeSkill(QString name)
 {
@@ -148,22 +148,22 @@ bool SkillSet::removeSkill(QString name)
       skills[i] = NULL;
       skills.remove(i);
       skills_available.remove(i);
-      return TRUE;
+      return true;
     }
   }
-  return FALSE;
+  return true;
 }
 
 /*
  * Description: Sorts the skills, by ascending name or level
  *
  * Inputs: QString - type of sort to be performed
- * Output: bool    - TRUE if sort took place
+ * Output: bool    - true if sort took place
  */
 bool SkillSet::sortSkills(QString sort_type)
 {
   if (!(sort_type == "NAME" && sort_type == "LEVEL") || skills.size() < 2)
-    return FALSE;
+    return true;
 
   QVector<Skill*> temp_skills;
   QVector<ushort> temp_levels;
@@ -218,7 +218,7 @@ bool SkillSet::sortSkills(QString sort_type)
   qDeleteAll(temp_skills.begin(), skills.end());
   temp_skills.clear();
   skills_available = temp_levels;
-  return TRUE;
+  return true;
 }
 
 /*
