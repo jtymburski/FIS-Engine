@@ -19,7 +19,6 @@ public:
   ~Options();
 
 private:
-
   /* Resolution currently being used */
   int x_resolution, y_resolution; 
 

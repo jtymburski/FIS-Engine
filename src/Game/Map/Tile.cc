@@ -12,6 +12,10 @@
 ******************************************************************************/
 #include "Game/Map/Tile.h"
 
+/*============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *===========================================================================*/
+
 /* 
  * Description: Constructor for this class. Takes information on the tile 
  *              such as size, location and the parent and sets up the given
@@ -54,6 +58,10 @@ Tile::~Tile()
   unsetLower();
   unsetUpper();
 }
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 
 /* 
  * Description: Paint event for the tile that gets called when the QWidget
@@ -132,6 +140,10 @@ void Tile::leaveEvent(QEvent *)
     hover = false;
     update();
 }
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 
 /* 
  * Description: Animates all sprites on tile. This allows for the fine control

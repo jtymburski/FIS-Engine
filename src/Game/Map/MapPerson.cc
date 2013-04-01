@@ -6,6 +6,10 @@
 ******************************************************************************/
 #include "Game/Map/MapPerson.h"
 
+/*============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *===========================================================================*/
+
 /* Constructor function */
 MapPerson::MapPerson()
 {
@@ -15,6 +19,10 @@ MapPerson::MapPerson()
 MapPerson::~MapPerson()
 {
 }
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 
 /* Sets the person to be facing east */
 void MapPerson::faceEast()
@@ -34,6 +42,50 @@ void MapPerson::faceSouth()
 /* Sets the person to be facing west */
 void MapPerson::faceWest()
 {
+}
+
+/* Gets the battle version of the person */
+/* TODO: Battle version of person is not needed, regular would suffice?
+Person* MapPerson::getBattlePerson()
+{
+    //return battle_person;
+}
+*/
+
+/* Gets the persons direction */
+Direction MapPerson::getDirection()
+{
+    return movement_direction;
+}
+
+/* Gets the name */
+QString MapPerson::getName()
+{
+    return name;
+}
+
+/* Gets the persons facing sprite */
+Sprite* MapPerson::getSprite()
+{
+    return NULL;//warning
+}
+
+/* Gets the persons step length */
+int MapPerson::getStepLength()
+{
+    return step_length;
+}
+
+/* Gets the x position */
+int MapPerson::getX()
+{
+    return xpos;
+}
+
+/* Gets the y position */
+int MapPerson::getY()
+{
+    return ypos;
 }
 
 /* Evaluates the East Facing flag */
@@ -158,48 +210,4 @@ void MapPerson::moveWest()
 /* Sets the person to cease moving */
 void MapPerson::stopMoving()
 {
-}
-
-/* Gets the battle version of the person */
-/* TODO: Battle version of person is not needed, regular would suffice?
-Person* MapPerson::getBattlePerson()
-{
-    //return battle_person;
-}
-*/
-
-/* Gets the persons direction */
-Direction MapPerson::getDirection()
-{
-    return movement_direction;
-}
-
-/* Gets the name */
-QString MapPerson::getName()
-{
-    return name;
-}
-
-/* Gets the persons facing sprite */
-Sprite* MapPerson::getSprite()
-{
-    return NULL;//warning
-}
-
-/* Gets the persons step length */
-int MapPerson::getStepLength()
-{
-    return step_length;
-}
-
-/* Gets the x position */
-int MapPerson::getX()
-{
-    return xpos;
-}
-
-/* Gets the y position */
-int MapPerson::getY()
-{
-    return ypos;
 }

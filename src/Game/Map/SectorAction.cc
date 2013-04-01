@@ -6,6 +6,10 @@
 ******************************************************************************/
 #include "Game/Map/SectorAction.h"
 
+/*============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *===========================================================================*/
+
 /* Constructor function */
 SectorAction::SectorAction(QWidget* parent) : QWidget(parent)
 {
@@ -15,6 +19,10 @@ SectorAction::SectorAction(QWidget* parent) : QWidget(parent)
 SectorAction::~SectorAction()
 {
 }
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 
 /* True if the action can be performed */
 bool SectorAction::isValid()

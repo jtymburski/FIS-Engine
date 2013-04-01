@@ -8,6 +8,10 @@
 ******************************************************************************/
 #include "Game/VictoryScreen.h"
 
+/*============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *===========================================================================*/
+
 /* Constructor function */
 VictoryScreen::VictoryScreen(QWidget* parent) : QWidget(parent)
 {
@@ -17,6 +21,10 @@ VictoryScreen::VictoryScreen(QWidget* parent) : QWidget(parent)
 VictoryScreen::~VictoryScreen()
 {
 }
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 
 /* Sets up the screen */
 void VictoryScreen::setUp()

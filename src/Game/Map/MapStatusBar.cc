@@ -7,6 +7,10 @@
 ******************************************************************************/
 #include "Game/Map/MapStatusBar.h"
 
+/*============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *===========================================================================*/
+
 /* Constructor function */
 MapStatusBar::MapStatusBar(QWidget* parent) : QWidget(parent)
 {
@@ -17,11 +21,19 @@ MapStatusBar::~MapStatusBar()
 {
 }
 
+/*============================================================================
+ * PROTECTED FUNCTIONS
+ *===========================================================================*/
+
 /* Painting function */
 void MapStatusBar::paintEvent(QPaintEvent* event)
 {
     (void)event;//warning
 }
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 
 /* Sets up a conversation with the given persons */
 void MapStatusBar::initConversation(MapPerson* left, MapPerson* right)

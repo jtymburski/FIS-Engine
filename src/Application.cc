@@ -9,8 +9,10 @@
 ******************************************************************************/
 #include "Application.h"
 
+/*============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *===========================================================================*/
 
-/* Constructor function */
 Application::Application(QWidget* parent)
 {
   setParent(parent);
@@ -54,16 +56,23 @@ Application::Application(QWidget* parent)
   show();
 }
 
-/* Destructor function */
 Application::~Application()
 {
 }
+
+/*============================================================================
+ * PROTECTED FUNCTIONS
+ *===========================================================================*/
 
 void Application::closeEvent(QCloseEvent* event)
 {
   close();
   event->ignore();
 }
+
+/*============================================================================
+ * SLOTS
+ *===========================================================================*/
 
 void Application::close()
 {
@@ -77,6 +86,10 @@ void Application::switchWidget(int index)
   if(index == 2)
     title_screen->playBackground();
 }
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 
 /* 
  * Temporary battle setup

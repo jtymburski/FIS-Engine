@@ -8,6 +8,10 @@
 ******************************************************************************/
 #include "Game/Frame.h"
 
+/*============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *===========================================================================*/
+
 /* 
  * Description: Constructor for this class. Takes path and next pointer.
  *              Next pointer is defaulted to 0 if not given.
@@ -31,6 +35,10 @@ Frame::~Frame()
   previous = 0;
   next = 0;
 }
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 
 /* 
  * Description: Returns if an image is stored in this frame

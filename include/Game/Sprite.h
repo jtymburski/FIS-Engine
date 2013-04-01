@@ -13,9 +13,6 @@
 
 #include "Game/Frame.h"
 
-/* Constants */
-#define kDOUBLE_DIGITS 10
-
 class Sprite
 {
 public:
@@ -46,6 +43,9 @@ private:
 
   /* Direction */
   bool direction;
+  
+  /*------------------- Constants -----------------------*/
+  const static int kDOUBLE_DIGITS;   /* the borderline to double digits */
 
 /*============================================================================
  * PUBLIC FUNCTIONS

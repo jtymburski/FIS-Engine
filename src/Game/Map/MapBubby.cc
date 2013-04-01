@@ -4,8 +4,11 @@
 * Inheritance: MapWalkOver
 * Description: The MapBubby class
 ******************************************************************************/
-
 #include "Game/Map/MapBubby.h"
+
+/*============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *===========================================================================*/
 
 /* Constructor function */
 MapBubby::MapBubby()

@@ -4,10 +4,14 @@
 
 #include "Application.h"
 
-/* Test - to delete */
+/* DELETE: Only for testing */
 #include "FileHandler.h"
 
 #undef main
+
+/*============================================================================
+ * MAIN FUNCTION
+ *===========================================================================*/
 
 int main(int argc, char *argv[])
 {

@@ -6,6 +6,10 @@
 ******************************************************************************/
 #include "Game/Map/Sector.h"
 
+/*============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *===========================================================================*/
+
 /* Constructor function */
 Sector::Sector(QWidget* parent) : QWidget(parent)
 {
@@ -16,11 +20,19 @@ Sector::~Sector()
 {
 }
 
+/*============================================================================
+ * PROTECTED FUNCTIONS
+ *===========================================================================*/
+
 /* Painting function */
 void Sector::paintEvent(QPaintEvent* event)
 {
     (void)event;//warning
 }
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 
 /* Sets all tiles in the sector to the given Status */
 void Sector::setStatus(Tile::Status status)

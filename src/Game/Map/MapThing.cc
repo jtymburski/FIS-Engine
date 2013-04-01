@@ -11,6 +11,30 @@
 ******************************************************************************/
 #include "Game/Map/MapThing.h"
 
+/* Constant Implementation - see header file for descriptions */
+const int MapThing::kMINIMUM_ID =  0;
+const int MapThing::kUNSET_ID   = -1;
+
+/*============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *===========================================================================*/
+
+/* 
+ * Description: Constructor for this class. Sets up an empty thing with no
+ *              data.
+ *
+ * Inputs: none
+ */
+MapThing::MapThing()
+{
+  thing_set = false;
+
+  setSprite(NULL);
+  setName("");
+  setDescription("");
+  setID(kUNSET_ID); 
+}
+
 /* 
  * Description: Constructor for this class. Takes data to create the thing.
  *
@@ -30,22 +54,6 @@ MapThing::MapThing(Sprite* frames, QString name, QString description, int id)
 }
 
 /* 
- * Description: Constructor for this class. Sets up an empty thing with no
- *              data.
- *
- * Inputs: none
- */
-MapThing::MapThing()
-{
-  thing_set = false;
-
-  setSprite(NULL);
-  setName("");
-  setDescription("");
-  setID(kUNSET_ID); 
-}
-
-/* 
  * Description: Destructor function 
  */
 MapThing::~MapThing()
@@ -54,6 +62,10 @@ MapThing::~MapThing()
     delete thing;
   thing = 0;
 }
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 
 /* 
  * Description: Starts interaction. In map thing, this isn't of use and is

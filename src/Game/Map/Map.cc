@@ -7,13 +7,16 @@
 *              of, it also holds pointers to all of the NPC's contained in the
 *              maps tiles. This also handles the viewport for the map.
 ******************************************************************************/
-
 #include "Game/Map/Map.h"
 
-#define STARTX 7
-#define STARTY 0
-bool turn_on_platform = 1;
+/* Constant Implementation - see header file for descriptions */
+const int Map::kSTARTX = 7;
+const int Map::kSTARTY = 0;
+const bool Map::kTURN_ON_PLATFORM = true;
 
+/*============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *===========================================================================*/
 
 /* Constructor function */
 Map::Map(QWidget* parent) : QWidget(parent)
@@ -92,337 +95,337 @@ Map::Map(QWidget* parent) : QWidget(parent)
         t->setUpper(":/tree_AB_A00");
 
 
-      if(turn_on_platform)
+      if(kTURN_ON_PLATFORM)
       {
-          if((i == STARTY && j == STARTX+1))
+          if((i == kSTARTY && j == kSTARTX+1))
               t->setUpper(":/TreePlatform_AB_A00");
 
-          if((i == STARTY && j == STARTX+2))
+          if((i == kSTARTY && j == kSTARTX+2))
               t->setUpper(":/TreePlatform_AC_A00");
 
-          if((i == STARTY && j == STARTX+3))
+          if((i == kSTARTY && j == kSTARTX+3))
               t->setUpper(":/TreePlatform_AC_A00");
 
-          if((i == STARTY && j == STARTX+4))
+          if((i == kSTARTY && j == kSTARTX+4))
               t->setUpper(":/TreePlatform_AC_A00");
 
-          if((i == STARTY && j == STARTX+5))
+          if((i == kSTARTY && j == kSTARTX+5))
               t->setUpper(":/TreePlatform_AC_A00");
 
-          if((i == STARTY && j == STARTX+6))
+          if((i == kSTARTY && j == kSTARTX+6))
               t->setUpper(":/TreePlatform_AC_A00");
 
-          if((i == STARTY && j == STARTX+7))
+          if((i == kSTARTY && j == kSTARTX+7))
               t->setUpper(":/TreePlatform_AC_A00");
 
-          if((i == STARTY && j == STARTX+8))
+          if((i == kSTARTY && j == kSTARTX+8))
               t->setUpper(":/TreePlatform_AC_A00");
 
-          if((i == STARTY && j == STARTX+9))
+          if((i == kSTARTY && j == kSTARTX+9))
               t->setUpper(":/TreePlatform_AC_A00");
 
-          if((i == STARTY && j == STARTX+10))
+          if((i == kSTARTY && j == kSTARTX+10))
               t->setUpper(":/TreePlatform_AD_A00");
 
 
 
-          if((i == STARTY+1 && j == STARTX))
+          if((i == kSTARTY+1 && j == kSTARTX))
               t->setUpper(":/TreePlatform_AB_A00");
 
-          if((i == STARTY+1 && j == STARTX+1))
+          if((i == kSTARTY+1 && j == kSTARTX+1))
               t->setUpper(":/TreePlatform_BB_A00");
 
-          if((i == STARTY+1 && j == STARTX+2))
+          if((i == kSTARTY+1 && j == kSTARTX+2))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+1 && j == STARTX+3))
+          if((i == kSTARTY+1 && j == kSTARTX+3))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+1 && j == STARTX+4))
+          if((i == kSTARTY+1 && j == kSTARTX+4))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+1 && j == STARTX+5))
+          if((i == kSTARTY+1 && j == kSTARTX+5))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+1 && j == STARTX+6))
+          if((i == kSTARTY+1 && j == kSTARTX+6))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+1 && j == STARTX+7))
+          if((i == kSTARTY+1 && j == kSTARTX+7))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+1 && j == STARTX+8))
+          if((i == kSTARTY+1 && j == kSTARTX+8))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+1 && j == STARTX+9))
+          if((i == kSTARTY+1 && j == kSTARTX+9))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+1 && j == STARTX+10))
+          if((i == kSTARTY+1 && j == kSTARTX+10))
               t->setUpper(":/TreePlatform_BD_A00");
 
-          if((i == STARTY+1 && j == STARTX+11))
+          if((i == kSTARTY+1 && j == kSTARTX+11))
               t->setUpper(":/TreePlatform_AD_A00");
 
 
 
 
-          if((i == STARTY+2 && j == STARTX))
+          if((i == kSTARTY+2 && j == kSTARTX))
               t->setUpper(":/TreePlatform_CA_A00");
 
-          if((i == STARTY+2 && j == STARTX+1))
+          if((i == kSTARTY+2 && j == kSTARTX+1))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+2 && j == STARTX+2))
+          if((i == kSTARTY+2 && j == kSTARTX+2))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+2 && j == STARTX+3))
+          if((i == kSTARTY+2 && j == kSTARTX+3))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+2 && j == STARTX+4))
+          if((i == kSTARTY+2 && j == kSTARTX+4))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+2 && j == STARTX+5))
+          if((i == kSTARTY+2 && j == kSTARTX+5))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+2 && j == STARTX+6))
+          if((i == kSTARTY+2 && j == kSTARTX+6))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+2 && j == STARTX+7))
+          if((i == kSTARTY+2 && j == kSTARTX+7))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+2 && j == STARTX+8))
+          if((i == kSTARTY+2 && j == kSTARTX+8))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+2 && j == STARTX+9))
+          if((i == kSTARTY+2 && j == kSTARTX+9))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+2 && j == STARTX+10))
+          if((i == kSTARTY+2 && j == kSTARTX+10))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+2 && j == STARTX+11))
+          if((i == kSTARTY+2 && j == kSTARTX+11))
               t->setUpper(":/TreePlatform_CE_A00");
 
 
 
 
-          if((i == STARTY+3 && j == STARTX))
+          if((i == kSTARTY+3 && j == kSTARTX))
               t->setUpper(":/TreePlatform_DA_A00");
 
-          if((i == STARTY+3 && j == STARTX+1))
+          if((i == kSTARTY+3 && j == kSTARTX+1))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+3 && j == STARTX+2))
+          if((i == kSTARTY+3 && j == kSTARTX+2))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+3 && j == STARTX+3))
+          if((i == kSTARTY+3 && j == kSTARTX+3))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+3 && j == STARTX+4))
+          if((i == kSTARTY+3 && j == kSTARTX+4))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+3 && j == STARTX+5))
+          if((i == kSTARTY+3 && j == kSTARTX+5))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+3 && j == STARTX+6))
+          if((i == kSTARTY+3 && j == kSTARTX+6))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+3 && j == STARTX+7))
+          if((i == kSTARTY+3 && j == kSTARTX+7))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+3 && j == STARTX+8))
+          if((i == kSTARTY+3 && j == kSTARTX+8))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+3 && j == STARTX+9))
+          if((i == kSTARTY+3 && j == kSTARTX+9))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+3 && j == STARTX+10))
+          if((i == kSTARTY+3 && j == kSTARTX+10))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+3 && j == STARTX+11))
+          if((i == kSTARTY+3 && j == kSTARTX+11))
               t->setUpper(":/TreePlatform_DE_A00");
 
 
 
-          if((i == STARTY+4 && j == STARTX))
+          if((i == kSTARTY+4 && j == kSTARTX))
               t->setUpper(":/TreePlatform_DA_A00");
 
-          if((i == STARTY+4 && j == STARTX+1))
+          if((i == kSTARTY+4 && j == kSTARTX+1))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+4 && j == STARTX+2))
+          if((i == kSTARTY+4 && j == kSTARTX+2))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+4 && j == STARTX+3))
+          if((i == kSTARTY+4 && j == kSTARTX+3))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+4 && j == STARTX+4))
+          if((i == kSTARTY+4 && j == kSTARTX+4))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+4 && j == STARTX+5))
+          if((i == kSTARTY+4 && j == kSTARTX+5))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+4 && j == STARTX+6))
+          if((i == kSTARTY+4 && j == kSTARTX+6))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+4 && j == STARTX+7))
+          if((i == kSTARTY+4 && j == kSTARTX+7))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+4 && j == STARTX+8))
+          if((i == kSTARTY+4 && j == kSTARTX+8))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+4 && j == STARTX+9))
+          if((i == kSTARTY+4 && j == kSTARTX+9))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+4 && j == STARTX+10))
+          if((i == kSTARTY+4 && j == kSTARTX+10))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+4 && j == STARTX+11))
+          if((i == kSTARTY+4 && j == kSTARTX+11))
               t->setUpper(":/TreePlatform_DE_A00");
 
 
 
-          if((i == STARTY+5 && j == STARTX))
+          if((i == kSTARTY+5 && j == kSTARTX))
               t->setUpper(":/TreePlatform_DA_A00");
 
-          if((i == STARTY+5 && j == STARTX+1))
+          if((i == kSTARTY+5 && j == kSTARTX+1))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+5 && j == STARTX+2))
+          if((i == kSTARTY+5 && j == kSTARTX+2))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+5 && j == STARTX+3))
+          if((i == kSTARTY+5 && j == kSTARTX+3))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+5 && j == STARTX+4))
+          if((i == kSTARTY+5 && j == kSTARTX+4))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+5 && j == STARTX+5))
+          if((i == kSTARTY+5 && j == kSTARTX+5))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+5 && j == STARTX+6))
+          if((i == kSTARTY+5 && j == kSTARTX+6))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+5 && j == STARTX+7))
+          if((i == kSTARTY+5 && j == kSTARTX+7))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+5 && j == STARTX+8))
+          if((i == kSTARTY+5 && j == kSTARTX+8))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+5 && j == STARTX+9))
+          if((i == kSTARTY+5 && j == kSTARTX+9))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+5 && j == STARTX+10))
+          if((i == kSTARTY+5 && j == kSTARTX+10))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+5 && j == STARTX+11))
+          if((i == kSTARTY+5 && j == kSTARTX+11))
               t->setUpper(":/TreePlatform_DE_A00");
 
 
-          if((i == STARTY+6 && j == STARTX))
+          if((i == kSTARTY+6 && j == kSTARTX))
               t->setUpper(":/TreePlatform_DA_A00");
 
-          if((i == STARTY+6 && j == STARTX+1))
+          if((i == kSTARTY+6 && j == kSTARTX+1))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+6 && j == STARTX+2))
+          if((i == kSTARTY+6 && j == kSTARTX+2))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+6 && j == STARTX+3))
+          if((i == kSTARTY+6 && j == kSTARTX+3))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+6 && j == STARTX+4))
+          if((i == kSTARTY+6 && j == kSTARTX+4))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+6 && j == STARTX+5))
+          if((i == kSTARTY+6 && j == kSTARTX+5))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+6 && j == STARTX+6))
+          if((i == kSTARTY+6 && j == kSTARTX+6))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+6 && j == STARTX+7))
+          if((i == kSTARTY+6 && j == kSTARTX+7))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+6 && j == STARTX+8))
+          if((i == kSTARTY+6 && j == kSTARTX+8))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+6 && j == STARTX+9))
+          if((i == kSTARTY+6 && j == kSTARTX+9))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+6 && j == STARTX+10))
+          if((i == kSTARTY+6 && j == kSTARTX+10))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+6 && j == STARTX+11))
+          if((i == kSTARTY+6 && j == kSTARTX+11))
               t->setUpper(":/TreePlatform_DE_A00");
 
 
 
 
-          if((i == STARTY+7 && j == STARTX))
+          if((i == kSTARTY+7 && j == kSTARTX))
               t->setUpper(":/TreePlatform_EA_A00");
 
-          if((i == STARTY+7 && j == STARTX+1))
+          if((i == kSTARTY+7 && j == kSTARTX+1))
               t->setUpper(":/TreePlatform_EB_A00");
 
-          if((i == STARTY+7 && j == STARTX+2))
+          if((i == kSTARTY+7 && j == kSTARTX+2))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+7 && j == STARTX+3))
+          if((i == kSTARTY+7 && j == kSTARTX+3))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+7 && j == STARTX+4))
+          if((i == kSTARTY+7 && j == kSTARTX+4))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+7 && j == STARTX+5))
+          if((i == kSTARTY+7 && j == kSTARTX+5))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+7 && j == STARTX+6))
+          if((i == kSTARTY+7 && j == kSTARTX+6))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+7 && j == STARTX+7))
+          if((i == kSTARTY+7 && j == kSTARTX+7))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+7 && j == STARTX+8))
+          if((i == kSTARTY+7 && j == kSTARTX+8))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+7 && j == STARTX+9))
+          if((i == kSTARTY+7 && j == kSTARTX+9))
               t->setUpper(":/TreePlatform_BC_A00");
 
-          if((i == STARTY+7 && j == STARTX+10))
+          if((i == kSTARTY+7 && j == kSTARTX+10))
               t->setUpper(":/TreePlatform_ED_A00");
 
-          if((i == STARTY+7 && j == STARTX+11))
+          if((i == kSTARTY+7 && j == kSTARTX+11))
               t->setUpper(":/TreePlatform_EE_A00");
 
 
 
 
-          if((i == STARTY+8 && j == STARTX+1))
+          if((i == kSTARTY+8 && j == kSTARTX+1))
               t->setUpper(":/TreePlatform_FB_A00");
 
-          if((i == STARTY+8 && j == STARTX+2))
+          if((i == kSTARTY+8 && j == kSTARTX+2))
               t->setUpper(":/TreePlatform_FC_A00");
 
-          if((i == STARTY+8 && j == STARTX+3))
+          if((i == kSTARTY+8 && j == kSTARTX+3))
               t->setUpper(":/TreePlatform_FC_A00");
 
-          if((i == STARTY+8 && j == STARTX+4))
+          if((i == kSTARTY+8 && j == kSTARTX+4))
               t->setUpper(":/TreePlatform_FC_A00");
 
-          if((i == STARTY+8 && j == STARTX+5))
+          if((i == kSTARTY+8 && j == kSTARTX+5))
               t->setUpper(":/TreePlatform_FC_A00");
 
-          if((i == STARTY+8 && j == STARTX+6))
+          if((i == kSTARTY+8 && j == kSTARTX+6))
               t->setUpper(":/TreePlatform_FC_A00");
 
-          if((i == STARTY+8 && j == STARTX+7))
+          if((i == kSTARTY+8 && j == kSTARTX+7))
               t->setUpper(":/TreePlatform_FC_A00");
 
-          if((i == STARTY+8 && j == STARTX+8))
+          if((i == kSTARTY+8 && j == kSTARTX+8))
               t->setUpper(":/TreePlatform_FC_A00");
 
-          if((i == STARTY+8 && j == STARTX+9))
+          if((i == kSTARTY+8 && j == kSTARTX+9))
               t->setUpper(":/TreePlatform_FC_A00");
 
-          if((i == STARTY+8 && j == STARTX+10))
+          if((i == kSTARTY+8 && j == kSTARTX+10))
               t->setUpper(":/TreePlatform_FD_A00");
       }
 
@@ -449,6 +452,9 @@ Map::~Map()
 }
 
 
+/*============================================================================
+ * PROTECTED FUNCTIONS
+ *===========================================================================*/
 
 /* Painting function */
 void Map::paintEvent(QPaintEvent* event)
@@ -462,72 +468,18 @@ void Map::keyPressEvent(QKeyEvent* event)
     closeMap();
 }
 
+/*============================================================================
+ * SLOTS
+ *===========================================================================*/
+
 void Map::closeMap()
 {
   emit closingMap(2);
 }
 
-/* Causes the thing you are facing and next to start its interactive action */
-void Map::interact(Direction dir)
-{
-  (void)dir;//warning
-}
-
-/* Checks whether the viewport contains any tiles with the given sector */
-bool Map::isInSector(int index)
-{
-    (void)index;//warning
-    return true;
-}
-
-/* Shifts the viewport */
-void Map::move(Direction dir, int step_length, Sprite dir_sprite)
-{
-    (void)dir;//warning
-    (void)step_length;//warning
-    (void)dir_sprite;//warning
-}
-
-/* Checks the tile you are attempting to enter for passibility of the given
-direction */
-bool Map::passible(Direction dir, int x, int y)
-{
-    (void)dir;//warning
-    (void)x;//warning
-    (void)y;//warning
-    return true;
-}
-
-/* Causes the thing you are moving into to start its interactive action */
-void Map::passOver()
-{
-}
-
-/* Changes NPC spirtes */
-void Map::updateNPC()
-{
-}
-
-/* Changes the players sprite (Facing direction) */
-void Map::updatePlayer(Sprite sprite)
-{
-    (void)sprite;//warning
-}
-
-/* Returns a vector of the indexes of the NPC's who are in the viewport */
-QVector<int> Map::visibleNPCs()
-{
-    QVector<int> joe;//warning
-    return joe;//warning
-    //return NULL;
-}
-
-/* Checks if the NPC at the given index in the NPC vector is in the current viewport */
-bool Map::zNPCInViewport(int index)
-{
-    (void)index;//warning
-    return true;
-}
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 
 /* Gets a pointer to the NPC in the given position in the NPC vector */
 Person* Map::getNPC(int index)
@@ -561,4 +513,67 @@ int Map::getPlayerX()
 int Map::getPlayerY()
 {
     return playery;
+}
+
+/* Causes the thing you are facing and next to start its interactive action */
+void Map::interact(Direction dir)
+{
+  (void)dir;//warning
+}
+
+/* Checks whether the viewport contains any tiles with the given sector */
+bool Map::isInSector(int index)
+{
+    (void)index;//warning
+    return true;
+}
+
+/* Shifts the viewport */
+void Map::move(Direction dir, int step_length, Sprite dir_sprite)
+{
+    (void)dir;//warning
+    (void)step_length;//warning
+    (void)dir_sprite;//warning
+}
+
+/* Checks the tile you are attempting to enter for passibility of the given
+ * direction */
+bool Map::passible(Direction dir, int x, int y)
+{
+    (void)dir;//warning
+    (void)x;//warning
+    (void)y;//warning
+    return true;
+}
+
+/* Causes the thing you are moving into to start its interactive action */
+void Map::passOver()
+{
+}
+
+/* Changes NPC spirtes */
+void Map::updateNPC()
+{
+}
+
+/* Changes the players sprite (Facing direction) */
+void Map::updatePlayer(Sprite sprite)
+{
+    (void)sprite;//warning
+}
+
+/* Returns a vector of the indexes of the NPC's who are in the viewport */
+QVector<int> Map::visibleNPCs()
+{
+    QVector<int> joe;//warning
+    return joe;//warning
+    //return NULL;
+}
+
+/* Checks if the NPC at the given index in the NPC vector is in the current 
+ * viewport */
+bool Map::zNPCInViewport(int index)
+{
+    (void)index;//warning
+    return true;
 }

@@ -48,8 +48,8 @@ private:
   bool sound_set;
 
   /* --------------------- CONSTANTS --------------------- */
-  static const int kINFINITE_LOOP = -1;
-  static const int kUNSET_CHANNEL = -1;
+  const static int kINFINITE_LOOP; /* Infinite loop special character */
+  const static int kUNSET_CHANNEL; /* Unset channel definition */
 
 /*============================================================================
  * SLOTS

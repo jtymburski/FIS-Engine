@@ -8,6 +8,13 @@
 ******************************************************************************/
 #include "Game/Sprite.h"
 
+/* Constant Implementation - see header file for descriptions */
+const int Sprite::kDOUBLE_DIGITS = 10;
+
+/*============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *===========================================================================*/
+
 /* 
  * Description: Constructor function - Set up no images
  *
@@ -57,6 +64,10 @@ Sprite::~Sprite()
   while(size > 0)
     removeTail();
 }
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 
 /* 
  * Description: Inserts the image into the sprite sequence at the given 

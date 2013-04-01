@@ -66,8 +66,8 @@ private:
   Sound* menu_click_sound;
 
   /* ------------------ Constants ------------------ */
-  const static int kNUM_MENU_ITEMS = 3;
-  const static QString kMENU_ITEMS[];
+  const static int kNUM_MENU_ITEMS;   /* Number of menu items in screen */
+  const static QString kMENU_ITEMS[]; /* The stored menu items */
 
 /*============================================================================
  * PROTECTED FUNCTIONS

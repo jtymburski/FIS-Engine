@@ -35,8 +35,8 @@ private:
   bool thing_set;
 
   /* -------------------------- Constants ------------------------- */
-  static const int kMINIMUM_ID = 0;
-  static const int kUNSET_ID = -1;
+  const static int kMINIMUM_ID;
+  const static int kUNSET_ID;
 
 /*============================================================================
  * PUBLIC FUNCTIONS

@@ -6,11 +6,19 @@
 ******************************************************************************/
 #include "TitleScreen.h"
 
-/* ------------------------- Constant Definitions -------------------------- */
-const QString TitleScreen::kMENU_ITEMS[] = {"Map Test", "Battle Test", "Exit"};
+/* Constant Implementation - see header file for descriptions */
+const int     TitleScreen::kNUM_MENU_ITEMS = 3;
+const QString TitleScreen::kMENU_ITEMS[]   = {"Map Test", 
+                                              "Battle Test", 
+                                              "Exit"};
+
+/*============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *===========================================================================*/
 
 /* Constructor function */
-TitleScreen::TitleScreen(int width, int height, QWidget* parent) : QWidget(parent)
+TitleScreen::TitleScreen(int width, int height, QWidget* parent) 
+                                                          : QWidget(parent)
 {
   setFixedSize(width, height);
 
@@ -44,6 +52,10 @@ TitleScreen::~TitleScreen()
   delete background_sound;
   delete menu_click_sound;
 }
+
+/*============================================================================
+ * PROTECTED FUNCTIONS
+ *===========================================================================*/
 
 void TitleScreen::paintEvent(QPaintEvent* event)
 {
@@ -86,6 +98,10 @@ void TitleScreen::keyPressEvent(QKeyEvent* event)
   }
 }
 
+/*============================================================================
+ * SLOTS
+ *===========================================================================*/
+
 void TitleScreen::close()
 {
   emit closing();
@@ -100,6 +116,10 @@ void TitleScreen::openMap()
 {
   emit openingMap(1);
 }
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 
 void TitleScreen::decrementState()
 {

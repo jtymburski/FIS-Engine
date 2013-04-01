@@ -68,23 +68,23 @@ private:
   QXmlStreamWriter* xml_writer;
 
   /*------------------- Constants -----------------------*/
-  const static int kASCII_IN_LONG = 4; /* # of ascii's that will fit in long */
-  const static int kCHAR_NEW_LINE = 10;
-  const static uint32_t kDELTA = 2654435769u; /* Sum bias for encryption */
-  const static int kENCRYPTION_MIN = 4; /* Min line length for encryption */
-  const static int kENCRYPTION_PAD = 150; /* Padding for encrypted values */
-  const static int kFILE_NAME_LIMIT = 1000000; /* File end number limit */
-  const static int kFILE_START = 5728; /* File start for temp data */
-  const static int kINT_BIT_SHIFT = 4; /* Shift int to next spot */
-  const static int kINT_BUFFER = 0xF; /* Only use most significant int */
-  const static uint32_t kKEY[]; /* Key array for encryption */
-  const static int kLONG_BIT_SHIFT = 8; /* Number of bits to shift long to 
-                                           next spot */
-  const static int kLONG_BUFFER = 0xFF; /* Only use most significant long */
-  const static int kMAX_ASCII = 255; /* Max ascii out of bounds */
-  const static int kMIN_LINE = 16; /* Minimum line length for encryption */
-  const static int kPADDING_ASCII = 200; /* Start of padding characters */
-  const static int kXXTEA_ROUNDS = 19; /* Number of rounds for encryption */
+  const static int kASCII_IN_LONG;   /* # of ascii's that will fit in long */
+  const static int kCHAR_NEW_LINE;   /* Character code representing new line */
+  const static uint32_t kDELTA;      /* Sum bias for encryption */
+  const static int kENCRYPTION_MIN;  /* Min line length for encryption */
+  const static int kENCRYPTION_PAD;  /* Padding for encrypted values */
+  const static int kFILE_NAME_LIMIT; /* File end number limit */
+  const static int kFILE_START;      /* File start for temp data */
+  const static int kINT_BIT_SHIFT;   /* Shift int to next spot */
+  const static int kINT_BUFFER;      /* Only use most significant int */
+  const static uint32_t kKEY[];      /* Key array for encryption */
+  const static int kLONG_BIT_SHIFT;  /* Number of bits to shift long to 
+                                      * next spot */
+  const static int kLONG_BUFFER;     /* Only use most significant long */
+  const static int kMAX_ASCII;       /* Max ascii out of bounds */
+  const static int kMIN_LINE;        /* Minimum line length for encryption */
+  const static int kPADDING_ASCII;   /* Start of padding characters */
+  const static int kXXTEA_ROUNDS;    /* Number of rounds for encryption */
 
 /*============================================================================
  * PRIVATE FUNCTIONS

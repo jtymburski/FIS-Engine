@@ -17,14 +17,30 @@
  *           </map>
  *****************************************************************************/
 #include "FileHandler.h"
-/* Constant Declarations */
 
-const uint32_t FileHandler::kKEY[] = {1073676287u,27644437u,
-                                      2971215073u,94418953u};
+/* Constant Implementation - see header file for descriptions */
+const int      FileHandler::kASCII_IN_LONG   = 4;
+const int      FileHandler::kCHAR_NEW_LINE   = 10;
+const uint32_t FileHandler::kDELTA           = 2654435769u;
+const int      FileHandler::kENCRYPTION_MIN  = 4;
+const int      FileHandler::kENCRYPTION_PAD  = 150;
+const int      FileHandler::kFILE_NAME_LIMIT = 1000000;
+const int      FileHandler::kFILE_START      = 5728;
+const int      FileHandler::kINT_BIT_SHIFT   = 4;
+const int      FileHandler::kINT_BUFFER      = 0xF;
+const uint32_t FileHandler::kKEY[]           = {1073676287u,27644437u,
+                                                2971215073u,94418953u};
+const int      FileHandler::kLONG_BIT_SHIFT  = 8;
+const int      FileHandler::kLONG_BUFFER     = 0xFF;
+const int      FileHandler::kMAX_ASCII       = 255;
+const int      FileHandler::kMIN_LINE        = 16;
+const int      FileHandler::kPADDING_ASCII   = 200;
+const int      FileHandler::kXXTEA_ROUNDS    = 19;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
+
 FileHandler::FileHandler()
 {
   available = false;
@@ -54,6 +70,7 @@ FileHandler::~FileHandler()
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
+
 /*
  * CHECKED:
  * Pretty foolproof
@@ -728,6 +745,7 @@ bool FileHandler::xmlEnd()
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
+
 QString FileHandler::getDate()
 {
   return file_date;
@@ -973,6 +991,7 @@ bool FileHandler::writeXmlElementEnd(bool all)
 /*============================================================================
  * PUBLIC STATIC FUNCTIONS
  *===========================================================================*/
+
 bool FileHandler::fileDelete(QString filename)
 {
   if(fileExists(filename))

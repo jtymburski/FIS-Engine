@@ -7,6 +7,10 @@
 ******************************************************************************/
 #include "Game/Map/MapInteractiveObject.h"
 
+/*============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *===========================================================================*/
+
 /* Constructor function */
 MapInteractiveObject::MapInteractiveObject()
 {

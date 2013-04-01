@@ -59,6 +59,12 @@ private:
    * a later time) */
   Weather* weather_effect;
 
+  /*------------------- Constants -----------------------*/
+  /* DELETE: temporary */
+  const static int kSTARTX;
+  const static int kSTARTY;
+  const static bool kTURN_ON_PLATFORM;
+
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
