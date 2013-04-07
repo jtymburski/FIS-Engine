@@ -16,6 +16,12 @@ class XmlData
 public:
   /* Constructor: Sets up a blank template with no data in the line set */
   XmlData();
+  
+  /* Constructor: Sets up a template with one data item */
+  XmlData(bool data);
+  XmlData(double data);
+  XmlData(int data);
+  XmlData(QString data);
 
   /* Destructor function */
   ~XmlData();

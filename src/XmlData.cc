@@ -22,12 +22,61 @@ XmlData::XmlData()
   clearData();
 }
 
+XmlData::XmlData(bool data)
+{
+  /* Start with the data cleared */
+  element.clear();
+  key.clear();
+  value.clear();
+  clearData();
+  
+  /* Add the data */
+  addData(data);
+}
+
+XmlData::XmlData(double data)
+{
+  /* Start with the data cleared */
+  element.clear();
+  key.clear();
+  value.clear();
+  clearData();
+  
+  /* Add the data */
+  addData(data);
+}
+
+XmlData::XmlData(int data)
+{
+  /* Start with the data cleared */
+  element.clear();
+  key.clear();
+  value.clear();
+  clearData();
+  
+  /* Add the data */
+  addData(data);
+}
+
+XmlData::XmlData(QString data)
+{
+  /* Start with the data cleared */
+  element.clear();
+  key.clear();
+  value.clear();
+  clearData();
+  
+  /* Add the data */
+  addData(data);
+}
+ 
 XmlData::~XmlData()
 {
   /* Cleanup by clearing the vectors */
   element.clear();
   key.clear();
   value.clear();
+  clearData();
 }
 
 /*============================================================================
