@@ -50,6 +50,10 @@ BattleStatusBar::~BattleStatusBar()
   }
 }
 
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
+
 /*
  * Description: Adds a person to the BattlStatusBar
  *
@@ -78,11 +82,23 @@ uint BattleStatusBar::getHeight()
   return height;
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 uint BattleStatusBar::getWidth()
 {
   return width;
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 void BattleStatusBar::setSize(QRect* box)
 {
   setLeftMargin(box->left());
@@ -91,21 +107,45 @@ void BattleStatusBar::setSize(QRect* box)
   setHeight(box->height());
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 void BattleStatusBar::setLeftMargin(uint left_margin)
 {
   this->left_margin = left_margin;
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 void BattleStatusBar::setTopDistance(uint top_distance)
 {
   this->top_distance = top_distance;
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 void BattleStatusBar::setWidth(uint new_width)
 {
   (new_width < kMAX_WIDTH) ? (width = new_width) : (width = kMAX_WIDTH);
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 void BattleStatusBar::setHeight(uint new_height)
 {
   (new_height < kMAX_HEIGHT) ? (height = new_height) : (height = kMAX_HEIGHT);

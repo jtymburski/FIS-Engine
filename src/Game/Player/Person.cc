@@ -7,7 +7,6 @@
 *              flags, etc.
 * // TODO: Race and category equip item types [03-06-13]
 * // TODO: Finish use item
-* // TODO: Rewrite LEVEL UP
 * // TODO: Setup Functions
 ******************************************************************************/
 #include "Game/Player/Person.h"

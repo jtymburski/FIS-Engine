@@ -63,10 +63,12 @@
 #define BATTLE_H
 
 #include <QKeyEvent>
+#include <QDebug>
 #include <QtGui/QWidget>
 #include <QtGui/QPaintEvent>
 #include <QtGui/QPainter>
 #include <cmath>
+
 #include "Game/Battle/BattleInfoBar.h"
 #include "Game/Battle/BattleMenu.h"
 #include "Game/Battle/BattleStatusBar.h"
@@ -95,24 +97,6 @@ public:
   BattleFlags flag_set;
 
 private:
-  /* Constant max limits */
-  static const int kMAX_PARTY_SIZE = 5;
-
-  /* Sets the allies pointer */
-  void setFriends(Party* p_friends = NULL);
-
-  /* Sets the foes pointer */
-  void setFoes(Party* p_foes = NULL);
-
-  /* Sets up bounding boxes */
-  void setUpBoxes();
-
-  /* Sets the maximum x-length of the battle window */
-  void setMaxWidth(int value);
-
-  /* Sets the maximum y-length of the battle window */
-  void setMaxHeight(int value);
-
   /* Pointer to the battle info bar */
   BattleInfoBar* info_bar;  // Q_OBJECT
 
@@ -176,7 +160,29 @@ private:
 
   /* Weather condition during battle */
   Weather* weather_cond;
+
+/*=============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+private:
+  /* Sets the allies pointer */
+  void setFriends(Party* p_friends = NULL);
+
+  /* Sets the foes pointer */
+  void setFoes(Party* p_foes = NULL);
+
+  /* Sets up bounding boxes */
+  void setUpBoxes();
+
+  /* Sets the maximum x-length of the battle window */
+  void setMaxWidth(int value);
+
+  /* Sets the maximum y-length of the battle window */
+  void setMaxHeight(int value);
    
+/*=============================================================================
+ * PROTECTED FUNCTIONS
+ *============================================================================*/
 protected:
   /* Handles all key entries */
   void keyPressEvent(QKeyEvent*);
@@ -189,47 +195,38 @@ protected:
   /* Checks for deaths, pops current action off stack, calls performAction();*/
   void actionOutcome();
 
-public slots:
-  void closeBattle();
-
-signals:
-  void closingBattle(int index);
-  void finished();
-
-public: 
-
   /* Ends battle with win message */
-  void battleWon(); 
+  void battleWon();
 
   /* Ends Battle with loss message, and reverts game to last save point */
-  void battleLost(); 
+  void battleLost();
 
   /* Arranges and paints static image */
-  void buildScene(); 
+  void buildScene();
 
   /* Sets temporary stats */
-  void buildStats(); 
+  void buildStats();
 
   /* Alters stats, updates scene */
-  void changeStats(Action* battle_action); 
+  void changeStats(Action* battle_action);
 
   /* Non-character events */
-  void generalUpkeep(); 
+  void generalUpkeep();
 
   /* Reorders stack (speed based) */
-  void orderActions(); 
+  void orderActions();
 
   /* Performs current action animation */
-  void performAction(); 
+  void performAction();
 
   /* Character events */
   void personalUpkeep();
 
   /* Increment party index for next Battle Menu */
-  void processAction(); 
+  void processAction();
 
   /* Gets all enemy actions, adds to stack */
-  void processEnemyActions(); 
+  void processEnemyActions();
 
   /* Paints dynamic images */
   void updateScene();
@@ -242,6 +239,19 @@ public:
 
   /* Sets the targeting mode (slot) */
   void setTargetMode(bool targeting);
+
+/*=============================================================================
+ * PUBLIC SLOTS
+ *============================================================================*/
+public slots:
+  void closeBattle();
+
+/*=============================================================================
+ * SIGNALS
+ *============================================================================*/
+  signals:
+    void closingBattle(int index);
+    void finished();
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Battle::BattleFlags)
 

@@ -25,28 +25,6 @@ public:
   virtual ~PersonStatusBar();
 
 protected:
-  /* Static const limits */
-  static const uint kMAX_FONT_SIZE = 25;
-  static const uint kMAX_WIDTH     = 1920 / 5;
-  static const uint kMAX_HEIGHT    = 200;
-
-  /* Sets up the vector of sprites for the ailments */
-  // void calcAilments();
-
-  /* Initial setup of a PersonStatusBar */
-  virtual void setup();
-
-  /* Pure virtual extra implementations */
-  virtual void additionalSetup()    = 0;
-  virtual void rebuildStatusBoxes() = 0;
-
-  /* Sets the character pointer */
-  void setCharacter(Person* character);
-
-  /* Clean up functions */
-  void clearStatusBoxes();
-  void cleanUp();
-
   /* Font size */
   int font_size;
 
@@ -72,6 +50,39 @@ protected:
   uint bar_height;
   uint bar_width;
 
+  /*------------------- Constants -----------------------*/
+  static const uint kMAX_FONT_SIZE;
+  static const uint kMAX_WIDTH;
+  static const uint kMAX_HEIGHT;
+
+/*=============================================================================
+ * VIRTUAL FUNCTIONS
+ *===========================================================================*/
+protected:
+  /* Initial setup of a PersonStatusBar */
+  virtual void setup();
+
+  /* Pure virtual extra implementations */
+  virtual void additionalSetup()    = 0;
+  virtual void rebuildStatusBoxes() = 0;
+
+/*=============================================================================
+ * PROTECTED FUNCTIONS
+ *===========================================================================*/
+protected:
+  /* Sets up the vector of sprites for the ailments */
+  void calcAilments();
+
+  /* Sets the character pointer */
+  void setCharacter(Person* character);
+
+  /* Clean up functions */
+  void clearStatusBoxes();
+  void cleanUp();
+
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 public:
   /* Virtual Display functions */
   QString getDisplayHP();

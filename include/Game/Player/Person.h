@@ -131,7 +131,7 @@ public:
 
   /* PersonState flag functions */
   bool getPersonFlag(PersonState flags);
-  void setPersonFlag(PersonState flags, bool set_value = TRUE);
+  void setPersonFlag(PersonState flags, bool set_value = true);
 
   /* Gets the person's category */
   Category* getCategory();

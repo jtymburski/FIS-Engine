@@ -543,15 +543,15 @@ void Ailment::unapply()
 {
   if (getType() == BERSERK)
   {
-
+    /* Enable Run, enable non-Physical skills, items */
   }
   if (getType() == SILENCE)
   {
-
+    /* Enable skills */
   }
   if (getType() == BUBBIFY)
   {
-
+    /* Return to normal stats */
   }
   if (getType() == PARALYSIS)
   {

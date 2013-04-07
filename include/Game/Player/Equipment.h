@@ -79,8 +79,8 @@ public:
   Bubby unattach(ushort x, ushort y);
 
   /* Gets the Leftmost X and Leftmost Y coordinates of a Bubby (+given an ID) */
-  int getLeftX(uint x, uint y, bool passingID = TRUE);
-  int getLeftY(uint x, uint y, bool passingID = TRUE);
+  int getLeftX(uint x, uint y, bool passingID = true);
+  int getLeftY(uint x, uint y, bool passingID = true);
 
   /* Gets the boolean value of flag */
   bool getEquipmentFlag(EquipmentState flags);

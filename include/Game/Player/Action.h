@@ -102,7 +102,7 @@ private:
   void setAilment(QString ailment);
 
   /* Sets the value of an Action Type Flag */
-  void setActionFlag(ActionType flags, bool set_value = TRUE);
+  void setActionFlag(ActionType flags, bool set_value = true);
 
   /* Sets the base change value that will effect the given stat */
   void setBaseChange(uint new_value);
@@ -114,7 +114,7 @@ private:
   void setId(int id);
 
   /* Sets the value of an Ignore Atk Flag */
-  void setIgnoreFlag(IgnoreFlag flags, bool set_value = TRUE);
+  void setIgnoreFlag(IgnoreFlag flags, bool set_value = true);
 
   /* Variance of the base change (percentage) */
   void setVariance(float new_value);

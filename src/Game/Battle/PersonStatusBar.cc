@@ -8,6 +8,13 @@
 #include "Game/Battle/PersonStatusBar.h"
 
 /*============================================================================
+ * CONSTANTS
+ *===========================================================================*/
+const uint PersonStatusBar::kMAX_FONT_SIZE = 25;
+const uint PersonStatusBar::kMAX_WIDTH     = 1920 / 5;
+const uint PersonStatusBar::kMAX_HEIGHT    = 200;
+
+/*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
 

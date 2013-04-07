@@ -38,6 +38,9 @@ private:
   uint height;
   uint width;
 
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 public:
   /* Adds a person to the vector of bars */
   void addPerson(Person* character, int person_index);

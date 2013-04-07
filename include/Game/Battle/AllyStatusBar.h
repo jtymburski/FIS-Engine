@@ -9,13 +9,14 @@
 #ifndef ALLYSTATUSBAR_H
 #define ALLYSTATUSBAR_H
 
+#include <QDebug>
 #include <QLabel>
 #include <QtGui/QWidget>
 #include <QtGui/QPaintEvent>
 #include <QtGui/QPainter>
-#include "Game/Battle/PersonStatusBar.h"
+
 #include "Game/Player/Person.h"
-#include <QDebug>
+#include "Game/Battle/PersonStatusBar.h"
 
 class AllyStatusBar : public PersonStatusBar
 {
@@ -26,6 +27,20 @@ public:
   /* Annihilates an AllyStatusBar object */
   virtual ~AllyStatusBar();
 
+  /* QLabel for the name box and QD */
+  QLabel* name_label;
+  QLabel* qd_label;
+
+  /* QGradient for the QD value */
+  QGradient* qd_grad;
+
+  /* QRects for the outline box and gradient box for QD */
+  QRect* qd_bar;
+  QRect* qd_outline;
+
+/*============================================================================
+ * VIRTUAL FUNCTIONS
+ *============================================================================*/
 protected:
   /* Paint event for the class */
   void paintEvent(QPaintEvent*);
@@ -36,21 +51,12 @@ protected:
   /* Rebuild the status boxes */
   void rebuildStatusBoxes();
 
-  /* Name & QD Labels */
-  QLabel* name_label;
-  QLabel* qd_label;
-
-  /* Additional Bounding Boxes */
-  QRect* qd_outline;
-  QRect* qd_bar;
-
-  /* Additional Gradients */
-  QLinearGradient* qd_grad;
-
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
 public:
   /* Gets for Stat displays */
   QString getDisplayQD();
-
 };
 
 #endif // PERSONSTATUSBAR_H

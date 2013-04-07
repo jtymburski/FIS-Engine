@@ -35,7 +35,10 @@ class BattleMenu : public QWidget
   Q_OBJECT // TODO: What is this for? [12-02-12]
 
 public: 
+  /* Constructs a BattleMenu object */
   BattleMenu(QWidget *parent = 0);
+
+  /* Destroys a BattleMenu object */
   ~BattleMenu();
 
 private:
@@ -58,7 +61,7 @@ private:
   Party* foes;
 
   /* Person currently selecting action */
-  	Person* active_person;
+  Person* active_person;
 
   /* Actions currently available for active person (compiled from 
   equipment, bubbies, race, class etc.) */
@@ -70,20 +73,29 @@ private:
   /* The buffer of inventory items from battle */
   QVector<Item*>* inventory_buffer;
 
-  signals:
-  /* Emitted when the action is selected and verified as correct,
-     connected to processAction() in battle */
-  void actionSelected();
-
+/*=============================================================================
+ * PROTECTED FUNCTIONS
+ *===========================================================================*/
 protected:
   /* Paint event for the class */
   void paintEvent(QPaintEvent*);
 
+/*=============================================================================
+ * SIGNALS
+ *===========================================================================*/
+signals:
+  /* Emitted when the action is selected and verified as correct,
+     connected to processAction() in battle */
+  void actionSelected();
+
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 public:
   /* Selects the target PARTY for the action. Also adds the action to the action buffer. */
-  	void selectedTarget (Party *);
+  void selectedTarget (Party *);
 
-  	/* Selects the target PERSON for the action. Also adds the action to the action buffer. */
+  /* Selects the target PERSON for the action. Also adds the action to the action buffer. */
   void selectedTarget (Person *); 
 
   /* Returns TRUE if menu is active */

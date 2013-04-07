@@ -22,9 +22,15 @@ public:
   /* Constructs an EnemyStatusBar object */
   EnemyStatusBar(Person* character, uint width, uint height, QWidget* parent);
 
+/*=============================================================================
+ * VIRTUAL FUNCTIONS
+ *===========================================================================*/
   /* Annihilates an EnemyStatusBar object */
  virtual ~EnemyStatusBar();
 
+/*=============================================================================
+ * PROTECTED FUNCTIONS
+ *===========================================================================*/
 protected:
   /* Paint event for the class */
   void paintEvent(QPaintEvent*);

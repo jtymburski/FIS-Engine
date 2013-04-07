@@ -63,7 +63,10 @@
 ******************************************************************************/
 
 #include "Game/Battle/Battle.h"
-#include <QDebug>
+
+/*=============================================================================
+ * CONSTANTS
+ *===========================================================================*/
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -117,7 +120,7 @@ Battle::Battle(Party* friends, Party* foes, QWidget* parent) : QWidget(parent)
   uint ally_h   = floor(0.3636 * getMaxHeight());
   uint aspacing = floor(0.0263 * getMaxWidth());
 
-  for (int i = 0; i < kMAX_PARTY_SIZE; i++)
+  for (int i = 0; i < 5; i++)
   {
     uint left_margin = left_d + (enemy_w * i) - spacing * i;
     enemy_box.push_back(new QRect(left_margin,top_d, enemy_w, enemy_h));
@@ -142,7 +145,7 @@ Battle::Battle(Party* friends, Party* foes, QWidget* parent) : QWidget(parent)
   bar_width  = enemy_w        * 0.75000;
   bar_height = getMaxHeight() * 0.07500;
   top_d      = top_d - bar_height;
-  for (int i = 0; i < kMAX_PARTY_SIZE; i++)
+  for (int i = 0; i < 5; i++)
   {
     uint left_m = left_d + (enemy_w * 1) - spacing * i;
     enemy_status_boxes.push_back(new QRect(left_m,top_d,bar_width,bar_height));
@@ -219,8 +222,12 @@ Battle::~Battle()
   }
 }
 
+/*=============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+
 /*============================================================================
- * PAINT EVENTS
+ * PROTECTED FUNCTIONS
  *===========================================================================*/
 
 /*
@@ -297,13 +304,6 @@ void Battle::paintMenu()
 
 }
 
-/*============================================================================
- * PRIVATE FUNCTIONS
- *===========================================================================*/
-
-/*============================================================================
- * PROTECTED FUNCTIONS
- *===========================================================================*/
 
 /*============================================================================
  * PUBLIC SLOTS

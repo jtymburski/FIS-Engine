@@ -20,40 +20,80 @@
 
 #include "Game/Battle/BattleMenu.h"
 
-/* Creates a BattleMenu object */
-BattleMenu::BattleMenu(QWidget* parent)
+/*
+ * Description: Constructs a BattleMenu object
+ *
+ * Inputs:
+ */
+BattleMenu::BattleMenu(QWidget* parent) : QWidget(parent)
 {
-  setParent(parent);
+
 }
 
-/* Annihilates a BattleMenu object */
+/*
+ * Description: Destroys a BattleMenu object
+ */
 BattleMenu::~BattleMenu()
 {
+\
 }
 
+/*=============================================================================
+ * PROTECTED FUNCTIONS
+ *===========================================================================*/
+
+/*
+ * Description: Paint event for the BattleMenu class
+ *
+ * Inputs: QPaintEVent*
+ * Output: none
+ */
 void BattleMenu::paintEvent(QPaintEvent*)
 {
   QPainter painter(this);
 }
 
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 
-/* Selects the target PARTY for the action. Also adds the action to the action buffer. */
-void BattleMenu::selectedTarget (Party *)
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void BattleMenu::selectedTarget(Party *)
 {
 }
 
-/* Selects the target PERSON for the action. Also adds the action to the action buffer. */
-void BattleMenu::selectedTarget (Person *)
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void BattleMenu::selectedTarget(Person *)
 {
 }
 
-/* Returns TRUE if menu is active */
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 bool BattleMenu::getActive()
 {
   return active;
 }
 
-/* Sets menu activity */
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 void BattleMenu::setActive(bool new_active)
 {
   active = new_active;
