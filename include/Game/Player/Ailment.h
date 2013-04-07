@@ -19,6 +19,7 @@
 #define AILMENT_H
 
 #include <QtGui/QWidget>
+
 #include "Game/Player/Person.h"
 #include "EnumDatabase.h"
 

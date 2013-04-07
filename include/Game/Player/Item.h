@@ -8,6 +8,7 @@
 ******************************************************************************/
 #ifndef ITEM_H
 #define ITEM_H
+
 #include <QImage>
 #include <QString>
 
@@ -57,6 +58,7 @@ private:
 
   /* Value of currency in the shop */
   uint value;
+  double weight;
 
 public:
   /* Gets category of unit */
@@ -77,11 +79,17 @@ public:
   /* Gets the turn count */
   uint getDuration();
 
+  /* Gets the weight of the item */
+  double getWeight();
+
   /* Sets unit count */
   void setDuration(uint value);
 
   /* Sets an ItemFlag */
   void setItemFlag(ItemState flag, bool set_value);
+
+  /* Sets the weight of the item */
+  void setWeight(double new_value);
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Item::ItemFlags);
 

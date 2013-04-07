@@ -40,6 +40,21 @@ Player::Player(Party* p_sleuth, Party* p_racks, int x, int y)
 Player::~Player() {}
 
 /*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+
+/*
+ * Description: Calculates the carry weight of the player
+ *
+ * Inputs:
+ * Output:
+ */
+void Player::calcCarryWeight()
+{
+
+}
+
+/*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
@@ -90,9 +105,9 @@ bool Player::removeSleuthMember(QString value)
  */
 bool Player::removeRacksMember(int index)
 {
-    if (bearacks->removeMember(index))
-      return true;
-    return false;
+  if (bearacks->removeMember(index))
+    return true;
+  return false;
 }
 
 /*
@@ -152,6 +167,28 @@ Party* Player::getBearacks()
 }
 
 /*
+ * Description: Returns the carry weight of the player
+ *
+ * Inputs: none
+ * Output: double - carry weight of the player
+ */
+double Player::getCarryWeight()
+{
+  return carry_weight;
+}
+
+/*
+ * Description: Returns the gravity of the player
+ *
+ * Inputs: none
+ * Output: double - gravity of the player
+ */
+double Player::getGravity()
+{
+  return gravity;
+}
+
+/*
  * Description: Gets the x-position on the map
  *
  * Inputs: none
@@ -204,6 +241,17 @@ void Player::setSleuth(Party* p)
 void Player::setBearacks(Party* p)
 {
   bearacks = p;
+}
+
+/*
+ * Description: Sets the gravity of the Player
+ *
+ * Inputs: double - value of gravity to be set
+ * Output: none
+ */
+void Player::setGravity(double new_value)
+{
+  gravity = new_value;
 }
 
 /*

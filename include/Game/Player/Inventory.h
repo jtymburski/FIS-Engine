@@ -41,6 +41,7 @@ private:
 
   /* Storage level */
   uint level;
+  double max_carry_weight;
 
   /* Name of Inventory storage unit */
   QString name;
@@ -56,6 +57,7 @@ private:
   static const uint kMAX_LEVEL;
   static const uint kMAX_EQUIP_STACK;
   static const uint kMAX_ITEM_STACK;
+  static const uint kMAX_CARRY_WEIGHT;
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -111,11 +113,17 @@ public:
   /* Gets storage level */
   uint getLevel();
 
+  /* Returns the current maximum carry weight of the Inv. */
+  double getMaxCarryWeight();
+
   /* Gets storage unit name */
   QString getName();
 
   /* Gets thumbnail image */
   QPixmap* getThumbnail();
+
+  /* Sets the carry weight of the inventory */
+  void setMaxCarryWeight(double gravity, ushort party_size);
 };
 
 #endif // INVENTORY_H

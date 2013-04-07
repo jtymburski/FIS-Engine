@@ -10,6 +10,7 @@
 #define PARTY_H
 
 #include <QtGui/QWidget>
+
 #include "Game/Player/Inventory.h"
 #include "Game/Player/Person.h"
 

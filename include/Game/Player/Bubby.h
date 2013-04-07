@@ -9,6 +9,7 @@
 #define BUBBY_H
 
 #include <QtGui/QWidget>
+
 #include "Game/Player/BubbyFlavour.h"
 #include "Game/Player/SkillSet.h"
 #include "Game/Player/Item.h"

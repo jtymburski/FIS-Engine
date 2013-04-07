@@ -85,6 +85,17 @@ uint Item::getDuration()
 }
 
 /*
+ * Description: Gets the weight of the item
+ *
+ * Inputs: none
+ * Output: double - the weight of the item
+ */
+double Item::getWeight()
+{
+  return weight;
+}
+
+/*
  * Description: Evaluates a given ItemState flag
  *
  * Inputs: ITemState flag to be evaluated
@@ -92,7 +103,7 @@ uint Item::getDuration()
  */
 bool Item::getItemFlag(ItemState flag)
 {
-    return (iflag_set.testFlag(flag));
+  return (iflag_set.testFlag(flag));
 }
 
 /*
@@ -105,7 +116,7 @@ bool Item::getItemFlag(ItemState flag)
  */
 void Item::setItemFlag(ItemState flag, bool set_value)
 {
-    (set_value) ? (iflag_set |= flag) : (iflag_set ^= flag);
+  (set_value) ? (iflag_set |= flag) : (iflag_set ^= flag);
 }
 
 /*
@@ -116,5 +127,16 @@ void Item::setItemFlag(ItemState flag, bool set_value)
  */
 void Item::setDuration(uint value)
 {
-    duration = value;
+  duration = value;
+}
+
+/*
+ * Description: Sets the weight value of the item.
+ *
+ * Inputs: double - new value to set weight to
+ * Output: none
+ */
+void Item::setWeight(double new_value)
+{
+  weight = new_value;
 }

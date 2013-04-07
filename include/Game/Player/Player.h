@@ -10,6 +10,7 @@
 #define PLAYER_H
 
 #include <QtGui/QWidget>
+
 #include "Game/Player/Party.h"
 
 class Player
@@ -35,11 +36,22 @@ private:
   int x_pos;
   int y_pos;
 
+  /* Carry weight */
+  double carry_weight;
+  double gravity;
+
   /* Money */
   uint32_t credits;
 
   /* ------------ Constants --------------- */
   static const uint32_t kMAX_CREDITS;
+
+/*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+private:
+  /* Calculates the carry weight of the player */
+  void calcCarryWeight();
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -66,11 +78,17 @@ public:
   /* Gets # of frames in the main persons sprite multiplied by kMAPSPEED */
   int getSpeed(); 
 
-  /* Gets the sleuth party */
-  Party* getSleuth();
-
   /* Gets the bearacks party */
   Party* getBearacks();
+
+  /* Returns the carry weight */
+  double getCarryWeight();
+
+  /* Returns the gravity */
+  double getGravity();
+
+  /* Gets the sleuth party */
+  Party* getSleuth();
 
   /* Gets the x-position on the map */
   int getXPos(); 
@@ -86,6 +104,9 @@ public:
 
   /* Sets the bearcks party */
   void setBearacks(Party* p = NULL);
+
+  /* Sets the gravity the player is experiencing */
+  void setGravity(double new_value);
 
   /* Sets the x-position on the map */
   void setXPos(int new_x_pos);

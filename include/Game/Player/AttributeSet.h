@@ -12,6 +12,7 @@
 
 #include <QtGui/QWidget>
 #include <QDebug>
+
 #include "EnumDatabase.h"
 
 class AttributeSet

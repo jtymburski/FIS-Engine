@@ -12,6 +12,7 @@
 #include <QtGui>
 #include <algorithm>
 #include <QtAlgorithms>
+
 #include "Game/Player/Skill.h"
 
 class SkillSet

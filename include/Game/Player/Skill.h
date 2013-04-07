@@ -16,6 +16,7 @@
 #define SKILL_H
 
 #include <QtGui/QWidget>
+
 #include "Game/Player/Action.h"
 #include "Game/Sprite.h"
 #include "Sound.h"

@@ -13,6 +13,7 @@
 #include <QtGui/QWidget>
 #include <cmath>
 #include <algorithm>
+
 #include "EnumDatabase.h"
 #include "Game/Player/Category.h"
 #include "Game/Player/Race.h"
