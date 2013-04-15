@@ -29,6 +29,8 @@
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 
+#include "XmlData.h"
+
 /* Macros */
 #define MX (((z>>5^y<<2) + (y>>3^z<<4)) ^ ((sum^y) + (kKEY[(p&3)^e] ^ z)))
 
@@ -62,6 +64,7 @@ private:
   bool file_write;
 
   /* XML handlers for reading/writing */
+  XmlData read_data;
   QString xml_data;
   int xml_depth;
   QXmlStreamReader* xml_reader;
@@ -90,6 +93,9 @@ private:
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 private:
+  /* Clean up function, frees appropriate pointers */
+  void cleanUp();
+
   /* Compute Md5 for byte array of data */
   QByteArray computeMd5(QByteArray data);
 
@@ -175,6 +181,10 @@ public:
 
   /* Reads the following line as a string. Only valid for REGULAR files */
   QString readRegularLine(bool* done = 0, bool* success = 0);
+
+  /* Reads the next XML data element - returns an empty data element when
+   * done */
+  XmlData readXmlData(bool* done = 0, bool* success = 0);
 
   /* Sets if encryption is enabled for reading and writing */
   void setEncryptionEnabled(bool enable);

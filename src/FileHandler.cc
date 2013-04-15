@@ -60,16 +60,28 @@ FileHandler::FileHandler()
 FileHandler::~FileHandler()
 {
   stop(true);
-
-  delete xml_reader;
-  xml_reader = 0;
-  delete xml_writer;
-  xml_writer = 0;
 }
 
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
+
+void FileHandler::cleanUp()
+{
+  if(xml_reader != 0)
+  {
+    delete xml_reader;
+    xml_reader = 0;
+  }
+  
+  if(xml_writer != 0)
+  {
+    delete xml_writer;
+    xml_writer = 0;
+  }
+
+  xml_data.clear();
+}
 
 /*
  * CHECKED:
@@ -720,26 +732,42 @@ bool FileHandler::writeMd5(QByteArray data)
 
 bool FileHandler::xmlStart()
 {
-  xml_writer->setAutoFormatting(true);
-  xml_writer->setAutoFormattingIndent(2);
-  xml_depth = 0;
-  xml_writer->writeStartDocument();
+  bool done = false;
+  bool success = true;
 
-  return true;
+  if(file_write)
+  {
+    xml_writer->setAutoFormatting(true);
+    xml_writer->setAutoFormattingIndent(2);
+    xml_depth = 0;
+    xml_writer->writeStartDocument();
+  }
+  else
+  {
+    xml_data = "";
+    while(!done && success)
+      xml_data.append(readLine(&done, &success));
+    qDebug() << xml_data;
+  }
+
+  return success;
 }
 
 bool FileHandler::xmlEnd()
 {
-  xml_writer->writeEndDocument();
+  if(available && xml_writer != 0)
+  {
+    xml_writer->writeEndDocument();
 
-  /* Write the data accumulated by the file handler into the file */
-  QStringList list = xml_data.split(QChar(kCHAR_NEW_LINE));
-  foreach(const QString &str, list)
-    if(!str.isEmpty())
-      writeLine(str);
+    /* Write the data accumulated by the file handler into the file */
+    QStringList list = xml_data.split(QChar(kCHAR_NEW_LINE));
+    foreach(const QString &str, list)
+      if(!str.isEmpty())
+        writeLine(str);
 
-
-  return true;
+    return true;
+  }
+  return false;
 }
 
 /*============================================================================
@@ -789,6 +817,55 @@ QString FileHandler::readRegularLine(bool* done, bool* success)
   return "";
 }
 
+XmlData FileHandler::readXmlData(bool* done, bool* success)
+{
+  XmlData data;
+  bool failed = false;
+  bool finished = false;
+
+  /* Only pass through if the XML has no error */
+  if(!xml_reader->hasError())
+  {
+    /* Only pass through if the XML is NOT at the end */
+    if(!xml_reader->atEnd())
+    {
+      /* Parse through until data is located */
+      while(xml_reader->tokenType() != QXmlStreamReader::Characters)
+      {
+        if(xml_reader->tokenType() == QXmlStreamReader::StartDocument)
+          qDebug() << "Start Document.";
+        else if(xml_reader->tokenType() == QXmlStreamReader::StartElement)
+          qDebug() << "Start: " << xml_reader->name();
+        else if(xml_reader->tokenType() == QXmlStreamReader::EndElement)
+          qDebug() << "End: " << xml_reader->name();
+        else if(xml_reader->tokenType() == QXmlStreamReader::EndDocument)
+          qDebug() << "End Document.";
+
+        xml_reader->readNext();
+      }
+
+      //QXmlStreamReader::TokenType token = xml_reader->readNext();
+      // Fill In
+    }
+    else
+    {
+      finished = true;
+    }
+  }
+  else
+  {
+    failed = true;
+  }
+  
+  /* Set status' if the pointers are available */
+  if(done != 0)
+    *done = finished;
+  if(success != 0)
+    *success = !failed;
+
+  return data;
+}
+
 void FileHandler::setEncryptionEnabled(bool enable)
 {
   encryption_enabled = enable;
@@ -831,20 +908,6 @@ bool FileHandler::start()
     if(file_write)
       success &= setTempFileName();
  
-    /* If the file type is XML, open the QXmlStreams */
-    if(file_type == XML)
-    {
-      if(file_write)
-      {
-        xml_writer = new QXmlStreamWriter(&xml_data);
-        xmlStart();
-      }
-      else
-      {
-        xml_reader = new QXmlStreamReader(xml_data);
-      }
-    }
-
     /* If the system is in read and encryption, check validity of file */
     if(!file_write && encryption_enabled)
       success &= readMd5();
@@ -852,7 +915,7 @@ bool FileHandler::start()
     /* Open the file stream */
     if(success)
       success &= fileOpen();
-  
+
     /* Write the success status, if available */
     if(success)
     {
@@ -862,7 +925,24 @@ bool FileHandler::start()
       if(!file_write && encryption_enabled)
         readRegularLine();
     }
-  
+
+    /* If the file type is XML, open the QXmlStreams and initialize XML */
+    if(file_type == XML)
+    {
+      if(file_write)
+      {
+        xml_writer = new QXmlStreamWriter(&xml_data);
+        success &= xmlStart();
+      }
+      else
+      {
+        success &= xmlStart();
+        xml_reader = new QXmlStreamReader(xml_data);
+        xml_reader->readNext();
+        readXmlData();
+      }
+    }
+
     /* Write MD5 data, if applicable */
     if(success && file_write && encryption_enabled)
       success &= writeMd5(file_data);
@@ -878,7 +958,7 @@ bool FileHandler::start()
     }
 
     /* Read off starting date, if applicable */
-    if(success && !file_write)
+    if(success && !file_write && file_type == REGULAR)
       file_date = readRegularLine();
 
     /* Stop the program if there is any problems and halt operation */
@@ -900,6 +980,7 @@ bool FileHandler::stop(bool failed)
 {
   bool success = true;
 
+  /* Handle ending of XML file if file in write and XML */
   if(file_write && file_type == XML)
     xmlEnd();
 
@@ -913,7 +994,7 @@ bool FileHandler::stop(bool failed)
   /* Close the file stream */
   success &= fileClose();
   file_date = "";
-
+    
   /* If success, reopen the class availability */
   if(success)
   {
@@ -925,6 +1006,10 @@ bool FileHandler::stop(bool failed)
     else if(file_write)
       fileDelete(file_name_temp);
   }
+
+  /* Do the final clean up once everything is stopped */
+  cleanUp();
+
   return success;
 }
 
