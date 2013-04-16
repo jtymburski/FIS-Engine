@@ -8,6 +8,7 @@
 #ifndef XMLDATA_H
 #define XMLDATA_H
 
+#include <QDebug>
 #include <QString>
 #include <QVector>
 
@@ -46,11 +47,15 @@ private:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
-  /* Add data to encapsulate in this class */
-  bool addData(bool data);
-  bool addData(double data);
-  bool addData(int data);
+  /* If the start element has been added that indicates the data, call this
+   * with a string read of the data and it will be converted */
   bool addData(QString data);
+
+  /* Add data to encapsulate in this class */
+  bool addDataOfType(bool data);
+  bool addDataOfType(double data);
+  bool addDataOfType(int data);
+  bool addDataOfType(QString data);
 
   /* Add element to XML array */
   bool addElement(QString element, QString key = "", QString value = "");

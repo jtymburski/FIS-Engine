@@ -26,6 +26,7 @@
 #include <QDateTime>
 #include <QDebug>
 #include <QStringList>
+#include <QXmlStreamAttributes>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 

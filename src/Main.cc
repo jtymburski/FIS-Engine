@@ -32,6 +32,10 @@ int main(int argc, char *argv[])
     /*while(!done) 
       qDebug() << fh.readRegularLine(&done);*/
 
+    /* XML */
+    //while(!done)
+    //qDebug() << fh.readXmlData(&done).getDataString();
+
     fh.stop();
   }
   else

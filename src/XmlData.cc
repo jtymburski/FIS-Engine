@@ -31,7 +31,7 @@ XmlData::XmlData(bool data)
   clearData();
   
   /* Add the data */
-  addData(data);
+  addDataOfType(data);
 }
 
 XmlData::XmlData(double data)
@@ -43,7 +43,7 @@ XmlData::XmlData(double data)
   clearData();
   
   /* Add the data */
-  addData(data);
+  addDataOfType(data);
 }
 
 XmlData::XmlData(int data)
@@ -55,7 +55,7 @@ XmlData::XmlData(int data)
   clearData();
   
   /* Add the data */
-  addData(data);
+  addDataOfType(data);
 }
 
 XmlData::XmlData(QString data)
@@ -67,7 +67,7 @@ XmlData::XmlData(QString data)
   clearData();
   
   /* Add the data */
-  addData(data);
+  addDataOfType(data);
 }
  
 XmlData::~XmlData()
@@ -83,7 +83,34 @@ XmlData::~XmlData()
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
-bool XmlData::addData(bool data)
+bool XmlData::addData(QString data)
+{
+  bool success = true;
+  int type = value.at(element.size() - 1).toInt();
+
+  /* Determine what the data is */
+  if(type == BOOLEAN)
+    success &= addDataOfType(data == "true");
+  else if(type == INTEGER)
+    success &= addDataOfType(data.toInt());
+  else if(type == FLOAT)
+    success &= addDataOfType(data.toDouble());
+  else if(type == STRING)
+    success &= addDataOfType(data);
+  else
+    return false;
+
+  /* Remove the type counter */
+  if(success)
+  {
+    key.replace(element.size() - 1, "");
+    value.replace(element.size() - 1, "");
+  }
+
+  return success;
+}
+
+bool XmlData::addDataOfType(bool data)
 {
   /* Clear the data before doing anything */
   bool status = clearData();
@@ -98,7 +125,7 @@ bool XmlData::addData(bool data)
   return status;
 }
 
-bool XmlData::addData(double data)
+bool XmlData::addDataOfType(double data)
 {
   /* Clear the data before doing anything */
   bool status = clearData();
@@ -113,7 +140,7 @@ bool XmlData::addData(double data)
   return status;
 }
 
-bool XmlData::addData(int data)
+bool XmlData::addDataOfType(int data)
 {
   /* Clear the data before doing anything */
   bool status = clearData();
@@ -128,7 +155,7 @@ bool XmlData::addData(int data)
   return status;
 }
 
-bool XmlData::addData(QString data)
+bool XmlData::addDataOfType(QString data)
 {
   /* Clear the data before doing anything */
   bool status = clearData();

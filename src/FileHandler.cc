@@ -747,7 +747,6 @@ bool FileHandler::xmlStart()
     xml_data = "";
     while(!done && success)
       xml_data.append(readLine(&done, &success));
-    qDebug() << xml_data;
   }
 
   return success;
@@ -819,7 +818,6 @@ QString FileHandler::readRegularLine(bool* done, bool* success)
 
 XmlData FileHandler::readXmlData(bool* done, bool* success)
 {
-  XmlData data;
   bool failed = false;
   bool finished = false;
 
@@ -830,22 +828,58 @@ XmlData FileHandler::readXmlData(bool* done, bool* success)
     if(!xml_reader->atEnd())
     {
       /* Parse through until data is located */
-      while(xml_reader->tokenType() != QXmlStreamReader::Characters)
+      while(!finished && !failed &&
+            xml_reader->tokenType() != QXmlStreamReader::Characters)
       {
+        /* Start of document token */
         if(xml_reader->tokenType() == QXmlStreamReader::StartDocument)
-          qDebug() << "Start Document.";
+        {
+          read_data.clearData();
+        }
+        /* Start element token */
         else if(xml_reader->tokenType() == QXmlStreamReader::StartElement)
-          qDebug() << "Start: " << xml_reader->name();
+        {
+          QXmlStreamAttributes attributes = xml_reader->attributes();
+
+          if(attributes.size() > 0)
+          {
+            read_data.addElement(xml_reader->name().toString(),
+                                 attributes.at(0).name().toString(),
+                                 attributes.at(0).value().toString());
+          }
+          else
+          {
+            read_data.addElement(xml_reader->name().toString());
+          }
+        }
+        /* End element token */
         else if(xml_reader->tokenType() == QXmlStreamReader::EndElement)
-          qDebug() << "End: " << xml_reader->name();
+        {
+          read_data.clearData();
+
+          if(read_data.getNumElements() > 0)
+            read_data.removeLastElement();
+          else
+            failed = true;
+        }
+        /* End of document token */
         else if(xml_reader->tokenType() == QXmlStreamReader::EndDocument)
-          qDebug() << "End Document.";
+        {
+          read_data.clearData();
+          finished = true;
+        }
 
         xml_reader->readNext();
       }
 
-      //QXmlStreamReader::TokenType token = xml_reader->readNext();
-      // Fill In
+      /* Handle the data, if located */
+      if(!finished && !failed && 
+         xml_reader->tokenType() == QXmlStreamReader::Characters)
+      {
+        read_data.clearData();
+        read_data.addData(xml_reader->text().toString());
+        xml_reader->readNext();
+      }
     }
     else
     {
@@ -863,7 +897,7 @@ XmlData FileHandler::readXmlData(bool* done, bool* success)
   if(success != 0)
     *success = !failed;
 
-  return data;
+  return read_data;
 }
 
 void FileHandler::setEncryptionEnabled(bool enable)
@@ -939,7 +973,8 @@ bool FileHandler::start()
         success &= xmlStart();
         xml_reader = new QXmlStreamReader(xml_data);
         xml_reader->readNext();
-        readXmlData();
+        XmlData date = readXmlData();
+        file_date = date.getDataString();
       }
     }
 
