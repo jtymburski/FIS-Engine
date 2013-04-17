@@ -31,7 +31,7 @@ Sprite::Sprite()
 /* 
  * Description: Constructor function - Set up one image
  *
- * Input: none
+ * Input: QString image_path - image to set as one sprite 
  */
 Sprite::Sprite(QString image_path)
 {
@@ -45,7 +45,9 @@ Sprite::Sprite(QString image_path)
 /* 
  * Description: Constructor function - Set up sequence of images
  *
- * Input: none
+ * Input: QString head_path - the start part of the path
+ *        int num_frames - the number of frames in this path sequence
+ *        QString tail_path - the end of the path, after the count index
  */
 Sprite::Sprite(QString head_path, int num_frames, QString tail_path)
 {

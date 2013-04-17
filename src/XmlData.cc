@@ -11,71 +11,88 @@
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
 
+/* 
+ * Description: Constructor function - Set up a no data XML class
+ *
+ * Input: none
+ */
 XmlData::XmlData()
 {
   /* Ensure the XML vectors are clear */
-  element.clear();
-  key.clear();
-  value.clear();
+  clearElements();
 
   /* Clear data set */
   clearData();
 }
 
+/* 
+ * Description: Constructor function - Sets up the class with just one BOOL
+ *              data element in it.
+ *
+ * Input: bool data - the data to add to the class, as a boolean
+ */
 XmlData::XmlData(bool data)
 {
   /* Start with the data cleared */
-  element.clear();
-  key.clear();
-  value.clear();
+  clearElements();
   clearData();
   
   /* Add the data */
   addDataOfType(data);
 }
 
+/* 
+ * Description: Constructor function - Set up the class with just one DOUBLE
+ *
+ * Input: double data - the data to add to the class, as a double
+ */
 XmlData::XmlData(double data)
 {
   /* Start with the data cleared */
-  element.clear();
-  key.clear();
-  value.clear();
+  clearElements();
   clearData();
   
   /* Add the data */
   addDataOfType(data);
 }
 
+/* 
+ * Description: Constructor function - Set up the class with just one INTEGER
+ *
+ * Input: int data - the data to add to the class, as an integer
+ */
 XmlData::XmlData(int data)
 {
   /* Start with the data cleared */
-  element.clear();
-  key.clear();
-  value.clear();
+  clearElements();
   clearData();
   
   /* Add the data */
   addDataOfType(data);
 }
 
+/* 
+ * Description: Constructor function - Set up the class with just one STRING
+ *
+ * Input: QString data - the data to add to the class, as a string (QString)
+ */
 XmlData::XmlData(QString data)
 {
   /* Start with the data cleared */
-  element.clear();
-  key.clear();
-  value.clear();
+  clearElements();
   clearData();
   
   /* Add the data */
   addDataOfType(data);
 }
  
+/* 
+ * Description: Destructor function
+ */
 XmlData::~XmlData()
 {
   /* Cleanup by clearing the vectors */
-  element.clear();
-  key.clear();
-  value.clear();
+  clearElements();
   clearData();
 }
 
@@ -83,6 +100,15 @@ XmlData::~XmlData()
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
+/* 
+ * Description: Add data to the class. It utilizes the last entered element
+ *              to determine what the data should be, as per the XML standard
+ *              of this product. It then pops off that identifier since it 
+ *              isn't needed anymore.
+ *
+ * Inputs: QString data - the data to add, of any of the 4 types
+ * Output: bool - status if insert is successful
+ */
 bool XmlData::addData(QString data)
 {
   bool success = true;
@@ -110,6 +136,13 @@ bool XmlData::addData(QString data)
   return success;
 }
 
+/* 
+ * Description: Add data to the class, of the type bool. It will attempt to 
+ *              clear out previous data before setting the new.
+ *
+ * Inputs: bool data - the data to add, of the type bool
+ * Output: bool - status if insert is successful
+ */
 bool XmlData::addDataOfType(bool data)
 {
   /* Clear the data before doing anything */
@@ -125,6 +158,13 @@ bool XmlData::addDataOfType(bool data)
   return status;
 }
 
+/* 
+ * Description: Add data to the class, of the type double. It will attempt to
+ *              clear out previous data before setting the new.
+ *
+ * Inputs: double data - the data to add, of the type double
+ * Output: bool - status if insert is successful
+ */
 bool XmlData::addDataOfType(double data)
 {
   /* Clear the data before doing anything */
@@ -140,6 +180,13 @@ bool XmlData::addDataOfType(double data)
   return status;
 }
 
+/* 
+ * Description: Add data to the class, of the type integer. It will attempt to
+ *              clear out previous data before setting the new.
+ *
+ * Inputs: int data - the data to add, of the type integer
+ * Output: bool - status if insert is successful
+ */
 bool XmlData::addDataOfType(int data)
 {
   /* Clear the data before doing anything */
@@ -155,6 +202,13 @@ bool XmlData::addDataOfType(int data)
   return status;
 }
 
+/* 
+ * Description: Add data to the class. of the type QString. It will attempt to
+ *              clear out previous data before setting the new.
+ *
+ * Inputs: QString data - the data to add, of the type string
+ * Output: bool - status if insert is successful
+ */
 bool XmlData::addDataOfType(QString data)
 {
   /* Clear the data before doing anything */
@@ -170,6 +224,17 @@ bool XmlData::addDataOfType(QString data)
   return status;
 }
 
+/* 
+ * Description: Add an element to the class. It adds it to the top of the
+ *              stack. The key and value strings are left to default to empty
+ *              and unused. If the key is not empty, then it is set in XML
+ *              as an indicator for the element.
+ *
+ * Inputs: QString element - the element name (front of the tag)
+ *         QString key - the key for the tag identifier (default "")
+ *         QString value - the value corresponding to the key (default "")
+ * Output: bool - status if insert is successful
+ */
 bool XmlData::addElement(QString element, QString key, QString value)
 {
   /* Add only if the element entry is not empty */
@@ -195,18 +260,29 @@ bool XmlData::addElement(QString element, QString key, QString value)
   return false;
 }
 
+/* 
+ * Description: Clear all the elements in the class, including the 
+ *              corresponding keys and values.
+ *
+ * Inputs: none
+ * Output: bool - status if clear was successful
+ */
 bool XmlData::clearElements()
 {
-  if(!element.isEmpty())
-  {
-    element.clear();
-    key.clear();
-    value.clear();
-    return true;
-  }
-  return false;
+  element.clear();
+  key.clear();
+  value.clear();
+
+  return true;
 }
 
+/* 
+ * Description: Clears out the data that is stored in this class. Set the data
+ *              type to NONE .
+ *
+ * Inputs: none
+ * Output: bool - status if clear was successful
+ */
 bool XmlData::clearData()
 {
   data_type = NONE;
@@ -218,6 +294,13 @@ bool XmlData::clearData()
   return true;
 }
 
+/* 
+ * Description: Returns the data stored in the class, if it's a bool. If it's 
+ *              not, success is set to false.
+ *
+ * Inputs: bool* success - status if the data in the class is bool
+ * Output: bool - the bool data available in the class
+ */
 bool XmlData::getDataBool(bool* success)
 {
   /* Only return data if the data stored is a boolean */
@@ -234,6 +317,13 @@ bool XmlData::getDataBool(bool* success)
   return false;
 }
 
+/* 
+ * Description: Returns the data stored in the class, if it's a float. If it's 
+ *              not, success is set to false.
+ *
+ * Inputs: bool* success - status if the data in the class is bool
+ * Output: double - the float data available in the class
+ */
 double XmlData::getDataFloat(bool* success)
 {
   /* Only return data if the data stored is a float */
@@ -250,6 +340,13 @@ double XmlData::getDataFloat(bool* success)
   return 0.0;
 }
 
+/* 
+ * Description: Returns the data stored in the class, if it's an integer. If 
+ *              it's not, success is set to false.
+ *
+ * Inputs: bool* success - status if the data in the class is bool
+ * Output: int - the integer data available in the class
+ */
 int XmlData::getDataInteger(bool* success)
 {
   /* Only return data if the data stored is an integer */
@@ -266,6 +363,13 @@ int XmlData::getDataInteger(bool* success)
   return 0;
 }
 
+/* 
+ * Description: Returns the data stored in the class, if it's a string. If it's 
+ *              not, success is set to false.
+ *
+ * Inputs: bool* success - status if the data in the class is bool
+ * Output: QString - the string data available in the class
+ */
 QString XmlData::getDataString(bool* success)
 {
   /* Only return data if the data stored is a string */
@@ -282,21 +386,48 @@ QString XmlData::getDataString(bool* success)
   return "";
 }
   
+/* 
+ * Description: Returns a QVector list of all elements stored within the class.
+ *
+ * Inputs: none
+ * Output: QVector<QString> - the list of all elements in the class
+ */
 QVector<QString> XmlData::getAllElements()
 {
   return element;
 }
 
+/* 
+ * Description: Returns a QVector list of all keys stored within the class.
+ *              This corresponds directly to the list of elements.
+ *
+ * Inputs: none
+ * Output: QVector<QString> - the list of all keys in the class
+ */
 QVector<QString> XmlData::getAllKeys()
 {
   return key;
 }
 
+/* 
+ * Description: Returns a QVector list of all values stored within the class.
+ *              This corresponds directly to the list of keys.
+ *
+ * Inputs: none
+ * Output: QVector<QString> - the list of all values (of keys) in the class
+ */
 QVector<QString> XmlData::getAllKeyValues()
 {
   return value;
 }
 
+/* 
+ * Description: Returns a single element of the given index, if it's within
+ *              range. Otherwise, it's returns a blank string.
+ *
+ * Inputs: int index - the index of the element to return
+ * Output: QString - the element to be returned, at the above index.
+ */
 QString XmlData::getElement(int index)
 {
   if(index < element.size() && index >= 0)
@@ -304,6 +435,14 @@ QString XmlData::getElement(int index)
   return "";
 }
 
+/* 
+ * Description: Returns a single key of the given index, if it's within
+ *              range. Otherwise, it's returns a blank string. This key
+ *              corresponds directly to the element, at the same index.
+ *
+ * Inputs: int index - the index of the key to return
+ * Output: QString - the key to be returned, at the above index.
+ */
 QString XmlData::getKey(int index)
 {
   if(index < key.size() && index >= 0)
@@ -311,6 +450,13 @@ QString XmlData::getKey(int index)
   return "";
 }
 
+/* 
+ * Description: Returns a single value (of the key) of the given index, if 
+ *              it's within range. Otherwise, it's returns a blank string.
+ *
+ * Inputs: int index - the index of the value (of the key) to return
+ * Output: QString - the value (of the key) to be returned, at the above index.
+ */
 QString XmlData::getKeyValue(int index)
 {
   if(index < value.size() && index >= 0)
@@ -318,36 +464,83 @@ QString XmlData::getKeyValue(int index)
   return "";
 }
 
+/* 
+ * Description: Returns the number of elements that are stored. This number
+ *              also indicates the number of keys and values, since these
+ *              directly correlate.
+ *
+ * Inputs: none
+ * Output: int - the number of elements in the class
+ */
 int XmlData::getNumElements()
 {
   return element.size();
 }
 
+/* 
+ * Description: Check if the data stored in the class is a boolean.
+ *
+ * Inputs: none
+ * Output: bool - returns if the data is a boolean.
+ */
 bool XmlData::isDataBool()
 {
   return (data_type == BOOLEAN);
 }
 
+/* 
+ * Description: Check if the data stored in the class is a float.
+ *
+ * Inputs: none
+ * Output: bool - returns if the data is a float.
+ */
 bool XmlData::isDataFloat()
 {
   return (data_type == FLOAT);
 }
 
+/* 
+ * Description: Check if the data stored in the class is an integer.
+ *
+ * Inputs: none
+ * Output: bool - returns if the data is an integer.
+ */
 bool XmlData::isDataInteger()
 {
   return (data_type == INTEGER);
 }
 
+/* 
+ * Description: Check if the data stored in the class is a string.
+ *
+ * Inputs: none
+ * Output: bool - returns if the data is a string.
+ */
 bool XmlData::isDataString()
 {
   return (data_type == STRING);
 }
 
+/* 
+ * Description: Check if the data stored in the class is unset.
+ *
+ * Inputs: none
+ * Output: bool - returns if the data is unset.
+ */
 bool XmlData::isDataUnset()
 {
   return (data_type == NONE);
 }
 
+/* 
+ * Description: Removes the last element on the top of the stack from the 
+ *              list of elements. This also includes the corresponding key
+ *              and value. This is a pop removal system, which corresponds
+ *              to the way that XML acts.
+ *
+ * Inputs: none
+ * Output: bool - returns if there is an element that can be popped off
+ */
 bool XmlData::removeLastElement()
 {
   if(!element.isEmpty())
