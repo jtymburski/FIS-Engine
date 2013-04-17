@@ -17,6 +17,7 @@ int main(int argc, char *argv[])
 {
   /* Testing code for file handler */
   bool done = false;
+  bool success = true;
   FileHandler fh;
   fh.setEncryptionEnabled(false);
   fh.setFilename("TEST.log");
@@ -33,8 +34,37 @@ int main(int argc, char *argv[])
       qDebug() << fh.readRegularLine(&done);*/
 
     /* XML */
-    //while(!done)
-    //qDebug() << fh.readXmlData(&done).getDataString();
+    while(!done && success)
+    {
+      XmlData data = fh.readXmlData(&done, &success);
+
+      if(!done)
+      {
+        for(int i = 0; i < data.getNumElements(); i++)
+          qDebug() << data.getElement(i) + ": " + data.getKey(i) + " - " 
+                                         + data.getKeyValue(i);
+
+        if(data.isDataBool())
+        {
+          qDebug() << "  " << data.getDataBool();
+        }
+        else if(data.isDataFloat())
+        {
+          qDebug() << "  " << data.getDataFloat();
+        }
+        else if(data.isDataInteger())
+        {
+          qDebug() << "  " << data.getDataInteger();
+        }
+        else if(data.isDataString())
+        {
+          qDebug() << "  " << data.getDataString();
+        }
+      }
+    }
+
+    if(!success)
+      qDebug() << "Error reading XML.";
 
     fh.stop();
   }
@@ -57,8 +87,12 @@ int main(int argc, char *argv[])
 
     /* XML */
     fh.writeXmlElement("persons");
-    fh.writeXmlElement("person");
+    fh.writeXmlElement("person", "index", "0");
     fh.writeXmlData("name", FileHandler::STRING, "john");
+    fh.writeXmlData("gender", FileHandler::STRING, "male");
+    fh.writeXmlData("available", FileHandler::BOOLEAN, "true");
+    fh.writeXmlElementEnd();
+    fh.writeXmlData("test", FileHandler::FLOAT, "0.25");
 
     fh.stop(false);
   }

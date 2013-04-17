@@ -541,10 +541,10 @@ bool FileHandler::readMd5()
     if(success)
     {
       available = true;
-      md5_value = readRegularLine(&complete, &success);
+      md5_value = readLine(&complete, &success);
       
       while(!complete && success)
-        file_data.append(readRegularLine(&complete, &success));
+        file_data.append(readLine(&complete, &success));
     }
 
     /* Check the MD5 */
@@ -741,12 +741,13 @@ bool FileHandler::xmlStart()
     xml_writer->setAutoFormattingIndent(2);
     xml_depth = 0;
     xml_writer->writeStartDocument();
+    xml_writer->writeStartElement("game");
   }
   else
   {
     xml_data = "";
     while(!done && success)
-      xml_data.append(readLine(&done, &success));
+      xml_data.append(readLine(&done, &success).trimmed());
   }
 
   return success;
@@ -868,6 +869,10 @@ XmlData FileHandler::readXmlData(bool* done, bool* success)
           read_data.clearData();
           finished = true;
         }
+        else if(xml_reader->tokenType() == QXmlStreamReader::Invalid)
+        {
+          failed = true;
+        }
 
         xml_reader->readNext();
       }
@@ -941,11 +946,11 @@ bool FileHandler::start()
     /* If file_write, determine temporary file name */
     if(file_write)
       success &= setTempFileName();
- 
+
     /* If the system is in read and encryption, check validity of file */
     if(!file_write && encryption_enabled)
       success &= readMd5();
-   
+
     /* Open the file stream */
     if(success)
       success &= fileOpen();
@@ -957,7 +962,7 @@ bool FileHandler::start()
   
       /* For a readable file with encryption, first line is Md5 -> throw away */
       if(!file_write && encryption_enabled)
-        readRegularLine();
+        readLine();
     }
 
     /* If the file type is XML, open the QXmlStreams and initialize XML */
