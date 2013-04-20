@@ -7,14 +7,37 @@
  *              for encrypting and decrypting the file using an implementation 
  *              of XXTEA. 
  *
- * Template: <map>
- *             <row>
- *               <tile>
- *                 <base>file/path</base>
- *                 <enhancer>file/path</enhancer>
- *               </tile>
- *             </row>
- *           </map>
+ * Example: REGULAR file read
+ *          -----------------
+ *          setFilename("name");
+ *          setFileType(FileType::REGULAR);
+ *          setWriteEnabled(false); // Set to true for writing
+ *          setEncryptionEnabled(false); // Set to true for encryption
+ *          start();
+ *          //writeRegularLine("line"); // For writing
+ *          readRegularLine(); // For reading
+ *          stop();
+ *
+ *          XML file read
+ *          -------------
+ *          setFilename("name");
+ *          setFileType(FileType::XML);
+ *          setWriteEnabled(false); // Set to true for writing
+ *          setEncryptionEnabled(false); // Set to true for encryption
+ *          start();
+ *
+ *          // For reading
+ *          readXmlData();
+ *
+ *          // For writing
+ *          //writeXmlElement("person", "id", "1");
+ *          //writeXmlData("name", VarType::STRING, "john");
+ *          //writeXmlElementEnd();
+ *          // Result: <person id="1">
+ *          //           <name type="3">john</name> // type 3 is string
+ *          //         </person>
+ *          
+ *          stop();
  *****************************************************************************/
 #ifndef FILEHANDLER_H
 #define FILEHANDLER_H
@@ -40,6 +63,8 @@ class FileHandler
 public:
   /* Constructor: Sets up a blank template, no read/write file set */
   FileHandler();
+  FileHandler(QString filename, bool write = false, 
+              bool xml = false, bool encryption = false);
 
   /* Destructor function */
   ~FileHandler();
@@ -188,16 +213,16 @@ public:
   XmlData readXmlData(bool* done = 0, bool* success = 0);
 
   /* Sets if encryption is enabled for reading and writing */
-  void setEncryptionEnabled(bool enable);
+  bool setEncryptionEnabled(bool enable);
 
   /* Sets the filename for reading from and writing to */
-  void setFilename(QString path);
+  bool setFilename(QString path);
 
   /* Sets the type that the file is that will be read */
-  void setFileType(FileType type);
+  bool setFileType(FileType type);
 
   /* Sets if the class is read or write (TRUE if write) */
-  void setWriteEnabled(bool enable);
+  bool setWriteEnabled(bool enable);
 
   /* Starts the whole process, to be able to access the file stream */
   bool start();

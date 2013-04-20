@@ -7,14 +7,37 @@
  *              for encrypting and decrypting the file using an implementation 
  *              of XXTEA. 
  *
- * Template: <map>
- *             <row>
- *               <tile>
- *                 <base>file/path</base>
- *                 <enhancer>file/path</enhancer>
- *               </tile>
- *             </row>
- *           </map>
+ * Example: REGULAR file read
+ *          -----------------
+ *          setFilename("name");
+ *          setFileType(FileType::REGULAR);
+ *          setWriteEnabled(false); // Set to true for writing
+ *          setEncryptionEnabled(false); // Set to true for encryption
+ *          start();
+ *          //writeRegularLine("line"); // For writing
+ *          readRegularLine(); // For reading
+ *          stop();
+ *
+ *          XML file read
+ *          -------------
+ *          setFilename("name");
+ *          setFileType(FileType::XML);
+ *          setWriteEnabled(false); // Set to true for writing
+ *          setEncryptionEnabled(false); // Set to true for encryption
+ *          start();
+ *
+ *          // For reading
+ *          readXmlData();
+ *
+ *          // For writing
+ *          //writeXmlElement("person", "id", "1");
+ *          //writeXmlData("name", VarType::STRING, "john");
+ *          //writeXmlElementEnd();
+ *          // Result: <person id="1">
+ *          //           <name type="3">john</name> // type 3 is string
+ *          //         </person>
+ *          
+ *          stop();
  *****************************************************************************/
 #include "FileHandler.h"
 
@@ -41,8 +64,15 @@ const int      FileHandler::kXXTEA_ROUNDS    = 19;
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
 
+/* 
+ * Description: Constructor function - Set up the file handler class with
+ *              just initial values and empty initialization.
+ *
+ * Input: none
+ */
 FileHandler::FileHandler()
 {
+  /* Preps the variables */
   available = false;
   file_date = "";
   file_name_temp = "";
@@ -51,12 +81,53 @@ FileHandler::FileHandler()
   xml_reader = 0;
   xml_writer = 0;
 
+  /* Sets the pertinent user information to default */
   setEncryptionEnabled(false);
   setFilename("");
   setFileType(REGULAR);
   setWriteEnabled(false);
 }
 
+/* 
+ * Description: Constructor function - Set up the file handler class with
+ *              just initial values and the initialization of the variables
+ *              outlined below. Allows for quick initialization of the 
+ *              class.
+ *
+ * Input: QString filename - the filename to read/write data to.
+ *        bool write - set the class to write instead of read (default false)
+ *        bool xml - set the file type to xml instead of regular line format
+ *                   (default false)
+ *        bool encryption - enables encryption for reading and writing 
+ *                          (default false)
+ */
+FileHandler::FileHandler(QString filename, bool write, 
+                         bool xml, bool encryption)
+{
+  /* Preps the variables */
+  available = false;
+  file_date = "";
+  file_name_temp = "";
+  xml_data = "";
+  xml_depth = 0;
+  xml_reader = 0;
+  xml_writer = 0;
+
+  /* Sets the pertinent user information to default */
+  setEncryptionEnabled(encryption);
+  setFilename(filename);
+  setWriteEnabled(write);
+
+  /* Set the file type */
+  if(xml)
+    setFileType(XML);
+  else
+    setFileType(REGULAR);
+}
+
+/* 
+ * Description: Destructor function
+ */
 FileHandler::~FileHandler()
 {
   stop(true);
@@ -66,6 +137,12 @@ FileHandler::~FileHandler()
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 
+/* 
+ * Description: Cleans up the dynamic memory in the class.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void FileHandler::cleanUp()
 {
   if(xml_reader != 0)
@@ -83,18 +160,25 @@ void FileHandler::cleanUp()
   xml_data.clear();
 }
 
-/*
- * CHECKED:
- * Pretty foolproof
+/* 
+ * Description: Computes the MD5 for a sequence of data, as given by the
+ *              input. Utilizes the QCryptographicHash for computing the hash.
+ *
+ * Inputs: QByteArray data - the sequence of data to calculate the hash for.
+ * Output: QByteArray - the MD5 hash
  */
 QByteArray FileHandler::computeMd5(QByteArray data)
 {
   return QCryptographicHash::hash(data, QCryptographicHash::Md5).toHex();
 }
 
-/*
- * CHECKED:
- * Returns false only if data is unset
+/* 
+ * Description: Takes a sequence of 32 bit data (4 in the array) and decrypts
+ *              the data, as per XXTEA algorithm. The data is returned on the
+ *              same path and returns a status.
+ *
+ * Inputs: uint32_t* data - an array of 4 32 bit values to decrypt
+ * Output: bool - the returned success status
  */
 bool FileHandler::decryptData(uint32_t* data)
 {
@@ -130,9 +214,18 @@ bool FileHandler::decryptData(uint32_t* data)
 }
 
 /* 
- * CHECKED:
- * Success status will determine if this call worked. If failed, it will
- *  typically be an empty string ("")
+ * Description: Decrypts a line of data. This line must conform to the length
+ *              requirements and must be greater than the minimum line length.
+ *              The line needs to be a divisor of 4 in terms of the number
+ *              of characters in order to ensure that the line can be
+ *              converted to a 32bit number for use with the XXTEA algorithm.
+ *              It also must have at least 16 characters (4 32-bit numbers)
+ *              which is the minimum for the XXTEA algorithm.
+ *
+ * Inputs: QString line - the line to be decrypted, from the file
+ *         bool* success - a bool pointer that can be set to return the
+ *                         success status.
+ * Output: QString - the decrypted version of the input line.
  */
 QString FileHandler::decryptLine(QString line, bool* success)
 {
@@ -206,9 +299,13 @@ QString FileHandler::decryptLine(QString line, bool* success)
   return decrypted_line;
 }
 
-/*
- * CHECKED:
- * Returns false only if data is unset
+/* 
+ * Description: Takes a sequence of 32 bit data (4 in the array) and encrypts
+ *              the data, as per XXTEA algorithm. The data is returned on the
+ *              same path and returns a status.
+ *
+ * Inputs: uint32_t* data - an array of 4 32 bit values to encrypt
+ * Output: bool - the returned success status
  */
 bool FileHandler::encryptData(uint32_t* data)
 {
@@ -245,9 +342,18 @@ bool FileHandler::encryptData(uint32_t* data)
 }
 
 /* 
- * CHECKED:
- * Returns success status based on encryption. true is success.
- *  Often, the string will be empty if it fails
+ * Description: Encrypts a line of data. This line must conform to the length
+ *              requirements and must be greater than the minimum line length.
+ *              The line needs to be a divisor of 4 in terms of the number
+ *              of characters in order to ensure that the line can be
+ *              converted to a 32bit number for use with the XXTEA algorithm.
+ *              It also must have at least 16 characters (4 32-bit numbers)
+ *              which is the minimum for the XXTEA algorithm.
+ *
+ * Inputs: QString line - the line to be encrypted, from the file
+ *         bool* success - a bool pointer that can be set to return the
+ *                         success status.
+ * Output: QString - the encrypted version of the input line.
  */
 QString FileHandler::encryptLine(QString line, bool* success)
 {
@@ -323,9 +429,12 @@ QString FileHandler::encryptLine(QString line, bool* success)
   return encrypted_line;
 }
 
-/*
- * CHECKED:
- * Returns true if file closed successfuly.
+/* 
+ * Description: Closes the file stream pointer, if it was open.
+ *
+ * Inputs: none
+ * Output: bool - the status if the file stream is not open after this class
+ *                tries to close it.
  */
 bool FileHandler::fileClose()
 {
@@ -341,9 +450,12 @@ bool FileHandler::fileClose()
   return false;
 }
 
-/*
- * CHECKED:
- * Returns true if open stream was successful and stream is good
+/* 
+ * Description: Opens the file stream, with the stored file name within the
+ *              class. 
+ *
+ * Inputs: none
+ * Output: bool - status is the file stream is open after the open procedure
  */
 bool FileHandler::fileOpen()
 {
@@ -366,11 +478,15 @@ bool FileHandler::fileOpen()
 }
 
 /* 
- * CHECKED:
- * Requires the line_data set to a memory location, length > 0 on line_data
- *  and length to be a factor of 4. Otherwise, 0 is returned.
+ * Description: Converts an array of integers to an array of longs. This 
+ *              combines 4 ints into one 32 bit long. They're restricted to
+ *              ASCII character integers which are 8 bits long. This class
+ *              will fail if the length of the integer array is not a divisor
+ *              of 4.
  *
- * Data uninitialized otherwise. Ie. no free required
+ * Inputs: int* line_data - the individual characters in the line split up.
+ *         int length - the number of integers in the array
+ * Output: uint32_t* - the converted array of longs. Length is length % 4
  */
 uint32_t* FileHandler::intToLong(int* line_data, int length)
 {
@@ -400,8 +516,14 @@ uint32_t* FileHandler::intToLong(int* line_data, int length)
 }
 
 /* 
- * CHECKED:
- * Returns empty string if length is 0 or line_data is uninitialized
+ * Description: Converts an array of integers into a string. The integers 
+ *              represent ASCII codes and are converted into the appropriate
+ *              character and appended to the return result.
+ *
+ * Inputs: int* line_data - the array of integers that defines the ASCII line
+ *         int length - the length of the integer array / future string line
+ *         bool decrypting - Is this call decrypting the data
+ * Output: QString - the converted line of data
  */
 QString FileHandler::intToString(int* line_data, int length, bool decrypting)
 {
@@ -452,9 +574,15 @@ QString FileHandler::intToString(int* line_data, int length, bool decrypting)
   return line;
 }
 
-/*
- * CHECKED:
- * Does not allocate memory if line_data unset or length is <= 0
+/* 
+ * Description: Converts an array of longs into an array of integers where
+ *              it splits one long into 4 integers. The long will be 
+ *              converted as follows: [int0][int1][int2][int3] = [long].
+ *              The length corresponds to the long array.
+ *
+ * Inputs: uint32_t* line_data - the long data, stored in an array
+ *         int length - the length of the line_data array
+ * Output: int* - the array of the split longs. Length is length*4
  */
 int* FileHandler::longToInt(uint32_t* line_data, int length)
 {
@@ -483,6 +611,19 @@ int* FileHandler::longToInt(uint32_t* line_data, int length)
   return 0;
 }
 
+/* 
+ * Description: Reads the line from the file stream, if the file stream is 
+ *              not complete. It takes said line, and decrypts it, if the
+ *              current line is encrypted. Otherwise, it just returns the
+ *              line.
+ *
+ * Inputs: bool* done - the pointer for a return value if the file has been
+ *                      completed.
+ *         bool* success - the pointer for a return value if the file read
+ *                         was successful.
+ * Output: QString - the line that was read. Empty if file is finished or
+ *                   failed.
+ */
 QString FileHandler::readLine(bool* done, bool* success)
 {
   std::string line;
@@ -514,6 +655,15 @@ QString FileHandler::readLine(bool* done, bool* success)
   return "";
 }
 
+/* 
+ * Description: This call determines if the file that is being read conforms
+ *              to the MD5 value and if the file has been unchanged. Will be
+ *              called before a read is allowed to check if the file is valid.
+ *              Only used when the file is encrypted.
+ *
+ * Inputs: none
+ * Output: bool - returns if the file is valid, and unchanged
+ */
 bool FileHandler::readMd5()
 {
   bool complete = false;
@@ -566,6 +716,15 @@ bool FileHandler::readMd5()
   return success;
 }
 
+/* 
+ * Description: Sets a temp file name for writing to during the duration of
+ *              a write procedure. The file will be deleted after it is 
+ *              completed and is only used to not overwrite the primary
+ *              file unless the write sequence was successful.
+ *
+ * Inputs: none
+ * Output: bool - returns if the temp file name setting call was successful
+ */
 bool FileHandler::setTempFileName()
 {
   if(!available)
@@ -594,9 +753,16 @@ bool FileHandler::setTempFileName()
   return false;
 }
 
-/*
- * CHECKED:
- * Does not allocate memory if the length of line is 0 and not encrypting
+/* 
+ * Description: Converts a string line to an array of integers where each
+ *              integer represents one character in the string line (via
+ *              ASCII conversion). It returns the length of the array.
+ *
+ * Inputs: QString line - the line to convert to an array of ints
+ *         int** line_data - the returned data of the converted string line
+ *         bool encrypting - Set to true if this call is called during the
+ *                           encrypting procedure.
+ * Output: int - Returns the length of the line_data array
  */
 int FileHandler::stringToInt(QString line, int** line_data, bool encrypting)
 {
@@ -650,9 +816,12 @@ int FileHandler::stringToInt(QString line, int** line_data, bool encrypting)
   return 0;
 }
 
-/*
- * CHECKED:
- * Returns true if file available only
+/* 
+ * Description: Returns the index in the file stream to the top of the file,
+ *              for re-reading or writing the data.
+ *
+ * Inputs: none
+ * Output: bool - returns if the file stream is available to shift the pointer
  */
 bool FileHandler::topOfFile()
 {
@@ -664,6 +833,13 @@ bool FileHandler::topOfFile()
   return false;
 }
 
+/* 
+ * Description: Writes the given line to the file. If the line is to be 
+ *              decrypted, that procedure is done first. 
+ *
+ * Inputs: QString line - the line to write to the file, if it exists
+ * Output: bool - returns if the write sequence was successful
+ */
 bool FileHandler::writeLine(QString line)
 {
   bool success = true;
@@ -688,10 +864,16 @@ bool FileHandler::writeLine(QString line)
   return false;
 }
 
-/*
- * CHECKED:
- * Only fails if value or limit is less than 0. Failure is indicated by a
- *  -1 in the return call.
+/* 
+ * Description: A wrap number call. This takes a value and a limit and wraps
+ *              it around to determine what the value should be. For example:
+ *                value=15,limit=10 -> 5
+ *                value=27,limit=10 -> 7
+ *                value=27,limit=5 -> 2
+ *
+ * Inputs: int value - the value to be wrapped
+ *         int limit - the maximum value that the value can be
+ * Output: int - the value, after the limit was applied.
  */
 int FileHandler::wrapNumber(int value, int limit)
 {
@@ -712,6 +894,13 @@ int FileHandler::wrapNumber(int value, int limit)
   return value;
 }
 
+/* 
+ * Description: Takes the data passed into the method and calculates the MD5.
+ *              This MD5 is then encrypted and written to the file
+ *
+ * Inputs: QByteArray data - the data to compute the MD5
+ * Output: bool - if the MD5 write sequence was successful
+ */
 bool FileHandler::writeMd5(QByteArray data)
 {
   bool success = true;
@@ -730,6 +919,14 @@ bool FileHandler::writeMd5(QByteArray data)
   return success;
 }
 
+/* 
+ * Description: Starts the XML sequence. For writing, it sets the formatting
+ *              and appropriate header detail. For the reading, it parses
+ *              all the data in the file to move it into the QXmlStreamReader.
+ *
+ * Inputs: none
+ * Output: bool - returns if the call was successful.
+ */
 bool FileHandler::xmlStart()
 {
   bool done = false;
@@ -753,6 +950,14 @@ bool FileHandler::xmlStart()
   return success;
 }
 
+/* 
+ * Description: Wrap up the XML sequence before proceding to write the data to
+ *              the file. This includes writing the end to all XML tags and 
+ *              writing the data to the file.
+ *
+ * Inputs: none
+ * Output: bool - Returns if the ending procedure was successful and ran.
+ */
 bool FileHandler::xmlEnd()
 {
   if(available && xml_writer != 0)
@@ -774,42 +979,93 @@ bool FileHandler::xmlEnd()
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
+/* 
+ * Description: Returns the date stored in this class. It's in string format,
+ *              like the following: [Month].[Day].[Year] [Hour]:[Minute]
+ *              For example: 04.20.2013 09:56
+ *
+ * Inputs: none
+ * Output: QString - the date string
+ */
 QString FileHandler::getDate()
 {
   return file_date;
 }
 
+/* 
+ * Description: Returns the file name that this class reads and writes from.
+ *
+ * Inputs: none
+ * Output: QString - the filename string
+ */
 QString FileHandler::getFilename()
 {
   return file_name;
 }
 
+/* 
+ * Description: Returns the file type that this class is configured for.
+ *
+ * Inputs: none
+ * Output: FileType - the file type classification (REGULAR, XML)
+ */
 FileHandler::FileType FileHandler::getFileType()
 {
   return file_type;
 }
 
+/* 
+ * Description: Returns if the class is available to read or write from.
+ *              If false is returned, the read and write calls will not 
+ *              work since the file has not been opened and configured.
+ *
+ * Inputs: none
+ * Output: bool - if the class is available for reading and writing
+ */
 bool FileHandler::isAvailable()
 {
   return available;
 }
 
+/* 
+ * Description: Check if the class is configured for encryption to be enabled.
+ *
+ * Inputs: none
+ * Output: bool - if the class is enabled for encryption
+ */
 bool FileHandler::isEncryptionEnabled()
 {
   return encryption_enabled;
 }
 
+/* 
+ * Description: Check if the class is configured for writing (or reading)
+ *
+ * Inputs: none
+ * Output: bool - false = reading, true = writing
+ */
 bool FileHandler::isWriteEnabled()
 {
   return file_write;
 }
 
+/* 
+ * Description: Reads a regular line of data from the file that has been
+ *              configured for this class. This method only works for REGULAR
+ *              file configurations.
+ *
+ * Inputs: bool* done - the pointer to a bool variable to flag if the read
+ *                      sequence is done and there is no more data to read
+ *                      from the file.
+ *         bool* success - returns if the call was successful
+ * Output: QString - the read data from the file
+ */
 QString FileHandler::readRegularLine(bool* done, bool* success)
 {
   if(done != 0)
     *done = false;
 
-  if(file_type == REGULAR)
+  if(file_type == REGULAR && !file_write)
     return readLine(done, success);
 
   if(success != 0)
@@ -817,13 +1073,27 @@ QString FileHandler::readRegularLine(bool* done, bool* success)
   return "";
 }
 
+/* 
+ * Description: Reads the XML data from the appropriate file. The call will
+ *              only succeed if it has been started and then if the class is
+ *              configured for XML. The return will send back an XmlData class
+ *              that will contain all the tags leading up the data as well as
+ *              said data. See that class for more information on the data
+ *              that can be accessed.
+ *
+ * Inputs: bool* done - returns if the file has been read and the sequence is
+ *                      completed.
+ *         bool* success - returns if the call was successful
+ * Output: XmlData - the output data from the XML read. See this class for
+ *                   more information on parsing the data
+ */
 XmlData FileHandler::readXmlData(bool* done, bool* success)
 {
   bool failed = false;
   bool finished = false;
 
   /* Only pass through if the XML has no error */
-  if(!xml_reader->hasError())
+  if(file_type == XML && !file_write && !xml_reader->hasError())
   {
     /* Only pass through if the XML is NOT at the end */
     if(!xml_reader->atEnd())
@@ -905,30 +1175,92 @@ XmlData FileHandler::readXmlData(bool* done, bool* success)
   return read_data;
 }
 
-void FileHandler::setEncryptionEnabled(bool enable)
+/* 
+ * Description: Sets the encryption status in the class. If enabled, only 
+ *              encrypted files can be read from and vice versa.
+ *
+ * Inputs: bool enabe - if encryption should be enabled
+ * Output: bool - if the set was successful. Only fails if the class is
+ *                currently off, which can be set after calling stop()
+ */
+bool FileHandler::setEncryptionEnabled(bool enable)
 {
-  encryption_enabled = enable;
+  if(!available)
+  {
+    encryption_enabled = enable;
+    return true;
+  }
+  return false;
 }
 
-void FileHandler::setFilename(QString path)
+/* 
+ * Description: Sets the filename string in the class. The read call will fail
+ *              if the file doesn't exist or it doesn't conform to the 
+ *              standard, as written from the write side of this class.
+ *
+ * Inputs: QString path - the path to read or write from. Only works if the
+ *                        path is not empty.
+ * Output: bool - if the set was successful. Only fails if the class is 
+ *                currently off, which can be set after calling stop()
+ */
+bool FileHandler::setFilename(QString path)
 {
-  if(!path.isEmpty())
-    file_name = path;
+  if(!available)
+  {
+    if(!path.isEmpty())
+    {
+      file_name = path;
+      return true;
+    }
+  }
+  return false;
 }
 
-void FileHandler::setFileType(FileType type)
+/* 
+ * Description: Sets the file type that this class is configured for.
+ *
+ * Inputs: FileType type - the type of the file to use (REGULAR, XML)
+ * Output: bool - if the set was successful. Only fails if the class is 
+ *                currently off, which can be set after calling stop()
+ */
+bool FileHandler::setFileType(FileType type)
 {
-  file_type = type;
+  if(!available)
+  {
+    file_type = type;
+    return true;
+  }
+  return false;
 }
 
-void FileHandler::setWriteEnabled(bool enable)
+/* 
+ * Description: Sets if the class is being used for reading or writing.
+ *
+ * Inputs: bool enable - If true, write is enabled. Else, read is enabled.
+ * Output: bool - if the set was successful. Only fails if the class is
+ *                currently off, which can be set after calling stop()
+ */
+bool FileHandler::setWriteEnabled(bool enable)
 {
-  file_write = enable;
+  if(!available)
+  {
+    file_write = enable;
+    return true;
+  }
+  return false;
 }
 
-/*
- * CHECKED:
- * Now will fail, and close file if open is unsuccessful
+/* 
+ * Description: Start the class sequence to enable the set settings. After
+ *              this call, the class can be accessed to write (or read) where
+ *              appropriate (depending on the settings). This call will stop
+ *              the class (with a fail) if it was running previously to wipe
+ *              out the previous settings.
+ *
+ * Inputs: none
+ * Output: bool - returns if the call was successful and if the file is now
+ *                available to be read or written from. If it fails, the
+ *                file will be unavailable.
  */
 bool FileHandler::start()
 {
@@ -1012,9 +1344,18 @@ bool FileHandler::start()
   return false;
 }
 
-/*
- * CHECKED:
- * Will return false if stop fails.
+/* 
+ * Description: Stops the class, after it is was run. If the class was never
+ *              started, this call does nothing except for a reclearing of 
+ *              all data elements stored within the class. Once the class
+ *              is stopped, no more reads and writes can take place until it
+ *              is started again. The class must be stopped before settings
+ *              can be changed, such as setEncryptionEnabled, etc.
+ *
+ * Inputs: bool failed - states if the calls failed and if the temporary
+ *                       writing should be thrown out. If false, the temporary
+ *                       write file is copied to overwrite the actual filename
+ * Output: bool - returns if the stop procedure was successful
  */
 bool FileHandler::stop(bool failed)
 {
@@ -1053,62 +1394,113 @@ bool FileHandler::stop(bool failed)
   return success;
 }
 
+/* 
+ * Description: Writes a regular line of data. Handles if the data is
+ *              encrypted or not. If the internal file type is not set to
+ *              REGULAR, this call fails.
+ *
+ * Inputs: QString line - the line to write to the file
+ * Output: bool - returns if the procedure was successful
+ */
 bool FileHandler::writeRegularLine(QString line)
 {
-  if(file_type == REGULAR)
+  if(file_type == REGULAR && file_write)
     return writeLine(line);
   return false;
 }
 
+/* 
+ * Description: Writes XML data to the class. This call only works if the 
+ *              class has been configured for XML file types. It takes an
+ *              element name, a Variable type for data (BOOLEAN, INTEGER,
+ *              FLOAT, or STRING) and the appropriate data. 
+ *
+ * Inputs: none
+ * Output: bool - returns if the writing of XML data was successful
+ */
 bool FileHandler::writeXmlData(QString element, VarType type, QString data)
 {
-  /* Only move foward if element string isn't empty */
-  if(!element.isEmpty() && !data.isEmpty())
+  /* Call only works if the file type is XML */
+  if(file_type == XML && file_write)
   {
-    xml_writer->writeStartElement(element);
-    xml_writer->writeAttribute("type", QString::number(type));
-    xml_writer->writeCharacters(data);
-    xml_writer->writeEndElement();
+    /* Only move foward if element string isn't empty */
+    if(!element.isEmpty() && !data.isEmpty())
+    {
+      xml_writer->writeStartElement(element);
+      xml_writer->writeAttribute("type", QString::number(type));
+      xml_writer->writeCharacters(data);
+      xml_writer->writeEndElement();
 
-    return true;
+      return true;
+    }
   }
   return false;
 }
 
+/* 
+ * Description: Writes the XML starting element tag, to encapsulate data in
+ *              the XML class. There are option key - value pairs to add to
+ *              the end of the start element.
+ *              For example: element="person", key="gender", value="male"
+ *                           <person gender="male">
+ *
+ * Inputs: QString element - the element name for the tag
+ *         QString key - the key identifier for the element (default "")
+ *         QString value - the value tied to said key (default "")
+ * Output: bool - returns if the writing of the XML element was successful
+ */
 bool FileHandler::writeXmlElement(QString element, QString key, QString value)
 {
-  /* Only move forward if element string isn't empty */
-  if(!element.isEmpty())
+  /* Call only works if the file type is XML */
+  if(file_type == XML && file_write)
   {
-    xml_writer->writeStartElement(element);
+    /* Only move forward if element string isn't empty */
+    if(!element.isEmpty())
+    {
+      xml_writer->writeStartElement(element);
 
-    if(!key.isEmpty())
-      xml_writer->writeAttribute(key, value);
+      if(!key.isEmpty())
+        xml_writer->writeAttribute(key, value);
 
-    xml_depth++;
+      xml_depth++;
 
-    return true;
+      return true;
+    }
   }
   return false;
 }
 
+/* 
+ * Description: Ends the element in the XML sequence, if there is an element
+ *              to complete. If all is triggered, the XML class is closed
+ *              up entirely. 
+ *              For example: <person> -> writeXmlElementEnd() -> </person>
+ *
+ * Inputs: bool all - if all, all open XML elements are closed (except the 
+ *                    overall identifier)
+ * Output: bool - if the close sequence was successful
+ */
 bool FileHandler::writeXmlElementEnd(bool all)
 {
   int limit = 1;
 
-  /* If all, up the limit */
-  if(all)
-    limit = xml_depth;
-
-  /* If xml_depth isn't 0, allow elements to end */
-  if(xml_depth > 0)
+  /* Call only works if the file type is XML */
+  if(file_type == XML && file_write)
   {
-    for(int i = 0; i < limit; i++)
+    /* If all, up the limit */
+    if(all)
+      limit = xml_depth;
+
+    /* If xml_depth isn't 0, allow elements to end */
+    if(xml_depth > 0)
     {
-      xml_writer->writeEndElement();
-      xml_depth--;
+      for(int i = 0; i < limit; i++)
+      {
+        xml_writer->writeEndElement();
+        xml_depth--;
+      }
+      return true;
     }
-    return true;
   }
   return false;
 }
@@ -1117,6 +1509,13 @@ bool FileHandler::writeXmlElementEnd(bool all)
  * PUBLIC STATIC FUNCTIONS
  *===========================================================================*/
 
+/* 
+ * Description: A function to delete a given filename. Only works if the file
+ *              already exists.
+ *
+ * Inputs: QString filename - the filename to delete
+ * Output: bool - status if deletion was successful
+ */
 bool FileHandler::fileDelete(QString filename)
 {
   if(fileExists(filename))
@@ -1124,12 +1523,28 @@ bool FileHandler::fileDelete(QString filename)
   return false;
 }
 
+/* 
+ * Description: A function to check if the file exists on the file directory.
+ *
+ * Inputs: QString filename - the filename to determine if it exists.
+ * Output: bool - does the file exist status
+ */
 bool FileHandler::fileExists(QString filename)
 {
   std::ifstream test_file(filename.toStdString().c_str());
   return test_file;
 }
 
+/* 
+ * Description: A file rename call to take an old filename and change it to a
+ *              new filename. If the new filename already exists, the
+ *              the overwrite call must be set or this won't rename the file.
+ *
+ * Inputs: QString old_filename - the filename to change
+ *         QString new_filename - the new filename name
+ *         bool overwrite - overwrite the new_filename, if it exists
+ * Output: bool - returns if the rename procedure was successful
+ */
 bool FileHandler::fileRename(QString old_filename, QString new_filename, 
                              bool overwrite)
 {

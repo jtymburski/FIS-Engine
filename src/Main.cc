@@ -18,13 +18,9 @@ int main(int argc, char *argv[])
   /* Testing code for file handler */
   bool done = false;
   bool success = true;
-  FileHandler fh;
-  fh.setEncryptionEnabled(false);
-  fh.setFilename("TEST.log");
-  fh.setFileType(FileHandler::XML);
-  
+  FileHandler fh("TEST.log", false, true, true);
+
   /* Read */
-  fh.setWriteEnabled(false);
   if(fh.start())
   {
     qDebug() << "Reading: " << fh.getDate();
@@ -75,6 +71,7 @@ int main(int argc, char *argv[])
 
   /* Write */
   fh.setWriteEnabled(true);
+  success = true;
   if(fh.start())
   {
     qDebug() << "Writing: " << fh.getDate();
@@ -86,15 +83,15 @@ int main(int argc, char *argv[])
     fh.writeRegularLine("Let's begin?");*/
 
     /* XML */
-    fh.writeXmlElement("persons");
-    fh.writeXmlElement("person", "index", "0");
-    fh.writeXmlData("name", FileHandler::STRING, "john");
-    fh.writeXmlData("gender", FileHandler::STRING, "male");
-    fh.writeXmlData("available", FileHandler::BOOLEAN, "true");
-    fh.writeXmlElementEnd();
-    fh.writeXmlData("test", FileHandler::FLOAT, "0.25");
+    success &= fh.writeXmlElement("persons");
+    success &= fh.writeXmlElement("person", "index", "0");
+    success &= fh.writeXmlData("name", FileHandler::STRING, "john");
+    success &= fh.writeXmlData("gender", FileHandler::STRING, "male");
+    success &= fh.writeXmlData("available", FileHandler::BOOLEAN, "true");
+    success &= fh.writeXmlElementEnd();
+    success &= fh.writeXmlData("test", FileHandler::FLOAT, "0.25");
 
-    fh.stop(false);
+    fh.stop(!success);
   }
   else
   {
