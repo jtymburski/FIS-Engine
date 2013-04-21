@@ -48,9 +48,12 @@ private:
   bool sound_set;
 
   /* --------------------- CONSTANTS --------------------- */
-  static const int kINFINITE_LOOP = -1;
-  static const int kUNSET_CHANNEL = -1;
+  const static int kINFINITE_LOOP; /* Infinite loop special character */
+  const static int kUNSET_CHANNEL; /* Unset channel definition */
 
+/*============================================================================
+ * SLOTS
+ *===========================================================================*/
 public slots:
   /* Play slot. If sound is set, it will play the sound for the given number
    * of loops */
@@ -59,6 +62,9 @@ public slots:
   /* Stop slot. Will stop the sound, if playing */
   void stop();
 
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 public:
   /* Returns the loop count, the number of times it will play for */
   int getPlayCount();

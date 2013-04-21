@@ -1,4 +1,4 @@
-/*********************************************************************************
+/******************************************************************************
 * Class Name: MapNPC
 * Date Created: Oct 28 2012
 * Inheritance: MapPerson
@@ -48,13 +48,15 @@ private:
   /* The other dialog person (usually the player) */
   MapPerson* target;
 
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 public:
   /* Gets a pointer to the Persons conversation */
   QVector<QString*>* getConversation();
 
   /* Gets a pointer to the gift the NPC has */
   MapThing* getGift();
-
 };
 
 #endif // MAPNPC_H

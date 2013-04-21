@@ -12,6 +12,10 @@
 ******************************************************************************/
 #include "Game/Map/Tile.h"
 
+/*============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *===========================================================================*/
+
 /* 
  * Description: Constructor for this class. Takes information on the tile 
  *              such as size, location and the parent and sets up the given
@@ -27,16 +31,16 @@
 Tile::Tile(int width, int height, int x, int y, QWidget* parent)
 {
   setParent(parent);
-  base_set = FALSE;
-  enhancer_set = FALSE;
-  lower_set = FALSE;
+  base_set = false;
+  enhancer_set = false;
+  lower_set = false;
   impassable_set = UNSET; 
-  upper_set = FALSE;
-  passable_set = FALSE;
+  upper_set = false;
+  passable_set = false;
 
-  setPassibility(TRUE);
+  setPassibility(true);
   tileselector = new GridShifter(this);
-  hover = FALSE;
+  hover = false;
   connect(tileselector->getBase(),SIGNAL(textChanged(QString)),this,SLOT(setBase(QString)));
   connect(tileselector->getLower(),SIGNAL(textChanged(QString)),this,SLOT(setLower(QString)));
   connect(tileselector->getUpper(),SIGNAL(textChanged(QString)),this,SLOT(setUpper(QString)));
@@ -54,6 +58,10 @@ Tile::~Tile()
   unsetLower();
   unsetUpper();
 }
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 
 /* 
  * Description: Paint event for the tile that gets called when the QWidget
@@ -124,14 +132,18 @@ void Tile::mousePressEvent(QMouseEvent *)
 }
 void Tile::enterEvent(QEvent *)
 {
-    hover = TRUE;
+    hover = true;
     update();
 }
 void Tile::leaveEvent(QEvent *)
 {
-    hover = FALSE;
+    hover = false;
     update();
 }
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 
 /* 
  * Description: Animates all sprites on tile. This allows for the fine control
@@ -302,7 +314,7 @@ bool Tile::isEnhancerSet()
  * Output: ImpassableObjectState - Enumerator that handles the impassable 
  *                                 object state: UNSET, OBJECT, PERSON.
  */
-ImpassableObjectState Tile::isImpassableObjectSet()
+Tile::ImpassableObjectState Tile::isImpassableObjectSet()
 {
   return impassable_set;
 }
@@ -345,7 +357,7 @@ bool Tile::isUpperSet()
  *              image file.
  *
  * Inputs: QString path - the path to the image to load in
- * Output: bool - returns TRUE if the base sprite was set
+ * Output: bool - returns true if the base sprite was set
  */
 bool Tile::setBase(QString path)
 {
@@ -357,11 +369,11 @@ bool Tile::setBase(QString path)
   if(base->getSize() == 0)
   {
     delete base;
-    base_set = FALSE;
+    base_set = false;
   }
   else
   {
-    base_set = TRUE;  
+    base_set = true;  
   }
 
   return base_set;
@@ -374,7 +386,7 @@ bool Tile::setBase(QString path)
  *          fails to set the enhancer with the new sprites. 
  *
  * Inputs: QString path - the path to the image to load in
- * Output: bool - returns TRUE if the enhancer was set successfully.
+ * Output: bool - returns true if the enhancer was set successfully.
  */
 bool Tile::setEnhancer(QString path)
 {
@@ -391,12 +403,12 @@ bool Tile::setEnhancer(QString path)
     else
       enhancer.append(new_enhancer);
 
-    enhancer_set = TRUE;
+    enhancer_set = true;
   }
   else
   {
     delete new_enhancer;
-    enhancer_set = FALSE;
+    enhancer_set = false;
   }
 
   return enhancer_set;
@@ -416,13 +428,13 @@ bool Tile::setEnhancer(QString path)
  *         QString ne_path - the NE corner path for the sprite
  *         QString sw_path - the SW corner path for the sprite
  *         QString se_path - the SE corner path for the sprite
- * Output: bool - returns TRUE if the enhancer was successfuly set.
+ * Output: bool - returns true if the enhancer was successfuly set.
  */
 bool Tile::setEnhancer(QString nw_path, QString ne_path, 
                        QString sw_path, QString se_path)
 {
   unsetEnhancer();
-  enhancer_set = TRUE;
+  enhancer_set = true;
   Sprite test_sprite;
 
   /* Sets the new enhancer tile with 4 1/4 portions of a tile */
@@ -431,7 +443,7 @@ bool Tile::setEnhancer(QString nw_path, QString ne_path,
     if(test_sprite.insertTail(nw_path))
       enhancer.append(new Sprite(nw_path));
     else
-      enhancer_set = FALSE;
+      enhancer_set = false;
   }
   else
   {
@@ -443,7 +455,7 @@ bool Tile::setEnhancer(QString nw_path, QString ne_path,
     if(test_sprite.insertTail(ne_path))
       enhancer.append(new Sprite(ne_path));
     else
-      enhancer_set = FALSE;
+      enhancer_set = false;
   }
   else
   {
@@ -455,7 +467,7 @@ bool Tile::setEnhancer(QString nw_path, QString ne_path,
     if(test_sprite.insertTail(sw_path))
       enhancer.append(new Sprite(sw_path));
     else
-      enhancer_set = FALSE;
+      enhancer_set = false;
   }
   else
   {
@@ -467,7 +479,7 @@ bool Tile::setEnhancer(QString nw_path, QString ne_path,
     if(test_sprite.insertTail(se_path))
       enhancer.append(new Sprite(se_path));
     else
-      enhancer_set = FALSE;
+      enhancer_set = false;
   }
   else
   {
@@ -486,7 +498,7 @@ bool Tile::setEnhancer(QString nw_path, QString ne_path,
  *              the sprite image file.
  *
  * Inputs: QString path - the path to the image to load in
- * Output: bool - returns TRUE if the impassable object sprite was successfuly 
+ * Output: bool - returns true if the impassable object sprite was successfuly 
  *                set.
  */
 bool Tile::setImpassableObject(QString path, ImpassableObjectState type)
@@ -494,7 +506,7 @@ bool Tile::setImpassableObject(QString path, ImpassableObjectState type)
   // TODO
     (void)path;//warning
     (void)type; //warning
-  return TRUE;
+  return true;
 }
 
 /* 
@@ -502,7 +514,7 @@ bool Tile::setImpassableObject(QString path, ImpassableObjectState type)
  *              image file.
  *
  * Inputs: QString path - the path to the image to load in
- * Output: bool - returns TRUE if the lower sprite was successfuly set
+ * Output: bool - returns true if the lower sprite was successfuly set
  */
 bool Tile::setLower(QString path)
 {
@@ -514,11 +526,11 @@ bool Tile::setLower(QString path)
   if(lower->getSize() == 0)
   {
     delete lower;
-    lower_set = FALSE;
+    lower_set = false;
   }
   else
   {
-    lower_set = TRUE;  
+    lower_set = true;  
   }
 
   return lower_set;
@@ -529,13 +541,13 @@ bool Tile::setLower(QString path)
  *              the sprite image file.
  *
  * Inputs: QString path - the path to the image to load in
- * Output: bool - returns TRUE if the passable object sprite was successfuly set
+ * Output: bool - returns true if the passable object sprite was successfuly set
  */
 bool Tile::setPassableObject(QString path)
 {
   // TODO
   (void)path;//warning
-  return TRUE;
+  return true;
 }
 
 /* 
@@ -619,7 +631,7 @@ void Tile::setPassibilityWest(bool is_passable)
  *              image file.
  *
  * Inputs: QString path - the path to the image to load in
- * Output: bool - returns TRUE if the upper sprite was set before
+ * Output: bool - returns true if the upper sprite was set before
  */
 bool Tile::setUpper(QString path)
 {
@@ -631,11 +643,11 @@ bool Tile::setUpper(QString path)
   if(upper->getSize() == 0)
   {
     delete upper;
-    upper_set = FALSE;
+    upper_set = false;
   }
   else
   {
-    upper_set = TRUE;  
+    upper_set = true;  
   }
 
   return upper_set;
@@ -647,17 +659,17 @@ bool Tile::setUpper(QString path)
  *              isn't repainted.
  *
  * Inputs: none
- * Output: bool - returns TRUE if the base was set before being unset
+ * Output: bool - returns true if the base was set before being unset
  */
 bool Tile::unsetBase()
 {
   if(base_set)
   {
     delete base;
-    base_set = FALSE;
-    return TRUE;
+    base_set = false;
+    return true;
   }
-  return FALSE;
+  return false;
 }
 
 /* 
@@ -666,7 +678,7 @@ bool Tile::unsetBase()
  *              variable to notify the class so the enhancer isn't repainted.
  *
  * Inputs: none
- * Output: bool - returns TRUE if the enhancer was set before being unset
+ * Output: bool - returns true if the enhancer was set before being unset
  */
 bool Tile::unsetEnhancer()
 {
@@ -678,10 +690,10 @@ bool Tile::unsetEnhancer()
     while(enhancer.size() > 0)
       enhancer.remove(0);
     
-    enhancer_set = FALSE;
-    return TRUE;
+    enhancer_set = false;
+    return true;
   }
-  return FALSE;
+  return false;
 }
 
 /*
@@ -690,13 +702,13 @@ bool Tile::unsetEnhancer()
  *              notify the class so the impassable object isn't repainted.
  *
  * Inputs: none
- * Output: bool - returns TRUE if the impassable object was set before being
+ * Output: bool - returns true if the impassable object was set before being
  *                unset.
  */
 bool Tile::unsetImpassableObject()
 {
   // TODO
-  return FALSE;
+  return false;
 }
 
 /* 
@@ -705,17 +717,17 @@ bool Tile::unsetImpassableObject()
  *              so the lower isn't repainted.
  *
  * Inputs: none
- * Output: bool - returns TRUE if the lower was set before being unset
+ * Output: bool - returns true if the lower was set before being unset
  */
 bool Tile::unsetLower()
 {
   if(lower_set)
   {
     delete lower;
-    lower_set = FALSE;
-    return TRUE;
+    lower_set = false;
+    return true;
   }
-  return FALSE;
+  return false;
 }
 
 /*
@@ -724,12 +736,12 @@ bool Tile::unsetLower()
  *              notify the class so the passable object isn't repainted.
  *
  * Inputs: none
- * Output: bool - returns TRUE if the passable object was set before being unset
+ * Output: bool - returns true if the passable object was set before being unset
  */
 bool Tile::unsetPassableObject()
 {
   // TODO
-  return FALSE;
+  return false;
 }
 
 /* 
@@ -738,15 +750,15 @@ bool Tile::unsetPassableObject()
  *              so the upper isn't repainted.
  *
  * Inputs: none
- * Output: bool - returns TRUE if the upper was set before being unset
+ * Output: bool - returns true if the upper was set before being unset
  */
 bool Tile::unsetUpper()
 {
   if(upper_set)
   {
     delete upper;
-    upper_set = FALSE;
-    return TRUE;
+    upper_set = false;
+    return true;
   }
-  return FALSE;
+  return false;
 }

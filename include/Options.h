@@ -15,11 +15,10 @@ class Options : public QWidget
 {
 public:
 
-  Options(QWidget *parent =0);
+  Options(QWidget* parent =0);
   ~Options();
 
 private:
-
   /* Resolution currently being used */
   int x_resolution, y_resolution; 
 
@@ -39,8 +38,10 @@ private:
   /* Flag for battle animations */
   bool ANIMATIONS; 
 
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 public:
-
   /* Gets the value of the given option */
   int getOption(QString s); 
 

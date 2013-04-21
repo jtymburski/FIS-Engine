@@ -4,22 +4,23 @@
 
 #include "Application.h"
 
-/* Test - to delete */
+/* DELETE: Only for testing */
 #include "FileHandler.h"
 
 #undef main
 
+/*============================================================================
+ * MAIN FUNCTION
+ *===========================================================================*/
+
 int main(int argc, char *argv[])
 {
   /* Testing code for file handler */
-  bool done = FALSE;
-  FileHandler fh;
-  fh.setEncryptionEnabled(FALSE);
-  fh.setFilename("TEST.log");
-  fh.setFileType(FileHandler::XML);
-  
+  bool done = false;
+  bool success = true;
+  FileHandler fh("TEST.log", false, true, true);
+
   /* Read */
-  fh.setWriteEnabled(FALSE);
   if(fh.start())
   {
     qDebug() << "Reading: " << fh.getDate();
@@ -27,6 +28,39 @@ int main(int argc, char *argv[])
     /* REGULAR */
     /*while(!done) 
       qDebug() << fh.readRegularLine(&done);*/
+
+    /* XML */
+    while(!done && success)
+    {
+      XmlData data = fh.readXmlData(&done, &success);
+
+      if(!done)
+      {
+        for(int i = 0; i < data.getNumElements(); i++)
+          qDebug() << data.getElement(i) + ": " + data.getKey(i) + " - " 
+                                         + data.getKeyValue(i);
+
+        if(data.isDataBool())
+        {
+          qDebug() << "  " << data.getDataBool();
+        }
+        else if(data.isDataFloat())
+        {
+          qDebug() << "  " << data.getDataFloat();
+        }
+        else if(data.isDataInteger())
+        {
+          qDebug() << "  " << data.getDataInteger();
+        }
+        else if(data.isDataString())
+        {
+          qDebug() << "  " << data.getDataString();
+        }
+      }
+    }
+
+    if(!success)
+      qDebug() << "Error reading XML.";
 
     fh.stop();
   }
@@ -36,7 +70,8 @@ int main(int argc, char *argv[])
   }
 
   /* Write */
-  fh.setWriteEnabled(TRUE);
+  fh.setWriteEnabled(true);
+  success = true;
   if(fh.start())
   {
     qDebug() << "Writing: " << fh.getDate();
@@ -48,11 +83,15 @@ int main(int argc, char *argv[])
     fh.writeRegularLine("Let's begin?");*/
 
     /* XML */
-    fh.writeXmlElement("persons");
-    fh.writeXmlElement("person");
-    fh.writeXmlData("name", FileHandler::STRING, "john");
+    success &= fh.writeXmlElement("persons");
+    success &= fh.writeXmlElement("person", "index", "0");
+    success &= fh.writeXmlData("name", FileHandler::STRING, "john");
+    success &= fh.writeXmlData("gender", FileHandler::STRING, "male");
+    success &= fh.writeXmlData("available", FileHandler::BOOLEAN, "true");
+    success &= fh.writeXmlElementEnd();
+    success &= fh.writeXmlData("test", FileHandler::FLOAT, "0.25");
 
-    fh.stop(FALSE);
+    fh.stop(!success);
   }
   else
   {

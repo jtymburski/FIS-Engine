@@ -1,4 +1,4 @@
-/*********************************************************************************
+/******************************************************************************
 * Class Name: MapNPC
 * Date Created: Dec 2 2012
 * Inheritance: MapPerson
@@ -6,6 +6,10 @@
 * TODO: Reimplement the movement functions based on NPC scripts
 ******************************************************************************/
 #include "Game/Map/MapNPC.h"
+
+/*============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *===========================================================================*/
 
 /* Constructor function */
 MapNPC::MapNPC()
@@ -16,6 +20,10 @@ MapNPC::MapNPC()
 MapNPC::~MapNPC()
 {
 }
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 
 /* Gets a pointer to the Persons conversation */
 QVector<QString*>* MapNPC::getConversation()

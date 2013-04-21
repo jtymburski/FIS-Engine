@@ -7,14 +7,37 @@
  *              for encrypting and decrypting the file using an implementation 
  *              of XXTEA. 
  *
- * Template: <map>
- *             <row>
- *               <tile>
- *                 <base>file/path</base>
- *                 <enhancer>file/path</enhancer>
- *               </tile>
- *             </row>
- *           </map>
+ * Example: REGULAR file read
+ *          -----------------
+ *          setFilename("name");
+ *          setFileType(FileType::REGULAR);
+ *          setWriteEnabled(false); // Set to true for writing
+ *          setEncryptionEnabled(false); // Set to true for encryption
+ *          start();
+ *          //writeRegularLine("line"); // For writing
+ *          readRegularLine(); // For reading
+ *          stop();
+ *
+ *          XML file read
+ *          -------------
+ *          setFilename("name");
+ *          setFileType(FileType::XML);
+ *          setWriteEnabled(false); // Set to true for writing
+ *          setEncryptionEnabled(false); // Set to true for encryption
+ *          start();
+ *
+ *          // For reading
+ *          readXmlData();
+ *
+ *          // For writing
+ *          //writeXmlElement("person", "id", "1");
+ *          //writeXmlData("name", VarType::STRING, "john");
+ *          //writeXmlElementEnd();
+ *          // Result: <person id="1">
+ *          //           <name type="3">john</name> // type 3 is string
+ *          //         </person>
+ *          
+ *          stop();
  *****************************************************************************/
 #ifndef FILEHANDLER_H
 #define FILEHANDLER_H
@@ -26,8 +49,11 @@
 #include <QDateTime>
 #include <QDebug>
 #include <QStringList>
+#include <QXmlStreamAttributes>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
+
+#include "XmlData.h"
 
 /* Macros */
 #define MX (((z>>5^y<<2) + (y>>3^z<<4)) ^ ((sum^y) + (kKEY[(p&3)^e] ^ z)))
@@ -37,6 +63,8 @@ class FileHandler
 public:
   /* Constructor: Sets up a blank template, no read/write file set */
   FileHandler();
+  FileHandler(QString filename, bool write = false, 
+              bool xml = false, bool encryption = false);
 
   /* Destructor function */
   ~FileHandler();
@@ -62,34 +90,38 @@ private:
   bool file_write;
 
   /* XML handlers for reading/writing */
+  XmlData read_data;
   QString xml_data;
   int xml_depth;
   QXmlStreamReader* xml_reader;
   QXmlStreamWriter* xml_writer;
 
   /*------------------- Constants -----------------------*/
-  const static int kASCII_IN_LONG = 4; /* # of ascii's that will fit in long */
-  const static int kCHAR_NEW_LINE = 10;
-  const static uint32_t kDELTA = 2654435769u; /* Sum bias for encryption */
-  const static int kENCRYPTION_MIN = 4; /* Min line length for encryption */
-  const static int kENCRYPTION_PAD = 150; /* Padding for encrypted values */
-  const static int kFILE_NAME_LIMIT = 1000000; /* File end number limit */
-  const static int kFILE_START = 5728; /* File start for temp data */
-  const static int kINT_BIT_SHIFT = 4; /* Shift int to next spot */
-  const static int kINT_BUFFER = 0xF; /* Only use most significant int */
-  const static uint32_t kKEY[]; /* Key array for encryption */
-  const static int kLONG_BIT_SHIFT = 8; /* Number of bits to shift long to 
-                                           next spot */
-  const static int kLONG_BUFFER = 0xFF; /* Only use most significant long */
-  const static int kMAX_ASCII = 255; /* Max ascii out of bounds */
-  const static int kMIN_LINE = 16; /* Minimum line length for encryption */
-  const static int kPADDING_ASCII = 200; /* Start of padding characters */
-  const static int kXXTEA_ROUNDS = 19; /* Number of rounds for encryption */
+  const static int kASCII_IN_LONG;   /* # of ascii's that will fit in long */
+  const static int kCHAR_NEW_LINE;   /* Character code representing new line */
+  const static uint32_t kDELTA;      /* Sum bias for encryption */
+  const static int kENCRYPTION_MIN;  /* Min line length for encryption */
+  const static int kENCRYPTION_PAD;  /* Padding for encrypted values */
+  const static int kFILE_NAME_LIMIT; /* File end number limit */
+  const static int kFILE_START;      /* File start for temp data */
+  const static int kINT_BIT_SHIFT;   /* Shift int to next spot */
+  const static int kINT_BUFFER;      /* Only use most significant int */
+  const static uint32_t kKEY[];      /* Key array for encryption */
+  const static int kLONG_BIT_SHIFT;  /* Number of bits to shift long to 
+                                      * next spot */
+  const static int kLONG_BUFFER;     /* Only use most significant long */
+  const static int kMAX_ASCII;       /* Max ascii out of bounds */
+  const static int kMIN_LINE;        /* Minimum line length for encryption */
+  const static int kPADDING_ASCII;   /* Start of padding characters */
+  const static int kXXTEA_ROUNDS;    /* Number of rounds for encryption */
 
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 private:
+  /* Clean up function, frees appropriate pointers */
+  void cleanUp();
+
   /* Compute Md5 for byte array of data */
   QByteArray computeMd5(QByteArray data);
 
@@ -176,17 +208,21 @@ public:
   /* Reads the following line as a string. Only valid for REGULAR files */
   QString readRegularLine(bool* done = 0, bool* success = 0);
 
+  /* Reads the next XML data element - returns an empty data element when
+   * done */
+  XmlData readXmlData(bool* done = 0, bool* success = 0);
+
   /* Sets if encryption is enabled for reading and writing */
-  void setEncryptionEnabled(bool enable);
+  bool setEncryptionEnabled(bool enable);
 
   /* Sets the filename for reading from and writing to */
-  void setFilename(QString path);
+  bool setFilename(QString path);
 
   /* Sets the type that the file is that will be read */
-  void setFileType(FileType type);
+  bool setFileType(FileType type);
 
   /* Sets if the class is read or write (TRUE if write) */
-  void setWriteEnabled(bool enable);
+  bool setWriteEnabled(bool enable);
 
   /* Starts the whole process, to be able to access the file stream */
   bool start();

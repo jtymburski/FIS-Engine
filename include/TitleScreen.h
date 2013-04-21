@@ -19,10 +19,6 @@
 #include "Sound.h"
 //#include "SavedGame.h"
 
-/* The available menu options, and another one for potential easter eggs */
-//enum State{OFF,MAIN,CONTINUE,INOPTIONS,INEXIT,SECRET};
-enum State{TESTMAP,TESTBATTLE,MAINEXIT};
-
 class TitleScreen : public QWidget
 {
   Q_OBJECT
@@ -33,6 +29,10 @@ public:
 
   /* Destructor function */
   ~TitleScreen();
+
+  /* Public enumerators */
+  //enum MenuState{OFF,MAIN,CONTINUE,INOPTIONS,INEXIT,SECRET};
+  enum MenuState{TESTMAP,TESTBATTLE,MAINEXIT};
 
 private:
   /* For the first menu level's position */
@@ -51,7 +51,7 @@ private:
   Options* application_options;
 
   /* The currently selected menu state */
-  State current_state;
+  MenuState current_state;
 
   /* The previously selected menu position */
   int previous_selection;
@@ -66,30 +66,42 @@ private:
   Sound* menu_click_sound;
 
   /* ------------------ Constants ------------------ */
-  const static int kNUM_MENU_ITEMS = 3;
-  const static QString kMENU_ITEMS[];
+  const static int kNUM_MENU_ITEMS;   /* Number of menu items in screen */
+  const static QString kMENU_ITEMS[]; /* The stored menu items */
 
+/*============================================================================
+ * PROTECTED FUNCTIONS
+ *===========================================================================*/
 protected:
   void paintEvent(QPaintEvent*);
   void keyPressEvent(QKeyEvent*);
 
+/*============================================================================
+ * SLOTS
+ *===========================================================================*/
 public slots:
   void close();
   void openBattle();
   void openMap();
 
+/*============================================================================
+ * SIGNALS
+ *===========================================================================*/
 signals:
   void closing();
   void openingBattle(int index);
   void openingMap(int index);
 
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 public:
   void decrementState();
 
   void incrementState();
 
   /* Changes the menu to state s and the given index */
-  void iterate(State s, int index);
+  void iterate(MenuState s, int index);
 
   void playBackground();
 
@@ -101,6 +113,5 @@ public:
 
   bool unsetSelectedMenu(int menu_count);
 };
-
 
 #endif // TITLESCREEN_H

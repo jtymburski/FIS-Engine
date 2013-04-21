@@ -13,9 +13,9 @@ class MapThing
 {
 public:
   /* Constructor functions */
+  MapThing();
   MapThing(Sprite* frames, QString name = "", 
            QString description = "", int id = kUNSET_ID);
-  MapThing();
 
   /* Destructor function */
   ~MapThing();
@@ -35,13 +35,13 @@ private:
   bool thing_set;
 
   /* -------------------------- Constants ------------------------- */
-  static const int kMINIMUM_ID = 0;
-  static const int kUNSET_ID = -1;
+  const static int kMINIMUM_ID;
+  const static int kUNSET_ID;
 
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 public:
-  /* Starts inteaction (conversation, giving something, etc) */
-  void interaction();
-
   /* Gets the things decription */
   QString getDescription();
 
@@ -53,6 +53,9 @@ public:
 
   /* Gets the sprite of the thing */
   Sprite* getSprite();
+  
+  /* Starts inteaction (conversation, giving something, etc) */
+  void interaction();
 
   /* Returns if the thing is set */
   bool isSet();

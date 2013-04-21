@@ -18,7 +18,10 @@
 class VictoryScreen : public QWidget
 {
 public:
-  VictoryScreen(QWidget *parent = NULL);
+  /* Constructor function */
+  VictoryScreen(QWidget* parent = NULL);
+
+  /* Destructor function */
   ~VictoryScreen();
 
 private:
@@ -52,15 +55,9 @@ private:
   /* Each party member */
   QVector <Person*> output_team;
 
-protected:
-
-
-signals:
-
-
-public slots:
-
-
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 public:
   /* Sets up the screen */
   void setUp(); 

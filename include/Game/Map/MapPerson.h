@@ -61,6 +61,9 @@ private:
   /* For if a person is actually rendering */
   bool RENDERING;
 
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 public:
   /* Sets the person to be facing east */
   void faceEast();
@@ -73,6 +76,27 @@ public:
 
   /* Sets the person to be facing west */
   void faceWest();
+  
+  /* Gets the battle version of the person */
+  // Person* getBattlePerson();
+
+  /* Gets the persons direction */
+  Direction getDirection();
+
+  /* Gets the name */
+  QString getName();
+
+  /* Gets the persons facing sprite */
+  Sprite* getSprite();
+
+  /* Gets the persons step length */
+  int getStepLength();
+
+  /* Gets the x position */
+  int getX();
+
+  /* Gets the y position */
+  int getY();
 
   /* Evaluates the East Facing flag */
   bool isFacingEast();
@@ -136,27 +160,6 @@ public:
 
   /* Sets the person to cease moving */
   void stopMoving();
-
-  /* Gets the battle version of the person */
-  // Person* getBattlePerson();
-
-  /* Gets the persons direction */
-  Direction getDirection();
-
-  /* Gets the name */
-  QString getName();
-
-  /* Gets the persons facing sprite */
-  Sprite* getSprite();
-
-  /* Gets the persons step length */
-  int getStepLength();
-
-  /* Gets the x position */
-  int getX();
-
-  /* Gets the y position */
-  int getY();
 };
 
 #endif // MAPPERSON_H

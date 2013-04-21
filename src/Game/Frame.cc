@@ -8,6 +8,10 @@
 ******************************************************************************/
 #include "Game/Frame.h"
 
+/*============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *===========================================================================*/
+
 /* 
  * Description: Constructor for this class. Takes path and next pointer.
  *              Next pointer is defaulted to 0 if not given.
@@ -31,6 +35,10 @@ Frame::~Frame()
   previous = 0;
   next = 0;
 }
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 
 /* 
  * Description: Returns if an image is stored in this frame
@@ -92,8 +100,8 @@ bool Frame::setImage(QString path)
     return image_set;
   }
 
-  image_set = FALSE;
-  return FALSE;
+  image_set = false;
+  return false;
 }
 
 /* 
@@ -106,7 +114,7 @@ bool Frame::setNext(Frame* next)
 {
   this->next = next;
 
-  return TRUE; // can't fail so always true
+  return true; // can't fail so always true
 }
 
 /* 
@@ -119,5 +127,5 @@ bool Frame::setPrevious(Frame* previous)
 {
   this->previous = previous;
 
-  return TRUE; // can't fail so always true
+  return true; // can't fail so always true
 }

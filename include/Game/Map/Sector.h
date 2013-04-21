@@ -16,7 +16,7 @@ class Sector : public QWidget
 {
 public:
   /* Constructor function */
-  Sector(QWidget *parent = 0);
+  Sector(QWidget* parent = 0);
 
   /* Destructor function */
   ~Sector();
@@ -34,12 +34,18 @@ private:
   /* Player is in sector */
   bool inSector;
 
+/*============================================================================
+ * PROTECTED FUNCTIONS
+ *===========================================================================*/
 protected:
   void paintEvent(QPaintEvent *);
 
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 public:
   /* Sets all tiles in the sector to the given Status */
-  void setStatus(Status s);
+  void setStatus(Tile::Status s);
 };
 
 #endif // SECTOR_H

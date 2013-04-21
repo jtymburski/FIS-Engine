@@ -11,6 +11,30 @@
 ******************************************************************************/
 #include "Game/Map/MapThing.h"
 
+/* Constant Implementation - see header file for descriptions */
+const int MapThing::kMINIMUM_ID =  0;
+const int MapThing::kUNSET_ID   = -1;
+
+/*============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *===========================================================================*/
+
+/* 
+ * Description: Constructor for this class. Sets up an empty thing with no
+ *              data.
+ *
+ * Inputs: none
+ */
+MapThing::MapThing()
+{
+  thing_set = false;
+
+  setSprite(NULL);
+  setName("");
+  setDescription("");
+  setID(kUNSET_ID); 
+}
+
 /* 
  * Description: Constructor for this class. Takes data to create the thing.
  *
@@ -21,28 +45,12 @@
  */
 MapThing::MapThing(Sprite* frames, QString name, QString description, int id)
 {
-  thing_set = FALSE;
+  thing_set = false;
 
   setSprite(frames);
   setName(name);
   setDescription(description);
   setID(id);
-}
-
-/* 
- * Description: Constructor for this class. Sets up an empty thing with no
- *              data.
- *
- * Inputs: none
- */
-MapThing::MapThing()
-{
-  thing_set = FALSE;
-
-  setSprite(NULL);
-  setName("");
-  setDescription("");
-  setID(kUNSET_ID); 
 }
 
 /* 
@@ -54,6 +62,10 @@ MapThing::~MapThing()
     delete thing;
   thing = 0;
 }
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 
 /* 
  * Description: Starts interaction. In map thing, this isn't of use and is
@@ -147,12 +159,12 @@ bool MapThing::setID(int new_id)
   if(new_id < kMINIMUM_ID)
   {
     id = kUNSET_ID;
-    return FALSE;
+    return false;
   }
 
   /* Otherwise, the ID is good */
   id = new_id;
-  return TRUE;
+  return true;
 }
 
 /*
@@ -181,7 +193,7 @@ bool MapThing::setSprite(Sprite* new_frames)
   if(new_frames != NULL && new_frames->getSize() > 0)
   {
     thing = new_frames;
-    thing_set = TRUE;
+    thing_set = true;
   }
 
   return thing_set;
@@ -191,7 +203,7 @@ bool MapThing::setSprite(Sprite* new_frames)
  * Description: Unsets the sprite that's embedded in this as the Map Thing
  *
  * Inputs: none
- * Output: bool - returns TRUE if the Map Thing was set before this was called 
+ * Output: bool - returns true if the Map Thing was set before this was called 
  */
 bool MapThing::unsetSprite()
 {
@@ -201,7 +213,7 @@ bool MapThing::unsetSprite()
     delete thing;
 
   this->thing = NULL;
-  thing_set = FALSE;
+  thing_set = false;
 
   return was_thing_set;
 }

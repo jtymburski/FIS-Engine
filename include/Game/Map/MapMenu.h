@@ -12,9 +12,6 @@
 
 #include "Game/Player/Party.h"
 
-/* The menu items */
-enum MenuItems { SLEUTH, /*EQUIPMENT,*/ ITEM, STATS, SAVE, OPTIONS, EXIT};
-
 class MapMenu : public QWidget
 {
 public:
@@ -23,6 +20,9 @@ public:
 
   /* Destructor function */
   ~MapMenu();
+
+  /* Public enumerators */
+  enum MenuItems { SLEUTH, /*EQUIPMENT,*/ ITEM, STATS, SAVE, OPTIONS, EXIT};
 
 private:
   /* The current menu selected */
@@ -40,11 +40,16 @@ private:
   /* Flag for if the menu is in a submenu */
   bool INSUBMENU;
 
+/*============================================================================
+ * PROTECTED FUNCTIONS
+ *===========================================================================*/
 protected:
-  void paintEvent(QPaintEvent *);
+  void paintEvent(QPaintEvent*);
 
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 public:
-
   /* Deselects a submenu, esc key calls this */
   void deselectSubMenu();
 

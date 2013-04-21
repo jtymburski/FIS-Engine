@@ -13,33 +13,33 @@
 #include "Game/Player/Player.h"
 #include "Game/VictoryScreen.h"
 
-/* All the modes in game */
-enum GameMode {MAP, BATTLE, VICTORY_SCREEN };
-
 class Game : public QWidget
 {
   Q_OBJECT
 
 public:
-  /* Game Options */
-  enum BattleOption
-  {
-    SHOWLEVELS    = 1ul << 0, /* Show levels of friends/foes on Battle? */
-    SHOWENEMYINFO = 1ul << 1, /* Show enemy info on Battle Screen? */
-  };
-  Q_DECLARE_FLAGS(BattleOptions, BattleOption)
-  BattleOptions bo_flag_set;
-
   /* Constructor function */
   Game();
 
   /* Destructor function */
   ~Game();
 
+  /* Public enumerators */
+  enum BattleOption
+  {
+    SHOWLEVELS    = 1ul << 0, /* Show levels of friends/foes on Battle? */
+    SHOWENEMYINFO = 1ul << 1, /* Show enemy info on Battle Screen? */
+  };
+  Q_DECLARE_FLAGS(BattleOptions, BattleOption)
+  enum GameMode {MAP, BATTLE, VICTORY_SCREEN };
+
 private:
   /* A current battle pointer */
   Battle* current_battle;
 
+  /* Battle options variable for flags being set */
+  BattleOptions bo_flag_set;
+  
   /* The current game mode */
   GameMode current_gamemode;
 
@@ -64,6 +64,9 @@ private:
   /* Flag for if the tick is enabled */
   bool GAME_ENABLED;
 
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 public:
   /* Enables or disables the GAME_ENABLED flag */
   void setEnabled (bool enable);
@@ -76,5 +79,8 @@ public:
   void toggleBattleFlag(BattleOption flags);
   void setBattleFlag(BattleOption flags, bool set_value);
 };
+
+/* Qt Declares */
 Q_DECLARE_OPERATORS_FOR_FLAGS(Game::BattleOptions)
+
 #endif // GAME_H

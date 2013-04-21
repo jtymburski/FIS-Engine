@@ -19,12 +19,12 @@ class MapStatusBar : public QWidget
 {
 public:
   /* Constructor function */
-  MapStatusBar(QWidget *parent = 0);
+  MapStatusBar(QWidget* parent = 0);
 
   /* Destructor function */
   ~MapStatusBar();
-private:
 
+private:
   /* The current string being shown */
   QString* current_dialog;
 
@@ -62,9 +62,15 @@ private:
   /* Flag for which person is talking(1-right, 0-left) */
   bool RIGHT_VISIBLE;
 
+/*============================================================================
+ * PROTECTED FUNCTIONS
+ *===========================================================================*/
 protected:
   void paintEvent(QPaintEvent *);
 
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 public:
   /* Sets up a conversation with the given persons */
   void initConversation (MapPerson* left, MapPerson* right);
