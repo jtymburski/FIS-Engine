@@ -76,6 +76,13 @@ private:
   /* The passibility of each direction of the tile */
   bool north_passibility,east_passibility,south_passibility,west_passibility;
 
+  /*------------------- Constants -----------------------*/
+  const static int kENHANCER_TOTAL; /* The number of enhancers in a tile */
+  const static int kNE_ENHANCER;    /* The NE enhancer quarter index */
+  const static int kNW_ENHANCER;    /* The NW enhancer quarter index */
+  const static int kSE_ENHANCER;    /* The SE enhancer quarter index */
+  const static int kSW_ENHANCER;    /* The SW enhancer quarter index */
+
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
