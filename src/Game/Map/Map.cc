@@ -10,6 +10,9 @@
 #include "Game/Map/Map.h"
 
 /* Constant Implementation - see header file for descriptions */
+const int Map::kFILE_COLUMN = 3;
+const int Map::kFILE_DATA = 4;
+const int Map::kFILE_ROW = 2;
 const int Map::kSTARTX = 7;
 const int Map::kSTARTY = 0;
 const bool Map::kTURN_ON_PLATFORM = true;
@@ -21,6 +24,9 @@ const bool Map::kTURN_ON_PLATFORM = true;
 /* Constructor function */
 Map::Map(QWidget* parent) : QWidget(parent)
 {
+  qDebug() << "Success: " << loadMap("maps/test_02");
+
+  /*
   for(int i = 0; i < 11; i++)
   {
     QVector<Tile*> row;
@@ -29,10 +35,10 @@ Map::Map(QWidget* parent) : QWidget(parent)
     {
       Tile* t = new Tile(64, 64, j*64, i*64, this);
 
-      /* Setup the base sprites */
+      // Setup the base sprites
       t->setBase(":/GrassTile01_AA_A00");
 
-      /* Setup the enhancer sprites */
+      // Setup the enhancer sprites
       if(i > 3 && i < 8 && j > 3 && j < 8)
       {
         if(i == 4 && j == 4)
@@ -60,7 +66,7 @@ Map::Map(QWidget* parent) : QWidget(parent)
           t->setEnhancer(":/WaterTile_BB_A00");
       }
 
-      /* Setup the lower sprites */
+      // Setup the lower sprites
       if((i == 5 && j == 8) || (i == 6 && j == 8) || (i == 8 && j == 5))
         t->setLower(":/tree_BA_A00");
       else if((i == 5 && j == 9) || (i == 6 && j == 9) || (i == 8 && j == 6))
@@ -88,7 +94,7 @@ Map::Map(QWidget* parent) : QWidget(parent)
       else if(i == 10 && j == 3)
         t->setLower(":/arcadius_AA_D00");
 
-      /* Setup the upper sprites */
+      // Setup the upper sprites
       if((i == 4 && j == 8) || (i == 5 && j == 8) || (i == 7 && j == 5))
         t->setUpper(":/tree_AA_A00");
       else if((i == 4 && j == 9) || (i == 5 && j == 9) || (i == 7 && j == 6))
@@ -428,14 +434,11 @@ Map::Map(QWidget* parent) : QWidget(parent)
           if((i == kSTARTY+8 && j == kSTARTX+10))
               t->setUpper(":/TreePlatform_FD_A00");
       }
-
-
-
-
       row.append(t);
     }
     geography.append(row);
   }
+  */
 }
 
 /* Destructor function */
@@ -526,6 +529,93 @@ bool Map::isInSector(int index)
 {
     (void)index;//warning
     return true;
+}
+
+bool Map::loadMap(QString file)
+{
+  bool done = false;
+  bool success = true;
+  FileHandler fh(file, false, true);
+  XmlData data;
+
+  /* Start the map read */
+  success &= fh.start();
+
+  /* If file open was successful, move forward */
+  if(success)
+  {
+    /* Calculate dimensions and set up the map */
+    int length = fh.readXmlData().getDataInteger();
+    int width = fh.readXmlData().getDataInteger();
+    for(int i = 0; i < width; i++)
+    {
+      QVector<Tile*> row;
+
+      for(int j = 0; j < length; j++)
+        row.append(new Tile(64, 64, j*64, i*64, this));
+
+      geography.append(row);
+    }
+   
+    /* Run through the map components and add them to the map */
+    data = fh.readXmlData(&done, &success);
+    do
+    {
+      /* Pull the row and column pairs, comma delimited */
+      QStringList row_list = data.getKeyValue(kFILE_ROW).split(",");
+      QStringList col_list = data.getKeyValue(kFILE_COLUMN).split(",");
+
+      /* Run through this list, checking ranges and add the corresponding
+       * tiles */
+      for(int i = 0; i < row_list.size(); i++)
+      {
+        QStringList rows = row_list[i].split("-");
+        QStringList cols = col_list[i].split("-");
+
+        /* Use the newly found range and add the tile */
+        for(int r = rows[0].toInt(); r <= rows[rows.size() - 1].toInt(); r++)
+        {
+          for(int c = cols[0].toInt(); c <= cols[cols.size() - 1].toInt(); c++)
+          {
+            /* Determine the type of tile */
+            if(data.getElement(kFILE_DATA) == "base")
+              geography[r][c]->setBase(data.getDataString());
+            else if(data.getElement(kFILE_DATA) == "enhancer")
+              geography[r][c]->setEnhancer(data.getDataString());
+            else if(data.getElement(kFILE_DATA) == "lower")
+              geography[r][c]->setLower(data.getDataString());
+            else if(data.getElement(kFILE_DATA) == "upper")
+              geography[r][c]->setUpper(data.getDataString());
+
+            /* Enhancer setting */
+            if(data.getElement(kFILE_DATA) == "enhancerNW" || 
+               data.getElement(kFILE_DATA) == "enhancerN" || 
+               data.getElement(kFILE_DATA) == "enhancerW")
+              geography[r][c]->setEnhancer(data.getDataString(), "", "", "");
+            if(data.getElement(kFILE_DATA) == "enhancerNE" || 
+               data.getElement(kFILE_DATA) == "enhancerN" || 
+               data.getElement(kFILE_DATA) == "enhancerE")
+              geography[r][c]->setEnhancer("", data.getDataString(), "", "");
+            if(data.getElement(kFILE_DATA) == "enhancerSW" ||
+               data.getElement(kFILE_DATA) == "enhancerS" || 
+               data.getElement(kFILE_DATA) == "enhancerW")
+              geography[r][c]->setEnhancer("", "", data.getDataString(), "");
+            if(data.getElement(kFILE_DATA) == "enhancerSE" ||
+               data.getElement(kFILE_DATA) == "enhancerS" ||
+               data.getElement(kFILE_DATA) == "enhancerE")
+              geography[r][c]->setEnhancer("", "", "", data.getDataString());
+          }
+        }
+      }
+
+      /* Get the next element */
+      data = fh.readXmlData(&done, &success);
+    } while(!done && success);
+  }
+
+  success &= fh.stop();
+
+  return success;
 }
 
 /* Shifts the viewport */

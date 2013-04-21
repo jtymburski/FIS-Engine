@@ -21,6 +21,7 @@
 #include "Game/Map/Sector.h"
 #include "Game/Sprite.h"
 #include "Game/Weather.h"
+#include "FileHandler.h"
 
 class Map : public QWidget
 {
@@ -60,6 +61,9 @@ private:
   Weather* weather_effect;
 
   /*------------------- Constants -----------------------*/
+  const static int kFILE_COLUMN; /* The depth in XML of the column tag */
+  const static int kFILE_DATA;   /* The depth in XML of the data information */
+  const static int kFILE_ROW;    /* The depth in XML of the row tag */
   /* DELETE: temporary */
   const static int kSTARTX;
   const static int kSTARTY;
@@ -108,6 +112,9 @@ public:
 
   /* Checks whether the viewport contains any tiles with the given sector */
   bool isInSector(int index);
+
+  /* Loads the map */
+  bool loadMap(QString file);
 
   /* Shifts the viewport */
   void move(Direction dir, int step_length, Sprite s);

@@ -12,6 +12,13 @@
 ******************************************************************************/
 #include "Game/Map/Tile.h"
 
+/* Constant Implementation - see header file for descriptions */
+const int Tile::kENHANCER_TOTAL = 4;
+const int Tile::kNE_ENHANCER     = 1;
+const int Tile::kNW_ENHANCER     = 0;
+const int Tile::kSE_ENHANCER     = 3;
+const int Tile::kSW_ENHANCER     = 2;
+
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
@@ -428,62 +435,69 @@ bool Tile::setEnhancer(QString path)
  *         QString ne_path - the NE corner path for the sprite
  *         QString sw_path - the SW corner path for the sprite
  *         QString se_path - the SE corner path for the sprite
+ *         bool reset - if set to true it unsets the enhancer and reloads it
  * Output: bool - returns true if the enhancer was successfuly set.
  */
 bool Tile::setEnhancer(QString nw_path, QString ne_path, 
                        QString sw_path, QString se_path)
 {
-  unsetEnhancer();
+  if(enhancer.empty() || enhancer.size() <= 1)
+  {
+    unsetEnhancer();
+    for(int i = 0; i < kENHANCER_TOTAL; i++)
+      enhancer.append(NULL);
+  }
+
   enhancer_set = true;
   Sprite test_sprite;
 
   /* Sets the new enhancer tile with 4 1/4 portions of a tile */
   if(!nw_path.isEmpty())
   {
+    if(enhancer[kNW_ENHANCER] != NULL)
+      delete enhancer[kNW_ENHANCER];
+    enhancer[kNW_ENHANCER] = NULL;
+
     if(test_sprite.insertTail(nw_path))
-      enhancer.append(new Sprite(nw_path));
+      enhancer[kNW_ENHANCER] = new Sprite(nw_path);
     else
       enhancer_set = false;
-  }
-  else
-  {
-    enhancer.append(NULL);
   }
 
   if(!ne_path.isEmpty() && enhancer_set)
   {
+    if(enhancer[kNE_ENHANCER] != NULL)
+      delete enhancer[kNE_ENHANCER];
+    enhancer[kNE_ENHANCER] = NULL;
+
     if(test_sprite.insertTail(ne_path))
-      enhancer.append(new Sprite(ne_path));
+      enhancer[kNE_ENHANCER] = new Sprite(ne_path);
     else
       enhancer_set = false;
-  }
-  else
-  {
-    enhancer.append(NULL);
   }
 
   if(!sw_path.isEmpty() && enhancer_set)
   {
+    if(enhancer[kSW_ENHANCER] != NULL)
+      delete enhancer[kSW_ENHANCER];
+    enhancer[kSW_ENHANCER] = NULL;
+
     if(test_sprite.insertTail(sw_path))
-      enhancer.append(new Sprite(sw_path));
+      enhancer[kSW_ENHANCER] = new Sprite(sw_path);
     else
       enhancer_set = false;
-  }
-  else
-  {
-    enhancer.append(NULL);
   }
 
   if(!se_path.isEmpty() && enhancer_set)
   {
+    if(enhancer[kSE_ENHANCER] != NULL)
+      delete enhancer[kSE_ENHANCER];
+    enhancer[kSE_ENHANCER] = NULL;
+
     if(test_sprite.insertTail(se_path))
-      enhancer.append(new Sprite(se_path));
+      enhancer[kSE_ENHANCER] = new Sprite(se_path);
     else
       enhancer_set = false;
-  }
-  else
-  {
-    enhancer.append(NULL);
   }
 
   /* Unset if it failed during the process */

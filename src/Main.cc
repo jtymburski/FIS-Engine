@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
   /* Testing code for file handler */
   bool done = false;
   bool success = true;
-  FileHandler fh("TEST.log", false, true, true);
+  FileHandler fh("TEST.log", false, true, false);
 
   /* Read */
   if(fh.start())
