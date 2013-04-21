@@ -147,17 +147,32 @@ void Person::battlePrep()
   }
 }
 
-/* // TODO NOT FINISHED
+/*
  * Description: This function calculates the currently usable skills of the
  *              person, based on the skills allowed by their Race and Category.
- *
  *
  * Inputs: none
  * Output: none
  */
 void Person::calcSkills()
 {
+  /*
+  QVector<Skill*> race_skills = getRace()->getSkillSet()->getSkills();
+  QVector<Skill*> cat_skills  = getCategory()->getSkillSet()->getSkills();
 
+  QVector<ushort> race_levels = getRace()->getSkillSet()->getSkillLevels();
+  QVector<ushort> cat_levels  = getCategory()->getSkillSet()->getSkillLevels();
+
+  for (int i = 0; i < race_skills.size(); i++)
+    if (getLevel() > race_levels.at(i))
+      skills->addSkill(race_skills.at(i));
+
+  for (int i = 0; i < cat_skills.size(); i++)
+    if (getLevel() > cat_levels.at(i))
+      skills->addSkill(cat_skills.at(i));
+
+  //TODO: Skills from Equipment!!!
+  skills->cleanUp(); */
 }
 
 /*
@@ -298,6 +313,44 @@ Race* Person::getRace()
 SkillSet* Person::getSkills()
 {
   return skills;
+}
+
+/*
+ * Description: Returns the set of skills the Person can currently use, based
+ *              on the amount of QD available and their enabled or disabled
+ *
+ *
+ * Inputs: none
+ * Output: SkillSet* - pointer to the useable Skills of the person
+ */
+SkillSet* Person::getUseableSkills()
+{
+  calcSkills();
+  QVector<Skill*> temp_skills = skills->getSkills();
+
+  /* Remove skills which have too high of QD cost */
+  for (int i = 0; i < temp_skills.size(); i++)
+    if (temp_skills.at(i)->getQdValue() > temp_stats.getStat("QTDR"))
+      temp_skills.remove(i);
+
+  /* Remove physical skills if physical skill flag disabled */
+  if (getPersonFlag(Person::CANATTACK) == FALSE)
+    for (int i = 0; i < temp_skills.size(); i++)
+      if (temp_skills.at(i)->getFlag(Skill::PHYSICAL))
+        temp_skills.remove(i);
+
+  /* Remove non-physical skills if non-physical skill flag disabled */
+  if (getPersonFlag(Person::CANUSESKILLS) == FALSE)
+    for (int i = 0; i < temp_skills.size(); i++)
+      if (!temp_skills.at(i)->getFlag(Skill::PHYSICAL))
+        temp_skills.remove(i);
+
+  SkillSet* temp_skill_set;
+
+  for (int i = 0; i < temp_skills.size(); i++)
+    temp_skill_set->addSkill(temp_skills.at(i));
+
+  return temp_skill_set;
 }
 
 /*

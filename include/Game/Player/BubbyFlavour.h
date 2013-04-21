@@ -39,7 +39,8 @@ private:
   QVector<Sprite*> sprites;
 
   /* ------------ Constants --------------- */
-  const static ushort kTIER_CAP;        /* Max # of Bubby Tiers */
+  static const ushort kTIER_CAP;        /* Max # of Bubby Tiers */
+  static QVector<ushort> kTIER_LEVELS;    /* Max levels of skills */
   static QVector<QString> flavour_list; /* Vector of Flavour names */
 
 /*============================================================================
@@ -48,6 +49,9 @@ private:
 private:
   /* Adding, checking flavour functions */
   static bool addFlavour(QString new_flavour);
+
+  /* Build the skill levels vector */
+  static void buildLevels();
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -88,6 +92,12 @@ public:
 public:
   /* Returns true if a given flavour of Bubby already exists */
   static int isFlavour(QString flavour_name);
+
+  /* Gets the number of tiers for Bubby's */
+  static ushort getNumTier();
+
+  /* Returns the maximum level of skills a certain Bubby tier unlocks */
+  static ushort getMaxSkillLevel(ushort tier_level);
 };
 
 #endif //BUBBYFLAVOUR_H

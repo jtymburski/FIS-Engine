@@ -79,12 +79,18 @@ public:
   /* Removes a Bubby at a given x and y value (checks adjacent values) */
   Bubby unattach(ushort x, ushort y);
 
+  /* Returns a vector of all Bubbies attached to the equipment */
+  QVector<Bubby*> getAttachedBubbies();
+
   /* Gets the Leftmost X and Leftmost Y coordinates of a Bubby (+given an ID) */
   int getLeftX(uint x, uint y, bool passingID = true);
   int getLeftY(uint x, uint y, bool passingID = true);
 
   /* Gets the boolean value of flag */
   bool getEquipmentFlag(EquipmentState flags);
+
+  /* Calculates and returns the skills the equipment provides */
+  SkillSet* getSkills(ushort level);
 
   /* Sets the value of a flag */
   void setEquipmentFlag(EquipmentState flags, bool set_value);

@@ -39,9 +39,14 @@ public:
     BEARACKS      = 1 << 3, /* Person is currently in your RESERVE */
     RENDERING     = 1 << 4, /* Person is rendering on the map */
     MAINCHARACTER = 1 << 5, /* Is this person the main character? */
-    BOSS          = 1 << 6, /* Is this person a Boss character? */
-    MINIBOSS      = 1 << 7,  /* Is this person a miniboss? */
-    MAXLVL        = 1 << 8  /* Is this person the max level? */
+    FINALBOSS     = 1 << 6, /* Is this the final boss? */
+    BOSS          = 1 << 7, /* Is this person a Boss character? */
+    MINIBOSS      = 1 << 8,  /* Is this person a miniboss? */
+    MAXLVL        = 1 << 9,  /* Is this person the max level? */
+    CANATTACK     = 1 << 10, /* Can the person use physical attacks> */
+    CANUSESKILLS  = 1 << 11, /* Can the person currently use non-phys skills? */
+    CANUSEITEM    = 1 << 12, /* Can the person currently use items? */
+    CANRUN        = 1 << 13 /* Can the person run? */
   };
   Q_DECLARE_FLAGS(PersonFlags, PersonState)
 
@@ -147,6 +152,7 @@ public:
 
   /* Returns the available skills of the person */
   SkillSet* getSkills();
+  SkillSet* getUseableSkills();
 
   /* Gets the person's experience */
   uint getExp();

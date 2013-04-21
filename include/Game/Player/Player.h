@@ -44,7 +44,7 @@ private:
   uint32_t credits;
 
   /* ------------ Constants --------------- */
-  static const uint32_t kMAX_CREDITS;
+  static const uint kMAX_CREDITS;
 
 /*============================================================================
  * PRIVATE FUNCTIONS

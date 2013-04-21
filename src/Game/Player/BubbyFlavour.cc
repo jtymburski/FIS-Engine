@@ -5,14 +5,14 @@
 * Description: Describes the flavour of a Bubby. Every Bubby of certain flavours
 *              will have the same SkillSet and AttributeSet as others.
 *******************************************************************************/
-
 #include "Game/Player/BubbyFlavour.h"
 
 /*============================================================================
  * CONSTANTS
  *===========================================================================*/
-const ushort BubbyFlavour::kTIER_CAP    = 3; /* Max # of Bubby Tiers */
+const ushort BubbyFlavour::kTIER_CAP         = 3; /* Max # of Bubby Tiers */
 QVector<QString> BubbyFlavour::flavour_list; /* Vector of Flavour names */
+QVector<ushort> BubbyFlavour::kTIER_LEVELS; /* Vector of Skill levels */
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -29,13 +29,17 @@ QVector<QString> BubbyFlavour::flavour_list; /* Vector of Flavour names */
  */
 BubbyFlavour::BubbyFlavour(QString name, AttributeSet stats, SkillSet* skills)
 {
+  /* Build the skill levels per tier if not built */
+  if (kTIER_LEVELS.isEmpty())
+    buildLevels();
+
   addFlavour(name);
   setName(name);
   setAttr(stats);
   setSkillSet(skills);
 
   for (int i = 0; i < kTIER_CAP; i++)
-      sprites.push_back(NULL);
+    sprites.push_back(NULL);
 }
 
 /*
@@ -60,6 +64,21 @@ bool BubbyFlavour::addFlavour(QString new_flavour)
   else
     flavour_list.push_back(new_flavour);
   return true;
+}
+
+/*
+ * Description: Builds the levels vector for the skills useable at certain
+ *              levels.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void BubbyFlavour::buildLevels()
+{
+  kTIER_LEVELS.push_back(0);
+  kTIER_LEVELS.push_back(30);
+  kTIER_LEVELS.push_back(50);
+  kTIER_LEVELS.push_back(127);
 }
 
 /*============================================================================
@@ -221,4 +240,26 @@ int BubbyFlavour::isFlavour(QString flavour_name)
   if (flavour_list.contains(flavour_name))
     return flavour_list.indexOf(flavour_name);
   return -1;
+}
+
+/*
+ * Description: Returns the number of tiers for a Bubby
+ *
+ * Inputs: none
+ * Output: ushort - the number of tiers for Bubbies
+ */
+ushort BubbyFlavour::getNumTier()
+{
+  return kTIER_CAP;
+}
+
+/*
+ * Description: Returns the maximum level of
+ *
+ * Inputs:
+ * Output: ushort -
+ */
+ushort BubbyFlavour::getMaxSkillLevel(ushort tier_level)
+{
+  return kTIER_LEVELS.at(tier_level);
 }

@@ -168,6 +168,36 @@ Bubby Equipment::unattach(ushort x, ushort y)
 }
 
 /*
+ * Description: Returns a vector of all attached Bubbies on the equipment.
+ *
+ * Inputs: none
+ * Output: QVector<Bubby*> - vector of pointers to attached Bubbies
+ */
+QVector<Bubby*> Equipment::getAttachedBubbies()
+{
+  QVector<int> bubby_ids;
+  QVector<Bubby*> attached_bubbies;
+
+
+  for (int i = 0; i < kMAX_X; i++)
+  {
+    for (int j = 0; j < kMAX_Y; j++)
+    {
+      if (signature[i][j] == 'B')
+      {
+        if (!bubby_ids.contains(bubby_signature[i][j]->getId()))
+        {
+          bubby_ids.push_back(bubby_signature[i][j]->getId());
+          attached_bubbies.push_back(bubby_signature[i][j]);
+        }
+      }
+    }
+  }
+
+  return attached_bubbies;
+}
+
+/*
  * Description: Evaluates a given EquipmentState flag
  *
  * Inputs: EquipmentState flag to be evaluated
@@ -176,6 +206,26 @@ Bubby Equipment::unattach(ushort x, ushort y)
 bool Equipment::getEquipmentFlag(EquipmentState flag)
 {
     return (eflag_set.testFlag(flag));
+}
+
+/*
+ * Description: Calculates and returns the skills the equipmenmt makes available
+ *              for used based off an input (the level of the character the
+ *              equipment is equipped to
+ *
+ * Inputs: ushort level - the level of the person the equipment is attached to
+ * Output: SkillSet* - pointer to the skill set the equipment provides
+ */
+SkillSet* getSkills(ushort level)
+{
+  SkillSet* temp_skills;
+
+  /*
+  for (ushort i = 0; i < BubbyFlavour::getNumTier(); i++)
+    if (BubbyFlavour::getMaxSkillLevel(i)) */
+    // TODO: FINISH
+
+  return temp_skills;
 }
 
 /*
@@ -189,7 +239,8 @@ bool Equipment::getEquipmentFlag(EquipmentState flag)
  */
 int Equipment::getLeftX(uint x, uint y, bool passingID)
 {
-    (void)passingID;//warning
+  (void)passingID; //warning
+
   if (signature[x][y] == 'B')
     return x;
   if (signature[x][y - 1] == 'B')

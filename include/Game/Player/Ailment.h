@@ -111,6 +111,8 @@ private:
   static const double kROOTBOUND_PC; /* % values by which rootbound increases */
   static const double kHIBERNATION_INIT; /* % value for initial hibernation */
   static const double kHIBERNATION_INCR; /* % value by which to increase Hib */
+  static const double kMETABOLIC_PC; /* % chance for metabolic teth to kill */
+  static const double kMETABOLIC_DMG; /* % damage metabolic teth will deal */
 
 /*============================================================================
  * PRIVATE FUNCTIONS

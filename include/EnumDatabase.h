@@ -25,7 +25,7 @@ enum Infliction
   POLDEFBUFF, PRIATKBUFF, PRIDEFBUFF, CHGATKBUFF, CHGDEFBUFF, CYBATKBUFF,
   CYBDEFBUFF, NIHATKBUFF, NIHDEFBUFF, LIMBUFF, UNBBUFF, MOMBUFF, VITBUFF,
   QDBUFF, ROOTBOUND, DOUBLECAST, TRIPLECAST, HALFCOST, REFLECT, HIBERNATION,
-  CURSE, NOAILMENT
+  CURSE, METATETHER, NOAILMENT
 };
 
 Begin_Enum_String( Infliction )
@@ -73,6 +73,7 @@ Begin_Enum_String( Infliction )
   RegisterEnumerator(REFLECT, "Reflect");
   RegisterEnumerator(HIBERNATION, "Hibernation");
   RegisterEnumerator(CURSE, "Curse");
+  RegisterEnumerator(METATETHER, "Metabolic Tether");
   RegisterEnumerator(NOAILMENT, "No Effect");
 }
 End_Enum_String;

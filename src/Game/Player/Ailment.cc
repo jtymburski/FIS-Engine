@@ -13,11 +13,11 @@
 *              3 - [(Add)] const static values to be used if necessary to class
 *              4 - (Add) the Ailment's effect to updateAndApply()
 *
-* // TODO: Add immunities to everything [03-12-13]
 * // TODO: Finalize chance to wear off per turn [03-11-13]
 * // TODO: Rigorous testing for class [03-11-13]
 * // TODO: Setup temporary skills for person [03-12-13]
 * // TODO: Finish Curse apply effect [03-30-13]
+* // TODO: Bubbify effect [04-21-13]
 *******************************************************************************/
 #include "Game/Player/Ailment.h"
 
@@ -52,11 +52,12 @@ const double Ailment::kQTMNBUFF_PC         = 1.15;
 const double Ailment::kROOTBOUND_PC        = 0.15;
 const double Ailment::kHIBERNATION_INIT    = 0.15;
 const double Ailment::kHIBERNATION_INCR    = 0.05;
+const double Ailment::kMETABOLIC_PC        = 0.25;
+const double Ailment::kMETABOLIC_DMG       = 0.25;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
-
 
 /*
  * Description: Constructs an Ailment object given an Infliction type,
@@ -225,8 +226,12 @@ bool Ailment::apply()
    */
   else if (ailment_type == BERSERK)
   {
-    /* On initial application, limit skills to Physical, disable run, items */
-    /* Update effect handled in Battle -- damage calculations. */
+    /* On initial application, disable non physical skills and running */
+    victim->setPersonFlag(Person::CANUSESKILLS, FALSE);
+    victim->setPersonFlag(Person::CANUSEITEM, FALSE);
+    victim->setPersonFlag(Person::CANRUN, FALSE);
+
+    /* After application, damage and effects will take place in Battle */
   }
 
   /* Confuse - ailed actor attacks a random target with a random skills */
@@ -426,19 +431,147 @@ bool Ailment::apply()
  */
 bool Ailment::checkImmunity(Person* new_victim)
 {
-    (void)new_victim;//warning
-  /* Immunity for semi-bosses */
+  /* Helper variables */
+  QString race_name = new_victim->getRace()->getName();
+  QString category_name = new_victim->getCategory()->getName();
 
-  /* Immunity for bosses */
+  /* Flag immunity section */
+  if (new_victim->getPersonFlag(Person::MINIBOSS))
+  {
+    if (ailment_type == DEATHTIMER || ailment_type == BUBBIFY)
+      return FALSE;
+  }
 
-  /* Immunity for final boss */
+  else if (new_victim->getPersonFlag(Person::BOSS))
+  {
+    if (ailment_type == DEATHTIMER || ailment_type == BUBBIFY   ||
+        ailment_type == SILENCE    || ailment_type == PARALYSIS ||
+        ailment_type == BLINDNESS)
+      return FALSE;
+  }
 
-  /* Racial immunity */
+  else if (new_victim->getPersonFlag(Person::FINALBOSS))
+  {
+    if (ailment_type == DEATHTIMER || ailment_type == BUBBIFY   ||
+        ailment_type == SILENCE    || ailment_type == PARALYSIS ||
+        ailment_type == BLINDNESS  || ailment_type == CONFUSE   ||
+        ailment_type == BERSERK)
+      return FALSE;
+  }
 
-  /* Class immunity */
+  /* Race immunity section */
+  if (race_name == "Human")
+  {
+    if (ailment_type == HIBERNATION || ailment_type == REFLECT ||
+        ailment_type == CONFUSE)
+      return FALSE;
+  }
 
-  /* Other immunity */
-  return true;
+  else if (race_name == "Bsian")
+  {
+    if (ailment_type == HIBERNATION || ailment_type == BERSERK)
+      return FALSE;
+  }
+
+  else if (race_name == "Cyborg")
+  {
+    if (ailment_type == HIBERNATION || ailment_type == REFLECT ||
+        ailment_type == POISON      || ailment_type == ROOTBOUND)
+      return false;
+  }
+
+  else if (race_name == "Artilect")
+  {
+    if (ailment_type == HIBERNATION || ailment_type == REFLECT ||
+        ailment_type == POISON      || ailment_type == BURN    ||
+        ailment_type == CHAR        || ailment_type == SCALD)
+      return FALSE;
+  }
+
+  else if (race_name == "Gyrokin")
+  {
+    if (ailment_type == HIBERNATION || ailment_type == REFLECT)
+      return FALSE;
+  }
+
+  else if (race_name == "Necross")
+  {
+    if (ailment_type == HIBERNATION || ailment_type == REFLECT)
+      return FALSE;
+  }
+  else if (race_name == "Bear")
+  {
+    if (ailment_type == ROOTBOUND)
+      return FALSE;
+  }
+
+  else if (race_name == "Boat")
+  {
+    if (ailment_type == ALLATKBUFF || ailment_type == ALLDEFBUFF ||
+        ailment_type == PHYATKBUFF || ailment_type == PHYDEFBUFF ||
+        ailment_type == THRATKBUFF || ailment_type == THRDEFBUFF ||
+        ailment_type == POLATKBUFF || ailment_type == POLDEFBUFF ||
+        ailment_type == PRIATKBUFF || ailment_type == PRIDEFBUFF ||
+        ailment_type == CHGATKBUFF || ailment_type == CHGDEFBUFF ||
+        ailment_type == CYBATKBUFF || ailment_type == CYBDEFBUFF ||
+        ailment_type == NIHATKBUFF || ailment_type == NIHDEFBUFF ||
+        ailment_type == LIMBUFF    || ailment_type == UNBBUFF    ||
+        ailment_type == MOMBUFF    || ailment_type == VITBUFF    ||
+        ailment_type == QDBUFF)
+    return FALSE;
+  }
+  else if (race_name == "Fiend")
+  {
+    if (ailment_type == REFLECT)
+      return FALSE;
+  }
+  else if (race_name == "Spirit")
+  {
+    if (ailment_type == HIBERNATION || ailment_type == ALLATKBUFF    ||
+        ailment_type == PHYATKBUFF  || ailment_type == PHYDEFBUFF ||
+        ailment_type == THRATKBUFF  || ailment_type == THRDEFBUFF ||
+        ailment_type == POLATKBUFF  || ailment_type == POLDEFBUFF ||
+        ailment_type == PRIATKBUFF  || ailment_type == PRIDEFBUFF ||
+        ailment_type == CHGATKBUFF  || ailment_type == CHGDEFBUFF ||
+        ailment_type == CYBATKBUFF  || ailment_type == CYBDEFBUFF ||
+        ailment_type == NIHATKBUFF  || ailment_type == NIHDEFBUFF ||
+        ailment_type == LIMBUFF     || ailment_type == UNBBUFF    ||
+        ailment_type == MOMBUFF     || ailment_type == VITBUFF    ||
+        ailment_type == QDBUFF      || ailment_type == POISON     ||
+        ailment_type == BURN        || ailment_type == SCALD      ||
+        ailment_type == CHAR        || ailment_type == BUBBIFY    ||
+        ailment_type == DEATHTIMER  || ailment_type == ROOTBOUND  ||
+        ailment_type == ALLDEFBUFF)
+    return FALSE;
+  }
+
+  /* Category immunity section */
+  if (category_name == "Bardic Sage" && ailment_type == SILENCE)
+      return FALSE;
+  else if (category_name == "Bloodclaw Scion" && ailment_type == DEATHTIMER)
+      return FALSE;
+  else if (category_name == "Druidic Avenger" && ailment_type == POISON)
+      return FALSE;
+  else if (category_name == "Eidoloncer" && ailment_type == SILENCE)
+      return FALSE;
+  else if (category_name == "Goliath Rogue" && ailment_type == BLINDNESS)
+      return FALSE;
+  else if (category_name == "Hexblade" && ailment_type == BERSERK)
+      return FALSE;
+  else if (category_name == "Psion" && ailment_type == SILENCE)
+      return FALSE;
+  else if (category_name == "Shadow Dancer" && ailment_type == PARALYSIS)
+      return FALSE;
+  else if (category_name == "Storm Paladin" && ailment_type == DREADSTRUCK)
+      return FALSE;
+  else if (category_name == "Swordsage" && ailment_type == DREAMSNARE)
+      return FALSE;
+  else if (category_name == "Tactical Samurai" && ailment_type == CONFUSE)
+      return FALSE;
+  else if (category_name == "Warmage" && ailment_type == HELLBOUND)
+      return FALSE;
+
+  return TRUE;
 }
 
 /*
@@ -541,6 +674,10 @@ void Ailment::update()
  */
 void Ailment::unapply()
 {
+  /* Helper variables */
+  const ushort kHEALTH = victim->tempStats()->getStat(0);
+  AttributeSet* stats = victim->tempStats();
+
   if (getType() == BERSERK)
   {
     /* Enable Run, enable non-Physical skills, items */
