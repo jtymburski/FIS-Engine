@@ -17,12 +17,14 @@
  *              Next pointer is defaulted to 0 if not given.
  *
  * Inputs: QString path - the path to the image to create
+ *         int rotate_angle - the angle to rotate the image to, default to 0
  *         Frame* next - pointer to next frame, default to 0
  *         Frame* previous - pointer to previous frame, default to 0
  */
-Frame::Frame(QString path, Frame* next, Frame* previous)
+Frame::Frame(QString path, int rotate_angle, Frame* next, Frame* previous)
 {
   setImage(path);
+  rotateImage(rotate_angle);
   setPrevious(previous);
   setNext(next);
 }
@@ -82,6 +84,27 @@ Frame* Frame::getNext()
 Frame* Frame::getPrevious()
 {
   return previous;
+}
+
+/* 
+ * Description: Rotates an image by the number of degrees specified. This will
+ *              have unknown results if the rotation isn't a clean number
+ *              that is a divisor of 90.
+ *
+ * Inputs: int angle - the angle to rotate the image by.
+ * Output: bool - the status if the image was set so it can be rotated.
+ */
+bool Frame::rotateImage(int angle)
+{
+  if(image_set && angle != 0)
+  {
+    QMatrix matrix;
+    matrix.rotate(angle);
+    image = image.transformed(matrix);
+    return true;
+  }
+
+  return false;
 }
 
 /* 

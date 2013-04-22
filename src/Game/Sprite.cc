@@ -33,13 +33,13 @@ Sprite::Sprite()
  *
  * Input: QString image_path - image to set as one sprite 
  */
-Sprite::Sprite(QString image_path)
+Sprite::Sprite(QString image_path, int rotate_angle)
 {
   head = 0;
   current = 0;
   size = 0;
   direction = FORWARD;
-  insertFirst(image_path);
+  insertFirst(image_path, rotate_angle);
 }
 
 /* 
@@ -49,13 +49,14 @@ Sprite::Sprite(QString image_path)
  *        int num_frames - the number of frames in this path sequence
  *        QString tail_path - the end of the path, after the count index
  */
-Sprite::Sprite(QString head_path, int num_frames, QString tail_path)
+Sprite::Sprite(QString head_path, int num_frames, 
+               QString tail_path, int rotate_angle)
 {
   head = 0;
   current = 0;
   size = 0;
   direction = FORWARD;
-  insertSequence(head_path, num_frames, tail_path);  
+  insertSequence(head_path, num_frames, tail_path, rotate_angle);  
 }
 
 /* 
@@ -79,7 +80,7 @@ Sprite::~Sprite()
  *         int position - the location in the linked list sequence
  * Output: bool - status if insert is successful
  */
-bool Sprite::insert(QString image_path, int position)
+bool Sprite::insert(QString image_path, int position, int rotate_angle)
 {
   Frame* next_frame;
   Frame* new_frame;
@@ -88,11 +89,11 @@ bool Sprite::insert(QString image_path, int position)
   /* Only add if the size is within the bounds of the sprite */
   if(size == 0)
   {
-    return insertFirst(image_path);
+    return insertFirst(image_path, rotate_angle);
   }
   else if(position <= size && position >= 0)
   {
-    new_frame = new Frame(image_path);
+    new_frame = new Frame(image_path, rotate_angle);
 
     if(new_frame->isImageSet())
     {
@@ -130,11 +131,11 @@ bool Sprite::insert(QString image_path, int position)
  * Inputs: QString image_path - the path to the image to insert
  * Output: bool - status if insertion was successful
  */
-bool Sprite::insertFirst(QString image_path)
+bool Sprite::insertFirst(QString image_path, int rotate_angle)
 {
   if(size == 0)
   {
-    head = new Frame(image_path);
+    head = new Frame(image_path, rotate_angle);
     if(head->isImageSet())
     {
       head->setNext(head);
@@ -161,7 +162,7 @@ bool Sprite::insertFirst(QString image_path)
  * Output: bool - status if insertion was succesful
  */
 bool Sprite::insertSequence(QString head_path, int num_frames, 
-		                        QString tail_path)
+		                        QString tail_path, int rotate_angle)
 {
   bool status = true;
 
@@ -176,10 +177,11 @@ bool Sprite::insertSequence(QString head_path, int num_frames,
   for(int i = 0; i < num_frames; i++)
   {
     if(i >= kDOUBLE_DIGITS)
-      status = status & insertTail(head_path + QString::number(i) + tail_path);
+      status = status & insertTail(head_path + QString::number(i) + tail_path,
+                                   rotate_angle);
     else
       status = status & insertTail(head_path + "0" + QString::number(i) + 
-		                               tail_path);
+		                               tail_path, rotate_angle);
   }
 
   /* If the sequence failed, delete the created pointers */
@@ -198,9 +200,9 @@ bool Sprite::insertSequence(QString head_path, int num_frames,
  * Inputs: QString image_path - the path to the image to insert
  * Output: bool - status if insertion was successful
  */
-bool Sprite::insertTail(QString image_path)
+bool Sprite::insertTail(QString image_path, int rotate_angle)
 {
-  return insert(image_path, size);
+  return insert(image_path, size, rotate_angle);
 }
 
 /* 

@@ -32,6 +32,12 @@ public:
    * PERSON - The impassable object is a person (player, npc) */
   enum ImpassableObjectState{UNSET, DECOR, PERSON};
 
+  /* NONE - the object isn't rotated
+   * CLOCKWISE - rotate the object 90 degrees clockwise
+   * COUNTERCLOCKWISE - rotate the object 90 degrees counterclockwise
+   * FLIP - rotate the object 180 degrees */
+  enum RotatedAngle{NONE, CLOCKWISE, COUNTERCLOCKWISE, FLIP};
+
   /* STATUSOFF - Not rendered at all
    * ACTIVE - Rendered
    * INACTIVE - Blacked out (sector past a door) */
@@ -49,7 +55,7 @@ private:
 
   /* The enhancment layer on the base. This is things like water bodies, 
    * ground enhancers, etc. */
-  QVector<Sprite*> enhancer;
+  Sprite* enhancer;
   bool enhancer_set;
 
   /* Player or NPC or impassible item (Causes the passibility of all directions
@@ -95,6 +101,13 @@ protected:
   void leaveEvent(QEvent *);
 
 /*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+private:
+  /* Determines the angle that's associated to the local enumerator */
+  int getAngle(RotatedAngle angle);
+
+/*============================================================================
  * PUBLIC FUNCTIONS (SLOTS? - not all!)
  *===========================================================================*/
 public slots:
@@ -105,7 +118,7 @@ public slots:
   Sprite* getBase();
 
   /* Gets the enhancer sprite qvector */
-  QVector<Sprite*> getEnhancer();
+  Sprite* getEnhancer();
 
   /* Gets the impassable object sprite */
   MapThing* getImpassableObject();
@@ -150,18 +163,16 @@ public slots:
   bool isUpperSet();
 
   /* Sets the base sprite */
-  bool setBase(QString path);
+  bool setBase(QString path, RotatedAngle angle = NONE);
 
   /* Set the enhancer sprite */
-  bool setEnhancer(QString path);
-  bool setEnhancer(QString nw_path, QString ne_path, 
-                   QString sw_path, QString se_path);
+  bool setEnhancer(QString path, RotatedAngle angle = NONE);
 
   /* Sets the impassable object sprite */
   bool setImpassableObject(QString path, ImpassableObjectState type);
 
   /* Sets the lower sprite */
-  bool setLower(QString path);
+  bool setLower(QString path, RotatedAngle angle = NONE);
 
   /* Sets the passable object sprite */
   bool setPassableObject(QString path);
@@ -184,7 +195,7 @@ public slots:
   void setPassibilityWest(bool is_passable);
 
   /* Sets the upper sprite */
-  bool setUpper(QString path);
+  bool setUpper(QString path, RotatedAngle angle = NONE);
 
   /* Unsets the base sprite */
   bool unsetBase();

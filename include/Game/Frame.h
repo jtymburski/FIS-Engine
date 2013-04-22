@@ -16,7 +16,8 @@ class Frame
 {
 public:
   /* Constructor function (path and next pointer initialization) */
-  Frame(QString path, Frame* next = 0, Frame* previous = 0);
+  Frame(QString path, int rotate_angle = 0, 
+        Frame* next = 0, Frame* previous = 0);
 
   /* Destructor function */
   ~Frame();
@@ -49,6 +50,9 @@ public:
 
   /* Get previous frame */
   Frame* getPrevious();
+
+  /* Rotate the image an integer number of degrees */
+  bool rotateImage(int angle);
 
   /* Set stored image */
   bool setImage(QString path);

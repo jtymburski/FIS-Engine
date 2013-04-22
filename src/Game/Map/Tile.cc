@@ -90,23 +90,7 @@ void Tile::paintEvent(QPaintEvent* event)
 
   /* Print the enhancer, if it exists */
   if(enhancer_set)
-  {
-    if(enhancer.size() == 1)
-    {
-      painter.drawPixmap(0,0,enhancer[0]->getCurrentAndShift());
-    }
-    else
-    {
-      if(enhancer[0] != NULL)
-        painter.drawPixmap(0,0,enhancer[0]->getCurrentAndShift());
-      if(enhancer[1] != NULL)
-        painter.drawPixmap(32,0,enhancer[1]->getCurrentAndShift());
-      if(enhancer[2] != NULL)
-        painter.drawPixmap(0,32,enhancer[2]->getCurrentAndShift());
-      if(enhancer[3] != NULL)
-        painter.drawPixmap(32,32,enhancer[3]->getCurrentAndShift());
-    }
-  }
+      painter.drawPixmap(0,0,enhancer->getCurrentAndShift());
 
   /* Print the lower sprite, if it exists */
   if(lower_set)
@@ -122,7 +106,6 @@ void Tile::paintEvent(QPaintEvent* event)
     painter.setPen(QColor(Qt::red));
     painter.drawRect(1,1,width()-2,height()-2);
   }
-
 }
 
 /*
@@ -146,6 +129,28 @@ void Tile::leaveEvent(QEvent *)
 {
     hover = false;
     update();
+}
+/*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+
+/* 
+ * Description: Returns the angle that connects the RotatedAngle enumerator
+ *              to the associated degrees to allow the rotation to occur
+ * 
+ * Inputs: RotatedAngle angle - the angle to determine the degree association
+ * Output: int - the degree integer count
+ */
+int Tile::getAngle(RotatedAngle angle)
+{
+  if(angle == CLOCKWISE)
+    return 90;
+  else if(angle == COUNTERCLOCKWISE)
+    return -90;
+  else if(angle == FLIP)
+    return 180;
+
+  return 0;
 }
 
 /*============================================================================
@@ -180,18 +185,16 @@ Sprite* Tile::getBase()
 }
 
 /* 
- * Description: Gets the enhancer sprite(s) and returns it(them), if set.
+ * Description: Gets the enhancer sprites and returns it, if set.
  *
  * Inputs: none
- * Output: QVector<Sprite*> - the enhancer sprite QVector pointer
+ * Output: Sprite* - the enhancer sprite pointer
  */
-QVector<Sprite*> Tile::getEnhancer()
+Sprite* Tile::getEnhancer()
 {
   if(enhancer_set)
     return enhancer;
-
-  QVector<Sprite*> temp_vector;
-  return temp_vector;
+  return NULL;
 }
 
 /* 
@@ -215,7 +218,7 @@ MapThing* Tile::getImpassableObject()
  * Inputs: none
  * Output: Sprite* - the lower sprite pointer
  */
-Sprite* Tile::getLower()
+Sprite* Tile::getLower()             
 {
   if(lower_set)
     return lower;
@@ -364,13 +367,14 @@ bool Tile::isUpperSet()
  *              image file.
  *
  * Inputs: QString path - the path to the image to load in
+ *         RotateAngle angle - the angle classification to rotate the tile
  * Output: bool - returns true if the base sprite was set
  */
-bool Tile::setBase(QString path)
+bool Tile::setBase(QString path, RotatedAngle angle)
 {
   /* Deletes the old base and sets the new base */
   unsetBase();
-  base = new Sprite(path);
+  base = new Sprite(path, getAngle(angle));
 
   /* Determine if the base was set successfully */
   if(base->getSize() == 0)
@@ -393,116 +397,25 @@ bool Tile::setBase(QString path)
  *          fails to set the enhancer with the new sprites. 
  *
  * Inputs: QString path - the path to the image to load in
+ *         RotateAngle angle - the angle classification to rotate the tile 
  * Output: bool - returns true if the enhancer was set successfully.
  */
-bool Tile::setEnhancer(QString path)
+bool Tile::setEnhancer(QString path, RotatedAngle angle)
 {
+  /* Deletes the old enhancer and sets the new enhancer */
   unsetEnhancer();
-  Sprite* new_enhancer = new Sprite(path);
+  enhancer = new Sprite(path, getAngle(angle));
 
-  if(new_enhancer->getSize() != 0)
+  /* Determine if the enhancer was set successfully */
+  if(enhancer->getSize() == 0)
   {
-    /* If the image size is half of the tile or less, call the function
-     * that puts 4 in one instead of a just single one. Allows for 4 32x32
-     * identical tiles to be assembled by just sending one path */
-    if(new_enhancer->getCurrent().width() <= this->width() / 2)
-      setEnhancer(path, path, path, path);
-    else
-      enhancer.append(new_enhancer);
-
-    enhancer_set = true;
+    delete enhancer;
+    enhancer_set = false;
   }
   else
   {
-    delete new_enhancer;
-    enhancer_set = false;
+    enhancer_set = true;  
   }
-
-  return enhancer_set;
-}
-
-/*
- * Description: Sets the enhancer tile using a path to 4 sprites that cover
- *              the 4 corners of the standard tile size. The corners are: 
- *              NW NE
- *              SW SE
- *              Set the path to "" if you don't want to use that corner of
- *              the Enhancer set in the Tile.
- * Warning: This will unset the enhancer no matter what, even if the call
- *          fails to set the enhancer with the new sprites.
- *
- * Inputs: QString nw_path - the NW corner path for the sprite
- *         QString ne_path - the NE corner path for the sprite
- *         QString sw_path - the SW corner path for the sprite
- *         QString se_path - the SE corner path for the sprite
- *         bool reset - if set to true it unsets the enhancer and reloads it
- * Output: bool - returns true if the enhancer was successfuly set.
- */
-bool Tile::setEnhancer(QString nw_path, QString ne_path, 
-                       QString sw_path, QString se_path)
-{
-  if(enhancer.empty() || enhancer.size() <= 1)
-  {
-    unsetEnhancer();
-    for(int i = 0; i < kENHANCER_TOTAL; i++)
-      enhancer.append(NULL);
-  }
-
-  enhancer_set = true;
-  Sprite test_sprite;
-
-  /* Sets the new enhancer tile with 4 1/4 portions of a tile */
-  if(!nw_path.isEmpty())
-  {
-    if(enhancer[kNW_ENHANCER] != NULL)
-      delete enhancer[kNW_ENHANCER];
-    enhancer[kNW_ENHANCER] = NULL;
-
-    if(test_sprite.insertTail(nw_path))
-      enhancer[kNW_ENHANCER] = new Sprite(nw_path);
-    else
-      enhancer_set = false;
-  }
-
-  if(!ne_path.isEmpty() && enhancer_set)
-  {
-    if(enhancer[kNE_ENHANCER] != NULL)
-      delete enhancer[kNE_ENHANCER];
-    enhancer[kNE_ENHANCER] = NULL;
-
-    if(test_sprite.insertTail(ne_path))
-      enhancer[kNE_ENHANCER] = new Sprite(ne_path);
-    else
-      enhancer_set = false;
-  }
-
-  if(!sw_path.isEmpty() && enhancer_set)
-  {
-    if(enhancer[kSW_ENHANCER] != NULL)
-      delete enhancer[kSW_ENHANCER];
-    enhancer[kSW_ENHANCER] = NULL;
-
-    if(test_sprite.insertTail(sw_path))
-      enhancer[kSW_ENHANCER] = new Sprite(sw_path);
-    else
-      enhancer_set = false;
-  }
-
-  if(!se_path.isEmpty() && enhancer_set)
-  {
-    if(enhancer[kSE_ENHANCER] != NULL)
-      delete enhancer[kSE_ENHANCER];
-    enhancer[kSE_ENHANCER] = NULL;
-
-    if(test_sprite.insertTail(se_path))
-      enhancer[kSE_ENHANCER] = new Sprite(se_path);
-    else
-      enhancer_set = false;
-  }
-
-  /* Unset if it failed during the process */
-  if(!enhancer_set)
-    unsetEnhancer();
 
   return enhancer_set;
 }
@@ -528,13 +441,14 @@ bool Tile::setImpassableObject(QString path, ImpassableObjectState type)
  *              image file.
  *
  * Inputs: QString path - the path to the image to load in
+ *         RotateAngle angle - the angle classification to rotate the tile 
  * Output: bool - returns true if the lower sprite was successfuly set
  */
-bool Tile::setLower(QString path)
+bool Tile::setLower(QString path, RotatedAngle angle)
 {
   /* Unset the sprite if it exists and try and set the new one */
   unsetLower();
-  lower = new Sprite(path);
+  lower = new Sprite(path, getAngle(angle));
 
   /* Determine if the lower was set successfully */
   if(lower->getSize() == 0)
@@ -645,13 +559,14 @@ void Tile::setPassibilityWest(bool is_passable)
  *              image file.
  *
  * Inputs: QString path - the path to the image to load in
+ *         RotateAngle angle - the angle classification to rotate the tile 
  * Output: bool - returns true if the upper sprite was set before
  */
-bool Tile::setUpper(QString path)
+bool Tile::setUpper(QString path, RotatedAngle angle)
 {
   /* Unset the sprite if it exists and try and set the new one */
   unsetUpper();
-  upper = new Sprite(path);
+  upper = new Sprite(path, getAngle(angle));
 
   /* Determine if the upper was set successfully */
   if(upper->getSize() == 0)
@@ -661,7 +576,7 @@ bool Tile::setUpper(QString path)
   }
   else
   {
-    upper_set = true;  
+    upper_set = true;
   }
 
   return upper_set;
@@ -687,9 +602,9 @@ bool Tile::unsetBase()
 }
 
 /* 
- * Description: Unsets the enhancer in the tile. Deletes the pointer(s), 
- *              clears out the QVector if applicable, and sets the internal
- *              variable to notify the class so the enhancer isn't repainted.
+ * Description: Unsets the enhancer in the tile. Deletes the pointer, 
+ *              and sets the internal variable to notify the class so the 
+ *              enhancer isn't repainted.
  *
  * Inputs: none
  * Output: bool - returns true if the enhancer was set before being unset
@@ -698,12 +613,7 @@ bool Tile::unsetEnhancer()
 {
   if(enhancer_set)
   {
-    for(int i = 0; i < enhancer.size(); i++)
-      delete enhancer[i];
-
-    while(enhancer.size() > 0)
-      enhancer.remove(0);
-    
+    delete enhancer;
     enhancer_set = false;
     return true;
   }
