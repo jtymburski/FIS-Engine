@@ -334,6 +334,9 @@ void Battle::keyPressEvent(QKeyEvent* event)
     case Qt::Key_4:
       battle_bg->load(":/bbd_sewers4");
       break;
+    case Qt::Key_5:
+      battle_bg->load(":/bbd_sewers5");
+      break;
     case Qt::Key_F1:
       friends->getMember(0)->tempStats()->changeStat("VITA", -50);
       friends->getMember(0)->tempStats()->changeStat("QTDR", -15);

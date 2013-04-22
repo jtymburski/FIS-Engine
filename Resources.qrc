@@ -110,5 +110,6 @@
         <file alias="bbd_sewers3">pictures/Battle Backdrops/battlebg/battlebg3.png</file>
         <file alias="bbd_sewers4">pictures/Battle Backdrops/battlebg/battlebg4.png</file>
         <file alias="title_Screen">pictures/univursatitle.png</file>
+        <file alias="bbd_sewers5">pictures/Battle Backdrops/battlebg/battlebg5.png</file>
     </qresource>
 </RCC>
