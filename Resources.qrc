@@ -61,7 +61,6 @@
         <file alias="A_bsian">sprites/Battle/Backs/bsian.png</file>
         <file alias="A_aurumba">sprites/Battle/Backs/aurumba.png</file>
         <file alias="A_berfriegg">sprites/Battle/Backs/berfriegg.png</file>
-        <file alias="bbd_sewer">pictures/Battle Backdrops/sewers.jpg</file>
         <file alias="E_draganaraven">sprites/Battle/Battle_Persons/draganaraven.png</file>
         <file alias="E_draganaraven_M">sprites/Battle/Battle_Persons/draganaraven_modulated.png</file>
         <file alias="E_ember">sprites/Battle/Battle_Persons/ember.png</file>
