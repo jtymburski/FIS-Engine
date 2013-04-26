@@ -52,6 +52,18 @@ private:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Gets the current frame */
+  QPixmap getCurrent();
+
+  /* Gets the current frame and then shifts to the next one */
+  QPixmap getCurrentAndShift();
+
+  /* Returns the position that the linked list pointer is at */
+  int getPosition();
+
+  /* Returns the size of the sequence */
+  int getSize();
+
   /* Inserts the image into the sprite sequence at the given position */
   bool insert(QString image_path, int position, int rotate_angle = 0);
 
@@ -84,26 +96,8 @@ public:
   /* Removes the last frame in the sequence */
   bool removeTail();
 
-  /* Shifts to the given position in the sequence */
-  bool shift(int position);
-
-  /* Shifts to the next frame in the sprite */
-  bool shiftNext();
-
-  /* Switches the direction that the linked list is parsed in */
-  bool switchDirection();
-
-  /* Gets the current frame */
-  QPixmap getCurrent();
-
-  /* Gets the current frame and then shifts to the next one */
-  QPixmap getCurrentAndShift();
-
-  /* Returns the position that the linked list pointer is at */
-  int getPosition();
-
-  /* Returns the size of the sequence */
-  int getSize();
+  /* Rotates all the frames within this sprite a specific angle */
+  bool rotateAll(int angle);
 
   /* Asserts the direction is forward for when accessing the linked list */
   bool setDirectionForward();
@@ -113,6 +107,15 @@ public:
 
   /* Asserts that the current pointer in the linked list is at the head */
   bool setAtFirst();
+
+  /* Shifts to the given position in the sequence */
+  bool shift(int position);
+
+  /* Shifts to the next frame in the sprite */
+  bool shiftNext();
+
+  /* Switches the direction that the linked list is parsed in */
+  bool switchDirection();
 };
 
 #endif // SPRITE_H

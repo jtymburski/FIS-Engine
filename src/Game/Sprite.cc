@@ -73,6 +73,67 @@ Sprite::~Sprite()
  *===========================================================================*/
 
 /* 
+ * Description: Gets the current frame 
+ *
+ * Inputs: none
+ * Output: QPixmap - the current image in the list
+ */
+QPixmap Sprite::getCurrent()
+{
+  if(size > 0)
+    return current->getImage();
+  return NULL;
+}
+
+/* 
+ * Description: Gets the current frame and then shifts to the next one 
+ *
+ * Inputs: none
+ * Output: QPixmap - the current image in the list 
+ */
+QPixmap Sprite::getCurrentAndShift()
+{
+  if(size > 0)
+  {
+    QPixmap image = current->getImage();
+    shiftNext();
+    return image;
+  }
+  return NULL;
+}
+
+/* 
+ * Description: Returns the position that the linked list is currently at
+ *
+ * Inputs: none
+ * Output: int - the position in the linked list from the head
+ */
+int Sprite::getPosition()
+{
+  int location = 0;
+  Frame* shifted = head;
+
+  while(shifted != current)
+  {
+    shifted = shifted->getNext();
+    location++;
+  }
+    
+  return location;
+}
+
+/* 
+ * Description: Returns the size of the sequence 
+ *
+ * Inputs: none
+ * Output: int - the size of the sprite list
+ */
+int Sprite::getSize()
+{
+  return size;
+}
+
+/* 
  * Description: Inserts the image into the sprite sequence at the given 
  *              position.
  *
@@ -303,6 +364,71 @@ bool Sprite::removeTail()
   return remove(size-1);
 }
 
+/*
+ * Description: Rotates all the frames within the sprite to the given angle.
+ *              Returns false if it fails or there are no frames.
+ *
+ * Inputs: int angle - the angle to rotate the frames to
+ * Output: bool - the status of the rotation
+ */
+bool Sprite::rotateAll(int angle)
+{
+  Frame* temp_frame = head;
+
+  /* Only proceed if there are frames to rotate */
+  if(size > 0)
+  {
+    for(int i = 0; i < size; i++)
+    {
+      temp_frame->rotateImage(angle);
+      temp_frame = temp_frame->getNext();
+    }
+  }
+
+  return false;
+}
+
+/* 
+ * Description: Sets the direction that the linked list is navigated to
+ *              FORWARD. In other words, accessing the *next pointer when
+ *              parsing it.
+ *
+ * Inputs: none
+ * Output: bool - status if direction set was successful
+ */
+bool Sprite::setDirectionForward()
+{
+  direction = FORWARD;
+  return true;
+}
+
+/* 
+ * Description: Sets the direction that the linked list is navigated to
+ *              REVERSE. In other words, accessing the *previous pointer when
+ *              parsing it.
+ *
+ * Inputs: none
+ * Output: bool - status if direction set was successful
+ */
+bool Sprite::setDirectionReverse()
+{
+  direction = REVERSE;
+  return true;
+}
+
+/* 
+ * Description: Set the linked list current pointer to the head of the list 
+ *
+ * Inputs: none
+ * Output: bool - status if resetting the linked list to the first element
+ *                was successful.
+ */
+bool Sprite::setAtFirst()
+{
+  current = head;
+  return true;
+}
+
 /* 
  * Description: Shifts to the given position in the sequence 
  *
@@ -358,106 +484,4 @@ bool Sprite::switchDirection()
   if(direction == FORWARD)
     return setDirectionReverse();
   return setDirectionForward();
-}
-
-/* 
- * Description: Gets the current frame 
- *
- * Inputs: none
- * Output: QPixmap - the current image in the list
- */
-QPixmap Sprite::getCurrent()
-{
-  if(size > 0)
-    return current->getImage();
-  return NULL;
-}
-
-/* 
- * Description: Gets the current frame and then shifts to the next one 
- *
- * Inputs: none
- * Output: QPixmap - the current image in the list 
- */
-QPixmap Sprite::getCurrentAndShift()
-{
-  if(size > 0)
-  {
-    QPixmap image = current->getImage();
-    shiftNext();
-    return image;
-  }
-  return NULL;
-}
-
-/* 
- * Description: Returns the position that the linked list is currently at
- *
- * Inputs: none
- * Output: int - the position in the linked list from the head
- */
-int Sprite::getPosition()
-{
-  int location = 0;
-  Frame* shifted = head;
-
-  while(shifted != current)
-  {
-    shifted = shifted->getNext();
-    location++;
-  }
-    
-  return location;
-}
-
-/* 
- * Description: Returns the size of the sequence 
- *
- * Inputs: none
- * Output: int - the size of the sprite list
- */
-int Sprite::getSize()
-{
-  return size;
-}
-
-/* 
- * Description: Sets the direction that the linked list is navigated to
- *              FORWARD. In other words, accessing the *next pointer when
- *              parsing it.
- *
- * Inputs: none
- * Output: bool - status if direction set was successful
- */
-bool Sprite::setDirectionForward()
-{
-  direction = FORWARD;
-  return true;
-}
-
-/* 
- * Description: Sets the direction that the linked list is navigated to
- *              REVERSE. In other words, accessing the *previous pointer when
- *              parsing it.
- *
- * Inputs: none
- * Output: bool - status if direction set was successful
- */
-bool Sprite::setDirectionReverse()
-{
-  direction = REVERSE;
-  return true;
-}
-
-/* 
- * Description: Set the linked list current pointer to the head of the list 
- *
- * Inputs: none
- * Output: bool - status if resetting the linked list to the first element
- *                was successful.
- */
-bool Sprite::setAtFirst()
-{
-  current = head;
-  return true;
 }

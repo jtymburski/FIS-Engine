@@ -45,6 +45,7 @@ SOURCES += \
     ./src/Game/Map/MapMenu.cc \
     ./src/Game/Map/MapNPC.cc \
     ./src/Game/Map/MapPerson.cc \
+    ./src/Game/Map/MapViewport.cc \
     ./src/Game/Map/MapStatusBar.cc \
     ./src/Game/Map/MapThing.cc \
     ./src/Game/Map/MapWalkOver.cc \
@@ -97,6 +98,7 @@ HEADERS += \
     ./include/Game/Map/MapMenu.h \
     ./include/Game/Map/MapNPC.h \
     ./include/Game/Map/MapPerson.h \
+    ./include/Game/Map/MapViewport.h \
     ./include/Game/Map/MapStatusBar.h \
     ./include/Game/Map/MapThing.h \
     ./include/Game/Map/MapWalkOver.h \

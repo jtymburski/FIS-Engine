@@ -52,7 +52,8 @@ Tile::Tile(int width, int height, int x, int y, QWidget* parent)
   connect(tileselector->getLower(),SIGNAL(textChanged(QString)),this,SLOT(setLower(QString)));
   connect(tileselector->getUpper(),SIGNAL(textChanged(QString)),this,SLOT(setUpper(QString)));
   setGeometry(x, y, width, height);
-  show();
+
+  //show();
 }
 
 /* 
@@ -81,7 +82,7 @@ Tile::~Tile()
  */
 void Tile::paintEvent(QPaintEvent* event)
 {
-  (void)event;//warning
+  (void)event;// TODO: removing causes warning
   QPainter painter(this);
 
   /* Print the base, if it exists */

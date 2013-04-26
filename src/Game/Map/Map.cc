@@ -13,18 +13,16 @@
 const int Map::kFILE_COLUMN = 3;
 const int Map::kFILE_DATA = 4;
 const int Map::kFILE_ROW = 2;
-const int Map::kSTARTX = 7;
-const int Map::kSTARTY = 0;
-const bool Map::kTURN_ON_PLATFORM = true;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
 
 /* Constructor function */
-Map::Map(QWidget* parent) : QWidget(parent)
+Map::Map(QWidget* parent): QWidget(parent)
 {
-  qDebug() << "Success: " << loadMap("maps/test_02");
+  qDebug() << "Success: " << loadMap("maps/test_03");
+  setMinimumSize(geography[0].size()*64, geography.size()*64);
 }
 
 /* Destructor function */
@@ -48,22 +46,7 @@ Map::~Map()
 /* Painting function */
 void Map::paintEvent(QPaintEvent* event)
 {
-    (void)event;//warning
-}
-
-void Map::keyPressEvent(QKeyEvent* event)
-{
-  if(event->key() == Qt::Key_Escape)
-    closeMap();
-}
-
-/*============================================================================
- * SLOTS
- *===========================================================================*/
-
-void Map::closeMap()
-{
-  emit closingMap(2);
+  (void)event;
 }
 
 /*============================================================================
@@ -73,35 +56,35 @@ void Map::closeMap()
 /* Gets a pointer to the NPC in the given position in the NPC vector */
 Person* Map::getNPC(int index)
 {
-    (void)index;//warning
-    return NULL;//warning
-    //return ai.at(index);
+  (void)index;//warning
+  return NULL;//warning
+  //return ai.at(index);
 }
 
 /* Gets x position of NPC in the given position in the NPC vector */
 int Map::getNPCx(int index)
 {
-    (void)index;//warning
-    return 0;
+  (void)index;//warning
+  return 0;
 }
 
 /* Gets y position of NPC in the given position in the NPC vector */
 int Map::getNPCy(int index)
 {
-    (void)index;//warning
-    return 0;
+  (void)index;//warning
+  return 0;
 }
 
  /* Gets players x position */
 int Map::getPlayerX()
 {
-    return playerx;
+  return playerx;
 }
 
 /* Gets players y position */
 int Map::getPlayerY()
 {
-    return playery;
+  return playery;
 }
 
 /* Causes the thing you are facing and next to start its interactive action */
@@ -113,8 +96,8 @@ void Map::interact(Direction dir)
 /* Checks whether the viewport contains any tiles with the given sector */
 bool Map::isInSector(int index)
 {
-    (void)index;//warning
-    return true;
+  (void)index;//warning
+  return true;
 }
 
 bool Map::loadMap(QString file)
@@ -203,19 +186,19 @@ bool Map::loadMap(QString file)
 /* Shifts the viewport */
 void Map::move(Direction dir, int step_length, Sprite dir_sprite)
 {
-    (void)dir;//warning
-    (void)step_length;//warning
-    (void)dir_sprite;//warning
+  (void)dir;//warning
+  (void)step_length;//warning
+  (void)dir_sprite;//warning
 }
 
 /* Checks the tile you are attempting to enter for passibility of the given
  * direction */
 bool Map::passible(Direction dir, int x, int y)
 {
-    (void)dir;//warning
-    (void)x;//warning
-    (void)y;//warning
-    return true;
+  (void)dir;//warning
+  (void)x;//warning
+  (void)y;//warning
+  return true;
 }
 
 /* Causes the thing you are moving into to start its interactive action */
@@ -231,21 +214,21 @@ void Map::updateNPC()
 /* Changes the players sprite (Facing direction) */
 void Map::updatePlayer(Sprite sprite)
 {
-    (void)sprite;//warning
+  (void)sprite;//warning
 }
 
 /* Returns a vector of the indexes of the NPC's who are in the viewport */
 QVector<int> Map::visibleNPCs()
 {
-    QVector<int> joe;//warning
-    return joe;//warning
-    //return NULL;
+  QVector<int> joe;//warning
+  return joe;//warning
+  //return NULL;
 }
 
 /* Checks if the NPC at the given index in the NPC vector is in the current 
  * viewport */
 bool Map::zNPCInViewport(int index)
 {
-    (void)index;//warning
-    return true;
+  (void)index;//warning
+  return true;
 }

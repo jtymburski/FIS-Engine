@@ -64,29 +64,12 @@ private:
   const static int kFILE_COLUMN; /* The depth in XML of the column tag */
   const static int kFILE_DATA;   /* The depth in XML of the data information */
   const static int kFILE_ROW;    /* The depth in XML of the row tag */
-  /* DELETE: temporary */
-  const static int kSTARTX;
-  const static int kSTARTY;
-  const static bool kTURN_ON_PLATFORM;
 
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
 protected:
   void paintEvent(QPaintEvent*);
-  void keyPressEvent(QKeyEvent*);
-
-/*============================================================================
- * SLOTS
- *===========================================================================*/
-public slots:
-  void closeMap();
-
-/*============================================================================
- * SIGNALS
- *===========================================================================*/
-signals:
-  void closingMap(int index);
 
 /*============================================================================
  * PUBLIC FUNCTIONS
