@@ -68,9 +68,9 @@ QString Item::getName()
  * Inputs: none
  * Output: QImage - image thumbnail of the item
  */
-QImage Item::getThumbnail()
+Sprite* Item::getThumb()
 {
-    return thumbnail;
+  return thumb;
 }
 
 /*
@@ -104,6 +104,17 @@ double Item::getWeight()
 bool Item::getItemFlag(ItemState flag)
 {
   return (iflag_set.testFlag(flag));
+}
+
+/*
+ * Description: Sets the sprite of an item
+ *
+ * Inputs: Sprite* - pointer to a sprite object
+ * Output: none
+ */
+void Item::setThumb(Sprite* new_thumb)
+{
+  thumb = new_thumb;
 }
 
 /*

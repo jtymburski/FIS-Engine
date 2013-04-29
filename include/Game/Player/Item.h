@@ -12,6 +12,8 @@
 #include <QImage>
 #include <QString>
 
+#include "Game/Sprite.h"
+
 class Item
 {
 public:
@@ -50,8 +52,8 @@ private:
   /* Name of unit*/
   QString name;
 
-  /* Thumbnail of unit*/
-  QImage thumbnail;
+  /* Thumb sprite of the item */
+  Sprite* thumb;
 
   /* Number of turns the item will last in battle */
   uint duration;
@@ -71,7 +73,7 @@ public:
   QString getName();
 
   /* Gets thumbnail of unit */
-  QImage getThumbnail();
+  Sprite* getThumb();
 
   /* Gets the value of an ItemFlag */
   bool getItemFlag(ItemState flag);
@@ -84,6 +86,9 @@ public:
 
   /* Sets unit count */
   void setDuration(uint value);
+
+  /* Sets the sprite icon of an item */
+  void setThumb(Sprite* new_icon);
 
   /* Sets an ItemFlag */
   void setItemFlag(ItemState flag, bool set_value);

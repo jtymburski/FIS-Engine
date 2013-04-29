@@ -345,7 +345,7 @@ SkillSet* Person::getUseableSkills()
       if (!temp_skills.at(i)->getFlag(Skill::PHYSICAL))
         temp_skills.remove(i);
 
-  SkillSet* temp_skill_set;
+  SkillSet* temp_skill_set = NULL;
 
   for (int i = 0; i < temp_skills.size(); i++)
     temp_skill_set->addSkill(temp_skills.at(i));

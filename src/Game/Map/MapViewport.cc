@@ -38,13 +38,13 @@ void MapViewport::keyPressEvent(QKeyEvent* event)
   if(event->key() == Qt::Key_Escape)
     closeMap();
   else if(event->key() == Qt::Key_Down)
-    verticalScrollBar()->setValue(verticalScrollBar()->value() + 40);
+    verticalScrollBar()->setValue(verticalScrollBar()->value() + 8);
   else if(event->key() == Qt::Key_Up)
-    verticalScrollBar()->setValue(verticalScrollBar()->value() - 40);
+    verticalScrollBar()->setValue(verticalScrollBar()->value() - 8);
   else if(event->key() == Qt::Key_Right)
-    horizontalScrollBar()->setValue(horizontalScrollBar()->value() + 40);
+    horizontalScrollBar()->setValue(horizontalScrollBar()->value() + 8);
   else if(event->key() == Qt::Key_Left)
-    horizontalScrollBar()->setValue(horizontalScrollBar()->value() - 40);
+    horizontalScrollBar()->setValue(horizontalScrollBar()->value() - 8);
 }
 
 //void MapViewport::wheelEvent(QWheelEvent* event)

@@ -15,15 +15,14 @@
 
 #include "Game/Player/Action.h"
 #include "Game/Player/Bubby.h"
-//#include "Game/Player/Item.h"
 
 class Equipment : public Item
 {
 public:
-  /* Constructor function*/
+  /* Constructor function */
   Equipment();
 
-  /* Destructor function*/
+  /* Destructor function */
   ~Equipment();
 
   /* Enumerated flags for Equipment */
@@ -81,13 +80,19 @@ public:
 
   /* Returns a vector of all Bubbies attached to the equipment */
   QVector<Bubby*> getAttachedBubbies();
+  QVector<BubbyFlavour*> getAttachedFlavours();
 
-  /* Gets the Leftmost X and Leftmost Y coordinates of a Bubby (+given an ID) */
-  int getLeftX(uint x, uint y, bool passingID = true);
-  int getLeftY(uint x, uint y, bool passingID = true);
+  /* Gets the Leftmost X and Leftmost Y coordinates of a Bubby */
+  int getLeftX(int id);
+  int getLeftX(uint x, uint y);
+  int getTopY(int id);
+  int getTopY(uint x, uint y);
 
   /* Gets the boolean value of flag */
   bool getEquipmentFlag(EquipmentState flags);
+
+  /* Obtains the largest tier of a given flavour */
+  int getLargestTier(BubbyFlavour* flavour);
 
   /* Calculates and returns the skills the equipment provides */
   SkillSet* getSkills(ushort level);
