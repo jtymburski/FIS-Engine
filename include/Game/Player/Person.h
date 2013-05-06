@@ -33,26 +33,33 @@ public:
   /* Enumerated flags for states of a person */
   enum PersonState
   {
-    ALIVE         = 1 << 0, /* Is the person alive? */
-    INBATTLE      = 1 << 1, /* Is the person in a battle? */
-    SLEUTH        = 1 << 2, /* Person is currently in your sleuth */
-    BEARACKS      = 1 << 3, /* Person is currently in your RESERVE */
-    RENDERING     = 1 << 4, /* Person is rendering on the map */
-    MAINCHARACTER = 1 << 5, /* Is this person the main character? */
-    FINALBOSS     = 1 << 6, /* Is this the final boss? */
-    BOSS          = 1 << 7, /* Is this person a Boss character? */
-    MINIBOSS      = 1 << 8,  /* Is this person a miniboss? */
-    MAXLVL        = 1 << 9,  /* Is this person the max level? */
-    CANATTACK     = 1 << 10, /* Can the person use physical attacks> */
-    CANUSESKILLS  = 1 << 11, /* Can the person currently use non-phys skills? */
-    CANUSEITEM    = 1 << 12, /* Can the person currently use items? */
-    CANRUN        = 1 << 13 /* Can the person run? */
+    ALIVE          = 1 << 0, /* Is the person alive? */
+    INBATTLE       = 1 << 1, /* Is the person in a battle? */
+    SLEUTH         = 1 << 2, /* Person is currently in your sleuth */
+    BEARACKS       = 1 << 3, /* Person is currently in your RESERVE */
+    RENDERING      = 1 << 4, /* Person is rendering on the map */
+    MAINCHARACTER  = 1 << 5, /* Is this person the main character? */
+    FINALBOSS      = 1 << 6, /* Is this the final boss? */
+    BOSS           = 1 << 7, /* Is this person a Boss character? */
+    MINIBOSS       = 1 << 8,  /* Is this person a miniboss? */
+    MAXLVL         = 1 << 9,  /* Is this person the max level? */
+    CANATTACK      = 1 << 10, /* Can the person use physical attacks> */
+    CANUSESKILLS   = 1 << 11, /* Can the person currently use non-phys skills? */
+    CANUSEITEM     = 1 << 12, /* Can the person currently use items? */
+    CANRUN         = 1 << 13, /* Can the person run? */
+    SKIPNEXTTURN   = 1 << 14, /* Will the person skip their next turn? */
+    MISSNEXTTARGET = 1 << 15, /* Will the person miss their next target? */
+    NOEFFECT       = 1 << 16, /* Does the person's next attack have no effect? */
+    ISBUBBY        = 1 << 17 /* Is the person currently a bubby? */
   };
   Q_DECLARE_FLAGS(PersonFlags, PersonState)
 
 private:
   /* Equipment names and slots */
   QVector<Equipment> equipment;
+
+  /* Modifier by which to change a Person's actual damage */
+  double damage_modifier;
 
   /* Person's level and experience */
   uint level;
@@ -96,6 +103,7 @@ private:
   /* Sprites for the person, first person and third person versions */
   Sprite* first_person;
   Sprite* third_person;
+  Sprite* bubbified_sprite;
 
   /*------------------- Constants -----------------------*/
   static const uint kMAX_LEVEL;
@@ -105,6 +113,7 @@ private:
   static const uint kMAX_EXP_DROP;    /* Million */
   static const uint kMAX_CREDIT_DROP; /* Ten Million */
   static const uint kMAX_EQUIP_SLOTS;
+  static const double kMAX_DAMAGE_MODIFIER;
 
 /*============================================================================
  * PRIVATE STATIC FUNCTIONS
@@ -139,8 +148,14 @@ public:
   bool getPersonFlag(PersonState flags);
   void setPersonFlag(PersonState flags, bool set_value = true);
 
+  /* Obtains the bubbified sprite of the person */
+  Sprite* getBubbySprite();
+
   /* Gets the person's category */
   Category* getCategory();
+
+  /* Obtain the curent Damage Modifier */
+  double getDmgMod();
 
   /* Methods for returning equipments */
   QVector<Equipment> getEquipment();
@@ -189,8 +204,14 @@ public:
   /* Sets an equipment to a slot */
   bool setEquipment(QString slot, Equipment e);
 
+  /* Sets the sprite of the Bubby */
+  void setBubbySprite(Sprite* new_sprite);
+
   /* Sets the person's category */
   void setCategory(Category* c);
+
+  /* Set's the person's damage modifier */
+  void setDmgMod(double value);
 
   /* Set's the person's experience */
   void setExp(uint value);

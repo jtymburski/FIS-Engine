@@ -33,6 +33,7 @@ private:
   /* Vectors holding the skills and the level they're available */
   QVector<Skill*> skills;
   QVector<ushort> skills_available;
+  QVector<bool> enabled;
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
@@ -57,6 +58,10 @@ public:
   QVector<ushort> getSkillLevels();
   Skill* getSkill(int index);
   ushort getSkillLevel(int index);
+
+  /* Methods to enable/disable skills */
+  void setSkillState(int index, bool state = true);
+  bool setSkillState(QString name, bool state = true);
 };
 
 

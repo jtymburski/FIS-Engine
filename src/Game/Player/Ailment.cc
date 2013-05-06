@@ -123,6 +123,8 @@ Ailment::Ailment(Person* victim, QString name, short max_turns,
     setDuration(kMIN_TURNS, chance);
   else
     setDuration(max_turns, chance);
+
+  emit inflicting(victim->getName(), this->getType());
 }
 
 /*
@@ -137,16 +139,34 @@ Ailment::Ailment(Person* victim, QWidget* parent) : QWidget(parent)
   setType(NOAILMENT);
   setFlag(Ailment::TOBEUPDATED, false);
   setDuration(-1,-1);
+
+  emit inflicting(victim->getName(), this->getType());
 }
 
 /*
  * Description: Annihilates a Status Ailment object
  */
-Ailment::~Ailment() {}
+Ailment::~Ailment()
+{
+  emit curing(victim->getName(), this->getType());
+}
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
+
+/*
+ * Description: Returns a random integer up to max
+ *
+ * Inputs: int - maximum integer value needed in randomization
+ * Output: int - randomized integer
+ */
+int Ailment::getRandomNumber(int max)
+{
+  QTime midnight(0, 0, 0);
+  qsrand(midnight.secsTo(QTime::currentTime()));
+  return qrand() % max;
+}
 
 /*
  * Description: Applies the effect of the status ailment to the Person (victim)
@@ -155,11 +175,12 @@ Ailment::~Ailment() {}
  * Inputs: none
  * Output: bool - true if the ailment is to be cured
  */
-bool Ailment::apply()
+void Ailment::apply()
 {
   /* Helper variables */
   const ushort kHEALTH = victim->tempStats()->getStat(0);
   AttributeSet* stats = victim->tempStats();
+  SkillSet* skills = victim->getSkills();
   ushort damage = 0;
 
   /* Poison: Ailed actor takes increasing hit to HP every turn
@@ -178,6 +199,9 @@ bool Ailment::apply()
           damage *= kPOISON_DMG_INCR;
     if (damage > kPOISON_DMG_MAX)
       damage = kPOISON_DMG_MAX;
+
+    if (victim->damage(damage))
+        emit victimDeath(victim->getName(), POISONDMG);
   }
 
   /* Burn/Scald/Char - The three increasing levels of Burn
@@ -213,11 +237,10 @@ bool Ailment::apply()
     }
     if (damage > kBURN_DMG_MAX)
       damage = kBURN_DMG_MAX;
-  }
 
-  /* Do the damage and if the actor is dead, set the Ailment to be cured */
-  if (getFlag(Ailment::CUREONDEATH) && victim->damage(damage))
-    setFlag(Ailment::TOBECURED);
+    if (victim->damage(damage))
+      emit victimDeath(victim->getName(), BURNDMG);
+  }
 
   /* Berserk - Ailed actor physically attacks enemy target for extreme damage
    *           while receiving damage themselves.
@@ -230,52 +253,62 @@ bool Ailment::apply()
     victim->setPersonFlag(Person::CANUSESKILLS, FALSE);
     victim->setPersonFlag(Person::CANUSEITEM, FALSE);
     victim->setPersonFlag(Person::CANRUN, FALSE);
+    victim->setDmgMod(2);
 
-    /* After application, damage and effects will take place in Battle */
+    /* Hitback damage during Berserk will take place in Battle */
   }
 
   /* Confuse - ailed actor attacks a random target with a random skills */
   else if (ailment_type == CONFUSE)
   {
-    /* Find all useable skills */
-    /* Find all valid targets */
-    /* Pick a useable skill */
-    /* Pick a valid target */
+    /* Confuse effect takes place in battle--calculates useable skills,
+       useable targets and performs random permutation of each. */
   }
 
   /* Ailed actor cannot use skills if they require QD */
   else if (ailment_type == SILENCE)
   {
     /* On application, remove skills which have a QD cost > 0 from useable */
+    for (int i = 0; i < skills->getSkills().size(); i++)
+      if (skills->getSkill(i)->getQdValue() > 0)
+        skills->setSkillState(i, FALSE);
   }
 
   /* Bubbify - ailed actor is turned into a near-useless Bubby
    */
   else if (ailment_type == BUBBIFY)
   {
+    /* Decrease the stats of the person by a factor of kBUBBIFY_STAT_MULR */
+    for (int i = 0; i < stats->getSize(); i++)
+        stats->setStat(i, stats->getStat(i) * kBUBBIFY_STAT_MULR);
 
+    /* Disable skills which have a qd cost above kBUBBIFY_MAX_QD */
+    for (int i = 0; i < skills->getSkills().size(); i++)
+      if (skills->getSkill(i)->getQdValue() > kBUBBIFY_MAX_QD)
+        skills->setSkillState(i, FALSE);
   }
 
-  /* Death Timer - Ailed actor KOs upon reaching max_turns
-   */
+  /* Death Timer - Ailed actor KOs upon reaching max_turns */
   else if (ailment_type == DEATHTIMER)
   {
-    /* Update death clock */
-    /* On reaching max_turns, actor dies */
+    if (turns_occured >= max_turns_left)
+      emit victimDeath(victim->getName(), DEATHCOUNTDOWN);
   }
 
-  /* Ailed actor has a 70% chance of skipping their turn
-   */
+  /* Ailed actor has a 70% chance of skipping their turn */
   else if (ailment_type == PARALYSIS)
   {
-    /* 1-100, if >30, set skip next turn flag */
+    int random_percent = getRandomNumber(100);
+    if (random_percent > 30)
+        victim->setPersonFlag(Person::SKIPNEXTTURN, TRUE);
   }
 
-  /* Blindness - Ailed actor has a much higher chance of missing targets
-   */
+  /* Blindness - Ailed actor has a much higher chance of missing targets */
   else if (ailment_type == BLINDNESS)
   {
-
+    int random_percent = getRandomNumber(100);
+    if (random_percent <= kBLIND_PC * 100)
+        victim->setPersonFlag(Person::MISSNEXTTARGET, FALSE);
   }
 
   /* Dreadstruck - formerly "Stun": Ailed actor has an extreme chance of
@@ -283,7 +316,9 @@ bool Ailment::apply()
    */
   else if (ailment_type == DREADSTRUCK)
   {
-
+    int random_percent = getRandomNumber(100);
+    if (random_percent <= kDREADSTRUCK_PC * 100)
+        victim->setPersonFlag(Person::MISSNEXTTARGET, FALSE);
   }
 
   /* Dreamsnare - Ailed actor's actions have a 50% chance of being benign
@@ -291,8 +326,9 @@ bool Ailment::apply()
    */
   else if (ailment_type == DREAMSNARE)
   {
-    /* Ailed actor's next turn has a 50% chance to miss */
-    /* Handle illusion in Battle */
+    int random_percent = getRandomNumber(100);
+    if (random_percent <= kDREAMSNARE_PC * 100)
+      victim->setPersonFlag(Person::NOEFFECT, TRUE);
   }
 
   /* Hellbound - If this actor dies, another living actor on the same team
@@ -300,7 +336,7 @@ bool Ailment::apply()
    */
   else if (ailment_type == HELLBOUND)
   {
-
+    /* Hellbound effect handled in battle */
   }
 
   /* Bond - Two actors are afflicted simultaneously. Affected actor's stats are
@@ -309,7 +345,7 @@ bool Ailment::apply()
   */
   else if (ailment_type == BOND)
   {
-
+    //TODO: Bond combination experimentation [05-05-13]
   }
 
   /* Buffs -- Increases the user's stats by a specified amount on application
@@ -392,8 +428,10 @@ bool Ailment::apply()
   /* Half Cost - On application, the user's useable skill costs are halved */
   else if (ailment_type == HALFCOST)
   {
-    /* Find users currently useable skills */
-    /* Half their cost (temporarily) */
+    /* Handle half cost in Battle
+     * -- Find users currently useable skills
+     * -- Half their cost (temporarily)
+    */
   }
 
   /* Hibernation - Gain a % health back per turn in exchange for skipping it,
@@ -411,15 +449,32 @@ bool Ailment::apply()
 
   /* Curse - Character is inflicted with a random ailment every turn.
    *         (Curse can inflict a new Curse--in which case just the remaining
-   *         turns is reset.) Curse may also reset curse if
-   *
-   * //TODO: Unfinished [03-30-13]
+   *         turns is reset.) Curse may also reset curse.
    */
   else if (ailment_type == CURSE)
   {
-
+    //TODO: Curse effect unfinishd [05-05-13]
   }
-  return true;
+
+  /* Metabolic Tether - Metabolic tether has a kMETABOLIC_PC chance for killing
+   *   the inflicted, but also a kMETABOLIC_DMG percent that it will deal to
+   *   the target.
+   */
+  else if (ailment_type == METATETHER)
+  {
+    int random_percent = getRandomNumber(100);
+
+    /* Do kMETABOLIC_DMG % upon victim, emit signal if dead */
+    if (victim->damage(stats->getMax("VITALITY") * kMETABOLIC_DMG))
+        emit victimDeath(victim->getName(), METABOLICTETHER);
+
+    /* Check for kMETABOLIC_PC chance for instant death */
+    if (random_percent <= kMETABOLIC_PC * 100)
+        emit victimDeath(victim->getName(), METABOLICDMG);
+  }
+
+  /* Ailment update complete, emit signal */
+  emit updated();
 }
 
 /*
@@ -623,48 +678,8 @@ void Ailment::setVictim(Person* set_victim)
 }
 
 /*=============================================================================
- * SIGNALS
- *============================================================================*/
-
-/*=============================================================================
- * PUBLIC SLOTS
- *============================================================================*/
-
-/*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
-
-/*
- * Description: Public update function. This function will handle calling the
- *              apply function if the status ailment applies an effect (new or
- *              recurring) every turn, and also will handle calling the update
- *              turn function. This function will flip the TOBECURED flag if
- *               the ailment is to be removed immediately.
- *
- * Inputs: none
- * Output: none
- */
-void Ailment::update()
-{
-  /* The ailment may not be updated */
-  if (getFlag(Ailment::TOBEUPDATED))
-  {
-    /* Update the turn count and set the TOBECURED flag if neccessary */
-    bool cure_value = false;
-    if (!getFlag(Ailment::INFINITE))
-        cure_value = updateTurns();
-    setFlag(Ailment::TOBECURED, cure_value);
-
-    /* If the ailment is not to be cured, apply an effect (if there is one) */
-    if (!getFlag(Ailment::TOBECURED))
-    {
-      if (getFlag(Ailment::TOBEAPPLIED))
-        apply();
-    }
-  }
-  if (getFlag(Ailment::TOBECURED))
-      unapply();
-}
 
 /*
  * Description: Unapplies the effects of the status ailment to the victim.
@@ -677,23 +692,31 @@ void Ailment::unapply()
   /* Helper variables */
   const ushort kHEALTH = victim->tempStats()->getStat(0);
   AttributeSet* stats = victim->tempStats();
+  SkillSet* skills = victim->getSkills();
 
+  /* On removing Berserk, the person's abilities need to be re-enabled */
   if (getType() == BERSERK)
   {
-    /* Enable Run, enable non-Physical skills, items */
+    victim->setPersonFlag(Person::CANRUN, TRUE);
+    victim->setPersonFlag(Person::CANUSESKILLS, TRUE);
+    victim->setPersonFlag(Person::CANUSEITEM, TRUE);
+    victim->setDmgMod(1);
   }
-  if (getType() == SILENCE)
+
+  /* When silence is removed, skills need to be recalculated */
+  else if (getType() == SILENCE)
   {
-    /* Enable skills */
+
+    for (int i = 0; i < skills->getSkills().size(); i++)
+      skills->setSkillState(i, TRUE);
   }
-  if (getType() == BUBBIFY)
-  {
-    /* Return to normal stats */
-  }
-  if (getType() == PARALYSIS)
+
+  /* When bubbify is removed, actor needs to return to normal */
+  else if (getType() == BUBBIFY)
   {
 
   }
+
   if (getType() == BLINDNESS)
   {
 
@@ -949,4 +972,67 @@ bool Ailment::setNewVictim(Person* new_victim, bool refresh_turns)
   setVictim(new_victim);
   update();
   return true;
+}
+
+/*============================================================================
+ * PUBLIC SLOTS
+ *===========================================================================*/
+
+/*
+ * Description: Slot to catch an ailment which caused death, handles flag work
+ *              for ailment destruction.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Ailment::death()
+{
+  setFlag(Ailment::TOBEAPPLIED, false);
+  setFlag(Ailment::TOBEUPDATED, false);
+  setFlag(Ailment::TOBECURED, true);
+}
+
+/*
+ * Description: Update slot. This function will handle calling the
+ *              apply function if the status ailment applies an effect (new or
+ *              recurring) every turn, and also will handle calling the update
+ *              turn function. This function will flip the TOBECURED flag if
+ *               the ailment is to be removed immediately.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Ailment::update()
+{
+  /* The ailment may not be updated */
+  if (getFlag(Ailment::TOBEUPDATED))
+  {
+    /* Update the turn count and set the TOBECURED flag if neccessary */
+    bool cure_value = false;
+    if (!getFlag(Ailment::INFINITE))
+        cure_value = updateTurns();
+    setFlag(Ailment::TOBECURED, cure_value);
+
+    /* If the ailment is not to be cured, apply an effect (if there is one) */
+    if (!getFlag(Ailment::TOBECURED))
+    {
+      if (getFlag(Ailment::TOBEAPPLIED))
+        apply();
+    }
+  }
+  if (getFlag(Ailment::TOBECURED))
+      unapply();
+}
+
+/*
+ * Description: Catches reset by Battle, resets the turn counter on the ailment.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Ailment::reset()
+{
+  max_turns_left += turns_occured;
+  turns_occured = 0;
+  emit reset();
 }

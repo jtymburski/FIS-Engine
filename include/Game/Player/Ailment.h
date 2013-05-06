@@ -75,9 +75,6 @@ private:
   /* The victim (owner) of the ailment. */
   Person* victim;
 
-  /* Applies the effect of the ailment */
-  bool apply();
-
   /* Checks the immunity of the ailment */
   bool checkImmunity(Person* new_victim);
 
@@ -118,6 +115,12 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Applies the effect of the ailment */
+  void apply();
+
+  /* Static function to obtain random number */
+  static int getRandomNumber(int max);
+
   /* Updates the ailment by decrementing the turn counter if necessary */
   bool updateTurns();
 
@@ -127,17 +130,10 @@ private:
   /* Assigns the victim of the object */
   void setVictim(Person* set_victim);
 
-signals:
-
-public slots:
-
 /*============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
-  /* Updates the ailment (will call apply and updateTurns() */
-  void update();
-
   /* Undoes the effect (if exits) to the victim before curing */
   void unapply();
 
@@ -164,6 +160,38 @@ public:
 
   /* Public function to assign a new victom for the status ailment */
   bool setNewVictim(Person* new_victim, bool refresh_turns = false);
+
+/*============================================================================
+ * PUBLIC SLOTS
+ *============================================================================*/
+public slots:
+  /* Handles ailment flag work on actor death */
+  void death();
+
+  /* Resets the ailment to an original state */
+  void reset();
+
+  /* Updates the ailment */
+  void update();
+
+/*============================================================================
+ * SLOTS
+ *============================================================================*/
+signals:
+  /* Tells BIB and BSB an ailment of victim is being inflicted */
+  void inflicting(QString victim_name, Infliction ailment_name);
+
+  /* Tells BIB and BSB an ailment of victim is curing */
+  void curing(QString victim_name, Infliction ailment_name);
+
+  /* Tells Battle the ailment was reset */
+  void resetComplete();
+
+  /* Tells BIB and Battle that the ailment has been updated for the turn */
+  void updated();
+
+  /* Tells BIB and BSB that the victim dies because of reasons */
+  void victimDeath(QString victim_name, ActorDeath reason);
 
 /*============================================================================
  * PUBLIC STATIC FUNCTIONS

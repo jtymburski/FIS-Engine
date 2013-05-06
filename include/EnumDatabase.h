@@ -9,6 +9,11 @@
 #ifndef ENUMDATABASE_H
 #define ENUMDATABASE_H
 
+/* ActorDeath enumeration is the enumerated type for reason for an actor's death
+   in Battle */
+enum ActorDeath {STANDARDDMG, POISONDMG, BURNDMG, BERSERKHITBACK, METABOLICTETHER,
+                 METABOLICDMG, DEATHCOUNTDOWN, UNKNOWN};
+
 enum ApplicationMode {TITLESCREEN, GAME};
 
 enum Direction {NORTH,EAST,SOUTH,WEST};

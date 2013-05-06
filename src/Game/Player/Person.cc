@@ -21,6 +21,7 @@ const uint Person::kMAX_EXPERIENCE  = 1000000000; /* Billion */
 const uint Person::kMAX_EXP_DROP    =    1000000; /* Million */
 const uint Person::kMAX_CREDIT_DROP =   10000000; /* Ten Million */
 const uint Person::kMAX_EQUIP_SLOTS =          5;
+const double Person::kMAX_DAMAGE_MODIFIER = 10.0000;
 QVector<uint> Person::exp_table;
 
 /*=============================================================================
@@ -48,6 +49,7 @@ Person::Person(QString name, Race *race, Category* cat, QString p, QString s)
   setFirstPerson();
   setThirdPerson();
 
+  setDmgMod(0);
   setExp(0);
   setLevel(1);
   setName(name);
@@ -243,6 +245,16 @@ void Person::setPersonFlag(PersonState flags, bool set_value)
   (set_value) ? (state_set |= flags) : (state_set ^= flags);
 }
 
+/*
+ * Description: Returns the bubby sprite of the Person
+ *
+ * Inputs: none
+ * Output: Sprite* - pointer to the bubby sprite of the person
+ */
+Sprite* Person::getBubbySprite()
+{
+  return bubbified_sprite;
+}
 
 /*
  * Description: Returns a pointer to the category of the Person.
@@ -253,6 +265,17 @@ void Person::setPersonFlag(PersonState flags, bool set_value)
 Category* Person::getCategory()
 {
   return cat;
+}
+
+/*
+ * Description: Returns the damage modifier of the Person
+ *
+ * Inputs: none
+ * Output: double - the damage modifier of the Person
+ */
+double Person::getDmgMod()
+{
+  return damage_modifier;
 }
 
 /*
@@ -330,7 +353,7 @@ SkillSet* Person::getUseableSkills()
 
   /* Remove skills which have too high of QD cost */
   for (int i = 0; i < temp_skills.size(); i++)
-    if (temp_skills.at(i)->getQdValue() > temp_stats.getStat("QTDR"))
+    if (temp_skills.at(i)->getQdValue() > (uint)temp_stats.getStat("QTDR"))
       temp_skills.remove(i);
 
   /* Remove physical skills if physical skill flag disabled */
@@ -591,6 +614,17 @@ bool Person::setEquipment(QString slot, Equipment e)
 }
 
 /*
+ * Description: Sets the bubby version sprite of the perso
+ *
+ * Inputs: Sprite* - the sprite to be set for the bubby version of person
+ * Output: none
+ */
+void Person::setBubbySprite(Sprite* new_sprite)
+{
+  bubbified_sprite = new_sprite;
+}
+
+/*
  * Description: Assigns a new Category to the person
  *
  * Inputs: Category* - new category for the Person
@@ -599,6 +633,18 @@ bool Person::setEquipment(QString slot, Equipment e)
 void Person::setCategory(Category* c)
 {
   cat = c;
+}
+
+/*
+ * Description: Assigns a new Category to the person
+ *
+ * Inputs: Category* - new category for the Person
+ * Output: none
+ */
+void Person::setDmgMod(double value)
+{
+    (value < kMAX_DAMAGE_MODIFIER) ? (damage_modifier = value) :
+                                     (damage_modifier = kMAX_DAMAGE_MODIFIER);
 }
 
 /*

@@ -70,6 +70,7 @@ bool SkillSet::addSkill(Skill* new_skill, ushort req_level)
   {
     skills.append(new_skill);
     skills_available.append(req_level);
+    enabled.push_back(TRUE);
     cleanUp();
     return true;
   }
@@ -94,6 +95,7 @@ bool SkillSet::addSkills(QVector<Skill* > new_skills,
     {
       skills.append(new_skills.at(i));
       skills_available.append(new_levels.at(i));
+      enabled.push_back(TRUE);
     }
     cleanUp();
     return true;
@@ -263,4 +265,36 @@ Skill* SkillSet::getSkill(int index)
 ushort SkillSet::getSkillLevel(int index)
 {
   return skills_available.at(index);
+}
+
+/*
+ * Description: Sets a skill with a given index in a skill set to be enabled
+ *              or disabled.
+ *
+ * Inputs: int - index
+ * Output: ushort - level required of the skill at a given index.
+ */
+void SkillSet::setSkillState(int index, bool state)
+{
+  enabled[index] = state;
+}
+
+/*
+ * Description: Sets a skill of a given index in a skill set to be enabled
+ *              or disabled.
+ *
+ * Inputs: QString name - name of the skill to be set
+ *         bool state - state to set the skill to
+ */
+bool SkillSet::setSkillState(QString name, bool state)
+{
+  for (int i = 0; i < skills.size(); i++)
+  {
+    if (skills.at(i)->getName() == name)
+    {
+      enabled[i] = state;
+      return true;
+    }
+  }
+  return false;
 }
