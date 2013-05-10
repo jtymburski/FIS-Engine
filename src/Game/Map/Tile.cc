@@ -37,7 +37,7 @@ const int Tile::kSW_ENHANCER     = 2;
  */
 Tile::Tile(int width, int height, int x, int y, QWidget* parent)
 {
-  setParent(parent);
+  //setParent(parent);
   base_set = false;
   enhancer_set = false;
   lower_set = false;
@@ -90,23 +90,23 @@ void Tile::paintEvent(QPaintEvent* event)
     painter.drawPixmap(0, 0, base->getCurrentAndShift());
 
   /* Print the enhancer, if it exists */
-  if(enhancer_set)
-      painter.drawPixmap(0,0,enhancer->getCurrentAndShift());
+  //if(enhancer_set)
+  //    painter.drawPixmap(0,0,enhancer->getCurrentAndShift());
 
   /* Print the lower sprite, if it exists */
-  if(lower_set)
-    painter.drawPixmap(0, 0, width(), height(), lower->getCurrentAndShift());
+  //if(lower_set)
+  //  painter.drawPixmap(0, 0, width(), height(), lower->getCurrentAndShift());
 
   /* Print the upper sprite, if it exists */
-  if(upper_set)
-    painter.drawPixmap(0, 0, upper->getCurrentAndShift());
+  //if(upper_set)
+  //  painter.drawPixmap(0, 0, upper->getCurrentAndShift());
 
   /* Bounding box if the mouse is hovered over the tile */
-  if(hover)
-  {
-    painter.setPen(QColor(Qt::red));
-    painter.drawRect(1,1,width()-2,height()-2);
-  }
+  //if(hover)
+  //{
+  //  painter.setPen(QColor(Qt::red));
+  //  painter.drawRect(1,1,width()-2,height()-2);
+  //}
 }
 
 /*

@@ -1,7 +1,7 @@
 /******************************************************************************
 * Class Name: Map
 * Date Created: Oct 28 2012
-* Inheritance: QWidget
+* Inheritance: QGraphicsScene
 * Description: The map class, this is the top level with regard to an actual
 *              in-game map. This contains all the tiles that a map is composed
 *              of, it also holds pointers to all of the NPC's contained in the
@@ -10,26 +10,30 @@
 #ifndef MAP_H
 #define MAP_H
 
+#include <QGraphicsScene>
 #include <QKeyEvent>
-#include <QtGui/QWidget>
+
+/* DELETE: for testing */
+#include <QGraphicsEllipseItem>
 
 #include "EnumDatabase.h"
 #include "Game/Map/MapNPC.h"
 #include "Game/Map/Tile.h"
 #include "Game/Map/MapMenu.h"
 #include "Game/Map/MapStatusBar.h"
+#include "Game/Map/MapViewport.h"
 #include "Game/Map/Sector.h"
 #include "Game/Sprite.h"
 #include "Game/Weather.h"
 #include "FileHandler.h"
 
-class Map : public QWidget
+class Map : public QGraphicsScene
 {
   Q_OBJECT
 
 public:
   /* Constructor function */
-  Map(QWidget* parent = 0);
+  Map();
 
   /* Destructor function */
   ~Map();
@@ -53,8 +57,8 @@ private:
   /* The sectors on the map (for rooms, caves, houses etc) */
   QVector <Sector> sectors;
 
-  /* The viewoport for the map, also dynamically sized */
-  QVector <QVector<Tile*> > viewport;
+  /* The viewoport for the map, controlled by QGraphicsView */
+  MapViewport* viewport;
 
   /* Weather effect on the overall map (May be pushed to the sector level at 
    * a later time) */
@@ -89,6 +93,9 @@ public:
 
   /* Gets players y position */
   int getPlayerY();
+
+  /* Returns the map viewport, for displaying the scene to the screen */
+  MapViewport* getViewport();
 
   /* Causes the thing you are facing and next to start its interactive action */
   void interact(Direction dir);

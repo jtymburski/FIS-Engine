@@ -19,7 +19,7 @@
 #include "TitleScreen.h"
 
 /* DELETE: Temporary header access for testing */
-#include "Game/Map/MapViewport.h"
+#include "Game/Map/Map.h"
 #include "Game/Battle/Battle.h"
 #include "Game/Player/Action.h"
 
@@ -40,8 +40,7 @@ private:
   
   /* DELETE two pointers below. Currently here for testing */
   Battle* test_battle;
-  MapViewport* viewport_map;
-  QScrollArea* map_scroll;
+  Map* test_map;
 
 /*============================================================================
  * PROTECTED FUNCTIONS

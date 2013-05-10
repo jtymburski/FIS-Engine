@@ -16,13 +16,14 @@
 Application::Application(QWidget* parent)
 {
   setParent(parent);
+
   title_screen = new TitleScreen(1216, 704);
   setupBattle();
-  viewport_map = new MapViewport();
+  test_map = new Map();
 
   widget_stack = new QStackedWidget();
   widget_stack->addWidget(test_battle);
-  widget_stack->addWidget(viewport_map);
+  widget_stack->addWidget(test_map->getViewport());
   widget_stack->addWidget(title_screen);
 
   widget_stack->setCurrentIndex(2); // TODO (0=battle, 1=map, 2=titlescreen)
@@ -37,8 +38,8 @@ Application::Application(QWidget* parent)
                    this,         SLOT(switchWidget(int)));
   QObject::connect(title_screen, SIGNAL(openingMap(int)), 
                    this,         SLOT(switchWidget(int)));
-  QObject::connect(viewport_map, SIGNAL(closingMap(int)), 
-                   this,         SLOT(switchWidget(int)));
+  //QObject::connect(viewport_map, SIGNAL(closingMap(int)), 
+  //                 this,         SLOT(switchWidget(int)));
   QObject::connect(test_battle, SIGNAL(closingBattle(int)), 
                    this,        SLOT(switchWidget(int)));
 

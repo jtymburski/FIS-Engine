@@ -1,7 +1,7 @@
 /******************************************************************************
 * Class Name: Map
 * Date Created: Dec 2 2012
-* Inheritance: QWidget
+* Inheritance: QGraphicsScene
 * Description: The map class, this is the top level with regard to an actual
 *              in-game map. This contains all the tiles that a map is composed
 *              of, it also holds pointers to all of the NPC's contained in the
@@ -19,23 +19,34 @@ const int Map::kFILE_ROW = 2;
  *===========================================================================*/
 
 /* Constructor function */
-Map::Map(QWidget* parent): QWidget(parent)
+Map::Map()
 {
-  qDebug() << "Success: " << loadMap("maps/test_03");
-  setMinimumSize(geography[0].size()*64, geography.size()*64);
+  setBackgroundBrush(Qt::blue);
+  addEllipse(50, 50, 50, 50);
+  addLine(0,0,100, 100);
+  //QGraphicsEllipseItem* item = new QGraphicsEllipseItem(100, 100, 75, 35);
+  //addItem(item);
+
+  viewport = new MapViewport(this);
+
+  //setBackgroundRole(QPalette::Dark);
+  //setAutoFillBackground(true);
+
+  //qDebug() << "Success: " << loadMap("maps/test_03");
+  //setMinimumSize(geography[0].size()*64, geography.size()*64);
 }
 
 /* Destructor function */
 Map::~Map()
 {
-  for(int i = 0; i < geography.size(); i++)
+  /*for(int i = 0; i < geography.size(); i++)
   {
     for(int j = 0; j < geography[i].size(); j++)
     {
       delete geography[i][j];
       geography[i][j] = NULL;
     }
-  }
+  }*/
 }
 
 
@@ -44,10 +55,28 @@ Map::~Map()
  *===========================================================================*/
 
 /* Painting function */
-void Map::paintEvent(QPaintEvent* event)
-{
+//void Map::paintEvent(QPaintEvent* event)
+//{
+  /*
+  //setUpdatesEnabled(false);
+
+  QPainter painter(this);
+
   (void)event;
-}
+  
+  //painter.drawPixmap(256, 256, geography[0][0]->getBase()->getCurrent());
+
+  for(int i = 0; i < 1000; i++)
+  {
+    for(int j = 0; j < 1000; j++)
+    {
+      painter.drawPixmap(i*64, j*64, geography[0][0]->getBase()->getCurrent());
+    }
+  }
+
+  //setUpdatesEnabled(true);
+  */
+//}
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -87,6 +116,12 @@ int Map::getPlayerY()
   return playery;
 }
 
+/* Returns the map viewport, for scrolling through the scene */
+MapViewport* Map::getViewport()
+{
+  return viewport;
+}
+
 /* Causes the thing you are facing and next to start its interactive action */
 void Map::interact(Direction dir)
 {
@@ -121,7 +156,7 @@ bool Map::loadMap(QString file)
       QVector<Tile*> row;
 
       for(int j = 0; j < length; j++)
-        row.append(new Tile(64, 64, j*64, i*64, this));
+        row.append(new Tile(64, 64, j*64, i*64));
 
       geography.append(row);
     }

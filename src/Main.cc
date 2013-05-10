@@ -127,6 +127,7 @@ int main(int argc, char *argv[])
 	}
 
   /* Setup QT */
+  QApplication::setGraphicsSystem(QLatin1String("opengl"));
   Application* game = new Application();
   QObject::connect(game, SIGNAL(closing()), &app, SLOT(quit()));
 

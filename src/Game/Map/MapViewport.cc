@@ -1,7 +1,7 @@
 /******************************************************************************
 * Class Name: MapViewport
 * Date Created: April 24, 2013
-* Inheritance: QScrollArea
+* Inheritance: QGraphicsView
 * Description: This class handles the viewport that sits on top of the map 
 *              class to allow for proper viewing. This will be the front 
 *              interface with the outside classes for allowing viewing to the
@@ -13,11 +13,13 @@
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
 
-MapViewport::MapViewport(QWidget* parent)
+MapViewport::MapViewport(QGraphicsScene* scene, QWidget* parent)
 {
-  display_map = new Map();
+  /* The initial viewport setup */
+  QGraphicsView(scene, parent);
+  setScene(scene);
 
-  setWidget(display_map);
+  /* Set viewport parameters */
   setGeometry(0, 0, 1216, 704);
   setFrameShape(QFrame::NoFrame);
   setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -33,8 +35,9 @@ MapViewport::~MapViewport()
  * PROTECTED FUNCTIONS
  *===========================================================================*/
 
-void MapViewport::keyPressEvent(QKeyEvent* event)
-{
+//void MapViewport::keyPressEvent(QKeyEvent* event)
+//{
+  /*
   if(event->key() == Qt::Key_Escape)
     closeMap();
   else if(event->key() == Qt::Key_Down)
@@ -45,7 +48,8 @@ void MapViewport::keyPressEvent(QKeyEvent* event)
     horizontalScrollBar()->setValue(horizontalScrollBar()->value() + 8);
   else if(event->key() == Qt::Key_Left)
     horizontalScrollBar()->setValue(horizontalScrollBar()->value() - 8);
-}
+  */
+//}
 
 //void MapViewport::wheelEvent(QWheelEvent* event)
 //{
@@ -57,16 +61,20 @@ void MapViewport::keyPressEvent(QKeyEvent* event)
  * SLOTS
  *===========================================================================*/
 
-void MapViewport::closeMap()
-{
+//void MapViewport::closeMap()
+//{
+  /*
   emit closingMap(2);
-}
+  */
+//}
 
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
-Map* MapViewport::getMap()
-{
+//Map* MapViewport::getMap()
+//{
+  /*
   return display_map;
-}
+  */
+//}
