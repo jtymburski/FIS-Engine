@@ -11,10 +11,6 @@
 #define MAP_H
 
 #include <QGraphicsScene>
-#include <QKeyEvent>
-
-/* DELETE: for testing */
-#include <QGraphicsEllipseItem>
 
 #include "EnumDatabase.h"
 #include "Game/Map/MapNPC.h"
@@ -74,6 +70,12 @@ private:
  *===========================================================================*/
 protected:
   void paintEvent(QPaintEvent*);
+
+/*============================================================================
+ * SIGNALS
+ *===========================================================================*/
+signals:
+  void closingMap(int index);
 
 /*============================================================================
  * PUBLIC FUNCTIONS

@@ -38,8 +38,8 @@ Application::Application(QWidget* parent)
                    this,         SLOT(switchWidget(int)));
   QObject::connect(title_screen, SIGNAL(openingMap(int)), 
                    this,         SLOT(switchWidget(int)));
-  //QObject::connect(viewport_map, SIGNAL(closingMap(int)), 
-  //                 this,         SLOT(switchWidget(int)));
+  QObject::connect(test_map, SIGNAL(closingMap(int)), 
+                   this,     SLOT(switchWidget(int)));
   QObject::connect(test_battle, SIGNAL(closingBattle(int)), 
                    this,        SLOT(switchWidget(int)));
 

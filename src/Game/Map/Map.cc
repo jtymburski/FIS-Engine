@@ -21,13 +21,17 @@ const int Map::kFILE_ROW = 2;
 /* Constructor function */
 Map::Map()
 {
-  setBackgroundBrush(Qt::blue);
+  /* Configure the scene */
+  setBackgroundBrush(Qt::red);
   addEllipse(50, 50, 50, 50);
   addLine(0,0,100, 100);
-  //QGraphicsEllipseItem* item = new QGraphicsEllipseItem(100, 100, 75, 35);
-  //addItem(item);
 
+  /* Setup the viewport */
   viewport = new MapViewport(this);
+
+  /* Connect the signals */
+  QObject::connect(viewport, SIGNAL(closingMap(int)),
+                   this,     SIGNAL(closingMap(int)));
 
   //setBackgroundRole(QPalette::Dark);
   //setAutoFillBackground(true);

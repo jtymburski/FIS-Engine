@@ -11,6 +11,7 @@
 #define MAPVIEWPORT_H
 
 #include <QGraphicsView>
+#include <QKeyEvent>
 
 class MapViewport : public QGraphicsView
 {
@@ -31,27 +32,21 @@ private:
  * PROTECTED FUNCTIONS
  *===========================================================================*/
 protected:
-//  void keyPressEvent(QKeyEvent*);
+  void keyPressEvent(QKeyEvent*);
 //  void wheelEvent(QWheelEvent*);
-
-/*============================================================================
- * SLOTS
- *===========================================================================*/
-public slots:
-//  void closeMap();
 
 /*============================================================================
  * SIGNALS
  *===========================================================================*/
 signals:
-//  void closingMap(int index);
+  void closingMap(int index);
 
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
-  /* Returns the map stored in this class */
-//  Map* getMap();
+  /* Initializes the closes map call based on a signal from the viewport */
+  void closeMap();
 };
 
 #endif // MAPVIEWPORT_H
