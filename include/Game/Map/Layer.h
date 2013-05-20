@@ -33,6 +33,8 @@ private:
   Sprite* item;
   int width;
   int height;
+  int x_point;
+  int y_point;
 
 /*============================================================================
  * PUBLIC FUNCTIONS

@@ -18,8 +18,13 @@ Application::Application(QWidget* parent)
   setParent(parent);
 
   title_screen = new TitleScreen(1216, 704);
+  //title_screen->show();
+  
   setupBattle();
+  //test_battle->show();
+  
   test_map = new Map();
+  //test_map->getViewport()->show();
 
   widget_stack = new QStackedWidget();
   widget_stack->addWidget(test_battle);
@@ -28,9 +33,14 @@ Application::Application(QWidget* parent)
 
   widget_stack->setCurrentIndex(2); // TODO (0=battle, 1=map, 2=titlescreen)
 
+  /* Widget information for handling the game */
   setCentralWidget(widget_stack);
   setFocus(Qt::OtherFocusReason);
   setFocusProxy(title_screen);
+  setMaximumWidth(1216);
+  setMaximumHeight(704);
+  setMinimumWidth(1216);
+  setMinimumHeight(704);
 
   QObject::connect(title_screen, SIGNAL(closing()),
                    this,         SLOT(close()));
@@ -49,9 +59,6 @@ Application::Application(QWidget* parent)
                       .availableGeometry(desktopWidget.primaryScreen()));
   setGeometry((desktopRect.width() - 1216) / 2, 
               (desktopRect.height() - 704) / 2, 1216, 704);
-
-  /* Enforce a fixed size and remove close button */
-  layout()->setSizeConstraint(QLayout::SetFixedSize);
 
   /* Do the final show once everything is set up */
   show();
@@ -82,6 +89,9 @@ void Application::close()
 
 void Application::switchWidget(int index)
 {
+  if(!test_map->isLoaded() && index == 1)
+    test_map->loadMap("");
+
   widget_stack->setCurrentIndex(index);
 
   if(index == 2)

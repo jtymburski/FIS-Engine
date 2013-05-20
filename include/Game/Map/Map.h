@@ -41,6 +41,9 @@ private:
   /* The actual tiles that comprise a map, dynamically sized */
   QVector <QVector <Tile*> > geography;
 
+  /* Indication if the map has been loaded */
+  bool loaded;
+
   /* The menu on the map */
   MapMenu map_menu;
 
@@ -105,6 +108,9 @@ public:
   /* Checks whether the viewport contains any tiles with the given sector */
   bool isInSector(int index);
 
+  /* Returns if the map has been currently loaded with data */
+  bool isLoaded();
+
   /* Loads the map */
   bool loadMap(QString file);
 
@@ -117,6 +123,9 @@ public:
 
   /* Causes the thing you are moving into to start its interactive action */
   void passOver();
+
+  /* Unload the map, if there is one loaded */
+  void unloadMap();
 
   /* Changes NPC spirtes */
   void updateNPC();

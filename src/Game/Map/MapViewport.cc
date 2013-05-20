@@ -9,6 +9,9 @@
 ******************************************************************************/
 #include "Game/Map/MapViewport.h"
 
+/* TESTING - DELETE */
+#include <QDebug>
+
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
@@ -20,7 +23,10 @@ MapViewport::MapViewport(QGraphicsScene* scene, QWidget* parent)
   setScene(scene);
 
   /* Set viewport parameters */
-  setGeometry(0, 0, 1216, 704);
+  setMaximumWidth(1216);
+  setMaximumHeight(704);
+  setMinimumWidth(1216);
+  setMinimumHeight(704);
   setFrameShape(QFrame::NoFrame);
   setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -36,8 +42,7 @@ MapViewport::~MapViewport()
  *===========================================================================*/
 
 void MapViewport::keyPressEvent(QKeyEvent* event)
-{
-  
+{ 
   if(event->key() == Qt::Key_Escape)
     closeMap();
   /*else if(event->key() == Qt::Key_Down)

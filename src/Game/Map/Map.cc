@@ -25,32 +25,13 @@ const int Map::kFILE_ROW = 2;
 Map::Map()
 {
   /* Configure the scene */
+  loaded = false;
   //setBackgroundBrush(Qt::red);
-  addEllipse(50, 50, 50, 50);
-  addLine(0,0,100, 100);
-
-  /*Layer* test_layer = new Layer(new Sprite("sprites/Map/Tiles/Ground/GrassTile/GrassTile01_AA_A00.png"), 64, 64, 0, 0);
-  addItem(test_layer); 
-   
-  test_layer = new Layer(new Sprite("sprites/Map/Tiles/Ground/GrassTile/GrassTile01_AA_A00.png"), 64, 64, 32, 0);
-  addItem(test_layer);
-
-  test_layer = new Layer(new Sprite("sprites/Map/Tiles/Ground/GrassTile/GrassTile01_AA_A00.png"), 64, 64, 64, 0);
-  addItem(test_layer);*/
-
-  for(int i = 0; i < 100; i++)
-  {
-    for(int j = 0; j < 100; j++)
-    {
-      Layer* test_layer = new Layer(new Sprite("sprites/Map/Tiles/Ground/GrassTile/GrassTile01_AA_A00.png"), 64, 64, i*32, j*32);
-      addItem(test_layer);
-    }
-  }
-
+  
   /* Setup the viewport */
   viewport = new MapViewport(this);
   viewport->centerOn(0, 0);
-
+  
   /* Connect the signals */
   QObject::connect(viewport, SIGNAL(closingMap(int)),
                    this,     SIGNAL(closingMap(int)));
@@ -161,21 +142,38 @@ bool Map::isInSector(int index)
   return true;
 }
 
+bool Map::isLoaded()
+{
+  return loaded;
+}
+
 bool Map::loadMap(QString file)
 {
-  bool done = false;
+  // TODO: New test code [05-20-2013]
+  for(int i = 0; i < 100; i++)
+  {
+    for(int j = 0; j < 100; j++)
+    {
+      Layer* test_layer = new Layer(new Sprite("sprites/Map/Tiles/Ground/GrassTile/GrassTile01_AA_A00.png"), 64, 64, i*64, j*64);
+      addItem(test_layer);
+    }
+  }
+  loaded = true;
+
+  // TODO: Old code [05-20-2013]
+  /*bool done = false;
   bool success = true;
   FileHandler fh(file, false, true);
   XmlData data;
 
   /* Start the map read */
-  success &= fh.start();
+  /*success &= fh.start();
 
   /* If file open was successful, move forward */
-  if(success)
+  /*if(success)
   {
     /* Calculate dimensions and set up the map */
-    int length = fh.readXmlData().getDataInteger();
+    /*int length = fh.readXmlData().getDataInteger();
     int width = fh.readXmlData().getDataInteger();
     for(int i = 0; i < width; i++)
     {
@@ -188,22 +186,22 @@ bool Map::loadMap(QString file)
     }
    
     /* Run through the map components and add them to the map */
-    data = fh.readXmlData(&done, &success);
+    /*data = fh.readXmlData(&done, &success);
     do
     {
       /* Pull the row and column pairs, comma delimited */
-      QStringList row_list = data.getKeyValue(kFILE_ROW).split(",");
+      /*QStringList row_list = data.getKeyValue(kFILE_ROW).split(",");
       QStringList col_list = data.getKeyValue(kFILE_COLUMN).split(",");
 
       /* Run through this list, checking ranges and add the corresponding
        * tiles */
-      for(int i = 0; i < row_list.size(); i++)
+      /*for(int i = 0; i < row_list.size(); i++)
       {
         QStringList rows = row_list[i].split("-");
         QStringList cols = col_list[i].split("-");
 
         /* Use the newly found range and add the tile */
-        for(int r = rows[0].toInt(); r <= rows[rows.size() - 1].toInt(); r++)
+        /*for(int r = rows[0].toInt(); r <= rows[rows.size() - 1].toInt(); r++)
         {
           for(int c = cols[0].toInt(); c <= cols[cols.size() - 1].toInt(); c++)
           {
@@ -211,7 +209,7 @@ bool Map::loadMap(QString file)
             Tile::RotatedAngle angle = Tile::NONE;
 
             /* Determine the angle to be rotated */
-            if(path.size() > 1)
+            /*if(path.size() > 1)
             {
               if(path[1] == "CW")
                 angle = Tile::CLOCKWISE;
@@ -222,7 +220,7 @@ bool Map::loadMap(QString file)
             }
 
             /* Determine the type of tile */
-            if(path[0] == "base")
+            /*if(path[0] == "base")
               geography[r][c]->setBase(data.getDataString(), angle);
             else if(path[0] == "enhancer")
               geography[r][c]->setEnhancer(data.getDataString(), angle);
@@ -235,13 +233,13 @@ bool Map::loadMap(QString file)
       }
 
       /* Get the next element */
-      data = fh.readXmlData(&done, &success);
+      /*data = fh.readXmlData(&done, &success);
     } while(!done && success);
   }
 
   success &= fh.stop();
 
-  return success;
+  return success;*/
 }
 
 /* Shifts the viewport */
@@ -265,6 +263,12 @@ bool Map::passible(Direction dir, int x, int y)
 /* Causes the thing you are moving into to start its interactive action */
 void Map::passOver()
 {
+}
+
+void Map::unloadMap()
+{
+  clear();
+  loaded = false;
 }
 
 /* Changes NPC spirtes */

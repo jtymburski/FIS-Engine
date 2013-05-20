@@ -33,6 +33,9 @@ Layer::Layer(Sprite* new_item, int width, int height, int x, int y, int z)
   setY(y);
   setZValue(z);
 
+  x_point = x;
+  y_point = y;
+
   //qDebug() << this->x() << " " << this->y() << " " << width << " " << height;
 }
 
@@ -47,8 +50,7 @@ Layer::~Layer()
 
 QRectF Layer::boundingRect() const
 {
-  QRectF rect(x(), y(), width, height);
-  //qDebug() << x() << " " << y() << " " << width << " " << height;
+  QRectF rect(0, 0, width, height);
 
   return rect;
 }
@@ -67,5 +69,5 @@ void Layer::paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
 
   /* Only paint if sprite exists */
   if(item != 0)
-    painter->drawPixmap(x(), y(), width, height, item->getCurrent());
+    painter->drawPixmap(0, 0, width, height, item->getCurrent());
 }
