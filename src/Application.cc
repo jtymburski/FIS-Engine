@@ -139,5 +139,18 @@ void Application::setupBattle()
 
   } */
 
+  Ailment* new_ailment1 = new Ailment(main, POISON, 2, 0.147, this);
+
+  qDebug() << "Turns left: " << new_ailment1->getTurnsLeft();
+  new_ailment1->update();
+  qDebug() << "Turns left: " << new_ailment1->getTurnsLeft();
+  new_ailment1->update();
+  qDebug() << "Turns left: " << new_ailment1->getTurnsLeft();
+  new_ailment1->update();
+  qDebug() << "Turns left: " << new_ailment1->getTurnsLeft();
+  new_ailment1->update();
+  qDebug() << "Turns left: " << new_ailment1->getTurnsLeft();
+  new_ailment1->update();
+
   test_battle = new Battle(friends, foes, this);
 }

@@ -13,11 +13,8 @@
 *              3 - [(Add)] const static values to be used if necessary to class
 *              4 - (Add) the Ailment's effect to updateAndApply()
 *
-* // TODO: Finalize chance to wear off per turn [03-11-13]
 * // TODO: Rigorous testing for class [03-11-13]
-* // TODO: Setup temporary skills for person [03-12-13]
 * // TODO: Finish Curse apply effect [03-30-13]
-* // TODO: Bubbify effect [04-21-13]
 *******************************************************************************/
 #include "Game/Player/Ailment.h"
 
@@ -89,6 +86,9 @@ Ailment::Ailment(Person* victim, Infliction type, short max_turns,
     setDuration(kMIN_TURNS, chance);
   else
     setDuration(max_turns, chance);
+
+  setFlag(Ailment::TOBEUPDATED, true);
+
 }
 
 /*
@@ -250,9 +250,9 @@ void Ailment::apply()
   else if (ailment_type == BERSERK)
   {
     /* On initial application, disable non physical skills and running */
-    victim->setPersonFlag(Person::CANUSESKILLS, FALSE);
-    victim->setPersonFlag(Person::CANUSEITEM, FALSE);
-    victim->setPersonFlag(Person::CANRUN, FALSE);
+    victim->setPersonFlag(Person::CANUSESKILLS, false);
+    victim->setPersonFlag(Person::CANUSEITEM, false);
+    victim->setPersonFlag(Person::CANRUN, false);
     victim->setDmgMod(2);
 
     /* Hitback damage during Berserk will take place in Battle */
@@ -271,13 +271,16 @@ void Ailment::apply()
     /* On application, remove skills which have a QD cost > 0 from useable */
     for (int i = 0; i < skills->getSkills().size(); i++)
       if (skills->getSkill(i)->getQdValue() > 0)
-        skills->setSkillState(i, FALSE);
+        skills->setSkillState(i, false);
   }
 
   /* Bubbify - ailed actor is turned into a near-useless Bubby
    */
   else if (ailment_type == BUBBIFY)
   {
+    /* Bubbies cannot be affected by buffs */
+    emit removeBuffs(victim->getName());
+
     /* Decrease the stats of the person by a factor of kBUBBIFY_STAT_MULR */
     for (int i = 0; i < stats->getSize(); i++)
         stats->setStat(i, stats->getStat(i) * kBUBBIFY_STAT_MULR);
@@ -285,7 +288,10 @@ void Ailment::apply()
     /* Disable skills which have a qd cost above kBUBBIFY_MAX_QD */
     for (int i = 0; i < skills->getSkills().size(); i++)
       if (skills->getSkill(i)->getQdValue() > kBUBBIFY_MAX_QD)
-        skills->setSkillState(i, FALSE);
+        skills->setSkillState(i, false);
+
+    /* Flip the person flag */
+    victim->setPersonFlag(Person::ISBUBBY, true);
   }
 
   /* Death Timer - Ailed actor KOs upon reaching max_turns */
@@ -300,7 +306,7 @@ void Ailment::apply()
   {
     int random_percent = getRandomNumber(100);
     if (random_percent > 30)
-        victim->setPersonFlag(Person::SKIPNEXTTURN, TRUE);
+        victim->setPersonFlag(Person::SKIPNEXTTURN, true);
   }
 
   /* Blindness - Ailed actor has a much higher chance of missing targets */
@@ -308,7 +314,7 @@ void Ailment::apply()
   {
     int random_percent = getRandomNumber(100);
     if (random_percent <= kBLIND_PC * 100)
-        victim->setPersonFlag(Person::MISSNEXTTARGET, FALSE);
+        victim->setPersonFlag(Person::MISSNEXTTARGET, false);
   }
 
   /* Dreadstruck - formerly "Stun": Ailed actor has an extreme chance of
@@ -318,7 +324,7 @@ void Ailment::apply()
   {
     int random_percent = getRandomNumber(100);
     if (random_percent <= kDREADSTRUCK_PC * 100)
-        victim->setPersonFlag(Person::MISSNEXTTARGET, FALSE);
+        victim->setPersonFlag(Person::MISSNEXTTARGET, false);
   }
 
   /* Dreamsnare - Ailed actor's actions have a 50% chance of being benign
@@ -328,16 +334,13 @@ void Ailment::apply()
   {
     int random_percent = getRandomNumber(100);
     if (random_percent <= kDREAMSNARE_PC * 100)
-      victim->setPersonFlag(Person::NOEFFECT, TRUE);
+      victim->setPersonFlag(Person::NOEFFECT, true);
   }
 
   /* Hellbound - If this actor dies, another living actor on the same team
    *             (if one exists) dies with them.
+   *           - Hellbound effect handled in Battle
    */
-  else if (ailment_type == HELLBOUND)
-  {
-    /* Hellbound effect handled in battle */
-  }
 
   /* Bond - Two actors are afflicted simultaneously. Affected actor's stats are
   *  combined, damage dealt to one is also dealt to the other, as with status
@@ -414,7 +417,6 @@ void Ailment::apply()
       stats->setStat("VITA", stats->getStat("VITA") * kVITBUFF_PC);
     else if (ailment_type == QDBUFF)
       stats->setStat("QTMN", stats->getStat("QTMN") * kQTMNBUFF_PC);
-
   }
 
   /* Rootbound - Ailed actor (if biological in nature) gains a % HP / turn
@@ -425,14 +427,21 @@ void Ailment::apply()
     stats->setStat("VITA", value);
   }
 
-  /* Half Cost - On application, the user's useable skill costs are halved */
-  else if (ailment_type == HALFCOST)
-  {
-    /* Handle half cost in Battle
-     * -- Find users currently useable skills
-     * -- Half their cost (temporarily)
-    */
-  }
+  /* Double cast allows the user to use two skils per turn */
+  else if (ailment_type == DOUBLECAST)
+    victim->setPersonFlag(Person::TWOSKILLS, true);
+
+  /* Triple cast allows the user to use three skills per turn */
+  else if (ailment_type == TRIPLECAST)
+    victim->setPersonFlag(Person::THREESKILLS, true);
+
+  /* Triple cast allows the user to use three skills per turn */
+
+  /* Half Cost - On application, the user's useable skill costs are halved
+     -- Handle half cost in Battle
+     -- Find users currently useable skills
+     -- Half their cost (temporarily)
+  */
 
   /* Hibernation - Gain a % health back per turn in exchange for skipping it,
    *               but the % gain grows
@@ -445,6 +454,12 @@ void Ailment::apply()
     for (int i = 0; i < turns_occured; i++)
       gain_pc += kHIBERNATION_INCR;
     stats->setStat("VITA", stats->getMax("VITA") * (1 + gain_pc));
+  }
+
+  /* Reflect - reflect handled in Battle */
+  else if (ailment_type == REFLECT)
+  {
+      victim->setPersonFlag(Person::REFLECT, true);
   }
 
   /* Curse - Character is inflicted with a random ailment every turn.
@@ -494,7 +509,7 @@ bool Ailment::checkImmunity(Person* new_victim)
   if (new_victim->getPersonFlag(Person::MINIBOSS))
   {
     if (ailment_type == DEATHTIMER || ailment_type == BUBBIFY)
-      return FALSE;
+      return false;
   }
 
   else if (new_victim->getPersonFlag(Person::BOSS))
@@ -502,7 +517,7 @@ bool Ailment::checkImmunity(Person* new_victim)
     if (ailment_type == DEATHTIMER || ailment_type == BUBBIFY   ||
         ailment_type == SILENCE    || ailment_type == PARALYSIS ||
         ailment_type == BLINDNESS)
-      return FALSE;
+      return false;
   }
 
   else if (new_victim->getPersonFlag(Person::FINALBOSS))
@@ -511,21 +526,35 @@ bool Ailment::checkImmunity(Person* new_victim)
         ailment_type == SILENCE    || ailment_type == PARALYSIS ||
         ailment_type == BLINDNESS  || ailment_type == CONFUSE   ||
         ailment_type == BERSERK)
-      return FALSE;
+      return false;
   }
+
+  /* Bubby effect immunity section */
+  if (ailment_type == ALLATKBUFF || ailment_type == ALLDEFBUFF ||
+      ailment_type == PHYATKBUFF || ailment_type == PHYDEFBUFF ||
+      ailment_type == THRATKBUFF || ailment_type == THRDEFBUFF ||
+      ailment_type == POLATKBUFF || ailment_type == POLDEFBUFF ||
+      ailment_type == PRIATKBUFF || ailment_type == PRIDEFBUFF ||
+      ailment_type == CHGATKBUFF || ailment_type == CHGDEFBUFF ||
+      ailment_type == CYBATKBUFF || ailment_type == CYBDEFBUFF ||
+      ailment_type == NIHATKBUFF || ailment_type == NIHDEFBUFF ||
+      ailment_type == LIMBUFF    || ailment_type == UNBBUFF    ||
+      ailment_type == MOMBUFF    || ailment_type == VITBUFF    ||
+      ailment_type == QDBUFF)
+  return false;
 
   /* Race immunity section */
   if (race_name == "Human")
   {
     if (ailment_type == HIBERNATION || ailment_type == REFLECT ||
         ailment_type == CONFUSE)
-      return FALSE;
+      return false;
   }
 
   else if (race_name == "Bsian")
   {
     if (ailment_type == HIBERNATION || ailment_type == BERSERK)
-      return FALSE;
+      return false;
   }
 
   else if (race_name == "Cyborg")
@@ -540,24 +569,24 @@ bool Ailment::checkImmunity(Person* new_victim)
     if (ailment_type == HIBERNATION || ailment_type == REFLECT ||
         ailment_type == POISON      || ailment_type == BURN    ||
         ailment_type == CHAR        || ailment_type == SCALD)
-      return FALSE;
+      return false;
   }
 
   else if (race_name == "Gyrokin")
   {
     if (ailment_type == HIBERNATION || ailment_type == REFLECT)
-      return FALSE;
+      return false;
   }
 
   else if (race_name == "Necross")
   {
     if (ailment_type == HIBERNATION || ailment_type == REFLECT)
-      return FALSE;
+      return false;
   }
   else if (race_name == "Bear")
   {
     if (ailment_type == ROOTBOUND)
-      return FALSE;
+      return false;
   }
 
   else if (race_name == "Boat")
@@ -573,12 +602,12 @@ bool Ailment::checkImmunity(Person* new_victim)
         ailment_type == LIMBUFF    || ailment_type == UNBBUFF    ||
         ailment_type == MOMBUFF    || ailment_type == VITBUFF    ||
         ailment_type == QDBUFF)
-    return FALSE;
+    return false;
   }
   else if (race_name == "Fiend")
   {
     if (ailment_type == REFLECT)
-      return FALSE;
+      return false;
   }
   else if (race_name == "Spirit")
   {
@@ -597,36 +626,36 @@ bool Ailment::checkImmunity(Person* new_victim)
         ailment_type == CHAR        || ailment_type == BUBBIFY    ||
         ailment_type == DEATHTIMER  || ailment_type == ROOTBOUND  ||
         ailment_type == ALLDEFBUFF)
-    return FALSE;
+    return false;
   }
 
   /* Category immunity section */
   if (category_name == "Bardic Sage" && ailment_type == SILENCE)
-      return FALSE;
+      return false;
   else if (category_name == "Bloodclaw Scion" && ailment_type == DEATHTIMER)
-      return FALSE;
+      return false;
   else if (category_name == "Druidic Avenger" && ailment_type == POISON)
-      return FALSE;
+      return false;
   else if (category_name == "Eidoloncer" && ailment_type == SILENCE)
-      return FALSE;
+      return false;
   else if (category_name == "Goliath Rogue" && ailment_type == BLINDNESS)
-      return FALSE;
+      return false;
   else if (category_name == "Hexblade" && ailment_type == BERSERK)
-      return FALSE;
+      return false;
   else if (category_name == "Psion" && ailment_type == SILENCE)
-      return FALSE;
+      return false;
   else if (category_name == "Shadow Dancer" && ailment_type == PARALYSIS)
-      return FALSE;
+      return false;
   else if (category_name == "Storm Paladin" && ailment_type == DREADSTRUCK)
-      return FALSE;
+      return false;
   else if (category_name == "Swordsage" && ailment_type == DREAMSNARE)
-      return FALSE;
+      return false;
   else if (category_name == "Tactical Samurai" && ailment_type == CONFUSE)
-      return FALSE;
+      return false;
   else if (category_name == "Warmage" && ailment_type == HELLBOUND)
-      return FALSE;
+      return false;
 
-  return TRUE;
+  return true;
 }
 
 /*
@@ -639,12 +668,17 @@ bool Ailment::checkImmunity(Person* new_victim)
  */
 bool Ailment::updateTurns()
 {
+  qDebug() << "Beginning update turns: " << max_turns_left;
+
   /* If the ailment is finite, cure it based on chance */;
   if (max_turns_left <= kMAX_TURNS && chance != 0)
   {
-    qsrand(QTime::currentTime().msec());
-    if (floor(chance * 1000) > rand()%(1000))
-        max_turns_left = 1;
+    int random_num = getRandomNumber(1000);
+    if (floor(chance * 1000) > random_num)
+    {
+      max_turns_left = 1;
+      qDebug() << "Random chance!";
+    }
   }
   /* If the ailment currently has one turn left, it's cured! */
   if (max_turns_left == 1)
@@ -652,6 +686,8 @@ bool Ailment::updateTurns()
   /* If the ailment doesn't have one turn left, if it's finite, decrement it */
   if (max_turns_left <= kMAX_TURNS)
     max_turns_left--;
+
+  qDebug() << " Ending update turns: " << max_turns_left;
   return false;
 }
 
@@ -689,17 +725,15 @@ void Ailment::setVictim(Person* set_victim)
  */
 void Ailment::unapply()
 {
-  /* Helper variables */
-  const ushort kHEALTH = victim->tempStats()->getStat(0);
   AttributeSet* stats = victim->tempStats();
   SkillSet* skills = victim->getSkills();
 
   /* On removing Berserk, the person's abilities need to be re-enabled */
   if (getType() == BERSERK)
   {
-    victim->setPersonFlag(Person::CANRUN, TRUE);
-    victim->setPersonFlag(Person::CANUSESKILLS, TRUE);
-    victim->setPersonFlag(Person::CANUSEITEM, TRUE);
+    victim->setPersonFlag(Person::CANRUN, true);
+    victim->setPersonFlag(Person::CANUSESKILLS, true);
+    victim->setPersonFlag(Person::CANUSEITEM, true);
     victim->setDmgMod(1);
   }
 
@@ -708,138 +742,86 @@ void Ailment::unapply()
   {
 
     for (int i = 0; i < skills->getSkills().size(); i++)
-      skills->setSkillState(i, TRUE);
+      skills->setSkillState(i, true);
   }
 
-  /* When bubbify is removed, actor needs to return to normal */
+  /* When bubbify is removed, actor needs to return to normal (all other buffs
+     are removed as well) */
   else if (getType() == BUBBIFY)
   {
-
+    emit removeBuffs(victim->getName());
   }
 
-  if (getType() == BLINDNESS)
-  {
 
-  }
-  if (getType() == DREADSTRUCK)
-  {
-
-  }
-  if (getType() == DREAMSNARE)
-  {
-
-  }
-  if (getType() == HELLBOUND)
-  {
-
-  }
   if (getType() == ALLATKBUFF)
   {
-
+    for (int i = 0; i < stats->getSize(); i++)
+    {
+      QStringList split_stats = stats->getName(i).split("");
+      if (split_stats.at(2) == "A" && split_stats.at(3) == "G")
+        stats->setStat(i, stats->getStat(i) / kALLBUFF_PC);
+    }
   }
-  if (getType() == ALLDEFBUFF)
+
+  else if (getType() == ALLDEFBUFF)
   {
-
+    for (int i = 0; i < stats->getSize(); i++)
+    {
+      QStringList split_stats = stats->getName(i).split("");
+      if (split_stats.at(2) == "F" && split_stats.at(3) == "D")
+        stats->setStat(i, stats->getStat(i) / kALLBUFF_PC);
+    }
   }
-  if (getType() == PHYATKBUFF)
-  {
 
-  }
-  else if (getType() == PHYDEFBUFF)
-  {
+  else if (ailment_type == PHYATKBUFF)
+    stats->setStat("PHAG", stats->getStat("PHAG") / kPHYSBUFF_PC);
+  else if (ailment_type == PHYDEFBUFF)
+    stats->setStat("PHFD", stats->getStat("PHFD") / kPHYSBUFF_PC);
+  else if (ailment_type == THRATKBUFF)
+    stats->setStat("THAG", stats->getStat("THAG") / kELMBUFF_PC);
+  else if (ailment_type == THRDEFBUFF)
+    stats->setStat("THFD", stats->getStat("THFD") / kELMBUFF_PC);
+  else if (ailment_type == POLATKBUFF)
+    stats->setStat("POAG", stats->getStat("POAG") / kELMBUFF_PC);
+  else if (ailment_type == POLDEFBUFF)
+    stats->setStat("POFD", stats->getStat("POFD") / kELMBUFF_PC);
+  else if (ailment_type == PRIATKBUFF)
+    stats->setStat("PRAG", stats->getStat("PRAG") / kELMBUFF_PC);
+  else if (ailment_type == PRIDEFBUFF)
+    stats->setStat("PRFD", stats->getStat("PRFD") / kELMBUFF_PC);
+  else if (ailment_type == CHGATKBUFF)
+    stats->setStat("CHAG", stats->getStat("CHAG") / kELMBUFF_PC);
+  else if (ailment_type == CHGDEFBUFF)
+   stats->setStat("CHFD", stats->getStat("CHFD") / kELMBUFF_PC);
+  else if (ailment_type == CYBATKBUFF)
+    stats->setStat("CYAG", stats->getStat("CYAG") / kELMBUFF_PC);
+  else if (ailment_type == CYBDEFBUFF)
+    stats->setStat("CYFD", stats->getStat("CYFD") / kELMBUFF_PC);
+  else if (ailment_type == NIHATKBUFF)
+    stats->setStat("NIAG", stats->getStat("NIAG") / kELMBUFF_PC);
+  else if (ailment_type == NIHDEFBUFF)
+    stats->setStat("NIAG", stats->getStat("NIFD") / kELMBUFF_PC);
+  else if (ailment_type == UNBBUFF)
+    stats->setStat("UNBR", stats->getStat("UNBR") / kELMBUFF_PC);
+  else if (ailment_type == LIMBUFF)
+    stats->setStat("NIFD", stats->getStat("LIMB") / kLIMBUFF_PC);
+  else if (ailment_type == MOMBUFF)
+    stats->setStat("MMTM", stats->getStat("MMTM") / kELMBUFF_PC);
+  else if (ailment_type == VITBUFF)
+    stats->setStat("VITA", stats->getStat("VITA") / kVITBUFF_PC);
+  else if (ailment_type == QDBUFF)
+    stats->setStat("QTMN", stats->getStat("QTMN") / kQTMNBUFF_PC);
 
-  }
-  else if (getType() == THRATKBUFF)
-  {
-
-  }
-  else if (getType() == THRDEFBUFF)
-  {
-
-  }
-  else if (getType() == POLATKBUFF)
-  {
-
-  }
-  else if (getType() == POLDEFBUFF)
-  {
-
-  }
-  else if (getType() == PRIATKBUFF)
-  {
-
-  }
-  else if (getType() == PRIDEFBUFF)
-  {
-
-  }
-  else if (getType() == CHGATKBUFF)
-  {
-
-  }
-  else if (getType() == CHGDEFBUFF)
-  {
-
-  }
-  else if (getType() == CYBATKBUFF)
-  {
-
-  }
-  else if (getType() == CYBDEFBUFF)
-  {
-
-  }
-  else if (getType() == NIHATKBUFF)
-  {
-
-  }
-  else if (getType() == NIHDEFBUFF)
-  {
-
-  }
-  else if (getType() == LIMBUFF)
-  {
-
-  }
-  else if (getType() == UNBBUFF)
-  {
-
-  }
-  else if (getType() == MOMBUFF)
-  {
-
-  }
-  else if (getType() == VITBUFF)
-  {
-
-  }
-  else if (getType() == QDBUFF)
-  {
-
-  }
   else if (getType() == DOUBLECAST)
-  {
-
-  }
+      victim->setPersonFlag(Person::TWOSKILLS, false);
   else if (getType() == TRIPLECAST)
-  {
+      victim->setPersonFlag(Person::THREESKILLS, false);
 
-  }
-  else if (getType() == HALFCOST)
-  {
+  /* Half cost removal handled within battle */
 
-  }
-  else if (getType() == REFLECT)
-  {
-
-  }
-  else if (getType() == HIBERNATION)
-  {
-
-  }
   else if (getType() == CURSE)
   {
-
+    /* Curse effect incomplete [05-13-13] */
   }
 }
 

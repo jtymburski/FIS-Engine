@@ -50,7 +50,10 @@ public:
     SKIPNEXTTURN   = 1 << 14, /* Will the person skip their next turn? */
     MISSNEXTTARGET = 1 << 15, /* Will the person miss their next target? */
     NOEFFECT       = 1 << 16, /* Does the person's next attack have no effect? */
-    ISBUBBY        = 1 << 17 /* Is the person currently a bubby? */
+    ISBUBBY        = 1 << 17, /* Is the person currently a bubby? */
+    TWOSKILLS      = 1 << 18, /* Can the person use two skills per turn? */
+    THREESKILLS    = 1 << 19, /* Can the person use three skills per turn? */
+    REFLECT        = 1 << 20 /* Is the person currently reflecting skills? */
   };
   Q_DECLARE_FLAGS(PersonFlags, PersonState)
 

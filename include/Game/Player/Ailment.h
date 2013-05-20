@@ -181,6 +181,10 @@ signals:
   /* Tells BIB and BSB an ailment of victim is being inflicted */
   void inflicting(QString victim_name, Infliction ailment_name);
 
+  /* Tells Battle to remove all buffs
+     (usually happens when Bubbify is added/removed) */
+  void removeBuffs(QString victim_name);
+
   /* Tells BIB and BSB an ailment of victim is curing */
   void curing(QString victim_name, Infliction ailment_name);
 

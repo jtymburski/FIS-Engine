@@ -69,6 +69,7 @@
 #include <QtGui/QPainter>
 #include <cmath>
 
+#include "Game/Player/Ailment.h"
 #include "Game/Battle/BattleInfoBar.h"
 #include "Game/Battle/BattleMenu.h"
 #include "Game/Battle/BattleStatusBar.h"
