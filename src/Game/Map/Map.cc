@@ -9,6 +9,9 @@
 ******************************************************************************/
 #include "Game/Map/Map.h"
 
+/* TEMPORARY - DELETE */
+#include "Game/Map/Layer.h"
+
 /* Constant Implementation - see header file for descriptions */
 const int Map::kFILE_COLUMN = 3;
 const int Map::kFILE_DATA = 4;
@@ -22,12 +25,31 @@ const int Map::kFILE_ROW = 2;
 Map::Map()
 {
   /* Configure the scene */
-  setBackgroundBrush(Qt::red);
+  //setBackgroundBrush(Qt::red);
   addEllipse(50, 50, 50, 50);
   addLine(0,0,100, 100);
 
+  /*Layer* test_layer = new Layer(new Sprite("sprites/Map/Tiles/Ground/GrassTile/GrassTile01_AA_A00.png"), 64, 64, 0, 0);
+  addItem(test_layer); 
+   
+  test_layer = new Layer(new Sprite("sprites/Map/Tiles/Ground/GrassTile/GrassTile01_AA_A00.png"), 64, 64, 32, 0);
+  addItem(test_layer);
+
+  test_layer = new Layer(new Sprite("sprites/Map/Tiles/Ground/GrassTile/GrassTile01_AA_A00.png"), 64, 64, 64, 0);
+  addItem(test_layer);*/
+
+  for(int i = 0; i < 100; i++)
+  {
+    for(int j = 0; j < 100; j++)
+    {
+      Layer* test_layer = new Layer(new Sprite("sprites/Map/Tiles/Ground/GrassTile/GrassTile01_AA_A00.png"), 64, 64, i*32, j*32);
+      addItem(test_layer);
+    }
+  }
+
   /* Setup the viewport */
   viewport = new MapViewport(this);
+  viewport->centerOn(0, 0);
 
   /* Connect the signals */
   QObject::connect(viewport, SIGNAL(closingMap(int)),

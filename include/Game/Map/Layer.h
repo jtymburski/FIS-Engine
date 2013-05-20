@@ -1,7 +1,7 @@
 /******************************************************************************
 * Class Name: Layer
 * Date Created: May 10, 2013
-* Inheritance: QGraphicsPixmapItem
+* Inheritance: QGraphicsItem
 * Description: This class becomes the middle interface in between a sprite 
 *              and converting it into the data needed to add it to the
 *              QGraphicsScene. Essentially it just offers the re-implemented
@@ -10,20 +10,43 @@
 #ifndef LAYER_H
 #define LAYER_H
 
-#include <QGraphicsPixmapItem>
+#include <QDebug>
+#include <QGraphicsItem>
+#include <QPainter>
+#include <QRectF>
 
-class Layer : public QGraphicsPixmapItem
+#include "Game/Sprite.h"
+
+class Layer : public QGraphicsItem
 {
 public:
-  /* Constructor function */
+  /* Constructor functions */
   Layer();
+  Layer(Sprite* new_item, int width, int height, 
+        int x = 0, int y = 0, int z = 0);
 
   /* Destructor function */
   ~Layer();
 
 private:
-  /* The map to be displayed */
-  //Map* display_map;
+  /* The information that defines the item */
+  Sprite* item;
+  int width;
+  int height;
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
+public:
+  /* Virtual bounding rectangle - The rectangle that encapsulates the item */
+  QRectF boundingRect() const;
+
+  /* Returns the sprite stored in the layer for control */
+  Sprite* getItem();
+
+  /* Virtual painter reimplementation - for painting the item */
+  void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
+             QWidget* widget);
 };
 
 #endif // LAYER_H

@@ -1,7 +1,7 @@
 /******************************************************************************
 * Class Name: Layer
 * Date Created: May 10, 2013
-* Inheritance: QGraphicsPixmapItem
+* Inheritance: QGraphicsItem
 * Description: This class becomes the middle interface in between a sprite 
 *              and converting it into the data needed to add it to the
 *              QGraphicsScene. Essentially it just offers the re-implemented
@@ -15,10 +15,57 @@
 
 Layer::Layer()
 {
+  /* Initialize the item to a blank slate */
+  item = 0;
+  width = 0;
+  height = 0;
+}
 
+Layer::Layer(Sprite* new_item, int width, int height, int x, int y, int z)
+{
+  /* Initialize the item */
+  item = new_item;
+  this->width = width;
+  this->height = height;
+
+  /* Set the coordinates */
+  setX(x);
+  setY(y);
+  setZValue(z);
+
+  //qDebug() << this->x() << " " << this->y() << " " << width << " " << height;
 }
 
 Layer::~Layer()
 {
 
+}
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
+
+QRectF Layer::boundingRect() const
+{
+  QRectF rect(x(), y(), width, height);
+  //qDebug() << x() << " " << y() << " " << width << " " << height;
+
+  return rect;
+}
+
+Sprite* Layer::getItem()
+{
+  return item;
+}
+
+void Layer::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
+                  QWidget* widget)
+{
+  /* Remove unused parameter warnings */
+  (void)option;
+  (void)widget;
+
+  /* Only paint if sprite exists */
+  if(item != 0)
+    painter->drawPixmap(x(), y(), width, height, item->getCurrent());
 }
