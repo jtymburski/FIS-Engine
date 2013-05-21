@@ -193,6 +193,7 @@ void TitleScreen::setup()
 
     QPalette pal(new_label->palette());
     pal.setColor(QPalette::Foreground, Qt::white);
+    pal.setColor(QPalette::Background, QColor(255,0,0,0));
     new_label->setPalette(pal);
 
     new_label->setMargin(marginWidth);
@@ -211,7 +212,7 @@ bool TitleScreen::unsetSelectedMenu(int menu_count)
   if(menu_count < kNUM_MENU_ITEMS)
   {
     QPalette pal(option_labels[menu_count]->palette());
-    pal.setColor(QPalette::Background, QColor(Qt::black));
+    pal.setColor(QPalette::Background, QColor(255,0,0,0));
     option_labels[menu_count]->setPalette(pal);
     return true;
   }

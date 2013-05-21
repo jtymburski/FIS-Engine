@@ -150,11 +150,16 @@ bool Map::isLoaded()
 bool Map::loadMap(QString file)
 {
   // TODO: New test code [05-20-2013]
+  QPixmap grass_image = Frame::openImage("sprites/Map/Tiles/Ground/GrassTile/GrassTile01_AA_A00.png");
   for(int i = 0; i < 100; i++)
   {
-    for(int j = 0; j < 100; j++)
+    for(int j = 0; j < 100; j++)/* 
+ * Description: Constructor function - Set up one image
+ *
+ * Input: QString image_path - image to set as one sprite 
+ */
     {
-      Layer* test_layer = new Layer(new Sprite("sprites/Map/Tiles/Ground/GrassTile/GrassTile01_AA_A00.png"), 64, 64, i*64, j*64);
+      Layer* test_layer = new Layer(new Sprite(grass_image), 64, 64, i*64, j*64);
       addItem(test_layer);
     }
   }

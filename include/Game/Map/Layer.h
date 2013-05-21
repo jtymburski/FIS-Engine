@@ -10,7 +10,6 @@
 #ifndef LAYER_H
 #define LAYER_H
 
-#include <QDebug>
 #include <QGraphicsItem>
 #include <QPainter>
 #include <QRectF>
@@ -33,8 +32,6 @@ private:
   Sprite* item;
   int width;
   int height;
-  int x_point;
-  int y_point;
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -42,6 +39,9 @@ private:
 public:
   /* Virtual bounding rectangle - The rectangle that encapsulates the item */
   QRectF boundingRect() const;
+
+  /* Clear out the layer definition */
+  void clear();
 
   /* Returns the sprite stored in the layer for control */
   Sprite* getItem();

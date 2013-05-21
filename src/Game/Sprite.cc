@@ -31,7 +31,21 @@ Sprite::Sprite()
 /* 
  * Description: Constructor function - Set up one image
  *
- * Input: QString image_path - image to set as one sprite 
+ * Input: QPixmap image - image to set as one sprite 
+ */
+Sprite::Sprite(QPixmap image, int rotate_angle)
+{
+  head = 0;
+  current = 0;
+  size = 0;
+  direction = FORWARD;
+  insertFirst(image, rotate_angle);
+}
+
+/* 
+ * Description: Constructor function - Set up one image, using the string path
+ *
+ * Input: QString image_path - image path to set as one sprite 
  */
 Sprite::Sprite(QString image_path, int rotate_angle)
 {
@@ -135,13 +149,13 @@ int Sprite::getSize()
 
 /* 
  * Description: Inserts the image into the sprite sequence at the given 
- *              position.
- *
- * Inputs: QString image_path - the path to the image to add
+ *              position using the QPixmap raw data.
+ * 
+ * Inputs: QPixmap image - the image to insert into the sequence
  *         int position - the location in the linked list sequence
  * Output: bool - status if insert is successful
  */
-bool Sprite::insert(QString image_path, int position, int rotate_angle)
+bool Sprite::insert(QPixmap image, int position, int rotate_angle)
 {
   Frame* next_frame;
   Frame* new_frame;
@@ -150,11 +164,11 @@ bool Sprite::insert(QString image_path, int position, int rotate_angle)
   /* Only add if the size is within the bounds of the sprite */
   if(size == 0)
   {
-    return insertFirst(image_path, rotate_angle);
+    return insertFirst(image, rotate_angle);
   }
   else if(position <= size && position >= 0)
   {
-    new_frame = new Frame(image_path, rotate_angle);
+    new_frame = new Frame(image, rotate_angle);
 
     if(new_frame->isImageSet())
     {
@@ -185,18 +199,31 @@ bool Sprite::insert(QString image_path, int position, int rotate_angle)
 }
 
 /* 
+ * Description: Inserts the image into the sprite sequence at the given 
+ *              position based on the given string path.
+ *
+ * Inputs: QString image_path - the path to the image to add
+ *         int position - the location in the linked list sequence
+ * Output: bool - status if insert is successful
+ */
+bool Sprite::insert(QString image_path, int position, int rotate_angle)
+{
+  return insert(Frame::openImage(image_path), position, rotate_angle);
+}
+
+/* 
  * Description: Inserts the first image if the frame sequence is empty.
  * Note: This isn't for inserting the head, just the first one in an empty
  *       list.
  *
- * Inputs: QString image_path - the path to the image to insert
+ * Inputs: QPixmap image - the image to insert
  * Output: bool - status if insertion was successful
  */
-bool Sprite::insertFirst(QString image_path, int rotate_angle)
+bool Sprite::insertFirst(QPixmap image, int rotate_angle)
 {
   if(size == 0)
   {
-    head = new Frame(image_path, rotate_angle);
+    head = new Frame(image, rotate_angle);
     if(head->isImageSet())
     {
       head->setNext(head);
@@ -205,9 +232,24 @@ bool Sprite::insertFirst(QString image_path, int rotate_angle)
       size = 1;
       return true;
     }
+
     delete head;
   }
   return false;
+}
+
+/* 
+ * Description: Inserts the first image, based on the image path, if the frame 
+ *              sequence is empty.
+ * Note: This isn't for inserting the head, just the first one in an empty
+ *       list.
+ *
+ * Inputs: QString image_path - the path to the image to insert
+ * Output: bool - status if insertion was successful
+ */
+bool Sprite::insertFirst(QString image_path, int rotate_angle)
+{
+  return insertFirst(Frame::openImage(image_path), rotate_angle);
 }
 
 /* 
@@ -257,6 +299,18 @@ bool Sprite::insertSequence(QString head_path, int num_frames,
 
 /* 
  * Description: Inserts the image at the end of the sprite sequence 
+ *
+ * Inputs: QPixmap image - the image to insert at the tail
+ * Output: bool - status if insertion was successful
+ */
+bool Sprite::insertTail(QPixmap image, int rotate_angle)
+{
+  return insert(image, size, rotate_angle);
+}
+
+/* 
+ * Description: Inserts the image, based on the path, at the end of the sprite 
+ *              sequence 
  *
  * Inputs: QString image_path - the path to the image to insert
  * Output: bool - status if insertion was successful

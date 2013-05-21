@@ -12,6 +12,37 @@
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
 
+/*
+ * Description: Constructor for this class. Empty parameter, default 
+ *              initialization. Clears pointers and sets up the class
+ *              for new data.
+ *
+ * Inputs: none
+ */
+Frame::Frame()
+{
+  previous = 0;
+  next = 0;
+  image_set = false;
+}
+
+/* 
+ * Description: Constructor for this class. Takes image and next pointer.
+ *              Next pointer is defaulted to 0 if not given.
+ *
+ * Inputs: QPixmap image - the image to copy into the class
+ *         int rotate_angle - the angle to rotate the image to, default to 0
+ *         Frame* next - pointer to next frame, default to 0
+ *         Frame* previous - pointer to previous frame, default to 0
+ */
+Frame::Frame(QPixmap image, int rotate_angle, Frame* next, Frame* previous)
+{
+  setImage(image);
+  rotateImage(rotate_angle);
+  setPrevious(previous);
+  setNext(next);
+}
+
 /* 
  * Description: Constructor for this class. Takes path and next pointer.
  *              Next pointer is defaulted to 0 if not given.
@@ -108,27 +139,46 @@ bool Frame::rotateImage(int angle)
 }
 
 /* 
- * Description: Sets stored image in the frame
+ * Description: Sets stored image in the frame, from a QPixmap
+ *
+ * Inputs: QPixmap image - the image to use within the class
+ * Output: Bool - true if successful
+ */
+bool Frame::setImage(QPixmap image)
+{
+  this->image = image;
+  
+  /* Check if the image is actual data to determine if it has been set */
+  if(image.isNull())
+    image_set = false;
+  else
+    image_set = true;
+  
+  return image_set;
+}
+
+/* 
+ * Description: Sets stored image in the frame, from a string path
  *
  * Inputs: QString path - the path to the image to create
  * Output: Bool - true if successful
  */
 bool Frame::setImage(QString path)
 {
-  QFile new_file(path);
+  QPixmap new_image = openImage(path);
+  image_set = false;
 
-  if(new_file.exists())
+  if(!new_image.isNull())
   {
-    image_set = (this->image).load(path);
-    return image_set;
+    this->image = new_image;
+    image_set = true;
   }
 
-  image_set = false;
-  return false;
+  return image_set;
 }
 
 /* 
- * Description: sets next frame pointer
+ * Description: Sets next frame pointer
  *
  * Inputs: Frame* next - pointer to next frame, can be 0
  * Output: bool - true if successful
@@ -141,7 +191,7 @@ bool Frame::setNext(Frame* next)
 }
 
 /* 
- * Description: sets next frame pointer
+ * Description: Sets next frame pointer
  *
  * Inputs: Frame* previous - pointer to previous frame, can be 0
  * Output: bool - true if successful
@@ -151,4 +201,29 @@ bool Frame::setPrevious(Frame* previous)
   this->previous = previous;
 
   return true; // can't fail so always true
+}
+
+/*============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *===========================================================================*/
+
+/* 
+ * Description: Attempts to open an image. Returns the QPixmap as a non null
+ *              image if its possible.
+ *
+ * Inputs: QString path - the path that the image is situated at
+ * Output: QPixmap - the returned image that can be used (for painting, etc)
+ */
+QPixmap Frame::openImage(QString path)
+{
+  QFile new_file(path);
+
+  if(new_file.exists())
+  {
+    QPixmap image(path);
+    return image;
+  }
+
+  QPixmap blank_image;
+  return blank_image;
 }

@@ -15,7 +15,14 @@
 class Frame
 {
 public:
-  /* Constructor function (path and next pointer initialization) */
+  /* Constructor function - empty initialization */
+  Frame();
+
+  /* Constructor function - image and next pointer initialization */
+  Frame(QPixmap image, int rotate_angle = 0,
+        Frame* next = 0, Frame* previous = 0);
+
+  /* Constructor function - path and next pointer initialization */
   Frame(QString path, int rotate_angle = 0, 
         Frame* next = 0, Frame* previous = 0);
 
@@ -54,7 +61,10 @@ public:
   /* Rotate the image an integer number of degrees */
   bool rotateImage(int angle);
 
-  /* Set stored image */
+  /* Sets the stored image, from QPixmap */
+  bool setImage(QPixmap image);
+
+  /* Sets the stored image, from QString */
   bool setImage(QString path);
 
   /* Set next frame */
@@ -62,6 +72,13 @@ public:
 
   /* Set previous frame */
   bool setPrevious(Frame* previous);
+
+/*============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *===========================================================================*/
+public:
+  /* Deletes the said file, if it exists */
+  static QPixmap openImage(QString path);
 };
 
 #endif // FRAME_H

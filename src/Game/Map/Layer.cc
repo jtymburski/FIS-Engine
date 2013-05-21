@@ -32,16 +32,11 @@ Layer::Layer(Sprite* new_item, int width, int height, int x, int y, int z)
   setX(x);
   setY(y);
   setZValue(z);
-
-  x_point = x;
-  y_point = y;
-
-  //qDebug() << this->x() << " " << this->y() << " " << width << " " << height;
 }
 
 Layer::~Layer()
 {
-
+  clear();
 }
 
 /*============================================================================
@@ -53,6 +48,16 @@ QRectF Layer::boundingRect() const
   QRectF rect(0, 0, width, height);
 
   return rect;
+}
+
+void Layer::clear()
+{
+  if(item != 0)
+    delete item;
+  item = 0;
+
+  width = 0;
+  height = 0;
 }
 
 Sprite* Layer::getItem()
