@@ -897,3 +897,88 @@ void Person::setTempStats(AttributeSet new_stat_set)
 {
   temp_stats = new_stat_set;
 }
+
+/*
+ * Description: Method for printing all the info describing a person, by
+ *              calling sub-print functions
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Person::printAll()
+{
+  qDebug() << " --- Person --- ";
+  printBasics();
+  printBaseStats();
+  printStats();
+  printTempStats();
+  printSkills();
+  qDebug() << " --- / Person --- ";
+}
+
+/*
+ * Description: Method for printing the basic info of a person
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Person::printBasics()
+{
+  qDebug() << " Name: " << getName();
+  qDebug() << " Level: " << getLevel();
+}
+
+/*
+ * Description: Method for printing the basic info of a person
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Person::printEquipment()
+{
+
+}
+
+/*
+ * Description: Method for printing out the base stats of a person
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Person::printBaseStats()
+{
+
+}
+
+/*
+ * Description: Method for printing out the normal stats of a person
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Person::printStats()
+{
+
+}
+
+/*
+ * Description: Method for printing out the temp stats of a person
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Person::printTempStats()
+{
+
+}
+
+/*
+ * Description: Method for printing out the skills of a person
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Person::printSkills()
+{
+
+}

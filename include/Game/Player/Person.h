@@ -141,6 +141,15 @@ public:
   /* Quick function for dealing Vitality damage */
   bool damage(ushort amount);
 
+  /* Methods for printing info pertaining to the person */
+  void printAll();
+  void printBasics();
+  void printEquipment();
+  void printBaseStats();
+  void printStats();
+  void printTempStats();
+  void printSkills();
+
   /* Stat set up functions */
   void setUpBaseStats();
 

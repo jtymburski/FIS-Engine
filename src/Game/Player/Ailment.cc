@@ -1,7 +1,7 @@
 /*******************************************************************************
 * Class Name: Ailment
 * Date Created: March 6th, 2013
-* Inheritance: N/A
+* Inheritance: QWidget
 * Description: The ailment class represents a Status Ailment or Debuff. Ailments
 *              use the Infliction enumerated type to store their type as well
 *              as the EnumString class to conver the enumerations to strings
@@ -11,15 +11,25 @@
 *              1 - (Add) an enumerated value to Infliction enum EnumDatabase.h
 *              2 - (Add) a registered string to BEGIN_ENUM_STRING( Infliction )
 *              3 - [(Add)] const static values to be used if necessary to class
-*              4 - (Add) the Ailment's effect to updateAndApply()
+*              4 - (Add) the Ailment's effects
+*                   i -- effect on apply() including per ter effects, flags
+*                        flipped, stat changes, etc.
+*                  ii -- effect on unapply(), best removal possible of the
+*                        ailment--return to normal (except for other
+*                        afflictions the user might be suffering from).
+*                 iii -- some ailments effects
+*                        are not practical to have an apply() effect per se
+*                        but alter the flow of combat, such as berserk, and so
+*                        they will be handled in Battle.
+*                  iv -- remember to fully utilize any Signals and Slots which
+*                        the class may use
 *
-* // TODO: Rigorous testing for class [03-11-13]
 * // TODO: Finish Curse apply effect [03-30-13]
 *******************************************************************************/
 #include "Game/Player/Ailment.h"
 
 /*============================================================================
- * CONSTANTS
+ * CONSTANTS (Explanation for each in header file)
  *============================================================================*/
 const ushort Ailment::kMAX_TURNS           =   25;
 const ushort Ailment::kMIN_TURNS           =    1;
@@ -512,6 +522,7 @@ bool Ailment::checkImmunity(Person* new_victim)
       return false;
   }
 
+  /* Bosses are immune to some ailments */
   else if (new_victim->getPersonFlag(Person::BOSS))
   {
     if (ailment_type == DEATHTIMER || ailment_type == BUBBIFY   ||
@@ -520,6 +531,7 @@ bool Ailment::checkImmunity(Person* new_victim)
       return false;
   }
 
+  /* Final boss will be immune to many ailments */
   else if (new_victim->getPersonFlag(Person::FINALBOSS))
   {
     if (ailment_type == DEATHTIMER || ailment_type == BUBBIFY   ||
@@ -551,12 +563,14 @@ bool Ailment::checkImmunity(Person* new_victim)
       return false;
   }
 
+  /* Bsians are not bears and don't get angry */
   else if (race_name == "Bsian")
   {
     if (ailment_type == HIBERNATION || ailment_type == BERSERK)
       return false;
   }
 
+  /* Cyborgs are non-biological */
   else if (race_name == "Cyborg")
   {
     if (ailment_type == HIBERNATION || ailment_type == REFLECT ||
@@ -564,6 +578,7 @@ bool Ailment::checkImmunity(Person* new_victim)
       return false;
   }
 
+  /* Artilects are non-biological and immune to some others */
   else if (race_name == "Artilect")
   {
     if (ailment_type == HIBERNATION || ailment_type == REFLECT ||
@@ -572,23 +587,28 @@ bool Ailment::checkImmunity(Person* new_victim)
       return false;
   }
 
+  /* Gyrokin are ot bears */
   else if (race_name == "Gyrokin")
   {
     if (ailment_type == HIBERNATION || ailment_type == REFLECT)
       return false;
   }
 
+  /* Necross are not bears */
   else if (race_name == "Necross")
   {
     if (ailment_type == HIBERNATION || ailment_type == REFLECT)
       return false;
   }
+
+  /* Bears have hibernate instead of Rootbound */
   else if (race_name == "Bear")
   {
     if (ailment_type == ROOTBOUND)
       return false;
   }
 
+  /* BOATs can't really be buffed up--they are extremely powerful */
   else if (race_name == "Boat")
   {
     if (ailment_type == ALLATKBUFF || ailment_type == ALLDEFBUFF ||
@@ -604,11 +624,15 @@ bool Ailment::checkImmunity(Person* new_victim)
         ailment_type == QDBUFF)
     return false;
   }
+
+  /* Fiends are immune to reflect */
   else if (race_name == "Fiend")
   {
     if (ailment_type == REFLECT)
       return false;
   }
+
+  /* Spirits can't be buffed and are immune to many other ailments */
   else if (race_name == "Spirit")
   {
     if (ailment_type == HIBERNATION || ailment_type == ALLATKBUFF    ||
@@ -629,7 +653,8 @@ bool Ailment::checkImmunity(Person* new_victim)
     return false;
   }
 
-  /* Category immunity section */
+  /* Category immunity section -- each category also allows an
+   * additional ailment immunity */
   if (category_name == "Bardic Sage" && ailment_type == SILENCE)
       return false;
   else if (category_name == "Bloodclaw Scion" && ailment_type == DEATHTIMER)
@@ -752,7 +777,7 @@ void Ailment::unapply()
     emit removeBuffs(victim->getName());
   }
 
-
+  /* Remove the buffing effects from all attack stats */
   if (getType() == ALLATKBUFF)
   {
     for (int i = 0; i < stats->getSize(); i++)
@@ -763,6 +788,7 @@ void Ailment::unapply()
     }
   }
 
+  /* Remove the buffing effect from all defense stats */
   else if (getType() == ALLDEFBUFF)
   {
     for (int i = 0; i < stats->getSize(); i++)
@@ -773,6 +799,7 @@ void Ailment::unapply()
     }
   }
 
+  /* Remove the buffing effect from each stat */
   else if (ailment_type == PHYATKBUFF)
     stats->setStat("PHAG", stats->getStat("PHAG") / kPHYSBUFF_PC);
   else if (ailment_type == PHYDEFBUFF)
@@ -812,6 +839,7 @@ void Ailment::unapply()
   else if (ailment_type == QDBUFF)
     stats->setStat("QTMN", stats->getStat("QTMN") / kQTMNBUFF_PC);
 
+  /* Flip the flags allowing the person to use two or three skills per turn */
   else if (getType() == DOUBLECAST)
       victim->setPersonFlag(Person::TWOSKILLS, false);
   else if (getType() == TRIPLECAST)
@@ -823,6 +851,56 @@ void Ailment::unapply()
   {
     /* Curse effect incomplete [05-13-13] */
   }
+}
+
+
+/*
+ * Description: Prints all the info pertaining to Ailment by calling the other
+ *              print functions
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Ailment::printAll()
+{
+  qDebug() << " --- Ailment --- ";
+  printFlags();
+  printInfo();
+  qDebug() << " -- /Ailment --- ";
+}
+
+/*
+ * Description: Prints out the states of the flags of ailment
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Ailment::printFlags()
+{
+  qDebug() << "INFINITE: " << getFlag(Ailment::INFINITE);
+  qDebug() << "CURABLE:  " << getFlag(Ailment::CURABLE);
+  qDebug() << "TOBECURED  " << getFlag(Ailment::TOBECURED);
+  qDebug() << "TOBEUPDATED:  " << getFlag(Ailment::TOBEUPDATED);
+  qDebug() << "TOBEAPPLIED:  " << getFlag(Ailment::TOBEAPPLIED);
+  qDebug() << "BUFF:  " << getFlag(Ailment::BUFF);
+  qDebug() << "ADVERSE:  " << getFlag(Ailment::ADVERSE);
+  qDebug() << "NEUTRAL:  " << getFlag(Ailment::NEUTRAL);
+  qDebug() << "IMMUNITY:  " << getFlag(Ailment::IMMUNITY);
+  qDebug() << "CUREONDEATH:  " << getFlag(Ailment::CUREONDEATH);
+}
+
+/*
+ * Description: Prints out the info pertaining to the ailment
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Ailment::printInfo()
+{
+  qDebug() << "Chance: " << chance;
+  qDebug() << "Max # turns left: " << max_turns_left;
+  qDebug() << "Turns Occured: " << turns_occured;
+  qDebug() << "Current Victim Name: " << victim->getName();
 }
 
 /*
@@ -870,35 +948,6 @@ QString Ailment::getName()
   const std::string &string = EnumString<Infliction>::From( ailment_type );
   QString ailment_qstring(string.c_str());
   return ailment_qstring;
-}
-
-/*
- * Description: Returns the string value of a given infliction. Uses the
- *              EnumString class which generates std::strings, the actual
- *              registered strings are in EnumDatabase
- *
- * Inputs: Infliction - type of Infliction to be evaluated.
- * Output: QString - A QString of the given Infliction type.
- */
-QString Ailment::getAilmentStr(Infliction type)
-{
-  const std::string &ailment_string = EnumString<Infliction>::From(type);
-  QString ailment_qstring(ailment_string.c_str());
-  return ailment_qstring;
-}
-
-/*
- * Description: Returns the Infliction of a given string (if one exists)
- *
- * Inputs: QString - name of Infliction to be checked for
- * Output: Infliction - the corresponding Infliction (NOAILMENT for default)
- */
-Infliction Ailment::getInfliction(QString name)
-{
-  const std::string &ailment_string = name.toUtf8().constData();
-  Infliction ailment_type;
-  EnumString<Infliction>::To(ailment_type, ailment_string);
-  return ailment_type;
 }
 
 /*
@@ -1017,4 +1066,37 @@ void Ailment::reset()
   max_turns_left += turns_occured;
   turns_occured = 0;
   emit reset();
+}
+
+/*=============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
+
+/*
+ * Description: Returns the string value of a given infliction. Uses the
+ *              EnumString class which generates std::strings, the actual
+ *              registered strings are in EnumDatabase
+ *
+ * Inputs: Infliction - type of Infliction to be evaluated.
+ * Output: QString - A QString of the given Infliction type.
+ */
+QString Ailment::getAilmentStr(Infliction type)
+{
+  const std::string &ailment_string = EnumString<Infliction>::From(type);
+  QString ailment_qstring(ailment_string.c_str());
+  return ailment_qstring;
+}
+
+/*
+ * Description: Returns the Infliction of a given string (if one exists)
+ *
+ * Inputs: QString - name of Infliction to be checked for
+ * Output: Infliction - the corresponding Infliction (NOAILMENT for default)
+ */
+Infliction Ailment::getInfliction(QString name)
+{
+  const std::string &ailment_string = name.toUtf8().constData();
+  Infliction ailment_type;
+  EnumString<Infliction>::To(ailment_type, ailment_string);
+  return ailment_type;
 }

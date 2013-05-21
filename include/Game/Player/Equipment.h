@@ -57,6 +57,15 @@ private:
   static const ushort kMAX_X;
   static const ushort kMAX_Y;
 
+/* =============================================================================
+ * VIRTUAL FUNCTIONS
+ *============================================================================*/
+public:
+  /* Method for printing the info of the equipment */
+  void printAll();
+  void printFlags();
+  void printInfo();
+
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
@@ -74,6 +83,9 @@ public:
   /* Checks if a Bubby at a given index can be unattached */
   bool canUnattach(ushort x, ushort y);
   bool canUnattach(uint id);
+
+  /* Method to print out the bubby signature on the Equipment */
+  void printSignature();
 
   /* Removes a Bubby at a given x and y value (checks adjacent values) */
   Bubby unattach(ushort x, ushort y);

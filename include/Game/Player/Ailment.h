@@ -137,6 +137,11 @@ public:
   /* Undoes the effect (if exits) to the victim before curing */
   void unapply();
 
+  /* Methods for printing all the information pertaining to the ailment */
+  void printAll();
+  void printFlags();
+  void printInfo();
+
   /* Evaluates an ailment flag or flags */
   bool getFlag(AilmentFlag flags);
 
@@ -175,7 +180,7 @@ public slots:
   void update();
 
 /*============================================================================
- * SLOTS
+ * SIGNALS
  *============================================================================*/
 signals:
   /* Tells BIB and BSB an ailment of victim is being inflicted */

@@ -46,6 +46,9 @@ public:
   /* Removes duplicates and cleans up vectors */
   void cleanUp();
 
+  /* Method to print out the info of the Skill Set */
+  void printInfo();
+
   /* Methods to remove skills */
   bool removeSkill(int index);
   bool removeSkill(QString name);
@@ -62,6 +65,8 @@ public:
   /* Methods to enable/disable skills */
   void setSkillState(int index, bool state = true);
   bool setSkillState(QString name, bool state = true);
+
+
 };
 
 

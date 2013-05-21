@@ -536,3 +536,24 @@ QString AttributeSet::getName(int index)
       return short_names.at(index);
   return "";
 }
+
+/*
+ * Description: Prints out the stats (normal and max values) of the attribute
+ *              set.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void AttributeSet::printInfo()
+{
+  qDebug() << " --- Attr Set:  < Normal Value | Max Value > ---";
+
+  /* Loop through each stat and print the values */
+  for (int i = 0; i < getSize(); i++)
+  {
+    qDebug() <<  short_names.at(i) << " < " << getStat(i) << " | "
+              << getMax(i) << " >";
+  }
+
+  qDebug() << " --- / Attr Set --- ";
+}

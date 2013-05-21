@@ -107,6 +107,9 @@ public:
 
   /* Returns the number of attributes */
   static int getSize();
+
+  /* Prints out the stats of the Attribute set */
+  void printInfo();
 };
 
 #endif // ATTRIBUTESET_H

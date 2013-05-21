@@ -432,3 +432,70 @@ void Equipment::setEquipmentFlag(EquipmentState flag, bool set_value)
     (set_value) ? (eflag_set |= flag) : (eflag_set ^= flag);
 }
 
+/*=============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
+
+/*
+ * Description: Prints out all the info of the equipment by calling the other
+ *              print functions.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Equipment::printAll()
+{
+  qDebug() << " --- Equipment --- ";
+  printFlags();
+  printInfo();
+  printSignature();
+  qDebug() << " --- / Equipment --- ";
+}
+
+/*
+ * Description: Prints out the info of the equipment
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Equipment::printFlags()
+{
+  qDebug() << "WEAPON: " << getEquipmentFlag(Equipment::WEAPON);
+  qDebug() << "METAL: " << getEquipmentFlag(Equipment::METAL);
+  qDebug() << "BROKEN: " << getEquipmentFlag(Equipment::BROKEN);
+  qDebug() << "HEAD: " << getEquipmentFlag(Equipment::HEAD);
+  qDebug() << "LEFT ARM: " << getEquipmentFlag(Equipment::LEFTARM);
+  qDebug() << "RIGHT ARM: " << getEquipmentFlag(Equipment::RIGHTARM);
+  qDebug() << "TORSO: "<< getEquipmentFlag(Equipment::TORSO);
+  qDebug() << "LEGS: " << getEquipmentFlag(Equipment::LEGS);
+  qDebug() << "TWOHAND: " << getEquipmentFlag(Equipment::TWOHAND);
+  qDebug() << "EQUIPPED: " << getEquipmentFlag(Equipment::EQUIPPED);
+}
+
+/*
+ * Description: Prints out the info of the equipment
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Equipment::printInfo()
+{
+    qDebug() << getName();
+}
+
+/*
+ * Description: Prints out the info of the equipment
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Equipment::printSignature()
+{
+  for (int i = 0; i < kMAX_X; i++)
+  {
+    for (int j = 0; j < kMAX_Y; j++)
+    {
+      qDebug() << signature[i][j];
+    }
+  }
+}

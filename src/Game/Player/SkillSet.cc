@@ -122,6 +122,26 @@ void SkillSet::cleanUp()
 }
 
 /*
+ * Description: Prints out the info of the skill set
+ *
+ * Inputs: none
+ * Output: none
+ */
+void SkillSet::printInfo()
+{
+  qDebug() << " --- Skill Set: Skill Name < Available At | Enabled > --- ";
+
+  /* Loop through each skill and dump the info relating to it */
+  for (int i = 0; i < skills.size(); i++)
+  {
+      qDebug() << skills.at(i)->getName() << " < " << getSkillLevel(i) << " | "
+               << enabled.at(i) << " > ";
+  }
+
+  qDebug() << " --- / Skill Set --- ";
+}
+
+/*
  * Description: Removes a skill from the SkillSet, given an index
  *
  * Inputs: int - index of the skill to be removed

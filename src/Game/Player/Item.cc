@@ -18,6 +18,10 @@
  */
 Item::Item()
 {
+  //setName(name);
+  //setThumb(thumb);
+  //setValue(value);
+  //setWeight(weight);
 }
 
 /*
@@ -26,7 +30,63 @@ Item::Item()
 Item::~Item() {}
 
 /*============================================================================
- * FUNCTIONS
+ * VIRTUAL FUNCTIONS
+ *===========================================================================*/
+
+/*
+ * Description: Returns the category of an item
+ *
+ * Inputs: ItemState flag to be toggled
+ * Output: none
+ */
+void Item::printAll()
+{
+  qDebug() << " --- Item --- ";
+  printFlags();
+  printInfo();
+  qDebug() << " --- /Item --- ";
+}
+
+/*
+ * Description: Returns the category of an item
+ *
+ * Inputs: ItemState flag to be toggled
+ * Output: none
+ */
+void Item::printFlags()
+{
+  qDebug() << "BATTLEREADY: " << getItemFlag(Item::BATTLEREADY);
+  qDebug() << "MENUREADY: " << getItemFlag(Item::MENUREADY);
+  qDebug() << "CONSUMABLE: " << getItemFlag(Item::CONSUMABLE);
+  qDebug() << "HEAL ITEM: " << getItemFlag(Item::HEALITEM);
+  qDebug() << "CURE: " << getItemFlag(Item::CURE);
+  qDebug() << "OFFENSIVE: " << getItemFlag(Item::OFFENSIVE);
+  qDebug() << "INDEFINITE: " << getItemFlag(Item::INDEFINITE);
+  qDebug() << "STACKABLE: " << getItemFlag(Item::STACKABLE);
+  qDebug() << "EQUIPMENT: " << getItemFlag(Item::EQUIPMENT);
+  qDebug() << "KEYITEM: " << getItemFlag(Item::KEYITEM);
+  qDebug() << "MULTIHIT: " << getItemFlag(Item::MULTIITEM);
+  qDebug() << "PARTYITEM: " << getItemFlag(Item::PARTYITEM);
+}
+
+/*
+ * Description: Returns the category of an item
+ *
+ * Inputs: ItemState flag to be toggled
+ * Output: none
+ */
+void Item::printInfo()
+{
+  qDebug() << "Name: " << name;
+  qDebug() << "Description: " << description;
+  qDebug() << "Category: " << item_category;
+  qDebug() << "Duration: " << duration;
+  qDebug() << "Value: " << value;
+  qDebug() << "Weight: " << weight;
+}
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
  *===========================================================================*/
 
 /*
@@ -85,6 +145,17 @@ uint Item::getDuration()
 }
 
 /*
+ * Description: Gets the value of the item
+ *
+ * Inputs: none
+ * Output: uint - the value of the item
+ */
+uint Item::getValue()
+{
+  return value;
+}
+
+/*
  * Description: Gets the weight of the item
  *
  * Inputs: none
@@ -139,6 +210,17 @@ void Item::setItemFlag(ItemState flag, bool set_value)
 void Item::setDuration(uint value)
 {
   duration = value;
+}
+
+/*
+ * Description: Sets the value of the item.
+ *
+ * Inputs: uint - new value of the item
+ * Output: none
+ */
+void Item::setValue(uint value)
+{
+  this->value = value;
 }
 
 /*

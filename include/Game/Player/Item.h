@@ -37,7 +37,7 @@ public:
     EQUIPMENT     = 1ul << 7, /* Is the item a piece of equipment? */
     KEYITEM       = 1ul << 8, /* is the item a unique quest item? */
     MULTIITEM     = 1ul << 9, /* Does the item hit more than one target? */
-    PARTYTITEM    = 1ul << 10 /* Does the item effect all members of a party? */
+    PARTYITEM    = 1ul << 10 /* Does the item effect all members of a party? */
   };
   Q_DECLARE_FLAGS(ItemFlags, ItemState)
   ItemFlags iflag_set;
@@ -62,6 +62,18 @@ private:
   uint value;
   double weight;
 
+/*=============================================================================
+ * VIRTUAL FUNCTIONS
+ *============================================================================*/
+public:
+  /* Methods for printing info of item */
+  virtual void printAll();
+  virtual void printFlags();
+  virtual void printInfo();
+
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
 public:
   /* Gets category of unit */
   QString getCategory();
@@ -81,6 +93,9 @@ public:
   /* Gets the turn count */
   uint getDuration();
 
+  /* Gets the value of an item */
+  uint getValue();
+
   /* Gets the weight of the item */
   double getWeight();
 
@@ -93,8 +108,12 @@ public:
   /* Sets an ItemFlag */
   void setItemFlag(ItemState flag, bool set_value);
 
+  /* Sets the value of an item */
+  void setValue(uint value);
+
   /* Sets the weight of the item */
   void setWeight(double new_value);
+
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Item::ItemFlags);
 
