@@ -13,6 +13,11 @@
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
 
+/* 
+ * Description: Constructor function - Sets up a blank layer
+ *
+ * Input: none
+ */
 Layer::Layer()
 {
   /* Initialize the item to a blank slate */
@@ -21,10 +26,22 @@ Layer::Layer()
   height = 0;
 }
 
-Layer::Layer(Sprite* new_item, int width, int height, int x, int y, int z)
+/* 
+ * Description: Constructor function - Sets up the layer by defining the
+ *              sprite, width and height. Optional variables include the X and 
+ *              Y value of the widget as well as the layer in the scene (Z).
+ *
+ * Inputs: Sprite* item - the new sprite to create the layer around
+ *         int width - the pixel width of the tile layer
+ *         int height - the pixel height of the tile layer
+ *         int x - the x location in the scene for the tile layer
+ *         int y - the y location in the scene for the tile layer
+ *         int z - the layer depth for the QGraphicsScene
+ */
+Layer::Layer(Sprite* item, int width, int height, int x, int y, int z)
 {
   /* Initialize the item */
-  item = new_item;
+  this->item = item;
   this->width = width;
   this->height = height;
 
@@ -34,6 +51,9 @@ Layer::Layer(Sprite* new_item, int width, int height, int x, int y, int z)
   setZValue(z);
 }
 
+/* 
+ * Description: Destructor function 
+ */
 Layer::~Layer()
 {
   clear();
@@ -43,6 +63,13 @@ Layer::~Layer()
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
+/* 
+ * Description: Implemented virtual function. Returns the bounding rectangle
+ *              around the image that is being added into the scene. 
+ *
+ * Inputs: none
+ * Output: QRectF - the rectangle around the internal image
+ */
 QRectF Layer::boundingRect() const
 {
   QRectF rect(0, 0, width, height);
@@ -50,6 +77,13 @@ QRectF Layer::boundingRect() const
   return rect;
 }
 
+/* 
+ * Description: Clears out the class by deleting the necessary sprite pointer
+ *              (if set) and then clears all the internal variables.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void Layer::clear()
 {
   if(item != 0)
@@ -60,11 +94,28 @@ void Layer::clear()
   height = 0;
 }
 
+/* 
+ * Description: Gets the sprite item encapsulated by the layer
+ *
+ * Inputs: none
+ * Output: Sprite* - the sprite housed within this layer
+ */
 Sprite* Layer::getItem()
 {
   return item;
 }
 
+/* 
+ * Description: Reimplemented virtual function. Handles the painting of the 
+ *              image stored within the layer. Runs based on the same data as 
+ *              the above QRectF for the bounding box. Only paints if the tile 
+ *              is set.
+ *
+ * Inputs: QPainter* painter - the painter to send all the image data to
+ *         QStyleOptionGraphicsItem* option - any painting options.
+ *         QWidget* widget - the related widget, if applicable
+ * Output: none
+ */
 void Layer::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
                   QWidget* widget)
 {

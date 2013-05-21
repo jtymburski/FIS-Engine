@@ -12,7 +12,6 @@
 
 #include <QGraphicsItem>
 #include <QPainter>
-#include <QRectF>
 
 #include "Game/Sprite.h"
 
@@ -21,7 +20,7 @@ class Layer : public QGraphicsItem
 public:
   /* Constructor functions */
   Layer();
-  Layer(Sprite* new_item, int width, int height, 
+  Layer(Sprite* item, int width, int height, 
         int x = 0, int y = 0, int z = 0);
 
   /* Destructor function */

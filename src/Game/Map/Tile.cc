@@ -13,11 +13,18 @@
 #include "Game/Map/Tile.h"
 
 /* Constant Implementation - see header file for descriptions */
+const int Tile::kBASE_DEPTH = 1;
+const int Tile::kENHANCER_DEPTH = 6;
 const int Tile::kENHANCER_TOTAL = 4;
+const int Tile::kLOWER_DEPTH = 7;
+const int Tile::kMAP_INTERACTIVE_DEPTH = 8;
+const int Tile::kMAP_PERSON_DEPTH = 9;
+const int Tile::kMAX_BASE_COUNT = 5;
 const int Tile::kNE_ENHANCER     = 1;
 const int Tile::kNW_ENHANCER     = 0;
 const int Tile::kSE_ENHANCER     = 3;
 const int Tile::kSW_ENHANCER     = 2;
+const int Tile::kUPPER_DEPTH = 10;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -33,11 +40,19 @@ const int Tile::kSW_ENHANCER     = 2;
  *         int height - the height of the tile in pixels
  *         int x - the x location respective to the parent (in pixels)
  *         int y - the y location respective to the parent (in pixels)
- *         QWidget* parent - the parent widget to be set in the tile
+ *         QObject* parent - the parent object to be set in the tile
  */
-Tile::Tile(int width, int height, int x, int y, QWidget* parent)
+Tile::Tile(int width, int height, int x, int y, QObject* parent)
 {
-  //setParent(parent);
+  setParent(parent);
+
+  /* Tile definitions */
+  this->height = height;
+  this->width = width;
+  this->x = x;
+  this->y = y;
+
+  /* Clear out the logic for parts of the tile */
   base_set = false;
   enhancer_set = false;
   lower_set = false;
@@ -45,15 +60,8 @@ Tile::Tile(int width, int height, int x, int y, QWidget* parent)
   upper_set = false;
   passable_set = false;
 
+  /* Set the initial passibility as completely open */
   setPassibility(true);
-  tileselector = new GridShifter(this);
-  hover = false;
-  connect(tileselector->getBase(),SIGNAL(textChanged(QString)),this,SLOT(setBase(QString)));
-  connect(tileselector->getLower(),SIGNAL(textChanged(QString)),this,SLOT(setLower(QString)));
-  connect(tileselector->getUpper(),SIGNAL(textChanged(QString)),this,SLOT(setUpper(QString)));
-  setGeometry(x, y, width, height);
-
-  //show();
 }
 
 /* 
@@ -67,70 +75,6 @@ Tile::~Tile()
   unsetUpper();
 }
 
-/*============================================================================
- * PUBLIC FUNCTIONS
- *===========================================================================*/
-
-/* 
- * Description: Paint event for the tile that gets called when the QWidget
- *              gets updated. Handles all the printing of sprites and 
- *              assembling the tile into one. Note: this is an override
- *              function.
- *
- * Inputs: QPaintEvent* event - the event that results in the call
- * Output: none
- */
-void Tile::paintEvent(QPaintEvent* event)
-{
-  (void)event;// TODO: removing causes warning
-  QPainter painter(this);
-
-  /* Print the base, if it exists */
-  if(base_set)
-    painter.drawPixmap(0, 0, base->getCurrentAndShift());
-
-  /* Print the enhancer, if it exists */
-  //if(enhancer_set)
-  //    painter.drawPixmap(0,0,enhancer->getCurrentAndShift());
-
-  /* Print the lower sprite, if it exists */
-  //if(lower_set)
-  //  painter.drawPixmap(0, 0, width(), height(), lower->getCurrentAndShift());
-
-  /* Print the upper sprite, if it exists */
-  //if(upper_set)
-  //  painter.drawPixmap(0, 0, upper->getCurrentAndShift());
-
-  /* Bounding box if the mouse is hovered over the tile */
-  //if(hover)
-  //{
-  //  painter.setPen(QColor(Qt::red));
-  //  painter.drawRect(1,1,width()-2,height()-2);
-  //}
-}
-
-/*
- * Description: Mouse Press event that handles setting map tiles on the fly for
- *              easy testing of textures in different places, this will be
- *              removed once either Map starts working, or the Map Editor is
- *              implemented, this is just a temporary method
- * Inputs: QMouseEvent*
- * Output: none
- */
-void Tile::mousePressEvent(QMouseEvent *)
-{
-    tileselector->show();
-}
-void Tile::enterEvent(QEvent *)
-{
-    hover = true;
-    update();
-}
-void Tile::leaveEvent(QEvent *)
-{
-    hover = false;
-    update();
-}
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
@@ -159,6 +103,31 @@ int Tile::getAngle(RotatedAngle angle)
  *===========================================================================*/
 
 /* 
+ * Description: Adds a new base layer to the stack. Only fails if the stack
+ *              already has 5 layers (max) or the sprite size is 0.
+ *
+ * Inputs: Sprite* base_sprite - the new base sprite to attempt to load in
+ *         RotateAngle angle - the angle classification to rotate the tile
+ * Output: Layer* - returns the layer that was set for the base
+ *                  If pointer is 0, call failed.
+ */
+Layer* Tile::addBase(Sprite* base_sprite, RotatedAngle angle)
+{
+  /* Determine if the base can be added to the stack */
+  if(base_sprite->getSize() != 0 && base.size() <= kMAX_BASE_COUNT)
+  {
+    /* Add the base to the stack. Offset the Z component based on the
+     * constant plus the array location so each base is on a different layer */
+    base.append(new Layer(base_sprite, width, height, 
+                          x, y, kBASE_DEPTH + base.size()));
+    base_set = true;
+    return base[base.size() - 1];
+  }
+
+  return 0;
+}
+
+/* 
  * Description: Animates all sprites on tile. This allows for the fine control
  *              of the QWidget update and if any special conditions need to be
  *              done for animation.
@@ -173,16 +142,19 @@ void Tile::animate()
 }
 
 /* 
- * Description: Gets the base sprite and returns it, if set.
+ * Description: Gets the base layer(s) and returns it(them), if set.
  *
  * Inputs: none
- * Output: Sprite* - the base sprite pointer
+ * Output: QVector<Layer*> - the QVector of up to 5 base layers allowed
  */
-Sprite* Tile::getBase()
+QVector<Layer*> Tile::getBase()
 {
   if(base_set)
     return base;
-  return NULL;
+
+  /* If not set, return an empty stack since the state is unknown */
+  QVector<Layer*> temp_stack;
+  return temp_stack;
 }
 
 /* 
@@ -297,10 +269,10 @@ Sprite* Tile::getUpper()
 }
 
 /* 
- * Description: Returns if the Base Sprite is set 
+ * Description: Returns if the Base Layer(s) is(are) set 
  *
  * Inputs: none
- * Output: bool - status if the base sprite is set
+ * Output: bool - status if the base layer(s) is(are) set
  */
 bool Tile::isBaseSet()
 {
@@ -363,33 +335,7 @@ bool Tile::isUpperSet()
   return upper_set;
 }
 
-/* 
- * Description: Sets the base sprite in the tile using a path to the sprite 
- *              image file.
- *
- * Inputs: QString path - the path to the image to load in
- *         RotateAngle angle - the angle classification to rotate the tile
- * Output: bool - returns true if the base sprite was set
- */
-bool Tile::setBase(QString path, RotatedAngle angle)
-{
-  /* Deletes the old base and sets the new base */
-  unsetBase();
-  base = new Sprite(path, getAngle(angle));
 
-  /* Determine if the base was set successfully */
-  if(base->getSize() == 0)
-  {
-    delete base;
-    base_set = false;
-  }
-  else
-  {
-    base_set = true;  
-  }
-
-  return base_set;
-}
 
 /*
  * Description: Sets the enhancer tile using a path to a single sprite image
@@ -584,9 +530,9 @@ bool Tile::setUpper(QString path, RotatedAngle angle)
 }
 
 /* 
- * Description: Unsets the base in the tile. Deletes the pointer, if applicable
- *              and sets the internal variable to notify the class so the base
- *              isn't repainted.
+ * Description: Unsets the base in the tile. Deletes the pointers, if 
+ *              applicable and sets the internal variable to notify the class 
+ *              so the base isn't reused.
  *
  * Inputs: none
  * Output: bool - returns true if the base was set before being unset
@@ -595,7 +541,12 @@ bool Tile::unsetBase()
 {
   if(base_set)
   {
-    delete base;
+    for(int i = 0; i < base.size(); i++)
+    {
+      delete base[i];
+    }
+
+    base.clear();
     base_set = false;
     return true;
   }

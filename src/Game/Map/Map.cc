@@ -149,21 +149,36 @@ bool Map::isLoaded()
 
 bool Map::loadMap(QString file)
 {
-  // TODO: New test code [05-20-2013]
-  QPixmap grass_image = Frame::openImage("sprites/Map/Tiles/Ground/GrassTile/GrassTile01_AA_A00.png");
+  // TODO: START TEST CODE [05-20-2013]
+
+  /* Set up the tiles */
   for(int i = 0; i < 100; i++)
   {
-    for(int j = 0; j < 100; j++)/* 
- * Description: Constructor function - Set up one image
- *
- * Input: QString image_path - image to set as one sprite 
- */
+    QVector<Tile*> row;
+
+    for(int j = 0; j < 100; j++)
+      row.append(new Tile(64, 64, j*64, i*64));
+
+    geography.append(row);
+  }
+
+  /* The grass pixmap */
+  QPixmap grass_image = Frame::openImage("sprites/Map/Tiles/Ground/GrassTile/GrassTile01_AA_A00.png");
+  QPixmap shrub_image = Frame::openImage("sprites/Map/Map_Things/shrub_AA_A00.png");
+
+  /* Add the new layers */
+  for(int i = 0; i < 100; i++)
+  {
+    for(int j = 0; j < 100; j++) 
     {
-      Layer* test_layer = new Layer(new Sprite(grass_image), 64, 64, i*64, j*64);
-      addItem(test_layer);
+      addItem(geography[i][j]->addBase(new Sprite(grass_image)));
+      addItem(geography[i][j]->addBase(new Sprite(shrub_image)));
     }
   }
   loaded = true;
+
+  // END TEST CODE
+  
 
   // TODO: Old code [05-20-2013]
   /*bool done = false;

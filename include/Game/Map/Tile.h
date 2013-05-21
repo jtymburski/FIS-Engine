@@ -1,28 +1,26 @@
 /******************************************************************************
 * Class Name: Tile
 * Date Created: Oct 28 2012
-* Inheritance: QWidget
+* Inheritance: QObject
 * Description: The Tile class
 ******************************************************************************/
 #ifndef TILE_H
 #define TILE_H
 
-#include <QtGui/QWidget>
-#include <QtGui/QPainter>
+#include <QObject>
 
+#include "Game/Map/Layer.h"
 #include "Game/Map/MapInteractiveObject.h"
 #include "Game/Map/MapPerson.h"
 #include "Game/Map/MapWalkOver.h"
-#include "Game/Sprite.h"
-#include "GridShifter.h"
 
-class Tile : public QWidget
+class Tile : public QObject
 {
     Q_OBJECT
 
 public:
   /* Constructor function */
-  Tile(int width, int height, int x = 0, int y = 0, QWidget* parent = 0);
+  Tile(int width, int height, int x = 0, int y = 0, QObject* parent = 0);
 
   /* Destructor function */
   ~Tile();
@@ -43,14 +41,16 @@ public:
    * INACTIVE - Blacked out (sector past a door) */
   enum Status{STATUSOFF, ACTIVE, INACTIVE};
 
-private: 
-  //TODO: Get rid of this once the map editor is complete
-  GridShifter* tileselector;
-  bool hover;
+private:
+  /* Basic information for the tile */
+  int height;
+  int width;
+  int x;
+  int y;
 
   /* The lowest level of sprite on tile, passibility varies based on tile
    * (eg. Grass, lava, water) */
-  Sprite* base;
+  QVector<Layer*> base;
   bool base_set;
 
   /* The enhancment layer on the base. This is things like water bodies, 
@@ -83,22 +83,22 @@ private:
   bool north_passibility,east_passibility,south_passibility,west_passibility;
 
   /*------------------- Constants -----------------------*/
-  const static int kENHANCER_TOTAL; /* The number of enhancers in a tile */
-  const static int kNE_ENHANCER;    /* The NE enhancer quarter index */
-  const static int kNW_ENHANCER;    /* The NW enhancer quarter index */
-  const static int kSE_ENHANCER;    /* The SE enhancer quarter index */
-  const static int kSW_ENHANCER;    /* The SW enhancer quarter index */
-
+  const static int kBASE_DEPTH;       /* The starting base layer depth */
+  const static int kENHANCER_DEPTH;   /* The enhancer layer depth */
+  const static int kENHANCER_TOTAL;   /* The number of enhancers in a tile */
+  const static int kLOWER_DEPTH;      /* The lower layer depth */
+  const static int kMAP_INTERACTIVE_DEPTH; /* The interactive object depth */
+  const static int kMAP_PERSON_DEPTH; /* The Map person layer depth */
+  const static int kMAX_BASE_COUNT;   /* The maximum number of base layers */
+  const static int kNE_ENHANCER;      /* The NE enhancer quarter index */
+  const static int kNW_ENHANCER;      /* The NW enhancer quarter index */
+  const static int kSE_ENHANCER;      /* The SE enhancer quarter index */
+  const static int kSW_ENHANCER;      /* The SW enhancer quarter index */
+  const static int kUPPER_DEPTH;      /* The starting upper layer depth */
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
 protected:
-  void paintEvent(QPaintEvent*);
-
-  //TODO: Get rid of this once the map editor is complete
-  void mousePressEvent(QMouseEvent *);
-  void enterEvent(QEvent *);
-  void leaveEvent(QEvent *);
 
 /*============================================================================
  * PRIVATE FUNCTIONS
@@ -108,14 +108,17 @@ private:
   int getAngle(RotatedAngle angle);
 
 /*============================================================================
- * PUBLIC FUNCTIONS (SLOTS? - not all!)
+ * PUBLIC FUNCTIONS
  *===========================================================================*/
-public slots:
+public:
+  /* Adds another base layer to the stack */
+  Layer* addBase(Sprite* base, RotatedAngle angle = NONE);
+
   /* Animates all sprites on tile (Including thing and walkover sprites) */
   void animate();
 
-  /* Gets the base sprite */
-  Sprite* getBase();
+  /* Gets the base layer(s) */
+  QVector<Layer*> getBase();
 
   /* Gets the enhancer sprite qvector */
   Sprite* getEnhancer();
@@ -161,9 +164,6 @@ public slots:
 
   /* Returns if the Upper Sprite is set */
   bool isUpperSet();
-
-  /* Sets the base sprite */
-  bool setBase(QString path, RotatedAngle angle = NONE);
 
   /* Set the enhancer sprite */
   bool setEnhancer(QString path, RotatedAngle angle = NONE);
