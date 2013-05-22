@@ -19,6 +19,7 @@ const int Tile::kLOWER_DEPTH = 7;
 const int Tile::kMAP_INTERACTIVE_DEPTH = 8;
 const int Tile::kMAP_PERSON_DEPTH = 9;
 const int Tile::kMAX_BASE_COUNT = 5;
+const int Tile::kMAX_UPPER_COUNT = 5;
 const int Tile::kNE_ENHANCER     = 1;
 const int Tile::kNW_ENHANCER     = 0;
 const int Tile::kSE_ENHANCER     = 3;
@@ -122,7 +123,38 @@ Layer* Tile::addBase(Sprite* base_sprite, RotatedAngle angle)
     base.append(new Layer(base_sprite, width, height, 
                           x, y, kBASE_DEPTH + base.size()));
     base_set = true;
+
+    emit addLayer(base[base.size() - 1]);
     return base[base.size() - 1];
+  }
+
+  return 0;
+}
+
+/* 
+ * Description: Adds a new upper layer to the stack. Only fails if the stack
+ *              already has 5 layers (max) or the sprite size is 0.
+ *
+ * Inputs: Sprite* upper_sprite - the new upper sprite to attempt to load in
+ *         RotateAngle angle - the angle classification to rotate the tile
+ * Output: Layer* - returns the layer that was set for the upper
+ *                  If pointer is 0, call failed.
+ */
+Layer* Tile::addUpper(Sprite* upper_sprite, RotatedAngle angle)
+{
+  /* Determine if the upper can be added to the stack */
+  if(upper_sprite != 0 && upper_sprite->getSize() > 0 
+                       && upper.size() <= kMAX_UPPER_COUNT)
+  {
+    /* Add the upper to the stack. Offset the Z component based on the
+     * constant plus the array location so each base is on a different layer */
+    upper_sprite->rotateAll(getAngle(angle));
+    upper.append(new Layer(upper_sprite, width, height, 
+                          x, y, kUPPER_DEPTH + upper.size()));
+    upper_set = true;
+
+    emit addLayer(upper[upper.size() - 1]);
+    return upper[upper.size() - 1];
   }
 
   return 0;
@@ -168,7 +200,7 @@ Layer* Tile::getEnhancer()
 {
   if(enhancer_set)
     return enhancer;
-  return NULL;
+  return 0;
 }
 
 /* 
@@ -196,7 +228,7 @@ Layer* Tile::getLower()
 {
   if(lower_set)
     return lower;
-  return NULL;
+  return 0;
 }
 
 /* 
@@ -257,16 +289,20 @@ bool Tile::getPassibilityWest()
 }
 
 /* 
- * Description: Gets the upper sprite and returns it, if set.
+ * Description: Gets the upper layer(s) and returns it(them), if set.
  *
  * Inputs: none
- * Output: Sprite* - the upper sprite pointer
+ * Output: QVector<Layer*> - the upper layer(s) pointer in a QVector
  */
-Sprite* Tile::getUpper()
+QVector<Layer*> Tile::getUpper()
 {
   if(upper_set)
     return upper;
-  return NULL;
+
+  /* If not set, return an empty stack since the state is unknown */
+  QVector<Layer*> temp_stack;
+  return temp_stack;
+
 }
 
 /* 
@@ -326,10 +362,10 @@ bool Tile::isPassableObjectSet()
 }
 
 /* 
- * Description: Returns if the Upper Sprite is set 
+ * Description: Returns if the Upper Layer(s) is(are) set 
  *
  * Inputs: none
- * Output: bool - status if the upper sprite is set
+ * Output: bool - status if there is at least one upper layer
  */
 bool Tile::isUpperSet()
 {
@@ -356,6 +392,8 @@ Layer* Tile::setEnhancer(Sprite* enhancer_sprite, RotatedAngle angle)
     unsetEnhancer();
     enhancer = new Layer(enhancer_sprite, width, height, 
                          x, y, kENHANCER_DEPTH);
+
+    emit addLayer(enhancer);
     return enhancer;
   }
 
@@ -396,6 +434,8 @@ Layer* Tile::setLower(Sprite* lower_sprite, RotatedAngle angle)
     unsetLower();
     lower = new Layer(lower_sprite, width, height, 
                       x, y, kLOWER_DEPTH);
+
+    emit addLayer(lower);
     return lower;
   }
 
@@ -493,34 +533,6 @@ void Tile::setPassibilityWest(bool is_passable)
 }
 
 /* 
- * Description: Sets the upper sprite in the tile using a path to the sprite 
- *              image file.
- *
- * Inputs: QString path - the path to the image to load in
- *         RotateAngle angle - the angle classification to rotate the tile 
- * Output: bool - returns true if the upper sprite was set before
- */
-bool Tile::setUpper(QString path, RotatedAngle angle)
-{
-  /* Unset the sprite if it exists and try and set the new one */
-  unsetUpper();
-  upper = new Sprite(path, getAngle(angle));
-
-  /* Determine if the upper was set successfully */
-  if(upper->getSize() == 0)
-  {
-    delete upper;
-    upper_set = false;
-  }
-  else
-  {
-    upper_set = true;
-  }
-
-  return upper_set;
-}
-
-/* 
  * Description: Unsets the base in the tile. Deletes the pointers, if 
  *              applicable and sets the internal variable to notify the class 
  *              so the base isn't reused.
@@ -534,6 +546,7 @@ bool Tile::unsetBase()
   {
     for(int i = 0; i < base.size(); i++)
     {
+      emit deleteLayer(base[i]);
       delete base[i];
       base[i] = 0;
     }
@@ -557,6 +570,7 @@ bool Tile::unsetEnhancer()
 {
   if(enhancer_set)
   {
+    emit deleteLayer(enhancer);
     delete enhancer;
     enhancer = 0;
     enhancer_set = false;
@@ -592,6 +606,7 @@ bool Tile::unsetLower()
 {
   if(lower_set)
   {
+    emit deleteLayer(lower);
     delete lower;
     lower = 0;
     lower_set = false;
@@ -615,7 +630,7 @@ bool Tile::unsetPassableObject()
 }
 
 /* 
- * Description: Unsets the upper sprite in the tile. Deletes the pointer, if 
+ * Description: Unsets the upper layer(s) in the tile. Deletes the pointers, if 
  *              applicable, and sets the internal variable to notify the class 
  *              so the upper isn't repainted.
  *
@@ -626,7 +641,14 @@ bool Tile::unsetUpper()
 {
   if(upper_set)
   {
-    delete upper;
+    for(int i = 0; i < upper.size(); i++)
+    {
+      emit deleteLayer(upper[i]);
+      delete upper[i];
+      upper[i] = 0;
+    }
+
+    upper.clear();
     upper_set = false;
     return true;
   }

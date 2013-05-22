@@ -75,8 +75,8 @@ private:
   /* The status of the tile */
   Status tile_status;
 
-  /* The upper sprite, fully passible (eg. Treetop) */
-  Sprite* upper;
+  /* The upper sprite(s), fully pass under */
+  QVector<Layer*> upper;
   bool upper_set;
 
   /* The passibility of each direction of the tile */
@@ -89,11 +89,13 @@ private:
   const static int kMAP_INTERACTIVE_DEPTH; /* The interactive object depth */
   const static int kMAP_PERSON_DEPTH; /* The Map person layer depth */
   const static int kMAX_BASE_COUNT;   /* The maximum number of base layers */
+  const static int kMAX_UPPER_COUNT;  /* The max number of upper layers */
   const static int kNE_ENHANCER;      /* The NE enhancer quarter index */
   const static int kNW_ENHANCER;      /* The NW enhancer quarter index */
   const static int kSE_ENHANCER;      /* The SE enhancer quarter index */
   const static int kSW_ENHANCER;      /* The SW enhancer quarter index */
   const static int kUPPER_DEPTH;      /* The starting upper layer depth */
+
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
@@ -107,12 +109,22 @@ private:
   int getAngle(RotatedAngle angle);
 
 /*============================================================================
+ * SIGNALS
+ *===========================================================================*/
+signals:
+  void addLayer(Layer* item);
+  void deleteLayer(Layer* item);
+
+/*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
   /* Adds another base layer to the stack */
-  Layer* addBase(Sprite* base, RotatedAngle angle = NONE);
-
+  Layer* addBase(Sprite* base_sprite, RotatedAngle angle = NONE);
+  
+  /* Adds another upper layer to the stack */
+  Layer* addUpper(Sprite* upper_sprite, RotatedAngle angle = NONE);
+  
   /* Animates all sprites on tile (Including thing and walkover sprites) */
   void animate();
 
@@ -143,8 +155,8 @@ public:
   /* Gets west passiblity */
   bool getPassibilityWest();
 
-  /* Gets the upper sprite */
-  Sprite* getUpper();
+  /* Gets the upper layer(s) */
+  QVector<Layer*> getUpper();
 
   /* Returns if the Base Layer is set (ie. at least one) */
   bool isBaseSet();
@@ -161,7 +173,7 @@ public:
   /* Returns if the Passable Sprite is set */
   bool isPassableObjectSet();
 
-  /* Returns if the Upper Sprite is set */
+  /* Returns if the Upper Layer is set (ie. at least one) */
   bool isUpperSet();
 
   /* Set the enhancer layer */
@@ -193,9 +205,6 @@ public:
   /* Sets west passiblity */
   void setPassibilityWest(bool is_passable);
 
-  /* Sets the upper sprite */
-  bool setUpper(QString path, RotatedAngle angle = NONE);
-
   /* Unsets the base layer(s) */
   bool unsetBase();
 
@@ -211,7 +220,7 @@ public:
   /* Unsets the passable object sprite */
   bool unsetPassableObject();
 
-  /* Unsets the upper sprite */
+  /* Unsets the upper layer(s) */
   bool unsetUpper();
 };
 

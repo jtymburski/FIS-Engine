@@ -46,15 +46,6 @@ Map::Map()
 /* Destructor function */
 Map::~Map()
 {
-  for(int i = 0; i < geography.size(); i++)
-  {
-    for(int j = 0; j < geography[i].size(); j++)
-    {
-      delete geography[i][j];
-      geography[i][j] = 0;
-    }
-  }
-  
   unloadMap();
 }
 
@@ -86,6 +77,20 @@ Map::~Map()
   //setUpdatesEnabled(true);
   */
 //}
+
+/*============================================================================
+ * PUBLIC SLOTS
+ *===========================================================================*/
+
+void Map::addLayer(Layer* item)
+{
+  addItem(item);
+}
+
+void Map::deleteLayer(Layer* item)
+{
+  removeItem(item);
+}
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -159,12 +164,25 @@ bool Map::loadMap(QString file)
     QVector<Tile*> row;
 
     for(int j = 0; j < 100; j++)
-      row.append(new Tile(64, 64, j*64, i*64));
+    {
+      /* Create the tile */
+      Tile* t = new Tile(64, 64, j*64, i*64);
+
+      /* Connect the signals */
+      QObject::connect(t, SIGNAL(addLayer(Layer*)), 
+                       this, SLOT(addLayer(Layer*)));
+      QObject::connect(t, SIGNAL(deleteLayer(Layer*)), 
+                       this, SLOT(deleteLayer(Layer*)));
+
+      /* Add the new tile to the list */
+      row.append(t);
+    }
 
     geography.append(row);
   }
 
   /* The grass pixmap */
+  QPixmap bubby_image = Frame::openImage("sprites/Map/Map_Things/bubby_AA_A00.png");
   QPixmap cloud_image = Frame::openImage("sprites/Map/Map_Things/test_cloud.png");
   QPixmap grass_image = Frame::openImage("sprites/Map/Tiles/Ground/GrassTile/GrassTile01_AA_A00.png");
   QPixmap shrub_image = Frame::openImage("sprites/Map/Map_Things/shrub_AA_A00.png");
@@ -174,9 +192,10 @@ bool Map::loadMap(QString file)
   {
     for(int j = 0; j < 100; j++) 
     {
-      addItem(geography[i][j]->addBase(new Sprite(grass_image)));
-      addItem(geography[i][j]->setEnhancer(new Sprite(cloud_image)));
-      addItem(geography[i][j]->setLower(new Sprite(shrub_image)));
+      geography[i][j]->addBase(new Sprite(grass_image));
+      geography[i][j]->setEnhancer(new Sprite(cloud_image));
+      geography[i][j]->setLower(new Sprite(shrub_image));
+      geography[i][j]->addUpper(new Sprite(bubby_image));
     }
   }
   loaded = true;
@@ -291,6 +310,17 @@ void Map::passOver()
 
 void Map::unloadMap()
 {
+  /* Delete all the tiles that have been set */
+  for(int i = 0; i < geography.size(); i++)
+  {
+    for(int j = 0; j < geography[i].size(); j++)
+    {
+      delete geography[i][j];
+      geography[i][j] = 0;
+    }
+  }
+
+  /* Clear the remaining and disable the loading */
   clear();
   loaded = false;
 }
