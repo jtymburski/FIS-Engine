@@ -156,95 +156,60 @@ bool Map::isLoaded()
 
 bool Map::loadMap(QString file)
 {
-  // TODO: START TEST CODE [05-20-2013]
-
-  /* Set up the tiles */
-  for(int i = 0; i < 100; i++)
-  {
-    QVector<Tile*> row;
-
-    for(int j = 0; j < 100; j++)
-    {
-      /* Create the tile */
-      Tile* t = new Tile(64, 64, j*64, i*64);
-
-      /* Connect the signals */
-      QObject::connect(t, SIGNAL(addLayer(Layer*)), 
-                       this, SLOT(addLayer(Layer*)));
-      QObject::connect(t, SIGNAL(deleteLayer(Layer*)), 
-                       this, SLOT(deleteLayer(Layer*)));
-
-      /* Add the new tile to the list */
-      row.append(t);
-    }
-
-    geography.append(row);
-  }
-
-  /* The grass pixmap */
-  QPixmap bubby_image = Frame::openImage("sprites/Map/Map_Things/bubby_AA_A00.png");
-  QPixmap cloud_image = Frame::openImage("sprites/Map/Map_Things/test_cloud.png");
-  QPixmap grass_image = Frame::openImage("sprites/Map/Tiles/Ground/GrassTile/GrassTile01_AA_A00.png");
-  QPixmap shrub_image = Frame::openImage("sprites/Map/Map_Things/shrub_AA_A00.png");
-
-  /* Add the new layers */
-  for(int i = 0; i < 100; i++)
-  {
-    for(int j = 0; j < 100; j++) 
-    {
-      geography[i][j]->addBase(new Sprite(grass_image));
-      geography[i][j]->setEnhancer(new Sprite(cloud_image));
-      geography[i][j]->setLower(new Sprite(shrub_image));
-      geography[i][j]->addUpper(new Sprite(bubby_image));
-    }
-  }
-  loaded = true;
-
-  // END TEST CODE
-  
-
-  // TODO: Old code [05-20-2013]
-  /*bool done = false;
+  bool done = false;
   bool success = true;
   FileHandler fh(file, false, true);
   XmlData data;
 
   /* Start the map read */
-  /*success &= fh.start();
+  success &= fh.start();
 
   /* If file open was successful, move forward */
-  /*if(success)
+  if(success)
   {
     /* Calculate dimensions and set up the map */
-    /*int length = fh.readXmlData().getDataInteger();
+    int length = fh.readXmlData().getDataInteger();
     int width = fh.readXmlData().getDataInteger();
     for(int i = 0; i < width; i++)
     {
       QVector<Tile*> row;
 
       for(int j = 0; j < length; j++)
-        row.append(new Tile(64, 64, j*64, i*64));
+      {
+        /* Create the tile */
+        Tile* t = new Tile(64, 64, j*64, i*64);
+
+        /* Connect the signals */
+        QObject::connect(t, SIGNAL(addLayer(Layer*)), 
+                         this, SLOT(addLayer(Layer*)));
+        QObject::connect(t, SIGNAL(deleteLayer(Layer*)), 
+                         this, SLOT(deleteLayer(Layer*)));
+
+        /* Add the new tile to the list */
+        row.append(t);
+      }
 
       geography.append(row);
     }
    
     /* Run through the map components and add them to the map */
-    /*data = fh.readXmlData(&done, &success);
+    data = fh.readXmlData(&done, &success);
     do
     {
       /* Pull the row and column pairs, comma delimited */
-      /*QStringList row_list = data.getKeyValue(kFILE_ROW).split(",");
+      QStringList row_list = data.getKeyValue(kFILE_ROW).split(",");
       QStringList col_list = data.getKeyValue(kFILE_COLUMN).split(",");
+      QPixmap image = Frame::openImage(data.getDataString());
 
       /* Run through this list, checking ranges and add the corresponding
        * tiles */
-      /*for(int i = 0; i < row_list.size(); i++)
+      for(int i = 0; i < row_list.size(); i++)
       {
         QStringList rows = row_list[i].split("-");
         QStringList cols = col_list[i].split("-");
 
         /* Use the newly found range and add the tile */
-        /*for(int r = rows[0].toInt(); r <= rows[rows.size() - 1].toInt(); r++)
+        for(int r = rows[0].toInt(); r <= rows[rows.size() - 1].toInt(); r++)
         {
           for(int c = cols[0].toInt(); c <= cols[cols.size() - 1].toInt(); c++)
           {
@@ -252,7 +217,7 @@ bool Map::loadMap(QString file)
             Tile::RotatedAngle angle = Tile::NONE;
 
             /* Determine the angle to be rotated */
-            /*if(path.size() > 1)
+            if(path.size() > 1)
             {
               if(path[1] == "CW")
                 angle = Tile::CLOCKWISE;
@@ -263,26 +228,26 @@ bool Map::loadMap(QString file)
             }
 
             /* Determine the type of tile */
-            /*if(path[0] == "base")
-              geography[r][c]->setBase(data.getDataString(), angle);
+            if(path[0] == "base")
+              geography[r][c]->addBase(new Sprite(image), angle);
             else if(path[0] == "enhancer")
-              geography[r][c]->setEnhancer(data.getDataString(), angle);
+              geography[r][c]->setEnhancer(new Sprite(image), angle);
             else if(path[0] == "lower")
-              geography[r][c]->setLower(data.getDataString(), angle);
+              geography[r][c]->setLower(new Sprite(image), angle);
             else if(path[0] == "upper")
-              geography[r][c]->setUpper(data.getDataString(), angle);
+              geography[r][c]->addUpper(new Sprite(image), angle);
           }
         }
       }
 
       /* Get the next element */
-      /*data = fh.readXmlData(&done, &success);
+      data = fh.readXmlData(&done, &success);
     } while(!done && success);
   }
 
   success &= fh.stop();
 
-  return success;*/
+  return success;
 }
 
 /* Shifts the viewport */
