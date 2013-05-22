@@ -15,7 +15,6 @@
 /* Constant Implementation - see header file for descriptions */
 const int Tile::kBASE_DEPTH = 1;
 const int Tile::kENHANCER_DEPTH = 6;
-const int Tile::kENHANCER_TOTAL = 4;
 const int Tile::kLOWER_DEPTH = 7;
 const int Tile::kMAP_INTERACTIVE_DEPTH = 8;
 const int Tile::kMAP_PERSON_DEPTH = 9;
@@ -114,10 +113,12 @@ int Tile::getAngle(RotatedAngle angle)
 Layer* Tile::addBase(Sprite* base_sprite, RotatedAngle angle)
 {
   /* Determine if the base can be added to the stack */
-  if(base_sprite->getSize() != 0 && base.size() <= kMAX_BASE_COUNT)
+  if(base_sprite != 0 && base_sprite->getSize() > 0 
+                      && base.size() <= kMAX_BASE_COUNT)
   {
     /* Add the base to the stack. Offset the Z component based on the
      * constant plus the array location so each base is on a different layer */
+    base_sprite->rotateAll(getAngle(angle));
     base.append(new Layer(base_sprite, width, height, 
                           x, y, kBASE_DEPTH + base.size()));
     base_set = true;
@@ -158,12 +159,12 @@ QVector<Layer*> Tile::getBase()
 }
 
 /* 
- * Description: Gets the enhancer sprites and returns it, if set.
+ * Description: Gets the enhancer layer and returns it, if set.
  *
  * Inputs: none
- * Output: Sprite* - the enhancer sprite pointer
+ * Output: Layer* - the enhancer layer pointer
  */
-Sprite* Tile::getEnhancer()
+Layer* Tile::getEnhancer()
 {
   if(enhancer_set)
     return enhancer;
@@ -186,12 +187,12 @@ MapThing* Tile::getImpassableObject()
 }
 
 /* 
- * Description: Gets the lower sprite and returns it, if set.
+ * Description: Gets the lower layer and returns it, if set.
  *
  * Inputs: none
- * Output: Sprite* - the lower sprite pointer
+ * Output: Layer* - the lower layer pointer
  */
-Sprite* Tile::getLower()             
+Layer* Tile::getLower()             
 {
   if(lower_set)
     return lower;
@@ -280,10 +281,10 @@ bool Tile::isBaseSet()
 }
 
 /* 
- * Description: Returns if the Enhancer Sprite(s) is set 
+ * Description: Returns if the Enhancer Layer is set 
  *
  * Inputs: none
- * Output: bool - status if the enhancer sprite is set
+ * Output: bool - status if the enhancer layer is set
  */
 bool Tile::isEnhancerSet()
 {
@@ -303,10 +304,10 @@ Tile::ImpassableObjectState Tile::isImpassableObjectSet()
 }
 
 /* 
- * Description: Returns if the Lower Sprite is set 
+ * Description: Returns if the Lower Layer is set 
  *
  * Inputs: none
- * Output: bool - status if the lower sprite is set
+ * Output: bool - status if the lower layer is set
  */
 bool Tile::isLowerSet()
 {
@@ -338,33 +339,27 @@ bool Tile::isUpperSet()
 
 
 /*
- * Description: Sets the enhancer tile using a path to a single sprite image
- *              file to cover the tile.
- * Warning: This will unset the enhancer no matter what, even if the call
- *          fails to set the enhancer with the new sprites. 
+ * Description: Sets the enhancer layer using a single sprite pointer
+ *              to cover the tile.
+ * Note: This will unset the enhancer automatically. 
  *
- * Inputs: QString path - the path to the image to load in
- *         RotateAngle angle - the angle classification to rotate the tile 
+ * Inputs: Sprite* enhancer - the sprite to attempt to load in
+ *         RotatedAngle angle - the angle classification to rotate the layer 
  * Output: bool - returns true if the enhancer was set successfully.
  */
-bool Tile::setEnhancer(QString path, RotatedAngle angle)
+Layer* Tile::setEnhancer(Sprite* enhancer_sprite, RotatedAngle angle)
 {
-  /* Deletes the old enhancer and sets the new enhancer */
-  unsetEnhancer();
-  enhancer = new Sprite(path, getAngle(angle));
-
-  /* Determine if the enhancer was set successfully */
-  if(enhancer->getSize() == 0)
+  /* Set the enhancer, if the sprite is valid and has a size greater than 0 */
+  if(enhancer_sprite != 0 && enhancer_sprite->getSize() > 0)
   {
-    delete enhancer;
-    enhancer_set = false;
-  }
-  else
-  {
-    enhancer_set = true;  
+    enhancer_sprite->rotateAll(getAngle(angle));
+    unsetEnhancer();
+    enhancer = new Layer(enhancer_sprite, width, height, 
+                         x, y, kENHANCER_DEPTH);
+    return enhancer;
   }
 
-  return enhancer_set;
+  return 0;
 }
 
 /* 
@@ -384,31 +379,27 @@ bool Tile::setImpassableObject(QString path, ImpassableObjectState type)
 }
 
 /* 
- * Description: Sets the lower sprite in the tile using a path to the sprite 
- *              image file.
+ * Description: Sets the lower layer in the tile using the sprite 
+ *              image data.
  *
- * Inputs: QString path - the path to the image to load in
- *         RotateAngle angle - the angle classification to rotate the tile 
- * Output: bool - returns true if the lower sprite was successfuly set
+ * Inputs: Sprite* lower_sprite - the lower sprite to attempt to load in
+ *         RotatedAngle angle - the angle classification to rotate the layer
+ * Output: bool - returns true if the lower layer was successfuly set
  */
-bool Tile::setLower(QString path, RotatedAngle angle)
+Layer* Tile::setLower(Sprite* lower_sprite, RotatedAngle angle)
 {
-  /* Unset the sprite if it exists and try and set the new one */
-  unsetLower();
-  lower = new Sprite(path, getAngle(angle));
-
-  /* Determine if the lower was set successfully */
-  if(lower->getSize() == 0)
+  /* Set the lower layer, if the sprite is valid and has a size greater 
+   * than 0 */
+  if(lower_sprite != 0 && lower_sprite->getSize() > 0)
   {
-    delete lower;
-    lower_set = false;
-  }
-  else
-  {
-    lower_set = true;  
+    lower_sprite->rotateAll(getAngle(angle));
+    unsetLower();
+    lower = new Layer(lower_sprite, width, height, 
+                      x, y, kLOWER_DEPTH);
+    return lower;
   }
 
-  return lower_set;
+  return 0;
 }
 
 /* 
@@ -544,6 +535,7 @@ bool Tile::unsetBase()
     for(int i = 0; i < base.size(); i++)
     {
       delete base[i];
+      base[i] = 0;
     }
 
     base.clear();
@@ -554,7 +546,7 @@ bool Tile::unsetBase()
 }
 
 /* 
- * Description: Unsets the enhancer in the tile. Deletes the pointer, 
+ * Description: Unsets the enhancer layer in the tile. Deletes the pointer, 
  *              and sets the internal variable to notify the class so the 
  *              enhancer isn't repainted.
  *
@@ -566,6 +558,7 @@ bool Tile::unsetEnhancer()
   if(enhancer_set)
   {
     delete enhancer;
+    enhancer = 0;
     enhancer_set = false;
     return true;
   }
@@ -588,7 +581,7 @@ bool Tile::unsetImpassableObject()
 }
 
 /* 
- * Description: Unsets the lower sprite in the tile. Deletes the pointer, if 
+ * Description: Unsets the lower layer in the tile. Deletes the pointer, if 
  *              applicable, and sets the internal variable to notify the class 
  *              so the lower isn't repainted.
  *
@@ -600,6 +593,7 @@ bool Tile::unsetLower()
   if(lower_set)
   {
     delete lower;
+    lower = 0;
     lower_set = false;
     return true;
   }

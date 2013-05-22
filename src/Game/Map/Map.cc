@@ -46,14 +46,16 @@ Map::Map()
 /* Destructor function */
 Map::~Map()
 {
-  /*for(int i = 0; i < geography.size(); i++)
+  for(int i = 0; i < geography.size(); i++)
   {
     for(int j = 0; j < geography[i].size(); j++)
     {
       delete geography[i][j];
-      geography[i][j] = NULL;
+      geography[i][j] = 0;
     }
-  }*/
+  }
+  
+  unloadMap();
 }
 
 
@@ -163,6 +165,7 @@ bool Map::loadMap(QString file)
   }
 
   /* The grass pixmap */
+  QPixmap cloud_image = Frame::openImage("sprites/Map/Map_Things/test_cloud.png");
   QPixmap grass_image = Frame::openImage("sprites/Map/Tiles/Ground/GrassTile/GrassTile01_AA_A00.png");
   QPixmap shrub_image = Frame::openImage("sprites/Map/Map_Things/shrub_AA_A00.png");
 
@@ -172,7 +175,8 @@ bool Map::loadMap(QString file)
     for(int j = 0; j < 100; j++) 
     {
       addItem(geography[i][j]->addBase(new Sprite(grass_image)));
-      addItem(geography[i][j]->addBase(new Sprite(shrub_image)));
+      addItem(geography[i][j]->setEnhancer(new Sprite(cloud_image)));
+      addItem(geography[i][j]->setLower(new Sprite(shrub_image)));
     }
   }
   loaded = true;

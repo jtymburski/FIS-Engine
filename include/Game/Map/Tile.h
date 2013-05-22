@@ -55,7 +55,7 @@ private:
 
   /* The enhancment layer on the base. This is things like water bodies, 
    * ground enhancers, etc. */
-  Sprite* enhancer;
+  Layer* enhancer;
   bool enhancer_set;
 
   /* Player or NPC or impassible item (Causes the passibility of all directions
@@ -64,8 +64,8 @@ private:
   MapPerson* person;
   ImpassableObjectState impassable_set;
   
-  /* The lower sprite, impassible (eg. Tree trunk) */
-  Sprite* lower;
+  /* The lower layer (Tree Trunks, shrubs, etc) */
+  Layer* lower;
   bool lower_set;
 
   /* The lower sprite, passible (eg. Bubby, equipment) */
@@ -85,7 +85,6 @@ private:
   /*------------------- Constants -----------------------*/
   const static int kBASE_DEPTH;       /* The starting base layer depth */
   const static int kENHANCER_DEPTH;   /* The enhancer layer depth */
-  const static int kENHANCER_TOTAL;   /* The number of enhancers in a tile */
   const static int kLOWER_DEPTH;      /* The lower layer depth */
   const static int kMAP_INTERACTIVE_DEPTH; /* The interactive object depth */
   const static int kMAP_PERSON_DEPTH; /* The Map person layer depth */
@@ -120,14 +119,14 @@ public:
   /* Gets the base layer(s) */
   QVector<Layer*> getBase();
 
-  /* Gets the enhancer sprite qvector */
-  Sprite* getEnhancer();
+  /* Gets the enhancer layer */
+  Layer* getEnhancer();
 
   /* Gets the impassable object sprite */
   MapThing* getImpassableObject();
 
-  /* Gets the lower sprite */
-  Sprite* getLower();
+  /* Gets the lower layer */
+  Layer* getLower();
 
   /* Gets the passable object sprite */
   MapThing* getPassableObject();
@@ -147,16 +146,16 @@ public:
   /* Gets the upper sprite */
   Sprite* getUpper();
 
-  /* Returns if the Base Sprite is set */
+  /* Returns if the Base Layer is set (ie. at least one) */
   bool isBaseSet();
 
-  /* Returns if the Enhancer Sprite(s) is set */
+  /* Returns if the Enhancer Layer is set */
   bool isEnhancerSet();
   
   /* Returns if the Impassable Sprite is set */
   ImpassableObjectState isImpassableObjectSet();
 
-  /* Returns if the Lower Sprite is set */
+  /* Returns if the Lower Layer is set */
   bool isLowerSet();
 
   /* Returns if the Passable Sprite is set */
@@ -165,14 +164,14 @@ public:
   /* Returns if the Upper Sprite is set */
   bool isUpperSet();
 
-  /* Set the enhancer sprite */
-  bool setEnhancer(QString path, RotatedAngle angle = NONE);
+  /* Set the enhancer layer */
+  Layer* setEnhancer(Sprite* enhancer_sprite, RotatedAngle angle = NONE);
 
   /* Sets the impassable object sprite */
   bool setImpassableObject(QString path, ImpassableObjectState type);
 
-  /* Sets the lower sprite */
-  bool setLower(QString path, RotatedAngle angle = NONE);
+  /* Sets the lower layer */
+  Layer* setLower(Sprite* lower_sprite, RotatedAngle angle = NONE);
 
   /* Sets the passable object sprite */
   bool setPassableObject(QString path);
@@ -197,16 +196,16 @@ public:
   /* Sets the upper sprite */
   bool setUpper(QString path, RotatedAngle angle = NONE);
 
-  /* Unsets the base sprite */
+  /* Unsets the base layer(s) */
   bool unsetBase();
 
-  /* Unsets the enhancer sprite(s) */
+  /* Unsets the enhancer layer */
   bool unsetEnhancer();
 
   /* Unsets the impassable object sprite */
   bool unsetImpassableObject();
 
-  /* Unsets the lower sprite */
+  /* Unsets the lower layer */
   bool unsetLower();
 
   /* Unsets the passable object sprite */

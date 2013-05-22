@@ -437,6 +437,8 @@ bool Sprite::rotateAll(int angle)
       temp_frame->rotateImage(angle);
       temp_frame = temp_frame->getNext();
     }
+    
+    return true;
   }
 
   return false;

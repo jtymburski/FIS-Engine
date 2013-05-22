@@ -66,6 +66,8 @@ Application::Application(QWidget* parent)
 
 Application::~Application()
 {
+  delete test_map;
+  test_map = 0;
 }
 
 /*============================================================================
