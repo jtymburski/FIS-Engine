@@ -178,7 +178,7 @@ bool Map::loadMap(QString file)
       {
         /* Create the tile */
         Tile* t = new Tile(64, 64, j*64, i*64);
-
+ 
         /* Connect the signals */
         QObject::connect(t, SIGNAL(addLayer(Layer*)), 
                          this, SLOT(addLayer(Layer*)));

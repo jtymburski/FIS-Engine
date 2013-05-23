@@ -62,6 +62,7 @@ Tile::Tile(int width, int height, int x, int y, QObject* parent)
 
   /* Set the initial passibility as completely open */
   setPassibility(true);
+  setStatus(ACTIVE);
 }
 
 /* 
@@ -98,6 +99,49 @@ int Tile::getAngle(RotatedAngle angle)
   return 0;
 }
 
+/* 
+ * Description: Sets if the layers are enabled, across them all.
+ * 
+ * Inputs: bool enabled - new enabled status of the layers
+ * Output: void
+ */
+void Tile::setEnabled(bool enabled)
+{
+  for(int i = 0; i < base.size(); i++)
+    base[i]->setEnabled(enabled);
+
+  if(enhancer_set)
+    enhancer->setEnabled(enabled);
+
+  if(lower_set)
+    lower->setEnabled(enabled);
+
+  for(int i = 0; i < upper.size(); i++)
+    upper[i]->setEnabled(enabled);
+}
+
+/* 
+ * Description: Sets if the layers are visible, across them all.
+ * 
+ * Inputs: bool visible - new visible status of the layers
+ * Output: void
+ */
+void Tile::setVisible(bool visible)
+{
+  for(int i = 0; i < base.size(); i++)
+    base[i]->setVisible(visible);
+
+  if(enhancer_set)
+    enhancer->setVisible(visible);
+
+  if(lower_set)
+    lower->setVisible(visible);
+
+  for(int i = 0; i < upper.size(); i++)
+    upper[i]->setVisible(visible);
+
+}
+
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
@@ -124,6 +168,7 @@ Layer* Tile::addBase(Sprite* base_sprite, RotatedAngle angle)
                           x, y, kBASE_DEPTH + base.size()));
     base_set = true;
 
+    setStatus(tile_status);
     emit addLayer(base[base.size() - 1]);
     return base[base.size() - 1];
   }
@@ -152,7 +197,8 @@ Layer* Tile::addUpper(Sprite* upper_sprite, RotatedAngle angle)
     upper.append(new Layer(upper_sprite, width, height, 
                           x, y, kUPPER_DEPTH + upper.size()));
     upper_set = true;
-
+  
+    setStatus(tile_status);
     emit addLayer(upper[upper.size() - 1]);
     return upper[upper.size() - 1];
   }
@@ -161,17 +207,27 @@ Layer* Tile::addUpper(Sprite* upper_sprite, RotatedAngle angle)
 }
 
 /* 
- * Description: Animates all sprites on tile. This allows for the fine control
- *              of the QWidget update and if any special conditions need to be
- *              done for animation.
+ * Description: Animates all sprite layers on tile. This allows for the fine 
+ *              control over when the timer hits and how it's updated.
  *
  * Inputs: none
  * Output: none
  */
 void Tile::animate()
 {
-  // TODO
-  //update();
+  /* Shift the base layer(s) */
+  for(int i = 0; i < base.size(); i++)
+    base[i]->getItem()->shiftNext();
+
+  /* Shift the enhancer layer */
+  enhancer->getItem()->shiftNext();
+
+  /* Shift the lower layer */
+  lower->getItem()->shiftNext();
+
+  /* Shift the upper layer(s) */
+  for(int i = 0; i < upper.size(); i++)
+    upper[i]->getItem()->shiftNext();
 }
 
 /* 
@@ -392,7 +448,9 @@ Layer* Tile::setEnhancer(Sprite* enhancer_sprite, RotatedAngle angle)
     unsetEnhancer();
     enhancer = new Layer(enhancer_sprite, width, height, 
                          x, y, kENHANCER_DEPTH);
+    enhancer_set = true;
 
+    setStatus(tile_status);
     emit addLayer(enhancer);
     return enhancer;
   }
@@ -434,7 +492,9 @@ Layer* Tile::setLower(Sprite* lower_sprite, RotatedAngle angle)
     unsetLower();
     lower = new Layer(lower_sprite, width, height, 
                       x, y, kLOWER_DEPTH);
+    lower_set = true;
 
+    setStatus(tile_status);
     emit addLayer(lower);
     return lower;
   }
@@ -530,6 +590,27 @@ void Tile::setPassibilitySouth(bool is_passable)
 void Tile::setPassibilityWest(bool is_passable)
 {
   west_passibility = is_passable;
+}
+
+void Tile::setStatus(Status updated_status)
+{
+  /* The various cases for the different statuses */
+  if(updated_status == OFF)
+  {
+    setEnabled(false);
+  }
+  else if(updated_status == ACTIVE)
+  {
+    setEnabled(true);
+    setVisible(true);
+  }
+  else if(updated_status == INACTIVE)
+  {
+    setEnabled(true);
+    setVisible(false);
+  }
+
+  tile_status = updated_status;
 }
 
 /* 

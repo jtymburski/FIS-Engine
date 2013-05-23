@@ -39,7 +39,7 @@ public:
   /* STATUSOFF - Not rendered at all
    * ACTIVE - Rendered
    * INACTIVE - Blacked out (sector past a door) */
-  enum Status{STATUSOFF, ACTIVE, INACTIVE};
+  enum Status{OFF, ACTIVE, INACTIVE};
 
 private:
   /* Basic information for the tile */
@@ -108,6 +108,12 @@ private:
   /* Determines the angle that's associated to the local enumerator */
   int getAngle(RotatedAngle angle);
 
+  /* Sets each layer to if its enabled or not */
+  void setEnabled(bool enabled);
+
+  /* Sets each layer to if its visible or not (otherwise black square) */
+  void setVisible(bool visible);
+
 /*============================================================================
  * SIGNALS
  *===========================================================================*/
@@ -154,6 +160,9 @@ public:
 
   /* Gets west passiblity */
   bool getPassibilityWest();
+
+  /* Returns the tile status */
+  Status getStatus();
 
   /* Gets the upper layer(s) */
   QVector<Layer*> getUpper();
@@ -204,6 +213,9 @@ public:
 
   /* Sets west passiblity */
   void setPassibilityWest(bool is_passable);
+
+  /* Sets a new status for the tile */
+  void setStatus(Status updated_status);
 
   /* Unsets the base layer(s) */
   bool unsetBase();

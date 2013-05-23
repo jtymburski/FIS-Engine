@@ -31,6 +31,7 @@ private:
   Sprite* item;
   int width;
   int height;
+  bool visible;
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -45,9 +46,15 @@ public:
   /* Returns the sprite stored in the layer for control */
   Sprite* getItem();
 
+  /* Returns if the painted information in the tile is visible */
+  bool isVisible();
+
   /* Virtual painter reimplementation - for painting the item */
   void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
              QWidget* widget);
+
+  /* Sets if the tile is visible or not (black or painted) */
+  void setVisible(bool status);
 };
 
 #endif // LAYER_H

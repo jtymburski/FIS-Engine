@@ -24,6 +24,7 @@ Layer::Layer()
   item = 0;
   width = 0;
   height = 0;
+  visible = true;
 }
 
 /* 
@@ -44,6 +45,8 @@ Layer::Layer(Sprite* item, int width, int height, int x, int y, int z)
   this->item = item;
   this->width = width;
   this->height = height;
+  visible = true;
+  setEnabled(false);
 
   /* Set the coordinates */
   setX(x);
@@ -106,6 +109,17 @@ Sprite* Layer::getItem()
 }
 
 /* 
+ * Description: Returns if the layer is set to be visible
+ *
+ * Inputs: none
+ * Output: bool - the layer visibility status
+ */
+bool Layer::isVisible()
+{
+  return visible;
+}
+
+/* 
  * Description: Reimplemented virtual function. Handles the painting of the 
  *              image stored within the layer. Runs based on the same data as 
  *              the above QRectF for the bounding box. Only paints if the tile 
@@ -123,7 +137,33 @@ void Layer::paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
   (void)option;
   (void)widget;
 
-  /* Only paint if sprite exists */
-  if(item != 0)
-    painter->drawPixmap(0, 0, width, height, item->getCurrent());
+  /* Set painter information */
+  painter->setBrush(QBrush(Qt::black));
+  painter->setPen(Qt::NoPen);
+
+  /* Only paint if enabled */
+  if(isEnabled())
+  {
+    if(isVisible())
+    {
+      /* Only paint if sprite exists */
+      if(item != 0)
+        painter->drawPixmap(0, 0, width, height, item->getCurrent());
+    }
+    else
+    {
+      painter->drawRect(QRectF(0, 0, width, height));
+    }
+  }
+}
+
+/* 
+ * Description: Sets if the sprite layer is visible
+ *
+ * Inputs: bool status - the visibility status
+ * Output: none
+ */
+void Layer::setVisible(bool status)
+{
+  visible = status;
 }
