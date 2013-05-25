@@ -12,6 +12,8 @@
 
 #include <QGraphicsView>
 #include <QKeyEvent>
+#include <QScrollBar>
+#include <QWheelEvent>
 
 class MapViewport : public QGraphicsView
 {
@@ -32,8 +34,9 @@ private:
  * PROTECTED FUNCTIONS
  *===========================================================================*/
 protected:
-  void keyPressEvent(QKeyEvent*);
-//  void wheelEvent(QWheelEvent*);
+  void keyPressEvent(QKeyEvent* event);
+  void keyReleaseEvent(QKeyEvent* event);
+  void wheelEvent(QWheelEvent* event);
 
 /*============================================================================
  * SIGNALS
