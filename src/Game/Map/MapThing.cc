@@ -1,14 +1,14 @@
 /******************************************************************************
-* Class Name: MapThing
-* Date Created: Dec 2 2012
-* Inheritance: none
-* Description: This class handles the generic MapThing. It contains things on
-*              the map that don't fall under general scenary. It acts as the
-*              parent class to a sequence of others, for example, MapPerson,
-*              MapWalkOver, MapInteractiveObject, etc. Also handles the 
-*              basic setup for name, description, id, sprite. No interaction
-*              is handled in this class since its a generic parent.
-******************************************************************************/
+ * Class Name: MapThing
+ * Date Created: Dec 2 2012
+ * Inheritance: none
+ * Description: This class handles the generic MapThing. It contains things on
+ *              the map that don't fall under general scenary. It acts as the
+ *              parent class to a sequence of others, for example, MapPerson,
+ *              MapWalkOver, MapSolid, etc. Also handles the basic setup for 
+ *              name, description, id, sprite. No interaction is handled in 
+ *              this class since its a generic parent.
+ *****************************************************************************/
 #include "Game/Map/MapThing.h"
 
 /* Constant Implementation - see header file for descriptions */

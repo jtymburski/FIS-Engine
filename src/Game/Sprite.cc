@@ -509,19 +509,33 @@ bool Sprite::shift(int position)
 }
 
 /* 
- * Description: Shifts to the next frame in the sprite 
+ * Description: Shifts to the next frame in the sprite. 
+ * Note: this function allows you to skip the head of the list while shifting.
+ *       However, if the size of the sprite is only one frame, the head will
+ *       still be selected.
  *
- * Inputs: none
+ * Inputs: bool skipHead - allows for the head of the list to be skipped
+ *                         while shifting.
  * Output: bool - status if shift to next was successful
  */
-bool Sprite::shiftNext()
+bool Sprite::shiftNext(bool skipHead)
 {
   if(size > 0)
   {
     if(direction == FORWARD)
-      current = current->getNext();
+    {
+      if(!skipHead || current->getNext() != head)
+        current = current->getNext();
+      else
+        current = current->getNext()->getNext();
+    }
     else
-      current = current->getPrevious();
+    {
+      if(!skipHead || current->getPrevious() != head)
+        current = current->getPrevious();
+      else
+        current = current->getPrevious()->getPrevious();
+    }
     return true;
   }
   return false;

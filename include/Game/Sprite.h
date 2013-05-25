@@ -116,7 +116,7 @@ public:
   bool shift(int position);
 
   /* Shifts to the next frame in the sprite */
-  bool shiftNext();
+  bool shiftNext(bool skipHead = false);
 
   /* Switches the direction that the linked list is parsed in */
   bool switchDirection();
