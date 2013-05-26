@@ -176,6 +176,36 @@ Layer* Tile::addBase(Sprite* base_sprite, RotatedAngle angle)
   return 0;
 }
 
+bool Tile::addData(XmlData data, QPixmap image, int dataIndex)
+{
+    QStringList path = data.getElement(dataIndex).split("_");
+    RotatedAngle angle = NONE;
+
+    /* Determine the angle to be rotated */
+    if(path.size() > 1)
+    {
+      if(path[1] == "CW")
+        angle = CLOCKWISE;
+      else if(path[1] == "CCW")
+        angle = COUNTERCLOCKWISE;
+      else if(path[1] == "F")
+        angle = FLIP;
+    }
+
+    /* Determine the type of tile */
+    if(path[0] == "base")
+      addBase(new Sprite(image), angle);
+    else if(path[0] == "enhancer")
+      setEnhancer(new Sprite(image), angle);
+    else if(path[0] == "lower")
+      setLower(new Sprite(image), angle);
+    else if(path[0] == "upper")
+      addUpper(new Sprite(image), angle);
+    else
+      return false;
+    return true;
+}
+
 /* 
  * Description: Adds a new upper layer to the stack. Only fails if the stack
  *              already has 5 layers (max) or the sprite size is 0.

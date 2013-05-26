@@ -35,6 +35,12 @@ public:
 
   /* Returns the sprite stored in the state for control/usage */
   Sprite* getSprite();
+
+  /* Sets the sprite internally to the state */
+  bool setSprite(Sprite* animation);
+
+  /* Unsets the sprite internally to the state */
+  void unsetSprite();
 };
 
 #endif // MAPSSTATE_H

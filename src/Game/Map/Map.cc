@@ -213,29 +213,10 @@ bool Map::loadMap(QString file)
         {
           for(int c = cols[0].toInt(); c <= cols[cols.size() - 1].toInt(); c++)
           {
-            QStringList path = data.getElement(kFILE_DATA).split("_");
-            Tile::RotatedAngle angle = Tile::NONE;
-
-            /* Determine the angle to be rotated */
-            if(path.size() > 1)
-            {
-              if(path[1] == "CW")
-                angle = Tile::CLOCKWISE;
-              else if(path[1] == "CCW")
-                angle = Tile::COUNTERCLOCKWISE;
-              else if(path[1] == "F")
-                angle = Tile::FLIP;
-            }
-
-            /* Determine the type of tile */
-            if(path[0] == "base")
-              geography[r][c]->addBase(new Sprite(image), angle);
-            else if(path[0] == "enhancer")
-              geography[r][c]->setEnhancer(new Sprite(image), angle);
-            else if(path[0] == "lower")
-              geography[r][c]->setLower(new Sprite(image), angle);
-            else if(path[0] == "upper")
-              geography[r][c]->addUpper(new Sprite(image), angle);
+            QString path = data.getElement(kFILE_DATA);
+            if(path.startsWith("base") || path.startsWith("enhancer") || 
+               path.startsWith("lower") || path.startsWith("upper"))
+              geography[r][c]->addData(data, image, kFILE_DATA);
           }
         }
       }
@@ -246,7 +227,6 @@ bool Map::loadMap(QString file)
   }
 
   success &= fh.stop();
-
   return success;
 }
 

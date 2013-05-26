@@ -27,30 +27,32 @@ const int MapThing::kUNSET_ID   = -1;
  */
 MapThing::MapThing()
 {
-  thing_set = false;
-
-  setSprite(NULL);
-  setName("");
-  setDescription("");
-  setID(kUNSET_ID); 
+  state = 0;
+  clear();
 }
 
 /* 
  * Description: Constructor for this class. Takes data to create the thing.
  *
- * Inputs: Sprite* frames - the sprite data to encapsalate by the thing
+ * Inputs: MapState* state - the state data to encapsalate by the thing
  *         QString name - the name of the thing, default to ""
  *         QString description - the description of the thing, default to ""
  *         int id - the ID of the thing, default to -1
  */
-MapThing::MapThing(Sprite* frames, QString name, QString description, int id)
+MapThing::MapThing(MapState* state, int width, int height, 
+                   QString name, QString description, int id)
 {
-  thing_set = false;
+  state = 0;
 
-  setSprite(frames);
-  setName(name);
+  /* The parent class definitions */
+  setHeight(height);
+  setWidth(width);
+
+  /* The class definitions */
   setDescription(description);
   setID(id);
+  setName(name);
+  setState(state);
 }
 
 /* 
@@ -58,9 +60,7 @@ MapThing::MapThing(Sprite* frames, QString name, QString description, int id)
  */
 MapThing::~MapThing()
 {
-  if(thing != NULL)
-    delete thing;
-  thing = 0;
+  clear();
 }
 
 /*============================================================================
@@ -68,14 +68,17 @@ MapThing::~MapThing()
  *===========================================================================*/
 
 /* 
- * Description: Starts interaction. In map thing, this isn't of use and is
- *              only used by its children classes.
- *
+ * Description: Clears out all information stored in the class
+ * 
  * Inputs: none
  * Output: none
  */
-void MapThing::interaction()
+void MapThing::clear()
 {
+  setDescription("");
+  setID(kUNSET_ID);
+  setName("");
+  unsetState();
 }
 
 /* 
@@ -113,26 +116,43 @@ QString MapThing::getName()
 }
 
 /* 
- * Description: Gets the sprite data of the thing. If sprite isn't set, returns
- *              NULL.
+ * Description: Gets the state data of the thing. If state isn't set, returns
+ *              0.
  *
  * Inputs: none
- * Output: Sprite* - the pointer to the data for the thing, as a Sprite
+ * Output: MapState* - the pointer to the data for the thing, as a MapState
  */
-Sprite* MapThing::getSprite()
+MapState* MapThing::getState()
 {
-  return thing;
+  return state;
 }
 
-/*
- * Description: Returns if the thing is set.
+/* 
+ * Description: Starts interaction. In map thing, this isn't of use and is
+ *              only used by its children classes.
  *
  * Inputs: none
- * Output: bool - returns if the thing is set
+ * Output: none
  */
-bool MapThing::isSet()
+void MapThing::interaction()
 {
-  return thing_set;
+}
+
+/* 
+ * Description: Sets the coordinate information for the base item (inherited).
+ *              X and Y are with respect to the scene plane. Z is the vertical
+ *              plane for how items are layered.
+ *
+ * Inputs: int x - the x pixel coordinate on the scene
+ *         int y - the y pixel coordinate on the scene
+ *         int z - the z rating on the screen (default to 0).
+ * Output: none
+ */
+void MapThing::setCoordinates(int x, int y, int z)
+{
+  setX(x);
+  setY(y);
+  setZValue(z);
 }
 
 /* 
@@ -179,41 +199,35 @@ void MapThing::setName(QString new_name)
 }
 
 /*
- * Description: Sets the sprite frame data that defines the thing.
+ * Description: Sets the state data that defines the thing.
  *
- * Inputs: Sprite* new_frames - the new frame data to use for representing
- *                              the thing.
- * Output: bool - returns if the thing was set successfuly
+ * Inputs: MapState* state - the new state to define to insert into the Map
+ *         Thing. Must actually have a sprite set in order to work.
+ * Output: bool - returns if the thing state was set successfuly
  */
-bool MapThing::setSprite(Sprite* new_frames)
+bool MapThing::setState(MapState* state)
 {
-  unsetSprite();
-
-  /* Check if the frames are valid */
-  if(new_frames != NULL && new_frames->getSize() > 0)
+  /* Check if the state is valid */
+  if(state->getSprite() != 0)
   {
-    thing = new_frames;
-    thing_set = true;
+    unsetState();
+    this->state = state;
+    setItem(state->getSprite());
+    return true;
   }
 
-  return thing_set;
+  return false;
 }
 
 /*
- * Description: Unsets the sprite that's embedded in this as the Map Thing
+ * Description: Unsets the state that's embedded in this as the Map Thing
  *
  * Inputs: none
- * Output: bool - returns true if the Map Thing was set before this was called 
+ * Output: none 
  */
-bool MapThing::unsetSprite()
+void MapThing::unsetState()
 {
-  bool was_thing_set = thing_set;
-
-  if(thing_set)
-    delete thing;
-
-  this->thing = NULL;
-  thing_set = false;
-
-  return was_thing_set;
+  unsetItem(false);
+  delete state;
+  state = 0;
 }

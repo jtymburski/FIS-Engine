@@ -41,12 +41,15 @@ Layer::Layer()
  */
 Layer::Layer(Sprite* item, int width, int height, int x, int y, int z)
 {
+  /* Pointers nullified */
+  this->item = 0;
+
   /* Initialize the item */
-  this->item = item;
-  this->width = width;
-  this->height = height;
+  setItem(item);
   visible = true;
   setEnabled(false);
+  setHeight(height);
+  setWidth(width);
 
   /* Set the coordinates */
   setX(x);
@@ -89,12 +92,20 @@ QRectF Layer::boundingRect() const
  */
 void Layer::clear()
 {
-  if(item != 0)
-    delete item;
-  item = 0;
-
+  unsetItem();
   width = 0;
   height = 0;
+}
+
+/* 
+ * Description: Gets the height of the stored sprite
+ *
+ * Inputs: none
+ * Output: int - the height, in pixels
+ */
+int Layer::getHeight()
+{
+  return height;
 }
 
 /* 
@@ -106,6 +117,17 @@ void Layer::clear()
 Sprite* Layer::getItem()
 {
   return item;
+}
+
+/* 
+ * Description: Gets the width of the stored sprite
+ *
+ * Inputs: none
+ * Output: int - the width, in pixels
+ */
+int Layer::getWidth()
+{
+  return width;
 }
 
 /* 
@@ -158,6 +180,42 @@ void Layer::paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
 }
 
 /* 
+ * Description: Sets the height of the stored sprite
+ *
+ * Inputs: int height - the height, in pixels
+ * Output: bool - the status, returns false if the height is <= 0
+ */
+bool Layer::setHeight(int height)
+{
+  if(height > 0)
+  {
+    this->height = height;
+    return true;
+  }
+
+  this->height = 0;
+  return false;
+}
+
+/* 
+ * Description: Sets the item stored within the layer. Only sets it if the
+ *              pointer is valid and the number of frames is greater than 0.
+ *
+ * Inputs: Sprite* item - the new item pointer to attempt to insert in
+ * Output: bool - status if the insertion succeeded
+ */
+bool Layer::setItem(Sprite* item)
+{
+  if(item != 0 && item->getSize() > 0)
+  {
+    unsetItem();
+    this->item = item;
+    return true;
+  }
+  return false;
+}
+
+/* 
  * Description: Sets if the sprite layer is visible
  *
  * Inputs: bool status - the visibility status
@@ -166,4 +224,36 @@ void Layer::paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
 void Layer::setVisible(bool status)
 {
   visible = status;
+}
+
+/* 
+ * Description: Sets the width of the stored sprite
+ *
+ * Inputs: int width - the width, in pixels
+ * Output: bool - the status, returns false if the width is <= 0
+ */
+bool Layer::setWidth(int width)
+{
+  if(width > 0)
+  {
+    this->width = width;
+    return true;
+  }
+
+  this->width = 0;
+  return false;
+}
+
+/* 
+ * Description: Unsets the item stored within the class, by deleting the 
+ *              pointer and nullifying it.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Layer::unsetItem(bool deleteItem)
+{
+  if(deleteItem)
+    delete item;
+  item = 0;
 }

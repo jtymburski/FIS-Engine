@@ -13,13 +13,14 @@
 #define MAPTHING_H
 
 #include "Game/Map/Layer.h"
+#include "Game/Map/MapState.h"
 
-class MapThing
+class MapThing : public Layer
 {
 public:
   /* Constructor functions */
   MapThing();
-  MapThing(Sprite* frames, QString name = "", 
+  MapThing(MapState* state, int width, int height, QString name = "", 
            QString description = "", int id = kUNSET_ID);
 
   /* Destructor function */
@@ -35,9 +36,8 @@ private:
   /* The things name */
   QString name;
 
-  /* The sprite object for the thing */
-  Sprite* thing;
-  bool thing_set;
+  /* The main state, the main one */
+  MapState* state;
 
   /* -------------------------- Constants ------------------------- */
   const static int kMINIMUM_ID;
@@ -47,6 +47,9 @@ private:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Clears the entire class data */
+  void clear();
+
   /* Gets the things decription */
   QString getDescription();
 
@@ -56,14 +59,14 @@ public:
   /* Gets the things name */
   QString getName();
 
-  /* Gets the sprite of the thing */
-  Sprite* getSprite();
+  /* Returns the map state that's defined */
+  MapState* getState();
   
   /* Starts inteaction (conversation, giving something, etc) */
   void interaction();
 
-  /* Returns if the thing is set */
-  bool isSet();
+  /* Set the coordinates for the data in the map thing (for the parent) */
+  void setCoordinates(int x, int y, int z = 0);
 
   /* Sets the things description */
   void setDescription(QString new_description);
@@ -74,11 +77,11 @@ public:
   /* Sets the things name */
   void setName(QString new_name);
 
-  /* Sets the sprite of the thing */
-  bool setSprite(Sprite* new_frames);
+  /* Sets the state of the thing */
+  bool setState(MapState* state);
 
-  /* Unsets the sprite of the thing */
-  bool unsetSprite();
+  /* Unsets the state, in the class */
+  void unsetState();
 };
 
 #endif // MAPTHING_H

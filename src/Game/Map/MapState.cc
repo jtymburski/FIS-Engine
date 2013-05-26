@@ -18,7 +18,8 @@ MapState::MapState()
 
 MapState::MapState(Sprite* animation)
 {
-  this->animation = animation;
+  this->animation = 0;
+  setSprite(animation);
 }
 
 MapState::~MapState()
@@ -33,12 +34,28 @@ MapState::~MapState()
 /* Clear out the state definition */
 void MapState::clear()
 {
-  delete animation;
-  animation = 0;
+  unsetSprite();
 }
 
 /* Returns the sprite stored in the state for control/usage */
 Sprite* MapState::getSprite()
 {
   return animation;
+}
+
+bool MapState::setSprite(Sprite* animation)
+{
+  if(animation != 0 && animation->getSize() > 0)
+  {
+    unsetSprite();
+    this->animation = animation;
+    return true;
+  }
+  return false;
+}
+
+void MapState::unsetSprite()
+{
+  delete animation;
+  animation = 0;
 }

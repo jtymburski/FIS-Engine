@@ -13,6 +13,7 @@
 #include "Game/Map/MapInteractiveObject.h"
 #include "Game/Map/MapPerson.h"
 #include "Game/Map/MapWalkOver.h"
+#include "XmlData.h"
 
 class Tile : public QObject
 {
@@ -127,7 +128,10 @@ signals:
 public:
   /* Adds another base layer to the stack */
   Layer* addBase(Sprite* base_sprite, RotatedAngle angle = NONE);
-  
+ 
+  /* Adds data from the file to this tile. Returns if valid */
+  bool addData(XmlData data, QPixmap image, int dataIndex);
+
   /* Adds another upper layer to the stack */
   Layer* addUpper(Sprite* upper_sprite, RotatedAngle angle = NONE);
   

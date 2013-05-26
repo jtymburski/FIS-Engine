@@ -43,8 +43,14 @@ public:
   /* Clear out the layer definition */
   void clear();
 
+  /* Returns the height of the layer */
+  int getHeight();
+
   /* Returns the sprite stored in the layer for control */
   Sprite* getItem();
+
+  /* Returns the width of the layer */
+  int getWidth();
 
   /* Returns if the painted information in the tile is visible */
   bool isVisible();
@@ -53,8 +59,20 @@ public:
   void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
              QWidget* widget);
 
+  /* Sets the height, stored in the layer */
+  bool setHeight(int height);
+
+  /* Sets the item within the class */
+  bool setItem(Sprite* item);
+
   /* Sets if the tile is visible or not (black or painted) */
   void setVisible(bool status);
+
+  /* Sets the width, stored in the layer */
+  bool setWidth(int width);
+
+  /* Unsets the item within the class */
+  void unsetItem(bool deleteItem = true);
 };
 
 #endif // LAYER_H
