@@ -89,6 +89,11 @@ public:
   /* Appends an effect to the vector */
   bool addEffect(Action* new_action);
 
+  /* Methods for printing ou the info of a Skill */
+  void printAll();
+  void printInfo();
+  void printFlags();
+
   /* Removes an effect from the vector */
   bool removeEffect(uint index);
 

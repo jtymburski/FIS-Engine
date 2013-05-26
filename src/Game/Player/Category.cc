@@ -85,6 +85,20 @@ void Category::cleanUp()
 }
 
 /*
+ * Description: Prints out all the information pertaining to the category
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Category::printInfo()
+{
+    qDebug() << " --- Category  --- ";
+    qDebug() << "Name: " << name;
+    qDebug() << "Description: " << description;
+    qDebug() << " --- / Category --- ";
+}
+
+/*
  * Description: Returns the description of the Category
  *
  * Inputs: none

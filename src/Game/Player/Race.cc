@@ -84,14 +84,28 @@ void Race::cleanUp()
   if (stat_set.getMax("QUANTUM DRIVE") > kMAX_QD)
       stat_set.setMax("QUANTUM DRIVE", kMAX_QD);
   for (int i = stat_set.getIndex("PHAG"); i <= stat_set.getIndex("PHFD"); i++)
-      if (stat_set.getMax(i) > kMAX_PHYSICAL)
-          stat_set.setMax(i, kMAX_PHYSICAL);
+    if (stat_set.getMax(i) > kMAX_PHYSICAL)
+        stat_set.setMax(i, kMAX_PHYSICAL);
   for (int i = stat_set.getIndex("THAG"); i <= stat_set.getIndex("NIFD"); i++)
-      if (stat_set.getMax(i) > kMAX_ELEMENTAL)
-          stat_set.setMax(i, kMAX_ELEMENTAL);
+    if (stat_set.getMax(i) > kMAX_ELEMENTAL)
+        stat_set.setMax(i, kMAX_ELEMENTAL);
   for (int i = stat_set.getIndex("NIFD") + 1; i < stat_set.getSize(); i++)
-      if (stat_set.getMax(i) > kMAX_SPECIAL)
-          stat_set.setMax(i, kMAX_SPECIAL);
+    if (stat_set.getMax(i) > kMAX_SPECIAL)
+        stat_set.setMax(i, kMAX_SPECIAL);
+}
+
+/*
+ * Description: Prints out the info of the Race
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Race::printInfo()
+{
+  qDebug() << "--- Race --- ";
+  qDebug() << "Name: " << name;
+  qDebug() << "Description: " << description;
+  qDebug() << "Skill Set: " << skill_set->getSkills().size();
 }
 
 /*

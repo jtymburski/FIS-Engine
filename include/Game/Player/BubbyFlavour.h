@@ -57,6 +57,9 @@ private:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Methods for printing the state of the Class */
+  void printInfo();
+
   /* Gets the set of attributes for the Bubby */
   AttributeSet* getAttr();
 

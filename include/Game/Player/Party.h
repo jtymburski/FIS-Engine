@@ -47,7 +47,7 @@ private:
   ushort max_size;
 
 public:
-  /* Constants*/
+  /* Constants */
   static const ushort kMAX_MEMBERS = 5;
 
   /* Adds a person to party, returns false if no space or failure */
@@ -55,6 +55,11 @@ public:
 
   /* Clears the party */
   void clearParty();
+
+  /* Methods for printing out the state of the class */
+  void printAll();
+  void printInfo();
+  void printFlags();
 
   /* Removes a person from the party by index */
   bool removeMember(uint index);

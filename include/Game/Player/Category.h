@@ -54,6 +54,9 @@ public:
   /* Cleans up the attributes and stat set */
   void cleanUp();
 
+  /* Method for printing out the information of the category */
+  void printInfo();
+
   /* Gets the description & name */
   QString getDescription();
   QString getName();

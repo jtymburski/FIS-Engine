@@ -193,6 +193,108 @@ bool Person::damage(ushort amount)
 }
 
 /*
+ * Description: Method for printing all the info describing a person, by
+ *              calling sub-print functions
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Person::printAll()
+{
+  qDebug() << " --- Person --- ";
+  printBasics();
+  printEquipment();
+  printBaseStats();
+  printStats();
+  printTempStats();
+  printSkills();
+  qDebug() << " --- / Person --- ";
+}
+
+/*
+ * Description: Method for printing the basic info of a person
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Person::printBasics()
+{
+  qDebug() << "Name: " << getName();
+  qDebug() << "Rank: " << getRank();
+  qDebug() << "Level: " << getLevel();
+  qDebug() << "Total Exp: " << getExp();
+  qDebug() <<  "Category: " << cat->getName();
+  qDebug() << "Race: " << race->getName();
+  qDebug() << "Dmg Modifier: " << damage_modifier;
+  qDebug() << "Primary Element: " << primary;
+  qDebug() << "Secondary Element: " << secondary;
+  qDebug() << "Primary Curve: " << primary_curve;
+  qDebug() << "Secondary Curve: " << secondary_curve;
+
+  /* Print out the drops */
+  for (int i = 0; i < item_drops.size(); i++)
+    qDebug() << "Item Drop #" << i << ": " << item_drops[i].getName();
+  qDebug() << "Exp Drop: " << experience_drop;
+  qDebug() << "Credit Drop: " << credit_drop;
+}
+
+/*
+ * Description: Method for printing the basic info of a person
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Person::printEquipment()
+{
+    for (int i = 0; i < equipment.size(); i++)
+        qDebug() << "Equipment #" << i << ": " << equipment[i].getName();
+}
+
+/*
+ * Description: Method for printing out the base stats of a person
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Person::printBaseStats()
+{
+    base_stats.printInfo();
+}
+
+/*
+ * Description: Method for printing out the normal stats of a person
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Person::printStats()
+{
+    stats.printInfo();
+}
+
+/*
+ * Description: Method for printing out the temp stats of a person
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Person::printTempStats()
+{
+    temp_stats.printInfo();
+}
+
+/*
+ * Description: Method for printing out the skills of a person
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Person::printSkills()
+{
+  skills->printInfo();
+}
+
+/*
  * Description: Sets up the base stats (grabs Category min and max values
  *              and adds them to the Race bonuses)
  *
@@ -896,89 +998,4 @@ void Person::setStats(AttributeSet new_stat_set)
 void Person::setTempStats(AttributeSet new_stat_set)
 {
   temp_stats = new_stat_set;
-}
-
-/*
- * Description: Method for printing all the info describing a person, by
- *              calling sub-print functions
- *
- * Inputs: none
- * Output: none
- */
-void Person::printAll()
-{
-  qDebug() << " --- Person --- ";
-  printBasics();
-  printBaseStats();
-  printStats();
-  printTempStats();
-  printSkills();
-  qDebug() << " --- / Person --- ";
-}
-
-/*
- * Description: Method for printing the basic info of a person
- *
- * Inputs: none
- * Output: none
- */
-void Person::printBasics()
-{
-  qDebug() << " Name: " << getName();
-  qDebug() << " Level: " << getLevel();
-}
-
-/*
- * Description: Method for printing the basic info of a person
- *
- * Inputs: none
- * Output: none
- */
-void Person::printEquipment()
-{
-
-}
-
-/*
- * Description: Method for printing out the base stats of a person
- *
- * Inputs: none
- * Output: none
- */
-void Person::printBaseStats()
-{
-
-}
-
-/*
- * Description: Method for printing out the normal stats of a person
- *
- * Inputs: none
- * Output: none
- */
-void Person::printStats()
-{
-
-}
-
-/*
- * Description: Method for printing out the temp stats of a person
- *
- * Inputs: none
- * Output: none
- */
-void Person::printTempStats()
-{
-
-}
-
-/*
- * Description: Method for printing out the skills of a person
- *
- * Inputs: none
- * Output: none
- */
-void Person::printSkills()
-{
-
 }

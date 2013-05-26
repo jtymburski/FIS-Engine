@@ -126,6 +126,61 @@ bool Skill::addEffect(Action* new_action)
 }
 
 /*
+ * Description: Prints out all the info of a skill by calling the sub print
+ *              functions.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Skill::printAll()
+{
+  qDebug() << "--- Skill ---";
+  printInfo();
+  printFlags();
+  qDebug() << "--- /SKill ---";
+}
+
+/*
+ * Description: Prints out the basic info describing the skill
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Skill::printInfo()
+{
+  qDebug() << "Name: " << name;
+  qDebug() << "Description: " << description;
+  qDebug() << "QD Cost: " << qd_cost;
+  qDebug() << "Using Message: " << using_message;
+
+  for (int i = 0; i < effects.size(); i++)
+  {
+    qDebug() << "Action #" << i << ": " << effects.at(i)->getId();
+    qDebug() << "Action Chance: " << effect_chance.at(i);
+  }
+}
+
+/*
+ * Description: Prints out the flags of the skill
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Skill::printFlags()
+{
+  qDebug() << "MULTIHIT: " << getFlag(Skill::MULTIHIT);
+  qDebug() << "OFFENSIVE: " << getFlag(Skill::OFFENSIVE);
+  qDebug() << "DEFENSIVE: " << getFlag(Skill::DEFENSIVE);
+  qDebug() << "PHYSICAL: " << getFlag(Skill::PHYSICAL);
+  qDebug() << "THERMAL: " << getFlag(Skill::THERMAL);
+  qDebug() << "POLAR: " << getFlag(Skill::POLAR);
+  qDebug() << "PRIMAL: " << getFlag(Skill::PRIMAL);
+  qDebug() << "CHARGED: " << getFlag(Skill::CHARGED);
+  qDebug() << "CYBERNETIC: " << getFlag(Skill::CYBERNETIC);
+  qDebug() << "NIHIL: " << getFlag(Skill::NIHIL);
+}
+
+/*
  * Description: Removes an effect chance from the vector
  *
  * Inputs: uint - index of the effect to be removed

@@ -109,6 +109,54 @@ void Party::clearParty()
 }
 
 /*
+ * Description: Prints out all the information of the state of the party by
+ *              calling sub-print classes.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Party::printAll()
+{
+  qDebug() << "---  Party --- ";
+  printInfo();
+  printFlags();
+  qDebug() << "--- / Party --- ";
+}
+
+/*
+ * Description: Prints out all the basic info of the state of the party
+ *              including its members.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Party::printInfo()
+{
+    qDebug() << "Inventory Name: " << pouch->getName();
+    qDebug() << "Party Members: " << members.size();
+    qDebug() << "Max Size: " << max_size;
+
+    for (int i = 0; i < members.size(); i++)
+      qDebug() << " Member #" << i << ": " << members.at(i)->getName();
+}
+
+/*
+ * Description: Prints out the state of the PartyFlags.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Party::printFlags()
+{
+  qDebug() << "MAIN: " << getPartyFlag(Party::MAIN);
+  qDebug() << "BEARACKS: " << getPartyFlag(Party::BEARACKS);
+  qDebug() << "FOE: " << getPartyFlag(Party::FOE);
+  qDebug() << "MINIBOSS: " << getPartyFlag(Party::MINIBOSS);
+  qDebug() << "BOSS: " << getPartyFlag(Party::BOSS);
+  qDebug() << "FINALBOSS: " << getPartyFlag(Party::FINALBOSS);
+}
+
+/*
  * Description: Returns a pointer to the party's inventory
  *
  * Inputs: none

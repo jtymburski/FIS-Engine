@@ -86,6 +86,21 @@ void BubbyFlavour::buildLevels()
  *===========================================================================*/
 
 /*
+ * Description: Prints the state of the class
+ *
+ * Inputs: none
+ * Output: none
+ */
+void BubbyFlavour::printInfo()
+{
+    qDebug() << " --- BubbyFlavour -- ";
+    qDebug() << "Name: " << name;
+    qDebug() << "Description: " << description;
+    qDebug() << "# Skills: " << skill_list->getSkills().size();
+    qDebug() << " --- / BubbyFlavour ---";
+}
+
+/*
  * Description: Returns the pointer to the attribute set of the BubbyFlavour.
  *
  * Inputs: none

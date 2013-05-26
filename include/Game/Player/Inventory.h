@@ -3,7 +3,7 @@
 * Date Created: Nov 04 2012
 * Inheritance: QWidget
 * Description: The Inventory class
-******************************************************************************/
+\*****************************************************************************/
 #ifndef INVENTORY_H
 #define INVENTORY_H
 
@@ -65,6 +65,11 @@ private:
 public:
   /* Attempts to reset the level of the inventory */
   bool resetLevel(const uint new_level);
+
+  /* Methods for printing out the info of the Inventory */
+  void printAll();
+  void printInfo();
+  void printItems();
 
   /* Attempts to add equipment, returns true if there is room to add */
   bool addTo(Equipment equipment);

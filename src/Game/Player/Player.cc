@@ -71,6 +71,24 @@ void Player::addCredits(unsigned long value)
 }
 
 /*
+ * Description: Prints out the information of the Player.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Player::printInfo()
+{
+  qDebug() << "Map Speed: " << kMAPSPEED;
+  qDebug() << "Sleuth Size: " << sleuth->getPartySize();
+  qDebug() << "Bearacks Size: " << bearacks->getPartySize();
+  qDebug() << "X Pos: " << x_pos;
+  qDebug() << "Y Pos: " << y_pos;
+  qDebug() << "Carry Weight: " << carry_weight;
+  qDebug() << "Gravity: " << gravity;
+  qDebug() << "Credits: " << credits;
+}
+
+/*
  * Description: Removes a sleuth member by index by
  *              calling party's remove member function
  *

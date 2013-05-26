@@ -4,6 +4,7 @@
 * Inheritance: QWidget
 * Description: The Inventory class
 * // TODO: CHECK FOR FLAGS (Stackable, etc.) [03-09-13]
+* // TODO: CHECK CARRY WEIGHTS ETC [05-26-13]
 ******************************************************************************/
 #include "Game/Player/Inventory.h"
 
@@ -231,6 +232,55 @@ bool Inventory::resetLevel(const uint new_level)
     return false;
   level = new_level;
   return true;
+}
+
+/*
+ * Description: Calls the other print functions to print out everything
+ *              in the inventory
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Inventory::printAll()
+{
+    qDebug() << "--- Inventory --- ";
+    printInfo();
+    printItems();
+    qDebug() << " --- / Inventory ---";
+}
+
+/*
+ * Description: Prints out the info of the inventory
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Inventory::printInfo()
+{
+    qDebug() << "Name of Unit: " << name;
+    qDebug() << "Level of Unit: " << level;
+    qDebug() << "Equip Limit: " << equip_limit;
+    qDebug() << "Item Limit: " << item_limit;
+    qDebug() << "Bubby Limit: " << bubby_limit;
+    qDebug() << "Max Carry Weight: " << max_carry_weight;
+}
+
+/*
+ * Description: Prints out the items of the Inventory
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Inventory::printItems()
+{
+  for (int i = 0; i < bubbies.size(); i++)
+    qDebug() << bubbies[i].getName();
+  for (int i = 0; i < equipments.size(); i++)
+    qDebug() << equipments[i].getName() << " " << equip_count.at(i);
+  for (int i = 0; i < items.size(); i++)
+    qDebug() << items[i].getName() << " " << item_count.at(i);
+  for (int i = 0; i < key_items.size(); i++)
+    qDebug() << key_items[i].getName();
 }
 
 /*

@@ -47,6 +47,9 @@ public:
   /* Cleans up the attributes and stat set */
   void cleanUp();
 
+  /* Method for printing the info of the Race */
+  void printInfo();
+
   /* Gets the Description & Name */
   QString getDescription();
   QString getName();

@@ -60,6 +60,9 @@ public:
   /* Adds an amount of money to credits */
   void addCredits(unsigned long value);
 
+  /* Methods for printing ou the info of the player */
+  void printInfo();
+
   /* Removes a sleuth member by index by calling Party's remove function */
   bool removeSleuthMember(int index);
 
