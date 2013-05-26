@@ -433,7 +433,7 @@ void Equipment::setEquipmentFlag(EquipmentState flag, bool set_value)
 }
 
 /*=============================================================================
- * PUBLIC STATIC FUNCTIONS
+ * VIRTUAL FUNCTIONS
  *============================================================================*/
 
 /*
@@ -447,18 +447,35 @@ void Equipment::printAll()
 {
   qDebug() << " --- Equipment --- ";
   printFlags();
+  printEquipmentFlags();
   printInfo();
   printSignature();
   qDebug() << " --- / Equipment --- ";
 }
 
+void Equipment::printFlags()
+{
+  qDebug() << "BATTLEREADY: " << getItemFlag(Item::BATTLEREADY);
+  qDebug() << "MENUREADY: " << getItemFlag(Item::MENUREADY);
+  qDebug() << "CONSUMABLE: " << getItemFlag(Item::CONSUMABLE);
+  qDebug() << "HEAL ITEM: " << getItemFlag(Item::HEALITEM);
+  qDebug() << "CURE: " << getItemFlag(Item::CURE);
+  qDebug() << "OFFENSIVE: " << getItemFlag(Item::OFFENSIVE);
+  qDebug() << "INDEFINITE: " << getItemFlag(Item::INDEFINITE);
+  qDebug() << "STACKABLE: " << getItemFlag(Item::STACKABLE);
+  qDebug() << "EQUIPMENT: " << getItemFlag(Item::EQUIPMENT);
+  qDebug() << "KEYITEM: " << getItemFlag(Item::KEYITEM);
+  qDebug() << "MULTIHIT: " << getItemFlag(Item::MULTIITEM);
+  qDebug() << "PARTYITEM: " << getItemFlag(Item::PARTYITEM);
+}
+
 /*
- * Description: Prints out the info of the equipment
+ * Description: Prints out the flags of the equipment
  *
  * Inputs: none
  * Output: none
  */
-void Equipment::printFlags()
+void Equipment::printEquipmentFlags()
 {
   qDebug() << "WEAPON: " << getEquipmentFlag(Equipment::WEAPON);
   qDebug() << "METAL: " << getEquipmentFlag(Equipment::METAL);
@@ -480,7 +497,7 @@ void Equipment::printFlags()
  */
 void Equipment::printInfo()
 {
-    qDebug() << getName();
+
 }
 
 /*

@@ -117,10 +117,30 @@ void Bubby::addExperience(uint value)
 }
 
 /*
+ * Description: Prints all the info pertaining to the Bubby
+ *
+ * Inputs: none
+ * Outputs: none
+ */
+void Bubby::printInfo()
+{
+  qDebug() << "Bubby ID #: " << my_id;
+  qDebug() << "Total Exp: " << total_exp;
+  qDebug() << "Level: " << level;
+  qDebug() << "Tier: " << tier;
+  qDebug() << "Name: " << name;
+  qDebug() << "Description: " << description;
+  qDebug() << "Category: " << item_category;
+  qDebug() << "Duration: " << duration;
+  qDebug() << "Value: " << value;
+  qDebug() << "Weight: " << weight;
+}
+
+/*
  * Description: Returns the ID of the Bubby
  *
  * Inputs: none
- * outputs: int - the ID of the Bubby
+ * Outputs: int - the ID of the Bubby
  */
 int Bubby::getId()
 {

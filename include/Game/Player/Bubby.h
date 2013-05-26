@@ -81,6 +81,9 @@ public:
   /* Adds experience to the Bubby */
   void addExperience(uint amount);
 
+  /* Prints the info describing the Bubby */
+  void printInfo();
+
   /* Gets the bubbies Id */
   int getId();
 

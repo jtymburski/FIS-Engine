@@ -247,6 +247,82 @@ void Action::setActionFlag(ActionType flags, bool set_value)
  *============================================================================*/
 
 /*
+ * Description: Prints all the info describing an action by calling the sub
+ *              print functions.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Action::printAll()
+{
+  printInfo();
+  printFlags();
+  qDebug() << " --- / Action ---";
+}
+
+/*
+ * Description: Prints the basic info describing an action.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Action::printInfo()
+{
+  qDebug() << "Action ID #: " << id;
+  qDebug() << "Min Duration: " << min_duration;
+  qDebug() << "Max Duration: " << max_duration;
+  qDebug() << "Base Change: " << base_change;
+  qDebug() << "Variance: " << variance;
+}
+
+/*
+ * Description: Prints out the stored flag values
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Action::printFlags()
+{
+  qDebug() << "RAISE: " << getActionFlag(Action::RAISE);
+  qDebug() << "LOWER: " << getActionFlag(Action::LOWER);
+  qDebug() << "GIVE: " << getActionFlag(Action::GIVE);
+  qDebug() << "TAKE: " << getActionFlag(Action::TAKE);
+  qDebug() << "OFFENSIVE: " << getActionFlag(Action::OFFENSIVE);
+  qDebug() << "DEFENSIVE: " << getActionFlag(Action::DEFENSIVE);
+  qDebug() << "PHYSICAL: " << getActionFlag(Action::PHYSICAL);
+  qDebug() << "THERMAL: " << getActionFlag(Action::THERMAL);
+  qDebug() << "POLAR: " << getActionFlag(Action::POLAR);
+  qDebug() << "PRIMAL: " << getActionFlag(Action::PRIMAL);
+  qDebug() << "CHARGED: " << getActionFlag(Action::CHARGED);
+  qDebug() << "CYBERNETIC: " << getActionFlag(Action::CYBERNETIC);
+  qDebug() << "NIHIL: " << getActionFlag(Action::NIHIL);
+  qDebug() << "VITALITY: " << getActionFlag(Action::VITALITY);
+  qDebug() << "QTMN DRIVEL: " << getActionFlag(Action::QUANTUM_DRIVE);
+  qDebug() << "MOMENTUM: " << getActionFlag(Action::MOMENTUM);
+  qDebug() << "LIMBERTUDE: " << getActionFlag(Action::LIMBERTUDE);
+  qDebug() << "UNBEARABILITY: " << getActionFlag(Action::UNBEARABILITY);
+  qDebug() << "---";
+  qDebug() << "IG ELMN ATK: " << getIgnoreFlag(Action::IGNORE_ELMN_ATK);
+  qDebug() << "IG PHYS ATK: " << getIgnoreFlag(Action::IGNORE_PHYS_ATK);
+  qDebug() << "IG THER ATK: " << getIgnoreFlag(Action::IGNORE_THER_ATK);
+  qDebug() << "IG POLA ATK: " << getIgnoreFlag(Action::IGNORE_POLA_ATK);
+  qDebug() << "IG PRIM ATK: " << getIgnoreFlag(Action::IGNORE_PRIM_ATK);
+  qDebug() << "IG CHAR ATK: " << getIgnoreFlag(Action::IGNORE_CHAR_ATK);
+  qDebug() << "IG CYBE ATK: " << getIgnoreFlag(Action::IGNORE_CYBE_ATK);
+  qDebug() << "IG NIHI ATK: " << getIgnoreFlag(Action::IGNORE_NIHI_ATK);
+  qDebug() << "IG ATK: " << getIgnoreFlag(Action::IGNORE_ATK);
+  qDebug() << "IGNORE ELMN DEF: " << getIgnoreFlag(Action::IGNORE_ELMN_DEF);
+  qDebug() << "IGNORE PHYS DEF: " << getIgnoreFlag(Action::IGNORE_PHYS_DEF);
+  qDebug() << "IGNORE THER DEF: " << getIgnoreFlag(Action::IGNORE_THER_DEF);
+  qDebug() << "IGNORE POLA DEF: " << getIgnoreFlag(Action::IGNORE_POLA_DEF);
+  qDebug() << "IGNORE PRIM DEF: " << getIgnoreFlag(Action::IGNORE_PRIM_DEF);
+  qDebug() << "IGNORE CHAR DEF: " << getIgnoreFlag(Action::IGNORE_CHAR_DEF);
+  qDebug() << "IGNORE CYBE DEF: " << getIgnoreFlag(Action::IGNORE_CYBE_DEF);
+  qDebug() << "IGNORE NIHI DEF: " << getIgnoreFlag(Action::IGNORE_NIHI_DEF);
+  qDebug() << "IGNORE DEF: " << getIgnoreFlag(Action::IGNORE_DEF);
+}
+
+/*
  * Description: Returns the base change of the action
  *
  * Inputs: None

@@ -15,6 +15,7 @@
 
 #include "Game/Player/Action.h"
 #include "Game/Player/Bubby.h"
+#include "Game/Player/Item.h"
 
 class Equipment : public Item
 {
@@ -64,6 +65,7 @@ public:
   /* Method for printing the info of the equipment */
   void printAll();
   void printFlags();
+  void printEquipmentFlags();
   void printInfo();
 
 /*=============================================================================

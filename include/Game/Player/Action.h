@@ -13,6 +13,8 @@
 
 #include <QtGui/QWidget>
 
+#include "QDebug"
+
 class Action : public QWidget
 {
 public:
@@ -123,6 +125,12 @@ private:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+
+  /* Methods for test-printing */
+  void printAll();
+  void printInfo();
+  void printFlags();
+
   /* Gets the value of an Action Type Flag */
   bool getActionFlag(ActionType flags);
 

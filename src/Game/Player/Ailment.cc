@@ -877,6 +877,7 @@ void Ailment::printAll()
  */
 void Ailment::printFlags()
 {
+  qDebug() << "AILMENT TYPE: " << getAilmentStr(ailment_type);
   qDebug() << "INFINITE: " << getFlag(Ailment::INFINITE);
   qDebug() << "CURABLE:  " << getFlag(Ailment::CURABLE);
   qDebug() << "TOBECURED  " << getFlag(Ailment::TOBECURED);

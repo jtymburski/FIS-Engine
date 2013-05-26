@@ -42,7 +42,7 @@ public:
   Q_DECLARE_FLAGS(ItemFlags, ItemState)
   ItemFlags iflag_set;
 
-private:
+protected:
   /* Category unit belongs to */
   QString item_category;
 
