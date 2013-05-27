@@ -28,6 +28,8 @@ MapNPC::~MapNPC()
 /* Gets a pointer to the Persons conversation */
 QVector<QString*>* MapNPC::getConversation()
 {
+    QVector<QString*>* x = NULL;//warning
+    return x;//warning
     //return talking_points;
 }
 

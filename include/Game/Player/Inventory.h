@@ -25,8 +25,8 @@ public:
   
 private:
   /* Data structures holding the item objects */
-  QVector<Item> bubbies;
-  QVector<Item> equipments;
+  QVector<Bubby> bubbies;
+  QVector<Equipment> equipments;
   QVector<Item> items;
   QVector<Item> key_items;
 
@@ -92,6 +92,9 @@ public:
   /* Attempts to upgrade the storage unit */
   void upgrade(QString name, QPixmap* thumbnail, uint equipment_limit,
                      uint item_limit, uint bubby_limit);
+
+  /* Calculates the current weight of all items */
+  double getCurrentWeight();
 
   /* Gets the count of equipment or items */
   uint getCount(const Item item);

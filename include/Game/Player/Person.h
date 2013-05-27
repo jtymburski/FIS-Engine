@@ -145,6 +145,7 @@ public:
   void printAll();
   void printBasics();
   void printEquipment();
+  void printFlags();
   void printBaseStats();
   void printStats();
   void printTempStats();

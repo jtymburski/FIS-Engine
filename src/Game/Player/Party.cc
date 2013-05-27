@@ -132,7 +132,7 @@ void Party::printAll()
  */
 void Party::printInfo()
 {
-    qDebug() << "Inventory Name: " << pouch->getName();
+    // qDebug() << "Inventory Name: " << pouch->getName();
     qDebug() << "Party Members: " << members.size();
     qDebug() << "Max Size: " << max_size;
 

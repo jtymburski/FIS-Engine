@@ -26,13 +26,14 @@ const ushort Equipment::kMAX_Y = 9;
  *
  * Inputs: none
  */
-Equipment::Equipment()
+Equipment::Equipment(QString name, QVector<QVector<char> > equip_signature,
+                     Sprite* thumb, uint value, double weight) : Item(name, value, thumb, mass)
 {
-  // INITIALIZE SIGNATURE
+  signature = equip_signature;
 
   for (int i = 0; i < kMAX_X; i++)
-      for (int j = 0; j < kMAX_Y; j++)
-          bubby_signature[i][j] = NULL;
+    for (int j = 0; j < kMAX_Y; j++)
+      bubby_signature[i][j] = NULL;
 }
 
 /*
@@ -234,6 +235,24 @@ QVector<BubbyFlavour*> Equipment::getAttachedFlavours()
 bool Equipment::getEquipmentFlag(EquipmentState flag)
 {
   return (eflag_set.testFlag(flag));
+}
+
+/*
+ * Description: Returns the weight added on to the original weight of the
+ *              equipment by the Bubbies which are attached to it.
+ *
+ * Inputs: none
+ * Output: double - amount of weight added to the original equipment
+ */
+double Equipment::getEquipmentMass()
+{
+  double mass = 0;
+  QVector<Bubby*> attachments = getAttachedBubbies();
+
+  for (int i = 0; i < attachments.size(); i++)
+      mass += attachments[i]->getMass();
+
+  return mass;
 }
 
 /*
@@ -457,7 +476,6 @@ void Equipment::printFlags()
 {
   qDebug() << "BATTLEREADY: " << getItemFlag(Item::BATTLEREADY);
   qDebug() << "MENUREADY: " << getItemFlag(Item::MENUREADY);
-  qDebug() << "CONSUMABLE: " << getItemFlag(Item::CONSUMABLE);
   qDebug() << "HEAL ITEM: " << getItemFlag(Item::HEALITEM);
   qDebug() << "CURE: " << getItemFlag(Item::CURE);
   qDebug() << "OFFENSIVE: " << getItemFlag(Item::OFFENSIVE);

@@ -14,14 +14,14 @@
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
-const uint Person::kMAX_LEVEL       =        127;
-const uint Person::kMIN_LVL_EXP     =        156;
-const uint Person::kMAX_LVL_EXP     =    5327426;
-const uint Person::kMAX_EXPERIENCE  = 1000000000; /* Billion */
-const uint Person::kMAX_EXP_DROP    =    1000000; /* Million */
-const uint Person::kMAX_CREDIT_DROP =   10000000; /* Ten Million */
-const uint Person::kMAX_EQUIP_SLOTS =          5;
-const double Person::kMAX_DAMAGE_MODIFIER = 10.0000;
+const uint Person::kMAX_LEVEL             =        127;
+const uint Person::kMIN_LVL_EXP           =        156;
+const uint Person::kMAX_LVL_EXP           =    5327426;
+const uint Person::kMAX_EXPERIENCE        = 1000000000; /* Billion */
+const uint Person::kMAX_EXP_DROP          =    1000000; /* Million */
+const uint Person::kMAX_CREDIT_DROP       =   10000000; /* Ten Million */
+const uint Person::kMAX_EQUIP_SLOTS       =          5;
+const double Person::kMAX_DAMAGE_MODIFIER =    10.0000;
 QVector<uint> Person::exp_table;
 
 /*=============================================================================
@@ -158,23 +158,36 @@ void Person::battlePrep()
  */
 void Person::calcSkills()
 {
-  /*
-  QVector<Skill*> race_skills = getRace()->getSkillSet()->getSkills();
-  QVector<Skill*> cat_skills  = getCategory()->getSkillSet()->getSkills();
+  if (getSkills() != NULL)
+  {
+    QVector<Skill*> race_skills = getRace()->getSkillSet()->getSkills();
+    QVector<Skill*> cat_skills  = getCategory()->getSkillSet()->getSkills();
 
-  QVector<ushort> race_levels = getRace()->getSkillSet()->getSkillLevels();
-  QVector<ushort> cat_levels  = getCategory()->getSkillSet()->getSkillLevels();
+    QVector<ushort> race_lvls = getRace()->getSkillSet()->getSkillLevels();
+    QVector<ushort> cat_lvls  = getCategory()->getSkillSet()->getSkillLevels();
 
-  for (int i = 0; i < race_skills.size(); i++)
-    if (getLevel() > race_levels.at(i))
-      skills->addSkill(race_skills.at(i));
+    for (int i = 0; i < race_skills.size(); i++)
+      if (getLevel() > race_lvls.at(i))
+        skills->addSkill(race_skills.at(i));
 
-  for (int i = 0; i < cat_skills.size(); i++)
-    if (getLevel() > cat_levels.at(i))
-      skills->addSkill(cat_skills.at(i));
+    for (int i = 0; i < cat_skills.size(); i++)
+     if (getLevel() > cat_lvls.at(i))
+       skills->addSkill(cat_skills.at(i));
 
-  //TODO: Skills from Equipment!!!
-  skills->cleanUp(); */
+
+    for (int i = 0; i < equipment.size(); i++)
+    {
+     // SkillSet* equipment_skills = equipment[i].getSkills(getLevel());
+     // QVector<Skill*> equip_skills = equipment_skills->getSkills();
+
+     // for (int j = 0; j < equip_skills.size(); j++)
+     //  skills->addSkill(equip_skills.at(i));
+
+      // equip_skills.clear();
+    }
+
+    skills->cleanUp();
+  }
 }
 
 /*
@@ -204,6 +217,7 @@ void Person::printAll()
   qDebug() << " --- Person --- ";
   printBasics();
   printEquipment();
+  printFlags();
   printBaseStats();
   printStats();
   printTempStats();
@@ -233,9 +247,9 @@ void Person::printBasics()
 
   /* Print out the drops */
   for (int i = 0; i < item_drops.size(); i++)
-    qDebug() << "Item Drop #" << i << ": " << item_drops[i].getName();
-  qDebug() << "Exp Drop: " << experience_drop;
-  qDebug() << "Credit Drop: " << credit_drop;
+  // qDebug() << "Item Drop #" << i << ": " << item_drops[i].getName();
+ qDebug() << "Exp Drop: " << experience_drop;
+ qDebug() << "Credit Drop: " << credit_drop;
 }
 
 /*
@@ -246,8 +260,38 @@ void Person::printBasics()
  */
 void Person::printEquipment()
 {
-    for (int i = 0; i < equipment.size(); i++)
-        qDebug() << "Equipment #" << i << ": " << equipment[i].getName();
+    // for (int i = 0; i < equipment.size(); i++)
+        // qDebug() << "Equipment #" << i << ": " << equipment[i].getName();
+}
+
+/*
+ * Description: Method for printing out the flags of the Person
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Person::printFlags()
+{
+  qDebug() << "ALIVE: " << getPersonFlag(Person::ALIVE);
+  qDebug() << "INBATTLE: " << getPersonFlag(Person::INBATTLE);
+  qDebug() << "SLEUTH: " << getPersonFlag(Person::SLEUTH);
+  qDebug() << "BEARACKS: " << getPersonFlag(Person::BEARACKS);
+  qDebug() << "RENDERING: " << getPersonFlag(Person::RENDERING);
+  qDebug() << "MAINCHARACTER: " << getPersonFlag(Person::MAINCHARACTER);
+  qDebug() << "FINALBOSS: " << getPersonFlag(Person::FINALBOSS);
+  qDebug() << "BOSS: " << getPersonFlag(Person::BOSS);
+  qDebug() << "MINIBOSS: " << getPersonFlag(Person::MINIBOSS);
+  qDebug() << "MAXLVLL " << getPersonFlag(Person::MAXLVL);
+  qDebug() << "CANATTACK: " << getPersonFlag(Person::CANATTACK);
+  qDebug() << "CANUSEITEM: " << getPersonFlag(Person::CANUSESKILLS);
+  qDebug() << "CANRUN: " << getPersonFlag(Person::CANRUN);
+  qDebug() << "SKIPNEXTTURN: " << getPersonFlag(Person::SKIPNEXTTURN);
+  qDebug() << "MISSNEXTTARGET: " << getPersonFlag(Person::MISSNEXTTARGET);
+  qDebug() << "NOEFFECT: " << getPersonFlag(Person::NOEFFECT);
+  qDebug() << "ISBUBBY: " << getPersonFlag(Person::ISBUBBY);
+  qDebug() << "TWOSKILLS: " << getPersonFlag(Person::TWOSKILLS);
+  qDebug() << "THREESKILLS: " << getPersonFlag(Person::THREESKILLS);
+  qDebug() << "REFLECT: " << getPersonFlag(Person::REFLECT);
 }
 
 /*
@@ -388,7 +432,7 @@ double Person::getDmgMod()
  */
 QVector<Equipment> Person::getEquipment()
 {
-  return equipment;
+  // return equipment;
 }
 
 /*
@@ -399,7 +443,7 @@ QVector<Equipment> Person::getEquipment()
  */
 Equipment* Person::getEquipSlot(int index)
 {
- return &equipment[index];
+ // return &equipment[index];
 }
 
 /*
@@ -519,7 +563,7 @@ uint Person::getCreditLoot()
  */
 QVector<Item> Person::getItemLoot()
 {
-  return item_drops;
+  // return item_drops;
 }
 
 /*
@@ -667,49 +711,49 @@ bool Person::setEquipment(QString slot, Equipment e)
   {
     if (getEquipSlot("LEFTARM") == NULL && getEquipSlot("RIGHTARM") == NULL)
     {
-      equipment[1] = e;
-      equipment[2] = e;
-      return true;
+      // equipment[1] = e;
+      // equipment[2] = e;
+      // return true;
     }
   }
   if (slot == "HEAD" && e.getEquipmentFlag(Equipment::HEAD))
   {
     if (getEquipSlot("HEAD") == NULL && getEquipSlot("HEAD") == NULL)
     {
-      equipment[0] = e;
-      return true;
+      // equipment[0] = e;
+      // return true;
     }
   }
   if (slot == "LEFTARM" && e.getEquipmentFlag(Equipment::LEFTARM))
   {
     if (getEquipSlot("LEFTARM") == NULL)
     {
-      equipment[1] = e;
-      return true;
+      // equipment[1] = e;
+      // return true;
     }
   }
   if (slot == "RIGHTARM" && e.getEquipmentFlag(Equipment::RIGHTARM))
   {
     if (getEquipSlot("RIGHTARM") == NULL)
     {
-      equipment[2] = e;
-      return true;
+      // equipment[2] = e;
+      // return true;
     }
   }
   if (slot == "TORSO" && e.getEquipmentFlag(Equipment::TORSO))
   {
     if (getEquipSlot("TORSO") == NULL)
     {
-      equipment[3] = e;
-      return true;
+      // equipment[3] = e;
+      // return true;
     }
   }
   if (slot == "LEGS" && e.getEquipmentFlag(Equipment::LEGS))
   {
     if (getEquipSlot("LEGS") == NULL)
     {
-      equipment[4] = e;
-      return true;
+      // equipment[4] = e;
+      // return true;
     }
   }
   return false;
@@ -795,9 +839,9 @@ void Person::setCreditLoot(uint value)
  */
 void Person::setItemLoot(QVector<Item> items)
 {
-    item_drops.clear();
-    for (int i = 0; i < items.size(); i++)
-        item_drops.push_back(items[i]);
+    // item_drops.clear();
+    // for (int i = 0; i < items.size(); i++)
+        // item_drops.push_back(items[i]);
 }
 
 /*

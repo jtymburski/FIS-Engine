@@ -14,6 +14,7 @@
 #include "Game/Player/SkillSet.h"
 #include "Game/Player/Item.h"
 
+
 class Bubby : public Item
 {
 public:
@@ -45,7 +46,6 @@ private:
   /* The Bubby's current tier */
   ushort tier;
 
-  /* Pointer to the current sprite */
   Sprite* current_sprite;
 
   /* ------------ Constants --------------- */
@@ -61,9 +61,6 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
-  /* Increments the bubbie's Id */
-  int setId();
-
   /* Updates the Bubby to the appropriate sprite (on tier level up) */
   bool setSprite();
 
@@ -83,9 +80,6 @@ public:
 
   /* Prints the info describing the Bubby */
   void printInfo();
-
-  /* Gets the bubbies Id */
-  int getId();
 
   /* Gets the bubbies exp */
   uint getExp();

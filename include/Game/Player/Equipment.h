@@ -21,7 +21,8 @@ class Equipment : public Item
 {
 public:
   /* Constructor function */
-  Equipment();
+  Equipment(QString name, QVector<QVector<char> > equip_signature,
+            Sprite* thumb, uint value = 0, double mass = 0);
 
   /* Destructor function */
   ~Equipment();
@@ -58,16 +59,6 @@ private:
   static const ushort kMAX_X;
   static const ushort kMAX_Y;
 
-/* =============================================================================
- * VIRTUAL FUNCTIONS
- *============================================================================*/
-public:
-  /* Method for printing the info of the equipment */
-  void printAll();
-  void printFlags();
-  void printEquipmentFlags();
-  void printInfo();
-
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
@@ -87,6 +78,10 @@ public:
   bool canUnattach(uint id);
 
   /* Method to print out the bubby signature on the Equipment */
+  void printAll();
+  void printFlags();
+  void printInfo();
+  void printEquipmentFlags();
   void printSignature();
 
   /* Removes a Bubby at a given x and y value (checks adjacent values) */
@@ -104,6 +99,9 @@ public:
 
   /* Gets the boolean value of flag */
   bool getEquipmentFlag(EquipmentState flags);
+
+  /* Gets the weight added on with Bubbies */
+  double getEquipmentMass();
 
   /* Obtains the largest tier of a given flavour */
   int getLargestTier(BubbyFlavour* flavour);

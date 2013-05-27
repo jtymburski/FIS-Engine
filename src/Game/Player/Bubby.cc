@@ -11,7 +11,6 @@
 /*=============================================================================
  * CONSTANTS
  *============================================================================*/
-int Bubby::id = 0;
 QVector<uint> Bubby::exp_table;
 
 /*=============================================================================
@@ -23,15 +22,21 @@ QVector<uint> Bubby::exp_table;
  *
  * Inputs: BubbyFlavour* - pointer to the type of the Bubby
  */
-Bubby::Bubby(BubbyFlavour* type) : my_id(setId())  // increment Bubby's id#
+Bubby::Bubby(BubbyFlavour* type) : Item(type->getName())
 {
+  /* Build the experience table the first time a Bubby is created */
   if (exp_table.isEmpty())
     calcExpTable();
 
-  /* Pointer setup */
+  /* Basic initialization */
+  setName(type->getName());
   setType(type);
-  current_sprite = NULL;
 
+  if (!type->getSprites().isEmpty())
+    setThumb(type->getSprites().at(0));
+
+  setValue(0); // TODO: Bubby values;
+  setMass(mass);
   setLevel(0);
   setTier(0);
   setExperience(0);
@@ -130,21 +135,9 @@ void Bubby::printInfo()
   qDebug() << "Tier: " << tier;
   qDebug() << "Name: " << name;
   qDebug() << "Description: " << description;
-  qDebug() << "Category: " << item_category;
   qDebug() << "Duration: " << duration;
   qDebug() << "Value: " << value;
-  qDebug() << "Weight: " << weight;
-}
-
-/*
- * Description: Returns the ID of the Bubby
- *
- * Inputs: none
- * Outputs: int - the ID of the Bubby
- */
-int Bubby::getId()
-{
-  return id;
+  qDebug() << "Mass: " << mass;
 }
 
 /*
@@ -213,17 +206,6 @@ ushort Bubby::getTier()
 BubbyFlavour* Bubby::getType()
 {
   return type;
-}
-
-/*
- * Description: Returns the ID of the Bubby and increments it
- *
- * Inputs: none
- * Output: static int - the ID of the Bubby
- */
-int Bubby::setId()
-{
-  return id++;
 }
 
 /*

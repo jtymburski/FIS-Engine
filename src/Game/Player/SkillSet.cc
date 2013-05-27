@@ -18,7 +18,10 @@
  *
  * Inputs: none
  */
-SkillSet::SkillSet() {}
+SkillSet::SkillSet()
+{
+  // skills.resize(0);
+}
 
 /*
  * Description: Constructs a SkillSet object given a single Skill* and a value
@@ -91,7 +94,7 @@ bool SkillSet::addSkills(QVector<Skill* > new_skills,
     return true;
   if (new_skills.size() + skills_available.size() <= kMAX_SKILLS)
   {
-    for (int i = 0; i < new_skills.size(); i++)
+      for (int i = 0; i < new_skills.size(), new_skills.at(i) != NULL; i++)
     {
       skills.append(new_skills.at(i));
       skills_available.append(new_levels.at(i));
