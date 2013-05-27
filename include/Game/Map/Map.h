@@ -64,9 +64,20 @@ private:
   Weather* weather_effect;
 
   /*------------------- Constants -----------------------*/
-  const static int kFILE_COLUMN; /* The depth in XML of the column tag */
-  const static int kFILE_DATA;   /* The depth in XML of the data information */
-  const static int kFILE_ROW;    /* The depth in XML of the row tag */
+  const static int kDOUBLE_DIGITS;   /* The point when integers are more than
+                                        a single digit */
+  const static int kFILE_SECTION_ID; /* The section identifier, for file data */
+  const static int kTILE_COLUMN; /* The tile depth in XML of column tag */
+  const static int kTILE_DATA;   /* The tile depth in XML of data info */
+  const static int kTILE_LENGTH; /* The tile length, as constant for now */
+  const static int kTILE_ROW;    /* The tile depth in XML of row tag */
+  const static int kTILE_WIDTH;  /* The tile width, as constant for now */
+
+/*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+private:
+  bool addTileData(XmlData data);
 
 /*============================================================================
  * PROTECTED FUNCTIONS
@@ -85,6 +96,7 @@ signals:
  *===========================================================================*/
 public slots:
   void addLayer(Layer* item);
+  void animateTiles();
   void deleteLayer(Layer* item);
 
 /*============================================================================

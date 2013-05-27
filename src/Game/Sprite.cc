@@ -32,6 +32,7 @@ Sprite::Sprite()
  * Description: Constructor function - Set up one image
  *
  * Input: QPixmap image - image to set as one sprite 
+ *        int rotate_angle - the degrees of angle to rotate the image
  */
 Sprite::Sprite(QPixmap image, int rotate_angle)
 {
@@ -45,7 +46,8 @@ Sprite::Sprite(QPixmap image, int rotate_angle)
 /* 
  * Description: Constructor function - Set up one image, using the string path
  *
- * Input: QString image_path - image path to set as one sprite 
+ * Input: QString image_path - image path to set as one sprite
+ *        int rotate_angle - the degree angle to rotate the image at the path
  */
 Sprite::Sprite(QString image_path, int rotate_angle)
 {
@@ -62,6 +64,7 @@ Sprite::Sprite(QString image_path, int rotate_angle)
  * Input: QString head_path - the start part of the path
  *        int num_frames - the number of frames in this path sequence
  *        QString tail_path - the end of the path, after the count index
+ *        int rotate_angle - the degree to rotate all the images at
  */
 Sprite::Sprite(QString head_path, int num_frames, 
                QString tail_path, int rotate_angle)

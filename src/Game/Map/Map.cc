@@ -13,9 +13,13 @@
 #include "Game/Map/Layer.h"
 
 /* Constant Implementation - see header file for descriptions */
-const int Map::kFILE_COLUMN = 3;
-const int Map::kFILE_DATA = 4;
-const int Map::kFILE_ROW = 2;
+const int Map::kDOUBLE_DIGITS = 10;
+const int Map::kFILE_SECTION_ID = 2;
+const int Map::kTILE_COLUMN = 4;
+const int Map::kTILE_DATA = 5;
+const int Map::kTILE_LENGTH = 64;
+const int Map::kTILE_ROW = 3;
+const int Map::kTILE_WIDTH = 64;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -26,13 +30,14 @@ Map::Map()
 {
   /* Configure the scene */
   loaded = false;
-  //setBackgroundBrush(Qt::red);
   
   /* Setup the viewport */
   viewport = new MapViewport(this);
   viewport->centerOn(0, 0);
   
   /* Connect the signals */
+  QObject::connect(viewport, SIGNAL(animateTiles()),
+                   this,     SLOT(animateTiles()));
   QObject::connect(viewport, SIGNAL(closingMap(int)),
                    this,     SIGNAL(closingMap(int)));
 
@@ -49,6 +54,75 @@ Map::~Map()
   unloadMap();
 }
 
+/*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+
+bool Map::addTileData(XmlData data)
+{
+  bool success = true;
+
+  /* Pull the row and column pairs, comma delimited */
+  QStringList row_list = data.getKeyValue(kTILE_ROW).split(",");
+  QStringList col_list = data.getKeyValue(kTILE_COLUMN).split(",");
+  QPixmap image = Frame::openImage(data.getDataString());
+
+  /* Handle the image data, split the path based on "|" */
+  QVector<QPixmap> images;
+  QStringList data_list = data.getDataString().split("|");
+  QString path;
+  QString path_tail;
+
+  /* If the split occurred, there are multiple paths to add */
+  if(data_list.size() > 1)
+  {
+    QString path = data_list[0]; /* The front half */
+    QString path_tail = data_list[2]; /* The latter half */
+    data_list = data_list[1].split("-"); /* The middle (integer range) */
+
+    /* Loop through the number of path options (|0-2|), 00 - 02 */
+    for(int i = data_list[0].toInt(); i <= data_list[1].toInt(); i++)
+    {
+      QString image_path;
+      if(i < kDOUBLE_DIGITS)
+        image_path = "0";
+      image_path += QString("%1").arg(i) + path_tail;
+
+      /* Finally, append it to the list */
+      images.append(Frame::openImage(path + image_path));
+    }
+  }
+  else
+  {
+    images.append(Frame::openImage(data.getDataString()));
+  }
+
+  /* Run through this list, checking ranges and add the corresponding
+   * tiles */
+  for(int index = 0; index < images.size(); index++) /* Image index */
+  {
+    for(int i = 0; i < row_list.size(); i++) /* Coordinate index */
+    {
+      QStringList rows = row_list[i].split("-");
+      QStringList cols = col_list[i].split("-");
+
+      /* Use the newly found range and add the tile */
+      for(int r = rows[0].toInt(); r <= rows[rows.size() - 1].toInt(); r++)
+      {
+        for(int c = cols[0].toInt(); c <= cols[cols.size() - 1].toInt(); c++)
+        {
+          QString path = data.getElement(kTILE_DATA);
+          if(path.startsWith("base") || path.startsWith("enhancer") || 
+             path.startsWith("lower") || path.startsWith("upper"))
+            success &= geography[r][c]->addData(data, images[index], 
+                                                images.size() > 1);
+        }
+      }
+    }
+  }
+
+  return success;
+}
 
 /*============================================================================
  * PROTECTED FUNCTIONS
@@ -85,6 +159,13 @@ Map::~Map()
 void Map::addLayer(Layer* item)
 {
   addItem(item);
+}
+
+void Map::animateTiles()
+{
+  for(int i = 0; i < geography.size(); i++)
+    for(int j = 0; j < geography[i].size(); j++)
+      geography[i][j]->animate();
 }
 
 void Map::deleteLayer(Layer* item)
@@ -177,7 +258,8 @@ bool Map::loadMap(QString file)
       for(int j = 0; j < length; j++)
       {
         /* Create the tile */
-        Tile* t = new Tile(64, 64, j*64, i*64);
+        Tile* t = new Tile(kTILE_LENGTH, kTILE_WIDTH, 
+                           j*kTILE_LENGTH, i*kTILE_WIDTH);
  
         /* Connect the signals */
         QObject::connect(t, SIGNAL(addLayer(Layer*)), 
@@ -196,30 +278,8 @@ bool Map::loadMap(QString file)
     data = fh.readXmlData(&done, &success);
     do
     {
-      /* Pull the row and column pairs, comma delimited */
-      QStringList row_list = data.getKeyValue(kFILE_ROW).split(",");
-      QStringList col_list = data.getKeyValue(kFILE_COLUMN).split(",");
-      QPixmap image = Frame::openImage(data.getDataString());
-
-      /* Run through this list, checking ranges and add the corresponding
-       * tiles */
-      for(int i = 0; i < row_list.size(); i++)
-      {
-        QStringList rows = row_list[i].split("-");
-        QStringList cols = col_list[i].split("-");
-
-        /* Use the newly found range and add the tile */
-        for(int r = rows[0].toInt(); r <= rows[rows.size() - 1].toInt(); r++)
-        {
-          for(int c = cols[0].toInt(); c <= cols[cols.size() - 1].toInt(); c++)
-          {
-            QString path = data.getElement(kFILE_DATA);
-            if(path.startsWith("base") || path.startsWith("enhancer") || 
-               path.startsWith("lower") || path.startsWith("upper"))
-              geography[r][c]->addData(data, image, kFILE_DATA);
-          }
-        }
-      }
+      if(data.getElement(kFILE_SECTION_ID) == "tiles")
+        success &= addTileData(data);
 
       /* Get the next element */
       data = fh.readXmlData(&done, &success);

@@ -20,7 +20,8 @@ class MapViewport : public QGraphicsView
   Q_OBJECT
 
 public:
-  /* Constructor function */
+  /* Constructor functions */
+  MapViewport();
   MapViewport(QGraphicsScene* scene, QWidget* parent = 0);
 
   /* Destructor function */
@@ -42,6 +43,10 @@ protected:
  * SIGNALS
  *===========================================================================*/
 signals:
+  /* Call to animate the tiles in the scene - TODO: temporary? */
+  void animateTiles();
+
+  /* Closes the map, based on a key command - TODO: temporary? */
   void closingMap(int index);
 
 /*============================================================================

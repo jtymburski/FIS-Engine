@@ -9,12 +9,16 @@
 ******************************************************************************/
 #include "Game/Map/MapViewport.h"
 
-/* TESTING - DELETE */
-#include <QDebug>
-
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
+
+MapViewport::MapViewport()
+{
+  setFrameShape(QFrame::NoFrame);
+  setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+}
 
 MapViewport::MapViewport(QGraphicsScene* scene, QWidget* parent)
 {
@@ -53,6 +57,8 @@ void MapViewport::keyPressEvent(QKeyEvent* event)
     horizontalScrollBar()->setValue(horizontalScrollBar()->value() + 4);
   else if(event->key() == Qt::Key_Left)
     horizontalScrollBar()->setValue(horizontalScrollBar()->value() - 4);
+  else if(event->key() == Qt::Key_A)
+    emit animateTiles();
 }
 
 // TODO [2013-05-23]
