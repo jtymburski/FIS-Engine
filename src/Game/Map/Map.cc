@@ -41,11 +41,9 @@ Map::Map()
   QObject::connect(viewport, SIGNAL(closingMap(int)),
                    this,     SIGNAL(closingMap(int)));
 
-  //setBackgroundRole(QPalette::Dark);
-  //setAutoFillBackground(true);
-
-  //qDebug() << "Success: " << loadMap("maps/test_03");
-  //setMinimumSize(geography[0].size()*64, geography.size()*64);
+  /* Bring the timer in to provide a game tick */
+  connect(&timer, SIGNAL(timeout()), this, SLOT(animate()));
+  timer.start(10);
 }
 
 /* Destructor function */
@@ -159,6 +157,11 @@ bool Map::addTileData(XmlData data)
 void Map::addLayer(Layer* item)
 {
   addItem(item);
+}
+
+void Map::animate()
+{
+  viewport->shiftViewport();
 }
 
 void Map::animateTiles()

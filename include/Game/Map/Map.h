@@ -56,6 +56,8 @@ private:
   /* The sectors on the map (for rooms, caves, houses etc) */
   QVector <Sector> sectors;
 
+  QTimer timer;
+
   /* The viewoport for the map, controlled by QGraphicsView */
   MapViewport* viewport;
 
@@ -96,6 +98,7 @@ signals:
  *===========================================================================*/
 public slots:
   void addLayer(Layer* item);
+  void animate();
   void animateTiles();
   void deleteLayer(Layer* item);
 

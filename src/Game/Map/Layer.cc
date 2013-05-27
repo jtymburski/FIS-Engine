@@ -162,6 +162,7 @@ void Layer::paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
   /* Set painter information */
   painter->setBrush(QBrush(Qt::black));
   painter->setPen(Qt::NoPen);
+  painter->setRenderHint(QPainter::SmoothPixmapTransform, true);
 
   /* Only paint if enabled */
   if(isEnabled())

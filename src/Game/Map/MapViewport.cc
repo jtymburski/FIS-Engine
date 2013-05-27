@@ -9,12 +9,21 @@
 ******************************************************************************/
 #include "Game/Map/MapViewport.h"
 
+#include <QDebug>
+
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
 
 MapViewport::MapViewport()
 {
+  /* Set some viewport parameters for optimal painting */
+  setAttribute(Qt::WA_OpaquePaintEvent, true);
+  setAttribute(Qt::WA_TranslucentBackground, true);
+  setAutoFillBackground(true);
+  setOptimizationFlag(QGraphicsView::DontSavePainterState, true);
+
+  /* Remove the scroll bars and frames for the viewport */
   setFrameShape(QFrame::NoFrame);
   setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -50,22 +59,29 @@ void MapViewport::keyPressEvent(QKeyEvent* event)
   if(event->key() == Qt::Key_Escape)
     closeMap();
   else if(event->key() == Qt::Key_Down)
-    verticalScrollBar()->setValue(verticalScrollBar()->value() + 4);
+    direction.append(DOWN);
   else if(event->key() == Qt::Key_Up)
-    verticalScrollBar()->setValue(verticalScrollBar()->value() - 4);
+    direction.append(UP);
   else if(event->key() == Qt::Key_Right)
-    horizontalScrollBar()->setValue(horizontalScrollBar()->value() + 4);
+    direction.append(RIGHT);
   else if(event->key() == Qt::Key_Left)
-    horizontalScrollBar()->setValue(horizontalScrollBar()->value() - 4);
+    direction.append(LEFT);
   else if(event->key() == Qt::Key_A)
     emit animateTiles();
+  else if(event->key() == Qt::Key_J)
+    shiftViewport();
 }
 
-// TODO [2013-05-23]
 void MapViewport::keyReleaseEvent(QKeyEvent* event)
 {
-  /* Do nothing, right now */
-  (void)event;
+  if(event->key() == Qt::Key_Down  && direction.contains(DOWN))
+    direction.remove(direction.indexOf(DOWN));
+  else if(event->key() == Qt::Key_Up && direction.contains(UP))
+    direction.remove(direction.indexOf(UP));
+  else if(event->key() == Qt::Key_Left && direction.contains(LEFT))
+    direction.remove(direction.indexOf(LEFT));
+  else if(event->key() == Qt::Key_Right && direction.contains(RIGHT))
+    direction.remove(direction.indexOf(RIGHT));
 }
 
 void MapViewport::wheelEvent(QWheelEvent* event)
@@ -81,4 +97,20 @@ void MapViewport::wheelEvent(QWheelEvent* event)
 void MapViewport::closeMap()
 {
   emit closingMap(2);
+}
+
+void MapViewport::shiftViewport()
+{
+  if(direction.endsWith(DOWN))
+    verticalScrollBar()->setSliderPosition(
+                              verticalScrollBar()->sliderPosition() + 1);
+  else if(direction.endsWith(UP))
+    verticalScrollBar()->setSliderPosition(
+                              verticalScrollBar()->sliderPosition() - 1);
+  else if(direction.endsWith(LEFT))
+    horizontalScrollBar()->setSliderPosition(
+                              horizontalScrollBar()->sliderPosition() - 1);
+  else if(direction.endsWith(RIGHT))
+    horizontalScrollBar()->setSliderPosition(
+                              horizontalScrollBar()->sliderPosition() + 1);
 }

@@ -100,6 +100,7 @@ int main(int argc, char *argv[])
 
   /* End Test */
 
+  QApplication::setGraphicsSystem("raster");
   QApplication app(argc, argv);
 
   /* Frequency of Audio Playback */

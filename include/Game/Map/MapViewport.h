@@ -27,9 +27,16 @@ public:
   /* Destructor function */
   ~MapViewport();
 
+  /* NONE - not currently moving the viewport
+   * UP   - move viewport up
+   * DOWN - move viewport down
+   * LEFT - move viewport to the left
+   * RIGHT - move viewport to the right */
+  enum MovementDirection{NONE, UP, DOWN, LEFT, RIGHT};
+
 private:
-  /* The map to be displayed */
-  //Map* display_map;
+  /* The current direction that the map is moving in */
+  QVector<MovementDirection> direction;
 
 /*============================================================================
  * PROTECTED FUNCTIONS
@@ -55,6 +62,9 @@ signals:
 public:
   /* Initializes the closes map call based on a signal from the viewport */
   void closeMap();
+
+  /* Shifts the viewport, based on what directional keys are pressed */
+  void shiftViewport();
 };
 
 #endif // MAPVIEWPORT_H
