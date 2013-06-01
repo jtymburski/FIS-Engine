@@ -36,7 +36,13 @@ public:
 
 private:
   /* The current direction that the map is moving in */
-  QVector<MovementDirection> direction;
+  MovementDirection direction;
+
+  /* The stack of currently pressed directions, on the keyboard */
+  QVector<MovementDirection> direction_stack;
+
+private:
+  void addDirection(MovementDirection new_direction);
 
 /*============================================================================
  * PROTECTED FUNCTIONS

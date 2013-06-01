@@ -51,37 +51,46 @@ MapViewport::~MapViewport()
 }
 
 /*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+
+void MapViewport::addDirection(MovementDirection new_direction)
+{
+  if(direction_stack.isEmpty() && direction == NONE)
+    direction = new_direction;
+  direction_stack.append(new_direction);
+}
+
+/*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
 
 void MapViewport::keyPressEvent(QKeyEvent* event)
-{ 
+{
   if(event->key() == Qt::Key_Escape)
     closeMap();
   else if(event->key() == Qt::Key_Down)
-    direction.append(DOWN);
+    addDirection(DOWN);
   else if(event->key() == Qt::Key_Up)
-    direction.append(UP);
+    addDirection(UP);
   else if(event->key() == Qt::Key_Right)
-    direction.append(RIGHT);
+    addDirection(RIGHT);
   else if(event->key() == Qt::Key_Left)
-    direction.append(LEFT);
+    addDirection(LEFT);
   else if(event->key() == Qt::Key_A)
     emit animateTiles();
-  else if(event->key() == Qt::Key_J)
-    shiftViewport();
 }
 
 void MapViewport::keyReleaseEvent(QKeyEvent* event)
 {
-  if(event->key() == Qt::Key_Down  && direction.contains(DOWN))
-    direction.remove(direction.indexOf(DOWN));
-  else if(event->key() == Qt::Key_Up && direction.contains(UP))
-    direction.remove(direction.indexOf(UP));
-  else if(event->key() == Qt::Key_Left && direction.contains(LEFT))
-    direction.remove(direction.indexOf(LEFT));
-  else if(event->key() == Qt::Key_Right && direction.contains(RIGHT))
-    direction.remove(direction.indexOf(RIGHT));
+  if(event->key() == Qt::Key_Down  && direction_stack.contains(DOWN))
+    direction_stack.remove(direction_stack.indexOf(DOWN));
+  else if(event->key() == Qt::Key_Up && direction_stack.contains(UP))
+    direction_stack.remove(direction_stack.indexOf(UP));
+  else if(event->key() == Qt::Key_Left && direction_stack.contains(LEFT))
+    direction_stack.remove(direction_stack.indexOf(LEFT));
+  else if(event->key() == Qt::Key_Right && direction_stack.contains(RIGHT))
+    direction_stack.remove(direction_stack.indexOf(RIGHT));
 }
 
 void MapViewport::wheelEvent(QWheelEvent* event)
@@ -101,16 +110,47 @@ void MapViewport::closeMap()
 
 void MapViewport::shiftViewport()
 {
-  if(direction.endsWith(DOWN))
+  if(direction != NONE)
+  {
+    if(direction == DOWN)
+      verticalScrollBar()->setSliderPosition(
+                              verticalScrollBar()->sliderPosition() + 1);
+    else if(direction == UP)
+      verticalScrollBar()->setSliderPosition(
+                              verticalScrollBar()->sliderPosition() - 1);
+    else if(direction == LEFT)
+      horizontalScrollBar()->setSliderPosition(
+                              horizontalScrollBar()->sliderPosition() - 1);
+    else if(direction == RIGHT)
+      horizontalScrollBar()->setSliderPosition(
+                              horizontalScrollBar()->sliderPosition() + 1);
+
+    qDebug() << horizontalScrollBar()->sliderPosition() << " " 
+             << verticalScrollBar()->sliderPosition() << " "
+             << direction_stack << " " 
+             << direction;
+
+    /* Only do movement based on tiles */
+    if(horizontalScrollBar()->sliderPosition() % 64 == 0 && verticalScrollBar()->sliderPosition() % 64 == 0)
+    {
+      if(direction_stack.isEmpty())
+        direction = NONE;
+      else
+        direction = direction_stack.last();
+    }
+  }
+  /*
+  if(direction_stack.endsWith(DOWN))
     verticalScrollBar()->setSliderPosition(
                               verticalScrollBar()->sliderPosition() + 1);
-  else if(direction.endsWith(UP))
+  else if(direction_stack.endsWith(UP))
     verticalScrollBar()->setSliderPosition(
                               verticalScrollBar()->sliderPosition() - 1);
-  else if(direction.endsWith(LEFT))
+  else if(direction_stack.endsWith(LEFT))
     horizontalScrollBar()->setSliderPosition(
                               horizontalScrollBar()->sliderPosition() - 1);
-  else if(direction.endsWith(RIGHT))
+  else if(direction_stack.endsWith(RIGHT))
     horizontalScrollBar()->setSliderPosition(
                               horizontalScrollBar()->sliderPosition() + 1);
+  */
 }
