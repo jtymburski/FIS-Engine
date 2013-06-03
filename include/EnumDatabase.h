@@ -18,6 +18,9 @@ enum ApplicationMode {TITLESCREEN, GAME};
 
 enum Direction {NORTH,EAST,SOUTH,WEST};
 
+enum ItemSorts {NONE, ID, NAME, FLAVOUR, LEVEL, EQUIPPABLE, VALUE, MASS,
+                VALUEPERMASS};
+
 /*
  * Description: Infliction enumeration represents a Status ailment or a Status
  *              Buff. String conversions are listed blow.

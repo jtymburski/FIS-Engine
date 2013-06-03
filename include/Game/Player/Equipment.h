@@ -110,7 +110,7 @@ public:
   SkillSet* getSkills(ushort level);
 
   /* Sets the value of a flag */
-  void setEquipmentFlag(EquipmentState flags, bool set_value);
+  void setEquipmentFlag(EquipmentState flags, bool set_value = true);
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Equipment::EquipmentFlags);
 
