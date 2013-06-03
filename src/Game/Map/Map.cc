@@ -20,6 +20,8 @@ const int Map::kTILE_DATA = 5;
 const int Map::kTILE_LENGTH = 64;
 const int Map::kTILE_ROW = 3;
 const int Map::kTILE_WIDTH = 64;
+const int Map::kVIEWPORT_LENGTH = 19;
+const int Map::kVIEWPORT_WIDTH = 11;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -161,7 +163,16 @@ void Map::addLayer(Layer* item)
 
 void Map::animate()
 {
-  viewport->shiftViewport();
+  if(player != 0)
+  {
+    viewport->updateDirection(player->x(), player->y());
+
+    player->setX(viewport->newX(player->x()));
+    player->setY(viewport->newY(player->y()));
+
+    if(viewport != 0)
+      viewport->centerOn(player);
+  }
 }
 
 void Map::animateTiles()
@@ -202,16 +213,9 @@ int Map::getNPCy(int index)
   return 0;
 }
 
- /* Gets players x position */
-int Map::getPlayerX()
+MapPerson* Map::getPlayer()
 {
-  return playerx;
-}
-
-/* Gets players y position */
-int Map::getPlayerY()
-{
-  return playery;
+  return player;
 }
 
 /* Returns the map viewport, for scrolling through the scene */
@@ -251,6 +255,7 @@ bool Map::loadMap(QString file)
   /* If file open was successful, move forward */
   if(success)
   {
+    qDebug() << "Here";
     /* Calculate dimensions and set up the map */
     int length = fh.readXmlData().getDataInteger();
     int width = fh.readXmlData().getDataInteger();
@@ -287,9 +292,33 @@ bool Map::loadMap(QString file)
       /* Get the next element */
       data = fh.readXmlData(&done, &success);
     } while(!done && success);
+
+    /* Add in temporary player information */
+    Sprite* up_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_D00.png");
+    Sprite* down_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_U00.png");
+    Sprite* left_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_R00.png");
+    Sprite* right_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_L00.png");
+
+    player = new MapPerson(64, 64);
+    player->setState(MapPerson::GROUND, MapPerson::NORTH, 
+                                        new MapState(up_sprite));
+    player->setState(MapPerson::GROUND, MapPerson::SOUTH, 
+                                        new MapState(down_sprite));
+    player->setState(MapPerson::GROUND, MapPerson::EAST, 
+                                        new MapState(right_sprite));
+    player->setState(MapPerson::GROUND, MapPerson::WEST, 
+                                        new MapState(left_sprite));
+    player->setCoordinates(576, 320, 9);
+    addItem(player);
   }
 
   success &= fh.stop();
+  
+  /* If the map load failed, unload the map */
+  if(!success)
+    unloadMap();
+  loaded = success;
+
   return success;
 }
 

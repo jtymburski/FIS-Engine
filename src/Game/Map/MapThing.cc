@@ -42,7 +42,7 @@ MapThing::MapThing()
 MapThing::MapThing(MapState* state, int width, int height, 
                    QString name, QString description, int id)
 {
-  state = 0;
+  this->state = 0;
 
   /* The parent class definitions */
   setHeight(height);
@@ -202,15 +202,17 @@ void MapThing::setName(QString new_name)
  * Description: Sets the state data that defines the thing.
  *
  * Inputs: MapState* state - the new state to define to insert into the Map
- *         Thing. Must actually have a sprite set in order to work.
+ *           Thing. Must actually have a sprite set in order to work.
+ *         bool unset_old - Do you want the old state deleted when changed?
  * Output: bool - returns if the thing state was set successfuly
  */
-bool MapThing::setState(MapState* state)
+bool MapThing::setState(MapState* state, bool unset_old)
 {
   /* Check if the state is valid */
-  if(state->getSprite() != 0)
+  if(state != 0 && state->getSprite() != 0)
   {
-    unsetState();
+    if(unset_old)
+      unsetState();
     this->state = state;
     setItem(state->getSprite());
     return true;
@@ -222,12 +224,13 @@ bool MapThing::setState(MapState* state)
 /*
  * Description: Unsets the state that's embedded in this as the Map Thing
  *
- * Inputs: none
+ * Inputs: bool delete_state - should the old state be deleted?
  * Output: none 
  */
-void MapThing::unsetState()
+void MapThing::unsetState(bool delete_state)
 {
   unsetItem(false);
-  delete state;
+  if(delete_state)
+    delete state;
   state = 0;
 }

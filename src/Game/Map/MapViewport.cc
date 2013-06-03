@@ -27,6 +27,9 @@ MapViewport::MapViewport()
   setFrameShape(QFrame::NoFrame);
   setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+  /* Shifting handlers */
+  direction = NONE;
 }
 
 MapViewport::MapViewport(QGraphicsScene* scene, QWidget* parent)
@@ -43,6 +46,9 @@ MapViewport::MapViewport(QGraphicsScene* scene, QWidget* parent)
   setFrameShape(QFrame::NoFrame);
   setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+  /* Shifting handlers */
+  direction = NONE;
 }
 
 MapViewport::~MapViewport()
@@ -56,8 +62,6 @@ MapViewport::~MapViewport()
 
 void MapViewport::addDirection(MovementDirection new_direction)
 {
-  if(direction_stack.isEmpty() && direction == NONE)
-    direction = new_direction;
   direction_stack.append(new_direction);
 }
 
@@ -70,27 +74,27 @@ void MapViewport::keyPressEvent(QKeyEvent* event)
   if(event->key() == Qt::Key_Escape)
     closeMap();
   else if(event->key() == Qt::Key_Down)
-    addDirection(DOWN);
+    addDirection(SOUTH);
   else if(event->key() == Qt::Key_Up)
-    addDirection(UP);
+    addDirection(NORTH);
   else if(event->key() == Qt::Key_Right)
-    addDirection(RIGHT);
+    addDirection(EAST);
   else if(event->key() == Qt::Key_Left)
-    addDirection(LEFT);
+    addDirection(WEST);
   else if(event->key() == Qt::Key_A)
     emit animateTiles();
 }
 
 void MapViewport::keyReleaseEvent(QKeyEvent* event)
 {
-  if(event->key() == Qt::Key_Down  && direction_stack.contains(DOWN))
-    direction_stack.remove(direction_stack.indexOf(DOWN));
-  else if(event->key() == Qt::Key_Up && direction_stack.contains(UP))
-    direction_stack.remove(direction_stack.indexOf(UP));
-  else if(event->key() == Qt::Key_Left && direction_stack.contains(LEFT))
-    direction_stack.remove(direction_stack.indexOf(LEFT));
-  else if(event->key() == Qt::Key_Right && direction_stack.contains(RIGHT))
-    direction_stack.remove(direction_stack.indexOf(RIGHT));
+  if(event->key() == Qt::Key_Down  && direction_stack.contains(SOUTH))
+    direction_stack.remove(direction_stack.indexOf(SOUTH));
+  else if(event->key() == Qt::Key_Up && direction_stack.contains(NORTH))
+    direction_stack.remove(direction_stack.indexOf(NORTH));
+  else if(event->key() == Qt::Key_Left && direction_stack.contains(WEST))
+    direction_stack.remove(direction_stack.indexOf(WEST));
+  else if(event->key() == Qt::Key_Right && direction_stack.contains(EAST))
+    direction_stack.remove(direction_stack.indexOf(EAST));
 }
 
 void MapViewport::wheelEvent(QWheelEvent* event)
@@ -108,49 +112,36 @@ void MapViewport::closeMap()
   emit closingMap(2);
 }
 
-void MapViewport::shiftViewport()
+int MapViewport::newX(int old_x)
 {
-  if(direction != NONE)
+  /* Shift the X, based on the direction */
+  if(direction == EAST)
+    return old_x + 1;
+  else if(direction == WEST && old_x > 0)
+    return old_x - 1;
+
+  return old_x;
+}
+
+int MapViewport::newY(int old_y)
+{
+  /* Shift the Y, based on the direction */
+  if(direction == SOUTH)
+    return old_y + 1;
+  else if(direction == NORTH && old_y > 0)
+    return old_y - 1;
+
+  return old_y;
+}
+
+void MapViewport::updateDirection(int x, int y)
+{
+  /* Once a tile end has reached, cycle the direction */
+  if(x % 64 == 0 && y % 64 == 0)
   {
-    if(direction == DOWN)
-      verticalScrollBar()->setSliderPosition(
-                              verticalScrollBar()->sliderPosition() + 1);
-    else if(direction == UP)
-      verticalScrollBar()->setSliderPosition(
-                              verticalScrollBar()->sliderPosition() - 1);
-    else if(direction == LEFT)
-      horizontalScrollBar()->setSliderPosition(
-                              horizontalScrollBar()->sliderPosition() - 1);
-    else if(direction == RIGHT)
-      horizontalScrollBar()->setSliderPosition(
-                              horizontalScrollBar()->sliderPosition() + 1);
-
-    qDebug() << horizontalScrollBar()->sliderPosition() << " " 
-             << verticalScrollBar()->sliderPosition() << " "
-             << direction_stack << " " 
-             << direction;
-
-    /* Only do movement based on tiles */
-    if(horizontalScrollBar()->sliderPosition() % 64 == 0 && verticalScrollBar()->sliderPosition() % 64 == 0)
-    {
-      if(direction_stack.isEmpty())
-        direction = NONE;
-      else
-        direction = direction_stack.last();
-    }
+    if(direction_stack.isEmpty())
+      direction = NONE;
+    else
+      direction = direction_stack.last();
   }
-  /*
-  if(direction_stack.endsWith(DOWN))
-    verticalScrollBar()->setSliderPosition(
-                              verticalScrollBar()->sliderPosition() + 1);
-  else if(direction_stack.endsWith(UP))
-    verticalScrollBar()->setSliderPosition(
-                              verticalScrollBar()->sliderPosition() - 1);
-  else if(direction_stack.endsWith(LEFT))
-    horizontalScrollBar()->setSliderPosition(
-                              horizontalScrollBar()->sliderPosition() - 1);
-  else if(direction_stack.endsWith(RIGHT))
-    horizontalScrollBar()->setSliderPosition(
-                              horizontalScrollBar()->sliderPosition() + 1);
-  */
 }

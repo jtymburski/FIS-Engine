@@ -28,11 +28,11 @@ public:
   ~MapViewport();
 
   /* NONE - not currently moving the viewport
-   * UP   - move viewport up
-   * DOWN - move viewport down
-   * LEFT - move viewport to the left
-   * RIGHT - move viewport to the right */
-  enum MovementDirection{NONE, UP, DOWN, LEFT, RIGHT};
+   * NORTH - move viewport up
+   * EAST  - move viewport to the right
+   * SOUTH - move viewport down
+   * WEST  - move viewport to the left */
+  enum MovementDirection{NONE, NORTH, EAST, SOUTH, WEST};
 
 private:
   /* The current direction that the map is moving in */
@@ -69,8 +69,12 @@ public:
   /* Initializes the closes map call based on a signal from the viewport */
   void closeMap();
 
-  /* Shifts the viewport, based on what directional keys are pressed */
-  void shiftViewport();
+  /* Shifting calls, based on keys being pressed and the status of the View */
+  int newX(int old_x);
+  int newY(int old_y);
+
+  /* Updates the direction, based on the TICK */
+  void updateDirection(int x, int y);
 };
 
 #endif // MAPVIEWPORT_H

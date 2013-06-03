@@ -6,6 +6,10 @@
 ******************************************************************************/
 #include "Game/Map/MapPerson.h"
 
+/* Constant Implementation - see header file for descriptions */
+const int MapPerson::kTOTAL_DIRECTIONS = 4;
+const int MapPerson::kTOTAL_SURFACES   = 1;
+
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
@@ -13,6 +17,15 @@
 /* Constructor function */
 MapPerson::MapPerson()
 {
+  initializeStates();
+}
+
+/* Another constructor function */
+MapPerson::MapPerson(int width, int height, 
+                     QString name, QString description, int id)
+{
+  MapThing(0, width, height, name, description, id);
+  initializeStates();
 }
 
 /* Destructor function */
@@ -20,194 +33,73 @@ MapPerson::~MapPerson()
 {
 }
 
+void MapPerson::initializeStates()
+{
+  for(int i = 0; i < kTOTAL_SURFACES; i++)
+  {
+    QVector<MapState*> row;
+
+    for(int j = 0; j < kTOTAL_DIRECTIONS; j++)
+    {
+      row.append(0);
+    }
+
+    states.append(row);
+  }
+}
+
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
-/* Sets the person to be facing east */
-void MapPerson::faceEast()
-{  
+MapPerson::MovementDirection MapPerson::getDirection()
+{
+  return direction;
 }
 
-/* Sets the person to be facing north */
-void MapPerson::faceNorth()
+MapPerson::SurfaceClassifier MapPerson::getSurface()
 {
+  return surface;
 }
 
-/* Sets the person to be facing south */
-void MapPerson::faceSouth()
+void MapPerson::setDirection(MovementDirection direction)
 {
+  this->direction = direction;
+  MapThing::setState(states[surface][direction], false);
 }
 
-/* Sets the person to be facing west */
-void MapPerson::faceWest()
+bool MapPerson::setState(SurfaceClassifier surface, MovementDirection direction, MapState* state)
 {
-}
+  /* Only proceed with insertion if the sprite and state data is valid */
+  if(state != 0 && state->getSprite() != 0)
+  {
+    unsetState(surface, direction);
+    states[surface][direction] = state;
 
-/* Gets the battle version of the person */
-/* TODO: Battle version of person is not needed, regular would suffice?
-Person* MapPerson::getBattlePerson()
-{
-    //return battle_person;
-}
-*/
+    /* If the updated state is the active one, automatically set the printable
+     * sprite */
+    if(this->surface == surface || this->direction == direction)
+      MapThing::setState(states[surface][direction], false);
 
-/* Gets the persons direction */
-Direction MapPerson::getDirection()
-{
-    return movement_direction;
-}
-
-/* Gets the name */
-QString MapPerson::getName()
-{
-    return name;
-}
-
-/* Gets the persons facing sprite */
-Sprite* MapPerson::getSprite()
-{
-    return NULL;//warning
-}
-
-/* Gets the persons step length */
-int MapPerson::getStepLength()
-{
-    return step_length;
-}
-
-/* Gets the x position */
-int MapPerson::getX()
-{
-    return xpos;
-}
-
-/* Gets the y position */
-int MapPerson::getY()
-{
-    return ypos;
-}
-
-/* Evaluates the East Facing flag */
-bool MapPerson::isFacingEast()
-{
-    return FACING_EAST;
-}
-
-/* Evaluates the North Facing flag */
-bool MapPerson::isFacingNorth()
-{
-    return FACING_NORTH;
-}
-
- /* Evaluates the South Facing flag */
-bool MapPerson::isFacingSouth()
-{
-    return FACING_SOUTH;
-}
-
-/* Evaluates the West Facing flag */
-bool MapPerson::isFacingWest()
-{
-    return FACING_WEST;
-}
-
-/* Evaluates the East Move flag */
-bool MapPerson::isMoveEast()
-{
-    return MOVE_EAST;
-}
-
-/* Evaluates the North Move flag */
-bool MapPerson::isMoveNorth()
-{
-    return MOVE_NORTH;
-}
-
- /* Evaluates the South Move flag */
-bool MapPerson::isMoveSouth()
-{
-    return MOVE_SOUTH;
-}
-
-/* Evaluates the West Move flag */
-bool MapPerson::isMoveWest()
-{
-    return MOVE_WEST;
-}
-
-/* Evaluates the East moving flag */
-bool MapPerson::isMovingEast()
-{
-    return MOVING_EAST;
-}
-
-/* Evaluates the North moving flag */
-bool MapPerson::isMovingNorth()
-{
-    return MOVING_NORTH;
-}
-
- /* Evaluates the South moving flag */
-bool MapPerson::isMovingSouth()
-{
-    return MOVING_SOUTH;
-}
-
-/* Evaluates the West moving flag */
-bool MapPerson::isMovingWest()
-{
-    return MOVING_WEST;
-}
-
-/* Gets the MIRRORED evaluation */
-bool MapPerson::isMirrored()
-{
-    return MIRRORED;
-}
-
-/* Returns true if the person is moving */
-bool MapPerson::isMoving()
-{
-    if(MOVING_EAST || MOVING_NORTH || MOVING_SOUTH || MOVING_WEST)
-        return true;
-    else
-        return false;
-}
-
-/* Gets the RENDERING evaluation */
-bool MapPerson::isRendering()
-{
-    return RENDERING;
-}
-
-/* Returns true if the player is wall moving */
-bool MapPerson::isWallMoving()
-{
     return true;
+  }
+
+  return false;
 }
 
-/* Sets the person to be moving east */
-void MapPerson::moveEast()
+void MapPerson::setSurface(SurfaceClassifier surface)
 {
+  this->surface = surface;
+  MapThing::setState(states[surface][direction], false);
 }
 
-/* Sets the person to be moving north */
-void MapPerson::moveNorth()
+void MapPerson::unsetState(SurfaceClassifier surface, 
+                           MovementDirection direction)
 {
-}
+  delete states[surface][direction];
+  states[surface][direction] = 0;
 
-/* Sets the person to be moving south */
-void MapPerson::moveSouth()
-{
-}
-
-/* Sets the person to be moving west */
-void MapPerson::moveWest()
-{
-}
-
-/* Sets the person to cease moving */
-void MapPerson::stopMoving()
-{
+  /* Clear out the parent call if the direction or surface lines up */
+  if(this->surface == surface || this->direction == direction)
+    MapThing::unsetState(false);
 }

@@ -12,6 +12,8 @@
 #ifndef MAPTHING_H
 #define MAPTHING_H
 
+#include <QDebug>
+
 #include "Game/Map/Layer.h"
 #include "Game/Map/MapState.h"
 
@@ -40,6 +42,7 @@ private:
   MapState* state;
 
   /* -------------------------- Constants ------------------------- */
+protected:
   const static int kMINIMUM_ID;
   const static int kUNSET_ID;
 
@@ -78,10 +81,10 @@ public:
   void setName(QString new_name);
 
   /* Sets the state of the thing */
-  bool setState(MapState* state);
+  bool setState(MapState* state, bool unset_old = true);
 
   /* Unsets the state, in the class */
-  void unsetState();
+  void unsetState(bool delete_state = true);
 };
 
 #endif // MAPTHING_H

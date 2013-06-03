@@ -3,163 +3,78 @@
 * Date Created: Oct 28 2012
 * Inheritance: MapThing
 * Description: The MapPerson class, this covers all Persons in the map
-* TODO: An in-battle version of a person is not needed [01-27-13]
 ******************************************************************************/
 #ifndef MAPPERSON_H
 #define MAPPERSON_H
 
-#include <QtGui/QWidget>
-
-#include "EnumDatabase.h" // TODO: Commented Out? [12-02-12]
 #include "Game/Map/MapThing.h"
-#include "Game/Player/Person.h"
-#include "Game/Sprite.h"
 
 class MapPerson : public MapThing
 {
 public:
-  /* Constructor function */
+  /* Constructor functions */
   MapPerson();
+  MapPerson(int width, int height, QString name = "", 
+            QString description = "", int id = kUNSET_ID);
 
   /* Destructor function */
   ~MapPerson();
 
+  /* Handles second layer of states 2D vector
+   * NORTH - player facing up
+   * EAST  - player facing right
+   * SOUTH - player facing down
+   * WEST  - player facing left */
+  enum MovementDirection{NORTH, EAST, SOUTH, WEST};
+
+  /* The surface classification, first layer of states 2D vector
+   * GROUND - is on a dirt like substance (where walking is possible) */
+  enum SurfaceClassifier{GROUND};
+
 private:
-  /* The in-battle version of this person */
-  /* TODO: An in-battle version of this person is NOT needed */
-  // Person battle_person;
-
   /* The current movement direction */
-  Direction movement_direction;
+  MovementDirection direction;
 
-  /* This persons name */
-  QString name;
+  /* Set of all states for person. 1st layer is surface (water, ground, etc)
+   * and then 2nd layer is direction facing */
+  QVector < QVector <MapState*> > states;
 
-  /* The facing sprites at all directions */
-  Sprite* north,south,east,west;
+  /* The surface that the person is walking on */
+  SurfaceClassifier surface;
 
-  /* The persons step length (used for speed essentially) */
-  int step_length;
-
-  /* Position on the map */
-  int xpos,ypos;
-
-  /* For if a person is facing certain directions, only one can be true 
-     at a time */
-  bool FACING_NORTH,FACING_EAST,FACING_SOUTH,FACING_WEST;
-
-  /* For if a person is attempting to move certain directions */
-  bool MOVE_NORTH,MOVE_EAST,MOVE_SOUTH,MOVE_WEST;
-
-
-  /* For if a person is moving (for seamless sprite drawing) */
-  bool MOVING_NORTH,MOVING_EAST,MOVING_SOUTH,MOVING_WEST;
-
-  /* For east and west sprites being symmetric */
-  bool MIRRORED;
-
-  /* For if a person is actually rendering */
-  bool RENDERING;
+  /* -------------------------- Constants ------------------------- */
+  const static int kTOTAL_DIRECTIONS; /* The total # of directions to move */
+  const static int kTOTAL_SURFACES;   /* The total # of surfaces to walk on */
+  
+/*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+private:
+  /* Initializes the states stack to an empty set */
+  void initializeStates();
 
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
-  /* Sets the person to be facing east */
-  void faceEast();
+  /* Returns the direction that this person is travelling in */
+  MovementDirection getDirection();
 
-  /* Sets the person to be facing north */
-  void faceNorth();
+  /* Returns the surface that this person resides on */
+  SurfaceClassifier getSurface();
 
-  /* Sets the person to be facing south */
-  void faceSouth();
+  /* Sets the direction that the person is travelling in */
+  void setDirection(MovementDirection direction);
 
-  /* Sets the person to be facing west */
-  void faceWest();
-  
-  /* Gets the battle version of the person */
-  // Person* getBattlePerson();
+  /* Sets a new state to add into the states list */
+  bool setState(SurfaceClassifier surface, MovementDirection direction, 
+                                           MapState* state);
 
-  /* Gets the persons direction */
-  Direction getDirection();
+  /* Sets the surface that the person travels on */
+  void setSurface(SurfaceClassifier surface);
 
-  /* Gets the name */
-  QString getName();
-
-  /* Gets the persons facing sprite */
-  Sprite* getSprite();
-
-  /* Gets the persons step length */
-  int getStepLength();
-
-  /* Gets the x position */
-  int getX();
-
-  /* Gets the y position */
-  int getY();
-
-  /* Evaluates the East Facing flag */
-  bool isFacingEast();
-
-  /* Evaluates the North Facing flag */
-  bool isFacingNorth();
-
-   /* Evaluates the South Facing flag */
-  bool isFacingSouth();
-
-  /* Evaluates the West Facing flag */
-  bool isFacingWest();
-
-  /* Evaluates the East Move flag */
-  bool isMoveEast();
-
-  /* Evaluates the North Move flag */
-  bool isMoveNorth();
-
-   /* Evaluates the South Move flag */
-  bool isMoveSouth();
-
-  /* Evaluates the West Move flag */
-  bool isMoveWest();
-
-  /* Evaluates the East moving flag */
-  bool isMovingEast();
-
-  /* Evaluates the North moving flag */
-  bool isMovingNorth();
-
-   /* Evaluates the South moving flag */
-  bool isMovingSouth();
-
-  /* Evaluates the West moving flag */
-  bool isMovingWest();
-
-  /* Gets the MIRRORED evaluation */
-  bool isMirrored();
-
-  /* Returns true if the person is moving */
-  bool isMoving();
-
-  /* Gets the RENDERING evaluation */
-  bool isRendering();
-
-  /* Returns true if the player is wall moving */
-  bool isWallMoving();
-
-  /* Sets the person to be moving east */
-  void moveEast();
-
-  /* Sets the person to be moving north */
-  void moveNorth();
-
-  /* Sets the person to be moving south */
-  void moveSouth();
-
-  /* Sets the person to be moving west */
-  void moveWest();
-
-  /* Sets the person to cease moving */
-  void stopMoving();
+  /* Unsets a state, if it exists, to remove from the stack of states */
+  void unsetState(SurfaceClassifier surface, MovementDirection direction);
 };
 
 #endif // MAPPERSON_H

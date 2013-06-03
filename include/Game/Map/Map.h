@@ -17,6 +17,7 @@
 #include "Game/Map/Tile.h"
 #include "Game/Map/MapMenu.h"
 #include "Game/Map/MapStatusBar.h"
+#include "Game/Map/MapThing.h"
 #include "Game/Map/MapViewport.h"
 #include "Game/Map/Sector.h"
 #include "Game/Sprite.h"
@@ -50,12 +51,13 @@ private:
   /* The status bar on the map */
   MapStatusBar map_status_bar;
 
-  /* The players position on the map */
-  int playerx, playery;
+  /* The players info on the map */
+  MapPerson* player;
 
   /* The sectors on the map (for rooms, caves, houses etc) */
   QVector <Sector> sectors;
 
+  /* The timer for handling the tick (temporary?) */
   QTimer timer;
 
   /* The viewoport for the map, controlled by QGraphicsView */
@@ -74,6 +76,8 @@ private:
   const static int kTILE_LENGTH; /* The tile length, as constant for now */
   const static int kTILE_ROW;    /* The tile depth in XML of row tag */
   const static int kTILE_WIDTH;  /* The tile width, as constant for now */
+  const static int kVIEWPORT_LENGTH; /* The viewport length, in tiles */
+  const static int kVIEWPORT_WIDTH;  /* The viewport width, in tiles */
 
 /*============================================================================
  * PRIVATE FUNCTIONS
@@ -115,11 +119,8 @@ public:
   /* Gets y position of NPC in the given position in the NPC vector */
   int getNPCy(int index);
 
-   /* Gets players x position */
-  int getPlayerX();
-
-  /* Gets players y position */
-  int getPlayerY();
+  /* Returns the map person, for access */
+  MapPerson* getPlayer();
 
   /* Returns the map viewport, for displaying the scene to the screen */
   MapViewport* getViewport();
