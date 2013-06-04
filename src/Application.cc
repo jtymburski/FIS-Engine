@@ -16,16 +16,16 @@
 Application::Application(QWidget* parent)
 {
   setParent(parent);
-
+  
   title_screen = new TitleScreen(1216, 704);
   //title_screen->show();
-  
+
   setupBattle();
   //test_battle->show();
   
   test_map = new Map();
   //test_map->getViewport()->show();
-
+  
   widget_stack = new QStackedWidget();
   widget_stack->addWidget(test_battle);
   widget_stack->addWidget(test_map->getViewport());

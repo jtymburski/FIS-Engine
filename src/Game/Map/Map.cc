@@ -32,6 +32,7 @@ Map::Map()
 {
   /* Configure the scene */
   loaded = false;
+  player = 0;
   
   /* Setup the viewport */
   viewport = new MapViewport(this);

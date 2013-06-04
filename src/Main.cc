@@ -131,14 +131,14 @@ int main(int argc, char *argv[])
   QApplication::setGraphicsSystem(QLatin1String("opengl"));
   Application* game = new Application();
   QObject::connect(game, SIGNAL(closing()), &app, SLOT(quit()));
-
+  
   /* Run QT App */
   int qt_result = app.exec();
   
   /* Clean up QT */
   delete game;
-
-	/* Clean up SDL */
+	
+  /* Clean up SDL */
 	Mix_CloseAudio();
 	SDL_Quit();	
 
