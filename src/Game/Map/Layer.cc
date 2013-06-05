@@ -9,6 +9,8 @@
 ******************************************************************************/
 #include "Game/Map/Layer.h"
 
+#include <QDebug>
+
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
@@ -203,14 +205,18 @@ bool Layer::setHeight(int height)
  *              pointer is valid and the number of frames is greater than 0.
  *
  * Inputs: Sprite* item - the new item pointer to attempt to insert in
+ *         bool unset_old - delete the old item from memory?
  * Output: bool - status if the insertion succeeded
  */
-bool Layer::setItem(Sprite* item)
+bool Layer::setItem(Sprite* item, bool unset_old)
 {
+
   if(item != 0 && item->getSize() > 0)
   {
-    unsetItem();
+    if(unset_old)
+      unsetItem();
     this->item = item;
+
     return true;
   }
   return false;

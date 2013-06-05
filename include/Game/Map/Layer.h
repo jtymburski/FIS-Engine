@@ -63,7 +63,7 @@ public:
   bool setHeight(int height);
 
   /* Sets the item within the class */
-  bool setItem(Sprite* item);
+  bool setItem(Sprite* item, bool unset_old = true);
 
   /* Sets if the tile is visible or not (black or painted) */
   void setVisible(bool status);

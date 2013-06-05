@@ -53,6 +53,7 @@ private:
 
   /* The players info on the map */
   MapPerson* player;
+  MapThing* thing;
 
   /* The sectors on the map (for rooms, caves, houses etc) */
   QVector <Sector> sectors;

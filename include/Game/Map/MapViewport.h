@@ -69,12 +69,18 @@ public:
   /* Initializes the closes map call based on a signal from the viewport */
   void closeMap();
 
+  /* Indicators on which direction the viewport is shifting, if at all */
+  bool movingEast();
+  bool movingNorth();
+  bool movingSouth();
+  bool movingWest();
+
   /* Shifting calls, based on keys being pressed and the status of the View */
   int newX(int old_x);
   int newY(int old_y);
 
   /* Updates the direction, based on the TICK */
-  void updateDirection(int x, int y);
+  bool updateDirection(int x, int y);
 };
 
 #endif // MAPVIEWPORT_H

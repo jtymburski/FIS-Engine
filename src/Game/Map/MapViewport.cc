@@ -112,13 +112,33 @@ void MapViewport::closeMap()
   emit closingMap(2);
 }
 
+bool MapViewport::movingEast()
+{
+  return (direction == EAST);
+}
+
+bool MapViewport::movingNorth()
+{
+  return (direction == NORTH);
+}
+
+bool MapViewport::movingSouth()
+{
+  return (direction == SOUTH);
+}
+
+bool MapViewport::movingWest()
+{
+  return (direction == WEST);
+}
+
 int MapViewport::newX(int old_x)
 {
   /* Shift the X, based on the direction */
   if(direction == EAST)
-    return old_x + 1;
+    return old_x + 2;
   else if(direction == WEST && old_x > 0)
-    return old_x - 1;
+    return old_x - 2;
 
   return old_x;
 }
@@ -127,21 +147,31 @@ int MapViewport::newY(int old_y)
 {
   /* Shift the Y, based on the direction */
   if(direction == SOUTH)
-    return old_y + 1;
+    return old_y + 2;
   else if(direction == NORTH && old_y > 0)
-    return old_y - 1;
+    return old_y - 2;
 
   return old_y;
 }
 
-void MapViewport::updateDirection(int x, int y)
+bool MapViewport::updateDirection(int x, int y)
 {
+  bool changed = false;
+
   /* Once a tile end has reached, cycle the direction */
-  if(x % 64 == 0 && y % 64 == 0)
+  if(x % 96 == 0 && y % 96 == 0)
   {
     if(direction_stack.isEmpty())
+    {
       direction = NONE;
+    }
     else
+    {
+      if(direction != direction_stack.last())
+        changed = true;
       direction = direction_stack.last();
+    }
   }
+
+  return changed;
 }

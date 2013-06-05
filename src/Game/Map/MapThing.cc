@@ -203,7 +203,7 @@ void MapThing::setName(QString new_name)
  *
  * Inputs: MapState* state - the new state to define to insert into the Map
  *           Thing. Must actually have a sprite set in order to work.
- *         bool unset_old - Do you want the old state deleted when changed?
+ *         bool unset_old - delete the old state from memory?
  * Output: bool - returns if the thing state was set successfuly
  */
 bool MapThing::setState(MapState* state, bool unset_old)
@@ -213,8 +213,10 @@ bool MapThing::setState(MapState* state, bool unset_old)
   {
     if(unset_old)
       unsetState();
+
     this->state = state;
-    setItem(state->getSprite());
+    setItem(state->getSprite(), unset_old);
+
     return true;
   }
 

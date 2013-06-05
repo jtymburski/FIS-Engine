@@ -17,9 +17,9 @@ const int Map::kDOUBLE_DIGITS = 10;
 const int Map::kFILE_SECTION_ID = 2;
 const int Map::kTILE_COLUMN = 4;
 const int Map::kTILE_DATA = 5;
-const int Map::kTILE_LENGTH = 64;
+const int Map::kTILE_LENGTH = 96;
 const int Map::kTILE_ROW = 3;
-const int Map::kTILE_WIDTH = 64;
+const int Map::kTILE_WIDTH = 96;
 const int Map::kVIEWPORT_LENGTH = 19;
 const int Map::kVIEWPORT_WIDTH = 11;
 
@@ -166,7 +166,18 @@ void Map::animate()
 {
   if(player != 0)
   {
-    viewport->updateDirection(player->x(), player->y());
+    /* If the udpate direction changes, update the player direction */
+    if(viewport->updateDirection(player->x(), player->y()))
+    {
+      if(viewport->movingNorth())
+        player->setDirection(MapPerson::NORTH);
+      else if(viewport->movingSouth())
+        player->setDirection(MapPerson::SOUTH);
+      else if(viewport->movingWest())
+        player->setDirection(MapPerson::WEST);
+      else if(viewport->movingEast())
+        player->setDirection(MapPerson::EAST);
+    }
 
     player->setX(viewport->newX(player->x()));
     player->setY(viewport->newY(player->y()));
@@ -256,7 +267,6 @@ bool Map::loadMap(QString file)
   /* If file open was successful, move forward */
   if(success)
   {
-    qDebug() << "Here";
     /* Calculate dimensions and set up the map */
     int length = fh.readXmlData().getDataInteger();
     int width = fh.readXmlData().getDataInteger();
@@ -300,7 +310,10 @@ bool Map::loadMap(QString file)
     Sprite* left_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_R00.png");
     Sprite* right_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_L00.png");
 
-    player = new MapPerson(64, 64);
+    /* Make the map person */
+    player = new MapPerson(kTILE_LENGTH, kTILE_WIDTH);
+    player->setCoordinates(kTILE_LENGTH*7, kTILE_WIDTH*5, 9);
+
     player->setState(MapPerson::GROUND, MapPerson::NORTH, 
                                         new MapState(up_sprite));
     player->setState(MapPerson::GROUND, MapPerson::SOUTH, 
@@ -309,7 +322,8 @@ bool Map::loadMap(QString file)
                                         new MapState(right_sprite));
     player->setState(MapPerson::GROUND, MapPerson::WEST, 
                                         new MapState(left_sprite));
-    player->setCoordinates(576, 320, 9);
+
+    /* Add it */
     addItem(player);
   }
 

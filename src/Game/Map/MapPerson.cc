@@ -18,14 +18,25 @@ const int MapPerson::kTOTAL_SURFACES   = 1;
 MapPerson::MapPerson()
 {
   initializeStates();
+
+  /* Set the default setup for what the player is standing on and facing */
+  surface = GROUND;
+  direction = NORTH;
 }
 
 /* Another constructor function */
 MapPerson::MapPerson(int width, int height, 
                      QString name, QString description, int id)
 {
-  MapThing(0, width, height, name, description, id);
+  //MapThing(0, width, height, name, description, id);
+  setHeight(height);
+  setWidth(width);
+
   initializeStates();
+
+  /* Set the default setup for what the player is standing on and facing */
+  surface = GROUND;
+  direction = NORTH;
 }
 
 /* Destructor function */
@@ -35,6 +46,8 @@ MapPerson::~MapPerson()
 
 void MapPerson::initializeStates()
 {
+  states.clear();
+
   for(int i = 0; i < kTOTAL_SURFACES; i++)
   {
     QVector<MapState*> row;
@@ -65,7 +78,9 @@ MapPerson::SurfaceClassifier MapPerson::getSurface()
 void MapPerson::setDirection(MovementDirection direction)
 {
   this->direction = direction;
-  MapThing::setState(states[surface][direction], false);
+
+  if(states[surface][direction] != 0)
+    MapThing::setState(states[surface][direction], false);
 }
 
 bool MapPerson::setState(SurfaceClassifier surface, MovementDirection direction, MapState* state)
@@ -78,7 +93,7 @@ bool MapPerson::setState(SurfaceClassifier surface, MovementDirection direction,
 
     /* If the updated state is the active one, automatically set the printable
      * sprite */
-    if(this->surface == surface || this->direction == direction)
+    if(this->surface == surface && this->direction == direction)
       MapThing::setState(states[surface][direction], false);
 
     return true;
@@ -90,7 +105,9 @@ bool MapPerson::setState(SurfaceClassifier surface, MovementDirection direction,
 void MapPerson::setSurface(SurfaceClassifier surface)
 {
   this->surface = surface;
-  MapThing::setState(states[surface][direction], false);
+
+  if(states[surface][direction] != 0)
+    MapThing::setState(states[surface][direction], false);
 }
 
 void MapPerson::unsetState(SurfaceClassifier surface, 
@@ -100,6 +117,6 @@ void MapPerson::unsetState(SurfaceClassifier surface,
   states[surface][direction] = 0;
 
   /* Clear out the parent call if the direction or surface lines up */
-  if(this->surface == surface || this->direction == direction)
+  if(this->surface == surface && this->direction == direction)
     MapThing::unsetState(false);
 }
