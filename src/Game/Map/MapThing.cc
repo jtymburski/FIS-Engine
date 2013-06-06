@@ -12,6 +12,7 @@
 #include "Game/Map/MapThing.h"
 
 /* Constant Implementation - see header file for descriptions */
+const int MapThing::kANIMATION_OFFSET = 10;
 const int MapThing::kMINIMUM_ID =  0;
 const int MapThing::kUNSET_ID   = -1;
 
@@ -27,6 +28,7 @@ const int MapThing::kUNSET_ID   = -1;
  */
 MapThing::MapThing()
 {
+  animation_delay = 0;
   state = 0;
   clear();
 }
@@ -42,6 +44,7 @@ MapThing::MapThing()
 MapThing::MapThing(MapState* state, int width, int height, 
                    QString name, QString description, int id)
 {
+  animation_delay = 0;
   this->state = 0;
 
   /* The parent class definitions */
@@ -66,6 +69,26 @@ MapThing::~MapThing()
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
+
+/* 
+ * Description: Animates the frames of the thing, based on the update offset
+ *              of the thing as well as calls to the sprite holder
+ * 
+ * Inputs: bool skip_head - Skip the head of the list of frames
+ * Output: bool - a status on the animate, only fails if it tries to animate
+ *                the sprite and there are no frames in it.
+ */
+bool MapThing::animate(bool skip_head)
+{
+  if(animation_delay == kANIMATION_OFFSET)
+  {
+    animation_delay = 0;
+    return state->getSprite()->shiftNext(skip_head);
+  }
+
+  animation_delay++;
+  return true;
+}
 
 /* 
  * Description: Clears out all information stored in the class
@@ -136,6 +159,19 @@ MapState* MapThing::getState()
  */
 void MapThing::interaction()
 {
+}
+
+/* 
+ * Description: Resets the sequence of animation to the head of the list.
+ *              The head is used as the inanimate place holder in most cases.
+ *
+ * Inputs: none
+ * Output: bool - status if the reset was successful. Only fails if there are
+ *                no frames in the sprite.
+ */
+bool MapThing::resetAnimation()
+{
+  return state->getSprite()->setAtFirst();
 }
 
 /* 

@@ -46,7 +46,7 @@ Map::Map()
 
   /* Bring the timer in to provide a game tick */
   connect(&timer, SIGNAL(timeout()), this, SLOT(animate()));
-  timer.start(10);
+  timer.start(15);
 }
 
 /* Destructor function */
@@ -177,13 +177,22 @@ void Map::animate()
         player->setDirection(MapPerson::WEST);
       else if(viewport->movingEast())
         player->setDirection(MapPerson::EAST);
+      else
+        player->resetAnimation();
     }
 
-    player->setX(viewport->newX(player->x()));
-    player->setY(viewport->newY(player->y()));
+    /* Update the X and Y coordinates, if moving */
+    if(viewport->moving())
+    {
+      player->setX(viewport->newX(player->x()));
+      player->setY(viewport->newY(player->y()));
+      player->animate(true);
+    }
 
     if(viewport != 0)
       viewport->centerOn(player);
+
+    player->update();
   }
 }
 
@@ -305,10 +314,10 @@ bool Map::loadMap(QString file)
     } while(!done && success);
 
     /* Add in temporary player information */
-    Sprite* up_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_D00.png");
-    Sprite* down_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_U00.png");
-    Sprite* left_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_R00.png");
-    Sprite* right_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_L00.png");
+    Sprite* up_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_D", 3, ".png");
+    Sprite* down_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_U", 3, ".png");
+    Sprite* left_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_R", 3, ".png");
+    Sprite* right_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_L", 3, ".png");
 
     /* Make the map person */
     player = new MapPerson(kTILE_LENGTH, kTILE_WIDTH);

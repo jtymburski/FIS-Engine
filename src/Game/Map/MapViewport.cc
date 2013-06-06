@@ -112,6 +112,11 @@ void MapViewport::closeMap()
   emit closingMap(2);
 }
 
+bool MapViewport::moving()
+{
+  return (direction != NONE);
+}
+
 bool MapViewport::movingEast()
 {
   return (direction == EAST);
@@ -136,9 +141,9 @@ int MapViewport::newX(int old_x)
 {
   /* Shift the X, based on the direction */
   if(direction == EAST)
-    return old_x + 2;
+    return old_x + 4;
   else if(direction == WEST && old_x > 0)
-    return old_x - 2;
+    return old_x - 4;
 
   return old_x;
 }
@@ -147,9 +152,9 @@ int MapViewport::newY(int old_y)
 {
   /* Shift the Y, based on the direction */
   if(direction == SOUTH)
-    return old_y + 2;
+    return old_y + 4;
   else if(direction == NORTH && old_y > 0)
-    return old_y - 2;
+    return old_y - 4;
 
   return old_y;
 }
@@ -164,6 +169,7 @@ bool MapViewport::updateDirection(int x, int y)
     if(direction_stack.isEmpty())
     {
       direction = NONE;
+      changed = true;
     }
     else
     {

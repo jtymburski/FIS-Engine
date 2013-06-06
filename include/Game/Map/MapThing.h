@@ -29,6 +29,9 @@ public:
   ~MapThing();
 
 private:
+  /* The animation delay, stored locally */
+  int animation_delay;
+
   /* The things description */
   QString description;
 
@@ -43,13 +46,18 @@ private:
 
   /* -------------------------- Constants ------------------------- */
 protected:
-  const static int kMINIMUM_ID;
-  const static int kUNSET_ID;
+  const static int kANIMATION_OFFSET; /* The number of animate calls before
+                                         the frame sequence is updated */
+  const static int kMINIMUM_ID;       /* The minimum ID, for a thing */
+  const static int kUNSET_ID;         /* The placeholder unset ID */
 
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Animates the thing. Skips the head of the list, if requested */
+  bool animate(bool skip_head = false);
+
   /* Clears the entire class data */
   void clear();
 
@@ -67,6 +75,9 @@ public:
   
   /* Starts inteaction (conversation, giving something, etc) */
   void interaction();
+
+  /* Resets the animation of the thing, back to the starting frame */ 
+  bool resetAnimation();
 
   /* Set the coordinates for the data in the map thing (for the parent) */
   void setCoordinates(int x, int y, int z = 0);

@@ -70,6 +70,7 @@ public:
   void closeMap();
 
   /* Indicators on which direction the viewport is shifting, if at all */
+  bool moving();
   bool movingEast();
   bool movingNorth();
   bool movingSouth();
