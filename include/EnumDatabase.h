@@ -27,7 +27,7 @@ enum ItemSorts {NONE, ID, NAME, FLAVOUR, LEVEL, EQUIPPABLE, VALUE, MASS,
  */
 enum Infliction
 {
-  POISON, BURN, SCALD, CHAR, BERSERK, CONFUSE, SILENCE, BUBBIFY, DEATHTIMER,
+  POISON, BURN, SCALD, INFLICTCHAR, BERSERK, CONFUSE, SILENCE, BUBBIFY, DEATHTIMER,
   PARALYSIS, BLINDNESS, DREADSTRUCK, DREAMSNARE, HELLBOUND, BOND, ALLATKBUFF,
   ALLDEFBUFF, PHYATKBUFF, PHYDEFBUFF, THRATKBUFF, THRDEFBUFF,POLATKBUFF,
   POLDEFBUFF, PRIATKBUFF, PRIDEFBUFF, CHGATKBUFF, CHGDEFBUFF, CYBATKBUFF,
@@ -41,7 +41,7 @@ Begin_Enum_String( Infliction )
   RegisterEnumerator(POISON, "Poison");
   RegisterEnumerator(BURN, "Burn");
   RegisterEnumerator(SCALD, "Scald");
-  RegisterEnumerator(CHAR, "Char");
+  RegisterEnumerator(INFLICTCHAR, "Char");
   RegisterEnumerator(BERSERK, "Berserk");
   RegisterEnumerator(CONFUSE, "Confuse");
   RegisterEnumerator(SILENCE, "Silence");

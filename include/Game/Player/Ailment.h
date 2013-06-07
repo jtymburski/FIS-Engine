@@ -45,16 +45,16 @@ public:
   /*------------------- Enumerated QFlags -----------------------*/
   enum AilmentFlag
   {
-    INFINITE    = 1 << 0, /* Ailment does not alleviate by time? >kMAX_TURNS */
-    CURABLE     = 1 << 1, /* Ailment cannot be cured except by time? */
-    TOBECURED   = 1 << 1, /* The ailment is to be cured immediately */
-    TOBEUPDATED = 1 << 2, /* Ailment set to be updated on new turn */
-    TOBEAPPLIED = 1 << 3, /* Ailment effects set to be applied on new turn */
-    BUFF        = 1 << 4, /* Is this ailment a favorable ailment? */
-    ADVERSE     = 1 << 5, /* Is this ailment an adverse ailment? */
-    NEUTRAL     = 1 << 6, /* (!FAVORABLE && !ADVERSE) */
-    IMMUNITY    = 1 << 7, /* Is the inflicted person immune to this ailment? */
-    CUREONDEATH = 1 << 8  /* Does the ailment persist death? */
+    INFINITETIME = 1 << 0, /* Ailment does not alleviate by time? >kMAX_TURNS */
+    CURABLE      = 1 << 1, /* Ailment cannot be cured except by time? */
+    TOBECURED    = 1 << 1, /* The ailment is to be cured immediately */
+    TOBEUPDATED  = 1 << 2, /* Ailment set to be updated on new turn */
+    TOBEAPPLIED  = 1 << 3, /* Ailment effects set to be applied on new turn */
+    BUFF         = 1 << 4, /* Is this ailment a favorable ailment? */
+    ADVERSE      = 1 << 5, /* Is this ailment an adverse ailment? */
+    NEUTRAL      = 1 << 6, /* (!FAVORABLE && !ADVERSE) */
+    IMMUNITY     = 1 << 7, /* Is the inflicted person immune to this ailment? */
+    CUREONDEATH  = 1 << 8  /* Does the ailment persist death? */
   };
   Q_DECLARE_FLAGS(AilmentFlags, AilmentFlag)
 

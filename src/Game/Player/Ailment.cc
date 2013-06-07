@@ -223,7 +223,7 @@ void Ailment::apply()
    *           kBURN_DMG_INCR - % incr burn damage per additional lvl
    *           kBURN_DMG_INIT - % dmg incurred by level 1 burn
    */
-  else if (ailment_type == BURN || ailment_type == SCALD || ailment_type == CHAR)
+  else if (ailment_type == BURN || ailment_type == SCALD || ailment_type == INFLICTCHAR)
   {
     damage = kBURN_DMG_MIN;
     ushort burn_damage = kHEALTH * kBURN_DMG_PC;
@@ -239,7 +239,7 @@ void Ailment::apply()
       if (damage < scald_damage)
         damage = scald_damage;
     }
-    else if (ailment_type == CHAR)
+    else if (ailment_type == INFLICTCHAR)
     {
       ushort char_damage = kHEALTH * (kBURN_DMG_PC + (2 * kBURN_DMG_INCR) - 2);
       if (damage < char_damage)
@@ -583,7 +583,7 @@ bool Ailment::checkImmunity(Person* new_victim)
   {
     if (ailment_type == HIBERNATION || ailment_type == REFLECT ||
         ailment_type == POISON      || ailment_type == BURN    ||
-        ailment_type == CHAR        || ailment_type == SCALD)
+        ailment_type == INFLICTCHAR || ailment_type == SCALD)
       return false;
   }
 
@@ -647,7 +647,7 @@ bool Ailment::checkImmunity(Person* new_victim)
         ailment_type == MOMBUFF     || ailment_type == VITBUFF    ||
         ailment_type == QDBUFF      || ailment_type == POISON     ||
         ailment_type == BURN        || ailment_type == SCALD      ||
-        ailment_type == CHAR        || ailment_type == BUBBIFY    ||
+        ailment_type == INFLICTCHAR || ailment_type == BUBBIFY    ||
         ailment_type == DEATHTIMER  || ailment_type == ROOTBOUND  ||
         ailment_type == ALLDEFBUFF)
     return false;
@@ -878,7 +878,7 @@ void Ailment::printAll()
 void Ailment::printFlags()
 {
   qDebug() << "AILMENT TYPE: " << getAilmentStr(ailment_type);
-  qDebug() << "INFINITE: " << getFlag(Ailment::INFINITE);
+  qDebug() << "INFINITE: " << getFlag(Ailment::INFINITETIME);
   qDebug() << "CURABLE:  " << getFlag(Ailment::CURABLE);
   qDebug() << "TOBECURED  " << getFlag(Ailment::TOBECURED);
   qDebug() << "TOBEUPDATED:  " << getFlag(Ailment::TOBEUPDATED);
@@ -961,9 +961,9 @@ QString Ailment::getName()
 void Ailment::setDuration(ushort max_turns, double chance)
 {
   if (max_turns > kMAX_TURNS)
-    setFlag(Ailment::INFINITE);
+    setFlag(Ailment::INFINITETIME);
   else
-    setFlag(Ailment::INFINITE, false);
+    setFlag(Ailment::INFINITETIME, false);
 
   max_turns_left = max_turns;
   this->chance = chance;
@@ -1041,7 +1041,7 @@ void Ailment::update()
   {
     /* Update the turn count and set the TOBECURED flag if neccessary */
     bool cure_value = false;
-    if (!getFlag(Ailment::INFINITE))
+    if (!getFlag(Ailment::INFINITETIME))
         cure_value = updateTurns();
     setFlag(Ailment::TOBECURED, cure_value);
 
