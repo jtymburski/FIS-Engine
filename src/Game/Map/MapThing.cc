@@ -12,7 +12,7 @@
 #include "Game/Map/MapThing.h"
 
 /* Constant Implementation - see header file for descriptions */
-const int MapThing::kANIMATION_OFFSET = 10;
+const int MapThing::kANIMATION_OFFSET = 8;
 const int MapThing::kMINIMUM_ID =  0;
 const int MapThing::kUNSET_ID   = -1;
 
@@ -75,12 +75,13 @@ MapThing::~MapThing()
  *              of the thing as well as calls to the sprite holder
  * 
  * Inputs: bool skip_head - Skip the head of the list of frames
+ *         bool just_started - the first call when animation begins
  * Output: bool - a status on the animate, only fails if it tries to animate
  *                the sprite and there are no frames in it.
  */
-bool MapThing::animate(bool skip_head)
+bool MapThing::animate(bool skip_head, bool just_started)
 {
-  if(animation_delay == kANIMATION_OFFSET)
+  if(animation_delay == kANIMATION_OFFSET || just_started)
   {
     animation_delay = 0;
     return state->getSprite()->shiftNext(skip_head);

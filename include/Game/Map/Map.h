@@ -11,6 +11,7 @@
 #define MAP_H
 
 #include <QGraphicsScene>
+#include <QGLWidget>
 
 #include "EnumDatabase.h"
 #include "Game/Map/MapNPC.h"
@@ -30,7 +31,7 @@ class Map : public QGraphicsScene
 
 public:
   /* Constructor function */
-  Map();
+  Map(QGLWidget* widget);
 
   /* Destructor function */
   ~Map();

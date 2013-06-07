@@ -9,9 +9,6 @@
 ******************************************************************************/
 #include "Game/Map/Map.h"
 
-/* TEMPORARY - DELETE */
-#include "Game/Map/Layer.h"
-
 /* Constant Implementation - see header file for descriptions */
 const int Map::kDOUBLE_DIGITS = 10;
 const int Map::kFILE_SECTION_ID = 2;
@@ -28,7 +25,7 @@ const int Map::kVIEWPORT_WIDTH = 11;
  *===========================================================================*/
 
 /* Constructor function */
-Map::Map()
+Map::Map(QGLWidget* widget)
 {
   /* Configure the scene */
   loaded = false;
@@ -36,8 +33,10 @@ Map::Map()
   
   /* Setup the viewport */
   viewport = new MapViewport(this);
+  viewport->setViewport(widget);
+  viewport->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
   viewport->centerOn(0, 0);
-  
+ 
   /* Connect the signals */
   QObject::connect(viewport, SIGNAL(animateTiles()),
                    this,     SLOT(animateTiles()));
@@ -46,7 +45,7 @@ Map::Map()
 
   /* Bring the timer in to provide a game tick */
   connect(&timer, SIGNAL(timeout()), this, SLOT(animate()));
-  timer.start(15);
+  timer.start(10);
 }
 
 /* Destructor function */
@@ -164,11 +163,15 @@ void Map::addLayer(Layer* item)
 
 void Map::animate()
 {
+  bool just_started = false;
+
   if(player != 0)
   {
     /* If the udpate direction changes, update the player direction */
     if(viewport->updateDirection(player->x(), player->y()))
     {
+      just_started = true;
+
       if(viewport->movingNorth())
         player->setDirection(MapPerson::NORTH);
       else if(viewport->movingSouth())
@@ -186,7 +189,7 @@ void Map::animate()
     {
       player->setX(viewport->newX(player->x()));
       player->setY(viewport->newY(player->y()));
-      player->animate(true);
+      player->animate(true, just_started);
     }
 
     if(viewport != 0)

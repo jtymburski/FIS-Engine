@@ -2,7 +2,12 @@
 * Class Name: MapPerson
 * Date Created: Oct 28 2012
 * Inheritance: MapThing
-* Description: The MapPerson class, this covers all Persons in the map
+* Description: The MapPerson class. An addition on top of MapThing that 
+*              expands the Thing into possible states to allow for walking
+*              in multiple directions and on multiple surfaces. At present, 
+*              it allows for the 4 directions (N,S,E,W) all on one surface
+*              (Ground). Future expansion is available for other surfaces
+*              such as water, flying, etc.
 ******************************************************************************/
 #ifndef MAPPERSON_H
 #define MAPPERSON_H
@@ -21,14 +26,14 @@ public:
   ~MapPerson();
 
   /* Handles second layer of states 2D vector
-   * NORTH - player facing up
-   * EAST  - player facing right
-   * SOUTH - player facing down
-   * WEST  - player facing left */
+   *  NORTH - player facing up
+   *  EAST  - player facing right
+   *  SOUTH - player facing down
+   *  WEST  - player facing left */
   enum MovementDirection{NORTH, EAST, SOUTH, WEST};
 
   /* The surface classification, first layer of states 2D vector
-   * GROUND - is on a dirt like substance (where walking is possible) */
+   *  GROUND - is on a dirt like substance (where walking is possible) */
   enum SurfaceClassifier{GROUND};
 
 private:
@@ -57,6 +62,10 @@ private:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Clears all information from the class (including deleting necessary
+   * pointers) */
+  void clear();
+
   /* Returns the direction that this person is travelling in */
   MovementDirection getDirection();
 

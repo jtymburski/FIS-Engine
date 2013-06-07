@@ -13,7 +13,7 @@ win32 {
   win32:QMAKE_CXX_FLAGS_WARN_ON += -Wextra
 }
 LIBS += -lSDL -lSDL_mixer
-#QT += opengl #phonon # network xml, core and gui are default
+QT += opengl #phonon # network xml, core and gui are default
 RESOURCES = Resources.qrc
 
 SOURCES += \

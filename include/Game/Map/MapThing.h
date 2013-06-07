@@ -56,7 +56,7 @@ protected:
  *===========================================================================*/
 public:
   /* Animates the thing. Skips the head of the list, if requested */
-  bool animate(bool skip_head = false);
+  bool animate(bool skip_head = false, bool just_started = false);
 
   /* Clears the entire class data */
   void clear();

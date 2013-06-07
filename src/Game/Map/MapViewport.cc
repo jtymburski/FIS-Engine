@@ -39,10 +39,10 @@ MapViewport::MapViewport(QGraphicsScene* scene, QWidget* parent)
   setScene(scene);
 
   /* Set viewport parameters */
-  setMaximumWidth(1216);
-  setMaximumHeight(704);
-  setMinimumWidth(1216);
-  setMinimumHeight(704);
+  setMaximumWidth(1216); // 1216
+  setMaximumHeight(704); // 704
+  setMinimumWidth(1216); // 1216
+  setMinimumHeight(704); // 704
   setFrameShape(QFrame::NoFrame);
   setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);

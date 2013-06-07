@@ -9,6 +9,8 @@
 ******************************************************************************/
 #include "Application.h"
 
+#include <QGLWidget>
+
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
@@ -16,14 +18,19 @@
 Application::Application(QWidget* parent)
 {
   setParent(parent);
-  
+ 
+  /* Set up the OpenGL Widget */
+  QGLWidget* widget = new QGLWidget(QGLFormat(QGL::SampleBuffers));
+  widget->makeCurrent();
+
   title_screen = new TitleScreen(1216, 704);
   //title_screen->show();
 
   setupBattle();
   //test_battle->show();
   
-  test_map = new Map();
+  test_map = new Map(widget);
+  //test_map->loadMap("maps/test_03");
   //test_map->getViewport()->show();
   
   widget_stack = new QStackedWidget();
