@@ -42,6 +42,10 @@ private:
   Battle* test_battle;
   Map* test_map;
 
+  /*------------------- Constants -----------------------*/
+  const static short kRESOLUTION_X; /* Screen resolution, x direction */
+  const static short kRESOLUTION_Y; /* Screen resolution, y direction */
+
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/

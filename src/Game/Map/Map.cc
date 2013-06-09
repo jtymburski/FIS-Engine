@@ -14,9 +14,9 @@ const int Map::kDOUBLE_DIGITS = 10;
 const int Map::kFILE_SECTION_ID = 2;
 const int Map::kTILE_COLUMN = 4;
 const int Map::kTILE_DATA = 5;
-const int Map::kTILE_LENGTH = 96;
+const int Map::kTILE_LENGTH = 64;
 const int Map::kTILE_ROW = 3;
-const int Map::kTILE_WIDTH = 96;
+const int Map::kTILE_WIDTH = 64;
 const int Map::kVIEWPORT_LENGTH = 19;
 const int Map::kVIEWPORT_WIDTH = 11;
 
@@ -25,15 +25,19 @@ const int Map::kVIEWPORT_WIDTH = 11;
  *===========================================================================*/
 
 /* Constructor function */
-Map::Map(QGLWidget* widget)
+Map::Map(short resolution_x, short resolution_y)
 {
   /* Configure the scene */
   loaded = false;
   player = 0;
-  
+ 
+  /* Setup the OpenGL Widget */
+  QGLFormat gl_format(QGL::SampleBuffers);
+  gl_format.setSwapInterval(0);
+
   /* Setup the viewport */
-  viewport = new MapViewport(this);
-  viewport->setViewport(widget);
+  viewport = new MapViewport(this, resolution_x, resolution_y);
+  viewport->setViewport(new QGLWidget(gl_format));
   viewport->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
   viewport->centerOn(0, 0);
  

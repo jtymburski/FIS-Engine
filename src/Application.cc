@@ -9,7 +9,9 @@
 ******************************************************************************/
 #include "Application.h"
 
-#include <QGLWidget>
+/* Constant Implementation - see header file for descriptions */
+const short Application::kRESOLUTION_X = 1216;
+const short Application::kRESOLUTION_Y = 704;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -19,17 +21,13 @@ Application::Application(QWidget* parent)
 {
   setParent(parent);
  
-  /* Set up the OpenGL Widget */
-  QGLWidget* widget = new QGLWidget(QGLFormat(QGL::SampleBuffers));
-  widget->makeCurrent();
-
-  title_screen = new TitleScreen(1216, 704);
+  title_screen = new TitleScreen(kRESOLUTION_X, kRESOLUTION_Y);
   //title_screen->show();
 
   setupBattle();
   //test_battle->show();
   
-  test_map = new Map(widget);
+  test_map = new Map(kRESOLUTION_X, kRESOLUTION_Y);
   //test_map->loadMap("maps/test_03");
   //test_map->getViewport()->show();
   
@@ -44,10 +42,10 @@ Application::Application(QWidget* parent)
   setCentralWidget(widget_stack);
   setFocus(Qt::OtherFocusReason);
   setFocusProxy(title_screen);
-  setMaximumWidth(1216);
-  setMaximumHeight(704);
-  setMinimumWidth(1216);
-  setMinimumHeight(704);
+  setMaximumWidth(kRESOLUTION_X);
+  setMaximumHeight(kRESOLUTION_Y);
+  setMinimumWidth(kRESOLUTION_X);
+  setMinimumHeight(kRESOLUTION_Y);
 
   QObject::connect(title_screen, SIGNAL(closing()),
                    this,         SLOT(close()));
@@ -64,8 +62,9 @@ Application::Application(QWidget* parent)
   QDesktopWidget desktopWidget;
   QRect desktopRect(desktopWidget
                       .availableGeometry(desktopWidget.primaryScreen()));
-  setGeometry((desktopRect.width() - 1216) / 2, 
-              (desktopRect.height() - 704) / 2, 1216, 704);
+  setGeometry((desktopRect.width() - kRESOLUTION_X) / 2, 
+              (desktopRect.height() - kRESOLUTION_Y) / 2, 
+              kRESOLUTION_X, kRESOLUTION_Y);
 
   /* Do the final show once everything is set up */
   show();

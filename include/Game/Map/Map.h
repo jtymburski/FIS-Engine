@@ -31,7 +31,7 @@ class Map : public QGraphicsScene
 
 public:
   /* Constructor function */
-  Map(QGLWidget* widget);
+  Map(short resolution_x, short resolution_y);
 
   /* Destructor function */
   ~Map();

@@ -12,7 +12,7 @@
 #include "Game/Map/MapThing.h"
 
 /* Constant Implementation - see header file for descriptions */
-const int MapThing::kANIMATION_OFFSET = 8;
+const int MapThing::kANIMATION_OFFSET = 4;
 const int MapThing::kMINIMUM_ID =  0;
 const int MapThing::kUNSET_ID   = -1;
 

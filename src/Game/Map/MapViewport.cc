@@ -32,17 +32,18 @@ MapViewport::MapViewport()
   direction = NONE;
 }
 
-MapViewport::MapViewport(QGraphicsScene* scene, QWidget* parent)
+MapViewport::MapViewport(QGraphicsScene* scene, short resolution_x,
+                         short resolution_y, QWidget* parent)
 {
   /* The initial viewport setup */
   QGraphicsView(scene, parent);
   setScene(scene);
 
   /* Set viewport parameters */
-  setMaximumWidth(1216); // 1216
-  setMaximumHeight(704); // 704
-  setMinimumWidth(1216); // 1216
-  setMinimumHeight(704); // 704
+  setMaximumWidth(resolution_x);
+  setMaximumHeight(resolution_y);
+  setMinimumWidth(resolution_x);
+  setMinimumHeight(resolution_y);
   setFrameShape(QFrame::NoFrame);
   setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -141,9 +142,9 @@ int MapViewport::newX(int old_x)
 {
   /* Shift the X, based on the direction */
   if(direction == EAST)
-    return old_x + 4;
+    return old_x + 8;
   else if(direction == WEST && old_x > 0)
-    return old_x - 4;
+    return old_x - 8;
 
   return old_x;
 }
@@ -152,9 +153,9 @@ int MapViewport::newY(int old_y)
 {
   /* Shift the Y, based on the direction */
   if(direction == SOUTH)
-    return old_y + 4;
+    return old_y + 8;
   else if(direction == NORTH && old_y > 0)
-    return old_y - 4;
+    return old_y - 8;
 
   return old_y;
 }
@@ -164,7 +165,7 @@ bool MapViewport::updateDirection(int x, int y)
   bool changed = false;
 
   /* Once a tile end has reached, cycle the direction */
-  if(x % 96 == 0 && y % 96 == 0)
+  if(x % 64 == 0 && y % 64 == 0)
   {
     if(direction_stack.isEmpty())
     {

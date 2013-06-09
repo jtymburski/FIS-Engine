@@ -22,7 +22,8 @@ class MapViewport : public QGraphicsView
 public:
   /* Constructor functions */
   MapViewport();
-  MapViewport(QGraphicsScene* scene, QWidget* parent = 0);
+  MapViewport(QGraphicsScene* scene, short resolution_x, 
+              short resolution_y, QWidget* parent = 0);
 
   /* Destructor function */
   ~MapViewport();
