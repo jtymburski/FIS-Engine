@@ -39,7 +39,8 @@ Map::Map(short resolution_x, short resolution_y)
   /* Setup the viewport */
   viewport = new MapViewport(this, resolution_x, resolution_y);
   viewport->setViewport(viewport_widget);
-  viewport->setViewportUpdateMode(QGraphicsView::SmartViewportUpdate);
+  viewport->setViewportUpdateMode(QGraphicsView::MinimalViewportUpdate);
+    /* FullViewportUpdate, SmartViewportUpdate, MinimalViewportUpdate */
   viewport->centerOn(0, 0);
  
   /* Connect the signals */
