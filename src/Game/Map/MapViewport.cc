@@ -19,7 +19,7 @@ MapViewport::MapViewport()
 {
   /* Set some viewport parameters for optimal painting */
   setAttribute(Qt::WA_OpaquePaintEvent, true);
-  setAttribute(Qt::WA_TranslucentBackground, true);
+  setAttribute(Qt::WA_NoSystemBackground, true);
   setAutoFillBackground(true);
   setOptimizationFlag(QGraphicsView::DontSavePainterState, true);
 

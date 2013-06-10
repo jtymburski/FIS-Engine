@@ -64,6 +64,7 @@ private:
 
   /* The viewoport for the map, controlled by QGraphicsView */
   MapViewport* viewport;
+  QGLWidget* viewport_widget;
 
   /* Weather effect on the overall map (May be pushed to the sector level at 
    * a later time) */

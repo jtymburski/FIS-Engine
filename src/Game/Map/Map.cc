@@ -33,12 +33,13 @@ Map::Map(short resolution_x, short resolution_y)
  
   /* Setup the OpenGL Widget */
   QGLFormat gl_format(QGL::SampleBuffers);
-  gl_format.setSwapInterval(0);
+  gl_format.setSwapInterval(1);
+  viewport_widget = new QGLWidget(gl_format);
 
   /* Setup the viewport */
   viewport = new MapViewport(this, resolution_x, resolution_y);
-  viewport->setViewport(new QGLWidget(gl_format));
-  viewport->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+  viewport->setViewport(viewport_widget);
+  viewport->setViewportUpdateMode(QGraphicsView::SmartViewportUpdate);
   viewport->centerOn(0, 0);
  
   /* Connect the signals */
@@ -49,7 +50,7 @@ Map::Map(short resolution_x, short resolution_y)
 
   /* Bring the timer in to provide a game tick */
   connect(&timer, SIGNAL(timeout()), this, SLOT(animate()));
-  timer.start(10);
+  timer.start(20);
 }
 
 /* Destructor function */
@@ -201,6 +202,8 @@ void Map::animate()
 
     player->update();
   }
+
+  viewport_widget->updateGL();
 }
 
 void Map::animateTiles()

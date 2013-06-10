@@ -67,6 +67,7 @@ Application::Application(QWidget* parent)
               kRESOLUTION_X, kRESOLUTION_Y);
 
   /* Do the final show once everything is set up */
+  //showFullScreen();
   show();
 }
 
