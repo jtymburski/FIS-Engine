@@ -83,8 +83,10 @@ bool MapThing::animate(bool skip_head, bool just_started)
 {
   if(animation_delay == kANIMATION_OFFSET || just_started)
   {
+    bool status = state->getSprite()->shiftNext(skip_head);
     animation_delay = 0;
-    return state->getSprite()->shiftNext(skip_head);
+    //update();
+    return status;
   }
 
   animation_delay++;

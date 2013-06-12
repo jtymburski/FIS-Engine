@@ -27,6 +27,9 @@ const int Map::kVIEWPORT_WIDTH = 11;
 /* Constructor function */
 Map::Map(short resolution_x, short resolution_y)
 {
+  /* Setting the tree indexing method (NoIndex or BspTreeIndex) */
+  //setItemIndexMethod(QGraphicsScene::NoIndex);
+
   /* Configure the scene */
   loaded = false;
   player = 0;
@@ -37,10 +40,10 @@ Map::Map(short resolution_x, short resolution_y)
   viewport_widget = new QGLWidget(gl_format);
 
   /* Setup the viewport */
-  viewport = new MapViewport(this, resolution_x, resolution_y);
+  viewport = new MapViewport(this, resolution_x, resolution_y, 
+                             kTILE_LENGTH, kTILE_WIDTH);
   viewport->setViewport(viewport_widget);
-  viewport->setViewportUpdateMode(QGraphicsView::MinimalViewportUpdate);
-    /* FullViewportUpdate, SmartViewportUpdate, MinimalViewportUpdate */
+  viewport->setViewportUpdateMode(QGraphicsView::NoViewportUpdate);
   viewport->centerOn(0, 0);
  
   /* Connect the signals */
@@ -134,6 +137,14 @@ bool Map::addTileData(XmlData data)
  * PROTECTED FUNCTIONS
  *===========================================================================*/
 
+/* Background painting function */
+void Map::drawBackground(QPainter* painter, const QRectF& rect)
+{
+  /* Do nothing */
+  (void)painter;
+  (void)rect;
+}
+
 /* Painting function */
 //void Map::paintEvent(QPaintEvent* event)
 //{
@@ -200,11 +211,9 @@ void Map::animate()
 
     if(viewport != 0)
       viewport->centerOn(player);
-
-    player->update();
   }
 
-  viewport_widget->updateGL();
+  viewport->viewport()->update();
 }
 
 void Map::animateTiles()
@@ -299,7 +308,8 @@ bool Map::loadMap(QString file)
         /* Create the tile */
         Tile* t = new Tile(kTILE_LENGTH, kTILE_WIDTH, 
                            j*kTILE_LENGTH, i*kTILE_WIDTH);
- 
+        //t->setStatus(Tile::OFF);
+
         /* Connect the signals */
         QObject::connect(t, SIGNAL(addLayer(Layer*)), 
                          this, SLOT(addLayer(Layer*)));

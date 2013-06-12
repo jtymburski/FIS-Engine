@@ -27,6 +27,9 @@ Layer::Layer()
   width = 0;
   height = 0;
   visible = true;
+
+  /* TEMP */
+  paint_count = 0;
 }
 
 /* 
@@ -57,6 +60,9 @@ Layer::Layer(Sprite* item, int width, int height, int x, int y, int z)
   setX(x);
   setY(y);
   setZValue(z);
+
+  /* TEMP */
+  paint_count = 0;
 }
 
 /* 
@@ -122,6 +128,18 @@ Sprite* Layer::getItem()
 }
 
 /* 
+ * Description: Returns the number time the paint protocol has occurred
+ *
+ * Inputs: none
+ * Output: int - the number of paints that have occurred since conception
+ */
+
+int Layer::getPaintCount()
+{
+  return paint_count;
+}
+
+/* 
  * Description: Gets the width of the stored sprite
  *
  * Inputs: none
@@ -157,14 +175,17 @@ bool Layer::isVisible()
 void Layer::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
                   QWidget* widget)
 {
+  /* Increment the paint count */
+  paint_count++;
+
   /* Remove unused parameter warnings */
   (void)option;
   (void)widget;
 
   /* Set painter information */
-  painter->setBrush(QBrush(Qt::black));
-  painter->setPen(Qt::NoPen);
-  painter->setRenderHint(QPainter::SmoothPixmapTransform, true);
+  //painter->setBrush(QBrush(Qt::black));
+  //painter->setPen(Qt::NoPen);
+  //painter->setRenderHint(QPainter::SmoothPixmapTransform, true);
 
   /* Only paint if enabled */
   if(isEnabled())

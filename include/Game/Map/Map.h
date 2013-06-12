@@ -92,6 +92,10 @@ private:
  * PROTECTED FUNCTIONS
  *===========================================================================*/
 protected:
+  /* Draw the background override */
+  void drawBackground(QPainter* painter, const QRectF& rect);
+
+  /* Paint event to the scene */
   void paintEvent(QPaintEvent*);
 
 /*============================================================================

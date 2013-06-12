@@ -33,6 +33,9 @@ private:
   int height;
   bool visible;
 
+  /* Temporary, DELETE when done */
+  int paint_count;
+
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
@@ -48,6 +51,9 @@ public:
 
   /* Returns the sprite stored in the layer for control */
   Sprite* getItem();
+
+  /* Returns the number of time the layer has painted */
+  int getPaintCount();
 
   /* Returns the width of the layer */
   int getWidth();

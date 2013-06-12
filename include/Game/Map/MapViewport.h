@@ -23,7 +23,8 @@ public:
   /* Constructor functions */
   MapViewport();
   MapViewport(QGraphicsScene* scene, short resolution_x, 
-              short resolution_y, QWidget* parent = 0);
+              short resolution_y, short tile_x,
+              short tile_y, QWidget* parent = 0);
 
   /* Destructor function */
   ~MapViewport();
@@ -41,6 +42,10 @@ private:
 
   /* The stack of currently pressed directions, on the keyboard */
   QVector<MovementDirection> direction_stack;
+
+  /* The tile boundaries */
+  short tile_x;
+  short tile_y;
 
 private:
   void addDirection(MovementDirection new_direction);

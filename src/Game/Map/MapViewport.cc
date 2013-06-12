@@ -18,9 +18,7 @@
 MapViewport::MapViewport()
 {
   /* Set some viewport parameters for optimal painting */
-  setAttribute(Qt::WA_OpaquePaintEvent, true);
-  setAttribute(Qt::WA_NoSystemBackground, true);
-  setAutoFillBackground(true);
+  setAutoFillBackground(false);
   setOptimizationFlag(QGraphicsView::DontSavePainterState, true);
 
   /* Remove the scroll bars and frames for the viewport */
@@ -30,10 +28,15 @@ MapViewport::MapViewport()
 
   /* Shifting handlers */
   direction = NONE;
+
+  /* Set the tile boundaries */
+  tile_x = 0;
+  tile_y = 0;
 }
 
 MapViewport::MapViewport(QGraphicsScene* scene, short resolution_x,
-                         short resolution_y, QWidget* parent)
+                         short resolution_y, short tile_x, 
+                         short tile_y, QWidget* parent)
 {
   /* The initial viewport setup */
   QGraphicsView(scene, parent);
@@ -50,6 +53,10 @@ MapViewport::MapViewport(QGraphicsScene* scene, short resolution_x,
 
   /* Shifting handlers */
   direction = NONE;
+
+  /* Set the tile boundaries */
+  this->tile_x = tile_x;
+  this->tile_y = tile_y;
 }
 
 MapViewport::~MapViewport()
@@ -165,7 +172,7 @@ bool MapViewport::updateDirection(int x, int y)
   bool changed = false;
 
   /* Once a tile end has reached, cycle the direction */
-  if(x % 64 == 0 && y % 64 == 0)
+  if(x % tile_x == 0 && y % tile_y == 0)
   {
     if(direction_stack.isEmpty())
     {
