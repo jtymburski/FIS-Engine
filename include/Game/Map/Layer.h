@@ -86,6 +86,9 @@ public:
   /* Returns the number of time the layer has painted */
   int getPaintCount();
 
+  /* Returns the status corresponding to the particular layer */
+  Status getStatus();
+
   /* Returns the list of upper layer sprites */
   QList<Sprite*> getUpper();
 

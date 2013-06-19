@@ -210,6 +210,22 @@ int Layer::getPaintCount()
 }
 
 /* 
+ * Description: Returns the status the layer is currently classified in. 
+ *              See the corresponding setStatus()
+ *
+ * Inputs: none
+ * Output: Status - public enum identifying the status
+ */
+Layer::Status Layer::getStatus()
+{
+  if(!blanked && !isVisible())
+    return OFF;
+  else if(!blanked && isVisible())
+    return ACTIVE;
+  return BLANKED;
+}
+
+/* 
  * Description: Gets the upper portion of the layer. Is an empty list if it's
  *              not set.
  *

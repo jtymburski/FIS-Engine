@@ -44,11 +44,6 @@ public:
    * FLIP - rotate the object 180 degrees */
   enum RotatedAngle{NONE, CLOCKWISE, COUNTERCLOCKWISE, FLIP};
 
-  /* STATUSOFF - Not rendered at all
-   * ACTIVE - Rendered
-   * INACTIVE - Blacked out (sector past a door) */
-  enum Status{OFF, ACTIVE, INACTIVE};
-
 private:
   /* Basic information for the tile */
   int height;
@@ -56,13 +51,9 @@ private:
   int x;
   int y;
 
-  /* The lowest level of sprite on tile, passibility varies based on tile
-   * (eg. Grass, lava, water) */
-  QVector<Layer*> base;
-
-  /* The enhancment layer on the base. This is things like water bodies, 
-   * ground enhancers, etc. */
-  Layer* enhancer;
+  /* The two primary layers of the tile */
+  Layer* lower;
+  Layer* upper;
 
   /* Player or NPC or impassible item (Causes the passibility of all directions
    * to be false if not null) */
@@ -70,18 +61,9 @@ private:
   MapPerson* person;
   ImpassableObjectState impassable_set;
   
-  /* The lower layer (Tree Trunks, shrubs, etc) */
-  Layer* lower;
-
   /* The lower sprite, passible (eg. Bubby, equipment) */
   MapWalkOver* passable_object;
   bool passable_set;
-
-  /* The status of the tile */
-  Status tile_status;
-
-  /* The upper sprite(s), fully pass under */
-  QVector<Layer*> upper;
 
   /* The passibility of each direction of the tile */
   bool north_passibility,east_passibility,south_passibility,west_passibility;
@@ -114,12 +96,6 @@ private:
   /* Determines the angle that's associated to the local enumerator */
   int getAngle(RotatedAngle angle);
 
-  /* Sets each layer to if its enabled or not */
-  void setEnabled(bool enabled);
-
-  /* Sets each layer to if its visible or not (otherwise black square) */
-  void setVisible(bool visible);
-
 /*============================================================================
  * SIGNALS
  *===========================================================================*/
@@ -151,10 +127,10 @@ public:
   bool appendUpper(QPixmap frame, RotatedAngle angle);
 
   /* Gets the base layer(s) */
-  QVector<Layer*> getBase();
+  Sprite* getBase();
 
   /* Gets the enhancer layer */
-  Layer* getEnhancer();
+  Sprite* getEnhancer();
 
   /* Returns the stored height of the tile */
   int getHeight();
@@ -163,7 +139,7 @@ public:
   MapThing* getImpassableObject();
 
   /* Gets the lower layer */
-  Layer* getLower();
+  QList<Sprite*> getLower();
 
   /* Gets the passable object sprite */
   MapThing* getPassableObject();
@@ -181,10 +157,10 @@ public:
   bool getPassibilityWest();
 
   /* Returns the tile status */
-  Status getStatus();
+  Layer::Status getStatus();
 
   /* Gets the upper layer(s) */
-  QVector<Layer*> getUpper();
+  QList<Sprite*> getUpper();
 
   /* Returns the width of the tile */
   int getWidth();
@@ -244,7 +220,7 @@ public:
   void setPassibilityWest(bool is_passable);
 
   /* Sets a new status for the tile */
-  void setStatus(Status updated_status);
+  void setStatus(Layer::Status updated_status);
 
   /* Sets the width of the tile (and all corresponding layers) */
   bool setWidth(int width);
@@ -254,22 +230,22 @@ public:
   void setY(int y);
 
   /* Unsets the base layer(s) */
-  bool unsetBase();
+  void unsetBase();
 
   /* Unsets the enhancer layer */
-  bool unsetEnhancer();
+  void unsetEnhancer();
 
   /* Unsets the impassable object sprite */
   bool unsetImpassableObject();
 
   /* Unsets the lower layer */
-  bool unsetLower();
+  void unsetLower();
 
   /* Unsets the passable object sprite */
   bool unsetPassableObject();
 
   /* Unsets the upper layer(s) */
-  bool unsetUpper();
+  void unsetUpper();
 };
 
 #endif // TILE_H

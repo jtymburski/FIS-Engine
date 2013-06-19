@@ -18,7 +18,7 @@ const int Tile::kBASE_DEPTH = 1;
 const int Tile::kDATA_ELEMENT = 0;
 const int Tile::kDATA_ROTATION = 1;
 const int Tile::kENHANCER_DEPTH = 6;
-const int Tile::kLOWER_DEPTH = 7;
+const int Tile::kLOWER_DEPTH = 0; // USING
 const int Tile::kMAP_INTERACTIVE_DEPTH = 8;
 const int Tile::kMAP_PERSON_DEPTH = 9;
 const int Tile::kNE_ENHANCER     = 1;
@@ -26,7 +26,7 @@ const int Tile::kNW_ENHANCER     = 0;
 const int Tile::kSE_ENHANCER     = 3;
 const int Tile::kSW_ENHANCER     = 2;
 const int Tile::kUPPER_COUNT_MAX = 5;
-const int Tile::kUPPER_DEPTH = 10;
+const int Tile::kUPPER_DEPTH = 3; // USING
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -34,27 +34,28 @@ const int Tile::kUPPER_DEPTH = 10;
 
 /* 
  * Description: Constructor for this class. Set up the tile class to an empty 
- *              null state.
+ *              null state. In this state, you will have to manually set
+ *              the width, height, x, and y coordinates of the tile and then
+ *              enable the tile using setStatus()
  *
  * Input: none
  */
 Tile::Tile()
 {
   /* Clear out the logic for parts of the tile */
-  enhancer = 0;
-  lower = 0;
-  impassable_set = UNSET; 
+  impassable_set = UNSET;
+  lower = new Layer();
   passable_set = false;
+  upper = new Layer();
 
   /* Tile definitions */
-  setHeight(0);
-  setWidth(0);
-  setX(0);
-  setY(0);
+  height = 0;
+  width = 0;
+  x = 0;
+  y = 0;
 
   /* Set the initial passibility as completely open but OFF */
   setPassibility(true);
-  setStatus(OFF);
 }
 
 /* 
@@ -74,20 +75,19 @@ Tile::Tile(int width, int height, int x, int y, QObject* parent)
   setParent(parent);
   
   /* Clear out the logic for parts of the tile */
-  enhancer = 0;
-  lower = 0;
-  impassable_set = UNSET; 
+  impassable_set = UNSET;
+  lower = new Layer(width, height, x, y, kLOWER_DEPTH);
   passable_set = false;
+  upper = new Layer(width, height, x, y, kUPPER_DEPTH);
 
   /* Tile definitions */
-  setHeight(height);
-  setWidth(width);
-  setX(x);
-  setY(y);
+  this->height = height;
+  this->width = width;
+  this->x = x;
+  this->y = y;
 
   /* Set the initial passibility as completely open and ACTIVE */
   setPassibility(true);
-  setStatus(ACTIVE);
 }
 
 /* 
@@ -99,6 +99,12 @@ Tile::~Tile()
   unsetEnhancer();
   unsetLower();
   unsetUpper();
+
+  /* Delete the layers from memory */
+  delete lower;
+  lower = 0;
+  delete upper;
+  upper = 0;
 }
 
 /*============================================================================
@@ -122,49 +128,6 @@ int Tile::getAngle(RotatedAngle angle)
     return 180;
 
   return 0;
-}
-
-/* 
- * Description: Sets if the layers are enabled, across them all.
- * 
- * Inputs: bool enabled - new enabled status of the layers
- * Output: void
- */
-void Tile::setEnabled(bool enabled)
-{
-  for(int i = 0; i < base.size(); i++)
-    base[i]->setEnabled(enabled);
-
-  if(isEnhancerSet())
-    enhancer->setEnabled(enabled);
-
-  if(isLowerSet())
-    lower->setEnabled(enabled);
-
-  for(int i = 0; i < upper.size(); i++)
-    upper[i]->setEnabled(enabled);
-}
-
-/* 
- * Description: Sets if the layers are visible, across them all.
- * 
- * Inputs: bool visible - new visible status of the layers
- * Output: void
- */
-void Tile::setVisible(bool visible)
-{
-  for(int i = 0; i < base.size(); i++)
-    base[i]->setVisible(visible);
-
-  if(isEnhancerSet())
-    enhancer->setVisible(visible);
-
-  if(isLowerSet())
-    lower->setVisible(visible);
-
-  for(int i = 0; i < upper.size(); i++)
-    upper[i]->setVisible(visible);
-
 }
 
 /*============================================================================
@@ -408,25 +371,25 @@ bool Tile::appendUpper(QPixmap frame, RotatedAngle angle)
 }
 
 /* 
- * Description: Gets the base layer(s) and returns it(them), if set.
+ * Description: Gets the base sprite sequence and returns it, if set.
  *
  * Inputs: none
- * Output: QVector<Layer*> - the QVector of up to 5 base layers allowed
+ * Output: Sprite* - the base sprite pointer
  */
-QVector<Layer*> Tile::getBase()
+Sprite* Tile::getBase()
 {
-  return base;
+  return lower->getBase();
 }
 
 /* 
- * Description: Gets the enhancer layer and returns it, if set.
+ * Description: Gets the enhancer sprite sequence and returns it, if set.
  *
  * Inputs: none
- * Output: Layer* - the enhancer layer pointer
+ * Output: Sprite* - the enhancer sprite pointer
  */
-Layer* Tile::getEnhancer()
+Sprite* Tile::getEnhancer()
 {
-  return enhancer;
+  return lower->getEnhancer();
 }
 
 /* 
@@ -456,14 +419,14 @@ MapThing* Tile::getImpassableObject()
 }
 
 /* 
- * Description: Gets the lower layer and returns it, if set.
+ * Description: Gets the lower sprite(s) and returns it(them), if set.
  *
  * Inputs: none
- * Output: Layer* - the lower layer pointer
+ * Output: QList<Sprite*> - the lower sprites, in a QList
  */
-Layer* Tile::getLower()             
+QList<Sprite*> Tile::getLower()
 {
-  return lower;
+  return lower->getLower();
 }
 
 /* 
@@ -524,14 +487,26 @@ bool Tile::getPassibilityWest()
 }
 
 /* 
- * Description: Gets the upper layer(s) and returns it(them), if set.
+ * Description: Returns the status the tile is currently classified in. Uses
+ *              the enum from Layer. See the corresponding setStatus()
  *
  * Inputs: none
- * Output: QVector<Layer*> - the upper layer(s) pointer in a QVector
+ * Output: Status - public enum from layer identifying state
  */
-QVector<Layer*> Tile::getUpper()
+Layer::Status Tile::getStatus()
 {
-  return upper;
+  return lower->getStatus();
+}
+
+/* 
+ * Description: Gets the upper sprite(s) and returns it(them), if set.
+ *
+ * Inputs: none
+ * Output: QList<Sprite*> - the upper sprites, in a QList
+ */
+QList<Sprite*> Tile::getUpper()
+{
+  return upper->getUpper();
 }
 
 /* 
@@ -570,25 +545,25 @@ int Tile::getY()
 }
 
 /* 
- * Description: Returns if the Base Layer(s) is(are) set 
+ * Description: Returns if the Base Sprite is set 
  *
  * Inputs: none
- * Output: bool - status if the base layer(s) is(are) set
+ * Output: bool - status if the base sprite is set
  */
 bool Tile::isBaseSet()
 {
-  return (base.size() > 0);
+  return (lower->getBase() != 0);
 }
 
 /* 
- * Description: Returns if the Enhancer Layer is set 
+ * Description: Returns if the Enhancer Sprite is set 
  *
  * Inputs: none
- * Output: bool - status if the enhancer layer is set
+ * Output: bool - status if the enhancer sprite is set
  */
 bool Tile::isEnhancerSet()
 {
-  return (enhancer != 0);
+  return (lower->getEnhancer() != 0);
 }
 
 /* 
@@ -604,14 +579,14 @@ Tile::ImpassableObjectState Tile::isImpassableObjectSet()
 }
 
 /* 
- * Description: Returns if the Lower Layer is set 
+ * Description: Returns if the Lower Sprite(s) is(are) set 
  *
  * Inputs: none
- * Output: bool - status if the lower layer is set
+ * Output: bool - status if there is at least one lower sprite
  */
 bool Tile::isLowerSet()
 {
-  return (lower != 0);
+  return (lower->getLower().size() > 0);
 }
 
 /* 
@@ -626,14 +601,14 @@ bool Tile::isPassableObjectSet()
 }
 
 /* 
- * Description: Returns if the Upper Layer(s) is(are) set 
+ * Description: Returns if the Upper Sprite(s) is(are) set 
  *
  * Inputs: none
- * Output: bool - status if there is at least one upper layer
+ * Output: bool - status if there is at least one upper sprite
  */
 bool Tile::isUpperSet()
 {
-  return (upper.size() > 0);
+  return (upper->getUpper().size() > 0);
 }
 
 
@@ -675,19 +650,13 @@ Layer* Tile::setEnhancer(Sprite* enhancer_sprite, RotatedAngle angle)
  */
 bool Tile::setHeight(int height)
 {
-  if(height >= 0)
+  if(height > 0)
   {
     this->height = height;
 
     /* Set it on all the layers */
-    for(int i = 0; i < base.size(); i++)
-      base[i]->setHeight(height);
-    if(isEnhancerSet())
-      enhancer->setHeight(height); 
-    if(isLowerSet())
-      lower->setHeight(height);
-    for(int i = 0; i < upper.size(); i++)
-      upper[i]->setHeight(height);
+    lower->setHeight(height);
+    upper->setHeight(height);
 
     return true;
   }
@@ -828,32 +797,18 @@ void Tile::setPassibilityWest(bool is_passable)
 }
 
 /* 
- * Description: Sets the tile status, which allows of 3 possible states that
- *              the tile can be in. This affects the visibility and painting
- *              of the tile.
+ * Description: Sets the tile status, which then sends this off to all the
+ *              applicable layers in the Tile utilizing the enum from Layer.
+ *              This allows of 3 possible states that the tile can be in. This 
+ *              affects the visibility and painting of the tile.
  * 
  * Inputs: Status updated_status - the new status to update the tile to
  * Output: none
  */
-void Tile::setStatus(Status updated_status)
+void Tile::setStatus(Layer::Status updated_status)
 {
-  /* The various cases for the different statuses */
-  if(updated_status == OFF)
-  {
-    setEnabled(false);
-  }
-  else if(updated_status == ACTIVE)
-  {
-    setEnabled(true);
-    setVisible(true);
-  }
-  else if(updated_status == INACTIVE)
-  {
-    setEnabled(true);
-    setVisible(false);
-  }
-
-  tile_status = updated_status;
+  lower->setStatus(updated_status);
+  upper->setStatus(updated_status);
 }
 
 /*
@@ -866,19 +821,13 @@ void Tile::setStatus(Status updated_status)
  */
 bool Tile::setWidth(int width)
 {
-  if(width >= 0)
+  if(width > 0)
   {
     this->width = width;
 
     /* Set it on all the layers */
-    for(int i = 0; i < base.size(); i++)
-      base[i]->setWidth(width);
-    if(isEnhancerSet())
-      enhancer->setWidth(width); 
-    if(isLowerSet())
-      lower->setWidth(width);
-    for(int i = 0; i < upper.size(); i++)
-      upper[i]->setWidth(width);
+    lower->setWidth(width);
+    upper->setWidth(width);
 
     return true;
   }
@@ -898,14 +847,8 @@ void Tile::setX(int x)
   this->x = x;
 
   /* Set it on all the layers */
-  for(int i = 0; i < base.size(); i++)
-    base[i]->setX(x);
-  if(isEnhancerSet())
-    enhancer->setX(x); 
-  if(isLowerSet())
-    lower->setX(x);
-  for(int i = 0; i < upper.size(); i++)
-    upper[i]->setX(x);
+  lower->setX(x);
+  upper->setX(x);
 }
 
 /*
@@ -921,59 +864,30 @@ void Tile::setY(int y)
   this->y = y;
 
   /* Set it on all the layers */
-  for(int i = 0; i < base.size(); i++)
-    base[i]->setY(y);
-  if(isEnhancerSet())
-    enhancer->setY(y); 
-  if(isLowerSet())
-    lower->setY(y);
-  for(int i = 0; i < upper.size(); i++)
-    upper[i]->setY(y);
+  lower->setY(y);
+  upper->setY(y);
 }
 
 /* 
- * Description: Unsets the base in the tile. Deletes the pointers, if 
- *              applicable and sets the internal variable to notify the class 
- *              so the base isn't reused.
+ * Description: Unsets the base sprite in the tile.
  *
  * Inputs: none
- * Output: bool - returns true if the base was set before being unset
+ * Output: none
  */
-bool Tile::unsetBase()
+void Tile::unsetBase()
 {
-  if(isBaseSet())
-  {
-    for(int i = 0; i < base.size(); i++)
-    {
-      emit deleteLayer(base[i]);
-      delete base[i];
-      base[i] = 0;
-    }
-
-    base.clear();
-    return true;
-  }
-  return false;
+  lower->unsetBase();
 }
 
 /* 
- * Description: Unsets the enhancer layer in the tile. Deletes the pointer, 
- *              and sets the internal variable to notify the class so the 
- *              enhancer isn't repainted.
+ * Description: Unsets the enhancer sprite in the tile. 
  *
  * Inputs: none
- * Output: bool - returns true if the enhancer was set before being unset
+ * Output: none
  */
-bool Tile::unsetEnhancer()
+void Tile::unsetEnhancer()
 {
-  if(isEnhancerSet())
-  {
-    emit deleteLayer(enhancer);
-    delete enhancer;
-    enhancer = 0;
-    return true;
-  }
-  return false;
+  lower->unsetEnhancer();
 }
 
 /*
@@ -992,23 +906,14 @@ bool Tile::unsetImpassableObject()
 }
 
 /* 
- * Description: Unsets the lower layer in the tile. Deletes the pointer, if 
- *              applicable, and sets the internal variable to notify the class 
- *              so the lower isn't repainted.
+ * Description: Unsets the lower sprite(s) in the tile. 
  *
  * Inputs: none
- * Output: bool - returns true if the lower was set before being unset
+ * Output: none
  */
-bool Tile::unsetLower()
+void Tile::unsetLower()
 {
-  if(isLowerSet())
-  {
-    emit deleteLayer(lower);
-    delete lower;
-    lower = 0;
-    return true;
-  }
-  return false;
+  lower->unsetLower();
 }
 
 /*
@@ -1026,26 +931,12 @@ bool Tile::unsetPassableObject()
 }
 
 /* 
- * Description: Unsets the upper layer(s) in the tile. Deletes the pointers, if 
- *              applicable, and sets the internal variable to notify the class 
- *              so the upper isn't repainted.
+ * Description: Unsets the upper sprite(s) in the tile. 
  *
  * Inputs: none
- * Output: bool - returns true if the upper was set before being unset
+ * Output: none
  */
-bool Tile::unsetUpper()
+void Tile::unsetUpper()
 {
-  if(isUpperSet())
-  {
-    for(int i = 0; i < upper.size(); i++)
-    {
-      emit deleteLayer(upper[i]);
-      delete upper[i];
-      upper[i] = 0;
-    }
-
-    upper.clear();
-    return true;
-  }
-  return false;
+  upper->unsetUpper();
 }
