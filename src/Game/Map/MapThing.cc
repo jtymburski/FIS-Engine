@@ -1,7 +1,7 @@
 /******************************************************************************
  * Class Name: MapThing
  * Date Created: Dec 2 2012
- * Inheritance: none
+ * Inheritance: QGraphicsObject
  * Description: This class handles the generic MapThing. It contains things on
  *              the map that don't fall under general scenary. It acts as the
  *              parent class to a sequence of others, for example, MapPerson,
@@ -94,6 +94,20 @@ bool MapThing::animate(bool skip_head, bool just_started)
 }
 
 /* 
+ * Description: Implemented virtual function. Returns the bounding rectangle
+ *              around the image that is being added into the scene. 
+ *
+ * Inputs: none
+ * Output: QRectF - the rectangle around the internal image
+ */
+QRectF MapThing::boundingRect() const
+{
+  QRectF rect(0, 0, width, height);
+
+  return rect;
+}
+
+/* 
  * Description: Clears out all information stored in the class
  * 
  * Inputs: none
@@ -104,6 +118,10 @@ void MapThing::clear()
   setDescription("");
   setID(kUNSET_ID);
   setName("");
+
+  height = 0;
+  width = 0;
+
   unsetState();
 }
 
@@ -116,6 +134,17 @@ void MapThing::clear()
 QString MapThing::getDescription()
 {
   return description;
+}
+
+/* 
+ * Description: Gets the height of the internal tile.
+ *
+ * Inputs: none
+ * Output: int - the height, in pixels
+ */
+int MapThing::getHeight()
+{
+  return height;
 }
 
 /* 
@@ -154,6 +183,17 @@ MapState* MapThing::getState()
 }
 
 /* 
+ * Description: Gets the width of the internal tile.
+ *
+ * Inputs: none
+ * Output: int - the width, in pixels
+ */
+int MapThing::getWidth()
+{
+  return width;
+}
+
+/* 
  * Description: Starts interaction. In map thing, this isn't of use and is
  *              only used by its children classes.
  *
@@ -162,6 +202,32 @@ MapState* MapThing::getState()
  */
 void MapThing::interaction()
 {
+}
+
+/* 
+ * Description: Reimplemented virtual function. Handles the painting of the 
+ *              image stored within the layer. Runs based on the same data as 
+ *              the above QRectF for the bounding box. Only paints if the tile 
+ *              is set.
+ *
+ * Inputs: QPainter* painter - the painter to send all the image data to
+ *         QStyleOptionGraphicsItem* option - any painting options.
+ *         QWidget* widget - the related widget, if applicable
+ * Output: none
+ */
+void MapThing::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
+                  QWidget* widget)
+{
+  /* Remove unused parameter warnings */
+  (void)option;
+  (void)widget;
+
+  /* Set painter information */
+  //painter->setRenderHint(QPainter::SmoothPixmapTransform, true);
+
+  /* Only paint if the sprite exists */
+  if(state != 0 && state->getSprite() != 0)
+    painter->drawPixmap(0, 0, width, height, state->getSprite()->getCurrent());
 }
 
 /* 
@@ -203,6 +269,25 @@ void MapThing::setCoordinates(int x, int y, int z)
 void MapThing::setDescription(QString new_description)
 {
   description = new_description;
+}
+
+/*
+ * Description: Sets the new tile height for the thing. This number must
+ *              be greater than 0 and if it's not, the call will fail.
+ *
+ * Inputs: int new_height - the new height of the thing, in pixels
+ * Output: bool - status if the height change was successful
+ */
+bool MapThing::setHeight(int new_height)
+{
+  if(new_height > 0)
+  {
+    prepareGeometryChange();
+    height = new_height;
+    return true;
+  }
+
+  return false;
 }
 
 /*
@@ -250,12 +335,27 @@ bool MapThing::setState(MapState* state, bool unset_old)
   /* Check if the state is valid */
   if(state != 0 && state->getSprite() != 0)
   {
-    if(unset_old)
-      unsetState();
-
+    unsetState(unset_old);
     this->state = state;
-    setItem(state->getSprite(), unset_old);
+    return true;
+  }
 
+  return false;
+}
+
+/*
+ * Description: Sets the new tile width for the thing. This number must
+ *              be greater than 0 and if it's not, the call will fail.
+ *
+ * Inputs: int new_width - the new width of the thing, in pixels
+ * Output: bool - status if the height change was successful
+ */
+bool MapThing::setWidth(int new_width)
+{
+  if(new_width > 0)
+  {
+    prepareGeometryChange();
+    width = new_width;
     return true;
   }
 
@@ -270,7 +370,6 @@ bool MapThing::setState(MapState* state, bool unset_old)
  */
 void MapThing::unsetState(bool delete_state)
 {
-  unsetItem(false);
   if(delete_state)
     delete state;
   state = 0;

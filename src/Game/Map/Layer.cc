@@ -9,7 +9,9 @@
 ******************************************************************************/
 #include "Game/Map/Layer.h"
 
-#include <QDebug>
+/* Constant Implementation - see header file for descriptions */
+const int Layer::kLOWER_COUNT_MAX = 5;
+const int Layer::kUPPER_COUNT_MAX = 5;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -22,47 +24,38 @@
  */
 Layer::Layer()
 {
-  /* Initialize the item to a blank slate */
-  item = 0;
-  width = 0;
-  height = 0;
-  visible = true;
-
-  /* TEMP */
-  paint_count = 0;
+  clear();
 }
 
 /* 
  * Description: Constructor function - Sets up the layer by defining the
- *              sprite, width and height. Optional variables include the X and 
+ *              width and height. Optional variables include the X and 
  *              Y value of the widget as well as the layer in the scene (Z).
  *
- * Inputs: Sprite* item - the new sprite to create the layer around
- *         int width - the pixel width of the tile layer
+ * Inputs: int width - the pixel width of the tile layer
  *         int height - the pixel height of the tile layer
  *         int x - the x location in the scene for the tile layer
  *         int y - the y location in the scene for the tile layer
  *         int z - the layer depth for the QGraphicsScene
  */
-Layer::Layer(Sprite* item, int width, int height, int x, int y, int z)
+Layer::Layer(int width, int height, int x, int y, int z)
 {
-  /* Pointers nullified */
-  this->item = 0;
+  /* Clear variables and layer sprite information */
+  base = 0;
+  enhancer = 0;
+  lower.clear();
+  upper.clear();
+  paint_count = 0;
 
-  /* Initialize the item */
-  setItem(item);
-  visible = true;
-  setEnabled(false);
-  setHeight(height);
-  setWidth(width);
+  /* Set layer parameters */
+  this->width = width;
+  this->height = height;
+  setStatus(ACTIVE);
 
-  /* Set the coordinates */
+  /* Set coordinates */
   setX(x);
   setY(y);
   setZValue(z);
-
-  /* TEMP */
-  paint_count = 0;
 }
 
 /* 
@@ -70,12 +63,53 @@ Layer::Layer(Sprite* item, int width, int height, int x, int y, int z)
  */
 Layer::~Layer()
 {
-  clear();
+  unsetBase();
+  unsetEnhancer();
+  unsetLower();
+  unsetUpper();
 }
 
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
+
+/* 
+ * Description: Appends a new lower sprite stored within the layer. Only sets 
+ *              it if the pointer is valid and the number of frames is greater
+ *              than 0 and if there is room in the stack (limit of 5). 
+ *
+ * Inputs: Sprite* new_lower - the new lower layer to attempt to append
+ * Output: bool - status if the insertion succeeded
+ */
+bool Layer::appendLower(Sprite* new_lower)
+{
+  if(new_lower != 0 && new_lower->getSize() > 0
+                    && lower.size() < kLOWER_COUNT_MAX)
+  {
+    lower.append(new_lower);
+    return true;
+  }
+  return false;
+}
+
+/* 
+ * Description: Appends a new upper sprite stored within the layer. Only sets 
+ *              it if the pointer is valid and the number of frames is greater
+ *              than 0 and if there is room in the stack (limit of 5). 
+ *
+ * Inputs: Sprite* new_upper - the new upper layer to attempt to append
+ * Output: bool - status if the insertion succeeded
+ */
+bool Layer::appendUpper(Sprite* new_upper)
+{
+  if(new_upper != 0 && new_upper->getSize() > 0 
+                    && upper.size() < kUPPER_COUNT_MAX)
+  {
+    upper.append(new_upper);
+    return true;
+  }
+  return false;
+}
 
 /* 
  * Description: Implemented virtual function. Returns the bounding rectangle
@@ -100,9 +134,44 @@ QRectF Layer::boundingRect() const
  */
 void Layer::clear()
 {
-  unsetItem();
+  /* Clear variables and layer sprite information */
+  unsetBase();
+  unsetEnhancer();
+  unsetLower();
+  unsetUpper();
+  paint_count = 0;
+
+  /* Reset layer parameters */
   width = 0;
   height = 0;
+  setStatus(OFF);
+
+  /* Reset coordinates */
+  setX(0);
+  setY(0);
+  setZValue(0);
+}
+
+/* 
+ * Description: Gets the base portion of the layer. Is 0 if it's not set
+ *
+ * Inputs: none
+ * Output: Sprite* - a sprite pointer for the base part of the layer
+ */
+Sprite* Layer::getBase()
+{
+  return base;
+}
+
+/* 
+ * Description: Gets the enhancer portion of the layer. Is 0 if it's not set
+ *
+ * Inputs: none
+ * Output: Sprite* - a sprite pointer for the enhancer part of the layer
+ */
+Sprite* Layer::getEnhancer()
+{
+  return enhancer;
 }
 
 /* 
@@ -117,14 +186,16 @@ int Layer::getHeight()
 }
 
 /* 
- * Description: Gets the sprite item encapsulated by the layer
+ * Description: Gets the lower portion of the layer. Is an empty list if it's
+ *              not set.
  *
  * Inputs: none
- * Output: Sprite* - the sprite housed within this layer
+ * Output: QList<Sprite*> - a list of sprite pointers for the lower part of 
+ *                          the layer
  */
-Sprite* Layer::getItem()
+QList<Sprite*> Layer::getLower()
 {
-  return item;
+  return lower;
 }
 
 /* 
@@ -133,10 +204,22 @@ Sprite* Layer::getItem()
  * Inputs: none
  * Output: int - the number of paints that have occurred since conception
  */
-
 int Layer::getPaintCount()
 {
   return paint_count;
+}
+
+/* 
+ * Description: Gets the upper portion of the layer. Is an empty list if it's
+ *              not set.
+ *
+ * Inputs: none
+ * Output: QList<Sprite*> - a list of sprite pointers for the upper part of 
+ *                          the layer
+ */
+QList<Sprite*> Layer::getUpper()
+{
+  return upper;
 }
 
 /* 
@@ -148,17 +231,6 @@ int Layer::getPaintCount()
 int Layer::getWidth()
 {
   return width;
-}
-
-/* 
- * Description: Returns if the layer is set to be visible
- *
- * Inputs: none
- * Output: bool - the layer visibility status
- */
-bool Layer::isVisible()
-{
-  return visible;
 }
 
 /* 
@@ -183,60 +255,110 @@ void Layer::paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
   (void)widget;
 
   /* Set painter information */
-  //painter->setBrush(QBrush(Qt::black));
-  //painter->setPen(Qt::NoPen);
+  painter->setBrush(QBrush(Qt::black));
+  painter->setPen(Qt::NoPen);
   //painter->setRenderHint(QPainter::SmoothPixmapTransform, true);
 
-  /* Only paint if enabled */
-  if(isEnabled())
+  /* Only paint if the tile isn't blanked */
+  if(!blanked)
   {
-    if(isVisible())
-    {
-      /* Only paint if sprite exists */
-      if(item != 0)
-        painter->drawPixmap(0, 0, width, height, item->getCurrent());
-    }
-    else
-    {
-      painter->drawRect(QRectF(0, 0, width, height));
-    }
+    /* Paint the base first */
+    if(base != 0)
+      painter->drawPixmap(0, 0, width, height, base->getCurrent());
+
+    /* Then the enhancer sprite */
+    if(enhancer != 0)
+      painter->drawPixmap(0, 0, width, height, enhancer->getCurrent());
+
+    /* Then paint the set of lower layers */
+    for(int i = 0; i < lower.size(); i++)
+      painter->drawPixmap(0, 0, width, height, lower[i]->getCurrent());
+
+    /* Finish by printing the upper set, if set */
+    for(int i = 0; i < upper.size(); i++)
+      painter->drawPixmap(0, 0, width, height, upper[i]->getCurrent());
+  }
+  else
+  {
+    /* If the tile is blanked, just paint a black square */
+    painter->drawRect(QRectF(0, 0, width, height));
   }
 }
 
 /* 
- * Description: Sets the height of the stored sprite
+ * Description: Sets the base sprite stored within the layer. Only sets it 
+ *              if the pointer is valid and the number of frames is greater 
+ *              than 0. The old base is set if the new pointer is valid.
+ *
+ * Inputs: Sprite* new_base - the new base layer to attempt to set
+ * Output: bool - status if the insertion succeeded
+ */
+bool Layer::setBase(Sprite* new_base)
+{
+  if(new_base != 0 && new_base->getSize() > 0)
+  {
+    unsetBase();
+    base = new_base;
+
+    return true;
+  }
+  return false;
+}
+
+/* 
+ * Description: Sets the enhancer sprite stored within the layer. Only sets it 
+ *              if the pointer is valid and the number of frames is greater 
+ *              than 0. The old enhancer is set if the new pointer is valid.
+ *
+ * Inputs: Sprite* new_enhancer - the new enhancer layer to attempt to set
+ * Output: bool - status if the insertion succeeded
+ */
+bool Layer::setEnhancer(Sprite* new_enhancer)
+{
+  if(new_enhancer != 0 && new_enhancer->getSize() > 0)
+  {
+    unsetEnhancer();
+    enhancer = new_enhancer;
+
+    return true;
+  }
+  return false;
+}
+
+/* 
+ * Description: Sets the height of the stored sprite. Fails if the new height
+ *              is not positive and greater than 0.
  *
  * Inputs: int height - the height, in pixels
- * Output: bool - the status, returns false if the height is <= 0
+ * Output: bool - the status, if the height call was successful
  */
 bool Layer::setHeight(int height)
 {
   if(height > 0)
   {
+    prepareGeometryChange();
     this->height = height;
     return true;
   }
 
-  this->height = 0;
   return false;
 }
 
 /* 
- * Description: Sets the item stored within the layer. Only sets it if the
- *              pointer is valid and the number of frames is greater than 0.
+ * Description: Sets the lower sprite stored within the layer. Only sets it if 
+ *              the pointer is valid and the number of frames is greater than 
+ *              0. Since lower is a stack, it unsets the stack if the sprite
+ *              is valid and puts this new lower at the front of the list.
  *
- * Inputs: Sprite* item - the new item pointer to attempt to insert in
- *         bool unset_old - delete the old item from memory?
+ * Inputs: Sprite* new_lower - the new lower layer to attempt to set
  * Output: bool - status if the insertion succeeded
  */
-bool Layer::setItem(Sprite* item, bool unset_old)
+bool Layer::setLower(Sprite* new_lower)
 {
-
-  if(item != 0 && item->getSize() > 0)
+  if(new_lower != 0 && new_lower->getSize() > 0)
   {
-    if(unset_old)
-      unsetItem();
-    this->item = item;
+    unsetLower();
+    lower.append(new_lower);
 
     return true;
   }
@@ -244,44 +366,120 @@ bool Layer::setItem(Sprite* item, bool unset_old)
 }
 
 /* 
- * Description: Sets if the sprite layer is visible
+ * Description: Sets the status that the layer must conform to, based on the
+ *              public enum in the class. This classification decides if the 
+ *              layer is painted or if it is blacked out. 
  *
- * Inputs: bool status - the visibility status
+ * Inputs: Status new_status - the new status for this class, enumerated
  * Output: none
  */
-void Layer::setVisible(bool status)
+void Layer::setStatus(Status new_status)
 {
-  visible = status;
+  /* Disables all events for the items (might need to enable) */
+  setEnabled(false);
+ 
+  /* Set the other settings, based on the status given */
+  if(new_status == OFF)
+  {
+    setVisible(false);
+    blanked = false;
+  }
+  else if(new_status == BLANKED)
+  {
+    setVisible(true);
+    blanked = true;
+  }
+  else if(new_status == ACTIVE)
+  {
+    setVisible(true);
+    blanked = false;
+  }
 }
 
 /* 
- * Description: Sets the width of the stored sprite
+ * Description: Sets the upper sprite stored within the layer. Only sets it if 
+ *              the pointer is valid and the number of frames is greater than 
+ *              0. Since upper is a stack, it unsets the stack if the sprite
+ *              is valid and puts this new upper at the front of the list.
+ *
+ * Inputs: Sprite* new_upper - the new upper layer to attempt to set
+ * Output: bool - status if the insertion succeeded
+ */
+bool Layer::setUpper(Sprite* new_upper)
+{
+  if(new_upper != 0 && new_upper->getSize() > 0)
+  {
+    unsetUpper();
+    upper.append(new_upper);
+
+    return true;
+  }
+  return false;
+}
+
+/* 
+ * Description: Sets the width of the stored sprite. The call will fail if the
+ *              width is not positive and greater than 0.
  *
  * Inputs: int width - the width, in pixels
- * Output: bool - the status, returns false if the width is <= 0
+ * Output: bool - the status, if the width change was successful
  */
 bool Layer::setWidth(int width)
 {
   if(width > 0)
   {
+    prepareGeometryChange();
     this->width = width;
     return true;
   }
 
-  this->width = 0;
   return false;
 }
 
 /* 
- * Description: Unsets the item stored within the class, by deleting the 
- *              pointer and nullifying it.
+ * Description: Unsets the base sprite stored within the class.
+ * Note: this class does NOT delete the pointer, only releases it
  *
  * Inputs: none
  * Output: none
  */
-void Layer::unsetItem(bool deleteItem)
+void Layer::unsetBase()
 {
-  if(deleteItem)
-    delete item;
-  item = 0;
+  base = 0;
+}
+
+/* 
+ * Description: Unsets the enhancer sprite stored within the class.
+ * Note: this class does NOT delete the pointer, only releases it
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Layer::unsetEnhancer()
+{
+  enhancer = 0;
+}
+
+/* 
+ * Description: Unsets all the lower sprites stored within the class.
+ * Note: this class does NOT delete the pointer, only releases it
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Layer::unsetLower()
+{
+  lower.clear();
+}
+
+/* 
+ * Description: Unsets all the upper sprites stored within the class.
+ * Note: this class does NOT delete the pointer, only releases it
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Layer::unsetUpper()
+{
+  upper.clear();
 }

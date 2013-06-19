@@ -53,8 +53,8 @@ Map::Map(short resolution_x, short resolution_y)
                    this,     SIGNAL(closingMap(int)));
 
   /* Bring the timer in to provide a game tick */
-  connect(&timer, SIGNAL(timeout()), this, SLOT(animate()));
-  timer.start(20);
+//  connect(&timer, SIGNAL(timeout()), this, SLOT(animate()));
+//  timer.start(20);
 }
 
 /* Destructor function */
@@ -121,10 +121,10 @@ bool Map::addTileData(XmlData data)
         for(int c = cols[0].toInt(); c <= cols[cols.size() - 1].toInt(); c++)
         {
           QString path = data.getElement(kTILE_DATA);
-          if(path.startsWith("base") || path.startsWith("enhancer") || 
-             path.startsWith("lower") || path.startsWith("upper"))
-            success &= geography[r][c]->addData(data, images[index], 
-                                                images.size() > 1);
+//          if(path.startsWith("base") || path.startsWith("enhancer") || 
+//             path.startsWith("lower") || path.startsWith("upper"))
+//            success &= geography[r][c]->addData(data, images[index], 
+//                                                images.size() > 1);
         }
       }
     }
@@ -182,36 +182,36 @@ void Map::animate()
 {
   bool just_started = false;
 
-  if(player != 0)
-  {
-    /* If the udpate direction changes, update the player direction */
-    if(viewport->updateDirection(player->x(), player->y()))
-    {
-      just_started = true;
-
-      if(viewport->movingNorth())
-        player->setDirection(MapPerson::NORTH);
-      else if(viewport->movingSouth())
-        player->setDirection(MapPerson::SOUTH);
-      else if(viewport->movingWest())
-        player->setDirection(MapPerson::WEST);
-      else if(viewport->movingEast())
-        player->setDirection(MapPerson::EAST);
-      else
-        player->resetAnimation();
-    }
+//  if(player != 0)
+//  {
+//    /* If the udpate direction changes, update the player direction */
+//    if(viewport->updateDirection(player->x(), player->y()))
+//    {
+//      just_started = true;
+//
+//      if(viewport->movingNorth())
+//        player->setDirection(MapPerson::NORTH);
+//      else if(viewport->movingSouth())
+//        player->setDirection(MapPerson::SOUTH);
+//      else if(viewport->movingWest())
+//        player->setDirection(MapPerson::WEST);
+//      else if(viewport->movingEast())
+//        player->setDirection(MapPerson::EAST);
+//      else
+//        player->resetAnimation();
+//    }
 
     /* Update the X and Y coordinates, if moving */
-    if(viewport->moving())
-    {
-      player->setX(viewport->newX(player->x()));
-      player->setY(viewport->newY(player->y()));
-      player->animate(true, just_started);
-    }
+//    if(viewport->moving())
+//    {
+//      player->setX(viewport->newX(player->x()));
+//      player->setY(viewport->newY(player->y()));
+//      player->animate(true, just_started);
+//    }
 
-    if(viewport != 0)
-      viewport->centerOn(player);
-  }
+//    if(viewport != 0)
+//      viewport->centerOn(player);
+//  }
 
   viewport->viewport()->update();
 }
@@ -354,7 +354,7 @@ bool Map::loadMap(QString file)
                                         new MapState(left_sprite));
 
     /* Add it */
-    addItem(player);
+//    addItem(player);
   }
 
   success &= fh.stop();

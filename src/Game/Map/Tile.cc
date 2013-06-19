@@ -183,19 +183,19 @@ void Tile::setVisible(bool visible)
 Layer* Tile::addBase(Sprite* base_sprite, RotatedAngle angle)
 {
   /* Determine if the base can be added to the stack */
-  if(base_sprite != 0 && base_sprite->getSize() > 0 
-                      && base.size() <= kBASE_COUNT_MAX)
-  {
+//  if(base_sprite != 0 && base_sprite->getSize() > 0 
+//                      && base.size() <= kBASE_COUNT_MAX)
+//  {
     /* Add the base to the stack. Offset the Z component based on the
      * constant plus the array location so each base is on a different layer */
-    base_sprite->rotateAll(getAngle(angle));
-    base.append(new Layer(base_sprite, width, height, 
-                          x, y, kBASE_DEPTH + base.size()));
+//    base_sprite->rotateAll(getAngle(angle));
+//    base.append(new Layer(base_sprite, width, height, 
+//                          x, y, kBASE_DEPTH + base.size()));
 
-    setStatus(tile_status);
-    emit addLayer(base[base.size() - 1]);
-    return base[base.size() - 1];
-  }
+//    setStatus(tile_status);
+//    emit addLayer(base[base.size() - 1]);
+//    return base[base.size() - 1];
+//  }
 
   return 0;
 }
@@ -268,19 +268,19 @@ bool Tile::addData(XmlData data, QPixmap image, bool append)
 Layer* Tile::addUpper(Sprite* upper_sprite, RotatedAngle angle)
 {
   /* Determine if the upper can be added to the stack */
-  if(upper_sprite != 0 && upper_sprite->getSize() > 0 
-                       && upper.size() <= kUPPER_COUNT_MAX)
-  {
+//  if(upper_sprite != 0 && upper_sprite->getSize() > 0 
+//                       && upper.size() <= kUPPER_COUNT_MAX)
+//  {
     /* Add the upper to the stack. Offset the Z component based on the
      * constant plus the array location so each base is on a different layer */
-    upper_sprite->rotateAll(getAngle(angle));
-    upper.append(new Layer(upper_sprite, width, height, 
-                          x, y, kUPPER_DEPTH + upper.size()));
+//    upper_sprite->rotateAll(getAngle(angle));
+//    upper.append(new Layer(upper_sprite, width, height, 
+//                          x, y, kUPPER_DEPTH + upper.size()));
   
-    setStatus(tile_status);
-    emit addLayer(upper[upper.size() - 1]);
-    return upper[upper.size() - 1];
-  }
+//    setStatus(tile_status);
+//    emit addLayer(upper[upper.size() - 1]);
+//    return upper[upper.size() - 1];
+//  }
 
   return 0;
 }
@@ -295,32 +295,32 @@ Layer* Tile::addUpper(Sprite* upper_sprite, RotatedAngle angle)
 void Tile::animate()
 {
   /* Shift the base layer(s) */
-  for(int i = 0; i < base.size(); i++)
-  {
-    base[i]->getItem()->shiftNext();
-    base[i]->update();
-  }
+//  for(int i = 0; i < base.size(); i++)
+//  {
+//    base[i]->getItem()->shiftNext();
+//    base[i]->update();
+//  }
 
   /* Shift the enhancer layer */
-  if(isEnhancerSet())
-  {
-    enhancer->getItem()->shiftNext();
-    enhancer->update();
-  }
+//  if(isEnhancerSet())
+//  {
+//    enhancer->getItem()->shiftNext();
+//    enhancer->update();
+//  }
 
   /* Shift the lower layer */
-  if(isLowerSet())
-  {
-    lower->getItem()->shiftNext();
-    lower->update();
-  }
+//  if(isLowerSet())
+//  {
+//    lower->getItem()->shiftNext();
+//    lower->update();
+//  }
 
   /* Shift the upper layer(s) */
-  for(int i = 0; i < upper.size(); i++)
-  {
-    upper[i]->getItem()->shiftNext();
-    upper[i]->update();
-  }
+//  for(int i = 0; i < upper.size(); i++)
+//  {
+//    upper[i]->getItem()->shiftNext();
+//    upper[i]->update();
+//  }
 }
 
 /* 
@@ -334,13 +334,13 @@ void Tile::animate()
  */
 bool Tile::appendBase(QPixmap frame, RotatedAngle angle)
 {
-  if(isBaseSet())
-  {
-    return base.last()->getItem()->insertTail(frame, getAngle(angle));
-  }
+//  if(isBaseSet())
+//  {
+//    return base.last()->getItem()->insertTail(frame, getAngle(angle));
+//  }
 
-  if(addBase(new Sprite(frame), angle) != 0)
-    return true;
+//  if(addBase(new Sprite(frame), angle) != 0)
+//    return true;
   return false;
 }
 
@@ -355,13 +355,13 @@ bool Tile::appendBase(QPixmap frame, RotatedAngle angle)
  */
 bool Tile::appendEnhancer(QPixmap frame, RotatedAngle angle)
 {
-  if(isEnhancerSet())
-  {
-    return enhancer->getItem()->insertTail(frame, getAngle(angle));
-  }
+//  if(isEnhancerSet())
+//  {
+//    return enhancer->getItem()->insertTail(frame, getAngle(angle));
+//  }
 
-  if(setEnhancer(new Sprite(frame), angle) != 0)
-    return true;
+//  if(setEnhancer(new Sprite(frame), angle) != 0)
+//    return true;
   return false;
 }
 
@@ -376,13 +376,13 @@ bool Tile::appendEnhancer(QPixmap frame, RotatedAngle angle)
  */
 bool Tile::appendLower(QPixmap frame, RotatedAngle angle)
 {
-  if(isLowerSet())
-  {
-    return lower->getItem()->insertTail(frame, getAngle(angle));
-  }
+//  if(isLowerSet())
+//  {
+//    return lower->getItem()->insertTail(frame, getAngle(angle));
+//  }
 
-  if(setLower(new Sprite(frame), angle) != 0)
-    return true;
+//  if(setLower(new Sprite(frame), angle) != 0)
+//    return true;
   return false;
 }
 
@@ -397,13 +397,13 @@ bool Tile::appendLower(QPixmap frame, RotatedAngle angle)
  */
 bool Tile::appendUpper(QPixmap frame, RotatedAngle angle)
 {
-  if(isUpperSet())
-  {
-    return upper.last()->getItem()->insertTail(frame, getAngle(angle));
-  }
+//  if(isUpperSet())
+//  {
+//    return upper.last()->getItem()->insertTail(frame, getAngle(angle));
+//  }
 
-  if(addUpper(new Sprite(frame), angle) != 0)
-    return true;
+//  if(addUpper(new Sprite(frame), angle) != 0)
+//    return true;
   return false;
 }
 
@@ -650,17 +650,17 @@ bool Tile::isUpperSet()
 Layer* Tile::setEnhancer(Sprite* enhancer_sprite, RotatedAngle angle)
 {
   /* Set the enhancer, if the sprite is valid and has a size greater than 0 */
-  if(enhancer_sprite != 0 && enhancer_sprite->getSize() > 0)
-  {
-    enhancer_sprite->rotateAll(getAngle(angle));
-    unsetEnhancer();
-    enhancer = new Layer(enhancer_sprite, width, height, 
-                         x, y, kENHANCER_DEPTH);
+//  if(enhancer_sprite != 0 && enhancer_sprite->getSize() > 0)
+//  {
+//    enhancer_sprite->rotateAll(getAngle(angle));
+//    unsetEnhancer();
+//    enhancer = new Layer(enhancer_sprite, width, height, 
+//                         x, y, kENHANCER_DEPTH);
 
-    setStatus(tile_status);
-    emit addLayer(enhancer);
-    return enhancer;
-  }
+//    setStatus(tile_status);
+//    emit addLayer(enhancer);
+//    return enhancer;
+//  }
 
   return 0;
 }
@@ -722,17 +722,17 @@ Layer* Tile::setLower(Sprite* lower_sprite, RotatedAngle angle)
 {
   /* Set the lower layer, if the sprite is valid and has a size greater 
    * than 0 */
-  if(lower_sprite != 0 && lower_sprite->getSize() > 0)
-  {
-    lower_sprite->rotateAll(getAngle(angle));
-    unsetLower();
-    lower = new Layer(lower_sprite, width, height, 
-                      x, y, kLOWER_DEPTH);
+//  if(lower_sprite != 0 && lower_sprite->getSize() > 0)
+//  {
+//    lower_sprite->rotateAll(getAngle(angle));
+//    unsetLower();
+//    lower = new Layer(lower_sprite, width, height, 
+//                      x, y, kLOWER_DEPTH);
 
-    setStatus(tile_status);
-    emit addLayer(lower);
-    return lower;
-  }
+//    setStatus(tile_status);
+//    emit addLayer(lower);
+//    return lower;
+//  }
 
   return 0;
 }
