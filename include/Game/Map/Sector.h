@@ -45,7 +45,7 @@ protected:
  *===========================================================================*/
 public:
   /* Sets all tiles in the sector to the given Status */
-  void setStatus(Tile::Status s);
+  void setStatus(Layer::Status s);
 };
 
 #endif // SECTOR_H

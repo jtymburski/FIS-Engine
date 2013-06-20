@@ -60,6 +60,9 @@ private:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Animates the layer, and the frames available within it */
+  void animate();
+
   /* Appends to the existing lower and upper layers. This allows for multiple
    * uppers and lowers to exist */
   bool appendLower(Sprite* new_lower);

@@ -13,20 +13,8 @@
 #include "Game/Map/Tile.h"
 
 /* Constant Implementation - see header file for descriptions */
-const int Tile::kBASE_COUNT_MAX = 5;
-const int Tile::kBASE_DEPTH = 1;
-const int Tile::kDATA_ELEMENT = 0;
-const int Tile::kDATA_ROTATION = 1;
-const int Tile::kENHANCER_DEPTH = 6;
-const int Tile::kLOWER_DEPTH = 0; // USING
-const int Tile::kMAP_INTERACTIVE_DEPTH = 8;
-const int Tile::kMAP_PERSON_DEPTH = 9;
-const int Tile::kNE_ENHANCER     = 1;
-const int Tile::kNW_ENHANCER     = 0;
-const int Tile::kSE_ENHANCER     = 3;
-const int Tile::kSW_ENHANCER     = 2;
-const int Tile::kUPPER_COUNT_MAX = 5;
-const int Tile::kUPPER_DEPTH = 3; // USING
+const int Tile::kLOWER_DEPTH = 0;
+const int Tile::kUPPER_DEPTH = 3;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -70,10 +58,8 @@ Tile::Tile()
  *         int y - the y location respective to the parent (in pixels)
  *         QObject* parent - the parent object to be set in the tile
  */
-Tile::Tile(int width, int height, int x, int y, QObject* parent)
+Tile::Tile(int width, int height, int x, int y)
 {
-  setParent(parent);
-  
   /* Clear out the logic for parts of the tile */
   impassable_set = UNSET;
   lower = new Layer(width, height, x, y, kLOWER_DEPTH);
@@ -108,148 +94,11 @@ Tile::~Tile()
 }
 
 /*============================================================================
- * PRIVATE FUNCTIONS
- *===========================================================================*/
-
-/* 
- * Description: Returns the angle that connects the RotatedAngle enumerator
- *              to the associated degrees to allow the rotation to occur
- * 
- * Inputs: RotatedAngle angle - the angle to determine the degree association
- * Output: int - the degree integer count
- */
-int Tile::getAngle(RotatedAngle angle)
-{
-  if(angle == CLOCKWISE)
-    return 90;
-  else if(angle == COUNTERCLOCKWISE)
-    return -90;
-  else if(angle == FLIP)
-    return 180;
-
-  return 0;
-}
-
-/*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
-/* 
- * Description: Adds a new base layer to the stack. Only fails if the stack
- *              already has 5 layers (max) or the sprite size is 0.
- *
- * Inputs: Sprite* base_sprite - the new base sprite to attempt to load in
- *         RotateAngle angle - the angle classification to rotate the tile
- * Output: Layer* - returns the layer that was set for the base
- *                  If pointer is 0, call failed.
- */
-Layer* Tile::addBase(Sprite* base_sprite, RotatedAngle angle)
-{
-  /* Determine if the base can be added to the stack */
-//  if(base_sprite != 0 && base_sprite->getSize() > 0 
-//                      && base.size() <= kBASE_COUNT_MAX)
-//  {
-    /* Add the base to the stack. Offset the Z component based on the
-     * constant plus the array location so each base is on a different layer */
-//    base_sprite->rotateAll(getAngle(angle));
-//    base.append(new Layer(base_sprite, width, height, 
-//                          x, y, kBASE_DEPTH + base.size()));
-
-//    setStatus(tile_status);
-//    emit addLayer(base[base.size() - 1]);
-//    return base[base.size() - 1];
-//  }
-
-  return 0;
-}
-
-/* 
- * Description: Adds data to this tile, from a file data pointer plus
- *              applicable other data, as defined below. The added data is
- *              inserted into this tile only if it's legitimate data.
- *
- * Inputs: XmlData data - the data that is read from the file
- *         QPixmap image - image data, to speed up adding the info to the tile
- *         bool append - indication if the data should be appended onto 
- *                       existing sprite data or create new (default false)
- * Output: bool - returns if the addition was successful and completed
- */
-bool Tile::addData(XmlData data, QPixmap image, bool append)
-{
-  QStringList path = data.getElement(data.getNumElements()-1).split("_");
-  RotatedAngle angle = NONE;
-
-  /* Determine the angle to be rotated, only if the rotation element exists */
-  if(path.size() > kDATA_ROTATION)
-  {
-    if(path[kDATA_ROTATION] == "CW")
-      angle = CLOCKWISE;
-    else if(path[kDATA_ROTATION] == "CCW")
-      angle = COUNTERCLOCKWISE;
-    else if(path[kDATA_ROTATION] == "F")
-      angle = FLIP;
-  }
-
-  /* Determine if this is a new set or an append call */
-  if(!append)
-  {
-    /* Determines the type of tile, to be set to new */
-    if(path[kDATA_ELEMENT] == "base")
-      return (addBase(new Sprite(image), angle) != 0);
-    else if(path[kDATA_ELEMENT] == "enhancer")
-      return (setEnhancer(new Sprite(image), angle) != 0);
-    else if(path[kDATA_ELEMENT] == "lower")
-      return (setLower(new Sprite(image), angle) != 0);
-    else if(path[kDATA_ELEMENT] == "upper")
-      return (addUpper(new Sprite(image), angle) != 0);
-    return false;
-  }
-  else
-  {
-    /* Determines the type of tile, to append */
-    if(path[kDATA_ELEMENT] == "base")
-      return appendBase(image, angle);
-    else if(path[kDATA_ELEMENT] == "enhancer")
-      return appendEnhancer(image, angle);
-    else if(path[kDATA_ELEMENT] == "lower")
-      return appendLower(image, angle);
-    else if(path[kDATA_ELEMENT] == "upper")
-      return appendUpper(image, angle);
-    return false;
-  }
-}
-
-/* 
- * Description: Adds a new upper layer to the stack. Only fails if the stack
- *              already has 5 layers (max) or the sprite size is 0.
- *
- * Inputs: Sprite* upper_sprite - the new upper sprite to attempt to load in
- *         RotateAngle angle - the angle classification to rotate the tile
- * Output: Layer* - returns the layer that was set for the upper
- *                  If pointer is 0, call failed.
- */
-Layer* Tile::addUpper(Sprite* upper_sprite, RotatedAngle angle)
-{
-  /* Determine if the upper can be added to the stack */
-//  if(upper_sprite != 0 && upper_sprite->getSize() > 0 
-//                       && upper.size() <= kUPPER_COUNT_MAX)
-//  {
-    /* Add the upper to the stack. Offset the Z component based on the
-     * constant plus the array location so each base is on a different layer */
-//    upper_sprite->rotateAll(getAngle(angle));
-//    upper.append(new Layer(upper_sprite, width, height, 
-//                          x, y, kUPPER_DEPTH + upper.size()));
-  
-//    setStatus(tile_status);
-//    emit addLayer(upper[upper.size() - 1]);
-//    return upper[upper.size() - 1];
-//  }
-
-  return 0;
-}
-
-/* 
- * Description: Animates all sprite layers on tile. This allows for the fine 
+/*
+ * Description: Animates all sprite sets on the tile. This allows for the fine 
  *              control over when the timer hits and how it's updated.
  *
  * Inputs: none
@@ -257,117 +106,33 @@ Layer* Tile::addUpper(Sprite* upper_sprite, RotatedAngle angle)
  */
 void Tile::animate()
 {
-  /* Shift the base layer(s) */
-//  for(int i = 0; i < base.size(); i++)
-//  {
-//    base[i]->getItem()->shiftNext();
-//    base[i]->update();
-//  }
-
-  /* Shift the enhancer layer */
-//  if(isEnhancerSet())
-//  {
-//    enhancer->getItem()->shiftNext();
-//    enhancer->update();
-//  }
-
-  /* Shift the lower layer */
-//  if(isLowerSet())
-//  {
-//    lower->getItem()->shiftNext();
-//    lower->update();
-//  }
-
-  /* Shift the upper layer(s) */
-//  for(int i = 0; i < upper.size(); i++)
-//  {
-//    upper[i]->getItem()->shiftNext();
-//    upper[i]->update();
-//  }
+  /* Animate the two layers stored within this class */
+  lower->animate();
+  upper->animate();
 }
 
 /* 
- * Description: Appends the new QPixmap frame data onto the last created base
- *              layer for this tile. If there is no base to append to, it 
- *              creates a new base layer
+ * Description: Appends the new Sprite frame data onto the created lower
+ *              layer for this tile. Passes implementation into Layer.
  *
- * Inputs: QPixmap frame - the new image data to insert
- *         RotatedAngle angle - the angle to rotate the pixmap data
+ * Inputs: Sprite* lower - the lower tile data, as a Sprite set
  * Output: bool - if the appending call succeeded and the data was inserted
  */
-bool Tile::appendBase(QPixmap frame, RotatedAngle angle)
+bool Tile::appendLower(Sprite* lower)
 {
-//  if(isBaseSet())
-//  {
-//    return base.last()->getItem()->insertTail(frame, getAngle(angle));
-//  }
-
-//  if(addBase(new Sprite(frame), angle) != 0)
-//    return true;
-  return false;
+  return this->lower->appendLower(lower);
 }
 
 /* 
- * Description: Appends the new QPixmap frame data onto the created enhancer
- *              layer for this tile. If there is no enhancer to append to, it
- *              create a new enhancer layer.
+ * Description: Appends the new Sprite frame data onto the created upper
+ *              layer for this tile. Passes implementation into Layer.
  *
- * Inputs: QPixmap frame - the new image data to insert
- *         RotatedAngle angle - the angle to rotate the pixmap data
+ * Inputs: Sprite* upper - the upper tile data, as a Sprite set
  * Output: bool - if the appending call succeeded and the data was inserted
  */
-bool Tile::appendEnhancer(QPixmap frame, RotatedAngle angle)
+bool Tile::appendUpper(Sprite* upper)
 {
-//  if(isEnhancerSet())
-//  {
-//    return enhancer->getItem()->insertTail(frame, getAngle(angle));
-//  }
-
-//  if(setEnhancer(new Sprite(frame), angle) != 0)
-//    return true;
-  return false;
-}
-
-/* 
- * Description: Appends the new QPixmap frame data onto the created lower
- *              layer for this tile. If there is no lower to append to, it
- *              create a new lower layer.
- *
- * Inputs: QPixmap frame - the new image data to insert
- *         RotatedAngle angle - the angle to rotate the pixmap data
- * Output: bool - if the appending call succeeded and the data was inserted
- */
-bool Tile::appendLower(QPixmap frame, RotatedAngle angle)
-{
-//  if(isLowerSet())
-//  {
-//    return lower->getItem()->insertTail(frame, getAngle(angle));
-//  }
-
-//  if(setLower(new Sprite(frame), angle) != 0)
-//    return true;
-  return false;
-}
-
-/* 
- * Description: Appends the new QPixmap frame data onto the last created upper
- *              layer for this tile. If there is no upper to append to, it 
- *              creates a new upper layer
- *
- * Inputs: QPixmap frame - the new image data to insert
- *         RotatedAngle angle - the angle to rotate the pixmap data
- * Output: bool - if the appending call succeeded and the data was inserted
- */
-bool Tile::appendUpper(QPixmap frame, RotatedAngle angle)
-{
-//  if(isUpperSet())
-//  {
-//    return upper.last()->getItem()->insertTail(frame, getAngle(angle));
-//  }
-
-//  if(addUpper(new Sprite(frame), angle) != 0)
-//    return true;
-  return false;
+  return this->upper->appendUpper(upper);
 }
 
 /* 
@@ -403,7 +168,7 @@ int Tile::getHeight()
   return height;
 }
 
-/* 
+/* TODO: [2013-06-19]
  * Description: Gets the impassable object sprite that is stored, if set
  *
  * Inputs: none
@@ -429,7 +194,7 @@ QList<Sprite*> Tile::getLower()
   return lower->getLower();
 }
 
-/* 
+/* TODO: [2013-06-19] 
  * Description: Gets the passable object sprite and returns it, if set.
  *
  * Inputs: none
@@ -442,7 +207,7 @@ MapThing* Tile::getPassableObject()
   return NULL;
 }
 
-/* 
+/* TODO: [2013-06-19]
  * Description: Gets if the tile is passable from the East
  *
  * Inputs: none
@@ -453,7 +218,7 @@ bool Tile::getPassibilityEast()
   return east_passibility && !impassable_set;
 }
 
-/* 
+/* TODO: [2013-06-19]
  * Description: Gets if the tile is passable from the North
  *
  * Inputs: none
@@ -464,7 +229,7 @@ bool Tile::getPassibilityNorth()
   return north_passibility;
 }
 
-/* 
+/* TODO: [2013-06-19]
  * Description: Gets if the tile is passable from the South
  *
  * Inputs: none
@@ -475,7 +240,7 @@ bool Tile::getPassibilitySouth()
   return south_passibility;
 }
 
-/* 
+/* TODO: [2013-06-19]
  * Description: Gets if the tile is passable from the West
  *
  * Inputs: none
@@ -545,6 +310,26 @@ int Tile::getY()
 }
 
 /* 
+ * Description: Inserts the inner layers (QGraphicsItems) into the scene
+ *              that have been created by the class.
+ *
+ * Inputs: QGraphicsScene* scene - the scene to insert the items
+ * Output: bool - returns if the insertion was successful and executed.
+ *                Only fails if something went wrong internally in the class
+ *                and the appropriate pointers aren't set.
+ */
+bool Tile::insertIntoScene(QGraphicsScene* scene)
+{
+  if(lower != 0 && upper != 0)
+  {
+    scene->addItem(lower);
+    scene->addItem(upper);
+    return true;
+  }
+  return false;
+}
+
+/* 
  * Description: Returns if the Base Sprite is set 
  *
  * Inputs: none
@@ -566,7 +351,7 @@ bool Tile::isEnhancerSet()
   return (lower->getEnhancer() != 0);
 }
 
-/* 
+/* TODO: [2013-06-19]
  * Description: Returns if the Impassable Sprite (object or person) is set 
  *
  * Inputs: none
@@ -589,7 +374,7 @@ bool Tile::isLowerSet()
   return (lower->getLower().size() > 0);
 }
 
-/* 
+/* TODO: [2013-06-19]
  * Description: Returns if the Passable Sprite(s) is(are) set 
  *
  * Inputs: none
@@ -611,33 +396,48 @@ bool Tile::isUpperSet()
   return (upper->getUpper().size() > 0);
 }
 
+/* 
+ * Description: Removes the layers in this class from the scene.
+ *              Typically called before deconstruction.
+ *
+ * Inputs: QGraphicsScene* scene - the scene to remove the items from
+ * Output: none
+ */
+void Tile::removeFromScene(QGraphicsScene* scene)
+{
+  if(lower != 0)
+    scene->removeItem(lower);
 
+  if(upper != 0)
+    scene->removeItem(upper);
+}
 
 /*
- * Description: Sets the enhancer layer using a single sprite pointer
- *              to cover the tile.
- * Note: This will unset the enhancer automatically. 
+ * Description: Sets the base part of the layer, in the lower half. This class 
+ *              only takes the pointer for usage and does not manage deleting.
+ *              Once the class is finished, deletion of the pointer is still
+ *              required.
  *
- * Inputs: Sprite* enhancer - the sprite to attempt to load in
- *         RotatedAngle angle - the angle classification to rotate the layer 
+ * Inputs: Sprite* base - the sprite that defines the base part
+ * Output: bool - returns true if the base was set successfully.
+ */
+bool Tile::setBase(Sprite* base)
+{
+  return lower->setBase(base);
+}
+
+/*
+ * Description: Sets the enhancer part of the layer, in the lower half. This 
+ *              class only takes the pointer for usage and does not manage 
+ *              deleting. Once the class is finished, deletion of the pointer 
+ *              is still required.
+ *
+ * Inputs: Sprite* enhancer - the sprite that defines the enhancer part
  * Output: bool - returns true if the enhancer was set successfully.
  */
-Layer* Tile::setEnhancer(Sprite* enhancer_sprite, RotatedAngle angle)
+bool Tile::setEnhancer(Sprite* enhancer)
 {
-  /* Set the enhancer, if the sprite is valid and has a size greater than 0 */
-//  if(enhancer_sprite != 0 && enhancer_sprite->getSize() > 0)
-//  {
-//    enhancer_sprite->rotateAll(getAngle(angle));
-//    unsetEnhancer();
-//    enhancer = new Layer(enhancer_sprite, width, height, 
-//                         x, y, kENHANCER_DEPTH);
-
-//    setStatus(tile_status);
-//    emit addLayer(enhancer);
-//    return enhancer;
-//  }
-
-  return 0;
+  return lower->setEnhancer(enhancer);
 }
 
 /*
@@ -663,7 +463,7 @@ bool Tile::setHeight(int height)
   return false;
 }
 
-/* 
+/* TODO: [2013-06-19]
  * Description: Sets the impassable object sprite in the tile using a path to 
  *              the sprite image file.
  *
@@ -679,34 +479,21 @@ bool Tile::setImpassableObject(QString path, ImpassableObjectState type)
   return true;
 }
 
-/* 
- * Description: Sets the lower layer in the tile using the sprite 
- *              image data.
+/*
+ * Description: Sets the lower part of the layer, in the lower half. This 
+ *              class only takes the pointer for usage and does not manage 
+ *              deleting. Once the class is finished, deletion of the pointer 
+ *              is still required.
  *
- * Inputs: Sprite* lower_sprite - the lower sprite to attempt to load in
- *         RotatedAngle angle - the angle classification to rotate the layer
- * Output: bool - returns true if the lower layer was successfuly set
+ * Inputs: Sprite* lower - the sprite that defines the lower part
+ * Output: bool - returns true if the lower was set successfully.
  */
-Layer* Tile::setLower(Sprite* lower_sprite, RotatedAngle angle)
+bool Tile::setLower(Sprite* lower)
 {
-  /* Set the lower layer, if the sprite is valid and has a size greater 
-   * than 0 */
-//  if(lower_sprite != 0 && lower_sprite->getSize() > 0)
-//  {
-//    lower_sprite->rotateAll(getAngle(angle));
-//    unsetLower();
-//    lower = new Layer(lower_sprite, width, height, 
-//                      x, y, kLOWER_DEPTH);
-
-//    setStatus(tile_status);
-//    emit addLayer(lower);
-//    return lower;
-//  }
-
-  return 0;
+  return this->lower->setLower(lower);
 }
 
-/* 
+/* TODO: [2013-06-19]
  * Description: Sets the passable object sprite in the tile using a path to 
  *              the sprite image file.
  *
@@ -720,7 +507,7 @@ bool Tile::setPassableObject(QString path)
   return true;
 }
 
-/* 
+/* TODO: [2013-06-19]
  * Description: Sets into the tile from all directions
  *
  * Inputs: bool is_passable - is the tile passable from all directions
@@ -734,7 +521,7 @@ void Tile::setPassibility(bool is_passable)
   west_passibility = is_passable;
 }
 
-/* 
+/* TODO: [2013-06-19]
  * Description: Sets the passibility into the tile from all directions.
  * 
  * Inputs: bool north_is_passable - is the tile passable from the north
@@ -752,7 +539,7 @@ void Tile::setPassibility(bool north_is_passable, bool east_is_passable,
   west_passibility = west_is_passable;
 }
 
-/* 
+/* TODO: [2013-06-19]
  * Description: Sets if the tile is passable from the East
  * 
  * Inputs: bool is_passable - is the tile passable
@@ -763,7 +550,7 @@ void Tile::setPassibilityEast(bool is_passable)
   east_passibility = is_passable;
 }
 
-/* 
+/* TODO: [2013-06-19]
  * Description: Sets if the tile is passable from the North
  * 
  * Inputs: bool is_passable - is the tile passable
@@ -774,7 +561,7 @@ void Tile::setPassibilityNorth(bool is_passable)
   north_passibility = is_passable;
 }
 
-/* 
+/* TODO: [2013-06-19]
  * Description: Sets if the tile is passable from the South
  * 
  * Inputs: bool is_passable - is the tile passable
@@ -785,7 +572,7 @@ void Tile::setPassibilitySouth(bool is_passable)
   south_passibility = is_passable;
 }
 
-/* 
+/* TODO: [2013-06-19]
  * Description: Sets if the tile is passable from the West
  * 
  * Inputs: bool is_passable - is the tile passable
@@ -809,6 +596,20 @@ void Tile::setStatus(Layer::Status updated_status)
 {
   lower->setStatus(updated_status);
   upper->setStatus(updated_status);
+}
+
+/*
+ * Description: Sets the upper part of the layer, in the upper half. This 
+ *              class only takes the pointer for usage and does not manage 
+ *              deleting. Once the class is finished, deletion of the pointer 
+ *              is still required.
+ *
+ * Inputs: Sprite* upper - the sprite that defines the upper part
+ * Output: bool - returns true if the upper was set successfully.
+ */
+bool Tile::setUpper(Sprite* upper)
+{
+  return this->upper->setUpper(upper);
 }
 
 /*
@@ -890,7 +691,7 @@ void Tile::unsetEnhancer()
   lower->unsetEnhancer();
 }
 
-/*
+/* TODO: [2013-06-19]
  * Description: Unsets the impassable object sprite in the tile. Deletes the 
  *              pointer, if applicable, and sets the internal variable to 
  *              notify the class so the impassable object isn't repainted.
@@ -916,7 +717,7 @@ void Tile::unsetLower()
   lower->unsetLower();
 }
 
-/*
+/* TODO: [2013-06-19]
  * Description: Unsets the passable object sprite in the tile. Deletes the
  *              pointer, if applicable, and sets the internal variable to
  *              notify the class so the passable object isn't repainted.

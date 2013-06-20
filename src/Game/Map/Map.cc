@@ -173,11 +173,6 @@ void Map::drawBackground(QPainter* painter, const QRectF& rect)
  * PUBLIC SLOTS
  *===========================================================================*/
 
-void Map::addLayer(Layer* item)
-{
-  addItem(item);
-}
-
 void Map::animate()
 {
   bool just_started = false;
@@ -221,11 +216,6 @@ void Map::animateTiles()
   for(int i = 0; i < geography.size(); i++)
     for(int j = 0; j < geography[i].size(); j++)
       geography[i][j]->animate();
-}
-
-void Map::deleteLayer(Layer* item)
-{
-  removeItem(item);
 }
 
 /*============================================================================
@@ -309,12 +299,7 @@ bool Map::loadMap(QString file)
         Tile* t = new Tile(kTILE_LENGTH, kTILE_WIDTH, 
                            j*kTILE_LENGTH, i*kTILE_WIDTH);
         //t->setStatus(Tile::OFF);
-
-        /* Connect the signals */
-        QObject::connect(t, SIGNAL(addLayer(Layer*)), 
-                         this, SLOT(addLayer(Layer*)));
-        QObject::connect(t, SIGNAL(deleteLayer(Layer*)), 
-                         this, SLOT(deleteLayer(Layer*)));
+        t->insertIntoScene(this);
 
         /* Add the new tile to the list */
         row.append(t);
@@ -397,6 +382,7 @@ void Map::unloadMap()
   {
     for(int j = 0; j < geography[i].size(); j++)
     {
+      geography[i][j]->removeFromScene(this);
       delete geography[i][j];
       geography[i][j] = 0;
     }

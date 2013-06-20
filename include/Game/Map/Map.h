@@ -108,10 +108,8 @@ signals:
  * PUBLIC SLOTS
  *===========================================================================*/
 public slots:
-  void addLayer(Layer* item);
   void animate();
   void animateTiles();
-  void deleteLayer(Layer* item);
 
 /*============================================================================
  * PUBLIC FUNCTIONS

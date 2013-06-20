@@ -25,7 +25,7 @@ Sprite::Sprite()
   head = 0;
   current = 0;
   size = 0;
-  direction = FORWARD;
+  sequence = FORWARD;
 }
 
 /* 
@@ -39,7 +39,7 @@ Sprite::Sprite(QPixmap image, int rotate_angle)
   head = 0;
   current = 0;
   size = 0;
-  direction = FORWARD;
+  sequence = FORWARD;
   insertFirst(image, rotate_angle);
 }
 
@@ -54,7 +54,7 @@ Sprite::Sprite(QString image_path, int rotate_angle)
   head = 0;
   current = 0;
   size = 0;
-  direction = FORWARD;
+  sequence = FORWARD;
   insertFirst(image_path, rotate_angle);
 }
 
@@ -72,7 +72,7 @@ Sprite::Sprite(QString head_path, int num_frames,
   head = 0;
   current = 0;
   size = 0;
-  direction = FORWARD;
+  sequence = FORWARD;
   insertSequence(head_path, num_frames, tail_path, rotate_angle);  
 }
 
@@ -435,12 +435,16 @@ bool Sprite::rotateAll(int angle)
   /* Only proceed if there are frames to rotate */
   if(size > 0)
   {
-    for(int i = 0; i < size; i++)
+    /* Only rotate the image if the angle is not 0 */
+    if(angle == 0)
     {
-      temp_frame->rotateImage(angle);
-      temp_frame = temp_frame->getNext();
+      for(int i = 0; i < size; i++)
+      {
+        temp_frame->rotateImage(angle);
+        temp_frame = temp_frame->getNext();
+      }
     }
-    
+
     return true;
   }
 
@@ -457,7 +461,7 @@ bool Sprite::rotateAll(int angle)
  */
 bool Sprite::setDirectionForward()
 {
-  direction = FORWARD;
+  sequence = FORWARD;
   return true;
 }
 
@@ -471,7 +475,7 @@ bool Sprite::setDirectionForward()
  */
 bool Sprite::setDirectionReverse()
 {
-  direction = REVERSE;
+  sequence = REVERSE;
   return true;
 }
 
@@ -525,7 +529,7 @@ bool Sprite::shiftNext(bool skipHead)
 {
   if(size > 0)
   {
-    if(direction == FORWARD)
+    if(sequence == FORWARD)
     {
       if(!skipHead || current->getNext() != head)
         current = current->getNext();
@@ -554,7 +558,30 @@ bool Sprite::shiftNext(bool skipHead)
  */
 bool Sprite::switchDirection()
 {
-  if(direction == FORWARD)
+  if(sequence == FORWARD)
     return setDirectionReverse();
   return setDirectionForward();
+}
+
+/*============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *===========================================================================*/
+
+/*
+ * Description: Returns the degree interpretation of the rotated angle enum
+ *              for the 4 classifications. Can be used above for translating
+ *              integer representation from the enumerator.
+ *
+ * Inputs: RotatedAngle angle - the angle enumerator to classify
+ * Output: int - angle in degrees.
+ */
+int Sprite::getAngle(RotatedAngle angle)
+{
+  if(angle == CLOCKWISE)
+    return 90;
+  else if(angle == COUNTERCLOCKWISE)
+    return -90;
+  else if(angle == FLIP)
+    return 180;
+  return 0;
 }

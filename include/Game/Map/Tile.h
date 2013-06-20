@@ -13,22 +13,19 @@
 #ifndef TILE_H
 #define TILE_H
 
-#include <QObject>
+#include <QGraphicsScene>
 
 #include "Game/Map/Layer.h"
 #include "Game/Map/MapInteractiveObject.h"
 #include "Game/Map/MapPerson.h"
 #include "Game/Map/MapWalkOver.h"
-#include "XmlData.h"
 
-class Tile : public QObject
+class Tile
 {
-    Q_OBJECT
-
 public:
   /* Constructor functions */
   Tile();
-  Tile(int width, int height, int x = 0, int y = 0, QObject* parent = 0);
+  Tile(int width, int height, int x = 0, int y = 0);
 
   /* Destructor function */
   ~Tile();
@@ -37,12 +34,6 @@ public:
    * DECOR - The impassable object is an object (Tree, etc)
    * PERSON - The impassable object is a person (player, npc) */
   enum ImpassableObjectState{UNSET, DECOR, PERSON};
-
-  /* NONE - the object isn't rotated
-   * CLOCKWISE - rotate the object 90 degrees clockwise
-   * COUNTERCLOCKWISE - rotate the object 90 degrees counterclockwise
-   * FLIP - rotate the object 180 degrees */
-  enum RotatedAngle{NONE, CLOCKWISE, COUNTERCLOCKWISE, FLIP};
 
 private:
   /* Basic information for the tile */
@@ -69,62 +60,20 @@ private:
   bool north_passibility,east_passibility,south_passibility,west_passibility;
 
   /*------------------- Constants -----------------------*/
-  const static int kBASE_COUNT_MAX;   /* The maximum number of base layers */
-  const static int kBASE_DEPTH;       /* The starting base layer depth */
-  const static int kDATA_ELEMENT;     /* The inserted data element location */
-  const static int kDATA_ROTATION;    /* The inserted data rotation location */
-  const static int kENHANCER_DEPTH;   /* The enhancer layer depth */
   const static int kLOWER_DEPTH;      /* The lower layer depth */
-  const static int kMAP_INTERACTIVE_DEPTH; /* The interactive object depth */
-  const static int kMAP_PERSON_DEPTH; /* The Map person layer depth */
-  const static int kNE_ENHANCER;      /* The NE enhancer quarter index */
-  const static int kNW_ENHANCER;      /* The NW enhancer quarter index */
-  const static int kSE_ENHANCER;      /* The SE enhancer quarter index */
-  const static int kSW_ENHANCER;      /* The SW enhancer quarter index */
-  const static int kUPPER_COUNT_MAX;  /* The max number of upper layers */
   const static int kUPPER_DEPTH;      /* The starting upper layer depth */
-
-/*============================================================================
- * PROTECTED FUNCTIONS
- *===========================================================================*/
-protected:
-
-/*============================================================================
- * PRIVATE FUNCTIONS
- *===========================================================================*/
-private:
-  /* Determines the angle that's associated to the local enumerator */
-  int getAngle(RotatedAngle angle);
-
-/*============================================================================
- * SIGNALS
- *===========================================================================*/
-signals:
-  void addLayer(Layer* item);
-  void deleteLayer(Layer* item);
 
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
-  /* Adds another base layer to the stack */
-  Layer* addBase(Sprite* base_sprite, RotatedAngle angle = NONE);
- 
-  /* Adds data from the file to this tile. Returns if valid */
-  bool addData(XmlData data, QPixmap image, bool append = false);
-
-  /* Adds another upper layer to the stack */
-  Layer* addUpper(Sprite* upper_sprite, RotatedAngle angle = NONE);
-  
   /* Animates all sprites on tile (Including thing and walkover sprites) */
   void animate();
 
-  /* Append to the layers - this just attempts to add image data to the tail
-   * end of the sequence of the layer. */
-  bool appendBase(QPixmap frame, RotatedAngle angle);
-  bool appendEnhancer(QPixmap frame, RotatedAngle angle);
-  bool appendLower(QPixmap frame, RotatedAngle angle);
-  bool appendUpper(QPixmap frame, RotatedAngle angle);
+  /* Append the lower and upper onto the stack (where applicable). This
+   * functionality is essentially entirely handled by Layer */
+  bool appendLower(Sprite* lower);
+  bool appendUpper(Sprite* upper);
 
   /* Gets the base layer(s) */
   Sprite* getBase();
@@ -169,6 +118,9 @@ public:
   int getX();
   int getY();
 
+  /* Insert the items in the class into the scene */
+  bool insertIntoScene(QGraphicsScene* scene);
+
   /* Returns if the Base Layer is set (ie. at least one) */
   bool isBaseSet();
 
@@ -187,8 +139,14 @@ public:
   /* Returns if the Upper Layer is set (ie. at least one) */
   bool isUpperSet();
 
-  /* Set the enhancer layer */
-  Layer* setEnhancer(Sprite* enhancer_sprite, RotatedAngle angle = NONE);
+  /* Removes the items internally to this class from the scene */
+  void removeFromScene(QGraphicsScene* scene);
+
+  /* Sets the base portion of the layer */
+  bool setBase(Sprite* base);
+
+  /* Set the enhancer portion of the layer */
+  bool setEnhancer(Sprite* enhancer);
 
   /* Sets the new height for the tile (must be >= 0) */
   bool setHeight(int height);
@@ -196,8 +154,8 @@ public:
   /* Sets the impassable object sprite */
   bool setImpassableObject(QString path, ImpassableObjectState type);
 
-  /* Sets the lower layer */
-  Layer* setLower(Sprite* lower_sprite, RotatedAngle angle = NONE);
+  /* Sets the lower portion of the layer */
+  bool setLower(Sprite* lower);
 
   /* Sets the passable object sprite */
   bool setPassableObject(QString path);
@@ -221,6 +179,9 @@ public:
 
   /* Sets a new status for the tile */
   void setStatus(Layer::Status updated_status);
+
+  /* Sets the upper portion of the layer */
+  bool setUpper(Sprite* upper);
 
   /* Sets the width of the tile (and all corresponding layers) */
   bool setWidth(int width);

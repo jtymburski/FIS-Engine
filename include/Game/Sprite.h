@@ -30,8 +30,14 @@ public:
   /* Destructor function */
   ~Sprite();
 
-  /* Public enumerators */
-  enum { REVERSE, FORWARD };
+  /* Direction to pass through the sequence of frames */
+  enum Direction{ REVERSE, FORWARD };
+
+  /* NONE - the object isn't rotated
+   * CLOCKWISE - rotate the object 90 degrees clockwise
+   * COUNTERCLOCKWISE - rotate the object 90 degrees counterclockwise
+   * FLIP - rotate the object 180 degrees */
+  enum RotatedAngle{NONE, CLOCKWISE, COUNTERCLOCKWISE, FLIP};
 
 private:
   /* The current frame */
@@ -44,7 +50,7 @@ private:
   int size;
 
   /* Direction */
-  bool direction;
+  Direction sequence;
   
   /*------------------- Constants -----------------------*/
   const static int kDOUBLE_DIGITS;   /* the borderline to double digits */
@@ -120,6 +126,13 @@ public:
 
   /* Switches the direction that the linked list is parsed in */
   bool switchDirection();
+
+/*============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *===========================================================================*/
+public:
+  /* Returns the degrees of the angle enumerator */
+  static int getAngle(RotatedAngle angle);
 };
 
 #endif // SPRITE_H

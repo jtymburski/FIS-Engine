@@ -74,6 +74,35 @@ Layer::~Layer()
  *===========================================================================*/
 
 /* 
+ * Description: Animates the layer. This just shifts all the sprites to the
+ *              next frame in the sequence. If there is only one frame,
+ *              it will just stay on that one. You probably don't want to call
+ *              this on every tick since that would animate quite quickly.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Layer::animate()
+{
+  /* Animate the base first */
+  if(base != 0)
+    base->shiftNext();
+
+  /* Then the enhancer sprite */
+  if(enhancer != 0)
+    enhancer->shiftNext();
+
+  /* Then animate the set of lower layers */
+  for(int i = 0; i < lower.size(); i++)
+    lower[i]->shiftNext();
+
+  /* Finish by animating the upper set, if set */
+  for(int i = 0; i < upper.size(); i++)
+    upper[i]->shiftNext();
+
+}
+
+/* 
  * Description: Appends a new lower sprite stored within the layer. Only sets 
  *              it if the pointer is valid and the number of frames is greater
  *              than 0 and if there is room in the stack (limit of 5). 
