@@ -11,11 +11,12 @@
 
 /* Constant Implementation - see header file for descriptions */
 const int Map::kDOUBLE_DIGITS = 10;
+const int Map::kELEMENT_ANGLE = 1;
+const int Map::kELEMENT_DATA = 0;
 const int Map::kFILE_SECTION_ID = 2;
-const int Map::kTILE_COLUMN = 4;
-const int Map::kTILE_DATA = 5;
+const int Map::kFILE_TILE_COLUMN = 4;
+const int Map::kFILE_TILE_ROW = 3;
 const int Map::kTILE_LENGTH = 64;
-const int Map::kTILE_ROW = 3;
 const int Map::kTILE_WIDTH = 64;
 const int Map::kVIEWPORT_LENGTH = 19;
 const int Map::kVIEWPORT_WIDTH = 11;
@@ -53,8 +54,8 @@ Map::Map(short resolution_x, short resolution_y)
                    this,     SIGNAL(closingMap(int)));
 
   /* Bring the timer in to provide a game tick */
-//  connect(&timer, SIGNAL(timeout()), this, SLOT(animate()));
-//  timer.start(20);
+  connect(&timer, SIGNAL(timeout()), this, SLOT(animate()));
+  timer.start(20);
 }
 
 /* Destructor function */
@@ -69,68 +70,62 @@ Map::~Map()
 
 bool Map::addTileData(XmlData data)
 {
+  int angle = 0;
   bool success = true;
+  Sprite* tile_frames = 0;
 
-  /* Pull the row and column pairs, comma delimited */
-  QStringList row_list = data.getKeyValue(kTILE_ROW).split(",");
-  QStringList col_list = data.getKeyValue(kTILE_COLUMN).split(",");
-  QPixmap image = Frame::openImage(data.getDataString());
+  /* Get the rotation angle, from the element */
+  QStringList element = data.getElement(data.getNumElements()-1).split("_");
+  if(element.size() > kELEMENT_ANGLE)
+    angle = Sprite::getAngle(element[kELEMENT_ANGLE]);
 
-  /* Handle the image data, split the path based on "|" */
-  QVector<QPixmap> images;
+  /* Handle the image data, split the path based on "|". This is the 
+   * identifier if there is multiple frames */
   QStringList data_list = data.getDataString().split("|");
-  QString path;
-  QString path_tail;
-
-  /* If the split occurred, there are multiple paths to add */
   if(data_list.size() > 1)
-  {
-    QString path = data_list[0]; /* The front half */
-    QString path_tail = data_list[2]; /* The latter half */
-    data_list = data_list[1].split("-"); /* The middle (integer range) */
-
-    /* Loop through the number of path options (|0-2|), 00 - 02 */
-    for(int i = data_list[0].toInt(); i <= data_list[1].toInt(); i++)
-    {
-      QString image_path;
-      if(i < kDOUBLE_DIGITS)
-        image_path = "0";
-      image_path += QString("%1").arg(i) + path_tail;
-
-      /* Finally, append it to the list */
-      images.append(Frame::openImage(path + image_path));
-    }
-  }
+    tile_frames = new Sprite(data_list[0], 
+                             data_list[1].toInt(), 
+                             data_list[2], angle);
   else
-  {
-    images.append(Frame::openImage(data.getDataString()));
-  }
-
+    tile_frames = new Sprite(data.getDataString(), angle);
+ 
   /* Run through this list, checking ranges and add the corresponding
-   * tiles */
-  for(int index = 0; index < images.size(); index++) /* Image index */
+   * tiles, only if the sprite data is legitimate */
+  if(tile_frames->getSize() > 0)
   {
-    for(int i = 0; i < row_list.size(); i++) /* Coordinate index */
-    {
-      QStringList rows = row_list[i].split("-");
-      QStringList cols = col_list[i].split("-");
+    /* Add to the list of tiles */
+    tile_sprites.append(tile_frames);
 
-      /* Use the newly found range and add the tile */
+    QStringList row_list = data.getKeyValue(kFILE_TILE_ROW).split(",");
+    QStringList col_list = data.getKeyValue(kFILE_TILE_COLUMN).split(",");
+
+    for(int i = 0; i < row_list.size(); i++) /* Coordinate set index */
+    {
+      QStringList rows = row_list[i].split("-"); /* x range for coordinate */
+      QStringList cols = col_list[i].split("-"); /* y range for coordinate */
+
+      /* Shift through all the rows and column pairs of the coordinate */
       for(int r = rows[0].toInt(); r <= rows[rows.size() - 1].toInt(); r++)
       {
         for(int c = cols[0].toInt(); c <= cols[cols.size() - 1].toInt(); c++)
         {
-          QString path = data.getElement(kTILE_DATA);
-//          if(path.startsWith("base") || path.startsWith("enhancer") || 
-//             path.startsWith("lower") || path.startsWith("upper"))
-//            success &= geography[r][c]->addData(data, images[index], 
-//                                                images.size() > 1);
+          /* Add the sprite data to the specific tile */
+          if(element[kELEMENT_DATA] == "base")
+            success &= geography[r][c]->setBase(tile_frames);
+          else if(element[kELEMENT_DATA] == "enhancer")
+            success &= geography[r][c]->setEnhancer(tile_frames);
+          else if(element[kELEMENT_DATA] == "lower")
+            success &= geography[r][c]->appendLower(tile_frames);
+          else if(element[kELEMENT_DATA] == "upper")
+            success &= geography[r][c]->appendUpper(tile_frames);
         }
       }
     }
+
+    return success;
   }
 
-  return success;
+  return false;
 }
 
 /*============================================================================
@@ -213,9 +208,8 @@ void Map::animate()
 
 void Map::animateTiles()
 {
-  for(int i = 0; i < geography.size(); i++)
-    for(int j = 0; j < geography[i].size(); j++)
-      geography[i][j]->animate();
+  for(int i = 0; i < tile_sprites.size(); i++)
+    tile_sprites[i]->shiftNext();
 }
 
 /*============================================================================
@@ -307,7 +301,7 @@ bool Map::loadMap(QString file)
 
       geography.append(row);
     }
-   
+  
     /* Run through the map components and add them to the map */
     data = fh.readXmlData(&done, &success);
     do
@@ -319,24 +313,24 @@ bool Map::loadMap(QString file)
       data = fh.readXmlData(&done, &success);
     } while(!done && success);
 
-    /* Add in temporary player information */
-    Sprite* up_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_D", 3, ".png");
-    Sprite* down_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_U", 3, ".png");
-    Sprite* left_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_R", 3, ".png");
-    Sprite* right_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_L", 3, ".png");
+//    /* Add in temporary player information */
+//    Sprite* up_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_D", 3, ".png");
+//    Sprite* down_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_U", 3, ".png");
+//    Sprite* left_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_R", 3, ".png");
+//    Sprite* right_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_L", 3, ".png");
 
-    /* Make the map person */
-    player = new MapPerson(kTILE_LENGTH, kTILE_WIDTH);
-    player->setCoordinates(kTILE_LENGTH*7, kTILE_WIDTH*5, 9);
-
-    player->setState(MapPerson::GROUND, MapPerson::NORTH, 
-                                        new MapState(up_sprite));
-    player->setState(MapPerson::GROUND, MapPerson::SOUTH, 
-                                        new MapState(down_sprite));
-    player->setState(MapPerson::GROUND, MapPerson::EAST, 
-                                        new MapState(right_sprite));
-    player->setState(MapPerson::GROUND, MapPerson::WEST, 
-                                        new MapState(left_sprite));
+//    /* Make the map person */
+//    player = new MapPerson(kTILE_LENGTH, kTILE_WIDTH);
+//    player->setCoordinates(kTILE_LENGTH*7, kTILE_WIDTH*5, 9);
+//
+//    player->setState(MapPerson::GROUND, MapPerson::NORTH, 
+//                                        new MapState(up_sprite));
+//    player->setState(MapPerson::GROUND, MapPerson::SOUTH, 
+//                                        new MapState(down_sprite));
+//    player->setState(MapPerson::GROUND, MapPerson::EAST, 
+//                                        new MapState(right_sprite));
+//    player->setState(MapPerson::GROUND, MapPerson::WEST, 
+//                                        new MapState(left_sprite));
 
     /* Add it */
 //    addItem(player);

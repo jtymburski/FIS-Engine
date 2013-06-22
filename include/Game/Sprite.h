@@ -20,7 +20,6 @@ public:
   Sprite();
 
   /* Constructor: Set up one image */
-  Sprite(QPixmap image, int rotate_angle = 0);
   Sprite(QString image_path, int rotate_angle = 0);
 
   /* Constructor: Set up sequence of images */
@@ -72,12 +71,10 @@ public:
   int getSize();
 
   /* Inserts the image into the sprite sequence at the given position */
-  bool insert(QPixmap image, int position, int rotate_angle = 0);
   bool insert(QString image_path, int position, int rotate_angle = 0);
 
   /* Inserts the first image if the frame sequence is empty
    * Note: This isn't for inserting the head, just the first one */
-  bool insertFirst(QPixmap image, int rotate_angle = 0);
   bool insertFirst(QString image_path, int rotate_angle = 0);
 
   /* Inserts a sequence of images that are stored. This allows for 
@@ -91,7 +88,6 @@ public:
                       QString tail_path, int rotate_angle = 0);
 
   /* Inserts the image at the end of the sprite sequence */
-  bool insertTail(QPixmap image, int rotate_angle = 0);
   bool insertTail(QString image_path, int rotate_angle = 0);
 
   /* Returns if the linked list pointer is currently at the head */
@@ -131,6 +127,9 @@ public:
  * PUBLIC STATIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Returns the degrees of the string identifier */
+  static int getAngle(QString identifier);
+
   /* Returns the degrees of the angle enumerator */
   static int getAngle(RotatedAngle angle);
 };

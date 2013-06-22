@@ -10,6 +10,7 @@
 #ifndef MAP_H
 #define MAP_H
 
+//#include <QDebug>
 #include <QGraphicsScene>
 #include <QGLWidget>
 
@@ -42,6 +43,7 @@ private:
 
   /* The actual tiles that comprise a map, dynamically sized */
   QVector <QVector <Tile*> > geography;
+  QList<Sprite*> tile_sprites;
 
   /* Indication if the map has been loaded */
   bool loaded;
@@ -73,14 +75,15 @@ private:
   /*------------------- Constants -----------------------*/
   const static int kDOUBLE_DIGITS;   /* The point when integers are more than
                                         a single digit */
-  const static int kFILE_SECTION_ID; /* The section identifier, for file data */
-  const static int kTILE_COLUMN; /* The tile depth in XML of column tag */
-  const static int kTILE_DATA;   /* The tile depth in XML of data info */
-  const static int kTILE_LENGTH; /* The tile length, as constant for now */
-  const static int kTILE_ROW;    /* The tile depth in XML of row tag */
-  const static int kTILE_WIDTH;  /* The tile width, as constant for now */
-  const static int kVIEWPORT_LENGTH; /* The viewport length, in tiles */
-  const static int kVIEWPORT_WIDTH;  /* The viewport width, in tiles */
+  const static int kELEMENT_ANGLE; /* Element angle for sprite */
+  const static int kELEMENT_DATA;  /* Element data type for sprite */
+  const static int kFILE_SECTION_ID;  /* The section identifier, for file */
+  const static int kFILE_TILE_COLUMN; /* The tile depth in XML of column tag */
+  const static int kFILE_TILE_ROW;    /* The tile depth in XML of row tag */
+  const static int kTILE_LENGTH;      /* The tile length, as constant (TEMP) */
+  const static int kTILE_WIDTH;       /* The tile width, as constant (TEMP) */
+  const static int kVIEWPORT_LENGTH;  /* The viewport length, in tiles */
+  const static int kVIEWPORT_WIDTH;   /* The viewport width, in tiles */
 
 /*============================================================================
  * PRIVATE FUNCTIONS

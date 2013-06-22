@@ -29,22 +29,8 @@ Sprite::Sprite()
 }
 
 /* 
- * Description: Constructor function - Set up one image
- *
- * Input: QPixmap image - image to set as one sprite 
- *        int rotate_angle - the degrees of angle to rotate the image
- */
-Sprite::Sprite(QPixmap image, int rotate_angle)
-{
-  head = 0;
-  current = 0;
-  size = 0;
-  sequence = FORWARD;
-  insertFirst(image, rotate_angle);
-}
-
-/* 
  * Description: Constructor function - Set up one image, using the string path
+ *              with an integer rotated angle.
  *
  * Input: QString image_path - image path to set as one sprite
  *        int rotate_angle - the degree angle to rotate the image at the path
@@ -59,7 +45,8 @@ Sprite::Sprite(QString image_path, int rotate_angle)
 }
 
 /* 
- * Description: Constructor function - Set up sequence of images
+ * Description: Constructor function - Set up sequence of images with an
+ *              integer rotated angle.
  *
  * Input: QString head_path - the start part of the path
  *        int num_frames - the number of frames in this path sequence
@@ -152,13 +139,13 @@ int Sprite::getSize()
 
 /* 
  * Description: Inserts the image into the sprite sequence at the given 
- *              position using the QPixmap raw data.
- * 
- * Inputs: QPixmap image - the image to insert into the sequence
+ *              position based on the given string path.
+ *
+ * Inputs: QString image_path - the path to the image to add
  *         int position - the location in the linked list sequence
  * Output: bool - status if insert is successful
  */
-bool Sprite::insert(QPixmap image, int position, int rotate_angle)
+bool Sprite::insert(QString image_path, int position, int rotate_angle)
 {
   Frame* next_frame;
   Frame* new_frame;
@@ -167,11 +154,11 @@ bool Sprite::insert(QPixmap image, int position, int rotate_angle)
   /* Only add if the size is within the bounds of the sprite */
   if(size == 0)
   {
-    return insertFirst(image, rotate_angle);
+    return insertFirst(image_path, rotate_angle);
   }
   else if(position <= size && position >= 0)
   {
-    new_frame = new Frame(image, rotate_angle);
+    new_frame = new Frame(image_path, rotate_angle);
 
     if(new_frame->isImageSet())
     {
@@ -202,31 +189,19 @@ bool Sprite::insert(QPixmap image, int position, int rotate_angle)
 }
 
 /* 
- * Description: Inserts the image into the sprite sequence at the given 
- *              position based on the given string path.
- *
- * Inputs: QString image_path - the path to the image to add
- *         int position - the location in the linked list sequence
- * Output: bool - status if insert is successful
- */
-bool Sprite::insert(QString image_path, int position, int rotate_angle)
-{
-  return insert(Frame::openImage(image_path), position, rotate_angle);
-}
-
-/* 
- * Description: Inserts the first image if the frame sequence is empty.
+ * Description: Inserts the first image, based on the image path, if the frame 
+ *              sequence is empty.
  * Note: This isn't for inserting the head, just the first one in an empty
  *       list.
  *
- * Inputs: QPixmap image - the image to insert
+ * Inputs: QString image_path - the path to the image to insert
  * Output: bool - status if insertion was successful
  */
-bool Sprite::insertFirst(QPixmap image, int rotate_angle)
+bool Sprite::insertFirst(QString image_path, int rotate_angle)
 {
   if(size == 0)
   {
-    head = new Frame(image, rotate_angle);
+    head = new Frame(image_path, rotate_angle);
     if(head->isImageSet())
     {
       head->setNext(head);
@@ -239,20 +214,6 @@ bool Sprite::insertFirst(QPixmap image, int rotate_angle)
     delete head;
   }
   return false;
-}
-
-/* 
- * Description: Inserts the first image, based on the image path, if the frame 
- *              sequence is empty.
- * Note: This isn't for inserting the head, just the first one in an empty
- *       list.
- *
- * Inputs: QString image_path - the path to the image to insert
- * Output: bool - status if insertion was successful
- */
-bool Sprite::insertFirst(QString image_path, int rotate_angle)
-{
-  return insertFirst(Frame::openImage(image_path), rotate_angle);
 }
 
 /* 
@@ -298,17 +259,6 @@ bool Sprite::insertSequence(QString head_path, int num_frames,
   }
 
   return status;
-}
-
-/* 
- * Description: Inserts the image at the end of the sprite sequence 
- *
- * Inputs: QPixmap image - the image to insert at the tail
- * Output: bool - status if insertion was successful
- */
-bool Sprite::insertTail(QPixmap image, int rotate_angle)
-{
-  return insert(image, size, rotate_angle);
 }
 
 /* 
@@ -566,6 +516,29 @@ bool Sprite::switchDirection()
 /*============================================================================
  * PUBLIC STATIC FUNCTIONS
  *===========================================================================*/
+
+/*
+ * Description: Returns the degree interpretation of a string representation
+ *              for the 3 classifications. 
+ *              90: Clockwise or CW
+ *              180: Flip or F
+ *              270: Counterclockwise or CCW
+ *
+ * Inputs: QString identifier - the angle string identity
+ * Output: int - angle in degrees.
+ */
+int Sprite::getAngle(QString identifier)
+{
+  identifier = identifier.toLower().trimmed();
+
+  if(identifier == "cw" || identifier == "clockwise")
+    return getAngle(CLOCKWISE);
+  else if(identifier == "ccw" || identifier == "counterclockwise")
+    return getAngle(COUNTERCLOCKWISE);
+  else if(identifier == "f" || identifier == "flip")
+    return getAngle(FLIP);
+  return 0;
+}
 
 /*
  * Description: Returns the degree interpretation of the rotated angle enum
