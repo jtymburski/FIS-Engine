@@ -25,6 +25,10 @@ const int Layer::kUPPER_COUNT_MAX = 5;
 Layer::Layer()
 {
   clear();
+
+  /* Set some QGraphicsItem specific classifications for performance */
+  setAcceptedMouseButtons(0);
+  //setCacheMode(DeviceCoordinateCache);
 }
 
 /* 
@@ -56,6 +60,10 @@ Layer::Layer(int width, int height, int x, int y, int z)
   setX(x);
   setY(y);
   setZValue(z);
+
+  /* Set some QGraphicsItem specific classifications for performance */
+  setAcceptedMouseButtons(0);
+  //setCacheMode(DeviceCoordinateCache);
 }
 
 /* 

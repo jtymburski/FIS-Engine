@@ -112,19 +112,27 @@ XmlData::~XmlData()
 bool XmlData::addData(QString data)
 {
   bool success = true;
-  int type = value.at(element.size() - 1).toInt();
 
   /* Determine what the data is */
-  if(type == BOOLEAN)
-    success &= addDataOfType(data == "true");
-  else if(type == INTEGER)
-    success &= addDataOfType(data.toInt());
-  else if(type == FLOAT)
-    success &= addDataOfType(data.toDouble());
-  else if(type == STRING)
-    success &= addDataOfType(data);
+  if(element.size() > 0)
+  {
+    int type = value.at(element.size() - 1).toInt();
+
+    if(type == BOOLEAN)
+      success &= addDataOfType(data == "true");
+    else if(type == INTEGER)
+      success &= addDataOfType(data.toInt());
+    else if(type == FLOAT)
+      success &= addDataOfType(data.toDouble());
+    else if(type == STRING)
+      success &= addDataOfType(data);
+    else
+      return false;
+  }
   else
+  {
     return false;
+  }
 
   /* Remove the type counter */
   if(success)

@@ -8,7 +8,7 @@
 #ifndef XMLDATA_H
 #define XMLDATA_H
 
-#include <QDebug>
+//#include <QDebug>
 #include <QString>
 #include <QVector>
 
@@ -28,7 +28,11 @@ public:
   ~XmlData();
 
   /* Public Enumerators */
-  enum DataType {BOOLEAN, INTEGER, FLOAT, STRING, NONE};
+  enum DataType {BOOLEAN = 1, 
+                 INTEGER = 2, 
+                 FLOAT   = 3, 
+                 STRING  = 4, 
+                 NONE    = 5};
 
 private:
   /* Element, key, and value stacks for data */

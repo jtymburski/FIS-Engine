@@ -1426,8 +1426,20 @@ bool FileHandler::writeXmlData(QString element, VarType type, QString data)
     /* Only move foward if element string isn't empty */
     if(!element.isEmpty() && !data.isEmpty())
     {
+      /* Start the data write */
       xml_writer->writeStartElement(element);
-      xml_writer->writeAttribute("type", QString::number(type));
+      
+      /* Classify the type according to the XmlData classifier */
+      if(type == BOOLEAN)
+        xml_writer->writeAttribute("type", QString::number(XmlData::BOOLEAN));
+      else if(type == INTEGER)
+        xml_writer->writeAttribute("type", QString::number(XmlData::INTEGER));
+      else if(type == FLOAT)
+        xml_writer->writeAttribute("type", QString::number(XmlData::FLOAT));
+      else if(type == STRING)
+        xml_writer->writeAttribute("type", QString::number(XmlData::STRING));
+
+      /* Write the data and finish */
       xml_writer->writeCharacters(data);
       xml_writer->writeEndElement();
 

@@ -73,7 +73,6 @@ Application::Application(QWidget* parent)
 
   /* Do the final show once everything is set up */
   //showFullScreen();
-  show();
 }
 
 Application::~Application()

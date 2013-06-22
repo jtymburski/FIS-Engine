@@ -170,6 +170,10 @@ void Map::drawBackground(QPainter* painter, const QRectF& rect)
 
 void Map::animate()
 {
+  /* Start a QTimer to determine time elapsed for update */
+  QTime time;
+  time.start();
+
   bool just_started = false;
 
 //  if(player != 0)
@@ -204,6 +208,9 @@ void Map::animate()
 //  }
 
   viewport->viewport()->update();
+
+  /* Time elapsed from standard update */
+  //qDebug() << time.elapsed();
 }
 
 void Map::animateTiles()
