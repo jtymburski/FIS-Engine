@@ -27,13 +27,14 @@ const ushort Equipment::kMAX_Y = 9;
  * Inputs: none
  */
 Equipment::Equipment(QString name, QVector<QVector<char> > equip_signature,
-                     Sprite* thumb, uint value, double weight) : Item(name, value, thumb, mass)
+                     Sprite* thumb, uint value, double weight)
+    : Item(name, value, thumb, mass)
 {
   signature = equip_signature;
 
   for (int i = 0; i < kMAX_X; i++)
     for (int j = 0; j < kMAX_Y; j++)
-      bubby_signature[i][j] = NULL;
+      bubby_signature[i][j] = 0;
 }
 
 /*
@@ -43,7 +44,7 @@ Equipment::~Equipment()
 {
   for (int i = 0; i < kMAX_X; i++)
     for (int j = 0; j < kMAX_Y; j++)
-      if (bubby_signature[i][j] != NULL)
+      if (bubby_signature[i][j] != 0)
         qDebug() << "WARNING: DELETING EQUIPMENT WITHOUT REMOVING BUBBIES";
 }
 
@@ -265,7 +266,7 @@ double Equipment::getEquipmentMass()
  */
 SkillSet* Equipment::getSkills(ushort level)
 {
-  SkillSet* skills;
+  SkillSet* skills = 0;
   QVector<Skill*> temp_skills;
   QVector<ushort> temp_skill_levels;
 

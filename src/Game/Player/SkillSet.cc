@@ -94,7 +94,7 @@ bool SkillSet::addSkills(QVector<Skill* > new_skills,
     return true;
   if (new_skills.size() + skills_available.size() <= kMAX_SKILLS)
   {
-      for (int i = 0; i < new_skills.size(), new_skills.at(i) != NULL; i++)
+    for (int i = 0; i < new_skills.size(), new_skills.at(i) != 0; i++)
     {
       skills.append(new_skills.at(i));
       skills_available.append(new_levels.at(i));
@@ -170,7 +170,7 @@ bool SkillSet::removeSkill(QString name)
     if (skills.at(i)->getName() == name)
     {
       delete skills.at(i);
-      skills[i] = NULL;
+      skills[i] = 0;
       skills.remove(i);
       skills_available.remove(i);
       return true;

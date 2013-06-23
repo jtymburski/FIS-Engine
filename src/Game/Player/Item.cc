@@ -40,12 +40,12 @@ Item::Item(QString name, uint value, Sprite* thumbnail, double mass)
   setMass(mass);
 
   /* Pointer initialization */
-  setBuffSet(NULL);
-  setActionSet(NULL);
-  setSkillSet(NULL);
-  setUsingAnimation(NULL);
-  setUsingMessage(NULL);
-  setUsingSound(NULL);
+  setBuffSet(0);
+  setActionSet(0);
+  setSkillSet(0);
+  setUsingAnimation(0);
+  setUsingMessage(0);
+  setUsingSound(0);
 }
 
 /*
@@ -305,7 +305,7 @@ uint Item::getValue()
  */
 void Item::setActionSet(SkillSet* new_action_set)
 {
-  if (new_action_set != NULL)
+  if (new_action_set != 0)
   {
     if (new_action_set->getSkills().size() <= kMAX_ACTION_SET)
     {
@@ -322,7 +322,7 @@ void Item::setActionSet(SkillSet* new_action_set)
     }
   }
   else
-    action_set = NULL;
+    action_set = 0;
 }
 
 /*
@@ -419,7 +419,7 @@ void Item::setName(QString new_name)
  */
 void Item::setSkillSet(SkillSet* new_skill_set)
 {
-  if (new_skill_set != NULL)
+  if (new_skill_set != 0)
   {
     if (new_skill_set->getSkills().size() <= kMAX_SKILL_SET)
     {
@@ -436,7 +436,7 @@ void Item::setSkillSet(SkillSet* new_skill_set)
     }
   }
   else
-    skill_set = NULL;
+    skill_set = 0;
 }
 
 /*

@@ -19,7 +19,7 @@ class Action : public QWidget
 {
 public:
   /* Action constructor object (requires a QString of raw input) */
-  Action(QString raw, QWidget *parent = NULL);
+  Action(QString raw, QWidget *parent = 0);
 
   /* Annihilates an action object */
   ~Action();
@@ -27,46 +27,46 @@ public:
   /* Enumerated ActionType * IgnoreFlag flags */
   enum ActionType
   {
-    RAISE         = 1 <<  0, /* Does the action raise a stat? */
-    LOWER         = 1 <<  1, /* Does the action lower a stat? */
-    GIVE          = 1 <<  2, /* Does the action give a status ailment? */
-    TAKE          = 1 <<  3, /* Does the action take a status ailment away? */
-    OFFENSIVE     = 1 <<  4, /* Does the action affect offensive stats? */
-    DEFENSIVE     = 1 <<  5, /* Does the action affect defensive stats? */
-    PHYSICAL      = 1 <<  6, /* Does the action affect physical stats? */
-    THERMAL       = 1 <<  7, /* Does the action affect thermal stats? */
-    POLAR         = 1 <<  8, /* " polar stats? */
-    PRIMAL        = 1 <<  9, /* " primal stats? */
-    CHARGED       = 1 << 10, /* " charged stats? */
-    CYBERNETIC    = 1 << 11, /* " cybernetic stats? */
-    NIHIL         = 1 << 12, /* " nihil stats? */
-    VITALITY      = 1 << 13, /* " vitality stat? */
-    QUANTUM_DRIVE = 1 << 14, /* " quantum drive stat? */
-    MOMENTUM      = 1 << 15, /* " speed stat? */
-    LIMBERTUDE    = 1 << 16, /* " dodge chance stats? */
-    UNBEARABILITY = 1 << 17  /* " unbearability stat? */
+    RAISE         = 1 <<  1, /* Does the action raise a stat? */
+    LOWER         = 1 <<  2, /* Does the action lower a stat? */
+    GIVE          = 1 <<  3, /* Does the action give a status ailment? */
+    TAKE          = 1 <<  4, /* Does the action take a status ailment away? */
+    OFFENSIVE     = 1 <<  5, /* Does the action affect offensive stats? */
+    DEFENSIVE     = 1 <<  6, /* Does the action affect defensive stats? */
+    PHYSICAL      = 1 <<  7, /* Does the action affect physical stats? */
+    THERMAL       = 1 <<  8, /* Does the action affect thermal stats? */
+    POLAR         = 1 <<  9, /* " polar stats? */
+    PRIMAL        = 1 << 10, /* " primal stats? */
+    CHARGED       = 1 << 11, /* " charged stats? */
+    CYBERNETIC    = 1 << 12, /* " cybernetic stats? */
+    NIHIL         = 1 << 13, /* " nihil stats? */
+    VITALITY      = 1 << 14, /* " vitality stat? */
+    QUANTUM_DRIVE = 1 << 15, /* " quantum drive stat? */
+    MOMENTUM      = 1 << 16, /* " speed stat? */
+    LIMBERTUDE    = 1 << 17, /* " dodge chance stats? */
+    UNBEARABILITY = 1 << 18  /* " unbearability stat? */
   };
   Q_DECLARE_FLAGS(ActionFlags, ActionType)
   enum IgnoreFlag
   {
-    IGNORE_ELMN_ATK = 1 <<  0,
-    IGNORE_PHYS_ATK = 1 <<  1,
-    IGNORE_THER_ATK = 1 <<  2,
-    IGNORE_POLA_ATK = 1 <<  3,
-    IGNORE_PRIM_ATK = 1 <<  4,
-    IGNORE_CHAR_ATK = 1 <<  5,
-    IGNORE_CYBE_ATK = 1 <<  6,
-    IGNORE_NIHI_ATK = 1 <<  7,
-    IGNORE_ATK      = 1 <<  8,
-    IGNORE_ELMN_DEF = 1 <<  9,
-    IGNORE_PHYS_DEF = 1 << 10,
-    IGNORE_THER_DEF = 1 << 11,
-    IGNORE_POLA_DEF = 1 << 12,
-    IGNORE_PRIM_DEF = 1 << 13,
-    IGNORE_CHAR_DEF = 1 << 14,
-    IGNORE_CYBE_DEF = 1 << 15,
-    IGNORE_NIHI_DEF = 1 << 16,
-    IGNORE_DEF      = 1 << 17
+    IGNORE_ELMN_ATK = 1 <<  1,
+    IGNORE_PHYS_ATK = 1 <<  2,
+    IGNORE_THER_ATK = 1 <<  3,
+    IGNORE_POLA_ATK = 1 <<  4,
+    IGNORE_PRIM_ATK = 1 <<  5,
+    IGNORE_CHAR_ATK = 1 <<  6,
+    IGNORE_CYBE_ATK = 1 <<  7,
+    IGNORE_NIHI_ATK = 1 <<  8,
+    IGNORE_ATK      = 1 <<  9,
+    IGNORE_ELMN_DEF = 1 << 10,
+    IGNORE_PHYS_DEF = 1 << 11,
+    IGNORE_THER_DEF = 1 << 12,
+    IGNORE_POLA_DEF = 1 << 13,
+    IGNORE_PRIM_DEF = 1 << 14,
+    IGNORE_CHAR_DEF = 1 << 15,
+    IGNORE_CYBE_DEF = 1 << 16,
+    IGNORE_NIHI_DEF = 1 << 17,
+    IGNORE_DEF      = 1 << 18
   };
   Q_DECLARE_FLAGS(IgnoreFlags, IgnoreFlag)
 

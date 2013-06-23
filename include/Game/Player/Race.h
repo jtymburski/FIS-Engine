@@ -19,7 +19,7 @@ class Race : public QWidget
 {
 public:
    /* Race constructor */
-   Race(QString name, AttributeSet attributes, SkillSet* skill_set = NULL);
+   Race(QString name, AttributeSet attributes, SkillSet* skill_set = 0);
 
    /* Default Race Constructor given a name */
    Race(QString name);

@@ -32,8 +32,8 @@ const int  Skill::kMAX_NAME_LENGTH = 80;
 Skill::Skill(QString name)
 {
   /* Pointer setup */
-  animation = NULL;
-  sound_effect = NULL;
+  animation = 0;
+  sound_effect = 0;
 
   setName(name);
   qd_cost = 0;
@@ -58,8 +58,8 @@ Skill::Skill(QString name, QVector<Action*> effect_list,
     addEffect(effect_list[i]);
     addEffectChance(chance_list[i]);
   }
-  animation = NULL;
-  sound_effect = NULL;
+  animation = 0;
+  sound_effect = 0;
 
   setName(name);
   setQdCost(0);

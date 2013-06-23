@@ -39,7 +39,7 @@ BubbyFlavour::BubbyFlavour(QString name, AttributeSet stats, SkillSet* skills)
   setSkillSet(skills);
 
   for (int i = 0; i < kTIER_CAP; i++)
-    sprites.push_back(NULL);
+    sprites.push_back(0);
 }
 
 /*

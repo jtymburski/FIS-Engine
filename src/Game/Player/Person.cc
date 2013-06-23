@@ -8,6 +8,8 @@
 * // TODO: Race and category equip item types [03-06-13]
 * // TODO: Finish use item
 * // TODO: Setup Functions
+* // TODO: Skill functions?? [06-23-13]
+* // TODO: Finish add item drops [06-23-13]
 ******************************************************************************/
 #include "Game/Player/Person.h"
 
@@ -45,7 +47,7 @@ Person::Person(QString name, Race *race, Category* cat, QString p, QString s)
   /* Pointer setup */
   setRace(race);
   setCategory(cat);
-  skills = NULL;
+  skills = 0;
   setFirstPerson();
   setThirdPerson();
 
@@ -158,7 +160,7 @@ void Person::battlePrep()
  */
 void Person::calcSkills()
 {
-  if (getSkills() != NULL)
+  if (getSkills() != 0)
   {
     QVector<Skill*> race_skills = getRace()->getSkillSet()->getSkills();
     QVector<Skill*> cat_skills  = getCategory()->getSkillSet()->getSkills();
@@ -177,13 +179,13 @@ void Person::calcSkills()
 
     for (int i = 0; i < equipment.size(); i++)
     {
-     // SkillSet* equipment_skills = equipment[i].getSkills(getLevel());
-     // QVector<Skill*> equip_skills = equipment_skills->getSkills();
+      SkillSet* equipment_skills = equipment[i]->getSkills(getLevel());
+      QVector<Skill*> equip_skills = equipment_skills->getSkills();
 
-     // for (int j = 0; j < equip_skills.size(); j++)
-     //  skills->addSkill(equip_skills.at(i));
+      for (int j = 0; j < equip_skills.size(); j++)
+        skills->addSkill(equip_skills.at(i));
 
-      // equip_skills.clear();
+      equip_skills.clear();
     }
 
     skills->cleanUp();
@@ -260,8 +262,8 @@ void Person::printBasics()
  */
 void Person::printEquipment()
 {
-    // for (int i = 0; i < equipment.size(); i++)
-        // qDebug() << "Equipment #" << i << ": " << equipment[i].getName();
+  for (int i = 0; i < equipment.size(); i++)
+    qDebug() << "Equipment #" << i << ": " << equipment[i]->getName();
 }
 
 /*
@@ -430,9 +432,9 @@ double Person::getDmgMod()
  * Inputs: None
  * Output: QVector<Equipment*> - the equipment of the person
  */
-QVector<Equipment> Person::getEquipment()
+QVector<Equipment*> Person::getEquipment()
 {
-  // return equipment;
+  return equipment;
 }
 
 /*
@@ -443,7 +445,7 @@ QVector<Equipment> Person::getEquipment()
  */
 Equipment* Person::getEquipSlot(int index)
 {
- // return &equipment[index];
+  return equipment[index];
 }
 
 /*
@@ -459,7 +461,7 @@ Equipment* Person::getEquipSlot(QString slot_name)
   if (slot_name == "RIGHTARM") return getEquipSlot(2);
   if (slot_name == "TORSO")    return getEquipSlot(3);
   if (slot_name == "LEGS")     return getEquipSlot(4);
-  return NULL;
+  return 0;
 }
 
 /*
@@ -514,7 +516,7 @@ SkillSet* Person::getUseableSkills()
       if (!temp_skills.at(i)->getFlag(Skill::PHYSICAL))
         temp_skills.remove(i);
 
-  SkillSet* temp_skill_set = NULL;
+  SkillSet* temp_skill_set = 0;
 
   for (int i = 0; i < temp_skills.size(); i++)
     temp_skill_set->addSkill(temp_skills.at(i));
@@ -561,9 +563,9 @@ uint Person::getCreditLoot()
  * Inputs: none
  * Output: QVector<Item> - vector of items containing loot
  */
-QVector<Item> Person::getItemLoot()
+QVector<Item*> Person::getItemLoot()
 {
-  // return item_drops;
+  return item_drops;
 }
 
 /*
@@ -705,62 +707,62 @@ AttributeSet* Person::tempStats()
  *         Equipment* - pointer to the equipment to attach
  * Output: bool - true if the equip took place
  */
-bool Person::setEquipment(QString slot, Equipment e)
+bool Person::setEquipment(QString slot, Equipment* new_equipment)
 {
-  if (slot == "TWOHAND" && e.getEquipmentFlag(Equipment::TWOHAND))
+  if (slot == "TWOHAND" && new_equipment->getEquipmentFlag(Equipment::TWOHAND))
   {
-    if (getEquipSlot("LEFTARM") == NULL && getEquipSlot("RIGHTARM") == NULL)
+    if (getEquipSlot("LEFTARM") == 0 && getEquipSlot("RIGHTARM") == 0)
     {
-      // equipment[1] = e;
-      // equipment[2] = e;
-      // return true;
+      equipment[1] = new_equipment;
+      equipment[2] = new_equipment;
+      return true;
     }
   }
-  if (slot == "HEAD" && e.getEquipmentFlag(Equipment::HEAD))
+  if (slot == "HEAD" && new_equipment->getEquipmentFlag(Equipment::HEAD))
   {
-    if (getEquipSlot("HEAD") == NULL && getEquipSlot("HEAD") == NULL)
+    if (getEquipSlot("HEAD") == 0 && getEquipSlot("HEAD") == 0)
     {
-      // equipment[0] = e;
-      // return true;
+      equipment[0] = new_equipment;
+      return true;
     }
   }
-  if (slot == "LEFTARM" && e.getEquipmentFlag(Equipment::LEFTARM))
+  if (slot == "LEFTARM" && new_equipment->getEquipmentFlag(Equipment::LEFTARM))
   {
-    if (getEquipSlot("LEFTARM") == NULL)
+    if (getEquipSlot("LEFTARM") == 0)
     {
-      // equipment[1] = e;
-      // return true;
+      equipment[1] = new_equipment;
+      return true;
     }
   }
-  if (slot == "RIGHTARM" && e.getEquipmentFlag(Equipment::RIGHTARM))
+  if (slot == "RIGHTARM" && new_equipment->getEquipmentFlag(Equipment::RIGHTARM))
   {
-    if (getEquipSlot("RIGHTARM") == NULL)
+    if (getEquipSlot("RIGHTARM") == 0)
     {
-      // equipment[2] = e;
-      // return true;
+      equipment[2] = new_equipment;
+      return true;
     }
   }
-  if (slot == "TORSO" && e.getEquipmentFlag(Equipment::TORSO))
+  if (slot == "TORSO" && new_equipment->getEquipmentFlag(Equipment::TORSO))
   {
-    if (getEquipSlot("TORSO") == NULL)
+    if (getEquipSlot("TORSO") == 0)
     {
-      // equipment[3] = e;
-      // return true;
+      equipment[3] = new_equipment;
+      return true;
     }
   }
-  if (slot == "LEGS" && e.getEquipmentFlag(Equipment::LEGS))
+  if (slot == "LEGS" && new_equipment->getEquipmentFlag(Equipment::LEGS))
   {
-    if (getEquipSlot("LEGS") == NULL)
+    if (getEquipSlot("LEGS") == 0)
     {
-      // equipment[4] = e;
-      // return true;
+      equipment[4] = new_equipment;
+      return true;
     }
   }
   return false;
 }
 
 /*
- * Description: Sets the bubby version sprite of the perso
+ * Description: Sets the bubby version sprite of the person
  *
  * Inputs: Sprite* - the sprite to be set for the bubby version of person
  * Output: none
@@ -836,8 +838,9 @@ void Person::setCreditLoot(uint value)
  *
  * Inputs: QVector<Item> - vector of items the loot is to be set to.
  * Output: none
+ * TODO: Incomplete item drops addition [06-23-13]
  */
-void Person::setItemLoot(QVector<Item> items)
+void Person::setItemLoot(QVector<Item*> items)
 {
     // item_drops.clear();
     // for (int i = 0; i < items.size(); i++)

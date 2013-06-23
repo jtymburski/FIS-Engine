@@ -11,27 +11,31 @@
 
 #include <QDebug>
 #include <QtGui/QWidget>
+#include <algorithm>
 
 #include "Game/Player/Bubby.h"
 #include "Game/Player/Equipment.h"
+#include "ObjectSorter.h"
 
 class Inventory : public QWidget
 {
+  Q_OBJECT
+
 public:
   /* Constructor function */
-  Inventory(QString name, Sprite* thumb = NULL, QWidget *parent = NULL);
+  Inventory(QString name, Sprite* thumb = 0, QWidget *parent = 0);
 
   /* Destructor function */
   ~Inventory();
   
   enum InventoryState
   {
-    PLAYERSTORAGE = 1ul << 0,
-    SHIPSTORAGE   = 1ul << 1,
-    ENEMYSTORAGE  = 1ul << 2,
-    EMPTY         = 1ul << 3,
-    FULL          = 1ul << 4,
-    CANBEUPGRADED = 1ul << 5
+    PLAYERSTORAGE = 1ul << 1,
+    SHIPSTORAGE   = 1ul << 2,
+    ENEMYSTORAGE  = 1ul << 3,
+    CANBEUPGRADED = 1ul << 4,
+    OVERWEIGHT    = 1ul << 5,
+    ENABLED       = 1ul << 6
   };
   Q_DECLARE_FLAGS(InventoryFlags, InventoryState);
   InventoryFlags invflag_set;
@@ -121,22 +125,28 @@ signals:
  *============================================================================*/
 public:
   /* Attempts to add a Bubby to the invetory */
-  bool addBubby(Bubby* new_bubby);
+  bool addBubby(Bubby* new_bubby, bool bypass = false);
 
   /* Attempts to add a new equipment to the inventory */
-  bool addEquipment(Equipment* new_equipment);
+  bool addEquipment(Equipment* new_equipment, bool bypass = false);
 
   /* Attempts to add a new item to the inventory */
-  bool addItem(Item* new_item);
+  bool addItem(Item* new_item, bool bypass = false);
 
   /* Attempts to add a key item to the inventory */
-  bool addKeyItem(Item* new_item);
+  bool addKeyItem(Item* new_item, bool bypass = false);
+
+  /* Checks the ID of an Equipment object to the contained Equipment */
+  bool containsItem(int id);
 
   /* Removes a Bubby fgrom the inventory */
   Bubby* removeBubby(uint index);
 
-  /* Removes an equipment from the inventory */
+  /* Removes an equipment from the inventory given an index */
   Equipment* removeEquipment(uint index);
+
+  /* Removes an equipment from the inventory given a name */
+  Equipment* removeEquipment(QString name);
 
   /* Removes an item from the inventory given an index */
   Item* removeItem(uint index);

@@ -59,7 +59,7 @@ public:
 
 private:
   /* Equipment names and slots */
-  QVector<Equipment> equipment;
+  QVector<Equipment*> equipment;
 
   /* Modifier by which to change a Person's actual damage */
   double damage_modifier;
@@ -72,7 +72,7 @@ private:
   static QVector<uint> exp_table;
 
   /* Person's loot when killed */
-  QVector<Item> item_drops;
+  QVector<Item*> item_drops;
   uint experience_drop;
   uint credit_drop;
 
@@ -171,7 +171,7 @@ public:
   double getDmgMod();
 
   /* Methods for returning equipments */
-  QVector<Equipment> getEquipment();
+  QVector<Equipment*> getEquipment();
   Equipment* getEquipSlot(int index);
   Equipment* getEquipSlot(QString name);
 
@@ -188,7 +188,7 @@ public:
   /* Get loot values */
   uint getExpLoot();
   uint getCreditLoot();
-  QVector<Item> getItemLoot();
+  QVector<Item*> getItemLoot();
 
   /* Gets the person's level */
   uint getLevel();
@@ -215,7 +215,7 @@ public:
   AttributeSet* tempStats();
 
   /* Sets an equipment to a slot */
-  bool setEquipment(QString slot, Equipment e);
+  bool setEquipment(QString slot, Equipment* new_equipment);
 
   /* Sets the sprite of the Bubby */
   void setBubbySprite(Sprite* new_sprite);
@@ -236,7 +236,7 @@ public:
   void setCreditLoot(uint value);
 
   /* Set's the person's item drops. */
-  void setItemLoot(QVector<Item> items);
+  void setItemLoot(QVector<Item*> items);
 
   /* Sets the person's level */
   bool setLevel(const uint &new_level);
@@ -257,10 +257,10 @@ public:
   void setRank(QString new_rank);
 
   /* Sets the first person sprite */
-  void setFirstPerson(Sprite* s = NULL);
+  void setFirstPerson(Sprite* s = 0);
 
   /* Sets the third person sprite */
-  void setThirdPerson(Sprite* s = NULL);
+  void setThirdPerson(Sprite* s = 0);
 
   /* Methods for setting stat values */
   void setBaseStats(AttributeSet new_stat_set);

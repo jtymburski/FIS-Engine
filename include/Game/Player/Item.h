@@ -22,7 +22,7 @@ class Item
 {
 public:
   /* Item constructor function */
-  Item(QString name, uint value = 0, Sprite* thumbnail = NULL, double mass = 0);
+  Item(QString name, uint value = 0, Sprite* thumbnail = 0, double mass = 0);
 
   /* Annihilates an Item object */
   ~Item();

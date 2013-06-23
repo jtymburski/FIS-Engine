@@ -17,7 +17,7 @@ class BubbyFlavour
 {
 public:
   /* Constructs a BubbyFlavour object */
-  BubbyFlavour(QString name, AttributeSet stats, SkillSet* skills = NULL);
+  BubbyFlavour(QString name, AttributeSet stats, SkillSet* skills = 0);
 
   /* Annihilates a BubbyFlavour object */
  ~BubbyFlavour();

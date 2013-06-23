@@ -66,7 +66,7 @@ bool Party::removeMember(uint index)
   if (members.at(index))
   {
     delete members.at(index);
-    members[index] = NULL;
+    members[index] = 0;
     members.remove(index);
     return true;
   }
@@ -88,7 +88,7 @@ bool Party::removeMember(QString value)
     if (members.at(i)->getName() == value)
     {
       delete members.at(i);
-      members[i] = NULL;
+      members[i] = 0;
       members.remove(i);
       return true;
     }
@@ -177,7 +177,7 @@ Person* Party::getMember(uint index)
 {
   if ((int)index < members.size())
     return members.at(index);
-  return NULL;
+  return 0;
 }
 
 /*

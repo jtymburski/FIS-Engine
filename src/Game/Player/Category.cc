@@ -40,7 +40,7 @@ Category::Category(QString name, AttributeSet attributes, SkillSet* skills)
   setName(name);
   setAttrSet(attributes);
   setSkillSet(skills);
-  if (getSkillSet() != NULL)
+  if (getSkillSet() != 0)
     cleanUp();
 }
 
@@ -53,7 +53,7 @@ Category::Category(QString name, AttributeSet attributes, SkillSet* skills)
 Category::Category(QString name)
 {
   setName(name);
-  skill_set = NULL;
+  skill_set = 0;
   cleanUp();
 }
 

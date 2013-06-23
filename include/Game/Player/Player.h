@@ -17,7 +17,7 @@ class Player
 {
 public:
   /* Player constructor object */
-  Player(Party* p_sleth = NULL, Party* p_racks = NULL, int x = 0, int y = 0);
+  Player(Party* p_sleth = 0, Party* p_racks = 0, int x = 0, int y = 0);
 
   /* Annihilates a player object */
   ~Player(); 
@@ -103,10 +103,10 @@ public:
   void setCredits(unsigned long value);
 
   /* Sets the sleuth party */
-  void setSleuth(Party* p = NULL);
+  void setSleuth(Party* p = 0);
 
   /* Sets the bearcks party */
-  void setBearacks(Party* p = NULL);
+  void setBearacks(Party* p = 0);
 
   /* Sets the gravity the player is experiencing */
   void setGravity(double new_value);

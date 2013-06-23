@@ -34,10 +34,13 @@ const uint Inventory::kMAX_EQUIPMENT        = 100000;      /* 10 ^ 5 */
  *============================================================================*/
 
 /*
- * Description:
+ * Description: Inventory class constructor: instantiates an inventory object
+ *              given a name (describing the current "size" or "type" of the
+ *              inventory, a thumbnail Sprite to display a picture of it. The
+ *              limits of the inventory must be set afterwards.
  *
- * Inputs: none
- * Output: none
+ * Inputs: QString name - the name describing the current size or type of inv.
+ *         Sprite* thumb - the thumbnail detailing an image of the inventory.
  */
 Inventory::Inventory(QString name, Sprite *thumb, QWidget *parent)
     : QWidget(parent)
@@ -62,22 +65,14 @@ Inventory::Inventory(QString name, Sprite *thumb, QWidget *parent)
   setDescription("????");
 
   /* Pointer setup */
-  setBackdrop(NULL);
+  setBackdrop(0);
 
   /* Flag setup */
-  setFlag(Inventory::PLAYERSTORAGE, false);
-  setFlag(Inventory::SHIPSTORAGE, false);
-  setFlag(Inventory::ENEMYSTORAGE, false);
-  setFlag(Inventory::EMPTY, true);
-  setFlag(Inventory::FULL, false);
-  setFlag(Inventory::CANBEUPGRADED, true);
+  setFlag(Inventory::PLAYERSTORAGE, true);
 }
 
 /*
- * Description:
- *
- * Inputs: none
- * Output: none
+ * Description: Annihilates an inventory object
  */
 Inventory::~Inventory() {}
 
@@ -86,15 +81,22 @@ Inventory::~Inventory() {}
  *============================================================================*/
 
 /*
- * Description:
+ * Description: Calculates the current mass stored within the inventory. This
+ *              function cannot be called publicly--but will be called
+ *              internally by the inventory when the mass of the inventory
+ *              needs to be verified or has changed.
  *
  * Inputs: none
  * Output: none
  */
 void Inventory::calcMass()
 {
+  /* Initially resets the class variable to zero */
   carry_mass = 0;
+  setFlag(Inventory::OVERWEIGHT, false);
 
+  /* Then, recounts the mass contained in each vector of items. Note that key
+     items are not counted as they are assumed to have no mass. */
   for (int i = 0; i < bubbies.size(); i++)
       carry_mass += getBubby(i)->getMass();
 
@@ -102,7 +104,10 @@ void Inventory::calcMass()
       carry_mass += getEquip(i)->getMass();
 
   for (int i = 0; i < items.size(); i++)
-      carry_mass+= getItem(i)->getMass();
+      carry_mass += getItem(i)->getMass();
+
+  if (carry_mass > max_carry_mass)
+      setFlag(Inventory::OVERWEIGHT, false);
 }
 
 /*============================================================================
@@ -110,14 +115,102 @@ void Inventory::calcMass()
  *============================================================================*/
 
 /*
- * Description:
+ * Description: This function attempts to add a Bubby to the vector of Bubbies
+ *              in the inventory
  *
- * Inputs: none
- * Output: none
+ * Inputs: Bubby* new_bubby - pointer to the bubby object to be added
+ *         bool bypass - true if containsItem check to be bypassed
+ * Output: bool - true if the Bubby was added successfully, false otherwise
  */
-bool Inventory::addBubby(Bubby* new_bubby)
+bool Inventory::addBubby(Bubby* new_bubby, bool bypass)
 {
-  return true; //warning
+
+  if (bubbies.size() >= (int)bubby_limit)
+  {
+    emit full((QString)"Maximum Bubbies Reached");
+    return false;
+  }
+
+  /* Assert the Bubbies ID is not already contained */
+  if (bypass || !containsItem(new_bubby->getId()))
+  {
+    bubbies.push_back(new_bubby);
+
+    /* Re-check mass, may emit carry mass exceeded limit */
+    calcMass();
+    return true;
+  }
+
+  return false;
+}
+
+/*
+ * Description: This function attempts to add an equipment to the vector of
+ *              equipments in the inventory.
+ *
+ * Inputs: Bubby* new_equipment - pointer to the Equipment object to be added
+ *         bool bypass - true if containsItem check to be bypassed
+ * Output: bool - true if the Equipment was added successfully, false otherwise
+ */
+bool Inventory::addEquipment(Equipment* new_equipment, bool bypass)
+{
+  if (equipments.size() >= (int)equip_limit)
+  {
+    emit full((QString)"Maximum Equipments Reached");
+    return false;
+  }
+
+  if (getEquipCount(new_equipment->getName()) >= equip_each_limit)
+  {
+    emit full((QString)"Maximum Equipment of Same Type Reached");
+    return false;
+  }
+
+  /* Assert the Equipmetns ID is not already contained */
+  if (bypass || containsItem(new_equipment->getId()))
+  {
+    equipments.push_back(new_equipment);
+
+    /* Re-chec mass, may emit carry mass exceeded limit */
+    calcMass();
+    return true;
+  }
+
+  return false;
+}
+
+/*
+ * Description: This function attempts to add an item to the vector of items
+ *              contained in the inventory.
+ *
+ * Inputs: Item* - pointer to the item object to be added.
+ *         bool bypass - trueif containsItem check to be bypassed
+ * Output: bool - true if the Item was added successfully, false otherwise
+ */
+bool Inventory::addItem(Item* new_item, bool bypass)
+{
+  if (items.size() >= (int)item_limit)
+  {
+    emit full((QString)"Maximum Items Reached");
+    return false;
+  }
+
+  if (getItemCount(new_item->getName()) >= item_each_limit)
+  {
+    emit full((QString)"Maximum Item of Same Type Reached");
+    return false;
+  }
+
+  if (bypass || containsItem(new_item->getId()))
+  {
+    items.push_back(new_item);
+
+    /* Re-check mass, may emit carry mass exceeded limit */
+    calcMass();
+    return true;
+  }
+
+  return false;
 }
 
 /*
@@ -126,101 +219,177 @@ bool Inventory::addBubby(Bubby* new_bubby)
  * Inputs: none
  * Output: none
  */
-bool Inventory::addEquipment(Equipment* new_equipment)
+bool Inventory::addKeyItem(Item* new_item, bool bypass)
 {
-  return true; //warning
+  if (!containsItem(new_item->getId()))
+  {
+    key_items.push_back(new_item);
+    return true;
+  }
+
+  return false;
 }
 
 /*
- * Description:
+ * Description: Verifies that a given ID is not already contained within the
+ *              inventory.
  *
- * Inputs: none
- * Output: none
+ * Inputs: int id - an ID of an item to be checked
+ * Output: bool - true if the item is already contained in the inv, else false
  */
-bool Inventory::addItem(Item* new_item)
+bool Inventory::containsItem(int id)
 {
-  return true; //warning
+  bool contains_item = false;
+
+  for (int i = 0; i < items.size() && !contains_item; i++)
+    if (items.at(i)->getId() == id)
+      contains_item = true;
+
+  for (int i = 0; i < bubbies.size() && !contains_item; i++)
+    if (bubbies.at(i)->getId() == id)
+      contains_item = true;
+
+  for (int i = 0; i < equipments.size() && !contains_item; i++)
+    if (equipments.at(i)->getId() == id)
+      contains_item = true;
+
+  if (contains_item)
+      emit full((QString)"ERROR: DUPLICATE ITEM ID");
+  return contains_item;
 }
 
-/*
- * Description:
- *
- * Inputs: none
- * Output: none
- */
-bool Inventory::addKeyItem(Item* new_item)
-{
-  return true; //warning
-}
 
 /*
- * Description:
+ * Description: Attempts to remove a Bubby at a given index from the vector of
+ *              Bubbies in the inventory.
  *
- * Inputs: none
- * Output: none
+ * Inputs: uint index -- the index of the Bubby to be remvoed
+ * Output: Bubby* - pointer to the removed Bubby object, if it exists.
  */
 Bubby* Inventory::removeBubby(uint index)
 {
-  return NULL; //warning
+  if (index > 0 && (int)index < bubbies.size())
+  {
+    Bubby* removed_bubby = bubbies.value(index);
+    bubbies[index] = 0;
+    bubbies.remove(index);
+    carry_mass -= removed_bubby->getMass();
+    return removed_bubby;
+  }
+
+  return 0;
 }
 
 /*
- * Description:
+ * Description: Attempts to remove an Equipment at a given index from the vector
+ *              of Equipments in the inventory.
  *
- * Inputs: none
- * Output: none
+ * Inputs: uint index -- the index of the Equipment to be removed
+ * Output: Equipment* - pointer to the removed Equipment object, if it exists.
  */
 Equipment* Inventory::removeEquipment(uint index)
 {
-  return NULL; //warning
+  if (index > 0 && (int)index < equipments.size())
+  {
+    Equipment* removed_equipment = equipments.value(index);
+    equipments[index] = 0;
+    equipments.remove(index);
+    carry_mass -= removed_equipment->getMass();
+    return removed_equipment;
+  }
+
+  return 0;
 }
 
 /*
- * Description:
+ * Description: Attempts to remove an Equipment of a given name from the vector
+ *              of Equipments in the inventory.
  *
- * Inputs: none
- * Output: none
+ * Inputs: QString name - the name of the equipment to be removed
+ * Output: Equipment* - pointer to the removed Equipment object, if it exists.
+ */
+Equipment* Inventory::removeEquipment(QString name)
+{
+  for (int i = 0; i < equipments.size(); i++)
+    if (equipments.at(i)->getName() == name)
+      return removeEquipment(i);
+  return 0;
+}
+
+/*
+ * Description: Attempts to remove an Item at a given index from the vector of
+ *              Items in the inventory.
+ *
+ * Inputs: uint index - the index of the Item to be removed
+ * Output: Item* - pointer to the removed Item object, if it exists.
  */
 Item* Inventory::removeItem(uint index)
 {
-  return NULL; //warning
+  if (index > 0 && (int)index < items.size())
+  {
+    Item* removed_item = items.value(index);
+    items[index] = 0;
+    items.remove(index);
+    carry_mass -= removed_item->getMass();
+    return removed_item;
+  }
+
+  return 0;
 }
 
 /*
- * Description:
+ * Description: Attempts to remove an Item of a given name from the vector of
+ *              Items in the invetory.
  *
- * Inputs: none
- * Output: none
+ * Inputs: QString - name of the item to be removed
+ * Output: Item* - pointer to the removed item, it it exist.
  */
 Item* Inventory::removeItem(QString name)
 {
-  return NULL; //warning
+  for (int i = 0; i < items.size(); i++)
+    if (items.at(i)->getName() == name)
+        return removeItem(i);
+  return 0;
 }
 
 /*
- * Description:
+ * Description: Attempts to remove a Key Item given an index from the vector of
+ *              key items in the inventory.
  *
- * Inputs: none
- * Output: none
+ * Inputs: uint index - the index of the key item to be removed
+ * Output: Item* - pointer to the removed key item, if it exists.
  */
 Item* Inventory::removeKeyItem(uint index)
 {
-  return NULL; //warning
+  if (index > 0 && (int)index < key_items.size())
+  {
+    Item* removed_item = key_items.value(index);
+    key_items[index] = 0;
+    key_items.remove(index);
+    return removed_item;
+  }
+
+  return 0;
 }
 
 /*
- * Description:
+ * Description: Attempts to remove a Key Item of a given name from the vector of
+ *              key items in the inventory.
  *
- * Inputs: none
- * Output: none
+ * Inputs: QString name - the name of the key item to be removed
+ * Output: Item* - pointer to the removed key item, if it exists.
  */
 Item* Inventory::removeKeyItem(QString name)
 {
-  return NULL; //warning
+  for (int i = 0; i < key_items.size(); i++)
+    if (key_items.at(i)->getName() == name)
+      return removeKeyItem(i);
+  return 0;
 }
 
 /*
- * Description:
+ * Description: Prints out all the information describing the inventory by
+ *              sub-calling all the other print functions.
  *
  * Inputs: none
  * Output: none
@@ -238,7 +407,8 @@ void Inventory::printAll()
 }
 
 /*
- * Description:
+ * Description: Prints out the basic information of the inventory, its name
+ *              and limits etc.
  *
  * Inputs: none
  * Output: none
@@ -257,7 +427,7 @@ void Inventory::printBasic()
 }
 
 /*
- * Description:
+ * Description: Prints out a list of the Bubies contained within the Inv.
  *
  * Inputs: none
  * Output: none
@@ -269,7 +439,7 @@ void Inventory::printBubbies()
 }
 
 /*
- * Description:
+ * Description: Prints out a list of the Equipment contained within the Inv.
  *
  * Inputs: none
  * Output: none
@@ -281,7 +451,7 @@ void Inventory::printEquipment()
 }
 
 /*
- * Description:
+ * Description: Prints out the state of the flags within the Inv.
  *
  * Inputs: none
  * Output: none
@@ -291,13 +461,13 @@ void Inventory::printFlags()
   qDebug() << "PlayerStorage: " << getFlag(Inventory::PLAYERSTORAGE);
   qDebug() << "ShipStorage: " << getFlag(Inventory::SHIPSTORAGE);
   qDebug() << "EnemyStorage: " << getFlag(Inventory::ENEMYSTORAGE);
-  qDebug() << "Empty: " << getFlag(Inventory::EMPTY);
-  qDebug() << "Full: " << getFlag(Inventory::FULL);
   qDebug() << "CanBeUpgraded: " << getFlag(Inventory::CANBEUPGRADED);
+  qDebug() << "Overweight: " << getFlag(Inventory::OVERWEIGHT);
+  qDebug() << "Enabled: " << getFlag(Inventory::ENABLED);
 }
 
 /*
- * Description:
+ * Description: Prints out a list of the items contained within the inv.
  *
  * Inputs: none
  * Output: none
@@ -309,7 +479,7 @@ void Inventory::printItems()
 }
 
 /*
- * Description:
+ * Description: Prints out a list of the key items contained within the inv.
  *
  * Inputs: none
  * Output: none
@@ -328,7 +498,8 @@ void Inventory::printKeyItems()
  */
 bool Inventory::sortBubbies(ItemSorts sort_by)
 {
-
+// TODO: UNFINISHED
+    return false;
 }
 
 /*
@@ -339,6 +510,8 @@ bool Inventory::sortBubbies(ItemSorts sort_by)
  */
 bool Inventory::sortEquipments(ItemSorts sort_by)
 {
+    //TODO: UNFINISHED
+    return false;
 
 }
 
@@ -350,7 +523,8 @@ bool Inventory::sortEquipments(ItemSorts sort_by)
  */
 bool Inventory::sortItems(ItemSorts sort_by)
 {
-
+//TODO: UNFINISHED
+    return false;
 }
 
 /*
@@ -361,14 +535,16 @@ bool Inventory::sortItems(ItemSorts sort_by)
  */
 bool Inventory::sortKeyItems(ItemSorts sort_by)
 {
+    //TODO: UNFINISHED
+    return false;
 
 }
 
 /*
- * Description:
+ * Description: Returns the backdrop sprite of the Inventory.
  *
  * Inputs: none
- * Output: none
+ * Output: Sprite* - pointer to the backdrop of the inventory.
  */
 Sprite* Inventory::getBackdrop()
 {
@@ -376,24 +552,24 @@ Sprite* Inventory::getBackdrop()
 }
 
 /*
- * Description:
+ * Description: Returns a pointer to a Bubby at a given index, if one exists.
  *
  * Inputs: none
- * Output: none
+ * Output: Bubby* - pointer to the Bubby at a given index
  */
 Bubby* Inventory::getBubby(uint index)
 {
-  if (bubbies.size() > index)
+  if (bubbies.size() > (int)index)
     return bubbies.at(index);
   else
-    return NULL;
+    return 0;
 }
 
 /*
- * Description:
+ * Description: Returns the maximum limit of Bubbies allowed in the inventory.
  *
  * Inputs: none
- * Output: none
+ * Output: uint - the maximum limit of Bubbies allowed in the inventory.
  */
 uint Inventory::getBubbyLimit()
 {
@@ -401,10 +577,10 @@ uint Inventory::getBubbyLimit()
 }
 
 /*
- * Description:
+ * Description: Returns the vector containing the Bubby pointers
  *
  * Inputs: none
- * Output: none
+ * Output: QVector<Bubby*> - the vector containing the Bubby pointers.
  */
 QVector<Bubby*> Inventory::getBubbyList()
 {
@@ -412,10 +588,10 @@ QVector<Bubby*> Inventory::getBubbyList()
 }
 
 /*
- * Description:
+ * Description: Returns the currently known sorted state of the Bubbies.
  *
  * Inputs: none
- * Output: none
+ * Output: ItemSorts - enumerated state describing the sorting of Bubbies
  */
 ItemSorts Inventory::getBubbyState()
 {
@@ -423,10 +599,10 @@ ItemSorts Inventory::getBubbyState()
 }
 
 /*
- * Description:
+ * Description: Returns the description of the inventory.
  *
  * Inputs: none
- * Output: none
+ * Output: QString - the description of the inventory.
  */
 QString Inventory::getDescription()
 {
@@ -434,24 +610,24 @@ QString Inventory::getDescription()
 }
 
 /*
- * Description:
+ * Description: Returns a pointer to the equipment at a given index.
  *
- * Inputs: none
- * Output: none
+ * Inputs: uint - index of the equipment to be returned
+ * Output: Equipment* - pointer to the equipment contained
  */
 Equipment* Inventory::getEquip(uint index)
 {
-  if (equipments.size() > index)
+  if (equipments.size() > (int)index)
       return equipments.at(index);
   else
-      return NULL;
+      return 0;
 }
 
 /*
- * Description:
+ * Description: Returns the # of equipments of a given name
  *
- * Inputs: none
- * Output: none
+ * Inputs: QString - name of an equipment to be checked
+ * Output: uint - the count of the items contained within the inventory
  */
 uint Inventory::getEquipCount(QString name)
 {
@@ -465,10 +641,10 @@ uint Inventory::getEquipCount(QString name)
 }
 
 /*
- * Description:
+ * Description: Returns the equip each limit set value.
  *
  * Inputs: none
- * Output: none
+ * Output: uint - equip each limit
  */
 uint Inventory::getEquipEachLimit()
 {
@@ -476,10 +652,10 @@ uint Inventory::getEquipEachLimit()
 }
 
 /*
- * Description:
+ * Description: Returns the maximum number of equipment allowed
  *
  * Inputs: none
- * Output: none
+ * Output: uint - maximum equip limit
  */
 uint Inventory::getEquipLimit()
 {
@@ -487,10 +663,10 @@ uint Inventory::getEquipLimit()
 }
 
 /*
- * Description:
+ * Description: Returns the enumerated known sorted state of equipment
  *
  * Inputs: none
- * Output: none
+ * Output: ItemSorts - enumerated sorted state of equipment
  */
 ItemSorts Inventory::getEquipState()
 {
@@ -498,10 +674,10 @@ ItemSorts Inventory::getEquipState()
 }
 
 /*
- * Description:
+ * Description: Returns a list of all the equipment in the inventory
  *
  * Inputs: none
- * Output: none
+ * Output: QVector<Equipment*> - vector of pointers to the contained equipment
  */
 QVector<Equipment*> Inventory::getEquipList()
 {
@@ -509,35 +685,35 @@ QVector<Equipment*> Inventory::getEquipList()
 }
 
 /*
- * Description:
+ * Description: Evaluates a given InventoryState flag
  *
- * Inputs: none
- * Output: none
+ * Inputs: InventoryState flag - the value ofa flag set to be evaluated
+ * Output: bool - the value of a given InventoryState flag
  */
 bool Inventory::getFlag(InventoryState flags)
 {
-  return invflag_set.testFlag(flags);
+  return (invflag_set.testFlag(flags));
 }
 
 /*
- * Description:
+ * Description: Returns a pointer to an item object at a given index.
  *
- * Inputs: none
- * Output: none
+ * Inputs: uint - the index of the item to be returned
+ * Output: Item* - pointer to the item object
  */
 Item* Inventory::getItem(uint index)
 {
-  if (items.size() > index)
+  if (items.size() > (int)index)
     return items.at(index);
   else
-    return NULL;
+    return 0;
 }
 
 /*
- * Description:
+ * Description: Returns the count of items of a given name in the inventory
  *
- * Inputs: none
- * Output: none
+ * Inputs: QString - name of the item to be looked for.
+ * Output: uint - the number of the item found.
  */
 uint Inventory::getItemCount(QString name)
 {
@@ -551,10 +727,10 @@ uint Inventory::getItemCount(QString name)
 }
 
 /*
- * Description:
+ * Description: Returns the get each limit for items.
  *
  * Inputs: none
- * Output: none
+ * Output: uint - the item each limit
  */
 uint Inventory::getItemEachLimit()
 {
@@ -562,10 +738,10 @@ uint Inventory::getItemEachLimit()
 }
 
 /*
- * Description:
+ * Description: Returns the item limit.
  *
  * Inputs: none
- * Output: none
+ * Output: uint - the item limit
  */
 uint Inventory::getItemLimit()
 {
@@ -573,10 +749,10 @@ uint Inventory::getItemLimit()
 }
 
 /*
- * Description:
+ * Description: Returns the list of items in the inventory.
  *
  * Inputs: none
- * Output: none
+ * Output: QVector<Item*> - the vector of items of the inventory
  */
 QVector<Item*> Inventory::getItemList()
 {
@@ -584,10 +760,10 @@ QVector<Item*> Inventory::getItemList()
 }
 
 /*
- * Description:
+ * Description: Returns the enumerated state of the items.
  *
  * Inputs: none
- * Output: none
+ * Output: ItemSorts - the enumerated state of the items.
  */
 ItemSorts Inventory::getItemState()
 {
@@ -595,24 +771,24 @@ ItemSorts Inventory::getItemState()
 }
 
 /*
- * Description:
+ * Description: Returns the pointer to the key item at a given index.
  *
- * Inputs: none
- * Output: none
+ * Inputs: uint - index of key items to be checked.
+ * Output: Item* - pointer to the item at the given index.
  */
 Item* Inventory::getKeyItem(uint index)
 {
   if ((uint)key_items.size() > index)
     return key_items.at(index);
   else
-    return NULL;
+    return 0;
 }
 
 /*
- * Description:
+ * Description: Returns a pointer to a key item of a given name.
  *
- * Inputs: none
- * Output: none
+ * Inputs: QString - name of the item to be looked for.
+ * Output: Item* - pointer to the key item (if found).
  */
 Item* Inventory::getKeyItem(QString name)
 {
@@ -620,14 +796,14 @@ Item* Inventory::getKeyItem(QString name)
    if (key_items.value(i)->getName() == name)
      return key_items.at(i);
 
-  return NULL;
+  return 0;
 }
 
 /*
- * Description:
+ * Description: Returns the list of key items.
  *
  * Inputs: none
- * Output: none
+ * Output: QVector<Item*> - the vector of key items of the inventory.
  */
 QVector<Item*> Inventory::getKeyItemList()
 {
@@ -635,10 +811,10 @@ QVector<Item*> Inventory::getKeyItemList()
 }
 
 /*
- * Description:
+ * Description: Returns the enumerated state of the key items vector.
  *
  * Inputs: none
- * Output: none
+ * Output: ItemSorts - the enumerated state of the key items vector.
  */
 ItemSorts Inventory::getKeyItemState()
 {
@@ -646,10 +822,10 @@ ItemSorts Inventory::getKeyItemState()
 }
 
 /*
- * Description:
+ * Description: Returns the max carry mass set value.
  *
  * Inputs: none
- * Output: none
+ * Output: double - the maximum carry mass of the inventory.
  */
 double Inventory::getMaxCarryMass()
 {
@@ -657,10 +833,10 @@ double Inventory::getMaxCarryMass()
 }
 
 /*
- * Description:
+ * Description: Returns the QString of the name of the inventory
  *
  * Inputs: none
- * Output: none
+ * Output: QString - the name of the inventory.
  */
 QString Inventory::getName()
 {
@@ -668,10 +844,10 @@ QString Inventory::getName()
 }
 
 /*
- * Description:
+ * Description: Returns the poitner to the sprite of the inventory.
  *
  * Inputs: none
- * Output: none
+ * Output: Sprite* - pointer to the thumbnail
  */
 Sprite* Inventory::getThumb()
 {
@@ -679,10 +855,10 @@ Sprite* Inventory::getThumb()
 }
 
 /*
- * Description:
+ * Description: Returns the mass of the Inventory.
  *
  * Inputs: none
- * Output: none
+ * Output: double - the mass of the Inventory.
  */
 double Inventory::getMass()
 {
@@ -691,9 +867,9 @@ double Inventory::getMass()
 }
 
 /*
- * Description:
+ * Description: Assigns a new sprite to the backdrop of the inventory.
  *
- * Inputs: none
+ * Inputs: Sprite* - a new back drop to be assigned
  * Output: none
  */
 void Inventory::setBackdrop(Sprite* new_backdrop)
@@ -702,9 +878,9 @@ void Inventory::setBackdrop(Sprite* new_backdrop)
 }
 
 /*
- * Description:
+ * Description: Assigns a new bubby limit to the inventory
  *
- * Inputs: none
+ * Inputs: uint - the new limit to be set (within kMIN_BUBBIES)
  * Output: none
  */
 void Inventory::setBubbyLimit(uint new_bubby_limit)
@@ -714,9 +890,9 @@ void Inventory::setBubbyLimit(uint new_bubby_limit)
 }
 
 /*
- * Description:
+ * Description: Assigns a new enumerated sorted state to the Bubbies.
  *
- * Inputs: none
+ * Inputs: ItemSorts - enumerated state of the Bubbies vector.
  * Output: none
  */
 void Inventory::setBubbyState(ItemSorts new_state)
@@ -725,9 +901,9 @@ void Inventory::setBubbyState(ItemSorts new_state)
 }
 
 /*
- * Description:
+ * Description: Assigns a new description to the inventory.
  *
- * Inputs: none
+ * Inputs: QString - the new description of the inventory.
  * Output: none
  */
 void Inventory::setDescription(QString new_description)
@@ -736,9 +912,9 @@ void Inventory::setDescription(QString new_description)
 }
 
 /*
- * Description:
+ * Description: Assigns a new equip each limit to the inventory.
  *
- * Inputs: none
+ * Inputs: ushort - the new equip each limit of the inventory, within constants.
  * Output: none
  */
 void Inventory::setEquipEachLimit(ushort new_equip_each_limit)
@@ -749,9 +925,9 @@ void Inventory::setEquipEachLimit(ushort new_equip_each_limit)
 }
 
 /*
- * Description:
+ * Description: Assigns a new equip limit to the inventory.
  *
- * Inputs: none
+ * Inputs: uint - the new equip limit of the inventory, within constants.
  * Output: none
  */
 void Inventory::setEquipLimit(uint new_equip_limit)
@@ -761,9 +937,9 @@ void Inventory::setEquipLimit(uint new_equip_limit)
 }
 
 /*
- * Description:
+ * Description: Assigsn a new enumerated equip state of the inventory.
  *
- * Inputs: none
+ * Inputs: ItemSorts - enumerated equip state of the Inventory.
  * Output: none
  */
 void Inventory::setEquipState(ItemSorts new_state)
@@ -772,20 +948,21 @@ void Inventory::setEquipState(ItemSorts new_state)
 }
 
 /*
- * Description:
+ * Description: Assigns a given InventoryState flag a value.
  *
- * Inputs: none
+ * Inputs: InventoryState flags - the flag to be assigned.
+ *         set_value - the value to set the flag to.
  * Output: none
  */
 void Inventory::setFlag(InventoryState flags, bool set_value)
 {
-  (set_value) ? (invflag_set |= flags) : (invflag_set ^= flags);
+  (set_value) ? (invflag_set |= flags) : (invflag_set &= !flags);
 }
 
 /*
- * Description:
+ * Description: Assigns a new item each limit to the inventory.
  *
- * Inputs: none
+ * Inputs: ushort - the new item each limit.
  * Output: none
  */
 void Inventory::setItemEachLimit(ushort new_item_each_limit)
@@ -796,9 +973,9 @@ void Inventory::setItemEachLimit(ushort new_item_each_limit)
 }
 
 /*
- * Description:
+ * Description: Assigns a new item limit to the inventory.
  *
- * Inputs: none
+ * Inputs: uint - the new item limit
  * Output: none
  */
 void Inventory::setItemLimit(uint new_item_limit)
@@ -808,9 +985,9 @@ void Inventory::setItemLimit(uint new_item_limit)
 }
 
 /*
- * Description:
+ * Description: Assign an enumerated item state to the inventory.
  *
- * Inputs: none
+ * Inputs: ItemSorts - the enumerated state of the item vector.
  * Output: none
  */
 void Inventory::setItemState(ItemSorts new_state)
@@ -819,9 +996,9 @@ void Inventory::setItemState(ItemSorts new_state)
 }
 
 /*
- * Description:
+ * Description: Assigns an enumerated key item state to the inventory.
  *
- * Inputs: none
+ * Inputs: ItemSorts - the enumerated state of the key item vector.
  * Output: none
  */
 void Inventory::setKeyItemState(ItemSorts new_state)
@@ -830,9 +1007,15 @@ void Inventory::setKeyItemState(ItemSorts new_state)
 }
 
 /*
- * Description:
+ * Description: Assigns new limits to each of the limits by calling their
+ *              respective functions.
  *
- * Inputs: none
+ * Inputs: uint bub_lim - the new value of the bubby limit.
+ *         ushort eq_each_lim - the new value of equip each limit.
+ *         uint eq_lim - the new value of equip limit.
+ *         ushort it_each_lim - the new value of item each limit.
+ *         uint it_lim - the new value of item limit.
+ *         double mass - the new value of max carry mass.
  * Output: none
  */
 void Inventory::setLimits(uint bub_lim, ushort eq_each_lim, uint eq_lim,
@@ -843,13 +1026,14 @@ void Inventory::setLimits(uint bub_lim, ushort eq_each_lim, uint eq_lim,
   setEquipLimit(eq_lim);
   setItemEachLimit(it_each_lim);
   setItemLimit(it_lim);
+
   setMaxCarryMass(mass);
 }
 
 /*
- * Description:
+ * Description: Assigsn a new value to max carry mass.
  *
- * Inputs: none
+ * Inputs: double new_max_carry_mass - the new maximum carry mass of the inv.
  * Output: none
  */
 void Inventory::setMaxCarryMass(double new_max_carry_mass)
@@ -860,9 +1044,9 @@ void Inventory::setMaxCarryMass(double new_max_carry_mass)
 }
 
 /*
- * Description:
+ * Description: Assigns a new name to the inventory.
  *
- * Inputs: none
+ * Inputs: QString - the new name to be assigned.
  * Output: none
  */
 void Inventory::setName(QString new_name)
@@ -871,9 +1055,9 @@ void Inventory::setName(QString new_name)
 }
 
 /*
- * Description:
+ * Description: Assigns a new thumbnail to the inventory.
  *
- * Inputs: none
+ * Inputs: Sprite* - the new thumbnail of the inventory.
  * Output: none
  */
 void Inventory::setThumb(Sprite* new_thumbnail)

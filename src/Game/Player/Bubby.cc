@@ -74,7 +74,7 @@ void Bubby::calcExpTable()
  * Description: Sets the pointer to the current sprite for the Bubby
  *              corresponding to its current tier (if one exists), else sets
  *              it to the highest tier sprite it can (if one exists), else
- *              sets the pointer to null.
+ *              sets the pointer to 0.
  *
  * Inputs: none
  * Output: bool - true if a sprite was actually set
@@ -92,7 +92,7 @@ bool Bubby::setSprite()
     current_sprite = getType()->getSprites().at(size - 1);
     return true;
   }
-  current_sprite = NULL;
+  current_sprite = 0;
   return false;
 }
 

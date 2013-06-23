@@ -38,11 +38,11 @@ Race::Race(QString name, AttributeSet attributes, SkillSet* skills)
 {
   setName(name);
   setAttrSet(attributes);
-  if (skills != NULL)
+  if (skills != 0)
     setSkillSet(skills);
   else
-    skill_set = NULL;
-  if (skills != NULL)
+    skill_set = 0;
+  if (skills != 0)
     cleanUp();
 }
 
@@ -55,7 +55,7 @@ Race::Race(QString name, AttributeSet attributes, SkillSet* skills)
 Race::Race(QString name)
 {
   setName(name);
-  skill_set = NULL;
+  skill_set = 0;
   cleanUp();
 }
 

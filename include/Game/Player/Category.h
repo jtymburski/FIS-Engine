@@ -23,7 +23,7 @@ class Category
 {
 public:
   /* Category constructor */
-  Category(QString name, AttributeSet attributes, SkillSet* skills = NULL);
+  Category(QString name, AttributeSet attributes, SkillSet* skills = 0);
 
   /* Default Category Constructor given a name */
   Category(QString name);

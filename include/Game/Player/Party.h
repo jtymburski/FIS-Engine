@@ -18,7 +18,7 @@ class Party : public QWidget
 {
 public:
   /* Creates a party object */
-  Party(Person* p_main, ushort max, Inventory* = NULL, QWidget* parent = 0);
+  Party(Person* p_main, ushort max, Inventory* = 0, QWidget* parent = 0);
 
   /* Annihilates a party object */
   ~Party();
@@ -86,10 +86,10 @@ public:
   int getMaxSize();
 
   /* Sets the inventory of the party */
-  void setInventory(Inventory* i = NULL);
+  void setInventory(Inventory* i = 0);
 
   /* Sets the main member of the party */
-  void setMainMember(Person* p = NULL);
+  void setMainMember(Person* p = 0);
 
   /* Sets the temp max size of the party (max 5) */
   bool setMaxSize(uint value);
