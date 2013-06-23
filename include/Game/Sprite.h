@@ -9,7 +9,7 @@
 #ifndef SPRITE_H
 #define SPRITE_H
 
-#include <QImage>
+//#include <QDebug>
 
 #include "Game/Frame.h"
 

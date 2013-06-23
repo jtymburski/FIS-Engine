@@ -77,7 +77,7 @@ public:
  * PUBLIC STATIC FUNCTIONS
  *===========================================================================*/
 public:
-  /* Deletes the said file, if it exists */
+  /* Opens an image and returns the qpixmap, if it exists */
   static QPixmap openImage(QString path);
 };
 

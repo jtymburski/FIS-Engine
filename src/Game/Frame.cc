@@ -88,7 +88,7 @@ bool Frame::isImageSet()
  * Description: Gets image stored in this node
  *
  * Inputs: none
- * Output: QImage - Returns a QImage initialized with the stored picture
+ * Output: QPixmap - Returns a QPixmap initialized with the stored picture
  */
 QPixmap Frame::getImage()
 {

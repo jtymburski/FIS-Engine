@@ -386,7 +386,7 @@ bool Sprite::rotateAll(int angle)
   if(size > 0)
   {
     /* Only rotate the image if the angle is not 0 */
-    if(angle == 0)
+    if(angle != 0)
     {
       for(int i = 0; i < size; i++)
       {
