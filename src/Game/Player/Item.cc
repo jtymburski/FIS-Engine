@@ -386,7 +386,7 @@ void Item::setDuration(ushort new_duration)
  */
 void Item::setItemFlag(ItemState flag, bool set_value)
 {
-  (set_value) ? (iflag_set |= flag) : (iflag_set ^= flag);
+  (set_value) ? (iflag_set |= flag) : (iflag_set &= flag);
 }
 
 /*

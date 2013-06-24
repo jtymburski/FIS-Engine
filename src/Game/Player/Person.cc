@@ -390,7 +390,7 @@ bool Person::getPersonFlag(PersonState flags)
  */
 void Person::setPersonFlag(PersonState flags, bool set_value)
 {
-  (set_value) ? (state_set |= flags) : (state_set ^= flags);
+  (set_value) ? (state_set |= flags) : (state_set &= flags);
 }
 
 /*

@@ -122,21 +122,43 @@ void Application::switchWidget(int index)
 void Application::setupBattle()
 {
   AttributeSet bloodclaw_attr = AttributeSet();
+  AttributeSet scion_attr = AttributeSet();
+
   AttributeSet bear_attr = AttributeSet();
+  AttributeSet human_attr = AttributeSet();
 
   bloodclaw_attr.setAll(1000, 125, 200, 150, 10, 8, 10, 8, 10, 8, 10, 8, 10,
                         8, 10, 8, 5, 5, 5);
   bloodclaw_attr.setAll(10000, 1250, 2000, 1500, 1000, 800, 1000, 800, 1000,
                         800, 1000, 800, 1000, 800, 1000, 800, 500, 500, 500,
                         true);
+
+  scion_attr.setAll(900, 125, 200, 150, 10, 8, 35, 8, 10, 8, 10, 8, 10,
+                    8, 10, 8, 5, 5, 5);
+  scion_attr.setAll(10000, 1250, 2000, 1500, 1000, 800, 1000, 800, 1000,
+                    800, 1000, 800, 1000, 800, 1000, 800, 500, 500, 500,
+                    true);
+
   bear_attr.setAll(100, 12, 20, 15, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
   bear_attr.setAll(300, 120, 150, 100, 80, 100, 80, 100, 80, 100, 80, 100, 80,
                    100, 80, 100, 50, 50, 50, true);
 
+  human_attr.setAll(1000, 125, 200, 150, 10, 8, 10, 8, 10, 8, 10, 8, 10,
+                    8, 10, 8, 5, 5, 5);
+  human_attr.setAll(10000, 1250, 2000, 1500, 1000, 800, 1000, 800, 1000,
+                     800, 1000, 800, 1000, 800, 1000, 800, 500, 500, 500, true);
+
   Category* battle_class   = new Category("Bloodclaw", bloodclaw_attr);
+  Category* scion_class    = new Category("Scion", scion_attr);
   Race* the_bears          = new Race("Bears", bear_attr);
+  Race* the_humans         = new Race("Humans", human_attr);
+
 
   Person* main = new Person("Malgidus", the_bears, battle_class, "THA", "PRB");
+  Person* friend2 = new Person("Artemis", the_humans, battle_class, "NIA", "PRC");
+  Person* friend3 = new Person("Yolo", the_humans, scion_class, "CHC", "PRB");
+  Person* friend4 = new Person("Helga", the_bears, battle_class, "POC", "NIC");
+
   Person* secd = new Person("CloudGuy", the_bears, battle_class, "THA", "PRC");
 
   Sprite* one = new Sprite(":/A_arcadius");
@@ -147,10 +169,19 @@ void Application::setupBattle()
 
   Party* friends = new Party(main, 5);
   friends->setPartyFlag(Party::MAIN, true);
+  friends->addMember(friend2);
+  friends->addMember(friend3);
+  friends->addMember(friend4);
 
   Party* foes = new Party(secd, 5);
   friends->setPartyFlag(Party::FOE, true);
 
+  /* Inventory Testing */
+  Inventory* first_inventory = new Inventory("Basic Inventory");
+
+  Item* potion = new Item("Potion", 15, 0, 1.15);
+  potion->setDescription("This item will do some magical healing for you.");
+  potion->setUsingMessage("WHY ARE YOU USING ME");
   /* Level Up Test
   for (int i = 1; i < 128; i++)
   {
@@ -162,6 +193,7 @@ void Application::setupBattle()
 
   } */
 
+  /* Ailment Testing
   Ailment* new_ailment1 = new Ailment(main, POISON, 2, 0.147, this);
 
   qDebug() << "Turns left: " << new_ailment1->getTurnsLeft();
@@ -174,6 +206,8 @@ void Application::setupBattle()
   new_ailment1->update();
   qDebug() << "Turns left: " << new_ailment1->getTurnsLeft();
   new_ailment1->update();
+
+  * End Ailment Testing */
 
   test_battle = new Battle(friends, foes, this);
 }

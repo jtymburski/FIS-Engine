@@ -262,5 +262,5 @@ bool Party::setMaxSize(uint value)
  */
 void Party::setPartyFlag(PartyFlag flag, bool set_value)
 {
-  (set_value) ? (pflag_set |= flag) : (pflag_set ^= flag);
+  (set_value) ? (pflag_set |= flag) : (pflag_set &= flag);
 }

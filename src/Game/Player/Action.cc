@@ -239,7 +239,7 @@ void Action::setIgnoreFlag(IgnoreFlag flags, bool set_value)
  */
 void Action::setActionFlag(ActionType flags, bool set_value)
 {
-  (set_value) ? (action_flags |= flags) : (action_flags ^= flags);
+  (set_value) ? (action_flags |= flags) : (action_flags &= flags);
 }
 
 /*=============================================================================

@@ -354,7 +354,7 @@ void Skill::setDescription(QString new_value)
  */
 void Skill::setFlag(SkillFlags flags, bool set_value)
 {
-  (set_value) ? (skill_flags |= flags) : (skill_flags ^= flags);
+  (set_value) ? (skill_flags |= flags) : (skill_flags &= flags);
 }
 
 /*
