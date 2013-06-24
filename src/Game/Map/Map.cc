@@ -41,18 +41,10 @@ Map::Map(short resolution_x, short resolution_y)
   viewport_widget = new QGLWidget(gl_format);
 
   /* Setup the viewport */
-  viewport = new MapViewport(this, resolution_x, resolution_y, 
-                             kTILE_LENGTH, kTILE_WIDTH);
+  viewport = new MapViewport(this, resolution_x, resolution_y);
   viewport->setViewport(viewport_widget);
   viewport->setViewportUpdateMode(QGraphicsView::NoViewportUpdate);
-  viewport->centerOn(0, 0);
  
-  /* Connect the signals */
-  QObject::connect(viewport, SIGNAL(animateTiles()),
-                   this,     SLOT(animateTiles()));
-  QObject::connect(viewport, SIGNAL(closingMap(int)),
-                   this,     SIGNAL(closingMap(int)));
-
   /* Bring the timer in to provide a game tick */
   connect(&timer, SIGNAL(timeout()), this, SLOT(animate()));
   timer.start(20);
@@ -140,29 +132,27 @@ void Map::drawBackground(QPainter* painter, const QRectF& rect)
   (void)rect;
 }
 
-/* Painting function */
-//void Map::paintEvent(QPaintEvent* event)
-//{
-  /*
-  //setUpdatesEnabled(false);
+void Map::keyPressEvent(QKeyEvent* keyEvent)
+{
+  if(keyEvent->key() == Qt::Key_Down || keyEvent->key() == Qt::Key_Up ||
+     keyEvent->key() == Qt::Key_Right || keyEvent->key() == Qt::Key_Left)
+    sendEvent(player, keyEvent);
+  else if(keyEvent->key() == Qt::Key_Escape)
+    closeMap();
+  else if(keyEvent->key() == Qt::Key_A)
+    animateTiles();
+  else if(keyEvent->key() == Qt::Key_1)
+    viewport->lockOn(player);
+  else if(keyEvent->key() == Qt::Key_2)
+    viewport->lockOn(1000, 1000);
+}
 
-  QPainter painter(this);
-
-  (void)event;
-  
-  //painter.drawPixmap(256, 256, geography[0][0]->getBase()->getCurrent());
-
-  for(int i = 0; i < 1000; i++)
-  {
-    for(int j = 0; j < 1000; j++)
-    {
-      painter.drawPixmap(i*64, j*64, geography[0][0]->getBase()->getCurrent());
-    }
-  }
-
-  //setUpdatesEnabled(true);
-  */
-//}
+void Map::keyReleaseEvent(QKeyEvent* keyEvent)
+{
+  if(keyEvent->key() == Qt::Key_Down || keyEvent->key() == Qt::Key_Up ||
+     keyEvent->key() == Qt::Key_Right || keyEvent->key() == Qt::Key_Left)
+    sendEvent(player, keyEvent);
+}
 
 /*============================================================================
  * PUBLIC SLOTS
@@ -174,43 +164,16 @@ void Map::animate()
   QTime time;
   time.start();
 
-  bool just_started = false;
-
-//  if(player != 0)
-//  {
-//    /* If the udpate direction changes, update the player direction */
-//    if(viewport->updateDirection(player->x(), player->y()))
-//    {
-//      just_started = true;
-//
-//      if(viewport->movingNorth())
-//        player->setDirection(MapPerson::NORTH);
-//      else if(viewport->movingSouth())
-//        player->setDirection(MapPerson::SOUTH);
-//      else if(viewport->movingWest())
-//        player->setDirection(MapPerson::WEST);
-//      else if(viewport->movingEast())
-//        player->setDirection(MapPerson::EAST);
-//      else
-//        player->resetAnimation();
-//    }
-
-    /* Update the X and Y coordinates, if moving */
-//    if(viewport->moving())
-//    {
-//      player->setX(viewport->newX(player->x()));
-//      player->setY(viewport->newY(player->y()));
-//      player->animate(true, just_started);
-//    }
-
-//    if(viewport != 0)
-//      viewport->centerOn(player);
-//  }
+  if(player != 0)
+  {
+    player->updateThing();
+    viewport->updateView();
+  }
 
   viewport->viewport()->update();
 
   /* Time elapsed from standard update */
-  //qDebug() << time.elapsed();
+  //qDebug() << time.elapsed() << " " << isActive() << " " << focusItem();
 }
 
 void Map::animateTiles()
@@ -222,6 +185,11 @@ void Map::animateTiles()
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
+
+void Map::closeMap()
+{
+  emit closingMap(2);
+}
 
 /* Gets a pointer to the NPC in the given position in the NPC vector */
 Person* Map::getNPC(int index)
@@ -254,6 +222,11 @@ MapPerson* Map::getPlayer()
 MapViewport* Map::getViewport()
 {
   return viewport;
+}
+
+void Map::initialization()
+{
+  player->setFocus();
 }
 
 /* Causes the thing you are facing and next to start its interactive action */
@@ -320,27 +293,33 @@ bool Map::loadMap(QString file)
       data = fh.readXmlData(&done, &success);
     } while(!done && success);
 
-//    /* Add in temporary player information */
-//    Sprite* up_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_D", 3, ".png");
-//    Sprite* down_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_U", 3, ".png");
-//    Sprite* left_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_R", 3, ".png");
-//    Sprite* right_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_L", 3, ".png");
+    /* Add in temporary player information */
+    Sprite* up_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_D", 
+                                   3, ".png");
+    Sprite* down_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_U", 
+                                     3, ".png");
+    Sprite* left_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_R", 
+                                     3, ".png");
+    Sprite* right_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_L", 
+                                      3, ".png");
 
-//    /* Make the map person */
-//    player = new MapPerson(kTILE_LENGTH, kTILE_WIDTH);
-//    player->setCoordinates(kTILE_LENGTH*7, kTILE_WIDTH*5, 9);
-//
-//    player->setState(MapPerson::GROUND, MapPerson::NORTH, 
-//                                        new MapState(up_sprite));
-//    player->setState(MapPerson::GROUND, MapPerson::SOUTH, 
-//                                        new MapState(down_sprite));
-//    player->setState(MapPerson::GROUND, MapPerson::EAST, 
-//                                        new MapState(right_sprite));
-//    player->setState(MapPerson::GROUND, MapPerson::WEST, 
-//                                        new MapState(left_sprite));
+    /* Make the map person */
+    player = new MapPerson(kTILE_LENGTH, kTILE_WIDTH);
+    player->setCoordinates(kTILE_LENGTH*7, kTILE_WIDTH*5, 2);
+
+    player->setState(MapPerson::GROUND, MapPerson::NORTH, 
+                                        new MapState(up_sprite));
+    player->setState(MapPerson::GROUND, MapPerson::SOUTH, 
+                                        new MapState(down_sprite));
+    player->setState(MapPerson::GROUND, MapPerson::EAST, 
+                                        new MapState(right_sprite));
+    player->setState(MapPerson::GROUND, MapPerson::WEST, 
+                                        new MapState(left_sprite));
 
     /* Add it */
-//    addItem(player);
+    addItem(player);
+    viewport->lockOn(player);
+    //setFocusItem(player);
   }
 
   success &= fh.stop();

@@ -12,6 +12,9 @@
 #ifndef MAPPERSON_H
 #define MAPPERSON_H
 
+//#include <QDebug>
+#include <QKeyEvent>
+
 #include "Game/Map/MapThing.h"
 
 class MapPerson : public MapThing
@@ -30,15 +33,17 @@ public:
    *  EAST  - player facing right
    *  SOUTH - player facing down
    *  WEST  - player facing left */
-  enum MovementDirection{NORTH, EAST, SOUTH, WEST};
+  enum MovementDirection{NORTH, EAST, SOUTH, WEST, NONE};
 
   /* The surface classification, first layer of states 2D vector
    *  GROUND - is on a dirt like substance (where walking is possible) */
   enum SurfaceClassifier{GROUND};
 
 private:
-  /* The current movement direction */
+  /* The direction of the player and the current movement direction */
   MovementDirection direction;
+  MovementDirection movement;
+  QList<MovementDirection> movement_stack;
 
   /* Set of all states for person. 1st layer is surface (water, ground, etc)
    * and then 2nd layer is direction facing */
@@ -58,6 +63,13 @@ private:
   /* Initializes the states stack to an empty set */
   void initializeStates();
 
+/*============================================================================
+ * PROTECTED FUNCTIONS
+ *===========================================================================*/
+protected:
+  void keyPressEvent(QKeyEvent* event);
+  void keyReleaseEvent(QKeyEvent* event);
+  
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
@@ -81,6 +93,9 @@ public:
 
   /* Sets the surface that the person travels on */
   void setSurface(SurfaceClassifier surface);
+
+  /* Updates the thing, based on the tick */
+  void updateThing();
 
   /* Unsets a state, if it exists, to remove from the stack of states */
   void unsetState(SurfaceClassifier surface, MovementDirection direction);

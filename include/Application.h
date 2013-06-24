@@ -1,7 +1,7 @@
 /******************************************************************************
 * Class Name: Application
 * Date Created: Jan 29, 2013
-* Inheritance: QMainWindow
+* Inheritance: QStackedWidget
 * Description: The Main Application that handles all the displays for the 
 *              entire game. This includes the primary switching mechanism to 
 *              switch between widgets as needed according to the selection on 
@@ -14,7 +14,6 @@
 #include <QDesktopWidget>
 #include <QLayout>
 #include <QStackedWidget>
-#include <QtGui/QMainWindow>
 
 #include "TitleScreen.h"
 
@@ -23,7 +22,7 @@
 #include "Game/Battle/Battle.h"
 #include "Game/Player/Action.h"
 
-class Application : public QMainWindow
+class Application : public QStackedWidget
 {
   Q_OBJECT
 
@@ -35,7 +34,6 @@ public:
   ~Application();
 
 private:
-  QStackedWidget* widget_stack;
   TitleScreen* title_screen;
   
   /* DELETE two pointers below. Currently here for testing */

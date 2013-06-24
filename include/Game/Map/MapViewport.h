@@ -10,10 +10,10 @@
 #ifndef MAPVIEWPORT_H
 #define MAPVIEWPORT_H
 
+//#include <QDebug>
+#include <QEvent>
 #include <QGraphicsView>
-#include <QKeyEvent>
 #include <QScrollBar>
-#include <QWheelEvent>
 
 class MapViewport : public QGraphicsView
 {
@@ -23,71 +23,41 @@ public:
   /* Constructor functions */
   MapViewport();
   MapViewport(QGraphicsScene* scene, short resolution_x, 
-              short resolution_y, short tile_x,
-              short tile_y, QWidget* parent = 0);
+              short resolution_y, QWidget* parent = 0);
 
   /* Destructor function */
   ~MapViewport();
 
-  /* NONE - not currently moving the viewport
-   * NORTH - move viewport up
-   * EAST  - move viewport to the right
-   * SOUTH - move viewport down
-   * WEST  - move viewport to the left */
-  enum MovementDirection{NONE, NORTH, EAST, SOUTH, WEST};
+  /* Public enumerators */
 
+  /* This controls what the viewport locks to 
+   * COORDINATE - lock the viewport on a specific coordinate tile
+   * ITEM - lock to a qgraphicsitem, which has the possibility of moving */
+  enum LockStatus{COORDINATE, ITEM};
+  
 private:
-  /* The current direction that the map is moving in */
-  MovementDirection direction;
-
-  /* The stack of currently pressed directions, on the keyboard */
-  QVector<MovementDirection> direction_stack;
-
-  /* The tile boundaries */
-  short tile_x;
-  short tile_y;
-
-private:
-  void addDirection(MovementDirection new_direction);
+  /* The lock qualifiers, for who the viewport is centered on */
+  MapViewport::LockStatus lock_on;
+  QGraphicsItem* lock_on_item;
+  int lock_on_x;
+  int lock_on_y;
 
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
 protected:
-  void keyPressEvent(QKeyEvent* event);
-  void keyReleaseEvent(QKeyEvent* event);
-  void wheelEvent(QWheelEvent* event);
-
-/*============================================================================
- * SIGNALS
- *===========================================================================*/
-signals:
-  /* Call to animate the tiles in the scene - TODO: temporary? */
-  void animateTiles();
-
-  /* Closes the map, based on a key command - TODO: temporary? */
-  void closingMap(int index);
+  bool event(QEvent* event);
 
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
-  /* Initializes the closes map call based on a signal from the viewport */
-  void closeMap();
+  /* To change what the viewport locks to, when the update is called */
+  bool lockOn(int x, int y);
+  bool lockOn(QGraphicsItem* item);
 
-  /* Indicators on which direction the viewport is shifting, if at all */
-  bool moving();
-  bool movingEast();
-  bool movingNorth();
-  bool movingSouth();
-  bool movingWest();
-
-  /* Shifting calls, based on keys being pressed and the status of the View */
-  int newX(int old_x);
-  int newY(int old_y);
-
-  /* Updates the direction, based on the TICK */
-  bool updateDirection(int x, int y);
+  /* Updates the viewport, call at the end of the update call in the scene */
+  void updateView();
 };
 
 #endif // MAPVIEWPORT_H

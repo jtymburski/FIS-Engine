@@ -1,7 +1,7 @@
 /******************************************************************************
 * Class Name: Application
 * Date Created: Jan 29, 2013
-* Inheritance: QWidget
+* Inheritance: QStackedWidget
 * Description: The Main Application that handles all the displays for the 
 *              entire game. This includes the primary switching mechanism to 
 *              switch between widgets as needed according to the selection on 
@@ -36,17 +36,15 @@ Application::Application(QWidget* parent)
   //test_map->loadMap("maps/test_03");
   //test_map->getViewport()->show();
   
-  widget_stack = new QStackedWidget();
-  widget_stack->addWidget(test_battle);
-  widget_stack->addWidget(test_map->getViewport());
-  widget_stack->addWidget(title_screen);
+  /* Add widgets to the stack */
+  addWidget(test_battle);
+  addWidget(test_map->getViewport());
+  addWidget(title_screen);
 
-  widget_stack->setCurrentIndex(2); // TODO (0=battle, 1=map, 2=titlescreen)
+  setCurrentIndex(2); // TODO (0=battle, 1=map, 2=titlescreen)
 
   /* Widget information for handling the game */
-  setCentralWidget(widget_stack);
-  setFocus(Qt::OtherFocusReason);
-  setFocusProxy(title_screen);
+  title_screen->setFocus();
   setMaximumWidth(kRESOLUTION_X);
   setMaximumHeight(kRESOLUTION_Y);
   setMinimumWidth(kRESOLUTION_X);
@@ -105,7 +103,7 @@ void Application::switchWidget(int index)
   if(!test_map->isLoaded() && index == 1)
     test_map->loadMap("maps/test_03");
 
-  widget_stack->setCurrentIndex(index);
+  setCurrentIndex(index);
 
   if(index == 2)
     title_screen->playBackground();

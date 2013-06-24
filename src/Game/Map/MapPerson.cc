@@ -102,6 +102,34 @@ void MapPerson::initializeStates()
 }
 
 /*============================================================================
+ * PROTECTED FUNCTIONS
+ *===========================================================================*/
+
+void MapPerson::keyPressEvent(QKeyEvent* event)
+{
+  if(event->key() == Qt::Key_Down && !movement_stack.contains(SOUTH))
+    movement_stack.append(SOUTH);
+  else if(event->key() == Qt::Key_Up && !movement_stack.contains(NORTH))
+    movement_stack.append(NORTH);
+  else if(event->key() == Qt::Key_Right && !movement_stack.contains(EAST))
+    movement_stack.append(EAST);
+  else if(event->key() == Qt::Key_Left && !movement_stack.contains(WEST))
+    movement_stack.append(WEST);
+}
+
+void MapPerson::keyReleaseEvent(QKeyEvent* event)
+{
+  if(event->key() == Qt::Key_Down  && movement_stack.contains(SOUTH))
+    movement_stack.removeAt(movement_stack.indexOf(SOUTH));
+  else if(event->key() == Qt::Key_Up && movement_stack.contains(NORTH))
+    movement_stack.removeAt(movement_stack.indexOf(NORTH));
+  else if(event->key() == Qt::Key_Left && movement_stack.contains(WEST))
+    movement_stack.removeAt(movement_stack.indexOf(WEST));
+  else if(event->key() == Qt::Key_Right && movement_stack.contains(EAST))
+    movement_stack.removeAt(movement_stack.indexOf(EAST));
+}
+
+/*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
@@ -200,6 +228,53 @@ void MapPerson::setSurface(SurfaceClassifier surface)
 
   if(states[surface][direction] != 0)
     MapThing::setState(states[surface][direction], false);
+}
+
+/*
+ * Description: Updates the state of the thing. This can include animation
+ *              sequencing or movement and such. Called on the tick.
+ *
+ * Inputs: none
+ * Output: none 
+ */
+void MapPerson::updateThing()
+{
+  bool changed = false;
+
+  /* Once a tile end has reached, cycle the movement direction */
+  if((int)x() % getWidth() == 0 && (int)y() % getHeight() == 0)
+  {
+    /* If the stack is finished, clear it out (halt animation) */
+    if(movement_stack.isEmpty())
+    {
+      movement = NONE;
+      resetAnimation();
+      changed = true;
+    }
+    else /* Otherwise, update the direction, if it has changed */
+    {
+      if(movement != movement_stack.last())
+      {
+        setDirection(movement_stack.last());
+        changed = true;
+      }
+      movement = movement_stack.last();
+    }
+  }
+
+  /* Update the direction movement, if the thing is still moving */
+  if(movement == EAST)
+    setX(x() + 8);
+  else if(movement == WEST)
+    setX(x() - 8);
+  else if(movement == SOUTH)
+    setY(y() + 8);
+  else if(movement == NORTH)
+    setY(y() - 8);
+
+  /* Finally, if it's moving, animate the character */
+  if(movement != NONE)
+    animate(true, changed);
 }
 
 /* 

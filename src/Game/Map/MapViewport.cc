@@ -25,18 +25,10 @@ MapViewport::MapViewport()
   setFrameShape(QFrame::NoFrame);
   setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-
-  /* Shifting handlers */
-  direction = NONE;
-
-  /* Set the tile boundaries */
-  tile_x = 0;
-  tile_y = 0;
 }
 
 MapViewport::MapViewport(QGraphicsScene* scene, short resolution_x,
-                         short resolution_y, short tile_x, 
-                         short tile_y, QWidget* parent)
+                         short resolution_y, QWidget* parent)
 {
   /* The initial viewport setup */
   QGraphicsView(scene, parent);
@@ -50,13 +42,6 @@ MapViewport::MapViewport(QGraphicsScene* scene, short resolution_x,
   setFrameShape(QFrame::NoFrame);
   setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-
-  /* Shifting handlers */
-  direction = NONE;
-
-  /* Set the tile boundaries */
-  this->tile_x = tile_x;
-  this->tile_y = tile_y;
 }
 
 MapViewport::~MapViewport()
@@ -65,127 +50,57 @@ MapViewport::~MapViewport()
 }
 
 /*============================================================================
- * PRIVATE FUNCTIONS
- *===========================================================================*/
-
-void MapViewport::addDirection(MovementDirection new_direction)
-{
-  direction_stack.append(new_direction);
-}
-
-/*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
 
-void MapViewport::keyPressEvent(QKeyEvent* event)
+bool MapViewport::event(QEvent* event)
 {
-  if(event->key() == Qt::Key_Escape)
-    closeMap();
-  else if(event->key() == Qt::Key_Down)
-    addDirection(SOUTH);
-  else if(event->key() == Qt::Key_Up)
-    addDirection(NORTH);
-  else if(event->key() == Qt::Key_Right)
-    addDirection(EAST);
-  else if(event->key() == Qt::Key_Left)
-    addDirection(WEST);
-  else if(event->key() == Qt::Key_A)
-    emit animateTiles();
-}
+  /* Only allow the events that are being used. Disable everything else */
+  if(event->type() == QEvent::KeyPress || 
+     event->type() == QEvent::KeyRelease)
+  {
+    return QGraphicsView::event(event);
+  }
 
-void MapViewport::keyReleaseEvent(QKeyEvent* event)
-{
-  if(event->key() == Qt::Key_Down  && direction_stack.contains(SOUTH))
-    direction_stack.remove(direction_stack.indexOf(SOUTH));
-  else if(event->key() == Qt::Key_Up && direction_stack.contains(NORTH))
-    direction_stack.remove(direction_stack.indexOf(NORTH));
-  else if(event->key() == Qt::Key_Left && direction_stack.contains(WEST))
-    direction_stack.remove(direction_stack.indexOf(WEST));
-  else if(event->key() == Qt::Key_Right && direction_stack.contains(EAST))
-    direction_stack.remove(direction_stack.indexOf(EAST));
-}
-
-void MapViewport::wheelEvent(QWheelEvent* event)
-{
-  /* Do nothing */
-  (void)event;
+  return false;
 }
 
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
-void MapViewport::closeMap()
+bool MapViewport::lockOn(int x, int y)
 {
-  emit closingMap(2);
-}
-
-bool MapViewport::moving()
-{
-  return (direction != NONE);
-}
-
-bool MapViewport::movingEast()
-{
-  return (direction == EAST);
-}
-
-bool MapViewport::movingNorth()
-{
-  return (direction == NORTH);
-}
-
-bool MapViewport::movingSouth()
-{
-  return (direction == SOUTH);
-}
-
-bool MapViewport::movingWest()
-{
-  return (direction == WEST);
-}
-
-int MapViewport::newX(int old_x)
-{
-  /* Shift the X, based on the direction */
-  if(direction == EAST)
-    return old_x + 8;
-  else if(direction == WEST && old_x > 0)
-    return old_x - 8;
-
-  return old_x;
-}
-
-int MapViewport::newY(int old_y)
-{
-  /* Shift the Y, based on the direction */
-  if(direction == SOUTH)
-    return old_y + 8;
-  else if(direction == NORTH && old_y > 0)
-    return old_y - 8;
-
-  return old_y;
-}
-
-bool MapViewport::updateDirection(int x, int y)
-{
-  bool changed = false;
-
-  /* Once a tile end has reached, cycle the direction */
-  if(x % tile_x == 0 && y % tile_y == 0)
+  if(x >= 0 && y >= 0)
   {
-    if(direction_stack.isEmpty())
-    {
-      direction = NONE;
-      changed = true;
-    }
-    else
-    {
-      if(direction != direction_stack.last())
-        changed = true;
-      direction = direction_stack.last();
-    }
+    lock_on_item = 0;
+    lock_on_x = x;
+    lock_on_y = y;
+    lock_on = COORDINATE;
+    return true;
   }
 
-  return changed;
+  return false;
+}
+
+bool MapViewport::lockOn(QGraphicsItem* item)
+{
+  if(item != 0)
+  {
+    lock_on_item = item;
+    lock_on_x = 0;
+    lock_on_y = 0;
+    lock_on = ITEM;
+    return true;
+  }
+
+  return false;
+}
+
+void MapViewport::updateView()
+{
+  if(lock_on == COORDINATE)
+    centerOn(lock_on_x, lock_on_y);
+  else if(lock_on == ITEM)
+    centerOn(lock_on_item);
 }

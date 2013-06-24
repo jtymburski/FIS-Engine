@@ -363,6 +363,18 @@ bool MapThing::setWidth(int new_width)
 }
 
 /*
+ * Description: Updates the state of the thing. This can include animation
+ *              sequencing or movement and such. Called on the tick.
+ *
+ * Inputs: none
+ * Output: none 
+ */
+void MapThing::updateThing()
+{
+
+}
+
+/*
  * Description: Unsets the state that's embedded in this as the Map Thing
  *
  * Inputs: bool delete_state - should the old state be deleted?

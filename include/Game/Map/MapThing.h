@@ -112,6 +112,9 @@ public:
   /* Sets the things width classification */
   bool setWidth(int new_width);
 
+  /* Updates the thing, called on the tick */
+  void updateThing();
+  
   /* Unsets the state, in the class */
   void unsetState(bool delete_state = true);
 };

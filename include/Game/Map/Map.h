@@ -98,15 +98,16 @@ protected:
   /* Draw the background override */
   void drawBackground(QPainter* painter, const QRectF& rect);
 
-  /* Paint event to the scene */
-  void paintEvent(QPaintEvent*);
+  /* Key Press/Release Events */
+  void keyPressEvent(QKeyEvent* keyEvent);
+  void keyReleaseEvent(QKeyEvent* keyEvent);
 
 /*============================================================================
  * SIGNALS
  *===========================================================================*/
 signals:
   void closingMap(int index);
-  
+ 
 /*============================================================================
  * PUBLIC SLOTS
  *===========================================================================*/
@@ -118,6 +119,9 @@ public slots:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Close the map - Handles the details and specifics for closing */
+  void closeMap();
+
   /* Gets a pointer to the NPC in the given position in the NPC vector */
   Person* getNPC(int index);
 
@@ -132,6 +136,9 @@ public:
 
   /* Returns the map viewport, for displaying the scene to the screen */
   MapViewport* getViewport();
+
+  /* Initial call when map is displayed */
+  void initialization();
 
   /* Causes the thing you are facing and next to start its interactive action */
   void interact(Direction dir);
