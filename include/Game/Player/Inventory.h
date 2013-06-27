@@ -42,10 +42,10 @@ public:
 
 private:
   /* Enumerations describing the state of the item sorting */
-  ItemSorts bubby_state;
-  ItemSorts equipment_state;
-  ItemSorts item_state;
-  ItemSorts key_item_state;
+  EnumDb::ItemSorts bubby_state;
+  EnumDb::ItemSorts equipment_state;
+  EnumDb::ItemSorts item_state;
+  EnumDb::ItemSorts key_item_state;
 
   /* Vector of pointers to the Bubbies stored in this inventory */
   QVector<Bubby*> bubbies;
@@ -170,16 +170,16 @@ public:
   void printKeyItems();
 
   /* Sorts the vector of bubbies by a given ItemSorts state */
-  bool sortBubbies(ItemSorts sort_by);
+  bool sortBubbies(EnumDb::ItemSorts sort_by);
 
   /* Sorts the vector of equipments by a given ItemSorts state */
-  bool sortEquipments(ItemSorts sort_by);
+  bool sortEquipments(EnumDb::ItemSorts sort_by);
 
   /* Sorts the vector of items by a given ItemSorts state */
-  bool sortItems(ItemSorts sort_by);
+  bool sortItems(EnumDb::ItemSorts sort_by);
 
   /* Sorts the vector of items by a given ItemSorts state */
-  bool sortKeyItems(ItemSorts sort_by);
+  bool sortKeyItems(EnumDb::ItemSorts sort_by);
 
   /* Returns a pointer to the backdrop */
   Sprite* getBackdrop();
@@ -194,7 +194,7 @@ public:
   QVector<Bubby*> getBubbyList();
 
   /* Returns the enumeration describing the current sorting of Bubbies */
-  ItemSorts getBubbyState();
+  EnumDb::ItemSorts getBubbyState();
 
   /* Returns the description of the item */
   QString getDescription();
@@ -212,7 +212,7 @@ public:
   uint getEquipLimit();
 
   /* Returns the enumeration describing the current sorting of equipment */
-  ItemSorts getEquipState();
+  EnumDb::ItemSorts getEquipState();
 
   /* Returns the vector of equipment in the inventory */
   QVector<Equipment*> getEquipList();
@@ -236,7 +236,7 @@ public:
   QVector<Item*> getItemList();
 
   /* Returns the enumeration describing the current sorting of items */
-  ItemSorts getItemState();
+  EnumDb::ItemSorts getItemState();
 
   /* Returns a pointer to a key item given an index */
   Item* getKeyItem(uint index);
@@ -248,7 +248,7 @@ public:
   QVector<Item*> getKeyItemList();
 
   /* Returns the sorted state of the key items */
-  ItemSorts getKeyItemState();
+  EnumDb::ItemSorts getKeyItemState();
 
   /* Returns the carry mass of the inventory */
   double getMaxCarryMass();
@@ -269,7 +269,7 @@ public:
   void setBubbyLimit(uint new_bubby_limit);
 
   /* Assigns a new Bubby sorted state */
-  void setBubbyState(ItemSorts new_state);
+  void setBubbyState(EnumDb::ItemSorts new_state);
 
   /* Assigns a new description to the inventory */
   void setDescription(QString new_description);
@@ -281,7 +281,7 @@ public:
   void setEquipLimit(uint new_equip_limit);
 
   /* Assigns a new equipment sorted state */
-  void setEquipState(ItemSorts new_state);
+  void setEquipState(EnumDb::ItemSorts new_state);
 
   /* Assigns a given inventory state flag a set_value */
   void setFlag(InventoryState flags, bool set_value = true);
@@ -293,10 +293,10 @@ public:
   void setItemLimit(uint new_item_limit);
 
   /* Assigns a new sorted item state */
-  void setItemState(ItemSorts new_state);
+  void setItemState(EnumDb::ItemSorts new_state);
 
   /* Assigns a new sorted key item state */
-  void setKeyItemState(ItemSorts new_state);
+  void setKeyItemState(EnumDb::ItemSorts new_state);
 
   /* Assigns all the limits of the inventory */
   void setLimits(uint bub_lim, ushort eq_each_lim, uint eq_lim,

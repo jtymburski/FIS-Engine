@@ -97,6 +97,27 @@ Tile::~Tile()
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
+bool Tile::addPassibility(QString data, QString classifier, QString index)
+{
+
+}
+
+bool Tile::addSprite(Sprite* frames, QString classifier, QString index)
+{
+//  qDebug() << classifier << " " << index;
+
+  /* Add the layer data to the specific classifier */
+  if(classifier.toLower().trimmed() == "base")
+    return setBase(frames);
+  else if(classifier.toLower().trimmed() == "enhancer")
+    return setEnhancer(frames);
+  else if(classifier.toLower().trimmed() == "lower")
+    return insertLower(frames, index.toInt());
+  else if(classifier.toLower().trimmed() == "upper")
+    return insertUpper(frames, index.toInt());
+  return false;
+}
+
 /*
  * Description: Animates all sprite sets on the tile. This allows for the fine 
  *              control over when the timer hits and how it's updated.
@@ -109,30 +130,6 @@ void Tile::animate()
   /* Animate the two layers stored within this class */
   lower->animate();
   upper->animate();
-}
-
-/* 
- * Description: Appends the new Sprite frame data onto the created lower
- *              layer for this tile. Passes implementation into Layer.
- *
- * Inputs: Sprite* lower - the lower tile data, as a Sprite set
- * Output: bool - if the appending call succeeded and the data was inserted
- */
-bool Tile::appendLower(Sprite* lower)
-{
-  return this->lower->appendLower(lower);
-}
-
-/* 
- * Description: Appends the new Sprite frame data onto the created upper
- *              layer for this tile. Passes implementation into Layer.
- *
- * Inputs: Sprite* upper - the upper tile data, as a Sprite set
- * Output: bool - if the appending call succeeded and the data was inserted
- */
-bool Tile::appendUpper(Sprite* upper)
-{
-  return this->upper->appendUpper(upper);
 }
 
 /* 
@@ -327,6 +324,32 @@ bool Tile::insertIntoScene(QGraphicsScene* scene)
     return true;
   }
   return false;
+}
+
+/* 
+ * Description: Inserts the new Sprite frame data onto the created lower
+ *              layer for this tile. Passes implementation into Layer.
+ *
+ * Inputs: Sprite* lower - the lower tile data, as a Sprite set
+ *         int index - the index to where the lower sprite is inserted
+ * Output: bool - if the insert call succeeded and the data was used
+ */
+bool Tile::insertLower(Sprite* lower, int index)
+{
+  return this->lower->insertLower(lower, index);
+}
+
+/* 
+ * Description: Inserts the new Sprite frame data onto the created upper
+ *              layer for this tile. Passes implementation into Layer.
+ *
+ * Inputs: Sprite* upper - the upper tile data, as a Sprite set
+ *         int index - the index to where the upper sprite is inserted
+ * Output: bool - if the insert call succeeded and the data was used
+ */
+bool Tile::insertUpper(Sprite* upper, int index)
+{
+  return this->upper->insertUpper(upper, index);
 }
 
 /* 

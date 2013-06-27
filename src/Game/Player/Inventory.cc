@@ -48,10 +48,10 @@ Inventory::Inventory(QString name, Sprite *thumb, QWidget *parent)
   setName(name);
   setThumb(thumb);
 
-  setBubbyState(NONE);
-  setEquipState(NONE);
-  setItemState(NONE);
-  setKeyItemState(NONE);
+  setBubbyState(EnumDb::NONE);
+  setEquipState(EnumDb::NONE);
+  setItemState(EnumDb::NONE);
+  setKeyItemState(EnumDb::NONE);
 
   bubbies.resize(0);
   equipments.resize(0);
@@ -496,7 +496,7 @@ void Inventory::printKeyItems()
  * Inputs: none
  * Output: none
  */
-bool Inventory::sortBubbies(ItemSorts sort_by)
+bool Inventory::sortBubbies(EnumDb::ItemSorts sort_by)
 {
 // TODO: UNFINISHED
     return false;
@@ -508,7 +508,7 @@ bool Inventory::sortBubbies(ItemSorts sort_by)
  * Inputs: none
  * Output: none
  */
-bool Inventory::sortEquipments(ItemSorts sort_by)
+bool Inventory::sortEquipments(EnumDb::ItemSorts sort_by)
 {
     //TODO: UNFINISHED
     return false;
@@ -521,7 +521,7 @@ bool Inventory::sortEquipments(ItemSorts sort_by)
  * Inputs: none
  * Output: none
  */
-bool Inventory::sortItems(ItemSorts sort_by)
+bool Inventory::sortItems(EnumDb::ItemSorts sort_by)
 {
 //TODO: UNFINISHED
     return false;
@@ -533,7 +533,7 @@ bool Inventory::sortItems(ItemSorts sort_by)
  * Inputs: none
  * Output: none
  */
-bool Inventory::sortKeyItems(ItemSorts sort_by)
+bool Inventory::sortKeyItems(EnumDb::ItemSorts sort_by)
 {
     //TODO: UNFINISHED
     return false;
@@ -593,7 +593,7 @@ QVector<Bubby*> Inventory::getBubbyList()
  * Inputs: none
  * Output: ItemSorts - enumerated state describing the sorting of Bubbies
  */
-ItemSorts Inventory::getBubbyState()
+EnumDb::ItemSorts Inventory::getBubbyState()
 {
   return bubby_state;
 }
@@ -668,7 +668,7 @@ uint Inventory::getEquipLimit()
  * Inputs: none
  * Output: ItemSorts - enumerated sorted state of equipment
  */
-ItemSorts Inventory::getEquipState()
+EnumDb::ItemSorts Inventory::getEquipState()
 {
  return equipment_state;
 }
@@ -765,7 +765,7 @@ QVector<Item*> Inventory::getItemList()
  * Inputs: none
  * Output: ItemSorts - the enumerated state of the items.
  */
-ItemSorts Inventory::getItemState()
+EnumDb::ItemSorts Inventory::getItemState()
 {
   return item_state;
 }
@@ -816,7 +816,7 @@ QVector<Item*> Inventory::getKeyItemList()
  * Inputs: none
  * Output: ItemSorts - the enumerated state of the key items vector.
  */
-ItemSorts Inventory::getKeyItemState()
+EnumDb::ItemSorts Inventory::getKeyItemState()
 {
   return key_item_state;
 }
@@ -895,7 +895,7 @@ void Inventory::setBubbyLimit(uint new_bubby_limit)
  * Inputs: ItemSorts - enumerated state of the Bubbies vector.
  * Output: none
  */
-void Inventory::setBubbyState(ItemSorts new_state)
+void Inventory::setBubbyState(EnumDb::ItemSorts new_state)
 {
   bubby_state = new_state;
 }
@@ -942,7 +942,7 @@ void Inventory::setEquipLimit(uint new_equip_limit)
  * Inputs: ItemSorts - enumerated equip state of the Inventory.
  * Output: none
  */
-void Inventory::setEquipState(ItemSorts new_state)
+void Inventory::setEquipState(EnumDb::ItemSorts new_state)
 {
   equipment_state = new_state;
 }
@@ -990,7 +990,7 @@ void Inventory::setItemLimit(uint new_item_limit)
  * Inputs: ItemSorts - the enumerated state of the item vector.
  * Output: none
  */
-void Inventory::setItemState(ItemSorts new_state)
+void Inventory::setItemState(EnumDb::ItemSorts new_state)
 {
   item_state = new_state;
 }
@@ -1001,7 +1001,7 @@ void Inventory::setItemState(ItemSorts new_state)
  * Inputs: ItemSorts - the enumerated state of the key item vector.
  * Output: none
  */
-void Inventory::setKeyItemState(ItemSorts new_state)
+void Inventory::setKeyItemState(EnumDb::ItemSorts new_state)
 {
   key_item_state = new_state;
 }

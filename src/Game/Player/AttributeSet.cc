@@ -99,7 +99,7 @@ void AttributeSet::setUpNames()
  * Inputs: Attribute type - the type of
  * Output: bool - true if the stat was found and changed, false otherwise
  */
-bool AttributeSet::changeStat(Attribute type, int amount)
+bool AttributeSet::changeStat(EnumDb::Attribute type, int amount)
 {
   int attr_index = getIndex(type);
   if (attr_index != -1)
@@ -163,7 +163,7 @@ int AttributeSet::getSize()
  * Inputs: Attribute type - enumerated attribute to be checked for
  * Output: shot - +value of the maximum stat (if exists), -1 otherwise
  */
-short AttributeSet::getMax(Attribute type)
+short AttributeSet::getMax(EnumDb::Attribute type)
 {
   int attr_index = getIndex(type);
   if (attr_index != -1)
@@ -203,7 +203,7 @@ short AttributeSet::getMax(int index)
  * Inputs: Attribute type - enumerated attribute to be checked
  * Output: short - value of the normal value stat if found, -1 otherwise
  */
-short AttributeSet::getStat(Attribute type)
+short AttributeSet::getStat(EnumDb::Attribute type)
 {
   int attr_index = getIndex(type);
   if (attr_index != -1)
@@ -350,7 +350,7 @@ void AttributeSet::setAll(ushort a, ushort b, ushort c, ushort d, ushort e,
  *         ushort - value to set the attribute
  * Output: bool - true if the attribute was set, false otherwise
  */
-bool AttributeSet::setMax(Attribute type, ushort value)
+bool AttributeSet::setMax(EnumDb::Attribute type, ushort value)
 {
   return setMax(getIndex(type), value);
 }
@@ -397,7 +397,7 @@ bool AttributeSet::setMax(int index, ushort value)
  *         ushort - value to set the attribute
  * Output: bool - true if the attribute was set, false otherwise
  */
-bool AttributeSet::setStat(Attribute type, ushort value)
+bool AttributeSet::setStat(EnumDb::Attribute type, ushort value)
 {
   return (getIndex(type), value);
 }
@@ -444,9 +444,10 @@ bool AttributeSet::setStat(int index, ushort value)
  * Inputs: Attribute type - enumerated Attribute type to get the QString for
  * Output: QString - the QString value of the enumerated Attribute type
  */
-QString AttributeSet::getAttrStr(Attribute type)
+QString AttributeSet::getAttrStr(EnumDb::Attribute type)
 {
-  const std::string &attribute_string = EnumString<Attribute>::From(type);
+  const std::string &attribute_string = 
+                                    EnumString<EnumDb::Attribute>::From(type);
   QString attribute_qstring(attribute_string.c_str());
   return attribute_qstring;
 }
@@ -458,11 +459,11 @@ QString AttributeSet::getAttrStr(Attribute type)
  * Inputs: Qstring name - the string to be converted to an enumerated Attribute
  * Output: Attribute - the enumerated type corresponding to the QString given
  */
-Attribute AttributeSet::getAttr(QString name)
+EnumDb::Attribute AttributeSet::getAttr(QString name)
 {
   const std::string &attribute_string = name.toUtf8().constData();
-  Attribute attribute_type;
-  EnumString<Attribute>::To(attribute_type, attribute_string);
+  EnumDb::Attribute attribute_type;
+  EnumString<EnumDb::Attribute>::To(attribute_type, attribute_string);
   return attribute_type;
 }
 
@@ -472,29 +473,29 @@ Attribute AttributeSet::getAttr(QString name)
  * Inputs: Attribute type - enumerated attribute to be checked
  * Output: int - the index of the enumerated if found, -1 otherwise
  */
-int AttributeSet::getIndex(Attribute type)
+int AttributeSet::getIndex(EnumDb::Attribute type)
 {
   switch (type)
   {
-    case VITALITY:  return 0;
-    case QUANTUMDRIVE: return 1;
-    case PHYSICALAGGRESSION: return 2;
-    case PHYSICALFORTITUDE: return 3;
-    case THERMALAGGRESSION: return 4;
-    case THERMALFORTITUDE: return 5;
-    case POLARAGGRESSION: return 6;
-    case POLARFORTITUDE: return 7;
-    case PRIMALAGGRESSION: return 8;
-    case PRIMALFORTITUDE: return 9;
-    case CHARGEDAGGRESSION: return 10;
-    case CHARGEDFORTITUDE: return 11;
-    case CYBERNETICAGGRESSION: return 12;
-    case CYBERNETICFORTITUDE: return 13;
-    case NIHILAGGRESSION: return 14;
-    case NIHILFORTITUDE: return 15;
-    case MOMENTUM: return 16;
-    case LIMBERTUDE: return 17;
-    case UNBEARABILITY: return 18;
+    case EnumDb::VITALITY:  return 0;
+    case EnumDb::QUANTUMDRIVE: return 1;
+    case EnumDb::PHYSICALAGGRESSION: return 2;
+    case EnumDb::PHYSICALFORTITUDE: return 3;
+    case EnumDb::THERMALAGGRESSION: return 4;
+    case EnumDb::THERMALFORTITUDE: return 5;
+    case EnumDb::POLARAGGRESSION: return 6;
+    case EnumDb::POLARFORTITUDE: return 7;
+    case EnumDb::PRIMALAGGRESSION: return 8;
+    case EnumDb::PRIMALFORTITUDE: return 9;
+    case EnumDb::CHARGEDAGGRESSION: return 10;
+    case EnumDb::CHARGEDFORTITUDE: return 11;
+    case EnumDb::CYBERNETICAGGRESSION: return 12;
+    case EnumDb::CYBERNETICFORTITUDE: return 13;
+    case EnumDb::NIHILAGGRESSION: return 14;
+    case EnumDb::NIHILFORTITUDE: return 15;
+    case EnumDb::MOMENTUM: return 16;
+    case EnumDb::LIMBERTUDE: return 17;
+    case EnumDb::UNBEARABILITY: return 18;
   }
   return -1;
 }
@@ -519,7 +520,7 @@ int AttributeSet::getIndex(QString name)
  * Inputs:
  * Output: QString - name of the attribute at the given index
  */
-QString AttributeSet::getName(Attribute type)
+QString AttributeSet::getName(EnumDb::Attribute type)
 {
   return getAttrStr(type);
 }

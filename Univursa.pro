@@ -73,7 +73,7 @@ SOURCES += \
 
 HEADERS += \
     ./include/Application.h \
-    ./include/EnumDatabase.h \
+    ./include/EnumDb.h \
     ./include/FileHandler.h \
     ./include/Options.h \
     ./include/Sound.h \

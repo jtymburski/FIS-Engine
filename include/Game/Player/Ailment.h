@@ -20,8 +20,8 @@
 
 #include <QtGui/QWidget>
 
+#include "EnumDb.h"
 #include "Game/Player/Person.h"
-#include "EnumDatabase.h"
 
 class Ailment : public QWidget
 {
@@ -29,7 +29,7 @@ class Ailment : public QWidget
 
 public:
   /* Constructor: Sets up ailment with type, turn and chance durations */
-  Ailment(Person* victim, Infliction type, short max_turns = 0,
+  Ailment(Person* victim, EnumDb::Infliction type, short max_turns = 0,
           double chance = 0, QWidget* parent = 0);
 
   /* Constructor: Sets up an ailment with a QString instead of an enum */
@@ -60,7 +60,7 @@ public:
 
 private:
   /* Inflinction of the Ailment */
-  Infliction ailment_type;
+  EnumDb::Infliction ailment_type;
 
   /* Chance the status effect will wear off per turn (>1 = 100%, 0 = 0%) */
   float chance;
@@ -125,7 +125,7 @@ private:
   bool updateTurns();
 
   /* Sets the Inflinction of the Status Ailment */
-  void setType(Infliction t);
+  void setType(EnumDb::Infliction t);
 
   /* Assigns the victim of the object */
   void setVictim(Person* set_victim);
@@ -149,7 +149,7 @@ public:
   ushort getTurnsLeft();
 
   /* Returns the Inflinction of the status ailment */
-  Infliction getType();
+  EnumDb::Infliction getType();
 
   /* Gets a QString of the current ailment's enumerated value */
   QString getName();
@@ -184,14 +184,14 @@ public slots:
  *============================================================================*/
 signals:
   /* Tells BIB and BSB an ailment of victim is being inflicted */
-  void inflicting(QString victim_name, Infliction ailment_name);
+  void inflicting(QString victim_name, EnumDb::Infliction ailment_name);
 
   /* Tells Battle to remove all buffs
      (usually happens when Bubbify is added/removed) */
   void removeBuffs(QString victim_name);
 
   /* Tells BIB and BSB an ailment of victim is curing */
-  void curing(QString victim_name, Infliction ailment_name);
+  void curing(QString victim_name, EnumDb::Infliction ailment_name);
 
   /* Tells Battle the ailment was reset */
   void resetComplete();
@@ -200,17 +200,17 @@ signals:
   void updated();
 
   /* Tells BIB and BSB that the victim dies because of reasons */
-  void victimDeath(QString victim_name, ActorDeath reason);
+  void victimDeath(QString victim_name, EnumDb::ActorDeath reason);
 
 /*============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
 public:
   /* Converts enum. Infliction to the corresponding QString (as per EnumDB) */
-  static QString getAilmentStr(Infliction type);
+  static QString getAilmentStr(EnumDb::Infliction type);
 
   /* Converts a QString to the corresponding enum. Infliction (default NOAIL) */
-  static Infliction getInfliction(QString name);
+  static EnumDb::Infliction getInfliction(QString name);
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Ailment::AilmentFlags)
 

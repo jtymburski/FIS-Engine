@@ -13,7 +13,7 @@
 #include <QtGui/QWidget>
 #include <QDebug>
 
-#include "EnumDatabase.h"
+#include "EnumDb.h"
 
 class AttributeSet
 {
@@ -52,7 +52,7 @@ private:
  *============================================================================*/
 public:
   /* Alters a given stat by a certain amount {Damage, Buff} */
-  bool changeStat(Attribute type, int amount);
+  bool changeStat(EnumDb::Attribute type, int amount);
   bool changeStat(QString name, int amount);
   bool changeStat(int index, int amount);
 
@@ -60,12 +60,12 @@ public:
   int getIndex(QString name);
 
   /* Returns the maximum values of a given stat given an enum, string, or int */
-  short getMax(Attribute type);
+  short getMax(EnumDb::Attribute type);
   short getMax(QString name);
   short getMax(int index);
 
   /* Returns the normal values of a given stat give an enum, string, or int*/
-  short getStat(Attribute type);
+  short getStat(EnumDb::Attribute type);
   short getStat(QString name);
   short getStat(int index);
 
@@ -77,12 +77,12 @@ public:
               ushort s, bool max = FALSE);
 
   /* Sets the maximum values of the Attribute Set */
-  bool setMax(Attribute type, ushort value);
+  bool setMax(EnumDb::Attribute type, ushort value);
   bool setMax(QString name, ushort value);
   bool setMax(int index, ushort value);
 
   /* Sets the normal stat values of the AttributeSet */
-  bool setStat(Attribute type, ushort value);
+  bool setStat(EnumDb::Attribute type, ushort value);
   bool setStat(QString name, ushort value);
   bool setStat(int index, ushort value);
 
@@ -91,16 +91,16 @@ public:
  *============================================================================*/
 public:
   /* Converts an Attribute enumeration to a QString (full name of attribute) */
-  static QString getAttrStr(Attribute type);
+  static QString getAttrStr(EnumDb::Attribute type);
 
   /* Converts a QString to the corresponding Attribute enumeration */
-  static Attribute getAttr(QString name);
+  static EnumDb::Attribute getAttr(QString name);
 
   /* Returns the index of a statistic given an Attribute enumeration */
-  static int getIndex(Attribute type);
+  static int getIndex(EnumDb::Attribute type);
 
   /* Obtains the 4-character QString corresponding to an Attribute enum */
-  static QString getName(Attribute type);
+  static QString getName(EnumDb::Attribute type);
 
   /* Obtains the 4-character QString corresponding to the index of attributes */
   static QString getName(int index);

@@ -63,11 +63,6 @@ public:
   /* Animates the layer, and the frames available within it */
   void animate();
 
-  /* Appends to the existing lower and upper layers. This allows for multiple
-   * uppers and lowers to exist */
-  bool appendLower(Sprite* new_lower);
-  bool appendUpper(Sprite* new_upper);
-
   /* Virtual bounding rectangle - The rectangle that encapsulates the item */
   QRectF boundingRect() const;
 
@@ -97,6 +92,11 @@ public:
 
   /* Returns the width of the layer */
   int getWidth();
+
+  /* Inserts to the existing lower and upper layers. This allows for multiple
+   * uppers and lowers to exist */
+  bool insertLower(Sprite* new_lower, int index);
+  bool insertUpper(Sprite* new_upper, int index);
 
   /* Virtual painter reimplementation - for painting the item */
   void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 

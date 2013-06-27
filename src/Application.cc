@@ -101,7 +101,7 @@ void Application::close()
 void Application::switchWidget(int index)
 {
   if(!test_map->isLoaded() && index == 1)
-    test_map->loadMap("maps/test_03");
+    test_map->loadMap("maps/test_04");
 
   setCurrentIndex(index);
 

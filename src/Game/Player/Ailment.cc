@@ -78,14 +78,14 @@ const double Ailment::kMETABOLIC_DMG       = 0.25;
  *         double ch  - % value the ailment will be cured per turn, >= 1 = 100%
  *         QWidget* parent - parent the Ailment was created from
  */
-Ailment::Ailment(Person* victim, Infliction type, short max_turns,
+Ailment::Ailment(Person* victim, EnumDb::Infliction type, short max_turns,
                  double chance, QWidget* parent) : QWidget(parent)
 {
   setVictim(victim);
   setType(type);
 
   /* NOAILMENT cannot have a turn length or a chance */
-  if (type == NOAILMENT)
+  if (type == EnumDb::NOAILMENT)
   {
     setDuration(-1, -1);
     setFlag(Ailment::TOBEUPDATED, false);
@@ -122,7 +122,7 @@ Ailment::Ailment(Person* victim, QString name, short max_turns,
   setType(getInfliction(name));
 
   /* NOAILMENT cannot have a turn length or a chance */
-  if (getType() == NOAILMENT)
+  if (getType() == EnumDb::NOAILMENT)
   {
     setDuration(-1, -1);
     setFlag(Ailment::TOBEUPDATED, false);
@@ -146,7 +146,7 @@ Ailment::Ailment(Person* victim, QString name, short max_turns,
 Ailment::Ailment(Person* victim, QWidget* parent) : QWidget(parent)
 {
   setVictim(victim);
-  setType(NOAILMENT);
+  setType(EnumDb::NOAILMENT);
   setFlag(Ailment::TOBEUPDATED, false);
   setDuration(-1,-1);
 
@@ -199,7 +199,7 @@ void Ailment::apply()
    *            kPOISON_DMG_INCR -- % increase poison damage does
    *            kPOISON_DMG_INIT -- % dmg incurred by poison initially
    */
-  if (ailment_type == POISON)
+  if (ailment_type == EnumDb::POISON)
   {
     damage = kPOISON_DMG_MIN;
     if (damage < (kPOISON_DMG_INIT * kHEALTH))
@@ -211,7 +211,7 @@ void Ailment::apply()
       damage = kPOISON_DMG_MAX;
 
     if (victim->damage(damage))
-        emit victimDeath(victim->getName(), POISONDMG);
+        emit victimDeath(victim->getName(), EnumDb::POISONDMG);
   }
 
   /* Burn/Scald/Char - The three increasing levels of Burn
@@ -223,7 +223,8 @@ void Ailment::apply()
    *           kBURN_DMG_INCR - % incr burn damage per additional lvl
    *           kBURN_DMG_INIT - % dmg incurred by level 1 burn
    */
-  else if (ailment_type == BURN || ailment_type == SCALD || ailment_type == INFLICTCHAR)
+  else if (ailment_type == EnumDb::BURN || ailment_type == EnumDb::SCALD || 
+                                           ailment_type == EnumDb::INFLICTCHAR)
   {
     damage = kBURN_DMG_MIN;
     ushort burn_damage = kHEALTH * kBURN_DMG_PC;
@@ -233,13 +234,13 @@ void Ailment::apply()
       damage = burn_damage;
 
     /* Increase the damage if the burn is level 2 or level 3 */
-    if (ailment_type == SCALD)
+    if (ailment_type == EnumDb::SCALD)
     {
       ushort scald_damage = kHEALTH * (kBURN_DMG_PC + kBURN_DMG_INCR - 1);
       if (damage < scald_damage)
         damage = scald_damage;
     }
-    else if (ailment_type == INFLICTCHAR)
+    else if (ailment_type == EnumDb::INFLICTCHAR)
     {
       ushort char_damage = kHEALTH * (kBURN_DMG_PC + (2 * kBURN_DMG_INCR) - 2);
       if (damage < char_damage)
@@ -249,7 +250,7 @@ void Ailment::apply()
       damage = kBURN_DMG_MAX;
 
     if (victim->damage(damage))
-      emit victimDeath(victim->getName(), BURNDMG);
+      emit victimDeath(victim->getName(), EnumDb::BURNDMG);
   }
 
   /* Berserk - Ailed actor physically attacks enemy target for extreme damage
@@ -257,7 +258,7 @@ void Ailment::apply()
    * Constants: kBERSERK_DMG_INCR - multiplier for normal damage on target
    *            kBERSERK_HITBACK_PC - multiplier for damage done to self.
    */
-  else if (ailment_type == BERSERK)
+  else if (ailment_type == EnumDb::BERSERK)
   {
     /* On initial application, disable non physical skills and running */
     victim->setPersonFlag(Person::CANUSESKILLS, false);
@@ -269,14 +270,14 @@ void Ailment::apply()
   }
 
   /* Confuse - ailed actor attacks a random target with a random skills */
-  else if (ailment_type == CONFUSE)
+  else if (ailment_type == EnumDb::CONFUSE)
   {
     /* Confuse effect takes place in battle--calculates useable skills,
        useable targets and performs random permutation of each. */
   }
 
   /* Ailed actor cannot use skills if they require QD */
-  else if (ailment_type == SILENCE)
+  else if (ailment_type == EnumDb::SILENCE)
   {
     /* On application, remove skills which have a QD cost > 0 from useable */
     for (int i = 0; i < skills->getSkills().size(); i++)
@@ -286,7 +287,7 @@ void Ailment::apply()
 
   /* Bubbify - ailed actor is turned into a near-useless Bubby
    */
-  else if (ailment_type == BUBBIFY)
+  else if (ailment_type == EnumDb::BUBBIFY)
   {
     /* Bubbies cannot be affected by buffs */
     emit removeBuffs(victim->getName());
@@ -305,14 +306,14 @@ void Ailment::apply()
   }
 
   /* Death Timer - Ailed actor KOs upon reaching max_turns */
-  else if (ailment_type == DEATHTIMER)
+  else if (ailment_type == EnumDb::DEATHTIMER)
   {
     if (turns_occured >= max_turns_left)
-      emit victimDeath(victim->getName(), DEATHCOUNTDOWN);
+      emit victimDeath(victim->getName(), EnumDb::DEATHCOUNTDOWN);
   }
 
   /* Ailed actor has a 70% chance of skipping their turn */
-  else if (ailment_type == PARALYSIS)
+  else if (ailment_type == EnumDb::PARALYSIS)
   {
     int random_percent = getRandomNumber(100);
     if (random_percent > 30)
@@ -320,7 +321,7 @@ void Ailment::apply()
   }
 
   /* Blindness - Ailed actor has a much higher chance of missing targets */
-  else if (ailment_type == BLINDNESS)
+  else if (ailment_type == EnumDb::BLINDNESS)
   {
     int random_percent = getRandomNumber(100);
     if (random_percent <= kBLIND_PC * 100)
@@ -330,7 +331,7 @@ void Ailment::apply()
   /* Dreadstruck - formerly "Stun": Ailed actor has an extreme chance of
    *               skipping just one turn
    */
-  else if (ailment_type == DREADSTRUCK)
+  else if (ailment_type == EnumDb::DREADSTRUCK)
   {
     int random_percent = getRandomNumber(100);
     if (random_percent <= kDREADSTRUCK_PC * 100)
@@ -340,7 +341,7 @@ void Ailment::apply()
   /* Dreamsnare - Ailed actor's actions have a 50% chance of being benign
    *              illusions (no effect
    */
-  else if (ailment_type == DREAMSNARE)
+  else if (ailment_type == EnumDb::DREAMSNARE)
   {
     int random_percent = getRandomNumber(100);
     if (random_percent <= kDREAMSNARE_PC * 100)
@@ -356,7 +357,7 @@ void Ailment::apply()
   *  combined, damage dealt to one is also dealt to the other, as with status
   *  ailments and other effects (ex. death)
   */
-  else if (ailment_type == BOND)
+  else if (ailment_type == EnumDb::BOND)
   {
     //TODO: Bond combination experimentation [05-05-13]
   }
@@ -369,7 +370,7 @@ void Ailment::apply()
   if (getFlag(Ailment::TOBEAPPLIED) && getFlag(Ailment::BUFF))
   {
 
-    if (ailment_type == ALLATKBUFF)
+    if (ailment_type == EnumDb::ALLATKBUFF)
     {
       for (int i = 0; i < stats->getSize(); i++)
       {
@@ -379,7 +380,7 @@ void Ailment::apply()
       }
       setFlag(Ailment::TOBEAPPLIED, false);
     }
-    else if (ailment_type == ALLDEFBUFF)
+    else if (ailment_type == EnumDb::ALLDEFBUFF)
     {
       for (int i = 0; i < stats->getSize(); i++)
       {
@@ -389,60 +390,60 @@ void Ailment::apply()
       }
       setFlag(Ailment::TOBEAPPLIED, false);
     }
-    else if (ailment_type == PHYATKBUFF)
+    else if (ailment_type == EnumDb::PHYATKBUFF)
       stats->setStat("PHAG", stats->getStat("PHAG") * kPHYSBUFF_PC);
-    else if (ailment_type == PHYDEFBUFF)
+    else if (ailment_type == EnumDb::PHYDEFBUFF)
       stats->setStat("PHFD", stats->getStat("PHFD") * kPHYSBUFF_PC);
-    else if (ailment_type == THRATKBUFF)
+    else if (ailment_type == EnumDb::THRATKBUFF)
       stats->setStat("THAG", stats->getStat("THAG") * kELMBUFF_PC);
-    else if (ailment_type == THRDEFBUFF)
+    else if (ailment_type == EnumDb::THRDEFBUFF)
       stats->setStat("THFD", stats->getStat("THFD") * kELMBUFF_PC);
-    else if (ailment_type == POLATKBUFF)
+    else if (ailment_type == EnumDb::POLATKBUFF)
       stats->setStat("POAG", stats->getStat("POAG") * kELMBUFF_PC);
-    else if (ailment_type == POLDEFBUFF)
+    else if (ailment_type == EnumDb::POLDEFBUFF)
       stats->setStat("POFD", stats->getStat("POFD") * kELMBUFF_PC);
-    else if (ailment_type == PRIATKBUFF)
+    else if (ailment_type == EnumDb::PRIATKBUFF)
       stats->setStat("PRAG", stats->getStat("PRAG") * kELMBUFF_PC);
-    else if (ailment_type == PRIDEFBUFF)
+    else if (ailment_type == EnumDb::PRIDEFBUFF)
       stats->setStat("PRFD", stats->getStat("PRFD") * kELMBUFF_PC);
-    else if (ailment_type == CHGATKBUFF)
+    else if (ailment_type == EnumDb::CHGATKBUFF)
       stats->setStat("CHAG", stats->getStat("CHAG") * kELMBUFF_PC);
-    else if (ailment_type == CHGDEFBUFF)
+    else if (ailment_type == EnumDb::CHGDEFBUFF)
      stats->setStat("CHFD", stats->getStat("CHFD") * kELMBUFF_PC);
-    else if (ailment_type == CYBATKBUFF)
+    else if (ailment_type == EnumDb::CYBATKBUFF)
       stats->setStat("CYAG", stats->getStat("CYAG") * kELMBUFF_PC);
-    else if (ailment_type == CYBDEFBUFF)
+    else if (ailment_type == EnumDb::CYBDEFBUFF)
       stats->setStat("CYFD", stats->getStat("CYFD") * kELMBUFF_PC);
-    else if (ailment_type == NIHATKBUFF)
+    else if (ailment_type == EnumDb::NIHATKBUFF)
       stats->setStat("NIAG", stats->getStat("NIAG") * kELMBUFF_PC);
-    else if (ailment_type == NIHDEFBUFF)
+    else if (ailment_type == EnumDb::NIHDEFBUFF)
       stats->setStat("NIAG", stats->getStat("NIFD") * kELMBUFF_PC);
-    else if (ailment_type == UNBBUFF)
+    else if (ailment_type == EnumDb::UNBBUFF)
       stats->setStat("UNBR", stats->getStat("UNBR") * kELMBUFF_PC);
-    else if (ailment_type == LIMBUFF)
+    else if (ailment_type == EnumDb::LIMBUFF)
       stats->setStat("NIFD", stats->getStat("LIMB") * kLIMBUFF_PC);
-    else if (ailment_type == MOMBUFF)
+    else if (ailment_type == EnumDb::MOMBUFF)
       stats->setStat("MMTM", stats->getStat("MMTM") * kELMBUFF_PC);
-    else if (ailment_type == VITBUFF)
+    else if (ailment_type == EnumDb::VITBUFF)
       stats->setStat("VITA", stats->getStat("VITA") * kVITBUFF_PC);
-    else if (ailment_type == QDBUFF)
+    else if (ailment_type == EnumDb::QDBUFF)
       stats->setStat("QTMN", stats->getStat("QTMN") * kQTMNBUFF_PC);
   }
 
   /* Rootbound - Ailed actor (if biological in nature) gains a % HP / turn
    * Constats - kROOTBOUND_PC - % vitality to be gained each turn */
-  else if (ailment_type == ROOTBOUND)
+  else if (ailment_type == EnumDb::ROOTBOUND)
   {
     ushort value = stats->getStat("VITA") * kROOTBOUND_PC;
     stats->setStat("VITA", value);
   }
 
   /* Double cast allows the user to use two skils per turn */
-  else if (ailment_type == DOUBLECAST)
+  else if (ailment_type == EnumDb::DOUBLECAST)
     victim->setPersonFlag(Person::TWOSKILLS, true);
 
   /* Triple cast allows the user to use three skills per turn */
-  else if (ailment_type == TRIPLECAST)
+  else if (ailment_type == EnumDb::TRIPLECAST)
     victim->setPersonFlag(Person::THREESKILLS, true);
 
   /* Triple cast allows the user to use three skills per turn */
@@ -458,7 +459,7 @@ void Ailment::apply()
    * Constants - kHIBERNATION_INIT - Initial % (of cur value) hibernation adds
    *             kHIBERNATION_INCR - Increasing % for each turn
    */
-  else if (ailment_type == HIBERNATION)
+  else if (ailment_type == EnumDb::HIBERNATION)
   {
     ushort gain_pc = kHIBERNATION_INIT;
     for (int i = 0; i < turns_occured; i++)
@@ -467,7 +468,7 @@ void Ailment::apply()
   }
 
   /* Reflect - reflect handled in Battle */
-  else if (ailment_type == REFLECT)
+  else if (ailment_type == EnumDb::REFLECT)
   {
       victim->setPersonFlag(Person::REFLECT, true);
   }
@@ -476,7 +477,7 @@ void Ailment::apply()
    *         (Curse can inflict a new Curse--in which case just the remaining
    *         turns is reset.) Curse may also reset curse.
    */
-  else if (ailment_type == CURSE)
+  else if (ailment_type == EnumDb::CURSE)
   {
     //TODO: Curse effect unfinishd [05-05-13]
   }
@@ -485,17 +486,17 @@ void Ailment::apply()
    *   the inflicted, but also a kMETABOLIC_DMG percent that it will deal to
    *   the target.
    */
-  else if (ailment_type == METATETHER)
+  else if (ailment_type == EnumDb::METATETHER)
   {
     int random_percent = getRandomNumber(100);
 
     /* Do kMETABOLIC_DMG % upon victim, emit signal if dead */
     if (victim->damage(stats->getMax("VITALITY") * kMETABOLIC_DMG))
-        emit victimDeath(victim->getName(), METABOLICTETHER);
+        emit victimDeath(victim->getName(), EnumDb::METABOLICTETHER);
 
     /* Check for kMETABOLIC_PC chance for instant death */
     if (random_percent <= kMETABOLIC_PC * 100)
-        emit victimDeath(victim->getName(), METABOLICDMG);
+        emit victimDeath(victim->getName(), EnumDb::METABOLICDMG);
   }
 
   /* Ailment update complete, emit signal */
@@ -518,166 +519,166 @@ bool Ailment::checkImmunity(Person* new_victim)
   /* Flag immunity section */
   if (new_victim->getPersonFlag(Person::MINIBOSS))
   {
-    if (ailment_type == DEATHTIMER || ailment_type == BUBBIFY)
+    if (ailment_type == EnumDb::DEATHTIMER || ailment_type == EnumDb::BUBBIFY)
       return false;
   }
 
   /* Bosses are immune to some ailments */
   else if (new_victim->getPersonFlag(Person::BOSS))
   {
-    if (ailment_type == DEATHTIMER || ailment_type == BUBBIFY   ||
-        ailment_type == SILENCE    || ailment_type == PARALYSIS ||
-        ailment_type == BLINDNESS)
+    if (ailment_type == EnumDb::DEATHTIMER || ailment_type == EnumDb::BUBBIFY   ||
+        ailment_type == EnumDb::SILENCE    || ailment_type == EnumDb::PARALYSIS ||
+        ailment_type == EnumDb::BLINDNESS)
       return false;
   }
 
   /* Final boss will be immune to many ailments */
   else if (new_victim->getPersonFlag(Person::FINALBOSS))
   {
-    if (ailment_type == DEATHTIMER || ailment_type == BUBBIFY   ||
-        ailment_type == SILENCE    || ailment_type == PARALYSIS ||
-        ailment_type == BLINDNESS  || ailment_type == CONFUSE   ||
-        ailment_type == BERSERK)
+    if (ailment_type == EnumDb::DEATHTIMER || ailment_type == EnumDb::BUBBIFY   ||
+        ailment_type == EnumDb::SILENCE    || ailment_type == EnumDb::PARALYSIS ||
+        ailment_type == EnumDb::BLINDNESS  || ailment_type == EnumDb::CONFUSE   ||
+        ailment_type == EnumDb::BERSERK)
       return false;
   }
 
   /* Bubby effect immunity section */
-  if (ailment_type == ALLATKBUFF || ailment_type == ALLDEFBUFF ||
-      ailment_type == PHYATKBUFF || ailment_type == PHYDEFBUFF ||
-      ailment_type == THRATKBUFF || ailment_type == THRDEFBUFF ||
-      ailment_type == POLATKBUFF || ailment_type == POLDEFBUFF ||
-      ailment_type == PRIATKBUFF || ailment_type == PRIDEFBUFF ||
-      ailment_type == CHGATKBUFF || ailment_type == CHGDEFBUFF ||
-      ailment_type == CYBATKBUFF || ailment_type == CYBDEFBUFF ||
-      ailment_type == NIHATKBUFF || ailment_type == NIHDEFBUFF ||
-      ailment_type == LIMBUFF    || ailment_type == UNBBUFF    ||
-      ailment_type == MOMBUFF    || ailment_type == VITBUFF    ||
-      ailment_type == QDBUFF)
+  if (ailment_type == EnumDb::ALLATKBUFF || ailment_type == EnumDb::ALLDEFBUFF ||
+      ailment_type == EnumDb::PHYATKBUFF || ailment_type == EnumDb::PHYDEFBUFF ||
+      ailment_type == EnumDb::THRATKBUFF || ailment_type == EnumDb::THRDEFBUFF ||
+      ailment_type == EnumDb::POLATKBUFF || ailment_type == EnumDb::POLDEFBUFF ||
+      ailment_type == EnumDb::PRIATKBUFF || ailment_type == EnumDb::PRIDEFBUFF ||
+      ailment_type == EnumDb::CHGATKBUFF || ailment_type == EnumDb::CHGDEFBUFF ||
+      ailment_type == EnumDb::CYBATKBUFF || ailment_type == EnumDb::CYBDEFBUFF ||
+      ailment_type == EnumDb::NIHATKBUFF || ailment_type == EnumDb::NIHDEFBUFF ||
+      ailment_type == EnumDb::LIMBUFF    || ailment_type == EnumDb::UNBBUFF    ||
+      ailment_type == EnumDb::MOMBUFF    || ailment_type == EnumDb::VITBUFF    ||
+      ailment_type == EnumDb::QDBUFF)
   return false;
 
   /* Race immunity section */
   if (race_name == "Human")
   {
-    if (ailment_type == HIBERNATION || ailment_type == REFLECT ||
-        ailment_type == CONFUSE)
+    if (ailment_type == EnumDb::HIBERNATION || ailment_type == EnumDb::REFLECT ||
+        ailment_type == EnumDb::CONFUSE)
       return false;
   }
 
   /* Bsians are not bears and don't get angry */
   else if (race_name == "Bsian")
   {
-    if (ailment_type == HIBERNATION || ailment_type == BERSERK)
+    if (ailment_type == EnumDb::HIBERNATION || ailment_type == EnumDb::BERSERK)
       return false;
   }
 
   /* Cyborgs are non-biological */
   else if (race_name == "Cyborg")
   {
-    if (ailment_type == HIBERNATION || ailment_type == REFLECT ||
-        ailment_type == POISON      || ailment_type == ROOTBOUND)
+    if (ailment_type == EnumDb::HIBERNATION || ailment_type == EnumDb::REFLECT ||
+        ailment_type == EnumDb::POISON      || ailment_type == EnumDb::ROOTBOUND)
       return false;
   }
 
   /* Artilects are non-biological and immune to some others */
   else if (race_name == "Artilect")
   {
-    if (ailment_type == HIBERNATION || ailment_type == REFLECT ||
-        ailment_type == POISON      || ailment_type == BURN    ||
-        ailment_type == INFLICTCHAR || ailment_type == SCALD)
+    if (ailment_type == EnumDb::HIBERNATION || ailment_type == EnumDb::REFLECT ||
+        ailment_type == EnumDb::POISON      || ailment_type == EnumDb::BURN    ||
+        ailment_type == EnumDb::INFLICTCHAR || ailment_type == EnumDb::SCALD)
       return false;
   }
 
   /* Gyrokin are ot bears */
   else if (race_name == "Gyrokin")
   {
-    if (ailment_type == HIBERNATION || ailment_type == REFLECT)
+    if (ailment_type == EnumDb::HIBERNATION || ailment_type == EnumDb::REFLECT)
       return false;
   }
 
   /* Necross are not bears */
   else if (race_name == "Necross")
   {
-    if (ailment_type == HIBERNATION || ailment_type == REFLECT)
+    if (ailment_type == EnumDb::HIBERNATION || ailment_type == EnumDb::REFLECT)
       return false;
   }
 
   /* Bears have hibernate instead of Rootbound */
   else if (race_name == "Bear")
   {
-    if (ailment_type == ROOTBOUND)
+    if (ailment_type == EnumDb::ROOTBOUND)
       return false;
   }
 
   /* BOATs can't really be buffed up--they are extremely powerful */
   else if (race_name == "Boat")
   {
-    if (ailment_type == ALLATKBUFF || ailment_type == ALLDEFBUFF ||
-        ailment_type == PHYATKBUFF || ailment_type == PHYDEFBUFF ||
-        ailment_type == THRATKBUFF || ailment_type == THRDEFBUFF ||
-        ailment_type == POLATKBUFF || ailment_type == POLDEFBUFF ||
-        ailment_type == PRIATKBUFF || ailment_type == PRIDEFBUFF ||
-        ailment_type == CHGATKBUFF || ailment_type == CHGDEFBUFF ||
-        ailment_type == CYBATKBUFF || ailment_type == CYBDEFBUFF ||
-        ailment_type == NIHATKBUFF || ailment_type == NIHDEFBUFF ||
-        ailment_type == LIMBUFF    || ailment_type == UNBBUFF    ||
-        ailment_type == MOMBUFF    || ailment_type == VITBUFF    ||
-        ailment_type == QDBUFF)
+    if (ailment_type == EnumDb::ALLATKBUFF || ailment_type == EnumDb::ALLDEFBUFF ||
+        ailment_type == EnumDb::PHYATKBUFF || ailment_type == EnumDb::PHYDEFBUFF ||
+        ailment_type == EnumDb::THRATKBUFF || ailment_type == EnumDb::THRDEFBUFF ||
+        ailment_type == EnumDb::POLATKBUFF || ailment_type == EnumDb::POLDEFBUFF ||
+        ailment_type == EnumDb::PRIATKBUFF || ailment_type == EnumDb::PRIDEFBUFF ||
+        ailment_type == EnumDb::CHGATKBUFF || ailment_type == EnumDb::CHGDEFBUFF ||
+        ailment_type == EnumDb::CYBATKBUFF || ailment_type == EnumDb::CYBDEFBUFF ||
+        ailment_type == EnumDb::NIHATKBUFF || ailment_type == EnumDb::NIHDEFBUFF ||
+        ailment_type == EnumDb::LIMBUFF    || ailment_type == EnumDb::UNBBUFF    ||
+        ailment_type == EnumDb::MOMBUFF    || ailment_type == EnumDb::VITBUFF    ||
+        ailment_type == EnumDb::QDBUFF)
     return false;
   }
 
   /* Fiends are immune to reflect */
   else if (race_name == "Fiend")
   {
-    if (ailment_type == REFLECT)
+    if (ailment_type == EnumDb::REFLECT)
       return false;
   }
 
   /* Spirits can't be buffed and are immune to many other ailments */
   else if (race_name == "Spirit")
   {
-    if (ailment_type == HIBERNATION || ailment_type == ALLATKBUFF    ||
-        ailment_type == PHYATKBUFF  || ailment_type == PHYDEFBUFF ||
-        ailment_type == THRATKBUFF  || ailment_type == THRDEFBUFF ||
-        ailment_type == POLATKBUFF  || ailment_type == POLDEFBUFF ||
-        ailment_type == PRIATKBUFF  || ailment_type == PRIDEFBUFF ||
-        ailment_type == CHGATKBUFF  || ailment_type == CHGDEFBUFF ||
-        ailment_type == CYBATKBUFF  || ailment_type == CYBDEFBUFF ||
-        ailment_type == NIHATKBUFF  || ailment_type == NIHDEFBUFF ||
-        ailment_type == LIMBUFF     || ailment_type == UNBBUFF    ||
-        ailment_type == MOMBUFF     || ailment_type == VITBUFF    ||
-        ailment_type == QDBUFF      || ailment_type == POISON     ||
-        ailment_type == BURN        || ailment_type == SCALD      ||
-        ailment_type == INFLICTCHAR || ailment_type == BUBBIFY    ||
-        ailment_type == DEATHTIMER  || ailment_type == ROOTBOUND  ||
-        ailment_type == ALLDEFBUFF)
+    if (ailment_type == EnumDb::HIBERNATION || ailment_type == EnumDb::ALLATKBUFF    ||
+        ailment_type == EnumDb::PHYATKBUFF  || ailment_type == EnumDb::PHYDEFBUFF ||
+        ailment_type == EnumDb::THRATKBUFF  || ailment_type == EnumDb::THRDEFBUFF ||
+        ailment_type == EnumDb::POLATKBUFF  || ailment_type == EnumDb::POLDEFBUFF ||
+        ailment_type == EnumDb::PRIATKBUFF  || ailment_type == EnumDb::PRIDEFBUFF ||
+        ailment_type == EnumDb::CHGATKBUFF  || ailment_type == EnumDb::CHGDEFBUFF ||
+        ailment_type == EnumDb::CYBATKBUFF  || ailment_type == EnumDb::CYBDEFBUFF ||
+        ailment_type == EnumDb::NIHATKBUFF  || ailment_type == EnumDb::NIHDEFBUFF ||
+        ailment_type == EnumDb::LIMBUFF     || ailment_type == EnumDb::UNBBUFF    ||
+        ailment_type == EnumDb::MOMBUFF     || ailment_type == EnumDb::VITBUFF    ||
+        ailment_type == EnumDb::QDBUFF      || ailment_type == EnumDb::POISON     ||
+        ailment_type == EnumDb::BURN        || ailment_type == EnumDb::SCALD      ||
+        ailment_type == EnumDb::INFLICTCHAR || ailment_type == EnumDb::BUBBIFY    ||
+        ailment_type == EnumDb::DEATHTIMER  || ailment_type == EnumDb::ROOTBOUND  ||
+        ailment_type == EnumDb::ALLDEFBUFF)
     return false;
   }
 
   /* Category immunity section -- each category also allows an
    * additional ailment immunity */
-  if (category_name == "Bardic Sage" && ailment_type == SILENCE)
+  if (category_name == "Bardic Sage" && ailment_type == EnumDb::SILENCE)
       return false;
-  else if (category_name == "Bloodclaw Scion" && ailment_type == DEATHTIMER)
+  else if (category_name == "Bloodclaw Scion" && ailment_type == EnumDb::DEATHTIMER)
       return false;
-  else if (category_name == "Druidic Avenger" && ailment_type == POISON)
+  else if (category_name == "Druidic Avenger" && ailment_type == EnumDb::POISON)
       return false;
-  else if (category_name == "Eidoloncer" && ailment_type == SILENCE)
+  else if (category_name == "Eidoloncer" && ailment_type == EnumDb::SILENCE)
       return false;
-  else if (category_name == "Goliath Rogue" && ailment_type == BLINDNESS)
+  else if (category_name == "Goliath Rogue" && ailment_type == EnumDb::BLINDNESS)
       return false;
-  else if (category_name == "Hexblade" && ailment_type == BERSERK)
+  else if (category_name == "Hexblade" && ailment_type == EnumDb::BERSERK)
       return false;
-  else if (category_name == "Psion" && ailment_type == SILENCE)
+  else if (category_name == "Psion" && ailment_type == EnumDb::SILENCE)
       return false;
-  else if (category_name == "Shadow Dancer" && ailment_type == PARALYSIS)
+  else if (category_name == "Shadow Dancer" && ailment_type == EnumDb::PARALYSIS)
       return false;
-  else if (category_name == "Storm Paladin" && ailment_type == DREADSTRUCK)
+  else if (category_name == "Storm Paladin" && ailment_type == EnumDb::DREADSTRUCK)
       return false;
-  else if (category_name == "Swordsage" && ailment_type == DREAMSNARE)
+  else if (category_name == "Swordsage" && ailment_type == EnumDb::DREAMSNARE)
       return false;
-  else if (category_name == "Tactical Samurai" && ailment_type == CONFUSE)
+  else if (category_name == "Tactical Samurai" && ailment_type == EnumDb::CONFUSE)
       return false;
-  else if (category_name == "Warmage" && ailment_type == HELLBOUND)
+  else if (category_name == "Warmage" && ailment_type == EnumDb::HELLBOUND)
       return false;
 
   return true;
@@ -722,7 +723,7 @@ bool Ailment::updateTurns()
  * Inputs: Infliction - type of Infliction to be set.
  * Output: none
  */
-void Ailment::setType(Infliction t)
+void Ailment::setType(EnumDb::Infliction t)
 {
   ailment_type = t;
 }
@@ -754,7 +755,7 @@ void Ailment::unapply()
   SkillSet* skills = victim->getSkills();
 
   /* On removing Berserk, the person's abilities need to be re-enabled */
-  if (getType() == BERSERK)
+  if (getType() == EnumDb::BERSERK)
   {
     victim->setPersonFlag(Person::CANRUN, true);
     victim->setPersonFlag(Person::CANUSESKILLS, true);
@@ -763,7 +764,7 @@ void Ailment::unapply()
   }
 
   /* When silence is removed, skills need to be recalculated */
-  else if (getType() == SILENCE)
+  else if (getType() == EnumDb::SILENCE)
   {
 
     for (int i = 0; i < skills->getSkills().size(); i++)
@@ -772,13 +773,13 @@ void Ailment::unapply()
 
   /* When bubbify is removed, actor needs to return to normal (all other buffs
      are removed as well) */
-  else if (getType() == BUBBIFY)
+  else if (getType() == EnumDb::BUBBIFY)
   {
     emit removeBuffs(victim->getName());
   }
 
   /* Remove the buffing effects from all attack stats */
-  if (getType() == ALLATKBUFF)
+  if (getType() == EnumDb::ALLATKBUFF)
   {
     for (int i = 0; i < stats->getSize(); i++)
     {
@@ -789,7 +790,7 @@ void Ailment::unapply()
   }
 
   /* Remove the buffing effect from all defense stats */
-  else if (getType() == ALLDEFBUFF)
+  else if (getType() == EnumDb::ALLDEFBUFF)
   {
     for (int i = 0; i < stats->getSize(); i++)
     {
@@ -800,54 +801,54 @@ void Ailment::unapply()
   }
 
   /* Remove the buffing effect from each stat */
-  else if (ailment_type == PHYATKBUFF)
+  else if (ailment_type == EnumDb::PHYATKBUFF)
     stats->setStat("PHAG", stats->getStat("PHAG") / kPHYSBUFF_PC);
-  else if (ailment_type == PHYDEFBUFF)
+  else if (ailment_type == EnumDb::PHYDEFBUFF)
     stats->setStat("PHFD", stats->getStat("PHFD") / kPHYSBUFF_PC);
-  else if (ailment_type == THRATKBUFF)
+  else if (ailment_type == EnumDb::THRATKBUFF)
     stats->setStat("THAG", stats->getStat("THAG") / kELMBUFF_PC);
-  else if (ailment_type == THRDEFBUFF)
+  else if (ailment_type == EnumDb::THRDEFBUFF)
     stats->setStat("THFD", stats->getStat("THFD") / kELMBUFF_PC);
-  else if (ailment_type == POLATKBUFF)
+  else if (ailment_type == EnumDb::POLATKBUFF)
     stats->setStat("POAG", stats->getStat("POAG") / kELMBUFF_PC);
-  else if (ailment_type == POLDEFBUFF)
+  else if (ailment_type == EnumDb::POLDEFBUFF)
     stats->setStat("POFD", stats->getStat("POFD") / kELMBUFF_PC);
-  else if (ailment_type == PRIATKBUFF)
+  else if (ailment_type == EnumDb::PRIATKBUFF)
     stats->setStat("PRAG", stats->getStat("PRAG") / kELMBUFF_PC);
-  else if (ailment_type == PRIDEFBUFF)
+  else if (ailment_type == EnumDb::PRIDEFBUFF)
     stats->setStat("PRFD", stats->getStat("PRFD") / kELMBUFF_PC);
-  else if (ailment_type == CHGATKBUFF)
+  else if (ailment_type == EnumDb::CHGATKBUFF)
     stats->setStat("CHAG", stats->getStat("CHAG") / kELMBUFF_PC);
-  else if (ailment_type == CHGDEFBUFF)
+  else if (ailment_type == EnumDb::CHGDEFBUFF)
    stats->setStat("CHFD", stats->getStat("CHFD") / kELMBUFF_PC);
-  else if (ailment_type == CYBATKBUFF)
+  else if (ailment_type == EnumDb::CYBATKBUFF)
     stats->setStat("CYAG", stats->getStat("CYAG") / kELMBUFF_PC);
-  else if (ailment_type == CYBDEFBUFF)
+  else if (ailment_type == EnumDb::CYBDEFBUFF)
     stats->setStat("CYFD", stats->getStat("CYFD") / kELMBUFF_PC);
-  else if (ailment_type == NIHATKBUFF)
+  else if (ailment_type == EnumDb::NIHATKBUFF)
     stats->setStat("NIAG", stats->getStat("NIAG") / kELMBUFF_PC);
-  else if (ailment_type == NIHDEFBUFF)
+  else if (ailment_type == EnumDb::NIHDEFBUFF)
     stats->setStat("NIAG", stats->getStat("NIFD") / kELMBUFF_PC);
-  else if (ailment_type == UNBBUFF)
+  else if (ailment_type == EnumDb::UNBBUFF)
     stats->setStat("UNBR", stats->getStat("UNBR") / kELMBUFF_PC);
-  else if (ailment_type == LIMBUFF)
+  else if (ailment_type == EnumDb::LIMBUFF)
     stats->setStat("NIFD", stats->getStat("LIMB") / kLIMBUFF_PC);
-  else if (ailment_type == MOMBUFF)
+  else if (ailment_type == EnumDb::MOMBUFF)
     stats->setStat("MMTM", stats->getStat("MMTM") / kELMBUFF_PC);
-  else if (ailment_type == VITBUFF)
+  else if (ailment_type == EnumDb::VITBUFF)
     stats->setStat("VITA", stats->getStat("VITA") / kVITBUFF_PC);
-  else if (ailment_type == QDBUFF)
+  else if (ailment_type == EnumDb::QDBUFF)
     stats->setStat("QTMN", stats->getStat("QTMN") / kQTMNBUFF_PC);
 
   /* Flip the flags allowing the person to use two or three skills per turn */
-  else if (getType() == DOUBLECAST)
+  else if (getType() == EnumDb::DOUBLECAST)
       victim->setPersonFlag(Person::TWOSKILLS, false);
-  else if (getType() == TRIPLECAST)
+  else if (getType() == EnumDb::TRIPLECAST)
       victim->setPersonFlag(Person::THREESKILLS, false);
 
   /* Half cost removal handled within battle */
 
-  else if (getType() == CURSE)
+  else if (getType() == EnumDb::CURSE)
   {
     /* Curse effect incomplete [05-13-13] */
   }
@@ -932,7 +933,7 @@ ushort Ailment::getTurnsLeft()
  * Inputs: none
  * Output: Infliction - type of Ailment
  */
-Infliction Ailment::getType()
+EnumDb::Infliction Ailment::getType()
 {
   return ailment_type;
 }
@@ -946,7 +947,7 @@ Infliction Ailment::getType()
  */
 QString Ailment::getName()
 {
-  const std::string &string = EnumString<Infliction>::From( ailment_type );
+  const std::string &string = EnumString<EnumDb::Infliction>::From( ailment_type );
   QString ailment_qstring(string.c_str());
   return ailment_qstring;
 }
@@ -1081,9 +1082,9 @@ void Ailment::reset()
  * Inputs: Infliction - type of Infliction to be evaluated.
  * Output: QString - A QString of the given Infliction type.
  */
-QString Ailment::getAilmentStr(Infliction type)
+QString Ailment::getAilmentStr(EnumDb::Infliction type)
 {
-  const std::string &ailment_string = EnumString<Infliction>::From(type);
+  const std::string &ailment_string = EnumString<EnumDb::Infliction>::From(type);
   QString ailment_qstring(ailment_string.c_str());
   return ailment_qstring;
 }
@@ -1094,10 +1095,10 @@ QString Ailment::getAilmentStr(Infliction type)
  * Inputs: QString - name of Infliction to be checked for
  * Output: Infliction - the corresponding Infliction (NOAILMENT for default)
  */
-Infliction Ailment::getInfliction(QString name)
+EnumDb::Infliction Ailment::getInfliction(QString name)
 {
   const std::string &ailment_string = name.toUtf8().constData();
-  Infliction ailment_type;
-  EnumString<Infliction>::To(ailment_type, ailment_string);
+  EnumDb::Infliction ailment_type;
+  EnumString<EnumDb::Infliction>::To(ailment_type, ailment_string);
   return ailment_type;
 }

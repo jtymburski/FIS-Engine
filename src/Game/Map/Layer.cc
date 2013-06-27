@@ -24,6 +24,14 @@ const int Layer::kUPPER_COUNT_MAX = 5;
  */
 Layer::Layer()
 {
+  /* Sets the initial size of the lower and upper, as per the class limits */
+  Sprite* null_sprite = 0;
+  for(int i = 0; i < kLOWER_COUNT_MAX; i++)
+    lower.append(null_sprite);
+  for(int i = 0; i < kUPPER_COUNT_MAX; i++)
+    upper.append(null_sprite);
+
+  /* Clears out the class storage and sets to unset default */
   clear();
 
   /* Set some QGraphicsItem specific classifications for performance */
@@ -44,11 +52,16 @@ Layer::Layer()
  */
 Layer::Layer(int width, int height, int x, int y, int z)
 {
+  /* Sets the initial size of the lower and upper, as per the class limits */
+  Sprite* null_sprite = 0;
+  for(int i = 0; i < kLOWER_COUNT_MAX; i++)
+    lower.append(null_sprite);
+  for(int i = 0; i < kUPPER_COUNT_MAX; i++)
+    upper.append(null_sprite);
+
   /* Clear variables and layer sprite information */
   base = 0;
   enhancer = 0;
-  lower.clear();
-  upper.clear();
   paint_count = 0;
 
   /* Set layer parameters */
@@ -71,10 +84,15 @@ Layer::Layer(int width, int height, int x, int y, int z)
  */
 Layer::~Layer()
 {
+  /* Unset all the sprite pointers stored (does not delete) */
   unsetBase();
   unsetEnhancer();
   unsetLower();
   unsetUpper();
+
+  /* Clear out the lower and upper lists */
+  lower.clear();
+  upper.clear();
 }
 
 /*============================================================================
@@ -102,50 +120,13 @@ void Layer::animate()
 
   /* Then animate the set of lower layers */
   for(int i = 0; i < lower.size(); i++)
-    lower[i]->shiftNext();
+    if(lower[i] != 0)
+      lower[i]->shiftNext();
 
   /* Finish by animating the upper set, if set */
   for(int i = 0; i < upper.size(); i++)
-    upper[i]->shiftNext();
-
-}
-
-/* 
- * Description: Appends a new lower sprite stored within the layer. Only sets 
- *              it if the pointer is valid and the number of frames is greater
- *              than 0 and if there is room in the stack (limit of 5). 
- *
- * Inputs: Sprite* new_lower - the new lower layer to attempt to append
- * Output: bool - status if the insertion succeeded
- */
-bool Layer::appendLower(Sprite* new_lower)
-{
-  if(new_lower != 0 && new_lower->getSize() > 0
-                    && lower.size() < kLOWER_COUNT_MAX)
-  {
-    lower.append(new_lower);
-    return true;
-  }
-  return false;
-}
-
-/* 
- * Description: Appends a new upper sprite stored within the layer. Only sets 
- *              it if the pointer is valid and the number of frames is greater
- *              than 0 and if there is room in the stack (limit of 5). 
- *
- * Inputs: Sprite* new_upper - the new upper layer to attempt to append
- * Output: bool - status if the insertion succeeded
- */
-bool Layer::appendUpper(Sprite* new_upper)
-{
-  if(new_upper != 0 && new_upper->getSize() > 0 
-                    && upper.size() < kUPPER_COUNT_MAX)
-  {
-    upper.append(new_upper);
-    return true;
-  }
-  return false;
+    if(upper[i] != 0)
+      upper[i]->shiftNext();
 }
 
 /* 
@@ -287,6 +268,45 @@ int Layer::getWidth()
 }
 
 /* 
+ * Description: Inserts a new lower sprite stored within the layer. Only sets 
+ *              it if the pointer is valid and the number of frames is greater
+ *              than 0 and if the index is in the stack (index of 0 - 4). 
+ *
+ * Inputs: Sprite* new_lower - the new lower layer to attempt to insert
+ *         int index - the index of the lower layer to insert
+ * Output: bool - status if the insertion succeeded
+ */
+bool Layer::insertLower(Sprite* new_lower, int index)
+{
+  if(new_lower != 0 && new_lower->getSize() > 0 && 
+     index >= 0 && index < kLOWER_COUNT_MAX)
+  {
+    lower[index] = new_lower;
+    return true;
+  }
+  return false;
+}
+
+/* 
+ * Description: Inserts a new upper sprite stored within the layer. Only sets 
+ *              it if the pointer is valid and the number of frames is greater
+ *              than 0 and if the index is in the stack (index of 0 - 4). 
+ *
+ * Inputs: Sprite* new_upper - the new upper layer to attempt to append
+ *         int index - the index of the upper layer to insert
+ * Output: bool - status if the insertion succeeded
+ */
+bool Layer::insertUpper(Sprite* new_upper, int index)
+{
+  if(new_upper != 0 && new_upper->getSize() > 0 && 
+     index >= 0 && index < kUPPER_COUNT_MAX)
+  {
+    upper[index] = new_upper;
+    return true;
+  }
+  return false;
+}
+/* 
  * Description: Reimplemented virtual function. Handles the painting of the 
  *              image stored within the layer. Runs based on the same data as 
  *              the above QRectF for the bounding box. Only paints if the tile 
@@ -325,11 +345,13 @@ void Layer::paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
 
     /* Then paint the set of lower layers */
     for(int i = 0; i < lower.size(); i++)
-      painter->drawPixmap(0, 0, width, height, lower[i]->getCurrent());
+      if(lower[i] != 0)
+        painter->drawPixmap(0, 0, width, height, lower[i]->getCurrent());
 
     /* Finish by printing the upper set, if set */
     for(int i = 0; i < upper.size(); i++)
-      painter->drawPixmap(0, 0, width, height, upper[i]->getCurrent());
+      if(upper[i] != 0)
+        painter->drawPixmap(0, 0, width, height, upper[i]->getCurrent());
   }
   else
   {
@@ -411,7 +433,7 @@ bool Layer::setLower(Sprite* new_lower)
   if(new_lower != 0 && new_lower->getSize() > 0)
   {
     unsetLower();
-    lower.append(new_lower);
+    lower[0] = new_lower;
 
     return true;
   }
@@ -463,7 +485,7 @@ bool Layer::setUpper(Sprite* new_upper)
   if(new_upper != 0 && new_upper->getSize() > 0)
   {
     unsetUpper();
-    upper.append(new_upper);
+    upper[0] = new_upper;
 
     return true;
   }
@@ -522,7 +544,8 @@ void Layer::unsetEnhancer()
  */
 void Layer::unsetLower()
 {
-  lower.clear();
+  for(int i = 0; i < lower.size(); i++)
+    lower[i] = 0;
 }
 
 /* 
@@ -534,5 +557,6 @@ void Layer::unsetLower()
  */
 void Layer::unsetUpper()
 {
-  upper.clear();
+  for(int i = 0; i < upper.size(); i++)
+    upper[i] = 0;
 }

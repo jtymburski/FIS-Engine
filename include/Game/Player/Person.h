@@ -14,7 +14,7 @@
 #include <cmath>
 #include <algorithm>
 
-#include "EnumDatabase.h"
+#include "EnumDb.h"
 #include "Game/Player/Category.h"
 #include "Game/Player/Race.h"
 #include "Game/Player/Item.h"

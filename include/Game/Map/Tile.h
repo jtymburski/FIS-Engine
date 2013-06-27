@@ -13,6 +13,7 @@
 #ifndef TILE_H
 #define TILE_H
 
+#include <QDebug>
 #include <QGraphicsScene>
 
 #include "Game/Map/Layer.h"
@@ -67,13 +68,12 @@ private:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Call to add data, as extracted from file data */
+  bool addPassibility(QString data, QString classifier, QString index);
+  bool addSprite(Sprite* frames, QString classifier, QString index);
+
   /* Animates all sprites on tile (Including thing and walkover sprites) */
   void animate();
-
-  /* Append the lower and upper onto the stack (where applicable). This
-   * functionality is essentially entirely handled by Layer */
-  bool appendLower(Sprite* lower);
-  bool appendUpper(Sprite* upper);
 
   /* Gets the base layer(s) */
   Sprite* getBase();
@@ -120,6 +120,11 @@ public:
 
   /* Insert the items in the class into the scene */
   bool insertIntoScene(QGraphicsScene* scene);
+
+  /* Inserts the lower and upper onto the stack (where applicable). This
+   * functionality is essentially entirely handled by Layer */
+  bool insertLower(Sprite* lower, int index);
+  bool insertUpper(Sprite* upper, int index);
 
   /* Returns if the Base Layer is set (ie. at least one) */
   bool isBaseSet();

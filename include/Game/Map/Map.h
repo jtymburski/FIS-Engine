@@ -14,7 +14,7 @@
 #include <QGraphicsScene>
 #include <QGLWidget>
 
-#include "EnumDatabase.h"
+#include "EnumDb.h"
 #include "Game/Map/MapNPC.h"
 #include "Game/Map/Tile.h"
 #include "Game/Map/MapMenu.h"
@@ -77,6 +77,7 @@ private:
                                         a single digit */
   const static int kELEMENT_ANGLE; /* Element angle for sprite */
   const static int kELEMENT_DATA;  /* Element data type for sprite */
+  const static int kFILE_CLASSIFIER;  /* The file tile classification text */
   const static int kFILE_SECTION_ID;  /* The section identifier, for file */
   const static int kFILE_TILE_COLUMN; /* The tile depth in XML of column tag */
   const static int kFILE_TILE_ROW;    /* The tile depth in XML of row tag */
@@ -141,7 +142,7 @@ public:
   void initialization();
 
   /* Causes the thing you are facing and next to start its interactive action */
-  void interact(Direction dir);
+  void interact(EnumDb::Direction dir);
 
   /* Checks whether the viewport contains any tiles with the given sector */
   bool isInSector(int index);
@@ -153,11 +154,11 @@ public:
   bool loadMap(QString file);
 
   /* Shifts the viewport */
-  void move(Direction dir, int step_length, Sprite s);
+  void move(EnumDb::Direction dir, int step_length, Sprite s);
 
   /* Checks the tile you are attempting to enter for passibility of the given
   direction */
-  bool passible(Direction dir, int x, int y);
+  bool passible(EnumDb::Direction dir, int x, int y);
 
   /* Causes the thing you are moving into to start its interactive action */
   void passOver();

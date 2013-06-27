@@ -13,9 +13,10 @@
 const int Map::kDOUBLE_DIGITS = 10;
 const int Map::kELEMENT_ANGLE = 1;
 const int Map::kELEMENT_DATA = 0;
+const int Map::kFILE_CLASSIFIER = 3;
 const int Map::kFILE_SECTION_ID = 2;
-const int Map::kFILE_TILE_COLUMN = 4;
-const int Map::kFILE_TILE_ROW = 3;
+const int Map::kFILE_TILE_COLUMN = 5;
+const int Map::kFILE_TILE_ROW = 4;
 const int Map::kTILE_LENGTH = 64;
 const int Map::kTILE_WIDTH = 64;
 const int Map::kVIEWPORT_LENGTH = 19;
@@ -98,20 +99,10 @@ bool Map::addTileData(XmlData data)
 
       /* Shift through all the rows and column pairs of the coordinate */
       for(int r = rows[0].toInt(); r <= rows[rows.size() - 1].toInt(); r++)
-      {
         for(int c = cols[0].toInt(); c <= cols[cols.size() - 1].toInt(); c++)
-        {
-          /* Add the sprite data to the specific tile */
-          if(element[kELEMENT_DATA] == "base")
-            success &= geography[r][c]->setBase(tile_frames);
-          else if(element[kELEMENT_DATA] == "enhancer")
-            success &= geography[r][c]->setEnhancer(tile_frames);
-          else if(element[kELEMENT_DATA] == "lower")
-            success &= geography[r][c]->appendLower(tile_frames);
-          else if(element[kELEMENT_DATA] == "upper")
-            success &= geography[r][c]->appendUpper(tile_frames);
-        }
-      }
+          success &= geography[r][c]->
+                  addSprite(tile_frames, data.getElement(kFILE_CLASSIFIER), 
+                                         data.getKeyValue(kFILE_CLASSIFIER));
     }
 
     return success;
@@ -173,7 +164,7 @@ void Map::animate()
   viewport->viewport()->update();
 
   /* Time elapsed from standard update */
-  //qDebug() << time.elapsed() << " " << isActive() << " " << focusItem();
+  //qDebug() << time.elapsed();
 }
 
 void Map::animateTiles()
@@ -230,7 +221,7 @@ void Map::initialization()
 }
 
 /* Causes the thing you are facing and next to start its interactive action */
-void Map::interact(Direction dir)
+void Map::interact(EnumDb::Direction dir)
 {
   (void)dir;//warning
 }
@@ -333,7 +324,7 @@ bool Map::loadMap(QString file)
 }
 
 /* Shifts the viewport */
-void Map::move(Direction dir, int step_length, Sprite dir_sprite)
+void Map::move(EnumDb::Direction dir, int step_length, Sprite dir_sprite)
 {
   (void)dir;//warning
   (void)step_length;//warning
@@ -342,7 +333,7 @@ void Map::move(Direction dir, int step_length, Sprite dir_sprite)
 
 /* Checks the tile you are attempting to enter for passibility of the given
  * direction */
-bool Map::passible(Direction dir, int x, int y)
+bool Map::passible(EnumDb::Direction dir, int x, int y)
 {
   (void)dir;//warning
   (void)x;//warning
@@ -367,6 +358,15 @@ void Map::unloadMap()
       geography[i][j] = 0;
     }
   }
+  geography.clear();
+
+  /* Deletes the sprite data stored */
+  for(int i = 0; i < tile_sprites.size(); i++)
+  {
+    delete tile_sprites[i];
+    tile_sprites[i] = 0;
+  }
+  tile_sprites.clear();
 
   /* Clear the remaining and disable the loading */
   clear();
