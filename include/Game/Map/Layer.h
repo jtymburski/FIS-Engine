@@ -39,12 +39,14 @@ private:
 
   /* The base information */
   Sprite* base;
+  char base_passability;
 
   /* The enhancer information */
   Sprite* enhancer;
 
   /* The lower information */
   QList<Sprite*> lower;
+  QList<char> lower_passability;
 
   /* The upper information */
   QList<Sprite*> upper;
@@ -69,8 +71,9 @@ public:
   /* Clear out the layer definition */
   void clear();
 
-  /* Returns the base layer sprite */
+  /* Returns the base layer sprite and passability */
   Sprite* getBase();
+  bool getBasePassability(EnumDb::Direction dir);
 
   /* Returns the enhancer layer sprite */
   Sprite* getEnhancer();
@@ -80,6 +83,8 @@ public:
 
   /* Returns the list of lower layer sprites */
   QList<Sprite*> getLower();
+  bool getLowerPassability(EnumDb::Direction dir);
+  bool getLowerPassability(int index, EnumDb::Direction dir);
 
   /* Returns the number of time the layer has painted */
   int getPaintCount();
@@ -102,8 +107,9 @@ public:
   void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
              QWidget* widget);
 
-  /* Sets the base sprite, if it's a legitimate sprite */
+  /* Sets the base sprite and the passability */
   bool setBase(Sprite* new_base);
+  bool setBasePassability(EnumDb::Direction dir, bool set_value);
 
   /* Sets the enhancer sprite, if it's a legitimate sprite */
   bool setEnhancer(Sprite* new_enhancer);
@@ -114,6 +120,7 @@ public:
   /* Sets the lower sprite. This removes all other lower sprites and sets
    * this as the only one, if it's legitimate */
   bool setLower(Sprite* new_lower);
+  bool setLowerPassability(int index, EnumDb::Direction dir, bool set_value);
   
   /* Sets the status of the layer */
   void setStatus(Status new_status);

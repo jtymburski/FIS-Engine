@@ -41,9 +41,6 @@ Tile::Tile()
   width = 0;
   x = 0;
   y = 0;
-
-  /* Set the initial passibility as completely open but OFF */
-  setPassibility(true);
 }
 
 /* 
@@ -71,9 +68,6 @@ Tile::Tile(int width, int height, int x, int y)
   this->width = width;
   this->x = x;
   this->y = y;
-
-  /* Set the initial passibility as completely open and ACTIVE */
-  setPassibility(true);
 }
 
 /* 
@@ -99,13 +93,10 @@ Tile::~Tile()
 
 bool Tile::addPassibility(QString data, QString classifier, QString index)
 {
-
 }
 
 bool Tile::addSprite(Sprite* frames, QString classifier, QString index)
 {
-//  qDebug() << classifier << " " << index;
-
   /* Add the layer data to the specific classifier */
   if(classifier.toLower().trimmed() == "base")
     return setBase(frames);
@@ -204,48 +195,18 @@ MapThing* Tile::getPassableObject()
   return NULL;
 }
 
-/* TODO: [2013-06-19]
- * Description: Gets if the tile is passable from the East
+/* TODO: Add in thing [2013-06-26]
+ * Description: Gets if the tile is passable from the given direction
  *
- * Inputs: none
- * Output: bool - status if the tile is accessable from the east
+ * Inputs: EnumDb::Direction dir - the direction enumerated for passability
+ * Output: bool - status if the tile is accessible into the tile from the
+ *                given direction.
  */
-bool Tile::getPassibilityEast()
+bool Tile::getPassability(EnumDb::Direction dir)
 {
-  return east_passibility && !impassable_set;
-}
-
-/* TODO: [2013-06-19]
- * Description: Gets if the tile is passable from the North
- *
- * Inputs: none
- * Output: bool - status if the tile is accessable from the north
- */
-bool Tile::getPassibilityNorth()
-{
-  return north_passibility;
-}
-
-/* TODO: [2013-06-19]
- * Description: Gets if the tile is passable from the South
- *
- * Inputs: none
- * Output: bool - status if the tile is accessable from the south
- */
-bool Tile::getPassibilitySouth()
-{
-  return south_passibility;
-}
-
-/* TODO: [2013-06-19]
- * Description: Gets if the tile is passable from the West
- *
- * Inputs: none
- * Output: bool - status if the tile is accessable from the west
- */
-bool Tile::getPassibilityWest()
-{
-  return west_passibility;
+  if(dir == EnumDb::DIRECTIONLESS)
+    return (lower->getBasePassability(dir) || lower->getLowerPassability(dir));
+  return (lower->getBasePassability(dir) && lower->getLowerPassability(dir));
 }
 
 /* 
@@ -450,6 +411,25 @@ bool Tile::setBase(Sprite* base)
 }
 
 /*
+ * Description: Sets the base passability for the base layer with 
+ *              a direction enumerator and the value it should be.
+ *
+ * Inputs: EnumDb::Direction dir - the direction passability to set
+ *         bool set_value - the value to set that direction to
+ * Output: bool - status if the set was successful
+ */
+bool Tile::setBasePassability(EnumDb::Direction dir, bool set_value)
+{
+  return lower->setBasePassability(dir, set_value);
+}
+
+bool Tile::setBasePassability(QString identifier)
+{
+  // TODO [2013-06-26]
+  //QStringList directions = identifier.split(",");
+}
+
+/*
  * Description: Sets the enhancer part of the layer, in the lower half. This 
  *              class only takes the pointer for usage and does not manage 
  *              deleting. Once the class is finished, deletion of the pointer 
@@ -516,6 +496,22 @@ bool Tile::setLower(Sprite* lower)
   return this->lower->setLower(lower);
 }
 
+/*
+ * Description: Sets the lower passability for a layer based on an index, 
+ *              a direction enumerator, and the value it should be. Only 
+ *              fails if the index is out of range of the allowable bounds.
+ *
+ * Inputs: int index - the lower layer index
+ *         EnumDb::Direction dir - the direction passability to set
+ *         bool set_value - the value to set that direction to
+ * Output: bool - if the set was successful
+ */
+bool Tile::setLowerPassability(int index, EnumDb::Direction dir, 
+                                          bool set_value)
+{
+  return lower->setLowerPassability(index, dir, set_value);
+}
+
 /* TODO: [2013-06-19]
  * Description: Sets the passable object sprite in the tile using a path to 
  *              the sprite image file.
@@ -528,82 +524,6 @@ bool Tile::setPassableObject(QString path)
   // TODO
   (void)path;//warning
   return true;
-}
-
-/* TODO: [2013-06-19]
- * Description: Sets into the tile from all directions
- *
- * Inputs: bool is_passable - is the tile passable from all directions
- * Output: none
- */
-void Tile::setPassibility(bool is_passable)
-{
-  north_passibility = is_passable;
-  east_passibility = is_passable;
-  south_passibility = is_passable;
-  west_passibility = is_passable;
-}
-
-/* TODO: [2013-06-19]
- * Description: Sets the passibility into the tile from all directions.
- * 
- * Inputs: bool north_is_passable - is the tile passable from the north
- *         bool east_is_passable - is the tile passable from the east
- *         bool south_is_passable - is the tile passable from the south
- *         bool west_is_passable - is the tile passable from the west
- * Output: none
- */
-void Tile::setPassibility(bool north_is_passable, bool east_is_passable,
-                          bool south_is_passable, bool west_is_passable)
-{
-  north_passibility = north_is_passable;
-  east_passibility = east_is_passable;
-  south_passibility = south_is_passable;
-  west_passibility = west_is_passable;
-}
-
-/* TODO: [2013-06-19]
- * Description: Sets if the tile is passable from the East
- * 
- * Inputs: bool is_passable - is the tile passable
- * Output: none
- */
-void Tile::setPassibilityEast(bool is_passable)
-{
-  east_passibility = is_passable;
-}
-
-/* TODO: [2013-06-19]
- * Description: Sets if the tile is passable from the North
- * 
- * Inputs: bool is_passable - is the tile passable
- * Output: none
- */
-void Tile::setPassibilityNorth(bool is_passable)
-{
-  north_passibility = is_passable;
-}
-
-/* TODO: [2013-06-19]
- * Description: Sets if the tile is passable from the South
- * 
- * Inputs: bool is_passable - is the tile passable
- * Output: none
- */
-void Tile::setPassibilitySouth(bool is_passable)
-{
-  south_passibility = is_passable;
-}
-
-/* TODO: [2013-06-19]
- * Description: Sets if the tile is passable from the West
- * 
- * Inputs: bool is_passable - is the tile passable
- * Output: none
- */
-void Tile::setPassibilityWest(bool is_passable)
-{
-  west_passibility = is_passable;
 }
 
 /* 

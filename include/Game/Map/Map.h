@@ -14,7 +14,6 @@
 #include <QGraphicsScene>
 #include <QGLWidget>
 
-#include "EnumDb.h"
 #include "Game/Map/MapNPC.h"
 #include "Game/Map/Tile.h"
 #include "Game/Map/MapMenu.h"

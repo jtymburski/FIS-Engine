@@ -19,7 +19,15 @@ public:
 
   enum ApplicationMode {TITLESCREEN, GAME};
 
-  enum Direction {NORTH,EAST,SOUTH,WEST};
+  /*
+   * Description: Handler for all direction related calls for movement, 
+   *              passability, etc.
+   */
+  enum Direction {NORTH         = 0x1,
+                  EAST          = 0x2,
+                  SOUTH         = 0x4,
+                  WEST          = 0x8,
+                  DIRECTIONLESS = 0};
 
   enum ItemSorts {NONE, ID, NAME, FLAVOUR, LEVEL, EQUIPPABLE, VALUE, MASS,
                   VALUEPERMASS};

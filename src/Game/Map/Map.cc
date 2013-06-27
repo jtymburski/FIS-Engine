@@ -284,6 +284,12 @@ bool Map::loadMap(QString file)
       data = fh.readXmlData(&done, &success);
     } while(!done && success);
 
+    /* TESTING - Passability */
+    //qDebug() << geography[0][0]->getPassability(EnumDb::NORTH) << " "
+    //         << geography[0][0]->getPassability(EnumDb::EAST) << " "
+    //         << geography[0][0]->getPassability(EnumDb::SOUTH) << " "
+    //         << geography[0][0]->getPassability(EnumDb::WEST);
+
     /* Add in temporary player information */
     Sprite* up_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_D", 
                                    3, ".png");
@@ -298,13 +304,13 @@ bool Map::loadMap(QString file)
     player = new MapPerson(kTILE_LENGTH, kTILE_WIDTH);
     player->setCoordinates(kTILE_LENGTH*7, kTILE_WIDTH*5, 2);
 
-    player->setState(MapPerson::GROUND, MapPerson::NORTH, 
+    player->setState(MapPerson::GROUND, EnumDb::NORTH, 
                                         new MapState(up_sprite));
-    player->setState(MapPerson::GROUND, MapPerson::SOUTH, 
+    player->setState(MapPerson::GROUND, EnumDb::SOUTH, 
                                         new MapState(down_sprite));
-    player->setState(MapPerson::GROUND, MapPerson::EAST, 
+    player->setState(MapPerson::GROUND, EnumDb::EAST, 
                                         new MapState(right_sprite));
-    player->setState(MapPerson::GROUND, MapPerson::WEST, 
+    player->setState(MapPerson::GROUND, EnumDb::WEST, 
                                         new MapState(left_sprite));
 
     /* Add it */

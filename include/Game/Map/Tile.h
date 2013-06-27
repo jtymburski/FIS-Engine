@@ -57,9 +57,6 @@ private:
   MapWalkOver* passable_object;
   bool passable_set;
 
-  /* The passibility of each direction of the tile */
-  bool north_passibility,east_passibility,south_passibility,west_passibility;
-
   /*------------------- Constants -----------------------*/
   const static int kLOWER_DEPTH;      /* The lower layer depth */
   const static int kUPPER_DEPTH;      /* The starting upper layer depth */
@@ -75,7 +72,7 @@ public:
   /* Animates all sprites on tile (Including thing and walkover sprites) */
   void animate();
 
-  /* Gets the base layer(s) */
+  /* Gets the base layer */
   Sprite* getBase();
 
   /* Gets the enhancer layer */
@@ -87,23 +84,14 @@ public:
   /* Gets the impassable object sprite */
   MapThing* getImpassableObject();
 
-  /* Gets the lower layer */
+  /* Gets the lower layer(s) */
   QList<Sprite*> getLower();
 
   /* Gets the passable object sprite */
   MapThing* getPassableObject();
 
-  /* Gets east passiblity */
-  bool getPassibilityEast();
-
-  /* Gets north passiblity */
-  bool getPassibilityNorth();
-
-  /* Gets south passiblity */
-  bool getPassibilitySouth();
-
-  /* Gets west passiblity */
-  bool getPassibilityWest();
+  /* Returns the passability of the tile based on direction */
+  bool getPassability(EnumDb::Direction dir);
 
   /* Returns the tile status */
   Layer::Status getStatus();
@@ -147,8 +135,10 @@ public:
   /* Removes the items internally to this class from the scene */
   void removeFromScene(QGraphicsScene* scene);
 
-  /* Sets the base portion of the layer */
+  /* Sets the base portion of the layer and the passability */
   bool setBase(Sprite* base);
+  bool setBasePassability(EnumDb::Direction dir, bool set_value);
+  bool setBasePassability(QString identifier);
 
   /* Set the enhancer portion of the layer */
   bool setEnhancer(Sprite* enhancer);
@@ -159,28 +149,12 @@ public:
   /* Sets the impassable object sprite */
   bool setImpassableObject(QString path, ImpassableObjectState type);
 
-  /* Sets the lower portion of the layer */
+  /* Sets the lower portion of the layer(s) and the passability */
   bool setLower(Sprite* lower);
+  bool setLowerPassability(int index, EnumDb::Direction dir, bool set_value);
 
   /* Sets the passable object sprite */
   bool setPassableObject(QString path);
-
-  /* Sets all passibility */
-  void setPassibility(bool is_passable);
-  void setPassibility(bool north_is_passable, bool east_is_passable,
-                      bool south_is_passable, bool west_is_passable);
-
-  /* Sets east passiblity */
-  void setPassibilityEast(bool is_passable);
-
-  /* Sets north passiblity */
-  void setPassibilityNorth(bool is_passable);
-
-  /* Sets south passiblity */
-  void setPassibilitySouth(bool is_passable);
-
-  /* Sets west passiblity */
-  void setPassibilityWest(bool is_passable);
 
   /* Sets a new status for the tile */
   void setStatus(Layer::Status updated_status);

@@ -12,6 +12,8 @@
 #include <QFile>
 #include <QPixmap>
 
+#include "EnumDb.h"
+
 class Frame
 {
 public:

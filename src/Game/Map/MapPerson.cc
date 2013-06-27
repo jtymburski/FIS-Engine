@@ -12,8 +12,13 @@
 #include "Game/Map/MapPerson.h"
 
 /* Constant Implementation - see header file for descriptions */
-const int MapPerson::kTOTAL_DIRECTIONS = 4;
-const int MapPerson::kTOTAL_SURFACES   = 1;
+const char MapPerson::kDIR_EAST = 1;
+const char MapPerson::kDIR_NORTH = 0;
+const char MapPerson::kDIR_SOUTH = 2;
+const char MapPerson::kDIR_UNKNOWN = -1;
+const char MapPerson::kDIR_WEST = 3;
+const char MapPerson::kTOTAL_DIRECTIONS = 4;
+const char MapPerson::kTOTAL_SURFACES   = 1;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -31,7 +36,7 @@ MapPerson::MapPerson()
 
   /* Set the default setup for what the player is standing on and facing */
   surface = GROUND;
-  direction = NORTH;
+  direction = EnumDb::NORTH;
 }
 
 /* 
@@ -60,7 +65,7 @@ MapPerson::MapPerson(int width, int height,
 
   /* Set the default setup for what the player is standing on and facing */
   surface = GROUND;
-  direction = NORTH;
+  direction = EnumDb::NORTH;
 }
 
 /* 
@@ -93,10 +98,7 @@ void MapPerson::initializeStates()
     QVector<MapState*> row;
 
     for(int j = 0; j < kTOTAL_DIRECTIONS; j++)
-    {
       row.append(0);
-    }
-
     states.append(row);
   }
 }
@@ -104,29 +106,108 @@ void MapPerson::initializeStates()
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
-
-void MapPerson::keyPressEvent(QKeyEvent* event)
+ 
+/* 
+ * Description: Integer converter from Direction enumerator to ensure that 
+ *              the compiler type doesn't affect the operation. This info
+ *              is used within internal array operation
+ * 
+ * Inputs: EnumDb::Direction dir - the direction enumerator
+ * Output: int - the converted integer from the enumerator
+ */
+int MapPerson::dirToInt(EnumDb::Direction dir)
 {
-  if(event->key() == Qt::Key_Down && !movement_stack.contains(SOUTH))
-    movement_stack.append(SOUTH);
-  else if(event->key() == Qt::Key_Up && !movement_stack.contains(NORTH))
-    movement_stack.append(NORTH);
-  else if(event->key() == Qt::Key_Right && !movement_stack.contains(EAST))
-    movement_stack.append(EAST);
-  else if(event->key() == Qt::Key_Left && !movement_stack.contains(WEST))
-    movement_stack.append(WEST);
+  if(dir == EnumDb::NORTH)
+    return kDIR_NORTH;
+  else if(dir == EnumDb::EAST)
+    return kDIR_EAST;
+  else if(dir == EnumDb::SOUTH)
+    return kDIR_SOUTH;
+  else if(dir == EnumDb::WEST)
+    return kDIR_WEST;
+  return kDIR_UNKNOWN;
 }
 
+/* 
+ * Description: Direction enumerator converter from integer to ensure that 
+ *              the compiler type doesn't affect the operation. This info
+ *              is used within internal array operation
+ * 
+ * Inputs: int dir_index - the direction index, associated with the enum
+ * Output: EnumDb::Direction - the direction enumerator, from the index
+ */
+EnumDb::Direction MapPerson::intToDir(int dir_index)
+{
+  if(dir_index == kDIR_NORTH)
+    return EnumDb::NORTH;
+  else if(dir_index == kDIR_EAST)
+    return EnumDb::EAST;
+  else if(dir_index == kDIR_SOUTH)
+    return EnumDb::SOUTH;
+  else if(dir_index == kDIR_WEST)
+    return EnumDb::WEST;
+  return EnumDb::DIRECTIONLESS;
+}
+
+/*
+ * Description: The key press event reimplementation. Handles all the movement
+ *              for the map person, if redirected here.
+ *
+ * Inputs: QKeyEvent* event - the key event to analyze
+ * Output: none
+ */
+void MapPerson::keyPressEvent(QKeyEvent* event)
+{
+  if(event->key() == Qt::Key_Down && 
+     !movement_stack.contains(EnumDb::SOUTH))
+    movement_stack.append(EnumDb::SOUTH);
+  else if(event->key() == Qt::Key_Up && 
+          !movement_stack.contains(EnumDb::NORTH))
+    movement_stack.append(EnumDb::NORTH);
+  else if(event->key() == Qt::Key_Right && 
+          !movement_stack.contains(EnumDb::EAST))
+    movement_stack.append(EnumDb::EAST);
+  else if(event->key() == Qt::Key_Left && 
+          !movement_stack.contains(EnumDb::WEST))
+    movement_stack.append(EnumDb::WEST);
+}
+
+/*
+ * Description: The key release event reimplementation. Handles all the 
+ *              movement for the map person, if redirected here.
+ *
+ * Inputs: QKeyEvent* event - the key event to analyze
+ * Output: none
+ */
 void MapPerson::keyReleaseEvent(QKeyEvent* event)
 {
-  if(event->key() == Qt::Key_Down  && movement_stack.contains(SOUTH))
-    movement_stack.removeAt(movement_stack.indexOf(SOUTH));
-  else if(event->key() == Qt::Key_Up && movement_stack.contains(NORTH))
-    movement_stack.removeAt(movement_stack.indexOf(NORTH));
-  else if(event->key() == Qt::Key_Left && movement_stack.contains(WEST))
-    movement_stack.removeAt(movement_stack.indexOf(WEST));
-  else if(event->key() == Qt::Key_Right && movement_stack.contains(EAST))
-    movement_stack.removeAt(movement_stack.indexOf(EAST));
+  if(event->key() == Qt::Key_Down  && 
+     movement_stack.contains(EnumDb::SOUTH))
+    movement_stack.removeAt(movement_stack.indexOf(EnumDb::SOUTH));
+  else if(event->key() == Qt::Key_Up && 
+          movement_stack.contains(EnumDb::NORTH))
+    movement_stack.removeAt(movement_stack.indexOf(EnumDb::NORTH));
+  else if(event->key() == Qt::Key_Left && 
+          movement_stack.contains(EnumDb::WEST))
+    movement_stack.removeAt(movement_stack.indexOf(EnumDb::WEST));
+  else if(event->key() == Qt::Key_Right && 
+          movement_stack.contains(EnumDb::EAST))
+    movement_stack.removeAt(movement_stack.indexOf(EnumDb::EAST));
+}
+
+/* 
+ * Description: Sets a new direction for the person on the map. It will update
+ *              the parent frame so a new classifier is printed.
+ * 
+ * Inputs: MovementDirection direction - the new direction to set
+ * Output: none
+ */
+void MapPerson::setDirection(EnumDb::Direction direction)
+{
+  this->direction = direction;
+
+  if(states[surface][dirToInt(direction)] != 0)
+    MapThing::setState(states[surface][dirToInt(direction)], false);
 }
 
 /*============================================================================
@@ -145,16 +226,16 @@ void MapPerson::clear()
 {
   for(int i = 0; i < kTOTAL_SURFACES; i++)
     for(int j = 0; j < kTOTAL_DIRECTIONS; j++)
-      unsetState( (SurfaceClassifier)i, (MovementDirection)j );
+      unsetState( (SurfaceClassifier)i, intToDir(j));
 }
 
 /* 
  * Description: Returns the direction that the MapPerson is currently set to. 
  * 
  * Inputs: none
- * Output: MovementDirection - the direction enumerator for this class
+ * Output: EnumDb::Direction - the direction enumerator for this class
  */
-MapPerson::MovementDirection MapPerson::getDirection()
+EnumDb::Direction MapPerson::getDirection()
 {
   return direction;
 }
@@ -172,42 +253,28 @@ MapPerson::SurfaceClassifier MapPerson::getSurface()
 }
 
 /* 
- * Description: Sets a new direction for the person on the map. It will update
- *              the parent frame so a new classifier is printed.
- * 
- * Inputs: MovementDirection direction - the new direction to set
- * Output: none
- */
-void MapPerson::setDirection(MovementDirection direction)
-{
-  this->direction = direction;
-
-  if(states[surface][direction] != 0)
-    MapThing::setState(states[surface][direction], false);
-}
-
-/* 
  * Description: Sets a state within the class, based on the double set of 
  *              enumerators, for surface and direction. This will automatically
  *              unset a state that is currently in its place, if one does
  *              exist. 
  * 
  * Inputs: SurfaceClassifier surface - the surface classifier for the state
- *         MovementDirection direction - the direction for the state
+ *         EnumDb::Direction direction - the direction for the state
  * Output: bool - if the call was successful
  */
-bool MapPerson::setState(SurfaceClassifier surface, MovementDirection direction, MapState* state)
+bool MapPerson::setState(SurfaceClassifier surface, 
+                         EnumDb::Direction direction, MapState* state)
 {
   /* Only proceed with insertion if the sprite and state data is valid */
   if(state != 0 && state->getSprite() != 0)
   {
     unsetState(surface, direction);
-    states[surface][direction] = state;
+    states[surface][dirToInt(direction)] = state;
 
     /* If the updated state is the active one, automatically set the printable
      * sprite */
     if(this->surface == surface && this->direction == direction)
-      MapThing::setState(states[surface][direction], false);
+      MapThing::setState(states[surface][dirToInt(direction)], false);
 
     return true;
   }
@@ -226,8 +293,8 @@ void MapPerson::setSurface(SurfaceClassifier surface)
 {
   this->surface = surface;
 
-  if(states[surface][direction] != 0)
-    MapThing::setState(states[surface][direction], false);
+  if(states[surface][dirToInt(direction)] != 0)
+    MapThing::setState(states[surface][dirToInt(direction)], false);
 }
 
 /*
@@ -247,7 +314,7 @@ void MapPerson::updateThing()
     /* If the stack is finished, clear it out (halt animation) */
     if(movement_stack.isEmpty())
     {
-      movement = NONE;
+      movement = EnumDb::DIRECTIONLESS;
       resetAnimation();
       changed = true;
     }
@@ -263,17 +330,17 @@ void MapPerson::updateThing()
   }
 
   /* Update the direction movement, if the thing is still moving */
-  if(movement == EAST)
+  if(movement == EnumDb::EAST)
     setX(x() + 8);
-  else if(movement == WEST)
+  else if(movement == EnumDb::WEST)
     setX(x() - 8);
-  else if(movement == SOUTH)
+  else if(movement == EnumDb::SOUTH)
     setY(y() + 8);
-  else if(movement == NORTH)
+  else if(movement == EnumDb::NORTH)
     setY(y() - 8);
 
   /* Finally, if it's moving, animate the character */
-  if(movement != NONE)
+  if(movement != EnumDb::DIRECTIONLESS)
     animate(true, changed);
 }
 
@@ -284,14 +351,14 @@ void MapPerson::updateThing()
  *              the current state data is being used.
  * 
  * Inputs: SurfaceClassifier surface - the surface classifier for the state
- *         MovementDirection direction - the direction for the state
+ *         EnumDb::Direction direction - the direction for the state
  * Output: none
  */
 void MapPerson::unsetState(SurfaceClassifier surface, 
-                           MovementDirection direction)
+                           EnumDb::Direction direction)
 {
-  delete states[surface][direction];
-  states[surface][direction] = 0;
+  delete states[surface][dirToInt(direction)];
+  states[surface][dirToInt(direction)] = 0;
 
   /* Clear out the parent call if the direction or surface lines up */
   if(this->surface == surface && this->direction == direction)

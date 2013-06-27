@@ -27,7 +27,10 @@ Layer::Layer()
   /* Sets the initial size of the lower and upper, as per the class limits */
   Sprite* null_sprite = 0;
   for(int i = 0; i < kLOWER_COUNT_MAX; i++)
+  {
     lower.append(null_sprite);
+    lower_passability.append(EnumDb::DIRECTIONLESS);
+  }
   for(int i = 0; i < kUPPER_COUNT_MAX; i++)
     upper.append(null_sprite);
 
@@ -55,13 +58,18 @@ Layer::Layer(int width, int height, int x, int y, int z)
   /* Sets the initial size of the lower and upper, as per the class limits */
   Sprite* null_sprite = 0;
   for(int i = 0; i < kLOWER_COUNT_MAX; i++)
+  {
     lower.append(null_sprite);
+    lower_passability.append(EnumDb::DIRECTIONLESS);
+  }
   for(int i = 0; i < kUPPER_COUNT_MAX; i++)
     upper.append(null_sprite);
 
   /* Clear variables and layer sprite information */
-  base = 0;
-  enhancer = 0;
+  unsetBase();
+  unsetEnhancer();
+  unsetLower();
+  unsetUpper();
   paint_count = 0;
 
   /* Set layer parameters */
@@ -182,6 +190,21 @@ Sprite* Layer::getBase()
 }
 
 /* 
+ * Description: Gets the passability for the base portion of the layer. This 
+ *              only responds true passability for set lower layers. Otherwise,
+ *              it returns true.
+ *
+ * Inputs: EnumDb::Direction dir - the direction to get
+ * Output: bool - the base passability directional status
+ */
+bool Layer::getBasePassability(EnumDb::Direction dir)
+{
+  if(dir == EnumDb::DIRECTIONLESS)
+    return (base_passability == EnumDb::DIRECTIONLESS);
+  return ((base_passability & dir) > 0);
+}
+
+/* 
  * Description: Gets the enhancer portion of the layer. Is 0 if it's not set
  *
  * Inputs: none
@@ -214,6 +237,44 @@ int Layer::getHeight()
 QList<Sprite*> Layer::getLower()
 {
   return lower;
+}
+
+/* 
+ * Description: Gets the passability for the entire lower portion of the layer.
+ *              Only returns for set lower layers. Otherwise, it returns true.
+ *
+ * Inputs: EnumDb::Direction dir - the direction to get
+ * Output: bool - the lower passability directional status
+ */
+bool Layer::getLowerPassability(EnumDb::Direction dir)
+{
+  bool passability = true;
+
+  for(int i = 0; i < kLOWER_COUNT_MAX; i++)
+    passability &= getLowerPassability(i, dir);
+
+  return passability;
+}
+#include <QDebug>
+/* 
+ * Description: Gets the passability for the lower specific index of the stack.
+ *              Only returns an actual value for set lower layers. If it's
+ *              not set, it returns true.
+ *
+ * Inputs: int index - the lower layer stack index
+ *         EnumDb::Direction dir - the direction to get
+ * Output: bool - the lower passability directional status
+ */
+bool Layer::getLowerPassability(int index, EnumDb::Direction dir)
+{
+  if(index >= 0 && index < kLOWER_COUNT_MAX)
+  {
+    qDebug() << ((lower_passability[index] & dir) > 0);
+    if(dir == EnumDb::DIRECTIONLESS)
+      return (lower_passability[index] == EnumDb::DIRECTIONLESS);
+    return ((lower_passability[index] & dir) > 0);
+  }
+  return false;
 }
 
 /* 
@@ -282,6 +343,8 @@ bool Layer::insertLower(Sprite* new_lower, int index)
      index >= 0 && index < kLOWER_COUNT_MAX)
   {
     lower[index] = new_lower;
+    lower_passability[index] = EnumDb::DIRECTIONLESS;
+
     return true;
   }
   return false;
@@ -374,6 +437,31 @@ bool Layer::setBase(Sprite* new_base)
   {
     unsetBase();
     base = new_base;
+    base_passability = EnumDb::DIRECTIONLESS;
+
+    return true;
+  }
+  return false;
+}
+
+/* 
+ * Description: Sets the base passability using a given direction and the 
+ *              set boolean value. Only fails if the base internal to the
+ *              layer is not set.
+ *
+ * Inputs: EnumDb::Direction dir - the direction to set
+ *         bool set_value - the value to set it to.
+ * Output: bool - the status if the set was successful.
+ */
+bool Layer::setBasePassability(EnumDb::Direction dir, bool set_value)
+{
+  /* Only set if the base is set */
+  if(base != 0)
+  {
+    if(dir == EnumDb::DIRECTIONLESS && set_value)
+      base_passability = EnumDb::DIRECTIONLESS;
+    else
+      (set_value) ? (base_passability |= dir) : (base_passability &= ~dir);
 
     return true;
   }
@@ -434,6 +522,34 @@ bool Layer::setLower(Sprite* new_lower)
   {
     unsetLower();
     lower[0] = new_lower;
+    lower_passability[0] = EnumDb::DIRECTIONLESS;
+
+    return true;
+  }
+  return false;
+}
+ 
+/* 
+ * Description: Sets the lower passability using a given direction and the 
+ *              set boolean value with the selected index to indicate the 
+ *              lower layer.
+ *
+ * Inputs: int index - the index indicating the lower layer
+ *         EnumDb::Direction dir - the direction to set
+ *         bool set_value - the value to set it to.
+ * Output: bool - if the set was successful
+ */ 
+bool Layer::setLowerPassability(int index, EnumDb::Direction dir, 
+                                           bool set_value)
+{
+  /* Only set if the lower layer is valid and in the right range */
+  if(index >= 0 && index < kLOWER_COUNT_MAX && lower[index] != 0)
+  {
+    if(dir == EnumDb::DIRECTIONLESS && set_value)
+      lower_passability[index] = EnumDb::DIRECTIONLESS;
+    else
+      (set_value) ? (lower_passability[index] |= dir) 
+                  : (lower_passability[index] &= ~dir);
 
     return true;
   }
@@ -521,6 +637,8 @@ bool Layer::setWidth(int width)
 void Layer::unsetBase()
 {
   base = 0;
+  base_passability = EnumDb::NORTH | EnumDb::EAST |
+                     EnumDb::SOUTH | EnumDb::WEST;
 }
 
 /* 
@@ -545,7 +663,11 @@ void Layer::unsetEnhancer()
 void Layer::unsetLower()
 {
   for(int i = 0; i < lower.size(); i++)
+  {
     lower[i] = 0;
+    lower_passability[i] = EnumDb::NORTH | EnumDb::EAST | 
+                           EnumDb::SOUTH | EnumDb::WEST;
+  }
 }
 
 /* 
