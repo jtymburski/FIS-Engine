@@ -4,9 +4,6 @@
 * Inheritance: 
 * Description: Action is an element of a skill (skill can have up to 10 actions
 * that will do alter stats, flip flags of a person, etc., or do damage to them.
-*
-* TODO: Constructors to be finished [02-17-13]
-* TODO: Need to write action parser [02-17-13]
 ******************************************************************************/
 #ifndef ACTION_H
 #define ACTION_H

@@ -49,6 +49,25 @@ Item::Item(QString name, uint value, Sprite* thumbnail, double mass)
 }
 
 /*
+ * Description: Copy constructor for item
+ *
+ * Inputs: Item* copy - pointer to an item to be copied
+ */
+Item::Item(Item *copy) : my_id(setId())
+{
+  setName(copy->getName());
+  setThumb(copy->getThumb());
+  setValue(copy->getValue());
+  setMass(copy->getMass());
+  setBuffSet(copy->getBuffSet());
+  setActionSet(copy->getActionSet());
+  setSkillSet(copy->getSkillSet());
+  setUsingAnimation(copy->getUsingAnimation());
+  setUsingMessage(copy->getUsingMessage());
+  setUsingSound(copy->getUsingSound());
+}
+
+/*
  * Description: Annihilates an Item object
  */
 Item::~Item() {}

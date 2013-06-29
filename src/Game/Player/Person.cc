@@ -9,7 +9,6 @@
 * // TODO: Finish use item
 * // TODO: Setup Functions
 * // TODO: Skill functions?? [06-23-13]
-* // TODO: Finish add item drops [06-23-13]
 ******************************************************************************/
 #include "Game/Player/Person.h"
 
@@ -23,6 +22,7 @@ const uint Person::kMAX_EXPERIENCE        = 1000000000; /* Billion */
 const uint Person::kMAX_EXP_DROP          =    1000000; /* Million */
 const uint Person::kMAX_CREDIT_DROP       =   10000000; /* Ten Million */
 const uint Person::kMAX_EQUIP_SLOTS       =          5;
+const uint Person::kMAX_ITEM_DROPS        =          5;
 const double Person::kMAX_DAMAGE_MODIFIER =    10.0000;
 QVector<uint> Person::exp_table;
 
@@ -366,8 +366,47 @@ void Person::setUpBaseStats()
  */
 bool Person::useItem(Item* used_item)
 {
-    (void)used_item;//warning
-    return true;
+  /* Assert the person can use items and the item is menu-usable */
+  if (!getPersonFlag(Person::CANUSEITEM))
+    return false;
+
+  if (!used_item->getItemFlag(Item::MENUREADY))
+    return false;
+
+  QVector<Skill*> to_do = used_item->getActionSet()->getSkills();
+
+  for (int i = 0; i < to_do.size(); i++)
+  {
+      QVector<Action*> to_be_done = to_do.at(i)->getEffects();
+
+    for (int j = 0; j < to_be_done.size(); j++)
+    {
+      if (to_be_done.at(j)->getActionFlag(Action::THERMAL))
+      {
+
+      }
+      if (to_be_done.at(j)->getActionFlag(Action::POLAR))
+      {
+      }
+      if (to_be_done.at(j)->getActionFlag(Action::CHARGED))
+      {
+      }
+
+        if (to_be_done.at(j)->getActionFlag(Action::OFFENSIVE))
+        {
+
+        }
+
+        if (to_be_done.at(j)->getActionFlag(Action::LOWER))
+        {
+
+        }
+        if (to_be_done.at(j)->getActionFlag(Action::RAISE))
+        {
+
+        }
+    }
+  }
 }
 
 /*
@@ -834,17 +873,23 @@ void Person::setCreditLoot(uint value)
 }
 
 /*
- * Description: Sets the item drops of the person
+ * Description: Sets the item drops of the person by creating new pointers.
+ *
  *
  * Inputs: QVector<Item> - vector of items the loot is to be set to.
  * Output: none
- * TODO: Incomplete item drops addition [06-23-13]
  */
 void Person::setItemLoot(QVector<Item*> items)
 {
-    // item_drops.clear();
-    // for (int i = 0; i < items.size(); i++)
-        // item_drops.push_back(items[i]);
+  for (int i = 0; i < item_drops.size(); i++)
+  {
+    delete item_drops.value(i);
+      item_drops[i] = NULL;
+  }
+  item_drops.clear();
+
+  for (int i = 0; (int)i < items.size() && (int)i < kMAX_ITEM_DROPS; i++)
+      item_drops.push_back(new Item(items.value(i)));
 }
 
 /*

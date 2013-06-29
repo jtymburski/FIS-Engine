@@ -46,8 +46,9 @@ bool Party::addMember(Person* person)
 {
   if ((int)getPartySize() < getMaxSize())
   {
-    members.push_back(person);
-    return true;
+    if (person != NULL)
+      members.push_back(person);
+      return true;
   }
   return false;
 }

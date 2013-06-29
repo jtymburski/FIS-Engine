@@ -1,9 +1,9 @@
 #include <functional>
-/*
+
 template<typename T, typename M, template<typename> class C = std::less>
 struct method_comparer : std::binary_function<T, T, bool>
 {
-  explicit method_comparer(M (T::*p)() const) : p_(pp) {}
+  explicit method_comparer(M (T::*p)() const) : p_(p) {}
 
   bool operator ()(T const& lhs, T const& rhs) const
   {
@@ -26,4 +26,4 @@ method_comparer<T, M, C> make_method_comparer2(M (T::*p)() const)
 {
     return method_comparer<T, M, C>(p);
 }
-*/
+

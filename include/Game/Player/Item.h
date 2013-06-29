@@ -24,6 +24,9 @@ public:
   /* Item constructor function */
   Item(QString name, uint value = 0, Sprite* thumbnail = 0, double mass = 0);
 
+  /* Copy constructor */
+  Item(Item* copy);
+
   /* Annihilates an Item object */
   ~Item();
 

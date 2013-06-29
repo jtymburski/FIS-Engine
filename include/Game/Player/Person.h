@@ -116,6 +116,7 @@ private:
   static const uint kMAX_EXP_DROP;    /* Million */
   static const uint kMAX_CREDIT_DROP; /* Ten Million */
   static const uint kMAX_EQUIP_SLOTS;
+  static const uint kMAX_ITEM_DROPS;
   static const double kMAX_DAMAGE_MODIFIER;
 
 /*============================================================================

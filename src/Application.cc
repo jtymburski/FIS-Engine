@@ -159,27 +159,29 @@ void Application::setupBattle()
 
   Person* secd = new Person("CloudGuy", the_bears, battle_class, "THA", "PRC");
 
-  Sprite* one = new Sprite(":/A_arcadius");
-  Sprite* two = new Sprite(":/E_ulterius");
+  Sprite* main_sprite = new Sprite(":/A_arcadius");
+  Sprite* secd_sprite = new Sprite(":/E_ulterius");
+  Sprite* friend2_sprite = new Sprite(":/A_arcadius");
 
-  main->setFirstPerson(one);
-  secd->setThirdPerson(two);
+  main->setFirstPerson(main_sprite);
+  secd->setThirdPerson(secd_sprite);
+  friend2->setFirstPerson(friend2_sprite);
 
   Party* friends = new Party(main, 5);
   friends->setPartyFlag(Party::MAIN, true);
   friends->addMember(friend2);
-  friends->addMember(friend3);
-  friends->addMember(friend4);
+  //friends->addMember(friend3);
+  //friends->addMember(friend4);
 
   Party* foes = new Party(secd, 5);
   friends->setPartyFlag(Party::FOE, true);
 
   /* Inventory Testing */
-  Inventory* first_inventory = new Inventory("Basic Inventory");
+  //Inventory* first_inventory = new Inventory("Basic Inventory");
 
-  Item* potion = new Item("Potion", 15, 0, 1.15);
-  potion->setDescription("This item will do some magical healing for you.");
-  potion->setUsingMessage("WHY ARE YOU USING ME");
+  //Item* potion = new Item("Potion", 15, 0, 1.15);
+  //potion->setDescription("This item will do some magical healing for you.");
+  //potion->setUsingMessage("WHY ARE YOU USING ME");
   /* Level Up Test
   for (int i = 1; i < 128; i++)
   {
@@ -207,5 +209,6 @@ void Application::setupBattle()
 
   * End Ailment Testing */
 
+  qDebug() << "Entering Battle.";
   test_battle = new Battle(friends, foes, this);
 }
