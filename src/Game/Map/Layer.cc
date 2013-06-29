@@ -269,7 +269,6 @@ bool Layer::getLowerPassability(int index, EnumDb::Direction dir)
 {
   if(index >= 0 && index < kLOWER_COUNT_MAX)
   {
-    qDebug() << ((lower_passability[index] & dir) > 0);
     if(dir == EnumDb::DIRECTIONLESS)
       return (lower_passability[index] == EnumDb::DIRECTIONLESS);
     return ((lower_passability[index] & dir) > 0);

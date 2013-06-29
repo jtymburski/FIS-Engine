@@ -91,8 +91,33 @@ Tile::~Tile()
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
-bool Tile::addPassibility(QString data, QString classifier, QString index)
+bool Tile::addPassability(QString data, QString classifier, QString index)
 {
+  bool success = true;
+  EnumDb::Direction new_direction = EnumDb::DIRECTIONLESS;
+  QStringList data_list = data.split(",");
+  
+  /* Loop through each value of the data list to add */
+  for(int i = 0; i < data_list.size(); i++)
+  {
+    /* Determine the data identifier first */
+    if(data_list[i].toLower().trimmed() == "n")
+      new_direction = EnumDb::NORTH;
+    else if(data_list[i].toLower().trimmed() == "e")
+      new_direction = EnumDb::EAST;
+    else if(data_list[i].toLower().trimmed() == "s")
+      new_direction = EnumDb::SOUTH;
+    else if(data_list[i].toLower().trimmed() == "w")
+      new_direction = EnumDb::WEST;
+
+    /* Add the layer passability to the specific classifier */
+    if(classifier.toLower().trimmed() == "base")
+      success &= setBasePassability(new_direction, true);
+    else if(classifier.toLower().trimmed() == "lower")
+      success &= setLowerPassability(index.toInt(), new_direction, true);
+  }
+
+  return success;
 }
 
 bool Tile::addSprite(Sprite* frames, QString classifier, QString index)
@@ -421,12 +446,6 @@ bool Tile::setBase(Sprite* base)
 bool Tile::setBasePassability(EnumDb::Direction dir, bool set_value)
 {
   return lower->setBasePassability(dir, set_value);
-}
-
-bool Tile::setBasePassability(QString identifier)
-{
-  // TODO [2013-06-26]
-  //QStringList directions = identifier.split(",");
 }
 
 /*

@@ -316,7 +316,6 @@ void MapPerson::updateThing()
     {
       movement = EnumDb::DIRECTIONLESS;
       resetAnimation();
-      changed = true;
     }
     else /* Otherwise, update the direction, if it has changed */
     {

@@ -66,7 +66,7 @@ private:
  *===========================================================================*/
 public:
   /* Call to add data, as extracted from file data */
-  bool addPassibility(QString data, QString classifier, QString index);
+  bool addPassability(QString data, QString classifier, QString index);
   bool addSprite(Sprite* frames, QString classifier, QString index);
 
   /* Animates all sprites on tile (Including thing and walkover sprites) */
@@ -138,7 +138,6 @@ public:
   /* Sets the base portion of the layer and the passability */
   bool setBase(Sprite* base);
   bool setBasePassability(EnumDb::Direction dir, bool set_value);
-  bool setBasePassability(QString identifier);
 
   /* Set the enhancer portion of the layer */
   bool setEnhancer(Sprite* enhancer);

@@ -67,28 +67,54 @@ bool Map::addTileData(XmlData data)
   bool success = true;
   Sprite* tile_frames = 0;
 
-  /* Get the rotation angle, from the element */
+  /* Get the element information */
   QStringList element = data.getElement(data.getNumElements()-1).split("_");
-  if(element.size() > kELEMENT_ANGLE)
-    angle = Sprite::getAngle(element[kELEMENT_ANGLE]);
 
-  /* Handle the image data, split the path based on "|". This is the 
-   * identifier if there is multiple frames */
-  QStringList data_list = data.getDataString().split("|");
-  if(data_list.size() > 1)
-    tile_frames = new Sprite(data_list[0], 
-                             data_list[1].toInt(), 
-                             data_list[2], angle);
-  else
-    tile_frames = new Sprite(data.getDataString(), angle);
- 
-  /* Run through this list, checking ranges and add the corresponding
-   * tiles, only if the sprite data is legitimate */
-  if(tile_frames->getSize() > 0)
+  /* Split based on the element information if it's for a path */
+  if(element[0].toLower().trimmed() == "path")
   {
-    /* Add to the list of tiles */
-    tile_sprites.append(tile_frames);
+    /* If there is rotational information available, use it */
+    if(element.size() > kELEMENT_ANGLE)
+      angle = Sprite::getAngle(element[kELEMENT_ANGLE]);
 
+    /* Handle the image data, split the path based on "|". This is the 
+     * identifier if there is multiple frames */
+    QStringList data_list = data.getDataString().split("|");
+    if(data_list.size() > 1)
+      tile_frames = new Sprite(data_list[0], 
+                               data_list[1].toInt(), 
+                               data_list[2], angle);
+    else
+      tile_frames = new Sprite(data.getDataString(), angle);
+ 
+    /* Run through this list, checking ranges and add the corresponding
+     * tiles, only if the sprite data is legitimate */
+    if(tile_frames->getSize() > 0)
+    {
+      /* Add to the list of tiles */
+      tile_sprites.append(tile_frames);
+
+      QStringList row_list = data.getKeyValue(kFILE_TILE_ROW).split(",");
+      QStringList col_list = data.getKeyValue(kFILE_TILE_COLUMN).split(",");
+
+      for(int i = 0; i < row_list.size(); i++) /* Coordinate set index */
+      {
+        QStringList rows = row_list[i].split("-"); /* x range for coordinate */
+        QStringList cols = col_list[i].split("-"); /* y range for coordinate */
+
+        /* Shift through all the rows and column pairs of the coordinate */
+        for(int r = rows[0].toInt(); r <= rows[rows.size() - 1].toInt(); r++)
+          for(int c = cols[0].toInt(); c <= cols[cols.size() - 1].toInt(); c++)
+            success &= geography[r][c]->
+                    addSprite(tile_frames, data.getElement(kFILE_CLASSIFIER), 
+                                           data.getKeyValue(kFILE_CLASSIFIER));
+      }
+      return success;
+    }
+  }
+  /* Otherwise, access the passability information for the tile */
+  else if(element[0].toLower().trimmed() == "passability")
+  {
     QStringList row_list = data.getKeyValue(kFILE_TILE_ROW).split(",");
     QStringList col_list = data.getKeyValue(kFILE_TILE_COLUMN).split(",");
 
@@ -101,10 +127,10 @@ bool Map::addTileData(XmlData data)
       for(int r = rows[0].toInt(); r <= rows[rows.size() - 1].toInt(); r++)
         for(int c = cols[0].toInt(); c <= cols[cols.size() - 1].toInt(); c++)
           success &= geography[r][c]->
-                  addSprite(tile_frames, data.getElement(kFILE_CLASSIFIER), 
-                                         data.getKeyValue(kFILE_CLASSIFIER));
+                  addPassability(data.getDataString(), 
+                                 data.getElement(kFILE_CLASSIFIER), 
+                                 data.getKeyValue(kFILE_CLASSIFIER));
     }
-
     return success;
   }
 
@@ -283,12 +309,6 @@ bool Map::loadMap(QString file)
       /* Get the next element */
       data = fh.readXmlData(&done, &success);
     } while(!done && success);
-
-    /* TESTING - Passability */
-    //qDebug() << geography[0][0]->getPassability(EnumDb::NORTH) << " "
-    //         << geography[0][0]->getPassability(EnumDb::EAST) << " "
-    //         << geography[0][0]->getPassability(EnumDb::SOUTH) << " "
-    //         << geography[0][0]->getPassability(EnumDb::WEST);
 
     /* Add in temporary player information */
     Sprite* up_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_D", 
