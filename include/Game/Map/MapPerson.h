@@ -12,7 +12,7 @@
 #ifndef MAPPERSON_H
 #define MAPPERSON_H
 
-//#include <QDebug>
+#include <QDebug>
 #include <QKeyEvent>
 
 #include "Game/Map/MapThing.h"
@@ -74,7 +74,7 @@ protected:
   void keyReleaseEvent(QKeyEvent* event);
 
   /* Sets the direction that the person is travelling in */
-  void setDirection(EnumDb::Direction direction);
+  void setDirection(EnumDb::Direction direction, bool set_movement = true);
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -87,8 +87,14 @@ public:
   /* Returns the direction that this person is travelling in */
   EnumDb::Direction getDirection();
 
+  /* Returns the move request in the class (virtual reimplemented) */
+  EnumDb::Direction getMoveRequest();
+  
   /* Returns the surface that this person resides on */
   SurfaceClassifier getSurface();
+
+  /* Determines if there is an active move request (virtual reimplemented) */
+  bool isMoveRequested();
 
   /* Sets a new state to add into the states list */
   bool setState(SurfaceClassifier surface, EnumDb::Direction direction, 
@@ -98,7 +104,7 @@ public:
   void setSurface(SurfaceClassifier surface);
 
   /* Updates the thing, based on the tick */
-  void updateThing();
+  void updateThing(bool can_move = true);
 
   /* Unsets a state, if it exists, to remove from the stack of states */
   void unsetState(SurfaceClassifier surface, EnumDb::Direction direction);

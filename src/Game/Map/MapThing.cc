@@ -12,8 +12,9 @@
 #include "Game/Map/MapThing.h"
 
 /* Constant Implementation - see header file for descriptions */
-const int MapThing::kANIMATION_OFFSET = 4;
+const int MapThing::kANIMATION_OFFSET = 12;
 const int MapThing::kMINIMUM_ID =  0;
+const int MapThing::kTHING_INCREMENT = 4;
 const int MapThing::kUNSET_ID   = -1;
 
 /*============================================================================
@@ -67,7 +68,7 @@ MapThing::~MapThing()
 }
 
 /*============================================================================
- * PUBLIC FUNCTIONS
+ * PROTECTED FUNCTIONS
  *===========================================================================*/
 
 /* 
@@ -75,23 +76,57 @@ MapThing::~MapThing()
  *              of the thing as well as calls to the sprite holder
  * 
  * Inputs: bool skip_head - Skip the head of the list of frames
- *         bool just_started - the first call when animation begins
  * Output: bool - a status on the animate, only fails if it tries to animate
  *                the sprite and there are no frames in it.
  */
-bool MapThing::animate(bool skip_head, bool just_started)
+bool MapThing::animate(bool skip_head)
 {
-  if(animation_delay == kANIMATION_OFFSET || just_started)
+  if(state != 0 && state->getSprite() != 0 && 
+     animation_delay == kANIMATION_OFFSET)
   {
     bool status = state->getSprite()->shiftNext(skip_head);
     animation_delay = 0;
-    //update();
     return status;
   }
 
   animation_delay++;
   return true;
 }
+
+void MapThing::moveThing()
+{
+  if(movement == EnumDb::EAST)
+    setX(x() + kTHING_INCREMENT);
+  else if(movement == EnumDb::WEST)
+    setX(x() - kTHING_INCREMENT);
+  else if(movement == EnumDb::SOUTH)
+    setY(y() + kTHING_INCREMENT);
+  else if(movement == EnumDb::NORTH)
+    setY(y() - kTHING_INCREMENT);
+}
+
+/* Sets the new direction that the class is moving in */
+bool MapThing::setDirection(EnumDb::Direction new_direction)
+{
+  bool changed = false;
+
+  /* Check if the direction is changed */
+  if(movement != new_direction)
+    changed = true;
+
+  /* Update the direction */
+  movement = new_direction;
+
+  /* Only shift the animation if the direction changed */
+  if(changed)
+    animation_delay = kANIMATION_OFFSET;
+
+  return changed;
+}
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 
 /* 
  * Description: Implemented virtual function. Returns the bounding rectangle
@@ -159,6 +194,16 @@ int MapThing::getID()
   return id;
 }
 
+EnumDb::Direction MapThing::getMovement()
+{
+  return movement;
+}
+
+EnumDb::Direction MapThing::getMoveRequest()
+{
+  return EnumDb::DIRECTIONLESS;
+}
+
 /* 
  * Description: Gets the things name.
  *
@@ -204,6 +249,21 @@ void MapThing::interaction()
 {
 }
 
+bool MapThing::isMoveRequested()
+{
+  return false;
+}
+
+bool MapThing::isMoving()
+{
+  return (movement != EnumDb::DIRECTIONLESS);
+}
+
+bool MapThing::isOnTile()
+{
+  return ((int)x() % getWidth() == 0 && (int)y() % getHeight() == 0);
+}
+
 /* 
  * Description: Reimplemented virtual function. Handles the painting of the 
  *              image stored within the layer. Runs based on the same data as 
@@ -240,7 +300,13 @@ void MapThing::paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
  */
 bool MapThing::resetAnimation()
 {
-  return state->getSprite()->setAtFirst();
+  if(state != 0 && state->getSprite() != 0)
+  {
+    if(!state->getSprite()->isAtFirst())
+      return state->getSprite()->setAtFirst();
+    return true;
+  }
+  return false;
 }
 
 /* 
@@ -369,9 +435,13 @@ bool MapThing::setWidth(int new_width)
  * Inputs: none
  * Output: none 
  */
-void MapThing::updateThing()
+void MapThing::updateThing(bool can_move)
 {
+  if(can_move)
+    moveThing();
 
+  if(movement != EnumDb::DIRECTIONLESS)
+    animate();
 }
 
 /*

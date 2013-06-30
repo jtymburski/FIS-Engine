@@ -183,7 +183,43 @@ void Map::animate()
 
   if(player != 0)
   {
-    player->updateThing();
+    bool movable = true;
+
+    if(player->isOnTile() && player->isMoveRequested())
+    {
+      EnumDb::Direction moving = player->getMoveRequest();
+      int x1 = (int)player->x() / kTILE_WIDTH;
+      int y1 = (int)player->y() / kTILE_LENGTH;
+      movable = geography[y1][x1]->getPassability(moving);
+      int x2, y2;
+
+      if(moving == EnumDb::NORTH)
+      {
+        x2 = x1;
+        y2 = y1 - 1;
+        movable &= geography[y2][x2]->getPassability(EnumDb::SOUTH);
+      }
+      else if(moving == EnumDb::EAST)
+      {
+        x2 = x1 + 1;
+        y2 = y1;
+        movable &= geography[y2][x2]->getPassability(EnumDb::WEST);
+      }
+      else if(moving == EnumDb::SOUTH)
+      {
+        x2 = x1;
+        y2 = y1 + 1;
+        movable &= geography[y2][x2]->getPassability(EnumDb::NORTH);
+      }
+      else if(moving == EnumDb::WEST)
+      {
+        x2 = x1 - 1;
+        y2 = y1;
+        movable &= geography[y2][x2]->getPassability(EnumDb::EAST);
+      }
+    }
+
+    player->updateThing(movable);
     viewport->updateView();
   }
 
@@ -322,7 +358,7 @@ bool Map::loadMap(QString file)
 
     /* Make the map person */
     player = new MapPerson(kTILE_LENGTH, kTILE_WIDTH);
-    player->setCoordinates(kTILE_LENGTH*7, kTILE_WIDTH*5, 2);
+    player->setCoordinates(kTILE_LENGTH*10, kTILE_WIDTH*8, 2);
 
     player->setState(MapPerson::GROUND, EnumDb::NORTH, 
                                         new MapState(up_sprite));

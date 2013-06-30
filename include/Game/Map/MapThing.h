@@ -12,7 +12,7 @@
 #ifndef MAPTHING_H
 #define MAPTHING_H
 
-//#include <QDebug>
+#include <QDebug>
 #include <QGraphicsObject>
 #include <QPainter>
 
@@ -43,20 +43,34 @@ private:
   /* The main state, the main one */
   MapState* state;
 
+  /* Movement information */
+  EnumDb::Direction movement;
+
   /* -------------------------- Constants ------------------------- */
 protected:
   const static int kANIMATION_OFFSET; /* The number of animate calls before
                                          the frame sequence is updated */
   const static int kMINIMUM_ID;       /* The minimum ID, for a thing */
+  const static int kTHING_INCREMENT;  /* The amount it can be moved */
   const static int kUNSET_ID;         /* The placeholder unset ID */
+
+/*============================================================================
+ * PROTECTED FUNCTIONS
+ *===========================================================================*/
+protected:
+  /* Animates the thing, if it has multiple frames */
+  bool animate(bool skip_head = false);
+
+  /* Move the thing, based on the internal direction */
+  void moveThing();
+
+  /* Sets the new direction that the class is moving in */
+  bool setDirection(EnumDb::Direction new_direction);
 
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
-  /* Animates the thing. Skips the head of the list, if requested */
-  bool animate(bool skip_head = false, bool just_started = false);
-  
   /* Virtual bounding rectangle - The rectangle that encapsulates the item */
   QRectF boundingRect() const;
   
@@ -72,6 +86,10 @@ public:
   /* Gets the things ID */
   int getID();
 
+  /* Get the specific details of the movement information */
+  EnumDb::Direction getMovement();
+  virtual EnumDb::Direction getMoveRequest();
+
   /* Gets the things name */
   QString getName();
 
@@ -82,8 +100,17 @@ public:
   int getWidth();
 
   /* Starts inteaction (conversation, giving something, etc) */
-  void interaction();
-  
+  virtual void interaction();
+ 
+  /* Returns if there is a move request for the given thing */
+  virtual bool isMoveRequested();
+
+  /* Returns if the thing is moving */
+  bool isMoving();
+
+  /* Is the thing centered on a tile */
+  bool isOnTile();
+
   /* Virtual painter reimplementation - for painting the item */
   void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
              QWidget* widget);
@@ -113,7 +140,7 @@ public:
   bool setWidth(int new_width);
 
   /* Updates the thing, called on the tick */
-  void updateThing();
+  virtual void updateThing(bool can_move = true);
   
   /* Unsets the state, in the class */
   void unsetState(bool delete_state = true);

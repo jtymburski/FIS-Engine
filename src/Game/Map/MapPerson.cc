@@ -202,12 +202,25 @@ void MapPerson::keyReleaseEvent(QKeyEvent* event)
  * Inputs: MovementDirection direction - the new direction to set
  * Output: none
  */
-void MapPerson::setDirection(EnumDb::Direction direction)
+void MapPerson::setDirection(EnumDb::Direction direction, bool set_movement)
 {
-  this->direction = direction;
+  bool changed = (this->direction != direction);
+ 
+  /* If moving, set the direction in map thing */
+  if(set_movement)
+    MapThing::setDirection(direction);
+  else
+    MapThing::setDirection(EnumDb::DIRECTIONLESS);
 
-  if(states[surface][dirToInt(direction)] != 0)
-    MapThing::setState(states[surface][dirToInt(direction)], false);
+  /* If it's a movement direction, rotate the fellow */
+  if(direction != EnumDb::DIRECTIONLESS)
+  {
+    if(changed && states[surface][dirToInt(direction)] != 0)
+      MapThing::setState(states[surface][dirToInt(direction)], false);
+
+    /* Finally set the in class direction */
+    this->direction = direction;
+  }
 }
 
 /*============================================================================
@@ -225,8 +238,12 @@ void MapPerson::setDirection(EnumDb::Direction direction)
 void MapPerson::clear()
 {
   for(int i = 0; i < kTOTAL_SURFACES; i++)
-    for(int j = 0; j < kTOTAL_DIRECTIONS; j++)
-      unsetState( (SurfaceClassifier)i, intToDir(j));
+  {
+    unsetState( (SurfaceClassifier)i, EnumDb::NORTH );
+    unsetState( (SurfaceClassifier)i, EnumDb::EAST );
+    unsetState( (SurfaceClassifier)i, EnumDb::SOUTH );
+    unsetState( (SurfaceClassifier)i, EnumDb::WEST );
+  }
 }
 
 /* 
@@ -240,6 +257,13 @@ EnumDb::Direction MapPerson::getDirection()
   return direction;
 }
 
+EnumDb::Direction MapPerson::getMoveRequest()
+{
+  if(isMoveRequested())
+    return movement_stack.last();
+  return EnumDb::DIRECTIONLESS;
+}
+
 /* 
  * Description: Returns the surface classifier to what the map person is 
  *              standing on.
@@ -250,6 +274,11 @@ EnumDb::Direction MapPerson::getDirection()
 MapPerson::SurfaceClassifier MapPerson::getSurface()
 {
   return surface;
+}
+
+bool MapPerson::isMoveRequested()
+{
+  return !movement_stack.isEmpty();
 }
 
 /* 
@@ -304,43 +333,32 @@ void MapPerson::setSurface(SurfaceClassifier surface)
  * Inputs: none
  * Output: none 
  */
-void MapPerson::updateThing()
+void MapPerson::updateThing(bool can_move)
 {
-  bool changed = false;
-
   /* Once a tile end has reached, cycle the movement direction */
-  if((int)x() % getWidth() == 0 && (int)y() % getHeight() == 0)
+  if(isOnTile())
   {
-    /* If the stack is finished, clear it out (halt animation) */
-    if(movement_stack.isEmpty())
+    /* Only update direction if a move is requested */
+    if(isMoveRequested())
     {
-      movement = EnumDb::DIRECTIONLESS;
-      resetAnimation();
+      setDirection(getMoveRequest(), can_move);
+
+      /* If not allowed to move, reset the animation */
+      if(!can_move)
+        resetAnimation();
     }
-    else /* Otherwise, update the direction, if it has changed */
+    else
     {
-      if(movement != movement_stack.last())
-      {
-        setDirection(movement_stack.last());
-        changed = true;
-      }
-      movement = movement_stack.last();
+      setDirection(EnumDb::DIRECTIONLESS);
+      resetAnimation();
     }
   }
 
-  /* Update the direction movement, if the thing is still moving */
-  if(movement == EnumDb::EAST)
-    setX(x() + 8);
-  else if(movement == EnumDb::WEST)
-    setX(x() - 8);
-  else if(movement == EnumDb::SOUTH)
-    setY(y() + 8);
-  else if(movement == EnumDb::NORTH)
-    setY(y() - 8);
+  moveThing();
 
-  /* Finally, if it's moving, animate the character */
-  if(movement != EnumDb::DIRECTIONLESS)
-    animate(true, changed);
+  /* Only animate if the direction exists */
+  if(getMovement() != EnumDb::DIRECTIONLESS)
+    animate(true);
 }
 
 /* 
