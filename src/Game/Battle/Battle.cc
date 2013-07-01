@@ -245,10 +245,10 @@ void Battle::paintEvent(QPaintEvent*)
   painter.setBrush(QColor(Qt::black));
   painter.setOpacity(1.00);
 
-  /* Paint the current backdrop
+  Paint the current backdrop
   painter.drawPixmap(0,0,getMaxWidth(),getMaxHeight(),*battle_bg);
 
-  /* Draw sprites for allies and foes (if they exist)
+  Draw sprites for allies and foes (if they exist)
   painter.setOpacity(1.0);
   Person* p = friends->getMember(0);
   painter.drawPixmap(*ally_box[1],p->getFirstPerson()->getCurrent());
@@ -277,11 +277,11 @@ void Battle::paintEvent(QPaintEvent*)
   }
   painter.drawPixmap(0,getMaxHeight() * 0.8181,*battle_status_bar_image);
 
-  /* Paint drawings for info,status,extra bars
+  Paint drawings for info,status,extra bars
   painter.setOpacity(0.70); //TODO: Get opacity form somewhere [02-23-13]
   painter.drawRect(*info_box);
 
-  /* Temp painting of status bar bounding box
+  Temp painting of status bar bounding box
   painter.setOpacity(0.70); */
 }
 

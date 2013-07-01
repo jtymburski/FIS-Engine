@@ -10,6 +10,11 @@
 #include "Game/Player/SkillSet.h"
 
 /*=============================================================================
+ * CONSTANTS
+ *============================================================================*/
+const uint SkillSet::kMAX_SKILLS = 500; /* Maximum # of Skills in one set */
+
+/*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
 
@@ -69,7 +74,7 @@ SkillSet::~SkillSet() {}
  */
 bool SkillSet::addSkill(Skill* new_skill, ushort req_level)
 {
-  if (skills_available.size() < kMAX_SKILLS)
+  if ((uint)skills_available.size() < kMAX_SKILLS)
   {
     skills.append(new_skill);
     skills_available.append(req_level);
@@ -90,9 +95,15 @@ bool SkillSet::addSkill(Skill* new_skill, ushort req_level)
 bool SkillSet::addSkills(QVector<Skill* > new_skills,
                                QVector<ushort> new_levels)
 {
+  /* The levels required vector must equal the size of the skills */
   if (new_skills.size() != new_levels.size())
-    return true;
-  if (new_skills.size() + skills_available.size() <= kMAX_SKILLS)
+    return false;
+
+  /* To add new skills, must calculate the total # of skills at end, if the
+     number of new skills exceeds this amount, then the addition will fail */
+  uint unique_skills = calcUniqueSkills(new_skills);
+
+  if (unique_skills <= kMAX_SKILLS)
   {
     for (int i = 0; i < new_skills.size(), new_skills.at(i) != 0; i++)
     {
@@ -103,7 +114,39 @@ bool SkillSet::addSkills(QVector<Skill* > new_skills,
     cleanUp();
     return true;
   }
-  return true;
+  else
+  {
+    //emit fullSet((QString)"SkillSet would exceed kMAX_SKILLS");
+    return false;
+  }
+}
+
+/*
+ * Description: This function will take in a vector of skil pointers which
+ *              are intended to be added to the SkillSet and finds the number
+ *              of unique skills which the SkillSet will be contained.
+ *
+ * Inputs: QVector<Skill*> new_skills - the vector of new_skills
+ * Output:
+ */
+uint SkillSet::calcUniqueSkills(QVector<Skill*> new_skills)
+{
+  /* First, compile a list of unique skill strings */
+  QVector<QString> unique_skills;
+
+  for (int i = 0; i < skills.size(); i++)
+    unique_skills.push_back(skills.at(i)->getName());
+
+  /* Then, find the # of new additions */
+  for (int i = 0; i < skills.size(); i++)
+  {
+    QString new_name = new_skills.at(i)->getName();
+
+    if (!unique_skills.contains(new_name));
+      unique_skills.push_back(new_name);
+  }
+
+  return (uint)unique_skills.size();
 }
 
 /*

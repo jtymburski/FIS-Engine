@@ -98,6 +98,94 @@ bool Party::removeMember(QString value)
 }
 
 /*
+ * Description: Uses an item given a primary target.
+ *
+ * Inputs: Item* used_item - the item to be used.
+ *         ushort target - the primary target for the item (it may be multihit)
+ * Output: bool - true if the item was used succesfully
+ */
+bool Party::useItem(Item *used_item, ushort target)
+{
+  /* Assert the person can use items and the item is menu-usable */
+  if (members[target]->getPersonFlag(Person::CANUSEITEM));
+    return false;
+  if (!used_item->getItemFlag(Item::MENUREADY))
+    return false;
+  if (target > getMaxSize())
+    return false;
+  /*
+  QVector<Skill*> to_do = used_item->getActionSet()->getSkills();
+
+  for (int i = 0; i < to_do.size(); i++)
+  {
+    QVector<Action*> to_be_done = to_do.at(i)->getEffects();
+
+    for (int j = 0; j < to_be_done.size(); j++)
+    {
+      Action* cur_action = to_be_done.at(j);
+      cur_action->getMinimum()
+
+      if (cur_action->getActionFlag(Action::OFFENSIVE))
+      {
+        if (cur_action->getActionFlag(Action::PHYSICAL))
+        {
+          if (cur_action->getActionFlag(Action::RAISE))
+          {
+            if (to_do.at(i)->getFlag(Skill::MULTIHIT))
+              for (int k = 0; k < getPartySize(); k++)
+              {
+                  members.at(k)->tempStats()->changeStat("PHAG",)
+              }
+
+          }
+
+          }
+          if (cur_action->getActionFlag(Action::LOWER))
+          {
+
+          }
+        }
+
+        if (cur_action->getActionFlag(Action::THERMAL))
+        {
+
+        }
+
+        if (cur_action->getActionFlag(Action::POLAR))
+        {
+
+        }
+
+        if (cur_action->getActionFlag(Action::PRIMAL))
+        {
+
+        }
+
+        if (to_be_done.at(j)->getActionFlag(Action::CHARGED))
+        {
+
+        }
+
+        if (to_be_done.at(j)->getActionFlag(Action::CYBERNETIC))
+        {
+
+        }
+
+        if (to_be_done.at(j)->getActionFlag(Action::NIHIL))
+        {
+
+        }
+
+        if (cur_action->getActionFlag(Action::DEFENSIVE))
+        {
+
+        }
+      }
+    }
+    */
+}
+
+/*
  * Description: Clears the party (except for the main character (index 0))
  *
  * Inputs: none

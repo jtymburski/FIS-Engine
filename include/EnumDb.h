@@ -20,6 +20,20 @@ public:
   enum ApplicationMode {TITLESCREEN, GAME};
 
   /*
+   * Description: The Attribute enumerations is used in AttributeSet to
+   *              describe then names of the statics used by Persons,
+   *              Items, etc.
+   */
+  enum Attribute
+  {
+    VITALITY, QUANTUMDRIVE, PHYSICALAGGRESSION, PHYSICALFORTITUDE,
+    THERMALAGGRESSION, THERMALFORTITUDE, PRIMALAGGRESSION, PRIMALFORTITUDE,
+    POLARAGGRESSION, POLARFORTITUDE, CHARGEDAGGRESSION, CHARGEDFORTITUDE,
+    CYBERNETICAGGRESSION, CYBERNETICFORTITUDE, NIHILAGGRESSION,
+    NIHILFORTITUDE, MOMENTUM, LIMBERTUDE, UNBEARABILITY
+  };
+
+  /*
    * Description: Handler for all direction related calls for movement, 
    *              passability, etc.
    */
@@ -29,6 +43,10 @@ public:
                   WEST          = 0x8,
                   DIRECTIONLESS = 0};
 
+  /*
+   * Description: Describes the current state of the inventory (how it is
+   *              currently sorted)
+   */
   enum ItemSorts {NONE, ID, NAME, FLAVOUR, LEVEL, EQUIPPABLE, VALUE, MASS,
                   VALUEPERMASS};
 
@@ -48,18 +66,10 @@ public:
   };
 
   /*
-   * Description: The Attribute enumerations is used in AttributeSet to 
-   *              describe then names of the statics used by Persons, 
-   *              Items, etc.
+   * Description: Describes the current state of a skill set (how it is
+   *              currently known to be sortd)
    */
-  enum Attribute
-  {
-    VITALITY, QUANTUMDRIVE, PHYSICALAGGRESSION, PHYSICALFORTITUDE,
-    THERMALAGGRESSION, THERMALFORTITUDE, PRIMALAGGRESSION, PRIMALFORTITUDE,
-    POLARAGGRESSION, POLARFORTITUDE, CHARGEDAGGRESSION, CHARGEDFORTITUDE,
-    CYBERNETICAGGRESSION, CYBERNETICFORTITUDE, NIHILAGGRESSION,
-    NIHILFORTITUDE, MOMENTUM, LIMBERTUDE, UNBEARABILITY
-  };
+  enum SkillSorts {NONE_SKILL, NAME_SKILL, LEVEL_SKILL};
 };
 
 /* Registration of Infliction Enumerator */

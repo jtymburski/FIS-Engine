@@ -155,9 +155,6 @@ public:
   /* Stat set up functions */
   void setUpBaseStats();
 
-  /* Uses a given item on a person */
-  bool useItem(Item* used_item);
-
   /* PersonState flag functions */
   bool getPersonFlag(PersonState flags);
   void setPersonFlag(PersonState flags, bool set_value = true);

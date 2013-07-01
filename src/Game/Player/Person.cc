@@ -359,57 +359,6 @@ void Person::setUpBaseStats()
 }
 
 /*
- * Description: Uses an item
- *
- * Inputs: used_item - pointer of an item to be used
- * Output: bool - tue if item used successfully
- */
-bool Person::useItem(Item* used_item)
-{
-  /* Assert the person can use items and the item is menu-usable */
-  if (!getPersonFlag(Person::CANUSEITEM))
-    return false;
-
-  if (!used_item->getItemFlag(Item::MENUREADY))
-    return false;
-
-  QVector<Skill*> to_do = used_item->getActionSet()->getSkills();
-
-  for (int i = 0; i < to_do.size(); i++)
-  {
-      QVector<Action*> to_be_done = to_do.at(i)->getEffects();
-
-    for (int j = 0; j < to_be_done.size(); j++)
-    {
-      if (to_be_done.at(j)->getActionFlag(Action::THERMAL))
-      {
-
-      }
-      if (to_be_done.at(j)->getActionFlag(Action::POLAR))
-      {
-      }
-      if (to_be_done.at(j)->getActionFlag(Action::CHARGED))
-      {
-      }
-
-        if (to_be_done.at(j)->getActionFlag(Action::OFFENSIVE))
-        {
-
-        }
-
-        if (to_be_done.at(j)->getActionFlag(Action::LOWER))
-        {
-
-        }
-        if (to_be_done.at(j)->getActionFlag(Action::RAISE))
-        {
-
-        }
-    }
-  }
-}
-
-/*
  * Description: Evaluates a given person state flag
  *
  * Inputs: Person state flag
@@ -888,7 +837,7 @@ void Person::setItemLoot(QVector<Item*> items)
   }
   item_drops.clear();
 
-  for (int i = 0; (int)i < items.size() && (int)i < kMAX_ITEM_DROPS; i++)
+  for (int i = 0; i < items.size() && (uint)i < kMAX_ITEM_DROPS; i++)
       item_drops.push_back(new Item(items.value(i)));
 }
 

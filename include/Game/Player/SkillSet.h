@@ -28,7 +28,7 @@ public:
 
 private:
   /* Maximum number of skills allowed */
-  static const int kMAX_SKILLS = 100;
+  static const uint kMAX_SKILLS;
 
   /* Vectors holding the skills and the level they're available */
   QVector<Skill*> skills;
@@ -42,6 +42,9 @@ public:
   /* Methods to add skills */
   bool addSkill(Skill* skill, ushort req_level = 1);
   bool addSkills(QVector<Skill*> new_skills, QVector<ushort> new_levels);
+
+  /* Calculates the end number of unique skills before an append of new ones */
+  uint calcUniqueSkills(QVector<Skill*> new_skills);
 
   /* Removes duplicates and cleans up vectors */
   void cleanUp();
@@ -66,7 +69,15 @@ public:
   void setSkillState(int index, bool state = true);
   bool setSkillState(QString name, bool state = true);
 
+/*=============================================================================
+  * SIGNALS
+  *============================================================================*/
+signals:
+    /* Signal emitted when the set would be full */
+    void fullSet(QString reasons);
 
+    /* Signl emitted when the set is sorted */
+    void sorted();
 };
 
 

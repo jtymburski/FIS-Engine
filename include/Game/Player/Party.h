@@ -67,6 +67,9 @@ public:
   /* Removes a person from the party by name */
   bool removeMember(QString);
 
+  /* Uses the item on the party */
+  bool useItem(Item* used_item, ushort target = 0);
+
   /* Returns the inventory of the party */
   Inventory* getInventory();
 

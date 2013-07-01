@@ -147,15 +147,15 @@ void Application::setupBattle()
                      800, 1000, 800, 1000, 800, 1000, 800, 500, 500, 500, true);
 
   Category* battle_class   = new Category("Bloodclaw", bloodclaw_attr);
-  Category* scion_class    = new Category("Scion", scion_attr);
+  //Category* scion_class    = new Category("Scion", scion_attr);
   Race* the_bears          = new Race("Bears", bear_attr);
   Race* the_humans         = new Race("Humans", human_attr);
 
 
   Person* main = new Person("Malgidus", the_bears, battle_class, "THA", "PRB");
   Person* friend2 = new Person("Artemis", the_humans, battle_class, "NIA", "PRC");
-  Person* friend3 = new Person("Yolo", the_humans, scion_class, "CHC", "PRB");
-  Person* friend4 = new Person("Helga", the_bears, battle_class, "POC", "NIC");
+  //Person* friend3 = new Person("Yolo", the_humans, scion_class, "CHC", "PRB");
+  //Person* friend4 = new Person("Helga", the_bears, battle_class, "POC", "NIC");
 
   Person* secd = new Person("CloudGuy", the_bears, battle_class, "THA", "PRC");
 
