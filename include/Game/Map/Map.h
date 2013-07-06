@@ -25,7 +25,7 @@
 #include "Game/Weather.h"
 #include "FileHandler.h"
 
-class Map : public QGraphicsScene
+class Map : public QGLWidget
 {
   Q_OBJECT
 

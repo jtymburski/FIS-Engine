@@ -4,7 +4,9 @@
 * Inheritance: none
 * Description: The Sprite class. This handles the linked list control that 
 *              wraps the Frame. This will allow for a sequence of events, 
-*              that emulate a GIF for animation or just store one image.
+*              that emulate a GIF for animation or just store one image. This
+*              class also has the functionality for direction GL painting 
+*              through the native API.
 ******************************************************************************/
 #include "Game/Sprite.h"
 
@@ -68,8 +70,7 @@ Sprite::Sprite(QString head_path, int num_frames,
  */
 Sprite::~Sprite()
 {
-  while(size > 0)
-    removeTail();
+  removeAll();
 }
 
 /*============================================================================
@@ -135,6 +136,31 @@ int Sprite::getPosition()
 int Sprite::getSize()
 {
   return size;
+}
+
+/* Initializes GL in all the frames stored within this sprite */
+/* 
+ * Description: Iniatilizes all the GL painting in all the frames. Call this
+ *              before starting the animation paint sequence. This will take
+ *              care of all the necessary prep setup of a single sprite.
+ *
+ * Inputs: none
+ * Output: bool - status if initialization was successful. If failed, there
+ *                is no image data to initialize.
+ */
+bool Sprite::initializeGl()
+{
+  bool status = true;
+  Frame* temp = head;
+
+  /* Loop through all frames and initialize them all */
+  for(int i = 0; i < size; i++)
+  {
+    status &= temp->initializeGl();
+    temp = temp->getNext();
+  }
+
+  return status;
 }
 
 /* 
@@ -283,6 +309,24 @@ bool Sprite::isAtFirst()
 {
   if(head == current)
     return true;
+  return false;
+}
+
+/* 
+ * Description: Paints the active frame using native GL calls. The context
+ *              for GL must have been called for this and the sprite
+ *              GL initialization must have occurred before any painting.
+ *
+ * Inputs: int x - the x offset in the plane (left-right)
+ *         int y - the y offset in the plane (up-down)
+ *         float opacity - the transparency of the paint object (0-1)
+ * Output: bool - status if the frame was painted. If failed, make sure there
+ *         is an image in the sprite and make sure initializeGl() was called.
+ */
+bool Sprite::paintGl(int x, int y, float opacity)
+{
+  if(current != 0)
+    return current->paintGl(x, y, opacity);
   return false;
 }
 
@@ -536,7 +580,7 @@ int Sprite::getAngle(QString identifier)
   else if(identifier == "ccw" || identifier == "counterclockwise")
     return getAngle(COUNTERCLOCKWISE);
   else if(identifier == "f" || identifier == "flip")
-    return getAngle(FLIP);
+    return getAngle(HALFCIRCLE);
   return 0;
 }
 
@@ -554,7 +598,7 @@ int Sprite::getAngle(RotatedAngle angle)
     return 90;
   else if(angle == COUNTERCLOCKWISE)
     return -90;
-  else if(angle == FLIP)
+  else if(angle == HALFCIRCLE)
     return 180;
   return 0;
 }

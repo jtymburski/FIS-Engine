@@ -38,7 +38,7 @@ Application::Application(QWidget* parent)
   
   /* Add widgets to the stack */
   addWidget(test_battle);
-  addWidget(test_map->getViewport());
+  addWidget(test_map); // TODO: should be viewport
   addWidget(title_screen);
 
   setCurrentIndex(2); // TODO (0=battle, 1=map, 2=titlescreen)

@@ -42,9 +42,9 @@ Map::Map(short resolution_x, short resolution_y)
   viewport_widget = new QGLWidget(gl_format);
 
   /* Setup the viewport */
-  viewport = new MapViewport(this, resolution_x, resolution_y);
-  viewport->setViewport(viewport_widget);
-  viewport->setViewportUpdateMode(QGraphicsView::NoViewportUpdate);
+  //viewport = new MapViewport(this, resolution_x, resolution_y);
+  //viewport->setViewport(viewport_widget);
+  //viewport->setViewportUpdateMode(QGraphicsView::NoViewportUpdate);
  
   /* Bring the timer in to provide a game tick */
   connect(&timer, SIGNAL(timeout()), this, SLOT(animate()));
@@ -54,7 +54,7 @@ Map::Map(short resolution_x, short resolution_y)
 /* Destructor function */
 Map::~Map()
 {
-  unloadMap();
+  //unloadMap();
 }
 
 /*============================================================================
@@ -151,24 +151,24 @@ void Map::drawBackground(QPainter* painter, const QRectF& rect)
 
 void Map::keyPressEvent(QKeyEvent* keyEvent)
 {
-  if(keyEvent->key() == Qt::Key_Down || keyEvent->key() == Qt::Key_Up ||
-     keyEvent->key() == Qt::Key_Right || keyEvent->key() == Qt::Key_Left)
-    sendEvent(player, keyEvent);
-  else if(keyEvent->key() == Qt::Key_Escape)
+  //if(keyEvent->key() == Qt::Key_Down || keyEvent->key() == Qt::Key_Up ||
+  //   keyEvent->key() == Qt::Key_Right || keyEvent->key() == Qt::Key_Left)
+  //  sendEvent(player, keyEvent);
+  if(keyEvent->key() == Qt::Key_Escape)
     closeMap();
-  else if(keyEvent->key() == Qt::Key_A)
-    animateTiles();
-  else if(keyEvent->key() == Qt::Key_1)
-    viewport->lockOn(player);
-  else if(keyEvent->key() == Qt::Key_2)
-    viewport->lockOn(1000, 1000);
+  //else if(keyEvent->key() == Qt::Key_A)
+  //  animateTiles();
+  //else if(keyEvent->key() == Qt::Key_1)
+  //  viewport->lockOn(player);
+  //else if(keyEvent->key() == Qt::Key_2)
+  //  viewport->lockOn(1000, 1000);
 }
 
 void Map::keyReleaseEvent(QKeyEvent* keyEvent)
 {
-  if(keyEvent->key() == Qt::Key_Down || keyEvent->key() == Qt::Key_Up ||
-     keyEvent->key() == Qt::Key_Right || keyEvent->key() == Qt::Key_Left)
-    sendEvent(player, keyEvent);
+  //if(keyEvent->key() == Qt::Key_Down || keyEvent->key() == Qt::Key_Up ||
+  //   keyEvent->key() == Qt::Key_Right || keyEvent->key() == Qt::Key_Left)
+  //  sendEvent(player, keyEvent);
 }
 
 /*============================================================================
@@ -181,7 +181,7 @@ void Map::animate()
   QTime time;
   time.start();
 
-  if(player != 0)
+  /*if(player != 0)
   {
     bool movable = true;
 
@@ -223,7 +223,7 @@ void Map::animate()
     viewport->updateView();
   }
 
-  viewport->viewport()->update();
+  viewport->viewport()->update();*/
 
   /* Time elapsed from standard update */
   //qDebug() << time.elapsed();
@@ -326,7 +326,7 @@ bool Map::loadMap(QString file)
         Tile* t = new Tile(kTILE_LENGTH, kTILE_WIDTH, 
                            j*kTILE_LENGTH, i*kTILE_WIDTH);
         //t->setStatus(Tile::OFF);
-        t->insertIntoScene(this);
+        //t->insertIntoScene(this);
 
         /* Add the new tile to the list */
         row.append(t);
@@ -347,31 +347,31 @@ bool Map::loadMap(QString file)
     } while(!done && success);
 
     /* Add in temporary player information */
-    Sprite* up_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_D", 
-                                   3, ".png");
-    Sprite* down_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_U", 
-                                     3, ".png");
-    Sprite* left_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_R", 
-                                     3, ".png");
-    Sprite* right_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_L", 
-                                      3, ".png");
+    //Sprite* up_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_D", 
+    //                               3, ".png");
+    //Sprite* down_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_U", 
+    //                                 3, ".png");
+    //Sprite* left_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_R", 
+    //                                 3, ".png");
+    //Sprite* right_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_L", 
+    //                                  3, ".png");
 
     /* Make the map person */
-    player = new MapPerson(kTILE_LENGTH, kTILE_WIDTH);
-    player->setCoordinates(kTILE_LENGTH*10, kTILE_WIDTH*8, 2);
+    //player = new MapPerson(kTILE_LENGTH, kTILE_WIDTH);
+    //player->setCoordinates(kTILE_LENGTH*10, kTILE_WIDTH*8, 2);
 
-    player->setState(MapPerson::GROUND, EnumDb::NORTH, 
-                                        new MapState(up_sprite));
-    player->setState(MapPerson::GROUND, EnumDb::SOUTH, 
-                                        new MapState(down_sprite));
-    player->setState(MapPerson::GROUND, EnumDb::EAST, 
-                                        new MapState(right_sprite));
-    player->setState(MapPerson::GROUND, EnumDb::WEST, 
-                                        new MapState(left_sprite));
+    //player->setState(MapPerson::GROUND, EnumDb::NORTH, 
+    //                                    new MapState(up_sprite));
+    //player->setState(MapPerson::GROUND, EnumDb::SOUTH, 
+    //                                    new MapState(down_sprite));
+    //player->setState(MapPerson::GROUND, EnumDb::EAST, 
+    //                                    new MapState(right_sprite));
+    //player->setState(MapPerson::GROUND, EnumDb::WEST, 
+    //                                    new MapState(left_sprite));
 
     /* Add it */
-    addItem(player);
-    viewport->lockOn(player);
+    //addItem(player);
+    //viewport->lockOn(player);
     //setFocusItem(player);
   }
 
@@ -415,7 +415,7 @@ void Map::unloadMap()
   {
     for(int j = 0; j < geography[i].size(); j++)
     {
-      geography[i][j]->removeFromScene(this);
+      //geography[i][j]->removeFromScene(this);
       delete geography[i][j];
       geography[i][j] = 0;
     }
@@ -431,7 +431,7 @@ void Map::unloadMap()
   tile_sprites.clear();
 
   /* Clear the remaining and disable the loading */
-  clear();
+  //clear();
   loaded = false;
 }
 
