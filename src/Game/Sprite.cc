@@ -319,14 +319,16 @@ bool Sprite::isAtFirst()
  *
  * Inputs: int x - the x offset in the plane (left-right)
  *         int y - the y offset in the plane (up-down)
+ *         int width - the width to render the frame to
+ *         int height - the height to render the frame to
  *         float opacity - the transparency of the paint object (0-1)
  * Output: bool - status if the frame was painted. If failed, make sure there
  *         is an image in the sprite and make sure initializeGl() was called.
  */
-bool Sprite::paintGl(int x, int y, float opacity)
+bool Sprite::paintGl(int x, int y, int width, int height, float opacity)
 {
   if(current != 0)
-    return current->paintGl(x, y, opacity);
+    return current->paintGl(x, y, width, height, opacity);
   return false;
 }
 

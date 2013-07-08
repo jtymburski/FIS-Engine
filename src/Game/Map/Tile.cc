@@ -1,7 +1,7 @@
 /******************************************************************************
 * Class Name: Tile
 * Date Created: December 2, 2012
-* Inheritance: QObject
+* Inheritance: none
 * Description: This class handles the basic tile that is set up on the map.
 *              It is the overall structure. The tile class creates a base, 
 *              enhancer, lower, upper, passable, and impassable to define
@@ -13,8 +13,8 @@
 #include "Game/Map/Tile.h"
 
 /* Constant Implementation - see header file for descriptions */
-const int Tile::kLOWER_DEPTH = 0;
-const int Tile::kUPPER_DEPTH = 3;
+const char Tile::kLOWER_COUNT_MAX = 5;
+const char Tile::kUPPER_COUNT_MAX = 5;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -30,17 +30,7 @@ const int Tile::kUPPER_DEPTH = 3;
  */
 Tile::Tile()
 {
-  /* Clear out the logic for parts of the tile */
-  impassable_set = UNSET;
-  lower = new Layer();
-  passable_set = false;
-  upper = new Layer();
-
-  /* Tile definitions */
-  height = 0;
-  width = 0;
-  x = 0;
-  y = 0;
+  clear();
 }
 
 /* 
@@ -53,21 +43,16 @@ Tile::Tile()
  *         int height - the height of the tile in pixels
  *         int x - the x location respective to the parent (in pixels)
  *         int y - the y location respective to the parent (in pixels)
- *         QObject* parent - the parent object to be set in the tile
  */
 Tile::Tile(int width, int height, int x, int y)
 {
-  /* Clear out the logic for parts of the tile */
-  impassable_set = UNSET;
-  lower = new Layer(width, height, x, y, kLOWER_DEPTH);
-  passable_set = false;
-  upper = new Layer(width, height, x, y, kUPPER_DEPTH);
+  clear();
 
-  /* Tile definitions */
-  this->height = height;
-  this->width = width;
-  this->x = x;
-  this->y = y;
+  /* Finally reset the parameters based on this alternate constructor */
+  setHeight(height);
+  setWidth(width);
+  setX(x);
+  setY(y);
 }
 
 /* 
@@ -75,16 +60,7 @@ Tile::Tile(int width, int height, int x, int y)
  */
 Tile::~Tile()
 {
-  unsetBase();
-  unsetEnhancer();
-  unsetLower();
-  unsetUpper();
-
-  /* Delete the layers from memory */
-  delete lower;
-  lower = 0;
-  delete upper;
-  upper = 0;
+  clear();
 }
 
 /*============================================================================
@@ -135,17 +111,65 @@ bool Tile::addSprite(Sprite* frames, QString classifier, QString index)
 }
 
 /*
- * Description: Animates all sprite sets on the tile. This allows for the fine 
- *              control over when the timer hits and how it's updated.
+ * Description: Animates all sprite layer sets on the tile. This allows for 
+ *              the fine control over when the timer hits and how it's updated.
  *
  * Inputs: none
  * Output: none
  */
 void Tile::animate()
 {
-  /* Animate the two layers stored within this class */
-  lower->animate();
-  upper->animate();
+  /* Animate the base first */
+  if(base != 0)
+    base->shiftNext();
+
+  /* Then the enhancer sprite */
+  if(enhancer != 0)
+    enhancer->shiftNext();
+
+  /* Then animate the set of lower layers */
+  for(int i = 0; i < lower.size(); i++)
+    if(lower[i] != 0)
+      lower[i]->shiftNext();
+
+  /* Finish by animating the upper set, if set */
+  for(int i = 0; i < upper.size(); i++)
+    if(upper[i] != 0)
+      upper[i]->shiftNext();
+}
+
+/*
+ * Description: Clears the data within the tile. Usually used for cleaning
+ *              up after the tile operation is complete. Has the functionality
+ *              just to clean out the sprites and not the width/height and
+ *              coordinates of the tile.
+ *
+ * Inputs: bool just_sprites - Only clean up the sprites or all of the class.
+ * Output: none
+ */
+void Tile::clear(bool just_sprites)
+{
+  /* Clear sprite layer data */
+  unsetBase();
+  unsetEnhancer();
+  unsetLower();
+  unsetUpper();
+
+  /* Clear player/thing data */
+  impassable_set = UNSET;
+  passable_set = false;
+
+  if(!just_sprites)
+  {
+    /* Reset tile parameters */
+    setWidth(1);
+    setHeight(1);
+    setStatus(OFF);
+
+    /* Reset coordinates */
+    setX(0);
+    setY(0);
+  }
 }
 
 /* 
@@ -156,7 +180,27 @@ void Tile::animate()
  */
 Sprite* Tile::getBase()
 {
-  return lower->getBase();
+  return base;
+}
+
+/* 
+ * Description: Gets the passability for the base portion of the tile. This 
+ *              only responds true passability for set sprites. Otherwise,
+ *              it returns true.
+ *
+ * Inputs: EnumDb::Direction dir - the direction to get
+ * Output: bool - the base passability directional status
+ */
+bool Tile::getBasePassability(EnumDb::Direction dir)
+{
+  if(base != 0)
+  {
+    if(dir == EnumDb::DIRECTIONLESS)
+      return (base_passability == EnumDb::DIRECTIONLESS);
+    return ((base_passability & dir) > 0);
+  }
+
+  return true;
 }
 
 /* 
@@ -167,7 +211,7 @@ Sprite* Tile::getBase()
  */
 Sprite* Tile::getEnhancer()
 {
-  return lower->getEnhancer();
+  return enhancer;
 }
 
 /* 
@@ -204,7 +248,57 @@ MapThing* Tile::getImpassableObject()
  */
 QList<Sprite*> Tile::getLower()
 {
-  return lower->getLower();
+  return lower;
+}
+
+/* 
+ * Description: Gets the passability for the entire lower portion of the tile.
+ *              Only returns for set lower sprites. Otherwise, it returns 
+ *              true.
+ *
+ * Inputs: EnumDb::Direction dir - the direction to get
+ * Output: bool - the lower passability directional status
+ */
+bool Tile::getLowerPassability(EnumDb::Direction dir)
+{
+  bool passability = true;
+
+  if(dir == EnumDb::DIRECTIONLESS)
+  {
+    passability = false;
+
+    for(int i = 0; i < lower_passability.size(); i++)
+      if(lower[i] != 0)
+        passability |= getLowerPassability(i, dir);
+  }
+  else
+  {
+    for(int i = 0; i < lower_passability.size(); i++)
+      if(lower[i] != 0)
+        passability &= getLowerPassability(i, dir);
+  }
+
+  return passability;
+}
+
+/* 
+ * Description: Gets the passability for the lower specific index of the stack.
+ *              Only returns an actual value for set sprites. If it's
+ *              not set or if it's out of range, it returns true.
+ *
+ * Inputs: int index - the lower sprite stack index
+ *         EnumDb::Direction dir - the direction to get
+ * Output: bool - the lower passability directional status
+ */
+bool Tile::getLowerPassability(int index, EnumDb::Direction dir)
+{
+  if(index >= 0 && index < lower_passability.size() && lower[index] != 0)
+  {
+    if(dir == EnumDb::DIRECTIONLESS)
+      return (lower_passability[index] == EnumDb::DIRECTIONLESS);
+    return ((lower_passability[index] & dir) > 0);
+  }
+  return true;
 }
 
 /* TODO: [2013-06-19] 
@@ -230,8 +324,8 @@ MapThing* Tile::getPassableObject()
 bool Tile::getPassability(EnumDb::Direction dir)
 {
   if(dir == EnumDb::DIRECTIONLESS)
-    return (lower->getBasePassability(dir) || lower->getLowerPassability(dir));
-  return (lower->getBasePassability(dir) && lower->getLowerPassability(dir));
+    return (getBasePassability(dir) || getLowerPassability(dir));
+  return (getBasePassability(dir) && getLowerPassability(dir));
 }
 
 /* 
@@ -241,9 +335,9 @@ bool Tile::getPassability(EnumDb::Direction dir)
  * Inputs: none
  * Output: Status - public enum from layer identifying state
  */
-Layer::Status Tile::getStatus()
+Tile::TileStatus Tile::getStatus()
 {
-  return lower->getStatus();
+  return status;
 }
 
 /* 
@@ -254,7 +348,7 @@ Layer::Status Tile::getStatus()
  */
 QList<Sprite*> Tile::getUpper()
 {
-  return upper->getUpper();
+  return upper;
 }
 
 /* 
@@ -291,30 +385,44 @@ int Tile::getY()
 {
   return y;
 }
-
+  
 /* 
- * Description: Inserts the inner layers (QGraphicsItems) into the scene
- *              that have been created by the class.
+ * Description: Initialize the GL functionality in all the stored sprites
+ *              within the tile. Only runs if the sprite is set and it hasn't
+ *              already been initialized.
  *
- * Inputs: QGraphicsScene* scene - the scene to insert the items
- * Output: bool - returns if the insertion was successful and executed.
- *                Only fails if something went wrong internally in the class
- *                and the appropriate pointers aren't set.
+ * Inputs: none
+ * Output: int - if the initialization procedure was successful. Only fails
+ *               if one of the sprites are set but with no legitimate frames.
  */
-bool Tile::insertIntoScene(QGraphicsScene* scene)
+bool Tile::initializeGl()
 {
-  if(lower != 0 && upper != 0)
-  {
-    scene->addItem(lower);
-    scene->addItem(upper);
-    return true;
-  }
-  return false;
+  bool success = true;
+
+  /* Initialize the base first */
+  if(base != 0)
+    success &= base->initializeGl();
+
+  /* Then the enhancer sprite */
+  if(enhancer != 0)
+    success &= enhancer->initializeGl();
+
+  /* Then initialize the set of lower layers */
+  for(int i = 0; i < lower.size(); i++)
+    if(lower[i] != 0)
+      success &= lower[i]->initializeGl();
+
+  /* Finish by initialize the upper set, if set */
+  for(int i = 0; i < upper.size(); i++)
+    if(upper[i] != 0)
+      success &= upper[i]->initializeGl();
+
+  return success;
 }
 
 /* 
  * Description: Inserts the new Sprite frame data onto the created lower
- *              layer for this tile. Passes implementation into Layer.
+ *              portion for this tile.
  *
  * Inputs: Sprite* lower - the lower tile data, as a Sprite set
  *         int index - the index to where the lower sprite is inserted
@@ -322,12 +430,33 @@ bool Tile::insertIntoScene(QGraphicsScene* scene)
  */
 bool Tile::insertLower(Sprite* lower, int index)
 {
-  return this->lower->insertLower(lower, index);
+  if(lower != 0 && lower->getSize() > 0 && 
+     index >= 0 && index < kLOWER_COUNT_MAX)
+  {
+    /* Increase the size of lower if it isn't big enough */
+    Sprite* null_sprite = 0;
+    if(index >= this->lower.size())
+    {
+      for(int i = this->lower.size(); i <= index; i++)
+      {
+        this->lower.append(null_sprite);
+        lower_passability.append(EnumDb::DIRECTIONLESS);
+      }
+    }
+
+    /* Actually set the lower layer now */
+    this->lower[index] = lower;
+    lower_passability[index] = EnumDb::DIRECTIONLESS;
+
+    return true;
+  }
+
+  return false;
 }
 
 /* 
  * Description: Inserts the new Sprite frame data onto the created upper
- *              layer for this tile. Passes implementation into Layer.
+ *              portion for this tile. 
  *
  * Inputs: Sprite* upper - the upper tile data, as a Sprite set
  *         int index - the index to where the upper sprite is inserted
@@ -335,7 +464,22 @@ bool Tile::insertLower(Sprite* lower, int index)
  */
 bool Tile::insertUpper(Sprite* upper, int index)
 {
-  return this->upper->insertUpper(upper, index);
+  if(upper != 0 && upper->getSize() > 0 && 
+     index >= 0 && index < kUPPER_COUNT_MAX)
+  {
+    /* Increase the size of upper if it isn't big enough */
+    Sprite* null_sprite = 0;
+    if(index >= this->upper.size())
+      for(int i = this->upper.size(); i <= index; i++)
+        this->upper.append(null_sprite);
+
+    /* Actually set the upper layer now */
+    this->upper[index] = upper;
+
+    return true;
+  }
+
+  return false;
 }
 
 /* 
@@ -346,7 +490,7 @@ bool Tile::insertUpper(Sprite* upper, int index)
  */
 bool Tile::isBaseSet()
 {
-  return (lower->getBase() != 0);
+  return (base != 0);
 }
 
 /* 
@@ -357,7 +501,7 @@ bool Tile::isBaseSet()
  */
 bool Tile::isEnhancerSet()
 {
-  return (lower->getEnhancer() != 0);
+  return (enhancer != 0);
 }
 
 /* TODO: [2013-06-19]
@@ -380,7 +524,7 @@ Tile::ImpassableObjectState Tile::isImpassableObjectSet()
  */
 bool Tile::isLowerSet()
 {
-  return (lower->getLower().size() > 0);
+  return (lower.size() > 0);
 }
 
 /* TODO: [2013-06-19]
@@ -402,83 +546,144 @@ bool Tile::isPassableObjectSet()
  */
 bool Tile::isUpperSet()
 {
-  return (upper->getUpper().size() > 0);
+  return (upper.size() > 0);
+}
+  
+/* 
+ * Description: Paints the lower sprites in the tile using native GL calls. The 
+ *              context for GL must have been called for this and the sprite
+ *              GL initialization must have occurred before any painting.
+ *
+ * Inputs: int x - the x offset in the plane (left-right)
+ *         int y - the y offset in the plane (up-down)
+ *         int width - the width to render the sprite to
+ *         int height - the height to render the sprite to
+ *         float opacity - the transparency of the paint object (0-1)
+ * Output: bool - status if the sprite was painted. If failed, make sure there
+ *         is an image in the sprite and make sure initializeGl() was called.
+ */
+bool Tile::paintLower(int x, int y, int width, int height, float opacity)
+{
+  bool success = true;
+
+  /* Paint the base first */
+  if(base != 0)
+    success &= base->paintGl(x, y, width, height, opacity);
+
+  /* Then the enhancer sprite */
+  if(enhancer != 0)
+    success &= enhancer->paintGl(x, y, width, height, opacity);
+
+  /* Then Paint the set of lower layers */
+  for(int i = 0; i < lower.size(); i++)
+    if(lower[i] != 0)
+      success &= lower[i]->paintGl(x, y, width, height, opacity);
+
+  return success;
 }
 
 /* 
- * Description: Removes the layers in this class from the scene.
- *              Typically called before deconstruction.
+ * Description: Paints the upper sprites in the tile using native GL calls. The 
+ *              context for GL must have been called for this and the sprite
+ *              GL initialization must have occurred before any painting.
  *
- * Inputs: QGraphicsScene* scene - the scene to remove the items from
- * Output: none
+ * Inputs: int x - the x offset in the plane (left-right)
+ *         int y - the y offset in the plane (up-down)
+ *         int width - the width to render the sprite to
+ *         int height - the height to render the sprite to
+ *         float opacity - the transparency of the paint object (0-1)
+ * Output: bool - status if the sprite was painted. If failed, make sure there
+ *         is an image in the sprite and make sure initializeGl() was called.
  */
-void Tile::removeFromScene(QGraphicsScene* scene)
+bool Tile::paintUpper(int x, int y, int width, int height, float opacity)
 {
-  if(lower != 0)
-    scene->removeItem(lower);
+  bool success = true;
 
-  if(upper != 0)
-    scene->removeItem(upper);
+  /* Paint the upper set, if set */
+  for(int i = 0; i < upper.size(); i++)
+    if(upper[i] != 0)
+      success &= upper[i]->paintGl(x, y, width, height, opacity);
+
+  return success;
 }
 
-/*
- * Description: Sets the base part of the layer, in the lower half. This class 
- *              only takes the pointer for usage and does not manage deleting.
- *              Once the class is finished, deletion of the pointer is still
- *              required.
+/* 
+ * Description: Sets the base sprite stored within the tile. Only sets it 
+ *              if the pointer is valid and the number of frames is greater 
+ *              than 0. The old base is set if the new pointer is valid.
  *
- * Inputs: Sprite* base - the sprite that defines the base part
- * Output: bool - returns true if the base was set successfully.
+ * Inputs: Sprite* base - the new base sprite to attempt to set
+ * Output: bool - status if the set procedure succeeded
  */
 bool Tile::setBase(Sprite* base)
 {
-  return lower->setBase(base);
+  if(base != 0 && base->getSize() > 0)
+  {
+    unsetBase();
+    this->base = base;
+    base_passability = EnumDb::DIRECTIONLESS;
+
+    return true;
+  }
+  return false;
 }
 
-/*
- * Description: Sets the base passability for the base layer with 
- *              a direction enumerator and the value it should be.
+/* 
+ * Description: Sets the base passability using a given direction and the 
+ *              set boolean value. Only fails if the base internal to the
+ *              tile is not set.
  *
- * Inputs: EnumDb::Direction dir - the direction passability to set
- *         bool set_value - the value to set that direction to
- * Output: bool - status if the set was successful
+ * Inputs: EnumDb::Direction dir - the direction to set
+ *         bool set_value - the value to set it to.
+ * Output: bool - the status if the set was successful.
  */
 bool Tile::setBasePassability(EnumDb::Direction dir, bool set_value)
 {
-  return lower->setBasePassability(dir, set_value);
+  /* Only set if the base is set */
+  if(base != 0)
+  {
+    if(dir == EnumDb::DIRECTIONLESS && set_value)
+      base_passability = EnumDb::DIRECTIONLESS;
+    else
+      (set_value) ? (base_passability |= dir) : (base_passability &= ~dir);
+
+    return true;
+  }
+  return false;
 }
 
-/*
- * Description: Sets the enhancer part of the layer, in the lower half. This 
- *              class only takes the pointer for usage and does not manage 
- *              deleting. Once the class is finished, deletion of the pointer 
- *              is still required.
+/* 
+ * Description: Sets the enhancer sprite stored within the tile. Only sets it 
+ *              if the pointer is valid and the number of frames is greater 
+ *              than 0. The old enhancer is set if the new pointer is valid.
  *
- * Inputs: Sprite* enhancer - the sprite that defines the enhancer part
- * Output: bool - returns true if the enhancer was set successfully.
+ * Inputs: Sprite* enhancer - the new enhancer sprite to attempt to set
+ * Output: bool - status if the insertion succeeded
  */
 bool Tile::setEnhancer(Sprite* enhancer)
 {
-  return lower->setEnhancer(enhancer);
+  if(enhancer != 0 && enhancer->getSize() > 0)
+  {
+    unsetEnhancer();
+    this->enhancer = enhancer;
+
+    return true;
+  }
+  return false;
 }
 
 /*
- * Description: Sets the height of the tile. This will call each layer that has
- *              already been created and update the height in them as well.
+ * Description: Sets the height of the tile.
  *
  * Inputs: int height - the tile height, in pixels
  * Output: bool - returns if the height set was successful (and the height was
- *                a positive number)
+ *                a positive number and greater than 0)
  */
 bool Tile::setHeight(int height)
 {
   if(height > 0)
   {
     this->height = height;
-
-    /* Set it on all the layers */
-    lower->setHeight(height);
-    upper->setHeight(height);
 
     return true;
   }
@@ -501,24 +706,36 @@ bool Tile::setImpassableObject(QString path, ImpassableObjectState type)
   return true;
 }
 
-/*
- * Description: Sets the lower part of the layer, in the lower half. This 
- *              class only takes the pointer for usage and does not manage 
- *              deleting. Once the class is finished, deletion of the pointer 
- *              is still required.
+/* 
+ * Description: Sets the lower sprite stored within the tile. Only sets it if 
+ *              the pointer is valid and the number of frames is greater than 
+ *              0. Since lower is a stack, it unsets the stack if the sprite
+ *              is valid and puts this new lower at the front of the list.
  *
- * Inputs: Sprite* lower - the sprite that defines the lower part
- * Output: bool - returns true if the lower was set successfully.
+ * Inputs: Sprite* lower - the new lower sprite to attempt to set
+ * Output: bool - status if the insertion succeeded
  */
 bool Tile::setLower(Sprite* lower)
 {
-  return this->lower->setLower(lower);
+  if(lower != 0 && lower->getSize() > 0)
+  {
+    Sprite* null_sprite = 0;
+
+    unsetLower();
+    this->lower.append(null_sprite);
+    this->lower[0] = lower;
+    lower_passability[0] = EnumDb::DIRECTIONLESS;
+
+    return true;
+  }
+  return false;
 }
 
 /*
- * Description: Sets the lower passability for a layer based on an index, 
+ * Description: Sets the lower passability for a sprite based on an index, 
  *              a direction enumerator, and the value it should be. Only 
- *              fails if the index is out of range of the allowable bounds.
+ *              fails if the index is out of range of the allowable bounds
+ *              or the lower isn't set at that index.
  *
  * Inputs: int index - the lower layer index
  *         EnumDb::Direction dir - the direction passability to set
@@ -528,7 +745,18 @@ bool Tile::setLower(Sprite* lower)
 bool Tile::setLowerPassability(int index, EnumDb::Direction dir, 
                                           bool set_value)
 {
-  return lower->setLowerPassability(index, dir, set_value);
+  /* Only set if the lower layer is valid and in the right range */
+  if(index >= 0 && index < kLOWER_COUNT_MAX && lower[index] != 0)
+  {
+    if(dir == EnumDb::DIRECTIONLESS && set_value)
+      lower_passability[index] = EnumDb::DIRECTIONLESS;
+    else
+      (set_value) ? (lower_passability[index] |= dir) 
+                  : (lower_passability[index] &= ~dir);
+
+    return true;
+  }
+  return false;
 }
 
 /* TODO: [2013-06-19]
@@ -546,51 +774,33 @@ bool Tile::setPassableObject(QString path)
 }
 
 /* 
- * Description: Sets the tile status, which then sends this off to all the
- *              applicable layers in the Tile utilizing the enum from Layer.
- *              This allows of 3 possible states that the tile can be in. This 
- *              affects the visibility and painting of the tile.
+ * Description: Sets the tile status. This allows of 3 possible states that 
+ *              the tile can be in. This affects the visibility and painting \
+ *              of the tile.
  * 
- * Inputs: Status updated_status - the new status to update the tile to
+ * Inputs: TileStatus status - the new status to update the tile to
  * Output: none
  */
-void Tile::setStatus(Layer::Status updated_status)
+void Tile::setStatus(TileStatus status)
 {
-  lower->setStatus(updated_status);
-  upper->setStatus(updated_status);
+  this->status = status;
 }
 
-/*
- * Description: Sets the upper part of the layer, in the upper half. This 
- *              class only takes the pointer for usage and does not manage 
- *              deleting. Once the class is finished, deletion of the pointer 
- *              is still required.
+/* 
+ * Description: Sets the upper sprite stored within the tile. Only sets it if 
+ *              the pointer is valid and the number of frames is greater than 
+ *              0. Since upper is a stack, it unsets the stack if the sprite
+ *              is valid and puts this new upper at the front of the list.
  *
- * Inputs: Sprite* upper - the sprite that defines the upper part
- * Output: bool - returns true if the upper was set successfully.
+ * Inputs: Sprite* upper - the new upper layer to attempt to set
+ * Output: bool - status if the insertion succeeded
  */
 bool Tile::setUpper(Sprite* upper)
 {
-  return this->upper->setUpper(upper);
-}
-
-/*
- * Description: Sets the width of the tile. This will call each layer that has
- *              already been created and update the width in them as well.
- *
- * Inputs: int width - the tile width, in pixels
- * Output: bool - returns if the width set was successful (and the width was
- *                a positive number)
- */
-bool Tile::setWidth(int width)
-{
-  if(width > 0)
+  if(upper != 0 && upper->getSize() > 0)
   {
-    this->width = width;
-
-    /* Set it on all the layers */
-    lower->setWidth(width);
-    upper->setWidth(width);
+    unsetUpper();
+    this->upper[0] = upper;
 
     return true;
   }
@@ -598,9 +808,25 @@ bool Tile::setWidth(int width)
 }
 
 /*
- * Description: Sets the X coordinate of the tile. This will call each layer 
- *              that has already been created and update the X coordinate in 
- *              them as well.
+ * Description: Sets the width of the tile.
+ *
+ * Inputs: int width - the tile width, in pixels
+ * Output: bool - returns if the width set was successful (and the width was
+ *                a positive number greater than 0)
+ */
+bool Tile::setWidth(int width)
+{
+  if(width > 0)
+  {
+    this->width = width;
+
+    return true;
+  }
+  return false;
+}
+
+/*
+ * Description: Sets the X coordinate of the tile. 
  *
  * Inputs: int x - the tile x coordinate, in pixels
  * Output: none
@@ -608,16 +834,10 @@ bool Tile::setWidth(int width)
 void Tile::setX(int x)
 {
   this->x = x;
-
-  /* Set it on all the layers */
-  lower->setX(x);
-  upper->setX(x);
 }
 
 /*
- * Description: Sets the Y coordinate of the tile. This will call each layer 
- *              that has already been created and update the Y coordinate in 
- *              them as well.
+ * Description: Sets the Y coordinate of the tile.
  *
  * Inputs: int y - the tile y coordinate, in pixels
  * Output: none
@@ -625,32 +845,31 @@ void Tile::setX(int x)
 void Tile::setY(int y)
 {
   this->y = y;
-
-  /* Set it on all the layers */
-  lower->setY(y);
-  upper->setY(y);
 }
 
 /* 
  * Description: Unsets the base sprite in the tile.
+ * Note: this class does NOT delete the pointer, only releases it.
  *
  * Inputs: none
  * Output: none
  */
 void Tile::unsetBase()
 {
-  lower->unsetBase();
+  base = 0;
+  base_passability = EnumDb::DIRECTIONLESS;
 }
 
 /* 
- * Description: Unsets the enhancer sprite in the tile. 
+ * Description: Unsets the enhancer sprite in the tile.
+ * Note: this class does NOT delete the pointer, only releases it.
  *
  * Inputs: none
  * Output: none
  */
 void Tile::unsetEnhancer()
 {
-  lower->unsetEnhancer();
+  enhancer = 0;
 }
 
 /* TODO: [2013-06-19]
@@ -670,13 +889,42 @@ bool Tile::unsetImpassableObject()
 
 /* 
  * Description: Unsets the lower sprite(s) in the tile. 
+ * Note: this class does NOT delete the pointer, only releases it.
  *
  * Inputs: none
  * Output: none
  */
 void Tile::unsetLower()
 {
-  lower->unsetLower();
+  /* Disconnect all references */
+  for(int i = 0; i < lower.size(); i++)
+  {
+    lower[i] = 0;
+    lower_passability[i] = EnumDb::DIRECTIONLESS;
+  }
+
+  /* Clean out the array */
+  lower.clear();
+  lower_passability.clear();
+}
+
+/* 
+ * Description: Unsets the lower sprite in the tile based on the index, only
+ *              if it exists.
+ * Note: this class does NOT delete the pointer, only releases it.
+ *
+ * Inputs: int index - the index of the lower to unset
+ * Output: bool - status if the unset occurred
+ */
+bool Tile::unsetLower(int index)
+{
+  if(index < lower.size() && lower[index] != 0)
+  {
+    lower[index] = 0;
+    lower_passability[index] = EnumDb::DIRECTIONLESS;
+    return true;
+  }
+  return false;
 }
 
 /* TODO: [2013-06-19]
@@ -695,11 +943,35 @@ bool Tile::unsetPassableObject()
 
 /* 
  * Description: Unsets the upper sprite(s) in the tile. 
+ * Note: this class does NOT delete the pointer, only releases it.
  *
  * Inputs: none
  * Output: none
  */
 void Tile::unsetUpper()
 {
-  upper->unsetUpper();
+  /* Disconnect all references */
+  for(int i = 0; i < upper.size(); i++)
+    upper[i] = 0;
+
+  /* Clear out the array */
+  upper.clear();
+}
+
+/* 
+ * Description: Unsets the upper sprite in the tile based on the index, only
+ *              if it exists.
+ * Note: this class does NOT delete the pointer, only releases it.
+ *
+ * Inputs: int index - the index of the upper to unset
+ * Output: bool - status if the unset occurred
+ */
+bool Tile::unsetUpper(int index)
+{
+  if(index < upper.size() && upper[index] != 0)
+  {
+    upper[index] = 0;
+    return true;
+  }
+  return false;
 }

@@ -1,7 +1,7 @@
 /******************************************************************************
 * Class Name: Layer
 * Date Created: May 10, 2013
-* Inheritance: QGraphicsItem
+* Inheritance: none
 * Description: This class becomes the middle interface in between a sprite 
 *              and converting it into the data needed to add it to the
 *              QGraphicsScene. Essentially it just offers the re-implemented
@@ -11,12 +11,12 @@
 #define LAYER_H
 
 //#include <QDebug>
-#include <QGraphicsItem>
+//#include <QGraphicsItem>
 #include <QPainter>
 
 #include "Game/Sprite.h"
 
-class Layer : public QGraphicsItem
+class Layer
 {
 public:
   /* Constructor functions */
@@ -104,8 +104,8 @@ public:
   bool insertUpper(Sprite* new_upper, int index);
 
   /* Virtual painter reimplementation - for painting the item */
-  void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
-             QWidget* widget);
+  //void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
+  //           QWidget* widget);
 
   /* Sets the base sprite and the passability */
   bool setBase(Sprite* new_base);

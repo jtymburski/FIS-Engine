@@ -170,16 +170,18 @@ Frame* Frame::getPrevious()
  *
  * Inputs: int x - the x offset on the plane (left/right)
  *         int y - the y offset on the plane (up/down)
+ *         int width - the width to render the image to
+ *         int height - the height to render the image to
  *         float opacity - the opacity of the paint (0-1)
  * Output: bool - status if the paint occurred (indication if the image was
  *                initialized.
  */
-bool Frame::paintGl(int x, int y, float opacity)
+bool Frame::paintGl(int x, int y, int width, int height, float opacity)
 {
   if(gl_image_set)
   {
-    int width = image.width();
-    int height = image.height();
+    int img_width = image.width();
+    int img_height = image.height();
 
     /* Set up the initial flags */
     glEnable(GL_TEXTURE_2D);
@@ -194,10 +196,19 @@ bool Frame::paintGl(int x, int y, float opacity)
   
     /* Execute the draw */
     glBegin(GL_QUADS);
-    glTexCoord2i(0, 0); glVertex3i(x, y, 0);
-    glTexCoord2i(width, 0); glVertex3i(x + width, y, 0);
-    glTexCoord2i(0, height); glVertex3i(x, y + height, 0);
-    glTexCoord2i(width, height); glVertex3i(x + width, y + height, 0);
+    
+    glTexCoord2i(0, 0); 
+    glVertex3i(x, y, 0);
+    
+    glTexCoord2i(img_width, 0); 
+    glVertex3i(x + width, y, 0);
+    
+    glTexCoord2i(0, img_height); 
+    glVertex3i(x, y + height, 0);
+    
+    glTexCoord2i(img_width, img_height); 
+    glVertex3i(x + width, y + height, 0);
+    
     glEnd();
 
     /* Initialize cleanup */

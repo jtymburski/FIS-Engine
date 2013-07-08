@@ -99,7 +99,7 @@ public:
   bool isAtFirst();
 
   /* Paints the active frame using GL direct calls */
-  bool paintGl(int x, int y, float opacity);
+  bool paintGl(int x, int y, int width, int height, float opacity);
 
   /* Removes the frame in the sequence at the given position */
   bool remove(int position);
