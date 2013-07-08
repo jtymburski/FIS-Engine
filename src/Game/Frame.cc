@@ -101,33 +101,22 @@ bool Frame::initializeGl()
 
     /* Set up the bind */
     glGenTextures(1, &gl_image);
-    //gl_image = bindTexture(image);
     glBindTexture(GL_TEXTURE_2D, gl_image);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,     GL_REPEAT);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,     GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);//GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);//GL_NEAREST);
+
+    /* Parameters for what to deal when the x or y coordinates is different
+     * from the texture. GL_CLAMP forces it to the size, GL_REPEAT duplicates 
+     * the texture */
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
     
-    // select modulate to mix texture with color for shading
-    //glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-
-    // when texture area is small, bilinear filter the closest mipmap
-    //glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-    //                 GL_LINEAR_MIPMAP_NEAREST );
-    // when texture area is large, bilinear filter the first mipmap
-    //glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-
-    // if wrap is true, the texture wraps over at the edges (repeat)
-    //       ... false, the texture ends at the edges (clamp)
-    //glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
-    //glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
+    /* Sizeing parameters, for how to deal with larger than sized cells. 
+     * GL_NEAREST is faster, GL_LINEAR is better */
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
     /* Set up the texture in GL */
-    //qDebug() << texture.width() << " " << texture.width();
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.width(), texture.height(),
                  0, GL_RGBA, GL_UNSIGNED_BYTE, texture.bits());
-    //gluBuild2DMipmaps( GL_TEXTURE_2D, 3, texture.width(), texture.height(),
-    //                   GL_RGB, GL_UNSIGNED_BYTE, texture.bits() );
 
     gl_image_set = true;
   }
@@ -198,13 +187,6 @@ bool Frame::paintGl(int x, int y, int width, int height, float opacity)
 {
   if(gl_image_set)
   {
-    int img_width = 64;//image.width();
-    int img_height = 64;//image.height();
-    height = 4096;
-    width = 4096;
-    x = 0;
-    y = 0;
-    
     /* Set up the initial flags */
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
@@ -219,25 +201,16 @@ bool Frame::paintGl(int x, int y, int width, int height, float opacity)
     /* Execute the draw */
     glBegin(GL_QUADS);
     
-    //glTexCoord2f(0.0,0.0);
-    //glVertex3f(0.0, 0.0, 0.0);
-    //glTexCoord2f(1.0,0.0);
-    //glVertex3f(1.0, 0.0, 0.0);
-    //glTexCoord2f(0.0,1.0);
-    //glVertex3f(0.0, 1.0, 0.0);
-    //glTexCoord2f(1.0,1.0);
-    //glVertex3f(1.0, 1.0, 0.0);
-
-    glTexCoord2f(0, 0); 
+    glTexCoord2f(0.0f, 0.0f); 
     glVertex3f(x, y + height, 0);
 
-    glTexCoord2f(0, img_height); 
+    glTexCoord2f(0.0f, 1.0f); 
     glVertex3f(x, y, 0);
 
-    glTexCoord2f(img_width, img_height); 
+    glTexCoord2f(1.0f, 1.0f); 
     glVertex3f(x + width, y, 0);    
     
-    glTexCoord2f(img_width, 0); 
+    glTexCoord2f(1.0f, 0); 
     glVertex3f(x + width, y + height, 0);
     
     glEnd();

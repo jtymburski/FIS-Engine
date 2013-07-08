@@ -34,13 +34,14 @@ Map::Map(short resolution_x, short resolution_y)
   setAttribute(Qt::WA_NoSystemBackground);
   setAutoBufferSwap(false);
 
-  /* Setting the tree indexing method (NoIndex or BspTreeIndex) */
-  //setItemIndexMethod(QGraphicsScene::NoIndex);
-
   /* Configure the scene */
   loaded = false;
   player = 0;
- 
+
+  /* Configure the FPS animation and reset to 0 */
+  frames = 0;
+  paint_animation = 0;
+
   /* Setup the OpenGL Widget */
   //QGLFormat gl_format(QGL::SampleBuffers);
   //gl_format.setSwapInterval(1);
@@ -150,8 +151,6 @@ void Map::initializeGL()
 {
   for(int i = 0; i < tile_sprites.size(); i++)
     tile_sprites[i]->initializeGl();
-
-  qDebug() << "GL Initialization.";
 }
 
 void Map::keyPressEvent(QKeyEvent* keyEvent)
@@ -161,8 +160,8 @@ void Map::keyPressEvent(QKeyEvent* keyEvent)
   //  sendEvent(player, keyEvent);
   if(keyEvent->key() == Qt::Key_Escape)
     closeMap();
-  //else if(keyEvent->key() == Qt::Key_A)
-  //  animateTiles();
+  else if(keyEvent->key() == Qt::Key_A)
+    animateTiles();
   //else if(keyEvent->key() == Qt::Key_1)
   //  viewport->lockOn(player);
   //else if(keyEvent->key() == Qt::Key_2)
@@ -178,18 +177,51 @@ void Map::keyReleaseEvent(QKeyEvent* keyEvent)
 
 void Map::paintGL()
 {
-  //qDebug() << "Paint GL call.";
-
+  /* Set up the painter */
   QPainter painter;
   painter.begin(this);
 
+  /* Start the GL painting */
   painter.beginNativePainting();
 
-  tile_sprites[0]->paintGl(0, 0, 64, 64, 1);
+  /* Paint the lower half of the tile */
+  for(int i = 0; i < 11; i++)
+    for(int j = 0; j < 19; j++)
+      geography[i][j]->paintLower(j*64, i*64, kTILE_WIDTH, kTILE_LENGTH, 1);
 
+  /* Paint the upper half of the tile */
+  for(int i = 0; i < 11; i++)
+    for(int j = 0; j < 19; j++)
+      geography[i][j]->paintUpper(j*64, i*64, kTILE_WIDTH, kTILE_LENGTH, 1);
+
+  /* Wrap up the GL painting */
   painter.endNativePainting();
+
+  /* Paint the FPS to the screen */
+  if(paint_animation <= 0)
+  {
+    frames_per_second.setNum(frames /(paint_time.elapsed() / 1000.0), 'f', 2);
+    paint_animation = 20;
+  }
+  painter.setBrush(Qt::black);
+  painter.drawRect(20, 30, 60, 15);
+  painter.setPen(Qt::white);
+  painter.drawText(20, 40, frames_per_second + " fps");
+  paint_animation--;
+
+  /* Wrap up the painting call */
   painter.end();
+
+  /* Finish by swapping the buffers */
   swapBuffers();
+
+  /* Check the FPS monitor to see if it needs to be reset */
+  if (!(frames % 100)) 
+  {
+    paint_time.start();
+    frames = 0;
+  }
+  frames++;
 }
 
 /*============================================================================

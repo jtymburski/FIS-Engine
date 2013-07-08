@@ -71,11 +71,17 @@ private:
    * a later time) */
   Weather* weather_effect;
 
+  /* The painting monitoring parameters */
+  QString frames_per_second;
+  int frames;
+  int paint_animation;
+  QTime paint_time;
+
   /*------------------- Constants -----------------------*/
-  const static int kDOUBLE_DIGITS;   /* The point when integers are more than
-                                        a single digit */
-  const static int kELEMENT_ANGLE; /* Element angle for sprite */
-  const static int kELEMENT_DATA;  /* Element data type for sprite */
+  const static int kDOUBLE_DIGITS;    /* The point when integers are more than
+                                       * a single digit */
+  const static int kELEMENT_ANGLE;    /* Element angle for sprite */
+  const static int kELEMENT_DATA;     /* Element data type for sprite */
   const static int kFILE_CLASSIFIER;  /* The file tile classification text */
   const static int kFILE_SECTION_ID;  /* The section identifier, for file */
   const static int kFILE_TILE_COLUMN; /* The tile depth in XML of column tag */
