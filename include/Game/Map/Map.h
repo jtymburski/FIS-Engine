@@ -95,12 +95,15 @@ private:
  * PROTECTED FUNCTIONS
  *===========================================================================*/
 protected:
-  /* Draw the background override */
-  void drawBackground(QPainter* painter, const QRectF& rect);
+  /* GL initialization call */
+  void initializeGL();
 
   /* Key Press/Release Events */
   void keyPressEvent(QKeyEvent* keyEvent);
   void keyReleaseEvent(QKeyEvent* keyEvent);
+
+  /* GL painting call */
+  void paintGL();
 
 /*============================================================================
  * SIGNALS

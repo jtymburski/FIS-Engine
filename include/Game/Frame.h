@@ -14,6 +14,7 @@
 #define FRAME_H
 
 #include <GL/glu.h>
+#include <QDebug>
 #include <QFile>
 #include <QGLWidget>
 #include <QPixmap>

@@ -29,6 +29,11 @@ const int Map::kVIEWPORT_WIDTH = 11;
 /* Constructor function */
 Map::Map(short resolution_x, short resolution_y)
 {
+  /* Set some initial class flags */
+  setAttribute(Qt::WA_PaintOnScreen);
+  setAttribute(Qt::WA_NoSystemBackground);
+  setAutoBufferSwap(false);
+
   /* Setting the tree indexing method (NoIndex or BspTreeIndex) */
   //setItemIndexMethod(QGraphicsScene::NoIndex);
 
@@ -37,9 +42,9 @@ Map::Map(short resolution_x, short resolution_y)
   player = 0;
  
   /* Setup the OpenGL Widget */
-  QGLFormat gl_format(QGL::SampleBuffers);
-  gl_format.setSwapInterval(1);
-  viewport_widget = new QGLWidget(gl_format);
+  //QGLFormat gl_format(QGL::SampleBuffers);
+  //gl_format.setSwapInterval(1);
+  //viewport_widget = new QGLWidget(gl_format);
 
   /* Setup the viewport */
   //viewport = new MapViewport(this, resolution_x, resolution_y);
@@ -47,8 +52,8 @@ Map::Map(short resolution_x, short resolution_y)
   //viewport->setViewportUpdateMode(QGraphicsView::NoViewportUpdate);
  
   /* Bring the timer in to provide a game tick */
-  connect(&timer, SIGNAL(timeout()), this, SLOT(animate()));
-  timer.start(20);
+  connect(&timer, SIGNAL(timeout()), this, SLOT(update())); // animate() ?
+  timer.start(10);
 }
 
 /* Destructor function */
@@ -141,12 +146,12 @@ bool Map::addTileData(XmlData data)
  * PROTECTED FUNCTIONS
  *===========================================================================*/
 
-/* Background painting function */
-void Map::drawBackground(QPainter* painter, const QRectF& rect)
+void Map::initializeGL()
 {
-  /* Do nothing */
-  (void)painter;
-  (void)rect;
+  for(int i = 0; i < tile_sprites.size(); i++)
+    tile_sprites[i]->initializeGl();
+
+  qDebug() << "GL Initialization.";
 }
 
 void Map::keyPressEvent(QKeyEvent* keyEvent)
@@ -169,6 +174,22 @@ void Map::keyReleaseEvent(QKeyEvent* keyEvent)
   //if(keyEvent->key() == Qt::Key_Down || keyEvent->key() == Qt::Key_Up ||
   //   keyEvent->key() == Qt::Key_Right || keyEvent->key() == Qt::Key_Left)
   //  sendEvent(player, keyEvent);
+}
+
+void Map::paintGL()
+{
+  //qDebug() << "Paint GL call.";
+
+  QPainter painter;
+  painter.begin(this);
+
+  painter.beginNativePainting();
+
+  tile_sprites[0]->paintGl(0, 0, 64, 64, 1);
+
+  painter.endNativePainting();
+  painter.end();
+  swapBuffers();
 }
 
 /*============================================================================
@@ -376,7 +397,7 @@ bool Map::loadMap(QString file)
   }
 
   success &= fh.stop();
-  
+
   /* If the map load failed, unload the map */
   if(!success)
     unloadMap();
