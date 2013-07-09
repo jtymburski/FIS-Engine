@@ -46,10 +46,11 @@ Map::Map(short viewport_width, short viewport_height)
   //QGLFormat gl_format(QGL::SampleBuffers);
   //gl_format.setSwapInterval(1);
   //viewport_widget = new QGLWidget(gl_format);
-  setMinimumSize(2000, 2000);
+  //setMinimumSize(2000, 2000);
+
   /* Setup the viewport */
-  viewport = new MapViewport(viewport_width, viewport_height);
-  viewport->setWidget(this);
+  //viewport = new MapViewport(viewport_width, viewport_height);
+  //viewport->setWidget(this);
   //viewport->setViewport(viewport_widget);
   //viewport->setViewportUpdateMode(QGraphicsView::NoViewportUpdate);
  
@@ -179,8 +180,15 @@ void Map::keyReleaseEvent(QKeyEvent* keyEvent)
   //  sendEvent(player, keyEvent);
 }
 
+/* TODO: seems to work much better than before. The flicker that is still
+ * there is from the video card (I think). The buffers are occassionally
+ * switching before the data is loaded. How to prevent? Maybe disable
+ * vsync and see if the results are better (probably not) */
 void Map::paintGL()
 {
+  /* Start by swapping in the loaded buffers */
+  swapBuffers();
+
   /* Set up the painter */
   QPainter painter;
   painter.begin(this);
@@ -189,15 +197,15 @@ void Map::paintGL()
   painter.beginNativePainting();
 
   /* Paint the lower half of the tile */
-  for(int i = 0; i < kVIEWPORT_WIDTH; i++)
-    for(int j = 0; j < kVIEWPORT_LENGTH; j++)
-      geography[i][j]->paintLower(j*64 + shift_index, i*64, 
+  for(int i = 0; i < kVIEWPORT_WIDTH*1; i++)
+    for(int j = 0; j < kVIEWPORT_LENGTH*1; j++)
+      geography[i][j]->paintLower(j*64 - shift_index, i*64,
                                   kTILE_WIDTH, kTILE_LENGTH, 1);
 
   /* Paint the upper half of the tile */
-  for(int i = 0; i < kVIEWPORT_WIDTH; i++)
-    for(int j = 0; j < kVIEWPORT_LENGTH; j++)
-      geography[i][j]->paintUpper(j*64 + shift_index, i*64, 
+  for(int i = 0; i < kVIEWPORT_WIDTH*1; i++)
+    for(int j = 0; j < kVIEWPORT_LENGTH*1; j++)
+      geography[i][j]->paintUpper(j*64 - shift_index, i*64,
                                   kTILE_WIDTH, kTILE_LENGTH, 1);
 
   /* Wrap up the GL painting */
@@ -218,9 +226,6 @@ void Map::paintGL()
   /* Wrap up the painting call */
   painter.end();
 
-  /* Finish by swapping the buffers */
-  swapBuffers();
-
   /* Testing */
   shift_index++;
 
@@ -232,8 +237,9 @@ void Map::paintGL()
   }
   frames++;
 
-  /* Finish by updating the viewport widget */
-  viewport->viewport()->update();
+  /* Finish by updating the viewport widget - currently implemented with the timer */
+  //update();
+  //viewport->viewport()->update();
 }
 
 /*============================================================================
