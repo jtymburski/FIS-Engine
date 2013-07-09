@@ -27,7 +27,7 @@ const int Map::kVIEWPORT_WIDTH = 11;
  *===========================================================================*/
 
 /* Constructor function */
-Map::Map(short resolution_x, short resolution_y)
+Map::Map(short viewport_width, short viewport_height)
 {
   /* Set some initial class flags */
   setAttribute(Qt::WA_PaintOnScreen);
@@ -46,21 +46,25 @@ Map::Map(short resolution_x, short resolution_y)
   //QGLFormat gl_format(QGL::SampleBuffers);
   //gl_format.setSwapInterval(1);
   //viewport_widget = new QGLWidget(gl_format);
-
+  setMinimumSize(2000, 2000);
   /* Setup the viewport */
-  //viewport = new MapViewport(this, resolution_x, resolution_y);
+  viewport = new MapViewport(viewport_width, viewport_height);
+  viewport->setWidget(this);
   //viewport->setViewport(viewport_widget);
   //viewport->setViewportUpdateMode(QGraphicsView::NoViewportUpdate);
  
   /* Bring the timer in to provide a game tick */
   connect(&timer, SIGNAL(timeout()), this, SLOT(update())); // animate() ?
   timer.start(10);
+
+  /* Testing */
+  shift_index = 0;
 }
 
 /* Destructor function */
 Map::~Map()
 {
-  //unloadMap();
+  unloadMap();
 }
 
 /*============================================================================
@@ -185,14 +189,16 @@ void Map::paintGL()
   painter.beginNativePainting();
 
   /* Paint the lower half of the tile */
-  for(int i = 0; i < 11; i++)
-    for(int j = 0; j < 19; j++)
-      geography[i][j]->paintLower(j*64, i*64, kTILE_WIDTH, kTILE_LENGTH, 1);
+  for(int i = 0; i < kVIEWPORT_WIDTH; i++)
+    for(int j = 0; j < kVIEWPORT_LENGTH; j++)
+      geography[i][j]->paintLower(j*64 + shift_index, i*64, 
+                                  kTILE_WIDTH, kTILE_LENGTH, 1);
 
   /* Paint the upper half of the tile */
-  for(int i = 0; i < 11; i++)
-    for(int j = 0; j < 19; j++)
-      geography[i][j]->paintUpper(j*64, i*64, kTILE_WIDTH, kTILE_LENGTH, 1);
+  for(int i = 0; i < kVIEWPORT_WIDTH; i++)
+    for(int j = 0; j < kVIEWPORT_LENGTH; j++)
+      geography[i][j]->paintUpper(j*64 + shift_index, i*64, 
+                                  kTILE_WIDTH, kTILE_LENGTH, 1);
 
   /* Wrap up the GL painting */
   painter.endNativePainting();
@@ -215,6 +221,9 @@ void Map::paintGL()
   /* Finish by swapping the buffers */
   swapBuffers();
 
+  /* Testing */
+  shift_index++;
+
   /* Check the FPS monitor to see if it needs to be reset */
   if (!(frames % 100)) 
   {
@@ -222,6 +231,9 @@ void Map::paintGL()
     frames = 0;
   }
   frames++;
+
+  /* Finish by updating the viewport widget */
+  viewport->viewport()->update();
 }
 
 /*============================================================================

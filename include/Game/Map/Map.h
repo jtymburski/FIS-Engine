@@ -31,7 +31,7 @@ class Map : public QGLWidget
 
 public:
   /* Constructor function */
-  Map(short resolution_x, short resolution_y);
+  Map(short viewport_width, short viewport_height);
 
   /* Destructor function */
   ~Map();
@@ -76,6 +76,9 @@ private:
   int frames;
   int paint_animation;
   QTime paint_time;
+
+  /* Testing */
+  int shift_index;
 
   /*------------------- Constants -----------------------*/
   const static int kDOUBLE_DIGITS;    /* The point when integers are more than
