@@ -1,7 +1,7 @@
 /******************************************************************************
 * Class Name: Map
 * Date Created: Dec 2 2012
-* Inheritance: QGraphicsScene
+* Inheritance: QGLWidget
 * Description: The map class, this is the top level with regard to an actual
 *              in-game map. This contains all the tiles that a map is composed
 *              of, it also holds pointers to all of the NPC's contained in the
@@ -27,13 +27,14 @@ const int Map::kVIEWPORT_WIDTH = 11;
  *===========================================================================*/
 
 /* Constructor function */
-Map::Map(short viewport_width, short viewport_height)
+Map::Map(const QGLFormat & format, short viewport_width, short viewport_height) : QGLWidget(format)
 {
   /* Set some initial class flags */
-  setAttribute(Qt::WA_PaintOnScreen);
-  setAttribute(Qt::WA_NoSystemBackground);
-  setAutoBufferSwap(false);
-
+  //setAttribute(Qt::WA_PaintOnScreen);
+  //setAttribute(Qt::WA_NoSystemBackground);
+  setAutoBufferSwap(true);
+  setAutoFillBackground(false);
+  
   /* Configure the scene */
   loaded = false;
   player = 0;
@@ -54,12 +55,17 @@ Map::Map(short viewport_width, short viewport_height)
   //viewport->setViewport(viewport_widget);
   //viewport->setViewportUpdateMode(QGraphicsView::NoViewportUpdate);
  
+  /* Check status of OpenGL */
+  //qDebug() << this->format();
+  //qDebug() << format().swapInterval();
+  
   /* Bring the timer in to provide a game tick */
-  connect(&timer, SIGNAL(timeout()), this, SLOT(update())); // animate() ?
+  connect(&timer, SIGNAL(timeout()), this, SLOT(updateGL()));
   timer.start(10);
 
   /* Testing */
   shift_index = 0;
+  gl_image = 0;
 }
 
 /* Destructor function */
@@ -154,8 +160,32 @@ bool Map::addTileData(XmlData data)
 
 void Map::initializeGL()
 {
+  glDisable(GL_TEXTURE_2D);
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_COLOR_MATERIAL);
+  glEnable(GL_BLEND);
+  //glEnable(GL_CULL_FACE); // Performance Add? Only for 3d
+  glEnable(GL_POLYGON_SMOOTH);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glClearColor(0, 0, 0, 0);
+  
+  if(!gl_image)
+  {
+    QImage image("sprites/Map/Tiles/Ground/GrassTile/GrassTile01_AA_A00.png");
+    gl_image = bindTexture(image);
+  }
+  
+  /*
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_CULL_FACE);
+  
+  qglClearColor(QColor(Qt::black));
+  
   for(int i = 0; i < tile_sprites.size(); i++)
     tile_sprites[i]->initializeGl();
+    
+  glViewport(0, 0, 1216, 704);
+  */
 }
 
 void Map::keyPressEvent(QKeyEvent* keyEvent)
@@ -186,51 +216,118 @@ void Map::keyReleaseEvent(QKeyEvent* keyEvent)
  * vsync and see if the results are better (probably not) */
 void Map::paintGL()
 {
+  /* Start a QTimer to determine time elapsed for painting */
+  //QTime time;
+  //time.start();
+  
+  makeCurrent();
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  //glPushMatrix();
+  
+  glEnable(GL_TEXTURE_2D);
+  glEnable(GL_BLEND);
+  glColor4f(1.0, 1.0, 1.0, 1.0);
+  glBindTexture(GL_TEXTURE_2D, gl_image);
+  
+  /* Execute the draw */
+  for(int i = 0; i < kVIEWPORT_WIDTH; i++)
+  {
+    for(int j = 0; j < kVIEWPORT_LENGTH; j++)
+    {
+      glBegin(GL_QUADS);
+    
+      glTexCoord2f(0.0f, 0.0f); 
+      glVertex3f(j*64 - shift_index, i*64 + 64, 0);
+
+      glTexCoord2f(0.0f, 1.0f); 
+      glVertex3f(j*64 - shift_index, i*64, 0);
+
+      glTexCoord2f(1.0f, 1.0f); 
+      glVertex3f(j*64 + 64 - shift_index, i*64, 0);    
+    
+      glTexCoord2f(1.0f, 0); 
+      glVertex3f(j*64 + 64 - shift_index, i*64 + 64, 0);
+    
+      glEnd();
+    }
+  }
+  
+  glDisable(GL_TEXTURE_2D);
+
+  /* TODO: not working. Want remote painting in the new system
+   * Possibly a modification of context and paint */
+  if(geography.size() >= 10 && geography[10].size() >= 10)
+    geography[10][10]->paintLower(10*64 - shift_index, 10*64, kTILE_WIDTH, kTILE_LENGTH, 1);
+  
+  glFlush();
+  //glPopMatrix();
+  glFinish();
+  
+  /* Time elapsed from standard update */
+  //qDebug() << "Time elapsed: " << time.elapsed();
+  
+  if(shift_index > 1200)
+    shift_index = 0;
+  shift_index++;
+
+  /*glBegin(GL_QUADS);  
+    glTexCoord2f(0.0f, 0.0f); 
+    glVertex3f(0, 64, 0);
+    glTexCoord2f(0.0f, 1.0f); 
+    glVertex3f(0, 0, 0);
+    glTexCoord2f(1.0f, 1.0f); 
+    glVertex3f(64, 0, 0);    
+    glTexCoord2f(1.0f, 0); 
+    glVertex3f(64, 64, 0);
+  glEnd();
+  glDisable(GL_TEXTURE_2D);*/
+  
+  //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  
   /* Start by swapping in the loaded buffers */
-  swapBuffers();
+  //swapBuffers();
 
   /* Set up the painter */
-  QPainter painter;
-  painter.begin(this);
+  //QPainter painter(this);
+  //painter.begin(this);
 
   /* Start the GL painting */
-  painter.beginNativePainting();
+  //painter.beginNativePainting();
 
   /* Paint the lower half of the tile */
-  for(int i = 0; i < kVIEWPORT_WIDTH*1; i++)
-    for(int j = 0; j < kVIEWPORT_LENGTH*1; j++)
-      geography[i][j]->paintLower(j*64 - shift_index, i*64,
-                                  kTILE_WIDTH, kTILE_LENGTH, 1);
+  //makeCurrent();
+  //for(int i = 0; i < kVIEWPORT_WIDTH*1; i++)
+  //  for(int j = 0; j < kVIEWPORT_LENGTH*1; j++)
+  //    geography[i][j]->paintLower(j*64 - shift_index, i*64,
+  //                                kTILE_WIDTH, kTILE_LENGTH, 1);
 
   /* Paint the upper half of the tile */
-  for(int i = 0; i < kVIEWPORT_WIDTH*1; i++)
-    for(int j = 0; j < kVIEWPORT_LENGTH*1; j++)
-      geography[i][j]->paintUpper(j*64 - shift_index, i*64,
-                                  kTILE_WIDTH, kTILE_LENGTH, 1);
+  //for(int i = 0; i < kVIEWPORT_WIDTH*1; i++)
+  //  for(int j = 0; j < kVIEWPORT_LENGTH*1; j++)
+  //    geography[i][j]->paintUpper(j*64 - shift_index, i*64,
+  //                                kTILE_WIDTH, kTILE_LENGTH, 1);
 
   /* Wrap up the GL painting */
-  painter.endNativePainting();
+  //painter.endNativePainting();
 
   /* Paint the FPS to the screen */
   if(paint_animation <= 0)
   {
     frames_per_second.setNum(frames /(paint_time.elapsed() / 1000.0), 'f', 2);
+    qDebug() << frames_per_second << " " << isValid();
     paint_animation = 20;
   }
-  painter.setBrush(Qt::black);
-  painter.drawRect(20, 30, 60, 15);
-  painter.setPen(Qt::white);
-  painter.drawText(20, 40, frames_per_second + " fps");
-  paint_animation--;
+  //painter.setBrush(Qt::black);
+  //painter.drawRect(20, 30, 60, 15);
+  //painter.setPen(Qt::white);
+  //painter.drawText(20, 40, frames_per_second + " fps");
+  //paint_animation--;
 
   /* Wrap up the painting call */
-  painter.end();
-
-  /* Testing */
-  shift_index++;
+  //painter.end();
 
   /* Check the FPS monitor to see if it needs to be reset */
-  if (!(frames % 100)) 
+  if (!(frames % 100))
   {
     paint_time.start();
     frames = 0;
@@ -238,8 +335,18 @@ void Map::paintGL()
   frames++;
 
   /* Finish by updating the viewport widget - currently implemented with the timer */
+  //swapBuffers();
   //update();
   //viewport->viewport()->update();
+}
+
+void Map::resizeGL(int width, int height) {
+    glViewport(0, 0, width, height);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(0, width, height, 0); // set origin to bottom left corner
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 }
 
 /*============================================================================
@@ -248,9 +355,18 @@ void Map::paintGL()
 
 void Map::animate()
 {
+  //if(shift_index > 1200)
+  //  shift_index = 0;
+  //shift_index++;
+  
+  //updateGL();
+  
   /* Start a QTimer to determine time elapsed for update */
-  QTime time;
-  time.start();
+  //QTime time;
+  //time.start();
+
+  /* Testing */
+  //shift_index++;
 
   /*if(player != 0)
   {
@@ -292,9 +408,9 @@ void Map::animate()
 
     player->updateThing(movable);
     viewport->updateView();
-  }
+  }*/
 
-  viewport->viewport()->update();*/
+  //update();
 
   /* Time elapsed from standard update */
   //qDebug() << time.elapsed();

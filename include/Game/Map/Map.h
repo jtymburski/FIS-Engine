@@ -1,7 +1,7 @@
 /******************************************************************************
 * Class Name: Map
 * Date Created: Oct 28 2012
-* Inheritance: QGraphicsScene
+* Inheritance: QGLWidget
 * Description: The map class, this is the top level with regard to an actual
 *              in-game map. This contains all the tiles that a map is composed
 *              of, it also holds pointers to all of the NPC's contained in the
@@ -31,7 +31,7 @@ class Map : public QGLWidget
 
 public:
   /* Constructor function */
-  Map(short viewport_width, short viewport_height);
+  Map(const QGLFormat & format, short viewport_width, short viewport_height);
 
   /* Destructor function */
   ~Map();
@@ -62,7 +62,7 @@ private:
 
   /* The timer for handling the tick (temporary?) */
   QTimer timer;
-
+  
   /* The viewoport for the map, controlled by QGraphicsView */
   MapViewport* viewport;
   QGLWidget* viewport_widget;
@@ -78,6 +78,7 @@ private:
   QTime paint_time;
 
   /* Testing */
+  GLuint gl_image;
   int shift_index;
 
   /*------------------- Constants -----------------------*/
@@ -113,6 +114,9 @@ protected:
 
   /* GL painting call */
   void paintGL();
+  
+  /* GL resize call */
+  void resizeGL(int width, int height);
 
 /*============================================================================
  * SIGNALS

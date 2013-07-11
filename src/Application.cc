@@ -32,7 +32,12 @@ Application::Application(QWidget* parent)
   setupBattle();
   //test_battle->show();
   
-  test_map = new Map(kRESOLUTION_X, kRESOLUTION_Y);
+  /* Sets up the map format and map with vsync and double buffering forced on */
+  /* TODO: add checking if OpenGL is not enabled */
+  QGLFormat gl_format(QGL::SampleBuffers);
+  gl_format.setDoubleBuffer(true);
+  gl_format.setSwapInterval(1);
+  test_map = new Map(gl_format, kRESOLUTION_X, kRESOLUTION_Y);
   //test_map->loadMap("maps/test_03");
   //test_map->getViewport()->show();
   
