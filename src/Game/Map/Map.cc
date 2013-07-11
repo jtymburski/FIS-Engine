@@ -321,7 +321,7 @@ void Map::paintGL()
   //painter.drawRect(20, 30, 60, 15);
   //painter.setPen(Qt::white);
   //painter.drawText(20, 40, frames_per_second + " fps");
-  //paint_animation--;
+  paint_animation--;
 
   /* Wrap up the painting call */
   //painter.end();

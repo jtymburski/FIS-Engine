@@ -36,7 +36,11 @@ Application::Application(QWidget* parent)
   /* TODO: add checking if OpenGL is not enabled */
   QGLFormat gl_format(QGL::SampleBuffers);
   gl_format.setDoubleBuffer(true);
+#ifdef WIN32
   gl_format.setSwapInterval(1);
+#else
+  gl_format.setSwapInterval(0);
+#endif
   test_map = new Map(gl_format, kRESOLUTION_X, kRESOLUTION_Y);
   //test_map->loadMap("maps/test_03");
   //test_map->getViewport()->show();
