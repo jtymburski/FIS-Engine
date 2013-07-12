@@ -60,9 +60,13 @@ private:
   /* The sectors on the map (for rooms, caves, houses etc) */
   QVector <Sector> sectors;
 
+  /* The time that has elapsed for each draw cycle */
+  short time_buffer;
+  QTime time_elapsed;
+
   /* The timer for handling the tick (temporary?) */
   QTimer timer;
-  
+
   /* The viewoport for the map, controlled by QGraphicsView */
   MapViewport* viewport;
   QGLWidget* viewport_widget;
@@ -91,6 +95,7 @@ private:
   const static int kFILE_SECTION_ID;  /* The section identifier, for file */
   const static int kFILE_TILE_COLUMN; /* The tile depth in XML of column tag */
   const static int kFILE_TILE_ROW;    /* The tile depth in XML of row tag */
+  const static int kTICK_DELAY;       /* Tick timer delay constant */
   const static int kTILE_HEIGHT;      /* The tile height, as constant (TEMP) */
   const static int kTILE_WIDTH;       /* The tile width, as constant (TEMP) */
   const static int kVIEWPORT_HEIGHT;  /* The viewport height, in tiles */
@@ -178,6 +183,10 @@ public:
 
   /* Causes the thing you are moving into to start its interactive action */
   void passOver();
+
+  /* The tick handling methods for starting and stopping the map */
+  void tickStart();
+  void tickStop();
 
   /* Unload the map, if there is one loaded */
   void unloadMap();

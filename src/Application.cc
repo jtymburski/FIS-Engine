@@ -111,10 +111,17 @@ void Application::switchWidget(int index)
 {
   if(!test_map->isLoaded() && index == 1)
     test_map->loadMap("maps/test_04");
+  
+  /* Map timer stop */
+  if(index != 1)
+    test_map->tickStop();
 
+  /* Sets the current displayed index */
   setCurrentIndex(index);
 
-  if(index == 2)
+  if(index == 1)
+    test_map->tickStart();
+  else if(index == 2)
     title_screen->playBackground();
 }
 

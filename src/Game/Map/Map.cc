@@ -17,6 +17,7 @@ const int Map::kFILE_CLASSIFIER = 3;
 const int Map::kFILE_SECTION_ID = 2;
 const int Map::kFILE_TILE_COLUMN = 5;
 const int Map::kFILE_TILE_ROW = 4;
+const int Map::kTICK_DELAY = 10;
 const int Map::kTILE_HEIGHT = 64;
 const int Map::kTILE_WIDTH = 64;
 const int Map::kVIEWPORT_HEIGHT = 11;
@@ -62,6 +63,10 @@ Map::Map(const QGLFormat & format, short viewport_width, short viewport_height) 
   /* Bring the timer in to provide a game tick */
   connect(&timer, SIGNAL(timeout()), this, SLOT(updateGL()));
   timer.start(10);
+
+  /* The time elapsed draw time */
+  time_buffer = 0;
+  time_elapsed.start();
 
   /* Testing */
   shift_index = 0;
@@ -256,20 +261,6 @@ void Map::paintGL()
   //glPopMatrix();
   glFinish();
   
-  /* Update the shifting for movement */
-  //if(shift_index > 1200)
-  //  shift_index = 0;
-  if(shift_forward)
-  {
-    if(shift_index < (geography.size() - kVIEWPORT_WIDTH)*64)
-      shift_index++;
-  }
-  else
-  {
-    if(shift_index > 0)
-      shift_index--;
-  }
-
   /* Paint the FPS to the screen */
   if(paint_animation <= 0)
   {
@@ -287,8 +278,9 @@ void Map::paintGL()
   }
   frames++;
   
-  /* Time elapsed from standard update */
-  //qDebug() << "Time elapsed: " << time.elapsed();
+  /* Time elapsed from standard update and then animate the screen */
+  time_buffer += time_elapsed.restart();
+  animate();
   
   /* Finish by updating the viewport widget - currently in auto */
   //swapBuffers();
@@ -311,18 +303,35 @@ void Map::resizeGL(int width, int height)
 
 void Map::animate()
 {
+  short time_constant = 11;
+
+  /* Update the shifting for movement */
   //if(shift_index > 1200)
   //  shift_index = 0;
-  //shift_index++;
-  
-  //updateGL();
-  
-  /* Start a QTimer to determine time elapsed for update */
-  //QTime time;
-  //time.start();
-
-  /* Testing */
-  //shift_index++;
+  if(shift_forward)
+  {
+    if(shift_index < (geography.size() - kVIEWPORT_WIDTH)*kTILE_WIDTH)
+    {
+      shift_index += (time_buffer / time_constant);
+      time_buffer -= (time_buffer / time_constant) * time_constant;
+    }
+    else
+    {
+      time_buffer = 0;
+    }
+  }
+  else
+  {
+    if(shift_index > 0)
+    {
+      shift_index -= (time_buffer / time_constant);
+      time_buffer -= (time_buffer / time_constant) * time_constant;
+    }
+    else
+    {
+      time_buffer = 0;
+    }
+  }
 
   /*if(player != 0)
   {
@@ -365,11 +374,6 @@ void Map::animate()
     player->updateThing(movable);
     viewport->updateView();
   }*/
-
-  //update();
-
-  /* Time elapsed from standard update */
-  //qDebug() << time.elapsed();
 }
 
 void Map::animateTiles()
@@ -556,6 +560,21 @@ bool Map::passible(EnumDb::Direction dir, int x, int y)
 /* Causes the thing you are moving into to start its interactive action */
 void Map::passOver()
 {
+}
+
+/* Starts the internal class animation tick */
+void Map::tickStart()
+{
+  timer.start(kTICK_DELAY);
+
+  time_buffer = 0;
+  time_elapsed.restart();
+}
+
+/* Stops the internal class animation tick */
+void Map::tickStop()
+{
+  timer.stop();
 }
 
 void Map::unloadMap()
