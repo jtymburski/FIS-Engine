@@ -80,6 +80,7 @@ private:
   /* Testing */
   GLuint gl_image;
   int shift_index;
+  bool shift_forward;
 
   /*------------------- Constants -----------------------*/
   const static int kDOUBLE_DIGITS;    /* The point when integers are more than
@@ -90,9 +91,9 @@ private:
   const static int kFILE_SECTION_ID;  /* The section identifier, for file */
   const static int kFILE_TILE_COLUMN; /* The tile depth in XML of column tag */
   const static int kFILE_TILE_ROW;    /* The tile depth in XML of row tag */
-  const static int kTILE_LENGTH;      /* The tile length, as constant (TEMP) */
+  const static int kTILE_HEIGHT;      /* The tile height, as constant (TEMP) */
   const static int kTILE_WIDTH;       /* The tile width, as constant (TEMP) */
-  const static int kVIEWPORT_LENGTH;  /* The viewport length, in tiles */
+  const static int kVIEWPORT_HEIGHT;  /* The viewport height, in tiles */
   const static int kVIEWPORT_WIDTH;   /* The viewport width, in tiles */
 
 /*============================================================================

@@ -17,10 +17,10 @@ const int Map::kFILE_CLASSIFIER = 3;
 const int Map::kFILE_SECTION_ID = 2;
 const int Map::kFILE_TILE_COLUMN = 5;
 const int Map::kFILE_TILE_ROW = 4;
-const int Map::kTILE_LENGTH = 64;
+const int Map::kTILE_HEIGHT = 64;
 const int Map::kTILE_WIDTH = 64;
-const int Map::kVIEWPORT_LENGTH = 19;
-const int Map::kVIEWPORT_WIDTH = 11;
+const int Map::kVIEWPORT_HEIGHT = 11;
+const int Map::kVIEWPORT_WIDTH = 19;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -65,6 +65,7 @@ Map::Map(const QGLFormat & format, short viewport_width, short viewport_height) 
 
   /* Testing */
   shift_index = 0;
+  shift_forward = true;
   gl_image = 0;
 }
 
@@ -168,24 +169,6 @@ void Map::initializeGL()
   glEnable(GL_POLYGON_SMOOTH);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glClearColor(0, 0, 0, 0);
-  
-  if(!gl_image)
-  {
-    QImage image("sprites/Map/Tiles/Ground/GrassTile/GrassTile01_AA_A00.png");
-    gl_image = bindTexture(image);
-  }
-  
-  /*
-  glEnable(GL_DEPTH_TEST);
-  glEnable(GL_CULL_FACE);
-  
-  qglClearColor(QColor(Qt::black));
-  
-  for(int i = 0; i < tile_sprites.size(); i++)
-    tile_sprites[i]->initializeGl();
-    
-  glViewport(0, 0, 1216, 704);
-  */
 }
 
 void Map::keyPressEvent(QKeyEvent* keyEvent)
@@ -197,6 +180,10 @@ void Map::keyPressEvent(QKeyEvent* keyEvent)
     closeMap();
   else if(keyEvent->key() == Qt::Key_A)
     animateTiles();
+  else if(keyEvent->key() == Qt::Key_R)
+    shift_index = 0;
+  else if(keyEvent->key() == Qt::Key_F)
+    shift_forward = !shift_forward;
   //else if(keyEvent->key() == Qt::Key_1)
   //  viewport->lockOn(player);
   //else if(keyEvent->key() == Qt::Key_2)
@@ -219,112 +206,78 @@ void Map::paintGL()
   /* Start a QTimer to determine time elapsed for painting */
   //QTime time;
   //time.start();
-  
+ 
+  /* Start by setting the context and clearing the screen buffers */
   makeCurrent();
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   //glPushMatrix();
   
-  glEnable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
-  glColor4f(1.0, 1.0, 1.0, 1.0);
-  glBindTexture(GL_TEXTURE_2D, gl_image);
-  
-  /* Execute the draw */
-  for(int i = 0; i < kVIEWPORT_WIDTH; i++)
+  /* Execute the draw, if loaded */
+  if(loaded)
   {
-    for(int j = 0; j < kVIEWPORT_LENGTH; j++)
-    {
-      glBegin(GL_QUADS);
-    
-      glTexCoord2f(0.0f, 0.0f); 
-      glVertex3f(j*64 - shift_index, i*64 + 64, 0);
+    int start_x = shift_index / 64 - 1;
+    if(start_x < 0)
+      start_x = 0;
+    int end_x = shift_index / 64 + kVIEWPORT_WIDTH + 1;
+    if(end_x > geography.size())
+      end_x = geography.size();
 
-      glTexCoord2f(0.0f, 1.0f); 
-      glVertex3f(j*64 - shift_index, i*64, 0);
+    /* Paint the lower half */
+    for(int i = start_x; i < end_x; i++)
+      for(int j = 0; j < kVIEWPORT_HEIGHT; j++)
+        geography[i][j]->paintLower(i*kTILE_WIDTH - shift_index, 
+                                    j*kTILE_HEIGHT, kTILE_WIDTH, 
+                                    kTILE_HEIGHT, 1);
 
-      glTexCoord2f(1.0f, 1.0f); 
-      glVertex3f(j*64 + 64 - shift_index, i*64, 0);    
-    
-      glTexCoord2f(1.0f, 0); 
-      glVertex3f(j*64 + 64 - shift_index, i*64 + 64, 0);
-    
-      glEnd();
-    }
+    /* Paint the upper half */
+    for(int i = start_x; i < end_x; i++)
+      for(int j = 0; j < kVIEWPORT_HEIGHT; j++)
+        geography[i][j]->paintUpper(i*kTILE_WIDTH - shift_index,
+                                    j*kTILE_HEIGHT, kTILE_WIDTH,
+                                    kTILE_HEIGHT, 1);
   }
-  
-  glDisable(GL_TEXTURE_2D);
 
-  /* TODO: not working. Want remote painting in the new system
-   * Possibly a modification of context and paint */
-  if(geography.size() >= 10 && geography[10].size() >= 10)
-    geography[10][10]->paintLower(10*64 - shift_index, 10*64, kTILE_WIDTH, kTILE_LENGTH, 1);
-  
+  /* Paint the frame rate */
+  glColor4f(0.0, 0.0, 0.0, 0.5);
+  glBegin(GL_QUADS);
+    glVertex3f(7, 40, 0);
+    glVertex3f(7, 10, 0);
+    glVertex3f(64, 10, 0);
+    glVertex3f(64, 40, 0);
+  glEnd();
+  glColor4f(1.0, 1.0, 1.0, 1.0);
+  renderText(20, 30, frames_per_second);
+  renderText(450, 24, "Press 'r' to reset the painting back to the origin");
+  renderText(490, 48, "Press 'a' to animate the grass tile");
+  renderText(480, 72, "Press 'f' to flip the movement direction");
+
+  /* Clean up the drawing procedure */
   glFlush();
   //glPopMatrix();
   glFinish();
   
-  /* Time elapsed from standard update */
-  //qDebug() << "Time elapsed: " << time.elapsed();
-  
-  if(shift_index > 1200)
-    shift_index = 0;
-  shift_index++;
-
-  /*glBegin(GL_QUADS);  
-    glTexCoord2f(0.0f, 0.0f); 
-    glVertex3f(0, 64, 0);
-    glTexCoord2f(0.0f, 1.0f); 
-    glVertex3f(0, 0, 0);
-    glTexCoord2f(1.0f, 1.0f); 
-    glVertex3f(64, 0, 0);    
-    glTexCoord2f(1.0f, 0); 
-    glVertex3f(64, 64, 0);
-  glEnd();
-  glDisable(GL_TEXTURE_2D);*/
-  
-  //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  
-  /* Start by swapping in the loaded buffers */
-  //swapBuffers();
-
-  /* Set up the painter */
-  //QPainter painter(this);
-  //painter.begin(this);
-
-  /* Start the GL painting */
-  //painter.beginNativePainting();
-
-  /* Paint the lower half of the tile */
-  //makeCurrent();
-  //for(int i = 0; i < kVIEWPORT_WIDTH*1; i++)
-  //  for(int j = 0; j < kVIEWPORT_LENGTH*1; j++)
-  //    geography[i][j]->paintLower(j*64 - shift_index, i*64,
-  //                                kTILE_WIDTH, kTILE_LENGTH, 1);
-
-  /* Paint the upper half of the tile */
-  //for(int i = 0; i < kVIEWPORT_WIDTH*1; i++)
-  //  for(int j = 0; j < kVIEWPORT_LENGTH*1; j++)
-  //    geography[i][j]->paintUpper(j*64 - shift_index, i*64,
-  //                                kTILE_WIDTH, kTILE_LENGTH, 1);
-
-  /* Wrap up the GL painting */
-  //painter.endNativePainting();
+  /* Update the shifting for movement */
+  //if(shift_index > 1200)
+  //  shift_index = 0;
+  if(shift_forward)
+  {
+    if(shift_index < (geography.size() - kVIEWPORT_WIDTH)*64)
+      shift_index++;
+  }
+  else
+  {
+    if(shift_index > 0)
+      shift_index--;
+  }
 
   /* Paint the FPS to the screen */
   if(paint_animation <= 0)
   {
     frames_per_second.setNum(frames /(paint_time.elapsed() / 1000.0), 'f', 2);
-    qDebug() << frames_per_second << " " << isValid();
+    //qDebug() << frames_per_second << " " << isValid();
     paint_animation = 20;
   }
-  //painter.setBrush(Qt::black);
-  //painter.drawRect(20, 30, 60, 15);
-  //painter.setPen(Qt::white);
-  //painter.drawText(20, 40, frames_per_second + " fps");
   paint_animation--;
-
-  /* Wrap up the painting call */
-  //painter.end();
 
   /* Check the FPS monitor to see if it needs to be reset */
   if (!(frames % 100))
@@ -333,20 +286,23 @@ void Map::paintGL()
     frames = 0;
   }
   frames++;
-
-  /* Finish by updating the viewport widget - currently implemented with the timer */
+  
+  /* Time elapsed from standard update */
+  //qDebug() << "Time elapsed: " << time.elapsed();
+  
+  /* Finish by updating the viewport widget - currently in auto */
   //swapBuffers();
   //update();
-  //viewport->viewport()->update();
 }
 
-void Map::resizeGL(int width, int height) {
-    glViewport(0, 0, width, height);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluOrtho2D(0, width, height, 0); // set origin to bottom left corner
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
+void Map::resizeGL(int width, int height) 
+{
+  glViewport(0, 0, width, height);
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  gluOrtho2D(0, width, height, 0); // set origin to bottom left corner
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
 }
 
 /*============================================================================
@@ -501,25 +457,24 @@ bool Map::loadMap(QString file)
   if(success)
   {
     /* Calculate dimensions and set up the map */
-    int length = fh.readXmlData().getDataInteger();
-    int width = fh.readXmlData().getDataInteger();
+    int width = fh.readXmlData().getDataInteger(); // TODO: fix to ensure that
+    int height = fh.readXmlData().getDataInteger();// it's actually this data
     for(int i = 0; i < width; i++)
     {
-      QVector<Tile*> row;
+      QVector<Tile*> col;
 
-      for(int j = 0; j < length; j++)
+      for(int j = 0; j < height; j++)
       {
         /* Create the tile */
-        Tile* t = new Tile(kTILE_LENGTH, kTILE_WIDTH, 
-                           j*kTILE_LENGTH, i*kTILE_WIDTH);
+        Tile* t = new Tile(kTILE_WIDTH, kTILE_HEIGHT, 
+                           i*kTILE_WIDTH, j*kTILE_HEIGHT);
         //t->setStatus(Tile::OFF);
-        //t->insertIntoScene(this);
 
         /* Add the new tile to the list */
-        row.append(t);
+        col.append(t);
       }
 
-      geography.append(row);
+      geography.append(col);
     }
   
     /* Run through the map components and add them to the map */
@@ -566,7 +521,15 @@ bool Map::loadMap(QString file)
 
   /* If the map load failed, unload the map */
   if(!success)
+  {
     unloadMap();
+  }
+  else
+  {
+    for(int i = 0; i < geography.size(); i++)
+      for(int j = 0; j < geography[i].size(); j++)
+        geography[i][j]->initializeGl();
+  }
   loaded = success;
 
   return success;

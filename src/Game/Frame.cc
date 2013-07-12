@@ -189,12 +189,12 @@ bool Frame::paintGl(int x, int y, int width, int height, float opacity)
   {
     /* Set up the initial flags */
     glEnable(GL_TEXTURE_2D);
-    glEnable(GL_BLEND);
+    //glEnable(GL_BLEND);
     if(opacity == 1.0)
       glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
     else
       glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glColor4f(1.0, 1.0, 1.0, opacity);
     glBindTexture(GL_TEXTURE_2D, gl_image);
   
