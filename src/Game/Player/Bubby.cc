@@ -14,7 +14,7 @@
 QVector<uint> Bubby::exp_table;
 
 /*=============================================================================
- * CONSTRUCTORS / DESTRUCTORS
+ * CONSTRUCTORS / DESTRUCTORS [PRIVATE CONSTRUCTOR]
  *============================================================================*/
 
 /*
@@ -22,25 +22,20 @@ QVector<uint> Bubby::exp_table;
  *
  * Inputs: BubbyFlavour* - pointer to the type of the Bubby
  */
-Bubby::Bubby(BubbyFlavour* type) : Item(type->getName())
+Bubby::Bubby(BubbyFlavour* type)
+    : Item(type->getName(), 0, 0, type->getMass()),
+    level(0),
+    current_sprite(0)
 {
+  setTier(0);
+  setExperience(0);
+
   /* Build the experience table the first time a Bubby is created */
   if (exp_table.isEmpty())
     calcExpTable();
 
-  /* Basic initialization */
-  setName(type->getName());
-  setType(type);
-
   if (!type->getSprites().isEmpty())
     setThumb(type->getSprites().at(0));
-
-  setValue(0); // TODO: Bubby values;
-  setMass(mass);
-  setLevel(0);
-  setTier(0);
-  setExperience(0);
-  setSprite();
 }
 
 /*
@@ -239,15 +234,4 @@ void Bubby::setLevel(ushort new_level)
 void Bubby::setTier(ushort new_tier)
 {
   tier = new_tier;
-}
-
-/*
- * Description: Sets the type (flavour) of the Bubby
- *
- * Inputs: BubbyFlavour* - pointer to the new flavour of the Bubby
- * Output: none
- */
-void Bubby::setType(BubbyFlavour* new_type)
-{
-  type = new_type;
 }

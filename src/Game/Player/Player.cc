@@ -25,14 +25,11 @@ const uint Player::kMAX_CREDITS = 1000000000;
  *         x, y - initial position of player on map
  */
 Player::Player(Party* p_sleuth, Party* p_racks, int x, int y)
-{
-    /* Set the sleuth and bearacks parties. */
-    setSleuth(p_sleuth);
-    setBearacks(p_racks);
-
-    setXPos(x);
-    setYPos(y);
-}
+  : sleuth(p_sleuth),
+    bearacks(p_racks),
+    x_pos(x),
+    y_pos(y)
+{}
 
 /*
  * Description: Annihilates a player object
@@ -51,7 +48,8 @@ Player::~Player() {}
  */
 void Player::calcCarryWeight()
 {
-
+  double mass = sleuth->getInventory()->getMass();
+  carry_weight = gravity * mass;
 }
 
 /*============================================================================

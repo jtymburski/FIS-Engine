@@ -78,11 +78,12 @@ const double Ailment::kMETABOLIC_DMG       = 0.25;
  *         double ch  - % value the ailment will be cured per turn, >= 1 = 100%
  *         QWidget* parent - parent the Ailment was created from
  */
-Ailment::Ailment(Person* victim, EnumDb::Infliction type, short max_turns,
-                 double chance, QWidget* parent) : QWidget(parent)
+Ailment::Ailment(Person* vic, EnumDb::Infliction type, short max_turns,
+                 double chance, QWidget* parent) 
+  : QWidget(parent)
 {
-  setVictim(victim);
-  setType(type);
+    setVictim(vic);
+    setType(type);
 
   /* NOAILMENT cannot have a turn length or a chance */
   if (type == EnumDb::NOAILMENT)
@@ -98,6 +99,7 @@ Ailment::Ailment(Person* victim, EnumDb::Infliction type, short max_turns,
     setDuration(max_turns, chance);
 
   setFlag(Ailment::TOBEUPDATED, true);
+  emit inflicting(victim->getName(), this->getType());
 
 }
 
@@ -114,12 +116,12 @@ Ailment::Ailment(Person* victim, EnumDb::Infliction type, short max_turns,
  *         double ch  - % value the ailment will be cured per turn, >= 1 = 100%
  *         QWidget* parent - parent the ailment was created from
  */
-Ailment::Ailment(Person* victim, QString name, short max_turns,
-                 double chance, QWidget* parent) : QWidget(parent)
+Ailment::Ailment(Person* vic, QString name, short max_turns,
+                 double chance, QWidget* parent)
+  : QWidget(parent)
 {
-  setVictim(victim);
-  /* Grabs the Enumeration of the given QString, then sets the type */
-  setType(getInfliction(name));
+   setVictim(vic);
+   setType(getInfliction(name));
 
   /* NOAILMENT cannot have a turn length or a chance */
   if (getType() == EnumDb::NOAILMENT)
@@ -143,9 +145,10 @@ Ailment::Ailment(Person* victim, QString name, short max_turns,
  * Inputs: Person* victim - pointer to the Victim (owner) of the Ailment
  *         QWidget* parent - parent the Ailment was created from
  */
-Ailment::Ailment(Person* victim, QWidget* parent) : QWidget(parent)
+Ailment::Ailment(Person* vic, QWidget* parent)
+  : QWidget(parent)
 {
-  setVictim(victim);
+  setVictim(vic);
   setType(EnumDb::NOAILMENT);
   setFlag(Ailment::TOBEUPDATED, false);
   setDuration(-1,-1);

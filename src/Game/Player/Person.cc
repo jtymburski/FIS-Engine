@@ -43,18 +43,17 @@ QVector<uint> Person::exp_table;
  * Output: none
  */
 Person::Person(QString name, Race *race, Category* cat, QString p, QString s)
+  : name(name),
+    race(race),
+    cat(cat),
+    skills(0),
+    first_person(0),
+    third_person(0),
+    damage_modifier(0),
+    total_exp(0),
+    level(1)
 {
-  /* Pointer setup */
-  setRace(race);
-  setCategory(cat);
-  skills = 0;
-  setFirstPerson();
-  setThirdPerson();
-
-  setDmgMod(0);
-  setExp(0);
-  setLevel(1);
-  setName(name);
+  /* Setup the primary and secondary curves */
   setPrimary(p);
   setSecondary(s);
 

@@ -47,7 +47,7 @@ public:
    * Description: Describes the current state of the inventory (how it is
    *              currently sorted)
    */
-  enum ItemSorts {NONE, ID, NAME, FLAVOUR, LEVEL, EQUIPPABLE, VALUE, MASS,
+  enum ItemSorts {NONE, ID, NAME, FLAVOUR, LEVEL, VALUE, MASS,
                   VALUEPERMASS};
 
   /*
@@ -70,6 +70,11 @@ public:
    *              currently known to be sortd)
    */
   enum SkillSorts {NONE_SKILL, NAME_SKILL, LEVEL_SKILL};
+
+  /*
+   * Description: Enumerates all the containers which can be sorted
+   */
+  enum SortObjects {BUBBY_VECTOR, EQUIPMENT_VECTOR, ITEM_VECTOR, KEY_ITEM_VECTOR};
 };
 
 /* Registration of Infliction Enumerator */

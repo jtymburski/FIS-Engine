@@ -9,11 +9,9 @@
 #define BUBBY_H
 
 #include <QtGui/QWidget>
-
 #include "Game/Player/BubbyFlavour.h"
 #include "Game/Player/SkillSet.h"
 #include "Game/Player/Item.h"
-
 
 class Bubby : public Item
 {
@@ -46,6 +44,7 @@ private:
   /* The Bubby's current tier */
   ushort tier;
 
+  /* Current sprite of the Bubby */
   Sprite* current_sprite;
 
   /* ------------ Constants --------------- */
@@ -107,9 +106,6 @@ public:
 
   /* Sets the tier of the bubby based on leveling */
   void setTier(ushort new_tier);
-
-  /* Sets the type of the Bubby */
-  void setType(BubbyFlavour* new_type);
 };
 
 #endif // BUBBY_H

@@ -9,28 +9,41 @@
 #define BUBBYFLAVOUR_H
 
 #include <QtGui/QWidget>
-
 #include "Game/Player/AttributeSet.h"
 #include "Game/Player/SkillSet.h"
 
 class BubbyFlavour
 {
-public:
   /* Constructs a BubbyFlavour object */
-  BubbyFlavour(QString name, AttributeSet stats, SkillSet* skills = 0);
+  BubbyFlavour(BubbyFlavour* parent, QString flavour_name, 
+               AttributeSet* stat_set = 0, SkillSet* skills = 0);
 
+public:
   /* Annihilates a BubbyFlavour object */
  ~BubbyFlavour();
 
+enum FlavourState
+{
+  CREATED_WITH_PARENT = 1 << 0
+};
+Q_DECLARE_FLAGS(FlavourFlags, FlavourState)
+
 private:
-  /* Stat set for the Bubby (bonuses) */
-  AttributeSet stats;
+  /* Stat set for the Bubby */
+  AttributeSet* stats;
+
+  /* Pointer to object's parent */
+  BubbyFlavour* parent;
+
+  /* Flavour flags object */
+  FlavourFlags flag_set;
+
+  /* Mass of a Bubby of this particular flavour */
+  double mass;
 
   /* Name and description of the BubbyFlavour */
   QString name;
   QString description;
-
-  /* The list of bubby flavours */
 
   /* The list of actions offered by the bubby */
   SkillSet* skill_list;
@@ -57,18 +70,29 @@ private:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+
+  /* Bubby factory */
+  // Bubby* createBubby();
+
   /* Methods for printing the state of the Class */
   void printInfo();
+
+  /* FlavourFlag flag functions */
+  bool getFlavourFlag(FlavourState flags);
+  void setFlavourFlag(FlavourState flags, bool set_value = true);
 
   /* Gets the set of attributes for the Bubby */
   AttributeSet* getAttr();
 
-  /* Returns the list of instantiated flavours */
-  static QVector<QString> getFlavourList();
+  /* Returns the mass of a Bubby of this particular flavour */
+  double getMass();
 
   /* Gets the name and description */
   QString getName();
   QString getDescription();
+
+  /* Returns the parent of the object */
+  BubbyFlavour* getParent();
 
   /* Gets the list of bubby actions (Used for total action lists in battle)*/
   SkillSet* getSkillSet();
@@ -77,11 +101,17 @@ public:
   QVector<Sprite*> getSprites();
 
   /* Sets the AttributeSet for the Bubby */
-  void setAttr(AttributeSet new_stats);
+  void setAttr(AttributeSet* new_stats);
+
+  /* Assigns a new mass to the Bubby flavour */
+  void setMass(double new_mass);
 
   /* Set the name and description of the BubbyFlavour */
   void setName(QString new_name);
   void setDescription(QString new_description);
+
+  /* Sets the parent of the Bubby flavour object */
+  bool setParent(BubbyFlavour* new_parent);
 
   /* Sets the new SkillSet */
   void setSkillSet(SkillSet* new_skill_list);
@@ -96,11 +126,15 @@ public:
   /* Returns true if a given flavour of Bubby already exists */
   static int isFlavour(QString flavour_name);
 
+  /* Returns the list of instantiated flavours */
+  static QVector<QString> getFlavourList();
+
   /* Gets the number of tiers for Bubby's */
   static ushort getNumTier();
 
   /* Returns the maximum level of skills a certain Bubby tier unlocks */
   static ushort getMaxSkillLevel(ushort tier_level);
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(BubbyFlavour::FlavourFlags)
 
 #endif //BUBBYFLAVOUR_H

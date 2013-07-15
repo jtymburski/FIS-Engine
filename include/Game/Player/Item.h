@@ -115,6 +115,7 @@ public:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+
   /* Returns the set of actions the item can perform */
   SkillSet* getActionSet();
 

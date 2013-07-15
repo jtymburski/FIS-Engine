@@ -43,16 +43,14 @@ const uint Inventory::kMAX_EQUIPMENT        = 100000;      /* 10 ^ 5 */
  *         Sprite* thumb - the thumbnail detailing an image of the inventory.
  */
 Inventory::Inventory(QString name, Sprite *thumb, QWidget *parent)
-    : QWidget(parent)
+    : QWidget(parent),
+      name(name),
+      thumbnail(thumb),
+      bubby_state(EnumDb::NONE),
+      equipment_state(EnumDb::NONE),
+      item_state(EnumDb::NONE),
+      key_item_state(EnumDb::NONE)
 {
-  setName(name);
-  setThumb(thumb);
-
-  setBubbyState(EnumDb::NONE);
-  setEquipState(EnumDb::NONE);
-  setItemState(EnumDb::NONE);
-  setKeyItemState(EnumDb::NONE);
-
   bubbies.resize(0);
   equipments.resize(0);
   items.resize(0);
@@ -491,53 +489,187 @@ void Inventory::printKeyItems()
 }
 
 /*
- * Description:
+ * Description: This function will sort one of the inventory containers
+ *              described by the input enumerated object_type first by
+ *              the enumerated primary value then by the enumerated secondary
+ *              value using std::stable_sort.
  *
- * Inputs: none
- * Output: none
+ * Inputs: ItemSorts sort_prim - the first method by which to sort
+ *         ItemSorts sort_secd - the secondary method by which to sort
+ *         SortObjects object_type - the type of object (container) to be sorted
+ * Output: bool - true if a sort actually took place
  */
-bool Inventory::sortBubbies(EnumDb::ItemSorts sort_by)
+bool Inventory::sort(EnumDb::ItemSorts sort_prim,
+                     EnumDb::SortObjects object_type)
 {
-// TODO: UNFINISHED
+  /* The sorting is done if a bad ItemSorts enumerator was given */
+  if (sort_prim == EnumDb::NONE)
     return false;
+
+  /* Check for certain containers not able to sort certain ways */
+  switch (object_type)
+  {
+    case (EnumDb::BUBBY_VECTOR) :
+      /* Bubbies cannot be sorted by value */
+      if (sort_prim == EnumDb::VALUE)
+        return false;
+      break;
+
+    case (EnumDb::EQUIPMENT_VECTOR) :
+    case (EnumDb::ITEM_VECTOR) :
+    case (EnumDb::KEY_ITEM_VECTOR) :
+      /* Equipments cannot be sorted by flavour or level */
+      if (sort_prim == EnumDb::FLAVOUR || sort_prim == EnumDb::LEVEL)
+        return false;
+      break;
+
+    default:
+      return false;
+  }
+
+  sorter(sort_prim, object_type);
+  return false;
 }
 
 /*
- * Description:
+ * Description: This private sorter function takes a type of an object and will
+ *              sort it by the desired item sorts typ using std::stable_sort
  *
- * Inputs: none
- * Output: none
- */
-bool Inventory::sortEquipments(EnumDb::ItemSorts sort_by)
-{
-    //TODO: UNFINISHED
-    return false;
-
-}
-
-/*
- * Description:
+ *  Note [1]: This function assumes the object_type can be sorted by
+ *            the desired sort state.
+ *  Note [2]: All items can be sorted by: ID, NAME, MASS
+ *            Bubbies can also be sorted by: FLAVOUR, LEVEL
+ *            General (non-key) items can also be sorted by: VALUE, VALUEPERMASS
  *
- * Inputs: none
- * Output: none
+ * Inputs: ItemSorts sort_by - the desired enumerated sort type
+ *         SortObjects object_type - enumeration of container to be sorted
  */
-bool Inventory::sortItems(EnumDb::ItemSorts sort_by)
+bool Inventory::sorter(EnumDb::ItemSorts sort_by,
+                       EnumDb::SortObjects object_type)
 {
-//TODO: UNFINISHED
-    return false;
-}
+  bool sort_completed = false;
 
-/*
- * Description:
- *
- * Inputs: none
- * Output: none
- */
-bool Inventory::sortKeyItems(EnumDb::ItemSorts sort_by)
-{
-    //TODO: UNFINISHED
-    return false;
+  if (sort_by == EnumDb::ID)
+  {
+    if (object_type == EnumDb::BUBBY_VECTOR)
+    {
+      std::sort(bubbies.begin(), bubbies.end(), ItemPtrSortByID());
+      sort_completed = true;
+    }
+    else if (object_type == EnumDb::EQUIPMENT_VECTOR)
+    {
+      std::sort(equipments.begin(), equipments.end(), ItemPtrSortByID());
+      sort_completed = true;
+    }
+    else if (object_type == EnumDb::ITEM_VECTOR)
+    {
+      std::sort(items.begin(), items.end(), ItemPtrSortByID());
+      sort_completed = true;
+    }
+    else if (object_type == EnumDb::KEY_ITEM_VECTOR)
+    {
+      std::sort(key_items.begin(), key_items.end(), ItemPtrSortByID());
+      sort_completed = true;
+    }
+  }
+  else if (sort_by == EnumDb::NAME)
+  {
+    if (object_type == EnumDb::BUBBY_VECTOR)
+    {
+      std::sort(bubbies.begin(), bubbies.end(), ItemPtrSortByName());
+      sort_completed = true;
+    }
+    else if (object_type == EnumDb::EQUIPMENT_VECTOR)
+    {
+      std::sort(equipments.begin(), equipments.end(), ItemPtrSortByName());
+      sort_completed = true;
+    }
+    else if (object_type == EnumDb::ITEM_VECTOR)
+    {
+      std::sort(items.begin(), items.end(), ItemPtrSortByName());
+      sort_completed = true;
+    }
+    else if (object_type == EnumDb::KEY_ITEM_VECTOR)
+    {
+      std::sort(key_items.begin(), key_items.end(), ItemPtrSortByName());
+      sort_completed = true;
+    }
+  }
+  else if (sort_by == EnumDb::MASS)
+  {
+    if (object_type == EnumDb::BUBBY_VECTOR)
+    {
+      std::sort(bubbies.begin(), bubbies.end(), ItemPtrSortByMass());
+      sort_completed = true;
+    }
+    else if (object_type == EnumDb::EQUIPMENT_VECTOR)
+    {
+      std::sort(equipments.begin(), equipments.end(), ItemPtrSortByMass());
+      sort_completed = true;
+    }
+    else if (object_type == EnumDb::ITEM_VECTOR)
+    {
+      std::sort(items.begin(), items.end(), ItemPtrSortByMass());
+      sort_completed = true;
+    }
+    else if (object_type == EnumDb::KEY_ITEM_VECTOR)
+    {
+      std::sort(key_items.begin(), key_items.end(), ItemPtrSortByMass());
+      sort_completed = true;
+    }
+  }
+  else if (sort_by == EnumDb::FLAVOUR && object_type == EnumDb::BUBBY_VECTOR)
+  {
+    std::sort(bubbies.begin(), bubbies.end(), BubbyPtrSortByFlavour());
+    sort_completed = true;
+  }
+  else if (sort_by == EnumDb::LEVEL && object_type == EnumDb::BUBBY_VECTOR)
+  {
+    std::sort(bubbies.begin(), bubbies.end(), BubbyPtrSortByLevel());
+    sort_completed = true;
+  }
+  else if (sort_by == EnumDb::VALUE)
+  {
+    if (object_type == EnumDb::EQUIPMENT_VECTOR)
+    {
+      std::sort(equipments.begin(), equipments.end(), ItemPtrSortByValue());
+      sort_completed = true;
+    }
+    if (object_type == EnumDb::ITEM_VECTOR)
+    {
+      std::sort(items.begin(), items.end(), ItemPtrSortByValue());
+      sort_completed = true;
+    }
+  }
+  else if (sort_by == EnumDb::VALUEPERMASS)
+  {
+    if (object_type == EnumDb::EQUIPMENT_VECTOR)
+    {
+      std::sort(equipments.begin(), equipments.end(), ItemPtrSortByVPerM());
+      sort_completed = true;
+    }
+    if (object_type == EnumDb::ITEM_VECTOR)
+    {
+      std::sort(items.begin(), items.end(), ItemPtrSortByVPerM());
+      sort_completed = true;
+    }
+  }
 
+  if (sort_completed)
+  {
+    if (object_type == EnumDb::BUBBY_VECTOR)
+      bubby_state = sort_by;
+    if (object_type == EnumDb::EQUIPMENT_VECTOR)
+      equipment_state = sort_by;
+    if  (object_type == EnumDb::ITEM_VECTOR)
+      item_state = sort_by;
+    if (object_type == EnumDb::KEY_ITEM_VECTOR)
+      key_item_state = sort_by;
+
+    emit(sort_by, object_type);
+  }
+
+  return sort_completed;
 }
 
 /*

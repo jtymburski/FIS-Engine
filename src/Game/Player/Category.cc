@@ -36,10 +36,10 @@ const ushort Category::kMAX_SPECIAL   =  1000;
  *         AttributeSet - statistic set to add to the category
  */
 Category::Category(QString name, AttributeSet attributes, SkillSet* skills)
+  : name(name),
+    stat_set(attributes),
+    skill_set(skills)
 {
-  setName(name);
-  setAttrSet(attributes);
-  setSkillSet(skills);
   if (getSkillSet() != 0)
     cleanUp();
 }
@@ -51,11 +51,9 @@ Category::Category(QString name, AttributeSet attributes, SkillSet* skills)
  * Inputs: QString - name of the category
  */
 Category::Category(QString name)
-{
-  setName(name);
-  skill_set = 0;
-  cleanUp();
-}
+  : name(name),
+    skill_set(0)
+{}
 
 /*
  * Description: Destroys a Category object

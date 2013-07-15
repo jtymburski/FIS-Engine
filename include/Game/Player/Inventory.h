@@ -113,12 +113,17 @@ private:
   /* Updates the carry mass of the inventory */
   void calcMass();
 
+  /* Sorts a given object type by a desired enumerated sort method */
+  bool sorter(EnumDb::ItemSorts sort_by, EnumDb::SortObjects object_type);
+
 /*============================================================================
  * SIGNALS
  *============================================================================*/
 signals:
   /* Emits a QString describing why the inventory is full -- to player */
   void full(QString reason);
+
+  void sortCompleted(EnumDb::ItemSorts sort_type, EnumDb::SortObjects object);
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -169,17 +174,8 @@ public:
   void printItems();
   void printKeyItems();
 
-  /* Sorts the vector of bubbies by a given ItemSorts state */
-  bool sortBubbies(EnumDb::ItemSorts sort_by);
-
-  /* Sorts the vector of equipments by a given ItemSorts state */
-  bool sortEquipments(EnumDb::ItemSorts sort_by);
-
-  /* Sorts the vector of items by a given ItemSorts state */
-  bool sortItems(EnumDb::ItemSorts sort_by);
-
-  /* Sorts the vector of items by a given ItemSorts state */
-  bool sortKeyItems(EnumDb::ItemSorts sort_by);
+  /*  Sort a given container by desired primary and secondary methods */
+  bool sort(EnumDb::ItemSorts sort_prim, EnumDb::SortObjects object_type);
 
   /* Returns a pointer to the backdrop */
   Sprite* getBackdrop();

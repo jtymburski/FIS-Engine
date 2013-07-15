@@ -29,15 +29,15 @@ class Ailment : public QWidget
 
 public:
   /* Constructor: Sets up ailment with type, turn and chance durations */
-  Ailment(Person* victim, EnumDb::Infliction type, short max_turns = 0,
+  Ailment(Person* vic, EnumDb::Infliction type, short max_turns = 0,
           double chance = 0, QWidget* parent = 0);
 
   /* Constructor: Sets up an ailment with a QString instead of an enum */
-  Ailment(Person* victim, QString name, short max_turns = 0,
+  Ailment(Person* vic, QString name, short max_turns = 0,
           double chance = 0, QWidget* parent = 0);
 
   /* Default constructor: Sets up a blank NOAILMENT type */
-  Ailment(Person* victim, QWidget* parent = 0);
+  Ailment(Person* vic, QWidget* parent = 0);
 
   /* Annihilates an AttributeSet object */
   ~Ailment();

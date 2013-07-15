@@ -32,40 +32,37 @@ const uint Item::kMAX_VALUE      = 100000000; /* Max value of items - 100 mil */
  *         double mass - the mass of the item
  */
 Item::Item(QString name, uint value, Sprite* thumbnail, double mass)
-    : my_id(setId()) /* Increment the Item's ID */
-{
-  setName(name);
-  setThumb(thumbnail);
-  setValue(value);
-  setMass(mass);
-
-  /* Pointer initialization */
-  setBuffSet(0);
-  setActionSet(0);
-  setSkillSet(0);
-  setUsingAnimation(0);
-  setUsingMessage(0);
-  setUsingSound(0);
-}
+    : my_id(setId()), /* Increment the Item's ID */
+      name(name),
+      thumbnail(thumbnail),
+      value(value),
+      mass(mass),
+      buff_set(0),
+      action_set(0),
+      skill_set(0),
+      using_animation(0),
+      using_message(""),
+      using_sound(0)
+{}
 
 /*
  * Description: Copy constructor for item
  *
  * Inputs: Item* copy - pointer to an item to be copied
  */
-Item::Item(Item *copy) : my_id(setId())
-{
-  setName(copy->getName());
-  setThumb(copy->getThumb());
-  setValue(copy->getValue());
-  setMass(copy->getMass());
-  setBuffSet(copy->getBuffSet());
-  setActionSet(copy->getActionSet());
-  setSkillSet(copy->getSkillSet());
-  setUsingAnimation(copy->getUsingAnimation());
-  setUsingMessage(copy->getUsingMessage());
-  setUsingSound(copy->getUsingSound());
-}
+Item::Item(Item *copy) 
+  : my_id(setId()),
+    name(copy->getName()),
+    thumbnail(copy->getThumb()),
+    value(copy->getValue()),
+    mass(copy->getMass()),
+    buff_set(copy->getBuffSet()),
+    action_set(copy->getActionSet()),
+    skill_set(copy->getSkillSet()),
+    using_animation(copy->getUsingAnimation()),
+    using_message(copy->getUsingMessage()),
+    using_sound(copy->getUsingSound())
+{}
 
 /*
  * Description: Annihilates an Item object
