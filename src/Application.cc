@@ -21,6 +21,9 @@ Application::Application(QWidget* parent)
 {
   setParent(parent);
 
+  /* Set some of the options */
+  vsync_enabled = false;
+
   // TODO: make this dependent on focus of the game. If it loses focus, 
   // return the normal cursor (Qt::ArrowCursor);
   setCursor(Qt::BlankCursor);
@@ -36,20 +39,18 @@ Application::Application(QWidget* parent)
   /* TODO: add checking if OpenGL is not enabled */
   QGLFormat gl_format(QGL::SampleBuffers);
   gl_format.setDoubleBuffer(true);
-#ifdef WIN32
-  gl_format.setSwapInterval(1);
-#else
-  gl_format.setSwapInterval(0);
-#endif
+  if(vsync_enabled)
+    gl_format.setSwapInterval(1);
+  else
+    gl_format.setSwapInterval(0);
   test_map = new Map(gl_format, kRESOLUTION_X, kRESOLUTION_Y);
   //test_map->loadMap("maps/test_03");
   //test_map->getViewport()->show();
-  
+
   /* Add widgets to the stack */
   addWidget(test_battle);
   addWidget(test_map); // TODO: should be viewport
   addWidget(title_screen);
-
   setCurrentIndex(2); // TODO (0=battle, 1=map, 2=titlescreen)
 
   /* Widget information for handling the game */

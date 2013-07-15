@@ -61,13 +61,13 @@ private:
   QVector <Sector> sectors;
 
   /* The time that has elapsed for each draw cycle */
-  short time_buffer;
+  double time_buffer;
   QTime time_elapsed;
 
   /* The timer for handling the tick (temporary?) */
   QTimer timer;
 
-  /* The viewoport for the map, controlled by QGraphicsView */
+  /* The viewport for the map, controlled by QGraphicsView */
   MapViewport* viewport;
   QGLWidget* viewport_widget;
 
@@ -79,7 +79,9 @@ private:
   QString frames_per_second;
   int frames;
   int paint_animation;
+  int paint_count;
   QTime paint_time;
+  double paint_time_average;
 
   /* Testing */
   GLuint gl_image;
@@ -106,6 +108,7 @@ private:
  *===========================================================================*/
 private:
   bool addTileData(XmlData data);
+  double averagePaintDelay(int time_elapsed);
 
 /*============================================================================
  * PROTECTED FUNCTIONS

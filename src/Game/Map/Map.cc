@@ -43,6 +43,8 @@ Map::Map(const QGLFormat & format, short viewport_width, short viewport_height) 
   /* Configure the FPS animation and reset to 0 */
   frames = 0;
   paint_animation = 0;
+  paint_count = 0;
+  paint_time_average = 0.0;
 
   /* Setup the OpenGL Widget */
   //QGLFormat gl_format(QGL::SampleBuffers);
@@ -158,6 +160,23 @@ bool Map::addTileData(XmlData data)
   }
 
   return false;
+}
+
+double Map::averagePaintDelay(int time_elapsed)
+{
+  /* Up the paint count and calculate if it's too large */
+  paint_count++;
+  if(paint_count < 0)
+    paint_count = 1000;
+
+  /* Calculate the newly skewed average */
+  double avg_original = paint_time_average * 
+                        ((paint_count - 1.0) / paint_count);
+  double avg_addition = time_elapsed * (1.0 / paint_count);
+
+  /* Calculate the average and return */
+  paint_time_average = avg_original + avg_addition;
+  return paint_time_average;
 }
 
 /*============================================================================
@@ -279,7 +298,7 @@ void Map::paintGL()
   frames++;
   
   /* Time elapsed from standard update and then animate the screen */
-  time_buffer += time_elapsed.restart();
+  time_buffer += averagePaintDelay(time_elapsed.restart());
   animate();
   
   /* Finish by updating the viewport widget - currently in auto */
@@ -312,8 +331,9 @@ void Map::animate()
   {
     if(shift_index < (geography.size() - kVIEWPORT_WIDTH)*kTILE_WIDTH)
     {
-      shift_index += (time_buffer / time_constant);
-      time_buffer -= (time_buffer / time_constant) * time_constant;
+      int shift = (int)(time_buffer / time_constant);
+      shift_index += shift;
+      time_buffer -= shift * time_constant;
     }
     else
     {
@@ -324,8 +344,9 @@ void Map::animate()
   {
     if(shift_index > 0)
     {
-      shift_index -= (time_buffer / time_constant);
-      time_buffer -= (time_buffer / time_constant) * time_constant;
+      int shift = (int)(time_buffer / time_constant);
+      shift_index -= shift;
+      time_buffer -= shift * time_constant;
     }
     else
     {
