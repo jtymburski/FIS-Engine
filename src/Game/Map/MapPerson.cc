@@ -50,8 +50,8 @@ MapPerson::MapPerson()
  *         QString description - a description of the person
  *         int id - a unique numerical identifier, for the person
  */
-MapPerson::MapPerson(int width, int height, 
-                     QString name, QString description, int id)
+MapPerson::MapPerson(int width, int height, QObject* parent,
+                     QString name, QString description, int id) : MapThing(parent)
 {
   /* Class value setup */
   setDescription(description);
@@ -149,51 +149,7 @@ EnumDb::Direction MapPerson::intToDir(int dir_index)
   return EnumDb::DIRECTIONLESS;
 }
 
-/*
- * Description: The key press event reimplementation. Handles all the movement
- *              for the map person, if redirected here.
- *
- * Inputs: QKeyEvent* event - the key event to analyze
- * Output: none
- */
-void MapPerson::keyPressEvent(QKeyEvent* event)
-{
-  if(event->key() == Qt::Key_Down && 
-     !movement_stack.contains(EnumDb::SOUTH))
-    movement_stack.append(EnumDb::SOUTH);
-  else if(event->key() == Qt::Key_Up && 
-          !movement_stack.contains(EnumDb::NORTH))
-    movement_stack.append(EnumDb::NORTH);
-  else if(event->key() == Qt::Key_Right && 
-          !movement_stack.contains(EnumDb::EAST))
-    movement_stack.append(EnumDb::EAST);
-  else if(event->key() == Qt::Key_Left && 
-          !movement_stack.contains(EnumDb::WEST))
-    movement_stack.append(EnumDb::WEST);
-}
 
-/*
- * Description: The key release event reimplementation. Handles all the 
- *              movement for the map person, if redirected here.
- *
- * Inputs: QKeyEvent* event - the key event to analyze
- * Output: none
- */
-void MapPerson::keyReleaseEvent(QKeyEvent* event)
-{
-  if(event->key() == Qt::Key_Down  && 
-     movement_stack.contains(EnumDb::SOUTH))
-    movement_stack.removeAt(movement_stack.indexOf(EnumDb::SOUTH));
-  else if(event->key() == Qt::Key_Up && 
-          movement_stack.contains(EnumDb::NORTH))
-    movement_stack.removeAt(movement_stack.indexOf(EnumDb::NORTH));
-  else if(event->key() == Qt::Key_Left && 
-          movement_stack.contains(EnumDb::WEST))
-    movement_stack.removeAt(movement_stack.indexOf(EnumDb::WEST));
-  else if(event->key() == Qt::Key_Right && 
-          movement_stack.contains(EnumDb::EAST))
-    movement_stack.removeAt(movement_stack.indexOf(EnumDb::EAST));
-}
 
 /* 
  * Description: Sets a new direction for the person on the map. It will update
@@ -274,6 +230,52 @@ EnumDb::Direction MapPerson::getMoveRequest()
 MapPerson::SurfaceClassifier MapPerson::getSurface()
 {
   return surface;
+}
+
+/*
+ * Description: The key press event implementation. Handles all the movement
+ *              for the map person, if redirected here.
+ *
+ * Inputs: QKeyEvent* event - the key event to analyze
+ * Output: none
+ */
+void MapPerson::keyPress(QKeyEvent* event)
+{
+  if(event->key() == Qt::Key_Down && 
+     !movement_stack.contains(EnumDb::SOUTH))
+    movement_stack.append(EnumDb::SOUTH);
+  else if(event->key() == Qt::Key_Up && 
+          !movement_stack.contains(EnumDb::NORTH))
+    movement_stack.append(EnumDb::NORTH);
+  else if(event->key() == Qt::Key_Right && 
+          !movement_stack.contains(EnumDb::EAST))
+    movement_stack.append(EnumDb::EAST);
+  else if(event->key() == Qt::Key_Left && 
+          !movement_stack.contains(EnumDb::WEST))
+    movement_stack.append(EnumDb::WEST);
+}
+
+/*
+ * Description: The key release event implementation. Handles all the 
+ *              movement for the map person, if redirected here.
+ *
+ * Inputs: QKeyEvent* event - the key event to analyze
+ * Output: none
+ */
+void MapPerson::keyRelease(QKeyEvent* event)
+{
+  if(event->key() == Qt::Key_Down  && 
+     movement_stack.contains(EnumDb::SOUTH))
+    movement_stack.removeAt(movement_stack.indexOf(EnumDb::SOUTH));
+  else if(event->key() == Qt::Key_Up && 
+          movement_stack.contains(EnumDb::NORTH))
+    movement_stack.removeAt(movement_stack.indexOf(EnumDb::NORTH));
+  else if(event->key() == Qt::Key_Left && 
+          movement_stack.contains(EnumDb::WEST))
+    movement_stack.removeAt(movement_stack.indexOf(EnumDb::WEST));
+  else if(event->key() == Qt::Key_Right && 
+          movement_stack.contains(EnumDb::EAST))
+    movement_stack.removeAt(movement_stack.indexOf(EnumDb::EAST));
 }
 
 bool MapPerson::isMoveRequested()

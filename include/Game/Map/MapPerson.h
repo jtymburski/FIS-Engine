@@ -22,7 +22,7 @@ class MapPerson : public MapThing
 public:
   /* Constructor functions */
   MapPerson();
-  MapPerson(int width, int height, QString name = "", 
+  MapPerson(int width, int height, QObject* parent = 0, QString name = "", 
             QString description = "", int id = kUNSET_ID);
 
   /* Destructor function */
@@ -69,10 +69,6 @@ protected:
   int dirToInt(EnumDb::Direction dir);
   EnumDb::Direction intToDir(int dir_index);
 
-  /* Key press event reimplemented */
-  void keyPressEvent(QKeyEvent* event);
-  void keyReleaseEvent(QKeyEvent* event);
-
   /* Sets the direction that the person is travelling in */
   void setDirection(EnumDb::Direction direction, bool set_movement = true);
 
@@ -92,6 +88,10 @@ public:
   
   /* Returns the surface that this person resides on */
   SurfaceClassifier getSurface();
+
+  /* Key press event reimplemented */
+  void keyPress(QKeyEvent* event);
+  void keyRelease(QKeyEvent* event);
 
   /* Determines if there is an active move request (virtual reimplemented) */
   bool isMoveRequested();

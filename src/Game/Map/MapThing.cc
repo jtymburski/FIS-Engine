@@ -1,7 +1,7 @@
 /******************************************************************************
  * Class Name: MapThing
  * Date Created: Dec 2 2012
- * Inheritance: QGraphicsObject
+ * Inheritance: QObject
  * Description: This class handles the generic MapThing. It contains things on
  *              the map that don't fall under general scenary. It acts as the
  *              parent class to a sequence of others, for example, MapPerson,
@@ -27,7 +27,7 @@ const int MapThing::kUNSET_ID   = -1;
  *
  * Inputs: none
  */
-MapThing::MapThing()
+MapThing::MapThing(QObject* parent) : QObject(parent)
 {
   animation_delay = 0;
   state = 0;
@@ -49,6 +49,7 @@ MapThing::MapThing(MapState* state, int width, int height,
   this->state = 0;
 
   /* The parent class definitions */
+  setCoordinates(0, 0);
   setHeight(height);
   setWidth(width);
 
@@ -96,13 +97,13 @@ bool MapThing::animate(bool skip_head)
 void MapThing::moveThing()
 {
   if(movement == EnumDb::EAST)
-    setX(x() + kTHING_INCREMENT);
+    x += kTHING_INCREMENT;
   else if(movement == EnumDb::WEST)
-    setX(x() - kTHING_INCREMENT);
+    x -= kTHING_INCREMENT;
   else if(movement == EnumDb::SOUTH)
-    setY(y() + kTHING_INCREMENT);
+    y += kTHING_INCREMENT;
   else if(movement == EnumDb::NORTH)
-    setY(y() - kTHING_INCREMENT);
+    y -= kTHING_INCREMENT;
 }
 
 /* Sets the new direction that the class is moving in */
@@ -127,20 +128,6 @@ bool MapThing::setDirection(EnumDb::Direction new_direction)
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
-
-/* 
- * Description: Implemented virtual function. Returns the bounding rectangle
- *              around the image that is being added into the scene. 
- *
- * Inputs: none
- * Output: QRectF - the rectangle around the internal image
- */
-QRectF MapThing::boundingRect() const
-{
-  QRectF rect(0, 0, width, height);
-
-  return rect;
-}
 
 /* 
  * Description: Clears out all information stored in the class
@@ -238,6 +225,16 @@ int MapThing::getWidth()
   return width;
 }
 
+int MapThing::getX()
+{
+  return x;
+}
+
+int MapThing::getY()
+{
+  return y;
+}
+
 /* 
  * Description: Starts interaction. In map thing, this isn't of use and is
  *              only used by its children classes.
@@ -261,33 +258,13 @@ bool MapThing::isMoving()
 
 bool MapThing::isOnTile()
 {
-  return ((int)x() % getWidth() == 0 && (int)y() % getHeight() == 0);
+  return ((x % getWidth() == 0) && (y % getHeight() == 0));
 }
 
-/* 
- * Description: Reimplemented virtual function. Handles the painting of the 
- *              image stored within the layer. Runs based on the same data as 
- *              the above QRectF for the bounding box. Only paints if the tile 
- *              is set.
- *
- * Inputs: QPainter* painter - the painter to send all the image data to
- *         QStyleOptionGraphicsItem* option - any painting options.
- *         QWidget* widget - the related widget, if applicable
- * Output: none
- */
-void MapThing::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
-                  QWidget* widget)
+bool MapThing::paintGl(int x, int y, int width, int height, float opacity)
 {
-  /* Remove unused parameter warnings */
-  (void)option;
-  (void)widget;
-
-  /* Set painter information */
-  //painter->setRenderHint(QPainter::SmoothPixmapTransform, true);
-
-  /* Only paint if the sprite exists */
   if(state != 0 && state->getSprite() != 0)
-    painter->drawPixmap(0, 0, width, height, state->getSprite()->getCurrent());
+    state->getSprite()->paintGl(x, y, width, height, opacity);
 }
 
 /* 
@@ -311,19 +288,16 @@ bool MapThing::resetAnimation()
 
 /* 
  * Description: Sets the coordinate information for the base item (inherited).
- *              X and Y are with respect to the scene plane. Z is the vertical
- *              plane for how items are layered.
+ *              X and Y are with respect to the scene plane.
  *
  * Inputs: int x - the x pixel coordinate on the scene
  *         int y - the y pixel coordinate on the scene
- *         int z - the z rating on the screen (default to 0).
  * Output: none
  */
-void MapThing::setCoordinates(int x, int y, int z)
+void MapThing::setCoordinates(int x, int y)
 {
-  setX(x);
-  setY(y);
-  setZValue(z);
+  this->x = x;
+  this->y = y;
 }
 
 /* 
@@ -348,7 +322,6 @@ bool MapThing::setHeight(int new_height)
 {
   if(new_height > 0)
   {
-    prepareGeometryChange();
     height = new_height;
     return true;
   }
@@ -420,7 +393,6 @@ bool MapThing::setWidth(int new_width)
 {
   if(new_width > 0)
   {
-    prepareGeometryChange();
     width = new_width;
     return true;
   }

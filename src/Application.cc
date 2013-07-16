@@ -26,7 +26,7 @@ Application::Application(QWidget* parent)
 
   // TODO: make this dependent on focus of the game. If it loses focus, 
   // return the normal cursor (Qt::ArrowCursor);
-  setCursor(Qt::BlankCursor);
+  //setCursor(Qt::BlankCursor);
   //setCursor(Qt::ArrowCursor);
 
   title_screen = new TitleScreen(kRESOLUTION_X, kRESOLUTION_Y);

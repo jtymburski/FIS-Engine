@@ -10,8 +10,8 @@
 #ifndef MAP_H
 #define MAP_H
 
-//#include <QDebug>
-#include <QGraphicsScene>
+#include <QDebug>
+//#include <QGraphicsScene>
 #include <QGLWidget>
 
 #include "Game/Map/MapNPC.h"

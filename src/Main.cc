@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
                    audio_channels, audio_buffers) != 0) 
   {
 		printf("Unable to initialize audio: %s\n", Mix_GetError());
-		exit(1);
+		//exit(1);
 	}
 
   /* Setup QT */

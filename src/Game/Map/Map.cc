@@ -46,6 +46,10 @@ Map::Map(const QGLFormat & format, short viewport_width, short viewport_height) 
   paint_count = 0;
   paint_time_average = 0.0;
 
+  /* Test the things and persons */
+  player = 0;
+  thing = 0;
+
   /* Setup the OpenGL Widget */
   //QGLFormat gl_format(QGL::SampleBuffers);
   //gl_format.setSwapInterval(1);
@@ -197,9 +201,9 @@ void Map::initializeGL()
 
 void Map::keyPressEvent(QKeyEvent* keyEvent)
 {
-  //if(keyEvent->key() == Qt::Key_Down || keyEvent->key() == Qt::Key_Up ||
-  //   keyEvent->key() == Qt::Key_Right || keyEvent->key() == Qt::Key_Left)
-  //  sendEvent(player, keyEvent);
+  if(keyEvent->key() == Qt::Key_Down || keyEvent->key() == Qt::Key_Up ||
+     keyEvent->key() == Qt::Key_Right || keyEvent->key() == Qt::Key_Left)
+    player->keyPress(keyEvent);
   if(keyEvent->key() == Qt::Key_Escape)
     closeMap();
   else if(keyEvent->key() == Qt::Key_A)
@@ -216,9 +220,9 @@ void Map::keyPressEvent(QKeyEvent* keyEvent)
 
 void Map::keyReleaseEvent(QKeyEvent* keyEvent)
 {
-  //if(keyEvent->key() == Qt::Key_Down || keyEvent->key() == Qt::Key_Up ||
-  //   keyEvent->key() == Qt::Key_Right || keyEvent->key() == Qt::Key_Left)
-  //  sendEvent(player, keyEvent);
+  if(keyEvent->key() == Qt::Key_Down || keyEvent->key() == Qt::Key_Up ||
+     keyEvent->key() == Qt::Key_Right || keyEvent->key() == Qt::Key_Left)
+    player->keyRelease(keyEvent);
 }
 
 /* TODO: seems to work much better than before. The flicker that is still
@@ -252,6 +256,11 @@ void Map::paintGL()
         geography[i][j]->paintLower(i*kTILE_WIDTH - shift_index, 
                                     j*kTILE_HEIGHT, kTILE_WIDTH, 
                                     kTILE_HEIGHT, 1);
+    
+    if(player != 0 && player->getX() >= start_x*64 && 
+                      player->getX() <= end_x*64)
+      player->paintGl(player->getX() - shift_index, player->getY(), 
+                      kTILE_WIDTH, kTILE_HEIGHT, 1.0);
 
     /* Paint the upper half */
     for(int i = start_x; i < end_x; i++)
@@ -354,47 +363,59 @@ void Map::animate()
     }
   }
 
-  /*if(player != 0)
+  if(player != 0)
   {
     bool movable = true;
 
     if(player->isOnTile() && player->isMoveRequested())
     {
       EnumDb::Direction moving = player->getMoveRequest();
-      int x1 = (int)player->x() / kTILE_WIDTH;
-      int y1 = (int)player->y() / kTILE_LENGTH;
-      movable = geography[y1][x1]->getPassability(moving);
+      int x1 = (int)player->getX() / kTILE_WIDTH;
+      int y1 = (int)player->getY() / kTILE_HEIGHT;
+      movable = geography[x1][y1]->getPassability(moving);
       int x2, y2;
 
       if(moving == EnumDb::NORTH)
       {
         x2 = x1;
         y2 = y1 - 1;
-        movable &= geography[y2][x2]->getPassability(EnumDb::SOUTH);
+        if(y2 >= 0)
+          movable &= geography[x2][y2]->getPassability(EnumDb::SOUTH);
+        else
+          movable = false;
       }
       else if(moving == EnumDb::EAST)
       {
         x2 = x1 + 1;
         y2 = y1;
-        movable &= geography[y2][x2]->getPassability(EnumDb::WEST);
+        if(x2 < geography.size())
+          movable &= geography[x2][y2]->getPassability(EnumDb::WEST);
+        else
+          movable = false;
       }
       else if(moving == EnumDb::SOUTH)
       {
         x2 = x1;
         y2 = y1 + 1;
-        movable &= geography[y2][x2]->getPassability(EnumDb::NORTH);
+        if(y2 < geography[x2].size())
+          movable &= geography[x2][y2]->getPassability(EnumDb::NORTH);
+        else
+          movable = false;
       }
       else if(moving == EnumDb::WEST)
       {
         x2 = x1 - 1;
         y2 = y1;
-        movable &= geography[y2][x2]->getPassability(EnumDb::EAST);
+        if(x2 >= 0)
+          movable &= geography[x2][y2]->getPassability(EnumDb::EAST);
+        else
+          movable = false;
       }
     }
 
     player->updateThing(movable);
-    viewport->updateView();
-  }*/
+    //viewport->updateView();
+  }
 }
 
 void Map::animateTiles()
@@ -447,7 +468,7 @@ MapViewport* Map::getViewport()
 
 void Map::initialization()
 {
-  player->setFocus();
+  //player->setFocus();
 }
 
 /* Causes the thing you are facing and next to start its interactive action */
@@ -514,27 +535,31 @@ bool Map::loadMap(QString file)
     } while(!done && success);
 
     /* Add in temporary player information */
-    //Sprite* up_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_D", 
-    //                               3, ".png");
-    //Sprite* down_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_U", 
-    //                                 3, ".png");
-    //Sprite* left_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_R", 
-    //                                 3, ".png");
-    //Sprite* right_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_L", 
-    //                                  3, ".png");
+    Sprite* up_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_D", 
+                                   3, ".png");
+    Sprite* down_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_U", 
+                                     3, ".png");
+    Sprite* left_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_R", 
+                                     3, ".png");
+    Sprite* right_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_L", 
+                                      3, ".png");
 
     /* Make the map person */
-    //player = new MapPerson(kTILE_LENGTH, kTILE_WIDTH);
-    //player->setCoordinates(kTILE_LENGTH*10, kTILE_WIDTH*8, 2);
+    player = new MapPerson(kTILE_WIDTH, kTILE_HEIGHT, this);
+    player->setCoordinates(kTILE_WIDTH*10, kTILE_HEIGHT*8);
 
-    //player->setState(MapPerson::GROUND, EnumDb::NORTH, 
-    //                                    new MapState(up_sprite));
-    //player->setState(MapPerson::GROUND, EnumDb::SOUTH, 
-    //                                    new MapState(down_sprite));
-    //player->setState(MapPerson::GROUND, EnumDb::EAST, 
-    //                                    new MapState(right_sprite));
-    //player->setState(MapPerson::GROUND, EnumDb::WEST, 
-    //                                    new MapState(left_sprite));
+    player->setState(MapPerson::GROUND, EnumDb::NORTH, 
+                                        new MapState(up_sprite));
+    player->setState(MapPerson::GROUND, EnumDb::SOUTH, 
+                                        new MapState(down_sprite));
+    player->setState(MapPerson::GROUND, EnumDb::EAST, 
+                                        new MapState(right_sprite));
+    player->setState(MapPerson::GROUND, EnumDb::WEST, 
+                                        new MapState(left_sprite));
+
+    /* Make the map thing */
+    //thing = new MapThing(new MapState(up_sprite), kTILE_WIDTH, kTILE_HEIGHT);
+    //thing->setCoordinates(128, 128);
 
     /* Add it */
     //addItem(player);

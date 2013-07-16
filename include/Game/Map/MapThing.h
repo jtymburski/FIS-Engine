@@ -1,7 +1,7 @@
 /******************************************************************************
  * Class Name: MapThing
  * Date Created: October 28, 2012
- * Inheritance: QGraphicsObject
+ * Inheritance: QObject
  * Description: This class handles the generic MapThing. It contains things on
  *              the map that don't fall under general scenary. It acts as the
  *              parent class to a sequence of others, for example, MapPerson,
@@ -12,17 +12,18 @@
 #ifndef MAPTHING_H
 #define MAPTHING_H
 
-#include <QDebug>
-#include <QGraphicsObject>
-#include <QPainter>
+//#include <QDebug>
+//#include <QGraphicsObject>
+#include <QObject>
+//#include <QPainter>
 
 #include "Game/Map/MapState.h"
 
-class MapThing : public QGraphicsObject
+class MapThing : public QObject
 {
 public:
   /* Constructor functions */
-  MapThing();
+  MapThing(QObject* parent = 0);
   MapThing(MapState* state, int width, int height, QString name = "", 
            QString description = "", int id = kUNSET_ID);
 
@@ -35,12 +36,14 @@ private:
 
   /* The thing classification */
   QString description;
-  int height;
+  short height;
   int id;
   QString name;
-  int width;
+  short width;
+  short x;
+  short y;
 
-  /* The main state, the main one */
+  /* The main state */
   MapState* state;
 
   /* Movement information */
@@ -71,9 +74,6 @@ protected:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
-  /* Virtual bounding rectangle - The rectangle that encapsulates the item */
-  QRectF boundingRect() const;
-  
   /* Clears the entire class data */
   void clear();
 
@@ -99,6 +99,10 @@ public:
   /* Returns the width of the thing */
   int getWidth();
 
+  /* Returns the location of the thing */
+  int getX();
+  int getY();
+
   /* Starts inteaction (conversation, giving something, etc) */
   virtual void interaction();
  
@@ -111,15 +115,14 @@ public:
   /* Is the thing centered on a tile */
   bool isOnTile();
 
-  /* Virtual painter reimplementation - for painting the item */
-  void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
-             QWidget* widget);
+  /* Paint call, that paints the main state of the thing */
+  bool paintGl(int x, int y, int width, int height, float opacity = 1.0);
   
   /* Resets the animation of the thing, back to the starting frame */ 
   bool resetAnimation();
 
   /* Set the coordinates for the data in the map thing (for the parent) */
-  void setCoordinates(int x, int y, int z = 0);
+  void setCoordinates(int x, int y);
 
   /* Sets the things description */
   void setDescription(QString new_description);

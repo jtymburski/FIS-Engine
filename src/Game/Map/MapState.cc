@@ -49,6 +49,7 @@ bool MapState::setSprite(Sprite* animation)
   {
     unsetSprite();
     this->animation = animation;
+    this->animation->initializeGl();
     return true;
   }
   return false;
