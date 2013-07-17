@@ -57,7 +57,8 @@ Map::Map(const QGLFormat & format, short viewport_width, short viewport_height) 
   //setMinimumSize(2000, 2000);
 
   /* Setup the viewport */
-  //viewport = new MapViewport(viewport_width, viewport_height);
+  viewport = new MapViewport(viewport_width, viewport_height, 
+                             kTILE_WIDTH, kTILE_HEIGHT);
   //viewport->setWidget(this);
   //viewport->setViewport(viewport_widget);
   //viewport->setViewportUpdateMode(QGraphicsView::NoViewportUpdate);
@@ -268,6 +269,9 @@ void Map::paintGL()
         geography[i][j]->paintUpper(i*kTILE_WIDTH - shift_index,
                                     j*kTILE_HEIGHT, kTILE_WIDTH,
                                     kTILE_HEIGHT, 1);
+
+    /* Test the viewport - TODO: delete */
+    viewport->updateView();
   }
 
   /* Paint the frame rate */
@@ -576,6 +580,12 @@ bool Map::loadMap(QString file)
   }
   else
   {
+    if(geography.size() > 0)
+    {
+      viewport->setMapSize(geography.size(), geography[0].size());
+      viewport->lockOn(609, 353); // 1216 / 2 + 1, 704 / 2 + 1
+    }
+
     for(int i = 0; i < geography.size(); i++)
       for(int j = 0; j < geography[i].size(); j++)
         geography[i][j]->initializeGl();
@@ -644,6 +654,10 @@ void Map::unloadMap()
     tile_sprites[i] = 0;
   }
   tile_sprites.clear();
+
+  /* Reset the viewport */
+  viewport->setMapSize(0, 0);
+  viewport->lockOn(0, 0);
 
   /* Clear the remaining and disable the loading */
   //clear();
