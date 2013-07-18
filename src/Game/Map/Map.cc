@@ -28,7 +28,8 @@ const int Map::kVIEWPORT_WIDTH = 19;
  *===========================================================================*/
 
 /* Constructor function */
-Map::Map(const QGLFormat & format, short viewport_width, short viewport_height) : QGLWidget(format)
+Map::Map(const QGLFormat & format, short viewport_width, 
+         short viewport_height) : QGLWidget(format)
 {
   /* Set some initial class flags */
   //setAttribute(Qt::WA_PaintOnScreen);
@@ -50,23 +51,12 @@ Map::Map(const QGLFormat & format, short viewport_width, short viewport_height) 
   player = 0;
   thing = 0;
 
-  /* Setup the OpenGL Widget */
-  //QGLFormat gl_format(QGL::SampleBuffers);
-  //gl_format.setSwapInterval(1);
-  //viewport_widget = new QGLWidget(gl_format);
   //setMinimumSize(2000, 2000);
 
   /* Setup the viewport */
   viewport = new MapViewport(viewport_width, viewport_height, 
                              kTILE_WIDTH, kTILE_HEIGHT);
-  //viewport->setWidget(this);
-  //viewport->setViewport(viewport_widget);
-  //viewport->setViewportUpdateMode(QGraphicsView::NoViewportUpdate);
  
-  /* Check status of OpenGL */
-  //qDebug() << this->format();
-  //qDebug() << format().swapInterval();
-  
   /* Bring the timer in to provide a game tick */
   connect(&timer, SIGNAL(timeout()), this, SLOT(updateGL()));
   timer.start(10);
@@ -213,10 +203,10 @@ void Map::keyPressEvent(QKeyEvent* keyEvent)
     shift_index = 0;
   else if(keyEvent->key() == Qt::Key_F)
     shift_forward = !shift_forward;
-  //else if(keyEvent->key() == Qt::Key_1)
-  //  viewport->lockOn(player);
-  //else if(keyEvent->key() == Qt::Key_2)
-  //  viewport->lockOn(1000, 1000);
+  else if(keyEvent->key() == Qt::Key_1)
+    viewport->lockOn(player);
+  else if(keyEvent->key() == Qt::Key_2)
+    viewport->lockOn(1000, 1000);
 }
 
 void Map::keyReleaseEvent(QKeyEvent* keyEvent)
@@ -252,26 +242,24 @@ void Map::paintGL()
       end_x = geography.size();
 
     /* Paint the lower half */
-    for(int i = start_x; i < end_x; i++)
-      for(int j = 0; j < kVIEWPORT_HEIGHT; j++)
-        geography[i][j]->paintLower(i*kTILE_WIDTH - shift_index, 
-                                    j*kTILE_HEIGHT, kTILE_WIDTH, 
-                                    kTILE_HEIGHT, 1);
+    for(int i = viewport->getXTileStart(); i < viewport->getXTileEnd(); i++)
+      for(int j = viewport->getYTileStart(); j < viewport->getYTileEnd(); j++)
+        geography[i][j]->paintLower(i*kTILE_WIDTH - viewport->getX(), 
+                                    j*kTILE_HEIGHT - viewport->getY(), 
+                                    kTILE_WIDTH, kTILE_HEIGHT, 1);
     
-    if(player != 0 && player->getX() >= start_x*64 && 
-                      player->getX() <= end_x*64)
-      player->paintGl(player->getX() - shift_index, player->getY(), 
+    if(player != 0 && player->getX() >= viewport->getXStart() && 
+                      player->getX() <= viewport->getXEnd())
+      player->paintGl(player->getX() - viewport->getX(), 
+                      player->getY() - viewport->getY(), 
                       kTILE_WIDTH, kTILE_HEIGHT, 1.0);
 
     /* Paint the upper half */
-    for(int i = start_x; i < end_x; i++)
-      for(int j = 0; j < kVIEWPORT_HEIGHT; j++)
-        geography[i][j]->paintUpper(i*kTILE_WIDTH - shift_index,
-                                    j*kTILE_HEIGHT, kTILE_WIDTH,
-                                    kTILE_HEIGHT, 1);
-
-    /* Test the viewport - TODO: delete */
-    viewport->updateView();
+    for(int i = viewport->getXTileStart(); i < viewport->getXTileEnd(); i++)
+      for(int j = viewport->getYTileStart(); j < viewport->getYTileEnd(); j++)
+        geography[i][j]->paintUpper(i*kTILE_WIDTH - viewport->getX(),
+                                    j*kTILE_HEIGHT - viewport->getY(), 
+                                    kTILE_WIDTH, kTILE_HEIGHT, 1);
   }
 
   /* Paint the frame rate */
@@ -313,7 +301,8 @@ void Map::paintGL()
   /* Time elapsed from standard update and then animate the screen */
   time_buffer += averagePaintDelay(time_elapsed.restart());
   animate();
-  
+  viewport->updateView();
+
   /* Finish by updating the viewport widget - currently in auto */
   //swapBuffers();
   //update();
@@ -564,11 +553,6 @@ bool Map::loadMap(QString file)
     /* Make the map thing */
     //thing = new MapThing(new MapState(up_sprite), kTILE_WIDTH, kTILE_HEIGHT);
     //thing->setCoordinates(128, 128);
-
-    /* Add it */
-    //addItem(player);
-    //viewport->lockOn(player);
-    //setFocusItem(player);
   }
 
   success &= fh.stop();
