@@ -73,6 +73,18 @@ public:
   short getTileHeight();
   short getTileWidth();
   short getWidth();
+  
+  /* Gets the painting ranges for the map of the valid visible range and the offset */
+  short getX();
+  short getXEnd();
+  short getXStart();
+  short getXTileEnd();
+  short getXTileStart();
+  short getY();
+  short getYEnd();
+  short getYStart();
+  short getYTileEnd();
+  short getYTileStart();
 
   /* To change what the viewport locks to, when the update is called */
   bool lockOn(int x, int y);

@@ -583,7 +583,8 @@ bool Map::loadMap(QString file)
     if(geography.size() > 0)
     {
       viewport->setMapSize(geography.size(), geography[0].size());
-      viewport->lockOn(609, 353); // 1216 / 2 + 1, 704 / 2 + 1
+      viewport->lockOn(player);
+      //viewport->lockOn(609, 353); // 1216 / 2 + 1, 704 / 2 + 1
     }
 
     for(int i = 0; i < geography.size(); i++)

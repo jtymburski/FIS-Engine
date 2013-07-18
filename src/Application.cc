@@ -22,7 +22,11 @@ Application::Application(QWidget* parent)
   setParent(parent);
 
   /* Set some of the options */
+#ifdef unix
   vsync_enabled = false;
+#else
+  vsync_enabled = true;
+#endif
 
   // TODO: make this dependent on focus of the game. If it loses focus, 
   // return the normal cursor (Qt::ArrowCursor);

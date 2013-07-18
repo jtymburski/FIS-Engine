@@ -84,6 +84,85 @@ short MapViewport::getWidth()
   return width;
 }
 
+short MapViewport::getX()
+{
+  return x;
+}
+
+short MapViewport::getXEnd()
+{
+  /* Perform the end x coordinate calculation */
+  int end_x = x + width + tile_width;
+  if(x % tile_width != 0)
+    end_x += (tile_width - (x % tile_width));
+
+  /* Check to see if the end_x is in the valid range */
+  if(end_x > map_width)
+    end_x = map_width;
+
+  return end_x;
+}
+
+short MapViewport::getXStart()
+{
+  int start_x = x - (x % tile_width) - tile_width;
+
+  /* Check to see if the start_x is in the valid range */
+  if(start_x < 0)
+    start_x = 0;
+
+  return start_x;
+}
+
+short MapViewport::getXTileEnd()
+{
+  return (getXEnd() / tile_width);
+}
+
+short MapViewport::getXTileStart()
+{
+  return (getXStart() / tile_width);
+}
+
+short MapViewport::getY()
+{
+  return y;
+}
+
+short MapViewport::getYEnd()
+{
+  /* Perform the end y coordinate calculation */
+  int end_y = y + height + tile_height;
+  if(y % tile_height != 0)
+    end_y += (tile_height - (y % tile_height));
+  
+  /* Check to see if the end_x is in the valid range */
+  if(end_y > map_height)
+    end_y = map_height;
+
+  return end_y;
+}
+
+short MapViewport::getYStart()
+{
+  int start_y = y - (y % tile_height) - tile_height;
+
+  /* Check to see if the start_x is in the valid range */
+  if(start_y < 0)
+    start_y = 0;
+
+  return start_y;
+}
+
+short MapViewport::getYTileEnd()
+{
+  return (getYEnd() / tile_height);
+}
+
+short MapViewport::getYTileStart()
+{
+  return (getYStart() / tile_height);
+}
 
 bool MapViewport::lockOn(int x, int y)
 {
@@ -184,34 +263,45 @@ void MapViewport::setTileSize(short pixel_width, short pixel_height)
 
 void MapViewport::updateView()
 {
+  int center_x = 0;
+  int center_y = 0;
   int delta_x = 0;
   int delta_y = 0;
 
   /* If the locked on information is a coordinate pair (x,y) */
   if(lock_on == PIXEL)
   {
-    /* Calculations for centering the width offset coordinate */
-    delta_x = lock_on_x - (width >> 1);
-    if((delta_x + width) > map_width)
-      delta_x = map_width - width;
-    if(delta_x < 0)
-      delta_x = 0;
-
-    /* Calculations for centering the height offset coordinate */
-    delta_y = lock_on_y - (height >> 1);
-    if((delta_y + height) > map_height)
-      delta_y = map_height - height;
-    if(delta_y < 0)
-      delta_y = 0;
+    center_x = lock_on_x;
+    center_y = lock_on_y;
   }
   /* Else if the locked on information is a map thing */
   else if(lock_on == THING)
   {
-
+    center_x = lock_on_thing->getX() + ((lock_on_thing->getWidth() - 1) >> 1);
+    center_y = lock_on_thing->getY() + ((lock_on_thing->getHeight() - 1) >> 1);
   }
   /* Else if the locked on information is a tile */
   else if(lock_on == TILE)
   {
-
+    center_x = lock_on_tile->getX() + ((lock_on_tile->getWidth() - 1) >> 1);
+    center_y = lock_on_tile->getY() + ((lock_on_tile->getHeight() - 1) >> 1);
   }
+  
+  /* Calculations for centering the width offset coordinate */
+  delta_x = center_x - ((width - 1) >> 1);
+  if((delta_x + width) > map_width)
+    delta_x = map_width - width;
+  if(delta_x < 0)
+    delta_x = 0;
+
+  /* Calculations for centering the height offset coordinate */
+  delta_y = center_y - ((height - 1) >> 1);
+  if((delta_y + height) > map_height)
+    delta_y = map_height - height;
+  if(delta_y < 0)
+    delta_y = 0;
+    
+  /* Set the internal X and Y to the newly calculated values */
+  this->x = delta_x;
+  this->y = delta_y;
 }
