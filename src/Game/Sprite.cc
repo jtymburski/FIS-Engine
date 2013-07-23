@@ -325,7 +325,7 @@ bool Sprite::isAtFirst()
  * Output: bool - status if the frame was painted. If failed, make sure there
  *         is an image in the sprite and make sure initializeGl() was called.
  */
-bool Sprite::paintGl(int x, int y, int width, int height, float opacity)
+bool Sprite::paintGl(float x, float y, int width, int height, float opacity)
 {
   if(current != 0)
     return current->paintGl(x, y, width, height, opacity);

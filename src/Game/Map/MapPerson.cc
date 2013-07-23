@@ -335,7 +335,7 @@ void MapPerson::setSurface(SurfaceClassifier surface)
  * Inputs: none
  * Output: none 
  */
-void MapPerson::updateThing(bool can_move)
+void MapPerson::updateThing(float cycle_time, bool can_move)
 {
   /* Once a tile end has reached, cycle the movement direction */
   if(isOnTile())
@@ -356,7 +356,7 @@ void MapPerson::updateThing(bool can_move)
     }
   }
 
-  moveThing();
+  moveThing(cycle_time);
 
   /* Only animate if the direction exists */
   if(getMovement() != EnumDb::DIRECTIONLESS)

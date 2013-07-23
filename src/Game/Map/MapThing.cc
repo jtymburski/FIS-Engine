@@ -12,10 +12,10 @@
 #include "Game/Map/MapThing.h"
 
 /* Constant Implementation - see header file for descriptions */
-const int MapThing::kANIMATION_OFFSET = 12;
-const int MapThing::kMINIMUM_ID =  0;
-const int MapThing::kTHING_INCREMENT = 4;
-const int MapThing::kUNSET_ID   = -1;
+const short MapThing::kANIMATION_OFFSET = 12;
+const short MapThing::kDEFAULT_SPEED = 100;
+const short MapThing::kMINIMUM_ID =  0;
+const short MapThing::kUNSET_ID   = -1;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -57,6 +57,7 @@ MapThing::MapThing(MapState* state, int width, int height,
   setDescription(description);
   setID(id);
   setName(name);
+  setSpeed(kDEFAULT_SPEED);
   setState(state);
 }
 
@@ -94,16 +95,23 @@ bool MapThing::animate(bool skip_head)
   return true;
 }
 
-void MapThing::moveThing()
+float MapThing::moveAmount(float cycle_time)
 {
+  return ((speed * cycle_time) / 1000.0);
+}
+
+void MapThing::moveThing(float cycle_time)
+{
+  float move_amount = moveAmount(cycle_time);
+  
   if(movement == EnumDb::EAST)
-    x += kTHING_INCREMENT;
+    x += move_amount;
   else if(movement == EnumDb::WEST)
-    x -= kTHING_INCREMENT;
+    x -= move_amount;
   else if(movement == EnumDb::SOUTH)
-    y += kTHING_INCREMENT;
+    y += move_amount;
   else if(movement == EnumDb::NORTH)
-    y -= kTHING_INCREMENT;
+    y -= move_amount;
 }
 
 /* Sets the new direction that the class is moving in */
@@ -140,7 +148,8 @@ void MapThing::clear()
   setDescription("");
   setID(kUNSET_ID);
   setName("");
-
+  setSpeed(kDEFAULT_SPEED);
+  
   height = 0;
   width = 0;
 
@@ -202,6 +211,11 @@ QString MapThing::getName()
   return name;
 }
 
+short MapThing::getSpeed()
+{
+  return speed;
+}
+
 /* 
  * Description: Gets the state data of the thing. If state isn't set, returns
  *              0.
@@ -225,12 +239,12 @@ int MapThing::getWidth()
   return width;
 }
 
-int MapThing::getX()
+float MapThing::getX()
 {
   return x;
 }
 
-int MapThing::getY()
+float MapThing::getY()
 {
   return y;
 }
@@ -246,6 +260,29 @@ void MapThing::interaction()
 {
 }
 
+/* Is the thing almost centered on a tile (less than 1 pulse away) */
+// TODO [2013-07-22]
+bool MapThing::isAlmostOnTile(short cycle_time)
+{
+  float tile_diff = 0.0;
+  
+  if(isMoving() && !isOnTile())
+  {
+    if(movement == EnumDb::EAST)
+      tile_diff = width - (x - (int)(x / width) * width);
+    else if(movement == EnumDb::WEST)
+      tile_diff = (x - (int)(x / width) * width);
+    else if(movement == EnumDb::SOUTH)
+      tile_diff = height - (y - (int)(y / height) * height);
+    else if(movement == EnumDb::NORTH)
+      tile_diff = (y - (int)(y / height) * height);
+
+    //qDebug() << tile_diff;
+  }
+  
+  return false;
+}
+
 bool MapThing::isMoveRequested()
 {
   return false;
@@ -258,13 +295,17 @@ bool MapThing::isMoving()
 
 bool MapThing::isOnTile()
 {
-  return ((x % getWidth() == 0) && (y % getHeight() == 0));
+  return (((int)x % getWidth() == 0) && ((int)y % getHeight() == 0));
 }
 
-bool MapThing::paintGl(int x, int y, int width, int height, float opacity)
+bool MapThing::paintGl(float offset_x, float offset_y, float opacity)
 {
   if(state != 0 && state->getSprite() != 0)
-    state->getSprite()->paintGl(x, y, width, height, opacity);
+  {
+    state->getSprite()->paintGl(x - offset_x, y - offset_y, width, height, opacity);
+    return true;
+  }
+  return false;
 }
 
 /* 
@@ -361,6 +402,17 @@ void MapThing::setName(QString new_name)
   name = new_name;
 }
 
+bool MapThing::setSpeed(short speed)
+{
+  if(speed >= 0)
+  {
+    this->speed = speed;
+    return true;
+  }
+  
+  return false;
+}
+
 /*
  * Description: Sets the state data that defines the thing.
  *
@@ -407,13 +459,14 @@ bool MapThing::setWidth(int new_width)
  * Inputs: none
  * Output: none 
  */
-void MapThing::updateThing(bool can_move)
-{
+void MapThing::updateThing(float cycle_time, bool can_move)
+{ 
+  /* If it can move, allow it */
   if(can_move)
-    moveThing();
+    moveThing(cycle_time);
 
-  if(movement != EnumDb::DIRECTIONLESS)
-    animate();
+  /* Animate the thing */
+  animate();
 }
 
 /*

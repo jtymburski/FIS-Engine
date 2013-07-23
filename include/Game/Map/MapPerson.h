@@ -104,7 +104,7 @@ public:
   void setSurface(SurfaceClassifier surface);
 
   /* Updates the thing, based on the tick */
-  void updateThing(bool can_move = true);
+  void updateThing(float cycle_time, bool can_move = true);
 
   /* Unsets a state, if it exists, to remove from the stack of states */
   void unsetState(SurfaceClassifier surface, EnumDb::Direction direction);

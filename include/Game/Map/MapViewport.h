@@ -45,15 +45,15 @@ private:
   short width;
 
   /* The location of the viewport */
-  short x;
-  short y;
+  float x;
+  float y;
 
   /* The lock qualifiers, for who the viewport is centered on */
   LockStatus lock_on;
   MapThing* lock_on_thing;
   Tile* lock_on_tile;
-  short lock_on_x;
-  short lock_on_y;
+  float lock_on_x;
+  float lock_on_y;
 
   /*------------------- Constants -----------------------*/
   const static int kMIN_HEIGHT; /* Minimum viewport height, in pixels */
@@ -75,19 +75,19 @@ public:
   short getWidth();
   
   /* Gets the painting ranges for the map of the valid visible range and the offset */
-  short getX();
+  float getX();
   short getXEnd();
   short getXStart();
   short getXTileEnd();
   short getXTileStart();
-  short getY();
+  float getY();
   short getYEnd();
   short getYStart();
   short getYTileEnd();
   short getYTileStart();
 
   /* To change what the viewport locks to, when the update is called */
-  bool lockOn(int x, int y);
+  bool lockOn(float x, float y);
   bool lockOn(MapThing* thing);
   bool lockOn(Tile* map_tile);
 

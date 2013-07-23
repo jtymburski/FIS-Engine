@@ -73,7 +73,7 @@ public:
   Frame* getPrevious();
 
   /* Draws the frame in OpenGL, if the appropriate flags are set */
-  bool paintGl(int x, int y, int width, int height, float opacity);
+  bool paintGl(float x, float y, int width, int height, float opacity);
 
   /* Rotate the image an integer number of degrees */
   bool rotateImage(int angle);

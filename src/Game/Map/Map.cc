@@ -62,13 +62,7 @@ Map::Map(const QGLFormat & format, short viewport_width,
   timer.start(10);
 
   /* The time elapsed draw time */
-  time_buffer = 0;
   time_elapsed.start();
-
-  /* Testing */
-  shift_index = 0;
-  shift_forward = true;
-  gl_image = 0;
 }
 
 /* Destructor function */
@@ -157,23 +151,6 @@ bool Map::addTileData(XmlData data)
   return false;
 }
 
-double Map::averagePaintDelay(int time_elapsed)
-{
-  /* Up the paint count and calculate if it's too large */
-  paint_count++;
-  if(paint_count < 0)
-    paint_count = 1000;
-
-  /* Calculate the newly skewed average */
-  double avg_original = paint_time_average * 
-                        ((paint_count - 1.0) / paint_count);
-  double avg_addition = time_elapsed * (1.0 / paint_count);
-
-  /* Calculate the average and return */
-  paint_time_average = avg_original + avg_addition;
-  return paint_time_average;
-}
-
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
@@ -190,30 +167,30 @@ void Map::initializeGL()
   glClearColor(0, 0, 0, 0);
 }
 
-void Map::keyPressEvent(QKeyEvent* keyEvent)
+void Map::keyPressEvent(QKeyEvent* key_event)
 {
-  if(keyEvent->key() == Qt::Key_Down || keyEvent->key() == Qt::Key_Up ||
-     keyEvent->key() == Qt::Key_Right || keyEvent->key() == Qt::Key_Left)
-    player->keyPress(keyEvent);
-  if(keyEvent->key() == Qt::Key_Escape)
+  if(key_event->key() == Qt::Key_Down || key_event->key() == Qt::Key_Up ||
+     key_event->key() == Qt::Key_Right || key_event->key() == Qt::Key_Left)
+    player->keyPress(key_event);
+  if(key_event->key() == Qt::Key_Escape)
     closeMap();
-  else if(keyEvent->key() == Qt::Key_A)
+  else if(key_event->key() == Qt::Key_A)
     animateTiles();
-  else if(keyEvent->key() == Qt::Key_R)
-    shift_index = 0;
-  else if(keyEvent->key() == Qt::Key_F)
-    shift_forward = !shift_forward;
-  else if(keyEvent->key() == Qt::Key_1)
+  else if(key_event->key() == Qt::Key_1)
     viewport->lockOn(player);
-  else if(keyEvent->key() == Qt::Key_2)
-    viewport->lockOn(1000, 1000);
+  else if(key_event->key() == Qt::Key_2)
+    viewport->lockOn(608, 352);
+  else if(key_event->key() == Qt::Key_3)
+    viewport->lockOn(608.5, 352.5);
+  else if(key_event->key() == Qt::Key_4)
+    viewport->lockOn(609, 353);
 }
 
-void Map::keyReleaseEvent(QKeyEvent* keyEvent)
+void Map::keyReleaseEvent(QKeyEvent* key_event)
 {
-  if(keyEvent->key() == Qt::Key_Down || keyEvent->key() == Qt::Key_Up ||
-     keyEvent->key() == Qt::Key_Right || keyEvent->key() == Qt::Key_Left)
-    player->keyRelease(keyEvent);
+  if(key_event->key() == Qt::Key_Down || key_event->key() == Qt::Key_Up ||
+     key_event->key() == Qt::Key_Right || key_event->key() == Qt::Key_Left)
+    player->keyRelease(key_event);
 }
 
 /* TODO: seems to work much better than before. The flicker that is still
@@ -234,13 +211,6 @@ void Map::paintGL()
   /* Execute the draw, if loaded */
   if(loaded)
   {
-    int start_x = shift_index / 64 - 1;
-    if(start_x < 0)
-      start_x = 0;
-    int end_x = shift_index / 64 + kVIEWPORT_WIDTH + 1;
-    if(end_x > geography.size())
-      end_x = geography.size();
-
     /* Paint the lower half */
     for(int i = viewport->getXTileStart(); i < viewport->getXTileEnd(); i++)
       for(int j = viewport->getYTileStart(); j < viewport->getYTileEnd(); j++)
@@ -248,11 +218,9 @@ void Map::paintGL()
                                     j*kTILE_HEIGHT - viewport->getY(), 
                                     kTILE_WIDTH, kTILE_HEIGHT, 1);
     
-    if(player != 0 && player->getX() >= viewport->getXStart() && 
+    if(player != 0 && player->getX() >= viewport->getXStart() &&
                       player->getX() <= viewport->getXEnd())
-      player->paintGl(player->getX() - viewport->getX(), 
-                      player->getY() - viewport->getY(), 
-                      kTILE_WIDTH, kTILE_HEIGHT, 1.0);
+      player->paintGl(viewport->getX(), viewport->getY());
 
     /* Paint the upper half */
     for(int i = viewport->getXTileStart(); i < viewport->getXTileEnd(); i++)
@@ -299,8 +267,7 @@ void Map::paintGL()
   frames++;
   
   /* Time elapsed from standard update and then animate the screen */
-  time_buffer += averagePaintDelay(time_elapsed.restart());
-  animate();
+  animate(time_elapsed.restart());
   viewport->updateView();
 
   /* Finish by updating the viewport widget - currently in auto */
@@ -322,92 +289,53 @@ void Map::resizeGL(int width, int height)
  * PUBLIC SLOTS
  *===========================================================================*/
 
-void Map::animate()
+void Map::animate(short time_since_last)
 {
-  short time_constant = 11;
-
-  /* Update the shifting for movement */
-  //if(shift_index > 1200)
-  //  shift_index = 0;
-  if(shift_forward)
-  {
-    if(shift_index < (geography.size() - kVIEWPORT_WIDTH)*kTILE_WIDTH)
-    {
-      int shift = (int)(time_buffer / time_constant);
-      shift_index += shift;
-      time_buffer -= shift * time_constant;
-    }
-    else
-    {
-      time_buffer = 0;
-    }
-  }
-  else
-  {
-    if(shift_index > 0)
-    {
-      int shift = (int)(time_buffer / time_constant);
-      shift_index -= shift;
-      time_buffer -= shift * time_constant;
-    }
-    else
-    {
-      time_buffer = 0;
-    }
-  }
-
+  /* The movement handling. This will be extrapolated to all things */
   if(player != 0)
   {
     bool movable = true;
-
+    
+    //player->isAlmostOnTile(time_since_last);
     if(player->isOnTile() && player->isMoveRequested())
     {
       EnumDb::Direction moving = player->getMoveRequest();
-      int x1 = (int)player->getX() / kTILE_WIDTH;
-      int y1 = (int)player->getY() / kTILE_HEIGHT;
+      int x1 = player->getX() / kTILE_WIDTH;
+      int y1 = player->getY() / kTILE_HEIGHT;
       movable = geography[x1][y1]->getPassability(moving);
-      int x2, y2;
+      int x2 = x1;
+      int y2 = y1;
 
       if(moving == EnumDb::NORTH)
       {
-        x2 = x1;
-        y2 = y1 - 1;
-        if(y2 >= 0)
+        if(--y2 >= 0)
           movable &= geography[x2][y2]->getPassability(EnumDb::SOUTH);
         else
           movable = false;
       }
       else if(moving == EnumDb::EAST)
       {
-        x2 = x1 + 1;
-        y2 = y1;
-        if(x2 < geography.size())
+        if(++x2 < geography.size())
           movable &= geography[x2][y2]->getPassability(EnumDb::WEST);
         else
           movable = false;
       }
       else if(moving == EnumDb::SOUTH)
       {
-        x2 = x1;
-        y2 = y1 + 1;
-        if(y2 < geography[x2].size())
+        if(++y2 < geography[x2].size())
           movable &= geography[x2][y2]->getPassability(EnumDb::NORTH);
         else
           movable = false;
       }
       else if(moving == EnumDb::WEST)
       {
-        x2 = x1 - 1;
-        y2 = y1;
-        if(x2 >= 0)
+        if(--x2 >= 0)
           movable &= geography[x2][y2]->getPassability(EnumDb::EAST);
         else
           movable = false;
-      }
+      } 
     }
-
-    player->updateThing(movable);
-    //viewport->updateView();
+    player->updateThing(time_since_last, movable);
   }
 }
 
@@ -538,8 +466,8 @@ bool Map::loadMap(QString file)
                                       3, ".png");
 
     /* Make the map person */
-    player = new MapPerson(kTILE_WIDTH, kTILE_HEIGHT, this);
-    player->setCoordinates(kTILE_WIDTH*10, kTILE_HEIGHT*8);
+    player = new MapPerson(kTILE_WIDTH, kTILE_HEIGHT);
+    player->setCoordinates(kTILE_WIDTH*11, kTILE_HEIGHT*9);
 
     player->setState(MapPerson::GROUND, EnumDb::NORTH, 
                                         new MapState(up_sprite));
@@ -607,8 +535,6 @@ void Map::passOver()
 void Map::tickStart()
 {
   timer.start(kTICK_DELAY);
-
-  time_buffer = 0;
   time_elapsed.restart();
 }
 

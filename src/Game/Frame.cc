@@ -183,7 +183,7 @@ Frame* Frame::getPrevious()
  * Output: bool - status if the paint occurred (indication if the image was
  *                initialized.
  */
-bool Frame::paintGl(int x, int y, int width, int height, float opacity)
+bool Frame::paintGl(float x, float y, int width, int height, float opacity)
 {
   if(gl_image_set)
   {

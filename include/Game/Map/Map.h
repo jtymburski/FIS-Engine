@@ -69,7 +69,6 @@ private:
 
   /* The viewport for the map, controlled by QGraphicsView */
   MapViewport* viewport;
-  QGLWidget* viewport_widget;
 
   /* Weather effect on the overall map (May be pushed to the sector level at 
    * a later time) */
@@ -82,11 +81,6 @@ private:
   int paint_count;
   QTime paint_time;
   double paint_time_average;
-
-  /* Testing */
-  GLuint gl_image;
-  int shift_index;
-  bool shift_forward;
 
   /*------------------- Constants -----------------------*/
   const static int kDOUBLE_DIGITS;    /* The point when integers are more than
@@ -108,7 +102,6 @@ private:
  *===========================================================================*/
 private:
   bool addTileData(XmlData data);
-  double averagePaintDelay(int time_elapsed);
 
 /*============================================================================
  * PROTECTED FUNCTIONS
@@ -118,8 +111,8 @@ protected:
   void initializeGL();
 
   /* Key Press/Release Events */
-  void keyPressEvent(QKeyEvent* keyEvent);
-  void keyReleaseEvent(QKeyEvent* keyEvent);
+  void keyPressEvent(QKeyEvent* key_event);
+  void keyReleaseEvent(QKeyEvent* key_event);
 
   /* GL painting call */
   void paintGL();
@@ -137,7 +130,7 @@ signals:
  * PUBLIC SLOTS
  *===========================================================================*/
 public slots:
-  void animate();
+  void animate(short time_since_last);
   void animateTiles();
 
 /*============================================================================
