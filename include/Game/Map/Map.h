@@ -15,12 +15,12 @@
 #include <QGLWidget>
 
 #include "Game/Map/MapNPC.h"
-#include "Game/Map/Tile.h"
 #include "Game/Map/MapMenu.h"
 #include "Game/Map/MapStatusBar.h"
 #include "Game/Map/MapThing.h"
 #include "Game/Map/MapViewport.h"
 #include "Game/Map/Sector.h"
+#include "Game/Map/Tile.h"
 #include "Game/Sprite.h"
 #include "Game/Weather.h"
 #include "FileHandler.h"

@@ -50,8 +50,8 @@ MapPerson::MapPerson()
  *         QString description - a description of the person
  *         int id - a unique numerical identifier, for the person
  */
-MapPerson::MapPerson(int width, int height, QObject* parent,
-                     QString name, QString description, int id) : MapThing(parent)
+MapPerson::MapPerson(int width, int height, QString name, 
+                     QString description, int id)
 {
   /* Class value setup */
   setDescription(description);
@@ -335,8 +335,11 @@ void MapPerson::setSurface(SurfaceClassifier surface)
  * Inputs: none
  * Output: none 
  */
-void MapPerson::updateThing(float cycle_time, bool can_move)
+void MapPerson::updateThing(float cycle_time, Tile* next_tile)
 {
+  bool can_move = true; // TODO [2013-07-23]
+  bool reset = false;
+  
   /* Once a tile end has reached, cycle the movement direction */
   if(isOnTile())
   {
@@ -344,23 +347,19 @@ void MapPerson::updateThing(float cycle_time, bool can_move)
     if(isMoveRequested())
     {
       setDirection(getMoveRequest(), can_move);
-
-      /* If not allowed to move, reset the animation */
-      if(!can_move)
-        resetAnimation();
+      reset = !can_move;
     }
     else
     {
       setDirection(EnumDb::DIRECTIONLESS);
-      resetAnimation();
+      reset = true;
     }
   }
 
   moveThing(cycle_time);
 
   /* Only animate if the direction exists */
-  if(getMovement() != EnumDb::DIRECTIONLESS)
-    animate(true);
+  animate(cycle_time, reset, true);
 }
 
 /* 

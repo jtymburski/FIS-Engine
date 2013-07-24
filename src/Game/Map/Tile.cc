@@ -41,8 +41,8 @@ Tile::Tile()
  *
  * Inputs: int width - the width of the tile in pixels
  *         int height - the height of the tile in pixels
- *         int x - the x location respective to the parent (in pixels)
- *         int y - the y location respective to the parent (in pixels)
+ *         int x - the x location respective to the parent (in tile count)
+ *         int y - the y location respective to the parent (in tile count)
  */
 Tile::Tile(int width, int height, int x, int y)
 {
@@ -152,12 +152,10 @@ void Tile::clear(bool just_sprites)
   /* Clear sprite layer data */
   unsetBase();
   unsetEnhancer();
+  unsetImpassableThing();
   unsetLower();
+  unsetPassableThing();
   unsetUpper();
-
-  /* Clear player/thing data */
-  impassable_set = UNSET;
-  passable_set = false;
 
   if(!just_sprites)
   {
@@ -225,19 +223,20 @@ int Tile::getHeight()
   return height;
 }
 
-/* TODO: [2013-06-19]
+/*
  * Description: Gets the impassable object sprite that is stored, if set
  *
  * Inputs: none
  * Output: MapThing* - the MapThing pointer, could be a person or object
  */
-MapThing* Tile::getImpassableObject()
+MapThing* Tile::getImpassableThing()
 {
-  if(impassable_set == DECOR)
-    return impassable_object;
-  else if(impassable_set == PERSON)
-    return person;
-  return NULL;
+  return impassable_thing;
+}
+
+Tile::ThingState Tile::getImpassableThingType()
+{
+  return thing_state;
 }
 
 /* 
@@ -301,17 +300,15 @@ bool Tile::getLowerPassability(int index, EnumDb::Direction dir)
   return true;
 }
 
-/* TODO: [2013-06-19] 
+/*
  * Description: Gets the passable object sprite and returns it, if set.
  *
  * Inputs: none
  * Output: MapThing* - the passable object MapThing pointer
  */
-MapThing* Tile::getPassableObject()
+MapThing* Tile::getPassableThing()
 {
-  if(passable_set)
-    return passable_object;
-  return NULL;
+  return passable_thing;
 }
 
 /* TODO: Add in thing [2013-06-26]
@@ -326,6 +323,16 @@ bool Tile::getPassability(EnumDb::Direction dir)
   if(dir == EnumDb::DIRECTIONLESS)
     return (getBasePassability(dir) || getLowerPassability(dir));
   return (getBasePassability(dir) && getLowerPassability(dir));
+}
+
+short Tile::getPixelX()
+{
+  return (x * width);
+}
+
+short Tile::getPixelY()
+{
+  return (y * height);
 }
 
 /* 
@@ -367,7 +374,7 @@ int Tile::getWidth()
  *              layers).
  *
  * Inputs: none
- * Output: int - the x coordinate in pixels
+ * Output: int - the x coordinate, in tile count
  */
 int Tile::getX()
 {
@@ -379,7 +386,7 @@ int Tile::getX()
  *              layers).
  *
  * Inputs: none
- * Output: int - the y coordinate in pixels
+ * Output: int - the y coordinate, in tile count
  */
 int Tile::getY()
 {
@@ -504,16 +511,15 @@ bool Tile::isEnhancerSet()
   return (enhancer != 0);
 }
 
-/* TODO: [2013-06-19]
- * Description: Returns if the Impassable Sprite (object or person) is set 
+/*
+ * Description: Returns if the Impassable Thing is set 
  *
  * Inputs: none
- * Output: ImpassableObjectState - Enumerator that handles the impassable 
- *                                 object state: UNSET, OBJECT, PERSON.
+ * Output: bool - set indicator
  */
-Tile::ImpassableObjectState Tile::isImpassableObjectSet()
+bool Tile::isImpassableThingSet()
 {
-  return impassable_set;
+  return (thing_state != UNSET);
 }
 
 /* 
@@ -527,15 +533,15 @@ bool Tile::isLowerSet()
   return (lower.size() > 0);
 }
 
-/* TODO: [2013-06-19]
- * Description: Returns if the Passable Sprite(s) is(are) set 
+/*
+ * Description: Returns if the Passable Thing is set 
  *
  * Inputs: none
- * Output: bool - status if the passable sprite(s) is(are) set
+ * Output: bool - set status
  */
-bool Tile::isPassableObjectSet()
+bool Tile::isPassableThingSet()
 {
-  return passable_set;
+  return (passable_thing != 0);
 }
 
 /* 
@@ -554,30 +560,33 @@ bool Tile::isUpperSet()
  *              context for GL must have been called for this and the sprite
  *              GL initialization must have occurred before any painting.
  *
- * Inputs: int x - the x offset in the plane (left-right)
- *         int y - the y offset in the plane (up-down)
- *         int width - the width to render the sprite to
- *         int height - the height to render the sprite to
+ * Inputs: float offset_x - the offset in X off of base coordinates
+ *         float offset_y - the offset in Y off of base coordinates
  *         float opacity - the transparency of the paint object (0-1)
  * Output: bool - status if the sprite was painted. If failed, make sure there
  *         is an image in the sprite and make sure initializeGl() was called.
  */
-bool Tile::paintLower(int x, int y, int width, int height, float opacity)
+bool Tile::paintLower(float offset_x, float offset_y, float opacity)
 {
   bool success = true;
-
+  float pixel_x = getPixelX();
+  float pixel_y = getPixelY();
+  
   /* Paint the base first */
   if(base != 0)
-    success &= base->paintGl(x, y, width, height, opacity);
+    success &= base->paintGl(pixel_x - offset_x, pixel_y - offset_y, 
+                             width, height, opacity);
 
   /* Then the enhancer sprite */
   if(enhancer != 0)
-    success &= enhancer->paintGl(x, y, width, height, opacity);
+    success &= enhancer->paintGl(pixel_x - offset_x, pixel_y - offset_y, 
+                                 width, height, opacity);
 
   /* Then Paint the set of lower layers */
   for(int i = 0; i < lower.size(); i++)
     if(lower[i] != 0)
-      success &= lower[i]->paintGl(x, y, width, height, opacity);
+      success &= lower[i]->paintGl(pixel_x - offset_x, pixel_y - offset_y,
+                                   width, height, opacity);
 
   return success;
 }
@@ -587,22 +596,24 @@ bool Tile::paintLower(int x, int y, int width, int height, float opacity)
  *              context for GL must have been called for this and the sprite
  *              GL initialization must have occurred before any painting.
  *
- * Inputs: int x - the x offset in the plane (left-right)
- *         int y - the y offset in the plane (up-down)
- *         int width - the width to render the sprite to
- *         int height - the height to render the sprite to
+ * Inputs: float offset_x - the offset in X off of base coordinates
+ *         float offset_y - the offset in Y off of base coordinates
  *         float opacity - the transparency of the paint object (0-1)
- * Output: bool - status if the sprite was painted. If failed, make sure there
- *         is an image in the sprite and make sure initializeGl() was called.
+ * Output: bool - status if the sprite(s) were painted. If failed, make sure 
+ *         there is an image in the sprite and make sure initializeGl() was 
+ *         called.
  */
-bool Tile::paintUpper(int x, int y, int width, int height, float opacity)
+bool Tile::paintUpper(float offset_x, float offset_y, float opacity)
 {
   bool success = true;
-
+  float pixel_x = getPixelX();
+  float pixel_y = getPixelY();
+  
   /* Paint the upper set, if set */
   for(int i = 0; i < upper.size(); i++)
     if(upper[i] != 0)
-      success &= upper[i]->paintGl(x, y, width, height, opacity);
+      success &= upper[i]->paintGl(pixel_x - offset_x, pixel_y - offset_y, 
+                                   width, height, opacity);
 
   return success;
 }
@@ -690,19 +701,28 @@ bool Tile::setHeight(int height)
   return false;
 }
 
-/* TODO: [2013-06-19]
- * Description: Sets the impassable object sprite in the tile using a path to 
- *              the sprite image file.
+/*
+ * Description: Sets the impassable thing in the tile using a pointer to the
+ *              thing itself.
  *
- * Inputs: QString path - the path to the image to load in
- * Output: bool - returns true if the impassable object sprite was successfuly 
- *                set.
+ * Inputs: MapThing* thing - the thing to put in the class
+ *         ThingState type - the state enumerator for what type of thing
+ * Output: bool - returns true if the impassable thing was successfuly set.
  */
-bool Tile::setImpassableObject(QString path, ImpassableObjectState type)
+bool Tile::setImpassableThing(MapThing* thing, ThingState type)
 {
-  // TODO
-    (void)path;//warning
-    (void)type; //warning
+  if(type == UNSET)
+    unsetImpassableThing();
+  else
+  {
+    if(thing != 0)
+    {
+      thing_state = type;
+      impassable_thing = thing;
+      return true;
+    }
+    return false;
+  }
   return true;
 }
 
@@ -759,18 +779,21 @@ bool Tile::setLowerPassability(int index, EnumDb::Direction dir,
   return false;
 }
 
-/* TODO: [2013-06-19]
- * Description: Sets the passable object sprite in the tile using a path to 
- *              the sprite image file.
+/*
+ * Description: Sets the passable thing in the tile using a thing
+ *              reference pointer
  *
- * Inputs: QString path - the path to the image to load in
- * Output: bool - returns true if the passable object sprite was successfuly set
+ * Inputs: MapThing* thing - the passable thing reference
+ * Output: bool - returns true if the passable thing was successfuly set
  */
-bool Tile::setPassableObject(QString path)
+bool Tile::setPassableThing(MapThing* thing)
 {
-  // TODO
-  (void)path;//warning
-  return true;
+  if(thing != 0)
+  {
+    passable_thing = thing;
+    return true;
+  }
+  return false;
 }
 
 /* 
@@ -872,19 +895,16 @@ void Tile::unsetEnhancer()
   enhancer = 0;
 }
 
-/* TODO: [2013-06-19]
- * Description: Unsets the impassable object sprite in the tile. Deletes the 
- *              pointer, if applicable, and sets the internal variable to 
- *              notify the class so the impassable object isn't repainted.
+/*
+ * Description: Unsets the impassable object sprite in the tile. 
  *
  * Inputs: none
- * Output: bool - returns true if the impassable object was set before being
- *                unset.
+ * Output: none
  */
-bool Tile::unsetImpassableObject()
+void Tile::unsetImpassableThing()
 {
-  // TODO
-  return false;
+  impassable_thing = 0;
+  thing_state = UNSET;
 }
 
 /* 
@@ -927,18 +947,15 @@ bool Tile::unsetLower(int index)
   return false;
 }
 
-/* TODO: [2013-06-19]
- * Description: Unsets the passable object sprite in the tile. Deletes the
- *              pointer, if applicable, and sets the internal variable to
- *              notify the class so the passable object isn't repainted.
+/*
+ * Description: Unsets the passable object sprite in the tile.
  *
  * Inputs: none
- * Output: bool - returns true if the passable object was set before being unset
+ * Output: none
  */
-bool Tile::unsetPassableObject()
+void Tile::unsetPassableThing()
 {
-  // TODO
-  return false;
+  passable_thing = 0;
 }
 
 /* 

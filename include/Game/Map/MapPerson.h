@@ -22,7 +22,7 @@ class MapPerson : public MapThing
 public:
   /* Constructor functions */
   MapPerson();
-  MapPerson(int width, int height, QObject* parent = 0, QString name = "", 
+  MapPerson(int width, int height, QString name = "", 
             QString description = "", int id = kUNSET_ID);
 
   /* Destructor function */
@@ -104,7 +104,7 @@ public:
   void setSurface(SurfaceClassifier surface);
 
   /* Updates the thing, based on the tick */
-  void updateThing(float cycle_time, bool can_move = true);
+  void updateThing(float cycle_time, Tile* next_tile);
 
   /* Unsets a state, if it exists, to remove from the stack of states */
   void unsetState(SurfaceClassifier surface, EnumDb::Direction direction);

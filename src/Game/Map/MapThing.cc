@@ -12,7 +12,7 @@
 #include "Game/Map/MapThing.h"
 
 /* Constant Implementation - see header file for descriptions */
-const short MapThing::kANIMATION_OFFSET = 12;
+const short MapThing::kDEFAULT_ANIMATION = 250;
 const short MapThing::kDEFAULT_SPEED = 100;
 const short MapThing::kMINIMUM_ID =  0;
 const short MapThing::kUNSET_ID   = -1;
@@ -27,10 +27,11 @@ const short MapThing::kUNSET_ID   = -1;
  *
  * Inputs: none
  */
-MapThing::MapThing(QObject* parent) : QObject(parent)
+MapThing::MapThing()
 {
-  animation_delay = 0;
   state = 0;
+  tile_main = 0;
+  tile_previous = 0;
   clear();
 }
 
@@ -45,20 +46,18 @@ MapThing::MapThing(QObject* parent) : QObject(parent)
 MapThing::MapThing(MapState* state, int width, int height, 
                    QString name, QString description, int id)
 {
-  animation_delay = 0;
   this->state = 0;
-
-  /* The parent class definitions */
-  setCoordinates(0, 0);
-  setHeight(height);
-  setWidth(width);
-
+  tile_main = 0;
+  tile_previous = 0;
+  clear();
+  
   /* The class definitions */
   setDescription(description);
+  setHeight(height);
   setID(id);
   setName(name);
-  setSpeed(kDEFAULT_SPEED);
   setState(state);
+  setWidth(width);
 }
 
 /* 
@@ -74,30 +73,47 @@ MapThing::~MapThing()
  *===========================================================================*/
 
 /* 
- * Description: Animates the frames of the thing, based on the update offset
+ * Description: Animates the frames of the thing, based on the animate offset
  *              of the thing as well as calls to the sprite holder
  * 
- * Inputs: bool skip_head - Skip the head of the list of frames
+ * Inputs: short cycle_time - the msec time between the last animate call
+ *         bool reset - Resets the animation back to head. Used for either 
+ *                      restarting animation or stopping it.
+ *         bool skip_head - Skip the head of the list of frames
  * Output: bool - a status on the animate, only fails if it tries to animate
  *                the sprite and there are no frames in it.
  */
-bool MapThing::animate(bool skip_head)
+bool MapThing::animate(short cycle_time, bool reset, bool skip_head)
 {
-  if(state != 0 && state->getSprite() != 0 && 
-     animation_delay == kANIMATION_OFFSET)
+  bool status = true;
+  
+  /* Check if an animation can occur */
+  if(state != 0 && state->getSprite() != 0)
   {
-    bool status = state->getSprite()->shiftNext(skip_head);
-    animation_delay = 0;
-    return status;
+    /* Increment the animation time */
+    animation_buffer += cycle_time;
+    
+    if(reset || animation_time == 0)
+    {
+      status = state->getSprite()->setAtFirst();
+      animation_buffer = 0;
+    }
+    else if(animation_buffer >= animation_time)
+    {
+      status = state->getSprite()->shiftNext(skip_head);
+      animation_buffer -= animation_time;
+    }
   }
-
-  animation_delay++;
-  return true;
+  
+  return status;
 }
 
 float MapThing::moveAmount(float cycle_time)
 {
-  return ((speed * cycle_time) / 1000.0);
+  float move_amount = ((speed * cycle_time) / 1000.0);
+  if(move_amount > width)
+    move_amount = width;
+  return move_amount;
 }
 
 void MapThing::moveThing(float cycle_time)
@@ -128,7 +144,7 @@ bool MapThing::setDirection(EnumDb::Direction new_direction)
 
   /* Only shift the animation if the direction changed */
   if(changed)
-    animation_delay = kANIMATION_OFFSET;
+    animation_buffer = animation_time;
 
   return changed;
 }
@@ -145,6 +161,11 @@ bool MapThing::setDirection(EnumDb::Direction new_direction)
  */
 void MapThing::clear()
 {
+  Tile* null_tile = 0;
+  setStartingTile(null_tile);
+  
+  /* Resets the class parameters */
+  setAnimationSpeed(kDEFAULT_ANIMATION);
   setDescription("");
   setID(kUNSET_ID);
   setName("");
@@ -154,6 +175,11 @@ void MapThing::clear()
   width = 0;
 
   unsetState();
+}
+
+short MapThing::getAnimationSpeed()
+{
+  return animation_time;
 }
 
 /* 
@@ -228,6 +254,12 @@ MapState* MapThing::getState()
   return state;
 }
 
+/* Returns the central tile */
+Tile* MapThing::getTile()
+{
+  return tile_main;
+}
+
 /* 
  * Description: Gets the width of the internal tile.
  *
@@ -300,7 +332,7 @@ bool MapThing::isOnTile()
 
 bool MapThing::paintGl(float offset_x, float offset_y, float opacity)
 {
-  if(state != 0 && state->getSprite() != 0)
+  if(state != 0 && state->getSprite() != 0 && tile_main != 0)
   {
     state->getSprite()->paintGl(x - offset_x, y - offset_y, width, height, opacity);
     return true;
@@ -308,37 +340,15 @@ bool MapThing::paintGl(float offset_x, float offset_y, float opacity)
   return false;
 }
 
-/* 
- * Description: Resets the sequence of animation to the head of the list.
- *              The head is used as the inanimate place holder in most cases.
- *
- * Inputs: none
- * Output: bool - status if the reset was successful. Only fails if there are
- *                no frames in the sprite.
- */
-bool MapThing::resetAnimation()
+bool MapThing::setAnimationSpeed(short frame_time)
 {
-  if(state != 0 && state->getSprite() != 0)
+  if(frame_time >= 0)
   {
-    if(!state->getSprite()->isAtFirst())
-      return state->getSprite()->setAtFirst();
+    animation_buffer = 0;
+    animation_time = frame_time;
     return true;
   }
   return false;
-}
-
-/* 
- * Description: Sets the coordinate information for the base item (inherited).
- *              X and Y are with respect to the scene plane.
- *
- * Inputs: int x - the x pixel coordinate on the scene
- *         int y - the y pixel coordinate on the scene
- * Output: none
- */
-void MapThing::setCoordinates(int x, int y)
-{
-  this->x = x;
-  this->y = y;
 }
 
 /* 
@@ -413,6 +423,43 @@ bool MapThing::setSpeed(short speed)
   return false;
 }
 
+/* 
+ * Description: Sets the connected tile information for the map thing. This is
+ *              the initial starting point and where the thing is initially
+ *              placed. If this is unset, the thing will not move or paint.
+ *
+ * Inputs: Tile* new_tile
+ * Output: none
+ */
+void MapThing::setStartingTile(Tile* new_tile)
+{
+  /* Stop movement */
+  setDirection(EnumDb::DIRECTIONLESS);
+  
+  /* Unset the previous tile */
+  //if(tile_previous != 0)
+  //  tile_previous-> // TODO
+  tile_previous = 0;
+  
+  /* Unset the main tile */
+  //if(tile_main != 0)
+  //  tile_main-> // TODO
+  tile_main = 0;
+  
+  /* Set the new tile */
+  tile_main = new_tile;
+  if(tile_main != 0)
+  {
+    this->x = tile_main->getPixelX();
+    this->y = tile_main->getPixelY();
+  }
+  else
+  {
+    this->x = 0;
+    this->y = 0;
+  }
+}
+
 /*
  * Description: Sets the state data that defines the thing.
  *
@@ -459,14 +506,16 @@ bool MapThing::setWidth(int new_width)
  * Inputs: none
  * Output: none 
  */
-void MapThing::updateThing(float cycle_time, bool can_move)
-{ 
-  /* If it can move, allow it */
-  if(can_move)
+void MapThing::updateThing(float cycle_time, Tile* next_tile)
+{
+  if(tile_main != 0)
+  {
+    /* Move the thing */
     moveThing(cycle_time);
 
-  /* Animate the thing */
-  animate();
+    /* Animate the thing */
+    animate(cycle_time);
+  }
 }
 
 /*

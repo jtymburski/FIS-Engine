@@ -13,17 +13,16 @@
 #define MAPTHING_H
 
 //#include <QDebug>
-//#include <QGraphicsObject>
 #include <QObject>
-//#include <QPainter>
 
 #include "Game/Map/MapState.h"
+#include "Game/Map/Tile.h"
 
 class MapThing : public QObject
 {
 public:
   /* Constructor functions */
-  MapThing(QObject* parent = 0);
+  MapThing();
   MapThing(MapState* state, int width, int height, QString name = "", 
            QString description = "", int id = kUNSET_ID);
 
@@ -31,14 +30,13 @@ public:
   ~MapThing();
 
 private:
-  /* The animation delay, stored locally */
-  int animation_delay;
-
   /* The thing classification */
   QString description;
   short height;
   int id;
   QString name;
+  Tile* tile_main;
+  Tile* tile_previous;
   short width;
   float x;
   float y;
@@ -47,23 +45,24 @@ private:
   MapState* state;
 
   /* Movement information */
+  short animation_buffer;
+  short animation_time;
   EnumDb::Direction movement;
   short speed;
   
   /* -------------------------- Constants ------------------------- */
 protected:
-  const static short kANIMATION_OFFSET; /* The number of animate calls before
-                                           the frame sequence is updated */
-  const static short kDEFAULT_SPEED;    /* The default thing speed (1 pixel every 10ms) */
-  const static short kMINIMUM_ID;       /* The minimum ID, for a thing */
-  const static short kUNSET_ID;         /* The placeholder unset ID */
+  const static short kDEFAULT_ANIMATION; /* The default animation speed */
+  const static short kDEFAULT_SPEED;     /* The default thing speed */
+  const static short kMINIMUM_ID;        /* The minimum ID, for a thing */
+  const static short kUNSET_ID;          /* The placeholder unset ID */
 
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
 protected:
   /* Animates the thing, if it has multiple frames */
-  bool animate(bool skip_head = false);
+  bool animate(short cycle_time, bool reset = false, bool skip_head = false);
 
   /* Move the thing, based on the internal direction */
   float moveAmount(float cycle_time);
@@ -79,6 +78,9 @@ public:
   /* Clears the entire class data */
   void clear();
 
+  /* Gets the animation speed of the thing */
+  short getAnimationSpeed();
+  
   /* Gets the things decription */
   QString getDescription();
 
@@ -100,6 +102,9 @@ public:
   
   /* Returns the map state that's defined */
   MapState* getState();
+  
+  /* Returns the central tile */
+  Tile* getTile();
   
   /* Returns the width of the thing */
   int getWidth();
@@ -125,13 +130,10 @@ public:
 
   /* Paint call, that paints the main state of the thing */
   bool paintGl(float offset_x = 0.0, float offset_y = 0.0, float opacity = 1.0);
+
+  /* Sets the animation time for each frame */
+  bool setAnimationSpeed(short frame_time);
   
-  /* Resets the animation of the thing, back to the starting frame */ 
-  bool resetAnimation();
-
-  /* Set the coordinates for the data in the map thing (for the parent) */
-  void setCoordinates(int x, int y);
-
   /* Sets the things description */
   void setDescription(QString new_description);
 
@@ -146,6 +148,9 @@ public:
 
   /* Sets the things speed */
   bool setSpeed(short speed);
+    
+  /* Set the tile to hook the map thing to */
+  void setStartingTile(Tile* new_tile);
   
   /* Sets the state of the thing */
   bool setState(MapState* state, bool unset_old = true);
@@ -154,7 +159,7 @@ public:
   bool setWidth(int new_width);
 
   /* Updates the thing, called on the tick */
-  virtual void updateThing(float cycle_time, bool can_move = true);
+  virtual void updateThing(float cycle_time, Tile* next_tile);
   
   /* Unsets the state, in the class */
   void unsetState(bool delete_state = true);

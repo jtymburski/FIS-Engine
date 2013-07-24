@@ -13,14 +13,11 @@
 #ifndef TILE_H
 #define TILE_H
 
+class MapThing;
+
 //#include <QDebug>
-//#include <QGraphicsScene>
 
 #include "EnumDb.h"
-//#include "Game/Map/Layer.h"
-#include "Game/Map/MapInteractiveObject.h"
-#include "Game/Map/MapPerson.h"
-#include "Game/Map/MapWalkOver.h"
 #include "Game/Sprite.h"
 
 class Tile
@@ -33,10 +30,10 @@ public:
   /* Destructor function */
   ~Tile();
   
-  /* UNSET - The impassable object is unused
-   * DECOR - The impassable object is an object (Tree, etc)
-   * PERSON - The impassable object is a person (player, npc) */
-  enum ImpassableObjectState{UNSET, DECOR, PERSON};
+  /* UNSET - The thing is unused
+   * DECOR - The thing is a solid object (impassable)
+   * PERSON - The thing is a person (player, npc) */
+  enum ThingState{UNSET, DECOR, PERSON};
   
   /* OFF - Not rendered at all
    * BLANKED - Blacked out
@@ -62,15 +59,10 @@ private:
   QList<Sprite*> lower;
   QList<char> lower_passability;
 
-  /* Player or NPC or impassible item (Causes the passibility of all directions
-   * to be false if not null). TODO */
-  MapInteractiveObject* impassable_object;
-  MapPerson* person;
-  ImpassableObjectState impassable_set;
-  
-  /* The passable sprite (eg. Bubby, equipment). TODO */
-  MapWalkOver* passable_object;
-  bool passable_set;
+  /* The things that are on the given tile - only used to store location */
+  MapThing* impassable_thing;
+  MapThing* passable_thing;
+  ThingState thing_state;
 
   /* The upper information */
   QList<Sprite*> upper;
@@ -104,19 +96,24 @@ public:
   int getHeight();
 
   /* Gets the impassable object sprite */
-  MapThing* getImpassableObject();
-
+  MapThing* getImpassableThing();
+  ThingState getImpassableThingType();
+  
   /* Gets the lower layer(s) */
   QList<Sprite*> getLower();
   bool getLowerPassability(EnumDb::Direction dir);
   bool getLowerPassability(int index, EnumDb::Direction dir);
   
   /* Gets the passable object sprite */
-  MapThing* getPassableObject();
+  MapThing* getPassableThing();
 
   /* Returns the passability of the tile based on direction */
   bool getPassability(EnumDb::Direction dir);
-
+  
+  /* Returns the tile x and y pixel count */
+  short getPixelX();
+  short getPixelY();
+  
   /* Returns the tile status */
   TileStatus getStatus();
 
@@ -144,21 +141,23 @@ public:
   /* Returns if the Enhancer Layer is set */
   bool isEnhancerSet();
   
-  /* Returns if the Impassable Sprite is set */
-  ImpassableObjectState isImpassableObjectSet();
+  /* Returns if the Impassable Thing is set */
+  bool isImpassableThingSet();
 
   /* Returns if the Lower Layer is set */
   bool isLowerSet();
 
-  /* Returns if the Passable Sprite is set */
-  bool isPassableObjectSet();
+  /* Returns if the Passable Thing is set */
+  bool isPassableThingSet();
 
   /* Returns if the Upper Layer is set (ie. at least one) */
   bool isUpperSet();
 
   /* Paints the active sprites in this tile using GL direct calls */
-  bool paintLower(int x, int y, int width, int height, float opacity);
-  bool paintUpper(int x, int y, int width, int height, float opacity);
+  bool paintLower(float offset_x = 0.0, float offset_y = 0.0, 
+                                        float opacity = 1.0);
+  bool paintUpper(float offset_x = 0.0, float offset_y = 0.0, 
+                                        float opacity = 1.0);
 
   /* Sets the base portion of the layer and the passability */
   bool setBase(Sprite* base);
@@ -171,14 +170,14 @@ public:
   bool setHeight(int height);
 
   /* Sets the impassable object sprite */
-  bool setImpassableObject(QString path, ImpassableObjectState type);
+  bool setImpassableThing(MapThing* thing, ThingState type);
 
   /* Sets the lower portion of the layer(s) and the passability */
   bool setLower(Sprite* lower);
   bool setLowerPassability(int index, EnumDb::Direction dir, bool set_value);
 
   /* Sets the passable object sprite */
-  bool setPassableObject(QString path);
+  bool setPassableThing(MapThing* thing);
 
   /* Sets a new status for the tile */
   void setStatus(TileStatus status);
@@ -199,16 +198,16 @@ public:
   /* Unsets the enhancer layer */
   void unsetEnhancer();
 
-  /* Unsets the impassable object sprite */
-  bool unsetImpassableObject();
-
+  /* Unsets the impassable thing sprite  - not deleting */
+  void unsetImpassableThing();
+  
   /* Unsets the lower layer */
   void unsetLower();
   bool unsetLower(int index);
 
-  /* Unsets the passable object sprite */
-  bool unsetPassableObject();
-
+  /* Unsets the passable thing sprite  - not deleting */
+  void unsetPassableThing();
+  
   /* Unsets the upper layer(s) */
   void unsetUpper();
   bool unsetUpper(int index);

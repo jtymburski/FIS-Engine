@@ -203,6 +203,11 @@ void Map::paintGL()
   //QTime time;
   //time.start();
  
+  /* Animate the map based on the elapsed time and then update
+   * the viewport due to the animate */
+  animate(time_elapsed.restart());
+  viewport->updateView();
+  
   /* Start by setting the context and clearing the screen buffers */
   makeCurrent();
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -214,9 +219,7 @@ void Map::paintGL()
     /* Paint the lower half */
     for(int i = viewport->getXTileStart(); i < viewport->getXTileEnd(); i++)
       for(int j = viewport->getYTileStart(); j < viewport->getYTileEnd(); j++)
-        geography[i][j]->paintLower(i*kTILE_WIDTH - viewport->getX(), 
-                                    j*kTILE_HEIGHT - viewport->getY(), 
-                                    kTILE_WIDTH, kTILE_HEIGHT, 1);
+        geography[i][j]->paintLower(viewport->getX(), viewport->getY());
     
     if(player != 0 && player->getX() >= viewport->getXStart() &&
                       player->getX() <= viewport->getXEnd())
@@ -225,9 +228,7 @@ void Map::paintGL()
     /* Paint the upper half */
     for(int i = viewport->getXTileStart(); i < viewport->getXTileEnd(); i++)
       for(int j = viewport->getYTileStart(); j < viewport->getYTileEnd(); j++)
-        geography[i][j]->paintUpper(i*kTILE_WIDTH - viewport->getX(),
-                                    j*kTILE_HEIGHT - viewport->getY(), 
-                                    kTILE_WIDTH, kTILE_HEIGHT, 1);
+        geography[i][j]->paintUpper(viewport->getX(), viewport->getY());
   }
 
   /* Paint the frame rate */
@@ -240,9 +241,7 @@ void Map::paintGL()
   glEnd();
   glColor4f(1.0, 1.0, 1.0, 1.0);
   renderText(20, 30, frames_per_second);
-  renderText(450, 24, "Press 'r' to reset the painting back to the origin");
-  renderText(490, 48, "Press 'a' to animate the grass tile");
-  renderText(480, 72, "Press 'f' to flip the movement direction");
+  renderText(490, 24, "Press 'a' to animate the grass tile");
 
   /* Clean up the drawing procedure */
   glFlush();
@@ -265,10 +264,6 @@ void Map::paintGL()
     frames = 0;
   }
   frames++;
-  
-  /* Time elapsed from standard update and then animate the screen */
-  animate(time_elapsed.restart());
-  viewport->updateView();
 
   /* Finish by updating the viewport widget - currently in auto */
   //swapBuffers();
@@ -335,7 +330,7 @@ void Map::animate(short time_since_last)
           movable = false;
       } 
     }
-    player->updateThing(time_since_last, movable);
+    player->updateThing(time_since_last, 0);
   }
 }
 
@@ -433,8 +428,7 @@ bool Map::loadMap(QString file)
       for(int j = 0; j < height; j++)
       {
         /* Create the tile */
-        Tile* t = new Tile(kTILE_WIDTH, kTILE_HEIGHT, 
-                           i*kTILE_WIDTH, j*kTILE_HEIGHT);
+        Tile* t = new Tile(kTILE_WIDTH, kTILE_HEIGHT, i, j);
         //t->setStatus(Tile::OFF);
 
         /* Add the new tile to the list */
@@ -467,7 +461,7 @@ bool Map::loadMap(QString file)
 
     /* Make the map person */
     player = new MapPerson(kTILE_WIDTH, kTILE_HEIGHT);
-    player->setCoordinates(kTILE_WIDTH*11, kTILE_HEIGHT*9);
+    player->setStartingTile(geography[11][9]);
 
     player->setState(MapPerson::GROUND, EnumDb::NORTH, 
                                         new MapState(up_sprite));
