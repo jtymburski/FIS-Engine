@@ -32,8 +32,9 @@ public:
   
   /* UNSET - The thing is unused
    * DECOR - The thing is a solid object (impassable)
-   * PERSON - The thing is a person (player, npc) */
-  enum ThingState{UNSET, DECOR, PERSON};
+   * PERSON - The thing is a player person
+   * NPC - The thing is an NPC person */
+  enum ThingState{UNSET, DECOR, PERSON, NPC};
   
   /* OFF - Not rendered at all
    * BLANKED - Blacked out
@@ -108,7 +109,8 @@ public:
   MapThing* getPassableThing();
 
   /* Returns the passability of the tile based on direction */
-  bool getPassability(EnumDb::Direction dir);
+  bool getPassabilityEntering(EnumDb::Direction dir);
+  bool getPassabilityExiting(EnumDb::Direction dir);
   
   /* Returns the tile x and y pixel count */
   short getPixelX();

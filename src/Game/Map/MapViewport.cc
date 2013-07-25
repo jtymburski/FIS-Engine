@@ -86,6 +86,8 @@ short MapViewport::getWidth()
 
 float MapViewport::getX()
 {
+  //int x_rounded = x * 10;
+  //return (x_rounded / 10.0);
   return x;
 }
 
@@ -126,6 +128,8 @@ short MapViewport::getXTileStart()
 
 float MapViewport::getY()
 {
+  //int y_rounded = y * 10;
+  //return (y_rounded / 10.0);
   return y;
 }
 

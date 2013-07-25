@@ -162,7 +162,7 @@ void Map::initializeGL()
   glDisable(GL_COLOR_MATERIAL);
   glEnable(GL_BLEND);
   //glEnable(GL_CULL_FACE); // Performance Add? Only for 3d
-  glEnable(GL_POLYGON_SMOOTH);
+  //glEnable(GL_POLYGON_SMOOTH); // Causes strange lines drawn between tiles
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glClearColor(0, 0, 0, 0);
 }
@@ -287,12 +287,12 @@ void Map::resizeGL(int width, int height)
 void Map::animate(short time_since_last)
 {
   /* The movement handling. This will be extrapolated to all things */
-  if(player != 0)
+  if(player != 0 && player->getTile() != 0)
   {
     bool movable = true;
     
     //player->isAlmostOnTile(time_since_last);
-    if(player->isOnTile() && player->isMoveRequested())
+    /*if(player->isOnTile() && player->isMoveRequested())
     {
       EnumDb::Direction moving = player->getMoveRequest();
       int x1 = player->getX() / kTILE_WIDTH;
@@ -329,8 +329,35 @@ void Map::animate(short time_since_last)
         else
           movable = false;
       } 
+    }*/
+    
+    Tile* next_tile = 0;
+    int tile_x = player->getTile()->getX();
+    int tile_y = player->getTile()->getY();
+    
+    switch(player->getMoveRequest())
+    {
+      case EnumDb::NORTH:
+        if(--tile_y >= 0)
+          next_tile = geography[tile_x][tile_y];
+        break;
+      case EnumDb::EAST:
+        if(++tile_x < geography.size())
+          next_tile = geography[tile_x][tile_y];
+        break;
+      case EnumDb::SOUTH:
+        if(++tile_y < geography[tile_x].size())
+          next_tile = geography[tile_x][tile_y];
+        break;
+      case EnumDb::WEST:
+        if(--tile_x >= 0)
+          next_tile = geography[tile_x][tile_y];
+        break;
+      case EnumDb::DIRECTIONLESS:
+        next_tile = 0;
     }
-    player->updateThing(time_since_last, 0);
+    
+    player->updateThing(time_since_last, next_tile);
   }
 }
 
@@ -461,7 +488,7 @@ bool Map::loadMap(QString file)
 
     /* Make the map person */
     player = new MapPerson(kTILE_WIDTH, kTILE_HEIGHT);
-    player->setStartingTile(geography[11][9]);
+    player->setStartingTile(geography[8][8]); // 11, 9
 
     player->setState(MapPerson::GROUND, EnumDb::NORTH, 
                                         new MapState(up_sprite));

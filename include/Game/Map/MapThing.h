@@ -20,6 +20,8 @@
 
 class MapThing : public QObject
 {
+  Q_OBJECT
+
 public:
   /* Constructor functions */
   MapThing();
@@ -29,7 +31,7 @@ public:
   /* Destructor function */
   ~MapThing();
 
-private:
+protected:
   /* The thing classification */
   QString description;
   short height;
@@ -51,7 +53,6 @@ private:
   short speed;
   
   /* -------------------------- Constants ------------------------- */
-protected:
   const static short kDEFAULT_ANIMATION; /* The default animation speed */
   const static short kDEFAULT_SPEED;     /* The default thing speed */
   const static short kMINIMUM_ID;        /* The minimum ID, for a thing */
@@ -63,7 +64,13 @@ protected:
 protected:
   /* Animates the thing, if it has multiple frames */
   bool animate(short cycle_time, bool reset = false, bool skip_head = false);
-
+ 
+  /* Is the thing almost centered on a tile (less than 1 pulse away) */
+  bool isAlmostOnTile(float cycle_time);
+  
+  /* Is move allowed, based on main tile and the next tile */
+  bool isMoveAllowed(Tile* next_tile);
+  
   /* Move the thing, based on the internal direction */
   float moveAmount(float cycle_time);
   void moveThing(float cycle_time);
@@ -71,6 +78,10 @@ protected:
   /* Sets the new direction that the class is moving in */
   bool setDirection(EnumDb::Direction new_direction);
 
+  /* Update the tiles, based on the new tile entering and if can move */
+  void tileUpdate(Tile* next_tile, bool can_move, 
+                  Tile::ThingState classification);
+  
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
@@ -115,9 +126,6 @@ public:
 
   /* Starts inteaction (conversation, giving something, etc) */
   virtual void interaction();
- 
-  /* Is the thing almost centered on a tile (less than 1 pulse away) */
-  bool isAlmostOnTile(short cycle_time);
   
   /* Returns if there is a move request for the given thing */
   virtual bool isMoveRequested();

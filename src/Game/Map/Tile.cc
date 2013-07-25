@@ -50,6 +50,7 @@ Tile::Tile(int width, int height, int x, int y)
 
   /* Finally reset the parameters based on this alternate constructor */
   setHeight(height);
+  setStatus(ACTIVE);
   setWidth(width);
   setX(x);
   setY(y);
@@ -311,18 +312,39 @@ MapThing* Tile::getPassableThing()
   return passable_thing;
 }
 
-/* TODO: Add in thing [2013-06-26]
- * Description: Gets if the tile is passable from the given direction
+/*
+ * TODO: comment
+ */
+bool Tile::getPassabilityEntering(EnumDb::Direction dir)
+{
+  bool thing_not_set = (thing_state == UNSET);
+  if(dir == EnumDb::NORTH)
+    return thing_not_set && getPassabilityExiting(EnumDb::SOUTH);
+  else if(dir == EnumDb::EAST)
+    return thing_not_set && getPassabilityExiting(EnumDb::WEST);
+  else if(dir == EnumDb::SOUTH)
+    return thing_not_set && getPassabilityExiting(EnumDb::NORTH);
+  else if(dir == EnumDb::WEST)
+    return thing_not_set && getPassabilityExiting(EnumDb::EAST);
+  return !thing_not_set || getPassabilityExiting(dir);
+}
+
+/*
+ * Description: Gets if the tile is passable leaving the given direction
  *
  * Inputs: EnumDb::Direction dir - the direction enumerated for passability
- * Output: bool - status if the tile is accessible into the tile from the
+ * Output: bool - status if the tile is accessible leaving the tile from the
  *                given direction.
  */
-bool Tile::getPassability(EnumDb::Direction dir)
+bool Tile::getPassabilityExiting(EnumDb::Direction dir)
 {
-  if(dir == EnumDb::DIRECTIONLESS)
-    return (getBasePassability(dir) || getLowerPassability(dir));
-  return (getBasePassability(dir) && getLowerPassability(dir));
+  if(status != OFF)
+  {
+    if(dir == EnumDb::DIRECTIONLESS)
+      return (getBasePassability(dir) || getLowerPassability(dir));
+    return (getBasePassability(dir) && getLowerPassability(dir));
+  }
+  return false;
 }
 
 short Tile::getPixelX()
@@ -569,25 +591,40 @@ bool Tile::isUpperSet()
 bool Tile::paintLower(float offset_x, float offset_y, float opacity)
 {
   bool success = true;
-  float pixel_x = getPixelX();
-  float pixel_y = getPixelY();
+  float pixel_x = getPixelX() - offset_x;
+  float pixel_y = getPixelY() - offset_y;
   
-  /* Paint the base first */
-  if(base != 0)
-    success &= base->paintGl(pixel_x - offset_x, pixel_y - offset_y, 
-                             width, height, opacity);
+  /* Only proceed if the status isn't off */
+  if(status != OFF)
+  {
+    if(status == ACTIVE)
+    {
+      /* Paint the base first */
+      if(base != 0)
+        success &= base->paintGl(pixel_x, pixel_y, width, height, opacity);
 
-  /* Then the enhancer sprite */
-  if(enhancer != 0)
-    success &= enhancer->paintGl(pixel_x - offset_x, pixel_y - offset_y, 
-                                 width, height, opacity);
+      /* Then the enhancer sprite */
+      if(enhancer != 0)
+        success &= enhancer->paintGl(pixel_x, pixel_y, width, height, opacity);
 
-  /* Then Paint the set of lower layers */
-  for(int i = 0; i < lower.size(); i++)
-    if(lower[i] != 0)
-      success &= lower[i]->paintGl(pixel_x - offset_x, pixel_y - offset_y,
-                                   width, height, opacity);
-
+      /* Then Paint the set of lower layers */
+      for(int i = 0; i < lower.size(); i++)
+        if(lower[i] != 0)
+          success &= lower[i]->paintGl(pixel_x, pixel_y,
+                                       width, height, opacity);
+    }
+    else if(status == BLANKED)
+    {
+      glColor4f(0.0, 0.0, 0.0, 1.0);
+      glBegin(GL_QUADS);
+        glVertex3f(pixel_x, pixel_y + height, 0);
+        glVertex3f(pixel_x, pixel_y, 0);
+        glVertex3f(pixel_x + width, pixel_y, 0);
+        glVertex3f(pixel_x + width, pixel_y + width, 0);
+      glEnd();
+    }
+  }
+  
   return success;
 }
 
@@ -606,15 +643,22 @@ bool Tile::paintLower(float offset_x, float offset_y, float opacity)
 bool Tile::paintUpper(float offset_x, float offset_y, float opacity)
 {
   bool success = true;
-  float pixel_x = getPixelX();
-  float pixel_y = getPixelY();
   
-  /* Paint the upper set, if set */
-  for(int i = 0; i < upper.size(); i++)
-    if(upper[i] != 0)
-      success &= upper[i]->paintGl(pixel_x - offset_x, pixel_y - offset_y, 
-                                   width, height, opacity);
-
+  /* Only paint if the status is enabled */
+  if(status != OFF)
+  {
+    if(status == ACTIVE)
+    {
+      float pixel_x = getPixelX();
+      float pixel_y = getPixelY();
+  
+      /* Paint the upper set, if set */
+      for(int i = 0; i < upper.size(); i++)
+        if(upper[i] != 0)
+          success &= upper[i]->paintGl(pixel_x - offset_x, pixel_y - offset_y,
+                                       width, height, opacity);
+    }
+  }
   return success;
 }
 

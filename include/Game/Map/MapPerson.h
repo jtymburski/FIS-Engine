@@ -70,7 +70,7 @@ protected:
   EnumDb::Direction intToDir(int dir_index);
 
   /* Sets the direction that the person is travelling in */
-  void setDirection(EnumDb::Direction direction, bool set_movement = true);
+  bool setDirection(EnumDb::Direction direction, bool set_movement = true);
 
 /*============================================================================
  * PUBLIC FUNCTIONS

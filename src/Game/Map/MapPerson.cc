@@ -156,15 +156,16 @@ EnumDb::Direction MapPerson::intToDir(int dir_index)
  *              the parent frame so a new classifier is printed.
  * 
  * Inputs: MovementDirection direction - the new direction to set
- * Output: none
+ * Output: bool - indicates if the directional movement changed
  */
-void MapPerson::setDirection(EnumDb::Direction direction, bool set_movement)
+bool MapPerson::setDirection(EnumDb::Direction direction, bool set_movement)
 {
   bool changed = (this->direction != direction);
- 
+  bool movement_changed = false;
+  
   /* If moving, set the direction in map thing */
   if(set_movement)
-    MapThing::setDirection(direction);
+    movement_changed = MapThing::setDirection(direction);
   else
     MapThing::setDirection(EnumDb::DIRECTIONLESS);
 
@@ -177,6 +178,8 @@ void MapPerson::setDirection(EnumDb::Direction direction, bool set_movement)
     /* Finally set the in class direction */
     this->direction = direction;
   }
+  
+  return movement_changed;
 }
 
 /*============================================================================
@@ -337,20 +340,52 @@ void MapPerson::setSurface(SurfaceClassifier surface)
  */
 void MapPerson::updateThing(float cycle_time, Tile* next_tile)
 {
-  bool can_move = true; // TODO [2013-07-23]
+  bool can_move = isMoveAllowed(next_tile);
   bool reset = false;
   
   /* Once a tile end has reached, cycle the movement direction */
-  if(isOnTile())
+  if(isOnTile() || isAlmostOnTile(cycle_time))
   {
+    if(tile_previous != 0)
+      tile_previous->unsetImpassableThing();
+    tile_previous = 0;
+    
+    //tileUpdate(next_tile, isMoveRequested() && can_move, Tile::PERSON);
+    
+    // TODO: causes choppy movement due to setting it back to the tile
+    if(isAlmostOnTile(cycle_time))
+    {
+      x = tile_main->getPixelX();
+      y = tile_main->getPixelY();
+    }
+    
     /* Only update direction if a move is requested */
     if(isMoveRequested())
     {
       setDirection(getMoveRequest(), can_move);
+      //if(setDirection(getMoveRequest(), can_move))
+      //{
+      //  x = tile_main->getPixelX();
+      //  y = tile_main->getPixelY();
+      //}
+      
+      if(can_move)
+      {
+        tile_previous = tile_main;
+        tile_main = next_tile;
+        tile_main->setImpassableThing(this, Tile::PERSON);
+      }
+
       reset = !can_move;
     }
     else
     {
+      //if(isAlmostOnTile(cycle_time))
+      //{
+      //  x = tile_main->getPixelX();
+      //  y = tile_main->getPixelY();
+      //}
+      
       setDirection(EnumDb::DIRECTIONLESS);
       reset = true;
     }

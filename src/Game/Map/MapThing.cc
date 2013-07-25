@@ -13,7 +13,7 @@
 
 /* Constant Implementation - see header file for descriptions */
 const short MapThing::kDEFAULT_ANIMATION = 250;
-const short MapThing::kDEFAULT_SPEED = 100;
+const short MapThing::kDEFAULT_SPEED = 150;
 const short MapThing::kMINIMUM_ID =  0;
 const short MapThing::kUNSET_ID   = -1;
 
@@ -108,6 +108,41 @@ bool MapThing::animate(short cycle_time, bool reset, bool skip_head)
   return status;
 }
 
+/* Is the thing almost centered on a tile (less than 1 pulse away) */
+// TODO [2013-07-22]
+bool MapThing::isAlmostOnTile(float cycle_time)
+{
+  float tile_diff = 0.0;
+  
+  if(isMoving() && !isOnTile())
+  {
+    if(movement == EnumDb::EAST)
+      tile_diff = width - (x - (int)(x / width) * width);
+    else if(movement == EnumDb::WEST)
+      tile_diff = (x - (int)(x / width) * width);
+    else if(movement == EnumDb::SOUTH)
+      tile_diff = height - (y - (int)(y / height) * height);
+    else if(movement == EnumDb::NORTH)
+      tile_diff = (y - (int)(y / height) * height);
+    
+    return (moveAmount(cycle_time) > tile_diff);
+  }
+  
+  return false;
+}
+
+bool MapThing::isMoveAllowed(Tile* next_tile)
+{
+  EnumDb::Direction move_request = getMoveRequest();
+  
+  if(tile_main != 0 && next_tile != 0 && isMoveRequested())
+  {
+    return tile_main->getPassabilityExiting(getMoveRequest()) && 
+           next_tile->getPassabilityEntering(getMoveRequest());
+  }
+  return false;
+}
+
 float MapThing::moveAmount(float cycle_time)
 {
   float move_amount = ((speed * cycle_time) / 1000.0);
@@ -142,11 +177,26 @@ bool MapThing::setDirection(EnumDb::Direction new_direction)
   /* Update the direction */
   movement = new_direction;
 
-  /* Only shift the animation if the direction changed */
+  /* Only shift the location and animation if the direction changed */
   if(changed)
     animation_buffer = animation_time;
-
+  
   return changed;
+}
+
+void MapThing::tileUpdate(Tile* next_tile, bool can_move, 
+                          Tile::ThingState classification)
+{
+  if(tile_previous != 0)
+    tile_previous->unsetImpassableThing();
+  tile_previous = 0;
+    
+  if(can_move && next_tile != 0)
+  {
+    tile_previous = tile_main;
+    tile_main = next_tile;
+    tile_main->setImpassableThing(this, classification);
+  }
 }
 
 /*============================================================================
@@ -292,29 +342,6 @@ void MapThing::interaction()
 {
 }
 
-/* Is the thing almost centered on a tile (less than 1 pulse away) */
-// TODO [2013-07-22]
-bool MapThing::isAlmostOnTile(short cycle_time)
-{
-  float tile_diff = 0.0;
-  
-  if(isMoving() && !isOnTile())
-  {
-    if(movement == EnumDb::EAST)
-      tile_diff = width - (x - (int)(x / width) * width);
-    else if(movement == EnumDb::WEST)
-      tile_diff = (x - (int)(x / width) * width);
-    else if(movement == EnumDb::SOUTH)
-      tile_diff = height - (y - (int)(y / height) * height);
-    else if(movement == EnumDb::NORTH)
-      tile_diff = (y - (int)(y / height) * height);
-
-    //qDebug() << tile_diff;
-  }
-  
-  return false;
-}
-
 bool MapThing::isMoveRequested()
 {
   return false;
@@ -334,7 +361,8 @@ bool MapThing::paintGl(float offset_x, float offset_y, float opacity)
 {
   if(state != 0 && state->getSprite() != 0 && tile_main != 0)
   {
-    state->getSprite()->paintGl(x - offset_x, y - offset_y, width, height, opacity);
+    state->getSprite()->paintGl(x - offset_x, y - offset_y, 
+                                width, height, opacity);
     return true;
   }
   return false;
@@ -437,13 +465,13 @@ void MapThing::setStartingTile(Tile* new_tile)
   setDirection(EnumDb::DIRECTIONLESS);
   
   /* Unset the previous tile */
-  //if(tile_previous != 0)
-  //  tile_previous-> // TODO
+  if(tile_previous != 0)
+    tile_previous->unsetImpassableThing();
   tile_previous = 0;
   
   /* Unset the main tile */
-  //if(tile_main != 0)
-  //  tile_main-> // TODO
+  if(tile_main != 0)
+    tile_main->unsetImpassableThing();
   tile_main = 0;
   
   /* Set the new tile */
@@ -452,6 +480,7 @@ void MapThing::setStartingTile(Tile* new_tile)
   {
     this->x = tile_main->getPixelX();
     this->y = tile_main->getPixelY();
+    tile_main->setImpassableThing(this, Tile::PERSON);
   }
   else
   {
