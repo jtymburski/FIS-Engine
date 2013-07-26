@@ -344,53 +344,39 @@ void MapPerson::updateThing(float cycle_time, Tile* next_tile)
   bool reset = false;
   
   /* Once a tile end has reached, cycle the movement direction */
-  if(isOnTile() || isAlmostOnTile(cycle_time))
+  if(isAlmostOnTile(cycle_time))
   {
-    if(tile_previous != 0)
-      tile_previous->unsetImpassableThing();
-    tile_previous = 0;
-    
-    //tileUpdate(next_tile, isMoveRequested() && can_move, Tile::PERSON);
-    
-    // TODO: causes choppy movement due to setting it back to the tile
-    if(isAlmostOnTile(cycle_time))
-    {
-      x = tile_main->getPixelX();
-      y = tile_main->getPixelY();
-    }
+    tileMoveFinish();
     
     /* Only update direction if a move is requested */
     if(isMoveRequested())
     {
-      setDirection(getMoveRequest(), can_move);
-      //if(setDirection(getMoveRequest(), can_move))
-      //{
-      //  x = tile_main->getPixelX();
-      //  y = tile_main->getPixelY();
-      //}
-      
-      if(can_move)
+      /* Set the new direction and if the direction is changed, or it's
+       * not allowed to move, recenter the thing */
+      if(setDirection(getMoveRequest(), can_move) || !can_move)
       {
-        tile_previous = tile_main;
-        tile_main = next_tile;
-        tile_main->setImpassableThing(this, Tile::PERSON);
+        x = tile_main->getPixelX();
+        y = tile_main->getPixelY();
       }
+      
+      /* If it can move, initiate tile shifting */
+      if(can_move)
+        tileMoveStart(next_tile, Tile::PERSON);
 
       reset = !can_move;
     }
+    /* If there is no move request, stop movement */
     else
     {
-      //if(isAlmostOnTile(cycle_time))
-      //{
-      //  x = tile_main->getPixelX();
-      //  y = tile_main->getPixelY();
-      //}
+      x = tile_main->getPixelX();
+      y = tile_main->getPixelY();
       
       setDirection(EnumDb::DIRECTIONLESS);
       reset = true;
     }
   }
 
+  /* Proceed to move the thing */
   moveThing(cycle_time);
 
   /* Only animate if the direction exists */

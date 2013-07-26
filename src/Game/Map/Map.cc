@@ -193,10 +193,11 @@ void Map::keyReleaseEvent(QKeyEvent* key_event)
     player->keyRelease(key_event);
 }
 
-/* TODO: seems to work much better than before. The flicker that is still
- * there is from the video card (I think). The buffers are occassionally
- * switching before the data is loaded. How to prevent? Maybe disable
- * vsync and see if the results are better (probably not) */
+/* TODO: might need to restrict animation for things out of the display
+ *       due to lag (high number of Things). Further testing required.
+ *
+ * Seem to be getting more consistent results for displaying, and it seems
+ * better with vsync disabled */
 void Map::paintGL()
 {
   /* Start a QTimer to determine time elapsed for painting */
@@ -266,6 +267,7 @@ void Map::paintGL()
   frames++;
 
   /* Finish by updating the viewport widget - currently in auto */
+  //qDebug() << time.elapsed();
   //swapBuffers();
   //update();
 }
@@ -286,55 +288,15 @@ void Map::resizeGL(int width, int height)
 
 void Map::animate(short time_since_last)
 {
-  /* The movement handling. This will be extrapolated to all things */
+  /* The movement handling for things*/
   if(player != 0 && player->getTile() != 0)
-  {
-    bool movable = true;
-    
-    //player->isAlmostOnTile(time_since_last);
-    /*if(player->isOnTile() && player->isMoveRequested())
-    {
-      EnumDb::Direction moving = player->getMoveRequest();
-      int x1 = player->getX() / kTILE_WIDTH;
-      int y1 = player->getY() / kTILE_HEIGHT;
-      movable = geography[x1][y1]->getPassability(moving);
-      int x2 = x1;
-      int y2 = y1;
-
-      if(moving == EnumDb::NORTH)
-      {
-        if(--y2 >= 0)
-          movable &= geography[x2][y2]->getPassability(EnumDb::SOUTH);
-        else
-          movable = false;
-      }
-      else if(moving == EnumDb::EAST)
-      {
-        if(++x2 < geography.size())
-          movable &= geography[x2][y2]->getPassability(EnumDb::WEST);
-        else
-          movable = false;
-      }
-      else if(moving == EnumDb::SOUTH)
-      {
-        if(++y2 < geography[x2].size())
-          movable &= geography[x2][y2]->getPassability(EnumDb::NORTH);
-        else
-          movable = false;
-      }
-      else if(moving == EnumDb::WEST)
-      {
-        if(--x2 >= 0)
-          movable &= geography[x2][y2]->getPassability(EnumDb::EAST);
-        else
-          movable = false;
-      } 
-    }*/
-    
+  { 
     Tile* next_tile = 0;
     int tile_x = player->getTile()->getX();
     int tile_y = player->getTile()->getY();
     
+    /* Based on the move request, provide the next tile in line using the
+     * current centered tile and move request */
     switch(player->getMoveRequest())
     {
       case EnumDb::NORTH:
@@ -357,6 +319,7 @@ void Map::animate(short time_since_last)
         next_tile = 0;
     }
     
+    /* Proceed to update the thing */
     player->updateThing(time_since_last, next_tile);
   }
 }
@@ -587,6 +550,11 @@ void Map::unloadMap()
   }
   tile_sprites.clear();
 
+  /* Delete the things */
+  if(player != 0)
+    delete player;
+  player = 0;
+  
   /* Reset the viewport */
   viewport->setMapSize(0, 0);
   viewport->lockOn(0, 0);

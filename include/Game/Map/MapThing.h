@@ -12,6 +12,7 @@
 #ifndef MAPTHING_H
 #define MAPTHING_H
 
+#include <cmath>
 //#include <QDebug>
 #include <QObject>
 
@@ -78,9 +79,9 @@ protected:
   /* Sets the new direction that the class is moving in */
   bool setDirection(EnumDb::Direction new_direction);
 
-  /* Update the tiles, based on the new tile entering and if can move */
-  void tileUpdate(Tile* next_tile, bool can_move, 
-                  Tile::ThingState classification);
+  /* Starts and stops tile move. Relies on underlying logic for occurance */
+  void tileMoveFinish();
+  bool tileMoveStart(Tile* next_tile, Tile::ThingState classification);
   
 /*============================================================================
  * PUBLIC FUNCTIONS

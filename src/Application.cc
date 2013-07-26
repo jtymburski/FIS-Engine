@@ -116,6 +116,8 @@ void Application::switchWidget(int index)
 {
   if(!test_map->isLoaded() && index == 1)
     test_map->loadMap("maps/test_04");
+  //if(test_map->isLoaded() && index != 1)
+  //  test_map->unloadMap();
   
   /* Map timer stop */
   if(index != 1)

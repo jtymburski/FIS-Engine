@@ -109,23 +109,29 @@ bool MapThing::animate(short cycle_time, bool reset, bool skip_head)
 }
 
 /* Is the thing almost centered on a tile (less than 1 pulse away) */
-// TODO [2013-07-22]
 bool MapThing::isAlmostOnTile(float cycle_time)
 {
-  float tile_diff = 0.0;
+  float x_diff = tile_main->getPixelX();
+  float y_diff = tile_main->getPixelY();
   
-  if(isMoving() && !isOnTile())
+  if(tile_main != 0)
   {
-    if(movement == EnumDb::EAST)
-      tile_diff = width - (x - (int)(x / width) * width);
-    else if(movement == EnumDb::WEST)
-      tile_diff = (x - (int)(x / width) * width);
-    else if(movement == EnumDb::SOUTH)
-      tile_diff = height - (y - (int)(y / height) * height);
-    else if(movement == EnumDb::NORTH)
-      tile_diff = (y - (int)(y / height) * height);
+    /* X differential calculations to ensure positive number */
+    if(x_diff > x)
+      x_diff = x_diff - x;
+    else
+      x_diff = x - x_diff;
+      
+    /* Y differential calculations to ensure positive number */
+    if(y_diff > y)
+      y_diff = y_diff - y;
+    else
+      y_diff = y - y_diff;
     
-    return (moveAmount(cycle_time) > tile_diff);
+    //float tile_diff = sqrt(x_diff*x_diff + y_diff*y_diff);
+    //return (moveAmount(cycle_time) > tile_diff);
+    
+    return (moveAmount(cycle_time) > (x_diff + y_diff));
   }
   
   return false;
@@ -137,8 +143,8 @@ bool MapThing::isMoveAllowed(Tile* next_tile)
   
   if(tile_main != 0 && next_tile != 0 && isMoveRequested())
   {
-    return tile_main->getPassabilityExiting(getMoveRequest()) && 
-           next_tile->getPassabilityEntering(getMoveRequest());
+    return tile_main->getPassabilityExiting(move_request) && 
+           next_tile->getPassabilityEntering(move_request);
   }
   return false;
 }
@@ -184,19 +190,23 @@ bool MapThing::setDirection(EnumDb::Direction new_direction)
   return changed;
 }
 
-void MapThing::tileUpdate(Tile* next_tile, bool can_move, 
-                          Tile::ThingState classification)
+void MapThing::tileMoveFinish()
 {
   if(tile_previous != 0)
     tile_previous->unsetImpassableThing();
   tile_previous = 0;
-    
-  if(can_move && next_tile != 0)
+}
+
+bool MapThing::tileMoveStart(Tile* next_tile, Tile::ThingState classification)
+{
+  if(next_tile != 0)
   {
     tile_previous = tile_main;
     tile_main = next_tile;
     tile_main->setImpassableThing(this, classification);
+    return true;
   }
+  return false;
 }
 
 /*============================================================================
@@ -537,6 +547,8 @@ bool MapThing::setWidth(int new_width)
  */
 void MapThing::updateThing(float cycle_time, Tile* next_tile)
 {
+  (void)next_tile;
+  
   if(tile_main != 0)
   {
     /* Move the thing */
