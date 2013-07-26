@@ -76,6 +76,36 @@ Sprite::~Sprite()
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
+  
+/* 
+ * Description: Flips all the frames inside the sprite either along the 
+ *              horizontal X axis or the vertical Y axis or both. 
+ *              InitializeGl() required after this call since the image data
+ *              has been changed.
+ *
+ * Inputs: bool horizontal - flip the frames along the horizontal axis
+ *         bool vertical - flip the frames along the vertical axis
+ * Output: bool - status if all the flips worked.
+ */
+bool Sprite::flipAll(bool horizontal, bool vertical)
+{
+  bool success = true;
+  Frame* temp_frame = head;
+
+  /* Only proceed if there are frames to rotate */
+  if(size > 0)
+  {
+    for(int i = 0; i < size; i++)
+    {
+      success &= temp_frame->flipImage(horizontal, vertical);
+      temp_frame = temp_frame->getNext();
+    }
+
+    return success;
+  }
+
+  return false;
+}
 
 /* 
  * Description: Gets the current frame 

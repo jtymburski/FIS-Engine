@@ -14,7 +14,7 @@
 #define FRAME_H
 
 #include <GL/glu.h>
-#include <QDebug>
+//#include <QDebug>
 #include <QFile>
 #include <QGLWidget>
 #include <QPixmap>
@@ -57,6 +57,9 @@ private:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Flips the image inside the frame */
+  bool flipImage(bool horizontal = true, bool vertical = false);
+
   /* Initializes GL for this class. Called before painting */
   bool initializeGl();
 

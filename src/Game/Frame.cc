@@ -84,6 +84,27 @@ Frame::~Frame()
  *===========================================================================*/
 
 /* 
+ * Description: Flips the image along either the horizontal axis or the
+ *              vertical axis or both. A call to initializeGl() will be
+ *              required after this, if necessary
+ *
+ * Inputs: bool horizontal - flip the image along the horizontal axis
+ *         bool vertical - flip the image along the vertical axis
+ * Output: bool - status if the flip was successful
+ */
+bool Frame::flipImage(bool horizontal, bool vertical)
+{
+  if(image_set)
+  {
+    uninitializeGl();
+    image = QPixmap::fromImage(image.toImage().mirrored(horizontal, vertical));
+    return true;
+  }
+
+  return false;
+}
+
+/* 
  * Description: Initializes GL functionality. This must be called anytime
  *              the image data is changed or when the class is first created
  *              to initialize the image data. Once this is complete, paintGl()

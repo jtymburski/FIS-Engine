@@ -216,6 +216,14 @@ EnumDb::Direction MapPerson::getDirection()
   return direction;
 }
 
+/* 
+ * Description: This is a reimplemented call from MapThing, gets the actual
+ *              move request which will be the last key pressed by the
+ *              keyboard, since it's utilized as a stack.
+ * 
+ * Inputs: none
+ * Output: EnumDb::Direction - the direction movement.
+ */
 EnumDb::Direction MapPerson::getMoveRequest()
 {
   if(isMoveRequested())
@@ -281,6 +289,13 @@ void MapPerson::keyRelease(QKeyEvent* event)
     movement_stack.removeAt(movement_stack.indexOf(EnumDb::EAST));
 }
 
+/* 
+ * Description: Reimplemented is move request call from map thing. This 
+ *              utilizes the key press stack to get movement options.
+ * 
+ * Inputs: none
+ * Output: bool - returns if a move is requested.
+ */
 bool MapPerson::isMoveRequested()
 {
   return !movement_stack.isEmpty();

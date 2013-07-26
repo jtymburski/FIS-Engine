@@ -12,7 +12,7 @@
 #ifndef MAPPERSON_H
 #define MAPPERSON_H
 
-#include <QDebug>
+//#include <QDebug>
 #include <QKeyEvent>
 
 #include "Game/Map/MapThing.h"

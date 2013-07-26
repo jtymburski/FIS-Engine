@@ -60,6 +60,9 @@ private:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Flips all the images in each frame */
+  bool flipAll(bool horizontal = true, bool vertical = false);
+
   /* Gets the current frame */
   QPixmap getCurrent();
 

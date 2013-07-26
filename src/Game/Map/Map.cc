@@ -17,6 +17,7 @@ const int Map::kFILE_CLASSIFIER = 3;
 const int Map::kFILE_SECTION_ID = 2;
 const int Map::kFILE_TILE_COLUMN = 5;
 const int Map::kFILE_TILE_ROW = 4;
+const short Map::kPLAYER_INDEX = 0;
 const int Map::kTICK_DELAY = 10;
 const int Map::kTILE_HEIGHT = 64;
 const int Map::kTILE_WIDTH = 64;
@@ -39,6 +40,7 @@ Map::Map(const QGLFormat & format, short viewport_width,
   
   /* Configure the scene */
   loaded = false;
+  persons.clear();
   player = 0;
 
   /* Configure the FPS animation and reset to 0 */
@@ -48,7 +50,6 @@ Map::Map(const QGLFormat & format, short viewport_width,
   paint_time_average = 0.0;
 
   /* Test the things and persons */
-  player = 0;
   thing = 0;
 
   //setMinimumSize(2000, 2000);
@@ -171,18 +172,31 @@ void Map::keyPressEvent(QKeyEvent* key_event)
 {
   if(key_event->key() == Qt::Key_Down || key_event->key() == Qt::Key_Up ||
      key_event->key() == Qt::Key_Right || key_event->key() == Qt::Key_Left)
-    player->keyPress(key_event);
-  if(key_event->key() == Qt::Key_Escape)
+  {
+    if(player != 0)
+      player->keyPress(key_event);
+  }
+  else if(key_event->key() == Qt::Key_Escape)
     closeMap();
   else if(key_event->key() == Qt::Key_A)
     animateTiles();
   else if(key_event->key() == Qt::Key_1)
-    viewport->lockOn(player);
+  {
+    if(persons.size() > kPLAYER_INDEX)
+    {
+      player = persons[kPLAYER_INDEX];
+      viewport->lockOn(player);
+    }
+  }
   else if(key_event->key() == Qt::Key_2)
-    viewport->lockOn(608, 352);
+  {
+    if(persons.size() > (kPLAYER_INDEX + 1))
+    {
+      player = persons[kPLAYER_INDEX + 1];
+      viewport->lockOn(player);
+    }
+  }
   else if(key_event->key() == Qt::Key_3)
-    viewport->lockOn(608.5, 352.5);
-  else if(key_event->key() == Qt::Key_4)
     viewport->lockOn(609, 353);
 }
 
@@ -190,7 +204,10 @@ void Map::keyReleaseEvent(QKeyEvent* key_event)
 {
   if(key_event->key() == Qt::Key_Down || key_event->key() == Qt::Key_Up ||
      key_event->key() == Qt::Key_Right || key_event->key() == Qt::Key_Left)
-    player->keyRelease(key_event);
+  {
+    if(player != 0)
+      player->keyRelease(key_event);
+  }
 }
 
 /* TODO: might need to restrict animation for things out of the display
@@ -203,35 +220,40 @@ void Map::paintGL()
   /* Start a QTimer to determine time elapsed for painting */
   //QTime time;
   //time.start();
- 
-  /* Animate the map based on the elapsed time and then update
-   * the viewport due to the animate */
-  animate(time_elapsed.restart());
-  viewport->updateView();
-  
+    
   /* Start by setting the context and clearing the screen buffers */
   makeCurrent();
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   //glPushMatrix();
   
-  /* Execute the draw, if loaded */
+  /* Only proceed if the map is loaded */
   if(loaded)
   {
+    /* Animate the map based on the elapsed time and then update
+     * the viewport due to the animate */
+    animate(time_elapsed.restart());
+    viewport->updateView();
+   
     /* Paint the lower half */
     for(int i = viewport->getXTileStart(); i < viewport->getXTileEnd(); i++)
       for(int j = viewport->getYTileStart(); j < viewport->getYTileEnd(); j++)
         geography[i][j]->paintLower(viewport->getX(), viewport->getY());
-    
-    if(player != 0 && player->getX() >= viewport->getXStart() &&
-                      player->getX() <= viewport->getXEnd())
-      player->paintGl(viewport->getX(), viewport->getY());
+   
+    /* Paint the persons (player and NPCs) */
+    for(int i = 0; i < persons.size(); i++)
+    {
+      if(persons[i] != 0 && persons[i]->getX() >= viewport->getXStart() &&
+                            persons[i]->getX() <= viewport->getXEnd())
+        persons[i]->paintGl(viewport->getX(), viewport->getY());
+
+    }
 
     /* Paint the upper half */
     for(int i = viewport->getXTileStart(); i < viewport->getXTileEnd(); i++)
       for(int j = viewport->getYTileStart(); j < viewport->getYTileEnd(); j++)
         geography[i][j]->paintUpper(viewport->getX(), viewport->getY());
   }
-
+    
   /* Paint the frame rate */
   glColor4f(0.0, 0.0, 0.0, 0.5);
   glBegin(GL_QUADS);
@@ -242,14 +264,13 @@ void Map::paintGL()
   glEnd();
   glColor4f(1.0, 1.0, 1.0, 1.0);
   renderText(20, 30, frames_per_second);
-  renderText(490, 24, "Press 'a' to animate the grass tile");
 
   /* Clean up the drawing procedure */
   glFlush();
   //glPopMatrix();
   glFinish();
   
-  /* Paint the FPS to the screen */
+  /* Determine the FPS sample rate */
   if(paint_animation <= 0)
   {
     frames_per_second.setNum(frames /(paint_time.elapsed() / 1000.0), 'f', 2);
@@ -289,38 +310,41 @@ void Map::resizeGL(int width, int height)
 void Map::animate(short time_since_last)
 {
   /* The movement handling for things*/
-  if(player != 0 && player->getTile() != 0)
-  { 
-    Tile* next_tile = 0;
-    int tile_x = player->getTile()->getX();
-    int tile_y = player->getTile()->getY();
+  for(int i = 0; i < persons.size(); i++)
+  {
+    if(persons[i] != 0 && persons[i]->getTile() != 0)
+    { 
+      Tile* next_tile = 0;
+      int tile_x = persons[i]->getTile()->getX();
+      int tile_y = persons[i]->getTile()->getY();
     
-    /* Based on the move request, provide the next tile in line using the
-     * current centered tile and move request */
-    switch(player->getMoveRequest())
-    {
-      case EnumDb::NORTH:
-        if(--tile_y >= 0)
-          next_tile = geography[tile_x][tile_y];
-        break;
-      case EnumDb::EAST:
-        if(++tile_x < geography.size())
-          next_tile = geography[tile_x][tile_y];
-        break;
-      case EnumDb::SOUTH:
-        if(++tile_y < geography[tile_x].size())
-          next_tile = geography[tile_x][tile_y];
-        break;
-      case EnumDb::WEST:
-        if(--tile_x >= 0)
-          next_tile = geography[tile_x][tile_y];
-        break;
-      case EnumDb::DIRECTIONLESS:
-        next_tile = 0;
+      /* Based on the move request, provide the next tile in line using the
+       * current centered tile and move request */
+      switch(persons[i]->getMoveRequest())
+      {
+        case EnumDb::NORTH:
+          if(--tile_y >= 0)
+            next_tile = geography[tile_x][tile_y];
+          break;
+        case EnumDb::EAST:
+          if(++tile_x < geography.size())
+            next_tile = geography[tile_x][tile_y];
+          break;
+        case EnumDb::SOUTH:
+          if(++tile_y < geography[tile_x].size())
+            next_tile = geography[tile_x][tile_y];
+          break;
+        case EnumDb::WEST:
+          if(--tile_x >= 0)
+            next_tile = geography[tile_x][tile_y];
+          break;
+        case EnumDb::DIRECTIONLESS:
+          next_tile = 0;
+      }
+    
+      /* Proceed to update the thing */
+      persons[i]->updateThing(time_since_last, next_tile);
     }
-    
-    /* Proceed to update the thing */
-    player->updateThing(time_since_last, next_tile);
   }
 }
 
@@ -419,7 +443,12 @@ bool Map::loadMap(QString file)
       {
         /* Create the tile */
         Tile* t = new Tile(kTILE_WIDTH, kTILE_HEIGHT, i, j);
-        //t->setStatus(Tile::OFF);
+       
+        // TODO: Remove - tile status testing
+        //if(i == 10 && j == 10)
+        //  t->setStatus(Tile::OFF);
+        //else if(i == 12 && j == 10)
+        //  t->setStatus(Tile::BLANKED);
 
         /* Add the new tile to the list */
         col.append(t);
@@ -439,7 +468,7 @@ bool Map::loadMap(QString file)
       data = fh.readXmlData(&done, &success);
     } while(!done && success);
 
-    /* Add in temporary player information */
+    /* Add the player information */
     Sprite* up_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_D", 
                                    3, ".png");
     Sprite* down_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_U", 
@@ -448,19 +477,36 @@ bool Map::loadMap(QString file)
                                      3, ".png");
     Sprite* right_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_L", 
                                       3, ".png");
+    MapPerson* person = new MapPerson(kTILE_WIDTH, kTILE_HEIGHT);
+    person->setStartingTile(geography[8][8]); // 11, 9
 
-    /* Make the map person */
-    player = new MapPerson(kTILE_WIDTH, kTILE_HEIGHT);
-    player->setStartingTile(geography[8][8]); // 11, 9
-
-    player->setState(MapPerson::GROUND, EnumDb::NORTH, 
+    person->setState(MapPerson::GROUND, EnumDb::NORTH, 
                                         new MapState(up_sprite));
-    player->setState(MapPerson::GROUND, EnumDb::SOUTH, 
+    person->setState(MapPerson::GROUND, EnumDb::SOUTH, 
                                         new MapState(down_sprite));
-    player->setState(MapPerson::GROUND, EnumDb::EAST, 
+    person->setState(MapPerson::GROUND, EnumDb::EAST, 
                                         new MapState(right_sprite));
-    player->setState(MapPerson::GROUND, EnumDb::WEST, 
+    person->setState(MapPerson::GROUND, EnumDb::WEST, 
                                         new MapState(left_sprite));
+    persons.append(person);
+
+    /* Add a second player */
+    up_sprite = new Sprite("sprites/Map/Map_Things/aurumba_AA_D", 3, ".png");
+    down_sprite = new Sprite("sprites/Map/Map_Things/aurumba_AA_U", 3, ".png");
+    left_sprite = new Sprite("sprites/Map/Map_Things/aurumba_AA_S", 3, ".png");
+    left_sprite->flipAll();
+    right_sprite = new Sprite("sprites/Map/Map_Things/aurumba_AA_S", 3, ".png");
+    person = new MapPerson(kTILE_WIDTH, kTILE_HEIGHT);
+    person->setStartingTile(geography[2][4]);
+    person->setState(MapPerson::GROUND, EnumDb::NORTH, 
+                                        new MapState(up_sprite));
+    person->setState(MapPerson::GROUND, EnumDb::SOUTH, 
+                                        new MapState(down_sprite));
+    person->setState(MapPerson::GROUND, EnumDb::EAST, 
+                                        new MapState(right_sprite));
+    person->setState(MapPerson::GROUND, EnumDb::WEST, 
+                                        new MapState(left_sprite));
+    persons.append(person);
 
     /* Make the map thing */
     //thing = new MapThing(new MapState(up_sprite), kTILE_WIDTH, kTILE_HEIGHT);
@@ -479,8 +525,10 @@ bool Map::loadMap(QString file)
     if(geography.size() > 0)
     {
       viewport->setMapSize(geography.size(), geography[0].size());
-      viewport->lockOn(player);
-      //viewport->lockOn(609, 353); // 1216 / 2 + 1, 704 / 2 + 1
+      if(persons.size() > kPLAYER_INDEX)
+        player = persons[kPLAYER_INDEX];
+      if(player != 0)
+        viewport->lockOn(player);
     }
 
     for(int i = 0; i < geography.size(); i++)
@@ -490,14 +538,6 @@ bool Map::loadMap(QString file)
   loaded = success;
 
   return success;
-}
-
-/* Shifts the viewport */
-void Map::move(EnumDb::Direction dir, int step_length, Sprite dir_sprite)
-{
-  (void)dir;//warning
-  (void)step_length;//warning
-  (void)dir_sprite;//warning
 }
 
 /* Checks the tile you are attempting to enter for passibility of the given
@@ -551,10 +591,14 @@ void Map::unloadMap()
   tile_sprites.clear();
 
   /* Delete the things */
-  if(player != 0)
-    delete player;
-  player = 0;
-  
+  for(int i = 0; i < persons.size(); i++)
+  {
+    if(persons[i] != 0)
+      delete persons[i];
+    persons[i] = 0;
+  }
+  persons.clear();
+
   /* Reset the viewport */
   viewport->setMapSize(0, 0);
   viewport->lockOn(0, 0);

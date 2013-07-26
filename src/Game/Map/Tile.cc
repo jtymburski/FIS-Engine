@@ -68,6 +68,17 @@ Tile::~Tile()
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
+/* 
+ * Description: Adds a passability to the given tile based on data from a file
+ *              that is read in. The data is a comma delimited directional
+ *              list, the classifier is if it's base or lower and the index
+ *              corresponds to which lower layer (if applicable).
+ * 
+ * Inputs: QString data - the passability data, as mentioned above.
+ *         QString classifier - the layer classifier (base, lower)
+ *         QString index - the lower layer index
+ * Output: bool - status if the set was successful
+ */
 bool Tile::addPassability(QString data, QString classifier, QString index)
 {
   bool success = true;
@@ -97,6 +108,17 @@ bool Tile::addPassability(QString data, QString classifier, QString index)
   return success;
 }
 
+/* 
+ * Description: Adds in sprite data for the applicable frames. Based on a
+ *              classifier, which indicates which layer and an index (which
+ *              is only applicable for stackable layers, such as lower and 
+ *              upper).
+ * 
+ * Inputs: Sprite* frames - the sprite data to add in (pointer only).
+ *         QString classifier - the layer classifier (base, lower, etc.)
+ *         QString index - the layering index (for lower and upper)
+ * Output: bool - status if addition was successful
+ */
 bool Tile::addSprite(Sprite* frames, QString classifier, QString index)
 {
   /* Add the layer data to the specific classifier */
@@ -225,7 +247,7 @@ int Tile::getHeight()
 }
 
 /*
- * Description: Gets the impassable object sprite that is stored, if set
+ * Description: Gets the impassable object Map Thing that is stored, if set
  *
  * Inputs: none
  * Output: MapThing* - the MapThing pointer, could be a person or object
@@ -235,6 +257,13 @@ MapThing* Tile::getImpassableThing()
   return impassable_thing;
 }
 
+/* 
+ * Description: Gets what kind of impassable thing is set currently, if set at
+ *              all.
+ * 
+ * Inputs: none
+ * Output: Tile::ThingState - the thing state enumerator - see header
+ */
 Tile::ThingState Tile::getImpassableThingType()
 {
   return thing_state;
@@ -302,7 +331,7 @@ bool Tile::getLowerPassability(int index, EnumDb::Direction dir)
 }
 
 /*
- * Description: Gets the passable object sprite and returns it, if set.
+ * Description: Gets the passable map thing and returns it, if set.
  *
  * Inputs: none
  * Output: MapThing* - the passable object MapThing pointer
@@ -312,8 +341,11 @@ MapThing* Tile::getPassableThing()
   return passable_thing;
 }
 
-/*
- * TODO: comment
+/* 
+ * Description: Gets if the tile is passable entering from the given direction.
+ * 
+ * Inputs: EnumDb::Direction dir - the direction enumerated for passability
+ * Output: bool - status if the tile passability is possible.
  */
 bool Tile::getPassabilityEntering(EnumDb::Direction dir)
 {
@@ -333,8 +365,7 @@ bool Tile::getPassabilityEntering(EnumDb::Direction dir)
  * Description: Gets if the tile is passable leaving the given direction
  *
  * Inputs: EnumDb::Direction dir - the direction enumerated for passability
- * Output: bool - status if the tile is accessible leaving the tile from the
- *                given direction.
+ * Output: bool - status if the tile passability is possible.
  */
 bool Tile::getPassabilityExiting(EnumDb::Direction dir)
 {
@@ -347,11 +378,25 @@ bool Tile::getPassabilityExiting(EnumDb::Direction dir)
   return false;
 }
 
+/* 
+ * Description: Returns the X coordinates of the top left of the tile, in
+ *              pixels.
+ * 
+ * Inputs: none
+ * Output: short - the X coordinate, in pixels
+ */
 short Tile::getPixelX()
 {
   return (x * width);
 }
 
+/* 
+ * Description: Returns the Y coordinates of the top left of the tile, in
+ *              pixels.
+ * 
+ * Inputs: none
+ * Output: short - the Y coordinate, in pixels
+ */
 short Tile::getPixelY()
 {
   return (y * height);
@@ -392,8 +437,8 @@ int Tile::getWidth()
 }
 
 /* 
- * Description: Gets the X coordinate stored within the tile (and all the 
- *              layers).
+ * Description: Gets the X coordinate stored within the tile. This is free of
+ *              width and height changes and only is a reference.
  *
  * Inputs: none
  * Output: int - the x coordinate, in tile count
@@ -404,8 +449,8 @@ int Tile::getX()
 }
 
 /* 
- * Description: Gets the Y coordinate stored within the tile (and all the 
- *              layers).
+ * Description: Gets the Y coordinate stored within the tile. This is free of
+ *              width and height changes and only is a reference.
  *
  * Inputs: none
  * Output: int - the y coordinate, in tile count
@@ -537,7 +582,7 @@ bool Tile::isEnhancerSet()
  * Description: Returns if the Impassable Thing is set 
  *
  * Inputs: none
- * Output: bool - set indicator
+ * Output: bool - set status
  */
 bool Tile::isImpassableThingSet()
 {
@@ -895,7 +940,7 @@ bool Tile::setWidth(int width)
 /*
  * Description: Sets the X coordinate of the tile. 
  *
- * Inputs: int x - the tile x coordinate, in pixels
+ * Inputs: int x - the tile x coordinate, in tile count
  * Output: none
  */
 void Tile::setX(int x)
@@ -906,7 +951,7 @@ void Tile::setX(int x)
 /*
  * Description: Sets the Y coordinate of the tile.
  *
- * Inputs: int y - the tile y coordinate, in pixels
+ * Inputs: int y - the tile y coordinate, in tile count
  * Output: none
  */
 void Tile::setY(int y)
@@ -940,7 +985,7 @@ void Tile::unsetEnhancer()
 }
 
 /*
- * Description: Unsets the impassable object sprite in the tile. 
+ * Description: Unsets the impassable map thing in the tile. 
  *
  * Inputs: none
  * Output: none
@@ -992,7 +1037,7 @@ bool Tile::unsetLower(int index)
 }
 
 /*
- * Description: Unsets the passable object sprite in the tile.
+ * Description: Unsets the passable map thing in the tile.
  *
  * Inputs: none
  * Output: none

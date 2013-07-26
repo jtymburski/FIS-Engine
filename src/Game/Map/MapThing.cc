@@ -108,7 +108,15 @@ bool MapThing::animate(short cycle_time, bool reset, bool skip_head)
   return status;
 }
 
-/* Is the thing almost centered on a tile (less than 1 pulse away) */
+/* 
+ * Description: Is the thing almost on the tile (less than 1 pulse away).
+ *              This is used to check movement limits to allow the update
+ *              cycle to know when passability needs to be checked or when
+ *              to stop the man from moving.
+ * 
+ * Inputs: float cycle_time - time since the last update call (ms)
+ * Output: bool - is the thing almost on the tile?
+ */
 bool MapThing::isAlmostOnTile(float cycle_time)
 {
   float x_diff = tile_main->getPixelX();
@@ -137,6 +145,16 @@ bool MapThing::isAlmostOnTile(float cycle_time)
   return false;
 }
 
+/* 
+ * Description: Checks if a move is allowed from the current thing main 
+ *              tile and the next tile that it is trying to move to. Utilizes
+ *              the move request inside the thing class to determine where to
+ *              move.
+ * 
+ * Inputs: Tile* next_tile - the next tile that corresponds to the move request
+ *                           direction.
+ * Output: bool - returns if the move is allowed.
+ */
 bool MapThing::isMoveAllowed(Tile* next_tile)
 {
   EnumDb::Direction move_request = getMoveRequest();
@@ -149,6 +167,14 @@ bool MapThing::isMoveAllowed(Tile* next_tile)
   return false;
 }
 
+/* 
+ * Description: Calculates the move amount based on the cycle time and the 
+ *              speed for how many pixels should be shifted. The calculation
+ *              is based on 10ms for 1 pixel at speed 100.
+ * 
+ * Inputs: float cycle_time - the time since the last update call
+ * Output: float - the move amount in pixels (and partial pixels)
+ */
 float MapThing::moveAmount(float cycle_time)
 {
   float move_amount = ((speed * cycle_time) / 1000.0);
@@ -157,6 +183,13 @@ float MapThing::moveAmount(float cycle_time)
   return move_amount;
 }
 
+/* 
+ * Description: Move the thing based on the cycle update time. Utilizes the 
+ *              moveAmount() calculation for determining how much to move.
+ * 
+ * Inputs: float cycle_time - the time since the last update call
+ * Output: none
+ */
 void MapThing::moveThing(float cycle_time)
 {
   float move_amount = moveAmount(cycle_time);
@@ -171,7 +204,14 @@ void MapThing::moveThing(float cycle_time)
     y -= move_amount;
 }
 
-/* Sets the new direction that the class is moving in */
+/* 
+ * Description: Sets the direction that the class should be moving in. Once
+ *              the direction has been changed, the animation buffer is forced
+ *              to occur so that the result will be noticed.
+ * 
+ * Inputs: EnumDb::Direction new_direction - the new movement direction
+ * Output: bool - if the direction changed since before the call
+ */
 bool MapThing::setDirection(EnumDb::Direction new_direction)
 {
   bool changed = false;
@@ -190,6 +230,14 @@ bool MapThing::setDirection(EnumDb::Direction new_direction)
   return changed;
 }
 
+/* 
+ * Description: The tile move finish call. To be called after a move and it's
+ *              determined that the thing is on the main tile (for the first
+ *              time). Essentially just cleans up the previous tile pointer.
+ * 
+ * Inputs: none
+ * Output: none
+ */
 void MapThing::tileMoveFinish()
 {
   if(tile_previous != 0)
@@ -197,6 +245,17 @@ void MapThing::tileMoveFinish()
   tile_previous = 0;
 }
 
+/* 
+ * Description: The tile move initialization call. To be called after
+ *              passability checks have passed and the thing can be moved to
+ *              the next tile. Sets the new main pointer and moves the current
+ *              to the old spot.
+ * 
+ * Inputs: Tile* next_tile - the tile to move to
+ *         Tile::ThingState classification - what kind of thing (NPC, Decor, 
+ *                                                               etc.)
+ * Output: bool - if the tile start was successfully started
+ */
 bool MapThing::tileMoveStart(Tile* next_tile, Tile::ThingState classification)
 {
   if(next_tile != 0)
@@ -237,6 +296,14 @@ void MapThing::clear()
   unsetState();
 }
 
+/* 
+ * Description: Returns the animation speed of each frame within the thing.
+ *              This is the millisecond value between each time the next
+ *              frame is shown.
+ * 
+ * Inputs: none
+ * Output: short - current set thing animation speed
+ */
 short MapThing::getAnimationSpeed()
 {
   return animation_time;
@@ -276,11 +343,27 @@ int MapThing::getID()
   return id;
 }
 
+/* 
+ * Description: Returns the movement that the class is set to. This indicates
+ *              the current direction that it will shift in when an update
+ *              call is selected
+ * 
+ * Inputs: none
+ * Output: EnumDb::Direction - the movement direction indicator
+ */
 EnumDb::Direction MapThing::getMovement()
 {
   return movement;
 }
 
+/* 
+ * Description: This is a virtual move request call that needs to be
+ *              reimplemented by whoever needs it. It returns what the current
+ *              move request is.
+ * 
+ * Inputs: none
+ * Output: EnumDb::Direction - the move request direction indicator
+ */
 EnumDb::Direction MapThing::getMoveRequest()
 {
   return EnumDb::DIRECTIONLESS;
@@ -297,6 +380,12 @@ QString MapThing::getName()
   return name;
 }
 
+/* 
+ * Description: Returns the speed that the thing is moving in. Default is 150.
+ * 
+ * Inputs: none
+ * Output: short - the speed integer movement indicator
+ */
 short MapThing::getSpeed()
 {
   return speed;
@@ -314,7 +403,14 @@ MapState* MapThing::getState()
   return state;
 }
 
-/* Returns the central tile */
+/* 
+ * Description: Returns the tile that the thing is currently at. Used for all
+ *              indication of where the thing is going and if someone talks to
+ *              it while moving, etc.
+ * 
+ * Inputs: none
+ * Output: Tile* - the tile pointer of the tile this thing resides at
+ */
 Tile* MapThing::getTile()
 {
   return tile_main;
@@ -331,11 +427,23 @@ int MapThing::getWidth()
   return width;
 }
 
+/* 
+ * Description: Returns the top left X coordinate of the thing
+ * 
+ * Inputs: none
+ * Output: float - the X coordinate, in pixels, of the top left corner
+ */
 float MapThing::getX()
 {
   return x;
 }
 
+/* 
+ * Description: Returns the top left Y coordinate of the thing
+ * 
+ * Inputs: none
+ * Output: float - the Y coordinate, in pixels, of the top left corner
+ */
 float MapThing::getY()
 {
   return y;
@@ -352,21 +460,50 @@ void MapThing::interaction()
 {
 }
 
+/* 
+ * Description: Returns if a move is currently in the request queue.
+ * 
+ * Inputs: none
+ * Output: bool - true if there is a move request.
+ */
 bool MapThing::isMoveRequested()
 {
   return false;
 }
 
+/* 
+ * Description: Returns if the thing is currently moving.
+ * 
+ * Inputs: none
+ * Output: bool - movement status
+ */
 bool MapThing::isMoving()
 {
   return (movement != EnumDb::DIRECTIONLESS);
 }
 
+/* 
+ * Description: Returns if the thing is currently centered on a tile 
+ *              (approximately).
+ * 
+ * Inputs: none
+ * Output: bool - tile centered status
+ */
 bool MapThing::isOnTile()
 {
   return (((int)x % getWidth() == 0) && ((int)y % getHeight() == 0));
 }
 
+/* 
+ * Description: The paint function for the thing. This takes the active state
+ *              and paints it based on location and offset (from paint engine)
+ *              and if it is set within the thing class.
+ * 
+ * Inputs: float offset_x - the paint offset in the x direction
+ *         float offset_y - the paint offset in the y direction
+ *         float opacity - the opacity of the thing [0.0-1.0]
+ * Output: bool - if the paint event occurred
+ */
 bool MapThing::paintGl(float offset_x, float offset_y, float opacity)
 {
   if(state != 0 && state->getSprite() != 0 && tile_main != 0)
@@ -378,6 +515,14 @@ bool MapThing::paintGl(float offset_x, float offset_y, float opacity)
   return false;
 }
 
+/* 
+ * Description: Sets the animation speed of the thing. This is the number of 
+ *              milliseconds between each frame update (needs to be greater
+ *              than 0. If 0, the thing does not change frames 
+ * 
+ * Inputs: short frame_time - the frame time (in milliseconds)
+ * Output: bool - if the frame time is valid
+ */
 bool MapThing::setAnimationSpeed(short frame_time)
 {
   if(frame_time >= 0)
@@ -450,6 +595,14 @@ void MapThing::setName(QString new_name)
   name = new_name;
 }
 
+/* 
+ * Description: Sets the speed of the thing that it is moving in. Default is
+ *              150 and gets set if the speed is invalid (less than 0).
+ * 
+ * Inputs: short speed - the speed to set the thing movement to
+ * Output: bool - returns if the speed was actually set. If false, the default
+ *                was set.
+ */
 bool MapThing::setSpeed(short speed)
 {
   if(speed >= 0)
@@ -458,6 +611,7 @@ bool MapThing::setSpeed(short speed)
     return true;
   }
   
+  this->speed = kDEFAULT_SPEED;
   return false;
 }
 

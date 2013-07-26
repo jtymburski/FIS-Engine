@@ -54,7 +54,8 @@ private:
   MapStatusBar map_status_bar;
 
   /* The players info on the map */
-  MapPerson* player;
+  QList<MapPerson*> persons;
+  MapPerson* player; /* The actively controlled player */
   MapThing* thing;
 
   /* The sectors on the map (for rooms, caves, houses etc) */
@@ -91,6 +92,7 @@ private:
   const static int kFILE_SECTION_ID;  /* The section identifier, for file */
   const static int kFILE_TILE_COLUMN; /* The tile depth in XML of column tag */
   const static int kFILE_TILE_ROW;    /* The tile depth in XML of row tag */
+  const static short kPLAYER_INDEX;   /* The player index, in the thing set */
   const static int kTICK_DELAY;       /* Tick timer delay constant */
   const static int kTILE_HEIGHT;      /* The tile height, as constant (TEMP) */
   const static int kTILE_WIDTH;       /* The tile width, as constant (TEMP) */
@@ -169,9 +171,6 @@ public:
 
   /* Loads the map */
   bool loadMap(QString file);
-
-  /* Shifts the viewport */
-  void move(EnumDb::Direction dir, int step_length, Sprite s);
 
   /* Checks the tile you are attempting to enter for passibility of the given
   direction */
