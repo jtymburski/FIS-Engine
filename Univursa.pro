@@ -37,7 +37,6 @@ SOURCES += \
     ./src/Game/Battle/PersonStatusBar.cc \
     ./src/Game/Battle/EnemyStatusBar.cc \
     ./src/Game/Battle/AllyStatusBar.cc \
-    ./src/Game/Map/Layer.cc \
     ./src/Game/Map/Map.cc \
     ./src/Game/Map/MapBubby.cc \
     ./src/Game/Map/MapEquipment.cc \
@@ -92,7 +91,6 @@ HEADERS += \
     ./include/Game/Battle/PersonStatusBar.h \
     ./include/Game/Battle/EnemyStatusBar.h \
     ./include/Game/Battle/AllyStatusBar.h \
-    ./include/Game/Map/Layer.h \
     ./include/Game/Map/Map.h \
     ./include/Game/Map/MapBubby.h \
     ./include/Game/Map/MapEquipment.h \
