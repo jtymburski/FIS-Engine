@@ -21,9 +21,16 @@ Application::Application(QWidget* parent)
 {
   setParent(parent);
 
+  /* Set some of the options */
+#ifdef unix
+  vsync_enabled = false;
+#else
+  vsync_enabled = true;
+#endif
+
   // TODO: make this dependent on focus of the game. If it loses focus, 
   // return the normal cursor (Qt::ArrowCursor);
-  setCursor(Qt::BlankCursor);
+  //setCursor(Qt::BlankCursor);
   //setCursor(Qt::ArrowCursor);
 
   title_screen = new TitleScreen(kRESOLUTION_X, kRESOLUTION_Y);
@@ -32,15 +39,22 @@ Application::Application(QWidget* parent)
   setupBattle();
   //test_battle->show();
   
-  test_map = new Map(kRESOLUTION_X, kRESOLUTION_Y);
+  /* Sets up the map format and map with vsync and double buffering forced on */
+  /* TODO: add checking if OpenGL is not enabled */
+  QGLFormat gl_format(QGL::SampleBuffers);
+  gl_format.setDoubleBuffer(true);
+  if(vsync_enabled)
+    gl_format.setSwapInterval(1);
+  else
+    gl_format.setSwapInterval(0);
+  test_map = new Map(gl_format, kRESOLUTION_X, kRESOLUTION_Y);
   //test_map->loadMap("maps/test_03");
   //test_map->getViewport()->show();
-  
+
   /* Add widgets to the stack */
   addWidget(test_battle);
-  addWidget(test_map->getViewport());
+  addWidget(test_map); // TODO: should be viewport
   addWidget(title_screen);
-
   setCurrentIndex(2); // TODO (0=battle, 1=map, 2=titlescreen)
 
   /* Widget information for handling the game */
@@ -102,10 +116,19 @@ void Application::switchWidget(int index)
 {
   if(!test_map->isLoaded() && index == 1)
     test_map->loadMap("maps/test_04");
+  //if(test_map->isLoaded() && index != 1)
+  //  test_map->unloadMap();
+  
+  /* Map timer stop */
+  if(index != 1)
+    test_map->tickStop();
 
+  /* Sets the current displayed index */
   setCurrentIndex(index);
 
-  if(index == 2)
+  if(index == 1)
+    test_map->tickStart();
+  else if(index == 2)
     title_screen->playBackground();
 }
 

@@ -1,7 +1,7 @@
 /******************************************************************************
 * Class Name: Layer
 * Date Created: May 10, 2013
-* Inheritance: QGraphicsItem
+* Inheritance: none
 * Description: This class becomes the middle interface in between a sprite 
 *              and converting it into the data needed to add it to the
 *              QGraphicsScene. Essentially it just offers the re-implemented
@@ -38,7 +38,7 @@ Layer::Layer()
   clear();
 
   /* Set some QGraphicsItem specific classifications for performance */
-  setAcceptedMouseButtons(0);
+  //setAcceptedMouseButtons(0);
   //setCacheMode(DeviceCoordinateCache);
 }
 
@@ -78,12 +78,12 @@ Layer::Layer(int width, int height, int x, int y, int z)
   setStatus(ACTIVE);
 
   /* Set coordinates */
-  setX(x);
-  setY(y);
-  setZValue(z);
+  //setX(x);
+  //setY(y);
+  //setZValue(z);
 
   /* Set some QGraphicsItem specific classifications for performance */
-  setAcceptedMouseButtons(0);
+  //setAcceptedMouseButtons(0);
   //setCacheMode(DeviceCoordinateCache);
 }
 
@@ -173,9 +173,9 @@ void Layer::clear()
   setStatus(OFF);
 
   /* Reset coordinates */
-  setX(0);
-  setY(0);
-  setZValue(0);
+  //setX(0);
+  //setY(0);
+  //setZValue(0);
 }
 
 /* 
@@ -296,10 +296,10 @@ int Layer::getPaintCount()
  */
 Layer::Status Layer::getStatus()
 {
-  if(!blanked && !isVisible())
-    return OFF;
-  else if(!blanked && isVisible())
-    return ACTIVE;
+  //if(!blanked && !isVisible())
+  //  return OFF;
+  //else if(!blanked && isVisible())
+  //  return ACTIVE;
   return BLANKED;
 }
 
@@ -368,6 +368,7 @@ bool Layer::insertUpper(Sprite* new_upper, int index)
   }
   return false;
 }
+
 /* 
  * Description: Reimplemented virtual function. Handles the painting of the 
  *              image stored within the layer. Runs based on the same data as 
@@ -379,48 +380,48 @@ bool Layer::insertUpper(Sprite* new_upper, int index)
  *         QWidget* widget - the related widget, if applicable
  * Output: none
  */
-void Layer::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
-                  QWidget* widget)
-{
-  /* Increment the paint count */
-  paint_count++;
-
-  /* Remove unused parameter warnings */
-  (void)option;
-  (void)widget;
-
-  /* Set painter information */
-  painter->setBrush(QBrush(Qt::black));
-  painter->setPen(Qt::NoPen);
-  //painter->setRenderHint(QPainter::SmoothPixmapTransform, true);
-
-  /* Only paint if the tile isn't blanked */
-  if(!blanked)
-  {
-    /* Paint the base first */
-    if(base != 0)
-      painter->drawPixmap(0, 0, width, height, base->getCurrent());
-
-    /* Then the enhancer sprite */
-    if(enhancer != 0)
-      painter->drawPixmap(0, 0, width, height, enhancer->getCurrent());
-
-    /* Then paint the set of lower layers */
-    for(int i = 0; i < lower.size(); i++)
-      if(lower[i] != 0)
-        painter->drawPixmap(0, 0, width, height, lower[i]->getCurrent());
-
-    /* Finish by printing the upper set, if set */
-    for(int i = 0; i < upper.size(); i++)
-      if(upper[i] != 0)
-        painter->drawPixmap(0, 0, width, height, upper[i]->getCurrent());
-  }
-  else
-  {
-    /* If the tile is blanked, just paint a black square */
-    painter->drawRect(QRectF(0, 0, width, height));
-  }
-}
+//void Layer::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
+//                  QWidget* widget)
+//{
+//  /* Increment the paint count */
+//  paint_count++;
+//
+//  /* Remove unused parameter warnings */
+//  (void)option;
+//  (void)widget;
+//
+//  /* Set painter information */
+//  painter->setBrush(QBrush(Qt::black));
+//  painter->setPen(Qt::NoPen);
+//  //painter->setRenderHint(QPainter::SmoothPixmapTransform, true);
+//
+//  /* Only paint if the tile isn't blanked */
+//  if(!blanked)
+//  {
+//    /* Paint the base first */
+//    if(base != 0)
+//      painter->drawPixmap(0, 0, width, height, base->getCurrent());
+//
+//    /* Then the enhancer sprite */
+//    if(enhancer != 0)
+//      painter->drawPixmap(0, 0, width, height, enhancer->getCurrent());
+//
+//    /* Then paint the set of lower layers */
+//    for(int i = 0; i < lower.size(); i++)
+//      if(lower[i] != 0)
+//        painter->drawPixmap(0, 0, width, height, lower[i]->getCurrent());
+//
+//    /* Finish by printing the upper set, if set */
+//    for(int i = 0; i < upper.size(); i++)
+//      if(upper[i] != 0)
+//        painter->drawPixmap(0, 0, width, height, upper[i]->getCurrent());
+//  }
+//  else
+//  {
+//    /* If the tile is blanked, just paint a black square */
+//    painter->drawRect(QRectF(0, 0, width, height));
+//  }
+//}
 
 /* 
  * Description: Sets the base sprite stored within the layer. Only sets it 
@@ -498,7 +499,7 @@ bool Layer::setHeight(int height)
 {
   if(height > 0)
   {
-    prepareGeometryChange();
+    //prepareGeometryChange();
     this->height = height;
     return true;
   }
@@ -565,25 +566,25 @@ bool Layer::setLowerPassability(int index, EnumDb::Direction dir,
  */
 void Layer::setStatus(Status new_status)
 {
-  /* Disables all events for the items (might need to enable) */
-  setEnabled(false);
- 
-  /* Set the other settings, based on the status given */
-  if(new_status == OFF)
-  {
-    setVisible(false);
-    blanked = false;
-  }
-  else if(new_status == BLANKED)
-  {
-    setVisible(true);
-    blanked = true;
-  }
-  else if(new_status == ACTIVE)
-  {
-    setVisible(true);
-    blanked = false;
-  }
+//  /* Disables all events for the items (might need to enable) */
+//  setEnabled(false);
+// 
+//  /* Set the other settings, based on the status given */
+//  if(new_status == OFF)
+//  {
+//    setVisible(false);
+//    blanked = false;
+//  }
+//  else if(new_status == BLANKED)
+//  {
+//    setVisible(true);
+//    blanked = true;
+//  }
+//  else if(new_status == ACTIVE)
+//  {
+//    setVisible(true);
+//    blanked = false;
+//  }
 }
 
 /* 
@@ -618,7 +619,7 @@ bool Layer::setWidth(int width)
 {
   if(width > 0)
   {
-    prepareGeometryChange();
+//    prepareGeometryChange();
     this->width = width;
     return true;
   }

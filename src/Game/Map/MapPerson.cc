@@ -50,8 +50,8 @@ MapPerson::MapPerson()
  *         QString description - a description of the person
  *         int id - a unique numerical identifier, for the person
  */
-MapPerson::MapPerson(int width, int height, 
-                     QString name, QString description, int id)
+MapPerson::MapPerson(int width, int height, QString name, 
+                     QString description, int id)
 {
   /* Class value setup */
   setDescription(description);
@@ -149,66 +149,23 @@ EnumDb::Direction MapPerson::intToDir(int dir_index)
   return EnumDb::DIRECTIONLESS;
 }
 
-/*
- * Description: The key press event reimplementation. Handles all the movement
- *              for the map person, if redirected here.
- *
- * Inputs: QKeyEvent* event - the key event to analyze
- * Output: none
- */
-void MapPerson::keyPressEvent(QKeyEvent* event)
-{
-  if(event->key() == Qt::Key_Down && 
-     !movement_stack.contains(EnumDb::SOUTH))
-    movement_stack.append(EnumDb::SOUTH);
-  else if(event->key() == Qt::Key_Up && 
-          !movement_stack.contains(EnumDb::NORTH))
-    movement_stack.append(EnumDb::NORTH);
-  else if(event->key() == Qt::Key_Right && 
-          !movement_stack.contains(EnumDb::EAST))
-    movement_stack.append(EnumDb::EAST);
-  else if(event->key() == Qt::Key_Left && 
-          !movement_stack.contains(EnumDb::WEST))
-    movement_stack.append(EnumDb::WEST);
-}
 
-/*
- * Description: The key release event reimplementation. Handles all the 
- *              movement for the map person, if redirected here.
- *
- * Inputs: QKeyEvent* event - the key event to analyze
- * Output: none
- */
-void MapPerson::keyReleaseEvent(QKeyEvent* event)
-{
-  if(event->key() == Qt::Key_Down  && 
-     movement_stack.contains(EnumDb::SOUTH))
-    movement_stack.removeAt(movement_stack.indexOf(EnumDb::SOUTH));
-  else if(event->key() == Qt::Key_Up && 
-          movement_stack.contains(EnumDb::NORTH))
-    movement_stack.removeAt(movement_stack.indexOf(EnumDb::NORTH));
-  else if(event->key() == Qt::Key_Left && 
-          movement_stack.contains(EnumDb::WEST))
-    movement_stack.removeAt(movement_stack.indexOf(EnumDb::WEST));
-  else if(event->key() == Qt::Key_Right && 
-          movement_stack.contains(EnumDb::EAST))
-    movement_stack.removeAt(movement_stack.indexOf(EnumDb::EAST));
-}
 
 /* 
  * Description: Sets a new direction for the person on the map. It will update
  *              the parent frame so a new classifier is printed.
  * 
  * Inputs: MovementDirection direction - the new direction to set
- * Output: none
+ * Output: bool - indicates if the directional movement changed
  */
-void MapPerson::setDirection(EnumDb::Direction direction, bool set_movement)
+bool MapPerson::setDirection(EnumDb::Direction direction, bool set_movement)
 {
   bool changed = (this->direction != direction);
- 
+  bool movement_changed = false;
+  
   /* If moving, set the direction in map thing */
   if(set_movement)
-    MapThing::setDirection(direction);
+    movement_changed = MapThing::setDirection(direction);
   else
     MapThing::setDirection(EnumDb::DIRECTIONLESS);
 
@@ -221,6 +178,8 @@ void MapPerson::setDirection(EnumDb::Direction direction, bool set_movement)
     /* Finally set the in class direction */
     this->direction = direction;
   }
+  
+  return movement_changed;
 }
 
 /*============================================================================
@@ -257,6 +216,14 @@ EnumDb::Direction MapPerson::getDirection()
   return direction;
 }
 
+/* 
+ * Description: This is a reimplemented call from MapThing, gets the actual
+ *              move request which will be the last key pressed by the
+ *              keyboard, since it's utilized as a stack.
+ * 
+ * Inputs: none
+ * Output: EnumDb::Direction - the direction movement.
+ */
 EnumDb::Direction MapPerson::getMoveRequest()
 {
   if(isMoveRequested())
@@ -276,6 +243,59 @@ MapPerson::SurfaceClassifier MapPerson::getSurface()
   return surface;
 }
 
+/*
+ * Description: The key press event implementation. Handles all the movement
+ *              for the map person, if redirected here.
+ *
+ * Inputs: QKeyEvent* event - the key event to analyze
+ * Output: none
+ */
+void MapPerson::keyPress(QKeyEvent* event)
+{
+  if(event->key() == Qt::Key_Down && 
+     !movement_stack.contains(EnumDb::SOUTH))
+    movement_stack.append(EnumDb::SOUTH);
+  else if(event->key() == Qt::Key_Up && 
+          !movement_stack.contains(EnumDb::NORTH))
+    movement_stack.append(EnumDb::NORTH);
+  else if(event->key() == Qt::Key_Right && 
+          !movement_stack.contains(EnumDb::EAST))
+    movement_stack.append(EnumDb::EAST);
+  else if(event->key() == Qt::Key_Left && 
+          !movement_stack.contains(EnumDb::WEST))
+    movement_stack.append(EnumDb::WEST);
+}
+
+/*
+ * Description: The key release event implementation. Handles all the 
+ *              movement for the map person, if redirected here.
+ *
+ * Inputs: QKeyEvent* event - the key event to analyze
+ * Output: none
+ */
+void MapPerson::keyRelease(QKeyEvent* event)
+{
+  if(event->key() == Qt::Key_Down  && 
+     movement_stack.contains(EnumDb::SOUTH))
+    movement_stack.removeAt(movement_stack.indexOf(EnumDb::SOUTH));
+  else if(event->key() == Qt::Key_Up && 
+          movement_stack.contains(EnumDb::NORTH))
+    movement_stack.removeAt(movement_stack.indexOf(EnumDb::NORTH));
+  else if(event->key() == Qt::Key_Left && 
+          movement_stack.contains(EnumDb::WEST))
+    movement_stack.removeAt(movement_stack.indexOf(EnumDb::WEST));
+  else if(event->key() == Qt::Key_Right && 
+          movement_stack.contains(EnumDb::EAST))
+    movement_stack.removeAt(movement_stack.indexOf(EnumDb::EAST));
+}
+
+/* 
+ * Description: Reimplemented is move request call from map thing. This 
+ *              utilizes the key press stack to get movement options.
+ * 
+ * Inputs: none
+ * Output: bool - returns if a move is requested.
+ */
 bool MapPerson::isMoveRequested()
 {
   return !movement_stack.isEmpty();
@@ -333,32 +353,49 @@ void MapPerson::setSurface(SurfaceClassifier surface)
  * Inputs: none
  * Output: none 
  */
-void MapPerson::updateThing(bool can_move)
+void MapPerson::updateThing(float cycle_time, Tile* next_tile)
 {
+  bool can_move = isMoveAllowed(next_tile);
+  bool reset = false;
+  
   /* Once a tile end has reached, cycle the movement direction */
-  if(isOnTile())
+  if(isAlmostOnTile(cycle_time))
   {
+    tileMoveFinish();
+    
     /* Only update direction if a move is requested */
     if(isMoveRequested())
     {
-      setDirection(getMoveRequest(), can_move);
+      /* Set the new direction and if the direction is changed, or it's
+       * not allowed to move, recenter the thing */
+      if(setDirection(getMoveRequest(), can_move) || !can_move)
+      {
+        x = tile_main->getPixelX();
+        y = tile_main->getPixelY();
+      }
+      
+      /* If it can move, initiate tile shifting */
+      if(can_move)
+        tileMoveStart(next_tile, Tile::PERSON);
 
-      /* If not allowed to move, reset the animation */
-      if(!can_move)
-        resetAnimation();
+      reset = !can_move;
     }
+    /* If there is no move request, stop movement */
     else
     {
+      x = tile_main->getPixelX();
+      y = tile_main->getPixelY();
+      
       setDirection(EnumDb::DIRECTIONLESS);
-      resetAnimation();
+      reset = true;
     }
   }
 
-  moveThing();
+  /* Proceed to move the thing */
+  moveThing(cycle_time);
 
   /* Only animate if the direction exists */
-  if(getMovement() != EnumDb::DIRECTIONLESS)
-    animate(true);
+  animate(cycle_time, reset, true);
 }
 
 /* 

@@ -40,6 +40,9 @@ private:
   Battle* test_battle;
   Map* test_map;
 
+  /* Some options (temp?) */
+  bool vsync_enabled;
+
   /*------------------- Constants -----------------------*/
   const static short kRESOLUTION_X; /* Screen resolution, x direction */
   const static short kRESOLUTION_Y; /* Screen resolution, y direction */

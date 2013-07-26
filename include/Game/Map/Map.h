@@ -1,7 +1,7 @@
 /******************************************************************************
 * Class Name: Map
 * Date Created: Oct 28 2012
-* Inheritance: QGraphicsScene
+* Inheritance: QGLWidget
 * Description: The map class, this is the top level with regard to an actual
 *              in-game map. This contains all the tiles that a map is composed
 *              of, it also holds pointers to all of the NPC's contained in the
@@ -10,28 +10,28 @@
 #ifndef MAP_H
 #define MAP_H
 
-//#include <QDebug>
-#include <QGraphicsScene>
+#include <QDebug>
+//#include <QGraphicsScene>
 #include <QGLWidget>
 
 #include "Game/Map/MapNPC.h"
-#include "Game/Map/Tile.h"
 #include "Game/Map/MapMenu.h"
 #include "Game/Map/MapStatusBar.h"
 #include "Game/Map/MapThing.h"
 #include "Game/Map/MapViewport.h"
 #include "Game/Map/Sector.h"
+#include "Game/Map/Tile.h"
 #include "Game/Sprite.h"
 #include "Game/Weather.h"
 #include "FileHandler.h"
 
-class Map : public QGraphicsScene
+class Map : public QGLWidget
 {
   Q_OBJECT
 
 public:
   /* Constructor function */
-  Map(short resolution_x, short resolution_y);
+  Map(const QGLFormat & format, short viewport_width, short viewport_height);
 
   /* Destructor function */
   ~Map();
@@ -54,35 +54,49 @@ private:
   MapStatusBar map_status_bar;
 
   /* The players info on the map */
-  MapPerson* player;
+  QList<MapPerson*> persons;
+  MapPerson* player; /* The actively controlled player */
   MapThing* thing;
 
   /* The sectors on the map (for rooms, caves, houses etc) */
   QVector <Sector> sectors;
 
+  /* The time that has elapsed for each draw cycle */
+  double time_buffer;
+  QTime time_elapsed;
+
   /* The timer for handling the tick (temporary?) */
   QTimer timer;
 
-  /* The viewoport for the map, controlled by QGraphicsView */
+  /* The viewport for the map, controlled by QGraphicsView */
   MapViewport* viewport;
-  QGLWidget* viewport_widget;
 
   /* Weather effect on the overall map (May be pushed to the sector level at 
    * a later time) */
   Weather* weather_effect;
 
+  /* The painting monitoring parameters */
+  QString frames_per_second;
+  int frames;
+  int paint_animation;
+  int paint_count;
+  QTime paint_time;
+  double paint_time_average;
+
   /*------------------- Constants -----------------------*/
-  const static int kDOUBLE_DIGITS;   /* The point when integers are more than
-                                        a single digit */
-  const static int kELEMENT_ANGLE; /* Element angle for sprite */
-  const static int kELEMENT_DATA;  /* Element data type for sprite */
+  const static int kDOUBLE_DIGITS;    /* The point when integers are more than
+                                       * a single digit */
+  const static int kELEMENT_ANGLE;    /* Element angle for sprite */
+  const static int kELEMENT_DATA;     /* Element data type for sprite */
   const static int kFILE_CLASSIFIER;  /* The file tile classification text */
   const static int kFILE_SECTION_ID;  /* The section identifier, for file */
   const static int kFILE_TILE_COLUMN; /* The tile depth in XML of column tag */
   const static int kFILE_TILE_ROW;    /* The tile depth in XML of row tag */
-  const static int kTILE_LENGTH;      /* The tile length, as constant (TEMP) */
+  const static short kPLAYER_INDEX;   /* The player index, in the thing set */
+  const static int kTICK_DELAY;       /* Tick timer delay constant */
+  const static int kTILE_HEIGHT;      /* The tile height, as constant (TEMP) */
   const static int kTILE_WIDTH;       /* The tile width, as constant (TEMP) */
-  const static int kVIEWPORT_LENGTH;  /* The viewport length, in tiles */
+  const static int kVIEWPORT_HEIGHT;  /* The viewport height, in tiles */
   const static int kVIEWPORT_WIDTH;   /* The viewport width, in tiles */
 
 /*============================================================================
@@ -95,12 +109,18 @@ private:
  * PROTECTED FUNCTIONS
  *===========================================================================*/
 protected:
-  /* Draw the background override */
-  void drawBackground(QPainter* painter, const QRectF& rect);
+  /* GL initialization call */
+  void initializeGL();
 
   /* Key Press/Release Events */
-  void keyPressEvent(QKeyEvent* keyEvent);
-  void keyReleaseEvent(QKeyEvent* keyEvent);
+  void keyPressEvent(QKeyEvent* key_event);
+  void keyReleaseEvent(QKeyEvent* key_event);
+
+  /* GL painting call */
+  void paintGL();
+  
+  /* GL resize call */
+  void resizeGL(int width, int height);
 
 /*============================================================================
  * SIGNALS
@@ -112,7 +132,7 @@ signals:
  * PUBLIC SLOTS
  *===========================================================================*/
 public slots:
-  void animate();
+  void animate(short time_since_last);
   void animateTiles();
 
 /*============================================================================
@@ -152,15 +172,16 @@ public:
   /* Loads the map */
   bool loadMap(QString file);
 
-  /* Shifts the viewport */
-  void move(EnumDb::Direction dir, int step_length, Sprite s);
-
   /* Checks the tile you are attempting to enter for passibility of the given
   direction */
   bool passible(EnumDb::Direction dir, int x, int y);
 
   /* Causes the thing you are moving into to start its interactive action */
   void passOver();
+
+  /* The tick handling methods for starting and stopping the map */
+  void tickStart();
+  void tickStop();
 
   /* Unload the map, if there is one loaded */
   void unloadMap();

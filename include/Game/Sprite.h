@@ -1,10 +1,12 @@
 /******************************************************************************
 * Class Name: Sprite
-* Date Created: Oct 28 2012
+* Date Created: Oct 28, 2012
 * Inheritance: none
 * Description: The Sprite class. This handles the linked list control that 
 *              wraps the Frame. This will allow for a sequence of events, 
-*              that emulate a GIF for animation or just store one image.
+*              that emulate a GIF for animation or just store one image. This
+*              class also has the functionality for direction GL painting 
+*              through the native API.
 ******************************************************************************/
 #ifndef SPRITE_H
 #define SPRITE_H
@@ -36,7 +38,7 @@ public:
    * CLOCKWISE - rotate the object 90 degrees clockwise
    * COUNTERCLOCKWISE - rotate the object 90 degrees counterclockwise
    * FLIP - rotate the object 180 degrees */
-  enum RotatedAngle{NONE, CLOCKWISE, COUNTERCLOCKWISE, FLIP};
+  enum RotatedAngle{NONE, CLOCKWISE, COUNTERCLOCKWISE, HALFCIRCLE};
 
 private:
   /* The current frame */
@@ -58,6 +60,9 @@ private:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Flips all the images in each frame */
+  bool flipAll(bool horizontal = true, bool vertical = false);
+
   /* Gets the current frame */
   QPixmap getCurrent();
 
@@ -69,6 +74,9 @@ public:
 
   /* Returns the size of the sequence */
   int getSize();
+
+  /* Initializes GL in all the frames stored within this sprite */
+  bool initializeGl();
 
   /* Inserts the image into the sprite sequence at the given position */
   bool insert(QString image_path, int position, int rotate_angle = 0);
@@ -92,6 +100,9 @@ public:
 
   /* Returns if the linked list pointer is currently at the head */
   bool isAtFirst();
+
+  /* Paints the active frame using GL direct calls */
+  bool paintGl(float x, float y, int width, int height, float opacity);
 
   /* Removes the frame in the sequence at the given position */
   bool remove(int position);

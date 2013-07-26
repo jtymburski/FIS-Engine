@@ -1,7 +1,7 @@
 /******************************************************************************
 * Class Name: Map
 * Date Created: Dec 2 2012
-* Inheritance: QGraphicsScene
+* Inheritance: QGLWidget
 * Description: The map class, this is the top level with regard to an actual
 *              in-game map. This contains all the tiles that a map is composed
 *              of, it also holds pointers to all of the NPC's contained in the
@@ -17,38 +17,53 @@ const int Map::kFILE_CLASSIFIER = 3;
 const int Map::kFILE_SECTION_ID = 2;
 const int Map::kFILE_TILE_COLUMN = 5;
 const int Map::kFILE_TILE_ROW = 4;
-const int Map::kTILE_LENGTH = 64;
+const short Map::kPLAYER_INDEX = 0;
+const int Map::kTICK_DELAY = 10;
+const int Map::kTILE_HEIGHT = 64;
 const int Map::kTILE_WIDTH = 64;
-const int Map::kVIEWPORT_LENGTH = 19;
-const int Map::kVIEWPORT_WIDTH = 11;
+const int Map::kVIEWPORT_HEIGHT = 11;
+const int Map::kVIEWPORT_WIDTH = 19;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
 
 /* Constructor function */
-Map::Map(short resolution_x, short resolution_y)
+Map::Map(const QGLFormat & format, short viewport_width, 
+         short viewport_height) : QGLWidget(format)
 {
-  /* Setting the tree indexing method (NoIndex or BspTreeIndex) */
-  //setItemIndexMethod(QGraphicsScene::NoIndex);
-
+  /* Set some initial class flags */
+  //setAttribute(Qt::WA_PaintOnScreen);
+  //setAttribute(Qt::WA_NoSystemBackground);
+  setAutoBufferSwap(true);
+  setAutoFillBackground(false);
+  
   /* Configure the scene */
   loaded = false;
+  persons.clear();
   player = 0;
- 
-  /* Setup the OpenGL Widget */
-  QGLFormat gl_format(QGL::SampleBuffers);
-  gl_format.setSwapInterval(1);
-  viewport_widget = new QGLWidget(gl_format);
+
+  /* Configure the FPS animation and reset to 0 */
+  frames = 0;
+  paint_animation = 0;
+  paint_count = 0;
+  paint_time_average = 0.0;
+
+  /* Test the things and persons */
+  thing = 0;
+
+  //setMinimumSize(2000, 2000);
 
   /* Setup the viewport */
-  viewport = new MapViewport(this, resolution_x, resolution_y);
-  viewport->setViewport(viewport_widget);
-  viewport->setViewportUpdateMode(QGraphicsView::NoViewportUpdate);
+  viewport = new MapViewport(viewport_width, viewport_height, 
+                             kTILE_WIDTH, kTILE_HEIGHT);
  
   /* Bring the timer in to provide a game tick */
-  connect(&timer, SIGNAL(timeout()), this, SLOT(animate()));
-  timer.start(20);
+  connect(&timer, SIGNAL(timeout()), this, SLOT(updateGL()));
+  timer.start(10);
+
+  /* The time elapsed draw time */
+  time_elapsed.start();
 }
 
 /* Destructor function */
@@ -141,92 +156,196 @@ bool Map::addTileData(XmlData data)
  * PROTECTED FUNCTIONS
  *===========================================================================*/
 
-/* Background painting function */
-void Map::drawBackground(QPainter* painter, const QRectF& rect)
+void Map::initializeGL()
 {
-  /* Do nothing */
-  (void)painter;
-  (void)rect;
+  glDisable(GL_TEXTURE_2D);
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_COLOR_MATERIAL);
+  glEnable(GL_BLEND);
+  //glEnable(GL_CULL_FACE); // Performance Add? Only for 3d
+  //glEnable(GL_POLYGON_SMOOTH); // Causes strange lines drawn between tiles
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glClearColor(0, 0, 0, 0);
 }
 
-void Map::keyPressEvent(QKeyEvent* keyEvent)
+void Map::keyPressEvent(QKeyEvent* key_event)
 {
-  if(keyEvent->key() == Qt::Key_Down || keyEvent->key() == Qt::Key_Up ||
-     keyEvent->key() == Qt::Key_Right || keyEvent->key() == Qt::Key_Left)
-    sendEvent(player, keyEvent);
-  else if(keyEvent->key() == Qt::Key_Escape)
+  if(key_event->key() == Qt::Key_Down || key_event->key() == Qt::Key_Up ||
+     key_event->key() == Qt::Key_Right || key_event->key() == Qt::Key_Left)
+  {
+    if(player != 0)
+      player->keyPress(key_event);
+  }
+  else if(key_event->key() == Qt::Key_Escape)
     closeMap();
-  else if(keyEvent->key() == Qt::Key_A)
+  else if(key_event->key() == Qt::Key_A)
     animateTiles();
-  else if(keyEvent->key() == Qt::Key_1)
-    viewport->lockOn(player);
-  else if(keyEvent->key() == Qt::Key_2)
-    viewport->lockOn(1000, 1000);
+  else if(key_event->key() == Qt::Key_1)
+  {
+    if(persons.size() > kPLAYER_INDEX)
+    {
+      player = persons[kPLAYER_INDEX];
+      viewport->lockOn(player);
+    }
+  }
+  else if(key_event->key() == Qt::Key_2)
+  {
+    if(persons.size() > (kPLAYER_INDEX + 1))
+    {
+      player = persons[kPLAYER_INDEX + 1];
+      viewport->lockOn(player);
+    }
+  }
+  else if(key_event->key() == Qt::Key_3)
+    viewport->lockOn(609, 353);
 }
 
-void Map::keyReleaseEvent(QKeyEvent* keyEvent)
+void Map::keyReleaseEvent(QKeyEvent* key_event)
 {
-  if(keyEvent->key() == Qt::Key_Down || keyEvent->key() == Qt::Key_Up ||
-     keyEvent->key() == Qt::Key_Right || keyEvent->key() == Qt::Key_Left)
-    sendEvent(player, keyEvent);
+  if(key_event->key() == Qt::Key_Down || key_event->key() == Qt::Key_Up ||
+     key_event->key() == Qt::Key_Right || key_event->key() == Qt::Key_Left)
+  {
+    if(player != 0)
+      player->keyRelease(key_event);
+  }
+}
+
+/* TODO: might need to restrict animation for things out of the display
+ *       due to lag (high number of Things). Further testing required.
+ *
+ * Seem to be getting more consistent results for displaying, and it seems
+ * better with vsync disabled */
+void Map::paintGL()
+{
+  /* Start a QTimer to determine time elapsed for painting */
+  //QTime time;
+  //time.start();
+    
+  /* Start by setting the context and clearing the screen buffers */
+  makeCurrent();
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  //glPushMatrix();
+  
+  /* Only proceed if the map is loaded */
+  if(loaded)
+  {
+    /* Animate the map based on the elapsed time and then update
+     * the viewport due to the animate */
+    animate(time_elapsed.restart());
+    viewport->updateView();
+   
+    /* Paint the lower half */
+    for(int i = viewport->getXTileStart(); i < viewport->getXTileEnd(); i++)
+      for(int j = viewport->getYTileStart(); j < viewport->getYTileEnd(); j++)
+        geography[i][j]->paintLower(viewport->getX(), viewport->getY());
+   
+    /* Paint the persons (player and NPCs) */
+    for(int i = 0; i < persons.size(); i++)
+    {
+      if(persons[i] != 0 && persons[i]->getX() >= viewport->getXStart() &&
+                            persons[i]->getX() <= viewport->getXEnd())
+        persons[i]->paintGl(viewport->getX(), viewport->getY());
+
+    }
+
+    /* Paint the upper half */
+    for(int i = viewport->getXTileStart(); i < viewport->getXTileEnd(); i++)
+      for(int j = viewport->getYTileStart(); j < viewport->getYTileEnd(); j++)
+        geography[i][j]->paintUpper(viewport->getX(), viewport->getY());
+  }
+    
+  /* Paint the frame rate */
+  glColor4f(0.0, 0.0, 0.0, 0.5);
+  glBegin(GL_QUADS);
+    glVertex3f(7, 40, 0);
+    glVertex3f(7, 10, 0);
+    glVertex3f(64, 10, 0);
+    glVertex3f(64, 40, 0);
+  glEnd();
+  glColor4f(1.0, 1.0, 1.0, 1.0);
+  renderText(20, 30, frames_per_second);
+
+  /* Clean up the drawing procedure */
+  glFlush();
+  //glPopMatrix();
+  glFinish();
+  
+  /* Determine the FPS sample rate */
+  if(paint_animation <= 0)
+  {
+    frames_per_second.setNum(frames /(paint_time.elapsed() / 1000.0), 'f', 2);
+    //qDebug() << frames_per_second << " " << isValid();
+    paint_animation = 20;
+  }
+  paint_animation--;
+
+  /* Check the FPS monitor to see if it needs to be reset */
+  if (!(frames % 100))
+  {
+    paint_time.start();
+    frames = 0;
+  }
+  frames++;
+
+  /* Finish by updating the viewport widget - currently in auto */
+  //qDebug() << time.elapsed();
+  //swapBuffers();
+  //update();
+}
+
+void Map::resizeGL(int width, int height) 
+{
+  glViewport(0, 0, width, height);
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  gluOrtho2D(0, width, height, 0); // set origin to bottom left corner
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
 }
 
 /*============================================================================
  * PUBLIC SLOTS
  *===========================================================================*/
 
-void Map::animate()
+void Map::animate(short time_since_last)
 {
-  /* Start a QTimer to determine time elapsed for update */
-  QTime time;
-  time.start();
-
-  if(player != 0)
+  /* The movement handling for things*/
+  for(int i = 0; i < persons.size(); i++)
   {
-    bool movable = true;
-
-    if(player->isOnTile() && player->isMoveRequested())
-    {
-      EnumDb::Direction moving = player->getMoveRequest();
-      int x1 = (int)player->x() / kTILE_WIDTH;
-      int y1 = (int)player->y() / kTILE_LENGTH;
-      movable = geography[y1][x1]->getPassability(moving);
-      int x2, y2;
-
-      if(moving == EnumDb::NORTH)
+    if(persons[i] != 0 && persons[i]->getTile() != 0)
+    { 
+      Tile* next_tile = 0;
+      int tile_x = persons[i]->getTile()->getX();
+      int tile_y = persons[i]->getTile()->getY();
+    
+      /* Based on the move request, provide the next tile in line using the
+       * current centered tile and move request */
+      switch(persons[i]->getMoveRequest())
       {
-        x2 = x1;
-        y2 = y1 - 1;
-        movable &= geography[y2][x2]->getPassability(EnumDb::SOUTH);
+        case EnumDb::NORTH:
+          if(--tile_y >= 0)
+            next_tile = geography[tile_x][tile_y];
+          break;
+        case EnumDb::EAST:
+          if(++tile_x < geography.size())
+            next_tile = geography[tile_x][tile_y];
+          break;
+        case EnumDb::SOUTH:
+          if(++tile_y < geography[tile_x].size())
+            next_tile = geography[tile_x][tile_y];
+          break;
+        case EnumDb::WEST:
+          if(--tile_x >= 0)
+            next_tile = geography[tile_x][tile_y];
+          break;
+        case EnumDb::DIRECTIONLESS:
+          next_tile = 0;
       }
-      else if(moving == EnumDb::EAST)
-      {
-        x2 = x1 + 1;
-        y2 = y1;
-        movable &= geography[y2][x2]->getPassability(EnumDb::WEST);
-      }
-      else if(moving == EnumDb::SOUTH)
-      {
-        x2 = x1;
-        y2 = y1 + 1;
-        movable &= geography[y2][x2]->getPassability(EnumDb::NORTH);
-      }
-      else if(moving == EnumDb::WEST)
-      {
-        x2 = x1 - 1;
-        y2 = y1;
-        movable &= geography[y2][x2]->getPassability(EnumDb::EAST);
-      }
+    
+      /* Proceed to update the thing */
+      persons[i]->updateThing(time_since_last, next_tile);
     }
-
-    player->updateThing(movable);
-    viewport->updateView();
   }
-
-  viewport->viewport()->update();
-
-  /* Time elapsed from standard update */
-  //qDebug() << time.elapsed();
 }
 
 void Map::animateTiles()
@@ -279,7 +398,7 @@ MapViewport* Map::getViewport()
 
 void Map::initialization()
 {
-  player->setFocus();
+  //player->setFocus();
 }
 
 /* Causes the thing you are facing and next to start its interactive action */
@@ -314,25 +433,28 @@ bool Map::loadMap(QString file)
   if(success)
   {
     /* Calculate dimensions and set up the map */
-    int length = fh.readXmlData().getDataInteger();
-    int width = fh.readXmlData().getDataInteger();
+    int width = fh.readXmlData().getDataInteger(); // TODO: fix to ensure that
+    int height = fh.readXmlData().getDataInteger();// it's actually this data
     for(int i = 0; i < width; i++)
     {
-      QVector<Tile*> row;
+      QVector<Tile*> col;
 
-      for(int j = 0; j < length; j++)
+      for(int j = 0; j < height; j++)
       {
         /* Create the tile */
-        Tile* t = new Tile(kTILE_LENGTH, kTILE_WIDTH, 
-                           j*kTILE_LENGTH, i*kTILE_WIDTH);
-        //t->setStatus(Tile::OFF);
-        t->insertIntoScene(this);
+        Tile* t = new Tile(kTILE_WIDTH, kTILE_HEIGHT, i, j);
+       
+        // TODO: Remove - tile status testing
+        //if(i == 10 && j == 10)
+        //  t->setStatus(Tile::OFF);
+        //else if(i == 12 && j == 10)
+        //  t->setStatus(Tile::BLANKED);
 
         /* Add the new tile to the list */
-        row.append(t);
+        col.append(t);
       }
 
-      geography.append(row);
+      geography.append(col);
     }
   
     /* Run through the map components and add them to the map */
@@ -346,7 +468,7 @@ bool Map::loadMap(QString file)
       data = fh.readXmlData(&done, &success);
     } while(!done && success);
 
-    /* Add in temporary player information */
+    /* Add the player information */
     Sprite* up_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_D", 
                                    3, ".png");
     Sprite* down_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_U", 
@@ -355,42 +477,67 @@ bool Map::loadMap(QString file)
                                      3, ".png");
     Sprite* right_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_L", 
                                       3, ".png");
+    MapPerson* person = new MapPerson(kTILE_WIDTH, kTILE_HEIGHT);
+    person->setStartingTile(geography[8][8]); // 11, 9
 
-    /* Make the map person */
-    player = new MapPerson(kTILE_LENGTH, kTILE_WIDTH);
-    player->setCoordinates(kTILE_LENGTH*10, kTILE_WIDTH*8, 2);
-
-    player->setState(MapPerson::GROUND, EnumDb::NORTH, 
+    person->setState(MapPerson::GROUND, EnumDb::NORTH, 
                                         new MapState(up_sprite));
-    player->setState(MapPerson::GROUND, EnumDb::SOUTH, 
+    person->setState(MapPerson::GROUND, EnumDb::SOUTH, 
                                         new MapState(down_sprite));
-    player->setState(MapPerson::GROUND, EnumDb::EAST, 
+    person->setState(MapPerson::GROUND, EnumDb::EAST, 
                                         new MapState(right_sprite));
-    player->setState(MapPerson::GROUND, EnumDb::WEST, 
+    person->setState(MapPerson::GROUND, EnumDb::WEST, 
                                         new MapState(left_sprite));
+    persons.append(person);
 
-    /* Add it */
-    addItem(player);
-    viewport->lockOn(player);
-    //setFocusItem(player);
+    /* Add a second player */
+    up_sprite = new Sprite("sprites/Map/Map_Things/aurumba_AA_D", 3, ".png");
+    down_sprite = new Sprite("sprites/Map/Map_Things/aurumba_AA_U", 3, ".png");
+    left_sprite = new Sprite("sprites/Map/Map_Things/aurumba_AA_S", 3, ".png");
+    left_sprite->flipAll();
+    right_sprite = new Sprite("sprites/Map/Map_Things/aurumba_AA_S", 3, ".png");
+    person = new MapPerson(kTILE_WIDTH, kTILE_HEIGHT);
+    person->setStartingTile(geography[2][4]);
+    person->setState(MapPerson::GROUND, EnumDb::NORTH, 
+                                        new MapState(up_sprite));
+    person->setState(MapPerson::GROUND, EnumDb::SOUTH, 
+                                        new MapState(down_sprite));
+    person->setState(MapPerson::GROUND, EnumDb::EAST, 
+                                        new MapState(right_sprite));
+    person->setState(MapPerson::GROUND, EnumDb::WEST, 
+                                        new MapState(left_sprite));
+    persons.append(person);
+
+    /* Make the map thing */
+    //thing = new MapThing(new MapState(up_sprite), kTILE_WIDTH, kTILE_HEIGHT);
+    //thing->setCoordinates(128, 128);
   }
 
   success &= fh.stop();
-  
+
   /* If the map load failed, unload the map */
   if(!success)
+  {
     unloadMap();
+  }
+  else
+  {
+    if(geography.size() > 0)
+    {
+      viewport->setMapSize(geography.size(), geography[0].size());
+      if(persons.size() > kPLAYER_INDEX)
+        player = persons[kPLAYER_INDEX];
+      if(player != 0)
+        viewport->lockOn(player);
+    }
+
+    for(int i = 0; i < geography.size(); i++)
+      for(int j = 0; j < geography[i].size(); j++)
+        geography[i][j]->initializeGl();
+  }
   loaded = success;
 
   return success;
-}
-
-/* Shifts the viewport */
-void Map::move(EnumDb::Direction dir, int step_length, Sprite dir_sprite)
-{
-  (void)dir;//warning
-  (void)step_length;//warning
-  (void)dir_sprite;//warning
 }
 
 /* Checks the tile you are attempting to enter for passibility of the given
@@ -408,6 +555,19 @@ void Map::passOver()
 {
 }
 
+/* Starts the internal class animation tick */
+void Map::tickStart()
+{
+  timer.start(kTICK_DELAY);
+  time_elapsed.restart();
+}
+
+/* Stops the internal class animation tick */
+void Map::tickStop()
+{
+  timer.stop();
+}
+
 void Map::unloadMap()
 {
   /* Delete all the tiles that have been set */
@@ -415,7 +575,7 @@ void Map::unloadMap()
   {
     for(int j = 0; j < geography[i].size(); j++)
     {
-      geography[i][j]->removeFromScene(this);
+      //geography[i][j]->removeFromScene(this);
       delete geography[i][j];
       geography[i][j] = 0;
     }
@@ -430,8 +590,21 @@ void Map::unloadMap()
   }
   tile_sprites.clear();
 
+  /* Delete the things */
+  for(int i = 0; i < persons.size(); i++)
+  {
+    if(persons[i] != 0)
+      delete persons[i];
+    persons[i] = 0;
+  }
+  persons.clear();
+
+  /* Reset the viewport */
+  viewport->setMapSize(0, 0);
+  viewport->lockOn(0, 0);
+
   /* Clear the remaining and disable the loading */
-  clear();
+  //clear();
   loaded = false;
 }
 
