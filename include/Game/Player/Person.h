@@ -254,6 +254,9 @@ public:
   /* Sets the persons word rank */
   void setRank(QString new_rank);
 
+  /* Sets the persons skill set */
+  void setSkills(SkillSet* new_skill_set);
+
   /* Sets the first person sprite */
   void setFirstPerson(Sprite* s = 0);
 
@@ -271,6 +274,9 @@ public:
 public:
   /* Gets the experience at a given level */
   static uint getExpAt(ushort level);
+
+  /* Gets the max level constant */
+  static const uint getMaxLevel();
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Person::PersonFlags)
 

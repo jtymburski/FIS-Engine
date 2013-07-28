@@ -4,7 +4,6 @@
 * Inheritance: Item
 * Description: The Bubby specification under Item that adds the extra
 *              details to define experience, level cap, etc.
-* // TODO: Bubby Attributes and LevelUp paths [03-09-13]
 *******************************************************************************/
 #include "Game/Player/Bubby.h"
 

@@ -34,12 +34,13 @@ QVector<ushort> BubbyFlavour::kTIER_LEVELS;  /* Vector of Skill levels */
  */
 BubbyFlavour::BubbyFlavour(BubbyFlavour* flavour_parent, QString flavour_name,
                            AttributeSet* stat_set, SkillSet* skills)
-  :  parent(flavour_parent),
-     name(flavour_name),
-     stats(stat_set),
-     skill_list(skills)
+  : parent(flavour_parent)
 {
-    /* Build the skill levels per tier if not built */
+  setAttr(stat_set);
+  setSkillSet(skills);
+  setName(flavour_name);
+
+  /* Build the skill levels per tier if not built */
   if (kTIER_LEVELS.isEmpty())
     buildLevels();
 

@@ -5,7 +5,6 @@
 * Description: Container class for Skills. Contains all methods needed ot hold
 *              a list of skills and levels required to use them. Removes
 *              duplicates, etc.
-// TODO: Remove duplicates from Skills. [03-09-13]
 ******************************************************************************/
 #include "Game/Player/SkillSet.h"
 
@@ -13,6 +12,7 @@
  * CONSTANTS
  *============================================================================*/
 const uint SkillSet::kMAX_SKILLS = 500; /* Maximum # of Skills in one set */
+const uint SkillSet::kMAX_LEVEL  = 127; /* Highest LVL for a Person */
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -76,10 +76,20 @@ bool SkillSet::addSkill(Skill* new_skill, ushort req_level)
 {
   if ((uint)skills_available.size() < kMAX_SKILLS)
   {
-    skills.append(new_skill);
-    skills_available.append(req_level);
-    enabled.push_back(TRUE);
-    cleanUp();
+    QVector<QString> names = getNames();
+    int index = names.indexOf(new_skill->getName());
+
+    if (index != -1 && skills_available.at(index) > req_level)
+    {
+      skills_available[index] = req_level;
+      enabled[index] = true;
+    }
+    else
+    {
+      skills.append(new_skill);
+      skills_available.append(req_level);
+      enabled.push_back(TRUE);
+    }
     return true;
   }
   return true;
@@ -88,37 +98,89 @@ bool SkillSet::addSkill(Skill* new_skill, ushort req_level)
 /*
  * Description: Adds multiple skills to the SkillSet, given vectors
  *
+ * Note [1]: Notice that using this function to add skills will result
+ *           in no duplicates added since the contains() check is on
+ *           every iteration. Thus, the SkillSet will never contain
+ *           duplicates.
+ *
  * Inputs: QVector<Skill* > - vector of skills to be added
  *         QVector<ushort>  - vector of levels corresponding
  * Output: bool             - true is successful
  */
-bool SkillSet::addSkills(QVector<Skill* > new_skills,
+bool SkillSet::addSkills(QVector<Skill*> new_skills,
                                QVector<ushort> new_levels)
 {
-  /* The levels required vector must equal the size of the skills */
-  if (new_skills.size() != new_levels.size())
-    return false;
+  bool to_be_completed = true;
 
-  /* To add new skills, must calculate the total # of skills at end, if the
-     number of new skills exceeds this amount, then the addition will fail */
-  uint unique_skills = calcUniqueSkills(new_skills);
+  if (new_skills.size() == new_levels.size() && !new_skills.isEmpty())
+    to_be_completed = false;
 
-  if (unique_skills <= kMAX_SKILLS)
+  if (to_be_completed && calcUniqueSkills(new_skills) > kMAX_SKILLS)
+    to_be_completed = false;
+
+  if (to_be_completed)
   {
-    for (int i = 0; i < new_skills.size(), new_skills.at(i) != 0; i++)
+    QVector<QString> names = getNames(); /* Starting vector of unique names */
+
+    for (int i = 0; i < new_skills.size(); i++)
     {
-      skills.append(new_skills.at(i));
-      skills_available.append(new_levels.at(i));
-      enabled.push_back(TRUE);
+      int index = names.indexOf(new_skills.at(i)->getName());
+
+      /* If the current skill to be added is already in the skill set,
+       * check if its level required is lower. If so, replace the level
+       * required for the skill only */
+      if (index != -1)
+      {
+        if (new_levels.at(index) < skills_available.at(index))
+        {
+          skills_available[index] = new_levels.value(index);
+          enabled[index] = true;
+        }
+      }
+
+      /* Else if the skill is not contained, add the skill to the skill set */
+      else
+      {
+        names.push_back(new_skills.at(i)->getName());
+        skills.push_back(new_skills.value(i));
+        skills_available.push_back(new_levels.value(i));
+        enabled.push_back(true);
+      }
     }
-    cleanUp();
-    return true;
   }
-  else
+
+  if (to_be_completed)
+      cleanUp();
+  return to_be_completed;
+}
+
+/*
+ * Description: This function will return an integer of the lowest level
+ *              found for a skill of a certain name in the skill set.
+ *              The function will return -1 if the skill is not found.
+ *
+ * Inputs: QString - the name of a skill allegedly contained in the skill set
+ * Output:
+ */
+int SkillSet::calcLowestLevel(QString skill_name)
+{
+  int lowest = kMAX_LEVEL;
+  bool found = false;
+
+  /* Iterate through the skills and levels to find the string */
+  for (int i = 0; i < skills.size(); i++)
   {
-    //emit fullSet((QString)"SkillSet would exceed kMAX_SKILLS");
-    return false;
+    int new_value = skills_available.at(i);
+    if (skills.at(i)->getName() == skill_name && new_value < lowest)
+    {
+      lowest = skills_available.at(i);
+      found = true;
+    }
   }
+  /* If the skill was found, return the lowest value, otherwise return 0 */
+  if (found)
+    return lowest;
+  return (int)found;
 }
 
 /*
@@ -132,15 +194,12 @@ bool SkillSet::addSkills(QVector<Skill* > new_skills,
 uint SkillSet::calcUniqueSkills(QVector<Skill*> new_skills)
 {
   /* First, compile a list of unique skill strings */
-  QVector<QString> unique_skills;
-
-  for (int i = 0; i < skills.size(); i++)
-    unique_skills.push_back(skills.at(i)->getName());
+  QVector<QString> unique_skills = getNames();
 
   /* Then, find the # of new additions */
-  for (int i = 0; i < skills.size(); i++)
+  for (QVector<Skill*>::Iterator it = skills.begin(); it < skills.end(); it++)
   {
-    QString new_name = new_skills.at(i)->getName();
+    QString new_name = (*it)->getName();
 
     if (!unique_skills.contains(new_name));
       unique_skills.push_back(new_name);
@@ -150,9 +209,7 @@ uint SkillSet::calcUniqueSkills(QVector<Skill*> new_skills)
 }
 
 /*
- * Description: Cleans up the SkillSet by calling Sort, then by removing
- *              duplicates (by taking the lowest level value for skills of the
- *              same name).
+ * Description: Cleans up the SkillSet by calling Sort
  *
  * Inputs: none
  * Output: none
@@ -162,8 +219,6 @@ void SkillSet::cleanUp()
   if (skills.size() > 1)
   {
     sortSkills();
-
-    // TODO: Remove duplicates from Skills. [03-09-13]
   }
 }
 
@@ -287,6 +342,22 @@ bool SkillSet::sortSkills(QString sort_type)
   temp_skills.clear();
   skills_available = temp_levels;
   return true;
+}
+
+/*
+ * Description: Returns the vector of skills
+ *
+ * Inputs: none
+ * Output: QVector<Skill* > - the skills of the SkillSet
+ */
+QVector<QString> SkillSet::getNames()
+{
+  QVector<QString> names;
+
+  for (QVector<Skill*>::iterator it = skills.begin(); it < skills.end(); ++it)
+    names.push_back((*it)->getName());
+
+  return names;
 }
 
 /*

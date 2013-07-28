@@ -44,13 +44,13 @@ const uint Inventory::kMAX_EQUIPMENT        = 100000;      /* 10 ^ 5 */
  */
 Inventory::Inventory(QString name, Sprite *thumb, QWidget *parent)
     : QWidget(parent),
-      name(name),
-      thumbnail(thumb),
       bubby_state(EnumDb::NONE),
       equipment_state(EnumDb::NONE),
       item_state(EnumDb::NONE),
       key_item_state(EnumDb::NONE)
 {
+  setName(name);
+  setThumb(thumb);
   bubbies.resize(0);
   equipments.resize(0);
   items.resize(0);
@@ -665,8 +665,6 @@ bool Inventory::sorter(EnumDb::ItemSorts sort_by,
       item_state = sort_by;
     if (object_type == EnumDb::KEY_ITEM_VECTOR)
       key_item_state = sort_by;
-
-    emit(sort_by, object_type);
   }
 
   return sort_completed;

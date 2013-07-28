@@ -123,8 +123,6 @@ signals:
   /* Emits a QString describing why the inventory is full -- to player */
   void full(QString reason);
 
-  void sortCompleted(EnumDb::ItemSorts sort_type, EnumDb::SortObjects object);
-
 /*============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/

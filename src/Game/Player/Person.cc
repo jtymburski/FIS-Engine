@@ -43,16 +43,18 @@ QVector<uint> Person::exp_table;
  * Output: none
  */
 Person::Person(QString name, Race *race, Category* cat, QString p, QString s)
-  : name(name),
-    race(race),
-    cat(cat),
-    skills(0),
-    first_person(0),
-    third_person(0),
-    damage_modifier(0),
-    total_exp(0),
-    level(1)
 {
+  /* Basic Setup */
+  setName(name);
+  setRace(race);
+  setCategory(cat);
+  setExp(0);
+  setLevel(1);
+  setSkills(0);
+  setFirstPerson(0);
+  setThirdPerson(0);
+  setDmgMod(1);
+
   /* Setup the primary and secondary curves */
   setPrimary(p);
   setSecondary(s);
@@ -112,6 +114,17 @@ uint Person::getExpAt(ushort level)
   if (level < exp_table.size())
     return exp_table.at(level);
   return 0;
+}
+
+/*
+ * Description: Returns the value of the maximum level constant
+ *
+ * Inputs: none
+ * Output: uint - the value of the maximum level constant
+ */
+const uint Person::getMaxLevel()
+{
+  return kMAX_LEVEL;
 }
 
 /*
@@ -972,6 +985,17 @@ void Person::setSecondary(QString value)
   setSecondaryCurve(value.at(value.length() - 1));
   value.chop(1);
   secondary = value;
+}
+
+/*
+ * Description: Sets the person's skill set
+ *
+ * Inputs: SkillSet* - pointer to a new skill set to be assigned
+ * Output: none
+ */
+void Person::setSkills(SkillSet* new_skill_set)
+{
+  skills = new_skill_set;
 }
 
 /*

@@ -29,6 +29,7 @@ public:
 private:
   /* Maximum number of skills allowed */
   static const uint kMAX_SKILLS;
+  static const uint kMAX_LEVEL;
 
   /* Vectors holding the skills and the level they're available */
   QVector<Skill*> skills;
@@ -43,10 +44,13 @@ public:
   bool addSkill(Skill* skill, ushort req_level = 1);
   bool addSkills(QVector<Skill*> new_skills, QVector<ushort> new_levels);
 
+  /* Calculates the lowest level of a skill contained in the set */
+  int calcLowestLevel(QString skill_name);
+
   /* Calculates the end number of unique skills before an append of new ones */
   uint calcUniqueSkills(QVector<Skill*> new_skills);
 
-  /* Removes duplicates and cleans up vectors */
+  /* Cleans up vectors */
   void cleanUp();
 
   /* Method to print out the info of the Skill Set */
@@ -58,6 +62,9 @@ public:
 
   /* Sorts the skill vector */
   bool sortSkills(QString sort_type = "NAME");
+
+  /* Creates and returns a vector of names of skills */
+  QVector<QString> getNames();
 
   /* Methods to obtain skills */
   QVector<Skill*> getSkills();
