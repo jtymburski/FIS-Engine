@@ -110,5 +110,10 @@
         <file alias="bbd_sewers4">pictures/Battle Backdrops/battlebg/battlebg4.png</file>
         <file alias="title_Screen">pictures/univursatitle.png</file>
         <file alias="bbd_sewers5">pictures/Battle Backdrops/battlebg/battlebg5.png</file>
+        <file alias="E_abbotmalus">sprites/Battle/Battle_Persons/abbotmalus.png</file>
+        <file alias="E_arcadius_modulated">sprites/Battle/Battle_Persons/arcadius_modulated.png</file>
+        <file alias="E_aurora_agent">sprites/Battle/Battle_Persons/auroraagent.png</file>
+        <file alias="E_ballman">sprites/Battle/Battle_Persons/ballman.png</file>
+        <file alias="A_gyrokin">sprites/Battle/Backs/gyrokin.png</file>
     </qresource>
 </RCC>

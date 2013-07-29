@@ -80,7 +80,7 @@
  */
 Battle::Battle(Party* friends, Party* foes, QWidget* parent) : QWidget(parent)
 {
-  qDebug() << "Entering Battle Constructor";
+
 
   /* Pointer setup */
   setFriends(friends);
@@ -160,7 +160,6 @@ Battle::Battle(Party* friends, Party* foes, QWidget* parent) : QWidget(parent)
 
   paintAll();
 
-  qDebug() << "Exiting Battle Constructor";
 }
 
 /*

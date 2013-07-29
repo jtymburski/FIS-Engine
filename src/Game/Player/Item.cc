@@ -38,7 +38,7 @@ Item::Item(QString name, uint value, Sprite* thumbnail, double mass)
   setThumb(thumbnail);
   setValue(value);
   setMass(mass);
-
+  setDuration(0);
   setActionSet(0);
   setBuffSet(0);
   setSkillSet(0);

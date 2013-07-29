@@ -14,15 +14,14 @@
 #include <QDebug>
 
 #include "Game/Player/Action.h"
-#include "Game/Player/Bubby.h"
+#include "Game/Player/Signature.h"
 #include "Game/Player/Item.h"
 
 class Equipment : public Item
 {
 public:
   /* Constructor function */
-  Equipment(QString name, QVector<QVector<char> > equip_signature,
-            Sprite* thumb, uint value = 0, double mass = 0);
+  Equipment(QString name, ushort x, ushort y, Sprite* thumb, uint value = 0, double mass = 0);
 
   /* Destructor function */
   ~Equipment();
@@ -45,66 +44,30 @@ public:
   EquipmentFlags eflag_set;
 
 private:
-  /* 2D 9x9 array for bubby signature*/
-  QVector<QVector<char> > signature;
-  Bubby* bubby_signature[9][9];
+  /* The signature of the Equipment */
+  Signature equip_signature;
 
-  /* The list of actions offered by the equipment*/
+  /* The list of actions offered by the equipment */
   QVector<Action*> action_list;
 
   /* A parallel list that shows when actions become available (Based on level)*/
   QVector<ushort> action_available;
 
-  /* -------------------- Constants ----------------- */
-  static const ushort kMAX_X;
-  static const ushort kMAX_Y;
-
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
-  /* Checks if the bubby will fit into the bubby signature
-   * X is the left most coordinate, Y is the top most coordinate
-   * Returns if space is available for attachment */
-  bool canAttach(Bubby* new_bubby, ushort x, ushort y);
-
-  /* Attempt to attach bubby into the signature
-   * X is the left most coordinate, Y is the top most coordinate
-   * Returns status of attachment */
-  bool attachBubby(Bubby* new_bubby, ushort x, ushort y);
-
-  /* Checks if a Bubby at a given index can be unattached */
-  bool canUnattach(ushort x, ushort y);
-  bool canUnattach(uint id);
-
   /* Method to print out the bubby signature on the Equipment */
   void printAll();
   void printFlags();
   void printInfo();
   void printEquipmentFlags();
-  void printSignature();
-
-  /* Removes a Bubby at a given x and y value (checks adjacent values) */
-  Bubby unattach(ushort x, ushort y);
-
-  /* Returns a vector of all Bubbies attached to the equipment */
-  QVector<Bubby*> getAttachedBubbies();
-  QVector<BubbyFlavour*> getAttachedFlavours();
-
-  /* Gets the Leftmost X and Leftmost Y coordinates of a Bubby */
-  int getLeftX(int id);
-  int getLeftX(uint x, uint y);
-  int getTopY(int id);
-  int getTopY(uint x, uint y);
 
   /* Gets the boolean value of flag */
   bool getEquipmentFlag(EquipmentState flags);
 
   /* Gets the weight added on with Bubbies */
   double getEquipmentMass();
-
-  /* Obtains the largest tier of a given flavour */
-  int getLargestTier(BubbyFlavour* flavour);
 
   /* Calculates and returns the skills the equipment provides */
   SkillSet* getSkills(ushort level);

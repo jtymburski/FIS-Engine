@@ -44,7 +44,7 @@ public:
     BUBBY         = 1ul << 8, /* Is the item a Bubby? */
     KEYITEM       = 1ul << 9, /* is the item a unique quest item? */
     MULTIITEM     = 1ul << 10, /* Does the item hit more than one target? */
-    PARTYITEM     = 1ul << 11 /* Does the item effect all members of a party? */
+    PARTYITEM     = 1ul << 11  /* Does the item effect all members of a party? */
   };
   Q_DECLARE_FLAGS(ItemFlags, ItemState)
   ItemFlags iflag_set;
