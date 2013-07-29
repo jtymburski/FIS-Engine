@@ -6,6 +6,7 @@
 
 /* DELETE: Only for testing */
 #include "FileHandler.h"
+#include "Game/Map/MapNPC.h"
 
 #undef main
 
@@ -98,6 +99,10 @@ int main(int argc, char *argv[])
     qDebug() << "Writing file fail.";
   }
 
+  /* Map NPC test */
+  MapNPC* test_npc = new MapNPC(64, 64);
+  test_npc->insertNode(0, new Tile(64, 64));
+  
   /* End Test */
 
   QApplication::setGraphicsSystem("raster");

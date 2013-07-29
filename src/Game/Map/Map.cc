@@ -18,7 +18,7 @@ const int Map::kFILE_SECTION_ID = 2;
 const int Map::kFILE_TILE_COLUMN = 5;
 const int Map::kFILE_TILE_ROW = 4;
 const short Map::kPLAYER_INDEX = 0;
-const int Map::kTICK_DELAY = 1;
+const int Map::kTICK_DELAY = 5;
 const int Map::kTILE_HEIGHT = 64;
 const int Map::kTILE_WIDTH = 64;
 const int Map::kVIEWPORT_HEIGHT = 11;
@@ -35,7 +35,7 @@ Map::Map(const QGLFormat & format, short viewport_width,
   /* Set some initial class flags */
   //setAttribute(Qt::WA_PaintOnScreen);
   //setAttribute(Qt::WA_NoSystemBackground);
-  setAutoBufferSwap(true);
+  setAutoBufferSwap(false);
   setAutoFillBackground(false);
   
   /* Configure the scene */
@@ -60,7 +60,7 @@ Map::Map(const QGLFormat & format, short viewport_width,
  
   /* Bring the timer in to provide a game tick */
   connect(&timer, SIGNAL(timeout()), this, SLOT(updateGL()));
-  timer.start(10);
+  timer.start(kTICK_DELAY);
 
   /* The time elapsed draw time */
   time_elapsed.start();
@@ -222,7 +222,7 @@ void Map::paintGL()
   //time.start();
     
   /* Start by setting the context and clearing the screen buffers */
-  makeCurrent();
+  //makeCurrent();
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   //glPushMatrix();
   
@@ -257,10 +257,10 @@ void Map::paintGL()
   /* Paint the frame rate */
   glColor4f(0.0, 0.0, 0.0, 0.5);
   glBegin(GL_QUADS);
-    glVertex3f(7, 40, 0);
-    glVertex3f(7, 10, 0);
-    glVertex3f(64, 10, 0);
-    glVertex3f(64, 40, 0);
+    glVertex3f(7, 40, 0);//7,40
+    glVertex3f(7, 10, 0);//7,10
+    glVertex3f(64, 10, 0);//64,10
+    glVertex3f(64, 40, 0);//64,40
   glEnd();
   glColor4f(1.0, 1.0, 1.0, 1.0);
   renderText(20, 30, frames_per_second);
@@ -268,7 +268,7 @@ void Map::paintGL()
   /* Clean up the drawing procedure */
   glFlush();
   //glPopMatrix();
-  glFinish();
+  //glFinish();
   
   /* Determine the FPS sample rate */
   if(paint_animation <= 0)
@@ -289,7 +289,7 @@ void Map::paintGL()
 
   /* Finish by updating the viewport widget - currently in auto */
   //qDebug() << time.elapsed();
-  //swapBuffers();
+  swapBuffers();
   //update();
 }
 
@@ -437,7 +437,7 @@ bool Map::loadMap(QString file)
     int height = fh.readXmlData().getDataInteger();// it's actually this data
     for(int i = 0; i < width; i++)
     {
-      QVector<Tile*> col;
+      QList<Tile*> col;
 
       for(int j = 0; j < height; j++)
       {
@@ -469,13 +469,14 @@ bool Map::loadMap(QString file)
     } while(!done && success);
 
     /* Add the player information */
-    Sprite* up_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_D", 
+    Sprite* up_sprite = new Sprite("sprites/Map/Map_Things/main_AA_D", 
                                    3, ".png");
-    Sprite* down_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_U", 
+    Sprite* down_sprite = new Sprite("sprites/Map/Map_Things/main_AA_U", 
                                      3, ".png");
-    Sprite* left_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_R", 
+    Sprite* left_sprite = new Sprite("sprites/Map/Map_Things/main_AA_S", 
                                      3, ".png");
-    Sprite* right_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_L", 
+    left_sprite->flipAll();
+    Sprite* right_sprite = new Sprite("sprites/Map/Map_Things/main_AA_S", 
                                       3, ".png");
     MapPerson* person = new MapPerson(kTILE_WIDTH, kTILE_HEIGHT);
     person->setStartingTile(geography[8][8]); // 11, 9

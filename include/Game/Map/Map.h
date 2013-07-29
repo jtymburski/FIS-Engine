@@ -38,10 +38,10 @@ public:
 
 private:
   /* Vector of all ai's on map */
-  QVector <MapNPC*> ai;
+  QList<MapNPC*> ai;
 
   /* The actual tiles that comprise a map, dynamically sized */
-  QVector <QVector <Tile*> > geography;
+  QList< QList<Tile*> > geography;
   QList<Sprite*> tile_sprites;
 
   /* Indication if the map has been loaded */
@@ -59,7 +59,7 @@ private:
   MapThing* thing;
 
   /* The sectors on the map (for rooms, caves, houses etc) */
-  QVector <Sector> sectors;
+  QList<Sector> sectors;
 
   /* The time that has elapsed for each draw cycle */
   double time_buffer;
