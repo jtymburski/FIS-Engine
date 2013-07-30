@@ -234,9 +234,9 @@ QVector<Bubby*> Signature::getBubbyMap()
  * Description: Evalutes kMAX_X
  *
  * Inputs: none
- * Output: const ushort - the maximum x-dimension size of the signature
+ * Output: ushort - the maximum x-dimension size of the signature
  */
-const ushort Signature::getMaxX()
+ushort Signature::getMaxX()
 {
   return kMAX_X;
 }
@@ -245,9 +245,9 @@ const ushort Signature::getMaxX()
  * Description: Evaluates kMAX_Y
  *
  * Inputs: none
- * Output: const ushort - the maximum y-dimension size of the signature
+ * Output: ushort - the maximum y-dimension size of the signature
  */
-const ushort Signature::getMaxY()
+ushort Signature::getMaxY()
 {
   return kMAX_Y;
 }

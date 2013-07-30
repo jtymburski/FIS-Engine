@@ -122,7 +122,7 @@ uint Person::getExpAt(ushort level)
  * Inputs: none
  * Output: uint - the value of the maximum level constant
  */
-const uint Person::getMaxLevel()
+uint Person::getMaxLevel()
 {
   return kMAX_LEVEL;
 }

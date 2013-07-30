@@ -276,7 +276,7 @@ public:
   static uint getExpAt(ushort level);
 
   /* Gets the max level constant */
-  static const uint getMaxLevel();
+  static uint getMaxLevel();
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Person::PersonFlags)
 

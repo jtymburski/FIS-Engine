@@ -9,11 +9,11 @@
 #define SIGNATURE_H
 
 #include <QVector>
-#include <qDebug>
+#include <QDebug>
 #include <vector>
 #include <utility>
 
-#include "Game/Player/Bubby.h";
+#include "Game/Player/Bubby.h"
 
 class Signature
 {
@@ -74,8 +74,8 @@ public:
   QVector<Bubby*> getBubbyMap();
 
   /* Returns the value of the maximum size of the signature */
-  static const ushort getMaxX();
-  static const ushort getMaxY();
+  ushort getMaxX();
+  ushort getMaxY();
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
