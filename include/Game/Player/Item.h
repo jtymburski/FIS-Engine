@@ -33,18 +33,29 @@ public:
   /* Enumerated flags for item class */
   enum ItemState
   {
-    BATTLEREADY   = 1ul << 0, /* Can the item be used in battle */
-    MENUREADY     = 1ul << 1, /* Can the item be used in the menu? */
-    HEALITEM      = 1ul << 2, /* Does the item heal vitality? */
-    CURE          = 1ul << 3, /* Does the item cure ailments? */
-    OFFENSIVE     = 1ul << 4, /* Does the item have an offensive battle use? */
-    INDEFINITE    = 1ul << 5, /* If item has infinite uses */
-    STACKABLE     = 1ul << 6, /* If item can be grouped with others */
-    EQUIPMENT     = 1ul << 7, /* Is the item a piece of equipment? */
-    BUBBY         = 1ul << 8, /* Is the item a Bubby? */
-    KEYITEM       = 1ul << 9, /* is the item a unique quest item? */
-    MULTIITEM     = 1ul << 10, /* Does the item hit more than one target? */
-    PARTYITEM     = 1ul << 11  /* Does the item effect all members of a party? */
+    BATTLEREADY    = 1ul << 0, /* Can the item be used in battle */
+    MENUREADY      = 1ul << 1, /* Can the item be used in the menu? */
+    HEALITEM       = 1ul << 2, /* Does the item heal vitality? */
+    CURE           = 1ul << 3, /* Does the item cure ailments? */
+    OFFENSIVE      = 1ul << 4, /* Does the item have an offensive battle use? */
+    INDEFINITE     = 1ul << 5, /* If item has infinite uses */
+    STACKABLE      = 1ul << 6, /* If item can be grouped with others */
+    EQUIPMENT      = 1ul << 7, /* Is the item a piece of equipment? */
+    BUBBY          = 1ul << 8, /* Is the item a Bubby? */
+    KEYITEM        = 1ul << 9, /* is the item a unique quest item? */
+    MULTIITEM      = 1ul << 10, /* Does the item hit more than one target? */
+    PARTYITEM      = 1ul << 11, /* Does the item effect the entire party?*/
+    METAL          = 1ul << 12, /* The following describe item composition */
+    WOOD           = 1ul << 13,
+    INSULATED      = 1ul << 14,
+    ANTIMATTER     = 1ul << 15,
+    PLASMA         = 1ul << 16,
+    DARKMATTER     = 1ul << 17,
+    DARKENERGY     = 1ul << 18,
+    ENERGY         = 1ul << 19,
+    ICE            = 1ul << 20,
+    MATERIAL       = 1ul << 21,
+    DISENSTUBULATE = 1ul << 22
   };
   Q_DECLARE_FLAGS(ItemFlags, ItemState)
   ItemFlags iflag_set;

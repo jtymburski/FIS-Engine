@@ -24,10 +24,11 @@
  *
  * Inputs: none
  */
-Equipment::Equipment(QString name, ushort x, ushort y, Sprite* thumb, uint value, double weight)
+Equipment::Equipment(QString name, ushort size_x, ushort size_y,
+                     Sprite* thumb, uint value, double weight)
     : Item(name, value, thumb, mass)
 {
-
+  createSignature(size_x, size_y);
 }
 
 /*
@@ -35,98 +36,16 @@ Equipment::Equipment(QString name, ushort x, ushort y, Sprite* thumb, uint value
  */
 Equipment::~Equipment()
 {
+  if (!getSignature()->isEmpty())
+      qDebug() << "Warning: Equipment Signature is NOT EMPTY!";
+
+  delete equip_signature;
+  equip_signature = NULL;
 }
 
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
-
-/*
- * Description: Evaluates a given EquipmentState flag
- *
- * Inputs: EquipmentState flag to be evaluated
- * Output: boolean value of the flag
- */
-bool Equipment::getEquipmentFlag(EquipmentState flag)
-{
-  return (eflag_set.testFlag(flag));
-}
-
-/*
- * Description: Returns the weight added on to the original weight of the
- *              equipment by the Bubbies which are attached to it.
- *
- * Inputs: none
- * Output: double - amount of weight added to the original equipment
- */
-double Equipment::getEquipmentMass()
-{
-  /*
-  double mass = 0;
-  QVector<Bubby*> attachments = getAttachedBubbies();
-
-  for (int i = 0; i < attachments.size(); i++)
-      mass += attachments[i]->getMass();
-
-  return mass; */
-  return 0;
-}
-
-/*
- * Description: Calculates and returns the skills the equipmenmt makes available
- *              for used based off an input (the level of the character the
- *              equipment is equipped to
- *
- * Inputs: ushort level - the level of the person the equipment is attached to
- * Output: SkillSet* - pointer to the skill set the equipment provides
- */
-SkillSet* Equipment::getSkills(ushort level)
-{
-  /*
-  SkillSet* skills = 0;
-  QVector<Skill*> temp_skills;
-  QVector<ushort> temp_skill_levels;
-
-  QVector<BubbyFlavour*> flavour_list = getAttachedFlavours();
-
-  for (int i = 0; i < flavour_list.size(); i++)
-  {
-    int tier = getLargestTier(flavour_list.at(i));
-    int max_level = BubbyFlavour::getMaxSkillLevel(tier);
-    temp_skills = flavour_list[i]->getSkillSet()->getSkills();
-    temp_skill_levels = flavour_list[i]->getSkillSet()->getSkillLevels();\
-
-    for (int j = 0; j < temp_skills.size(); i++)
-    {
-      if (temp_skill_levels.at(j) <= max_level)
-        skills->addSkill(temp_skills.at(i));
-    }
-
-    temp_skills.clear();
-    temp_skill_levels.clear();
-  }
-
-  return skills;
-  */
-  return 0;
-}
-
-/*
- * Description: Given an EquipmentFlags object and a bool, sets the flags
- *              contained in the object to the boolean value.
- *
- * Inputs: EquipmentState flag to be set
- *         set_value - boolean value to set flags to
- * Output: none
- */
-void Equipment::setEquipmentFlag(EquipmentState flag, bool set_value)
-{
-    (set_value) ? (eflag_set |= flag) : (eflag_set &= flag);
-}
-
-/*=============================================================================
- * VIRTUAL FUNCTIONS
- *============================================================================*/
 
 /*
  * Description: Prints out all the info of the equipment by calling the other
@@ -168,7 +87,6 @@ void Equipment::printFlags()
 void Equipment::printEquipmentFlags()
 {
   qDebug() << "WEAPON: " << getEquipmentFlag(Equipment::WEAPON);
-  qDebug() << "METAL: " << getEquipmentFlag(Equipment::METAL);
   qDebug() << "BROKEN: " << getEquipmentFlag(Equipment::BROKEN);
   qDebug() << "HEAD: " << getEquipmentFlag(Equipment::HEAD);
   qDebug() << "LEFT ARM: " << getEquipmentFlag(Equipment::LEFTARM);
@@ -177,15 +95,103 @@ void Equipment::printEquipmentFlags()
   qDebug() << "LEGS: " << getEquipmentFlag(Equipment::LEGS);
   qDebug() << "TWOHAND: " << getEquipmentFlag(Equipment::TWOHAND);
   qDebug() << "EQUIPPED: " << getEquipmentFlag(Equipment::EQUIPPED);
+  qDebug() << "SIGNATURE ENABLED: "
+           << getEquipmentFlag(Equipment::SIGNATURE_ENABLED);
 }
 
 /*
- * Description: Prints out the info of the equipment
+ * Description: Evaluates a given EquipmentState flag
+ *
+ * Inputs: EquipmentState flag to be evaluated
+ * Output: boolean value of the flag
+ */
+bool Equipment::getEquipmentFlag(EquipmentState flag)
+{
+  return (eflag_set.testFlag(flag));
+}
+
+/*
+ * Description: Returns the mass of the Equipment, including the mass of the
+ *              signature.
  *
  * Inputs: none
+ * Output: double - total weight of the Equipment.
+ */
+double Equipment::getEquipmentMass()
+{
+  return getMass() + getSignature()->getMass();
+}
+
+/*
+ * Description: Calculates and returns the skills the equipmenmt makes available
+ *              for used based off an input (the level of the character the
+ *              equipment is equipped to
+ *
+ * Inputs: ushort level - the level of the person the equipment is attached to
+ * Output: SkillSet* - pointer to the skill set the equipment provides
+ */
+SkillSet* Equipment::getSkills(ushort level)
+{
+  SkillSet* skills = 0;
+
+  QVector<Skill*> temp_skills;
+  QVector<ushort> temp_skill_levels;
+
+  QList<BubbyFlavour*> flavour_list = getSignature()->getUniqueFlavours();
+  QList<BubbyFlavour*>::Iterator it = flavour_list.begin();
+
+  for (; it < flavour_list.end(); ++it)
+  {
+    int max_tier = getSignature()->getHighestTier((*it)->getName());
+    int max_level = (*it)->getMaxSkillLevel(max_tier);
+
+    temp_skills = (*it)->getSkillSet()->getSkills();
+    temp_skill_levels = (*it)->getSkillSet()->getSkillLevels();
+
+    for (int i = 0; i < temp_skills.size(); i++)
+    {
+      if (temp_skill_levels.at(i) <= max_level)
+        skills->addSkill(temp_skills.at(i));
+    }
+
+    temp_skills.clear();
+    temp_skill_levels.clear();
+  }
+
+  return skills;
+}
+
+/*
+ * Description: Returns a pointer to the signature.
+ *
+ * Inputs: none
+ * Output: Pointer to the signature object in the equipment.
+ */
+Signature* Equipment::getSignature()
+{
+  return equip_signature;
+}
+
+/*
+ * Description: Given an EquipmentFlags object and a bool, sets the flags
+ *              contained in the object to the boolean value.
+ *
+ * Inputs: EquipmentState flag to be set
+ *         set_value - boolean value to set flags to
  * Output: none
  */
-void Equipment::printInfo()
+void Equipment::setEquipmentFlag(EquipmentState flag, bool set_value)
 {
+    (set_value) ? (eflag_set |= flag) : (eflag_set &= flag);
+}
 
+/*=============================================================================
+ * PRIVATE FUNCTIONS
+ *============================================================================*/
+void Equipment::createSignature(ushort size_x, ushort size_y)
+{
+  if (equip_signature != NULL)
+    delete equip_signature;
+
+  equip_signature = new Signature(size_x, size_y);
 }

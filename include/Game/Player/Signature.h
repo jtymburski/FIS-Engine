@@ -1,16 +1,22 @@
 /******************************************************************************
 * Class Name: Signature
 * Date Created: July 28, 2013
-* Inheritance:
+* Inheritance: None
 * Description: Abstraction of an equipment's signature. Contains information
-*              on where Bubbies can be "attached" to equipment.
+*              on where Bubbies can be "attached" to equipment. The Signature
+*              has a size X by Y (up to kMAX_X and kMAX_Y. Pointers to the
+*              Bubbies stored in the Signature are contained within the
+*              QList bubby_map. Positions which can not be occupied by a bubby
+*              are in the std::vector closed_cells, whereas the positions which
+*              are occupied by Bubbies are stored in the 2D std::vector of
+*              std::pairs in such a way that occupied_cells[i] is the vector of
+*              positions which are occupied by bubby_map[i].
 ******************************************************************************/
 #ifndef SIGNATURE_H
 #define SIGNATURE_H
 
-#include <QVector>
 #include <QDebug>
-#include <vector>
+#include <QList>
 #include <utility>
 
 #include "Game/Player/Bubby.h"
@@ -21,8 +27,7 @@ public:
   /* Creates a Signature object */
   Signature();
   Signature(ushort x, ushort y);
-  Signature(ushort x, ushort y,
-            std::vector< std::pair<ushort, ushort>  > closed);
+  Signature(ushort x, ushort y, std::vector< std::pair<ushort, ushort>  > list);
 
   /* Annihilates a Signature object */
   ~Signature();
@@ -33,13 +38,13 @@ private:
   ushort y;
 
   /* Vector of Bubbies the signature is pointing to */
-  QVector<Bubby*> bubby_map;
+  QList<Bubby*> bubby_map;
 
-  /* Pairs of positions where Bubbies are located */
-  std::vector< std::vector< std::pair<ushort,ushort> > > positions;
+  /* 2D Vector of coordinate pairs where Bubbies are located */
+  std::vector< std::vector< std::pair<ushort,ushort> > > occupied_cells;
 
-  /* Pairs of positions that are closed, all others open */
-  std::vector< std::pair<ushort, ushort> > closed;
+  /* Coordinates that are closed, all others open */
+  std::vector< std::pair<ushort, ushort> > closed_cells;
 
   /* -------------------- Constants ----------------- */
   static const ushort kMAX_X;
@@ -71,11 +76,20 @@ public:
   Bubby* getBubby(ushort x, ushort y);
 
   /* Returns the entire Bubby map */
-  QVector<Bubby*> getBubbyMap();
+  QList<Bubby*> getBubbyMap();
+
+  /* Returns the highest Tier of a given flavour name */
+  ushort getHighestTier(QString name);
+
+  /* Evalutes and returns the mass of the Signature */
+  double getMass();
 
   /* Returns the value of the maximum size of the signature */
   ushort getMaxX();
   ushort getMaxY();
+
+  /* Returns a QList of the unique flavours the signature has */
+  QList<BubbyFlavour*> getUniqueFlavours();
 
 /*=============================================================================
  * PRIVATE FUNCTIONS

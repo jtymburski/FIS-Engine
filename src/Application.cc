@@ -25,7 +25,7 @@ Application::Application(QWidget* parent)
 #ifdef unix
   vsync_enabled = false;
 #else
-  vsync_enabled = false;
+  vsync_enabled = true;
 #endif
 
   // TODO: make this dependent on focus of the game. If it loses focus, 
@@ -199,12 +199,12 @@ void Application::setupBattle()
   Sprite* aurumba_ally   = new Sprite(":/A_auruba");
 
   Sprite* cloud_enemy = new Sprite(":/E_cloud_thing");
-  Sprite* arcadius_enemy = new Sprite(":/E_arcadius");
-  Sprite* ulterius_enemy = new Sprite(":/E_ulterius");
-  Sprite* abbotmalus_enemy = new Sprite(":/E_abbotmalus");
-  Sprite* arcadius_enemy_modulated = new Sprite(":/E_arcadius_modulated");
-  Sprite* aurora_agent_enemy = new Sprite(":/E_aurora_agent");
-  Sprite* ballman_enemy = new Sprite(":/E_ballman");
+  //Sprite* arcadius_enemy = new Sprite(":/E_arcadius");
+  //Sprite* ulterius_enemy = new Sprite(":/E_ulterius");
+  //Sprite* abbotmalus_enemy = new Sprite(":/E_abbotmalus");
+  //Sprite* arcadius_enemy_modulated = new Sprite(":/E_arcadius_modulated");
+  //Sprite* aurora_agent_enemy = new Sprite(":/E_aurora_agent");
+  //Sprite* ballman_enemy = new Sprite(":/E_ballman");
 
   /* Item Setup */
   Item* anti_matter = new Item("Anti Matter", 1000, 0, 0);

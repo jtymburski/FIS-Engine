@@ -44,12 +44,12 @@ Signature::Signature(ushort x, ushort y)
  *         size_y - size of the signature in the y dimension
  */
 Signature::Signature(ushort x, ushort y,
-                     std::vector<std::pair<ushort, ushort> > closed)
+                     std::vector<std::pair<ushort, ushort> > list)
 {
   resize(x, y);
 
-  for (int i = 0; i < closed.size(); i++)
-    close(closed.at(i).first, closed.at(i).second);
+  for (int i = 0; i < closed_cells.size(); i++)
+    close(closed_cells.at(i).first, closed_cells.at(i).second);
 }
 
 /*
@@ -73,10 +73,11 @@ bool Signature::attach(ushort x, ushort y, Bubby* new_bubby)
 {
   /* Check Tier 1 is open */
   bool can_attach = isOpen(x, y);
+
   std::vector< std::pair<ushort, ushort> > new_positions;
   new_positions.push_back(std::make_pair(x, y));
 
-  /* If needed, check Tier 2 is open */
+  /* Check Tier 2 is open [if needed] */
   if (new_bubby->getTier() > 1)
   {
     if (!isOpen(x + 1, y) || !isOpen(x, y + 1) || !isOpen(x + 1, y + 1))
@@ -87,7 +88,7 @@ bool Signature::attach(ushort x, ushort y, Bubby* new_bubby)
     new_positions.push_back(std::make_pair(x + 1, y + 1));
   }
 
-  /* If needed, check Tier 3 is open */
+  /* Check Tier 3 is open [if needed] */
   if (new_bubby->getTier() > 2)
   {
     if (!isOpen(x + 2, y) || !isOpen(x + 2, y + 1) || !isOpen(x + 2, y + 2) ||
@@ -104,11 +105,13 @@ bool Signature::attach(ushort x, ushort y, Bubby* new_bubby)
   if (can_attach)
   {
     /* Add the Bubby to the vector of pointers */
-    bubby_map.push_back(new_bubby);
+    bubby_map.append(new_bubby);
 
     /* Add the new positions to the positions vector on the new index */
-    positions.push_back(new_positions);
+    occupied_cells.push_back(new_positions);
   }
+
+  return can_attach;
 }
 
 /*
@@ -120,8 +123,8 @@ bool Signature::attach(ushort x, ushort y, Bubby* new_bubby)
  */
 bool Signature::close(ushort x, ushort y)
 {
-  for (int i = 0; i < closed.size(); i++)
-    if (closed[i].first == x && closed[i].second == y)
+  for (int i = 0; i < closed_cells.size(); i++)
+    if (closed_cells[i].first == x && closed_cells[i].second == y)
       return true;
   return false;
 }
@@ -164,11 +167,11 @@ bool Signature::open(ushort x, ushort y)
   if (getBubby(x, y) != 0)
     return false;
 
-  for (int i = 0; i < closed.size(); i++)
+  for (int i = 0; i < closed_cells.size(); i++)
   {
-    if (closed[i].first == x && closed[i].second == y)
+    if (closed_cells[i].first == x && closed_cells[i].second == y)
     {
-      closed.erase(closed.begin() + i);
+      closed_cells.erase(closed_cells.begin() + i);
       return true;
     }
   }
@@ -194,9 +197,9 @@ Bubby* Signature::unattach(ushort x, ushort y)
   /* Bubby exists and will be unattached */
   if (index != -1 && unattachment != 0)
   {
-    positions[index].clear();
+    occupied_cells[index].clear();
     bubby_map[index] = NULL;
-    bubby_map.remove(index);
+    bubby_map.removeAt(index);
   }
 
   return unattachment;
@@ -211,9 +214,9 @@ Bubby* Signature::unattach(ushort x, ushort y)
  */
 Bubby* Signature::getBubby(ushort x, ushort y)
 {
-  for (int i = 0; i < positions.size(); i++)
-    for (int j = 0; j < positions[i].size(); j++)
-      if (positions[i][j].first == x && positions[i][j].second == y)
+  for (int i = 0; i < occupied_cells.size(); i++)
+    for (int j = 0; j < occupied_cells[i].size(); j++)
+      if (occupied_cells[i][j].first == x && occupied_cells[i][j].second == y)
         return bubby_map.at(i);
 
   return 0;
@@ -225,9 +228,48 @@ Bubby* Signature::getBubby(ushort x, ushort y)
  * Inputs: none
  * Output: QVector<Bubby*> - the vector of attached Bubbies
  */
-QVector<Bubby*> Signature::getBubbyMap()
+QList<Bubby*> Signature::getBubbyMap()
 {
   return bubby_map;
+}
+
+/*
+ * Description: Evaluates and returns the highest tier of a given Bubby flavour
+ *              in the Signature.
+ *
+ * Notes [1]: A return of 0 indicates the tier was not found.
+ *
+ * Inputs: none
+ * Output: ushort - the highest tier level of a given flavour.
+ */
+ushort Signature::getHighestTier(QString name)
+{
+  ushort max = 0;
+  QList<Bubby*>::Iterator it = bubby_map.begin();
+
+  for (; it < bubby_map.end(); ++it)
+      if (name == (*it)->getType()->getName() && (*it)->getTier() > max)
+          max = (*it)->getTier();
+
+
+  return max;
+}
+
+/*
+ * Description: Evalutes kMAX_X
+ *
+ * Inputs: none
+ * Output: ushort - the maximum x-dimension size of the signature
+ */
+double Signature::getMass()
+{
+  double temp_mass = 0;
+  QList<Bubby*>::Iterator it = bubby_map.begin();
+
+  for (; it < bubby_map.end(); ++it)
+    temp_mass += (*it)->getMass();
+
+  return temp_mass;
 }
 
 /*
@@ -250,6 +292,32 @@ ushort Signature::getMaxX()
 ushort Signature::getMaxY()
 {
   return kMAX_Y;
+}
+
+/*
+ * Description: Compiles and returns a list of unique BubbyFlavours which
+ *              are contained in the Signature.
+ *
+ * Inputs: none
+ * Output: none
+ */
+QList<BubbyFlavour*> Signature::getUniqueFlavours()
+{
+  QList<BubbyFlavour*> flavour_list;
+  QList<QString> flavour_names;
+
+  QList<Bubby*>::Iterator it = bubby_map.begin();
+  for (; it < bubby_map.end(); ++it)
+  {
+    QString index_name = (*it)->getType()->getName();
+    if (!flavour_names.contains(index_name))
+    {
+      flavour_names.push_back(index_name);
+      flavour_list.push_back((*it)->getType());
+    }
+  }
+
+  return flavour_list;
 }
 
 /*=============================================================================
@@ -282,7 +350,7 @@ std::pair<ushort, ushort> Signature::getTopLeft(ushort x, ushort y)
   /* Tier 2 Bubbies are 2 x 2 */
   if (tier > 1)
   {
-    if (x > 1 && getBubby(x - 1, y)->getId() == attached_id)
+    if (x > 1 && getBubby(x - 1, y)->getId()  == attached_id)
       top_left.first = x - 1;
     if (y > 1 && getBubby(x , y - 1)->getId() == attached_id)
       top_left.second = y - 1;
