@@ -106,7 +106,20 @@ void MapPerson::initializeStates()
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
- 
+  
+/*
+ * Description: Adds the direction from the direction stack, if it's not
+ *              currently on the stack. Used for movement of the person.
+ *
+ * Inputs: EnumDb::Direction direction - the direction to add
+ * Output: none
+ */
+void MapPerson::addDirection(EnumDb::Direction direction)
+{
+  if(!movement_stack.contains(direction))
+    movement_stack.append(direction);
+}
+
 /* 
  * Description: Integer converter from Direction enumerator to ensure that 
  *              the compiler type doesn't affect the operation. This info
@@ -149,7 +162,18 @@ EnumDb::Direction MapPerson::intToDir(int dir_index)
   return EnumDb::DIRECTIONLESS;
 }
 
-
+/*
+ * Description: Removes the direction from the direction stack, if it's
+ *              currently on the stack. Used for movement of the person.
+ *
+ * Inputs: EnumDb::Direction direction - the direction to remove
+ * Output: none
+ */
+void MapPerson::removeDirection(EnumDb::Direction direction)
+{
+  if(movement_stack.contains(direction))
+    movement_stack.removeAt(movement_stack.indexOf(direction));
+}
 
 /* 
  * Description: Sets a new direction for the person on the map. It will update
@@ -252,18 +276,14 @@ MapPerson::SurfaceClassifier MapPerson::getSurface()
  */
 void MapPerson::keyPress(QKeyEvent* event)
 {
-  if(event->key() == Qt::Key_Down && 
-     !movement_stack.contains(EnumDb::SOUTH))
-    movement_stack.append(EnumDb::SOUTH);
-  else if(event->key() == Qt::Key_Up && 
-          !movement_stack.contains(EnumDb::NORTH))
-    movement_stack.append(EnumDb::NORTH);
-  else if(event->key() == Qt::Key_Right && 
-          !movement_stack.contains(EnumDb::EAST))
-    movement_stack.append(EnumDb::EAST);
-  else if(event->key() == Qt::Key_Left && 
-          !movement_stack.contains(EnumDb::WEST))
-    movement_stack.append(EnumDb::WEST);
+  if(event->key() == Qt::Key_Down)
+    addDirection(EnumDb::SOUTH);
+  else if(event->key() == Qt::Key_Up)
+    addDirection(EnumDb::NORTH);
+  else if(event->key() == Qt::Key_Right)
+    addDirection(EnumDb::EAST);
+  else if(event->key() == Qt::Key_Left)
+    addDirection(EnumDb::WEST);
 }
 
 /*
@@ -275,18 +295,14 @@ void MapPerson::keyPress(QKeyEvent* event)
  */
 void MapPerson::keyRelease(QKeyEvent* event)
 {
-  if(event->key() == Qt::Key_Down  && 
-     movement_stack.contains(EnumDb::SOUTH))
-    movement_stack.removeAt(movement_stack.indexOf(EnumDb::SOUTH));
-  else if(event->key() == Qt::Key_Up && 
-          movement_stack.contains(EnumDb::NORTH))
-    movement_stack.removeAt(movement_stack.indexOf(EnumDb::NORTH));
-  else if(event->key() == Qt::Key_Left && 
-          movement_stack.contains(EnumDb::WEST))
-    movement_stack.removeAt(movement_stack.indexOf(EnumDb::WEST));
-  else if(event->key() == Qt::Key_Right && 
-          movement_stack.contains(EnumDb::EAST))
-    movement_stack.removeAt(movement_stack.indexOf(EnumDb::EAST));
+  if(event->key() == Qt::Key_Down)
+    removeDirection(EnumDb::SOUTH);
+  else if(event->key() == Qt::Key_Up)
+    removeDirection(EnumDb::NORTH);
+  else if(event->key() == Qt::Key_Right)
+    removeDirection(EnumDb::EAST);
+  else if(event->key() == Qt::Key_Left)
+    removeDirection(EnumDb::WEST);
 }
 
 /* 
@@ -383,9 +399,12 @@ void MapPerson::updateThing(float cycle_time, Tile* next_tile)
     /* If there is no move request, stop movement */
     else
     {
-      x = tile_main->getPixelX();
-      y = tile_main->getPixelY();
-      
+      if(tile_main != 0)
+      {
+        x = tile_main->getPixelX();
+        y = tile_main->getPixelY();
+      }
+
       setDirection(EnumDb::DIRECTIONLESS);
       reset = true;
     }

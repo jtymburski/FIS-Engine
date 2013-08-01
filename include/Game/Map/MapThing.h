@@ -13,7 +13,7 @@
 #define MAPTHING_H
 
 #include <cmath>
-//#include <QDebug>
+#include <QDebug>
 #include <QObject>
 
 #include "Game/Map/MapState.h"

@@ -64,12 +64,12 @@ bool MapNPC::insertNode(int index, Tile* tile, int delay)
       success = true;
     }
     /* If it's at the end of the 
-    /* Otherwise, drop it behind the first, if the index is in range */
+     * Otherwise, drop it behind the first, if the index is in range */
     else if(index <= getPathLength())
     {
       Path* temp_node = head;
       success = true;
-      
+
       /* Loop through to find the insertion point */
       for(int i = 0; i < index; i++)
         temp_node = temp_node->next;
@@ -87,9 +87,9 @@ bool MapNPC::insertNode(int index, Tile* tile, int delay)
     
     /* If successful, reset the current node ptr of the class */
     if(success)
-      current = head;
+      resetMovement();
   }
-  
+ 
   return success;
 }
 
@@ -120,7 +120,10 @@ int MapNPC::getPathLength()
   else
   {
     while(temp_node->next != head)
+    {
+      temp_node = temp_node->next;
       size++;
+    }
   }
   
   return size;
@@ -129,15 +132,70 @@ int MapNPC::getPathLength()
 /* Path nodes removal handling */
 bool MapNPC::removeAllNodes()
 {
-
+  /* Loop through all nodes and remove them */
+  while(removeNodeAtTail());
+  return true;
 }
 
 bool MapNPC::removeNode(int index)
 {
+  int length = getPathLength();
+  bool success = false;
+  Path* temp_node = 0;
 
+  if(index == 0 && length == 1)
+  {
+    temp_node = head;
+    head = 0;
+    current = 0;
+    success = true;
+  }
+  else if(index >= 0 && index < length)
+  {
+    /* Loop through to find the node to remove */
+    temp_node = head;
+    for(int i = 0; i < index; i++)
+      temp_node = temp_node->next;
+
+    /* Reset the pointers around the path to delete */
+    temp_node->previous->next = temp_node->next;
+    temp_node->next->previous = temp_node->previous;
+
+    /* Fix the pointers if they need to be changed */
+    if(index == 0)
+      head = temp_node->next;
+    if(current == temp_node)
+      resetMovement();
+
+    success = true;
+  }
+
+  /* Finish by deleting the pointer */
+  delete temp_node;
+
+  return success;
 }
 
 bool MapNPC::removeNodeAtTail()
 {
+  return removeNode(getPathLength() - 1);
+}
 
+void MapNPC::resetMovement()
+{
+  current = head;
+
+  if(current != 0)
+    setStartingTile(current->tile);
+}
+
+void MapNPC::updateThing(float cycle_time, Tile* next_tile)
+{
+  if(current != 0)
+  {
+    setStartingTile(current->tile);
+    current = current->next;
+  }
+
+  MapPerson::updateThing(cycle_time, next_tile);
 }

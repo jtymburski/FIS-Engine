@@ -109,6 +109,9 @@ private:
  * PROTECTED FUNCTIONS
  *===========================================================================*/
 protected:
+  /* Animates the map */
+  void animate(short time_since_last);
+
   /* GL initialization call */
   void initializeGL();
 
@@ -132,7 +135,7 @@ signals:
  * PUBLIC SLOTS
  *===========================================================================*/
 public slots:
-  void animate(short time_since_last);
+  /* Animates the tiles within the map */
   void animateTiles();
 
 /*============================================================================

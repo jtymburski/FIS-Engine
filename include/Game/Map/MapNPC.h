@@ -75,6 +75,12 @@ public:
   bool removeAllNodes();
   bool removeNode(int index);
   bool removeNodeAtTail();
+
+  /* Resets the movement of the thing to the new location */
+  void resetMovement();
+
+  /* Updates the thing, based on the tick - reimplemented */
+  void updateThing(float cycle_time, Tile* next_tile);
 };
 
 #endif // MAPNPC_H

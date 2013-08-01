@@ -21,6 +21,7 @@ SOURCES += \
     ./src/Main.cc \
     ./src/Application.cc \
     ./src/FileHandler.cc \
+    ./src/GridShifter.cc \
     ./src/Options.cc \
     ./src/Sound.cc \
     ./src/TitleScreen.cc \
@@ -69,14 +70,15 @@ SOURCES += \
     ./src/Game/Player/Person.cc \
     ./src/Game/Player/Race.cc \
     ./src/Game/Player/Signature.cc \
-    ./src/Game/Player/Skill.cc \
-    ./src/GridShifter.cc \
-
+    ./src/Game/Player/Skill.cc
 
 HEADERS += \
     ./include/Application.h \
     ./include/EnumDb.h \
+    ./include/EnumString.h \
     ./include/FileHandler.h \
+    ./include/GridShifter.h \
+    ./include/ObjectSorter.h \
     ./include/Options.h \
     ./include/Sound.h \
     ./include/TitleScreen.h \
@@ -125,10 +127,6 @@ HEADERS += \
     ./include/Game/Player/Person.h \
     ./include/Game/Player/Race.h \
     ./include/Game/Player/Skill.h \
-    ./include/Game/Player/Signature.h \
-    ./include/ObjectSorter.h \
-    ./include/GridShifter.h \
-    ./include/EnumString.h \
-    ./include/Signature.h
- 
+    ./include/Game/Player/Signature.h
+
 INCLUDEPATH += ./include

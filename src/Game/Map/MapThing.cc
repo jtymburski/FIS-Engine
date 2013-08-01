@@ -119,11 +119,11 @@ bool MapThing::animate(short cycle_time, bool reset, bool skip_head)
  */
 bool MapThing::isAlmostOnTile(float cycle_time)
 {
-  float x_diff = tile_main->getPixelX();
-  float y_diff = tile_main->getPixelY();
-  
   if(tile_main != 0)
   {
+    float x_diff = tile_main->getPixelX();
+    float y_diff = tile_main->getPixelY();
+
     /* X differential calculations to ensure positive number */
     if(x_diff > x)
       x_diff = x_diff - x;
@@ -639,9 +639,9 @@ void MapThing::setStartingTile(Tile* new_tile)
   tile_main = 0;
   
   /* Set the new tile */
-  tile_main = new_tile;
-  if(tile_main != 0)
+  if(new_tile != 0 && !new_tile->isImpassableThingSet())
   {
+    tile_main = new_tile;
     this->x = tile_main->getPixelX();
     this->y = tile_main->getPixelY();
     tile_main->setImpassableThing(this, Tile::PERSON);

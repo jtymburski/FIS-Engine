@@ -65,9 +65,15 @@ private:
  * PROTECTED FUNCTIONS
  *===========================================================================*/
 protected:
+  /* Add movement direction to the stack */
+  void addDirection(EnumDb::Direction direction);
+
   /* Direction enumerator to/from integer converters */
   int dirToInt(EnumDb::Direction dir);
   EnumDb::Direction intToDir(int dir_index);
+
+  /* Remove movement direction from the stack, if it exists */
+  void removeDirection(EnumDb::Direction direction);
 
   /* Sets the direction that the person is travelling in */
   bool setDirection(EnumDb::Direction direction, bool set_movement = true);
@@ -104,7 +110,7 @@ public:
   void setSurface(SurfaceClassifier surface);
 
   /* Updates the thing, based on the tick */
-  void updateThing(float cycle_time, Tile* next_tile);
+  virtual void updateThing(float cycle_time, Tile* next_tile);
 
   /* Unsets a state, if it exists, to remove from the stack of states */
   void unsetState(SurfaceClassifier surface, EnumDb::Direction direction);

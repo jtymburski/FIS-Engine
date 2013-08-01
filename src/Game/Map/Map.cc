@@ -18,7 +18,7 @@ const int Map::kFILE_SECTION_ID = 2;
 const int Map::kFILE_TILE_COLUMN = 5;
 const int Map::kFILE_TILE_ROW = 4;
 const short Map::kPLAYER_INDEX = 0;
-const int Map::kTICK_DELAY = 10;
+const int Map::kTICK_DELAY = 1;
 const int Map::kTILE_HEIGHT = 64;
 const int Map::kTILE_WIDTH = 64;
 const int Map::kVIEWPORT_HEIGHT = 11;
@@ -60,10 +60,12 @@ Map::Map(const QGLFormat & format, short viewport_width,
  
   /* Bring the timer in to provide a game tick */
   connect(&timer, SIGNAL(timeout()), this, SLOT(updateGL()));
-  timer.start(kTICK_DELAY);
+  timer.setSingleShot(true);
+  //timer.start(kTICK_DELAY);
+  updateGL();
 
   /* The time elapsed draw time */
-  time_elapsed.start();
+  //time_elapsed.start();
 }
 
 /* Destructor function */
@@ -155,6 +157,51 @@ bool Map::addTileData(XmlData data)
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
+
+void Map::animate(short time_since_last)
+{
+  /* The movement handling for things*/
+  for(int i = 0; i < persons.size(); i++)
+  {
+    if(persons[i] != 0)
+    { 
+      Tile* next_tile = 0;
+
+      if(persons[i]->getTile() != 0)
+      {
+        int tile_x = persons[i]->getTile()->getX();
+        int tile_y = persons[i]->getTile()->getY();
+    
+        /* Based on the move request, provide the next tile in line using the
+         * current centered tile and move request */
+        switch(persons[i]->getMoveRequest())
+        {
+          case EnumDb::NORTH:
+            if(--tile_y >= 0)
+              next_tile = geography[tile_x][tile_y];
+            break;
+          case EnumDb::EAST:
+            if(++tile_x < geography.size())
+              next_tile = geography[tile_x][tile_y];
+            break;
+          case EnumDb::SOUTH:
+            if(++tile_y < geography[tile_x].size())
+              next_tile = geography[tile_x][tile_y];
+            break;
+          case EnumDb::WEST:
+            if(--tile_x >= 0)
+              next_tile = geography[tile_x][tile_y];
+            break;
+          case EnumDb::DIRECTIONLESS:
+            next_tile = 0;
+        }
+      }
+
+      /* Proceed to update the thing */
+      persons[i]->updateThing(time_since_last, next_tile);
+    }
+  }
+}
 
 void Map::initializeGL()
 {
@@ -290,6 +337,7 @@ void Map::paintGL()
   /* Finish by updating the viewport widget - currently in auto */
   //qDebug() << time.elapsed();
   swapBuffers();
+  timer.start(kTICK_DELAY);
   //update();
 }
 
@@ -306,47 +354,6 @@ void Map::resizeGL(int width, int height)
 /*============================================================================
  * PUBLIC SLOTS
  *===========================================================================*/
-
-void Map::animate(short time_since_last)
-{
-  /* The movement handling for things*/
-  for(int i = 0; i < persons.size(); i++)
-  {
-    if(persons[i] != 0 && persons[i]->getTile() != 0)
-    { 
-      Tile* next_tile = 0;
-      int tile_x = persons[i]->getTile()->getX();
-      int tile_y = persons[i]->getTile()->getY();
-    
-      /* Based on the move request, provide the next tile in line using the
-       * current centered tile and move request */
-      switch(persons[i]->getMoveRequest())
-      {
-        case EnumDb::NORTH:
-          if(--tile_y >= 0)
-            next_tile = geography[tile_x][tile_y];
-          break;
-        case EnumDb::EAST:
-          if(++tile_x < geography.size())
-            next_tile = geography[tile_x][tile_y];
-          break;
-        case EnumDb::SOUTH:
-          if(++tile_y < geography[tile_x].size())
-            next_tile = geography[tile_x][tile_y];
-          break;
-        case EnumDb::WEST:
-          if(--tile_x >= 0)
-            next_tile = geography[tile_x][tile_y];
-          break;
-        case EnumDb::DIRECTIONLESS:
-          next_tile = 0;
-      }
-    
-      /* Proceed to update the thing */
-      persons[i]->updateThing(time_since_last, next_tile);
-    }
-  }
-}
 
 void Map::animateTiles()
 {
@@ -508,6 +515,22 @@ bool Map::loadMap(QString file)
     person->setState(MapPerson::GROUND, EnumDb::WEST, 
                                         new MapState(left_sprite));
     persons.append(person);
+
+    /* Add an NPC */
+    up_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_D",3,".png");
+    down_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_U",3,".png");
+    left_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_R",3,".png");
+    right_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_L",3,".png");
+    MapNPC* npc = new MapNPC(kTILE_WIDTH, kTILE_HEIGHT);
+    npc->setState(MapPerson::GROUND, EnumDb::NORTH, new MapState(up_sprite));
+    npc->setState(MapPerson::GROUND, EnumDb::SOUTH, new MapState(down_sprite));
+    npc->setState(MapPerson::GROUND, EnumDb::EAST, new MapState(right_sprite));
+    npc->setState(MapPerson::GROUND, EnumDb::WEST, new MapState(left_sprite));
+    npc->insertNodeAtTail(geography[10][10], 250);
+    npc->insertNodeAtTail(geography[0][10], 500);
+    npc->insertNodeAtTail(geography[0][0], 250);
+    npc->insertNodeAtTail(geography[10][0], 50);
+    persons.append(npc);
 
     /* Make the map thing */
     //thing = new MapThing(new MapState(up_sprite), kTILE_WIDTH, kTILE_HEIGHT);
