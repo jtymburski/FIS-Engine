@@ -17,6 +17,7 @@ MapNPC::MapNPC() : MapPerson()
   /* Clear the path pointers */
   current = 0;
   head = 0;
+  npc_delay = 0;
 }
 
 /* Another constructor function */
@@ -26,6 +27,7 @@ MapNPC::MapNPC(int width, int height, QString name, QString description, int id)
   /* Clear the path pointers */
   current = 0;
   head = 0;
+  npc_delay = 0;
 }
 
 /* Destructor function */
@@ -41,7 +43,16 @@ MapNPC::~MapNPC()
 /* Clears out the NPC construct, void of painting */
 void MapNPC::clear()
 {
+  /* Clear out all the nodes */
+  removeAllNodes();
+  head = 0;
+  current = 0;
 
+  /* Clear out other variables */
+  npc_delay = 0;
+
+  /* Clear out parent */
+  MapPerson::clear();
 }
 
 bool MapNPC::insertNode(int index, Tile* tile, int delay)
@@ -191,10 +202,56 @@ void MapNPC::resetMovement()
 
 void MapNPC::updateThing(float cycle_time, Tile* next_tile)
 {
+  /* Some initial parameters */
+  EnumDb::Direction direction = EnumDb::DIRECTIONLESS;
+
+  /* Begin the check to handle each time the NPC is on a tile */
   if(current != 0)
   {
-    setStartingTile(current->tile);
-    current = current->next;
+    /* If the tile isn't set, try and set the starting point */
+    if(getTile() == 0)
+      setStartingTile(current->tile);
+    /* Otherwise, it is set so check if it's almost on the tile */
+    else
+    {
+      int delta_x = current->tile->getX() - tile_main->getX();
+      int delta_y = current->tile->getY() - tile_main->getY();
+
+      /* If the npc needs to move on the X plane */
+      if(delta_x != 0)
+      {
+        if(delta_x < 0)
+          direction = EnumDb::WEST;
+        else
+          direction = EnumDb::EAST;
+      }
+      /* Else if the npc needs to move on the Y plane */
+      else if(delta_y != 0)
+      {
+        if(delta_y < 0)
+          direction = EnumDb::NORTH;
+        else
+          direction = EnumDb::SOUTH;
+      }
+      /* Otherwise, on tile if not moving so handle pauses or shifts */
+      else if(!isMoving())
+      {
+        if(current->delay > npc_delay)
+          npc_delay += cycle_time;
+        else
+        {
+          current = current->next;
+          npc_delay = 0;
+        }
+      }
+
+      /* Update the new direction */
+      if(getMoveRequest() != direction)
+      {
+        clearAllMovement();
+        addDirection(direction);
+      }
+    }
   }
 
   MapPerson::updateThing(cycle_time, next_tile);

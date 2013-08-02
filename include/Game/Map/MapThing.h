@@ -88,7 +88,7 @@ protected:
  *===========================================================================*/
 public:
   /* Clears the entire class data */
-  void clear();
+  virtual void clear();
 
   /* Gets the animation speed of the thing */
   short getAnimationSpeed();

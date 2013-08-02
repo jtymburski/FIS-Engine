@@ -84,7 +84,11 @@ protected:
 public:
   /* Clears all information from the class (including deleting necessary
    * pointers) */
-  void clear();
+  virtual void clear();
+
+  /* Clear all movement from the stack. This is filled from add/remove
+   * direction */
+  void clearAllMovement();
 
   /* Returns the direction that this person is travelling in */
   EnumDb::Direction getDirection();

@@ -36,20 +36,21 @@ public:
 
 private:
   /* The object given by the NPC, can be NULL */
-  MapThing* gift;
+  MapThing* gift; // TODO
 
   /* The starting node of the NPCs Path */
   Path* current;
   Path* head;
-  
+  int npc_delay;
+
   /* The dialog sequence for the NPC and the Player */
-  QList<QString> talking_points; //The dialog sequence
+  QList<QString> talking_points; // TODO
 
   /* The dialog sources for each talking point */
-  QList<bool> talking_sources;
+  QList<bool> talking_sources; // TODO
 
   /* The other dialog person (usually the player) */
-  MapPerson* target;
+  MapPerson* target; // TODO
 
 /*============================================================================
  * PUBLIC FUNCTIONS
