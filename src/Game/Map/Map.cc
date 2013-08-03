@@ -171,7 +171,7 @@ void Map::animate(short time_since_last)
       {
         int tile_x = persons[i]->getTile()->getX();
         int tile_y = persons[i]->getTile()->getY();
-    
+
         /* Based on the move request, provide the next tile in line using the
          * current centered tile and move request */
         switch(persons[i]->getMoveRequest())
@@ -265,14 +265,18 @@ void Map::keyReleaseEvent(QKeyEvent* key_event)
 void Map::paintGL()
 {
   /* Start a QTimer to determine time elapsed for painting */
-  //QTime time;
-  //time.start();
-    
+  QTime time;
+  time.start();
+  
+  /* Swap the buffers from the last call */
+  swapBuffers();
+  //qDebug() << "1: " << time.elapsed();
+
   /* Start by setting the context and clearing the screen buffers */
   //makeCurrent();
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   //glPushMatrix();
-  
+
   /* Only proceed if the map is loaded */
   if(loaded)
   {
@@ -280,7 +284,7 @@ void Map::paintGL()
      * the viewport due to the animate */
     animate(time_elapsed.restart());
     viewport->updateView();
-   
+
     /* Paint the lower half */
     for(int i = viewport->getXTileStart(); i < viewport->getXTileEnd(); i++)
       for(int j = viewport->getYTileStart(); j < viewport->getYTileEnd(); j++)
@@ -292,7 +296,6 @@ void Map::paintGL()
       if(persons[i] != 0 && persons[i]->getX() >= viewport->getXStart() &&
                             persons[i]->getX() <= viewport->getXEnd())
         persons[i]->paintGl(viewport->getX(), viewport->getY());
-
     }
 
     /* Paint the upper half */
@@ -300,7 +303,7 @@ void Map::paintGL()
       for(int j = viewport->getYTileStart(); j < viewport->getYTileEnd(); j++)
         geography[i][j]->paintUpper(viewport->getX(), viewport->getY());
   }
-    
+
   /* Paint the frame rate */
   glColor4f(0.0, 0.0, 0.0, 0.5);
   glBegin(GL_QUADS);
@@ -313,7 +316,7 @@ void Map::paintGL()
   renderText(20, 30, frames_per_second);
 
   /* Clean up the drawing procedure */
-  glFlush();
+  //glFlush();
   //glPopMatrix();
   //glFinish();
   
@@ -334,11 +337,11 @@ void Map::paintGL()
   }
   frames++;
 
-  /* Finish by updating the viewport widget - currently in auto */
-  //qDebug() << time.elapsed();
-  swapBuffers();
-  timer.start(kTICK_DELAY);
+  /* Finish by restarting the timer to update the map again */
+  //swapBuffers();
   //update();
+  timer.start(kTICK_DELAY);
+  //qDebug() << "2: " << time.elapsed();
 }
 
 void Map::resizeGL(int width, int height) 
@@ -527,14 +530,17 @@ bool Map::loadMap(QString file)
     npc->setState(MapPerson::GROUND, EnumDb::EAST, new MapState(right_sprite));
     npc->setState(MapPerson::GROUND, EnumDb::WEST, new MapState(left_sprite));
     npc->insertNodeAtTail(geography[10][10], 250);
-    npc->insertNodeAtTail(geography[0][10], 500);
-    npc->insertNodeAtTail(geography[0][0], 250);
-    npc->insertNodeAtTail(geography[10][0], 50);
+    npc->insertNodeAtTail(geography[5][10], 750);
+    //npc->insertNodeAtTail(geography[0][10], 500);
+    npc->insertNodeAtTail(geography[1][1], 1000);
+    npc->insertNodeAtTail(geography[5][1], 250);
+    //npc->insertNodeAtTail(geography[10][0], 50);
+    npc->setSpeed(200);
     persons.append(npc);
 
     /* Make the map thing */
     //thing = new MapThing(new MapState(up_sprite), kTILE_WIDTH, kTILE_HEIGHT);
-    //thing->setCoordinates(128, 128);
+    //thing->setStartingTile(geography[2][2]);
   }
 
   success &= fh.stop();

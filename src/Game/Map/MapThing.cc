@@ -32,7 +32,7 @@ MapThing::MapThing()
   state = 0;
   tile_main = 0;
   tile_previous = 0;
-  clear();
+  MapThing::clear();
 }
 
 /* 
@@ -49,7 +49,7 @@ MapThing::MapThing(MapState* state, int width, int height,
   this->state = 0;
   tile_main = 0;
   tile_previous = 0;
-  clear();
+  MapThing::clear();
   
   /* The class definitions */
   setDescription(description);
@@ -123,6 +123,7 @@ bool MapThing::isAlmostOnTile(float cycle_time)
   {
     float x_diff = tile_main->getPixelX();
     float y_diff = tile_main->getPixelY();
+    //qDebug() << "IsAlmost calc: " << x_diff << " " << y_diff << " : " << x << " " << y;
 
     /* X differential calculations to ensure positive number */
     if(x_diff > x)
@@ -135,7 +136,9 @@ bool MapThing::isAlmostOnTile(float cycle_time)
       y_diff = y_diff - y;
     else
       y_diff = y - y_diff;
-    
+   
+    //qDebug() << "Difference: " << x_diff << " " << y_diff;
+
     //float tile_diff = sqrt(x_diff*x_diff + y_diff*y_diff);
     //return (moveAmount(cycle_time) > tile_diff);
     

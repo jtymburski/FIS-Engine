@@ -227,6 +227,27 @@ void MapPerson::clear()
     unsetState( (SurfaceClassifier)i, EnumDb::SOUTH );
     unsetState( (SurfaceClassifier)i, EnumDb::WEST );
   }
+  
+  /* Clear direction and movement information */
+  direction = EnumDb::NORTH;
+  movement = EnumDb::DIRECTIONLESS;
+  clearAllMovement();
+  surface = GROUND;
+
+  MapThing::clear();
+}
+
+/* 
+ * Description: Clears all active movement pointers that are in the current
+ *              movement stack. This allows to halt all movement once the
+ *              person has reached the next tile.
+ * 
+ * Inputs: none
+ * Output: none
+ */
+void MapPerson::clearAllMovement()
+{
+  movement_stack.clear();
 }
 
 /* 
