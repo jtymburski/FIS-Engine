@@ -9,14 +9,13 @@
 #define ACTION_H
 
 #include <QtGui/QWidget>
+#include <QDebug>
 
-#include "QDebug"
-
-class Action : public QWidget
+class Action
 {
 public:
   /* Action constructor object (requires a QString of raw input) */
-  Action(QString raw, QWidget *parent = 0);
+  Action(QString raw);
 
   /* Annihilates an action object */
   ~Action();

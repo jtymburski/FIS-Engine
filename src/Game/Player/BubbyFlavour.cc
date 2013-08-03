@@ -10,7 +10,7 @@
 /*============================================================================
  * CONSTANTS
  *===========================================================================*/
-const ushort BubbyFlavour::kTIER_CAP         = 3; /* Max # of Bubby Tiers */
+const ushort BubbyFlavour::kTIER_CAP = 3; /* Max # of Bubby Tiers */
 QVector<QString> BubbyFlavour::flavour_list; /* Vector of Flavour names */
 QVector<ushort> BubbyFlavour::kTIER_LEVELS;  /* Vector of Skill levels */
 
@@ -34,11 +34,13 @@ QVector<ushort> BubbyFlavour::kTIER_LEVELS;  /* Vector of Skill levels */
  */
 BubbyFlavour::BubbyFlavour(BubbyFlavour* flavour_parent, QString flavour_name,
                            AttributeSet* stat_set, SkillSet* skills)
-  : parent(flavour_parent)
+  : parent(flavour_parent),
+    stats(stat_set),
+    mass(0),
+    name(flavour_name),
+    description(""),
+    skill_list(skills)
 {
-  setAttr(stat_set);
-  setSkillSet(skills);
-  setName(flavour_name);
 
   /* Build the skill levels per tier if not built */
   if (kTIER_LEVELS.isEmpty())
@@ -52,16 +54,12 @@ BubbyFlavour::BubbyFlavour(BubbyFlavour* flavour_parent, QString flavour_name,
   else
   {
     setFlavourFlag(BubbyFlavour::CREATED_WITH_PARENT, false);
-    setDescription("");
     for (ushort i = 0; i < kTIER_CAP; i++)
       sprites.push_back(0);
   }
 
   /* Check to add the flavour to the static list */
   assert(addFlavour(name));
-
-  /* Instantiate it with empty sprites */
-
 }
 
 /*
@@ -97,27 +95,20 @@ bool BubbyFlavour::addFlavour(QString new_flavour)
  */
 void BubbyFlavour::buildLevels()
 {
-  kTIER_LEVELS.push_back(0);
-  kTIER_LEVELS.push_back(30);
-  kTIER_LEVELS.push_back(50);
-  kTIER_LEVELS.push_back(127);
+  ushort kTIER_0_SKILL_LEVEL =   0;
+  ushort kTIER_1_SKILL_LEVEL =  30;
+  ushort kTIER_2_SKILL_LEVEL =  50;
+  ushort kTIER_3_SKILL_LEVEL = 127;
+
+  kTIER_LEVELS.push_back(kTIER_0_SKILL_LEVEL);
+  kTIER_LEVELS.push_back(kTIER_1_SKILL_LEVEL);
+  kTIER_LEVELS.push_back(kTIER_2_SKILL_LEVEL);
+  kTIER_LEVELS.push_back(kTIER_3_SKILL_LEVEL);
 }
 
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
-
-/*
- * Description: This function is the Bubby factory, creates a new Bubby
- *              given a pointer to this (a flavour).
- *
- * Inputs: none
- * Output: Bubby object created in the likeness of this flavour.
- */
-//Bubby* BubbyFlavour::createBubby()
-//{
-  //return new Bubby(*this);
-//}
 
 /*
  * Description: Prints the state of the class

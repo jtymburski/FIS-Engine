@@ -27,10 +27,20 @@ public:
   /* Creates a Signature object */
   Signature();
   Signature(ushort x, ushort y);
-  Signature(ushort x, ushort y, std::vector< std::pair<ushort, ushort>  > list);
+  Signature(ushort x, ushort y, std::vector<std::pair<ushort, ushort> > list);
 
   /* Annihilates a Signature object */
   ~Signature();
+
+  /* Enumerated flags for Signature */
+  enum SignatureState
+  {
+    BUBBABLE    = 1ul << 0, /* Can the signature add Bubbies? */
+    CHANGEABLE  = 1ul << 1, /* Can the signature have cells opened/closed? */
+    RESIZEABLE  = 1ul << 2  /* Can the signature be resized? */
+  };
+  Q_DECLARE_FLAGS(SignatureFlags, SignatureState);
+  SignatureFlags flag_set;
 
 private:
   /* The size of the signature */
@@ -47,6 +57,8 @@ private:
   std::vector<std::pair<ushort, ushort> > closed_cells;
 
   /* -------------------- Constants ----------------- */
+  static const ushort kMIN_X;
+  static const ushort kMIN_Y;
   static const ushort kMAX_X;
   static const ushort kMAX_Y;
 
@@ -78,6 +90,9 @@ public:
   /* Returns the entire Bubby map */
   QList<Bubby*> getBubbyMap();
 
+  /* Gets the boolean value of a SignatureState flag */
+  bool getFlag(SignatureState flag);
+
   /* Returns the highest Tier of a given flavour name */
   ushort getHighestTier(QString name);
 
@@ -91,6 +106,9 @@ public:
   /* Returns a QList of the unique flavours the signature has */
   QList<BubbyFlavour*> getUniqueFlavours();
 
+  /* Sets the value of a Signature flag */
+  void setFlag(SignatureState flag, bool set_value = true);
+
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
@@ -101,5 +119,6 @@ private:
   /* Attempts to resize the Bubby signature */
   bool resize(ushort size_x, ushort size_y);
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(Signature::SignatureFlags);
 
 #endif // SIGNATURE_H

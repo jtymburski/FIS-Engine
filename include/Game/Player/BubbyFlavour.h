@@ -9,31 +9,40 @@
 #define BUBBYFLAVOUR_H
 
 #include <QtGui/QWidget>
+//#include "Game/Player/Bubby.h"
 #include "Game/Player/AttributeSet.h"
 #include "Game/Player/SkillSet.h"
 
-class BubbyFlavour
+class BubbyFlavour : QWidget
 {
-  /* Constructs a BubbyFlavour object */
-  BubbyFlavour(BubbyFlavour* parent, QString flavour_name, 
-               AttributeSet* stat_set = 0, SkillSet* skills = 0);
+  Q_OBJECT
+
+  friend class Bubby;
 
 public:
-  /* Annihilates a BubbyFlavour object */
- ~BubbyFlavour();
+  /* Default BubbyFlavour object */
+  BubbyFlavour(QString name);
 
-enum FlavourState
-{
-  CREATED_WITH_PARENT = 1 << 0
-};
-Q_DECLARE_FLAGS(FlavourFlags, FlavourState)
+  /* Constructs a BubbyFlavour object */
+  BubbyFlavour(BubbyFlavour* flavour_parent, QString flavour_name,
+               AttributeSet* stat_set = 0, SkillSet* skills = 0);
+
+  /* Annihilates a BubbyFlavour object */
+  ~BubbyFlavour();
+
+  /* FlavourState enumerated flags */
+  enum FlavourState
+  {
+    CREATED_WITH_PARENT = 1 << 0
+  };
+  Q_DECLARE_FLAGS(FlavourFlags, FlavourState)
 
 private:
-  /* Stat set for the Bubby */
-  AttributeSet* stats;
-
   /* Pointer to object's parent */
   BubbyFlavour* parent;
+
+  /* Stat set for the Bubby */
+  AttributeSet* stats;
 
   /* Flavour flags object */
   FlavourFlags flag_set;
@@ -52,8 +61,8 @@ private:
   QVector<Sprite*> sprites;
 
   /* ------------ Constants --------------- */
-  static const ushort kTIER_CAP;        /* Max # of Bubby Tiers */
-  static QVector<ushort> kTIER_LEVELS;    /* Max levels of skills */
+  static const ushort    kTIER_CAP;     /* Max # of Bubby Tiers */
+  static QVector<ushort> kTIER_LEVELS;  /* Max levels of skills */
   static QVector<QString> flavour_list; /* Vector of Flavour names */
 
 /*============================================================================
@@ -70,9 +79,6 @@ private:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
-
-  /* Bubby factory */
-  // Bubby* createBubby();
 
   /* Methods for printing the state of the Class */
   void printInfo();

@@ -26,10 +26,8 @@ private:
   /* Tick speed for the maps */
   int kMAPSPEED;
 
-  /* Current party (Sleuth) object */
+  /* Current party (Sleuth) object, and base party (Bearacks) */
   Party* sleuth;
-
-  /* Party at the ship */
   Party* bearacks;
 
   /* Your position on the current map */

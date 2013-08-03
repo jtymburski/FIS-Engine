@@ -14,67 +14,141 @@ class EnumDb
 public:
   /* ActorDeath enumeration is the enumerated type for reason for an actor's 
    * death in Battle */
-  enum ActorDeath {STANDARDDMG, POISONDMG, BURNDMG, BERSERKHITBACK, 
-                   METABOLICTETHER, METABOLICDMG, DEATHCOUNTDOWN, UNKNOWN};
+  enum ActorDeath { STANDARDDMG,
+                    POISONDMG,
+                    BURNDMG,
+                    BERSERKHITBACK,
+                    METABOLICTETHER,
+                    METABOLICDMG,
+                    DEATHCOUNTDOWN,
+                    UNKNOWN };
 
-  enum ApplicationMode {TITLESCREEN, GAME};
+  enum ApplicationMode { TITLESCREEN,
+                         GAME };
 
   /*
    * Description: The Attribute enumerations is used in AttributeSet to
    *              describe then names of the statics used by Persons,
    *              Items, etc.
    */
-  enum Attribute
-  {
-    VITALITY, QUANTUMDRIVE, PHYSICALAGGRESSION, PHYSICALFORTITUDE,
-    THERMALAGGRESSION, THERMALFORTITUDE, PRIMALAGGRESSION, PRIMALFORTITUDE,
-    POLARAGGRESSION, POLARFORTITUDE, CHARGEDAGGRESSION, CHARGEDFORTITUDE,
-    CYBERNETICAGGRESSION, CYBERNETICFORTITUDE, NIHILAGGRESSION,
-    NIHILFORTITUDE, MOMENTUM, LIMBERTUDE, UNBEARABILITY
-  };
+  enum Attribute { VITALITY,
+                   QUANTUMDRIVE,
+                   PHYSICALAGGRESSION,
+                   PHYSICALFORTITUDE,
+                   THERMALAGGRESSION,
+                   THERMALFORTITUDE,
+                   PRIMALAGGRESSION,
+                   PRIMALFORTITUDE,
+                   POLARAGGRESSION,
+                   POLARFORTITUDE,
+                   CHARGEDAGGRESSION,
+                   CHARGEDFORTITUDE,
+                   CYBERNETICAGGRESSION,
+                   CYBERNETICFORTITUDE,
+                   NIHILAGGRESSION,
+                   NIHILFORTITUDE,
+                   MOMENTUM,
+                   LIMBERTUDE,
+                   UNBEARABILITY };
 
   /*
    * Description: Handler for all direction related calls for movement, 
    *              passability, etc.
    */
-  enum Direction {NORTH         = 0x1,
-                  EAST          = 0x2,
-                  SOUTH         = 0x4,
-                  WEST          = 0x8,
-                  DIRECTIONLESS = 0};
+  enum Direction { NORTH         = 0x1,
+                   EAST          = 0x2,
+                   SOUTH         = 0x4,
+                   WEST          = 0x8,
+                   DIRECTIONLESS = 0 };
 
   /*
    * Description: Describes the current state of the inventory (how it is
    *              currently sorted)
    */
-  enum ItemSorts {NONE, ID, NAME, FLAVOUR, LEVEL, VALUE, MASS,
-                  VALUEPERMASS};
+  enum ItemSorts { NONE,
+                   ID,
+                   NAME,
+                   FLAVOUR,
+                   LEVEL,
+                   VALUE,
+                   MASS,
+                   VALUEPERMASS };
 
   /*
    * Description: Infliction enumeration represents a Status ailment or a 
    *              Status Buff. String conversions are listed blow.
    */
-  enum Infliction
-  {
-    POISON, BURN, SCALD, INFLICTCHAR, BERSERK, CONFUSE, SILENCE, BUBBIFY, 
-    DEATHTIMER, PARALYSIS, BLINDNESS, DREADSTRUCK, DREAMSNARE, HELLBOUND, 
-    BOND, ALLATKBUFF, ALLDEFBUFF, PHYATKBUFF, PHYDEFBUFF, THRATKBUFF, 
-    THRDEFBUFF, POLATKBUFF, POLDEFBUFF, PRIATKBUFF, PRIDEFBUFF, CHGATKBUFF, 
-    CHGDEFBUFF, CYBATKBUFF, CYBDEFBUFF, NIHATKBUFF, NIHDEFBUFF, LIMBUFF, 
-    UNBBUFF, MOMBUFF, VITBUFF, QDBUFF, ROOTBOUND, DOUBLECAST, TRIPLECAST, 
-    HALFCOST, REFLECT, HIBERNATION, CURSE, METATETHER, NOAILMENT
-  };
+  enum Infliction { POISON,
+                    BURN,
+                    SCALD,
+                    INFLICTCHAR,
+                    BERSERK,
+                    CONFUSE,
+                    SILENCE,
+                    BUBBIFY,
+                    DEATHTIMER,
+                    PARALYSIS,
+                    BLINDNESS,
+                    DREADSTRUCK,
+                    DREAMSNARE,
+                    HELLBOUND,
+                    BOND,
+                    ALLATKBUFF,
+                    ALLDEFBUFF,
+                    PHYATKBUFF,
+                    PHYDEFBUFF,
+                    THRATKBUFF,
+                    THRDEFBUFF,
+                    POLATKBUFF,
+                    POLDEFBUFF,
+                    PRIATKBUFF,
+                    PRIDEFBUFF,
+                    CHGATKBUFF,
+                    CHGDEFBUFF,
+                    CYBATKBUFF,
+                    CYBDEFBUFF,
+                    NIHATKBUFF,
+                    NIHDEFBUFF,
+                    LIMBUFF,
+                    UNBBUFF,
+                    MOMBUFF,
+                    VITBUFF,
+                    QDBUFF,
+                    ROOTBOUND,
+                    DOUBLECAST,
+                    TRIPLECAST,
+                    HALFCOST,
+                    REFLECT,
+                    HIBERNATION,
+                    CURSE,
+                    METATETHER,
+                    NOAILMENT };
+
+  /*
+   * Description: Describes the type of party to be created
+   */
+  enum PartyType { SLEUTH,
+                   BEARACKS,
+                   REGULAR_FOE,
+                   MINI_BOSS,
+                   BOSS,
+                   FINAL_BOSS };
 
   /*
    * Description: Describes the current state of a skill set (how it is
    *              currently known to be sortd)
    */
-  enum SkillSorts {NONE_SKILL, NAME_SKILL, LEVEL_SKILL};
+  enum SkillSorts {NONE_SKILL,
+                   NAME_SKILL,
+                   LEVEL_SKILL };
 
   /*
    * Description: Enumerates all the containers which can be sorted
    */
-  enum SortObjects {BUBBY_VECTOR, EQUIPMENT_VECTOR, ITEM_VECTOR, KEY_ITEM_VECTOR};
+  enum SortObjects {BUBBY_VECTOR,
+                    EQUIPMENT_VECTOR,
+                    ITEM_VECTOR,
+                    KEY_ITEM_VECTOR };
 };
 
 /* Registration of Infliction Enumerator */

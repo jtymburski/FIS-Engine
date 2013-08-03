@@ -16,15 +16,30 @@
 /*
  * Description: Constructor for a party object.
  */
-Party::Party(Person* p_main, ushort max, Inventory* inventory, QWidget* parent)
-    : QWidget(parent), max_size(kMAX_MEMBERS)
-{
-  /* Pointer setup */
-  setInventory(inventory);
+Party::Party(Person* p_main, Inventory* inventory, EnumDb::PartyType party)
+    : pouch(inventory),
+      party_type(party)
 
+{
   members.push_back(p_main);
-  if (max < kMAX_MEMBERS)
-    setMaxSize(max);
+
+  switch (party_type)
+  {
+    case(EnumDb::SLEUTH):
+      setMaxSize(getMaxSleuthSize());
+      break;
+
+    case(EnumDb::REGULAR_FOE):
+    case(EnumDb::MINI_BOSS):
+    case(EnumDb::BOSS):
+    case(EnumDb::FINAL_BOSS):
+      setMaxSize(getMaxFoeSize());
+      break;
+
+  case(EnumDb::BEARACKS):
+      setMaxSize(getMaxBearacksSize());
+      break;
+  };
 }
 
 /*
@@ -33,7 +48,7 @@ Party::Party(Person* p_main, ushort max, Inventory* inventory, QWidget* parent)
 Party::~Party() {}
 
 /*============================================================================
- * FUNCTIONS
+ * PUBLIC FUNCTIONS
  *===========================================================================*/
 
 /*
@@ -75,7 +90,7 @@ bool Party::removeMember(uint index)
 }
 
 /*
- * Description: Removes a person from the party from a given name
+ * Description: Removes a person from the party of a given name
  *
  * Inputs: QString - name of the person to be removed
  * Output: bool - true if person was removed succesfully
@@ -84,7 +99,7 @@ bool Party::removeMember(QString value)
 {
   if (members.size() < 2)
     return false;
-  for (ushort i = 1; i < kMAX_MEMBERS; i++)
+  for (ushort i = 1; i < members.size(); i++)
   {
     if (members.at(i)->getName() == value)
     {
@@ -193,7 +208,7 @@ bool Party::useItem(Item *used_item, ushort target)
  */
 void Party::clearParty()
 {
-  for (uint i = 1; i < kMAX_MEMBERS; i++)
+  for (uint i = 1; i < members.size(); i++)
     members.remove(i);
 }
 
@@ -237,12 +252,7 @@ void Party::printInfo()
  */
 void Party::printFlags()
 {
-  qDebug() << "MAIN: " << getPartyFlag(Party::MAIN);
-  qDebug() << "BEARACKS: " << getPartyFlag(Party::BEARACKS);
-  qDebug() << "FOE: " << getPartyFlag(Party::FOE);
-  qDebug() << "MINIBOSS: " << getPartyFlag(Party::MINIBOSS);
-  qDebug() << "BOSS: " << getPartyFlag(Party::BOSS);
-  qDebug() << "FINALBOSS: " << getPartyFlag(Party::FINALBOSS);
+
 }
 
 /*
@@ -286,7 +296,7 @@ bool Party::getPartyFlag(PartyFlag flag)
  * Inputs: none
  * Output: int - current size of the party
  */
-uint Party::getPartySize()
+ushort Party::getPartySize()
 {
   return members.size();
 }
@@ -310,7 +320,7 @@ QString Party::getMemberName(uint index)
  * Inputs: none
  * Outputs: int - maximum size of the party
  */
-int Party::getMaxSize()
+ushort Party::getMaxSize()
 {
   return max_size;
 }
@@ -332,9 +342,27 @@ void Party::setInventory(Inventory* i)
  * Inputs: int - new max size of the party
  * Output: bool - true if party size was successfully changed
  */
-bool Party::setMaxSize(uint value)
+bool Party::setMaxSize(ushort value)
 {
-  if (value > 0 && value <= kMAX_MEMBERS)
+  int party_type_max = 0;
+
+  switch (party_type)
+  {
+    case(EnumDb::SLEUTH):
+      party_type_max = getMaxSleuthSize();
+      break;
+    case (EnumDb::REGULAR_FOE):
+    case(EnumDb::MINI_BOSS):
+    case(EnumDb::BOSS):
+    case(EnumDb::FINAL_BOSS):
+      party_type_max = getMaxFoeSize();
+      break;
+    case(EnumDb::BEARACKS):
+      party_type_max = getMaxBearacksSize();
+      break;
+  }
+
+  if (value > 0 && value <= party_type_max)
   {
     max_size = value;
     return true;
@@ -352,4 +380,41 @@ bool Party::setMaxSize(uint value)
 void Party::setPartyFlag(PartyFlag flag, bool set_value)
 {
   (set_value) ? (pflag_set |= flag) : (pflag_set &= flag);
+}
+
+/*============================================================================
+ * STATIC PUBLIC FUNCTIONS
+ *===========================================================================*/
+
+/*
+ * Description: Returns the maximum number of members a Bearacks can contain
+ *
+ * Inputs: none
+ * Output: const ushort - the maximum number of Bearacks members.
+ */
+const ushort Party::getMaxBearacksSize()
+{
+  return kMAX_MEMBERS_BEARACKS;
+}
+
+/*
+ * Description: Returns the maximum number of members for a party of foes.
+ *
+ * Inputs: none
+ * Output: const ushort - the maximum number of Bearacks members.
+ */
+const ushort Party::getMaxFoeSize()
+{
+  return kMAX_MEMBERS_FOE;
+}
+
+/*
+ * Description: Returns the maximum number of members for a sleuth.
+ *
+ * Inputs: none
+ * Output: const ushort - the maximum number of Bearacks members.
+ */
+const ushort Party::getMaxSleuthSize()
+{
+  return kMAX_MEMBERS_SLEUTH;
 }

@@ -16,8 +16,7 @@
  *
  * Inputs: QString raw - the raw language to be parsed
  */
-Action::Action(QString raw, QWidget *parent) 
-  : QWidget(parent)
+Action::Action(QString raw)
 {
   parse(raw);
 }

@@ -269,8 +269,7 @@ void Application::setupBattle()
   /* Party Setup */
 
   /* Main Party Setup */
-  Party* friends = new Party(malgidus, 5);
-  friends->setPartyFlag(Party::MAIN, true);
+  Party* friends = new Party(malgidus, 0, EnumDb::SLEUTH);
   friends->addMember(artemis);
   friends->addMember(yolo);
   friends->addMember(helga);
@@ -288,8 +287,7 @@ void Application::setupBattle()
       qDebug() << "Removing Malgidus"; */
 
   /* Foes Setup */
-  Party* foes = new Party(cloud_foe, 5);
-  foes->setPartyFlag(Party::FOE, true);
+  Party* foes = new Party(cloud_foe, 0, EnumDb::REGULAR_FOE);
   foes->addMember(cloud_foe2);
   foes->addMember(cloud_foe3);
   foes->addMember(cloud_foe4);

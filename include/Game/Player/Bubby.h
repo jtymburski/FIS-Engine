@@ -47,7 +47,6 @@ private:
   uint total_exp;
 
   /* ------------ Constants --------------- */
-  static const ushort kTIER_CAP;
   static const ushort kTIER1_LVL;
   static const ushort kTIER2_LVL;
   static const ushort kLEVEL_CAP;

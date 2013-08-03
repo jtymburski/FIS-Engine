@@ -12,6 +12,8 @@
  * CONSTANTS
  *============================================================================*/
 
+const ushort Signature::kMIN_X = 0;
+const ushort Signature::kMIN_Y = 0;
 const ushort Signature::kMAX_X = 9;
 const ushort Signature::kMAX_Y = 9;
 
@@ -22,7 +24,13 @@ const ushort Signature::kMAX_Y = 9;
 /*
  * Description: Default Signature object
  */
-Signature::Signature() {}
+Signature::Signature()
+{
+  resize(kMIN_X, kMIN_Y);
+  setFlag(Signature::BUBBABLE,  false);
+  setFlag(Signature::CHANGEABLE, false);
+  setFlag(Signature::RESIZEABLE, false);
+}
 
 /*
  * Description: Creates a Signature object given a two dimensional size.
@@ -33,6 +41,9 @@ Signature::Signature() {}
 Signature::Signature(ushort x, ushort y)
 {
   resize(x, y);
+  setFlag(Signature::BUBBABLE,   true);
+  setFlag(Signature::CHANGEABLE, true);
+  setFlag(Signature::RESIZEABLE, true);
 }
 
 /*
@@ -47,6 +58,9 @@ Signature::Signature(ushort x, ushort y,
                      std::vector<std::pair<ushort, ushort> > list)
 {
   resize(x, y);
+  setFlag(Signature::BUBBABLE,   true);
+  setFlag(Signature::CHANGEABLE, true);
+  setFlag(Signature::RESIZEABLE, true);
 
   for (int i = 0; i < closed_cells.size(); i++)
     close(closed_cells.at(i).first, closed_cells.at(i).second);
@@ -73,6 +87,9 @@ bool Signature::attach(ushort x, ushort y, Bubby* new_bubby)
 {
   /* Check Tier 1 is open */
   bool can_attach = isOpen(x, y);
+
+  if (getFlag(Signature::BUBBABLE))
+    can_attach = false;
 
   std::vector< std::pair<ushort, ushort> > new_positions;
   new_positions.push_back(std::make_pair(x, y));
@@ -123,10 +140,14 @@ bool Signature::attach(ushort x, ushort y, Bubby* new_bubby)
  */
 bool Signature::close(ushort x, ushort y)
 {
+  if (getFlag(Signature::CHANGEABLE))
+    return false;
+
   std::vector<std::pair<ushort, ushort> >::iterator it;
   for (it = closed_cells.begin(); it < closed_cells.end(); ++it)
     if ((*it).first == x && (*it).second == y)
       return true;
+
   return false;
 }
 
@@ -165,7 +186,7 @@ bool Signature::isOpen(ushort x, ushort y)
  */
 bool Signature::open(ushort x, ushort y)
 {
-  if (getBubby(x, y) != 0)
+  if (getBubby(x, y) != 0 || getFlag(Signature::CHANGEABLE))
     return false;
 
   std::vector<std::pair<ushort, ushort> >::iterator it;
@@ -233,6 +254,17 @@ Bubby* Signature::getBubby(ushort x, ushort y)
 QList<Bubby*> Signature::getBubbyMap()
 {
   return bubby_map;
+}
+
+/*
+ * Description: Evaluates a given SignatureState flag
+ *
+ * Inputs: SignatureState flag to be evaluated
+ * Output: boolean value of the flag
+ */
+bool Signature::getFlag(SignatureState flag)
+{
+  return (flag_set.testFlag(flag));
 }
 
 /*
@@ -322,6 +354,19 @@ QList<BubbyFlavour*> Signature::getUniqueFlavours()
   return flavour_list;
 }
 
+/*
+ * Description: Given a SignatureState flag and a boolean value to set it to,
+ *              sets the desired state of the flag.
+ *
+ * Inputs: SignatureState - the desired flag to be set
+ *         set_value - boolean value to set the flag to
+ * Output: none
+ */
+void Signature::setFlag(SignatureState flag, bool set_value)
+{
+  (set_value) ? (flag_set |= flag) : (flag_set &= flag);
+}
+
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
@@ -382,6 +427,9 @@ std::pair<ushort, ushort> Signature::getTopLeft(ushort x, ushort y)
 bool Signature::resize(ushort size_x, ushort size_y)
 {
   bool resized = true;
+
+  if (getFlag(Signature::RESIZEABLE))
+    resized = false;
 
   if (size_x > getMaxX() || size_y > getMaxY() || !isEmpty())
     resized = false;

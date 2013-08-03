@@ -18,7 +18,8 @@ class Party : public QWidget
 {
 public:
   /* Creates a party object */
-  Party(Person* p_main, ushort max, Inventory* = 0, QWidget* parent = 0);
+  Party(Person* p_main, Inventory* inventory = 0,
+        EnumDb::PartyType party = EnumDb::REGULAR_FOE);
 
   /* Annihilates a party object */
   ~Party();
@@ -26,12 +27,6 @@ public:
   /* Enumerated flags for party */
   enum PartyFlag
   {
-    MAIN      = 1ul << 0, /* This is the main character's party */
-    BEARACKS  = 1ul << 1, /* This is the bearacks party */
-    FOE       = 1ul << 2, /* This is an enemy troop */
-    MINIBOSS  = 1ul << 3, /* This party is a miniboss */
-    BOSS      = 1ul << 4, /* This party is a boss */
-    FINALBOSS = 1ul << 5  /* This party is the final boss */
   };
   Q_DECLARE_FLAGS(PartyFlags, PartyFlag)
   PartyFlags pflag_set;
@@ -46,10 +41,18 @@ private:
   /* Temporary maximum size of the party (max 5) */
   ushort max_size;
 
-public:
-  /* Constants */
-  static const ushort kMAX_MEMBERS = 5;
+  /* Enumeration describing the type of party */
+  EnumDb::PartyType party_type;
 
+  /*------------------- Constants -----------------------*/
+  static const ushort kMAX_MEMBERS_BEARACKS = 50; /* Maximum bearacks members */
+  static const ushort kMAX_MEMBERS_SLEUTH   =  5; /* Maximum sleuth members */
+  static const ushort kMAX_MEMBERS_FOE      =  5; /* Maximum foe members */
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
+public:
   /* Adds a person to party, returns false if no space or failure */
   bool addMember(Person* p); 
 
@@ -80,13 +83,13 @@ public:
   bool getPartyFlag(PartyFlag flag);
 
   /* Returns the party size */
-  uint getPartySize();
+  ushort getPartySize();
 
   /* Returns a person's name at a certain index */
   QString getMemberName(uint index);
 
   /* Returns the currently set max size of the party */
-  int getMaxSize();
+  ushort getMaxSize();
 
   /* Sets the inventory of the party */
   void setInventory(Inventory* i = 0);
@@ -95,10 +98,25 @@ public:
   void setMainMember(Person* p = 0);
 
   /* Sets the temp max size of the party (max 5) */
-  bool setMaxSize(uint value);
+  bool setMaxSize(ushort value);
 
   /* Sets a party flag */
   void setPartyFlag(PartyFlag flag, bool set_value);
+
+/*============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
+public:
+  /* Obtains the maximum number of members in a bearacks */
+  static const ushort getMaxBearacksSize();
+
+  /* Obtains the maximum number of members in a party of foes */
+  static const ushort getMaxFoeSize();
+
+  /* Obtains the maximum number of members in a slueth */
+  static const ushort getMaxSleuthSize();
+
+
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Party::PartyFlags)
 

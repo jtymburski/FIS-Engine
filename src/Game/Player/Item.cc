@@ -223,7 +223,7 @@ int Item::getId()
 /*
  * Description: Evaluates a given ItemState flag
  *
- * Inputs: ITemState flag to be evaluated
+ * Inputs: ItemState flag to be evaluated
  * Output: boolean value of the flag
  */
 bool Item::getItemFlag(ItemState flag)

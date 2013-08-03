@@ -12,7 +12,6 @@
  *============================================================================*/
 QVector<uint> Bubby::exp_table;
 
-const ushort Bubby::kTIER_CAP     =       3;
 const ushort Bubby::kTIER1_LVL    =       9;
 const ushort Bubby::kTIER2_LVL    =      19;
 const ushort Bubby::kLEVEL_CAP    =      20;
@@ -273,7 +272,7 @@ void Bubby::setLevel(ushort new_level)
 
   if (getTier() == 0)
   {
-    if (new_level <= kTIER1_LVL)
+    if (new_level < kTIER1_LVL)
       level_up = true;
     if (new_level + 1 == kTIER1_LVL)
       tier_up = true;
@@ -281,7 +280,7 @@ void Bubby::setLevel(ushort new_level)
 
   if (getTier() == 1)
   {
-    if (new_level <= kTIER2_LVL)
+    if (new_level < kTIER2_LVL)
       level_up = true;
     if (new_level + 1 == kTIER2_LVL)
       tier_up = true;
@@ -289,7 +288,7 @@ void Bubby::setLevel(ushort new_level)
 
   if (getTier() == 2)
   {
-    if (new_level <= kLEVEL_CAP)
+    if (new_level < kLEVEL_CAP)
       level_up = true;
     if (new_level + 1 == kLEVEL_CAP)
       tier_up   = true;
@@ -322,7 +321,7 @@ bool Bubby::setTier(ushort new_tier)
     can_tier_up = false;
   if (getTier() == 2 && getLevel() != kLEVEL_CAP)
     can_tier_up = false;
-  if (getTier() >= kTIER_CAP)
+  if (getTier() >= BubbyFlavour::kTIER_CAP)
     can_tier_up = false;
 
   /* Commence necessary tier-up functions */
