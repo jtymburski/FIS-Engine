@@ -45,6 +45,9 @@ private:
   /* The surface that the person is walking on */
   SurfaceClassifier surface;
 
+  /* The target for this person. If set, it cannot be targetted by others */
+  MapPerson* target;
+  
   /* -------------------------- Constants ------------------------- */
   const static char kDIR_EAST;        /* The EAST direction for moving */
   const static char kDIR_NORTH;       /* The NORTH direction for moving */
@@ -90,6 +93,9 @@ public:
    * direction */
   void clearAllMovement();
 
+  /* Clears the target that the map person is currently pointing at */
+  void clearTarget();
+  
   /* Returns the direction that this person is travelling in */
   EnumDb::Direction getDirection();
 
@@ -99,6 +105,9 @@ public:
   /* Returns the surface that this person resides on */
   SurfaceClassifier getSurface();
 
+  /* Returns the target that this person is pointed at */
+  MapPerson* getTarget();
+  
   /* Key press event reimplemented */
   void keyPress(QKeyEvent* event);
   void keyRelease(QKeyEvent* event);
@@ -113,6 +122,9 @@ public:
   /* Sets the surface that the person travels on */
   void setSurface(SurfaceClassifier surface);
 
+  /* Sets the target map person, fails if there is already a target */
+  bool setTarget(MapPerson* target);
+  
   /* Updates the thing, based on the tick */
   virtual void updateThing(float cycle_time, Tile* next_tile);
 

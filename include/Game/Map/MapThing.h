@@ -12,6 +12,8 @@
 #ifndef MAPTHING_H
 #define MAPTHING_H
 
+class MapPerson;
+
 #include <cmath>
 #include <QDebug>
 #include <QObject>
@@ -125,8 +127,8 @@ public:
   float getX();
   float getY();
 
-  /* Starts inteaction (conversation, giving something, etc) */
-  virtual void interaction();
+  /* Starts interaction (conversation, giving something, etc) */
+  virtual bool interaction(MapPerson* person);
   
   /* Returns if there is a move request for the given thing */
   virtual bool isMoveRequested();

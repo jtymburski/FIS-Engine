@@ -17,7 +17,9 @@ MapNPC::MapNPC() : MapPerson()
   /* Clear the path pointers */
   current = 0;
   head = 0;
+  moving_forward = true;
   npc_delay = 0;
+  state = LOOPED;
 }
 
 /* Another constructor function */
@@ -27,7 +29,9 @@ MapNPC::MapNPC(int width, int height, QString name, QString description, int id)
   /* Clear the path pointers */
   current = 0;
   head = 0;
+  moving_forward = true;
   npc_delay = 0;
+  state = LOOPED;
 }
 
 /* Destructor function */
@@ -121,6 +125,12 @@ MapThing* MapNPC::getGift()
   return gift;
 }
 
+/* Returns the node movement state - how it traverses */
+MapNPC::NodeState MapNPC::getNodeState()
+{
+  return state;
+}
+
 int MapNPC::getPathLength()
 {
   int size = 1;
@@ -200,6 +210,15 @@ void MapNPC::resetMovement()
     setStartingTile(current->tile);
 }
 
+/* Sets the node movement state - how it traverses */
+void MapNPC::setNodeState(NodeState state)
+{
+  this->state = state;
+  
+  if(state == BACKANDFORTH)
+    moving_forward = true;
+}
+
 void MapNPC::updateThing(float cycle_time, Tile* next_tile)
 {
   /* Some initial parameters */
@@ -240,8 +259,26 @@ void MapNPC::updateThing(float cycle_time, Tile* next_tile)
           npc_delay += cycle_time;
         else
         {
-          current = current->next;
-          npc_delay = 0;
+          if(state == LOOPED)
+          {
+            current = current->next;
+            npc_delay = 0;
+          }
+          else if(state == BACKANDFORTH)
+          {
+            /* Check to see if the ends are reached */
+            if(moving_forward && current->next == head)
+              moving_forward = false;
+            else if(!moving_forward && current == head)
+              moving_forward = true;
+            
+            /* Move in the new / old direction */
+            if(moving_forward)
+              current = current->next;
+            else
+              current = current->previous;
+            npc_delay = 0;
+          }
         }
       }
 

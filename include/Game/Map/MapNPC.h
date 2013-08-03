@@ -34,6 +34,11 @@ public:
   /* Destructor function */
   ~MapNPC();
 
+  /* LOOPED - Goes from node 1->2->3->1->2...
+   * BACKANDFORTH - Goes from node 1->2->3->2->1->2...
+   * LOCKED - Halts movement once the next node is reached */
+  enum NodeState{LOOPED, BACKANDFORTH, LOCKED};
+  
 private:
   /* The object given by the NPC, can be NULL */
   MapThing* gift; // TODO
@@ -41,16 +46,15 @@ private:
   /* The starting node of the NPCs Path */
   Path* current;
   Path* head;
+  bool moving_forward;
   int npc_delay;
-
+  NodeState state;
+  
   /* The dialog sequence for the NPC and the Player */
   QList<QString> talking_points; // TODO
 
   /* The dialog sources for each talking point */
   QList<bool> talking_sources; // TODO
-
-  /* The other dialog person (usually the player) */
-  MapPerson* target; // TODO
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -64,14 +68,17 @@ public:
   bool insertNodeAtTail(Tile* tile, int delay = 0);
 
   /* Gets a pointer to the Persons conversation */
-  QList<QString> getConversation();
+  QList<QString> getConversation(); // TODO
 
   /* Gets a pointer to the gift the NPC has */
-  MapThing* getGift();
+  MapThing* getGift(); // TODO
+  
+  /* Returns the node movement state - how it traverses */
+  NodeState getNodeState();
   
   /* Returns the number of nodes in the NPC path */
   int getPathLength();
-  
+
   /* Path nodes removal handling */
   bool removeAllNodes();
   bool removeNode(int index);
@@ -80,6 +87,9 @@ public:
   /* Resets the movement of the thing to the new location */
   void resetMovement();
 
+  /* Sets the node movement state - how it traverses */
+  void setNodeState(NodeState state);
+  
   /* Updates the thing, based on the tick - reimplemented */
   void updateThing(float cycle_time, Tile* next_tile);
 };

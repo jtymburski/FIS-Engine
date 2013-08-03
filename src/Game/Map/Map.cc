@@ -245,6 +245,12 @@ void Map::keyPressEvent(QKeyEvent* key_event)
   }
   else if(key_event->key() == Qt::Key_3)
     viewport->lockOn(609, 353);
+  else if(persons.size() >= 3 && key_event->key() == Qt::Key_7)
+    ((MapNPC*)persons[2])->setNodeState(MapNPC::LOOPED);
+  else if(persons.size() >= 3 && key_event->key() == Qt::Key_8)
+    ((MapNPC*)persons[2])->setNodeState(MapNPC::BACKANDFORTH);
+  else if(persons.size() >= 3 && key_event->key() == Qt::Key_9)
+    ((MapNPC*)persons[2])->setNodeState(MapNPC::LOCKED);
 }
 
 void Map::keyReleaseEvent(QKeyEvent* key_event)
@@ -529,12 +535,13 @@ bool Map::loadMap(QString file)
     npc->setState(MapPerson::GROUND, EnumDb::SOUTH, new MapState(down_sprite));
     npc->setState(MapPerson::GROUND, EnumDb::EAST, new MapState(right_sprite));
     npc->setState(MapPerson::GROUND, EnumDb::WEST, new MapState(left_sprite));
-    npc->insertNodeAtTail(geography[10][10], 250);
-    npc->insertNodeAtTail(geography[5][10], 750);
+    npc->insertNodeAtTail(geography[10][10], 750);
+    //npc->insertNodeAtTail(geography[5][10], 250);
     //npc->insertNodeAtTail(geography[0][10], 500);
     npc->insertNodeAtTail(geography[1][1], 1000);
     npc->insertNodeAtTail(geography[5][1], 250);
     //npc->insertNodeAtTail(geography[10][0], 50);
+    npc->setNodeState(MapNPC::BACKANDFORTH);
     npc->setSpeed(200);
     persons.append(npc);
 

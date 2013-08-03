@@ -33,7 +33,8 @@ const char MapPerson::kTOTAL_SURFACES   = 1;
 MapPerson::MapPerson()
 {
   initializeStates();
-
+  clearTarget();
+  
   /* Set the default setup for what the player is standing on and facing */
   surface = GROUND;
   direction = EnumDb::NORTH;
@@ -62,6 +63,7 @@ MapPerson::MapPerson(int width, int height, QString name,
 
   /* Initializes the class information */
   initializeStates();
+  clearTarget();
 
   /* Set the default setup for what the player is standing on and facing */
   surface = GROUND;
@@ -232,6 +234,7 @@ void MapPerson::clear()
   direction = EnumDb::NORTH;
   movement = EnumDb::DIRECTIONLESS;
   clearAllMovement();
+  clearTarget();
   surface = GROUND;
 
   MapThing::clear();
@@ -250,6 +253,12 @@ void MapPerson::clearAllMovement()
   movement_stack.clear();
 }
 
+/* Clears the target that the map person is currently pointing at */
+void MapPerson::clearTarget()
+{
+  target = 0;
+}
+  
 /* 
  * Description: Returns the direction that the MapPerson is currently set to. 
  * 
@@ -288,6 +297,12 @@ MapPerson::SurfaceClassifier MapPerson::getSurface()
   return surface;
 }
 
+/* Returns the target that this person is pointed at */
+MapPerson* MapPerson::getTarget()
+{
+  return target;
+}
+  
 /*
  * Description: The key press event implementation. Handles all the movement
  *              for the map person, if redirected here.
@@ -381,6 +396,17 @@ void MapPerson::setSurface(SurfaceClassifier surface)
 
   if(states[surface][dirToInt(direction)] != 0)
     MapThing::setState(states[surface][dirToInt(direction)], false);
+}
+
+/* Sets the target map person, fails if there is already a target */
+bool MapPerson::setTarget(MapPerson* target)
+{
+  if(target != 0 && this->target == 0)
+  {
+    this->target = target;
+    return true;
+  }
+  return false;
 }
 
 /*

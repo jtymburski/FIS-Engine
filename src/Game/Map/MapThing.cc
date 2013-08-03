@@ -456,11 +456,13 @@ float MapThing::getY()
  * Description: Starts interaction. In map thing, this isn't of use and is
  *              only used by its children classes.
  *
- * Inputs: none
- * Output: none
+ * Inputs: MapPerson* person - the person that is starting the interaction
+ * Output: bool - status if the interaction could be started.
  */
-void MapThing::interaction()
+bool MapThing::interaction(MapPerson* person)
 {
+  (void)person;
+  return false;
 }
 
 /* 
