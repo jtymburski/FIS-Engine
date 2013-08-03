@@ -15,6 +15,8 @@
 
 class Bubby : public Item
 {
+  Q_OBJECT
+
 public:
   /* Constructor function */
   Bubby(BubbyFlavour* type);
@@ -35,40 +37,59 @@ private:
   /* The experience table for Bubbies */
   static QVector<uint> exp_table;
 
-  /* Bubby's totaly experience gained */
-  uint total_exp;
-
   /* The Bubby's current level */
   ushort level;
 
   /* The Bubby's current tier */
   ushort tier;
 
-  /* Current sprite of the Bubby */
-  Sprite* current_sprite;
+  /* Bubby's totaly experience gained */
+  uint total_exp;
 
   /* ------------ Constants --------------- */
-  const static ushort kTIER_CAP     =       3;
-  const static ushort kTIER1_LVL    =       9;
-  const static ushort kTIER2_LVL    =      19;
-  const static ushort kLEVEL_CAP    =      20;
-  const static uint kMIN_LVL_EXP    =      75;
-  const static uint kMAX_LVL_EXP    =  450000;
-  const static uint kMAX_EXPERIENCE = 1000000;
+  static const ushort kTIER_CAP;
+  static const ushort kTIER1_LVL;
+  static const ushort kTIER2_LVL;
+  static const ushort kLEVEL_CAP;
+  static const uint kMIN_LVL_EXP;
+  static const uint kMAX_LVL_EXP;
+  static const uint kMAX_EXP;
+  static const double kBASE_VALUE;
+  static const double kVALUE_PER_LEVEL;
+  static const double kVALUE_PER_TIER;
+  static const double kVALUE_MULTIPLIER;
+  static const double kTIER_1_MASS;
+  static const double kTIER_2_MASS;
+  static const double kTIER_3_MASS;
 
 /*============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
-  /* Updates the Bubby to the appropriate sprite (on tier level up) */
-  bool setSprite();
-
-/*============================================================================
- * PRIVATE STATIC FUNCTIONS
- *============================================================================*/
-private:
   /* Calculate the experience table for Bubbies */
   static void calcExpTable();
+
+  /* Updates the Bubby's value on Level-Up */
+  void calcNewValue();
+
+  /* Updates the Bubby to the appropriate sprite (on tier level up) */
+  bool updateTierSprite();
+
+/*============================================================================
+ * SIGNALS
+ *============================================================================*/
+signals:
+ /* Emitted on Level-Up */
+ void levelUp();
+
+ /* Emitted on Tier-Up */
+ void tierUp();
+
+ /* Emitted on kMAX_EXP */
+ void maxExp();
+
+ /* Emitted when the Bubby reaches the maximum level for its current tier */
+ void maxLevelForTier();
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -89,9 +110,6 @@ public:
   /* Gets the bubbies level */
   ushort getLevel();
 
-  /* Gets the current sprite for the tier */
-  Sprite* getSprite();
-
   /* Gets the bubbies tier */
   ushort getTier();
 
@@ -105,7 +123,7 @@ public:
   void setLevel(ushort new_level);
 
   /* Sets the tier of the bubby based on leveling */
-  void setTier(ushort new_tier);
+  bool setTier(ushort new_tier);
 };
 
 #endif // BUBBY_H

@@ -123,8 +123,9 @@ bool Signature::attach(ushort x, ushort y, Bubby* new_bubby)
  */
 bool Signature::close(ushort x, ushort y)
 {
-  for (int i = 0; i < closed_cells.size(); i++)
-    if (closed_cells[i].first == x && closed_cells[i].second == y)
+  std::vector<std::pair<ushort, ushort> >::iterator it;
+  for (it = closed_cells.begin(); it < closed_cells.end(); ++it)
+    if ((*it).first == x && (*it).second == y)
       return true;
   return false;
 }
@@ -167,11 +168,12 @@ bool Signature::open(ushort x, ushort y)
   if (getBubby(x, y) != 0)
     return false;
 
-  for (int i = 0; i < closed_cells.size(); i++)
+  std::vector<std::pair<ushort, ushort> >::iterator it;
+  for (it = closed_cells.begin(); it < closed_cells.end(); ++it)
   {
-    if (closed_cells[i].first == x && closed_cells[i].second == y)
+    if ((*it).first == x && (*it).second == y)
     {
-      closed_cells.erase(closed_cells.begin() + i);
+      closed_cells.erase(it);
       return true;
     }
   }
@@ -245,9 +247,9 @@ QList<Bubby*> Signature::getBubbyMap()
 ushort Signature::getHighestTier(QString name)
 {
   ushort max = 0;
-  QList<Bubby*>::Iterator it = bubby_map.begin();
+  QList<Bubby*>::Iterator it;
 
-  for (; it < bubby_map.end(); ++it)
+  for (it = bubby_map.begin(); it < bubby_map.end(); ++it)
       if (name == (*it)->getType()->getName() && (*it)->getTier() > max)
           max = (*it)->getTier();
 
@@ -264,9 +266,9 @@ ushort Signature::getHighestTier(QString name)
 double Signature::getMass()
 {
   double temp_mass = 0;
-  QList<Bubby*>::Iterator it = bubby_map.begin();
+  QList<Bubby*>::Iterator it;
 
-  for (; it < bubby_map.end(); ++it)
+  for (it = bubby_map.begin(); it < bubby_map.end(); ++it)
     temp_mass += (*it)->getMass();
 
   return temp_mass;
@@ -306,8 +308,8 @@ QList<BubbyFlavour*> Signature::getUniqueFlavours()
   QList<BubbyFlavour*> flavour_list;
   QList<QString> flavour_names;
 
-  QList<Bubby*>::Iterator it = bubby_map.begin();
-  for (; it < bubby_map.end(); ++it)
+  QList<Bubby*>::Iterator it;
+  for (it = bubby_map.begin(); it < bubby_map.end(); ++it)
   {
     QString index_name = (*it)->getType()->getName();
     if (!flavour_names.contains(index_name))

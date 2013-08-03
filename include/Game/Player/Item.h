@@ -18,8 +18,10 @@
 #include "Game/Sprite.h"
 #include "Sound.h"
 
-class Item
+class Item : public QWidget
 {
+  Q_OBJECT
+
 public:
   /* Item constructor function */
   Item(QString name, uint value = 0, Sprite* thumbnail = 0, double mass = 0);

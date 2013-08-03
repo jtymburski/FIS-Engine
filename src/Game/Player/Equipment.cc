@@ -24,8 +24,8 @@
  *
  * Inputs: none
  */
-Equipment::Equipment(QString name, ushort size_x, ushort size_y,
-                     Sprite* thumb, uint value, double weight)
+Equipment::Equipment(QString name, uint value, Sprite* thumb, double weight,
+                     ushort size_x, ushort size_y)
     : Item(name, value, thumb, mass)
 {
   createSignature(size_x, size_y);
@@ -194,4 +194,6 @@ void Equipment::createSignature(ushort size_x, ushort size_y)
     delete equip_signature;
 
   equip_signature = new Signature(size_x, size_y);
+
+  setEquipmentFlag(Equipment::SIGNATURE_ENABLED);
 }

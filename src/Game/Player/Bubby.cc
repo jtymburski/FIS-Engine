@@ -12,6 +12,21 @@
  *============================================================================*/
 QVector<uint> Bubby::exp_table;
 
+const ushort Bubby::kTIER_CAP     =       3;
+const ushort Bubby::kTIER1_LVL    =       9;
+const ushort Bubby::kTIER2_LVL    =      19;
+const ushort Bubby::kLEVEL_CAP    =      20;
+const uint Bubby::kMIN_LVL_EXP    =      75;
+const uint Bubby::kMAX_LVL_EXP    =  450000;
+const uint Bubby::kMAX_EXP        = 1000000; /* 10^6 */
+const double Bubby::kBASE_VALUE       =    3.14;
+const double Bubby::kVALUE_PER_LEVEL  =   20.00;
+const double Bubby::kVALUE_PER_TIER   =  200.00;
+const double Bubby::kVALUE_MULTIPLIER =   1.100;
+const double Bubby::kTIER_1_MASS      =   0.500;
+const double Bubby::kTIER_2_MASS      =   2.000;
+const double Bubby::kTIER_3_MASS      =   4.500;
+
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS [PRIVATE CONSTRUCTOR]
  *============================================================================*/
@@ -22,19 +37,17 @@ QVector<uint> Bubby::exp_table;
  * Inputs: BubbyFlavour* - pointer to the type of the Bubby
  */
 Bubby::Bubby(BubbyFlavour* type)
-    : Item(type->getName(), 0, 0, type->getMass()),
+    : Item(type->getName(), 0, 0, kTIER_1_MASS),
     level(0),
-    current_sprite(0)
+    tier(0),
+    total_exp(0)
 {
-  setTier(0);
-  setExperience(0);
-
   /* Build the experience table the first time a Bubby is created */
   if (exp_table.isEmpty())
     calcExpTable();
 
-  if (!type->getSprites().isEmpty())
-    setThumb(type->getSprites().at(0));
+  updateTierSprite();
+  calcNewValue();
 }
 
 /*
@@ -65,6 +78,39 @@ void Bubby::calcExpTable()
 }
 
 /*
+ * Description: Calculate and set a new value for the Bubby on level up. The
+ * value of a Bubby is based upon its level.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Bubby::calcNewValue()
+{
+  long double temp_value   = kBASE_VALUE;
+  long double level_amount = kVALUE_PER_LEVEL;
+  long double tier_amount  = kVALUE_PER_TIER;
+
+  /* Add the Level value to the base value */
+  for (int i = 0; i < getLevel(); i++)
+  {
+    temp_value += level_amount;
+    level_amount *= kVALUE_MULTIPLIER;
+  }
+
+  /* Then add the Tier value */
+  for (int i = 1; i < getTier(); i++)
+  {
+    temp_value += tier_amount;
+    tier_amount *= kVALUE_MULTIPLIER;
+  }
+
+  if (getLevel() == kLEVEL_CAP)
+    temp_value += kVALUE_PER_TIER;
+
+  setValue(floor(temp_value));
+}
+
+/*
  * Description: Sets the pointer to the current sprite for the Bubby
  *              corresponding to its current tier (if one exists), else sets
  *              it to the highest tier sprite it can (if one exists), else
@@ -73,21 +119,24 @@ void Bubby::calcExpTable()
  * Inputs: none
  * Output: bool - true if a sprite was actually set
  */
-bool Bubby::setSprite()
+bool Bubby::updateTierSprite()
 {
+  bool updated = false;
+
   int size = getType()->getSprites().size();
+
   if (size >= getTier())
   {
-    current_sprite = getType()->getSprites().at(getTier() - 1);
-    return true;
+    setThumb(getType()->getSprites().at(getTier() - 1));
+    updated = true;
   }
   else if (!getType()->getSprites().isEmpty())
   {
-    current_sprite = getType()->getSprites().at(size - 1);
-    return true;
+    setThumb(getType()->getSprites().at(size - 1));
+    updated = true;
   }
-  current_sprite = 0;
-  return false;
+
+  return updated;
 }
 
 
@@ -105,14 +154,17 @@ bool Bubby::setSprite()
  */
 void Bubby::addExperience(uint value)
 {
-  if (total_exp + value > kMAX_EXPERIENCE)
-    total_exp = kMAX_EXPERIENCE;
+  if (total_exp + value > kMAX_EXP)
+    total_exp = kMAX_EXP;
   else
     total_exp += value;
 
   /* Level the bubby to the proper value (if necessary) */
   while (getLevel() < kLEVEL_CAP && total_exp >= getExpAt(getLevel() + 1))
+  {
     setLevel(getLevel() + 1);
+    calcNewValue();
+  }
 }
 
 /*
@@ -170,17 +222,6 @@ ushort Bubby::getLevel()
 }
 
 /*
- * Description: Returns the current sprite for the tier of the Bubby.
- *
- * Inputs: none
- * Output: Sprite* - pointer to the current sprite of the Bubby (for its tier)
- */
-Sprite* Bubby::getSprite()
-{
-  return current_sprite;
-}
-
-/*
  * Description: Returns the tier of the Bubby
  *
  * Inputs: none
@@ -210,7 +251,13 @@ BubbyFlavour* Bubby::getType()
  */
 void Bubby::setExperience(uint new_experience)
 {
-  total_exp = new_experience;
+  if (new_experience <= kMAX_EXP)
+    total_exp = new_experience;
+  else
+    total_exp = kMAX_EXP;
+
+  if (new_experience == kMAX_EXP)
+      emit maxExp();
 }
 
 /*
@@ -221,7 +268,41 @@ void Bubby::setExperience(uint new_experience)
  */
 void Bubby::setLevel(ushort new_level)
 {
-  level = new_level;
+  bool level_up  = false;
+  bool tier_up   = false;
+
+  if (getTier() == 0)
+  {
+    if (new_level <= kTIER1_LVL)
+      level_up = true;
+    if (new_level + 1 == kTIER1_LVL)
+      tier_up = true;
+  }
+
+  if (getTier() == 1)
+  {
+    if (new_level <= kTIER2_LVL)
+      level_up = true;
+    if (new_level + 1 == kTIER2_LVL)
+      tier_up = true;
+  }
+
+  if (getTier() == 2)
+  {
+    if (new_level <= kLEVEL_CAP)
+      level_up = true;
+    if (new_level + 1 == kLEVEL_CAP)
+      tier_up   = true;
+  }
+
+  if (level_up)
+  {
+    level = new_level;
+    emit levelUp();
+    calcNewValue();
+  }
+  if (level_up && tier_up)
+    emit maxLevelForTier();
 }
 
 /*
@@ -230,7 +311,27 @@ void Bubby::setLevel(ushort new_level)
  * Inputs: uint - new value of Tier of the Bubby
  * Output: none
  */
-void Bubby::setTier(ushort new_tier)
+bool Bubby::setTier(ushort new_tier)
 {
-  tier = new_tier;
+  bool can_tier_up = true;
+
+  /* Conditional checks */
+  if (getTier() == 0 && getLevel() != kTIER1_LVL)
+    can_tier_up = false;
+  if (getTier() == 1 && getLevel() != kTIER2_LVL)
+    can_tier_up = false;
+  if (getTier() == 2 && getLevel() != kLEVEL_CAP)
+    can_tier_up = false;
+  if (getTier() >= kTIER_CAP)
+    can_tier_up = false;
+
+  /* Commence necessary tier-up functions */
+  if (can_tier_up)
+  {
+    tier = new_tier;
+    emit tierUp();
+    updateTierSprite();
+  }
+
+  return can_tier_up;
 }

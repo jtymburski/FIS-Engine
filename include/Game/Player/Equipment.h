@@ -10,10 +10,6 @@
 #ifndef EQUIPMENT_H
 #define EQUIPMENT_H
 
-#include <QVector>
-#include <QDebug>
-
-#include "Game/Player/Action.h"
 #include "Game/Player/Signature.h"
 #include "Game/Player/Item.h"
 
@@ -21,8 +17,8 @@ class Equipment : public Item
 {
 public:
   /* Constructor function */
-  Equipment(QString name, ushort size_x, ushort size_y, Sprite* thumb,
-            uint value = 0, double mass = 0);
+  Equipment(QString name, uint value, Sprite* thumb, double weight,
+            ushort size_x, ushort size_y);
 
   /* Destructor function */
   ~Equipment();
@@ -39,7 +35,7 @@ public:
     LEGS       = 1ul << 6, /* Can be attached to legs slot */
     TWOHAND    = 1ul << 7, /* Does the item require both hands? */
     EQUIPPED   = 1ul << 8,  /* Is the item currently equipped to a person? */
-    SIGNATURE_ENABLED = 1ul << 9
+    SIGNATURE_ENABLED = 1ul << 9 /* Can the signature have Bubbies? */
   };
   Q_DECLARE_FLAGS(EquipmentFlags, EquipmentState);
   EquipmentFlags eflag_set;

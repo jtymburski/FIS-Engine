@@ -41,10 +41,10 @@ private:
   QList<Bubby*> bubby_map;
 
   /* 2D Vector of coordinate pairs where Bubbies are located */
-  std::vector< std::vector< std::pair<ushort,ushort> > > occupied_cells;
+  std::vector<std::vector< std::pair<ushort,ushort> > > occupied_cells;
 
   /* Coordinates that are closed, all others open */
-  std::vector< std::pair<ushort, ushort> > closed_cells;
+  std::vector<std::pair<ushort, ushort> > closed_cells;
 
   /* -------------------- Constants ----------------- */
   static const ushort kMAX_X;

@@ -32,7 +32,8 @@ const uint Item::kMAX_VALUE      = 100000000; /* Max value of items - 100 mil */
  *         double mass - the mass of the item
  */
 Item::Item(QString name, uint value, Sprite* thumbnail, double mass)
-    : my_id(setId()) /* Increment the Item's ID */
+    : QWidget(0),
+      my_id(setId()) /* Increment the Item's ID */
 {
   setName(name);
   setThumb(thumbnail);
