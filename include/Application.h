@@ -21,6 +21,7 @@
 #include "Game/Map/Map.h"
 #include "Game/Battle/Battle.h"
 #include "Game/Player/Action.h"
+#include "MathHelper.h"
 
 class Application : public QStackedWidget
 {

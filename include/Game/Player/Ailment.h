@@ -21,6 +21,7 @@
 #include <QtGui/QWidget>
 
 #include "EnumDb.h"
+#include "MathHelper.h"
 #include "Game/Player/Person.h"
 
 class Ailment : public QWidget
@@ -94,6 +95,7 @@ private:
   static const double kBERSERK_HITBACK_PC; /* % hitback on victim */
   static const ushort kBUBBIFY_MAX_QD; /* Maximum skill's QD cost when Bubby */
   static const double kBUBBIFY_STAT_MULR; /* % mod for stats while a Bubby */
+  static const double kPARALYSIS_PC; /* % chance paralysis will skip turn */
   static const double kBLIND_PC; /* % chance Blind will miss attacks */
   static const double kDREADSTRUCK_PC; /* % Dreadstruck will miss attacks */
   static const double kDREAMSNARE_PC; /* % Dreamsnare causes attacks to miss */
@@ -110,6 +112,7 @@ private:
   static const double kHIBERNATION_INCR; /* % value by which to increase Hib */
   static const double kMETABOLIC_PC; /* % chance for metabolic teth to kill */
   static const double kMETABOLIC_DMG; /* % damage metabolic teth will deal */
+  static const double kBOND_STATS_PC; /* % by which bond wil increase stats */
 
 /*============================================================================
  * PRIVATE FUNCTIONS
@@ -117,9 +120,6 @@ private:
 private:
   /* Applies the effect of the ailment */
   void apply();
-
-  /* Static function to obtain random number */
-  static int getRandomNumber(int max);
 
   /* Updates the ailment by decrementing the turn counter if necessary */
   bool updateTurns();

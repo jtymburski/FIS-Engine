@@ -8,6 +8,7 @@
 #define GAME_H
 
 #include <QtGui/QWidget>
+#include "MathHelper.h"
 #include "Game/Battle/Battle.h"
 #include "Game/Map/Map.h"
 #include "Game/Player/Player.h"

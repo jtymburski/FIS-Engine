@@ -45,6 +45,7 @@ const double Ailment::kBERSERK_DMG_INCR    = 1.75;
 const double Ailment::kBERSERK_HITBACK_PC  = 0.35;
 const ushort Ailment::kBUBBIFY_MAX_QD      =   10;
 const double Ailment::kBUBBIFY_STAT_MULR   = 0.68;
+const double Ailment::kPARALYSIS_PC        = 0.70;
 const double Ailment::kBLIND_PC            = 0.50;
 const double Ailment::kDREADSTRUCK_PC      = 0.75;
 const double Ailment::kDREAMSNARE_PC       = 0.50;
@@ -61,6 +62,7 @@ const double Ailment::kHIBERNATION_INIT    = 0.15;
 const double Ailment::kHIBERNATION_INCR    = 0.05;
 const double Ailment::kMETABOLIC_PC        = 0.25;
 const double Ailment::kMETABOLIC_DMG       = 0.25;
+const double Ailment::kBOND_STATS_PC       = 0.35;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -168,22 +170,20 @@ Ailment::~Ailment()
  * PRIVATE FUNCTIONS
  *============================================================================*/
 
-/*
- * Description: Returns a random integer up to max
- *
- * Inputs: int - maximum integer value needed in randomization
- * Output: int - randomized integer
- */
-int Ailment::getRandomNumber(int max)
-{
-  QTime midnight(0, 0, 0);
-  qsrand(midnight.secsTo(QTime::currentTime()));
-  return qrand() % max;
-}
+/* Confuse effect takes place in battle--calculates useable skills,
+   useable targets and performs random permutation of each. */
 
 /*
  * Description: Applies the effect of the status ailment to the Person (victim)
  *              if one so exists, checking for recurring effects, etc.
+ *
+ * Note [1]: The following are descriptions of ailments which have handling in
+ *           the Battle class.
+ *
+ *           Hellbound - If this actor dies, another living actor on the same
+ *                       team KOs, this actor will KO as well.
+ *           Confuse   - Ailed actor performs random useable skill on a random
+ *                       target.
  *
  * Inputs: none
  * Output: bool - true if the ailment is to be cured
@@ -257,7 +257,8 @@ void Ailment::apply()
   }
 
   /* Berserk - Ailed actor physically attacks enemy target for extreme damage
-   *           while receiving damage themselves.
+   *           while receiving damage themselves. Hitback damage will take
+   *           place in Battle.
    * Constants: kBERSERK_DMG_INCR - multiplier for normal damage on target
    *            kBERSERK_HITBACK_PC - multiplier for damage done to self.
    */
@@ -268,15 +269,6 @@ void Ailment::apply()
     victim->setPersonFlag(Person::CANUSEITEM, false);
     victim->setPersonFlag(Person::CANRUN, false);
     victim->setDmgMod(2);
-
-    /* Hitback damage during Berserk will take place in Battle */
-  }
-
-  /* Confuse - ailed actor attacks a random target with a random skills */
-  else if (ailment_type == EnumDb::CONFUSE)
-  {
-    /* Confuse effect takes place in battle--calculates useable skills,
-       useable targets and performs random permutation of each. */
   }
 
   /* Ailed actor cannot use skills if they require QD */
@@ -288,8 +280,7 @@ void Ailment::apply()
         skills->setSkillState(i, false);
   }
 
-  /* Bubbify - ailed actor is turned into a near-useless Bubby
-   */
+  /* Bubbify - ailed actor is turned into a near-useless Bubby */
   else if (ailment_type == EnumDb::BUBBIFY)
   {
     /* Bubbies cannot be affected by buffs */
@@ -315,54 +306,60 @@ void Ailment::apply()
       emit victimDeath(victim->getName(), EnumDb::DEATHCOUNTDOWN);
   }
 
-  /* Ailed actor has a 70% chance of skipping their turn */
+  /* Paralysis - Ailed actor has a kPARALYSIS_PC chance of skipping their turn,
+   *             the effect persisting or a number of turns
+   * Constants: kPARALYSIS_PC - Percent chance to skip each turn */
   else if (ailment_type == EnumDb::PARALYSIS)
   {
-    int random_percent = getRandomNumber(100);
-    if (random_percent > 30)
-        victim->setPersonFlag(Person::SKIPNEXTTURN, true);
+    if (chanceHappens(kPARALYSIS_PC * 100))
+      victim->setPersonFlag(Person::SKIPNEXTTURN, true);
   }
 
-  /* Blindness - Ailed actor has a much higher chance of missing targets */
+  /* Blindness - Ailed actor has a kBLIND_PC chance of missing targets
+   * Constants: kBLIND_PC - Percet chance for ailed actor to miss targets
+   */
   else if (ailment_type == EnumDb::BLINDNESS)
   {
-    int random_percent = getRandomNumber(100);
-    if (random_percent <= kBLIND_PC * 100)
-        victim->setPersonFlag(Person::MISSNEXTTARGET, false);
+    if (chanceHappens(kBLIND_PC * 100))
+      victim->setPersonFlag(Person::MISSNEXTTARGET, false);
   }
 
   /* Dreadstruck - formerly "Stun": Ailed actor has an extreme chance of
    *               skipping just one turn
+   * Constants: kDREADSTRUCK_PC - Percent chance of skipping their next turn.
    */
   else if (ailment_type == EnumDb::DREADSTRUCK)
   {
-    int random_percent = getRandomNumber(100);
-    if (random_percent <= kDREADSTRUCK_PC * 100)
-        victim->setPersonFlag(Person::MISSNEXTTARGET, false);
+    if (chanceHappens(kDREADSTRUCK_PC))
+      victim->setPersonFlag(Person::SKIPNEXTTURN, false);
   }
 
-  /* Dreamsnare - Ailed actor's actions have a 50% chance of being benign
-   *              illusions (no effect
+  /* Dreamsnare - Ailed actor's actions have a kDREAMSNARE_PC chance of being
+   *              benign illusions (no effect)
+   * Constants: kDREAMSNARE_PC - Percent chance of no effect attacks
    */
   else if (ailment_type == EnumDb::DREAMSNARE)
   {
-    int random_percent = getRandomNumber(100);
-    if (random_percent <= kDREAMSNARE_PC * 100)
+    if (chanceHappens(kDREAMSNARE_PC * 100))
       victim->setPersonFlag(Person::NOEFFECT, true);
   }
 
-  /* Hellbound - If this actor dies, another living actor on the same team
-   *             (if one exists) dies with them.
-   *           - Hellbound effect handled in Battle
+  /* Bond & Bonded - Two actors are afflicted simultaneously. One person is
+   * Bonded to the other. The Bond person is essentially in a dead state, but
+   * the other assumes a kBOND_STATS_PC percent of their statistical boost.
+   * However, if the Bonded actor dies, the Bond actor wll also die (this
+   * case will be handled in Battle)
+   * Constants: kBOND_STATS_PC - % by which to increase actor's stats.
    */
-
-  /* Bond - Two actors are afflicted simultaneously. Affected actor's stats are
-  *  combined, damage dealt to one is also dealt to the other, as with status
-  *  ailments and other effects (ex. death)
-  */
   else if (ailment_type == EnumDb::BOND)
   {
-    //TODO: Bond combination experimentation [05-05-13]
+    victim->setPersonFlag(Person::BOND, true);
+  }
+
+  else if (ailment_type == EnumDb::BONDED)
+  {
+    for (int i = 0; i < stats->getSize(); i++)
+      stats->setStat(i, stats->getStat(i) * kBOND_STATS_PC);
   }
 
   /* Buffs -- Increases the user's stats by a specified amount on application
@@ -449,13 +446,9 @@ void Ailment::apply()
   else if (ailment_type == EnumDb::TRIPLECAST)
     victim->setPersonFlag(Person::THREESKILLS, true);
 
-  /* Triple cast allows the user to use three skills per turn */
-
-  /* Half Cost - On application, the user's useable skill costs are halved
-     -- Handle half cost in Battle
-     -- Find users currently useable skills
-     -- Half their cost (temporarily)
-  */
+  /* Half Cost - On application, the user's useable skill costs are halved */
+  else if (ailment_type == EnumDb::HALFCOST)
+    victim->setPersonFlag(Person::HALFCOST, true);
 
   /* Hibernation - Gain a % health back per turn in exchange for skipping it,
    *               but the % gain grows
@@ -478,7 +471,7 @@ void Ailment::apply()
 
   /* Curse - Character is inflicted with a random ailment every turn.
    *         (Curse can inflict a new Curse--in which case just the remaining
-   *         turns is reset.) Curse may also reset curse.
+   *         turns is reset.).
    */
   else if (ailment_type == EnumDb::CURSE)
   {
@@ -491,14 +484,12 @@ void Ailment::apply()
    */
   else if (ailment_type == EnumDb::METATETHER)
   {
-    int random_percent = getRandomNumber(100);
-
     /* Do kMETABOLIC_DMG % upon victim, emit signal if dead */
     if (victim->damage(stats->getMax("VITALITY") * kMETABOLIC_DMG))
         emit victimDeath(victim->getName(), EnumDb::METABOLICTETHER);
 
     /* Check for kMETABOLIC_PC chance for instant death */
-    if (random_percent <= kMETABOLIC_PC * 100)
+    if (chanceHappens(kMETABOLIC_PC * 100))
         emit victimDeath(victim->getName(), EnumDb::METABOLICDMG);
   }
 
@@ -702,7 +693,7 @@ bool Ailment::updateTurns()
   /* If the ailment is finite, cure it based on chance */;
   if (max_turns_left <= kMAX_TURNS && chance != 0)
   {
-    int random_num = getRandomNumber(1000);
+    int random_num = randInt(0, 100);
     if (floor(chance * 1000) > random_num)
     {
       max_turns_left = 1;

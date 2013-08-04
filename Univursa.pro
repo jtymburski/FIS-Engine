@@ -70,7 +70,8 @@ SOURCES += \
     ./src/Game/Player/Person.cc \
     ./src/Game/Player/Race.cc \
     ./src/Game/Player/Signature.cc \
-    ./src/Game/Player/Skill.cc
+    ./src/Game/Player/Skill.cc \
+    ./src/MathHelper.cc
 
 HEADERS += \
     ./include/Application.h \
@@ -127,6 +128,7 @@ HEADERS += \
     ./include/Game/Player/Person.h \
     ./include/Game/Player/Race.h \
     ./include/Game/Player/Skill.h \
-    ./include/Game/Player/Signature.h
+    ./include/Game/Player/Signature.h \
+    ./include/MathHelper.h
 
 INCLUDEPATH += ./include

@@ -56,7 +56,9 @@ public:
     ISBUBBY        = 1 << 17, /* Is the person currently a bubby? */
     TWOSKILLS      = 1 << 18, /* Can the person use two skills per turn? */
     THREESKILLS    = 1 << 19, /* Can the person use three skills per turn? */
-    REFLECT        = 1 << 20 /* Is the person currently reflecting skills? */
+    HALFCOST       = 1 << 20, /* Does the person only use half the QD? */
+    REFLECT        = 1 << 20, /* Is the person currently reflecting skills? */
+    BOND           = 1 << 21  /* Is the person in the BOND state? */
   };
   Q_DECLARE_FLAGS(PersonFlags, PersonState)
 

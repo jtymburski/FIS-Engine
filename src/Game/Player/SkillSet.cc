@@ -23,10 +23,7 @@ const uint SkillSet::kMAX_LEVEL  = 127; /* Highest LVL for a Person */
  *
  * Inputs: none
  */
-SkillSet::SkillSet()
-{
-  // skills.resize(0);
-}
+SkillSet::SkillSet() {}
 
 /*
  * Description: Constructs a SkillSet object given a single Skill* and a value

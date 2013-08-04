@@ -165,6 +165,7 @@ void Application::setupBattle()
                      800, 1000, 800, 1000, 800, 1000, 800, 500, 500, 500,
                      true);
 
+
   Category* bloodclaw  = new Category("Bloodclaw", bloodclaw_attr);
   Category* scion      = new Category("Scion", scion_attr);
   Category* cloud_dudes = new Category("Cloud Attr", cloud_attr);
@@ -224,6 +225,14 @@ void Application::setupBattle()
   infinite_nourishment->setItemFlag(Item::STACKABLE, true);
 
   /* Equipment Setup */
+  AttributeSet forest_vesture_set = AttributeSet();
+  AttributeSet fated_wooden_saber = AttributeSet();
+
+  forest_vesture_set.setAll(100, 12, 20, 15, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+
+  /* Bubby Flavour Setup */
+
+  /* Bubby Setup */
 
   /* ---- */
 
@@ -293,12 +302,31 @@ void Application::setupBattle()
   foes->addMember(cloud_foe4);
   foes->addMember(cloud_foe5);
 
+  QVector<bool> random;
+  int size = 1000;
 
+  QTime midnight(0, 0, 0);
+  qsrand(midnight.secsTo(QTime::currentTime()));
 
+  for (int i = 0; i < size; i++)
+      random.push_back(chanceHappens(55));
+
+  int true_ct = 0;
+  int false_ct = 0;
 
 
   qDebug() << "=========================================";
-  anti_matter->printAll();
+  //anti_matter->printAll();
+  for (int i = 0; i < random.size(); i++)
+  {
+      qDebug() << random.at(i);
+      if (random.at(i))
+          ++true_ct;
+      else
+          ++false_ct;
+  }
+
+  qDebug() << "TRUE: " << true_ct;
 
   qDebug() << "=========================================";
 

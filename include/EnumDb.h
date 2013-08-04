@@ -93,6 +93,7 @@ public:
                     DREAMSNARE,
                     HELLBOUND,
                     BOND,
+                    BONDED,
                     ALLATKBUFF,
                     ALLDEFBUFF,
                     PHYATKBUFF,
@@ -122,6 +123,7 @@ public:
                     HIBERNATION,
                     CURSE,
                     METATETHER,
+                    STUBULATE,
                     NOAILMENT };
 
   /*
@@ -213,6 +215,7 @@ Begin_Enum_String( EnumDb::Infliction )
   RegisterEnumerator(EnumDb::DREAMSNARE, "Dreamsnare");
   RegisterEnumerator(EnumDb::HELLBOUND, "Hellbound");
   RegisterEnumerator(EnumDb::BOND, "Bond");
+  RegisterEnumerator(EnumDb::BONDED, "Bonded");
   RegisterEnumerator(EnumDb::ALLATKBUFF, "All-Aggression Buff");
   RegisterEnumerator(EnumDb::ALLDEFBUFF, "All-Fortitude Buff");
   RegisterEnumerator(EnumDb::PHYATKBUFF, "Physical Aggression Buff");
@@ -242,6 +245,7 @@ Begin_Enum_String( EnumDb::Infliction )
   RegisterEnumerator(EnumDb::HIBERNATION, "Hibernation");
   RegisterEnumerator(EnumDb::CURSE, "Curse");
   RegisterEnumerator(EnumDb::METATETHER, "Metabolic Tether");
+  RegisterEnumerator(EnumDb::STUBULATE, "Stubulate");
   RegisterEnumerator(EnumDb::NOAILMENT, "No Effect");
 }
 End_Enum_String;
