@@ -17,35 +17,66 @@
  * Description: Constructor for a party object.
  */
 Party::Party(Person* p_main, Inventory* inventory, EnumDb::PartyType party)
-    : pouch(inventory),
-      party_type(party)
-
+    : pouch(inventory)
 {
+  setPartyType(party);
+  updateMaxSize();
   members.push_back(p_main);
 
-  switch (party_type)
-  {
-    case(EnumDb::SLEUTH):
-      setMaxSize(getMaxSleuthSize());
-      break;
-
-    case(EnumDb::REGULAR_FOE):
-    case(EnumDb::MINI_BOSS):
-    case(EnumDb::BOSS):
-    case(EnumDb::FINAL_BOSS):
-      setMaxSize(getMaxFoeSize());
-      break;
-
-  case(EnumDb::BEARACKS):
-      setMaxSize(getMaxBearacksSize());
-      break;
-  };
+  setFlag(Party::INVENTORY_ENABLED, true);
+  setFlag(Party::MEMBERS_ENABLED, true);
 }
 
 /*
  * Description: Annihilates a party object
  */
 Party::~Party() {}
+
+/*============================================================================
+ * PRIVATE FUNCTIONS
+ *============================================================================*/
+
+/*
+ * Description: Sets the enumerated party type object. Usually called by the
+ *              party constructor.
+ *
+ * Inputs: EnumDb::PartyType - party type enumeration to set the party to.
+ * Output: none
+ */
+void Party::setPartyType(EnumDb::PartyType new_party_type)
+{
+  party_type = new_party_type;
+}
+
+/*
+ * Description: Updates the maximum size of the party based on the enumerated
+ *              party type that the party is.
+ *
+ * Inputs: none
+ * Output: none
+ */
+ushort Party::updateMaxSize()
+{
+  ushort party_max = 0;
+
+  switch (party_type)
+  {
+    case (EnumDb::REGULAR_FOE):
+    case (EnumDb::MINI_BOSS):
+    case (EnumDb::BOSS):
+    case (EnumDb::FINAL_BOSS):
+        party_max = getMaxFoeSize();
+        break;
+    case (EnumDb::SLEUTH):
+      party_max = getMaxSleuthSize();
+      break;
+    case(EnumDb::BEARACKS):
+      party_max = getMaxBearacksSize();
+      break;
+  }
+
+  return party_max;
+}
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -59,34 +90,41 @@ Party::~Party() {}
  */
 bool Party::addMember(Person* person)
 {
-  if ((int)getPartySize() < getMaxSize())
-  {
+  bool can_add_member = true;
+
+  if (!getFlag(Party::MEMBERS_ENABLED))
+    can_add_member = false;
+
+  if (can_add_member && (int)getPartySize() < getMaxSize())
     if (person != NULL)
       members.push_back(person);
-      return true;
-  }
-  return false;
+
+  return true;
 }
 
 /*
  * Description: Removes a person from the party at given index
- * Note: cleanUp() should be called after this function is called
  *
  * Inputs: int - index of party member needing to be removed
  * Output: bool - true if person was able to be removed
  */
-bool Party::removeMember(uint index)
+bool Party::removeMember(uint i)
 {
-  if (members.size() < 2)
-    return false;
-  if (members.at(index))
+  bool can_remove = true;
+
+  if (members.size() < 2 || (int)i >= members.size())
+    can_remove = false;
+
+  if (!getFlag(Party::MEMBERS_ENABLED))
+    can_remove = false;
+
+  if (can_remove)
   {
-    delete members.at(index);
-    members[index] = 0;
-    members.remove(index);
-    return true;
+    members[i] = 0;
+    members.removeAt(i);
   }
-  return false;
+
+  return can_remove;
 }
 
 /*
@@ -97,19 +135,19 @@ bool Party::removeMember(uint index)
  */
 bool Party::removeMember(QString value)
 {
-  if (members.size() < 2)
-    return false;
-  for (ushort i = 1; i < members.size(); i++)
+  bool found = false;
+
+  QList<Person*>::iterator it;
+  for (it = members.begin(); it < members.end(); ++it)
   {
-    if (members.at(i)->getName() == value)
+    if ((*it)->getName() == value)
     {
-      delete members.at(i);
-      members[i] = 0;
-      members.remove(i);
-      return true;
+      members.erase(it);
+      found = true;
     }
   }
-  return false;
+
+  return found;
 }
 
 /*
@@ -208,8 +246,7 @@ bool Party::useItem(Item *used_item, ushort target)
  */
 void Party::clearParty()
 {
-  for (uint i = 1; i < members.size(); i++)
-    members.remove(i);
+  members.erase(members.begin() + 1, members.end());
 }
 
 /*
@@ -236,12 +273,14 @@ void Party::printAll()
  */
 void Party::printInfo()
 {
-    // qDebug() << "Inventory Name: " << pouch->getName();
-    qDebug() << "Party Members: " << members.size();
-    qDebug() << "Max Size: " << max_size;
+  qDebug() << "Inventory Name: " << pouch->getName();
+  qDebug() << "Party Members: " << members.size();
+  qDebug() << "Max Size: " << max_size;
 
-    for (int i = 0; i < members.size(); i++)
-      qDebug() << " Member #" << i << ": " << members.at(i)->getName();
+  uint index = 0;
+  QList<Person*>::iterator it;
+  for (it = members.begin(); it < members.end(); ++it)
+    qDebug() << " Member #" << index++ << ": " << (*it)->getName();
 }
 
 /*
@@ -252,7 +291,8 @@ void Party::printInfo()
  */
 void Party::printFlags()
 {
-
+  qDebug() << "Inventory Enabled: " << getFlag(Party::INVENTORY_ENABLED);
+  qDebug() << "Members Locked: " << getFlag(Party::MEMBERS_ENABLED);
 }
 
 /*
@@ -285,7 +325,7 @@ Person* Party::getMember(uint index)
  * Inputs: PartyFlag - flag to evaluate
  * Output: bool      - evaluation of the flag
  */
-bool Party::getPartyFlag(PartyFlag flag)
+bool Party::getFlag(PartyFlag flag)
 {
   return (pflag_set.testFlag(flag));
 }
@@ -307,7 +347,7 @@ ushort Party::getPartySize()
  * Inputs: int - index of party member to return name of
  * Output: QString - name of party member at index
  */
-QString Party::getMemberName(uint index)
+QString Party::getMemberName(ushort index)
 {
   if ((int)index < members.size())
     return members.at((int)index)->getName();
@@ -344,30 +384,16 @@ void Party::setInventory(Inventory* i)
  */
 bool Party::setMaxSize(ushort value)
 {
-  int party_type_max = 0;
-
-  switch (party_type)
-  {
-    case(EnumDb::SLEUTH):
-      party_type_max = getMaxSleuthSize();
-      break;
-    case (EnumDb::REGULAR_FOE):
-    case(EnumDb::MINI_BOSS):
-    case(EnumDb::BOSS):
-    case(EnumDb::FINAL_BOSS):
-      party_type_max = getMaxFoeSize();
-      break;
-    case(EnumDb::BEARACKS):
-      party_type_max = getMaxBearacksSize();
-      break;
-  }
+  bool set_new_size = false;
+  ushort party_type_max = updateMaxSize();
 
   if (value > 0 && value <= party_type_max)
   {
     max_size = value;
-    return true;
+    set_new_size = true;
   }
-  return false;
+
+  return set_new_size;
 }
 
 /*
@@ -377,7 +403,7 @@ bool Party::setMaxSize(ushort value)
  *         bool      - value to set the flag to
  * Output: none
  */
-void Party::setPartyFlag(PartyFlag flag, bool set_value)
+void Party::setFlag(PartyFlag flag, bool set_value)
 {
   (set_value) ? (pflag_set |= flag) : (pflag_set &= flag);
 }

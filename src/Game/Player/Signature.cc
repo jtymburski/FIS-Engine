@@ -62,8 +62,9 @@ Signature::Signature(ushort x, ushort y,
   setFlag(Signature::CHANGEABLE, true);
   setFlag(Signature::RESIZEABLE, true);
 
-  for (int i = 0; i < closed_cells.size(); i++)
-    close(closed_cells.at(i).first, closed_cells.at(i).second);
+  std::vector<std::pair<ushort, ushort> >::iterator it;
+  for (it = list.begin(); it < list.end(); ++it)
+      close((*it).first, (*it).second);
 }
 
 /*
@@ -186,18 +187,22 @@ bool Signature::isOpen(ushort x, ushort y)
  */
 bool Signature::open(ushort x, ushort y)
 {
-  if (getBubby(x, y) != 0 || getFlag(Signature::CHANGEABLE))
-    return false;
+  bool can_open = true;
 
-  std::vector<std::pair<ushort, ushort> >::iterator it;
-  for (it = closed_cells.begin(); it < closed_cells.end(); ++it)
+  if (getBubby(x, y) != 0 || getFlag(Signature::CHANGEABLE))
+    can_open = false;
+
+  if (can_open)
   {
-    if ((*it).first == x && (*it).second == y)
+    std::vector<std::pair<ushort, ushort> >::iterator it;
+    for (it = closed_cells.begin(); it < closed_cells.end(); ++it)
     {
-      closed_cells.erase(it);
-      return true;
+      if ((*it).first == x && (*it).second == y)
+        closed_cells.erase(it);
     }
   }
+
+  return can_open;
 }
 
 /*
@@ -237,8 +242,8 @@ Bubby* Signature::unattach(ushort x, ushort y)
  */
 Bubby* Signature::getBubby(ushort x, ushort y)
 {
-  for (int i = 0; i < occupied_cells.size(); i++)
-    for (int j = 0; j < occupied_cells[i].size(); j++)
+  for (int i = 0; i < (int)occupied_cells.size(); i++)
+    for (int j = 0; j < (int)occupied_cells[i].size(); j++)
       if (occupied_cells[i][j].first == x && occupied_cells[i][j].second == y)
         return bubby_map.at(i);
 

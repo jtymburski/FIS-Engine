@@ -27,6 +27,8 @@ public:
   /* Enumerated flags for party */
   enum PartyFlag
   {
+    INVENTORY_ENABLED = 1 << 0, /**/
+    MEMBERS_ENABLED    = 1 << 1
   };
   Q_DECLARE_FLAGS(PartyFlags, PartyFlag)
   PartyFlags pflag_set;
@@ -36,7 +38,7 @@ private:
   Inventory* pouch;
 
   /* The party members */
-  QVector<Person*> members;
+  QList<Person*> members;
 
   /* Temporary maximum size of the party (max 5) */
   ushort max_size;
@@ -48,6 +50,16 @@ private:
   static const ushort kMAX_MEMBERS_BEARACKS = 50; /* Maximum bearacks members */
   static const ushort kMAX_MEMBERS_SLEUTH   =  5; /* Maximum sleuth members */
   static const ushort kMAX_MEMBERS_FOE      =  5; /* Maximum foe members */
+
+/*============================================================================
+ * PRIVATE FUNCTIONS
+ *============================================================================*/
+private:
+  /* Sets the enumerated party type (usually called by construction) */
+  void setPartyType(EnumDb::PartyType new_party_type);
+
+  /* Updates the maximum size of the party based on its current type */
+  ushort updateMaxSize();
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -65,7 +77,7 @@ public:
   void printFlags();
 
   /* Removes a person from the party by index */
-  bool removeMember(uint index);
+  bool removeMember(uint i);
 
   /* Removes a person from the party by name */
   bool removeMember(QString);
@@ -80,13 +92,16 @@ public:
   Person* getMember(uint index);
 
   /* Gets a party flag */
-  bool getPartyFlag(PartyFlag flag);
+  bool getFlag(PartyFlag flag);
+
+  /* Returns the enumerated party type */
+  EnumDb::PartyType getPartyType();
 
   /* Returns the party size */
   ushort getPartySize();
 
   /* Returns a person's name at a certain index */
-  QString getMemberName(uint index);
+  QString getMemberName(ushort index);
 
   /* Returns the currently set max size of the party */
   ushort getMaxSize();
@@ -101,7 +116,7 @@ public:
   bool setMaxSize(ushort value);
 
   /* Sets a party flag */
-  void setPartyFlag(PartyFlag flag, bool set_value);
+  void setFlag(PartyFlag flag, bool set_value);
 
 /*============================================================================
  * PUBLIC STATIC FUNCTIONS
@@ -115,8 +130,6 @@ public:
 
   /* Obtains the maximum number of members in a slueth */
   static const ushort getMaxSleuthSize();
-
-
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Party::PartyFlags)
 
