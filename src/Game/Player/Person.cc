@@ -42,19 +42,22 @@ QVector<uint> Person::exp_table;
  *         QString s - secondary element and curve of the person
  * Output: none
  */
-Person::Person(QString name, Race *race, Category* cat, QString p, QString s)
+Person::Person(QString pname, Race* prace, Category* pcat, QString p, QString s)
+    : damage_modifier(1.00),
+      level(1),
+      total_exp(0),
+      experience_drop(0),
+      credit_drop(0),
+      cat(pcat),
+      parent(0),
+      race(prace),
+      name(pname),
+      rank(EnumDb::NUBEAR),
+      skills(0),
+      first_person(0),
+      third_person(0),
+      bubbified_sprite(0)
 {
-  /* Basic Setup */
-  setName(name);
-  setRace(race);
-  setCategory(cat);
-  setExp(0);
-  setLevel(1);
-  setSkills(0);
-  setFirstPerson(0);
-  setThirdPerson(0);
-  setDmgMod(1);
-
   /* Setup the primary and secondary curves */
   setPrimary(p);
   setSecondary(s);
@@ -72,9 +75,54 @@ Person::Person(QString name, Race *race, Category* cat, QString p, QString s)
 }
 
 /*
+ * Description: Copy constructor
+ */
+Person::Person(Person* parent)
+    : damage_modifier(parent->getDmgMod()),
+      level(parent->getLevel()),
+      total_exp(parent->getExp()),
+      experience_drop(parent->getExpLoot()),
+      credit_drop(parent->getCreditLoot()),
+      cat(parent->getCategory()),
+      parent(parent),
+      race(parent->getRace()),
+      name(parent->getName()),
+      rank(parent->getRank()),
+      skills(parent->getSkills()),
+      first_person(parent->getFirstPerson()),
+      third_person(parent->getThirdPerson()),
+      bubbified_sprite(parent->getBubbySprite())
+{
+  /* Grabs the primary and secondary curves from the parent */
+  setPrimary(parent->getPrimary() + parent->getPrimaryCurve());
+  setSecondary(parent->getSecondary() + parent->getSecondaryCurve());
+
+  /* Sets up the Attribute Sets */
+  setUpBaseStats();
+  setStats(base_stats);
+  setTempStats(base_stats);
+
+  for (int i = 0; i < parent->getItemLoot().size(); i++)
+    item_drops.push_back(new Item(parent->getItemLoot().value(i)));
+
+  /* Initially calculates all the skills */
+  calcSkills();
+}
+
+/*
  * Description: Annihilates a Person object
  */
-Person::~Person() {}
+Person::~Person()
+{
+  if (parent != 0)
+  {
+    for (int i = 0; i < item_drops.size(); i++)
+    {
+      delete item_drops[i];
+      item_drops[i] = NULL;
+    }
+  }
+}
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -102,30 +150,6 @@ void Person::calcExpTable()
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
-
-/*
- * Description: Returns the value of the experience table at a given point
- *
- * Inputs: ushort - level to look up on the table
- * Output: uint   - total experience required for given level
- */
-uint Person::getExpAt(ushort level)
-{
-  if (level < exp_table.size())
-    return exp_table.at(level);
-  return 0;
-}
-
-/*
- * Description: Returns the value of the maximum level constant
- *
- * Inputs: none
- * Output: uint - the value of the maximum level constant
- */
-uint Person::getMaxLevel()
-{
-  return kMAX_LEVEL;
-}
 
 /*
  * Description: Adds an amount to the experience of the person and calls
@@ -248,7 +272,7 @@ void Person::printAll()
 void Person::printBasics()
 {
   qDebug() << "Name: " << getName();
-  qDebug() << "Rank: " << getRank();
+  // qDebug() << "Rank: " << getRank();
   qDebug() << "Level: " << getLevel();
   qDebug() << "Total Exp: " << getExp();
   qDebug() <<  "Category: " << cat->getName();
@@ -640,7 +664,7 @@ QChar Person::getSecondaryCurve()
  * Inputs: none
  * Output: QString - rank of the Person
  */
-QString Person::getRank()
+EnumDb::PersonRanks Person::getRank()
 {
   return rank;
 }
@@ -931,7 +955,7 @@ void Person::setName(QString new_name)
  * Inputs: QString - string representing a new rank
  * Output: none
  */
-void Person::setRank(QString new_rank)
+void Person::setRank(EnumDb::PersonRanks new_rank)
 {
   rank = new_rank;
 }
@@ -1062,4 +1086,32 @@ void Person::setStats(AttributeSet new_stat_set)
 void Person::setTempStats(AttributeSet new_stat_set)
 {
   temp_stats = new_stat_set;
+}
+
+/*=============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
+
+/*
+ * Description: Returns the value of the experience table at a given point
+ *
+ * Inputs: ushort - level to look up on the table
+ * Output: uint   - total experience required for given level
+ */
+uint Person::getExpAt(ushort level)
+{
+  if (level < exp_table.size())
+    return exp_table.at(level);
+  return 0;
+}
+
+/*
+ * Description: Returns the value of the maximum level constant
+ *
+ * Inputs: none
+ * Output: uint - the value of the maximum level constant
+ */
+uint Person::getMaxLevel()
+{
+  return kMAX_LEVEL;
 }

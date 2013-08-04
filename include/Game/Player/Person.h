@@ -5,7 +5,6 @@
 * Description: Head for Person class. Container for all the info describing
 *              a character in the game, including their statistics for battle,
 *              flags, etc.
-* // TODO: Race and category equip item types [03-06-13]
 ******************************************************************************/
 #ifndef PERSON_H
 #define PERSON_H
@@ -17,15 +16,19 @@
 #include "EnumDb.h"
 #include "Game/Player/Category.h"
 #include "Game/Player/Race.h"
-#include "Game/Player/Item.h"
 #include "Game/Player/Equipment.h"
 #include "Game/Sprite.h"
 
-class Person
+class Person : QWidget
 {
+  Q_OBJECT
+
 public:
   /* Constructor for a person object */
-  Person(QString name, Race* race, Category* cat, QString p, QString s);
+  Person(QString pname, Race* prace, Category* pcat, QString p, QString s);
+
+  /* Copy constructor */
+  Person(Person* parent);
 
   /* Annihilates a person object */
   ~Person();
@@ -64,8 +67,10 @@ private:
   /* Modifier by which to change a Person's actual damage */
   double damage_modifier;
 
-  /* Person's level and experience */
+  /* Person's level [1-127] */
   uint level;
+
+  /* Person's total experience */
   uint total_exp;
 
   /* Table of experience */
@@ -79,12 +84,15 @@ private:
   /* The person's class */
   Category* cat;
 
+  /* The parent of the person */
+  Person* parent;
+
   /* The person's race */
   Race* race;
 
   /* The person's name & rank */
   QString name;
-  QString rank;
+  EnumDb::PersonRanks rank;
 
   /* Set of flags for the person */
   PersonFlags state_set;
@@ -201,7 +209,7 @@ public:
   QChar   getSecondaryCurve();
 
   /* Gets the person's word rank */
-  QString getRank();
+  EnumDb::PersonRanks getRank();
 
   /* Gets the first and third person sprites */
   Sprite* getFirstPerson();
@@ -252,7 +260,7 @@ public:
   void setRace(Race* new_race);
 
   /* Sets the persons word rank */
-  void setRank(QString new_rank);
+  void setRank(EnumDb::PersonRanks new_rank);
 
   /* Sets the persons skill set */
   void setSkills(SkillSet* new_skill_set);

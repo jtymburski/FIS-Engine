@@ -28,12 +28,6 @@ private:
   /* Bubby Type */
   BubbyFlavour* type;
 
-  /* Static ID of the Bubby (current value) */
-  static int id;
-
-  /* The ID of the current Bubby */
-  int my_id;
-
   /* The experience table for Bubbies */
   static QVector<uint> exp_table;
 

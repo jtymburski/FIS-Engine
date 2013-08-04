@@ -125,6 +125,23 @@ public:
                     NOAILMENT };
 
   /*
+   * Description: Ranks the Player may have
+   */
+  enum PersonRanks { NUBEAR,
+                     CUB,
+                     RECRUIT,
+                     SLEUTHLING,
+                     SERGEANT,
+                     SLEUTHMASTER,
+                     OFFICER,
+                     URSAMINOR,
+                     ADMIRAL,
+                     URSAMAJOR,
+                     FOREBEAR,
+                     ALPHABEAR,
+                     BOAT };
+
+  /*
    * Description: Describes the type of party to be created
    */
   enum PartyType { SLEUTH,
@@ -150,6 +167,33 @@ public:
                     ITEM_VECTOR,
                     KEY_ITEM_VECTOR };
 };
+
+/* Registration of Attribute Enumerator */
+Begin_Enum_String( EnumDb::Attribute )
+{
+  RegisterEnumerator(EnumDb::VITALITY, "Vitality");
+  RegisterEnumerator(EnumDb::QUANTUMDRIVE, "Quantum Drive");
+  RegisterEnumerator(EnumDb::PHYSICALAGGRESSION, "Physical Aggression");
+  RegisterEnumerator(EnumDb::PHYSICALAGGRESSION, "Physical Aggression");
+  RegisterEnumerator(EnumDb::PHYSICALFORTITUDE, "Physical Fortitude");
+  RegisterEnumerator(EnumDb::THERMALAGGRESSION, "Thermal Aggression");
+  RegisterEnumerator(EnumDb::THERMALFORTITUDE, "Thermal Fortitude");
+  RegisterEnumerator(EnumDb::PRIMALAGGRESSION, "Primal Aggression");
+  RegisterEnumerator(EnumDb::PRIMALFORTITUDE, "Primal Fortitude");
+  RegisterEnumerator(EnumDb::POLARAGGRESSION, "Polar Aggression");
+  RegisterEnumerator(EnumDb::POLARFORTITUDE, "Polar Fortitude");
+  RegisterEnumerator(EnumDb::CHARGEDAGGRESSION, "Charged Aggression");
+  RegisterEnumerator(EnumDb::CHARGEDFORTITUDE, "Charged Fortitude");
+  RegisterEnumerator(EnumDb::CYBERNETICFORTITUDE, "Cybernetic Fortitude");
+  RegisterEnumerator(EnumDb::CYBERNETICFORTITUDE, "Cybernetic Fortitude");
+  RegisterEnumerator(EnumDb::CYBERNETICAGGRESSION, "Cybernetic Fortitude");
+  RegisterEnumerator(EnumDb::NIHILAGGRESSION, "Nihil Aggression");
+  RegisterEnumerator(EnumDb::NIHILFORTITUDE, "Nihil Fortitude");
+  RegisterEnumerator(EnumDb::MOMENTUM, "Momentum");
+  RegisterEnumerator(EnumDb::LIMBERTUDE, "Limbertude");
+  RegisterEnumerator(EnumDb::UNBEARABILITY, "Unbearability");
+}
+End_Enum_String;
 
 /* Registration of Infliction Enumerator */
 Begin_Enum_String( EnumDb::Infliction )
@@ -202,30 +246,21 @@ Begin_Enum_String( EnumDb::Infliction )
 }
 End_Enum_String;
 
-/* Registration of Attribute Enumerator */
-Begin_Enum_String( EnumDb::Attribute )
+/* Registration of PersonRank enumerated strings */
+Begin_Enum_String( EnumDb::PersonRanks )
 {
-  RegisterEnumerator(EnumDb::VITALITY, "Vitality");
-  RegisterEnumerator(EnumDb::QUANTUMDRIVE, "Quantum Drive");
-  RegisterEnumerator(EnumDb::PHYSICALAGGRESSION, "Physical Aggression");
-  RegisterEnumerator(EnumDb::PHYSICALAGGRESSION, "Physical Aggression");
-  RegisterEnumerator(EnumDb::PHYSICALFORTITUDE, "Physical Fortitude");
-  RegisterEnumerator(EnumDb::THERMALAGGRESSION, "Thermal Aggression");
-  RegisterEnumerator(EnumDb::THERMALFORTITUDE, "Thermal Fortitude");
-  RegisterEnumerator(EnumDb::PRIMALAGGRESSION, "Primal Aggression");
-  RegisterEnumerator(EnumDb::PRIMALFORTITUDE, "Primal Fortitude");
-  RegisterEnumerator(EnumDb::POLARAGGRESSION, "Polar Aggression");
-  RegisterEnumerator(EnumDb::POLARFORTITUDE, "Polar Fortitude");
-  RegisterEnumerator(EnumDb::CHARGEDAGGRESSION, "Charged Aggression");
-  RegisterEnumerator(EnumDb::CHARGEDFORTITUDE, "Charged Fortitude");
-  RegisterEnumerator(EnumDb::CYBERNETICFORTITUDE, "Cybernetic Fortitude");
-  RegisterEnumerator(EnumDb::CYBERNETICFORTITUDE, "Cybernetic Fortitude");
-  RegisterEnumerator(EnumDb::CYBERNETICAGGRESSION, "Cybernetic Fortitude");
-  RegisterEnumerator(EnumDb::NIHILAGGRESSION, "Nihil Aggression");
-  RegisterEnumerator(EnumDb::NIHILFORTITUDE, "Nihil Fortitude");
-  RegisterEnumerator(EnumDb::MOMENTUM, "Momentum");
-  RegisterEnumerator(EnumDb::LIMBERTUDE, "Limbertude");
-  RegisterEnumerator(EnumDb::UNBEARABILITY, "Unbearability");
+  RegisterEnumerator(EnumDb::NUBEAR, "Nubear");
+  RegisterEnumerator(EnumDb::RECRUIT, "Recruit");
+  RegisterEnumerator(EnumDb::SLEUTHLING, "Sleuthling");
+  RegisterEnumerator(EnumDb::SERGEANT, "Sergeant");
+  RegisterEnumerator(EnumDb::SLEUTHMASTER, "Sleuth Master");
+  RegisterEnumerator(EnumDb::OFFICER, "Officer");
+  RegisterEnumerator(EnumDb::URSAMINOR, "Ursa Minor");
+  RegisterEnumerator(EnumDb::ADMIRAL, "Admiral");
+  RegisterEnumerator(EnumDb::URSAMAJOR, "Ursa Major");
+  RegisterEnumerator(EnumDb::FOREBEAR, "Forebear");
+  RegisterEnumerator(EnumDb::ALPHABEAR, "Alpha Bear");
+  RegisterEnumerator(EnumDb::BOAT, "Bear of Ancient Times");
 }
 End_Enum_String;
 
