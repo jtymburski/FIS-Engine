@@ -302,36 +302,17 @@ void Application::setupBattle()
   foes->addMember(cloud_foe4);
   foes->addMember(cloud_foe5);
 
-  QVector<bool> random;
-  int size = 1000;
-
-  QTime midnight(0, 0, 0);
-  qsrand(midnight.secsTo(QTime::currentTime()));
-
-  for (int i = 0; i < size; i++)
-      random.push_back(chanceHappens(55));
-
-  int true_ct = 0;
-  int false_ct = 0;
-
-
   qDebug() << "=========================================";
-  //anti_matter->printAll();
-  for (int i = 0; i < random.size(); i++)
-  {
-      qDebug() << random.at(i);
-      if (random.at(i))
-          ++true_ct;
-      else
-          ++false_ct;
-  }
 
-  qDebug() << "TRUE: " << true_ct;
 
   qDebug() << "=========================================";
 
   /* Item Setup */
-  // Item* potion = new Item("Potion", 15, 0, 1.15);
+  Item* potion = new Item("Potion", 15, 0, 1.15);
+  Item* saber = new Item("Fated Oak Saber", 1, 0, 0.75);
+  saber->setDescription("Awesome sauce");
+  saber->setItemFlag(Item::WOOD, true);
+
   //potion->setDescription("This item will do some magical healing for you.");
   //potion->setUsingMessage("WHY ARE YOU USING ME");
   /* Level Up Test

@@ -9,6 +9,8 @@
 #define BUBBY_H
 
 #include <QtGui/QWidget>
+
+#include "MathHelper.h"
 #include "Game/Player/BubbyFlavour.h"
 #include "Game/Player/SkillSet.h"
 #include "Game/Player/Item.h"
@@ -29,7 +31,7 @@ private:
   BubbyFlavour* type;
 
   /* The experience table for Bubbies */
-  static QVector<uint> exp_table;
+  static QVector<int> exp_table;
 
   /* The Bubby's current level */
   ushort level;
@@ -59,9 +61,6 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
-  /* Calculate the experience table for Bubbies */
-  static void calcExpTable();
-
   /* Updates the Bubby's value on Level-Up */
   void calcNewValue();
 

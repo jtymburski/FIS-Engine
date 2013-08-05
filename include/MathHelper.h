@@ -7,12 +7,19 @@
 #ifndef MATHHELPER_H
 #define MATHHELPER_H
 
+#include <QTime>
+#include <QtGlobal>
+#include <QDebug>
+
+#include <cmath>
+#include <algorithm>
 #include <ctime>
 #include <limits>
-#include <QtGlobal>
+
+#include "EnumDb.h"
 
 /*============================================================================
- * FUNCTIONS
+ * RANDOM GENERATOR FUNCTIONS
  *===========================================================================*/
 
 /* Decides whether a percent_chance occurs or not */
@@ -21,8 +28,11 @@ bool chanceHappens(uint percent_chance);
 /* Generates a random coin flip */
 bool flipCoin();
 
-/* Generates a random unsigned integer [min, max]. */
-uint randInt(uint min, uint max);
+/* Returns a random direction */
+EnumDb::Direction randDirection();
+
+/* Generates a random number between 0 and max - 1, equal distribution */
+int randInt(int max);
 
 /* Generates a random unsigned 64-bit integer */
 quint64 randInt64();
@@ -31,7 +41,7 @@ quint64 randInt64();
 quint64 randInt64(quint64 min, quint64 max);
 
 /* Generates a Gaussian uniform integer between min and max */
-int randUniform(int min, int max);
+int randUniform(int a, int b);
 
 /* Generates a random D6 roll */
 int rollD6();
@@ -44,5 +54,15 @@ int rollD20();
 
 /* Generates a random D100 roll */
 int rollD100();
+
+/* Seeds the random number generator */
+void seed();
+
+/*============================================================================
+ * OTHER FUNCTIONS
+ *===========================================================================*/
+
+/* Builds an exponentially growing table from min to max with iter iterations */
+QVector<int> buildExponentialTable(int min, int max, int iter);
 
 #endif // MATHHELPER_H

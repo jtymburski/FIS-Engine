@@ -28,8 +28,10 @@ public:
   /* Public enumerators */
   enum BattleOption
   {
-    SHOWLEVELS    = 1ul << 0, /* Show levels of friends/foes on Battle? */
-    SHOWENEMYINFO = 1ul << 1, /* Show enemy info on Battle Screen? */
+    SHOWLEVELS               = 1ul << 0, /* Show levels of friends/foes       */
+    SHOWENEMYINFO            = 1ul << 1, /* Show enemy info on Battle Screen? */
+    SHOWALLAILMENTINFO       = 1ul << 2, /* Show all ailment info in Battle?  */
+    SHOWESSENTIALAILMENTINFO = 1ul << 3  /* Show only essential ailment info? */
   };
   Q_DECLARE_FLAGS(BattleOptions, BattleOption)
   enum GameMode {MAP, BATTLE, VICTORY_SCREEN };

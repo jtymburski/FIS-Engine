@@ -10,6 +10,32 @@
 *         This code is distributed in the hope that it will be useful,
 *         but WITHOUT ANY WARRANTY; without even the implied warranty of
 *         MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*
+* Usage example
+*
+*    // WeekEnd enumeration
+*    enum WeekEnd
+*    {
+*        Sunday = 1,
+*        Saturday = 7
+*    };
+*
+*    // String support for WeekEnd
+*    Begin_Enum_String( WeekEnd )
+*    {
+*       Enum_String( Sunday );
+*       Enum_String( Saturday );
+*    }
+*    End_Enum_String;
+*
+*    // Convert from WeekEnd to string
+*    const std::string &str = EnumString<WeekEnd>::From( Saturday );
+*	// str should now be "Saturday"
+*
+*    // Convert from string to WeekEnd
+*    WeekEnd w;
+*    EnumString<WeekEnd>::To( w, "Sunday" );
+*	// w should now be Sunday
 *******************************************************************************/
 #ifndef ENUMSTRING_H
 #define ENUMSTRING_H
@@ -18,71 +44,55 @@
 #include <map>
 #include <cassert>
 
-/* Usage example
-
-    // WeekEnd enumeration
-    enum WeekEnd
-    {
-        Sunday = 1,
-        Saturday = 7
-    };
-
-    // String support for WeekEnd
-    Begin_Enum_String( WeekEnd )
-    {
-        Enum_String( Sunday );
-        Enum_String( Saturday );
-    }
-    End_Enum_String;
-
-    // Convert from WeekEnd to string
-    const std::string &str = EnumString<WeekEnd>::From( Saturday );
-	// str should now be "Saturday"
-
-    // Convert from string to WeekEnd
-    WeekEnd w;
-    EnumString<WeekEnd>::To( w, "Sunday" );
-	// w should now be Sunday
-*/
-
 // Helper macros
 
-#define Begin_Enum_String(EnumerationName)                                      \
-    template <> struct EnumString<EnumerationName> :                            \
-        public EnumStringBase< EnumString<EnumerationName>, EnumerationName >   \
-    {                                                                           \
+#define Begin_Enum_String(EnumerationName)                                     \
+    template <> struct EnumString<EnumerationName> :                           \
+        public EnumStringBase< EnumString<EnumerationName>, EnumerationName >  \
+    {                                                                          \
         static void RegisterEnumerators()
 //      {
 
-#define Enum_String(EnumeratorName)                                             \
+#define Enum_String(EnumeratorName)                                            \
             RegisterEnumerator( EnumeratorName, #EnumeratorName );
 //      }
 
-#define End_Enum_String                                                         \
+#define End_Enum_String                                                        \
     }
 
-// The EnumString base class
+/******************************************************************************
+* Class Name: EnumStringBase
+******************************************************************************/
 template <class DerivedType, class EnumType>
 class EnumStringBase
 {
-// Types
 protected:
-    typedef std::map<std::string, EnumType> AssocMap;
+  /* Types */
+  typedef std::map<std::string, EnumType> AssocMap;
 
 protected:
-// Constructor / Destructor
-    explicit EnumStringBase();
-    ~EnumStringBase();
+  /* Creates an EnumStringBase object */
+  explicit EnumStringBase();
+
+  /* Annihilates an EnumStringBase object */
+  ~EnumStringBase();
 
 private:
-// Copy Constructor / Assignment Operator
-    EnumStringBase(const EnumStringBase &);
-    const EnumStringBase &operator =(const EnumStringBase &);
+  /* Copy constructor */
+  EnumStringBase(const EnumStringBase &);
 
-// Functions
+  /* Overloaded assignment operator */
+  const EnumStringBase &operator =(const EnumStringBase &);
+
+/*=============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
 private:
     static AssocMap &GetMap();
 
+/*=============================================================================
+ * PROTECTED FUNCTIONS
+ *===========================================================================*/
 protected:
     // Use this helper function to register each enumerator
     // and its string representation.
@@ -98,17 +108,26 @@ public:
     static bool To(EnumType &e, const std::string &str);
 };
 
-// The EnumString class
-// Note: Specialize this class for each enumeration, and implement
-//       the RegisterEnumerators() function.
+/******************************************************************************
+* Struct Name: EnumString
+*
+* Note: Specialize this class for each enumeration, and implement
+*       the RegisterEnumerators() function.
+******************************************************************************/
+
 template <class EnumType>
 struct EnumString : public EnumStringBase< EnumString<EnumType>, EnumType >
 {
     static void RegisterEnumerators();
 };
 
-// Function definitions
+/*=============================================================================
+ * FUNCTION DEFINITIONS
+ *===========================================================================*/
 
+/*
+ * GetMap()
+ */
 template <class D, class E>
 typename EnumStringBase<D,E>::AssocMap &EnumStringBase<D,E>::GetMap()
 {
@@ -127,14 +146,23 @@ typename EnumStringBase<D,E>::AssocMap &EnumStringBase<D,E>::GetMap()
     return assocMap;
 }
 
+/*
+ * Register Enumerator
+ */
 template <class D, class E>
 void EnumStringBase<D,E>::RegisterEnumerator(const E e, const std::string &eStr)
 {
-    bool bRegistered = GetMap().insert( typename AssocMap::value_type( eStr, e ) ).second;
+    bool bRegistered;
+    bRegistered = GetMap().insert(typename AssocMap::value_type(eStr,e)).second;
     assert( bRegistered );
-    (void)sizeof( bRegistered ); // This is to avoid the pesky 'unused variable' warning in Release Builds.
+
+    // This is to avoid the pesky 'unused variable' warning in Release Builds.
+    (void)sizeof( bRegistered );
 }
 
+/*
+ * From
+ */
 template <class D, class E>
 const std::string &EnumStringBase<D,E>::From(const E e)
 {
@@ -156,7 +184,7 @@ const std::string &EnumStringBase<D,E>::From(const E e)
             if( (*j).second == e )
                 break;
 
-        // If we found another one with the same value, we can't do this conversion
+        // If we found another with the same value, we can't do this conversion
         if( j != GetMap().end() )
             break;
 
@@ -169,6 +197,9 @@ const std::string &EnumStringBase<D,E>::From(const E e)
     return dummy;
 }
 
+/*
+ * To
+ */
 template <class D, class E>
 bool EnumStringBase<D,E>::To(E &e, const std::string &str)
 {

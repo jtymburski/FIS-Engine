@@ -52,8 +52,7 @@ bool Game::getBattleFlag(BattleOption flags)
  * Inputs: BattleOption - flag to be flipped
  * Output: none
  */
-void Game::toggleBattleFlag(BattleOption flags)
-{
+void Game::toggleBattleFlag(BattleOption flags){
   setBattleFlag(flags, !getBattleFlag(flags));
 }
 

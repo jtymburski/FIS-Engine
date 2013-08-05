@@ -10,9 +10,9 @@
 #define PERSON_H
 
 #include <QtGui/QWidget>
-#include <cmath>
-#include <algorithm>
 
+
+#include "MathHelper.h"
 #include "EnumDb.h"
 #include "Game/Player/Category.h"
 #include "Game/Player/Race.h"
@@ -58,7 +58,8 @@ public:
     THREESKILLS    = 1 << 19, /* Can the person use three skills per turn? */
     HALFCOST       = 1 << 20, /* Does the person only use half the QD? */
     REFLECT        = 1 << 20, /* Is the person currently reflecting skills? */
-    BOND           = 1 << 21  /* Is the person in the BOND state? */
+    BOND           = 1 << 21,  /* Is the person in the BOND state? */
+    CANREVIVE      = 1 << 22
   };
   Q_DECLARE_FLAGS(PersonFlags, PersonState)
 
@@ -76,7 +77,7 @@ private:
   uint total_exp;
 
   /* Table of experience */
-  static QVector<uint> exp_table;
+  static QVector<int> exp_table;
 
   /* Person's loot when killed */
   QVector<Item*> item_drops;
@@ -128,13 +129,6 @@ private:
   static const uint kMAX_EQUIP_SLOTS;
   static const uint kMAX_ITEM_DROPS;
   static const double kMAX_DAMAGE_MODIFIER;
-
-/*============================================================================
- * PRIVATE STATIC FUNCTIONS
- *============================================================================*/
-private:
-  /* Calculate the experience table */
-  static void calcExpTable();
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -287,6 +281,13 @@ public:
 
   /* Gets the max level constant */
   static uint getMaxLevel();
+
+  /* Returns the enumeration of a given QString */
+  static EnumDb::PersonRanks getRankEnum(QString person_rank);
+
+  /* Returns the QString of a given enumeration */
+  static QString getRankString(EnumDb::PersonRanks person_rank);
+
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Person::PersonFlags)
 

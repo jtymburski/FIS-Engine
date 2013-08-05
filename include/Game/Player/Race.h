@@ -30,7 +30,11 @@ public:
 private:
   /* Name & description */
   QString description;
+  QString denonym;
   QString name;
+
+  /* List of racial immunities */
+  QList<EnumDb::Infliction> immunities;
 
   /* Set of attributes */
   AttributeSet stat_set;
@@ -44,14 +48,24 @@ private:
   static const ushort kMAX_SPECIAL;
 
 public:
+  /* Adds an ailment to the immunity list */
+  void addImmunity(EnumDb::Infliction new_immunity);
+
   /* Cleans up the attributes and stat set */
   void cleanUp();
+
+  /* Checks whether the Race is immune to a given Infliction */
+  bool isImmune(EnumDb::Infliction check_immunity);
+
+  /* Removes a given infliction from the list (if it exists) */
+  void removeImmunity(EnumDb::Infliction remove_immuity);
 
   /* Method for printing the info of the Race */
   void printInfo();
 
   /* Gets the Description & Name */
   QString getDescription();
+  QString getDenonym();
   QString getName();
 
   /* Gets the attribute and skill sets */
@@ -60,6 +74,7 @@ public:
 
   /*  Sets Description & Name */
   void setDescription(QString new_description);
+  void setDenonym(QString new_denonym);
   void setName(QString new_name);
 
   /* Sets the Attribute and Skill sets */

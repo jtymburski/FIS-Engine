@@ -64,6 +64,24 @@ Category::~Category() {}
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
+/*
+ * Description: Adds an immunity to the list of immunities.
+ *
+ * Inputs: EnumDb::Inflictio - the type of Immunity to be added
+ * Output: none
+ */
+void Category::addImmunity(EnumDb::Infliction new_immunity)
+{
+  if (!isImmune(new_immunity))
+    immunities.append(new_immunity);
+}
+
+/*
+ * Description: Cleans up the categories stat set
+ *
+ * Inputs: none
+ * Output: none
+ */
 void Category::cleanUp()
 {
   getSkillSet()->cleanUp();
@@ -81,6 +99,36 @@ void Category::cleanUp()
       if (stat_set.getMax(i) > kMAX_SPECIAL)
           stat_set.setMax(i, kMAX_SPECIAL);
 }
+
+/*
+ * Description: Evaluates whether the category is immune to a given Infliction
+ *
+ * Inputs: EnumDb::Infliction - the immunity to be checked for
+ * Output: bool - true if the category is immune to the infliction
+ */
+bool Category::isImmune(EnumDb::Infliction check_immunity)
+{
+  QList<EnumDb::Infliction>::iterator it;
+  for (it = immunities.begin(); it < immunities.end(); ++it)
+      if ((*it) == check_immunity)
+        return true;
+  return false;
+}
+
+/*
+ * Description: Removes an immunity for the list if it is found.
+ *
+ * Inputs: EnumDb::Infliction - the immunity to be removed.
+ * Output: none
+ */
+void Category::removeImmunity(EnumDb::Infliction remove_immunity)
+{
+ QList<EnumDb::Infliction>::iterator it;
+ for (it = immunities.begin(); it < immunities.end(); ++it)
+     if ((*it) == remove_immunity)
+       immunities.erase(it);
+}
+
 
 /*
  * Description: Prints out all the information pertaining to the category
@@ -105,6 +153,17 @@ void Category::printInfo()
 QString Category::getDescription()
 {
   return description;
+}
+
+/*
+ * Description: Returns the denonym of the Category
+ *
+ * Inputs: none
+ * Output: QString - denonym of the category
+ */
+QString Category::getDenonym()
+{
+  return denonym;
 }
 
 /*
@@ -141,7 +200,7 @@ SkillSet* Category::getSkillSet()
 }
 
 /*
- * Description: Sets the Category bonus value of the thermal attack stat
+ * Description: Assigns a new description to the Category.
  *
  * Inputs: QString - string of the Category description
  * Output: none
@@ -149,6 +208,17 @@ SkillSet* Category::getSkillSet()
 void Category::setDescription(QString new_description)
 {
   description = new_description;
+}
+
+/*
+ * Description: Assigns a new denonym to the category.
+ *
+ * Inputs: QString - string of the Category denonym
+ * Output: none
+ */
+void Category::setDenonym(QString new_denonym)
+{
+  denonym = new_denonym;
 }
 
 /*

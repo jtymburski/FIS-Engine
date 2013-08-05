@@ -13,8 +13,10 @@
 #include "Game/Player/Person.h"
 
 /*=============================================================================
- * CONSTRUCTORS / DESTRUCTORS
+ * CONSTANTS
  *============================================================================*/
+QVector<int> Person::exp_table;
+
 const uint Person::kMAX_LEVEL             =        127;
 const uint Person::kMIN_LVL_EXP           =        156;
 const uint Person::kMAX_LVL_EXP           =    5327426;
@@ -24,7 +26,6 @@ const uint Person::kMAX_CREDIT_DROP       =   10000000; /* Ten Million */
 const uint Person::kMAX_EQUIP_SLOTS       =          5;
 const uint Person::kMAX_ITEM_DROPS        =          5;
 const double Person::kMAX_DAMAGE_MODIFIER =    10.0000;
-QVector<uint> Person::exp_table;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -67,8 +68,9 @@ Person::Person(QString pname, Race* prace, Category* pcat, QString p, QString s)
   setStats(base_stats);
   setTempStats(base_stats);
 
+  /* Construct the Exp Table */
   if (exp_table.isEmpty())
-    calcExpTable();
+    exp_table = buildExponentialTable(kMIN_LVL_EXP, kMAX_LVL_EXP, kMAX_LEVEL);
 
   /* Initially gather all usable skills */
   calcSkills();
@@ -121,29 +123,6 @@ Person::~Person()
       delete item_drops[i];
       item_drops[i] = NULL;
     }
-  }
-}
-
-/*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
-
-/*
- * Description: Calculates and builds the experience table for a person
- *
- * Inputs: none
- * Output: none
- *
- */
-void Person::calcExpTable()
-{
-  double b = log((double)kMAX_LVL_EXP / kMIN_LVL_EXP) / (kMAX_LEVEL - 1);
-  double a = (double)kMIN_LVL_EXP / (exp(b) - 1.0);
-  for (uint i = 1; i <= kMAX_LEVEL + 1; i++)
-  {
-    int old_exp = round(a * exp(b * (i - 1)));
-    int new_exp = round(a * exp(b * i));
-    exp_table.push_back(new_exp - old_exp);
   }
 }
 
@@ -1114,4 +1093,34 @@ uint Person::getExpAt(ushort level)
 uint Person::getMaxLevel()
 {
   return kMAX_LEVEL;
+}
+
+/*
+ * Description: Returns the enumeration of a given QString
+ *              representation of a PlayerRank enum.
+ *
+ * Inputs: QString - string of a PlayerRank enum
+ * Output: EnumDb::PersonRanks - corresponding enumeration
+ */
+EnumDb::PersonRanks Person::getRankEnum(QString rank_string)
+{
+  const std::string &rank = rank_string.toUtf8().constData();
+  EnumDb::PersonRanks person_rank = EnumDb::NUBEAR;
+  EnumString<EnumDb::PersonRanks>::To(person_rank, rank);
+  return person_rank;
+}
+
+/*
+ * Description: Returns the QString registered to the enumerated
+ *              PlayerRanks type.
+ *
+ * Inputs: EnumDb::PersonRanks - enumeration to find QString for
+ * Output: QString - the QString of the enumeration
+ */
+QString getRankString(EnumDb::PersonRanks person_rank)
+{
+  const std::string &rank_string
+          = EnumString<EnumDb::PersonRanks>::From(person_rank);
+  QString rank_qstring(rank_string.c_str());
+  return rank_qstring;
 }

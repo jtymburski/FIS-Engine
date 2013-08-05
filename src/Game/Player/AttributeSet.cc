@@ -462,7 +462,7 @@ QString AttributeSet::getAttrStr(EnumDb::Attribute type)
 EnumDb::Attribute AttributeSet::getAttr(QString name)
 {
   const std::string &attribute_string = name.toUtf8().constData();
-  EnumDb::Attribute attribute_type;
+  EnumDb::Attribute attribute_type = EnumDb::VITALITY;
   EnumString<EnumDb::Attribute>::To(attribute_type, attribute_string);
   return attribute_type;
 }

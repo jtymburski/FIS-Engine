@@ -170,9 +170,6 @@ Ailment::~Ailment()
  * PRIVATE FUNCTIONS
  *============================================================================*/
 
-/* Confuse effect takes place in battle--calculates useable skills,
-   useable targets and performs random permutation of each. */
-
 /*
  * Description: Applies the effect of the status ailment to the Person (victim)
  *              if one so exists, checking for recurring effects, etc.
@@ -184,6 +181,9 @@ Ailment::~Ailment()
  *                       team KOs, this actor will KO as well.
  *           Confuse   - Ailed actor performs random useable skill on a random
  *                       target.
+ *           Curse     - Ailed actor is inflicted with a random ailment each
+ *                       turn. Curse has a small chance of inflicting a new
+ *                       Curse (turns are reset essentially)
  *
  * Inputs: none
  * Output: bool - true if the ailment is to be cured
@@ -355,11 +355,10 @@ void Ailment::apply()
   {
     victim->setPersonFlag(Person::BOND, true);
   }
-
   else if (ailment_type == EnumDb::BONDED)
   {
     for (int i = 0; i < stats->getSize(); i++)
-      stats->setStat(i, stats->getStat(i) * kBOND_STATS_PC);
+      stats->setStat(i, stats->getStat(i) * (1 + kBOND_STATS_PC));
   }
 
   /* Buffs -- Increases the user's stats by a specified amount on application
@@ -438,11 +437,11 @@ void Ailment::apply()
     stats->setStat("VITA", value);
   }
 
-  /* Double cast allows the user to use two skils per turn */
+  /* Double Cast allows the user to use two skils per turn */
   else if (ailment_type == EnumDb::DOUBLECAST)
     victim->setPersonFlag(Person::TWOSKILLS, true);
 
-  /* Triple cast allows the user to use three skills per turn */
+  /* Triple Cast allows the user to use three skills per turn */
   else if (ailment_type == EnumDb::TRIPLECAST)
     victim->setPersonFlag(Person::THREESKILLS, true);
 
@@ -463,20 +462,9 @@ void Ailment::apply()
     stats->setStat("VITA", stats->getMax("VITA") * (1 + gain_pc));
   }
 
-  /* Reflect - reflect handled in Battle */
+  /* Reflect - turn on Person flag to show they reflect skills */
   else if (ailment_type == EnumDb::REFLECT)
-  {
-      victim->setPersonFlag(Person::REFLECT, true);
-  }
-
-  /* Curse - Character is inflicted with a random ailment every turn.
-   *         (Curse can inflict a new Curse--in which case just the remaining
-   *         turns is reset.).
-   */
-  else if (ailment_type == EnumDb::CURSE)
-  {
-    //TODO: Curse effect unfinishd [05-05-13]
-  }
+    victim->setPersonFlag(Person::REFLECT, true);
 
   /* Metabolic Tether - Metabolic tether has a kMETABOLIC_PC chance for killing
    *   the inflicted, but also a kMETABOLIC_DMG percent that it will deal to
@@ -491,6 +479,15 @@ void Ailment::apply()
     /* Check for kMETABOLIC_PC chance for instant death */
     if (chanceHappens(kMETABOLIC_PC * 100))
         emit victimDeath(victim->getName(), EnumDb::METABOLICDMG);
+  }
+
+  /* Stubulate - //TODO: Unknown Effect [08-04-13]
+   *
+   * Constants:
+   */
+  else if (ailment_type == EnumDb::STUBULATE)
+  {
+
   }
 
   /* Ailment update complete, emit signal */
@@ -508,20 +505,23 @@ bool Ailment::checkImmunity(Person* new_victim)
 {
   /* Helper variables */
   QString race_name = new_victim->getRace()->getName();
-  QString category_name = new_victim->getCategory()->getName();
+  QString cat_name = new_victim->getCategory()->getName();
 
   /* Flag immunity section */
   if (new_victim->getPersonFlag(Person::MINIBOSS))
   {
-    if (ailment_type == EnumDb::DEATHTIMER || ailment_type == EnumDb::BUBBIFY)
+    if (ailment_type == EnumDb::DEATHTIMER ||
+        ailment_type == EnumDb::BUBBIFY)
       return false;
   }
 
   /* Bosses are immune to some ailments */
   else if (new_victim->getPersonFlag(Person::BOSS))
   {
-    if (ailment_type == EnumDb::DEATHTIMER || ailment_type == EnumDb::BUBBIFY   ||
-        ailment_type == EnumDb::SILENCE    || ailment_type == EnumDb::PARALYSIS ||
+    if (ailment_type == EnumDb::DEATHTIMER ||
+        ailment_type == EnumDb::BUBBIFY    ||
+        ailment_type == EnumDb::SILENCE    ||
+        ailment_type == EnumDb::PARALYSIS  ||
         ailment_type == EnumDb::BLINDNESS)
       return false;
   }
@@ -529,151 +529,46 @@ bool Ailment::checkImmunity(Person* new_victim)
   /* Final boss will be immune to many ailments */
   else if (new_victim->getPersonFlag(Person::FINALBOSS))
   {
-    if (ailment_type == EnumDb::DEATHTIMER || ailment_type == EnumDb::BUBBIFY   ||
-        ailment_type == EnumDb::SILENCE    || ailment_type == EnumDb::PARALYSIS ||
-        ailment_type == EnumDb::BLINDNESS  || ailment_type == EnumDb::CONFUSE   ||
+    if (ailment_type == EnumDb::DEATHTIMER ||
+        ailment_type == EnumDb::BUBBIFY    ||
+        ailment_type == EnumDb::SILENCE    ||
+        ailment_type == EnumDb::PARALYSIS  ||
+        ailment_type == EnumDb::BLINDNESS  ||
+        ailment_type == EnumDb::CONFUSE    ||
         ailment_type == EnumDb::BERSERK)
       return false;
   }
 
   /* Bubby effect immunity section */
-  if (ailment_type == EnumDb::ALLATKBUFF || ailment_type == EnumDb::ALLDEFBUFF ||
-      ailment_type == EnumDb::PHYATKBUFF || ailment_type == EnumDb::PHYDEFBUFF ||
-      ailment_type == EnumDb::THRATKBUFF || ailment_type == EnumDb::THRDEFBUFF ||
-      ailment_type == EnumDb::POLATKBUFF || ailment_type == EnumDb::POLDEFBUFF ||
-      ailment_type == EnumDb::PRIATKBUFF || ailment_type == EnumDb::PRIDEFBUFF ||
-      ailment_type == EnumDb::CHGATKBUFF || ailment_type == EnumDb::CHGDEFBUFF ||
-      ailment_type == EnumDb::CYBATKBUFF || ailment_type == EnumDb::CYBDEFBUFF ||
-      ailment_type == EnumDb::NIHATKBUFF || ailment_type == EnumDb::NIHDEFBUFF ||
-      ailment_type == EnumDb::LIMBUFF    || ailment_type == EnumDb::UNBBUFF    ||
-      ailment_type == EnumDb::MOMBUFF    || ailment_type == EnumDb::VITBUFF    ||
+  if (ailment_type == EnumDb::ALLATKBUFF ||
+      ailment_type == EnumDb::ALLDEFBUFF ||
+      ailment_type == EnumDb::PHYATKBUFF ||
+      ailment_type == EnumDb::PHYDEFBUFF ||
+      ailment_type == EnumDb::THRATKBUFF ||
+      ailment_type == EnumDb::THRDEFBUFF ||
+      ailment_type == EnumDb::POLATKBUFF ||
+      ailment_type == EnumDb::POLDEFBUFF ||
+      ailment_type == EnumDb::PRIATKBUFF ||
+      ailment_type == EnumDb::PRIDEFBUFF ||
+      ailment_type == EnumDb::CHGATKBUFF ||
+      ailment_type == EnumDb::CHGDEFBUFF ||
+      ailment_type == EnumDb::CYBATKBUFF ||
+      ailment_type == EnumDb::CYBDEFBUFF ||
+      ailment_type == EnumDb::NIHATKBUFF ||
+      ailment_type == EnumDb::NIHDEFBUFF ||
+      ailment_type == EnumDb::LIMBUFF    ||
+      ailment_type == EnumDb::UNBBUFF    ||
+      ailment_type == EnumDb::MOMBUFF    ||
+      ailment_type == EnumDb::VITBUFF    ||
       ailment_type == EnumDb::QDBUFF)
   return false;
 
-  /* Race immunity section */
-  if (race_name == "Human")
-  {
-    if (ailment_type == EnumDb::HIBERNATION || ailment_type == EnumDb::REFLECT ||
-        ailment_type == EnumDb::CONFUSE)
-      return false;
-  }
-
-  /* Bsians are not bears and don't get angry */
-  else if (race_name == "Bsian")
-  {
-    if (ailment_type == EnumDb::HIBERNATION || ailment_type == EnumDb::BERSERK)
-      return false;
-  }
-
-  /* Cyborgs are non-biological */
-  else if (race_name == "Cyborg")
-  {
-    if (ailment_type == EnumDb::HIBERNATION || ailment_type == EnumDb::REFLECT ||
-        ailment_type == EnumDb::POISON      || ailment_type == EnumDb::ROOTBOUND)
-      return false;
-  }
-
-  /* Artilects are non-biological and immune to some others */
-  else if (race_name == "Artilect")
-  {
-    if (ailment_type == EnumDb::HIBERNATION || ailment_type == EnumDb::REFLECT ||
-        ailment_type == EnumDb::POISON      || ailment_type == EnumDb::BURN    ||
-        ailment_type == EnumDb::INFLICTCHAR || ailment_type == EnumDb::SCALD)
-      return false;
-  }
-
-  /* Gyrokin are ot bears */
-  else if (race_name == "Gyrokin")
-  {
-    if (ailment_type == EnumDb::HIBERNATION || ailment_type == EnumDb::REFLECT)
-      return false;
-  }
-
-  /* Necross are not bears */
-  else if (race_name == "Necross")
-  {
-    if (ailment_type == EnumDb::HIBERNATION || ailment_type == EnumDb::REFLECT)
-      return false;
-  }
-
-  /* Bears have hibernate instead of Rootbound */
-  else if (race_name == "Bear")
-  {
-    if (ailment_type == EnumDb::ROOTBOUND)
-      return false;
-  }
-
-  /* BOATs can't really be buffed up--they are extremely powerful */
-  else if (race_name == "Boat")
-  {
-    if (ailment_type == EnumDb::ALLATKBUFF || ailment_type == EnumDb::ALLDEFBUFF ||
-        ailment_type == EnumDb::PHYATKBUFF || ailment_type == EnumDb::PHYDEFBUFF ||
-        ailment_type == EnumDb::THRATKBUFF || ailment_type == EnumDb::THRDEFBUFF ||
-        ailment_type == EnumDb::POLATKBUFF || ailment_type == EnumDb::POLDEFBUFF ||
-        ailment_type == EnumDb::PRIATKBUFF || ailment_type == EnumDb::PRIDEFBUFF ||
-        ailment_type == EnumDb::CHGATKBUFF || ailment_type == EnumDb::CHGDEFBUFF ||
-        ailment_type == EnumDb::CYBATKBUFF || ailment_type == EnumDb::CYBDEFBUFF ||
-        ailment_type == EnumDb::NIHATKBUFF || ailment_type == EnumDb::NIHDEFBUFF ||
-        ailment_type == EnumDb::LIMBUFF    || ailment_type == EnumDb::UNBBUFF    ||
-        ailment_type == EnumDb::MOMBUFF    || ailment_type == EnumDb::VITBUFF    ||
-        ailment_type == EnumDb::QDBUFF)
+  /* Check for category and racial immunity */
+  if (victim->getCategory()->isImmune(ailment_type));
     return false;
-  }
 
-  /* Fiends are immune to reflect */
-  else if (race_name == "Fiend")
-  {
-    if (ailment_type == EnumDb::REFLECT)
-      return false;
-  }
-
-  /* Spirits can't be buffed and are immune to many other ailments */
-  else if (race_name == "Spirit")
-  {
-    if (ailment_type == EnumDb::HIBERNATION || ailment_type == EnumDb::ALLATKBUFF    ||
-        ailment_type == EnumDb::PHYATKBUFF  || ailment_type == EnumDb::PHYDEFBUFF ||
-        ailment_type == EnumDb::THRATKBUFF  || ailment_type == EnumDb::THRDEFBUFF ||
-        ailment_type == EnumDb::POLATKBUFF  || ailment_type == EnumDb::POLDEFBUFF ||
-        ailment_type == EnumDb::PRIATKBUFF  || ailment_type == EnumDb::PRIDEFBUFF ||
-        ailment_type == EnumDb::CHGATKBUFF  || ailment_type == EnumDb::CHGDEFBUFF ||
-        ailment_type == EnumDb::CYBATKBUFF  || ailment_type == EnumDb::CYBDEFBUFF ||
-        ailment_type == EnumDb::NIHATKBUFF  || ailment_type == EnumDb::NIHDEFBUFF ||
-        ailment_type == EnumDb::LIMBUFF     || ailment_type == EnumDb::UNBBUFF    ||
-        ailment_type == EnumDb::MOMBUFF     || ailment_type == EnumDb::VITBUFF    ||
-        ailment_type == EnumDb::QDBUFF      || ailment_type == EnumDb::POISON     ||
-        ailment_type == EnumDb::BURN        || ailment_type == EnumDb::SCALD      ||
-        ailment_type == EnumDb::INFLICTCHAR || ailment_type == EnumDb::BUBBIFY    ||
-        ailment_type == EnumDb::DEATHTIMER  || ailment_type == EnumDb::ROOTBOUND  ||
-        ailment_type == EnumDb::ALLDEFBUFF)
+  if (victim->getRace()->isImmune(ailment_type))
     return false;
-  }
-
-  /* Category immunity section -- each category also allows an
-   * additional ailment immunity */
-  if (category_name == "Bardic Sage" && ailment_type == EnumDb::SILENCE)
-      return false;
-  else if (category_name == "Bloodclaw Scion" && ailment_type == EnumDb::DEATHTIMER)
-      return false;
-  else if (category_name == "Druidic Avenger" && ailment_type == EnumDb::POISON)
-      return false;
-  else if (category_name == "Eidoloncer" && ailment_type == EnumDb::SILENCE)
-      return false;
-  else if (category_name == "Goliath Rogue" && ailment_type == EnumDb::BLINDNESS)
-      return false;
-  else if (category_name == "Hexblade" && ailment_type == EnumDb::BERSERK)
-      return false;
-  else if (category_name == "Psion" && ailment_type == EnumDb::SILENCE)
-      return false;
-  else if (category_name == "Shadow Dancer" && ailment_type == EnumDb::PARALYSIS)
-      return false;
-  else if (category_name == "Storm Paladin" && ailment_type == EnumDb::DREADSTRUCK)
-      return false;
-  else if (category_name == "Swordsage" && ailment_type == EnumDb::DREAMSNARE)
-      return false;
-  else if (category_name == "Tactical Samurai" && ailment_type == EnumDb::CONFUSE)
-      return false;
-  else if (category_name == "Warmage" && ailment_type == EnumDb::HELLBOUND)
-      return false;
 
   return true;
 }
@@ -693,8 +588,7 @@ bool Ailment::updateTurns()
   /* If the ailment is finite, cure it based on chance */;
   if (max_turns_left <= kMAX_TURNS && chance != 0)
   {
-    int random_num = randInt(0, 100);
-    if (floor(chance * 1000) > random_num)
+    if (chanceHappens(floor(chance * 100)))
     {
       max_turns_left = 1;
       qDebug() << "Random chance!";
@@ -757,12 +651,27 @@ void Ailment::unapply()
     victim->setDmgMod(1);
   }
 
-  /* When silence is removed, skills need to be recalculated */
+  /* Silence - When silence is removed, skills need to be recalculated */
   else if (getType() == EnumDb::SILENCE)
   {
 
     for (int i = 0; i < skills->getSkills().size(); i++)
       skills->setSkillState(i, true);
+  }
+
+  /* Bond - on unapplication, the Person BOND flag is turned off
+   */
+  else if (getType() == EnumDb::BOND)
+  {
+    victim->setPersonFlag(Person::BOND, false);
+  }
+
+  /* Bonded - on unapplication, the Persons' buffed stats are returned to normal
+   */
+  else if (getType() == EnumDb::BONDED)
+  {
+    for (int i = 0; i < stats->getSize(); i++)
+      stats->setStat(i, stats->getStat(i) / (1 + kBOND_STATS_PC));
   }
 
   /* When bubbify is removed, actor needs to return to normal (all other buffs
@@ -834,20 +743,32 @@ void Ailment::unapply()
   else if (ailment_type == EnumDb::QDBUFF)
     stats->setStat("QTMN", stats->getStat("QTMN") / kQTMNBUFF_PC);
 
-  /* Flip the flags allowing the person to use two or three skills per turn */
+  /* Double Cast - on unapplication turn off the flag for DoubleCast */
   else if (getType() == EnumDb::DOUBLECAST)
-      victim->setPersonFlag(Person::TWOSKILLS, false);
+    victim->setPersonFlag(Person::TWOSKILLS, false);
+
+  /* Tripl Cast - on unapplication, turn off the flag for TripleCast */
   else if (getType() == EnumDb::TRIPLECAST)
-      victim->setPersonFlag(Person::THREESKILLS, false);
+    victim->setPersonFlag(Person::THREESKILLS, false);
 
-  /* Half cost removal handled within battle */
+  /* Half Cost - on unapplication, turn off the flag for HalfCost */
+  else if (getType() == EnumDb::HALFCOST)
+     victim->setPersonFlag(Person::HALFCOST, false);
 
-  else if (getType() == EnumDb::CURSE)
+  /* Reflect - on unapplication, turn off the Person flag for reflect */
+  else if (getType() == EnumDb::REFLECT)
+    victim->setPersonFlag(Person::REFLECT, false);
+
+  /* Stubulate - //TODO: Unknown Effect [08-04-13]
+   *
+   * Constants:
+   */
+  else if (ailment_type == EnumDb::STUBULATE)
   {
-    /* Curse effect incomplete [05-13-13] */
-  }
-}
 
+  }
+
+}
 
 /*
  * Description: Prints all the info pertaining to Ailment by calling the other
@@ -953,7 +874,7 @@ QString Ailment::getName()
  *         float ch   - chance the ailment has to be cured per turn
  * Output: none
  */
-void Ailment::setDuration(ushort max_turns, double chance)
+void Ailment::setDuration(short max_turns, double chance)
 {
   if (max_turns > kMAX_TURNS)
     setFlag(Ailment::INFINITETIME);
@@ -1037,7 +958,7 @@ void Ailment::update()
     /* Update the turn count and set the TOBECURED flag if neccessary */
     bool cure_value = false;
     if (!getFlag(Ailment::INFINITETIME))
-        cure_value = updateTurns();
+      cure_value = updateTurns();
     setFlag(Ailment::TOBECURED, cure_value);
 
     /* If the ailment is not to be cured, apply an effect (if there is one) */
@@ -1092,7 +1013,7 @@ QString Ailment::getAilmentStr(EnumDb::Infliction type)
 EnumDb::Infliction Ailment::getInfliction(QString name)
 {
   const std::string &ailment_string = name.toUtf8().constData();
-  EnumDb::Infliction ailment_type;
+  EnumDb::Infliction ailment_type = EnumDb::NOAILMENT;
   EnumString<EnumDb::Infliction>::To(ailment_type, ailment_string);
   return ailment_type;
 }

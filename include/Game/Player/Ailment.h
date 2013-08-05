@@ -158,7 +158,7 @@ public:
   Person* getVictim();
 
   /* Sets the duration of the ailment */
-  void setDuration(ushort max_turns, double chance = 0);
+  void setDuration(short max_turns, double chance = 0);
 
   /* Sets the value of an AilmentFlag to a set_value, defaulting to true */
   void setFlag(AilmentFlag flags, bool set_value = true);
@@ -210,7 +210,7 @@ public:
   static QString getAilmentStr(EnumDb::Infliction type);
 
   /* Converts a QString to the corresponding enum. Infliction (default NOAIL) */
-  static EnumDb::Infliction getInfliction(QString name);
+  static EnumDb::Infliction getInfliction(QString rank_string);
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Ailment::AilmentFlags)
 

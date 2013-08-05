@@ -3,12 +3,27 @@
  * Date Created: August 4th, 2013
  * Inheritance: none
  * Description: Helper functions for generic math algorithms.
+ *
+ * Notes [1]: These numbers are PSEUDO-random, seeded by QTime.
+ * Notes [2]: The function seed() should be called once per application.
  *****************************************************************************/
 #include "MathHelper.h"
 
+/*============================================================================
+ * FUNCTIONS
+ *===========================================================================*/
+
+/*
+ * Description: Given a percent chance of something happening, returns true
+ *              if the event will happen based on the generation of a random
+ *              # from 1 to 100.
+ *
+ * Inputs: uint - percent chance for the event to occur
+ * Output: bool - true if the event occured.
+ */
 bool chanceHappens(uint percent_chance)
 {
-  uint random = randInt(1, 100);
+  uint random = randUniform(1, 100);
 
   if (random <= percent_chance)
       return true;
@@ -16,10 +31,10 @@ bool chanceHappens(uint percent_chance)
 }
 
 /*
- * Description:
+ * Description: Flips a coin and returns the result.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: bool - state of the coin flip.
  */
 bool flipCoin()
 {
@@ -27,21 +42,43 @@ bool flipCoin()
 }
 
 /*
- * Description:
+ * Description: Returns a random direction
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: EnumDb::Direction - randomly generated direction
  */
-uint randInt(uint min, uint max)
+EnumDb::Direction randomDirection()
 {
-  return min + (qrand() % (max + 1));
+  int random_num = randInt(4);
+
+  if (random_num == 0)
+    return EnumDb::NORTH;
+  if (random_num == 1)
+    return EnumDb::EAST;
+  if (random_num == 2)
+    return EnumDb::SOUTH;
+  if (random_num == 3)
+    return EnumDb::WEST;
+
+  return (EnumDb::Direction)0;
 }
 
 /*
- * Description:
+ * Description: Randomly genreates an integer from 0 to max, exclusive.
  *
- * Inputs:
- * Output:
+ * Inputs: max - upper bound of number distribution (max will not be reached)
+ * Output: int - randomly generated number from 1 to max - 1.
+ */
+int randInt(int max)
+{
+  return qrand() % max;
+}
+
+/*
+ * Description: Generates a 64-bit random integer
+ *
+ * Inputs: none
+ * Output: quint64 - randomly generated 64-bit number
  */
 quint64 randInt64()
 {
@@ -51,17 +88,19 @@ quint64 randInt64()
 }
 
 /*
- * Description:
+ * Description: Generates a 64-bit random integer with a lower to an
+ *              upper boundary.
  *
- * Inputs:
- * Output:
+ * Inputs: quint64 - minimum bound for generated number
+ *         quint64 - maximum bound for generated number
+ * Output: quint64 - randomly generated 64-bit number
  */
 quint64 randInt64(quint64 min, quint64 max)
 {
   quint64 difference = max - min;
 
   if (difference < std::numeric_limits<quint32>::max())
-    return randInt((uint)min, (uint)max);
+    return randUniform((uint)min, (uint)max);
 
   quint64 rlow  = qrand();
   quint64 rhigh = qrand();
@@ -77,21 +116,28 @@ quint64 randInt64(quint64 min, quint64 max)
 }
 
 /*
- * Description:
+ * Description: Genrates a random number from a to b inclusive with uniform
+ *              distribution.
  *
- * Inputs:
- * Output:
+ * Note [1]: a or b can be either min or max
+ *
+ * Inputs: a - first bound
+ *         b - other bound
+ * Output: int - uniform distributed random number from a to b
  */
 int randUniform(int a, int b)
 {
-  return 0; //TODO
+    int min = std::min(a, b);
+    int max = std::max(a, b);
+
+    return (qrand() % (max - min + 1)) + min;
 }
 
 /*
- * Description:
+ * Description: Simulates the rolling of a 6-sided die and returns the roll
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: int - randomly generated # from [1-6]
  */
 int rollD6()
 {
@@ -99,10 +145,10 @@ int rollD6()
 }
 
 /*
- * Description:
+ * Description: Simulates the rolling of a 10-sided die and returns the roll
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: int - randomly generated # from [1-10]
  */
 int rollD10()
 {
@@ -110,10 +156,10 @@ int rollD10()
 }
 
 /*
- * Description:
+ * Description: Simulates the rolling of a 20-sided die and returns the roll
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: int - randomly generated # from [1-20]
  */
 int rollD20()
 {
@@ -121,12 +167,54 @@ int rollD20()
 }
 
 /*
- * Description:
+ * Description: Simulates the rolling of a 100-sided die and returns the roll
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: int - randomly generated # from [1-100]
  */
 int rollD100()
 {
   return (qrand() % 100) + 1;
+}
+
+/*
+ * Description: Reseeds the random number generator with a new seed based
+ *              on the current time.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void seed()
+{
+  QTime midnight(0, 0, 0);
+  qsrand(midnight.secsTo(QTime::currentTime()));
+}
+
+/*============================================================================
+ * OTHER FUNCTIONS
+ *===========================================================================*/
+
+/*
+ * Description: This functions computes an exponentially growing table from
+ *              min to max with iter iterations.
+ *
+ * Inputs: min  - the starting value
+ *         max  - the ending value
+ *         iter - the # of iterations of the table
+ * Output: QVector<int> - the QVector containing the generated table
+ */
+QVector<int> buildExponentialTable(int min, int max, int iter)
+{
+  QVector<int> table;
+  double b = log((double)max / min) / (iter - 1);
+  double a = (double)min / (exp(b) - 1.0);
+
+  for  (int i = 1; i < iter; i++)
+  {
+    int old_value = round(a * exp(b * (i - 1)));
+    int new_value = round(a * exp(b * i));
+    table.push_back(new_value - old_value);
+  }
+
+  return table;
 }

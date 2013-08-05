@@ -69,6 +69,18 @@ Race::~Race() {}
  *===========================================================================*/
 
 /*
+ * Description: Adds an immunity to the list of immunities.
+ *
+ * Inputs: EnumDb::Inflictio - the type of Immunity to be added
+ * Output: none
+ */
+void Race::addImmunity(EnumDb::Infliction new_immunity)
+{
+  if (!isImmune(new_immunity))
+    immunities.append(new_immunity);
+}
+
+/*
  * Description: Cleans up the skill vector by calling its clean up function,
  *              and also ensures all the maximum attribute values are within
  *              the limits specified by the consts
@@ -95,6 +107,35 @@ void Race::cleanUp()
 }
 
 /*
+ * Description: Evaluates whether the race is immune to a given Infliction
+ *
+ * Inputs: EnumDb::Infliction - the immunity to be checked for
+ * Output: bool - true if the category is immune to the infliction
+ */
+bool Race::isImmune(EnumDb::Infliction check_immunity)
+{
+  QList<EnumDb::Infliction>::iterator it;
+  for (it = immunities.begin(); it < immunities.end(); ++it)
+      if ((*it) == check_immunity)
+        return true;
+  return false;
+}
+
+/*
+ * Description: Removes an immunity for the list if it is found.
+ *
+ * Inputs: EnumDb::Infliction - the immunity to be removed.
+ * Output: none
+ */
+void Race::removeImmunity(EnumDb::Infliction remove_immunity)
+{
+ QList<EnumDb::Infliction>::iterator it;
+ for (it = immunities.begin(); it < immunities.end(); ++it)
+     if ((*it) == remove_immunity)
+       immunities.erase(it);
+}
+
+/*
  * Description: Prints out the info of the Race
  *
  * Inputs: none
@@ -117,6 +158,17 @@ void Race::printInfo()
 QString Race::getDescription()
 {
   return description;
+}
+
+/*
+ * Description: Returns the denonym of the Race
+ *
+ * Inputs: none
+ * Output: QString - denonym of the Race
+ */
+QString Race::getDenonym()
+{
+  return denonym;
 }
 
 /*
@@ -153,7 +205,7 @@ SkillSet* Race::getSkillSet()
 }
 
 /*
- * Description: Sets the Race bonus value of the thermal attack stat
+ * Description: Set the description of the Race
  *
  * Inputs: QString - string of the Race description
  * Output: none
@@ -161,6 +213,17 @@ SkillSet* Race::getSkillSet()
 void Race::setDescription(QString new_description)
 {
   description = new_description;
+}
+
+/*
+ * Description: Sets the denonym of the Race
+ *
+ * Inputs: QString - new race denonym string
+ * Output: none
+ */
+void Race::setDenonym(QString new_denonym)
+{
+  denonym = new_denonym;
 }
 
 /*

@@ -10,6 +10,7 @@
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
+#include <vector>
 #include <QCloseEvent>
 #include <QDesktopWidget>
 #include <QLayout>

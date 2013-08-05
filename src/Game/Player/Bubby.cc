@@ -10,7 +10,7 @@
 /*=============================================================================
  * CONSTANTS
  *============================================================================*/
-QVector<uint> Bubby::exp_table;
+QVector<int> Bubby::exp_table;
 
 const ushort Bubby::kTIER1_LVL    =       9;
 const ushort Bubby::kTIER2_LVL    =      19;
@@ -43,7 +43,7 @@ Bubby::Bubby(BubbyFlavour* type)
 {
   /* Build the experience table the first time a Bubby is created */
   if (exp_table.isEmpty())
-    calcExpTable();
+    exp_table = buildExponentialTable(kMIN_LVL_EXP, kMAX_LVL_EXP, kLEVEL_CAP);
 
   updateTierSprite();
   calcNewValue();
@@ -57,24 +57,6 @@ Bubby::~Bubby() {}
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
-
-/*
- * Description: Calculates and builds the experience table for a person
- *
- * Inputs: none
- * Output: none
- */
-void Bubby::calcExpTable()
-{
-  double b = log((double)kMAX_LVL_EXP / kMIN_LVL_EXP) / (kLEVEL_CAP - 1);
-  double a = (double)kMIN_LVL_EXP / (exp(b) - 1.0);
-  for (uint i = 1; i <= kLEVEL_CAP + 1; i++)
-  {
-    int old_exp = round(a * exp(b * (i - 1)));
-    int new_exp = round(a * exp(b * i));
-    exp_table.push_back(new_exp - old_exp);
-  }
-}
 
 /*
  * Description: Calculate and set a new value for the Bubby on level up. The

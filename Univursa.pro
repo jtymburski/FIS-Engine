@@ -10,7 +10,7 @@ CONFIG += qt
 DESTDIR = ./bin
 win32 {
   LIBS += -lmingw32 -l SDLmain
-  win32:QMAKE_CXX_FLAGS_WARN_ON += -Wextra
+  win32:QMAKE_CXX_FLAGS_WARN_ON += -Wall
 }
 LIBS += -lSDL -lSDL_mixer
 unix:LIBS += -lGLU

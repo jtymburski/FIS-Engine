@@ -34,11 +34,14 @@ public:
 private:
   /* Name & description */
   QString description;
+  QString denonym;
   QString name;
 
   /* Set of attributes and skills for the category */
   AttributeSet stat_set;
   SkillSet* skill_set;
+
+  QList<EnumDb::Infliction> immunities;
 
   /* ------------ Constants --------------- */
   static const ushort kMAX_VITALITY;
@@ -51,14 +54,24 @@ private:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Adds an immunity */
+  void addImmunity(EnumDb::Infliction new_immunity);
+
   /* Cleans up the attributes and stat set */
   void cleanUp();
+
+  /* Checks the Immunity of the Category to a given Infliction */
+  bool isImmune(EnumDb::Infliction check_immunity);
+
+  /* Removes an immunity from the category */
+  void removeImmunity(EnumDb::Infliction remove_immunity);
 
   /* Method for printing out the information of the category */
   void printInfo();
 
   /* Gets the description & name */
   QString getDescription();
+  QString getDenonym();
   QString getName();
 
   /* Returns the attribute and skill sets */
@@ -67,6 +80,7 @@ public:
 
   /* Sets the description & name */
   void setDescription(QString new_description);
+  void setDenonym(QString new_denonym);
   void setName(QString new_name);
 
   /* Sets the skill set for the category */

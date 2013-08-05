@@ -21,6 +21,7 @@ public:
                     METABOLICTETHER,
                     METABOLICDMG,
                     DEATHCOUNTDOWN,
+                    BONDDEATH,
                     UNKNOWN };
 
   enum ApplicationMode { TITLESCREEN,
@@ -124,7 +125,7 @@ public:
                     CURSE,
                     METATETHER,
                     STUBULATE,
-                    NOAILMENT };
+                    NOAILMENT, };
 
   /*
    * Description: Ranks the Player may have
