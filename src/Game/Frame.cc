@@ -105,6 +105,39 @@ bool Frame::flipImage(bool horizontal, bool vertical)
 }
 
 /* 
+ * Description: Gets image stored in this node
+ *
+ * Inputs: none
+ * Output: QPixmap - Returns a QPixmap initialized with the stored picture
+ */
+QPixmap Frame::getImage()
+{
+  return image;
+}
+
+/* 
+ * Description: Gets next frame pointed to by this node
+ *
+ * Inputs: none
+ * Output: Frame* - pointer to next node
+ */
+Frame* Frame::getNext()
+{
+  return next;
+}
+
+/* 
+ * Description: Gets previous frame pointed to by this node
+ *
+ * Inputs: none
+ * Output: Frame* - pointer to previous node
+ */
+Frame* Frame::getPrevious()
+{
+  return previous;
+}
+
+/* 
  * Description: Initializes GL functionality. This must be called anytime
  *              the image data is changed or when the class is first created
  *              to initialize the image data. Once this is complete, paintGl()
@@ -154,39 +187,6 @@ bool Frame::initializeGl()
 bool Frame::isImageSet()
 {
   return image_set;
-}
-
-/* 
- * Description: Gets image stored in this node
- *
- * Inputs: none
- * Output: QPixmap - Returns a QPixmap initialized with the stored picture
- */
-QPixmap Frame::getImage()
-{
-  return image;
-}
-
-/* 
- * Description: Gets next frame pointed to by this node
- *
- * Inputs: none
- * Output: Frame* - pointer to next node
- */
-Frame* Frame::getNext()
-{
-  return next;
-}
-
-/* 
- * Description: Gets previous frame pointed to by this node
- *
- * Inputs: none
- * Output: Frame* - pointer to previous node
- */
-Frame* Frame::getPrevious()
-{
-  return previous;
 }
 
 /* 

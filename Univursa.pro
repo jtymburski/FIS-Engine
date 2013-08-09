@@ -40,6 +40,7 @@ SOURCES += \
     ./src/Game/Battle/AllyStatusBar.cc \
     ./src/Game/Map/Map.cc \
     ./src/Game/Map/MapBubby.cc \
+    ./src/Game/Map/MapDialog.cc \
     ./src/Game/Map/MapEquipment.cc \
     ./src/Game/Map/MapFoliage.cc \
     ./src/Game/Map/MapInteractiveObject.cc \
@@ -98,6 +99,7 @@ HEADERS += \
     ./include/Game/Battle/AllyStatusBar.h \
     ./include/Game/Map/Map.h \
     ./include/Game/Map/MapBubby.h \
+    ./include/Game/Map/MapDialog.h \
     ./include/Game/Map/MapEquipment.h \
     ./include/Game/Map/MapFoliage.h \
     ./include/Game/Map/MapInteractiveObject.h \

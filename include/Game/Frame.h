@@ -37,7 +37,7 @@ public:
 
   /* Destructor function */
   ~Frame();
-
+  
 private:
   /* The image for this frame */
   QPixmap image;
@@ -60,12 +60,6 @@ public:
   /* Flips the image inside the frame */
   bool flipImage(bool horizontal = true, bool vertical = false);
 
-  /* Initializes GL for this class. Called before painting */
-  bool initializeGl();
-
-  /* Returns if an image is set */
-  bool isImageSet();
-
   /* Get stored image */
   QPixmap getImage();
 
@@ -75,6 +69,12 @@ public:
   /* Get previous frame */
   Frame* getPrevious();
 
+  /* Initializes GL for this class. Called before painting */
+  bool initializeGl();
+
+  /* Returns if an image is set */
+  bool isImageSet();
+  
   /* Draws the frame in OpenGL, if the appropriate flags are set */
   bool paintGl(float x, float y, int width, int height, float opacity);
 

@@ -18,7 +18,7 @@ const int Map::kFILE_SECTION_ID = 2;
 const int Map::kFILE_TILE_COLUMN = 5;
 const int Map::kFILE_TILE_ROW = 4;
 const short Map::kPLAYER_INDEX = 0;
-const int Map::kTICK_DELAY = 1;
+const int Map::kTICK_DELAY = 0;
 const int Map::kTILE_HEIGHT = 64;
 const int Map::kTILE_WIDTH = 64;
 const int Map::kVIEWPORT_HEIGHT = 11;
@@ -53,6 +53,9 @@ Map::Map(const QGLFormat & format, short viewport_width,
   thing = 0;
 
   //setMinimumSize(2000, 2000);
+
+  /* Set up the map displays */
+  //map_dialog.setDialogImage("sprites/menu_test.png");//Map/Overlay/dialog.png");
 
   /* Setup the viewport */
   viewport = new MapViewport(viewport_width, viewport_height, 
@@ -201,6 +204,9 @@ void Map::animate(short time_since_last)
       persons[i]->updateThing(time_since_last, next_tile);
     }
   }
+
+  /* Animate the displays on the screen */
+  map_dialog.update(time_since_last);
 }
 
 void Map::initializeGL()
@@ -245,6 +251,10 @@ void Map::keyPressEvent(QKeyEvent* key_event)
   }
   else if(key_event->key() == Qt::Key_3)
     viewport->lockOn(609, 353);
+  else if(key_event->key() == Qt::Key_4)
+    map_dialog.initDialog();
+  else if(key_event->key() == Qt::Key_5)
+    map_dialog.haltDialog();
   else if(persons.size() >= 3 && key_event->key() == Qt::Key_7)
     ((MapNPC*)persons[2])->setNodeState(MapNPC::LOOPED);
   else if(persons.size() >= 3 && key_event->key() == Qt::Key_8)
@@ -274,8 +284,8 @@ void Map::paintGL()
   QTime time;
   time.start();
   
-  /* Swap the buffers from the last call */
-  swapBuffers();
+  /* Swap the buffers from the last call - put it on top or bottom? */
+  //swapBuffers();
   //qDebug() << "1: " << time.elapsed();
 
   /* Start by setting the context and clearing the screen buffers */
@@ -308,6 +318,9 @@ void Map::paintGL()
     for(int i = viewport->getXTileStart(); i < viewport->getXTileEnd(); i++)
       for(int j = viewport->getYTileStart(); j < viewport->getYTileEnd(); j++)
         geography[i][j]->paintUpper(viewport->getX(), viewport->getY());
+
+    /* Paint the dialog */
+    map_dialog.paintGl();
   }
 
   /* Paint the frame rate */
@@ -343,8 +356,9 @@ void Map::paintGL()
   }
   frames++;
 
-  /* Finish by restarting the timer to update the map again */
-  //swapBuffers();
+  /* Finish by swapping the buffers and then restarting the timer to update 
+   * the map again */
+  swapBuffers();
   //update();
   timer.start(kTICK_DELAY);
   //qDebug() << "2: " << time.elapsed();
@@ -567,6 +581,9 @@ bool Map::loadMap(QString file)
       if(player != 0)
         viewport->lockOn(player);
     }
+
+    /* Set up the map displays */
+    map_dialog.setDialogImage("sprites/Map/Overlay/dialog.png");
 
     for(int i = 0; i < geography.size(); i++)
       for(int j = 0; j < geography[i].size(); j++)

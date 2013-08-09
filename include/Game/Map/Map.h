@@ -10,10 +10,10 @@
 #ifndef MAP_H
 #define MAP_H
 
-#include <QDebug>
-//#include <QGraphicsScene>
+//#include <QDebug>
 #include <QGLWidget>
 
+#include "Game/Map/MapDialog.h"
 #include "Game/Map/MapNPC.h"
 #include "Game/Map/MapMenu.h"
 #include "Game/Map/MapStatusBar.h"
@@ -47,7 +47,8 @@ private:
   /* Indication if the map has been loaded */
   bool loaded;
 
-  /* The menu on the map */
+  /* The menus and dialogs on top of the map */
+  MapDialog map_dialog;
   MapMenu map_menu;
 
   /* The status bar on the map */
@@ -62,11 +63,8 @@ private:
   QList<Sector> sectors;
 
   /* The time that has elapsed for each draw cycle */
-  double time_buffer;
   QTime time_elapsed;
-
-  /* The timer for handling the tick (temporary?) */
-  QTimer timer;
+  QTimer timer; // TODO: Move up, the tick
 
   /* The viewport for the map, controlled by QGraphicsView */
   MapViewport* viewport;

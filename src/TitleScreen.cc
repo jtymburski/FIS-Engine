@@ -10,7 +10,7 @@
 const int     TitleScreen::kNUM_MENU_ITEMS = 3;
 // TODO: Fixed your error [08-04-13]
 const QString TitleScreen::kMENU_ITEMS[]   = {"(> \" )> (> \" )> (> \" )> Kevin Likes Cocks <( \" <) <( \" <) <( \" <)",
-                                              "Battle Test", 
+                                              "Mike knows first hand ;p", 
                                               "Exit"};
 
 /*============================================================================
