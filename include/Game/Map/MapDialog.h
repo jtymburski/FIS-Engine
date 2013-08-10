@@ -61,6 +61,14 @@ private:
     dialog box */
 //  QRect leftbox, rightbox, midbox;
 
+  /* The display npc that gets shown during the conversation */
+  Frame npc_display;
+  QString npc_name;
+
+  /* The display person that gets shown during the conversation */
+  Frame person_display;
+  QString person_name;
+
   /* The bounding box for the popout at the top right of screen (On bubby
     pickup for example) */
 //  QRect popoutbox;
@@ -102,13 +110,21 @@ public:
 //  void initPopout (QImage* img, QString* dialog);
 
   /* Paint call, that paints the dialog */
-  bool paintGl();
+  bool paintGl(QGLWidget* painter);
 
   /* Proceeds in the conversation, enter key triggers this */
 //  void proceed();
 
   /* Sets the dialog image within the class, for conversation display */
   bool setDialogImage(QString path);
+
+  /* Sets the npc display information, for conversations */
+  bool setNpcDisplay(QString path);
+  void setNpcName(QString name);
+
+  /* Sets the person display information, for conversations */
+  bool setPersonDisplay(QString path);
+  void setPersonName(QString name);
 
   /* Updates the dialog, based on an elapsed time */
   void update(float cycle_time);

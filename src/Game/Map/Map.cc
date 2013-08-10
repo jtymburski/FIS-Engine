@@ -261,6 +261,21 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     ((MapNPC*)persons[2])->setNodeState(MapNPC::BACKANDFORTH);
   else if(persons.size() >= 3 && key_event->key() == Qt::Key_9)
     ((MapNPC*)persons[2])->setNodeState(MapNPC::LOCKED);
+  else if(key_event->key() == Qt::Key_F1)
+  {
+    map_dialog.setPersonDisplay("sprites/Battle/Battle_Persons/ulterius.png");
+    map_dialog.setPersonName("Ulterius");
+  }
+  else if(key_event->key() == Qt::Key_F2)
+  {
+    map_dialog.setPersonDisplay("sprites/Battle/Battle_Persons/peltrance.png");
+    map_dialog.setPersonName("Peltrance");
+  }
+  else if(key_event->key() == Qt::Key_F3)
+  {
+    map_dialog.setPersonDisplay("sprites/Battle/Battle_Persons/arcadius.png");
+    map_dialog.setPersonName("Arcadius");
+  }
 }
 
 void Map::keyReleaseEvent(QKeyEvent* key_event)
@@ -320,7 +335,7 @@ void Map::paintGL()
         geography[i][j]->paintUpper(viewport->getX(), viewport->getY());
 
     /* Paint the dialog */
-    map_dialog.paintGl();
+    map_dialog.paintGl(this);
   }
 
   /* Paint the frame rate */
@@ -584,6 +599,8 @@ bool Map::loadMap(QString file)
 
     /* Set up the map displays */
     map_dialog.setDialogImage("sprites/Map/Overlay/dialog.png");
+    map_dialog.setPersonDisplay("sprites/Battle/Battle_Persons/osborn.png");
+    map_dialog.setPersonName("Osborn");
 
     for(int i = 0; i < geography.size(); i++)
       for(int j = 0; j < geography[i].size(); j++)
