@@ -46,7 +46,7 @@ void Action::setAilment(QString new_ailment)
  *
  * Notes: Language Syntax Below:
  *
- * [AILMENT ID],[LOWER/UPPER/GIVE/TAKE],[STATISTIC/AILMENT],
+ * [ACTION ID],[LOWER/UPPER/GIVE/TAKE],[STATISTIC/AILMENT],
  * [MIN DURATION].[MAX DURATION],[IGNORE ATK],[IGNORE ATK ELM 1]...,
  * [IGNORE DEF],[IGNORE DEF ELM 1]...,[BASECHANGE],[VARIANCE];
  *

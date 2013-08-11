@@ -254,6 +254,17 @@ QString Item::getName()
 }
 
 /*
+ * Description: Returns the prefix of the item
+ *
+ * Inputs: QString - prefix of the item
+ * Output: none
+ */
+QString Item::getPrefix()
+{
+  return prefix;
+}
+
+/*
  * Description: Returns the SkillSet the item can unlock
  *
  * Inputs: none
@@ -426,12 +437,23 @@ void Item::setMass(double new_mass)
 /*
  * Description: Assigns a name to the item
  *
- * Input: QString name - name of the item to be assigned
+ * Input: QString new_name - name of the item to be assigned
  * Output: none
  */
 void Item::setName(QString new_name)
 {
   name = new_name;
+}
+
+/*
+ * Description: Assigns a new prefix to the item
+ *
+ * Input:  QString new_prefix - the new prefix to be assigned
+ * Output: none
+ */
+void Item::setPrefix(QString new_prefix)
+{
+  prefix = new_prefix;
 }
 
 /*

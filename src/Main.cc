@@ -16,6 +16,9 @@
 
 int main(int argc, char *argv[])
 {
+  /* Seed the Random # Generator */
+  seed();
+
   /* Testing code for file handler */
   bool done = false;
   bool success = true;

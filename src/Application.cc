@@ -199,7 +199,9 @@ void Application::setupBattle()
   Sprite* ulterius_ally  = new Sprite(":/A_ulterius");
   Sprite* aurumba_ally   = new Sprite(":/A_auruba");
 
-  Sprite* cloud_enemy = new Sprite(":/E_cloud_thing");
+  Sprite* cloud_enemy256 = new Sprite(":/raven256");
+  Sprite* cloud_enemy512 = new Sprite(":/raven1024");
+  Sprite* cloud_enemy1024 = new Sprite(":/raven1024");
   //Sprite* arcadius_enemy = new Sprite(":/E_arcadius");
   //Sprite* ulterius_enemy = new Sprite(":/E_ulterius");
   //Sprite* abbotmalus_enemy = new Sprite(":/E_abbotmalus");
@@ -238,6 +240,7 @@ void Application::setupBattle()
 
   /* Person Setup */
 
+
   /* Test Party */
   Person* malgidus = new Person("Malgidus", bears, bloodclaw,  "THA", "PRB");
   malgidus->setFirstPerson(main_ally);
@@ -257,32 +260,24 @@ void Application::setupBattle()
   /* Test Foes */
   Person* cloud_foe
           = new Person("Cloud Dude 1", base_enemies, cloud_dudes, "PRB", "POC");
-  cloud_foe->setThirdPerson(cloud_enemy);
+  cloud_foe->setThirdPerson(cloud_enemy256);
 
   Person* cloud_foe2
           = new Person("Cloud Dude 1", base_enemies, cloud_dudes, "PRB", "POC");
-  cloud_foe2->setThirdPerson(cloud_enemy);
+  cloud_foe2->setThirdPerson(cloud_enemy512);
 
   Person* cloud_foe3
           = new Person("Cloud Dude 1", base_enemies, cloud_dudes, "PRB", "POC");
-  cloud_foe3->setThirdPerson(cloud_enemy);
-
-  Person* cloud_foe4
-          = new Person("Cloud Dude 1", base_enemies, cloud_dudes, "PRB", "POC");
-  cloud_foe4->setThirdPerson(cloud_enemy);
-
-  Person* cloud_foe5
-          = new Person("Cloud Dude 1", base_enemies, cloud_dudes, "PRB", "POC");
-  cloud_foe5->setThirdPerson(cloud_enemy);
+  cloud_foe3->setThirdPerson(cloud_enemy1024);
 
   /* Party Setup */
 
   /* Main Party Setup */
   Party* friends = new Party(malgidus, 0, EnumDb::SLEUTH);
-  friends->addMember(artemis);
-  friends->addMember(yolo);
-  friends->addMember(helga);
-  friends->addMember(gertrude);
+ // friends->addMember(artemis);
+ // friends->addMember(yolo);
+ // friends->addMember(helga);
+  //friends->addMember(gertrude);
 
   /* if (friends->removeMember("Artemis"))
       qDebug() << "Removing Artemis";
@@ -299,19 +294,28 @@ void Application::setupBattle()
   Party* foes = new Party(cloud_foe, 0, EnumDb::REGULAR_FOE);
   foes->addMember(cloud_foe2);
   foes->addMember(cloud_foe3);
-  foes->addMember(cloud_foe4);
-  foes->addMember(cloud_foe5);
+
+  for (int x = 1; x < 75; x++)
+    qDebug() << x << " : " << orderedInt(x);
+
+
+  //for (int i = 0; i < 10000; i++)
+ // {
+  //  randoms.push_back(randInt(100));
+  //  double_rands.push_back(randInt());
+  //}
 
   qDebug() << "=========================================";
-
+  //for (int i = 0; i < randoms.size(); i++)
+  //    qDebug() << double_rands.at(i);
 
   qDebug() << "=========================================";
 
   /* Item Setup */
-  Item* potion = new Item("Potion", 15, 0, 1.15);
-  Item* saber = new Item("Fated Oak Saber", 1, 0, 0.75);
-  saber->setDescription("Awesome sauce");
-  saber->setItemFlag(Item::WOOD, true);
+  //Item* potion = new Item("Potion", 15, 0, 1.15);
+  //Item* saber = new Item("Fated Oak Saber", 1, 0, 0.75);
+  //saber->setDescription("Awesome sauce");
+  //saber->setItemFlag(Item::WOOD, true);
 
   //potion->setDescription("This item will do some magical healing for you.");
   //potion->setUsingMessage("WHY ARE YOU USING ME");
