@@ -94,6 +94,9 @@ protected:
   /* Name of the item */
   QString name;
 
+  /* Item Prefix [ex. "bottles" or "bunch" or "suit"] */
+  QString prefix;
+
   /* SkillSet which can be gathered for the item */
   SkillSet* action_set;
   SkillSet* skill_set;
@@ -156,6 +159,9 @@ public:
   /* Returns the name of the item */
   QString getName();
 
+  /* Returns the prefix of the item */
+  QString getPrefix();
+
   /* Returns the SkillSet of the item */
   SkillSet* getSkillSet();
 
@@ -197,6 +203,9 @@ public:
 
   /* Assigns the name of the item */
   void setName(QString new_name);
+
+  /* Assigns a new prefix to the item */
+  void setPrefix(QString new_prefix);
 
   /* Assigns a skill set to the item */
   void setSkillSet(SkillSet* new_skill_set);

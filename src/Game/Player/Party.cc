@@ -162,6 +162,7 @@ bool Party::useItem(Item *used_item, ushort target)
   /* Assert the person can use items and the item is menu-usable */
   if (members[target]->getPersonFlag(Person::CANUSEITEM));
     return false;
+
   if (!used_item->getItemFlag(Item::MENUREADY))
     return false;
   if (target > getMaxSize())

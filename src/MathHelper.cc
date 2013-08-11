@@ -57,10 +57,8 @@ EnumDb::Direction randomDirection()
     return EnumDb::EAST;
   if (random_num == 2)
     return EnumDb::SOUTH;
-  if (random_num == 3)
-    return EnumDb::WEST;
 
-  return (EnumDb::Direction)0;
+  return EnumDb::WEST;
 }
 
 /*

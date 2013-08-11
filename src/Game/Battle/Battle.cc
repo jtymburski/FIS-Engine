@@ -80,8 +80,6 @@
  */
 Battle::Battle(Party* friends, Party* foes, QWidget* parent) : QWidget(parent)
 {
-
-
   /* Pointer setup */
   setFriends(friends);
   setFoes(foes);
@@ -101,9 +99,8 @@ Battle::Battle(Party* friends, Party* foes, QWidget* parent) : QWidget(parent)
   setMaxHeight(704);
   setFixedSize(getMaxWidth(), getMaxHeight());
   battle_bg = new QPixmap();
-  battle_bg->load(":/bbd_sewers");
+  battle_bg->load("");
   battle_status_bar_image = new QPixmap();
-  battle_status_bar_image->load(":/statusbar");
 
   /* Set up each friend's and each foe's temporary statistics */
   for (uint i = 0; i < friends->getPartySize(); i++)
@@ -114,8 +111,8 @@ Battle::Battle(Party* friends, Party* foes, QWidget* parent) : QWidget(parent)
   /* Create and place enemy & ally bounding boxes */
   uint left_d   = floor(0.1290 * getMaxHeight());
   uint top_d    = floor(0.1464 * getMaxHeight());
-  uint enemy_w  = floor(0.2105 * getMaxWidth());
-  uint enemy_h  = enemy_w;
+  uint enemy_w  = 256;//floor(0.2105 * getMaxWidth());
+  uint enemy_h  = 256;//enemy_w;
   uint spacing  = floor(0.0226 * getMaxWidth());
   uint atop_d   = floor(0.5200 * getMaxHeight());
   uint ally_w   = floor(0.2100 * getMaxWidth());
@@ -156,7 +153,6 @@ Battle::Battle(Party* friends, Party* foes, QWidget* parent) : QWidget(parent)
   /* Battle extra bar set up */
   bar_width  = 1 - (getMaxWidth() * bar_width);
   extra_box = new QRect(0, getMaxHeight() - bar_height, bar_width, bar_height);
-  // TODO: Create an extra bar [02-24-13]
 
   paintAll();
 
@@ -238,21 +234,20 @@ Battle::~Battle()
  */
 void Battle::paintEvent(QPaintEvent*)
 {
-  /* Preparation
   QPainter painter(this);
   painter.setPen(QColor(Qt::black));
   painter.setBrush(QColor(Qt::black));
   painter.setOpacity(1.00);
 
-  Paint the current backdrop
   painter.drawPixmap(0,0,getMaxWidth(),getMaxHeight(),*battle_bg);
-
-  Draw sprites for allies and foes (if they exist)
   painter.setOpacity(1.0);
   Person* p = friends->getMember(0);
   painter.drawPixmap(*ally_box[1],p->getFirstPerson()->getCurrent());
+
+
   p = foes->getMember(0);
   painter.drawPixmap(*enemy_box[3],p->getThirdPerson()->getCurrent());
+
   if (friends->getPartySize() > 1)
   {
       p = friends->getMember(1);
@@ -263,25 +258,27 @@ void Battle::paintEvent(QPaintEvent*)
       p = foes->getMember(1);
       painter.drawPixmap(*enemy_box[4],p->getFirstPerson()->getCurrent());
   }
+
+  /*
   for (uint i = 2; i < friends->getPartySize(); i++)
   {
       p = friends->getMember(i);
       painter.drawPixmap(*ally_box[i],p->getFirstPerson()->getCurrent());
-  }
-  for (uint i = 2; i < foes->getPartySize(); i++)
-  {
-      p = foes->getMember(i);
-      ushort index = foes->getMaxSize() - i - 1;
-      painter.drawPixmap(*enemy_box[index],p->getFirstPerson()->getCurrent());
-  }
-  painter.drawPixmap(0,getMaxHeight() * 0.8181,*battle_status_bar_image);
+  }*/
 
-  Paint drawings for info,status,extra bars
+  painter.setRenderHints(QPainter::SmoothPixmapTransform, true);
+
+  p = foes->getMember(1);
+  painter.drawPixmap(*enemy_box[1], p->getThirdPerson()->getCurrent());
+  p = foes->getMember(2);
+  painter.drawPixmap(*enemy_box[2],p->getThirdPerson()->getCurrent());
+
+
+
+  painter.drawPixmap(0,getMaxHeight() * 0.8181, *battle_status_bar_image);
   painter.setOpacity(0.70); //TODO: Get opacity form somewhere [02-23-13]
   painter.drawRect(*info_box);
-
-  Temp painting of status bar bounding box
-  painter.setOpacity(0.70); */
+  painter.setOpacity(0.70);
 }
 
 /*

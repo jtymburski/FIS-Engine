@@ -23,6 +23,7 @@
 #include "Game/Battle/Battle.h"
 #include "Game/Player/Action.h"
 #include "MathHelper.h"
+#include "GrammarHelper.h"
 
 class Application : public QStackedWidget
 {

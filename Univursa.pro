@@ -72,7 +72,8 @@ SOURCES += \
     ./src/Game/Player/Race.cc \
     ./src/Game/Player/Signature.cc \
     ./src/Game/Player/Skill.cc \
-    ./src/MathHelper.cc
+    ./src/MathHelper.cc \
+    ./src/GrammarHelper.cc
 
 HEADERS += \
     ./include/Application.h \
@@ -131,6 +132,7 @@ HEADERS += \
     ./include/Game/Player/Race.h \
     ./include/Game/Player/Skill.h \
     ./include/Game/Player/Signature.h \
-    ./include/MathHelper.h
+    ./include/MathHelper.h \
+    ./include/GrammarHelper.h
 
 INCLUDEPATH += ./include
