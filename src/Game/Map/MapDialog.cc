@@ -8,6 +8,12 @@
 #include "Game/Map/MapDialog.h"
 
 /* Constant Implementation - see header file for descriptions */
+const short MapDialog::kFONT_SIZE = 12;
+const short MapDialog::kFONT_SPACING = 10;
+const short MapDialog::kMARGIN_SIDES = 50;
+const short MapDialog::kMARGIN_TOP = 25;
+const short MapDialog::kMSEC_PER_WORD = 333;
+const short MapDialog::kPIXELS_PER_100MS = 30;
 const short MapDialog::kSHIFT_TIME = 750;
 
 /*============================================================================
@@ -15,18 +21,45 @@ const short MapDialog::kSHIFT_TIME = 750;
  *===========================================================================*/
 
 /* Constructor function */
-MapDialog::MapDialog()
-{
+MapDialog::MapDialog(QFont font)
+{ 
   /* Clear some of the initial parameters */
   animation_offset = 0;
+  dialog_mode = DISABLED;
   dialog_status = OFF;
+  display_time = 0;
   npc_name = "";
   person_name = "";
+  
+  setFont(font);
 }
 
 /* Destructor function */
 MapDialog::~MapDialog()
 {
+}
+
+/*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+
+/* Halts the dialog, if it's being shown or showing */
+void MapDialog::initiateAnimation(QFont display_font)
+{
+  animation_offset = 0;
+  dialog_status = SHOWING;
+  QFontMetrics font_info(display_font);
+  
+  if(dialog_mode == CONVERSATION)
+  {
+  
+  }
+  else if(dialog_mode == NOTIFICATION)
+  {
+    animation_height = (display_text.size() - 1)*kFONT_SPACING + 
+                       display_text.size() * font_info.height() +
+                       kFONT_SPACING + kMARGIN_TOP;
+  }
 }
 
 /*============================================================================
@@ -52,6 +85,11 @@ bool MapDialog::haltDialog()
   return false;
 }
 
+bool MapDialog::initConversation(MapPerson* person, MapNPC* npc)
+{
+
+}
+
 /* Sets up a dialog with the initial parameters */
 bool MapDialog::initDialog()//MapPerson* left, MapPerson* right)
 {
@@ -72,6 +110,45 @@ bool MapDialog::initDialog()//MapPerson* left, MapPerson* right)
   return false;
 }
 
+bool MapDialog::initNotification(QString notification, int time_visible, 
+                                                       bool single_line)
+{
+  if(dialog_mode == DISABLED && isDialogImageSet())
+  {
+    dialog_mode = NOTIFICATION;
+    display_font.setPointSize(12);
+    QFontMetrics font_info(display_font);
+    
+    /* Calculate the available space */
+    int available_width = 
+                      dialog_display.getImage().width() - (kMARGIN_SIDES << 1);
+    if(available_width < 0)
+      available_width = 0;
+    
+    /* Chop to single line if required */
+    if(single_line)
+      notification = 
+            font_info.elidedText(notification, Qt::ElideRight, available_width);
+    
+    /* Calculate the display time if invalid */
+    if(time_visible < 0)
+      display_time = ((notification.count(" ") + 1) * kMSEC_PER_WORD) 
+                   + kMSEC_PER_WORD;
+    else
+      display_time = time_visible;
+    
+    /* Split the line */
+    display_text = lineSplitter(notification, available_width, display_font);
+    
+    /* Initiate animation sequence */
+    initiateAnimation(display_font);
+    
+    return true;
+  }
+  
+  return false;
+}
+
 /* Sets up the popout box */
 //void MapStatusBar::initPopout(QImage* img, QString* dialog)
 //{
@@ -79,6 +156,11 @@ bool MapDialog::initDialog()//MapPerson* left, MapPerson* right)
 //    (void)dialog;//warning
 //}
 
+bool MapDialog::isDialogImageSet()
+{
+  return dialog_display.isImageSet();
+}
+  
 bool MapDialog::paintGl(QGLWidget* painter)
 {
   if(dialog_status != OFF)
@@ -86,24 +168,39 @@ bool MapDialog::paintGl(QGLWidget* painter)
     int height = dialog_display.getImage().height();
     int width = dialog_display.getImage().width();
     short x1 = (1216 - width) >> 1;
-    short y1 = (704 - height);
+    short y1 = 704;
 
     /* Paints the conversation dialog */
-    dialog_display.paintGl(x1, y1 + animation_offset, width, height, 1.0);
+    dialog_display.paintGl(x1, y1 - animation_offset, width, height, 1.0);
 
-    if(dialog_status == ON)
+    if(dialog_mode == NOTIFICATION)
     {
-    /* Draw text display background */
-      glColor4f(0.0, 0.0, 0.0, 0.65);
+      QFontMetrics font_info(display_font);
+      short x2 = x1;
+      short y2 = y1 + kMARGIN_TOP + font_info.ascent();
+      
+      for(int i = 0; i < display_text.size(); i++)
+      {
+        x2 = x1 + ((width - font_info.width(display_text[i])) >> 1);
+        painter->renderText(x2, y2 - animation_offset, 
+                            display_text[i], display_font);
+        y2 += font_info.descent() + kFONT_SPACING + font_info.ascent();
+      }
+    }
+    
+/*    if(dialog_status == ON)
+    {
+      /* Draw text display background */
+/*      glColor4f(0.0, 0.0, 0.0, 0.65);
       glBegin(GL_QUADS); /* 42 high, angle at 30, central width based on text */
-        glVertex2f(232.0f, 482.0f);
+/*        glVertex2f(232.0f, 482.0f);
         glVertex2f(442.0f, 482.0f);
         glVertex2f(412.0f, 440.0f);
         glVertex2f(262.0f, 440.0f);
       glEnd();
 
       /* Draw outline */
-      glColor4f(1.0, 1.0, 1.0, 1.0);
+/*      glColor4f(1.0, 1.0, 1.0, 1.0);
       glLineWidth(3);
       glBegin(GL_LINES);
         glVertex2f(412.0f, 440.0f);
@@ -119,7 +216,7 @@ bool MapDialog::paintGl(QGLWidget* painter)
       glEnd();
 
       /* Paints the person near the conversation */
-      short char_height = person_display.getImage().height();
+/*      short char_height = person_display.getImage().height();
       short char_width = person_display.getImage().width();
 
       person_display.paintGl(x1 + width - (char_width >> 1), 
@@ -127,15 +224,28 @@ bool MapDialog::paintGl(QGLWidget* painter)
                              char_width, char_height, 1.0);
 
       /* Paint the text for the name */
-      QFont font;
-      font.setPointSize(14);
-      font.setBold(true);
-      QFontMetrics font_details(font);
+/*      QFont usable_font = display_font;
+      usable_font.setPointSize(14);
+      usable_font.setBold(true);
+      QFontMetrics font_details(usable_font);
+      char_height = font_details.height();
+      char_width = font_details.boundingRect(person_name).width();
       painter->renderText(
-        (412 - 262 - font_details.width(person_name) >> 1) + 262, 
-        (482 - 440 - font_details.height() >> 1) + 440 + (482 - 440 >> 1) - 2, 
-        person_name, font);
-    }
+        (412 - 262 - char_width >> 1) + 262, 
+        (482 - 440 - char_height >> 1) + 440 + font_details.ascent(), 
+        person_name, usable_font);
+        
+      /* Multiple side by side painting - test */
+/*      usable_font.setBold(false);
+      font_details = QFontMetrics(usable_font);
+      painter->renderText(800, 300, "Test Running.", usable_font);
+      painter->renderText(800, 300 + font_details.height(), 
+                          "Test ", usable_font);
+      glColor4f(0.9, 0.2, 0.0, 1.0);
+      usable_font.setUnderline(true);
+      painter->renderText(800 + font_details.width("Test "), 
+                          300 + font_details.height(), "Running.", usable_font);
+    }*/
   }
 }
 
@@ -154,6 +264,16 @@ bool MapDialog::setDialogImage(QString path)
   return false;
 }
 
+/* Sets the rendering font */
+void MapDialog::setFont(QFont font)
+{
+  display_font = font;
+  display_font.setBold(false);
+  display_font.setItalic(false);
+  display_font.setOverline(false);
+  display_font.setUnderline(false);
+}
+  
 bool MapDialog::setNpcDisplay(QString path)
 {
   if(npc_display.setImage(path))
@@ -190,20 +310,88 @@ void MapDialog::update(float cycle_time)
 
   if(dialog_status == HIDING)
   {
-    animation_offset += cycle_time * height / kSHIFT_TIME;
-    if(animation_offset > height)
+    animation_offset -= cycle_time * height / kSHIFT_TIME;
+    if(animation_offset <= 0)
     {
+      dialog_mode = DISABLED;
       dialog_status = OFF;
       animation_offset = 0;
     }
   }
   else if(dialog_status == SHOWING)
   {
-    animation_offset -= cycle_time * height / kSHIFT_TIME;
-    if(animation_offset <= 0)
+    animation_offset += cycle_time * height / kSHIFT_TIME;
+    if(animation_offset >= animation_height)
     {
       dialog_status = ON;
-      animation_offset = 0;
+      animation_offset = animation_height;
     }
   }
+  else if(dialog_status == ON)
+  {
+    if(dialog_mode == NOTIFICATION)
+    {
+      display_time -= cycle_time;
+      if(display_time < 0)
+        dialog_status = HIDING;
+    }
+  }
+}
+
+/*============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *===========================================================================*/
+
+/* Fits a line into a list of lines that are less than the size using the
+ * given parameters */
+QList<QString> MapDialog::lineSplitter(QString line, 
+                                       int line_length, QFont font)
+{
+  /* Initial parameter setup */
+  QFontMetrics font_details(font);
+  int index = 0;
+  QList<QString> line_stack;
+  QString line_str = "";
+  QString temp_str = "";
+  QStringList word_list = line.split(" ");
+  
+  /* Loop through all the words in the line */
+  while(index < word_list.size())
+  {
+    do
+    {
+      /* Try and append the next word */
+      temp_str = line_str;
+      if(!temp_str.isEmpty())
+        temp_str += " ";
+      temp_str += word_list[index];
+      
+      /* If the line is too long, append the previous line */
+      if(font_details.boundingRect(temp_str).width() > line_length)
+      {
+        /* This is for infinite loop checking. If the first word is too long,
+         * append it anyway */
+        if(line_str.isEmpty())
+        {
+          index++;
+          line_str = temp_str;
+        }
+          
+        line_stack.append(line_str);
+        line_str = "";
+      }
+      /* Otherwise, add the next word and increase the line length */
+      else
+      {
+        index++;
+        line_str = temp_str;
+      }
+    } while(!line_str.isEmpty() && index < word_list.size());
+    
+    /* If it ended before filling the line, append the remainder */
+    if(!line_str.isEmpty())
+      line_stack.append(line_str);
+  }
+  
+  return line_stack;
 }

@@ -18,7 +18,7 @@ const int Map::kFILE_SECTION_ID = 2;
 const int Map::kFILE_TILE_COLUMN = 5;
 const int Map::kFILE_TILE_ROW = 4;
 const short Map::kPLAYER_INDEX = 0;
-const int Map::kTICK_DELAY = 0;
+const int Map::kTICK_DELAY = 10;
 const int Map::kTILE_HEIGHT = 64;
 const int Map::kTILE_WIDTH = 64;
 const int Map::kVIEWPORT_HEIGHT = 11;
@@ -55,6 +55,7 @@ Map::Map(const QGLFormat & format, short viewport_width,
   //setMinimumSize(2000, 2000);
 
   /* Set up the map displays */
+  //map_dialog.setFont(QFont("Times", 10));
   //map_dialog.setDialogImage("sprites/menu_test.png");//Map/Overlay/dialog.png");
 
   /* Setup the viewport */
@@ -252,30 +253,32 @@ void Map::keyPressEvent(QKeyEvent* key_event)
   else if(key_event->key() == Qt::Key_3)
     viewport->lockOn(609, 353);
   else if(key_event->key() == Qt::Key_4)
-    map_dialog.initDialog();
+    map_dialog.initNotification("Testing", 1000, true);
   else if(key_event->key() == Qt::Key_5)
-    map_dialog.haltDialog();
+    map_dialog.initNotification("This is a really long message. It goes on and on without end. Who makes notifications this long except for crazy deranged eutherlytes. Yes, I made a new word. You want to fight about it?");//map_dialog.haltDialog();
+  else if(key_event->key() == Qt::Key_6)
+    map_dialog.initNotification("This is a really long message. It goes on and on without end. Who makes notifications this long except for crazy deranged eutherlytes. Yes, I made a new word. You want to fight about it?", 5000, true);
   else if(persons.size() >= 3 && key_event->key() == Qt::Key_7)
     ((MapNPC*)persons[2])->setNodeState(MapNPC::LOOPED);
   else if(persons.size() >= 3 && key_event->key() == Qt::Key_8)
     ((MapNPC*)persons[2])->setNodeState(MapNPC::BACKANDFORTH);
   else if(persons.size() >= 3 && key_event->key() == Qt::Key_9)
     ((MapNPC*)persons[2])->setNodeState(MapNPC::LOCKED);
-  else if(key_event->key() == Qt::Key_F1)
-  {
-    map_dialog.setPersonDisplay("sprites/Battle/Battle_Persons/ulterius.png");
-    map_dialog.setPersonName("Ulterius");
-  }
-  else if(key_event->key() == Qt::Key_F2)
-  {
-    map_dialog.setPersonDisplay("sprites/Battle/Battle_Persons/peltrance.png");
-    map_dialog.setPersonName("Peltrance");
-  }
-  else if(key_event->key() == Qt::Key_F3)
-  {
-    map_dialog.setPersonDisplay("sprites/Battle/Battle_Persons/arcadius.png");
-    map_dialog.setPersonName("Arcadius");
-  }
+  //else if(key_event->key() == Qt::Key_F1)
+  //{
+  //  map_dialog.setPersonDisplay("sprites/Map/Dialog/ulterius.png");
+  //  map_dialog.setPersonName("Ulterius");
+  //}
+  //else if(key_event->key() == Qt::Key_F2)
+  //{
+  //  map_dialog.setPersonDisplay("sprites/Map/Dialog/peltrance.png");
+  //  map_dialog.setPersonName("Peltrance");
+  //}
+  //else if(key_event->key() == Qt::Key_F3)
+  //{
+  //  map_dialog.setPersonDisplay("sprites/Map/Dialog/arcadius.png");
+  //  map_dialog.setPersonName("Arcadius");
+  //}
 }
 
 void Map::keyReleaseEvent(QKeyEvent* key_event)
@@ -599,9 +602,10 @@ bool Map::loadMap(QString file)
 
     /* Set up the map displays */
     map_dialog.setDialogImage("sprites/Map/Overlay/dialog.png");
-    map_dialog.setPersonDisplay("sprites/Battle/Battle_Persons/osborn.png");
-    map_dialog.setPersonName("Osborn");
-
+    map_dialog.setPersonDisplay("sprites/Map/Dialog/myliria.png");
+    map_dialog.setPersonName("Myliria");
+    //map_dialog.initNotification("Hello sunshine, this is a really long text that will go on and on and on. Let's try for even more, I'm sure I can push it to the absolute limit.");
+    
     for(int i = 0; i < geography.size(); i++)
       for(int j = 0; j < geography[i].size(); j++)
         geography[i][j]->initializeGl();
