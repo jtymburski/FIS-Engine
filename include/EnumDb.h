@@ -53,6 +53,12 @@ public:
                    UNBEARABILITY };
 
   /*
+   * Description: Handles the category for the talking inside the map
+   */
+  enum DialogCategory { TEXT,
+                        NUMBERENTRY,
+                        TEXTENTRY };
+  /*
    * Description: Handler for all direction related calls for movement, 
    *              passability, etc.
    */

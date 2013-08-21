@@ -32,6 +32,25 @@ MapDialog::MapDialog(QFont font)
   person_name = "";
   
   setFont(font);
+
+  /* Testing */
+  Conversation convo;
+  convo.thing_id = 1;
+  Conversation test1, test2, test3, test4, test5;
+  test1.thing_id = 2;
+  test2.thing_id = 3;
+  test3.thing_id = 4;
+  test4.thing_id = 3;
+  test5.thing_id = 24;
+  test3.next.append(test4);
+  test1.next.append(test3);
+  test1.next.append(test2);
+  convo.next.append(test1);
+  convo.next.append(test5);
+  convo.next.append(test1);
+  convo.next.append(test3);
+  qDebug() << calculateThingList(convo);
+  qDebug() << removeDuplicates(calculateThingList(convo));
 }
 
 /* Destructor function */
@@ -42,6 +61,19 @@ MapDialog::~MapDialog()
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
+
+/* Calculates a complete list of thing IDs that are used in the given 
+ * conversation */
+QList<int> MapDialog::calculateThingList(Conversation conversation)
+{
+  QList<int> list;
+
+  for(int i = 0; i < conversation.next.size(); i++)
+    list.append(calculateThingList(conversation.next[i]));
+  list.append(conversation.thing_id);
+
+  return list;
+}
 
 /* Halts the dialog, if it's being shown or showing */
 void MapDialog::initiateAnimation(QFont display_font)
@@ -60,6 +92,13 @@ void MapDialog::initiateAnimation(QFont display_font)
                        display_text.size() * font_info.height() +
                        kFONT_SPACING + kMARGIN_TOP;
   }
+}
+
+/* Removes duplicates from the given qlist and returns it. Used in
+ * conjunction with "calculateThingList" */
+QList<int> MapDialog::removeDuplicates(QList<int> duplicate_list)
+{
+  return duplicate_list.toSet().toList();
 }
 
 /*============================================================================
@@ -85,9 +124,42 @@ bool MapDialog::haltDialog()
   return false;
 }
 
-bool MapDialog::initConversation(MapPerson* person, MapNPC* npc)
+bool MapDialog::initConversation(Conversation* dialog_info)
 {
-
+  if(dialog_mode == DISABLED && isDialogImageSet() && dialog_info != 0)
+  {
+    dialog_mode = CONVERSATION;
+//    display_font.setPointSize(12);
+//    QFontMetrics font_info(display_font);
+    
+    /* Calculate the available space */
+//    int available_width = 
+//                      dialog_display.getImage().width() - (kMARGIN_SIDES << 1);
+//    if(available_width < 0)
+//      available_width = 0;
+    
+    /* Chop to single line if required */
+//    if(single_line)
+//      notification = 
+//            font_info.elidedText(notification, Qt::ElideRight, available_width);
+    
+    /* Calculate the display time if invalid */
+//    if(time_visible < 0)
+//      display_time = ((notification.count(" ") + 1) * kMSEC_PER_WORD) 
+//                   + kMSEC_PER_WORD;
+//    else
+//      display_time = time_visible;
+    
+    /* Split the line */
+//    display_text = lineSplitter(notification, available_width, display_font);
+    
+    /* Initiate animation sequence */
+//    initiateAnimation(display_font);
+    
+    return true;
+  }
+  
+  return false;
 }
 
 /* Sets up a dialog with the initial parameters */
@@ -247,6 +319,8 @@ bool MapDialog::paintGl(QGLWidget* painter)
                           300 + font_details.height(), "Running.", usable_font);
     }*/
   }
+
+  return true; // TODO??
 }
 
 /* Proceeds in the conversation, enter key triggers this */

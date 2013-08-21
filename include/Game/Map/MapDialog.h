@@ -16,8 +16,19 @@
 //#include <QString>
 //#include <QTimer>
 
+#include "EnumDb.h"
 #include "Game/Frame.h"
-#include "Game/Map/MapNPC.h"
+#include "Game/Map/MapThing.h"
+
+/* Struct to handle the conversation throughout the map */
+// TODO: Add MapAction, tile image?
+struct Conversation
+{
+  QString text;
+  int thing_id;
+  EnumDb::DialogCategory category;
+  QList<Conversation> next;
+};
 
 class MapDialog : public QObject
 {
@@ -37,17 +48,22 @@ public:
    *  HIDING - lowering to the bottom */
   enum DialogStatus{OFF, SHOWING, ON, HIDING};
 
+  // TODO: add the shop implementation [2013-08-20]
   /* The dialog mode classifier to define the running mode:
    *  DISABLED - The dialog is not in use
    *  CONVERSATION - A conversation is currently running
-   *  NOTIFICATION - A notification display, shifts up then down */
-  enum DialogMode{DISABLED, CONVERSATION, NOTIFICATION};
+   *  NOTIFICATION - A notification display, shifts up then down 
+   *  SHOP - A numerical question for buying, in a shop for example */
+  enum DialogMode{DISABLED, CONVERSATION, NOTIFICATION, SHOP};
   
 private:
   /* The animation info for displaying the dialog */
   short animation_offset;
   short animation_height;
-  
+ 
+  /* The currently running conversation information */
+  Conversation conversation_info;
+
   /* The current string being shown */
 //  QString* current_dialog;
 
@@ -101,6 +117,10 @@ private:
   /* Timer to handle the popout box rendering */
 //  QTimer popout_shift;
 
+  /* The data for the associated things. This is pertinent for the
+   * conversation access and anything displayed */
+  QList<MapThing*> thing_data;
+
   /* Flag for if a converation is taking place */
 //  bool CONVERSATION;
 
@@ -125,8 +145,16 @@ private:
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 private:
+  /* Calculates a complete list of thing IDs that are used in the given
+   * conversation */
+  QList<int> calculateThingList(Conversation conversation);
+
   /* Halts the dialog, if it's being shown or showing */
   void initiateAnimation(QFont display_font);
+
+  /* Removes duplicates from the given qlist and returns it. Used in
+   * conjunction with "calculateThingList" */
+  QList<int> removeDuplicates(QList<int> duplicate_list);
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -136,7 +164,7 @@ public:
   bool haltDialog();
 
   /* Initializes a conversation with the two given people. */
-  bool initConversation(MapPerson* person, MapNPC* npc);
+  bool initConversation(Conversation* dialog_info);
   
   /* Sets up a dialog with the initial parameters */
   bool initDialog();//MapPerson* left, MapPerson* right);
