@@ -157,6 +157,12 @@ private:
   QList<int> removeDuplicates(QList<int> duplicate_list);
 
 /*============================================================================
+ * SIGNALS
+ *===========================================================================*/
+signals:
+  void setThingData(QList<int> thing_ids);
+
+/*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
@@ -164,7 +170,7 @@ public:
   bool haltDialog();
 
   /* Initializes a conversation with the two given people. */
-  bool initConversation(Conversation* dialog_info);
+  bool initConversation(Conversation dialog_info);
   
   /* Sets up a dialog with the initial parameters */
   bool initDialog();//MapPerson* left, MapPerson* right);
@@ -199,6 +205,9 @@ public:
   bool setPersonDisplay(QString path);
   void setPersonName(QString name);
 
+  /* Sets the thing data, needed for the conversation */
+  void setThingData(QList<MapThing*> data);
+
   /* Updates the dialog, based on an elapsed time */
   void update(float cycle_time);
   
@@ -208,7 +217,7 @@ public:
 public:
   /* Fits a line into a list of lines that are less than the size using the
    * given parameters */
-  QList<QString> lineSplitter(QString line, int line_length, QFont font);
+  static QList<QString> lineSplitter(QString line, int line_length, QFont font);
 };
 
 #endif // MAPDIALOG_H

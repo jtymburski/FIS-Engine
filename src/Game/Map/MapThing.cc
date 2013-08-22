@@ -324,6 +324,18 @@ QString MapThing::getDescription()
 }
 
 /* 
+ * Description: Gets the dialog image data, that is used in conversational
+ *              interaction painting.
+ * 
+ * Inputs: none
+ * Output: Frame - the dialog image data
+ */
+Frame MapThing::getDialogImage()
+{
+  return dialog_image;
+}
+
+/* 
  * Description: Gets the height of the internal tile.
  *
  * Inputs: none
@@ -548,6 +560,23 @@ bool MapThing::setAnimationSpeed(short frame_time)
 void MapThing::setDescription(QString new_description)
 {
   description = new_description;
+}
+
+/*
+ * Description: Sets the dialog image internal to the map thing. This will be
+ *              the image displayed if the particular map thing is involved
+ *              in a conversational interaction throughout the map scene
+ *
+ * Inputs: QString path - the path to the image data.
+ * Output: bool - If the path is invalid, this set will fail
+ */
+bool MapThing::setDialogImage(QString path)
+{
+  bool success = dialog_image.setImage(path);
+  if(success)
+    dialog_image.initializeGl();
+
+  return success;
 }
 
 /*

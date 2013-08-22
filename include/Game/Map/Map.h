@@ -136,6 +136,9 @@ public slots:
   /* Animates the tiles within the map */
   void animateTiles();
 
+  /* Acquires the thing data and sets it in the dialog class, if applicable */
+  void getThingData(QList<int> thing_ids);
+
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/

@@ -55,6 +55,9 @@ protected:
   EnumDb::Direction movement;
   short speed;
   
+  /* Painting information */
+  Frame dialog_image;
+
   /* -------------------------- Constants ------------------------- */
   const static short kDEFAULT_ANIMATION; /* The default animation speed */
   const static short kDEFAULT_SPEED;     /* The default thing speed */
@@ -97,6 +100,9 @@ public:
   
   /* Gets the things decription */
   QString getDescription();
+
+  /* Returns the dialog image data, so that it may be painted */
+  Frame getDialogImage();
 
   /* Returns the height of the thing */
   int getHeight();
@@ -147,6 +153,9 @@ public:
   
   /* Sets the things description */
   void setDescription(QString new_description);
+
+  /* Sets the dialog image data, for display during conversation */
+  bool setDialogImage(QString path);
 
   /* Sets the things height classification */
   bool setHeight(int new_height);

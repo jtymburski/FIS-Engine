@@ -57,6 +57,8 @@ Map::Map(const QGLFormat & format, short viewport_width,
   /* Set up the map displays */
   //map_dialog.setFont(QFont("Times", 10));
   //map_dialog.setDialogImage("sprites/menu_test.png");//Map/Overlay/dialog.png");
+  connect(&map_dialog, SIGNAL(setThingData(QList<int>)), 
+          this, SLOT(getThingData(QList<int>)));
 
   /* Setup the viewport */
   viewport = new MapViewport(viewport_width, viewport_height, 
@@ -264,6 +266,35 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     ((MapNPC*)persons[2])->setNodeState(MapNPC::BACKANDFORTH);
   else if(persons.size() >= 3 && key_event->key() == Qt::Key_9)
     ((MapNPC*)persons[2])->setNodeState(MapNPC::LOCKED);
+  else if(key_event->key() == Qt::Key_0)
+  {
+    Conversation convo;
+    convo.thing_id = 1;
+    Conversation test1, test2, test3, test4, test5;
+    test1.category = EnumDb::TEXT;
+    test1.text = "Testing Case 1";
+    test1.thing_id = 2;
+    test2.category = EnumDb::TEXT;
+    test2.text = "Testing Case 2";
+    test2.thing_id = 3;
+    test3.category = EnumDb::TEXT;
+    test3.text = "Testing Case 3";
+    test3.thing_id = 4;
+    test4.category = EnumDb::TEXT;
+    test4.text = "Testing Case 4";
+    test4.thing_id = 3;
+    test5.category = EnumDb::TEXT;
+    test5.text = "Testing Case 5";
+    test5.thing_id = 24;
+    test3.next.append(test4);
+    test1.next.append(test3);
+    test1.next.append(test2);
+    convo.next.append(test1);
+    convo.next.append(test5);
+    convo.next.append(test1);
+    convo.next.append(test3);
+    map_dialog.initConversation(convo);
+  }
   //else if(key_event->key() == Qt::Key_F1)
   //{
   //  map_dialog.setPersonDisplay("sprites/Map/Dialog/ulterius.png");
@@ -402,6 +433,36 @@ void Map::animateTiles()
     tile_sprites[i]->shiftNext();
 }
 
+void Map::getThingData(QList<int> thing_ids)
+{
+  QList<MapThing*> used_things;
+
+  /* Loop through all the ids to find the associated things */
+  for(int i = 0; i < thing_ids.size(); i++)
+  {
+    /* Only continue if the ID is valid and >= than 0 */
+    if(thing_ids[i] >= 0)
+    {
+      bool found = false;
+      int j = 0;
+
+      /* Loop through the stack of things to find the associated ID */
+      while(!found && j < persons.size())
+      {
+        if(persons[j]->getID() == thing_ids[i])
+        {
+          used_things.append(persons[j]);
+          found = true;
+        }
+        j++;
+      }
+    }
+  }
+
+  /* Set the dialog with the new stack of things */
+  map_dialog.setThingData(used_things);
+}
+
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
@@ -537,6 +598,9 @@ bool Map::loadMap(QString file)
                                         new MapState(right_sprite));
     person->setState(MapPerson::GROUND, EnumDb::WEST, 
                                         new MapState(left_sprite));
+    person->setDialogImage("sprites/Map/Dialog/player.png");
+    person->setID(1);
+    person->setName("Yuseway");
     persons.append(person);
 
     /* Add a second player */
@@ -555,6 +619,9 @@ bool Map::loadMap(QString file)
                                         new MapState(right_sprite));
     person->setState(MapPerson::GROUND, EnumDb::WEST, 
                                         new MapState(left_sprite));
+    person->setDialogImage("sprites/Map/Dialog/el_oroso.png");
+    person->setID(24);
+    person->setName("El Oroso");
     persons.append(person);
 
     /* Add an NPC */
@@ -573,6 +640,9 @@ bool Map::loadMap(QString file)
     npc->insertNodeAtTail(geography[1][1], 1000);
     npc->insertNodeAtTail(geography[5][1], 250);
     //npc->insertNodeAtTail(geography[10][0], 50);
+    npc->setDialogImage("sprites/Map/Dialog/arcadius.png");
+    npc->setID(3);
+    npc->setName("Arcadius");
     npc->setNodeState(MapNPC::BACKANDFORTH);
     npc->setSpeed(200);
     persons.append(npc);

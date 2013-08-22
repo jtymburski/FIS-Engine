@@ -32,25 +32,6 @@ MapDialog::MapDialog(QFont font)
   person_name = "";
   
   setFont(font);
-
-  /* Testing */
-  Conversation convo;
-  convo.thing_id = 1;
-  Conversation test1, test2, test3, test4, test5;
-  test1.thing_id = 2;
-  test2.thing_id = 3;
-  test3.thing_id = 4;
-  test4.thing_id = 3;
-  test5.thing_id = 24;
-  test3.next.append(test4);
-  test1.next.append(test3);
-  test1.next.append(test2);
-  convo.next.append(test1);
-  convo.next.append(test5);
-  convo.next.append(test1);
-  convo.next.append(test3);
-  qDebug() << calculateThingList(convo);
-  qDebug() << removeDuplicates(calculateThingList(convo));
 }
 
 /* Destructor function */
@@ -124,11 +105,16 @@ bool MapDialog::haltDialog()
   return false;
 }
 
-bool MapDialog::initConversation(Conversation* dialog_info)
+bool MapDialog::initConversation(Conversation dialog_info)
 {
-  if(dialog_mode == DISABLED && isDialogImageSet() && dialog_info != 0)
+  qDebug() << calculateThingList(dialog_info);
+  QList<int> thing_ids = removeDuplicates(calculateThingList(dialog_info));
+  qDebug() << thing_ids;
+  emit setThingData(thing_ids);
+
+  if(dialog_mode == DISABLED && isDialogImageSet())
   {
-    dialog_mode = CONVERSATION;
+    //dialog_mode = CONVERSATION;
 //    display_font.setPointSize(12);
 //    QFontMetrics font_info(display_font);
     
@@ -376,6 +362,11 @@ bool MapDialog::setPersonDisplay(QString path)
 void MapDialog::setPersonName(QString name)
 {
   person_name = name;
+}
+
+void MapDialog::setThingData(QList<MapThing*> data)
+{
+  thing_data = data;
 }
 
 void MapDialog::update(float cycle_time)
