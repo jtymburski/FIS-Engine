@@ -58,8 +58,10 @@ public:
   
 private:
   /* The animation info for displaying the dialog */
-  short animation_offset;
+  float animation_cursor;
+  bool animation_cursor_up;
   short animation_height;
+  short animation_offset;
  
   /* The currently running conversation information */
   Conversation conversation_info;
@@ -132,12 +134,17 @@ private:
 //  bool RIGHT_VISIBLE;
 
   /* -------------------------- Constants ------------------------- */
+  const static short kCURSOR_NEXT_SIZE; /* The size of the next shifter */
+  const static short kCURSOR_NEXT_TIME; /* Time it takes to animate */
   const static short kFONT_SIZE;   /* The font size, used for rendering */
   const static short kFONT_SPACING; /* The spacing between lines of font */
   const static short kMARGIN_SIDES; /* The left and right margin size */
   const static short kMARGIN_TOP;   /* The top margin size */
   const static short kMSEC_PER_WORD; /* The read speed per word */
-  const static short kPIXELS_PER_100MS; /* The animation pixels per 100 ms */
+  const static short kNAME_BOX_ANGLE_X; /* Offset X on angle for name box */
+  const static short kNAME_BOX_HEIGHT; /* Height of the name box */
+  const static short kNAME_BOX_MIN_WIDTH; /* Minimum width of name box */
+  const static short kNAME_BOX_X_OFFSET; /* Offset from dialog box for name */
   const static short kSHIFT_TIME;  /* The time it takes to shift the display
                                       into view (in msec) */
 
@@ -148,6 +155,10 @@ private:
   /* Calculates a complete list of thing IDs that are used in the given
    * conversation */
   QList<int> calculateThingList(Conversation conversation);
+
+  /* Functions to acquire thing data, for painting to the screen */
+  Frame getThingDisplay(int id);
+  QString getThingName(int id);
 
   /* Halts the dialog, if it's being shown or showing */
   void initiateAnimation(QFont display_font);

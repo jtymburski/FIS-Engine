@@ -8,12 +8,17 @@
 #include "Game/Map/MapDialog.h"
 
 /* Constant Implementation - see header file for descriptions */
+const short MapDialog::kCURSOR_NEXT_SIZE = 8;
+const short MapDialog::kCURSOR_NEXT_TIME = 300;
 const short MapDialog::kFONT_SIZE = 12;
 const short MapDialog::kFONT_SPACING = 10;
 const short MapDialog::kMARGIN_SIDES = 50;
 const short MapDialog::kMARGIN_TOP = 25;
 const short MapDialog::kMSEC_PER_WORD = 333;
-const short MapDialog::kPIXELS_PER_100MS = 30;
+const short MapDialog::kNAME_BOX_ANGLE_X = 30;
+const short MapDialog::kNAME_BOX_HEIGHT = 42;
+const short MapDialog::kNAME_BOX_MIN_WIDTH = 100;
+const short MapDialog::kNAME_BOX_X_OFFSET = 45;
 const short MapDialog::kSHIFT_TIME = 750;
 
 /*============================================================================
@@ -24,6 +29,8 @@ const short MapDialog::kSHIFT_TIME = 750;
 MapDialog::MapDialog(QFont font)
 { 
   /* Clear some of the initial parameters */
+  animation_cursor = 0;
+  animation_cursor_up = true;
   animation_offset = 0;
   dialog_mode = DISABLED;
   dialog_status = OFF;
@@ -55,17 +62,37 @@ QList<int> MapDialog::calculateThingList(Conversation conversation)
 
   return list;
 }
+  
+Frame MapDialog::getThingDisplay(int id)
+{
+  for(int i = 0; i < thing_data.size(); i++)
+  {
+    if(thing_data[i]->getID() == id)
+      return thing_data[i]->getDialogImage();
+  }
+}
+
+QString MapDialog::getThingName(int id)
+{
+  for(int i = 0; i < thing_data.size(); i++)
+  {
+    if(thing_data[i]->getID() == id)
+      return thing_data[i]->getName();
+  }
+}
 
 /* Halts the dialog, if it's being shown or showing */
 void MapDialog::initiateAnimation(QFont display_font)
 {
+  animation_cursor = 0;
+  animation_cursor_up = true;
   animation_offset = 0;
   dialog_status = SHOWING;
   QFontMetrics font_info(display_font);
   
   if(dialog_mode == CONVERSATION)
   {
-  
+    animation_height = dialog_display.getImage().height() + kNAME_BOX_HEIGHT;
   }
   else if(dialog_mode == NOTIFICATION)
   {
@@ -107,15 +134,15 @@ bool MapDialog::haltDialog()
 
 bool MapDialog::initConversation(Conversation dialog_info)
 {
-  qDebug() << calculateThingList(dialog_info);
-  QList<int> thing_ids = removeDuplicates(calculateThingList(dialog_info));
-  qDebug() << thing_ids;
-  emit setThingData(thing_ids);
-
   if(dialog_mode == DISABLED && isDialogImageSet())
   {
-    //dialog_mode = CONVERSATION;
-//    display_font.setPointSize(12);
+    dialog_mode = CONVERSATION;
+    display_font.setPointSize(12);
+    conversation_info = dialog_info;
+
+    /* Acquire all the needed information about things in the conversation */
+    emit setThingData(removeDuplicates(calculateThingList(dialog_info)));
+
 //    QFontMetrics font_info(display_font);
     
     /* Calculate the available space */
@@ -129,18 +156,11 @@ bool MapDialog::initConversation(Conversation dialog_info)
 //      notification = 
 //            font_info.elidedText(notification, Qt::ElideRight, available_width);
     
-    /* Calculate the display time if invalid */
-//    if(time_visible < 0)
-//      display_time = ((notification.count(" ") + 1) * kMSEC_PER_WORD) 
-//                   + kMSEC_PER_WORD;
-//    else
-//      display_time = time_visible;
-    
     /* Split the line */
 //    display_text = lineSplitter(notification, available_width, display_font);
     
     /* Initiate animation sequence */
-//    initiateAnimation(display_font);
+    initiateAnimation(display_font);
     
     return true;
   }
@@ -223,27 +243,87 @@ bool MapDialog::paintGl(QGLWidget* painter)
 {
   if(dialog_status != OFF)
   {
+    QFontMetrics font_info(display_font);
     int height = dialog_display.getImage().height();
     int width = dialog_display.getImage().width();
     short x1 = (1216 - width) >> 1;
-    short y1 = 704;
+    short y1 = 704 - animation_offset;
+    
+    /* Slightly offset y1 for conversational name box addition */
+    if(dialog_mode == CONVERSATION)
+      y1 += kNAME_BOX_HEIGHT;
 
     /* Paints the conversation dialog */
-    dialog_display.paintGl(x1, y1 - animation_offset, width, height, 1.0);
+    dialog_display.paintGl(x1, y1, width, height, 1.0);
 
     if(dialog_mode == NOTIFICATION)
     {
-      QFontMetrics font_info(display_font);
       short x2 = x1;
       short y2 = y1 + kMARGIN_TOP + font_info.ascent();
       
       for(int i = 0; i < display_text.size(); i++)
       {
         x2 = x1 + ((width - font_info.width(display_text[i])) >> 1);
-        painter->renderText(x2, y2 - animation_offset, 
-                            display_text[i], display_font);
+        painter->renderText(x2, y2, display_text[i], display_font);
         y2 += font_info.descent() + kFONT_SPACING + font_info.ascent();
       }
+    }
+    else if(dialog_mode == CONVERSATION)
+    {
+      display_font.setPointSize(14);
+      display_font.setBold(true);
+      QFontMetrics bold_font(display_font);
+      //qDebug() << getThingName(conversation_info.thing_id);
+      // TODO: Doesn't paint
+      //qDebug() << "Paint Start.";
+      //qDebug() << getThingDisplay(conversation_info.thing_id).paintGl(0, 0, 256, 256, 1.0);
+      //qDebug() << "Paint End.";
+
+      /* Calculate the width and height of the name box */
+      int name_height = kNAME_BOX_HEIGHT;
+      int name_x = x1 + kNAME_BOX_X_OFFSET;
+      int name_width = 0;//bold_font.boundingRect(conversation_info).width();;
+      if(name_width < kNAME_BOX_MIN_WIDTH)
+        name_width = kNAME_BOX_MIN_WIDTH;
+
+      /* Draw text display background */
+      glColor4f(0.0, 0.0, 0.0, 0.65);
+      glBegin(GL_QUADS);
+        glVertex2f(name_x, y1);
+        glVertex2f(name_x + (kNAME_BOX_ANGLE_X << 1) + name_width, y1);
+        glVertex2f(name_x + kNAME_BOX_ANGLE_X + name_width, 
+                   y1 - kNAME_BOX_HEIGHT);
+        glVertex2f(name_x + kNAME_BOX_ANGLE_X, y1 - kNAME_BOX_HEIGHT);
+      glEnd();
+
+      /* Draw outline */
+      glColor4f(1.0, 1.0, 1.0, 1.0);
+      glLineWidth(3);
+      glBegin(GL_LINES);
+        glVertex2f(name_x + kNAME_BOX_ANGLE_X + name_width, 
+                   y1 - kNAME_BOX_HEIGHT);
+        glVertex2f(name_x + kNAME_BOX_ANGLE_X, y1 - kNAME_BOX_HEIGHT);
+      glEnd();
+      glBegin(GL_LINES);
+        glVertex2f(name_x, y1);
+        glVertex2f(name_x + kNAME_BOX_ANGLE_X, y1 - kNAME_BOX_HEIGHT);
+      glEnd();
+      glBegin(GL_LINES);
+        glVertex2f(name_x + kNAME_BOX_ANGLE_X + name_width, 
+                   y1 - kNAME_BOX_HEIGHT);
+        glVertex2f(name_x + (kNAME_BOX_ANGLE_X << 1) + name_width, y1);
+      glEnd();
+
+      /* Draw triangle cursor */
+      int cursor_x = (1216 >> 1);
+      glLineWidth(2);
+      glBegin(GL_LINE_LOOP);
+        glVertex2f(cursor_x - kCURSOR_NEXT_SIZE, 
+                   y1 + height - kCURSOR_NEXT_SIZE - animation_cursor);
+        glVertex2f(cursor_x + kCURSOR_NEXT_SIZE, 
+                   y1 + height - kCURSOR_NEXT_SIZE - animation_cursor);
+        glVertex2f(cursor_x, y1 + height - animation_cursor);
+      glEnd();
     }
     
 /*    if(dialog_status == ON)
@@ -373,6 +453,7 @@ void MapDialog::update(float cycle_time)
 {
   short height = dialog_display.getImage().height();
 
+  /* If hiding, shift the display onto the screen */
   if(dialog_status == HIDING)
   {
     animation_offset -= cycle_time * height / kSHIFT_TIME;
@@ -383,6 +464,7 @@ void MapDialog::update(float cycle_time)
       animation_offset = 0;
     }
   }
+  /* If showing, shift the display onto the screen */
   else if(dialog_status == SHOWING)
   {
     animation_offset += cycle_time * height / kSHIFT_TIME;
@@ -392,13 +474,39 @@ void MapDialog::update(float cycle_time)
       animation_offset = animation_height;
     }
   }
+  /* If ON, do action appropriate to the dialog mode */
   else if(dialog_status == ON)
   {
+    /* This controls how long the notification box is displayed */
     if(dialog_mode == NOTIFICATION)
     {
       display_time -= cycle_time;
       if(display_time < 0)
         dialog_status = HIDING;
+    }
+    /* This controls the bouncing cursor at the bottom of each conversational
+     * box to signal going to the next set */
+    else if(dialog_mode == CONVERSATION)
+    {
+      if(animation_cursor_up)
+      {
+        animation_cursor += cycle_time * kCURSOR_NEXT_SIZE / kCURSOR_NEXT_TIME;
+        if(animation_cursor >= kCURSOR_NEXT_SIZE)
+        {
+          animation_cursor = kCURSOR_NEXT_SIZE;
+          animation_cursor_up = false;
+        }
+      }
+      else
+      {
+        animation_cursor -= cycle_time * kCURSOR_NEXT_SIZE / kCURSOR_NEXT_TIME;
+        if(animation_cursor <= 0)
+        {
+          animation_cursor = 0;
+          animation_cursor_up = true;
+        }
+
+      }
     }
   }
 }

@@ -269,6 +269,10 @@ void Map::keyPressEvent(QKeyEvent* key_event)
   else if(key_event->key() == Qt::Key_0)
   {
     Conversation convo;
+    convo.text = "This is the initial conversation point that will start it.\
+                  How can this continue? It must pursue to complete\
+                  embodiment. Ok, maybe I'll just keep typing until I break\
+                  the entire compiler.";
     convo.thing_id = 1;
     Conversation test1, test2, test3, test4, test5;
     test1.category = EnumDb::TEXT;
