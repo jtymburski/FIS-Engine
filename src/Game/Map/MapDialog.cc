@@ -15,9 +15,9 @@ const short MapDialog::kFONT_SPACING = 10;
 const short MapDialog::kMARGIN_SIDES = 50;
 const short MapDialog::kMARGIN_TOP = 25;
 const short MapDialog::kMSEC_PER_WORD = 333;
-const short MapDialog::kNAME_BOX_ANGLE_X = 30;
+const short MapDialog::kNAME_BOX_ANGLE_X = 42;
 const short MapDialog::kNAME_BOX_HEIGHT = 42;
-const short MapDialog::kNAME_BOX_MIN_WIDTH = 100;
+const short MapDialog::kNAME_BOX_MIN_WIDTH = 50;//100;
 const short MapDialog::kNAME_BOX_X_OFFSET = 45;
 const short MapDialog::kSHIFT_TIME = 750;
 
@@ -63,13 +63,17 @@ QList<int> MapDialog::calculateThingList(Conversation conversation)
   return list;
 }
   
-Frame MapDialog::getThingDisplay(int id)
+Frame* MapDialog::getThingDisplay(int id)
 {
+  Frame* null_frame = 0;
+
   for(int i = 0; i < thing_data.size(); i++)
   {
     if(thing_data[i]->getID() == id)
       return thing_data[i]->getDialogImage();
   }
+
+  return null_frame;
 }
 
 QString MapDialog::getThingName(int id)
@@ -79,6 +83,8 @@ QString MapDialog::getThingName(int id)
     if(thing_data[i]->getID() == id)
       return thing_data[i]->getName();
   }
+  
+  return "";
 }
 
 /* Halts the dialog, if it's being shown or showing */
@@ -238,7 +244,26 @@ bool MapDialog::isDialogImageSet()
 {
   return dialog_display.isImageSet();
 }
-  
+   
+void MapDialog::keyPress(QKeyEvent* event)
+{
+  if(event->key() == Qt::Key_Space && !event->isAutoRepeat())
+  {
+    if(dialog_mode == CONVERSATION && dialog_status == ON)
+    {
+      if(conversation_info.next.size() == 0)
+        dialog_status = HIDING;
+      else
+        conversation_info = conversation_info.next[0];
+    }
+  }
+}
+
+void MapDialog::keyRelease(QKeyEvent* event)
+{
+
+}
+
 bool MapDialog::paintGl(QGLWidget* painter)
 {
   if(dialog_status != OFF)
@@ -272,47 +297,87 @@ bool MapDialog::paintGl(QGLWidget* painter)
     {
       display_font.setPointSize(14);
       display_font.setBold(true);
+      
       QFontMetrics bold_font(display_font);
-      //qDebug() << getThingName(conversation_info.thing_id);
-      // TODO: Doesn't paint
-      //qDebug() << "Paint Start.";
-      //qDebug() << getThingDisplay(conversation_info.thing_id).paintGl(0, 0, 256, 256, 1.0);
-      //qDebug() << "Paint End.";
+      Frame* thing_frame = getThingDisplay(conversation_info.thing_id);
+      QString thing_name = getThingName(conversation_info.thing_id);
 
       /* Calculate the width and height of the name box */
       int name_height = kNAME_BOX_HEIGHT;
       int name_x = x1 + kNAME_BOX_X_OFFSET;
-      int name_width = 0;//bold_font.boundingRect(conversation_info).width();;
+      int name_width = bold_font.width(thing_name);
       if(name_width < kNAME_BOX_MIN_WIDTH)
         name_width = kNAME_BOX_MIN_WIDTH;
 
-      /* Draw text display background */
-      glColor4f(0.0, 0.0, 0.0, 0.65);
-      glBegin(GL_QUADS);
-        glVertex2f(name_x, y1);
-        glVertex2f(name_x + (kNAME_BOX_ANGLE_X << 1) + name_width, y1);
-        glVertex2f(name_x + kNAME_BOX_ANGLE_X + name_width, 
-                   y1 - kNAME_BOX_HEIGHT);
-        glVertex2f(name_x + kNAME_BOX_ANGLE_X, y1 - kNAME_BOX_HEIGHT);
-      glEnd();
+      if(thing_name.size() > 0)
+      {
+        /* Draw text display background */
+        glColor4f(0.0, 0.0, 0.0, 0.65);
+        glBegin(GL_QUADS);
+          glVertex2f(name_x, y1);
+          glVertex2f(name_x + (kNAME_BOX_ANGLE_X << 1) + name_width, y1);
+          glVertex2f(name_x + kNAME_BOX_ANGLE_X + name_width, 
+                     y1 - kNAME_BOX_HEIGHT);
+          glVertex2f(name_x + kNAME_BOX_ANGLE_X, y1 - kNAME_BOX_HEIGHT);
+        glEnd();
 
-      /* Draw outline */
-      glColor4f(1.0, 1.0, 1.0, 1.0);
-      glLineWidth(3);
-      glBegin(GL_LINES);
-        glVertex2f(name_x + kNAME_BOX_ANGLE_X + name_width, 
-                   y1 - kNAME_BOX_HEIGHT);
-        glVertex2f(name_x + kNAME_BOX_ANGLE_X, y1 - kNAME_BOX_HEIGHT);
-      glEnd();
-      glBegin(GL_LINES);
-        glVertex2f(name_x, y1);
-        glVertex2f(name_x + kNAME_BOX_ANGLE_X, y1 - kNAME_BOX_HEIGHT);
-      glEnd();
-      glBegin(GL_LINES);
-        glVertex2f(name_x + kNAME_BOX_ANGLE_X + name_width, 
-                   y1 - kNAME_BOX_HEIGHT);
-        glVertex2f(name_x + (kNAME_BOX_ANGLE_X << 1) + name_width, y1);
-      glEnd();
+        /* Draw outline */
+        glColor4f(1.0, 1.0, 1.0, 1.0);
+        glLineWidth(3);
+        glBegin(GL_LINES);
+          glVertex2f(name_x + kNAME_BOX_ANGLE_X + name_width, 
+                     y1 - kNAME_BOX_HEIGHT);
+          glVertex2f(name_x + kNAME_BOX_ANGLE_X, y1 - kNAME_BOX_HEIGHT);
+        glEnd();
+        glBegin(GL_LINES);
+          glVertex2f(name_x, y1);
+          glVertex2f(name_x + kNAME_BOX_ANGLE_X, y1 - kNAME_BOX_HEIGHT);
+        glEnd();
+        glBegin(GL_LINES);
+          glVertex2f(name_x + kNAME_BOX_ANGLE_X + name_width, 
+                     y1 - kNAME_BOX_HEIGHT);
+          glVertex2f(name_x + (kNAME_BOX_ANGLE_X << 1) + name_width, y1);
+        glEnd();
+      }
+
+      /* Only display the information once the dialog box is visible */
+      if(dialog_status == ON)
+      {
+        /* Draw the name text */
+        glColor4f(1.0, 1.0, 1.0, 1.0);
+        painter->renderText(x1 + kNAME_BOX_X_OFFSET + kNAME_BOX_ANGLE_X, 
+                           y1 - (kNAME_BOX_HEIGHT >> 1) 
+                              - (bold_font.height() >> 1) + bold_font.ascent(), 
+                           thing_name, display_font);
+        display_font.setBold(false);
+
+        /* Paint the object frame, if it exists */
+        int img_width = 0;
+        int img_height = 0;
+        if(thing_frame != 0)
+        {
+          img_width = thing_frame->getImage().width();
+          img_height = thing_frame->getImage().height();
+          thing_frame->paintGl(x1 + width - (img_width >> 1), 704 - img_height, 
+                               img_width, img_height, 1.0);
+        }
+
+        /* Draw the conversational text */
+        int txt_length = width - (kMARGIN_SIDES << 1) 
+                               - (img_width >> 1);
+        int txt_y = y1 + (kMARGIN_TOP << 1) + font_info.ascent();
+        display_font.setPointSize(kFONT_SIZE);
+
+        QList<QString> convo_list = lineSplitter(conversation_info.text, 
+                                                 txt_length, display_font);
+        for(int i = 0; i < convo_list.size(); i++)
+        {
+          painter->renderText(x1 + kMARGIN_SIDES, txt_y, 
+                              convo_list[i], display_font);
+          txt_y += (kFONT_SPACING << 1) + font_info.height();
+        }
+      }
+      display_font.setBold(false);
 
       /* Draw triangle cursor */
       int cursor_x = (1216 >> 1);
@@ -505,7 +570,6 @@ void MapDialog::update(float cycle_time)
           animation_cursor = 0;
           animation_cursor_up = true;
         }
-
       }
     }
   }

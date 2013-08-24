@@ -328,11 +328,11 @@ QString MapThing::getDescription()
  *              interaction painting.
  * 
  * Inputs: none
- * Output: Frame - the dialog image data
+ * Output: Frame* - the dialog image data
  */
-Frame MapThing::getDialogImage()
+Frame* MapThing::getDialogImage()
 {
-  return dialog_image;
+  return &dialog_image;
 }
 
 /* 

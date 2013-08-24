@@ -102,7 +102,7 @@ public:
   QString getDescription();
 
   /* Returns the dialog image data, so that it may be painted */
-  Frame getDialogImage();
+  Frame* getDialogImage();
 
   /* Returns the height of the thing */
   int getHeight();

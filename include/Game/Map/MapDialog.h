@@ -10,6 +10,7 @@
 
 #include <QDebug>
 //#include <QImage>
+#include <QKeyEvent>
 #include <QObject>
 //#include <QtGui/QWidget>
 //#include <QRect>
@@ -157,7 +158,7 @@ private:
   QList<int> calculateThingList(Conversation conversation);
 
   /* Functions to acquire thing data, for painting to the screen */
-  Frame getThingDisplay(int id);
+  Frame* getThingDisplay(int id);
   QString getThingName(int id);
 
   /* Halts the dialog, if it's being shown or showing */
@@ -195,7 +196,11 @@ public:
 
   /* Returns if the dialog image has been set (and proper size) */
   bool isDialogImageSet();
-  
+
+  /* Key press event reimplemented */
+  void keyPress(QKeyEvent* event);
+  void keyRelease(QKeyEvent* event);
+
   /* Paint call, that paints the dialog */
   bool paintGl(QGLWidget* painter);
 

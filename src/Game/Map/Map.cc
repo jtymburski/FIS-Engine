@@ -269,22 +269,26 @@ void Map::keyPressEvent(QKeyEvent* key_event)
   else if(key_event->key() == Qt::Key_0)
   {
     Conversation convo;
-    convo.text = "This is the initial conversation point that will start it.\
-                  How can this continue? It must pursue to complete\
-                  embodiment. Ok, maybe I'll just keep typing until I break\
-                  the entire compiler.";
+    convo.text = "This is the initial conversation point that will start it. ";
+    convo.text += "How can this continue? It must pursue to complete ";
+    convo.text += "embodiment. Ok, maybe I'll just keep typing until I break ";
+    convo.text += "the entire compiler.";
     convo.thing_id = 1;
     Conversation test1, test2, test3, test4, test5;
     test1.category = EnumDb::TEXT;
-    test1.text = "Testing Case 1";
-    test1.thing_id = 2;
+    test1.text = "This is a test to see how the data performs. Single line!";
+    test1.thing_id = 3;
     test2.category = EnumDb::TEXT;
-    test2.text = "Testing Case 2";
-    test2.thing_id = 3;
+    test2.text = "This is a no man case. See what happens??";
+    test2.thing_id = 2;
+    test2.next.append(test1);
     test3.category = EnumDb::TEXT;
-    test3.text = "Testing Case 3";
-    test3.thing_id = 4;
-    test4.category = EnumDb::TEXT;
+    test3.text = "Back to finish off with a clean case with a couple of lines.";
+    test3.text += " So this requires me to write a bunch of BS to try and fill";
+    test3.text += " these lines.";
+    test3.thing_id = 24;
+    test3.next.append(test2);
+    /*test4.category = EnumDb::TEXT;
     test4.text = "Testing Case 4";
     test4.thing_id = 3;
     test5.category = EnumDb::TEXT;
@@ -292,12 +296,16 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     test5.thing_id = 24;
     test3.next.append(test4);
     test1.next.append(test3);
-    test1.next.append(test2);
-    convo.next.append(test1);
-    convo.next.append(test5);
-    convo.next.append(test1);
+    test1.next.append(test2);*/
     convo.next.append(test3);
+    /*convo.next.append(test5);
+    convo.next.append(test1);
+    convo.next.append(test3);*/
     map_dialog.initConversation(convo);
+  }
+  else if(key_event->key() == Qt::Key_Space)
+  {
+    map_dialog.keyPress(key_event);
   }
   //else if(key_event->key() == Qt::Key_F1)
   //{
@@ -323,6 +331,10 @@ void Map::keyReleaseEvent(QKeyEvent* key_event)
   {
     if(player != 0)
       player->keyRelease(key_event);
+  }
+  else if(key_event->key() == Qt::Key_Space)
+  {
+    map_dialog.keyRelease(key_event);
   }
 }
 
