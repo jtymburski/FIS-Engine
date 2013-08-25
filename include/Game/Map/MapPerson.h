@@ -19,6 +19,8 @@
 
 class MapPerson : public MapThing
 {
+  Q_OBJECT
+
 public:
   /* Constructor functions */
   MapPerson();
@@ -35,7 +37,6 @@ public:
 private:
   /* The direction of the player and the current movement direction */
   EnumDb::Direction direction;
-  EnumDb::Direction movement;
   QList<EnumDb::Direction> movement_stack;
 
   /* Set of all states for person. 1st layer is surface (water, ground, etc)
@@ -46,7 +47,7 @@ private:
   SurfaceClassifier surface;
 
   /* The target for this person. If set, it cannot be targetted by others */
-  MapPerson* target;
+  MapThing* target;
   
   /* -------------------------- Constants ------------------------- */
   const static char kDIR_EAST;        /* The EAST direction for moving */
@@ -82,6 +83,12 @@ protected:
   bool setDirection(EnumDb::Direction direction, bool set_movement = true);
 
 /*============================================================================
+ * SIGNALS
+ *===========================================================================*/
+signals:
+  void initiateThingUse(MapPerson* person);
+
+/*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
@@ -106,9 +113,10 @@ public:
   SurfaceClassifier getSurface();
 
   /* Returns the target that this person is pointed at */
-  MapPerson* getTarget();
+  MapThing* getTarget();
   
-  /* Key press event reimplemented */
+  /* Key flush/press/release events handled */
+  void keyFlush();
   void keyPress(QKeyEvent* event);
   void keyRelease(QKeyEvent* event);
 
@@ -123,8 +131,8 @@ public:
   void setSurface(SurfaceClassifier surface);
 
   /* Sets the target map person, fails if there is already a target */
-  bool setTarget(MapPerson* target);
-  
+  void setTarget(MapThing* target);
+ 
   /* Updates the thing, based on the tick */
   virtual void updateThing(float cycle_time, Tile* next_tile);
 

@@ -665,7 +665,7 @@ bool Tile::paintLower(float offset_x, float offset_y, float opacity)
         glVertex3f(pixel_x, pixel_y + height, 0);
         glVertex3f(pixel_x, pixel_y, 0);
         glVertex3f(pixel_x + width, pixel_y, 0);
-        glVertex3f(pixel_x + width, pixel_y + width, 0);
+        glVertex3f(pixel_x + width, pixel_y + height, 0);
       glEnd();
     }
   }

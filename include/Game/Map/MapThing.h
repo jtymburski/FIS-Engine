@@ -18,6 +18,7 @@ class MapPerson;
 #include <QDebug>
 #include <QObject>
 
+#include "EnumDb.h"
 #include "Game/Map/MapState.h"
 #include "Game/Map/Tile.h"
 
@@ -48,6 +49,9 @@ protected:
 
   /* The main state */
   MapState* state;
+
+  /* Conversation information */
+  Conversation conversation_info;
 
   /* Movement information */
   short animation_buffer;
@@ -87,7 +91,13 @@ protected:
   /* Starts and stops tile move. Relies on underlying logic for occurance */
   void tileMoveFinish();
   bool tileMoveStart(Tile* next_tile, Tile::ThingState classification);
-  
+ 
+/*============================================================================
+ * SIGNALS
+ *===========================================================================*/
+signals:
+  void startConversation(Conversation conversation_data);
+
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
@@ -98,6 +108,9 @@ public:
   /* Gets the animation speed of the thing */
   short getAnimationSpeed();
   
+  /* Gets the conversation data for the thing */
+  Conversation getConversation();
+
   /* Gets the things decription */
   QString getDescription();
 
@@ -133,6 +146,9 @@ public:
   float getX();
   float getY();
 
+  /* Initiates a conversation to occur with the map */
+  void initiateConversation(EnumDb::Direction person_dir);
+
   /* Starts interaction (conversation, giving something, etc) */
   virtual bool interaction(MapPerson* person);
   
@@ -150,7 +166,10 @@ public:
 
   /* Sets the animation time for each frame */
   bool setAnimationSpeed(short frame_time);
-  
+ 
+  /* Sets the conversation data for the thing */
+  void setConversation(Conversation conversation_info);
+
   /* Sets the things description */
   void setDescription(QString new_description);
 

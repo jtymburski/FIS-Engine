@@ -139,6 +139,13 @@ public slots:
   /* Acquires the thing data and sets it in the dialog class, if applicable */
   void getThingData(QList<int> thing_ids);
 
+  /* Initiates the thing use, and sets the given person with the applicable
+   * thing, if there is one near */
+  void initiateThingUse(MapPerson* person);
+
+  /* Starts a conversation within the map */
+  void startConversation(Conversation conversation_data);
+
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/

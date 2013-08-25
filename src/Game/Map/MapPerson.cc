@@ -298,11 +298,16 @@ MapPerson::SurfaceClassifier MapPerson::getSurface()
 }
 
 /* Returns the target that this person is pointed at */
-MapPerson* MapPerson::getTarget()
+MapThing* MapPerson::getTarget()
 {
   return target;
 }
-  
+ 
+void MapPerson::keyFlush()
+{
+  movement_stack.clear();
+}
+
 /*
  * Description: The key press event implementation. Handles all the movement
  *              for the map person, if redirected here.
@@ -320,6 +325,24 @@ void MapPerson::keyPress(QKeyEvent* event)
     addDirection(EnumDb::EAST);
   else if(event->key() == Qt::Key_Left)
     addDirection(EnumDb::WEST);
+  else if(event->key() == Qt::Key_E && !event->isAutoRepeat())
+  {
+    /* Initiate the thing and get the conversation, if applicable */
+    emit initiateThingUse(this);
+
+    /* Start the conversation, if one exists */
+    if(target != 0)
+    {
+      Conversation thing_convo = target->getConversation();
+
+      /* Check if the conversation is relevant and use if so */
+      if(!thing_convo.text.isEmpty() || thing_convo.next.size() > 0)
+      {
+        target->initiateConversation(getDirection());
+        keyFlush();
+      }
+    }
+  }
 }
 
 /*
@@ -399,14 +422,9 @@ void MapPerson::setSurface(SurfaceClassifier surface)
 }
 
 /* Sets the target map person, fails if there is already a target */
-bool MapPerson::setTarget(MapPerson* target)
+void MapPerson::setTarget(MapThing* target)
 {
-  if(target != 0 && this->target == 0)
-  {
-    this->target = target;
-    return true;
-  }
-  return false;
+  this->target = target;
 }
 
 /*

@@ -17,8 +17,10 @@ const short MapDialog::kMARGIN_TOP = 25;
 const short MapDialog::kMSEC_PER_WORD = 333;
 const short MapDialog::kNAME_BOX_ANGLE_X = 42;
 const short MapDialog::kNAME_BOX_HEIGHT = 42;
-const short MapDialog::kNAME_BOX_MIN_WIDTH = 50;//100;
+const short MapDialog::kNAME_BOX_MIN_WIDTH = 50;
 const short MapDialog::kNAME_BOX_X_OFFSET = 45;
+const short MapDialog::kOPTION_MARGIN = 5;
+const short MapDialog::kOPTION_OFFSET = 50;
 const short MapDialog::kSHIFT_TIME = 750;
 
 /*============================================================================
@@ -34,6 +36,7 @@ MapDialog::MapDialog(QFont font)
   animation_offset = 0;
   dialog_mode = DISABLED;
   dialog_status = OFF;
+  display_option = 0;
   display_time = 0;
   npc_name = "";
   person_name = "";
@@ -140,7 +143,7 @@ bool MapDialog::haltDialog()
 
 bool MapDialog::initConversation(Conversation dialog_info)
 {
-  if(dialog_mode == DISABLED && isDialogImageSet())
+  if(!isInUse() && isDialogImageSet())
   {
     dialog_mode = CONVERSATION;
     display_font.setPointSize(12);
@@ -197,7 +200,7 @@ bool MapDialog::initDialog()//MapPerson* left, MapPerson* right)
 bool MapDialog::initNotification(QString notification, int time_visible, 
                                                        bool single_line)
 {
-  if(dialog_mode == DISABLED && isDialogImageSet())
+  if(!isInUse() && isDialogImageSet())
   {
     dialog_mode = NOTIFICATION;
     display_font.setPointSize(12);
@@ -244,26 +247,61 @@ bool MapDialog::isDialogImageSet()
 {
   return dialog_display.isImageSet();
 }
-   
+  
+bool MapDialog::isInConversation()
+{
+  return (dialog_mode == CONVERSATION);
+}
+
+bool MapDialog::isInUse()
+{
+  return (dialog_mode != DISABLED);
+}
+
 void MapDialog::keyPress(QKeyEvent* event)
 {
+  /* Selection case for the conversational dialog option */
   if(event->key() == Qt::Key_Space && !event->isAutoRepeat())
   {
-    if(dialog_mode == CONVERSATION && dialog_status == ON)
+    if(isInConversation() && dialog_status == ON)
     {
+      bool multiple = (conversation_info.next.size() > 1);
+
+      /* Check for dialog status and shift to next conversation */
       if(conversation_info.next.size() == 0)
         dialog_status = HIDING;
       else
+        conversation_info = conversation_info.next[display_option];
+      
+      /* Skip the option if it was an option case */
+      if(multiple)
         conversation_info = conversation_info.next[0];
+      display_option = 0;
     }
+  }
+  /* Go back an option selector */
+  else if(event->key() == Qt::Key_Up)
+  {
+    display_option--;
+    if(display_option < 0)
+      display_option = conversation_info.next.size() - 1;
+  }
+  /* Go to next option selector */
+  else if(event->key() == Qt::Key_Down)
+  {
+    display_option++;
+    if(display_option >= conversation_info.next.size())
+      display_option = 0;
   }
 }
 
 void MapDialog::keyRelease(QKeyEvent* event)
 {
-
+  /* Unused currently */
+  (void)event;
 }
 
+// TODO: Transition elements of conversation
 bool MapDialog::paintGl(QGLWidget* painter)
 {
   if(dialog_status != OFF)
@@ -275,7 +313,7 @@ bool MapDialog::paintGl(QGLWidget* painter)
     short y1 = 704 - animation_offset;
     
     /* Slightly offset y1 for conversational name box addition */
-    if(dialog_mode == CONVERSATION)
+    if(isInConversation())
       y1 += kNAME_BOX_HEIGHT;
 
     /* Paints the conversation dialog */
@@ -293,7 +331,7 @@ bool MapDialog::paintGl(QGLWidget* painter)
         y2 += font_info.descent() + kFONT_SPACING + font_info.ascent();
       }
     }
-    else if(dialog_mode == CONVERSATION)
+    else if(isInConversation())
     {
       display_font.setPointSize(14);
       display_font.setBold(true);
@@ -316,26 +354,23 @@ bool MapDialog::paintGl(QGLWidget* painter)
         glBegin(GL_QUADS);
           glVertex2f(name_x, y1);
           glVertex2f(name_x + (kNAME_BOX_ANGLE_X << 1) + name_width, y1);
-          glVertex2f(name_x + kNAME_BOX_ANGLE_X + name_width, 
-                     y1 - kNAME_BOX_HEIGHT);
-          glVertex2f(name_x + kNAME_BOX_ANGLE_X, y1 - kNAME_BOX_HEIGHT);
+          glVertex2f(name_x + kNAME_BOX_ANGLE_X + name_width, y1 - name_height);
+          glVertex2f(name_x + kNAME_BOX_ANGLE_X, y1 - name_height);
         glEnd();
 
         /* Draw outline */
         glColor4f(1.0, 1.0, 1.0, 1.0);
         glLineWidth(3);
         glBegin(GL_LINES);
-          glVertex2f(name_x + kNAME_BOX_ANGLE_X + name_width, 
-                     y1 - kNAME_BOX_HEIGHT);
-          glVertex2f(name_x + kNAME_BOX_ANGLE_X, y1 - kNAME_BOX_HEIGHT);
+          glVertex2f(name_x + kNAME_BOX_ANGLE_X + name_width, y1 - name_height);
+          glVertex2f(name_x + kNAME_BOX_ANGLE_X, y1 - name_height);
         glEnd();
         glBegin(GL_LINES);
           glVertex2f(name_x, y1);
-          glVertex2f(name_x + kNAME_BOX_ANGLE_X, y1 - kNAME_BOX_HEIGHT);
+          glVertex2f(name_x + kNAME_BOX_ANGLE_X, y1 - name_height);
         glEnd();
         glBegin(GL_LINES);
-          glVertex2f(name_x + kNAME_BOX_ANGLE_X + name_width, 
-                     y1 - kNAME_BOX_HEIGHT);
+          glVertex2f(name_x + kNAME_BOX_ANGLE_X + name_width, y1 - name_height);
           glVertex2f(name_x + (kNAME_BOX_ANGLE_X << 1) + name_width, y1);
         glEnd();
       }
@@ -346,7 +381,7 @@ bool MapDialog::paintGl(QGLWidget* painter)
         /* Draw the name text */
         glColor4f(1.0, 1.0, 1.0, 1.0);
         painter->renderText(x1 + kNAME_BOX_X_OFFSET + kNAME_BOX_ANGLE_X, 
-                           y1 - (kNAME_BOX_HEIGHT >> 1) 
+                           y1 - (name_height >> 1) 
                               - (bold_font.height() >> 1) + bold_font.ascent(), 
                            thing_name, display_font);
         display_font.setBold(false);
@@ -365,10 +400,15 @@ bool MapDialog::paintGl(QGLWidget* painter)
         /* Draw the conversational text */
         int txt_length = width - (kMARGIN_SIDES << 1) 
                                - (img_width >> 1);
+        QString txt_line = conversation_info.text;
         int txt_y = y1 + (kMARGIN_TOP << 1) + font_info.ascent();
         display_font.setPointSize(kFONT_SIZE);
+        QFontMetrics normal_font(display_font);
 
-        QList<QString> convo_list = lineSplitter(conversation_info.text, 
+        if(conversation_info.next.size() > 1)
+          txt_line = normal_font.elidedText(txt_line, 
+                                            Qt::ElideRight, txt_length);
+        QList<QString> convo_list = lineSplitter(txt_line, 
                                                  txt_length, display_font);
         for(int i = 0; i < convo_list.size(); i++)
         {
@@ -376,79 +416,68 @@ bool MapDialog::paintGl(QGLWidget* painter)
                               convo_list[i], display_font);
           txt_y += (kFONT_SPACING << 1) + font_info.height();
         }
+
+        /* Add the option text, if it's applicable */
+        if(conversation_info.next.size() > 1)
+        {
+          for(int i = 0; i < conversation_info.next.size(); i++)
+          {
+            int option_x = x1 + kMARGIN_SIDES + kOPTION_OFFSET;
+
+            /* Paint the bounding box portion */
+            if(display_option == i)
+            {
+              int margin = kOPTION_MARGIN;
+              QRect option = 
+                  normal_font.boundingRect(conversation_info.next[i].text);
+              glColor4f(0.0, 0.0, 0.0, 1.0);
+              glBegin(GL_QUADS);
+                glVertex3f(option_x + option.x() - margin, 
+                           txt_y + option.y() + margin + option.height(), 0);
+                glVertex3f(option_x + option.x() - margin, 
+                           txt_y + option.y()- margin, 0);
+                glVertex3f(option_x + option.x() + margin + option.width(), 
+                           txt_y + option.y() - margin, 0);
+                glVertex3f(option_x + option.x() + margin + option.width(), 
+                           txt_y + option.y() + margin + option.height(), 0);
+              glEnd();
+            }
+
+            /* Paint the text portion */
+            glColor4f(1.0, 1.0, 1.0, 1.0);
+            painter->renderText(option_x, txt_y, 
+                                conversation_info.next[i].text, display_font);
+            txt_y += (kFONT_SPACING << 1) + font_info.height();
+          }
+        }
       }
       display_font.setBold(false);
 
       /* Draw triangle cursor */
-      int cursor_x = (1216 >> 1);
-      glLineWidth(2);
-      glBegin(GL_LINE_LOOP);
-        glVertex2f(cursor_x - kCURSOR_NEXT_SIZE, 
-                   y1 + height - kCURSOR_NEXT_SIZE - animation_cursor);
-        glVertex2f(cursor_x + kCURSOR_NEXT_SIZE, 
-                   y1 + height - kCURSOR_NEXT_SIZE - animation_cursor);
-        glVertex2f(cursor_x, y1 + height - animation_cursor);
-      glEnd();
+      if(conversation_info.next.size() <= 1)
+      {
+        int cursor_x = (1216 >> 1);
+        glLineWidth(2);
+        glBegin(GL_LINE_LOOP);
+          glVertex2f(cursor_x - kCURSOR_NEXT_SIZE, 
+                     y1 + height - kCURSOR_NEXT_SIZE - animation_cursor);
+          glVertex2f(cursor_x + kCURSOR_NEXT_SIZE, 
+                     y1 + height - kCURSOR_NEXT_SIZE - animation_cursor);
+          glVertex2f(cursor_x, y1 + height - animation_cursor);
+        glEnd();
+      }
     }
-    
-/*    if(dialog_status == ON)
-    {
-      /* Draw text display background */
-/*      glColor4f(0.0, 0.0, 0.0, 0.65);
-      glBegin(GL_QUADS); /* 42 high, angle at 30, central width based on text */
-/*        glVertex2f(232.0f, 482.0f);
-        glVertex2f(442.0f, 482.0f);
-        glVertex2f(412.0f, 440.0f);
-        glVertex2f(262.0f, 440.0f);
-      glEnd();
-
-      /* Draw outline */
-/*      glColor4f(1.0, 1.0, 1.0, 1.0);
-      glLineWidth(3);
-      glBegin(GL_LINES);
-        glVertex2f(412.0f, 440.0f);
-        glVertex2f(262.0f, 440.0f);
-      glEnd();
-      glBegin(GL_LINES);
-        glVertex2f(232.0f, 482.0f);
-        glVertex2f(262.0f, 440.0f);
-      glEnd();
-      glBegin(GL_LINES);
-        glVertex2f(412.0f, 440.0f);
-        glVertex2f(442.0f, 482.0f);
-      glEnd();
-
-      /* Paints the person near the conversation */
-/*      short char_height = person_display.getImage().height();
-      short char_width = person_display.getImage().width();
-
-      person_display.paintGl(x1 + width - (char_width >> 1), 
-                             704 - char_height, 
-                             char_width, char_height, 1.0);
-
-      /* Paint the text for the name */
-/*      QFont usable_font = display_font;
-      usable_font.setPointSize(14);
-      usable_font.setBold(true);
-      QFontMetrics font_details(usable_font);
-      char_height = font_details.height();
-      char_width = font_details.boundingRect(person_name).width();
-      painter->renderText(
-        (412 - 262 - char_width >> 1) + 262, 
-        (482 - 440 - char_height >> 1) + 440 + font_details.ascent(), 
-        person_name, usable_font);
-        
-      /* Multiple side by side painting - test */
-/*      usable_font.setBold(false);
-      font_details = QFontMetrics(usable_font);
-      painter->renderText(800, 300, "Test Running.", usable_font);
-      painter->renderText(800, 300 + font_details.height(), 
-                          "Test ", usable_font);
-      glColor4f(0.9, 0.2, 0.0, 1.0);
-      usable_font.setUnderline(true);
-      painter->renderText(800 + font_details.width("Test "), 
-                          300 + font_details.height(), "Running.", usable_font);
-    }*/
+   
+    /* Multiple side by side painting - test */
+/*    usable_font.setBold(false);
+    font_details = QFontMetrics(usable_font);
+    painter->renderText(800, 300, "Test Running.", usable_font);
+    painter->renderText(800, 300 + font_details.height(), 
+                        "Test ", usable_font);
+    glColor4f(0.9, 0.2, 0.0, 1.0);
+    usable_font.setUnderline(true);
+    painter->renderText(800 + font_details.width("Test "), 
+                        300 + font_details.height(), "Running.", usable_font);*/
   }
 
   return true; // TODO??
@@ -551,7 +580,7 @@ void MapDialog::update(float cycle_time)
     }
     /* This controls the bouncing cursor at the bottom of each conversational
      * box to signal going to the next set */
-    else if(dialog_mode == CONVERSATION)
+    else if(isInConversation())
     {
       if(animation_cursor_up)
       {

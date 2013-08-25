@@ -312,6 +312,12 @@ short MapThing::getAnimationSpeed()
   return animation_time;
 }
 
+/* Gets the conversation data for the thing */
+Conversation MapThing::getConversation()
+{
+  return conversation_info;
+}
+
 /* 
  * Description: Gets the things description.
  * 
@@ -464,6 +470,21 @@ float MapThing::getY()
   return y;
 }
 
+/* Initiates a conversation to occur with the map */
+// TODO: How to deal with person direction and stopping movement
+void MapThing::initiateConversation(EnumDb::Direction person_dir)
+{
+  emit startConversation(conversation_info);
+  /*if(person_dir == EnumDb::NORTH)
+    setDirection(EnumDb::SOUTH);
+  else if(person_dir == EnumDb::EAST)
+    setDirection(EnumDb::WEST);
+  else if(person_dir == EnumDb::SOUTH)
+    setDirection(EnumDb::NORTH);
+  else if(person_dir == EnumDb::WEST)
+    setDirection(EnumDb::EAST);*/
+}
+
 /* 
  * Description: Starts interaction. In map thing, this isn't of use and is
  *              only used by its children classes.
@@ -549,6 +570,12 @@ bool MapThing::setAnimationSpeed(short frame_time)
     return true;
   }
   return false;
+}
+
+/* Sets the conversation data for the thing */
+void MapThing::setConversation(Conversation conversation_info)
+{
+  this->conversation_info = conversation_info;
 }
 
 /* 

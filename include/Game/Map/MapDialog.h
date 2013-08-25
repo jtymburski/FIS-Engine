@@ -21,16 +21,6 @@
 #include "Game/Frame.h"
 #include "Game/Map/MapThing.h"
 
-/* Struct to handle the conversation throughout the map */
-// TODO: Add MapAction, tile image?
-struct Conversation
-{
-  QString text;
-  int thing_id;
-  EnumDb::DialogCategory category;
-  QList<Conversation> next;
-};
-
 class MapDialog : public QObject
 {
   Q_OBJECT
@@ -79,13 +69,12 @@ private:
   /* Logic if the conversation is taking place */
   DialogStatus dialog_status;
 
-  /* Timer that handles shifting the bounding boxes when the talking source
-    shifts */
-//  QTimer dialog_shift;
-
   /* The font information to render the dialog to */
   QFont display_font;
-  
+ 
+  /* The display option index, for option based selection */
+  short display_option;
+
   /* The display text, inside the visible dialog */
   QList<QString> display_text;
   
@@ -146,6 +135,8 @@ private:
   const static short kNAME_BOX_HEIGHT; /* Height of the name box */
   const static short kNAME_BOX_MIN_WIDTH; /* Minimum width of name box */
   const static short kNAME_BOX_X_OFFSET; /* Offset from dialog box for name */
+  const static short kOPTION_MARGIN; /* The margin around option selection */
+  const static short kOPTION_OFFSET; /* The option display offset in pixels */
   const static short kSHIFT_TIME;  /* The time it takes to shift the display
                                       into view (in msec) */
 
@@ -196,6 +187,10 @@ public:
 
   /* Returns if the dialog image has been set (and proper size) */
   bool isDialogImageSet();
+
+  /* Some status checks, of the state of the class */
+  bool isInConversation();
+  bool isInUse();
 
   /* Key press event reimplemented */
   void keyPress(QKeyEvent* event);

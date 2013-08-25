@@ -4,10 +4,13 @@
 * Inheritance:
 * Description:  Enum Database holds non-flag Enums
  *****************************************************************************/
-#include "EnumString.h"
-
 #ifndef ENUMDB_H
 #define ENUMDB_H
+
+#include <QList>
+#include <QString>
+
+#include "EnumString.h"
 
 class EnumDb
 {
@@ -274,5 +277,15 @@ Begin_Enum_String( EnumDb::PersonRanks )
   RegisterEnumerator(EnumDb::BOAT, "Bear of Ancient Times");
 }
 End_Enum_String;
+
+/* Struct to handle the conversation throughout the map */
+// TODO: Add MapAction, tile image?
+struct Conversation
+{
+  QString text;
+  int thing_id;
+  EnumDb::DialogCategory category;
+  QList<Conversation> next;
+};
 
 #endif // ENUMDB_H

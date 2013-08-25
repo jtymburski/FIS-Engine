@@ -226,20 +226,24 @@ void Map::initializeGL()
 
 void Map::keyPressEvent(QKeyEvent* key_event)
 {
-  if(key_event->key() == Qt::Key_Down || key_event->key() == Qt::Key_Up ||
-     key_event->key() == Qt::Key_Right || key_event->key() == Qt::Key_Left)
+  if(key_event->key() == Qt::Key_Escape)
+    closeMap();
+  else if(map_dialog.isInConversation())
+    map_dialog.keyPress(key_event);
+  else if(key_event->key() == Qt::Key_Down || key_event->key() == Qt::Key_Up ||
+     key_event->key() == Qt::Key_Right || key_event->key() == Qt::Key_Left || 
+     key_event->key() == Qt::Key_E)
   {
     if(player != 0)
       player->keyPress(key_event);
   }
-  else if(key_event->key() == Qt::Key_Escape)
-    closeMap();
   else if(key_event->key() == Qt::Key_A)
     animateTiles();
   else if(key_event->key() == Qt::Key_1)
   {
     if(persons.size() > kPLAYER_INDEX)
     {
+      player->keyFlush();
       player = persons[kPLAYER_INDEX];
       viewport->lockOn(player);
     }
@@ -248,6 +252,7 @@ void Map::keyPressEvent(QKeyEvent* key_event)
   {
     if(persons.size() > (kPLAYER_INDEX + 1))
     {
+      player->keyFlush();
       player = persons[kPLAYER_INDEX + 1];
       viewport->lockOn(player);
     }
@@ -276,7 +281,8 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     convo.thing_id = 1;
     Conversation test1, test2, test3, test4, test5;
     test1.category = EnumDb::TEXT;
-    test1.text = "This is a test to see how the data performs. Single line!";
+    test1.text = "This is a test to see how the data performs. The line will split once ";
+    test1.text += "unless it is an option based selection in which case it will restrict."; 
     test1.thing_id = 3;
     test2.category = EnumDb::TEXT;
     test2.text = "This is a no man case. See what happens??";
@@ -288,25 +294,27 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     test3.text += " these lines.";
     test3.thing_id = 24;
     test3.next.append(test2);
-    /*test4.category = EnumDb::TEXT;
-    test4.text = "Testing Case 4";
-    test4.thing_id = 3;
+    test4.category = EnumDb::TEXT;
+    test4.text = "Option 1";
+    test4.thing_id = -1;
+    test4.next.append(test2);
     test5.category = EnumDb::TEXT;
-    test5.text = "Testing Case 5";
-    test5.thing_id = 24;
-    test3.next.append(test4);
+    test5.text = "Option 2";
+    test5.thing_id = -1;
+    test5.next.append(test3);
+    test1.next.append(test4);
+    test1.next.append(test5);
+    /*test3.next.append(test4);
     test1.next.append(test3);
     test1.next.append(test2);*/
-    convo.next.append(test3);
+    convo.next.append(test1);
     /*convo.next.append(test5);
     convo.next.append(test1);
     convo.next.append(test3);*/
-    map_dialog.initConversation(convo);
+    if(map_dialog.initConversation(convo))
+      player->keyFlush();
   }
-  else if(key_event->key() == Qt::Key_Space)
-  {
-    map_dialog.keyPress(key_event);
-  }
+
   //else if(key_event->key() == Qt::Key_F1)
   //{
   //  map_dialog.setPersonDisplay("sprites/Map/Dialog/ulterius.png");
@@ -326,15 +334,13 @@ void Map::keyPressEvent(QKeyEvent* key_event)
 
 void Map::keyReleaseEvent(QKeyEvent* key_event)
 {
-  if(key_event->key() == Qt::Key_Down || key_event->key() == Qt::Key_Up ||
-     key_event->key() == Qt::Key_Right || key_event->key() == Qt::Key_Left)
+  if(map_dialog.isInConversation())
+    map_dialog.keyRelease(key_event);
+  else if(key_event->key() == Qt::Key_Down || key_event->key() == Qt::Key_Up ||
+          key_event->key() == Qt::Key_Right || key_event->key() == Qt::Key_Left)
   {
     if(player != 0)
       player->keyRelease(key_event);
-  }
-  else if(key_event->key() == Qt::Key_Space)
-  {
-    map_dialog.keyRelease(key_event);
   }
 }
 
@@ -479,6 +485,42 @@ void Map::getThingData(QList<int> thing_ids)
   map_dialog.setThingData(used_things);
 }
 
+void Map::initiateThingUse(MapPerson* person)
+{
+  if(person != 0)
+  {
+    MapThing* null_thing = 0;
+    int x = person->getTile()->getX();
+    int y = person->getTile()->getY();
+
+    /* Determine the direction and offset coordinate tile selection */
+    EnumDb::Direction direction = person->getDirection();
+    if(direction == EnumDb::NORTH)
+      y--;
+    else if(direction == EnumDb::EAST)
+      x++;
+    else if(direction == EnumDb::SOUTH)
+      y++;
+    else if(direction == EnumDb::WEST)
+      x--;
+    /* Throw X out of bounds if no direction */
+    else
+      x = -1;
+
+    /* Aquire the thing, that's being pointed at */
+    if(x >= 0 && x < geography.size() && y >= 0 && y < geography[0].size())
+      person->setTarget(geography[x][y]->getImpassableThing());
+    else
+      person->setTarget(null_thing);
+  }
+}
+
+/* Starts a conversation within the map */
+void Map::startConversation(Conversation conversation_data)
+{
+  map_dialog.initConversation(conversation_data);
+}
+
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
@@ -616,7 +658,11 @@ bool Map::loadMap(QString file)
                                         new MapState(left_sprite));
     person->setDialogImage("sprites/Map/Dialog/player.png");
     person->setID(1);
-    person->setName("Yuseway");
+    person->setName("REally LOng NAme");
+    connect(person, SIGNAL(initiateThingUse(MapPerson*)), 
+            this, SLOT(initiateThingUse(MapPerson*)));
+    connect(person, SIGNAL(startConversation(Conversation)), 
+            this, SLOT(startConversation(Conversation)));
     persons.append(person);
 
     /* Add a second player */
@@ -638,6 +684,14 @@ bool Map::loadMap(QString file)
     person->setDialogImage("sprites/Map/Dialog/el_oroso.png");
     person->setID(24);
     person->setName("El Oroso");
+    Conversation person_convo;
+    person_convo.text = "I don't have anything to say to you!!";
+    person_convo.thing_id = 24;
+    person->setConversation(person_convo);
+    connect(person, SIGNAL(initiateThingUse(MapPerson*)), 
+            this, SLOT(initiateThingUse(MapPerson*)));
+    connect(person, SIGNAL(startConversation(Conversation)), 
+            this, SLOT(startConversation(Conversation)));
     persons.append(person);
 
     /* Add an NPC */
@@ -661,6 +715,16 @@ bool Map::loadMap(QString file)
     npc->setName("Arcadius");
     npc->setNodeState(MapNPC::BACKANDFORTH);
     npc->setSpeed(200);
+    person_convo.text = "I don't like to be stopped. Why must you insist to stop progress. ";
+    person_convo.text += "On second thought, I really don't like you and want to run away.";
+    person_convo.thing_id = 3;
+    Conversation second_set;
+    second_set.text = "Fine, I'm leaving.";
+    second_set.thing_id = 1;
+    person_convo.next.append(second_set);
+    npc->setConversation(person_convo);
+    connect(npc, SIGNAL(startConversation(Conversation)), 
+            this, SLOT(startConversation(Conversation)));
     persons.append(npc);
 
     /* Make the map thing */
