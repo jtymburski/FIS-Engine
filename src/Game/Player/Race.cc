@@ -1,50 +1,59 @@
-/*******************************************************************************
+/******************************************************************************
 * Class Name: Race
-* Date Created: Sunday, October 28th, 2012
+* Date Created: October 28th, 2012
+*               Rewritten - March 5th, 2013
+*               Refactored - August 11th, 2013
+*
 * Inheritance: None
-* Description: Implementation for Race. Every Person has a Race, which
-*              is equivalent to their "Battle Class". This holds their starting
-*              and ending values for attributes (In an attribute set), and a
-*              set of skills which will become available to the person at
-*              various levels.
-* // TODO: SKILL SORTING [03-05-13]
-* // TODO: ADD Race FLAGS [03-05-13]
-*******************************************************************************/
+* Description: Header for Race that defines the race for the particular person.
+*              Some examples includes Bears, Humans, etc. The Race class will
+*              provide some unique Actions for persons, as well as provide
+*              bonuses to the category stats when making up a person.
+******************************************************************************/
 #include "Game/Player/Race.h"
-#include <QDebug>
 
 /*============================================================================
  * CONSTANTS
  *===========================================================================*/
-const ushort Race::kMAX_VITALITY  = 5000;
-const ushort Race::kMAX_QD        = 1250;
-const ushort Race::kMAX_PHYSICAL  = 1250;
-const ushort Race::kMAX_ELEMENTAL =  750;
-const ushort Race::kMAX_SPECIAL   =  250;
+const uint Race::kMIN_VITA =    0;
+const uint Race::kMIN_QTDR =    0;
+const uint Race::kMIN_PHYS =    0;
+const uint Race::kMIN_ELMT =    0;
+const uint Race::kMIN_SPEC =    0;
+const uint Race::kMAX_VITA = 5000;
+const uint Race::kMAX_QTDR =  500;
+const uint Race::kMAX_PHYS =  700;
+const uint Race::kMAX_ELMT =  550;
+const uint Race::kMAX_SPEC =  200;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
 
 /*
- * Description: Constructor object. Constructs a Race given a string and
- *             a full set of base stat values. None of the Race constructors
- *             set the description of the Race.
+ * Description:
  *
- * Inputs: QString - name of the Race
- *         AttributeSet - statistic set to add to the Race
+ * Inputs:
  */
-Race::Race(QString name, AttributeSet attributes, SkillSet* skills)
+Race::Race()
 {
-  setName(name);
-  setAttrSet(attributes);
-  if (skills != 0)
-    setSkillSet(skills);
-  else
-    skill_set = 0;
-  if (skills != 0)
-    cleanUp();
+  loadDefaults();
 }
+
+/*
+ * Description:
+ *
+ * Inputs:
+ */
+Race::Race(Race& other)
+    : description(other.getDescription()),
+      denonym(other.getDenonym()),
+      name(other.getName()),
+      base_stat_set(other.getBaseSet()),
+      max_stat_set(other.getMaxSet()),
+      immunities(other.getImmunities()),
+      skill_set(other.getSkillSet())
+{}
 
 /*
  * Description: Default Race object constructor. Constructs a Race with
@@ -54,10 +63,27 @@ Race::Race(QString name, AttributeSet attributes, SkillSet* skills)
  */
 Race::Race(QString name)
 {
+  loadDefaults();
   setName(name);
-  skill_set = 0;
-  cleanUp();
 }
+
+/*
+ * Description: Constructor object. Constructs a Race given a string and
+ *             a full set of base stat values. None of the Race constructors
+ *             set the description of the Race.
+ *
+ * Inputs: QString - name of the Race
+ *         AttributeSet - statistic set to add to the Race
+ */
+Race::Race(QString name, QString denonym, QString desc, AttributeSet base_set,
+           AttributeSet max_set, SkillSet *skill_set)
+    : description(desc),
+      denonym(denonym),
+      name(name),
+      base_stat_set(base_set),
+      max_stat_set(max_set),
+      skill_set(skill_set)
+{}
 
 /*
  * Description: Destroys a Race object
@@ -65,7 +91,70 @@ Race::Race(QString name)
 Race::~Race() {}
 
 /*============================================================================
- * FUNCTIONS
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void Race::loadDefaults()
+{
+  /* Default string params */
+  setDenonym("");
+  setDescription("");
+  setName("");
+
+  /* Set up basic min and max Attribute Sets */
+  setAttrSet(buildMinSet());
+  setMaxSet(buildMaxSet());
+
+  /* No skill set */
+  setSkillSet(0);
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+AttributeSet Race::buildMinSet()
+{
+  QList<uint> min_values;
+
+  min_values << kMIN_VITA << kMIN_QTDR << kMIN_PHYS << kMIN_PHYS
+             << kMIN_ELMT << kMIN_ELMT << kMIN_ELMT << kMIN_ELMT
+             << kMIN_ELMT << kMIN_ELMT << kMIN_ELMT << kMIN_ELMT
+             << kMIN_ELMT << kMIN_ELMT << kMIN_ELMT << kMIN_ELMT
+             << kMIN_SPEC << kMIN_SPEC << kMIN_SPEC;
+
+  return AttributeSet(min_values);
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+AttributeSet Race::buildMaxSet()
+{
+  QList<uint> max_values;
+
+  max_values << kMAX_VITA << kMAX_QTDR << kMAX_PHYS << kMAX_PHYS
+             << kMAX_ELMT << kMAX_ELMT << kMAX_ELMT << kMAX_ELMT
+             << kMAX_ELMT << kMAX_ELMT << kMAX_ELMT << kMAX_ELMT
+             << kMAX_ELMT << kMAX_ELMT << kMAX_ELMT << kMAX_ELMT
+             << kMAX_SPEC << kMAX_SPEC << kMAX_SPEC;
+
+  return AttributeSet(max_values);
+}
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
  *===========================================================================*/
 
 /*
@@ -90,20 +179,22 @@ void Race::addImmunity(EnumDb::Infliction new_immunity)
  */
 void Race::cleanUp()
 {
-  getSkillSet()->cleanUp();
-  if (stat_set.getMax("VITALITY") > kMAX_VITALITY)
-      stat_set.setMax("VITALITY", kMAX_VITALITY);
-  if (stat_set.getMax("QUANTUM DRIVE") > kMAX_QD)
-      stat_set.setMax("QUANTUM DRIVE", kMAX_QD);
-  for (int i = stat_set.getIndex("PHAG"); i <= stat_set.getIndex("PHFD"); i++)
-    if (stat_set.getMax(i) > kMAX_PHYSICAL)
-        stat_set.setMax(i, kMAX_PHYSICAL);
-  for (int i = stat_set.getIndex("THAG"); i <= stat_set.getIndex("NIFD"); i++)
-    if (stat_set.getMax(i) > kMAX_ELEMENTAL)
-        stat_set.setMax(i, kMAX_ELEMENTAL);
-  for (int i = stat_set.getIndex("NIFD") + 1; i < stat_set.getSize(); i++)
-    if (stat_set.getMax(i) > kMAX_SPECIAL)
-        stat_set.setMax(i, kMAX_SPECIAL);
+  /* Clean up the base and maximum attribute sets */
+  AttributeSet temp_min = buildMinSet();
+  AttributeSet temp_max = buildMaxSet();
+
+  for (int i = 0; i < temp_min.getSize(); i++)
+  {
+    if (getBaseSet().getStat(i) < temp_min.getStat(i))
+      getBaseSet().setStat(i, temp_min.getStat(i));
+
+    if (getMaxSet().getStat(i) < temp_max.getStat(i))
+      getMaxSet().setStat(i, temp_max.getStat(i));
+  }
+
+  /* Clean up the skill set, if one is set */
+  if (getSkillSet() != 0)
+    getSkillSet()->cleanUp();
 }
 
 /*
@@ -116,8 +207,8 @@ bool Race::isImmune(EnumDb::Infliction check_immunity)
 {
   QList<EnumDb::Infliction>::iterator it;
   for (it = immunities.begin(); it < immunities.end(); ++it)
-      if ((*it) == check_immunity)
-        return true;
+    if ((*it) == check_immunity)
+      return true;
   return false;
 }
 
@@ -131,8 +222,8 @@ void Race::removeImmunity(EnumDb::Infliction remove_immunity)
 {
  QList<EnumDb::Infliction>::iterator it;
  for (it = immunities.begin(); it < immunities.end(); ++it)
-     if ((*it) == remove_immunity)
-       immunities.erase(it);
+   if ((*it) == remove_immunity)
+     immunities.erase(it);
 }
 
 /*
@@ -143,10 +234,14 @@ void Race::removeImmunity(EnumDb::Infliction remove_immunity)
  */
 void Race::printInfo()
 {
-  qDebug() << "--- Race --- ";
   qDebug() << "Name: " << name;
+  qDebug() << "Denonym: " << denonym;
   qDebug() << "Description: " << description;
-  qDebug() << "Skill Set: " << skill_set->getSkills().size();
+  //qDebug() << "Base Set: " << base_stat_set.printInfo();
+  //qDebug() << "Max Set " << max_stat_set.printInfo();
+
+  if (getSkillSet() != 0)
+    qDebug() << "Sills: " << getSkillSet()->getSkills().size();
 }
 
 /*
@@ -188,20 +283,42 @@ QString Race::getName()
  * Inputs: none
  * Output: AttributeSet - attribute set of the Race
  */
-AttributeSet Race::getAttrSet()
+AttributeSet Race::getBaseSet()
 {
-  return stat_set;
+  return base_stat_set;
 }
 
 /*
- * Description: Returns the SkillSet*
+ * Description:
  *
- * Inputs: none
- * Output: SkillSet* - the skills of the Race
+ * Inputs:
+ * Output:
+ */
+AttributeSet Race::getMaxSet()
+{
+  return max_stat_set;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
  */
 SkillSet* Race::getSkillSet()
 {
   return skill_set;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+QList<EnumDb::Infliction> Race::getImmunities()
+{
+  return immunities;
 }
 
 /*
@@ -245,7 +362,18 @@ void Race::setName(QString new_name)
  */
 void Race::setAttrSet(AttributeSet new_stat_set)
 {
-  stat_set = new_stat_set;
+  base_stat_set = new_stat_set;
+}
+
+/*
+ * Description: Sets the AttributeSet of the Race and calls clean up
+ *
+ * Inputs: AttributeSet - new stat set
+ * Output: none
+ */
+void Race::setMaxSet(AttributeSet new_stat_set)
+{
+  max_stat_set = new_stat_set;
 }
 
 /*
@@ -258,5 +386,3 @@ void Race::setSkillSet(SkillSet* new_skill_set)
 {
   skill_set = new_skill_set;
 }
-
-

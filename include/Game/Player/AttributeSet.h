@@ -22,23 +22,23 @@ public:
   AttributeSet();
 
   /* Constructor: Constructs an attribute set given a vector of values. */
-  AttributeSet(QVector<ushort> stat_values);
+  AttributeSet(QList<uint> stat_values);
 
   /* Annihilates an AttributeSet object */
   ~AttributeSet();
 
 private:
   /* Container for short names of Attributes */
-  static QVector<QString> short_names;
+  static QList<QString> short_names;
 
   /* Containers for the values and the maximum values of the Attribute Set */
-  QVector<ushort> values;
-  QVector<ushort> max_values;
+  QList<uint> values;
 
   /*------------------- Constants -----------------------*/
-  static const ushort kDEFAULT_MIN; /* Default value for a min stat */
-  static const ushort kDEFAULT_MAX; /* Default value for a max stat */
-  static const ushort kMAX_VALUE;   /* The maximum value of any stat */
+  static const uint kDEFAULT_MIN; /* Default value for a min stat */
+  static const uint kDEFAULT_MAX; /* Default value for a max stat */
+  static const uint kMIN_VALUE;
+  static const uint kMAX_VALUE;   /* The maximum value of any stat */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -59,32 +59,18 @@ public:
   /* Returns the index of a statistic given the 4-character QString */
   int getIndex(QString name);
 
-  /* Returns the maximum values of a given stat given an enum, string, or int */
-  short getMax(EnumDb::Attribute type);
-  short getMax(QString name);
-  short getMax(int index);
-
   /* Returns the normal values of a given stat give an enum, string, or int*/
   short getStat(EnumDb::Attribute type);
   short getStat(QString name);
   short getStat(int index);
 
   /* Overridden functions for setting all the values in a stat set */
-  void setAll(QVector<ushort> stat_values, bool max = FALSE);
-  void setAll(ushort a, ushort b, ushort c, ushort d, ushort e, ushort f,
-              ushort g, ushort h, ushort i, ushort j, ushort k, ushort l,
-              ushort m, ushort n, ushort o, ushort p, ushort q, ushort r,
-              ushort s, bool max = FALSE);
-
-  /* Sets the maximum values of the Attribute Set */
-  bool setMax(EnumDb::Attribute type, ushort value);
-  bool setMax(QString name, ushort value);
-  bool setMax(int index, ushort value);
+  void setAll(QList<uint> stat_values);
 
   /* Sets the normal stat values of the AttributeSet */
-  bool setStat(EnumDb::Attribute type, ushort value);
-  bool setStat(QString name, ushort value);
-  bool setStat(int index, ushort value);
+  bool setStat(EnumDb::Attribute type, uint value);
+  bool setStat(QString name, uint value);
+  bool setStat(int index, uint value);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS

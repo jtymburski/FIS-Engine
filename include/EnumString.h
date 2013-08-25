@@ -118,7 +118,7 @@ public:
 template <class EnumType>
 struct EnumString : public EnumStringBase< EnumString<EnumType>, EnumType >
 {
-    static void RegisterEnumerators();
+  static void RegisterEnumerators();
 };
 
 /*=============================================================================

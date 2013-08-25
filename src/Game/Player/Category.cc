@@ -1,31 +1,74 @@
 /*******************************************************************************
 * Class Name: Category
-* Date Created: Sunday, October 28th, 2012
+* Date Created: October 28th, 2012
+*               Rewritten - March 5th, 2013
+*               Refactored - August 11th, 2013
+*
 * Inheritance: None
-* Description: Implementation for Category. Every Person has a Category, which
+* Description: Header for the Category class. Every Person has a Category, which
 *              is equivalent to their "Battle Class". This holds their starting
 *              and ending values for attributes (In an attribute set), and a
 *              set of skills which will become available to the person at
 *              various levels.
-* // TODO: SKILL SORTING [03-05-13]
-* // TODO: ADD CATEGORY FLAGS [03-05-13]
 *******************************************************************************/
-
 #include "Game/Player/Category.h"
-#include <QDebug>
 
 /*============================================================================
  * CONSTANTS
  *============================================================================*/
-const ushort Category::kMAX_VITALITY  = 20000;
-const ushort Category::kMAX_QD        =  5000;
-const ushort Category::kMAX_PHYSICAL  =  5000;
-const ushort Category::kMAX_ELEMENTAL =  3500;
-const ushort Category::kMAX_SPECIAL   =  1000;
+const uint Category::kMIN_VITA  =    30;
+const uint Category::kMIN_QTDR  =     2;
+const uint Category::kMIN_PHYS  =     5;
+const uint Category::kMIN_ELMT  =     4;
+const uint Category::kMIN_SPEC  =     1;
+const uint Category::kMAX_VITA  = 50000;
+const uint Category::kMAX_QTDR  =  5000;
+const uint Category::kMAX_PHYS  =  7000;
+const uint Category::kMAX_ELMT  =  5500;
+const uint Category::kMAX_SPEC  =  2000;
+
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
+/*
+ * Description: Default Category construction: loads the object with default
+ *              values.
+ *
+ * Inputs: none
+ */
+Category::Category()
+{
+  loadDefaults();
+}
+
+/*
+ * Description:
+ *
+ * Inputs: Category& - reference of a Category to be copied
+ */
+Category::Category(Category &other)
+    : description(other.getDescription()),
+      denonym(other.getDenonym()),
+      name(other.getName()),
+      base_stat_set(other.getBaseSet()),
+      max_stat_set(other.getMaxSet()),
+      immunities(getImmunities()),
+      skill_set(other.getSkillSet())
+{}
+
+/*
+ * Description: Minimal category construction: construct a category object with
+ *              default values except with a proper name.
+ *
+ * Inputs: QString - name of the category
+ */
+Category::Category(QString name)
+{
+  loadDefaults();
+  setName(name);
+}
+
 
 /*
  * Description: Constructor object. Constructs a Category given a string and
@@ -35,30 +78,92 @@ const ushort Category::kMAX_SPECIAL   =  1000;
  * Inputs: QString - name of the Category
  *         AttributeSet - statistic set to add to the category
  */
-Category::Category(QString name, AttributeSet attributes, SkillSet* skills)
-  : name(name),
-    stat_set(attributes),
-    skill_set(skills)
-{
-  if (getSkillSet() != 0)
-    cleanUp();
-}
-
-/*
- * Description: Default Category object constructor. Constructs a category with
- *              a default set of attributes.
- *
- * Inputs: QString - name of the category
- */
-Category::Category(QString name)
-  : name(name),
-    skill_set(0)
+Category::Category(QString name, QString denonym, QString desc,
+                   AttributeSet base, AttributeSet max, SkillSet* skills)
+    : description(desc),
+      denonym(denonym),
+      name(name),
+      base_stat_set(base),
+      max_stat_set(max),
+      skill_set(skills)
 {}
 
 /*
  * Description: Destroys a Category object
  */
 Category::~Category() {}
+
+/*============================================================================
+ * PRIVATE FUNCTIONS
+ *============================================================================*/
+
+/*
+ * Description: This method loads default values into all of the categories
+ *              data, including attribute sets. The default skill set is empty.
+ *
+ * Notes [1]: Static function
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Category::loadDefaults()
+{
+  /* Default string parameters */
+  setDenonym("");
+  setDescription("");
+  setName("");
+
+  /* Set up basic min and max Attribute Sets */
+  setAttrSet(buildMinSet());
+  setMaxSet(buildMaxSet());
+
+  /* No skill set */
+  setSkillSet(0);
+}
+
+/*
+ * Description: Method for loading an attribute set with min values based on
+ *              the min constants defined in the class.
+ *
+ * Notes [1]: Static function
+ *
+ * Inputs: none
+ * Output: AttributeSet - a minimum attribute set
+ */
+AttributeSet Category::buildMinSet()
+{
+  QList<uint> min_values;
+
+  min_values << kMIN_VITA << kMIN_QTDR << kMIN_PHYS << kMIN_PHYS
+             << kMIN_ELMT << kMIN_ELMT << kMIN_ELMT << kMIN_ELMT
+             << kMIN_ELMT << kMIN_ELMT << kMIN_ELMT << kMIN_ELMT
+             << kMIN_ELMT << kMIN_ELMT << kMIN_ELMT << kMIN_ELMT
+             << kMIN_SPEC << kMIN_SPEC << kMIN_SPEC;
+
+  return AttributeSet(min_values);
+}
+
+/*
+ * Description: Method for loading an attribute set with max values based on
+ *              the max constants defined in the class.
+ *
+ * Notes [1]: Static function
+ *
+ * Inputs: none
+ * Output: AttributeSet - a maximum attribute set
+ */
+AttributeSet Category::buildMaxSet()
+{
+  QList<uint> max_values;
+
+  max_values << kMAX_VITA << kMAX_QTDR << kMAX_PHYS << kMAX_PHYS
+             << kMAX_ELMT << kMAX_ELMT << kMAX_ELMT << kMAX_ELMT
+             << kMAX_ELMT << kMAX_ELMT << kMAX_ELMT << kMAX_ELMT
+             << kMAX_ELMT << kMAX_ELMT << kMAX_ELMT << kMAX_ELMT
+             << kMAX_SPEC << kMAX_SPEC << kMAX_SPEC;
+
+  return AttributeSet(max_values);
+}
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -77,27 +182,29 @@ void Category::addImmunity(EnumDb::Infliction new_immunity)
 }
 
 /*
- * Description: Cleans up the categories stat set
+ * Description: Cleans up the categories skill set, attribute sets.
  *
  * Inputs: none
  * Output: none
  */
 void Category::cleanUp()
 {
-  getSkillSet()->cleanUp();
-  if (stat_set.getMax("VITALITY") > kMAX_VITALITY)
-      stat_set.setMax("VITALITY", kMAX_VITALITY);
-  if (stat_set.getMax("QUANTUM DRIVE") > kMAX_QD)
-      stat_set.setMax("QUANTUM DRIVE", kMAX_QD);
-  for (int i = stat_set.getIndex("PHAG"); i <= stat_set.getIndex("PHFD"); i++)
-      if (stat_set.getMax(i) > kMAX_PHYSICAL)
-          stat_set.setMax(i, kMAX_PHYSICAL);
-  for (int i = stat_set.getIndex("THAG"); i <= stat_set.getIndex("NIFD"); i++)
-      if (stat_set.getMax(i) > kMAX_ELEMENTAL)
-          stat_set.setMax(i, kMAX_ELEMENTAL);
-  for (int i = stat_set.getIndex("NIFD") + 1; i < stat_set.getSize(); i++)
-      if (stat_set.getMax(i) > kMAX_SPECIAL)
-          stat_set.setMax(i, kMAX_SPECIAL);
+  /* Clean up the base and maximum attribute sets */
+  AttributeSet temp_min = buildMinSet();
+  AttributeSet temp_max = buildMaxSet();
+
+  for (int i = 0; i < temp_min.getSize(); i++)
+  {
+    if (getBaseSet().getStat(i) < temp_min.getStat(i))
+      getBaseSet().setStat(i, temp_min.getStat(i));
+
+    if (getMaxSet().getStat(i) < temp_max.getStat(i))
+      getMaxSet().setStat(i, temp_max.getStat(i));
+  }
+
+  /* Clean up the skill set, if one is set */
+  if (getSkillSet() != 0)
+    getSkillSet()->cleanUp();
 }
 
 /*
@@ -110,8 +217,8 @@ bool Category::isImmune(EnumDb::Infliction check_immunity)
 {
   QList<EnumDb::Infliction>::iterator it;
   for (it = immunities.begin(); it < immunities.end(); ++it)
-      if ((*it) == check_immunity)
-        return true;
+    if ((*it) == check_immunity)
+      return true;
   return false;
 }
 
@@ -125,8 +232,8 @@ void Category::removeImmunity(EnumDb::Infliction remove_immunity)
 {
  QList<EnumDb::Infliction>::iterator it;
  for (it = immunities.begin(); it < immunities.end(); ++it)
-     if ((*it) == remove_immunity)
-       immunities.erase(it);
+   if ((*it) == remove_immunity)
+     immunities.erase(it);
 }
 
 
@@ -138,10 +245,17 @@ void Category::removeImmunity(EnumDb::Infliction remove_immunity)
  */
 void Category::printInfo()
 {
-    qDebug() << " --- Category  --- ";
-    qDebug() << "Name: " << name;
-    qDebug() << "Description: " << description;
-    qDebug() << " --- / Category --- ";
+  qDebug() << " --- Category  --- ";
+  qDebug() << "Name: " << name;
+  qDebug() << "Denonym: " << denonym;
+  qDebug() << "Description: " << description;
+  //qDebug() << "Base Set: " << base_stat_set.printInfo();
+  //qDebug() << "Max Set " << max_stat_set.printInfo();
+
+  if (getSkillSet() != 0)
+    qDebug() << "Sills: " << getSkillSet()->getSkills().size();
+
+  qDebug() << " --- / Category --- ";
 }
 
 /*
@@ -183,9 +297,20 @@ QString Category::getName()
  * Inputs: none
  * Output: AttributeSet - attribute set of the Category
  */
-AttributeSet Category::getAttrSet()
+AttributeSet Category::getBaseSet()
 {
-  return stat_set;
+  return base_stat_set;
+}
+
+/*
+ * Description: Returns the maximum stat values of the category
+ *
+ * Inputs: none
+ * Output: AttributeSet - attribute set of the Category
+ */
+AttributeSet Category::getMaxSet()
+{
+  return max_stat_set;
 }
 
 /*
@@ -197,6 +322,17 @@ AttributeSet Category::getAttrSet()
 SkillSet* Category::getSkillSet()
 {
   return skill_set;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+QList<EnumDb::Infliction> Category::getImmunities()
+{
+  return immunities;
 }
 
 /*
@@ -238,9 +374,20 @@ void Category::setName(QString new_name)
  * Inputs: AttributeSet - new stat set
  * Output: none
  */
-void Category::setAttrSet(AttributeSet new_stat_set)
+void Category::setAttrSet(AttributeSet new_base_set)
 {
-  stat_set = new_stat_set;
+  base_stat_set = new_base_set;
+}
+
+/*
+ * Description: Assigns a new maximum stat set to the Category
+ *
+ * Inputs: AttributeSet - new stat set
+ * Output: none
+ */
+void Category::setMaxSet(AttributeSet new_max_set)
+{
+  max_stat_set = new_max_set;
 }
 
 /*

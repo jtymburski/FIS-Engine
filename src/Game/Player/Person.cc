@@ -31,6 +31,11 @@ const double Person::kMAX_DAMAGE_MODIFIER =    10.0000;
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
 
+Person::Person()
+{
+
+}
+
 /*
  * Description: Constructs a Person object gievn a name, race and category
  *              pointers, plus two strings describing which stats they are
@@ -65,8 +70,10 @@ Person::Person(QString pname, Race* prace, Category* pcat, QString p, QString s)
 
   /* Set up all three attribute sets */
   setUpBaseStats();
-  setStats(base_stats);
-  setTempStats(base_stats);
+  setStats(*getBase());
+  setMax(*getBase());
+  setTemp(*getBase());
+  setMaxTemp(*getBase());
 
   /* Construct the Exp Table */
   if (exp_table.isEmpty())
@@ -79,30 +86,27 @@ Person::Person(QString pname, Race* prace, Category* pcat, QString p, QString s)
 /*
  * Description: Copy constructor
  */
-Person::Person(Person* parent)
-    : damage_modifier(parent->getDmgMod()),
-      level(parent->getLevel()),
-      total_exp(parent->getExp()),
-      experience_drop(parent->getExpLoot()),
-      credit_drop(parent->getCreditLoot()),
-      cat(parent->getCategory()),
-      parent(parent),
-      race(parent->getRace()),
-      name(parent->getName()),
-      rank(parent->getRank()),
-      skills(parent->getSkills()),
-      first_person(parent->getFirstPerson()),
-      third_person(parent->getThirdPerson()),
-      bubbified_sprite(parent->getBubbySprite())
+Person::Person(Person& other)
+    : damage_modifier(other.getDmgMod()),
+      level(other.getLevel()),
+      total_exp(other.getExp()),
+      experience_drop(other.getExpLoot()),
+      credit_drop(other.getCreditLoot()),
+      cat(other.getCategory()),
+      parent(&other),
+      race(other.getRace()),
+      name(other.getName()),
+      rank(other.getRank()),
+      skills(other.getSkills()),
+      first_person(other.getFirstPerson()),
+      third_person(other.getThirdPerson()),
+      bubbified_sprite(other.getBubbySprite())
 {
   /* Grabs the primary and secondary curves from the parent */
-  setPrimary(parent->getPrimary() + parent->getPrimaryCurve());
-  setSecondary(parent->getSecondary() + parent->getSecondaryCurve());
+  setPrimary(other.getPrimary() + other.getPrimaryCurve());
+  setSecondary(other.getSecondary() + other.getSecondaryCurve());
 
   /* Sets up the Attribute Sets */
-  setUpBaseStats();
-  setStats(base_stats);
-  setTempStats(base_stats);
 
   for (int i = 0; i < parent->getItemLoot().size(); i++)
     item_drops.push_back(new Item(parent->getItemLoot().value(i)));
@@ -161,8 +165,8 @@ void Person::battlePrep()
 {
   for (int i = 0 ; i < temp_stats.getSize(); i++)
   {
-    temp_stats.setStat(i, stats.getStat(i));
-    temp_stats.setMax(i, stats.getStat(i));
+    temp_stats.setStat(i, current_stats.getStat(i));
+    temp_max_stats.setStat(i, current_max_stats.getStat(i));
   }
 }
 
@@ -216,8 +220,8 @@ void Person::calcSkills()
  */
 bool Person::damage(ushort amount)
 {
-  tempStats()->changeStat(0, -amount);
-  if (tempStats()->getStat(0) == 0)
+  getTemp()->changeStat(0, -amount);
+  if (getTemp()->getStat(0) == 0)
     return true;
   return false;
 }
@@ -235,9 +239,6 @@ void Person::printAll()
   printBasics();
   printEquipment();
   printFlags();
-  printBaseStats();
-  printStats();
-  printTempStats();
   printSkills();
   qDebug() << " --- / Person --- ";
 }
@@ -312,39 +313,6 @@ void Person::printFlags()
 }
 
 /*
- * Description: Method for printing out the base stats of a person
- *
- * Inputs: none
- * Output: none
- */
-void Person::printBaseStats()
-{
-    base_stats.printInfo();
-}
-
-/*
- * Description: Method for printing out the normal stats of a person
- *
- * Inputs: none
- * Output: none
- */
-void Person::printStats()
-{
-    stats.printInfo();
-}
-
-/*
- * Description: Method for printing out the temp stats of a person
- *
- * Inputs: none
- * Output: none
- */
-void Person::printTempStats()
-{
-    temp_stats.printInfo();
-}
-
-/*
  * Description: Method for printing out the skills of a person
  *
  * Inputs: none
@@ -364,13 +332,11 @@ void Person::printSkills()
  */
 void Person::setUpBaseStats()
 {
+  AttributeSet cat_set = cat->getBaseSet();
+  AttributeSet race_set = race->getBaseSet();
+
   for (int i = 0; i < base_stats.getSize(); i++)
-  {
-    base_stats.setStat(i, cat->getAttrSet().getStat(i) +
-                       race->getAttrSet().getStat(i));
-    base_stats.setMax(i, cat->getAttrSet().getMax(i) +
-                      race->getAttrSet().getMax(i));
-  }
+    base_stats.setStat(i, cat_set.getStat(i) + race_set.getStat(i));
 }
 
 /*
@@ -671,36 +637,88 @@ Sprite* Person::getFirstPerson()
 }
 
 /*
- * Description: Returns the base AttributeSet
+ * Description:
  *
- * Inputs: none
- * Output: AttributeSet - the base stat AttributeSet
+ * Inputs:
+ * Output:
  */
-AttributeSet* Person::baseStats()
+AttributeSet* Person::getBase()
 {
   return &base_stats;
 }
 
 /*
- * Description: Returns the standard AttributeSet
+ * Description:
  *
- * Inputs: none
- * Output: AttributeSet - the standard stat AttributeSet
+ * Inputs:
+ * Output:
  */
 AttributeSet* Person::getStats()
 {
-  return &stats;
+  return &current_stats;
 }
 
 /*
- * Description: Returns the temporary AttributeSet
+ * Description:
  *
- * Inputs: none
- * Output: AttributeSet - the temporary AttributeSet
+ * Inputs:
+ * Output:
  */
-AttributeSet* Person::tempStats()
+AttributeSet* Person::getMax()
+{
+  return &current_max_stats;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+AttributeSet* Person::getTemp()
 {
   return &temp_stats;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+AttributeSet* Person::getMaxTemp()
+{
+  return &temp_max_stats;
+}
+
+/*
+ * Description: Returns the enumeration of a given QString
+ *              representation of a PlayerRank enum.
+ *
+ * Inputs: QString - string of a PlayerRank enum
+ * Output: EnumDb::PersonRanks - corresponding enumeration
+ */
+EnumDb::PersonRanks Person::getRankEnum(QString rank_string)
+{
+  const std::string &rank = rank_string.toUtf8().constData();
+  EnumDb::PersonRanks person_rank = EnumDb::NUBEAR;
+  EnumString<EnumDb::PersonRanks>::To(person_rank, rank);
+  return person_rank;
+}
+
+/*
+ * Description: Returns the QString registered to the enumerated
+ *              PlayerRanks type.
+ *
+ * Inputs: EnumDb::PersonRanks - enumeration to find QString for
+ * Output: QString - the QString of the enumeration
+ */
+QString Person::getRankString(EnumDb::PersonRanks person_rank)
+{
+  const std::string &rank_string
+          = EnumString<EnumDb::PersonRanks>::From(person_rank);
+  QString rank_qstring(rank_string.c_str());
+  return rank_qstring;
 }
 
 /*
@@ -869,7 +887,8 @@ void Person::setItemLoot(QVector<Item*> items)
  */
 bool Person::setLevel(const uint &new_level)
 {
-  /* Assign the proper level value */
+
+  /*
   if (new_level == getLevel())
     return false;
   if (new_level < kMAX_LEVEL)
@@ -880,7 +899,6 @@ bool Person::setLevel(const uint &new_level)
     setPersonFlag(Person::MAXLVL, true);
   }
 
-  /* Calculate the stats for the person based on their maximum values */
   setUpBaseStats();
   setTempStats(*getStats());
 
@@ -915,6 +933,9 @@ bool Person::setLevel(const uint &new_level)
     stats.setStat(i, new_values - old_values);
   }
   return true;
+  */
+
+  return true; //TODO
 }
 
 /*
@@ -1035,36 +1056,58 @@ void Person::setThirdPerson(Sprite* s)
 }
 
 /*
- * Description: Assigns a new base stat set.
+ * Description:
  *
- * Inputs: AttributeSet - new attribute set to be assigned
- * Output: none
+ * Inputs:
+ * Output:
  */
-void Person::setBaseStats(AttributeSet new_stat_set)
+void Person::setBase(AttributeSet new_stat_set)
 {
   base_stats = new_stat_set;
 }
 
 /*
- * Description: Assigns a new standard stat set
+ * Description:
  *
- * Inputs: AttributeSet - new attribute set to be assigned
- * Output: none
+ * Inputs:
+ * Output:
  */
 void Person::setStats(AttributeSet new_stat_set)
 {
-  stats = new_stat_set;
+  current_stats = new_stat_set;
 }
 
 /*
- * Description: Assigns a new temp stat set.
+ * Description:
  *
- * Inputs: AttributeSet - new attribute set to be assigned
- * Output: none
+ * Inputs:
+ * Output:
  */
-void Person::setTempStats(AttributeSet new_stat_set)
+void Person::setMax(AttributeSet new_stat_set)
+{
+  current_max_stats = new_stat_set;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void Person::setTemp(AttributeSet new_stat_set)
 {
   temp_stats = new_stat_set;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void Person::setMaxTemp(AttributeSet new_stat_set)
+{
+  temp_max_stats = new_stat_set;
 }
 
 /*=============================================================================
@@ -1093,34 +1136,4 @@ uint Person::getExpAt(ushort level)
 uint Person::getMaxLevel()
 {
   return kMAX_LEVEL;
-}
-
-/*
- * Description: Returns the enumeration of a given QString
- *              representation of a PlayerRank enum.
- *
- * Inputs: QString - string of a PlayerRank enum
- * Output: EnumDb::PersonRanks - corresponding enumeration
- */
-EnumDb::PersonRanks Person::getRankEnum(QString rank_string)
-{
-  const std::string &rank = rank_string.toUtf8().constData();
-  EnumDb::PersonRanks person_rank = EnumDb::NUBEAR;
-  EnumString<EnumDb::PersonRanks>::To(person_rank, rank);
-  return person_rank;
-}
-
-/*
- * Description: Returns the QString registered to the enumerated
- *              PlayerRanks type.
- *
- * Inputs: EnumDb::PersonRanks - enumeration to find QString for
- * Output: QString - the QString of the enumeration
- */
-QString getRankString(EnumDb::PersonRanks person_rank)
-{
-  const std::string &rank_string
-          = EnumString<EnumDb::PersonRanks>::From(person_rank);
-  QString rank_qstring(rank_string.c_str());
-  return rank_qstring;
 }

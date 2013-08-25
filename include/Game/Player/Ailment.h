@@ -29,6 +29,12 @@ class Ailment : public QWidget
   Q_OBJECT
 
 public:
+  /* Default constructor */
+  Ailment();
+
+  /* Minimal Constructor */
+  Ailment(Person* vic, QWidget* parent = 0);
+
   /* Constructor: Sets up ailment with type, turn and chance durations */
   Ailment(Person* vic, EnumDb::Infliction type, short max_turns = 0,
           double chance = 0, QWidget* parent = 0);
@@ -36,9 +42,6 @@ public:
   /* Constructor: Sets up an ailment with a QString instead of an enum */
   Ailment(Person* vic, QString name, short max_turns = 0,
           double chance = 0, QWidget* parent = 0);
-
-  /* Default constructor: Sets up a blank NOAILMENT type */
-  Ailment(Person* vic, QWidget* parent = 0);
 
   /* Annihilates an AttributeSet object */
   ~Ailment();
@@ -81,19 +84,19 @@ private:
 
   /*------------------- Constants -----------------------*/
   static const ushort kMAX_TURNS; /* Maximum # turns ailments will last */
-  static const ushort kMIN_TURNS; /* The minimum # turns ailments last */
-  static const ushort kPOISON_DMG_MAX; /* The max. daamge from Poison ailment */
-  static const ushort kPOISON_DMG_MIN; /* The min. damage from Poison ailment */
+  static const uint   kMIN_TURNS; /* The minimum # turns ailments last */
+  static const uint   kPOISON_DMG_MAX; /* The max. daamge from Poison ailment */
+  static const uint   kPOISON_DMG_MIN; /* The min. damage from Poison ailment */
   static const double kPOISON_DMG_INCR; /* Additional % per turn for Poison */
   static const double kPOISON_DMG_INIT; /* Initial % per turn for Poison */
-  static const ushort kBURN_DMG_MAX; /* The max. damage from Burn */
-  static const ushort kBURN_DMG_MIN; /* The min. damage from Burn */
+  static const uint   kBURN_DMG_MAX; /* The max. damage from Burn */
+  static const uint   kBURN_DMG_MIN; /* The min. damage from Burn */
   static const double kBURN_DMG_INCR; /* The increment (amt) for Burn lvls */
   static const double kBURN_DMG_INIT; /* The inital dmg caused by Burn */
   static const double kBURN_DMG_PC; /* Additional % dmg causedby Burn */
   static const double kBERSERK_DMG_INCR; /* % incr in damage against target */
   static const double kBERSERK_HITBACK_PC; /* % hitback on victim */
-  static const ushort kBUBBIFY_MAX_QD; /* Maximum skill's QD cost when Bubby */
+  static const uint   kBUBBIFY_MAX_QD; /* Maximum skill's QD cost when Bubby */
   static const double kBUBBIFY_STAT_MULR; /* % mod for stats while a Bubby */
   static const double kPARALYSIS_PC; /* % chance paralysis will skip turn */
   static const double kBLIND_PC; /* % chance Blind will miss attacks */
@@ -131,42 +134,6 @@ private:
   void setVictim(Person* set_victim);
 
 /*============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
-public:
-  /* Undoes the effect (if exits) to the victim before curing */
-  void unapply();
-
-  /* Methods for printing all the information pertaining to the ailment */
-  void printAll();
-  void printFlags();
-  void printInfo();
-
-  /* Evaluates an ailment flag or flags */
-  bool getFlag(AilmentFlag flags);
-
-  /* Returns the number of turns left (assuming 0%) */
-  ushort getTurnsLeft();
-
-  /* Returns the Inflinction of the status ailment */
-  EnumDb::Infliction getType();
-
-  /* Gets a QString of the current ailment's enumerated value */
-  QString getName();
-
-  /* Obtains the victim of the Status Ailment */
-  Person* getVictim();
-
-  /* Sets the duration of the ailment */
-  void setDuration(short max_turns, double chance = 0);
-
-  /* Sets the value of an AilmentFlag to a set_value, defaulting to true */
-  void setFlag(AilmentFlag flags, bool set_value = true);
-
-  /* Public function to assign a new victom for the status ailment */
-  bool setNewVictim(Person* new_victim, bool refresh_turns = false);
-
-/*============================================================================
  * PUBLIC SLOTS
  *============================================================================*/
 public slots:
@@ -202,15 +169,47 @@ signals:
   /* Tells BIB and BSB that the victim dies because of reasons */
   void victimDeath(QString victim_name, EnumDb::ActorDeath reason);
 
-/*============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
-public:
-  /* Converts enum. Infliction to the corresponding QString (as per EnumDB) */
-  static QString getAilmentStr(EnumDb::Infliction type);
+  /*============================================================================
+   * PUBLIC FUNCTIONS
+   *============================================================================*/
+  public:
+    /* Undoes the effect (if exits) to the victim before curing */
+    void unapply();
 
-  /* Converts a QString to the corresponding enum. Infliction (default NOAIL) */
-  static EnumDb::Infliction getInfliction(QString rank_string);
+    /* Methods for printing all the information pertaining to the ailment */
+    void printAll();
+    void printFlags();
+    void printInfo();
+
+    /* Evaluates an ailment flag or flags */
+    bool getFlag(AilmentFlag flags);
+
+    /* Returns the number of turns left (assuming 0%) */
+    ushort getTurnsLeft();
+
+    /* Returns the Inflinction of the status ailment */
+    EnumDb::Infliction getType();
+
+    /* Gets a QString of the current ailment's enumerated value */
+    QString getName();
+
+    /* Obtains the victim of the Status Ailment */
+    Person* getVictim();
+
+    /* Sets the duration of the ailment */
+    void setDuration(short max_turns, double chance = 0);
+
+    /* Sets the value of an AilmentFlag to a set_value, defaulting to true */
+    void setFlag(AilmentFlag flags, bool set_value = true);
+
+    /* Public function to assign a new victom for the status ailment */
+    bool setNewVictim(Person* new_victim, bool refresh_turns = false);
+
+    /* Returns a QString corresponding to an enumerated Infliction */
+    QString getAilmentStr(EnumDb::Infliction type);
+
+    /* Returns an enumerated Infliction corresponding to a QString */
+    EnumDb::Infliction getInfliction(QString name);
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Ailment::AilmentFlags)
 

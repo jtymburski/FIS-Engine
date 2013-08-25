@@ -53,10 +53,6 @@ void EnemyStatusBar::paintEvent(QPaintEvent*)
   painter.drawRect(*health_outline);
   painter.setPen(Qt::transparent);
   painter.setBrush(*health_grad);
-  short num = character->tempStats()->getStat("VITA");
-  short den = character->tempStats()->getMax("VITA");
-  health_bar->setWidth(health_outline->width() * num * 1.0 / den);
-  painter.drawRect(*health_bar);
 }
 
 /*

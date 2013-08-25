@@ -4,15 +4,17 @@
 * Inheritance:
 * Description:  Enum Database holds non-flag Enums
  *****************************************************************************/
-#include "EnumString.h"
-
 #ifndef ENUMDB_H
 #define ENUMDB_H
+
+#include <QString>
+
+#include "EnumString.h"
 
 class EnumDb
 {
 public:
-  /* ActorDeath enumeration is the enumerated type for reason for an actor's 
+  /* ActorDeath enumeration is the enumerated type for reason for an actor's
    * death in Battle */
   enum ActorDeath { STANDARDDMG,
                     POISONDMG,
@@ -32,28 +34,28 @@ public:
    *              describe then names of the statics used by Persons,
    *              Items, etc.
    */
-  enum Attribute { VITALITY,
-                   QUANTUMDRIVE,
-                   PHYSICALAGGRESSION,
-                   PHYSICALFORTITUDE,
-                   THERMALAGGRESSION,
-                   THERMALFORTITUDE,
-                   PRIMALAGGRESSION,
-                   PRIMALFORTITUDE,
-                   POLARAGGRESSION,
-                   POLARFORTITUDE,
-                   CHARGEDAGGRESSION,
-                   CHARGEDFORTITUDE,
-                   CYBERNETICAGGRESSION,
-                   CYBERNETICFORTITUDE,
-                   NIHILAGGRESSION,
-                   NIHILFORTITUDE,
-                   MOMENTUM,
-                   LIMBERTUDE,
-                   UNBEARABILITY };
+  enum Attribute { VITA,
+                   QTDR,
+                   PHAG,
+                   PHFD,
+                   THAG,
+                   THFD,
+                   PRAG,
+                   PRFD,
+                   POAG,
+                   POFD,
+                   CHAG,
+                   CHFD,
+                   CYAG,
+                   CYFD,
+                   NIAG,
+                   NIFD,
+                   MMNT,
+                   LIMB,
+                   UNBR };
 
   /*
-   * Description: Handler for all direction related calls for movement, 
+   * Description: Handler for all direction related calls for movement,
    *              passability, etc.
    */
   enum Direction { NORTH         = 0x1,
@@ -76,7 +78,7 @@ public:
                    VALUEPERMASS };
 
   /*
-   * Description: Infliction enumeration represents a Status ailment or a 
+   * Description: Infliction enumeration represents a Status ailment or a
    *              Status Buff. String conversions are listed blow.
    */
   enum Infliction { POISON,
@@ -174,31 +176,28 @@ public:
 /* Registration of Attribute Enumerator */
 Begin_Enum_String( EnumDb::Attribute )
 {
-  RegisterEnumerator(EnumDb::VITALITY, "Vitality");
-  RegisterEnumerator(EnumDb::QUANTUMDRIVE, "Quantum Drive");
-  RegisterEnumerator(EnumDb::PHYSICALAGGRESSION, "Physical Aggression");
-  RegisterEnumerator(EnumDb::PHYSICALAGGRESSION, "Physical Aggression");
-  RegisterEnumerator(EnumDb::PHYSICALFORTITUDE, "Physical Fortitude");
-  RegisterEnumerator(EnumDb::THERMALAGGRESSION, "Thermal Aggression");
-  RegisterEnumerator(EnumDb::THERMALFORTITUDE, "Thermal Fortitude");
-  RegisterEnumerator(EnumDb::PRIMALAGGRESSION, "Primal Aggression");
-  RegisterEnumerator(EnumDb::PRIMALFORTITUDE, "Primal Fortitude");
-  RegisterEnumerator(EnumDb::POLARAGGRESSION, "Polar Aggression");
-  RegisterEnumerator(EnumDb::POLARFORTITUDE, "Polar Fortitude");
-  RegisterEnumerator(EnumDb::CHARGEDAGGRESSION, "Charged Aggression");
-  RegisterEnumerator(EnumDb::CHARGEDFORTITUDE, "Charged Fortitude");
-  RegisterEnumerator(EnumDb::CYBERNETICFORTITUDE, "Cybernetic Fortitude");
-  RegisterEnumerator(EnumDb::CYBERNETICFORTITUDE, "Cybernetic Fortitude");
-  RegisterEnumerator(EnumDb::CYBERNETICAGGRESSION, "Cybernetic Fortitude");
-  RegisterEnumerator(EnumDb::NIHILAGGRESSION, "Nihil Aggression");
-  RegisterEnumerator(EnumDb::NIHILFORTITUDE, "Nihil Fortitude");
-  RegisterEnumerator(EnumDb::MOMENTUM, "Momentum");
-  RegisterEnumerator(EnumDb::LIMBERTUDE, "Limbertude");
-  RegisterEnumerator(EnumDb::UNBEARABILITY, "Unbearability");
+  RegisterEnumerator(EnumDb::VITA, "Vitality");
+  RegisterEnumerator(EnumDb::QTDR, "Quantum Drive");
+  RegisterEnumerator(EnumDb::PHAG, "Physical Aggression");
+  RegisterEnumerator(EnumDb::PHFD, "Physical Fortitude");
+  RegisterEnumerator(EnumDb::THAG, "Thermal Aggression");
+  RegisterEnumerator(EnumDb::THFD, "Thermal Fortitude");
+  RegisterEnumerator(EnumDb::PRAG, "Primal Aggression");
+  RegisterEnumerator(EnumDb::PRFD, "Primal Fortitude");
+  RegisterEnumerator(EnumDb::POAG, "Polar Aggression");
+  RegisterEnumerator(EnumDb::POFD, "Polar Fortitude");
+  RegisterEnumerator(EnumDb::CHAG, "Charged Aggression");
+  RegisterEnumerator(EnumDb::CHFD, "Charged Fortitude");
+  RegisterEnumerator(EnumDb::CYAG, "Cybernetic Aggression");
+  RegisterEnumerator(EnumDb::CYFD, "Cybernetic Fortitude");
+  RegisterEnumerator(EnumDb::NIAG, "Nihil Aggression");
+  RegisterEnumerator(EnumDb::NIFD, "Nihil Fortitude");
+  RegisterEnumerator(EnumDb::MMNT, "Momentum");
+  RegisterEnumerator(EnumDb::LIMB, "Limbertude");
+  RegisterEnumerator(EnumDb::UNBR, "Unbearability");
 }
 End_Enum_String;
 
-/* Registration of Infliction Enumerator */
 Begin_Enum_String( EnumDb::Infliction )
 {
   RegisterEnumerator(EnumDb::POISON, "Poison");
@@ -251,7 +250,7 @@ Begin_Enum_String( EnumDb::Infliction )
 }
 End_Enum_String;
 
-/* Registration of PersonRank enumerated strings */
+
 Begin_Enum_String( EnumDb::PersonRanks )
 {
   RegisterEnumerator(EnumDb::NUBEAR, "Nubear");

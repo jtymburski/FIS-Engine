@@ -88,22 +88,17 @@ AllyStatusBar::~AllyStatusBar()
  */
 void AllyStatusBar::paintEvent(QPaintEvent*)
 {
-  /* Initial paint preparation */
+  /*
   QPainter painter(this);
   QPalette pal(palette());
 
   painter.setPen(QColor(Qt::black));
-
-  // Status thumbs TODO: Get Status from Person [02-03-31]
   painter.setOpacity(0.80);
   painter.setBrush(QColor(Qt::red));
-
-  /* Rebuild and paint the status thumbnail boxes / images */
   rebuildStatusBoxes();
   for (int i = 0; i < status_thumbs.size(); i++)
     painter.drawRect(*status_thumbs.at(i));
 
-  /* Draw HP & QD Bars */
   painter.setPen(QColor(Qt::black));
   painter.setBrush(Qt::transparent);
   painter.drawRect(*health_outline);
@@ -125,7 +120,7 @@ void AllyStatusBar::paintEvent(QPaintEvent*)
   qd_bar->setWidth(qd_outline->width() * 1.0 * num / den);
   painter.drawRect(*qd_bar);
   health_label->setText(getDisplayHP());
-  qd_label->setText(getDisplayQD());
+  qd_label->setText(getDisplayQD()); */
 }
 
 /*
@@ -207,7 +202,7 @@ void AllyStatusBar::rebuildStatusBoxes()
 QString AllyStatusBar::getDisplayQD()
 {
   QString display_qd;
-  return display_qd.setNum(character->tempStats()->getStat("QTDR"));
+  return display_qd.setNum(character->getTemp()->getStat(EnumDb::VITA));
 }
 
 

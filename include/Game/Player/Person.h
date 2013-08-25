@@ -9,9 +9,6 @@
 #ifndef PERSON_H
 #define PERSON_H
 
-#include <QtGui/QWidget>
-
-
 #include "MathHelper.h"
 #include "EnumDb.h"
 #include "Game/Player/Category.h"
@@ -19,16 +16,17 @@
 #include "Game/Player/Equipment.h"
 #include "Game/Sprite.h"
 
-class Person : QWidget
+class Person
 {
-  Q_OBJECT
-
 public:
-  /* Constructor for a person object */
-  Person(QString pname, Race* prace, Category* pcat, QString p, QString s);
+  /* Default Constructor */
+  Person();
 
   /* Copy constructor */
-  Person(Person* parent);
+  Person(Person& other);
+
+  /* Constructor for a person object */
+  Person(QString pname, Race* prace, Category* pcat, QString p, QString s);
 
   /* Annihilates a person object */
   ~Person();
@@ -102,8 +100,10 @@ private:
 
   /* List of skills and attributes that the person has */
   AttributeSet base_stats;
-  AttributeSet stats;
+  AttributeSet current_stats;
+  AttributeSet current_max_stats;
   AttributeSet temp_stats;
+  AttributeSet temp_max_stats;
 
   /* List of currently available skills */
   SkillSet* skills;
@@ -151,9 +151,6 @@ public:
   void printBasics();
   void printEquipment();
   void printFlags();
-  void printBaseStats();
-  void printStats();
-  void printTempStats();
   void printSkills();
 
   /* Stat set up functions */
@@ -212,9 +209,11 @@ public:
   Sprite* getThirdPerson();
 
   /* Methods for obtaining stat sets */
-  AttributeSet* baseStats();
+  AttributeSet* getBase();
   AttributeSet* getStats();
-  AttributeSet* tempStats();
+  AttributeSet* getMax();
+  AttributeSet* getTemp();
+  AttributeSet* getMaxTemp();
 
   /* Sets an equipment to a slot */
   bool setEquipment(QString slot, Equipment* new_equipment);
@@ -268,9 +267,14 @@ public:
   void setThirdPerson(Sprite* s = 0);
 
   /* Methods for setting stat values */
-  void setBaseStats(AttributeSet new_stat_set);
+  void setBase(AttributeSet new_stat_set);
   void setStats(AttributeSet new_stat_set);
-  void setTempStats(AttributeSet new_stat_set);
+  void setMax(AttributeSet new_stat_set);
+  void setTemp(AttributeSet new_stat_set);
+  void setMaxTemp(AttributeSet new_stat_set);
+
+  EnumDb::PersonRanks getRankEnum(QString rank_string);
+  QString getRankString(EnumDb::PersonRanks person_rank);
 
 /*============================================================================
  * PUBLIC STATIC FUNCTIONS
@@ -281,13 +285,6 @@ public:
 
   /* Gets the max level constant */
   static uint getMaxLevel();
-
-  /* Returns the enumeration of a given QString */
-  static EnumDb::PersonRanks getRankEnum(QString person_rank);
-
-  /* Returns the QString of a given enumeration */
-  static QString getRankString(EnumDb::PersonRanks person_rank);
-
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Person::PersonFlags)
 

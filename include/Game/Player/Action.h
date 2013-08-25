@@ -11,9 +11,14 @@
 #include <QtGui/QWidget>
 #include <QDebug>
 
+#include "EnumDb.h"
+
 class Action
 {
 public:
+  /* Default action constructor */
+  Action();
+
   /* Action constructor object (requires a QString of raw input) */
   Action(QString raw);
 
@@ -71,23 +76,23 @@ private:
   ActionFlags action_flags;
   IgnoreFlags ignore_flags;
 
-  /* String of Ailment (if exists) the action inflicts */
-  QString action_ailment;
+  /* Enumeration of the ailment the action may inflict */
+  EnumDb::Infliction ailment;
 
   /* ID of the action: Positive for status effects, negative for others */
   int id;
 
   /* Minimum duration the action will take */
-  uint min_duration;
+  ushort min_duration;
 
   /* Maximum duration the action will take */
-  uint max_duration;
+  ushort max_duration;
 
   /* Value the effected stat will alter temporarily */
   uint base_change;
 
   /* Variance of base change (percentage) */
-  float variance;
+  double variance;
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -97,7 +102,7 @@ private:
   void parse(QString raw);
 
   /* Sets the ailment string */
-  void setAilment(QString ailment);
+  void setAilment(EnumDb::Infliction new_ailment);
 
   /* Sets the value of an Action Type Flag */
   void setActionFlag(ActionType flags, bool set_value = true);
@@ -121,7 +126,6 @@ private:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
-
   /* Methods for test-printing */
   void printAll();
   void printInfo();
@@ -131,7 +135,7 @@ public:
   bool getActionFlag(ActionType flags);
 
   /* Returns the affected status ailment */
-  QString getAilment();
+  EnumDb::Infliction getAilment();
 
   /* Gets the base change of the action */
   uint getBaseChange();
@@ -149,7 +153,9 @@ public:
   uint getMinimum();
 
   /* Returns the variance of the action */
-  float getVariance();
+  double getVariance();
+
+  EnumDb::Infliction getInfliction(QString ailment);
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Action::IgnoreFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Action::ActionFlags)

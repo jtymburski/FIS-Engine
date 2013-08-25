@@ -31,19 +31,19 @@
 /*============================================================================
  * CONSTANTS (Explanation for each in header file)
  *============================================================================*/
-const ushort Ailment::kMAX_TURNS           =   25;
-const ushort Ailment::kMIN_TURNS           =    1;
-const ushort Ailment::kPOISON_DMG_MAX      = 5000;
-const ushort Ailment::kPOISON_DMG_MIN      =   50;
+const ushort   Ailment::kMAX_TURNS           =   25;
+const uint   Ailment::kMIN_TURNS           =    1;
+const uint   Ailment::kPOISON_DMG_MAX      = 5000;
+const uint   Ailment::kPOISON_DMG_MIN      =   50;
 const double Ailment::kPOISON_DMG_INCR     = 1.05;
 const double Ailment::kPOISON_DMG_INIT     = 1.08;
-const ushort Ailment::kBURN_DMG_MAX        = 5000;
-const ushort Ailment::kBURN_DMG_MIN        =  100;
+const uint   Ailment::kBURN_DMG_MAX        = 5000;
+const uint   Ailment::kBURN_DMG_MIN        =  100;
 const double Ailment::kBURN_DMG_INCR       = 1.02;
 const double Ailment::kBURN_DMG_PC         = 1.05;
 const double Ailment::kBERSERK_DMG_INCR    = 1.75;
 const double Ailment::kBERSERK_HITBACK_PC  = 0.35;
-const ushort Ailment::kBUBBIFY_MAX_QD      =   10;
+const uint   Ailment::kBUBBIFY_MAX_QD      =   10;
 const double Ailment::kBUBBIFY_STAT_MULR   = 0.68;
 const double Ailment::kPARALYSIS_PC        = 0.70;
 const double Ailment::kBLIND_PC            = 0.50;
@@ -69,6 +69,39 @@ const double Ailment::kBOND_STATS_PC       = 0.35;
  *============================================================================*/
 
 /*
+ * Description: Default ailment constructor
+ *
+ * Inputs: QWidget* - pointer to parent object
+ */
+Ailment::Ailment()
+    : ailment_type(EnumDb::NOAILMENT),
+      chance(0.00),
+      victim(0)
+{
+  setFlag(Ailment::TOBEUPDATED, false);
+  setDuration(-1,-1);
+}
+
+/*
+ * Description: Default ailment constructor (constructs a NOAILMENT type)
+ *
+ * Inputs: Person* victim - pointer to the Victim (owner) of the Ailment
+ *         QWidget* parent - parent the Ailment was created from
+ */
+Ailment::Ailment(Person* vic, QWidget* parent)
+  : QWidget(parent),
+    ailment_type(EnumDb::NOAILMENT),
+    chance(0.00),
+    victim(0)
+
+{
+  setFlag(Ailment::TOBEUPDATED, false);
+  setDuration(-1,-1);
+
+  emit inflicting(victim->getName(), getType());
+}
+
+/*
  * Description: Constructs an Ailment object given an Infliction type,
  *              a maximum duration and a double.
  *
@@ -82,11 +115,11 @@ const double Ailment::kBOND_STATS_PC       = 0.35;
  */
 Ailment::Ailment(Person* vic, EnumDb::Infliction type, short max_turns,
                  double chance, QWidget* parent) 
-  : QWidget(parent)
+  : QWidget(parent),
+    ailment_type(type),
+    chance(chance),
+    victim(vic)
 {
-    setVictim(vic);
-    setType(type);
-
   /* NOAILMENT cannot have a turn length or a chance */
   if (type == EnumDb::NOAILMENT)
   {
@@ -101,8 +134,7 @@ Ailment::Ailment(Person* vic, EnumDb::Infliction type, short max_turns,
     setDuration(max_turns, chance);
 
   setFlag(Ailment::TOBEUPDATED, true);
-  emit inflicting(victim->getName(), this->getType());
-
+  emit inflicting(victim->getName(), getType());
 }
 
 /*
@@ -120,11 +152,11 @@ Ailment::Ailment(Person* vic, EnumDb::Infliction type, short max_turns,
  */
 Ailment::Ailment(Person* vic, QString name, short max_turns,
                  double chance, QWidget* parent)
-  : QWidget(parent)
+  : QWidget(parent),
+    ailment_type(getInfliction(name)),
+    chance(chance),
+    victim(vic)
 {
-   setVictim(vic);
-   setType(getInfliction(name));
-
   /* NOAILMENT cannot have a turn length or a chance */
   if (getType() == EnumDb::NOAILMENT)
   {
@@ -138,24 +170,7 @@ Ailment::Ailment(Person* vic, QString name, short max_turns,
   else
     setDuration(max_turns, chance);
 
-  emit inflicting(victim->getName(), this->getType());
-}
-
-/*
- * Description: Default ailment constructor (constructs a NOAILMENT type)
- *
- * Inputs: Person* victim - pointer to the Victim (owner) of the Ailment
- *         QWidget* parent - parent the Ailment was created from
- */
-Ailment::Ailment(Person* vic, QWidget* parent)
-  : QWidget(parent)
-{
-  setVictim(vic);
-  setType(EnumDb::NOAILMENT);
-  setFlag(Ailment::TOBEUPDATED, false);
-  setDuration(-1,-1);
-
-  emit inflicting(victim->getName(), this->getType());
+  emit inflicting(victim->getName(), getType());
 }
 
 /*
@@ -163,7 +178,7 @@ Ailment::Ailment(Person* vic, QWidget* parent)
  */
 Ailment::~Ailment()
 {
-  emit curing(victim->getName(), this->getType());
+  emit curing(victim->getName(), getType());
 }
 
 /*=============================================================================
@@ -191,8 +206,9 @@ Ailment::~Ailment()
 void Ailment::apply()
 {
   /* Helper variables */
-  const ushort kHEALTH = victim->tempStats()->getStat(0);
-  AttributeSet* stats = victim->tempStats();
+  const ushort kHEALTH = victim->getTemp()->getStat(EnumDb::VITA);
+  AttributeSet* stats = victim->getTemp();
+  AttributeSet* max_stats = victim->getMaxTemp();
   SkillSet* skills = victim->getSkills();
   ushort damage = 0;
 
@@ -459,7 +475,7 @@ void Ailment::apply()
     ushort gain_pc = kHIBERNATION_INIT;
     for (int i = 0; i < turns_occured; i++)
       gain_pc += kHIBERNATION_INCR;
-    stats->setStat("VITA", stats->getMax("VITA") * (1 + gain_pc));
+    stats->setStat("VITA", max_stats->getStat("VITA") * (1 + gain_pc));
   }
 
   /* Reflect - turn on Person flag to show they reflect skills */
@@ -473,7 +489,7 @@ void Ailment::apply()
   else if (ailment_type == EnumDb::METATETHER)
   {
     /* Do kMETABOLIC_DMG % upon victim, emit signal if dead */
-    if (victim->damage(stats->getMax("VITALITY") * kMETABOLIC_DMG))
+    if (victim->damage(max_stats->getStat(EnumDb::VITA) * kMETABOLIC_DMG))
         emit victimDeath(victim->getName(), EnumDb::METABOLICTETHER);
 
     /* Check for kMETABOLIC_PC chance for instant death */
@@ -639,7 +655,8 @@ void Ailment::setVictim(Person* set_victim)
  */
 void Ailment::unapply()
 {
-  AttributeSet* stats = victim->tempStats();
+  AttributeSet* stats = victim->getTemp();
+  AttributeSet* max_stats = victim->getMax();
   SkillSet* skills = victim->getSkills();
 
   /* On removing Berserk, the person's abilities need to be re-enabled */
@@ -793,7 +810,7 @@ void Ailment::printAll()
  */
 void Ailment::printFlags()
 {
-  qDebug() << "AILMENT TYPE: " << getAilmentStr(ailment_type);
+  //qDebug() << "AILMENT TYPE: " << getAilmentStr(ailment_type);
   qDebug() << "INFINITE: " << getFlag(Ailment::INFINITETIME);
   qDebug() << "CURABLE:  " << getFlag(Ailment::CURABLE);
   qDebug() << "TOBECURED  " << getFlag(Ailment::TOBECURED);
@@ -984,10 +1001,6 @@ void Ailment::reset()
   turns_occured = 0;
   emit reset();
 }
-
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
 
 /*
  * Description: Returns the string value of a given infliction. Uses the

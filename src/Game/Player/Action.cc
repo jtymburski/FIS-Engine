@@ -12,6 +12,21 @@
  *============================================================================*/
 
 /*
+ * Description: Default action constructor
+ *
+ * Inputs: none
+ */
+Action::Action()
+    : ailment(EnumDb::NOAILMENT),
+      min_duration(0),
+      max_duration(0),
+      base_change(0),
+      variance(0.00)
+{
+  ailment = EnumDb::NOAILMENT;
+}
+
+/*
  * Description: Action constructor object
  *
  * Inputs: QString raw - the raw language to be parsed
@@ -36,9 +51,9 @@ Action::~Action() {}
  * Inputs: QString - string to set the infliction to
  * Output: none
  */
-void Action::setAilment(QString new_ailment)
+void Action::setAilment(EnumDb::Infliction new_ailment)
 {
-  action_ailment = new_ailment;
+  ailment = new_ailment;
 }
 
 /*
@@ -111,7 +126,7 @@ void Action::parse(QString raw)
     }
   }
   else if (getActionFlag(Action::GIVE) || getActionFlag(Action::TAKE))
-    setAilment(split.at(2));
+    setAilment(getInfliction(split.at(2)));
 
   /* Parse Duration */
   QStringList duration_split = split.at(3).split('.');
@@ -175,9 +190,9 @@ void Action::parse(QString raw)
  * Inputs: int - the id to be set (negative for normal, positive for status)
  * Output: none
  */
-void Action::setId(int id)
+void Action::setId(int new_id)
 {
-  this->id = id;
+  id = new_id;
 }
 
 /*
@@ -350,9 +365,9 @@ int Action::getId()
  * Inputs: None
  * Output: QString - string of the ailment to be set/checked
  */
-QString Action::getAilment()
+EnumDb::Infliction Action::getAilment()
 {
-  return action_ailment;
+  return ailment;
 }
 
 /*
@@ -405,7 +420,21 @@ uint Action::getMinimum()
  * Inputs: None
  * Output: float - variance of the action
  */
-float Action::getVariance()
+double Action::getVariance()
 {
   return variance;
+}
+
+/*
+ * Description: Returns the Infliction of a given string (if one exists)
+ *
+ * Inputs: QString - name of Infliction to be checked for
+ * Output: Infliction - the corresponding Infliction (NOAILMENT for default)
+ */
+EnumDb::Infliction Action::getInfliction(QString name)
+{
+  const std::string &ailment_string = name.toUtf8().constData();
+  EnumDb::Infliction ailment_type = EnumDb::NOAILMENT;
+  EnumString<EnumDb::Infliction>::To(ailment_type, ailment_string);
+  return ailment_type;
 }

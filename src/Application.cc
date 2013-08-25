@@ -142,209 +142,26 @@ void Application::switchWidget(int index)
  */
 void Application::setupBattle()
 {
-  /* Category Setups */
-  AttributeSet bloodclaw_attr = AttributeSet();
-  AttributeSet scion_attr = AttributeSet();
-  AttributeSet cloud_attr = AttributeSet();
+  QList<uint> stats1;
 
-  bloodclaw_attr.setAll(1000, 125, 200, 150, 10, 8, 10, 8, 10, 8, 10, 8, 10,
-                        8, 10, 8, 5, 5, 5);
-  bloodclaw_attr.setAll(10000, 1250, 2000, 1500, 1000, 800, 1000, 800, 1000,
-                        800, 1000, 800, 1000, 800, 1000, 800, 500, 500, 500,
-                        true);
+  for (int i = 0; i < 19; i++)
+    stats1.append(5);
 
-  scion_attr.setAll(900, 125, 200, 150, 10, 8, 35, 8, 10, 8, 10, 8, 10,
-                    8, 10, 8, 5, 5, 5);
-  scion_attr.setAll(10000, 1250, 2000, 1500, 1000, 800, 1000, 800, 1000,
-                    800, 1000, 800, 1000, 800, 1000, 800, 500, 500, 500,
-                    true);
+  AttributeSet base_set(stats1);
 
-  cloud_attr.setAll(500, 120, 180, 135, 9, 7, 9, 7, 9, 7, 9, 7, 9, 7, 5, 5,
-                     5, 5, 5, false);
-  cloud_attr.setAll(10000, 1250, 2000, 1500, 1000, 800, 1000, 800, 1000,
-                     800, 1000, 800, 1000, 800, 1000, 800, 500, 500, 500,
-                     true);
+  Race* base_race = new Race("Fiends");
+  base_race->setAttrSet(stats1);
+  base_race->setMaxSet(stats1);
 
+  Category* base_category = new Category("Battle Class");
+  base_category->setAttrSet(stats1);
+  base_category->setMaxSet(stats1);
 
-  Category* bloodclaw  = new Category("Bloodclaw", bloodclaw_attr);
-  Category* scion      = new Category("Scion", scion_attr);
-  Category* cloud_dudes = new Category("Cloud Attr", cloud_attr);
+  Person* main_character = new Person("Malgidus", base_race, base_category, "PHA", "CYB");
+  Person* secd_character = new Person("Arcadius", base_race, base_category, "PHA", "CYA");
 
-  /* Race Setups */
-  AttributeSet bear_attr  = AttributeSet();
-  AttributeSet human_attr = AttributeSet();
-  AttributeSet base_enemy = AttributeSet();
-
-  bear_attr.setAll(100, 12, 20, 15, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
-  bear_attr.setAll(300, 120, 150, 100, 80, 100, 80, 100, 80, 100, 80, 100, 80,
-                   100, 80, 100, 50, 50, 50, true);
-
-  human_attr.setAll(1000, 125, 200, 150, 10, 8, 10, 8, 10, 8, 10, 8, 10,
-                    8, 10, 8, 5, 5, 5);
-  human_attr.setAll(10000, 1250, 2000, 1500, 1000, 800, 1000, 800, 1000,
-                     800, 1000, 800, 1000, 800, 1000, 800, 500, 500, 500, true);
-
-  base_enemy.setAll(100, 12, 20, 15, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
-  base_enemy.setAll(300, 120, 150, 100, 80, 100, 80, 100, 80, 100, 80, 100, 80,
-                   100, 80, 100, 50, 50, 50, true);
-
-  Race* bears   = new Race("Bears", bear_attr);
-  Race* humans  = new Race("Humans", human_attr);
-  Race* base_enemies = new Race("Fiend", base_enemy);
-
-  /* Sprite Setup */
-  Sprite* main_ally      = new Sprite(":/A_player");
-  Sprite* arcadius_ally  = new Sprite(":/A_arcadius");
-  Sprite* gyrokin_ally   = new Sprite(":/A_gyrokin");
-  Sprite* ulterius_ally  = new Sprite(":/A_ulterius");
-  Sprite* aurumba_ally   = new Sprite(":/A_auruba");
-
-  Sprite* cloud_enemy256 = new Sprite(":/raven256");
-  Sprite* cloud_enemy512 = new Sprite(":/raven1024");
-  Sprite* cloud_enemy1024 = new Sprite(":/raven1024");
-  //Sprite* arcadius_enemy = new Sprite(":/E_arcadius");
-  //Sprite* ulterius_enemy = new Sprite(":/E_ulterius");
-  //Sprite* abbotmalus_enemy = new Sprite(":/E_abbotmalus");
-  //Sprite* arcadius_enemy_modulated = new Sprite(":/E_arcadius_modulated");
-  //Sprite* aurora_agent_enemy = new Sprite(":/E_aurora_agent");
-  //Sprite* ballman_enemy = new Sprite(":/E_ballman");
-
-  /* Item Setup */
-  Item* anti_matter = new Item("Anti Matter", 1000, 0, 0);
-  anti_matter->setBriefDescription("Not Matter");
-  anti_matter->setDescription("This is a scary Item!");
-  anti_matter->setItemFlag(Item::KEYITEM, true);
-
-  Item* synthetic_food = new Item("Synthetic Food", 15, 0, 1.15);
-  synthetic_food->setDescription("Biological Composite Material");
-  synthetic_food->setItemFlag(Item::HEALITEM, true);
-  synthetic_food->setItemFlag(Item::STACKABLE, true);
-
-  Item* infinite_nourishment = new Item("Infinite Nourishment", 25, 0, 5.56);
-  infinite_nourishment->setDescription("NEVER ENDING HEALS");
-  infinite_nourishment->setItemFlag(Item::HEALITEM, true);
-  infinite_nourishment->setItemFlag(Item::INDEFINITE, true);
-  infinite_nourishment->setItemFlag(Item::STACKABLE, true);
-
-  /* Equipment Setup */
-  AttributeSet forest_vesture_set = AttributeSet();
-  AttributeSet fated_wooden_saber = AttributeSet();
-
-  forest_vesture_set.setAll(100, 12, 20, 15, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
-
-  /* Bubby Flavour Setup */
-
-  /* Bubby Setup */
-
-  /* ---- */
-
-  /* Person Setup */
-
-
-  /* Test Party */
-  Person* malgidus = new Person("Malgidus", bears, bloodclaw,  "THA", "PRB");
-  malgidus->setFirstPerson(main_ally);
-
-  Person* artemis  = new Person("Artemis", humans, scion,      "NIA", "PRC");
-  artemis->setFirstPerson(arcadius_ally);
-
-  Person* yolo     = new Person("Yolo", humans, bloodclaw,     "CHC", "PRB");
-  yolo->setFirstPerson(gyrokin_ally);
-
-  Person* helga    = new Person("Helga", humans, scion,        "POC", "NIC");
-  helga->setFirstPerson(aurumba_ally);
-
-  Person* gertrude = new Person("Gertrude", humans, bloodclaw, "PHA", "CYC");
-  gertrude->setFirstPerson(ulterius_ally);
-
-  /* Test Foes */
-  Person* cloud_foe
-          = new Person("Cloud Dude 1", base_enemies, cloud_dudes, "PRB", "POC");
-  cloud_foe->setThirdPerson(cloud_enemy256);
-
-  Person* cloud_foe2
-          = new Person("Cloud Dude 1", base_enemies, cloud_dudes, "PRB", "POC");
-  cloud_foe2->setThirdPerson(cloud_enemy512);
-
-  Person* cloud_foe3
-          = new Person("Cloud Dude 1", base_enemies, cloud_dudes, "PRB", "POC");
-  cloud_foe3->setThirdPerson(cloud_enemy1024);
-
-  /* Party Setup */
-
-  /* Main Party Setup */
-  Party* friends = new Party(malgidus, 0, EnumDb::SLEUTH);
- // friends->addMember(artemis);
- // friends->addMember(yolo);
- // friends->addMember(helga);
-  //friends->addMember(gertrude);
-
-  /* if (friends->removeMember("Artemis"))
-      qDebug() << "Removing Artemis";
-  if (friends->removeMember("Yolo"))
-      qDebug() << "Removing Yolo";
-  if (friends->removeMember("Helga"))
-      qDebug() << "Removing Helga";
-  if (friends->removeMember("Gertrude"))
-      qDebug() << "Removing Gertrude";
-  if (friends->removeMember("Malgidus"))
-      qDebug() << "Removing Malgidus"; */
-
-  /* Foes Setup */
-  Party* foes = new Party(cloud_foe, 0, EnumDb::REGULAR_FOE);
-  foes->addMember(cloud_foe2);
-  foes->addMember(cloud_foe3);
-
-  for (int x = 1; x < 75; x++)
-    qDebug() << x << " : " << orderedInt(x);
-
-
-  //for (int i = 0; i < 10000; i++)
- // {
-  //  randoms.push_back(randInt(100));
-  //  double_rands.push_back(randInt());
-  //}
-
-  qDebug() << "=========================================";
-  //for (int i = 0; i < randoms.size(); i++)
-  //    qDebug() << double_rands.at(i);
-
-  qDebug() << "=========================================";
-
-  /* Item Setup */
-  //Item* potion = new Item("Potion", 15, 0, 1.15);
-  //Item* saber = new Item("Fated Oak Saber", 1, 0, 0.75);
-  //saber->setDescription("Awesome sauce");
-  //saber->setItemFlag(Item::WOOD, true);
-
-  //potion->setDescription("This item will do some magical healing for you.");
-  //potion->setUsingMessage("WHY ARE YOU USING ME");
-  /* Level Up Test
-  for (int i = 1; i < 128; i++)
-  {
-    main->setLevel(i);
-    qDebug() << "LEVEL: " << main->getLevel();
-    for (int j = 0; j < main->getStats()->getSize(); j++)
-        qDebug() << main->getStats()->getStat(j) << " MAX: " << main->baseStats()->getMax(j);
-    qDebug() << endl << endl;
-
-  } */
-
-  /* Ailment Testing
-  Ailment* new_ailment1 = new Ailment(main, POISON, 2, 0.147, this);
-
-  qDebug() << "Turns left: " << new_ailment1->getTurnsLeft();
-  new_ailment1->update();
-  qDebug() << "Turns left: " << new_ailment1->getTurnsLeft();
-  new_ailment1->update();
-  qDebug() << "Turns left: " << new_ailment1->getTurnsLeft();
-  new_ailment1->update();
-  qDebug() << "Turns left: " << new_ailment1->getTurnsLeft();
-  new_ailment1->update();
-  qDebug() << "Turns left: " << new_ailment1->getTurnsLeft();
-  new_ailment1->update();
-
-  * End Ailment Testing */
+  Party* friends = new Party(main_character);
+  Party* foes = new Party(secd_character);
 
 
   test_battle = new Battle(friends, foes, this);
