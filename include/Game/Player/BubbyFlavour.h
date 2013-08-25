@@ -20,9 +20,6 @@ class BubbyFlavour : QWidget
   friend class Bubby;
 
 public:
-  /* Default BubbyFlavour object */
-  BubbyFlavour(QString name);
-
   /* Constructs a BubbyFlavour object */
   BubbyFlavour(BubbyFlavour* flavour_parent, QString flavour_name,
                AttributeSet* stat_set = 0, SkillSet* skills = 0);

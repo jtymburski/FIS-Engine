@@ -26,24 +26,58 @@ const ushort Signature::kMAX_Y = 9;
  */
 Signature::Signature()
 {
+  setFlag(Signature::RESIZEABLE, true);
   resize(kMIN_X, kMIN_Y);
-  setFlag(Signature::BUBBABLE,  false);
+
+  setFlag(Signature::BUBBABLE,   false);
   setFlag(Signature::CHANGEABLE, false);
   setFlag(Signature::RESIZEABLE, false);
 }
 
 /*
- * Description: Creates a Signature object given a two dimensional size.
+ * Description: Creates a blank Signature object given a two dimensional size.
  *
  * Inputs: size_x - size of the signature in the x dimension
  *         size_y - size of the signature in the y dimension
  */
 Signature::Signature(ushort x, ushort y)
 {
+  setFlag(Signature::RESIZEABLE, true);
   resize(x, y);
+
   setFlag(Signature::BUBBABLE,   true);
   setFlag(Signature::CHANGEABLE, true);
+
+}
+
+/*
+ * Description: Creates a random Signature object given a two dimensional size.
+ *
+ * Inputs: size_x - size of the signature in the x dimension
+ *         size_y - size of the signature in the y dimension
+ *        bool random - boolean to create a random signature
+ */
+Signature::Signature(ushort x, ushort y, bool random)
+{
   setFlag(Signature::RESIZEABLE, true);
+  resize(x, y);
+
+  setFlag(Signature::CHANGEABLE, true);
+  setFlag(Signature::BUBBABLE,   true);
+
+  if (random)
+  {
+    /* Generate a random number of closed cells */
+    int random_cell_amount = randInt(x * y);
+
+    for (int i = 0; i < random_cell_amount; i++)
+    {
+      int random_x = randInt(x);
+      int random_y = randInt(y);
+
+      close(random_x, random_y);
+    }
+  }
 }
 
 /*
@@ -57,10 +91,12 @@ Signature::Signature(ushort x, ushort y)
 Signature::Signature(ushort x, ushort y,
                      std::vector<std::pair<ushort, ushort> > list)
 {
+  setFlag(Signature::RESIZEABLE, true);
   resize(x, y);
+
   setFlag(Signature::BUBBABLE,   true);
   setFlag(Signature::CHANGEABLE, true);
-  setFlag(Signature::RESIZEABLE, true);
+
 
   std::vector<std::pair<ushort, ushort> >::iterator it;
   for (it = list.begin(); it < list.end(); ++it)
@@ -86,11 +122,18 @@ Signature::~Signature() {}
  */
 bool Signature::attach(ushort x, ushort y, Bubby* new_bubby)
 {
-  /* Check Tier 1 is open */
+  /* Check Tier 1 is open and if the Signature can have Bubbies attached */
   bool can_attach = isOpen(x, y);
+  can_attach &= getFlag(Signature::BUBBABLE);
 
-  if (getFlag(Signature::BUBBABLE))
+  if (new_bubby->getTier() == 0)
     can_attach = false;
+
+  /* Check if this particular Bubby is already attached to the signature */
+  QList<Bubby*>::iterator it;
+  for (it = bubby_map.begin(); it < bubby_map.end(); ++it)
+    if ((*it)->getId() == new_bubby->getId())
+      can_attach = false;
 
   std::vector< std::pair<ushort, ushort> > new_positions;
   new_positions.push_back(std::make_pair(x, y));
@@ -141,15 +184,23 @@ bool Signature::attach(ushort x, ushort y, Bubby* new_bubby)
  */
 bool Signature::close(ushort x, ushort y)
 {
-  if (getFlag(Signature::CHANGEABLE))
+  if (!getFlag(Signature::CHANGEABLE))
     return false;
 
-  std::vector<std::pair<ushort, ushort> >::iterator it;
-  for (it = closed_cells.begin(); it < closed_cells.end(); ++it)
-    if ((*it).first == x && (*it).second == y)
-      return true;
+  bool closed = false;
 
-  return false;
+  if (isOpen(x, y))
+  {
+    std::vector<std::pair<ushort, ushort> >::iterator it;
+    for (it = closed_cells.begin(); it < closed_cells.end(); ++it)
+      if ((*it).first == x && (*it).second == y)
+        closed = true;
+
+    if (!closed)
+      closed_cells.push_back(std::make_pair(x, y));
+  }
+
+  return closed;
 }
 
 /*
@@ -173,7 +224,14 @@ bool Signature::isEmpty()
 bool Signature::isOpen(ushort x, ushort y)
 {
   if (getBubby(x, y) == 0)
+  {
+    std::vector<std::pair<ushort, ushort> >::iterator it;
+    for (it = closed_cells.begin(); it < closed_cells.end(); ++it)
+        if ((*it).first == x && (*it).second == y)
+          return false;
+
     return true;
+  }
   else
     return false;
 }
@@ -203,6 +261,40 @@ bool Signature::open(ushort x, ushort y)
   }
 
   return can_open;
+}
+
+/*
+ * Description: Prints out an ASCII representation of the Signature
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Signature::printInfo()
+{
+  qDebug() << "Size X: " << x;
+  qDebug() << "Size Y: " << y;
+  qDebug() << "Bubbies: " << bubby_map.size();
+  qDebug() << "Occupied Cells: " << occupied_cells.size();
+  qDebug() << "Closed Cells: " << closed_cells.size();
+
+  qDebug() << getFlag(Signature::BUBBABLE);
+  qDebug() << getFlag(Signature::CHANGEABLE);
+  qDebug() << getFlag(Signature::RESIZEABLE);
+
+  for (int i = 0; i < x; i++)
+  {
+    QString line = "| ";
+    for (int j = 0; j < y; j++)
+    {
+      if (getBubby(i, j) != 0)
+        line += " B |";
+      else if (isOpen(i, j))
+        line += " O |";
+      else
+        line += " X |";
+      }
+    qDebug () << line;
+  }
 }
 
 /*
@@ -345,6 +437,7 @@ QList<BubbyFlavour*> Signature::getUniqueFlavours()
   QList<BubbyFlavour*> flavour_list;
   QList<QString> flavour_names;
 
+
   QList<Bubby*>::Iterator it;
   for (it = bubby_map.begin(); it < bubby_map.end(); ++it)
   {
@@ -433,11 +526,17 @@ bool Signature::resize(ushort size_x, ushort size_y)
 {
   bool resized = true;
 
-  if (getFlag(Signature::RESIZEABLE))
+  if (!getFlag(Signature::RESIZEABLE))
+  {
+      qDebug() << "whee";
     resized = false;
+  }
 
   if (size_x > getMaxX() || size_y > getMaxY() || !isEmpty())
+  {
+      qDebug() << "uhoh";
     resized = false;
+  }
 
   if (resized)
   {

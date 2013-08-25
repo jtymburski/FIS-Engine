@@ -252,22 +252,19 @@ void Person::printAll()
 void Person::printBasics()
 {
   qDebug() << "Name: " << getName();
-  // qDebug() << "Rank: " << getRank();
   qDebug() << "Level: " << getLevel();
   qDebug() << "Total Exp: " << getExp();
-  qDebug() <<  "Category: " << cat->getName();
+  qDebug() << "Category: " << cat->getName();
   qDebug() << "Race: " << race->getName();
+  qDebug() << "Rank: " << getRankString(getRank());
   qDebug() << "Dmg Modifier: " << damage_modifier;
   qDebug() << "Primary Element: " << primary;
   qDebug() << "Secondary Element: " << secondary;
   qDebug() << "Primary Curve: " << primary_curve;
   qDebug() << "Secondary Curve: " << secondary_curve;
-
-  /* Print out the drops */
-  for (int i = 0; i < item_drops.size(); i++)
-  // qDebug() << "Item Drop #" << i << ": " << item_drops[i].getName();
- qDebug() << "Exp Drop: " << experience_drop;
- qDebug() << "Credit Drop: " << credit_drop;
+  qDebug() << "Item Drops: " << getItemLoot().size();
+  qDebug() << "Exp Drop: " << experience_drop;
+  qDebug() << "Credit Drop: " << credit_drop;
 }
 
 /*

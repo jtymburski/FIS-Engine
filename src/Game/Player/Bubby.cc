@@ -37,6 +37,7 @@ const double Bubby::kTIER_3_MASS      =   4.500;
  */
 Bubby::Bubby(BubbyFlavour* type)
     : Item(type->getName(), 0, 0, kTIER_1_MASS),
+    type(type),
     level(0),
     tier(0),
     total_exp(0)
@@ -104,8 +105,9 @@ bool Bubby::updateTierSprite()
 {
   bool updated = false;
 
-  int size = getType()->getSprites().size();
+  // int size = getType()->getSprites().size();
 
+  /*
   if (size >= getTier())
   {
     setThumb(getType()->getSprites().at(getTier() - 1));
@@ -115,7 +117,7 @@ bool Bubby::updateTierSprite()
   {
     setThumb(getType()->getSprites().at(size - 1));
     updated = true;
-  }
+  }*/
 
   return updated;
 }
@@ -297,11 +299,9 @@ bool Bubby::setTier(ushort new_tier)
   bool can_tier_up = true;
 
   /* Conditional checks */
-  if (getTier() == 0 && getLevel() != kTIER1_LVL)
+  if (getTier() == 1 && getLevel() != kTIER1_LVL)
     can_tier_up = false;
-  if (getTier() == 1 && getLevel() != kTIER2_LVL)
-    can_tier_up = false;
-  if (getTier() == 2 && getLevel() != kLEVEL_CAP)
+  if (getTier() == 2 && getLevel() != kTIER2_LVL)
     can_tier_up = false;
   if (getTier() >= BubbyFlavour::kTIER_CAP)
     can_tier_up = false;

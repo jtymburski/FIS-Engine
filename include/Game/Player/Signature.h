@@ -20,13 +20,21 @@
 #include <utility>
 
 #include "Game/Player/Bubby.h"
+#include "MathHelper.h"
 
 class Signature
 {
 public:
-  /* Creates a Signature object */
+  /* Default Constructor */
   Signature();
+
+  /* Generates a blank size X by Y Signature object */
   Signature(ushort x, ushort y);
+
+  /* Generates a Random size X by Y Signature object */
+  Signature(ushort x, ushort y, bool random);
+
+  /* Generates a size X by Y Signature obj given a list of closed positions */
   Signature(ushort x, ushort y, std::vector<std::pair<ushort, ushort> > list);
 
   /* Annihilates a Signature object */
@@ -70,7 +78,7 @@ public:
   bool attach(ushort x, ushort y, Bubby* new_bubby);
 
   /* Closes a particular valid open position without a bubby */
-  bool close (ushort x, ushort y);
+  bool close(ushort x, ushort y);
 
   /* Evaluates whether the signatures contains no Bubbies */
   bool isEmpty();
@@ -80,6 +88,9 @@ public:
 
   /* Opens a particular valid closed position */
   bool open(ushort x, ushort y);
+
+  /* Method or printing out the Signature Information */
+  void printInfo();
 
   /* Unattach a Bubby from a given cell */
   Bubby* unattach(ushort x, ushort y);

@@ -157,12 +157,46 @@ void Application::setupBattle()
   base_category->setAttrSet(stats1);
   base_category->setMaxSet(stats1);
 
-  Person* main_character = new Person("Malgidus", base_race, base_category, "PHA", "CYB");
-  Person* secd_character = new Person("Arcadius", base_race, base_category, "PHA", "CYA");
+  Person* main_character
+          = new Person("Malgidus", base_race, base_category, "PHA", "CYB");
+  Person* secd_character
+          = new Person("Arcadius", base_race, base_category, "PHA", "CYA");
 
   Party* friends = new Party(main_character);
   Party* foes = new Party(secd_character);
 
+
+  /* Bubby Signature Testing */
+  BubbyFlavour* spark_flavour = new BubbyFlavour(0, "Spark");
+  spark_flavour->setAttr(&base_set);
+
+  Bubby* first_bubby = new Bubby(spark_flavour);
+  first_bubby->setLevel(5);
+  first_bubby->setTier(3);
+
+  Bubby* second_bubby = new Bubby(spark_flavour);
+  second_bubby->setTier(1);
+
+  Bubby* third_bubby = new Bubby(spark_flavour);
+
+  std::vector<std::pair<ushort, ushort> > list;
+  list.push_back(std::make_pair(0, 0));
+  list.push_back(std::make_pair(1, 1));
+  list.push_back(std::make_pair(2, 2));
+  list.push_back(std::make_pair(3, 3));
+  list.push_back(std::make_pair(4, 4));
+  Signature* equip_signature = new Signature(6, 6, list);
+
+  qDebug() << " ======================= ";
+  qDebug() << "Tier: " << first_bubby->getTier();
+  qDebug() << equip_signature->attach(0, 3, first_bubby);
+  qDebug() << equip_signature->attach(0, 1, second_bubby);
+  qDebug() << equip_signature->attach(0, 0, third_bubby);
+  QList<BubbyFlavour*> flavours = equip_signature->getUniqueFlavours();
+  for (int i = 0; i < flavours.size(); i++)
+    qDebug() << flavours.at(i)->getName();
+
+  equip_signature->printInfo();
 
   test_battle = new Battle(friends, foes, this);
 }
