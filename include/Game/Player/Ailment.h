@@ -84,7 +84,7 @@ private:
 
   /*------------------- Constants -----------------------*/
   static const ushort kMAX_TURNS; /* Maximum # turns ailments will last */
-  static const uint   kMIN_TURNS; /* The minimum # turns ailments last */
+  static const ushort kMIN_TURNS; /* The minimum # turns ailments last */
   static const uint   kPOISON_DMG_MAX; /* The max. daamge from Poison ailment */
   static const uint   kPOISON_DMG_MIN; /* The min. damage from Poison ailment */
   static const double kPOISON_DMG_INCR; /* Additional % per turn for Poison */

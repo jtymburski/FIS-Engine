@@ -7,9 +7,6 @@
 #ifndef ENUMDB_H
 #define ENUMDB_H
 
-#ifndef ENUMDB_H
-#define ENUMDB_H
-
 #include <QList>
 #include <QString>
 

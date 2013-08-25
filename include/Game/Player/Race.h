@@ -46,15 +46,15 @@ private:
   QString denonym;
   QString name;
 
-  /* List of racial immunities */
-  QList<EnumDb::Infliction> immunities;
-
   /* Attribute Sets for the Race */
   AttributeSet base_stat_set;
   AttributeSet max_stat_set;
 
   /* Pointer to skill set the race can use */
   SkillSet* skill_set;
+
+  /* List of racial immunities */
+  QList<EnumDb::Infliction> immunities;
 
   /* ------------ Constants --------------- */
   static const uint kMIN_VITA;

@@ -31,8 +31,8 @@
 /*============================================================================
  * CONSTANTS (Explanation for each in header file)
  *============================================================================*/
-const ushort   Ailment::kMAX_TURNS           =   25;
-const uint   Ailment::kMIN_TURNS           =    1;
+const ushort Ailment::kMAX_TURNS           =   25;
+const ushort Ailment::kMIN_TURNS           =    1;
 const uint   Ailment::kPOISON_DMG_MAX      = 5000;
 const uint   Ailment::kPOISON_DMG_MIN      =   50;
 const double Ailment::kPOISON_DMG_INCR     = 1.05;
@@ -656,7 +656,6 @@ void Ailment::setVictim(Person* set_victim)
 void Ailment::unapply()
 {
   AttributeSet* stats = victim->getTemp();
-  AttributeSet* max_stats = victim->getMax();
   SkillSet* skills = victim->getSkills();
 
   /* On removing Berserk, the person's abilities need to be re-enabled */

@@ -53,8 +53,8 @@ Category::Category(Category &other)
       name(other.getName()),
       base_stat_set(other.getBaseSet()),
       max_stat_set(other.getMaxSet()),
-      immunities(getImmunities()),
-      skill_set(other.getSkillSet())
+      skill_set(other.getSkillSet()),
+      immunities(getImmunities())
 {}
 
 /*

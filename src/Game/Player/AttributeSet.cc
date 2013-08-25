@@ -130,9 +130,9 @@ bool AttributeSet::changeStat(int index, int amount)
 {
   if (index < getSize() && index > 0)
   {
-    if (amount < 0 && -amount >= values.at(index))
+    if (amount < 0 && -amount >= (int)values.at(index))
       values[index] = 0;
-    else if (amount > 0 && amount >= kMAX_VALUE)
+    else if (amount > 0 && amount >= (int)kMAX_VALUE)
       values[index] = kMAX_VALUE;
     else
       values[index] += amount;

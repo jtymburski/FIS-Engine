@@ -51,8 +51,8 @@ Race::Race(Race& other)
       name(other.getName()),
       base_stat_set(other.getBaseSet()),
       max_stat_set(other.getMaxSet()),
-      immunities(other.getImmunities()),
-      skill_set(other.getSkillSet())
+      skill_set(other.getSkillSet()),
+      immunities(other.getImmunities())
 {}
 
 /*
