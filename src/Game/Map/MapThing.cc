@@ -312,6 +312,12 @@ short MapThing::getAnimationSpeed()
   return animation_time;
 }
 
+/* Gets the conversation data for the thing */
+Conversation MapThing::getConversation()
+{
+  return conversation_info;
+}
+
 /* 
  * Description: Gets the things description.
  * 
@@ -321,6 +327,18 @@ short MapThing::getAnimationSpeed()
 QString MapThing::getDescription()
 {
   return description;
+}
+
+/* 
+ * Description: Gets the dialog image data, that is used in conversational
+ *              interaction painting.
+ * 
+ * Inputs: none
+ * Output: Frame* - the dialog image data
+ */
+Frame* MapThing::getDialogImage()
+{
+  return &dialog_image;
 }
 
 /* 
@@ -452,6 +470,21 @@ float MapThing::getY()
   return y;
 }
 
+/* Initiates a conversation to occur with the map */
+// TODO: How to deal with person direction and stopping movement
+void MapThing::initiateConversation(EnumDb::Direction person_dir)
+{
+  emit startConversation(conversation_info);
+  /*if(person_dir == EnumDb::NORTH)
+    setDirection(EnumDb::SOUTH);
+  else if(person_dir == EnumDb::EAST)
+    setDirection(EnumDb::WEST);
+  else if(person_dir == EnumDb::SOUTH)
+    setDirection(EnumDb::NORTH);
+  else if(person_dir == EnumDb::WEST)
+    setDirection(EnumDb::EAST);*/
+}
+
 /* 
  * Description: Starts interaction. In map thing, this isn't of use and is
  *              only used by its children classes.
@@ -539,6 +572,12 @@ bool MapThing::setAnimationSpeed(short frame_time)
   return false;
 }
 
+/* Sets the conversation data for the thing */
+void MapThing::setConversation(Conversation conversation_info)
+{
+  this->conversation_info = conversation_info;
+}
+
 /* 
  * Description: Sets the description that defines the thing.
  *
@@ -548,6 +587,23 @@ bool MapThing::setAnimationSpeed(short frame_time)
 void MapThing::setDescription(QString new_description)
 {
   description = new_description;
+}
+
+/*
+ * Description: Sets the dialog image internal to the map thing. This will be
+ *              the image displayed if the particular map thing is involved
+ *              in a conversational interaction throughout the map scene
+ *
+ * Inputs: QString path - the path to the image data.
+ * Output: bool - If the path is invalid, this set will fail
+ */
+bool MapThing::setDialogImage(QString path)
+{
+  bool success = dialog_image.setImage(path);
+  if(success)
+    dialog_image.initializeGl();
+
+  return success;
 }
 
 /*

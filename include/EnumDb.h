@@ -7,6 +7,10 @@
 #ifndef ENUMDB_H
 #define ENUMDB_H
 
+#ifndef ENUMDB_H
+#define ENUMDB_H
+
+#include <QList>
 #include <QString>
 
 #include "EnumString.h"
@@ -55,7 +59,13 @@ public:
                    UNBR };
 
   /*
-   * Description: Handler for all direction related calls for movement,
+   * Description: Handles the category for the talking inside the map
+   */
+  enum DialogCategory { TEXT,
+                        NUMBERENTRY,
+                        TEXTENTRY };
+  /*
+   * Description: Handler for all direction related calls for movement, 
    *              passability, etc.
    */
   enum Direction { NORTH         = 0x1,
@@ -267,5 +277,15 @@ Begin_Enum_String( EnumDb::PersonRanks )
   RegisterEnumerator(EnumDb::BOAT, "Bear of Ancient Times");
 }
 End_Enum_String;
+
+/* Struct to handle the conversation throughout the map */
+// TODO: Add MapAction, tile image?
+struct Conversation
+{
+  QString text;
+  int thing_id;
+  EnumDb::DialogCategory category;
+  QList<Conversation> next;
+};
 
 #endif // ENUMDB_H
