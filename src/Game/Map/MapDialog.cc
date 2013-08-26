@@ -38,8 +38,7 @@ MapDialog::MapDialog(QFont font)
   dialog_status = OFF;
   display_option = 0;
   display_time = 0;
-  npc_name = "";
-  person_name = "";
+  thing = 0;
   
   setFont(font);
 }
@@ -65,29 +64,20 @@ QList<int> MapDialog::calculateThingList(Conversation conversation)
 
   return list;
 }
-  
-Frame* MapDialog::getThingDisplay(int id)
-{
-  Frame* null_frame = 0;
 
-  for(int i = 0; i < thing_data.size(); i++)
-  {
-    if(thing_data[i]->getID() == id)
-      return thing_data[i]->getDialogImage();
-  }
-
-  return null_frame;
-}
-
-QString MapDialog::getThingName(int id)
+bool MapDialog::getThingPtr(int id)
 {
   for(int i = 0; i < thing_data.size(); i++)
   {
     if(thing_data[i]->getID() == id)
-      return thing_data[i]->getName();
+    {
+      thing = thing_data[i];
+      return true;
+    }
   }
   
-  return "";
+  thing = 0;
+  return false;
 }
 
 /* Halts the dialog, if it's being shown or showing */
@@ -118,28 +108,32 @@ QList<int> MapDialog::removeDuplicates(QList<int> duplicate_list)
   return duplicate_list.toSet().toList();
 }
 
+void MapDialog::setupConversation()
+{
+  /* Get and set up all the pertinent thing data */
+  int img_width = 0;
+  Frame* thing_frame = 0;
+  if(getThingPtr(conversation_info.thing_id))
+    thing_frame = thing->getDialogImage();
+  if(thing_frame != 0)
+    img_width = thing_frame->getImage().width();
+  
+  /* Now work on the text length vs. viewable area */
+  display_font.setPointSize(kFONT_SIZE);
+  QFontMetrics normal_font(display_font);
+  int txt_length = dialog_display.getImage().width() - (kMARGIN_SIDES << 1) 
+                               - (img_width >> 1);
+  QString txt_line = conversation_info.text;
+
+  /* Split up the text as per the visible viewing area */
+  if(conversation_info.next.size() > 1)
+    txt_line = normal_font.elidedText(txt_line, Qt::ElideRight, txt_length);
+  display_text = lineSplitter(txt_line, txt_length, display_font);
+}
+
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
-
-bool MapDialog::haltDialog()
-{
-  if(dialog_display.isImageSet())
-  {
-    /* Reset the animation sequence if ON */
-    if(dialog_status == ON)
-      animation_offset = 0;
-
-    /* Change the status, if not already in OFF */
-    if(dialog_status != OFF)
-    {
-      dialog_status = HIDING;
-      return true;
-    }
-  }
-
-  return false;
-}
 
 bool MapDialog::initConversation(Conversation dialog_info)
 {
@@ -151,22 +145,7 @@ bool MapDialog::initConversation(Conversation dialog_info)
 
     /* Acquire all the needed information about things in the conversation */
     emit setThingData(removeDuplicates(calculateThingList(dialog_info)));
-
-//    QFontMetrics font_info(display_font);
-    
-    /* Calculate the available space */
-//    int available_width = 
-//                      dialog_display.getImage().width() - (kMARGIN_SIDES << 1);
-//    if(available_width < 0)
-//      available_width = 0;
-    
-    /* Chop to single line if required */
-//    if(single_line)
-//      notification = 
-//            font_info.elidedText(notification, Qt::ElideRight, available_width);
-    
-    /* Split the line */
-//    display_text = lineSplitter(notification, available_width, display_font);
+    setupConversation();
     
     /* Initiate animation sequence */
     initiateAnimation(display_font);
@@ -174,26 +153,6 @@ bool MapDialog::initConversation(Conversation dialog_info)
     return true;
   }
   
-  return false;
-}
-
-/* Sets up a dialog with the initial parameters */
-bool MapDialog::initDialog()//MapPerson* left, MapPerson* right)
-{
-  if(dialog_display.isImageSet())
-  {
-    /*Reset the animation sequence if OFF */
-    if(dialog_status == OFF)
-      animation_offset = dialog_display.getImage().height();
-
-    /* Change the status, if not already in ON */
-    if(dialog_status != ON)
-    {
-      dialog_status = SHOWING;
-      return true;
-    }
-  }
-
   return false;
 }
 
@@ -236,13 +195,6 @@ bool MapDialog::initNotification(QString notification, int time_visible,
   return false;
 }
 
-/* Sets up the popout box */
-//void MapStatusBar::initPopout(QImage* img, QString* dialog)
-//{
-//    (void)img;//warning
-//    (void)dialog;//warning
-//}
-
 bool MapDialog::isDialogImageSet()
 {
   return dialog_display.isImageSet();
@@ -266,10 +218,13 @@ void MapDialog::keyPress(QKeyEvent* event)
     if(isInConversation() && dialog_status == ON)
     {
       bool multiple = (conversation_info.next.size() > 1);
-
+      
       /* Check for dialog status and shift to next conversation */
       if(conversation_info.next.size() == 0)
+      {
         dialog_status = HIDING;
+        emit finishThingTarget();
+      }
       else
         conversation_info = conversation_info.next[display_option];
       
@@ -277,6 +232,9 @@ void MapDialog::keyPress(QKeyEvent* event)
       if(multiple)
         conversation_info = conversation_info.next[0];
       display_option = 0;
+      
+      /* Finalize the conversation change */
+      setupConversation();
     }
   }
   /* Go back an option selector */
@@ -284,7 +242,12 @@ void MapDialog::keyPress(QKeyEvent* event)
   {
     display_option--;
     if(display_option < 0)
-      display_option = conversation_info.next.size() - 1;
+    {
+      if(conversation_info.next.size() > 0)
+        display_option = conversation_info.next.size() - 1;
+      else
+        display_option = 0;
+    }
   }
   /* Go to next option selector */
   else if(event->key() == Qt::Key_Down)
@@ -333,12 +296,19 @@ bool MapDialog::paintGl(QGLWidget* painter)
     }
     else if(isInConversation())
     {
+      /* Bold font info */
       display_font.setPointSize(14);
       display_font.setBold(true);
-      
       QFontMetrics bold_font(display_font);
-      Frame* thing_frame = getThingDisplay(conversation_info.thing_id);
-      QString thing_name = getThingName(conversation_info.thing_id);
+      
+      /* Thing data, for the conversation */
+      Frame* thing_frame = 0;
+      QString thing_name = "";
+      if(thing != 0)
+      {
+        thing_frame = thing->getDialogImage();
+        thing_name = thing->getName();
+      }
 
       /* Calculate the width and height of the name box */
       int name_height = kNAME_BOX_HEIGHT;
@@ -398,22 +368,13 @@ bool MapDialog::paintGl(QGLWidget* painter)
         }
 
         /* Draw the conversational text */
-        int txt_length = width - (kMARGIN_SIDES << 1) 
-                               - (img_width >> 1);
-        QString txt_line = conversation_info.text;
         int txt_y = y1 + (kMARGIN_TOP << 1) + font_info.ascent();
         display_font.setPointSize(kFONT_SIZE);
-        QFontMetrics normal_font(display_font);
-
-        if(conversation_info.next.size() > 1)
-          txt_line = normal_font.elidedText(txt_line, 
-                                            Qt::ElideRight, txt_length);
-        QList<QString> convo_list = lineSplitter(txt_line, 
-                                                 txt_length, display_font);
-        for(int i = 0; i < convo_list.size(); i++)
+        glColor4f(1.0, 1.0, 1.0, 1.0);
+        for(int i = 0; i < display_text.size(); i++)
         {
           painter->renderText(x1 + kMARGIN_SIDES, txt_y, 
-                              convo_list[i], display_font);
+                              display_text[i], display_font);
           txt_y += (kFONT_SPACING << 1) + font_info.height();
         }
 
@@ -429,7 +390,7 @@ bool MapDialog::paintGl(QGLWidget* painter)
             {
               int margin = kOPTION_MARGIN;
               QRect option = 
-                  normal_font.boundingRect(conversation_info.next[i].text);
+                  font_info.boundingRect(conversation_info.next[i].text);
               glColor4f(0.0, 0.0, 0.0, 1.0);
               glBegin(GL_QUADS);
                 glVertex3f(option_x + option.x() - margin, 
@@ -480,6 +441,14 @@ bool MapDialog::paintGl(QGLWidget* painter)
                         300 + font_details.height(), "Running.", usable_font);*/
   }
 
+  /* Update from events that occurred during running */
+  //if(display_text_update)
+  //{
+  //  display_text = display_text_new;
+  //  display_text_new.clear();
+  //  display_text_update = false;
+  //}
+  
   return true; // TODO??
 }
 
@@ -506,36 +475,6 @@ void MapDialog::setFont(QFont font)
   display_font.setItalic(false);
   display_font.setOverline(false);
   display_font.setUnderline(false);
-}
-  
-bool MapDialog::setNpcDisplay(QString path)
-{
-  if(npc_display.setImage(path))
-  {
-    npc_display.initializeGl();
-    return true;
-  }
-  return false;
-}
-  
-void MapDialog::setNpcName(QString name)
-{
-  npc_name = name;
-}
-
-bool MapDialog::setPersonDisplay(QString path)
-{
-  if(person_display.setImage(path))
-  {
-    person_display.initializeGl();
-    return true;
-  }
-  return false;
-}
-
-void MapDialog::setPersonName(QString name)
-{
-  person_name = name;
 }
 
 void MapDialog::setThingData(QList<MapThing*> data)

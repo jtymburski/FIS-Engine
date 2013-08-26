@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
     qDebug() << "Writing file fail.";
   }
 
-  QApplication::setGraphicsSystem("raster");
+  //QApplication::setGraphicsSystem("raster");
   QApplication app(argc, argv);
 
   /* Frequency of Audio Playback */
@@ -130,7 +130,8 @@ int main(int argc, char *argv[])
 	}
 
   /* Setup QT */
-  QApplication::setGraphicsSystem(QLatin1String("opengl"));
+  QApplication::setGraphicsSystem("opengl");
+  QGL::setPreferredPaintEngine(QPaintEngine::OpenGL);
   Application* game = new Application();
   QObject::connect(game, SIGNAL(closing()), &app, SLOT(quit()));
   game->show();

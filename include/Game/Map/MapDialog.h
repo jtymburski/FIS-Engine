@@ -9,13 +9,9 @@
 #define MAPDIALOG_H
 
 #include <QDebug>
-//#include <QImage>
 #include <QKeyEvent>
 #include <QObject>
-//#include <QtGui/QWidget>
-//#include <QRect>
-//#include <QString>
-//#include <QTimer>
+//#include <QTime>
 
 #include "EnumDb.h"
 #include "Game/Frame.h"
@@ -57,9 +53,6 @@ private:
   /* The currently running conversation information */
   Conversation conversation_info;
 
-  /* The current string being shown */
-//  QString* current_dialog;
-
   /* The conversational display frame */
   Frame dialog_display;
 
@@ -80,48 +73,15 @@ private:
   
   /* A time counter, for determining how long things have been displayed */
   short display_time;
-  
-  /* The left and right conversationists */
-//  MapPerson* left,right;
-
-  /* Bounding boxes for the left and right conversationists and the central
-    dialog box */
-//  QRect leftbox, rightbox, midbox;
-
-  /* The display npc that gets shown during the conversation */
-  Frame npc_display;
-  QString npc_name;
-
-  /* The display person that gets shown during the conversation */
-  Frame person_display;
-  QString person_name;
 
   /* The bounding box for the popout at the top right of screen (On bubby
     pickup for example) */
 //  QRect popoutbox;
 
-  /* The dialog displayed in the popout */
-//  QString * popout_dialog;
-
-  /* The image displayed in the popout */
-//  QImage * popout_image;
-
-  /* Timer to handle the popout box rendering */
-//  QTimer popout_shift;
-
   /* The data for the associated things. This is pertinent for the
    * conversation access and anything displayed */
+  MapThing* thing;
   QList<MapThing*> thing_data;
-
-  /* Flag for if a converation is taking place */
-//  bool CONVERSATION;
-
-  /* Flag for if the popout box is visible (For nullifying the popout image
-    and dialog) */
-//  bool POPOUT_VISIBLE;
-
-  /* Flag for which person is talking(1-right, 0-left) */
-//  bool RIGHT_VISIBLE;
 
   /* -------------------------- Constants ------------------------- */
   const static short kCURSOR_NEXT_SIZE; /* The size of the next shifter */
@@ -149,41 +109,36 @@ private:
   QList<int> calculateThingList(Conversation conversation);
 
   /* Functions to acquire thing data, for painting to the screen */
-  Frame* getThingDisplay(int id);
-  QString getThingName(int id);
-
+  bool getThingPtr(int id);
+  
   /* Halts the dialog, if it's being shown or showing */
   void initiateAnimation(QFont display_font);
-
+  
   /* Removes duplicates from the given qlist and returns it. Used in
    * conjunction with "calculateThingList" */
   QList<int> removeDuplicates(QList<int> duplicate_list);
 
+  /* Sets the current conversation entry up, called after the previous was
+   * finished */
+  void setupConversation();
+  
 /*============================================================================
  * SIGNALS
  *===========================================================================*/
 signals:
+  void finishThingTarget();
   void setThingData(QList<int> thing_ids);
 
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
-  /* Halts the dialog, if it's being shown or showing */
-  bool haltDialog();
-
   /* Initializes a conversation with the two given people. */
   bool initConversation(Conversation dialog_info);
-  
-  /* Sets up a dialog with the initial parameters */
-  bool initDialog();//MapPerson* left, MapPerson* right);
 
   /* Initializes a notification, using a QString */
   bool initNotification(QString notification, int time_visible = -1, 
                                               bool single_line = false);
-  
-  /* Sets up the popout box */
-//  void initPopout (QImage* img, QString* dialog);
 
   /* Returns if the dialog image has been set (and proper size) */
   bool isDialogImageSet();
@@ -207,14 +162,6 @@ public:
 
   /* Sets the rendering font */
   void setFont(QFont font);
-  
-  /* Sets the npc display information, for conversations */
-  bool setNpcDisplay(QString path);
-  void setNpcName(QString name);
-
-  /* Sets the person display information, for conversations */
-  bool setPersonDisplay(QString path);
-  void setPersonName(QString name);
 
   /* Sets the thing data, needed for the conversation */
   void setThingData(QList<MapThing*> data);

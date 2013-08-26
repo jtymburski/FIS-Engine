@@ -59,6 +59,8 @@ Map::Map(const QGLFormat & format, short viewport_width,
   //map_dialog.setDialogImage("sprites/menu_test.png");//Map/Overlay/dialog.png");
   connect(&map_dialog, SIGNAL(setThingData(QList<int>)), 
           this, SLOT(getThingData(QList<int>)));
+  connect(&map_dialog, SIGNAL(finishThingTarget()), 
+          this, SLOT(finishThingTarget()));
 
   /* Setup the viewport */
   viewport = new MapViewport(viewport_width, viewport_height, 
@@ -160,6 +162,51 @@ bool Map::addTileData(XmlData data)
   return false;
 }
 
+/* Initiates a thing action, based on the action key being hit */
+void Map::initiateThingAction()
+{
+  if(player != 0)
+  {
+    MapThing* null_thing = 0;
+    int x = player->getTile()->getX();
+    int y = player->getTile()->getY();
+
+    /* Determine the direction and offset coordinate tile selection */
+    EnumDb::Direction direction = player->getDirection();
+    if(direction == EnumDb::NORTH)
+      y--;
+    else if(direction == EnumDb::EAST)
+      x++;
+    else if(direction == EnumDb::SOUTH)
+      y++;
+    else if(direction == EnumDb::WEST)
+      x--;
+    /* Throw X out of bounds if no direction */
+    else
+      x = -1;
+
+    /* Aquire the thing, that's being pointed at */
+    if((x >= 0 && x < geography.size() && y >= 0 && y < geography[0].size()) &&
+       (geography[x][y]->getImpassableThing() != 0 &&
+        geography[x][y]->getImpassableThing()->getTile()->getX() == x &&
+        geography[x][y]->getImpassableThing()->getTile()->getY() == y))
+    {
+      MapThing* target_thing = geography[x][y]->getImpassableThing();
+      Conversation target_convo = target_thing->getConversation();
+
+      /* Check if the conversation is relevant and use if so */
+      if(!target_convo.text.isEmpty() || target_convo.next.size() > 0)
+      {
+        if(player->setTarget(target_thing) && 
+           map_dialog.initConversation(target_convo))
+        {
+          player->keyFlush();
+        }
+      }
+    }
+  }
+}
+
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
@@ -230,9 +277,10 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     closeMap();
   else if(map_dialog.isInConversation())
     map_dialog.keyPress(key_event);
+  else if(key_event->key() == Qt::Key_Space)
+    initiateThingAction();
   else if(key_event->key() == Qt::Key_Down || key_event->key() == Qt::Key_Up ||
-     key_event->key() == Qt::Key_Right || key_event->key() == Qt::Key_Left || 
-     key_event->key() == Qt::Key_E)
+          key_event->key() == Qt::Key_Right || key_event->key() == Qt::Key_Left)
   {
     if(player != 0)
       player->keyPress(key_event);
@@ -285,13 +333,19 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     test1.text += "unless it is an option based selection in which case it will restrict."; 
     test1.thing_id = 3;
     test2.category = EnumDb::TEXT;
-    test2.text = "This is a no man case. See what happens??";
+    test2.text = "This is a no man case. See what happens!! Ok, this is the ";
+    test2.text += "too long case where the lines never cease to exist and the ";
+    test2.text += "points aren't for real. I'm feeling a bit hungry though ";
+    test2.text += "so I don't know if I'll have the stamina to clean up this ";
+    test2.text += "case in all it's glory. Repeat: ";
+    test2.text += test2.text;
     test2.thing_id = 2;
     test2.next.append(test1);
     test3.category = EnumDb::TEXT;
     test3.text = "Back to finish off with a clean case with a couple of lines.";
     test3.text += " So this requires me to write a bunch of BS to try and fill";
     test3.text += " these lines.";
+    test3.text += test3.text;
     test3.thing_id = 24;
     test3.next.append(test2);
     test4.category = EnumDb::TEXT;
@@ -455,6 +509,14 @@ void Map::animateTiles()
     tile_sprites[i]->shiftNext();
 }
 
+void Map::finishThingTarget()
+{
+  if(player != 0)
+  {
+    player->clearTarget();
+  }
+}
+
 void Map::getThingData(QList<int> thing_ids)
 {
   QList<MapThing*> used_things;
@@ -483,42 +545,6 @@ void Map::getThingData(QList<int> thing_ids)
 
   /* Set the dialog with the new stack of things */
   map_dialog.setThingData(used_things);
-}
-
-void Map::initiateThingUse(MapPerson* person)
-{
-  if(person != 0)
-  {
-    MapThing* null_thing = 0;
-    int x = person->getTile()->getX();
-    int y = person->getTile()->getY();
-
-    /* Determine the direction and offset coordinate tile selection */
-    EnumDb::Direction direction = person->getDirection();
-    if(direction == EnumDb::NORTH)
-      y--;
-    else if(direction == EnumDb::EAST)
-      x++;
-    else if(direction == EnumDb::SOUTH)
-      y++;
-    else if(direction == EnumDb::WEST)
-      x--;
-    /* Throw X out of bounds if no direction */
-    else
-      x = -1;
-
-    /* Aquire the thing, that's being pointed at */
-    if(x >= 0 && x < geography.size() && y >= 0 && y < geography[0].size())
-      person->setTarget(geography[x][y]->getImpassableThing());
-    else
-      person->setTarget(null_thing);
-  }
-}
-
-/* Starts a conversation within the map */
-void Map::startConversation(Conversation conversation_data)
-{
-  map_dialog.initConversation(conversation_data);
 }
 
 /*============================================================================
@@ -659,10 +685,6 @@ bool Map::loadMap(QString file)
     person->setDialogImage("sprites/Map/Dialog/player.png");
     person->setID(1);
     person->setName("REally LOng NAme");
-    connect(person, SIGNAL(initiateThingUse(MapPerson*)), 
-            this, SLOT(initiateThingUse(MapPerson*)));
-    connect(person, SIGNAL(startConversation(Conversation)), 
-            this, SLOT(startConversation(Conversation)));
     persons.append(person);
 
     /* Add a second player */
@@ -688,10 +710,6 @@ bool Map::loadMap(QString file)
     person_convo.text = "I don't have anything to say to you!!";
     person_convo.thing_id = 24;
     person->setConversation(person_convo);
-    connect(person, SIGNAL(initiateThingUse(MapPerson*)), 
-            this, SLOT(initiateThingUse(MapPerson*)));
-    connect(person, SIGNAL(startConversation(Conversation)), 
-            this, SLOT(startConversation(Conversation)));
     persons.append(person);
 
     /* Add an NPC */
@@ -723,8 +741,6 @@ bool Map::loadMap(QString file)
     second_set.thing_id = 1;
     person_convo.next.append(second_set);
     npc->setConversation(person_convo);
-    connect(npc, SIGNAL(startConversation(Conversation)), 
-            this, SLOT(startConversation(Conversation)));
     persons.append(npc);
 
     /* Make the map thing */
@@ -752,8 +768,8 @@ bool Map::loadMap(QString file)
 
     /* Set up the map displays */
     map_dialog.setDialogImage("sprites/Map/Overlay/dialog.png");
-    map_dialog.setPersonDisplay("sprites/Map/Dialog/myliria.png");
-    map_dialog.setPersonName("Myliria");
+    //map_dialog.setPersonDisplay("sprites/Map/Dialog/myliria.png");
+    //map_dialog.setPersonName("Myliria");
     //map_dialog.initNotification("Hello sunshine, this is a really long text that will go on and on and on. Let's try for even more, I'm sure I can push it to the absolute limit.");
     
     for(int i = 0; i < geography.size(); i++)

@@ -290,13 +290,23 @@ void MapThing::clear()
   setAnimationSpeed(kDEFAULT_ANIMATION);
   setDescription("");
   setID(kUNSET_ID);
+  setMovementPaused(false);
   setName("");
   setSpeed(kDEFAULT_SPEED);
+  target = 0;
   
   height = 0;
   width = 0;
 
   unsetState();
+}
+
+/* Clears the target that the map thing is currently pointing at */
+void MapThing::clearTarget()
+{
+  if(target != 0)
+    target->setMovementPaused(false);
+  target = 0;
 }
 
 /* 
@@ -377,6 +387,11 @@ EnumDb::Direction MapThing::getMovement()
   return movement;
 }
 
+bool MapThing::getMovementPaused()
+{
+  return movement_paused;
+}
+
 /* 
  * Description: This is a virtual move request call that needs to be
  *              reimplemented by whoever needs it. It returns what the current
@@ -424,6 +439,12 @@ MapState* MapThing::getState()
   return state;
 }
 
+/* Returns the target that this thing is pointed at */
+MapThing* MapThing::getTarget()
+{
+  return target;
+}
+
 /* 
  * Description: Returns the tile that the thing is currently at. Used for all
  *              indication of where the thing is going and if someone talks to
@@ -468,21 +489,6 @@ float MapThing::getX()
 float MapThing::getY()
 {
   return y;
-}
-
-/* Initiates a conversation to occur with the map */
-// TODO: How to deal with person direction and stopping movement
-void MapThing::initiateConversation(EnumDb::Direction person_dir)
-{
-  emit startConversation(conversation_info);
-  /*if(person_dir == EnumDb::NORTH)
-    setDirection(EnumDb::SOUTH);
-  else if(person_dir == EnumDb::EAST)
-    setDirection(EnumDb::WEST);
-  else if(person_dir == EnumDb::SOUTH)
-    setDirection(EnumDb::NORTH);
-  else if(person_dir == EnumDb::WEST)
-    setDirection(EnumDb::EAST);*/
 }
 
 /* 
@@ -645,6 +651,11 @@ bool MapThing::setID(int new_id)
   return true;
 }
 
+void MapThing::setMovementPaused(bool paused)
+{
+  movement_paused = paused;
+}
+
 /*
  * Description: Sets the name for the thing.
  *
@@ -732,6 +743,23 @@ bool MapThing::setState(MapState* state, bool unset_old)
     return true;
   }
 
+  return false;
+}
+
+/* Sets the target map thing, fails if there is already a target */
+bool MapThing::setTarget(MapThing* target)
+{
+  if((target != 0 && this->target == 0) || target == 0)
+  {
+    if(target == 0)
+      clearTarget();
+    else
+      target->setMovementPaused(true);
+  
+    this->target = target;
+    return true;
+  }
+  
   return false;
 }
 

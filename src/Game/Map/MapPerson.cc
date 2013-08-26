@@ -234,7 +234,6 @@ void MapPerson::clear()
   direction = EnumDb::NORTH;
   movement = EnumDb::DIRECTIONLESS;
   clearAllMovement();
-  clearTarget();
   surface = GROUND;
 
   MapThing::clear();
@@ -253,12 +252,6 @@ void MapPerson::clearAllMovement()
   movement_stack.clear();
 }
 
-/* Clears the target that the map person is currently pointing at */
-void MapPerson::clearTarget()
-{
-  target = 0;
-}
-  
 /* 
  * Description: Returns the direction that the MapPerson is currently set to. 
  * 
@@ -297,12 +290,6 @@ MapPerson::SurfaceClassifier MapPerson::getSurface()
   return surface;
 }
 
-/* Returns the target that this person is pointed at */
-MapThing* MapPerson::getTarget()
-{
-  return target;
-}
- 
 void MapPerson::keyFlush()
 {
   movement_stack.clear();
@@ -325,24 +312,6 @@ void MapPerson::keyPress(QKeyEvent* event)
     addDirection(EnumDb::EAST);
   else if(event->key() == Qt::Key_Left)
     addDirection(EnumDb::WEST);
-  else if(event->key() == Qt::Key_E && !event->isAutoRepeat())
-  {
-    /* Initiate the thing and get the conversation, if applicable */
-    emit initiateThingUse(this);
-
-    /* Start the conversation, if one exists */
-    if(target != 0)
-    {
-      Conversation thing_convo = target->getConversation();
-
-      /* Check if the conversation is relevant and use if so */
-      if(!thing_convo.text.isEmpty() || thing_convo.next.size() > 0)
-      {
-        target->initiateConversation(getDirection());
-        keyFlush();
-      }
-    }
-  }
 }
 
 /*
@@ -421,12 +390,6 @@ void MapPerson::setSurface(SurfaceClassifier surface)
     MapThing::setState(states[surface][dirToInt(direction)], false);
 }
 
-/* Sets the target map person, fails if there is already a target */
-void MapPerson::setTarget(MapThing* target)
-{
-  this->target = target;
-}
-
 /*
  * Description: Updates the state of the thing. This can include animation
  *              sequencing or movement and such. Called on the tick.
@@ -436,7 +399,7 @@ void MapPerson::setTarget(MapThing* target)
  */
 void MapPerson::updateThing(float cycle_time, Tile* next_tile)
 {
-  bool can_move = isMoveAllowed(next_tile);
+  bool can_move = isMoveAllowed(next_tile) && !getMovementPaused();
   bool reset = false;
   
   /* Once a tile end has reached, cycle the movement direction */

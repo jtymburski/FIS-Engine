@@ -45,9 +45,6 @@ private:
 
   /* The surface that the person is walking on */
   SurfaceClassifier surface;
-
-  /* The target for this person. If set, it cannot be targetted by others */
-  MapThing* target;
   
   /* -------------------------- Constants ------------------------- */
   const static char kDIR_EAST;        /* The EAST direction for moving */
@@ -86,7 +83,7 @@ protected:
  * SIGNALS
  *===========================================================================*/
 signals:
-  void initiateThingUse(MapPerson* person);
+//  void initiateThingUse(MapPerson* person);
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -99,9 +96,6 @@ public:
   /* Clear all movement from the stack. This is filled from add/remove
    * direction */
   void clearAllMovement();
-
-  /* Clears the target that the map person is currently pointing at */
-  void clearTarget();
   
   /* Returns the direction that this person is travelling in */
   EnumDb::Direction getDirection();
@@ -111,9 +105,6 @@ public:
   
   /* Returns the surface that this person resides on */
   SurfaceClassifier getSurface();
-
-  /* Returns the target that this person is pointed at */
-  MapThing* getTarget();
   
   /* Key flush/press/release events handled */
   void keyFlush();
@@ -129,9 +120,6 @@ public:
 
   /* Sets the surface that the person travels on */
   void setSurface(SurfaceClassifier surface);
-
-  /* Sets the target map person, fails if there is already a target */
-  void setTarget(MapThing* target);
  
   /* Updates the thing, based on the tick */
   virtual void updateThing(float cycle_time, Tile* next_tile);

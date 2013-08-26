@@ -47,6 +47,9 @@ protected:
   float x;
   float y;
 
+  /* The target for this thing. If set, it cannot be targetted by others */
+  MapThing* target;
+  
   /* The main state */
   MapState* state;
 
@@ -57,6 +60,7 @@ protected:
   short animation_buffer;
   short animation_time;
   EnumDb::Direction movement;
+  bool movement_paused;
   short speed;
   
   /* Painting information */
@@ -96,7 +100,7 @@ protected:
  * SIGNALS
  *===========================================================================*/
 signals:
-  void startConversation(Conversation conversation_data);
+  //void startConversation(Conversation conversation_data);
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -104,7 +108,10 @@ signals:
 public:
   /* Clears the entire class data */
   virtual void clear();
-
+  
+  /* Clears the target that the map thing is currently pointing at */
+  void clearTarget();
+  
   /* Gets the animation speed of the thing */
   short getAnimationSpeed();
   
@@ -125,6 +132,7 @@ public:
 
   /* Get the specific details of the movement information */
   EnumDb::Direction getMovement();
+  bool getMovementPaused();
   virtual EnumDb::Direction getMoveRequest();
 
   /* Gets the things name */
@@ -136,6 +144,9 @@ public:
   /* Returns the map state that's defined */
   MapState* getState();
   
+  /* Returns the target that this thing is pointed at */
+  MapThing* getTarget();
+  
   /* Returns the central tile */
   Tile* getTile();
   
@@ -145,9 +156,6 @@ public:
   /* Returns the location of the thing */
   float getX();
   float getY();
-
-  /* Initiates a conversation to occur with the map */
-  void initiateConversation(EnumDb::Direction person_dir);
 
   /* Starts interaction (conversation, giving something, etc) */
   virtual bool interaction(MapPerson* person);
@@ -182,6 +190,9 @@ public:
   /* Sets the things ID */
   bool setID(int new_id);
 
+  /* Sets if the movement is paused */
+  void setMovementPaused(bool paused);
+  
   /* Sets the things name */
   void setName(QString new_name);
 
@@ -194,6 +205,9 @@ public:
   /* Sets the state of the thing */
   bool setState(MapState* state, bool unset_old = true);
 
+  /* Sets the target map thing, fails if there is already a target */
+  bool setTarget(MapThing* target);
+  
   /* Sets the things width classification */
   bool setWidth(int new_width);
 

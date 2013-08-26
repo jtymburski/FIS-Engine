@@ -103,6 +103,9 @@ private:
 private:
   bool addTileData(XmlData data);
 
+  /* Initiates a thing action, based on the action key being hit */
+  void initiateThingAction();
+  
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
@@ -136,15 +139,11 @@ public slots:
   /* Animates the tiles within the map */
   void animateTiles();
 
+  /* Complete the action sequence with the thing */
+  void finishThingTarget();
+  
   /* Acquires the thing data and sets it in the dialog class, if applicable */
   void getThingData(QList<int> thing_ids);
-
-  /* Initiates the thing use, and sets the given person with the applicable
-   * thing, if there is one near */
-  void initiateThingUse(MapPerson* person);
-
-  /* Starts a conversation within the map */
-  void startConversation(Conversation conversation_data);
 
 /*============================================================================
  * PUBLIC FUNCTIONS
