@@ -60,6 +60,9 @@ private:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Returns the class descriptor, useful for casting */
+  virtual QString classDescriptor();
+
   /* Clears out the NPC construct, void of painting */
   void clear();
 

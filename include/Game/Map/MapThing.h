@@ -106,6 +106,9 @@ signals:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Returns the class descriptor, useful for casting */
+  virtual QString classDescriptor();
+
   /* Clears the entire class data */
   virtual void clear();
   
@@ -113,7 +116,7 @@ public:
   void clearTarget();
   
   /* Gets the animation speed of the thing */
-  short getAnimationSpeed();
+  virtual short getAnimationSpeed();
   
   /* Gets the conversation data for the thing */
   Conversation getConversation();
@@ -173,7 +176,7 @@ public:
   bool paintGl(float offset_x = 0.0, float offset_y = 0.0, float opacity = 1.0);
 
   /* Sets the animation time for each frame */
-  bool setAnimationSpeed(short frame_time);
+  virtual bool setAnimationSpeed(short frame_time);
  
   /* Sets the conversation data for the thing */
   void setConversation(Conversation conversation_info);

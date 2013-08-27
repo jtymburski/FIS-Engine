@@ -85,6 +85,7 @@ MapThing::~MapThing()
  */
 bool MapThing::animate(short cycle_time, bool reset, bool skip_head)
 {
+  //qDebug() << animation_time;
   bool status = true;
   
   /* Check if an animation can occur */
@@ -274,6 +275,12 @@ bool MapThing::tileMoveStart(Tile* next_tile, Tile::ThingState classification)
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
+  
+/* Returns the class descriptor, useful for casting */
+QString MapThing::classDescriptor()
+{
+  return "MapThing";
+}
 
 /* 
  * Description: Clears out all information stored in the class
@@ -305,7 +312,7 @@ void MapThing::clear()
 void MapThing::clearTarget()
 {
   if(target != 0)
-    target->setMovementPaused(false);
+    setMovementPaused(false);
   target = 0;
 }
 
@@ -754,7 +761,7 @@ bool MapThing::setTarget(MapThing* target)
     if(target == 0)
       clearTarget();
     else
-      target->setMovementPaused(true);
+      setMovementPaused(true);
   
     this->target = target;
     return true;

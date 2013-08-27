@@ -55,6 +55,7 @@ MapPerson::MapPerson(int width, int height, QString name,
                      QString description, int id)
 {
   /* Class value setup */
+  setAnimationSpeed(kDEFAULT_ANIMATION);
   setDescription(description);
   setHeight(height);
   setID(id);
@@ -204,13 +205,44 @@ bool MapPerson::setDirection(EnumDb::Direction direction, bool set_movement)
     /* Finally set the in class direction */
     this->direction = direction;
   }
-  
+
+  /* Only update the animation if the direction has changed */
+  if(movement_changed)
+    updateAnimation();
+
   return movement_changed;
+}
+
+/* Updates the animation of the map thing, based on the current state */
+void MapPerson::updateAnimation()
+{
+  if((direction == EnumDb::WEST || direction == EnumDb::EAST || 
+                                   direction == EnumDb::SOUTH) && 
+     states[surface][dirToInt(direction)] != 0 && 
+     states[surface][dirToInt(EnumDb::NORTH)] != 0)
+  {
+    int e_w_count = 
+              states[surface][dirToInt(direction)]->getSprite()->getSize();
+    int n_s_count = 
+              states[surface][dirToInt(EnumDb::NORTH)]->getSprite()->getSize();
+    MapThing::setAnimationSpeed(n_s_count * 1.0 * 
+                                animation_vertical / e_w_count);
+  }
+  else
+  {
+    MapThing::setAnimationSpeed(animation_vertical);
+  }
 }
 
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
+
+/* Returns the class descriptor, useful for casting */
+QString MapPerson::classDescriptor()
+{
+  return "MapPerson";
+}
 
 /* 
  * Description: Clears out all person states that were initialized into this
@@ -235,6 +267,7 @@ void MapPerson::clear()
   movement = EnumDb::DIRECTIONLESS;
   clearAllMovement();
   surface = GROUND;
+  setAnimationSpeed(kDEFAULT_ANIMATION);
 
   MapThing::clear();
 }
@@ -250,6 +283,12 @@ void MapPerson::clear()
 void MapPerson::clearAllMovement()
 {
   movement_stack.clear();
+}
+   
+/* Gets the animation speed of the person */
+short MapPerson::getAnimationSpeed()
+{
+  return animation_vertical;
 }
 
 /* 
@@ -345,6 +384,19 @@ bool MapPerson::isMoveRequested()
   return !movement_stack.isEmpty();
 }
 
+/* Sets the animation time for each frame */
+bool MapPerson::setAnimationSpeed(short frame_time)
+{
+  if(frame_time >= 0)
+  {
+    animation_vertical = frame_time;
+    updateAnimation();
+
+    return true;
+  }
+  return false;
+}
+
 /* 
  * Description: Sets a state within the class, based on the double set of 
  *              enumerators, for surface and direction. This will automatically
@@ -367,7 +419,10 @@ bool MapPerson::setState(SurfaceClassifier surface,
     /* If the updated state is the active one, automatically set the printable
      * sprite */
     if(this->surface == surface && this->direction == direction)
+    {
       MapThing::setState(states[surface][dirToInt(direction)], false);
+      updateAnimation();
+    }
 
     return true;
   }
@@ -407,8 +462,32 @@ void MapPerson::updateThing(float cycle_time, Tile* next_tile)
   {
     tileMoveFinish();
     
-    /* Only update direction if a move is requested */
-    if(isMoveRequested())
+    /* If paused and there is a target, change direction to the target */
+    if(getMovementPaused())
+    {
+      if(getTarget())
+      {
+        int delta_x = getTile()->getX() - getTarget()->getTile()->getX();
+        int delta_y = getTile()->getY() - getTarget()->getTile()->getY();
+
+        if(delta_x < 0)
+          setDirection(EnumDb::EAST, can_move);
+        else if(delta_x > 0)
+          setDirection(EnumDb::WEST, can_move);
+        else if(delta_y < 0)
+          setDirection(EnumDb::SOUTH, can_move);
+        else if(delta_y > 0)
+          setDirection(EnumDb::NORTH, can_move);
+      }
+      else
+      {
+        setDirection(EnumDb::DIRECTIONLESS);
+      }
+
+      reset = true;
+    }
+    /* Update direction based on move request and if it should move */
+    else if(isMoveRequested())
     {
       /* Set the new direction and if the direction is changed, or it's
        * not allowed to move, recenter the thing */

@@ -198,9 +198,15 @@ void Map::initiateThingAction()
       if(!target_convo.text.isEmpty() || target_convo.next.size() > 0)
       {
         if(player->setTarget(target_thing) && 
+           target_thing->setTarget(player) &&
            map_dialog.initConversation(target_convo))
         {
           player->keyFlush();
+        }
+        else
+        {
+          player->clearTarget();
+          target_thing->clearTarget();
         }
       }
     }
@@ -513,6 +519,8 @@ void Map::finishThingTarget()
 {
   if(player != 0)
   {
+    if(player->getTarget() != 0)
+      player->getTarget()->clearTarget();
     player->clearTarget();
   }
 }
@@ -716,7 +724,7 @@ bool Map::loadMap(QString file)
     up_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_D",3,".png");
     down_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_U",3,".png");
     left_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_R",3,".png");
-    right_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_L",3,".png");
+    right_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_L",5,".png");
     MapNPC* npc = new MapNPC(kTILE_WIDTH, kTILE_HEIGHT);
     npc->setState(MapPerson::GROUND, EnumDb::NORTH, new MapState(up_sprite));
     npc->setState(MapPerson::GROUND, EnumDb::SOUTH, new MapState(down_sprite));

@@ -35,6 +35,9 @@ public:
   enum SurfaceClassifier{GROUND = 0};
 
 private:
+  /* The animation speed for up and down, extrapolated for left and right */
+  short animation_vertical;
+
   /* The direction of the player and the current movement direction */
   EnumDb::Direction direction;
   QList<EnumDb::Direction> movement_stack;
@@ -79,6 +82,9 @@ protected:
   /* Sets the direction that the person is travelling in */
   bool setDirection(EnumDb::Direction direction, bool set_movement = true);
 
+  /* Updates the animation of the map thing, based on the current state */
+  void updateAnimation();
+
 /*============================================================================
  * SIGNALS
  *===========================================================================*/
@@ -89,6 +95,9 @@ signals:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Returns the class descriptor, useful for casting */
+  virtual QString classDescriptor();
+
   /* Clears all information from the class (including deleting necessary
    * pointers) */
   virtual void clear();
@@ -96,7 +105,10 @@ public:
   /* Clear all movement from the stack. This is filled from add/remove
    * direction */
   void clearAllMovement();
-  
+
+   /* Gets the animation speed of the person */
+  short getAnimationSpeed(); 
+
   /* Returns the direction that this person is travelling in */
   EnumDb::Direction getDirection();
 
@@ -113,6 +125,9 @@ public:
 
   /* Determines if there is an active move request (virtual reimplemented) */
   bool isMoveRequested();
+  
+  /* Sets the animation time for each frame */
+  bool setAnimationSpeed(short frame_time);
 
   /* Sets a new state to add into the states list */
   bool setState(SurfaceClassifier surface, EnumDb::Direction direction, 

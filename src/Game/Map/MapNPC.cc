@@ -44,6 +44,12 @@ MapNPC::~MapNPC()
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
+/* Returns the class descriptor, useful for casting */
+QString MapNPC::classDescriptor()
+{
+  return "MapNPC";
+}
+
 /* Clears out the NPC construct, void of painting */
 void MapNPC::clear()
 {
