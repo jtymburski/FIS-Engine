@@ -94,15 +94,18 @@ bool MapThing::animate(short cycle_time, bool reset, bool skip_head)
     /* Increment the animation time */
     animation_buffer += cycle_time;
     
-    if(reset || animation_time == 0)
+    if((reset && !skip_head) || animation_time == 0)
     {
       status = state->getSprite()->setAtFirst();
       animation_buffer = 0;
     }
-    else if(animation_buffer >= animation_time)
+    else if((reset && skip_head) || animation_buffer >= animation_time)
     {
       status = state->getSprite()->shiftNext(skip_head);
-      animation_buffer -= animation_time;
+      if(reset)
+        animation_buffer = 0;
+      else
+        animation_buffer -= animation_time;
     }
   }
   

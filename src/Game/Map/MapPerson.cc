@@ -491,17 +491,17 @@ void MapPerson::updateThing(float cycle_time, Tile* next_tile)
     {
       /* Set the new direction and if the direction is changed, or it's
        * not allowed to move, recenter the thing */
+      reset = !can_move;
       if(setDirection(getMoveRequest(), can_move) || !can_move)
       {
         x = tile_main->getPixelX();
         y = tile_main->getPixelY();
+        reset = true;
       }
       
       /* If it can move, initiate tile shifting */
       if(can_move)
         tileMoveStart(next_tile, Tile::PERSON);
-
-      reset = !can_move;
     }
     /* If there is no move request, stop movement */
     else
@@ -521,7 +521,8 @@ void MapPerson::updateThing(float cycle_time, Tile* next_tile)
   moveThing(cycle_time);
 
   /* Only animate if the direction exists */
-  animate(cycle_time, reset, true);
+  //qDebug() << getName() << ": " << cycle_time << " " << reset << " " << can_move;
+  animate(cycle_time, reset, getMovement() != EnumDb::DIRECTIONLESS);
 }
 
 /* 

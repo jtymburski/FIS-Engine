@@ -14,6 +14,7 @@ const short MapDialog::kFONT_SIZE = 12;
 const short MapDialog::kFONT_SPACING = 10;
 const short MapDialog::kMARGIN_SIDES = 50;
 const short MapDialog::kMARGIN_TOP = 25;
+const short MapDialog::kMAX_LINES = 4;
 const short MapDialog::kMSEC_PER_WORD = 333;
 const short MapDialog::kNAME_BOX_ANGLE_X = 42;
 const short MapDialog::kNAME_BOX_HEIGHT = 42;
@@ -370,11 +371,22 @@ bool MapDialog::paintGl(QGLWidget* painter)
         /* Draw the conversational text */
         int txt_y = y1 + (kMARGIN_TOP << 1) + font_info.ascent();
         display_font.setPointSize(kFONT_SIZE);
+        int max_lines = display_text.size() > kMAX_LINES ? kMAX_LINES 
+                                                         : display_text.size();
         glColor4f(1.0, 1.0, 1.0, 1.0);
-        for(int i = 0; i < display_text.size(); i++)
+        for(int i = 0; i < max_lines; i++)
         {
           painter->renderText(x1 + kMARGIN_SIDES, txt_y, 
                               display_text[i], display_font);
+          txt_y += (kFONT_SPACING << 1) + font_info.height();
+        }
+
+        /* The last conversational text line, based on long sets */
+        glColor4f(1.0, 1.0, 1.0, 0.25);
+        if(display_text.size() > max_lines)
+        {
+          painter->renderText(x1 + kMARGIN_SIDES, txt_y, 
+                              display_text[max_lines], display_font);
           txt_y += (kFONT_SPACING << 1) + font_info.height();
         }
 
@@ -411,22 +423,24 @@ bool MapDialog::paintGl(QGLWidget* painter)
             txt_y += (kFONT_SPACING << 1) + font_info.height();
           }
         }
+
+        /* Draw triangle cursor */
+        if(conversation_info.next.size() <= 1 && 
+           display_text.size() <= kMAX_LINES)
+        {
+          int cursor_x = (1216 >> 1);
+          glLineWidth(2);
+          glColor4f(1.0, 1.0, 1.0, 1.0);
+          glBegin(GL_LINE_LOOP);
+            glVertex2f(cursor_x - kCURSOR_NEXT_SIZE, 
+                       y1 + height - kCURSOR_NEXT_SIZE - animation_cursor);
+            glVertex2f(cursor_x + kCURSOR_NEXT_SIZE, 
+                       y1 + height - kCURSOR_NEXT_SIZE - animation_cursor);
+            glVertex2f(cursor_x, y1 + height - animation_cursor);
+          glEnd();
+        }
       }
       display_font.setBold(false);
-
-      /* Draw triangle cursor */
-      if(conversation_info.next.size() <= 1)
-      {
-        int cursor_x = (1216 >> 1);
-        glLineWidth(2);
-        glBegin(GL_LINE_LOOP);
-          glVertex2f(cursor_x - kCURSOR_NEXT_SIZE, 
-                     y1 + height - kCURSOR_NEXT_SIZE - animation_cursor);
-          glVertex2f(cursor_x + kCURSOR_NEXT_SIZE, 
-                     y1 + height - kCURSOR_NEXT_SIZE - animation_cursor);
-          glVertex2f(cursor_x, y1 + height - animation_cursor);
-        glEnd();
-      }
     }
    
     /* Multiple side by side painting - test */

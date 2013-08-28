@@ -90,6 +90,7 @@ private:
   const static short kFONT_SPACING; /* The spacing between lines of font */
   const static short kMARGIN_SIDES; /* The left and right margin size */
   const static short kMARGIN_TOP;   /* The top margin size */
+  const static short kMAX_LINES;    /* The max number of lines in display */
   const static short kMSEC_PER_WORD; /* The read speed per word */
   const static short kNAME_BOX_ANGLE_X; /* Offset X on angle for name box */
   const static short kNAME_BOX_HEIGHT; /* Height of the name box */
