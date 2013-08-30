@@ -213,7 +213,14 @@ bool MapPerson::setDirection(EnumDb::Direction direction, bool set_movement)
   return movement_changed;
 }
 
-/* Updates the animation of the map thing, based on the current state */
+/*
+ * Description: Updates the current animation state. This is called each time
+ *              the direction has changed or if movement has been initiated.
+ *              It is relevant for applicable animation speeds to be processed.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void MapPerson::updateAnimation()
 {
   if((direction == EnumDb::WEST || direction == EnumDb::EAST || 
@@ -238,7 +245,14 @@ void MapPerson::updateAnimation()
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
-/* Returns the class descriptor, useful for casting */
+/*
+ * Description: This is the class descriptor. Primarily used for encapsulation
+ *              to determine which class to cast it to for specific parameters.
+ *
+ * Inputs: none
+ * Output: QString - the string descriptor, it will be the same as the class
+ *                   name. For example, "MapThing", "MapPerson", etc.
+ */
 QString MapPerson::classDescriptor()
 {
   return "MapPerson";
@@ -521,7 +535,6 @@ void MapPerson::updateThing(float cycle_time, Tile* next_tile)
   moveThing(cycle_time);
 
   /* Only animate if the direction exists */
-  //qDebug() << getName() << ": " << cycle_time << " " << reset << " " << can_move;
   animate(cycle_time, reset, getMovement() != EnumDb::DIRECTIONLESS);
 }
 

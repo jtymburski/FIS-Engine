@@ -37,6 +37,7 @@ MapDialog::MapDialog(QFont font)
   animation_offset = 0;
   dialog_mode = DISABLED;
   dialog_status = OFF;
+  display_index = 0;
   display_option = 0;
   display_time = 0;
   thing = 0;
@@ -218,24 +219,31 @@ void MapDialog::keyPress(QKeyEvent* event)
   {
     if(isInConversation() && dialog_status == ON)
     {
-      bool multiple = (conversation_info.next.size() > 1);
-      
       /* Check for dialog status and shift to next conversation */
-      if(conversation_info.next.size() == 0)
+      if((display_index + kMAX_LINES) < display_text.size())
+      {
+        display_index += kMAX_LINES;
+      }
+      else if(conversation_info.next.size() == 0)
       {
         dialog_status = HIDING;
         emit finishThingTarget();
       }
       else
+      {
+        bool multiple = (conversation_info.next.size() > 1);
         conversation_info = conversation_info.next[display_option];
-      
-      /* Skip the option if it was an option case */
-      if(multiple)
-        conversation_info = conversation_info.next[0];
-      display_option = 0;
-      
-      /* Finalize the conversation change */
-      setupConversation();
+              
+        /* Skip the option if it was an option case */
+        if(multiple)
+          conversation_info = conversation_info.next[0];
+
+        display_index = 0;
+        display_option = 0;
+
+        /* Finalize the conversation change */
+        setupConversation();
+      }
     }
   }
   /* Go back an option selector */
@@ -371,10 +379,12 @@ bool MapDialog::paintGl(QGLWidget* painter)
         /* Draw the conversational text */
         int txt_y = y1 + (kMARGIN_TOP << 1) + font_info.ascent();
         display_font.setPointSize(kFONT_SIZE);
-        int max_lines = display_text.size() > kMAX_LINES ? kMAX_LINES 
-                                                         : display_text.size();
+        int max_lines = display_index + kMAX_LINES;
+        if(max_lines > display_text.size())
+          max_lines = display_text.size();
+
         glColor4f(1.0, 1.0, 1.0, 1.0);
-        for(int i = 0; i < max_lines; i++)
+        for(int i = display_index; i < max_lines; i++)
         {
           painter->renderText(x1 + kMARGIN_SIDES, txt_y, 
                               display_text[i], display_font);
@@ -426,7 +436,7 @@ bool MapDialog::paintGl(QGLWidget* painter)
 
         /* Draw triangle cursor */
         if(conversation_info.next.size() <= 1 && 
-           display_text.size() <= kMAX_LINES)
+           (display_index + kMAX_LINES) >= display_text.size())
         {
           int cursor_x = (1216 >> 1);
           glLineWidth(2);

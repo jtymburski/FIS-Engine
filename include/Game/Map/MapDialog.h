@@ -62,6 +62,9 @@ private:
   /* Logic if the conversation is taking place */
   DialogStatus dialog_status;
 
+  /* The display text index, the first line currently being shown */
+  short display_index;
+
   /* The font information to render the dialog to */
   QFont display_font;
  

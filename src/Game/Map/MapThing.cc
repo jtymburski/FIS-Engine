@@ -279,7 +279,14 @@ bool MapThing::tileMoveStart(Tile* next_tile, Tile::ThingState classification)
  * PUBLIC FUNCTIONS
  *===========================================================================*/
   
-/* Returns the class descriptor, useful for casting */
+/*
+ * Description: This is the class descriptor. Primarily used for encapsulation
+ *              to determine which class to cast it to for specific parameters.
+ *
+ * Inputs: none
+ * Output: QString - the string descriptor, it will be the same as the class
+ *                   name. For example, "MapThing", "MapPerson", etc.
+ */
 QString MapThing::classDescriptor()
 {
   return "MapThing";
@@ -311,7 +318,14 @@ void MapThing::clear()
   unsetState();
 }
 
-/* Clears the target that the map thing is currently pointing at */
+/*
+ * Description: Clears the given target from this class. Once cleared, the 
+ *              movement being paused will be removed to allow for continuing
+ *              movement. The target is another MapThing.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void MapThing::clearTarget()
 {
   if(target != 0)
@@ -332,7 +346,15 @@ short MapThing::getAnimationSpeed()
   return animation_time;
 }
 
-/* Gets the conversation data for the thing */
+/*
+ * Description: Returns the conversation stored in the given thing. Used when
+ *              the action key is used on this particular thing which will then
+ *              be displayed on the map.
+ *
+ * Inputs: none
+ * Output: Conversation - a conversation struct with the pertinent information
+ *                        to be displayed.
+ */
 Conversation MapThing::getConversation()
 {
   return conversation_info;
@@ -397,6 +419,12 @@ EnumDb::Direction MapThing::getMovement()
   return movement;
 }
 
+/*
+ * Description: Returns if the thing movement has been paused.
+ *
+ * Inputs: none
+ * Output: bool - the movement paused state
+ */
 bool MapThing::getMovementPaused()
 {
   return movement_paused;
@@ -449,7 +477,13 @@ MapState* MapThing::getState()
   return state;
 }
 
-/* Returns the target that this thing is pointed at */
+/*
+ * Description: Returns the map thing target that this class is targetted at.
+ *              Do not delete this pointer as that would cause errors.
+ *
+ * Inputs: none
+ * Output: MapThing* - the pointer to the targetted thing
+ */
 MapThing* MapThing::getTarget()
 {
   return target;
@@ -588,7 +622,13 @@ bool MapThing::setAnimationSpeed(short frame_time)
   return false;
 }
 
-/* Sets the conversation data for the thing */
+/*
+ * Description: Sets the conversation stored within this thing. This is used
+ *              with action keys on this thing on the map.
+ *
+ * Inputs: Conversation conversation_info - the conversation to embed
+ * Output: none
+ */
 void MapThing::setConversation(Conversation conversation_info)
 {
   this->conversation_info = conversation_info;
@@ -661,6 +701,13 @@ bool MapThing::setID(int new_id)
   return true;
 }
 
+/*
+ * Description: Sets if the class should be paused. When it's paused, it will
+ *              finish walking to the tile and then stop there until unpaused.
+ *
+ * Inputs: bool paused - if the movement is paused status
+ * Output: none
+ */
 void MapThing::setMovementPaused(bool paused)
 {
   movement_paused = paused;
@@ -756,7 +803,15 @@ bool MapThing::setState(MapState* state, bool unset_old)
   return false;
 }
 
-/* Sets the target map thing, fails if there is already a target */
+/* 
+ * Description: Sets the target for this map thing. This is only permitted if
+ *              the class is currently not targetting anything. However, if the
+ *              pointer is null, the target will be cleared. Once the target is
+ *              set, the movement will be paused.
+ *
+ * Inputs: MapThing* target - a map thing target that is to be targetted
+ * Output: bool - returns if the target could be set.
+ */
 bool MapThing::setTarget(MapThing* target)
 {
   if((target != 0 && this->target == 0) || target == 0)
