@@ -41,7 +41,6 @@ public:
   EquipmentFlags eflag_set;
 
 private:
-
   /* The signature of the Equipment */
   Signature* equip_signature;
 
@@ -53,6 +52,9 @@ public:
   void printAll();
   void printFlags();
   void printEquipmentFlags();
+
+  /* Returns an Attribute Set of stat bonuses in the Signature */
+  AttributeSet getBubbyBonus();
 
   /* Gets the boolean value of flag */
   bool getEquipmentFlag(EquipmentState flags);

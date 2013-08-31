@@ -100,6 +100,35 @@ void Equipment::printEquipmentFlags()
 }
 
 /*
+ * Description: Calculates an AttributeSet which is equivalent to the bonuses
+ *              the bubbies attached to a signature wil provide to the
+ *              stat boosts of the equipment.
+ *
+ * Inputs: none
+ * Output: AttributeSet - combined bubby stats of the signature
+ */
+AttributeSet Equipment::getBubbyBonus()
+{
+  QList<uint> bubby_bonus_values;
+  QList<Bubby*> bubbies = equip_signature->getBubbyMap();
+
+
+  for (int i = 0; i < bubbies.size(); i++)
+  {
+    AttributeSet* current_set = bubbies.at(i)->getBuffSet();
+
+    if (bubby_bonus_values.isEmpty())
+      for (int j = 0; j < current_set->getSize(); j++)
+        bubby_bonus_values.push_back(0);
+
+    for (int j = 0; j < current_set->getSize(); j++)
+        bubby_bonus_values[i] += current_set->getStat(i);
+  }
+
+  return AttributeSet(bubby_bonus_values);
+}
+
+/*
  * Description: Evaluates a given EquipmentState flag
  *
  * Inputs: EquipmentState flag to be evaluated
@@ -140,7 +169,7 @@ SkillSet* Equipment::getSkills(ushort level)
   QList<BubbyFlavour*> flavour_list = getSignature()->getUniqueFlavours();
   QList<BubbyFlavour*>::Iterator it = flavour_list.begin();
 
-  for (; it < flavour_list.end(); ++it)
+  while (++it < flavour_list.end())
   {
     int max_tier = getSignature()->getHighestTier((*it)->getName());
     int max_level = (*it)->getMaxSkillLevel(max_tier);

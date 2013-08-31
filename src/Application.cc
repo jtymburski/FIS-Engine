@@ -200,11 +200,6 @@ void Application::setupBattle()
   equip_signature->unattach(0, 3);
   equip_signature->unattach(0, 1);
 
-  equip_signature->attach(0, 3, second_bubby);
-  equip_signature->unattach(0, 3);
-
-  equip_signature->attach(0, 3, first_bubby);
-  equip_signature->unattach(2, 3);
 
   qDebug() << " ==================== ";
   equip_signature->printInfo();

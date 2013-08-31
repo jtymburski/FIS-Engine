@@ -119,23 +119,7 @@ void Bubby::calcNewMass()
  */
 bool Bubby::updateTierSprite()
 {
-  bool updated = false;
-
-  // int size = getType()->getSprites().size();
-
-  /*
-  if (size >= getTier())
-  {
-    setThumb(getType()->getSprites().at(getTier() - 1));
-    updated = true;
-  }
-  else if (!getType()->getSprites().isEmpty())
-  {
-    setThumb(getType()->getSprites().at(size - 1));
-    updated = true;
-  }*/
-
-  return updated;
+  setThumb(getType()->getSprites().at(getTier()));
 }
 
 

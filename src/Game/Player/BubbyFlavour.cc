@@ -54,7 +54,7 @@ BubbyFlavour::BubbyFlavour(BubbyFlavour* flavour_parent, QString flavour_name,
   else
   {
     setFlavourFlag(BubbyFlavour::CREATED_WITH_PARENT, false);
-    for (ushort i = 0; i < kTIER_CAP; i++)
+    for (ushort i = 0; i <= kTIER_CAP; i++)
       sprites.push_back(0);
   }
 
