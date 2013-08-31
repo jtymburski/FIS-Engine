@@ -127,11 +127,16 @@ public:
   virtual void printFlags();
   virtual void printInfo();
 
+  /* Returns the mass of the item */
+  virtual double getMass();
+
+  /* Returns the value of an item */
+  virtual uint getValue();
+
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
-
   /* Returns the set of actions the item can perform */
   SkillSet* getActionSet();
 
@@ -153,9 +158,6 @@ public:
   /* Evaluates the value of a given ItemState flag */
   bool getItemFlag(ItemState flag);
 
-  /* Returns the mass of the item */
-  double getMass();
-
   /* Returns the name of the item */
   QString getName();
 
@@ -176,9 +178,6 @@ public:
 
   /* Returns the using sound of the item */
   Sound* getUsingSound();
-
-  /* Returns the value of an item */
-  uint getValue();
 
   /* Assigns a set of actions that the item can perform */
   void setActionSet(SkillSet* new_action_set);

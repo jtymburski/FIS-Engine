@@ -189,13 +189,24 @@ void Application::setupBattle()
 
   qDebug() << " ======================= ";
   qDebug() << "Tier: " << first_bubby->getTier();
-  qDebug() << equip_signature->attach(0, 3, first_bubby);
   qDebug() << equip_signature->attach(0, 1, second_bubby);
+  qDebug() << equip_signature->attach(0, 3, first_bubby);
+
   qDebug() << equip_signature->attach(0, 0, third_bubby);
   QList<BubbyFlavour*> flavours = equip_signature->getUniqueFlavours();
   for (int i = 0; i < flavours.size(); i++)
     qDebug() << flavours.at(i)->getName();
 
+  equip_signature->unattach(0, 3);
+  equip_signature->unattach(0, 1);
+
+  equip_signature->attach(0, 3, second_bubby);
+  equip_signature->unattach(0, 3);
+
+  equip_signature->attach(0, 3, first_bubby);
+  equip_signature->unattach(2, 3);
+
+  qDebug() << " ==================== ";
   equip_signature->printInfo();
 
   test_battle = new Battle(friends, foes, this);

@@ -306,23 +306,37 @@ void Signature::printInfo()
  */
 Bubby* Signature::unattach(ushort x, ushort y)
 {
+  bool can_unattach = false;
+  bool unattached   = false;
+  int  index        = -1;
+
+  /* Grab the Bubby at the location, if one exists */
   Bubby* unattachment = getBubby(x, y);
-  int index = -1;
 
-  /* Find the index the Bubby is stored */
-  for (int i = 0; i < bubby_map.size(); i++)
-    if (bubby_map.at(i)->getId() == unattachment->getId())
-      index = i;
+  /* If a Bubby exists at the location, and the signature can be changed */
+  if (unattachment != 0 && getFlag(Signature::CHANGEABLE))
+    can_unattach = true;
 
-  /* Bubby exists and will be unattached */
-  if (index != -1 && unattachment != 0)
+  if (can_unattach)
   {
-    occupied_cells[index].clear();
-    bubby_map[index] = NULL;
-    bubby_map.removeAt(index);
+    /* Find the index of the Bubby to be unattached */
+    for (int i = 0; i < bubby_map.size(); i++)
+      if (bubby_map.at(i)->getId() == unattachment->getId())
+        index = i;
+
+    /* If the index is found, remove it from the Bubby map and remove the
+     * vecor of pairs from the vector of occupied cells */
+    if (index != -1)
+    {
+      occupied_cells.erase(occupied_cells.begin() + index);
+      bubby_map.removeAt(index);
+      unattached = true;
+    }
   }
 
-  return unattachment;
+  if (unattached)
+    return unattachment;
+  return 0;
 }
 
 /*

@@ -22,6 +22,7 @@ const double Bubby::kBASE_VALUE       =    3.14;
 const double Bubby::kVALUE_PER_LEVEL  =   20.00;
 const double Bubby::kVALUE_PER_TIER   =  200.00;
 const double Bubby::kVALUE_MULTIPLIER =   1.100;
+const double Bubby::kTIER_0_MASS      =   0.010;
 const double Bubby::kTIER_1_MASS      =   0.500;
 const double Bubby::kTIER_2_MASS      =   2.000;
 const double Bubby::kTIER_3_MASS      =   4.500;
@@ -90,6 +91,21 @@ void Bubby::calcNewValue()
     temp_value += kVALUE_PER_TIER;
 
   setValue(floor(temp_value));
+}
+
+/*
+ * Description: Calculate and set a new mass of the Bubby based upon its
+ *              current tier level.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Bubby::calcNewMass()
+{
+  if (tier == 0) setMass(kTIER_0_MASS);
+  if (tier == 1) setMass(kTIER_1_MASS);
+  if (tier == 2) setMass(kTIER_2_MASS);
+  if (tier == 3) setMass(kTIER_3_MASS);
 }
 
 /*
@@ -310,8 +326,9 @@ bool Bubby::setTier(ushort new_tier)
   if (can_tier_up)
   {
     tier = new_tier;
-    emit tierUp();
+    calcNewMass();
     updateTierSprite();
+    emit tierUp();
   }
 
   return can_tier_up;

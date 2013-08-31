@@ -53,6 +53,7 @@ private:
   static const double kVALUE_PER_LEVEL;
   static const double kVALUE_PER_TIER;
   static const double kVALUE_MULTIPLIER;
+  static const double kTIER_0_MASS;
   static const double kTIER_1_MASS;
   static const double kTIER_2_MASS;
   static const double kTIER_3_MASS;
@@ -63,6 +64,9 @@ private:
 private:
   /* Updates the Bubby's value on Level-Up */
   void calcNewValue();
+
+  /* Updates the Bubby's mass on Tier-Up */
+  void calcNewMass();
 
   /* Updates the Bubby to the appropriate sprite (on tier level up) */
   bool updateTierSprite();
@@ -99,7 +103,7 @@ public:
   /* Gets the exp required at a given Bubby level */
   uint getExpAt(ushort level);
 
-  /* Gets the bubbies level */
+  /* Returns the bubbies level */
   ushort getLevel();
 
   /* Gets the bubbies tier */
