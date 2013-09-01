@@ -723,7 +723,7 @@ bool Map::loadMap(QString file)
     /* Add an NPC */
     up_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_D",3,".png");
     down_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_U",3,".png");
-    left_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_R",3,".png");
+    left_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_R",5,".png");
     right_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_L",5,".png");
     MapNPC* npc = new MapNPC(kTILE_WIDTH, kTILE_HEIGHT);
     npc->setState(MapPerson::GROUND, EnumDb::NORTH, new MapState(up_sprite));
