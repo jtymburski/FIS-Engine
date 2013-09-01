@@ -11,6 +11,7 @@
 #define APPLICATION_H
 
 #include <vector>
+#include <QDebug>
 #include <QCloseEvent>
 #include <QDesktopWidget>
 #include <QLayout>

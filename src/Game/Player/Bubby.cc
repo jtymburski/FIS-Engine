@@ -117,7 +117,7 @@ void Bubby::calcNewMass()
  * Inputs: none
  * Output: bool - true if a sprite was actually set
  */
-bool Bubby::updateTierSprite()
+void Bubby::updateTierSprite()
 {
   setThumb(getType()->getSprites().at(getTier()));
 }

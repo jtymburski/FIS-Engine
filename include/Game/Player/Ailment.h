@@ -203,7 +203,7 @@ signals:
     void setFlag(AilmentFlag flags, bool set_value = true);
 
     /* Public function to assign a new victom for the status ailment */
-    bool setNewVictim(Person* new_victim, bool refresh_turns = false);
+    bool setNewVictim(Person* new_victim, bool refresh3_turns = false);
 
     /* Returns a QString corresponding to an enumerated Infliction */
     QString getAilmentStr(EnumDb::Infliction type);

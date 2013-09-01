@@ -69,7 +69,7 @@ private:
   void calcNewMass();
 
   /* Updates the Bubby to the appropriate sprite (on tier level up) */
-  bool updateTierSprite();
+  void updateTierSprite();
 
 /*============================================================================
  * SIGNALS

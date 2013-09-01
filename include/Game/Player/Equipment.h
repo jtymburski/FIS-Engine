@@ -4,8 +4,6 @@
 * Inheritance: Item
 * Description: Equipment that categorizes under Item in an Inventory unit. Gets
 *              called by Person as well for attached Equipment.
-* TODO: Implement Action List [01-25-13]
-* TODO: Bubby signature check [01-25-13]
 ******************************************************************************/
 #ifndef EQUIPMENT_H
 #define EQUIPMENT_H

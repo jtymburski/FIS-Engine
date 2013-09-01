@@ -142,43 +142,63 @@ void Application::switchWidget(int index)
  */
 void Application::setupBattle()
 {
+  // Begin Action Builds
+  Action action_0001("1,RAISE,PHYSICAL AGGRESSION,1.1,0,,0,,5,2");
+  Action action_0002("2,RAISE,PHYSICAL FORTITUDE,1.1,0,,0,,10,3");
+  Action action_0003("3,GIVE,Poison,2.5,0,,0,,,");
+
+  // End Action Builds
+
+  // Begin Skill Builds
+
+  QVector<Action*> effect_list;
+  effect_list.push_back(&action_0001);
+  effect_list.push_back(&action_0002);
+  effect_list.push_back(&action_0003);
+
+  QVector<float> chance_list;
+  chance_list.push_back(1.00);
+  chance_list.push_back(0.95);
+  chance_list.push_back(0.90);
+
+  Skill* poison_skill = new Skill("Posion Attack", effect_list, chance_list);
+  poison_skill->setFlag(Skill::OFFENSIVE, TRUE);
+  poison_skill->setFlag(Skill::PHYSICAL, TRUE);
+
+  // End Skill Builds
+
+  // Testing
+
+  //action_0003.printAll();
+
+  // End Testing
+
   QList<uint> stats1;
 
   for (int i = 0; i < 19; i++)
     stats1.append(5);
 
   AttributeSet base_set(stats1);
-
   Race* base_race = new Race("Fiends");
   base_race->setAttrSet(stats1);
   base_race->setMaxSet(stats1);
-
   Category* base_category = new Category("Battle Class");
   base_category->setAttrSet(stats1);
   base_category->setMaxSet(stats1);
-
   Person* main_character
           = new Person("Malgidus", base_race, base_category, "PHA", "CYB");
   Person* secd_character
           = new Person("Arcadius", base_race, base_category, "PHA", "CYA");
-
   Party* friends = new Party(main_character);
   Party* foes = new Party(secd_character);
-
-
-  /* Bubby Signature Testing */
   BubbyFlavour* spark_flavour = new BubbyFlavour(0, "Spark");
   spark_flavour->setAttr(&base_set);
-
   Bubby* first_bubby = new Bubby(spark_flavour);
   first_bubby->setLevel(5);
   first_bubby->setTier(3);
-
   Bubby* second_bubby = new Bubby(spark_flavour);
   second_bubby->setTier(1);
-
   Bubby* third_bubby = new Bubby(spark_flavour);
-
   std::vector<std::pair<ushort, ushort> > list;
   list.push_back(std::make_pair(0, 0));
   list.push_back(std::make_pair(1, 1));
@@ -186,23 +206,13 @@ void Application::setupBattle()
   list.push_back(std::make_pair(3, 3));
   list.push_back(std::make_pair(4, 4));
   Signature* equip_signature = new Signature(6, 6, list);
-
-  qDebug() << " ======================= ";
-  qDebug() << "Tier: " << first_bubby->getTier();
-  qDebug() << equip_signature->attach(0, 1, second_bubby);
-  qDebug() << equip_signature->attach(0, 3, first_bubby);
-
-  qDebug() << equip_signature->attach(0, 0, third_bubby);
+  equip_signature->attach(0, 1, second_bubby);
+  equip_signature->attach(0, 3, first_bubby);
+  equip_signature->attach(0, 0, third_bubby);
   QList<BubbyFlavour*> flavours = equip_signature->getUniqueFlavours();
-  for (int i = 0; i < flavours.size(); i++)
-    qDebug() << flavours.at(i)->getName();
-
   equip_signature->unattach(0, 3);
   equip_signature->unattach(0, 1);
 
-
-  qDebug() << " ==================== ";
-  equip_signature->printInfo();
 
   test_battle = new Battle(friends, foes, this);
 }

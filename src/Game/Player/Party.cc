@@ -1,4 +1,3 @@
-
 /******************************************************************************
 * Class Name: Party Implementation
 * Date Created: December 2nd, 2012

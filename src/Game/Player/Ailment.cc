@@ -23,8 +23,6 @@
 *                        they will be handled in Battle.
 *                  iv -- remember to fully utilize any Signals and Slots which
 *                        the class may use
-*
-* // TODO: Finish Curse apply effect [03-30-13]
 *******************************************************************************/
 #include "Game/Player/Ailment.h"
 

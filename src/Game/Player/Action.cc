@@ -1,9 +1,22 @@
 /*******************************************************************************
 * Class Name: Action
-* Date Created: Sunday, October 28th, 2012
-* Inheritance:
-* Description: Action is an element of a skill (skill can have up to 10 actions
-* that will do alter stats, flip flags of a person, etc., or do damage to them.
+* Date Created: October 28th, 2012
+* Updated: September 1st, 2013
+* Inheritance: None
+* ------------------------------------------------------------------------------
+* Description: Action is an element of a skill. A Skill may have a number of
+* actions which have various effects: altering stats, flipping flags, damage,
+* inflicting ailments, etc. The effect of actions is built by parsing a scripted
+* string from a file. Every action has a unique ID.
+*
+* Note [1]: Prase Language Syntax
+*
+* [ACTION ID],[LOWER/LOWER/GIVE/TAKE],[STATISTIC/AILMENT],
+* [MIN DURATION].[MAX DURATION],[IGNORE ATK],[IGNORE ATK ELM 1]...,
+* [IGNORE DEF],[IGNORE DEF ELM 1]...,[BASECHANGE],[VARIANCE];
+*
+* [int]:[string][string][uint].[uint],[bool],[string]...,
+* [bool],[string]...,[uint],[float];
 *******************************************************************************/
 #include "Game/Player/Action.h"
 
@@ -12,28 +25,43 @@
  *============================================================================*/
 
 /*
- * Description: Default action constructor
+ * Description: Default action constructor. Constructs an action object which
+ *              has a NULL ailment infliction, no duration, no hange, no
+ *              variance, and all flags NULL, including VALID_ACTION which
+ *              an action which should never be acted upon in Battle, and should
+ *              not be able to be added to a skill.
  *
  * Inputs: none
  */
 Action::Action()
     : ailment(EnumDb::NOAILMENT),
-      min_duration(0),
-      max_duration(0),
       base_change(0),
+      max_duration(0),
+      min_duration(0),
       variance(0.00)
 {
   ailment = EnumDb::NOAILMENT;
 }
 
 /*
- * Description: Action constructor object
+ * Description: Standard action constructor. Constructs an action with a QString
+ * paramater which [should] contain the scripting language to be parsed. This
+ * constructor will run a basic check to first call the action parser, otherwise
+ * the action will remain in a default constructed state.
  *
  * Inputs: QString raw - the raw language to be parsed
  */
 Action::Action(QString raw)
+    : ailment(EnumDb::NOAILMENT),
+      base_change(0),
+      max_duration(0),
+      min_duration(0),
+      variance(0.00)
 {
-  parse(raw);
+  QStringList split = raw.split(',');
+
+  if (split.size() == 10)
+    parse(raw);
 }
 
 /*
@@ -46,22 +74,11 @@ Action::~Action() {}
  *============================================================================*/
 
 /*
- * Description: Sets the string of the ailment to be inflicted
- *
- * Inputs: QString - string to set the infliction to
- * Output: none
- */
-void Action::setAilment(EnumDb::Infliction new_ailment)
-{
-  ailment = new_ailment;
-}
-
-/*
  * Description: Parses the raw language into something we can have skills use
  *
  * Notes: Language Syntax Below:
  *
- * [ACTION ID],[LOWER/UPPER/GIVE/TAKE],[STATISTIC/AILMENT],
+ * [ACTION ID],[LOWER/RAISE/GIVE/TAKE],[STATISTIC/AILMENT],
  * [MIN DURATION].[MAX DURATION],[IGNORE ATK],[IGNORE ATK ELM 1]...,
  * [IGNORE DEF],[IGNORE DEF ELM 1]...,[BASECHANGE],[VARIANCE];
  *
@@ -78,7 +95,9 @@ void Action::parse(QString raw)
   /* Parse ID */
   setId(split.at(0).toInt());
 
-  /* Parse LOWER/UPPER/GIVE/TAKE --> BRANCH */
+  qDebug() << "Split 1: " << split.at(1);
+
+  /* Parse LOWER/RAISE/GIVE/TAKE --> BRANCH */
   if (split.at(1) == "LOWER")
     setActionFlag(Action::LOWER);
   else if (split.at(1) == "RAISE")
@@ -93,7 +112,9 @@ void Action::parse(QString raw)
   {
     QStringList stat_split = split.at(2).split(' ');
     /* Check which stat is to be affected */
-    if (stat_split.at(0) == "THERMAL")
+    if (stat_split.at(0) == "PHYSICAL")
+      setActionFlag(Action::PHYSICAL);
+    else if (stat_split.at(0) == "THERMAL")
       setActionFlag(Action::THERMAL);
     else if (stat_split.at(0) == "POLAR")
       setActionFlag(Action::POLAR);
@@ -126,7 +147,11 @@ void Action::parse(QString raw)
     }
   }
   else if (getActionFlag(Action::GIVE) || getActionFlag(Action::TAKE))
+  {
+    qDebug() << "Setting ailment: ";
+    qDebug() << getInfliction(split.at(2));
     setAilment(getInfliction(split.at(2)));
+  }
 
   /* Parse Duration */
   QStringList duration_split = split.at(3).split('.');
@@ -182,17 +207,43 @@ void Action::parse(QString raw)
   setBaseChange(split.at(8).toInt());
   split[9].chop(1); /* Remove trailing ; */
   setVariance(split.at(9).toFloat());
+
+  /* The action was parased correctly, set the flag to be a valid action */
+  setActionFlag(Action::VALID_ACTION, true);
 }
 
 /*
- * Description: Sets the id of the action
+ * Description: Assigns an enumerated ailment
  *
- * Inputs: int - the id to be set (negative for normal, positive for status)
+ * Inputs: QString - string to set the infliction to
  * Output: none
  */
-void Action::setId(int new_id)
+void Action::setAilment(EnumDb::Infliction new_ailment)
 {
-  id = new_id;
+  ailment = new_ailment;
+}
+
+/*
+ * Description: Sets an ActionType flag to a boolean
+ *
+ * Inputs: ActionType flag to be set
+ *         Boolean value to set the flag to
+ * Output: none
+ */
+void Action::setActionFlag(ActionType flags, bool set_value)
+{
+  (set_value) ? (action_flags |= flags) : (action_flags &= flags);
+}
+
+/*
+ * Description: Sets the base change describing the specified stat
+ *
+ * Inputs: uint - new value of base change
+ * Output: none
+ */
+void Action::setBaseChange(uint new_value)
+{
+  base_change = new_value;
 }
 
 /*
@@ -208,15 +259,28 @@ void Action::setDuration(uint min, uint max)
   max_duration = max;
 }
 
+
 /*
- * Description: Sets the base change describing the specified stat
+ * Description: Sets the id of the action
  *
- * Inputs: uint - new value of base change
+ * Inputs: int - the id to be set (negative for normal, positive for status)
  * Output: none
  */
-void Action::setBaseChange(uint new_value)
+void Action::setId(int new_id)
 {
-  base_change = new_value;
+  id = new_id;
+}
+
+/*
+ * Description: Sets an IgnoreAttack flag to a boolean
+ *
+ * Inputs: IgnoreAttack flag to be set
+ *         Boolean value to set the flag to
+ * Output: none
+ */
+void Action::setIgnoreFlag(IgnoreFlag flags, bool set_value)
+{
+  (set_value) ? (ignore_flags |= flags) : (ignore_flags ^= flags);
 }
 
 /*
@@ -233,30 +297,6 @@ void Action::setVariance(float new_value)
     variance = 1;
 }
 
-/*
- * Description: Sets an IgnoreAttack flag to a boolean
- *
- * Inputs: IgnoreAttack flag to be set
- *         Boolean value to set the flag to
- * Output: none
- */
-void Action::setIgnoreFlag(IgnoreFlag flags, bool set_value)
-{
-  (set_value) ? (ignore_flags |= flags) : (ignore_flags ^= flags);
-}
-
-/*
- * Description: Sets an ActionType flag to a boolean
- *
- * Inputs: ActionType flag to be set
- *         Boolean value to set the flag to
- * Output: none
- */
-void Action::setActionFlag(ActionType flags, bool set_value)
-{
-  (set_value) ? (action_flags |= flags) : (action_flags &= flags);
-}
-
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
@@ -270,9 +310,70 @@ void Action::setActionFlag(ActionType flags, bool set_value)
  */
 void Action::printAll()
 {
+  qDebug() << "--- Action / ---";
   printInfo();
-  printFlags();
+  printActionFlags();
+  printIgnoreFlags();
   qDebug() << " --- / Action ---";
+}
+
+/*
+ * Description: Prints out the ActionFlag truth values of the action using
+ *              qDebug()
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Action::printActionFlags()
+{
+  qDebug() << "RAISE: " << getActionFlag(Action::RAISE);
+  qDebug() << "LOWER: " << getActionFlag(Action::LOWER);
+  qDebug() << "GIVE: "  << getActionFlag(Action::GIVE);
+  qDebug() << "TAKE: "  << getActionFlag(Action::TAKE);
+  qDebug() << "OFFENSIVE: " << getActionFlag(Action::OFFENSIVE);
+  qDebug() << "DEFENSIVE: " << getActionFlag(Action::DEFENSIVE);
+  qDebug() << "PHYSICAL: "      << getActionFlag(Action::PHYSICAL);
+  qDebug() << "THERMAL: "       << getActionFlag(Action::THERMAL);
+  qDebug() << "POLAR: "         << getActionFlag(Action::POLAR);
+  qDebug() << "PRIMAL: "        << getActionFlag(Action::PRIMAL);
+  qDebug() << "CHARGED: "       << getActionFlag(Action::CHARGED);
+  qDebug() << "CYBERNETIC: "    << getActionFlag(Action::CYBERNETIC);
+  qDebug() << "NIHIL: "         << getActionFlag(Action::NIHIL);
+  qDebug() << "VITALITY: "      << getActionFlag(Action::VITALITY);
+  qDebug() << "QTMN DRIVEL: "   << getActionFlag(Action::QUANTUM_DRIVE);
+  qDebug() << "MOMENTUM: "      << getActionFlag(Action::MOMENTUM);
+  qDebug() << "LIMBERTUDE: "    << getActionFlag(Action::LIMBERTUDE);
+  qDebug() << "UNBEARABILITY: " << getActionFlag(Action::UNBEARABILITY);
+  qDebug() << "VALID ACTION: " << getActionFlag(Action::VALID_ACTION);
+}
+
+/*
+ * Description: Prints out the IgnoreFlags truth values of the action using
+ *              qDebug().
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Action::printIgnoreFlags()
+{
+  qDebug() << "IG ELMN ATK: " << getIgnoreFlag(Action::IGNORE_ELMN_ATK);
+  qDebug() << "IG PHYS ATK: " << getIgnoreFlag(Action::IGNORE_PHYS_ATK);
+  qDebug() << "IG THER ATK: " << getIgnoreFlag(Action::IGNORE_THER_ATK);
+  qDebug() << "IG POLA ATK: " << getIgnoreFlag(Action::IGNORE_POLA_ATK);
+  qDebug() << "IG PRIM ATK: " << getIgnoreFlag(Action::IGNORE_PRIM_ATK);
+  qDebug() << "IG CHAR ATK: " << getIgnoreFlag(Action::IGNORE_CHAR_ATK);
+  qDebug() << "IG CYBE ATK: " << getIgnoreFlag(Action::IGNORE_CYBE_ATK);
+  qDebug() << "IG NIHI ATK: " << getIgnoreFlag(Action::IGNORE_NIHI_ATK);
+  qDebug() << "IG ATK: "      << getIgnoreFlag(Action::IGNORE_ATK);
+  qDebug() << "IGNORE ELMN DEF: " << getIgnoreFlag(Action::IGNORE_ELMN_DEF);
+  qDebug() << "IGNORE PHYS DEF: " << getIgnoreFlag(Action::IGNORE_PHYS_DEF);
+  qDebug() << "IGNORE THER DEF: " << getIgnoreFlag(Action::IGNORE_THER_DEF);
+  qDebug() << "IGNORE POLA DEF: " << getIgnoreFlag(Action::IGNORE_POLA_DEF);
+  qDebug() << "IGNORE PRIM DEF: " << getIgnoreFlag(Action::IGNORE_PRIM_DEF);
+  qDebug() << "IGNORE CHAR DEF: " << getIgnoreFlag(Action::IGNORE_CHAR_DEF);
+  qDebug() << "IGNORE CYBE DEF: " << getIgnoreFlag(Action::IGNORE_CYBE_DEF);
+  qDebug() << "IGNORE NIHI DEF: " << getIgnoreFlag(Action::IGNORE_NIHI_DEF);
+  qDebug() << "IGNORE DEF: "      << getIgnoreFlag(Action::IGNORE_DEF);
 }
 
 /*
@@ -284,57 +385,11 @@ void Action::printAll()
 void Action::printInfo()
 {
   qDebug() << "Action ID #: " << id;
+  qDebug() << "Base Change: " << base_change;
   qDebug() << "Min Duration: " << min_duration;
   qDebug() << "Max Duration: " << max_duration;
-  qDebug() << "Base Change: " << base_change;
   qDebug() << "Variance: " << variance;
-}
-
-/*
- * Description: Prints out the stored flag values
- *
- * Inputs: none
- * Output: none
- */
-void Action::printFlags()
-{
-  qDebug() << "RAISE: " << getActionFlag(Action::RAISE);
-  qDebug() << "LOWER: " << getActionFlag(Action::LOWER);
-  qDebug() << "GIVE: " << getActionFlag(Action::GIVE);
-  qDebug() << "TAKE: " << getActionFlag(Action::TAKE);
-  qDebug() << "OFFENSIVE: " << getActionFlag(Action::OFFENSIVE);
-  qDebug() << "DEFENSIVE: " << getActionFlag(Action::DEFENSIVE);
-  qDebug() << "PHYSICAL: " << getActionFlag(Action::PHYSICAL);
-  qDebug() << "THERMAL: " << getActionFlag(Action::THERMAL);
-  qDebug() << "POLAR: " << getActionFlag(Action::POLAR);
-  qDebug() << "PRIMAL: " << getActionFlag(Action::PRIMAL);
-  qDebug() << "CHARGED: " << getActionFlag(Action::CHARGED);
-  qDebug() << "CYBERNETIC: " << getActionFlag(Action::CYBERNETIC);
-  qDebug() << "NIHIL: " << getActionFlag(Action::NIHIL);
-  qDebug() << "VITALITY: " << getActionFlag(Action::VITALITY);
-  qDebug() << "QTMN DRIVEL: " << getActionFlag(Action::QUANTUM_DRIVE);
-  qDebug() << "MOMENTUM: " << getActionFlag(Action::MOMENTUM);
-  qDebug() << "LIMBERTUDE: " << getActionFlag(Action::LIMBERTUDE);
-  qDebug() << "UNBEARABILITY: " << getActionFlag(Action::UNBEARABILITY);
-  qDebug() << "---";
-  qDebug() << "IG ELMN ATK: " << getIgnoreFlag(Action::IGNORE_ELMN_ATK);
-  qDebug() << "IG PHYS ATK: " << getIgnoreFlag(Action::IGNORE_PHYS_ATK);
-  qDebug() << "IG THER ATK: " << getIgnoreFlag(Action::IGNORE_THER_ATK);
-  qDebug() << "IG POLA ATK: " << getIgnoreFlag(Action::IGNORE_POLA_ATK);
-  qDebug() << "IG PRIM ATK: " << getIgnoreFlag(Action::IGNORE_PRIM_ATK);
-  qDebug() << "IG CHAR ATK: " << getIgnoreFlag(Action::IGNORE_CHAR_ATK);
-  qDebug() << "IG CYBE ATK: " << getIgnoreFlag(Action::IGNORE_CYBE_ATK);
-  qDebug() << "IG NIHI ATK: " << getIgnoreFlag(Action::IGNORE_NIHI_ATK);
-  qDebug() << "IG ATK: " << getIgnoreFlag(Action::IGNORE_ATK);
-  qDebug() << "IGNORE ELMN DEF: " << getIgnoreFlag(Action::IGNORE_ELMN_DEF);
-  qDebug() << "IGNORE PHYS DEF: " << getIgnoreFlag(Action::IGNORE_PHYS_DEF);
-  qDebug() << "IGNORE THER DEF: " << getIgnoreFlag(Action::IGNORE_THER_DEF);
-  qDebug() << "IGNORE POLA DEF: " << getIgnoreFlag(Action::IGNORE_POLA_DEF);
-  qDebug() << "IGNORE PRIM DEF: " << getIgnoreFlag(Action::IGNORE_PRIM_DEF);
-  qDebug() << "IGNORE CHAR DEF: " << getIgnoreFlag(Action::IGNORE_CHAR_DEF);
-  qDebug() << "IGNORE CYBE DEF: " << getIgnoreFlag(Action::IGNORE_CYBE_DEF);
-  qDebug() << "IGNORE NIHI DEF: " << getIgnoreFlag(Action::IGNORE_NIHI_DEF);
-  qDebug() << "IGNORE DEF: " << getIgnoreFlag(Action::IGNORE_DEF);
+  qDebug() << "Ailment: " << getAilmentStr(ailment);
 }
 
 /*
@@ -423,6 +478,25 @@ uint Action::getMinimum()
 double Action::getVariance()
 {
   return variance;
+}
+
+/*=============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
+
+/*
+ * Description: Returns the string value of a given infliction. Uses the
+ *              EnumString class which generates std::strings, the actual
+ *              registered strings are in EnumDatabase
+ *
+ * Inputs: Infliction - type of Infliction to be evaluated.
+ * Output: QString - A QString of the given Infliction type.
+ */
+QString Action::getAilmentStr(EnumDb::Infliction type)
+{
+  const std::string &ailment_str = EnumString<EnumDb::Infliction>::From(type);
+  QString ailment_qstring(ailment_str.c_str());
+  return ailment_qstring;
 }
 
 /*

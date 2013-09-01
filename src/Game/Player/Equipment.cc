@@ -4,9 +4,6 @@
 * Inheritance: Item
 * Description: Equipment that categorizes under Item in an Inventory unit. Gets
 *              called by Person as well for attached Equipment.
-* TODO: Get Mass [07-28-13]
-* TODO: Check over class, add functionality for signature back.
-* TODO: Print for Signature, etc.
 ******************************************************************************/
 #include "Game/Player/Equipment.h"
 
