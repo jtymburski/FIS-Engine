@@ -213,6 +213,5 @@ void Application::setupBattle()
   equip_signature->unattach(0, 3);
   equip_signature->unattach(0, 1);
 
-
   test_battle = new Battle(friends, foes, this);
 }

@@ -23,6 +23,8 @@
 *                        they will be handled in Battle.
 *                  iv -- remember to fully utilize any Signals and Slots which
 *                        the class may use
+*              5 - (Add) the Ailment's immunities based off Person flags
+*              6 - (Add) any effects or checks in Battle or subclasses
 *******************************************************************************/
 #include "Game/Player/Ailment.h"
 
@@ -204,11 +206,11 @@ Ailment::~Ailment()
 void Ailment::apply()
 {
   /* Helper variables */
-  const ushort kHEALTH = victim->getTemp()->getStat(EnumDb::VITA);
-  AttributeSet* stats = victim->getTemp();
+  const ushort kHEALTH    = victim->getTemp()->getStat(EnumDb::VITA);
+  AttributeSet* stats     = victim->getTemp();
   AttributeSet* max_stats = victim->getMaxTemp();
-  SkillSet* skills = victim->getSkills();
-  ushort damage = 0;
+  SkillSet* skills        = victim->getSkills();
+  ushort damage           = 0;
 
   /* Poison: Ailed actor takes increasing hit to HP every turn
    * Constants: kPOISON_DMG_MAX -- maximum amount poison damage can do
@@ -597,17 +599,11 @@ bool Ailment::checkImmunity(Person* new_victim)
  */
 bool Ailment::updateTurns()
 {
-  qDebug() << "Beginning update turns: " << max_turns_left;
-
   /* If the ailment is finite, cure it based on chance */;
   if (max_turns_left <= kMAX_TURNS && chance != 0)
-  {
     if (chanceHappens(floor(chance * 100)))
-    {
       max_turns_left = 1;
-      qDebug() << "Random chance!";
-    }
-  }
+
   /* If the ailment currently has one turn left, it's cured! */
   if (max_turns_left == 1)
     return true;
@@ -615,7 +611,6 @@ bool Ailment::updateTurns()
   if (max_turns_left <= kMAX_TURNS)
     max_turns_left--;
 
-  qDebug() << " Ending update turns: " << max_turns_left;
   return false;
 }
 
@@ -876,7 +871,8 @@ EnumDb::Infliction Ailment::getType()
  */
 QString Ailment::getName()
 {
-  const std::string &string = EnumString<EnumDb::Infliction>::From( ailment_type );
+  const std::string &string =
+          EnumString<EnumDb::Infliction>::From(ailment_type);
   QString ailment_qstring(string.c_str());
   return ailment_qstring;
 }
@@ -998,6 +994,10 @@ void Ailment::reset()
   turns_occured = 0;
   emit reset();
 }
+
+/*===========================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *===========================================================================*/
 
 /*
  * Description: Returns the string value of a given infliction. Uses the

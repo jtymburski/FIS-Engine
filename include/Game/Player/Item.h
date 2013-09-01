@@ -85,6 +85,9 @@ protected:
   /* Static ID of the Item (current increasing value) */
   static int id;
 
+  /* The use of the item */
+  EnumDb::ItemUse item_use;
+
   /* ID of the current Item object */
   int my_id;
 

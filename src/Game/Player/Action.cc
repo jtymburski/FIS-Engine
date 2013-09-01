@@ -9,7 +9,7 @@
 * inflicting ailments, etc. The effect of actions is built by parsing a scripted
 * string from a file. Every action has a unique ID.
 *
-* Note [1]: Prase Language Syntax
+* Note [1]: Phrase Language Syntax
 *
 * [ACTION ID],[LOWER/LOWER/GIVE/TAKE],[STATISTIC/AILMENT],
 * [MIN DURATION].[MAX DURATION],[IGNORE ATK],[IGNORE ATK ELM 1]...,
@@ -17,6 +17,9 @@
 *
 * [int]:[string][string][uint].[uint],[bool],[string]...,
 * [bool],[string]...,[uint],[float];
+*
+* Note [2]: Statistics should be in upper cases, ailments should be in title
+*           case. (ex. THERMAL AGGRESSION , Poison)
 *******************************************************************************/
 #include "Game/Player/Action.h"
 
@@ -95,8 +98,6 @@ void Action::parse(QString raw)
   /* Parse ID */
   setId(split.at(0).toInt());
 
-  qDebug() << "Split 1: " << split.at(1);
-
   /* Parse LOWER/RAISE/GIVE/TAKE --> BRANCH */
   if (split.at(1) == "LOWER")
     setActionFlag(Action::LOWER);
@@ -147,11 +148,7 @@ void Action::parse(QString raw)
     }
   }
   else if (getActionFlag(Action::GIVE) || getActionFlag(Action::TAKE))
-  {
-    qDebug() << "Setting ailment: ";
-    qDebug() << getInfliction(split.at(2));
     setAilment(getInfliction(split.at(2)));
-  }
 
   /* Parse Duration */
   QStringList duration_split = split.at(3).split('.');

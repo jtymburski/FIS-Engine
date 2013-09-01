@@ -12,8 +12,21 @@
 *              2 - (Add) a registered string to BEGIN_ENUM_STRING( Infliction )
 *              3 - [(Add)] const static values to be used if necessary to class
 *              4 - (Add) the Ailment's effect to apply(), and other flags
+*                   i -- effect on apply() including per ter effects, flags
+*                        flipped, stat changes, etc.
+*                  ii -- effect on unapply(), best removal possible of the
+*                        ailment--return to normal (except for other
+*                        afflictions the user might be suffering from).
+*                 iii -- some ailments effects
+*                        are not practical to have an apply() effect per se
+*                        but alter the flow of combat, such as berserk, and so
+*                        they will be handled in Battle.
+*                  iv -- remember to fully utilize any Signals and Slots which
+*                        the class may use
 *              5 - (Add) the Ailment's immunities based off Person flags
 *              6 - (Add) any effects or checks in Battle or subclasses
+*
+* TODO: Create a stubulate effect [08-04-13]
 *******************************************************************************/
 #ifndef AILMENT_H
 #define AILMENT_H
@@ -150,15 +163,15 @@ public slots:
  * SIGNALS
  *============================================================================*/
 signals:
+  /* Tells BIB and BSB an ailment of victim is curing */
+  void curing(QString victim_name, EnumDb::Infliction ailment_name);
+
   /* Tells BIB and BSB an ailment of victim is being inflicted */
   void inflicting(QString victim_name, EnumDb::Infliction ailment_name);
 
   /* Tells Battle to remove all buffs
      (usually happens when Bubbify is added/removed) */
   void removeBuffs(QString victim_name);
-
-  /* Tells BIB and BSB an ailment of victim is curing */
-  void curing(QString victim_name, EnumDb::Infliction ailment_name);
 
   /* Tells Battle the ailment was reset */
   void resetComplete();
@@ -169,47 +182,51 @@ signals:
   /* Tells BIB and BSB that the victim dies because of reasons */
   void victimDeath(QString victim_name, EnumDb::ActorDeath reason);
 
-  /*============================================================================
-   * PUBLIC FUNCTIONS
-   *============================================================================*/
-  public:
-    /* Undoes the effect (if exits) to the victim before curing */
-    void unapply();
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
+public:
+  /* Undoes the effect (if exits) to the victim before curing */
+  void unapply();
 
-    /* Methods for printing all the information pertaining to the ailment */
-    void printAll();
-    void printFlags();
-    void printInfo();
+  /* Methods for printing all the information pertaining to the ailment */
+  void printAll();
+  void printFlags();
+  void printInfo();
 
-    /* Evaluates an ailment flag or flags */
-    bool getFlag(AilmentFlag flags);
+  /* Evaluates an ailment flag or flags */
+  bool getFlag(AilmentFlag flags);
 
-    /* Returns the number of turns left (assuming 0%) */
-    ushort getTurnsLeft();
+  /* Gets a QString of the current ailment's enumerated value */
+  QString getName();
 
-    /* Returns the Inflinction of the status ailment */
-    EnumDb::Infliction getType();
+  /* Returns the number of turns left (assuming 0%) */
+  ushort getTurnsLeft();
 
-    /* Gets a QString of the current ailment's enumerated value */
-    QString getName();
+  /* Returns the Inflinction of the status ailment */
+  EnumDb::Infliction getType();
 
-    /* Obtains the victim of the Status Ailment */
-    Person* getVictim();
+  /* Obtains the victim of the Status Ailment */
+  Person* getVictim();
 
-    /* Sets the duration of the ailment */
-    void setDuration(short max_turns, double chance = 0);
+  /* Sets the duration of the ailment */
+  void setDuration(short max_turns, double chance = 0);
 
-    /* Sets the value of an AilmentFlag to a set_value, defaulting to true */
-    void setFlag(AilmentFlag flags, bool set_value = true);
+  /* Sets the value of an AilmentFlag to a set_value, defaulting to true */
+  void setFlag(AilmentFlag flags, bool set_value = true);
 
-    /* Public function to assign a new victom for the status ailment */
-    bool setNewVictim(Person* new_victim, bool refresh3_turns = false);
+  /* Public function to assign a new victom for the status ailment */
+  bool setNewVictim(Person* new_victim, bool refresh3_turns = false);
 
-    /* Returns a QString corresponding to an enumerated Infliction */
-    QString getAilmentStr(EnumDb::Infliction type);
+/*===========================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *===========================================================================*/
+public:
+  /* Returns a QString corresponding to an enumerated Infliction */
+  static QString getAilmentStr(EnumDb::Infliction type);
 
-    /* Returns an enumerated Infliction corresponding to a QString */
-    EnumDb::Infliction getInfliction(QString name);
+  /* Returns an enumerated Infliction corresponding to a QString */
+  static EnumDb::Infliction getInfliction(QString name);
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Ailment::AilmentFlags)
 

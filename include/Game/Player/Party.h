@@ -55,6 +55,12 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Functionality for using items in battle */
+  bool battleUseItem(Item* used_item, ushort target = 0);
+
+  /* Functionality for using items in menu */
+  bool menuUseItem(Item* used_item, ushort target = 0);
+
   /* Sets the enumerated party type (usually called by construction) */
   void setPartyType(EnumDb::PartyType new_party_type);
 

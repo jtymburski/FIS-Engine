@@ -36,6 +36,31 @@ Party::~Party() {}
  *============================================================================*/
 
 /*
+ * Description: Functionality for using an item in menu.
+ *
+ * Inputs: Item* used_item - the item to be used.
+ *         ushort target - the primary target for the item (it may be multihit)
+ * Output: bool - true if the item was used succesfully
+ */
+bool Party::menuUseItem(Item* used_item, ushort target)
+{
+
+}
+
+
+/*
+ * Description: Functionality for using an item in battle.
+ *
+ * Inputs: Item* used_item - the item to be used.
+ *         ushort target - the primary target for the item (it may be multihit)
+ * Output: bool - true if the item was used succesfully
+ */
+bool Party::battleUseItem(Item* used_item, ushort target)
+{
+
+}
+
+/*
  * Description: Sets the enumerated party type object. Usually called by the
  *              party constructor.
  *
@@ -158,84 +183,18 @@ bool Party::removeMember(QString value)
  */
 bool Party::useItem(Item *used_item, ushort target)
 {
+  bool item_used = false;
+  bool item_can_be_used = true;
+
   /* Assert the person can use items and the item is menu-usable */
   if (members[target]->getPersonFlag(Person::CANUSEITEM));
     return false;
 
+  /* Assert that the target is valid and that the item can be used in menu */
   if (!used_item->getItemFlag(Item::MENUREADY))
     return false;
   if (target > getMaxSize())
     return false;
-  /*
-  QVector<Skill*> to_do = used_item->getActionSet()->getSkills();
-
-  for (int i = 0; i < to_do.size(); i++)
-  {
-    QVector<Action*> to_be_done = to_do.at(i)->getEffects();
-
-    for (int j = 0; j < to_be_done.size(); j++)
-    {
-      Action* cur_action = to_be_done.at(j);
-      cur_action->getMinimum()
-
-      if (cur_action->getActionFlag(Action::OFFENSIVE))
-      {
-        if (cur_action->getActionFlag(Action::PHYSICAL))
-        {
-          if (cur_action->getActionFlag(Action::RAISE))
-          {
-            if (to_do.at(i)->getFlag(Skill::MULTIHIT))
-              for (int k = 0; k < getPartySize(); k++)
-              {
-                  members.at(k)->tempStats()->changeStat("PHAG",)
-              }
-
-          }
-
-          }
-          if (cur_action->getActionFlag(Action::LOWER))
-          {
-
-          }
-        }
-
-        if (cur_action->getActionFlag(Action::THERMAL))
-        {
-
-        }
-
-        if (cur_action->getActionFlag(Action::POLAR))
-        {
-
-        }
-
-        if (cur_action->getActionFlag(Action::PRIMAL))
-        {
-
-        }
-
-        if (to_be_done.at(j)->getActionFlag(Action::CHARGED))
-        {
-
-        }
-
-        if (to_be_done.at(j)->getActionFlag(Action::CYBERNETIC))
-        {
-
-        }
-
-        if (to_be_done.at(j)->getActionFlag(Action::NIHIL))
-        {
-
-        }
-
-        if (cur_action->getActionFlag(Action::DEFENSIVE))
-        {
-
-        }
-      }
-    }
-    */
 }
 
 /*

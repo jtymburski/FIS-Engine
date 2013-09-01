@@ -137,6 +137,14 @@ public:
                     NOAILMENT, };
 
   /*
+   * Description: Item use types, Menu, Battle, Both, None
+   */
+  enum ItemUse { MENU_USABLE,
+                 BATTLE_USABLE,
+                 BOTH_USABLE,
+                 NOT_USABLE };
+
+  /*
    * Description: Ranks the Player may have
    */
   enum PersonRanks { NUBEAR,
