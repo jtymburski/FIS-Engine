@@ -675,10 +675,10 @@ bool Map::loadMap(QString file)
     Sprite* down_sprite = new Sprite("sprites/Map/Map_Things/main_AA_U", 
                                      3, ".png");
     Sprite* left_sprite = new Sprite("sprites/Map/Map_Things/main_AA_S", 
-                                     3, ".png");
+                                     5, ".png");
     left_sprite->flipAll();
     Sprite* right_sprite = new Sprite("sprites/Map/Map_Things/main_AA_S", 
-                                      3, ".png");
+                                      5, ".png");
     MapPerson* person = new MapPerson(kTILE_WIDTH, kTILE_HEIGHT);
     person->setStartingTile(geography[8][8]); // 11, 9
 
