@@ -77,6 +77,10 @@ private:
   /* A time counter, for determining how long things have been displayed */
   short display_time;
 
+  /* The pause indication, if control has been paused */
+  bool paused;
+  float paused_opacity;
+  
   /* The bounding box for the popout at the top right of screen (On bubby
     pickup for example) */
 //  QRect popoutbox;
@@ -132,6 +136,13 @@ private:
 signals:
   void finishThingTarget();
   void setThingData(QList<int> thing_ids);
+  
+/*============================================================================
+ * PUBLIC SLOTS
+ *===========================================================================*/
+public slots:
+  /* Sets if the class control is paused */
+  void setPaused(bool paused);
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -151,6 +162,9 @@ public:
   bool isInConversation();
   bool isInUse();
 
+  /* Returns if the dialog class is paused */
+  bool isPaused();
+  
   /* Key press event reimplemented */
   void keyPress(QKeyEvent* event);
   void keyRelease(QKeyEvent* event);
@@ -166,7 +180,7 @@ public:
 
   /* Sets the rendering font */
   void setFont(QFont font);
-
+  
   /* Sets the thing data, needed for the conversation */
   void setThingData(QList<MapThing*> data);
 

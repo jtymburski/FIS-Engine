@@ -281,6 +281,8 @@ void Map::keyPressEvent(QKeyEvent* key_event)
 {
   if(key_event->key() == Qt::Key_Escape)
     closeMap();
+  else if(key_event->key() == Qt::Key_P)
+    map_dialog.setPaused(!map_dialog.isPaused());
   else if(map_dialog.isInConversation())
     map_dialog.keyPress(key_event);
   else if(key_event->key() == Qt::Key_Space)

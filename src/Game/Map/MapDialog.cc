@@ -40,6 +40,8 @@ MapDialog::MapDialog(QFont font)
   display_index = 0;
   display_option = 0;
   display_time = 0;
+  paused = false;
+  paused_opacity = 1.0;
   thing = 0;
   
   setFont(font);
@@ -134,6 +136,16 @@ void MapDialog::setupConversation()
 }
 
 /*============================================================================
+ * PUBLIC SLOTS
+ *===========================================================================*/
+
+/* Sets if the class control is paused */
+void MapDialog::setPaused(bool paused)
+{
+  this->paused = paused;
+}
+
+/*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
@@ -212,58 +224,67 @@ bool MapDialog::isInUse()
   return (dialog_mode != DISABLED);
 }
 
+bool MapDialog::isPaused()
+{
+  return paused;
+}
+
 void MapDialog::keyPress(QKeyEvent* event)
 {
-  /* Selection case for the conversational dialog option */
-  if(event->key() == Qt::Key_Space && !event->isAutoRepeat())
+  /* Only proceed if the dialog isn't paused */
+  if(!paused)
   {
-    if(isInConversation() && dialog_status == ON)
+    /* Selection case for the conversational dialog option */
+    if(event->key() == Qt::Key_Space && !event->isAutoRepeat())
     {
-      /* Check for dialog status and shift to next conversation */
-      if((display_index + kMAX_LINES) < display_text.size())
+      if(isInConversation() && dialog_status == ON)
       {
-        display_index += kMAX_LINES;
-      }
-      else if(conversation_info.next.size() == 0)
-      {
-        dialog_status = HIDING;
-        emit finishThingTarget();
-      }
-      else
-      {
-        bool multiple = (conversation_info.next.size() > 1);
-        conversation_info = conversation_info.next[display_option];
+        /* Check for dialog status and shift to next conversation */
+        if((display_index + kMAX_LINES) < display_text.size())
+        {
+          display_index += kMAX_LINES;
+        }
+        else if(conversation_info.next.size() == 0)
+        {
+          dialog_status = HIDING;
+          emit finishThingTarget();
+        }
+        else
+        {
+          bool multiple = (conversation_info.next.size() > 1);
+          conversation_info = conversation_info.next[display_option];
               
-        /* Skip the option if it was an option case */
-        if(multiple)
-          conversation_info = conversation_info.next[0];
+          /* Skip the option if it was an option case */
+          if(multiple)
+            conversation_info = conversation_info.next[0];
 
-        display_index = 0;
-        display_option = 0;
+          display_index = 0;
+          display_option = 0;
 
-        /* Finalize the conversation change */
-        setupConversation();
+          /* Finalize the conversation change */
+          setupConversation();
+        }
       }
     }
-  }
-  /* Go back an option selector */
-  else if(event->key() == Qt::Key_Up)
-  {
-    display_option--;
-    if(display_option < 0)
+    /* Go back an option selector */
+    else if(event->key() == Qt::Key_Up)
     {
-      if(conversation_info.next.size() > 0)
-        display_option = conversation_info.next.size() - 1;
-      else
+      display_option--;
+      if(display_option < 0)
+      {
+        if(conversation_info.next.size() > 0)
+          display_option = conversation_info.next.size() - 1;
+        else
+          display_option = 0;
+      }
+    }
+    /* Go to next option selector */
+    else if(event->key() == Qt::Key_Down)
+    {
+      display_option++;
+      if(display_option >= conversation_info.next.size())
         display_option = 0;
     }
-  }
-  /* Go to next option selector */
-  else if(event->key() == Qt::Key_Down)
-  {
-    display_option++;
-    if(display_option >= conversation_info.next.size())
-      display_option = 0;
   }
 }
 
@@ -289,12 +310,13 @@ bool MapDialog::paintGl(QGLWidget* painter)
       y1 += kNAME_BOX_HEIGHT;
 
     /* Paints the conversation dialog */
-    dialog_display.paintGl(x1, y1, width, height, 1.0);
+    dialog_display.paintGl(x1, y1, width, height, paused_opacity);
 
     if(dialog_mode == NOTIFICATION)
     {
       short x2 = x1;
       short y2 = y1 + kMARGIN_TOP + font_info.ascent();
+      glColor4f(1.0, 1.0, 1.0, paused_opacity);
       
       for(int i = 0; i < display_text.size(); i++)
       {
@@ -329,7 +351,7 @@ bool MapDialog::paintGl(QGLWidget* painter)
       if(thing_name.size() > 0)
       {
         /* Draw text display background */
-        glColor4f(0.0, 0.0, 0.0, 0.65);
+        glColor4f(0.0, 0.0, 0.0, 0.65 * paused_opacity);
         glBegin(GL_QUADS);
           glVertex2f(name_x, y1);
           glVertex2f(name_x + (kNAME_BOX_ANGLE_X << 1) + name_width, y1);
@@ -338,7 +360,7 @@ bool MapDialog::paintGl(QGLWidget* painter)
         glEnd();
 
         /* Draw outline */
-        glColor4f(1.0, 1.0, 1.0, 1.0);
+        glColor4f(1.0, 1.0, 1.0, paused_opacity);
         glLineWidth(3);
         glBegin(GL_LINES);
           glVertex2f(name_x + kNAME_BOX_ANGLE_X + name_width, y1 - name_height);
@@ -358,7 +380,7 @@ bool MapDialog::paintGl(QGLWidget* painter)
       if(dialog_status == ON)
       {
         /* Draw the name text */
-        glColor4f(1.0, 1.0, 1.0, 1.0);
+        glColor4f(1.0, 1.0, 1.0, paused_opacity);
         painter->renderText(x1 + kNAME_BOX_X_OFFSET + kNAME_BOX_ANGLE_X, 
                            y1 - (name_height >> 1) 
                               - (bold_font.height() >> 1) + bold_font.ascent(), 
@@ -373,7 +395,7 @@ bool MapDialog::paintGl(QGLWidget* painter)
           img_width = thing_frame->getImage().width();
           img_height = thing_frame->getImage().height();
           thing_frame->paintGl(x1 + width - (img_width >> 1), 704 - img_height, 
-                               img_width, img_height, 1.0);
+                               img_width, img_height, paused_opacity);
         }
 
         /* Draw the conversational text */
@@ -383,7 +405,7 @@ bool MapDialog::paintGl(QGLWidget* painter)
         if(max_lines > display_text.size())
           max_lines = display_text.size();
 
-        glColor4f(1.0, 1.0, 1.0, 1.0);
+        glColor4f(1.0, 1.0, 1.0, paused_opacity);
         for(int i = display_index; i < max_lines; i++)
         {
           painter->renderText(x1 + kMARGIN_SIDES, txt_y, 
@@ -392,7 +414,7 @@ bool MapDialog::paintGl(QGLWidget* painter)
         }
 
         /* The last conversational text line, based on long sets */
-        glColor4f(1.0, 1.0, 1.0, 0.25);
+        glColor4f(1.0, 1.0, 1.0, 0.25 * paused_opacity);
         if(display_text.size() > max_lines)
         {
           painter->renderText(x1 + kMARGIN_SIDES, txt_y, 
@@ -413,7 +435,7 @@ bool MapDialog::paintGl(QGLWidget* painter)
               int margin = kOPTION_MARGIN;
               QRect option = 
                   font_info.boundingRect(conversation_info.next[i].text);
-              glColor4f(0.0, 0.0, 0.0, 1.0);
+              glColor4f(0.0, 0.0, 0.0, paused_opacity);
               glBegin(GL_QUADS);
                 glVertex3f(option_x + option.x() - margin, 
                            txt_y + option.y() + margin + option.height(), 0);
@@ -427,7 +449,7 @@ bool MapDialog::paintGl(QGLWidget* painter)
             }
 
             /* Paint the text portion */
-            glColor4f(1.0, 1.0, 1.0, 1.0);
+            glColor4f(1.0, 1.0, 1.0, paused_opacity);
             painter->renderText(option_x, txt_y, 
                                 conversation_info.next[i].text, display_font);
             txt_y += (kFONT_SPACING << 1) + font_info.height();
@@ -440,7 +462,7 @@ bool MapDialog::paintGl(QGLWidget* painter)
         {
           int cursor_x = (1216 >> 1);
           glLineWidth(2);
-          glColor4f(1.0, 1.0, 1.0, 1.0);
+          glColor4f(1.0, 1.0, 1.0, paused_opacity);
           glBegin(GL_LINE_LOOP);
             glVertex2f(cursor_x - kCURSOR_NEXT_SIZE, 
                        y1 + height - kCURSOR_NEXT_SIZE - animation_cursor);
@@ -500,7 +522,7 @@ void MapDialog::setFont(QFont font)
   display_font.setOverline(false);
   display_font.setUnderline(false);
 }
-
+  
 void MapDialog::setThingData(QList<MapThing*> data)
 {
   thing_data = data;
@@ -510,57 +532,75 @@ void MapDialog::update(float cycle_time)
 {
   short height = dialog_display.getImage().height();
 
-  /* If hiding, shift the display onto the screen */
-  if(dialog_status == HIDING)
+  /* Modify the opacity of the dialog information based on the paused status */
+  if(paused && paused_opacity != 0)
   {
-    animation_offset -= cycle_time * height / kSHIFT_TIME;
-    if(animation_offset <= 0)
-    {
-      dialog_mode = DISABLED;
-      dialog_status = OFF;
-      animation_offset = 0;
-    }
+    paused_opacity -= 0.02;//cycle_time * 100 / kSHIFT_TIME;
+    if(paused_opacity < 0.0)
+      paused_opacity = 0.0;
   }
-  /* If showing, shift the display onto the screen */
-  else if(dialog_status == SHOWING)
+  else if(!paused && paused_opacity != 1.0)
   {
-    animation_offset += cycle_time * height / kSHIFT_TIME;
-    if(animation_offset >= animation_height)
-    {
-      dialog_status = ON;
-      animation_offset = animation_height;
-    }
+    paused_opacity += 0.02;//cycle_time * 100 / kSHIFT_TIME;
+    if(paused_opacity > 1.0)
+      paused_opacity = 1.0;
   }
-  /* If ON, do action appropriate to the dialog mode */
-  else if(dialog_status == ON)
+  
+  /* Ignore all updating if paused */
+  if(!paused)
   {
-    /* This controls how long the notification box is displayed */
-    if(dialog_mode == NOTIFICATION)
+    /* If hiding, shift the display onto the screen */
+    if(dialog_status == HIDING)
     {
-      display_time -= cycle_time;
-      if(display_time < 0)
-        dialog_status = HIDING;
-    }
-    /* This controls the bouncing cursor at the bottom of each conversational
-     * box to signal going to the next set */
-    else if(isInConversation())
-    {
-      if(animation_cursor_up)
+      animation_offset -= cycle_time * height / kSHIFT_TIME;
+      if(animation_offset <= 0)
       {
-        animation_cursor += cycle_time * kCURSOR_NEXT_SIZE / kCURSOR_NEXT_TIME;
-        if(animation_cursor >= kCURSOR_NEXT_SIZE)
-        {
-          animation_cursor = kCURSOR_NEXT_SIZE;
-          animation_cursor_up = false;
-        }
+        dialog_mode = DISABLED;
+        dialog_status = OFF;
+        animation_offset = 0;
       }
-      else
+    }
+    /* If showing, shift the display onto the screen */
+    else if(dialog_status == SHOWING)
+    {
+      animation_offset += cycle_time * height / kSHIFT_TIME;
+      if(animation_offset >= animation_height)
       {
-        animation_cursor -= cycle_time * kCURSOR_NEXT_SIZE / kCURSOR_NEXT_TIME;
-        if(animation_cursor <= 0)
+        dialog_status = ON;
+        animation_offset = animation_height;
+      }
+    }
+    /* If ON, do action appropriate to the dialog mode */
+    else if(dialog_status == ON)
+    {
+      /* This controls how long the notification box is displayed */
+      if(dialog_mode == NOTIFICATION)
+      {
+        display_time -= cycle_time;
+        if(display_time < 0)
+          dialog_status = HIDING;
+      }
+      /* This controls the bouncing cursor at the bottom of each conversational
+       * box to signal going to the next set */
+      else if(isInConversation())
+      {
+        if(animation_cursor_up)
         {
-          animation_cursor = 0;
-          animation_cursor_up = true;
+          animation_cursor += cycle_time * kCURSOR_NEXT_SIZE / kCURSOR_NEXT_TIME;
+          if(animation_cursor >= kCURSOR_NEXT_SIZE)
+          {
+            animation_cursor = kCURSOR_NEXT_SIZE;
+            animation_cursor_up = false;
+          }
+        }
+        else
+        {
+          animation_cursor -= cycle_time * kCURSOR_NEXT_SIZE / kCURSOR_NEXT_TIME;
+          if(animation_cursor <= 0)
+          {
+            animation_cursor = 0;
+            animation_cursor_up = true;
+          }
         }
       }
     }
