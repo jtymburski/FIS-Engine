@@ -22,6 +22,8 @@ const short MapDialog::kNAME_BOX_MIN_WIDTH = 50;
 const short MapDialog::kNAME_BOX_X_OFFSET = 45;
 const short MapDialog::kOPTION_MARGIN = 5;
 const short MapDialog::kOPTION_OFFSET = 50;
+const float MapDialog::kPAUSE_OPACITY_DIFF = 0.03;
+const float MapDialog::kPAUSE_OPACITY_MAX = 1.0;
 const short MapDialog::kSHIFT_TIME = 750;
 
 /*============================================================================
@@ -41,7 +43,7 @@ MapDialog::MapDialog(QFont font)
   display_option = 0;
   display_time = 0;
   paused = false;
-  paused_opacity = 1.0;
+  paused_opacity = kPAUSE_OPACITY_MAX;
   thing = 0;
   
   setFont(font);
@@ -232,7 +234,7 @@ bool MapDialog::isPaused()
 void MapDialog::keyPress(QKeyEvent* event)
 {
   /* Only proceed if the dialog isn't paused */
-  if(!paused)
+  if(!paused && paused_opacity == kPAUSE_OPACITY_MAX)
   {
     /* Selection case for the conversational dialog option */
     if(event->key() == Qt::Key_Space && !event->isAutoRepeat())
@@ -475,6 +477,14 @@ bool MapDialog::paintGl(QGLWidget* painter)
       display_font.setBold(false);
     }
    
+    /* Testing the notification display */
+    //Frame notification_1("sprites/Map/Overlay/notification_1.png");
+    //notification_1.initializeGl();
+    //notification_1.paintGl(1100.0, 25.0, 177, 148, 1.0); // 1039, 1100
+    Frame notification_2("sprites/Map/Overlay/notification_2.png");
+    notification_2.initializeGl();
+    notification_2.paintGl(1063.0, 50.0, 153, 98, 1.0); // 1063, 1124
+    
     /* Multiple side by side painting - test */
 /*    usable_font.setBold(false);
     font_details = QFontMetrics(usable_font);
@@ -535,15 +545,23 @@ void MapDialog::update(float cycle_time)
   /* Modify the opacity of the dialog information based on the paused status */
   if(paused && paused_opacity != 0)
   {
-    paused_opacity -= 0.02;//cycle_time * 100 / kSHIFT_TIME;
-    if(paused_opacity < 0.0)
+    paused_opacity -= kPAUSE_OPACITY_DIFF;
+    if(paused_opacity <= 0.0)
+    {
       paused_opacity = 0.0;
+      
+      /* Complete the animation sequence if it's occurring during a pause */
+      if(dialog_status == HIDING)
+        animation_offset = 0;
+      else if(dialog_status == SHOWING)
+        animation_offset = animation_height;
+    }
   }
-  else if(!paused && paused_opacity != 1.0)
+  else if(!paused && paused_opacity != kPAUSE_OPACITY_MAX)
   {
-    paused_opacity += 0.02;//cycle_time * 100 / kSHIFT_TIME;
-    if(paused_opacity > 1.0)
-      paused_opacity = 1.0;
+    paused_opacity += kPAUSE_OPACITY_DIFF;
+    if(paused_opacity > kPAUSE_OPACITY_MAX)
+      paused_opacity = kPAUSE_OPACITY_MAX;
   }
   
   /* Ignore all updating if paused */

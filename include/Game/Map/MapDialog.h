@@ -105,6 +105,8 @@ private:
   const static short kNAME_BOX_X_OFFSET; /* Offset from dialog box for name */
   const static short kOPTION_MARGIN; /* The margin around option selection */
   const static short kOPTION_OFFSET; /* The option display offset in pixels */
+  const static float kPAUSE_OPACITY_DIFF; /* Delta when changing opacity */
+  const static float kPAUSE_OPACITY_MAX; /* Max opacity once pause has ended */
   const static short kSHIFT_TIME;  /* The time it takes to shift the display
                                       into view (in msec) */
 
@@ -171,9 +173,6 @@ public:
 
   /* Paint call, that paints the dialog */
   bool paintGl(QGLWidget* painter);
-
-  /* Proceeds in the conversation, enter key triggers this */
-//  void proceed();
 
   /* Sets the dialog image within the class, for conversation display */
   bool setDialogImage(QString path);
