@@ -154,15 +154,17 @@ public:
   bool initConversation(Conversation dialog_info);
 
   /* Initializes a notification, using a QString */
-  bool initNotification(QString notification, int time_visible = -1, 
-                                              bool single_line = false);
+  bool initNotification(QString notification = "", Frame* thing_image = 0, 
+                        int thing_count = 0, int time_visible = -1, 
+                        bool single_line = false);
 
   /* Returns if the dialog image has been set (and proper size) */
   bool isDialogImageSet();
 
   /* Some status checks, of the state of the class */
   bool isInConversation();
-  bool isInUse();
+  bool isBottomInUse();
+  bool isSideInUse();
 
   /* Returns if the dialog class is paused */
   bool isPaused();

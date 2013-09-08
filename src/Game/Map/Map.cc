@@ -316,11 +316,11 @@ void Map::keyPressEvent(QKeyEvent* key_event)
   else if(key_event->key() == Qt::Key_3)
     viewport->lockOn(609, 353);
   else if(key_event->key() == Qt::Key_4)
-    map_dialog.initNotification("Testing", 1000, true);
+    map_dialog.initNotification("Testing", 0, 0, 1000, true);
   else if(key_event->key() == Qt::Key_5)
     map_dialog.initNotification("This is a really long message. It goes on and on without end. Who makes notifications this long except for crazy deranged eutherlytes. Yes, I made a new word. You want to fight about it?");//map_dialog.haltDialog();
   else if(key_event->key() == Qt::Key_6)
-    map_dialog.initNotification("This is a really long message. It goes on and on without end. Who makes notifications this long except for crazy deranged eutherlytes. Yes, I made a new word. You want to fight about it?", 5000, true);
+    map_dialog.initNotification("This is a really long message. It goes on and on without end. Who makes notifications this long except for crazy deranged eutherlytes. Yes, I made a new word. You want to fight about it?", 0, 0, 5000, true);
   else if(persons.size() >= 3 && key_event->key() == Qt::Key_7)
     ((MapNPC*)persons[2])->setNodeState(MapNPC::LOOPED);
   else if(persons.size() >= 3 && key_event->key() == Qt::Key_8)

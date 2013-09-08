@@ -153,29 +153,39 @@ void MapDialog::setPaused(bool paused)
 
 bool MapDialog::initConversation(Conversation dialog_info)
 {
-  if(!isInUse() && isDialogImageSet())
+  if(isDialogImageSet())
   {
-    dialog_mode = CONVERSATION;
-    display_font.setPointSize(12);
-    conversation_info = dialog_info;
+    if(dialog_mode == DISABLED)
+    {
+      dialog_mode = CONVERSATION;
+      display_font.setPointSize(12);
+      conversation_info = dialog_info;
 
-    /* Acquire all the needed information about things in the conversation */
-    emit setThingData(removeDuplicates(calculateThingList(dialog_info)));
-    setupConversation();
+      /* Acquire all the needed information about things in the conversation */
+      emit setThingData(removeDuplicates(calculateThingList(dialog_info)));
+      setupConversation();
     
-    /* Initiate animation sequence */
-    initiateAnimation(display_font);
+      /* Initiate animation sequence */
+      initiateAnimation(display_font);
     
-    return true;
+      return true;
+    }
+    else if(dialog_mode == NOTIFICATION)
+    {
+      // TODO: Make it a queue that ends the notification and then initiates
+      // conversation. However, this still keeps the image display notification
+      return false;
+    }
   }
   
   return false;
 }
 
-bool MapDialog::initNotification(QString notification, int time_visible, 
-                                                       bool single_line)
+bool MapDialog::initNotification(QString notification, Frame* thing_image, 
+                                 int thing_count, int time_visible, 
+                                 bool single_line)
 {
-  if(!isInUse() && isDialogImageSet())
+  if(!isBottomInUse() && isDialogImageSet())
   {
     dialog_mode = NOTIFICATION;
     display_font.setPointSize(12);
@@ -221,9 +231,14 @@ bool MapDialog::isInConversation()
   return (dialog_mode == CONVERSATION);
 }
 
-bool MapDialog::isInUse()
+bool MapDialog::isBottomInUse()
 {
   return (dialog_mode != DISABLED);
+}
+
+bool MapDialog::isSideInUse()
+{
+  return false; // TODO
 }
 
 bool MapDialog::isPaused()
@@ -479,12 +494,15 @@ bool MapDialog::paintGl(QGLWidget* painter)
    
     /* Testing the notification display */
     //Frame notification_1("sprites/Map/Overlay/notification_1.png");
-    //notification_1.initializeGl();
-    //notification_1.paintGl(1100.0, 25.0, 177, 148, 1.0); // 1039, 1100
+    //notification_1.initializeGl(); // 1039, 1100
+    //notification_1.paintGl(1100.0, 25.0, 177, 148, paused_opacity);
     Frame notification_2("sprites/Map/Overlay/notification_2.png");
-    notification_2.initializeGl();
-    notification_2.paintGl(1063.0, 50.0, 153, 98, 1.0); // 1063, 1124
-    
+    notification_2.initializeGl(); // 1060, 1117
+    notification_2.paintGl(1060.0, 50.0, 156, 110, paused_opacity);
+    //Frame notification_3("sprites/Map/Overlay/notification_3.png");
+    //notification_3.initializeGl(); // 1061, 1118
+    //notification_3.paintGl(1061.0, 50.0, 155, 108, paused_opacity);
+
     /* Multiple side by side painting - test */
 /*    usable_font.setBold(false);
     font_details = QFontMetrics(usable_font);
@@ -507,11 +525,6 @@ bool MapDialog::paintGl(QGLWidget* painter)
   
   return true; // TODO??
 }
-
-/* Proceeds in the conversation, enter key triggers this */
-//void MapStatusBar::proceed()
-//{
-//}
 
 bool MapDialog::setDialogImage(QString path)
 {
