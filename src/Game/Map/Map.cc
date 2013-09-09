@@ -698,11 +698,11 @@ bool Map::loadMap(QString file)
     persons.append(person);
 
     /* Add a second player */
-    up_sprite = new Sprite("sprites/Map/Map_Things/aurumba_AA_D", 3, ".png");
-    down_sprite = new Sprite("sprites/Map/Map_Things/aurumba_AA_U", 3, ".png");
-    left_sprite = new Sprite("sprites/Map/Map_Things/aurumba_AA_S", 3, ".png");
+    up_sprite = new Sprite("sprites/Map/Map_Things/aurora_AA_D", 3, ".png");
+    down_sprite = new Sprite("sprites/Map/Map_Things/aurora_AA_U", 3, ".png");
+    left_sprite = new Sprite("sprites/Map/Map_Things/aurora_AA_S", 5, ".png");
     left_sprite->flipAll();
-    right_sprite = new Sprite("sprites/Map/Map_Things/aurumba_AA_S", 3, ".png");
+    right_sprite = new Sprite("sprites/Map/Map_Things/aurora_AA_S", 5, ".png");
     person = new MapPerson(kTILE_WIDTH, kTILE_HEIGHT);
     person->setStartingTile(geography[2][4]);
     person->setState(MapPerson::GROUND, EnumDb::NORTH, 
