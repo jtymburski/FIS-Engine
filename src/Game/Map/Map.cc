@@ -167,7 +167,6 @@ void Map::initiateThingAction()
 {
   if(player != 0)
   {
-    MapThing* null_thing = 0;
     int x = player->getTile()->getX();
     int y = player->getTile()->getY();
 
@@ -283,6 +282,24 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     closeMap();
   else if(key_event->key() == Qt::Key_P)
     map_dialog.setPaused(!map_dialog.isPaused());
+  else if(key_event->key() == Qt::Key_F1)
+  {
+    Frame* image = new Frame("sprites/Map/Tiles/Ground/BlueMetalTile/BlueMetalTile01_AA_A00.png");
+    image->initializeGl();
+    map_dialog.initPickup(image, 50, 1000);
+  }
+  else if(key_event->key() == Qt::Key_F2)
+  {
+    Frame* image = new Frame("sprites/Battle/Bubbies/blazing_t1.png");
+    image->initializeGl();
+    map_dialog.initPickup(image, 1);
+  }
+  else if(key_event->key() == Qt::Key_4)
+    map_dialog.initNotification("Testing", 1000, true);
+  else if(key_event->key() == Qt::Key_5)
+    map_dialog.initNotification("This is a really long message. It goes on and on without end. Who makes notifications this long except for crazy deranged eutherlytes. Yes, I made a new word. You want to fight about it?");//map_dialog.haltDialog();
+  else if(key_event->key() == Qt::Key_6)
+    map_dialog.initNotification("This is a really long message. It goes on and on without end. Who makes notifications this long except for crazy deranged eutherlytes. Yes, I made a new word. You want to fight about it?", 5000, true);
   else if(map_dialog.isInConversation())
     map_dialog.keyPress(key_event);
   else if(key_event->key() == Qt::Key_Space)
@@ -315,12 +332,6 @@ void Map::keyPressEvent(QKeyEvent* key_event)
   }
   else if(key_event->key() == Qt::Key_3)
     viewport->lockOn(609, 353);
-  else if(key_event->key() == Qt::Key_4)
-    map_dialog.initNotification("Testing", 0, 0, 1000, true);
-  else if(key_event->key() == Qt::Key_5)
-    map_dialog.initNotification("This is a really long message. It goes on and on without end. Who makes notifications this long except for crazy deranged eutherlytes. Yes, I made a new word. You want to fight about it?");//map_dialog.haltDialog();
-  else if(key_event->key() == Qt::Key_6)
-    map_dialog.initNotification("This is a really long message. It goes on and on without end. Who makes notifications this long except for crazy deranged eutherlytes. Yes, I made a new word. You want to fight about it?", 0, 0, 5000, true);
   else if(persons.size() >= 3 && key_event->key() == Qt::Key_7)
     ((MapNPC*)persons[2])->setNodeState(MapNPC::LOOPED);
   else if(persons.size() >= 3 && key_event->key() == Qt::Key_8)

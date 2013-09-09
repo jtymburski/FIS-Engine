@@ -24,6 +24,14 @@ const short MapDialog::kOPTION_MARGIN = 5;
 const short MapDialog::kOPTION_OFFSET = 50;
 const float MapDialog::kPAUSE_OPACITY_DIFF = 0.03;
 const float MapDialog::kPAUSE_OPACITY_MAX = 1.0;
+const short MapDialog::kPICKUP_ANGLE_X = 15;
+const short MapDialog::kPICKUP_ANGLE_Y = 15;
+const short MapDialog::kPICKUP_DEFAULT_TIME = 5000;
+const short MapDialog::kPICKUP_HEIGHT = 104;
+const short MapDialog::kPICKUP_MARGIN = 20;
+const short MapDialog::kPICKUP_TEXT_SPACE = 10;
+const short MapDialog::kPICKUP_WIDTH = 156;
+const short MapDialog::kPICKUP_Y = 50;
 const short MapDialog::kSHIFT_TIME = 750;
 
 /*============================================================================
@@ -38,13 +46,19 @@ MapDialog::MapDialog(QFont font)
   animation_cursor_up = true;
   animation_offset = 0;
   dialog_mode = DISABLED;
+  dialog_option = 0;
   dialog_status = OFF;
-  display_index = 0;
-  display_option = 0;
-  display_time = 0;
+  dialog_text_index = 0;
+  dialog_time = 0;
   paused = false;
   paused_opacity = kPAUSE_OPACITY_MAX;
   thing = 0;
+  
+  /* Pickup Notification parameters cleared */
+  pickup_offset = 0;
+  pickup_status = OFF;
+  pickup_time = 0;
+  pickup_width = 0;
   
   setFont(font);
 }
@@ -101,10 +115,86 @@ void MapDialog::initiateAnimation(QFont display_font)
   }
   else if(dialog_mode == NOTIFICATION)
   {
-    animation_height = (display_text.size() - 1)*kFONT_SPACING + 
-                       display_text.size() * font_info.height() +
+    animation_height = (dialog_text.size() - 1)*kFONT_SPACING + 
+                       dialog_text.size() * font_info.height() +
                        kFONT_SPACING + kMARGIN_TOP;
   }
+}
+
+bool MapDialog::initiateNextNotification()
+{
+  if(notification_queue.size() > 0 && pickup_status == OFF 
+                                   && dialog_mode != NOTIFICATION)
+  {
+    display_font.setPointSize(12);
+    bool done = false;
+    short index = 0;
+
+    while(!done && index < notification_queue.size())
+    {
+      Notification display_info = notification_queue[index];
+      
+      /* Categorize the notification, as pickup notification */
+      if(display_info.thing_image != 0)
+      {
+        QFontMetrics font_details(display_font);
+        QString multiplier = "x " + QString::number(display_info.thing_count);
+        
+        /* Start the sequence */
+        pickup_status = SHOWING;
+        
+        /* Set up animation */
+        pickup_offset = 0;
+        pickup_width = (kPICKUP_MARGIN << 1) 
+                     + display_info.thing_image->getImage().width() 
+                     + kPICKUP_TEXT_SPACE 
+                     + font_details.boundingRect(multiplier).width();
+        if(pickup_width > kPICKUP_WIDTH)
+          pickup_width = kPICKUP_WIDTH;
+        
+        /* Set up time shown */
+        pickup_time = display_info.time_visible;
+
+        done = true;
+      }
+      /* Otherwise, it's a text notification */
+      else if(dialog_mode == DISABLED)
+      {
+        dialog_mode = NOTIFICATION;
+    
+        /* Calculate the available space */
+        int width = dialog_display.getImage().width() - (kMARGIN_SIDES << 1);
+        if(width < 0)
+          width = 0;
+    
+        /* Calculate the display time if invalid */
+        if(display_info.time_visible <= 0)
+          dialog_time = ((display_info.text.count(" ") + 1) * kMSEC_PER_WORD) 
+                      + kMSEC_PER_WORD;
+        else
+          dialog_time = display_info.time_visible;
+    
+        /* Split the line */
+        dialog_text = lineSplitter(display_info.text, width, display_font);
+    
+        /* Initiate animation sequence */
+        initiateAnimation(display_font);
+    
+        done = true;
+      }
+      
+      /* Shift the index to the front if done and index is not 0 */
+      if(done && index > 0)
+        notification_queue.move(index, 0);
+
+      index++;
+    }
+    
+    if(done)
+      return true;
+  }
+  
+  return false;
 }
 
 /* Removes duplicates from the given qlist and returns it. Used in
@@ -134,7 +224,7 @@ void MapDialog::setupConversation()
   /* Split up the text as per the visible viewing area */
   if(conversation_info.next.size() > 1)
     txt_line = normal_font.elidedText(txt_line, Qt::ElideRight, txt_length);
-  display_text = lineSplitter(txt_line, txt_length, display_font);
+  dialog_text = lineSplitter(txt_line, txt_length, display_font);
 }
 
 /*============================================================================
@@ -181,39 +271,63 @@ bool MapDialog::initConversation(Conversation dialog_info)
   return false;
 }
 
-bool MapDialog::initNotification(QString notification, Frame* thing_image, 
-                                 int thing_count, int time_visible, 
+bool MapDialog::initNotification(QString notification, int time_visible, 
                                  bool single_line)
 {
-  if(!isBottomInUse() && isDialogImageSet())
+  if(isDialogImageSet() && !notification.isEmpty())
   {
-    dialog_mode = NOTIFICATION;
     display_font.setPointSize(12);
     QFontMetrics font_info(display_font);
     
     /* Calculate the available space */
-    int available_width = 
-                      dialog_display.getImage().width() - (kMARGIN_SIDES << 1);
-    if(available_width < 0)
-      available_width = 0;
+    int width = dialog_display.getImage().width() - (kMARGIN_SIDES << 1);
+    if(width < 0)
+      width = 0;
     
     /* Chop to single line if required */
     if(single_line)
-      notification = 
-            font_info.elidedText(notification, Qt::ElideRight, available_width);
+      notification = font_info.elidedText(notification, Qt::ElideRight, width);
+      
+    /* Set up the queue entry */
+    Notification queue_entry;
+    queue_entry.text = notification;
+    queue_entry.thing_image = 0;
+    queue_entry.thing_count = 0;
+    queue_entry.time_visible = time_visible;
     
-    /* Calculate the display time if invalid */
-    if(time_visible < 0)
-      display_time = ((notification.count(" ") + 1) * kMSEC_PER_WORD) 
-                   + kMSEC_PER_WORD;
+    /* Append to running queue */
+    notification_queue.append(queue_entry);
+
+    /* Setup the next notification, if possible */
+    initiateNextNotification();
+    
+    return true;
+  }
+  
+  return false;
+}
+
+bool MapDialog::initPickup(Frame* thing_image, int thing_count, 
+                           int time_visible)
+{
+  if(thing_image != 0 && !thing_image->getImage().isNull() && thing_count > 0)
+  {
+    /* Set up the queue entry */
+    Notification queue_entry;
+    queue_entry.text = "";
+    queue_entry.thing_image = thing_image;
+    queue_entry.thing_count = thing_count;
+    
+    if(time_visible <= 0)
+      queue_entry.time_visible = kPICKUP_DEFAULT_TIME;
     else
-      display_time = time_visible;
+      queue_entry.time_visible = time_visible;
     
-    /* Split the line */
-    display_text = lineSplitter(notification, available_width, display_font);
+    /* Append to running queue */
+    notification_queue.append(queue_entry);
     
-    /* Initiate animation sequence */
-    initiateAnimation(display_font);
+    /* Setup the next notification, if possible */
+    initiateNextNotification();
     
     return true;
   }
@@ -257,9 +371,9 @@ void MapDialog::keyPress(QKeyEvent* event)
       if(isInConversation() && dialog_status == ON)
       {
         /* Check for dialog status and shift to next conversation */
-        if((display_index + kMAX_LINES) < display_text.size())
+        if((dialog_text_index + kMAX_LINES) < dialog_text.size())
         {
-          display_index += kMAX_LINES;
+          dialog_text_index += kMAX_LINES;
         }
         else if(conversation_info.next.size() == 0)
         {
@@ -269,15 +383,15 @@ void MapDialog::keyPress(QKeyEvent* event)
         else
         {
           bool multiple = (conversation_info.next.size() > 1);
-          conversation_info = conversation_info.next[display_option];
+          conversation_info = conversation_info.next[dialog_option];
               
           /* Skip the option if it was an option case */
           if(multiple)
             conversation_info = conversation_info.next[0];
 
-          display_index = 0;
-          display_option = 0;
-
+          dialog_option = 0;
+          dialog_text_index = 0;
+          
           /* Finalize the conversation change */
           setupConversation();
         }
@@ -286,21 +400,21 @@ void MapDialog::keyPress(QKeyEvent* event)
     /* Go back an option selector */
     else if(event->key() == Qt::Key_Up)
     {
-      display_option--;
-      if(display_option < 0)
+      dialog_option--;
+      if(dialog_option < 0)
       {
         if(conversation_info.next.size() > 0)
-          display_option = conversation_info.next.size() - 1;
+          dialog_option = conversation_info.next.size() - 1;
         else
-          display_option = 0;
+          dialog_option = 0;
       }
     }
     /* Go to next option selector */
     else if(event->key() == Qt::Key_Down)
     {
-      display_option++;
-      if(display_option >= conversation_info.next.size())
-        display_option = 0;
+      dialog_option++;
+      if(dialog_option >= conversation_info.next.size())
+        dialog_option = 0;
     }
   }
 }
@@ -335,10 +449,10 @@ bool MapDialog::paintGl(QGLWidget* painter)
       short y2 = y1 + kMARGIN_TOP + font_info.ascent();
       glColor4f(1.0, 1.0, 1.0, paused_opacity);
       
-      for(int i = 0; i < display_text.size(); i++)
+      for(int i = 0; i < dialog_text.size(); i++)
       {
-        x2 = x1 + ((width - font_info.width(display_text[i])) >> 1);
-        painter->renderText(x2, y2, display_text[i], display_font);
+        x2 = x1 + ((width - font_info.width(dialog_text[i])) >> 1);
+        painter->renderText(x2, y2, dialog_text[i], display_font);
         y2 += font_info.descent() + kFONT_SPACING + font_info.ascent();
       }
     }
@@ -418,24 +532,24 @@ bool MapDialog::paintGl(QGLWidget* painter)
         /* Draw the conversational text */
         int txt_y = y1 + (kMARGIN_TOP << 1) + font_info.ascent();
         display_font.setPointSize(kFONT_SIZE);
-        int max_lines = display_index + kMAX_LINES;
-        if(max_lines > display_text.size())
-          max_lines = display_text.size();
+        int max_lines = dialog_text_index + kMAX_LINES;
+        if(max_lines > dialog_text.size())
+          max_lines = dialog_text.size();
 
         glColor4f(1.0, 1.0, 1.0, paused_opacity);
-        for(int i = display_index; i < max_lines; i++)
+        for(int i = dialog_text_index; i < max_lines; i++)
         {
           painter->renderText(x1 + kMARGIN_SIDES, txt_y, 
-                              display_text[i], display_font);
+                              dialog_text[i], display_font);
           txt_y += (kFONT_SPACING << 1) + font_info.height();
         }
 
         /* The last conversational text line, based on long sets */
         glColor4f(1.0, 1.0, 1.0, 0.25 * paused_opacity);
-        if(display_text.size() > max_lines)
+        if(dialog_text.size() > max_lines)
         {
           painter->renderText(x1 + kMARGIN_SIDES, txt_y, 
-                              display_text[max_lines], display_font);
+                              dialog_text[max_lines], display_font);
           txt_y += (kFONT_SPACING << 1) + font_info.height();
         }
 
@@ -447,7 +561,7 @@ bool MapDialog::paintGl(QGLWidget* painter)
             int option_x = x1 + kMARGIN_SIDES + kOPTION_OFFSET;
 
             /* Paint the bounding box portion */
-            if(display_option == i)
+            if(dialog_option == i)
             {
               int margin = kOPTION_MARGIN;
               QRect option = 
@@ -475,7 +589,7 @@ bool MapDialog::paintGl(QGLWidget* painter)
 
         /* Draw triangle cursor */
         if(conversation_info.next.size() <= 1 && 
-           (display_index + kMAX_LINES) >= display_text.size())
+           (dialog_text_index + kMAX_LINES) >= dialog_text.size())
         {
           int cursor_x = (1216 >> 1);
           glLineWidth(2);
@@ -491,17 +605,6 @@ bool MapDialog::paintGl(QGLWidget* painter)
       }
       display_font.setBold(false);
     }
-   
-    /* Testing the notification display */
-    //Frame notification_1("sprites/Map/Overlay/notification_1.png");
-    //notification_1.initializeGl(); // 1039, 1100
-    //notification_1.paintGl(1100.0, 25.0, 177, 148, paused_opacity);
-    Frame notification_2("sprites/Map/Overlay/notification_2.png");
-    notification_2.initializeGl(); // 1060, 1117
-    notification_2.paintGl(1060.0, 50.0, 156, 110, paused_opacity);
-    //Frame notification_3("sprites/Map/Overlay/notification_3.png");
-    //notification_3.initializeGl(); // 1061, 1118
-    //notification_3.paintGl(1061.0, 50.0, 155, 108, paused_opacity);
 
     /* Multiple side by side painting - test */
 /*    usable_font.setBold(false);
@@ -515,6 +618,67 @@ bool MapDialog::paintGl(QGLWidget* painter)
                         300 + font_details.height(), "Running.", usable_font);*/
   }
 
+  /* Draw the pickup notification portion */
+  if(pickup_status != OFF)
+  {
+    /* Draw image display */
+    int pickup_x = 1216 - pickup_offset;
+    int pickup_y = kPICKUP_Y;
+    
+    /* The background draw */
+    glColor4f(0.0, 0.0, 0.0, 0.65 * paused_opacity);  
+    glBegin(GL_POLYGON);
+      glVertex2f(pickup_x + kPICKUP_ANGLE_X, pickup_y);
+      glVertex2f(pickup_x, pickup_y + kPICKUP_ANGLE_Y);
+      glVertex2f(pickup_x, pickup_y + kPICKUP_HEIGHT - kPICKUP_ANGLE_Y);
+      glVertex2f(pickup_x + kPICKUP_ANGLE_X, pickup_y + kPICKUP_HEIGHT);
+      glVertex2f(pickup_x + kPICKUP_WIDTH, pickup_y + kPICKUP_HEIGHT);
+      glVertex2f(pickup_x + kPICKUP_WIDTH, pickup_y);
+    glEnd();
+    
+    /* The outline draw */
+    glColor4f(1.0, 1.0, 1.0, paused_opacity);
+    glLineWidth(4);
+    glBegin(GL_LINES);
+      glVertex2f(pickup_x + kPICKUP_ANGLE_X, pickup_y);
+      glVertex2f(pickup_x, pickup_y + kPICKUP_ANGLE_Y);
+      glVertex2f(pickup_x, pickup_y + kPICKUP_HEIGHT - kPICKUP_ANGLE_Y);
+      glVertex2f(pickup_x + kPICKUP_ANGLE_X, pickup_y + kPICKUP_HEIGHT);
+    glEnd();
+    glLineWidth(3);
+    glBegin(GL_LINES);
+      glVertex2f(pickup_x + kPICKUP_ANGLE_X, pickup_y);
+      glVertex2f(pickup_x + kPICKUP_WIDTH, pickup_y);
+      glVertex2f(pickup_x + 1, pickup_y + kPICKUP_ANGLE_Y - 1);
+      glVertex2f(pickup_x + 1, pickup_y + kPICKUP_HEIGHT - kPICKUP_ANGLE_Y + 1);
+      glVertex2f(pickup_x + kPICKUP_ANGLE_X, pickup_y + kPICKUP_HEIGHT);
+      glVertex2f(pickup_x + kPICKUP_WIDTH, pickup_y + kPICKUP_HEIGHT);
+    glEnd();
+    
+    /* Paint the tile portion */
+    Frame* tile = notification_queue[0].thing_image;
+    short tile_height = 0;
+    short tile_width = 0;
+    if(tile != 0)
+    {
+      tile_height = tile->getImage().height();
+      tile_width = tile->getImage().width();
+    }
+    tile->paintGl(pickup_x + kPICKUP_MARGIN, pickup_y + kPICKUP_MARGIN,
+                  tile_width, tile_height, paused_opacity);
+    
+    /* Paint the text portion */
+    display_font.setPointSize(12);
+    display_font.setBold(true);
+    QFontMetrics font_info(display_font);
+    QString multiplier = "x " 
+                       + QString::number(notification_queue[0].thing_count);
+    int text_x = pickup_x + kPICKUP_MARGIN + tile_width + kPICKUP_TEXT_SPACE;
+    int text_y = pickup_y + (kPICKUP_HEIGHT >> 1) + (font_info.ascent() >> 2);
+    painter->renderText(text_x, text_y, multiplier, display_font);
+    display_font.setBold(false);    
+  }
+  
   /* Update from events that occurred during running */
   //if(display_text_update)
   //{
@@ -568,6 +732,12 @@ void MapDialog::update(float cycle_time)
         animation_offset = 0;
       else if(dialog_status == SHOWING)
         animation_offset = animation_height;
+        
+      /* Complete the pickup animation sequence */
+      if(pickup_status == HIDING)
+        pickup_offset = 0;
+      else if(pickup_status == SHOWING)
+        pickup_offset = pickup_width;
     }
   }
   else if(!paused && paused_opacity != kPAUSE_OPACITY_MAX)
@@ -586,9 +756,16 @@ void MapDialog::update(float cycle_time)
       animation_offset -= cycle_time * height / kSHIFT_TIME;
       if(animation_offset <= 0)
       {
-        dialog_mode = DISABLED;
         dialog_status = OFF;
         animation_offset = 0;
+        
+        /* If notification, remove the first ptr */
+        if(dialog_mode == NOTIFICATION)
+          notification_queue.removeFirst();
+        dialog_mode = DISABLED;
+
+        /* Set up the next notification, if there is one in the queue */
+        initiateNextNotification();
       }
     }
     /* If showing, shift the display onto the screen */
@@ -607,14 +784,15 @@ void MapDialog::update(float cycle_time)
       /* This controls how long the notification box is displayed */
       if(dialog_mode == NOTIFICATION)
       {
-        display_time -= cycle_time;
-        if(display_time < 0)
+        dialog_time -= cycle_time;
+        if(dialog_time < 0)
           dialog_status = HIDING;
       }
       /* This controls the bouncing cursor at the bottom of each conversational
        * box to signal going to the next set */
       else if(isInConversation())
       {
+        /* Up motion */
         if(animation_cursor_up)
         {
           animation_cursor += cycle_time * kCURSOR_NEXT_SIZE / kCURSOR_NEXT_TIME;
@@ -624,6 +802,7 @@ void MapDialog::update(float cycle_time)
             animation_cursor_up = false;
           }
         }
+        /* Down motion */
         else
         {
           animation_cursor -= cycle_time * kCURSOR_NEXT_SIZE / kCURSOR_NEXT_TIME;
@@ -634,6 +813,40 @@ void MapDialog::update(float cycle_time)
           }
         }
       }
+    }
+    
+    /* The portion that updates the pickup notification - if hiding */
+    if(pickup_status == HIDING)
+    {
+      pickup_offset -= cycle_time * kPICKUP_WIDTH / kSHIFT_TIME;
+      if(pickup_offset <= 0)
+      {
+        pickup_status = OFF;
+        pickup_offset = 0;
+        
+        /* Remove from queue since completed */
+        notification_queue.removeFirst();
+        
+        /* Set up the next notification, if there is one in the queue */
+        initiateNextNotification();
+      }
+    }
+    /* If showing, shift it out until fully visible */
+    else if(pickup_status == SHOWING)
+    {
+      pickup_offset += cycle_time * kPICKUP_WIDTH / kSHIFT_TIME;
+      if(pickup_offset >= pickup_width)
+      {
+        pickup_status = ON;
+        pickup_offset = pickup_width;
+      }
+    }
+    /* If visible, display for the duration as set of the pickup time */
+    else if(pickup_status == ON)
+    {
+      pickup_time -= cycle_time;
+      if(pickup_time < 0)
+        pickup_status = HIDING;
     }
   }
 }

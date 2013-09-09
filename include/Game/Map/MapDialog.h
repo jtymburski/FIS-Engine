@@ -17,6 +17,15 @@
 #include "Game/Frame.h"
 #include "Game/Map/MapThing.h"
 
+/* Notification queue structure */
+struct Notification
+{
+  QString text;
+  Frame* thing_image;
+  short thing_count;
+  short time_visible;
+};
+
 class MapDialog : public QObject
 {
   Q_OBJECT
@@ -53,33 +62,30 @@ private:
   /* The currently running conversation information */
   Conversation conversation_info;
 
-  /* The conversational display frame */
+  /* Bottom dialog information, for displaying */
   Frame dialog_display;
-
-  /* The mode that the dialog is running in */
   DialogMode dialog_mode;
-  
-  /* Logic if the conversation is taking place */
+  short dialog_option;
   DialogStatus dialog_status;
-
-  /* The display text index, the first line currently being shown */
-  short display_index;
+  QList<QString> dialog_text;
+  short dialog_text_index;
+  short dialog_time;
 
   /* The font information to render the dialog to */
   QFont display_font;
- 
-  /* The display option index, for option based selection */
-  short display_option;
 
-  /* The display text, inside the visible dialog */
-  QList<QString> display_text;
+  /* The queue of all notifications available */
+  QList<Notification> notification_queue;
   
-  /* A time counter, for determining how long things have been displayed */
-  short display_time;
-
   /* The pause indication, if control has been paused */
   bool paused;
   float paused_opacity;
+  
+  /* The top right notification data to be displayed - from a pickup */
+  short pickup_offset;
+  DialogStatus pickup_status;
+  short pickup_time;
+  short pickup_width;
   
   /* The bounding box for the popout at the top right of screen (On bubby
     pickup for example) */
@@ -93,11 +99,11 @@ private:
   /* -------------------------- Constants ------------------------- */
   const static short kCURSOR_NEXT_SIZE; /* The size of the next shifter */
   const static short kCURSOR_NEXT_TIME; /* Time it takes to animate */
-  const static short kFONT_SIZE;   /* The font size, used for rendering */
+  const static short kFONT_SIZE; /* The font size, used for rendering */
   const static short kFONT_SPACING; /* The spacing between lines of font */
   const static short kMARGIN_SIDES; /* The left and right margin size */
-  const static short kMARGIN_TOP;   /* The top margin size */
-  const static short kMAX_LINES;    /* The max number of lines in display */
+  const static short kMARGIN_TOP; /* The top margin size */
+  const static short kMAX_LINES; /* The max number of lines in display */
   const static short kMSEC_PER_WORD; /* The read speed per word */
   const static short kNAME_BOX_ANGLE_X; /* Offset X on angle for name box */
   const static short kNAME_BOX_HEIGHT; /* Height of the name box */
@@ -107,6 +113,14 @@ private:
   const static short kOPTION_OFFSET; /* The option display offset in pixels */
   const static float kPAUSE_OPACITY_DIFF; /* Delta when changing opacity */
   const static float kPAUSE_OPACITY_MAX; /* Max opacity once pause has ended */
+  const static short kPICKUP_ANGLE_X; /* The angled portion x width */
+  const static short kPICKUP_ANGLE_Y; /* The angled portion y width */
+  const static short kPICKUP_DEFAULT_TIME; /* The default animation time */
+  const static short kPICKUP_HEIGHT; /* The overall full painted height */
+  const static short kPICKUP_MARGIN; /* The margin between the tile and edge */
+  const static short kPICKUP_TEXT_SPACE; /* The space between tile and text */
+  const static short kPICKUP_WIDTH; /* The overall full painted width */
+  const static short kPICKUP_Y; /* The top left y coordinate */
   const static short kSHIFT_TIME;  /* The time it takes to shift the display
                                       into view (in msec) */
 
@@ -123,6 +137,9 @@ private:
   
   /* Halts the dialog, if it's being shown or showing */
   void initiateAnimation(QFont display_font);
+  
+  /* Initiates the next notification, if there is a slot available */
+  bool initiateNextNotification();
   
   /* Removes duplicates from the given qlist and returns it. Used in
    * conjunction with "calculateThingList" */
@@ -154,10 +171,12 @@ public:
   bool initConversation(Conversation dialog_info);
 
   /* Initializes a notification, using a QString */
-  bool initNotification(QString notification = "", Frame* thing_image = 0, 
-                        int thing_count = 0, int time_visible = -1, 
+  bool initNotification(QString notification = "", int time_visible = -1, 
                         bool single_line = false);
 
+  bool initPickup(Frame* thing_image, int thing_count = 1, 
+                  int time_visible = -1);
+                  
   /* Returns if the dialog image has been set (and proper size) */
   bool isDialogImageSet();
 
