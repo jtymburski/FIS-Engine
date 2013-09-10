@@ -15,6 +15,8 @@ const short MapDialog::kFONT_SPACING = 10;
 const short MapDialog::kMARGIN_SIDES = 50;
 const short MapDialog::kMARGIN_TOP = 25;
 const short MapDialog::kMAX_LINES = 4;
+const short MapDialog::kMAX_OPTIONS = 3;
+const short MapDialog::kMIN_DISPLAY_TIME = 1000;
 const short MapDialog::kMSEC_PER_WORD = 333;
 const short MapDialog::kNAME_BOX_ANGLE_X = 42;
 const short MapDialog::kNAME_BOX_HEIGHT = 42;
@@ -47,13 +49,17 @@ MapDialog::MapDialog(QFont font)
   animation_offset = 0;
   dialog_mode = DISABLED;
   dialog_option = 0;
+  dialog_option_top = 0;
   dialog_status = OFF;
   dialog_text_index = 0;
   dialog_time = 0;
   paused = false;
   paused_opacity = kPAUSE_OPACITY_MAX;
   thing = 0;
-  
+ 
+  /* Conversation dialog initialization */
+  conversation_waiting = false;
+
   /* Pickup Notification parameters cleared */
   pickup_offset = 0;
   pickup_status = OFF;
@@ -167,16 +173,12 @@ bool MapDialog::initiateNextNotification()
         if(width < 0)
           width = 0;
     
-        /* Calculate the display time if invalid */
-        if(display_info.time_visible <= 0)
-          dialog_time = ((display_info.text.count(" ") + 1) * kMSEC_PER_WORD) 
-                      + kMSEC_PER_WORD;
-        else
-          dialog_time = display_info.time_visible;
-    
-        /* Split the line */
+        /* Split the line and set the time to display*/
         dialog_text = lineSplitter(display_info.text, width, display_font);
-    
+        dialog_time = display_info.time_visible;
+        if(dialog_time < kMIN_DISPLAY_TIME)
+          dialog_time = kMIN_DISPLAY_TIME;
+
         /* Initiate animation sequence */
         initiateAnimation(display_font);
     
@@ -206,6 +208,13 @@ QList<int> MapDialog::removeDuplicates(QList<int> duplicate_list)
 
 void MapDialog::setupConversation()
 {
+  /* Only operated on first running - gets thing data */
+  if(dialog_mode == DISABLED)
+  {
+    /* Acquire all the needed information about things in the conversation */
+    emit setThingData(removeDuplicates(calculateThingList(conversation_info)));
+  }
+
   /* Get and set up all the pertinent thing data */
   int img_width = 0;
   Frame* thing_frame = 0;
@@ -218,13 +227,26 @@ void MapDialog::setupConversation()
   display_font.setPointSize(kFONT_SIZE);
   QFontMetrics normal_font(display_font);
   int txt_length = dialog_display.getImage().width() - (kMARGIN_SIDES << 1) 
-                               - (img_width >> 1);
+                 - (img_width >> 1);
   QString txt_line = conversation_info.text;
 
   /* Split up the text as per the visible viewing area */
   if(conversation_info.next.size() > 1)
     txt_line = normal_font.elidedText(txt_line, Qt::ElideRight, txt_length);
   dialog_text = lineSplitter(txt_line, txt_length, display_font);
+
+  /* Clear the option pointers */
+  dialog_option = 0;
+  dialog_option_top = 0;
+
+  /* Only occurs on first time running - initiates animation sequence */
+  if(dialog_mode == DISABLED)
+  {
+    dialog_mode = CONVERSATION;
+
+    /* Initiate animation sequence */
+    initiateAnimation(display_font);
+  }
 }
 
 /*============================================================================
@@ -243,29 +265,21 @@ void MapDialog::setPaused(bool paused)
 
 bool MapDialog::initConversation(Conversation dialog_info)
 {
-  if(isDialogImageSet())
+  if(isDialogImageSet() && dialog_mode != CONVERSATION)
   {
+    conversation_info = dialog_info;
+
     if(dialog_mode == DISABLED)
     {
-      dialog_mode = CONVERSATION;
-      display_font.setPointSize(12);
-      conversation_info = dialog_info;
-
-      /* Acquire all the needed information about things in the conversation */
-      emit setThingData(removeDuplicates(calculateThingList(dialog_info)));
       setupConversation();
-    
-      /* Initiate animation sequence */
-      initiateAnimation(display_font);
-    
-      return true;
     }
     else if(dialog_mode == NOTIFICATION)
     {
-      // TODO: Make it a queue that ends the notification and then initiates
-      // conversation. However, this still keeps the image display notification
-      return false;
+      conversation_waiting = true;
+      dialog_status = HIDING;
     }
+
+    return true;
   }
   
   return false;
@@ -287,7 +301,12 @@ bool MapDialog::initNotification(QString notification, int time_visible,
     /* Chop to single line if required */
     if(single_line)
       notification = font_info.elidedText(notification, Qt::ElideRight, width);
-      
+          
+    /* Calculate the display time if invalid */
+    if(time_visible <= 0)
+      time_visible = ((notification.count(" ") + 1) * kMSEC_PER_WORD) 
+                      + kMSEC_PER_WORD;
+
     /* Set up the queue entry */
     Notification queue_entry;
     queue_entry.text = notification;
@@ -323,9 +342,21 @@ bool MapDialog::initPickup(Frame* thing_image, int thing_count,
     else
       queue_entry.time_visible = time_visible;
     
-    /* Append to running queue */
-    notification_queue.append(queue_entry);
-    
+    /* Insert into the running queue - ahead of messages */
+    if(notification_queue.size() == 0 || 
+       notification_queue.last().thing_image != 0)
+      notification_queue.append(queue_entry);
+    else
+    {
+      int index = 0;
+      if(dialog_mode == NOTIFICATION || pickup_status != OFF)
+        index = 1;
+      while(index < notification_queue.size() && 
+            notification_queue[index].thing_image != 0)
+        index++;
+      notification_queue.insert(index, queue_entry);
+    }
+
     /* Setup the next notification, if possible */
     initiateNextNotification();
     
@@ -402,19 +433,20 @@ void MapDialog::keyPress(QKeyEvent* event)
     {
       dialog_option--;
       if(dialog_option < 0)
-      {
-        if(conversation_info.next.size() > 0)
-          dialog_option = conversation_info.next.size() - 1;
-        else
-          dialog_option = 0;
-      }
+        dialog_option = 0;
+
+      if(dialog_option < dialog_option_top)
+        dialog_option_top = dialog_option;
     }
     /* Go to next option selector */
     else if(event->key() == Qt::Key_Down)
     {
       dialog_option++;
       if(dialog_option >= conversation_info.next.size())
-        dialog_option = 0;
+        dialog_option = conversation_info.next.size() - 1;
+
+      if(dialog_option >= (dialog_option_top + kMAX_OPTIONS))
+        dialog_option_top = dialog_option - kMAX_OPTIONS + 1;
     }
   }
 }
@@ -556,7 +588,8 @@ bool MapDialog::paintGl(QGLWidget* painter)
         /* Add the option text, if it's applicable */
         if(conversation_info.next.size() > 1)
         {
-          for(int i = 0; i < conversation_info.next.size(); i++)
+          for(int i = dialog_option_top; 
+              i < dialog_option_top + kMAX_OPTIONS; i++)
           {
             int option_x = x1 + kMARGIN_SIDES + kOPTION_OFFSET;
 
@@ -761,8 +794,26 @@ void MapDialog::update(float cycle_time)
         
         /* If notification, remove the first ptr */
         if(dialog_mode == NOTIFICATION)
-          notification_queue.removeFirst();
-        dialog_mode = DISABLED;
+        {
+          dialog_mode = DISABLED;
+
+          if(conversation_waiting)
+          {
+            if((notification_queue[0].time_visible >> 1) > dialog_time)
+              notification_queue[0].time_visible = 
+                                     (notification_queue[0].time_visible >> 1);
+            setupConversation();
+            conversation_waiting = false;
+          }
+          else
+          {
+            notification_queue.removeFirst();
+          }
+        }
+        else
+        {
+          dialog_mode = DISABLED;
+        }
 
         /* Set up the next notification, if there is one in the queue */
         initiateNextNotification();
@@ -795,7 +846,8 @@ void MapDialog::update(float cycle_time)
         /* Up motion */
         if(animation_cursor_up)
         {
-          animation_cursor += cycle_time * kCURSOR_NEXT_SIZE / kCURSOR_NEXT_TIME;
+          animation_cursor += cycle_time * kCURSOR_NEXT_SIZE 
+                                         / kCURSOR_NEXT_TIME;
           if(animation_cursor >= kCURSOR_NEXT_SIZE)
           {
             animation_cursor = kCURSOR_NEXT_SIZE;
@@ -805,7 +857,8 @@ void MapDialog::update(float cycle_time)
         /* Down motion */
         else
         {
-          animation_cursor -= cycle_time * kCURSOR_NEXT_SIZE / kCURSOR_NEXT_TIME;
+          animation_cursor -= cycle_time * kCURSOR_NEXT_SIZE 
+                                         / kCURSOR_NEXT_TIME;
           if(animation_cursor <= 0)
           {
             animation_cursor = 0;

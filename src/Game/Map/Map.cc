@@ -291,6 +291,7 @@ void Map::keyPressEvent(QKeyEvent* key_event)
   else if(key_event->key() == Qt::Key_F2)
   {
     Frame* image = new Frame("sprites/Battle/Bubbies/blazing_t1.png");
+    //Frame* image = new Frame("sprites/Battle/Battle_Persons/auroraagent.png");
     image->initializeGl();
     map_dialog.initPickup(image, 1);
   }
@@ -368,7 +369,7 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     test3.thing_id = 24;
     test3.next.append(test2);
     test4.category = EnumDb::TEXT;
-    test4.text = "Option 1";
+    test4.text = "Option 1 - This goes on and on and on and on and on and lorem ipsum.";
     test4.thing_id = -1;
     test4.next.append(test2);
     test5.category = EnumDb::TEXT;
@@ -376,6 +377,14 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     test5.thing_id = -1;
     test5.next.append(test3);
     test1.next.append(test4);
+    test1.next.append(test5);
+    test4.text = "Option 3";
+    test1.next.append(test4);
+    test5.text = "Option 4";
+    test1.next.append(test5);
+    test4.text = "Option 5";
+    test1.next.append(test4);
+    test5.text = "Option 6";
     test1.next.append(test5);
     /*test3.next.append(test4);
     test1.next.append(test3);

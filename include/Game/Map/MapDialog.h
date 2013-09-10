@@ -61,11 +61,13 @@ private:
  
   /* The currently running conversation information */
   Conversation conversation_info;
+  bool conversation_waiting;
 
   /* Bottom dialog information, for displaying */
   Frame dialog_display;
   DialogMode dialog_mode;
   short dialog_option;
+  short dialog_option_top;
   DialogStatus dialog_status;
   QList<QString> dialog_text;
   short dialog_text_index;
@@ -87,10 +89,6 @@ private:
   short pickup_time;
   short pickup_width;
   
-  /* The bounding box for the popout at the top right of screen (On bubby
-    pickup for example) */
-//  QRect popoutbox;
-
   /* The data for the associated things. This is pertinent for the
    * conversation access and anything displayed */
   MapThing* thing;
@@ -104,6 +102,8 @@ private:
   const static short kMARGIN_SIDES; /* The left and right margin size */
   const static short kMARGIN_TOP; /* The top margin size */
   const static short kMAX_LINES; /* The max number of lines in display */
+  const static short kMAX_OPTIONS; /* The max number of options displayed */
+  const static short kMIN_DISPLAY_TIME; /* The minimum notification display */
   const static short kMSEC_PER_WORD; /* The read speed per word */
   const static short kNAME_BOX_ANGLE_X; /* Offset X on angle for name box */
   const static short kNAME_BOX_HEIGHT; /* Height of the name box */
