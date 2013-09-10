@@ -369,7 +369,7 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     test3.thing_id = 24;
     test3.next.append(test2);
     test4.category = EnumDb::TEXT;
-    test4.text = "Option 1 - This goes on and on and on and on and on and lorem ipsum.";
+    test4.text = "Option 1 - This goes on and on and on and on and on and lorem ipsum. This is way too long to be an option. Loser";
     test4.thing_id = -1;
     test4.next.append(test2);
     test5.category = EnumDb::TEXT;

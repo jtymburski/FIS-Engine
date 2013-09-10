@@ -57,7 +57,7 @@ private:
   float animation_cursor;
   bool animation_cursor_up;
   short animation_height;
-  short animation_offset;
+  float animation_offset;
  
   /* The currently running conversation information */
   Conversation conversation_info;
@@ -79,12 +79,15 @@ private:
   /* The queue of all notifications available */
   QList<Notification> notification_queue;
   
+  /* The list of available options, being printed out */
+  QList<QString> options_text;
+  
   /* The pause indication, if control has been paused */
   bool paused;
   float paused_opacity;
   
   /* The top right notification data to be displayed - from a pickup */
-  short pickup_offset;
+  float pickup_offset;
   DialogStatus pickup_status;
   short pickup_time;
   short pickup_width;
@@ -119,8 +122,10 @@ private:
   const static short kPICKUP_HEIGHT; /* The overall full painted height */
   const static short kPICKUP_MARGIN; /* The margin between the tile and edge */
   const static short kPICKUP_TEXT_SPACE; /* The space between tile and text */
-  const static short kPICKUP_WIDTH; /* The overall full painted width */
   const static short kPICKUP_Y; /* The top left y coordinate */
+  const static short kSCROLL_CIRCLE_RADIUS; /* Circle radius, in pixels */
+  const static short kSCROLL_OFFSET; /* The offset for scrollbar off of text */
+  const static short kSCROLL_TRIANGLE_HEIGHT; /* Triangle pixel height */
   const static short kSHIFT_TIME;  /* The time it takes to shift the display
                                       into view (in msec) */
 
@@ -181,9 +186,9 @@ public:
   bool isDialogImageSet();
 
   /* Some status checks, of the state of the class */
+  bool isDialogInUse();
   bool isInConversation();
-  bool isBottomInUse();
-  bool isSideInUse();
+  bool isPickupInUse();
 
   /* Returns if the dialog class is paused */
   bool isPaused();

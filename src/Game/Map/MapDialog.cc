@@ -32,9 +32,11 @@ const short MapDialog::kPICKUP_DEFAULT_TIME = 5000;
 const short MapDialog::kPICKUP_HEIGHT = 104;
 const short MapDialog::kPICKUP_MARGIN = 20;
 const short MapDialog::kPICKUP_TEXT_SPACE = 10;
-const short MapDialog::kPICKUP_WIDTH = 156;
 const short MapDialog::kPICKUP_Y = 50;
-const short MapDialog::kSHIFT_TIME = 750;
+const short MapDialog::kSCROLL_CIRCLE_RADIUS = 3;
+const short MapDialog::kSCROLL_OFFSET = 6;
+const short MapDialog::kSCROLL_TRIANGLE_HEIGHT = 4;
+const short MapDialog::kSHIFT_TIME = 75;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -155,8 +157,6 @@ bool MapDialog::initiateNextNotification()
                      + display_info.thing_image->getImage().width() 
                      + kPICKUP_TEXT_SPACE 
                      + font_details.boundingRect(multiplier).width();
-        if(pickup_width > kPICKUP_WIDTH)
-          pickup_width = kPICKUP_WIDTH;
         
         /* Set up time shown */
         pickup_time = display_info.time_visible;
@@ -226,15 +226,26 @@ void MapDialog::setupConversation()
   /* Now work on the text length vs. viewable area */
   display_font.setPointSize(kFONT_SIZE);
   QFontMetrics normal_font(display_font);
-  int txt_length = dialog_display.getImage().width() - (kMARGIN_SIDES << 1) 
+  int txt_length = dialog_display.getImage().width() - kMARGIN_SIDES
                  - (img_width >> 1);
+  if((img_width >> 1) < kMARGIN_SIDES)
+    txt_length -= kMARGIN_SIDES;
   QString txt_line = conversation_info.text;
 
   /* Split up the text as per the visible viewing area */
   if(conversation_info.next.size() > 1)
+  {
     txt_line = normal_font.elidedText(txt_line, Qt::ElideRight, txt_length);
-  dialog_text = lineSplitter(txt_line, txt_length, display_font);
 
+    /* Fill the options */
+    int options_length = txt_length - kOPTION_OFFSET;
+    options_text.clear();
+    for(int i = 0; i < conversation_info.next.size(); i++)
+      options_text.append(normal_font.elidedText(
+               conversation_info.next[i].text, Qt::ElideRight, options_length));
+  }
+  dialog_text = lineSplitter(txt_line, txt_length, display_font);
+  
   /* Clear the option pointers */
   dialog_option = 0;
   dialog_option_top = 0;
@@ -371,19 +382,19 @@ bool MapDialog::isDialogImageSet()
   return dialog_display.isImageSet();
 }
   
+bool MapDialog::isDialogInUse()
+{
+  return (dialog_mode != DISABLED);
+}
+
 bool MapDialog::isInConversation()
 {
   return (dialog_mode == CONVERSATION);
 }
 
-bool MapDialog::isBottomInUse()
+bool MapDialog::isPickupInUse()
 {
-  return (dialog_mode != DISABLED);
-}
-
-bool MapDialog::isSideInUse()
-{
-  return false; // TODO
+  return (pickup_status != OFF);
 }
 
 bool MapDialog::isPaused()
@@ -457,7 +468,6 @@ void MapDialog::keyRelease(QKeyEvent* event)
   (void)event;
 }
 
-// TODO: Transition elements of conversation
 bool MapDialog::paintGl(QGLWidget* painter)
 {
   if(dialog_status != OFF)
@@ -588,17 +598,17 @@ bool MapDialog::paintGl(QGLWidget* painter)
         /* Add the option text, if it's applicable */
         if(conversation_info.next.size() > 1)
         {
+          short arrow_y = txt_y - kSCROLL_OFFSET;
+          int option_x = x1 + kMARGIN_SIDES + kOPTION_OFFSET;
+          
           for(int i = dialog_option_top; 
               i < dialog_option_top + kMAX_OPTIONS; i++)
           {
-            int option_x = x1 + kMARGIN_SIDES + kOPTION_OFFSET;
-
             /* Paint the bounding box portion */
             if(dialog_option == i)
             {
               int margin = kOPTION_MARGIN;
-              QRect option = 
-                  font_info.boundingRect(conversation_info.next[i].text);
+              QRect option = font_info.boundingRect(options_text[i]);
               glColor4f(0.0, 0.0, 0.0, paused_opacity);
               glBegin(GL_QUADS);
                 glVertex3f(option_x + option.x() - margin, 
@@ -614,9 +624,101 @@ bool MapDialog::paintGl(QGLWidget* painter)
 
             /* Paint the text portion */
             glColor4f(1.0, 1.0, 1.0, paused_opacity);
-            painter->renderText(option_x, txt_y, 
-                                conversation_info.next[i].text, display_font);
+            painter->renderText(option_x, txt_y, options_text[i], display_font);
             txt_y += (kFONT_SPACING << 1) + font_info.height();
+          }
+          
+          /* Paint the scrolling arrows */
+          if(conversation_info.next.size() > kMAX_OPTIONS)
+          {
+            glColor4f(1.0, 1.0, 1.0, 0.5 * paused_opacity);
+            option_x -= (kOPTION_OFFSET >> 1);
+            
+            /* The top indicator */
+            if(dialog_option_top == 0)
+            {
+              short edge_width = (kSCROLL_CIRCLE_RADIUS >> 1);
+              short inner_radius = kSCROLL_CIRCLE_RADIUS - 1;
+              
+              glBegin(GL_QUADS);
+                glVertex2f(option_x - inner_radius, arrow_y - inner_radius);
+                glVertex2f(option_x - inner_radius, arrow_y + inner_radius);
+                glVertex2f(option_x + inner_radius, arrow_y + inner_radius);
+                glVertex2f(option_x + inner_radius, arrow_y - inner_radius);
+                
+                glVertex2f(option_x - edge_width, 
+                           arrow_y - kSCROLL_CIRCLE_RADIUS);
+                glVertex2f(option_x - edge_width, 
+                           arrow_y + kSCROLL_CIRCLE_RADIUS);
+                glVertex2f(option_x + edge_width, 
+                           arrow_y + kSCROLL_CIRCLE_RADIUS);
+                glVertex2f(option_x + edge_width, 
+                           arrow_y - kSCROLL_CIRCLE_RADIUS);
+
+                glVertex2f(option_x - kSCROLL_CIRCLE_RADIUS, 
+                           arrow_y - edge_width);
+                glVertex2f(option_x - kSCROLL_CIRCLE_RADIUS, 
+                           arrow_y + edge_width);
+                glVertex2f(option_x + kSCROLL_CIRCLE_RADIUS, 
+                           arrow_y + edge_width);
+                glVertex2f(option_x + kSCROLL_CIRCLE_RADIUS, 
+                           arrow_y - edge_width);
+              glEnd();
+            }
+            else
+            {
+              glBegin(GL_TRIANGLES);
+                glVertex2f(option_x, arrow_y - kSCROLL_TRIANGLE_HEIGHT);
+                glVertex2f(option_x - kSCROLL_TRIANGLE_HEIGHT, 
+                           arrow_y + kSCROLL_TRIANGLE_HEIGHT);
+                glVertex2f(option_x + kSCROLL_TRIANGLE_HEIGHT, 
+                           arrow_y + kSCROLL_TRIANGLE_HEIGHT);
+              glEnd();
+            }
+              
+            /* The bottom indicator */
+            arrow_y += ((kFONT_SPACING << 1) + font_info.height()) << 1;
+            if((dialog_option_top + kMAX_OPTIONS) == 
+                                                conversation_info.next.size())
+            {
+              short edge_width = (kSCROLL_CIRCLE_RADIUS >> 1);
+              short inner_radius = kSCROLL_CIRCLE_RADIUS - 1;
+              
+              glBegin(GL_QUADS);
+                glVertex2f(option_x - inner_radius, arrow_y - inner_radius);
+                glVertex2f(option_x - inner_radius, arrow_y + inner_radius);
+                glVertex2f(option_x + inner_radius, arrow_y + inner_radius);
+                glVertex2f(option_x + inner_radius, arrow_y - inner_radius);
+                
+                glVertex2f(option_x - edge_width, 
+                           arrow_y - kSCROLL_CIRCLE_RADIUS);
+                glVertex2f(option_x - edge_width, 
+                           arrow_y + kSCROLL_CIRCLE_RADIUS);
+                glVertex2f(option_x + edge_width, 
+                           arrow_y + kSCROLL_CIRCLE_RADIUS);
+                glVertex2f(option_x + edge_width, 
+                           arrow_y - kSCROLL_CIRCLE_RADIUS);
+
+                glVertex2f(option_x - kSCROLL_CIRCLE_RADIUS, 
+                           arrow_y - edge_width);
+                glVertex2f(option_x - kSCROLL_CIRCLE_RADIUS, 
+                           arrow_y + edge_width);
+                glVertex2f(option_x + kSCROLL_CIRCLE_RADIUS, 
+                           arrow_y + edge_width);
+                glVertex2f(option_x + kSCROLL_CIRCLE_RADIUS, 
+                           arrow_y - edge_width);
+              glEnd();
+            }
+            else
+            {
+              glBegin(GL_TRIANGLES);
+                glVertex2f(option_x - kSCROLL_TRIANGLE_HEIGHT, 
+                           arrow_y - kSCROLL_TRIANGLE_HEIGHT);
+                glVertex2f(option_x, arrow_y + kSCROLL_TRIANGLE_HEIGHT);
+                glVertex2f(option_x + kSCROLL_TRIANGLE_HEIGHT, 
+                           arrow_y - kSCROLL_TRIANGLE_HEIGHT);
+              glEnd();
+            }
           }
         }
 
@@ -629,10 +731,10 @@ bool MapDialog::paintGl(QGLWidget* painter)
           glColor4f(1.0, 1.0, 1.0, paused_opacity);
           glBegin(GL_LINE_LOOP);
             glVertex2f(cursor_x - kCURSOR_NEXT_SIZE, 
-                       y1 + height - kCURSOR_NEXT_SIZE - animation_cursor);
+                       y1 + height - kCURSOR_NEXT_SIZE - (int)animation_cursor);
             glVertex2f(cursor_x + kCURSOR_NEXT_SIZE, 
-                       y1 + height - kCURSOR_NEXT_SIZE - animation_cursor);
-            glVertex2f(cursor_x, y1 + height - animation_cursor);
+                       y1 + height - kCURSOR_NEXT_SIZE - (int)animation_cursor);
+            glVertex2f(cursor_x, y1 + height - (int)animation_cursor);
           glEnd();
         }
       }
@@ -654,41 +756,7 @@ bool MapDialog::paintGl(QGLWidget* painter)
   /* Draw the pickup notification portion */
   if(pickup_status != OFF)
   {
-    /* Draw image display */
-    int pickup_x = 1216 - pickup_offset;
-    int pickup_y = kPICKUP_Y;
-    
-    /* The background draw */
-    glColor4f(0.0, 0.0, 0.0, 0.65 * paused_opacity);  
-    glBegin(GL_POLYGON);
-      glVertex2f(pickup_x + kPICKUP_ANGLE_X, pickup_y);
-      glVertex2f(pickup_x, pickup_y + kPICKUP_ANGLE_Y);
-      glVertex2f(pickup_x, pickup_y + kPICKUP_HEIGHT - kPICKUP_ANGLE_Y);
-      glVertex2f(pickup_x + kPICKUP_ANGLE_X, pickup_y + kPICKUP_HEIGHT);
-      glVertex2f(pickup_x + kPICKUP_WIDTH, pickup_y + kPICKUP_HEIGHT);
-      glVertex2f(pickup_x + kPICKUP_WIDTH, pickup_y);
-    glEnd();
-    
-    /* The outline draw */
-    glColor4f(1.0, 1.0, 1.0, paused_opacity);
-    glLineWidth(4);
-    glBegin(GL_LINES);
-      glVertex2f(pickup_x + kPICKUP_ANGLE_X, pickup_y);
-      glVertex2f(pickup_x, pickup_y + kPICKUP_ANGLE_Y);
-      glVertex2f(pickup_x, pickup_y + kPICKUP_HEIGHT - kPICKUP_ANGLE_Y);
-      glVertex2f(pickup_x + kPICKUP_ANGLE_X, pickup_y + kPICKUP_HEIGHT);
-    glEnd();
-    glLineWidth(3);
-    glBegin(GL_LINES);
-      glVertex2f(pickup_x + kPICKUP_ANGLE_X, pickup_y);
-      glVertex2f(pickup_x + kPICKUP_WIDTH, pickup_y);
-      glVertex2f(pickup_x + 1, pickup_y + kPICKUP_ANGLE_Y - 1);
-      glVertex2f(pickup_x + 1, pickup_y + kPICKUP_HEIGHT - kPICKUP_ANGLE_Y + 1);
-      glVertex2f(pickup_x + kPICKUP_ANGLE_X, pickup_y + kPICKUP_HEIGHT);
-      glVertex2f(pickup_x + kPICKUP_WIDTH, pickup_y + kPICKUP_HEIGHT);
-    glEnd();
-    
-    /* Paint the tile portion */
+    /* Get tile data  */
     Frame* tile = notification_queue[0].thing_image;
     short tile_height = 0;
     short tile_width = 0;
@@ -697,6 +765,45 @@ bool MapDialog::paintGl(QGLWidget* painter)
       tile_height = tile->getImage().height();
       tile_width = tile->getImage().width();
     }
+    
+    /* Get pickup general data for drawing */
+    int pickup_height = tile_height + (kPICKUP_MARGIN << 1);
+    if(pickup_height < kPICKUP_HEIGHT)
+      pickup_height = kPICKUP_HEIGHT;
+    int pickup_x = 1216 - pickup_offset;
+    int pickup_y = kPICKUP_Y;
+
+    /* The background draw */
+    glColor4f(0.0, 0.0, 0.0, 0.65 * paused_opacity);  
+    glBegin(GL_POLYGON);
+      glVertex2f(pickup_x + kPICKUP_ANGLE_X, pickup_y);
+      glVertex2f(pickup_x, pickup_y + kPICKUP_ANGLE_Y);
+      glVertex2f(pickup_x, pickup_y + pickup_height - kPICKUP_ANGLE_Y);
+      glVertex2f(pickup_x + kPICKUP_ANGLE_X, pickup_y + pickup_height);
+      glVertex2f(pickup_x + pickup_width, pickup_y + pickup_height);
+      glVertex2f(pickup_x + pickup_width, pickup_y);
+    glEnd();
+    
+    /* The outline draw */
+    glColor4f(1.0, 1.0, 1.0, paused_opacity);
+    glLineWidth(4);
+    glBegin(GL_LINES);
+      glVertex2f(pickup_x + kPICKUP_ANGLE_X, pickup_y);
+      glVertex2f(pickup_x, pickup_y + kPICKUP_ANGLE_Y);
+      glVertex2f(pickup_x, pickup_y + pickup_height - kPICKUP_ANGLE_Y);
+      glVertex2f(pickup_x + kPICKUP_ANGLE_X, pickup_y + pickup_height);
+    glEnd();
+    glLineWidth(3);
+    glBegin(GL_LINES);
+      glVertex2f(pickup_x + kPICKUP_ANGLE_X, pickup_y);
+      glVertex2f(pickup_x + pickup_width, pickup_y);
+      glVertex2f(pickup_x + 1, pickup_y + kPICKUP_ANGLE_Y - 1);
+      glVertex2f(pickup_x + 1, pickup_y + pickup_height - kPICKUP_ANGLE_Y + 1);
+      glVertex2f(pickup_x + kPICKUP_ANGLE_X, pickup_y + pickup_height);
+      glVertex2f(pickup_x + pickup_width, pickup_y + pickup_height);
+    glEnd();
+    
+    /* Paint the tile portion */
     tile->paintGl(pickup_x + kPICKUP_MARGIN, pickup_y + kPICKUP_MARGIN,
                   tile_width, tile_height, paused_opacity);
     
@@ -707,20 +814,12 @@ bool MapDialog::paintGl(QGLWidget* painter)
     QString multiplier = "x " 
                        + QString::number(notification_queue[0].thing_count);
     int text_x = pickup_x + kPICKUP_MARGIN + tile_width + kPICKUP_TEXT_SPACE;
-    int text_y = pickup_y + (kPICKUP_HEIGHT >> 1) + (font_info.ascent() >> 2);
+    int text_y = pickup_y + (pickup_height >> 1) + (font_info.ascent() >> 2);
     painter->renderText(text_x, text_y, multiplier, display_font);
     display_font.setBold(false);    
   }
   
-  /* Update from events that occurred during running */
-  //if(display_text_update)
-  //{
-  //  display_text = display_text_new;
-  //  display_text_new.clear();
-  //  display_text_update = false;
-  //}
-  
-  return true; // TODO??
+  return true;
 }
 
 bool MapDialog::setDialogImage(QString path)
@@ -786,11 +885,11 @@ void MapDialog::update(float cycle_time)
     /* If hiding, shift the display onto the screen */
     if(dialog_status == HIDING)
     {
-      animation_offset -= cycle_time * height / kSHIFT_TIME;
-      if(animation_offset <= 0)
+      animation_offset -= kSHIFT_TIME * 1.0 / cycle_time;
+      if(animation_offset <= 0.0)
       {
         dialog_status = OFF;
-        animation_offset = 0;
+        animation_offset = 0.0;
         
         /* If notification, remove the first ptr */
         if(dialog_mode == NOTIFICATION)
@@ -822,7 +921,7 @@ void MapDialog::update(float cycle_time)
     /* If showing, shift the display onto the screen */
     else if(dialog_status == SHOWING)
     {
-      animation_offset += cycle_time * height / kSHIFT_TIME;
+      animation_offset += kSHIFT_TIME * 1.0 / cycle_time;
       if(animation_offset >= animation_height)
       {
         dialog_status = ON;
@@ -871,11 +970,11 @@ void MapDialog::update(float cycle_time)
     /* The portion that updates the pickup notification - if hiding */
     if(pickup_status == HIDING)
     {
-      pickup_offset -= cycle_time * kPICKUP_WIDTH / kSHIFT_TIME;
-      if(pickup_offset <= 0)
+      pickup_offset -= kSHIFT_TIME * 1.0 / cycle_time;
+      if(pickup_offset <= 0.0)
       {
         pickup_status = OFF;
-        pickup_offset = 0;
+        pickup_offset = 0.0;
         
         /* Remove from queue since completed */
         notification_queue.removeFirst();
@@ -887,7 +986,7 @@ void MapDialog::update(float cycle_time)
     /* If showing, shift it out until fully visible */
     else if(pickup_status == SHOWING)
     {
-      pickup_offset += cycle_time * kPICKUP_WIDTH / kSHIFT_TIME;
+      pickup_offset += kSHIFT_TIME * 1.0 / cycle_time;
       if(pickup_offset >= pickup_width)
       {
         pickup_status = ON;
