@@ -58,6 +58,7 @@ private:
   bool animation_cursor_up;
   short animation_height;
   float animation_offset;
+  short animation_shifter;
  
   /* The currently running conversation information */
   Conversation conversation_info;
@@ -65,9 +66,13 @@ private:
 
   /* Bottom dialog information, for displaying */
   Frame dialog_display;
+  float dialog_letters;
+  bool dialog_letters_done;
+  short dialog_letters_max;
   DialogMode dialog_mode;
   short dialog_option;
   short dialog_option_top;
+  short dialog_shift_index;
   DialogStatus dialog_status;
   QList<QString> dialog_text;
   short dialog_text_index;
@@ -128,6 +133,7 @@ private:
   const static short kSCROLL_TRIANGLE_HEIGHT; /* Triangle pixel height */
   const static short kSHIFT_TIME;  /* The time it takes to shift the display
                                       into view (in msec) */
+  const static float kTEXT_DISPLAY_SPEED; /* The character display speed */
 
  /*============================================================================
  * PRIVATE FUNCTIONS
@@ -136,6 +142,9 @@ private:
   /* Calculates a complete list of thing IDs that are used in the given
    * conversation */
   QList<int> calculateThingList(Conversation conversation);
+
+  /* Draws an approximate circle. More applicable for small circles */
+  bool drawPseudoCircle(int x, int y, int radius);
 
   /* Functions to acquire thing data, for painting to the screen */
   bool getThingPtr(int id);
@@ -153,7 +162,11 @@ private:
   /* Sets the current conversation entry up, called after the previous was
    * finished */
   void setupConversation();
-  
+ 
+  /* Resets the counters that spell out the text character by character when
+   * initially displayed */
+  void resetConversationTextDisplay();
+
 /*============================================================================
  * SIGNALS
  *===========================================================================*/

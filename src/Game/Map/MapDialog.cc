@@ -37,6 +37,7 @@ const short MapDialog::kSCROLL_CIRCLE_RADIUS = 3;
 const short MapDialog::kSCROLL_OFFSET = 6;
 const short MapDialog::kSCROLL_TRIANGLE_HEIGHT = 4;
 const short MapDialog::kSHIFT_TIME = 75;
+const float MapDialog::kTEXT_DISPLAY_SPEED = 0.25;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -49,9 +50,14 @@ MapDialog::MapDialog(QFont font)
   animation_cursor = 0;
   animation_cursor_up = true;
   animation_offset = 0;
+  animation_shifter = 0;
+  dialog_letters = 0.0;
+  dialog_letters_done = false;
+  dialog_letters_max = 0;
   dialog_mode = DISABLED;
   dialog_option = 0;
   dialog_option_top = 0;
+  dialog_shift_index = 0;
   dialog_status = OFF;
   dialog_text_index = 0;
   dialog_time = 0;
@@ -91,6 +97,35 @@ QList<int> MapDialog::calculateThingList(Conversation conversation)
   list.append(conversation.thing_id);
 
   return list;
+}
+
+bool MapDialog::drawPseudoCircle(int x, int y, int radius)
+{
+  if(radius > 0)
+  {
+    short edge_width = (radius >> 1);
+    short inner_radius = radius - 1;
+              
+    glBegin(GL_QUADS);
+      glVertex2f(x - inner_radius, y - inner_radius);
+      glVertex2f(x - inner_radius, y + inner_radius);
+      glVertex2f(x + inner_radius, y + inner_radius);
+      glVertex2f(x + inner_radius, y - inner_radius);
+                
+      glVertex2f(x - edge_width, y - radius);
+      glVertex2f(x - edge_width, y + radius);
+      glVertex2f(x + edge_width, y + radius);
+      glVertex2f(x + edge_width, y - radius);
+
+      glVertex2f(x - radius, y - edge_width);
+      glVertex2f(x - radius, y + edge_width);
+      glVertex2f(x + radius, y + edge_width);
+      glVertex2f(x + radius, y - edge_width);
+    glEnd();
+
+    return true;
+  }
+  return false;
 }
 
 bool MapDialog::getThingPtr(int id)
@@ -134,7 +169,7 @@ bool MapDialog::initiateNextNotification()
   if(notification_queue.size() > 0 && pickup_status == OFF 
                                    && dialog_mode != NOTIFICATION)
   {
-    display_font.setPointSize(12);
+    display_font.setPointSize(kFONT_SIZE);
     bool done = false;
     short index = 0;
 
@@ -216,6 +251,7 @@ void MapDialog::setupConversation()
   }
 
   /* Get and set up all the pertinent thing data */
+  dialog_text_index = 0;
   int img_width = 0;
   Frame* thing_frame = 0;
   if(getThingPtr(conversation_info.thing_id))
@@ -246,10 +282,14 @@ void MapDialog::setupConversation()
   }
   dialog_text = lineSplitter(txt_line, txt_length, display_font);
   
-  /* Clear the option pointers */
+  /* Clear the option and index counters */
   dialog_option = 0;
   dialog_option_top = 0;
+  dialog_shift_index = 0;
 
+  /* Reset the conversation text display */
+  resetConversationTextDisplay();
+  
   /* Only occurs on first time running - initiates animation sequence */
   if(dialog_mode == DISABLED)
   {
@@ -258,6 +298,21 @@ void MapDialog::setupConversation()
     /* Initiate animation sequence */
     initiateAnimation(display_font);
   }
+}
+
+void MapDialog::resetConversationTextDisplay()
+{
+  /* Reset counters for printing out display */
+  dialog_letters = 0.0;
+  dialog_letters_done = false;
+  dialog_letters_max = 0;
+
+  /* Calculate the max number of characters in the next printing cycle */
+  short max_lines = dialog_text_index + kMAX_LINES;
+  if(max_lines > dialog_text.size())
+    max_lines = dialog_text.size();
+  for(int i = dialog_text_index; i < max_lines; i++)
+    dialog_letters_max += dialog_text[i].length(); 
 }
 
 /*============================================================================
@@ -301,7 +356,7 @@ bool MapDialog::initNotification(QString notification, int time_visible,
 {
   if(isDialogImageSet() && !notification.isEmpty())
   {
-    display_font.setPointSize(12);
+    display_font.setPointSize(kFONT_SIZE);
     QFontMetrics font_info(display_font);
     
     /* Calculate the available space */
@@ -413,9 +468,17 @@ void MapDialog::keyPress(QKeyEvent* event)
       if(isInConversation() && dialog_status == ON)
       {
         /* Check for dialog status and shift to next conversation */
-        if((dialog_text_index + kMAX_LINES) < dialog_text.size())
+        if(!dialog_letters_done)
         {
-          dialog_text_index += kMAX_LINES;
+          //dialog_text_index = dialog_shift_index;
+          dialog_letters = dialog_letters_max;
+        }
+        else if((dialog_text_index + kMAX_LINES) < dialog_text.size())
+        {
+          dialog_shift_index += kMAX_LINES - 1;
+          dialog_text_index += kMAX_LINES - 1;
+          resetConversationTextDisplay();
+          dialog_letters += dialog_text[dialog_text_index].length();
         }
         else if(conversation_info.next.size() == 0)
         {
@@ -431,16 +494,13 @@ void MapDialog::keyPress(QKeyEvent* event)
           if(multiple)
             conversation_info = conversation_info.next[0];
 
-          dialog_option = 0;
-          dialog_text_index = 0;
-          
           /* Finalize the conversation change */
           setupConversation();
         }
       }
     }
     /* Go back an option selector */
-    else if(event->key() == Qt::Key_Up)
+    else if(event->key() == Qt::Key_Up && dialog_letters_done)
     {
       dialog_option--;
       if(dialog_option < 0)
@@ -450,7 +510,7 @@ void MapDialog::keyPress(QKeyEvent* event)
         dialog_option_top = dialog_option;
     }
     /* Go to next option selector */
-    else if(event->key() == Qt::Key_Down)
+    else if(event->key() == Qt::Key_Down && dialog_letters_done)
     {
       dialog_option++;
       if(dialog_option >= conversation_info.next.size())
@@ -572,37 +632,43 @@ bool MapDialog::paintGl(QGLWidget* painter)
         }
 
         /* Draw the conversational text */
-        int txt_y = y1 + (kMARGIN_TOP << 1) + font_info.ascent();
         display_font.setPointSize(kFONT_SIZE);
+        short letter_count = dialog_letters;
         int max_lines = dialog_text_index + kMAX_LINES;
         if(max_lines > dialog_text.size())
           max_lines = dialog_text.size();
+        int txt_y = y1 + (kMARGIN_TOP << 1) + font_info.ascent();
 
         glColor4f(1.0, 1.0, 1.0, paused_opacity);
         for(int i = dialog_text_index; i < max_lines; i++)
         {
-          painter->renderText(x1 + kMARGIN_SIDES, txt_y, 
-                              dialog_text[i], display_font);
-          txt_y += (kFONT_SPACING << 1) + font_info.height();
-        }
+          /* Determine the amount of the line to paint */
+          QString text_line = "";
+          if(letter_count > 0)
+          {
+            if((letter_count - dialog_text[i].length()) < 0)
+              text_line = dialog_text[i].left(letter_count);
+            else
+              text_line = dialog_text[i];
+          }
 
-        /* The last conversational text line, based on long sets */
-        glColor4f(1.0, 1.0, 1.0, 0.25 * paused_opacity);
-        if(dialog_text.size() > max_lines)
-        {
+          /* Render the text */
           painter->renderText(x1 + kMARGIN_SIDES, txt_y, 
-                              dialog_text[max_lines], display_font);
+                              text_line, display_font);
           txt_y += (kFONT_SPACING << 1) + font_info.height();
+          letter_count -= text_line.length();
         }
 
         /* Add the option text, if it's applicable */
-        if(conversation_info.next.size() > 1)
+        if(conversation_info.next.size() > 1 && dialog_letters_done)
         {
           short arrow_y = txt_y - kSCROLL_OFFSET;
           int option_x = x1 + kMARGIN_SIDES + kOPTION_OFFSET;
-          
-          for(int i = dialog_option_top; 
-              i < dialog_option_top + kMAX_OPTIONS; i++)
+          short max_options = dialog_option_top + kMAX_OPTIONS;
+          if(max_options > options_text.size())
+            max_options = options_text.size();
+
+          for(int i = dialog_option_top; i < max_options; i++)
           {
             /* Paint the bounding box portion */
             if(dialog_option == i)
@@ -637,33 +703,7 @@ bool MapDialog::paintGl(QGLWidget* painter)
             /* The top indicator */
             if(dialog_option_top == 0)
             {
-              short edge_width = (kSCROLL_CIRCLE_RADIUS >> 1);
-              short inner_radius = kSCROLL_CIRCLE_RADIUS - 1;
-              
-              glBegin(GL_QUADS);
-                glVertex2f(option_x - inner_radius, arrow_y - inner_radius);
-                glVertex2f(option_x - inner_radius, arrow_y + inner_radius);
-                glVertex2f(option_x + inner_radius, arrow_y + inner_radius);
-                glVertex2f(option_x + inner_radius, arrow_y - inner_radius);
-                
-                glVertex2f(option_x - edge_width, 
-                           arrow_y - kSCROLL_CIRCLE_RADIUS);
-                glVertex2f(option_x - edge_width, 
-                           arrow_y + kSCROLL_CIRCLE_RADIUS);
-                glVertex2f(option_x + edge_width, 
-                           arrow_y + kSCROLL_CIRCLE_RADIUS);
-                glVertex2f(option_x + edge_width, 
-                           arrow_y - kSCROLL_CIRCLE_RADIUS);
-
-                glVertex2f(option_x - kSCROLL_CIRCLE_RADIUS, 
-                           arrow_y - edge_width);
-                glVertex2f(option_x - kSCROLL_CIRCLE_RADIUS, 
-                           arrow_y + edge_width);
-                glVertex2f(option_x + kSCROLL_CIRCLE_RADIUS, 
-                           arrow_y + edge_width);
-                glVertex2f(option_x + kSCROLL_CIRCLE_RADIUS, 
-                           arrow_y - edge_width);
-              glEnd();
+              drawPseudoCircle(option_x, arrow_y, kSCROLL_CIRCLE_RADIUS);
             }
             else
             {
@@ -681,33 +721,7 @@ bool MapDialog::paintGl(QGLWidget* painter)
             if((dialog_option_top + kMAX_OPTIONS) == 
                                                 conversation_info.next.size())
             {
-              short edge_width = (kSCROLL_CIRCLE_RADIUS >> 1);
-              short inner_radius = kSCROLL_CIRCLE_RADIUS - 1;
-              
-              glBegin(GL_QUADS);
-                glVertex2f(option_x - inner_radius, arrow_y - inner_radius);
-                glVertex2f(option_x - inner_radius, arrow_y + inner_radius);
-                glVertex2f(option_x + inner_radius, arrow_y + inner_radius);
-                glVertex2f(option_x + inner_radius, arrow_y - inner_radius);
-                
-                glVertex2f(option_x - edge_width, 
-                           arrow_y - kSCROLL_CIRCLE_RADIUS);
-                glVertex2f(option_x - edge_width, 
-                           arrow_y + kSCROLL_CIRCLE_RADIUS);
-                glVertex2f(option_x + edge_width, 
-                           arrow_y + kSCROLL_CIRCLE_RADIUS);
-                glVertex2f(option_x + edge_width, 
-                           arrow_y - kSCROLL_CIRCLE_RADIUS);
-
-                glVertex2f(option_x - kSCROLL_CIRCLE_RADIUS, 
-                           arrow_y - edge_width);
-                glVertex2f(option_x - kSCROLL_CIRCLE_RADIUS, 
-                           arrow_y + edge_width);
-                glVertex2f(option_x + kSCROLL_CIRCLE_RADIUS, 
-                           arrow_y + edge_width);
-                glVertex2f(option_x + kSCROLL_CIRCLE_RADIUS, 
-                           arrow_y - edge_width);
-              glEnd();
+              drawPseudoCircle(option_x, arrow_y, kSCROLL_CIRCLE_RADIUS);
             }
             else
             {
@@ -722,20 +736,35 @@ bool MapDialog::paintGl(QGLWidget* painter)
           }
         }
 
-        /* Draw triangle cursor */
-        if(conversation_info.next.size() <= 1 && 
-           (dialog_text_index + kMAX_LINES) >= dialog_text.size())
-        {
-          int cursor_x = (1216 >> 1);
-          glLineWidth(2);
+        /* The ending dialog indication painting */
+        if(dialog_letters_done && conversation_info.next.size() <= 1)
+        { 
           glColor4f(1.0, 1.0, 1.0, paused_opacity);
-          glBegin(GL_LINE_LOOP);
-            glVertex2f(cursor_x - kCURSOR_NEXT_SIZE, 
-                       y1 + height - kCURSOR_NEXT_SIZE - (int)animation_cursor);
-            glVertex2f(cursor_x + kCURSOR_NEXT_SIZE, 
-                       y1 + height - kCURSOR_NEXT_SIZE - (int)animation_cursor);
-            glVertex2f(cursor_x, y1 + height - (int)animation_cursor);
-          glEnd();
+          int cursor_x = (1216 >> 1); // TODO - constant - brought from map
+
+          /* Draw incremental next indicator */
+          if((dialog_text_index + kMAX_LINES) < dialog_text.size())
+          {
+            int count = (animation_shifter >> 8);
+            if(count >= 1)
+              drawPseudoCircle(cursor_x, 680, 2);
+            if(count >= 2)
+              drawPseudoCircle(cursor_x, 687, 2);
+            if(count >= 3)
+              drawPseudoCircle(cursor_x, 694, 2);
+          }
+          /* Draw triangle cursor */
+          else
+          {
+            glLineWidth(2);
+            glBegin(GL_LINE_LOOP);
+              glVertex2f(cursor_x - kCURSOR_NEXT_SIZE, 
+                      y1 + height - kCURSOR_NEXT_SIZE - (int)animation_cursor);
+              glVertex2f(cursor_x + kCURSOR_NEXT_SIZE, 
+                      y1 + height - kCURSOR_NEXT_SIZE - (int)animation_cursor);
+              glVertex2f(cursor_x, y1 + height - (int)animation_cursor);
+            glEnd();
+          }
         }
       }
       display_font.setBold(false);
@@ -808,7 +837,7 @@ bool MapDialog::paintGl(QGLWidget* painter)
                   tile_width, tile_height, paused_opacity);
     
     /* Paint the text portion */
-    display_font.setPointSize(12);
+    display_font.setPointSize(kFONT_SIZE);
     display_font.setBold(true);
     QFontMetrics font_info(display_font);
     QString multiplier = "x " 
@@ -942,6 +971,14 @@ void MapDialog::update(float cycle_time)
        * box to signal going to the next set */
       else if(isInConversation())
       {
+        /* Increment the dialog letters display */
+        if(dialog_text_index == dialog_shift_index && !dialog_letters_done)
+        {
+          dialog_letters += kTEXT_DISPLAY_SPEED;
+          if(dialog_letters > dialog_letters_max)
+            dialog_letters_done = true;
+        }
+
         /* Up motion */
         if(animation_cursor_up)
         {
@@ -964,6 +1001,12 @@ void MapDialog::update(float cycle_time)
             animation_cursor_up = true;
           }
         }
+
+        /* The animating shifter, for text that is too long to fit in the 
+         * viewing window */
+        animation_shifter += cycle_time;
+        if(animation_shifter > 1024)
+          animation_shifter = 0;
       }
     }
     
