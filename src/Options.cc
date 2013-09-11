@@ -5,6 +5,9 @@
 * Description: Options menu
 *
 * TODO: CONSTRUCTORS TO BE FINISHED
+*
+* Options to add:
+*  - Set the text display speed in MapDialog (for the character letters)
 ******************************************************************************/
 #include "Options.h"
 

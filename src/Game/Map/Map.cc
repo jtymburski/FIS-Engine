@@ -359,6 +359,7 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     test2.text += "so I don't know if I'll have the stamina to clean up this ";
     test2.text += "case in all it's glory. Repeat: ";
     test2.text += test2.text;
+    test2.text += test2.text;
     test2.thing_id = 2;
     test2.next.append(test1);
     test3.category = EnumDb::TEXT;
@@ -366,6 +367,7 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     test3.text += " So this requires me to write a bunch of BS to try and fill";
     test3.text += " these lines.";
     test3.text += test3.text;
+    //test3.text += test3.text;
     test3.thing_id = 24;
     test3.next.append(test2);
     test4.category = EnumDb::TEXT;

@@ -72,7 +72,9 @@ private:
   DialogMode dialog_mode;
   short dialog_option;
   short dialog_option_top;
-  short dialog_shift_index;
+  bool dialog_shift_enable;
+  short dialog_shift_max;
+  short dialog_shift_offset;
   DialogStatus dialog_status;
   QList<QString> dialog_text;
   short dialog_text_index;

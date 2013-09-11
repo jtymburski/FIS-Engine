@@ -37,7 +37,7 @@ const short MapDialog::kSCROLL_CIRCLE_RADIUS = 3;
 const short MapDialog::kSCROLL_OFFSET = 6;
 const short MapDialog::kSCROLL_TRIANGLE_HEIGHT = 4;
 const short MapDialog::kSHIFT_TIME = 75;
-const float MapDialog::kTEXT_DISPLAY_SPEED = 0.25;
+const float MapDialog::kTEXT_DISPLAY_SPEED = 0.5;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -57,7 +57,9 @@ MapDialog::MapDialog(QFont font)
   dialog_mode = DISABLED;
   dialog_option = 0;
   dialog_option_top = 0;
-  dialog_shift_index = 0;
+  dialog_shift_enable = false;
+  dialog_shift_max = 0;
+  dialog_shift_offset = 0;
   dialog_status = OFF;
   dialog_text_index = 0;
   dialog_time = 0;
@@ -285,7 +287,8 @@ void MapDialog::setupConversation()
   /* Clear the option and index counters */
   dialog_option = 0;
   dialog_option_top = 0;
-  dialog_shift_index = 0;
+  dialog_shift_enable = false;
+  dialog_shift_offset = 0;
 
   /* Reset the conversation text display */
   resetConversationTextDisplay();
@@ -467,24 +470,41 @@ void MapDialog::keyPress(QKeyEvent* event)
     {
       if(isInConversation() && dialog_status == ON)
       {
-        /* Check for dialog status and shift to next conversation */
-        if(!dialog_letters_done)
+        /* If dialog shift is enabled, end it prior to checking other status' */
+        if(dialog_shift_enable)
         {
-          //dialog_text_index = dialog_shift_index;
-          dialog_letters = dialog_letters_max;
-        }
-        else if((dialog_text_index + kMAX_LINES) < dialog_text.size())
-        {
-          dialog_shift_index += kMAX_LINES - 1;
+          dialog_shift_enable = false;
+          dialog_shift_offset = 0;
           dialog_text_index += kMAX_LINES - 1;
           resetConversationTextDisplay();
           dialog_letters += dialog_text[dialog_text_index].length();
         }
+        /* If the spell out text logic isn't complete, finish it */
+        else if(!dialog_letters_done)
+        {
+          //dialog_text_index = dialog_shift_index;
+          dialog_letters = dialog_letters_max;
+        }
+        /* If there's more lines to show, begin the shift */
+        else if((dialog_text_index + kMAX_LINES) < dialog_text.size())
+        {
+          display_font.setPointSize(kFONT_SIZE);
+          QFontMetrics font_info(display_font);
+          dialog_shift_max = (font_info.height() + (kFONT_SPACING << 1)) * (kMAX_LINES - 1);
+          dialog_shift_enable = true;
+          dialog_shift_offset = 0;
+          //dialog_shift_index += kMAX_LINES - 1;
+          //dialog_text_index += kMAX_LINES - 1;
+          //resetConversationTextDisplay();
+          //dialog_letters += dialog_text[dialog_text_index].length();
+        }
+        /* If this is the last conversation entry, end it */
         else if(conversation_info.next.size() == 0)
         {
           dialog_status = HIDING;
           emit finishThingTarget();
         }
+        /* Otherwise, go to the next conversation entry*/
         else
         {
           bool multiple = (conversation_info.next.size() > 1);
@@ -637,9 +657,11 @@ bool MapDialog::paintGl(QGLWidget* painter)
         int max_lines = dialog_text_index + kMAX_LINES;
         if(max_lines > dialog_text.size())
           max_lines = dialog_text.size();
+        float shift_amount = dialog_shift_offset;
+        float shift_max = dialog_shift_max / (kMAX_LINES - 1);
         int txt_y = y1 + (kMARGIN_TOP << 1) + font_info.ascent();
 
-        glColor4f(1.0, 1.0, 1.0, paused_opacity);
+        
         for(int i = dialog_text_index; i < max_lines; i++)
         {
           /* Determine the amount of the line to paint */
@@ -652,8 +674,25 @@ bool MapDialog::paintGl(QGLWidget* painter)
               text_line = dialog_text[i];
           }
 
+          /* Determine the text opacity */
+          float text_opacity = 1.0;
+          if(dialog_shift_enable)
+          {
+            if(shift_amount > shift_max)
+            {
+              text_opacity = 0.0;
+              shift_amount -= shift_max;
+            }
+            else if(shift_amount > 0)
+            {
+              text_opacity -= (shift_amount / shift_max);
+              shift_amount = 0;
+            }
+          }
+          glColor4f(1.0, 1.0, 1.0, text_opacity * paused_opacity);
+          
           /* Render the text */
-          painter->renderText(x1 + kMARGIN_SIDES, txt_y, 
+          painter->renderText(x1 + kMARGIN_SIDES, txt_y - dialog_shift_offset, 
                               text_line, display_font);
           txt_y += (kFONT_SPACING << 1) + font_info.height();
           letter_count -= text_line.length();
@@ -737,7 +776,8 @@ bool MapDialog::paintGl(QGLWidget* painter)
         }
 
         /* The ending dialog indication painting */
-        if(dialog_letters_done && conversation_info.next.size() <= 1)
+        if(!dialog_shift_enable && dialog_letters_done 
+                                && conversation_info.next.size() <= 1)
         { 
           glColor4f(1.0, 1.0, 1.0, paused_opacity);
           int cursor_x = (1216 >> 1); // TODO - constant - brought from map
@@ -951,6 +991,7 @@ void MapDialog::update(float cycle_time)
     else if(dialog_status == SHOWING)
     {
       animation_offset += kSHIFT_TIME * 1.0 / cycle_time;
+      qDebug() << animation_offset << " " << kSHIFT_TIME << " " << cycle_time << " " << animation_height;
       if(animation_offset >= animation_height)
       {
         dialog_status = ON;
@@ -972,7 +1013,19 @@ void MapDialog::update(float cycle_time)
       else if(isInConversation())
       {
         /* Increment the dialog letters display */
-        if(dialog_text_index == dialog_shift_index && !dialog_letters_done)
+        if(dialog_shift_enable)
+        {
+          dialog_shift_offset += 2; // TODO: Constant and what speed?
+          if(dialog_shift_offset >= dialog_shift_max)
+          { // TODO: maybe throw in a function ??
+            dialog_shift_enable = false;
+            dialog_shift_offset = 0;
+            dialog_text_index += kMAX_LINES - 1;
+            resetConversationTextDisplay();
+            dialog_letters += dialog_text[dialog_text_index].length();
+          }
+        }
+        if(!dialog_shift_enable && !dialog_letters_done)
         {
           dialog_letters += kTEXT_DISPLAY_SPEED;
           if(dialog_letters > dialog_letters_max)
