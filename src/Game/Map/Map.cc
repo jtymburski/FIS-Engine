@@ -56,7 +56,9 @@ Map::Map(const QGLFormat & format, short viewport_width,
 
   /* Set up the map displays */
   //map_dialog.setFont(QFont("Times", 10));
-  //map_dialog.setDialogImage("sprites/menu_test.png");//Map/Overlay/dialog.png");
+  map_dialog.setDialogImage("sprites/Map/Overlay/dialog.png");
+  map_dialog.setViewportDimension(viewport_width, viewport_height);
+
   connect(&map_dialog, SIGNAL(setThingData(QList<int>)), 
           this, SLOT(getThingData(QList<int>)));
   connect(&map_dialog, SIGNAL(finishThingTarget()), 
@@ -274,6 +276,9 @@ void Map::initializeGL()
   //glEnable(GL_POLYGON_SMOOTH); // Causes strange lines drawn between tiles
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glClearColor(0, 0, 0, 0);
+
+  /* Initialize Gl in other classes */
+  map_dialog.initializeGl();
 }
 
 void Map::keyPressEvent(QKeyEvent* key_event)
@@ -798,12 +803,6 @@ bool Map::loadMap(QString file)
         viewport->lockOn(player);
     }
 
-    /* Set up the map displays */
-    map_dialog.setDialogImage("sprites/Map/Overlay/dialog.png");
-    //map_dialog.setPersonDisplay("sprites/Map/Dialog/myliria.png");
-    //map_dialog.setPersonName("Myliria");
-    //map_dialog.initNotification("Hello sunshine, this is a really long text that will go on and on and on. Let's try for even more, I'm sure I can push it to the absolute limit.");
-    
     for(int i = 0; i < geography.size(); i++)
       for(int j = 0; j < geography[i].size(); j++)
         geography[i][j]->initializeGl();

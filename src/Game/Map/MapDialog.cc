@@ -4,14 +4,31 @@
 * Inheritance: none
 * Description: The dialog display at the bottom of the map. Offers either
 *              conversation options and display or notifications.
+*
+* TODO:
+*  - Number entry, text entry. Shop mode? Also, built into conversation
+*  - MapAction adaption
+*
+* Want List:
+*  - Text HTML like response to allow for color changes
+*    - <b> - bold
+*    - <u> - underline
+*    - <i> - italic
+*    - <color r g b> - color change
+*    - <id 12> - id to text name reference change
 ******************************************************************************/
 #include "Game/Map/MapDialog.h"
 
 /* Constant Implementation - see header file for descriptions */
+const float MapDialog::kBUBBLES_ANIMATE = 0.06;
+const short MapDialog::kBUBBLES_COUNT = 3;
+const short MapDialog::kBUBBLES_OFFSET = 16;
+const short MapDialog::kBUBBLES_RADIUS = 2;
+const short MapDialog::kBUBBLES_SPACING = 7;
 const short MapDialog::kCURSOR_NEXT_SIZE = 8;
 const short MapDialog::kCURSOR_NEXT_TIME = 300;
 const short MapDialog::kFONT_SIZE = 12;
-const short MapDialog::kFONT_SPACING = 10;
+const short MapDialog::kFONT_SPACING = 8;
 const short MapDialog::kMARGIN_SIDES = 50;
 const short MapDialog::kMARGIN_TOP = 25;
 const short MapDialog::kMAX_LINES = 4;
@@ -36,6 +53,7 @@ const short MapDialog::kPICKUP_Y = 50;
 const short MapDialog::kSCROLL_CIRCLE_RADIUS = 3;
 const short MapDialog::kSCROLL_OFFSET = 6;
 const short MapDialog::kSCROLL_TRIANGLE_HEIGHT = 4;
+const short MapDialog::kSHIFT_OFFSET = 2;
 const short MapDialog::kSHIFT_TIME = 75;
 const float MapDialog::kTEXT_DISPLAY_SPEED = 0.5;
 
@@ -50,7 +68,7 @@ MapDialog::MapDialog(QFont font)
   animation_cursor = 0;
   animation_cursor_up = true;
   animation_offset = 0;
-  animation_shifter = 0;
+  animation_shifter = 0.0;
   dialog_letters = 0.0;
   dialog_letters_done = false;
   dialog_letters_max = 0;
@@ -76,7 +94,12 @@ MapDialog::MapDialog(QFont font)
   pickup_time = 0;
   pickup_width = 0;
   
+  /* Set the font for rendering */
   setFont(font);
+
+  /* Initialize the viewport parameters */
+  viewport_height = 0;
+  viewport_width = 0;
 }
 
 /* Destructor function */
@@ -99,6 +122,27 @@ QList<int> MapDialog::calculateThingList(Conversation conversation)
   list.append(conversation.thing_id);
 
   return list;
+}
+  
+void MapDialog::dialogShiftEnable(bool enable)
+{
+  if(enable)
+  {
+    display_font.setPointSize(kFONT_SIZE);
+    QFontMetrics font_info(display_font);
+    dialog_shift_max = (font_info.height() + (kFONT_SPACING << 1)) * 
+                                                               (kMAX_LINES - 1);
+    dialog_shift_enable = true;
+    dialog_shift_offset = 0;
+  }
+  else
+  {
+    dialog_shift_enable = false;
+    dialog_shift_offset = 0;
+    dialog_text_index += kMAX_LINES - 1;
+    resetConversationTextDisplay();
+    dialog_letters += dialog_text[dialog_text_index].length();
+  }
 }
 
 bool MapDialog::drawPseudoCircle(int x, int y, int radius)
@@ -354,6 +398,11 @@ bool MapDialog::initConversation(Conversation dialog_info)
   return false;
 }
 
+void MapDialog::initializeGl()
+{
+  dialog_display.initializeGl();
+}
+
 bool MapDialog::initNotification(QString notification, int time_visible, 
                                  bool single_line)
 {
@@ -473,30 +522,17 @@ void MapDialog::keyPress(QKeyEvent* event)
         /* If dialog shift is enabled, end it prior to checking other status' */
         if(dialog_shift_enable)
         {
-          dialog_shift_enable = false;
-          dialog_shift_offset = 0;
-          dialog_text_index += kMAX_LINES - 1;
-          resetConversationTextDisplay();
-          dialog_letters += dialog_text[dialog_text_index].length();
+          dialogShiftEnable(false);
         }
         /* If the spell out text logic isn't complete, finish it */
         else if(!dialog_letters_done)
         {
-          //dialog_text_index = dialog_shift_index;
           dialog_letters = dialog_letters_max;
         }
         /* If there's more lines to show, begin the shift */
         else if((dialog_text_index + kMAX_LINES) < dialog_text.size())
         {
-          display_font.setPointSize(kFONT_SIZE);
-          QFontMetrics font_info(display_font);
-          dialog_shift_max = (font_info.height() + (kFONT_SPACING << 1)) * (kMAX_LINES - 1);
-          dialog_shift_enable = true;
-          dialog_shift_offset = 0;
-          //dialog_shift_index += kMAX_LINES - 1;
-          //dialog_text_index += kMAX_LINES - 1;
-          //resetConversationTextDisplay();
-          //dialog_letters += dialog_text[dialog_text_index].length();
+          dialogShiftEnable(true);
         }
         /* If this is the last conversation entry, end it */
         else if(conversation_info.next.size() == 0)
@@ -555,8 +591,8 @@ bool MapDialog::paintGl(QGLWidget* painter)
     QFontMetrics font_info(display_font);
     int height = dialog_display.getImage().height();
     int width = dialog_display.getImage().width();
-    short x1 = (1216 - width) >> 1;
-    short y1 = 704 - animation_offset;
+    short x1 = (viewport_width - width) >> 1;
+    short y1 = viewport_height - animation_offset;
     
     /* Slightly offset y1 for conversational name box addition */
     if(isInConversation())
@@ -647,7 +683,8 @@ bool MapDialog::paintGl(QGLWidget* painter)
         {
           img_width = thing_frame->getImage().width();
           img_height = thing_frame->getImage().height();
-          thing_frame->paintGl(x1 + width - (img_width >> 1), 704 - img_height, 
+          thing_frame->paintGl(x1 + width - (img_width >> 1), 
+                               viewport_height - img_height, 
                                img_width, img_height, paused_opacity);
         }
 
@@ -780,18 +817,20 @@ bool MapDialog::paintGl(QGLWidget* painter)
                                 && conversation_info.next.size() <= 1)
         { 
           glColor4f(1.0, 1.0, 1.0, paused_opacity);
-          int cursor_x = (1216 >> 1); // TODO - constant - brought from map
+          int cursor_x = (viewport_width >> 1);
 
           /* Draw incremental next indicator */
           if((dialog_text_index + kMAX_LINES) < dialog_text.size())
           {
-            int count = (animation_shifter >> 8);
-            if(count >= 1)
-              drawPseudoCircle(cursor_x, 680, 2);
-            if(count >= 2)
-              drawPseudoCircle(cursor_x, 687, 2);
-            if(count >= 3)
-              drawPseudoCircle(cursor_x, 694, 2);
+            short offset = kBUBBLES_OFFSET;
+
+            for(int i = kBUBBLES_COUNT; i > 0; i--)
+            {
+              if(animation_shifter >= i)
+                drawPseudoCircle(cursor_x, 
+                                 viewport_height - offset, kBUBBLES_RADIUS);
+              offset += kBUBBLES_SPACING;
+            }
           }
           /* Draw triangle cursor */
           else
@@ -839,7 +878,7 @@ bool MapDialog::paintGl(QGLWidget* painter)
     int pickup_height = tile_height + (kPICKUP_MARGIN << 1);
     if(pickup_height < kPICKUP_HEIGHT)
       pickup_height = kPICKUP_HEIGHT;
-    int pickup_x = 1216 - pickup_offset;
+    int pickup_x = viewport_width - pickup_offset;
     int pickup_y = kPICKUP_Y;
 
     /* The background draw */
@@ -894,10 +933,7 @@ bool MapDialog::paintGl(QGLWidget* painter)
 bool MapDialog::setDialogImage(QString path)
 {
   if(dialog_display.setImage(path))
-  {
-    dialog_display.initializeGl();
     return true;
-  }
   return false;
 }
 
@@ -914,6 +950,17 @@ void MapDialog::setFont(QFont font)
 void MapDialog::setThingData(QList<MapThing*> data)
 {
   thing_data = data;
+}
+  
+bool MapDialog::setViewportDimension(short width, short height)
+{
+  if(width > 0 && height > 0)
+  {
+    viewport_height = height;
+    viewport_width = width;
+    return true;
+  }
+  return false;
 }
 
 void MapDialog::update(float cycle_time)
@@ -991,7 +1038,6 @@ void MapDialog::update(float cycle_time)
     else if(dialog_status == SHOWING)
     {
       animation_offset += kSHIFT_TIME * 1.0 / cycle_time;
-      qDebug() << animation_offset << " " << kSHIFT_TIME << " " << cycle_time << " " << animation_height;
       if(animation_offset >= animation_height)
       {
         dialog_status = ON;
@@ -1015,15 +1061,9 @@ void MapDialog::update(float cycle_time)
         /* Increment the dialog letters display */
         if(dialog_shift_enable)
         {
-          dialog_shift_offset += 2; // TODO: Constant and what speed?
+          dialog_shift_offset += kSHIFT_OFFSET;
           if(dialog_shift_offset >= dialog_shift_max)
-          { // TODO: maybe throw in a function ??
-            dialog_shift_enable = false;
-            dialog_shift_offset = 0;
-            dialog_text_index += kMAX_LINES - 1;
-            resetConversationTextDisplay();
-            dialog_letters += dialog_text[dialog_text_index].length();
-          }
+            dialogShiftEnable(false);
         }
         if(!dialog_shift_enable && !dialog_letters_done)
         {
@@ -1057,8 +1097,8 @@ void MapDialog::update(float cycle_time)
 
         /* The animating shifter, for text that is too long to fit in the 
          * viewing window */
-        animation_shifter += cycle_time;
-        if(animation_shifter > 1024)
+        animation_shifter += kBUBBLES_ANIMATE;
+        if(animation_shifter >= (kBUBBLES_COUNT + 1))
           animation_shifter = 0;
       }
     }

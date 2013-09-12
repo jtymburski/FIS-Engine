@@ -58,7 +58,7 @@ private:
   bool animation_cursor_up;
   short animation_height;
   float animation_offset;
-  short animation_shifter;
+  float animation_shifter;
  
   /* The currently running conversation information */
   Conversation conversation_info;
@@ -104,7 +104,16 @@ private:
   MapThing* thing;
   QList<MapThing*> thing_data;
 
+  /* The map viewport dimensions */
+  short viewport_height;
+  short viewport_width;
+
   /* -------------------------- Constants ------------------------- */
+  const static float kBUBBLES_ANIMATE; /* The text too long animation time */
+  const static short kBUBBLES_COUNT; /* The number of dots to display */
+  const static short kBUBBLES_OFFSET; /* Offset from the bottom of the screen */
+  const static short kBUBBLES_RADIUS; /* Radius of display bubble */
+  const static short kBUBBLES_SPACING; /* Spacing between dots */
   const static short kCURSOR_NEXT_SIZE; /* The size of the next shifter */
   const static short kCURSOR_NEXT_TIME; /* Time it takes to animate */
   const static short kFONT_SIZE; /* The font size, used for rendering */
@@ -133,6 +142,8 @@ private:
   const static short kSCROLL_CIRCLE_RADIUS; /* Circle radius, in pixels */
   const static short kSCROLL_OFFSET; /* The offset for scrollbar off of text */
   const static short kSCROLL_TRIANGLE_HEIGHT; /* Triangle pixel height */
+  const static short kSHIFT_OFFSET; /* The number of pixels per update shift of
+                                       text */
   const static short kSHIFT_TIME;  /* The time it takes to shift the display
                                       into view (in msec) */
   const static float kTEXT_DISPLAY_SPEED; /* The character display speed */
@@ -144,6 +155,10 @@ private:
   /* Calculates a complete list of thing IDs that are used in the given
    * conversation */
   QList<int> calculateThingList(Conversation conversation);
+
+  /* The dialog shifting enable call. Used to rotate the text up before
+   * shifting to the next when the entry is too long */
+  void dialogShiftEnable(bool enable);
 
   /* Draws an approximate circle. More applicable for small circles */
   bool drawPseudoCircle(int x, int y, int radius);
@@ -190,6 +205,9 @@ public:
   /* Initializes a conversation with the two given people. */
   bool initConversation(Conversation dialog_info);
 
+  /* Initialize all OpenGL calls needed for this class */
+  void initializeGl();
+
   /* Initializes a notification, using a QString */
   bool initNotification(QString notification = "", int time_visible = -1, 
                         bool single_line = false);
@@ -220,9 +238,12 @@ public:
 
   /* Sets the rendering font */
   void setFont(QFont font);
-  
+
   /* Sets the thing data, needed for the conversation */
   void setThingData(QList<MapThing*> data);
+ 
+  /* Sets the map dimension used for positioning dialog and notifications */
+  bool setViewportDimension(short width, short height);
 
   /* Updates the dialog, based on an elapsed time */
   void update(float cycle_time);
