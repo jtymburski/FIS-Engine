@@ -38,6 +38,9 @@ public:
   ~Application();
 
 private:
+  /* All options available for the system */
+  Options system_options;
+
   TitleScreen* title_screen;
   
   /* DELETE two pointers below. Currently here for testing */

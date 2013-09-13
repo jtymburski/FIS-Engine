@@ -21,19 +21,13 @@ Application::Application(QWidget* parent)
 {
   setParent(parent);
 
-  /* Set some of the options */
-#ifdef unix
-  vsync_enabled = false;
-#else
-  vsync_enabled = true;
-#endif
-
   // TODO: make this dependent on focus of the game. If it loses focus, 
   // return the normal cursor (Qt::ArrowCursor);
   //setCursor(Qt::BlankCursor);
   //setCursor(Qt::ArrowCursor);
 
-  title_screen = new TitleScreen(kRESOLUTION_X, kRESOLUTION_Y);
+  title_screen = new TitleScreen(system_options.getScreenWidth(), 
+                                 system_options.getScreenHeight());
   //title_screen->show();
 
   setupBattle();
@@ -43,11 +37,12 @@ Application::Application(QWidget* parent)
   /* TODO: add checking if OpenGL is not enabled */
   QGLFormat gl_format(QGL::SampleBuffers);
   gl_format.setDoubleBuffer(true);
-  if(vsync_enabled)
+  if(system_options.isVsyncEnabled())
     gl_format.setSwapInterval(1);
   else
     gl_format.setSwapInterval(0);
-  test_map = new Map(gl_format, kRESOLUTION_X, kRESOLUTION_Y);
+  test_map = new Map(gl_format, system_options.getScreenWidth(), 
+                                system_options.getScreenHeight());
   //test_map->loadMap("maps/test_03");
   //test_map->getViewport()->show();
 
