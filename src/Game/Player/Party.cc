@@ -43,43 +43,53 @@ Party::~Party() {}
  * Output: bool - true if the item was used succesfully
  */
 bool Party::menuUseItem(Item* used_item, ushort target)
-{
-  bool can_use_item = false;
-  bool item_used    = false;
+{  
+  bool item_used = false;
+  bool action_happens = false;
+  QVector<Action*> actions = used_item->getAction()->getEffects();
+  QVector<float> action_chance = used_item->getAction()->getEffectChance();
 
-  if (!used_item->getItemFlag(Item::MENUREADY) && getMember(target) != 0)
-    can_use_item = true;
-
-  if (can_use_item)
+  /* For each action in the action Skill of the item */
+  for (int i = 0; i < actions.size(); i++)
   {
-    QVector<Action*> actions = used_item->getAction()->getEffects();
+    action_happens = false;
+    item_used = true;
 
-    for (int i = 0; i < actions.size(); i++)
+    Action* curr_action = actions.at(i);
+
+    /* See if the action happens (random) */
+    int random = randInt(100);
+    if (random < action_chance.at(i))
+      action_happens = true;
+
+    if (action_happens)
     {
-      item_used = true;
-      Action* curr_action = actions.at(i);
-
+      /* If the Item is a stat changing item */
       if (used_item->getItemFlag(Item::STATCHANGING))
       {
+        /* Obtain the attribute to be affected */
         EnumDb::Attribute stat = curr_action->getAttribute();
 
+        /* If the stat is legitimate */
         if (stat != EnumDb::NOAT)
         {
+          /* Find base change +/- eq. dist. with the variance */
           int amount = (int)curr_action->getBaseChange();
           amount += randInt(curr_action->getVariance());
 
+          /* If it's a lower action, multiply by -1 */
           if (curr_action->getActionFlag(Action::LOWER))
             amount *= -1;
 
+          /* Alter the afflicted attribute */
           AttributeSet* attr_set = getMember(target)->getStats();
-
           attr_set->setStat(stat, attr_set->getStat(stat) + amount);
         }
       }
     }
   }
 
-  return used_item;
+  return item_used;
 }
 
 
@@ -216,20 +226,27 @@ bool Party::removeMember(QString value)
  *         ushort target - the primary target for the item (it may be multihit)
  * Output: bool - true if the item was used succesfully
  */
-bool Party::useItem(Item *used_item, ushort target)
+bool Party::useItem(Item *used_item, ushort target, EnumDb::ItemUse use_type)
 {
-  bool item_used = false;
-  bool item_can_be_used = true;
+  bool item_used    = false;
+  Person* actor = 0;
 
-  /* Assert the person can use items and the item is menu-usable */
-  if (members[target]->getPersonFlag(Person::CANUSEITEM));
-    return false;
+  /* Get the person [actor target] at the target index */
+  if (target <= getMaxSize())
+    actor = getMember(target);
 
-  /* Assert that the target is valid and that the item can be used in menu */
-  if (!used_item->getItemFlag(Item::MENUREADY))
-    return false;
-  if (target > getMaxSize())
-    return false;
+  /* Assert the target can use items */
+  if (actor != 0 && actor->getPersonFlag(Person::CANUSEITEM))
+  {
+    if (use_type == EnumDb::MENU_USABLE)
+      if (used_item->getItemFlag(Item::MENUREADY))
+        item_used = menuUseItem(used_item, target);
+    if (use_type == EnumDb::BATTLE_USABLE)
+      if (used_item->getItemFlag(Item::BATTLEREADY))
+        item_used = battleUseItem(used_item, target);
+  }
+
+  return item_used;
 }
 
 /*

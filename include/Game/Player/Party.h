@@ -89,7 +89,7 @@ public:
   bool removeMember(QString);
 
   /* Uses the item on the party */
-  bool useItem(Item* used_item, ushort target = 0);
+  bool useItem(Item* used_item, ushort target, EnumDb::ItemUse use_type);
 
   /* Returns the inventory of the party */
   Inventory* getInventory();
