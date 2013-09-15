@@ -1,20 +1,22 @@
 /******************************************************************************
 * Class Name: Game
 * Date Created: Nov 04 2012
-* Inheritance: QWidget
+* Inheritance: QStackedWidget
 * Description: The Game class
 ******************************************************************************/
 #ifndef GAME_H
 #define GAME_H
 
-#include <QtGui/QWidget>
-#include "MathHelper.h"
+#include <QStackedWidget>
+
 #include "Game/Battle/Battle.h"
+#include "Game/EventHandler.h"
 #include "Game/Map/Map.h"
 #include "Game/Player/Player.h"
 #include "Game/VictoryScreen.h"
+#include "MathHelper.h"
 
-class Game : public QWidget
+class Game : public QStackedWidget
 {
   Q_OBJECT
 

@@ -26,8 +26,9 @@ SOURCES += \
     ./src/Sound.cc \
     ./src/TitleScreen.cc \
     ./src/XmlData.cc \
-    ./src/Game/Game.cc \
+    ./src/Game/EventHandler.cc \
     ./src/Game/Frame.cc \
+    ./src/Game/Game.cc \
     ./src/Game/Sprite.cc \
     ./src/Game/VictoryScreen.cc \
     ./src/Game/Weather.cc \
@@ -86,8 +87,9 @@ HEADERS += \
     ./include/Sound.h \
     ./include/TitleScreen.h \
     ./include/XmlData.h \
-    ./include/Game/Game.h \
+    ./include/Game/EventHandler.h \
     ./include/Game/Frame.h \
+    ./include/Game/Game.h \
     ./include/Game/Sprite.h \
     ./include/Game/VictoryScreen.h \
     ./include/Game/Weather.h \

@@ -56,7 +56,9 @@ Map::Map(const QGLFormat & format, short viewport_width,
 
   /* Set up the map displays */
   //map_dialog.setFont(QFont("Times", 10));
-  //map_dialog.setDialogImage("sprites/menu_test.png");//Map/Overlay/dialog.png");
+  map_dialog.setDialogImage("sprites/Map/Overlay/dialog.png");
+  map_dialog.setViewportDimension(viewport_width, viewport_height);
+
   connect(&map_dialog, SIGNAL(setThingData(QList<int>)), 
           this, SLOT(getThingData(QList<int>)));
   connect(&map_dialog, SIGNAL(finishThingTarget()), 
@@ -167,7 +169,6 @@ void Map::initiateThingAction()
 {
   if(player != 0)
   {
-    MapThing* null_thing = 0;
     int x = player->getTile()->getX();
     int y = player->getTile()->getY();
 
@@ -275,6 +276,9 @@ void Map::initializeGL()
   //glEnable(GL_POLYGON_SMOOTH); // Causes strange lines drawn between tiles
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glClearColor(0, 0, 0, 0);
+
+  /* Initialize Gl in other classes */
+  map_dialog.initializeGl();
 }
 
 void Map::keyPressEvent(QKeyEvent* key_event)
@@ -283,6 +287,25 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     closeMap();
   else if(key_event->key() == Qt::Key_P)
     map_dialog.setPaused(!map_dialog.isPaused());
+  else if(key_event->key() == Qt::Key_F1)
+  {
+    Frame* image = new Frame("sprites/Map/Tiles/Ground/BlueMetalTile/BlueMetalTile01_AA_A00.png");
+    image->initializeGl();
+    map_dialog.initPickup(image, 50, 1000);
+  }
+  else if(key_event->key() == Qt::Key_F2)
+  {
+    Frame* image = new Frame("sprites/Battle/Bubbies/blazing_t1.png");
+    //Frame* image = new Frame("sprites/Battle/Battle_Persons/auroraagent.png");
+    image->initializeGl();
+    map_dialog.initPickup(image, 1);
+  }
+  else if(key_event->key() == Qt::Key_4)
+    map_dialog.initNotification("Testing", 1000, true);
+  else if(key_event->key() == Qt::Key_5)
+    map_dialog.initNotification("This is a really long message. It goes on and on without end. Who makes notifications this long except for crazy deranged eutherlytes. Yes, I made a new word. You want to fight about it?");//map_dialog.haltDialog();
+  else if(key_event->key() == Qt::Key_6)
+    map_dialog.initNotification("This is a really long message. It goes on and on without end. Who makes notifications this long except for crazy deranged eutherlytes. Yes, I made a new word. You want to fight about it?", 5000, true);
   else if(map_dialog.isInConversation())
     map_dialog.keyPress(key_event);
   else if(key_event->key() == Qt::Key_Space)
@@ -315,12 +338,6 @@ void Map::keyPressEvent(QKeyEvent* key_event)
   }
   else if(key_event->key() == Qt::Key_3)
     viewport->lockOn(609, 353);
-  else if(key_event->key() == Qt::Key_4)
-    map_dialog.initNotification("Testing", 0, 0, 1000, true);
-  else if(key_event->key() == Qt::Key_5)
-    map_dialog.initNotification("This is a really long message. It goes on and on without end. Who makes notifications this long except for crazy deranged eutherlytes. Yes, I made a new word. You want to fight about it?");//map_dialog.haltDialog();
-  else if(key_event->key() == Qt::Key_6)
-    map_dialog.initNotification("This is a really long message. It goes on and on without end. Who makes notifications this long except for crazy deranged eutherlytes. Yes, I made a new word. You want to fight about it?", 0, 0, 5000, true);
   else if(persons.size() >= 3 && key_event->key() == Qt::Key_7)
     ((MapNPC*)persons[2])->setNodeState(MapNPC::LOOPED);
   else if(persons.size() >= 3 && key_event->key() == Qt::Key_8)
@@ -347,6 +364,7 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     test2.text += "so I don't know if I'll have the stamina to clean up this ";
     test2.text += "case in all it's glory. Repeat: ";
     test2.text += test2.text;
+    test2.text += test2.text;
     test2.thing_id = 2;
     test2.next.append(test1);
     test3.category = EnumDb::TEXT;
@@ -354,10 +372,11 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     test3.text += " So this requires me to write a bunch of BS to try and fill";
     test3.text += " these lines.";
     test3.text += test3.text;
+    //test3.text += test3.text;
     test3.thing_id = 24;
     test3.next.append(test2);
     test4.category = EnumDb::TEXT;
-    test4.text = "Option 1";
+    test4.text = "Option 1 - This goes on and on and on and on and on and lorem ipsum. This is way too long to be an option. Loser";
     test4.thing_id = -1;
     test4.next.append(test2);
     test5.category = EnumDb::TEXT;
@@ -365,6 +384,14 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     test5.thing_id = -1;
     test5.next.append(test3);
     test1.next.append(test4);
+    test1.next.append(test5);
+    test4.text = "Option 3";
+    test1.next.append(test4);
+    test5.text = "Option 4";
+    test1.next.append(test5);
+    test4.text = "Option 5";
+    test1.next.append(test4);
+    test5.text = "Option 6";
     test1.next.append(test5);
     /*test3.next.append(test4);
     test1.next.append(test3);
@@ -698,11 +725,11 @@ bool Map::loadMap(QString file)
     persons.append(person);
 
     /* Add a second player */
-    up_sprite = new Sprite("sprites/Map/Map_Things/aurumba_AA_D", 3, ".png");
-    down_sprite = new Sprite("sprites/Map/Map_Things/aurumba_AA_U", 3, ".png");
-    left_sprite = new Sprite("sprites/Map/Map_Things/aurumba_AA_S", 3, ".png");
+    up_sprite = new Sprite("sprites/Map/Map_Things/aurora_AA_D", 3, ".png");
+    down_sprite = new Sprite("sprites/Map/Map_Things/aurora_AA_U", 3, ".png");
+    left_sprite = new Sprite("sprites/Map/Map_Things/aurora_AA_S", 5, ".png");
     left_sprite->flipAll();
-    right_sprite = new Sprite("sprites/Map/Map_Things/aurumba_AA_S", 3, ".png");
+    right_sprite = new Sprite("sprites/Map/Map_Things/aurora_AA_S", 5, ".png");
     person = new MapPerson(kTILE_WIDTH, kTILE_HEIGHT);
     person->setStartingTile(geography[2][4]);
     person->setState(MapPerson::GROUND, EnumDb::NORTH, 
@@ -776,12 +803,6 @@ bool Map::loadMap(QString file)
         viewport->lockOn(player);
     }
 
-    /* Set up the map displays */
-    map_dialog.setDialogImage("sprites/Map/Overlay/dialog.png");
-    //map_dialog.setPersonDisplay("sprites/Map/Dialog/myliria.png");
-    //map_dialog.setPersonName("Myliria");
-    //map_dialog.initNotification("Hello sunshine, this is a really long text that will go on and on and on. Let's try for even more, I'm sure I can push it to the absolute limit.");
-    
     for(int i = 0; i < geography.size(); i++)
       for(int j = 0; j < geography[i].size(); j++)
         geography[i][j]->initializeGl();
