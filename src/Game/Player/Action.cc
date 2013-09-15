@@ -412,14 +412,59 @@ int Action::getId()
 }
 
 /*
- * Description: Returns the string of the ailment
+ * Description: Returns the enumeration of the ailment
  *
  * Inputs: None
- * Output: QString - string of the ailment to be set/checked
+ * Output: EnumDb::Infliction - string of the ailment to be set/checked
  */
 EnumDb::Infliction Action::getAilment()
 {
   return ailment;
+}
+
+/*
+ * Description: Returns the enumeration of the attribute that the
+ *              action affects.
+ *
+ * Inputs: None
+ * Output: EnumDb::Attribute - affected attribute
+ */
+EnumDb::Attribute Action::getAttribute()
+{
+  if (!(getActionFlag(Action::RAISE) || getActionFlag(Action::LOWER)))
+    return EnumDb::NOAT;
+
+  if (getActionFlag(Action::OFFENSIVE))
+  {
+    if (getActionFlag(Action::PHYSICAL))   return EnumDb::PHAG;
+    if (getActionFlag(Action::THERMAL))    return EnumDb::THAG;
+    if (getActionFlag(Action::POLAR))      return EnumDb::POAG;
+    if (getActionFlag(Action::PRIMAL))     return EnumDb::PRAG;
+    if (getActionFlag(Action::CHARGED))    return EnumDb::CHAG;
+    if (getActionFlag(Action::CYBERNETIC)) return EnumDb::CYAG;
+    if (getActionFlag(Action::NIHIL))      return EnumDb::NIAG;
+  }
+  if (getActionFlag(Action::DEFENSIVE))
+  {
+    if (getActionFlag(Action::PHYSICAL))   return EnumDb::PHFD;
+    if (getActionFlag(Action::THERMAL))    return EnumDb::THFD;
+    if (getActionFlag(Action::POLAR))      return EnumDb::POFD;
+    if (getActionFlag(Action::PRIMAL))     return EnumDb::PRFD;
+    if (getActionFlag(Action::CHARGED))    return EnumDb::CHFD;
+    if (getActionFlag(Action::CYBERNETIC)) return EnumDb::CYFD;
+    if (getActionFlag(Action::NIHIL))      return EnumDb::NIFD;
+  }
+
+  if (getActionFlag(Action::VITALITY))
+    return EnumDb::VITA;
+  if (getActionFlag(Action::QUANTUM_DRIVE))
+    return EnumDb::QTDR;
+  if (getActionFlag(Action::LIMBERTUDE))
+    return EnumDb::LIMB;
+  if (getActionFlag(Action::UNBEARABILITY))
+    return EnumDb::UNBR;
+  if (getActionFlag(Action::MOMENTUM))
+    return EnumDb::MMNT;
 }
 
 /*

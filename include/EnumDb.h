@@ -53,7 +53,8 @@ public:
                    NIFD,
                    MMNT,
                    LIMB,
-                   UNBR };
+                   UNBR,
+                   NOAT};
 
   /*
    * Description: Handles the category for the talking inside the map

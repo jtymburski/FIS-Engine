@@ -145,6 +145,9 @@ public:
   /* Returns an enumeration of the action's status ailment infliction */
   EnumDb::Infliction getAilment();
 
+  /* Returns an enumeration of the action's affected attribute */
+  EnumDb::Attribute getAttribute();
+
   /* Returns the base change of the action */
   uint getBaseChange();
 

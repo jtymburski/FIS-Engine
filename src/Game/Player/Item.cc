@@ -40,9 +40,9 @@ Item::Item(QString name, uint value, Sprite* thumbnail, double mass)
   setValue(value);
   setMass(mass);
   setDuration(0);
-  setActionSet(0);
+  setAction(0);
   setBuffSet(0);
-  setSkillSet(0);
+  setSkill(0);
   setUsingAnimation(0);
   setUsingMessage("");
   setUsingSound(0);
@@ -62,8 +62,8 @@ Item::Item(Item *copy)
   setDuration(copy->getDuration());
   setMass(copy->getMass());
   setName(copy->getName());
-  setActionSet(copy->getActionSet());
-  setSkillSet(copy->getSkillSet());
+  setAction(copy->getAction());
+  setSkill(copy->getSkill());
   setThumb(copy->getThumb());
   setUsingAnimation(copy->getUsingAnimation());
   setUsingMessage(copy->getUsingMessage());
@@ -157,11 +157,11 @@ void Item::printInfo()
  * Description: Returns the set of actions the item can performon use
  *
  * Inputs: none
- * Output: SkillSet* - the set of actions the item can perform on use
+ * Output: Skill* - the set of actions the item can perform on use
  */
-SkillSet* Item::getActionSet()
+Skill* Item::getAction()
 {
-  return action_set;
+  return action;
 }
 
 /*
@@ -265,14 +265,14 @@ QString Item::getPrefix()
 }
 
 /*
- * Description: Returns the SkillSet the item can unlock
+ * Description: Returns the Skill the item can unlock
  *
  * Inputs: none
- * Output: SkillSet* - pointer to the skillset unlocked by the item
+ * Output: Skill* - pointer to the skillset unlocked by the item
  */
-SkillSet* Item::getSkillSet()
+Skill* Item::getSkill()
 {
-  return skill_set;
+  return skill;
 }
 
 /*
@@ -334,29 +334,12 @@ uint Item::getValue()
 /*
  * Description: Assigns a set of actions which the item uses
  *
- * Inputs: SkillSet* - set of actions the item performs
+ * Inputs: Skill* - set of actions the item performs
  * Output: none
  */
-void Item::setActionSet(SkillSet* new_action_set)
+void Item::setAction(Skill* new_action)
 {
-  if (new_action_set != 0)
-  {
-    if (new_action_set->getSkills().size() <= kMAX_ACTION_SET)
-    {
-      action_set = new_action_set;
-    }
-    else
-    {
-      SkillSet* temp_action_set = new_action_set;
-
-      while (temp_action_set->getSkills().size() > kMAX_ACTION_SET)
-          temp_action_set->removeSkill(temp_action_set->getSkills().size() - 1);
-
-      action_set = temp_action_set;
-    }
-  }
-  else
-    action_set = 0;
+  action = new_action;
 }
 
 /*
@@ -462,26 +445,9 @@ void Item::setPrefix(QString new_prefix)
  * Inputs: SkillSet* - the new skill set to be assigned
  * Output: none
  */
-void Item::setSkillSet(SkillSet* new_skill_set)
+void Item::setSkill(Skill* new_skill)
 {
-  if (new_skill_set != 0)
-  {
-    if (new_skill_set->getSkills().size() <= kMAX_SKILL_SET)
-    {
-      skill_set = new_skill_set;
-    }
-    else
-    {
-      SkillSet* temp_skill_set = new_skill_set;
-
-      while (temp_skill_set->getSkills().size() > kMAX_SKILL_SET)
-        temp_skill_set->removeSkill(temp_skill_set->getSkills().size() - 1);
-
-      skill_set = temp_skill_set;
-    }
-  }
-  else
-    skill_set = 0;
+  skill = new_skill;
 }
 
 /*

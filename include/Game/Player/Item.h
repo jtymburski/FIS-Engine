@@ -57,7 +57,8 @@ public:
     ENERGY         = 1ul << 19,
     ICE            = 1ul << 20,
     MATERIAL       = 1ul << 21,
-    DISENSTUBULATE = 1ul << 22
+    DISENSTUBULATE = 1ul << 22,
+    STATCHANGING   = 1ul << 23
   };
   Q_DECLARE_FLAGS(ItemFlags, ItemState)
   ItemFlags iflag_set;
@@ -101,8 +102,8 @@ protected:
   QString prefix;
 
   /* SkillSet which can be gathered for the item */
-  SkillSet* action_set;
-  SkillSet* skill_set;
+  Skill* action;
+  Skill* skill;
 
   /* Thumb sprite of the item */
   Sprite* thumbnail;
@@ -141,7 +142,7 @@ public:
  *============================================================================*/
 public:
   /* Returns the set of actions the item can perform */
-  SkillSet* getActionSet();
+  Skill* getAction();
 
   /* Returns the AttributeSet of the item */
   AttributeSet* getBuffSet();
@@ -168,7 +169,7 @@ public:
   QString getPrefix();
 
   /* Returns the SkillSet of the item */
-  SkillSet* getSkillSet();
+  Skill* getSkill();
 
   /* Returns the thumbnail of the unit */
   Sprite* getThumb();
@@ -183,7 +184,7 @@ public:
   Sound* getUsingSound();
 
   /* Assigns a set of actions that the item can perform */
-  void setActionSet(SkillSet* new_action_set);
+  void setAction(Skill* new_action);
 
   /* Assigns an attribute set to the item */
   void setBuffSet(AttributeSet* new_buff_set);
@@ -210,7 +211,7 @@ public:
   void setPrefix(QString new_prefix);
 
   /* Assigns a skill set to the item */
-  void setSkillSet(SkillSet* new_skill_set);
+  void setSkill(Skill* new_skill_set);
 
   /* Assigns an icon thumbnail to the item */
   void setThumb(Sprite* new_thumb);

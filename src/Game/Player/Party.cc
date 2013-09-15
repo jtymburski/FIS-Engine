@@ -44,7 +44,42 @@ Party::~Party() {}
  */
 bool Party::menuUseItem(Item* used_item, ushort target)
 {
+  bool can_use_item = false;
+  bool item_used    = false;
 
+  if (!used_item->getItemFlag(Item::MENUREADY) && getMember(target) != 0)
+    can_use_item = true;
+
+  if (can_use_item)
+  {
+    QVector<Action*> actions = used_item->getAction()->getEffects();
+
+    for (int i = 0; i < actions.size(); i++)
+    {
+      item_used = true;
+      Action* curr_action = actions.at(i);
+
+      if (used_item->getItemFlag(Item::STATCHANGING))
+      {
+        EnumDb::Attribute stat = curr_action->getAttribute();
+
+        if (stat != EnumDb::NOAT)
+        {
+          int amount = (int)curr_action->getBaseChange();
+          amount += randInt(curr_action->getVariance());
+
+          if (curr_action->getActionFlag(Action::LOWER))
+            amount *= -1;
+
+          AttributeSet* attr_set = getMember(target)->getStats();
+
+          attr_set->setStat(stat, attr_set->getStat(stat) + amount);
+        }
+      }
+    }
+  }
+
+  return used_item;
 }
 
 
