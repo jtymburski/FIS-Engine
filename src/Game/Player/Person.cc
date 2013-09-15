@@ -26,6 +26,16 @@ const uint Person::kMAX_CREDIT_DROP       =   10000000; /* Ten Million */
 const uint Person::kMAX_EQUIP_SLOTS       =          5;
 const uint Person::kMAX_ITEM_DROPS        =          5;
 const double Person::kMAX_DAMAGE_MODIFIER =    10.0000;
+const double Person::kPRIM_X_MODI = 1.250;
+const double Person::kPRIM_S_MODI = 1.200;
+const double Person::kPRIM_A_MODI = 1.500;
+const double Person::kPRIM_B_MODI = 1.100;
+const double Person::kPRIM_C_MODI = 1.050;
+const double Person::kSECD_X_MODI = 1.150;
+const double Person::kSECD_S_MODI = 1.120;
+const double Person::kSECD_A_MODI = 1.090;
+const double Person::kSECD_B_MODI = 1.060;
+const double Person::kSECD_C_MODI = 1.030;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -69,11 +79,12 @@ Person::Person(QString pname, Race* prace, Category* pcat, QString p, QString s)
   setSecondary(s);
 
   /* Set up all three attribute sets */
-  setUpBaseStats();
-  setStats(*getBase());
-  setMax(*getBase());
-  setTemp(*getBase());
-  setMaxTemp(*getBase());
+  AttributeSet base_set = calcBaseLevelStats();
+
+  setStats(base_set);
+  setMax(base_set);
+  setTemp(base_set);
+  setMaxTemp(base_set);
 
   /* Construct the Exp Table */
   if (exp_table.isEmpty())
@@ -85,6 +96,10 @@ Person::Person(QString pname, Race* prace, Category* pcat, QString p, QString s)
 
 /*
  * Description: Copy constructor
+ *
+ * Notes [1]: The copy constructor does not assign the same flags as the
+ *            copy, nor does it assign equipment to the person. It instead just
+ *            creates a copy skeleton of the person.
  */
 Person::Person(Person& other)
     : damage_modifier(other.getDmgMod()),
@@ -107,6 +122,12 @@ Person::Person(Person& other)
   setSecondary(other.getSecondary() + other.getSecondaryCurve());
 
   /* Sets up the Attribute Sets */
+  AttributeSet base_set = calcBaseLevelStats();
+
+  setStats(base_set);
+  setMax(base_set);
+  setTemp(base_set);
+  setMaxTemp(base_set);
 
   for (int i = 0; i < parent->getItemLoot().size(); i++)
     item_drops.push_back(new Item(parent->getItemLoot().value(i)));
@@ -128,6 +149,50 @@ Person::~Person()
       item_drops[i] = NULL;
     }
   }
+}
+
+/*============================================================================
+ * PRIVATE FUNCTIONS
+ *============================================================================*/
+
+/*
+ * Description: Method to calculate an AttributeSet representing the Person's
+ *              level 1 Attribute values based upon their race's and category's
+ *              Attribute amounts.
+ *
+ * Inputs: none
+ * Output: AttributeSet representing level 1 values.
+ */
+AttributeSet Person::calcBaseLevelStats()
+{
+  AttributeSet cat_set = cat->getBaseSet();
+  AttributeSet race_set = race->getBaseSet();
+  AttributeSet base_level_set;
+
+  for (int i = 0; i < base_stats.getSize(); i++)
+    base_level_set.setStat(i, cat_set.getStat(i) + race_set.getStat(i));
+
+  return base_level_set;
+}
+
+/*
+ * Description: Method to calculate an AttributeSet representing the Person's
+ *              final level values based upon their race's and category's final
+ *              Attribute amounts.
+ *
+ * Inputs: none
+ * Output: AttributeSet representing final level values
+ */
+AttributeSet Person::calcMaxLevelStats()
+{
+  AttributeSet cat_set = cat->getMaxSet();
+  AttributeSet race_set = race->getMaxSet();
+  AttributeSet max_level_set;
+
+  for (int i = 0; i < base_stats.getSize(); i++)
+    max_level_set.setStat(i, cat_set.getStat(i) + race_set.getStat(i));
+
+  return max_level_set;
 }
 
 /*=============================================================================
@@ -318,22 +383,6 @@ void Person::printFlags()
 void Person::printSkills()
 {
   skills->printInfo();
-}
-
-/*
- * Description: Sets up the base stats (grabs Category min and max values
- *              and adds them to the Race bonuses)
- *
- * Inputs: none
- * Output: none
- */
-void Person::setUpBaseStats()
-{
-  AttributeSet cat_set = cat->getBaseSet();
-  AttributeSet race_set = race->getBaseSet();
-
-  for (int i = 0; i < base_stats.getSize(); i++)
-    base_stats.setStat(i, cat_set.getStat(i) + race_set.getStat(i));
 }
 
 /*
@@ -633,16 +682,6 @@ Sprite* Person::getFirstPerson()
   return first_person;
 }
 
-/*
- * Description:
- *
- * Inputs:
- * Output:
- */
-AttributeSet* Person::getBase()
-{
-  return &base_stats;
-}
 
 /*
  * Description:
@@ -884,55 +923,80 @@ void Person::setItemLoot(QVector<Item*> items)
  */
 bool Person::setLevel(const uint &new_level)
 {
+  /* Booleans if the person can level up, and if a level up actually occured */
+  bool can_level = true;
+  bool leveled_up = false;
 
-  /*
-  if (new_level == getLevel())
-    return false;
-  if (new_level < kMAX_LEVEL)
-    level = new_level;
-  else
+  /* Level number checks */
+  if (new_level == getLevel() || !getPersonFlag(Person::CANLEVEL))
+    can_level = false;
+
+  if (can_level)
   {
-    level = kMAX_LEVEL;
-    setPersonFlag(Person::MAXLVL, true);
-  }
+    /* If the level is increasing, signal will be emitted */
+    if (new_level > getLevel())
+      leveled_up = true;
 
-  setUpBaseStats();
-  setTempStats(*getStats());
-
-  for (int i = 0; i < stats.getSize(); i++)
-  {
-    int base = base_stats.getStat(i);
-    int max  = base_stats.getMax(i);
-    QString test = stats.getName(i);
-    test.chop(2);
-
-    if (primary == test)
+    /* Level will top out at max level if set level goes beyond */
+    if (new_level < kMAX_LEVEL)
     {
-      if (primary_curve == 'S') base = floor(base * 1.200);
-      if (primary_curve == 'A') base = floor(base * 1.150);
-      if (primary_curve == 'B') base = floor(base * 1.100);
-      if (primary_curve == 'C') base = floor(base * 1.050);
+      level = new_level;
     }
-    else if (secondary == test)
+    else
     {
-      if (secondary_curve == 'S') base = floor(base * 1.120);
-      if (secondary_curve == 'A') base = floor(base * 1.090);
-      if (secondary_curve == 'B') base = floor(base * 1.060);
-      if (secondary_curve == 'C') base = floor(base * 1.030);
+      level = kMAX_LEVEL;
+      setPersonFlag(Person::MAXLVL, true);
     }
 
-    double b = log((double)max / base) / (kMAX_LEVEL - 1);
-    double a = (double)base / (exp(b) - 1.0);
+    /* Recalculate the current base and max level stat values for the Person */
+    AttributeSet base_stats = calcBaseLevelStats();
+    AttributeSet max_stats = calcMaxLevelStats();
 
-    int old_values = round(a * exp(b * (new_level - 1)));
-    int new_values = round(a * exp(b * new_level));
+    /* Use the temp stats AttributeSet as a current */
+    setTemp(*getMax());
 
-    stats.setStat(i, new_values - old_values);
+    /* For each stat, build a distribution table and find the value */
+    for (int i = 0; i < base_stats.getSize(); i++)
+    {
+        int base = base_stats.getStat(i);
+        int max = max_stats.getStat(i);
+        QString current = base_stats.getName(i);
+        current.chop(2);
+
+        if (getPrimary() == current)
+        {
+          if (getPrimaryCurve() == 'X') base = floor(base * kPRIM_X_MODI);
+          if (getPrimaryCurve() == 'S') base = floor(base * kPRIM_S_MODI);
+          if (getPrimaryCurve() == 'A') base = floor(base * kPRIM_A_MODI);
+          if (getPrimaryCurve() == 'B') base = floor(base * kPRIM_B_MODI);
+          if (getPrimaryCurve() == 'C') base = floor(base * kPRIM_C_MODI);
+        }
+        else if (getSecondary() == current)
+        {
+          if (getSecondaryCurve() == 'X') base = floor(base * kSECD_X_MODI);
+          if (getSecondaryCurve() == 'S') base = floor(base * kSECD_S_MODI);
+          if (getSecondaryCurve() == 'A') base = floor(base * kSECD_A_MODI);
+          if (getSecondaryCurve() == 'B') base = floor(base * kSECD_B_MODI);
+          if (getSecondaryCurve() == 'C') base = floor(base * kSECD_C_MODI);
+        }
+
+        int iterations = (int)kMAX_LEVEL;
+        qDebug() << base << " " << max << " " << iterations;
+        QVector<int> stat_table = buildExponentialTable(base, max, iterations);
+        getMax()->setStat(i, stat_table.at(level));
+    }
+
+    /* Set the other Attribute sets to this set for now */
+    setStats(*getMax());
+    setTemp(*getMax());
+    setMaxTemp(*getMax());
   }
-  return true;
-  */
 
-  return true; //TODO
+  /* Emit the level up signal for the victory screen, etc. */
+  if (leveled_up)
+      emit levelUp();
+
+  return can_level;
 }
 
 /*
@@ -1050,17 +1114,6 @@ void Person::setFirstPerson(Sprite* s)
 void Person::setThirdPerson(Sprite* s)
 {
   third_person = s;
-}
-
-/*
- * Description:
- *
- * Inputs:
- * Output:
- */
-void Person::setBase(AttributeSet new_stat_set)
-{
-  base_stats = new_stat_set;
 }
 
 /*

@@ -174,23 +174,39 @@ void Application::setupBattle()
   // End Testing
 
   QList<uint> stats1;
+  QList<uint> stats2;
+  QList<uint> stats3;
 
   for (int i = 0; i < 19; i++)
-    stats1.append(5);
+  {
+    stats1.append(5 + i);
+    stats2.append(500 + i);
+    stats3.append(15 + i);
+  }
 
-  AttributeSet base_set(stats1);
+  AttributeSet race_set(stats1);
+  AttributeSet cate_set(stats1);
+  AttributeSet race_max(stats3);
+  AttributeSet cate_max(stats2);
+
   Race* base_race = new Race("Fiends");
-  base_race->setAttrSet(stats1);
-  base_race->setMaxSet(stats1);
+  base_race->setAttrSet(race_set);
+  base_race->setMaxSet(race_max);
   Category* base_category = new Category("Battle Class");
-  base_category->setAttrSet(stats1);
-  base_category->setMaxSet(stats1);
+  base_category->setAttrSet(cate_set);
+  base_category->setMaxSet(cate_max);
   Person* main_character
           = new Person("Malgidus", base_race, base_category, "PHA", "CYB");
   Person* secd_character
           = new Person("Arcadius", base_race, base_category, "PHA", "CYA");
+
+  /* Level up Tests */
+  main_character->setPersonFlag(Person::CANLEVEL, true);
+
   Party* friends = new Party(main_character);
   Party* foes = new Party(secd_character);
+
+  /*
   BubbyFlavour* spark_flavour = new BubbyFlavour(0, "Spark");
   spark_flavour->setAttr(&base_set);
   Bubby* first_bubby = new Bubby(spark_flavour);
@@ -212,6 +228,7 @@ void Application::setupBattle()
   QList<BubbyFlavour*> flavours = equip_signature->getUniqueFlavours();
   equip_signature->unattach(0, 3);
   equip_signature->unattach(0, 1);
+  */
 
   test_battle = new Battle(friends, foes, this);
 }

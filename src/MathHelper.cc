@@ -207,11 +207,11 @@ QVector<int> buildExponentialTable(int min, int max, int iter)
   double b = log((double)max / min) / (iter - 1);
   double a = (double)min / (exp(b) - 1.0);
 
-  for  (int i = 1; i < iter; i++)
+  for  (int i = 1; i <= iter; i++)
   {
-    int old_value = round(a * exp(b * (i - 1)));
-    int new_value = round(a * exp(b * i));
-    table.push_back(new_value - old_value);
+      int old_exp = round(a * exp(b * (i - 1)));
+      int new_exp = round(a * exp(b * i));
+      table.push_back(new_exp - old_exp);
   }
 
   return table;

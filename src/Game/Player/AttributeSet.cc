@@ -176,7 +176,7 @@ short AttributeSet::getStat(QString name)
  */
 short AttributeSet::getStat(int index)
 {
-  if (index > 0 && index < values.size())
+  if (index >= 0 && index < values.size())
     return values.at(index);
   return -1;
 }
@@ -194,14 +194,10 @@ void AttributeSet::setAll(QList<uint> stat_values)
 {
     values.clear();
 
-    int index = 0;
-    while (values.size() < short_names.size())
+    for (int i = 0; i < short_names.size(); i++)
     {
-      if (values.size() < stat_values.size())
-        values.append(stat_values.at(index));
-      else
-        values.append(kDEFAULT_MIN);
-      index++;
+      if (stat_values.size() > i)
+        values.append(stat_values.at(i));
     }
 }
 

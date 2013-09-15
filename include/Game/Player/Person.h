@@ -16,8 +16,10 @@
 #include "Game/Player/Equipment.h"
 #include "Game/Sprite.h"
 
-class Person
+class Person : QWidget
 {
+  Q_OBJECT;
+
 public:
   /* Default Constructor */
   Person();
@@ -56,8 +58,9 @@ public:
     THREESKILLS    = 1 << 19, /* Can the person use three skills per turn? */
     HALFCOST       = 1 << 20, /* Does the person only use half the QD? */
     REFLECT        = 1 << 20, /* Is the person currently reflecting skills? */
-    BOND           = 1 << 21,  /* Is the person in the BOND state? */
-    CANREVIVE      = 1 << 22
+    BOND           = 1 << 21, /* Is the person in the BOND state? */
+    CANREVIVE      = 1 << 22, /* Can the person be revived? */
+    CANLEVEL       = 1 << 23  /* Can the person level up? */
   };
   Q_DECLARE_FLAGS(PersonFlags, PersonState)
 
@@ -129,6 +132,27 @@ private:
   static const uint kMAX_EQUIP_SLOTS;
   static const uint kMAX_ITEM_DROPS;
   static const double kMAX_DAMAGE_MODIFIER;
+  static const double kPRIM_X_MODI;
+  static const double kPRIM_S_MODI;
+  static const double kPRIM_A_MODI;
+  static const double kPRIM_B_MODI;
+  static const double kPRIM_C_MODI;
+  static const double kSECD_X_MODI;
+  static const double kSECD_S_MODI;
+  static const double kSECD_A_MODI;
+  static const double kSECD_B_MODI;
+  static const double kSECD_C_MODI;
+
+
+/*============================================================================
+ * PRIVATE FUNCTIONS
+ *============================================================================*/
+private:
+  /* Calculates an AttributeSet representing the person's basic statistics */
+  AttributeSet calcBaseLevelStats();
+
+  /* Calculate an AttributeSet representing the person's top statistics */
+  AttributeSet calcMaxLevelStats();
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -153,8 +177,7 @@ public:
   void printFlags();
   void printSkills();
 
-  /* Stat set up functions */
-  void setUpBaseStats();
+
 
   /* PersonState flag functions */
   bool getPersonFlag(PersonState flags);
@@ -209,7 +232,6 @@ public:
   Sprite* getThirdPerson();
 
   /* Methods for obtaining stat sets */
-  AttributeSet* getBase();
   AttributeSet* getStats();
   AttributeSet* getMax();
   AttributeSet* getTemp();
@@ -267,7 +289,6 @@ public:
   void setThirdPerson(Sprite* s = 0);
 
   /* Methods for setting stat values */
-  void setBase(AttributeSet new_stat_set);
   void setStats(AttributeSet new_stat_set);
   void setMax(AttributeSet new_stat_set);
   void setTemp(AttributeSet new_stat_set);
@@ -275,6 +296,13 @@ public:
 
   EnumDb::PersonRanks getRankEnum(QString rank_string);
   QString getRankString(EnumDb::PersonRanks person_rank);
+
+ /*============================================================================
+  * SIGNALS
+  *============================================================================*/
+signals:
+  /* Emitted when the Person levels up */
+  void levelUp();
 
 /*============================================================================
  * PUBLIC STATIC FUNCTIONS

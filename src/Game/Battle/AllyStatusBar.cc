@@ -38,46 +38,7 @@ AllyStatusBar::AllyStatusBar(Person* character, uint width, uint height,
 /*
  * Description: Annihilates a PersonStatusBar
  */
-AllyStatusBar::~AllyStatusBar()
-{
-  if (health_bar != NULL)
-  {
-    delete health_bar;
-    health_bar = NULL;
-  }
-  if (health_label != NULL)
-  {
-    delete health_label;
-    health_label = NULL;
-  }
-  if (name_label != NULL)
-  {
-    delete name_label;
-    name_label = NULL;
-  }
-  if (qd_label != NULL)
-  {
-    delete qd_label;
-    qd_label = NULL;
-  }
-  if (qd_outline != NULL)
-  {
-    delete qd_outline;
-    qd_outline = NULL;
-  }
-  if (qd_bar != NULL)
-  {
-    delete qd_bar;
-    qd_bar = NULL;
-  }
-  if (qd_grad != NULL)
-  {
-    delete qd_grad;
-    qd_grad = NULL;
-  }
-
-  cleanUp();
-}
+AllyStatusBar::~AllyStatusBar() {}
 
 /*==============================================================================
  * VIRTUAL FUNCTIONS
