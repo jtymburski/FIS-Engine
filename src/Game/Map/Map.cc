@@ -6,6 +6,13 @@
 *              in-game map. This contains all the tiles that a map is composed
 *              of, it also holds pointers to all of the NPC's contained in the
 *              maps tiles. This also handles the viewport for the map.
+*
+* TODO: 
+*  1. If the tile image does not exist, disable the painting sequence
+*    - There seems to be a small glitch in this where it paints a white tile
+*  2. Allow for map to run with a parameterless constructor. Is that possible
+*     with the QGLFormat in the mix that is required for setting up the 
+*     QGLWidget?
 ******************************************************************************/
 #include "Game/Map/Map.h"
 

@@ -17,6 +17,7 @@
 #include <QLayout>
 #include <QStackedWidget>
 
+#include "Game/Game.h"
 #include "TitleScreen.h"
 
 /* DELETE: Temporary header access for testing */
