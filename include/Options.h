@@ -17,6 +17,9 @@ public:
   /* Constructor(s) */
   Options(QWidget* parent = 0);
 
+  /* Copy constructor */
+  Options(const Options &source);
+
   /* Destructor */
   ~Options();
 
@@ -53,6 +56,9 @@ private:
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 private:
+  /* Copy all parameters from the other to the current if called */
+  void copySelf(const Options &source);
+
   /* Sets all parameters to default */
   void setAllToDefault();
 
@@ -79,6 +85,12 @@ public:
 
   /* Sets the given option ot the give value (may require reimplementation) */
   //void setOption(QString s, int value); 
+
+/*============================================================================
+ * OPERATOR FUNCTIONS
+ *===========================================================================*/
+public:
+  Options& operator= (const Options &source);
 };
 
 #endif // OPTIONS_H

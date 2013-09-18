@@ -39,21 +39,21 @@ public:
   ~Application();
 
 private:
+  /* The running game */
+  Game* game_handler;
+
   /* All options available for the system */
   Options system_options;
 
+  /* The displayed title screen for the game */
   TitleScreen* title_screen;
   
   /* DELETE two pointers below. Currently here for testing */
   Battle* test_battle;
   Map* test_map;
 
-  /* Some options (temp?) */
-  bool vsync_enabled;
-
   /*------------------- Constants -----------------------*/
-  const static short kRESOLUTION_X; /* Screen resolution, x direction */
-  const static short kRESOLUTION_Y; /* Screen resolution, y direction */
+  //const static short kRESOLUTION_X; /* Sample */
 
 /*============================================================================
  * PROTECTED FUNCTIONS

@@ -34,6 +34,11 @@ Options::Options(QWidget* parent) : QWidget(parent)
 #endif
 }
 
+Options::Options(const Options &source)
+{
+  copySelf(source);
+}
+
 /* Destructor function */
 Options::~Options()
 {
@@ -42,6 +47,13 @@ Options::~Options()
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
+
+void Options::copySelf(const Options &source)
+{
+  resolution_x = source.resolution_x;
+  resolution_y = source.resolution_y;
+  vsync_enabled = source.vsync_enabled;
+}
 
 void Options::setAllToDefault()
 {
@@ -53,13 +65,13 @@ void Options::setAllToDefault()
 void Options::setScreenHeight(int index)
 {
   if(index >= 0 && index < kNUM_RESOLUTIONS)
-    resolution_y = kRESOLUTIONS_Y[index];
+    resolution_y = index;
 }
 
 void Options::setScreenWidth(int index)
 {
   if(index >= 0 && index < kNUM_RESOLUTIONS)
-    resolution_x = kRESOLUTIONS_X[index];
+    resolution_x = index;
 }
 
 void Options::setVsync(bool enabled)
@@ -81,12 +93,12 @@ void Options::setVsync(bool enabled)
 
 short Options::getScreenHeight()
 {
-  return resolution_y;
+  return kRESOLUTIONS_Y[resolution_y];
 }
 
 short Options::getScreenWidth()
 {
-  return resolution_x;
+  return kRESOLUTIONS_X[resolution_x];
 }
 
 bool Options::isVsyncEnabled()
@@ -101,3 +113,20 @@ bool Options::isVsyncEnabled()
 //    (void)option; //warning
 //    (void)value; //warning
 //}
+
+/*============================================================================
+ * OPERATOR FUNCTIONS
+ *===========================================================================*/
+
+Options& Options::operator= (const Options &source)
+{
+  /* Check for self assignment */
+  if(this == &source)
+    return *this;
+
+  /* Do the copy */
+  copySelf(source);
+
+  /* Return the copied object */
+  return *this;
+}

@@ -14,6 +14,7 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include <QDebug>
 #include <QStackedWidget>
 
 #include "Game/Battle/Battle.h"
@@ -30,8 +31,8 @@ class Game : public QStackedWidget
 
 public:
   /* Constructor functions */
-  Game();
-  Game(Options* running_config);
+  Game(QWidget* parent = 0);
+  Game(Options running_config, QWidget* parent = 0);
 
   /* Destructor function */
   ~Game();
@@ -47,20 +48,26 @@ public:
   Q_DECLARE_FLAGS(BattleOptions, BattleOption)
 
   /* The game mode operator, for controlling the visible widget */
-  enum GameMode {DISABLED, MAP, BATTLE, VICTORY_SCREEN};
+  enum GameMode {DISABLED       = 0, 
+                 MAP            = 1, 
+                 BATTLE         = 2, 
+                 VICTORY_SCREEN = 3};
 
 private:
+  /* A blank black screened widget for disabled mode */
+  QWidget blank_widget;
+
   /* Battle options variable for flags being set */
   BattleOptions bo_flag_set;
 
   /* A current battle pointer */
-  //Battle* current_battle;
+  Battle* game_battle;
   
   /* A current victory screen pointer */
   //VictoryScreen* current_victoryscreen;
 
   /* The configuration for the display of the game */
-  Options* game_config;
+  Options game_config;
 
   /* The current loaded map */
   Map* game_map; // TODO: Make non-pointer?
@@ -85,6 +92,19 @@ private:
   bool GAME_ENABLED;
 
 /*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+private:
+  /* Set up the battle */
+  void setupBattle();
+
+  /* Set up the map */
+  void setupMap();
+
+  /* Sets up the game - called on first creation */
+  void setupGame();
+
+/*============================================================================
  * PUBLIC SLOTS
  *===========================================================================*/
 public slots:
@@ -95,6 +115,9 @@ public slots:
 public:
   /* Retrieve battle option flag and what it's set to */
   bool getBattleFlag(BattleOption flags);
+
+  /* Set the running configuration, from the options class */
+  void setConfiguration(Options running_config);
 
   /* Enables or disables the GAME_ENABLED flag */
   void setEnabled(bool enable);

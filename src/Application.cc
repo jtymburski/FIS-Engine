@@ -10,8 +10,7 @@
 #include "Application.h"
 
 /* Constant Implementation - see header file for descriptions */
-const short Application::kRESOLUTION_X = 1216;
-const short Application::kRESOLUTION_Y = 704;
+//const short Application::kRESOLUTION_X = 1216;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -26,10 +25,20 @@ Application::Application(QWidget* parent)
   //setCursor(Qt::BlankCursor);
   //setCursor(Qt::ArrowCursor);
 
-  title_screen = new TitleScreen(system_options.getScreenWidth(), 
-                                 system_options.getScreenHeight());
+  /* Options information */
+  short screen_height = system_options.getScreenHeight();
+  short screen_width = system_options.getScreenWidth();
+
+  /* Set up the title screen */
+  title_screen = new TitleScreen(screen_width, screen_height);
   //title_screen->show();
 
+  /* Set up the game */
+  qDebug() << system_options.isVsyncEnabled();
+  game_handler = new Game(system_options);
+  //game_handler->switchGameMode(Game::MAP); // TODO: properly integrate
+
+  /* Set up battle - temporary */
   setupBattle();
   //test_battle->show();
   
@@ -41,23 +50,23 @@ Application::Application(QWidget* parent)
     gl_format.setSwapInterval(1);
   else
     gl_format.setSwapInterval(0);
-  test_map = new Map(gl_format, system_options.getScreenWidth(), 
-                                system_options.getScreenHeight());
+  test_map = new Map(gl_format, screen_width, screen_height);
   //test_map->loadMap("maps/test_03");
   //test_map->getViewport()->show();
 
   /* Add widgets to the stack */
   addWidget(test_battle);
-  addWidget(test_map); // TODO: should be viewport
+  addWidget(test_map);
   addWidget(title_screen);
-  setCurrentIndex(2); // TODO (0=battle, 1=map, 2=titlescreen)
+  addWidget(game_handler); // TODO: Remove
+  setCurrentIndex(2); // TODO (0=battle, 1=map, 2=titlescreen) - Move out
 
   /* Widget information for handling the game */
   title_screen->setFocus();
-  setMaximumWidth(kRESOLUTION_X);
-  setMaximumHeight(kRESOLUTION_Y);
-  setMinimumWidth(kRESOLUTION_X);
-  setMinimumHeight(kRESOLUTION_Y);
+  setMaximumWidth(screen_width);
+  setMaximumHeight(screen_height);
+  setMinimumWidth(screen_width);
+  setMinimumHeight(screen_height);
 
   QObject::connect(title_screen, SIGNAL(closing()),
                    this,         SLOT(close()));
@@ -74,9 +83,9 @@ Application::Application(QWidget* parent)
   QDesktopWidget desktopWidget;
   QRect desktopRect(desktopWidget
                       .availableGeometry(desktopWidget.primaryScreen()));
-  setGeometry((desktopRect.width() - kRESOLUTION_X) / 2, 
-              (desktopRect.height() - kRESOLUTION_Y) / 2, 
-              kRESOLUTION_X, kRESOLUTION_Y);
+  setGeometry((desktopRect.width() - screen_width) / 2, 
+              (desktopRect.height() - screen_height) / 2, 
+              screen_width, screen_height);
 
   /* Do the final show once everything is set up */
   //showFullScreen();
