@@ -251,30 +251,30 @@ void Sound::cleanupSDL()
 bool Sound::initiateSDL()
 {
   /* Frequency of Audio Playback */
-	int audio_rate = kINIT_RATE;
+  int audio_rate = kINIT_RATE;
   /* Format of the audio we're playing */
-	Uint16 audio_format = kINIT_FORMAT;
+  Uint16 audio_format = kINIT_FORMAT;
   /* 1 channel = mono, 2 channels = stereo */
-	int audio_channels = kINIT_CHANNELS;
+  int audio_channels = kINIT_CHANNELS;
   /* Size of the audio buffers in memory */
-	int audio_buffers = kINIT_BUFFERS;
-	/* Success of the initialization */
+  int audio_buffers = kINIT_BUFFERS;
+  /* Success of the initialization */
   bool success = true;
   
-	/* Initialize the SDL audio */
-	if (SDL_Init(SDL_INIT_AUDIO) != 0) 
+  /* Initialize the SDL audio */
+  if (SDL_Init(SDL_INIT_AUDIO) != 0) 
   {
-		printf("[ERROR] Unable to initialize SDL: %s\n", SDL_GetError());
+    printf("[ERROR] Unable to initialize SDL: %s\n", SDL_GetError());
     success = false;
-	}
+  }
 
-	/* Initialize SDL_mixer with our chosen audio settings */
-	if(Mix_OpenAudio(audio_rate, audio_format, 
+  /* Initialize SDL_mixer with our chosen audio settings */
+  if(Mix_OpenAudio(audio_rate, audio_format, 
                    audio_channels, audio_buffers) != 0) 
   {
-		printf("[ERROR] Unable to initialize audio: %s\n", Mix_GetError());
+    printf("[ERROR] Unable to initialize audio: %s\n", Mix_GetError());
     success = false;
-	}
+  }
 
   //printf("%d\n", Mix_QuerySpec(&audio_rate, &audio_format, &audio_channels));
 
@@ -291,9 +291,9 @@ bool Sound::initiateSDL()
 bool Sound::statusSDL()
 {
   /* Info on the configured audio */
-	int audio_rate = kINIT_RATE;
-	Uint16 audio_format = kINIT_FORMAT;
-	int audio_channels = kINIT_CHANNELS;
+  int audio_rate = kINIT_RATE;
+  Uint16 audio_format = kINIT_FORMAT;
+  int audio_channels = kINIT_CHANNELS;
 
   /* Return if the audio configuration is complete */
   return SDL_WasInit(SDL_INIT_AUDIO) > 0 && 
