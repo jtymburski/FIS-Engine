@@ -48,8 +48,12 @@ private:
   bool sound_set;
 
   /* --------------------- CONSTANTS --------------------- */
-  const static int kINFINITE_LOOP; /* Infinite loop special character */
-  const static int kUNSET_CHANNEL; /* Unset channel definition */
+  const static short kINIT_BUFFERS; /* Size of audio buffers in memory */
+  const static short kINIT_CHANNELS; /* 1 channel = mono, 2 = stereo */
+  const static Uint16 kINIT_FORMAT; /* Format of the audio being played */
+  const static short kINIT_RATE; /* Frequency of Audio Playback */
+  const static short kINFINITE_LOOP; /* Infinite loop special character */
+  const static short kUNSET_CHANNEL; /* Unset channel definition */
 
 /*============================================================================
  * SLOTS
@@ -77,6 +81,19 @@ public:
 
   /* Unset the sound file and frees the memory */
   bool unsetSoundFile();
+
+/*============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *===========================================================================*/
+public:
+  /* Cleans up the initialization protocol which ends all sound */
+  static void cleanupSDL();
+
+  /* Initiates the sound protocol using SDL */
+  static bool initiateSDL();
+
+  /* Status of the running SDL system */
+  static bool statusSDL();
 };
 
 #endif // SOUND_H

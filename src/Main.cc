@@ -1,12 +1,19 @@
-#include <QtGui/QApplication>
-#include <SDL/SDL.h>
-#include <SDL/SDL_mixer.h>
+/******************************************************************************
+* Name: Main function call
+* Date Created: February 9, 2012
+* Inheritance: none
+* Description: This is the first call of the entire game and where it all
+*              begins. Merely sets up the sound and QT and runs until the 
+*              application close sequence is called. Built to create joy for 
+*              all between the age of 17.7-17.9
+******************************************************************************/
+#include <QApplication>
 
 #include "Application.h"
+#include "Sound.h"
 
 /* DELETE: Only for testing */
 #include "FileHandler.h"
-#include "Game/Map/MapNPC.h"
 
 #undef main
 
@@ -102,50 +109,29 @@ int main(int argc, char *argv[])
     qDebug() << "Writing file fail.";
   }
 
-  //QApplication::setGraphicsSystem("raster");
-  QApplication app(argc, argv);
+  /*------------------ Actual Code Start ----------------------*/
 
-  /* Frequency of Audio Playback */
-	int audio_rate = 22050;
-  /* Format of the audio we're playing */
-	Uint16 audio_format = AUDIO_S16SYS;
-  /* 1 channel = mono, 2 channels = stereo */
-	int audio_channels = 2;			//2 channels = stereo
-  /* Size of the audio buffers in memory */
-	int audio_buffers = 1024;
-	
-	/* Initialize the SDL audio */
-	if (SDL_Init(SDL_INIT_AUDIO) != 0) 
-  {
-		printf("Unable to initialize SDL: %s\n", SDL_GetError());
-		exit(1);
-	}
-	
-	/* Initialize SDL_mixer with our chosen audio settings */
-	if(Mix_OpenAudio(audio_rate, audio_format, 
-                   audio_channels, audio_buffers) != 0) 
-  {
-		printf("Unable to initialize audio: %s\n", Mix_GetError());
-		//exit(1);
-	}
+  /* Setup the sound */
+  Sound::initiateSDL();
+  qDebug() << "[DEBUG] Sound configured: " << Sound::statusSDL();
 
   /* Setup QT */
-  QApplication::setGraphicsSystem("opengl");
-  QGL::setPreferredPaintEngine(QPaintEngine::OpenGL);
-  Application* game = new Application();
-  QObject::connect(game, SIGNAL(closing()), &app, SLOT(quit()));
-  game->show();
+  QApplication qt_app(argc, argv);
+  //QApplication::setGraphicsSystem("opengl"); /* Removed in QT5 */
+  //QGL::setPreferredPaintEngine(QPaintEngine::OpenGL); /* Removed in QT5 */
+  Application* app = new Application();
+  QObject::connect(app, SIGNAL(closing()), &qt_app, SLOT(quit()));
+  app->show();
 
   /* Run QT App */
-  int qt_result = app.exec();
+  int qt_result = qt_app.exec();
   
   /* Clean up QT and the game */
-  game->hide();
-  delete game;
+  app->hide();
+  delete app;
 	
   /* Clean up SDL */
-	Mix_CloseAudio();
-	SDL_Quit();	
+  Sound::cleanupSDL();
 
   return qt_result;
 }

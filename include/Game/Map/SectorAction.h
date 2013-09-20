@@ -7,7 +7,7 @@
 #ifndef SECTORACTION_H
 #define SECTORACTION_H
 
-#include <QtGui/QWidget>
+#include <QWidget>
 
 class SectorAction : public QWidget
 {

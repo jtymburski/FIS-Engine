@@ -117,7 +117,9 @@ QPixmap Sprite::getCurrent()
 {
   if(size > 0)
     return current->getImage();
-  return NULL;
+
+  QPixmap null_image;
+  return null_image;
 }
 
 /* 
@@ -134,7 +136,9 @@ QPixmap Sprite::getCurrentAndShift()
     shiftNext();
     return image;
   }
-  return NULL;
+
+  QPixmap null_image;
+  return null_image;
 }
 
 /* 

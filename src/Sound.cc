@@ -16,8 +16,12 @@
 #include "Sound.h"
 
 /* Constant Implementation - see header file for descriptions */
-const int Sound::kINFINITE_LOOP = -1;
-const int Sound::kUNSET_CHANNEL = -1;
+const short Sound::kINIT_BUFFERS = 1024;
+const short Sound::kINIT_CHANNELS = 2;
+const Uint16 Sound::kINIT_FORMAT = AUDIO_S16SYS;
+const short Sound::kINIT_RATE = 22050;
+const short Sound::kINFINITE_LOOP = -1;
+const short Sound::kUNSET_CHANNEL = -1;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -85,10 +89,14 @@ void Sound::play()
   /* Ensure the channel is stopped if it was in use */
   stop();
 
-  /* Try to play on a new channel */
-  channel = Mix_PlayChannel(-1, sound, loop_count);
-  if(channel == kUNSET_CHANNEL)
-    qDebug() << "[ERROR]Unable to play WAV file " << Mix_GetError();
+  /* Only proceed if the sound SDL layer is ready to run */
+  if(sound_set && statusSDL())
+  {
+    /* Try to play on a new channel */
+    channel = Mix_PlayChannel(-1, sound, loop_count);
+    if(channel == kUNSET_CHANNEL)
+      printf("[ERROR] Unable to play WAV file: %s\n", Mix_GetError());
+  }
 }
 
 /* 
@@ -140,23 +148,27 @@ int Sound::getPlayCount()
  */
 bool Sound::setSoundFile(QString path)
 {
-  if(!path.isEmpty())
+  if(statusSDL())
   {
-    unsetSoundFile();
-    sound = Mix_LoadWAV(path.toStdString().c_str());
-
-    /* Determine if the setting of the sound was valid */
-    if(sound == NULL)
+    if(!path.isEmpty())
     {
-      qDebug() << "[ERROR]Unable to load WAV file: " << Mix_GetError();
-      return false;
+      unsetSoundFile();
+      sound = Mix_LoadWAV(path.toStdString().c_str());
+
+      /* Determine if the setting of the sound was valid */
+      if(sound == NULL)
+      {
+        printf("[ERROR] Unable to load WAV file: %s\n", Mix_GetError());
+        return false;
+      }
+
+      sound_set = true;
+      return true;
     }
 
-    sound_set = true;
-    return true;
+    printf("[ERROR] Unable to load empty WAV file path\n");
+    return false;
   }
-
-  qDebug() << "[ERROR]Unable to load empty WAV file path";
   return false;
 }
 
@@ -209,4 +221,81 @@ bool Sound::unsetSoundFile()
 
   sound = NULL;
   return false;
+}
+
+/*============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *===========================================================================*/
+
+/*
+ * Description: Cleans up SDL sound information by closing the appropriate
+ *              streams and calling close on the mixer and SDL.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Sound::cleanupSDL()
+{
+  Mix_CloseAudio();
+  SDL_Quit();
+}
+
+/* 
+ * Description: Initializes the sound information to set up SDL in order for
+ *              sound to work throughout the game. If the sound is not set up,
+ *              no sound will be able to play.
+ *
+ * Inputs: none
+ * Output: bool - status if the sound initiation was successful
+ */
+bool Sound::initiateSDL()
+{
+  /* Frequency of Audio Playback */
+	int audio_rate = kINIT_RATE;
+  /* Format of the audio we're playing */
+	Uint16 audio_format = kINIT_FORMAT;
+  /* 1 channel = mono, 2 channels = stereo */
+	int audio_channels = kINIT_CHANNELS;
+  /* Size of the audio buffers in memory */
+	int audio_buffers = kINIT_BUFFERS;
+	/* Success of the initialization */
+  bool success = true;
+  
+	/* Initialize the SDL audio */
+	if (SDL_Init(SDL_INIT_AUDIO) != 0) 
+  {
+		printf("[ERROR] Unable to initialize SDL: %s\n", SDL_GetError());
+    success = false;
+	}
+
+	/* Initialize SDL_mixer with our chosen audio settings */
+	if(Mix_OpenAudio(audio_rate, audio_format, 
+                   audio_channels, audio_buffers) != 0) 
+  {
+		printf("[ERROR] Unable to initialize audio: %s\n", Mix_GetError());
+    success = false;
+	}
+
+  //printf("%d\n", Mix_QuerySpec(&audio_rate, &audio_format, &audio_channels));
+
+  return success;
+}
+
+/*
+ * Description: Returns if the SDL sound system has been configured and is up
+ *              and running to allow for sounds to be played.
+ *
+ * Inputs: none
+ * Output: bool - status if the SDL sound is configured and running
+ */
+bool Sound::statusSDL()
+{
+  /* Info on the configured audio */
+	int audio_rate = kINIT_RATE;
+	Uint16 audio_format = kINIT_FORMAT;
+	int audio_channels = kINIT_CHANNELS;
+
+  /* Return if the audio configuration is complete */
+  return SDL_WasInit(SDL_INIT_AUDIO) > 0 && 
+         Mix_QuerySpec(&audio_rate, &audio_format, &audio_channels) > 0;
 }

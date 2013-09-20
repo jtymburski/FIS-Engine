@@ -41,12 +41,18 @@ Game::Game(Options running_config, QWidget* parent)
 /* Destructor function */
 Game::~Game()
 {
+  /* Clear out the widgets in the stack */
+  while(count() > 0)
+    removeWidget(widget(0));
+
+  /* Delete battle */
   if(game_battle != 0)
   {
     delete game_battle;
     game_battle = 0;
   }
 
+  /* Delete map */
   if(game_map != 0)
   {
     delete game_map;
@@ -81,8 +87,8 @@ void Game::setupBattle()
   chance_list.push_back(0.90);
 
   Skill* poison_skill = new Skill("Posion Attack", effect_list, chance_list);
-  poison_skill->setFlag(Skill::OFFENSIVE, TRUE);
-  poison_skill->setFlag(Skill::PHYSICAL, TRUE);
+  poison_skill->setFlag(Skill::OFFENSIVE, true);
+  poison_skill->setFlag(Skill::PHYSICAL, true);
 
   // End Skill Builds
 

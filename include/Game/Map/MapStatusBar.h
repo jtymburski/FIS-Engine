@@ -8,10 +8,10 @@
 #define MAPSTATUSBAR_H
 
 #include <QImage>
-#include <QtGui/QWidget>
 #include <QRect>
 #include <QString>
 #include <QTimer>
+#include <QWidget>
 
 #include "Game/Map/MapPerson.h"
 

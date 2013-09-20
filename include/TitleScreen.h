@@ -10,10 +10,10 @@
 #include <QImage>
 #include <QKeyEvent>
 #include <QLabel>
+#include <QPainter>
 #include <QString>
-#include <QtGui/QWidget>
-#include <QtGui/QPainter>
 #include <QVector>
+#include <QWidget>
 
 #include "Options.h"
 #include "Sound.h"

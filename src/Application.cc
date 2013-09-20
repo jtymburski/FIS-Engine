@@ -34,7 +34,6 @@ Application::Application(QWidget* parent)
   //title_screen->show();
 
   /* Set up the game */
-  qDebug() << system_options.isVsyncEnabled();
   game_handler = new Game(system_options);
   //game_handler->switchGameMode(Game::MAP); // TODO: properly integrate
 
@@ -93,6 +92,18 @@ Application::Application(QWidget* parent)
 
 Application::~Application()
 {
+  /* Clear out the widgets in the stack */
+  while(count() > 0)
+    removeWidget(widget(0));
+
+  /* Delete the game */
+  if(game_handler != 0)
+  {
+    delete game_handler;
+    game_handler = 0;
+  }
+
+  /* Delete the map - temporary */
   delete test_map;
   test_map = 0;
 }
@@ -166,8 +177,8 @@ void Application::setupBattle()
   chance_list.push_back(0.90);
 
   Skill* poison_skill = new Skill("Posion Attack", effect_list, chance_list);
-  poison_skill->setFlag(Skill::OFFENSIVE, TRUE);
-  poison_skill->setFlag(Skill::PHYSICAL, TRUE);
+  poison_skill->setFlag(Skill::OFFENSIVE, true);
+  poison_skill->setFlag(Skill::PHYSICAL, true);
 
   // End Skill Builds
 

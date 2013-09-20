@@ -228,7 +228,7 @@ public:
   bool start();
 
   /* Stops the whole process, to end access to the file stream */
-  bool stop(bool failed = FALSE);
+  bool stop(bool failed = false);
 
   /* Writes the following line to the file. Only valid for REGULAR files */
   bool writeRegularLine(QString line);
@@ -240,7 +240,7 @@ public:
   bool writeXmlElement(QString element, QString key = "", QString value = "");
 
   /* Writes an ending XML element or elements */
-  bool writeXmlElementEnd(bool all = FALSE);
+  bool writeXmlElementEnd(bool all = false);
 
 /*============================================================================
  * PUBLIC STATIC FUNCTIONS
@@ -254,7 +254,7 @@ public:
 
   /* Rename the file, if it exists and the new name doesn't */
   static bool fileRename(QString old_filename, QString new_filename, 
-                         bool overwrite = FALSE);
+                         bool overwrite = false);
 };
 
 #endif // FILEHANDLER_H

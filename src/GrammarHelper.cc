@@ -104,7 +104,7 @@ QString fullFormItem(Item* object, int quantity)
  */
 bool isVowel(QChar x)
 {
-  x = x.toLower().toAscii();
+  x = x.toLower();
 
   if (x == 'a' || x == 'e' || x == 'i' || x == 'o' || x == 'u')
     return true;

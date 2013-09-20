@@ -9,7 +9,7 @@
 #ifndef OPTIONS_H
 #define OPTIONS_H
 
-#include <QtGui/QWidget>
+#include <QWidget>
 
 class Options : public QWidget
 {
