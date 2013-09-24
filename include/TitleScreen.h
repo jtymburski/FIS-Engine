@@ -2,116 +2,118 @@
 * Class Name: TitleScreen
 * Date Created: Oct 28 2012
 * Inheritance: QWidget
-* Description: The TitleScreen class
+* Description: Is the widget for the main display of the game. Will mostly 
+*              just be a menu but this allows for the safe passage between
+*              classes as interactions with Application occur.
 ******************************************************************************/
 #ifndef TITLESCREEN_H
 #define TITLESCREEN_H
 
-#include <QImage>
 #include <QKeyEvent>
 #include <QLabel>
+#include <QList>
 #include <QPainter>
+#include <QPixmap>
 #include <QString>
-#include <QVector>
 #include <QWidget>
 
 #include "Options.h"
 #include "Sound.h"
-//#include "SavedGame.h"
 
 class TitleScreen : public QWidget
 {
   Q_OBJECT
 
 public:
+  /* Default constructor */
+  TitleScreen(QWidget* parent = 0);
+
   /* Constructor function */
-  TitleScreen(int width, int height, QWidget* parent = 0);
+  TitleScreen(Options running_config, QWidget* parent = 0);
 
   /* Destructor function */
   ~TitleScreen();
 
-  /* Public enumerators */
-  //enum MenuState{OFF,MAIN,CONTINUE,INOPTIONS,INEXIT,SECRET};
-  enum MenuState{TESTMAP,TESTBATTLE,MAINEXIT};
-
+  /* Enumerator: Application options to be selected */
+  enum MenuItems{TESTMAP    = 0,
+                 TESTBATTLE = 1,
+                 OPTIONS    = 2,
+                 EXIT       = 3};
 private:
-  /* For the first menu level's position */
+  /* Background audio during title screen */
+  Sound background_sound;
+
+  /* The selection cursor - needed?? */
+  //Frame cursor;
+
+  /* Indication for the title screen menu's position */
   int cursor_index;
 
+  /* Menu click audio, during selection changes */
+  Sound menu_click_sound;
+
   /* The options at the first menu level */
-  QVector<QLabel*> option_labels;
+  QList<QLabel*> option_labels;
 
-  /* The selection cursor */
-  QImage cursor;
-
-  /* The total saved games for menu building purposes */
-//  QVector<SavedGame*> games;
-
-  /* The options for menu building purposes */
-  Options* application_options;
-
-  /* The currently selected menu state */
-  MenuState current_state;
-
-  /* The previously selected menu position */
-  int previous_selection;
-
-  /* The currently selected menu position */
-  int current_selection;
-
-  /* The options names for menu building */
-  QVector<QString> option_names;
-
-  Sound* background_sound;
-  Sound* menu_click_sound;
+  /* The configuration for display of the game */
+  Options system_options;
 
   /* ------------------ Constants ------------------ */
-  const static int kNUM_MENU_ITEMS;   /* Number of menu items in screen */
   const static QString kMENU_ITEMS[]; /* The stored menu items */
+  const static short kNUM_MENU_ITEMS;   /* Number of menu items in screen */
+  
+/*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+private:
+  /* Decrements the selected menu item */
+  void decrementSelected();
+
+  /* Highlight the selected index, with a surrounding border */
+  bool highlight(int index);
+
+  /* Increments the selected menu item */
+  void incrementSelected();
+
+  /* Sets the selected menu item - fails if out of range */
+  bool setSelected(int index);
+ 
+  /* Sets up the class, with the appropriate widget information */
+  void setupClass();
+
+  /* Set up the menu display text, for painting */
+  void setupMenu();
+  
+  /* Un-Highlight the selected index by removing the border */
+  bool unhighlight(int index);
 
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
 protected:
+  /* The paint event for the widget, to display everything */
   void paintEvent(QPaintEvent*);
-  void keyPressEvent(QKeyEvent*);
 
-/*============================================================================
- * SLOTS
- *===========================================================================*/
-public slots:
-  void close();
-  void openBattle();
-  void openMap();
+  /* The key press event, activated when this widget is in the forefront */
+  void keyPressEvent(QKeyEvent*);
 
 /*============================================================================
  * SIGNALS
  *===========================================================================*/
 signals:
-  void closing();
-  void openingBattle(int index);
-  void openingMap(int index);
+  void close();
+  void openBattle(); // TEMP
+  void openMap(); // TEMP
 
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
-  void decrementState();
-
-  void incrementState();
-
-  /* Changes the menu to state s and the given index */
-  void iterate(MenuState s, int index);
-
+  /* Play the background sound file, once the menu status is returned */
   void playBackground();
 
-  bool setSelectedMenu(int menu_count);
-
-  bool setState(int index);
-
-  void setup();
-
-  bool unsetSelectedMenu(int menu_count);
+  /* Sets the running configuration, from the options class */
+  void setConfiguration(Options running_config);
 };
 
 #endif // TITLESCREEN_H

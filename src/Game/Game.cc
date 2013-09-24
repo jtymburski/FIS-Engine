@@ -158,21 +158,6 @@ void Game::setupBattle()
   game_battle = new Battle(friends, foes, this);
 }
 
-/* Set up the map - old map needs to be deleted prior to calling */
-void Game::setupMap()
-{
-  /* Sets up the map format and map with vsync and double buffering forced on */
-  /* TODO: add checking if OpenGL is not enabled */
-  QGLFormat gl_format(QGL::SampleBuffers);
-  gl_format.setDoubleBuffer(true);
-  if(game_config.isVsyncEnabled())
-    gl_format.setSwapInterval(1);
-  else
-    gl_format.setSwapInterval(0);
-  //game_map = new Map(gl_format, game_config.getScreenWidth(), 
-  //                              game_config.getScreenHeight());
-}
-
 // TODO: Add victory screen
 void Game::setupGame()
 {
@@ -202,6 +187,21 @@ void Game::setupGame()
   else
     qDebug() << "[ERROR] Failed to initialize battle in game.";
   setCurrentIndex(game_mode);
+}
+
+/* Set up the map - old map needs to be deleted prior to calling */
+void Game::setupMap()
+{
+  /* Sets up the map format and map with vsync and double buffering forced on */
+  /* TODO: add checking if OpenGL is not enabled */
+  QGLFormat gl_format(QGL::SampleBuffers);
+  gl_format.setDoubleBuffer(true);
+  if(game_config.isVsyncEnabled())
+    gl_format.setSwapInterval(1);
+  else
+    gl_format.setSwapInterval(0);
+  //game_map = new Map(gl_format, game_config.getScreenWidth(), 
+  //                              game_config.getScreenHeight());
 }
 
 /*============================================================================
@@ -260,5 +260,3 @@ void Game::switchGameMode(GameMode mode)
 void Game::updateGame()
 {
 }
-
-

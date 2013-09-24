@@ -13,9 +13,9 @@
 #include "Options.h"
 
 /* Constant Implementation - see header file for descriptions */
-const short Options::kNUM_RESOLUTIONS = 1;
-const short Options::kRESOLUTIONS_X[1] = {1216};
-const short Options::kRESOLUTIONS_Y[1] = {704};
+const short Options::kNUM_RESOLUTIONS = 2;
+const short Options::kRESOLUTIONS_X[] = {1216, 1366};
+const short Options::kRESOLUTIONS_Y[] = {704, 768};
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS

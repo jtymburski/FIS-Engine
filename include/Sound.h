@@ -24,11 +24,11 @@ class Sound : public QObject
   Q_OBJECT
 
 public:
-  /* Constructor: Sets up all the pertinent data to create a sound */
-  Sound(QString path, int loop_count = 0);
-
   /* Constructor: Sets up a blank template, nothing will play */
   Sound();
+
+  /* Constructor: Sets up all the pertinent data to create a sound */
+  Sound(QString path, int loop_count = 0);
 
   /* Destructor function */
   ~Sound();
@@ -40,6 +40,9 @@ private:
   /* The number of times to play the sound. It will be loop_count+1 
    * except for -1, which is infinite loop */
   int loop_count;
+
+  /* The path for the played sound file */
+  QString path;
 
   /* The raw data of the sound in RAM */
   Mix_Chunk* sound;
@@ -79,8 +82,11 @@ public:
   /* Set the number of times to play the song for. If 0, defaults to 1 */
   bool setPlayCount(int play_count);
 
+  /* Set the sound to loop infinitely, until stop() is called */
+  void setPlayForever();
+
   /* Unset the sound file and frees the memory */
-  bool unsetSoundFile();
+  bool unsetSoundFile(bool clear_path = true);
 
 /*============================================================================
  * PUBLIC STATIC FUNCTIONS

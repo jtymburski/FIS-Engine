@@ -23,9 +23,6 @@
 
 int main(int argc, char *argv[])
 {
-  /* Seed the Random # Generator */
-  seed();
-
   /* Testing code for file handler */
   bool done = false;
   bool success = true;
@@ -110,7 +107,10 @@ int main(int argc, char *argv[])
   }
 
   /*------------------ Actual Code Start ----------------------*/
-
+  
+  /* Seed the Random # Generator */
+  seed(); // TODO: Should be encapsulated
+  
   /* Setup the sound */
   Sound::initiateSDL();
   qDebug() << "[DEBUG] Sound configured: " << Sound::statusSDL();

@@ -11,7 +11,7 @@
 *              files, SDL allows up to 8 files being mixed together at
 *              once before returning the channel full error.
 * Notes: This requires that SDL has been setup already and set to run. This
-*        is typically done with SDL_Init(*) and Mix_OpenAudio(*).
+*        is done by calling initiateSDL() - a public static function.
 ******************************************************************************/
 #include "Sound.h"
 
@@ -28,6 +28,22 @@ const short Sound::kUNSET_CHANNEL = -1;
  *===========================================================================*/
 
 /*
+ * Description: Constructor function - Sets up a shell for a sound. It will
+ *              play nothing though, since no sound file is setup.
+ *
+ * Inputs: none
+ */
+Sound::Sound()
+{
+  channel = kUNSET_CHANNEL;
+  path.clear();
+  sound = NULL;
+  sound_set = false;
+
+  setPlayCount(0);
+}
+
+/*
  * Description: Constructor function - Sets up a sound with the path given
  *              and with a loop count to play it for.
  *
@@ -38,27 +54,13 @@ const short Sound::kUNSET_CHANNEL = -1;
  */
 Sound::Sound(QString path, int loop_count)
 {
+  channel = kUNSET_CHANNEL;
+  path.clear();
   sound = NULL;
   sound_set = false;
-  channel = kUNSET_CHANNEL;
 
   setSoundFile(path);
   setPlayCount(loop_count);
-}
-
-/*
- * Description: Constructor function - Sets up a shell for a sound. It will
- *              play nothing though, since no sound file is setup.
- *
- * Inputs: none
- */
-Sound::Sound()
-{
-  sound = NULL;
-  sound_set = false;
-  channel = kUNSET_CHANNEL;
-
-  setPlayCount(0);
 }
 
 /* 
@@ -88,6 +90,10 @@ void Sound::play()
 {
   /* Ensure the channel is stopped if it was in use */
   stop();
+
+  /* Attempt to initialize the sound file if it isn't initialized */
+  if(!sound_set && !path.isEmpty())
+    setSoundFile(path);
 
   /* Only proceed if the sound SDL layer is ready to run */
   if(sound_set && statusSDL())
@@ -148,11 +154,16 @@ int Sound::getPlayCount()
  */
 bool Sound::setSoundFile(QString path)
 {
+  /* Set the path file first */
+  if(!path.isEmpty())
+    this->path = path;
+
+  /* Next, attempt and load the file */
   if(statusSDL())
   {
     if(!path.isEmpty())
     {
-      unsetSoundFile();
+      unsetSoundFile(false);
       sound = Mix_LoadWAV(path.toStdString().c_str());
 
       /* Determine if the setting of the sound was valid */
@@ -198,6 +209,18 @@ bool Sound::setPlayCount(int play_count)
   return true;
 }
 
+/*
+ * Description: Loop the stored sound file infinitely, once play is called.
+ *              This will only cease once the stop() function is called.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Sound::setPlayForever()
+{
+  loop_count = kINFINITE_LOOP;
+}
+
 /* 
  * Description: Unsets the sound file in this class. If it's set, the memory 
  *              is freed, the pointer is nulled and the class is notified of
@@ -205,11 +228,11 @@ bool Sound::setPlayCount(int play_count)
  *              to ensure that the sound hasn't been set. Will be called on
  *              cleanup and destruction as well.
  *
- * Inputs: none
+ * Inputs: bool clear_path - clear the path stored in the class as well
  * Output: bool - returns if the sound file was set before calling this 
  *                function.
  */
-bool Sound::unsetSoundFile()
+bool Sound::unsetSoundFile(bool clear_path)
 {
   if(sound_set)
   {
@@ -219,6 +242,8 @@ bool Sound::unsetSoundFile()
     return true;
   }
 
+  if(clear_path)
+    path.clear();
   sound = NULL;
   return false;
 }

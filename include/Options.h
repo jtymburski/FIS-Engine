@@ -49,8 +49,8 @@ private:
 
   /*------------------- Constants -----------------------*/
   const static short kNUM_RESOLUTIONS;  /* Number of resolutions available */
-  const static short kRESOLUTIONS_X[1]; /* X Resolution sizes available */
-  const static short kRESOLUTIONS_Y[1]; /* Y Resolution sizes available */
+  const static short kRESOLUTIONS_X[]; /* X Resolution sizes available */
+  const static short kRESOLUTIONS_Y[]; /* Y Resolution sizes available */
 
 /*============================================================================
  * PRIVATE FUNCTIONS

@@ -2,27 +2,101 @@
 * Class Name: TitleScreen
 * Date Created: Dec 02 2012
 * Inheritance: QWidget
-* Description: The TitleScreen class
+* Description: Is the widget for the main display of the game. Will mostly 
+*              just be a menu but this allows for the safe passage between
+*              classes as interactions with Application occur.
+*
+* TODO:
+*  1. Set up the options connection -> resolution
+*  2. Constants in setupClass() and setupMenu()??
 ******************************************************************************/
 #include "TitleScreen.h"
 
 /* Constant Implementation - see header file for descriptions */
-const int     TitleScreen::kNUM_MENU_ITEMS = 3;
-// TODO: Fixed your error [08-04-13]
-const QString TitleScreen::kMENU_ITEMS[]   = {"Array of Tiles",
-                                              "Sprite Basher",
+const QString TitleScreen::kMENU_ITEMS[]   = {"Game - Map",
+                                              "Game - Battle",
+                                              "Options",
                                               "Exit"};
+const short TitleScreen::kNUM_MENU_ITEMS = 4;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
 
+/* Default constructor */
+TitleScreen::TitleScreen(QWidget* parent)
+{
+  setupClass();
+}
+
 /* Constructor function */
-TitleScreen::TitleScreen(int width, int height, QWidget* parent) 
+TitleScreen::TitleScreen(Options running_config, QWidget* parent) 
                                                           : QWidget(parent)
 {
-  setFixedSize(width, height);
+  setConfiguration(running_config);
+  setupClass();
+}
 
+/* Destructor function */
+TitleScreen::~TitleScreen()
+{
+  for(int i = 0; i < option_labels.size(); i++)
+    delete option_labels[i];
+  option_labels.clear();
+}
+
+/*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+
+/* Decrements the selected menu item */
+void TitleScreen::decrementSelected()
+{
+  if(cursor_index == 0)
+    setSelected(kNUM_MENU_ITEMS - 1);
+  else
+    setSelected(cursor_index - 1);
+}
+  
+/* Choose whether to highlight or not highlight the selected index */
+bool TitleScreen::highlight(int index)
+{
+  if(index >= 0 && index < kNUM_MENU_ITEMS)
+  {
+    QPalette pal(option_labels[index]->palette());
+    pal.setColor(QPalette::Background, QColor(28,76,46,64)); // R,G,B,A
+    option_labels[index]->setPalette(pal);
+    return true;
+  }
+
+  return false;
+}
+
+/* Increments the selected menu item */
+void TitleScreen::incrementSelected()
+{
+  if((cursor_index + 1) == kNUM_MENU_ITEMS)
+    setSelected(0);
+  else
+    setSelected(cursor_index + 1);
+}
+
+/* Sets the selected menu item - fails if out of range */
+bool TitleScreen::setSelected(int index)
+{
+  if(index >= 0 && index < kNUM_MENU_ITEMS)
+  {
+    unhighlight(cursor_index);
+    cursor_index = index;
+    highlight(cursor_index);
+
+    return true;
+  }
+  return false;
+}
+
+void TitleScreen::setupClass()
+{
   /* Window Colors Setup */
   QPalette pal(palette());
   pal.setColor(QPalette::Background, Qt::black);
@@ -37,152 +111,19 @@ TitleScreen::TitleScreen(int width, int height, QWidget* parent)
   setFont(current_font);
 
   /* Sound setup */
-  //background_sound =new Sound("sound/ambience/background_menu_sound.wav",-1);
-  background_sound = new Sound("sound/ambience/background_menu_sound.wav", -1);
-  background_sound->play();
-  menu_click_sound = new Sound("sound/functional/menu_click.wav", 1);
+  background_sound.setSoundFile("sound/ambience/background_menu_sound.wav");
+  background_sound.setPlayForever();
+  background_sound.play();
+  menu_click_sound.setSoundFile("sound/functional/menu_click.wav");
+  menu_click_sound.setPlayCount(1);
 
   /* Setup the internals of the screen */
-  setup();
+  setupMenu();
   cursor_index = 0;
 }
 
-/* Destructor function */
-TitleScreen::~TitleScreen()
-{
-  delete background_sound;
-  delete menu_click_sound;
-}
-
-/*============================================================================
- * PROTECTED FUNCTIONS
- *===========================================================================*/
-
-void TitleScreen::paintEvent(QPaintEvent* event)
-{
-  (void)event; //warning
-  QPainter painter(this);
-
-  painter.drawPixmap(0,0,1216,704,QPixmap(":/title_Screen"));
-  //QPixmap image(":/FBS_Logo");
-  //painter.drawPixmap((this->width() - image.width()) / 2, 100,
-  //                    QPixmap(":/FBS_Logo"));
-}
-
-void TitleScreen::keyPressEvent(QKeyEvent* event)
-{
-  if(event->key() == Qt::Key_Up)
-  {
-    decrementState();
-    menu_click_sound->play();
-  }
-  else if(event->key() == Qt::Key_Down)
-  {
-    incrementState();
-    menu_click_sound->play();
-  }
-  else if(event->key() == Qt::Key_Escape)
-  {
-    setState(MAINEXIT);
-    menu_click_sound->play();
-  }
-  else if(event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)
-  {
-    background_sound->stop();
-
-    if(cursor_index == TESTMAP)
-      openMap();
-    else if(cursor_index == TESTBATTLE)
-      openBattle();
-    else
-      close();
-  }
-}
-
-/*============================================================================
- * SLOTS
- *===========================================================================*/
-
-void TitleScreen::close()
-{
-  emit closing();
-}
-
-void TitleScreen::openBattle()
-{
-  emit openingBattle(0);
-}
-
-void TitleScreen::openMap()
-{
-  emit openingMap(1);
-}
-
-/*============================================================================
- * PUBLIC FUNCTIONS
- *===========================================================================*/
-
-void TitleScreen::decrementState()
-{
-  unsetSelectedMenu(cursor_index);
-
-  if(cursor_index == 0)
-    cursor_index = kNUM_MENU_ITEMS - 1;
-  else
-    cursor_index--;
-
-  setSelectedMenu(cursor_index);
-}
-
-void TitleScreen::incrementState()
-{
-  unsetSelectedMenu(cursor_index);
-
-  cursor_index++;
-  if(cursor_index == kNUM_MENU_ITEMS)
-    cursor_index = 0;
-
-  setSelectedMenu(cursor_index);
-}
-
-/* Changes the menu to state s and the given index */
-void TitleScreen::iterate(MenuState titlestate, int index)
-{
-    (void)titlestate; //warning
-    (void)index; //warning
-}
-
-void TitleScreen::playBackground()
-{
-  background_sound->play();
-}
-
-bool TitleScreen::setSelectedMenu(int menu_count)
-{
-  if(menu_count < kNUM_MENU_ITEMS)
-  {
-    QPalette pal(option_labels[menu_count]->palette());
-    pal.setColor(QPalette::Background, QColor(28,76,46,64)); // R,G,B,A
-    option_labels[menu_count]->setPalette(pal);
-    return true;
-  }
-
-  return false;
-}
-
-bool TitleScreen::setState(int index)
-{
-  if(index >= 0 && index < kNUM_MENU_ITEMS)
-  {
-    unsetSelectedMenu(cursor_index);
-    cursor_index = index;
-    setSelectedMenu(cursor_index);
-    return true;
-  }
-  return false;
-}
-
-void TitleScreen::setup()
+/* Set up the menu display text, for painting */
+void TitleScreen::setupMenu()
 {
   int marginWidth = 10;
 
@@ -192,31 +133,96 @@ void TitleScreen::setup()
     int pixelWidth = new_label->fontMetrics().boundingRect(
                                                     new_label->text()).width();
 
+    /* Set the color */
     QPalette pal(new_label->palette());
     pal.setColor(QPalette::Foreground, Qt::white);
     pal.setColor(QPalette::Background, QColor(255,0,0,0));
     new_label->setPalette(pal);
 
+    /* Paint the labels */
     new_label->setMargin(marginWidth);
     new_label->move((this->width() - pixelWidth) / 2 - marginWidth,
-                    400 + i*75);
+                    350 + i*75);
     new_label->setAutoFillBackground(true);
 
     option_labels.append(new_label);
   }
 
-  setSelectedMenu(0);
+  setSelected(TESTMAP);
 }
 
-bool TitleScreen::unsetSelectedMenu(int menu_count)
+/* Un-Highlight the selected index by removing the border */
+bool TitleScreen::unhighlight(int index)
 {
-  if(menu_count < kNUM_MENU_ITEMS)
+  if(index >= 0 && index < kNUM_MENU_ITEMS)
   {
-    QPalette pal(option_labels[menu_count]->palette());
+    QPalette pal(option_labels[index]->palette());
     pal.setColor(QPalette::Background, QColor(255,0,0,0));
-    option_labels[menu_count]->setPalette(pal);
+    option_labels[index]->setPalette(pal);
     return true;
   }
 
-  return false; 
+  return false;
+}
+
+/*============================================================================
+ * PROTECTED FUNCTIONS
+ *===========================================================================*/
+
+void TitleScreen::paintEvent(QPaintEvent* event)
+{
+  (void)event;
+  QPainter painter(this);
+
+  painter.drawPixmap(0, 0, system_options.getScreenWidth(), 
+                           system_options.getScreenHeight(), 
+                           QPixmap("pictures/univursatitle.png"));
+}
+
+void TitleScreen::keyPressEvent(QKeyEvent* event)
+{
+  if(event->key() == Qt::Key_Up)
+  {
+    decrementSelected();
+    menu_click_sound.play();
+  }
+  else if(event->key() == Qt::Key_Down)
+  {
+    incrementSelected();
+    menu_click_sound.play();
+  }
+  else if(event->key() == Qt::Key_Escape)
+  {
+    setSelected(EXIT);
+    menu_click_sound.play();
+  }
+  else if(event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)
+  {
+    background_sound.stop();
+
+    if(cursor_index == TESTMAP)
+      emit openMap();
+    else if(cursor_index == TESTBATTLE)
+      emit openBattle();
+    else if(cursor_index == OPTIONS) // TODO
+      background_sound.play();
+    else if(cursor_index == EXIT)
+      emit close();
+  }
+}
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
+
+void TitleScreen::playBackground()
+{
+  background_sound.play();
+}
+
+void TitleScreen::setConfiguration(Options running_config)
+{
+  system_options = running_config;
+  setFixedSize(system_options.getScreenWidth(), 
+               system_options.getScreenHeight());
 }

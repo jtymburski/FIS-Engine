@@ -18,6 +18,8 @@
 #include <QStackedWidget>
 
 #include "Game/Game.h"
+#include "Options.h"
+//#include "SavedGame.h"
 #include "TitleScreen.h"
 
 /* DELETE: Temporary header access for testing */
@@ -37,6 +39,13 @@ public:
 
   /* Destructor function */
   ~Application();
+
+  /* Enumerator: Application options to be selected */
+  //enum MenuState{OFF,MAIN,CONTINUE,INOPTIONS,INEXIT,SECRET}; // OLD
+  enum AppItems{TITLESCREEN = 0,
+                GAME        = 1,
+                OPTIONS     = 2,
+                EXIT        = 3};
 
 private:
   /* The running game */
@@ -66,6 +75,8 @@ protected:
  *===========================================================================*/
 public slots:
   void close();
+  void openBattle(); // TEMP
+  void openMap(); // TEMP
   void switchWidget(int index);
 
 /*============================================================================

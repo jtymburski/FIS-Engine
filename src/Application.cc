@@ -30,7 +30,7 @@ Application::Application(QWidget* parent)
   short screen_width = system_options.getScreenWidth();
 
   /* Set up the title screen */
-  title_screen = new TitleScreen(screen_width, screen_height);
+  title_screen = new TitleScreen(system_options);
   //title_screen->show();
 
   /* Set up the game */
@@ -67,12 +67,12 @@ Application::Application(QWidget* parent)
   setMinimumWidth(screen_width);
   setMinimumHeight(screen_height);
 
-  QObject::connect(title_screen, SIGNAL(closing()),
+  QObject::connect(title_screen, SIGNAL(close()),
                    this,         SLOT(close()));
-  QObject::connect(title_screen, SIGNAL(openingBattle(int)), 
-                   this,         SLOT(switchWidget(int)));
-  QObject::connect(title_screen, SIGNAL(openingMap(int)), 
-                   this,         SLOT(switchWidget(int)));
+  QObject::connect(title_screen, SIGNAL(openBattle()), 
+                   this,         SLOT(openBattle()));
+  QObject::connect(title_screen, SIGNAL(openMap()), 
+                   this,         SLOT(openMap()));
   QObject::connect(test_map, SIGNAL(closingMap(int)), 
                    this,     SLOT(switchWidget(int)));
   QObject::connect(test_battle, SIGNAL(closingBattle(int)), 
@@ -125,6 +125,16 @@ void Application::closeEvent(QCloseEvent* event)
 void Application::close()
 {
   emit closing();
+}
+
+void Application::openBattle()
+{
+  switchWidget(0);
+}
+
+void Application::openMap()
+{
+  switchWidget(1);
 }
 
 void Application::switchWidget(int index)

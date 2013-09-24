@@ -98,11 +98,11 @@ private:
   /* Set up the battle */
   void setupBattle();
 
-  /* Set up the map */
-  void setupMap();
-
   /* Sets up the game - called on first creation */
   void setupGame();
+
+  /* Set up the map */
+  void setupMap();
 
 /*============================================================================
  * PUBLIC SLOTS
