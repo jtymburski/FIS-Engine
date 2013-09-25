@@ -10,7 +10,7 @@
 #include "Application.h"
 
 /* Constant Implementation - see header file for descriptions */
-//const short Application::kRESOLUTION_X = 1216;
+const short Application::kTICK_DELAY = 10;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -35,48 +35,27 @@ Application::Application(QWidget* parent)
 
   /* Set up the game */
   game_handler = new Game(system_options);
-  //game_handler->switchGameMode(Game::MAP); // TODO: properly integrate
-
-  /* Set up battle - temporary */
-  setupBattle();
-  //test_battle->show();
-  
-  /* Sets up the map format and map with vsync and double buffering forced on */
-  /* TODO: add checking if OpenGL is not enabled */
-  QGLFormat gl_format(QGL::SampleBuffers);
-  gl_format.setDoubleBuffer(true);
-  if(system_options.isVsyncEnabled())
-    gl_format.setSwapInterval(1);
-  else
-    gl_format.setSwapInterval(0);
-  test_map = new Map(gl_format, screen_width, screen_height);
-  //test_map->loadMap("maps/test_03");
-  //test_map->getViewport()->show();
 
   /* Add widgets to the stack */
-  addWidget(test_battle);
-  addWidget(test_map);
   addWidget(title_screen);
-  addWidget(game_handler); // TODO: Remove
-  setCurrentIndex(2); // TODO (0=battle, 1=map, 2=titlescreen) - Move out
+  addWidget(game_handler);
+  switchWidget(TITLESCREEN);
 
   /* Widget information for handling the game */
-  title_screen->setFocus();
   setMaximumWidth(screen_width);
   setMaximumHeight(screen_height);
   setMinimumWidth(screen_width);
   setMinimumHeight(screen_height);
 
+  /* Object function call connections */
   QObject::connect(title_screen, SIGNAL(close()),
                    this,         SLOT(close()));
   QObject::connect(title_screen, SIGNAL(openBattle()), 
                    this,         SLOT(openBattle()));
   QObject::connect(title_screen, SIGNAL(openMap()), 
                    this,         SLOT(openMap()));
-  QObject::connect(test_map, SIGNAL(closingMap(int)), 
-                   this,     SLOT(switchWidget(int)));
-  QObject::connect(test_battle, SIGNAL(closingBattle(int)), 
-                   this,        SLOT(switchWidget(int)));
+  QObject::connect(game_handler, SIGNAL(closeGame()),
+                   this,         SLOT(closeGame()));
 
   /* Set the widget location (center of the screen) */
   QDesktopWidget desktopWidget;
@@ -85,6 +64,11 @@ Application::Application(QWidget* parent)
   setGeometry((desktopRect.width() - screen_width) / 2, 
               (desktopRect.height() - screen_height) / 2, 
               screen_width, screen_height);
+
+  /* Set up the tick and start the update sequence */
+  QObject::connect(&tick, SIGNAL(timeout()), this, SLOT(updateApp()));
+  tick.setSingleShot(true);
+  updateApp();
 
   /* Do the final show once everything is set up */
   //showFullScreen();
@@ -102,10 +86,22 @@ Application::~Application()
     delete game_handler;
     game_handler = 0;
   }
+}
 
-  /* Delete the map - temporary */
-  delete test_map;
-  test_map = 0;
+/*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+
+void Application::switchWidget(int index)
+{
+  /* Sets the current displayed index */
+  setCurrentIndex(index);
+  if(index != GAME)
+    currentWidget()->setFocus();
+
+  /* Restart the background music if title screen is activated */
+  if(index == TITLESCREEN && title_screen != 0)
+    title_screen->playBackground();
 }
 
 /*============================================================================
@@ -127,133 +123,39 @@ void Application::close()
   emit closing();
 }
 
+void Application::closeGame()
+{
+  switchWidget(TITLESCREEN);
+}
+
+/* TEMP */
 void Application::openBattle()
 {
-  switchWidget(0);
+  if(game_handler != 0)
+  {
+    game_handler->switchGameMode(Game::BATTLE);
+    switchWidget(GAME);
+  }
 }
 
+/* TEMP */
 void Application::openMap()
 {
-  switchWidget(1);
-}
-
-void Application::switchWidget(int index)
-{
-  if(!test_map->isLoaded() && index == 1)
-    test_map->loadMap("maps/test_04");
-  //if(test_map->isLoaded() && index != 1)
-  //  test_map->unloadMap();
-  
-  /* Map timer stop */
-  if(index != 1)
-    test_map->tickStop();
-
-  /* Sets the current displayed index */
-  setCurrentIndex(index);
-
-  if(index == 1)
-    test_map->tickStart();
-  else if(index == 2)
-    title_screen->playBackground();
-}
-
-/*============================================================================
- * PUBLIC FUNCTIONS
- *===========================================================================*/
-
-/* 
- * Temporary battle setup
- * DELETE when done
- */
-void Application::setupBattle()
-{
-  // Begin Action Builds
-  Action action_0001("1,RAISE,PHYSICAL AGGRESSION,1.1,0,,0,,5,2");
-  Action action_0002("2,RAISE,PHYSICAL FORTITUDE,1.1,0,,0,,10,3");
-  Action action_0003("3,GIVE,Poison,2.5,0,,0,,,");
-
-  // End Action Builds
-
-  // Begin Skill Builds
-
-  QVector<Action*> effect_list;
-  effect_list.push_back(&action_0001);
-  effect_list.push_back(&action_0002);
-  effect_list.push_back(&action_0003);
-
-  QVector<float> chance_list;
-  chance_list.push_back(1.00);
-  chance_list.push_back(0.95);
-  chance_list.push_back(0.90);
-
-  Skill* poison_skill = new Skill("Posion Attack", effect_list, chance_list);
-  poison_skill->setFlag(Skill::OFFENSIVE, true);
-  poison_skill->setFlag(Skill::PHYSICAL, true);
-
-  // End Skill Builds
-
-  // Testing
-
-  //action_0003.printAll();
-
-  // End Testing
-
-  QList<uint> stats1;
-  QList<uint> stats2;
-  QList<uint> stats3;
-
-  for (int i = 0; i < 19; i++)
+  if(game_handler != 0)
   {
-    stats1.append(5 + i);
-    stats2.append(500 + i);
-    stats3.append(15 + i);
+    game_handler->switchGameMode(Game::MAP);
+    switchWidget(GAME);
   }
+}
 
-  AttributeSet race_set(stats1);
-  AttributeSet cate_set(stats1);
-  AttributeSet race_max(stats3);
-  AttributeSet cate_max(stats2);
+void Application::updateApp()
+{
+  /* Implement the update, where necessary */
+  if(currentIndex() == TITLESCREEN && title_screen != 0)
+    title_screen->update(); // TODO: Change to custom function??
+  else if(currentIndex() == GAME && game_handler != 0)
+    game_handler->updateGame();
 
-  Race* base_race = new Race("Fiends");
-  base_race->setAttrSet(race_set);
-  base_race->setMaxSet(race_max);
-  Category* base_category = new Category("Battle Class");
-  base_category->setAttrSet(cate_set);
-  base_category->setMaxSet(cate_max);
-  Person* main_character
-          = new Person("Malgidus", base_race, base_category, "PHA", "CYB");
-  Person* secd_character
-          = new Person("Arcadius", base_race, base_category, "PHA", "CYA");
-
-  /* Level up Tests */
-  main_character->setPersonFlag(Person::CANLEVEL, true);
-
-  Party* friends = new Party(main_character);
-  Party* foes = new Party(secd_character);
-
-  /*
-  BubbyFlavour* spark_flavour = new BubbyFlavour(0, "Spark");
-  spark_flavour->setAttr(&base_set);
-  Bubby* first_bubby = new Bubby(spark_flavour);
-  first_bubby->setLevel(5);
-  first_bubby->setTier(3);
-  Bubby* second_bubby = new Bubby(spark_flavour);
-  second_bubby->setTier(1);
-  Bubby* third_bubby = new Bubby(spark_flavour);
-  std::vector<std::pair<ushort, ushort> > list;
-  list.push_back(std::make_pair(0, 0));
-  list.push_back(std::make_pair(1, 1));
-  list.push_back(std::make_pair(2, 2));
-  list.push_back(std::make_pair(3, 3));
-  list.push_back(std::make_pair(4, 4));
-  Signature* equip_signature = new Signature(6, 6, list);
-  equip_signature->attach(0, 1, second_bubby);
-  equip_signature->attach(0, 3, first_bubby);
-  equip_signature->attach(0, 0, third_bubby);
-  QList<BubbyFlavour*> flavours = equip_signature->getUniqueFlavours();
-  equip_signature->unattach(0, 3);
-  equip_signature->unattach(0, 1);
-  */
-
-  test_battle = new Battle(friends, foes, this);
+  /* Restart the timer */
+  tick.start(kTICK_DELAY);
 }

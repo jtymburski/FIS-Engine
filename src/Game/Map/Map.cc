@@ -76,8 +76,8 @@ Map::Map(const QGLFormat & format, short viewport_width,
                              kTILE_WIDTH, kTILE_HEIGHT);
  
   /* Bring the timer in to provide a game tick */
-  connect(&timer, SIGNAL(timeout()), this, SLOT(updateGL()));
-  timer.setSingleShot(true);
+  //connect(&timer, SIGNAL(timeout()), this, SLOT(updateGL()));
+  //timer.setSingleShot(true);
   //timer.start(kTICK_DELAY);
   updateGL();
 
@@ -291,7 +291,7 @@ void Map::initializeGL()
 void Map::keyPressEvent(QKeyEvent* key_event)
 {
   if(key_event->key() == Qt::Key_Escape)
-    closeMap();
+    emit closeMap();
   else if(key_event->key() == Qt::Key_P)
     map_dialog.setPaused(!map_dialog.isPaused());
   else if(key_event->key() == Qt::Key_F1)
@@ -594,11 +594,6 @@ void Map::getThingData(QList<int> thing_ids)
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
-
-void Map::closeMap()
-{
-  emit closingMap(2);
-}
 
 /* Gets a pointer to the NPC in the given position in the NPC vector */
 Person* Map::getNPC(int index)

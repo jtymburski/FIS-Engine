@@ -104,6 +104,7 @@ signals:
   void close();
   void openBattle(); // TEMP
   void openMap(); // TEMP
+  void openOptions();
 
 /*============================================================================
  * PUBLIC FUNCTIONS

@@ -14,8 +14,6 @@
 *     just change the player and foes when it switches. This is primarily
 *     for dealing with the stacked widget.
 *  3. Add victory screen logic
-*  4. OpenGL does not like being initialized twice. Temporary commented out
-*     map creation until Application is fully integrated out
 ******************************************************************************/
 #include "Game/Game.h"
 
@@ -163,7 +161,6 @@ void Game::setupGame()
 {
   game_battle = 0;
   game_map = 0;
-  game_mode = DISABLED;
 
   /* Set up the internal widgets */
   setupBattle();
@@ -186,7 +183,13 @@ void Game::setupGame()
     addWidget(game_battle);
   else
     qDebug() << "[ERROR] Failed to initialize battle in game.";
-  setCurrentIndex(game_mode);
+  setCurrentIndex(DISABLED);
+
+  /* Connections relevant to the game */
+  QObject::connect(game_map, SIGNAL(closeMap()), 
+                   this,     SIGNAL(closeGame()));
+  QObject::connect(game_battle, SIGNAL(closeBattle()), 
+                   this,        SIGNAL(closeGame()));
 }
 
 /* Set up the map - old map needs to be deleted prior to calling */
@@ -200,29 +203,16 @@ void Game::setupMap()
     gl_format.setSwapInterval(1);
   else
     gl_format.setSwapInterval(0);
-  //game_map = new Map(gl_format, game_config.getScreenWidth(), 
-  //                              game_config.getScreenHeight());
+  game_map = new Map(gl_format, game_config.getScreenWidth(), 
+                                game_config.getScreenHeight());
+
+  /* Load the map - temporary location */
+  game_map->loadMap("maps/test_04");
 }
-
-/*============================================================================
- * PUBLIC SLOTS
- *===========================================================================*/
-
 
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
-
-/*
- * Description: Evaluates a given BattleOption flag
- *
- * Inputs: BattleOption - flag to be evaluated
- * Output: bool   - evaluation of the flag
- */
-bool Game::getBattleFlag(BattleOption flags)
-{
-  return bo_flag_set.testFlag(flags);
-}
 
 // TODO: How to do map initialization with GL if options change in the middle
 void Game::setConfiguration(Options running_config)
@@ -232,31 +222,15 @@ void Game::setConfiguration(Options running_config)
   // TODO: Add reset map and battle parameters when this is changed */
 }
 
-/* Enables or disables the GAME_ENABLED flag */
-void Game::setEnabled (bool enable)
-{
-  GAME_ENABLED = enable;
-}
-
-/*
- * Description: Sets ta given BattleOption flag
- *
- * Inputs: BattleOption - flag to be set
- *         bool   - value to set flag to
- * Output: none
- */
-void Game::setBattleFlag(BattleOption flags, bool set_value)
-{
-  (set_value) ? (bo_flag_set |= flags) : (bo_flag_set ^= flags);
-}
-
 void Game::switchGameMode(GameMode mode)
 {
-  game_mode = mode;
-  setCurrentIndex(game_mode);
+  setCurrentIndex(mode);
+  currentWidget()->setFocus();
 }
 
 /* Updates the game state */
 void Game::updateGame()
 {
+  if(currentIndex() == MAP && game_map != 0)
+    game_map->updateGL();
 }

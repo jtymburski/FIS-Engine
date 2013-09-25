@@ -26,6 +26,8 @@ const short TitleScreen::kNUM_MENU_ITEMS = 4;
 /* Default constructor */
 TitleScreen::TitleScreen(QWidget* parent)
 {
+  setFixedSize(system_options.getScreenWidth(), 
+               system_options.getScreenHeight());
   setupClass();
 }
 
@@ -205,7 +207,10 @@ void TitleScreen::keyPressEvent(QKeyEvent* event)
     else if(cursor_index == TESTBATTLE)
       emit openBattle();
     else if(cursor_index == OPTIONS) // TODO
+    {
+      emit openOptions();
       background_sound.play();
+    }
     else if(cursor_index == EXIT)
       emit close();
   }

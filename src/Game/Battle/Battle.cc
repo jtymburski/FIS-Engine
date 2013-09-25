@@ -306,10 +306,6 @@ void Battle::paintMenu()
 
 
 /*============================================================================
- * PUBLIC SLOTS
- *===========================================================================*/
-
-/*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 
@@ -319,7 +315,7 @@ void Battle::keyPressEvent(QKeyEvent* event)
   switch(event->key())
   {
     case Qt::Key_Escape:
-      closeBattle();
+      emit closeBattle();
       break;
     /* Temporary swapping for background image testing */
     case Qt::Key_1:
@@ -365,13 +361,6 @@ void Battle::setFoes(Party* p_foes)
 {
   foes = p_foes;
 }
-
-void Battle::closeBattle()
-{
-  emit closingBattle(2);
-}
-
-
 
 /*
  * Description: Ends battle with win message

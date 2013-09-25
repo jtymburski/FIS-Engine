@@ -22,13 +22,6 @@
 //#include "SavedGame.h"
 #include "TitleScreen.h"
 
-/* DELETE: Temporary header access for testing */
-#include "Game/Map/Map.h"
-#include "Game/Battle/Battle.h"
-#include "Game/Player/Action.h"
-#include "MathHelper.h"
-#include "GrammarHelper.h"
-
 class Application : public QStackedWidget
 {
   Q_OBJECT
@@ -54,15 +47,21 @@ private:
   /* All options available for the system */
   Options system_options;
 
+  /* The application tick, for executing updates */
+  QTimer tick;
+
   /* The displayed title screen for the game */
   TitleScreen* title_screen;
   
-  /* DELETE two pointers below. Currently here for testing */
-  Battle* test_battle;
-  Map* test_map;
-
   /*------------------- Constants -----------------------*/
-  //const static short kRESOLUTION_X; /* Sample */
+  const static short kTICK_DELAY; /* The tick time, in ms */
+
+/*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+private:
+  /* Switches the widget inside the stack (plus appropriate calls needed) */
+  void switchWidget(int index);
 
 /*============================================================================
  * PROTECTED FUNCTIONS
@@ -71,26 +70,28 @@ protected:
   void closeEvent(QCloseEvent* event);
 
 /*============================================================================
- * SLOTS
- *===========================================================================*/
-public slots:
-  void close();
-  void openBattle(); // TEMP
-  void openMap(); // TEMP
-  void switchWidget(int index);
-
-/*============================================================================
  * SIGNALS
  *===========================================================================*/
 signals:
+  /* The closing signal, to shutdown the app */
   void closing();
 
 /*============================================================================
- * PUBLIC FUNCTIONS
+ * SLOTS
  *===========================================================================*/
-public:
-  /* DELETE two functions below. Currently here for testing */
-  void setupBattle();
+public slots:
+  /* The function called for closing. Clean-up put here */
+  void close();
+
+  /* Called when the game is closed to return the application back to title */
+  void closeGame();
+
+  /* Temp opening calls */
+  void openBattle(); // TEMP
+  void openMap(); // TEMP
+  
+  /* Updates the application, called on the tick */
+  void updateApp();
 };
 
-#endif // MAINWINDOW_H
+#endif // APPLICATION_H

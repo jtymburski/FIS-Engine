@@ -242,17 +242,11 @@ protected:
   void setTargetMode(bool targeting);
 
 /*=============================================================================
- * PUBLIC SLOTS
- *============================================================================*/
-public slots:
-  void closeBattle();
-
-/*=============================================================================
  * SIGNALS
  *============================================================================*/
-  signals:
-    void closingBattle(int index);
-    void finished();
+signals:
+  void closeBattle();
+  void finished();
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Battle::BattleFlags)
 

@@ -130,7 +130,7 @@ protected:
  * SIGNALS
  *===========================================================================*/
 signals:
-  void closingMap(int index);
+  void closeMap();
  
 /*============================================================================
  * PUBLIC SLOTS
@@ -149,9 +149,6 @@ public slots:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
-  /* Close the map - Handles the details and specifics for closing */
-  void closeMap();
-
   /* Gets a pointer to the NPC in the given position in the NPC vector */
   Person* getNPC(int index);
 
