@@ -72,6 +72,15 @@ public:
                    WEST          = 0x8,
                    DIRECTIONLESS = 0 };
 
+  /* 
+   * Description: The event classification - for what the event will do 
+   */
+  enum EventClassifier {NOEVENT       = 0,
+                        GIVEITEM       = 1,
+                        RUNBATTLE      = 2, 
+                        RUNMAP         = 3,
+                        TELEPORTPLAYER = 4};
+                        
   /*
    * Description: Describes the current state of the inventory (how it is
    *              currently sorted)
@@ -284,13 +293,24 @@ Begin_Enum_String( EnumDb::PersonRanks )
 }
 End_Enum_String;
 
+/* -------------------------- Structures ------------------------------- */
+
+/* The event that gets executed throughout the game. It will relay information
+ * back to this class where it can be processed */
+struct Event
+{
+  QObject* handler;
+  EnumDb::EventClassifier classification;
+};
+
 /* Struct to handle the conversation throughout the map */
-// TODO: Add MapAction, tile image?
+// TODO: tile image?
 struct Conversation
 {
   QString text;
   int thing_id;
   EnumDb::DialogCategory category;
+  Event action_event;
   QList<Conversation> next;
 };
 

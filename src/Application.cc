@@ -10,7 +10,7 @@
 #include "Application.h"
 
 /* Constant Implementation - see header file for descriptions */
-const short Application::kTICK_DELAY = 10;
+const short Application::kTICK_DELAY = 5;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -48,8 +48,8 @@ Application::Application(QWidget* parent)
   setMinimumHeight(screen_height);
 
   /* Object function call connections */
-  QObject::connect(title_screen, SIGNAL(close()),
-                   this,         SLOT(close()));
+  QObject::connect(title_screen, SIGNAL(exit()),
+                   this,         SLOT(exit()));
   QObject::connect(title_screen, SIGNAL(openBattle()), 
                    this,         SLOT(openBattle()));
   QObject::connect(title_screen, SIGNAL(openMap()), 
@@ -110,7 +110,7 @@ void Application::switchWidget(int index)
 
 void Application::closeEvent(QCloseEvent* event)
 {
-  close();
+  exit();
   event->ignore();
 }
 
@@ -118,14 +118,14 @@ void Application::closeEvent(QCloseEvent* event)
  * SLOTS
  *===========================================================================*/
 
-void Application::close()
-{
-  emit closing();
-}
-
 void Application::closeGame()
 {
   switchWidget(TITLESCREEN);
+}
+
+void Application::exit()
+{
+  emit closing();
 }
 
 /* TEMP */

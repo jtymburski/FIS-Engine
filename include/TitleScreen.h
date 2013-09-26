@@ -101,7 +101,7 @@ protected:
  * SIGNALS
  *===========================================================================*/
 signals:
-  void close();
+  void exit();
   void openBattle(); // TEMP
   void openMap(); // TEMP
   void openOptions();

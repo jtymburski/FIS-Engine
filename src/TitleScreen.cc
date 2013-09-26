@@ -212,7 +212,7 @@ void TitleScreen::keyPressEvent(QKeyEvent* event)
       background_sound.play();
     }
     else if(cursor_index == EXIT)
-      emit close();
+      emit exit();
   }
 }
 

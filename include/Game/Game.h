@@ -44,11 +44,12 @@ private:
   /* A blank black screened widget for disabled mode */
   QWidget blank_widget;
 
+  /* Handles all events throughout the game. */
+  EventHandler event_handler;
+  
   /* A current battle pointer */
   Battle* game_battle;
   
-
-
   /* The configuration for the display of the game */
   Options game_config;
 

@@ -27,3 +27,12 @@ EventHandler::~EventHandler()
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
+/* Creates a disabled blank event */
+Event EventHandler::createBlankEvent()
+{
+  Event blank_event;
+  blank_event.handler = this;
+  blank_event.classification = EnumDb::NOEVENT;
+  
+  return blank_event;
+}

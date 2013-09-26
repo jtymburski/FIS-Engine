@@ -80,11 +80,11 @@ signals:
  * SLOTS
  *===========================================================================*/
 public slots:
-  /* The function called for closing. Clean-up put here */
-  void close();
-
   /* Called when the game is closed to return the application back to title */
   void closeGame();
+
+  /* The function called for closing. Clean-up put here */
+  void exit();
 
   /* Temp opening calls */
   void openBattle(); // TEMP

@@ -7,6 +7,9 @@
 *              It is merely meant as a facilitator of actions that need to
 *              happen deep inside of the nested structure and then need to 
 *              fire from the top of the chain.
+*
+* Notes: The 'Event' struct is located at the bottom of this class which is
+*        used for executing actions according the handler specification
 ******************************************************************************/
 #ifndef EVENTHANDLER_H
 #define EVENTHANDLER_H
@@ -33,6 +36,8 @@ private:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Creates a disabled blank event */
+  Event createBlankEvent();
 };
 
 #endif // EVENTHANDLER_H
