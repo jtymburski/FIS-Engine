@@ -9,9 +9,10 @@
 #ifndef BATTLESTATUSBAR_H
 #define BATTLESTATUSBAR_H
 
-#include <QtGui/QWidget>
-#include <QtGui/QPaintEvent>
-#include <QtGui/QPainter>
+#include <QPaintEvent>
+#include <QPainter>
+#include <QWidget>
+
 #include "Game/Battle/AllyStatusBar.h"
 #include "Game/Battle/EnemyStatusBar.h"
 #include "Game/Player/Party.h"

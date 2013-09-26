@@ -20,9 +20,9 @@
 #ifndef BATTLEMENU_H
 #define BATTLEMENU_H
 
-#include <QtGui/QWidget>
-#include <QtGui/QPaintEvent>
-#include <QtGui/QPainter>
+#include <QPaintEvent>
+#include <QPainter>
+#include <QWidget>
 
 #include "Game/Battle/BattleInfoBar.h"
 #include "Game/Player/Action.h"

@@ -4,14 +4,14 @@
 * Inheritance: Parent class: QWidget (Contained within BattleStatusBar)
 * Description: Superclass of Enemy and Person Status Class
 *******************************************************************************/
-
 #ifndef PERSONSTATUSBAR_H
 #define PERSONSTATUSBAR_H
 
 #include <QLabel>
-#include <QtGui/QWidget>
-#include <QtGui/QPaintEvent>
-#include <QtGui/QPainter>
+#include <QPaintEvent>
+#include <QPainter>
+#include <QWidget>
+
 #include "Game/Sprite.h"
 #include "Game/Player/Person.h"
 

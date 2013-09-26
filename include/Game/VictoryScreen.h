@@ -11,7 +11,7 @@
 
 #include <QImage>
 #include <QTimer>
-#include <QtGui/QWidget>
+#include <QWidget>
 
 #include "Game/Player/Party.h"
 

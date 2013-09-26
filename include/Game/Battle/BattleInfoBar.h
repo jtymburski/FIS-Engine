@@ -9,10 +9,10 @@
 #ifndef BATTLEINFOBAR_H
 #define BATTLEINFOBAR_H
 
-#include <QtGui/QWidget>
-#include <QtGui/QPaintEvent>
-#include <QtGui/QPainter>
+#include <QPaintEvent>
+#include <QPainter>
 #include <QTimer>
+#include <QWidget>
 
 class BattleInfoBar : public QWidget
 {

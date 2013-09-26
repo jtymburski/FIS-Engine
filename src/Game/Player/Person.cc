@@ -520,13 +520,13 @@ SkillSet* Person::getUseableSkills()
       temp_skills.remove(i);
 
   /* Remove physical skills if physical skill flag disabled */
-  if (getPersonFlag(Person::CANATTACK) == FALSE)
+  if (getPersonFlag(Person::CANATTACK) == false)
     for (int i = 0; i < temp_skills.size(); i++)
       if (temp_skills.at(i)->getFlag(Skill::PHYSICAL))
         temp_skills.remove(i);
 
   /* Remove non-physical skills if non-physical skill flag disabled */
-  if (getPersonFlag(Person::CANUSESKILLS) == FALSE)
+  if (getPersonFlag(Person::CANUSESKILLS) == false)
     for (int i = 0; i < temp_skills.size(); i++)
       if (!temp_skills.at(i)->getFlag(Skill::PHYSICAL))
         temp_skills.remove(i);

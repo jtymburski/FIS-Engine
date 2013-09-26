@@ -31,7 +31,7 @@
 #ifndef AILMENT_H
 #define AILMENT_H
 
-#include <QtGui/QWidget>
+#include <QWidget>
 
 #include "EnumDb.h"
 #include "MathHelper.h"

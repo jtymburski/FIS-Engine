@@ -8,6 +8,10 @@ TEMPLATE = app
 
 CONFIG += qt
 DESTDIR = ./bin
+macx {
+  INCLUDEPATH += "/Library/Frameworks/SDL.framework/Headers/"
+}
+
 win32 {
   LIBS += -lmingw32 -l SDLmain
   win32:QMAKE_CXX_FLAGS_WARN_ON += -Wall

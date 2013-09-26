@@ -10,8 +10,8 @@
 #ifndef ATTRIBUTESET_H
 #define ATTRIBUTESET_H
 
-#include <QtGui/QWidget>
 #include <QDebug>
+#include <QWidget>
 
 #include "EnumDb.h"
 

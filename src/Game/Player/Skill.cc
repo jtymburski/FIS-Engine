@@ -87,9 +87,9 @@ bool Skill::addEffectChance(float new_value)
   if (effect_chance.size() + 1 < kMAX_ACTIONS)
   {
     effect_chance.push_back(new_value);
-    return TRUE;
+    return true;
   }
-  return FALSE;
+  return false;
 }
 
 /*
@@ -104,9 +104,9 @@ bool Skill::removeEffectChance(uint index)
   if (effect_chance.at(index))
   {
     effect_chance.remove(index);
-    return TRUE;
+    return true;
   }
-  return FALSE;
+  return false;
 }
 
 /*
@@ -120,9 +120,9 @@ bool Skill::addEffect(Action* new_action)
   if (effects.size() + 1 < kMAX_ACTIONS)
   {
     effects.push_back(new_action);
-    return TRUE;
+    return true;
   }
-  return FALSE;
+  return false;
 }
 
 /*
@@ -191,9 +191,9 @@ bool Skill::removeEffect(uint index)
   if (effects.at(index))
   {
     effects.remove(index);
-    return TRUE;
+    return true;
   }
-  return FALSE;
+  return false;
 }
 
 /*

@@ -9,9 +9,10 @@
 #ifndef INVENTORY_H
 #define INVENTORY_H
 
-#include <QDebug>
-#include <QtGui/QWidget>
 #include <algorithm>
+#include <QDebug>
+#include <QWidget>
+
 
 #include "Game/Player/Bubby.h"
 #include "Game/Player/Equipment.h"

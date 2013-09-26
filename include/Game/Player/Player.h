@@ -9,7 +9,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include <QtGui/QWidget>
+#include <QWidget>
 
 #include "Game/Player/Party.h"
 

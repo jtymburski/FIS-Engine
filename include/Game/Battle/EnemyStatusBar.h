@@ -8,7 +8,7 @@
 *******************************************************************************/
 
 #include <QLabel>
-#include <QtGui/QWidget>
+#include <QWidget>
 
 #include "Game/Player/Person.h"
 #include "Game/Battle/PersonStatusBar.h"

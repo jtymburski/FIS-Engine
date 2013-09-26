@@ -85,7 +85,7 @@ bool SkillSet::addSkill(Skill* new_skill, ushort req_level)
     {
       skills.append(new_skill);
       skills_available.append(req_level);
-      enabled.push_back(TRUE);
+      enabled.push_back(true);
     }
     return true;
   }

@@ -8,6 +8,7 @@
 #define ENUMDB_H
 
 #include <QList>
+#include <QObject>
 #include <QString>
 
 #include "EnumString.h"

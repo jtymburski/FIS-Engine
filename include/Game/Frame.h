@@ -13,7 +13,11 @@
 #ifndef FRAME_H
 #define FRAME_H
 
-#include <GL/glu.h>
+#ifdef __APPLE__
+  #include <OpenGL/glu.h>
+#else
+  #include <GL/glu.h>
+#endif
 #include <QDebug>
 #include <QFile>
 #include <QGLWidget>

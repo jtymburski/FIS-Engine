@@ -8,7 +8,7 @@
 #ifndef BUBBY_H
 #define BUBBY_H
 
-#include <QtGui/QWidget>
+#include <QWidget>
 
 #include "MathHelper.h"
 #include "Game/Player/BubbyFlavour.h"

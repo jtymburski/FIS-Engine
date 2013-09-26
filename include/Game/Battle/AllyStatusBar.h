@@ -11,9 +11,9 @@
 
 #include <QDebug>
 #include <QLabel>
-#include <QtGui/QWidget>
-#include <QtGui/QPaintEvent>
-#include <QtGui/QPainter>
+#include <QPainter>
+#include <QPaintEvent>
+#include <QWidget>
 
 #include "Game/Player/Person.h"
 #include "Game/Battle/PersonStatusBar.h"

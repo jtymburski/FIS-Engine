@@ -62,12 +62,12 @@
 #ifndef BATTLE_H
 #define BATTLE_H
 
+#include <cmath>
 #include <QKeyEvent>
 #include <QDebug>
-#include <QtGui/QWidget>
-#include <QtGui/QPaintEvent>
-#include <QtGui/QPainter>
-#include <cmath>
+#include <QPainter>
+#include <QPaintEvent>
+#include <QWidget>
 
 #include "Game/Player/Ailment.h"
 #include "Game/Battle/BattleInfoBar.h"
