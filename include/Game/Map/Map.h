@@ -13,6 +13,8 @@
 //#include <QDebug>
 #include <QGLWidget>
 
+#include "FileHandler.h"
+#include "Game/EventHandler.h"
 #include "Game/Map/MapDialog.h"
 #include "Game/Map/MapNPC.h"
 #include "Game/Map/MapMenu.h"
@@ -23,7 +25,7 @@
 #include "Game/Map/Tile.h"
 #include "Game/Sprite.h"
 #include "Game/Weather.h"
-#include "FileHandler.h"
+#include "Options.h"
 
 class Map : public QGLWidget
 {
@@ -31,7 +33,7 @@ class Map : public QGLWidget
 
 public:
   /* Constructor function */
-  Map(const QGLFormat & format, short viewport_width, short viewport_height);
+  Map(const QGLFormat & format, Options running_config, Event blank_event);
 
   /* Destructor function */
   ~Map();
@@ -39,6 +41,9 @@ public:
 private:
   /* Vector of all ai's on map */
   QList<MapNPC*> ai;
+
+  /* A reference blank event for setting events in the game */
+  Event blank_event;
 
   /* The actual tiles that comprise a map, dynamically sized */
   QList< QList<Tile*> > geography;
@@ -94,8 +99,6 @@ private:
   const static int kTICK_DELAY;       /* Tick timer delay constant */
   const static int kTILE_HEIGHT;      /* The tile height, as constant (TEMP) */
   const static int kTILE_WIDTH;       /* The tile width, as constant (TEMP) */
-  const static int kVIEWPORT_HEIGHT;  /* The viewport height, in tiles */
-  const static int kVIEWPORT_WIDTH;   /* The viewport width, in tiles */
 
 /*============================================================================
  * PRIVATE FUNCTIONS
@@ -185,6 +188,9 @@ public:
 
   /* Causes the thing you are moving into to start its interactive action */
   void passOver();
+
+  /* Teleport a thing, based on the given coordinates */
+  void teleportThing(int id, int tile_x, int tile_y);
 
   /* The tick handling methods for starting and stopping the map */
   void tickStart();

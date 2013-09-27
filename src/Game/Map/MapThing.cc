@@ -314,6 +314,8 @@ void MapThing::clear()
   
   height = 0;
   width = 0;
+  x = 0.0;
+  y = 0.0;
 
   unsetState();
 }
@@ -750,36 +752,35 @@ bool MapThing::setSpeed(short speed)
  *              placed. If this is unset, the thing will not move or paint.
  *
  * Inputs: Tile* new_tile
- * Output: none
+ * Output: bool - status if the change was able to occur
  */
-void MapThing::setStartingTile(Tile* new_tile)
+bool MapThing::setStartingTile(Tile* new_tile)
 {
-  /* Stop movement */
-  setDirection(EnumDb::DIRECTIONLESS);
-  
-  /* Unset the previous tile */
-  if(tile_previous != 0)
-    tile_previous->unsetImpassableThing();
-  tile_previous = 0;
-  
-  /* Unset the main tile */
-  if(tile_main != 0)
-    tile_main->unsetImpassableThing();
-  tile_main = 0;
-  
-  /* Set the new tile */
   if(new_tile != 0 && !new_tile->isImpassableThingSet())
   {
+    /* Stop movement */
+    setDirection(EnumDb::DIRECTIONLESS);
+  
+    /* Unset the previous tile */
+    if(tile_previous != 0)
+      tile_previous->unsetImpassableThing();
+    tile_previous = 0;
+  
+    /* Unset the main tile */
+    if(tile_main != 0)
+      tile_main->unsetImpassableThing();
+    tile_main = 0;
+  
+    /* Set the new tile */
     tile_main = new_tile;
     this->x = tile_main->getPixelX();
     this->y = tile_main->getPixelY();
     tile_main->setImpassableThing(this, Tile::PERSON);
+
+    return true;
   }
-  else
-  {
-    this->x = 0;
-    this->y = 0;
-  }
+
+  return false;
 }
 
 /*

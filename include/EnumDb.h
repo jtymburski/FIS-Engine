@@ -76,7 +76,7 @@ public:
   /* 
    * Description: The event classification - for what the event will do 
    */
-  enum EventClassifier {NOEVENT       = 0,
+  enum EventClassifier {NOEVENT        = 0,
                         GIVEITEM       = 1,
                         RUNBATTLE      = 2, 
                         RUNMAP         = 3,
@@ -302,6 +302,7 @@ struct Event
 {
   QObject* handler;
   EnumDb::EventClassifier classification;
+  QList<int> integer_stack;
 };
 
 /* Struct to handle the conversation throughout the map */

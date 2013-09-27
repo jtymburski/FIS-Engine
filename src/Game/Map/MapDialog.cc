@@ -87,6 +87,7 @@ MapDialog::MapDialog(QFont font)
  
   /* Conversation dialog initialization */
   conversation_waiting = false;
+  player_id = 0;
 
   /* Pickup Notification parameters cleared */
   pickup_offset = 0;
@@ -172,6 +173,13 @@ bool MapDialog::drawPseudoCircle(int x, int y, int radius)
     return true;
   }
   return false;
+}
+
+void MapDialog::executeEvent()
+{
+  if(conversation_info.action_event.handler != 0)
+    ((EventHandler*)conversation_info.action_event.handler)->
+            executeEvent(conversation_info.action_event, player_id);
 }
 
 bool MapDialog::getThingPtr(int id)
@@ -376,11 +384,21 @@ void MapDialog::setPaused(bool paused)
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
-bool MapDialog::initConversation(Conversation dialog_info)
+void MapDialog::endConversation()
 {
-  if(isDialogImageSet() && dialog_mode != CONVERSATION)
+  if(isInConversation())
+  {
+    dialog_status = HIDING;
+    emit finishThingTarget();
+  }
+}
+
+bool MapDialog::initConversation(Conversation dialog_info, int player_id)
+{
+  if(isDialogImageSet() && dialog_mode != CONVERSATION && player_id > 0)
   {
     conversation_info = dialog_info;
+    this->player_id = player_id;
 
     if(dialog_mode == DISABLED)
     {
@@ -537,18 +555,22 @@ void MapDialog::keyPress(QKeyEvent* event)
         /* If this is the last conversation entry, end it */
         else if(conversation_info.next.size() == 0)
         {
-          dialog_status = HIDING;
-          emit finishThingTarget();
+          executeEvent();
+          endConversation();
         }
         /* Otherwise, go to the next conversation entry*/
         else
         {
           bool multiple = (conversation_info.next.size() > 1);
+          executeEvent();
           conversation_info = conversation_info.next[dialog_option];
               
           /* Skip the option if it was an option case */
           if(multiple)
+          {
+            executeEvent();
             conversation_info = conversation_info.next[0];
+          }
 
           /* Finalize the conversation change */
           setupConversation();
@@ -965,8 +987,6 @@ bool MapDialog::setViewportDimension(short width, short height)
 
 void MapDialog::update(float cycle_time)
 {
-  short height = dialog_display.getImage().height();
-
   /* Modify the opacity of the dialog information based on the paused status */
   if(paused && paused_opacity != 0)
   {

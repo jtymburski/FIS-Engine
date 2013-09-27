@@ -14,6 +14,7 @@
 //#include <QTime>
 
 #include "EnumDb.h"
+#include "Game/EventHandler.h"
 #include "Game/Frame.h"
 #include "Game/Map/MapThing.h"
 
@@ -98,7 +99,10 @@ private:
   DialogStatus pickup_status;
   short pickup_time;
   short pickup_width;
-  
+ 
+  /* The player id that instantiated the conversation */
+  int player_id;
+
   /* The data for the associated things. This is pertinent for the
    * conversation access and anything displayed */
   MapThing* thing;
@@ -163,6 +167,9 @@ private:
   /* Draws an approximate circle. More applicable for small circles */
   bool drawPseudoCircle(int x, int y, int radius);
 
+  /* Executes the conversation event */
+  void executeEvent();
+
   /* Functions to acquire thing data, for painting to the screen */
   bool getThingPtr(int id);
   
@@ -202,8 +209,11 @@ public slots:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Called when the conversation needs to be abruptly ended */
+  void endConversation();
+
   /* Initializes a conversation with the two given people. */
-  bool initConversation(Conversation dialog_info);
+  bool initConversation(Conversation dialog_info, int player_id);
 
   /* Initialize all OpenGL calls needed for this class */
   void initializeGl();

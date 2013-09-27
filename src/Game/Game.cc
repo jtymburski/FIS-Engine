@@ -61,6 +61,13 @@ Game::~Game()
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
+  
+/* Connect the event handler to the game */
+void Game::connectEvents()
+{
+  QObject::connect(&event_handler, SIGNAL(teleportThing(int, int, int)), 
+                   this,           SLOT(teleportThing(int, int, int)));
+}
 
 /* Set up the battle - old battle needs to be deleted prior to calling */
 void Game::setupBattle()
@@ -190,6 +197,9 @@ void Game::setupGame()
                    this,     SIGNAL(closeGame()));
   QObject::connect(game_battle, SIGNAL(closeBattle()), 
                    this,        SIGNAL(closeGame()));
+
+  /* Set up events */
+  connectEvents();
 }
 
 /* Set up the map - old map needs to be deleted prior to calling */
@@ -203,11 +213,20 @@ void Game::setupMap()
     gl_format.setSwapInterval(1);
   else
     gl_format.setSwapInterval(0);
-  game_map = new Map(gl_format, game_config.getScreenWidth(), 
-                                game_config.getScreenHeight());
+  game_map = new Map(gl_format, game_config, event_handler.createBlankEvent());
 
   /* Load the map - temporary location */
   game_map->loadMap("maps/test_04");
+}
+
+/*============================================================================
+ * PUBLIC SLOTS
+ *===========================================================================*/
+
+void Game::teleportThing(int id, int x, int y)
+{
+  if(game_map != 0)
+    game_map->teleportThing(id, x, y);
 }
 
 /*============================================================================

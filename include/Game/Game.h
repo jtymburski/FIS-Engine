@@ -73,6 +73,9 @@ private:
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 private:
+  /* Connect the event handler to the game */
+  void connectEvents();
+
   /* Set up the battle */
   void setupBattle();
 
@@ -87,6 +90,13 @@ private:
  *===========================================================================*/
 signals:
   void closeGame();
+
+/*============================================================================
+ * PUBLIC SLOTS
+ *===========================================================================*/
+public slots:
+  /* Teleports the player stored within the map */
+  void teleportThing(int id, int x, int y);
 
 /*============================================================================
  * PUBLIC FUNCTIONS

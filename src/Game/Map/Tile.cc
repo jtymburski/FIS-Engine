@@ -9,6 +9,10 @@
 *              its own tile data and ensuring that movement isn't entered 
 *              through the tile. For additional information, read the comments
 *              below for each function.
+*
+* TODO:
+*  1. Possibly connect events to walking onto tiles and leaving - separate 
+*     from sectors
 ******************************************************************************/
 #include "Game/Map/Tile.h"
 

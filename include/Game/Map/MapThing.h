@@ -203,7 +203,7 @@ public:
   bool setSpeed(short speed);
     
   /* Set the tile to hook the map thing to */
-  void setStartingTile(Tile* new_tile);
+  bool setStartingTile(Tile* new_tile);
   
   /* Sets the state of the thing */
   bool setState(MapState* state, bool unset_old = true);

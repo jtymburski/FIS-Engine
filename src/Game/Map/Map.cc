@@ -28,16 +28,14 @@ const short Map::kPLAYER_INDEX = 0;
 const int Map::kTICK_DELAY = 10;
 const int Map::kTILE_HEIGHT = 64;
 const int Map::kTILE_WIDTH = 64;
-const int Map::kVIEWPORT_HEIGHT = 11;
-const int Map::kVIEWPORT_WIDTH = 19;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
 
 /* Constructor function */
-Map::Map(const QGLFormat & format, short viewport_width, 
-         short viewport_height) : QGLWidget(format)
+Map::Map(const QGLFormat & format, Options running_config, 
+                                   Event blank_event) : QGLWidget(format)
 {
   /* Set some initial class flags */
   //setAttribute(Qt::WA_PaintOnScreen);
@@ -64,7 +62,8 @@ Map::Map(const QGLFormat & format, short viewport_width,
   /* Set up the map displays */
   //map_dialog.setFont(QFont("Times", 10));
   map_dialog.setDialogImage("sprites/Map/Overlay/dialog.png");
-  map_dialog.setViewportDimension(viewport_width, viewport_height);
+  map_dialog.setViewportDimension(running_config.getScreenWidth(), 
+                                  running_config.getScreenHeight());
 
   connect(&map_dialog, SIGNAL(setThingData(QList<int>)), 
           this, SLOT(getThingData(QList<int>)));
@@ -72,9 +71,13 @@ Map::Map(const QGLFormat & format, short viewport_width,
           this, SLOT(finishThingTarget()));
 
   /* Setup the viewport */
-  viewport = new MapViewport(viewport_width, viewport_height, 
+  viewport = new MapViewport(running_config.getScreenWidth(), 
+                             running_config.getScreenHeight(), 
                              kTILE_WIDTH, kTILE_HEIGHT);
- 
+
+  /* Initialize the event handler, for map creation */
+  this->blank_event = blank_event;
+
   /* Bring the timer in to provide a game tick */
   //connect(&timer, SIGNAL(timeout()), this, SLOT(updateGL()));
   //timer.setSingleShot(true);
@@ -207,7 +210,7 @@ void Map::initiateThingAction()
       {
         if(player->setTarget(target_thing) && 
            target_thing->setTarget(player) &&
-           map_dialog.initConversation(target_convo))
+           map_dialog.initConversation(target_convo, player->getID()))
         {
           player->keyFlush();
         }
@@ -227,50 +230,54 @@ void Map::initiateThingAction()
 
 void Map::animate(short time_since_last)
 {
-  /* The movement handling for things*/
-  for(int i = 0; i < persons.size(); i++)
+  /* Only proceed if the animation time is positive */
+  if(time_since_last > 0)
   {
-    if(persons[i] != 0)
-    { 
-      Tile* next_tile = 0;
-
-      if(persons[i]->getTile() != 0)
+    /* The movement handling for things*/
+    for(int i = 0; i < persons.size(); i++)
+    {
+      if(persons[i] != 0)
       {
-        int tile_x = persons[i]->getTile()->getX();
-        int tile_y = persons[i]->getTile()->getY();
+        Tile* next_tile = 0;
 
-        /* Based on the move request, provide the next tile in line using the
-         * current centered tile and move request */
-        switch(persons[i]->getMoveRequest())
+        if(persons[i]->getTile() != 0)
         {
-          case EnumDb::NORTH:
-            if(--tile_y >= 0)
-              next_tile = geography[tile_x][tile_y];
-            break;
-          case EnumDb::EAST:
-            if(++tile_x < geography.size())
-              next_tile = geography[tile_x][tile_y];
-            break;
-          case EnumDb::SOUTH:
-            if(++tile_y < geography[tile_x].size())
-              next_tile = geography[tile_x][tile_y];
-            break;
-          case EnumDb::WEST:
-            if(--tile_x >= 0)
-              next_tile = geography[tile_x][tile_y];
-            break;
-          case EnumDb::DIRECTIONLESS:
-            next_tile = 0;
+          int tile_x = persons[i]->getTile()->getX();
+          int tile_y = persons[i]->getTile()->getY();
+
+          /* Based on the move request, provide the next tile in line using the
+           * current centered tile and move request */
+          switch(persons[i]->getMoveRequest())
+          {
+            case EnumDb::NORTH:
+              if(--tile_y >= 0)
+                next_tile = geography[tile_x][tile_y];
+              break;
+            case EnumDb::EAST:
+              if(++tile_x < geography.size())
+                next_tile = geography[tile_x][tile_y];
+              break;
+            case EnumDb::SOUTH:
+              if(++tile_y < geography[tile_x].size())
+                next_tile = geography[tile_x][tile_y];
+              break;
+            case EnumDb::WEST:
+              if(--tile_x >= 0)
+                next_tile = geography[tile_x][tile_y];
+              break;
+            case EnumDb::DIRECTIONLESS:
+              next_tile = 0;
+          }
         }
+
+        /* Proceed to update the thing */
+        persons[i]->updateThing(time_since_last, next_tile);
       }
-
-      /* Proceed to update the thing */
-      persons[i]->updateThing(time_since_last, next_tile);
     }
-  }
 
-  /* Animate the displays on the screen */
-  map_dialog.update(time_since_last);
+    /* Animate the displays on the screen */
+    map_dialog.update(time_since_last);
+  }
 }
 
 void Map::initializeGL()
@@ -354,6 +361,8 @@ void Map::keyPressEvent(QKeyEvent* key_event)
   else if(key_event->key() == Qt::Key_0)
   {
     Conversation convo;
+    convo.category = EnumDb::TEXT;
+    convo.action_event = blank_event;
     convo.text = "This is the initial conversation point that will start it. ";
     convo.text += "How can this continue? It must pursue to complete ";
     convo.text += "embodiment. Ok, maybe I'll just keep typing until I break ";
@@ -361,10 +370,12 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     convo.thing_id = 1;
     Conversation test1, test2, test3, test4, test5;
     test1.category = EnumDb::TEXT;
+    test1.action_event = blank_event;
     test1.text = "This is a test to see how the data performs. The line will split once ";
     test1.text += "unless it is an option based selection in which case it will restrict."; 
     test1.thing_id = 3;
     test2.category = EnumDb::TEXT;
+    test2.action_event = blank_event;
     test2.text = "This is a no man case. See what happens!! Ok, this is the ";
     test2.text += "too long case where the lines never cease to exist and the ";
     test2.text += "points aren't for real. I'm feeling a bit hungry though ";
@@ -375,6 +386,7 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     test2.thing_id = 2;
     test2.next.append(test1);
     test3.category = EnumDb::TEXT;
+    test3.action_event = blank_event;
     test3.text = "Back to finish off with a clean case with a couple of lines.";
     test3.text += " So this requires me to write a bunch of BS to try and fill";
     test3.text += " these lines.";
@@ -383,10 +395,12 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     test3.thing_id = 24;
     test3.next.append(test2);
     test4.category = EnumDb::TEXT;
+    test4.action_event = blank_event;
     test4.text = "Option 1 - This goes on and on and on and on and on and lorem ipsum. This is way too long to be an option. Loser";
     test4.thing_id = -1;
     test4.next.append(test2);
     test5.category = EnumDb::TEXT;
+    test5.action_event = blank_event;
     test5.text = "Option 2";
     test5.thing_id = -1;
     test5.next.append(test3);
@@ -407,7 +421,7 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     /*convo.next.append(test5);
     convo.next.append(test1);
     convo.next.append(test3);*/
-    if(map_dialog.initConversation(convo))
+    if(map_dialog.initConversation(convo, player->getID()))
       player->keyFlush();
   }
 
@@ -746,6 +760,9 @@ bool Map::loadMap(QString file)
     person->setID(24);
     person->setName("El Oroso");
     Conversation person_convo;
+    person_convo.category = EnumDb::TEXT;
+    person_convo.action_event = 
+            ((EventHandler*)blank_event.handler)->createTeleportEvent(30, 30);
     person_convo.text = "I don't have anything to say to you!!";
     person_convo.thing_id = 24;
     person->setConversation(person_convo);
@@ -776,6 +793,8 @@ bool Map::loadMap(QString file)
     person_convo.text += "On second thought, I really don't like you and want to run away.";
     person_convo.thing_id = 3;
     Conversation second_set;
+    second_set.category = EnumDb::TEXT;
+    second_set.action_event = blank_event;
     second_set.text = "Fine, I'm leaving.";
     second_set.thing_id = 1;
     person_convo.next.append(second_set);
@@ -827,6 +846,17 @@ bool Map::passible(EnumDb::Direction dir, int x, int y)
 /* Causes the thing you are moving into to start its interactive action */
 void Map::passOver()
 {
+}
+
+void Map::teleportThing(int id, int tile_x, int tile_y)
+{
+  /* Change the starting tile for the thing */
+  for(int i = 0; i < persons.size(); i++)
+  {
+    if(persons[i]->getID() == id)
+      if(persons[i]->setStartingTile(geography[tile_x][tile_y]))
+        map_dialog.endConversation();
+  }
 }
 
 /* Starts the internal class animation tick */

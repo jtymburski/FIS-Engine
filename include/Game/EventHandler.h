@@ -33,11 +33,34 @@ private:
   /* Private variables - needed?? */
 
 /*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+private:
+  /* Creates the initial event template, clearing it */
+  Event createEventTemplate();
+
+  /* Execute the teleport event */
+  void executeTeleportEvent(Event event, int target_id);
+
+/*============================================================================
+ * SIGNALS
+ *===========================================================================*/
+signals:
+  /* Signals for the various events */
+  void teleportThing(int id, int x, int y);
+
+/*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
   /* Creates a disabled blank event */
   Event createBlankEvent();
+
+  /* Creates a teleport event */
+  Event createTeleportEvent(int tile_x, int tile_y);
+
+  /* Execute the given event - done through signal emits */
+  void executeEvent(Event event, int target_id);
 };
 
 #endif // EVENTHANDLER_H
