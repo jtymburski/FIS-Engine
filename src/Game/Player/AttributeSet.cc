@@ -309,6 +309,7 @@ int AttributeSet::getIndex(EnumDb::Attribute type)
     case EnumDb::MMNT: return 16;
     case EnumDb::LIMB: return 17;
     case EnumDb::UNBR: return 18;
+    case EnumDb::NOAT: return INT_MAX;
   }
   return -1;
 }
