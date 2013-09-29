@@ -102,7 +102,8 @@ bool Party::menuUseItem(Item* used_item, ushort target)
  */
 bool Party::battleUseItem(Item* used_item, ushort target)
 {
-
+  /* To do */
+  return false;
 }
 
 /*

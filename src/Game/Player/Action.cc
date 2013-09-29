@@ -465,6 +465,8 @@ EnumDb::Attribute Action::getAttribute()
     return EnumDb::UNBR;
   if (getActionFlag(Action::MOMENTUM))
     return EnumDb::MMNT;
+
+  return EnumDb::NOAT;
 }
 
 /*

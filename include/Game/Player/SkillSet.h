@@ -43,6 +43,7 @@ public:
   /* Methods to add skills */
   bool addSkill(Skill* skill, ushort req_level = 1);
   bool addSkills(QVector<Skill*> new_skills, QVector<ushort> new_levels);
+  bool addSkills(SkillSet* new_Skills);
 
   /* Calculates the lowest level of a skill contained in the set */
   int calcLowestLevel(QString skill_name);

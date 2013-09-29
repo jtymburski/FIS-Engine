@@ -23,7 +23,9 @@ const uint SkillSet::kMAX_LEVEL  = 127; /* Highest LVL for a Person */
  *
  * Inputs: none
  */
-SkillSet::SkillSet() {}
+SkillSet::SkillSet()
+{
+}
 
 /*
  * Description: Constructs a SkillSet object given a single Skill* and a value
@@ -149,6 +151,21 @@ bool SkillSet::addSkills(QVector<Skill*> new_skills,
   if (to_be_completed)
       cleanUp();
   return to_be_completed;
+}
+
+/*
+ * Description: This function combines the current skill list with a parameter
+ *              skill list.
+ *
+ * Inputs: SkillSet* new_skills - list of skills to be added to this
+ * Output: bool - true if the skils were added
+ */
+bool SkillSet::addSkills(SkillSet* new_skills)
+{
+  QVector<Skill*> temp_skills = new_skills->getSkills();
+  QVector<ushort> temp_levels = new_skills->getSkillLevels();
+
+  return this->addSkills(temp_skills, temp_levels);
 }
 
 /*
@@ -365,7 +382,7 @@ QVector<QString> SkillSet::getNames()
  */
 QVector<Skill*> SkillSet::getSkills()
 {
-  return skills;
+  // return skills;
 }
 
 /*
@@ -376,7 +393,7 @@ QVector<Skill*> SkillSet::getSkills()
  */
 QVector<ushort> SkillSet::getSkillLevels()
 {
-  return skills_available;
+  //return skills_available;
 }
 
 /*

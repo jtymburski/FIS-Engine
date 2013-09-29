@@ -155,6 +155,9 @@ private:
   /* Calculate an AttributeSet representing the person's top statistics */
   AttributeSet calcMaxLevelStats();
 
+  /* Clears the temporary skill list */
+  void clearTempSkills();
+
 /*============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/

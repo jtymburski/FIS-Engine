@@ -196,6 +196,7 @@ double Equipment::getEquipmentMass()
 SkillSet* Equipment::getSkills()
 {
   /* Temporary Skill Storage */
+  clearTempSkills();
   QVector<Skill*> temp_skills;
   QVector<ushort> temp_skill_levels;
 

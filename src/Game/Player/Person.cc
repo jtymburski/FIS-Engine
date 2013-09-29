@@ -91,7 +91,11 @@ Person::Person(QString pname, Race* prace, Category* pcat, QString p, QString s)
     exp_table = buildExponentialTable(kMIN_LVL_EXP, kMAX_LVL_EXP, kMAX_LEVEL);
 
   /* Initially gather all usable skills */
+  temp_skill_list = new SkillSet();
+
+  qDebug() << "oi";
   calcSkills();
+  qDebug() << "posh";
 }
 
 /*
@@ -133,6 +137,7 @@ Person::Person(Person& other)
     item_drops.push_back(new Item(parent->getItemLoot().value(i)));
 
   /* Initially calculates all the skills */
+  temp_skill_list = new SkillSet();
   calcSkills();
 }
 
@@ -146,9 +151,12 @@ Person::~Person()
     for (int i = 0; i < item_drops.size(); i++)
     {
       delete item_drops[i];
-      item_drops[i] = NULL;
+      item_drops[i] = 0;
     }
   }
+
+  delete temp_skill_list;
+  temp_skill_list = 0;
 }
 
 /*============================================================================
@@ -195,6 +203,18 @@ AttributeSet Person::calcMaxLevelStats()
   return max_level_set;
 }
 
+/*
+ * Description: Clears the temporary skill set pointer by removing skills until
+ *              the size of the temp skills is 0.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Person::clearTempSkills()
+{
+
+}
+
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
@@ -236,15 +256,33 @@ void Person::battlePrep()
 }
 
 /*
- * Description: This function calculates the currently usable skills of the
- *              person, based on the skills allowed by their Race and Category.
+ * Description: This function calculates and updates the skills of the
+ *              person, based on the skills allowed by their Race and Category,
+ *              the equipment carried by them, and their personal base skill
+ *              set.
  *
  * Inputs: none
  * Output: none
  */
 void Person::calcSkills()
 {
+  /* Clear the temporary skill list for now */
+  clearTempSkills();
 
+  /* Add the category skill sets, race skill sets, and base skill set */
+  SkillSet* race_set = getRace()->getSkillSet();
+  SkillSet* cate_set = getCategory()->getSkillSet();
+
+  // temp_skill_list->addSkills(base_skill_list);
+  // temp_skill_list->addSkills(race_set);
+  // temp_skill_list->addSkills(cate_set);
+
+  /* Add the skills gained by the Person's equipment */
+  for (int i = 0; i < (int)kMAX_EQUIP_SLOTS; i++)
+  {
+    // SkillSet* equip_skills = getEquipSlot(i)->getSkills();
+    // temp_skill_list->addSkills(equip_skills);
+  }
 }
 
 /*
@@ -483,31 +521,49 @@ SkillSet* Person::getSkills()
 SkillSet* Person::getUseableSkills()
 {
   calcSkills();
+
   QVector<Skill*> temp_skills = temp_skill_list->getSkills();
+  QVector<ushort> temp_levels = temp_skill_list->getSkillLevels();
 
   /* Remove skills which have too high of QD cost */
   for (int i = 0; i < temp_skills.size(); i++)
+  {
     if (temp_skills.at(i)->getQdValue() > (uint)temp_stats.getStat("QTDR"))
+    {
       temp_skills.remove(i);
+      temp_levels.remove(i);
+    }
+  }
 
   /* Remove physical skills if physical skill flag disabled */
   if (getPersonFlag(Person::CANATTACK) == false)
+  {
     for (int i = 0; i < temp_skills.size(); i++)
+    {
       if (temp_skills.at(i)->getFlag(Skill::PHYSICAL))
+      {
         temp_skills.remove(i);
+        temp_levels.remove(i);
+      }
+    }
+  }
 
   /* Remove non-physical skills if non-physical skill flag disabled */
   if (getPersonFlag(Person::CANUSESKILLS) == false)
+  {
     for (int i = 0; i < temp_skills.size(); i++)
+    {
       if (!temp_skills.at(i)->getFlag(Skill::PHYSICAL))
+      {
         temp_skills.remove(i);
+        temp_levels.remove(i);
+      }
+    }
+  }
 
-  SkillSet* temp_skill_set = 0;
-
-  for (int i = 0; i < temp_skills.size(); i++)
-    temp_skill_set->addSkill(temp_skills.at(i));
-
-  return temp_skill_set;
+  /* Use the wittled down levels and skill vectors to create a new skill list */
+  temp_skill_list->addSkills(temp_skills, temp_levels);
+  return temp_skill_list;
 }
 
 /*
