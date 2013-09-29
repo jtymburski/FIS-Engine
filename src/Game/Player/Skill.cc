@@ -299,6 +299,17 @@ float Skill::getEffectChance(uint index)
 }
 
 /*
+ * Description: Returns the point value assosciated with the skill.
+ *
+ * Inputs: none
+ * Output: uint - the point value of
+ */
+uint Skill::getPointValue()
+{
+  return point_value;
+}
+
+/*
  * Description: Returns the QD cost of the skill
  *
  * Inputs: none
@@ -369,6 +380,17 @@ void Skill::setName(QString new_value)
     name = new_value;
   else
     name = "INVALID NAME LENGTH";
+}
+
+/*
+ * Description: Assigns a new point value to the Skill.
+ *
+ * Inputs: new_point_value - new point value
+ * Output: none
+ */
+void Skill::setPointValue(uint new_point_value)
+{
+  point_value = new_point_value;
 }
 
 /*

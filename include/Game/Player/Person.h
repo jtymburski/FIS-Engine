@@ -60,7 +60,8 @@ public:
     REFLECT        = 1 << 20, /* Is the person currently reflecting skills? */
     BOND           = 1 << 21, /* Is the person in the BOND state? */
     CANREVIVE      = 1 << 22, /* Can the person be revived? */
-    CANLEVEL       = 1 << 23  /* Can the person level up? */
+    CANLEVEL       = 1 << 23, /* Can the person level up? */
+    CANLEARNSKILLS = 1 << 24  /* Can the person learn skills? */
   };
   Q_DECLARE_FLAGS(PersonFlags, PersonState)
 
@@ -154,9 +155,6 @@ private:
 
   /* Calculate an AttributeSet representing the person's top statistics */
   AttributeSet calcMaxLevelStats();
-
-  /* Clears the temporary skill list */
-  void clearTempSkills();
 
 /*============================================================================
  * PUBLIC FUNCTIONS

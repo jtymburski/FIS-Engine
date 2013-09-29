@@ -70,6 +70,7 @@ Person::Person(QString pname, Race* prace, Category* pcat, QString p, QString s)
       name(pname),
       rank(EnumDb::NUBEAR),
       base_skill_list(0),
+      temp_skill_list(0),
       first_person(0),
       third_person(0),
       bubbified_sprite(0)
@@ -91,11 +92,7 @@ Person::Person(QString pname, Race* prace, Category* pcat, QString p, QString s)
     exp_table = buildExponentialTable(kMIN_LVL_EXP, kMAX_LVL_EXP, kMAX_LEVEL);
 
   /* Initially gather all usable skills */
-  temp_skill_list = new SkillSet();
-
-  qDebug() << "oi";
   calcSkills();
-  qDebug() << "posh";
 }
 
 /*
@@ -117,6 +114,7 @@ Person::Person(Person& other)
       name(other.getName()),
       rank(other.getRank()),
       base_skill_list(other.getSkills()),
+      temp_skill_list(0),
       first_person(other.getFirstPerson()),
       third_person(other.getThirdPerson()),
       bubbified_sprite(other.getBubbySprite())
@@ -137,7 +135,6 @@ Person::Person(Person& other)
     item_drops.push_back(new Item(parent->getItemLoot().value(i)));
 
   /* Initially calculates all the skills */
-  temp_skill_list = new SkillSet();
   calcSkills();
 }
 
@@ -203,18 +200,6 @@ AttributeSet Person::calcMaxLevelStats()
   return max_level_set;
 }
 
-/*
- * Description: Clears the temporary skill set pointer by removing skills until
- *              the size of the temp skills is 0.
- *
- * Inputs: none
- * Output: none
- */
-void Person::clearTempSkills()
-{
-
-}
-
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
@@ -266,16 +251,19 @@ void Person::battlePrep()
  */
 void Person::calcSkills()
 {
-  /* Clear the temporary skill list for now */
-  clearTempSkills();
-
   /* Add the category skill sets, race skill sets, and base skill set */
+  SkillSet* temp_person_skills = new SkillSet();
   SkillSet* race_set = getRace()->getSkillSet();
   SkillSet* cate_set = getCategory()->getSkillSet();
 
-  // temp_skill_list->addSkills(base_skill_list);
-  // temp_skill_list->addSkills(race_set);
-  // temp_skill_list->addSkills(cate_set);
+  if (base_skill_list !=0)
+    temp_person_skills->addSkills(base_skill_list);
+
+  if (race_set != 0)
+    temp_skill_list->addSkills(race_set);
+
+  if (cate_set != 0)
+    temp_skill_list->addSkills(cate_set);
 
   /* Add the skills gained by the Person's equipment */
   for (int i = 0; i < (int)kMAX_EQUIP_SLOTS; i++)
@@ -283,6 +271,10 @@ void Person::calcSkills()
     // SkillSet* equip_skills = getEquipSlot(i)->getSkills();
     // temp_skill_list->addSkills(equip_skills);
   }
+
+  temp_skill_list = temp_person_skills;
+  delete temp_person_skills;
+  temp_person_skills = 0;
 }
 
 /*

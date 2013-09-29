@@ -165,7 +165,9 @@ bool SkillSet::addSkills(SkillSet* new_skills)
   QVector<Skill*> temp_skills = new_skills->getSkills();
   QVector<ushort> temp_levels = new_skills->getSkillLevels();
 
-  return this->addSkills(temp_skills, temp_levels);
+  if (this->addSkills(temp_skills, temp_levels))
+      return true;
+  return false;
 }
 
 /*
@@ -382,7 +384,7 @@ QVector<QString> SkillSet::getNames()
  */
 QVector<Skill*> SkillSet::getSkills()
 {
-  // return skills;
+  return skills;
 }
 
 /*
@@ -393,7 +395,7 @@ QVector<Skill*> SkillSet::getSkills()
  */
 QVector<ushort> SkillSet::getSkillLevels()
 {
-  //return skills_available;
+  return skills_available;
 }
 
 /*

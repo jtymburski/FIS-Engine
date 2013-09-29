@@ -57,6 +57,9 @@ private:
   /* Int value for Quantum Drive cost */
   uint qd_cost;
 
+  /* Point value for the Skill */
+  uint point_value;
+
   /* Name of the skill */
   QString name;
 
@@ -124,6 +127,9 @@ public:
   /* Return a chance vector index of the skill */
   float getEffectChance(uint index);
 
+  /* Returns the point value of the skill */
+  uint getPointValue();
+
   /* Gets the QD Cost Value */
   uint getQdValue();
 
@@ -141,6 +147,9 @@ public:
 
   /* Sets the name of the skill */
   void setName(QString new_value);
+
+  /* Assigns a new point value to the skill */
+  void setPointValue(uint new_point_value);
 
   /* Sets the qd cost value */
   void setQdCost(uint new_value);

@@ -86,12 +86,21 @@ bool Party::menuUseItem(Item* used_item, ushort target)
           attr_set->setStat(stat, attr_set->getStat(stat) + amount);
         }
       }
+
+      /* If the item is meant to allow a skill to be learned */
+      if (used_item->getItemFlag(Item::SKILLLEARNING))
+      {
+        if (getMember(target)->getPersonFlag(Person::CANLEARNSKILLS))
+        {
+          Skill* learned_skill = used_item->getSkill();
+          getMember(target)->getSkills()->addSkill(learned_skill);
+        }
+      }
     }
   }
 
   return item_used;
 }
-
 
 /*
  * Description: Functionality for using an item in battle.
@@ -102,7 +111,10 @@ bool Party::menuUseItem(Item* used_item, ushort target)
  */
 bool Party::battleUseItem(Item* used_item, ushort target)
 {
-  /* To do */
+  bool item_used = false;
+  bool action_happens = false;
+
+
   return false;
 }
 

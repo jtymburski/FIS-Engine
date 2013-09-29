@@ -46,23 +46,6 @@ Equipment::~Equipment()
 }
 
 /*============================================================================
- * PRIVATE FUNCTIONS
- *===========================================================================*/
-
-/*
- * Description: "Clears" the temporary skill list stored by the equipment by
- *              removing each skill until the size is 0.
- *
- * Inputs: none
- * Output: none
- */
-void Equipment::clearTempSkills()
-{
-  while (temp_skill_list->getSkills().size() != 0)
-    temp_skill_list->removeSkill(0);
-}
-
-/*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
@@ -142,7 +125,6 @@ AttributeSet Equipment::getBubbyBonus()
   QList<uint> bubby_bonus_values;
   QList<Bubby*> bubbies = equip_signature->getBubbyMap();
 
-
   /* For each bubby in the bubby map */
   for (int i = 0; i < bubbies.size(); i++)
   {
@@ -196,7 +178,9 @@ double Equipment::getEquipmentMass()
 SkillSet* Equipment::getSkills()
 {
   /* Temporary Skill Storage */
-  clearTempSkills();
+  delete temp_skill_list;
+  temp_skill_list = new SkillSet();
+
   QVector<Skill*> temp_skills;
   QVector<ushort> temp_skill_levels;
 

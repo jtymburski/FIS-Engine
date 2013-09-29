@@ -110,15 +110,15 @@ Battle::Battle(Party* friends, Party* foes, QWidget* parent) : QWidget(parent)
   //  foes->getMember((int)i)->battlePrep();
 
   /* Create and place enemy & ally bounding boxes */
-  uint left_d   = floor(0.1290 * getMaxHeight());
-  uint top_d    = floor(0.1464 * getMaxHeight());
-  uint enemy_w  = 256;//floor(0.2105 * getMaxWidth());
-  uint enemy_h  = 256;//enemy_w;
-  uint spacing  = floor(0.0226 * getMaxWidth());
-  uint atop_d   = floor(0.5200 * getMaxHeight());
-  uint ally_w   = floor(0.2100 * getMaxWidth());
-  uint ally_h   = floor(0.3636 * getMaxHeight());
-  uint aspacing = floor(0.0263 * getMaxWidth());
+  //uint left_d   = floor(0.1290 * getMaxHeight());
+  //uint top_d    = floor(0.1464 * getMaxHeight());
+  //uint enemy_w  = 256;//floor(0.2105 * getMaxWidth());
+  //uint enemy_h  = 256;//enemy_w;
+  //uint spacing  = floor(0.0226 * getMaxWidth());
+  //uint atop_d   = floor(0.5200 * getMaxHeight());
+  //uint ally_w   = floor(0.2100 * getMaxWidth());
+  //uint ally_h   = floor(0.3636 * getMaxHeight());
+  //uint aspacing = floor(0.0263 * getMaxWidth());
 
   //for (int i = 0; i < 5; i++)
   //{
@@ -237,8 +237,10 @@ void Battle::paintEvent(QPaintEvent*)
 {
   QPainter painter(this);
   painter.setPen(QColor(Qt::black));
-  painter.setBrush(QColor(Qt::black));
+  painter.setBrush(QColor(Qt::blue));
   painter.setOpacity(1.00);
+
+  painter.drawRect(0, 0, getMaxHeight(), getMaxWidth());
 
   //painter.drawPixmap(0,0,getMaxWidth(),getMaxHeight(),*battle_bg);
   //painter.setOpacity(1.0);
