@@ -69,7 +69,7 @@ Person::Person(QString pname, Race* prace, Category* pcat, QString p, QString s)
       race(prace),
       name(pname),
       rank(EnumDb::NUBEAR),
-      skills(0),
+      base_skill_list(0),
       first_person(0),
       third_person(0),
       bubbified_sprite(0)
@@ -112,7 +112,7 @@ Person::Person(Person& other)
       race(other.getRace()),
       name(other.getName()),
       rank(other.getRank()),
-      skills(other.getSkills()),
+      base_skill_list(other.getSkills()),
       first_person(other.getFirstPerson()),
       third_person(other.getThirdPerson()),
       bubbified_sprite(other.getBubbySprite())
@@ -244,36 +244,7 @@ void Person::battlePrep()
  */
 void Person::calcSkills()
 {
-  if (getSkills() != 0)
-  {
-    QVector<Skill*> race_skills = getRace()->getSkillSet()->getSkills();
-    QVector<Skill*> cat_skills  = getCategory()->getSkillSet()->getSkills();
 
-    QVector<ushort> race_lvls = getRace()->getSkillSet()->getSkillLevels();
-    QVector<ushort> cat_lvls  = getCategory()->getSkillSet()->getSkillLevels();
-
-    for (int i = 0; i < race_skills.size(); i++)
-      if (getLevel() > race_lvls.at(i))
-        skills->addSkill(race_skills.at(i));
-
-    for (int i = 0; i < cat_skills.size(); i++)
-     if (getLevel() > cat_lvls.at(i))
-       skills->addSkill(cat_skills.at(i));
-
-
-    for (int i = 0; i < equipment.size(); i++)
-    {
-      SkillSet* equipment_skills = equipment[i]->getSkills(getLevel());
-      QVector<Skill*> equip_skills = equipment_skills->getSkills();
-
-      for (int j = 0; j < equip_skills.size(); j++)
-        skills->addSkill(equip_skills.at(i));
-
-      equip_skills.clear();
-    }
-
-    skills->cleanUp();
-  }
 }
 
 /*
@@ -382,7 +353,7 @@ void Person::printFlags()
  */
 void Person::printSkills()
 {
-  skills->printInfo();
+  base_skill_list->printInfo();
 }
 
 /*
@@ -498,7 +469,7 @@ Race* Person::getRace()
  */
 SkillSet* Person::getSkills()
 {
-  return skills;
+  return base_skill_list;
 }
 
 /*
@@ -512,7 +483,7 @@ SkillSet* Person::getSkills()
 SkillSet* Person::getUseableSkills()
 {
   calcSkills();
-  QVector<Skill*> temp_skills = skills->getSkills();
+  QVector<Skill*> temp_skills = temp_skill_list->getSkills();
 
   /* Remove skills which have too high of QD cost */
   for (int i = 0; i < temp_skills.size(); i++)
@@ -1080,7 +1051,7 @@ void Person::setSecondary(QString value)
  */
 void Person::setSkills(SkillSet* new_skill_set)
 {
-  skills = new_skill_set;
+  base_skill_list = new_skill_set;
 }
 
 /*

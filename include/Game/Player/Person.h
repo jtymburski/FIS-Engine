@@ -109,7 +109,8 @@ private:
   AttributeSet temp_max_stats;
 
   /* List of currently available skills */
-  SkillSet* skills;
+  SkillSet* base_skill_list;
+  SkillSet* temp_skill_list;
 
   /* Person's primary and secondary curves */
   QString primary;
@@ -176,8 +177,6 @@ public:
   void printEquipment();
   void printFlags();
   void printSkills();
-
-
 
   /* PersonState flag functions */
   bool getPersonFlag(PersonState flags);

@@ -60,6 +60,7 @@ void Options::setAllToDefault()
   setScreenHeight(0);
   setScreenWidth(0);
   setVsync(false);
+
 }
 
 void Options::setScreenHeight(int index)

@@ -26,6 +26,8 @@ Equipment::Equipment(QString name, uint value, Sprite* thumb, double weight,
     : Item(name, value, thumb, mass)
 {
   createSignature(size_x, size_y);
+
+  temp_skill_list = new SkillSet();
 }
 
 /*
@@ -37,7 +39,27 @@ Equipment::~Equipment()
       qDebug() << "Warning: Equipment Signature is NOT EMPTY!";
 
   delete equip_signature;
-  equip_signature = NULL;
+  equip_signature = 0;
+
+  delete temp_skill_list;
+  temp_skill_list = 0;
+}
+
+/*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+
+/*
+ * Description: "Clears" the temporary skill list stored by the equipment by
+ *              removing each skill until the size is 0.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Equipment::clearTempSkills()
+{
+  while (temp_skill_list->getSkills().size() != 0)
+    temp_skill_list->removeSkill(0);
 }
 
 /*============================================================================
@@ -97,6 +119,17 @@ void Equipment::printEquipmentFlags()
 }
 
 /*
+ * Description: Returns the stored base skill list for the Equipment
+ *
+ * Inputs: none
+ * Output: SkillSet* - the base skill set assigned to the equipment
+ */
+SkillSet* Equipment::getBaseSkillList()
+{
+  return base_skill_list;
+}
+
+/*
  * Description: Calculates an AttributeSet which is equivalent to the bonuses
  *              the bubbies attached to a signature wil provide to the
  *              stat boosts of the equipment.
@@ -110,14 +143,18 @@ AttributeSet Equipment::getBubbyBonus()
   QList<Bubby*> bubbies = equip_signature->getBubbyMap();
 
 
+  /* For each bubby in the bubby map */
   for (int i = 0; i < bubbies.size(); i++)
   {
+    /* Get the buff set from the bubby */
     AttributeSet* current_set = bubbies.at(i)->getBuffSet();
 
+    /* If the bubby bonus values is empty, push it full of 0's */
     if (bubby_bonus_values.isEmpty())
       for (int j = 0; j < current_set->getSize(); j++)
         bubby_bonus_values.push_back(0);
 
+    /* For each stat in the current set, add it to the bubby bonus value */
     for (int j = 0; j < current_set->getSize(); j++)
         bubby_bonus_values[i] += current_set->getStat(i);
   }
@@ -156,35 +193,39 @@ double Equipment::getEquipmentMass()
  * Inputs: ushort level - the level of the person the equipment is attached to
  * Output: SkillSet* - pointer to the skill set the equipment provides
  */
-SkillSet* Equipment::getSkills(ushort level)
+SkillSet* Equipment::getSkills()
 {
-  SkillSet* skills = 0;
-
+  /* Temporary Skill Storage */
   QVector<Skill*> temp_skills;
   QVector<ushort> temp_skill_levels;
 
+  /* Find the unique flavours contained in the signature and iterate through */
   QList<BubbyFlavour*> flavour_list = getSignature()->getUniqueFlavours();
   QList<BubbyFlavour*>::Iterator it = flavour_list.begin();
 
   while (++it < flavour_list.end())
   {
+    /* For each flavou, find the max tier and the max level that tier unlocks */
     int max_tier = getSignature()->getHighestTier((*it)->getName());
     int max_level = (*it)->getMaxSkillLevel(max_tier);
 
+    /* Obtain the skills and skill levels for that particular flavour */
     temp_skills = (*it)->getSkillSet()->getSkills();
     temp_skill_levels = (*it)->getSkillSet()->getSkillLevels();
 
+    /* Add the skill to the temp skill total if it falls within the max_level */
     for (int i = 0; i < temp_skills.size(); i++)
     {
       if (temp_skill_levels.at(i) <= max_level)
-        skills->addSkill(temp_skills.at(i));
+        temp_skill_list->addSkill(temp_skills.at(i));
     }
 
+    /* Clear the temp skills */
     temp_skills.clear();
     temp_skill_levels.clear();
   }
 
-  return skills;
+  return temp_skill_list;
 }
 
 /*
@@ -196,6 +237,17 @@ SkillSet* Equipment::getSkills(ushort level)
 Signature* Equipment::getSignature()
 {
   return equip_signature;
+}
+
+/*
+ * Description: Assigns a new base skill list to the equipment
+ *
+ * Inputs: SkillSet* - pointer to the new equipment's skill list
+ * Output: none
+ */
+void Equipment::setBaseSkillList(SkillSet* new_base_skill_list)
+{
+  base_skill_list = new_base_skill_list;
 }
 
 /*

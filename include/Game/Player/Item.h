@@ -101,8 +101,10 @@ protected:
   /* Item Prefix [ex. "bottles" or "bunch" or "suit"] */
   QString prefix;
 
-  /* SkillSet which can be gathered for the item */
+  /* Skill which the item performs upon consumption */
   Skill* action;
+
+  /* Skill which can be learned by the item */
   Skill* skill;
 
   /* Thumb sprite of the item */
@@ -168,7 +170,7 @@ public:
   /* Returns the prefix of the item */
   QString getPrefix();
 
-  /* Returns the SkillSet of the item */
+  /* Returns the Skill of the item */
   Skill* getSkill();
 
   /* Returns the thumbnail of the unit */

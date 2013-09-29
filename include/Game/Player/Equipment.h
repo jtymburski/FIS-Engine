@@ -42,6 +42,17 @@ private:
   /* The signature of the Equipment */
   Signature* equip_signature;
 
+  /* The base equipment skill list */
+  SkillSet* base_skill_list;
+  SkillSet* temp_skill_list;
+
+/*=============================================================================
+ * PRIVATE FUNCTIONS
+ *============================================================================*/
+private:
+  /* Clears the temporary skills */
+  void clearTempSkills();
+
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
@@ -50,6 +61,9 @@ public:
   void printAll();
   void printFlags();
   void printEquipmentFlags();
+
+  /* Returns the basic skill list provided by the Equipment */
+  SkillSet* getBaseSkillList();
 
   /* Returns an Attribute Set of stat bonuses in the Signature */
   AttributeSet getBubbyBonus();
@@ -61,10 +75,13 @@ public:
   double getEquipmentMass();
 
   /* Calculates and returns the skills the equipment provides (at a level) */
-  SkillSet* getSkills(ushort level = 1);
+  SkillSet* getSkills();
 
   /* Returns a pointer to the signature of the Equipment */
   Signature* getSignature();
+
+  /* Assigns a new base skill list to the Equipment */
+  void setBaseSkillList(SkillSet* new_base_skill_list);
 
   /* Sets the value of a flag */
   void setEquipmentFlag(EquipmentState flags, bool set_value = true);
