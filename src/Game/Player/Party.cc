@@ -41,6 +41,7 @@ Party::~Party() {}
  * Inputs: Item* used_item - the item to be used.
  *         ushort target - the primary target for the item (it may be multihit)
  * Output: bool - true if the item was used succesfully
+ * TODO: Animations, sound, etc.
  */
 bool Party::menuUseItem(Item* used_item, ushort target)
 {  
@@ -108,16 +109,74 @@ bool Party::menuUseItem(Item* used_item, ushort target)
  * Inputs: Item* used_item - the item to be used.
  *         ushort target - the primary target for the item (it may be multihit)
  * Output: bool - true if the item was used succesfully
+ * TODO: Animations, Sound, etc.
  */
 bool Party::battleUseItem(Item* used_item, ushort target)
 {
-  bool item_used = false;
-  bool action_happens = false;
+    bool item_used = false;
+    bool action_happens = false;
+    QVector<Action*> actions = used_item->getAction()->getEffects();
+    QVector<float> action_chance = used_item->getAction()->getEffectChance();
 
+    /* For each action in the action Skill of the item */
+    for (int i = 0; i < actions.size(); i++)
+    {
+      action_happens = false;
+      item_used = true;
 
-  return false;
-}
+      Action* curr_action = actions.at(i);
 
+      /* See if the action happens (random) */
+      int random = randInt(100);
+      if (random < action_chance.at(i))
+        action_happens = true;
+
+      if (action_happens)
+      {
+        /* If the ailment is meant to cure Inflictions */
+        if (used_item->getItemFlag(Item::CURE))
+        {
+          // EnumDb::Infliction to_cure = curr_action->getAilment();
+          //TODO: AILMENT CURE SIGNAL
+        }
+
+        /* If the Item is a stat changing item */
+        if (used_item->getItemFlag(Item::STATCHANGING))
+        {
+          /* Obtain the attribute to be affected */
+          EnumDb::Attribute stat = curr_action->getAttribute();
+
+          /* If the stat is legitimate */
+          if (stat != EnumDb::NOAT)
+          {
+            /* Find base change +/- eq. dist. with the variance */
+            int amount = (int)curr_action->getBaseChange();
+            amount += randInt(curr_action->getVariance());
+
+            /* If it's a lower action, multiply by -1 */
+            if (curr_action->getActionFlag(Action::LOWER))
+              amount *= -1;
+
+            /* Alter the afflicted attribute */
+            AttributeSet* attr_set = getMember(target)->getTemp();
+            attr_set->setStat(stat, attr_set->getStat(stat) + amount);
+          }
+        }
+
+        /* If the item is meant to allow a skill to be learned */
+        if (used_item->getItemFlag(Item::SKILLLEARNING))
+        {
+          if (getMember(target)->getPersonFlag(Person::CANLEARNSKILLS))
+          {
+            Skill* learned_skill = used_item->getSkill();
+            getMember(target)->getSkills()->addSkill(learned_skill);
+          }
+        }
+      }
+    }
+
+    return item_used;
+  }
 /*
  * Description: Sets the enumerated party type object. Usually called by the
  *              party constructor.

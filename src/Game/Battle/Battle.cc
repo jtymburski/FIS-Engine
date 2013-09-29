@@ -104,59 +104,57 @@ Battle::Battle(Party* friends, Party* foes, QWidget* parent) : QWidget(parent)
   battle_status_bar_image = new QPixmap();
 
   /* Set up each friend's and each foe's temporary statistics */
-  //for (uint i = 0; i < friends->getPartySize(); i++)
-  //  friends->getMember((int)i)->battlePrep();
-  //for (uint i = 0; i < foes->getPartySize(); i++)
-  //  foes->getMember((int)i)->battlePrep();
+  for (uint i = 0; i < friends->getPartySize(); i++)
+    friends->getMember((int)i)->battlePrep();
+  for (uint i = 0; i < foes->getPartySize(); i++)
+    foes->getMember((int)i)->battlePrep();
 
   /* Create and place enemy & ally bounding boxes */
-  //uint left_d   = floor(0.1290 * getMaxHeight());
-  //uint top_d    = floor(0.1464 * getMaxHeight());
-  //uint enemy_w  = 256;//floor(0.2105 * getMaxWidth());
-  //uint enemy_h  = 256;//enemy_w;
-  //uint spacing  = floor(0.0226 * getMaxWidth());
-  //uint atop_d   = floor(0.5200 * getMaxHeight());
-  //uint ally_w   = floor(0.2100 * getMaxWidth());
-  //uint ally_h   = floor(0.3636 * getMaxHeight());
-  //uint aspacing = floor(0.0263 * getMaxWidth());
+  uint left_d   = floor(0.1290 * getMaxHeight());
+  uint top_d    = floor(0.1464 * getMaxHeight());
+  uint enemy_w  = 256;//floor(0.2105 * getMaxWidth());
+  uint enemy_h  = 256;//enemy_w;
+  uint spacing  = floor(0.0226 * getMaxWidth());
+  uint atop_d   = floor(0.5200 * getMaxHeight());
+  uint ally_w   = floor(0.2100 * getMaxWidth());
+  uint ally_h   = floor(0.3636 * getMaxHeight());
+  uint aspacing = floor(0.0263 * getMaxWidth());
 
-  //for (int i = 0; i < 5; i++)
-  //{
-  //  uint left_margin = left_d + (enemy_w * i) - spacing * i;
-  //  enemy_box.push_back(new QRect(left_margin,top_d, enemy_w, enemy_h));
-  //  left_margin = (ally_w * i) - aspacing * i;
-  //  ally_box.push_back(new QRect(left_margin,atop_d,ally_w,ally_h));
-  //}
+  for (int i = 0; i < 5; i++)
+  {
+    uint left_margin = left_d + (enemy_w * i) - spacing * i;
+    enemy_box.push_back(new QRect(left_margin,top_d, enemy_w, enemy_h));
+    left_margin = (ally_w * i) - aspacing * i;
+    ally_box.push_back(new QRect(left_margin,atop_d,ally_w,ally_h));
+  }
 
   /* Battle status bar setup */
-  //uint bar_width  = (ally_w * 5) - aspacing * 4;
-  //uint bar_height = getMaxHeight() * 0.1200;
-  //status_box = new QRect(0, getMaxHeight() - bar_height, bar_width, bar_height);
-  //status_bar = new BattleStatusBar(friends, bar_width, bar_height, this);
-  //status_bar->setGeometry(*status_box);
+  uint bar_width  = (ally_w * 5) - aspacing * 4;
+  uint bar_height = getMaxHeight() * 0.1200;
+  status_box = new QRect(0, getMaxHeight() - bar_height, bar_width, bar_height);
+  status_bar = new BattleStatusBar(friends, bar_width, bar_height, this);
+  status_bar->setGeometry(*status_box);
 
   /* Battle info bar set up */
-  //bar_width  = getMaxWidth()   * 1.0000;
-  //bar_height = getMaxHeight()  * 0.0500;
-  //info_box = new QRect(0, 0, bar_width, bar_height);
-  //info_bar = new BattleInfoBar();
+  bar_width  = getMaxWidth()   * 1.0000;
+  bar_height = getMaxHeight()  * 0.0500;
+  info_box = new QRect(0, 0, bar_width, bar_height);
+  info_bar = new BattleInfoBar();
 
   /* Enemy status bars setup */
-  //bar_width  = enemy_w        * 0.75000;
-  // bar_height = getMaxHeight() * 0.07500;
-  //top_d      = top_d - bar_height;
-  //for (int i = 0; i < 5; i++)
-  //{
-  //  uint left_m = left_d + (enemy_w * 1) - spacing * i;
-  //  enemy_status_boxes.push_back(new QRect(left_m,top_d,bar_width,bar_height));
-  //}
+  bar_width  = enemy_w        * 0.75000;
+  bar_height = getMaxHeight() * 0.07500;
+  top_d      = top_d - bar_height;
+  for (int i = 0; i < 5; i++)
+  {
+    uint left_m = left_d + (enemy_w * 1) - spacing * i;
+    enemy_status_boxes.push_back(new QRect(left_m,top_d,bar_width,bar_height));
+  }
 
   /* Battle extra bar set up */
-  //bar_width  = 1 - (getMaxWidth() * bar_width);
-  //extra_box = new QRect(0, getMaxHeight() - bar_height, bar_width, bar_height);
-
+  bar_width  = 1 - (getMaxWidth() * bar_width);
+  extra_box = new QRect(0, getMaxHeight() - bar_height, bar_width, bar_height);
   paintAll();
-
 }
 
 /*
@@ -240,48 +238,45 @@ void Battle::paintEvent(QPaintEvent*)
   painter.setBrush(QColor(Qt::blue));
   painter.setOpacity(1.00);
 
-  painter.drawRect(0, 0, getMaxHeight(), getMaxWidth());
+  painter.drawPixmap(0,0,getMaxWidth(),getMaxHeight(),*battle_bg);
+  painter.setOpacity(1.0);
+  Person* p = friends->getMember(0);
 
-  //painter.drawPixmap(0,0,getMaxWidth(),getMaxHeight(),*battle_bg);
-  //painter.setOpacity(1.0);
-  //Person* p = friends->getMember(0);
-  //painter.drawPixmap(*ally_box[1],p->getFirstPerson()->getCurrent());
+  //painter.drawPixmap(*ally_box[0],p->getFirstPerson()->getCurrent());
 
 
-  //p = foes->getMember(0);
+  p = foes->getMember(0);
   //painter.drawPixmap(*enemy_box[3],p->getThirdPerson()->getCurrent());
 
-  //if (friends->getPartySize() > 1)
-  //{
-  //    p = friends->getMember(1);
-  //    painter.drawPixmap(*ally_box[0],p->getFirstPerson()->getCurrent());
-  //}
-  //if (friends->getPartySize() > 1)
-  //{
-  //    p = foes->getMember(1);
-  //   painter.drawPixmap(*enemy_box[4],p->getFirstPerson()->getCurrent());
-  //}
+  if (friends->getPartySize() > 1)
+  {
+    p = friends->getMember(1);
+    //painter.drawPixmap(*ally_box[0],p->getFirstPerson()->getCurrent());
+  }
 
-  /*
-  //for (uint i = 2; i < friends->getPartySize(); i++)
-  //{
-  //    p = friends->getMember(i);
-  //   painter.drawPixmap(*ally_box[i],p->getFirstPerson()->getCurrent());
-  //}*/
+  if (friends->getPartySize() > 1)
+  {
+    p = foes->getMember(1);
+    //painter.drawPixmap(*enemy_box[4],p->getFirstPerson()->getCurrent());
+  }
 
- // painter.setRenderHints(QPainter::SmoothPixmapTransform, true);
+  for (uint i = 2; i < friends->getPartySize(); i++)
+  {
+    p = friends->getMember(i);
+    //painter.drawPixmap(*ally_box[i],p->getFirstPerson()->getCurrent());
+  }
 
- // p = foes->getMember(1);
- // painter.drawPixmap(*enemy_box[1], p->getThirdPerson()->getCurrent());
-  //p = foes->getMember(2);
- // painter.drawPixmap(*enemy_box[2],p->getThirdPerson()->getCurrent());
+  painter.setRenderHints(QPainter::SmoothPixmapTransform, true);
 
+  p = foes->getMember(1);
+  // painter.drawPixmap(*enemy_box[1], p->getThirdPerson()->getCurrent());
+  p = foes->getMember(2);
+  // painter.drawPixmap(*enemy_box[2],p->getThirdPerson()->getCurrent());
 
-
- // painter.drawPixmap(0,getMaxHeight() * 0.8181, *battle_status_bar_image);
-  //painter.setOpacity(0.70); //TODO: Get opacity form somewhere [02-23-13]
+  //painter.drawPixmap(0,getMaxHeight() * 0.8181, *battle_status_bar_image);
+  painter.setOpacity(0.70); //TODO: Get opacity from somewhere [02-23-13]
   //painter.drawRect(*info_box);
-  //painter.setOpacity(0.70);
+  painter.setOpacity(0.70);
 }
 
 /*
@@ -295,7 +290,6 @@ void Battle::paintAll()
   /* Paints stats bar */
   //status_bar->update();
 
-
   //info_bar->update();
 }
 
@@ -306,7 +300,6 @@ void Battle::paintMenu()
 {
 
 }
-
 
 /*============================================================================
  * PRIVATE FUNCTIONS
