@@ -1,5 +1,5 @@
 /******************************************************************************
-* Class Name: Map
+* Class Name: Map-
 * Date Created: Dec 2 2012
 * Inheritance: QGLWidget
 * Description: The map class, this is the top level with regard to an actual
@@ -13,6 +13,7 @@
 *  2. Allow for map to run with a parameterless constructor. Is that possible
 *     with the QGLFormat in the mix that is required for setting up the 
 *     QGLWidget?
+*  3. Need a way to classify which index players are in. According to the map
 ******************************************************************************/
 #include "Game/Map/Map.h"
 
@@ -20,10 +21,11 @@
 const int Map::kDOUBLE_DIGITS = 10;
 const int Map::kELEMENT_ANGLE = 1;
 const int Map::kELEMENT_DATA = 0;
-const int Map::kFILE_CLASSIFIER = 3;
-const int Map::kFILE_SECTION_ID = 2;
-const int Map::kFILE_TILE_COLUMN = 5;
-const int Map::kFILE_TILE_ROW = 4;
+const short Map::kFILE_CLASSIFIER = 3;
+const short Map::kFILE_GAME_TYPE = 1;
+const short Map::kFILE_SECTION_ID = 2;
+const short Map::kFILE_TILE_COLUMN = 5;
+const short Map::kFILE_TILE_ROW = 4;
 const short Map::kPLAYER_INDEX = 0;
 const int Map::kTICK_DELAY = 10;
 const int Map::kTILE_HEIGHT = 64;
@@ -45,6 +47,7 @@ Map::Map(const QGLFormat & format, Options running_config,
   
   /* Configure the scene */
   loaded = false;
+  map_index = 0;
   persons.clear();
   player = 0;
 
@@ -98,7 +101,7 @@ Map::~Map()
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 
-bool Map::addTileData(XmlData data)
+bool Map::addTileData(XmlData data, int section_index)
 {
   int angle = 0;
   bool success = true;
@@ -133,7 +136,6 @@ bool Map::addTileData(XmlData data)
 
       QStringList row_list = data.getKeyValue(kFILE_TILE_ROW).split(",");
       QStringList col_list = data.getKeyValue(kFILE_TILE_COLUMN).split(",");
-
       for(int i = 0; i < row_list.size(); i++) /* Coordinate set index */
       {
         QStringList rows = row_list[i].split("-"); /* x range for coordinate */
@@ -141,10 +143,14 @@ bool Map::addTileData(XmlData data)
 
         /* Shift through all the rows and column pairs of the coordinate */
         for(int r = rows[0].toInt(); r <= rows[rows.size() - 1].toInt(); r++)
+        {
           for(int c = cols[0].toInt(); c <= cols[cols.size() - 1].toInt(); c++)
-            success &= geography[r][c]->
+          {
+            success &= geography[section_index][r][c]->
                     addSprite(tile_frames, data.getElement(kFILE_CLASSIFIER), 
                                            data.getKeyValue(kFILE_CLASSIFIER));
+          }
+        }
       }
       return success;
     }
@@ -163,7 +169,7 @@ bool Map::addTileData(XmlData data)
       /* Shift through all the rows and column pairs of the coordinate */
       for(int r = rows[0].toInt(); r <= rows[rows.size() - 1].toInt(); r++)
         for(int c = cols[0].toInt(); c <= cols[cols.size() - 1].toInt(); c++)
-          success &= geography[r][c]->
+          success &= geography[section_index][r][c]->
                   addPassability(data.getDataString(), 
                                  data.getElement(kFILE_CLASSIFIER), 
                                  data.getKeyValue(kFILE_CLASSIFIER));
@@ -171,6 +177,40 @@ bool Map::addTileData(XmlData data)
     return success;
   }
 
+  return false;
+}
+
+bool Map::initiateMapSection(int section_index, int width, int height)
+{
+  /* Check if the initiation will be viable */
+  if(section_index >= 0 && width > 0 && height > 0 && 
+    (geography.size() <= section_index || 
+     geography[section_index].size() == 0))
+  {
+    /* Get the geography subset filled up past the point of being set */
+    while(geography.size() <= section_index)
+    {
+      QList< QList<Tile*> > map_section;
+      geography.append(map_section);
+    }
+
+    /* Fill the section */
+    for(int i = 0; i < width; i++)
+    {
+      QList<Tile*> col;
+      
+      for(int j = 0; j < height; j++)
+      {
+        Tile* t = new Tile(kTILE_WIDTH, kTILE_HEIGHT, i, j);
+        col.append(t);
+      }
+      
+      geography[section_index].append(col);
+    }
+
+    return true;    
+  }
+  
   return false;
 }
 
@@ -197,12 +237,14 @@ void Map::initiateThingAction()
       x = -1;
 
     /* Aquire the thing, that's being pointed at */
-    if((x >= 0 && x < geography.size() && y >= 0 && y < geography[0].size()) &&
-       (geography[x][y]->getImpassableThing() != 0 &&
-        geography[x][y]->getImpassableThing()->getTile()->getX() == x &&
-        geography[x][y]->getImpassableThing()->getTile()->getY() == y))
+    int index = map_index;
+    if((x >= 0 && x < geography[index].size() && y >= 0 && 
+        y < geography[index][0].size()) &&
+       (geography[index][x][y]->getImpassableThing() != 0 &&
+        geography[index][x][y]->getImpassableThing()->getTile()->getX() == x &&
+        geography[index][x][y]->getImpassableThing()->getTile()->getY() == y))
     {
-      MapThing* target_thing = geography[x][y]->getImpassableThing();
+      MapThing* target_thing = geography[index][x][y]->getImpassableThing();
       Conversation target_convo = target_thing->getConversation();
 
       /* Check if the conversation is relevant and use if so */
@@ -251,19 +293,19 @@ void Map::animate(short time_since_last)
           {
             case EnumDb::NORTH:
               if(--tile_y >= 0)
-                next_tile = geography[tile_x][tile_y];
+                next_tile = geography[map_index][tile_x][tile_y];
               break;
             case EnumDb::EAST:
-              if(++tile_x < geography.size())
-                next_tile = geography[tile_x][tile_y];
+              if(++tile_x < geography[map_index].size())
+                next_tile = geography[map_index][tile_x][tile_y];
               break;
             case EnumDb::SOUTH:
-              if(++tile_y < geography[tile_x].size())
-                next_tile = geography[tile_x][tile_y];
+              if(++tile_y < geography[map_index][tile_x].size())
+                next_tile = geography[map_index][tile_x][tile_y];
               break;
             case EnumDb::WEST:
               if(--tile_x >= 0)
-                next_tile = geography[tile_x][tile_y];
+                next_tile = geography[map_index][tile_x][tile_y];
               break;
             case EnumDb::DIRECTIONLESS:
               next_tile = 0;
@@ -332,6 +374,10 @@ void Map::keyPressEvent(QKeyEvent* key_event)
   }
   else if(key_event->key() == Qt::Key_A)
     animateTiles();
+  else if(key_event->key() == Qt::Key_F4)
+    setSectionIndex(0);
+  else if(key_event->key() == Qt::Key_F5)
+    setSectionIndex(1);
   else if(key_event->key() == Qt::Key_1)
   {
     if(persons.size() > kPLAYER_INDEX)
@@ -421,7 +467,7 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     /*convo.next.append(test5);
     convo.next.append(test1);
     convo.next.append(test3);*/
-    if(map_dialog.initConversation(convo, player->getID()))
+    if(player != 0 && map_dialog.initConversation(convo, player->getID()))
       player->keyFlush();
   }
 
@@ -479,18 +525,20 @@ void Map::paintGL()
   {
     /* Animate the map based on the elapsed time and then update
      * the viewport due to the animate */
-    animate(time_elapsed.restart());
+    if(map_index == 0) // TODO: Remove.
+      animate(time_elapsed.restart());
     viewport->updateView();
 
     /* Paint the lower half */
     for(int i = viewport->getXTileStart(); i < viewport->getXTileEnd(); i++)
       for(int j = viewport->getYTileStart(); j < viewport->getYTileEnd(); j++)
-        geography[i][j]->paintLower(viewport->getX(), viewport->getY());
+        geography[map_index][i][j]->paintLower(viewport->getX(), 
+                                               viewport->getY());
    
     /* Paint the persons (player and NPCs) */
     for(int i = 0; i < persons.size(); i++)
     {
-      if(persons[i] != 0 && persons[i]->getX() >= viewport->getXStart() &&
+      if(persons[i] != 0 && persons[i]->getX() >= viewport->getXStart() && // TODO: Check which map index this is in
                             persons[i]->getX() <= viewport->getXEnd())
         persons[i]->paintGl(viewport->getX(), viewport->getY());
     }
@@ -498,7 +546,8 @@ void Map::paintGL()
     /* Paint the upper half */
     for(int i = viewport->getXTileStart(); i < viewport->getXTileEnd(); i++)
       for(int j = viewport->getYTileStart(); j < viewport->getYTileEnd(); j++)
-        geography[i][j]->paintUpper(viewport->getX(), viewport->getY());
+        geography[map_index][i][j]->paintUpper(viewport->getX(), 
+                                               viewport->getY());
 
     /* Paint the dialog */
     map_dialog.paintGl(this);
@@ -541,7 +590,7 @@ void Map::paintGL()
    * the map again */
   swapBuffers();
   //update();
-  timer.start(kTICK_DELAY);
+  //timer.start(kTICK_DELAY);
   //qDebug() << "2: " << time.elapsed();
 }
 
@@ -678,42 +727,62 @@ bool Map::loadMap(QString file)
   /* If file open was successful, move forward */
   if(success)
   {
-    /* Calculate dimensions and set up the map */
-    int width = fh.readXmlData().getDataInteger(); // TODO: fix to ensure that
-    int height = fh.readXmlData().getDataInteger();// it's actually this data
-    for(int i = 0; i < width; i++)
-    {
-      QList<Tile*> col;
-
-      for(int j = 0; j < height; j++)
-      {
-        /* Create the tile */
-        Tile* t = new Tile(kTILE_WIDTH, kTILE_HEIGHT, i, j);
-       
-        // TODO: Remove - tile status testing
-        //if(i == 10 && j == 10)
-        //  t->setStatus(Tile::OFF);
-        //else if(i == 12 && j == 10)
-        //  t->setStatus(Tile::BLANKED);
-
-        /* Add the new tile to the list */
-        col.append(t);
-      }
-
-      geography.append(col);
-    }
-  
     /* Run through the map components and add them to the map */
+    int height = -1;
+    int index = -1;
+    int width = -1;
     data = fh.readXmlData(&done, &success);
     do
     {
-      if(data.getElement(kFILE_SECTION_ID) == "tiles")
-        success &= addTileData(data);
-
+      /* Temporary variables */
+      int temp_index = -1;
+      
+      if(data.getElement(kFILE_GAME_TYPE) == "map")
+      {
+        /* Determine if it's a new section */
+        if(index != 0 && data.getElement(kFILE_SECTION_ID) == "main")
+          temp_index = 0;
+        else if(index != data.getKeyValue(kFILE_SECTION_ID).toInt() && 
+                data.getElement(kFILE_SECTION_ID) == "section")
+          temp_index = data.getKeyValue(kFILE_SECTION_ID).toInt();
+        
+        /* Update the index information accordingly */
+        if(temp_index >= 0)
+        {
+          index = temp_index;
+          if(geography.size() > index && geography[index].size() > 0)
+          {
+            height = geography[index][0].size();
+            width = geography[index].size();
+          }
+          else
+          {
+            height = -1;
+            width = -1;
+          }
+        }
+        
+        /* Parse the data, if it is relevant to the map */
+        if(height == -1 && data.getElement(kFILE_CLASSIFIER) == "height")
+        {
+          height = data.getDataInteger();
+          if(width > 0 && height > 0)
+            initiateMapSection(index, width, height);
+        }
+        else if(width == -1 && data.getElement(kFILE_CLASSIFIER) == "width")
+        {
+          width = data.getDataInteger();
+          if(width > 0 && height > 0)
+            initiateMapSection(index, width, height);
+        }
+        else if(index >= 0 && height > 0 && width > 0)
+          success &= addTileData(data, index);
+      }
+      
       /* Get the next element */
       data = fh.readXmlData(&done, &success);
     } while(!done && success);
-
+    
     /* Add the player information */
     Sprite* up_sprite = new Sprite("sprites/Map/Map_Things/main_AA_D", 
                                    3, ".png");
@@ -725,7 +794,7 @@ bool Map::loadMap(QString file)
     Sprite* right_sprite = new Sprite("sprites/Map/Map_Things/main_AA_S", 
                                       5, ".png");
     MapPerson* person = new MapPerson(kTILE_WIDTH, kTILE_HEIGHT);
-    person->setStartingTile(geography[8][8]); // 11, 9
+    person->setStartingTile(geography[map_index][8][8]); // 11, 9
 
     person->setState(MapPerson::GROUND, EnumDb::NORTH, 
                                         new MapState(up_sprite));
@@ -747,7 +816,7 @@ bool Map::loadMap(QString file)
     left_sprite->flipAll();
     right_sprite = new Sprite("sprites/Map/Map_Things/aurora_AA_S", 5, ".png");
     person = new MapPerson(kTILE_WIDTH, kTILE_HEIGHT);
-    person->setStartingTile(geography[2][4]);
+    person->setStartingTile(geography[map_index][2][4]);
     person->setState(MapPerson::GROUND, EnumDb::NORTH, 
                                         new MapState(up_sprite));
     person->setState(MapPerson::GROUND, EnumDb::SOUTH, 
@@ -778,12 +847,13 @@ bool Map::loadMap(QString file)
     npc->setState(MapPerson::GROUND, EnumDb::SOUTH, new MapState(down_sprite));
     npc->setState(MapPerson::GROUND, EnumDb::EAST, new MapState(right_sprite));
     npc->setState(MapPerson::GROUND, EnumDb::WEST, new MapState(left_sprite));
-    npc->insertNodeAtTail(geography[10][10], 750);
-    //npc->insertNodeAtTail(geography[5][10], 250);
-    //npc->insertNodeAtTail(geography[0][10], 500);
-    npc->insertNodeAtTail(geography[1][1], 1000);
-    npc->insertNodeAtTail(geography[5][1], 250);
-    //npc->insertNodeAtTail(geography[10][0], 50);
+    npc->insertNodeAtTail(geography[map_index][10][10], 750);
+    //npc->insertNodeAtTail(geography[map_index][5][10], 250);
+    //npc->insertNodeAtTail(geography[map_index][0][10], 500);
+    npc->insertNodeAtTail(geography[map_index][1][1], 1000);
+    npc->insertNodeAtTail(geography[map_index][5][1], 250);
+    //npc->insertNodeAtTail(geography[map_index][10][0], 50);
+    npc->setStartingTile(geography[map_index][12][12]);
     npc->setDialogImage("sprites/Map/Dialog/arcadius.png");
     npc->setID(3);
     npc->setName("Arcadius");
@@ -815,9 +885,10 @@ bool Map::loadMap(QString file)
   }
   else
   {
-    if(geography.size() > 0)
+    if(geography[map_index].size() > 0)
     {
-      viewport->setMapSize(geography.size(), geography[0].size());
+      viewport->setMapSize(geography[map_index].size(), 
+                           geography[map_index][0].size());
       if(persons.size() > kPLAYER_INDEX)
         player = persons[kPLAYER_INDEX];
       if(player != 0)
@@ -826,7 +897,8 @@ bool Map::loadMap(QString file)
 
     for(int i = 0; i < geography.size(); i++)
       for(int j = 0; j < geography[i].size(); j++)
-        geography[i][j]->initializeGl();
+        for(int k = 0; k < geography[i][j].size(); k++) 
+          geography[i][j][k]->initializeGl();
   }
   loaded = success;
 
@@ -848,14 +920,35 @@ void Map::passOver()
 {
 }
 
+/* Changes the map section index - what is displayed */
+bool Map::setSectionIndex(int index)
+{
+  if(index >= 0 && index < geography.size() && geography[index].size() > 0)
+  {
+    map_index = index;
+    viewport->setMapSize(geography[index].size(), geography[index][0].size());
+    
+    return true;
+  }
+  
+  return false;
+}
+  
+// TODO: Add check to see if the person is within map_index.
+// Possibly make the teleport add the ability of shifting map thing
 void Map::teleportThing(int id, int tile_x, int tile_y)
 {
-  /* Change the starting tile for the thing */
-  for(int i = 0; i < persons.size(); i++)
+  /* Ensure that the tile x and y is within the range */
+  if(geography[map_index].size() > tile_x && tile_x >= 0 && 
+     geography[map_index][tile_x].size() > tile_y && tile_y >= 0)
   {
-    if(persons[i]->getID() == id)
-      if(persons[i]->setStartingTile(geography[tile_x][tile_y]))
-        map_dialog.endConversation();
+    /* Change the starting tile for the thing */
+    for(int i = 0; i < persons.size(); i++)
+    {
+      if(persons[i]->getID() == id)
+        if(persons[i]->setStartingTile(geography[map_index][tile_x][tile_y]))
+          map_dialog.endConversation();
+    }
   }
 }
 
@@ -879,10 +972,14 @@ void Map::unloadMap()
   {
     for(int j = 0; j < geography[i].size(); j++)
     {
-      //geography[i][j]->removeFromScene(this);
-      delete geography[i][j];
-      geography[i][j] = 0;
+      for(int k = 0; k < geography[i][j].size(); k++)
+      {
+        delete geography[i][j][k];
+        geography[i][j][k] = 0;
+      }
+      geography[i][j].clear();
     }
+    geography[i].clear();
   }
   geography.clear();
 

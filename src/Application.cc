@@ -10,7 +10,7 @@
 #include "Application.h"
 
 /* Constant Implementation - see header file for descriptions */
-const short Application::kTICK_DELAY = 5;
+const short Application::kTICK_DELAY = 0;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -150,12 +150,22 @@ void Application::openMap()
 
 void Application::updateApp()
 {
+  /* Start a QTimer to determine time elapsed for updating */
+  //QTime time;
+  //time.start();
+  
   /* Implement the update, where necessary */
   if(currentIndex() == TITLESCREEN && title_screen != 0)
     title_screen->update(); // TODO: Change to custom function??
   else if(currentIndex() == GAME && game_handler != 0)
     game_handler->updateGame();
 
+  /* Time elapsed before delay */
+  //int time_elapsed_1 = time.elapsed();
+  
   /* Restart the timer */
   tick.start(kTICK_DELAY);
+  
+  /* Printing both time delays, for overall calculations */
+  //qDebug() << time_elapsed_1 << " " << time.elapsed();
 }

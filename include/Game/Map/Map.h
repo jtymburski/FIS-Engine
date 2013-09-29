@@ -46,7 +46,8 @@ private:
   Event blank_event;
 
   /* The actual tiles that comprise a map, dynamically sized */
-  QList< QList<Tile*> > geography;
+  QList< QList< QList<Tile*> > > geography;
+  short map_index;
   QList<Sprite*> tile_sprites;
 
   /* Indication if the map has been loaded */
@@ -57,7 +58,7 @@ private:
   MapMenu map_menu;
 
   /* The status bar on the map */
-  MapStatusBar map_status_bar;
+  MapStatusBar map_status_bar; // TODO: Remove
 
   /* The players info on the map */
   QList<MapPerson*> persons;
@@ -69,7 +70,7 @@ private:
 
   /* The time that has elapsed for each draw cycle */
   QTime time_elapsed;
-  QTimer timer; // TODO: Move up, the tick
+  QTimer timer; // TODO: Remove
 
   /* The viewport for the map, controlled by QGraphicsView */
   MapViewport* viewport;
@@ -91,10 +92,11 @@ private:
                                        * a single digit */
   const static int kELEMENT_ANGLE;    /* Element angle for sprite */
   const static int kELEMENT_DATA;     /* Element data type for sprite */
-  const static int kFILE_CLASSIFIER;  /* The file tile classification text */
-  const static int kFILE_SECTION_ID;  /* The section identifier, for file */
-  const static int kFILE_TILE_COLUMN; /* The tile depth in XML of column tag */
-  const static int kFILE_TILE_ROW;    /* The tile depth in XML of row tag */
+  const static short kFILE_CLASSIFIER;  /* The file tile classification text */
+  const static short kFILE_GAME_TYPE;   /* The game type classifier */
+  const static short kFILE_SECTION_ID;  /* The section identifier, for file */
+  const static short kFILE_TILE_COLUMN; /* The tile depth in XML of column */
+  const static short kFILE_TILE_ROW;    /* The tile depth in XML of row */
   const static short kPLAYER_INDEX;   /* The player index, in the thing set */
   const static int kTICK_DELAY;       /* Tick timer delay constant */
   const static int kTILE_HEIGHT;      /* The tile height, as constant (TEMP) */
@@ -104,8 +106,12 @@ private:
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 private:
-  bool addTileData(XmlData data);
+  /* Adds tile data, as per data from the file */
+  bool addTileData(XmlData data, int section_index);
 
+  /* Initiates a section block of map. Triggered from the file data */
+  bool initiateMapSection(int section_index, int width, int height);
+  
   /* Initiates a thing action, based on the action key being hit */
   void initiateThingAction();
   
@@ -189,6 +195,9 @@ public:
   /* Causes the thing you are moving into to start its interactive action */
   void passOver();
 
+  /* Changes the map section index - what is displayed */
+  bool setSectionIndex(int index);
+  
   /* Teleport a thing, based on the given coordinates */
   void teleportThing(int id, int tile_x, int tile_y);
 

@@ -292,19 +292,33 @@ void MapViewport::updateView()
   }
   
   /* Calculations for centering the width offset coordinate */
-  delta_x = center_x - (width / 2.0);
-  if((delta_x + width) > map_width)
-    delta_x = map_width - width;
-  if(delta_x < 0)
-    delta_x = 0.0;
+  if(width > map_width)
+  {
+    delta_x = (map_width - width) / 2.0;
+  }
+  else
+  {
+    delta_x = center_x - (width / 2.0);
+    if((delta_x + width) > map_width)
+      delta_x = map_width - width;
+    if(delta_x < 0)
+      delta_x = 0.0;
+  }
 
   /* Calculations for centering the height offset coordinate */
-  delta_y = center_y - (height / 2.0);
-  if((delta_y + height) > map_height)
-    delta_y = map_height - height;
-  if(delta_y < 0)
-    delta_y = 0.0;
-    
+  if(height > map_height)
+  {
+    delta_y = (map_height - height) / 2.0;
+  }
+  else
+  {
+    delta_y = center_y - (height / 2.0);
+    if((delta_y + height) > map_height)
+      delta_y = map_height - height;
+    if(delta_y < 0)
+      delta_y = 0.0;
+  }
+  
   /* Set the internal X and Y to the newly calculated values */
   this->x = delta_x;
   this->y = delta_y;

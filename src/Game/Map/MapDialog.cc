@@ -1057,8 +1057,8 @@ void MapDialog::update(float cycle_time)
     /* If showing, shift the display onto the screen */
     else if(dialog_status == SHOWING)
     {
-      animation_offset += kSHIFT_TIME * 1.0 / cycle_time;
-      if(animation_offset >= animation_height)
+      animation_offset += kSHIFT_TIME * 1.0 / cycle_time; // 4.5 without calc @
+      if(animation_offset >= animation_height)            // 16.666 ms
       {
         dialog_status = ON;
         animation_offset = animation_height;
