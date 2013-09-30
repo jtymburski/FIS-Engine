@@ -213,7 +213,7 @@ void MapNPC::resetMovement()
   current = head;
 
   if(current != 0)
-    setStartingTile(current->tile);
+    setStartingTile(getMapSection(), current->tile);
 }
 
 /* Sets the node movement state - how it traverses */
@@ -235,7 +235,7 @@ void MapNPC::updateThing(float cycle_time, Tile* next_tile)
   {
     /* If the tile isn't set, try and set the starting point */
     if(getTile() == 0)
-      setStartingTile(current->tile);
+      setStartingTile(getMapSection(), current->tile);
     /* Otherwise, it is set so check if it's almost on the tile */
     else
     {

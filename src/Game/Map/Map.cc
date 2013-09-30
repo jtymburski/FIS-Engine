@@ -1,5 +1,5 @@
 /******************************************************************************
-* Class Name: Map-
+* Class Name: Map
 * Date Created: Dec 2 2012
 * Inheritance: QGLWidget
 * Description: The map class, this is the top level with regard to an actual
@@ -14,6 +14,11 @@
 *     with the QGLFormat in the mix that is required for setting up the 
 *     QGLWidget?
 *  3. Need a way to classify which index players are in. According to the map
+*  4. If mode is switched, end all notification animations and such. -> battle
+*
+* Extra:
+*  1. As the player is teleported to a new map, maybe have the option to have
+*     it at a tile and then walking in. More true animation. How to?
 ******************************************************************************/
 #include "Game/Map/Map.h"
 
@@ -82,13 +87,7 @@ Map::Map(const QGLFormat & format, Options running_config,
   this->blank_event = blank_event;
 
   /* Bring the timer in to provide a game tick */
-  //connect(&timer, SIGNAL(timeout()), this, SLOT(updateGL()));
-  //timer.setSingleShot(true);
-  //timer.start(kTICK_DELAY);
   updateGL();
-
-  /* The time elapsed draw time */
-  //time_elapsed.start();
 }
 
 /* Destructor function */
@@ -201,7 +200,7 @@ bool Map::initiateMapSection(int section_index, int width, int height)
       
       for(int j = 0; j < height; j++)
       {
-        Tile* t = new Tile(kTILE_WIDTH, kTILE_HEIGHT, i, j);
+        Tile* t = new Tile(blank_event, kTILE_WIDTH, kTILE_HEIGHT, i, j);
         col.append(t);
       }
       
@@ -270,6 +269,10 @@ void Map::initiateThingAction()
  * PROTECTED FUNCTIONS
  *===========================================================================*/
 
+/* TODO: Possibly add it so that any map can keep updating? This might get too
+ *       heavy. 
+ *       Should updates be restricted to a larger space around the viewport
+ *       and no more? */
 void Map::animate(short time_since_last)
 {
   /* Only proceed if the animation time is positive */
@@ -282,7 +285,8 @@ void Map::animate(short time_since_last)
       {
         Tile* next_tile = 0;
 
-        if(persons[i]->getTile() != 0)
+        if(persons[i]->getMapSection() == map_index && 
+           persons[i]->getTile() != 0)
         {
           int tile_x = persons[i]->getTile()->getX();
           int tile_y = persons[i]->getTile()->getY();
@@ -525,8 +529,7 @@ void Map::paintGL()
   {
     /* Animate the map based on the elapsed time and then update
      * the viewport due to the animate */
-    if(map_index == 0) // TODO: Remove.
-      animate(time_elapsed.restart());
+    animate(time_elapsed);
     viewport->updateView();
 
     /* Paint the lower half */
@@ -538,7 +541,8 @@ void Map::paintGL()
     /* Paint the persons (player and NPCs) */
     for(int i = 0; i < persons.size(); i++)
     {
-      if(persons[i] != 0 && persons[i]->getX() >= viewport->getXStart() && // TODO: Check which map index this is in
+      if(persons[i] != 0 && persons[i]->getMapSection() == map_index && 
+                            persons[i]->getX() >= viewport->getXStart() &&
                             persons[i]->getX() <= viewport->getXEnd())
         persons[i]->paintGl(viewport->getX(), viewport->getY());
     }
@@ -572,26 +576,23 @@ void Map::paintGL()
   /* Determine the FPS sample rate */
   if(paint_animation <= 0)
   {
-    frames_per_second.setNum(frames /(paint_time.elapsed() / 1000.0), 'f', 2);
-    //qDebug() << frames_per_second << " " << isValid();
+    frames_per_second.setNum(frames /(paint_time / 1000.0), 'f', 2);
     paint_animation = 20;
   }
   paint_animation--;
 
   /* Check the FPS monitor to see if it needs to be reset */
-  if (!(frames % 100))
+  if((frames % 100) == 0)
   {
-    paint_time.start();
     frames = 0;
+    paint_time = 0;
   }
   frames++;
-
+  paint_time += time_elapsed;
+  
   /* Finish by swapping the buffers and then restarting the timer to update 
    * the map again */
   swapBuffers();
-  //update();
-  //timer.start(kTICK_DELAY);
-  //qDebug() << "2: " << time.elapsed();
 }
 
 void Map::resizeGL(int width, int height) 
@@ -783,6 +784,12 @@ bool Map::loadMap(QString file)
       data = fh.readXmlData(&done, &success);
     } while(!done && success);
     
+    /* Add teleport to door - temporary */
+    geography[1][3][1]->setEnterEvent(
+          ((EventHandler*)blank_event.handler)->createTeleportEvent(1, 1, 0));
+    geography[0][0][0]->setExitEvent(
+          ((EventHandler*)blank_event.handler)->createStartBattleEvent());
+
     /* Add the player information */
     Sprite* up_sprite = new Sprite("sprites/Map/Map_Things/main_AA_D", 
                                    3, ".png");
@@ -794,7 +801,7 @@ bool Map::loadMap(QString file)
     Sprite* right_sprite = new Sprite("sprites/Map/Map_Things/main_AA_S", 
                                       5, ".png");
     MapPerson* person = new MapPerson(kTILE_WIDTH, kTILE_HEIGHT);
-    person->setStartingTile(geography[map_index][8][8]); // 11, 9
+    person->setStartingTile(0, geography[0][8][8]); // 11, 9
 
     person->setState(MapPerson::GROUND, EnumDb::NORTH, 
                                         new MapState(up_sprite));
@@ -816,7 +823,7 @@ bool Map::loadMap(QString file)
     left_sprite->flipAll();
     right_sprite = new Sprite("sprites/Map/Map_Things/aurora_AA_S", 5, ".png");
     person = new MapPerson(kTILE_WIDTH, kTILE_HEIGHT);
-    person->setStartingTile(geography[map_index][2][4]);
+    person->setStartingTile(1, geography[1][2][4]);
     person->setState(MapPerson::GROUND, EnumDb::NORTH, 
                                         new MapState(up_sprite));
     person->setState(MapPerson::GROUND, EnumDb::SOUTH, 
@@ -831,7 +838,7 @@ bool Map::loadMap(QString file)
     Conversation person_convo;
     person_convo.category = EnumDb::TEXT;
     person_convo.action_event = 
-            ((EventHandler*)blank_event.handler)->createTeleportEvent(30, 30);
+          ((EventHandler*)blank_event.handler)->createTeleportEvent(30, 30, 0);
     person_convo.text = "I don't have anything to say to you!!";
     person_convo.thing_id = 24;
     person->setConversation(person_convo);
@@ -853,20 +860,32 @@ bool Map::loadMap(QString file)
     npc->insertNodeAtTail(geography[map_index][1][1], 1000);
     npc->insertNodeAtTail(geography[map_index][5][1], 250);
     //npc->insertNodeAtTail(geography[map_index][10][0], 50);
-    npc->setStartingTile(geography[map_index][12][12]);
+    npc->setStartingTile(0, geography[0][12][12]);
     npc->setDialogImage("sprites/Map/Dialog/arcadius.png");
     npc->setID(3);
     npc->setName("Arcadius");
     npc->setNodeState(MapNPC::BACKANDFORTH);
     npc->setSpeed(200);
+    person_convo.action_event = blank_event;
     person_convo.text = "I don't like to be stopped. Why must you insist to stop progress. ";
-    person_convo.text += "On second thought, I really don't like you and want to run away.";
+    person_convo.text += "On second thought, I really don't like you and want to destroy you.";
     person_convo.thing_id = 3;
     Conversation second_set;
     second_set.category = EnumDb::TEXT;
     second_set.action_event = blank_event;
-    second_set.text = "Fine, I'm leaving.";
-    second_set.thing_id = 1;
+    second_set.text = "Here are your options:";
+    second_set.thing_id = 3;
+    Conversation option;
+    option.category = EnumDb::TEXT;
+    option.text = "Be teleported to an unknown place";
+    option.thing_id = 3;
+    option.action_event = 
+            ((EventHandler*)blank_event.handler)->createTeleportEvent(3, 2, 1);
+    second_set.next.append(option);
+    option.text = "Be slaughtered by my hand";
+    option.action_event = 
+            ((EventHandler*)blank_event.handler)->createStartBattleEvent();
+    second_set.next.append(option);
     person_convo.next.append(second_set);
     npc->setConversation(person_convo);
     persons.append(npc);
@@ -936,33 +955,33 @@ bool Map::setSectionIndex(int index)
   
 // TODO: Add check to see if the person is within map_index.
 // Possibly make the teleport add the ability of shifting map thing
-void Map::teleportThing(int id, int tile_x, int tile_y)
+void Map::teleportThing(int id, int tile_x, int tile_y, int section_id)
 {
+  /* If the section id is below 0, then set to internal map index */
+  if(section_id < 0)
+    section_id = map_index;
+  
   /* Ensure that the tile x and y is within the range */
-  if(geography[map_index].size() > tile_x && tile_x >= 0 && 
-     geography[map_index][tile_x].size() > tile_y && tile_y >= 0)
+  if(section_id < geography.size() && 
+     geography[section_id].size() > tile_x && tile_x >= 0 && 
+     geography[section_id][tile_x].size() > tile_y && tile_y >= 0)
   {
     /* Change the starting tile for the thing */
     for(int i = 0; i < persons.size(); i++)
     {
       if(persons[i]->getID() == id)
-        if(persons[i]->setStartingTile(geography[map_index][tile_x][tile_y]))
+      {
+        if(persons[i]->setStartingTile(section_id, 
+                                       geography[section_id][tile_x][tile_y]))
+        {
           map_dialog.endConversation();
+          if(map_index != section_id)
+            setSectionIndex(section_id);
+          persons[i]->clearAllMovement();
+        }
+      }
     }
   }
-}
-
-/* Starts the internal class animation tick */
-void Map::tickStart()
-{
-  timer.start(kTICK_DELAY);
-  time_elapsed.restart();
-}
-
-/* Stops the internal class animation tick */
-void Map::tickStop()
-{
-  timer.stop();
 }
 
 void Map::unloadMap()
@@ -1009,6 +1028,13 @@ void Map::unloadMap()
   loaded = false;
 }
 
+/* Updates the map - called by the cycle timer call from game */
+void Map::updateMap(int cycle_time)
+{
+  time_elapsed = cycle_time;
+  updateGL();
+}
+  
 /* Changes NPC spirtes */
 void Map::updateNPC()
 {

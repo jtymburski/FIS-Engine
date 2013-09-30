@@ -7,7 +7,7 @@
 *
 * TODO:
 *  - Number entry, text entry. Shop mode? Also, built into conversation
-*  - MapAction adaption
+*  - On a very dark background, the black highlight is kind of unnoticeable
 *
 * Want List:
 *  - Text HTML like response to allow for color changes
@@ -121,7 +121,8 @@ QList<int> MapDialog::calculateThingList(Conversation conversation)
   for(int i = 0; i < conversation.next.size(); i++)
     list.append(calculateThingList(conversation.next[i]));
   list.append(conversation.thing_id);
-
+  list.append(player_id);
+  
   return list;
 }
   
@@ -177,9 +178,19 @@ bool MapDialog::drawPseudoCircle(int x, int y, int radius)
 
 void MapDialog::executeEvent()
 {
-  if(conversation_info.action_event.handler != 0)
+  if(conversation_info.action_event.classification != EnumDb::NOEVENT &&
+     conversation_info.action_event.handler != 0)
+  {
+    /* Determine the map thing object from the stack */
+    MapThing* player = 0;
+    for(int i = 0; i < thing_data.size(); i++)
+      if(thing_data[i]->getID() == player_id)
+        player = thing_data[i];
+    
+    /* Execute the event */
     ((EventHandler*)conversation_info.action_event.handler)->
-            executeEvent(conversation_info.action_event, player_id);
+            executeEvent(conversation_info.action_event, player);
+  }
 }
 
 bool MapDialog::getThingPtr(int id)
@@ -562,18 +573,24 @@ void MapDialog::keyPress(QKeyEvent* event)
         else
         {
           bool multiple = (conversation_info.next.size() > 1);
+          
           executeEvent();
-          conversation_info = conversation_info.next[dialog_option];
+          if(dialog_status == ON)
+            conversation_info = conversation_info.next[dialog_option];
               
           /* Skip the option if it was an option case */
           if(multiple)
           {
             executeEvent();
-            conversation_info = conversation_info.next[0];
+            if(conversation_info.next.size() == 0)
+              endConversation();
+            else if(dialog_status == ON)
+              conversation_info = conversation_info.next[0];
           }
 
           /* Finalize the conversation change */
-          setupConversation();
+          if(dialog_status == ON)
+            setupConversation();
         }
       }
     }

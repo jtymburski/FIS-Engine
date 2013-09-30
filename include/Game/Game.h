@@ -95,8 +95,11 @@ signals:
  * PUBLIC SLOTS
  *===========================================================================*/
 public slots:
+  /* Starts a battle */
+  void startBattle();
+  
   /* Teleports the player stored within the map */
-  void teleportThing(int id, int x, int y);
+  void teleportThing(MapThing* target, int x, int y, int section_id);
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -109,7 +112,7 @@ public:
   void switchGameMode(GameMode mode); // TODO: Make private
 
   /* Updates the game state */
-  void updateGame();
+  void updateGame(int cycle_time);
 };
 
 #endif // GAME_H

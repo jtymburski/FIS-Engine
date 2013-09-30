@@ -18,6 +18,7 @@ class MapThing;
 //#include <QDebug>
 
 #include "EnumDb.h"
+#include "Game/EventHandler.h"
 #include "Game/Sprite.h"
 
 class Tile
@@ -25,7 +26,7 @@ class Tile
 public:
   /* Constructor functions */
   Tile();
-  Tile(int width, int height, int x = 0, int y = 0);
+  Tile(Event blank_event, int width, int height, int x = 0, int y = 0);
 
   /* Destructor function */
   ~Tile();
@@ -56,6 +57,10 @@ private:
   /* The enhancer information */
   Sprite* enhancer;
 
+  /* Events for entering and exiting the tile */
+  Event enter_event;
+  Event exit_event;
+  
   /* The lower information */
   QList<Sprite*> lower;
   QList<char> lower_passability;
@@ -85,7 +90,8 @@ public:
 
   /* Clears out data from the class */
   void clear(bool just_sprites = false);
-
+  void clearEvents(Event blank_event);
+  
   /* Gets the base layer and passability */
   Sprite* getBase();
   bool getBasePassability(EnumDb::Direction dir);
@@ -168,11 +174,18 @@ public:
   /* Set the enhancer portion of the layer */
   bool setEnhancer(Sprite* enhancer);
 
+  /* Set the enter event, for the tile */
+  void setEnterEvent(Event enter_event);
+  
+  /* Set the exit event, for the tile */
+  void setExitEvent(Event exit_event);
+  
   /* Sets the new height for the tile (must be >= 0) */
   bool setHeight(int height);
 
   /* Sets the impassable object sprite */
-  bool setImpassableThing(MapThing* thing, ThingState type);
+  bool setImpassableThing(MapThing* thing, ThingState type, 
+                                           bool no_events = false);
 
   /* Sets the lower portion of the layer(s) and the passability */
   bool setLower(Sprite* lower);
@@ -201,7 +214,7 @@ public:
   void unsetEnhancer();
 
   /* Unsets the impassable thing sprite  - not deleting */
-  void unsetImpassableThing();
+  void unsetImpassableThing(bool no_events = false);
   
   /* Unsets the lower layer */
   void unsetLower();

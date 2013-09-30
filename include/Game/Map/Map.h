@@ -44,7 +44,7 @@ private:
 
   /* A reference blank event for setting events in the game */
   Event blank_event;
-
+  
   /* The actual tiles that comprise a map, dynamically sized */
   QList< QList< QList<Tile*> > > geography;
   short map_index;
@@ -69,8 +69,7 @@ private:
   QList<Sector> sectors;
 
   /* The time that has elapsed for each draw cycle */
-  QTime time_elapsed;
-  QTimer timer; // TODO: Remove
+  int time_elapsed;
 
   /* The viewport for the map, controlled by QGraphicsView */
   MapViewport* viewport;
@@ -84,7 +83,7 @@ private:
   int frames;
   int paint_animation;
   int paint_count;
-  QTime paint_time;
+  int paint_time;//QTime paint_time;
   double paint_time_average;
 
   /*------------------- Constants -----------------------*/
@@ -199,15 +198,14 @@ public:
   bool setSectionIndex(int index);
   
   /* Teleport a thing, based on the given coordinates */
-  void teleportThing(int id, int tile_x, int tile_y);
-
-  /* The tick handling methods for starting and stopping the map */
-  void tickStart();
-  void tickStop();
+  void teleportThing(int id, int tile_x, int tile_y, int section_id = -1);
 
   /* Unload the map, if there is one loaded */
   void unloadMap();
 
+  /* Updates the map - called by the cycle timer call from game */
+  void updateMap(int cycle_time);
+  
   /* Changes NPC spirtes */
   void updateNPC();
 

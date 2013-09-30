@@ -41,6 +41,9 @@ public:
                 EXIT        = 3};
 
 private:
+  /* A status if the application has been commanded to close */
+  bool close_command;
+  
   /* The running game */
   Game* game_handler;
 
@@ -52,6 +55,9 @@ private:
 
   /* The displayed title screen for the game */
   TitleScreen* title_screen;
+  
+  /* The update time, for each cycle */
+  QTime update_time;
   
   /*------------------- Constants -----------------------*/
   const static short kTICK_DELAY; /* The tick time, in ms */

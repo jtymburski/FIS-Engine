@@ -43,15 +43,17 @@ Tile::Tile()
  *              tile. This will be framed by an upper class that handles 
  *              overall control (Map).
  *
- * Inputs: int width - the width of the tile in pixels
+ * Inputs: Event blank_event - the blank reference event
+ *         int width - the width of the tile in pixels
  *         int height - the height of the tile in pixels
  *         int x - the x location respective to the parent (in tile count)
  *         int y - the y location respective to the parent (in tile count)
  */
-Tile::Tile(int width, int height, int x, int y)
+Tile::Tile(Event blank_event, int width, int height, int x, int y)
 {
   clear();
-
+  clearEvents(blank_event);
+  
   /* Finally reset the parameters based on this alternate constructor */
   setHeight(height);
   setStatus(ACTIVE);
@@ -195,6 +197,12 @@ void Tile::clear(bool just_sprites)
     setX(0);
     setY(0);
   }
+}
+
+void Tile::clearEvents(Event blank_event)
+{
+  enter_event = blank_event;
+  exit_event = blank_event;
 }
 
 /* 
@@ -777,6 +785,30 @@ bool Tile::setEnhancer(Sprite* enhancer)
 }
 
 /*
+ * Description: Sets the enter event. This goes off when an impassable object
+ *              gets set onto the tile.
+ *
+ * Inputs: Event enter_event - the event to be executed
+ * Output: none
+ */
+void Tile::setEnterEvent(Event enter_event)
+{
+  this->enter_event = enter_event;
+}
+  
+/*
+ * Description: Sets the exit event. This goes off when an impassable object
+ *              gets cleared off of a tile.
+ *
+ * Inputs: Event exit_event - the event to be executed
+ * Output: none
+ */
+void Tile::setExitEvent(Event exit_event)
+{
+  this->exit_event = exit_event;
+}
+  
+/*
  * Description: Sets the height of the tile.
  *
  * Inputs: int height - the tile height, in pixels
@@ -800,9 +832,10 @@ bool Tile::setHeight(int height)
  *
  * Inputs: MapThing* thing - the thing to put in the class
  *         ThingState type - the state enumerator for what type of thing
+ *         bool no_events - don't allow any events
  * Output: bool - returns true if the impassable thing was successfuly set.
  */
-bool Tile::setImpassableThing(MapThing* thing, ThingState type)
+bool Tile::setImpassableThing(MapThing* thing, ThingState type, bool no_events)
 {
   if(type == UNSET)
     unsetImpassableThing();
@@ -812,6 +845,12 @@ bool Tile::setImpassableThing(MapThing* thing, ThingState type)
     {
       thing_state = type;
       impassable_thing = thing;
+      
+      /* Execute enter event, if applicable */
+      if(!no_events && enter_event.classification != EnumDb::NOEVENT)
+        ((EventHandler*)enter_event.handler)->
+                                    executeEvent(enter_event, impassable_thing);
+
       return true;
     }
     return false;
@@ -994,8 +1033,17 @@ void Tile::unsetEnhancer()
  * Inputs: none
  * Output: none
  */
-void Tile::unsetImpassableThing()
+void Tile::unsetImpassableThing(bool no_events)
 {
+  /* If there was a thing and an exit event, execute it */
+  if(!no_events && impassable_thing != 0)
+  {
+    /* Execute enter event, if applicable */
+    if(exit_event.classification != EnumDb::NOEVENT)
+      ((EventHandler*)exit_event.handler)->
+                                    executeEvent(exit_event, impassable_thing);
+  }
+  
   impassable_thing = 0;
   thing_state = UNSET;
 }

@@ -65,8 +65,12 @@ Game::~Game()
 /* Connect the event handler to the game */
 void Game::connectEvents()
 {
-  QObject::connect(&event_handler, SIGNAL(teleportThing(int, int, int)), 
-                   this,           SLOT(teleportThing(int, int, int)));
+  QObject::connect(&event_handler, SIGNAL(startBattle()), 
+                   this,           SLOT(startBattle()));
+  QObject::connect(&event_handler, 
+                   SIGNAL(teleportThing(MapThing*, int, int, int)), 
+                   this,           
+                   SLOT(teleportThing(MapThing*, int, int, int)));
 }
 
 /* Set up the battle - old battle needs to be deleted prior to calling */
@@ -223,10 +227,20 @@ void Game::setupMap()
  * PUBLIC SLOTS
  *===========================================================================*/
 
-void Game::teleportThing(int id, int x, int y)
+void Game::startBattle()
 {
-  if(game_map != 0)
-    game_map->teleportThing(id, x, y);
+  switchGameMode(BATTLE);
+}
+
+void Game::teleportThing(MapThing* target, int x, int y, int section_id)
+{
+  if(game_map != 0 && target != 0)
+  {
+    if(section_id < 0)
+      game_map->teleportThing(target->getID(), x, y);
+    else
+      game_map->teleportThing(target->getID(), x, y, section_id);
+  }
 }
 
 /*============================================================================
@@ -248,8 +262,8 @@ void Game::switchGameMode(GameMode mode)
 }
 
 /* Updates the game state */
-void Game::updateGame()
+void Game::updateGame(int cycle_time)
 {
   if(currentIndex() == MAP && game_map != 0)
-    game_map->updateGL();
+    game_map->updateMap(cycle_time);
 }

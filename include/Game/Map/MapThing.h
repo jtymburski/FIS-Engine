@@ -43,6 +43,7 @@ protected:
   QString name;
   Tile* tile_main;
   Tile* tile_previous;
+  short tile_section;
   short width;
   float x;
   float y;
@@ -133,6 +134,9 @@ public:
   /* Gets the things ID */
   int getID();
 
+  /* Returns the map section of the tile where this is painted */
+  int getMapSection();
+  
   /* Get the specific details of the movement information */
   EnumDb::Direction getMovement();
   bool getMovementPaused();
@@ -203,7 +207,7 @@ public:
   bool setSpeed(short speed);
     
   /* Set the tile to hook the map thing to */
-  bool setStartingTile(Tile* new_tile);
+  bool setStartingTile(int section_id, Tile* new_tile, bool no_events = false);
   
   /* Sets the state of the thing */
   bool setState(MapState* state, bool unset_old = true);

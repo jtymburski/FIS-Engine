@@ -25,6 +25,9 @@ Application::Application(QWidget* parent)
   //setCursor(Qt::BlankCursor);
   //setCursor(Qt::ArrowCursor);
 
+  /* General class variables */
+  close_command = false;
+  
   /* Options information */
   short screen_height = system_options.getScreenHeight();
   short screen_width = system_options.getScreenWidth();
@@ -67,8 +70,10 @@ Application::Application(QWidget* parent)
 
   /* Set up the tick and start the update sequence */
   QObject::connect(&tick, SIGNAL(timeout()), this, SLOT(updateApp()));
+  update_time.start();
   tick.setSingleShot(true);
-  updateApp();
+  tick.start(kTICK_DELAY);
+  //updateApp();
 
   /* Do the final show once everything is set up */
   //showFullScreen();
@@ -125,6 +130,7 @@ void Application::closeGame()
 
 void Application::exit()
 {
+  close_command = true;
   emit closing();
 }
 
@@ -150,22 +156,14 @@ void Application::openMap()
 
 void Application::updateApp()
 {
-  /* Start a QTimer to determine time elapsed for updating */
-  //QTime time;
-  //time.start();
-  
   /* Implement the update, where necessary */
+  int cycle_time = update_time.restart();
   if(currentIndex() == TITLESCREEN && title_screen != 0)
     title_screen->update(); // TODO: Change to custom function??
   else if(currentIndex() == GAME && game_handler != 0)
-    game_handler->updateGame();
+    game_handler->updateGame(cycle_time);
 
-  /* Time elapsed before delay */
-  //int time_elapsed_1 = time.elapsed();
-  
   /* Restart the timer */
-  tick.start(kTICK_DELAY);
-  
-  /* Printing both time delays, for overall calculations */
-  //qDebug() << time_elapsed_1 << " " << time.elapsed();
+  if(!close_command)
+    tick.start(kTICK_DELAY);
 }

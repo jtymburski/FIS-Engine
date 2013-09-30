@@ -39,20 +39,28 @@ Event EventHandler::createEventTemplate()
   return blank_event;
 }
 
+/* Execute a start battle event */
+void EventHandler::executeStartBattleEvent(Event event, MapThing* target)
+{
+  emit startBattle();
+}
+  
 /* Execute the teleport event */
-void EventHandler::executeTeleportEvent(Event event, int target_id)
+void EventHandler::executeTeleportEvent(Event event, MapThing* target)
 {
   int x = -1;
   int y = -1;
-
-  if(event.integer_stack.size() == 2)
+  int section_id = -1;
+  
+  if(event.integer_stack.size() == 3)
   {
     x = event.integer_stack[0];
     y = event.integer_stack[1];
+    section_id = event.integer_stack[2];
   }
 
   if(x >= 0 && y >= 0)
-    emit teleportThing(target_id, x, y);
+    emit teleportThing(target, x, y, section_id);
 }
 
 /*============================================================================
@@ -65,8 +73,19 @@ Event EventHandler::createBlankEvent()
   return createEventTemplate();
 }
 
+/* Creates a start battle event */
+/* TODO: Add parameters. Battle not ready */
+Event EventHandler::createStartBattleEvent()
+{
+  /* Create the event and identify */
+  Event new_event = createEventTemplate();
+  new_event.classification = EnumDb::RUNBATTLE;
+
+  return new_event;
+}
+
 /* Creates a teleport event */
-Event EventHandler::createTeleportEvent(int tile_x, int tile_y)
+Event EventHandler::createTeleportEvent(int tile_x, int tile_y, int section_id)
 {
   /* Create the event and identify */
   Event new_event = createEventTemplate();
@@ -75,13 +94,16 @@ Event EventHandler::createTeleportEvent(int tile_x, int tile_y)
   /* Fill in the event specific information */
   new_event.integer_stack.append(tile_x);
   new_event.integer_stack.append(tile_y);
+  new_event.integer_stack.append(section_id);
 
   return new_event;
 }
 
 /* Execute the given event - done through signal emits */
-void EventHandler::executeEvent(Event event, int target_id)
+void EventHandler::executeEvent(Event event, MapThing* target)
 {
   if(event.classification == EnumDb::TELEPORTPLAYER)
-    executeTeleportEvent(event, target_id);
+    executeTeleportEvent(event, target);
+  else if(event.classification == EnumDb::RUNBATTLE)
+    executeStartBattleEvent(event, target);
 }

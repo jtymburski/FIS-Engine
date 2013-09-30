@@ -14,6 +14,8 @@
 #ifndef EVENTHANDLER_H
 #define EVENTHANDLER_H
 
+class MapThing;
+
 #include <QObject>
 
 #include "EnumDb.h"
@@ -39,15 +41,19 @@ private:
   /* Creates the initial event template, clearing it */
   Event createEventTemplate();
 
+  /* Execute a start battle event */
+  void executeStartBattleEvent(Event event, MapThing* target);
+  
   /* Execute the teleport event */
-  void executeTeleportEvent(Event event, int target_id);
+  void executeTeleportEvent(Event event, MapThing* target);
 
 /*============================================================================
  * SIGNALS
  *===========================================================================*/
 signals:
   /* Signals for the various events */
-  void teleportThing(int id, int x, int y);
+  void startBattle();
+  void teleportThing(MapThing* target, int x, int y, int section_id);
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -56,11 +62,14 @@ public:
   /* Creates a disabled blank event */
   Event createBlankEvent();
 
+  /* Creates a start battle event */
+  Event createStartBattleEvent();
+  
   /* Creates a teleport event */
-  Event createTeleportEvent(int tile_x, int tile_y);
+  Event createTeleportEvent(int tile_x, int tile_y, int section_id = -1);
 
   /* Execute the given event - done through signal emits */
-  void executeEvent(Event event, int target_id);
+  void executeEvent(Event event, MapThing* target);
 };
 
 #endif // EVENTHANDLER_H

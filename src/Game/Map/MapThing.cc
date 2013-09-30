@@ -30,8 +30,6 @@ const short MapThing::kUNSET_ID   = -1;
 MapThing::MapThing()
 {
   state = 0;
-  tile_main = 0;
-  tile_previous = 0;
   MapThing::clear();
 }
 
@@ -39,6 +37,8 @@ MapThing::MapThing()
  * Description: Constructor for this class. Takes data to create the thing.
  *
  * Inputs: MapState* state - the state data to encapsalate by the thing
+ *         int width - the tile width of the thing
+ *         int height - the tile height of the thing
  *         QString name - the name of the thing, default to ""
  *         QString description - the description of the thing, default to ""
  *         int id - the ID of the thing, default to -1
@@ -47,8 +47,6 @@ MapThing::MapThing(MapState* state, int width, int height,
                    QString name, QString description, int id)
 {
   this->state = 0;
-  tile_main = 0;
-  tile_previous = 0;
   MapThing::clear();
   
   /* The class definitions */
@@ -300,8 +298,10 @@ QString MapThing::classDescriptor()
  */
 void MapThing::clear()
 {
-  Tile* null_tile = 0;
-  setStartingTile(null_tile);
+  /* Reset tile parameters */
+  tile_main = 0;
+  tile_previous = 0;
+  tile_section = -1; /* Unset value */
   
   /* Resets the class parameters */
   setAnimationSpeed(kDEFAULT_ANIMATION);
@@ -406,6 +406,18 @@ int MapThing::getHeight()
 int MapThing::getID()
 {
   return id;
+}
+
+/* 
+ * Description: Gets the map section attributed to the tile(s) that the thing
+ *              currently resides on. It will default to -1 if it is unset.
+ *
+ * Inputs: none
+ * Output: int - the section ID, based on the map
+ */
+int MapThing::getMapSection()
+{
+  return tile_section;
 }
 
 /* 
@@ -751,32 +763,35 @@ bool MapThing::setSpeed(short speed)
  *              the initial starting point and where the thing is initially
  *              placed. If this is unset, the thing will not move or paint.
  *
- * Inputs: Tile* new_tile
+ * Inputs: int section_id - the map id that the tile is from
+ *         Tile* new_tile - the tile to set the starting pointer to
+ *         bool no_events - don't execute any events when set
  * Output: bool - status if the change was able to occur
  */
-bool MapThing::setStartingTile(Tile* new_tile)
+bool MapThing::setStartingTile(int section_id, Tile* new_tile, bool no_events)
 {
-  if(new_tile != 0 && !new_tile->isImpassableThingSet())
+  if(section_id >= 0 && new_tile != 0 && !new_tile->isImpassableThingSet())
   {
     /* Stop movement */
     setDirection(EnumDb::DIRECTIONLESS);
   
     /* Unset the previous tile */
     if(tile_previous != 0)
-      tile_previous->unsetImpassableThing();
+      tile_previous->unsetImpassableThing(no_events);
     tile_previous = 0;
   
     /* Unset the main tile */
     if(tile_main != 0)
-      tile_main->unsetImpassableThing();
+      tile_main->unsetImpassableThing(no_events);
     tile_main = 0;
   
     /* Set the new tile */
     tile_main = new_tile;
     this->x = tile_main->getPixelX();
     this->y = tile_main->getPixelY();
-    tile_main->setImpassableThing(this, Tile::PERSON);
-
+    tile_main->setImpassableThing(this, Tile::PERSON, no_events);
+    tile_section = section_id;
+    
     return true;
   }
 

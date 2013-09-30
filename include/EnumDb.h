@@ -28,9 +28,6 @@ public:
                     BONDDEATH,
                     UNKNOWN };
 
-  enum ApplicationMode { TITLESCREEN,
-                         GAME };
-
   /*
    * Description: The Attribute enumerations is used in AttributeSet to
    *              describe then names of the statics used by Persons,
@@ -80,7 +77,8 @@ public:
                         GIVEITEM       = 1,
                         RUNBATTLE      = 2, 
                         RUNMAP         = 3,
-                        TELEPORTPLAYER = 4};
+                        TELEPORTPLAYER = 4,
+                        TELEPORTTHING = 5};
                         
   /*
    * Description: Describes the current state of the inventory (how it is
