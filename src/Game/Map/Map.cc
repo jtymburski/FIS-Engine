@@ -13,8 +13,10 @@
 *  2. Allow for map to run with a parameterless constructor. Is that possible
 *     with the QGLFormat in the mix that is required for setting up the 
 *     QGLWidget?
-*  3. Need a way to classify which index players are in. According to the map
-*  4. If mode is switched, end all notification animations and such. -> battle
+*  3. If mode is switched, end all notification animations and such. -> battle
+*  4. Animation event for teleport requires fade out -> teleport -> fade in
+*  5. If tile set fails, don't quit the map. Useful only multi tile setups.
+*     Maybe only pass if it is a multi tile setup ??
 *
 * Extra:
 *  1. As the player is teleported to a new map, maybe have the option to have
@@ -56,11 +58,11 @@ Map::Map(const QGLFormat & format, Options running_config,
   persons.clear();
   player = 0;
 
-  /* Configure the FPS animation and reset to 0 */
-  frames = 0;
+  /* Configure the FPS animation and time elapsed, and reset to 0 */
   paint_animation = 0;
-  paint_count = 0;
-  paint_time_average = 0.0;
+  paint_frames = 0;
+  paint_time = 0;
+  time_elapsed = 0;
 
   /* Test the things and persons */
   thing = 0;
@@ -86,7 +88,7 @@ Map::Map(const QGLFormat & format, Options running_config,
   /* Initialize the event handler, for map creation */
   this->blank_event = blank_event;
 
-  /* Bring the timer in to provide a game tick */
+  /* Call the initial update to start OpenGL */
   updateGL();
 }
 
@@ -104,7 +106,6 @@ bool Map::addTileData(XmlData data, int section_index)
 {
   int angle = 0;
   bool success = true;
-  Sprite* tile_frames = 0;
 
   /* Get the element information */
   QStringList element = data.getElement(data.getNumElements()-1).split("_");
@@ -116,43 +117,14 @@ bool Map::addTileData(XmlData data, int section_index)
     if(element.size() > kELEMENT_ANGLE)
       angle = Sprite::getAngle(element[kELEMENT_ANGLE]);
 
-    /* Handle the image data, split the path based on "|". This is the 
-     * identifier if there is multiple frames */
-    QStringList data_list = data.getDataString().split("|");
-    if(data_list.size() > 1)
-      tile_frames = new Sprite(data_list[0], 
-                               data_list[1].toInt(), 
-                               data_list[2], angle);
-    else
-      tile_frames = new Sprite(data.getDataString(), angle);
- 
-    /* Run through this list, checking ranges and add the corresponding
-     * tiles, only if the sprite data is legitimate */
-    if(tile_frames->getSize() > 0)
-    {
-      /* Add to the list of tiles */
-      tile_sprites.append(tile_frames);
+    /* Get the actual set of paths and add them */
+    QList< QList<QString> > path_stack = splitTilePath(data.getDataString());
+    for(int y = 0; y < path_stack.size(); y++)
+      for(int x = 0; x < path_stack[y].size(); x++)
+        success &= addTileSprite(path_stack[y][x], x, y, 
+                                 angle, section_index, data);
 
-      QStringList row_list = data.getKeyValue(kFILE_TILE_ROW).split(",");
-      QStringList col_list = data.getKeyValue(kFILE_TILE_COLUMN).split(",");
-      for(int i = 0; i < row_list.size(); i++) /* Coordinate set index */
-      {
-        QStringList rows = row_list[i].split("-"); /* x range for coordinate */
-        QStringList cols = col_list[i].split("-"); /* y range for coordinate */
-
-        /* Shift through all the rows and column pairs of the coordinate */
-        for(int r = rows[0].toInt(); r <= rows[rows.size() - 1].toInt(); r++)
-        {
-          for(int c = cols[0].toInt(); c <= cols[cols.size() - 1].toInt(); c++)
-          {
-            success &= geography[section_index][r][c]->
-                    addSprite(tile_frames, data.getElement(kFILE_CLASSIFIER), 
-                                           data.getKeyValue(kFILE_CLASSIFIER));
-          }
-        }
-      }
-      return success;
-    }
+    return success;
   }
   /* Otherwise, access the passability information for the tile */
   else if(element[0].toLower().trimmed() == "passability")
@@ -177,6 +149,68 @@ bool Map::addTileData(XmlData data, int section_index)
   }
 
   return false;
+}
+
+/* Adds a tile sprite, based on the path and some XMLData */
+// TODO: Add search existing sprites to see if it exists
+bool Map::addTileSprite(QString path, int x_diff, int y_diff, 
+                        int angle, int section_index, XmlData data)
+{
+  bool success = false;
+  Sprite* tile_frames = 0;
+
+  /* Handle the image data, split the path based on "|". This is the 
+   * identifier if there is multiple frames */
+  QStringList data_list = path.split("|");
+  if(data_list.size() > 1)
+    tile_frames = new Sprite(data_list[0], data_list[1].toInt(), 
+                                           data_list[2], angle);
+  else
+    tile_frames = new Sprite(path, angle);
+ 
+  /* Run through this list, checking ranges and add the corresponding
+   * tiles, only if the sprite data is legitimate */
+  if(tile_frames->getSize() > 0)
+  {
+    /* Split up the coordinates for the tile sprite */
+    QStringList row_list = data.getKeyValue(kFILE_TILE_ROW).split(",");
+    QStringList col_list = data.getKeyValue(kFILE_TILE_COLUMN).split(",");
+    for(int i = 0; i < row_list.size(); i++) /* Coordinate set index */
+    {
+      QStringList rows = row_list[i].split("-"); /* x range for coordinate */
+      QStringList cols = col_list[i].split("-"); /* y range for coordinate */
+
+      /* Shift through all the rows and column pairs of the coordinate */
+      for(int r = rows[0].toInt(); r <= rows[rows.size() - 1].toInt(); r++)
+      {
+        for(int c = cols[0].toInt(); c <= cols[cols.size() - 1].toInt(); c++)
+        {
+          int x = r + x_diff;
+          int y = c + y_diff;
+
+          if(section_index >= 0 && section_index < geography.size() && 
+             x >= 0 && x < geography[section_index].size() && 
+             y >= 0 && y < geography[section_index][x].size())
+          {
+            success |= geography[section_index][x][y]->
+                  addSprite(tile_frames, data.getElement(kFILE_CLASSIFIER), 
+                                         data.getKeyValue(kFILE_CLASSIFIER));
+          }
+        }
+      }
+    }
+  }
+
+  /* If successful, add the data to the stack. Else, delete it */
+  if(success)
+    tile_sprites.append(tile_frames);
+  else
+  {
+    delete tile_frames;
+    qDebug() << "[ERROR] Map sprite add fail with path: " + path;
+  }
+
+  return success;
 }
 
 bool Map::initiateMapSection(int section_index, int width, int height)
@@ -263,6 +297,54 @@ void Map::initiateThingAction()
       }
     }
   }
+}
+
+/* Splites the tile path, to determine if numerous tiles are needed */
+QList< QList<QString> > Map::splitTilePath(QString path)
+{
+  QList< QList<QString> > path_matrix;
+
+  /* First split, to pull out the range */
+  QStringList split_1 = path.split("{");
+  if(split_1.size() == 2)
+  {
+    /* Second split, to pull out the range */
+    QStringList split_2 = split_1[1].split("}");
+    if(split_2.size() == 2)
+    {
+      /* Split the two directional coordinates */
+      QStringList range = split_2[0].split("x");
+      if(range.size() == 2)
+      {
+        /* Split the range */
+        QStringList first_digit = range[0].split("-");
+        int first_max = first_digit[first_digit.size()-1].toInt();
+        int first_start = first_digit[0].toInt();
+        QStringList second_digit = range[1].split("-");
+        int second_max = second_digit[second_digit.size()-1].toInt();
+        int second_start = second_digit[0].toInt();
+
+        /* Loop through and create all the paths */
+        for(int i = first_start; i <= first_max; i++)
+        {
+          QList<QString> x_paths;
+
+          for(int j = second_start; j <= second_max; j++)
+            x_paths.append(split_1[0] + QChar(64+i) + QChar(64+j) + split_2[1]);
+
+          path_matrix.append(x_paths);
+        }
+
+        return path_matrix;
+      }
+    }
+  }
+
+  /* If here, the split was unsuccessful and therefore only one path */
+  QList<QString> path_stack;
+  path_stack.append(path);
+  path_matrix.append(path_stack);
+  return path_matrix;
 }
 
 /*============================================================================
@@ -378,10 +460,6 @@ void Map::keyPressEvent(QKeyEvent* key_event)
   }
   else if(key_event->key() == Qt::Key_A)
     animateTiles();
-  else if(key_event->key() == Qt::Key_F4)
-    setSectionIndex(0);
-  else if(key_event->key() == Qt::Key_F5)
-    setSectionIndex(1);
   else if(key_event->key() == Qt::Key_1)
   {
     if(persons.size() > kPLAYER_INDEX)
@@ -474,22 +552,6 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     if(player != 0 && map_dialog.initConversation(convo, player->getID()))
       player->keyFlush();
   }
-
-  //else if(key_event->key() == Qt::Key_F1)
-  //{
-  //  map_dialog.setPersonDisplay("sprites/Map/Dialog/ulterius.png");
-  //  map_dialog.setPersonName("Ulterius");
-  //}
-  //else if(key_event->key() == Qt::Key_F2)
-  //{
-  //  map_dialog.setPersonDisplay("sprites/Map/Dialog/peltrance.png");
-  //  map_dialog.setPersonName("Peltrance");
-  //}
-  //else if(key_event->key() == Qt::Key_F3)
-  //{
-  //  map_dialog.setPersonDisplay("sprites/Map/Dialog/arcadius.png");
-  //  map_dialog.setPersonName("Arcadius");
-  //}
 }
 
 void Map::keyReleaseEvent(QKeyEvent* key_event)
@@ -576,18 +638,18 @@ void Map::paintGL()
   /* Determine the FPS sample rate */
   if(paint_animation <= 0)
   {
-    frames_per_second.setNum(frames /(paint_time / 1000.0), 'f', 2);
+    frames_per_second.setNum(paint_frames /(paint_time / 1000.0), 'f', 2);
     paint_animation = 20;
   }
   paint_animation--;
 
   /* Check the FPS monitor to see if it needs to be reset */
-  if((frames % 100) == 0)
+  if((paint_frames % 100) == 0)
   {
-    frames = 0;
+    paint_frames = 0;
     paint_time = 0;
   }
-  frames++;
+  paint_frames++;
   paint_time += time_elapsed;
   
   /* Finish by swapping the buffers and then restarting the timer to update 
@@ -715,6 +777,7 @@ bool Map::isLoaded()
   return loaded;
 }
 
+// TODO: Separate file add success and XML read success to parse error
 bool Map::loadMap(QString file)
 {
   bool done = false;
@@ -785,10 +848,12 @@ bool Map::loadMap(QString file)
     } while(!done && success);
     
     /* Add teleport to door - temporary */
-    geography[1][3][1]->setEnterEvent(
-          ((EventHandler*)blank_event.handler)->createTeleportEvent(1, 1, 0));
+    geography[1][3][6]->setEnterEvent(
+          ((EventHandler*)blank_event.handler)->createTeleportEvent(12, 9, 0));
     geography[0][0][0]->setExitEvent(
           ((EventHandler*)blank_event.handler)->createStartBattleEvent());
+    geography[0][12][8]->setEnterEvent(
+          ((EventHandler*)blank_event.handler)->createTeleportEvent(3, 5, 1));
 
     /* Add the player information */
     Sprite* up_sprite = new Sprite("sprites/Map/Map_Things/main_AA_D", 
@@ -1035,17 +1100,6 @@ void Map::updateMap(int cycle_time)
   updateGL();
 }
   
-/* Changes NPC spirtes */
-void Map::updateNPC()
-{
-}
-
-/* Changes the players sprite (Facing direction) */
-void Map::updatePlayer(Sprite sprite)
-{
-  (void)sprite;//warning
-}
-
 /* Returns a vector of the indexes of the NPC's who are in the viewport */
 QVector<int> Map::visibleNPCs()
 {

@@ -39,9 +39,6 @@ public:
   ~Map();
 
 private:
-  /* Vector of all ai's on map */
-  QList<MapNPC*> ai;
-
   /* A reference blank event for setting events in the game */
   Event blank_event;
   
@@ -80,11 +77,9 @@ private:
 
   /* The painting monitoring parameters */
   QString frames_per_second;
-  int frames;
   int paint_animation;
-  int paint_count;
-  int paint_time;//QTime paint_time;
-  double paint_time_average;
+  int paint_frames;
+  int paint_time;
 
   /*------------------- Constants -----------------------*/
   const static int kDOUBLE_DIGITS;    /* The point when integers are more than
@@ -108,12 +103,19 @@ private:
   /* Adds tile data, as per data from the file */
   bool addTileData(XmlData data, int section_index);
 
+  /* Adds a tile sprite, based on the path and some XMLData */
+  bool addTileSprite(QString path, int x_diff, int y_diff, 
+                     int angle, int section_index, XmlData data);
+
   /* Initiates a section block of map. Triggered from the file data */
   bool initiateMapSection(int section_index, int width, int height);
   
   /* Initiates a thing action, based on the action key being hit */
   void initiateThingAction();
-  
+ 
+  /* Splites the tile path, to determine if numerous tiles are needed */
+  QList< QList<QString> > splitTilePath(QString path);
+
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
@@ -206,12 +208,6 @@ public:
   /* Updates the map - called by the cycle timer call from game */
   void updateMap(int cycle_time);
   
-  /* Changes NPC spirtes */
-  void updateNPC();
-
-  /* Changes the players sprite (Facing direction) */
-  void updatePlayer(Sprite s);
-
   /* Returns a vector of the indexes of the NPC's who are in the viewport */
   QVector<int> visibleNPCs();
 

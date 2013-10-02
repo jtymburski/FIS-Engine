@@ -233,7 +233,7 @@ bool Tile::getBasePassability(EnumDb::Direction dir)
     return ((base_passability & dir) > 0);
   }
 
-  return true;
+  return false;
 }
 
 /* 
