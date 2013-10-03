@@ -7,6 +7,9 @@
 *              that emulate a GIF for animation or just store one image. This
 *              class also has the functionality for direction GL painting 
 *              through the native API.
+*
+* TODO:
+*   1. Add reverse function: 1(head)->2->3->4  -->  4(head)->3->2->1
 ******************************************************************************/
 #include "Game/Sprite.h"
 

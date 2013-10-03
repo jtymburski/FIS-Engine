@@ -98,7 +98,7 @@ void MapPerson::initializeStates()
 
   for(int i = 0; i < kTOTAL_SURFACES; i++)
   {
-    QVector<MapState*> row;
+    QList<MapState*> row;
 
     for(int j = 0; j < kTOTAL_DIRECTIONS; j++)
       row.append(0);

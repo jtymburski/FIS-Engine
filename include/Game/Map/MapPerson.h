@@ -19,7 +19,7 @@
 
 class MapPerson : public MapThing
 {
-  Q_OBJECT
+//  Q_OBJECT
 
 public:
   /* Constructor functions */
@@ -44,7 +44,7 @@ private:
 
   /* Set of all states for person. 1st layer is surface (water, ground, etc)
    * and then 2nd layer is direction facing */
-  QVector < QVector <MapState*> > states;
+  QList< QList<MapState*> > states;
 
   /* The surface that the person is walking on */
   SurfaceClassifier surface;

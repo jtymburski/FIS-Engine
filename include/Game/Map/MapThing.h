@@ -16,15 +16,15 @@ class MapPerson;
 
 #include <cmath>
 #include <QDebug>
-#include <QObject>
+//#include <QObject>
 
 #include "EnumDb.h"
 #include "Game/Map/MapState.h"
 #include "Game/Map/Tile.h"
 
-class MapThing : public QObject
+class MapThing// : public QObject
 {
-  Q_OBJECT
+//  Q_OBJECT
 
 public:
   /* Constructor functions */

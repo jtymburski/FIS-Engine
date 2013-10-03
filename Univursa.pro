@@ -25,7 +25,6 @@ SOURCES += \
     ./src/Main.cc \
     ./src/Application.cc \
     ./src/FileHandler.cc \
-    ./src/GridShifter.cc \
     ./src/Options.cc \
     ./src/Sound.cc \
     ./src/TitleScreen.cc \
@@ -85,7 +84,6 @@ HEADERS += \
     ./include/EnumDb.h \
     ./include/EnumString.h \
     ./include/FileHandler.h \
-    ./include/GridShifter.h \
     ./include/ObjectSorter.h \
     ./include/Options.h \
     ./include/Sound.h \
