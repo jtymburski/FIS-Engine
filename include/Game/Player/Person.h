@@ -36,32 +36,32 @@ public:
   /* Enumerated flags for states of a person */
   enum PersonState
   {
-    ALIVE          = 1 << 0, /* Is the person alive? */
-    INBATTLE       = 1 << 1, /* Is the person in a battle? */
-    SLEUTH         = 1 << 2, /* Person is currently in your sleuth */
-    BEARACKS       = 1 << 3, /* Person is currently in your RESERVE */
-    RENDERING      = 1 << 4, /* Person is rendering on the map */
-    MAINCHARACTER  = 1 << 5, /* Is this person the main character? */
-    FINALBOSS      = 1 << 6, /* Is this the final boss? */
-    BOSS           = 1 << 7, /* Is this person a Boss character? */
-    MINIBOSS       = 1 << 8,  /* Is this person a miniboss? */
-    MAXLVL         = 1 << 9,  /* Is this person the max level? */
-    CANATTACK      = 1 << 10, /* Can the person use physical attacks> */
-    CANUSESKILLS   = 1 << 11, /* Can the person currently use non-phys skills? */
-    CANUSEITEM     = 1 << 12, /* Can the person currently use items? */
-    CANRUN         = 1 << 13, /* Can the person run? */
-    SKIPNEXTTURN   = 1 << 14, /* Will the person skip their next turn? */
-    MISSNEXTTARGET = 1 << 15, /* Will the person miss their next target? */
-    NOEFFECT       = 1 << 16, /* Does the person's next attack have no effect? */
-    ISBUBBY        = 1 << 17, /* Is the person currently a bubby? */
-    TWOSKILLS      = 1 << 18, /* Can the person use two skills per turn? */
-    THREESKILLS    = 1 << 19, /* Can the person use three skills per turn? */
-    HALFCOST       = 1 << 20, /* Does the person only use half the QD? */
-    REFLECT        = 1 << 20, /* Is the person currently reflecting skills? */
-    BOND           = 1 << 21, /* Is the person in the BOND state? */
-    CANREVIVE      = 1 << 22, /* Can the person be revived? */
-    CANLEVEL       = 1 << 23, /* Can the person level up? */
-    CANLEARNSKILLS = 1 << 24  /* Can the person learn skills? */
+    ALIVE            = 1 << 0, /* Is the person alive? */
+    IN_BATTLE        = 1 << 1, /* Is the person in a battle? */
+    SLEUTH           = 1 << 2, /* Person is currently in your sleuth */
+    BEARACKS         = 1 << 3, /* Person is currently in your RESERVE */
+    RENDERING        = 1 << 4, /* Person is rendering on the map */
+    MAIN_CHARACTER   = 1 << 5, /* Is this person the main character? */
+    FINAL_BOSS       = 1 << 6, /* Is this the final boss? */
+    BOSS             = 1 << 7, /* Is this person a Boss character? */
+    MINI_BOSS        = 1 << 8,  /* Is this person a miniboss? */
+    MAX_LVL          = 1 << 9,  /* Is this person the max level? */
+    ATTACK_ENABLED   = 1 << 10, /* Can the person use physical attacks> */
+    SKILL_ENABLED    = 1 << 11, /* Can the person currently use non-phys skills? */
+    ITEM_USE_ENABLED = 1 << 12, /* Can the person currently use items? */
+    RUN_ENABLED      = 1 << 13, /* Can the person run? */
+    SKIP_NEXT_TURN   = 1 << 14, /* Will the person skip their next turn? */
+    MISS_NEXT_TARGET = 1 << 15, /* Will the person miss their next target? */
+    NO_EFFECT        = 1 << 16, /* Does the person's next attack have no effect? */
+    IS_BUBBY         = 1 << 17, /* Is the person currently a bubby? */
+    TWO_SKILLS       = 1 << 18, /* Can the person use two skills per turn? */
+    THREE_SKILLS     = 1 << 19, /* Can the person use three skills per turn? */
+    HALF_COST        = 1 << 20, /* Does the person only use half the QD? */
+    REFLECT          = 1 << 20, /* Is the person currently reflecting skills? */
+    BOND             = 1 << 21, /* Is the person in the BOND state? */
+    REVIVABLE        = 1 << 22, /* Can the person be revived? */
+    CAN_LEVEL_UP     = 1 << 23, /* Can the person level up? */
+    CAN_LEARN_SKILLS = 1 << 24  /* Can the person learn skills? */
   };
   Q_DECLARE_FLAGS(PersonFlags, PersonState)
 

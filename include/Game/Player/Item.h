@@ -58,8 +58,8 @@ public:
     ICE            = 1ul << 20,
     MATERIAL       = 1ul << 21,
     DISENSTUBULATE = 1ul << 22,
-    STATCHANGING   = 1ul << 23,
-    SKILLLEARNING  = 1ul << 24
+    STAT_CHANGING   = 1ul << 23,
+    SKILL_LEARNING  = 1ul << 24
   };
   Q_DECLARE_FLAGS(ItemFlags, ItemState)
   ItemFlags iflag_set;

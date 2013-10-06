@@ -220,7 +220,7 @@ void Person::addExperience(uint value)
     total_exp += value;
 
   /* Level the character to the proper value (if necessary) */
-  while (!getPersonFlag(Person::MAXLVL) && total_exp >= getExpAt(getLevel()+1))
+  while (!getPersonFlag(Person::MAX_LVL) && total_exp >= getExpAt(getLevel()+1))
     setLevel(getLevel() + 1);
 }
 
@@ -354,24 +354,24 @@ void Person::printEquipment()
 void Person::printFlags()
 {
   qDebug() << "ALIVE: " << getPersonFlag(Person::ALIVE);
-  qDebug() << "INBATTLE: " << getPersonFlag(Person::INBATTLE);
+  qDebug() << "INBATTLE: " << getPersonFlag(Person::IN_BATTLE);
   qDebug() << "SLEUTH: " << getPersonFlag(Person::SLEUTH);
   qDebug() << "BEARACKS: " << getPersonFlag(Person::BEARACKS);
   qDebug() << "RENDERING: " << getPersonFlag(Person::RENDERING);
-  qDebug() << "MAINCHARACTER: " << getPersonFlag(Person::MAINCHARACTER);
-  qDebug() << "FINALBOSS: " << getPersonFlag(Person::FINALBOSS);
+  qDebug() << "MAINCHARACTER: " << getPersonFlag(Person::MAIN_CHARACTER);
+  qDebug() << "FINALBOSS: " << getPersonFlag(Person::FINAL_BOSS);
   qDebug() << "BOSS: " << getPersonFlag(Person::BOSS);
-  qDebug() << "MINIBOSS: " << getPersonFlag(Person::MINIBOSS);
-  qDebug() << "MAXLVLL " << getPersonFlag(Person::MAXLVL);
-  qDebug() << "CANATTACK: " << getPersonFlag(Person::CANATTACK);
-  qDebug() << "CANUSEITEM: " << getPersonFlag(Person::CANUSESKILLS);
-  qDebug() << "CANRUN: " << getPersonFlag(Person::CANRUN);
-  qDebug() << "SKIPNEXTTURN: " << getPersonFlag(Person::SKIPNEXTTURN);
-  qDebug() << "MISSNEXTTARGET: " << getPersonFlag(Person::MISSNEXTTARGET);
-  qDebug() << "NOEFFECT: " << getPersonFlag(Person::NOEFFECT);
-  qDebug() << "ISBUBBY: " << getPersonFlag(Person::ISBUBBY);
-  qDebug() << "TWOSKILLS: " << getPersonFlag(Person::TWOSKILLS);
-  qDebug() << "THREESKILLS: " << getPersonFlag(Person::THREESKILLS);
+  qDebug() << "MINIBOSS: " << getPersonFlag(Person::MINI_BOSS);
+  qDebug() << "MAXLVLL " << getPersonFlag(Person::MAX_LVL);
+  qDebug() << "CANATTACK: " << getPersonFlag(Person::ATTACK_ENABLED);
+  qDebug() << "CANUSEITEM: " << getPersonFlag(Person::SKILL_ENABLED);
+  qDebug() << "CANRUN: " << getPersonFlag(Person::RUN_ENABLED);
+  qDebug() << "SKIPNEXTTURN: " << getPersonFlag(Person::SKIP_NEXT_TURN);
+  qDebug() << "MISSNEXTTARGET: " << getPersonFlag(Person::MISS_NEXT_TARGET);
+  qDebug() << "NOEFFECT: " << getPersonFlag(Person::NO_EFFECT);
+  qDebug() << "ISBUBBY: " << getPersonFlag(Person::IS_BUBBY);
+  qDebug() << "TWOSKILLS: " << getPersonFlag(Person::TWO_SKILLS);
+  qDebug() << "THREESKILLS: " << getPersonFlag(Person::THREE_SKILLS);
   qDebug() << "REFLECT: " << getPersonFlag(Person::REFLECT);
 }
 
@@ -528,7 +528,7 @@ SkillSet* Person::getUseableSkills()
   }
 
   /* Remove physical skills if physical skill flag disabled */
-  if (getPersonFlag(Person::CANATTACK) == false)
+  if (getPersonFlag(Person::ATTACK_ENABLED) == false)
   {
     for (int i = 0; i < temp_skills.size(); i++)
     {
@@ -541,7 +541,7 @@ SkillSet* Person::getUseableSkills()
   }
 
   /* Remove non-physical skills if non-physical skill flag disabled */
-  if (getPersonFlag(Person::CANUSESKILLS) == false)
+  if (getPersonFlag(Person::SKILL_ENABLED) == false)
   {
     for (int i = 0; i < temp_skills.size(); i++)
     {
@@ -947,7 +947,7 @@ bool Person::setLevel(const uint &new_level)
   bool leveled_up = false;
 
   /* Level number checks */
-  if (new_level == getLevel() || !getPersonFlag(Person::CANLEVEL))
+  if (new_level == getLevel() || !getPersonFlag(Person::CAN_LEVEL_UP))
     can_level = false;
 
   if (can_level)
@@ -964,7 +964,7 @@ bool Person::setLevel(const uint &new_level)
     else
     {
       level = kMAX_LEVEL;
-      setPersonFlag(Person::MAXLVL, true);
+      setPersonFlag(Person::MAX_LVL, true);
     }
 
     /* Recalculate the current base and max level stat values for the Person */

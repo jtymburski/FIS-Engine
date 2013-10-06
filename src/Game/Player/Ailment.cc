@@ -281,9 +281,9 @@ void Ailment::apply()
   else if (ailment_type == EnumDb::BERSERK)
   {
     /* On initial application, disable non physical skills and running */
-    victim->setPersonFlag(Person::CANUSESKILLS, false);
-    victim->setPersonFlag(Person::CANUSEITEM, false);
-    victim->setPersonFlag(Person::CANRUN, false);
+    victim->setPersonFlag(Person::SKILL_ENABLED, false);
+    victim->setPersonFlag(Person::ITEM_USE_ENABLED, false);
+    victim->setPersonFlag(Person::RUN_ENABLED, false);
     victim->setDmgMod(2);
   }
 
@@ -312,7 +312,7 @@ void Ailment::apply()
         skills->setSkillState(i, false);
 
     /* Flip the person flag */
-    victim->setPersonFlag(Person::ISBUBBY, true);
+    victim->setPersonFlag(Person::IS_BUBBY, true);
   }
 
   /* Death Timer - Ailed actor KOs upon reaching max_turns */
@@ -328,7 +328,7 @@ void Ailment::apply()
   else if (ailment_type == EnumDb::PARALYSIS)
   {
     if (chanceHappens(kPARALYSIS_PC * 100))
-      victim->setPersonFlag(Person::SKIPNEXTTURN, true);
+      victim->setPersonFlag(Person::SKIP_NEXT_TURN, true);
   }
 
   /* Blindness - Ailed actor has a kBLIND_PC chance of missing targets
@@ -337,7 +337,7 @@ void Ailment::apply()
   else if (ailment_type == EnumDb::BLINDNESS)
   {
     if (chanceHappens(kBLIND_PC * 100))
-      victim->setPersonFlag(Person::MISSNEXTTARGET, false);
+      victim->setPersonFlag(Person::MISS_NEXT_TARGET, false);
   }
 
   /* Dreadstruck - formerly "Stun": Ailed actor has an extreme chance of
@@ -347,7 +347,7 @@ void Ailment::apply()
   else if (ailment_type == EnumDb::DREADSTRUCK)
   {
     if (chanceHappens(kDREADSTRUCK_PC))
-      victim->setPersonFlag(Person::SKIPNEXTTURN, false);
+      victim->setPersonFlag(Person::SKIP_NEXT_TURN, false);
   }
 
   /* Dreamsnare - Ailed actor's actions have a kDREAMSNARE_PC chance of being
@@ -357,7 +357,7 @@ void Ailment::apply()
   else if (ailment_type == EnumDb::DREAMSNARE)
   {
     if (chanceHappens(kDREAMSNARE_PC * 100))
-      victim->setPersonFlag(Person::NOEFFECT, true);
+      victim->setPersonFlag(Person::NO_EFFECT, true);
   }
 
   /* Bond & Bonded - Two actors are afflicted simultaneously. One person is
@@ -455,15 +455,15 @@ void Ailment::apply()
 
   /* Double Cast allows the user to use two skils per turn */
   else if (ailment_type == EnumDb::DOUBLECAST)
-    victim->setPersonFlag(Person::TWOSKILLS, true);
+    victim->setPersonFlag(Person::TWO_SKILLS, true);
 
   /* Triple Cast allows the user to use three skills per turn */
   else if (ailment_type == EnumDb::TRIPLECAST)
-    victim->setPersonFlag(Person::THREESKILLS, true);
+    victim->setPersonFlag(Person::THREE_SKILLS, true);
 
   /* Half Cost - On application, the user's useable skill costs are halved */
   else if (ailment_type == EnumDb::HALFCOST)
-    victim->setPersonFlag(Person::HALFCOST, true);
+    victim->setPersonFlag(Person::HALF_COST, true);
 
   /* Hibernation - Gain a % health back per turn in exchange for skipping it,
    *               but the % gain grows
@@ -524,7 +524,7 @@ bool Ailment::checkImmunity(Person* new_victim)
   QString cat_name = new_victim->getCategory()->getName();
 
   /* Flag immunity section */
-  if (new_victim->getPersonFlag(Person::MINIBOSS))
+  if (new_victim->getPersonFlag(Person::MINI_BOSS))
   {
     if (ailment_type == EnumDb::DEATHTIMER ||
         ailment_type == EnumDb::BUBBIFY)
@@ -543,7 +543,7 @@ bool Ailment::checkImmunity(Person* new_victim)
   }
 
   /* Final boss will be immune to many ailments */
-  else if (new_victim->getPersonFlag(Person::FINALBOSS))
+  else if (new_victim->getPersonFlag(Person::FINAL_BOSS))
   {
     if (ailment_type == EnumDb::DEATHTIMER ||
         ailment_type == EnumDb::BUBBIFY    ||
@@ -654,9 +654,9 @@ void Ailment::unapply()
   /* On removing Berserk, the person's abilities need to be re-enabled */
   if (getType() == EnumDb::BERSERK)
   {
-    victim->setPersonFlag(Person::CANRUN, true);
-    victim->setPersonFlag(Person::CANUSESKILLS, true);
-    victim->setPersonFlag(Person::CANUSEITEM, true);
+    victim->setPersonFlag(Person::RUN_ENABLED, true);
+    victim->setPersonFlag(Person::SKILL_ENABLED, true);
+    victim->setPersonFlag(Person::ITEM_USE_ENABLED, true);
     victim->setDmgMod(1);
   }
 
@@ -754,15 +754,15 @@ void Ailment::unapply()
 
   /* Double Cast - on unapplication turn off the flag for DoubleCast */
   else if (getType() == EnumDb::DOUBLECAST)
-    victim->setPersonFlag(Person::TWOSKILLS, false);
+    victim->setPersonFlag(Person::TWO_SKILLS, false);
 
   /* Tripl Cast - on unapplication, turn off the flag for TripleCast */
   else if (getType() == EnumDb::TRIPLECAST)
-    victim->setPersonFlag(Person::THREESKILLS, false);
+    victim->setPersonFlag(Person::THREE_SKILLS, false);
 
   /* Half Cost - on unapplication, turn off the flag for HalfCost */
   else if (getType() == EnumDb::HALFCOST)
-     victim->setPersonFlag(Person::HALFCOST, false);
+     victim->setPersonFlag(Person::HALF_COST, false);
 
   /* Reflect - on unapplication, turn off the Person flag for reflect */
   else if (getType() == EnumDb::REFLECT)

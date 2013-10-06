@@ -16,6 +16,8 @@
 
 class Party : public QWidget
 {
+  Q_OBJECT
+
 public:
   /* Creates a party object */
   Party(Person* p_main, Inventory* inventory = 0,
@@ -27,8 +29,10 @@ public:
   /* Enumerated flags for party */
   enum PartyFlag
   {
-    INVENTORY_ENABLED = 1 << 0, /**/
-    MEMBERS_ENABLED    = 1 << 1
+    INVENTORY_ENABLED  = 1 << 0, /* Can the inventory be altered? */
+    ITEM_USE_ENABLED      = 1 << 1, /* Can the party use items? */
+    MEMBERS_ENABLED    = 1 << 2, /* Can the members be altered? */
+    BATTLE_ENCOUNTERS  = 1 << 3  /* Can this party battle other parties? */
   };
   Q_DECLARE_FLAGS(PartyFlags, PartyFlag)
   PartyFlags pflag_set;
@@ -66,6 +70,22 @@ private:
 
   /* Updates the maximum size of the party based on its current type */
   ushort updateMaxSize();
+
+/*============================================================================
+ * SIGNALS
+ *============================================================================*/
+signals:
+  /* Battle Item can not be used error */
+  void battleUseItemError(QString reasons);
+
+  /* Signal to Battle to cure an ailment */
+  void cureAilment(ushort target, EnumDb::Infliction ailment_type);
+
+  /* Menu Item can not be used error */
+  void menuUseItemError(QString reasons);
+
+  /* General Item can not be used error */
+  void useItemError(QString reasons);
 
 /*============================================================================
  * PUBLIC FUNCTIONS

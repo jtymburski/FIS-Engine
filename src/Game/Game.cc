@@ -135,7 +135,7 @@ void Game::setupBattle()
           = new Person("Arcadius", base_race, base_category, "PHA", "CYA");
 
   /* Level up Tests */
-  main_character->setPersonFlag(Person::CANLEVEL, true);
+  main_character->setPersonFlag(Person::CAN_LEVEL_UP, true);
 
   Party* friends = new Party(main_character);
   Party* foes = new Party(secd_character);

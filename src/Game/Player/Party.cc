@@ -66,7 +66,7 @@ bool Party::menuUseItem(Item* used_item, ushort target)
     if (action_happens)
     {
       /* If the Item is a stat changing item */
-      if (used_item->getItemFlag(Item::STATCHANGING))
+      if (used_item->getItemFlag(Item::STAT_CHANGING))
       {
         /* Obtain the attribute to be affected */
         EnumDb::Attribute stat = curr_action->getAttribute();
@@ -89,9 +89,9 @@ bool Party::menuUseItem(Item* used_item, ushort target)
       }
 
       /* If the item is meant to allow a skill to be learned */
-      if (used_item->getItemFlag(Item::SKILLLEARNING))
+      if (used_item->getItemFlag(Item::SKILL_LEARNING))
       {
-        if (getMember(target)->getPersonFlag(Person::CANLEARNSKILLS))
+        if (getMember(target)->getPersonFlag(Person::CAN_LEARN_SKILLS))
         {
           Skill* learned_skill = used_item->getSkill();
           getMember(target)->getSkills()->addSkill(learned_skill);
@@ -136,12 +136,12 @@ bool Party::battleUseItem(Item* used_item, ushort target)
         /* If the ailment is meant to cure Inflictions */
         if (used_item->getItemFlag(Item::CURE))
         {
-          // EnumDb::Infliction to_cure = curr_action->getAilment();
-          //TODO: AILMENT CURE SIGNAL
+          EnumDb::Infliction to_cure = curr_action->getAilment();
+          emit cureAilment(target, to_cure);
         }
 
         /* If the Item is a stat changing item */
-        if (used_item->getItemFlag(Item::STATCHANGING))
+        if (used_item->getItemFlag(Item::STAT_CHANGING))
         {
           /* Obtain the attribute to be affected */
           EnumDb::Attribute stat = curr_action->getAttribute();
@@ -164,9 +164,9 @@ bool Party::battleUseItem(Item* used_item, ushort target)
         }
 
         /* If the item is meant to allow a skill to be learned */
-        if (used_item->getItemFlag(Item::SKILLLEARNING))
+        if (used_item->getItemFlag(Item::SKILL_LEARNING))
         {
-          if (getMember(target)->getPersonFlag(Person::CANLEARNSKILLS))
+          if (getMember(target)->getPersonFlag(Person::CAN_LEARN_SKILLS))
           {
             Skill* learned_skill = used_item->getSkill();
             getMember(target)->getSkills()->addSkill(learned_skill);
@@ -301,14 +301,40 @@ bool Party::removeMember(QString value)
 bool Party::useItem(Item *used_item, ushort target, EnumDb::ItemUse use_type)
 {
   bool item_used    = false;
+  bool can_use_item = true;
   Person* actor = 0;
 
   /* Get the person [actor target] at the target index */
   if (target <= getMaxSize())
     actor = getMember(target);
 
+  /* Assert the party can use items */
+  if (!this->getFlag(Party::INVENTORY_ENABLED))
+  {
+    can_use_item = false;
+    emit useItemError("Cannot use item: party inventory disabled");
+  }
+
+  if (!this->getFlag(Party::ITEM_USE_ENABLED))
+  {
+    can_use_item = false;
+    emit useItemError("Cannot use item: party item use disabled");
+  }
+
   /* Assert the target can use items */
-  if (actor != 0 && actor->getPersonFlag(Person::CANUSEITEM))
+  if (actor == 0)
+  {
+    can_use_item = false;
+    emit useItemError("Cannot use item: invalid actor");
+  }
+
+  if (!actor->getPersonFlag(Person::ITEM_USE_ENABLED))
+  {
+    can_use_item = false;
+    emit useItemError("Cannot usei tem: actor item use disabled)");
+  }
+
+  if (can_use_item)
   {
     if (use_type == EnumDb::MENU_USABLE)
       if (used_item->getItemFlag(Item::MENUREADY))
@@ -316,6 +342,13 @@ bool Party::useItem(Item *used_item, ushort target, EnumDb::ItemUse use_type)
     if (use_type == EnumDb::BATTLE_USABLE)
       if (used_item->getItemFlag(Item::BATTLEREADY))
         item_used = battleUseItem(used_item, target);
+  }
+
+  if (item_used)
+  {
+    /* Remove the item from the inventory if the item is not indefinite */
+    if (!used_item->getItemFlag(Item::INDEFINITE))
+      getInventory()->removeItem(used_item->getName());
   }
 
   return item_used;
