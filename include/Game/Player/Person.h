@@ -1,5 +1,5 @@
 /******************************************************************************
-* Class Name: Person Implementation
+* Class Name: Person [Header Declaration]
 * Date Created: December 2nd, 2012 (Rewritten March 6th, 2013)
 * Inheritance: None
 * Description: Head for Person class. Container for all the info describing

@@ -56,7 +56,6 @@ Person::Person()
  *         Category* - pointer to the category of the person
  *         QString p - primary element and curve of the person
  *         QString s - secondary element and curve of the person
- * Output: none
  */
 Person::Person(QString pname, Race* prace, Category* pcat, QString p, QString s)
     : damage_modifier(1.00),
