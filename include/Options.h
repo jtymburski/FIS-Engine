@@ -18,7 +18,7 @@ public:
   Options(QWidget* parent = 0);
 
   /* Copy constructor */
-  Options(const Options &source);
+  Options(const Options &source, QWidget* parent = 0);
 
   /* Destructor */
   ~Options();

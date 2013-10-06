@@ -33,7 +33,7 @@ public:
            QString description = "", int id = kUNSET_ID);
 
   /* Destructor function */
-  ~MapThing();
+  virtual ~MapThing();
 
 protected:
   /* The thing classification */

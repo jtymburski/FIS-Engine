@@ -37,7 +37,7 @@ MapNPC::MapNPC(int width, int height, QString name, QString description, int id)
 /* Destructor function */
 MapNPC::~MapNPC()
 {
-
+  clear();
 }
 
 /*============================================================================
@@ -198,7 +198,8 @@ bool MapNPC::removeNode(int index)
   }
 
   /* Finish by deleting the pointer */
-  delete temp_node;
+  if(success)
+    delete temp_node;
 
   return success;
 }

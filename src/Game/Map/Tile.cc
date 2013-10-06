@@ -49,7 +49,7 @@ Tile::Tile()
  *         int x - the x location respective to the parent (in tile count)
  *         int y - the y location respective to the parent (in tile count)
  */
-Tile::Tile(Event blank_event, int width, int height, int x, int y)
+Tile::Tile(EventHandler::Event blank_event, int width, int height, int x, int y)
 {
   clear();
   clearEvents(blank_event);
@@ -199,7 +199,7 @@ void Tile::clear(bool just_sprites)
   }
 }
 
-void Tile::clearEvents(Event blank_event)
+void Tile::clearEvents(EventHandler::Event blank_event)
 {
   enter_event = blank_event;
   exit_event = blank_event;
@@ -791,7 +791,7 @@ bool Tile::setEnhancer(Sprite* enhancer)
  * Inputs: Event enter_event - the event to be executed
  * Output: none
  */
-void Tile::setEnterEvent(Event enter_event)
+void Tile::setEnterEvent(EventHandler::Event enter_event)
 {
   this->enter_event = enter_event;
 }
@@ -803,7 +803,7 @@ void Tile::setEnterEvent(Event enter_event)
  * Inputs: Event exit_event - the event to be executed
  * Output: none
  */
-void Tile::setExitEvent(Event exit_event)
+void Tile::setExitEvent(EventHandler::Event exit_event)
 {
   this->exit_event = exit_event;
 }
@@ -847,9 +847,8 @@ bool Tile::setImpassableThing(MapThing* thing, ThingState type, bool no_events)
       impassable_thing = thing;
       
       /* Execute enter event, if applicable */
-      if(!no_events && enter_event.classification != EnumDb::NOEVENT)
-        ((EventHandler*)enter_event.handler)->
-                                    executeEvent(enter_event, impassable_thing);
+      if(!no_events && enter_event.classification != EventHandler::NOEVENT)
+        enter_event.handler->executeEvent(enter_event, impassable_thing);
 
       return true;
     }
@@ -1039,9 +1038,8 @@ void Tile::unsetImpassableThing(bool no_events)
   if(!no_events && impassable_thing != 0)
   {
     /* Execute enter event, if applicable */
-    if(exit_event.classification != EnumDb::NOEVENT)
-      ((EventHandler*)exit_event.handler)->
-                                    executeEvent(exit_event, impassable_thing);
+    if(exit_event.classification != EventHandler::NOEVENT)
+      exit_event.handler->executeEvent(exit_event, impassable_thing);
   }
   
   impassable_thing = 0;

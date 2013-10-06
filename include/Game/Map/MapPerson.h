@@ -28,7 +28,7 @@ public:
             QString description = "", int id = kUNSET_ID);
 
   /* Destructor function */
-  ~MapPerson();
+  virtual ~MapPerson();
 
   /* The surface classification, first layer of states 2D vector
    *  GROUND - is on a dirt like substance (where walking is possible) */

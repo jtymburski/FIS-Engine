@@ -22,7 +22,7 @@ public:
                        QString description = "", int id = kUNSET_ID);
 
   /* Destructor function */
-  ~MapInteractiveObject();
+  virtual ~MapInteractiveObject();
 
   /* Enumerator for defining the available states 
    *  STATE_A - the initial (closed) state

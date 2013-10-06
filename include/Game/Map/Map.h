@@ -33,14 +33,15 @@ class Map : public QGLWidget
 
 public:
   /* Constructor function */
-  Map(const QGLFormat & format, Options running_config, Event blank_event);
+  Map(const QGLFormat & format, Options running_config, 
+      EventHandler::Event blank_event);
 
   /* Destructor function */
   ~Map();
 
 private:
   /* A reference blank event for setting events in the game */
-  Event blank_event;
+  EventHandler::Event blank_event;
   
   /* The actual tiles that comprise a map, dynamically sized */
   QList< QList< QList<Tile*> > > geography;

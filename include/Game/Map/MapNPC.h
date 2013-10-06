@@ -32,7 +32,7 @@ public:
          QString description = "", int id = kUNSET_ID);
   
   /* Destructor function */
-  ~MapNPC();
+  virtual ~MapNPC();
 
   /* LOOPED - Goes from node 1->2->3->1->2...
    * BACKANDFORTH - Goes from node 1->2->3->2->1->2...

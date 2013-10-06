@@ -24,7 +24,7 @@ const short TitleScreen::kNUM_MENU_ITEMS = 4;
  *===========================================================================*/
 
 /* Default constructor */
-TitleScreen::TitleScreen(QWidget* parent)
+TitleScreen::TitleScreen(QWidget* parent) : QWidget(parent)
 {
   setFixedSize(system_options.getScreenWidth(), 
                system_options.getScreenHeight());

@@ -44,7 +44,7 @@ const int Map::kTILE_WIDTH = 64;
 
 /* Constructor function */
 Map::Map(const QGLFormat & format, Options running_config, 
-                                   Event blank_event) : QGLWidget(format)
+         EventHandler::Event blank_event) : QGLWidget(format)
 {
   /* Set some initial class flags */
   //setAttribute(Qt::WA_PaintOnScreen);

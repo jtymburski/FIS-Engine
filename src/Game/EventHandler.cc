@@ -29,11 +29,11 @@ EventHandler::~EventHandler()
  *===========================================================================*/
 
 /* Creates the initial event template, clearing it */
-Event EventHandler::createEventTemplate()
+EventHandler::Event EventHandler::createEventTemplate()
 {
   Event blank_event;
   blank_event.handler = this;
-  blank_event.classification = EnumDb::NOEVENT;
+  blank_event.classification = NOEVENT;
   blank_event.integer_stack.clear();
 
   return blank_event;
@@ -42,6 +42,9 @@ Event EventHandler::createEventTemplate()
 /* Execute a start battle event */
 void EventHandler::executeStartBattleEvent(Event event, MapThing* target)
 {
+  (void)event;
+  (void)target;
+
   emit startBattle();
 }
   
@@ -68,28 +71,29 @@ void EventHandler::executeTeleportEvent(Event event, MapThing* target)
  *===========================================================================*/
 
 /* Creates a disabled blank event */
-Event EventHandler::createBlankEvent()
+EventHandler::Event EventHandler::createBlankEvent()
 {
   return createEventTemplate();
 }
 
 /* Creates a start battle event */
 /* TODO: Add parameters. Battle not ready */
-Event EventHandler::createStartBattleEvent()
+EventHandler::Event EventHandler::createStartBattleEvent()
 {
   /* Create the event and identify */
   Event new_event = createEventTemplate();
-  new_event.classification = EnumDb::RUNBATTLE;
+  new_event.classification = RUNBATTLE;
 
   return new_event;
 }
 
 /* Creates a teleport event */
-Event EventHandler::createTeleportEvent(int tile_x, int tile_y, int section_id)
+EventHandler::Event EventHandler::createTeleportEvent(int tile_x, int tile_y, 
+                                                      int section_id)
 {
   /* Create the event and identify */
   Event new_event = createEventTemplate();
-  new_event.classification = EnumDb::TELEPORTPLAYER;
+  new_event.classification = TELEPORTPLAYER;
 
   /* Fill in the event specific information */
   new_event.integer_stack.append(tile_x);
@@ -102,8 +106,8 @@ Event EventHandler::createTeleportEvent(int tile_x, int tile_y, int section_id)
 /* Execute the given event - done through signal emits */
 void EventHandler::executeEvent(Event event, MapThing* target)
 {
-  if(event.classification == EnumDb::TELEPORTPLAYER)
+  if(event.classification == TELEPORTPLAYER)
     executeTeleportEvent(event, target);
-  else if(event.classification == EnumDb::RUNBATTLE)
+  else if(event.classification == RUNBATTLE)
     executeStartBattleEvent(event, target);
 }

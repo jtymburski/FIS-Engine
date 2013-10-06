@@ -178,7 +178,7 @@ bool MapDialog::drawPseudoCircle(int x, int y, int radius)
 
 void MapDialog::executeEvent()
 {
-  if(conversation_info.action_event.classification != EnumDb::NOEVENT &&
+  if(conversation_info.action_event.classification != EventHandler::NOEVENT &&
      conversation_info.action_event.handler != 0)
   {
     /* Determine the map thing object from the stack */
@@ -188,7 +188,7 @@ void MapDialog::executeEvent()
         player = thing_data[i];
     
     /* Execute the event */
-    ((EventHandler*)conversation_info.action_event.handler)->
+    conversation_info.action_event.handler->
             executeEvent(conversation_info.action_event, player);
   }
 }

@@ -26,7 +26,8 @@ class Tile
 public:
   /* Constructor functions */
   Tile();
-  Tile(Event blank_event, int width, int height, int x = 0, int y = 0);
+  Tile(EventHandler::Event blank_event, int width, int height, 
+       int x = 0, int y = 0);
 
   /* Destructor function */
   ~Tile();
@@ -58,8 +59,8 @@ private:
   Sprite* enhancer;
 
   /* Events for entering and exiting the tile */
-  Event enter_event;
-  Event exit_event;
+  EventHandler::Event enter_event;
+  EventHandler::Event exit_event;
   
   /* The lower information */
   QList<Sprite*> lower;
@@ -90,7 +91,7 @@ public:
 
   /* Clears out data from the class */
   void clear(bool just_sprites = false);
-  void clearEvents(Event blank_event);
+  void clearEvents(EventHandler::Event blank_event);
   
   /* Gets the base layer and passability */
   Sprite* getBase();
@@ -175,10 +176,10 @@ public:
   bool setEnhancer(Sprite* enhancer);
 
   /* Set the enter event, for the tile */
-  void setEnterEvent(Event enter_event);
+  void setEnterEvent(EventHandler::Event enter_event);
   
   /* Set the exit event, for the tile */
-  void setExitEvent(Event exit_event);
+  void setExitEvent(EventHandler::Event exit_event);
   
   /* Sets the new height for the tile (must be >= 0) */
   bool setHeight(int height);

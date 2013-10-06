@@ -18,7 +18,7 @@ class MapThing;
 
 #include <QObject>
 
-#include "EnumDb.h"
+//#include "EnumDb.h"
 
 class EventHandler : public QObject
 {
@@ -30,6 +30,27 @@ public:
 
   /* Destructor function */
   ~EventHandler();
+
+  /* 
+   * Description: The event classification - for what the event will do 
+   */
+  enum EventClassifier {NOEVENT        = 0,
+                        GIVEITEM       = 1,
+                        RUNBATTLE      = 2, 
+                        RUNMAP         = 3,
+                        TELEPORTPLAYER = 4,
+                        TELEPORTTHING  = 5};
+
+  /* Test enumerator */
+  //enum EventTestEnum { TEST1, TEST2, TEST3 };
+
+  /* Test struct */
+  struct Event
+  {
+    EventHandler* handler;
+    EventClassifier classification;
+    QList<int> integer_stack;
+  };
 
 private:
   /* Private variables - needed?? */

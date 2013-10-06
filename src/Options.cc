@@ -34,7 +34,7 @@ Options::Options(QWidget* parent) : QWidget(parent)
 #endif
 }
 
-Options::Options(const Options &source)
+Options::Options(const Options &source, QWidget* parent) : QWidget(parent)
 {
   copySelf(source);
 }
