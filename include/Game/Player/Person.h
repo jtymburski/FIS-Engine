@@ -14,6 +14,7 @@
 #include "Game/Player/Category.h"
 #include "Game/Player/Race.h"
 #include "Game/Player/Equipment.h"
+#include "Game/Player/PersonRecord.h"
 #include "Game/Sprite.h"
 
 class Person : QWidget
@@ -91,6 +92,7 @@ private:
 
   /* The parent of the person */
   Person* parent;
+  PersonRecord* person_record;
 
   /* The person's race */
   Race* race;
@@ -217,6 +219,9 @@ public:
 
   /* Gets the persons name (set in construction and never again) */
   QString getName();
+
+  /* Returns the personal record of the person */
+  PersonRecord* getPersonRecord();
 
   /* Gets the person's primary and secondary elemental strengths */
   QString getPrimary();

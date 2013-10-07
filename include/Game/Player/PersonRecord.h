@@ -4,7 +4,11 @@
 * Inheritance: None
 * Description: A class which represents an object holding the records of a
 *              person. This class will be used to keep track of the progress
-*              a person (character) has.
+*              a person (character) has
+*
+* //TODO: Build preset values [10-06-13]
+* //TODO: Signal/function for Rank-Up [10-06-13]
+* //TODO: Grand Score calculations [10-06-13]
 ******************************************************************************/
 #ifndef PERSONRECORD_H
 #define PERSONRECORD_H
@@ -18,11 +22,14 @@ public:
   /* Creates a default PersonRecord object */
   PersonRecord();
 
+  /* Copy Constructor */
+  PersonRecord(PersonRecord& other);
+
   /* Creates a PersonRecord object based on a couple of presets */
   PersonRecord(EnumDb::PersonRanks rank_preset = EnumDb::NUBEAR);
 
- /* Annihilates a PersonRecord object */
- ~PersonRecord();
+  /* Annihilates a PersonRecord object */
+  ~PersonRecord();
 
 private:
 
@@ -82,6 +89,11 @@ private:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Methods for printing information about the PersonRecord object */
+  void printAll();
+  void printConstants();
+  void printRecord();
+
   /* Loads a default PersonRecord object */
   void loadDefault();
 

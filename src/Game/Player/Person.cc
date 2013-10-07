@@ -41,10 +41,11 @@ const double Person::kSECD_C_MODI = 1.030;
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
 
-Person::Person()
-{
-
-}
+/* Description: Default constructor object
+ *
+ * Inputs: none
+ */
+Person::Person() {}
 
 /*
  * Description: Constructs a Person object gievn a name, race and category
@@ -85,6 +86,9 @@ Person::Person(QString pname, Race* prace, Category* pcat, QString p, QString s)
   setMax(base_set);
   setTemp(base_set);
   setMaxTemp(base_set);
+
+  /* Setup a person record */
+  person_record = new PersonRecord(EnumDb::NUBEAR);
 
   /* Construct the Exp Table */
   if (exp_table.isEmpty())
@@ -130,6 +134,9 @@ Person::Person(Person& other)
   setTemp(base_set);
   setMaxTemp(base_set);
 
+  /* Setup a new Person Record */
+  person_record = new PersonRecord(*other.getPersonRecord());
+
   for (int i = 0; i < parent->getItemLoot().size(); i++)
     item_drops.push_back(new Item(parent->getItemLoot().value(i)));
 
@@ -153,6 +160,9 @@ Person::~Person()
 
   delete temp_skill_list;
   temp_skill_list = 0;
+
+  delete person_record;
+  person_record = 0;
 }
 
 /*============================================================================
@@ -621,6 +631,17 @@ uint Person::getLevel()
 QString Person::getName()
 {
   return name;
+}
+
+/*
+ * Description: Returns a pointer to the personal record of the person.
+ *
+ * Inputs: none
+ * Output: PersonRecord* - pointer to a person record object
+ */
+PersonRecord* Person::getPersonRecord()
+{
+  return person_record;
 }
 
 /*

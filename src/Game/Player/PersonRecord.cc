@@ -5,6 +5,8 @@
 * Description: A class which represents an object holding the records of a
 *              person. This class will be used to keep track of the progress
 *              a person (character) has.
+*
+* //TODO: Build preset values [10-06-13]
 ******************************************************************************/
 #include "Game/Player/PersonRecord.h"
 
@@ -12,6 +14,7 @@
  * CONSTANTS
  *============================================================================*/
 
+/* Vector of points required for each rank */
 QVector<int> PersonRecord::rank_points_required;
 
 /* Defaults */
@@ -44,16 +47,47 @@ const uint PersonRecord::kPOINTS_KILLS_FIEND = 15;
 /*
  * Description: Creates a default PersonRecord object
  *
- * Inputs:
- * Output:
+ * Inputs: none
  */
 PersonRecord::PersonRecord()
 {
+  if (rank_points_required.isEmpty())
+    setUpRankPoints();
+
   loadDefault();
 }
 
+/*
+ * Description: Creates a default PersonRecord object
+ *
+ * Inputs: PersonRecord& - object to be copied.
+ */
+PersonRecord::PersonRecord(PersonRecord& other)
+{
+  setBattlesWon(other.getBattlesWon());
+  setBattlesWonNaked(other.getBattlesWonNaked());
+  setBattlesWonEmptyHanded(other.getBattlesWonEmptyHanded());
+  setBattlesWonMiniBoss(other.getBattlesWonMiniBoss());
+  setBattlesWonBoss(other.getBattlesWonBoss());
+  setBattlesWonFinalBoss(other.getBattlesWonFinalBoss());
+
+  setKillsBear(other.getKillsBear());
+  setKillsHuman(other.getKillsHuman());
+  setKillsFiend(other.getKillsFiend());
+  setGrandScore(other.getGrandScore());
+  setTimesKOd(other.getTimesKOd());
+}
+
+/*
+ * Description: Creates a PersonRecord object with a rank_preset
+ *
+ * Inputs: EnumDb::PersonRanks - the rank for the PersonRecord to be preset at
+ */
 PersonRecord::PersonRecord(EnumDb::PersonRanks rank_preset)
 {
+  if (rank_points_required.isEmpty())
+    setUpRankPoints();
+
   loadPreset(rank_preset);
 }
 
@@ -67,21 +101,87 @@ PersonRecord::~PersonRecord() {}
  *============================================================================*/
 
 /*
- * Description: Creates a default PersonRecord object
+ * Description: Sets up the rank_points_required vector with an exponential
+ *              table built between the default grand score and the highest
+ *              score needed to achieve the top rank.
  *
- * Inputs:
- * Output:
+ * Notes [1]: Static function.
+ *
+ * Inputs: none
+ * Output: none
  */
 void PersonRecord::setUpRankPoints()
 {
-    rank_points_required = buildExponentialTable(kDEFAULT_GRAND_SCORE,
-                                                  kMAX_RANK_SCORE,
-                                                  kRANKS);
+  rank_points_required = buildExponentialTable(kDEFAULT_GRAND_SCORE,
+                                               kMAX_RANK_SCORE, kRANKS);
 }
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
+
+/*
+ * Description: Prints everything related to this and general PersonalRecords.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void PersonRecord::printAll()
+{
+  qDebug() << " --- Personal Record ---";
+  printConstants();
+  printRecord();
+  qDebug() << " --- / Personal Record --- ";
+}
+
+/*
+ * Description: Prints out the constants of the general PersonalRecord
+ *
+ * Inputs: none
+ * Output: none
+ */
+void PersonRecord::printConstants()
+{
+  qDebug() << " --- Personal Record Constants ---";
+  qDebug() << "Default Grand Score: " << kDEFAULT_GRAND_SCORE;
+  qDebug() << "Number of Ranks: " << kRANKS;
+  qDebug() << "Max Battles Won: " << kMAX_BATTLES_WON;
+  qDebug() << "Max Kills: " << kMAX_KILLS;
+  qDebug() << "Max Grand Score: " << kMAX_GRAND_SCORE;
+  qDebug() << "Max Times KOd: " << kMAX_TIMES_KOD;
+  qDebug() << "Max Rank Score: " << kMAX_RANK_SCORE;
+  qDebug() << "Points Battle Won: " << kPOINTS_BATTLE_WON;
+  qDebug() << "Points Battle Won Naked: " << kPOINTS_BATTLE_WON_EMPTY_HANDED;
+  qDebug() << "Points Battle Won Empty Handed: " << kPOINTS_BATTLE_WON_MINI_BOSS;
+  qDebug() << "Points Battle Won Mini Boss: " << kPOINTS_BATTLE_WON_BOSS;
+  qDebug() << "Points Battle Won Boss: " << kPOINTS_BATTLE_WON_BOSS;
+  qDebug() << "Points Battle Won Final Boss: " << kPOINTS_BATTLE_WON_FINAL_BOSS;
+  qDebug() << "Points Kills Bear: " << kPOINTS_KILLS_BEAR;
+  qDebug() << "Points Kills Human: " << kPOINTS_KILLS_HUMAN;
+  qDebug() << "Points Kills Fiend: " << kPOINTS_KILLS_FIEND;
+}
+
+/*
+ * Description: Prints out the information of (*this) PersonalRecord
+ *
+ * Inputs: none
+ * Output: none
+ */
+void PersonRecord::printRecord()
+{
+  qDebug() << "Battles Won: " << battles_won;
+  qDebug() << "Battles Won Naked: " << battles_won_naked;
+  qDebug() << "Battles Won Empty Handed: " << battles_won_empty_handed;
+  qDebug() << "Battles Won Mini Boss: " << battles_won_mini_boss;
+  qDebug() << "Battles Won Boss: " << battles_won_boss;
+  qDebug() << "Battles Won Final Boss: " << battles_won_final_boss;
+  qDebug() << "Kills Bear: " << kills_bear;
+  qDebug() << "Kills Human: " << kills_human;
+  qDebug() << "Kills Fiend: " << kills_fiend;
+  qDebug() << "Grand Score: " << grand_score;
+  qDebug() << "Times KOd: " << times_kod;
+}
+
 
 /*
  * Description: Resets the PersonRecord object to a default state.
@@ -91,77 +191,123 @@ void PersonRecord::setUpRankPoints()
  */
 void PersonRecord::loadDefault()
 {
+  setBattlesWon(0);
+  setBattlesWonNaked(0);
+  setBattlesWonEmptyHanded(0);
+  setBattlesWonMiniBoss(0);
+  setBattlesWonBoss(0);
+  setBattlesWonFinalBoss(0);
 
+  setKillsBear(0);
+  setKillsHuman(0);
+  setKillsFiend(0);
+  setGrandScore(kDEFAULT_GRAND_SCORE);
+  setTimesKOd(0);
 }
 
 /*
  * Description: Loads the PersonObject with one of the pre-configured presets.
  *
- * Inputs: none
+ * Inputs: EnumDb::PersonRanks - rank for record to be preset to.
  * Output: none
+ * //TODO: Set values for presets [10-06-13]
  */
 void PersonRecord::loadPreset(EnumDb::PersonRanks rank_preset)
 {
+  /* Nubear Preset */
   if (rank_preset == EnumDb::NUBEAR)
   {
-
-
+    loadDefault();
   }
+
+  /* Cub Preset */
   else if (rank_preset == EnumDb::CUB)
   {
+    setBattlesWon(0);
+    setBattlesWonNaked(0);
+    setBattlesWonEmptyHanded(0);
+    setBattlesWonMiniBoss(0);
+    setBattlesWonBoss(0);
+    setBattlesWonFinalBoss(0);
 
-
+    setKillsBear(0);
+    setKillsHuman(0);
+    setKillsFiend(0);
+    setGrandScore(kDEFAULT_GRAND_SCORE);
+    setTimesKOd(0);
   }
+
+  /* Recruit Preset */
   else if (rank_preset == EnumDb::RECRUIT)
   {
 
 
   }
+
+  /* Sleuthling Preset */
   else if (rank_preset == EnumDb::SLEUTHLING)
   {
 
 
   }
+
+  /* Sergeant Preset */
   else if (rank_preset == EnumDb::SERGEANT)
   {
 
 
   }
+
+  /* Sleuthmaster Preset */
   else if (rank_preset == EnumDb::SLEUTHMASTER)
   {
 
 
   }
+
+  /* Officer Preset */
   else if (rank_preset == EnumDb::OFFICER)
   {
 
 
   }
+
+  /* Ursa Minor Preset */
   else if (rank_preset == EnumDb::URSAMINOR)
   {
 
 
   }
+
+  /* Admiral Preset */
   else if (rank_preset == EnumDb::ADMIRAL)
   {
 
 
   }
+
+  /* Ursa Major Preset */
   else if (rank_preset == EnumDb::URSAMAJOR)
   {
 
 
   }
+
+  /* Forebear Preset */
   else if (rank_preset == EnumDb::FOREBEAR)
   {
 
 
   }
+
+  /* Alpha Bear Preset */
   else if (rank_preset == EnumDb::ALPHABEAR)
   {
 
 
   }
+
+  /* BOAT Preset */
   else if (rank_preset == EnumDb::BOAT)
   {
 
@@ -172,7 +318,7 @@ void PersonRecord::loadPreset(EnumDb::PersonRanks rank_preset)
 /*
  * Description: Assigns a new value to battles_won
  *
- * Inputs: none
+ * Inputs: uint new_value - new value for battles_won
  * Output: none
  */
 void PersonRecord::setBattlesWon(uint new_value)
@@ -186,7 +332,7 @@ void PersonRecord::setBattlesWon(uint new_value)
 /*
  * Description: Assigns a new value to battles_won_naked
  *
- * Inputs: none
+ * Inputs: uint new_value - new value for battles_won_naked
  * Output: none
  */
 void PersonRecord::setBattlesWonNaked(uint new_value)
@@ -200,7 +346,7 @@ void PersonRecord::setBattlesWonNaked(uint new_value)
 /*
  * Description: Assigns a new value to battles_won_empty_handed
  *
- * Inputs: none
+ * Inputs: uint new_value - new value for battles_won_empty_handed
  * Output: none
  */
 void PersonRecord::setBattlesWonEmptyHanded(uint new_value)
@@ -214,7 +360,7 @@ void PersonRecord::setBattlesWonEmptyHanded(uint new_value)
 /*
  * Description: Assigns a new value to battles_won_mini_boss
  *
- * Inputs: none
+ * Inputs: uint new_value - new value for battles_won_mini_boss
  * Output: none
  */
 void PersonRecord::setBattlesWonMiniBoss(uint new_value)
@@ -226,9 +372,9 @@ void PersonRecord::setBattlesWonMiniBoss(uint new_value)
 }
 
 /*
- * Description: Loads the PersonObject with one of the pre-configured presets.
+ * Description: Assigns a new value to battles_won_boss
  *
- * Inputs: none
+ * Inputs: uint new_value - new value for battles_won_boss
  * Output: none
  */
 void PersonRecord::setBattlesWonBoss(uint new_value)
@@ -240,9 +386,9 @@ void PersonRecord::setBattlesWonBoss(uint new_value)
 }
 
 /*
- * Description: Loads the PersonObject with one of the pre-configured presets.
+ * Description: Assgns a new value to battles_won_final_boss
  *
- * Inputs: none
+ * Inputs: uint new_value - new value for battles_won_final_boss
  * Output: none
  */
 void PersonRecord::setBattlesWonFinalBoss(uint new_value)
@@ -254,9 +400,9 @@ void PersonRecord::setBattlesWonFinalBoss(uint new_value)
 }
 
 /*
- * Description: Loads the PersonObject with one of the pre-configured presets.
+ * Description: Assigns a new value to kills_bear
  *
- * Inputs: none
+ * Inputs: uint new_value - new value for kills_bear
  * Output: none
  */
 void PersonRecord::setKillsBear(uint new_value)
@@ -268,9 +414,9 @@ void PersonRecord::setKillsBear(uint new_value)
 }
 
 /*
- * Description: Loads the PersonObject with one of the pre-configured presets.
+ * Description: Assigns a new value to kills_human
  *
- * Inputs: none
+ * Inputs: uint new_value - new value for kills_human
  * Output: none
  */
 void PersonRecord::setKillsHuman(uint new_value)
@@ -282,9 +428,9 @@ void PersonRecord::setKillsHuman(uint new_value)
 }
 
 /*
- * Description: Loads the PersonObject with one of the pre-configured presets.
+ * Description: Assigns a new value to kills_fiend
  *
- * Inputs: none
+ * Inputs: uint new_value - new value for kills_fiend
  * Output: none
  */
 void PersonRecord::setKillsFiend(uint new_value)
@@ -296,9 +442,9 @@ void PersonRecord::setKillsFiend(uint new_value)
 }
 
 /*
- * Description: Loads the PersonObject with one of the pre-configured presets.
+ * Description: Assigns a new value to grand_score
  *
- * Inputs: none
+ * Inputs: uint new_value - new value for grand_score
  * Output: none
  */
 void PersonRecord::setGrandScore(uint new_value)
@@ -312,9 +458,9 @@ void PersonRecord::setGrandScore(uint new_value)
 }
 
 /*
- * Description: Loads the PersonObject with one of the pre-configured presets.
+ * Description: Assigns a new value to times_kod
  *
- * Inputs: none
+ * Inputs: uint new_value - new value to be assigned times_kod
  * Output: none
  */
 void PersonRecord::setTimesKOd(uint new_value)
@@ -326,10 +472,10 @@ void PersonRecord::setTimesKOd(uint new_value)
 }
 
 /*
- * Description: Loads the PersonObject with one of the pre-configured presets.
+ * Description: Returns the value of battles_won
  *
  * Inputs: none
- * Output: none
+ * Output: uint - battles_won
  */
 uint PersonRecord::getBattlesWon()
 {
@@ -337,10 +483,10 @@ uint PersonRecord::getBattlesWon()
 }
 
 /*
- * Description: Loads the PersonObject with one of the pre-configured presets.
+ * Description: Returns the value of battles_won_naked
  *
  * Inputs: none
- * Output: none
+ * Output: uint - battles_won_naked
  */
 uint PersonRecord::getBattlesWonNaked()
 {
@@ -348,10 +494,10 @@ uint PersonRecord::getBattlesWonNaked()
 }
 
 /*
- * Description: Loads the PersonObject with one of the pre-configured presets.
+ * Description: Returns the value of battles_won_empty_handed
  *
  * Inputs: none
- * Output: none
+ * Output: uint - battles_won_empty_handed
  */
 uint PersonRecord::getBattlesWonEmptyHanded()
 {
@@ -359,10 +505,10 @@ uint PersonRecord::getBattlesWonEmptyHanded()
 }
 
 /*
- * Description: Loads the PersonObject with one of the pre-configured presets.
+ * Description: Returns the value of battles_won_mini_boss
  *
  * Inputs: none
- * Output: none
+ * Output: uint - battles_won_mini_boss
  */
 uint PersonRecord::getBattlesWonMiniBoss()
 {
@@ -370,10 +516,10 @@ uint PersonRecord::getBattlesWonMiniBoss()
 }
 
 /*
- * Description: Loads the PersonObject with one of the pre-configured presets.
+ * Description: Returns the value of battles_won_boss
  *
  * Inputs: none
- * Output: none
+ * Output: uint - battles_won_boss
  */
 uint PersonRecord::getBattlesWonBoss()
 {
@@ -381,10 +527,10 @@ uint PersonRecord::getBattlesWonBoss()
 }
 
 /*
- * Description: Loads the PersonObject with one of the pre-configured presets.
+ * Description: Returns the value of battles_won_final_boss
  *
  * Inputs: none
- * Output: none
+ * Output: uint - battles_won_final_boss
  */
 uint PersonRecord::getBattlesWonFinalBoss()
 {
@@ -392,10 +538,10 @@ uint PersonRecord::getBattlesWonFinalBoss()
 }
 
 /*
- * Description: Loads the PersonObject with one of the pre-configured presets.
+ * Description: Returns the value of kills_bear
  *
  * Inputs: none
- * Output: none
+ * Output: uint - kills_bear
  */
 uint PersonRecord::getKillsBear()
 {
@@ -403,10 +549,10 @@ uint PersonRecord::getKillsBear()
 }
 
 /*
- * Description: Loads the PersonObject with one of the pre-configured presets.
+ * Description: Returns the value of kills_human
  *
  * Inputs: none
- * Output: none
+ * Output: uint - kills_human
  */
 uint PersonRecord::getKillsHuman()
 {
@@ -414,10 +560,10 @@ uint PersonRecord::getKillsHuman()
 }
 
 /*
- * Description: Loads the PersonObject with one of the pre-configured presets.
+ * Description: Returns the value of kills_fiend
  *
  * Inputs: none
- * Output: none
+ * Output: uint - kills_fiend
  */
 uint PersonRecord::getKillsFiend()
 {
@@ -425,10 +571,10 @@ uint PersonRecord::getKillsFiend()
 }
 
 /*
- * Description: Loads the PersonObject with one of the pre-configured presets.
+ * Description: Returns the value of grand_score
  *
  * Inputs: none
- * Output: none
+ * Output: uint - grand_score
  */
 uint PersonRecord::getGrandScore()
 {
@@ -436,10 +582,10 @@ uint PersonRecord::getGrandScore()
 }
 
 /*
- * Description: Loads the PersonObject with one of the pre-configured presets.
+ * Description: Returns the value of times_kod
  *
  * Inputs: none
- * Output: none
+ * Output: uint - times_kod
  */
 uint PersonRecord::getTimesKOd()
 {
