@@ -318,6 +318,12 @@ public:
 
   /* Gets the max level constant */
   static uint getMaxLevel();
+
+/*============================================================================
+ * OPERATOR FUNCTIONS
+ *===========================================================================*/
+public:
+  Person& operator= (const Person &source);
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Person::PersonFlags)
 
