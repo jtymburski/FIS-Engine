@@ -1226,3 +1226,21 @@ uint Person::getMaxLevel()
 {
   return kMAX_LEVEL;
 }
+
+/*============================================================================
+ * OPERATOR FUNCTIONS
+ *===========================================================================*/
+
+Person& Person::operator= (const Person &source)
+{
+  /* Check for self assignment */
+  if (this == &source)
+    return *this;
+
+  /* Do the copy */
+  copySelf(source);
+
+  /* Return the copied object */
+  return *this;
+}
+

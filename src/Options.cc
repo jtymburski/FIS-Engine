@@ -50,17 +50,34 @@ Options::~Options()
 
 void Options::copySelf(const Options &source)
 {
-  resolution_x = source.resolution_x;
-  resolution_y = source.resolution_y;
+  /* Battle Options */
+  ailment_update_state = source.ailment_update_state;
+  battle_hud_state = source.ailment_update_state;
+
+  resolution_x  = source.resolution_x;
+  resolution_y  = source.resolution_y;
   vsync_enabled = source.vsync_enabled;
 }
 
 void Options::setAllToDefault()
 {
+  /* Battle Options */
+  setAilmentUpdateState(BEARWALK);
+  setBattleHudState(BEARWALK);
+
   setScreenHeight(0);
   setScreenWidth(0);
   setVsync(false);
+}
 
+void Options::setAilmentUpdateState(BattleDifficulty new_state)
+{
+  ailment_update_state = new_state;
+}
+
+void Options::setBattleHudState(BattleDifficulty new_state)
+{
+  battle_hud_state = new_state;
 }
 
 void Options::setScreenHeight(int index)
@@ -91,6 +108,16 @@ void Options::setVsync(bool enabled)
 //    (void)option; //warning
 //    return 0;
 //}
+
+Options::BattleDifficulty Options::getAilmentUpdateState()
+{
+  return ailment_update_state;
+}
+
+Options::BattleDifficulty Options::getBattleHudState()
+{
+  return battle_hud_state;
+}
 
 short Options::getScreenHeight()
 {

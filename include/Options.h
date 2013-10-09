@@ -23,7 +23,16 @@ public:
   /* Destructor */
   ~Options();
 
+  /* Battle Options */
+  enum BattleDifficulty { BEARWALK,
+                          BEARLY_DIFFICULT,
+                          GRIZZLY };
+
 private:
+
+  BattleDifficulty ailment_update_state;
+  BattleDifficulty battle_hud_state;
+
   /* Resolution of the screen currently being used */
   short resolution_x;
   short resolution_y;
@@ -62,6 +71,10 @@ private:
   /* Sets all parameters to default */
   void setAllToDefault();
 
+  /* Battle Settings */
+  void setAilmentUpdateState(BattleDifficulty new_state);
+  void setBattleHudState(BattleDifficulty new_state);
+
   /* Set the screen dimensions to be painted, based on the array index */
   void setScreenHeight(int index);
   void setScreenWidth(int index);
@@ -75,6 +88,10 @@ private:
 public:
   /* Gets the value of the given option */
   //int getOption(QString s); 
+
+  /* Battle Options */
+  BattleDifficulty getAilmentUpdateState();
+  BattleDifficulty getBattleHudState();
 
   /* Returns the screen dimensions to be painted */
   short getScreenHeight();
