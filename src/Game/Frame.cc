@@ -175,7 +175,7 @@ bool Frame::initializeGl()
     gl_image_set = true;
   }
 
-  return image_set;
+  return gl_image_set;
 }
 
 /* 

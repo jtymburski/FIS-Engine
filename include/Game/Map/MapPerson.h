@@ -44,7 +44,7 @@ private:
 
   /* Set of all states for person. 1st layer is surface (water, ground, etc)
    * and then 2nd layer is direction facing */
-  QList< QList<MapState*> > states;
+  QList< QList<Sprite*> > states;
 
   /* The surface that the person is walking on */
   SurfaceClassifier surface;
@@ -118,20 +118,24 @@ public:
   /* Returns the surface that this person resides on */
   SurfaceClassifier getSurface();
   
+  /* Reimplemented: the GL state initialization for the movement states in this
+                    class. */
+  bool initializeGl();
+  
+  /* Determines if there is an active move request (virtual reimplemented) */
+  bool isMoveRequested();
+  
   /* Key flush/press/release events handled */
   void keyFlush();
   void keyPress(QKeyEvent* event);
   void keyRelease(QKeyEvent* event);
-
-  /* Determines if there is an active move request (virtual reimplemented) */
-  bool isMoveRequested();
   
   /* Sets the animation time for each frame */
   bool setAnimationSpeed(short frame_time);
 
   /* Sets a new state to add into the states list */
   bool setState(SurfaceClassifier surface, EnumDb::Direction direction, 
-                                           MapState* state);
+                                           Sprite* frames);
 
   /* Sets the surface that the person travels on */
   void setSurface(SurfaceClassifier surface);

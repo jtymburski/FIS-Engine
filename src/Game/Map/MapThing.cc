@@ -14,8 +14,9 @@
 /* Constant Implementation - see header file for descriptions */
 const short MapThing::kDEFAULT_ANIMATION = 250;
 const short MapThing::kDEFAULT_SPEED = 150;
+const float MapThing::kMAX_OPACITY = 1.0;
 const short MapThing::kMINIMUM_ID =  0;
-const short MapThing::kUNSET_ID   = -1;
+const short MapThing::kUNSET_ID = -1;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -29,32 +30,32 @@ const short MapThing::kUNSET_ID   = -1;
  */
 MapThing::MapThing()
 {
-  state = 0;
+  frames = 0;
   MapThing::clear();
 }
 
 /* 
  * Description: Constructor for this class. Takes data to create the thing.
  *
- * Inputs: MapState* state - the state data to encapsalate by the thing
+ * Inputs: Sprite* frames - the frame data to encapsalate by the thing
  *         int width - the tile width of the thing
  *         int height - the tile height of the thing
  *         QString name - the name of the thing, default to ""
  *         QString description - the description of the thing, default to ""
  *         int id - the ID of the thing, default to -1
  */
-MapThing::MapThing(MapState* state, int width, int height, 
+MapThing::MapThing(Sprite* frames, int width, int height, 
                    QString name, QString description, int id)
 {
-  this->state = 0;
+  this->frames = 0;
   MapThing::clear();
   
   /* The class definitions */
   setDescription(description);
+  setFrames(frames);
   setHeight(height);
   setID(id);
   setName(name);
-  setState(state);
   setWidth(width);
 }
 
@@ -87,19 +88,19 @@ bool MapThing::animate(short cycle_time, bool reset, bool skip_head)
   bool status = true;
   
   /* Check if an animation can occur */
-  if(state != 0 && state->getSprite() != 0)
+  if(frames != 0)
   {
     /* Increment the animation time */
     animation_buffer += cycle_time;
     
     if((reset && !skip_head) || animation_time == 0)
     {
-      status = state->getSprite()->setAtFirst();
+      status = frames->setAtFirst();
       animation_buffer = 0;
     }
     else if((reset && skip_head) || animation_buffer >= animation_time)
     {
-      status = state->getSprite()->shiftNext(skip_head);
+      status = frames->shiftNext(skip_head);
       if(reset)
         animation_buffer = 0;
       else
@@ -125,7 +126,6 @@ bool MapThing::isAlmostOnTile(float cycle_time)
   {
     float x_diff = tile_main->getPixelX();
     float y_diff = tile_main->getPixelY();
-    //qDebug() << "IsAlmost calc: " << x_diff << " " << y_diff << " : " << x << " " << y;
 
     /* X differential calculations to ensure positive number */
     if(x_diff > x)
@@ -138,12 +138,7 @@ bool MapThing::isAlmostOnTile(float cycle_time)
       y_diff = y_diff - y;
     else
       y_diff = y - y_diff;
-   
-    //qDebug() << "Difference: " << x_diff << " " << y_diff;
 
-    //float tile_diff = sqrt(x_diff*x_diff + y_diff*y_diff);
-    //return (moveAmount(cycle_time) > tile_diff);
-    
     return (moveAmount(cycle_time) > (x_diff + y_diff));
   }
   
@@ -309,6 +304,7 @@ void MapThing::clear()
   setID(kUNSET_ID);
   setMovementPaused(false);
   setName("");
+  setOpacity(kMAX_OPACITY);
   setSpeed(kDEFAULT_SPEED);
   target = 0;
   
@@ -317,7 +313,7 @@ void MapThing::clear()
   x = 0.0;
   y = 0.0;
 
-  unsetState();
+  unsetFrames();
 }
 
 /*
@@ -383,6 +379,18 @@ QString MapThing::getDescription()
 Frame* MapThing::getDialogImage()
 {
   return &dialog_image;
+}
+
+/* 
+ * Description: Gets the frames data of the thing. If frames isn't set, returns
+ *              0.
+ *
+ * Inputs: none
+ * Output: Sprite* - the pointer to the data for the thing, as a Sprite
+ */
+Sprite* MapThing::getFrames()
+{
+  return frames;
 }
 
 /* 
@@ -468,6 +476,18 @@ QString MapThing::getName()
   return name;
 }
 
+/*
+ * Description: Returns the opacity of the thing. This is the value that will
+ *              change how the thing is rendered on the map.
+ *
+ * Inputs: none
+ * Output: float - the float rating of opacity (0 - 1.0)
+ */
+float MapThing::getOpacity()
+{
+  return opacity;
+}
+
 /* 
  * Description: Returns the speed that the thing is moving in. Default is 150.
  * 
@@ -477,18 +497,6 @@ QString MapThing::getName()
 short MapThing::getSpeed()
 {
   return speed;
-}
-
-/* 
- * Description: Gets the state data of the thing. If state isn't set, returns
- *              0.
- *
- * Inputs: none
- * Output: MapState* - the pointer to the data for the thing, as a MapState
- */
-MapState* MapThing::getState()
-{
-  return state;
 }
 
 /*
@@ -549,7 +557,17 @@ float MapThing::getY()
   return y;
 }
 
-/* 
+bool MapThing::initializeGl()
+{
+  bool success = true;
+  
+  if(frames != 0)
+    success &= frames->initializeGl();
+    
+  return success;
+}
+
+/* TODO: make this the generic call for interaction
  * Description: Starts interaction. In map thing, this isn't of use and is
  *              only used by its children classes.
  *
@@ -596,6 +614,18 @@ bool MapThing::isOnTile()
   return (((int)x % getWidth() == 0) && ((int)y % getHeight() == 0));
 }
 
+/*
+ * Description: Returns if the thing is passable and can be walked through.
+ *              Pertinent to movement on the map.
+ *
+ * Inputs: none
+ * Output: bool - true if the thing can be walked onto
+ */
+bool MapThing::isPassable()
+{
+  return false;
+}
+
 /* 
  * Description: The paint function for the thing. This takes the active state
  *              and paints it based on location and offset (from paint engine)
@@ -603,15 +633,13 @@ bool MapThing::isOnTile()
  * 
  * Inputs: float offset_x - the paint offset in the x direction
  *         float offset_y - the paint offset in the y direction
- *         float opacity - the opacity of the thing [0.0-1.0]
  * Output: bool - if the paint event occurred
  */
-bool MapThing::paintGl(float offset_x, float offset_y, float opacity)
+bool MapThing::paintGl(float offset_x, float offset_y)
 {
-  if(state != 0 && state->getSprite() != 0 && tile_main != 0)
+  if(frames != 0 && tile_main != 0)
   {
-    state->getSprite()->paintGl(x - offset_x, y - offset_y, 
-                                width, height, opacity);
+    frames->paintGl(x - offset_x, y - offset_y, width, height, opacity);
     return true;
   }
   return false;
@@ -677,6 +705,27 @@ bool MapThing::setDialogImage(QString path)
 }
 
 /*
+ * Description: Sets the frames that defines the thing.
+ *
+ * Inputs: Sprite* frames - the new frames to define to insert into the Map
+ *           Thing. Must actually have a sprite set in order to work.
+ *         bool unset_old - delete the old frames from memory?
+ * Output: bool - returns if the thing frames were set successfully
+ */
+bool MapThing::setFrames(Sprite* frames, bool unset_old)
+{
+  /* Check if the frames are valid */
+  if(frames != 0)
+  {
+    unsetFrames(unset_old);
+    this->frames = frames;
+    return true;
+  }
+
+  return false;
+}
+
+/*
  * Description: Sets the new tile height for the thing. This number must
  *              be greater than 0 and if it's not, the call will fail.
  *
@@ -738,6 +787,24 @@ void MapThing::setName(QString new_name)
   name = new_name;
 }
 
+/*
+ * Description: Sets the opacity that the thing is painted as. This will be a
+ *              rated value between 0 and 1.0, where 0 is invisible and 1.0 is
+ *              fully visible.
+ *
+ * Inputs: float opacity - the object rated opacity (0 - 1.0)
+ * Output: none
+ */
+void MapThing::setOpacity(float opacity)
+{
+  if(opacity < 0)
+    this->opacity = 0;
+  else if(opacity > kMAX_OPACITY)
+    this->opacity = kMAX_OPACITY;
+  else
+    this->opacity = opacity;
+}
+ 
 /* 
  * Description: Sets the speed of the thing that it is moving in. Default is
  *              150 and gets set if the speed is invalid (less than 0).
@@ -798,27 +865,6 @@ bool MapThing::setStartingTile(int section_id, Tile* new_tile, bool no_events)
   return false;
 }
 
-/*
- * Description: Sets the state data that defines the thing.
- *
- * Inputs: MapState* state - the new state to define to insert into the Map
- *           Thing. Must actually have a sprite set in order to work.
- *         bool unset_old - delete the old state from memory?
- * Output: bool - returns if the thing state was set successfuly
- */
-bool MapThing::setState(MapState* state, bool unset_old)
-{
-  /* Check if the state is valid */
-  if(state != 0 && state->getSprite() != 0)
-  {
-    unsetState(unset_old);
-    this->state = state;
-    return true;
-  }
-
-  return false;
-}
-
 /* 
  * Description: Sets the target for this map thing. This is only permitted if
  *              the class is currently not targetting anything. However, if the
@@ -863,7 +909,7 @@ bool MapThing::setWidth(int new_width)
 }
 
 /*
- * Description: Updates the state of the thing. This can include animation
+ * Description: Updates the frames of the thing. This can include animation
  *              sequencing or movement and such. Called on the tick.
  *
  * Inputs: none
@@ -884,14 +930,14 @@ void MapThing::updateThing(float cycle_time, Tile* next_tile)
 }
 
 /*
- * Description: Unsets the state that's embedded in this as the Map Thing
+ * Description: Unsets the frames that are embedded in this as the Map Thing
  *
- * Inputs: bool delete_state - should the old state be deleted?
+ * Inputs: bool delete_state - should the old frames be deleted?
  * Output: none 
  */
-void MapThing::unsetState(bool delete_state)
+void MapThing::unsetFrames(bool delete_frames)
 {
-  if(delete_state)
-    delete state;
-  state = 0;
+  if(delete_frames)
+    delete frames;
+  frames = 0;
 }

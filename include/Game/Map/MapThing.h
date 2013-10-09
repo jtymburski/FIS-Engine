@@ -19,8 +19,8 @@ class MapPerson;
 //#include <QObject>
 
 #include "EnumDb.h"
-#include "Game/Map/MapState.h"
 #include "Game/Map/Tile.h"
+#include "Game/Sprite.h"
 
 class MapThing// : public QObject
 {
@@ -29,7 +29,7 @@ class MapThing// : public QObject
 public:
   /* Constructor functions */
   MapThing();
-  MapThing(MapState* state, int width, int height, QString name = "", 
+  MapThing(Sprite* frames, int width, int height, QString name = "", 
            QString description = "", int id = kUNSET_ID);
 
   /* Destructor function */
@@ -41,6 +41,8 @@ protected:
   short height;
   int id;
   QString name;
+  float opacity;
+  bool passable;
   Tile* tile_main;
   Tile* tile_previous;
   short tile_section;
@@ -51,8 +53,8 @@ protected:
   /* The target for this thing. If set, it cannot be targetted by others */
   MapThing* target;
   
-  /* The main state */
-  MapState* state;
+  /* The main sprite frame data */
+  Sprite* frames;
 
   /* Conversation information */
   Conversation conversation_info;
@@ -69,9 +71,10 @@ protected:
 
   /* -------------------------- Constants ------------------------- */
   const static short kDEFAULT_ANIMATION; /* The default animation speed */
-  const static short kDEFAULT_SPEED;     /* The default thing speed */
-  const static short kMINIMUM_ID;        /* The minimum ID, for a thing */
-  const static short kUNSET_ID;          /* The placeholder unset ID */
+  const static short kDEFAULT_SPEED; /* The default thing speed */
+  const static float kMAX_OPACITY; /* The max opacity allowable (0-1.0) */
+  const static short kMINIMUM_ID; /* The minimum ID, for a thing */
+  const static short kUNSET_ID; /* The placeholder unset ID */
 
 /*============================================================================
  * PROTECTED FUNCTIONS
@@ -127,7 +130,10 @@ public:
 
   /* Returns the dialog image data, so that it may be painted */
   Frame* getDialogImage();
-
+  
+  /* Returns the map frames that's defined */
+  Sprite* getFrames();
+  
   /* Returns the height of the thing */
   int getHeight();
 
@@ -145,11 +151,11 @@ public:
   /* Gets the things name */
   QString getName();
 
+  /* Returns the opacity of the painted thing. */
+  float getOpacity();
+  
   /* Returns the speed that the thing is moving at */
   short getSpeed();
-  
-  /* Returns the map state that's defined */
-  MapState* getState();
   
   /* Returns the target that this thing is pointed at */
   MapThing* getTarget();
@@ -164,6 +170,9 @@ public:
   float getX();
   float getY();
 
+  /* Initializes the GL context with the frames / states stored internally */
+  virtual bool initializeGl();
+  
   /* Starts interaction (conversation, giving something, etc) */
   virtual bool interaction(MapPerson* person);
   
@@ -176,8 +185,11 @@ public:
   /* Is the thing centered on a tile */
   bool isOnTile();
 
+  /* Is the thing passable - can you walk in it? */
+  virtual bool isPassable();
+  
   /* Paint call, that paints the main state of the thing */
-  bool paintGl(float offset_x = 0.0, float offset_y = 0.0, float opacity = 1.0);
+  bool paintGl(float offset_x = 0.0, float offset_y = 0.0);
 
   /* Sets the animation time for each frame */
   virtual bool setAnimationSpeed(short frame_time);
@@ -190,7 +202,10 @@ public:
 
   /* Sets the dialog image data, for display during conversation */
   bool setDialogImage(QString path);
-
+  
+  /* Sets the state of the thing */
+  bool setFrames(Sprite* frames, bool unset_old = true);
+  
   /* Sets the things height classification */
   bool setHeight(int new_height);
 
@@ -203,14 +218,14 @@ public:
   /* Sets the things name */
   void setName(QString new_name);
 
+  /* Sets the opacity of the painted state (0 - 1.0) */
+  void setOpacity(float opacity);
+
   /* Sets the things speed */
   bool setSpeed(short speed);
     
   /* Set the tile to hook the map thing to */
   bool setStartingTile(int section_id, Tile* new_tile, bool no_events = false);
-  
-  /* Sets the state of the thing */
-  bool setState(MapState* state, bool unset_old = true);
 
   /* Sets the target map thing, fails if there is already a target */
   bool setTarget(MapThing* target);
@@ -221,8 +236,8 @@ public:
   /* Updates the thing, called on the tick */
   virtual void updateThing(float cycle_time, Tile* next_tile);
   
-  /* Unsets the state, in the class */
-  void unsetState(bool delete_state = true);
+  /* Unsets the thing frames, in the class */
+  void unsetFrames(bool delete_frames = true);
 };
 
 #endif // MAPTHING_H

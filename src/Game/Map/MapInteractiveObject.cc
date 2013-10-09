@@ -99,7 +99,7 @@ void MapInteractiveObject::interact()
     if(new_state != STATE_A)
     {
       current_state = new_state;
-      MapThing::setState(states[current_state], false);
+      //MapThing::setState(states[current_state], false);
       states[current_state]->getSprite()->setDirectionForward();
       states[current_state]->getSprite()->setAtFirst();
     }
@@ -110,7 +110,7 @@ void MapInteractiveObject::interact()
     if(states[A_TO_B] != 0)
     {
       current_state = B_TO_A;
-      MapThing::setState(states[A_TO_B], false);
+      //MapThing::setState(states[A_TO_B], false);
       states[A_TO_B]->getSprite()->setDirectionReverse();
       states[A_TO_B]->getSprite()->setAtFirst();
       states[A_TO_B]->getSprite()->shiftNext();
@@ -119,7 +119,7 @@ void MapInteractiveObject::interact()
     else if(states[STATE_A] != 0)
     {
       current_state = STATE_A;
-      MapThing::setState(states[current_state], false);
+      //MapThing::setState(states[current_state], false);
       states[current_state]->getSprite()->setDirectionForward();
       states[current_state]->getSprite()->setAtFirst();
     }
@@ -129,9 +129,9 @@ void MapInteractiveObject::interact()
 /* Reset back to state A */
 void MapInteractiveObject::reset()
 {
-  MapThing::unsetState(false);
+  //MapThing::unsetState(false);
   current_state = STATE_A;
-  MapThing::setState(states[current_state], false);
+  //MapThing::setState(states[current_state], false);
   
   if(states[current_state] != 0)
     states[current_state]->getSprite()->setAtFirst();
@@ -195,7 +195,7 @@ void MapInteractiveObject::updateThing(float cycle_time, Tile* next_tile)
   /* If the state has been changed, update the appropriate sprites */
   if(changed)
   {
-    MapThing::setState(states[current_state], false);
+    //MapThing::setState(states[current_state], false);
     if(states[current_state] != 0)
       states[current_state]->getSprite()->setAtFirst();
   }

@@ -98,7 +98,7 @@ void MapPerson::initializeStates()
 
   for(int i = 0; i < kTOTAL_SURFACES; i++)
   {
-    QList<MapState*> row;
+    QList<Sprite*> row;
 
     for(int j = 0; j < kTOTAL_DIRECTIONS; j++)
       row.append(0);
@@ -200,7 +200,7 @@ bool MapPerson::setDirection(EnumDb::Direction direction, bool set_movement)
   if(direction != EnumDb::DIRECTIONLESS)
   {
     if(changed && states[surface][dirToInt(direction)] != 0)
-      MapThing::setState(states[surface][dirToInt(direction)], false);
+      MapThing::setFrames(states[surface][dirToInt(direction)], false);
 
     /* Finally set the in class direction */
     this->direction = direction;
@@ -228,10 +228,8 @@ void MapPerson::updateAnimation()
      states[surface][dirToInt(direction)] != 0 && 
      states[surface][dirToInt(EnumDb::NORTH)] != 0)
   {
-    int e_w_count = 
-              states[surface][dirToInt(direction)]->getSprite()->getSize();
-    int n_s_count = 
-              states[surface][dirToInt(EnumDb::NORTH)]->getSprite()->getSize();
+    int e_w_count = states[surface][dirToInt(direction)]->getSize();
+    int n_s_count = states[surface][dirToInt(EnumDb::NORTH)]->getSize();
     MapThing::setAnimationSpeed(n_s_count * 1.0 * 
                                 animation_vertical / e_w_count);
   }
@@ -343,6 +341,49 @@ MapPerson::SurfaceClassifier MapPerson::getSurface()
   return surface;
 }
 
+bool MapPerson::initializeGl()
+{
+  bool success = true;
+  Sprite* state = 0;
+  
+  for(int i = 0; i < kTOTAL_SURFACES; i++)
+  {
+    /* Check the NORTH moving state */
+    state = states[(SurfaceClassifier)i][dirToInt(EnumDb::NORTH)];
+    if(state != 0)
+      state->initializeGl();
+      
+    /* Check the EAST moving state */
+    state = states[(SurfaceClassifier)i][dirToInt(EnumDb::EAST)];
+    if(state != 0)
+      state->initializeGl();
+    
+    /* Check the SOUTH moving state */
+    state = states[(SurfaceClassifier)i][dirToInt(EnumDb::SOUTH)];
+    if(state != 0)
+      state->initializeGl();
+      
+    /* Check the WEST moving state */
+    state = states[(SurfaceClassifier)i][dirToInt(EnumDb::WEST)];
+    if(state != 0)
+      state->initializeGl();
+  }
+  
+  return success;
+}
+
+/* 
+ * Description: Reimplemented is move request call from map thing. This 
+ *              utilizes the key press stack to get movement options.
+ * 
+ * Inputs: none
+ * Output: bool - returns if a move is requested.
+ */
+bool MapPerson::isMoveRequested()
+{
+  return !movement_stack.isEmpty();
+}
+
 void MapPerson::keyFlush()
 {
   movement_stack.clear();
@@ -386,18 +427,6 @@ void MapPerson::keyRelease(QKeyEvent* event)
     removeDirection(EnumDb::WEST);
 }
 
-/* 
- * Description: Reimplemented is move request call from map thing. This 
- *              utilizes the key press stack to get movement options.
- * 
- * Inputs: none
- * Output: bool - returns if a move is requested.
- */
-bool MapPerson::isMoveRequested()
-{
-  return !movement_stack.isEmpty();
-}
-
 /* Sets the animation time for each frame */
 bool MapPerson::setAnimationSpeed(short frame_time)
 {
@@ -419,25 +448,28 @@ bool MapPerson::setAnimationSpeed(short frame_time)
  * 
  * Inputs: SurfaceClassifier surface - the surface classifier for the state
  *         EnumDb::Direction direction - the direction for the state
+ *         Sprite* frames - the frame data to set the state at
  * Output: bool - if the call was successful
  */
 bool MapPerson::setState(SurfaceClassifier surface, 
-                         EnumDb::Direction direction, MapState* state)
+                         EnumDb::Direction direction, Sprite* frames)
 {
   /* Only proceed with insertion if the sprite and state data is valid */
-  if(state != 0 && state->getSprite() != 0)
+  if(frames != 0 && frames->getSize() > 0)
   {
     unsetState(surface, direction);
-    states[surface][dirToInt(direction)] = state;
-
+    states[surface][dirToInt(direction)] = frames;
+    
     /* If the updated state is the active one, automatically set the printable
      * sprite */
     if(this->surface == surface && this->direction == direction)
     {
-      MapThing::setState(states[surface][dirToInt(direction)], false);
+      MapThing::setFrames(states[surface][dirToInt(direction)], false);
       updateAnimation();
     }
 
+    //states[surface][dirToInt(direction)]->initializeGl();
+    
     return true;
   }
 
@@ -456,7 +488,7 @@ void MapPerson::setSurface(SurfaceClassifier surface)
   this->surface = surface;
 
   if(states[surface][dirToInt(direction)] != 0)
-    MapThing::setState(states[surface][dirToInt(direction)], false);
+    MapThing::setFrames(states[surface][dirToInt(direction)], false);
 }
 
 /*
@@ -556,5 +588,5 @@ void MapPerson::unsetState(SurfaceClassifier surface,
 
   /* Clear out the parent call if the direction or surface lines up */
   if(this->surface == surface && this->direction == direction)
-    MapThing::unsetState(false);
+    MapThing::unsetFrames(false);
 }

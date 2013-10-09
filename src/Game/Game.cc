@@ -14,6 +14,8 @@
 *     just change the player and foes when it switches. This is primarily
 *     for dealing with the stacked widget.
 *  3. Add victory screen logic
+*  4. Add speed up button to allow the game to accelerate movement and
+*     everything else. Do it by multiplying the time elapsed.
 ******************************************************************************/
 #include "Game/Game.h"
 

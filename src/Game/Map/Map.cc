@@ -486,6 +486,10 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     ((MapNPC*)persons[2])->setNodeState(MapNPC::BACKANDFORTH);
   else if(persons.size() >= 3 && key_event->key() == Qt::Key_9)
     ((MapNPC*)persons[2])->setNodeState(MapNPC::LOCKED);
+  else if(key_event->key() == Qt::Key_F4)
+    player->setSpeed(player->getSpeed() - 1);
+  else if(key_event->key() == Qt::Key_F5)
+    player->setSpeed(player->getSpeed() + 1);
   else if(key_event->key() == Qt::Key_0)
   {
     Conversation convo;
@@ -868,14 +872,10 @@ bool Map::loadMap(QString file)
     MapPerson* person = new MapPerson(kTILE_WIDTH, kTILE_HEIGHT);
     person->setStartingTile(0, geography[0][8][8]); // 11, 9
 
-    person->setState(MapPerson::GROUND, EnumDb::NORTH, 
-                                        new MapState(up_sprite));
-    person->setState(MapPerson::GROUND, EnumDb::SOUTH, 
-                                        new MapState(down_sprite));
-    person->setState(MapPerson::GROUND, EnumDb::EAST, 
-                                        new MapState(right_sprite));
-    person->setState(MapPerson::GROUND, EnumDb::WEST, 
-                                        new MapState(left_sprite));
+    person->setState(MapPerson::GROUND, EnumDb::NORTH, up_sprite);
+    person->setState(MapPerson::GROUND, EnumDb::SOUTH, down_sprite);
+    person->setState(MapPerson::GROUND, EnumDb::EAST, right_sprite);
+    person->setState(MapPerson::GROUND, EnumDb::WEST, left_sprite);
     person->setDialogImage("sprites/Map/Dialog/player.png");
     person->setID(1);
     person->setName("REally LOng NAme");
@@ -889,17 +889,14 @@ bool Map::loadMap(QString file)
     right_sprite = new Sprite("sprites/Map/Map_Things/aurora_AA_S", 5, ".png");
     person = new MapPerson(kTILE_WIDTH, kTILE_HEIGHT);
     person->setStartingTile(1, geography[1][2][4]);
-    person->setState(MapPerson::GROUND, EnumDb::NORTH, 
-                                        new MapState(up_sprite));
-    person->setState(MapPerson::GROUND, EnumDb::SOUTH, 
-                                        new MapState(down_sprite));
-    person->setState(MapPerson::GROUND, EnumDb::EAST, 
-                                        new MapState(right_sprite));
-    person->setState(MapPerson::GROUND, EnumDb::WEST, 
-                                        new MapState(left_sprite));
+    person->setState(MapPerson::GROUND, EnumDb::NORTH, up_sprite);
+    person->setState(MapPerson::GROUND, EnumDb::SOUTH, down_sprite);
+    person->setState(MapPerson::GROUND, EnumDb::EAST, right_sprite);
+    person->setState(MapPerson::GROUND, EnumDb::WEST, left_sprite);
     person->setDialogImage("sprites/Map/Dialog/el_oroso.png");
     person->setID(24);
     person->setName("El Oroso");
+    person->setOpacity(0.5);
     Conversation person_convo;
     person_convo.category = EnumDb::TEXT;
     person_convo.action_event = 
@@ -915,10 +912,10 @@ bool Map::loadMap(QString file)
     left_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_R",5,".png");
     right_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_L",5,".png");
     MapNPC* npc = new MapNPC(kTILE_WIDTH, kTILE_HEIGHT);
-    npc->setState(MapPerson::GROUND, EnumDb::NORTH, new MapState(up_sprite));
-    npc->setState(MapPerson::GROUND, EnumDb::SOUTH, new MapState(down_sprite));
-    npc->setState(MapPerson::GROUND, EnumDb::EAST, new MapState(right_sprite));
-    npc->setState(MapPerson::GROUND, EnumDb::WEST, new MapState(left_sprite));
+    npc->setState(MapPerson::GROUND, EnumDb::NORTH, up_sprite);
+    npc->setState(MapPerson::GROUND, EnumDb::SOUTH, down_sprite);
+    npc->setState(MapPerson::GROUND, EnumDb::EAST, right_sprite);
+    npc->setState(MapPerson::GROUND, EnumDb::WEST, left_sprite);
     npc->insertNodeAtTail(geography[map_index][10][10], 750);
     //npc->insertNodeAtTail(geography[map_index][5][10], 250);
     //npc->insertNodeAtTail(geography[map_index][0][10], 500);
@@ -956,8 +953,11 @@ bool Map::loadMap(QString file)
     persons.append(npc);
 
     /* Make the map thing */
-    //thing = new MapThing(new MapState(up_sprite), kTILE_WIDTH, kTILE_HEIGHT);
-    //thing->setStartingTile(geography[2][2]);
+    //thing = new MapThing(new Sprite("sprites/Map/Map_Things/main_AA_D00.png"),
+    //                     kTILE_WIDTH, kTILE_HEIGHT);
+    //thing->setStartingTile(0, geography[0][2][2]);
+    //thing->initializeGl();
+    //persons.append(thing);
   }
 
   success &= fh.stop();
@@ -978,11 +978,14 @@ bool Map::loadMap(QString file)
       if(player != 0)
         viewport->lockOn(player);
     }
-
+    
     for(int i = 0; i < geography.size(); i++)
       for(int j = 0; j < geography[i].size(); j++)
         for(int k = 0; k < geography[i][j].size(); k++) 
           geography[i][j][k]->initializeGl();
+    
+    for(int i = 0; i < persons.size(); i++)
+      persons[i]->initializeGl();
   }
   loaded = success;
 
