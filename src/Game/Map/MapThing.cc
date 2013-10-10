@@ -30,6 +30,7 @@ const short MapThing::kUNSET_ID = -1;
  */
 MapThing::MapThing()
 {
+  event_handler = 0;
   frames = 0;
   MapThing::clear();
 }
@@ -299,6 +300,7 @@ void MapThing::clear()
   tile_section = -1; /* Unset value */
   
   /* Resets the class parameters */
+  event_handler = 0;
   setAnimationSpeed(kDEFAULT_ANIMATION);
   setDescription("");
   setID(kUNSET_ID);
@@ -702,6 +704,20 @@ bool MapThing::setDialogImage(QString path)
     dialog_image.initializeGl();
 
   return success;
+}
+
+/*
+ * Description: Sets the event handler to create and manage all existing events
+ *              that get fired throughout interaction with the class. This is 
+ *              necessary to ensure that any events work.
+ *
+ * Inputs: EventHandler* event_handler - the new handler pointer (must not be 0)
+ * Output: none
+ */
+void MapThing::setEventHandler(EventHandler* event_handler)
+{
+  if(event_handler != 0)
+    this->event_handler = event_handler;
 }
 
 /*

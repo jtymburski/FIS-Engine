@@ -219,7 +219,7 @@ void Game::setupMap()
     gl_format.setSwapInterval(1);
   else
     gl_format.setSwapInterval(0);
-  game_map = new Map(gl_format, game_config, event_handler.createBlankEvent());
+  game_map = new Map(gl_format, game_config, &event_handler);
 
   /* Load the map - temporary location */
   game_map->loadMap("maps/test_04");

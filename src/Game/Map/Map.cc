@@ -44,7 +44,7 @@ const int Map::kTILE_WIDTH = 64;
 
 /* Constructor function */
 Map::Map(const QGLFormat & format, Options running_config, 
-         EventHandler::Event blank_event) : QGLWidget(format)
+         EventHandler* event_handler) : QGLWidget(format)
 {
   /* Set some initial class flags */
   //setAttribute(Qt::WA_PaintOnScreen);
@@ -86,7 +86,7 @@ Map::Map(const QGLFormat & format, Options running_config,
                              kTILE_WIDTH, kTILE_HEIGHT);
 
   /* Initialize the event handler, for map creation */
-  this->blank_event = blank_event;
+  this->event_handler = event_handler;
 
   /* Call the initial update to start OpenGL */
   updateGL();
@@ -234,7 +234,7 @@ bool Map::initiateMapSection(int section_index, int width, int height)
       
       for(int j = 0; j < height; j++)
       {
-        Tile* t = new Tile(blank_event, kTILE_WIDTH, kTILE_HEIGHT, i, j);
+        Tile* t = new Tile(event_handler, kTILE_WIDTH, kTILE_HEIGHT, i, j);
         col.append(t);
       }
       
@@ -492,6 +492,8 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     player->setSpeed(player->getSpeed() + 1);
   else if(key_event->key() == Qt::Key_0)
   {
+    EventHandler::Event blank_event = event_handler->createBlankEvent();
+    
     Conversation convo;
     convo.category = EnumDb::TEXT;
     convo.action_event = blank_event;
@@ -852,13 +854,16 @@ bool Map::loadMap(QString file)
     } while(!done && success);
     
     /* Add teleport to door - temporary */
-    geography[1][3][6]->setEnterEvent(
-          ((EventHandler*)blank_event.handler)->createTeleportEvent(12, 9, 0));
-    geography[0][0][0]->setExitEvent(
-          ((EventHandler*)blank_event.handler)->createStartBattleEvent());
-    geography[0][12][8]->setEnterEvent(
-          ((EventHandler*)blank_event.handler)->createTeleportEvent(3, 5, 1));
-
+    if(event_handler != 0)
+    {
+      geography[1][3][6]->setEnterEvent(
+            event_handler->createTeleportEvent(12, 9, 0));
+      geography[0][0][0]->setExitEvent(
+            event_handler->createStartBattleEvent());
+      geography[0][12][8]->setEnterEvent(
+            event_handler->createTeleportEvent(3, 5, 1));
+    }
+    
     /* Add the player information */
     Sprite* up_sprite = new Sprite("sprites/Map/Map_Things/main_AA_D", 
                                    3, ".png");
@@ -871,7 +876,7 @@ bool Map::loadMap(QString file)
                                       5, ".png");
     MapPerson* person = new MapPerson(kTILE_WIDTH, kTILE_HEIGHT);
     person->setStartingTile(0, geography[0][8][8]); // 11, 9
-
+    person->setEventHandler(event_handler);
     person->setState(MapPerson::GROUND, EnumDb::NORTH, up_sprite);
     person->setState(MapPerson::GROUND, EnumDb::SOUTH, down_sprite);
     person->setState(MapPerson::GROUND, EnumDb::EAST, right_sprite);
@@ -889,6 +894,7 @@ bool Map::loadMap(QString file)
     right_sprite = new Sprite("sprites/Map/Map_Things/aurora_AA_S", 5, ".png");
     person = new MapPerson(kTILE_WIDTH, kTILE_HEIGHT);
     person->setStartingTile(1, geography[1][2][4]);
+    person->setEventHandler(event_handler);
     person->setState(MapPerson::GROUND, EnumDb::NORTH, up_sprite);
     person->setState(MapPerson::GROUND, EnumDb::SOUTH, down_sprite);
     person->setState(MapPerson::GROUND, EnumDb::EAST, right_sprite);
@@ -899,8 +905,7 @@ bool Map::loadMap(QString file)
     person->setOpacity(0.5);
     Conversation person_convo;
     person_convo.category = EnumDb::TEXT;
-    person_convo.action_event = 
-          ((EventHandler*)blank_event.handler)->createTeleportEvent(30, 30, 0);
+    person_convo.action_event = event_handler->createTeleportEvent(30, 30, 0);
     person_convo.text = "I don't have anything to say to you!!";
     person_convo.thing_id = 24;
     person->setConversation(person_convo);
@@ -923,30 +928,29 @@ bool Map::loadMap(QString file)
     npc->insertNodeAtTail(geography[map_index][5][1], 250);
     //npc->insertNodeAtTail(geography[map_index][10][0], 50);
     npc->setStartingTile(0, geography[0][12][12]);
+    npc->setEventHandler(event_handler);
     npc->setDialogImage("sprites/Map/Dialog/arcadius.png");
     npc->setID(3);
     npc->setName("Arcadius");
     npc->setNodeState(MapNPC::BACKANDFORTH);
     npc->setSpeed(200);
-    person_convo.action_event = blank_event;
+    person_convo.action_event = event_handler->createBlankEvent();
     person_convo.text = "I don't like to be stopped. Why must you insist to stop progress. ";
     person_convo.text += "On second thought, I really don't like you and want to destroy you.";
     person_convo.thing_id = 3;
     Conversation second_set;
     second_set.category = EnumDb::TEXT;
-    second_set.action_event = blank_event;
+    second_set.action_event = event_handler->createBlankEvent();
     second_set.text = "Here are your options:";
     second_set.thing_id = 3;
     Conversation option;
     option.category = EnumDb::TEXT;
     option.text = "Be teleported to an unknown place";
     option.thing_id = 3;
-    option.action_event = 
-            ((EventHandler*)blank_event.handler)->createTeleportEvent(3, 2, 1);
+    option.action_event = event_handler->createTeleportEvent(3, 2, 1);
     second_set.next.append(option);
     option.text = "Be slaughtered by my hand";
-    option.action_event = 
-            ((EventHandler*)blank_event.handler)->createStartBattleEvent();
+    option.action_event = event_handler->createStartBattleEvent();
     second_set.next.append(option);
     person_convo.next.append(second_set);
     npc->setConversation(person_convo);

@@ -26,7 +26,7 @@ class Tile
 public:
   /* Constructor functions */
   Tile();
-  Tile(EventHandler::Event blank_event, int width, int height, 
+  Tile(EventHandler* event_handler, int width, int height, 
        int x = 0, int y = 0);
 
   /* Destructor function */
@@ -58,7 +58,8 @@ private:
   /* The enhancer information */
   Sprite* enhancer;
 
-  /* Events for entering and exiting the tile */
+  /* Events for entering and exiting the tile and the handler */
+  EventHandler* event_handler;
   EventHandler::Event enter_event;
   EventHandler::Event exit_event;
   
@@ -91,7 +92,7 @@ public:
 
   /* Clears out data from the class */
   void clear(bool just_sprites = false);
-  void clearEvents(EventHandler::Event blank_event);
+  bool clearEvents();
   
   /* Gets the base layer and passability */
   Sprite* getBase();
@@ -177,6 +178,9 @@ public:
 
   /* Set the enter event, for the tile */
   void setEnterEvent(EventHandler::Event enter_event);
+  
+  /* Sets the event handler - this call also clears out all existing events */
+  void setEventHandler(EventHandler* event_handler);
   
   /* Set the exit event, for the tile */
   void setExitEvent(EventHandler::Event exit_event);

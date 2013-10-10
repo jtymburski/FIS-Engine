@@ -19,6 +19,7 @@ class MapPerson;
 //#include <QObject>
 
 #include "EnumDb.h"
+#include "Game/EventHandler.h"
 #include "Game/Map/Tile.h"
 #include "Game/Sprite.h"
 
@@ -65,6 +66,9 @@ protected:
   EnumDb::Direction movement;
   bool movement_paused;
   short speed;
+  
+  /* The event handler information */
+  EventHandler* event_handler;
   
   /* Painting information */
   Frame dialog_image;
@@ -202,6 +206,9 @@ public:
 
   /* Sets the dialog image data, for display during conversation */
   bool setDialogImage(QString path);
+    
+  /* Sets the event handler */
+  void setEventHandler(EventHandler* event_handler);
   
   /* Sets the state of the thing */
   bool setFrames(Sprite* frames, bool unset_old = true);

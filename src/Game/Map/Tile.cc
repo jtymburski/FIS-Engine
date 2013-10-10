@@ -34,6 +34,8 @@ const char Tile::kUPPER_COUNT_MAX = 5;
  */
 Tile::Tile()
 {
+  event_handler = 0;
+  
   clear();
 }
 
@@ -43,16 +45,17 @@ Tile::Tile()
  *              tile. This will be framed by an upper class that handles 
  *              overall control (Map).
  *
- * Inputs: Event blank_event - the blank reference event
+ * Inputs: EventHandler* event_handler - the handler for all events
  *         int width - the width of the tile in pixels
  *         int height - the height of the tile in pixels
  *         int x - the x location respective to the parent (in tile count)
  *         int y - the y location respective to the parent (in tile count)
  */
-Tile::Tile(EventHandler::Event blank_event, int width, int height, int x, int y)
+Tile::Tile(EventHandler* event_handler, int width, int height, int x, int y)
 {
+  this->event_handler = 0;
+  setEventHandler(event_handler);
   clear();
-  clearEvents(blank_event);
   
   /* Finally reset the parameters based on this alternate constructor */
   setHeight(height);
@@ -197,12 +200,28 @@ void Tile::clear(bool just_sprites)
     setX(0);
     setY(0);
   }
+  
+  clearEvents();
 }
 
-void Tile::clearEvents(EventHandler::Event blank_event)
+/*
+ * Description: Clears all events stored within the class. Call only works if 
+ *              the event handler has already been set up and is available.
+ *              Note that if there is no event handler, no events fire.
+ *
+ * Inputs: none
+ * Output: bool - status if the events were cleared.
+ */
+bool Tile::clearEvents()
 {
-  enter_event = blank_event;
-  exit_event = blank_event;
+  if(event_handler != 0)
+  {
+    enter_event = event_handler->createBlankEvent();
+    exit_event = event_handler->createBlankEvent();
+    return true;
+  }
+  
+  return false;
 }
 
 /* 
@@ -795,7 +814,25 @@ void Tile::setEnterEvent(EventHandler::Event enter_event)
 {
   this->enter_event = enter_event;
 }
-  
+
+/*
+ * Description: Sets the event handler to create and manage all existing events
+ *              that get fired throughout interaction with the class. This is 
+ *              necessary to ensure that any events work.
+ *
+ * Inputs: EventHandler* event_handler - the new handler pointer (must not be 0)
+ * Output: none
+ */
+void Tile::setEventHandler(EventHandler* event_handler)
+{
+  //qDebug() << event_handler;
+  if(event_handler != 0)
+  {
+    this->event_handler = event_handler;
+    clearEvents();
+  }
+}
+
 /*
  * Description: Sets the exit event. This goes off when an impassable object
  *              gets cleared off of a tile.
@@ -826,6 +863,7 @@ bool Tile::setHeight(int height)
   return false;
 }
 
+// TODO: Fix
 /*
  * Description: Sets the impassable thing in the tile using a pointer to the
  *              thing itself.
@@ -845,10 +883,11 @@ bool Tile::setImpassableThing(MapThing* thing, ThingState type, bool no_events)
     {
       thing_state = type;
       impassable_thing = thing;
-      
+
       /* Execute enter event, if applicable */
-      if(!no_events && enter_event.classification != EventHandler::NOEVENT)
-        enter_event.handler->executeEvent(enter_event, impassable_thing);
+      if(!no_events && event_handler != 0 && 
+                       enter_event.classification != EventHandler::NOEVENT)
+        event_handler->executeEvent(enter_event, impassable_thing);
 
       return true;
     }
@@ -1038,8 +1077,8 @@ void Tile::unsetImpassableThing(bool no_events)
   if(!no_events && impassable_thing != 0)
   {
     /* Execute enter event, if applicable */
-    if(exit_event.classification != EventHandler::NOEVENT)
-      exit_event.handler->executeEvent(exit_event, impassable_thing);
+    if(event_handler != 0 && exit_event.classification != EventHandler::NOEVENT)
+      event_handler->executeEvent(exit_event, impassable_thing);
   }
   
   impassable_thing = 0;

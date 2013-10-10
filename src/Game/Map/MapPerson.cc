@@ -40,6 +40,7 @@ MapPerson::MapPerson()
   direction = EnumDb::NORTH;
 }
 
+// TODO: Need to call parent constructor
 /* 
  * Description: Constructor for this class. Sets up a person with the
  *              appropriate height and width (for the tile) and other info
