@@ -48,6 +48,7 @@ MapThing::MapThing()
 MapThing::MapThing(Sprite* frames, int width, int height, 
                    QString name, QString description, int id)
 {
+  event_handler = 0;
   this->frames = 0;
   MapThing::clear();
   
@@ -300,9 +301,9 @@ void MapThing::clear()
   tile_section = -1; /* Unset value */
   
   /* Resets the class parameters */
-  event_handler = 0;
   setAnimationSpeed(kDEFAULT_ANIMATION);
   setDescription("");
+  setEventHandler(0);
   setID(kUNSET_ID);
   setMovementPaused(false);
   setName("");
@@ -344,20 +345,6 @@ void MapThing::clearTarget()
 short MapThing::getAnimationSpeed()
 {
   return animation_time;
-}
-
-/*
- * Description: Returns the conversation stored in the given thing. Used when
- *              the action key is used on this particular thing which will then
- *              be displayed on the map.
- *
- * Inputs: none
- * Output: Conversation - a conversation struct with the pertinent information
- *                        to be displayed.
- */
-Conversation MapThing::getConversation()
-{
-  return conversation_info;
 }
 
 /* 
@@ -416,6 +403,18 @@ int MapThing::getHeight()
 int MapThing::getID()
 {
   return id;
+}
+
+/*
+ * Description: Returns the interaction event that fires upon an interact()
+ *              call to this thing.
+ *
+ * Inputs: none
+ * Output: EventHandler::Event - the event fired
+ */
+EventHandler::Event MapThing::getInteraction()
+{
+  return interact_event;
 }
 
 /* 
@@ -559,6 +558,14 @@ float MapThing::getY()
   return y;
 }
 
+/*
+ * Description: Initialize all the relevant GL handling sprites within this
+ *              Thing. This is called after it is loaded up, typically from
+ *              a file through the map handler.
+ *
+ * Inputs: none
+ * Output: bool - if the initialize call was successful
+ */
 bool MapThing::initializeGl()
 {
   bool success = true;
@@ -569,16 +576,22 @@ bool MapThing::initializeGl()
   return success;
 }
 
-/* TODO: make this the generic call for interaction
- * Description: Starts interaction. In map thing, this isn't of use and is
- *              only used by its children classes.
+/*
+ * Description: The generic interact call. This is what fires when a player
+ *              presses a use key and then this searches for if an event is
+ *              available and starts it.
  *
- * Inputs: MapPerson* person - the person that is starting the interaction
- * Output: bool - status if the interaction could be started.
+ * Inputs: MapThing* initiator - the pointer to the thing that initiated it
+ * Output: bool - if the call can occur (Event handler needs to be set
  */
-bool MapThing::interaction(MapPerson* person)
+bool MapThing::interact(MapThing* initiator)
 {
-  (void)person;
+  if(event_handler != 0)
+  {
+    event_handler->executeEvent(interact_event, initiator, this);
+    return true;
+  }
+
   return false;
 }
 
@@ -666,18 +679,6 @@ bool MapThing::setAnimationSpeed(short frame_time)
   return false;
 }
 
-/*
- * Description: Sets the conversation stored within this thing. This is used
- *              with action keys on this thing on the map.
- *
- * Inputs: Conversation conversation_info - the conversation to embed
- * Output: none
- */
-void MapThing::setConversation(Conversation conversation_info)
-{
-  this->conversation_info = conversation_info;
-}
-
 /* 
  * Description: Sets the description that defines the thing.
  *
@@ -716,8 +717,14 @@ bool MapThing::setDialogImage(QString path)
  */
 void MapThing::setEventHandler(EventHandler* event_handler)
 {
+  /* Clean up the existing event handler */
+  if(this->event_handler != 0)
+    setInteraction(this->event_handler->createBlankEvent());
+
+  /* Set the new event handler and clean up the interact event */
+  this->event_handler = event_handler;
   if(event_handler != 0)
-    this->event_handler = event_handler;
+    interact_event = event_handler->createBlankEvent();
 }
 
 /*
@@ -778,6 +785,33 @@ bool MapThing::setID(int new_id)
   /* Otherwise, the ID is good */
   id = new_id;
   return true;
+}
+  
+/* 
+ * Description: Sets the interaction event that gets fired when the interact()
+ *              function is called. This requires a relevant event handler
+ *              to work and needs to be set first. Once an event is set, the
+ *              class it is set in handles deletion of conversation pointers,
+ *              if relevant.
+ *
+ * Inputs: EventHandler::Event interact_event - the event to set in the class
+ * Output: bool - if the event could be set
+ */
+bool MapThing::setInteraction(EventHandler::Event interact_event)
+{
+  if(event_handler != 0)
+  {
+    /* Delet the existing event, if relevant */
+    if(this->interact_event.convo != 0)
+      delete this->interact_event.convo;
+    this->interact_event.convo = 0;
+
+    /* Set the new event */
+    this->interact_event = interact_event;
+    return true;
+  }
+
+  return false;
 }
 
 /*

@@ -160,15 +160,6 @@ public slots:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
-  /* Gets a pointer to the NPC in the given position in the NPC vector */
-  Person* getNPC(int index);
-
-  /* Gets x position of NPC in the given position in the NPC vector */
-  int getNPCx(int index);
-
-  /* Gets y position of NPC in the given position in the NPC vector */
-  int getNPCy(int index);
-
   /* Returns the map person, for access */
   MapPerson* getPlayer();
 
@@ -177,6 +168,10 @@ public:
 
   /* Initial call when map is displayed */
   void initialization();
+
+  /* Initiates a conversation, within the map. */
+  bool initConversation(Conversation* convo, MapThing* initiator, 
+                                             MapThing* source);
 
   /* Causes the thing you are facing and next to start its interactive action */
   void interact(EnumDb::Direction dir);

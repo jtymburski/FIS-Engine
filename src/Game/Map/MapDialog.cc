@@ -83,11 +83,14 @@ MapDialog::MapDialog(QFont font)
   dialog_time = 0;
   paused = false;
   paused_opacity = kPAUSE_OPACITY_MAX;
-  thing = 0;
- 
+
+  /* Event handling setup */
+  event_handler = 0;
+
   /* Conversation dialog initialization */
   conversation_waiting = false;
-  player_id = 0;
+  target = 0;
+  thing = 0;
 
   /* Pickup Notification parameters cleared */
   pickup_offset = 0;
@@ -121,7 +124,7 @@ QList<int> MapDialog::calculateThingList(Conversation conversation)
   for(int i = 0; i < conversation.next.size(); i++)
     list.append(calculateThingList(conversation.next[i]));
   list.append(conversation.thing_id);
-  list.append(player_id);
+  list.append(target->getID());
   
   return list;
 }
@@ -178,18 +181,11 @@ bool MapDialog::drawPseudoCircle(int x, int y, int radius)
 
 void MapDialog::executeEvent()
 {
-  if(conversation_info.action_event.classification != EventHandler::NOEVENT &&
-     conversation_info.action_event.handler != 0)
+  if(event_handler != 0 && 
+     conversation_info.action_event.classification != EventHandler::NOEVENT)
   {
-    /* Determine the map thing object from the stack */
-    MapThing* player = 0;
-    for(int i = 0; i < thing_data.size(); i++)
-      if(thing_data[i]->getID() == player_id)
-        player = thing_data[i];
-    
     /* Execute the event */
-    conversation_info.action_event.handler->
-            executeEvent(conversation_info.action_event, player);
+    event_handler->executeEvent(conversation_info.action_event, target);
   }
 }
 
@@ -404,12 +400,19 @@ void MapDialog::endConversation()
   }
 }
 
-bool MapDialog::initConversation(Conversation dialog_info, int player_id)
+bool MapDialog::initConversation(Conversation* dialog_info, MapThing* target)
 {
-  if(isDialogImageSet() && dialog_mode != CONVERSATION && player_id > 0)
+  if(dialog_info != 0)
+    return initConversation(*dialog_info, target);
+  return false;
+}
+
+bool MapDialog::initConversation(Conversation dialog_info, MapThing* target)
+{
+  if(isDialogImageSet() && dialog_mode != CONVERSATION && target != 0)
   {
     conversation_info = dialog_info;
-    this->player_id = player_id;
+    this->target = target;
 
     if(dialog_mode == DISABLED)
     {
@@ -974,6 +977,20 @@ bool MapDialog::setDialogImage(QString path)
   if(dialog_display.setImage(path))
     return true;
   return false;
+}
+
+/*
+ * Description: Sets the event handler to create and manage all existing events
+ *              that get fired throughout interaction with the class. This is 
+ *              necessary to ensure that any events work.
+ *
+ * Inputs: EventHandler* event_handler - the new handler pointer (must not be 0)
+ * Output: none
+ */
+void MapDialog::setEventHandler(EventHandler* event_handler)
+{
+  if(event_handler != 0)
+    this->event_handler = event_handler;
 }
 
 /* Sets the rendering font */

@@ -72,6 +72,7 @@ Map::Map(const QGLFormat & format, Options running_config,
   /* Set up the map displays */
   //map_dialog.setFont(QFont("Times", 10));
   map_dialog.setDialogImage("sprites/Map/Overlay/dialog.png");
+  map_dialog.setEventHandler(event_handler);
   map_dialog.setViewportDimension(running_config.getScreenWidth(), 
                                   running_config.getScreenHeight());
 
@@ -277,24 +278,7 @@ void Map::initiateThingAction()
         geography[index][x][y]->getImpassableThing()->getTile()->getX() == x &&
         geography[index][x][y]->getImpassableThing()->getTile()->getY() == y))
     {
-      MapThing* target_thing = geography[index][x][y]->getImpassableThing();
-      Conversation target_convo = target_thing->getConversation();
-
-      /* Check if the conversation is relevant and use if so */
-      if(!target_convo.text.isEmpty() || target_convo.next.size() > 0)
-      {
-        if(player->setTarget(target_thing) && 
-           target_thing->setTarget(player) &&
-           map_dialog.initConversation(target_convo, player->getID()))
-        {
-          player->keyFlush();
-        }
-        else
-        {
-          player->clearTarget();
-          target_thing->clearTarget();
-        }
-      }
+      geography[index][x][y]->getImpassableThing()->interact(player);
     }
   }
 }
@@ -494,14 +478,14 @@ void Map::keyPressEvent(QKeyEvent* key_event)
   {
     EventHandler::Event blank_event = event_handler->createBlankEvent();
     
-    Conversation convo;
-    convo.category = EnumDb::TEXT;
-    convo.action_event = blank_event;
-    convo.text = "This is the initial conversation point that will start it. ";
-    convo.text += "How can this continue? It must pursue to complete ";
-    convo.text += "embodiment. Ok, maybe I'll just keep typing until I break ";
-    convo.text += "the entire compiler.";
-    convo.thing_id = 1;
+    Conversation* convo = new Conversation;
+    convo->category = EnumDb::TEXT;
+    convo->action_event = blank_event;
+    convo->text = "This is the initial conversation point that will start it. ";
+    convo->text += "How can this continue? It must pursue to complete ";
+    convo->text += "embodiment. Ok, maybe I'll just keep typing until I break ";
+    convo->text += "the entire compiler.";
+    convo->thing_id = 1;
     Conversation test1, test2, test3, test4, test5;
     test1.category = EnumDb::TEXT;
     test1.action_event = blank_event;
@@ -548,15 +532,11 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     test1.next.append(test4);
     test5.text = "Option 6";
     test1.next.append(test5);
-    /*test3.next.append(test4);
-    test1.next.append(test3);
-    test1.next.append(test2);*/
-    convo.next.append(test1);
-    /*convo.next.append(test5);
-    convo.next.append(test1);
-    convo.next.append(test3);*/
-    if(player != 0 && map_dialog.initConversation(convo, player->getID()))
-      player->keyFlush();
+    convo->next.append(test1);
+    event_handler->executeEvent(event_handler->createConversationEvent(convo),
+                                player);
+    
+    delete convo;
   }
 }
 
@@ -727,28 +707,6 @@ void Map::getThingData(QList<int> thing_ids)
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
-/* Gets a pointer to the NPC in the given position in the NPC vector */
-Person* Map::getNPC(int index)
-{
-  (void)index;//warning
-  return NULL;//warning
-  //return ai.at(index);
-}
-
-/* Gets x position of NPC in the given position in the NPC vector */
-int Map::getNPCx(int index)
-{
-  (void)index;//warning
-  return 0;
-}
-
-/* Gets y position of NPC in the given position in the NPC vector */
-int Map::getNPCy(int index)
-{
-  (void)index;//warning
-  return 0;
-}
-
 MapPerson* Map::getPlayer()
 {
   return player;
@@ -763,6 +721,25 @@ MapViewport* Map::getViewport()
 void Map::initialization()
 {
   //player->setFocus();
+}
+
+bool Map::initConversation(Conversation* convo, MapThing* initiator, 
+                                                MapThing* source)
+{
+  if(player != 0 && map_dialog.initConversation(convo, initiator))
+  {
+    player->keyFlush();
+
+    /* Set the targets */
+    if(initiator != 0)
+      initiator->setTarget(source);
+    if(source != 0)
+      source->setTarget(initiator);
+
+    return true;
+  }
+
+  return false;
 }
 
 /* Causes the thing you are facing and next to start its interactive action */
@@ -903,12 +880,13 @@ bool Map::loadMap(QString file)
     person->setID(24);
     person->setName("El Oroso");
     person->setOpacity(0.5);
-    Conversation person_convo;
-    person_convo.category = EnumDb::TEXT;
-    person_convo.action_event = event_handler->createTeleportEvent(30, 30, 0);
-    person_convo.text = "I don't have anything to say to you!!";
-    person_convo.thing_id = 24;
-    person->setConversation(person_convo);
+    Conversation* person_convo = new Conversation;
+    person_convo->category = EnumDb::TEXT;
+    person_convo->action_event = event_handler->createTeleportEvent(30, 30, 0);
+    person_convo->text = "I don't have anything to say to you!!";
+    person_convo->thing_id = 24;
+    person->setInteraction( // TODO: Check if event handler set & successful
+                         event_handler->createConversationEvent(person_convo));
     persons.append(person);
 
     /* Add an NPC */
@@ -934,10 +912,12 @@ bool Map::loadMap(QString file)
     npc->setName("Arcadius");
     npc->setNodeState(MapNPC::BACKANDFORTH);
     npc->setSpeed(200);
-    person_convo.action_event = event_handler->createBlankEvent();
-    person_convo.text = "I don't like to be stopped. Why must you insist to stop progress. ";
-    person_convo.text += "On second thought, I really don't like you and want to destroy you.";
-    person_convo.thing_id = 3;
+    Conversation* npc_convo = new Conversation;
+    npc_convo->category = EnumDb::TEXT;
+    npc_convo->action_event = event_handler->createBlankEvent();
+    npc_convo->text = "I don't like to be stopped. Why must you insist to stop progress. ";
+    npc_convo->text += "On second thought, I really don't like you and want to destroy you.";
+    npc_convo->thing_id = 3;
     Conversation second_set;
     second_set.category = EnumDb::TEXT;
     second_set.action_event = event_handler->createBlankEvent();
@@ -952,8 +932,8 @@ bool Map::loadMap(QString file)
     option.text = "Be slaughtered by my hand";
     option.action_event = event_handler->createStartBattleEvent();
     second_set.next.append(option);
-    person_convo.next.append(second_set);
-    npc->setConversation(person_convo);
+    npc_convo->next.append(second_set);
+    npc->setInteraction(event_handler->createConversationEvent(npc_convo));
     persons.append(npc);
 
     /* Make the map thing */

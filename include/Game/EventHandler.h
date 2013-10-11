@@ -14,8 +14,10 @@
 #ifndef EVENTHANDLER_H
 #define EVENTHANDLER_H
 
+struct Conversation;
 class MapThing;
 
+#include <QDebug>
 #include <QObject>
 
 //#include "EnumDb.h"
@@ -39,7 +41,8 @@ public:
                         RUNBATTLE      = 2, 
                         RUNMAP         = 3,
                         TELEPORTPLAYER = 4,
-                        TELEPORTTHING  = 5};
+                        TELEPORTTHING  = 5,
+                        STARTCONVO     = 6};
 
   /* Test enumerator */
   //enum EventTestEnum { TEST1, TEST2, TEST3 };
@@ -47,8 +50,8 @@ public:
   /* Test struct */
   struct Event
   {
-    EventHandler* handler;
     EventClassifier classification;
+    Conversation* convo;
     QList<int> integer_stack;
   };
 
@@ -62,6 +65,10 @@ private:
   /* Creates the initial event template, clearing it */
   Event createEventTemplate();
 
+  /* Execute a conversation event */
+  void executeConversationEvent(Conversation* convo, MapThing* initiator, 
+                                                     MapThing* source);
+
   /* Execute a start battle event */
   void executeStartBattleEvent(Event event, MapThing* target);
   
@@ -73,6 +80,8 @@ private:
  *===========================================================================*/
 signals:
   /* Signals for the various events */
+  void initConversation(Conversation* convo, MapThing* initiator, 
+                                             MapThing* source);
   void startBattle();
   void teleportThing(MapThing* target, int x, int y, int section_id);
 
@@ -83,6 +92,9 @@ public:
   /* Creates a disabled blank event */
   Event createBlankEvent();
 
+  /* Creates the conversation initiation event */
+  Event createConversationEvent(Conversation* new_conversation);
+
   /* Creates a start battle event */
   Event createStartBattleEvent();
   
@@ -90,7 +102,7 @@ public:
   Event createTeleportEvent(int tile_x, int tile_y, int section_id = -1);
 
   /* Execute the given event - done through signal emits */
-  void executeEvent(Event event, MapThing* target);
+  void executeEvent(Event event, MapThing* initiator, MapThing* source = 0);
 };
 
 #endif // EVENTHANDLER_H

@@ -84,6 +84,9 @@ private:
   /* The font information to render the dialog to */
   QFont display_font;
 
+  /* The event handler information */
+  EventHandler* event_handler;
+
   /* The queue of all notifications available */
   QList<Notification> notification_queue;
   
@@ -100,11 +103,9 @@ private:
   short pickup_time;
   short pickup_width;
  
-  /* The player id that instantiated the conversation */
-  int player_id;
-
   /* The data for the associated things. This is pertinent for the
    * conversation access and anything displayed */
+  MapThing* target;
   MapThing* thing;
   QList<MapThing*> thing_data;
 
@@ -213,7 +214,8 @@ public:
   void endConversation();
 
   /* Initializes a conversation with the two given people. */
-  bool initConversation(Conversation dialog_info, int player_id);
+  bool initConversation(Conversation* dialog_info, MapThing* target);
+  bool initConversation(Conversation dialog_info, MapThing* target);
 
   /* Initialize all OpenGL calls needed for this class */
   void initializeGl();
@@ -245,6 +247,9 @@ public:
 
   /* Sets the dialog image within the class, for conversation display */
   bool setDialogImage(QString path);
+
+  /* Sets the event handler */
+  void setEventHandler(EventHandler* event_handler);
 
   /* Sets the rendering font */
   void setFont(QFont font);

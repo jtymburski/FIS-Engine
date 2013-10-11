@@ -35,7 +35,9 @@ const char Tile::kUPPER_COUNT_MAX = 5;
 Tile::Tile()
 {
   event_handler = 0;
-  
+  enter_event.convo = 0;
+  exit_event.convo = 0;
+
   clear();
 }
 
@@ -54,6 +56,9 @@ Tile::Tile()
 Tile::Tile(EventHandler* event_handler, int width, int height, int x, int y)
 {
   this->event_handler = 0;
+  enter_event.convo = 0;
+  exit_event.convo = 0;
+
   setEventHandler(event_handler);
   clear();
   
@@ -216,8 +221,8 @@ bool Tile::clearEvents()
 {
   if(event_handler != 0)
   {
-    enter_event = event_handler->createBlankEvent();
-    exit_event = event_handler->createBlankEvent();
+    setEnterEvent(event_handler->createBlankEvent());
+    setExitEvent(event_handler->createBlankEvent());
     return true;
   }
   
@@ -808,11 +813,23 @@ bool Tile::setEnhancer(Sprite* enhancer)
  *              gets set onto the tile.
  *
  * Inputs: Event enter_event - the event to be executed
- * Output: none
+ * Output: bool - if the setting was able to occur
  */
-void Tile::setEnterEvent(EventHandler::Event enter_event)
+bool Tile::setEnterEvent(EventHandler::Event enter_event)
 {
-  this->enter_event = enter_event;
+  if(event_handler != 0)
+  {
+    /* Delete the existing event, if relevant */
+    if(this->enter_event.convo != 0)
+      delete this->enter_event.convo;
+    this->enter_event.convo = 0;
+
+    /* Set the new event */
+    this->enter_event = enter_event;
+    return true;
+  }
+
+  return false;
 }
 
 /*
@@ -825,12 +842,14 @@ void Tile::setEnterEvent(EventHandler::Event enter_event)
  */
 void Tile::setEventHandler(EventHandler* event_handler)
 {
-  //qDebug() << event_handler;
-  if(event_handler != 0)
-  {
-    this->event_handler = event_handler;
+  /* Clean up the existing event handler */
+  if(this->event_handler != 0)
     clearEvents();
-  }
+
+  /* Set the new event handler and clean up the interact event */
+  this->event_handler = event_handler;
+  if(event_handler != 0)
+    clearEvents();
 }
 
 /*
@@ -838,11 +857,23 @@ void Tile::setEventHandler(EventHandler* event_handler)
  *              gets cleared off of a tile.
  *
  * Inputs: Event exit_event - the event to be executed
- * Output: none
+ * Output: bool - status if the event could be set
  */
-void Tile::setExitEvent(EventHandler::Event exit_event)
+bool Tile::setExitEvent(EventHandler::Event exit_event)
 {
-  this->exit_event = exit_event;
+  if(event_handler != 0)
+  {
+    /* Delet the existing event, if relevant */
+    if(this->exit_event.convo != 0)
+      delete this->exit_event.convo;
+    this->exit_event.convo = 0;
+
+    /* Set the new event */
+    this->exit_event = exit_event;
+    return true;
+  }
+
+  return false;
 }
   
 /*
@@ -863,7 +894,7 @@ bool Tile::setHeight(int height)
   return false;
 }
 
-// TODO: Fix
+// TODO: Fix: this fires for all things and not just you.
 /*
  * Description: Sets the impassable thing in the tile using a pointer to the
  *              thing itself.

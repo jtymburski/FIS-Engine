@@ -32,11 +32,19 @@ EventHandler::~EventHandler()
 EventHandler::Event EventHandler::createEventTemplate()
 {
   Event blank_event;
-  blank_event.handler = this;
   blank_event.classification = NOEVENT;
+  blank_event.convo = 0;
   blank_event.integer_stack.clear();
 
   return blank_event;
+}
+
+void EventHandler::executeConversationEvent(Conversation* convo, 
+                                            MapThing* initiator, 
+                                            MapThing* source)
+{
+  if(convo != 0)
+    emit initConversation(convo, initiator, source);
 }
 
 /* Execute a start battle event */
@@ -75,6 +83,18 @@ EventHandler::Event EventHandler::createBlankEvent()
 {
   return createEventTemplate();
 }
+  
+/* Creates the conversation initiation event */
+EventHandler::Event EventHandler::createConversationEvent(
+                                               Conversation* new_conversation)
+{
+  /* Create the event and identify */
+  Event new_event = createEventTemplate();
+  new_event.classification = STARTCONVO;
+  new_event.convo = new_conversation;
+
+  return new_event;
+}
 
 /* Creates a start battle event */
 /* TODO: Add parameters. Battle not ready */
@@ -104,10 +124,13 @@ EventHandler::Event EventHandler::createTeleportEvent(int tile_x, int tile_y,
 }
 
 /* Execute the given event - done through signal emits */
-void EventHandler::executeEvent(Event event, MapThing* target)
+void EventHandler::executeEvent(Event event, MapThing* initiator, 
+                                             MapThing* source)
 {
   if(event.classification == TELEPORTPLAYER)
-    executeTeleportEvent(event, target);
+    executeTeleportEvent(event, initiator); // TODO: Fix? Let map decide player
   else if(event.classification == RUNBATTLE)
-    executeStartBattleEvent(event, target);
+    executeStartBattleEvent(event, initiator);
+  else if(event.classification == STARTCONVO)
+    executeConversationEvent(event.convo, initiator, source);
 }

@@ -12,8 +12,6 @@
 #ifndef MAPTHING_H
 #define MAPTHING_H
 
-class MapPerson;
-
 #include <cmath>
 #include <QDebug>
 //#include <QObject>
@@ -57,9 +55,6 @@ protected:
   /* The main sprite frame data */
   Sprite* frames;
 
-  /* Conversation information */
-  Conversation conversation_info;
-
   /* Movement information */
   short animation_buffer;
   short animation_time;
@@ -67,8 +62,9 @@ protected:
   bool movement_paused;
   short speed;
   
-  /* The event handler information */
+  /* The event handler information and corresponding interact event */
   EventHandler* event_handler;
+  EventHandler::Event interact_event;
   
   /* Painting information */
   Frame dialog_image;
@@ -126,15 +122,12 @@ public:
   /* Gets the animation speed of the thing */
   virtual short getAnimationSpeed();
   
-  /* Gets the conversation data for the thing */
-  Conversation getConversation();
-
   /* Gets the things decription */
   QString getDescription();
 
   /* Returns the dialog image data, so that it may be painted */
   Frame* getDialogImage();
-  
+
   /* Returns the map frames that's defined */
   Sprite* getFrames();
   
@@ -143,6 +136,9 @@ public:
 
   /* Gets the things ID */
   int getID();
+  
+  /* Gets the interaction event for the thing */
+  EventHandler::Event getInteraction();
 
   /* Returns the map section of the tile where this is painted */
   int getMapSection();
@@ -178,7 +174,7 @@ public:
   virtual bool initializeGl();
   
   /* Starts interaction (conversation, giving something, etc) */
-  virtual bool interaction(MapPerson* person);
+  virtual bool interact(MapThing* initiator);
   
   /* Returns if there is a move request for the given thing */
   virtual bool isMoveRequested();
@@ -198,9 +194,6 @@ public:
   /* Sets the animation time for each frame */
   virtual bool setAnimationSpeed(short frame_time);
  
-  /* Sets the conversation data for the thing */
-  void setConversation(Conversation conversation_info);
-
   /* Sets the things description */
   void setDescription(QString new_description);
 
@@ -219,6 +212,9 @@ public:
   /* Sets the things ID */
   bool setID(int new_id);
 
+  /* Sets the interaction event for the thing */
+  bool setInteraction(EventHandler::Event interact_event);
+  
   /* Sets if the movement is paused */
   void setMovementPaused(bool paused);
   
