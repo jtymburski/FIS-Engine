@@ -159,7 +159,8 @@ public:
                      URSAMAJOR,
                      FOREBEAR,
                      ALPHABEAR,
-                     BOAT };
+                     BOAT,
+                     NULL_RANK };
 
   /*
    * Description: Describes the type of party to be created

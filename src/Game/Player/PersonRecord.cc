@@ -62,20 +62,9 @@ PersonRecord::PersonRecord()
  *
  * Inputs: PersonRecord& - object to be copied.
  */
-PersonRecord::PersonRecord(PersonRecord& other)
+PersonRecord::PersonRecord(const PersonRecord &source)
 {
-  setBattlesWon(other.getBattlesWon());
-  setBattlesWonNaked(other.getBattlesWonNaked());
-  setBattlesWonEmptyHanded(other.getBattlesWonEmptyHanded());
-  setBattlesWonMiniBoss(other.getBattlesWonMiniBoss());
-  setBattlesWonBoss(other.getBattlesWonBoss());
-  setBattlesWonFinalBoss(other.getBattlesWonFinalBoss());
-
-  setKillsBear(other.getKillsBear());
-  setKillsHuman(other.getKillsHuman());
-  setKillsFiend(other.getKillsFiend());
-  setGrandScore(other.getGrandScore());
-  setTimesKOd(other.getTimesKOd());
+  copySelf(source);
 }
 
 /*
@@ -119,6 +108,49 @@ void PersonRecord::setUpRankPoints()
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
+
+void PersonRecord::copySelf(const PersonRecord &source)
+{
+  current_rank = source.current_rank;
+
+  battles_won = source.battles_won;
+  battles_won_naked = source.battles_won_naked;
+  battles_won_empty_handed = source.battles_won_empty_handed;
+  battles_won_mini_boss = source.battles_won_mini_boss;
+  battles_won_boss = source.battles_won_boss;
+  battles_won_final_boss = source.battles_won_final_boss;
+
+  kills_bear = source.kills_bear;
+  kills_human = source.kills_human;
+  kills_fiend = source.kills_fiend;
+
+  grand_score = source.grand_score;
+  times_kod = source.times_kod;
+}
+
+/*
+ * Description: Prints everything related to this and general PersonalRecords.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void PersonRecord::calcGrandScore()
+{
+  uint temp = kDEFAULT_GRAND_SCORE;
+
+  temp += battles_won * kPOINTS_BATTLE_WON;
+  temp += battles_won_naked  * kPOINTS_BATTLE_WON_NAKED;
+  temp += battles_won_empty_handed * kPOINTS_BATTLE_WON_EMPTY_HANDED;
+  temp += battles_won_mini_boss * kPOINTS_BATTLE_WON_MINI_BOSS;
+  temp += battles_won_boss * kPOINTS_BATTLE_WON_BOSS;
+  temp += battles_won_final_boss * kPOINTS_BATTLE_WON_FINAL_BOSS;
+
+  temp += kills_bear  * kPOINTS_KILLS_BEAR;
+  temp += kills_human * kPOINTS_KILLS_HUMAN;
+  temp += kills_fiend * kPOINTS_KILLS_FIEND;
+
+  setGrandScore(temp);
+}
 
 /*
  * Description: Prints everything related to this and general PersonalRecords.
@@ -182,6 +214,17 @@ void PersonRecord::printRecord()
   qDebug() << "Times KOd: " << times_kod;
 }
 
+/*
+ * Description: Performs an update to the PersonRecord. For instance, this
+ *              upgrades the current rank of the person to the correct value.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void PersonRecord::update()
+{
+  setRank(rankAtScore(getGrandScore()));
+}
 
 /*
  * Description: Resets the PersonRecord object to a default state.
@@ -191,6 +234,8 @@ void PersonRecord::printRecord()
  */
 void PersonRecord::loadDefault()
 {
+  setRank(EnumDb::NUBEAR);
+
   setBattlesWon(0);
   setBattlesWonNaked(0);
   setBattlesWonEmptyHanded(0);
@@ -223,25 +268,39 @@ void PersonRecord::loadPreset(EnumDb::PersonRanks rank_preset)
   /* Cub Preset */
   else if (rank_preset == EnumDb::CUB)
   {
-    setBattlesWon(0);
-    setBattlesWonNaked(0);
-    setBattlesWonEmptyHanded(0);
+    setRank(EnumDb::CUB);
+    setBattlesWon(10);
+    setBattlesWonNaked(1);
+    setBattlesWonEmptyHanded(1);
     setBattlesWonMiniBoss(0);
     setBattlesWonBoss(0);
     setBattlesWonFinalBoss(0);
 
-    setKillsBear(0);
-    setKillsHuman(0);
-    setKillsFiend(0);
-    setGrandScore(kDEFAULT_GRAND_SCORE);
+    setKillsBear(3);
+    setKillsHuman(3);
+    setKillsFiend(1);
     setTimesKOd(0);
+
+    calcGrandScore();
   }
 
   /* Recruit Preset */
   else if (rank_preset == EnumDb::RECRUIT)
   {
+    setRank(EnumDb::RECRUIT);
+    setBattlesWon(20);
+    setBattlesWonNaked(5);
+    setBattlesWonEmptyHanded(3);
+    setBattlesWonMiniBoss(1);
+    setBattlesWonBoss(0);
+    setBattlesWonFinalBoss(0);
 
+    setKillsBear(7);
+    setKillsHuman(8);
+    setKillsFiend(5);
+    setTimesKOd(0);
 
+    calcGrandScore();
   }
 
   /* Sleuthling Preset */
@@ -313,6 +372,83 @@ void PersonRecord::loadPreset(EnumDb::PersonRanks rank_preset)
 
 
   }
+}
+
+/*
+ * Description: Returns the rank at a given index.
+ *
+ * Inputs: uint index - index of the rank to be checked.
+ * Output: EnumDb::PersonRank - the rank at the index, if it exists.
+ */
+EnumDb::PersonRanks PersonRecord::rankAtIndex(uint index)
+{
+  if      (index ==  0) return EnumDb::NUBEAR;
+  else if (index ==  1) return EnumDb::CUB;
+  else if (index ==  2) return EnumDb::RECRUIT;
+  else if (index ==  3) return EnumDb::SLEUTHLING;
+  else if (index ==  4) return EnumDb::SERGEANT;
+  else if (index ==  5) return EnumDb::SLEUTHMASTER;
+  else if (index ==  6) return EnumDb::OFFICER;
+  else if (index ==  7) return EnumDb::URSAMINOR;
+  else if (index ==  8) return EnumDb::ADMIRAL;
+  else if (index ==  9) return EnumDb::URSAMAJOR;
+  else if (index == 10) return EnumDb::FOREBEAR;
+  else if (index == 11) return EnumDb::ALPHABEAR;
+  else if (index == 12) return EnumDb::BOAT;
+
+  return EnumDb::NULL_RANK;
+}
+
+/*
+ * Description: Returns the highest rank achieveable at a given rank.
+ *
+ * Inputs: uint score - score to be checked against rank-scores.
+ * Output: EnumDb::PersonRank - the highest rank achieveable
+ */
+EnumDb::PersonRanks PersonRecord::rankAtScore(uint score)
+{
+  uint index = 1;
+  EnumDb::PersonRanks temporary_rank = rankAtIndex(index);
+
+  /* Loop through every rank until the score is greater than required */
+  while (score < (uint)scoreAtRank(temporary_rank) && index <= kRANKS)
+    temporary_rank = rankAtIndex(++index);
+
+  return rankAtIndex(index - 1);
+}
+
+/*
+ * Description: Returns the lowest score required to achieve a given rank.
+ *
+ * Inputs: EnumDb::PersonRanks - the rank to be checked against score-ranks.
+ * Output: int - the lowest score required to achieve the given rank.
+ */
+int PersonRecord::scoreAtRank(EnumDb::PersonRanks rank)
+{
+  EnumDb::PersonRanks check_rank;
+
+  /* Loop through each rank until the rank to be checked is found */
+  for (int index = 0; index <= (int)kRANKS; index++)
+  {
+    check_rank = rankAtIndex(index);
+
+    /* Return the points required at the found rank */
+    if (rank == check_rank)
+      return rank_points_required.at(index);
+  }
+
+  return -1;
+}
+
+/*
+ * Description: Assigns a new rank to the PersonRecord
+ *
+ * Inputs: EnumDb::PersonRecord - new rank for the PersonRecord
+ * Output: none
+ */
+void PersonRecord::setRank(EnumDb::PersonRanks new_rank)
+{
+  current_rank = new_rank;
 }
 
 /*
@@ -472,6 +608,17 @@ void PersonRecord::setTimesKOd(uint new_value)
 }
 
 /*
+ * Description: Returns the rank of the person
+ *
+ * Inputs: none
+ * Output: EnumDb::PersonRanks - the current rank of the Person.
+ */
+EnumDb::PersonRanks PersonRecord::getRank()
+{
+  return current_rank;
+}
+
+/*
  * Description: Returns the value of battles_won
  *
  * Inputs: none
@@ -590,4 +737,25 @@ uint PersonRecord::getGrandScore()
 uint PersonRecord::getTimesKOd()
 {
    return times_kod;
+}
+
+/*
+ * Description: Overloaded operator = function for deep copy of PersonRecord.
+ *              Calls copySelf function for copying after a check for self-
+ *              assignment.
+ *
+ * Inputs: source - const reference of object to be copied
+ * Output:
+ */
+PersonRecord& PersonRecord::operator= (const PersonRecord &source)
+{
+  /* Check for self assignment */
+  if (this == &source)
+    return *this;
+
+  /* Do the copy */
+  copySelf(source);
+
+  /* Return the copied object */
+  return *this;
 }

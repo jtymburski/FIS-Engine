@@ -28,7 +28,7 @@ public:
    Race();
 
    /* Copy Constructor */
-   Race(Race& other);
+   Race(const Race &source);
 
    /* Default Race Constructor given a name */
    Race(QString name);
@@ -72,6 +72,9 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Method for deep copy of Race object */
+  void copySelf(const Race &source);
+
   /* Loads the category with default objects and values */
   void loadDefaults();
 
@@ -126,5 +129,13 @@ public:
 
   /* Assigns a new skill set */
   void setSkillSet(SkillSet* new_skill_set);
+
+/*=============================================================================
+ * OPERATOR FUNCTIONS
+ *============================================================================*/
+public:
+  /* Overloaded operator for deep copy */
+  Race& operator= (const Race &source);
+
 };
 #endif // RACE_H

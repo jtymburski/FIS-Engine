@@ -98,7 +98,6 @@ public slots:
   /* Initiates a conversation */
   void initConversation(Conversation* convo, MapThing* initiator, 
                                              MapThing* source);
-
   /* Starts a battle */
   void startBattle();
   

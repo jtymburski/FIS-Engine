@@ -68,7 +68,6 @@ Person::Person(QString pname, Race* prace, Category* pcat, QString p, QString s)
       parent(0),
       race(prace),
       name(pname),
-      rank(EnumDb::NUBEAR),
       base_skill_list(0),
       temp_skill_list(0),
       first_person(0),
@@ -105,43 +104,9 @@ Person::Person(QString pname, Race* prace, Category* pcat, QString p, QString s)
  *            copy, nor does it assign equipment to the person. It instead just
  *            creates a copy skeleton of the person.
  */
-Person::Person(Person& other)
-    : damage_modifier(other.getDmgMod()),
-      level(other.getLevel()),
-      total_exp(other.getExp()),
-      experience_drop(other.getExpLoot()),
-      credit_drop(other.getCreditLoot()),
-      cat(other.getCategory()),
-      parent(&other),
-      race(other.getRace()),
-      name(other.getName()),
-      rank(other.getRank()),
-      base_skill_list(other.getSkills()),
-      temp_skill_list(0),
-      first_person(other.getFirstPerson()),
-      third_person(other.getThirdPerson()),
-      bubbified_sprite(other.getBubbySprite())
+Person::Person(const Person &source)
 {
-  /* Grabs the primary and secondary curves from the parent */
-  setPrimary(other.getPrimary() + other.getPrimaryCurve());
-  setSecondary(other.getSecondary() + other.getSecondaryCurve());
-
-  /* Sets up the Attribute Sets */
-  AttributeSet base_set = calcBaseLevelStats();
-
-  setStats(base_set);
-  setMax(base_set);
-  setTemp(base_set);
-  setMaxTemp(base_set);
-
-  /* Setup a new Person Record */
-  person_record = new PersonRecord(*other.getPersonRecord());
-
-  for (int i = 0; i < parent->getItemLoot().size(); i++)
-    item_drops.push_back(new Item(parent->getItemLoot().value(i)));
-
-  /* Initially calculates all the skills */
-  calcSkills();
+  copySelf(source);
 }
 
 /*
@@ -207,6 +172,53 @@ AttributeSet Person::calcMaxLevelStats()
     max_level_set.setStat(i, cat_set.getStat(i) + race_set.getStat(i));
 
   return max_level_set;
+}
+
+/*
+ * Description: Deep copy method called by operator= and copy constructor.
+ *              Constructs a deep copy of the Person based on the source
+ *              Person
+ *
+ * Inputs: source - const reference to a Person
+ * Output: none
+ */
+void Person::copySelf(const Person &source)
+{
+  damage_modifier = source.damage_modifier;
+  level = source.level;
+  total_exp = source.total_exp;
+  experience_drop = source.experience_drop;
+  credit_drop = source.credit_drop;
+  cat = source.cat;
+  race = source.race;
+  name = source.name;
+  first_person = source.first_person;
+  third_person = source.third_person;
+  bubbified_sprite = source.bubbified_sprite;
+  base_skill_list = source.base_skill_list;
+  temp_skill_list = source.temp_skill_list;
+  primary = source.primary;
+  primary_curve = source.primary_curve;
+  secondary = source.secondary;
+  secondary_curve = source.secondary_curve;
+
+  /* Sets up the Attribute Sets */
+  AttributeSet base_set = calcBaseLevelStats();
+
+  setStats(base_set);
+  setMax(base_set);
+  setTemp(base_set);
+  setMaxTemp(base_set);
+
+  /* Setup a new Person Record */
+  person_record = new PersonRecord(*(source.person_record));
+
+  /* Deep copy the item drops of the person */
+  for (int i = 0; i < parent->getItemLoot().size(); i++)
+    item_drops.push_back(new Item(parent->getItemLoot().value(i)));
+
+  /* Initially calculates all the skills */
+  calcSkills();
 }
 
 /*=============================================================================
@@ -331,7 +343,7 @@ void Person::printBasics()
   qDebug() << "Total Exp: " << getExp();
   qDebug() << "Category: " << cat->getName();
   qDebug() << "Race: " << race->getName();
-  qDebug() << "Rank: " << getRankString(getRank());
+  qDebug() << "Rank: " << getRankString(getPersonRecord()->getRank());
   qDebug() << "Dmg Modifier: " << damage_modifier;
   qDebug() << "Primary Element: " << primary;
   qDebug() << "Secondary Element: " << secondary;
@@ -689,17 +701,6 @@ QChar Person::getSecondaryCurve()
 }
 
 /*
- * Description: Returns the rank string
- *
- * Inputs: none
- * Output: QString - rank of the Person
- */
-EnumDb::PersonRanks Person::getRank()
-{
-  return rank;
-}
-
-/*
  * Description: Returns a pointer to the third person sprite
  *
  * Inputs: none
@@ -1050,17 +1051,6 @@ void Person::setName(QString new_name)
 }
 
 /*
- * Description: Sets the rank of the person
- *
- * Inputs: QString - string representing a new rank
- * Output: none
- */
-void Person::setRank(EnumDb::PersonRanks new_rank)
-{
-  rank = new_rank;
-}
-
-/*
  * Description: Sets the race pointer of the Person
  *
  * Inputs: Race* - pointer to a new race value for the Person
@@ -1231,6 +1221,13 @@ uint Person::getMaxLevel()
  * OPERATOR FUNCTIONS
  *===========================================================================*/
 
+/*
+ * Description: Overloaded operator = function for deep copy of Person. Calls
+ *              the copySelf function for copying after a check for self-assign
+ *
+ * Inputs: source - const reference of object to be copied
+ * Output: person - reference
+ */
 Person& Person::operator= (const Person &source)
 {
   /* Check for self assignment */
@@ -1238,7 +1235,7 @@ Person& Person::operator= (const Person &source)
     return *this;
 
   /* Do the copy */
-  //copySelf(source);
+  copySelf(source);
 
   /* Return the copied object */
   return *this;

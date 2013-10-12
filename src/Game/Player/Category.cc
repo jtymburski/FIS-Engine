@@ -43,19 +43,14 @@ Category::Category()
 }
 
 /*
- * Description:
+ * Description: Copy constructor for Category
  *
  * Inputs: Category& - reference of a Category to be copied
  */
-Category::Category(Category &other)
-    : description(other.getDescription()),
-      denonym(other.getDenonym()),
-      name(other.getName()),
-      base_stat_set(other.getBaseSet()),
-      max_stat_set(other.getMaxSet()),
-      skill_set(other.getSkillSet()),
-      immunities(getImmunities())
-{}
+Category::Category(const Category &source)
+{
+  copySelf(source);
+}
 
 /*
  * Description: Minimal category construction: construct a category object with
@@ -96,6 +91,23 @@ Category::~Category() {}
 /*============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
+
+/*
+ * Description: Performs a deep copy of the Category.
+ *
+ * Inputs: source - const reference to object to be copied
+ * Output: none
+ */
+void Category::copySelf(const Category &source)
+{
+  description   = source.description;
+  denonym       = source.denonym;
+  name          = source.name;
+  base_stat_set = source.base_stat_set;
+  max_stat_set  = source.max_stat_set;
+  skill_set     = source.skill_set;
+  immunities    = source.immunities;
+}
 
 /*
  * Description: This method loads default values into all of the categories
@@ -399,4 +411,28 @@ void Category::setMaxSet(AttributeSet new_max_set)
 void Category::setSkillSet(SkillSet* new_skill_set)
 {
   skill_set = new_skill_set;
+}
+
+/*============================================================================
+ * OPERATOR FUNCTIONS
+ *===========================================================================*/
+
+/*
+ * Description: Overloaded = operator for Category class. Checks for self
+ *              assignment and calls the deep copy for the category.
+ *
+ * Inputs: SkillSet* - pointer to the new skill set
+ * Output: none
+ */
+Category& Category::operator= (const Category &source)
+{
+  /* Check for self assignment */
+  if (this == &source)
+    return *this;
+
+  /* Do the copy */
+  copySelf(source);
+
+  /* Return the copied object */
+  return *this;
 }

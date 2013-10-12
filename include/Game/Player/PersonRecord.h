@@ -23,7 +23,7 @@ public:
   PersonRecord();
 
   /* Copy Constructor */
-  PersonRecord(PersonRecord& other);
+  PersonRecord(const PersonRecord &source);
 
   /* Creates a PersonRecord object based on a couple of presets */
   PersonRecord(EnumDb::PersonRanks rank_preset = EnumDb::NUBEAR);
@@ -32,6 +32,9 @@ public:
   ~PersonRecord();
 
 private:
+
+  /* Current rank of the Person of this PersonRank */
+  EnumDb::PersonRanks current_rank;
 
   /* Battles Won records */
   uint battles_won;
@@ -82,23 +85,48 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Deep copy for PersonRecord */
+  void copySelf(const PersonRecord &source);
+
   /* Initially sets up the points required to reach various ranks */
   static void setUpRankPoints();
+
+/*============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
+public:
+  /* Returns the rank of a given index */
+  static EnumDb::PersonRanks rankAtIndex(uint index);
+
+  /* Returns the highest rank achieveable at a given score */
+  static EnumDb::PersonRanks rankAtScore(uint score);
+
+  /* Returns the minimum score required to achieve a given rank */
+  static int scoreAtRank(EnumDb::PersonRanks rank);
 
 /*============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Calculates the grandscore of the PersonRecord */
+  void calcGrandScore();
+
   /* Methods for printing information about the PersonRecord object */
   void printAll();
   void printConstants();
   void printRecord();
+
+  /* Updates neccessary information relating to the grand_score, etc. */
+  void update();
 
   /* Loads a default PersonRecord object */
   void loadDefault();
 
   /* Loads the PersonRecord object with one of a particular preset */
   void loadPreset(EnumDb::PersonRanks rank_preset);
+
+  /* Assigns a new rank to the Person Record */
+  void setRank(EnumDb::PersonRanks new_rank);
 
   /* Assigns a new value to battles_won to the Person Record */
   void setBattlesWon(uint new_value);
@@ -133,6 +161,9 @@ public:
   /* Assigns a new value to times_kod to the Person Record */
   void setTimesKOd(uint new_value);
 
+  /* Returns the rank of the Person */
+  EnumDb::PersonRanks getRank();
+
   /* Returns the value of battles_won */
   uint getBattlesWon();
 
@@ -165,6 +196,12 @@ public:
 
   /* Returns the value of times_kod */
   uint getTimesKOd();
+
+/*============================================================================
+ * OPERATOR FUNCTIONS
+ *===========================================================================*/
+public:
+    PersonRecord& operator= (const PersonRecord &source);
 };
 
 #endif // PERSONRECORD_H

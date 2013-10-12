@@ -29,7 +29,7 @@ public:
   Category();
 
   /* Copy Constructor */
-  Category(Category& other);
+  Category(const Category &source);
 
   /* Constructs a generi category just given a name */
   Category(QString name);
@@ -73,6 +73,9 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Deep copy for Category class */
+  void copySelf(const Category& source);
+
   /* Loads the category with default objects and values */
   void loadDefaults();
 
@@ -128,5 +131,10 @@ public:
   /* Assigns a new skill set to the category */
   void setSkillSet(SkillSet* new_skill_set);
 
+/*============================================================================
+ * OPERATOR FUNCTIONS
+ *===========================================================================*/
+public:
+  Category& operator= (const Category &source);
 };
 #endif // CATEGORY_H

@@ -26,7 +26,7 @@ public:
   Person();
 
   /* Copy constructor */
-  Person(Person& other);
+  Person(const Person &source);
 
   /* Constructor for a person object */
   Person(QString pname, Race* prace, Category* pcat, QString p, QString s);
@@ -157,6 +157,9 @@ private:
 
   /* Calculate an AttributeSet representing the person's top statistics */
   AttributeSet calcMaxLevelStats();
+
+  /* Copy all parameters from the other to the current */
+  void copySelf(const Person &source);
 
 /*============================================================================
  * PUBLIC FUNCTIONS

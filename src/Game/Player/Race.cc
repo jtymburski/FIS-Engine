@@ -45,15 +45,10 @@ Race::Race()
  *
  * Inputs:
  */
-Race::Race(Race& other)
-    : description(other.getDescription()),
-      denonym(other.getDenonym()),
-      name(other.getName()),
-      base_stat_set(other.getBaseSet()),
-      max_stat_set(other.getMaxSet()),
-      skill_set(other.getSkillSet()),
-      immunities(other.getImmunities())
-{}
+Race::Race(const Race &source)
+{
+  copySelf(source);
+}
 
 /*
  * Description: Default Race object constructor. Constructs a Race with
@@ -93,6 +88,23 @@ Race::~Race() {}
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
+
+/*
+ * Description: Deep copy constructor for Race.
+ *
+ * Inputs: source - const reference for Race object to be copied
+ * Output: none
+ */
+void Race::copySelf(const Race &source)
+{
+  description = source.description;
+  denonym = source.denonym;
+  name = source.name;
+  base_stat_set = source.base_stat_set;
+  max_stat_set = source.max_stat_set;
+  skill_set = source.skill_set;
+  immunities = source.immunities;
+}
 
 /*
  * Description:
@@ -385,4 +397,27 @@ void Race::setMaxSet(AttributeSet new_stat_set)
 void Race::setSkillSet(SkillSet* new_skill_set)
 {
   skill_set = new_skill_set;
+}
+
+/*============================================================================
+ * OPERATOR FUNCTIONS
+ *===========================================================================*/
+
+/*
+ * Description: Overloaded = operator for Race class.
+ *
+ * Inputs: source - const reference of object to be copied
+ * Output: Race& - reference to copied race object
+ */
+Race& Race::operator= (const Race &source)
+{
+  /* Check for self assignment */
+  if (this == &source)
+    return *this;
+
+  /* Do the copy */
+  copySelf(source);
+
+  /* Return the copied object */
+  return *this;
 }
