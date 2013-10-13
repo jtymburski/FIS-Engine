@@ -70,12 +70,12 @@ void Options::setAllToDefault()
   setVsync(false);
 }
 
-void Options::setAilmentUpdateState(BattleDifficulty new_state)
+void Options::setAilmentUpdateState(BattleOptions new_state)
 {
   ailment_update_state = new_state;
 }
 
-void Options::setBattleHudState(BattleDifficulty new_state)
+void Options::setBattleHudState(BattleOptions new_state)
 {
   battle_hud_state = new_state;
 }
@@ -109,12 +109,12 @@ void Options::setVsync(bool enabled)
 //    return 0;
 //}
 
-Options::BattleDifficulty Options::getAilmentUpdateState()
+Options::BattleOptions Options::getAilmentUpdateState()
 {
   return ailment_update_state;
 }
 
-Options::BattleDifficulty Options::getBattleHudState()
+Options::BattleOptions Options::getBattleHudState()
 {
   return battle_hud_state;
 }

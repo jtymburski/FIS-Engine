@@ -282,4 +282,7 @@ void Game::updateGame(int cycle_time)
 {
   if(currentIndex() == MAP && game_map != 0)
     game_map->updateMap(cycle_time);
+
+  // if (currentIndex() == BATTLE && game_battle != 0)
+    //game_battle->updateBattle(cycle_time);
 }

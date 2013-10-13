@@ -24,14 +24,14 @@ public:
   ~Options();
 
   /* Battle Options */
-  enum BattleDifficulty { BEARWALK,
+  enum BattleOptions { BEARWALK,
                           BEARLY_DIFFICULT,
                           GRIZZLY };
 
 private:
 
-  BattleDifficulty ailment_update_state;
-  BattleDifficulty battle_hud_state;
+  BattleOptions ailment_update_state;
+  BattleOptions battle_hud_state;
 
   /* Resolution of the screen currently being used */
   short resolution_x;
@@ -72,8 +72,8 @@ private:
   void setAllToDefault();
 
   /* Battle Settings */
-  void setAilmentUpdateState(BattleDifficulty new_state);
-  void setBattleHudState(BattleDifficulty new_state);
+  void setAilmentUpdateState(BattleOptions new_state);
+  void setBattleHudState(BattleOptions new_state);
 
   /* Set the screen dimensions to be painted, based on the array index */
   void setScreenHeight(int index);
@@ -90,8 +90,8 @@ public:
   //int getOption(QString s); 
 
   /* Battle Options */
-  BattleDifficulty getAilmentUpdateState();
-  BattleDifficulty getBattleHudState();
+  BattleOptions getAilmentUpdateState();
+  BattleOptions getBattleHudState();
 
   /* Returns the screen dimensions to be painted */
   short getScreenHeight();

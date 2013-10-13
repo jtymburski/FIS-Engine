@@ -84,7 +84,7 @@ private:
 
   /*------------------- Constants -----------------------*/
   const static int kDOUBLE_DIGITS;    /* The point when integers are more than
-                                       * a single digit */
+                                      * a single digit */
   const static int kELEMENT_ANGLE;    /* Element angle for sprite */
   const static int kELEMENT_DATA;     /* Element data type for sprite */
   const static short kFILE_CLASSIFIER;  /* The file tile classification text */

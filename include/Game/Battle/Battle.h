@@ -1,253 +1,150 @@
 /*******************************************************************************
-* Class Name: Battle
-* Date Created: Sunday, October 28th, 2012
-* Inheritance: Parent class: Game
-* Description: 
+* Class Name: Battle [Header Declaration]
+* Date Created: December 2nd, 2012 - Rewritten October 12th, 2013
+* Inheritance: QWidget
+* Description: Battle is a class which contains all the events handled and
+*              happening in a classic RPG battle between two Parties.
 *
-* Notes: Turn Progression:
+* Notes:
 *
-* 1. generalUpkeep() adjusts all values based on Weather.  BattleInfoBar
-* displays info on these adjustments * after X seconds, personalUpkeep() is 
-* called.
 *
-* 2. personalUpkeep() adjusts all values of the Person represented by 
-* party_index. PersonalUpkeep() then, after X seconds, activates and 
-* initializes BattleMenu with party_index's relevant options.
-*
-* 3. Once an option from BattleMenu is selected processAction() is
-* called and party_index is incremented, then if it is less
-* than 5, personalUpkeep is called (Step 2).  Else, BattleMenu 
-* deactivates and processEnemyActions() is called (Step 4).
-*
-* 4. processEnemyActions() uses the enemies scripts to add actions to the
-* stack, after which orderActions() is called.
-*
-* 5. orderActions() reorders the stack based on speed and status ailments,
-* performActions() is then called.
-*
-* 6. performAction() takes the first Action on the stack and loads it into 
-* action_animate which then shows the Actions animation.  The Action is then 
-* removed from the stack.
-*
-* 7. action_animate emits a finished(Action *) signal which is connected to
-* changeStats(Action* battle_action), changeStats(Action* battle_action) 
-* alters each Person's stats based off its parameter Action.  UpdateScene() 
-* is then called.
-*
-* 8. updateScene() emits a finished() signal which is connected to 
-* actionOutcome(). ActionOutcome() checks for deaths and animates 
-* appropriately, if a whole party is eliminated, then all the memory
-* is cleared, and battleWon() or battleLost() is called.  If the stack is not
-* empty, (Step 6) else reset party_index and (Step 1).
-*   
-* Note: Animation has changed since this design and requires some alteration 
-*     in terms of these steps.
-*  
-* In Battle Action Animations
-* ----------------------------
-* Action Timer is removed
-* For actions that occur during battle, the animations will only be targets
-* of the player and centered on them. For example, there will be a sequence 
-* of sprites where it will animate (based on a timer) and flash on the target 
-* and possibly flash on the caster itself. These will be attached to the action
-* class and will occur during the generation of the action in the step 6? This
-* could be tied into the action paint event to draw on the battle screen These 
-* would utilize the sprite class which already has a linked list to generate 
-* the sequences of the animation. How would this be programmed in? Attached 
-* to the database since we generated a sequence within action to program in 
-* actions and commands that can be used in the battle sequence. An addition 
-* to that sequence to include frames or generate generic ones that everyone 
-* has to share.
+* //TODO:
 ******************************************************************************/
+
 #ifndef BATTLE_H
 #define BATTLE_H
 
-#include <cmath>
-#include <QKeyEvent>
 #include <QDebug>
-#include <QPainter>
-#include <QPaintEvent>
+#include <QKeyEvent>
 #include <QWidget>
 
-#include "Game/Player/Ailment.h"
 #include "Game/Battle/BattleInfoBar.h"
 #include "Game/Battle/BattleMenu.h"
 #include "Game/Battle/BattleStatusBar.h"
-#include "Game/Player/SkillSet.h"
-#include "Game/Player/Party.h"
-#include "Game/Weather.h"
 
-class Battle: public QWidget
+#include "Game/Player/Party.h"
+#include "GrammarHelper.h"
+#include "MathHelper.h"
+#include "Options.h"
+
+class Battle : public QWidget
 {
   Q_OBJECT
 
 public:
-  /* Constructor for a Battle class */
-  Battle(Party* p_friends, Party* p_foes, QWidget* parent = NULL);
+  /* Creates a default Battle object */
+  Battle();
 
-  /* Annihilates a battle object */
+  /* Creates a standard Battle object */
+  Battle(Party* friends, Party* foes, Options config, QWidget* parent = 0);
+
+  /* Annihilates a Battle object */
   ~Battle();
 
   /* Enumerated flags for battle class */
   enum BattleState
   {
-    BOSS     = 1ul << 0, /* Is this a boss battle? */
-    MINIBOSS = 1ul << 1  /* Is this a mini-boss battle? */
+    CONFIGURED      = 1ul << 0,
+    RANDOM_ENCOUTER = 1ul << 1,
+    MINI_BOSS       = 1ul << 2,
+    BOSS            = 1ul << 3,
+    FINAL_BOSS      = 1ul << 4
   };
   Q_DECLARE_FLAGS(BattleFlags, BattleState)
   BattleFlags flag_set;
 
 private:
-  /* Pointer to the battle info bar */
-  BattleInfoBar* info_bar;  // Q_OBJECT
+  /* Enumerated battle options for ailment updates */
+  Options::BattleOptions ailment_update_mode;
 
-  /* Battle Status bar */
-  BattleStatusBar* status_bar; // Q_OBJECT
-   QVector<EnemyStatusBar*> enemy_status_bar; // Q_OBJECT
+  /* Enumerated battle options for hud display mode */
+  Options::BattleOptions hud_display_mode;
 
-  /* The Battle menu pointer (for selecting actions), off by default */
-  BattleMenu* menu;
+  /* Elapsed time of the Battle */
+  uint time_elapsed;
 
-  /* Checks if targeting mode is active */
-  bool target_mode; //Checks if targeting mode is active
-
-  /* Maximum size of the battle window */
-  uint max_width;
-  uint max_height;
-
-  /* Bounding box dimensions */
-  uint ally_width;
-  uint ally_height;
-
-  /* Which party is currently selected */
-  uint party_index;
-
-  /* Current target selected */
-  uint target_index;
-
-  /* Current turn count */
-  uint turn_count;
-
-  /* The enemy party */
-  Party* foes; 
-
-  /* Allied party */
+  /* Pointers to the battling parties */
   Party* friends;
+  Party* foes;
 
-  /* Backdrop for the battle */
-  QPixmap* battle_bg;
+  /* Dimensions of the screen */
+  uint screen_height;
+  uint screen_width;
 
-  /* Battle Status Bar Image */
-  QPixmap* battle_status_bar_image;
-
-  /* Ally Bounding Boxes */
-  QVector<QRect*> ally_box;
-
-  /* Enemy Bounding Boxes & StatusBar Boxes */
-  QVector<QRect*> enemy_box;
-  QVector<QRect*> enemy_status_boxes;
-
-  /* Bounding boxes */
-  QRect* target_box;
-  QRect* status_box;
-  QRect* info_box;
-  QRect* extra_box;
-
-  /* The skill buffer */
-  QVector<Skill*> skill_buffer;
-
-  /* The items use buffer */
-  QVector<Item*> items_buffer;
-
-  /* Weather condition during battle */
-  Weather* weather_cond;
+  /* ------------ Constants --------------- */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
- *===========================================================================*/
+ *============================================================================*/
 private:
-  /* Sets the allies pointer */
-  void setFriends(Party* p_friends = NULL);
+  /* Load default configuration of the battle */
+  bool loadDefaults();
 
-  /* Sets the foes pointer */
-  void setFoes(Party* p_foes = NULL);
+  /* Assigns a new value to the elapsed time */
+  void setTimeElapsed(uint new_value);
 
-  /* Sets up bounding boxes */
-  void setUpBoxes();
+  /* Assigns the friends party of the Battle */
+  void setFriends(Party* new_friends);
 
-  /* Sets the maximum x-length of the battle window */
-  void setMaxWidth(int value);
+  /* Assigns the foes party of the Battle */
+  void setFoes(Party* new_foes);
 
-  /* Sets the maximum y-length of the battle window */
-  void setMaxHeight(int value);
-   
+  /* Assign a new value for the screen width */
+  void setScreenHeight(uint new_value);
+
+  /* Assign a new value for the screen width */
+  void setScreenWidth(uint new_value);
+
 /*=============================================================================
  * PROTECTED FUNCTIONS
  *============================================================================*/
 protected:
-  /* Handles all key entries */
-  void keyPressEvent(QKeyEvent*);
+  /* Handles all key entries for the Battle */
+  void keyPressEvent(QKeyEvent* event);
 
-  /* Paint event for the class */
-  void paintEvent(QPaintEvent*);
-  void paintAll();
-  void paintMenu();
+  /* Returns the elapsed time of the Battle */
+  uint getTimeElapsed();
 
-  /* Checks for deaths, pops current action off stack, calls performAction();*/
-  void actionOutcome();
+  /* Returns the friends pointer of the Battle */
+  Party* getFriends();
 
-  /* Ends battle with win message */
-  void battleWon();
+  /* Returns the foes pointer of the Battle */
+  Party* getFoes();
 
-  /* Ends Battle with loss message, and reverts game to last save point */
-  void battleLost();
+  /* Returns the value of the screen height */
+  uint getScreenHeight();
 
-  /* Arranges and paints static image */
-  void buildScene();
-
-  /* Sets temporary stats */
-  void buildStats();
-
-  /* Alters stats, updates scene */
-  void changeStats(Action* battle_action);
-
-  /* Non-character events */
-  void generalUpkeep();
-
-  /* Reorders stack (speed based) */
-  void orderActions();
-
-  /* Performs current action animation */
-  void performAction();
-
-  /* Character events */
-  void personalUpkeep();
-
-  /* Increment party index for next Battle Menu */
-  void processAction();
-
-  /* Gets all enemy actions, adds to stack */
-  void processEnemyActions();
-
-  /* Paints dynamic images */
-  void updateScene();
-
-  /* Gets the maximum x-length of the battle window */
-  int getMaxWidth();
-
-  /* Gets the maximum y-length of the battle window */
-  int getMaxHeight();
-
-  /* Sets the targeting mode (slot) */
-  void setTargetMode(bool targeting);
+  /* Returns the value of the screen width */
+  uint getScreenWidth();
 
 /*=============================================================================
  * SIGNALS
  *============================================================================*/
 signals:
+  /* TODO */
   void closeBattle();
-  void finished();
+
+/*=============================================================================
+ * PUBLIC SLOTS
+ *============================================================================*/
+public slots:
+
+/*=============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
+public:
+
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
+public:
+  /* Update the cycle time of Battle */
+  void updateBattle(int cycle_time);
+
+  /* BattleState flag functions */
+  bool getBattleFlag(BattleState flags);
+  void setBattleFlag(BattleState flags, bool set_value = true);
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Battle::BattleFlags)
 
-#endif // BATTLE_H
+#endif //BATTLE_H

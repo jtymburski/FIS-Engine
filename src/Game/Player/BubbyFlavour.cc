@@ -15,7 +15,7 @@ QVector<QString> BubbyFlavour::flavour_list; /* Vector of Flavour names */
 QVector<ushort> BubbyFlavour::kTIER_LEVELS;  /* Vector of Skill levels */
 
 /*============================================================================
- * CONSTRUCTORS / DESTRUCTORS [PRIVATE CONSTRUCTOR]
+ * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
 
 /*
