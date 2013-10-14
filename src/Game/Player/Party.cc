@@ -244,6 +244,115 @@ bool Party::addMember(Person* person)
 }
 
 /*
+ * Description: Clears the party (except for the main character (index 0))
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Party::clearParty()
+{
+  members.erase(members.begin() + 1, members.end());
+}
+
+/*
+ * Description: Evaluates true if the Party contains a "Boss" character
+ *
+ * Inputs: none
+ * Output: bool - true if the party contains a Boss
+ */
+
+bool Party::hasBoss()
+{
+  bool has_boss = false;
+
+  for (int i = 0; i < getPartySize(); i++)
+    if (getMember(i)->getPersonFlag(Person::BOSS))
+      has_boss = true;
+
+  return has_boss;
+}
+
+/*
+ * Description: Evaluates true if the Party contains a "Final Boss" character
+ *
+ * Inputs: none
+ * Output: bool - true if the paty contaisn a Final Boss
+ */
+bool Party::hasFinalBoss()
+{
+  bool has_final_boss;
+
+  for (int i = 0; i < getPartySize(); i++)
+    if (getMember(i)->getPersonFlag(Person::FINAL_BOSS))
+      has_final_boss = true;
+
+  return has_final_boss;
+}
+
+/*
+ * Description: Evaluates true if the Party contains a "Mini Boss" character
+ *
+ * Inputs: none
+ * Output: bool - true if the party contains a Mini Boss
+ */
+bool Party::hasMiniBoss()
+{
+  bool has_mini_boss;
+
+  for (int i = 0; i < getPartySize(); i++)
+    if (getMember(i)->getPersonFlag(Person::MINI_BOSS))
+      has_mini_boss = true;
+
+  return has_mini_boss;
+}
+
+/*
+ * Description: Prints out all the information of the state of the party by
+ *              calling sub-print classes.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Party::printAll()
+{
+  qDebug() << "---  Party --- ";
+  printInfo();
+  printFlags();
+  qDebug() << "--- / Party --- ";
+}
+
+/*
+ * Description: Prints out all the basic info of the state of the party
+ *              including its members.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Party::printInfo()
+{
+  qDebug() << "Inventory Name: " << pouch->getName();
+  qDebug() << "Party Members: " << members.size();
+  qDebug() << "Max Size: " << max_size;
+
+  uint index = 0;
+  QList<Person*>::iterator it;
+  for (it = members.begin(); it < members.end(); ++it)
+    qDebug() << " Member #" << index++ << ": " << (*it)->getName();
+}
+
+/*
+ * Description: Prints out the state of the PartyFlags.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Party::printFlags()
+{
+  qDebug() << "Inventory Enabled: " << getFlag(Party::INVENTORY_ENABLED);
+  qDebug() << "Members Locked: " << getFlag(Party::MEMBERS_ENABLED);
+}
+
+/*
  * Description: Removes a person from the party at given index
  *
  * Inputs: int - index of party member needing to be removed
@@ -352,63 +461,6 @@ bool Party::useItem(Item *used_item, ushort target, EnumDb::ItemUse use_type)
   }
 
   return item_used;
-}
-
-/*
- * Description: Clears the party (except for the main character (index 0))
- *
- * Inputs: none
- * Output: none
- */
-void Party::clearParty()
-{
-  members.erase(members.begin() + 1, members.end());
-}
-
-/*
- * Description: Prints out all the information of the state of the party by
- *              calling sub-print classes.
- *
- * Inputs: none
- * Output: none
- */
-void Party::printAll()
-{
-  qDebug() << "---  Party --- ";
-  printInfo();
-  printFlags();
-  qDebug() << "--- / Party --- ";
-}
-
-/*
- * Description: Prints out all the basic info of the state of the party
- *              including its members.
- *
- * Inputs: none
- * Output: none
- */
-void Party::printInfo()
-{
-  qDebug() << "Inventory Name: " << pouch->getName();
-  qDebug() << "Party Members: " << members.size();
-  qDebug() << "Max Size: " << max_size;
-
-  uint index = 0;
-  QList<Person*>::iterator it;
-  for (it = members.begin(); it < members.end(); ++it)
-    qDebug() << " Member #" << index++ << ": " << (*it)->getName();
-}
-
-/*
- * Description: Prints out the state of the PartyFlags.
- *
- * Inputs: none
- * Output: none
- */
-void Party::printFlags()
-{
-  qDebug() << "Inventory Enabled: " << getFlag(Party::INVENTORY_ENABLED);
-  qDebug() << "Members Locked: " << getFlag(Party::MEMBERS_ENABLED);
 }
 
 /*

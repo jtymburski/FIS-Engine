@@ -15,7 +15,8 @@
  * CONSTANTS
  *============================================================================*/
 
-
+const ushort Battle::kDEFAULT_SCREEN_HEIGHT = 1216;
+const ushort Battle::kDEFAULT_SCREEN_WIDTH  =  708;
 
 /*==============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -28,7 +29,7 @@
  */
 Battle::Battle()
 {
-
+  loadDefaults();
 }
 
 /*
@@ -41,7 +42,17 @@ Battle::Battle(Party *friends, Party *foes, Options config, QWidget *parent)
       friends(friends),
       foes(foes)
 {
+  setScreenHeight(config.getScreenHeight());
+  setScreenWidth(config.getScreenWidth());
+  setFixedSize(getScreenWidth(), getScreenHeight());
 
+  setTimeElapsed(0);
+  setTurnsElapsed(0);
+
+  setAilmentUpdateMode(config.getAilmentUpdateState());
+  setHudDisplayMode(config.getBattleHudState());
+
+  loadBattleStateFlags();
 }
 
 /*
@@ -62,13 +73,75 @@ Battle::~Battle()
  * Description: Loads a default configuration of the Battle, if it has not
  *              already been configured.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: bool - true if the Battle was set for the first time
  */
 bool Battle::loadDefaults()
 {
+  setScreenHeight(kDEFAULT_SCREEN_HEIGHT);
+  setScreenWidth(kDEFAULT_SCREEN_WIDTH);
+  setFixedSize(getScreenWidth(), getScreenHeight());
 
+  setTimeElapsed(0);
+  setTurnsElapsed(0);
+
+  setAilmentUpdateMode(Options::BEARWALK);
+  setHudDisplayMode(Options::BEARWALK);
+
+  if (getBattleFlag(Battle::CONFIGURED))
+    return false;
+
+  setBattleFlag(Battle::CONFIGURED, true);
+  return true;
 }
+
+/*
+ * Description: Finds and assigns the proper BattleState flags at the beginning
+ *              of a Battle.
+ *
+ * Inputs: none
+ * Output: bool - true if the flags were set for the first time
+ */
+bool Battle::loadBattleStateFlags()
+{
+  setBattleFlag(Battle::RANDOM_ENCOUNTER, true);
+
+  if (foes->hasMiniBoss())
+  {
+    setBattleFlag(Battle::RANDOM_ENCOUNTER, false);
+    setBattleFlag(Battle::MINI_BOSS, true);
+  }
+  if (foes->hasBoss())
+  {
+    setBattleFlag(Battle::RANDOM_ENCOUNTER, false);
+    setBattleFlag(Battle::MINI_BOSS, false);
+    setBattleFlag(Battle::BOSS, true);
+  }
+  if (foes->hasFinalBoss())
+  {
+    setBattleFlag(Battle::RANDOM_ENCOUNTER, false);
+    setBattleFlag(Battle::MINI_BOSS, false);
+    setBattleFlag(Battle::BOSS, false);
+    setBattleFlag(Battle::FINAL_BOSS, false);
+  }
+
+  if (getBattleFlag(Battle::FLAGS_CONFIGURED))
+    return false;
+
+  setBattleFlag(Battle::FLAGS_CONFIGURED, true);
+  return true;
+}
+
+/*
+ * Description: Assigns a new value to the ailment update mode
+ *
+ * Inputs: Options::BattleOptions - enumerated value for ailment update mode
+ * Output: none
+ */
+ void Battle::setAilmentUpdateMode(Options::BattleOptions new_value)
+ {
+   ailment_update_mode = new_value;
+ }
 
 /*
  * Description: Assigns a new value to the elapsed time.
@@ -78,7 +151,8 @@ bool Battle::loadDefaults()
  */
 void Battle::setTimeElapsed(uint new_value)
 {
-
+  time_elapsed = new_value;
+  emit battleTimerUpdate();
 }
 
 /*
@@ -90,7 +164,10 @@ void Battle::setTimeElapsed(uint new_value)
 /* Assigns the friends party of the Battle */
 void Battle::setFriends(Party* new_friends)
 {
-  friends = new_friends;
+  if (!getBattleFlag(Battle::CONFIGURED))
+    friends = new_friends;
+  else
+    emit battleError("Attempted reconfigure of friends");
 }
 
 /*
@@ -102,8 +179,22 @@ void Battle::setFriends(Party* new_friends)
 /* Assigns the foes party of the Battle */
 void Battle::setFoes(Party* new_foes)
 {
-  foes = new_foes;
+  if (!getBattleFlag(Battle::CONFIGURED))
+    foes = new_foes;
+  else
+    emit battleError("Attempted reconfigure of foes");
 }
+
+/*
+ * Description: Assigns a new value to the hud display mode
+ *
+ * Inputs: Options::BattleOptions - enumerated value for hud display mode
+ * Output: none
+ */
+ void Battle::setHudDisplayMode(Options::BattleOptions new_value)
+ {
+   hud_display_mode = new_value;
+ }
 
 /*
  * Description: Assigns a new value for the screen height
@@ -111,9 +202,12 @@ void Battle::setFoes(Party* new_foes)
  * Inputs: new_value - uint value for the screen height
  * Output: none
  */
-void Battle::setScreenHeight(uint new_value)
+void Battle::setScreenHeight(ushort new_value)
 {
-  screen_height = new_value;
+  if (new_value != 0)
+    screen_height = new_value;
+  else
+    screen_height = kDEFAULT_SCREEN_HEIGHT;
 }
 
 /*
@@ -122,10 +216,26 @@ void Battle::setScreenHeight(uint new_value)
  * Inputs: new_value - uint value for the screen width
  * Output: none
  */
-/* Assign a new value for the screen width */
-void Battle::setScreenWidth(uint new_value)
+void Battle::setScreenWidth(ushort new_value)
 {
-  screen_width = new_value;
+  if (new_value != 0)
+    screen_width = new_value;
+  else
+    screen_height = kDEFAULT_SCREEN_WIDTH;
+}
+
+/*
+ * Description: Assigns a new value for turns elapsed
+ *
+ * Inputs: new_value - ushort value of new turns elapsed
+ * Output: none
+ */
+void Battle::setTurnsElapsed(ushort new_value)
+{
+  if (new_value > turns_elapsed + 1 || new_value < turns_elapsed)
+    emit battleTurnsReset();
+
+  turns_elapsed = new_value;
 }
 
 /*==============================================================================
@@ -158,6 +268,17 @@ void Battle::keyPressEvent(QKeyEvent* event)
     default:
       break;
   }
+}
+
+/*
+ * Description: Returns the ailment update mode
+ *
+ * Inputs: none
+ * Output: Options::BattleOptions - the currently set ailment update mode
+ */
+Options::BattleOptions Battle::getAilmentUpdateMode()
+{
+  return ailment_update_mode;
 }
 
 /*
@@ -194,12 +315,23 @@ Party* Battle::getFoes()
 }
 
 /*
+ * Description: Returns the hud display mode
+ *
+ * Inputs: none
+ * Output: Options::BattleOptions - the currently set hud display mode
+ */
+Options::BattleOptions Battle::getHudDisplayMode()
+{
+  return hud_display_mode;
+}
+
+/*
  * Description: Returns the screen height of the Battle
  *
  * Inputs: none
  * Output: uint - the height of the Battle screen
  */
-uint Battle::getScreenHeight()
+ushort Battle::getScreenHeight()
 {
   return screen_height;
 }
@@ -210,9 +342,20 @@ uint Battle::getScreenHeight()
  * Inputs: none
  * Output: uint - the width of the Battle screen
  */
-uint Battle::getScreenWidth()
+ushort Battle::getScreenWidth()
 {
   return screen_width;
+}
+
+/*
+ * Description: Returns the turns elapsed of Battle
+ *
+ * Inputs: none
+ * Output: ushort - the turns elapsed since the start of the Battle
+ */
+ushort Battle::getTurnsElapsed()
+{
+  return turns_elapsed;
 }
 
 /*==============================================================================

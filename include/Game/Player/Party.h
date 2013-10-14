@@ -97,6 +97,15 @@ public:
   /* Clears the party */
   void clearParty();
 
+  /* Evaluates true if the Party contains a "Boss" character */
+  bool hasBoss();
+
+  /* Evaluates true if the Party contains a "Final Boss" character */
+  bool hasFinalBoss();
+
+  /* Evaluates true if the Party contains a "Mini Boss" character */
+  bool hasMiniBoss();
+
   /* Methods for printing out the state of the class */
   void printAll();
   void printInfo();

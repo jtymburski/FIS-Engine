@@ -44,34 +44,58 @@ public:
   /* Enumerated flags for battle class */
   enum BattleState
   {
-    CONFIGURED      = 1ul << 0,
-    RANDOM_ENCOUTER = 1ul << 1,
-    MINI_BOSS       = 1ul << 2,
-    BOSS            = 1ul << 3,
-    FINAL_BOSS      = 1ul << 4
+    CONFIGURED       = 1ul << 0,
+    FLAGS_CONFIGURED = 1ul << 1,
+    RANDOM_ENCOUNTER = 1ul << 2,
+    MINI_BOSS        = 1ul << 3,
+    BOSS             = 1ul << 4,
+    FINAL_BOSS       = 1ul << 5
   };
   Q_DECLARE_FLAGS(BattleFlags, BattleState)
   BattleFlags flag_set;
 
 private:
+  /* The Battle Info Bar */
+  BattleInfoBar* info_bar;
+
+  /* The Battle Menu Bar */
+  BattleMenu* menu;
+
+  /* The Battle Status Bar */
+  BattleStatusBar* status_bar;
+
+  /* The Background of the Battle */
+  Frame* background;
+
+  /* The background mage of the Battle Status Bar */
+  Frame* status_bar_image;
+
+  /* Enemy Status Bars */
+  QVector<EnemyStatusBar*> enemy_status_bars;
+
   /* Enumerated battle options for ailment updates */
   Options::BattleOptions ailment_update_mode;
 
   /* Enumerated battle options for hud display mode */
   Options::BattleOptions hud_display_mode;
 
-  /* Elapsed time of the Battle */
-  uint time_elapsed;
-
   /* Pointers to the battling parties */
   Party* friends;
   Party* foes;
 
   /* Dimensions of the screen */
-  uint screen_height;
-  uint screen_width;
+  ushort screen_height;
+  ushort screen_width;
+
+  /* Elapsed time of the Battle */
+  uint time_elapsed;
+
+  /* Elapsed turns of hte battle */
+  ushort turns_elapsed;
 
   /* ------------ Constants --------------- */
+  static const ushort kDEFAULT_SCREEN_HEIGHT;
+  static const ushort kDEFAULT_SCREEN_WIDTH;
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -80,8 +104,11 @@ private:
   /* Load default configuration of the battle */
   bool loadDefaults();
 
-  /* Assigns a new value to the elapsed time */
-  void setTimeElapsed(uint new_value);
+  /* Sets the flags of BattleState at the beginning of the Battle */
+  bool loadBattleStateFlags();
+
+  /* Assigns a new value to the ailment update mode */
+  void setAilmentUpdateMode(Options::BattleOptions new_value);
 
   /* Assigns the friends party of the Battle */
   void setFriends(Party* new_friends);
@@ -89,11 +116,20 @@ private:
   /* Assigns the foes party of the Battle */
   void setFoes(Party* new_foes);
 
-  /* Assign a new value for the screen width */
-  void setScreenHeight(uint new_value);
+  /* Assigns a new value to the hud display mode */
+  void setHudDisplayMode(Options::BattleOptions new_value);
 
   /* Assign a new value for the screen width */
-  void setScreenWidth(uint new_value);
+  void setScreenHeight(ushort new_value);
+
+  /* Assign a new value for the screen width */
+  void setScreenWidth(ushort new_value);
+
+  /* Assigns a new value to the elapsed time */
+  void setTimeElapsed(uint new_value);
+
+  /* Assigns a new value to the turns elapsed */
+  void setTurnsElapsed(ushort new_value);
 
 /*=============================================================================
  * PROTECTED FUNCTIONS
@@ -102,8 +138,8 @@ protected:
   /* Handles all key entries for the Battle */
   void keyPressEvent(QKeyEvent* event);
 
-  /* Returns the elapsed time of the Battle */
-  uint getTimeElapsed();
+  /* Returns the ailment update mode currently set */
+  Options::BattleOptions getAilmentUpdateMode();
 
   /* Returns the friends pointer of the Battle */
   Party* getFriends();
@@ -111,11 +147,20 @@ protected:
   /* Returns the foes pointer of the Battle */
   Party* getFoes();
 
+  /* Returns the hud display mode currently set */
+  Options::BattleOptions getHudDisplayMode();
+
   /* Returns the value of the screen height */
-  uint getScreenHeight();
+  ushort getScreenHeight();
 
   /* Returns the value of the screen width */
-  uint getScreenWidth();
+  ushort getScreenWidth();
+
+  /* Returns the value of the turns elapsed */
+  ushort getTurnsElapsed();
+
+  /* Returns the elapsed time of the Battle */
+  uint getTimeElapsed();
 
 /*=============================================================================
  * SIGNALS
@@ -123,6 +168,15 @@ protected:
 signals:
   /* TODO */
   void closeBattle();
+
+  /* Emitted when the Battle reaches an error */
+  void battleError(QString error);
+
+  /* Emitted when the time is reset */
+  void battleTimerUpdate();
+
+  /* Emitted when the turns occured changes other than when it increments */
+  void battleTurnsReset();
 
 /*=============================================================================
  * PUBLIC SLOTS
