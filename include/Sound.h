@@ -10,11 +10,16 @@
 *              the previous execution. However, if you create multiple sound
 *              files, SDL allows up to 8 files being mixed together at
 *              once before returning the channel full error.
+*
+* Notes: main needed to be undefined because of how SDL forces control of
+*        Winmain for initialization. Since I do initialization myself,
+*        this call wasn't needed.
 ******************************************************************************/
+#undef main
+
 #ifndef SOUND_H
 #define SOUND_H
 
-#include <QDebug>
 #include <QObject>
 #include <SDL/SDL.h>
 #include <SDL/SDL_mixer.h>
