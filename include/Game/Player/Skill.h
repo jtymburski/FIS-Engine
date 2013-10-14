@@ -11,7 +11,6 @@
 *              different names but similar purposes to create more than one
 *              action that does the same thing.
 ******************************************************************************/
-
 #ifndef SKILL_H
 #define SKILL_H
 

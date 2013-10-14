@@ -10,7 +10,6 @@
 *
 * //TODO:
 ******************************************************************************/
-
 #ifndef BATTLE_H
 #define BATTLE_H
 
@@ -21,7 +20,6 @@
 #include "Game/Battle/BattleInfoBar.h"
 #include "Game/Battle/BattleMenu.h"
 #include "Game/Battle/BattleStatusBar.h"
-
 #include "Game/Player/Party.h"
 #include "GrammarHelper.h"
 #include "MathHelper.h"

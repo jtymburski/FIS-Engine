@@ -17,7 +17,7 @@
 struct Conversation;
 class MapThing;
 
-#include <QDebug>
+//#include <QDebug>
 #include <QObject>
 
 //#include "EnumDb.h"

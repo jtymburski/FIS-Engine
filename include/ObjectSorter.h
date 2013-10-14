@@ -3,7 +3,7 @@
  * Date Created: July 7th, 2013
  * Description: This object sorter file contains all the functors for sorting
  *              objects in the game
-\****************************************************************************/
+ ****************************************************************************/
 
 #include "Game/Player/Item.h"
 #include "Game/Player/Bubby.h"
