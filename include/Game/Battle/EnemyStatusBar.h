@@ -6,15 +6,14 @@
 *              including their health, thumbnails of inflicted status ailments,
 *              and their level.
 *******************************************************************************/
+#ifndef ENEMYSTATUSBAR_H
+#define ENEMYSTATUSBAR_H
 
 #include <QLabel>
 #include <QWidget>
 
 #include "Game/Player/Person.h"
 #include "Game/Battle/PersonStatusBar.h"
-
-#ifndef ENEMYSTATUSBAR_H
-#define ENEMYSTATUSBAR_H
 
 class EnemyStatusBar : public PersonStatusBar
 {

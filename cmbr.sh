@@ -10,7 +10,7 @@ if [ -n "$1" ]
 then
   if [ $1 = 'b' -o $1 = 'B' ] 
   then
-    qmake Univursa.pro
+    qmake5 Univursa.pro
     make
     ./bin/Univursa
   fi

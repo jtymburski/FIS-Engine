@@ -768,6 +768,9 @@ bool Map::loadMap(QString file)
   FileHandler fh(file, false, true);
   XmlData data;
 
+  /* Set up for gl initialization */
+  glInit();
+
   /* Start the map read */
   success &= fh.start();
 

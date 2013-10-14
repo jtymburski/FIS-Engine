@@ -18,7 +18,7 @@ win32 {
 }
 LIBS += -lSDL -lSDL_mixer
 unix:LIBS += -lGLU
-QT += opengl #phonon # network xml, core and gui are default
+QT += opengl widgets #phonon # network xml, core and gui are default
 RESOURCES = Resources.qrc
 
 SOURCES += \

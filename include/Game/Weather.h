@@ -7,7 +7,6 @@
 #ifndef WEATHER_H
 #define WEATHER_H
 
-//#include <QSound>
 #include <QWidget>
 
 #include "Game/Sprite.h"
