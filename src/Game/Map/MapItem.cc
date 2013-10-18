@@ -1,8 +1,8 @@
 /******************************************************************************
 * Class Name: MapItem
 * Date Created: Dec 2 2012
-* Inheritance: MapInteractiveObject
-* Description: The MapItem class, right now this is just for categorization
+* Inheritance: MapThing
+* Description: The MapItem class - TODO: description
 ******************************************************************************/
 #include "Game/Map/MapItem.h"
 

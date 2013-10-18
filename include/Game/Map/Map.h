@@ -16,8 +16,9 @@
 #include "FileHandler.h"
 #include "Game/EventHandler.h"
 #include "Game/Map/MapDialog.h"
-#include "Game/Map/MapNPC.h"
+#include "Game/Map/MapItem.h"
 #include "Game/Map/MapMenu.h"
+#include "Game/Map/MapNPC.h"
 #include "Game/Map/MapStatusBar.h"
 #include "Game/Map/MapThing.h"
 #include "Game/Map/MapViewport.h"
@@ -59,9 +60,10 @@ private:
   MapStatusBar map_status_bar; // TODO: Remove
 
   /* The players info on the map */
+  QList<MapItem*> items;
   QList<MapPerson*> persons;
   MapPerson* player; /* The actively controlled player */
-  MapThing* thing;
+  QList<MapThing*> things;
 
   /* The sectors on the map (for rooms, caves, houses etc) */
   QList<Sector> sectors;
@@ -92,7 +94,6 @@ private:
   const static short kFILE_SECTION_ID;  /* The section identifier, for file */
   const static short kFILE_TILE_COLUMN; /* The tile depth in XML of column */
   const static short kFILE_TILE_ROW;    /* The tile depth in XML of row */
-  const static short kPLAYER_INDEX;   /* The player index, in the thing set */
   const static int kTICK_DELAY;       /* Tick timer delay constant */
   const static int kTILE_HEIGHT;      /* The tile height, as constant (TEMP) */
   const static int kTILE_WIDTH;       /* The tile width, as constant (TEMP) */
@@ -112,7 +113,7 @@ private:
   bool initiateMapSection(int section_index, int width, int height);
   
   /* Initiates a thing action, based on the action key being hit */
-  void initiateThingAction();
+  void initiateThingInteraction();
  
   /* Splites the tile path, to determine if numerous tiles are needed */
   QList< QList<QString> > splitTilePath(QString path);
@@ -170,7 +171,7 @@ public:
   void initialization();
 
   /* Initiates a conversation, within the map. */
-  bool initConversation(Conversation* convo, MapThing* initiator, 
+  bool initConversation(Conversation* convo, MapPerson* initiator, 
                                              MapThing* source);
 
   /* Causes the thing you are facing and next to start its interactive action */

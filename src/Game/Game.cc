@@ -71,15 +71,15 @@ void Game::connectEvents()
                    this,           SLOT(startBattle()));
 
   QObject::connect(&event_handler, 
-                   SIGNAL(teleportThing(MapThing*, int, int, int)), 
+                   SIGNAL(teleportThing(MapPerson*, int, int, int)), 
                    this,           
-                   SLOT(teleportThing(MapThing*, int, int, int)));
+                   SLOT(teleportThing(MapPerson*, int, int, int)));
 
   QObject::connect(
               &event_handler, 
-              SIGNAL(initConversation(Conversation*, MapThing*, MapThing*)), 
+              SIGNAL(initConversation(Conversation*, MapPerson*, MapThing*)), 
               this, 
-              SLOT(initConversation(Conversation*, MapThing*, MapThing*)));
+              SLOT(initConversation(Conversation*, MapPerson*, MapThing*)));
 }
 
 /* Set up the battle - old battle needs to be deleted prior to calling */
@@ -236,7 +236,7 @@ void Game::setupMap()
  * PUBLIC SLOTS
  *===========================================================================*/
 
-void Game::initConversation(Conversation* convo, MapThing* initiator, 
+void Game::initConversation(Conversation* convo, MapPerson* initiator, 
                                                  MapThing* source)
 {
   if(game_map != 0)
@@ -248,7 +248,7 @@ void Game::startBattle()
   switchGameMode(BATTLE);
 }
 
-void Game::teleportThing(MapThing* target, int x, int y, int section_id)
+void Game::teleportThing(MapPerson* target, int x, int y, int section_id)
 {
   if(game_map != 0 && target != 0)
   {

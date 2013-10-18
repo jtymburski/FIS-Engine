@@ -18,7 +18,7 @@ win32 {
 }
 LIBS += -lSDL -lSDL_mixer
 unix:LIBS += -lGLU
-QT += opengl widgets #phonon # network xml, core and gui are default
+QT += opengl widgets #phonon network xml, core and gui are default
 RESOURCES = Resources.qrc
 
 SOURCES += \
@@ -43,10 +43,7 @@ SOURCES += \
     ./src/Game/Battle/EnemyStatusBar.cc \
     ./src/Game/Battle/AllyStatusBar.cc \
     ./src/Game/Map/Map.cc \
-    ./src/Game/Map/MapBubby.cc \
     ./src/Game/Map/MapDialog.cc \
-    ./src/Game/Map/MapEquipment.cc \
-    ./src/Game/Map/MapFoliage.cc \
     ./src/Game/Map/MapInteractiveObject.cc \
     ./src/Game/Map/MapItem.cc \
     ./src/Game/Map/MapMenu.cc \
@@ -56,7 +53,6 @@ SOURCES += \
     ./src/Game/Map/MapStatusBar.cc \
     ./src/Game/Map/MapThing.cc \
     ./src/Game/Map/MapViewport.cc \
-    ./src/Game/Map/MapWalkOver.cc \
     ./src/Game/Map/Sector.cc \
     ./src/Game/Map/SectorAction.cc \
     ./src/Game/Map/Tile.cc \
@@ -104,10 +100,7 @@ HEADERS += \
     ./include/Game/Battle/EnemyStatusBar.h \
     ./include/Game/Battle/AllyStatusBar.h \
     ./include/Game/Map/Map.h \
-    ./include/Game/Map/MapBubby.h \
     ./include/Game/Map/MapDialog.h \
-    ./include/Game/Map/MapEquipment.h \
-    ./include/Game/Map/MapFoliage.h \
     ./include/Game/Map/MapInteractiveObject.h \
     ./include/Game/Map/MapItem.h \
     ./include/Game/Map/MapMenu.h \
@@ -117,7 +110,6 @@ HEADERS += \
     ./include/Game/Map/MapStatusBar.h \
     ./include/Game/Map/MapThing.h \
     ./include/Game/Map/MapViewport.h \
-    ./include/Game/Map/MapWalkOver.h \
     ./include/Game/Map/Sector.h \
     ./include/Game/Map/SectorAction.h \
     ./include/Game/Map/Tile.h \

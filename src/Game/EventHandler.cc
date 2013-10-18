@@ -40,7 +40,7 @@ EventHandler::Event EventHandler::createEventTemplate()
 }
 
 void EventHandler::executeConversationEvent(Conversation* convo, 
-                                            MapThing* initiator, 
+                                            MapPerson* initiator, 
                                             MapThing* source)
 {
   if(convo != 0)
@@ -48,7 +48,7 @@ void EventHandler::executeConversationEvent(Conversation* convo,
 }
 
 /* Execute a start battle event */
-void EventHandler::executeStartBattleEvent(Event event, MapThing* target)
+void EventHandler::executeStartBattleEvent(Event event, MapPerson* target)
 {
   (void)event;
   (void)target;
@@ -57,7 +57,7 @@ void EventHandler::executeStartBattleEvent(Event event, MapThing* target)
 }
   
 /* Execute the teleport event */
-void EventHandler::executeTeleportEvent(Event event, MapThing* target)
+void EventHandler::executeTeleportEvent(Event event, MapPerson* target)
 {
   int x = -1;
   int y = -1;
@@ -124,7 +124,7 @@ EventHandler::Event EventHandler::createTeleportEvent(int tile_x, int tile_y,
 }
 
 /* Execute the given event - done through signal emits */
-void EventHandler::executeEvent(Event event, MapThing* initiator, 
+void EventHandler::executeEvent(Event event, MapPerson* initiator, 
                                              MapThing* source)
 {
   if(event.classification == TELEPORTPLAYER)

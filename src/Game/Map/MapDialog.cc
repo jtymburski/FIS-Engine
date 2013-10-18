@@ -400,14 +400,14 @@ void MapDialog::endConversation()
   }
 }
 
-bool MapDialog::initConversation(Conversation* dialog_info, MapThing* target)
+bool MapDialog::initConversation(Conversation* dialog_info, MapPerson* target)
 {
   if(dialog_info != 0)
     return initConversation(*dialog_info, target);
   return false;
 }
 
-bool MapDialog::initConversation(Conversation dialog_info, MapThing* target)
+bool MapDialog::initConversation(Conversation dialog_info, MapPerson* target)
 {
   if(isDialogImageSet() && dialog_mode != CONVERSATION && target != 0)
   {

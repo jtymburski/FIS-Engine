@@ -16,6 +16,7 @@
 #include "EnumDb.h"
 #include "Game/EventHandler.h"
 #include "Game/Frame.h"
+#include "Game/Map/MapPerson.h"
 #include "Game/Map/MapThing.h"
 
 /* Notification queue structure */
@@ -105,7 +106,7 @@ private:
  
   /* The data for the associated things. This is pertinent for the
    * conversation access and anything displayed */
-  MapThing* target;
+  MapPerson* target;
   MapThing* thing;
   QList<MapThing*> thing_data;
 
@@ -214,8 +215,8 @@ public:
   void endConversation();
 
   /* Initializes a conversation with the two given people. */
-  bool initConversation(Conversation* dialog_info, MapThing* target);
-  bool initConversation(Conversation dialog_info, MapThing* target);
+  bool initConversation(Conversation* dialog_info, MapPerson* target);
+  bool initConversation(Conversation dialog_info, MapPerson* target);
 
   /* Initialize all OpenGL calls needed for this class */
   void initializeGl();

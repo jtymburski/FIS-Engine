@@ -81,7 +81,11 @@ protected:
 
   /* Sets the direction that the person is travelling in */
   bool setDirection(EnumDb::Direction direction, bool set_movement = true);
-
+  
+  /* Starts and stops tile move. Relies on underlying logic for occurance */
+  void tileMoveFinish();
+  bool tileMoveStart(Tile* next_tile);
+  
   /* Updates the animation of the map thing, based on the current state */
   void updateAnimation();
 
@@ -132,6 +136,9 @@ public:
   
   /* Sets the animation time for each frame */
   bool setAnimationSpeed(short frame_time);
+  
+  /* Set the tile to hook the map thing to */
+  bool setStartingTile(int section_id, Tile* new_tile, bool no_events = false);
 
   /* Sets a new state to add into the states list */
   bool setState(SurfaceClassifier surface, EnumDb::Direction direction, 

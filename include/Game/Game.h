@@ -96,13 +96,13 @@ signals:
  *===========================================================================*/
 public slots:
   /* Initiates a conversation */
-  void initConversation(Conversation* convo, MapThing* initiator, 
+  void initConversation(Conversation* convo, MapPerson* initiator, 
                                              MapThing* source);
   /* Starts a battle */
   void startBattle();
   
   /* Teleports the player stored within the map */
-  void teleportThing(MapThing* target, int x, int y, int section_id);
+  void teleportThing(MapPerson* target, int x, int y, int section_id);
 
 /*============================================================================
  * PUBLIC FUNCTIONS

@@ -74,6 +74,7 @@ protected:
   const static short kDEFAULT_SPEED; /* The default thing speed */
   const static float kMAX_OPACITY; /* The max opacity allowable (0-1.0) */
   const static short kMINIMUM_ID; /* The minimum ID, for a thing */
+  const static short kPLAYER_ID; /* The player ID */
   const static short kUNSET_ID; /* The placeholder unset ID */
 
 /*============================================================================
@@ -97,8 +98,8 @@ protected:
   bool setDirection(EnumDb::Direction new_direction);
 
   /* Starts and stops tile move. Relies on underlying logic for occurance */
-  void tileMoveFinish();
-  bool tileMoveStart(Tile* next_tile, Tile::ThingState classification);
+  virtual void tileMoveFinish();
+  virtual bool tileMoveStart(Tile* next_tile);
  
 /*============================================================================
  * SIGNALS
@@ -115,7 +116,11 @@ public:
 
   /* Clears the entire class data */
   virtual void clear();
-  
+   
+  /* Clear all movement from the stack. This is filled from add/remove
+   * direction */
+  virtual void clearAllMovement();
+
   /* Clears the target that the map thing is currently pointing at */
   void clearTarget();
   
@@ -174,7 +179,7 @@ public:
   virtual bool initializeGl();
   
   /* Starts interaction (conversation, giving something, etc) */
-  virtual bool interact(MapThing* initiator);
+  virtual bool interact(MapPerson* initiator);
   
   /* Returns if there is a move request for the given thing */
   virtual bool isMoveRequested();
@@ -211,6 +216,7 @@ public:
 
   /* Sets the things ID */
   bool setID(int new_id);
+  void setIDPlayer();
 
   /* Sets the interaction event for the thing */
   bool setInteraction(EventHandler::Event interact_event);
@@ -228,7 +234,8 @@ public:
   bool setSpeed(short speed);
     
   /* Set the tile to hook the map thing to */
-  bool setStartingTile(int section_id, Tile* new_tile, bool no_events = false);
+  virtual bool setStartingTile(int section_id, Tile* new_tile, 
+                                               bool no_events = false);
 
   /* Sets the target map thing, fails if there is already a target */
   bool setTarget(MapThing* target);

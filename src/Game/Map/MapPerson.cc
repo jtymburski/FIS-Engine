@@ -214,6 +214,46 @@ bool MapPerson::setDirection(EnumDb::Direction direction, bool set_movement)
   return movement_changed;
 }
 
+/* 
+ * Description: The tile move finish call. To be called after a move and it's
+ *              determined that the thing is on the main tile (for the first
+ *              time). Essentially just cleans up the previous tile pointer.
+ *              This is reimplemented from MapThing since it uses "Person"
+ *              instead of "Thing" in tile.
+ * 
+ * Inputs: none
+ * Output: none
+ */
+void MapPerson::tileMoveFinish()
+{
+  if(tile_previous != 0)
+    tile_previous->unsetPerson(getID() != kPLAYER_ID);
+  tile_previous = 0;
+}
+
+// TODO
+/* 
+ * Description: The tile move initialization call. To be called after
+ *              passability checks have passed and the thing can be moved to
+ *              the next tile. Sets the new main pointer and moves the current
+ *              to the old spot. This is reimplemented from MapThing since it
+ *              uses "Person" instead of "Thing" in tile.
+ * 
+ * Inputs: Tile* next_tile - the tile to move to
+ * Output: bool - if the tile start was successfully started
+ */
+bool MapPerson::tileMoveStart(Tile* next_tile)
+{
+  if(next_tile != 0 && !next_tile->isPersonSet())
+  {
+    tile_previous = tile_main;
+    tile_main = next_tile;
+    tile_main->setPerson(this, getID() != kPLAYER_ID);
+    return true;
+  }
+  return false;
+}
+
 /*
  * Description: Updates the current animation state. This is called each time
  *              the direction has changed or if movement has been initiated.
@@ -442,6 +482,48 @@ bool MapPerson::setAnimationSpeed(short frame_time)
 }
 
 /* 
+ * Description: Sets the connected tile information for the map thing. This is
+ *              the initial starting point and where the thing is initially
+ *              placed. If this is unset, the thing will not move or paint.
+ *              This replaces the generic mapthing call to allow for map 
+ *              person in tile to be modified.
+ *
+ * Inputs: int section_id - the map id that the tile is from
+ *         Tile* new_tile - the tile to set the starting pointer to
+ *         bool no_events - don't execute any events when set
+ * Output: bool - status if the change was able to occur
+ */
+bool MapPerson::setStartingTile(int section_id, Tile* new_tile, bool no_events)
+{
+  if(section_id >= 0 && new_tile != 0 && !new_tile->isPersonSet())
+  {
+    /* Stop movement */
+    setDirection(EnumDb::DIRECTIONLESS);
+  
+    /* Unset the previous tile */
+    if(tile_previous != 0)
+      tile_previous->unsetPerson(no_events);
+    tile_previous = 0;
+  
+    /* Unset the main tile */
+    if(tile_main != 0)
+      tile_main->unsetPerson(no_events);
+    tile_main = 0;
+  
+    /* Set the new tile */
+    tile_main = new_tile;
+    this->x = tile_main->getPixelX();
+    this->y = tile_main->getPixelY();
+    tile_main->setPerson(this, no_events);
+    tile_section = section_id;
+    
+    return true;
+  }
+
+  return false;
+}
+
+/* 
  * Description: Sets a state within the class, based on the double set of 
  *              enumerators, for surface and direction. This will automatically
  *              unset a state that is currently in its place, if one does
@@ -548,7 +630,7 @@ void MapPerson::updateThing(float cycle_time, Tile* next_tile)
       
       /* If it can move, initiate tile shifting */
       if(can_move)
-        tileMoveStart(next_tile, Tile::PERSON);
+        tileMoveStart(next_tile);
     }
     /* If there is no move request, stop movement */
     else

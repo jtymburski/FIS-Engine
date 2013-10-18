@@ -33,7 +33,6 @@ const short Map::kFILE_GAME_TYPE = 1;
 const short Map::kFILE_SECTION_ID = 2;
 const short Map::kFILE_TILE_COLUMN = 5;
 const short Map::kFILE_TILE_ROW = 4;
-const short Map::kPLAYER_INDEX = 0;
 const int Map::kTICK_DELAY = 10;
 const int Map::kTILE_HEIGHT = 64;
 const int Map::kTILE_WIDTH = 64;
@@ -53,19 +52,18 @@ Map::Map(const QGLFormat & format, Options running_config,
   setAutoFillBackground(false);
   
   /* Configure the scene */
+  items.clear();
   loaded = false;
   map_index = 0;
   persons.clear();
   player = 0;
+  things.clear();
 
   /* Configure the FPS animation and time elapsed, and reset to 0 */
   paint_animation = 0;
   paint_frames = 0;
   paint_time = 0;
   time_elapsed = 0;
-
-  /* Test the things and persons */
-  thing = 0;
 
   //setMinimumSize(2000, 2000);
 
@@ -76,6 +74,7 @@ Map::Map(const QGLFormat & format, Options running_config,
   map_dialog.setViewportDimension(running_config.getScreenWidth(), 
                                   running_config.getScreenHeight());
 
+  /* Necessary connections for child functions */
   connect(&map_dialog, SIGNAL(setThingData(QList<int>)), 
           this, SLOT(getThingData(QList<int>)));
   connect(&map_dialog, SIGNAL(finishThingTarget()), 
@@ -88,9 +87,6 @@ Map::Map(const QGLFormat & format, Options running_config,
 
   /* Initialize the event handler, for map creation */
   this->event_handler = event_handler;
-
-  /* Call the initial update to start OpenGL */
-  updateGL();
 }
 
 /* Destructor function */
@@ -249,7 +245,7 @@ bool Map::initiateMapSection(int section_index, int width, int height)
 }
 
 /* Initiates a thing action, based on the action key being hit */
-void Map::initiateThingAction()
+void Map::initiateThingInteraction()
 {
   if(player != 0)
   {
@@ -272,13 +268,19 @@ void Map::initiateThingAction()
 
     /* Aquire the thing, that's being pointed at */
     int index = map_index;
-    if((x >= 0 && x < geography[index].size() && y >= 0 && 
-        y < geography[index][0].size()) &&
-       (geography[index][x][y]->getImpassableThing() != 0 &&
-        geography[index][x][y]->getImpassableThing()->getTile()->getX() == x &&
-        geography[index][x][y]->getImpassableThing()->getTile()->getY() == y))
+    if(x >= 0 && x < geography[index].size() && 
+       y >= 0 && y < geography[index][0].size())
     {
-      geography[index][x][y]->getImpassableThing()->interact(player);
+      if(geography[index][x][y]->isPersonSet() &&
+         geography[index][x][y]->getPerson()->getTile()->getX() == x &&
+         geography[index][x][y]->getPerson()->getTile()->getY() == y)
+      {
+        geography[index][x][y]->getPerson()->interact(player);
+      }
+      else if(geography[index][x][y]->isThingSet())
+      {
+        geography[index][x][y]->getThing()->interact(player);
+      }
     }
   }
 }
@@ -344,7 +346,7 @@ void Map::animate(short time_since_last)
   /* Only proceed if the animation time is positive */
   if(time_since_last > 0)
   {
-    /* The movement handling for things*/
+    /* The movement handling for persons */
     for(int i = 0; i < persons.size(); i++)
     {
       if(persons[i] != 0)
@@ -387,6 +389,20 @@ void Map::animate(short time_since_last)
       }
     }
 
+    /* Update items on the map */
+    for(int i = 0; i < items.size(); i++)
+    {
+      if(items[i] != 0)
+        items[i]->updateThing(time_since_last, 0);
+    }
+
+    /* Update things on the map */
+    for(int i = 0; i < things.size(); i++)
+    {
+      if(things[i] != 0)
+        things[i]->updateThing(time_since_last, 0);
+    }
+
     /* Animate the displays on the screen */
     map_dialog.update(time_since_last);
   }
@@ -410,7 +426,11 @@ void Map::initializeGL()
 void Map::keyPressEvent(QKeyEvent* key_event)
 {
   if(key_event->key() == Qt::Key_Escape)
+  {
+    if(player != 0)
+      player->clearAllMovement();
     emit closeMap();
+  }
   else if(key_event->key() == Qt::Key_P)
     map_dialog.setPaused(!map_dialog.isPaused());
   else if(key_event->key() == Qt::Key_F1)
@@ -435,7 +455,7 @@ void Map::keyPressEvent(QKeyEvent* key_event)
   else if(map_dialog.isInConversation())
     map_dialog.keyPress(key_event);
   else if(key_event->key() == Qt::Key_Space)
-    initiateThingAction();
+    initiateThingInteraction();
   else if(key_event->key() == Qt::Key_Down || key_event->key() == Qt::Key_Up ||
           key_event->key() == Qt::Key_Right || key_event->key() == Qt::Key_Left)
   {
@@ -444,32 +464,6 @@ void Map::keyPressEvent(QKeyEvent* key_event)
   }
   else if(key_event->key() == Qt::Key_A)
     animateTiles();
-  else if(key_event->key() == Qt::Key_1)
-  {
-    if(persons.size() > kPLAYER_INDEX)
-    {
-      player->keyFlush();
-      player = persons[kPLAYER_INDEX];
-      viewport->lockOn(player);
-    }
-  }
-  else if(key_event->key() == Qt::Key_2)
-  {
-    if(persons.size() > (kPLAYER_INDEX + 1))
-    {
-      player->keyFlush();
-      player = persons[kPLAYER_INDEX + 1];
-      viewport->lockOn(player);
-    }
-  }
-  else if(key_event->key() == Qt::Key_3)
-    viewport->lockOn(609, 353);
-  else if(persons.size() >= 3 && key_event->key() == Qt::Key_7)
-    ((MapNPC*)persons[2])->setNodeState(MapNPC::LOOPED);
-  else if(persons.size() >= 3 && key_event->key() == Qt::Key_8)
-    ((MapNPC*)persons[2])->setNodeState(MapNPC::BACKANDFORTH);
-  else if(persons.size() >= 3 && key_event->key() == Qt::Key_9)
-    ((MapNPC*)persons[2])->setNodeState(MapNPC::LOCKED);
   else if(key_event->key() == Qt::Key_F4)
     player->setSpeed(player->getSpeed() - 1);
   else if(key_event->key() == Qt::Key_F5)
@@ -485,7 +479,7 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     convo->text += "How can this continue? It must pursue to complete ";
     convo->text += "embodiment. Ok, maybe I'll just keep typing until I break ";
     convo->text += "the entire compiler.";
-    convo->thing_id = 1;
+    convo->thing_id = 0;
     Conversation test1, test2, test3, test4, test5;
     test1.category = EnumDb::TEXT;
     test1.action_event = blank_event;
@@ -580,26 +574,60 @@ void Map::paintGL()
     animate(time_elapsed);
     viewport->updateView();
 
+    /* Grab the variables for viewport */
+    int tile_x_start = viewport->getXTileStart();
+    int tile_x_end = viewport->getXTileEnd();
+    int tile_y_start = viewport->getYTileStart();
+    int tile_y_end = viewport->getYTileEnd();
+    float x_offset = viewport->getX();
+    int x_start = viewport->getXStart();
+    int x_end = viewport->getXEnd();
+    float y_offset = viewport->getY();
+    int y_start = viewport->getYStart();
+    int y_end = viewport->getYEnd();
+
     /* Paint the lower half */
-    for(int i = viewport->getXTileStart(); i < viewport->getXTileEnd(); i++)
-      for(int j = viewport->getYTileStart(); j < viewport->getYTileEnd(); j++)
-        geography[map_index][i][j]->paintLower(viewport->getX(), 
-                                               viewport->getY());
-   
-    /* Paint the persons (player and NPCs) */
+    for(int i = tile_x_start; i < tile_x_end; i++)
+      for(int j = tile_y_start; j < tile_y_end; j++)
+        geography[map_index][i][j]->paintLower(x_offset, y_offset);
+
+    /* Paint the walkover objects */
+    for(int i = tile_x_start; i < tile_x_end; i++)
+    {
+      for(int j = tile_y_start; j < tile_y_end; j++)
+      {
+        if(geography[map_index][i][j]->isItemsSet())
+          geography[map_index][i][j]->getItems()[0]->
+                                                  paintGl(x_offset, y_offset);
+      }
+    }
+
+    /* Paint all things on the map */
+    for(int i = 0; i < things.size(); i++)
+    {
+      if(things[i] != 0 && things[i]->getMapSection() == map_index && 
+         things[i]->getX() >= x_start && things[i]->getX() <= x_end && 
+         things[i]->getY() >= y_start && things[i]->getY() <= y_end)
+      {
+        things[i]->paintGl(x_offset, y_offset);
+      }
+    }
+
+    /* Paint all persons on the map */
     for(int i = 0; i < persons.size(); i++)
     {
       if(persons[i] != 0 && persons[i]->getMapSection() == map_index && 
-                            persons[i]->getX() >= viewport->getXStart() &&
-                            persons[i]->getX() <= viewport->getXEnd())
-        persons[i]->paintGl(viewport->getX(), viewport->getY());
+         persons[i]->getX() >= x_start && persons[i]->getX() <= x_end && 
+         persons[i]->getY() >= y_start && persons[i]->getY() <= y_end)
+      {
+        persons[i]->paintGl(x_offset, y_offset);
+      }
     }
 
     /* Paint the upper half */
-    for(int i = viewport->getXTileStart(); i < viewport->getXTileEnd(); i++)
-      for(int j = viewport->getYTileStart(); j < viewport->getYTileEnd(); j++)
-        geography[map_index][i][j]->paintUpper(viewport->getX(), 
-                                               viewport->getY());
+    for(int i = tile_x_start; i < tile_x_end; i++)
+      for(int j = tile_y_start; j < tile_y_end; j++)
+        geography[map_index][i][j]->paintUpper(x_offset, y_offset);
 
     /* Paint the dialog */
     map_dialog.paintGl(this);
@@ -683,15 +711,22 @@ void Map::getThingData(QList<int> thing_ids)
     /* Only continue if the ID is valid and >= than 0 */
     if(thing_ids[i] >= 0)
     {
+      /* Compile a list of all MapThings */
+      QList<MapThing*> combined = things;
+      for(int k = 0; k < items.size(); k++)
+        combined.append((MapThing*)items[k]);
+      for(int k = 0; k < persons.size(); k++)
+        combined.append((MapThing*)persons[k]);
+
       bool found = false;
       int j = 0;
 
       /* Loop through the stack of things to find the associated ID */
-      while(!found && j < persons.size())
+      while(!found && j < combined.size())
       {
-        if(persons[j]->getID() == thing_ids[i])
+        if(combined[j]->getID() == thing_ids[i])
         {
-          used_things.append(persons[j]);
+          used_things.append(combined[j]);
           found = true;
         }
         j++;
@@ -723,7 +758,7 @@ void Map::initialization()
   //player->setFocus();
 }
 
-bool Map::initConversation(Conversation* convo, MapThing* initiator, 
+bool Map::initConversation(Conversation* convo, MapPerson* initiator, 
                                                 MapThing* source)
 {
   if(player != 0 && map_dialog.initConversation(convo, initiator))
@@ -838,12 +873,12 @@ bool Map::loadMap(QString file)
     {
       geography[1][3][6]->setEnterEvent(
             event_handler->createTeleportEvent(12, 9, 0));
-      geography[0][0][0]->setExitEvent(
+      geography[0][1][1]->setExitEvent(
             event_handler->createStartBattleEvent());
       geography[0][12][8]->setEnterEvent(
             event_handler->createTeleportEvent(3, 5, 1));
     }
-    
+
     /* Add the player information */
     Sprite* up_sprite = new Sprite("sprites/Map/Map_Things/main_AA_D", 
                                    3, ".png");
@@ -862,9 +897,10 @@ bool Map::loadMap(QString file)
     person->setState(MapPerson::GROUND, EnumDb::EAST, right_sprite);
     person->setState(MapPerson::GROUND, EnumDb::WEST, left_sprite);
     person->setDialogImage("sprites/Map/Dialog/player.png");
-    person->setID(1);
+    person->setIDPlayer();
     person->setName("REally LOng NAme");
     persons.append(person);
+    player = person;
 
     /* Add a second player */
     up_sprite = new Sprite("sprites/Map/Map_Things/aurora_AA_D", 3, ".png");
@@ -886,7 +922,7 @@ bool Map::loadMap(QString file)
     Conversation* person_convo = new Conversation;
     person_convo->category = EnumDb::TEXT;
     person_convo->action_event = event_handler->createTeleportEvent(30, 30, 0);
-    person_convo->text = "I don't have anything to say to you!!";
+    person_convo->text = "I'm invisible and you are gone!!";
     person_convo->thing_id = 24;
     person->setInteraction( // TODO: Check if event handler set & successful
                          event_handler->createConversationEvent(person_convo));
@@ -940,11 +976,16 @@ bool Map::loadMap(QString file)
     persons.append(npc);
 
     /* Make the map thing */
-    //thing = new MapThing(new Sprite("sprites/Map/Map_Things/main_AA_D00.png"),
-    //                     kTILE_WIDTH, kTILE_HEIGHT);
-    //thing->setStartingTile(0, geography[0][2][2]);
-    //thing->initializeGl();
-    //persons.append(thing);
+    Sprite* frames = new Sprite(
+          "sprites/Map/Tiles/Scenery/Transitional/TreeDoor01Opening_AA_A", 
+          5, ".png");
+    MapThing* thing = new MapThing(frames, kTILE_WIDTH, kTILE_HEIGHT);
+    thing->setAnimationSpeed(100);
+    if(geography.size() > 0 && geography[0].size() > 2 && 
+                               geography[0][2].size() > 2)
+      thing->setStartingTile(0, geography[0][2][2]);
+    thing->initializeGl();
+    things.append(thing);
   }
 
   success &= fh.stop();
@@ -960,8 +1001,6 @@ bool Map::loadMap(QString file)
     {
       viewport->setMapSize(geography[map_index].size(), 
                            geography[map_index][0].size());
-      if(persons.size() > kPLAYER_INDEX)
-        player = persons[kPLAYER_INDEX];
       if(player != 0)
         viewport->lockOn(player);
     }
@@ -970,9 +1009,13 @@ bool Map::loadMap(QString file)
       for(int j = 0; j < geography[i].size(); j++)
         for(int k = 0; k < geography[i][j].size(); k++) 
           geography[i][j][k]->initializeGl();
-    
+   
+    for(int i = 0; i < items.size(); i++)
+      items[i]->initializeGl();
     for(int i = 0; i < persons.size(); i++)
       persons[i]->initializeGl();
+    for(int i = 0; i < things.size(); i++)
+      things[i]->initializeGl();
   }
   loaded = success;
 
@@ -1008,7 +1051,6 @@ bool Map::setSectionIndex(int index)
   return false;
 }
   
-// TODO: Add check to see if the person is within map_index.
 // Possibly make the teleport add the ability of shifting map thing
 void Map::teleportThing(int id, int tile_x, int tile_y, int section_id)
 {
@@ -1065,7 +1107,16 @@ void Map::unloadMap()
   }
   tile_sprites.clear();
 
-  /* Delete the things */
+  /* Delete the items */
+  for(int i = 0; i < items.size(); i++)
+  {
+    if(items[i] != 0)
+      delete items[i];
+    items[i] = 0;
+  }
+  items.clear();
+
+  /* Delete all persons */
   for(int i = 0; i < persons.size(); i++)
   {
     if(persons[i] != 0)
@@ -1073,6 +1124,15 @@ void Map::unloadMap()
     persons[i] = 0;
   }
   persons.clear();
+
+  /* Delete the things */
+  for(int i = 0; i < things.size(); i++)
+  {
+    if(things[i] != 0)
+      delete things[i];
+    things[i] = 0;
+  }
+  things.clear();
 
   /* Reset the viewport */
   viewport->setMapSize(0, 0);

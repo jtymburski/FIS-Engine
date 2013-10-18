@@ -16,6 +16,7 @@ const short MapThing::kDEFAULT_ANIMATION = 250;
 const short MapThing::kDEFAULT_SPEED = 150;
 const float MapThing::kMAX_OPACITY = 1.0;
 const short MapThing::kMINIMUM_ID =  0;
+const short MapThing::kPLAYER_ID = 0;
 const short MapThing::kUNSET_ID = -1;
 
 /*============================================================================
@@ -163,7 +164,13 @@ bool MapThing::isMoveAllowed(Tile* next_tile)
   
   if(tile_main != 0 && next_tile != 0 && isMoveRequested())
   {
-    return tile_main->getPassabilityExiting(move_request) && 
+    bool thing_passable = true;
+
+    /* Determine if the thing is passable */
+    if(next_tile->getThing() != 0)
+      thing_passable = next_tile->getThing()->isPassable();
+
+    return thing_passable && tile_main->getPassabilityExiting(move_request) && 
            next_tile->getPassabilityEntering(move_request);
   }
   return false;
@@ -243,10 +250,11 @@ bool MapThing::setDirection(EnumDb::Direction new_direction)
 void MapThing::tileMoveFinish()
 {
   if(tile_previous != 0)
-    tile_previous->unsetImpassableThing();
+    tile_previous->unsetThing();
   tile_previous = 0;
 }
 
+// TODO
 /* 
  * Description: The tile move initialization call. To be called after
  *              passability checks have passed and the thing can be moved to
@@ -254,17 +262,15 @@ void MapThing::tileMoveFinish()
  *              to the old spot.
  * 
  * Inputs: Tile* next_tile - the tile to move to
- *         Tile::ThingState classification - what kind of thing (NPC, Decor, 
- *                                                               etc.)
  * Output: bool - if the tile start was successfully started
  */
-bool MapThing::tileMoveStart(Tile* next_tile, Tile::ThingState classification)
+bool MapThing::tileMoveStart(Tile* next_tile)
 {
-  if(next_tile != 0)
+  if(next_tile != 0 && !next_tile->isThingSet())
   {
     tile_previous = tile_main;
     tile_main = next_tile;
-    tile_main->setImpassableThing(this, classification);
+    tile_main->setThing(this);//, classification);
     return true;
   }
   return false;
@@ -317,6 +323,17 @@ void MapThing::clear()
   y = 0.0;
 
   unsetFrames();
+}
+
+/* 
+ * Description: Clears all active movement on the thing. Since the thing is
+ *              not movable, this is merely virtual and useful for other calls.
+ * 
+ * Inputs: none
+ * Output: none
+ */
+void MapThing::clearAllMovement()
+{
 }
 
 /*
@@ -581,10 +598,10 @@ bool MapThing::initializeGl()
  *              presses a use key and then this searches for if an event is
  *              available and starts it.
  *
- * Inputs: MapThing* initiator - the pointer to the thing that initiated it
+ * Inputs: MapPerson* initiator - the pointer to the person that initiated it
  * Output: bool - if the call can occur (Event handler needs to be set
  */
-bool MapThing::interact(MapThing* initiator)
+bool MapThing::interact(MapPerson* initiator)
 {
   if(event_handler != 0)
   {
@@ -786,7 +803,19 @@ bool MapThing::setID(int new_id)
   id = new_id;
   return true;
 }
-  
+
+/*
+ * Description: Sets the player ID for the thing. This is a constant and used
+ *              for referencing during actions throughout.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void MapThing::setIDPlayer()
+{
+  id = kPLAYER_ID;
+}
+
 /* 
  * Description: Sets the interaction event that gets fired when the interact()
  *              function is called. This requires a relevant event handler
@@ -887,26 +916,21 @@ bool MapThing::setSpeed(short speed)
  */
 bool MapThing::setStartingTile(int section_id, Tile* new_tile, bool no_events)
 {
-  if(section_id >= 0 && new_tile != 0 && !new_tile->isImpassableThingSet())
+  /* Unused variable - used in virtual call for Person */
+  (void)no_events;
+
+  if(section_id >= 0 && new_tile != 0 && !new_tile->isThingSet())
   {
-    /* Stop movement */
-    setDirection(EnumDb::DIRECTIONLESS);
-  
-    /* Unset the previous tile */
-    if(tile_previous != 0)
-      tile_previous->unsetImpassableThing(no_events);
-    tile_previous = 0;
-  
     /* Unset the main tile */
     if(tile_main != 0)
-      tile_main->unsetImpassableThing(no_events);
+      tile_main->unsetThing();
     tile_main = 0;
   
     /* Set the new tile */
     tile_main = new_tile;
     this->x = tile_main->getPixelX();
     this->y = tile_main->getPixelY();
-    tile_main->setImpassableThing(this, Tile::PERSON, no_events);
+    tile_main->setThing(this);
     tile_section = section_id;
     
     return true;

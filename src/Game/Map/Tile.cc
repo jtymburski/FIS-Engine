@@ -4,15 +4,11 @@
 * Inheritance: none
 * Description: This class handles the basic tile that is set up on the map.
 *              It is the overall structure. The tile class creates a base, 
-*              enhancer, lower, upper, passable, and impassable to define
+*              enhancer, lower, upper, items, person, and thing to define
 *              all the possibilities on the tile. This also handles printing
 *              its own tile data and ensuring that movement isn't entered 
 *              through the tile. For additional information, read the comments
 *              below for each function.
-*
-* TODO:
-*  1. Possibly connect events to walking onto tiles and leaving - separate 
-*     from sectors
 ******************************************************************************/
 #include "Game/Map/Tile.h"
 
@@ -81,6 +77,25 @@ Tile::~Tile()
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
+  
+/*
+ * Description: This adds an item to the stack for the tile. These are relevant
+ *              walking over to pick up items. It appends the new item to the 
+ *              end of the list.
+ *
+ * Inputs: MapItem* item - the item to append into the tile
+ * Output: bool - status if the item could be added (not NULL)
+ */
+bool Tile::addItem(MapItem* item)
+{
+  if(item != 0)
+  {
+    items.append(item);
+    return true;
+  }
+  
+  return false;
+}
 
 /* 
  * Description: Adds a passability to the given tile based on data from a file
@@ -189,9 +204,10 @@ void Tile::clear(bool just_sprites)
   /* Clear sprite layer data */
   unsetBase();
   unsetEnhancer();
-  unsetImpassableThing();
+  unsetItems();
   unsetLower();
-  unsetPassableThing();
+  unsetPerson();
+  unsetThing();
   unsetUpper();
 
   if(!just_sprites)
@@ -283,26 +299,15 @@ int Tile::getHeight()
 }
 
 /*
- * Description: Gets the impassable object Map Thing that is stored, if set
+ * Description: Returns the stack of items that are stored within the class.
+ *              This list is returned in the order from which it was added.
  *
  * Inputs: none
- * Output: MapThing* - the MapThing pointer, could be a person or object
+ * Output: QList<MapItem*> - the QList stack of MapItem* stored within
  */
-MapThing* Tile::getImpassableThing()
+QList<MapItem*> Tile::getItems()
 {
-  return impassable_thing;
-}
-
-/* 
- * Description: Gets what kind of impassable thing is set currently, if set at
- *              all.
- * 
- * Inputs: none
- * Output: Tile::ThingState - the thing state enumerator - see header
- */
-Tile::ThingState Tile::getImpassableThingType()
-{
-  return thing_state;
+  return items;
 }
 
 /* 
@@ -366,39 +371,31 @@ bool Tile::getLowerPassability(int index, EnumDb::Direction dir)
   return true;
 }
 
-/*
- * Description: Gets the passable map thing and returns it, if set.
- *
- * Inputs: none
- * Output: MapThing* - the passable object MapThing pointer
- */
-MapThing* Tile::getPassableThing()
-{
-  return passable_thing;
-}
-
 /* 
  * Description: Gets if the tile is passable entering from the given direction.
+ *              This does not take into account the status of the thing(s) and 
+ *              if it's passable.
  * 
  * Inputs: EnumDb::Direction dir - the direction enumerated for passability
  * Output: bool - status if the tile passability is possible.
  */
 bool Tile::getPassabilityEntering(EnumDb::Direction dir)
 {
-  bool thing_not_set = (thing_state == UNSET);
   if(dir == EnumDb::NORTH)
-    return thing_not_set && getPassabilityExiting(EnumDb::SOUTH);
+    return (person == 0) && getPassabilityExiting(EnumDb::SOUTH);
   else if(dir == EnumDb::EAST)
-    return thing_not_set && getPassabilityExiting(EnumDb::WEST);
+    return (person == 0) && getPassabilityExiting(EnumDb::WEST);
   else if(dir == EnumDb::SOUTH)
-    return thing_not_set && getPassabilityExiting(EnumDb::NORTH);
+    return (person == 0) && getPassabilityExiting(EnumDb::NORTH);
   else if(dir == EnumDb::WEST)
-    return thing_not_set && getPassabilityExiting(EnumDb::EAST);
-  return !thing_not_set || getPassabilityExiting(dir);
+    return (person == 0) && getPassabilityExiting(EnumDb::EAST);
+  return (person != 0) || getPassabilityExiting(dir);
 }
 
 /*
- * Description: Gets if the tile is passable leaving the given direction
+ * Description: Gets if the tile is passable leaving the given direction.
+ *              This does not take into account the status of the thing(s)
+ *              and if it's passable.
  *
  * Inputs: EnumDb::Direction dir - the direction enumerated for passability
  * Output: bool - status if the tile passability is possible.
@@ -412,6 +409,17 @@ bool Tile::getPassabilityExiting(EnumDb::Direction dir)
     return (getBasePassability(dir) && getLowerPassability(dir));
   }
   return false;
+}
+  
+/*
+ * Description: Returns the person pointer that is residing on the tile.
+ *
+ * Inputs: none
+ * Output: MapPerson* - the person pointer
+ */
+MapPerson* Tile::getPerson()
+{
+  return person;
 }
 
 /* 
@@ -448,6 +456,17 @@ short Tile::getPixelY()
 Tile::TileStatus Tile::getStatus()
 {
   return status;
+}
+  
+/*
+ * Description: Returns the stored thing from within the tile. 
+ *
+ * Inputs: none
+ * Output: MapThing* - the stored Map Thing object pointer
+ */
+MapThing* Tile::getThing()
+{
+  return thing;
 }
 
 /* 
@@ -615,14 +634,14 @@ bool Tile::isEnhancerSet()
 }
 
 /*
- * Description: Returns if the Impassable Thing is set 
+ * Description: Returns if at least one item is set on the tile.
  *
  * Inputs: none
- * Output: bool - set status
+ * Output: bool - true if there's at least one item set on the tile.
  */
-bool Tile::isImpassableThingSet()
+bool Tile::isItemsSet()
 {
-  return (thing_state != UNSET);
+  return (items.size() > 0);
 }
 
 /* 
@@ -637,14 +656,27 @@ bool Tile::isLowerSet()
 }
 
 /*
- * Description: Returns if the Passable Thing is set 
+ * Description: Returns if the map person pointer is set and residing on the
+ *              tile.
  *
  * Inputs: none
- * Output: bool - set status
+ * Output: bool - true if the person pointer is set
  */
-bool Tile::isPassableThingSet()
+bool Tile::isPersonSet()
 {
-  return (passable_thing != 0);
+  return (person != 0);
+}
+
+/*
+ * Description: Returns if the map thing pointer is set and residing on the
+ *              tile.
+ *
+ * Inputs:none
+ * Output: bool - true if the thing pointer is set
+ */
+bool Tile::isThingSet()
+{
+  return (thing != 0);
 }
 
 /* 
@@ -657,7 +689,7 @@ bool Tile::isUpperSet()
 {
   return (upper.size() > 0);
 }
-  
+
 /* 
  * Description: Paints the lower sprites in the tile using native GL calls. The 
  *              context for GL must have been called for this and the sprite
@@ -894,37 +926,26 @@ bool Tile::setHeight(int height)
   return false;
 }
 
-// TODO: Fix: this fires for all things and not just you.
 /*
- * Description: Sets the impassable thing in the tile using a pointer to the
- *              thing itself.
+ * Description: Sets the item in the tile. This call will unset all previous
+ *              items and appends the new one to the head of the list. After, 
+ *              only this new item will remain in the list. See addItem(*)
  *
- * Inputs: MapThing* thing - the thing to put in the class
- *         ThingState type - the state enumerator for what type of thing
- *         bool no_events - don't allow any events
- * Output: bool - returns true if the impassable thing was successfuly set.
+ * Inputs: MapItem* item - the item to put in the list
+ * Output: bool - status if successful (item needs to be non-null)
  */
-bool Tile::setImpassableThing(MapThing* thing, ThingState type, bool no_events)
+bool Tile::setItem(MapItem* item)
 {
-  if(type == UNSET)
-    unsetImpassableThing();
-  else
+  if(item != 0)
   {
-    if(thing != 0)
-    {
-      thing_state = type;
-      impassable_thing = thing;
+    /* First unset all existing items */
+    unsetItems();
 
-      /* Execute enter event, if applicable */
-      if(!no_events && event_handler != 0 && 
-                       enter_event.classification != EventHandler::NOEVENT)
-        event_handler->executeEvent(enter_event, impassable_thing);
-
-      return true;
-    }
-    return false;
+    /* Append the new item to the head of the list */
+    return addItem(item);
   }
-  return true;
+
+  return false;
 }
 
 /* 
@@ -981,19 +1002,33 @@ bool Tile::setLowerPassability(int index, EnumDb::Direction dir,
 }
 
 /*
- * Description: Sets the passable thing in the tile using a thing
- *              reference pointer
+ * Description: Sets the person stored within the tile. The stored person
+ *              indicates that the person is either on the tile, walking to
+ *              the tile, or walking away from. This allows to disable
+ *              walk-on events, if relevant.
  *
- * Inputs: MapThing* thing - the passable thing reference
- * Output: bool - returns true if the passable thing was successfuly set
+ * Inputs: MapPerson* person - the new person pointer to set onto the tile
+ *         bool no_events - true if the events are disabled (default false)
+ * Output: bool - true if successful (fails if person is null)
  */
-bool Tile::setPassableThing(MapThing* thing)
+bool Tile::setPerson(MapPerson* person, bool no_events)
 {
-  if(thing != 0)
+  if(person != 0)
   {
-    passable_thing = thing;
+    /* First unset the existing person */
+    unsetPerson();
+
+    /* Set the new person */
+    this->person = person;
+
+    /* Execute enter event, if applicable */
+    if(!no_events && event_handler != 0 && 
+                     enter_event.classification != EventHandler::NOEVENT)
+      event_handler->executeEvent(enter_event, person);
+
     return true;
   }
+
   return false;
 }
 
@@ -1008,6 +1043,30 @@ bool Tile::setPassableThing(MapThing* thing)
 void Tile::setStatus(TileStatus status)
 {
   this->status = status;
+}
+
+/*
+ * Description: Sets the MapThing pointer in the class. This is the inactive
+ *              object that doesn't move but can be interacted with. This will
+ *              unset a different thing if it's already on the tile.
+ *
+ * Inputs: MapThing* thing - the new thing pointer to inject into the tile
+ * Output: bool - true if successful, fails if thing ptr is null
+ */
+bool Tile::setThing(MapThing* thing)
+{
+  if(thing != 0)
+  {
+    /* First unset the existing thing */
+    unsetThing();
+
+    /* Set the new thing */
+    this->thing = thing;
+
+    return true;
+  }
+
+  return false;
 }
 
 /* 
@@ -1097,23 +1156,36 @@ void Tile::unsetEnhancer()
 }
 
 /*
- * Description: Unsets the impassable map thing in the tile. 
+ * Description: Unsets a particular item, based on the item in the index of the
+ *              list. This will remove and slide all items after it up in the 
+ *              list.
+ *
+ * Inputs: int index - the index in the list array
+ * Output: bool - true if successful, fails if out of range of the list
+ */
+bool Tile::unsetItem(int index)
+{
+  if(index >= 0 && index < items.size())
+  {
+    items[index] = 0;
+    items.removeAt(index);
+    return true;
+  }
+  return false;
+}
+
+/* 
+ * Description: Unsets all items stored within the class.
  *
  * Inputs: none
  * Output: none
  */
-void Tile::unsetImpassableThing(bool no_events)
+void Tile::unsetItems()
 {
-  /* If there was a thing and an exit event, execute it */
-  if(!no_events && impassable_thing != 0)
-  {
-    /* Execute enter event, if applicable */
-    if(event_handler != 0 && exit_event.classification != EventHandler::NOEVENT)
-      event_handler->executeEvent(exit_event, impassable_thing);
-  }
-  
-  impassable_thing = 0;
-  thing_state = UNSET;
+  for(int i = 0; i < items.size(); i++)
+    items[i] = 0;
+
+  items.clear();
 }
 
 /* 
@@ -1147,7 +1219,7 @@ void Tile::unsetLower()
  */
 bool Tile::unsetLower(int index)
 {
-  if(index < lower.size() && lower[index] != 0)
+  if(index >= 0 && index < lower.size())
   {
     lower[index] = 0;
     lower_passability[index] = EnumDb::DIRECTIONLESS;
@@ -1157,14 +1229,35 @@ bool Tile::unsetLower(int index)
 }
 
 /*
- * Description: Unsets the passable map thing in the tile.
+ * Description: Unsets the person pointer from the tile. This does not delete
+ *              the pointer and merely clears it. This allows for you to enable
+ *              or disable the leave event from firing as well.
+ *
+ * Inputs: bool no_events - status if events should be ignored, default false
+ * Output: none
+ */
+void Tile::unsetPerson(bool no_events)
+{
+  if(!no_events && person != 0)
+  {
+    /* Execute exit event, if applicable */
+    if(event_handler != 0 && exit_event.classification != EventHandler::NOEVENT)
+      event_handler->executeEvent(exit_event, person);
+  }
+
+  person = 0;
+}
+  
+/*
+ * Description: Unsets the map thing stored in the tile. This does not delete
+ *              the pointer and merely clears it from the Tile.
  *
  * Inputs: none
  * Output: none
  */
-void Tile::unsetPassableThing()
+void Tile::unsetThing()
 {
-  passable_thing = 0;
+  thing = 0;
 }
 
 /* 
@@ -1194,7 +1287,7 @@ void Tile::unsetUpper()
  */
 bool Tile::unsetUpper(int index)
 {
-  if(index < upper.size() && upper[index] != 0)
+  if(index >= 0 && index < upper.size())
   {
     upper[index] = 0;
     return true;

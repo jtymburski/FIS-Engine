@@ -15,9 +15,10 @@
 #define EVENTHANDLER_H
 
 struct Conversation;
+class MapPerson;
 class MapThing;
 
-//#include <QDebug>
+#include <QDebug>
 #include <QObject>
 
 //#include "EnumDb.h"
@@ -66,24 +67,24 @@ private:
   Event createEventTemplate();
 
   /* Execute a conversation event */
-  void executeConversationEvent(Conversation* convo, MapThing* initiator, 
+  void executeConversationEvent(Conversation* convo, MapPerson* initiator, 
                                                      MapThing* source);
 
   /* Execute a start battle event */
-  void executeStartBattleEvent(Event event, MapThing* target);
+  void executeStartBattleEvent(Event event, MapPerson* target);
   
   /* Execute the teleport event */
-  void executeTeleportEvent(Event event, MapThing* target);
+  void executeTeleportEvent(Event event, MapPerson* target);
 
 /*============================================================================
  * SIGNALS
  *===========================================================================*/
 signals:
   /* Signals for the various events */
-  void initConversation(Conversation* convo, MapThing* initiator, 
+  void initConversation(Conversation* convo, MapPerson* initiator, 
                                              MapThing* source);
   void startBattle();
-  void teleportThing(MapThing* target, int x, int y, int section_id);
+  void teleportThing(MapPerson* target, int x, int y, int section_id);
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -102,7 +103,7 @@ public:
   Event createTeleportEvent(int tile_x, int tile_y, int section_id = -1);
 
   /* Execute the given event - done through signal emits */
-  void executeEvent(Event event, MapThing* initiator, MapThing* source = 0);
+  void executeEvent(Event event, MapPerson* initiator, MapThing* source = 0);
 };
 
 #endif // EVENTHANDLER_H
