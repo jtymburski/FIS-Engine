@@ -137,7 +137,7 @@ public:
   /* Sets the animation time for each frame */
   bool setAnimationSpeed(short frame_time);
   
-  /* Set the tile to hook the map thing to */
+  /* Set the tile to hook the map person to */
   bool setStartingTile(int section_id, Tile* new_tile, bool no_events = false);
 
   /* Sets a new state to add into the states list */

@@ -226,6 +226,7 @@ public:
 
   /* Unsets items stored within the tile */
   bool unsetItem(int index);
+  bool unsetItem(MapItem* item);
   void unsetItems();
 
   /* Unsets the lower layer */

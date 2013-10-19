@@ -1174,6 +1174,25 @@ bool Tile::unsetItem(int index)
   return false;
 }
 
+/*
+ * Description: Unsets a particular item, based on the item pointer and if it
+ *              exists in the tile. This call returns false if no item is
+ *              removed.
+ *
+ * Inputs: MapItem* item - the pointer to a MapItem
+ * Output: bool - true if successful, fails if the pointer can't be found
+ */
+bool Tile::unsetItem(MapItem* item)
+{
+  for(int i = 0; i < items.size(); i++)
+  {
+    if(items[i] == item)
+      return unsetItem(i);
+  }
+  
+  return false;
+}
+
 /* 
  * Description: Unsets all items stored within the class.
  *

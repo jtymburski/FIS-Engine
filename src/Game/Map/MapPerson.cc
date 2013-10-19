@@ -482,9 +482,9 @@ bool MapPerson::setAnimationSpeed(short frame_time)
 }
 
 /* 
- * Description: Sets the connected tile information for the map thing. This is
- *              the initial starting point and where the thing is initially
- *              placed. If this is unset, the thing will not move or paint.
+ * Description: Sets the connected tile information for the map person. This is
+ *              the initial starting point and where the person is initially
+ *              placed. If this is unset, the person will not move or paint.
  *              This replaces the generic mapthing call to allow for map 
  *              person in tile to be modified.
  *

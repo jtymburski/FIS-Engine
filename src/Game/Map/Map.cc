@@ -446,6 +446,10 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     image->initializeGl();
     map_dialog.initPickup(image, 1);
   }
+  else if(key_event->key() == Qt::Key_1)
+    items[0]->setStartingTile(0, geography[0][10][1]);
+  else if(key_event->key() == Qt::Key_2)
+    items[0]->setStartingTile(0, geography[0][1][10]);
   else if(key_event->key() == Qt::Key_4)
     map_dialog.initNotification("Testing", 1000, true);
   else if(key_event->key() == Qt::Key_5)
@@ -596,9 +600,12 @@ void Map::paintGL()
     {
       for(int j = tile_y_start; j < tile_y_end; j++)
       {
-        if(geography[map_index][i][j]->isItemsSet())
+        if(geography[map_index][i][j]->isItemsSet() && 
+           geography[map_index][i][j]->getItems()[0]->getCount() > 0)
+        {
           geography[map_index][i][j]->getItems()[0]->
                                                   paintGl(x_offset, y_offset);
+        }
       }
     }
 
@@ -986,6 +993,14 @@ bool Map::loadMap(QString file)
       thing->setStartingTile(0, geography[0][2][2]);
     thing->initializeGl();
     things.append(thing);
+    
+    /* Make the map item, to walkover */
+    frames = new Sprite("sprites/Map/Map_Things/bubby_AA_A", 4, ".png");
+    MapItem* item = new MapItem(frames, kTILE_WIDTH, kTILE_HEIGHT);
+    item->setAnimationSpeed(175);
+    item->setStartingTile(0, geography[0][1][10]);
+    item->initializeGl();
+    items.append(item);
   }
 
   success &= fh.stop();
