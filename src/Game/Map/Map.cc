@@ -641,6 +641,7 @@ void Map::paintGL()
   }
 
   /* Paint the frame rate */
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glColor4f(0.0, 0.0, 0.0, 0.5);
   glBegin(GL_QUADS);
     glVertex3f(7, 40, 0);//7,40
@@ -995,9 +996,8 @@ bool Map::loadMap(QString file)
     things.append(thing);
     
     /* Make the map item, to walkover */
-    frames = new Sprite("sprites/Map/Map_Things/bubby_AA_A", 4, ".png");
+    frames = new Sprite("sprites/Map/Map_Things/bubby_AA_A00.png");
     MapItem* item = new MapItem(frames, kTILE_WIDTH, kTILE_HEIGHT);
-    item->setAnimationSpeed(175);
     item->setStartingTile(0, geography[0][1][10]);
     item->initializeGl();
     items.append(item);

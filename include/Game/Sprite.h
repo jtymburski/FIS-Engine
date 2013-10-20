@@ -41,6 +41,9 @@ public:
   enum RotatedAngle{NONE, CLOCKWISE, COUNTERCLOCKWISE, HALFCIRCLE};
 
 private:
+  /* The stored brightness for rendering */
+  float brightness;
+  
   /* The current frame */
   Frame* current;
 
@@ -54,7 +57,8 @@ private:
   Direction sequence;
   
   /*------------------- Constants -----------------------*/
-  const static int kDOUBLE_DIGITS;   /* the borderline to double digits */
+  const static float kDEFAULT_BRIGHTNESS; /* the default brightness value */
+  const static short kDOUBLE_DIGITS; /* the borderline to double digits */
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -63,6 +67,9 @@ public:
   /* Flips all the images in each frame */
   bool flipAll(bool horizontal = true, bool vertical = false);
 
+  /* Gets the brightness (0-0.99: darker, 1.0: same, 1.0+: brighter) */
+  float getBrightness();
+  
   /* Gets the current frame */
   QPixmap getCurrent();
 
@@ -116,6 +123,9 @@ public:
   /* Rotates all the frames within this sprite a specific angle */
   bool rotateAll(int angle);
 
+  /* Sets the brightness (0-0.99: darker, 1.0: same, 1.0+: brighter) */
+  bool setBrightness(float brightness);
+  
   /* Asserts the direction is forward for when accessing the linked list */
   bool setDirectionForward();
 

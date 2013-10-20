@@ -200,42 +200,75 @@ bool Frame::isImageSet()
  *         int y - the y offset on the plane (up/down)
  *         int width - the width to render the image to
  *         int height - the height to render the image to
+ *         float brightness - the brightness of the texture 
+                             (0-0.99: darker, 1: same, 1+: brighter)
  *         float opacity - the opacity of the paint (0-1)
  * Output: bool - status if the paint occurred (indication if the image was
  *                initialized.
  */
-bool Frame::paintGl(float x, float y, int width, int height, float opacity)
+bool Frame::paintGl(float x, float y, int width, int height, 
+                    float brightness, float opacity)
 {
   if(gl_image_set)
   {
     /* Set up the initial flags */
     glEnable(GL_TEXTURE_2D);
     //glEnable(GL_BLEND);
-    if(opacity == 1.0)
+    if(brightness == 1.0 && opacity == 1.0)
       glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
     else
       glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glColor4f(1.0, 1.0, 1.0, opacity);
     glBindTexture(GL_TEXTURE_2D, gl_image);
   
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
     /* Execute the draw */
     glBegin(GL_QUADS);
-    
-    glTexCoord2f(0.0f, 0.0f); 
-    glVertex3f(x, y + height, 0);
-
-    glTexCoord2f(0.0f, 1.0f); 
-    glVertex3f(x, y, 0);
-
-    glTexCoord2f(1.0f, 1.0f); 
-    glVertex3f(x + width, y, 0);    
-    
-    glTexCoord2f(1.0f, 0); 
-    glVertex3f(x + width, y + height, 0);
-    
+      /* Set the brightness, based on darkening or if brightening is required */
+      if(brightness > 1.0)
+        glColor4f(1.0, 1.0, 1.0, opacity);
+      else
+        glColor4f(brightness, brightness, brightness, opacity);
+      brightness -= 1.0;
+      
+      /* Paint the texture on the quad */
+      glTexCoord2f(0.0f, 0.0f); 
+      glVertex3f(x, y + height, 0);
+      glTexCoord2f(0.0f, 1.0f); 
+      glVertex3f(x, y, 0);
+      glTexCoord2f(1.0f, 1.0f); 
+      glVertex3f(x + width, y, 0);    
+      glTexCoord2f(1.0f, 0); 
+      glVertex3f(x + width, y + height, 0);
     glEnd();
 
+    /* Paint the quad again, based on the brightness value */
+    if(brightness > 0.0)
+    {
+      glBlendFunc(GL_DST_COLOR, GL_ONE);
+      glBegin(GL_QUADS);
+      
+      /* Draw the sprite over again in the changed mode to up brightness */
+      while(brightness > 0.0)
+      {
+        glColor4f(brightness, brightness, brightness, opacity);
+         
+        /* Draw the texture */         
+        glTexCoord2f(0.0f, 0.0f); 
+        glVertex3f(x, y + height, 0);
+        glTexCoord2f(0.0f, 1.0f); 
+        glVertex3f(x, y, 0);
+        glTexCoord2f(1.0f, 1.0f); 
+        glVertex3f(x + width, y, 0);    
+        glTexCoord2f(1.0f, 0); 
+        glVertex3f(x + width, y + height, 0);
+        
+        brightness -= 1.0;
+      }
+      
+      glEnd();
+    }
+    
     /* Initialize cleanup */
     glDisable(GL_TEXTURE_2D);
 

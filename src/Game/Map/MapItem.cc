@@ -8,6 +8,8 @@
 
 /* Constant Implementation - see header file for descriptions */
 const short MapItem::kDEFAULT_COUNT = 1;
+const float MapItem::kMAX_BRIGHTNESS = 3.0;
+const float MapItem::kMIN_BRIGHTNESS = 1.0;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -16,6 +18,8 @@ const short MapItem::kDEFAULT_COUNT = 1;
 /* Constructor function */
 MapItem::MapItem() : MapThing()
 {
+  brighter = false;
+  
   /* Set the count to 0 since the map item is not configured */
   setCount(0);
 }
@@ -24,6 +28,8 @@ MapItem::MapItem(Sprite* frames, int width, int height, QString name,
                  QString description, int id)
        : MapThing(frames, width, height, name, description, id)
 {
+  brighter = false;
+  
   /* Set the count to the default since the map item is configured */
   setCount(kDEFAULT_COUNT);
 }
@@ -107,4 +113,46 @@ bool MapItem::setStartingTile(int section_id, Tile* new_tile, bool no_events)
   }
 
   return false;
+}
+
+/*
+ * Description: Updates the state of the item. This can include animation
+ *              sequencing or movement and such. Called on the tick.
+ *
+ * Inputs: float cycle_time - the time elapsed between updates
+ *         Tile* next_tile - the next tile to be travelled onto
+ * Output: none 
+ */
+void MapItem::updateThing(float cycle_time, Tile* next_tile)
+{
+  /* Update the brightness, to create the item pulse */
+  if(frames != 0)
+  {
+    float brightness = frames->getBrightness();
+    
+    /* If brighter, increase brightness. */
+    if(brighter)
+    {
+      brightness += 0.05;
+      if(brightness > kMAX_BRIGHTNESS)
+      {
+        brightness = kMAX_BRIGHTNESS;
+        brighter = false;
+      }
+    }
+    /* Otherwise, dim the frames instead */
+    else
+    {
+      brightness -= 0.05;
+      if(brightness < kMIN_BRIGHTNESS)
+      {
+        brightness = kMIN_BRIGHTNESS;
+        brighter = true;
+      }
+    }
+    frames->setBrightness(brightness);
+  }
+  
+  /* Finally update the thing */
+  MapThing::updateThing(cycle_time, next_tile);
 }
