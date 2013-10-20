@@ -158,13 +158,13 @@ public:
  *============================================================================*/
 public:
   /* Obtains the maximum number of members in a bearacks */
-  static const ushort getMaxBearacksSize();
+  static ushort getMaxBearacksSize();
 
   /* Obtains the maximum number of members in a party of foes */
-  static const ushort getMaxFoeSize();
+  static ushort getMaxFoeSize();
 
   /* Obtains the maximum number of members in a slueth */
-  static const ushort getMaxSleuthSize();
+  static ushort getMaxSleuthSize();
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Party::PartyFlags)
 

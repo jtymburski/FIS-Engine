@@ -2,7 +2,8 @@
 * Class Name: Battle [Implementation]
 * Date Created: December 2nd, 2012 - Rewritten October 12, 2013
 * Inheritance: QWidget
-* Description:
+* Description: Battle is a class which contains all the events handled and
+*              happening in a classic RPG battle between two Parties.
 *
 * Notes:
 *
@@ -15,17 +16,22 @@
  * CONSTANTS
  *============================================================================*/
 
-const ushort Battle::kDEFAULT_SCREEN_HEIGHT = 1216;
-const ushort Battle::kDEFAULT_SCREEN_WIDTH  =  708;
+const ushort Battle::kDEFAULT_SCREEN_HEIGHT = 1216; /* The default height */
+const ushort Battle::kDEFAULT_SCREEN_WIDTH  =  708; /* The default width */
+const ushort Battle::kMAX_ITEM_BUFFER       =   20; /* Max # items tb proc */
+const ushort Battle::kMAX_SKILL_BUFFER      =   30; /* Max # skills tb proc */
+const ushort Battle::kGENERAL_UPKEEP_DELAY  =  500; /* Time prior info bar msg */
+const ushort Battle::kBATTLE_MENU_DELAY     =  400; /* Personal menu delay */
 
 /*==============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
 
 /*
- * Description:
+ * Description: Default Battle constructor - constructs a default Battle object
+ *              by loading the default settings.
  *
- * Inputs:
+ * Inputs: none
  */
 Battle::Battle()
 {
@@ -33,9 +39,13 @@ Battle::Battle()
 }
 
 /*
- * Description:
+ * Description: Normal battle constructor - constructs a Battle between two
+ *              parties - friends vs. foes, also given the Options config to
+ *              assign various options for the Battle
  *
- * Inputs:
+ * Inputs: Party* friends - the player's party in the Battle
+ *         Party* foes - the player's enemies in the Battle
+ *         Options - the configuration passed on to the Battle
  */
 Battle::Battle(Party *friends, Party *foes, Options config, QWidget *parent)
     : QWidget(parent),
@@ -53,10 +63,11 @@ Battle::Battle(Party *friends, Party *foes, Options config, QWidget *parent)
   setHudDisplayMode(config.getBattleHudState());
 
   loadBattleStateFlags();
+  setBattleFlag(Battle::CONFIGURED, true);
 }
 
 /*
- * Description:
+ * Description: Annihilates a Battle object
  *
  */
 Battle::~Battle()
@@ -68,6 +79,65 @@ Battle::~Battle()
 /*==============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
+
+/*
+ * Description: Attempts to add an item to the buffer. To do this, the target id
+ *              of the aggressor is added to the buffer, and a vector of target
+ *              receivers is added to the item receiver vector.
+ *
+ * Inputs: Item* - pointer to the item to take place
+ *         ushort aggressor - the target id of the item user
+ *         QVector<ushort>  - the vector of target ids the item will be used on
+ * Output: bool - true if the item was added to the buffer
+ */
+bool Battle::addItem(Item* new_item, ushort aggressor,
+                     QVector<ushort> receivers)
+{
+  if (item_buffer.size() < kMAX_ITEM_BUFFER)
+  {
+    item_buffer.append(new_item);
+    item_aggressor_target_buffer.append(aggressor);
+    item_receiver_target_buffer.append(receivers);
+    return true;
+  }
+
+  return true;
+}
+
+/*
+ * Description: Attempts to add a skill to the buffer. To do this, the target id
+ *              of the aggressor added to the  buffer, and a vector of target
+ *              receivers is added to to the skill receiver vector.
+ *
+ * Inputs: Skill* new_skill - pointer to the skill to take place.
+ *         ushort aggressor - the target id of the skill user
+ *         QVector<ushort> - a vector of targets the skill will hit
+ * Output: bool - true if the item was added to the buffer
+ */
+bool Battle::addSkill(Skill* new_skill, ushort aggressor,
+                      QVector<ushort> receivers)
+{
+  if (skill_buffer.size() < kMAX_SKILL_BUFFER)
+  {
+    skill_buffer.append(new_skill);
+    skill_aggressor_target_buffer.append(aggressor);
+    skill_receiver_target_buffer.append(receivers);
+    return true;
+  }
+
+  return false;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void Battle::generalUpkeep()
+{
+
+}
 
 /*
  * Description: Loads a default configuration of the Battle, if it has not
@@ -93,6 +163,18 @@ bool Battle::loadDefaults()
 
   setBattleFlag(Battle::CONFIGURED, true);
   return true;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ * //TODO
+ */
+void Battle::personalUpkeep()
+{
+
 }
 
 /*
@@ -225,6 +307,52 @@ void Battle::setScreenWidth(ushort new_value)
 }
 
 /*
+ * Description: Attempts to assign a new value to the currently selected
+ *              targeting index. Returns true if this was assigned, false
+ *              otherwise (as in the index in the currently selected party does
+ *              not exist).
+ *
+ * Inputs: uint - new value to assign the party index to
+ * Output: bool - true if the targeting index was set
+ */
+bool Battle::setTargetIndex(uint new_value)
+{
+  /* Check for Friends Index */
+  if (getTargetingMode() == ACTIVE_OVER_FRIENDS)
+  {
+    if (new_value < foes->getPartySize())
+    {
+      target_index = new_value;
+      return true;
+    }
+  }
+
+  /* Check for Foes Index */
+  else if (getTargetingMode() == ACTIVE_OVER_FOES)
+  {
+    if (new_value < friends->getPartySize())
+    {
+      target_index = new_value;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
+/*
+ * Description: Assigns a new targeting mode value
+ *
+ * Inputs: TargetingMode - enumerated value to set the targeting value to.
+ * Output: none
+ */
+ void Battle::setTargetingMode(TargetingMode new_value)
+ {
+   targeting_mode = new_value;
+ }
+
+/*
  * Description: Assigns a new value for turns elapsed
  *
  * Inputs: new_value - ushort value of new turns elapsed
@@ -348,6 +476,17 @@ ushort Battle::getScreenWidth()
 }
 
 /*
+ * Description: Returns the currently assigned targeting mode
+ *
+ * Inputs: none
+ * Output: TargetingMode - enumerated targeting mode value
+ */
+Battle::TargetingMode Battle::getTargetingMode()
+{
+  return targeting_mode;
+}
+
+/*
  * Description: Returns the turns elapsed of Battle
  *
  * Inputs: none
@@ -397,6 +536,116 @@ ushort Battle::getTurnsElapsed()
 /*==============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
+
+/*
+ * Description: Prints out all the information of the battle by calling
+ *              the sub-print functions.
+ *
+ * Inputs: none
+ * Output: none
+ */
+ void Battle::printAll()
+ {
+  qDebug() << "--- Battle ---";
+  printFlags();
+  printInfo();
+  printPartyState();
+  printOther();
+  qDebug() << "--- /Battle ---";
+ }
+
+/*
+ * Description: Prints all the values of the flags of the Battle
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Battle::printFlags()
+{
+  qDebug() << "CONFIGURED: "       << getBattleFlag(Battle::CONFIGURED);
+  qDebug() << "FLAGS_CONFIGURED: " << getBattleFlag(Battle::FLAGS_CONFIGURED);
+  qDebug() << "RANDOM_ENOUNTER: "  << getBattleFlag(Battle::RANDOM_ENCOUNTER);
+  qDebug() << "MINI_BOSS: "        << getBattleFlag(Battle::MINI_BOSS);
+  qDebug() << "BOSS: "             << getBattleFlag(Battle::BOSS);
+  qDebug() << "FINAL_BOSS: "       << getBattleFlag(Battle::FINAL_BOSS);
+}
+
+/*
+ * Description: Prints ou the general information about the Battle.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Battle::printInfo()
+{
+  if (ailment_update_mode == Options::BEARWALK)
+    qDebug() << "Ailment Update Mode: BEARWALK";
+  if (ailment_update_mode == Options::BEARLY_DIFFICULT)
+    qDebug() << "Ailment Update Mode: BEARLY_DIFFICULT";
+  if (ailment_update_mode == Options::GRIZZLY)
+    qDebug() << "Ailment Update Mode: GRIZZLY";
+
+  if (hud_display_mode == Options::BEARWALK)
+    qDebug() << "Hud Display Mode: BEARWALK";
+  else if (hud_display_mode == Options::BEARLY_DIFFICULT)
+    qDebug() << "Hud Display Mode: BEARLY_DIFFICULT";
+  else if (hud_display_mode == Options::GRIZZLY)
+    qDebug() << "Hud Display Mode: GRIZZLY";
+
+  qDebug() << "Friends Size: "  << friends->getPartySize();
+  qDebug() << "Foes Size: "     << foes->getPartySize();
+  qDebug() << "Screen Height: " << screen_height;
+  qDebug() << "Screen Width: "  << screen_width;
+  qDebug() << "Time Elapsed: "  << time_elapsed;
+  qDebug() << "Turns Elapsed: " << turns_elapsed;
+  qDebug() << "Enemy Status Bars: " << enemy_status_bars.size();
+}
+
+/*
+ * Description: Prints out a more in depth state of the Parties which are
+ *              currently in the Battle.
+ *
+ * Inputs: none
+ * Output: none
+ */
+ void Battle::printPartyState()
+ {
+   Person* temp;
+
+   qDebug() << "--- Friends ---";
+   for (int i = 0; i < friends->getPartySize(); i++)
+   {
+     temp = friends->getMember(i);
+     qDebug() << temp->getName() << temp->getTemp()->getStat(0);
+   }
+   qDebug() << "--- /Friends ---";
+
+   qDebug() << "--- Foes ---";
+   for (int i = 0; i < foes->getPartySize(); i++)
+   {
+     temp = foes->getMember(i);
+     qDebug() << temp->getName() << temp->getTemp()->getStat(0);
+   }
+   qDebug() << "--- /Foes ---";
+ }
+
+/*
+ * Description: Prints out information about the menus relating to the Battle
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Battle::printOther()
+{
+  // if (info_bar != 0)
+  //   info_bar->printInfo();
+
+  // if (menu != 0)
+  //  menu->printInfo();
+
+  // if (staus_bar != 0)
+  //   status_bar->printAll();
+}
 
 /*
  * Description: Updates the cycle time of the Battle

@@ -28,7 +28,7 @@ public:
    Race();
 
    /* Copy Constructor */
-   Race(const Race &source);
+   Race(const Race &source, QWidget* parent = 0);
 
    /* Default Race Constructor given a name */
    Race(QString name);

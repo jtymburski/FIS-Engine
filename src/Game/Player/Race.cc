@@ -45,7 +45,8 @@ Race::Race()
  *
  * Inputs:
  */
-Race::Race(const Race &source)
+Race::Race(const Race &source, QWidget* parent)
+    : QWidget(parent)
 {
   copySelf(source);
 }

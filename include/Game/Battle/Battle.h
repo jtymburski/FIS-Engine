@@ -7,8 +7,58 @@
 *
 * Notes:
 *
+** 1. generalUpkeep() adjusts all values based on Weather.  BattleInfoBar
+* displays info on these adjustments * after X seconds, personalUpkeep() is
+* called.
 *
-* //TODO:
+* 2. personalUpkeep() adjusts all values of the Person represented by
+* party_index. PersonalUpkeep() then, after X seconds, activates and
+* initializes BattleMenu with party_index's relevant options.
+*
+* 3. Once an option from BattleMenu is selected processAction() is
+* called and party_index is incremented, then if it is less
+* than 5, personalUpkeep is called (Step 2).  Else, BattleMenu
+* deactivates and processEnemyActions() is called (Step 4).
+*
+* 4. processEnemyActions() uses the enemies scripts to add actions to the
+* stack, after which orderActions() is called.
+*
+* 5. orderActions() reorders the stack based on speed and status ailments,
+* performActions() is then called.
+*
+* 6. performAction() takes the first Action on the stack and loads it into
+* action_animate which then shows the Actions animation.  The Action is then
+* removed from the stack.
+*
+* 7. action_animate emits a finished(Action *) signal which is connected to
+* changeStats(Action* battle_action), changeStats(Action* battle_action)
+* alters each Person's stats based off its parameter Action.  UpdateScene()
+* is then called.
+*
+* 8. updateScene() emits a finished() signal which is connected to
+* actionOutcome(). ActionOutcome() checks for deaths and animates
+* appropriately, if a whole party is eliminated, then all the memory
+* is cleared, and battleWon() or battleLost() is called.  If the stack is not
+* empty, (Step 6) else reset party_index and (Step 1).
+*
+* Note: Animation has changed since this design and requires some alteration
+*     in terms of these steps.
+*
+* In Battle Action Animations
+* ----------------------------
+* Action Timer is removed
+* For actions that occur during battle, the animations will only be targets
+* of the player and centered on them. For example, there will be a sequence
+* of sprites where it will animate (based on a timer) and flash on the target
+* and possibly flash on the caster itself. These will be attached to the action
+* class and will occur during the generation of the action in the step 6? This
+* could be tied into the action paint event to draw on the battle screen These
+* would utilize the sprite class which already has a linked list to generate
+* the sequences of the animation. How would this be programmed in? Attached
+* to the database since we generated a sequence within action to program in
+* actions and commands that can be used in the battle sequence. An addition
+* to that sequence to include frames or generate generic ones that everyone
+* has to share.
 ******************************************************************************/
 #ifndef BATTLE_H
 #define BATTLE_H
@@ -52,6 +102,14 @@ public:
   Q_DECLARE_FLAGS(BattleFlags, BattleState)
   BattleFlags flag_set;
 
+  enum TargetingMode
+  {
+    DISABLED,
+    INACTIVE,
+    ACTIVE_OVER_FRIENDS,
+    ACTIVE_OVER_FOES
+  };
+
 private:
   /* The Battle Info Bar */
   BattleInfoBar* info_bar;
@@ -85,25 +143,89 @@ private:
   ushort screen_height;
   ushort screen_width;
 
+  /* Currently stacked item buffer */
+  QVector<Item*> item_buffer;
+
+  /* Vector of targets for item buffer */
+  QVector<uint> item_aggressor_target_buffer;
+
+  /* Vector of vectors containing targets for receiving items */
+  QVector<QVector<ushort> > item_receiver_target_buffer;
+
+  /* Currently stacked skill buffer */
+  QVector<Skill*> skill_buffer;
+
+  /* Vector of targets for skill buffer */
+  QVector<uint> skill_aggressor_target_buffer;
+
+  /* Vector of vector containing targets for receiving skills */
+  QVector<QVector<ushort> > skill_receiver_target_buffer;
+
+  /* The current targeting mode of the Battle */
+  TargetingMode targeting_mode;
+
+  /* The index of the currently selected target */
+  uint target_index;
+
   /* Elapsed time of the Battle */
   uint time_elapsed;
 
   /* Elapsed turns of hte battle */
   ushort turns_elapsed;
 
+  // Currently active weather condition
+  // Weather* weather_condition
+
   /* ------------ Constants --------------- */
   static const ushort kDEFAULT_SCREEN_HEIGHT;
   static const ushort kDEFAULT_SCREEN_WIDTH;
+  static const ushort kMAX_ITEM_BUFFER;
+  static const ushort kMAX_SKILL_BUFFER;
+  static const ushort kGENERAL_UPKEEP_DELAY;
+  static const ushort kBATTLE_MENU_DELAY;
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Adds a Skill to the buffer of Skills */
+  bool addSkill(Skill* new_skill, ushort aggressor, QVector<ushort> receivers);
+
+  /* Adds an Item to the buffer of Items */
+  bool addItem(Item* new_item, ushort aggressor, QVector<ushort> receivers);
+
+  /* Called when the Battle has been won */
+  void battleWon();
+
+  /* Called when the Battle has been lost */
+  void battleLost();
+
+  /* Deals with general upkeep (i.e. weather) */
+  void generalUpkeep();
+
   /* Load default configuration of the battle */
   bool loadDefaults();
 
   /* Sets the flags of BattleState at the beginning of the Battle */
   bool loadBattleStateFlags();
+
+  /* Orders the actions on the buffer by speed of the aggressor */
+  void orderActions();
+
+  /* Actually performs the actions in the buffer */
+  void performAction();
+
+  /* Deals with character related upkeep */
+  void personalUpkeep();
+
+  /* Process the actions (Items & Skills) in the buffer */
+  void processActions();
+
+  /* Calculates enemy actions and add them to the buffer */
+  void processEnemyActions();
+
+  /* Emits finished() signal for actions */
+  void updateScene();
 
   /* Assigns a new value to the ailment update mode */
   void setAilmentUpdateMode(Options::BattleOptions new_value);
@@ -122,6 +244,12 @@ private:
 
   /* Assign a new value for the screen width */
   void setScreenWidth(ushort new_value);
+
+  /* Assigns a new value to the targeting index of the selected party */
+  bool setTargetIndex(uint new_value);
+
+  /* Assigns a new targeting mode value */
+  void setTargetingMode(TargetingMode new_value);
 
   /* Assigns a new value to the elapsed time */
   void setTimeElapsed(uint new_value);
@@ -154,6 +282,12 @@ protected:
   /* Returns the value of the screen width */
   ushort getScreenWidth();
 
+  /* Returns the value of the target index of the currently selected index */
+  uint getTargetingIndex();
+
+  /* Returns the currently assigned targeting mode */
+  TargetingMode getTargetingMode();
+
   /* Returns the value of the turns elapsed */
   ushort getTurnsElapsed();
 
@@ -180,6 +314,8 @@ signals:
  * PUBLIC SLOTS
  *============================================================================*/
 public slots:
+  /* Checks for outcomes of an action after an action takes place */
+  // void actionOutcome();
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
@@ -190,6 +326,13 @@ public:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Methods to print information about the Battle */
+  void printAll();
+  void printFlags();
+  void printInfo();
+  void printPartyState();
+  void printOther();
+
   /* Update the cycle time of Battle */
   void updateBattle(int cycle_time);
 

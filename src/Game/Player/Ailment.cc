@@ -92,7 +92,7 @@ Ailment::Ailment(Person* vic, QWidget* parent)
   : QWidget(parent),
     ailment_type(EnumDb::NOAILMENT),
     chance(0.00),
-    victim(0)
+    victim(vic)
 
 {
   setFlag(Ailment::TOBEUPDATED, false);
@@ -580,7 +580,7 @@ bool Ailment::checkImmunity(Person* new_victim)
   return false;
 
   /* Check for category and racial immunity */
-  if (victim->getCategory()->isImmune(ailment_type));
+  if (victim->getCategory()->isImmune(ailment_type))
     return false;
 
   if (victim->getRace()->isImmune(ailment_type))

@@ -45,7 +45,11 @@ const double Person::kSECD_C_MODI = 1.030;
  *
  * Inputs: none
  */
-Person::Person() {}
+Person::Person(QWidget* parent)
+    : QWidget(parent)
+{
+  setParent(parent);
+}
 
 /*
  * Description: Constructs a Person object gievn a name, race and category
@@ -58,14 +62,16 @@ Person::Person() {}
  *         QString p - primary element and curve of the person
  *         QString s - secondary element and curve of the person
  */
-Person::Person(QString pname, Race* prace, Category* pcat, QString p, QString s)
-    : damage_modifier(1.00),
+Person::Person(QString pname, Race* prace, Category* pcat, QString p, QString s,
+               QWidget* parent)
+    : QWidget(parent),
+      damage_modifier(1.00),
       level(1),
       total_exp(0),
       experience_drop(0),
       credit_drop(0),
       cat(pcat),
-      parent(0),
+      person_parent(0),
       race(prace),
       name(pname),
       base_skill_list(0),
@@ -74,6 +80,8 @@ Person::Person(QString pname, Race* prace, Category* pcat, QString p, QString s)
       third_person(0),
       bubbified_sprite(0)
 {
+  setParent(parent);
+
   /* Setup the primary and secondary curves */
   setPrimary(p);
   setSecondary(s);
@@ -104,8 +112,10 @@ Person::Person(QString pname, Race* prace, Category* pcat, QString p, QString s)
  *            copy, nor does it assign equipment to the person. It instead just
  *            creates a copy skeleton of the person.
  */
-Person::Person(const Person &source)
+Person::Person(const Person &source, QWidget* parent)
+    : QWidget(parent)
 {
+  setParent(parent);
   copySelf(source);
 }
 
@@ -114,7 +124,7 @@ Person::Person(const Person &source)
  */
 Person::~Person()
 {
-  if (parent != 0)
+  if (person_parent != 0)
   {
     for (int i = 0; i < item_drops.size(); i++)
     {
@@ -214,8 +224,8 @@ void Person::copySelf(const Person &source)
   person_record = new PersonRecord(*(source.person_record));
 
   /* Deep copy the item drops of the person */
-  for (int i = 0; i < parent->getItemLoot().size(); i++)
-    item_drops.push_back(new Item(parent->getItemLoot().value(i)));
+  for (int i = 0; i < source.item_drops.size(); i++)
+    item_drops.push_back(new Item(source.item_drops.value(i)));
 
   /* Initially calculates all the skills */
   calcSkills();

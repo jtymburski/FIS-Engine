@@ -586,7 +586,7 @@ void Party::setFlag(PartyFlag flag, bool set_value)
  * Inputs: none
  * Output: const ushort - the maximum number of Bearacks members.
  */
-const ushort Party::getMaxBearacksSize()
+ushort Party::getMaxBearacksSize()
 {
   return kMAX_MEMBERS_BEARACKS;
 }
@@ -597,7 +597,7 @@ const ushort Party::getMaxBearacksSize()
  * Inputs: none
  * Output: const ushort - the maximum number of Bearacks members.
  */
-const ushort Party::getMaxFoeSize()
+ushort Party::getMaxFoeSize()
 {
   return kMAX_MEMBERS_FOE;
 }
@@ -608,7 +608,7 @@ const ushort Party::getMaxFoeSize()
  * Inputs: none
  * Output: const ushort - the maximum number of Bearacks members.
  */
-const ushort Party::getMaxSleuthSize()
+ushort Party::getMaxSleuthSize()
 {
   return kMAX_MEMBERS_SLEUTH;
 }

@@ -15,7 +15,7 @@ class Equipment : public Item
 {
 public:
   /* Constructor function */
-  Equipment(QString name, uint value, Sprite* thumb, double weight,
+  Equipment(QString name, uint value, Sprite* thumb, double mass,
             ushort size_x, ushort size_y);
 
   /* Destructor function */

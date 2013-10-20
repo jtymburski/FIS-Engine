@@ -182,7 +182,7 @@ bool Inventory::addEquipment(Equipment* new_equipment, bool bypass)
  *              contained in the inventory.
  *
  * Inputs: Item* - pointer to the item object to be added.
- *         bool bypass - trueif containsItem check to be bypassed
+ *         bool bypass - true if containsItem check to be bypassed
  * Output: bool - true if the Item was added successfully, false otherwise
  */
 bool Inventory::addItem(Item* new_item, bool bypass)
@@ -212,14 +212,16 @@ bool Inventory::addItem(Item* new_item, bool bypass)
 }
 
 /*
- * Description:
+ * Description: This function attempts to add a key item to the vector of
+ *              key items.
  *
- * Inputs: none
+ * Inputs: Item* - the new item to be added to the vector of key items
+ *         bool bypass - true if the containsItem check is to be bypassed
  * Output: none
  */
 bool Inventory::addKeyItem(Item* new_item, bool bypass)
 {
-  if (!containsItem(new_item->getId()))
+  if (bypass || !containsItem(new_item->getId()))
   {
     key_items.push_back(new_item);
     return true;
@@ -249,6 +251,10 @@ bool Inventory::containsItem(int id)
 
   for (int i = 0; i < equipments.size() && !contains_item; i++)
     if (equipments.at(i)->getId() == id)
+      contains_item = true;
+
+  for (int i = 0; i < key_items.size() && !contains_item; i++)
+    if (key_items.at(i)->getId() == id)
       contains_item = true;
 
   if (contains_item)

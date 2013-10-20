@@ -21,7 +21,7 @@
  *
  * Inputs: none
  */
-Equipment::Equipment(QString name, uint value, Sprite* thumb, double weight,
+Equipment::Equipment(QString name, uint value, Sprite* thumb, double mass,
                      ushort size_x, ushort size_y)
     : Item(name, value, thumb, mass)
 {

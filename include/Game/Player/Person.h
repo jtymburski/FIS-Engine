@@ -19,17 +19,18 @@
 
 class Person : QWidget
 {
-  Q_OBJECT;
+  Q_OBJECT
 
 public:
   /* Default Constructor */
-  Person();
+  Person(QWidget* parent = 0);
 
   /* Copy constructor */
-  Person(const Person &source);
+  Person(const Person &source, QWidget* parent = 0);
 
   /* Constructor for a person object */
-  Person(QString pname, Race* prace, Category* pcat, QString p, QString s);
+  Person(QString pname, Race* prace, Category* pcat, QString p, QString s,
+         QWidget* parent = 0);
 
   /* Annihilates a person object */
   ~Person();
@@ -91,7 +92,7 @@ private:
   Category* cat;
 
   /* The parent of the person */
-  Person* parent;
+  Person* person_parent;
   PersonRecord* person_record;
 
   /* The person's race */

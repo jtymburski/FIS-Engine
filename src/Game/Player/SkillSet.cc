@@ -213,11 +213,12 @@ uint SkillSet::calcUniqueSkills(QVector<Skill*> new_skills)
   QVector<QString> unique_skills = getNames();
 
   /* Then, find the # of new additions */
-  for (QVector<Skill*>::Iterator it = skills.begin(); it < skills.end(); it++)
+  QVector<Skill*>::Iterator it;
+  for (it = new_skills.begin(); it < new_skills.end(); ++it)
   {
     QString new_name = (*it)->getName();
 
-    if (!unique_skills.contains(new_name));
+    if (!unique_skills.contains(new_name))
       unique_skills.push_back(new_name);
   }
 
