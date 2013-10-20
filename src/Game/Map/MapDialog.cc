@@ -641,7 +641,7 @@ bool MapDialog::paintGl(QGLWidget* painter)
       y1 += kNAME_BOX_HEIGHT;
 
     /* Paints the conversation dialog */
-    dialog_display.paintGl(x1, y1, width, height, paused_opacity);
+    dialog_display.paintGl(x1, y1, width, height, 1.0, paused_opacity);
 
     if(dialog_mode == NOTIFICATION)
     {
@@ -727,7 +727,7 @@ bool MapDialog::paintGl(QGLWidget* painter)
           img_height = thing_frame->getImage().height();
           thing_frame->paintGl(x1 + width - (img_width >> 1), 
                                viewport_height - img_height, 
-                               img_width, img_height, paused_opacity);
+                               img_width, img_height, 1.0, paused_opacity);
         }
 
         /* Draw the conversational text */
@@ -955,7 +955,7 @@ bool MapDialog::paintGl(QGLWidget* painter)
     
     /* Paint the tile portion */
     tile->paintGl(pickup_x + kPICKUP_MARGIN, pickup_y + kPICKUP_MARGIN,
-                  tile_width, tile_height, paused_opacity);
+                  tile_width, tile_height, 1.0, paused_opacity);
     
     /* Paint the text portion */
     display_font.setPointSize(kFONT_SIZE);

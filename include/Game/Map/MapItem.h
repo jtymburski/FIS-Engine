@@ -21,11 +21,16 @@ public:
   virtual ~MapItem();
   
 private:
+  /* Status if the item is being brightened. Otherwise, darken it */
+  bool brighter;
+  
   /* The number of items available */
   int count;
 
   /* -------------------------- Constants ------------------------- */
   const static short kDEFAULT_COUNT; /* Default number of items on setup */
+  const static float kMAX_BRIGHTNESS; /* The max brightness setting */
+  const static float kMIN_BRIGHTNESS; /* The min brightness setting */
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -45,6 +50,9 @@ public:
   
   /* Set the tile to hook the map item to */
   bool setStartingTile(int section_id, Tile* new_tile, bool no_events = false);
+  
+  /* Updates the thing, based on the tick */
+  void updateThing(float cycle_time, Tile* next_tile);
 };
 
 #endif // MAPITEM_H

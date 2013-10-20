@@ -80,7 +80,8 @@ public:
   bool isImageSet();
   
   /* Draws the frame in OpenGL, if the appropriate flags are set */
-  bool paintGl(float x, float y, int width, int height, float opacity);
+  bool paintGl(float x, float y, int width, int height, 
+               float brightness = 1.0, float opacity = 1.0);
 
   /* Rotate the image an integer number of degrees */
   bool rotateImage(int angle);

@@ -14,7 +14,8 @@
 #include "Game/Sprite.h"
 
 /* Constant Implementation - see header file for descriptions */
-const int Sprite::kDOUBLE_DIGITS = 10;
+const float Sprite::kDEFAULT_BRIGHTNESS = 1.0;
+const short Sprite::kDOUBLE_DIGITS = 10;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -27,8 +28,9 @@ const int Sprite::kDOUBLE_DIGITS = 10;
  */
 Sprite::Sprite()
 {
-  head = 0;
+  brightness = kDEFAULT_BRIGHTNESS;
   current = 0;
+  head = 0;
   size = 0;
   sequence = FORWARD;
 }
@@ -42,8 +44,9 @@ Sprite::Sprite()
  */
 Sprite::Sprite(QString image_path, int rotate_angle)
 {
-  head = 0;
+  brightness = kDEFAULT_BRIGHTNESS;
   current = 0;
+  head = 0;
   size = 0;
   sequence = FORWARD;
   insertFirst(image_path, rotate_angle);
@@ -61,8 +64,9 @@ Sprite::Sprite(QString image_path, int rotate_angle)
 Sprite::Sprite(QString head_path, int num_frames, 
                QString tail_path, int rotate_angle)
 {
-  head = 0;
+  brightness = kDEFAULT_BRIGHTNESS;
   current = 0;
+  head = 0; 
   size = 0;
   sequence = FORWARD;
   insertSequence(head_path, num_frames, tail_path, rotate_angle);  
@@ -108,6 +112,19 @@ bool Sprite::flipAll(bool horizontal, bool vertical)
   }
 
   return false;
+}
+
+/* 
+ * Description: Gets the brightness value that the sprite sequence is being
+ *              rendered at.
+ *
+ * Inputs: none
+ * Output: float - the brightness indicator 
+ *                (<1: darker, 1: default, >1: lighter)
+ */
+float Sprite::getBrightness()
+{
+  return brightness;
 }
 
 /* 
@@ -365,7 +382,7 @@ bool Sprite::isAtFirst()
 bool Sprite::paintGl(float x, float y, int width, int height, float opacity)
 {
   if(current != 0)
-    return current->paintGl(x, y, width, height, opacity);
+    return current->paintGl(x, y, width, height, brightness, opacity);
   return false;
 }
 
@@ -481,6 +498,26 @@ bool Sprite::rotateAll(int angle)
     return true;
   }
 
+  return false;
+}
+
+/*
+ * Description: Sets the brightness that the entire sprite sequence will be
+ *              rendered at. It's range is 0-0.99: darker than default, 1.0: 
+ *              default brightness, 1.0+: brighter.
+ *
+ * Inputs: float brightness - the brightness value (0+, 1.0 default)
+ * Output: bool - if the set succeeded (brightness in proper range)
+ */
+bool Sprite::setBrightness(float brightness)
+{
+  /* Only allow the change if the brightness is a positive number */
+  if(brightness >= 0.0)
+  {
+    this->brightness = brightness;
+    return true;
+  }
+  
   return false;
 }
 

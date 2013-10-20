@@ -575,10 +575,11 @@ void MapPerson::setSurface(SurfaceClassifier surface)
 }
 
 /*
- * Description: Updates the state of the thing. This can include animation
+ * Description: Updates the state of the person. This can include animation
  *              sequencing or movement and such. Called on the tick.
  *
- * Inputs: none
+ * Inputs: float cycle_time - the time elapsed between updates
+ *         Tile* next_tile - the next tile to be travelled onto
  * Output: none 
  */
 void MapPerson::updateThing(float cycle_time, Tile* next_tile)
