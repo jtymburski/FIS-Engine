@@ -15,6 +15,7 @@
 #define EVENTHANDLER_H
 
 struct Conversation;
+class MapItem;
 class MapPerson;
 class MapThing;
 
@@ -81,8 +82,10 @@ private:
  *===========================================================================*/
 signals:
   /* Signals for the various events */
+  void giveItem(int id, int count);
   void initConversation(Conversation* convo, MapPerson* initiator, 
                                              MapThing* source);
+  void pickupItem(MapItem* item, bool walkover);
   void startBattle();
   void teleportThing(MapPerson* target, int x, int y, int section_id);
 
@@ -104,6 +107,9 @@ public:
 
   /* Execute the given event - done through signal emits */
   void executeEvent(Event event, MapPerson* initiator, MapThing* source = 0);
+  
+  /* Executes a pickup item event */
+  void executePickup(MapItem* item, bool walkover = false);
 };
 
 #endif // EVENTHANDLER_H

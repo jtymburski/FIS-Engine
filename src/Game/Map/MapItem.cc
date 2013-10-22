@@ -8,6 +8,7 @@
 
 /* Constant Implementation - see header file for descriptions */
 const short MapItem::kDEFAULT_COUNT = 1;
+const float MapItem::kDELTA_TIME_ONE_POINT = 333.0;
 const float MapItem::kMAX_BRIGHTNESS = 3.0;
 const float MapItem::kMIN_BRIGHTNESS = 1.0;
 
@@ -19,6 +20,8 @@ const float MapItem::kMIN_BRIGHTNESS = 1.0;
 MapItem::MapItem() : MapThing()
 {
   brighter = false;
+  visible = true;
+  walkover = false;
   
   /* Set the count to 0 since the map item is not configured */
   setCount(0);
@@ -29,6 +32,8 @@ MapItem::MapItem(Sprite* frames, int width, int height, QString name,
        : MapThing(frames, width, height, name, description, id)
 {
   brighter = false;
+  visible = true;
+  walkover = false;
   
   /* Set the count to the default since the map item is configured */
   setCount(kDEFAULT_COUNT);
@@ -55,6 +60,8 @@ void MapItem::clear()
 {
   /* Clear out the item variables */
   setCount(0);
+  setVisibility(true);
+  setWalkover(false);
   
   /* Clear out parent */
   MapThing::clear();
@@ -66,6 +73,26 @@ int MapItem::getCount()
   return count;
 }
   
+/* Returns the opacity of the item - overwritten from Map Thing */
+float MapItem::getOpacity()
+{
+  if(!isVisible())
+    return 0.0;
+  return MapThing::getOpacity();
+}
+
+/* Returns if the Map Item can be seen */
+bool MapItem::isVisible()
+{
+  return visible;
+}
+  
+/* Returns if the item is picked up merely by walking over it */
+bool MapItem::isWalkover()
+{
+  return walkover;
+}
+
 /* Sets the number of this item */
 bool MapItem::setCount(int count)
 {
@@ -99,20 +126,32 @@ bool MapItem::setStartingTile(int section_id, Tile* new_tile, bool no_events)
   {
     /* Unset the main tile */
     if(tile_main != 0)
-      tile_main->unsetItem(this);
+      tile_main->unsetItem();
     tile_main = 0;
   
     /* Set the new tile */
     tile_main = new_tile;
     this->x = tile_main->getPixelX();
     this->y = tile_main->getPixelY();
-    tile_main->addItem(this);
+    tile_main->setItem(this);
     tile_section = section_id;
     
     return true;
   }
 
   return false;
+}
+
+/* Sets the item visibility */
+void MapItem::setVisibility(bool visible)
+{
+  this->visible = visible;
+}
+
+/* Sets if the item is picked up by merely walking over it */
+void MapItem::setWalkover(bool walkover)
+{
+  this->walkover = walkover;
 }
 
 /*
@@ -133,7 +172,7 @@ void MapItem::updateThing(float cycle_time, Tile* next_tile)
     /* If brighter, increase brightness. */
     if(brighter)
     {
-      brightness += 0.05;
+      brightness += cycle_time / kDELTA_TIME_ONE_POINT;
       if(brightness > kMAX_BRIGHTNESS)
       {
         brightness = kMAX_BRIGHTNESS;
@@ -143,7 +182,7 @@ void MapItem::updateThing(float cycle_time, Tile* next_tile)
     /* Otherwise, dim the frames instead */
     else
     {
-      brightness -= 0.05;
+      brightness -= cycle_time / kDELTA_TIME_ONE_POINT;
       if(brightness < kMIN_BRIGHTNESS)
       {
         brightness = kMIN_BRIGHTNESS;

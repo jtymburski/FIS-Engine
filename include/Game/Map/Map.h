@@ -174,6 +174,9 @@ public:
   bool initConversation(Conversation* convo, MapPerson* initiator, 
                                              MapThing* source);
 
+  /* Initiates a notification, within the map */
+  bool initNotification(QString notification);
+
   /* Causes the thing you are facing and next to start its interactive action */
   void interact(EnumDb::Direction dir);
 
@@ -193,6 +196,9 @@ public:
   /* Causes the thing you are moving into to start its interactive action */
   void passOver();
 
+  /* Picks up the total number of the item */
+  bool pickupItem(MapItem* item);
+  
   /* Changes the map section index - what is displayed */
   bool setSectionIndex(int index);
   
@@ -204,13 +210,6 @@ public:
 
   /* Updates the map - called by the cycle timer call from game */
   void updateMap(int cycle_time);
-  
-  /* Returns a vector of the indexes of the NPC's who are in the viewport */
-  QVector<int> visibleNPCs();
-
-  /* Checks if the NPC at the given index in the NPC vector is in the current 
-   * viewport */
-  bool zNPCInViewport(int index);
 };
 
 #endif

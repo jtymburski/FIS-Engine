@@ -161,6 +161,18 @@ QPixmap Sprite::getCurrentAndShift()
   return null_image;
 }
 
+/*
+ * Description: Returns the frame that marks the head of the sprite stack.
+ *              Do not delete since this causes erradic results.
+ *
+ * Inputs: none
+ * Output: Frame* - the frame pointer
+ */
+Frame* Sprite::getFirstFrame()
+{
+  return head;
+}
+
 /* 
  * Description: Returns the position that the linked list is currently at
  *

@@ -249,6 +249,7 @@ void Map::initiateThingInteraction()
 {
   if(player != 0)
   {
+    bool interacted = false;
     int x = player->getTile()->getX();
     int y = player->getTile()->getY();
 
@@ -266,7 +267,7 @@ void Map::initiateThingInteraction()
     else
       x = -1;
 
-    /* Aquire the thing, that's being pointed at */
+    /* Aquire the thing, that's being pointed at and try to interact */
     int index = map_index;
     if(x >= 0 && x < geography[index].size() && 
        y >= 0 && y < geography[index][0].size())
@@ -276,11 +277,21 @@ void Map::initiateThingInteraction()
          geography[index][x][y]->getPerson()->getTile()->getY() == y)
       {
         geography[index][x][y]->getPerson()->interact(player);
+        interacted = true;
       }
       else if(geography[index][x][y]->isThingSet())
       {
         geography[index][x][y]->getThing()->interact(player);
+        interacted = true;
       }
+    }
+    
+    /* If there was no thing to interact with, proceed to try and pickup the
+     * tile item. */
+    if(!interacted && player->getTile()->getItem() != 0 && 
+       player->getTile()->getItem()->getCount() > 0 && event_handler != 0)
+    {
+      event_handler->executePickup(player->getTile()->getItem());
     }
   }
 }
@@ -600,10 +611,10 @@ void Map::paintGL()
     {
       for(int j = tile_y_start; j < tile_y_end; j++)
       {
-        if(geography[map_index][i][j]->isItemsSet() && 
-           geography[map_index][i][j]->getItems()[0]->getCount() > 0)
+        if(geography[map_index][i][j]->isItemSet() && 
+           geography[map_index][i][j]->getItem()->getCount() > 0)
         {
-          geography[map_index][i][j]->getItems()[0]->
+          geography[map_index][i][j]->getItem()->
                                                   paintGl(x_offset, y_offset);
         }
       }
@@ -783,6 +794,11 @@ bool Map::initConversation(Conversation* convo, MapPerson* initiator,
   }
 
   return false;
+}
+
+bool Map::initNotification(QString notification)
+{
+  return map_dialog.initNotification(notification);
 }
 
 /* Causes the thing you are facing and next to start its interactive action */
@@ -992,14 +1008,30 @@ bool Map::loadMap(QString file)
     if(geography.size() > 0 && geography[0].size() > 2 && 
                                geography[0][2].size() > 2)
       thing->setStartingTile(0, geography[0][2][2]);
-    thing->initializeGl();
     things.append(thing);
     
-    /* Make the map item, to walkover */
-    frames = new Sprite("sprites/Map/Map_Things/bubby_AA_A00.png");
+    /* Make three map items, to walkover */
+    frames = new Sprite("sprites/Map/Map_Things/sword_AA_A00.png");
     MapItem* item = new MapItem(frames, kTILE_WIDTH, kTILE_HEIGHT);
+    item->setID(10000);
+    item->setName("Sword of Power");
+    item->setStartingTile(0, geography[0][7][8]);
+    items.append(item);
+    frames = new Sprite("sprites/Map/Map_Things/bubby_AA_A00.png");
+    item = new MapItem(frames, kTILE_WIDTH, kTILE_HEIGHT);
+    item->setCount(5);
+    item->setDialogImage("sprites/Battle/Bubbies/frosty_t1.png");
+    item->setID(10001);
+    item->setName("Frost Bubby");
     item->setStartingTile(0, geography[0][1][10]);
-    item->initializeGl();
+    items.append(item);
+    frames = new Sprite("sprites/Map/Map_Things/coins_AA_A00.png");
+    item = new MapItem(frames, kTILE_WIDTH, kTILE_HEIGHT);
+    item->setCount(100);
+    item->setID(10002);
+    item->setName("Coin");
+    item->setStartingTile(0, geography[1][3][3]);
+    item->setWalkover(true);
     items.append(item);
   }
 
@@ -1050,6 +1082,29 @@ bool Map::passible(EnumDb::Direction dir, int x, int y)
 /* Causes the thing you are moving into to start its interactive action */
 void Map::passOver()
 {
+}
+
+/* Proceeds to pickup the total number of this marked item */
+bool Map::pickupItem(MapItem* item)
+{
+  if(item != 0)
+  {
+    Frame* dialog_image = item->getDialogImage();
+    Sprite* map_image = item->getFrames();
+    
+    /* Show pickup dialog */
+    if(dialog_image != 0 && dialog_image->isImageSet())
+      map_dialog.initPickup(dialog_image, item->getCount());
+    else if(map_image != 0 && map_image->getSize() > 0)
+      map_dialog.initPickup(map_image->getFirstFrame(), item->getCount());
+      
+    /* Finally, set the on map count to 0 */
+    item->setCount(0);
+    
+    return true;
+  }
+  
+  return false;
 }
 
 /* Changes the map section index - what is displayed */
@@ -1163,20 +1218,4 @@ void Map::updateMap(int cycle_time)
 {
   time_elapsed = cycle_time;
   updateGL();
-}
-  
-/* Returns a vector of the indexes of the NPC's who are in the viewport */
-QVector<int> Map::visibleNPCs()
-{
-  QVector<int> joe;//warning
-  return joe;//warning
-  //return NULL;
-}
-
-/* Checks if the NPC at the given index in the NPC vector is in the current 
- * viewport */
-bool Map::zNPCInViewport(int index)
-{
-  (void)index;//warning
-  return true;
 }

@@ -1,15 +1,15 @@
 /******************************************************************************
-* Class Name: Tile
-* Date Created: December 2, 2012
-* Inheritance: none
-* Description: This class handles the basic tile that is set up on the map.
-*              It is the overall structure. The tile class creates a base, 
-*              enhancer, lower, upper, items, person, and thing to define
-*              all the possibilities on the tile. This also handles printing
-*              its own tile data and ensuring that movement isn't entered 
-*              through the tile. For additional information, read the comments
-*              below for each function.
-******************************************************************************/
+ * Class Name: Tile
+ * Date Created: December 2, 2012
+ * Inheritance: none
+ * Description: This class handles the basic tile that is set up on the map.
+ *              It is the overall structure. The tile class creates a base, 
+ *              enhancer, lower, upper, item, person, and thing to define
+ *              all the possibilities on the tile. This also handles printing
+ *              its own tile data and ensuring that movement isn't entered 
+ *              through the tile. For additional information, read the comments
+ *              below for each function.
+ *****************************************************************************/
 #include "Game/Map/Tile.h"
 
 /* Constant Implementation - see header file for descriptions */
@@ -77,25 +77,6 @@ Tile::~Tile()
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
-  
-/*
- * Description: This adds an item to the stack for the tile. These are relevant
- *              walking over to pick up items. It appends the new item to the 
- *              end of the list.
- *
- * Inputs: MapItem* item - the item to append into the tile
- * Output: bool - status if the item could be added (not NULL)
- */
-bool Tile::addItem(MapItem* item)
-{
-  if(item != 0)
-  {
-    items.append(item);
-    return true;
-  }
-  
-  return false;
-}
 
 /* 
  * Description: Adds a passability to the given tile based on data from a file
@@ -204,7 +185,7 @@ void Tile::clear(bool just_sprites)
   /* Clear sprite layer data */
   unsetBase();
   unsetEnhancer();
-  unsetItems();
+  unsetItem();
   unsetLower();
   unsetPerson();
   unsetThing();
@@ -299,15 +280,14 @@ int Tile::getHeight()
 }
 
 /*
- * Description: Returns the stack of items that are stored within the class.
- *              This list is returned in the order from which it was added.
+ * Description: Returns the item that is stored within the class.
  *
  * Inputs: none
- * Output: QList<MapItem*> - the QList stack of MapItem* stored within
+ * Output: MapItem* - the MapItem* pointer stored within
  */
-QList<MapItem*> Tile::getItems()
+MapItem* Tile::getItem()
 {
-  return items;
+  return item;
 }
 
 /* 
@@ -634,14 +614,14 @@ bool Tile::isEnhancerSet()
 }
 
 /*
- * Description: Returns if at least one item is set on the tile.
+ * Description: Returns if the item thing has been set.
  *
  * Inputs: none
- * Output: bool - true if there's at least one item set on the tile.
+ * Output: bool - true if the item pointer is not null.
  */
-bool Tile::isItemsSet()
+bool Tile::isItemSet()
 {
-  return (items.size() > 0);
+  return (item != 0);
 }
 
 /* 
@@ -774,7 +754,7 @@ bool Tile::paintUpper(float offset_x, float offset_y, float opacity)
   }
   return success;
 }
-
+  
 /* 
  * Description: Sets the base sprite stored within the tile. Only sets it 
  *              if the pointer is valid and the number of frames is greater 
@@ -927,9 +907,8 @@ bool Tile::setHeight(int height)
 }
 
 /*
- * Description: Sets the item in the tile. This call will unset all previous
- *              items and appends the new one to the head of the list. After, 
- *              only this new item will remain in the list. See addItem(*)
+ * Description: Sets the item in the tile. This call will unset the previous
+ *              item and sets it to the new one if not null. 
  *
  * Inputs: MapItem* item - the item to put in the list
  * Output: bool - status if successful (item needs to be non-null)
@@ -939,10 +918,11 @@ bool Tile::setItem(MapItem* item)
   if(item != 0)
   {
     /* First unset all existing items */
-    unsetItems();
+    unsetItem();
 
-    /* Append the new item to the head of the list */
-    return addItem(item);
+    /* \Sets the new item in the tile */
+    this->item = item;
+    return true;
   }
 
   return false;
@@ -1022,9 +1002,16 @@ bool Tile::setPerson(MapPerson* person, bool no_events)
     this->person = person;
 
     /* Execute enter event, if applicable */
-    if(!no_events && event_handler != 0 && 
-                     enter_event.classification != EventHandler::NOEVENT)
-      event_handler->executeEvent(enter_event, person);
+    if(!no_events && event_handler != 0)
+    {
+      /* Pickup the item, if applicable */
+      if(item != 0)
+        event_handler->executePickup(item, true);
+      
+      /* Execute the enter event, if applicable */
+      if(enter_event.classification != EventHandler::NOEVENT)
+        event_handler->executeEvent(enter_event, person);
+    }
 
     return true;
   }
@@ -1129,7 +1116,7 @@ void Tile::setY(int y)
 {
   this->y = y;
 }
-
+  
 /* 
  * Description: Unsets the base sprite in the tile.
  * Note: this class does NOT delete the pointer, only releases it.
@@ -1155,56 +1142,15 @@ void Tile::unsetEnhancer()
   enhancer = 0;
 }
 
-/*
- * Description: Unsets a particular item, based on the item in the index of the
- *              list. This will remove and slide all items after it up in the 
- *              list.
- *
- * Inputs: int index - the index in the list array
- * Output: bool - true if successful, fails if out of range of the list
- */
-bool Tile::unsetItem(int index)
-{
-  if(index >= 0 && index < items.size())
-  {
-    items[index] = 0;
-    items.removeAt(index);
-    return true;
-  }
-  return false;
-}
-
-/*
- * Description: Unsets a particular item, based on the item pointer and if it
- *              exists in the tile. This call returns false if no item is
- *              removed.
- *
- * Inputs: MapItem* item - the pointer to a MapItem
- * Output: bool - true if successful, fails if the pointer can't be found
- */
-bool Tile::unsetItem(MapItem* item)
-{
-  for(int i = 0; i < items.size(); i++)
-  {
-    if(items[i] == item)
-      return unsetItem(i);
-  }
-  
-  return false;
-}
-
 /* 
- * Description: Unsets all items stored within the class.
+ * Description: Unsets the item stored within the class.
  *
  * Inputs: none
  * Output: none
  */
-void Tile::unsetItems()
+void Tile::unsetItem()
 {
-  for(int i = 0; i < items.size(); i++)
-    items[i] = 0;
-
-  items.clear();
+  item = 0;
 }
 
 /* 

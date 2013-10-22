@@ -669,9 +669,9 @@ bool MapThing::isPassable()
  */
 bool MapThing::paintGl(float offset_x, float offset_y)
 {
-  if(frames != 0 && tile_main != 0)
+  if(frames != 0 && tile_main != 0 && getOpacity() > 0)
   {
-    frames->paintGl(x - offset_x, y - offset_y, width, height, opacity);
+    frames->paintGl(x - offset_x, y - offset_y, width, height, getOpacity());
     return true;
   }
   return false;

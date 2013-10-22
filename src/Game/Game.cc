@@ -67,6 +67,18 @@ Game::~Game()
 /* Connect the event handler to the game */
 void Game::connectEvents()
 {
+  QObject::connect(&event_handler, SIGNAL(giveItem(int, int)),
+                   this,           SLOT(giveItem(int, int)));
+
+  QObject::connect(
+              &event_handler, 
+              SIGNAL(initConversation(Conversation*, MapPerson*, MapThing*)), 
+              this, 
+              SLOT(initConversation(Conversation*, MapPerson*, MapThing*)));
+  
+  QObject::connect(&event_handler, SIGNAL(pickupItem(MapItem*, bool)),
+                   this,           SLOT(pickupItem(MapItem*, bool)));
+
   QObject::connect(&event_handler, SIGNAL(startBattle()), 
                    this,           SLOT(startBattle()));
 
@@ -74,12 +86,6 @@ void Game::connectEvents()
                    SIGNAL(teleportThing(MapPerson*, int, int, int)), 
                    this,           
                    SLOT(teleportThing(MapPerson*, int, int, int)));
-
-  QObject::connect(
-              &event_handler, 
-              SIGNAL(initConversation(Conversation*, MapPerson*, MapThing*)), 
-              this, 
-              SLOT(initConversation(Conversation*, MapPerson*, MapThing*)));
 }
 
 /* Set up the battle - old battle needs to be deleted prior to calling */
@@ -236,11 +242,48 @@ void Game::setupMap()
  * PUBLIC SLOTS
  *===========================================================================*/
 
+/* Returns the number of items actually inserted into inventory. If less than
+ * count, it only could fit that many */
+bool Game::giveItem(int id, int count)
+{
+  // TODO: connect to player and inventory
+  return true;
+}
+
 void Game::initConversation(Conversation* convo, MapPerson* initiator, 
                                                  MapThing* source)
 {
   if(game_map != 0)
     game_map->initConversation(convo, initiator, source);
+}
+
+void Game::pickupItem(MapItem* item, bool walkover)
+{
+  if(item != 0 && item->isWalkover() == walkover)
+  {
+    bool was_inserted = giveItem(item->getID(), item->getCount());
+    
+    /* Only proceed if it was inserted */
+    if(game_map != 0)
+    {
+      if(was_inserted)
+      {
+        game_map->pickupItem(item);
+      }
+      else
+      {
+        QString notification = "Inventory too full to pick up ";
+        if(item->getCount() > 1)
+          notification += QString::number(item->getCount()) + " " + 
+                          item->getName();
+        else
+          notification += "the " + item->getName();
+        notification += ".";
+        
+        game_map->initNotification(notification);
+      }
+    }
+  }
 }
 
 void Game::startBattle()

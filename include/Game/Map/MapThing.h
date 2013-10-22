@@ -157,7 +157,7 @@ public:
   QString getName();
 
   /* Returns the opacity of the painted thing. */
-  float getOpacity();
+  virtual float getOpacity();
   
   /* Returns the speed that the thing is moving at */
   short getSpeed();

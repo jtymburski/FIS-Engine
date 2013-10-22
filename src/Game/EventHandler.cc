@@ -134,3 +134,9 @@ void EventHandler::executeEvent(Event event, MapPerson* initiator,
   else if(event.classification == STARTCONVO)
     executeConversationEvent(event.convo, initiator, source);
 }
+
+/* Executes a pickup item event */
+void EventHandler::executePickup(MapItem* item, bool walkover)
+{
+  emit pickupItem(item, walkover);
+}

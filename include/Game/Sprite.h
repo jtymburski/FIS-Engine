@@ -76,6 +76,9 @@ public:
   /* Gets the current frame and then shifts to the next one */
   QPixmap getCurrentAndShift();
 
+  /* Returns the head frame */
+  Frame* getFirstFrame();
+  
   /* Returns the position that the linked list pointer is at */
   int getPosition();
 

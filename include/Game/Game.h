@@ -95,9 +95,16 @@ signals:
  * PUBLIC SLOTS
  *===========================================================================*/
 public slots:
+  /* Gives the player an item, based on the id and number of that id */
+  bool giveItem(int id, int count);
+  
   /* Initiates a conversation */
   void initConversation(Conversation* convo, MapPerson* initiator, 
                                              MapThing* source);
+  
+  /* Executes a pickup event on map */  
+  void pickupItem(MapItem* item, bool walkover);
+  
   /* Starts a battle */
   void startBattle();
   
