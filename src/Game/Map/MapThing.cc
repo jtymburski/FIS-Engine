@@ -82,13 +82,11 @@ MapThing::~MapThing()
  *         bool reset - Resets the animation back to head. Used for either 
  *                      restarting animation or stopping it.
  *         bool skip_head - Skip the head of the list of frames
- * Output: bool - a status on the animate, only fails if it tries to animate
- *                the sprite and there are no frames in it.
+ * Output: bool - a status on the animate, if the frame sequence changed.
  */
 bool MapThing::animate(short cycle_time, bool reset, bool skip_head)
 {
-  //qDebug() << animation_time;
-  bool status = true;
+  bool status = false;
   
   /* Check if an animation can occur */
   if(frames != 0)
@@ -98,16 +96,18 @@ bool MapThing::animate(short cycle_time, bool reset, bool skip_head)
     
     if((reset && !skip_head) || animation_time == 0)
     {
-      status = frames->setAtFirst();
+      frames->setAtFirst();
       animation_buffer = 0;
+      status = true;
     }
     else if((reset && skip_head) || animation_buffer >= animation_time)
     {
-      status = frames->shiftNext(skip_head);
+      frames->shiftNext(skip_head);
       if(reset)
         animation_buffer = 0;
       else
         animation_buffer -= animation_time;
+      status = true;
     }
   }
   

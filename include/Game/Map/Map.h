@@ -16,6 +16,7 @@
 #include "FileHandler.h"
 #include "Game/EventHandler.h"
 #include "Game/Map/MapDialog.h"
+#include "Game/Map/MapInteractiveObject.h"
 #include "Game/Map/MapItem.h"
 #include "Game/Map/MapMenu.h"
 #include "Game/Map/MapNPC.h"

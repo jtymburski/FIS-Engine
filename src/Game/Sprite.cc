@@ -378,6 +378,31 @@ bool Sprite::isAtFirst()
   return false;
 }
 
+/*
+ * Description: Checks if the linked list pointer is at the tail of the list
+ *
+ * Inputs: none
+ * Output: bool - returns true if the current pointer is at the tail
+ */
+bool Sprite::isAtEnd()
+{
+  if(getSize() <= 1)
+    return isAtFirst();
+  return (head->getPrevious() == current);
+}
+
+/*
+ * Description: Returns if the parsing direction through the frame sequence
+ *              is forward. Otherwise, it is in reverse.
+ *
+ * Inputs: none
+ * Output: bool - status if the direction is forward. False if reverse.
+ */
+bool Sprite::isDirectionForward()
+{
+  return (sequence == FORWARD);
+}
+
 /* 
  * Description: Paints the active frame using native GL calls. The context
  *              for GL must have been called for this and the sprite

@@ -78,7 +78,7 @@ public:
 
   /* Returns the head frame */
   Frame* getFirstFrame();
-  
+ 
   /* Returns the position that the linked list pointer is at */
   int getPosition();
 
@@ -108,8 +108,12 @@ public:
   /* Inserts the image at the end of the sprite sequence */
   bool insertTail(QString image_path, int rotate_angle = 0);
 
-  /* Returns if the linked list pointer is currently at the head */
+  /* Returns if the linked list pointer is at the head or at the tail */
   bool isAtFirst();
+  bool isAtEnd();
+
+  /* Returns if the direction parsing the frames is forward */
+  bool isDirectionForward();
 
   /* Paints the active frame using GL direct calls */
   bool paintGl(float x, float y, int width, int height, float opacity);

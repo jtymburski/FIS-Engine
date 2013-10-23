@@ -444,23 +444,6 @@ void Map::keyPressEvent(QKeyEvent* key_event)
   }
   else if(key_event->key() == Qt::Key_P)
     map_dialog.setPaused(!map_dialog.isPaused());
-  else if(key_event->key() == Qt::Key_F1)
-  {
-    Frame* image = new Frame("sprites/Map/Tiles/Ground/BlueMetalTile/BlueMetalTile01_AA_A00.png");
-    image->initializeGl();
-    map_dialog.initPickup(image, 50, 1000);
-  }
-  else if(key_event->key() == Qt::Key_F2)
-  {
-    Frame* image = new Frame("sprites/Battle/Bubbies/blazing_t1.png");
-    //Frame* image = new Frame("sprites/Battle/Battle_Persons/auroraagent.png");
-    image->initializeGl();
-    map_dialog.initPickup(image, 1);
-  }
-  else if(key_event->key() == Qt::Key_1)
-    items[0]->setStartingTile(0, geography[0][10][1]);
-  else if(key_event->key() == Qt::Key_2)
-    items[0]->setStartingTile(0, geography[0][1][10]);
   else if(key_event->key() == Qt::Key_4)
     map_dialog.initNotification("Testing", 1000, true);
   else if(key_event->key() == Qt::Key_5)
@@ -1024,6 +1007,7 @@ bool Map::loadMap(QString file)
     item->setID(10001);
     item->setName("Frost Bubby");
     item->setStartingTile(0, geography[0][1][10]);
+    item->setWalkover(true);
     items.append(item);
     frames = new Sprite("sprites/Map/Map_Things/coins_AA_A00.png");
     item = new MapItem(frames, kTILE_WIDTH, kTILE_HEIGHT);
@@ -1033,6 +1017,26 @@ bool Map::loadMap(QString file)
     item->setStartingTile(0, geography[1][3][3]);
     item->setWalkover(true);
     items.append(item);
+
+    /* Make the map interactive object */
+    MapInteractiveObject* object = 
+                           new MapInteractiveObject(kTILE_WIDTH, kTILE_HEIGHT);
+    object->setAnimationSpeed(150);
+    object->setStartingTile(0, geography[0][7][9]);
+    frames = new Sprite(
+               "sprites/Map/Map_Things/Chest01/Chest01Closed_AA_A", 4, ".png");
+    MapState* state = new MapState(frames, event_handler);
+    state->setInteraction(MapState::USE);
+    object->setState(state);
+    frames = new Sprite(
+              "sprites/Map/Map_Things/Chest01/Chest01Opening_AA_A", 2, ".png");
+    object->setState(frames);
+    frames = new Sprite(
+                      "sprites/Map/Map_Things/Chest01/Chest01Open_AA_A00.png");
+    state = new MapState(frames, event_handler);
+    state->setInteraction(MapState::USE);
+    object->setState(state);
+    things.append(object);
   }
 
   success &= fh.stop();
