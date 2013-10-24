@@ -11,7 +11,7 @@
 #include "Game/Map/MapInteractiveObject.h"
 
 /* Constant Implementation - see header file for descriptions */
-//const short MapInteractiveObject::kTOTAL_STATES = 3;
+const short MapInteractiveObject::kRETURN_TIME_UNUSED = -1;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -20,9 +20,12 @@
 /* Constructor function */
 MapInteractiveObject::MapInteractiveObject() : MapThing()
 {
+  action_initiator = 0;
   node_current = 0;
   node_head = 0;
   shifting_forward = true;
+  time_elapsed = 0;
+  time_return = kRETURN_TIME_UNUSED;
 
   clear();
 }
@@ -32,9 +35,12 @@ MapInteractiveObject::MapInteractiveObject(int width, int height, QString name,
                                            QString description, int id)
                     : MapThing(0, width, height, name, description, id)
 {
+  action_initiator = 0;
   node_current = 0;
   node_head = 0;
   shifting_forward = true;
+  time_elapsed = 0;
+  time_return = kRETURN_TIME_UNUSED;
 }
 
 /* Destructor function */
@@ -87,15 +93,6 @@ StateNode* MapInteractiveObject::getTailNode()
   return tail;
 }
 
-/* Initializes the states stack to an empty set */
-//void MapInteractiveObject::initializeStates()
-//{
-//  states.clear();
-//
-//  for(int i = 0; i < kTOTAL_STATES; i++)
-//    states.append(0);
-//}
-  
 /* Sets the current sequence of the node to the parent frames and resets the
  * pointers, where applicable */
 void MapInteractiveObject::setParentFrames()
@@ -137,8 +134,18 @@ bool MapInteractiveObject::shiftNext()
 {
   if(node_current != 0 && node_current->next != 0)
   {
+    /* Fire exit event */
+    if(node_current->state != 0)
+      node_current->state->triggerExitEvent(action_initiator);
+
+    /* Shift the pointer and update the frames */
     node_current = node_current->next;
+    time_elapsed = 0;
     setParentFrames();
+
+    /* Fire enter event */
+    if(node_current->state != 0)
+      node_current->state->triggerEnterEvent(action_initiator);
 
     return true;
   }
@@ -151,8 +158,17 @@ bool MapInteractiveObject::shiftPrevious()
 {
   if(node_current != 0 && node_current->previous != 0)
   {
+    /* Fire exit event */
+    if(node_current->state != 0)
+      node_current->state->triggerExitEvent(action_initiator);
+
     node_current = node_current->previous;
+    time_elapsed = 0;
     setParentFrames();
+
+    /* Fire enter event */
+    if(node_current->state != 0)
+      node_current->state->triggerEnterEvent(action_initiator);
 
     return true;
   }
@@ -174,11 +190,20 @@ QString MapInteractiveObject::classDescriptor()
  * pointers) */
 void MapInteractiveObject::clear()
 {
+  /* Clears action initiator pointer */
+  action_initiator = 0;
+
   /* Clear states */
   unsetStates();
 
   /* Parent cleanup */
   MapThing::clear();
+}
+  
+/* Returns the inactive time before returning down the state path */
+int MapInteractiveObject::getInactiveTime()
+{
+  return time_return;
 }
 
 bool MapInteractiveObject::initializeGl()
@@ -200,44 +225,55 @@ bool MapInteractiveObject::initializeGl()
 }
 
 /* Interact with the thing (use key) */
-// TODO: Add events to this sequence since it can cause interaction
-// TODO: Fix how the sequence works with the use key at the end of the sequence
-// with multiple states.
 bool MapInteractiveObject::interact(MapPerson* initiator)
 {
-  /* Only proceed if the node is available */
-  if(node_current != 0 && node_current->state != 0 && 
-     node_current->state->getInteraction() == MapState::USE)
-  {
-    /* Do the interaction based on the direction travelling */
-    if(shifting_forward)
-    {
-      if(node_current->next != 0)
-      {
-        shiftNext();
-      }
-      else if(node_current->previous != 0)
-      {
-        shifting_forward = false;
-        shiftPrevious();
-      }
-      
-    }
-    else
-    {
-      if(node_current->previous != 0)
-      {
-        shiftPrevious();
-      }
-      else if(node_current->next != 0)
-      {
-        shifting_forward = true;
-        shiftNext();
-      }
-    }
+  bool status = false;
 
-    return true;
+  /* Only proceed if the node is available */
+  if(node_current != 0 && node_current->state != 0)
+  {
+    /* Set the action initiator for the state */
+    action_initiator = initiator;
+
+    /* Fire the use event, if it exists */
+    status |= node_current->state->triggerUseEvent(initiator);
+
+    /* Proceed to execute a use event, if it exists */
+    if(node_current->state->getInteraction() == MapState::USE)
+    {
+      /* Do the interaction based on the direction travelling */
+      if(shifting_forward)
+      {
+        if(!shiftNext())
+        {
+          shifting_forward = false;
+          status |= shiftPrevious();
+        }
+        else
+          status = true;
+      }
+      else
+      {
+        if(!shiftPrevious())
+        {
+          shifting_forward = true;
+          status |= shiftNext();
+        }
+        else
+          status = true;
+      }
+    }
   }
+
+  if(status)
+    time_elapsed = 0;
+
+  return status;
+}
+/* Reimplemented thing call - to if the interactive state can be walked on */
+bool MapInteractiveObject::isPassable()
+{
+  return false; // TODO
 }
 
 /* Reset back to head state */
@@ -247,31 +283,17 @@ void MapInteractiveObject::reset()
   shifting_forward = true;
   setParentFrames();
 }
+  
+/* Sets the inactive time before returning down the state path (ms) */
+void MapInteractiveObject::setInactiveTime(int time)
+{
+  if(time <= 0)
+    time_return = kRETURN_TIME_UNUSED;
+  else
+    time_return = time;
 
-/* Sets the state, to be painted and used */
-//bool MapInteractiveObject::setState(StateOptions selector, MapState* state)
-//{
-//  if(state != 0 && state->getSprite() != 0)
-//  {
-//    StateOptions new_selector = selector;
-//
-//    /* Reset second transitional element back to other */
-//    if(selector == B_TO_A)
-//      new_selector = A_TO_B;
-//
-//    /* Unset and reset the new state */
-//    unsetState(new_selector);
-//    states[new_selector] = state;
-//
-//    /* Set the state in the parent class */
-//    if(current_state == selector || current_state == new_selector)
-//      reset();
-//
-//    return true;
-//  }
-//
-//  return false;
-//}
+  time_elapsed = 0;
+}
 
 bool MapInteractiveObject::setState(MapState* state)
 {
@@ -321,6 +343,17 @@ void MapInteractiveObject::updateThing(float cycle_time, Tile* next_tile)
   /* Animate the frames and determine if the frame has changed */
   bool frames_changed = animate(cycle_time, false, false);
 
+  /* Determine if the cycle time has passed on activity response */
+  if(time_return != kRETURN_TIME_UNUSED && node_current != node_head)
+  {
+    time_elapsed += cycle_time;
+    if(time_elapsed > time_return)
+    {
+      shifting_forward = false;
+      shiftPrevious();
+    }
+  }
+
   /* Only proceed if frames are changed and a transitional sequence  */
   if(frames_changed && node_current != 0 && node_current->transition != 0)
   {
@@ -332,6 +365,7 @@ void MapInteractiveObject::updateThing(float cycle_time, Tile* next_tile)
       {
         node_current->transition->setDirectionReverse();
         shifting_forward = false;
+        time_elapsed = 0;
       }
     }
     else if(!node_current->transition->isDirectionForward() && 
@@ -342,6 +376,7 @@ void MapInteractiveObject::updateThing(float cycle_time, Tile* next_tile)
       {
         node_current->transition->setDirectionForward();
         shifting_forward = true;
+        time_elapsed = 0;
       }
     }
   }

@@ -11,6 +11,7 @@
 #ifndef MAPINTERACTIVEOBJECT_H
 #define MAPINTERACTIVEOBJECT_H
 
+#include "Game/Map/MapPerson.h"
 #include "Game/Map/MapState.h"
 #include "Game/Map/MapThing.h"
 
@@ -25,32 +26,24 @@ public:
   /* Destructor function */
   virtual ~MapInteractiveObject();
 
-  /* Enumerator for defining the available states 
-   *  STATE_A - the initial (closed) state
-   *  A_TO_B  - transitional state from A to B
-   *  STATE_B - the secondary (open) state -> after interaction
-   *  B_TO_A  - transitional state from B to A */
-  //enum StateOptions{STATE_A = 0, 
-  //                  A_TO_B  = 1, 
-  //                  STATE_B = 2, 
-  //                  B_TO_A  = 3};
-
 private:
+  /* The action initiator person pointer - last one called */
+  MapPerson* action_initiator;
+
   /* The nodes that indicate the available states and transitions */
   StateNode* node_current;
   StateNode* node_head;
 
-  /* The current running state */
-  //StateOptions current_state;
-
   /* Shifting the nodes in the forward direction indicator */
   bool shifting_forward;
 
-  /* The list of available states */
-  //QList<MapState*> states;
+  /* This defines the time before returning to the previous state after no
+   * activity */
+  int time_elapsed;
+  int time_return;
 
   /* -------------------------- Constants ------------------------- */
-  //const static short kTOTAL_STATES; /* The total number of object states */
+  const static short kRETURN_TIME_UNUSED; /* The unused time inidicator */
 
 /*============================================================================
  * PRIVATE FUNCTIONS
@@ -64,9 +57,6 @@ private:
 
   /* Returns the tail state */
   StateNode* getTailNode();
-
-  /* Initializes the states stack to an empty set */
-  //void initializeStates();
 
   /* Sets the current sequence of the node to the parent frames and resets the
    * pointers, where applicable */
@@ -87,14 +77,23 @@ public:
    * pointers) */
   virtual void clear();
 
+  /* Returns the inactive time before returning down the state path */
+  int getInactiveTime();
+
   /* Initializes the GL context with all the state frames */
   bool initializeGl();
 
   /* Interact with the thing (use key) */
   bool interact(MapPerson* initiator);
 
+  /* Reimplemented thing call - to if the interactive state can be walked on */
+  bool isPassable();
+
   /* Reset back to head state */
   void reset();
+
+  /* Sets the inactive time before returning down the state path (ms) */
+  void setInactiveTime(int time);
 
   /* Sets the states, to be painted and used */
   bool setState(MapState* state);

@@ -1019,13 +1019,20 @@ bool Map::loadMap(QString file)
     items.append(item);
 
     /* Make the map interactive object */
+    Conversation* mio_convo = new Conversation;
+    mio_convo->category = EnumDb::TEXT;
+    mio_convo->action_event = event_handler->createBlankEvent();
+    mio_convo->text = "Conversation event test on chest.";
+
     MapInteractiveObject* object = 
                            new MapInteractiveObject(kTILE_WIDTH, kTILE_HEIGHT);
     object->setAnimationSpeed(150);
+    object->setInactiveTime(5000);
     object->setStartingTile(0, geography[0][7][9]);
     frames = new Sprite(
                "sprites/Map/Map_Things/Chest01/Chest01Closed_AA_A", 4, ".png");
     MapState* state = new MapState(frames, event_handler);
+    //state->setExitEvent(event_handler->createConversationEvent(mio_convo));
     state->setInteraction(MapState::USE);
     object->setState(state);
     frames = new Sprite(
@@ -1034,7 +1041,8 @@ bool Map::loadMap(QString file)
     frames = new Sprite(
                       "sprites/Map/Map_Things/Chest01/Chest01Open_AA_A00.png");
     state = new MapState(frames, event_handler);
-    state->setInteraction(MapState::USE);
+    //state->setInteraction(MapState::USE);
+    state->setUseEvent(event_handler->createConversationEvent(mio_convo));
     object->setState(state);
     things.append(object);
   }

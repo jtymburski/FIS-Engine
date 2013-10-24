@@ -267,6 +267,55 @@ bool MapState::setWalkoverEvent(EventHandler::Event walkover_event)
 
   return false;
 }
+  
+bool MapState::triggerEnterEvent(MapPerson* initiator)
+{
+  /* Only proceed with event if it's a valid event */
+  if(event_handler != 0 && enter_event.classification != EventHandler::NOEVENT)
+  {
+    event_handler->executeEvent(enter_event, initiator);
+    return true;
+  }
+
+  return false;
+}
+
+bool MapState::triggerExitEvent(MapPerson* initiator)
+{
+  /* Only proceed with event if it's a valid event */
+  if(event_handler != 0 && exit_event.classification != EventHandler::NOEVENT)
+  {
+    event_handler->executeEvent(exit_event, initiator);
+    return true;
+  }
+
+  return false;
+}
+
+bool MapState::triggerUseEvent(MapPerson* initiator)
+{
+  /* Only proceed with event if it's a valid event */
+  if(event_handler != 0 && use_event.classification != EventHandler::NOEVENT)
+  {
+    event_handler->executeEvent(use_event, initiator);
+    return true;
+  }
+
+  return false;
+}
+
+bool MapState::triggerWalkoverEvent(MapPerson* initiator)
+{
+  /* Only proceed with event if it's a valid event */
+  if(event_handler != 0 && 
+     walkover_event.classification != EventHandler::NOEVENT)
+  {
+    event_handler->executeEvent(walkover_event, initiator);
+    return true;
+  }
+
+  return false;
+}
 
 void MapState::unsetSprite()
 {

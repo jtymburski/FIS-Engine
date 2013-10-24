@@ -97,6 +97,12 @@ public:
   /* Sets the walkover event */
   bool setWalkoverEvent(EventHandler::Event walkover_event);
 
+  /* The event triggers. Fire to start the event */
+  bool triggerEnterEvent(MapPerson* initiator);
+  bool triggerExitEvent(MapPerson* initiator);
+  bool triggerUseEvent(MapPerson* initiator);
+  bool triggerWalkoverEvent(MapPerson* initiator);
+
   /* Unsets the sprite internally to the state */
   void unsetSprite();
 };
