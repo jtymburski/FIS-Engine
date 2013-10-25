@@ -20,11 +20,10 @@ MapState::MapState()
   event_handler = 0;
   interaction = NOINTERACTION;
   opacity = kMAX_OPACITY;
-  passable = false;
 }
 
 MapState::MapState(Sprite* animation, EventHandler* event_handler, 
-                   float opacity, bool passable)
+                   float opacity)
 {
   this->animation = 0;
   this->event_handler = 0;
@@ -33,7 +32,6 @@ MapState::MapState(Sprite* animation, EventHandler* event_handler,
   setSprite(animation);
   setEventHandler(event_handler);
   setOpacity(opacity);
-  setPassable(passable);
 }
 
 MapState::~MapState()
@@ -101,12 +99,6 @@ bool MapState::initializeGl()
     status &= animation->initializeGl();
 
   return status;
-}
-
-/* Returns if the state is passable */
-bool MapState::isPassable()
-{
-  return passable;
 }
 
 /*
@@ -200,12 +192,6 @@ void MapState::setOpacity(float opacity)
     this->opacity = opacity;
 }
   
-/* Sets the passability and if this state restricts walking */
-void MapState::setPassable(bool passable)
-{
-  this->passable = passable;
-}
-
 bool MapState::setSprite(Sprite* animation)
 {
   if(animation != 0 && animation->getSize() > 0)

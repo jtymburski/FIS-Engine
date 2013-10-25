@@ -34,6 +34,9 @@ private:
   StateNode* node_current;
   StateNode* node_head;
 
+  /* Indicator if a person is standing on the interactive object */
+  MapPerson* person_on;
+
   /* Shifting the nodes in the forward direction indicator */
   bool shifting_forward;
 
@@ -63,6 +66,7 @@ private:
   void setParentFrames();
 
   /* Shift the node sequence to next or previous */
+  bool shift();
   bool shiftNext();
   bool shiftPrevious();
 
@@ -94,10 +98,13 @@ public:
 
   /* Sets the inactive time before returning down the state path (ms) */
   void setInactiveTime(int time);
-
+  
+  /* Set the tile to hook the map interactive object to */
+  bool setStartingTile(int section_id, Tile* new_tile, bool no_events = false);
+  
   /* Sets the states, to be painted and used */
-  bool setState(MapState* state);
-  bool setState(Sprite* transition);
+  bool setState(MapState* state, bool passable = false);
+  bool setState(Sprite* transition, bool passable = false);
 
   /* Updates the thing, based on the tick */
   virtual void updateThing(float cycle_time, Tile* next_tile);

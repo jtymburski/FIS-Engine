@@ -17,7 +17,7 @@ public:
   /* Constructor functions */
   MapState();
   MapState(Sprite* animation, EventHandler* event_handler = 0,
-           float opacity = kMAX_OPACITY, bool passable = false);
+           float opacity = kMAX_OPACITY);
 
   /* Destructor function */
   ~MapState();
@@ -32,7 +32,6 @@ private:
   /* The information that defines the animation image data for the sprite */
   Sprite* animation;
   float opacity;
-  bool passable;
 
   /* Stores the interaction state for changing state */
   InteractionState interaction;
@@ -67,9 +66,6 @@ public:
   /* Initializes GL in all the frames stored within this state */
   bool initializeGl();
   
-  /* Returns if the state is passable */
-  bool isPassable();
-
   /* Sets the enter event */
   bool setEnterEvent(EventHandler::Event enter_event);
 
@@ -84,9 +80,6 @@ public:
 
   /* Sets the opacity of the painted state (0 - 1.0) */
   void setOpacity(float opacity);
-  
-  /* Sets the passability and if this state restricts walking */
-  void setPassable(bool passable);
   
   /* Sets the sprite internally to the state */
   bool setSprite(Sprite* animation);
@@ -111,6 +104,8 @@ struct StateNode
 {
   MapState* state;
   Sprite* transition;
+  bool passable;
+
   StateNode* previous;
   StateNode* next;
 };

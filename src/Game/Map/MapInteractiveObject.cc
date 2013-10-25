@@ -7,6 +7,9 @@
 *              nearby slots. Pressing the key will toggle the object and allow
 *              it to change states. These objects are unmovable and are of the
 *              typical interactive objects such as doors, chests, etc.
+*
+* TODO: Glitch in here that causes it to skip a state when triggering...
+*       I think it has to do with the animate(0, true, false) call.
 ******************************************************************************/
 #include "Game/Map/MapInteractiveObject.h"
 
@@ -23,6 +26,7 @@ MapInteractiveObject::MapInteractiveObject() : MapThing()
   action_initiator = 0;
   node_current = 0;
   node_head = 0;
+  person_on = 0;
   shifting_forward = true;
   time_elapsed = 0;
   time_return = kRETURN_TIME_UNUSED;
@@ -38,6 +42,7 @@ MapInteractiveObject::MapInteractiveObject(int width, int height, QString name,
   action_initiator = 0;
   node_current = 0;
   node_head = 0;
+  person_on = 0;
   shifting_forward = true;
   time_elapsed = 0;
   time_return = kRETURN_TIME_UNUSED;
@@ -127,7 +132,36 @@ void MapInteractiveObject::setParentFrames()
     }
   }
 }
-  
+ 
+bool MapInteractiveObject::shift()
+{
+  bool status = false;
+
+  /* Do the interaction based on the direction travelling */
+  if(shifting_forward)
+  {
+    if(!shiftNext())
+    {
+      shifting_forward = false;
+      status |= shiftPrevious();
+    }
+    else
+      status = true;
+  }
+  else
+  {
+    if(!shiftPrevious())
+    {
+      shifting_forward = true;
+      status |= shiftNext();
+    }
+    else
+      status = true;
+  }
+
+  return status;
+}
+
 /* Shift the node sequence to next or previous */
 // TODO: Event handling
 bool MapInteractiveObject::shiftNext()
@@ -240,29 +274,7 @@ bool MapInteractiveObject::interact(MapPerson* initiator)
 
     /* Proceed to execute a use event, if it exists */
     if(node_current->state->getInteraction() == MapState::USE)
-    {
-      /* Do the interaction based on the direction travelling */
-      if(shifting_forward)
-      {
-        if(!shiftNext())
-        {
-          shifting_forward = false;
-          status |= shiftPrevious();
-        }
-        else
-          status = true;
-      }
-      else
-      {
-        if(!shiftPrevious())
-        {
-          shifting_forward = true;
-          status |= shiftNext();
-        }
-        else
-          status = true;
-      }
-    }
+      status |= shift();
   }
 
   if(status)
@@ -273,7 +285,9 @@ bool MapInteractiveObject::interact(MapPerson* initiator)
 /* Reimplemented thing call - to if the interactive state can be walked on */
 bool MapInteractiveObject::isPassable()
 {
-  return false; // TODO
+  if(node_current != 0)
+    return node_current->passable;
+  return true;
 }
 
 /* Reset back to head state */
@@ -295,7 +309,18 @@ void MapInteractiveObject::setInactiveTime(int time)
   time_elapsed = 0;
 }
 
-bool MapInteractiveObject::setState(MapState* state)
+bool MapInteractiveObject::setStartingTile(int section_id, Tile* new_tile, 
+                                           bool no_events)
+{
+  if(MapThing::setStartingTile(section_id, new_tile, no_events))
+  {
+    person_on = 0;
+    return true;
+  }
+  return false;
+}
+
+bool MapInteractiveObject::setState(MapState* state, bool passable)
 {
   if(state != 0 && state->getSprite() != 0)
   {
@@ -304,6 +329,7 @@ bool MapInteractiveObject::setState(MapState* state)
     /* Set the state parameters */
     node->state = state;
     node->transition = 0;
+    node->passable = passable;
     node->previous = 0;
     node->next = 0;
 
@@ -316,7 +342,7 @@ bool MapInteractiveObject::setState(MapState* state)
   return false;
 }
 
-bool MapInteractiveObject::setState(Sprite* transition)
+bool MapInteractiveObject::setState(Sprite* transition, bool passable)
 {
   if(transition != 0)
   {
@@ -325,6 +351,7 @@ bool MapInteractiveObject::setState(Sprite* transition)
     /* Set the state parameters */
     node->state = 0;
     node->transition = transition;
+    node->passable = passable;
     node->previous = 0;
     node->next = 0;
 
@@ -340,8 +367,40 @@ bool MapInteractiveObject::setState(Sprite* transition)
 /* Updates the thing, based on the tick */
 void MapInteractiveObject::updateThing(float cycle_time, Tile* next_tile)
 {
+  (void)next_tile;
+
   /* Animate the frames and determine if the frame has changed */
   bool frames_changed = animate(cycle_time, false, false);
+
+  /* Do the walk on / walk off animation for the state */
+  Tile* location = getTile();
+  if(location != 0)
+  {
+    if(person_on == 0 && location->isPersonSet() && 
+       location->getPerson()->getID() == kPLAYER_ID)
+    {
+      person_on = location->getPerson();
+
+      if(node_current != 0 && node_current->state != 0)
+      {
+        /* Trigger walkover event, if valid */
+        node_current->state->triggerWalkoverEvent(person_on);
+
+        /* Trigger walk on interaction */
+        if(node_current->state->getInteraction() == MapState::WALKON)
+          shift();;
+      }
+    }
+    else if(person_on != 0 && !location->isPersonSet())
+    {
+      /* Trigger walk off interaction */
+      if(node_current != 0 && node_current->state != 0 && 
+         node_current->state->getInteraction() == MapState::WALKOFF)
+        shift();
+
+      person_on = 0;
+    }
+  }
 
   /* Determine if the cycle time has passed on activity response */
   if(time_return != kRETURN_TIME_UNUSED && node_current != node_head)

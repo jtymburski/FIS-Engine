@@ -1041,9 +1041,9 @@ bool Map::loadMap(QString file)
     frames = new Sprite(
                       "sprites/Map/Map_Things/Chest01/Chest01Open_AA_A00.png");
     state = new MapState(frames, event_handler);
-    //state->setInteraction(MapState::USE);
-    state->setUseEvent(event_handler->createConversationEvent(mio_convo));
-    object->setState(state);
+    state->setInteraction(MapState::WALKOFF);
+    state->setWalkoverEvent(event_handler->createConversationEvent(mio_convo));
+    object->setState(state, true);
     things.append(object);
   }
 
