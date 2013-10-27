@@ -994,7 +994,7 @@ bool Map::loadMap(QString file)
     things.append(thing);
     
     /* Make three map items, to walkover */
-    frames = new Sprite("sprites/Map/Map_Things/sword_AA_A00.png");
+    frames = new Sprite("sprites/Map/Testing/sword_AA_A00.png");
     MapItem* item = new MapItem(frames, kTILE_WIDTH, kTILE_HEIGHT);
     item->setID(10000);
     item->setName("Sword of Power");
@@ -1009,7 +1009,7 @@ bool Map::loadMap(QString file)
     item->setStartingTile(0, geography[0][1][10]);
     item->setWalkover(true);
     items.append(item);
-    frames = new Sprite("sprites/Map/Map_Things/coins_AA_A00.png");
+    frames = new Sprite("sprites/Map/Testing/coins_AA_A00.png");
     item = new MapItem(frames, kTILE_WIDTH, kTILE_HEIGHT);
     item->setCount(100);
     item->setID(10002);
@@ -1022,12 +1022,12 @@ bool Map::loadMap(QString file)
     Conversation* mio_convo = new Conversation;
     mio_convo->category = EnumDb::TEXT;
     mio_convo->action_event = event_handler->createBlankEvent();
-    mio_convo->text = "Conversation event test on chest.";
+    mio_convo->text = "Event test firing on chest.";
 
     MapInteractiveObject* object = 
                            new MapInteractiveObject(kTILE_WIDTH, kTILE_HEIGHT);
     object->setAnimationSpeed(150);
-    object->setInactiveTime(5000);
+    object->setInactiveTime(10000);
     object->setStartingTile(0, geography[0][7][9]);
     frames = new Sprite(
                "sprites/Map/Map_Things/Chest01/Chest01Closed_AA_A", 4, ".png");
@@ -1041,8 +1041,42 @@ bool Map::loadMap(QString file)
     frames = new Sprite(
                       "sprites/Map/Map_Things/Chest01/Chest01Open_AA_A00.png");
     state = new MapState(frames, event_handler);
+    //state->setInteraction(MapState::WALKOFF);
+    state->setEnterEvent(event_handler->createConversationEvent(mio_convo));
+    state->setUseEvent(event_handler->createConversationEvent(mio_convo));
+    object->setState(state);
+    things.append(object);
+    
+    /* Make another map interactive object (colors walk over) */
+    object = new MapInteractiveObject(kTILE_WIDTH, kTILE_HEIGHT);
+    object->setStartingTile(0, geography[0][0][8]);
+    frames = new Sprite("sprites/Map/Testing/light1_AA_A00.png");
+    state = new MapState(frames, event_handler);
+    state->setInteraction(MapState::WALKON);
+    object->setState(state, true);
+    frames = new Sprite("sprites/Map/Testing/light2_AA_A00.png");
+    state = new MapState(frames, event_handler);
     state->setInteraction(MapState::WALKOFF);
-    state->setWalkoverEvent(event_handler->createConversationEvent(mio_convo));
+    object->setState(state, true);
+    things.append(object);
+    
+    /* Make the door interactive object */
+    object = new MapInteractiveObject(kTILE_WIDTH, kTILE_HEIGHT);
+    object->setAnimationSpeed(100);
+    object->setStartingTile(0, geography[0][0][6]);
+    frames = new Sprite(
+                "sprites/Map/Tiles/Scenery/Transitional/TreeDoor01_AA_A00.png");
+    state = new MapState(frames, event_handler);
+    state->setInteraction(MapState::USE);
+    object->setState(state);
+    frames = new Sprite(
+          "sprites/Map/Tiles/Scenery/Transitional/TreeDoor01Opening_AA_A", 
+          5, ".png");
+    object->setState(frames);
+    frames = new Sprite(
+            "sprites/Map/Tiles/Scenery/Transitional/TreeDoor01Open_AA_A00.png");
+    state = new MapState(frames, event_handler);
+    state->setInteraction(MapState::WALKOFF); // WALKOFF
     object->setState(state, true);
     things.append(object);
   }
@@ -1165,30 +1199,6 @@ void Map::teleportThing(int id, int tile_x, int tile_y, int section_id)
 
 void Map::unloadMap()
 {
-  /* Delete all the tiles that have been set */
-  for(int i = 0; i < geography.size(); i++)
-  {
-    for(int j = 0; j < geography[i].size(); j++)
-    {
-      for(int k = 0; k < geography[i][j].size(); k++)
-      {
-        delete geography[i][j][k];
-        geography[i][j][k] = 0;
-      }
-      geography[i][j].clear();
-    }
-    geography[i].clear();
-  }
-  geography.clear();
-
-  /* Deletes the sprite data stored */
-  for(int i = 0; i < tile_sprites.size(); i++)
-  {
-    delete tile_sprites[i];
-    tile_sprites[i] = 0;
-  }
-  tile_sprites.clear();
-
   /* Delete the items */
   for(int i = 0; i < items.size(); i++)
   {
@@ -1216,6 +1226,30 @@ void Map::unloadMap()
   }
   things.clear();
 
+    /* Delete all the tiles that have been set */
+  for(int i = 0; i < geography.size(); i++)
+  {
+    for(int j = 0; j < geography[i].size(); j++)
+    {
+      for(int k = 0; k < geography[i][j].size(); k++)
+      {
+        delete geography[i][j][k];
+        geography[i][j][k] = 0;
+      }
+      geography[i][j].clear();
+    }
+    geography[i].clear();
+  }
+  geography.clear();
+
+  /* Deletes the sprite data stored */
+  for(int i = 0; i < tile_sprites.size(); i++)
+  {
+    delete tile_sprites[i];
+    tile_sprites[i] = 0;
+  }
+  tile_sprites.clear();
+  
   /* Reset the viewport */
   viewport->setMapSize(0, 0);
   viewport->lockOn(0, 0);

@@ -7,9 +7,6 @@
 *              nearby slots. Pressing the key will toggle the object and allow
 *              it to change states. These objects are unmovable and are of the
 *              typical interactive objects such as doors, chests, etc.
-*
-* TODO: Glitch in here that causes it to skip a state when triggering...
-*       I think it has to do with the animate(0, true, false) call.
 ******************************************************************************/
 #include "Game/Map/MapInteractiveObject.h"
 
@@ -115,6 +112,7 @@ void MapInteractiveObject::setParentFrames()
     else if(node_current->transition != 0)
     {
       Sprite* transition = node_current->transition;
+      transition->setDirectionForward();
       MapThing::setFrames(transition, false);
       animate(0, true, false);
 
@@ -372,47 +370,6 @@ void MapInteractiveObject::updateThing(float cycle_time, Tile* next_tile)
   /* Animate the frames and determine if the frame has changed */
   bool frames_changed = animate(cycle_time, false, false);
 
-  /* Do the walk on / walk off animation for the state */
-  Tile* location = getTile();
-  if(location != 0)
-  {
-    if(person_on == 0 && location->isPersonSet() && 
-       location->getPerson()->getID() == kPLAYER_ID)
-    {
-      person_on = location->getPerson();
-
-      if(node_current != 0 && node_current->state != 0)
-      {
-        /* Trigger walkover event, if valid */
-        node_current->state->triggerWalkoverEvent(person_on);
-
-        /* Trigger walk on interaction */
-        if(node_current->state->getInteraction() == MapState::WALKON)
-          shift();;
-      }
-    }
-    else if(person_on != 0 && !location->isPersonSet())
-    {
-      /* Trigger walk off interaction */
-      if(node_current != 0 && node_current->state != 0 && 
-         node_current->state->getInteraction() == MapState::WALKOFF)
-        shift();
-
-      person_on = 0;
-    }
-  }
-
-  /* Determine if the cycle time has passed on activity response */
-  if(time_return != kRETURN_TIME_UNUSED && node_current != node_head)
-  {
-    time_elapsed += cycle_time;
-    if(time_elapsed > time_return)
-    {
-      shifting_forward = false;
-      shiftPrevious();
-    }
-  }
-
   /* Only proceed if frames are changed and a transitional sequence  */
   if(frames_changed && node_current != 0 && node_current->transition != 0)
   {
@@ -439,13 +396,55 @@ void MapInteractiveObject::updateThing(float cycle_time, Tile* next_tile)
       }
     }
   }
+  
+  /* Do the walk on / walk off animation for the state */
+  Tile* location = getTile();
+  if(location != 0)
+  {
+    if(person_on == 0 && location->isPersonSet() && 
+       location->getPerson()->getID() == kPLAYER_ID)
+    {
+      person_on = location->getPerson();
+
+      if(node_current != 0 && node_current->state != 0)
+      {
+        /* Trigger walkover event, if valid */
+        node_current->state->triggerWalkoverEvent(person_on);
+
+        /* Trigger walk on interaction */
+        if(node_current->state->getInteraction() == MapState::WALKON)
+          shift();
+      }
+    }
+    else if(person_on != 0 && !location->isPersonSet())
+    {
+      /* Trigger walk off interaction */
+      if(node_current != 0 && node_current->state != 0 && 
+         node_current->state->getInteraction() == MapState::WALKOFF)
+        shift();
+
+      person_on = 0;
+    }
+  }
+  
+  /* Determine if the cycle time has passed on activity response */
+  if(time_return != kRETURN_TIME_UNUSED && node_current != node_head)
+  {
+    time_elapsed += cycle_time;
+    if(time_elapsed > time_return)
+    {
+      shifting_forward = false;
+      shiftPrevious();
+    }
+  }
 }
 
 /* Unsets the tied state - this handles deletion */
 void MapInteractiveObject::unsetStates()
 {
   StateNode* node = node_head;
-
+  unsetFrames(false);
+  
   /* Proceed to delete all nodes */
   while(node != 0)
   {
@@ -463,5 +462,17 @@ void MapInteractiveObject::unsetStates()
   /* Clear the class data */
   node_current = 0;
   node_head = 0;
-  unsetFrames(false);
+}
+
+/*
+ * Description: Unsets the starting tile location that is stored within the
+ *              thing.
+ *
+ * Inputs: bool no_events - fire no events when unsetting
+ * Output: none
+ */
+void MapInteractiveObject::unsetStartingTile(bool no_events)
+{ 
+  MapThing::unsetStartingTile(no_events);
+  person_on = 0;
 }

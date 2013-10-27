@@ -497,18 +497,8 @@ bool MapPerson::setStartingTile(int section_id, Tile* new_tile, bool no_events)
 {
   if(section_id >= 0 && new_tile != 0 && !new_tile->isPersonSet())
   {
-    /* Stop movement */
-    setDirection(EnumDb::DIRECTIONLESS);
-  
-    /* Unset the previous tile */
-    if(tile_previous != 0)
-      tile_previous->unsetPerson(no_events);
-    tile_previous = 0;
-  
-    /* Unset the main tile */
-    if(tile_main != 0)
-      tile_main->unsetPerson(no_events);
-    tile_main = 0;
+    /* Unsets the old tile information */
+    unsetStartingTile(no_events);
   
     /* Set the new tile */
     tile_main = new_tile;
@@ -673,4 +663,31 @@ void MapPerson::unsetState(SurfaceClassifier surface,
   /* Clear out the parent call if the direction or surface lines up */
   if(this->surface == surface && this->direction == direction)
     MapThing::unsetFrames(false);
+}
+
+/*
+ * Description: Unsets the starting tile location that is stored within the
+ *              thing.
+ *
+ * Inputs: bool no_events - fire no events when unsetting
+ * Output: none
+ */
+void MapPerson::unsetStartingTile(bool no_events)
+{ 
+  /* Stop movement */
+  setDirection(EnumDb::DIRECTIONLESS);
+  
+  /* Unset the previous tile */
+  if(tile_previous != 0)
+    tile_previous->unsetPerson(no_events);
+  tile_previous = 0;
+  
+  /* Unset the main tile */
+  if(tile_main != 0)
+    tile_main->unsetPerson(no_events);
+  tile_main = 0;
+    
+  /* Resets the coordinates */
+  this->x = 0;
+  this->y = 0;
 }

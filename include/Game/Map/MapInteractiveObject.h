@@ -111,6 +111,9 @@ public:
 
   /* Unsets all states - this handles deletion */
   void unsetStates();
+  
+  /* Unsets the starting tile */
+  void unsetStartingTile(bool no_events = false);
 };
 
 #endif // MAPINTERACTIVEOBJECT_H

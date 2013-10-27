@@ -248,6 +248,9 @@ public:
   
   /* Unsets the thing frames, in the class */
   void unsetFrames(bool delete_frames = true);
+  
+  /* Unsets the starting tile */
+  virtual void unsetStartingTile(bool no_events = false);
 };
 
 #endif // MAPTHING_H

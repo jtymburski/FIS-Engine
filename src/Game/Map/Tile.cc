@@ -71,7 +71,7 @@ Tile::Tile(EventHandler* event_handler, int width, int height, int x, int y)
  */
 Tile::~Tile()
 {
-  clear();
+  //clear();
 }
 
 /*============================================================================

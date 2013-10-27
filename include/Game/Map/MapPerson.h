@@ -152,6 +152,9 @@ public:
 
   /* Unsets a state, if it exists, to remove from the stack of states */
   void unsetState(SurfaceClassifier surface, EnumDb::Direction direction);
+  
+  /* Unsets the starting tile */
+  void unsetStartingTile(bool no_events = false);
 };
 
 #endif // MAPPERSON_H

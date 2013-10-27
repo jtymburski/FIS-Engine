@@ -916,15 +916,10 @@ bool MapThing::setSpeed(short speed)
  */
 bool MapThing::setStartingTile(int section_id, Tile* new_tile, bool no_events)
 {
-  /* Unused variable - used in virtual call for Person */
-  (void)no_events;
-
   if(section_id >= 0 && new_tile != 0 && !new_tile->isThingSet())
   {
     /* Unset the main tile */
-    if(tile_main != 0)
-      tile_main->unsetThing();
-    tile_main = 0;
+    unsetStartingTile(no_events);
   
     /* Set the new tile */
     tile_main = new_tile;
@@ -1014,4 +1009,25 @@ void MapThing::unsetFrames(bool delete_frames)
   if(delete_frames)
     delete frames;
   frames = 0;
+}
+
+/*
+ * Description: Unsets the starting tile location that is stored within the
+ *              thing.
+ *
+ * Inputs: bool no_events - fire no events when unsetting (virtual for person)
+ * Output: none
+ */
+void MapThing::unsetStartingTile(bool no_events)
+{
+  (void)no_events;
+  
+  /* Unset the main tile */
+  if(tile_main != 0)
+    tile_main->unsetThing();
+  tile_main = 0;
+  
+  /* Resets the coordinates */
+  this->x = 0;
+  this->y = 0;
 }

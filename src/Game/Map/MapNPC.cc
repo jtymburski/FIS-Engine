@@ -159,7 +159,6 @@ int MapNPC::getPathLength()
 /* Path nodes removal handling */
 bool MapNPC::removeAllNodes()
 {
-  /* Loop through all nodes and remove them */
   while(removeNodeAtTail());
   return true;
 }
@@ -196,7 +195,7 @@ bool MapNPC::removeNode(int index)
 
     success = true;
   }
-
+  
   /* Finish by deleting the pointer */
   if(success)
     delete temp_node;
@@ -214,7 +213,7 @@ void MapNPC::resetMovement()
   current = head;
 
   if(current != 0)
-    setStartingTile(getMapSection(), current->tile);
+    setStartingTile(getMapSection(), current->tile, true);
 }
 
 /* Sets the node movement state - how it traverses */
