@@ -92,7 +92,7 @@ Map::Map(const QGLFormat & format, Options running_config,
 /* Destructor function */
 Map::~Map()
 {
-  unloadMap();
+ unloadMap();
 }
 
 /*============================================================================

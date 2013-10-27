@@ -17,7 +17,9 @@
 class BattleInfoBar : public QWidget
 {
 public:
+
   BattleInfoBar(QWidget* parent = NULL);
+
   ~BattleInfoBar();
 
 private:

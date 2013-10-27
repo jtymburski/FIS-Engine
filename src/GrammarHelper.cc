@@ -114,12 +114,14 @@ bool isVowel(QChar x)
 //TODO
 QString plural(QString noun)
 {
+  noun;//WARNING
   return "";//WARNING
 }
 
 //TODO
 QString singular(QString enoun)
 {
+  enoun;//WARNING
   return "";//WARNING
 }
 
