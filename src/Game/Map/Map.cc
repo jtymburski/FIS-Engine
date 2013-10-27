@@ -452,6 +452,11 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     map_dialog.initNotification("This is a really long message. It goes on and on without end. Who makes notifications this long except for crazy deranged eutherlytes. Yes, I made a new word. You want to fight about it?", 5000, true);
   else if(map_dialog.isInConversation())
     map_dialog.keyPress(key_event);
+  else if(key_event->key() == Qt::Key_Shift && !key_event->isAutoRepeat())
+  {
+    if(player != 0)
+      player->setSpeed(300);
+  }
   else if(key_event->key() == Qt::Key_Space)
     initiateThingInteraction();
   else if(key_event->key() == Qt::Key_Down || key_event->key() == Qt::Key_Up ||
@@ -541,6 +546,11 @@ void Map::keyReleaseEvent(QKeyEvent* key_event)
   {
     if(player != 0)
       player->keyRelease(key_event);
+  }
+  else if(key_event->key() == Qt::Key_Shift && !key_event->isAutoRepeat())
+  {
+    if(player != 0)
+      player->setSpeed(150);
   }
 }
 
@@ -1023,6 +1033,10 @@ bool Map::loadMap(QString file)
     mio_convo->category = EnumDb::TEXT;
     mio_convo->action_event = event_handler->createBlankEvent();
     mio_convo->text = "Event test firing on chest.";
+    Conversation* mio_convo2 = new Conversation;
+    mio_convo2->category = EnumDb::TEXT;
+    mio_convo2->action_event = event_handler->createBlankEvent();
+    mio_convo2->text = "Event test re-firing on chest.";
 
     MapInteractiveObject* object = 
                            new MapInteractiveObject(kTILE_WIDTH, kTILE_HEIGHT);
@@ -1043,7 +1057,7 @@ bool Map::loadMap(QString file)
     state = new MapState(frames, event_handler);
     //state->setInteraction(MapState::WALKOFF);
     state->setEnterEvent(event_handler->createConversationEvent(mio_convo));
-    state->setUseEvent(event_handler->createConversationEvent(mio_convo));
+    state->setUseEvent(event_handler->createConversationEvent(mio_convo2));
     object->setState(state);
     things.append(object);
     

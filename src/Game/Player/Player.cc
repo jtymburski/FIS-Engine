@@ -1,11 +1,15 @@
 /******************************************************************************
-* Class Name: Player
-* Date Created: December 2nd, 2012
-* Inheritance:
-* Description: Abstract player class, containing the two parties -- sleuth and
-*              bearacks, and also represents the player's position and speed
-*              on the map
-******************************************************************************/
+ * Class Name: Player
+ * Date Created: December 2nd, 2012
+ * Inheritance: none
+ * Description: The player class, containing the two parties -- sleuth and
+ *              bearacks, and represents any pertinent information to the
+ *              working of the game player.
+ *
+ * TODO:
+ *   1. Default value of gravity
+ *   2. Deletion of party pointers
+ *****************************************************************************/
 #include "Game/Player/Player.h"
 
 /*============================================================================
@@ -22,19 +26,22 @@ const uint Player::kMAX_CREDITS = 1000000000;
  *
  * Inputs: p_sleuth - pointer to sleuth party
  *         p_bearacks - pointer to bearacks party
- *         x, y - initial position of player on map
  */
-Player::Player(Party* p_sleuth, Party* p_racks, int x, int y)
-  : sleuth(p_sleuth),
-    bearacks(p_racks),
-    x_pos(x),
-    y_pos(y)
-{}
+Player::Player(Party* sleuth, Party* bearacks)
+  : sleuth(0), bearacks(0)
+{
+  setSleuth(sleuth);
+  setBearacks(bearacks);
+}
 
 /*
  * Description: Annihilates a player object
  */
-Player::~Player() {}
+Player::~Player() 
+{
+  setSleuth(0);
+  setBearacks(0);
+}
 
 /*============================================================================
  * PRIVATE FUNCTIONS
@@ -43,13 +50,14 @@ Player::~Player() {}
 /*
  * Description: Calculates the carry weight of the player
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: double - the carry weight calculated based on inventory mass
  */
-void Player::calcCarryWeight()
+double Player::calcCarryWeight()
 {
-  double mass = sleuth->getInventory()->getMass();
-  carry_weight = gravity * mass;
+  if(sleuth != 0 && sleuth->getInventory() != 0)
+    return (gravity * sleuth->getInventory()->getMass());
+  return 0;
 }
 
 /*============================================================================
@@ -64,112 +72,8 @@ void Player::calcCarryWeight()
  */
 void Player::addCredits(unsigned long value)
 {
-    (credits + value < kMAX_CREDITS) ? (credits += value) :
-                                       (credits = kMAX_CREDITS);
-}
-
-/*
- * Description: Prints out the information of the Player.
- *
- * Inputs: none
- * Output: none
- */
-void Player::printInfo()
-{
-  qDebug() << "Map Speed: " << kMAPSPEED;
-  qDebug() << "Sleuth Size: " << sleuth->getPartySize();
-  qDebug() << "Bearacks Size: " << bearacks->getPartySize();
-  qDebug() << "X Pos: " << x_pos;
-  qDebug() << "Y Pos: " << y_pos;
-  qDebug() << "Carry Weight: " << carry_weight;
-  qDebug() << "Gravity: " << gravity;
-  qDebug() << "Credits: " << credits;
-}
-
-/*
- * Description: Removes a sleuth member by index by
- *              calling party's remove member function
- *
- * Inputs: int - index of sleuth member to be removed
- * Output: bool - true if member was removed successfully
- */
-bool Player::removeSleuthMember(int index)
-{
-    if (sleuth->removeMember(index))
-        return true;
-    return false;
-}
-
-/*
- * Description: Removes a member from the sleuth by name
- *
- * Inputs: QString - name of person to be removed from the bearacks
- * Output: bool - true if member was removed succesfully
- */
-bool Player::removeSleuthMember(QString value)
-{
-    if (sleuth->removeMember(value))
-      return true;
-    return false;
-}
-
-/*
- * Description: Removes a member from the bearacks at a given index
- *
- * Inputs: int - index at which to remove the member
- * Output: bool - true if removal was successful
- */
-bool Player::removeRacksMember(int index)
-{
-  if (bearacks->removeMember(index))
-    return true;
-  return false;
-}
-
-/*
- * Description: Removes a member from the bearacks by name
- *
- * Inputs: QString - name of member to remove
- * Output: bool - true if removal was successful
- */
-bool Player::removeRacksMember(QString value)
-{
-    if (bearacks->removeMember(value))
-      return true;
-    return false;
-}
-
-/*
- * Description: Returns the value of credits
- *
- * Inputs: none
- * Output: unsigned int - value of credits returned
- */
-unsigned long Player::getCredits()
-{
-  return credits;
-}
-
-/*
- * Description: Gets the number of frames in the main person's sprite
- *              multiplied by the kMAPSPEED
- * Inputs: none
- * Output: int - speed of the player
- */
-int Player::getSpeed()
-{
-  return kMAPSPEED;
-}
-
-/*
- * Description: Gets the pointer to the sleuth party
- *
- * Inputs: none
- * Output: Party* - pointer to the sleuth party
- */
-Party* Player::getSleuth()
-{
-    return sleuth;
+  (credits + value < kMAX_CREDITS) ? (credits += value) :
+                                     (credits = kMAX_CREDITS);
 }
 
 /*
@@ -190,7 +94,18 @@ Party* Player::getBearacks()
  */
 double Player::getCarryWeight()
 {
-  return carry_weight;
+  return calcCarryWeight();
+}
+
+/*
+ * Description: Returns the value of credits
+ *
+ * Inputs: none
+ * Output: uint32_t - value of credits returned
+ */
+uint32_t Player::getCredits()
+{
+  return credits;
 }
 
 /*
@@ -205,25 +120,101 @@ double Player::getGravity()
 }
 
 /*
- * Description: Gets the x-position on the map
+ * Description: Gets the pointer to the sleuth party
  *
  * Inputs: none
- * Output: int - x-position of the player
+ * Output: Party* - pointer to the sleuth party
  */
-int Player::getXPos()
+Party* Player::getSleuth()
 {
-  return x_pos;
+  return sleuth;
 }
 
 /*
- * Description: Gets the y-position on the map
+ * Description: Prints out the information of the Player.
  *
  * Inputs: none
- * Output: int - y-position on the map
+ * Output: none
  */
-int Player::getYPos()
+void Player::printInfo()
 {
-  return y_pos;
+  if(sleuth != 0)
+    qDebug() << "Sleuth Size: " << sleuth->getPartySize();
+  if(bearacks != 0)
+    qDebug() << "Bearacks Size: " << bearacks->getPartySize();
+  qDebug() << "Carry Weight: " << calcCarryWeight();
+  qDebug() << "Gravity: " << gravity;
+  qDebug() << "Credits: " << credits;
+}
+
+/*
+ * Description: Removes a sleuth member by index by
+ *              calling party's remove member function
+ *
+ * Inputs: int - index of sleuth member to be removed
+ * Output: bool - true if member was removed successfully
+ */
+bool Player::removeSleuthMember(int index)
+{
+  if(sleuth != 0 && sleuth->removeMember(index))
+    return true;
+  return false;
+}
+
+/*
+ * Description: Removes a member from the sleuth by name
+ *
+ * Inputs: QString - name of person to be removed from the bearacks
+ * Output: bool - true if member was removed succesfully
+ */
+bool Player::removeSleuthMember(QString value)
+{
+  if(sleuth != 0 && sleuth->removeMember(value))
+    return true;
+  return false;
+}
+
+/*
+ * Description: Removes a member from the bearacks at a given index
+ *
+ * Inputs: int - index at which to remove the member
+ * Output: bool - true if removal was successful
+ */
+bool Player::removeBearacksMember(int index)
+{
+  if(bearacks != 0 && bearacks->removeMember(index))
+    return true;
+  return false;
+}
+
+/*
+ * Description: Removes a member from the bearacks by name
+ *
+ * Inputs: QString - name of member to remove
+ * Output: bool - true if removal was successful
+ */
+bool Player::removeBearacksMember(QString value)
+{
+  if(bearacks->removeMember(value))
+    return true;
+  return false;
+}
+
+/*
+ * Description: Sets the pointer to the bearacks party
+ *
+ * Inputs: Party* - pointer to the new bearacks party
+ * Output: none
+ */
+void Player::setBearacks(Party* p)
+{
+  /* Delete the old bearacks */
+  if(bearacks != 0)
+    delete bearacks;
+  bearacks = 0;
+
+  /* Set the new bearacks */
+  bearacks = p;
 }
 
 /*
@@ -238,28 +229,6 @@ void Player::setCredits(unsigned long value)
 }
 
 /*
- * Description: Sets the pointer to the sleuth party
- *
- * Inputs: Party* - pointer to new sleuth party
- * Output: none
- */
-void Player::setSleuth(Party* p)
-{
-   sleuth = p;
-}
-
-/*
- * Description: Sets the pointer to the bearacks party
- *
- * Inputs: Party* - pointer to the new bearacks party
- * Output: none
- */
-void Player::setBearacks(Party* p)
-{
-  bearacks = p;
-}
-
-/*
  * Description: Sets the gravity of the Player
  *
  * Inputs: double - value of gravity to be set
@@ -271,22 +240,20 @@ void Player::setGravity(double new_value)
 }
 
 /*
- * Description: Sets the x-position of the player
+ * Description: Sets the pointer to the sleuth party
  *
- * Inputs: int - new x-position
+ * Inputs: Party* - pointer to new sleuth party
  * Output: none
  */
-void Player::setXPos(int new_x_pos)
+void Player::setSleuth(Party* p)
 {
-  x_pos = new_x_pos;
+  /* Delete the old sleuth */
+  if(sleuth != 0)
+    delete sleuth;
+  sleuth = 0;
+
+  /* Set the new sleuth */
+  sleuth = p;
 }
-/*
- * Description: Sets the y-position of the player
- *
- * Inputs: int - new y-position
- * Output: none
- */
-void Player::setYPos(int new_y_pos)
-{
-  y_pos = new_y_pos;
-}
+
+
