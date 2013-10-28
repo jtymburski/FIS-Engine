@@ -56,9 +56,15 @@ private:
   /* Direction */
   Direction sequence;
   
+  /* Animation time */
+  short animation_time;
+  short elapsed_time;
+  
   /*------------------- Constants -----------------------*/
+  const static short kDEFAULT_ANIMATE_TIME; /* The default animation time */
   const static float kDEFAULT_BRIGHTNESS; /* the default brightness value */
   const static short kDOUBLE_DIGITS; /* the borderline to double digits */
+  const static short kUNSET_ANIMATE_TIME; /* The unset animate time value */
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -67,6 +73,9 @@ public:
   /* Flips all the images in each frame */
   bool flipAll(bool horizontal = true, bool vertical = false);
 
+  /* Returns the total animation time between frame changes */
+  short getAnimationTime();
+  
   /* Gets the brightness (0-0.99: darker, 1.0: same, 1.0+: brighter) */
   float getBrightness();
   
@@ -130,6 +139,9 @@ public:
   /* Rotates all the frames within this sprite a specific angle */
   bool rotateAll(int angle);
 
+  /* Sets the frame animation time (in ms) */
+  void setAnimationTime(short time);
+  
   /* Sets the brightness (0-0.99: darker, 1.0: same, 1.0+: brighter) */
   bool setBrightness(float brightness);
   
@@ -151,6 +163,9 @@ public:
   /* Switches the direction that the linked list is parsed in */
   bool switchDirection();
 
+  /* Updates the frames within the sprite */
+  void updateSprite(int cycle_time);
+  
 /*============================================================================
  * PUBLIC STATIC FUNCTIONS
  *===========================================================================*/

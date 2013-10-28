@@ -59,12 +59,12 @@ short MapViewport::getHeight()
   return height;
 }
 
-short MapViewport::getMapHeight()
+int MapViewport::getMapHeight()
 {
   return map_height;
 }
 
-short MapViewport::getMapWidth()
+int MapViewport::getMapWidth()
 {
   return map_width;
 }
@@ -91,7 +91,7 @@ float MapViewport::getX()
   return x;
 }
 
-short MapViewport::getXEnd()
+int MapViewport::getXEnd()
 {
   /* Perform the end x coordinate calculation */
   int end_x = (((int)x + width) / tile_width) * tile_width + tile_width;
@@ -105,7 +105,7 @@ short MapViewport::getXEnd()
   return end_x;
 }
 
-short MapViewport::getXStart()
+int MapViewport::getXStart()
 {
   int start_x = (((int)x / tile_width) * tile_width) - tile_width;
   
@@ -133,7 +133,7 @@ float MapViewport::getY()
   return y;
 }
 
-short MapViewport::getYEnd()
+int MapViewport::getYEnd()
 {
   /* Perform the end y coordinate calculation */
   int end_y = (((int)y + height) / tile_height) * tile_height + tile_height;
@@ -147,7 +147,7 @@ short MapViewport::getYEnd()
   return end_y;
 }
 
-short MapViewport::getYStart()
+int MapViewport::getYStart()
 {
   int start_y = (((int)y / tile_height) * tile_height) - tile_height;
 

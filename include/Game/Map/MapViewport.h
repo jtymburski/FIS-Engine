@@ -36,9 +36,9 @@ public:
 private:
   /* The size of the viewport */
   short height;
-  short map_height;
+  int map_height;
   short map_height_tiles;
-  short map_width;
+  int map_width;
   short map_width_tiles;
   short tile_height;
   short tile_width;
@@ -68,21 +68,21 @@ public:
 
   /* Gets the size of the viewport and related information */
   short getHeight();
-  short getMapHeight();
-  short getMapWidth();
+  int getMapHeight();
+  int getMapWidth();
   short getTileHeight();
   short getTileWidth();
   short getWidth();
   
   /* Gets the painting ranges for the map of the valid visible range and the offset */
   float getX();
-  short getXEnd();
-  short getXStart();
+  int getXEnd();
+  int getXStart();
   short getXTileEnd();
   short getXTileStart();
   float getY();
-  short getYEnd();
-  short getYStart();
+  int getYEnd();
+  int getYStart();
   short getYTileEnd();
   short getYTileStart();
 

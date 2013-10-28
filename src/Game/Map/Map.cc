@@ -92,7 +92,7 @@ Map::Map(const QGLFormat & format, Options running_config,
 /* Destructor function */
 Map::~Map()
 {
- unloadMap();
+  unloadMap();
 }
 
 /*============================================================================
@@ -400,6 +400,13 @@ void Map::animate(short time_since_last)
       }
     }
 
+    /* Update the sprites on the map (tiles) */
+    for(int i = 0; i < tile_sprites.size(); i++)
+    {
+      if(tile_sprites[i] != 0)
+        tile_sprites[i]->updateSprite(time_since_last);
+    }
+    
     /* Update items on the map */
     for(int i = 0; i < items.size(); i++)
     {
@@ -439,7 +446,10 @@ void Map::keyPressEvent(QKeyEvent* key_event)
   if(key_event->key() == Qt::Key_Escape)
   {
     if(player != 0)
+    {
       player->clearAllMovement();
+      player->setSpeed(150);
+    }
     emit closeMap();
   }
   else if(key_event->key() == Qt::Key_P)
@@ -465,8 +475,6 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     if(player != 0)
       player->keyPress(key_event);
   }
-  else if(key_event->key() == Qt::Key_A)
-    animateTiles();
   else if(key_event->key() == Qt::Key_F4)
     player->setSpeed(player->getSpeed() - 1);
   else if(key_event->key() == Qt::Key_F5)
@@ -593,7 +601,7 @@ void Map::paintGL()
     float y_offset = viewport->getY();
     int y_start = viewport->getYStart();
     int y_end = viewport->getYEnd();
-
+    
     /* Paint the lower half */
     for(int i = tile_x_start; i < tile_x_end; i++)
       for(int j = tile_y_start; j < tile_y_end; j++)
@@ -696,12 +704,6 @@ void Map::resizeGL(int width, int height)
 /*============================================================================
  * PUBLIC SLOTS
  *===========================================================================*/
-
-void Map::animateTiles()
-{
-  for(int i = 0; i < tile_sprites.size(); i++)
-    tile_sprites[i]->shiftNext();
-}
 
 void Map::finishThingTarget()
 {
@@ -1094,7 +1096,7 @@ bool Map::loadMap(QString file)
     object->setState(state, true);
     things.append(object);
   }
-
+  glInit();
   success &= fh.stop();
 
   /* If the map load failed, unload the map */

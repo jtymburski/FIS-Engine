@@ -116,8 +116,8 @@ public:
   MapPerson* getPerson();
 
   /* Returns the tile x and y pixel count */
-  short getPixelX();
-  short getPixelY();
+  int getPixelX();
+  int getPixelY();
  
   /* Returns the tile status */
   TileStatus getStatus();

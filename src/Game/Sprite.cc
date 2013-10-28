@@ -14,8 +14,10 @@
 #include "Game/Sprite.h"
 
 /* Constant Implementation - see header file for descriptions */
+const short Sprite::kDEFAULT_ANIMATE_TIME = 250;
 const float Sprite::kDEFAULT_BRIGHTNESS = 1.0;
 const short Sprite::kDOUBLE_DIGITS = 10;
+const short Sprite::kUNSET_ANIMATE_TIME = -1;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -28,8 +30,10 @@ const short Sprite::kDOUBLE_DIGITS = 10;
  */
 Sprite::Sprite()
 {
+  animation_time = kUNSET_ANIMATE_TIME;
   brightness = kDEFAULT_BRIGHTNESS;
   current = 0;
+  elapsed_time = 0;
   head = 0;
   size = 0;
   sequence = FORWARD;
@@ -44,8 +48,10 @@ Sprite::Sprite()
  */
 Sprite::Sprite(QString image_path, int rotate_angle)
 {
+  animation_time = kUNSET_ANIMATE_TIME;
   brightness = kDEFAULT_BRIGHTNESS;
   current = 0;
+  elapsed_time = 0;
   head = 0;
   size = 0;
   sequence = FORWARD;
@@ -64,8 +70,10 @@ Sprite::Sprite(QString image_path, int rotate_angle)
 Sprite::Sprite(QString head_path, int num_frames, 
                QString tail_path, int rotate_angle)
 {
+  animation_time = kDEFAULT_ANIMATE_TIME;
   brightness = kDEFAULT_BRIGHTNESS;
   current = 0;
+  elapsed_time = 0;
   head = 0; 
   size = 0;
   sequence = FORWARD;
@@ -112,6 +120,18 @@ bool Sprite::flipAll(bool horizontal, bool vertical)
   }
 
   return false;
+}
+
+/*
+ * Description: Returns the animation time between frame changes on the sprite
+ *              sequence.
+ *
+ * Inputs: none
+ * Output: short - the animation time in milliseconds
+ */
+short Sprite::getAnimationTime()
+{
+  return animation_time;
 }
 
 /* 
@@ -539,6 +559,24 @@ bool Sprite::rotateAll(int angle)
 }
 
 /*
+ * Description: Sets the animation time between frame changes. Gets called from
+ *              the update call below for updating the frames in the sequence.
+ *
+ * Inputs: short time - the update time in milliseconds
+ * Output: none
+ */
+void Sprite::setAnimationTime(short time)
+{
+  /* Set the new animation time */
+  if(time < 0)
+    animation_time = kUNSET_ANIMATE_TIME;
+  animation_time = time;
+  
+  /* Reset the elapsed time */
+  elapsed_time = 0;
+}
+  
+/*
  * Description: Sets the brightness that the entire sprite sequence will be
  *              rendered at. It's range is 0-0.99: darker than default, 1.0: 
  *              default brightness, 1.0+: brighter.
@@ -670,6 +708,30 @@ bool Sprite::switchDirection()
   return setDirectionForward();
 }
 
+/*
+ * Description: Updates the sprite times for animation. Necessary for automated
+ *              animation.
+ *
+ * Inputs: int cycle_time - the update time that has elapsed, in milliseconds
+ * Output: none
+ */
+void Sprite::updateSprite(int cycle_time)
+{
+  if(size > 1 && cycle_time > 0 && animation_time > 0)
+  {
+    elapsed_time += cycle_time;
+    if(elapsed_time > animation_time)
+    {
+      elapsed_time -= animation_time;
+      shiftNext();
+    }
+    else if(elapsed_time < 0)
+    {
+      elapsed_time = 0;
+    }
+  }
+}
+  
 /*============================================================================
  * PUBLIC STATIC FUNCTIONS
  *===========================================================================*/

@@ -149,9 +149,6 @@ signals:
  * PUBLIC SLOTS
  *===========================================================================*/
 public slots:
-  /* Animates the tiles within the map */
-  void animateTiles();
-
   /* Complete the action sequence with the thing */
   void finishThingTarget();
   

@@ -407,9 +407,9 @@ MapPerson* Tile::getPerson()
  *              pixels.
  * 
  * Inputs: none
- * Output: short - the X coordinate, in pixels
+ * Output: int - the X coordinate, in pixels
  */
-short Tile::getPixelX()
+int Tile::getPixelX()
 {
   return (x * width);
 }
@@ -419,9 +419,9 @@ short Tile::getPixelX()
  *              pixels.
  * 
  * Inputs: none
- * Output: short - the Y coordinate, in pixels
+ * Output: int - the Y coordinate, in pixels
  */
-short Tile::getPixelY()
+int Tile::getPixelY()
 {
   return (y * height);
 }

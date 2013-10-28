@@ -793,7 +793,7 @@ bool MapDialog::paintGl(QGLWidget* painter)
             {
               int margin = kOPTION_MARGIN;
               QRect option = font_info.boundingRect(options_text[i]);
-              glColor4f(0.0, 0.0, 0.0, paused_opacity);
+              glColor4f(1.0, 1.0, 1.0, 0.2 * paused_opacity);
               glBegin(GL_QUADS);
                 glVertex3f(option_x + option.x() - margin, 
                            txt_y + option.y() + margin + option.height(), 0);
