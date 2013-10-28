@@ -8,7 +8,7 @@
 * Notes:
 *
 * See Header for TODOs.
-******************************************************************************/
+*******************************************************************************/
 
 #include "Game/Battle/Battle.h"
 
@@ -72,7 +72,16 @@ Battle::Battle(Party *friends, Party *foes, Options config, QWidget *parent)
  */
 Battle::~Battle()
 {
+  //delete info_bar;
+  //info_bar = NULL;
 
+  //delete menu;
+  //menu = NULL;
+
+  //delete status_bar;
+  //status_bar = NULL;
+
+  //qDeleteAll(enemy_status_bars);
 }
 
 
@@ -81,58 +90,35 @@ Battle::~Battle()
  *============================================================================*/
 
 /*
- * Description: Attempts to add an item to the buffer. To do this, the target id
- *              of the aggressor is added to the buffer, and a vector of target
- *              receivers is added to the item receiver vector.
+ * Description:
  *
- * Inputs: Item* - pointer to the item to take place
- *         ushort aggressor - the target id of the item user
- *         QVector<ushort>  - the vector of target ids the item will be used on
- * Output: bool - true if the item was added to the buffer
+ * Inputs: none
+ * Output: none
  */
-bool Battle::addItem(Item* new_item, ushort aggressor,
-                     QVector<ushort> receivers)
+void Battle::battleWon()
 {
-  if (item_buffer.size() < kMAX_ITEM_BUFFER)
-  {
-    item_buffer.append(new_item);
-    item_aggressor_target_buffer.append(aggressor);
-    item_receiver_target_buffer.append(receivers);
-    return true;
-  }
 
-  return true;
 }
 
-/*
- * Description: Attempts to add a skill to the buffer. To do this, the target id
- *              of the aggressor added to the  buffer, and a vector of target
- *              receivers is added to to the skill receiver vector.
- *
- * Inputs: Skill* new_skill - pointer to the skill to take place.
- *         ushort aggressor - the target id of the skill user
- *         QVector<ushort> - a vector of targets the skill will hit
- * Output: bool - true if the item was added to the buffer
- */
-bool Battle::addSkill(Skill* new_skill, ushort aggressor,
-                      QVector<ushort> receivers)
-{
-  if (skill_buffer.size() < kMAX_SKILL_BUFFER)
-  {
-    skill_buffer.append(new_skill);
-    skill_aggressor_target_buffer.append(aggressor);
-    skill_receiver_target_buffer.append(receivers);
-    return true;
-  }
-
-  return false;
-}
 
 /*
  * Description:
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: none
+ */
+void Battle::battleLost()
+{
+
+}
+
+/*
+ * Description: This function deals with general battle upkeep, such as
+ *              factors like gravity, weather, or other functions
+ *              which affect the entire party or both parties.
+ *
+ * Inputs: none
+ * Output: none
  */
 void Battle::generalUpkeep()
 {
@@ -163,18 +149,6 @@ bool Battle::loadDefaults()
 
   setBattleFlag(Battle::CONFIGURED, true);
   return true;
-}
-
-/*
- * Description:
- *
- * Inputs:
- * Output:
- * //TODO
- */
-void Battle::personalUpkeep()
-{
-
 }
 
 /*
@@ -213,6 +187,74 @@ bool Battle::loadBattleStateFlags()
   setBattleFlag(Battle::FLAGS_CONFIGURED, true);
   return true;
 }
+
+/*
+ * Description:
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Battle::orderActions()
+{
+
+}
+
+/*
+ * Description:
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Battle::performAction()
+{
+
+}
+
+/*
+ * Description: Deals with the upkeep specific to a person (given a uint
+ *              target), such as ailment updates, etc.
+ *
+ * Inputs: uint target - the target of personal upkeep to take place.
+ * Output: none
+ */
+void Battle::personalUpkeep(uint target)
+{
+  target;//WARNING
+}
+
+/*
+ * Description:
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Battle::processActions()
+{
+
+}
+
+/*
+ * Description:
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Battle::processEnemyActions()
+{
+
+}
+
+/*
+ * Description:
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Battle::updateScene()
+{
+
+}
+
 
 /*
  * Description: Assigns a new value to the ailment update mode

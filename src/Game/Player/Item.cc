@@ -4,6 +4,7 @@
 * Inheritance: InventoryUnit
 * Description: The Item Header that defines all elements within Inventory.
 *              This includes Equipment and Bubby.
+* //TODO: Remove incrementing id [10-28-13]
 ******************************************************************************/
 #include "Game/Player/Item.h"
 

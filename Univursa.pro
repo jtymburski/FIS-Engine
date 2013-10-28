@@ -42,6 +42,8 @@ SOURCES += \
     ./src/Game/Battle/PersonStatusBar.cc \
     ./src/Game/Battle/EnemyStatusBar.cc \
     ./src/Game/Battle/AllyStatusBar.cc \
+    ./src/Game/Battle/SkillBuffer.cc \
+    ./src/Game/Battle/ItemBuffer.cc \
     ./src/Game/Map/Map.cc \
     ./src/Game/Map/MapDialog.cc \
     ./src/Game/Map/MapInteractiveObject.cc \
@@ -74,7 +76,9 @@ SOURCES += \
     ./src/Game/Player/Signature.cc \
     ./src/Game/Player/Skill.cc \
     ./src/MathHelper.cc \
-    ./src/GrammarHelper.cc 
+    ./src/GrammarHelper.cc
+
+
 
 HEADERS += \
     ./include/Application.h \
@@ -99,6 +103,8 @@ HEADERS += \
     ./include/Game/Battle/PersonStatusBar.h \
     ./include/Game/Battle/EnemyStatusBar.h \
     ./include/Game/Battle/AllyStatusBar.h \
+    ./include/Game/Battle/SkillBuffer.h \
+    ./include/Game/Battle/ItemBuffer.h \
     ./include/Game/Map/Map.h \
     ./include/Game/Map/MapDialog.h \
     ./include/Game/Map/MapInteractiveObject.h \

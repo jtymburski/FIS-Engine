@@ -10,6 +10,7 @@
 *           the gravity the player is experiencing, while the ship inventory
 *           will only be bound to higher limits, and regardless of the gravity.
 * TODO: Add, Remove, Sorting algorithms [06-02-03]
+* TODO: Remove sorted state after inventory alteration.
 \*****************************************************************************/
 #include "Game/Player/Inventory.h"
 

@@ -59,6 +59,8 @@
 * actions and commands that can be used in the battle sequence. An addition
 * to that sequence to include frames or generate generic ones that everyone
 * has to share.
+*
+* //TODO: Battle destructor seg fault [10-28-13]
 ******************************************************************************/
 #ifndef BATTLE_H
 #define BATTLE_H
@@ -143,24 +145,6 @@ private:
   ushort screen_height;
   ushort screen_width;
 
-  /* Currently stacked item buffer */
-  QVector<Item*> item_buffer;
-
-  /* Vector of targets for item buffer */
-  QVector<uint> item_aggressor_target_buffer;
-
-  /* Vector of vectors containing targets for receiving items */
-  QVector<QVector<ushort> > item_receiver_target_buffer;
-
-  /* Currently stacked skill buffer */
-  QVector<Skill*> skill_buffer;
-
-  /* Vector of targets for skill buffer */
-  QVector<uint> skill_aggressor_target_buffer;
-
-  /* Vector of vector containing targets for receiving skills */
-  QVector<QVector<ushort> > skill_receiver_target_buffer;
-
   /* The current targeting mode of the Battle */
   TargetingMode targeting_mode;
 
@@ -188,12 +172,6 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
-  /* Adds a Skill to the buffer of Skills */
-  bool addSkill(Skill* new_skill, ushort aggressor, QVector<ushort> receivers);
-
-  /* Adds an Item to the buffer of Items */
-  bool addItem(Item* new_item, ushort aggressor, QVector<ushort> receivers);
-
   /* Called when the Battle has been won */
   void battleWon();
 
@@ -216,7 +194,7 @@ private:
   void performAction();
 
   /* Deals with character related upkeep */
-  void personalUpkeep();
+  void personalUpkeep(uint target);
 
   /* Process the actions (Items & Skills) in the buffer */
   void processActions();
