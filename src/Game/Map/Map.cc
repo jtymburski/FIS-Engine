@@ -897,14 +897,14 @@ bool Map::loadMap(QString file)
     }
 
     /* Add the player information */
-    Sprite* up_sprite = new Sprite("sprites/Map/Map_Things/main_AA_D", 
+    Sprite* up_sprite = new Sprite("sprites/Map/Map_Things/genericbear4_AA_D",
                                    3, ".png");
-    Sprite* down_sprite = new Sprite("sprites/Map/Map_Things/main_AA_U", 
+    Sprite* down_sprite = new Sprite("sprites/Map/Map_Things/genericbear4_AA_U",
                                      3, ".png");
-    Sprite* left_sprite = new Sprite("sprites/Map/Map_Things/main_AA_S", 
+    Sprite* left_sprite = new Sprite("sprites/Map/Map_Things/genericbear4_AA_S",
                                      5, ".png");
     left_sprite->flipAll();
-    Sprite* right_sprite = new Sprite("sprites/Map/Map_Things/main_AA_S", 
+    Sprite* right_sprite = new Sprite("sprites/Map/Map_Things/genericbear4_AA_S",
                                       5, ".png");
     MapPerson* person = new MapPerson(kTILE_WIDTH, kTILE_HEIGHT);
     person->setStartingTile(0, geography[0][8][8]); // 11, 9
