@@ -106,9 +106,10 @@ bool Map::addTileData(XmlData data, int section_index)
 
   /* Get the element information */
   QStringList element = data.getElement(data.getNumElements()-1).split("_");
+  QString descriptor = element[0].toLower().trimmed();
 
   /* Split based on the element information if it's for a path */
-  if(element[0].toLower().trimmed() == "path")
+  if(descriptor == "path")
   {
     /* If there is rotational information available, use it */
     if(element.size() > kELEMENT_ANGLE)
@@ -124,7 +125,7 @@ bool Map::addTileData(XmlData data, int section_index)
     return success;
   }
   /* Otherwise, access the passability information for the tile */
-  else if(element[0].toLower().trimmed() == "passability")
+  else if(descriptor == "passability")
   {
     QStringList row_list = data.getKeyValue(kFILE_TILE_ROW).split(",");
     QStringList col_list = data.getKeyValue(kFILE_TILE_COLUMN).split(",");
@@ -143,6 +144,18 @@ bool Map::addTileData(XmlData data, int section_index)
                                  data.getKeyValue(kFILE_CLASSIFIER));
     }
     return success;
+  }
+  /* Otherwise, if animation, it is assumed that this is tied with the last
+   * sprite added and sets the animation accordingly */
+  else if(descriptor == "animation")
+  {
+    Sprite* last_sprite = 0;
+    if(!tile_sprites.isEmpty())
+      last_sprite = tile_sprites.last();
+
+    /* Access the tile if it's not 0 */
+    if(last_sprite != 0)
+      last_sprite->setAnimationTime(data.getDataInteger());
   }
 
   return false;
@@ -208,6 +221,11 @@ bool Map::addTileSprite(QString path, int x_diff, int y_diff,
   }
 
   return success;
+}
+
+bool Map::addThingData(XmlData data, int section_index)
+{
+  qDebug() << "Here: " << data.getElement(kFILE_CLASSIFIER) << " " << data.getDataString();
 }
 
 bool Map::initiateMapSection(int section_index, int width, int height)
@@ -880,13 +898,28 @@ bool Map::loadMap(QString file)
             initiateMapSection(index, width, height);
         }
         else if(index >= 0 && height > 0 && width > 0)
-          success &= addTileData(data, index);
+        {
+          /* Tile data */
+          if(data.getElement(kFILE_CLASSIFIER) == "base" ||
+             data.getElement(kFILE_CLASSIFIER) == "enhancer" ||
+             data.getElement(kFILE_CLASSIFIER) == "lower" ||
+             data.getElement(kFILE_CLASSIFIER) == "upper")
+          {
+            success &= addTileData(data, index);
+          }
+          /* Thing data */
+          else if(data.getElement(kFILE_CLASSIFIER) == "mapthing" || 
+                  data.getElement(kFILE_CLASSIFIER) == "mapperson")
+          {
+            success &= addThingData(data, index);
+          }
+        }
       }
       
       /* Get the next element */
       data = fh.readXmlData(&done, &success);
     } while(!done && success);
-    
+
     /* Add teleport to door - temporary */
     if(event_handler != 0)
     {
@@ -995,18 +1028,18 @@ bool Map::loadMap(QString file)
     persons.append(npc);
 
     /* Make the map thing */
-    Sprite* frames = new Sprite(
-          "sprites/Map/Tiles/Scenery/Transitional/TreeDoor01Opening_AA_A", 
-          5, ".png");
-    MapThing* thing = new MapThing(frames, kTILE_WIDTH, kTILE_HEIGHT);
-    thing->setAnimationSpeed(100);
-    if(geography.size() > 0 && geography[0].size() > 2 && 
-                               geography[0][2].size() > 2)
-      thing->setStartingTile(0, geography[0][2][2]);
-    things.append(thing);
+    //Sprite* frames = new Sprite(
+    //      "sprites/Map/Tiles/Scenery/Transitional/TreeDoor01Opening_AA_A", 
+    //      5, ".png");
+    //MapThing* thing = new MapThing(frames, kTILE_WIDTH, kTILE_HEIGHT);
+    //thing->setAnimationSpeed(100);
+    //if(geography.size() > 0 && geography[0].size() > 2 && 
+    //                           geography[0][2].size() > 2)
+    //  thing->setStartingTile(0, geography[0][2][2]);
+    //things.append(thing);
     
     /* Make three map items, to walkover */
-    frames = new Sprite("sprites/Map/Testing/sword_AA_A00.png");
+    Sprite* frames = new Sprite("sprites/Map/Testing/sword_AA_A00.png");
     MapItem* item = new MapItem(frames, kTILE_WIDTH, kTILE_HEIGHT);
     item->setID(10000);
     item->setName("Sword of Power");
@@ -1062,7 +1095,7 @@ bool Map::loadMap(QString file)
     state->setUseEvent(event_handler->createConversationEvent(mio_convo2));
     object->setState(state);
     things.append(object);
-    
+
     /* Make another map interactive object (colors walk over) */
     object = new MapInteractiveObject(kTILE_WIDTH, kTILE_HEIGHT);
     object->setStartingTile(0, geography[0][0][8]);
@@ -1096,7 +1129,6 @@ bool Map::loadMap(QString file)
     object->setState(state, true);
     things.append(object);
   }
-  glInit();
   success &= fh.stop();
 
   /* If the map load failed, unload the map */

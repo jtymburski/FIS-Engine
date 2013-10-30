@@ -110,6 +110,9 @@ private:
   bool addTileSprite(QString path, int x_diff, int y_diff, 
                      int angle, int section_index, XmlData data);
 
+  /* Adds thing data, as per data from the file */
+  bool addThingData(XmlData data, int section_index);
+
   /* Initiates a section block of map. Triggered from the file data */
   bool initiateMapSection(int section_index, int width, int height);
   
