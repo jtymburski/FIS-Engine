@@ -225,7 +225,9 @@ bool Map::addTileSprite(QString path, int x_diff, int y_diff,
 
 bool Map::addThingData(XmlData data, int section_index)
 {
-  qDebug() << "Here: " << data.getElement(kFILE_CLASSIFIER) << " " << data.getDataString();
+  qDebug() << "Thing detail: " << data.getElement(kFILE_CLASSIFIER)
+                               << " " << data.getDataString()
+                               << " " << data.getDataInteger();
 }
 
 bool Map::initiateMapSection(int section_index, int width, int height)
@@ -909,7 +911,10 @@ bool Map::loadMap(QString file)
           }
           /* Thing data */
           else if(data.getElement(kFILE_CLASSIFIER) == "mapthing" || 
-                  data.getElement(kFILE_CLASSIFIER) == "mapperson")
+                  data.getElement(kFILE_CLASSIFIER) == "mapperson" ||
+                  data.getElement(kFILE_CLASSIFIER) == "mapnpc" ||
+                  data.getElement(kFILE_CLASSIFIER) == "mapitem" || 
+                  data.getElement(kFILE_CLASSIFIER) == "mapio")
           {
             success &= addThingData(data, index);
           }
