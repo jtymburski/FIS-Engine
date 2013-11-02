@@ -22,8 +22,8 @@
  * Inputs: none
  */
 Equipment::Equipment(QString name, uint value, Sprite* thumb, double mass,
-                     ushort size_x, ushort size_y)
-    : Item(name, value, thumb, mass)
+                     ushort size_x, ushort size_y, int id)
+    : Item(name, value, thumb, mass, id)
 {
   createSignature(size_x, size_y);
 

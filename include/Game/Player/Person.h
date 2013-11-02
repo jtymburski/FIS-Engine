@@ -30,7 +30,7 @@ public:
 
   /* Constructor for a person object */
   Person(QString pname, Race* prace, Category* pcat, QString p, QString s,
-         QWidget* parent = 0);
+         QWidget* parent = 0, int id = kUNSET_ID);
 
   /* Annihilates a person object */
   ~Person();
@@ -79,6 +79,9 @@ private:
 
   /* Person's total experience */
   uint total_exp;
+
+  /* ID of the Person */
+  int id;
 
   /* Table of experience */
   static QVector<int> exp_table;
@@ -147,6 +150,8 @@ private:
   static const double kSECD_A_MODI;
   static const double kSECD_B_MODI;
   static const double kSECD_C_MODI;
+  static const int kMINIMUM_ID;     /* The minimum allowable ID for a person */
+  static const int kUNSET_ID;       /* The default unset ID for a person */
 
 
 /*============================================================================
@@ -161,6 +166,9 @@ private:
 
   /* Copy all parameters from the other to the current */
   void copySelf(const Person &source);
+
+  /* Assigns a new ID to the Person, returns whether in range */
+  bool setID(int new_id);
 
 /*============================================================================
  * PUBLIC FUNCTIONS

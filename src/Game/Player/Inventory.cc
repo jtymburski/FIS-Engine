@@ -43,13 +43,14 @@ const uint Inventory::kMAX_EQUIPMENT        = 100000;      /* 10 ^ 5 */
  * Inputs: QString name - the name describing the current size or type of inv.
  *         Sprite* thumb - the thumbnail detailing an image of the inventory.
  */
-Inventory::Inventory(QString name, Sprite *thumb, QWidget *parent)
+Inventory::Inventory(QString name, Sprite *thumb, QWidget *parent, int id)
     : QWidget(parent),
       bubby_state(EnumDb::NONE),
       equipment_state(EnumDb::NONE),
       item_state(EnumDb::NONE),
       key_item_state(EnumDb::NONE)
 {
+  setID(id);
   setName(name);
   setThumb(thumb);
   bubbies.resize(0);
@@ -675,6 +676,29 @@ bool Inventory::sorter(EnumDb::ItemSorts sort_by,
   }
 
   return sort_completed;
+}
+
+/*
+ * Description: Assigns a new value to ID of the Person. If the ID is in range,
+ *              the id is set and true is returned. Otherwise, the ID set to the
+ *              minimum storage value (OOR).
+ *
+ *
+ * Inputs: int new_id - the new integer ID to define the person.
+ * Output: bool - status if the new_id is within the allowable range.
+ */
+ bool Inventory::setID(int new_id)
+ {
+  /* If the ID is out of range */
+  if (new_id < kMINIMUM_ID)
+  {
+    id = kUNSET_ID;
+    return false;
+  }
+
+  /* Otherwise, the ID is good */
+  id = new_id;
+  return true;
 }
 
 /*

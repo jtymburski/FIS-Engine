@@ -36,6 +36,8 @@ const double Person::kSECD_S_MODI = 1.120;
 const double Person::kSECD_A_MODI = 1.090;
 const double Person::kSECD_B_MODI = 1.060;
 const double Person::kSECD_C_MODI = 1.030;
+const int Person::kMINIMUM_ID =  0;
+const int Person::kUNSET_ID   = -1;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -63,7 +65,7 @@ Person::Person(QWidget* parent)
  *         QString s - secondary element and curve of the person
  */
 Person::Person(QString pname, Race* prace, Category* pcat, QString p, QString s,
-               QWidget* parent)
+               QWidget* parent, int id)
     : QWidget(parent),
       damage_modifier(1.00),
       level(1),
@@ -229,6 +231,29 @@ void Person::copySelf(const Person &source)
 
   /* Initially calculates all the skills */
   calcSkills();
+}
+
+/*
+ * Description: Assigns a new value to ID of the Person. If the ID is in range,
+ *              the id is set and true is returned. Otherwise, the ID set to the
+ *              minimum storage value (OOR).
+ *
+ *
+ * Inputs: int new_id - the new integer ID to define the person.
+ * Output: bool - status if the new_id is within the allowable range.
+ */
+ bool Person::setID(int new_id)
+ {
+  /* If the ID is out of range */
+  if (new_id < kMINIMUM_ID)
+  {
+    id = kUNSET_ID;
+    return false;
+  }
+
+  /* Otherwise, the ID is good */
+  id = new_id;
+  return true;
 }
 
 /*=============================================================================
@@ -1250,4 +1275,3 @@ Person& Person::operator= (const Person &source)
   /* Return the copied object */
   return *this;
 }
-

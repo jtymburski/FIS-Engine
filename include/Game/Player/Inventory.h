@@ -24,7 +24,8 @@ class Inventory : public QWidget
 
 public:
   /* Constructor function */
-  Inventory(QString name, Sprite* thumb = 0, QWidget *parent = 0);
+  Inventory(QString name, Sprite* thumb = 0, QWidget *parent = 0,
+            int id = kUNSET_ID);
 
   /* Destructor function */
   ~Inventory();
@@ -69,6 +70,9 @@ private:
   /* Maximum equipment allowed in the inventory */
   uint equip_limit;
 
+  /* The ID # of the Inventory object */
+  ushort id;
+
   /* Maximum # of a certain item name allowed in an inventory */
   ushort item_each_limit;
 
@@ -106,6 +110,8 @@ private:
   static const uint kMAX_EQUIPMENT;
   static const uint kMIN_ITEMS;
   static const uint kMAX_ITEMS;
+  static const ushort kMINIMUM_ID = 0;
+  static const ushort kUNSET_ID   = -1;
 
 /* ============================================================================
  * PRIVATE FUNCTIONS
@@ -116,6 +122,9 @@ private:
 
   /* Sorts a given object type by a desired enumerated sort method */
   bool sorter(EnumDb::ItemSorts sort_by, EnumDb::SortObjects object_type);
+
+  /* Sets the ID of the Inventory */
+  bool setID(int new_id);
 
 /*============================================================================
  * SIGNALS

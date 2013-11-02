@@ -24,7 +24,9 @@ class Item : public QWidget
 
 public:
   /* Item constructor function */
-  Item(QString name, uint value = 0, Sprite* thumbnail = 0, double mass = 0);
+  Item(QString name, uint value = 0, Sprite* thumbnail = 0,
+       double mass = 0.0, int id = kUNSET_ID);
+
 
   /* Copy constructor */
   Item(Item* copy);
@@ -65,7 +67,7 @@ public:
   ItemFlags iflag_set;
 
 private:
-  /*------------------- Constants -----------------------*/
+  /*------------------- Private Constants -----------------------*/
   static const ushort kMAX_ACTION_SET; /* Max action set item can perform */
   static const ushort kMAX_BRIEF_DESCRIPTION; /* Max # of chars for desc. */
   static const ushort kMAX_DESCRIPTION; /* Max # of char for desc. */
@@ -85,13 +87,10 @@ protected:
   ushort duration;
 
   /* Static ID of the Item (current increasing value) */
-  static int id;
+  int id;
 
   /* The use of the item */
   EnumDb::ItemUse item_use;
-
-  /* ID of the current Item object */
-  int my_id;
 
   /* Mass of the item (not referenced to gravity) */
   double mass;
@@ -119,11 +118,15 @@ protected:
   /* Value (in credits) to a shop */
   uint value;
 
+  /*------------------- Protected Constants -----------------------*/
+  static const int kMINIMUM_ID; /* The minimum ID # for an Item */
+  static const int kUNSET_ID; /* Placeholder unset ID */
+
 /*============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
   /* Increments the Item's ID */
-  int setId();
+bool setID(int new_id);
 
 /*=============================================================================
  * VIRTUAL FUNCTIONS

@@ -36,8 +36,8 @@ const double Bubby::kTIER_3_MASS      =   4.500;
  *
  * Inputs: BubbyFlavour* - pointer to the type of the Bubby
  */
-Bubby::Bubby(BubbyFlavour* type)
-    : Item(type->getName(), 0, 0, kTIER_1_MASS),
+Bubby::Bubby(BubbyFlavour* type, int id)
+    : Item(type->getName(), 0, 0, kTIER_1_MASS, id),
     type(type),
     level(0),
     tier(0),
@@ -158,7 +158,6 @@ void Bubby::addExperience(uint value)
  */
 void Bubby::printInfo()
 {
-  qDebug() << "Bubby ID #: " << my_id;
   qDebug() << "Total Exp: " << total_exp;
   qDebug() << "Level: " << level;
   qDebug() << "Tier: " << tier;

@@ -21,7 +21,7 @@ class Bubby : public Item
 
 public:
   /* Constructor function */
-  Bubby(BubbyFlavour* type);
+  Bubby(BubbyFlavour* type, int id = kUNSET_ID);
 
   /* Destructor function */
   ~Bubby();

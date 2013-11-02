@@ -219,7 +219,7 @@ void Battle::performAction()
  */
 void Battle::personalUpkeep(uint target)
 {
-  target;//WARNING
+  (void)target;//WARNING
 }
 
 /*

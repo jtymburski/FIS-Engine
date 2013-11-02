@@ -11,14 +11,14 @@
 /*============================================================================
  * CONSTANTS (Explanation for each in header file)
  *============================================================================*/
-int Item::id = 0; /* Starting value for the Item ID */
-
 const ushort Item::kMAX_ACTION_SET = 3; /* Max action set item can perform */
 const ushort Item::kMAX_BRIEF_DESCRIPTION = 75; /* Max length brief desc. */
 const ushort Item::kMAX_DESCRIPTION = 500; /* Max length desc. of the item */
 const double Item::kMAX_MASS        = 250; /* Max mass the item can have */
 const ushort Item::kMAX_SKILL_SET   = 5; /* Max # skills the item can unlock */
 const uint Item::kMAX_VALUE      = 100000000; /* Max value of items - 100 mil */
+const int Item::kMINIMUM_ID =  0; /* The minimum ID # for an Item */
+const int Item::kUNSET_ID   = -1; /* Placeholder unset ID */
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -32,11 +32,11 @@ const uint Item::kMAX_VALUE      = 100000000; /* Max value of items - 100 mil */
  *         uint value - the value of the item in a shop
  *         double mass - the mass of the item
  */
-Item::Item(QString name, uint value, Sprite* thumbnail, double mass)
-    : QWidget(0),
-      my_id(setId()) /* Increment the Item's ID */
+Item::Item(QString name, uint value, Sprite* thumbnail, double mass, int id)
+    : QWidget(0)
 {
   setName(name);
+  setID(id);
   setThumb(thumbnail);
   setValue(value);
   setMass(mass);
@@ -55,12 +55,12 @@ Item::Item(QString name, uint value, Sprite* thumbnail, double mass)
  * Inputs: Item* copy - pointer to an item to be copied
  */
 Item::Item(Item *copy) 
-  : my_id(setId())
 {
   setBuffSet(copy->getBuffSet());
   setBriefDescription(copy->getBriefDescription());
   setDescription(copy->getDescription());
   setDuration(copy->getDuration());
+  setID(copy->getId());
   setMass(copy->getMass());
   setName(copy->getName());
   setAction(copy->getAction());
@@ -82,15 +82,24 @@ Item::~Item() {}
  *============================================================================*/
 
 /*
- * Description: Returns the ID of the current object and increments the ID
- *              counter.
+ * Description: Sets the ID for the item. If out of the allowable range, the
+ *              value is set to a minimum storage value (OOR).
  *
- * Inputs: none
- * Output: static int - the ID of the Item
+ * Inputs: int new_id - the new integer ID to define the item.
+ * Output: bool - status if the new_id is within the allowable range.
  */
-int Item::setId()
+bool Item::setID(int new_id)
 {
-  return id++;
+  /* If the ID is out of range */
+  if (new_id < kMINIMUM_ID)
+  {
+    id = kUNSET_ID;
+    return false;
+  }
+
+  /* Otherwise, the ID is good */
+  id = new_id;
+  return true;
 }
 
 /*============================================================================
@@ -218,7 +227,7 @@ ushort Item::getDuration()
  */
 int Item::getId()
 {
-  return my_id;
+   return id;
 }
 
 /*
