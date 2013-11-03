@@ -26,7 +26,6 @@ public:
     ~ItemBuffer();
 
 private:
-
   /* Structure containing the data of one element in the Item Buffer */
   struct ItemUseAction
   {
@@ -51,7 +50,7 @@ private:
  * PRIVATE FUNCTIONS
  *=============================================================================*/
 private:
-  /* Asserts that the ItemUseAction at the next index is a valid item use */
+  /* Asserts that a given ItemUseAction is a valid item use */
   bool checkValid(ItemUseAction item_use_action);
 
   /* Clears the vector of ItemUseActions -- Does not delete item/person data */
@@ -67,7 +66,7 @@ public:
   /* Attempts to add an Item to the Item Buffer */
   bool addItemUse(Person* user, Item* item_used, QVector<Person*> targets);
 
-  /* Clears the invalid ItemUseActions from the ItemBuffer */
+  /* Calculates and clears the invalid ItemUseActions from the ItemBuffer */
   void clearInvalid();
 
   /* Returns whether the next ItemUseAction is valid */
@@ -84,13 +83,13 @@ public:
   /* Removes an ItemUse from the buffer by a given index */
   bool removeItemUse(int index);
 
-  /* Returns a pointer to the next user of the item index */
+  /* Returns a pointer to the current user of the item index */
   Person* getUser();
 
-  /* Returns a pointer to the item next on the ItemUse buffer. */
+  /* Returns a pointer to the current item on the ItemUse buffer. */
   Item* getItemUse();
 
-  /* Returns the vector containing the targets of the next ItemUse buffer */
+  /* Returns the vector containing the targets of the current ItemUse buffer */
   QVector<Person*> getTargets();
 
   /* Sets the next index of the ItemUse buffer--if one exists */

@@ -13,8 +13,8 @@
  * CONSTANTS
  *============================================================================*/
 
-const ushort ItemBuffer::kMAXIMUM_ELEMENTS = 20;
-const ushort ItemBuffer::kMAXIMUM_TARGETS  = 10;
+const ushort ItemBuffer::kMAXIMUM_ELEMENTS   = 20;
+const ushort ItemBuffer::kMAXIMUM_TARGETS    = 10;
 const ushort ItemBuffer::kSTARTING_ELEMENT   =  0;
 
 /*==============================================================================
@@ -48,7 +48,7 @@ ItemBuffer::~ItemBuffer() {}
  *              also check that the item is battle ready, the target vector is
  *              not empty, and that the targets are all in battle.
  *
- * Inputs: ItemUseAction& - struct describing ref. to element of the ItemBuffer
+ * Inputs: ItemUseAction - struct describing to element of the ItemBuffer
  * Outputs: bool - the validity of the ItemUseAction struct
  */
 bool ItemBuffer::checkValid(ItemUseAction item_use_action)
@@ -56,27 +56,21 @@ bool ItemBuffer::checkValid(ItemUseAction item_use_action)
   bool is_valid = true;
 
   /* If the user of the item is both alive, in battle, and can use items */
-  if (!item_use_action.user->getPersonFlag(Person::ALIVE) ||
-      !item_use_action.user->getPersonFlag(Person::IN_BATTLE) ||
-      !item_use_action.user->getPersonFlag(Person::ITEM_USE_ENABLED))
-  {
-    is_valid = false;
-  }
+  is_valid &= item_use_action.user->getPersonFlag(Person::ALIVE);
+  is_valid &= item_use_action.user->getPersonFlag(Person::IN_BATTLE);
+  is_valid &= item_use_action.user->getPersonFlag(Person::ITEM_USE_ENABLED);
 
   /* If the item to be used is BattleReady */
-  if (!item_use_action.item_used->getItemFlag(Item::BATTLEREADY))
-    is_valid = false;
+  is_valid &= item_use_action.item_used->getItemFlag(Item::BATTLEREADY);
 
   /* If the targets of the item are empty */
-  if (item_use_action.targets.empty())
-    is_valid = false;
+  is_valid &= !item_use_action.targets.empty();
 
   /* Iterate through the targets and assert they are in battle */
   QVector<Person*>::Iterator it = item_use_action.targets.begin();
 
   for (; it < item_use_action.targets.end(); ++it)
-    if (!(*it)->getPersonFlag(Person::IN_BATTLE))
-      is_valid = false;
+    is_valid &= (*it)->getPersonFlag(Person::IN_BATTLE);
 
   /* Assign the validity of the item_use_action */
   item_use_action.valid_item_use = is_valid;
@@ -85,7 +79,7 @@ bool ItemBuffer::checkValid(ItemUseAction item_use_action)
 }
 
 /*
- * Description: Clears the vector of ItemUseActions. This does not delete the
+ * Description: Clears the list of ItemUseActions. This does not delete the
  *              data of the person or items contained in the struct.
  *
  * Inputs: none
@@ -98,10 +92,10 @@ void ItemBuffer::clearAll()
 }
 
 /*
- * Description:
+ * Description: Returns a single element of the Item Buffer given an index.
  *
- * Inputs:
- * Outputs:
+ * Inputs: int index - the index of the item buffer to be checked.
+ * Outputs: The ItemUseAction struct at that index, if one exists
  */
 ItemBuffer::ItemUseAction ItemBuffer::getIndex(int index)
 {
@@ -144,9 +138,8 @@ bool ItemBuffer::addItemUse(Person* user, Item* item_used,
     struct ItemUseAction item_use;
 
     item_use.user = user;
-    item_used = item_used;
+    item_use.item_used = item_used;
     item_use.targets = targets;
-    item_use.valid_item_use = true;
 
     add_to_buffer &= checkValid(item_use);
 
@@ -186,7 +179,7 @@ void ItemBuffer::clearInvalid()
 
 /*
  * Description: Re-Evaluates whether the next element (if one exists) in the item
- *              buffer is valid.
+ *              buffer and return the state of that validity.
  *
  * Inputs: none
  * Outputs: bool - evaluation of the validity of the next ItemUseAction
@@ -211,6 +204,8 @@ void ItemBuffer::printAll()
 
   for (int i = 0; i < item_buffer.size(); i++)
     printElement(i);
+
+  qDebug() << "--- / Skill Buffer --";
 }
 
 /*
@@ -255,7 +250,7 @@ bool ItemBuffer::printElement(int index)
  *              the user.
  *
  * Inputs: Person* user - the user of the ItemUseAction to be checked for
- * Outputs: bool - true if an ItemUseAction element was found and be removed
+ * Outputs: bool - true if an ItemUseAction element was found and removed
  */
 bool ItemBuffer::removeItemUse(Person* user)
 {
@@ -348,12 +343,14 @@ QVector<Person*> ItemBuffer::getTargets()
  */
 bool ItemBuffer::setNextIndex()
 {
+  /* If the next current index is not the last element of the item buffer */
   if (curr_index + 1 < item_buffer.size())
   {
     curr_index++;
     return true;
   }
 
+  /* Otherwise the next index does not exist, clear the Item Buffer */
   clearAll();
   return false;
 }
