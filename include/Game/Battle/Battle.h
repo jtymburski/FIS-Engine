@@ -163,8 +163,6 @@ private:
   /* ------------ Constants --------------- */
   static const ushort kDEFAULT_SCREEN_HEIGHT;
   static const ushort kDEFAULT_SCREEN_WIDTH;
-  static const ushort kMAX_ITEM_BUFFER;
-  static const ushort kMAX_SKILL_BUFFER;
   static const ushort kGENERAL_UPKEEP_DELAY;
   static const ushort kBATTLE_MENU_DELAY;
 

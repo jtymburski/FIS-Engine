@@ -18,8 +18,6 @@
 
 const ushort Battle::kDEFAULT_SCREEN_HEIGHT = 1216; /* The default height */
 const ushort Battle::kDEFAULT_SCREEN_WIDTH  =  708; /* The default width */
-const ushort Battle::kMAX_ITEM_BUFFER       =   20; /* Max # items tb proc */
-const ushort Battle::kMAX_SKILL_BUFFER      =   30; /* Max # skills tb proc */
 const ushort Battle::kGENERAL_UPKEEP_DELAY  =  500; /* Time prior info bar msg */
 const ushort Battle::kBATTLE_MENU_DELAY     =  400; /* Personal menu delay */
 
