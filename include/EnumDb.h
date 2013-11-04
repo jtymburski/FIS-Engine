@@ -12,7 +12,7 @@
 #include <QString>
 
 #include "EnumString.h"
-#include "Game/EventHandler.h"
+//#include "Game/EventHandler.h"
 
 class EnumDb
 {
@@ -61,6 +61,7 @@ public:
   enum DialogCategory { TEXT,
                         NUMBERENTRY,
                         TEXTENTRY };
+
   /*
    * Description: Handler for all direction related calls for movement, 
    *              passability, etc.
@@ -70,6 +71,17 @@ public:
                    SOUTH         = 0x4,
                    WEST          = 0x8,
                    DIRECTIONLESS = 0 };
+  
+  /* 
+   * Description: The event classification - for what the event will do 
+   */
+  enum EventClassifier {NOEVENT        = 0,
+                        GIVEITEM       = 1,
+                        RUNBATTLE      = 2, 
+                        RUNMAP         = 3,
+                        TELEPORTPLAYER = 4,
+                        TELEPORTTHING  = 5,
+                        STARTCONVO     = 6};
 
   /*
    * Description: Describes the current state of the inventory (how it is
@@ -285,16 +297,5 @@ Begin_Enum_String( EnumDb::PersonRanks )
 End_Enum_String;
 
 /* -------------------------- Structures ------------------------------- */
-
-/* Struct to handle the conversation throughout the map */
-// TODO: tile image?
-struct Conversation
-{
-  QString text;
-  int thing_id;
-  EnumDb::DialogCategory category;
-  EventHandler::Event action_event;
-  QList<Conversation> next;
-};
 
 #endif // ENUMDB_H

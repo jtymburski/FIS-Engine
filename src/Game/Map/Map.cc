@@ -535,7 +535,7 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     player->setSpeed(player->getSpeed() + 1);
   else if(key_event->key() == Qt::Key_0)
   {
-    EventHandler::Event blank_event = event_handler->createBlankEvent();
+    Event blank_event = event_handler->createBlankEvent();
     
     Conversation* convo = new Conversation;
     convo->category = EnumDb::TEXT;

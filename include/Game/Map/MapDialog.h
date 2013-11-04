@@ -13,7 +13,7 @@
 #include <QObject>
 //#include <QTime>
 
-#include "EnumDb.h"
+//#include "EnumDb.h"
 #include "Game/EventHandler.h"
 #include "Game/Frame.h"
 #include "Game/Map/MapPerson.h"

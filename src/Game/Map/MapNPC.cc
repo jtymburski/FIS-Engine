@@ -119,12 +119,6 @@ bool MapNPC::insertNodeAtTail(Tile* tile, int delay)
   return insertNode(getPathLength(), tile, delay);
 }
 
-/* Gets a pointer to the Persons conversation */
-QList<QString> MapNPC::getConversation()
-{
-  return talking_points;
-}
-
 /* Gets a pointer to the gift the NPC has */
 MapThing* MapNPC::getGift()
 {

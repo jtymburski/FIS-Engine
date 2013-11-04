@@ -65,7 +65,7 @@ protected:
   
   /* The event handler information and corresponding interact event */
   EventHandler* event_handler;
-  EventHandler::Event interact_event;
+  Event interact_event;
   
   /* Painting information */
   Frame dialog_image;
@@ -149,7 +149,7 @@ public:
   int getID();
   
   /* Gets the interaction event for the thing */
-  EventHandler::Event getInteraction();
+  Event getInteraction();
 
   /* Returns the map section of the tile where this is painted */
   int getMapSection();
@@ -225,7 +225,7 @@ public:
   void setIDPlayer();
 
   /* Sets the interaction event for the thing */
-  bool setInteraction(EventHandler::Event interact_event);
+  bool setInteraction(Event interact_event);
   
   /* Sets if the movement is paused */
   void setMovementPaused(bool paused);

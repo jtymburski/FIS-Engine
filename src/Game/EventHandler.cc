@@ -29,10 +29,10 @@ EventHandler::~EventHandler()
  *===========================================================================*/
 
 /* Creates the initial event template, clearing it */
-EventHandler::Event EventHandler::createEventTemplate()
+Event EventHandler::createEventTemplate()
 {
   Event blank_event;
-  blank_event.classification = NOEVENT;
+  blank_event.classification = EnumDb::NOEVENT;
   blank_event.convo = 0;
   blank_event.integer_stack.clear();
 
@@ -79,18 +79,18 @@ void EventHandler::executeTeleportEvent(Event event, MapPerson* target)
  *===========================================================================*/
 
 /* Creates a disabled blank event */
-EventHandler::Event EventHandler::createBlankEvent()
+Event EventHandler::createBlankEvent()
 {
   return createEventTemplate();
 }
   
 /* Creates the conversation initiation event */
-EventHandler::Event EventHandler::createConversationEvent(
+Event EventHandler::createConversationEvent(
                                                Conversation* new_conversation)
 {
   /* Create the event and identify */
   Event new_event = createEventTemplate();
-  new_event.classification = STARTCONVO;
+  new_event.classification = EnumDb::STARTCONVO;
   new_event.convo = new_conversation;
 
   return new_event;
@@ -98,22 +98,22 @@ EventHandler::Event EventHandler::createConversationEvent(
 
 /* Creates a start battle event */
 /* TODO: Add parameters. Battle not ready */
-EventHandler::Event EventHandler::createStartBattleEvent()
+Event EventHandler::createStartBattleEvent()
 {
   /* Create the event and identify */
   Event new_event = createEventTemplate();
-  new_event.classification = RUNBATTLE;
+  new_event.classification = EnumDb::RUNBATTLE;
 
   return new_event;
 }
 
 /* Creates a teleport event */
-EventHandler::Event EventHandler::createTeleportEvent(int tile_x, int tile_y, 
+Event EventHandler::createTeleportEvent(int tile_x, int tile_y, 
                                                       int section_id)
 {
   /* Create the event and identify */
   Event new_event = createEventTemplate();
-  new_event.classification = TELEPORTPLAYER;
+  new_event.classification = EnumDb::TELEPORTPLAYER;
 
   /* Fill in the event specific information */
   new_event.integer_stack.append(tile_x);
@@ -123,15 +123,27 @@ EventHandler::Event EventHandler::createTeleportEvent(int tile_x, int tile_y,
   return new_event;
 }
 
+/* Deletes the given event. Just clears the relevant memory 
+ * Returns a blank event */
+Event EventHandler::deleteEvent(Event event)
+{
+  /* Delet the existing event, if relevant */
+  if(event.convo != 0)
+    delete event.convo;
+  event.convo = 0;
+
+  return createBlankEvent();
+}
+
 /* Execute the given event - done through signal emits */
 void EventHandler::executeEvent(Event event, MapPerson* initiator, 
                                              MapThing* source)
 {
-  if(event.classification == TELEPORTPLAYER)
+  if(event.classification == EnumDb::TELEPORTPLAYER)
     executeTeleportEvent(event, initiator); // TODO: Fix? Let map decide player
-  else if(event.classification == RUNBATTLE)
+  else if(event.classification == EnumDb::RUNBATTLE)
     executeStartBattleEvent(event, initiator);
-  else if(event.classification == STARTCONVO)
+  else if(event.classification == EnumDb::STARTCONVO)
     executeConversationEvent(event.convo, initiator, source);
 }
 
@@ -139,4 +151,14 @@ void EventHandler::executeEvent(Event event, MapPerson* initiator,
 void EventHandler::executePickup(MapItem* item, bool walkover)
 {
   emit pickupItem(item, walkover);
+}
+
+Event EventHandler::updateEvent(Event event, XmlData data, int file_index, 
+                                                          int section_index)
+{
+  qDebug() << event.classification << " " << file_index << " " 
+           << data.getElement(file_index) << " " 
+           << data.getElement(file_index + 1);
+
+  return event;
 }

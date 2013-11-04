@@ -56,8 +56,8 @@ private:
 
   /* Events for entering and exiting the tile and the handler */
   EventHandler* event_handler;
-  EventHandler::Event enter_event;
-  EventHandler::Event exit_event;
+  Event enter_event;
+  Event exit_event;
   
   /* The lower information */
   QList<Sprite*> lower;
@@ -178,13 +178,13 @@ public:
   bool setEnhancer(Sprite* enhancer);
 
   /* Set the enter event, for the tile */
-  bool setEnterEvent(EventHandler::Event enter_event);
+  bool setEnterEvent(Event enter_event);
   
   /* Sets the event handler - this call also clears out all existing events */
   void setEventHandler(EventHandler* event_handler);
   
   /* Set the exit event, for the tile */
-  bool setExitEvent(EventHandler::Event exit_event);
+  bool setExitEvent(Event exit_event);
   
   /* Sets the new height for the tile (must be >= 0) */
   bool setHeight(int height);

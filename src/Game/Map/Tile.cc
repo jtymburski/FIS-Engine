@@ -71,7 +71,7 @@ Tile::Tile(EventHandler* event_handler, int width, int height, int x, int y)
  */
 Tile::~Tile()
 {
-  //clear();
+  clear();
 }
 
 /*============================================================================
@@ -218,8 +218,8 @@ bool Tile::clearEvents()
 {
   if(event_handler != 0)
   {
-    setEnterEvent(event_handler->createBlankEvent());
-    setExitEvent(event_handler->createBlankEvent());
+    enter_event = event_handler->deleteEvent(enter_event);
+    exit_event = event_handler->deleteEvent(exit_event);
     return true;
   }
   
@@ -827,16 +827,12 @@ bool Tile::setEnhancer(Sprite* enhancer)
  * Inputs: Event enter_event - the event to be executed
  * Output: bool - if the setting was able to occur
  */
-bool Tile::setEnterEvent(EventHandler::Event enter_event)
+bool Tile::setEnterEvent(Event enter_event)
 {
   if(event_handler != 0)
   {
-    /* Delete the existing event, if relevant */
-    if(this->enter_event.convo != 0)
-      delete this->enter_event.convo;
-    this->enter_event.convo = 0;
-
-    /* Set the new event */
+    /* Delete the existing event and set new event */
+    this->enter_event = event_handler->deleteEvent(this->enter_event);
     this->enter_event = enter_event;
     return true;
   }
@@ -855,8 +851,7 @@ bool Tile::setEnterEvent(EventHandler::Event enter_event)
 void Tile::setEventHandler(EventHandler* event_handler)
 {
   /* Clean up the existing event handler */
-  if(this->event_handler != 0)
-    clearEvents();
+  clearEvents();
 
   /* Set the new event handler and clean up the interact event */
   this->event_handler = event_handler;
@@ -871,16 +866,12 @@ void Tile::setEventHandler(EventHandler* event_handler)
  * Inputs: Event exit_event - the event to be executed
  * Output: bool - status if the event could be set
  */
-bool Tile::setExitEvent(EventHandler::Event exit_event)
+bool Tile::setExitEvent(Event exit_event)
 {
   if(event_handler != 0)
   {
-    /* Delet the existing event, if relevant */
-    if(this->exit_event.convo != 0)
-      delete this->exit_event.convo;
-    this->exit_event.convo = 0;
-
-    /* Set the new event */
+    /* Delet the existing event and set the new event */
+    this->exit_event = event_handler->deleteEvent(this->exit_event);
     this->exit_event = exit_event;
     return true;
   }
@@ -1009,7 +1000,7 @@ bool Tile::setPerson(MapPerson* person, bool no_events)
         event_handler->executePickup(item, true);
       
       /* Execute the enter event, if applicable */
-      if(enter_event.classification != EventHandler::NOEVENT)
+      if(enter_event.classification != EnumDb::NOEVENT)
         event_handler->executeEvent(enter_event, person);
     }
 
@@ -1206,7 +1197,7 @@ void Tile::unsetPerson(bool no_events)
   if(!no_events && person != 0)
   {
     /* Execute exit event, if applicable */
-    if(event_handler != 0 && exit_event.classification != EventHandler::NOEVENT)
+    if(event_handler != 0 && exit_event.classification != EnumDb::NOEVENT)
       event_handler->executeEvent(exit_event, person);
   }
 

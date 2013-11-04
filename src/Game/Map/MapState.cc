@@ -18,6 +18,7 @@ MapState::MapState()
 {
   animation = 0;
   event_handler = 0;
+  setEventHandler(0);
   interaction = NOINTERACTION;
   opacity = kMAX_OPACITY;
 }
@@ -29,6 +30,7 @@ MapState::MapState(Sprite* animation, EventHandler* event_handler,
   this->event_handler = 0;
   interaction = NOINTERACTION;
 
+  /* Set the relevant data */
   setSprite(animation);
   setEventHandler(event_handler);
   setOpacity(opacity);
@@ -62,10 +64,10 @@ bool MapState::clearEvents()
 {
   if(event_handler != 0)
   {
-    setEnterEvent(event_handler->createBlankEvent());
-    setExitEvent(event_handler->createBlankEvent());
-    setUseEvent(event_handler->createBlankEvent());
-    setWalkoverEvent(event_handler->createBlankEvent());
+    enter_event = event_handler->deleteEvent(enter_event);
+    exit_event = event_handler->deleteEvent(exit_event);
+    use_event = event_handler->deleteEvent(use_event);
+    walkover_event = event_handler->deleteEvent(walkover_event);
 
     return true;
   }
@@ -108,16 +110,12 @@ bool MapState::initializeGl()
  * Inputs: Event enter_event - the event to be executed
  * Output: bool - if the setting was able to occur
  */
-bool MapState::setEnterEvent(EventHandler::Event enter_event)
+bool MapState::setEnterEvent(Event enter_event)
 {
   if(event_handler != 0)
   {
-    /* Delete the existing event, if relevant */
-    if(this->enter_event.convo != 0)
-      delete this->enter_event.convo;
-    this->enter_event.convo = 0;
-
-    /* Set the new event */
+    /* Delete the existing event and set the new event */
+    this->enter_event = event_handler->deleteEvent(this->enter_event);
     this->enter_event = enter_event;
     return true;
   }
@@ -136,8 +134,7 @@ bool MapState::setEnterEvent(EventHandler::Event enter_event)
 void MapState::setEventHandler(EventHandler* event_handler)
 {
   /* Clean up the existing event handler */
-  if(this->event_handler != 0)
-    clearEvents();
+  clearEvents();
 
   /* Clear out the conversation data */
   enter_event.convo = 0;
@@ -158,16 +155,12 @@ void MapState::setEventHandler(EventHandler* event_handler)
  * Inputs: Event exit_event - the event to be executed
  * Output: bool - status if the event could be set
  */
-bool MapState::setExitEvent(EventHandler::Event exit_event)
+bool MapState::setExitEvent(Event exit_event)
 {
   if(event_handler != 0)
   {
-    /* Delet the existing event, if relevant */
-    if(this->exit_event.convo != 0)
-      delete this->exit_event.convo;
-    this->exit_event.convo = 0;
-
-    /* Set the new event */
+    /* Delet the existing event and set the new event */
+    this->exit_event = event_handler->deleteEvent(this->exit_event);
     this->exit_event = exit_event;
     return true;
   }
@@ -213,16 +206,12 @@ bool MapState::setSprite(Sprite* animation)
  * Inputs: Event use_event - the event to be executed
  * Output: bool - if the setting was able to occur
  */
-bool MapState::setUseEvent(EventHandler::Event use_event)
+bool MapState::setUseEvent(Event use_event)
 {
   if(event_handler != 0)
   {
-    /* Delete the existing event, if relevant */
-    if(this->use_event.convo != 0)
-      delete this->use_event.convo;
-    this->use_event.convo = 0;
-
-    /* Set the new event */
+    /* Delete the existing event and set the new event */
+    this->use_event = event_handler->deleteEvent(this->use_event);
     this->use_event = use_event;
     return true;
   }
@@ -237,16 +226,12 @@ bool MapState::setUseEvent(EventHandler::Event use_event)
  * Inputs: Event walkover_event - the event to be executed
  * Output: bool - if the setting was able to occur
  */
-bool MapState::setWalkoverEvent(EventHandler::Event walkover_event)
+bool MapState::setWalkoverEvent(Event walkover_event)
 {
   if(event_handler != 0)
   {
-    /* Delete the existing event, if relevant */
-    if(this->walkover_event.convo != 0)
-      delete this->walkover_event.convo;
-    this->walkover_event.convo = 0;
-
-    /* Set the new event */
+    /* Delete the existing event and set the new event */
+    this->walkover_event = event_handler->deleteEvent(this->walkover_event);
     this->walkover_event = walkover_event;
     return true;
   }
@@ -257,7 +242,7 @@ bool MapState::setWalkoverEvent(EventHandler::Event walkover_event)
 bool MapState::triggerEnterEvent(MapPerson* initiator)
 {
   /* Only proceed with event if it's a valid event */
-  if(event_handler != 0 && enter_event.classification != EventHandler::NOEVENT)
+  if(event_handler != 0 && enter_event.classification != EnumDb::NOEVENT)
   {
     event_handler->executeEvent(enter_event, initiator);
     return true;
@@ -269,7 +254,7 @@ bool MapState::triggerEnterEvent(MapPerson* initiator)
 bool MapState::triggerExitEvent(MapPerson* initiator)
 {
   /* Only proceed with event if it's a valid event */
-  if(event_handler != 0 && exit_event.classification != EventHandler::NOEVENT)
+  if(event_handler != 0 && exit_event.classification != EnumDb::NOEVENT)
   {
     event_handler->executeEvent(exit_event, initiator);
     return true;
@@ -281,7 +266,7 @@ bool MapState::triggerExitEvent(MapPerson* initiator)
 bool MapState::triggerUseEvent(MapPerson* initiator)
 {
   /* Only proceed with event if it's a valid event */
-  if(event_handler != 0 && use_event.classification != EventHandler::NOEVENT)
+  if(event_handler != 0 && use_event.classification != EnumDb::NOEVENT)
   {
     event_handler->executeEvent(use_event, initiator);
     return true;
@@ -294,7 +279,7 @@ bool MapState::triggerWalkoverEvent(MapPerson* initiator)
 {
   /* Only proceed with event if it's a valid event */
   if(event_handler != 0 && 
-     walkover_event.classification != EventHandler::NOEVENT)
+     walkover_event.classification != EnumDb::NOEVENT)
   {
     event_handler->executeEvent(walkover_event, initiator);
     return true;

@@ -22,7 +22,27 @@ class MapThing;
 #include <QDebug>
 #include <QObject>
 
-//#include "EnumDb.h"
+#include "EnumDb.h"
+#include "XmlData.h"
+  
+/* Test struct */
+struct Event
+{
+  EnumDb::EventClassifier classification;
+  Conversation* convo;
+  QList<int> integer_stack;
+};
+
+/* Struct to handle the conversation throughout the map */
+// TODO: tile image?
+struct Conversation
+{
+  QString text;
+  int thing_id;
+  EnumDb::DialogCategory category;
+  Event action_event;
+  QList<Conversation> next;
+};
 
 class EventHandler : public QObject
 {
@@ -34,28 +54,9 @@ public:
 
   /* Destructor function */
   ~EventHandler();
-
-  /* 
-   * Description: The event classification - for what the event will do 
-   */
-  enum EventClassifier {NOEVENT        = 0,
-                        GIVEITEM       = 1,
-                        RUNBATTLE      = 2, 
-                        RUNMAP         = 3,
-                        TELEPORTPLAYER = 4,
-                        TELEPORTTHING  = 5,
-                        STARTCONVO     = 6};
-
+  
   /* Test enumerator */
   //enum EventTestEnum { TEST1, TEST2, TEST3 };
-
-  /* Test struct */
-  struct Event
-  {
-    EventClassifier classification;
-    Conversation* convo;
-    QList<int> integer_stack;
-  };
 
 private:
   /* Private variables - needed?? */
@@ -83,8 +84,8 @@ private:
 signals:
   /* Signals for the various events */
   void giveItem(int id, int count);
-  void initConversation(Conversation* convo, MapPerson* initiator, 
-                                             MapThing* source);
+  void initConversation(Conversation* convo, 
+                        MapPerson* initiator, MapThing* source);
   void pickupItem(MapItem* item, bool walkover);
   void startBattle();
   void teleportThing(MapPerson* target, int x, int y, int section_id);
@@ -105,11 +106,18 @@ public:
   /* Creates a teleport event */
   Event createTeleportEvent(int tile_x, int tile_y, int section_id = -1);
 
+  /* Deletes the given event. Just clears the relevant memory */
+  Event deleteEvent(Event event);
+  
   /* Execute the given event - done through signal emits */
   void executeEvent(Event event, MapPerson* initiator, MapThing* source = 0);
   
   /* Executes a pickup item event */
   void executePickup(MapItem* item, bool walkover = false);
+
+  /* Updates the event from the data in the file */
+  Event updateEvent(Event event, XmlData data, int file_index, 
+                                               int section_index);
 };
 
 #endif // EVENTHANDLER_H

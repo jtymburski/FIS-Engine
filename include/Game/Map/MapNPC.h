@@ -49,12 +49,6 @@ private:
   bool moving_forward;
   int npc_delay;
   NodeState state;
-  
-  /* The dialog sequence for the NPC and the Player */
-  QList<QString> talking_points; // TODO
-
-  /* The dialog sources for each talking point */
-  QList<bool> talking_sources; // TODO
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -69,9 +63,6 @@ public:
   /* Path node handling functions */
   bool insertNode(int index, Tile* tile, int delay = 0);
   bool insertNodeAtTail(Tile* tile, int delay = 0);
-
-  /* Gets a pointer to the Persons conversation */
-  QList<QString> getConversation(); // TODO
 
   /* Gets a pointer to the gift the NPC has */
   MapThing* getGift(); // TODO

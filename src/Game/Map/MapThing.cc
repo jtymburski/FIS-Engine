@@ -313,7 +313,11 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
   }
   else if(identifier == "event")
   {
-    // TODO
+    if(event_handler != 0)
+      interact_event = event_handler->
+              updateEvent(interact_event, data, file_index + 2, section_index);
+    else
+      success = false;
   }
   else if(identifier == "name" && elements.size() == 1)
   {
@@ -484,9 +488,9 @@ int MapThing::getID()
  *              call to this thing.
  *
  * Inputs: none
- * Output: EventHandler::Event - the event fired
+ * Output: Event - the event fired
  */
-EventHandler::Event MapThing::getInteraction()
+Event MapThing::getInteraction()
 {
   return interact_event;
 }
@@ -793,7 +797,7 @@ void MapThing::setEventHandler(EventHandler* event_handler)
 {
   /* Clean up the existing event handler */
   if(this->event_handler != 0)
-    setInteraction(this->event_handler->createBlankEvent());
+    interact_event = this->event_handler->deleteEvent(interact_event);
 
   /* Set the new event handler and clean up the interact event */
   this->event_handler = event_handler;
@@ -880,19 +884,15 @@ void MapThing::setIDPlayer()
  *              class it is set in handles deletion of conversation pointers,
  *              if relevant.
  *
- * Inputs: EventHandler::Event interact_event - the event to set in the class
+ * Inputs: Event interact_event - the event to set in the class
  * Output: bool - if the event could be set
  */
-bool MapThing::setInteraction(EventHandler::Event interact_event)
+bool MapThing::setInteraction(Event interact_event)
 {
   if(event_handler != 0)
   {
-    /* Delet the existing event, if relevant */
-    if(this->interact_event.convo != 0)
-      delete this->interact_event.convo;
-    this->interact_event.convo = 0;
-
-    /* Set the new event */
+    /* Delete the existing event and set the new event */
+    this->interact_event = event_handler->deleteEvent(this->interact_event);
     this->interact_event = interact_event;
     return true;
   }

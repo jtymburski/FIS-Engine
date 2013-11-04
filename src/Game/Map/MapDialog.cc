@@ -182,7 +182,7 @@ bool MapDialog::drawPseudoCircle(int x, int y, int radius)
 void MapDialog::executeEvent()
 {
   if(event_handler != 0 && 
-     conversation_info.action_event.classification != EventHandler::NOEVENT)
+     conversation_info.action_event.classification != EnumDb::NOEVENT)
   {
     /* Execute the event */
     event_handler->executeEvent(conversation_info.action_event, target);
