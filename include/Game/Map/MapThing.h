@@ -20,6 +20,7 @@
 #include "Game/EventHandler.h"
 #include "Game/Map/Tile.h"
 #include "Game/Sprite.h"
+#include "XmlData.h"
 
 class MapThing// : public QObject
 {
@@ -111,6 +112,11 @@ signals:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Adds thing information from the XML file. Will be virtually re-called
+   * by all children for proper operation */
+  virtual bool addThingInformation(XmlData data, int file_index, 
+                                                 int section_index);
+  
   /* Returns the class descriptor, useful for casting */
   virtual QString classDescriptor();
 

@@ -9,8 +9,8 @@
 #define XMLDATA_H
 
 //#include <QDebug>
+#include <QList>
 #include <QString>
-#include <QVector>
 
 class XmlData
 {
@@ -36,9 +36,9 @@ public:
 
 private:
   /* Element, key, and value stacks for data */
-  QVector<QString> element;
-  QVector<QString> key;
-  QVector<QString> value;
+  QList<QString> element;
+  QList<QString> key;
+  QList<QString> value;
 
   /* The data from the XML */
   DataType data_type;
@@ -77,13 +77,14 @@ public:
   QString getDataString(bool* success = 0);
 
   /* Element handling */
-  QVector<QString> getAllElements();
-  QVector<QString> getAllKeys();
-  QVector<QString> getAllKeyValues();
+  QList<QString> getAllElements();
+  QList<QString> getAllKeys();
+  QList<QString> getAllKeyValues();
   QString getElement(int index);
   QString getKey(int index);
   QString getKeyValue(int index);
   int getNumElements();
+  QList<QString> getTailElements(int index);
 
   /* Determine the type of the data */
   bool isDataBool();

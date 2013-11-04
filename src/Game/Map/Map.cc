@@ -167,19 +167,10 @@ bool Map::addTileSprite(QString path, int x_diff, int y_diff,
                         int angle, int section_index, XmlData data)
 {
   bool success = false;
-  Sprite* tile_frames = 0;
 
-  /* Handle the image data, split the path based on "|". This is the 
-   * identifier if there is multiple frames */
-  QStringList data_list = path.split("|");
-  if(data_list.size() > 1)
-    tile_frames = new Sprite(data_list[0], data_list[1].toInt(), 
-                                           data_list[2], angle);
-  else
-    tile_frames = new Sprite(path, angle);
- 
   /* Run through this list, checking ranges and add the corresponding
    * tiles, only if the sprite data is legitimate */
+  Sprite* tile_frames = new Sprite(path, angle);
   if(tile_frames->getSize() > 0)
   {
     /* Split up the coordinates for the tile sprite */
@@ -225,9 +216,52 @@ bool Map::addTileSprite(QString path, int x_diff, int y_diff,
 
 bool Map::addThingData(XmlData data, int section_index)
 {
-  qDebug() << "Thing detail: " << data.getElement(kFILE_CLASSIFIER)
-                               << " " << data.getDataString()
-                               << " " << data.getDataInteger();
+  QString identifier = data.getElement(kFILE_CLASSIFIER);
+  int id = data.getKeyValue(kFILE_CLASSIFIER).toInt();
+  int index = 0;
+  MapThing* modified_thing = 0;
+  
+  /* Identify which thing to be created */
+  if(identifier == "mapthing" || identifier == "mapio")
+  {
+    /* Search for the existing map object */
+    while(modified_thing == 0 && index < things.size())
+    {
+      if(things[index]->getID() == id)
+        modified_thing = things[index];
+      index++;
+    }
+
+    /* Create a new thing if one does not exist */
+    if(modified_thing == 0)
+    {
+      if(identifier == "mapthing")
+        modified_thing = new MapThing(0, kTILE_WIDTH, kTILE_HEIGHT);
+      else
+        modified_thing = new MapInteractiveObject(kTILE_WIDTH, kTILE_HEIGHT);
+      modified_thing->setEventHandler(event_handler);
+      modified_thing->setID(id);
+      
+      /* Append the new one */
+      things.append(modified_thing);
+    }
+    
+    //qDebug() << "1: " << identifier << " " << modified_thing;
+  }
+  else if(identifier == "mapperson" || identifier == "mapnpc")
+  {
+    qDebug() << "2: " << identifier;
+  }
+  else if(identifier == "mapitem")
+  {
+    qDebug() << "3: " << identifier;
+  }
+  
+  /* Proceed to update the thing information from the XML data */
+  if(modified_thing != 0)
+    return modified_thing->addThingInformation(data, kFILE_CLASSIFIER, 
+                                                     section_index);
+  return false;
 }
 
 bool Map::initiateMapSection(int section_index, int width, int height)
@@ -925,19 +959,19 @@ bool Map::loadMap(QString file)
       data = fh.readXmlData(&done, &success);
     } while(!done && success);
 
-    /* Add teleport to door - temporary */
+    /* Add teleport to door - temporary (TODO) */
     if(event_handler != 0)
     {
-      geography[1][3][6]->setEnterEvent(
+      geography[1][3][9]->setEnterEvent(
             event_handler->createTeleportEvent(12, 9, 0));
       geography[0][1][1]->setExitEvent(
             event_handler->createStartBattleEvent());
       geography[0][12][8]->setEnterEvent(
-            event_handler->createTeleportEvent(3, 5, 1));
+            event_handler->createTeleportEvent(3, 8, 1));
     }
 
     /* Add the player information */
-    Sprite* up_sprite = new Sprite("sprites/Map/Map_Things/genericbear4_AA_D",
+/*    Sprite* up_sprite = new Sprite("sprites/Map/Map_Things/genericbear4_AA_D",
                                    3, ".png");
     Sprite* down_sprite = new Sprite("sprites/Map/Map_Things/genericbear4_AA_U",
                                      3, ".png");
@@ -960,7 +994,7 @@ bool Map::loadMap(QString file)
     player = person;
 
     /* Add a second player */
-    up_sprite = new Sprite("sprites/Map/Map_Things/aurora_AA_D", 3, ".png");
+/*    up_sprite = new Sprite("sprites/Map/Map_Things/aurora_AA_D", 3, ".png");
     down_sprite = new Sprite("sprites/Map/Map_Things/aurora_AA_U", 3, ".png");
     left_sprite = new Sprite("sprites/Map/Map_Things/aurora_AA_S", 5, ".png");
     left_sprite->flipAll();
@@ -986,7 +1020,7 @@ bool Map::loadMap(QString file)
     persons.append(person);
 
     /* Add an NPC */
-    up_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_D",3,".png");
+/*    up_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_D",3,".png");
     down_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_U",3,".png");
     left_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_R",5,".png");
     right_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_L",5,".png");
@@ -1044,7 +1078,7 @@ bool Map::loadMap(QString file)
     //things.append(thing);
     
     /* Make three map items, to walkover */
-    Sprite* frames = new Sprite("sprites/Map/Testing/sword_AA_A00.png");
+/*    Sprite* frames = new Sprite("sprites/Map/Testing/sword_AA_A00.png");
     MapItem* item = new MapItem(frames, kTILE_WIDTH, kTILE_HEIGHT);
     item->setID(10000);
     item->setName("Sword of Power");
@@ -1069,7 +1103,7 @@ bool Map::loadMap(QString file)
     items.append(item);
 
     /* Make the map interactive object */
-    Conversation* mio_convo = new Conversation;
+/*    Conversation* mio_convo = new Conversation;
     mio_convo->category = EnumDb::TEXT;
     mio_convo->action_event = event_handler->createBlankEvent();
     mio_convo->text = "Event test firing on chest.";
@@ -1102,7 +1136,7 @@ bool Map::loadMap(QString file)
     things.append(object);
 
     /* Make another map interactive object (colors walk over) */
-    object = new MapInteractiveObject(kTILE_WIDTH, kTILE_HEIGHT);
+/*    object = new MapInteractiveObject(kTILE_WIDTH, kTILE_HEIGHT);
     object->setStartingTile(0, geography[0][0][8]);
     frames = new Sprite("sprites/Map/Testing/light1_AA_A00.png");
     state = new MapState(frames, event_handler);
@@ -1115,7 +1149,7 @@ bool Map::loadMap(QString file)
     things.append(object);
     
     /* Make the door interactive object */
-    object = new MapInteractiveObject(kTILE_WIDTH, kTILE_HEIGHT);
+/*    object = new MapInteractiveObject(kTILE_WIDTH, kTILE_HEIGHT);
     object->setAnimationSpeed(100);
     object->setStartingTile(0, geography[0][0][6]);
     frames = new Sprite(
@@ -1132,7 +1166,7 @@ bool Map::loadMap(QString file)
     state = new MapState(frames, event_handler);
     state->setInteraction(MapState::WALKOFF); // WALKOFF
     object->setState(state, true);
-    things.append(object);
+    things.append(object);*/
   }
   success &= fh.stop();
 

@@ -395,36 +395,36 @@ QString XmlData::getDataString(bool* success)
 }
   
 /* 
- * Description: Returns a QVector list of all elements stored within the class.
+ * Description: Returns a QList list of all elements stored within the class.
  *
  * Inputs: none
- * Output: QVector<QString> - the list of all elements in the class
+ * Output: QList<QString> - the list of all elements in the class
  */
-QVector<QString> XmlData::getAllElements()
+QList<QString> XmlData::getAllElements()
 {
   return element;
 }
 
 /* 
- * Description: Returns a QVector list of all keys stored within the class.
+ * Description: Returns a QList list of all keys stored within the class.
  *              This corresponds directly to the list of elements.
  *
  * Inputs: none
- * Output: QVector<QString> - the list of all keys in the class
+ * Output: QList<QString> - the list of all keys in the class
  */
-QVector<QString> XmlData::getAllKeys()
+QList<QString> XmlData::getAllKeys()
 {
   return key;
 }
 
 /* 
- * Description: Returns a QVector list of all values stored within the class.
+ * Description: Returns a QList list of all values stored within the class.
  *              This corresponds directly to the list of keys.
  *
  * Inputs: none
- * Output: QVector<QString> - the list of all values (of keys) in the class
+ * Output: QList<QString> - the list of all values (of keys) in the class
  */
-QVector<QString> XmlData::getAllKeyValues()
+QList<QString> XmlData::getAllKeyValues()
 {
   return value;
 }
@@ -483,6 +483,25 @@ QString XmlData::getKeyValue(int index)
 int XmlData::getNumElements()
 {
   return element.size();
+}
+
+/*
+ * Description: Returns the tail elements from the selected index to the end.
+ * 
+ * Inputs: int index - the index for the starting element
+ * Output: QList<QString> - the QList stack of elements
+ */
+QList<QString> XmlData::getTailElements(int index)
+{
+  QList<QString> tail_elements;
+  
+  if(index < element.size())
+  {
+    for(int i = index; i < element.size(); i++)
+      tail_elements.append(element[i]);
+  }
+  
+  return tail_elements;
 }
 
 /* 
@@ -553,9 +572,9 @@ bool XmlData::removeLastElement()
 {
   if(!element.isEmpty())
   {
-    element.remove(element.size() - 1);
-    key.remove(key.size() - 1);
-    value.remove(value.size() - 1);
+    element.removeLast();
+    key.removeLast();
+    value.removeLast();
     return true;
   }
   return false;

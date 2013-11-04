@@ -279,6 +279,63 @@ bool MapThing::tileMoveStart(Tile* next_tile)
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
+
+/* Adds thing information from the XML file. Will be virtually re-called
+ * by all children for proper operation */ // TODO - comment and implementation
+bool MapThing::addThingInformation(XmlData data, int file_index, 
+                                                 int section_index)
+{
+  QList<QString> elements = data.getTailElements(file_index + 1);
+  QString identifier = data.getElement(file_index + 1);
+  bool success = true;
+  
+  /* Parse the identifier for setting the thing information */
+  if(identifier == "animation" && elements.size() == 1)
+  {
+    success &= setAnimationSpeed(data.getDataInteger(&success));
+  }
+  else if(identifier == "description" && elements.size() == 1)
+  {
+    setDescription(data.getDataString(&success));
+  }
+  else if(identifier == "frames" && elements.size() == 1)
+  {
+    Sprite* new_sprite = new Sprite(data.getDataString(&success));
+    if(!setFrames(new_sprite))
+    {
+      delete new_sprite;
+      success = false;
+    }
+  }
+  else if(identifier == "image" && elements.size() == 1)
+  {
+    success &= setDialogImage(data.getDataString(&success));
+  }
+  else if(identifier == "event")
+  {
+    // TODO
+  }
+  else if(identifier == "name" && elements.size() == 1)
+  {
+    setName(data.getDataString(&success));
+  }
+  else if(identifier == "opacity" && elements.size() == 1)
+  {
+    setOpacity(data.getDataFloat(&success));
+  }
+  else if(identifier == "speed" && elements.size() == 1)
+  {
+    success &= setSpeed(data.getDataInteger(&success));
+  }
+  else if(identifier == "startpoint")
+  {
+    // TODO (Higher up?!)
+  }
+  
+  qDebug() << "Status: " << success << " " << getID() << " " 
+                         << " " << identifier << " " << this;
+  return success;
+}
   
 /*
  * Description: This is the class descriptor. Primarily used for encapsulation

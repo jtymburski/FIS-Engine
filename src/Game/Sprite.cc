@@ -55,7 +55,17 @@ Sprite::Sprite(QString image_path, int rotate_angle)
   head = 0;
   size = 0;
   sequence = FORWARD;
-  insertFirst(image_path, rotate_angle);
+
+  /* See if the tile needs a split sequence - do it if relevant */
+  QStringList path_details = image_path.split("|");
+  if(path_details.size() > 1)
+  {
+    animation_time = kDEFAULT_ANIMATE_TIME;
+    insertSequence(path_details[0], path_details[1].toInt(), 
+                   path_details[2], rotate_angle);
+  }
+  else
+    insertFirst(image_path, rotate_angle);
 }
 
 /* 
