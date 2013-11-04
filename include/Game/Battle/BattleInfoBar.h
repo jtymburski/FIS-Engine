@@ -3,8 +3,6 @@
 * Date Created: Sunday, October 28th, 2012
 * Inheritance: Parent class: Battle
 * Description: Display information on the screen about battle events
-*
-*  TODO: CONSTRUCTORS TO BE FINISHED
 ******************************************************************************/
 #ifndef BATTLEINFOBAR_H
 #define BATTLEINFOBAR_H
@@ -14,50 +12,143 @@
 #include <QTimer>
 #include <QWidget>
 
+#include "Game/Frame.h"
+
 class BattleInfoBar : public QWidget
 {
 public:
+  /* Creates a BattleInfoBar object */
+  BattleInfoBar(uint bar_height, uint bar_width, QWidget* parent = 0);
 
-  BattleInfoBar(QWidget* parent = NULL);
-
+  /* Annihilates a BattleInfoBar object */
   ~BattleInfoBar();
 
+  /* Mode for displaying the BattleInfoBar messages */
+  enum MessageDisplayMode
+  {
+    DISABLED,
+    DEBUG,
+    BASIC,
+    FULL
+  };
+
+  /* Mode for display the text of messages */
+  enum TextDisplayMode
+  {
+    INSTANT,
+    SCROLLING
+  };
+
 private:
+  /* Structure to hold the data for a message to be displayed */
+  struct Message
+  {
+    QString text;
+    short time_visible;
+  };
+
   /* Bar's height (screen_height * 0.05) */
-  uint bar_height;
+  ushort bar_height;
+
+  /* Opacity of the BattleInfoBar */
+  float bar_opacity;
 
   /* Bar's width (screen width) */
-  uint bar_width;
+  ushort bar_width;
 
-  /* Time the string is displayed for */
-  uint display_time;
+  /* Background of the info bar */
+  Frame* bg;
 
-  /* Information currently being displayed */
-  QString info;
+  /* Time the current string has displayed for */
+  uint time_elapsed;
 
-  /* Bounding box for the string */
-  QRect string_border;
+  /* The enumerated message display mode */
+  MessageDisplayMode message_display_mode;
 
-  /* String's style */
-  //QPen string_style;
+  /* Time the current string has displayed for */
+  ushort message_time_elapsed;
 
-  /* Timer that runs how long a string will be on the bar for */
-  QTimer display_timer;
+  /* List of information to be displayed */
+  QList<Message> message_buffer;
+
+  /* The enumerated text display mode */
+  TextDisplayMode text_display_mode;
+
+  /* Font of the text */
+  QFont text_font;
+
+  /* Opacity of the text */
+  float text_opacity;
+
+  /* The speed to display the text at */
+  float text_speed;
+
+  /* Style of the text */
+  QPen text_style;
 
   /*------------------- Constants -----------------------*/
-  static const ushort kMAX_TIME; /* Maximum # seconds for displayed message */
+  static const ushort kDEFAULT_BAR_HEIGHT; /* Default height of the bar */
+  static const ushort kDEFAULT_BAR_WIDTH; /* The default width of the bar */
+  static const float kDEFAULT_BAR_OPACITY; /* The default opacity for the bar */
+  static const float kDEFUALT_TEXT_OPACITY; /* The default text opacity */
+  static const float kDEFAULT_TEXT_SPEED; /* The default text speed */
+  static const ushort kMARGIN_SIDES; /* Spacing on the sides of the Info Bar */
+  static const ushort kMARGIN_TOP; /* Spacing on the top of the info bar */
+  static const ushort kMAX_BUFFER; /* Maximum # of messages to buffer */
   static const ushort kMAX_CHAR; /* Maximum # of characters for displayed msg */
-  static const ushort kWAIT_TIME; /* Time the Info Bar will pause before set */
+  static const ushort kMAX_TIME; /* Maximum amt. time for displayed message */
+  static const ushort kMIN_TIME; /* Minimum amt. time for displayed msg. */
+  static const ushort kMIN_CHAR; /* Minimum # of characters for displayed msg */
+  static const ushort kWAIT_TIME; /* Initial waiting time before displaying */
 
 /*==============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
-  /* Set display info */
-  void setDisplayTime(uint new_time);
+  /* Assigns all values of the BattleInfo bar to defaults */
+  void loadDefaults();
 
-  /* Sets the string on the bar */
-  void setInfo(QString new_info);
+  /* Clears the current message */
+  void clear();
+
+  /* Clears the stack of messages */
+  void clearAll();
+
+  /* Returns the height of the bar */
+  uint getBarHeight();
+
+  /* Returns the width of the bar */
+  uint getBarWidth();
+
+  /* Returns the display mode of the message */
+  MessageDisplayMode getMessageDisplayMode();
+
+  /* Returns the display mode of the text */
+  TextDisplayMode getTextDisplayMode();
+
+  /* Obtains the speed of the text */
+  uint getTextSpeed();
+
+  /* Obtains the currently elapsed time */
+  uint getTimeElapsed();
+
+  /* Assigns the y-dimension of the bar */
+  bool setBarHeight(uint new_value);
+
+  /* Assigns the x-dimension of the bar */
+  bool setBarWidth(uint new_value);
+
+  /* Assigns the display mode for the message */
+  void setMessageDisplayMode(MessageDisplayMode new_message_display_mode);
+
+  /* Assigns the text display mode */
+  void setTextDisplayMode(TextDisplayMode new_text_display_mode);
+
+  /* Assigns the speed of the text */
+  bool setTextSpeed(uint new_value);
+
+  /* Updates the time elapsed */
+  void setTimeElapsed(uint new_value);
 
 /*==============================================================================
  * PROTECTED FUNCTIONS
@@ -67,36 +158,54 @@ protected:
   void paintEvent(QPaintEvent*);
 
 /*==============================================================================
+ * PUBLIC SLOTS
+ *============================================================================*/
+public slots:
+
+/*==============================================================================
  * SIGNALS
  *============================================================================*/
 signals:
-  /* Emitted after message is on the bar for d time, connect to person_upkeep */
-  void finished();
 
 /*==============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
-  /* Adds a time to the message */
-  void addTime(uint value);
+  /* Adds a message to the BattleInfoBar message buffer */
+  bool addMessage(QString text, short time_visible);
 
-  /* Gets the display time for the string */
-  uint getDisplayTime();
+  /* Update the cycle time of BattleInfoBar */
+  void updateBattleInfoBar(int cycle_time);
 
-  /* Returns the height fo the bar */
-  uint getHeight();
+  /* Returns the opacity of the bar */
+  float getBarOpacity();
 
-  /* Returns the width of the bar */
-  uint getWidth();
-    
-  /* Sets the display time for the string */
-  void setMessage(QString new_message, uint new_time);
+  /* Returns the assigned background of the bar */
+  Frame* getBackground();
 
-  /* Sets the height of the bar */
-  void setHeight(uint new_height);
+  /* Returns the font of the text */
+  QFont getTextFont();
 
-  /* Sets the width of the bar */
-  void setWidth(uint new_width);
+  /* Returns the opacity of the text */
+  float getTextOpacity();
+
+  /* Returns the style of the text */
+  QPen getTextStyle();
+
+  /* Sets the opacity of the bar */
+  bool setBarOpacity(float new_value);
+
+  /* Assigns a new background */
+  void setBackground(Frame* new_backround);
+
+  /* Assigns a new font to the info bar */
+  void setTextFont(QFont new_font);
+
+  /* Assigns a new value to the text opacity */
+  void setTextOpacity(float new_value);
+
+  /* Assigns a new font style to the info bar */
+  void setTextStyle(QPen new_style);
 };
 
 #endif

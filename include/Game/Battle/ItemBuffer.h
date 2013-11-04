@@ -29,9 +29,16 @@ private:
   /* Structure containing the data of one element in the Item Buffer */
   struct ItemUseAction
   {
+    /* The user of the ItemUseAction */
     Person* user;
+
+    /* The item to be used */
     Item*   item_used;
+
+    /* Vector of targets the item will hit */
     QVector<Person*> targets;
+
+    /* Validity of the ItemUseAction element */
     bool valid_item_use;
   };
 

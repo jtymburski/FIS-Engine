@@ -26,17 +26,6 @@ const ushort Battle::kBATTLE_MENU_DELAY     =  400; /* Personal menu delay */
  *============================================================================*/
 
 /*
- * Description: Default Battle constructor - constructs a default Battle object
- *              by loading the default settings.
- *
- * Inputs: none
- */
-Battle::Battle()
-{
-  loadDefaults();
-}
-
-/*
  * Description: Normal battle constructor - constructs a Battle between two
  *              parties - friends vs. foes, also given the Options config to
  *              assign various options for the Battle
@@ -59,9 +48,19 @@ Battle::Battle(Party *friends, Party *foes, Options config, QWidget *parent)
 
   setAilmentUpdateMode(config.getAilmentUpdateState());
   setHudDisplayMode(config.getBattleHudState());
+  setBattleMode(config.getBattleMode());
 
+  setBattleFlag(Battle::CONFIGURED);
   loadBattleStateFlags();
-  setBattleFlag(Battle::CONFIGURED, true);
+
+  /* Create battle GUI elements */
+  info_bar    = new BattleInfoBar(getScreenWidth(), getScreenHeight(), this);
+  menu        = new BattleMenu(this);
+  status_bar  = new BattleStatusBar(getFriends(), getScreenWidth(),
+                                    getScreenHeight(), this);
+  /* Create buffers */
+  item_buffer  = new ItemBuffer();
+  skill_buffer = new SkillBuffer();
 }
 
 /*
@@ -70,18 +69,37 @@ Battle::Battle(Party *friends, Party *foes, Options config, QWidget *parent)
  */
 Battle::~Battle()
 {
-  //delete info_bar;
-  //info_bar = NULL;
+  if (info_bar != 0)
+    delete info_bar;
+  info_bar = 0;
 
-  //delete menu;
-  //menu = NULL;
+  if (menu != 0)
+    delete menu;
+  menu = 0;
 
-  //delete status_bar;
-  //status_bar = NULL;
+  if (status_bar != 0)
+    delete status_bar;
+  status_bar = 0;
 
-  //qDeleteAll(enemy_status_bars);
+  if (item_buffer != 0)
+    delete item_buffer;
+  item_buffer = 0;
+
+  if (skill_buffer != 0)
+    delete skill_buffer;
+  skill_buffer;
+
+  if (!enemy_status_bars.isEmpty())
+    qDeleteAll(enemy_status_bars);
+
+ // if (bg != 0)
+ //   delete bg;
+ // bg = 0;
+
+ // if (status_bar_bg != 0)
+ //   delete status_bar_bg;
+ // status_bar_bg = 0;
 }
-
 
 /*==============================================================================
  * PRIVATE FUNCTIONS
@@ -141,11 +159,12 @@ bool Battle::loadDefaults()
 
   setAilmentUpdateMode(Options::BEARWALK);
   setHudDisplayMode(Options::BEARWALK);
+  setBattleMode(Options::DEBUG);
 
-  if (getBattleFlag(Battle::CONFIGURED))
+  if (getBattleFlag(Battle::FLAGS_CONFIGURED))
     return false;
 
-  setBattleFlag(Battle::CONFIGURED, true);
+  setBattleFlag(Battle::FLAGS_CONFIGURED, true);
   return true;
 }
 
@@ -263,6 +282,17 @@ void Battle::updateScene()
  void Battle::setAilmentUpdateMode(Options::BattleOptions new_value)
  {
    ailment_update_mode = new_value;
+ }
+
+ /*
+ * Description: Assigns a new value to the battle output mode
+ *
+ * Inputs: Options::BattleMode - enumerated value of battle output mode
+ * Output: none
+ */
+ void Battle::setBattleMode(Options::BattleMode new_value)
+ {
+   battle_mode = new_value;
  }
 
 /*
@@ -447,6 +477,17 @@ void Battle::keyPressEvent(QKeyEvent* event)
 Options::BattleOptions Battle::getAilmentUpdateMode()
 {
   return ailment_update_mode;
+}
+
+/*
+ * Description: Returns the battle output mode currently set
+ *
+ * Inputs: none
+ * Output: Options::BattleMode - the currently set Battle update mode
+ */
+Options::BattleMode Battle::getBattleMode()
+{
+  return battle_mode;
 }
 
 /*

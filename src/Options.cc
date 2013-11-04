@@ -53,6 +53,7 @@ void Options::copySelf(const Options &source)
   /* Battle Options */
   ailment_update_state = source.ailment_update_state;
   battle_hud_state = source.ailment_update_state;
+  battle_mode = source.battle_mode;
 
   resolution_x  = source.resolution_x;
   resolution_y  = source.resolution_y;
@@ -64,6 +65,7 @@ void Options::setAllToDefault()
   /* Battle Options */
   setAilmentUpdateState(BEARWALK);
   setBattleHudState(BEARWALK);
+  setBattleMode(DEBUG);
 
   setScreenHeight(0);
   setScreenWidth(0);
@@ -78,6 +80,11 @@ void Options::setAilmentUpdateState(BattleOptions new_state)
 void Options::setBattleHudState(BattleOptions new_state)
 {
   battle_hud_state = new_state;
+}
+
+void Options::setBattleMode(BattleMode new_state)
+{
+  battle_mode = new_state;
 }
 
 void Options::setScreenHeight(int index)
@@ -117,6 +124,11 @@ Options::BattleOptions Options::getAilmentUpdateState()
 Options::BattleOptions Options::getBattleHudState()
 {
   return battle_hud_state;
+}
+
+Options::BattleMode Options::getBattleMode()
+{
+  return battle_mode;
 }
 
 short Options::getScreenHeight()

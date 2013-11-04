@@ -24,14 +24,22 @@ public:
   ~Options();
 
   /* Battle Options */
-  enum BattleOptions { BEARWALK,
+  enum BattleOptions {    BEARWALK,
                           BEARLY_DIFFICULT,
                           GRIZZLY };
 
-private:
+  enum BattleMode {  DEBUG,
+                     GUI    };
 
+private:
+  /* Amount of information to display during ailment updates */
   BattleOptions ailment_update_state;
+
+  /* Amount of information to display on the Battle HUD */
   BattleOptions battle_hud_state;
+
+  /* Output mode the Battle is operating in */
+  BattleMode battle_mode;
 
   /* Resolution of the screen currently being used */
   short resolution_x;
@@ -71,9 +79,14 @@ private:
   /* Sets all parameters to default */
   void setAllToDefault();
 
-  /* Battle Settings */
+  /* Assign a new ailment update state to BattleOptions */
   void setAilmentUpdateState(BattleOptions new_state);
+
+  /* Assign a new hud update state to BattleOptions */
   void setBattleHudState(BattleOptions new_state);
+
+  /* Assigns a new battle mode */
+  void setBattleMode(BattleMode new_state);
 
   /* Set the screen dimensions to be painted, based on the array index */
   void setScreenHeight(int index);
@@ -89,9 +102,14 @@ public:
   /* Gets the value of the given option */
   //int getOption(QString s); 
 
-  /* Battle Options */
+  /* Returns the current state of ailment updates */
   BattleOptions getAilmentUpdateState();
+
+  /* Returns the current state of battle hud display */
   BattleOptions getBattleHudState();
+
+  /* Returns the current state of Battle update mode */
+  BattleMode getBattleMode();
 
   /* Returns the screen dimensions to be painted */
   short getScreenHeight();

@@ -4,6 +4,9 @@
 * Inheritance: None
 * Description: Skill Buffer is a helper class for Battle which contains the stack
 *              of skills with users and targets.
+*
+* //TODO: - Adding Skills into the buffer should be done based on the speed of
+*           the user. [11-03-13]
 *******************************************************************************/
 #ifndef SKILLBUFFER_H
 #define SKILLBUFFER_H
@@ -23,9 +26,16 @@ private:
   /* Structure containing the data describing one element in the skill buffer */
   struct SkillUseAction
   {
+    /* The user of the SkillUseAction */
     Person* user;
+
+    /* The skill being used */
     Skill* skill_used;
+
+    /* Vector of targets the skill is aimed to hit */
     QVector<Person*> targets;
+
+    /* Validity of the SkillUseAction object (set on addition) */
     bool valid_skill_use;
   };
 

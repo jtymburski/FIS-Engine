@@ -3,18 +3,26 @@
 * Date Created: December 2nd, 2012
 * Inheritance: 
 * Description: Display information on the screen about battle events
-*
-*  TODO: CONSTRUCTORS TO BE FINISHED
 ******************************************************************************/
 #include "Game/Battle/BattleInfoBar.h"
 #include <QDebug>
 
 /*==============================================================================
- * CONSTANTS
+ * CONSTANTS - See header file for descriptions
  *============================================================================*/
-const ushort BattleInfoBar::kMAX_TIME = 10; /* maximum time to display a msg */
-const ushort BattleInfoBar::kMAX_CHAR = 75; /* # of characters in a message */
-const ushort BattleInfoBar::kWAIT_TIME = 1; /* waiting time for transition */
+const ushort kDEFAULT_BAR_HEIGHT    = 100;
+const ushort kDEFAULT_BAR_WIDTH     = 1216;
+const float  kDEFAULT_BAR_OPACITY   = 0.5;
+const float  kDEFUALT_TEXT_OPACITY  = 1.0;
+const ushort kDEFAULT_TEXT_SPEED    = 0.5;
+const ushort kMARGIN_SIDES          = 25;
+const ushort kMARGIN_TOP            = 15;
+const ushort kMAX_BUFFER            = 300;
+const ushort kMAX_CHAR              = 80;
+const ushort kMAX_TIME              = 75;
+const ushort kMIN_TIME              =  5;
+const ushort kMIN_CHAR              =  5;
+const ushort kWAIT_TIME             =  5;
 
 /*==============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -25,7 +33,14 @@ const ushort BattleInfoBar::kWAIT_TIME = 1; /* waiting time for transition */
  *
  * Inputs: QWidget* - pointer to the parent object
  */
-BattleInfoBar::BattleInfoBar(QWidget* parent) : QWidget(parent) {}
+BattleInfoBar::BattleInfoBar(uint bar_height, uint bar_width, QWidget* parent)
+  : bar_height(bar_height),
+    bar_width(bar_width),
+    QWidget(parent)
+{
+
+
+}
 
 /*
  * Description: Destroys a BattleInfoBar object
@@ -37,25 +52,170 @@ BattleInfoBar::~BattleInfoBar() {}
  *============================================================================*/
 
 /*
- * Description: Sets the display time
+ * Description:
  *
- * Inputs: uint - new time to set the BattleInfoBar to
- * Output: none
+ * Inputs:
+ * Output:
  */
-void BattleInfoBar::setDisplayTime(uint new_time)
+void BattleInfoBar::loadDefaults()
 {
-  display_time = new_time;
+
 }
 
 /*
- * Description: Sets the info to be displayed
+ * Description:
  *
- * Inputs: QString - new info
+ * Inputs:
  * Output:
  */
-void BattleInfoBar::setInfo(QString new_info)
+void BattleInfoBar::clear()
 {
-  info = new_info;
+
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void BattleInfoBar::clearAll()
+{
+
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+uint BattleInfoBar::getBarHeight()
+{
+
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+uint BattleInfoBar::getBarWidth()
+{
+
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+BattleInfoBar::MessageDisplayMode BattleInfoBar::getMessageDisplayMode()
+{
+
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+BattleInfoBar::TextDisplayMode BattleInfoBar::getTextDisplayMode()
+{
+
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+uint BattleInfoBar::getTextSpeed()
+{
+
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+uint BattleInfoBar::getTimeElapsed()
+{
+
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+bool BattleInfoBar::setBarHeight(uint new_value)
+{
+
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+bool BattleInfoBar::setBarWidth(uint new_value)
+{
+
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void BattleInfoBar::setMessageDisplayMode(BattleInfoBar::MessageDisplayMode
+                                         new_message_display_mode)
+{
+
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void BattleInfoBar::setTextDisplayMode(BattleInfoBar::TextDisplayMode
+                                       new_text_display_mode)
+{
+
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+bool BattleInfoBar::setTextSpeed(uint new_value)
+{
+
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void BattleInfoBar::setTimeElapsed(uint new_value)
+{
+
 }
 
 /*==============================================================================
@@ -74,7 +234,7 @@ void BattleInfoBar::paintEvent(QPaintEvent*)
 }
 
 /*==============================================================================
- * SIGNALS
+ * PUBLIC SLOTS
  *============================================================================*/
 
 /*==============================================================================
@@ -82,15 +242,14 @@ void BattleInfoBar::paintEvent(QPaintEvent*)
  *============================================================================*/
 
 /*
- * Description: Adds an amount of time to the display_time (up to kMAX_TIME)
+ * Description:
  *
- * Inputs: uint - value of time to be added
- * Output: none
+ * Inputs:
+ * Output:
  */
-void BattleInfoBar::addTime(uint value)
+bool BattleInfoBar::addMessage(QString text, short time_visible)
 {
-  display_time + value < kMAX_TIME ? display_time += value :
-                                     display_time = kMAX_TIME;
+
 }
 
 /*
@@ -99,63 +258,117 @@ void BattleInfoBar::addTime(uint value)
  * Inputs:
  * Output:
  */
-uint BattleInfoBar::getDisplayTime()
+void BattleInfoBar::updateBattleInfoBar(int cycle_time)
 {
-  return display_time;
+
 }
 
 /*
- * Description: Returns the height of the Battle Info Bar
+ * Description:
  *
- * Inputs: none
- * Output: uint - the height of the bar
+ * Inputs:
+ * Output:
  */
-uint BattleInfoBar::getHeight()
+float BattleInfoBar::getBarOpacity()
 {
-  return bar_height;
+
 }
 
 /*
- * Description: Returns the width of the Battle Info Bar
+ * Description:
  *
- * Inputs: none
- * Output: uint - the width of the bar
+ * Inputs:
+ * Output:
  */
-uint BattleInfoBar::getWidth()
+Frame* BattleInfoBar::getBackground()
 {
-  return bar_width;
+
 }
 
 /*
- * Description: Sets the message on the Battle Info bar
+ * Description:
  *
- * Inputs: none
- * Output: uint - the width of the bar
+ * Inputs:
+ * Output:
  */
-void BattleInfoBar::setMessage(QString new_message, uint new_time)
+QFont BattleInfoBar::getTextFont()
 {
-  setInfo(new_message);
-  setDisplayTime(new_time);
+
 }
 
 /*
- * Description: Sets the height of the Battle Info Bar (5% of screen height)
+ * Description:
  *
- * Inputs: uint - new height of the screen
- * Output: none
+ * Inputs:
+ * Output:
  */
-void BattleInfoBar::setHeight(uint new_height)
+float BattleInfoBar::getTextOpacity()
 {
-  bar_height = new_height;
+
 }
 
 /*
- * Description: Sets the width of the Battle Info Bar (usually the screen)
+ * Description:
  *
- * Inputs: uint - new value for the width of the screen
- * Output: none
+ * Inputs:
+ * Output:
  */
-void BattleInfoBar::setWidth(uint new_width)
+QPen BattleInfoBar::getTextStyle()
 {
-  bar_width = new_width;
+
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+bool BattleInfoBar::setBarOpacity(float new_value)
+{
+
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void BattleInfoBar::setBackground(Frame* new_backround)
+{
+
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void BattleInfoBar::setTextFont(QFont new_font)
+{
+
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void BattleInfoBar::setTextOpacity(float new_value)
+{
+
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void BattleInfoBar::setTextStyle(QPen new_style)
+{
+
 }

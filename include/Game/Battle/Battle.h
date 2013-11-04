@@ -60,7 +60,7 @@
 * to that sequence to include frames or generate generic ones that everyone
 * has to share.
 *
-* //TODO: Battle destructor seg fault [10-28-13]
+* //TODO: Battle Weather effects [11-03-13]
 ******************************************************************************/
 #ifndef BATTLE_H
 #define BATTLE_H
@@ -72,6 +72,8 @@
 #include "Game/Battle/BattleInfoBar.h"
 #include "Game/Battle/BattleMenu.h"
 #include "Game/Battle/BattleStatusBar.h"
+#include "Game/Battle/SkillBuffer.h"
+#include "Game/Battle/ItemBuffer.h"
 #include "Game/Player/Party.h"
 #include "GrammarHelper.h"
 #include "MathHelper.h"
@@ -82,9 +84,6 @@ class Battle : public QWidget
   Q_OBJECT
 
 public:
-  /* Creates a default Battle object */
-  Battle();
-
   /* Creates a standard Battle object */
   Battle(Party* friends, Party* foes, Options config, QWidget* parent = 0);
 
@@ -122,20 +121,29 @@ private:
   /* The Battle Status Bar */
   BattleStatusBar* status_bar;
 
-  /* The Background of the Battle */
-  Frame* background;
-
-  /* The background mage of the Battle Status Bar */
-  Frame* status_bar_image;
-
   /* Enemy Status Bars */
   QVector<EnemyStatusBar*> enemy_status_bars;
+
+  /* The Item Buffer of the Battle */
+  ItemBuffer* item_buffer;
+
+  /* Skill Buffer of the Battle */
+  SkillBuffer* skill_buffer;
+
+  /* The Background of the Battle */
+  Frame* bg;
+
+  /* The background mage of the Battle Status Bar */
+  Frame* status_bar_bg;
 
   /* Enumerated battle options for ailment updates */
   Options::BattleOptions ailment_update_mode;
 
   /* Enumerated battle options for hud display mode */
   Options::BattleOptions hud_display_mode;
+
+  /* Enumerated battle mode for Battle output type */
+  Options::BattleMode battle_mode;
 
   /* Pointers to the battling parties */
   Party* friends;
@@ -206,6 +214,9 @@ private:
   /* Assigns a new value to the ailment update mode */
   void setAilmentUpdateMode(Options::BattleOptions new_value);
 
+  /* Assigns a new value to the battle output mode */
+  void setBattleMode(Options::BattleMode new_value);
+
   /* Assigns the friends party of the Battle */
   void setFriends(Party* new_friends);
 
@@ -242,6 +253,9 @@ protected:
 
   /* Returns the ailment update mode currently set */
   Options::BattleOptions getAilmentUpdateMode();
+
+  /* Returns the assigned Battle display mode */
+  Options::BattleMode getBattleMode();
 
   /* Returns the friends pointer of the Battle */
   Party* getFriends();

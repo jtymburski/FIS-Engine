@@ -3,8 +3,6 @@
 * Date Created: Sunday, October 28th, 2012
 * Inheritance: Parent class: Battle
 * Description: Larger box display the BattleStatus
-*
-* TODO: CONSTRUCTORS TO BE FINISHED
 ******************************************************************************/
 #ifndef BATTLESTATUSBAR_H
 #define BATTLESTATUSBAR_H
