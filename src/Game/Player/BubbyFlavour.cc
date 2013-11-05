@@ -10,6 +10,7 @@
 /*============================================================================
  * CONSTANTS
  *===========================================================================*/
+
 const ushort BubbyFlavour::kTIER_CAP = 3; /* Max # of Bubby Tiers */
 QVector<QString> BubbyFlavour::flavour_list; /* Vector of Flavour names */
 QVector<ushort> BubbyFlavour::kTIER_LEVELS;  /* Vector of Skill levels */

@@ -3,6 +3,8 @@
 * Date Created: Sunday, October 28th, 2012
 * Inheritance: Parent class: Battle
 * Description: Display information on the screen about battle events
+*
+* //TODO: Finish update functions [11-04-13]
 ******************************************************************************/
 #ifndef BATTLEINFOBAR_H
 #define BATTLEINFOBAR_H
@@ -16,6 +18,8 @@
 
 class BattleInfoBar : public QWidget
 {
+  Q_OBJECT
+
 public:
   /* Creates a BattleInfoBar object */
   BattleInfoBar(uint bar_height, uint bar_width, QWidget* parent = 0);
@@ -90,7 +94,7 @@ private:
   static const ushort kDEFAULT_BAR_HEIGHT; /* Default height of the bar */
   static const ushort kDEFAULT_BAR_WIDTH; /* The default width of the bar */
   static const float kDEFAULT_BAR_OPACITY; /* The default opacity for the bar */
-  static const float kDEFUALT_TEXT_OPACITY; /* The default text opacity */
+  static const float kDEFAULT_TEXT_OPACITY; /* The default text opacity */
   static const float kDEFAULT_TEXT_SPEED; /* The default text speed */
   static const ushort kMARGIN_SIDES; /* Spacing on the sides of the Info Bar */
   static const ushort kMARGIN_TOP; /* Spacing on the top of the info bar */
@@ -133,10 +137,10 @@ private:
   uint getTimeElapsed();
 
   /* Assigns the y-dimension of the bar */
-  bool setBarHeight(uint new_value);
+  void setBarHeight(uint new_value);
 
   /* Assigns the x-dimension of the bar */
-  bool setBarWidth(uint new_value);
+  void setBarWidth(uint new_value);
 
   /* Assigns the display mode for the message */
   void setMessageDisplayMode(MessageDisplayMode new_message_display_mode);
@@ -145,7 +149,7 @@ private:
   void setTextDisplayMode(TextDisplayMode new_text_display_mode);
 
   /* Assigns the speed of the text */
-  bool setTextSpeed(uint new_value);
+  void setTextSpeed(float new_value);
 
   /* Updates the time elapsed */
   void setTimeElapsed(uint new_value);
@@ -166,6 +170,7 @@ public slots:
  * SIGNALS
  *============================================================================*/
 signals:
+  void invalidMessage(QString reasons);
 
 /*==============================================================================
  * PUBLIC FUNCTIONS
@@ -175,7 +180,7 @@ public:
   bool addMessage(QString text, short time_visible);
 
   /* Update the cycle time of BattleInfoBar */
-  void updateBattleInfoBar(int cycle_time);
+  void update(int cycle_time);
 
   /* Returns the opacity of the bar */
   float getBarOpacity();
@@ -202,7 +207,7 @@ public:
   void setTextFont(QFont new_font);
 
   /* Assigns a new value to the text opacity */
-  void setTextOpacity(float new_value);
+  bool setTextOpacity(float new_value);
 
   /* Assigns a new font style to the info bar */
   void setTextStyle(QPen new_style);
