@@ -21,6 +21,7 @@ class MapThing;
 
 #include <QDebug>
 #include <QObject>
+#include <QStringList>
 
 #include "EnumDb.h"
 #include "XmlData.h"
@@ -65,6 +66,9 @@ private:
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 private:
+  /* Creates an empty conversation */
+  Conversation createEmptyConversation();
+
   /* Creates the initial event template, clearing it */
   Event createEventTemplate();
 
@@ -76,7 +80,16 @@ private:
   void executeStartBattleEvent(Event event, MapPerson* target);
   
   /* Execute the teleport event */
-  void executeTeleportEvent(Event event, MapPerson* target);
+  void executeTeleportPlayerEvent(Event event, MapPerson* target);
+
+  /* Returns the conversation at the given index */
+  Conversation* getConversation(Conversation* reference, 
+                                QStringList index_list);
+
+  /* Sets the conversation values of the pointed object, based on the XML
+   * file data */
+  void setConversationValues(Conversation* reference, XmlData data, 
+                             int index, int section_index);
 
 /*============================================================================
  * SIGNALS
@@ -98,13 +111,13 @@ public:
   Event createBlankEvent();
 
   /* Creates the conversation initiation event */
-  Event createConversationEvent(Conversation* new_conversation);
+  Event createConversationEvent(Conversation* new_conversation = 0);
 
   /* Creates a start battle event */
   Event createStartBattleEvent();
   
   /* Creates a teleport event */
-  Event createTeleportEvent(int tile_x, int tile_y, int section_id = -1);
+  Event createTeleportPlayerEvent(int tile_x, int tile_y, int section_id = -1);
 
   /* Deletes the given event. Just clears the relevant memory */
   Event deleteEvent(Event event);

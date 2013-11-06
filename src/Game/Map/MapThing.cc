@@ -254,7 +254,6 @@ void MapThing::tileMoveFinish()
   tile_previous = 0;
 }
 
-// TODO
 /* 
  * Description: The tile move initialization call. To be called after
  *              passability checks have passed and the thing can be moved to
@@ -270,7 +269,7 @@ bool MapThing::tileMoveStart(Tile* next_tile)
   {
     tile_previous = tile_main;
     tile_main = next_tile;
-    tile_main->setThing(this);//, classification);
+    tile_main->setThing(this);
     return true;
   }
   return false;
@@ -280,8 +279,17 @@ bool MapThing::tileMoveStart(Tile* next_tile)
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
-/* Adds thing information from the XML file. Will be virtually re-called
- * by all children for proper operation */ // TODO - comment and implementation
+/*
+ * Description: Adds thing information from the XML file. This will be
+ *              virtually called by children where the child will deal with
+ *              additional sets needed and then pass call to this. Works off
+ *              reading the XML file in a strict manner.
+ *
+ * Inputs: XmlData data - the read XML data
+ *         int file_index - the index in the xml data where this detail begins
+ *         int section_index - the map section index of the thing
+ * Output: bool - status if successful
+ */
 bool MapThing::addThingInformation(XmlData data, int file_index, 
                                                  int section_index)
 {
@@ -290,14 +298,17 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
   bool success = true;
   
   /* Parse the identifier for setting the thing information */
+  /*---------------------- ANIMATION ------------------*/
   if(identifier == "animation" && elements.size() == 1)
   {
     success &= setAnimationSpeed(data.getDataInteger(&success));
   }
+  /*--------------------- DESCRIPTION -----------------*/
   else if(identifier == "description" && elements.size() == 1)
   {
     setDescription(data.getDataString(&success));
   }
+  /*--------------------- FRAMES -----------------*/
   else if(identifier == "frames" && elements.size() == 1)
   {
     Sprite* new_sprite = new Sprite(data.getDataString(&success));
@@ -307,37 +318,38 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
       success = false;
     }
   }
+  /*--------------------- DIALOG IMAGE -----------------*/
   else if(identifier == "image" && elements.size() == 1)
   {
     success &= setDialogImage(data.getDataString(&success));
   }
+  /*--------------------- EVENT -----------------*/
   else if(identifier == "event")
   {
     if(event_handler != 0)
+    {
       interact_event = event_handler->
               updateEvent(interact_event, data, file_index + 2, section_index);
+    }
     else
       success = false;
   }
+  /*--------------------- NAME -----------------*/
   else if(identifier == "name" && elements.size() == 1)
   {
     setName(data.getDataString(&success));
   }
+  /*--------------------- OPACITY -----------------*/
   else if(identifier == "opacity" && elements.size() == 1)
   {
     setOpacity(data.getDataFloat(&success));
   }
+  /*--------------------- SPEED -----------------*/
   else if(identifier == "speed" && elements.size() == 1)
   {
     success &= setSpeed(data.getDataInteger(&success));
   }
-  else if(identifier == "startpoint")
-  {
-    // TODO (Higher up?!)
-  }
-  
-  qDebug() << "Status: " << success << " " << getID() << " " 
-                         << " " << identifier << " " << this;
+ 
   return success;
 }
   

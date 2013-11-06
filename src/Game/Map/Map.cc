@@ -259,8 +259,34 @@ bool Map::addThingData(XmlData data, int section_index)
   
   /* Proceed to update the thing information from the XML data */
   if(modified_thing != 0)
+  {
+    /* Handle the startpoint case if it's the identifying element */
+    if(data.getElement(kFILE_CLASSIFIER + 1) == "startpoint")
+    {
+      QStringList points = data.getDataString().split(",");
+      if(points.size() == 2) /* There needs to be an x and y point */
+      {
+        int x = points[0].toInt();
+        int y = points[1].toInt();
+
+        /* Check if the tile data is relevant */
+        if(geography.size() > section_index && 
+           geography[section_index].size() > x && 
+           geography[section_index][x].size() > y)
+        {
+          return modified_thing->setStartingTile(section_index, 
+                                          geography[section_index][x][y], true);
+        }
+      }      
+      
+      return false;
+    }
+   
+    /* Otherwise, add the thing information (virtual function) */
     return modified_thing->addThingInformation(data, kFILE_CLASSIFIER, 
                                                      section_index);
+  }
+
   return false;
 }
 
@@ -960,15 +986,15 @@ bool Map::loadMap(QString file)
     } while(!done && success);
 
     /* Add teleport to door - temporary (TODO) */
-    if(event_handler != 0)
-    {
-      geography[1][3][9]->setEnterEvent(
-            event_handler->createTeleportEvent(12, 9, 0));
-      geography[0][1][1]->setExitEvent(
-            event_handler->createStartBattleEvent());
-      geography[0][12][8]->setEnterEvent(
-            event_handler->createTeleportEvent(3, 8, 1));
-    }
+    //if(event_handler != 0)
+    //{
+    //  geography[1][3][9]->setEnterEvent(
+    //        event_handler->createTeleportEvent(12, 9, 0));
+    //  geography[0][1][1]->setExitEvent(
+    //        event_handler->createStartBattleEvent());
+    //  geography[0][12][8]->setEnterEvent(
+    //        event_handler->createTeleportEvent(3, 8, 1));
+    //}
 
     /* Add the player information */
 /*    Sprite* up_sprite = new Sprite("sprites/Map/Map_Things/genericbear4_AA_D",

@@ -211,7 +211,30 @@ bool MapInteractiveObject::shiftPrevious()
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
+ 
+/* Adds IO information from the XML file. Will be virtually re-called
+ * by all children for proper operation */ // TODO - comment
+bool MapInteractiveObject::addThingInformation(XmlData data, int file_index, 
+                                               int section_index)
+{
+  QList<QString> elements = data.getTailElements(file_index + 1);
+  QString identifier = data.getElement(file_index + 1);
+  bool success = true;
   
+  /* Parse the identifier for setting the IO information */
+  if(identifier == "inactive" && elements.size() == 1)
+  {
+    // TODO
+  }
+  else if(identifier == "states")
+  {
+    // TODO
+  }
+ 
+  return (success && 
+          MapThing::addThingInformation(data, file_index, section_index));
+}
+
 /* Returns the class descriptor, useful for casting */
 QString MapInteractiveObject::classDescriptor()
 {
