@@ -52,11 +52,23 @@ private:
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 private:
+  /* Appends an empty node to the tail of the sequence list */
+  void appendEmptyNode();
+
   /* Appends the node to the tail of the sequence list */
   void appendNode(StateNode* node);
 
+  /* Deletes all memory stored within the given node */
+  bool clearNode(int id);
+
   /* Returns the head state */
   StateNode* getHeadNode();
+
+  /* Returns the node based on the id, NULL if doeesn't exist */
+  StateNode* getNode(int id);
+
+  /* Returns the length of the node sequence */
+  int getNodeLength();
 
   /* Returns the tail state */
   StateNode* getTailNode();
@@ -108,8 +120,8 @@ public:
   bool setStartingTile(int section_id, Tile* new_tile, bool no_events = false);
   
   /* Sets the states, to be painted and used */
-  bool setState(MapState* state, bool passable = false);
-  bool setState(Sprite* transition, bool passable = false);
+  bool setState(MapState* state, bool passable = false, int id = -1);
+  bool setState(Sprite* transition, bool passable = false, int id = -1);
 
   /* Updates the thing, based on the tick */
   virtual void updateThing(float cycle_time, Tile* next_tile);

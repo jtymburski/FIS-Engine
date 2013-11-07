@@ -54,7 +54,23 @@ MapInteractiveObject::~MapInteractiveObject()
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
-  
+   
+/* Appends an empty node to the tail of the sequence list */
+void MapInteractiveObject::appendEmptyNode()
+{
+  StateNode* node = new StateNode;
+
+  /* Set the state parameters */
+  node->state = 0;
+  node->transition = 0;
+  node->passable = false;
+  node->previous = 0;
+  node->next = 0;
+
+  /* Assign the node to the tail of the sequence */
+  appendNode(node);
+}
+
 /* Appends the node to the tail of the sequence list */
 void MapInteractiveObject::appendNode(StateNode* node)
 {
@@ -72,11 +88,70 @@ void MapInteractiveObject::appendNode(StateNode* node)
   else
     tail_node->next = node;
 }
+  
+/* Deletes all memory stored within the given node */
+bool MapInteractiveObject::clearNode(int id)
+{
+  StateNode* node_to_clear = getNode(id);
+
+  /* Check if the node is valid */
+  if(node_to_clear != 0)
+  {
+    /* Delete state pointer, if relevant */
+    if(node_to_clear->state != 0)
+      delete node_to_clear->state;
+    node_to_clear->state = 0;
+
+    /* Delete transition pointer, if relevant */
+    if(node_to_clear->transition != 0)
+      delete node_to_clear->transition;
+    node_to_clear->transition = 0;
+
+    return true;
+  }
+
+  return false;
+}
 
 /* Returns the head state */
 StateNode* MapInteractiveObject::getHeadNode()
 {
   return node_head;
+}
+
+/* Returns the node based on the id, NULL if doeesn't exist */
+StateNode* MapInteractiveObject::getNode(int id)
+{
+  StateNode* selected = 0;
+
+  if(id >= 0 && id < getNodeLength())
+  {
+    selected = node_head;
+
+    while(id > 0)
+    {
+      selected = selected->next;
+      id--;
+    }
+  }
+
+  return selected;
+}
+
+/* Returns the length of the node sequence */
+int MapInteractiveObject::getNodeLength()
+{
+  StateNode* parser = node_head;
+  int length = 0;
+
+  /* Determine the length of the node sequence by parsing through it */
+  while(parser != 0)
+  {
+    length++;
+    parser = parser->next;
+  }
+
+  return length;
 }
 
 /* Returns the tail state */
@@ -220,15 +295,57 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
   QList<QString> elements = data.getTailElements(file_index + 1);
   QString identifier = data.getElement(file_index + 1);
   bool success = true;
-  
+  qDebug() << elements;
   /* Parse the identifier for setting the IO information */
   if(identifier == "inactive" && elements.size() == 1)
   {
-    // TODO
+    setInactiveTime(data.getDataInteger());
   }
   else if(identifier == "states")
   {
-    // TODO
+    int index = data.getKeyValue(file_index + 2).toInt();
+    int length = getNodeLength();
+
+    /* Only proceed if the index is legitimate */
+    if((elements[1] == "state" || elements[1] == "transition") && index >= 0)
+    {
+      /* Fill up the node length to suffice for the given index */
+      while(length <= index)
+      {
+        appendEmptyNode();
+        length++;
+      }
+
+      /* Proceed to determine if it was changed */
+      StateNode* modified_node = getNode(index);
+      if(modified_node != 0)
+      {
+        if((elements[1] == "state" && modified_node->transition != 0) || 
+           (elements[1] == "transition" && modified_node->state != 0))
+          clearNode(index);
+
+        /* Move forward with updating the given state/transiton sequence */
+        if(elements[1] == "state" && modified_node != 0)
+        {
+          // TODO
+        }
+        else if(elements[1] == "transition" && modified_node != 0)
+        {
+          // TODO
+        }
+      }
+
+      // TODO
+    }
+
+    //qDebug() << "STATES";
+
+    //qDebug() << data.getKeyValue(file_index + 1);
+    //qDebug() << data.getKeyValue(file_index + 2);
+
+    //qDebug() << "Length: " << getNodeLength();
+    //appendEmptyNode();
+    qDebug() << "Length: " << getNodeLength();
   }
  
   return (success && 
@@ -341,7 +458,7 @@ bool MapInteractiveObject::setStartingTile(int section_id, Tile* new_tile,
   return false;
 }
 
-bool MapInteractiveObject::setState(MapState* state, bool passable)
+bool MapInteractiveObject::setState(MapState* state, bool passable, int id)
 {
   if(state != 0 && state->getSprite() != 0)
   {
@@ -363,7 +480,7 @@ bool MapInteractiveObject::setState(MapState* state, bool passable)
   return false;
 }
 
-bool MapInteractiveObject::setState(Sprite* transition, bool passable)
+bool MapInteractiveObject::setState(Sprite* transition, bool passable, int id)
 {
   if(transition != 0)
   {
