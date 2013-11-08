@@ -42,6 +42,24 @@ MapState::~MapState()
 }
 
 /*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+
+/* Returns the interaction, based on the string. Returns NOINTERACTION if
+ * nothing found */
+MapState::InteractionState MapState::getInteraction(QString interaction)
+{
+  if(interaction.toLower() == "use")
+    return USE;
+  else if(interaction.toLower() == "walkoff")
+    return WALKOFF;
+  else if(interaction.toLower() == "walkon")
+    return WALKON;
+  else
+    return NOINTERACTION;
+}
+
+/*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
@@ -169,9 +187,23 @@ bool MapState::setExitEvent(Event exit_event)
 }
   
 /* Sets how this state gets interacted with */
-void MapState::setInteraction(InteractionState interaction)
+bool MapState::setInteraction(InteractionState interaction)
 {
   this->interaction = interaction;
+  return true;
+}
+
+/* Sets how this state is interacted with from string */
+bool MapState::setInteraction(QString interaction)
+{
+  InteractionState new_interaction = getInteraction(interaction);
+  if(!interaction.isEmpty())
+  {
+    this->interaction = new_interaction;
+    return true;
+  }
+
+  return false;
 }
 
 /* Sets the opacity of the painted state (0 - 1.0) */

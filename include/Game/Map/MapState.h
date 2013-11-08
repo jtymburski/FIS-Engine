@@ -45,7 +45,15 @@ private:
 
   /* -------------------------- Constants ------------------------- */
   const static float kMAX_OPACITY; /* The max opacity allowable (0-1.0) */
-  
+ 
+/*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+private:
+  /* Returns the interaction, based on the string. Returns NOINTERACTION if
+   * nothing found */
+  InteractionState getInteraction(QString interaction); 
+
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
@@ -76,7 +84,8 @@ public:
   bool setExitEvent(Event exit_event);
 
   /* Sets how this state gets interacted with */
-  void setInteraction(InteractionState interaction);
+  bool setInteraction(InteractionState interaction);
+  bool setInteraction(QString interaction);
 
   /* Sets the opacity of the painted state (0 - 1.0) */
   void setOpacity(float opacity);

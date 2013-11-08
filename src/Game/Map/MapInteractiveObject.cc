@@ -289,13 +289,14 @@ bool MapInteractiveObject::shiftPrevious()
  
 /* Adds IO information from the XML file. Will be virtually re-called
  * by all children for proper operation */ // TODO - comment
+// TODO: Opacity in state, all events in state
 bool MapInteractiveObject::addThingInformation(XmlData data, int file_index, 
                                                int section_index)
 {
   QList<QString> elements = data.getTailElements(file_index + 1);
   QString identifier = data.getElement(file_index + 1);
   bool success = true;
-  qDebug() << elements;
+
   /* Parse the identifier for setting the IO information */
   if(identifier == "inactive" && elements.size() == 1)
   {
@@ -327,25 +328,66 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
         /* Move forward with updating the given state/transiton sequence */
         if(elements[1] == "state" && modified_node != 0)
         {
-          // TODO
+          /* Make the state if it doesn't exist */
+          if(modified_node->state == 0)
+            modified_node->state = new MapState(0, event_handler);
+
+          /* If frames, parse the string for path sprites */
+          if(elements[2] == "frames")
+          {
+            Sprite* animation = new Sprite(data.getDataString());
+            if(modified_node->state->setSprite(animation))
+            {
+              /* Update the current thing frames if changed */
+              if(node_current == modified_node)
+                setParentFrames();
+            }
+            else
+            {
+              delete animation;
+              success = false;
+            }
+          }
+          /* Update the interaction parser for the given thing */
+          else if(elements[2] == "interaction")
+          {
+            success &= modified_node->state->setInteraction(
+                                                  data.getDataString(&success));
+          }
         }
         else if(elements[1] == "transition" && modified_node != 0)
         {
-          // TODO
+          /* If transition frames, parse the given sprite data */
+          if(elements[2] == "frames")
+          {
+            Sprite* animation = new Sprite(data.getDataString());
+            if(animation->getSize() > 0)
+            {
+              if(modified_node->transition != 0)
+                delete modified_node->transition;
+              modified_node->transition = animation;
+
+              /* Update the current thing frames, if changed */
+              if(node_current == modified_node)
+                setParentFrames();
+            }
+            else
+            {
+              delete animation;
+              success = false;
+            }
+          }
+        }
+
+        /* If passability setting set, execute */
+        if(elements[2] == "passable")
+        {
+          bool passable = data.getDataBool(&success);
+          if(success)
+            modified_node->passable = passable;
         }
       }
-
-      // TODO
     }
-
-    //qDebug() << "STATES";
-
-    //qDebug() << data.getKeyValue(file_index + 1);
-    //qDebug() << data.getKeyValue(file_index + 2);
-
-    //qDebug() << "Length: " << getNodeLength();
-    //appendEmptyNode();
-    qDebug() << "Length: " << getNodeLength();
   }
  
   return (success && 
