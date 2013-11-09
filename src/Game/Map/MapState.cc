@@ -8,7 +8,7 @@
 #include "Game/Map/MapState.h"
 
 /* Constant Implementation - see header file for descriptions */
-const float MapState::kMAX_OPACITY = 1.0;
+//const float MapState::kMAX_OPACITY = 1.0;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -20,11 +20,9 @@ MapState::MapState()
   event_handler = 0;
   setEventHandler(0);
   interaction = NOINTERACTION;
-  opacity = kMAX_OPACITY;
 }
 
-MapState::MapState(Sprite* animation, EventHandler* event_handler, 
-                   float opacity)
+MapState::MapState(Sprite* animation, EventHandler* event_handler)
 {
   this->animation = 0;
   this->event_handler = 0;
@@ -33,7 +31,6 @@ MapState::MapState(Sprite* animation, EventHandler* event_handler,
   /* Set the relevant data */
   setSprite(animation);
   setEventHandler(event_handler);
-  setOpacity(opacity);
 }
 
 MapState::~MapState()
@@ -92,17 +89,23 @@ bool MapState::clearEvents()
   
   return false;
 }
+
+/* Returns the enter  event */
+Event MapState::getEnterEvent()
+{
+  return enter_event;
+}
+  
+/* Returns the exit event */  
+Event MapState::getExitEvent()
+{
+  return exit_event;
+}
   
 /* Returns what interaction would initiate this */
 MapState::InteractionState MapState::getInteraction()
 {
   return interaction;
-}
-
-/* Returns the painted opacity of the state */
-float MapState::getOpacity()
-{
-  return opacity;
 }
   
 /* Returns the sprite stored in the state for control/usage */
@@ -111,6 +114,18 @@ Sprite* MapState::getSprite()
   return animation;
 }
 
+/* Returns the use event */
+Event MapState::getUseEvent()
+{
+  return use_event;
+}
+
+/* Returns the walkover event */
+Event MapState::getWalkoverEvent()
+{
+  return walkover_event;
+}
+  
 bool MapState::initializeGl()
 {
   bool status = true;
@@ -204,17 +219,6 @@ bool MapState::setInteraction(QString interaction)
   }
 
   return false;
-}
-
-/* Sets the opacity of the painted state (0 - 1.0) */
-void MapState::setOpacity(float opacity)
-{
-  if(opacity < 0)
-    this->opacity = 0.0;
-  else if(opacity > kMAX_OPACITY)
-    this->opacity = kMAX_OPACITY;
-  else
-    this->opacity = opacity;
 }
   
 bool MapState::setSprite(Sprite* animation)

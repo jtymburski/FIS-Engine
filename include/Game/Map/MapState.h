@@ -16,8 +16,7 @@ class MapState
 public:
   /* Constructor functions */
   MapState();
-  MapState(Sprite* animation, EventHandler* event_handler = 0,
-           float opacity = kMAX_OPACITY);
+  MapState(Sprite* animation, EventHandler* event_handler = 0);
 
   /* Destructor function */
   ~MapState();
@@ -31,7 +30,6 @@ public:
 private:
   /* The information that defines the animation image data for the sprite */
   Sprite* animation;
-  float opacity;
 
   /* Stores the interaction state for changing state */
   InteractionState interaction;
@@ -44,7 +42,7 @@ private:
   Event walkover_event;
 
   /* -------------------------- Constants ------------------------- */
-  const static float kMAX_OPACITY; /* The max opacity allowable (0-1.0) */
+  //const static float kMAX_OPACITY; /* The max opacity allowable (0-1.0) */
  
 /*============================================================================
  * PRIVATE FUNCTIONS
@@ -62,14 +60,19 @@ public:
   void clear();
   bool clearEvents();
 
+  /* Returns the enter and exit events */
+  Event getEnterEvent();
+  Event getExitEvent();
+  
   /* Returns what interaction would initiate this */
   InteractionState getInteraction();
-
-  /* Returns the painted opacity of the state */
-  float getOpacity();
   
   /* Returns the sprite stored in the state for control/usage */
   Sprite* getSprite();
+  
+  /* Returns the use and walkover events */
+  Event getUseEvent();
+  Event getWalkoverEvent();
   
   /* Initializes GL in all the frames stored within this state */
   bool initializeGl();
@@ -86,9 +89,6 @@ public:
   /* Sets how this state gets interacted with */
   bool setInteraction(InteractionState interaction);
   bool setInteraction(QString interaction);
-
-  /* Sets the opacity of the painted state (0 - 1.0) */
-  void setOpacity(float opacity);
   
   /* Sets the sprite internally to the state */
   bool setSprite(Sprite* animation);
@@ -113,6 +113,7 @@ struct StateNode
 {
   MapState* state;
   Sprite* transition;
+  float opacity;
   bool passable;
 
   StateNode* previous;

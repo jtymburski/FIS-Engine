@@ -1,16 +1,20 @@
-/******************************************************************************
-* Class Name: MapInteractiveObject
-* Date Created: Dec 2 2012
-* Inheritance: MapThing
-* Description: This is the object is a specialization of the stock map thing
-*              that allows interaction from key presses by players in 
-*              nearby slots. Pressing the key will toggle the object and allow
-*              it to change states. These objects are unmovable and are of the
-*              typical interactive objects such as doors, chests, etc.
-******************************************************************************/
+/*******************************************************************************
+ * Class Name: MapInteractiveObject
+ * Date Created: Dec 2 2012
+ * Inheritance: MapThing
+ * Description: This is the object is a specialization of the stock map thing
+ *              that allows interaction from key presses by players in 
+ *              nearby slots. Pressing the key will toggle the object and allow
+ *              it to change states. These objects are unmovable and are of the
+ *              typical interactive objects such as doors, chests, etc.
+ *
+ * TODO:
+ * 1. Locked status of MIO??
+ ******************************************************************************/
 #include "Game/Map/MapInteractiveObject.h"
 
 /* Constant Implementation - see header file for descriptions */
+const float MapInteractiveObject::kMAX_OPACITY = 1.0;
 const short MapInteractiveObject::kRETURN_TIME_UNUSED = -1;
 
 /*============================================================================
@@ -63,6 +67,7 @@ void MapInteractiveObject::appendEmptyNode()
   /* Set the state parameters */
   node->state = 0;
   node->transition = 0;
+  node->opacity = kMAX_OPACITY;
   node->passable = false;
   node->previous = 0;
   node->next = 0;
@@ -154,6 +159,24 @@ int MapInteractiveObject::getNodeLength()
   return length;
 }
 
+/* Sets the opacity in the node, if not null */
+bool MapInteractiveObject::setOpacity(StateNode* node, float opacity)
+{
+  if(node != 0)
+  {
+    if(opacity < 0)
+      node->opacity = 0.0;
+    else if(opacity > kMAX_OPACITY)
+      node->opacity = kMAX_OPACITY;
+    else
+      node->opacity = opacity;
+    
+    return true;
+  }
+  
+  return false;
+}
+  
 /* Returns the tail state */
 StateNode* MapInteractiveObject::getTailNode()
 {
@@ -289,7 +312,6 @@ bool MapInteractiveObject::shiftPrevious()
  
 /* Adds IO information from the XML file. Will be virtually re-called
  * by all children for proper operation */ // TODO - comment
-// TODO: Opacity in state, all events in state
 bool MapInteractiveObject::addThingInformation(XmlData data, int file_index, 
                                                int section_index)
 {
@@ -332,7 +354,7 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
           if(modified_node->state == 0)
             modified_node->state = new MapState(0, event_handler);
 
-          /* If frames, parse the string for path sprites */
+          /*--------------------- FRAMES -----------------*/
           if(elements[2] == "frames")
           {
             Sprite* animation = new Sprite(data.getDataString());
@@ -348,13 +370,66 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
               success = false;
             }
           }
-          /* Update the interaction parser for the given thing */
+          /*--------------------- INTERACTION -----------------*/
           else if(elements[2] == "interaction")
           {
             success &= modified_node->state->setInteraction(
                                                   data.getDataString(&success));
           }
+          /*------------------ ENTER EVENT -----------------*/
+          else if(elements[2] == "enterevent")
+          {
+            if(event_handler != 0)
+            {
+              Event event = event_handler->updateEvent(
+                                 modified_node->state->getEnterEvent(), data, 
+                                 file_index + 4, section_index);
+              modified_node->state->setEnterEvent(event);
+            }
+            else
+              success = false;
+          }
+          /*------------------ EXIT EVENT -----------------*/
+          else if(elements[2] == "exitevent")
+          {
+            if(event_handler != 0)
+            {
+              Event event = event_handler->updateEvent(
+                                 modified_node->state->getExitEvent(), data, 
+                                 file_index + 4, section_index);
+              modified_node->state->setExitEvent(event);
+            }
+            else
+              success = false;
+          }
+          /*------------------ USE EVENT -----------------*/
+          else if(elements[2] == "useevent")
+          {
+            if(event_handler != 0)
+            {
+              Event event = event_handler->updateEvent(
+                                 modified_node->state->getUseEvent(), data, 
+                                 file_index + 4, section_index);
+              modified_node->state->setUseEvent(event);
+            }
+            else
+              success = false;
+          }
+          /*---------------- WALKOVER EVENT -----------------*/
+          else if(elements[2] == "walkoverevent")
+          {
+            if(event_handler != 0)
+            {
+              Event event = event_handler->updateEvent(
+                                 modified_node->state->getWalkoverEvent(), data, 
+                                 file_index + 4, section_index);
+              modified_node->state->setWalkoverEvent(event);
+            }
+            else
+              success = false;
+          }
         }
+        /*--------------------- TRANSITION FRAMES -----------------*/
         else if(elements[1] == "transition" && modified_node != 0)
         {
           /* If transition frames, parse the given sprite data */
@@ -379,17 +454,24 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
           }
         }
 
-        /* If passability setting set, execute */
+        /*--------------------- PASSABILITY -----------------*/
         if(elements[2] == "passable")
         {
           bool passable = data.getDataBool(&success);
           if(success)
             modified_node->passable = passable;
         }
+        /*--------------------- OPACITY -----------------*/
+        else if(elements[2] == "opacity")
+        {
+          float opacity = data.getDataFloat(&success);
+          if(success)
+            success &= setOpacity(modified_node, opacity);
+        }
       }
     }
   }
- 
+
   return (success && 
           MapThing::addThingInformation(data, file_index, section_index));
 }
@@ -420,6 +502,14 @@ int MapInteractiveObject::getInactiveTime()
   return time_return;
 }
 
+/* Returns the opacity of the painted thing. */
+float MapInteractiveObject::getOpacity()
+{
+  if(node_current != 0)
+    return node_current->opacity;
+  return kMAX_OPACITY;
+}
+  
 bool MapInteractiveObject::initializeGl()
 {
   StateNode* node = node_head;
@@ -500,7 +590,8 @@ bool MapInteractiveObject::setStartingTile(int section_id, Tile* new_tile,
   return false;
 }
 
-bool MapInteractiveObject::setState(MapState* state, bool passable, int id)
+bool MapInteractiveObject::setState(MapState* state, bool passable, 
+                                                     float opacity)
 {
   if(state != 0 && state->getSprite() != 0)
   {
@@ -509,6 +600,7 @@ bool MapInteractiveObject::setState(MapState* state, bool passable, int id)
     /* Set the state parameters */
     node->state = state;
     node->transition = 0;
+    node->opacity = opacity;
     node->passable = passable;
     node->previous = 0;
     node->next = 0;
@@ -522,7 +614,8 @@ bool MapInteractiveObject::setState(MapState* state, bool passable, int id)
   return false;
 }
 
-bool MapInteractiveObject::setState(Sprite* transition, bool passable, int id)
+bool MapInteractiveObject::setState(Sprite* transition, bool passable, 
+                                                        float opacity)
 {
   if(transition != 0)
   {
@@ -531,6 +624,7 @@ bool MapInteractiveObject::setState(Sprite* transition, bool passable, int id)
     /* Set the state parameters */
     node->state = 0;
     node->transition = transition;
+    node->opacity = opacity;
     node->passable = passable;
     node->previous = 0;
     node->next = 0;

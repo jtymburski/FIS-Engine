@@ -1,13 +1,13 @@
-/******************************************************************************
-* Class Name: MapInteractiveObject
-* Date Created: Oct 28 2012
-* Inheritance: MapThing
-* Description: This is the object is a specialization of the stock map thing
-*              that allows interaction from key presses by players in 
-*              nearby slots. Pressing the key will toggle the object and allow
-*              it to change states. These objects are unmovable and are of the
-*              typical interactive objects such as doors, chests, etc.
-******************************************************************************/
+/*******************************************************************************
+ * Class Name: MapInteractiveObject
+ * Date Created: Oct 28 2012
+ * Inheritance: MapThing
+ * Description: This is the object is a specialization of the stock map thing
+ *              that allows interaction from key presses by players in 
+ *              nearby slots. Pressing the key will toggle the object and allow
+ *              it to change states. These objects are unmovable and are of the
+ *              typical interactive objects such as doors, chests, etc.
+ ******************************************************************************/
 #ifndef MAPINTERACTIVEOBJECT_H
 #define MAPINTERACTIVEOBJECT_H
 
@@ -46,6 +46,7 @@ private:
   int time_return;
 
   /* -------------------------- Constants ------------------------- */
+  const static float kMAX_OPACITY; /* The max opacity allowable (0 - 1.0) */
   const static short kRETURN_TIME_UNUSED; /* The unused time inidicator */
 
 /*============================================================================
@@ -70,6 +71,9 @@ private:
   /* Returns the length of the node sequence */
   int getNodeLength();
 
+  /* Sets the opacity in the node, if not null */
+  bool setOpacity(StateNode* node, float opacity);
+  
   /* Returns the tail state */
   StateNode* getTailNode();
 
@@ -101,6 +105,9 @@ public:
   /* Returns the inactive time before returning down the state path */
   int getInactiveTime();
 
+  /* Returns the opacity of the painted thing. */
+  float getOpacity();
+  
   /* Initializes the GL context with all the state frames */
   bool initializeGl();
 
@@ -120,8 +127,10 @@ public:
   bool setStartingTile(int section_id, Tile* new_tile, bool no_events = false);
   
   /* Sets the states, to be painted and used */
-  bool setState(MapState* state, bool passable = false, int id = -1);
-  bool setState(Sprite* transition, bool passable = false, int id = -1);
+  bool setState(MapState* state, bool passable = false, 
+                                 float opacity = kMAX_OPACITY);
+  bool setState(Sprite* transition, bool passable = false, 
+                                    float opacity = kMAX_OPACITY);
 
   /* Updates the thing, based on the tick */
   virtual void updateThing(float cycle_time, Tile* next_tile);
