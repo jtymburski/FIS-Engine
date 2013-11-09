@@ -88,11 +88,12 @@ Ailment::Ailment()
  * Inputs: Person* victim - pointer to the Victim (owner) of the Ailment
  *         QWidget* parent - parent the Ailment was created from
  */
-Ailment::Ailment(Person* vic, QWidget* parent)
+Ailment::Ailment(Person* victim, Person* inflictor, QWidget* parent)
   : QWidget(parent),
     ailment_type(EnumDb::NOAILMENT),
     chance(0.00),
-    victim(vic)
+    inflictor(inflictor),
+    victim(victim)
 
 {
   setFlag(Ailment::TOBEUPDATED, false);
@@ -113,12 +114,13 @@ Ailment::Ailment(Person* vic, QWidget* parent)
  *         double ch  - % value the ailment will be cured per turn, >= 1 = 100%
  *         QWidget* parent - parent the Ailment was created from
  */
-Ailment::Ailment(Person* vic, EnumDb::Infliction type, short max_turns,
-                 double chance, QWidget* parent) 
+Ailment::Ailment(Person* victim, EnumDb::Infliction type, Person* inflictor,
+                 short max_turns, double chance, QWidget* parent)
   : QWidget(parent),
     ailment_type(type),
     chance(chance),
-    victim(vic)
+    inflictor(inflictor),
+    victim(victim)
 {
   /* NOAILMENT cannot have a turn length or a chance */
   if (type == EnumDb::NOAILMENT)
@@ -150,12 +152,13 @@ Ailment::Ailment(Person* vic, EnumDb::Infliction type, short max_turns,
  *         double ch  - % value the ailment will be cured per turn, >= 1 = 100%
  *         QWidget* parent - parent the ailment was created from
  */
-Ailment::Ailment(Person* vic, QString name, short max_turns,
+Ailment::Ailment(Person* vic, QString name, Person* inflictor, short max_turns,
                  double chance, QWidget* parent)
   : QWidget(parent),
     ailment_type(getInfliction(name)),
     chance(chance),
-    victim(vic)
+    inflictor(inflictor),
+    victim(victim)
 {
   /* NOAILMENT cannot have a turn length or a chance */
   if (getType() == EnumDb::NOAILMENT)
@@ -519,6 +522,9 @@ void Ailment::apply()
  */
 bool Ailment::checkImmunity(Person* new_victim)
 {
+  if (new_victim == 0)
+    return false;
+
   /* Helper variables */
   QString race_name = new_victim->getRace()->getName();
   QString cat_name = new_victim->getCategory()->getName();
@@ -620,20 +626,45 @@ bool Ailment::updateTurns()
  * Inputs: Infliction - type of Infliction to be set.
  * Output: none
  */
-void Ailment::setType(EnumDb::Infliction t)
+ void Ailment::setType(EnumDb::Infliction t)
 {
   ailment_type = t;
 }
 
 /*
- * Description: Sets the victim of the status ailment.
+ * Description: Assigns the inflictor of the ailment
  *
- * Inputs: Infliction - type of Infliction to be set.
- * Output: none
+ * Inputs: Person* - pointer to the person who inflicted the ailment
+ * Output: bool - true if the inflictor is being set for the first time.
  */
-void Ailment::setVictim(Person* set_victim)
+bool Ailment::setInflictor(Person* new_inflictor)
 {
-  victim = set_victim;
+  if (!getFlag(Ailment::INFLICTOR_SET) && new_inflictor != 0)
+  {
+    inflictor = new_inflictor;
+    setFlag(Ailment::INFLICTOR_SET);
+    return true;
+  }
+
+  return false;
+}
+
+/*
+ * Description: Assigns the victim of the ailment.
+ *
+ * Inputs: Person* - pointer to the person the ailment is inflicting.
+ * Output: bool - true if the victim is being set for the first time.
+ */
+bool Ailment::setVictim(Person* set_victim)
+{
+  if (!getFlag(Ailment::VICTIM_SET))
+  {
+    victim = set_victim;
+    setFlag(Ailment::VICTIM_SET);
+    return true;
+  }
+
+  return false;
 }
 
 /*=============================================================================
@@ -911,25 +942,39 @@ void Ailment::setFlag(AilmentFlag flags, bool set_value)
  * Description: Assigns a PersonState flag or flags to (a) given value(s)
  *
  * Inputs: Perosn* new_victim - Potential new victim of the status ailment.
+ *         Person* new_inflictor -
  *         bool refresh_turns - Whether to reset the turn count
  * Output: Returns true if the new victim was set successfully.
  */
-bool Ailment::setNewVictim(Person* new_victim, bool refresh_turns)
+bool Ailment::setNewVictim(Person* new_victim, Person* new_inflictor,
+                           bool refresh_turns)
 {
-  /* The ailment cannot be assigned if the new victim is immune */
-  if (checkImmunity(new_victim))
-    return false;
+  /* Boolean to do checks for assigning new victim */
+  bool can_assign = true;
 
-  if (refresh_turns)
+  /* Assert the new victim exists */
+  if (new_victim == 0)
+    can_assign = false;
+
+  if (can_assign)
   {
-    max_turns_left += turns_occured;
-    turns_occured = 0;
-  }
+    /* The ailment cannot be assigned if the new victim is immune */
+    can_assign &= !checkImmunity(new_victim);
+    can_assign &= getFlag(Ailment::VICTIM_SET);
 
-  setFlag(Ailment::TOBEAPPLIED);
-  setVictim(new_victim);
-  update();
-  return true;
+    /* Reset the turns the ailment has occured */
+    if (refresh_turns)
+    {
+      max_turns_left += turns_occured;
+      turns_occured = 0;
+    }
+
+    setFlag(Ailment::TOBEAPPLIED);
+    setVictim(new_victim);
+    setInflictor(new_inflictor);
+    update();
+    return true;
+  }
 }
 
 /*============================================================================

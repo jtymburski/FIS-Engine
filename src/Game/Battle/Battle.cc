@@ -16,10 +16,48 @@
  * CONSTANTS
  *============================================================================*/
 
+/* ------------ Menu Constants --------------- */
 const ushort Battle::kDEFAULT_SCREEN_HEIGHT = 1216; /* The default height */
 const ushort Battle::kDEFAULT_SCREEN_WIDTH  =  708; /* The default width */
 const ushort Battle::kGENERAL_UPKEEP_DELAY  =  500; /* Time prior info bar msg */
 const ushort Battle::kBATTLE_MENU_DELAY     =  400; /* Personal menu delay */
+
+/* ------------ Battle Damage Calculation Modifiers ---------------
+ *
+ * Offensive Primary Element Modifier
+ * Defensive Primary Element Modifier
+ * Offensive Secondary Element Modifier
+ * Defensive Secondary Element Modifier
+ * Offensive Critical Hit Chance [Unbearability] Modifier
+ * Defensive Critical Hit Chance [Unbearability] Modifier
+ * Base Critical Hit Chance [Unbearability] Modifier
+ * Dodge Chance [Limbertude] Modifier
+ * Dodge Chance [Limbertude] Per Level Modifier
+ * Primary Elemental Advantage Modifier
+ * Primary Elemental Disadvantage Modifier
+ * Secondary Elemental Advantage Modifier
+ * Secondary Elemental Disadvantage Modifier
+ * Double Elemental Advantage Modifier
+ * Double Elemental Disadvantage Modifier
+ */
+
+const ushort Battle::kMINIMUM_DAMAGE          =     1;
+const ushort Battle::kMAXIMUM_DAMAGE          = 29999;
+const float Battle::kOFF_PRIM_ELM_MODIFIER    =  1.07;
+const float Battle::kDEF_PRIM_ELM_MODIFIER    =  1.04;
+const float Battle::kOFF_SECD_ELM_MODIFIER    =  1.05;
+const float Battle::kDEF_SECD_ELM_MODIFIER    =  1.03;
+const float Battle::kOFF_CRIT_MODIFIER        =  1.10;
+const float Battle::kDEF_CRIT_MODIFIER        =  0.90;
+const float Battle::kBASE_CRIT_MODIFIER       =  1.25;
+const float Battle::kDODGE_MODIFIER           =  1.10;
+const float Battle::kDODGE_PER_LEVEL_MODIFIER =  1.04;
+const float Battle::kPRIM_ELM_ADV_MODIFIER    =  1.15;
+const float Battle::kPRIM_ELM_DIS_MODIFIER    =  0.87;
+const float Battle::kSECD_ELM_ADV_MODIFIER    =  1.10;
+const float Battle::kSECD_ELM_DIS_MODIFIER    =  0.93;
+const float Battle::kDOUBLE_ELM_ADV_MODIFIER  =  1.30;
+const float Battle::kDOUBLE_ELM_DIS_MODIFIER  =  0.74;
 
 /*==============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -87,7 +125,7 @@ Battle::~Battle()
 
   if (skill_buffer != 0)
     delete skill_buffer;
-  skill_buffer;
+  skill_buffer = 0;
 
   if (!enemy_status_bars.isEmpty())
     qDeleteAll(enemy_status_bars);
@@ -436,6 +474,17 @@ void Battle::setTurnsElapsed(ushort new_value)
   turns_elapsed = new_value;
 }
 
+/*
+ * Description: Assigns a new enumerated value to the Battle turn state
+ *
+ * Inputs: TurnState - enumerated turn state of the current turn
+ * Output: none
+ */
+void Battle::setTurnState(TurnState new_turn_state)
+{
+  turn_state = new_turn_state;
+}
+
 /*==============================================================================
  * PROTECTED FUNCTIONS
  *============================================================================*/
@@ -499,6 +548,17 @@ Options::BattleMode Battle::getBattleMode()
 uint Battle::getTimeElapsed()
 {
   return time_elapsed;
+}
+
+/*
+ * Description: Returns the currently assigned enumerated Battle turn state
+ *
+ * Inputs: none
+ * Output: Battle::TurnState - enumerated turn state of current turn
+ */
+Battle::TurnState Battle::getTurnState()
+{
+  return turn_state;
 }
 
 /*

@@ -55,6 +55,9 @@ int rollD20();
 /* Generates a random D100 roll */
 int rollD100();
 
+/* Rolls an X-Sided die S times */
+int rollXS(int x_sides, int s_times);
+
 /* Seeds the random number generator */
 void seed();
 

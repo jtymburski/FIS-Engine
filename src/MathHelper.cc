@@ -176,6 +176,23 @@ int rollD100()
 }
 
 /*
+ * Description: Simulates the rolling of an x-sided die s-times.
+ *
+ * Inputs: int x_sides - number of sides to be rolled for.
+ *         int s_dies - number of times to roll the die.
+ * Output: int - the outcome of s_times rolls of an x_sides die.
+ */
+int rollXS(int x_sides, int s_times)
+{
+  int total = 0;
+
+  for (int i = 0; i < s_times; i++)
+    total += randInt(x_sides + 1);
+
+  return total;
+}
+
+/*
  * Description: Reseeds the random number generator with a new seed based
  *              on the current time.
  *

@@ -111,6 +111,19 @@ public:
     ACTIVE_OVER_FOES
   };
 
+  enum TurnState
+  {
+    GENERAL_UPKEEP,
+    UPKEEP,
+    SELECT_USER_ACTION,
+    SELECT_ENEMY_ACTION,
+    ORDER_ACTIONS,
+    PROCESS_ACTION,
+    CLEAN_UP,
+    BATTLE_LOSS,
+    BATTLE_VICTORY
+  };
+
 private:
   /* The Battle Info Bar */
   BattleInfoBar* info_bar;
@@ -165,14 +178,36 @@ private:
   /* Elapsed turns of hte battle */
   ushort turns_elapsed;
 
+  /* The turn state of the Battle */
+  TurnState turn_state;
+
   // Currently active weather condition
   // Weather* weather_condition
 
-  /* ------------ Constants --------------- */
+  /* ------------ Menu Constants --------------- */
   static const ushort kDEFAULT_SCREEN_HEIGHT;
   static const ushort kDEFAULT_SCREEN_WIDTH;
   static const ushort kGENERAL_UPKEEP_DELAY;
   static const ushort kBATTLE_MENU_DELAY;
+
+  /* ------------ Battle Modifiers --------------- */
+  static const ushort kMAXIMUM_DAMAGE;
+  static const ushort kMINIMUM_DAMAGE;
+  static const float kOFF_PRIM_ELM_MODIFIER;
+  static const float kDEF_PRIM_ELM_MODIFIER;
+  static const float kOFF_SECD_ELM_MODIFIER;
+  static const float kDEF_SECD_ELM_MODIFIER;
+  static const float kOFF_CRIT_MODIFIER;
+  static const float kDEF_CRIT_MODIFIER;
+  static const float kBASE_CRIT_MODIFIER;
+  static const float kDODGE_MODIFIER;
+  static const float kDODGE_PER_LEVEL_MODIFIER;
+  static const float kPRIM_ELM_ADV_MODIFIER;
+  static const float kPRIM_ELM_DIS_MODIFIER;
+  static const float kSECD_ELM_ADV_MODIFIER;
+  static const float kSECD_ELM_DIS_MODIFIER;
+  static const float kDOUBLE_ELM_ADV_MODIFIER;
+  static const float kDOUBLE_ELM_DIS_MODIFIER;
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -244,6 +279,9 @@ private:
   /* Assigns a new value to the turns elapsed */
   void setTurnsElapsed(ushort new_value);
 
+  /* Updates the turn state of the Battle */
+  void setTurnState(TurnState new_turn_state);
+
 /*=============================================================================
  * PROTECTED FUNCTIONS
  *============================================================================*/
@@ -275,7 +313,7 @@ protected:
   /* Returns the value of the target index of the currently selected index */
   uint getTargetingIndex();
 
-  /* Returns the currently assigned targeting mode */
+    /* Returns the currently assigned targeting mode */
   TargetingMode getTargetingMode();
 
   /* Returns the value of the turns elapsed */
@@ -283,6 +321,9 @@ protected:
 
   /* Returns the elapsed time of the Battle */
   uint getTimeElapsed();
+
+  /* Returns the enumerated turn state of the Battle */
+  Battle::TurnState getTurnState();
 
 /*=============================================================================
  * SIGNALS

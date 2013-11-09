@@ -46,15 +46,15 @@ public:
   Ailment();
 
   /* Minimal Constructor */
-  Ailment(Person* vic, QWidget* parent = 0);
+  Ailment(Person* victim, Person* inflictor = 0, QWidget* parent = 0);
 
   /* Constructor: Sets up ailment with type, turn and chance durations */
-  Ailment(Person* vic, EnumDb::Infliction type, short max_turns = 0,
-          double chance = 0, QWidget* parent = 0);
+  Ailment(Person* victim, EnumDb::Infliction type, Person* inflictor = 0,
+          short max_turns = 0, double chance = 0, QWidget* parent = 0);
 
   /* Constructor: Sets up an ailment with a QString instead of an enum */
-  Ailment(Person* vic, QString name, short max_turns = 0,
-          double chance = 0, QWidget* parent = 0);
+  Ailment(Person* victim, QString name, Person* inflictor = 0,
+          short max_turns = 0, double chance = 0, QWidget* parent = 0);
 
   /* Annihilates an AttributeSet object */
   ~Ailment();
@@ -62,16 +62,18 @@ public:
   /*------------------- Enumerated QFlags -----------------------*/
   enum AilmentFlag
   {
-    INFINITETIME = 1 << 0, /* Ailment does not alleviate by time? >kMAX_TURNS */
-    CURABLE      = 1 << 1, /* Ailment cannot be cured except by time? */
-    TOBECURED    = 1 << 1, /* The ailment is to be cured immediately */
-    TOBEUPDATED  = 1 << 2, /* Ailment set to be updated on new turn */
-    TOBEAPPLIED  = 1 << 3, /* Ailment effects set to be applied on new turn */
-    BUFF         = 1 << 4, /* Is this ailment a favorable ailment? */
-    ADVERSE      = 1 << 5, /* Is this ailment an adverse ailment? */
-    NEUTRAL      = 1 << 6, /* (!FAVORABLE && !ADVERSE) */
-    IMMUNITY     = 1 << 7, /* Is the inflicted person immune to this ailment? */
-    CUREONDEATH  = 1 << 8  /* Does the ailment persist death? */
+    INFINITETIME = 1 << 0,  /* Ailment does not alleviate by time? >kMAX_TURNS */
+    CURABLE      = 1 << 1,  /* Ailment cannot be cured except by time? */
+    TOBECURED    = 1 << 1,  /* The ailment is to be cured immediately */
+    TOBEUPDATED  = 1 << 2,  /* Ailment set to be updated on new turn */
+    TOBEAPPLIED  = 1 << 3,  /* Ailment effects set to be applied on new turn */
+    BUFF         = 1 << 4,  /* Is this ailment a favorable ailment? */
+    ADVERSE      = 1 << 5,  /* Is this ailment an adverse ailment? */
+    NEUTRAL      = 1 << 6,  /* (!FAVORABLE && !ADVERSE) */
+    IMMUNITY     = 1 << 7,  /* Is the inflicted person immune to this ailment? */
+    CUREONDEATH  = 1 << 8,  /* Does the ailment persist death? */
+    VICTIM_SET   = 1 << 9,  /* Has the victim of the ailment been set? */
+    INFLICTOR_SET = 1 << 10 /* Has the inflictor of the ailment been set? */
   };
   Q_DECLARE_FLAGS(AilmentFlags, AilmentFlag)
 
@@ -88,6 +90,9 @@ private:
   /* Durations of the status_ailment (>KMAX_TURNS = INFINITY) */
   short max_turns_left;
   short turns_occured;
+
+  /* The person who inflicted the ailment */
+  Person* inflictor;
 
   /* The victim (owner) of the ailment. */
   Person* victim;
@@ -143,8 +148,11 @@ private:
   /* Sets the Inflinction of the Status Ailment */
   void setType(EnumDb::Infliction t);
 
+  /* Assigns the inflictor of the ailment */
+  bool setInflictor(Person* set_inflictor);
+
   /* Assigns the victim of the object */
-  void setVictim(Person* set_victim);
+  bool setVictim(Person* set_victim);
 
 /*============================================================================
  * PUBLIC SLOTS
@@ -197,6 +205,9 @@ public:
   /* Evaluates an ailment flag or flags */
   bool getFlag(AilmentFlag flags);
 
+  /* Returns the Inflictor of the ailment */
+  Person* getInflictor();
+
   /* Gets a QString of the current ailment's enumerated value */
   QString getName();
 
@@ -216,7 +227,8 @@ public:
   void setFlag(AilmentFlag flags, bool set_value = true);
 
   /* Public function to assign a new victom for the status ailment */
-  bool setNewVictim(Person* new_victim, bool refresh3_turns = false);
+  bool setNewVictim(Person* new_victim, Person* new_inflictor = 0,
+                    bool refresh_turns = false);
 
 /*===========================================================================
  * PUBLIC STATIC FUNCTIONS
