@@ -70,6 +70,10 @@ private:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Executes the necessary image adjustments, as per the file data handlers */
+  bool execImageAdjustment(QString adjustment);
+  bool execImageAdjustments(QList<QString> adjustments);
+  
   /* Flips all the images in each frame */
   bool flipAll(bool horizontal = true, bool vertical = false);
 
@@ -96,7 +100,7 @@ public:
 
   /* Initializes GL in all the frames stored within this sprite */
   bool initializeGl();
-
+  
   /* Inserts the image into the sprite sequence at the given position */
   bool insert(QString image_path, int position, int rotate_angle = 0);
 
@@ -153,7 +157,7 @@ public:
 
   /* Asserts that the current pointer in the linked list is at the head */
   bool setAtFirst();
-
+  
   /* Shifts to the given position in the sequence */
   bool shift(int position);
 

@@ -44,6 +44,31 @@ MapNPC::~MapNPC()
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
+/*
+ * Description: Adds npc information from the XML file. This will be
+ *              virtually called by children where the child will deal with
+ *              additional sets needed and then pass call to this. Works off
+ *              reading the XML file in a strict manner. Passes call to parent
+ *              after it is complete.
+ *
+ * Inputs: XmlData data - the read XML data
+ *         int file_index - the index in the xml data where this detail begins
+ *         int section_index - the map section index of the npc
+ * Output: bool - status if successful
+ */
+bool MapNPC::addThingInformation(XmlData data, int file_index, 
+                                                  int section_index)
+{
+  QList<QString> elements = data.getTailElements(file_index + 1);
+  QString identifier = data.getElement(file_index + 1);
+  bool success = true;
+  
+  qDebug() << "MapNPC: " << elements;
+  
+  return (success && 
+          MapPerson::addThingInformation(data, file_index, section_index));
+}
+
 /* Returns the class descriptor, useful for casting */
 QString MapNPC::classDescriptor()
 {

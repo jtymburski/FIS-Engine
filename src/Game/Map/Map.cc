@@ -26,13 +26,13 @@
 
 /* Constant Implementation - see header file for descriptions */
 const int Map::kDOUBLE_DIGITS = 10;
-const int Map::kELEMENT_ANGLE = 1;
 const int Map::kELEMENT_DATA = 0;
 const short Map::kFILE_CLASSIFIER = 3;
 const short Map::kFILE_GAME_TYPE = 1;
 const short Map::kFILE_SECTION_ID = 2;
 const short Map::kFILE_TILE_COLUMN = 5;
 const short Map::kFILE_TILE_ROW = 4;
+const short Map::kPLAYER_ID = 0;
 const int Map::kTICK_DELAY = 10;
 const int Map::kTILE_HEIGHT = 64;
 const int Map::kTILE_WIDTH = 64;
@@ -101,7 +101,7 @@ Map::~Map()
 
 bool Map::addTileData(XmlData data, int section_index)
 {
-  int angle = 0;
+  QList<QString> adjustments;
   bool success = true;
 
   /* Get the element information */
@@ -111,16 +111,15 @@ bool Map::addTileData(XmlData data, int section_index)
   /* Split based on the element information if it's for a path */
   if(descriptor == "path")
   {
-    /* If there is rotational information available, use it */
-    if(element.size() > kELEMENT_ANGLE)
-      angle = Sprite::getAngle(element[kELEMENT_ANGLE]);
+    /* If there is adjustment information available, use it */
+    adjustments = element.mid(1);
 
     /* Get the actual set of paths and add them */
     QList< QList<QString> > path_stack = splitTilePath(data.getDataString());
     for(int y = 0; y < path_stack.size(); y++)
       for(int x = 0; x < path_stack[y].size(); x++)
         success &= addTileSprite(path_stack[y][x], x, y, 
-                                 angle, section_index, data);
+                                 adjustments, section_index, data);
 
     return success;
   }
@@ -164,13 +163,15 @@ bool Map::addTileData(XmlData data, int section_index)
 /* Adds a tile sprite, based on the path and some XMLData */
 // TODO: Add search existing sprites to see if it exists
 bool Map::addTileSprite(QString path, int x_diff, int y_diff, 
-                        int angle, int section_index, XmlData data)
+                        QList<QString> adjustments, int section_index, 
+                        XmlData data)
 {
   bool success = false;
 
   /* Run through this list, checking ranges and add the corresponding
    * tiles, only if the sprite data is legitimate */
-  Sprite* tile_frames = new Sprite(path, angle);
+  Sprite* tile_frames = new Sprite(path);
+  tile_frames->execImageAdjustments(adjustments);
   if(tile_frames->getSize() > 0)
   {
     /* Split up the coordinates for the tile sprite */
@@ -250,7 +251,31 @@ bool Map::addThingData(XmlData data, int section_index)
   }
   else if(identifier == "mapperson" || identifier == "mapnpc")
   {
-    qDebug() << "2: " << identifier;
+    /* Search for the existing map object */
+    while(modified_thing == 0 && index < persons.size())
+    {
+      if(persons[index]->getID() == id)
+        modified_thing = persons[index];
+      index++;
+    }
+
+    /* Create a new person if one does not exist */
+    if(modified_thing == 0)
+    {
+      if(identifier == "mapperson")
+        modified_thing = new MapPerson(kTILE_WIDTH, kTILE_HEIGHT);
+      else
+        modified_thing = new MapNPC(kTILE_WIDTH, kTILE_HEIGHT);
+      modified_thing->setEventHandler(event_handler);
+      modified_thing->setID(id);
+      
+      /* If the ID is the player ID, tie to the player */
+      if(id == kPLAYER_ID)
+        player = (MapPerson*)modified_thing;
+      
+      /* Append the new one */
+      persons.append((MapPerson*)modified_thing);
+    }
   }
   else if(identifier == "mapitem")
   {

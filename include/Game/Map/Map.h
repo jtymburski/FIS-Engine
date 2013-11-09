@@ -88,13 +88,13 @@ private:
   /*------------------- Constants -----------------------*/
   const static int kDOUBLE_DIGITS;    /* The point when integers are more than
                                       * a single digit */
-  const static int kELEMENT_ANGLE;    /* Element angle for sprite */
   const static int kELEMENT_DATA;     /* Element data type for sprite */
   const static short kFILE_CLASSIFIER;  /* The file tile classification text */
   const static short kFILE_GAME_TYPE;   /* The game type classifier */
   const static short kFILE_SECTION_ID;  /* The section identifier, for file */
   const static short kFILE_TILE_COLUMN; /* The tile depth in XML of column */
   const static short kFILE_TILE_ROW;    /* The tile depth in XML of row */
+  const static short kPLAYER_ID;      /* The player ID for computer control */
   const static int kTICK_DELAY;       /* Tick timer delay constant */
   const static int kTILE_HEIGHT;      /* The tile height, as constant (TEMP) */
   const static int kTILE_WIDTH;       /* The tile width, as constant (TEMP) */
@@ -108,7 +108,8 @@ private:
 
   /* Adds a tile sprite, based on the path and some XMLData */
   bool addTileSprite(QString path, int x_diff, int y_diff, 
-                     int angle, int section_index, XmlData data);
+                     QList<QString> adjustments, int section_index, 
+                     XmlData data);
 
   /* Adds thing data, as per data from the file */
   bool addThingData(XmlData data, int section_index);

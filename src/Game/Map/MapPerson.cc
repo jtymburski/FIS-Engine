@@ -285,6 +285,65 @@ void MapPerson::updateAnimation()
  *===========================================================================*/
 
 /*
+ * Description: Adds person information from the XML file. This will be
+ *              virtually called by children where the child will deal with
+ *              additional sets needed and then pass call to this. Works off
+ *              reading the XML file in a strict manner. Passes call to parent
+ *              after it is complete.
+ *
+ * Inputs: XmlData data - the read XML data
+ *         int file_index - the index in the xml data where this detail begins
+ *         int section_index - the map section index of the person
+ * Output: bool - status if successful
+ */
+bool MapPerson::addThingInformation(XmlData data, int file_index, 
+                                                  int section_index)
+{
+  QList<QString> elements = data.getTailElements(file_index + 1);
+  bool success = true;
+  
+  /* Parse the identifier for setting the person information */
+  if(elements.size() >= 3)
+  {
+    QStringList identifiers = elements[2].split("_");
+
+    /*--------------------- FRAMES -----------------*/
+    if(identifiers[0] == "frames")
+    {
+      Sprite* new_sprite = new Sprite(data.getDataString(&success));
+      new_sprite->execImageAdjustments(identifiers.mid(1));
+      
+      /* Create the surface identifier */
+      SurfaceClassifier surface = GROUND;
+      if(elements[0] == "ground")
+        surface = GROUND;
+      
+      /* Create the direction identifier */
+      EnumDb::Direction direction = EnumDb::DIRECTIONLESS;
+      if(elements[1] == "north")
+        direction = EnumDb::NORTH;
+      else if(elements[1] == "south")
+        direction = EnumDb::SOUTH;
+      else if(elements[1] == "east")
+        direction = EnumDb::EAST;
+      else if(elements[1] == "west")
+        direction = EnumDb::WEST;
+
+      /* Attempt to set the state */
+      if(!setState(surface, direction, new_sprite))
+      {
+        delete new_sprite;
+        success = false;
+      }
+    }
+  }
+  
+  /* Proceed to parent */
+  return (success && 
+          MapThing::addThingInformation(data, file_index, section_index));
+}
+
+/*
  * Description: This is the class descriptor. Primarily used for encapsulation
  *              to determine which class to cast it to for specific parameters.
  *

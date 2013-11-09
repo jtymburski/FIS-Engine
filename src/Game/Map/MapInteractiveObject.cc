@@ -350,14 +350,17 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
         /* Move forward with updating the given state/transiton sequence */
         if(elements[1] == "state" && modified_node != 0)
         {
+          QStringList identifiers = elements[2].split("_");
+          
           /* Make the state if it doesn't exist */
           if(modified_node->state == 0)
             modified_node->state = new MapState(0, event_handler);
 
           /*--------------------- FRAMES -----------------*/
-          if(elements[2] == "frames")
+          if(identifiers[0] == "frames")
           {
             Sprite* animation = new Sprite(data.getDataString());
+            animation->execImageAdjustments(identifiers.mid(1));
             if(modified_node->state->setSprite(animation))
             {
               /* Update the current thing frames if changed */
@@ -371,13 +374,13 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
             }
           }
           /*--------------------- INTERACTION -----------------*/
-          else if(elements[2] == "interaction")
+          else if(identifiers[0] == "interaction")
           {
             success &= modified_node->state->setInteraction(
                                                   data.getDataString(&success));
           }
           /*------------------ ENTER EVENT -----------------*/
-          else if(elements[2] == "enterevent")
+          else if(identifiers[0] == "enterevent")
           {
             if(event_handler != 0)
             {
@@ -390,7 +393,7 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
               success = false;
           }
           /*------------------ EXIT EVENT -----------------*/
-          else if(elements[2] == "exitevent")
+          else if(identifiers[0] == "exitevent")
           {
             if(event_handler != 0)
             {
@@ -403,7 +406,7 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
               success = false;
           }
           /*------------------ USE EVENT -----------------*/
-          else if(elements[2] == "useevent")
+          else if(identifiers[0] == "useevent")
           {
             if(event_handler != 0)
             {
@@ -416,7 +419,7 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
               success = false;
           }
           /*---------------- WALKOVER EVENT -----------------*/
-          else if(elements[2] == "walkoverevent")
+          else if(identifiers[0] == "walkoverevent")
           {
             if(event_handler != 0)
             {
@@ -432,10 +435,13 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
         /*--------------------- TRANSITION FRAMES -----------------*/
         else if(elements[1] == "transition" && modified_node != 0)
         {
+          QStringList identifiers = elements[2].split("_");
+          
           /* If transition frames, parse the given sprite data */
-          if(elements[2] == "frames")
+          if(identifiers[0] == "frames")
           {
             Sprite* animation = new Sprite(data.getDataString());
+            animation->execImageAdjustments(identifiers.mid(1));
             if(animation->getSize() > 0)
             {
               if(modified_node->transition != 0)

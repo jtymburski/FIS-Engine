@@ -1,4 +1,4 @@
-/******************************************************************************
+/*******************************************************************************
  * Class Name: Tile
  * Date Created: December 2, 2012
  * Inheritance: none
@@ -9,7 +9,7 @@
  *              its own tile data and ensuring that movement isn't entered 
  *              through the tile. For additional information, read the comments
  *              below for each function.
- *****************************************************************************/
+ ******************************************************************************/
 #include "Game/Map/Tile.h"
 
 /* Constant Implementation - see header file for descriptions */

@@ -294,7 +294,8 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
                                                  int section_index)
 {
   QList<QString> elements = data.getTailElements(file_index + 1);
-  QString identifier = data.getElement(file_index + 1);
+  QStringList identifiers = data.getElement(file_index + 1).split("_");
+  QString identifier = identifiers[0];
   bool success = true;
   
   /* Parse the identifier for setting the thing information */
@@ -312,6 +313,7 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
   else if(identifier == "frames" && elements.size() == 1)
   {
     Sprite* new_sprite = new Sprite(data.getDataString(&success));
+    new_sprite->execImageAdjustments(identifiers.mid(1));
     if(!setFrames(new_sprite))
     {
       delete new_sprite;

@@ -101,7 +101,60 @@ Sprite::~Sprite()
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
+
+/*
+ * Description: Executes an image adjustment based on string data that is stored
+ *              within the file. Usually tied to the path of the sprite to 
+ *              indicate any extra adjustments.
+ *
+ * Inputs: QString adjustment - the adjustment string (90, 180, 270, VF, HF)
+ *                            - 90, 180, 270: angle of rotation
+ *                            - VF, HF: horizontal or vertical flip
+ * Output: bool - status if successful
+ */
+bool Sprite::execImageAdjustment(QString adjustment)
+{
+  bool success = true;
   
+  /* Parse the adjustment and do the appropriate activity */
+  if(adjustment == "90" || adjustment == "180" || adjustment == "270")
+  {
+    success = rotateAll(getAngle(adjustment));
+  }
+  else if(adjustment.toLower() == "vf")
+  {
+    success = flipAll(false, true);
+  }
+  else if(adjustment.toLower() == "hf")
+  {
+    success = flipAll(true, false);
+  }
+  else
+  {
+    success = false;
+  }
+  
+  return success;
+}
+
+/*
+ * Description: Executes a set of image adjustments using a list of strings.
+ *              See execImageAdjustment() for more details
+ *
+ * Inputs: QList<QString> adjustments - a stack of all adjustments
+ * Output: bool - status if successful
+ */
+bool Sprite::execImageAdjustments(QList<QString> adjustments)
+{
+  bool success = true;
+  
+  /* Run through all the adjustments and execute them */
+  for(int i = 0; i < adjustments.size(); i++)
+    success &= execImageAdjustment(adjustments[i]);
+    
+  return success;
+}
+
 /* 
  * Description: Flips all the frames inside the sprite either along the 
  *              horizontal X axis or the vertical Y axis or both. 
@@ -760,11 +813,11 @@ int Sprite::getAngle(QString identifier)
 {
   identifier = identifier.toLower().trimmed();
 
-  if(identifier == "cw" || identifier == "clockwise")
+  if(identifier == "90" || identifier == "clockwise")
     return getAngle(CLOCKWISE);
-  else if(identifier == "ccw" || identifier == "counterclockwise")
+  else if(identifier == "270" || identifier == "counterclockwise")
     return getAngle(COUNTERCLOCKWISE);
-  else if(identifier == "f" || identifier == "flip")
+  else if(identifier == "180" || identifier == "half")
     return getAngle(HALFCIRCLE);
   return 0;
 }
