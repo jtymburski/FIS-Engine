@@ -93,16 +93,19 @@ public:
   /* Enumerated flags for battle class */
   enum BattleState
   {
-    CONFIGURED             = 1ul << 0,
-    FLAGS_CONFIGURED       = 1ul << 1,
-    RANDOM_ENCOUNTER       = 1ul << 2,
-    MINI_BOSS              = 1ul << 3,
-    BOSS                   = 1ul << 4,
-    FINAL_BOSS             = 1ul << 5,
-    CURRENT_STATE_COMPLETE = 1ul << 6,
-    BATTLE_LOST            = 1ul << 7,
-    BATTLE_WON             = 1ul << 8
+    CONFIGURED              = 1ul << 0,
+    FLAGS_CONFIGURED        = 1ul << 1,
+    RANDOM_ENCOUNTER        = 1ul << 2,
+    MINI_BOSS               = 1ul << 3,
+    BOSS                    = 1ul << 4,
+    FINAL_BOSS              = 1ul << 5,
+    CURRENT_STATE_COMPLETE  = 1ul << 6,
+    BATTLE_LOST             = 1ul << 7,
+    BATTLE_WON              = 1ul << 8,
+    BATTLE_OUTCOME_COMPLETE = 1ul << 9,
+    ERROR_STATE             = 1ul << 10
   };
+
   Q_DECLARE_FLAGS(BattleFlags, BattleState)
   BattleFlags flag_set;
 
@@ -226,6 +229,9 @@ private:
   /* Called when the Battle has been lost */
   void battleLost();
 
+  /* Returns enumeration of party death [None, Friends, Foes, Both] */
+  bool checkPartyDeath(Party* check_party);
+
   /* Cleanup before the end of a Battle turn */
   void cleanUp();
 
@@ -250,11 +256,14 @@ private:
   /* Process the actions (Items & Skills) in the buffer */
   void processActions();
 
-  /* Calculates enemy actions and add them to the buffer */
-  void processEnemyActions();
+  /* Recalculates the ailments after they have been altered */
+  void recalculateAilments();
 
-  /* Emits finished() signal for actions */
-  void updateScene();
+  /* Calculates enemy actions and add them to the buffer */
+  void selectEnemyActions();
+
+  /* Calculates user actions and add them to the buffer */
+  void selectUserActions();
 
   /* Method which calls personal upkeeps */
   void upkeep();
@@ -320,6 +329,9 @@ protected:
   /* Returns the hud display mode currently set */
   Options::BattleOptions getHudDisplayMode();
 
+  /* Returns true if a party has died */
+  bool getPartyDeath();
+
   /* Returns the value of the screen height */
   ushort getScreenHeight();
 
@@ -345,8 +357,11 @@ protected:
  * SIGNALS
  *============================================================================*/
 signals:
-  /* TODO */
+  /* Closes the Battle */
   void closeBattle();
+
+  /* Signal for the finishing of Battle */
+  void finished();
 
   /* Emitted when the Battle reaches an error */
   void battleError(QString error);
@@ -363,11 +378,6 @@ signals:
 public slots:
   /* Checks for outcomes of an action after an action takes place */
   // void actionOutcome();
-
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
-public:
 
 /*=============================================================================
  * PUBLIC FUNCTIONS

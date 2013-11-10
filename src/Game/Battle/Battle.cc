@@ -156,9 +156,25 @@ Battle::~Battle()
  */
 void Battle::battleWon()
 {
+  //  clear ailments, clear other data
 
-  /* Battle Won state complete */
-  setBattleFlag(CURRENT_STATE_COMPLETE);
+  // call victory
+    // for each person on friends
+      // increase exp by enemyTotalExp
+      // levelUp() --> show update info
+      // for each equipment
+        // for each bubby
+          // increase exp by enemyTotalExp
+          // levelUp() --> show update info
+   // process loot
+     // money
+     // items
+
+  if (getBattleMode() == Options::DEBUG)
+    qDebug() << "Battle Victorious! :-)";
+
+  setBattleFlag(Battle::BATTLE_OUTCOME_COMPLETE);
+  setNextTurnState();
 }
 
 
@@ -170,9 +186,29 @@ void Battle::battleWon()
  */
 void Battle::battleLost()
 {
+  // clear party members, clear ailments
+  // return to title?
 
-  /* Battle Lost state complete */
-  setBattleFlag(CURRENT_STATE_COMPLETE);
+  if (getBattleMode() == Options::DEBUG)
+    qDebug() << "Battle Lost! :-(";
+
+  setBattleFlag(Battle::BATTLE_OUTCOME_COMPLETE);
+  setNextTurnState();
+}
+
+/*
+ * Description:
+ *
+ * Inputs: none
+ * Output: none
+ */
+bool Battle::checkPartyDeath(Party* check_party)
+{
+  for (int i = 0; i < check_party->getPartySize(); i++)
+    if (check_party->getMember(i)->getStats()->getStat("VITA") == 0)
+      return true;
+
+  return false;
 }
 
 /*
@@ -183,14 +219,20 @@ void Battle::battleLost()
  */
 void Battle::cleanUp()
 {
+  // clears stacks of actions
+  // clear other data
+
+
+
   /* Increment the turn counter */
   turns_elapsed++;
 
-  if (turns_elapsed < 20)
-  {
-    /* Clean up state complete */
-    setBattleFlag(Battle::CURRENT_STATE_COMPLETE);
-  }
+  /* Clean Up state complete */
+  setBattleFlag(CURRENT_STATE_COMPLETE);
+
+  //TODO: Battle wins after 20 turns [11-09-13]
+  if (turns_elapsed == 20)
+    setBattleFlag(BATTLE_WON);
 }
 
 /*
@@ -203,6 +245,11 @@ void Battle::cleanUp()
  */
 void Battle::generalUpkeep()
 {
+  /* Print out the party state in debug mode */
+  if (getBattleMode() == Options::DEBUG)
+    printPartyState();
+
+  //TODO: Weather updates [11-09-13]
 
   /* General Upkeep state complete */
   setBattleFlag(CURRENT_STATE_COMPLETE);
@@ -285,6 +332,9 @@ bool Battle::loadBattleStateFlags()
  */
 void Battle::orderActions()
 {
+  // Items are fast -- item buffer first
+  // Skills are slow
+    // Sort skills by momentum of the skill user
 
   /* Order action state complete */
   setBattleFlag(Battle::CURRENT_STATE_COMPLETE);
@@ -322,10 +372,45 @@ void Battle::personalUpkeep(uint target)
  */
 void Battle::processActions()
 {
+  // get list of actions for skills and items
+  // if run, attempt to run
+  // if defend, incresae def. by some factor
+  // do Action   [+ critical, + miss rate]
+    // if offensive attack
+      // find stats related to the skill of the user
+      // find stats related to the skill of each target
+      // for each target
+        // deal damage based on these skill values
+          // NOTES: CHECK FOR IGNORE FLAGS ALONG THE WAY
+          // primary factor modifier * prim element of user
+          // secondary factor modifier * secd element of user
+          // find elemental strengths/weaknesses
+            // add modifiers (one way, two ways, one way or one way
+          // determine crit chance
+            // if so, multiply by crit factor
+          // determine hit rate
+          // if so, add variance
+          // determine ratio of target based on prim/secd elements
+          // deal the damage
+        // check party death upon each damage dealt
+        // output info to BIB
+    // if infliction
+      // check for immunities
+        // if not immune, chance for infliction
+        // if successful, recalculate ailments
+        // if failed, output message
+    // stat changing? TBD
+      // find each stat to change
+      // find by amount or by factor
+        // incr. stats by amt. or factor
+    // if relieving, if chance occurs,
+      // remove ailment if exists
+      // update ailments
 
+    //
 
   /* Process Action stae complete */
-  setBattleFlag(Battle::CURRENT_STATE_COMPLETE);
+  setBattleFlag(CURRENT_STATE_COMPLETE);
 }
 
 /*
@@ -334,11 +419,12 @@ void Battle::processActions()
  * Inputs: none
  * Output: none
  */
-void Battle::processEnemyActions()
+void Battle::recalculateAilments()
 {
-
-  /* Process enemy action state complete */
-  setBattleFlag(Battle::CURRENT_STATE_COMPLETE);
+  // find base stats of person
+  // find all buff factors
+  // OR find bubbify factor (bubbify == NO BUFFS)
+  // disenstubulate factor
 }
 
 /*
@@ -347,9 +433,42 @@ void Battle::processEnemyActions()
  * Inputs: none
  * Output: none
  */
-void Battle::updateScene()
+void Battle::selectEnemyActions()
 {
+  // Calculate method by which for AI to choose actions
+    // Easy AI:
+      // Choose from skkill list
+      // Prioritize by skill value, each value point adds chance of using
+      // offensive factor if HP > 35%
+      // defensive factor if HP < 35%
 
+  /* Select enemy action state complete */
+  setBattleFlag(CURRENT_STATE_COMPLETE);
+}
+
+/*
+ * Description:
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Battle::selectUserActions()
+{
+  // Choose actions from menu
+    // Choose skill from list of valid skills available
+    // Find valid targets for the skill
+      // Select target from list
+    // Add skill from skill buffer
+    // Remove required QD from person
+
+    // Find Battle Usable items in inventory
+    // Select item
+      // Find valid targets
+      // Choose from targets
+      // Remove item from inventory
+
+  /* Select user action state complete */
+  setBattleFlag(CURRENT_STATE_COMPLETE);
 }
 
 /*
@@ -454,74 +573,84 @@ void Battle::setNextTurnState()
   /* Set the CURRENT_STATE to incomplete */
   setBattleFlag(Battle::CURRENT_STATE_COMPLETE, false);
 
-  /* If the Battle has been won, go to victory */
-  if (getBattleFlag(Battle::BATTLE_WON))
+  /* If the Battle victory/loss has been complete, go to Destruct */
+  if (getBattleFlag(Battle::BATTLE_OUTCOME_COMPLETE))
   {
-    setTurnState(BATTLE_VICTORY);
-    battleWon();
+    setTurnState(BATTLE_DESTRUCT);
+    emit finished();
   }
 
-  /* If the Battle has been lost, GAME OVER */
-  if (getBattleFlag(Battle::BATTLE_LOST))
+  if (getTurnState() != BATTLE_DESTRUCT)
   {
-    setTurnState(BATTLE_LOSS);
-    battleLost();
-  }
+    /* If the Battle has been won, go to victory */
+    if (getBattleFlag(Battle::BATTLE_WON))
+    {
+      setTurnState(BATTLE_VICTORY);
+      battleWon();
+    }
 
-  /* After the Battle Begins, the general turn loop begins at General Upkeep */
-  if (turn_state == BATTLE_BEGIN)
-  {
-    setTurnState(GENERAL_UPKEEP);
-    generalUpkeep();
-  }
+    /* If the Battle has been lost, GAME OVER */
+    if (getBattleFlag(Battle::BATTLE_LOST))
+    {
+      setTurnState(BATTLE_LOSS);
+      battleLost();
+    }
 
-  /* After general upkeep, each personal upkeep takes place */
-  else if (turn_state == GENERAL_UPKEEP)
-  {
-    setTurnState(UPKEEP);
-    upkeep();
-  }
+    /* After the Battle Begins, the general turn loop begins at General Upkeep */
+    if (turn_state == BATTLE_BEGIN)
+    {
+      setTurnState(GENERAL_UPKEEP);
+      generalUpkeep();
+    }
 
-  /* After presonal upkeeps, the user selects actions from the Battle Menu */
-  else if (turn_state == UPKEEP)
-  {
-    setTurnState(SELECT_USER_ACTION);
-    processActions();
-  }
+    /* After general upkeep, each personal upkeep takes place */
+    else if (turn_state == GENERAL_UPKEEP)
+    {
+      setTurnState(UPKEEP);
+      upkeep();
+    }
 
-  /* After the user selects actions, the enemy chooses actions */
-  else if (turn_state == SELECT_USER_ACTION)
-  {
-    setTurnState(SELECT_ENEMY_ACTION);
-    processEnemyActions();
-  }
+    /* After presonal upkeeps, the user selects actions from the Battle Menu */
+    else if (turn_state == UPKEEP)
+    {
+      setTurnState(SELECT_USER_ACTION);
+      selectUserActions();
+    }
 
-  /* After enemies select actions, the actions are ordered */
-  else if (turn_state == SELECT_ENEMY_ACTION)
-  {
-    setTurnState(ORDER_ACTIONS);
-    orderActions();
-  }
+    /* After the user selects actions, the enemy chooses actions */
+    else if (turn_state == SELECT_USER_ACTION)
+    {
+      setTurnState(SELECT_ENEMY_ACTION);
+      selectEnemyActions();
+    }
 
-  /* After the actions are ordered, the actions are processed */
-  else if (turn_state == ORDER_ACTIONS)
-  {
-    setTurnState(PROCESS_ACTIONS);
-    cleanUp();
-  }
+    /* After enemies select actions, the actions are ordered */
+    else if (turn_state == SELECT_ENEMY_ACTION)
+    {
+      setTurnState(ORDER_ACTIONS);
+      orderActions();
+    }
 
-  /* After the actions are processed, Battle turn clean up occurs */
-  else if (turn_state == PROCESS_ACTIONS)
-  {
-    setTurnState(CLEAN_UP);
-    cleanUp();
-  }
+    /* After the actions are ordered, the actions are processed */
+    else if (turn_state == ORDER_ACTIONS)
+    {
+      setTurnState(PROCESS_ACTIONS);
+      cleanUp();
+    }
 
-  /* After the end of the turn, loop restarts at general upkeep */
-  else if (turn_state == CLEAN_UP)
-  {
-    setTurnState(GENERAL_UPKEEP);
-    generalUpkeep();
+    /* After the actions are processed, Battle turn clean up occurs */
+    else if (turn_state == PROCESS_ACTIONS)
+    {
+      setTurnState(CLEAN_UP);
+      cleanUp();
+    }
+
+    /* After the end of the turn, loop restarts at general upkeep */
+    else if (turn_state == CLEAN_UP)
+    {
+      setTurnState(GENERAL_UPKEEP);
+      generalUpkeep();
+    }
   }
 }
 
@@ -739,6 +868,31 @@ Options::BattleOptions Battle::getHudDisplayMode()
 }
 
 /*
+ * Description:
+ *
+ * Inputs: none
+ * Output: none
+ */
+bool Battle::getPartyDeath()
+{
+  if (checkPartyDeath(friends) && checkPartyDeath(foes))
+  {
+    if (getBattleMode() == Options::DEBUG)
+    {
+      setBattleFlag(Battle::ERROR_STATE);
+      qDebug() << "[ERROR] - Both parties are dead!";
+    }
+  }
+
+  if (checkPartyDeath(friends))
+    setBattleFlag(Battle::BATTLE_WON);
+  if (checkPartyDeath(foes))
+    setBattleFlag(Battle::BATTLE_LOST);
+
+  return false;
+}
+
+/*
  * Description: Returns the screen height of the Battle
  *
  * Inputs: none
@@ -783,18 +937,6 @@ ushort Battle::getTurnsElapsed()
 }
 
 /*==============================================================================
- * SIGNALS
- *============================================================================*/
-
-/*
- * Description:
- *
- * Inputs:
- * Output:
- */
-
-
-/*==============================================================================
  * PUBLIC SLOTS
  *============================================================================*/
 
@@ -804,19 +946,6 @@ ushort Battle::getTurnsElapsed()
  * Inputs:
  * Output:
  */
-
-
-/*==============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
-
-/*
- * Description:
- *
- * Inputs:
- * Output:
- */
-
 
 /*==============================================================================
  * PUBLIC FUNCTIONS
@@ -857,6 +986,9 @@ void Battle::printFlags()
            << getBattleFlag(Battle::CURRENT_STATE_COMPLETE);
   qDebug() << "BATTLE_LOST: " << getBattleFlag(Battle::BATTLE_LOST);
   qDebug() << "BATTLE_WON: " << getBattleFlag(Battle::BATTLE_WON);
+  qDebug() << "BATTLE_OUTCOME_COMPLETE"
+           << getBattleFlag(Battle::BATTLE_OUTCOME_COMPLETE);
+  qDebug() << "ERROR_STATE: " << getBattleFlag(Battle::ERROR_STATE);
 }
 
 /*
@@ -881,12 +1013,12 @@ void Battle::printInfo()
   else if (hud_display_mode == Options::GRIZZLY)
     qDebug() << "Hud Display Mode: GRIZZLY";
 
-  qDebug() << "Friends Size: "  << friends->getPartySize();
-  qDebug() << "Foes Size: "     << foes->getPartySize();
-  qDebug() << "Screen Height: " << screen_height;
-  qDebug() << "Screen Width: "  << screen_width;
-  qDebug() << "Time Elapsed: "  << time_elapsed;
-  qDebug() << "Turns Elapsed: " << turns_elapsed;
+  qDebug() << "Friends Size: "      << friends->getPartySize();
+  qDebug() << "Foes Size: "         << foes->getPartySize();
+  qDebug() << "Screen Height: "     << screen_height;
+  qDebug() << "Screen Width: "      << screen_width;
+  qDebug() << "Time Elapsed: "      << time_elapsed;
+  qDebug() << "Turns Elapsed: "     << turns_elapsed;
   qDebug() << "Enemy Status Bars: " << enemy_status_bars.size();
 }
 
@@ -907,7 +1039,6 @@ void Battle::printInfo()
      temp = friends->getMember(i);
      qDebug() << temp->getName() << temp->getTemp()->getStat(0);
    }
-   qDebug() << "--- /Friends ---";
 
    qDebug() << "--- Foes ---";
    for (int i = 0; i < foes->getPartySize(); i++)
@@ -915,8 +1046,7 @@ void Battle::printInfo()
      temp = foes->getMember(i);
      qDebug() << temp->getName() << temp->getTemp()->getStat(0);
    }
-   qDebug() << "--- /Foes ---";
- }
+}
 
 /*
  * Description: Prints out the enumerated turn state of the Battle
@@ -980,9 +1110,7 @@ void Battle::updateBattle(int cycle_time)
   //TODO [10-12-13] updateGL();
 
   if (getBattleFlag(Battle::CURRENT_STATE_COMPLETE))
-  {
     setNextTurnState();
-  }
 }
 
 /*
@@ -1007,4 +1135,3 @@ void Battle::setBattleFlag(BattleState flags, bool set_value)
 {
   (set_value) ? (flag_set |= flags) : (flag_set ^= flags);
 }
-
