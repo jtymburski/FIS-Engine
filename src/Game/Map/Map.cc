@@ -33,7 +33,6 @@ const short Map::kFILE_SECTION_ID = 2;
 const short Map::kFILE_TILE_COLUMN = 5;
 const short Map::kFILE_TILE_ROW = 4;
 const short Map::kPLAYER_ID = 0;
-const int Map::kTICK_DELAY = 10;
 const int Map::kTILE_HEIGHT = 64;
 const int Map::kTILE_WIDTH = 64;
 
@@ -106,6 +105,7 @@ bool Map::addTileData(XmlData data, int section_index)
 
   /* Get the element information */
   QStringList element = data.getElement(data.getNumElements()-1).split("_");
+  QString classifier = data.getElement(kFILE_CLASSIFIER);
   QString descriptor = element[0].toLower().trimmed();
 
   /* Split based on the element information if it's for a path */
@@ -124,24 +124,60 @@ bool Map::addTileData(XmlData data, int section_index)
     return success;
   }
   /* Otherwise, access the passability information for the tile */
-  else if(descriptor == "passability")
+  else if(descriptor == "passability" || 
+          classifier == "tileevent")
   {
     QStringList row_list = data.getKeyValue(kFILE_TILE_ROW).split(",");
     QStringList col_list = data.getKeyValue(kFILE_TILE_COLUMN).split(",");
-
+    QString type = data.getKeyValue(kFILE_CLASSIFIER);
+    
     for(int i = 0; i < row_list.size(); i++) /* Coordinate set index */
     {
       QStringList rows = row_list[i].split("-"); /* x range for coordinate */
       QStringList cols = col_list[i].split("-"); /* y range for coordinate */
-
+      
+      /* Determine the row of parsing - limit to map size */
+      int r_start = rows[0].toInt();
+      int r_end = rows[rows.size() - 1].toInt();
+      if(r_start >= geography[section_index].size())
+        r_start = geography[section_index].size() - 1;
+      if(r_end >= geography[section_index].size())
+        r_end = geography[section_index].size() - 1;
+      
+      /* Determine the column of parsing - limit to map size */
+      int c_start = cols[0].toInt();
+      int c_end = cols[cols.size() - 1].toInt();
+      if(c_start >= geography[section_index][r_start].size())
+        c_start = geography[section_index][r_start].size() - 1;
+      if(c_end >= geography[section_index][r_start].size())
+        c_end = geography[section_index][r_start].size() - 1;
+      
       /* Shift through all the rows and column pairs of the coordinate */
-      for(int r = rows[0].toInt(); r <= rows[rows.size() - 1].toInt(); r++)
-        for(int c = cols[0].toInt(); c <= cols[cols.size() - 1].toInt(); c++)
-          success &= geography[section_index][r][c]->
-                  addPassability(data.getDataString(), 
-                                 data.getElement(kFILE_CLASSIFIER), 
-                                 data.getKeyValue(kFILE_CLASSIFIER));
+      for(int r = r_start; r <= r_end; r++)
+      {
+        for(int c = c_start; c <= c_end; c++)
+        {
+          /* Set the passability */
+          if(descriptor == "passability")
+            success &= geography[section_index][r][c]->
+                    addPassability(data.getDataString(), 
+                                   data.getElement(kFILE_CLASSIFIER), 
+                                   data.getKeyValue(kFILE_CLASSIFIER));
+          /* Otherwise, it's a tile event */
+          else
+          {
+            /* Classify between enter and exit events */
+            if(type == "enter")
+              success &= geography[section_index][r][c]->
+                    updateEnterEvent(data, kFILE_CLASSIFIER + 3, section_index);
+            else if(type == "exit")
+              success &= geography[section_index][r][c]->
+                    updateExitEvent(data, kFILE_CLASSIFIER + 3, section_index);
+          }
+        }
+      }
     }
+    
     return success;
   }
   /* Otherwise, if animation, it is assumed that this is tied with the last
@@ -279,7 +315,25 @@ bool Map::addThingData(XmlData data, int section_index)
   }
   else if(identifier == "mapitem")
   {
-    qDebug() << "3: " << identifier;
+    /* Search for the existing map object */
+    while(modified_thing == 0 && index < items.size())
+    {
+      if(items[index]->getID() == id)
+        modified_thing = items[index];
+      index++;
+    }
+    
+    /* If no item found, create one */
+    if(modified_thing == 0)
+    {
+      /* Create the new thing */
+      modified_thing = new MapItem(0, kTILE_WIDTH, kTILE_HEIGHT);
+      modified_thing->setEventHandler(event_handler);
+      modified_thing->setID(id);
+      
+      /* Append the new one */
+      items.append((MapItem*)modified_thing);
+    }
   }
   
   /* Proceed to update the thing information from the XML data */
@@ -903,12 +957,6 @@ bool Map::initNotification(QString notification)
   return map_dialog.initNotification(notification);
 }
 
-/* Causes the thing you are facing and next to start its interactive action */
-void Map::interact(EnumDb::Direction dir)
-{
-  (void)dir;//warning
-}
-
 /* Checks whether the viewport contains any tiles with the given sector */
 bool Map::isInSector(int index)
 {
@@ -992,7 +1040,8 @@ bool Map::loadMap(QString file)
           if(data.getElement(kFILE_CLASSIFIER) == "base" ||
              data.getElement(kFILE_CLASSIFIER) == "enhancer" ||
              data.getElement(kFILE_CLASSIFIER) == "lower" ||
-             data.getElement(kFILE_CLASSIFIER) == "upper")
+             data.getElement(kFILE_CLASSIFIER) == "upper" ||
+             data.getElement(kFILE_CLASSIFIER) == "tileevent")
           {
             success &= addTileData(data, index);
           }
@@ -1011,42 +1060,6 @@ bool Map::loadMap(QString file)
       /* Get the next element */
       data = fh.readXmlData(&done, &success);
     } while(!done && success);
-
-    /* Add teleport to door - temporary (TODO) */
-    //if(event_handler != 0)
-    //{
-    //  geography[1][3][9]->setEnterEvent(
-    //        event_handler->createTeleportEvent(12, 9, 0));
-    //  geography[0][1][1]->setExitEvent(
-    //        event_handler->createStartBattleEvent());
-    //  geography[0][12][8]->setEnterEvent(
-    //        event_handler->createTeleportEvent(3, 8, 1));
-    //}
-    
-    /* Make three map items, to walkover */
-/*    Sprite* frames = new Sprite("sprites/Map/Testing/sword_AA_A00.png");
-    MapItem* item = new MapItem(frames, kTILE_WIDTH, kTILE_HEIGHT);
-    item->setID(10000);
-    item->setName("Sword of Power");
-    item->setStartingTile(0, geography[0][7][8]);
-    items.append(item);
-    frames = new Sprite("sprites/Map/Map_Things/bubby_AA_A00.png");
-    item = new MapItem(frames, kTILE_WIDTH, kTILE_HEIGHT);
-    item->setCount(5);
-    item->setDialogImage("sprites/Battle/Bubbies/frosty_t1.png");
-    item->setID(10001);
-    item->setName("Frost Bubby");
-    item->setStartingTile(0, geography[0][1][10]);
-    item->setWalkover(true);
-    items.append(item);
-    frames = new Sprite("sprites/Map/Testing/coins_AA_A00.png");
-    item = new MapItem(frames, kTILE_WIDTH, kTILE_HEIGHT);
-    item->setCount(100);
-    item->setID(10002);
-    item->setName("Coin");
-    item->setStartingTile(0, geography[1][3][3]);
-    item->setWalkover(true);
-    items.append(item); */
   }
   success &= fh.stop();
 

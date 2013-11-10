@@ -610,7 +610,9 @@ bool Sprite::rotateAll(int angle)
     {
       for(int i = 0; i < size; i++)
       {
+        temp_frame->uninitializeGl();
         temp_frame->rotateImage(angle);
+        temp_frame->initializeGl();
         temp_frame = temp_frame->getNext();
       }
     }

@@ -1,9 +1,11 @@
-/******************************************************************************
-* Class Name: MapItem
-* Date Created: Dec 2 2012
-* Inheritance: MapThing
-* Description: The MapItem class - TODO: description
-******************************************************************************/
+/*******************************************************************************
+ * Class Name: MapItem
+ * Date Created: Dec 2 2012
+ * Inheritance: MapThing
+ * Description: The item class contains the data that is used for pickups
+ *              scattered throughout the map. This class expands upon MapThing
+ *              to add counts and if it can be picked up.
+ ******************************************************************************/
 #include "Game/Map/MapItem.h"
 
 /* Constant Implementation - see header file for descriptions */
@@ -48,6 +50,53 @@ MapItem::~MapItem()
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
+
+/*
+ * Description: Adds item information from the XML file. This will be
+ *              virtually called by children where the child will deal with
+ *              additional sets needed and then pass call to this. Works off
+ *              reading the XML file in a strict manner. Passes call to parent
+ *              after it is complete.
+ *
+ * Inputs: XmlData data - the read XML data
+ *         int file_index - the index in the xml data where this detail begins
+ *         int section_index - the map section index of the item
+ * Output: bool - status if successful
+ */
+bool MapItem::addThingInformation(XmlData data, int file_index, 
+                                                  int section_index)
+{
+  QList<QString> elements = data.getTailElements(file_index + 1);
+  QString identifier = data.getElement(file_index + 1);
+  bool success = true;
+  
+  /* Parse the identifier for setting the item information */
+  /*--------------------- COUNT --------------------*/
+  if(identifier == "count" && elements.size() == 1)
+  {
+    int count = data.getDataInteger(&success);
+    if(success)
+      success &= setCount(count);
+  }
+  /*--------------------- VISIBILITY --------------------*/
+  if(identifier == "visibility" && elements.size() == 1)
+  {
+    bool visible = data.getDataBool(&success);
+    if(success)
+      setVisibility(visible);
+  }
+  /*--------------------- WALKOVER --------------------*/
+  if(identifier == "walkover" && elements.size() == 1)
+  {
+    bool walkover = data.getDataBool(&success);
+    if(success)
+      setWalkover(walkover);
+  }
+
+  /* Proceed to parent */
+  return (success && 
+          MapThing::addThingInformation(data, file_index, section_index));
+}
 
 /* Returns the class descriptor, useful for casting */
 QString MapItem::classDescriptor()

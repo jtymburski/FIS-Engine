@@ -41,7 +41,7 @@ MapNPC::~MapNPC()
 }
 
 /*============================================================================
- * PUBLIC FUNCTIONS
+ * PRIVATE FUNCTIONS
  *===========================================================================*/
 
 /* Appends an empty node onto the back of the movement stack */

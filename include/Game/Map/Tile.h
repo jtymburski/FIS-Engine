@@ -163,7 +163,7 @@ public:
 
   /* Returns if the Upper Layer is set (ie. at least one) */
   bool isUpperSet();
-
+  
   /* Paints the active sprites in this tile using GL direct calls */
   bool paintLower(float offset_x = 0.0, float offset_y = 0.0, 
                                         float opacity = 1.0);
@@ -214,6 +214,10 @@ public:
   /* Sets the coordinate location of the tile (and all corresponding layers) */
   void setX(int x);
   void setY(int y);
+  
+  /* Updates the relevent enter and exit events, from file data */
+  bool updateEnterEvent(XmlData data, int file_index, int section_index);
+  bool updateExitEvent(XmlData data, int file_index, int section_index);
   
   /* Unsets the base layer(s) */
   void unsetBase();

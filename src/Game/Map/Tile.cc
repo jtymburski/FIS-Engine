@@ -1107,7 +1107,53 @@ void Tile::setY(int y)
 {
   this->y = y;
 }
+
+/*
+ * Description: Updates the enter event, from the relevant file data. This then
+ *              passes the call to the event handler which parses the file data.
+ *
+ * Inputs: XmlData data - the data calculated from the file
+ *         int file_index - the offset index where the event is
+ *         int section_index - the relevant map section index
+ * Output: bool - returns if the call was successful
+ */
+bool Tile::updateEnterEvent(XmlData data, int file_index, int section_index)
+{
+  /* Ensure that the event handler is relevant */
+  if(event_handler != 0)
+  {
+    /* Update the enter event */
+    enter_event = event_handler->updateEvent(enter_event, data, 
+                                             file_index, section_index);
+    return true;
+  }
   
+  return false;
+}
+
+/*
+ * Description: Updates the exit event, from the relevant file data. This then
+ *              passes the call to the event handler which parses the file data.
+ *
+ * Inputs: XmlData data - the data calculated from the file
+ *         int file_index - the offset index where the event is
+ *         int section_index - the relevant map section index
+ * Output: bool - returns if the call was successful
+ */
+bool Tile::updateExitEvent(XmlData data, int file_index, int section_index)
+{
+  /* Ensure that the event handler is relevant */
+  if(event_handler != 0)
+  {
+    /* Update the exit event */
+    exit_event = event_handler->updateEvent(exit_event, data, 
+                                            file_index, section_index);
+    return true;
+  }
+  
+  return false;
+}
+
 /* 
  * Description: Unsets the base sprite in the tile.
  * Note: this class does NOT delete the pointer, only releases it.

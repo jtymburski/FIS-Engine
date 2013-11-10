@@ -1,9 +1,11 @@
-/******************************************************************************
-* Class Name: MapItem
-* Date Created: Oct 28 2012
-* Inheritance: MapThing
-* Description: The MapItem class - TODO: description
-******************************************************************************/
+/*******************************************************************************
+ * Class Name: MapItem
+ * Date Created: Oct 28 2012
+ * Inheritance: MapThing
+ * Description: The item class contains the data that is used for pickups
+ *              scattered throughout the map. This class expands upon MapThing
+ *              to add counts and if it can be picked up.
+ ******************************************************************************/
 #ifndef MAPITEM_H
 #define MAPITEM_H
 
@@ -43,6 +45,11 @@ private:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Adds item information from the XML file. Will be virtually re-called
+   * by all children for proper operation */
+  virtual bool addThingInformation(XmlData data, int file_index, 
+                                                 int section_index);
+
   /* Returns the class descriptor, useful for casting */
   virtual QString classDescriptor();
 

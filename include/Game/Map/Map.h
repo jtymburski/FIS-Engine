@@ -95,7 +95,6 @@ private:
   const static short kFILE_TILE_COLUMN; /* The tile depth in XML of column */
   const static short kFILE_TILE_ROW;    /* The tile depth in XML of row */
   const static short kPLAYER_ID;      /* The player ID for computer control */
-  const static int kTICK_DELAY;       /* Tick timer delay constant */
   const static int kTILE_HEIGHT;      /* The tile height, as constant (TEMP) */
   const static int kTILE_WIDTH;       /* The tile width, as constant (TEMP) */
 
@@ -178,9 +177,6 @@ public:
 
   /* Initiates a notification, within the map */
   bool initNotification(QString notification);
-
-  /* Causes the thing you are facing and next to start its interactive action */
-  void interact(EnumDb::Direction dir);
 
   /* Checks whether the viewport contains any tiles with the given sector */
   bool isInSector(int index);
