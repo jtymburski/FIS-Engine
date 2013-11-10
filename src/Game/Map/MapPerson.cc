@@ -30,17 +30,19 @@ const char MapPerson::kTOTAL_SURFACES   = 1;
  *
  * Inputs: none
  */
-MapPerson::MapPerson()
+MapPerson::MapPerson() : MapThing()
 {
   initializeStates();
   clearTarget();
+  setAnimationSpeed(kDEFAULT_ANIMATION);
+  starting_section = 0;
+  starting_tile = 0;
   
   /* Set the default setup for what the player is standing on and facing */
   surface = GROUND;
   direction = EnumDb::NORTH;
 }
 
-// TODO: Need to call parent constructor
 /* 
  * Description: Constructor for this class. Sets up a person with the
  *              appropriate height and width (for the tile) and other info
@@ -54,18 +56,14 @@ MapPerson::MapPerson()
  */
 MapPerson::MapPerson(int width, int height, QString name, 
                      QString description, int id)
+          : MapThing(0, width, height, name, description, id)
 {
-  /* Class value setup */
-  setAnimationSpeed(kDEFAULT_ANIMATION);
-  setDescription(description);
-  setHeight(height);
-  setID(id);
-  setName(name);
-  setWidth(width);
-
   /* Initializes the class information */
   initializeStates();
   clearTarget();
+  setAnimationSpeed(kDEFAULT_ANIMATION);
+  starting_section = 0;
+  starting_tile = 0;
 
   /* Set the default setup for what the player is standing on and facing */
   surface = GROUND;
@@ -378,9 +376,10 @@ void MapPerson::clear()
   direction = EnumDb::NORTH;
   movement = EnumDb::DIRECTIONLESS;
   clearAllMovement();
+  starting_tile = 0;
   surface = GROUND;
-  setAnimationSpeed(kDEFAULT_ANIMATION);
 
+  /* Clear the parent */
   MapThing::clear();
 }
 
@@ -527,6 +526,14 @@ void MapPerson::keyRelease(QKeyEvent* event)
     removeDirection(EnumDb::WEST);
 }
 
+/* Resets the person position, to where they started */
+bool MapPerson::resetPosition()
+{
+  if(starting_tile != 0)
+    return setStartingTile(starting_section, starting_tile, true);
+  return false;
+}
+
 /* Sets the animation time for each frame */
 bool MapPerson::setAnimationSpeed(short frame_time)
 {
@@ -565,6 +572,10 @@ bool MapPerson::setStartingTile(int section_id, Tile* new_tile, bool no_events)
     this->y = tile_main->getPixelY();
     tile_main->setPerson(this, no_events);
     tile_section = section_id;
+    
+    /* Store the starting tile */
+    starting_section = section_id;
+    starting_tile = tile_main;
     
     return true;
   }

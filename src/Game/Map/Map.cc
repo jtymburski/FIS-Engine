@@ -559,6 +559,8 @@ void Map::keyPressEvent(QKeyEvent* key_event)
   }
   else if(key_event->key() == Qt::Key_P)
     map_dialog.setPaused(!map_dialog.isPaused());
+  else if(key_event->key() == Qt::Key_1 && player != 0)
+    player->resetPosition();
   else if(key_event->key() == Qt::Key_4)
     map_dialog.initNotification("Testing", 1000, true);
   else if(key_event->key() == Qt::Key_5)
@@ -1020,113 +1022,6 @@ bool Map::loadMap(QString file)
     //  geography[0][12][8]->setEnterEvent(
     //        event_handler->createTeleportEvent(3, 8, 1));
     //}
-
-    /* Add the player information */
-/*    Sprite* up_sprite = new Sprite("sprites/Map/Map_Things/genericbear4_AA_D",
-                                   3, ".png");
-    Sprite* down_sprite = new Sprite("sprites/Map/Map_Things/genericbear4_AA_U",
-                                     3, ".png");
-    Sprite* left_sprite = new Sprite("sprites/Map/Map_Things/genericbear4_AA_S",
-                                     5, ".png");
-    left_sprite->flipAll();
-    Sprite* right_sprite = new Sprite("sprites/Map/Map_Things/genericbear4_AA_S",
-                                      5, ".png");
-    MapPerson* person = new MapPerson(kTILE_WIDTH, kTILE_HEIGHT);
-    person->setStartingTile(0, geography[0][8][8]); // 11, 9
-    person->setEventHandler(event_handler);
-    person->setState(MapPerson::GROUND, EnumDb::NORTH, up_sprite);
-    person->setState(MapPerson::GROUND, EnumDb::SOUTH, down_sprite);
-    person->setState(MapPerson::GROUND, EnumDb::EAST, right_sprite);
-    person->setState(MapPerson::GROUND, EnumDb::WEST, left_sprite);
-    person->setDialogImage("sprites/Map/Dialog/player.png");
-    person->setIDPlayer();
-    person->setName("REally LOng NAme");
-    persons.append(person);
-    player = person;
-
-    /* Add a second player */
-/*    up_sprite = new Sprite("sprites/Map/Map_Things/aurora_AA_D", 3, ".png");
-    down_sprite = new Sprite("sprites/Map/Map_Things/aurora_AA_U", 3, ".png");
-    left_sprite = new Sprite("sprites/Map/Map_Things/aurora_AA_S", 5, ".png");
-    left_sprite->flipAll();
-    right_sprite = new Sprite("sprites/Map/Map_Things/aurora_AA_S", 5, ".png");
-    person = new MapPerson(kTILE_WIDTH, kTILE_HEIGHT);
-    person->setStartingTile(1, geography[1][2][4]);
-    person->setEventHandler(event_handler);
-    person->setState(MapPerson::GROUND, EnumDb::NORTH, up_sprite);
-    person->setState(MapPerson::GROUND, EnumDb::SOUTH, down_sprite);
-    person->setState(MapPerson::GROUND, EnumDb::EAST, right_sprite);
-    person->setState(MapPerson::GROUND, EnumDb::WEST, left_sprite);
-    person->setDialogImage("sprites/Map/Dialog/el_oroso.png");
-    person->setID(24);
-    person->setName("El Oroso");
-    person->setOpacity(0.5);
-    Conversation* person_convo = new Conversation;
-    person_convo->category = EnumDb::TEXT;
-    person_convo->action_event = event_handler->createTeleportEvent(30, 30, 0);
-    person_convo->text = "I'm invisible and you are gone!!";
-    person_convo->thing_id = 24;
-    person->setInteraction( // TODO: Check if event handler set & successful
-                         event_handler->createConversationEvent(person_convo));
-    persons.append(person);
-
-    /* Add an NPC */
-/*    up_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_D",3,".png");
-    down_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_U",3,".png");
-    left_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_R",5,".png");
-    right_sprite = new Sprite("sprites/Map/Map_Things/arcadius_AA_L",5,".png");
-    MapNPC* npc = new MapNPC(kTILE_WIDTH, kTILE_HEIGHT);
-    npc->setState(MapPerson::GROUND, EnumDb::NORTH, up_sprite);
-    npc->setState(MapPerson::GROUND, EnumDb::SOUTH, down_sprite);
-    npc->setState(MapPerson::GROUND, EnumDb::EAST, right_sprite);
-    npc->setState(MapPerson::GROUND, EnumDb::WEST, left_sprite);
-    npc->insertNodeAtTail(geography[map_index][10][10], 750);
-    //npc->insertNodeAtTail(geography[map_index][5][10], 250);
-    //npc->insertNodeAtTail(geography[map_index][0][10], 500);
-    npc->insertNodeAtTail(geography[map_index][1][1], 1000);
-    npc->insertNodeAtTail(geography[map_index][5][1], 250);
-    //npc->insertNodeAtTail(geography[map_index][10][0], 50);
-    npc->setStartingTile(0, geography[0][12][12]);
-    npc->setEventHandler(event_handler);
-    npc->setDialogImage("sprites/Map/Dialog/arcadius.png");
-    npc->setID(3);
-    npc->setName("Arcadius");
-    npc->setNodeState(MapNPC::BACKANDFORTH);
-    npc->setSpeed(200);
-    Conversation* npc_convo = new Conversation;
-    npc_convo->category = EnumDb::TEXT;
-    npc_convo->action_event = event_handler->createBlankEvent();
-    npc_convo->text = "I don't like to be stopped. Why must you insist to stop progress. ";
-    npc_convo->text += "On second thought, I really don't like you and want to destroy you.";
-    npc_convo->thing_id = 3;
-    Conversation second_set;
-    second_set.category = EnumDb::TEXT;
-    second_set.action_event = event_handler->createBlankEvent();
-    second_set.text = "Here are your options:";
-    second_set.thing_id = 3;
-    Conversation option;
-    option.category = EnumDb::TEXT;
-    option.text = "Be teleported to an unknown place";
-    option.thing_id = 3;
-    option.action_event = event_handler->createTeleportEvent(3, 2, 1);
-    second_set.next.append(option);
-    option.text = "Be slaughtered by my hand";
-    option.action_event = event_handler->createStartBattleEvent();
-    second_set.next.append(option);
-    npc_convo->next.append(second_set);
-    npc->setInteraction(event_handler->createConversationEvent(npc_convo));
-    persons.append(npc);
-
-    /* Make the map thing */
-    //Sprite* frames = new Sprite(
-    //      "sprites/Map/Tiles/Scenery/Transitional/TreeDoor01Opening_AA_A", 
-    //      5, ".png");
-    //MapThing* thing = new MapThing(frames, kTILE_WIDTH, kTILE_HEIGHT);
-    //thing->setAnimationSpeed(100);
-    //if(geography.size() > 0 && geography[0].size() > 2 && 
-    //                           geography[0][2].size() > 2)
-    //  thing->setStartingTile(0, geography[0][2][2]);
-    //things.append(thing);
     
     /* Make three map items, to walkover */
 /*    Sprite* frames = new Sprite("sprites/Map/Testing/sword_AA_A00.png");
@@ -1151,73 +1046,7 @@ bool Map::loadMap(QString file)
     item->setName("Coin");
     item->setStartingTile(0, geography[1][3][3]);
     item->setWalkover(true);
-    items.append(item);
-
-    /* Make the map interactive object */
-/*    Conversation* mio_convo = new Conversation;
-    mio_convo->category = EnumDb::TEXT;
-    mio_convo->action_event = event_handler->createBlankEvent();
-    mio_convo->text = "Event test firing on chest.";
-    Conversation* mio_convo2 = new Conversation;
-    mio_convo2->category = EnumDb::TEXT;
-    mio_convo2->action_event = event_handler->createBlankEvent();
-    mio_convo2->text = "Event test re-firing on chest.";
-
-    MapInteractiveObject* object = 
-                           new MapInteractiveObject(kTILE_WIDTH, kTILE_HEIGHT);
-    object->setAnimationSpeed(150);
-    object->setInactiveTime(10000);
-    object->setStartingTile(0, geography[0][7][9]);
-    frames = new Sprite(
-               "sprites/Map/Map_Things/Chest01/Chest01Closed_AA_A", 4, ".png");
-    MapState* state = new MapState(frames, event_handler);
-    //state->setExitEvent(event_handler->createConversationEvent(mio_convo));
-    state->setInteraction(MapState::USE);
-    object->setState(state);
-    frames = new Sprite(
-              "sprites/Map/Map_Things/Chest01/Chest01Opening_AA_A", 2, ".png");
-    object->setState(frames);
-    frames = new Sprite(
-                      "sprites/Map/Map_Things/Chest01/Chest01Open_AA_A00.png");
-    state = new MapState(frames, event_handler);
-    //state->setInteraction(MapState::WALKOFF);
-    state->setEnterEvent(event_handler->createConversationEvent(mio_convo));
-    state->setUseEvent(event_handler->createConversationEvent(mio_convo2));
-    object->setState(state);
-    things.append(object);
-
-    /* Make another map interactive object (colors walk over) */
-/*    object = new MapInteractiveObject(kTILE_WIDTH, kTILE_HEIGHT);
-    object->setStartingTile(0, geography[0][0][8]);
-    frames = new Sprite("sprites/Map/Testing/light1_AA_A00.png");
-    state = new MapState(frames, event_handler);
-    state->setInteraction(MapState::WALKON);
-    object->setState(state, true);
-    frames = new Sprite("sprites/Map/Testing/light2_AA_A00.png");
-    state = new MapState(frames, event_handler);
-    state->setInteraction(MapState::WALKOFF);
-    object->setState(state, true);
-    things.append(object);
-    
-    /* Make the door interactive object */
-/*    object = new MapInteractiveObject(kTILE_WIDTH, kTILE_HEIGHT);
-    object->setAnimationSpeed(100);
-    object->setStartingTile(0, geography[0][0][6]);
-    frames = new Sprite(
-                "sprites/Map/Tiles/Scenery/Transitional/TreeDoor01_AA_A00.png");
-    state = new MapState(frames, event_handler);
-    state->setInteraction(MapState::USE);
-    object->setState(state);
-    frames = new Sprite(
-          "sprites/Map/Tiles/Scenery/Transitional/TreeDoor01Opening_AA_A", 
-          5, ".png");
-    object->setState(frames);
-    frames = new Sprite(
-            "sprites/Map/Tiles/Scenery/Transitional/TreeDoor01Open_AA_A00.png");
-    state = new MapState(frames, event_handler);
-    state->setInteraction(MapState::WALKOFF); // WALKOFF
-    object->setState(state, true);
-    things.append(object);*/
+    items.append(item); */
   }
   success &= fh.stop();
 

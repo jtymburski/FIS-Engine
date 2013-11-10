@@ -10,14 +10,14 @@
 
 #include <QDebug>
 #include <QString>
-#include <QVector>
 
 #include "Game/Map/MapPerson.h"
 
 /* Path node struct for moving */
 struct Path
 {
-  Tile* tile;
+  int x;
+  int y;
   int delay;
   Path* previous;
   Path* next;
@@ -40,9 +40,6 @@ public:
   enum NodeState{LOOPED, BACKANDFORTH, LOCKED};
   
 private:
-  /* The object given by the NPC, can be NULL */
-  MapThing* gift; // TODO
-
   /* The starting node of the NPCs Path */
   Path* current;
   Path* head;
@@ -50,6 +47,19 @@ private:
   int npc_delay;
   NodeState state;
 
+/*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+private:
+  /* Appends an empty node onto the back of the movement stack */
+  void appendEmptyNode();
+  
+  /* Returns the node pointer at the index */
+  Path* getNode(int index);
+  
+  /* Inserts a node, at the given index */
+  bool insertNode(int index, Path* node);
+  
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
@@ -66,11 +76,8 @@ public:
   void clear();
 
   /* Path node handling functions */
-  bool insertNode(int index, Tile* tile, int delay = 0);
-  bool insertNodeAtTail(Tile* tile, int delay = 0);
-
-  /* Gets a pointer to the gift the NPC has */
-  MapThing* getGift(); // TODO
+  bool insertNode(int index, int x, int y, int delay = 0);
+  bool insertNodeAtTail(int x, int y, int delay = 0);
   
   /* Returns the node movement state - how it traverses */
   NodeState getNodeState();
@@ -82,9 +89,6 @@ public:
   bool removeAllNodes();
   bool removeNode(int index);
   bool removeNodeAtTail();
-
-  /* Resets the movement of the thing to the new location */
-  void resetMovement();
 
   /* Sets the node movement state - how it traverses */
   void setNodeState(NodeState state);

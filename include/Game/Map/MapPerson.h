@@ -42,6 +42,10 @@ private:
   EnumDb::Direction direction;
   QList<EnumDb::Direction> movement_stack;
 
+  /* The initial tile location to start movement on */
+  int starting_section;
+  Tile* starting_tile;
+  
   /* Set of all states for person. 1st layer is surface (water, ground, etc)
    * and then 2nd layer is direction facing */
   QList< QList<Sprite*> > states;
@@ -138,6 +142,9 @@ public:
   void keyFlush();
   void keyPress(QKeyEvent* event);
   void keyRelease(QKeyEvent* event);
+  
+  /* Resets the tile position */
+  bool resetPosition();
   
   /* Sets the animation time for each frame */
   bool setAnimationSpeed(short frame_time);
