@@ -11,15 +11,16 @@
 *
 * Note [1]: Phrase Language Syntax
 *
-* [ACTION ID],[LOWER/LOWER/GIVE/TAKE],[STATISTIC/AILMENT],
-* [MIN DURATION].[MAX DURATION],[IGNORE ATK],[IGNORE ATK ELM 1]...,
+* [ACTION ID],[PRIMARY ELEMENT],[SECONDARY ELEMENT],[LOWER/LOWER/GIVE/TAKE],
+* [STATISTIC/AILMENT],[MIN DURATION].[MAX DURATION],[IGNORE ATK],[IGNORE ATK ELM 1]...,
 * [IGNORE DEF],[IGNORE DEF ELM 1]...,[BASECHANGE],[VARIANCE];
 *
 * [int]:[string][string][uint].[uint],[bool],[string]...,
 * [bool],[string]...,[uint],[float];
 *
-* Note [2]: Statistics should be in upper cases, ailments should be in title
-*           case. (ex. THERMAL AGGRESSION , Poison)
+* Note [2]: Elements should be in title case, Statistics should be in upper
+*           case, ailments should be in title  case.
+*           (ex. Physical, THERMAL AGGRESSION , Poison)
 *******************************************************************************/
 #include "Game/Player/Action.h"
 
@@ -98,20 +99,23 @@ void Action::parse(QString raw)
   /* Parse ID */
   setId(split.at(0).toInt());
 
+  /* Parse Primary and Secondary Elements */
+  setPrimaryElement(parseElement(split.at(1)));
+
   /* Parse LOWER/RAISE/GIVE/TAKE --> BRANCH */
-  if (split.at(1) == "LOWER")
+  if (split.at(3) == "LOWER")
     setActionFlag(Action::LOWER);
-  else if (split.at(1) == "RAISE")
+  else if (split.at(3) == "RAISE")
     setActionFlag(Action::RAISE);
-  else if (split.at(1) == "GIVE")
+  else if (split.at(3) == "GIVE")
     setActionFlag(Action::GIVE);
-  else if (split.at(1) == "TAKE")
+  else if (split.at(3) == "TAKE")
     setActionFlag(Action::TAKE);
 
   /* Parse STATISTIC or AILMENT */
   if (getActionFlag(Action::LOWER) || getActionFlag(Action::RAISE))
   {
-    QStringList stat_split = split.at(2).split(' ');
+    QStringList stat_split = split.at(4).split(' ');
     /* Check which stat is to be affected */
     if (stat_split.at(0) == "PHYSICAL")
       setActionFlag(Action::PHYSICAL);
@@ -151,14 +155,14 @@ void Action::parse(QString raw)
     setAilment(getInfliction(split.at(2)));
 
   /* Parse Duration */
-  QStringList duration_split = split.at(3).split('.');
+  QStringList duration_split = split.at(5).split('.');
   setDuration(duration_split.at(0).toInt(),duration_split.at(1).toInt());
 
   /* Parse Ignore Atk */
-  setIgnoreFlag(Action::IGNORE_ATK, split.at(4).toInt());
+  setIgnoreFlag(Action::IGNORE_ATK, split.at(6).toInt());
 
   /* Parse Ignore Atk Elements */
-  QStringList atk_split = split.at(5).split('.');
+  QStringList atk_split = split.at(7).split('.');
   for (int i = 0; i < atk_split.size(); i++)
   {
     if (atk_split.at(i) == "PHYSICAL")
@@ -178,10 +182,10 @@ void Action::parse(QString raw)
   }
 
   /* Parse Ignore Def */
-  setIgnoreFlag(Action::IGNORE_DEF, split.at(6).toInt());
+  setIgnoreFlag(Action::IGNORE_DEF, split.at(8).toInt());
 
   /* Parse Ignore Def Elements */
-  QStringList def_split = split.at(7).split('.');
+  QStringList def_split = split.at(9).split('.');
   for (int i = 0; i < def_split.size(); i++)
   {
     if (def_split.at(i) == "PHYSICAL")
@@ -201,12 +205,40 @@ void Action::parse(QString raw)
   }
 
   /* Parse Base Change & Variance */
-  setBaseChange(split.at(8).toInt());
+  setBaseChange(split.at(10).toInt());
   split[9].chop(1); /* Remove trailing ; */
-  setVariance(split.at(9).toFloat());
+  setVariance(split.at(11).toFloat());
 
   /* The action was parased correctly, set the flag to be a valid action */
   setActionFlag(Action::VALID_ACTION, true);
+}
+
+/*
+ * Description: Attempts to parse a substring containing an element
+ *
+ * Inputs: QString - substring containing an Element.
+ * Output: EnumDb::Element - the element contained within the string (if exists)
+ */
+EnumDb::Element Action::parseElement(QString element)
+{
+  /* Attempt to parse the QString */
+  if (element == "Physical")
+    return EnumDb::PHYSICAL;
+  if (element == "Fire")
+    return EnumDb::FIRE;
+  if (element == "Ice")
+    return EnumDb::ICE;
+  if (element == "Forest")
+    return EnumDb::FOREST;
+  if (element == "Electric")
+    return EnumDb::ELECTRIC;
+  if (element == "Digital")
+    return EnumDb::DIGITAL;
+  if (element == "Nihil")
+    return EnumDb::NIHIL;
+
+  /* Parse failed, set to NONELEMENTAL */
+  return EnumDb::NONELEMENTAL;
 }
 
 /*
@@ -278,6 +310,28 @@ void Action::setId(int new_id)
 void Action::setIgnoreFlag(IgnoreFlag flags, bool set_value)
 {
   (set_value) ? (ignore_flags |= flags) : (ignore_flags ^= flags);
+}
+
+/*
+ * Description: Assigns the primary element of the Action
+ *
+ * Inputs: EnumDb::Element - the primary element of the action
+ * Output: none
+ */
+void Action::setPrimaryElement(EnumDb::Element new_primary_element)
+{
+  primary_element = new_primary_element;
+}
+
+/*
+ * Description: Assigns the secondary element of the Action
+ *
+ * Inputs: EnumDb::Element - the secondary element of the action
+ * Output: none
+ */
+void Action::setSecondaryElement(EnumDb::Element new_secondary_element)
+{
+  secondary_element = new_secondary_element;
 }
 
 /*
@@ -511,6 +565,28 @@ uint Action::getMaximum()
 uint Action::getMinimum()
 {
   return min_duration;
+}
+
+/*
+ * Description: Returns primary element of the Action
+ *
+ * Inputs: None
+ * Output: EnumDb::Element - the enumerated primary element of the action
+ */
+EnumDb::Element Action::getPrimary()
+{
+  return primary_element;
+}
+
+/*
+ * Description: Returns the secondary element of the Action
+ *
+ * Inputs: None
+ * Output: EnumDb::Element - the enumerated secondary elemen of the action
+ */
+EnumDb::Element Action::getSecondary()
+{
+  return secondary_element;
 }
 
 /*

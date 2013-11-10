@@ -10,7 +10,7 @@
 #include "Application.h"
 
 /* Constant Implementation - see header file for descriptions */
-const short Application::kTICK_DELAY = 0;
+const short Application::kTICK_DELAY = 10;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS

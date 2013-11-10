@@ -93,16 +93,20 @@ public:
   /* Enumerated flags for battle class */
   enum BattleState
   {
-    CONFIGURED       = 1ul << 0,
-    FLAGS_CONFIGURED = 1ul << 1,
-    RANDOM_ENCOUNTER = 1ul << 2,
-    MINI_BOSS        = 1ul << 3,
-    BOSS             = 1ul << 4,
-    FINAL_BOSS       = 1ul << 5
+    CONFIGURED             = 1ul << 0,
+    FLAGS_CONFIGURED       = 1ul << 1,
+    RANDOM_ENCOUNTER       = 1ul << 2,
+    MINI_BOSS              = 1ul << 3,
+    BOSS                   = 1ul << 4,
+    FINAL_BOSS             = 1ul << 5,
+    CURRENT_STATE_COMPLETE = 1ul << 6,
+    BATTLE_LOST            = 1ul << 7,
+    BATTLE_WON             = 1ul << 8
   };
   Q_DECLARE_FLAGS(BattleFlags, BattleState)
   BattleFlags flag_set;
 
+  /* TargetingMode -- current targeting mode selection */
   enum TargetingMode
   {
     DISABLED,
@@ -111,17 +115,20 @@ public:
     ACTIVE_OVER_FOES
   };
 
+  /* TurnState -- the current turn state of the Battle */
   enum TurnState
   {
+    BATTLE_BEGIN,
     GENERAL_UPKEEP,
     UPKEEP,
     SELECT_USER_ACTION,
     SELECT_ENEMY_ACTION,
     ORDER_ACTIONS,
-    PROCESS_ACTION,
+    PROCESS_ACTIONS,
     CLEAN_UP,
     BATTLE_LOSS,
-    BATTLE_VICTORY
+    BATTLE_VICTORY,
+    BATTLE_DESTRUCT
   };
 
 private:
@@ -219,6 +226,9 @@ private:
   /* Called when the Battle has been lost */
   void battleLost();
 
+  /* Cleanup before the end of a Battle turn */
+  void cleanUp();
+
   /* Deals with general upkeep (i.e. weather) */
   void generalUpkeep();
 
@@ -246,6 +256,9 @@ private:
   /* Emits finished() signal for actions */
   void updateScene();
 
+  /* Method which calls personal upkeeps */
+  void upkeep();
+
   /* Assigns a new value to the ailment update mode */
   void setAilmentUpdateMode(Options::BattleOptions new_value);
 
@@ -260,6 +273,9 @@ private:
 
   /* Assigns a new value to the hud display mode */
   void setHudDisplayMode(Options::BattleOptions new_value);
+
+  /* Updates the Battle to the next state */
+  void setNextTurnState();
 
   /* Assign a new value for the screen width */
   void setScreenHeight(ushort new_value);
@@ -362,6 +378,7 @@ public:
   void printFlags();
   void printInfo();
   void printPartyState();
+  void printTurnState();
   void printOther();
 
   /* Update the cycle time of Battle */

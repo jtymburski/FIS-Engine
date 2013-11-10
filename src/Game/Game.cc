@@ -92,9 +92,9 @@ void Game::connectEvents()
 void Game::setupBattle()
 {
   // Begin Action Builds
-  Action action_0001("1,RAISE,PHYSICAL AGGRESSION,1.1,0,,0,,5,2");
-  Action action_0002("2,RAISE,PHYSICAL FORTITUDE,1.1,0,,0,,10,3");
-  Action action_0003("3,GIVE,Poison,2.5,0,,0,,,");
+  Action action_0001("1,Physical,Physical,RAISE,PHYSICAL AGGRESSION,1.1,0,,0,,5,2");
+  Action action_0002("2,Physical,Physical,RAISE,PHYSICAL FORTITUDE,1.1,0,,0,,10,3");
+  Action action_0003("3,Forest,Physical,GIVE,Poison,2.5,0,,0,,,");
 
   // End Action Builds
 
@@ -326,6 +326,6 @@ void Game::updateGame(int cycle_time)
   if(currentIndex() == MAP && game_map != 0)
     game_map->updateMap(cycle_time);
 
-  // if (currentIndex() == BATTLE && game_battle != 0)
-    //game_battle->updateBattle(cycle_time);
+  if(currentIndex() == BATTLE && game_battle != 0);
+    game_battle->updateBattle(cycle_time);
 }

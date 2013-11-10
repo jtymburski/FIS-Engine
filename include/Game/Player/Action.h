@@ -98,6 +98,12 @@ private:
   /* Minimum duration the action will take */
   ushort min_duration;
 
+  /* The primary element of the action */
+  EnumDb::Element primary_element;
+
+  /* The secondary element of the action */
+  EnumDb::Element secondary_element;
+
   /* Variance of base change (percentage) */
   double variance;
 
@@ -107,6 +113,9 @@ private:
 private:
   /* The parsing script for action input */
   void parse(QString raw);
+
+  /* Attempts to parse an element from a QString */
+  EnumDb::Element parseElement(QString elment);
 
   /* Assigns an enumerated ailment */
   void setAilment(EnumDb::Infliction new_ailment);
@@ -125,6 +134,12 @@ private:
 
   /* Assigns a given IgnoreFlag flag a given boolean value */
   void setIgnoreFlag(IgnoreFlag flags, bool set_value = true);
+
+  /* Assigns the primary element of the action */
+  void setPrimaryElement(EnumDb::Element new_primary_element);
+
+  /* Assigns the secondary element of the action */
+  void setSecondaryElement(EnumDb::Element new_secondary_element);
 
   /* Variance of the base change (percentage) */
   void setVariance(float new_value);
@@ -162,6 +177,12 @@ public:
 
   /* Returns the minimum turns of action duration */
   uint getMinimum();
+
+  /* Returns the enumerated primary element of the action */
+  EnumDb::Element getPrimary();
+
+  /* Returns the enumerated secondary element of the action */
+  EnumDb::Element getSecondary();
 
   /* Returns the variance of the action */
   double getVariance();

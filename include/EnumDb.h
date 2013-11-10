@@ -72,6 +72,18 @@ public:
                    WEST          = 0x8,
                    DIRECTIONLESS = 0 };
   
+  /*
+   * Description: Elements of the Game
+   */
+  enum Element { PHYSICAL,
+                 FIRE,
+                 ICE,
+                 FOREST,
+                 ELECTRIC,
+                 DIGITAL,
+                 NIHIL,
+                 NONELEMENTAL };
+
   /* 
    * Description: The event classification - for what the event will do 
    */
@@ -81,7 +93,7 @@ public:
                         RUNMAP         = 3,
                         TELEPORTPLAYER = 4,
                         TELEPORTTHING  = 5,
-                        STARTCONVO     = 6};
+                        STARTCONVO     = 6 };
 
   /*
    * Description: Describes the current state of the inventory (how it is

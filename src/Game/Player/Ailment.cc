@@ -31,6 +31,45 @@
 /*============================================================================
  * CONSTANTS (Explanation for each in header file)
  *============================================================================*/
+
+/*------------------- Ailment Constants -----------------------
+ * kMAX_TURNS - maximum number of turns an ailment can be inflicted for
+ * kMIN_TURNS - minimum number of turns an ailment can be inflicted for
+ * kPOISON_DAMAGE_MAX - upper limit the poison ailment can inflict
+ * kPOISON_DAMAGE_MIN - minimum damage poison can do
+ * kPOISON_DAMAGE_INCR - factor by which poison damage increments per turn
+ * kPOISON_DMG_INIT - factor of victim's health to deal poison damage on
+ * kBURN_DMG_MAX - upper limit of burn damage the ailment can inflict
+ * kBURN_DMG_MIN - lower limit of burn damage the ailment can inflict
+ * kBURN_DMG_INCR - factor by which to increase burn damage per burn level
+ * kBURN_DMG_PC - factor of health by which to deal burn damage
+ * kBERSERK_DMG_INCR - factor by which to increase damage of Berserked person
+ * kBERSERK_HITBACK_PC - factor of health to deal self-damage of Berserked
+ * kBUBBIFY_MAX_QD - the maximum QD a Person may have being bubbified
+ * kBUBBIFY_STAT_MULR - factor applied to a person's stats during Bubbification
+ * kPARALYSIS_PC - normal chance for paralaysis skipping of turn
+ * kBLIND_PC - normal chance of missing attacks while blind
+ * kDREADSTRUCK_PC - normal chance of missing turn while dreadstruck
+ * kDREAMSNARE_PC - normal chance of attacks being benign illusions
+ *
+ * ---- Ailment Buff Factors ----
+ * kALLBUFF_PC - factor by which to increase all stats during all buff
+ * kPHYSBUFF_PC - factor by which to increase physical stats during phys buff
+ * kELMBUFF_PC - factor by which to increase elemental stats during elmn buff
+ * kLIMBUFF_PC - factor by which to increase limbertude stat during limb buff
+ * kUNBBUFF_PC - factor by which to incrase unbearability stat during unbr buff
+ * kMOMBUFF_PC - factor by which to increase momentum stat during mmtm buff
+ * kVITBUFF_PC - factor by which to increase health during vitality buff
+ * kQTMNBUFF_PC - factor by which to increase quantum drive during qtmn buff
+ *
+ *
+ * kROOTBOUND_PC - factor by which to heal health during Rootbound
+ * kHIBERNATION_INIT - base factor by which to heal health during Hibernating
+ * kHIBERNATION_INCR - factor by which to increase healing during Hibernating
+ * kMETABOLIC_PC - percent chance to die during metabolic tether
+ * kMETABOLIC_DMG - percent hit taken to health if death does not occur
+ * kBOND_STATS_PC - factor of others stats' by which inflicted increases stats
+ */
 const ushort Ailment::kMAX_TURNS           =   25;
 const ushort Ailment::kMIN_TURNS           =    1;
 const uint   Ailment::kPOISON_DMG_MAX      = 5000;
@@ -152,7 +191,7 @@ Ailment::Ailment(Person* victim, EnumDb::Infliction type, Person* inflictor,
  *         double ch  - % value the ailment will be cured per turn, >= 1 = 100%
  *         QWidget* parent - parent the ailment was created from
  */
-Ailment::Ailment(Person* vic, QString name, Person* inflictor, short max_turns,
+Ailment::Ailment(Person* victim, QString name, Person* inflictor, short max_turns,
                  double chance, QWidget* parent)
   : QWidget(parent),
     ailment_type(getInfliction(name)),
@@ -961,7 +1000,10 @@ bool Ailment::setNewVictim(Person* new_victim, Person* new_inflictor,
     /* The ailment cannot be assigned if the new victim is immune */
     can_assign &= !checkImmunity(new_victim);
     can_assign &= getFlag(Ailment::VICTIM_SET);
+  }
 
+  if (can_assign)
+  {
     /* Reset the turns the ailment has occured */
     if (refresh_turns)
     {
@@ -973,8 +1015,9 @@ bool Ailment::setNewVictim(Person* new_victim, Person* new_inflictor,
     setVictim(new_victim);
     setInflictor(new_inflictor);
     update();
-    return true;
   }
+
+  return can_assign;
 }
 
 /*============================================================================

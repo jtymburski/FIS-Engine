@@ -77,6 +77,8 @@ Battle::Battle(Party *friends, Party *foes, Options config, QWidget *parent)
       friends(friends),
       foes(foes)
 {
+  setTurnState(Battle::BATTLE_BEGIN);
+
   setScreenHeight(config.getScreenHeight());
   setScreenWidth(config.getScreenWidth());
   setFixedSize(getScreenWidth(), getScreenHeight());
@@ -99,6 +101,9 @@ Battle::Battle(Party *friends, Party *foes, Options config, QWidget *parent)
   /* Create buffers */
   item_buffer  = new ItemBuffer();
   skill_buffer = new SkillBuffer();
+
+  /* Battle Begin state complete */
+  setBattleFlag(Battle::CURRENT_STATE_COMPLETE);
 }
 
 /*
@@ -152,6 +157,8 @@ Battle::~Battle()
 void Battle::battleWon()
 {
 
+  /* Battle Won state complete */
+  setBattleFlag(CURRENT_STATE_COMPLETE);
 }
 
 
@@ -164,6 +171,26 @@ void Battle::battleWon()
 void Battle::battleLost()
 {
 
+  /* Battle Lost state complete */
+  setBattleFlag(CURRENT_STATE_COMPLETE);
+}
+
+/*
+ * Description:
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Battle::cleanUp()
+{
+  /* Increment the turn counter */
+  turns_elapsed++;
+
+  if (turns_elapsed < 20)
+  {
+    /* Clean up state complete */
+    setBattleFlag(Battle::CURRENT_STATE_COMPLETE);
+  }
 }
 
 /*
@@ -177,6 +204,8 @@ void Battle::battleLost()
 void Battle::generalUpkeep()
 {
 
+  /* General Upkeep state complete */
+  setBattleFlag(CURRENT_STATE_COMPLETE);
 }
 
 /*
@@ -203,6 +232,11 @@ bool Battle::loadDefaults()
     return false;
 
   setBattleFlag(Battle::FLAGS_CONFIGURED, true);
+  setBattleFlag(Battle::CURRENT_STATE_COMPLETE, false);
+  setBattleFlag(Battle::BATTLE_WON, false);
+  setBattleFlag(Battle::BATTLE_WON, false);
+
+  setTurnState(GENERAL_UPKEEP);
   return true;
 }
 
@@ -252,6 +286,8 @@ bool Battle::loadBattleStateFlags()
 void Battle::orderActions()
 {
 
+  /* Order action state complete */
+  setBattleFlag(Battle::CURRENT_STATE_COMPLETE);
 }
 
 /*
@@ -262,6 +298,7 @@ void Battle::orderActions()
  */
 void Battle::performAction()
 {
+
 
 }
 
@@ -286,6 +323,9 @@ void Battle::personalUpkeep(uint target)
 void Battle::processActions()
 {
 
+
+  /* Process Action stae complete */
+  setBattleFlag(Battle::CURRENT_STATE_COMPLETE);
 }
 
 /*
@@ -297,6 +337,8 @@ void Battle::processActions()
 void Battle::processEnemyActions()
 {
 
+  /* Process enemy action state complete */
+  setBattleFlag(Battle::CURRENT_STATE_COMPLETE);
 }
 
 /*
@@ -310,6 +352,18 @@ void Battle::updateScene()
 
 }
 
+/*
+ * Description:
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Battle::upkeep()
+{
+
+  /* Personal upkeep state complete */
+  setBattleFlag(Battle::CURRENT_STATE_COMPLETE);
+}
 
 /*
  * Description: Assigns a new value to the ailment update mode
@@ -381,10 +435,95 @@ void Battle::setFoes(Party* new_foes)
  * Inputs: Options::BattleOptions - enumerated value for hud display mode
  * Output: none
  */
- void Battle::setHudDisplayMode(Options::BattleOptions new_value)
- {
-   hud_display_mode = new_value;
- }
+void Battle::setHudDisplayMode(Options::BattleOptions new_value)
+{
+  hud_display_mode = new_value;
+}
+
+/*
+ * Description: Updates the state of the Battle
+ *
+ * Notes [1]: This function should be called after CURRENT_STATE_COMPLETE
+ *            flag is set.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Battle::setNextTurnState()
+{
+  /* Set the CURRENT_STATE to incomplete */
+  setBattleFlag(Battle::CURRENT_STATE_COMPLETE, false);
+
+  /* If the Battle has been won, go to victory */
+  if (getBattleFlag(Battle::BATTLE_WON))
+  {
+    setTurnState(BATTLE_VICTORY);
+    battleWon();
+  }
+
+  /* If the Battle has been lost, GAME OVER */
+  if (getBattleFlag(Battle::BATTLE_LOST))
+  {
+    setTurnState(BATTLE_LOSS);
+    battleLost();
+  }
+
+  /* After the Battle Begins, the general turn loop begins at General Upkeep */
+  if (turn_state == BATTLE_BEGIN)
+  {
+    setTurnState(GENERAL_UPKEEP);
+    generalUpkeep();
+  }
+
+  /* After general upkeep, each personal upkeep takes place */
+  else if (turn_state == GENERAL_UPKEEP)
+  {
+    setTurnState(UPKEEP);
+    upkeep();
+  }
+
+  /* After presonal upkeeps, the user selects actions from the Battle Menu */
+  else if (turn_state == UPKEEP)
+  {
+    setTurnState(SELECT_USER_ACTION);
+    processActions();
+  }
+
+  /* After the user selects actions, the enemy chooses actions */
+  else if (turn_state == SELECT_USER_ACTION)
+  {
+    setTurnState(SELECT_ENEMY_ACTION);
+    processEnemyActions();
+  }
+
+  /* After enemies select actions, the actions are ordered */
+  else if (turn_state == SELECT_ENEMY_ACTION)
+  {
+    setTurnState(ORDER_ACTIONS);
+    orderActions();
+  }
+
+  /* After the actions are ordered, the actions are processed */
+  else if (turn_state == ORDER_ACTIONS)
+  {
+    setTurnState(PROCESS_ACTIONS);
+    cleanUp();
+  }
+
+  /* After the actions are processed, Battle turn clean up occurs */
+  else if (turn_state == PROCESS_ACTIONS)
+  {
+    setTurnState(CLEAN_UP);
+    cleanUp();
+  }
+
+  /* After the end of the turn, loop restarts at general upkeep */
+  else if (turn_state == CLEAN_UP)
+  {
+    setTurnState(GENERAL_UPKEEP);
+    generalUpkeep();
+  }
+}
 
 /*
  * Description: Assigns a new value for the screen height
@@ -426,7 +565,7 @@ void Battle::setScreenWidth(ushort new_value)
 bool Battle::setTargetIndex(uint new_value)
 {
   /* Check for Friends Index */
-  if (getTargetingMode() == ACTIVE_OVER_FRIENDS)
+  if (getTargetingMode() == ACTIVE_OVER_FOES)
   {
     if (new_value < foes->getPartySize())
     {
@@ -436,7 +575,7 @@ bool Battle::setTargetIndex(uint new_value)
   }
 
   /* Check for Foes Index */
-  else if (getTargetingMode() == ACTIVE_OVER_FOES)
+  else if (getTargetingMode() == ACTIVE_OVER_FRIENDS)
   {
     if (new_value < friends->getPartySize())
     {
@@ -482,7 +621,12 @@ void Battle::setTurnsElapsed(ushort new_value)
  */
 void Battle::setTurnState(TurnState new_turn_state)
 {
+  /* Update the turn state */
   turn_state = new_turn_state;
+
+  /* Output the new turn state in DEBUG mode */
+  if (getBattleMode() == Options::DEBUG)
+    printTurnState();
 }
 
 /*==============================================================================
@@ -709,6 +853,10 @@ void Battle::printFlags()
   qDebug() << "MINI_BOSS: "        << getBattleFlag(Battle::MINI_BOSS);
   qDebug() << "BOSS: "             << getBattleFlag(Battle::BOSS);
   qDebug() << "FINAL_BOSS: "       << getBattleFlag(Battle::FINAL_BOSS);
+  qDebug() << "CURRENT_STATE_COMPLETE: "
+           << getBattleFlag(Battle::CURRENT_STATE_COMPLETE);
+  qDebug() << "BATTLE_LOST: " << getBattleFlag(Battle::BATTLE_LOST);
+  qDebug() << "BATTLE_WON: " << getBattleFlag(Battle::BATTLE_WON);
 }
 
 /*
@@ -771,6 +919,38 @@ void Battle::printInfo()
  }
 
 /*
+ * Description: Prints out the enumerated turn state of the Battle
+ *
+ * Inputs: none
+ * Output: none
+ */
+ void Battle::printTurnState()
+ {
+  if (turn_state == BATTLE_BEGIN)
+    qDebug() << "Current Battle State:: Battle Begin";
+  if (turn_state == GENERAL_UPKEEP)
+    qDebug() << "Current Battle State: General Upkeep";
+  if (turn_state == UPKEEP)
+    qDebug() << "Current Battle State:: Upkeep";
+  if (turn_state == SELECT_USER_ACTION)
+    qDebug() << "Current Battle State: Select User Action";
+  if (turn_state == SELECT_ENEMY_ACTION)
+    qDebug() << "Current Battle State: Select Enemy Action";
+  if (turn_state == ORDER_ACTIONS)
+    qDebug() << "Current Battle State: Order Actions";
+  if (turn_state == PROCESS_ACTIONS)
+    qDebug() << "Current Battle State: Process Actions";
+  if (turn_state == CLEAN_UP)
+    qDebug() << "Current Battle State: Clean Up";
+  if (turn_state == BATTLE_LOSS)
+    qDebug() << "Current Battle State: Battle Loss";
+  if (turn_state == BATTLE_VICTORY)
+    qDebug() << "Current Battle State: Battle Victory";
+  if (turn_state == BATTLE_DESTRUCT)
+    qDebug() << "Current Battle State: Battle Destruct";
+ }
+
+/*
  * Description: Prints out information about the menus relating to the Battle
  *
  * Inputs: none
@@ -798,6 +978,11 @@ void Battle::updateBattle(int cycle_time)
 {
   setTimeElapsed(cycle_time);
   //TODO [10-12-13] updateGL();
+
+  if (getBattleFlag(Battle::CURRENT_STATE_COMPLETE))
+  {
+    setNextTurnState();
+  }
 }
 
 /*
@@ -820,6 +1005,6 @@ bool Battle::getBattleFlag(BattleState flags)
  */
 void Battle::setBattleFlag(BattleState flags, bool set_value)
 {
-  (set_value) ? (flag_set |= flags) : (flag_set &= flags);
+  (set_value) ? (flag_set |= flags) : (flag_set ^= flags);
 }
 
