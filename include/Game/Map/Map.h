@@ -110,6 +110,9 @@ private:
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 private:
+  /* Adds sprite data, as per data from the file */
+  bool addSpriteData(XmlData data, int file_index);
+  
   /* Adds tile data, as per data from the file */
   bool addTileData(XmlData data, int section_index);
 

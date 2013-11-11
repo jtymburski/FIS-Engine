@@ -103,6 +103,9 @@ public:
   /* Initiates the sound protocol using SDL */
   static bool initiateSDL();
 
+  /* Plays a sound, only once. More than that? create a sound handle */
+  //bool playSound(); // TODO
+  
   /* Status of the running SDL system */
   static bool statusSDL();
 };

@@ -50,6 +50,9 @@ private:
    * and then 2nd layer is direction facing */
   QList< QList<Sprite*> > states;
 
+  /* A counter of steps made on the map */
+  int steps;
+  
   /* The surface that the person is walking on */
   SurfaceClassifier surface;
   
@@ -127,6 +130,9 @@ public:
 
   /* Returns the move request in the class (virtual reimplemented) */
   EnumDb::Direction getMoveRequest();
+  
+  /* Returns the number of tiles walked on for the person */
+  int getStepCount();
   
   /* Returns the predicted move request in the class */
   virtual EnumDb::Direction getPredictedMoveRequest();

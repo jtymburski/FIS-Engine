@@ -104,6 +104,12 @@ Map::~Map()
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 
+// TODO
+bool Map::addSpriteData(XmlData data, int file_index)
+{
+  return true;
+}
+
 bool Map::addTileData(XmlData data, int section_index)
 {
   QList<QString> adjustments;
@@ -725,6 +731,8 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     viewport->lockOn(persons[1]);
   else if(key_event->key() == Qt::Key_F4)
     viewport->lockOn(player);
+  else if(key_event->key() == Qt::Key_F5)
+    qDebug() << "Player steps: " << player->getStepCount();
   else if(key_event->key() == Qt::Key_0)
   {
     Event blank_event = event_handler->createBlankEvent();
@@ -1081,7 +1089,12 @@ bool Map::loadMap(QString file)
       /* Temporary variables */
       int temp_index = -1;
       
-      if(data.getElement(kFILE_GAME_TYPE) == "map")
+      if(data.getElement(kFILE_SECTION_ID) == "sprite" && 
+         data.getElement(kFILE_GAME_TYPE) == "map")
+      {
+        qDebug() << "Sprite data: " << data.getDataString();
+      }
+      else if(data.getElement(kFILE_GAME_TYPE) == "map")
       {
         /* Determine if it's a new section */
         if(index != 0 && data.getElement(kFILE_SECTION_ID) == "main")

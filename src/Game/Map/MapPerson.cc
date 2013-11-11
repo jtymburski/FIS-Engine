@@ -37,6 +37,7 @@ MapPerson::MapPerson() : MapThing()
   setAnimationSpeed(kDEFAULT_ANIMATION);
   starting_section = 0;
   starting_tile = 0;
+  steps = 0;
   
   /* Set the default setup for what the player is standing on and facing */
   surface = GROUND;
@@ -64,7 +65,8 @@ MapPerson::MapPerson(int width, int height, QString name,
   setAnimationSpeed(kDEFAULT_ANIMATION);
   starting_section = 0;
   starting_tile = 0;
-
+  steps = 0;
+  
   /* Set the default setup for what the player is standing on and facing */
   surface = GROUND;
   direction = EnumDb::NORTH;
@@ -243,9 +245,16 @@ bool MapPerson::tileMoveStart(Tile* next_tile)
 {
   if(next_tile != 0 && !next_tile->isPersonSet())
   {
+    /* Increment step counter. Reset, if it loops around */
+    steps++;
+    if(steps < 0)
+      steps = 1;
+    
+    /* Set the new main tile */
     tile_previous = tile_main;
     tile_main = next_tile;
     tile_main->setPerson(this, getID() != kPLAYER_ID);
+    
     return true;
   }
   return false;
@@ -432,6 +441,18 @@ EnumDb::Direction MapPerson::getMoveRequest()
   if(isMoveRequested())
     return movement_stack.last();
   return EnumDb::DIRECTIONLESS;
+}
+
+/*
+ * Description: Returns the number of steps for the person, aka the number of 
+ *              tiles walked on.
+ *
+ * Inputs: none
+ * Output: int - the number of steps
+ */
+int MapPerson::getStepCount()
+{
+  return steps;
 }
 
 /*
