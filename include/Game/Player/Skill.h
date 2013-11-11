@@ -37,13 +37,17 @@ public:
     MULTIHIT       = 1 << 0,
     OFFENSIVE      = 1 << 1,
     DEFENSIVE      = 1 << 2,
-    PHYSICAL       = 1 << 3,
-    THERMAL        = 1 << 4,
-    POLAR          = 1 << 5,
-    PRIMAL         = 1 << 6,
-    CHARGED        = 1 << 7,
-    CYBERNETIC     = 1 << 8,
-    NIHIL          = 1 << 9
+    INFLICTING     = 1 << 3,
+    ALLEVIATING    = 1 << 4,
+    HEALING        = 1 << 5,
+    PHYSICAL       = 1 << 6,
+    THERMAL        = 1 << 7,
+    POLAR          = 1 << 8,
+    PRIMAL         = 1 << 9,
+    CHARGED        = 1 << 10,
+    CYBERNETIC     = 1 << 11,
+    NIHIL          = 1 << 12,
+    VALID_SKILL    = 1 << 13
   };
   Q_DECLARE_FLAGS(SkillFlags, SkillType)
 
@@ -74,13 +78,24 @@ private:
   /* effect_chance[i] of effect[i] */
   QVector<float> effect_chance;
 
-  // TODO: Discuss animations and sound effects [02-07-13] */
+  /* Sprite animation of the skill */
   Sprite* animation;
+
+  /* Sound effect that the skill uses */
   Sound* sound_effect;
 
   /* SKill flags variable */
   SkillFlags skill_flags;
 
+/*=============================================================================
+ * PRIVATE FUNCTIONS
+ *============================================================================*/
+private:
+  void calculateFlags();
+
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
 public:
   /* Appends an effect chance to the vector */
   bool addEffectChance(float new_value);
@@ -142,7 +157,7 @@ public:
   void setDescription(QString new_value);
 
   /* Set a skill flag */
-  void setFlag(SkillFlags flags, bool set_value);
+  void setFlag(SkillFlags flags, bool set_value = true);
 
   /* Sets the name of the skill */
   void setName(QString new_value);

@@ -932,6 +932,12 @@ EnumDb::Infliction Ailment::getType()
   return ailment_type;
 }
 
+
+Person* Ailment::getVictim()
+{
+  return victim;
+}
+
 /*
  * Description: Returns the string value of the current object's enumerated
  *              value.

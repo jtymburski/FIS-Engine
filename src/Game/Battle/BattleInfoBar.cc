@@ -294,12 +294,12 @@ bool BattleInfoBar::addMessage(QString text, short time_visible)
     text = text.left(80);
     emit invalidMessage("Warning: Info essage Exceeds Allowed Length");
   }
-  if (time_visible < kMIN_TIME)
+  if (!getTextDisplayMode() == DEBUG || time_visible < kMIN_TIME)
   {
     time_visible = kMIN_TIME;
     emit invalidMessage("Warning: Info mmsg time lower than minimum allowed");
   }
-  if (time_visible > kMAX_TIME)
+  if (!getTextDisplayMode() == DEBUG || time_visible > kMAX_TIME)
   {
     time_visible = kMAX_TIME;
     emit invalidMessage("Warning: Info msg time visible exceeds maximum value");

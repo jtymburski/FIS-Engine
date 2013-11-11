@@ -1,22 +1,13 @@
-/******************************************************************************
-* Class Name: BattleMenu
+/********************************************************************************
+* Class Name: BattleMenu [Declaration]
 * Date Created: Sunday, October 28th, 2012
-* Inheritance: Parent class: Battle <-- Game <-- Application
-* Description: BattleMenu displays an interactive menu for the player to 
-*        utilize commands while in a Battle.
+* Rewritten: Saturday, November 9th, 2013
+* Inheritance: QWidget
+* Description: The BattleMenu class is the menu displayed when a user is choosing
+*              a skill or action during Battle.
 *
-*  TODO: CONSTRUCTORS TO BE FINISHED
-*
-*  NOTES:
-*
-* On construction of a BattleMenu, the person pointer is accessed to get all
-* the possible categories (from action class) and that is assembled into a 
-* local Qvector<QString> for categories.  This is stored in layer 2 of the
-* battle menu. Once a category is selected, a method accesses all actions'
-* from the person that match the category selected and assemble them into
-* a new Qvector<Action *> actions. This is then rendered in layer 3 to be 
-* ready for selection. 
-******************************************************************************/
+* //TODO: Everything [11-09-13]
+********************************************************************************/
 #ifndef BATTLEMENU_H
 #define BATTLEMENU_H
 
@@ -24,85 +15,142 @@
 #include <QPainter>
 #include <QWidget>
 
-#include "Game/Battle/BattleInfoBar.h"
-#include "Game/Player/Action.h"
-#include "Game/Player/Inventory.h"
+#include "Options.h"
+#include "Sound.h"
+#include "Game/Battle/SkillBuffer.h"
+#include "Game/Battle/ItemBuffer.h"
 #include "Game/Player/Party.h"
-#include "Game/Player/Person.h"
 
 class BattleMenu : public QWidget
 {
-  Q_OBJECT // TODO: What is this for? [12-02-12]
+  Q_OBJECT
 
 public: 
-  /* Constructs a BattleMenu object */
-  BattleMenu(QWidget *parent = 0);
+  /* Constructs a default Battle Menu object */
+  BattleMenu(QWidget* parent = 0);
+
+  /* Constructs a normal Battle Menu object */
+  BattleMenu(Options running_config, QWidget* parent = 0);
 
   /* Destroys a BattleMenu object */
   ~BattleMenu();
 
+  /* Enumerated display mode of the BattleMenu */
+  enum MenuStatus
+  {
+    OFF,      /* OFF - not showing */
+    SHOWING,  /* SHOWING - rising from the depths */
+    ON,       /* ON - currently fully displayed */
+    HIDING,   /* HIDING - menu is hiding from view */
+    DEBUG     /* DEBUG - outputting in text mode (not rendering) */
+  };
+
 private:
-  	/* Current action that is selected */
-  Action* current_action;
+  /* Currently active and inactive parties for the Battle Menu Bar */
+  Party* active_party;
+  Party* inactive_party;
 
-  /* Menu active? */
-  bool active;
-  
-  /* Pointer to Battle Info Bar (top bar describing battle events) */
-  BattleInfoBar * bar;
+  /* Index of the active item of the active party */
+  ushort active_item;
 
-  /* Inventory that the sleuth has access to */
-  Inventory* inven;
+  /* Index of the active person in the party */
+  ushort active_person;
 
-  /* Allied party */
-  Party* friends;
-  
-  /* Enemy party */
-  Party* foes;
+  /* Index of the active skill of the active person */
+  ushort active_skill;
 
-  /* Person currently selecting action */
-  Person* active_person;
+  /* Current layer index */
+  ushort layer_index;
 
-  /* Actions currently available for active person (compiled from 
-  equipment, bubbies, race, class etc.) */
-  QVector<Action*> actions;
+  /* Current layer zero element index */
+  ushort cursor_index;
 
-  /* Action buffer in battle */
-  QVector<Action*>* action_buffer;
+  /* Current status of the menu (display mode) */
+  MenuStatus menu_status;
 
-  /* The buffer of inventory items from battle */
-  QVector<Item*>* inventory_buffer;
+  /* Configuration for display of the Menu */
+  Options system_options;
+
+  /* ------------------ Constants ------------------ */
+  static const QString kMENU_ITEMS[];  /* The stored menu items */
+  static const ushort kNUM_MENU_ITEMS;  /* # of items on layer zero of menu */
+
+/*=============================================================================
+ * PRIVATE FUNCTIONS
+ *=============================================================================*/
+private:
+  /* Decrements to the previous menu layer */
+  void decrementLayer();
+
+  /* Decrements the selected menu item (of the layer index) */
+  void decrementSelected();
+
+  /* Highlight the selected index (of the layer index) */
+  bool highlight(int index);
+
+  /* Increments the selected menu item (of the layer index) */
+  void incrementSelected();
+
+  /* Increments to the next layer */
+  void incrementLayer();
+
+  /* Chooses the selected menu item */
+  bool setChosen();
+
+  /* Assigns the selected menu item - fails if out of range */
+  bool setSelected(int index);
+
+  /* Remove highlight on the selected index */
+  bool unhighlight(int index);
+
+  /* List of skills from the active person available */
+  QList<Skill*> getValidSkills();
+
+  /* List of targets from the inactive party available to the active person */
+  QList<Person*> getValidTargets();
+
+  /* Assigns the active party of the menu */
+  bool setActiveParty(Party* new_active_party);
+
+  /* Assigns the cursor index */
+  void setCursorIndex(int new_index);
+
+  /* Assigns the inactive party of the menu */
+  bool setInactiveParty(Party* new_inactive_party);
+
+  /* Assigns the running configuration from the options cass */
+  void setConfiguration(Options running_config);
+
+  /* Assigns a new layer index */
+  void setLayerIndex(int new_index);
+
+  /* Assigns the menu status */
+  void setMenuStatus(MenuStatus new_menu_status);
 
 /*=============================================================================
  * PROTECTED FUNCTIONS
- *===========================================================================*/
+ *=============================================================================*/
 protected:
   /* Paint event for the class */
-  void paintEvent(QPaintEvent*);
+  void paintEvent(QPaintEvent* event);
+
+  /* Key press event */
+  void keyPressEvent(QKeyEvent* event);
 
 /*=============================================================================
  * SIGNALS
- *===========================================================================*/
+ *=============================================================================*/
 signals:
-  /* Emitted when the action is selected and verified as correct,
-     connected to processAction() in battle */
-  void actionSelected();
+  /* Emitted when a Skill is chosen */
+  void skillChosen(SkillUseAction skill_chosen);
+
+  void itemChosen(ItemUseAction item_chosen);
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
-  /* Selects the target PARTY for the action. Also adds the action to the action buffer. */
-  void selectedTarget (Party *);
 
-  /* Selects the target PERSON for the action. Also adds the action to the action buffer. */
-  void selectedTarget (Person *); 
-
-  /* Returns TRUE if menu is active */
-  bool getActive();
-
-  /* Sets menu activity */
-  void setActive(bool active);
 };
 
 #endif // BATTLEMENU_H

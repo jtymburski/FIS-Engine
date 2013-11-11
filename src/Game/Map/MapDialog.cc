@@ -54,7 +54,7 @@ const short MapDialog::kSCROLL_CIRCLE_RADIUS = 3;
 const short MapDialog::kSCROLL_OFFSET = 6;
 const short MapDialog::kSCROLL_TRIANGLE_HEIGHT = 4;
 const short MapDialog::kSHIFT_OFFSET = 2;
-const short MapDialog::kSHIFT_TIME = 75;
+const short MapDialog::kSHIFT_TIME = 115;
 const float MapDialog::kTEXT_DISPLAY_SPEED = 0.5;
 
 /*============================================================================

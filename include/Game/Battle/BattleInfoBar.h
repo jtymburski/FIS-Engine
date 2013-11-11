@@ -177,7 +177,7 @@ signals:
  *============================================================================*/
 public:
   /* Adds a message to the BattleInfoBar message buffer */
-  bool addMessage(QString text, short time_visible);
+  bool addMessage(QString text, short time_visible = 0);
 
   /* Update the cycle time of BattleInfoBar */
   void update(int cycle_time);

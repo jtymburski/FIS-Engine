@@ -120,6 +120,9 @@ public:
   /* Uses the item on the party */
   bool useItem(Item* used_item, ushort target, EnumDb::ItemUse use_type);
 
+  /* Returns the average speed of the Party */
+  ushort getAverageSpeed();
+
   /* Returns the inventory of the party */
   Inventory* getInventory();
 
@@ -134,6 +137,9 @@ public:
 
   /* Returns the party size */
   ushort getPartySize();
+
+  /* Returns the total speed of the Party */
+  int getTotalSpeed();
 
   /* Returns a person's name at a certain index */
   QString getMemberName(ushort index);

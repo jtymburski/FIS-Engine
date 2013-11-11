@@ -158,7 +158,7 @@ public:
                     CURSE,
                     METATETHER,
                     STUBULATE,
-                    NOAILMENT, };
+                    NOAILMENT };
 
   /*
    * Description: Item use types, Menu, Battle, Both, None

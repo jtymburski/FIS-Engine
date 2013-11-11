@@ -75,6 +75,7 @@
 #include "Game/Battle/SkillBuffer.h"
 #include "Game/Battle/ItemBuffer.h"
 #include "Game/Player/Party.h"
+#include "Game/Player/Ailment.h"
 #include "GrammarHelper.h"
 #include "MathHelper.h"
 #include "Options.h"
@@ -118,23 +119,33 @@ public:
     ACTIVE_OVER_FOES
   };
 
+  /* TurnMode -- enumeration of turn order */
+  enum TurnMode
+  {
+    FRIENDS_FIRST,
+    FOES_FIRST
+  };
+
   /* TurnState -- the current turn state of the Battle */
   enum TurnState
   {
-    BATTLE_BEGIN,
-    GENERAL_UPKEEP,
-    UPKEEP,
-    SELECT_USER_ACTION,
-    SELECT_ENEMY_ACTION,
-    ORDER_ACTIONS,
-    PROCESS_ACTIONS,
-    CLEAN_UP,
-    BATTLE_LOSS,
-    BATTLE_VICTORY,
-    BATTLE_DESTRUCT
+    BATTLE_BEGIN,         /* Setup of the battle */
+    GENERAL_UPKEEP,       /* General upkeep phase - weather etc. */
+    UPKEEP,               /* Personal upkeep - ailments etc. */
+    SELECT_USER_ACTION,   /* User choice of action/skill etc. */
+    SELECT_ENEMY_ACTION,  /* Enemy choice of skill -> AI */
+    ORDER_ACTIONS,        /* Determines order of skills */
+    PROCESS_ACTIONS,      /* Determines outcomes of skills */
+    CLEAN_UP,             /* Cleanup after turn, turn incr. etc. */
+    BATTLE_LOSS,          /* Loss stage returns to title */
+    BATTLE_VICTORY,       /* Victory displays the victory screen */
+    BATTLE_DESTRUCT       /* Battle should be destructed */
   };
 
 private:
+  /* Ailments currently stored in the Battle */
+  QVector<Ailment*> current_ailments;
+
   /* The Battle Info Bar */
   BattleInfoBar* info_bar;
 
@@ -172,6 +183,9 @@ private:
   Party* friends;
   Party* foes;
 
+  /* Running config */
+  Options running_config;
+
   /* Dimensions of the screen */
   ushort screen_height;
   ushort screen_width;
@@ -188,6 +202,9 @@ private:
   /* Elapsed turns of hte battle */
   ushort turns_elapsed;
 
+  /* Enumeration of turn order */
+  TurnMode turn_mode;
+
   /* The turn state of the Battle */
   TurnState turn_state;
 
@@ -201,6 +218,8 @@ private:
   static const ushort kBATTLE_MENU_DELAY;
 
   /* ------------ Battle Modifiers --------------- */
+  static const ushort kMAX_AILMENTS;
+  static const ushort kMAX_EACH_AILMENTS;
   static const ushort kMAXIMUM_DAMAGE;
   static const ushort kMINIMUM_DAMAGE;
   static const float kOFF_PRIM_ELM_MODIFIER;
@@ -223,6 +242,9 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Attempts to add an ailment to the vector of ailments */
+  bool addAilment(Ailment* new_ailment);
+
   /* Called when the Battle has been won */
   void battleWon();
 
@@ -234,6 +256,9 @@ private:
 
   /* Cleanup before the end of a Battle turn */
   void cleanUp();
+
+  /* Determines the turn progression of the Battle (based on speed) */
+  void determineTurnMode();
 
   /* Deals with general upkeep (i.e. weather) */
   void generalUpkeep();
@@ -251,13 +276,13 @@ private:
   void performAction();
 
   /* Deals with character related upkeep */
-  void personalUpkeep(uint target);
+  void personalUpkeep(Person* target);
 
   /* Process the actions (Items & Skills) in the buffer */
   void processActions();
 
   /* Recalculates the ailments after they have been altered */
-  void recalculateAilments();
+  void recalculateAilments(Person* target);
 
   /* Calculates enemy actions and add them to the buffer */
   void selectEnemyActions();
@@ -286,10 +311,13 @@ private:
   /* Updates the Battle to the next state */
   void setNextTurnState();
 
-  /* Assign a new value for the screen width */
+  /* Assings the running config */
+  void setRunningConfig(Options config);
+
+  /* Assigns a new value for the screen width */
   void setScreenHeight(ushort new_value);
 
-  /* Assign a new value for the screen width */
+  /* Assigns a new value for the screen width */
   void setScreenWidth(ushort new_value);
 
   /* Assigns a new value to the targeting index of the selected party */
@@ -304,6 +332,9 @@ private:
   /* Assigns a new value to the turns elapsed */
   void setTurnsElapsed(ushort new_value);
 
+  /* Assigns a new turn mode to the Battle */
+  void setTurnMode(TurnMode new_turn_mode);
+
   /* Updates the turn state of the Battle */
   void setTurnState(TurnState new_turn_state);
 
@@ -311,8 +342,11 @@ private:
  * PROTECTED FUNCTIONS
  *============================================================================*/
 protected:
+  /* Paint event for Battle */
+  void paintEvent(QPaintEvent *event);
+
   /* Handles all key entries for the Battle */
-  void keyPressEvent(QKeyEvent* event);
+  void keyPressEvent(QKeyEvent *event);
 
   /* Returns the ailment update mode currently set */
   Options::BattleOptions getAilmentUpdateMode();
@@ -338,10 +372,10 @@ protected:
   /* Returns the value of the screen width */
   ushort getScreenWidth();
 
-  /* Returns the value of the target index of the currently selected index */
-  uint getTargetingIndex();
+  /* Evaluates and retrns a vector of ailments for a given person */
+  QVector<Ailment*> getPersonAilments(Person* target);
 
-    /* Returns the currently assigned targeting mode */
+  /* Returns the currently assigned targeting mode */
   TargetingMode getTargetingMode();
 
   /* Returns the value of the turns elapsed */

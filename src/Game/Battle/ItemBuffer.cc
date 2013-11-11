@@ -97,7 +97,7 @@ void ItemBuffer::clearAll()
  * Inputs: int index - the index of the item buffer to be checked.
  * Outputs: The ItemUseAction struct at that index, if one exists
  */
-ItemBuffer::ItemUseAction ItemBuffer::getIndex(int index)
+ItemUseAction ItemBuffer::getIndex(int index)
 {
   if (index < item_buffer.size())
     return item_buffer.at(index);

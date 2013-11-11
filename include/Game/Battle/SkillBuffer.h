@@ -13,6 +13,25 @@
 
 #include "Game/Player/Person.h"
 
+/* Structure containing the data describing one element in the skill buffer */
+struct SkillUseAction
+{
+ /* The user of the SkillUseAction */
+ Person* user;
+
+ /* The skill being used */
+ Skill* skill_used;
+
+ /* Vector of targets the skill is aimed to hit */
+ QVector<Person*> targets;
+
+ /* Validity of the SkillUseAction object (set on addition) */
+ bool valid_skill_use;
+
+ /* Turns til the skill activates */
+ ushort cooldown;
+};
+
 class SkillBuffer
 {
 public:
@@ -23,21 +42,7 @@ public:
   ~SkillBuffer();
 
 private:
-  /* Structure containing the data describing one element in the skill buffer */
-  struct SkillUseAction
-  {
-    /* The user of the SkillUseAction */
-    Person* user;
 
-    /* The skill being used */
-    Skill* skill_used;
-
-    /* Vector of targets the skill is aimed to hit */
-    QVector<Person*> targets;
-
-    /* Validity of the SkillUseAction object (set on addition) */
-    bool valid_skill_use;
-  };
 
   /* The current index of the SkillUse buffer */
   int curr_index;
@@ -46,6 +51,7 @@ private:
   QList<SkillUseAction> skill_buffer;
 
   /* ------------ Constants --------------- */
+  static const ushort kMAXIMUM_COOLDOWN;
   static const ushort kMAXIMUM_ELEMENTS;
   static const ushort kMAXIMUM_TARGETS;
   static const ushort kSTARTING_ELEMENT;
@@ -68,7 +74,8 @@ private:
  *=============================================================================*/
 public:
   /* Attempts to add a SkillUseAction to the Skill Buffer */
-  bool addSkillUse(Person* user, Skill* skill_used, QVector<Person*> targets);
+  bool addSkillUse(Person* user, Skill* skill_used, QVector<Person*> targets,
+                   int cooldown = 0);
  
  /* Calculates and clears the invalid SkillUseActions from the SkillBuffer */
  void clearInvalid();

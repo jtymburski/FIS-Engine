@@ -41,6 +41,8 @@ const ushort Battle::kBATTLE_MENU_DELAY     =  400; /* Personal menu delay */
  * Double Elemental Disadvantage Modifier
  */
 
+const ushort Battle::kMAX_AILMENTS            =    50;
+const ushort Battle::kMAX_EACH_AILMENTS       =     5;
 const ushort Battle::kMINIMUM_DAMAGE          =     1;
 const ushort Battle::kMAXIMUM_DAMAGE          = 29999;
 const float Battle::kOFF_PRIM_ELM_MODIFIER    =  1.07;
@@ -78,17 +80,11 @@ Battle::Battle(Party *friends, Party *foes, Options config, QWidget *parent)
       foes(foes)
 {
   setTurnState(Battle::BATTLE_BEGIN);
-
-  setScreenHeight(config.getScreenHeight());
-  setScreenWidth(config.getScreenWidth());
-  setFixedSize(getScreenWidth(), getScreenHeight());
+  setRunningConfig(config);
 
   setTimeElapsed(0);
   setTurnsElapsed(0);
-
-  setAilmentUpdateMode(config.getAilmentUpdateState());
-  setHudDisplayMode(config.getBattleHudState());
-  setBattleMode(config.getBattleMode());
+  determineTurnMode();
 
   setBattleFlag(Battle::CONFIGURED);
   loadBattleStateFlags();
@@ -98,6 +94,7 @@ Battle::Battle(Party *friends, Party *foes, Options config, QWidget *parent)
   menu        = new BattleMenu(this);
   status_bar  = new BattleStatusBar(getFriends(), getScreenWidth(),
                                     getScreenHeight(), this);
+
   /* Create buffers */
   item_buffer  = new ItemBuffer();
   skill_buffer = new SkillBuffer();
@@ -112,6 +109,10 @@ Battle::Battle(Party *friends, Party *foes, Options config, QWidget *parent)
  */
 Battle::~Battle()
 {
+  for (int i = 0; i < current_ailments.size(); i++)
+    delete current_ailments[i];
+  current_ailments.clear();
+
   if (info_bar != 0)
     delete info_bar;
   info_bar = 0;
@@ -135,13 +136,13 @@ Battle::~Battle()
   if (!enemy_status_bars.isEmpty())
     qDeleteAll(enemy_status_bars);
 
- // if (bg != 0)
- //   delete bg;
- // bg = 0;
+  //if (bg != 0)
+  //  delete bg;
+  //bg = 0;
 
- // if (status_bar_bg != 0)
- //   delete status_bar_bg;
- // status_bar_bg = 0;
+  //if (status_bar_bg != 0)
+  //  delete status_bar_bg;
+  //status_bar_bg = 0;
 }
 
 /*==============================================================================
@@ -151,14 +152,42 @@ Battle::~Battle()
 /*
  * Description:
  *
+ * Inputs:
+ * Output:
+ */
+bool Battle::addAilment(Ailment* new_ailment)
+{
+  bool can_add;
+  int  ailments;
+
+  can_add  = current_ailments.size() < kMAX_AILMENTS;
+  ailments = getPersonAilments(new_ailment->getVictim()).size();
+  can_add &= ailments < kMAX_EACH_AILMENTS;
+
+  if (can_add)
+  {
+    QString victim = new_ailment->getVictim()->getName();
+    QString ailment = new_ailment->getName();
+
+    current_ailments.push_back(new_ailment);
+
+    if (getBattleMode() == Options::DEBUG)
+    {
+      QString message = "Inflicting new ailment: " + ailment + " on " + victim;
+      info_bar->addMessage(message);
+    }
+  }
+}
+
+/*
+ * Description:
+ *
  * Inputs: none
  * Output: none
  */
 void Battle::battleWon()
 {
-  //  clear ailments, clear other data
-
-  // call victory
+  //call victory
     // for each person on friends
       // increase exp by enemyTotalExp
       // levelUp() --> show update info
@@ -186,7 +215,6 @@ void Battle::battleWon()
  */
 void Battle::battleLost()
 {
-  // clear party members, clear ailments
   // return to title?
 
   if (getBattleMode() == Options::DEBUG)
@@ -222,8 +250,6 @@ void Battle::cleanUp()
   // clears stacks of actions
   // clear other data
 
-
-
   /* Increment the turn counter */
   turns_elapsed++;
 
@@ -231,8 +257,33 @@ void Battle::cleanUp()
   setBattleFlag(CURRENT_STATE_COMPLETE);
 
   //TODO: Battle wins after 20 turns [11-09-13]
-  if (turns_elapsed == 20)
+  if (turns_elapsed == 5)
     setBattleFlag(BATTLE_WON);
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void Battle::determineTurnMode()
+{
+  if (friends->getTotalSpeed() > foes->getTotalSpeed())
+  {
+    setTurnMode(FRIENDS_FIRST);
+  }
+  else if (friends->getTotalSpeed() < foes->getTotalSpeed())
+  {
+    setTurnMode(FOES_FIRST);
+  }
+  else
+  {
+    if (flipCoin())
+      setTurnMode(FRIENDS_FIRST);
+    else
+      setTurnMode(FOES_FIRST);
+  }
 }
 
 /*
@@ -359,9 +410,13 @@ void Battle::performAction()
  * Inputs: uint target - the target of personal upkeep to take place.
  * Output: none
  */
-void Battle::personalUpkeep(uint target)
+void Battle::personalUpkeep(Person* target)
 {
-  (void)target;//WARNING
+  // clear flags for new turn (temp flags?)
+  // process ailments
+    // damage ailments
+    // flag setting ailments
+    // recalulate ailment factors
 }
 
 /*
@@ -419,7 +474,7 @@ void Battle::processActions()
  * Inputs: none
  * Output: none
  */
-void Battle::recalculateAilments()
+void Battle::recalculateAilments(Person* target)
 {
   // find base stats of person
   // find all buff factors
@@ -479,6 +534,13 @@ void Battle::selectUserActions()
  */
 void Battle::upkeep()
 {
+  /* Foes Update */
+  for (int i = 0; i < foes->getPartySize(); i++)
+    personalUpkeep(foes->getMember(i));
+
+  /* Friends Update */
+  for (int i = 0; i < friends->getPartySize(); i++)
+    personalUpkeep(friends->getMember(i));
 
   /* Personal upkeep state complete */
   setBattleFlag(Battle::CURRENT_STATE_COMPLETE);
@@ -610,25 +672,51 @@ void Battle::setNextTurnState()
       upkeep();
     }
 
-    /* After presonal upkeeps, the user selects actions from the Battle Menu */
+    /* After presonal upkeeps, the first turn order party selects actions */
     else if (turn_state == UPKEEP)
     {
-      setTurnState(SELECT_USER_ACTION);
-      selectUserActions();
+      if (turn_mode == FRIENDS_FIRST)
+      {
+        setTurnState(SELECT_USER_ACTION);
+        selectUserActions();
+      }
+      else if (turn_mode == FOES_FIRST)
+      {
+        setTurnState(SELECT_ENEMY_ACTION);
+        selectEnemyActions();
+      }
     }
 
-    /* After the user selects actions, the enemy chooses actions */
+    /* After the user selects actions, the enemy party may still need to
+       select actions, or if not, order actions is called  */
     else if (turn_state == SELECT_USER_ACTION)
     {
-      setTurnState(SELECT_ENEMY_ACTION);
-      selectEnemyActions();
+      if (turn_mode == FRIENDS_FIRST)
+      {
+        setTurnState(SELECT_ENEMY_ACTION);
+        selectEnemyActions();
+      }
+      else if (turn_mode == FOES_FIRST)
+      {
+        setTurnState(ORDER_ACTIONS);
+        orderActions();
+      }
     }
 
-    /* After enemies select actions, the actions are ordered */
+    /* After enemies select actions, the users may still need to select actios,
+       or if not, order actions is called  */
     else if (turn_state == SELECT_ENEMY_ACTION)
     {
-      setTurnState(ORDER_ACTIONS);
-      orderActions();
+      if (turn_mode == FRIENDS_FIRST)
+      {
+        setTurnState(ORDER_ACTIONS);
+        orderActions();
+      }
+      else if (turn_mode == FOES_FIRST)
+      {
+        setTurnState(SELECT_USER_ACTION);
+        selectUserActions();
+      }
     }
 
     /* After the actions are ordered, the actions are processed */
@@ -652,6 +740,25 @@ void Battle::setNextTurnState()
       generalUpkeep();
     }
   }
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void Battle::setRunningConfig(Options config)
+{
+  running_config = config;
+
+  setScreenHeight(config.getScreenHeight());
+  setScreenWidth(config.getScreenWidth());
+  setFixedSize(getScreenWidth(), getScreenHeight());
+
+  setAilmentUpdateMode(config.getAilmentUpdateState());
+  setHudDisplayMode(config.getBattleHudState());
+  setBattleMode(config.getBattleMode());
 }
 
 /*
@@ -743,6 +850,17 @@ void Battle::setTurnsElapsed(ushort new_value)
 }
 
 /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void Battle::setTurnMode(TurnMode new_turn_mode)
+{
+  turn_mode = new_turn_mode;
+}
+
+/*
  * Description: Assigns a new enumerated value to the Battle turn state
  *
  * Inputs: TurnState - enumerated turn state of the current turn
@@ -753,6 +871,7 @@ void Battle::setTurnState(TurnState new_turn_state)
   /* Update the turn state */
   turn_state = new_turn_state;
 
+
   /* Output the new turn state in DEBUG mode */
   if (getBattleMode() == Options::DEBUG)
     printTurnState();
@@ -761,6 +880,44 @@ void Battle::setTurnState(TurnState new_turn_state)
 /*==============================================================================
  * PROTECTED FUNCTIONS
  *============================================================================*/
+
+void Battle::paintEvent(QPaintEvent *event)
+{
+  QPainter painter(this);
+  //painter.setPen(QColor(Qt::black));
+  //painter.setBrush(QColor(Qt::blue));
+  //painter.setOpacity(1.00);
+  //painter.drawPixmap(0,0,(int)getScreenWidth(),(int)getScreenHeight(),*bg);
+  //painter.setOpacity(1.0);
+  //Person* p = friends->getMember(0);
+  //painter.drawPixmap(*ally_box[0],p->getFirstPerson()->getCurrent());
+  //p = foes->getMember(0);
+  //painter.drawPixmap(*enemy_box[3],p->getThirdPerson()->getCurrent());
+  //if (friends->getPartySize() > 1)
+  //{
+    //p = friends->getMember(1);
+    //painter.drawPixmap(*ally_box[0],p->getFirstPerson()->getCurrent());
+  //}
+  //if (friends->getPartySize() > 1)
+  //{
+  //  p = foes->getMember(1);
+    //painter.drawPixmap(*enemy_box[4],p->getFirstPerson()->getCurrent());
+  //}
+  //for (uint i = 2; i < friends->getPartySize(); i++)
+  //{
+    //p = friends->getMember(i);
+    //painter.drawPixmap(*ally_box[i],p->getFirstPerson()->getCurrent());
+  //}
+  //painter.setRenderHints(QPainter::SmoothPixmapTransform, true);
+  //p = foes->getMember(1);
+  // painter.drawPixmap(*enemy_box[1], p->getThirdPerson()->getCurrent());
+  //p = foes->getMember(2);
+  // painter.drawPixmap(*enemy_box[2],p->getThirdPerson()->getCurrent());
+  //painter.drawPixmap(0,getMaxHeight() * 0.8181, *battle_status_bar_image);
+  //painter.setOpacity(0.70); //TODO: Get opacity from somewhere [02-23-13]
+  //painter.drawRect(*info_box);
+  //painter.setOpacity(0.70);
+}
 
 /*
  * Description: Handles all the key press events for Battle
@@ -912,6 +1069,25 @@ ushort Battle::getScreenHeight()
 ushort Battle::getScreenWidth()
 {
   return screen_width;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+QVector<Ailment*> Battle::getPersonAilments(Person* target)
+{
+  QVector<Ailment*> person_ailments;
+
+  for (int i = 0; i < current_ailments.size(); i++)
+  {
+    if (current_ailments.at(i)->getVictim() == target)
+      person_ailments.push_back(current_ailments.at(i));
+  }
+
+  return person_ailments;
 }
 
 /*
@@ -1107,7 +1283,7 @@ void Battle::printOther()
 void Battle::updateBattle(int cycle_time)
 {
   setTimeElapsed(cycle_time);
-  //TODO [10-12-13] updateGL();
+  update();
 
   if (getBattleFlag(Battle::CURRENT_STATE_COMPLETE))
     setNextTurnState();

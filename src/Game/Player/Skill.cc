@@ -39,6 +39,8 @@ Skill::Skill(QString name)
   qd_cost = 0;
   description = "";
   using_message = "";
+
+  setFlag(Skill::VALID_SKILL, false);
 }
 
 /*
@@ -51,12 +53,22 @@ Skill::Skill(QString name)
 Skill::Skill(QString name, QVector<Action*> effect_list,
              QVector<float> chance_list)
 {
+  /* Valid skill check */
+  bool valid_skill = true;
+
   /* Pointer setup */
-  // assert(effect_list.size() == chance_list.size());
-  for (int i = 0; i < effect_list.size(); i++)
+  if (effect_list.size() == chance_list.size())
+    setFlag(Skill::VALID_SKILL);
+  else
+    valid_skill = false;
+
+  if (valid_skill)
   {
-    addEffect(effect_list[i]);
-    addEffectChance(chance_list[i]);
+    for (int i = 0; i < effect_list.size(); i++)
+    {
+      addEffect(effect_list[i]);
+      addEffectChance(chance_list[i]);
+    }
   }
   animation = 0;
   sound_effect = 0;
@@ -71,6 +83,55 @@ Skill::Skill(QString name, QVector<Action*> effect_list,
  * Description: Annihilates a Skill object
  */
 Skill::~Skill() {}
+
+/*=============================================================================
+ * PRIVATE FUNCTIONS
+ *============================================================================*/
+
+/*
+ * Description: Updates the skill flags based on the actions currently stored in
+ *              the skill.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Skill::calculateFlags()
+{
+  for (int i = 0; i < effects.size(); i++)
+  {
+    Action* effect = effects.at(i);
+    if (effect->getActionFlag(Action::OFFENSIVE))
+      setFlag(Skill::OFFENSIVE);
+    if (effect->getActionFlag(Action::DEFENSIVE))
+      setFlag(Skill::DEFENSIVE);
+
+    if (effect->getActionFlag(Action::GIVE))
+      setFlag(Skill::INFLICTING);
+    if (effect->getActionFlag(Action::TAKE))
+      setFlag(Skill::ALLEVIATING);
+
+    if (effect->getActionFlag(Action::RAISE) &&
+        effect->getActionFlag(Action::VITALITY))
+    {
+      setFlag(Skill::HEALING);
+    }
+
+    if (effect->getActionFlag(Action::PHYSICAL))
+      setFlag(Skill::PHYSICAL);
+    if (effect->getActionFlag(Action::THERMAL))
+      setFlag(Skill::THERMAL);
+    if (effect->getActionFlag(Action::POLAR))
+      setFlag(Skill::POLAR);
+    if (effect->getActionFlag(Action::PRIMAL))
+      setFlag(Skill::PRIMAL);
+    if (effect->getActionFlag(Action::CHARGED))
+      setFlag(Skill::CHARGED);
+    if (effect->getActionFlag(Action::CYBERNETIC))
+      setFlag(Skill::CYBERNETIC);
+    if (effect->getActionFlag(Action::NIHIL))
+      setFlag(Skill::NIHIL);
+  }
+}
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -171,6 +232,9 @@ void Skill::printFlags()
   qDebug() << "MULTIHIT: " << getFlag(Skill::MULTIHIT);
   qDebug() << "OFFENSIVE: " << getFlag(Skill::OFFENSIVE);
   qDebug() << "DEFENSIVE: " << getFlag(Skill::DEFENSIVE);
+  qDebug() << "INFLICTING: " << getFlag(Skill::INFLICTING);
+  qDebug() << "ALLEVIATING: " << getFlag(Skill::ALLEVIATING);
+  qDebug() << "HEALING: " << getFlag(Skill::HEALING);
   qDebug() << "PHYSICAL: " << getFlag(Skill::PHYSICAL);
   qDebug() << "THERMAL: " << getFlag(Skill::THERMAL);
   qDebug() << "POLAR: " << getFlag(Skill::POLAR);
@@ -178,6 +242,7 @@ void Skill::printFlags()
   qDebug() << "CHARGED: " << getFlag(Skill::CHARGED);
   qDebug() << "CYBERNETIC: " << getFlag(Skill::CYBERNETIC);
   qDebug() << "NIHIL: " << getFlag(Skill::NIHIL);
+  qDebug() << "VALID_SKILL: " << getFlag(Skill::VALID_SKILL);
 }
 
 /*
@@ -415,8 +480,7 @@ void Skill::setQdCost(uint new_value)
  */
 void Skill::setSoundEffect(Sound* new_sound)
 {
-    (void)new_sound;//warning
-  // sound_effect = new_sound;
+  sound_effect = new_sound;
 }
 
 /*
@@ -429,5 +493,3 @@ void Skill::setUsingMessage(QString new_value)
 {
   using_message = new_value;
 }
-
-

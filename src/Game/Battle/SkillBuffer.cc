@@ -11,9 +11,10 @@
  * CONSTANTS
  *============================================================================*/
 
-const ushort SkillBuffer::kMAXIMUM_ELEMENTS = 40;
-const ushort SkillBuffer::kMAXIMUM_TARGETS  = 10;
-const ushort SkillBuffer::kSTARTING_ELEMENT = 0;
+const ushort SkillBuffer::kMAXIMUM_COOLDOWN  = 10;
+const ushort SkillBuffer::kMAXIMUM_ELEMENTS  = 40;
+const ushort SkillBuffer::kMAXIMUM_TARGETS   = 10;
+const ushort SkillBuffer::kSTARTING_ELEMENT  = 0;
 
 /*==============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -100,7 +101,7 @@ void SkillBuffer::clearAll()
  * Inputs: int index - the index of the item buffer to be checked.
  * Outputs: The SkillUseAction struct at that index, if one exists
  */
-SkillBuffer::SkillUseAction SkillBuffer::getIndex(int index)
+SkillUseAction SkillBuffer::getIndex(int index)
 {
   if (index < skill_buffer.size())
     return skill_buffer.at(index);
@@ -124,7 +125,7 @@ SkillBuffer::SkillUseAction SkillBuffer::getIndex(int index)
  * Outputs: bool - the validity of the new SkillUseAction
  */
  bool SkillBuffer::addSkillUse(Person *user, Skill *skill_used,
-                               QVector<Person *> targets)
+                               QVector<Person *> targets, int cooldown)
 {
   bool add_to_buffer = true;
 

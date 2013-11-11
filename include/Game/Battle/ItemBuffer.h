@@ -16,32 +16,32 @@
 #include <QList>
 #include <QVector>
 
+/* Structure containing the data of one element in the Item Buffer */
+struct ItemUseAction
+{
+  /* The user of the ItemUseAction */
+  Person* user;
+
+  /* The item to be used */
+  Item*   item_used;
+
+  /* Vector of targets the item will hit */
+  QVector<Person*> targets;
+
+  /* Validity of the ItemUseAction element */
+  bool valid_item_use;
+};
+
 class ItemBuffer
 {
 public:
-    /* Creates an ItemBuffer object */
-    ItemBuffer();
+  /* Creates an ItemBuffer object */
+  ItemBuffer();
 
-    /* Annihilates an Item Buffer object */
-    ~ItemBuffer();
+  /* Annihilates an Item Buffer object */
+  ~ItemBuffer();
 
 private:
-  /* Structure containing the data of one element in the Item Buffer */
-  struct ItemUseAction
-  {
-    /* The user of the ItemUseAction */
-    Person* user;
-
-    /* The item to be used */
-    Item*   item_used;
-
-    /* Vector of targets the item will hit */
-    QVector<Person*> targets;
-
-    /* Validity of the ItemUseAction element */
-    bool valid_item_use;
-  };
-
   /* The current index of the ItemUse buffer */
   int curr_index;
 

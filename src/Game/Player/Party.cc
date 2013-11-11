@@ -464,6 +464,17 @@ bool Party::useItem(Item *used_item, ushort target, EnumDb::ItemUse use_type)
 }
 
 /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+ushort Party::getAverageSpeed()
+{
+  return floor(getTotalSpeed() / getPartySize());
+}
+
+/*
  * Description: Returns a pointer to the party's inventory
  *
  * Inputs: none
@@ -507,6 +518,22 @@ bool Party::getFlag(PartyFlag flag)
 ushort Party::getPartySize()
 {
   return members.size();
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+int Party::getTotalSpeed()
+{
+  int total_speed = 0;
+
+  for (int i = 0; i < this->getPartySize(); i++)
+    total_speed += getMember(i)->getStats()->getStat("MMTM");
+
+  return total_speed;
 }
 
 /*
