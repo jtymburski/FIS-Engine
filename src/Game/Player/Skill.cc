@@ -101,30 +101,44 @@ void Skill::calculateFlags()
     Action* effect = effects.at(i);
     if (effect->getActionFlag(Action::OFFENSIVE))
       setFlag(Skill::OFFENSIVE);
+
     if (effect->getActionFlag(Action::DEFENSIVE))
       setFlag(Skill::DEFENSIVE);
 
     if (effect->getActionFlag(Action::GIVE))
       setFlag(Skill::INFLICTING);
+
     if (effect->getActionFlag(Action::TAKE))
       setFlag(Skill::ALLEVIATING);
 
+    /* Healing Skills raise VITALITY */
     if (effect->getActionFlag(Action::RAISE) &&
         effect->getActionFlag(Action::VITALITY))
       setFlag(Skill::HEALING);
 
+    /* Revive Skills target one or all alies who are KO'd */
+    if (getSkillScope() == EnumDb::ONE_ALLY_KO ||
+        getSkillScope() == EnumDb::ALL_ALLIES_KO)
+      setFlag(Skill::REVIVING);
+
     if (effect->getActionFlag(Action::PHYSICAL))
       setFlag(Skill::PHYSICAL);
+
     if (effect->getActionFlag(Action::THERMAL))
       setFlag(Skill::THERMAL);
+
     if (effect->getActionFlag(Action::POLAR))
       setFlag(Skill::POLAR);
+
     if (effect->getActionFlag(Action::PRIMAL))
       setFlag(Skill::PRIMAL);
+
     if (effect->getActionFlag(Action::CHARGED))
       setFlag(Skill::CHARGED);
+
     if (effect->getActionFlag(Action::CYBERNETIC))
       setFlag(Skill::CYBERNETIC);
+
     if (effect->getActionFlag(Action::NIHIL))
       setFlag(Skill::NIHIL);
   }

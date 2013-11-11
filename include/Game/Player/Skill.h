@@ -40,14 +40,15 @@ public:
     INFLICTING     = 1 << 4,
     ALLEVIATING    = 1 << 5,
     HEALING        = 1 << 6,
-    PHYSICAL       = 1 << 7,
-    THERMAL        = 1 << 8,
-    POLAR          = 1 << 9,
-    PRIMAL         = 1 << 10,
-    CHARGED        = 1 << 11,
-    CYBERNETIC     = 1 << 12,
-    NIHIL          = 1 << 13,
-    VALID_SKILL    = 1 << 14
+    REVIVING       = 1 << 7,
+    PHYSICAL       = 1 << 8,
+    THERMAL        = 1 << 9,
+    POLAR          = 1 << 10,
+    PRIMAL         = 1 << 11,
+    CHARGED        = 1 << 12,
+    CYBERNETIC     = 1 << 13,
+    NIHIL          = 1 << 14,
+    VALID_SKILL    = 1 << 15
   };
   Q_DECLARE_FLAGS(SkillFlags, SkillType)
 

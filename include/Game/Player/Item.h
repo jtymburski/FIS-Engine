@@ -25,11 +25,11 @@ class Item : public QWidget
 public:
   /* Item constructor function */
   Item(QString name, uint value = 0, Sprite* thumbnail = 0,
-       double mass = 0.0, int id = kUNSET_ID);
+       double mass = 0.0, int id = kUNSET_ID, QWidget* parent = 0);
 
 
   /* Copy constructor */
-  Item(Item* copy);
+  Item(const Item& source, int id, QWidget* parent = 0);
 
   /* Annihilates an Item object */
   ~Item();
@@ -37,8 +37,6 @@ public:
   /* Enumerated flags for item class */
   enum ItemState
   {
-    BATTLEREADY    = 1ul << 0, /* Can the item be used in battle */
-    MENUREADY      = 1ul << 1, /* Can the item be used in the menu? */
     HEALITEM       = 1ul << 2, /* Does the item heal vitality? */
     CURE           = 1ul << 3, /* Does the item cure ailments? */
     OFFENSIVE      = 1ul << 4, /* Does the item have an offensive battle use? */
@@ -47,21 +45,19 @@ public:
     EQUIPMENT      = 1ul << 7, /* Is the item a piece of equipment? */
     BUBBY          = 1ul << 8, /* Is the item a Bubby? */
     KEYITEM        = 1ul << 9, /* is the item a unique quest item? */
-    MULTI_HIT      = 1ul << 10, /* Does the item hit more than one target? */
-    PARTY_HIT      = 1ul << 11, /* Does the item effect the entire party?*/
-    METAL          = 1ul << 12, /* The following describe item composition */
-    WOOD           = 1ul << 13,
-    INSULATED      = 1ul << 14,
-    ANTIMATTER     = 1ul << 15,
-    PLASMA         = 1ul << 16,
-    DARKMATTER     = 1ul << 17,
-    DARKENERGY     = 1ul << 18,
-    ENERGY         = 1ul << 19,
-    ICE            = 1ul << 20,
-    MATERIAL       = 1ul << 21,
-    DISENSTUBULATE = 1ul << 22,
-    STAT_CHANGING   = 1ul << 23,
-    SKILL_LEARNING  = 1ul << 24
+    METAL          = 1ul << 10, /* The following describe item composition */
+    WOOD           = 1ul << 11,
+    INSULATED      = 1ul << 12,
+    ANTIMATTER     = 1ul << 13,
+    PLASMA         = 1ul << 14,
+    DARKMATTER     = 1ul << 16,
+    DARKENERGY     = 1ul << 17,
+    ENERGY         = 1ul << 18,
+    ICE            = 1ul << 19,
+    MATERIAL       = 1ul << 20,
+    DISENSTUBULATE = 1ul << 21,
+    STAT_CHANGING   = 1ul << 22,
+    SKILL_LEARNING  = 1ul << 23
   };
   Q_DECLARE_FLAGS(ItemFlags, ItemState)
   ItemFlags iflag_set;
@@ -89,9 +85,6 @@ protected:
   /* Static ID of the Item (current increasing value) */
   int id;
 
-  /* The use of the item */
-  EnumDb::ItemUse item_use;
-
   /* Mass of the item (not referenced to gravity) */
   double mass;
 
@@ -118,6 +111,12 @@ protected:
   /* Value (in credits) to a shop */
   uint value;
 
+  /* The occasion the item can be used */
+  EnumDb::ActionOccasion item_occasion;
+
+  /* The scope of the item (as per use */
+  EnumDb::ActionScope item_scope;
+
   /*------------------- Protected Constants -----------------------*/
   static const int kMINIMUM_ID; /* The minimum ID # for an Item */
   static const int kUNSET_ID; /* Placeholder unset ID */
@@ -125,8 +124,12 @@ protected:
 /*============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
+private:
+  /* Copy all parameters from the other to the current */
+  void copySelf(const Item &source);
+
   /* Increments the Item's ID */
-bool setID(int new_id);
+  bool setID(int new_id);
 
 /*=============================================================================
  * VIRTUAL FUNCTIONS
@@ -168,6 +171,12 @@ public:
   /* Evaluates the value of a given ItemState flag */
   bool getItemFlag(ItemState flag);
 
+  /* Returns the occasion of the item */
+  EnumDb::ActionOccasion getItemOccasion();
+
+  /* Returns the scope of the Item */
+  EnumDb::ActionScope getItemScope();
+
   /* Returns the name of the item */
   QString getName();
 
@@ -207,6 +216,12 @@ public:
   /* Assigns a given value to a given ItemState flag */
   void setItemFlag(ItemState flag, bool set_value = true);
 
+  /* Assigns a new occasion the item can be used for */
+  void setItemOccasion(EnumDb::ActionOccasion new_item_occasion);
+
+  /* Assigns a new scope the item use will target */
+  void setItemScope(EnumDb::ActionScope new_item_scope);
+
   /* Assigns a mass to the item */
   void setMass(double new_mass);
 
@@ -233,6 +248,13 @@ public:
 
   /* Assigns the value of an item */
   void setValue(uint new_value);
+
+/*============================================================================
+ * OPERATOR FUNCTIONS
+ *===========================================================================*/
+public:
+  /* Overloaded = operator for copy construction */
+  Item& operator= (const Item &source);
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Item::ItemFlags);
 

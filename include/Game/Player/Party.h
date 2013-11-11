@@ -118,7 +118,7 @@ public:
   bool removeMember(QString);
 
   /* Uses the item on the party */
-  bool useItem(Item* used_item, ushort target, EnumDb::ItemUse use_type);
+  bool useItem(Item* used_item, ushort target, EnumDb::ActionOccasion use_type);
 
   /* Returns the average speed of the Party */
   ushort getAverageSpeed();

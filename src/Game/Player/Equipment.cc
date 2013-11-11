@@ -67,8 +67,6 @@ void Equipment::printAll()
 
 void Equipment::printFlags()
 {
-  qDebug() << "BATTLEREADY: " << getItemFlag(Item::BATTLEREADY);
-  qDebug() << "MENUREADY: " << getItemFlag(Item::MENUREADY);
   qDebug() << "HEAL ITEM: " << getItemFlag(Item::HEALITEM);
   qDebug() << "CURE: " << getItemFlag(Item::CURE);
   qDebug() << "OFFENSIVE: " << getItemFlag(Item::OFFENSIVE);
@@ -76,8 +74,6 @@ void Equipment::printFlags()
   qDebug() << "STACKABLE: " << getItemFlag(Item::STACKABLE);
   qDebug() << "EQUIPMENT: " << getItemFlag(Item::EQUIPMENT);
   qDebug() << "KEYITEM: " << getItemFlag(Item::KEYITEM);
-  qDebug() << "MULTIHIT: " << getItemFlag(Item::MULTI_HIT);
-  qDebug() << "PARTYITEM: " << getItemFlag(Item::PARTY_HIT);
 }
 
 /*

@@ -61,7 +61,7 @@ bool ItemBuffer::checkValid(ItemUseAction item_use_action)
   is_valid &= item_use_action.user->getPersonFlag(Person::ITEM_USE_ENABLED);
 
   /* If the item to be used is BattleReady */
-  is_valid &= item_use_action.item_used->getItemFlag(Item::BATTLEREADY);
+  is_valid &= item_use_action.item_used->getItemOccasion() == EnumDb::BATTLE;
 
   /* If the targets of the item are empty */
   is_valid &= !item_use_action.targets.empty();

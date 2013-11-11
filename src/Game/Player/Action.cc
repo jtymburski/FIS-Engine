@@ -40,6 +40,7 @@
 Action::Action()
     : ailment(EnumDb::NOAILMENT),
       base_change(0),
+      id(0),
       max_duration(0),
       min_duration(0),
       variance(0.00)
@@ -58,14 +59,17 @@ Action::Action()
 Action::Action(QString raw)
     : ailment(EnumDb::NOAILMENT),
       base_change(0),
+      id(0),
       max_duration(0),
       min_duration(0),
       variance(0.00)
 {
   QStringList split = raw.split(',');
 
-  if (split.size() == 10)
+  if (split.size() == 11)
     parse(raw);
+  else
+    printf("[Error] Unable to parse action %s\n");
 }
 
 /*

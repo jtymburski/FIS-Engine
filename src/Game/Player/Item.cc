@@ -32,9 +32,10 @@ const int Item::kUNSET_ID   = -1; /* Placeholder unset ID */
  *         uint value - the value of the item in a shop
  *         double mass - the mass of the item
  */
-Item::Item(QString name, uint value, Sprite* thumbnail, double mass, int id)
-    : QWidget(0)
+Item::Item(QString name, uint value, Sprite* thumbnail, double mass, int id,
+           QWidget* parent)
 {
+  setParent(parent);
   setName(name);
   setID(id);
   setThumb(thumbnail);
@@ -44,6 +45,8 @@ Item::Item(QString name, uint value, Sprite* thumbnail, double mass, int id)
   setAction(0);
   setBuffSet(0);
   setSkill(0);
+  setItemOccasion(EnumDb::NEVER);
+  setItemScope(EnumDb::NO_SCOPE);
   setUsingAnimation(0);
   setUsingMessage("");
   setUsingSound(0);
@@ -54,22 +57,11 @@ Item::Item(QString name, uint value, Sprite* thumbnail, double mass, int id)
  *
  * Inputs: Item* copy - pointer to an item to be copied
  */
-Item::Item(Item *copy) 
+Item::Item(const Item& source, int id, QWidget* parent)
 {
-  setBuffSet(copy->getBuffSet());
-  setBriefDescription(copy->getBriefDescription());
-  setDescription(copy->getDescription());
-  setDuration(copy->getDuration());
-  setID(copy->getId());
-  setMass(copy->getMass());
-  setName(copy->getName());
-  setAction(copy->getAction());
-  setSkill(copy->getSkill());
-  setThumb(copy->getThumb());
-  setUsingAnimation(copy->getUsingAnimation());
-  setUsingMessage(copy->getUsingMessage());
-  setUsingSound(copy->getUsingSound());
-  setValue(copy->getValue());
+  setParent(parent);
+  copySelf(source);
+  setID(id);
 }
 
 /*
@@ -80,6 +72,37 @@ Item::~Item() {}
 /*============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
+
+/*
+ * Description: Function for copying item from source item (used by the copy
+ *              constructor and overloaded = operator.
+ *
+ * Notes [1]: ID is not copied from the parent, but should be set from the
+ *            constructor.
+ *
+ * Inputs: const Item& - const reference to parent Item object
+ * Output: none
+ */
+void Item::copySelf(const Item& source)
+{
+  buff_set = source.buff_set;
+  brief_description = source.brief_description;
+  description = source.description;
+  duration = source.duration;
+  id = source.kUNSET_ID;
+  mass = source.mass;
+  name = source.name;
+  prefix = source.prefix;
+  action = source.action;
+  skill = source.skill;
+  thumbnail = source.thumbnail;
+  using_animation = source.using_animation;
+  using_message = source.using_message;
+  using_sound = source.using_sound;
+  value = source.value;
+  item_occasion = source.item_occasion;
+  item_scope = source.item_scope;
+}
 
 /*
  * Description: Sets the ID for the item. If out of the allowable range, the
@@ -130,8 +153,6 @@ void Item::printAll()
  */
 void Item::printFlags()
 {
-  qDebug() << "BATTLEREADY: " << getItemFlag(Item::BATTLEREADY);
-  qDebug() << "MENUREADY: " << getItemFlag(Item::MENUREADY);
   qDebug() << "HEAL ITEM: " << getItemFlag(Item::HEALITEM);
   qDebug() << "CURE: " << getItemFlag(Item::CURE);
   qDebug() << "OFFENSIVE: " << getItemFlag(Item::OFFENSIVE);
@@ -140,8 +161,6 @@ void Item::printFlags()
   qDebug() << "EQUIPMENT: " << getItemFlag(Item::EQUIPMENT);
   qDebug() << "BUBBY: " << getItemFlag(Item::BUBBY);
   qDebug() << "KEYITEM: " << getItemFlag(Item::KEYITEM);
-  qDebug() << "MULTIHIT: " << getItemFlag(Item::MULTI_HIT);
-  qDebug() << "PARTYITEM: " << getItemFlag(Item::PARTY_HIT);
 }
 
 /*
@@ -250,6 +269,28 @@ bool Item::getItemFlag(ItemState flag)
 double Item::getMass()
 {
   return mass;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+EnumDb::ActionOccasion Item::getItemOccasion()
+{
+  return item_occasion;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+EnumDb::ActionScope Item::getItemScope()
+{
+  return item_scope;
 }
 
 /*
@@ -417,6 +458,28 @@ void Item::setItemFlag(ItemState flag, bool set_value)
 }
 
 /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void Item::setItemOccasion(EnumDb::ActionOccasion new_item_occasion)
+{
+  item_occasion = new_item_occasion;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void Item::setItemScope(EnumDb::ActionScope new_item_scope)
+{
+  item_scope = new_item_scope;
+}
+
+/*
  * Description: Assigns a value to the items mass.
  *
  * Inputs: double - the new value of mass to be assigned
@@ -513,4 +576,29 @@ void Item::setUsingSound(Sound* new_using_sound)
 void Item::setValue(uint new_value)
 {
   (new_value < kMAX_VALUE) ? (value = new_value) : (value = kMAX_VALUE);
+}
+
+
+/*============================================================================
+ * OPERATOR FUNCTIONS
+ *===========================================================================*/
+
+/*
+ * Description: Overloaded operator = function for deep copy of Item. Calls
+ *              the copySelf function for copying after a check for self-assign
+ *
+ * Inputs: source - const reference of object to be copied
+ * Output: Item& - reference to the item
+ */
+Item& Item::operator= (const Item &source)
+{
+  /* Check for self assignment */
+  if (this == &source)
+    return *this;
+
+  /* Do the copy */
+  copySelf(source);
+
+  /* Return the copied object */
+  return *this;
 }

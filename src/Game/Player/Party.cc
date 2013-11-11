@@ -407,7 +407,8 @@ bool Party::removeMember(QString value)
  *         ushort target - the primary target for the item (it may be multihit)
  * Output: bool - true if the item was used succesfully
  */
-bool Party::useItem(Item *used_item, ushort target, EnumDb::ItemUse use_type)
+bool Party::useItem(Item *used_item, ushort target,
+                    EnumDb::ActionOccasion use_type)
 {
   bool item_used    = false;
   bool can_use_item = true;
@@ -445,12 +446,16 @@ bool Party::useItem(Item *used_item, ushort target, EnumDb::ItemUse use_type)
 
   if (can_use_item)
   {
-    if (use_type == EnumDb::MENU_USABLE)
-      if (used_item->getItemFlag(Item::MENUREADY))
-        item_used = menuUseItem(used_item, target);
-    if (use_type == EnumDb::BATTLE_USABLE)
-      if (used_item->getItemFlag(Item::BATTLEREADY))
-        item_used = battleUseItem(used_item, target);
+    if (use_type == EnumDb::MENU &&
+        used_item->getItemOccasion() == EnumDb::MENU)
+    {
+      item_used = menuUseItem(used_item, target);
+    }
+    if (use_type == EnumDb::BATTLE &&
+        used_item->getItemOccasion() == EnumDb::BATTLE)
+    {
+      item_used = battleUseItem(used_item, target);
+    }
   }
 
   if (item_used)

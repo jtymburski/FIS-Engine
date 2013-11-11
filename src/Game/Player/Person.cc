@@ -227,8 +227,9 @@ void Person::copySelf(const Person &source)
   person_record = new PersonRecord(*(source.person_record));
 
   /* Deep copy the item drops of the person */
-  for (int i = 0; i < source.item_drops.size(); i++)
-    item_drops.push_back(new Item(source.item_drops.value(i)));
+  //for (int i = 0; i < source.item_drops.size(); i++)
+  //  item_drops.push_back(new Item(source.item_drops.value(i)));
+  //TODO: Item drop construction? [11-11-13]
 
   /* Initially calculates all the skills */
   calcSkills();
@@ -982,8 +983,9 @@ void Person::setItemLoot(QVector<Item*> items)
   }
   item_drops.clear();
 
-  for (int i = 0; i < items.size() && (uint)i < kMAX_ITEM_DROPS; i++)
-      item_drops.push_back(new Item(items.value(i)));
+  //for (int i = 0; i < items.size() && (uint)i < kMAX_ITEM_DROPS; i++)
+  //    item_drops.push_back(new Item(items.value(i)));
+  //Item drop construction [11-11-13]
 }
 
 /*
