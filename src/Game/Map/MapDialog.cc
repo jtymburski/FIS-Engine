@@ -20,7 +20,7 @@
 #include "Game/Map/MapDialog.h"
 
 /* Constant Implementation - see header file for descriptions */
-const float MapDialog::kBUBBLES_ANIMATE = 0.06;
+const float MapDialog::kBUBBLES_ANIMATE = 277.67;
 const short MapDialog::kBUBBLES_COUNT = 3;
 const short MapDialog::kBUBBLES_OFFSET = 16;
 const short MapDialog::kBUBBLES_RADIUS = 2;
@@ -53,9 +53,9 @@ const short MapDialog::kPICKUP_Y = 50;
 const short MapDialog::kSCROLL_CIRCLE_RADIUS = 3;
 const short MapDialog::kSCROLL_OFFSET = 6;
 const short MapDialog::kSCROLL_TRIANGLE_HEIGHT = 4;
-const short MapDialog::kSHIFT_OFFSET = 2;
-const short MapDialog::kSHIFT_TIME = 115;
-const float MapDialog::kTEXT_DISPLAY_SPEED = 0.5;
+const float MapDialog::kSHIFT_OFFSET = 8.33;
+const float MapDialog::kSHIFT_TIME = 3.704;
+const float MapDialog::kTEXT_DISPLAY_SPEED = 33.33;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -1055,7 +1055,7 @@ void MapDialog::update(float cycle_time)
     /* If hiding, shift the display onto the screen */
     if(dialog_status == HIDING)
     {
-      animation_offset -= kSHIFT_TIME * 1.0 / cycle_time;
+      animation_offset -= cycle_time / kSHIFT_TIME;
       if(animation_offset <= 0.0)
       {
         dialog_status = OFF;
@@ -1091,8 +1091,8 @@ void MapDialog::update(float cycle_time)
     /* If showing, shift the display onto the screen */
     else if(dialog_status == SHOWING)
     {
-      animation_offset += kSHIFT_TIME * 1.0 / cycle_time; // 4.5 without calc @
-      if(animation_offset >= animation_height)            // 16.666 ms
+      animation_offset += cycle_time / kSHIFT_TIME; // ~4.5 @ 16.666 ms
+      if(animation_offset >= animation_height)
       {
         dialog_status = ON;
         animation_offset = animation_height;
@@ -1115,13 +1115,13 @@ void MapDialog::update(float cycle_time)
         /* Increment the dialog letters display */
         if(dialog_shift_enable)
         {
-          dialog_shift_offset += kSHIFT_OFFSET;
+          dialog_shift_offset += cycle_time / kSHIFT_OFFSET;
           if(dialog_shift_offset >= dialog_shift_max)
             dialogShiftEnable(false);
         }
         if(!dialog_shift_enable && !dialog_letters_done)
         {
-          dialog_letters += kTEXT_DISPLAY_SPEED;
+          dialog_letters += cycle_time / kTEXT_DISPLAY_SPEED;
           if(dialog_letters > dialog_letters_max)
             dialog_letters_done = true;
         }
@@ -1151,7 +1151,7 @@ void MapDialog::update(float cycle_time)
 
         /* The animating shifter, for text that is too long to fit in the 
          * viewing window */
-        animation_shifter += kBUBBLES_ANIMATE;
+        animation_shifter += cycle_time / kBUBBLES_ANIMATE;
         if(animation_shifter >= (kBUBBLES_COUNT + 1))
           animation_shifter = 0;
       }
@@ -1160,7 +1160,7 @@ void MapDialog::update(float cycle_time)
     /* The portion that updates the pickup notification - if hiding */
     if(pickup_status == HIDING)
     {
-      pickup_offset -= kSHIFT_TIME * 1.0 / cycle_time;
+      pickup_offset -= cycle_time / kSHIFT_TIME;
       if(pickup_offset <= 0.0)
       {
         pickup_status = OFF;
@@ -1176,7 +1176,7 @@ void MapDialog::update(float cycle_time)
     /* If showing, shift it out until fully visible */
     else if(pickup_status == SHOWING)
     {
-      pickup_offset += kSHIFT_TIME * 1.0 / cycle_time;
+      pickup_offset += cycle_time / kSHIFT_TIME;
       if(pickup_offset >= pickup_width)
       {
         pickup_status = ON;

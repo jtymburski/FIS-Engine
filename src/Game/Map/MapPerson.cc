@@ -229,7 +229,6 @@ void MapPerson::tileMoveFinish()
   tile_previous = 0;
 }
 
-// TODO
 /* 
  * Description: The tile move initialization call. To be called after
  *              passability checks have passed and the thing can be moved to
@@ -395,8 +394,15 @@ void MapPerson::clearAllMovement()
 {
   movement_stack.clear();
 }
-   
-/* Gets the animation speed of the person */
+
+/*
+ * Description: Returns the animation speed of the vertical movement, within
+ *              the person. This is due to the slightly dynamic operation that
+ *              animation speed is handled on the person side.
+ *
+ * Inputs: none
+ * Output: short - the animation speed, in msec
+ */
 short MapPerson::getAnimationSpeed()
 {
   return animation_vertical;
@@ -428,6 +434,19 @@ EnumDb::Direction MapPerson::getMoveRequest()
   return EnumDb::DIRECTIONLESS;
 }
 
+/*
+ * Description: Returns the predicted move request.This simply returns the move
+ *              request in map person but can be used to predict what the move
+ *              sequence will be before updating the thing.
+ *
+ * Inputs: none
+ * Output: EnumDb::Direction - the direction enumerator identifier
+ */
+EnumDb::Direction MapPerson::getPredictedMoveRequest()
+{
+  return getMoveRequest();
+}
+
 /* 
  * Description: Returns the surface classifier to what the map person is 
  *              standing on.
@@ -440,6 +459,12 @@ MapPerson::SurfaceClassifier MapPerson::getSurface()
   return surface;
 }
 
+/*
+ * Description: Initializes OpenGL handles for the necessary state frames.
+ *
+ * Inputs: none
+ * Output: bool - status if successful
+ */
 bool MapPerson::initializeGl()
 {
   bool success = true;
@@ -483,6 +508,13 @@ bool MapPerson::isMoveRequested()
   return !movement_stack.isEmpty();
 }
 
+/*
+ * Description: Flushes the key presses. Used to stop the person movement
+ *              without key release events.
+ * 
+ * Inputs: none
+ * Output: none
+ */
 void MapPerson::keyFlush()
 {
   movement_stack.clear();
@@ -526,7 +558,14 @@ void MapPerson::keyRelease(QKeyEvent* event)
     removeDirection(EnumDb::WEST);
 }
 
-/* Resets the person position, to where they started */
+/*
+ * Description: Resets the position of the person back to the initial starting
+ *              point. This is the position that was set when the last 
+ *              setStartingTile() was called.
+ *
+ * Inputs: none
+ * Output: bool - status if successful
+ */
 bool MapPerson::resetPosition()
 {
   if(starting_tile != 0)
@@ -534,7 +573,14 @@ bool MapPerson::resetPosition()
   return false;
 }
 
-/* Sets the animation time for each frame */
+/*
+ * Description: Sets the animation speed for the person. This is re-implemented
+ *              from thing to allow for dynamic changing based on the number of
+ *              frames in each independent state.
+ * 
+ * Inputs: short frame_time - the animation frame time, in msec
+ * Output: bool - status if the set was successful (>= 0)
+ */
 bool MapPerson::setAnimationSpeed(short frame_time)
 {
   if(frame_time >= 0)
@@ -646,7 +692,7 @@ void MapPerson::updateThing(float cycle_time, Tile* next_tile)
 {
   bool can_move = isMoveAllowed(next_tile) && !getMovementPaused();
   bool reset = false;
-  
+
   /* Once a tile end has reached, cycle the movement direction */
   if(isAlmostOnTile(cycle_time))
   {

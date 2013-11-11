@@ -69,6 +69,10 @@ private:
   /* The sectors on the map (for rooms, caves, houses etc) */
   QList<Sector> sectors;
 
+  /* The number of pixels for each tile in the class */
+  short tile_height;
+  short tile_width;
+  
   /* The time that has elapsed for each draw cycle */
   int time_elapsed;
 
@@ -79,6 +83,10 @@ private:
    * a later time) */
   Weather* weather_effect;
 
+  /* Status of the zoom on the map */
+  bool zoom_in;
+  bool zoom_out;
+  
   /* The painting monitoring parameters */
   QString frames_per_second;
   int paint_animation;
@@ -95,8 +103,8 @@ private:
   const static short kFILE_TILE_COLUMN; /* The tile depth in XML of column */
   const static short kFILE_TILE_ROW;    /* The tile depth in XML of row */
   const static short kPLAYER_ID;      /* The player ID for computer control */
-  const static int kTILE_HEIGHT;      /* The tile height, as constant (TEMP) */
-  const static int kTILE_WIDTH;       /* The tile width, as constant (TEMP) */
+  const static short kTILE_SIZE;       /* The default tile size, when no zoom */
+  const static short kZOOM_TILE_SIZE;  /* The tile size, when zoomed out */
 
 /*============================================================================
  * PRIVATE FUNCTIONS
@@ -122,6 +130,9 @@ private:
   /* Splites the tile path, to determine if numerous tiles are needed */
   QList< QList<QString> > splitTilePath(QString path);
 
+  /* Updates the height and width, based on zoom factors */
+  void updateTileSize();
+  
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/

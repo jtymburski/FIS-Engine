@@ -33,8 +33,8 @@ const short Map::kFILE_SECTION_ID = 2;
 const short Map::kFILE_TILE_COLUMN = 5;
 const short Map::kFILE_TILE_ROW = 4;
 const short Map::kPLAYER_ID = 0;
-const int Map::kTILE_HEIGHT = 64;
-const int Map::kTILE_WIDTH = 64;
+const short Map::kTILE_SIZE = 64;
+const short Map::kZOOM_TILE_SIZE = 16;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -58,6 +58,12 @@ Map::Map(const QGLFormat & format, Options running_config,
   player = 0;
   things.clear();
 
+  /* Configure the width / height of tiles and sets default zooming */
+  tile_height = kTILE_SIZE;
+  tile_width = kTILE_SIZE;
+  zoom_in = false;
+  zoom_out = false;
+  
   /* Configure the FPS animation and time elapsed, and reset to 0 */
   paint_animation = 0;
   paint_frames = 0;
@@ -82,7 +88,7 @@ Map::Map(const QGLFormat & format, Options running_config,
   /* Setup the viewport */
   viewport = new MapViewport(running_config.getScreenWidth(), 
                              running_config.getScreenHeight(), 
-                             kTILE_WIDTH, kTILE_HEIGHT);
+                             tile_width, tile_height);
 
   /* Initialize the event handler, for map creation */
   this->event_handler = event_handler;
@@ -273,9 +279,9 @@ bool Map::addThingData(XmlData data, int section_index)
     if(modified_thing == 0)
     {
       if(identifier == "mapthing")
-        modified_thing = new MapThing(0, kTILE_WIDTH, kTILE_HEIGHT);
+        modified_thing = new MapThing(0, tile_width, tile_height);
       else
-        modified_thing = new MapInteractiveObject(kTILE_WIDTH, kTILE_HEIGHT);
+        modified_thing = new MapInteractiveObject(tile_width, tile_height);
       modified_thing->setEventHandler(event_handler);
       modified_thing->setID(id);
       
@@ -299,9 +305,9 @@ bool Map::addThingData(XmlData data, int section_index)
     if(modified_thing == 0)
     {
       if(identifier == "mapperson")
-        modified_thing = new MapPerson(kTILE_WIDTH, kTILE_HEIGHT);
+        modified_thing = new MapPerson(tile_width, tile_height);
       else
-        modified_thing = new MapNPC(kTILE_WIDTH, kTILE_HEIGHT);
+        modified_thing = new MapNPC(tile_width, tile_height);
       modified_thing->setEventHandler(event_handler);
       modified_thing->setID(id);
       
@@ -327,7 +333,7 @@ bool Map::addThingData(XmlData data, int section_index)
     if(modified_thing == 0)
     {
       /* Create the new thing */
-      modified_thing = new MapItem(0, kTILE_WIDTH, kTILE_HEIGHT);
+      modified_thing = new MapItem(0, tile_width, tile_height);
       modified_thing->setEventHandler(event_handler);
       modified_thing->setID(id);
       
@@ -390,7 +396,7 @@ bool Map::initiateMapSection(int section_index, int width, int height)
       
       for(int j = 0; j < height; j++)
       {
-        Tile* t = new Tile(event_handler, kTILE_WIDTH, kTILE_HEIGHT, i, j);
+        Tile* t = new Tile(event_handler, tile_width, tile_height, i, j);
         col.append(t);
       }
       
@@ -503,6 +509,81 @@ QList< QList<QString> > Map::splitTilePath(QString path)
   return path_matrix;
 }
 
+/* Updates the height and width, based on zoom factors */
+void Map::updateTileSize()
+{
+  bool updated = false;
+  
+  /* Try and zoom out the map */
+  if(zoom_out)
+  {
+    /* Modify the tile height and width, limited by the constants */
+    tile_height--;
+    tile_width--;
+    if(tile_height < kZOOM_TILE_SIZE || tile_width < kZOOM_TILE_SIZE)
+    {
+      tile_height = kZOOM_TILE_SIZE;
+      tile_width = kZOOM_TILE_SIZE;
+      zoom_out = false;
+    }
+    
+    updated = true;
+  }
+  /* Otherwise, try and zoom back in */
+  else if(zoom_in)
+  {
+    /* Modify the tile height and width, limited by the constants */
+    tile_height++;
+    tile_width++;
+    if(tile_height > kTILE_SIZE || tile_width > kTILE_SIZE)
+    {
+      tile_height = kTILE_SIZE;
+      tile_width = kTILE_SIZE;
+      zoom_in = false;
+    }
+    
+    updated = true;
+  }
+  
+  /* If updated, update the height and width everywhere */
+  if(updated)
+  {
+    /* Update map tiles */
+    for(int i = 0; i < geography.size(); i++)
+      for(int j = 0; j < geography[i].size(); j++)
+        for(int k = 0; k < geography[i][j].size(); k++)
+        {
+          geography[i][j][k]->setHeight(tile_height);
+          geography[i][j][k]->setWidth(tile_width);
+        }
+        
+    /* Update map things */
+    for(int i = 0; i < things.size(); i++)
+    {
+      things[i]->setHeight(tile_height);
+      things[i]->setWidth(tile_width);
+    }
+    
+    /* Update map items */
+    for(int i = 0; i < items.size(); i++)
+    {
+      items[i]->setHeight(tile_height);
+      items[i]->setWidth(tile_width);
+    }
+    
+    /* Update map persons */
+    for(int i = 0; i < persons.size(); i++)
+    {
+      persons[i]->setHeight(tile_height);
+      persons[i]->setWidth(tile_width);
+    }
+    
+    /* Update viewport */
+    if(viewport != 0)
+      viewport->setTileSize(tile_width, tile_height);
+  }
+}
+  
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
@@ -531,7 +612,7 @@ void Map::animate(short time_since_last)
 
           /* Based on the move request, provide the next tile in line using the
            * current centered tile and move request */
-          switch(persons[i]->getMoveRequest())
+          switch(persons[i]->getPredictedMoveRequest())
           {
             case EnumDb::NORTH:
               if(--tile_y >= 0)
@@ -636,10 +717,14 @@ void Map::keyPressEvent(QKeyEvent* key_event)
     if(player != 0)
       player->keyPress(key_event);
   }
+  else if(key_event->key() == Qt::Key_F1)
+    zoom_out = true;
+  else if(key_event->key() == Qt::Key_F2)
+    zoom_in = true;
+  else if(key_event->key() == Qt::Key_F3)
+    viewport->lockOn(persons[1]);
   else if(key_event->key() == Qt::Key_F4)
-    player->setSpeed(player->getSpeed() - 1);
-  else if(key_event->key() == Qt::Key_F5)
-    player->setSpeed(player->getSpeed() + 1);
+    viewport->lockOn(player);
   else if(key_event->key() == Qt::Key_0)
   {
     Event blank_event = event_handler->createBlankEvent();
@@ -1243,5 +1328,6 @@ void Map::unloadMap()
 void Map::updateMap(int cycle_time)
 {
   time_elapsed = cycle_time;
+  updateTileSize();
   updateGL();
 }

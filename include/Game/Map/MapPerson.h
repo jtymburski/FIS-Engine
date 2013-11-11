@@ -128,6 +128,9 @@ public:
   /* Returns the move request in the class (virtual reimplemented) */
   EnumDb::Direction getMoveRequest();
   
+  /* Returns the predicted move request in the class */
+  virtual EnumDb::Direction getPredictedMoveRequest();
+  
   /* Returns the surface that this person resides on */
   SurfaceClassifier getSurface();
   

@@ -148,10 +148,8 @@ private:
   const static short kSCROLL_CIRCLE_RADIUS; /* Circle radius, in pixels */
   const static short kSCROLL_OFFSET; /* The offset for scrollbar off of text */
   const static short kSCROLL_TRIANGLE_HEIGHT; /* Triangle pixel height */
-  const static short kSHIFT_OFFSET; /* The number of pixels per update shift of
-                                       text */
-  const static short kSHIFT_TIME;  /* The time it takes to shift the display
-                                      into view (in msec) */
+  const static float kSHIFT_OFFSET; /* The per 16 ms shift of pixels */
+  const static float kSHIFT_TIME;  /* The display offset shift time */
   const static float kTEXT_DISPLAY_SPEED; /* The character display speed */
 
  /*============================================================================

@@ -142,7 +142,7 @@ bool MapThing::isAlmostOnTile(float cycle_time)
     else
       y_diff = y - y_diff;
 
-    return (moveAmount(cycle_time) > (x_diff + y_diff));
+    return (moveAmount(cycle_time) >= (x_diff + y_diff));
   }
   
   return false;
@@ -851,7 +851,9 @@ bool MapThing::setHeight(int new_height)
 {
   if(new_height > 0)
   {
+    float height_tiles = y / height;
     height = new_height;
+    y = height_tiles * height;
     return true;
   }
 
@@ -1041,7 +1043,9 @@ bool MapThing::setWidth(int new_width)
 {
   if(new_width > 0)
   {
+    float width_tiles = x / width;
     width = new_width;
+    x = width_tiles * width;
     return true;
   }
 

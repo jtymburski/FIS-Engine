@@ -85,6 +85,9 @@ public:
   /* Returns the number of nodes in the NPC path */
   int getPathLength();
 
+  /* Returns the predicted move request in the class */
+  EnumDb::Direction getPredictedMoveRequest();
+  
   /* Path nodes removal handling */
   bool removeAllNodes();
   bool removeNode(int index);

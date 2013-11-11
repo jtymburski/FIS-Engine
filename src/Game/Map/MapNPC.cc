@@ -295,6 +295,38 @@ int MapNPC::getPathLength()
   return size;
 }
 
+/* Returns the predicted move request in the class */
+EnumDb::Direction MapNPC::getPredictedMoveRequest()
+{
+  if(current != 0)
+  {
+    int delta_x = current->x - tile_main->getX();
+    int delta_y = current->y - tile_main->getY();
+    EnumDb::Direction direction = EnumDb::DIRECTIONLESS;
+    
+    /* If the npc needs to move on the X plane */
+    if(delta_x != 0)
+    {
+      if(delta_x < 0)
+        direction = EnumDb::WEST;
+      else
+        direction = EnumDb::EAST;
+    }
+    /* Else if the npc needs to move on the Y plane */
+    else if(delta_y != 0)
+    {
+      if(delta_y < 0)
+        direction = EnumDb::NORTH;
+      else
+        direction = EnumDb::SOUTH;
+    }
+    
+    return direction;
+  }
+  
+  return getMoveRequest();
+}
+  
 /* Path nodes removal handling */
 bool MapNPC::removeAllNodes()
 {
@@ -366,7 +398,7 @@ void MapNPC::updateThing(float cycle_time, Tile* next_tile)
   {
     int delta_x = current->x - tile_main->getX();
     int delta_y = current->y - tile_main->getY();
-
+    
     /* If the npc needs to move on the X plane */
     if(delta_x != 0)
     {
