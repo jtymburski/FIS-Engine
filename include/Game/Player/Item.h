@@ -47,8 +47,8 @@ public:
     EQUIPMENT      = 1ul << 7, /* Is the item a piece of equipment? */
     BUBBY          = 1ul << 8, /* Is the item a Bubby? */
     KEYITEM        = 1ul << 9, /* is the item a unique quest item? */
-    MULTIITEM      = 1ul << 10, /* Does the item hit more than one target? */
-    PARTYITEM      = 1ul << 11, /* Does the item effect the entire party?*/
+    MULTI_HIT      = 1ul << 10, /* Does the item hit more than one target? */
+    PARTY_HIT      = 1ul << 11, /* Does the item effect the entire party?*/
     METAL          = 1ul << 12, /* The following describe item composition */
     WOOD           = 1ul << 13,
     INSULATED      = 1ul << 14,

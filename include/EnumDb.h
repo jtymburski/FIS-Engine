@@ -17,17 +17,90 @@
 class EnumDb
 {
 public:
-  /* ActorDeath enumeration is the enumerated type for reason for an actor's
-   * death in Battle */
-  enum ActorDeath { STANDARDDMG,
-                    POISONDMG,
-                    BURNDMG,
-                    BERSERKHITBACK,
-                    METABOLICTETHER,
-                    METABOLICDMG,
-                    DEATHCOUNTDOWN,
-                    BONDDEATH,
-                    UNKNOWN };
+  /*
+   * Description: ActionType - types of actions an actor in battle may take
+   *
+   * SKILL - the actor has chosen to utilize a skill
+   * ITEM - the actor has chosen to use an item from inventory
+   * DEFEND - the actor has chosen to defend, thereby increasing defense.
+   * RUN - the actor has chosen to attempt to run from battle
+   * PASS - the actor has chosen to pass their turn (inaction)
+   * NULL_ACTION - no action has been yet chosen by the actor
+   */
+  enum ActionType { SKILL,
+                    ITEM,
+                    DEFEND,
+                    RUN,
+                    PASS,
+                    NULL_ACTION };
+
+ /*
+  * Description: ActionScope - possible scopes that a skill or an itemmay have
+  *              use for
+  *
+  * NO_SCOPE - no scope (cannot be used)
+  * ONE_ENEMY - the skill strikes a choice of one enemy (other party)
+  * TWO_ENEMIES - the skills strikes a choice of two enemies (other party)
+  * ALL_ENEMIES - the skill strikes all enemies on opposing team
+  * ONE_ALLY - the skill hits a choice of one ally (including self)
+  * TWO_ALLIES - the skill hits a choice of two allies (including self)
+  * ONE_ALLY_KO - the skill hits an incapacitated ally
+  * ALL_ALLIES_KO - the skill strikes all allies who are incapacitated
+  * ALL_TARGETS - the skill strikes all available targets
+  * NOT_USER - the skill strikes choice of everyone except the user
+  * ALL_NOT_USER - the skill strikes all targets except user
+  */
+  enum ActionScope { NO_SCOPE,
+                     ONE_TARGET,
+                     ONE_ENEMY,
+                     TWO_ENEMIES,
+                     ALL_ENEMIES,
+                     ONE_ALLY,
+                     TWO_ALLIES,
+                     ALL_ALLIES,
+                     ONE_ALLY_KO,
+                     ALL_ALLIES_KO,
+                     ALL_TARGETS,
+                     NOT_USER,
+                     ALL_NOT_USER };
+
+  /*
+   * Description: ActionOccasion - describes possible scenarios that an action
+   *              may be used
+   *
+   * ALWAYS - the skill may be used in Battle and in Menu
+   * BATTLE - the skill may only be used in Battle
+   * MENU   - the skill may only be used in Menu
+   * NEVER  - the skill cannot be used
+   */
+  enum ActionOccasion { ALWAYS,
+                        BATTLE,
+                        MENU,
+                        NEVER };
+
+  /*
+   * Description: ActorDeath - describes reasons for an actor becoming
+   *              incapacitated.
+   *
+   * STANDARD_DMG - the actor was struck down by normal battle damage
+   * POISON_DMG - the actor was struck down by incurred upkeep posion damage
+   * BURN_DMG - the actor was struck down by incurred upkeep burn damage
+   * BERSERK_HIT_BACK - the actor was struck by self berserk damage
+   * METABOLIC_TETHER - the metabolic tether randomnly killed the ActorDeath
+   * METABOLIC_DMG - the metabolic tether damage killed the actor
+   * DEATH_COUNTDOWN - a death clock killed the actor
+   * BOND_DEAD - the user was killed due to the effects of Bond/Bonded
+   * UNKNOWN_DEATH - the actor was killed for unknown reasons.
+   */
+  enum ActorDeath { STANDARD_DMG,
+                    POISON_DMG,
+                    BURN_DMG,
+                    BERSERK_HIT_BACK,
+                    METABOLIC_TETHER,
+                    METABOLIC_DMG,
+                    DEATH_COUNTDOWN,
+                    BOND_DEATH,
+                    UNKNOWN_DEATH };
 
   /*
    * Description: The Attribute enumerations is used in AttributeSet to

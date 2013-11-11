@@ -16,9 +16,10 @@
 /*============================================================================
  * CONSTANTS
  *============================================================================*/
-const int  Skill::kMAX_ACTIONS = 10;
-const uint Skill::kMAX_QD_COST = 1000;
+const int  Skill::kMAX_ACTIONS     = 10;
+const uint Skill::kMAX_QD_COST     = 2000;
 const int  Skill::kMAX_NAME_LENGTH = 80;
+const ushort Skill::kMAX_COOLDOWN  = 10;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -30,16 +31,10 @@ const int  Skill::kMAX_NAME_LENGTH = 80;
  * Inputs: QString - name of the skill
  */
 Skill::Skill(QString name)
+    : name(name)
 {
-  /* Pointer setup */
-  animation = 0;
-  sound_effect = 0;
-
-  setName(name);
-  qd_cost = 0;
-  description = "";
-  using_message = "";
-
+  classSetup();
+  setSkillScope(EnumDb::NO_SCOPE);
   setFlag(Skill::VALID_SKILL, false);
 }
 
@@ -50,33 +45,22 @@ Skill::Skill(QString name)
  *         QVector<Action> - vector of actions to base the skill off
  *         QVector<float> - chance_list -
  */
-Skill::Skill(QString name, QVector<Action*> effect_list,
-             QVector<float> chance_list)
+Skill::Skill(QString name, EnumDb::ActionScope skill_scope,
+             QVector<Action*> effect_list, QVector<float> chance_list)
+    : name(name)
 {
-  /* Valid skill check */
-  bool valid_skill = true;
+  classSetup();
 
-  /* Pointer setup */
-  if (effect_list.size() == chance_list.size())
-    setFlag(Skill::VALID_SKILL);
-  else
-    valid_skill = false;
-
-  if (valid_skill)
+  for (int i = 0; i < effect_list.size(); i++)
   {
-    for (int i = 0; i < effect_list.size(); i++)
-    {
-      addEffect(effect_list[i]);
-      addEffectChance(chance_list[i]);
-    }
+    addEffect(effect_list[i]);
+    addEffectChance(chance_list[i]);
   }
-  animation = 0;
-  sound_effect = 0;
 
-  setName(name);
-  setQdCost(0);
-  setDescription("");
-  setUsingMessage("");
+  bool is_valid = isValid();
+  setFlag(Skill::VALID_SKILL, is_valid);
+
+  setSkillScope(skill_scope);
 }
 
 /*
@@ -87,6 +71,21 @@ Skill::~Skill() {}
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void Skill::classSetup()
+{
+  setAnimation(0);
+  setSoundEffect(0);
+  setQdCost(0);
+  setDescription("");
+  setUsingMessage("");
+}
 
 /*
  * Description: Updates the skill flags based on the actions currently stored in
@@ -112,9 +111,7 @@ void Skill::calculateFlags()
 
     if (effect->getActionFlag(Action::RAISE) &&
         effect->getActionFlag(Action::VITALITY))
-    {
       setFlag(Skill::HEALING);
-    }
 
     if (effect->getActionFlag(Action::PHYSICAL))
       setFlag(Skill::PHYSICAL);
@@ -151,6 +148,22 @@ bool Skill::addEffectChance(float new_value)
     return true;
   }
   return false;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+bool Skill::isValid()
+{
+  bool valid_skill = effects.size() > 0;
+  valid_skill &= effect_chance.size() > 0;
+  valid_skill &= (effects.size() == effect_chance.size());
+  valid_skill &= (skill_scope != EnumDb::NONE);
+
+  return valid_skill;
 }
 
 /*
@@ -229,7 +242,6 @@ void Skill::printInfo()
  */
 void Skill::printFlags()
 {
-  qDebug() << "MULTIHIT: " << getFlag(Skill::MULTIHIT);
   qDebug() << "OFFENSIVE: " << getFlag(Skill::OFFENSIVE);
   qDebug() << "DEFENSIVE: " << getFlag(Skill::DEFENSIVE);
   qDebug() << "INFLICTING: " << getFlag(Skill::INFLICTING);
@@ -270,6 +282,17 @@ bool Skill::removeEffect(uint index)
 void Skill::toggleFlag(SkillType flags)
 {
   setFlag(flags, !getFlag(flags));
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+uint Skill::getCooldown()
+{
+  return cooldown;
 }
 
 /*
@@ -386,6 +409,17 @@ uint Skill::getQdValue()
 }
 
 /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+EnumDb::ActionScope Skill::getSkillScope()
+{
+  return skill_scope;
+}
+
+/*
  * Description: Sets the animation sprite pointer
  *
  * Inputs: Sprite* - pointer to the new sprite
@@ -393,8 +427,21 @@ uint Skill::getQdValue()
  */
 void Skill::setAnimation(Sprite* new_sprite)
 {
-    (void)new_sprite;//warning
-  // animation = new_sprite;
+  animation = new_sprite;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void Skill::setCooldown(int new_cooldown)
+{
+  if (new_cooldown >= 0 && new_cooldown <= kMAX_COOLDOWN)
+    cooldown = new_cooldown;
+  else
+    cooldown = 0;
 }
 
 /*
@@ -492,4 +539,15 @@ void Skill::setSoundEffect(Sound* new_sound)
 void Skill::setUsingMessage(QString new_value)
 {
   using_message = new_value;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void Skill::setSkillScope(EnumDb::ActionScope new_skill_scope)
+{
+  skill_scope = new_skill_scope;
 }

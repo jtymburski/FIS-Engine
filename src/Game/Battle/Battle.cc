@@ -177,6 +177,8 @@ bool Battle::addAilment(Ailment* new_ailment)
       info_bar->addMessage(message);
     }
   }
+
+  return can_add;
 }
 
 /*
@@ -252,6 +254,8 @@ void Battle::cleanUp()
 
   /* Increment the turn counter */
   turns_elapsed++;
+
+  skill_buffer->update();
 
   /* Clean Up state complete */
   setBattleFlag(CURRENT_STATE_COMPLETE);
@@ -412,6 +416,7 @@ void Battle::performAction()
  */
 void Battle::personalUpkeep(Person* target)
 {
+  target;//WARNING
   // clear flags for new turn (temp flags?)
   // process ailments
     // damage ailments
@@ -431,6 +436,7 @@ void Battle::processActions()
   // if run, attempt to run
   // if defend, incresae def. by some factor
   // do Action   [+ critical, + miss rate]
+  // if cooldown == 0
     // if offensive attack
       // find stats related to the skill of the user
       // find stats related to the skill of each target
@@ -476,6 +482,7 @@ void Battle::processActions()
  */
 void Battle::recalculateAilments(Person* target)
 {
+  target;//WARNING
   // find base stats of person
   // find all buff factors
   // OR find bubbify factor (bubbify == NO BUFFS)

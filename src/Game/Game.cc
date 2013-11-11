@@ -110,7 +110,8 @@ void Game::setupBattle()
   chance_list.push_back(0.95);
   chance_list.push_back(0.90);
 
-  Skill* poison_skill = new Skill("Posion Attack", effect_list, chance_list);
+  Skill* poison_skill = new Skill("Posion Attack", EnumDb::ONE_TARGET,
+                                  effect_list, chance_list);
   poison_skill->setFlag(Skill::OFFENSIVE, true);
   poison_skill->setFlag(Skill::PHYSICAL, true);
 

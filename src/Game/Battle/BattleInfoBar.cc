@@ -326,9 +326,7 @@ bool BattleInfoBar::addMessage(QString text, short time_visible)
  */
 void BattleInfoBar::update(int cycle_time)
 {
-  // int time_begin = time_elapsed;
-  // int time_now   = time_elapsed + cycle_time;
-
+  cycle_time;//WARNING
   //TODO
 }
 

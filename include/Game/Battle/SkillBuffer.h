@@ -42,8 +42,6 @@ public:
   ~SkillBuffer();
 
 private:
-
-
   /* The current index of the SkillUse buffer */
   int curr_index;
   
@@ -51,7 +49,6 @@ private:
   QList<SkillUseAction> skill_buffer;
 
   /* ------------ Constants --------------- */
-  static const ushort kMAXIMUM_COOLDOWN;
   static const ushort kMAXIMUM_ELEMENTS;
   static const ushort kMAXIMUM_TARGETS;
   static const ushort kSTARTING_ELEMENT;
@@ -63,9 +60,15 @@ private:
   /* Asserts that a given SkillUseAction is a valid skill use */
   bool checkValid(SkillUseAction skill_use_action);
   
+  /* Decrements the cooldown of a skill use action at a given index */
+  bool decrementCooldown(int index);
+
   /* Clears the vector of SkillUseActions -- Does not delete skill/person data */
   void clearAll();
-  
+
+  /* Calculates and clears the invalid SkillUseActions from the SkillBuffer */
+  void clearInvalid();
+
   /* Returns the entire structure of a SkillBuffer element */
   SkillUseAction getIndex(int index);
 
@@ -77,34 +80,34 @@ public:
   bool addSkillUse(Person* user, Skill* skill_used, QVector<Person*> targets,
                    int cooldown = 0);
  
- /* Calculates and clears the invalid SkillUseActions from the SkillBuffer */
- void clearInvalid();
+  /* Evaluates whether the next SkillUseAction is valid */
+  bool isNextValid();
  
- /* Evaluates whether the next SkillUseAction is valid */
- bool isNextValid();
+  /* Methods for printing out basic information describing Skill Buffer */
+  void printAll();
+  void printInfo();
+  bool printElement(int index);
  
- /* Methods for printing out basic information describing Skill Buffer */
- void printAll();
- void printInfo();
- bool printElement(int index);
+  /* Removes a SkillBuffer element by a given user of the item */
+  bool removeSkillUse(Person* user);
  
- /* Removes a SkillBuffer element by a given user of the item */
- bool removeSkillUse(Person* user);
+  /* Removes a SkillBuffer element by a given index */
+  bool removeSkillUse(int index);
  
- /* Removes a SkillBuffer element by a given index */
- bool removeSkillUse(int index);
+  /* Updates the skill buffer for the next turn */
+  void update(bool clear = false);
+
+  /* Returns a pointer to the current user on the ItemBuffer */
+  Person* getUser();
  
- /* Returns a pointer to the current user on the ItemBuffer */
- Person* getUser();
+  /* Returns a pointer to the current skill on the SkillBuffer */
+  Skill* getSkill();
  
- /* Returns a pointer to the current skill on the SkillBuffer */
- Skill* getSkill();
+  /* Returns the vector of targets of the current SkillBuffer index */
+  QVector<Person*> getTargets();
  
- /* Returns the vector of targets of the current SkillBuffer index */
- QVector<Person*> getTargets();
- 
- /* Assigns the curr_index to the next element if one exists */
- bool setNextIndex();
+  /* Assigns the curr_index to the next element if one exists */
+  bool setNextIndex();
 };
 
 #endif // SKILLBUFFER_H

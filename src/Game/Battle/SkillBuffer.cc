@@ -11,7 +11,6 @@
  * CONSTANTS
  *============================================================================*/
 
-const ushort SkillBuffer::kMAXIMUM_COOLDOWN  = 10;
 const ushort SkillBuffer::kMAXIMUM_ELEMENTS  = 40;
 const ushort SkillBuffer::kMAXIMUM_TARGETS   = 10;
 const ushort SkillBuffer::kSTARTING_ELEMENT  = 0;
@@ -60,16 +59,6 @@ bool SkillBuffer::checkValid(SkillUseAction skill_use_action)
   is_valid &= skill_use_action.user->getPersonFlag(Person::IN_BATTLE);
   is_valid &= skill_use_action.user->getPersonFlag(Person::ITEM_USE_ENABLED);
 
-  /* If the skill to be used is single hit-single target */
-  if (!(!skill_use_action.skill_used->getFlag(Skill::MULTIHIT) &&
-       skill_use_action.targets.size() == 1))
-    is_valid = false;
-
-  /* If the skill is multi-hit multi-target */
-  if (!(skill_use_action.skill_used->getFlag(Skill::MULTIHIT) &&
-         skill_use_action.targets.size() > 1))
-    is_valid = false;
-
   /* Iterate through targets and assert they are all in battle */
   QVector<Person*>::Iterator it = skill_use_action.targets.begin();
 
@@ -80,6 +69,27 @@ bool SkillBuffer::checkValid(SkillUseAction skill_use_action)
   skill_use_action.valid_skill_use = is_valid;
 
   return is_valid;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Outputs:
+ */
+bool SkillBuffer::decrementCooldown(int index)
+{
+  if (index < skill_buffer.size())
+  {
+    if (skill_buffer.at(index).cooldown > 0)
+    {
+      skill_buffer[index].cooldown--;
+
+      return true;
+    }
+  }
+
+  return false;
 }
 
 /*
@@ -94,7 +104,7 @@ void SkillBuffer::clearAll()
   skill_buffer.clear();
   curr_index = kSTARTING_ELEMENT;
 }
- 
+
  /*
  * Description: Returns a single element of the SkillBuffer given an index.
  *
@@ -130,12 +140,14 @@ SkillUseAction SkillBuffer::getIndex(int index)
   bool add_to_buffer = true;
 
   /* Assert the user and skill to be used exist */
-  if (user == 0 || skill_used == 0)
-    add_to_buffer = false;
+  add_to_buffer &= !(user == 0);
+  add_to_buffer &= !(skill_used == 0);
 
-  /* If the new size of the SkillBuffer will be within bounds */
-  if (skill_buffer.size() >= kMAXIMUM_ELEMENTS)
-    add_to_buffer = false;
+  /* Assert the new size of the SkillBuffer will be within bounds */
+  add_to_buffer &= (skill_buffer.size() < kMAXIMUM_ELEMENTS);
+
+  /* Assert the cooldown is within range */
+  add_to_buffer &= (cooldown >= 0);
 
   if (add_to_buffer)
   {
@@ -144,6 +156,7 @@ SkillUseAction SkillBuffer::getIndex(int index)
     skill_use.user = user;
     skill_use.skill_used = skill_used;
     skill_use.targets = targets;
+    skill_use.cooldown =  skill_used->getCooldown();
 
     add_to_buffer &= checkValid(skill_use);
 
@@ -241,6 +254,7 @@ bool SkillBuffer::printElement(int index)
     qDebug() << "User Name: " << skill_buffer.at(index).user->getName();
     qDebug() << "Skill Name: " << skill_buffer.at(index).skill_used->getName();
     qDebug() << "Target Size: " << skill_buffer.at(index).targets.size();
+    qDebug() << "Cooldown: " << skill_buffer.at(index).cooldown;
     qDebug() << "Valid Skill Use: " << skill_buffer.at(index).valid_skill_use;
     return true;
   }
@@ -280,7 +294,7 @@ bool SkillBuffer::removeSkillUse(Person* user)
  *              given an index of an element to be removed.
  *
  * Inputs: int index - index of element to be removed
- * Outputs: bool - true if the element exists and was removed
+ * Output: bool - true if the element exists and was removed
  */
 bool SkillBuffer::removeSkillUse(int index)
 {
@@ -292,13 +306,39 @@ bool SkillBuffer::removeSkillUse(int index)
 
   return false;
 }
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void SkillBuffer::update(bool clear)
+{
+  clearInvalid();
+
+  if (clear)
+  {
+    clearAll();
+  }
+  else
+  {
+    for (int i = 0; i < skill_buffer.size(); i++)
+    {
+      decrementCooldown(i);
+
+      if (skill_buffer.at(i).cooldown == 0)
+        removeSkillUse(i);
+    }
+  }
+}
  
 /*
  * Description: Returns a pointer to the user of the current element if the
  *              current index on the skill buffer is valid.
  *
  * Inputs: none
- * Outputs: Person* - ptr to the person on the curr_index of the SkillBuffer
+ * Output: Person* - ptr to the person on the curr_index of the SkillBuffer
  */
 Person* SkillBuffer::getUser()
 {
@@ -313,7 +353,7 @@ Person* SkillBuffer::getUser()
  *              next index on the SkillBuffer is valid.
  *
  * Inputs: none
- * Outputs: Skill* - ptr to the skill on the curr_index of the SkillBuffer
+ * Output: Skill* - ptr to the skill on the curr_index of the SkillBuffer
   */
 Skill* SkillBuffer::getSkill()
 {

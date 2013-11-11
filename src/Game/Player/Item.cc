@@ -140,8 +140,8 @@ void Item::printFlags()
   qDebug() << "EQUIPMENT: " << getItemFlag(Item::EQUIPMENT);
   qDebug() << "BUBBY: " << getItemFlag(Item::BUBBY);
   qDebug() << "KEYITEM: " << getItemFlag(Item::KEYITEM);
-  qDebug() << "MULTIHIT: " << getItemFlag(Item::MULTIITEM);
-  qDebug() << "PARTYITEM: " << getItemFlag(Item::PARTYITEM);
+  qDebug() << "MULTIHIT: " << getItemFlag(Item::MULTI_HIT);
+  qDebug() << "PARTYITEM: " << getItemFlag(Item::PARTY_HIT);
 }
 
 /*

@@ -26,7 +26,8 @@ public:
   /* Constructor for a skill object */
   Skill(QString name);
 
-  Skill(QString name, QVector<Action*> effect_list, QVector<float> chance_list);
+  Skill(QString name, EnumDb::ActionScope skill_scope,
+        QVector<Action*> effect_list, QVector<float> chance_list);
 
   /* Annihilates a skill object */
   ~Skill();
@@ -34,20 +35,19 @@ public:
   /* SkillType Flags */
   enum SkillType
   {
-    MULTIHIT       = 1 << 0,
-    OFFENSIVE      = 1 << 1,
-    DEFENSIVE      = 1 << 2,
-    INFLICTING     = 1 << 3,
-    ALLEVIATING    = 1 << 4,
-    HEALING        = 1 << 5,
-    PHYSICAL       = 1 << 6,
-    THERMAL        = 1 << 7,
-    POLAR          = 1 << 8,
-    PRIMAL         = 1 << 9,
-    CHARGED        = 1 << 10,
-    CYBERNETIC     = 1 << 11,
-    NIHIL          = 1 << 12,
-    VALID_SKILL    = 1 << 13
+    OFFENSIVE      = 1 << 2,
+    DEFENSIVE      = 1 << 3,
+    INFLICTING     = 1 << 4,
+    ALLEVIATING    = 1 << 5,
+    HEALING        = 1 << 6,
+    PHYSICAL       = 1 << 7,
+    THERMAL        = 1 << 8,
+    POLAR          = 1 << 9,
+    PRIMAL         = 1 << 10,
+    CHARGED        = 1 << 11,
+    CYBERNETIC     = 1 << 12,
+    NIHIL          = 1 << 13,
+    VALID_SKILL    = 1 << 14
   };
   Q_DECLARE_FLAGS(SkillFlags, SkillType)
 
@@ -56,6 +56,10 @@ private:
   static const int kMAX_ACTIONS;
   static const uint kMAX_QD_COST;
   static const int kMAX_NAME_LENGTH;
+  static const ushort kMAX_COOLDOWN;
+
+  /* Cooldown of the skill */
+  uint cooldown;
 
   /* Int value for Quantum Drive cost */
   uint qd_cost;
@@ -87,11 +91,18 @@ private:
   /* SKill flags variable */
   SkillFlags skill_flags;
 
+  /* The scope of the skill */
+  EnumDb::ActionScope skill_scope;
+
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Sets up the flags during construction */
   void calculateFlags();
+
+  /* Sets up the class during construction */
+  void classSetup();
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
@@ -99,6 +110,9 @@ private:
 public:
   /* Appends an effect chance to the vector */
   bool addEffectChance(float new_value);
+
+  /* Asserts the current skill is valid */
+  bool isValid();
 
   /* Removes an effect chance from the vector */
   bool removeEffectChance(uint index);
@@ -116,6 +130,9 @@ public:
 
   /* Toggle a SkillType flag */
   void toggleFlag(SkillType flags);
+
+  /* Returns the cooldown of the skill */
+  uint getCooldown();
 
   /* Get a skill flag */
   bool getFlag(SkillType flags);
@@ -147,8 +164,14 @@ public:
   /* Gets the QD Cost Value */
   uint getQdValue();
 
+  /* Returns the scope of the skill */
+  EnumDb::ActionScope getSkillScope();
+
   /* Sets the sprite pointer for animation */
   void setAnimation(Sprite* new_sprite);
+
+  /* Assigns a cooldown to the skill */
+  void setCooldown(int new_cooldown);
 
   /* Sets the effect_cance vector */
   void setEffectChances(QVector<float> new_value);
@@ -173,6 +196,9 @@ public:
 
   /* Sets the using message of the skill */
   void setUsingMessage(QString new_value);
+
+  /* Assigns the scope of the skill */
+  void setSkillScope(EnumDb::ActionScope new_skill_scope);
 
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Skill::SkillFlags)

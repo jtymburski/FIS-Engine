@@ -14,15 +14,7 @@
 /*=============================================================================
  * CONSTANTS
  *=============================================================================*/
-
-const QString BattleMenu::kMENU_ITEMS[] = { "SKILL", /* Skills available */
-                                            "ITEM",  /* Items available */
-                                            "DEFEND",/* Defends [Pass turn] */
-                                            "RUN"};  /* Attempts to flee */
-
-
 const ushort BattleMenu::kNUM_MENU_ITEMS = 4; /* Number of layer zero elements */
-
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -36,21 +28,20 @@ const ushort BattleMenu::kNUM_MENU_ITEMS = 4; /* Number of layer zero elements *
 BattleMenu::BattleMenu(QWidget* parent)
     : QWidget(parent)
 {
-
+  selected_action = EnumDb::NULL_ACTION;
 }
 
 /*
  * Description: Constructs a BattleMenu object with an active party.
  *
- * Inputs: Party* active_party - party the menu is currently being displayed for
- *         Party* inactive_party - target party for the active party
- *         bool debug - enables debug output mode of the BattleMenu
+ * Inputs: bool debug - enables debug output mode of the BattleMenu
  *         QWidget* parent - the parent of the object
  */
 BattleMenu::BattleMenu(Options running_config, QWidget* parent)
     : QWidget(parent)
 {
   setConfiguration(running_config);
+  selected_action = EnumDb::NULL_ACTION;
 }
 
 /*
@@ -82,10 +73,28 @@ void BattleMenu::decrementSelected()
   }
   else if (layer_index == 1)
   {
+    if (selected_action == EnumDb::SKILL)
+    {
+      if (cursor_index == 0)
+        setSelected(valid_skills.size() - 1);
+      else
+        setSelected(cursor_index - 1);
+    }
 
+    if (selected_action == EnumDb::ITEM)
+    {
+      if (cursor_index == 0)
+        setSelected(valid_items.size() - 1);
+      else
+        setSelected(cursor_index - 1);
+    }
   }
   else if (layer_index == 2)
   {
+    if (cursor_index == 0)
+      setSelected(valid_person_targets.size() - 1);
+    else
+      setSelected(cursor_index - 1 );
 
   }
 }
@@ -98,7 +107,21 @@ void BattleMenu::decrementSelected()
  */
 void BattleMenu::decrementLayer()
 {
-
+  if (layer_index == 0)
+  {
+    setLayerIndex(0);
+    setSelected(0);
+  }
+  if (layer_index == 1)
+  {
+    setLayerIndex(0);
+    setSelected(0);
+  }
+  else if (layer_index == 2)
+  {
+    setLayerIndex(1);
+    setSelected(0);
+  }
 }
 
 /*
@@ -109,7 +132,7 @@ void BattleMenu::decrementLayer()
  */
 bool BattleMenu::highlight(int index)
 {
-
+  index;//WARNING
 }
 
 /*
@@ -129,10 +152,28 @@ void BattleMenu::incrementSelected()
   }
   else if (layer_index == 1)
   {
+    if (selected_action == EnumDb::SKILL)
+    {
+      if ((cursor_index + 1) == valid_skills.size())
+        setSelected(0);
+      else
+        setSelected(cursor_index + 1);
+    }
 
+    if (selected_action == EnumDb::ITEM)
+    {
+      if ((cursor_index + 1) == valid_items.size())
+        setSelected(0);
+      else
+        setSelected(0);
+    }
   }
   else if (layer_index == 2)
   {
+    if ((cursor_index + 1) == valid_person_targets.size())
+    {
+
+    }
 
   }
 }
@@ -150,8 +191,16 @@ void BattleMenu::incrementLayer()
     setLayerIndex(1);
     setSelected(0);
   }
-  else if (layer_index == 3)
+  else if (layer_index == 1)
+  {
+    setChosen();
+    setLayerIndex(2);
+    setSelected(0);
+  }
+  else if (layer_index == 2)
+  {
     setLayerIndex(0);
+  }
 }
 
 /*
@@ -160,8 +209,45 @@ void BattleMenu::incrementLayer()
  * Inputs:
  * Output:
  */
-bool BattleMenu::setChosen()
+void BattleMenu::setChosen()
 {
+  if (layer_index == 0)
+  {
+    if (cursor_index == 0)
+    {
+      selected_action = EnumDb::SKILL;
+
+      if (menu_status == DEBUG)
+        qDebug() << "Skill Action Chosen";
+    }
+    if (cursor_index == 1)
+    {
+      selected_action = EnumDb::ITEM;
+
+      if (menu_status == DEBUG)
+        qDebug() << "Item Action Chosen";
+    }
+    if (cursor_index == 2)
+    {
+      selected_action = EnumDb::DEFEND;
+      emit actionChosen(selected_action);
+
+      if (menu_status == DEBUG)
+        qDebug() << "Defend Action Chosen";
+    }
+    if (cursor_index == 3)
+    {
+      selected_action = EnumDb::RUN;
+      emit actionChosen(selected_action);
+
+      if (menu_status == DEBUG)
+        qDebug() << "Run Action Chosen";
+    }
+  }
+  else if (layer_index == 2)
+  {
+    //TODO: All party vs. single person selctions? [11-10-13]
+  }
 }
 
 /*
@@ -195,7 +281,7 @@ bool BattleMenu::setSelected(int index)
  */
 bool BattleMenu::unhighlight(int index)
 {
-
+  index;//WARNING
 }
 
 /*
@@ -258,6 +344,8 @@ void BattleMenu::setConfiguration(Options running_config)
 
   if (running_config.getBattleMode() == Options::DEBUG)
     menu_status = DEBUG;
+  else
+    menu_status = HIDING;
 }
 
 /*
@@ -272,6 +360,17 @@ void BattleMenu::setLayerIndex(int new_layer_index)
 
   if (menu_status == DEBUG)
     qDebug() << "Set Layer Index: " << layer_index;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+QList<Item*> BattleMenu::getValidItems()
+{
+
 }
 
 /*
@@ -337,3 +436,61 @@ void BattleMenu::keyPressEvent(QKeyEvent* event)
  * PUBLIC FUNCTIONS
  *=============================================================================*/
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void BattleMenu::printInfo()
+{
+  qDebug() << "Active Person Index: " << active_person;
+  qDebug() << "Active Skill Index: " << active_skill;
+  qDebug() << "Chosen Targets Size: " << chosen_targets.size();
+  qDebug() << "Layer Index: " << layer_index;
+  qDebug() << "Cursor Index: " << cursor_index;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+Skill* BattleMenu::getChosenSkill()
+{
+  return getValidSkills().at(active_skill);
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+Item* BattleMenu::getChosenItem()
+{
+  return getValidItems().at(active_skill);
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+Person* BattleMenu::getChosenUser()
+{
+  return active_party->getMember(active_person);
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+QVector<Person*> BattleMenu::getChosenTargets()
+{
+  return chosen_targets;
+}

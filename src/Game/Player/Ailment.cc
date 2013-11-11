@@ -272,7 +272,7 @@ void Ailment::apply()
       damage = kPOISON_DMG_MAX;
 
     if (victim->damage(damage))
-        emit victimDeath(victim->getName(), EnumDb::POISONDMG);
+        emit victimDeath(victim->getName(), EnumDb::POISON_DMG);
   }
 
   /* Burn/Scald/Char - The three increasing levels of Burn
@@ -311,7 +311,7 @@ void Ailment::apply()
       damage = kBURN_DMG_MAX;
 
     if (victim->damage(damage))
-      emit victimDeath(victim->getName(), EnumDb::BURNDMG);
+      emit victimDeath(victim->getName(), EnumDb::BURN_DMG);
   }
 
   /* Berserk - Ailed actor physically attacks enemy target for extreme damage
@@ -361,7 +361,7 @@ void Ailment::apply()
   else if (ailment_type == EnumDb::DEATHTIMER)
   {
     if (turns_occured >= max_turns_left)
-      emit victimDeath(victim->getName(), EnumDb::DEATHCOUNTDOWN);
+      emit victimDeath(victim->getName(), EnumDb::DEATH_COUNTDOWN);
   }
 
   /* Paralysis - Ailed actor has a kPARALYSIS_PC chance of skipping their turn,
@@ -532,11 +532,11 @@ void Ailment::apply()
   {
     /* Do kMETABOLIC_DMG % upon victim, emit signal if dead */
     if (victim->damage(max_stats->getStat(EnumDb::VITA) * kMETABOLIC_DMG))
-        emit victimDeath(victim->getName(), EnumDb::METABOLICTETHER);
+        emit victimDeath(victim->getName(), EnumDb::METABOLIC_TETHER);
 
     /* Check for kMETABOLIC_PC chance for instant death */
     if (chanceHappens(kMETABOLIC_PC * 100))
-        emit victimDeath(victim->getName(), EnumDb::METABOLICDMG);
+        emit victimDeath(victim->getName(), EnumDb::METABOLIC_DMG);
   }
 
   /* Stubulate - //TODO: Unknown Effect [08-04-13]

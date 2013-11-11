@@ -76,8 +76,8 @@ void Equipment::printFlags()
   qDebug() << "STACKABLE: " << getItemFlag(Item::STACKABLE);
   qDebug() << "EQUIPMENT: " << getItemFlag(Item::EQUIPMENT);
   qDebug() << "KEYITEM: " << getItemFlag(Item::KEYITEM);
-  qDebug() << "MULTIHIT: " << getItemFlag(Item::MULTIITEM);
-  qDebug() << "PARTYITEM: " << getItemFlag(Item::PARTYITEM);
+  qDebug() << "MULTIHIT: " << getItemFlag(Item::MULTI_HIT);
+  qDebug() << "PARTYITEM: " << getItemFlag(Item::PARTY_HIT);
 }
 
 /*
