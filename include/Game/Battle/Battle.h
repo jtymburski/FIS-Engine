@@ -94,30 +94,20 @@ public:
   /* Enumerated flags for battle class */
   enum BattleState
   {
-    CONFIGURED              = 1ul << 0,
-    FLAGS_CONFIGURED        = 1ul << 1,
-    RANDOM_ENCOUNTER        = 1ul << 2,
-    MINI_BOSS               = 1ul << 3,
-    BOSS                    = 1ul << 4,
-    FINAL_BOSS              = 1ul << 5,
-    CURRENT_STATE_COMPLETE  = 1ul << 6,
-    BATTLE_LOST             = 1ul << 7,
-    BATTLE_WON              = 1ul << 8,
-    BATTLE_OUTCOME_COMPLETE = 1ul << 9,
-    ERROR_STATE             = 1ul << 10
+    FLAGS_CONFIGURED        = 1 << 0,
+    RANDOM_ENCOUNTER        = 1 << 1,
+    MINI_BOSS               = 1 << 2,
+    BOSS                    = 1 << 3,
+    FINAL_BOSS              = 1 << 4,
+    CURRENT_STATE_COMPLETE  = 1 << 5,
+    BATTLE_LOST             = 1 << 6,
+    BATTLE_WON              = 1 << 7,
+    BATTLE_OUTCOME_COMPLETE = 1 << 8,
+    ERROR_STATE             = 1 << 9
   };
 
   Q_DECLARE_FLAGS(BattleFlags, BattleState)
   BattleFlags flag_set;
-
-  /* TargetingMode -- current targeting mode selection */
-  enum TargetingMode
-  {
-    DISABLED,
-    INACTIVE,
-    ACTIVE_OVER_FRIENDS,
-    ACTIVE_OVER_FOES
-  };
 
   /* TurnMode -- enumeration of turn order */
   enum TurnMode
@@ -190,14 +180,14 @@ private:
   ushort screen_height;
   ushort screen_width;
 
-  /* The current targeting mode of the Battle */
-  TargetingMode targeting_mode;
-
   /* The index of the currently selected target */
   uint target_index;
 
   /* Elapsed time of the Battle */
   uint time_elapsed;
+
+  /* Elapsed time since last turn */
+  uint time_elapsed_this_turn;
 
   /* Elapsed turns of hte battle */
   ushort turns_elapsed;
@@ -212,8 +202,6 @@ private:
   // Weather* weather_condition
 
   /* ------------ Menu Constants --------------- */
-  static const ushort kDEFAULT_SCREEN_HEIGHT;
-  static const ushort kDEFAULT_SCREEN_WIDTH;
   static const ushort kGENERAL_UPKEEP_DELAY;
   static const ushort kBATTLE_MENU_DELAY;
 
@@ -263,11 +251,8 @@ private:
   /* Deals with general upkeep (i.e. weather) */
   void generalUpkeep();
 
-  /* Load default configuration of the battle */
-  bool loadDefaults();
-
   /* Sets the flags of BattleState at the beginning of the Battle */
-  bool loadBattleStateFlags();
+  void loadBattleStateFlags();
 
   /* Orders the actions on the buffer by speed of the aggressor */
   void orderActions();
@@ -289,6 +274,9 @@ private:
 
   /* Calculates user actions and add them to the buffer */
   void selectUserActions();
+
+  /* Load default configuration of the battle */
+  bool setupClass();
 
   /* Method which calls personal upkeeps */
   void upkeep();
@@ -320,14 +308,11 @@ private:
   /* Assigns a new value for the screen width */
   void setScreenWidth(ushort new_value);
 
-  /* Assigns a new value to the targeting index of the selected party */
-  bool setTargetIndex(uint new_value);
-
-  /* Assigns a new targeting mode value */
-  void setTargetingMode(TargetingMode new_value);
-
   /* Assigns a new value to the elapsed time */
   void setTimeElapsed(uint new_value);
+
+  /* Assigns thee time elapsed this turn */
+  void setTimeElapsedThisTurn(uint new_value);
 
   /* Assigns a new value to the turns elapsed */
   void setTurnsElapsed(ushort new_value);
@@ -375,9 +360,6 @@ protected:
   /* Evaluates and retrns a vector of ailments for a given person */
   QVector<Ailment*> getPersonAilments(Person* target);
 
-  /* Returns the currently assigned targeting mode */
-  TargetingMode getTargetingMode();
-
   /* Returns the value of the turns elapsed */
   ushort getTurnsElapsed();
 
@@ -397,14 +379,8 @@ signals:
   /* Signal for the finishing of Battle */
   void finished();
 
-  /* Emitted when the Battle reaches an error */
-  void battleError(QString error);
-
-  /* Emitted when the time is reset */
-  void battleTimerUpdate();
-
-  /* Emitted when the turns occured changes other than when it increments */
-  void battleTurnsReset();
+  // Emitted when the Battle reaches an error */
+  // void battleError(QString error);
 
 /*=============================================================================
  * PUBLIC SLOTS

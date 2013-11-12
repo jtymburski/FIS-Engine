@@ -66,10 +66,10 @@ Action::Action(QString raw)
 {
   QStringList split = raw.split(',');
 
-  if (split.size() == 11)
+  if (split.size() == 12)
     parse(raw);
   else
-    printf("[Error] Unable to parse action %s\n");
+    qDebug() << "[Error] Unable to parse action.";
 }
 
 /*
@@ -265,7 +265,7 @@ void Action::setAilment(EnumDb::Infliction new_ailment)
  */
 void Action::setActionFlag(ActionType flags, bool set_value)
 {
-  (set_value) ? (action_flags |= flags) : (action_flags &= flags);
+  (set_value) ? (action_flags |= flags) : (action_flags &= ~flags);
 }
 
 /*
@@ -313,7 +313,7 @@ void Action::setId(int new_id)
  */
 void Action::setIgnoreFlag(IgnoreFlag flags, bool set_value)
 {
-  (set_value) ? (ignore_flags |= flags) : (ignore_flags ^= flags);
+  (set_value) ? (ignore_flags |= flags) : (ignore_flags &= ~flags);
 }
 
 /*

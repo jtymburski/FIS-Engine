@@ -188,6 +188,9 @@ public:
   /* Returns a pointer to the backdrop */
   Sprite* getBackdrop();
 
+  /* Returns a list of Battle usable items */
+  QList<Item*> getBattleItems();
+
   /* Returns Bubby given an index */
   Bubby* getBubby(uint index);
 

@@ -62,6 +62,39 @@ BattleMenu::~BattleMenu()
  * Inputs:
  * Output:
  */
+ void BattleMenu::calcValidItems()
+ {
+   valid_items = getValidItems();
+ }
+
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+ void BattleMenu::calcValidSkills()
+ {
+   valid_skills = getValidSkills();
+ }
+
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+ void BattleMenu::calcValidTargets()
+ {
+   valid_person_targets = getValidTargets();
+ }
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 void BattleMenu::decrementSelected()
 {
   if (layer_index == 0)
@@ -368,9 +401,25 @@ void BattleMenu::setLayerIndex(int new_layer_index)
  * Inputs:
  * Output:
  */
+EnumDb::ActionScope  BattleMenu::getActionScope()
+{
+  if (selected_action == EnumDb::SKILL)
+    return valid_skills.at(active_skill)->getSkillScope();
+  if (selected_action == EnumDb::ITEM)
+    return valid_items.at(active_skill)->getItemScope();
+
+  return EnumDb::NO_SCOPE;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 QList<Item*> BattleMenu::getValidItems()
 {
-
+  return active_party->getInventory()->getBattleItems();
 }
 
 /*
@@ -381,18 +430,54 @@ QList<Item*> BattleMenu::getValidItems()
  */
 QList<Skill*> BattleMenu::getValidSkills()
 {
-
+  active_party->getMember(active_person)->calcSkills();
+  SkillSet* usable_skills = active_party->getMember(active_person)->getSkills();
+  return usable_skills->getSkills().toList();
 }
 
 /*
- * Description:
- *
- * Inputs:
- * Output:
+ * Description: Build list of persons based on scope -- see EnumDB for
+ *              documentation
+ * Inputs: none
+ * Output: QList<Person*> builds list of valid targets
  */
 QList<Person*> BattleMenu::getValidTargets()
 {
+  EnumDb::ActionScope action_scope = getActionScope();
+  QList<Person*> targets;
 
+  if (action_scope == EnumDb::ONE_TARGET ||
+      action_scope == EnumDb::ALL_TARGETS)
+  {
+    targets += active_party->getLivingMembers();
+    targets += inactive_party->getLivingMembers();
+  }
+  else if (action_scope == EnumDb::ONE_ENEMY ||
+           action_scope == EnumDb::TWO_ENEMIES ||
+           action_scope == EnumDb::ALL_ENEMIES)
+  {
+    targets += inactive_party->getLivingMembers();
+  }
+  else if (action_scope == EnumDb::ONE_ALLY ||
+           action_scope == EnumDb::TWO_ALLIES ||
+           action_scope == EnumDb::ALL_ALLIES)
+  {
+    targets += active_party->getLivingMembers();
+  }
+  else if (action_scope == EnumDb::ONE_ALLY_KO ||
+           action_scope == EnumDb::ALL_ALLIES_KO)
+  {
+    targets += active_party->getDeadMembers();
+  }
+  else if (action_scope == EnumDb::NOT_USER ||
+           action_scope == EnumDb::ALL_NOT_USER)
+  {
+    targets += active_party->getLivingMembers();
+    targets.removeAt(active_person);
+    targets += inactive_party->getLivingMembers();
+  }
+
+  return targets;
 }
 
 /*
@@ -429,7 +514,14 @@ void BattleMenu::paintEvent(QPaintEvent* event)
  */
 void BattleMenu::keyPressEvent(QKeyEvent* event)
 {
+  switch (event->key())
+  {
+    case Qt::Key_Escape:
+      break;
 
+    default:
+      break;
+  }
 }
 
 /*=============================================================================
@@ -490,7 +582,7 @@ Person* BattleMenu::getChosenUser()
  * Inputs:
  * Output:
  */
-QVector<Person*> BattleMenu::getChosenTargets()
+QList<Person*> BattleMenu::getChosenTargets()
 {
   return chosen_targets;
 }

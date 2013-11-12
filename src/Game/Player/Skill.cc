@@ -175,7 +175,7 @@ bool Skill::isValid()
   bool valid_skill = effects.size() > 0;
   valid_skill &= effect_chance.size() > 0;
   valid_skill &= (effects.size() == effect_chance.size());
-  valid_skill &= (skill_scope != EnumDb::NONE);
+  valid_skill &= (skill_scope != EnumDb::NO_SCOPE);
 
   return valid_skill;
 }
@@ -491,7 +491,7 @@ void Skill::setDescription(QString new_value)
  */
 void Skill::setFlag(SkillFlags flags, bool set_value)
 {
-  (set_value) ? (skill_flags |= flags) : (skill_flags &= flags);
+  (set_value) ? (skill_flags |= flags) : (skill_flags &= ~flags);
 }
 
 /*

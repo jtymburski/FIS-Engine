@@ -17,8 +17,6 @@
  *============================================================================*/
 
 /* ------------ Menu Constants --------------- */
-const ushort Battle::kDEFAULT_SCREEN_HEIGHT = 1216; /* The default height */
-const ushort Battle::kDEFAULT_SCREEN_WIDTH  =  708; /* The default width */
 const ushort Battle::kGENERAL_UPKEEP_DELAY  =  500; /* Time prior info bar msg */
 const ushort Battle::kBATTLE_MENU_DELAY     =  400; /* Personal menu delay */
 
@@ -73,33 +71,25 @@ const float Battle::kDOUBLE_ELM_DIS_MODIFIER  =  0.74;
  * Inputs: Party* friends - the player's party in the Battle
  *         Party* foes - the player's enemies in the Battle
  *         Options - the configuration passed on to the Battle
+ *         QWidget - parent object of Battle
  */
 Battle::Battle(Party *friends, Party *foes, Options config, QWidget *parent)
     : QWidget(parent),
       friends(friends),
       foes(foes)
 {
-  setTurnState(Battle::BATTLE_BEGIN);
-  setRunningConfig(config);
-
-  setTimeElapsed(0);
-  setTurnsElapsed(0);
+  setupClass();
   determineTurnMode();
-
-  setBattleFlag(Battle::CONFIGURED);
+  setRunningConfig(config);
   loadBattleStateFlags();
 
-  /* Create battle GUI elements */
-  info_bar    = new BattleInfoBar(getScreenWidth(), getScreenHeight(), this);
-  menu        = new BattleMenu(this);
-  status_bar  = new BattleStatusBar(getFriends(), getScreenWidth(),
-                                    getScreenHeight(), this);
-
-  /* Create buffers */
+  info_bar   = new BattleInfoBar(getScreenWidth(), getScreenHeight(), this);
+  menu       = new BattleMenu(config, this);
+  status_bar = new BattleStatusBar(getFriends(), getScreenWidth(),
+                                   getScreenHeight(), this);
   item_buffer  = new ItemBuffer();
   skill_buffer = new SkillBuffer();
 
-  /* Battle Begin state complete */
   setBattleFlag(Battle::CURRENT_STATE_COMPLETE);
 }
 
@@ -311,34 +301,17 @@ void Battle::generalUpkeep()
 }
 
 /*
- * Description: Loads a default configuration of the Battle, if it has not
- *              already been configured.
+ * Description: Sets up the class for the first time.
  *
  * Inputs: none
  * Output: bool - true if the Battle was set for the first time
  */
-bool Battle::loadDefaults()
+bool Battle::setupClass()
 {
-  setScreenHeight(kDEFAULT_SCREEN_HEIGHT);
-  setScreenWidth(kDEFAULT_SCREEN_WIDTH);
-  setFixedSize(getScreenWidth(), getScreenHeight());
-
   setTimeElapsed(0);
+  setTimeElapsedThisTurn(0);
   setTurnsElapsed(0);
-
-  setAilmentUpdateMode(Options::BEARWALK);
-  setHudDisplayMode(Options::BEARWALK);
-  setBattleMode(Options::DEBUG);
-
-  if (getBattleFlag(Battle::FLAGS_CONFIGURED))
-    return false;
-
-  setBattleFlag(Battle::FLAGS_CONFIGURED, true);
-  setBattleFlag(Battle::CURRENT_STATE_COMPLETE, false);
-  setBattleFlag(Battle::BATTLE_WON, false);
-  setBattleFlag(Battle::BATTLE_WON, false);
-
-  setTurnState(GENERAL_UPKEEP);
+  setTurnState(BATTLE_BEGIN);
   return true;
 }
 
@@ -349,7 +322,7 @@ bool Battle::loadDefaults()
  * Inputs: none
  * Output: bool - true if the flags were set for the first time
  */
-bool Battle::loadBattleStateFlags()
+void Battle::loadBattleStateFlags()
 {
   setBattleFlag(Battle::RANDOM_ENCOUNTER, true);
 
@@ -372,11 +345,11 @@ bool Battle::loadBattleStateFlags()
     setBattleFlag(Battle::FINAL_BOSS, false);
   }
 
-  if (getBattleFlag(Battle::FLAGS_CONFIGURED))
-    return false;
-
-  setBattleFlag(Battle::FLAGS_CONFIGURED, true);
-  return true;
+  setBattleFlag(Battle::CURRENT_STATE_COMPLETE, false);
+  setBattleFlag(Battle::BATTLE_LOST, false);
+  setBattleFlag(Battle::BATTLE_WON, false);
+  setBattleFlag(Battle::BATTLE_OUTCOME_COMPLETE, false);
+  setBattleFlag(Battle::ERROR_STATE, false);
 }
 
 /*
@@ -584,7 +557,17 @@ void Battle::upkeep()
 void Battle::setTimeElapsed(uint new_value)
 {
   time_elapsed = new_value;
-  emit battleTimerUpdate();
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void Battle::setTimeElapsedThisTurn(uint new_value)
+{
+  time_elapsed_this_turn = new_value;
 }
 
 /*
@@ -596,10 +579,10 @@ void Battle::setTimeElapsed(uint new_value)
 /* Assigns the friends party of the Battle */
 void Battle::setFriends(Party* new_friends)
 {
-  if (!getBattleFlag(Battle::CONFIGURED))
+  if (new_friends != 0)
     friends = new_friends;
-  else
-    emit battleError("Attempted reconfigure of friends");
+ // else
+ //   printf("[Error] Setting NULL friends party %s\n");
 }
 
 /*
@@ -611,10 +594,10 @@ void Battle::setFriends(Party* new_friends)
 /* Assigns the foes party of the Battle */
 void Battle::setFoes(Party* new_foes)
 {
-  if (!getBattleFlag(Battle::CONFIGURED))
+  if (new_foes != 0)
     foes = new_foes;
-  else
-    emit battleError("Attempted reconfigure of foes");
+ // else
+ //   printf("[Error] Assigning NULL foes party %s\n");
 }
 
 /*
@@ -776,10 +759,7 @@ void Battle::setRunningConfig(Options config)
  */
 void Battle::setScreenHeight(ushort new_value)
 {
-  if (new_value != 0)
-    screen_height = new_value;
-  else
-    screen_height = kDEFAULT_SCREEN_HEIGHT;
+  screen_height = new_value;
 }
 
 /*
@@ -790,57 +770,8 @@ void Battle::setScreenHeight(ushort new_value)
  */
 void Battle::setScreenWidth(ushort new_value)
 {
-  if (new_value != 0)
-    screen_width = new_value;
-  else
-    screen_height = kDEFAULT_SCREEN_WIDTH;
+  screen_width = new_value;
 }
-
-/*
- * Description: Attempts to assign a new value to the currently selected
- *              targeting index. Returns true if this was assigned, false
- *              otherwise (as in the index in the currently selected party does
- *              not exist).
- *
- * Inputs: uint - new value to assign the party index to
- * Output: bool - true if the targeting index was set
- */
-bool Battle::setTargetIndex(uint new_value)
-{
-  /* Check for Friends Index */
-  if (getTargetingMode() == ACTIVE_OVER_FOES)
-  {
-    if (new_value < foes->getPartySize())
-    {
-      target_index = new_value;
-      return true;
-    }
-  }
-
-  /* Check for Foes Index */
-  else if (getTargetingMode() == ACTIVE_OVER_FRIENDS)
-  {
-    if (new_value < friends->getPartySize())
-    {
-      target_index = new_value;
-      return true;
-    }
-  }
-
-  return false;
-}
-
-
-/*
- * Description: Assigns a new targeting mode value
- *
- * Inputs: TargetingMode - enumerated value to set the targeting value to.
- * Output: none
- */
- void Battle::setTargetingMode(TargetingMode new_value)
- {
-   targeting_mode = new_value;
- }
 
 /*
  * Description: Assigns a new value for turns elapsed
@@ -850,9 +781,6 @@ bool Battle::setTargetIndex(uint new_value)
  */
 void Battle::setTurnsElapsed(ushort new_value)
 {
-  if (new_value > turns_elapsed + 1 || new_value < turns_elapsed)
-    emit battleTurnsReset();
-
   turns_elapsed = new_value;
 }
 
@@ -943,7 +871,7 @@ void Battle::keyPressEvent(QKeyEvent* event)
    // End Temp
 
   /* Switch between possible keys */
-  switch(event->key())
+  switch (event->key())
   {
     case Qt::Key_Escape:
       emit closeBattle();
@@ -1098,17 +1026,6 @@ QVector<Ailment*> Battle::getPersonAilments(Person* target)
 }
 
 /*
- * Description: Returns the currently assigned targeting mode
- *
- * Inputs: none
- * Output: TargetingMode - enumerated targeting mode value
- */
-Battle::TargetingMode Battle::getTargetingMode()
-{
-  return targeting_mode;
-}
-
-/*
  * Description: Returns the turns elapsed of Battle
  *
  * Inputs: none
@@ -1159,7 +1076,6 @@ ushort Battle::getTurnsElapsed()
  */
 void Battle::printFlags()
 {
-  qDebug() << "CONFIGURED: "       << getBattleFlag(Battle::CONFIGURED);
   qDebug() << "FLAGS_CONFIGURED: " << getBattleFlag(Battle::FLAGS_CONFIGURED);
   qDebug() << "RANDOM_ENOUNTER: "  << getBattleFlag(Battle::RANDOM_ENCOUNTER);
   qDebug() << "MINI_BOSS: "        << getBattleFlag(Battle::MINI_BOSS);
@@ -1264,21 +1180,16 @@ void Battle::printInfo()
  }
 
 /*
- * Description: Prints out information about the menus relating to the Battle
+ * Description: Prints out information about the menus and structures relating
+ *              to the Battle
  *
  * Inputs: none
  * Output: none
  */
 void Battle::printOther()
 {
-  // if (info_bar != 0)
-  //   info_bar->printInfo();
-
-  // if (menu != 0)
-  //  menu->printInfo();
-
-  // if (staus_bar != 0)
-  //   status_bar->printAll();
+  if (menu != 0)
+    menu->printInfo();
 }
 
 /*
@@ -1316,5 +1227,5 @@ bool Battle::getBattleFlag(BattleState flags)
  */
 void Battle::setBattleFlag(BattleState flags, bool set_value)
 {
-  (set_value) ? (flag_set |= flags) : (flag_set ^= flags);
+  (set_value) ? (flag_set |= flags) : (flag_set &= ~flags);
 }

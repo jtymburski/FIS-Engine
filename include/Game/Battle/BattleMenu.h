@@ -70,16 +70,16 @@ private:
   ushort active_skill;
 
   /* Vector of valid items the player has available */
-  QVector<Item*> valid_items;
+  QList<Item*> valid_items;
 
   /* Vector of valid skills the player has available */
-  QVector<Skill*> valid_skills;
+  QList<Skill*> valid_skills;
 
   /* Vector of targets the user may hit */
-  QVector<Person*> valid_person_targets;
+  QList<Person*> valid_person_targets;
 
   /* Vector of targets currently chosen */
-  QVector<Person*> chosen_targets;
+  QList<Person*> chosen_targets;
 
   /* Current layer index */
   ushort layer_index;
@@ -103,6 +103,15 @@ private:
  * PRIVATE FUNCTIONS
  *=============================================================================*/
 private:
+  /* Calculates and assigns the valid items */
+  void calcValidItems();
+
+  /* Calculates and assigns the valid skills */
+  void calcValidSkills();
+
+  /* Calculates adn assigns the valid targets */
+  void calcValidTargets();
+
   /* Decrements to the previous menu layer */
   void decrementLayer();
 
@@ -126,6 +135,9 @@ private:
 
   /* Remove highlight on the selected index */
   bool unhighlight(int index);
+
+  /* Returns the scope of the chosen action */
+  EnumDb::ActionScope getActionScope();
 
   /* List of valid items from the active person available */
   QList<Item*> getValidItems();
@@ -182,7 +194,7 @@ public:
   Person* getChosenUser();
 
   /* Returns a vector containing the targets chosen for the current action */
-  QVector<Person*> getChosenTargets();
+  QList<Person*> getChosenTargets();
 
   /* Assigns the active party of the menu */
   bool setActiveParty(Party* new_active_party);

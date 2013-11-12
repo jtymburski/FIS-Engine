@@ -980,7 +980,7 @@ void Ailment::setDuration(short max_turns, double chance)
  */
 void Ailment::setFlag(AilmentFlag flags, bool set_value)
 {
-  (set_value) ? (flag_set |= flags) : (flag_set &= flags);
+  (set_value) ? (flag_set |= flags) : (flag_set &= ~flags);
 }
 
 /*

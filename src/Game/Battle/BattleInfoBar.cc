@@ -322,12 +322,16 @@ bool BattleInfoBar::addMessage(QString text, short time_visible)
  *              time.
  *
  * Inputs: int cycle_time - value to be added to elapsed time.
- * Output:
+ * Output: none
  */
 void BattleInfoBar::update(int cycle_time)
 {
-  cycle_time;//WARNING
-  //TODO
+  int message_time = message_buffer[0].time_visible;
+
+  message_time_elapsed += cycle_time - time_elapsed;
+
+  if (message_time_elapsed >= message_time)
+    clear();
 }
 
 /*

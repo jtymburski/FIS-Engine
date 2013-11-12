@@ -123,11 +123,17 @@ public:
   /* Returns the average speed of the Party */
   ushort getAverageSpeed();
 
+  /* Returns a list of all members with VITA == 0 */
+  QList<Person*> getDeadMembers();
+
   /* Returns the inventory of the party */
   Inventory* getInventory();
 
   /* Returns a person at a certain index */
   Person* getMember(uint index);
+
+  /* Returns a vector of all the members */
+  QList<Person*> getAllMembers();
 
   /* Gets a party flag */
   bool getFlag(PartyFlag flag);
@@ -140,6 +146,9 @@ public:
 
   /* Returns the total speed of the Party */
   int getTotalSpeed();
+
+  /* Returns a list of all members with VITA >= 0 */
+  QList<Person*> getLivingMembers();
 
   /* Returns a person's name at a certain index */
   QString getMemberName(ushort index);

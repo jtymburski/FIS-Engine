@@ -480,6 +480,23 @@ ushort Party::getAverageSpeed()
 }
 
 /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+QList<Person*> Party::getDeadMembers()
+{
+  QList<Person*> temp_members;
+
+  for (int i = 0; i < members.size(); i++)
+    if (getMember(i)->getTemp()->getStat("VITA") == 0)
+      temp_members.push_back(getMember(i));
+
+  return temp_members;
+}
+
+/*
  * Description: Returns a pointer to the party's inventory
  *
  * Inputs: none
@@ -501,6 +518,17 @@ Person* Party::getMember(uint index)
   if ((int)index < members.size())
     return members.at(index);
   return 0;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+QList<Person*> Party::getAllMembers()
+{
+  return members;
 }
 
 /*
@@ -539,6 +567,23 @@ int Party::getTotalSpeed()
     total_speed += getMember(i)->getStats()->getStat("MMTM");
 
   return total_speed;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+QList<Person*> Party::getLivingMembers()
+{
+  QList<Person*> temp_members;
+
+  for (int i = 0; i < members.size(); i++)
+    if (getMember(i)->getTemp()->getStat("VITA") > 0)
+      temp_members.push_back(getMember(i));
+
+  return temp_members;
 }
 
 /*
@@ -605,7 +650,7 @@ bool Party::setMaxSize(ushort value)
  */
 void Party::setFlag(PartyFlag flag, bool set_value)
 {
-  (set_value) ? (pflag_set |= flag) : (pflag_set &= flag);
+  (set_value) ? (pflag_set |= flag) : (pflag_set &= ~flag);
 }
 
 /*============================================================================

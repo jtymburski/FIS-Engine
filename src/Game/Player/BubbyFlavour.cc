@@ -147,7 +147,7 @@ bool BubbyFlavour::getFlavourFlag(FlavourState flags)
  */
 void BubbyFlavour::setFlavourFlag(FlavourState flags, bool set_value)
 {
-  (set_value) ? (flag_set |= flags) : (flag_set &= flags);
+  (set_value) ? (flag_set |= flags) : (flag_set &= ~flags);
 }
 
 /*

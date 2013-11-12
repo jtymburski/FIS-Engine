@@ -476,7 +476,7 @@ QList<BubbyFlavour*> Signature::getUniqueFlavours()
  */
 void Signature::setFlag(SignatureState flag, bool set_value)
 {
-  (set_value) ? (flag_set |= flag) : (flag_set &= flag);
+  (set_value) ? (flag_set |= flag) : (flag_set &= ~flag);
 }
 
 /*=============================================================================

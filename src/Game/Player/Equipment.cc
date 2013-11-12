@@ -241,7 +241,7 @@ void Equipment::setBaseSkillList(SkillSet* new_base_skill_list)
  */
 void Equipment::setEquipmentFlag(EquipmentState flag, bool set_value)
 {
-    (set_value) ? (eflag_set |= flag) : (eflag_set &= flag);
+    (set_value) ? (eflag_set |= flag) : (eflag_set &= ~flag);
 }
 
 /*=============================================================================

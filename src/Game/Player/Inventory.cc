@@ -713,6 +713,27 @@ Sprite* Inventory::getBackdrop()
 }
 
 /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+QList<Item*> Inventory::getBattleItems()
+{
+  QList<Item*> battle_items;
+
+  if (getFlag(Inventory::ENABLED))
+  {
+    for (int i = 0; i < items.size(); i++)
+      if (items.at(i)->getItemOccasion() == EnumDb::ALWAYS ||
+          items.at(i)->getItemOccasion() == EnumDb::BATTLE)
+        battle_items.push_back(items.at(i));
+  }
+
+  return battle_items;
+}
+
+/*
  * Description: Returns a pointer to a Bubby at a given index, if one exists.
  *
  * Inputs: none
@@ -1117,7 +1138,7 @@ void Inventory::setEquipState(EnumDb::ItemSorts new_state)
  */
 void Inventory::setFlag(InventoryState flags, bool set_value)
 {
-  (set_value) ? (invflag_set |= flags) : (invflag_set &= !flags);
+  (set_value) ? (invflag_set |= flags) : (invflag_set &= ~flags);
 }
 
 /*
