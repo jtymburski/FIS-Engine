@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file alias="title_Screen">pictures/univursatitle.png</file>
-    </qresource>
-</RCC>
