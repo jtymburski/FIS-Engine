@@ -21,6 +21,8 @@
 //#include <QLayout>
 //#include <QStackedWidget>
 
+#include "Game/Frame.h"
+
 //#include "Game/Game.h"
 //#include "Options.h"
 //#include "SavedGame.h"

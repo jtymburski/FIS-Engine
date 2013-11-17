@@ -35,7 +35,8 @@ else
 endif
 
 SOURCES=src/Main.cc \
-        src/Application.cc
+        src/Application.cc \
+        src/Game/Frame.cc
 
 OBJECTS=$(SOURCES:.cc=.o)
 

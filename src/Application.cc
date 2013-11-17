@@ -274,9 +274,15 @@ bool Application::isInitialized()
 /* Runs the application */
 bool Application::run()
 {
+  SDL_Texture* texture = NULL;
+  
   if(isInitialized())
   {
     quit = false;
+    
+    Frame f;
+    if(f.setSurface("sprites/bg.png"))
+      texture = SDL_CreateTextureFromSurface(renderer, f.getSurface());
     
     /* Main application loop */
     while(!quit)
@@ -288,6 +294,9 @@ bool Application::run()
       SDL_RenderClear(renderer);
       
       // TODO: Put rendering code here for entire application
+      
+      // TESTING
+      SDL_RenderCopy(renderer, texture, NULL, NULL);
       
       /* Update screen */
       SDL_RenderPresent(renderer);
