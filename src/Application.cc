@@ -280,6 +280,7 @@ bool Application::run()
   SDL_Texture* texture2 = NULL;
   SDL_Texture* texture3 = NULL;
   SDL_Texture* texture_mask = NULL;
+  int test; // TODO - Remove: Warning test
   
   if(isInitialized())
   {

@@ -9,10 +9,17 @@
 if not exist bin mkdir bin
 
 :: Attempt to build the application,outputting result to terminal as well
-:: as output file "build.log"
-echo ------------- BUILD SEQUENCE -------------
-mingw32-make | tee build.log
-echo ----------- END BUILD SEQUENCE -----------
+:: as output file "build-stdout.log" and the error/warning information to
+:: "build-stderr.log"
+echo.
+echo --------------------- BUILD SEQUENCE ---------------------
+mingw32-make 2> build-stderr.log | tee build-stdout.log
+echo ----------------------------------------------------------
+echo.
+echo -------------- ERROR/WARNING NOTIFICATIONS ---------------
+cat build-stderr.log
+echo ----------------------------------------------------------
+echo.
 
 :: Ask the user if they want to run the application
 set /p choice="Do you want to run Univursa.exe? " %=%
