@@ -160,7 +160,7 @@ bool Frame::setSurface(std::string path)
   }
   
   /* Otherwise, return failed success */
-  printf("[WARNING] Unable to load image %s. SDL_image error: %s\n", 
+  printf("[WARNING] Unable to load image \"%s\". SDL_image error: %s\n", 
          path.c_str(), IMG_GetError());
   return false;
 }

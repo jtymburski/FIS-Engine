@@ -9,6 +9,12 @@
 
 int main(int argc, char** argv)
 {
+  // TODO: Remove - testing static cast on enum additives
+  /*SDL_RendererFlip flip = static_cast<SDL_RendererFlip>(SDL_FLIP_HORIZONTAL | SDL_FLIP_VERTICAL);
+  printf("%d %d %d\n", flip, SDL_FLIP_HORIZONTAL, SDL_FLIP_VERTICAL);
+  flip = static_cast<SDL_RendererFlip>(flip & ~SDL_FLIP_HORIZONTAL);
+  printf("%d\n", flip);*/
+  
   /* Set up the game application */
   Application game_app;
   game_app.initialize();
