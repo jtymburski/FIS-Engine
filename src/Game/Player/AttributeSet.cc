@@ -66,6 +66,13 @@ const std::vector<uint> AttributeSet::kPRESET2 =
    18, 7, 18, 7,
    20, 20, 10, 1 };
 
+const std::vector<uint> AttributeSet::kPRESET3 =
+  {1000, 200, 75, 45,
+   60, 40, 60, 40,
+   80, 75, 80, 75,
+   60, 40, 60, 40,
+   40, 50, 25, 5};
+
 const uint AttributeSet::kDEFAULT     =        0;
 const uint AttributeSet::kNUM_VALUES  =       20;
 const uint AttributeSet::kMIN_VALUE   =        0;
@@ -133,12 +140,14 @@ void AttributeSet::buildAsPreset(const uint &level)
 {
   std::vector<uint> default_values(kNUM_VALUES, kDEFAULT);
 
-  if (level == 0 || kNUM_PRESETS <= level)
+  if (level == 0 || level > kNUM_PRESETS)
     values = default_values;
- else if (level == 1)
+  else if (level == 1)
     values = kPRESET1;
- else if (level == 2)
+  else if (level == 2)
     values = kPRESET2;
+  else if (level == 3)
+    values = kPRESET3;
 }
 
 void AttributeSet::copySelf(const AttributeSet &source)
@@ -156,12 +165,24 @@ void AttributeSet::cleanUp()
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
+void AttributeSet::printValues()
+{
+  for (uint i : values)
+    std::cout << i << std::endl;
+}
+
 bool AttributeSet::alterStat(uint index, int amount)
 {
-  if ((int)index != -1 && index < kNUM_VALUES)
+  if (static_cast<int>(index) != -1 && index < kNUM_VALUES)
   {
-    values[index] += amount;
-    setWithinRange(values[index], kMIN_VALUE, kMAX_VALUE);
+    auto temp = static_cast<int>(values[index]) + amount;
+
+    if (temp < 0)
+      temp = 0;
+
+    setWithinRange(temp, kMIN_VALUE, kMAX_VALUE);
+    values[index] = temp;
+
     return true;
   }
 
@@ -195,6 +216,26 @@ int AttributeSet::getIndex(std::string name)
 
   /* Else return an invalid index */
   return -1; 
+}
+
+std::string AttributeSet::getLongName(Attribute stat)
+{
+  auto index = getIndex(stat);
+
+  if (index != -1)
+    return kLONG_NAMES[index];
+
+  return "";
+}
+
+std::string AttributeSet::getName(Attribute stat)
+{
+  auto index = getIndex(stat);
+
+  if (index != -1)
+    return kSHORT_NAMES[index];
+
+  return "";
 }
 
 int AttributeSet::getStat(uint index)
@@ -272,24 +313,6 @@ uint AttributeSet::getSize()
   return kNUM_VALUES;
 }
 
-std::string AttributeSet::getName(uint index)
-{
-  if (index < kNUM_VALUES)
-    return kSHORT_NAMES[index];
-
-  return "";
-}
-
-std::string AttributeSet::getName(Attribute stat)
-{
-  auto index = getIndex(stat);
-
-  if (index != -1)
-    return kSHORT_NAMES[index];
-
-  return "";
-}
-
 std::string AttributeSet::getLongName(uint index)
 {
   if (index < kNUM_VALUES)
@@ -298,12 +321,10 @@ std::string AttributeSet::getLongName(uint index)
   return "";
 }
 
-std::string AttributeSet::getLongName(Attribute stat)
+std::string AttributeSet::getName(uint index)
 {
-  auto index = getIndex(stat);
-
-  if (index != -1)
-    return kLONG_NAMES[index];
+  if (index < kNUM_VALUES)
+    return kSHORT_NAMES[index];
 
   return "";
 }

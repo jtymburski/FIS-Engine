@@ -12,7 +12,8 @@
 *
 * TODO
 * ----
-* X - [MM-DD-YY]
+* - More Presets [11-18-13]
+* - Conventions [11-18-13]
 *******************************************************************************/
 #ifndef ATTRIBUTESET_H
 #define ATTRIBUTESET_H
@@ -46,6 +47,7 @@ private:
   static const std::vector<std::string> kLONG_NAMES; /* Full names of Attrs */
   static const std::vector<uint> kPRESET1;
   static const std::vector<uint> kPRESET2;
+  static const std::vector<uint> kPRESET3;
 
   static const uint kDEFAULT;    /* Default value for a min stat */
   static const uint kNUM_VALUES; /* The number of values in an AttributeSet */
@@ -77,9 +79,15 @@ public:
 
   bool alterStat(std::string name, int amount);
 
+  void printValues();
+
   int getIndex(Attribute stat);
 
   int getIndex(std::string name);
+
+  static std::string getLongName(uint index);
+
+  std::string getName(Attribute stat);
 
   int getStat(uint index = 0);
 
@@ -100,13 +108,9 @@ public:
 
   static uint getSize();
 
-  static std::string getName(uint index);
-
-  std::string getName(Attribute stat);
-
-  static std::string getLongName(uint index);
-
   std::string getLongName(Attribute stat);
+
+  static std::string getName(uint index);
 
 /*============================================================================
  * OPERATOR FUNCTIONS
@@ -116,10 +120,10 @@ public:
   AttributeSet& operator=(const AttributeSet &source);
 
   /* Overloaded += operator for compound assignment */
-  //AttributeSet& operator+=(const AttributeSet& rhs);
+  AttributeSet& operator+=(const AttributeSet& rhs);
 };
 
 /* Overloaded + operator for AttributeSet additions */
-//inline AttributeSet& operator+(AttributeSet lhs, const AttributeSet &rhs);
+inline AttributeSet& operator+(AttributeSet lhs, const AttributeSet &rhs);
 
 #endif //ATTRIBUTESET_H
