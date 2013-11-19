@@ -1,7 +1,8 @@
 ::==============================================================================
-:: Description: Runs the latest application of Univursa, if applicable. Fails if
-::              the file doesn't exist.
-:: Date: November 16, 2013
+:: Description: Cleans the current build using MinGW.
+:: Date: November 18, 2013
 ::==============================================================================
 @echo off
-start bin/Univursa.exe
+
+mingw32-make clean
+pause

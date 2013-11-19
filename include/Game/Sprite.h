@@ -1,17 +1,18 @@
-/******************************************************************************
-* Class Name: Sprite
-* Date Created: Oct 28, 2012
-* Inheritance: none
-* Description: The Sprite class. This handles the linked list control that 
-*              wraps the Frame. This will allow for a sequence of events, 
-*              that emulate a GIF for animation or just store one image. This
-*              class also has the functionality for direction GL painting 
-*              through the native API.
-******************************************************************************/
+/*******************************************************************************
+ * Class Name: Sprite
+ * Date Created: Oct 28, 2012
+ * Inheritance: none
+ * Description: The Sprite class. This handles the linked list control that 
+ *              wraps the Frame. This will allow for a sequence of events, 
+ *              that emulate a GIF for animation or just store one image. This
+ *              class also has the functionality for modded rendering through
+ *              the SDL engine. The list of these mods are brightening or
+ *              darkening, opacity, and color tuning.
+ ******************************************************************************/
 #ifndef SPRITE_H
 #define SPRITE_H
 
-//#include <QDebug>
+#include <vector>
 
 #include "Game/Frame.h"
 
@@ -19,14 +20,14 @@ class Sprite
 {
 public:
   /* Constructor: Set up no images */
-  Sprite();
+  Sprite(SDL_Renderer* renderer = NULL);
 
   /* Constructor: Set up one image */
-  Sprite(QString image_path, int rotate_angle = 0);
+  Sprite(std::string path, SDL_Renderer* renderer);
 
   /* Constructor: Set up sequence of images */
-  Sprite(QString head_path, int num_frames, 
-         QString tail_path, int rotate_angle = 0);
+  Sprite(std::string head_path, int num_frames, 
+         std::string tail_path, SDL_Renderer* renderer);
 
   /* Destructor function */
   ~Sprite();
@@ -56,6 +57,9 @@ private:
 
   /* How the SDL texture should be flipped while rendering */
   SDL_RendererFlip flip;
+
+  /* The rotation angle for rendering */
+  int rotation_angle;
   
   /* The number of frames */
   int size;
@@ -63,15 +67,19 @@ private:
   /* Direction */
   Sequencer sequence;
   
+  /* The texture with the presently displayed frame + modifications */
+  SDL_Texture* texture;
+  bool texture_update;
+  
   /*------------------- Constants -----------------------*/
   const static short kDEFAULT_ANIMATE_TIME; /* The default animation time */
   const static float kDEFAULT_BRIGHTNESS; /* the default brightness value */
   const static short kDOUBLE_DIGITS; /* the borderline to double digits */
   const static short kUNSET_ANIMATE_TIME; /* The unset animate time value */
 
-/*============================================================================
+/*=============================================================================
  * PUBLIC FUNCTIONS
- *===========================================================================*/
+ *============================================================================*/
 public:
   /* Executes the necessary image adjustments, as per the file data handlers */
   bool execImageAdjustment(std::string adjustment);
@@ -103,11 +111,11 @@ public:
   int getSize();
   
   /* Inserts the image into the sprite sequence at the given position */
-  bool insert(QString image_path, int position, int rotate_angle = 0);
+  bool insert(std::string path, SDL_Renderer* renderer, int position);
 
   /* Inserts the first image if the frame sequence is empty
    * Note: This isn't for inserting the head, just the first one */
-  bool insertFirst(QString image_path, int rotate_angle = 0);
+  bool insertFirst(std::string path, SDL_Renderer* renderer);
 
   /* Inserts a sequence of images that are stored. This allows for 
    * quick insertion of stored frames
@@ -116,11 +124,11 @@ public:
    *              file_type = ".png"
    *   This will allow for image_00.png -> image_04.png to be added into
    *   a sequence */
-  bool insertSequence(QString head_path, int num_frames, 
-                      QString tail_path, int rotate_angle = 0);
+  bool insertSequence(std::string head_path, int num_frames, 
+                      std::string tail_path, SDL_Renderer* renderer);
 
   /* Inserts the image at the end of the sprite sequence */
-  bool insertTail(QString image_path, int rotate_angle = 0);
+  bool insertTail(std::string path, SDL_Renderer* renderer);
 
   /* Returns if the linked list pointer is at the head or at the tail */
   bool isAtFirst();
@@ -128,9 +136,6 @@ public:
 
   /* Returns if the direction parsing the frames is forward */
   bool isDirectionForward();
-
-  /* Paints the active frame using GL direct calls */
-  bool paintGl(float x, float y, int width, int height, float opacity);
 
   /* Removes the frame in the sequence at the given position */
   bool remove(int position);
@@ -140,9 +145,6 @@ public:
 
   /* Removes the last frame in the sequence */
   bool removeTail();
-
-  /* Rotates all the frames within this sprite a specific angle */
-  bool rotateAll(int angle);
 
   /* Sets the frame animation time (in ms) */
   void setAnimationTime(short time);
@@ -159,6 +161,9 @@ public:
   /* Asserts that the current pointer in the linked list is at the head */
   bool setAtFirst();
   
+  /* Sets the rotation for all frames to be rendered at */
+  void setRotation(int angle);
+  
   /* Shifts to the given position in the sequence */
   bool shift(int position);
 
@@ -171,12 +176,12 @@ public:
   /* Updates the frames within the sprite */
   void updateSprite(int cycle_time);
   
-/*============================================================================
+/*=============================================================================
  * PUBLIC STATIC FUNCTIONS
- *===========================================================================*/
+ *============================================================================*/
 public:
   /* Returns the degrees of the string identifier */
-  static int getAngle(QString identifier);
+  static int getAngle(std::string identifier);
 
   /* Returns the degrees of the angle enumerator */
   static int getAngle(RotatedAngle angle);

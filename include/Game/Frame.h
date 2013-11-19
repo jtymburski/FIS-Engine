@@ -5,8 +5,7 @@
  * Description: The Frame class, this represents an animation frame within the
  *              Sprite class. It acts as a linked list node, in that it contains
  *              a pointer to the next Frame in the sequence. The image frame is
- *              stored as a SDL_Surface, which can be converted to a texture
- *              to be rendered.
+ *              stored as a SDL_Texture which is used for rendering.
  ******************************************************************************/
 #ifndef FRAME_H
 #define FRAME_H
@@ -16,18 +15,6 @@
 #include <SDL2/SDL_image.h>
 #include <string>
 
-//#ifdef __APPLE__
-//  #include <OpenGL/glu.h>
-//#else
-//  #include <GL/glu.h>
-//#endif
-//#include <QDebug>
-//#include <QFile>
-//#include <QGLWidget>
-//#include <QPixmap>
-
-//#include "EnumDb.h"
-
 class Frame
 {
 public:
@@ -35,12 +22,16 @@ public:
   Frame();
 
   /* Constructor function - path and next pointer initialization */
-  Frame(std::string path, Frame* previous = NULL, Frame* next = NULL);
+  Frame(std::string path, SDL_Renderer* renderer, 
+        Frame* previous = NULL, Frame* next = NULL);
 
   /* Destructor function */
   ~Frame();
   
 private:
+  /* The height of the stored texture */
+  int height;
+  
   /* Asserts that the image has been set */
   bool image_set;
   
@@ -50,36 +41,49 @@ private:
   /* The previous element in the linked list */
   Frame* previous;
 
-  /* The surface for this frame */
-  SDL_Surface* surface;
+  /* The texture for this frame */
+  SDL_Texture* texture;
+  
+  /* The width of the stored texture */
+  int width;
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Returns the height of the texture */
+  int getHeight();
+  
   /* Get next frame */
   Frame* getNext();
 
   /* Get previous frame */
   Frame* getPrevious();
 
-  /* Returns the 2D SDL surface to be painted */
-  SDL_Surface* getSurface();
+  /* Returns the 2D SDL texture to be painted */
+  SDL_Texture* getTexture();
+  
+  /* Returns the width of the texture */
+  int getWidth();
   
   /* Returns if an image is set */
   bool isImageSet();
 
+  /* Render the texture to the given renderer with the given parameters */
+  bool render(SDL_Renderer* renderer, int x = 0, int y = 0, 
+                                      int h = 0, int w = 0);
+  
   /* Set next frame */
   bool setNext(Frame* next);
   
   /* Set previous frame */
   bool setPrevious(Frame* previous);
 
-  /* Sets the frame surface */
-  bool setSurface(std::string path);
+  /* Sets the frame texture */
+  bool setTexture(std::string path, SDL_Renderer* renderer);
   
-  /* Unsets the surface, if one is set */
-  void unsetSurface();
+  /* Unsets the texture, if one is set */
+  void unsetTexture();
 };
 
 #endif // FRAME_H

@@ -1,16 +1,17 @@
-/******************************************************************************
-* Class Name: Sprite
-* Date Created: Dec 2 2012
-* Inheritance: none
-* Description: The Sprite class. This handles the linked list control that 
-*              wraps the Frame. This will allow for a sequence of events, 
-*              that emulate a GIF for animation or just store one image. This
-*              class also has the functionality for direction GL painting 
-*              through the native API.
-*
-* TODO:
-*   1. Add reverse function: 1(head)->2->3->4  -->  4(head)->3->2->1
-******************************************************************************/
+/*******************************************************************************
+ * Class Name: Sprite
+ * Date Created: Oct 28, 2012
+ * Inheritance: none
+ * Description: The Sprite class. This handles the linked list control that 
+ *              wraps the Frame. This will allow for a sequence of events, 
+ *              that emulate a GIF for animation or just store one image. This
+ *              class also has the functionality for modded rendering through
+ *              the SDL engine. The list of these mods are brightening or
+ *              darkening, opacity, and color tuning.
+ *
+ * TODO:
+ *   1. Add reverse function: 1(head)->2->3->4  -->  4(head)->3->2->1
+*******************************************************************************/
 #include "Game/Sprite.h"
 
 /* Constant Implementation - see header file for descriptions */
@@ -19,16 +20,16 @@ const float Sprite::kDEFAULT_BRIGHTNESS = 1.0;
 const short Sprite::kDOUBLE_DIGITS = 10;
 const short Sprite::kUNSET_ANIMATE_TIME = -1;
 
-/*============================================================================
+/*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
- *===========================================================================*/
+ *============================================================================*/
 
 /* 
  * Description: Constructor function - Set up no frames
  *
  * Input: none
  */
-Sprite::Sprite()
+Sprite::Sprite(SDL_Renderer* renderer)
 {
   /* Reset the class parameters */
   animation_time = kDEFAULT_ANIMATE_TIME;
@@ -37,16 +38,11 @@ Sprite::Sprite()
   elapsed_time = 0;
   head = NULL;
   flip = SDL_FLIP_NONE;
+  rotation_angle = 0;
   size = 0;
   sequence = FORWARD;
-  
-  /*animation_time = kUNSET_ANIMATE_TIME;
-  brightness = kDEFAULT_BRIGHTNESS;
-  current = 0;
-  elapsed_time = 0;
-  head = 0;
-  size = 0;
-  sequence = FORWARD;*/
+  texture = NULL;
+  texture_update = false;
 }
 
 /* 
@@ -56,7 +52,7 @@ Sprite::Sprite()
  * Input: QString image_path - image path to set as one sprite
  *        int rotate_angle - the degree angle to rotate the image at the path
  */
-Sprite::Sprite(QString image_path, int rotate_angle)
+Sprite::Sprite(std::string path, SDL_Renderer* renderer)
 {
   /*animation_time = kUNSET_ANIMATE_TIME;
   brightness = kDEFAULT_BRIGHTNESS;
@@ -87,8 +83,8 @@ Sprite::Sprite(QString image_path, int rotate_angle)
  *        QString tail_path - the end of the path, after the count index
  *        int rotate_angle - the degree to rotate all the images at
  */
-Sprite::Sprite(QString head_path, int num_frames, 
-               QString tail_path, int rotate_angle)
+Sprite::Sprite(std::string head_path, int num_frames,
+               std::string tail_path, SDL_Renderer* renderer)
 {
   /*animation_time = kDEFAULT_ANIMATE_TIME;
   brightness = kDEFAULT_BRIGHTNESS;
@@ -129,7 +125,7 @@ bool Sprite::execImageAdjustment(std::string adjustment)
   /* Parse the adjustment and do the appropriate activity */
   if(adjustment == "90" || adjustment == "180" || adjustment == "270")
   {
-    success = rotateAll(getAngle(adjustment));
+    setRotation(getAngle(adjustment));
   }
   else if(adjustment == "VF" || adjustment == "vf")
   {
@@ -159,7 +155,7 @@ bool Sprite::execImageAdjustments(std::vector<std::string> adjustments)
   bool success = true;
   
   /* Run through all the adjustments and execute them */
-  for(int i = 0; i < adjustments.size(); i++)
+  for(size_t i = 0; i < adjustments.size(); i++)
     success &= execImageAdjustment(adjustments[i]);
     
   return success;
@@ -168,17 +164,25 @@ bool Sprite::execImageAdjustments(std::vector<std::string> adjustments)
 /* Flips the sprite SDL image - either horizontal or vertical */
 void Sprite::flipHorizontal(bool flip)
 {
+  /* Enables / Disables the horizontal flip */
   if(flip)
     flip = static_cast<SDL_RendererFlip>(flip | SDL_FLIP_HORIZONTAL);
   flip = static_cast<SDL_RendererFlip>(flip & ~SDL_FLIP_HORIZONTAL);
+  
+  /* Initiate a texture update on the next update cycle */
+  texture_update = true;
 }
 
 /* Flips the sprite SDL image - either horizontal or vertical */
 void Sprite::flipVertical(bool flip)
 {
+  /* Enables / Disables the vertical flip */
   if(flip)
     flip = static_cast<SDL_RendererFlip>(flip | SDL_FLIP_VERTICAL);
   flip = static_cast<SDL_RendererFlip>(flip & ~SDL_FLIP_VERTICAL);
+  
+  /* Initiate a texture update on the next update cycle */
+  texture_update = true;
 }
   
 /*
@@ -278,11 +282,12 @@ int Sprite::getSize()
  * Description: Inserts the image into the sprite sequence at the given 
  *              position based on the given string path.
  *
- * Inputs: QString image_path - the path to the image to add
+ * Inputs: std::string path - the path to the image to add
+ *         SDL_Renderer* renderer - the rendering engine pointer
  *         int position - the location in the linked list sequence
  * Output: bool - status if insert is successful
  */
-bool Sprite::insert(QString image_path, int position, int rotate_angle)
+bool Sprite::insert(std::string path, SDL_Renderer* renderer, int position)
 {
   Frame* next_frame;
   Frame* new_frame;
@@ -291,11 +296,11 @@ bool Sprite::insert(QString image_path, int position, int rotate_angle)
   /* Only add if the size is within the bounds of the sprite */
   if(size == 0)
   {
-    return insertFirst(image_path, rotate_angle);
+    return insertFirst(path, renderer);
   }
   else if(position <= size && position >= 0)
   {
-    new_frame = new Frame(image_path, rotate_angle);
+    new_frame = new Frame(path, renderer);
 
     if(new_frame->isImageSet())
     {
@@ -331,20 +336,23 @@ bool Sprite::insert(QString image_path, int position, int rotate_angle)
  * Note: This isn't for inserting the head, just the first one in an empty
  *       list.
  *
- * Inputs: QString image_path - the path to the image to insert
+ * Inputs: std::string path - the path to the image to add
+ *         SDL_Renderer* renderer - the rendering engine pointer
  * Output: bool - status if insertion was successful
  */
-bool Sprite::insertFirst(QString image_path, int rotate_angle)
+bool Sprite::insertFirst(std::string path, SDL_Renderer* renderer)
 {
   if(size == 0)
   {
-    head = new Frame(image_path, rotate_angle);
+    head = new Frame(path, renderer);
     if(head->isImageSet())
     {
       head->setNext(head);
       head->setPrevious(head);
       current = head;
       size = 1;
+      texture_update = true;
+      
       return true;
     }
 
@@ -362,11 +370,14 @@ bool Sprite::insertFirst(QString image_path, int rotate_angle)
  *   This will allow for image_00.png -> image_04.png to be added into
  *   a sequence 
  *
- * Inputs: See the above example.
+ * Inputs: std::string head_path - see above for explanation
+ *         int num_frames - see above for explanation
+ *         std::string tail_path - see above for explanation
+ *         SDL_Renderer* renderer - the rendering engine pointer
  * Output: bool - status if insertion was succesful
  */
-bool Sprite::insertSequence(QString head_path, int num_frames, 
-		                        QString tail_path, int rotate_angle)
+bool Sprite::insertSequence(std::string head_path, int num_frames, 
+		                        std::string tail_path, SDL_Renderer* renderer)
 {
   bool status = true;
 
@@ -381,11 +392,11 @@ bool Sprite::insertSequence(QString head_path, int num_frames,
   for(int i = 0; i < num_frames; i++)
   {
     if(i >= kDOUBLE_DIGITS)
-      status = status & insertTail(head_path + QString::number(i) + tail_path,
-                                   rotate_angle);
+      status = status & insertTail(head_path + std::to_string(i) + tail_path,
+                                   renderer);
     else
-      status = status & insertTail(head_path + "0" + QString::number(i) + 
-		                               tail_path, rotate_angle);
+      status = status & insertTail(head_path + "0" + std::to_string(i) + 
+		                               tail_path, renderer);
   }
 
   /* If the sequence failed, delete the created pointers */
@@ -402,12 +413,13 @@ bool Sprite::insertSequence(QString head_path, int num_frames,
  * Description: Inserts the image, based on the path, at the end of the sprite 
  *              sequence 
  *
- * Inputs: QString image_path - the path to the image to insert
+ * Inputs: std::string path - the path to the image to add
+ *         SDL_Renderer* renderer - the rendering engine pointer
  * Output: bool - status if insertion was successful
  */
-bool Sprite::insertTail(QString image_path, int rotate_angle)
+bool Sprite::insertTail(std::string path, SDL_Renderer* renderer)
 {
-  return insert(image_path, size, rotate_angle);
+  return insert(path, renderer, size);
 }
 
 /* 
@@ -446,26 +458,6 @@ bool Sprite::isAtEnd()
 bool Sprite::isDirectionForward()
 {
   return (sequence == FORWARD);
-}
-
-/* 
- * Description: Paints the active frame using native GL calls. The context
- *              for GL must have been called for this and the sprite
- *              GL initialization must have occurred before any painting.
- *
- * Inputs: int x - the x offset in the plane (left-right)
- *         int y - the y offset in the plane (up-down)
- *         int width - the width to render the frame to
- *         int height - the height to render the frame to
- *         float opacity - the transparency of the paint object (0-1)
- * Output: bool - status if the frame was painted. If failed, make sure there
- *         is an image in the sprite and make sure initializeGl() was called.
- */
-bool Sprite::paintGl(float x, float y, int width, int height, float opacity)
-{
-  if(current != 0)
-    return current->paintGl(x, y, width, height, brightness, opacity);
-  return false;
 }
 
 /* 
@@ -514,7 +506,8 @@ bool Sprite::remove(int position)
     {
       current = head;
     }
-
+    texture_update = true;
+    
     return true;
   }
   
@@ -554,38 +547,6 @@ bool Sprite::removeTail()
 }
 
 /*
- * Description: Rotates all the frames within the sprite to the given angle.
- *              Returns false if it fails or there are no frames.
- *
- * Inputs: int angle - the angle to rotate the frames to
- * Output: bool - the status of the rotation
- */
-bool Sprite::rotateAll(int angle)
-{
-  Frame* temp_frame = head;
-
-  /* Only proceed if there are frames to rotate */
-  if(size > 0)
-  {
-    /* Only rotate the image if the angle is not 0 */
-    if(angle != 0)
-    {
-      for(int i = 0; i < size; i++)
-      {
-        temp_frame->uninitializeGl();
-        temp_frame->rotateImage(angle);
-        temp_frame->initializeGl();
-        temp_frame = temp_frame->getNext();
-      }
-    }
-
-    return true;
-  }
-
-  return false;
-}
-
-/*
  * Description: Sets the animation time between frame changes. Gets called from
  *              the update call below for updating the frames in the sequence.
  *
@@ -617,6 +578,7 @@ bool Sprite::setBrightness(float brightness)
   if(brightness >= 0.0)
   {
     this->brightness = brightness;
+    texture_update = true;
     return true;
   }
   
@@ -661,7 +623,20 @@ bool Sprite::setDirectionReverse()
 bool Sprite::setAtFirst()
 {
   current = head;
+  texture_update = true;
   return true;
+}
+
+/*
+ * Description: Sets the rotation that the frames will be rendered at around
+ *              the center point.
+ *
+ * Inputs: int angle - the angle in degrees to rotate the frames to
+ * Output: none
+ */
+void Sprite::setRotation(int angle)
+{
+  rotation_angle = angle;
 }
 
 /* 
@@ -672,6 +647,8 @@ bool Sprite::setAtFirst()
  */
 bool Sprite::shift(int position)
 {
+  Frame* old_current = current;
+  
   /* Only shift if the position is within the bounds of the sprite */
   if(position < size && position >= 0)
   {
@@ -680,7 +657,11 @@ bool Sprite::shift(int position)
     for(int i = 0; i < position; i++)
       new_current_frame = new_current_frame->getNext();
     current = new_current_frame;
-
+    
+    /* Only update the texture if the current frame has changed */
+    if(old_current != current)
+      texture_update = true;
+    
     return true;
   }
 
@@ -699,6 +680,8 @@ bool Sprite::shift(int position)
  */
 bool Sprite::shiftNext(bool skipHead)
 {
+  Frame* old_current = current;
+
   if(size > 0)
   {
     if(sequence == FORWARD)
@@ -715,6 +698,11 @@ bool Sprite::shiftNext(bool skipHead)
       else
         current = current->getPrevious()->getPrevious();
     }
+    
+    /* Only update the texture if the current frame has changed */
+    if(old_current != current)
+      texture_update = true;
+    
     return true;
   }
   return false;
@@ -744,6 +732,7 @@ bool Sprite::switchDirection()
  */
 void Sprite::updateSprite(int cycle_time)
 {
+  /* Start by updating the animation and shifting, if necessary */
   if(size > 1 && cycle_time > 0 && animation_time > 0)
   {
     elapsed_time += cycle_time;
@@ -757,8 +746,16 @@ void Sprite::updateSprite(int cycle_time)
       elapsed_time = 0;
     }
   }
-}
   
+  /* Proceed to update the running texture if it's changed */
+  if(texture_update)
+  {
+    // TODO: SDL Update texture that is being rendered - needs render pointer
+  
+    texture_update = false;
+  }
+}
+
 /*============================================================================
  * PUBLIC STATIC FUNCTIONS
  *===========================================================================*/
@@ -766,22 +763,20 @@ void Sprite::updateSprite(int cycle_time)
 /*
  * Description: Returns the degree interpretation of a string representation
  *              for the 3 classifications. 
- *              90: Clockwise or CW
- *              180: Flip or F
- *              270: Counterclockwise or CCW
+ *              90, clockwise: "90", CW, or cw
+ *              180, half circle: "180", HC, or hc
+ *              270, counter clockwise: "270", CCW, or ccw
  *
- * Inputs: QString identifier - the angle string identity
+ * Inputs: std::string identifier - the angle string identity
  * Output: int - angle in degrees.
  */
-int Sprite::getAngle(QString identifier)
+int Sprite::getAngle(std::string identifier)
 {
-  identifier = identifier.toLower().trimmed();
-
-  if(identifier == "90" || identifier == "clockwise")
+  if(identifier == "90" || identifier == "CW" || identifier == "cw")
     return getAngle(CLOCKWISE);
-  else if(identifier == "270" || identifier == "counterclockwise")
+  else if(identifier == "270" || identifier == "CCW" || identifier == "ccw")
     return getAngle(COUNTERCLOCKWISE);
-  else if(identifier == "180" || identifier == "half")
+  else if(identifier == "180" || identifier == "HC" || identifier == "hc")
     return getAngle(HALFCIRCLE);
   return 0;
 }

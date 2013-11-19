@@ -36,7 +36,8 @@ endif
 
 SOURCES=src/Main.cc \
         src/Application.cc \
-        src/Game/Frame.cc
+        src/Game/Frame.cc \
+        src/Game/Sprite.cc
 
 OBJECTS=$(SOURCES:.cc=.o)
 

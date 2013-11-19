@@ -275,51 +275,33 @@ bool Application::isInitialized()
 bool Application::run()
 {
   SDL_Rect rect;
-  SDL_Rect rect2;
-  SDL_Texture* texture = NULL;
-  SDL_Texture* texture2 = NULL;
-  SDL_Texture* texture3 = NULL;
-  SDL_Texture* texture_mask = NULL;
+  SDL_Texture* target_texture = NULL;
   int test; // TODO - Remove: Warning test
   
   if(isInitialized())
   {
     quit = false;
     
-    Frame f;
-    if(f.setSurface("sprites/bg.png"))
-      texture = SDL_CreateTextureFromSurface(renderer, f.getSurface());
+    // TESTING - frame setup
+    Frame f("sprites/bg.png", renderer);
+    Frame f2("sprites/arcadius.png", renderer);
+    Frame f3("sprites/white_mask.png", renderer);
     
-    Frame f2;
-    if(f2.setSurface("sprites/arcadius.png"))
-      texture2 = SDL_CreateTextureFromSurface(renderer, f2.getSurface());
-    //SDL_BlendMode mode;
-    //SDL_GetTextureBlendMode(texture2, &mode);
-    //SDL_SetTextureBlendMode(texture2, SDL_BLENDMODE_NONE);
-    //printf("%d\n", mode); 
-    rect.x = 64;
-    rect.y = 64;
-    rect.w = 64;
-    rect.h = 64;
-    
-    Frame f3;
-    if(f3.setSurface("sprites/white_mask.png"))
-      texture_mask = SDL_CreateTextureFromSurface(renderer, f3.getSurface());
-    SDL_SetTextureBlendMode(texture_mask, SDL_BLENDMODE_ADD);
-    SDL_SetTextureAlphaMod(texture_mask, 128);
-    texture3 = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, 
+    // TESTING - Do some setup for the target painted texture
+    SDL_SetTextureBlendMode(f3.getTexture(), SDL_BLENDMODE_ADD);
+    SDL_SetTextureAlphaMod(f3.getTexture(), 128);
+    target_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, 
                                  SDL_TEXTUREACCESS_TARGET, 64, 64);
-    SDL_SetTextureBlendMode(texture3, SDL_BLENDMODE_BLEND);
-    //SDL_SetTextureAlphaMod(texture3, 128);
-    SDL_SetRenderTarget(renderer, texture3);
+    SDL_SetTextureBlendMode(target_texture, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderTarget(renderer, target_texture);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0);
     SDL_RenderClear(renderer);
-    SDL_RenderCopy(renderer, texture2, NULL, NULL);
-    SDL_RenderCopy(renderer, texture_mask, NULL, NULL);
-    rect2.x = 128;
-    rect2.y = 128;
-    rect2.w = 64;
-    rect2.h = 64;
+    f2.render(renderer);
+    SDL_RenderCopy(renderer, f3.getTexture(), NULL, NULL);
+    rect.x = 128;
+    rect.y = 128;
+    rect.w = 64;
+    rect.h = 64;
     
     
     SDL_SetRenderTarget(renderer, NULL);
@@ -336,21 +318,19 @@ bool Application::run()
       // TODO: Put rendering code here for entire application
       
       // TESTING
-      SDL_RenderCopy(renderer, texture, NULL, NULL);
-      SDL_SetTextureAlphaMod(texture2, 255);
-      rect.x = 64;
-      rect.y = 64;
-      SDL_RenderCopy(renderer, texture2, NULL, &rect);
-      SDL_SetTextureColorMod(texture2, 128, 128, 128);
-      rect.x = 256;
-      rect.y = 256;
-      SDL_RenderCopy(renderer, texture2, NULL, &rect);
-      SDL_SetTextureColorMod(texture2, 255, 255, 255);
-      SDL_SetTextureAlphaMod(texture2, 128);
-      rect.x = 192;
-      rect.y = 192;
-      SDL_RenderCopy(renderer, texture2, NULL, &rect);
-      SDL_RenderCopy(renderer, texture3, NULL, &rect2);
+      SDL_RenderCopy(renderer, f.getTexture(), NULL, NULL);
+      
+      SDL_SetTextureAlphaMod(f2.getTexture(), 255);
+      f2.render(renderer, 64, 64);
+      
+      SDL_SetTextureColorMod(f2.getTexture(), 128, 128, 128);
+      f2.render(renderer, 256, 256);
+      
+      SDL_SetTextureColorMod(f2.getTexture(), 255, 255, 255);
+      SDL_SetTextureAlphaMod(f2.getTexture(), 128);
+      f2.render(renderer, 192, 192);
+      
+      SDL_RenderCopy(renderer, target_texture, NULL, &rect);
       
       /* Update screen */
       SDL_RenderPresent(renderer);

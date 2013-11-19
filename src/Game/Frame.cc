@@ -5,8 +5,7 @@
  * Description: The Frame class, this represents an animation frame within the
  *              Sprite class. It acts as a linked list node, in that it contains
  *              a pointer to the next Frame in the sequence. The image frame is
- *              stored as a SDL_Surface, which can be converted to a texture
- *              to be rendered.
+ *              stored as a SDL_Texture which is used for rendering.
  ******************************************************************************/
 #include "Game/Frame.h"
 
@@ -24,10 +23,12 @@
 Frame::Frame()
 {
   /* Initialize variables */
+  height = 0;
   image_set = false;
   next = NULL;
   previous = NULL;
-  surface = NULL;
+  texture = NULL;
+  width = 0;
 }
 
 /* 
@@ -35,19 +36,23 @@ Frame::Frame()
  *              ptr. Pointers are defaulted to NULL if not given.
  *
  * Inputs: std::string path - the path to the image to create
+ *         SDL_Renderer* renderer - the image renderer to handle the texture
  *         Frame* previous - pointer to previous frame, default to NULL
  *         Frame* next - pointer to next frame, default to NULL
  */
-Frame::Frame(std::string path, Frame* previous, Frame* next)
+Frame::Frame(std::string path, SDL_Renderer* renderer, 
+             Frame* previous, Frame* next)
 {
   /* Initialize variables */
+  height = 0;
   image_set = false;
   next = NULL;
   previous = NULL;
-  surface = NULL;
+  texture = NULL;
+  width = 0;
   
   /* Sets the class parameters */
-  setSurface(path);
+  setTexture(path, renderer);
   setPrevious(previous);
   setNext(next);
 }
@@ -59,12 +64,24 @@ Frame::~Frame()
 {
   next = NULL;
   previous = NULL;
-  unsetSurface();
+  unsetTexture();
 }
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
+
+/*
+ * Description: Returns the height of the texture stored in the class. Is 0 if
+ *              the image isn't set.
+ *
+ * Inputs: none
+ * Output: int - pixel height of image
+ */
+int Frame::getHeight()
+{
+  return height;
+}
 
 /* 
  * Description: Gets next frame pointed to by this node
@@ -89,16 +106,28 @@ Frame* Frame::getPrevious()
 }
 
 /*
- * Description: Returns the SDL surface that the texture has been stored in.
- *              It is not necessarily NULL if the surface isn't set. Call 
+ * Description: Returns the SDL texture that is being stored in the frame.
+ *              It is not necessarily NULL if the texture isn't set. Call 
  *              isImageSet() to determine if it's been set.
  *
  * Inputs: none
- * Output: SDL_Surface* - the SDL surface of the image
+ * Output: SDL_Texture* - the SDL texture of the image
  */
-SDL_Surface* Frame::getSurface()
+SDL_Texture* Frame::getTexture()
 {
-  return surface;
+  return texture;
+}
+
+/*
+ * Description: Returns the width of the texture stored in the class. Is 0 if
+ *              the image isn't set.
+ *
+ * Inputs: none
+ * Output: int - pixel width of image
+ */
+int Frame::getWidth()
+{
+  return width;
 }
 
 /* 
@@ -110,6 +139,31 @@ SDL_Surface* Frame::getSurface()
 bool Frame::isImageSet()
 {
   return image_set;
+}
+
+/* Render the texture to the given renderer with the given parameters */
+bool Frame::render(SDL_Renderer* renderer, int x, int y, int h, int w)
+{
+  if(isImageSet() && renderer != NULL)
+  {
+    SDL_Rect rect;
+    rect.x = x;
+    rect.y = y;
+    rect.h = height;
+    rect.w = width;
+
+    /* Use parameter height and width if both are viable */
+    if(h > 0 && w > 0)
+    {
+      rect.h = h;
+      rect.w = w;
+    }
+    
+    /* Render and return status */
+    return (SDL_RenderCopy(renderer, getTexture(), NULL, &rect) == 0);
+  }
+  
+  return false;
 }
 
 /* 
@@ -137,48 +191,68 @@ bool Frame::setPrevious(Frame* previous)
 }
 
 /*
- * Description: Sets the SDL frame surface from a path file. This requires that
+ * Description: Sets the SDL frame texture from a path file. This requires that
  *              the extension appropriately defines the file in order to 
  *              properly work. If the image can be loaded, it automatically
- *              unsets the previous surface and sets this as the new one.
+ *              unsets the previous texture and sets this as the new one.
  *
  * Inputs: std::string path - the path to the image
- * Output: bool - the success of loading the surface
+ *         SDL_Renderer* renderer - the renderer to associate the texture with
+ * Output: bool - the success of loading the texture
  */
-bool Frame::setSurface(std::string path)
+bool Frame::setTexture(std::string path, SDL_Renderer* renderer)
 {
-	/* Attempt to load the surface */
-	SDL_Surface* loaded_surface = IMG_Load(path.c_str());
+  bool success = true;
   
-  /* If successful, set the surface in the class */
-  if(loaded_surface != NULL)
+	/* Attempt to load the image */
+  SDL_Surface* loaded_surface = IMG_Load(path.c_str());
+  
+  /* If successful, unset previous and set the new texture */
+  if(loaded_surface != NULL && renderer != NULL)
   {
-    unsetSurface();
-    surface = loaded_surface;
+    unsetTexture();
+    texture = SDL_CreateTextureFromSurface(renderer, loaded_surface);
     image_set = true;
-    return true;
+    height = loaded_surface->h;
+    width = loaded_surface->w;
+    SDL_FreeSurface(loaded_surface);
+  }
+  /* If the renderer is NULL, unload the surface */
+  else if(loaded_surface != NULL)
+  {
+    SDL_FreeSurface(loaded_surface);
+    printf("[WARNING] Renderer required to set texture in frame for \"%s\".\n",
+           path.c_str());
+    success = false;
+  }
+  /* If the surface is unset, notify the terminal with the failed surface */
+  else
+  {
+    /* Otherwise, return failed success */
+    printf("[WARNING] Unable to load image \"%s\". SDL_image error: %s\n", 
+           path.c_str(), IMG_GetError());
+    success = false;
   }
   
-  /* Otherwise, return failed success */
-  printf("[WARNING] Unable to load image \"%s\". SDL_image error: %s\n", 
-         path.c_str(), IMG_GetError());
-  return false;
+  return success;
 }
 
 /*
- * Description: Unsets the surface, if it has been stored in the class.
+ * Description: Unsets the texture, if it has been stored in the class.
  *              Otherwise, this call does nothing. After called, there is no
  *              image data to render.
  *
  * Inputs: none
  * Output: none
  */
-void Frame::unsetSurface()
+void Frame::unsetTexture()
 {
   if(image_set)
   {
-    SDL_FreeSurface(surface);
-    surface = NULL;
+    SDL_DestroyTexture(texture);
+    texture = NULL;
     image_set = false;
+    height = 0;
+    width = 0;
   }
 }
