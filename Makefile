@@ -34,7 +34,8 @@ else
 	endif
 endif
 
-SOURCES=src/Main.cc \
+SOURCES=src/Helpers.cc \
+        src/Main.cc \
         src/Application.cc \
         src/Game/Frame.cc \
         src/Game/Sprite.cc

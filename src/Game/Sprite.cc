@@ -29,7 +29,7 @@ const short Sprite::kUNSET_ANIMATE_TIME = -1;
  *
  * Input: none
  */
-Sprite::Sprite(SDL_Renderer* renderer)
+Sprite::Sprite()
 {
   /* Reset the class parameters */
   animation_time = kDEFAULT_ANIMATE_TIME;
@@ -52,26 +52,20 @@ Sprite::Sprite(SDL_Renderer* renderer)
  * Input: QString image_path - image path to set as one sprite
  *        int rotate_angle - the degree angle to rotate the image at the path
  */
-Sprite::Sprite(std::string path, SDL_Renderer* renderer)
+Sprite::Sprite(std::string path, SDL_Renderer* renderer) : Sprite()
 {
-  /*animation_time = kUNSET_ANIMATE_TIME;
-  brightness = kDEFAULT_BRIGHTNESS;
-  current = 0;
-  elapsed_time = 0;
-  head = 0;
-  size = 0;
-  sequence = FORWARD;
-
   /* See if the tile needs a split sequence - do it if relevant */
-  /*QStringList path_details = image_path.split("|");
-  if(path_details.size() > 1)
+  std::vector<std::string> split_path;
+  Helpers::split(path, '|', split_path);
+  if(split_path.size() == 3)
   {
-    animation_time = kDEFAULT_ANIMATE_TIME;
-    insertSequence(path_details[0], path_details[1].toInt(), 
-                   path_details[2], rotate_angle);
+    insertSequence(split_path[0], std::stoi(split_path[1]), 
+                   split_path[2], renderer);
   }
   else
-    insertFirst(image_path, rotate_angle);*/
+  {
+    insertFirst(path, renderer);
+  }
 }
 
 /* 
@@ -84,16 +78,9 @@ Sprite::Sprite(std::string path, SDL_Renderer* renderer)
  *        int rotate_angle - the degree to rotate all the images at
  */
 Sprite::Sprite(std::string head_path, int num_frames,
-               std::string tail_path, SDL_Renderer* renderer)
+               std::string tail_path, SDL_Renderer* renderer) : Sprite()
 {
-  /*animation_time = kDEFAULT_ANIMATE_TIME;
-  brightness = kDEFAULT_BRIGHTNESS;
-  current = 0;
-  elapsed_time = 0;
-  head = 0; 
-  size = 0;
-  sequence = FORWARD;
-  insertSequence(head_path, num_frames, tail_path, rotate_angle);*/
+  insertSequence(head_path, num_frames, tail_path, renderer);
 }
 
 /* 
@@ -102,6 +89,9 @@ Sprite::Sprite(std::string head_path, int num_frames,
 Sprite::~Sprite()
 {
   removeAll();
+  
+  SDL_DestroyTexture(texture);
+  texture = NULL;
 }
 
 /*============================================================================
@@ -347,16 +337,29 @@ bool Sprite::insertFirst(std::string path, SDL_Renderer* renderer)
     head = new Frame(path, renderer);
     if(head->isImageSet())
     {
-      head->setNext(head);
-      head->setPrevious(head);
-      current = head;
-      size = 1;
-      texture_update = true;
+      /* First set the rendering texture, if unset */
+      if(texture == NULL)
+      {
+        texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, 
+                                    SDL_TEXTUREACCESS_TARGET, head->getWidth(), 
+                                    head->getHeight());
+      }
       
-      return true;
+      /* Only proceed with finishing if the rendering texture could be set */
+      if(texture != NULL)
+      {
+        head->setNext(head);
+        head->setPrevious(head);
+        current = head;
+        size = 1;
+        texture_update = true;
+      
+        return true;
+      }
     }
 
     delete head;
+    head = NULL;
   }
   return false;
 }
@@ -380,7 +383,8 @@ bool Sprite::insertSequence(std::string head_path, int num_frames,
 		                        std::string tail_path, SDL_Renderer* renderer)
 {
   bool status = true;
-
+  printf("%s %d %s\n", head_path.c_str(), num_frames, tail_path.c_str());
+  
   /* Test if there are sufficient frames */
   if(num_frames <= 0)
     status = false;
@@ -638,7 +642,7 @@ void Sprite::setRotation(int angle)
 {
   rotation_angle = angle;
 }
-
+  
 /* 
  * Description: Shifts to the given position in the sequence 
  *

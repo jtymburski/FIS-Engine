@@ -14,13 +14,14 @@
 
 #include <vector>
 
+#include "Helpers.h"
 #include "Game/Frame.h"
 
 class Sprite
 {
 public:
   /* Constructor: Set up no images */
-  Sprite(SDL_Renderer* renderer = NULL);
+  Sprite();
 
   /* Constructor: Set up one image */
   Sprite(std::string path, SDL_Renderer* renderer);
@@ -163,6 +164,9 @@ public:
   
   /* Sets the rotation for all frames to be rendered at */
   void setRotation(int angle);
+  
+  /* Sets the texture renderer that is needed to render the sprite */
+  bool setTextureRenderer(SDL_Renderer* renderer);
   
   /* Shifts to the given position in the sequence */
   bool shift(int position);
