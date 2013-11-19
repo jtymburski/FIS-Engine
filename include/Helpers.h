@@ -13,7 +13,7 @@
  *
  * TODO
  * ----
- * 
+ *  - Random # generator - use Mersene Twister [11-18-13]
  ******************************************************************************/
 #ifndef HELPERS_H
 #define HELPERS_H
