@@ -1,24 +1,23 @@
 /*******************************************************************************
-* Class Name: x [Declaration]
+* Class Name: MathHelper [Declaration]
 * Date Created: 
 * Inheritance: 
 * Description: MathHelper is a collection of math-related functions to be used
-*              as common helpers in other classes.
-*
-* Notes:
-*
-* [1]:
-*
+*              as common helpers in other classes. This includes such functions
+*              as dealing with random numbers, working with general values
+*              and building tables, etc.
+
 * TODO
 * ----
-* 
+* //TODO - Random # generator -- user Mersenne Twister? [11-18-13]
+*        - Else, deal with stray global bool for seed
 *******************************************************************************/
 #ifndef MATHHELPER_H
 #define MATHHELPER_H
 
 #include <algorithm> /* std::min(), std::max() */
-#include <stdlib.h> /* srand, rand */
-#include <time.h>   /* time */
+#include <stdlib.h>  /* srand, rand */
+#include <time.h>    /* time */
 
 bool seeded = false;
 
@@ -27,7 +26,7 @@ bool seeded = false;
  *============================================================================*/
 
 /* Decides whether a percent_chance occurs or not */
-bool chanceHappens(const uint &pc_chance);
+bool chanceHappens(const uint &pc_chance, const uint& magnitude = 100);
 
 /* Generates a random coin flip */
 bool flipCoin();
@@ -38,8 +37,8 @@ int randInt(const int &max);
 /* Generates a Gaussian uniform integer between min and max */
 int randUniform(const int &a, const int &b);
 
-/* Rolls an X-Sided die S times */
-int rollXS(int x_sides, int s_times);
+/* Rolls an s-sided time x-times */
+int rollSX(const int &s_sides, const int &x_times);
 
 /* Seeds the random number generator */
 bool seed();
