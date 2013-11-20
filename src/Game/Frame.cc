@@ -141,7 +141,17 @@ bool Frame::isImageSet()
   return image_set;
 }
 
-/* Render the texture to the given renderer with the given parameters */
+/*
+ * Description: Renders the stored image if it is set and with a viable renderer
+ *              using the coordinates for location. 
+ *
+ * Inputs: SDL_Renderer* renderer - the rendering context for the GPU
+ *         int x - the x pixel location of the top left
+ *         int y - the y pixel location of the top left
+ *         int h - the height to render (in pixels)
+ *         int w - the width to render (in pixels)
+ * Output: bool - status if the render occurred
+ */
 bool Frame::render(SDL_Renderer* renderer, int x, int y, int h, int w)
 {
   if(isImageSet() && renderer != NULL)

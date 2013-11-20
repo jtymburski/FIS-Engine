@@ -50,6 +50,11 @@ private:
   /* The stored brightness for rendering */
   float brightness;
   
+  /* Color values to indicate the composition of the image */
+  uint8_t color_red;
+  uint8_t color_green;
+  uint8_t color_blue;
+  
   /* The current frame */
   Frame* current;
 
@@ -59,6 +64,9 @@ private:
   /* How the SDL texture should be flipped while rendering */
   SDL_RendererFlip flip;
 
+  /* Sets the opacity of the rendered sprite */
+  uint8_t opacity;
+  
   /* The rotation angle for rendering */
   int rotation_angle;
   
@@ -72,12 +80,24 @@ private:
   SDL_Texture* texture;
   bool texture_update;
   
+  /* Sets the white mask that can be used for modifying the brightness */
+  SDL_Texture* white_mask;
+  
   /*------------------- Constants -----------------------*/
   const static short kDEFAULT_ANIMATE_TIME; /* The default animation time */
   const static float kDEFAULT_BRIGHTNESS; /* the default brightness value */
+  const static uint8_t kDEFAULT_COLOR; /* the default color rating */
+  const static uint8_t kDEFAULT_OPACITY; /* the default rendered alpha */
   const static short kDOUBLE_DIGITS; /* the borderline to double digits */
   const static short kUNSET_ANIMATE_TIME; /* The unset animate time value */
 
+/*=============================================================================
+ * PRIVATE FUNCTIONS
+ *============================================================================*/
+private:
+  /* Sets the color modification with the texture */
+  void setColorMod();
+  
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
@@ -147,11 +167,21 @@ public:
   /* Removes the last frame in the sequence */
   bool removeTail();
 
+  /* Render the texture to the given renderer with the given parameters */
+  bool render(SDL_Renderer* renderer, int x = 0, int y = 0, 
+                                      int h = 0, int w = 0);
+
   /* Sets the frame animation time (in ms) */
   void setAnimationTime(short time);
   
+  /* Asserts that the current pointer in the linked list is at the head */
+  bool setAtFirst();
+  
   /* Sets the brightness (0-0.99: darker, 1.0: same, 1.0+: brighter) */
   bool setBrightness(float brightness);
+  
+  /* Sets the color balance of the sprite */
+  void setColorBalance(uint8_t red, uint8_t green, uint8_t blue);
   
   /* Asserts the direction is forward for when accessing the linked list */
   bool setDirectionForward();
@@ -159,14 +189,14 @@ public:
   /* Asserts the direction is reverse for when accessing the linked list */
   bool setDirectionReverse();
 
-  /* Asserts that the current pointer in the linked list is at the head */
-  bool setAtFirst();
+  /* Sets the opacity rating */
+  void setOpacity(uint8_t opacity);
   
   /* Sets the rotation for all frames to be rendered at */
   void setRotation(int angle);
   
-  /* Sets the texture renderer that is needed to render the sprite */
-  bool setTextureRenderer(SDL_Renderer* renderer);
+  /* Sets the white mask texture, for tuning brightness */
+  bool setWhiteMask(SDL_Texture* texture);
   
   /* Shifts to the given position in the sequence */
   bool shift(int position);
@@ -178,7 +208,7 @@ public:
   bool switchDirection();
 
   /* Updates the frames within the sprite */
-  void updateSprite(int cycle_time);
+  void updateSprite(int cycle_time, SDL_Renderer* renderer);
   
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS

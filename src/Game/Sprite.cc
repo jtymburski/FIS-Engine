@@ -17,6 +17,8 @@
 /* Constant Implementation - see header file for descriptions */
 const short Sprite::kDEFAULT_ANIMATE_TIME = 250;
 const float Sprite::kDEFAULT_BRIGHTNESS = 1.0;
+const uint8_t Sprite::kDEFAULT_COLOR = 255;
+const uint8_t Sprite::kDEFAULT_OPACITY = 255;
 const short Sprite::kDOUBLE_DIGITS = 10;
 const short Sprite::kUNSET_ANIMATE_TIME = -1;
 
@@ -34,15 +36,20 @@ Sprite::Sprite()
   /* Reset the class parameters */
   animation_time = kDEFAULT_ANIMATE_TIME;
   brightness = kDEFAULT_BRIGHTNESS;
+  color_red = kDEFAULT_COLOR;
+  color_green = kDEFAULT_COLOR;
+  color_blue = kDEFAULT_COLOR;
   current = NULL;
   elapsed_time = 0;
   head = NULL;
   flip = SDL_FLIP_NONE;
+  opacity = kDEFAULT_OPACITY;
   rotation_angle = 0;
   size = 0;
   sequence = FORWARD;
   texture = NULL;
   texture_update = false;
+  white_mask = NULL;
 }
 
 /* 
@@ -94,6 +101,24 @@ Sprite::~Sprite()
   texture = NULL;
 }
 
+/*=============================================================================
+ * PRIVATE FUNCTIONS
+ *============================================================================*/
+
+/* Sets the color modification with the texture */
+void Sprite::setColorMod()
+{
+  if(brightness < kDEFAULT_BRIGHTNESS)
+  {
+    SDL_SetTextureColorMod(texture, brightness * color_red, 
+                           brightness * color_green, brightness * color_blue);
+  }
+  else
+  {
+    SDL_SetTextureColorMod(texture, color_red, color_green, color_blue);
+  }
+}
+  
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
@@ -156,11 +181,11 @@ void Sprite::flipHorizontal(bool flip)
 {
   /* Enables / Disables the horizontal flip */
   if(flip)
-    flip = static_cast<SDL_RendererFlip>(flip | SDL_FLIP_HORIZONTAL);
-  flip = static_cast<SDL_RendererFlip>(flip & ~SDL_FLIP_HORIZONTAL);
-  
-  /* Initiate a texture update on the next update cycle */
-  texture_update = true;
+    this->flip = 
+               static_cast<SDL_RendererFlip>(this->flip |  SDL_FLIP_HORIZONTAL);
+  else
+    this->flip = 
+               static_cast<SDL_RendererFlip>(this->flip & ~SDL_FLIP_HORIZONTAL);
 }
 
 /* Flips the sprite SDL image - either horizontal or vertical */
@@ -168,11 +193,10 @@ void Sprite::flipVertical(bool flip)
 {
   /* Enables / Disables the vertical flip */
   if(flip)
-    flip = static_cast<SDL_RendererFlip>(flip | SDL_FLIP_VERTICAL);
-  flip = static_cast<SDL_RendererFlip>(flip & ~SDL_FLIP_VERTICAL);
-  
-  /* Initiate a texture update on the next update cycle */
-  texture_update = true;
+    this->flip = static_cast<SDL_RendererFlip>(this->flip | SDL_FLIP_VERTICAL);
+  else
+    this->flip = 
+                 static_cast<SDL_RendererFlip>(this->flip & ~SDL_FLIP_VERTICAL);
 }
   
 /*
@@ -343,6 +367,9 @@ bool Sprite::insertFirst(std::string path, SDL_Renderer* renderer)
         texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, 
                                     SDL_TEXTUREACCESS_TARGET, head->getWidth(), 
                                     head->getHeight());
+        SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+        setColorMod();
+        setOpacity(opacity);
       }
       
       /* Only proceed with finishing if the rendering texture could be set */
@@ -383,7 +410,6 @@ bool Sprite::insertSequence(std::string head_path, int num_frames,
 		                        std::string tail_path, SDL_Renderer* renderer)
 {
   bool status = true;
-  printf("%s %d %s\n", head_path.c_str(), num_frames, tail_path.c_str());
   
   /* Test if there are sufficient frames */
   if(num_frames <= 0)
@@ -550,6 +576,33 @@ bool Sprite::removeTail()
   return remove(size-1);
 }
 
+/* Render the texture to the given renderer with the given parameters */
+bool Sprite::render(SDL_Renderer* renderer, int x, int y, int h, int w)
+{
+  if(current != NULL && renderer != NULL)
+  {
+    SDL_Rect rect;
+    rect.x = x;
+    rect.y = y;
+    rect.h = current->getHeight();
+    rect.w = current->getWidth();
+
+    /* Use parameter height and width if both are viable */
+    if(h > 0 && w > 0)
+    {
+      rect.h = h;
+      rect.w = w;
+    }
+    
+    //printf("%d\n", flip);
+    /* Render and return status */
+    return (SDL_RenderCopyEx(renderer, texture, NULL, &rect, 
+                             rotation_angle, NULL, flip) == 0);
+  }
+  
+  return false;
+}
+
 /*
  * Description: Sets the animation time between frame changes. Gets called from
  *              the update call below for updating the frames in the sequence.
@@ -567,7 +620,21 @@ void Sprite::setAnimationTime(short time)
   /* Reset the elapsed time */
   elapsed_time = 0;
 }
-  
+
+/* 
+ * Description: Set the linked list current pointer to the head of the list 
+ *
+ * Inputs: none
+ * Output: bool - status if resetting the linked list to the first element
+ *                was successful.
+ */
+bool Sprite::setAtFirst()
+{
+  current = head;
+  texture_update = true;
+  return true;
+}
+ 
 /*
  * Description: Sets the brightness that the entire sprite sequence will be
  *              rendered at. It's range is 0-0.99: darker than default, 1.0: 
@@ -582,11 +649,23 @@ bool Sprite::setBrightness(float brightness)
   if(brightness >= 0.0)
   {
     this->brightness = brightness;
+    setColorMod();
     texture_update = true;
+    
     return true;
   }
   
   return false;
+}
+
+/* Sets the color balance of the sprite */
+void Sprite::setColorBalance(uint8_t red, uint8_t green, uint8_t blue)
+{
+  color_red = red;
+  color_green = green;
+  color_blue = blue;
+  
+  setColorMod();
 }
 
 /* 
@@ -617,18 +696,10 @@ bool Sprite::setDirectionReverse()
   return true;
 }
 
-/* 
- * Description: Set the linked list current pointer to the head of the list 
- *
- * Inputs: none
- * Output: bool - status if resetting the linked list to the first element
- *                was successful.
- */
-bool Sprite::setAtFirst()
+void Sprite::setOpacity(uint8_t opacity)
 {
-  current = head;
-  texture_update = true;
-  return true;
+  this->opacity = opacity;
+  SDL_SetTextureAlphaMod(texture, opacity);
 }
 
 /*
@@ -642,7 +713,18 @@ void Sprite::setRotation(int angle)
 {
   rotation_angle = angle;
 }
+
+bool Sprite::setWhiteMask(SDL_Texture* texture)
+{
+  if(texture != NULL)
+  {
+    white_mask = texture;
+    return true;
+  }
   
+  return false;
+}
+
 /* 
  * Description: Shifts to the given position in the sequence 
  *
@@ -734,7 +816,7 @@ bool Sprite::switchDirection()
  * Inputs: int cycle_time - the update time that has elapsed, in milliseconds
  * Output: none
  */
-void Sprite::updateSprite(int cycle_time)
+void Sprite::updateSprite(int cycle_time, SDL_Renderer* renderer)
 {
   /* Start by updating the animation and shifting, if necessary */
   if(size > 1 && cycle_time > 0 && animation_time > 0)
@@ -752,10 +834,28 @@ void Sprite::updateSprite(int cycle_time)
   }
   
   /* Proceed to update the running texture if it's changed */
-  if(texture_update)
+  if(texture_update && size > 0)
   {
-    // TODO: SDL Update texture that is being rendered - needs render pointer
-  
+    SDL_SetRenderTarget(renderer, texture);
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0);
+    SDL_RenderClear(renderer);
+    
+    /* Render current frame */
+    current->render(renderer);
+    
+    /* Render white mask, if relevant */
+    if(white_mask != NULL && brightness > kDEFAULT_BRIGHTNESS)
+    {
+      double bright_mod = (brightness - kDEFAULT_BRIGHTNESS);
+      if(bright_mod > kDEFAULT_BRIGHTNESS)
+        bright_mod = kDEFAULT_BRIGHTNESS;
+      
+      SDL_SetTextureAlphaMod(white_mask, 255 * brightness);
+      SDL_RenderCopy(renderer, white_mask, NULL, NULL);
+    }
+    
+    /* Release the renderer and end the update */
+    SDL_SetRenderTarget(renderer, NULL);
     texture_update = false;
   }
 }

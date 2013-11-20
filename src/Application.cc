@@ -277,16 +277,20 @@ bool Application::run()
   SDL_Rect rect;
   SDL_Texture* target_texture = NULL;
   int test; // TODO - Remove: Warning test
+  int angle = 0;
+  double brightness = 1.0;
+  double brightness2 = 1.0;
+  bool increasing = true;
   
   if(isInitialized())
   {
     quit = false;
-    
+
     // TESTING - frame setup
     Frame f("sprites/bg.png", renderer);
     Frame f2("sprites/arcadius.png", renderer);
     Frame f3("sprites/white_mask.png", renderer);
-    
+
     // TESTING - Do some setup for the target painted texture
     SDL_SetTextureBlendMode(f3.getTexture(), SDL_BLENDMODE_ADD);
     SDL_SetTextureAlphaMod(f3.getTexture(), 128);
@@ -303,12 +307,58 @@ bool Application::run()
     rect.w = 64;
     rect.h = 64;
     
-    
     SDL_SetRenderTarget(renderer, NULL);
+    
+    // TESTING - sprite setup
+    Frame white_mask("sprites/white_mask.png", renderer);
+    SDL_SetTextureBlendMode(white_mask.getTexture(), SDL_BLENDMODE_ADD);
+    
+    Sprite image_sprite("sprites/raven_AA_D|3|.png", renderer);
+    image_sprite.setWhiteMask(white_mask.getTexture());
+    image_sprite.setBrightness(1.2f);
+    image_sprite.setColorBalance(128, 128, 255);
+    //image_sprite.flipHorizontal();
+    //image_sprite.flipVertical(true);
+    image_sprite.updateSprite(0, renderer);
+    
+    Sprite bubby_sprite("sprites/bubby_AA_A00.png", renderer);
+    bubby_sprite.setWhiteMask(white_mask.getTexture());
+    bubby_sprite.setOpacity(128);
+    bubby_sprite.updateSprite(0, renderer);
+    
+    Sprite coin_sprite("sprites/coins_AA_A00.png", renderer);
+    coin_sprite.setWhiteMask(white_mask.getTexture());
+    coin_sprite.updateSprite(0, renderer);
     
     /* Main application loop */
     while(!quit)
     {
+      angle++;
+      if(angle == 180)
+        image_sprite.flipVertical(true);
+      else if(angle == 360)
+      {
+        image_sprite.flipVertical(false);
+        image_sprite.removeTail();
+        angle = 0;
+      }
+      
+      if(increasing)
+      {
+        brightness += 0.01;
+        if(brightness > 1.3)
+          increasing = false;
+      }
+      else
+      {
+        brightness -= 0.01;
+        if(brightness <= 1.0)
+          increasing = true;
+      }
+      brightness2 += 0.01;
+      if(brightness2 >= 2.0)
+        brightness2 = 0.0;
+      
       handleEvents();
       
       /* Clear screen */
@@ -331,6 +381,20 @@ bool Application::run()
       f2.render(renderer, 192, 192);
       
       SDL_RenderCopy(renderer, target_texture, NULL, &rect);
+      
+      /* Render Sprite */
+      image_sprite.setBrightness(brightness2);
+      image_sprite.setRotation(angle);
+      image_sprite.updateSprite(10, renderer);
+      image_sprite.render(renderer, 512, 512);
+      
+      bubby_sprite.setBrightness(brightness);
+      bubby_sprite.updateSprite(10, renderer);
+      bubby_sprite.render(renderer, 512, 525);
+      
+      coin_sprite.setBrightness(brightness);
+      coin_sprite.updateSprite(10, renderer);
+      coin_sprite.render(renderer, 700, 300);
       
       /* Update screen */
       SDL_RenderPresent(renderer);
