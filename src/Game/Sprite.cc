@@ -844,7 +844,7 @@ void Sprite::updateSprite(int cycle_time, SDL_Renderer* renderer)
     current->render(renderer);
     
     /* Render white mask, if relevant */
-    if(white_mask != NULL && brightness > kDEFAULT_BRIGHTNESS)
+    if(brightness > kDEFAULT_BRIGHTNESS && white_mask != NULL)
     {
       double bright_mod = (brightness - kDEFAULT_BRIGHTNESS);
       if(bright_mod > kDEFAULT_BRIGHTNESS)

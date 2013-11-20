@@ -14,8 +14,7 @@ endif
 
 CFLAGS = -c -std=c++11 -Wall
 INCLUDES = -Iinclude
-# Extra libraries: -lSDL2_ttf (fonts)
-LIBS += -lSDL2 -lSDL2_image -lSDL2_mixer
+LIBS += -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf
 # WINDOWS only?! Helps the cmd not appear when running the app separately.
 # This stops all output to the command line though...
 # -Wl,-subsystem,windows
@@ -34,11 +33,14 @@ else
 	endif
 endif
 
-SOURCES=src/Helpers.cc \
-        src/Main.cc \
-        src/Application.cc \
+SOURCES=src/Application.cc \
+        src/EnumDb.cc \
         src/Game/Frame.cc \
-        src/Game/Sprite.cc
+        src/Game/Sprite.cc \
+        src/Helpers.cc \
+        src/Main.cc \
+        src/Options.cc \
+        src/TitleScreen.cc
 
 OBJECTS=$(SOURCES:.cc=.o)
 

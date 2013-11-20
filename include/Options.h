@@ -1,0 +1,143 @@
+/*******************************************************************************
+ * Class Name: Options
+ * Date Created: Sunday, December 2, 2012
+ * Inheritance: none
+ * Description: This handles all options used throughout the application as well
+ *              as the API for changing this. It's activated by calling the
+ *              render class by the higher end classes.
+ *  
+ * TODO: See cc file
+ ******************************************************************************/
+#ifndef OPTIONS_H
+#define OPTIONS_H
+
+#include <iostream>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
+#include <string>
+
+class Options
+{
+public:
+  /* Constructor(s) */
+  Options();
+
+  /* Copy constructor */
+  Options(const Options &source);
+
+  /* Destructor */
+  ~Options();
+
+  /* Battle Options */
+  enum BattleOptions { BEARWALK,
+                       BEARLY_DIFFICULT,
+                       GRIZZLY };
+
+  enum BattleMode { DEBUG,
+                    GUI };
+
+private:
+  /* Amount of information to display during ailment updates */
+  BattleOptions ailment_update_state;
+
+  /* Amount of information to display on the Battle HUD */
+  BattleOptions battle_hud_state;
+
+  /* Output mode the Battle is operating in */
+  BattleMode battle_mode;
+
+  /* The index for the selected font */
+  uint8_t font;
+  
+  /* Resolution of the screen currently being used */
+  uint8_t resolution_x;
+  uint8_t resolution_y;
+
+  /* Vertical refresh syncing enable */
+  bool vsync_enabled;
+
+  /* Horizontal resolution options */
+  //QVector<int> x_options; 
+
+  /* Vertical resolution options */
+  //QVector<int> y_options; 
+
+  /* Primary options menu */
+  //QList<QString> main_options;
+
+  /* Secondary options menu */
+  /* Notes: other options to be added as need (audio, animations, font size) */
+  //QList<QString> secondary_Options;
+
+  /* Flag for battle animations */
+  //bool ANIMATIONS; 
+
+  /*------------------- Constants -----------------------*/
+  const static std::string kFONTS[]; /* A list of all the fonts available */
+  const static uint8_t kNUM_FONTS; /* The number of fonts available */
+  const static uint8_t kNUM_RESOLUTIONS; /* Number of resolutions available */
+  const static uint16_t kRESOLUTIONS_X[]; /* X Resolution sizes available */
+  const static uint16_t kRESOLUTIONS_Y[]; /* Y Resolution sizes available */
+
+/*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+private:
+  /* Copy all parameters from the other to the current if called */
+  void copySelf(const Options &source);
+
+  /* Sets all parameters to default */
+  void setAllToDefault();
+
+  /* Assign a new ailment update state to BattleOptions */
+  void setAilmentUpdateState(BattleOptions new_state);
+
+  /* Assign a new hud update state to BattleOptions */
+  void setBattleHudState(BattleOptions new_state);
+
+  /* Assigns a new battle mode */
+  void setBattleMode(BattleMode new_state);
+
+  /* Sets the chosen font */
+  void setFont(uint8_t index, bool first_call = false);
+  
+  /* Set the screen dimensions to be painted, based on the array index */
+  void setScreenResolution(uint8_t index);
+
+  /* Enable or disable vertical refresh syncing */
+  void setVsync(bool enabled);
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
+public:
+  /* Function to confirm the setup of the font */
+  bool confirmFontSetup();
+  
+  /* Returns the current state of ailment updates */
+  BattleOptions getAilmentUpdateState();
+
+  /* Returns the current state of battle hud display */
+  BattleOptions getBattleHudState();
+
+  /* Returns the current state of Battle update mode */
+  BattleMode getBattleMode();
+
+  /* Returns the path to the font to use throughout the application */
+  std::string getFont();
+  
+  /* Returns the screen dimensions to be painted */
+  uint16_t getScreenHeight();
+  uint16_t getScreenWidth();  
+
+  /* Returns if vertical refresh syncing is enabled */
+  bool isVsyncEnabled();
+
+/*============================================================================
+ * OPERATOR FUNCTIONS
+ *===========================================================================*/
+public:
+  Options& operator= (const Options &source);
+};
+
+#endif // OPTIONS_H

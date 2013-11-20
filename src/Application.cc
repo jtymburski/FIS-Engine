@@ -20,9 +20,14 @@ Application::Application()//QWidget* parent)
 {
   /* Initialize the variables */
   initialized = false;
+  quit = false;
   renderer = NULL;
+  running = TITLESCREEN;
   window = NULL;
   
+  /* Set the title screen parameters */
+  title_screen.setConfiguration(&system_options);
+
   //setParent(parent);
 
   // TODO: make this dependent on focus of the game. If it loses focus, 
@@ -209,8 +214,8 @@ bool Application::initialize()
   if(success)
   {
     /* Enable vertical syncing */
-    if(!SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1"))
-      printf("[WARNING] Vsync not enabled.");
+    //if(!SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1"))
+    //  printf("[WARNING] Vsync not enabled.");
     
     /* Set texture filtering to linear */
     if(!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1"))
@@ -219,7 +224,7 @@ bool Application::initialize()
     /* Create window for display */
     window = SDL_CreateWindow("Univursa", SDL_WINDOWPOS_CENTERED, 
                               SDL_WINDOWPOS_CENTERED, 1216, 704, 
-                              SDL_WINDOW_SHOWN);
+                              SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
     if(window == NULL)
     {
       printf("[ERROR] Window could not be created. SDL error: %s\n", 
@@ -249,15 +254,33 @@ bool Application::initialize()
   {
     if(!IMG_Init(IMG_INIT_PNG))
     {
-      printf("[ERROR] SDL_Image could not initialize. SDL_Image error: %s\n", 
+      printf("[ERROR] SDL_Image could not initialize. SDL_image error: %s\n", 
              IMG_GetError());
       success = false;
     }
   }
+  
+  /* Initialize SDL TTF library */
+  if(success)
+  {
+    if(TTF_Init() == -1)
+    {
+      printf("[ERROR] SDL_ttf could not initialize. SDL_ttf error: %s\n",
+             TTF_GetError());
+      success = false;
+    }
+    
+    success = system_options.confirmFontSetup();
+  }
 
   /* If successful, confirm the initialization */
   if(success)
+  {
     initialized = true;
+    
+    /* Set the title screen background */
+    title_screen.setBackground("pictures/univursatitle.png", renderer);
+  }
   /* Uninitialize everything, if the init sequence failed */
   else if(!isInitialized())
     uninitialize();
@@ -274,17 +297,17 @@ bool Application::isInitialized()
 /* Runs the application */
 bool Application::run()
 {
-  SDL_Rect rect;
+  /*SDL_Rect rect;
   SDL_Texture* target_texture = NULL;
   int test; // TODO - Remove: Warning test
   int angle = 0;
   double brightness = 1.0;
   double brightness2 = 1.0;
-  bool increasing = true;
+  bool increasing = true;*/
   
   if(isInitialized())
   {
-    quit = false;
+    /*quit = false;
 
     // TESTING - frame setup
     Frame f("sprites/bg.png", renderer);
@@ -328,12 +351,12 @@ bool Application::run()
     
     Sprite coin_sprite("sprites/coins_AA_A00.png", renderer);
     coin_sprite.setWhiteMask(white_mask.getTexture());
-    coin_sprite.updateSprite(0, renderer);
+    coin_sprite.updateSprite(0, renderer);*/
     
     /* Main application loop */
     while(!quit)
     {
-      angle++;
+/*      angle++;
       if(angle == 180)
         image_sprite.flipVertical(true);
       else if(angle == 360)
@@ -362,7 +385,7 @@ bool Application::run()
       handleEvents();
       
       /* Clear screen */
-      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+/*      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
       SDL_RenderClear(renderer);
       
       // TODO: Put rendering code here for entire application
@@ -383,7 +406,7 @@ bool Application::run()
       SDL_RenderCopy(renderer, target_texture, NULL, &rect);
       
       /* Render Sprite */
-      image_sprite.setBrightness(brightness2);
+/*      image_sprite.setBrightness(brightness2);
       image_sprite.setRotation(angle);
       image_sprite.updateSprite(10, renderer);
       image_sprite.render(renderer, 512, 512);
@@ -395,6 +418,19 @@ bool Application::run()
       coin_sprite.setBrightness(brightness);
       coin_sprite.updateSprite(10, renderer);
       coin_sprite.render(renderer, 700, 300);
+      
+      /* Handle events */
+      handleEvents();
+      
+      /* Handle the individual action items, depending on whats running */
+      if(running == TITLESCREEN)
+        title_screen.render(renderer);
+      else if(running == GAME)
+        quit = quit; // DO GAME EXECUTION
+      else if(running == OPTIONS)
+        quit = quit; // DO OPTIONS EXECUTION
+      else if(running == EXIT)
+        quit = true;
       
       /* Update screen */
       SDL_RenderPresent(renderer);

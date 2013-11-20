@@ -13,15 +13,11 @@
 #include <cstdio>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-
-//#include <vector>
-//#include <QDebug>
-//#include <QCloseEvent>
-//#include <QDesktopWidget>
-//#include <QLayout>
-//#include <QStackedWidget>
+#include <SDL2/SDL_ttf.h>
 
 #include "Game/Sprite.h"
+#include "Options.h"
+#include "TitleScreen.h"
 
 //#include "Game/Game.h"
 //#include "Options.h"
@@ -62,14 +58,18 @@ private:
   /* The renderer for handling all interactions with the window */
   SDL_Renderer* renderer;
   
+  /* The current application that is running, under the head application
+   * management */
+  AppItems running;
+  
   /* All options available for the system */
-  //Options system_options;
+  Options system_options;
 
   /* The application tick, for executing updates */
   //QTimer tick;
 
   /* The displayed title screen for the game */
-  //TitleScreen* title_screen;
+  TitleScreen title_screen;
   
   /* The update time, for each cycle */
   //QTime update_time;
