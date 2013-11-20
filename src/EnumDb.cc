@@ -195,14 +195,14 @@ enum class Direction
  */
 enum class Element : std::uint8_t
 { 
-  PHYSICAL,
-  FIRE,
-  FOREST,
-  ICE,
-  ELECTRIC,
-  DIGITAL,
-  NIHIL,
-  NONE 
+  PHYSICAL   = 1 << 1,
+  FIRE       = 1 << 2,
+  FOREST     = 1 << 3,
+  ICE        = 1 << 4,
+  ELECTRIC   = 1 << 5,
+  DIGITAL    = 1 << 6,
+  NIHIL      = 1 << 7,
+  NONE       = 0
 };
 
 /*
