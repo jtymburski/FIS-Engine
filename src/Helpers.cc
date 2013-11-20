@@ -1,5 +1,5 @@
 /*******************************************************************************
- * File Name: Helpers [Implementation]
+ * Class Name: Helpers [Implementation]
  * Date Created: November 17th, 2013
  * Inheritance: None
  * Description: Helpers is a collection of functions to be used as common
@@ -7,7 +7,8 @@
  *              as dealing with random numbers, working with general values
  *              and building tables, etc.
  *
- * Notes: 
+ * Notes
+ * -----
  * [1]: Was tuned to remove the global nature of both variables and functions.
  *      Also, to expand to general functions instead of math specific
  *
@@ -31,19 +32,18 @@
  *        - chanceHappens(0, n) -> always false
  *
  * Inputs: const uint32_t &pc_chance - const ref to the chance the event has
- *         const uint32_t &magnitude - magnitude of accuracy 
+ *         const uint32_t &mag - magnitude of accuracy 
  *                                    (bound to generate #s)
  * Output: bool - determination of the event
  */
-bool Helpers::chanceHappens(const uint32_t &pc_chance, 
-                            const uint32_t &magnitude)
+bool Helpers::chanceHappens(const uint32_t &pc_chance, const uint32_t &mag)
 {
-  if (pc_chance >= magnitude)
+  if (pc_chance >= mag)
     return true;
   if (pc_chance <= 0)
     return false;
 
-  auto random = randUniform(1, static_cast<int>(magnitude));
+  auto random = randUniform(1, static_cast<int>(mag));
 
   if (static_cast<uint32_t>(random) <= pc_chance) 
     return true;
@@ -173,6 +173,7 @@ T Helpers::setWithinRange(T &value, const size_t &a, const size_t &b)
     value = min;
   else if (value > max)
     value = max;
+
   return value;
 }
 

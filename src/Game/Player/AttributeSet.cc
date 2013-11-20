@@ -6,8 +6,8 @@
 *              which are used by other classes to calculate the outcome of
 *              combat states.
 *
-* Notes:
-*
+* Notes
+* -----
 * [1]:
 *
 * See .h file for TODOs
@@ -84,11 +84,23 @@ const uint AttributeSet::kNUM_PRESETS =        3;
  *============================================================================*/
 
 /*
- * Description: Default constructor, but may also be used to construct an
- *              AttributeSet based on presets which are pre-initialized
+ * Description: Default constructor, intitializes a default Attribute set
+ *
+ * Inputs: none
+ */
+ AttributeSet::AttributeSet()
+{
+  buildAsPreset(0);
+
+  /* Assert the values are within range */
+  cleanUp();
+}
+
+/*
+ * Description: Construct an AS based on presets which are pre-initialized
  *              and configured values of stats.
  *
- * Inputs: const int &preset_level - const ref to the preset to set (default 0)
+ * Inputs: const int &preset_level - const ref to the preset to set
  */
 AttributeSet::AttributeSet(const int &preset_level)
 {
@@ -117,7 +129,7 @@ AttributeSet::AttributeSet(const AttributeSet &source)
  *
  * Inputs: std::vector<uint> new_values - vector of values to be set
  */
-AttributeSet::AttributeSet(std::vector<uint> new_values)
+AttributeSet::AttributeSet(const std::vector<uint> &new_values)
 {
   if (new_values.size() == kNUM_VALUES)
     values = new_values;
@@ -180,7 +192,7 @@ void AttributeSet::copySelf(const AttributeSet &source)
 void AttributeSet::cleanUp()
 {
   for (auto it = values.begin(); it != values.end(); ++it)
-    setWithinRange((*it), kMIN_VALUE, kMAX_VALUE);
+    Helpers::setWithinRange((*it), kMIN_VALUE, kMAX_VALUE);
 }
 
 /*=============================================================================
@@ -203,7 +215,7 @@ bool AttributeSet::alterStat(const uint &index, const int &amount)
     if (temp < 0)
       temp = 0;
 
-    setWithinRange(temp, kMIN_VALUE, kMAX_VALUE);
+    Helpers::setWithinRange(temp, kMIN_VALUE, kMAX_VALUE);
     values[index] = temp;
 
     return true;
@@ -216,11 +228,11 @@ bool AttributeSet::alterStat(const uint &index, const int &amount)
  * Description: Alters the stat of a given enumerated value by an amount.
  *              Calls the alterStat(uint index, int amount) function.
  *
- * Inputs: Attribute stat - enumerated Attribute value to be altered
+ * Inputs: const Attribute &stat - enumerated Attribute value to be altered
  *         const int &amount - the amount by which to alter the stat (+/-) 
  * Output: bool - true if the enumeration was a valid attribute
  */
-bool AttributeSet::alterStat(Attribute stat, const int &amount)
+bool AttributeSet::alterStat(const Attribute &stat, const int &amount)
 {
   return alterStat(static_cast<uint>(stat), amount);
 }
@@ -230,11 +242,11 @@ bool AttributeSet::alterStat(Attribute stat, const int &amount)
  *              amount. Uses the alterStat function above after obtaining 
  *              the right index.
  *
- * Inputs: std::string name - the name form of the attribute
+ * Inputs: const std::string &name - the name form of the attribute
  *         const int &amount - the amount by which to alter the stat 
  * Output: bool - true if the name relates to a valid stat
  */
-bool AttributeSet::alterStat(std::string name, const int &amount)
+bool AttributeSet::alterStat(const std::string &name, const int &amount)
 {
   return alterStat(getIndex(name), amount);
 }
@@ -243,10 +255,10 @@ bool AttributeSet::alterStat(std::string name, const int &amount)
  * Description: Returns the index of a given enumerated Attribute, or
  *              returns -1 if the index was not found.
  *
- * Inputs: Attribute stat - enumerated attribute to find the index for
+ * Inputs: const Attribute &stat - enumerated attribute to find the index for
  * Output: int - the index of the corresponding attribute (if it exists)
  */
-int AttributeSet::getIndex(Attribute stat)
+int AttributeSet::getIndex(const Attribute &stat)
 {
   if (stat < Attribute::NONE)
     return static_cast<uint>(stat);
@@ -258,10 +270,10 @@ int AttributeSet::getIndex(Attribute stat)
  * Description: Returns the long form name version of an attribute given
  *              an enumerated attribute. If not found, returns the empty string.
  *
- * Inputs: Attribute stat - the enumerated attribute to find the name for
+ * Inputs: const Attribute &stat - the enum. stat to find the name for
  * Output: std::string - the long version of the attributes name (if it exists)
  */
-std::string AttributeSet::getLongName(Attribute stat)
+std::string AttributeSet::getLongName(const Attribute &stat)
 {
   auto index = getIndex(stat);
 
@@ -275,10 +287,10 @@ std::string AttributeSet::getLongName(Attribute stat)
  * Description: Returns the short form name version of an attribute given
  *              an enumerated attribute. If not found, returns the empty string.
  *
- * Inputs: Attribute stat - the enumerated attribute to find the name for
+ * Inputs: const Attribute &stat - the enumerated attribute to find the name for
  * Output: std::string - the short version of the attributes name (if it exists)
  */
-std::string AttributeSet::getName(Attribute stat)
+std::string AttributeSet::getName(const Attribute &stat)
 {
   auto index = getIndex(stat);
 
@@ -304,12 +316,14 @@ int AttributeSet::getStat(const uint &index)
 }
 
 /*
- * Description: Returns the value of a stat 
+ * Description: Returns the value of a stat represented by a given enumerated
+ *              attribute, or if not a valid attribute, returns -1 (impossible
+ *              value for a stat)
  *
- * Inputs: 
- * Output: 
+ * Inputs: const Attribute &stat - enumerated value representing an attribute
+ * Output: int - the value of the stat corresponding to the enum value, or -1
  */
-int AttributeSet::getStat(Attribute stat)
+int AttributeSet::getStat(const Attribute &stat)
 {
   auto index = getIndex(stat);
 
@@ -320,12 +334,13 @@ int AttributeSet::getStat(Attribute stat)
 }
 
 /*
- * Description: 
+ * Description: Returns the value of a stat given the name (short or long form)
+ *              of a stat.
  *
- * Inputs: 
- * Output: 
+ * Inputs: const std::string &name - name of stat to check value for
+ * Output: int - the value of the stat if it exists, else -1
  */
-int AttributeSet::getStat(std::string name)
+int AttributeSet::getStat(const std::string &name)
 {
   auto index = getIndex(name);
 
@@ -336,16 +351,18 @@ int AttributeSet::getStat(std::string name)
 }
 
 /*
- * Description: 
+ * Description: Attempts to assign a stat at a given index to a value.
+ *              Returns the truth of the assignment.
  *
- * Inputs: 
- * Output: 
+ * Inputs: const uint &index - the index of the stat to be assigned
+ *         const int &value - the value to assign the stat to
+ * Output: bool - the truth of the assignment
  */
-bool AttributeSet::setStat(uint index, int value)
+bool AttributeSet::setStat(const uint &index, const int &value)
 {
   if (index < kNUM_VALUES)
   {
-    setWithinRange(value, kMIN_VALUE, kMAX_VALUE);
+    Helpers::setWithinRange(value, kMIN_VALUE, kMAX_VALUE);
     values[index] = value;
     return true;
   }
@@ -354,12 +371,14 @@ bool AttributeSet::setStat(uint index, int value)
 }
 
 /*
- * Description: 
+ * Description: Attempts to assign a stat of a given enum value to a value.
+ *              Returns the truth of the assignment.
  *
- * Inputs: 
- * Output: 
+ * Inputs: Attribute stat - enum. value of the stat to be assigned
+ *         const int &value - the value to assign to the stat
+ * Output: bool - the truth of the assignment
  */
-bool AttributeSet::setStat(Attribute stat, int value)
+bool AttributeSet::setStat(const Attribute &stat, int value)
 {
   auto index = getIndex(stat);
 
@@ -373,12 +392,14 @@ bool AttributeSet::setStat(Attribute stat, int value)
 }
 
 /*
- * Description: 
+ * Description: Attempts to assign a stat of a given name (long or short form)
+ *              to a given value. Returns the truth of the assignment.
  *
- * Inputs: 
- * Output: 
+ * Inputs: const std::string &name - the name of the stat to be assigned
+ *         const int &value - the value to assign to the stat
+ * Output: bool - the truth of the assignment
  */
-bool AttributeSet::setStat(std::string name, int value)
+bool AttributeSet::setStat(const std::string &name, const int &value)
 {
   auto index = getIndex(name);
 
@@ -399,10 +420,10 @@ bool AttributeSet::setStat(std::string name, int value)
  * Description: Returns the index of an attribute given a name (short or long)
  *              form representing the attribute.
  *
- * Inputs: std::string name - the name (short or long) form of the attribute
+ * Inputs: const std::string &name - the name of the attribute to find index of
  * Output: int - the index of the corresponding attribute (if it exists)
  */
-int AttributeSet::getIndex(std::string name)
+int AttributeSet::getIndex(const std::string &name)
 {
   /* Find the index in the vector of short or long names */
   for (uint i = 0; i < kNUM_VALUES; i++)
@@ -413,18 +434,24 @@ int AttributeSet::getIndex(std::string name)
   return -1; 
 }
 
+/*
+ * Description: Returns the size of an attribute set (the value of kNUM_VALUES)
+ *
+ * Inputs: none
+ * Output: uint - the number of values contained in an attribute set
+ */
 uint AttributeSet::getSize()
 {
   return kNUM_VALUES;
 }
 
 /*
- * Description: 
+ * Description: Returns the long-form name of an attribute at a given index.
  *
- * Inputs: 
- * Output: 
+ * Inputs: const uint &index - the index to return the long-form name of
+ * Output: std::string - the string stored in kLONG_NAMES[index]
  */
-std::string AttributeSet::getLongName(uint index)
+std::string AttributeSet::getLongName(const uint &index)
 {
   if (index < kNUM_VALUES)
     return kLONG_NAMES[index];
@@ -433,12 +460,12 @@ std::string AttributeSet::getLongName(uint index)
 }
 
 /*
- * Description: 
+ * Description: Returns the short-form name of an attribute at a given index
  *
- * Inputs: 
- * Output: 
+ * Inputs: const uint &index - the index to return the short-form name of
+ * Output: std::string - the string stored in kLONG_NAMES[index]
  */
-std::string AttributeSet::getName(uint index)
+std::string AttributeSet::getName(const uint &index)
 {
   if (index < kNUM_VALUES)
     return kSHORT_NAMES[index];
@@ -451,10 +478,12 @@ std::string AttributeSet::getName(uint index)
  *============================================================================*/
 
 /*
- * Description: 
+ * Description: Overloaded assignment operator. Checks for self-assignment, then
+ *              calls copySelf on the given object as the common copying
+ *              method between this function and the copy constructor.
  *
- * Inputs: 
- * Output: 
+ * Inputs: const AttributeSet& source - the source object to be copied
+ * Output: AttributeSet& - ref to the copied object
  */
 AttributeSet& AttributeSet::operator= (const AttributeSet &source)
 {
@@ -462,21 +491,23 @@ AttributeSet& AttributeSet::operator= (const AttributeSet &source)
   if (this == &source)
     return *this;
 
-  /* Do the copy and return the copied object */
   copySelf(source);
+  
+  /* Return the copied object by ref */
   return *this;
 }
 
 /*
- * Description: 
+ * Description: Overloaded compound assignment operator. Adds a given 
+ *              AttributeSet (rhs) to the current object and returns itself.
  *
- * Inputs: 
- * Output: 
+ * Inputs: const AttributeSet& rhs - the set to be added to the current set
+ * Output: AttributeSet& - ref to the current object (after compounding)
  */
 AttributeSet& AttributeSet::operator+=(const AttributeSet& rhs)
 {
   for (uint i = 0; i < kNUM_VALUES; i++)
-    this->values[i] = this.values[i] + rhs.values[i];
+    this->values[i] = this->values[i] + rhs.values[i];
 
   /* Assert the new values are within range */
   this->cleanUp();
@@ -486,15 +517,16 @@ AttributeSet& AttributeSet::operator+=(const AttributeSet& rhs)
 }
 
 /*
- * Description: 
- *
- * Inputs: 
- * Output: 
+ * Description: Overloaded subtractive assignment operator. Subtracts a given
+ *              AttributeSet (rhs) from the current object and returns itself
+.e *
+ * Inputs: const AttributeSet& rhs - the set to be subtracted from the current
+ * Output: AttributeSet& - ref to the current object (after subtraction)
  */
 AttributeSet& AttributeSet::operator-=(const AttributeSet& rhs)
 {
   for (uint i = 0; i < kNUM_VALUES; i++)
-    this->values[i] = this.values[i] - rhs.values[i];
+    this->values[i] = this->values[i] - rhs.values[i];
 
   /* Assert the new values are within range */
   this->cleanUp();
@@ -504,12 +536,14 @@ AttributeSet& AttributeSet::operator-=(const AttributeSet& rhs)
 }
 
 /*
- * Description: 
+ * Description: Overloaded + operator. Adds two given Attribute sets together
+ *              and returns the added set (re-uses the compound assignment)
  *
- * Inputs: 
- * Output: 
+ * Inputs: AttributeSet lhs - the left expression AttributeSet
+ *         const AttributeSet &rhs - the right side expression AttributeSet
+ * Output: AttributeSet - the new object after addition
  */
-inline AttributeSet& operator+ (AttributeSet lhs, const AttributeSet &rhs)
+inline AttributeSet operator+(AttributeSet lhs, const AttributeSet &rhs)
 {
   /* Reuse compound addition operator */
   lhs += rhs;
@@ -518,12 +552,14 @@ inline AttributeSet& operator+ (AttributeSet lhs, const AttributeSet &rhs)
 }
 
 /*
- * Description: 
+ * Description: Overlaoded subtraction operator. Subtracts the rhs AS from the
+ *              lhs AS and returns a ref to the rhs object after.
  *
- * Inputs: 
- * Output: 
+ * Inputs: AttributeSet lhs - the left expression AS
+ *         const AttributeSet& rhs - the right expression AS
+ * Output: AttributeSet - the left hand expression after subtration
  */
-inline AttributeSet& opreator-(AttributeSet lhs, const AttributeSet& rhs)
+inline AttributeSet operator-(AttributeSet lhs, const AttributeSet& rhs)
 {
   /* Reuse the compound subtraction operator */
   lhs -= rhs;

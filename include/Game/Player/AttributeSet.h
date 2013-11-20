@@ -6,10 +6,13 @@
 *              which are used by other classes to calculate the outcome of
 *              combat states.
 *
+* Notes
+* -----
+* [1]:
+*
 * TODO
 * ----
-* - More Presets [11-18-13]
-* - Conventions [11-18-13]
+* - Build more unique flavoured presets for Battle testing/generics [11-18-13]
 *******************************************************************************/
 #ifndef ATTRIBUTESET_H
 #define ATTRIBUTESET_H
@@ -17,19 +20,22 @@
 #include <vector>
 
 #include "EnumDb.h"
-#include "MathHelper.h"
+#include "Helpers.h"
 
 class AttributeSet
 {
 public:
-  /* Default constructor, can also be used to build presets */
-  AttributeSet(const int &preset_level = 0);
+  /* Default constructor */
+  AttributeSet();
+
+  /* Preset constructor */
+  AttributeSet(const int &preset_level);
 
   /* Copy constructor */
   AttributeSet(const AttributeSet &source);
 
   /* Construct and AttributeSet from a vector of values */
-  AttributeSet(std::vector<uint> new_values);
+  AttributeSet(const std::vector<uint> &new_values);
 
   /* Annihilates an AttributeSet object */
   ~AttributeSet();
@@ -71,45 +77,45 @@ public:
   /* Methods for altering a stat by a given amount given either an index,
    * enumerated value of the Attribute, or a string name (short or long */
   bool alterStat(const uint &index, const int &amount);
-  bool alterStat(Attribute stat, const int &amount);
-  bool alterStat(std::string name, const int &amount);
+  bool alterStat(const Attribute &stat, const int &amount);
+  bool alterStat(const std::string &name, const int &amount);
 
   /* Method for getting the index of an attribute by an enum  */
-  int getIndex(Attribute stat);
+  int getIndex(const Attribute &stat);
 
   /* Returns the long form name of an attribtue given an enumerated value */
-  std::string getLongName(Attribute stat);
+  std::string getLongName(const Attribute &stat);
 
   /* Returns the short form name of an attribute given an enumerated value */
-  std::string getName(Attribute stat);
+  std::string getName(const Attribute &stat);
 
   /* Methods for returning the value of a stat given either an index, an
      enumerated value, or a string name (short or long) */
   int getStat(const uint &index = 0);
-  int getStat(Attribute stat);
-  int getStat(std::string name);
+  int getStat(const Attribute &stat);
+  int getStat(const std::string &name);
 
   /* Methods for assigning a new value to a stat given either an index, an
    * enumerated value, or a string name (short or long) */
-  bool setStat(uint index, int value);
-  bool setStat(Attribute stat, int value);
-  bool setStat(std::string name, int value);
+  bool setStat(const uint &index, int value);
+  bool setStat(const Attribute &stat, const int &value);
+  bool setStat(const std::string &name, const int &value);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
 public:
   /* Method for returning the index of an attribute given a name */
-  static int getIndex(std::string name);
+  static int getIndex(const std::string &name);
 
   /* Returns the size of an attribute set (static -- returns kNUM_VALUES) */
   static uint getSize();
 
   /* Returns the long-form name of an attribute at a given index */
-  static std::string getLongName(uint index);
+  static std::string getLongName(const uint &index);
 
   /* Returns the short name form of a stat at a given index */
-  static std::string getName(uint index);
+  static std::string getName(const uint &index);
 
 /*============================================================================
  * OPERATOR FUNCTIONS
@@ -126,9 +132,9 @@ public:
 };
 
 /* Overloaded + operator for AttributeSet additions */
-inline AttributeSet& operator+(AttributeSet lhs, const AttributeSet &rhs);
+inline AttributeSet operator+(AttributeSet lhs, const AttributeSet &rhs);
 
 /* Overloaded - operator for AttributeSet subtractions */
-inline AttributeSet& operator-(AttributeSet lhs, const AttributeSet &rhs);
+inline AttributeSet operator-(AttributeSet lhs, const AttributeSet &rhs);
 
 #endif //ATTRIBUTESET_H

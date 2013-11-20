@@ -1,5 +1,5 @@
 /*******************************************************************************
- * File Name: Helpers [Declaration]
+ * Class Name: Helpers [Declaration]
  * Date Created: November 17th, 2013
  * Inheritance: None
  * Description: Helpers is a collection of functions to be used as common
@@ -7,7 +7,8 @@
  *              as dealing with random numbers, working with general values
  *              and building tables, etc.
  *
- * Notes: 
+ * Notes
+ * -----
  * [1]: Was tuned to remove the global nature of both variables and functions.
  *      Also, to expand to general functions instead of math specific
  *
@@ -20,9 +21,9 @@
 
 #include <algorithm> /* std::min(), std::max() */
 #include <sstream>
-#include <stdlib.h> /* srand, rand */
+#include <stdlib.h>  /* srand, rand */
 #include <string>
-#include <time.h>   /* time */
+#include <time.h>    /* time */
 #include <vector>
 
 class Helpers
@@ -32,8 +33,7 @@ class Helpers
  *============================================================================*/
 public:
   /* Decides whether a percent_chance occurs or not */
-  static bool chanceHappens(const uint32_t &pc_chance, 
-                            const uint32_t &magnitude);
+  static bool chanceHappens(const uint32_t &pc_chance, const uint32_t &mag);
 
   /* Generates a random coin flip */
   static bool flipCoin();
@@ -57,7 +57,7 @@ public:
   /* Builds an exponentially growing table from min to max with iter
    * iterations */
   static std::vector<int> buildExponentialTable(const int &min, const int &max, 
-                                                         const int &iter);
+                                                const int &iter);
 
   /* Assign a value within lower and upper boundaries */
   template<class T> 
