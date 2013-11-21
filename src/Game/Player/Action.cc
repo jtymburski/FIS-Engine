@@ -26,9 +26,13 @@
 *   - IGNORE ATK ELMENTs - a list of valid elements which when set, will not
 *                          include the action user's corresponding offensive
 *                          elemental statistics into battle calculations.
+*                         - can use ALL for all elements or ELEMENTAL for
+*                           everything non-physical
 *   - IGNORE DEF ELEMENTs - a list of valid elements which when set, will not
 *                           include the action target's corresponding defensive
 *                           elemental statistics into battle calculations.
+*                         - can use ALL for all elements or ELEMENTAL for
+*                           everything non-physical
 *   - BASE - the base power of the action (amount an attribute is affected)\
 *          - negative values will be used only when the ALTER key word is set
 *   - AMOUNT/PC - decides between utilizing base and variance as an amount 
@@ -64,8 +68,9 @@
  * CONSTANTS - See implementation for details
  *============================================================================*/
 
-const int Action::kDEFAULT_ID = INT_MAX;
-const char Action::kDELIMITER = ',';
+const int  Action::kDEFAULT_ID  = INT_MAX;
+const char Action::kDELIMITER   = ',';
+const char Action::kDELIMITER_2 = '.';
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -77,32 +82,35 @@ const char Action::kDELIMITER = ',';
  * Inputs: none
  */
 Action::Action()
-    : attribute(Attribute::NONE),
+    : action_flags(static_cast<ActionFlags>(0)),
+      attribute(Attribute::NONE),
       ailment(Infliction::NONE),
       base(0),
       id(kDEFAULT_ID),
+      ignore_atk(static_cast<IgnoreFlags>(0)),
+      ignore_def(static_cast<IgnoreflagS>(0)),
       min_duration(0),
       max_duration(0),
       variance(0)
 {
-
+  action_flags &= static_cast<ActionFlags>(0);
+  action_flags &= static_cast<ActionFlags>(0);
 }
 
 Action::Action(const std::string &raw)
-    : attribute(Attribute::NONE),
+    : action_flags(static_cast<ActionFlags>(0)),
+      attribute(Attribute::NONE),
       ailment(Infliction::NONE),
       base(0),
       id(kDEFAULT_ID),
+      ignore_atk(static_cast<IgnoreFlags>(0)),
+      ignore_def(static_cast<IgnoreflagS>(0)),
       min_duration(0),
       max_duration(0),
       variance(0)
 {
   if (parse(raw))
-  {
-    // VALID	
-  }
-
-  // INVALID
+    action_flags |= ActionFlags::VALID;
 }
 
 /*
@@ -123,24 +131,136 @@ Action::~Action() {}
 bool Action::parse(const std::string &raw)
 {
   std::vector<std::string> sub_strings;
+  bool valid_action = true;
 
   Helpers::split(raw, kDELIMITER, sub_strings);
 
-  if (sub_strings.size() == 11)
+  if (sub_strings.size() == 8)
   {
+  	/* Parse the ID */
+    id = std::stoi(sub_string.at(0));
 
+  	/* Parse the initial action keyword */
+    valid_action &= parseActionKeyword(sub_strings.at(1));
+
+    /* ALTER and ASSIGN keywords relate to attributes */
+    if (action_flags == ActionFlags::ALTER || 
+    	action_flags == ActionFlags::ASSIGN)
+    {
+      valid_action &= parseAttribute(sub_strings.at(2));
+    }
+
+    /* INFLICT and RELIEVE keywords relate to ailments */
+    else if (action_flags == ActionFlags::INFLICT || 
+    	     action_flags == ActionFlags::RELIEVE)
+    {
+      valid_action &= parseAilment(sub_strings.at(3));
+    }
+    
+    /* Parse min & max durations */
+    if (sub_strings.at(4) != "")
+    {
+      std::vector<std::string> duration;
+
+      Helpers::split(sub_string.at(4), kDELIMITER_2, duration);
+
+      valid_action &= setDuration(std::stoi(duration.at(0)), 
+      	                          std::stoi(duration.at(1)));
+    }
+
+    /* Parse ignore_atk flags */
+    if (sub_strings.at(5) != "")
+      parseIgnoreFlags(ignore_atk, sub_strings.at(5));
+
+    /* Parse ignore def flags */
+    if (sub_string.at(6) != "")
+      parseIgnoreFlags(ignore_def, sub_strings.at(6));
+
+    /* Parse base change and variance */
+    std::vector<std::string> base_values;
+    std::vector<std::string> variance_values;
+
+    Helpers::split(sub_strings.at(7), kDELIMITER_2, base_values);
+    Helpers::split(sub_strings.at(8), kDELIMITER_2, variance_values);
+    
+    if (base_values.at(0) == "PC")
+      action_flags |= Flags::BASE_PC;
+    if (variance_values.at(0) == "PC")
+      action_flags |= ActionFlags::VARI_PC;
+
+    base = std::stoi(base_values.at(1));
+    variance = std::stoi(variance_values.at(1));
   }
 
+  return valid_action;
 }
 
-void Action::setAttribute(Attribute new_attribute)
+//TODO: Boost enum string? [11-20-13]
+bool Action::parseAilment(const std::string &ailm_parse)
 {
-  attribute = new_attribute;
+  ailment = Ailment::POISON;
+
+  return true;
 }
 
-void Action::setBase(const int &value)
+bool Action::parseActionKeyword(const std::string &action_keyword)
 {
-  base = value;
+  if (action_keyword == "ALTER")
+    action_flags |= ActionFlags::ALTER;
+  else if (action_keyword == "INFLICT")
+    action_flags |= ActionFlags::INFLICT;
+  else if (action_keyword == "RELIEVE")
+    action_flags |= ActionFlags::RELIEVE;
+  else if (action_keyword == "ASSIGN")
+    action_flags |= ActionFlags::ASSIGN;
+  else if (action_keyword == "REVIVE")
+    action_flags |= ActionFlags::REVIVE;
+  else
+    return false;
+
+  return true;
+}
+
+//TODO: Boost enum string? [11-20-13]
+bool Action::parseAttribute(const std::string &attr_parse)
+{
+  attribute = Attribute::THAG;
+
+  return true;
+}
+
+void Action::parseIgnoreFlags(IgnoreFlags& flag_set, const std::string &flags)
+{
+  std::vector<std::string> sub_strings;
+
+  Helpers::split(flags, kDELIMITER2, sub_strings);
+
+  for (std::string s : sub_strings)
+  {
+    if (s == "ALL" || s == "ELEMENTAL")
+    {
+      flag_set |= IgnoreFlags::PHYSICAL | IgnoreFlags::THERMAL    | 
+                  IgnoreFlags::POLAR    | IgnoreFlags::PRIMAL     |
+                  IgnoreFlags::CHARGED  | IgnoreFlags::CYBERNETIC |
+                  IgnoreFlags::NIHIL;
+    }
+    if (s == "ELEMENTAL")
+      flag_set &= ~IgnoreFlags::PHYSICAL;
+    else if (s == "PHYSICAL")
+      flag_set |= IgnoreFlags::PHYSICAL;
+    else if (s == "THERMAL")
+      flag_set |= IgnoreFlags::THERMAL;
+    else if (s == "POLAR")
+      flag_set |= IgnoreFlags::POLAR;
+    else if (s == "PRIMAL")
+      flag_set |= IgnoreFlags::PRIMAL;
+    else if (s == "CHARGED")
+      flag_set |= IgnoreFlags::CHARGED;
+    else if (s == "CYBERNETIC")
+      flag_set |= IgnoreFlags::CYBERNETIC;
+    else if (s == "NIHIL")
+      flag_set |= IgnoreFlags::NIHIL;
+  }
 }
 
 bool Action::setDuration(const int &min_value, const int &max_value)
@@ -156,31 +276,6 @@ bool Action::setDuration(const int &min_value, const int &max_value)
   max_duration = -1;
 
   return false;
-}
-
-void Action::setID(const int &value)
-{
-  id = value;
-}
-
-void Action:setFlags(ActionFlags new_flags)
-{
-  flags = new_flags;
-}
-
-void Action::setIgnoreAtk(Element new_ignore_atk)
-{
-  ignore_atk = new_ignore_atk;
-}
-
-void Action::setIgnoreDef(Element new_ignore_def)
-{
-  ignore_def = new_ignore_def;
-}
- 
-void Action::setVariance(const int &new_variance)
-{
-  variance = new_variance;
 }
 
 /*=============================================================================
@@ -204,7 +299,7 @@ int Action::getBase()
 
 ActionFlags Action::getFlags()
 {
-  return flags;
+  return action_flags;
 }
 
 int Action::getID()
@@ -212,12 +307,12 @@ int Action::getID()
   return id;
 }
 
-Element Action::getIgnoreAtk()
+IgnoreFlags Action::getIgnoreAtk()
 {
   return ignore_atk;
 }
 
-Element Action::getIgnoreDef()
+IgnoreFlags Action::getIgnoreDef()
 {
   return ignore_def;
 }

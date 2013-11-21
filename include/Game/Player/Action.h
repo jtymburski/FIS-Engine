@@ -26,9 +26,13 @@
 *   - IGNORE ATK ELMENTs - a list of valid elements which when set, will not
 *                          include the action user's corresponding offensive
 *                          elemental statistics into battle calculations.
+*                         - can use ALL for all elements or ELEMENTAL for
+*                           everything non-physical
 *   - IGNORE DEF ELEMENTs - a list of valid elements which when set, will not
 *                           include the action target's corresponding defensive
 *                           elemental statistics into battle calculations.
+*                         - can use ALL for all elements or ELEMENTAL for
+*                           everything non-physical
 *   - BASE - the base power of the action (amount an attribute is affected)\
 *          - negative values will be used only when the ALTER key word is set
 *   - AMOUNT/PC - decides between utilizing base and variance as an amount 
@@ -57,7 +61,8 @@
 *
 * TODO
 * ----
-* - Build parser [11-19-13]
+* - Testing [11-20-13]
+* - Boost enum string? [11-20-13]
 * - Conventions [11-19-13]
 *******************************************************************************/
 
@@ -65,9 +70,11 @@
 #define ACTION_H
 
 #include <climits> /* INT_MAX */
+#include <string>  /* std::stoi */
 #include <vector>
 
 #include "EnumDb.cc"
+#include "EnumFlags.h"
 #include "Helpers.h"
 
 class Action
@@ -83,17 +90,34 @@ public:
   /* Annihilates an action object */
   ~Action();
 
-  enum ActionFlags
+  ENUM_FLAGS(ActionFlags)
+  enum class ActionFlags
   {
     ALTER    = 1 << 0, /* ALTER an attribute by a given value */
     INFLICT  = 1 << 1, /* INFLICT a given ailment for a duration */
     RELIEVE  = 1 << 2, /* RELIEVE a given ailment */
     ASSIGN   = 1 << 3, /* ASSIGN an attribute to a given value */
     REVIVE   = 1 << 4, /* REVIVE un-KOs target with base HP */
-    VALID    = 1 << 4  /* The validity of the action */
-  }
+    BASE_PC  = 1 << 5, /* True if the base is a % value and not an abs. one */
+    VARI_PC  = 1 << 6, /* True if the variance is a % value and not an abs. one */
+    VALID    = 1 << 7  /* The validity of the action */
+  };
+
+  ENUM_FLAGS(IgnoreFlags)
+  enum class IgnoreFlags
+  {
+    PHYSICAL   = 1 << 0,
+    THERMAL    = 1 << 1,
+    POLAR      = 1 << 2,
+    PRIMAL     = 1 << 3,
+    CHARGED    = 1 << 4,
+    CYBERNETIC = 1 << 5,
+    NIHIL      = 1 << 6
+  };
 
 private:
+
+  ActionFlags action_flags;
 
   Attribute attribute;
 
@@ -101,12 +125,10 @@ private:
 
   int base;
 
-  ActionFlags flags;
-
   int id;
 
-  Element ignore_atk;
-  Element ignore_def;
+  IgnoreFlags ignore_atk;
+  IgnoreFlags ignore_def;
 
   int min_duration
   int max_duration;
@@ -114,8 +136,9 @@ private:
   int variance;
 
   /* ------------ Constants --------------- */
-  static const int kDEFAULT_ID; /* ID for a default Action object */
-  static const char kDELIMITER; /* The delimiter for string parsing */
+  static const int kDEFAULT_ID;  /* ID for a default Action object */
+  static const char kDELIMITER;  /* The delimiter for string parsing */
+  static const char kDELIMITER_2; /* The secondary delimiter */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -124,21 +147,15 @@ private:
 
   bool parse(const std::string &raw);
 
-  void setAttribute(Attribute new_attribute);
+  bool parseAilment(const std::string &ailm_parse);
 
-  void setBase(const int &value);
+  bool parseActionKeyword(const std::string &action_keyword);
+
+  bool parseAttribute(const std::string &attr_parse);
+  
+  void parseIgnoreFlags(IgnoreFlags& flag_set, const std::string &flags);
 
   bool setDuration(const int &min_value, const int &max_value);
-
-  void setID(const int &value);
-
-  void setFlags(ActionFlags new_flags);
-
-  void setIgnoreAtk(Element new_ignore_atk);
-
-  void setIgnoreDef(Element new_ignore_def);
- 
-  void setVariance(const int &new_variance);
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
@@ -151,16 +168,15 @@ public:
 
   int getBase();
 
-  ActionFlags getFlags();
+  ActionFlags getActionFlags();
 
   int getID();
 
-  Element getIgnoreAtk();
-  Element getIgnoreDef();
+  IgnoreFlags getIgnoreAtk();
+  IgnoreFlags getIgnoreDef();
 
   int getMin();
   int getMax();
-
 
   float getVariance();
 };
