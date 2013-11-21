@@ -35,6 +35,7 @@ endif
 
 SOURCES=src/Application.cc \
         src/EnumDb.cc \
+        src/Font.cc \
         src/Game/Frame.cc \
         src/Game/Sprite.cc \
         src/Helpers.cc \

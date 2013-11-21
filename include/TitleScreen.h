@@ -10,6 +10,7 @@
 #define TITLESCREEN_H
 
 #include <string>
+#include <vector>
 //#include <QKeyEvent>
 //#include <QLabel>
 //#include <QList>
@@ -18,6 +19,7 @@
 //#include <QString>
 //#include <QWidget>
 
+#include "Font.h"
 #include "Game/Frame.h"
 #include "Options.h"
 //#include "Sound.h"
@@ -61,6 +63,7 @@ private:
   //Sound menu_click_sound;
 
   /* The options at the first menu level */
+  std::vector<SDL_Texture*> option_labels;
   //QList<QLabel*> option_labels;
 
   /* The configuration for display of the game */
@@ -90,7 +93,7 @@ private:
   //void setupClass();
 
   /* Set up the menu display text, for painting */
-  //void setupMenu();
+  bool setupMenu(SDL_Renderer* renderer);
   
   /* Un-Highlight the selected index by removing the border */
   //bool unhighlight(int index);

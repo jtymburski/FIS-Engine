@@ -87,12 +87,17 @@ void Options::setBattleMode(BattleMode new_state)
 /* Sets the chosen font */
 void Options::setFont(uint8_t index, bool first_call)
 {
+  bool success = true;
   if(index < kNUM_FONTS)
   {
+    int old_index = font;
     font = index;
     
     if(!first_call)
-      confirmFontSetup();
+      success = confirmFontSetup();
+      
+    if(!success)
+      font = old_index;
   }
 }
   

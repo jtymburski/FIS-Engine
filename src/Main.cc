@@ -33,12 +33,10 @@ int main(int argc, char** argv)
   //flip &= ~SDL_FLIP_HORIZONTAL;
   //printf("%d\n", flip);
   
-  /* Set up the game application */
+  /* Set up the game application and then run */
   Application game_app;
-  game_app.initialize();
-  
-  /* Run the game (game loop) */
-  game_app.run();
+  if(game_app.initialize())
+    game_app.run();
   
   /* Clean up the game */
   game_app.uninitialize();

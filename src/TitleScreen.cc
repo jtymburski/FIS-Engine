@@ -121,9 +121,67 @@ TitleScreen::~TitleScreen()
 }*/
 
 /* Set up the menu display text, for painting */
-/*void TitleScreen::setupMenu()
+bool TitleScreen::setupMenu(SDL_Renderer* renderer)
 {
-  int marginWidth = 10;
+  bool success = true;
+  SDL_Color color={255, 255, 255};
+  TTF_Font* font = TTF_OpenFont(system_options->getFont().c_str(), 14);
+
+  /* If the font setup is successful, proceed with creating the textures */
+  /*if(font != NULL)
+  {
+    for(int i = 0; i < kNUM_MENU_ITEMS; i++)
+    {
+      SDL_Surface* text_surface = 
+                    TTF_RenderText_Blended(font, kMENU_ITEMS[i].c_str(), color);
+      if(text_surface != NULL)
+        option_labels.
+    }
+    // Create textures here
+    
+    
+	//Get rid of preexisting texture
+	free();
+
+	//Render text surface
+	SDL_Surface* textSurface = TTF_RenderText_Solid( gFont, textureText.c_str(), textColor );
+	if( textSurface == NULL )
+	{
+		printf( "Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError() );
+	}
+	else
+	{
+		//Create texture from surface pixels
+        mTexture = SDL_CreateTextureFromSurface( gRenderer, textSurface );
+		if( mTexture == NULL )
+		{
+			printf( "Unable to create texture from rendered text! SDL Error: %s\n", SDL_GetError() );
+		}
+		else
+		{
+			//Get image dimensions
+			mWidth = textSurface->w;
+			mHeight = textSurface->h;
+		}
+
+		//Get rid of old surface
+		SDL_FreeSurface( textSurface );
+	}
+	
+	//Return success
+	return mTexture != NULL;
+  
+  
+  }
+  else
+  {
+    success = false;
+  }*/
+  
+  TTF_CloseFont(font);
+  return success;
+  
+  /*int marginWidth = 10;
 
   for(int i = 0; i < kNUM_MENU_ITEMS; i++)
   {
@@ -146,8 +204,8 @@ TitleScreen::~TitleScreen()
     option_labels.append(new_label);
   }
 
-  setSelected(TESTMAP);
-}*/
+  setSelected(TESTMAP);*/
+}
 
 /* Un-Highlight the selected index by removing the border */
 /*bool TitleScreen::unhighlight(int index)
@@ -228,6 +286,14 @@ bool TitleScreen::render(SDL_Renderer* renderer)
   {
     /* Render the background */
     SDL_RenderCopy(renderer, background.getTexture(), NULL, NULL);
+    
+    // TEST - Render font
+    SDL_Color color = {255, 255, 255};
+    std::string test = "Hello World, I know you're out there: " + 
+                       std::to_string(SDL_GetTicks());
+    Font font(system_options->getFont(), 25, TTF_STYLE_BOLD);
+    font.setText(renderer, test, color);
+    font.render(renderer, 200, 450);
     
     return true;
   }
