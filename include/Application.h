@@ -15,8 +15,8 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 
-#include "Game/Sprite.h"
 #include "Options.h"
+#include "Sprite.h"
 #include "TitleScreen.h"
 
 //#include "Game/Game.h"
@@ -24,13 +24,13 @@
 //#include "SavedGame.h"
 //#include "TitleScreen.h"
 
-class Application// : public QStackedWidget
+class Application
 {
 //  Q_OBJECT
 
 public:
   /* Constructor function */
-  Application();//QWidget* parent = 0);
+  Application();
 
   /* Destructor function */
   ~Application();
@@ -65,14 +65,8 @@ private:
   /* All options available for the system */
   Options system_options;
 
-  /* The application tick, for executing updates */
-  //QTimer tick;
-
   /* The displayed title screen for the game */
   TitleScreen title_screen;
-  
-  /* The update time, for each cycle */
-  //QTime update_time;
   
   /* The window to be displayed when the application is started */
   SDL_Window* window;
@@ -84,37 +78,19 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Handles actions in views, depending on what's active */
+  void handleActions();
+  
   /* Goes through all available events that are currently on the stack */
   void handleEvents();
   
-  /* Switches the widget inside the stack (plus appropriate calls needed) */
-//  void switchWidget(int index);
-
-
-  
-/*=============================================================================
- * PROTECTED FUNCTIONS
- *============================================================================*/
-protected:
-//  void closeEvent(QCloseEvent* event);
-
-/*=============================================================================
- * SIGNALS
- *============================================================================*/
-//signals:
-  /* The closing signal, to shutdown the app */
-//  void closing();
+  /* Renders the current view and all relevant visual data */
+  void render(uint32_t cycle_time);
 
 /*=============================================================================
  * SLOTS
  *============================================================================*/
 //public slots:
-  /* Called when the game is closed to return the application back to title */
-//  void closeGame();
-
-  /* The function called for closing. Clean-up put here */
-//  void exit();
-
   /* Temp opening calls */
 //  void openBattle(); // TEMP
 //  void openMap(); // TEMP

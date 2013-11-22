@@ -12,7 +12,7 @@
  * TODO:
  *   1. Add reverse function: 1(head)->2->3->4  -->  4(head)->3->2->1
 *******************************************************************************/
-#include "Game/Sprite.h"
+#include "Sprite.h"
 
 /* Constant Implementation - see header file for descriptions */
 const short Sprite::kDEFAULT_ANIMATE_TIME = 250;

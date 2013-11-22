@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "Helpers.h"
-#include "Game/Frame.h"
+#include "Frame.h"
 
 class Sprite
 {

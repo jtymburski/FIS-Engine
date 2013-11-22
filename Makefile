@@ -35,12 +35,12 @@ endif
 
 SOURCES=src/Application.cc \
         src/EnumDb.cc \
-        src/Font.cc \
-        src/Game/Frame.cc \
-        src/Game/Sprite.cc \
+        src/Frame.cc \
         src/Helpers.cc \
         src/Main.cc \
         src/Options.cc \
+        src/Sprite.cc \
+        src/Text.cc \
         src/TitleScreen.cc
 
 OBJECTS=$(SOURCES:.cc=.o)

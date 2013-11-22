@@ -109,6 +109,21 @@ Application::~Application()
  * PRIVATE FUNCTIONS
  *============================================================================*/
 
+void Application::handleActions()
+{
+  /* Handle any appropriate actions of the individual views */
+  if(running == TITLESCREEN)
+  {
+    /* Check if there is a title screen action */
+    if(title_screen.isActionOnQueue())
+    {
+      TitleScreen::MenuItems action_item = title_screen.getAction();
+      if(action_item == TitleScreen::EXIT)
+        running = EXIT;
+    }
+  }
+}
+
 /* Goes through all available events that are currently on the stack */
 void Application::handleEvents()
 {
@@ -116,49 +131,49 @@ void Application::handleEvents()
   
   while(SDL_PollEvent(&event) != 0)
   {
+    /* If quit initialized, end the game loop */
     if(event.type == SDL_QUIT)
     {
       quit = true;
     }
+    /* Otherwise, pass the key down events on to the active view */
+    else if(event.type == SDL_KEYDOWN)
+    {
+      SDL_Keysym symbol = event.key.keysym;
+      
+      /* Send the key to the relevant view */
+      if(running == TITLESCREEN)
+        title_screen.keyDownEvent(symbol);
+    }
+    else if(event.type == SDL_KEYUP)
+    {
+      SDL_Keysym symbol = event.key.keysym;
+      
+      /* Send the key to the relevant view */
+      if(running == TITLESCREEN)
+        title_screen.keyUpEvent(symbol);
+    }
   }
 }
   
-//void Application::switchWidget(int index)
-//{
-//  /* Sets the current displayed index */
-//  setCurrentIndex(index);
-//  if(index != GAME)
-//    currentWidget()->setFocus();
-//
-//  /* Restart the background music if title screen is activated */
-//  if(index == TITLESCREEN && title_screen != 0)
-//    title_screen->playBackground();
-//}
-
-/*=============================================================================
- * PROTECTED FUNCTIONS
- *============================================================================*/
-
-//void Application::closeEvent(QCloseEvent* event)
-//{
-//  exit();
-//  event->ignore();
-//}
+void Application::render(uint32_t cycle_time)
+{
+  //printf("Cycle Time: %d\n", cycle_time);
+  
+  /* Handle the individual action items, depending on whats running */
+  if(running == TITLESCREEN)
+    title_screen.render(renderer);
+  else if(running == GAME)
+    quit = quit; // DO GAME EXECUTION
+  else if(running == OPTIONS)
+    quit = quit; // DO OPTIONS EXECUTION
+  else if(running == EXIT)
+    quit = true;
+}
 
 /*=============================================================================
  * SLOTS
  *============================================================================*/
-
-//void Application::closeGame()
-//{
-//  switchWidget(TITLESCREEN);
-//}
-
-//void Application::exit()
-//{
-//  close_command = true;
-//  emit closing();
-//}
 
 /* TEMP */
 //void Application::openBattle()
@@ -297,42 +312,17 @@ bool Application::isInitialized()
 /* Runs the application */
 bool Application::run()
 {
-  /*SDL_Rect rect;
-  SDL_Texture* target_texture = NULL;
-  int test; // TODO - Remove: Warning test
+  uint32_t ticks = 0;
+  
+  // TODO: Remove - testing variables
   int angle = 0;
   double brightness = 1.0;
   double brightness2 = 1.0;
-  bool increasing = true;*/
+  bool increasing = true;
   
   if(isInitialized())
   {
-    /*quit = false;
-
-    // TESTING - frame setup
-    Frame f("sprites/bg.png", renderer);
-    Frame f2("sprites/arcadius.png", renderer);
-    Frame f3("sprites/white_mask.png", renderer);
-
-    // TESTING - Do some setup for the target painted texture
-    SDL_SetTextureBlendMode(f3.getTexture(), SDL_BLENDMODE_ADD);
-    SDL_SetTextureAlphaMod(f3.getTexture(), 128);
-    target_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, 
-                                 SDL_TEXTUREACCESS_TARGET, 64, 64);
-    SDL_SetTextureBlendMode(target_texture, SDL_BLENDMODE_BLEND);
-    SDL_SetRenderTarget(renderer, target_texture);
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0);
-    SDL_RenderClear(renderer);
-    f2.render(renderer);
-    SDL_RenderCopy(renderer, f3.getTexture(), NULL, NULL);
-    rect.x = 128;
-    rect.y = 128;
-    rect.w = 64;
-    rect.h = 64;
-    
-    SDL_SetRenderTarget(renderer, NULL);
-    
-    // TESTING - sprite setup
+    // TODO: Remove - sprite setup
     Frame white_mask("sprites/white_mask.png", renderer);
     SDL_SetTextureBlendMode(white_mask.getTexture(), SDL_BLENDMODE_ADD);
     
@@ -351,12 +341,13 @@ bool Application::run()
     
     Sprite coin_sprite("sprites/coins_AA_A00.png", renderer);
     coin_sprite.setWhiteMask(white_mask.getTexture());
-    coin_sprite.updateSprite(0, renderer);*/
+    coin_sprite.updateSprite(0, renderer);
     
     /* Main application loop */
     while(!quit)
     {
-/*      angle++;
+      // TODO: Remove - Sprite logic during rendering
+      angle++;
       if(angle == 180)
         image_sprite.flipVertical(true);
       else if(angle == 360)
@@ -382,31 +373,24 @@ bool Application::run()
       if(brightness2 >= 2.0)
         brightness2 = 0.0;
       
+      /* Handle events and actions */
       handleEvents();
+      handleActions();
+      
+      /* Determine the previous cycle time for using throughout the update
+       * sequence for rendering */
+      uint32_t cycle_time = SDL_GetTicks() - ticks;
+      ticks = SDL_GetTicks();
       
       /* Clear screen */
-/*      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
       SDL_RenderClear(renderer);
       
-      // TODO: Put rendering code here for entire application
+      /* Render the application view */
+      render(cycle_time);
       
-      // TESTING
-      SDL_RenderCopy(renderer, f.getTexture(), NULL, NULL);
-      
-      SDL_SetTextureAlphaMod(f2.getTexture(), 255);
-      f2.render(renderer, 64, 64);
-      
-      SDL_SetTextureColorMod(f2.getTexture(), 128, 128, 128);
-      f2.render(renderer, 256, 256);
-      
-      SDL_SetTextureColorMod(f2.getTexture(), 255, 255, 255);
-      SDL_SetTextureAlphaMod(f2.getTexture(), 128);
-      f2.render(renderer, 192, 192);
-      
-      SDL_RenderCopy(renderer, target_texture, NULL, &rect);
-      
-      /* Render Sprite */
-/*      image_sprite.setBrightness(brightness2);
+      // TODO: Remove - Sprite rendering
+      image_sprite.setBrightness(brightness2);
       image_sprite.setRotation(angle);
       image_sprite.updateSprite(10, renderer);
       image_sprite.render(renderer, 512, 512);
@@ -418,19 +402,6 @@ bool Application::run()
       coin_sprite.setBrightness(brightness);
       coin_sprite.updateSprite(10, renderer);
       coin_sprite.render(renderer, 700, 300);
-      
-      /* Handle events */
-      handleEvents();
-      
-      /* Handle the individual action items, depending on whats running */
-      if(running == TITLESCREEN)
-        title_screen.render(renderer);
-      else if(running == GAME)
-        quit = quit; // DO GAME EXECUTION
-      else if(running == OPTIONS)
-        quit = quit; // DO OPTIONS EXECUTION
-      else if(running == EXIT)
-        quit = true;
       
       /* Update screen */
       SDL_RenderPresent(renderer);

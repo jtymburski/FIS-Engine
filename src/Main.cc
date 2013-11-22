@@ -9,7 +9,7 @@
 #include "Helpers.h"
 
 // TODO - Remove testing headers
-#include "Game/Sprite.h"
+#include "Sprite.h"
 
 int main(int argc, char** argv)
 {

@@ -7,7 +7,7 @@
  *              a pointer to the next Frame in the sequence. The image frame is
  *              stored as a SDL_Texture which is used for rendering.
  ******************************************************************************/
-#include "Game/Frame.h"
+#include "Frame.h"
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS

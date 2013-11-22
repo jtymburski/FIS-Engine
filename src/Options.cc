@@ -15,8 +15,9 @@
 #include "Options.h"
 
 /* Constant Implementation - see header file for descriptions */
-const std::string Options::kFONTS[] = {"fonts/colab_light.otf"};
-const uint8_t Options::kNUM_FONTS = 1;
+const std::string Options::kFONTS[] = {"fonts/colab_light.otf", 
+                                       "fonts/blanch_caps.otf"};
+const uint8_t Options::kNUM_FONTS = 2;
 const uint8_t Options::kNUM_RESOLUTIONS = 3;
 const uint16_t Options::kRESOLUTIONS_X[] = {1216, 1366, 1920};
 const uint16_t Options::kRESOLUTIONS_Y[] = {704, 768, 1080};

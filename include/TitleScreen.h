@@ -19,10 +19,10 @@
 //#include <QString>
 //#include <QWidget>
 
-#include "Font.h"
-#include "Game/Frame.h"
+#include "Frame.h"
 #include "Options.h"
 //#include "Sound.h"
+#include "Text.h"
 
 class TitleScreen// : public QWidget
 {
@@ -41,38 +41,47 @@ public:
   /* Enumerator: Application options to be selected */
   enum MenuItems{GAME    = 0,
                  OPTIONS = 1,
-                 EXIT    = 2};
+                 EXIT    = 2,
+                 NONE    = 3};
 
 private:
+  /* The menu item that has been initiated. Gets polled by a parent class for
+   * usage */
+  MenuItems action;
+  
   /* The background frame to render */
   Frame background;
   
   /* Background audio during title screen */
   //Sound background_sound;
 
-  /* The selection cursor - needed?? */
-  //Frame cursor;
-
   /* Indication for the title screen menu's position */
-  int cursor_index;
+  uint8_t cursor_index;
 
   /* The font that is being used throughout the program */
-  //TTF_Font* font;
+  TTF_Font* font;
   
   /* Menu click audio, during selection changes */
   //Sound menu_click_sound;
 
+  /* The render index of the top left of the title screen options */
+  int render_index;
+  
   /* The options at the first menu level */
-  std::vector<SDL_Texture*> option_labels;
-  //QList<QLabel*> option_labels;
+  std::vector<Text*> selected_options;
+  std::vector<Text*> unselected_options;
 
   /* The configuration for display of the game */
   Options* system_options;
 
   /* ------------------ Constants ------------------ */
+  const static uint8_t kFONT_SIZE; /* The size of the font for rendering */
   const static std::string kMENU_ITEMS[]; /* The stored menu items */
   const static short kNUM_MENU_ITEMS;   /* Number of menu items in screen */
-  
+  const static uint16_t kTEXT_GAP; /* The gap between the rows of text */
+  const static uint16_t kTEXT_MARGIN; /* The margin between the text and edge
+                                       * of the screen */
+
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
@@ -92,12 +101,18 @@ private:
   /* Sets up the class, with the appropriate widget information */
   //void setupClass();
 
+  /* Sets the selected item. This gets polled by another class */
+  void setAction();
+  
   /* Set up the menu display text, for painting */
-  bool setupMenu(SDL_Renderer* renderer);
+  bool setMenu(SDL_Renderer* renderer);
   
   /* Un-Highlight the selected index by removing the border */
   //bool unhighlight(int index);
 
+  /* Unsets all the menu related data, such as font and labels */
+  void unsetMenu();
+  
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
@@ -121,6 +136,16 @@ private:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Returns the active action */
+  MenuItems getAction();
+  
+  /* Check if there's an active action */
+  bool isActionOnQueue();
+  
+  /* The key up and down events to be handled by the class */
+  void keyDownEvent(SDL_Keysym symbol);
+  void keyUpEvent(SDL_Keysym symbol);
+  
   /* Play the background sound file, once the menu status is returned */
   //void playBackground();
 

@@ -1,35 +1,37 @@
 /*******************************************************************************
- * Class Name: Font
+ * Class Name: Text
  * Date Created: November 20, 2013
  * Inheritance: none
  * Description: This class handles the font and appropriate rendering. It is
  *              used for creating the font and storing it with render box
  *              sizing.
  ******************************************************************************/
-#ifndef FONT_H
-#define FONT_H
+#ifndef TEXT_H
+#define TEXT_H
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <string>
 
-class Font
+class Text
 {
 public:
   /* Constructor functions */
-  Font();
-  Font(std::string font_path, int font_size, int font_style = TTF_STYLE_NORMAL);
+  Text();
+  Text(TTF_Font* font);
+  Text(std::string font_path, int font_size, int font_style = TTF_STYLE_NORMAL);
 
   /* Destructor function */
-  ~Font();
+  ~Text();
 
 private:
   /* The height of the texture */
   int height;
   
-  /* The font to render the text to */
+  /* The font to render the text to, and if it needs to be deleted */
   TTF_Font* render_font;
-
+  bool delete_font;
+  
   /* The texture that the font is rendered on */
   SDL_Texture* texture;
   
@@ -58,6 +60,9 @@ public:
   /* Sets up the font, that is used for rendering the text */
   bool setFont(std::string font_path, int font_size, 
                                       int font_style = TTF_STYLE_NORMAL);
+                                      
+  /* Sets the using font to this one - does not delete once class is done */
+  bool setFont(TTF_Font* font);
   
   /* Sets the text, stored in the internal texture */
   bool setText(SDL_Renderer* renderer, std::string text, SDL_Color text_color);
@@ -65,6 +70,14 @@ public:
   /* Clean up functions for the data stored in the class */
   void unsetFont();
   void unsetTexture();
+  
+/*============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *===========================================================================*/
+public:
+  /* Create a font, based on the font parameters. Null if fails */
+  static TTF_Font* createFont(std::string font_path, int font_size, 
+                              int font_style = TTF_STYLE_NORMAL);
 };
 
-#endif // FONT_H
+#endif // TEXT_H

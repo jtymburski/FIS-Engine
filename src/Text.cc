@@ -1,26 +1,27 @@
 /*******************************************************************************
- * Class Name: Font
+ * Class Name: Text
  * Date Created: November 20, 2013
  * Inheritance: none
  * Description: This class handles the font and appropriate rendering. It is
  *              used for creating the font and storing it with render box
  *              sizing.
  ******************************************************************************/
-#include "Font.h"
+#include "Text.h"
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
 
 /*
- * Description: Sets up the font class but with blank parameters. Font is 
+ * Description: Sets up the text class but with blank parameters. Font is 
  *              required to be set first before the text can be sent and then
  *              rendering is viable.
  *
  * Inputs: none
  */
-Font::Font()
+Text::Text()
 {
+  delete_font = false;
   height = 0;
   render_font = NULL;
   texture = NULL;
@@ -28,7 +29,19 @@ Font::Font()
 }
 
 /*
- * Description: Sets up the font class with parameters to create the font as
+ * Description: Sets up the text class with an externally handled font. This
+ *              allows the texture to be created right away, unless the font
+ *              creation failed.
+ *
+ * Inputs: TTF_Font* font - the font pointer to use as a font
+ */
+Text::Text(TTF_Font* font) : Text()
+{
+  setFont(font);
+}
+
+/*
+ * Description: Sets up the text class with parameters to create the font as
  *              well. This will allow the texture to be created right away, 
  *              unless the font creation failed.
  *
@@ -36,7 +49,7 @@ Font::Font()
  *         int font_size - the DPI size of the font
  *         int font_style - the TTF styles, such as BOLD, ITALIC, etc.
  */
-Font::Font(std::string font_path, int font_size, int font_style) : Font()
+Text::Text(std::string font_path, int font_size, int font_style) : Text()
 {
   setFont(font_path, font_size, font_style);
 }
@@ -44,7 +57,7 @@ Font::Font(std::string font_path, int font_size, int font_style) : Font()
 /*
  * Description: The deconstructor of the font class. Deletes texture and font.
  */
-Font::~Font()
+Text::~Text()
 {
   unsetTexture();
   unsetFont();
@@ -60,7 +73,7 @@ Font::~Font()
  * Inputs: none
  * Output: TTF_Font* - the font reference pointer
  */
-TTF_Font* Font::getFont()
+TTF_Font* Text::getFont()
 {
   return render_font;
 }
@@ -72,7 +85,7 @@ TTF_Font* Font::getFont()
  * Inputs: none
  * Output: int - the height in pixels
  */
-int Font::getHeight()
+int Text::getHeight()
 {
   return height;
 }
@@ -83,7 +96,7 @@ int Font::getHeight()
  * Inputs: none
  * Output: SDL_Texture* - the texture handle pointer
  */
-SDL_Texture* Font::getTexture()
+SDL_Texture* Text::getTexture()
 {
   return texture;
 }
@@ -95,7 +108,7 @@ SDL_Texture* Font::getTexture()
  * Inputs: none
  * Output: int - the width in pixels
  */
-int Font::getWidth()
+int Text::getWidth()
 {
   return width;
 }
@@ -111,7 +124,7 @@ int Font::getWidth()
  *         int y - the y coordinate to be rendered to
  * Output: bool - returns if a render sequence occurred and was successful
  */
-bool Font::render(SDL_Renderer* renderer, int x, int y)
+bool Text::render(SDL_Renderer* renderer, int x, int y)
 {
   if(texture != NULL && renderer != NULL)
   {
@@ -131,7 +144,8 @@ bool Font::render(SDL_Renderer* renderer, int x, int y)
 /*
  * Description: Sets the font to use for creating the text texture that will 
  *              inevitably used for rendering. Fails if the font_path isn't
- *              relevant.
+ *              relevant. The font created from this path will be deleted by
+ *              this class when it's destroyed or when unsetFont() is called.
  *
  * Inputs: std::string font_path - the path to the font
  *         int font_size - the DPI size of font
@@ -139,23 +153,41 @@ bool Font::render(SDL_Renderer* renderer, int x, int y)
  *                        - these are from SDL TTF. See documentation
  * Output: bool - returns if the font was created
  */
-bool Font::setFont(std::string font_path, int font_size, int font_style)
+bool Text::setFont(std::string font_path, int font_size, int font_style)
 {
-  TTF_Font* new_font = TTF_OpenFont(font_path.c_str(), font_size);
+  TTF_Font* new_font = createFont(font_path, font_size, font_style);
+  bool success = setFont(new_font);
   
-  /* If the font creation is successful, update the stored font */
-  if(new_font != NULL)
+  /* If setting the font is successful, tell the class to delete the font when
+   * done */
+  if(success)
+    delete_font = true;
+  
+  return success;
+}
+
+/*
+ * Description: Sets the font pointer to use for rendering text in the class.
+ *              This is merely a pointer to an external font so ensure that
+ *              this class is destroyed before deleting the font. This class
+ *              does not destroy the font and only sets it to NULL when unset.
+ *
+ * Inputs: TTF_Font* font - the font to set into the class
+ * Output: bool - status if the set is successful
+ */
+bool Text::setFont(TTF_Font* font)
+{
+  if(font != NULL)
   {
     unsetFont();
-    render_font = new_font;
-    TTF_SetFontStyle(render_font, font_style);
+    render_font = font;
+    delete_font = false;
     return true;
   }
   
-  /* Otherwise, the creation failed */
   return false;
 }
-
+  
 /*
  * Description: Sets the text that is stored in the class and will be used for
  *              rendering. It is necessary that first the font is set up before
@@ -166,7 +198,7 @@ bool Font::setFont(std::string font_path, int font_size, int font_style)
  *         SDL_Color text_color - the color of the text
  * Output: bool - returns if the text is created
  */
-bool Font::setText(SDL_Renderer* renderer, std::string text, 
+bool Text::setText(SDL_Renderer* renderer, std::string text, 
                                            SDL_Color text_color)
 {
   bool success = false;
@@ -205,9 +237,11 @@ bool Font::setText(SDL_Renderer* renderer, std::string text,
  * Inputs: none
  * Output: none
  */
-void Font::unsetFont()
+void Text::unsetFont()
 {
-  TTF_CloseFont(render_font);
+  if(delete_font)
+    TTF_CloseFont(render_font);
+  delete_font = false;
   render_font = NULL;
 }
 
@@ -217,8 +251,25 @@ void Font::unsetFont()
  * Inputs: none
  * Output: none
  */
-void Font::unsetTexture()
+void Text::unsetTexture()
 {
   SDL_DestroyTexture(texture);
   texture = NULL;
+}
+
+/*============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *===========================================================================*/
+
+/* Create a font, based on the font parameters. Null if fails */
+TTF_Font* Text::createFont(std::string font_path, int font_size,
+                                                  int font_style)
+{
+  TTF_Font* new_font = TTF_OpenFont(font_path.c_str(), font_size);
+  
+  /* If the font creation is successful, set the style */
+  if(new_font != NULL)
+    TTF_SetFontStyle(new_font, font_style);
+
+  return new_font;
 }
