@@ -84,11 +84,11 @@ const char Action::kDELIMITER_2 = '.';
 Action::Action()
     : action_flags(static_cast<ActionFlags>(0)),
       attribute(Attribute::NONE),
-      ailment(Infliction::NONE),
+      ailment(Infliction::INVALID),
       base(0),
       id(kDEFAULT_ID),
       ignore_atk(static_cast<IgnoreFlags>(0)),
-      ignore_def(static_cast<IgnoreflagS>(0)),
+      ignore_def(static_cast<IgnoreFlags>(0)),
       min_duration(0),
       max_duration(0),
       variance(0)
@@ -100,11 +100,11 @@ Action::Action()
 Action::Action(const std::string &raw)
     : action_flags(static_cast<ActionFlags>(0)),
       attribute(Attribute::NONE),
-      ailment(Infliction::NONE),
+      ailment(Infliction::INVALID),
       base(0),
       id(kDEFAULT_ID),
       ignore_atk(static_cast<IgnoreFlags>(0)),
-      ignore_def(static_cast<IgnoreflagS>(0)),
+      ignore_def(static_cast<IgnoreFlags>(0)),
       min_duration(0),
       max_duration(0),
       variance(0)
@@ -138,7 +138,7 @@ bool Action::parse(const std::string &raw)
   if (sub_strings.size() == 8)
   {
   	/* Parse the ID */
-    id = std::stoi(sub_string.at(0));
+    id = std::stoi(sub_strings.at(0));
 
   	/* Parse the initial action keyword */
     valid_action &= parseActionKeyword(sub_strings.at(1));
@@ -154,37 +154,37 @@ bool Action::parse(const std::string &raw)
     else if (action_flags == ActionFlags::INFLICT || 
     	     action_flags == ActionFlags::RELIEVE)
     {
-      valid_action &= parseAilment(sub_strings.at(3));
+      valid_action &= parseAilment(sub_strings.at(2));
     }
     
     /* Parse min & max durations */
-    if (sub_strings.at(4) != "")
+    if (sub_strings.at(3) != "")
     {
       std::vector<std::string> duration;
 
-      Helpers::split(sub_string.at(4), kDELIMITER_2, duration);
+      Helpers::split(sub_strings.at(3), kDELIMITER_2, duration);
 
       valid_action &= setDuration(std::stoi(duration.at(0)), 
       	                          std::stoi(duration.at(1)));
     }
 
     /* Parse ignore_atk flags */
-    if (sub_strings.at(5) != "")
-      parseIgnoreFlags(ignore_atk, sub_strings.at(5));
+    if (sub_strings.at(4) != "")
+      parseIgnoreFlags(ignore_atk, sub_strings.at(4));
 
     /* Parse ignore def flags */
-    if (sub_string.at(6) != "")
-      parseIgnoreFlags(ignore_def, sub_strings.at(6));
+    if (sub_strings.at(5) != "")
+      parseIgnoreFlags(ignore_def, sub_strings.at(5));
 
     /* Parse base change and variance */
     std::vector<std::string> base_values;
     std::vector<std::string> variance_values;
 
-    Helpers::split(sub_strings.at(7), kDELIMITER_2, base_values);
-    Helpers::split(sub_strings.at(8), kDELIMITER_2, variance_values);
+    Helpers::split(sub_strings.at(6), kDELIMITER_2, base_values);
+    Helpers::split(sub_strings.at(7), kDELIMITER_2, variance_values);
     
     if (base_values.at(0) == "PC")
-      action_flags |= Flags::BASE_PC;
+      action_flags |= ActionFlags::BASE_PC;
     if (variance_values.at(0) == "PC")
       action_flags |= ActionFlags::VARI_PC;
 
@@ -195,12 +195,52 @@ bool Action::parse(const std::string &raw)
   return valid_action;
 }
 
-//TODO: Boost enum string? [11-20-13]
-bool Action::parseAilment(const std::string &ailm_parse)
+bool Action::parseAilment(const std::string &ailm)
 {
-  ailment = Ailment::POISON;
+  if      (ailm == "POISON")      ailment = Infliction::POISON;
+  else if (ailm == "BURN")        ailment = Infliction::BURN;
+  else if (ailm == "SCALD")       ailment = Infliction::SCALD;
+  else if (ailm == "CHARR")       ailment = Infliction::CHARR;
+  else if (ailm == "BERSERK")     ailment = Infliction::BERSERK;
+  else if (ailm == "CONFUSE")     ailment = Infliction::CONFUSE;
+  else if (ailm == "SILENCE")     ailment = Infliction::SILENCE;
+  else if (ailm == "BUBBIFY")     ailment = Infliction::BUBBIFY;
+  else if (ailm == "DEATHTIMER")  ailment = Infliction::DEATHTIMER;
+  else if (ailm == "PARALYSIS")   ailment = Infliction::PARALYSIS;
+  else if (ailm == "BLINDNESS")   ailment = Infliction::BLINDNESS;
+  else if (ailm == "DREADSTRUCK") ailment = Infliction::DREADSTRUCK;
+  else if (ailm == "DREAMSNARE")  ailment = Infliction::DREAMSNARE;
+  else if (ailm == "HELLBOUND")   ailment = Infliction::HELLBOUND;
+  else if (ailm == "BOND")        ailment = Infliction::BOND;
+  else if (ailm == "BONDED")      ailment = Infliction::BONDED;
+  else if (ailm == "ALLATKBUFF")  ailment = Infliction::ALLATKBUFF;
+  else if (ailm == "ALLDEFBUFF")  ailment = Infliction::ALLDEFBUFF;
+  else if (ailm == "PHYBUFF")     ailment = Infliction::PHYBUFF;
+  else if (ailm == "THRBUFF")     ailment = Infliction::THRBUFF;
+  else if (ailm == "POLBUFF")     ailment = Infliction::POLBUFF;
+  else if (ailm == "PRIBUFF")     ailment = Infliction::PRIBUFF;
+  else if (ailm == "CHGBUFF")     ailment = Infliction::CHGBUFF;
+  else if (ailm == "CYBBUFF")     ailment = Infliction::CYBBUFF;
+  else if (ailm == "NIHBUFF")     ailment = Infliction::NIHBUFF;
+  else if (ailm == "LIMBUFF")     ailment = Infliction::LIMBUFF;
+  else if (ailm == "UNBBUFF")     ailment = Infliction::UNBBUFF;
+  else if (ailm == "MOMBUFF")     ailment = Infliction::MOMBUFF; 
+  else if (ailm == "VITBUFF")     ailment = Infliction::VITBUFF; 
+  else if (ailm == "QDBUFF")      ailment = Infliction::QDBUFF;
+  else if (ailm == "ROOTBOUND")   ailment = Infliction::ROOTBOUND;
+  else if (ailm == "DOUBLECAST")  ailment = Infliction::DOUBLECAST;
+  else if (ailm == "TRIPLECAST")  ailment = Infliction::TRIPLECAST;
+  else if (ailm == "HALFCOST")    ailment = Infliction::HALFCOST;
+  else if (ailm == "REFLECT")     ailment = Infliction::REFLECT;
+  else if (ailm == "HIBERNATION") ailment = Infliction::HIBERNATION;
+  else if (ailm == "CURSE")       ailment = Infliction::CURSE;
+  else if (ailm == "METATETHER")  ailment = Infliction::METATETHER;
+  else if (ailm == "STUBULATE")   ailment = Infliction::STUBULATE;
 
-  return true;
+  if (ailment != Infliction::INVALID)
+    return true;
+
+  return false;
 }
 
 bool Action::parseActionKeyword(const std::string &action_keyword)
@@ -221,19 +261,40 @@ bool Action::parseActionKeyword(const std::string &action_keyword)
   return true;
 }
 
-//TODO: Boost enum string? [11-20-13]
 bool Action::parseAttribute(const std::string &attr_parse)
 {
-  attribute = Attribute::THAG;
+  if (attr_parse == "VITA") attribute = Attribute::VITA;
+  if (attr_parse == "QTDR") attribute = Attribute::QTDR;
+  if (attr_parse == "PHAG") attribute = Attribute::PHAG;
+  if (attr_parse == "PHFD") attribute = Attribute::PHFD;
+  if (attr_parse == "THAG") attribute = Attribute::THAG;
+  if (attr_parse == "THFD") attribute = Attribute::THFD;
+  if (attr_parse == "PRAG") attribute = Attribute::PRAG;
+  if (attr_parse == "PRFD") attribute = Attribute::PRFD;
+  if (attr_parse == "POAG") attribute = Attribute::POAG;
+  if (attr_parse == "POFD") attribute = Attribute::POFD;
+  if (attr_parse == "CHAG") attribute = Attribute::CHAG;
+  if (attr_parse == "CHFD") attribute = Attribute::CHFD;
+  if (attr_parse == "CYAG") attribute = Attribute::CYAG;
+  if (attr_parse == "CYFD") attribute = Attribute::CYFD;
+  if (attr_parse == "NIAG") attribute = Attribute::NIAG;
+  if (attr_parse == "NIFD") attribute = Attribute::NIFD;
+  if (attr_parse == "MMNT") attribute = Attribute::MMNT;
+  if (attr_parse == "LIMB") attribute = Attribute::LIMB;
+  if (attr_parse == "UNBR") attribute = Attribute::UNBR;
+  if (attr_parse == "MANN") attribute = Attribute::MANN;
 
-  return true;
+  if (attribute != Attribute::NONE)
+    return true;
+
+  return false;
 }
 
 void Action::parseIgnoreFlags(IgnoreFlags& flag_set, const std::string &flags)
 {
   std::vector<std::string> sub_strings;
 
-  Helpers::split(flags, kDELIMITER2, sub_strings);
+  Helpers::split(flags, kDELIMITER_2, sub_strings);
 
   for (std::string s : sub_strings)
   {
@@ -295,11 +356,6 @@ Infliction Action::getAilment()
 int Action::getBase()
 {
   return base;
-}
-
-ActionFlags Action::getFlags()
-{
-  return action_flags;
 }
 
 int Action::getID()

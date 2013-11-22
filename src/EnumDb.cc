@@ -44,7 +44,8 @@ enum class ActionOccasion : std::uint8_t
  * ALL_NOT_USER - the skill strikes all targets except user
  */
 enum class ActionScope : std::uint16_t
-{ ONE_TARGET,
+{ 
+  ONE_TARGET,
   ONE_ENEMY,
   TWO_ENEMIES,
   ALL_ENEMIES,
@@ -72,7 +73,8 @@ enum class ActionScope : std::uint16_t
  * NULL_ACTION - no action has been yet chosen by the actor
  */
 enum class ActionType : std::uint8_t
-{ SKILL,
+{ 
+  SKILL,
   ITEM,
   DEFEND,
   GUARD,
@@ -97,7 +99,8 @@ enum class ActionType : std::uint8_t
  * UNKNOWN_DEATH - the actor was killed for unknown reasons.
  */
 enum class ActorDeath : std::uint16_t
-{ STANDARD_DMG,
+{ 
+  STANDARD_DMG,
   POISON_DMG,
   BURN_DMG,
   BERSERK_HIT_BACK,

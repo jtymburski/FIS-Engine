@@ -61,8 +61,7 @@
 *
 * TODO
 * ----
-* - Testing [11-20-13]
-* - Boost enum string? [11-20-13]
+* - !!! CLASS UNTESTED - Testing [11-20-13]
 * - Conventions [11-19-13]
 *******************************************************************************/
 
@@ -77,6 +76,31 @@
 #include "EnumFlags.h"
 #include "Helpers.h"
 
+ENUM_FLAGS(ActionFlags)
+enum class ActionFlags
+{
+  ALTER    = 1 << 0, /* ALTER an attribute by a given value */
+  INFLICT  = 1 << 1, /* INFLICT a given ailment for a duration */
+  RELIEVE  = 1 << 2, /* RELIEVE a given ailment */
+  ASSIGN   = 1 << 3, /* ASSIGN an attribute to a given value */
+  REVIVE   = 1 << 4, /* REVIVE un-KOs target with base HP */
+  BASE_PC  = 1 << 5, /* True if the base is a % value and not an abs. one */
+  VARI_PC  = 1 << 6, /* True if the variance is a % value and not an abs. one */
+  VALID    = 1 << 7  /* The validity of the action */
+};
+
+ENUM_FLAGS(IgnoreFlags)
+enum class IgnoreFlags
+{
+  PHYSICAL   = 1 << 0,
+  THERMAL    = 1 << 1,
+  POLAR      = 1 << 2,
+  PRIMAL     = 1 << 3,
+  CHARGED    = 1 << 4,
+  CYBERNETIC = 1 << 5,
+  NIHIL      = 1 << 6
+};
+
 class Action
 {
 public:
@@ -89,31 +113,6 @@ public:
 
   /* Annihilates an action object */
   ~Action();
-
-  ENUM_FLAGS(ActionFlags)
-  enum class ActionFlags
-  {
-    ALTER    = 1 << 0, /* ALTER an attribute by a given value */
-    INFLICT  = 1 << 1, /* INFLICT a given ailment for a duration */
-    RELIEVE  = 1 << 2, /* RELIEVE a given ailment */
-    ASSIGN   = 1 << 3, /* ASSIGN an attribute to a given value */
-    REVIVE   = 1 << 4, /* REVIVE un-KOs target with base HP */
-    BASE_PC  = 1 << 5, /* True if the base is a % value and not an abs. one */
-    VARI_PC  = 1 << 6, /* True if the variance is a % value and not an abs. one */
-    VALID    = 1 << 7  /* The validity of the action */
-  };
-
-  ENUM_FLAGS(IgnoreFlags)
-  enum class IgnoreFlags
-  {
-    PHYSICAL   = 1 << 0,
-    THERMAL    = 1 << 1,
-    POLAR      = 1 << 2,
-    PRIMAL     = 1 << 3,
-    CHARGED    = 1 << 4,
-    CYBERNETIC = 1 << 5,
-    NIHIL      = 1 << 6
-  };
 
 private:
 
@@ -130,7 +129,7 @@ private:
   IgnoreFlags ignore_atk;
   IgnoreFlags ignore_def;
 
-  int min_duration
+  int min_duration;
   int max_duration;
 
   int variance;
