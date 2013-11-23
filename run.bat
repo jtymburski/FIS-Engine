@@ -4,4 +4,8 @@
 :: Date: November 16, 2013
 ::==============================================================================
 @echo off
-start bin/Univursa.exe
+
+bin\Univursa.exe 2> run-stderr.log | tee run-stdout.log
+echo ------------ RUN ERROR/WARNING NOTIFICATIONS -------------
+cat run-stderr.log
+echo ----------------------------------------------------------

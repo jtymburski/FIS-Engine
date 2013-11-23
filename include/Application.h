@@ -12,14 +12,14 @@
 
 #include <iostream>
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_ttf.h>
 
 #include "Game/Game.h"
+#include "Helpers.h"
 #include "Options.h"
 //#include "SavedGame.h"
 #include "Sound.h"
 #include "Sprite.h"
+#include "Text.h"
 #include "TitleScreen.h"
 
 class Application
@@ -96,13 +96,6 @@ public:
   /* Uninitializes all set functions in the application. Used to wind down
    * and no rendering will take place after this. */
   void uninitialize();
-  
-/*============================================================================
- * PUBLIC STATIC FUNCTIONS
- *===========================================================================*/
-public:
-  /* Status of the running SDL system */
-  static bool statusSDL();
 };
 
 #endif // APPLICATION_H

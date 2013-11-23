@@ -6,28 +6,74 @@
  *              necessary subsystems and starts up the application.
  ******************************************************************************/
 #include "Application.h"
-#include "Helpers.h"
+
+bool initSDL()
+{
+  bool success = true;
+  
+  /* Initialize SDL */
+  if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
+  {
+    std::cerr << "[ERROR] SDL could not initialize. SDL error: "
+              << SDL_GetError() << std::endl;
+    success = false;
+  }
+  
+  /* Initialize SDL Image library */
+  if(!IMG_Init(IMG_INIT_PNG))
+  {
+    std::cerr << "[ERROR] SDL_Image could not initialize. SDL_image error: "
+              << IMG_GetError() << std::endl;
+    success = false;
+  }
+    
+  /* Initialize SDL TTF library */
+  if(!TTF_WasInit() && TTF_Init() == -1)
+  {
+    std::cerr << "[ERROR] SDL_ttf could not initialize. SDL_ttf error: "
+              << TTF_GetError() << std::endl;
+    success = false;
+  }
+
+  /* Init SDL mixer, and open the audio with the chosen settings */
+  int buffers = 1024; /* Size of audio buffers in memory */
+  int channels = 2;   /* 1 channel = mono, 2 = stereo */
+  int rate = 22050;   /* Frequency of Audio Playback */
+  if(!Mix_Init(MIX_INIT_OGG) || 
+     Mix_OpenAudio(rate, AUDIO_S16SYS, channels, buffers) != 0)
+  {
+    std::cerr << "[WARNING] Unable to initialize audio: " 
+              << Mix_GetError() << std::endl;
+  }
+
+  return success;
+}
 
 int main(int argc, char** argv)
 {
   /* The initial game seeding - for random number generation */
   Helpers::seed();
   
-  // TODO: Remove - split testing
-  std::string test = "Hello,sunshine,what,a,beautiful,day";
-  std::vector<std::string> temp_list;
-  Helpers::split(test, ',', temp_list);
-  printf("%d\n", temp_list.size());
-  for(int i = 0; i < temp_list.size(); i++)
-    printf("%s\n", temp_list[i].c_str());
+  /* Initialize SDL libraries */
+  bool success = initSDL();
   
-  /* Set up the game application and then run */
-  Application game_app;
-  if(game_app.initialize())
-    game_app.run();
+  if(success)
+  {
+    /* Create the application and start the run loop */
+    Application game_app;
+    if(game_app.initialize())
+      game_app.run();
   
-  /* Clean up the game */
-  game_app.uninitialize();
+    /* Clean up the application, after the run loop is finished */
+    game_app.uninitialize();
+  }
+  
+  /* Clean up SDL libraries */
+  Mix_CloseAudio();
+  Mix_Quit();
+  TTF_Quit();
+  IMG_Quit();
+  SDL_Quit();
   
 	return 0;
 }

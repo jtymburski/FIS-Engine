@@ -11,6 +11,7 @@
  *  - Some way to handle when SDL parameters are changed or anything of
  *    relevance so that the game gets the updated versions of all these
  *    parameters.
+ *  - Add sound slider, for globa volume. Max 100%.
  *
  * Options to add:
  *  - Set the text display speed in MapDialog (for the character letters)
@@ -114,13 +115,13 @@ void Options::setLinearFiltering(bool linear_filtering)
   {
     /* Set texture filtering to linear */
     if(!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0"))
-      std::cout << "[WARNING] Unable to enable linear filtering.";
+      std::cerr << "[WARNING] Unable to enable linear filtering.";
   }
   else
   {
     /* Set texture filtering to nearest pixel */
     if(!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0"))
-      std::cout << "[WARNING] Unable to enable nearest pixel filtering.";
+      std::cerr << "[WARNING] Unable to enable nearest pixel filtering.";
   }
 }
 
@@ -150,7 +151,7 @@ bool Options::confirmFontSetup()
   /* If the font setup fails, output the error alert */
   if(test_font == NULL)
   {
-    std::cout << "[ERROR] The font " << kFONTS[font] 
+    std::cerr << "[ERROR] The font " << kFONTS[font] 
               << " could not be loaded. SDL_ttf error: " << TTF_GetError() 
               << "\n";
     success = false;

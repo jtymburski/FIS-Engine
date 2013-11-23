@@ -8,22 +8,22 @@
  *              execution. However, if you create multiple sound files, SDL 
  *              allows up to 8 files being mixed together at once before
  *              returning the channel full error.
+ *
+ * TODO:
+ *  - Add sound adjustments for modifying the volume this individual sound
+ *    plays at.
+ *  - Music vs. samples. Set this up since music will always be the backend
+ *    and can be globally called to stop.
  ******************************************************************************/
 #include "Sound.h"
 
-/* Private Constant Implementation - see header file for descriptions */
+/* Constant Implementation - see header file for descriptions */
 const short Sound::kINFINITE_LOOP = -1;
 const short Sound::kUNSET_CHANNEL = -1;
 
-/* Public Constant Implementation - see header file for descriptions */
-const int Sound::kINIT_BUFFERS = 1024;
-const int Sound::kINIT_CHANNELS = 2;
-const uint16_t Sound::kINIT_FORMAT = AUDIO_S16SYS;
-const int Sound::kINIT_RATE = 22050;
-
-/*============================================================================
+/*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
- *===========================================================================*/
+ *============================================================================*/
 
 /*
  * Description: Constructor function - Sets up a shell for a sound. It will
@@ -69,9 +69,21 @@ Sound::~Sound()
   unsetSoundFile();
 }
 
-/*============================================================================
+/*=============================================================================
  * PUBLIC FUNCTIONS
- *===========================================================================*/
+ *============================================================================*/
+
+/*
+ * Description: Returns the channel that the sound file is currently playing on.
+ *              This will be the unset channel value (-1) if it's not playing.
+ *
+ * Inputs: none
+ * Output: int - the channel integer
+ */
+int Sound::getChannel()
+{
+  return channel;
+}
 
 /* 
  * Description: Gets the number of times that the audio will loop for when
@@ -114,9 +126,29 @@ void Sound::play()
     /* Try to play on a new channel */
     channel = Mix_PlayChannel(-1, sound, loop_count);
     if(channel == kUNSET_CHANNEL)
-      std::cout << "[WARNING] Unable to play WAV file: " << Mix_GetError()
+      std::cerr << "[WARNING] Unable to play WAV file: " << Mix_GetError()
                 << std::endl;
   }
+}
+
+/*
+ * Description: Plays the internal sound file only once. This is designed as a
+ *              fast call and does not save the channel in the class and just
+ *              dumps the sound file on the first channel available. If fails, 
+ *              -1 is returned. Note that this does not attempt to check for
+ *              errors or set the sound file if possible.
+ *
+ * Inputs: none
+ * Output: int - channel that is playing. -1 if invalid
+ */
+int Sound::playOnce()
+{
+  if(sound_set)
+  {
+    return Mix_PlayChannel(-1, sound, 0);
+  }
+  
+  return -1;
 }
 
 /* 
@@ -136,15 +168,15 @@ bool Sound::setSoundFile(std::string path)
     this->path = path;
 
   /* Next, attempt and load the file */
-  if(!path.empty())
+  if(!this->path.empty())
   {
     unsetSoundFile(false);
-    sound = Mix_LoadWAV(path.c_str());
+    sound = Mix_LoadWAV(this->path.c_str());
 
     /* Determine if the setting of the sound was valid */
     if(sound == NULL)
     {
-      std::cout << "[WARNING] Unable to load WAV file: "
+      std::cerr << "[WARNING] Unable to load WAV file: "
                 << Mix_GetError() << std::endl;
       return false;
     }
@@ -153,7 +185,7 @@ bool Sound::setSoundFile(std::string path)
     return true;
   }
 
-  std::cout << "[WARNING] Unable to load empty WAV file path." << std::endl;
+  std::cerr << "[WARNING] Unable to load empty WAV file path." << std::endl;
   return false;
 }
 
@@ -208,7 +240,7 @@ void Sound::setPlayForever()
  */
 void Sound::stop()
 {
-  if(channel != kUNSET_CHANNEL)
+  if(channel != kUNSET_CHANNEL && Mix_GetChunk(channel) == sound)
     Mix_HaltChannel(channel);
   channel = kUNSET_CHANNEL;
 }
@@ -221,21 +253,22 @@ void Sound::stop()
  *              cleanup and destruction as well.
  *
  * Inputs: bool clear_path - clear the path stored in the class as well
- * Output: bool - returns if the sound file was set before calling this 
- *                function.
+ * Output: none
  */
-bool Sound::unsetSoundFile(bool clear_path)
+void Sound::unsetSoundFile(bool clear_path)
 {
+  stop();
+  
+  /* Free the sound chunk */
   if(sound_set)
   {
     Mix_FreeChunk(sound);
-    sound = NULL;
     sound_set = false;
-    return true;
   }
 
+  /* Clears the path, if asked */
   if(clear_path)
     path.clear();
+  
   sound = NULL;
-  return false;
 }

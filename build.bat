@@ -23,8 +23,8 @@ echo.
 
 :: Ask the user if they want to run the application
 set /p choice="Do you want to run Univursa.exe? " %=%
-if %choice%==Y start bin/Univursa.exe
-if %choice%==y start bin/Univursa.exe
+if %choice%==Y start run.bat
+if %choice%==y start run.bat
 
 :: Pause and wait for user to close
 pause

@@ -50,22 +50,25 @@ private:
 private:
   const static short kINFINITE_LOOP; /* Infinite loop special character */
   const static short kUNSET_CHANNEL; /* Unset channel definition */
-public:
-  const static int kINIT_BUFFERS; /* Size of audio buffers in memory */
-  const static int kINIT_CHANNELS; /* 1 channel = mono, 2 = stereo */
-  const static uint16_t kINIT_FORMAT; /* Format of the audio being played */
-  const static int kINIT_RATE; /* Frequency of Audio Playback */
 
-/*============================================================================
+/*=============================================================================
  * PUBLIC FUNCTIONS
- *===========================================================================*/
+ *============================================================================*/
 public:
+  /* Returns the channel that the music is playing on. Useful for calling mix
+   * calls to get feedback on the sound */
+  int getChannel();
+  
   /* Returns the loop count, the number of times it will play for */
   int getPlayCount();
 
   /* Play slot. If sound is set, it will play the sound for the given number
    * of loops */
   void play();
+  
+  /* Plays the stored sound file only once without keeping track of the running
+   * channel. */
+  int playOnce();
   
   /* Trys to set the sound file to the given path */
   bool setSoundFile(std::string path);
@@ -80,14 +83,7 @@ public:
   void stop();
   
   /* Unset the sound file and frees the memory */
-  bool unsetSoundFile(bool clear_path = true);
-
-/*============================================================================
- * PUBLIC STATIC FUNCTIONS
- *===========================================================================*/
-public:
-  /* Plays a sound, only once. More than that? create a sound handle */
-  //bool playSound(); // TODO
+  void unsetSoundFile(bool clear_path = true);
 };
 
 #endif // SOUND_H

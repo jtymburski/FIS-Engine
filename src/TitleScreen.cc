@@ -1,15 +1,13 @@
-/******************************************************************************
-* Class Name: TitleScreen
-* Date Created: Dec 02 2012
-* Inheritance: QWidget
-* Description: Is the widget for the main display of the game. Will mostly 
-*              just be a menu but this allows for the safe passage between
-*              classes as interactions with Application occur.
-*
-* TODO:
-*  1. Set up the options connection -> resolution
-*  2. Constants in setupClass() and setupMenu()??
-******************************************************************************/
+/*******************************************************************************
+ * Class Name: TitleScreen
+ * Date Created: Dec 02 2012
+ * Inheritance: none
+ * Description: Is the view for the main control display of the game. Will 
+ *              mostly just be a menu but this allows for the safe passage 
+ *              between classes as interactions with Application occur.
+ *
+ * TODO:
+ ******************************************************************************/
 #include "TitleScreen.h"
 
 /* Constant Implementation - see header file for descriptions */
@@ -21,12 +19,12 @@ const short TitleScreen::kNUM_MENU_ITEMS = 3;
 const uint16_t TitleScreen::kTEXT_GAP = 65;
 const uint16_t TitleScreen::kTEXT_MARGIN = 75;
 
-/*============================================================================
+/*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
- *===========================================================================*/
+ *============================================================================*/
 
-/* Default constructor */
-TitleScreen::TitleScreen()
+/* Constructor function */
+TitleScreen::TitleScreen(Options* running_config)
 {
   /* Initial parameter setup */
   action = NONE;
@@ -34,34 +32,15 @@ TitleScreen::TitleScreen()
   font = NULL;
   render_index = 0;
   system_options = NULL;
-  
-  /* Window Colors Setup */
-  //QPalette pal(palette());
-  //pal.setColor(QPalette::Background, Qt::black);
-  //pal.setColor(QPalette::Foreground, Qt::white);
-  //setAutoFillBackground(true);
-  //setPalette(pal);
-
-  /* Font setup */
-  //QFont current_font = font();
-  //current_font.setPixelSize(30);
-  //current_font.setWeight(QFont::Bold);
-  //setFont(current_font);
 
   /* Sound setup */
-  //background_sound.setSoundFile("sound/ambience/background_menu_sound.wav");
-  //background_sound.setPlayForever();
-  //background_sound.play();
-  //menu_click_sound.setSoundFile("sound/functional/menu_click.wav");
-  //menu_click_sound.setPlayCount(1);
-
-  /* Setup the internals of the screen */
-  //setupMenu();
-}
-
-/* Constructor function */
-TitleScreen::TitleScreen(Options* running_config) : TitleScreen()
-{
+  background_sound.setSoundFile("sound/ambience/background_menu_sound.wav");
+  background_sound.setPlayForever();
+  background_sound.play();
+  menu_click_sound.setSoundFile("sound/functional/menu_click.wav");
+  menu_click_sound.setPlayCount(1);
+  
+  /* Set up the configuration, if applicable */
   setConfiguration(running_config);
 }
 
@@ -72,55 +51,9 @@ TitleScreen::~TitleScreen()
   unsetMenu();
 }
 
-/*============================================================================
+/*=============================================================================
  * PRIVATE FUNCTIONS
- *===========================================================================*/
-
-/* Decrements the selected menu item */
-/*void TitleScreen::decrementSelected()
-{
-  if(cursor_index == 0)
-    setSelected(kNUM_MENU_ITEMS - 1);
-  else
-    setSelected(cursor_index - 1);
-}*/
-  
-/* Choose whether to highlight or not highlight the selected index */
-/*bool TitleScreen::highlight(int index)
-{
-  if(index >= 0 && index < kNUM_MENU_ITEMS)
-  {
-    QPalette pal(option_labels[index]->palette());
-    pal.setColor(QPalette::Background, QColor(28,76,46,64)); // R,G,B,A
-    option_labels[index]->setPalette(pal);
-    return true;
-  }
-
-  return false;
-}*/
-
-/* Increments the selected menu item */
-/*void TitleScreen::incrementSelected()
-{
-  if((cursor_index + 1) == kNUM_MENU_ITEMS)
-    setSelected(0);
-  else
-    setSelected(cursor_index + 1);
-}*/
-
-/* Sets the selected menu item - fails if out of range */
-/*bool TitleScreen::setSelected(int index)
-{
-  if(index >= 0 && index < kNUM_MENU_ITEMS)
-  {
-    unhighlight(cursor_index);
-    cursor_index = index;
-    highlight(cursor_index);
-
-    return true;
-  }
-  return false;
-}*/
+ *============================================================================*/
 
 /* Sets the selected item. This gets polled by another class */
 void TitleScreen::setAction()
@@ -170,20 +103,6 @@ bool TitleScreen::setMenu(SDL_Renderer* renderer)
   
   return false;
 }
-  
-/* Un-Highlight the selected index by removing the border */
-/*bool TitleScreen::unhighlight(int index)
-{
-  if(index >= 0 && index < kNUM_MENU_ITEMS)
-  {
-    QPalette pal(option_labels[index]->palette());
-    pal.setColor(QPalette::Background, QColor(255,0,0,0));
-    option_labels[index]->setPalette(pal);
-    return true;
-  }
-
-  return false;
-}*/
 
 void TitleScreen::unsetMenu()
 {
@@ -202,58 +121,9 @@ void TitleScreen::unsetMenu()
   font = NULL;
 }
 
-/*============================================================================
- * PROTECTED FUNCTIONS
- *===========================================================================*/
-
-/*void TitleScreen::paintEvent(QPaintEvent* event)
-{
-  (void)event;
-  QPainter painter(this);
-
-  painter.drawPixmap(0, 0, system_options.getScreenWidth(), 
-                           system_options.getScreenHeight(), 
-                           QPixmap("pictures/univursatitle.png"));
-}*/
-
-//void TitleScreen::keyPressEvent(QKeyEvent* event)
-//{
-//  if(event->key() == Qt::Key_Up)
-//  {
-//    decrementSelected();
-//    menu_click_sound.play();
-//  }
-//  else if(event->key() == Qt::Key_Down)
-//  {
-//    incrementSelected();
-//    menu_click_sound.play();
-//  }
-//  else if(event->key() == Qt::Key_Escape)
-//  {
-//    setSelected(EXIT);
-//    menu_click_sound.play();
-/*  }
-  else if(event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)
-  {
-    background_sound.stop();
-
-    if(cursor_index == TESTMAP)
-      emit openMap();
-    else if(cursor_index == TESTBATTLE)
-      emit openBattle();
-    else if(cursor_index == OPTIONS) // TODO
-    {
-      emit openOptions();
-      background_sound.play();
-    }
-    else if(cursor_index == EXIT)
-      emit exit();
-  }
-}*/
-
-/*============================================================================
+/*=============================================================================
  * PUBLIC FUNCTIONS
- *===========================================================================*/
+ *============================================================================*/
 
 /* Returns the active action */
 TitleScreen::MenuItems TitleScreen::getAction()
@@ -283,12 +153,14 @@ void TitleScreen::keyDownEvent(SDL_Keysym symbol)
     cursor_index++;
     if(cursor_index == kNUM_MENU_ITEMS)
       cursor_index = 0;
+    menu_click_sound.play();
   }
   else if(symbol.sym == SDLK_UP)
   {
     if(cursor_index == 0)
       cursor_index = kNUM_MENU_ITEMS;
     cursor_index--;
+    menu_click_sound.play();
   }
   else if(symbol.sym == SDLK_RETURN)
   {
@@ -297,6 +169,7 @@ void TitleScreen::keyDownEvent(SDL_Keysym symbol)
   else if(symbol.sym == SDLK_ESCAPE)
   {
     cursor_index = kNUM_MENU_ITEMS - 1;
+    menu_click_sound.play();
   }
 }
 
@@ -304,11 +177,6 @@ void TitleScreen::keyDownEvent(SDL_Keysym symbol)
 void TitleScreen::keyUpEvent(SDL_Keysym symbol)
 {
 }
-  
-//void TitleScreen::playBackground()
-//{
-//  background_sound.play();
-//}
 
 /* Renders the title screen */
 bool TitleScreen::render(SDL_Renderer* renderer)
