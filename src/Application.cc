@@ -148,9 +148,10 @@ bool Application::initialize()
 	bool success = !isInitialized();
 
   /* Initialize SDL */
-  if(success && SDL_Init(SDL_INIT_VIDEO) < 0)
+  if(success && SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
   {
-    printf("[ERROR] SDL could not initialize. SDL error: %s\n", SDL_GetError());
+    std::cout << "[ERROR] SDL could not initialize. SDL error: "
+              << SDL_GetError() << std::endl;
     success = false;
   }
 
@@ -165,8 +166,8 @@ bool Application::initialize()
                               SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
     if(window == NULL)
     {
-      printf("[ERROR] Window could not be created. SDL error: %s\n", 
-             SDL_GetError());
+      std::cout << "[ERROR] Window could not be created. SDL error: " 
+                << SDL_GetError() << std::endl;
       success = false;
     }
   }
@@ -183,8 +184,8 @@ bool Application::initialize()
     renderer = SDL_CreateRenderer(window, -1, flags);
     if(renderer == NULL)
     {
-      printf("[ERROR] Renderer could not be created. SDL error: %s\n", 
-             SDL_GetError());
+      std::cout << "[ERROR] Renderer could not be created. SDL error: "
+                << SDL_GetError() << std::endl;
       success = false;
     }
     else
@@ -193,41 +194,47 @@ bool Application::initialize()
     }
   }
   
-  /* Initialize SDL Image library */
-  if(success)
-  {
-    if(!IMG_Init(IMG_INIT_PNG))
-    {
-      printf("[ERROR] SDL_Image could not initialize. SDL_image error: %s\n", 
-             IMG_GetError());
-      success = false;
-    }
-  }
-  
   /* Initialize SDL TTF library */
   if(success)
   {
-    if(TTF_Init() == -1)
+    /* Initialize SDL Image library */
+    if(!IMG_Init(IMG_INIT_PNG))
     {
-      printf("[ERROR] SDL_ttf could not initialize. SDL_ttf error: %s\n",
-             TTF_GetError());
+      std::cout << "[ERROR] SDL_Image could not initialize. SDL_image error: "
+                << IMG_GetError() << std::endl;
       success = false;
     }
     
-    success = system_options.confirmFontSetup();
+    /* Initialize SDL TTF library */
+    if(TTF_Init() == -1)
+    {
+      std::cout << "[ERROR] SDL_ttf could not initialize. SDL_ttf error: "
+                << TTF_GetError() << std::endl;
+      success = false;
+    }
+    success &= system_options.confirmFontSetup();
+    
+    /* Initialize SDL_mixer with the chosen audio settings */
+    if(Mix_OpenAudio(Sound::kINIT_RATE, Sound::kINIT_FORMAT, 
+                     Sound::kINIT_CHANNELS, Sound::kINIT_BUFFERS) != 0) 
+    {
+      std::cout << "[WARNING] Unable to initialize audio: " 
+                << Mix_GetError() << std::endl;
+    }
   }
 
   /* If successful, confirm the initialization */
+  initialized = true;
   if(success)
   {
-    initialized = true;
-    
     /* Set the title screen background */
     title_screen.setBackground("pictures/univursatitle.png", renderer);
   }
   /* Uninitialize everything, if the init sequence failed */
   else if(!isInitialized())
+  {
     uninitialize();
+  }
   
 	return success;
 }
@@ -349,17 +356,80 @@ bool Application::run()
   
 void Application::uninitialize()
 {
-  /* Clean up the renderer */
-  if(renderer != NULL)
-    SDL_DestroyRenderer(renderer);
-  renderer = NULL;
+  if(initialized)
+  {
+    /* Clean up the renderer */
+    if(renderer != NULL)
+      SDL_DestroyRenderer(renderer);
+    renderer = NULL;
   
-  /* Clean up the window */
-  if(window != NULL)
-    SDL_DestroyWindow(window);
-  window = NULL;
+    /* Clean up the window */
+    if(window != NULL)
+      SDL_DestroyWindow(window);
+    window = NULL;
 
-	/* Quit SDL sub-systems */
-	IMG_Quit();
-	SDL_Quit();
+    /* Quit SDL sub-systems */
+    Mix_CloseAudio();
+    //TTF_Quit(); // TODO: Causes the program to hang?!
+    IMG_Quit();
+    SDL_Quit();
+    
+    initialized = false;
+  }
+}
+
+/*============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *===========================================================================*/
+
+/* Status of the running SDL system */
+bool Application::statusSDL()
+{
+  uint32_t init_mask = SDL_WasInit(SDL_INIT_EVERYTHING);
+  bool success = true;
+  
+  /* Check if video subsystem is initialized */
+  if(init_mask & SDL_INIT_VIDEO)
+    std::cout << "[DEBUG] Video subsystem is initialized." << std::endl;
+  else
+  {
+    std::cout << "[DEBUG] Video subsystem is not initialized." << std::endl;
+    success = false;
+  }
+  
+  /* Check if audio subsystem is initialized */
+  if(init_mask & SDL_INIT_AUDIO)
+    std::cout << "[DEBUG] Audio subsystem is initialized." << std::endl;
+  else
+  {
+    std::cout << "[DEBUG] Audio subsystem is not initialized." << std::endl;
+    success = false;
+  }
+  
+  /* Check on the true font API */
+  if(TTF_WasInit())
+    std::cout << "[DEBUG] True type font library has been initialized."
+              << std::endl;
+  else
+  {
+    std::cout << "[DEBUG] True type font library has not been initialized."
+              << std::endl;
+    success = false;
+  }
+
+  /* Check on the audio mixer */
+  int channel = Sound::kINIT_CHANNELS;
+  uint16_t format = Sound::kINIT_FORMAT;
+  int rate = Sound::kINIT_RATE;
+  if(Mix_QuerySpec(&rate, &format, &channel) > 0)
+    std::cout << "[DEBUG] Mixer channel is initialized and running." 
+              << std::endl;
+  else
+  {
+    std::cout << "[DEBUG] Mixer channnel is not initialized properly: "
+              << Mix_GetError() << std::endl;
+    success = false;
+  }
+  
+  return success;
 }

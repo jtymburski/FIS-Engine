@@ -593,8 +593,7 @@ bool Sprite::render(SDL_Renderer* renderer, int x, int y, int h, int w)
       rect.h = h;
       rect.w = w;
     }
-    
-    //printf("%d\n", flip);
+
     /* Render and return status */
     return (SDL_RenderCopyEx(renderer, texture, NULL, &rect, 
                              rotation_angle, NULL, flip) == 0);

@@ -40,6 +40,7 @@ SOURCES=src/Application.cc \
         src/Helpers.cc \
         src/Main.cc \
         src/Options.cc \
+        src/Sound.cc \
         src/Sprite.cc \
         src/Text.cc \
         src/TitleScreen.cc
