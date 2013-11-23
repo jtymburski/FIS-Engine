@@ -46,12 +46,27 @@ Skill::Skill()
  *
  * Inputs:
  */
+Skill::Skill(const Skill &source)
+{
+  copySelf(source);
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ */
 Skill::Skill(const std::string &name)
 {
   classSetup();
   setName(name);
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ */
 Skill::Skill(const std::string &name, const ActionScope &skill_scope,
 	         const Action* effects, const float &chance)
 {
@@ -108,11 +123,36 @@ void Skill::classSetup()
   flags = static_cast<SkillFlags>(0));
   cost = 0;
   name = "";
+  primary = EnumDb::NONE;
+  secondary = EnumDb::NONE;
   sound_effect = nullptr;
   scope = ActionScope::NONE;
   thumbnail = nullptr;
   message = "";
   value = 0;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void Skill::copySelf(const Skill &source)
+{
+  animation    = source.animation;
+  cooldown     = source.cooldown;
+  description  = source.description;
+  flags        = source.flags;
+  cost         = source.cost;
+  name         = source.name;
+  primary      = source.primary;
+  secondary    = source.secondary;
+  sound_effect = source.sound_effect;
+  scope        = source.scope;
+  thumbnail    = source.thumbnail;
+  message      = source.message;
+  value        = source.value;
 }
 
 /*
@@ -342,6 +382,11 @@ bool Skill::setDescription(const std::string &new_description)
   return false;
 }
 
+void Skill::setFlag(const SkillFlags &flag, const bool &set_value)
+{
+  (set_value) ? (flags |= flag) : (flags &= flag);
+}
+
 bool Skill::setName(const std::string &new_name)
 {
   if (new_name.size() < kMAX_NAME_LENGTH)
@@ -398,4 +443,17 @@ bool Skill::setValue(const uint &new_value)
   }
 
   return false;
+}
+
+Skill& Skill::operator=(const Skill &source)
+{
+  /* Check for self assignment */
+  if (this == &source)
+    return *this;
+
+  /* Do the copy */
+  copySelf(source);
+
+  /* Return the copied object */
+  return *this;
 }

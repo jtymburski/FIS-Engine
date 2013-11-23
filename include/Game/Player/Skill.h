@@ -15,6 +15,7 @@
 *
 * TODO
 * ----
+* - Possible OFENSIVE/DEFENSIVE/NEUTRAL categories (set in flags)? [11-23-13]
 * - Testing [11-22-13]
 * - Conventions [11-22-13]
 *******************************************************************************/
@@ -48,6 +49,8 @@ public:
 
   Skill();
 
+  Skill(const Skill &source);
+
   Skill(const std::string &name);
 
   Skill(const std::string &name, const ActionScope &skill_scope,
@@ -78,7 +81,7 @@ private:
 
   Element primary;
 
-  Eleemtn secondary;
+  Element secondary;
 
   Sound* sound_effect;
 
@@ -105,6 +108,8 @@ private:
 private:
 
   void classSetup();
+
+  void copySelf(const Skill &source);
 
   void flagSetup();
 
@@ -175,5 +180,7 @@ public:
 
   bool setValue(const uint &new_value);
 };
+
+Skill& operator=(const Skill &source);
 
 #endif //SKILL_H
