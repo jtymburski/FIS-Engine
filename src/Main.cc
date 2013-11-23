@@ -8,9 +8,6 @@
 #include "Application.h"
 #include "Helpers.h"
 
-// TODO - Remove testing headers
-#include "Sprite.h"
-
 int main(int argc, char** argv)
 {
   /* The initial game seeding - for random number generation */
@@ -23,15 +20,6 @@ int main(int argc, char** argv)
   printf("%d\n", temp_list.size());
   for(int i = 0; i < temp_list.size(); i++)
     printf("%s\n", temp_list[i].c_str());
-  
-  // TODO: Remove - sprite testing
-  Sprite test_sprite("HALO|2|.png", NULL);
-  
-  // TODO: Remove - testing static cast on enum additives
-  //SDL_RendererFlip flip = static_cast<SDL_RendererFlip>(SDL_FLIP_HORIZONTAL | SDL_FLIP_VERTICAL);
-  //printf("%d %d %d\n", flip, SDL_FLIP_HORIZONTAL, SDL_FLIP_VERTICAL);
-  //flip &= ~SDL_FLIP_HORIZONTAL;
-  //printf("%d\n", flip);
   
   /* Set up the game application and then run */
   Application game_app;

@@ -7,7 +7,10 @@
  *              render class by the higher end classes.
  *
  * TODO: CONSTRUCTORS TO BE FINISHED
- *       Add option to load settings from file and dump to file as well.
+ *  - Add option to load settings from file and dump to file as well.
+ *  - Some way to handle when SDL parameters are changed or anything of
+ *    relevance so that the game gets the updated versions of all these
+ *    parameters.
  *
  * Options to add:
  *  - Set the text display speed in MapDialog (for the character letters)
@@ -66,6 +69,7 @@ void Options::setAllToDefault()
   setBattleMode(DEBUG);
 
   setFont(0, true);
+  setLinearFiltering(false);
   setScreenResolution(0);
   setVsync(true);
 }
@@ -101,7 +105,25 @@ void Options::setFont(uint8_t index, bool first_call)
       font = old_index;
   }
 }
+
+void Options::setLinearFiltering(bool linear_filtering)
+{
+  this->linear_filtering = linear_filtering;
   
+  if(linear_filtering)
+  {
+    /* Set texture filtering to linear */
+    if(!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0"))
+      std::cout << "[WARNING] Unable to enable linear filtering.";
+  }
+  else
+  {
+    /* Set texture filtering to nearest pixel */
+    if(!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0"))
+      std::cout << "[WARNING] Unable to enable nearest pixel filtering.";
+  }
+}
+
 void Options::setScreenResolution(uint8_t index)
 {
   if(index < kNUM_RESOLUTIONS)
@@ -114,18 +136,6 @@ void Options::setScreenResolution(uint8_t index)
 void Options::setVsync(bool enabled)
 {
   vsync_enabled = enabled;
-  
-  /* Enable vertical syncing */
-  if(enabled)
-  {
-    if(!SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1"))
-      printf("[WARNING] Vsync not enabled.");
-  }
-  /* Disable vertical syncing */
-  else
-  {
-    SDL_SetHint(SDL_HINT_RENDER_VSYNC, "0");
-  }
 }
 
 /*=============================================================================
@@ -181,6 +191,12 @@ uint16_t Options::getScreenWidth()
   return kRESOLUTIONS_X[resolution_x];
 }
 
+/* Returns if linear filtering mode is enabled */
+bool Options::isLinearFilteringEnabled()
+{
+  return linear_filtering;
+}
+  
 bool Options::isVsyncEnabled()
 {
   return vsync_enabled;

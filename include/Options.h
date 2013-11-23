@@ -49,6 +49,9 @@ private:
   /* The index for the selected font */
   uint8_t font;
   
+  /* If the linear filtering is enabled */
+  bool linear_filtering;
+  
   /* Resolution of the screen currently being used */
   uint8_t resolution_x;
   uint8_t resolution_y;
@@ -101,6 +104,9 @@ private:
   /* Sets the chosen font */
   void setFont(uint8_t index, bool first_call = false);
   
+  /* Sets if linear filtering should be enabled or not */
+  void setLinearFiltering(bool linear_filtering);
+  
   /* Set the screen dimensions to be painted, based on the array index */
   void setScreenResolution(uint8_t index);
 
@@ -130,6 +136,9 @@ public:
   uint16_t getScreenHeight();
   uint16_t getScreenWidth();  
 
+  /* Returns if linear filtering mode is enabled */
+  bool isLinearFilteringEnabled();
+  
   /* Returns if vertical refresh syncing is enabled */
   bool isVsyncEnabled();
 

@@ -15,19 +15,14 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 
+#include "Game/Game.h"
 #include "Options.h"
+//#include "SavedGame.h"
 #include "Sprite.h"
 #include "TitleScreen.h"
 
-//#include "Game/Game.h"
-//#include "Options.h"
-//#include "SavedGame.h"
-//#include "TitleScreen.h"
-
 class Application
 {
-//  Q_OBJECT
-
 public:
   /* Constructor function */
   Application();
@@ -37,30 +32,24 @@ public:
 
   /* Enumerator: Application options to be selected */
   //enum MenuState{OFF,MAIN,CONTINUE,INOPTIONS,INEXIT,SECRET}; // OLD
-  enum AppItems{TITLESCREEN = 0,
-                GAME        = 1,
-                OPTIONS     = 2,
-                EXIT        = 3};
+  enum AppMode{TITLESCREEN = 0,
+               GAME        = 1,
+               OPTIONS     = 2,
+               EXIT        = 3};
 
 private:
-  /* A status if the application has been commanded to close */
-  //bool close_command;
-  
   /* The running game */
-  //Game* game_handler;
+  Game game_handler;
 
   /* Status if the subsystems have been successfully initialized */
   bool initialized;
   
-  /* Internal variable to if the run loop should be stopped */
-  bool quit;
+  /* The current application that is running, under the head application
+   * management */
+  AppMode mode;
   
   /* The renderer for handling all interactions with the window */
   SDL_Renderer* renderer;
-  
-  /* The current application that is running, under the head application
-   * management */
-  AppItems running;
   
   /* All options available for the system */
   Options system_options;
@@ -78,8 +67,8 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
-  /* Handles actions in views, depending on what's active */
-  void handleActions();
+  /* Change the mode that the application is running */
+  bool changeMode(AppMode mode);
   
   /* Goes through all available events that are currently on the stack */
   void handleEvents();
@@ -87,16 +76,8 @@ private:
   /* Renders the current view and all relevant visual data */
   void render(uint32_t cycle_time);
 
-/*=============================================================================
- * SLOTS
- *============================================================================*/
-//public slots:
-  /* Temp opening calls */
-//  void openBattle(); // TEMP
-//  void openMap(); // TEMP
-  
-  /* Updates the application, called on the tick */
-//  void updateApp();
+  /* Handles actions in views, depending on what's active */
+  bool updateViews(int cycle_time);
 
 /*=============================================================================
  * PUBLIC FUNCTIONS

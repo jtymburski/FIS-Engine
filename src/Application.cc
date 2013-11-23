@@ -16,112 +16,40 @@
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
 
-Application::Application()//QWidget* parent)
+Application::Application()
 {
   /* Initialize the variables */
   initialized = false;
-  quit = false;
+  mode = TITLESCREEN;
   renderer = NULL;
-  running = TITLESCREEN;
   window = NULL;
   
   /* Set the title screen parameters */
+  game_handler.setConfiguration(&system_options);
   title_screen.setConfiguration(&system_options);
-
-  //setParent(parent);
-
-  // TODO: make this dependent on focus of the game. If it loses focus, 
-  // return the normal cursor (Qt::ArrowCursor);
-  //setCursor(Qt::BlankCursor);
-  //setCursor(Qt::ArrowCursor);
-
-  /* General class variables */
-  //close_command = false;
-  
-  /* Options information */
-  //short screen_height = system_options.getScreenHeight();
-  //short screen_width = system_options.getScreenWidth();
-
-  /* Set up the title screen */
-  //title_screen = new TitleScreen(system_options);
-  //title_screen->show();
-
-  /* Set up the game */
-  //game_handler = new Game(system_options);
-
-  /* Add widgets to the stack */
-  //addWidget(title_screen);
-  //addWidget(game_handler);
-  //switchWidget(TITLESCREEN);
-
-  /* Widget information for handling the game */
-  //setMaximumWidth(screen_width);
-  //setMaximumHeight(screen_height);
-  //setMinimumWidth(screen_width);
-  //setMinimumHeight(screen_height);
-
-  /* Object function call connections */
-  //QObject::connect(title_screen, SIGNAL(exit()),
-  //                 this,         SLOT(exit()));
-  //QObject::connect(title_screen, SIGNAL(openBattle()), 
-  //                 this,         SLOT(openBattle()));
-  //QObject::connect(title_screen, SIGNAL(openMap()), 
-  //                 this,         SLOT(openMap()));
-  //QObject::connect(game_handler, SIGNAL(closeGame()),
-  //                 this,         SLOT(closeGame()));
-
-  /* Set the widget location (center of the screen) */
-  //QDesktopWidget desktopWidget;
-  //QRect desktopRect(desktopWidget
-  //                    .availableGeometry(desktopWidget.primaryScreen()));
-  //setGeometry((desktopRect.width() - screen_width) / 2, 
-  //            (desktopRect.height() - screen_height) / 2, 
-  //            screen_width, screen_height);
-
-  /* Set up the tick and start the update sequence */
-  //QObject::connect(&tick, SIGNAL(timeout()), this, SLOT(updateApp()));
-  //update_time.start();
-  //tick.setSingleShot(true);
-  //tick.start(kTICK_DELAY);
-  //updateApp();
-
-  /* Do the final show once everything is set up */
-  //showFullScreen();
 }
 
 Application::~Application()
 {
   uninitialize();
-
-  /* Clear out the widgets in the stack */
-  //while(count() > 0)
-  //  removeWidget(widget(0));
-
-  /* Delete the game */
-  //if(game_handler != 0)
-  //{
-  //  delete game_handler;
-  //  game_handler = 0;
-  //}
 }
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
-
-void Application::handleActions()
+  
+/* Change the mode that the application is running */
+bool Application::changeMode(AppMode mode)
 {
-  /* Handle any appropriate actions of the individual views */
-  if(running == TITLESCREEN)
-  {
-    /* Check if there is a title screen action */
-    if(title_screen.isActionOnQueue())
-    {
-      TitleScreen::MenuItems action_item = title_screen.getAction();
-      if(action_item == TitleScreen::EXIT)
-        running = EXIT;
-    }
-  }
+  bool allow = true;
+  
+  /* Run logic to determine if mode switch is allowed - currently empty */
+  
+  /* If allowed, make change */
+  if(allow)
+    this->mode = mode;
+    
+  return allow;
 }
 
 /* Goes through all available events that are currently on the stack */
@@ -134,7 +62,7 @@ void Application::handleEvents()
     /* If quit initialized, end the game loop */
     if(event.type == SDL_QUIT)
     {
-      quit = true;
+      changeMode(EXIT);
     }
     /* Otherwise, pass the key down events on to the active view */
     else if(event.type == SDL_KEYDOWN)
@@ -142,72 +70,73 @@ void Application::handleEvents()
       SDL_Keysym symbol = event.key.keysym;
       
       /* Send the key to the relevant view */
-      if(running == TITLESCREEN)
+      if(mode == TITLESCREEN)
+      {
         title_screen.keyDownEvent(symbol);
+      }
+      else if(mode == GAME)
+      {
+        /* If the key event returns true, exit the game view */
+        if(game_handler.keyDownEvent(symbol))
+          changeMode(TITLESCREEN);
+      }
     }
     else if(event.type == SDL_KEYUP)
     {
       SDL_Keysym symbol = event.key.keysym;
       
       /* Send the key to the relevant view */
-      if(running == TITLESCREEN)
+      if(mode == TITLESCREEN)
         title_screen.keyUpEvent(symbol);
+      else if(mode == GAME)
+        game_handler.keyUpEvent(symbol);
     }
   }
 }
   
 void Application::render(uint32_t cycle_time)
 {
-  //printf("Cycle Time: %d\n", cycle_time);
-  
   /* Handle the individual action items, depending on whats running */
-  if(running == TITLESCREEN)
+  if(mode == TITLESCREEN)
     title_screen.render(renderer);
-  else if(running == GAME)
-    quit = quit; // DO GAME EXECUTION
-  else if(running == OPTIONS)
-    quit = quit; // DO OPTIONS EXECUTION
-  else if(running == EXIT)
-    quit = true;
+  else if(mode == GAME)
+    game_handler.render(renderer);
+  else if(mode == OPTIONS)
+    cycle_time = cycle_time; // DO OPTIONS EXECUTION
 }
 
-/*=============================================================================
- * SLOTS
- *============================================================================*/
-
-/* TEMP */
-//void Application::openBattle()
-//{
-//  if(game_handler != 0)
-//  {
-//    game_handler->switchGameMode(Game::BATTLE);
-//    switchWidget(GAME);
-//  }
-//}
-
-/* TEMP */
-//void Application::openMap()
-//{
-//  if(game_handler != 0)
-//  {
-//    game_handler->switchGameMode(Game::MAP);
-//    switchWidget(GAME);
-//  }
-//}
-
-//void Application::updateApp()
-//{
-//  /* Implement the update, where necessary */
-//  int cycle_time = update_time.restart();
-//  if(currentIndex() == TITLESCREEN && title_screen != 0)
-//    title_screen->update(); // TODO: Change to custom function??
-//  else if(currentIndex() == GAME && game_handler != 0)
-//    game_handler->updateGame(cycle_time);
-//
-//  /* Restart the timer */
-//  if(!close_command)
-//    tick.start(kTICK_DELAY);
-//}
+bool Application::updateViews(int cycle_time)
+{
+  bool quit = false;
+  
+  /* Handle any appropriate actions of the individual views */
+  if(mode == TITLESCREEN)
+  {
+    /* Check if there is a title screen action */
+    if(title_screen.isActionOnQueue())
+    {
+      TitleScreen::MenuItems action_item = title_screen.getAction();
+      if(action_item == TitleScreen::EXIT)
+        changeMode(EXIT);
+      else if(action_item == TitleScreen::GAME)
+        changeMode(GAME);
+    }
+  }
+  /* Otherwise, update the game and check if the game is finished */
+  else if(mode == GAME)
+  {
+    if(game_handler.update(cycle_time))
+      changeMode(TITLESCREEN);
+  }
+  /* If exit, return true to notify the running thread the application is 
+   * done */
+  else if(mode == EXIT)
+  {
+    quit = true;
+  }
+  
+  return quit;
+}
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
@@ -228,17 +157,11 @@ bool Application::initialize()
   /* Only proceed if successful */
   if(success)
   {
-    /* Enable vertical syncing */
-    //if(!SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1"))
-    //  printf("[WARNING] Vsync not enabled.");
-    
-    /* Set texture filtering to linear */
-    if(!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1"))
-      printf("[WARNING] Linear texture filtering not enabled.");
-    
     /* Create window for display */
     window = SDL_CreateWindow("Univursa", SDL_WINDOWPOS_CENTERED, 
-                              SDL_WINDOWPOS_CENTERED, 1216, 704, 
+                              SDL_WINDOWPOS_CENTERED, 
+                              system_options.getScreenWidth(), 
+                              system_options.getScreenHeight(), 
                               SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
     if(window == NULL)
     {
@@ -251,7 +174,13 @@ bool Application::initialize()
   /* Create the renderer for the window */
   if(success)
   {
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    /* Set up the renderer flags */
+    uint32_t flags = SDL_RENDERER_ACCELERATED;
+    if(system_options.isVsyncEnabled())
+      flags |= SDL_RENDERER_PRESENTVSYNC;
+    
+    /* Create the renderer */
+    renderer = SDL_CreateRenderer(window, -1, flags);
     if(renderer == NULL)
     {
       printf("[ERROR] Renderer could not be created. SDL error: %s\n", 
@@ -312,6 +241,7 @@ bool Application::isInitialized()
 /* Runs the application */
 bool Application::run()
 {
+  bool quit = false;
   uint32_t ticks = 0;
   
   // TODO: Remove - testing variables
@@ -373,14 +303,18 @@ bool Application::run()
       if(brightness2 >= 2.0)
         brightness2 = 0.0;
       
-      /* Handle events and actions */
-      handleEvents();
-      handleActions();
-      
       /* Determine the previous cycle time for using throughout the update
        * sequence for rendering */
       uint32_t cycle_time = SDL_GetTicks() - ticks;
       ticks = SDL_GetTicks();
+      
+      /* Handle events - key press, window events, and such */
+      handleEvents();
+      
+      /* Update the view control (moving sprites, players, etc.)
+       * This returns true if the application should shut down */
+      if(updateViews(cycle_time))
+        quit = true;
       
       /* Clear screen */
       SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);

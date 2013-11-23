@@ -11,23 +11,14 @@
 
 #include <string>
 #include <vector>
-//#include <QKeyEvent>
-//#include <QLabel>
-//#include <QList>
-//#include <QPainter>
-//#include <QPixmap>
-//#include <QString>
-//#include <QWidget>
 
 #include "Frame.h"
 #include "Options.h"
 //#include "Sound.h"
 #include "Text.h"
 
-class TitleScreen// : public QWidget
+class TitleScreen
 {
-  //Q_OBJECT
-
 public:
   /* Default constructor */
   TitleScreen();
