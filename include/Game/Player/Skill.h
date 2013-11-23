@@ -33,15 +33,13 @@
 ENUM_FLAGS(SkillFlags)
 enum class SkillFlags
 {
-  OFFENSIVE  = 1 << 0,
-  DEFENSIVE  = 1 << 1,
-  NEUTRAL    = 1 << 2,
-  ALTERING   = 1 << 3,
-  HEALING    = 1 << 4,
-  INFLICTING = 1 << 5,
-  RELIEVING  = 1 << 6,
-  REVIVING   = 1 << 7,
-  VALID      = 1 << 8
+  ALTERING   = 1 << 0,
+  HEALING    = 1 << 1,
+  INFLICTING = 1 << 2,
+  RELIEVING  = 1 << 3,
+  REVIVING   = 1 << 4,
+  ASSIGNING  = 1 << 5,
+  VALID      = 1 << 6
 };
 
 class Skill
@@ -51,6 +49,9 @@ public:
   Skill();
 
   Skill(const std::string &name);
+
+  Skill(const std::string &name, const ActionScope &skill_scope,
+        const Action* effect, const float &chance);
 
   Skill(const std::string &name, const ActionScope &skill_scope, 
   	    const std::vector<Action*> &effects, const std::vector<float> &chances);
@@ -75,6 +76,10 @@ private:
 
   std::string name;
 
+  Element primary;
+
+  Eleemtn secondary;
+
   Sound* sound_effect;
 
   ActionScope scope;
@@ -89,6 +94,7 @@ private:
   static const size_t kMAX_ACTIONS;     /* Maximum # of actions in a skill */
   static const uint   kMAX_COOLDOWN;    /* Maximum turn cooldown time */
   static const uint   kMAX_COST;        /* Highest possible cost for a skill */
+  static const size_t kMAX_MESG_LENGTH; /* Maximum length for using message */
   static const size_t kMAX_NAME_LENGTH; /* Maximum length for a valid name */
   static const size_t kMAX_DESC_LENGTH; /* Maximum length for a valid desc */
   static const uint   kMAX_VALUE;       /* Maximum assigned point value */
@@ -131,6 +137,10 @@ public:
 
   std::string getName();
 
+  Element getPrimary();
+
+  Element getSecondary();
+
   Sound* getSoundEffect();
 
   ActionScope getScope();
@@ -151,13 +161,17 @@ public:
 
   bool setName(const std::string &new_name);
 
-  void setSoundEffect(const Sound* new_sound_effect);
+  void setPrimary(const Element &new_element);
+
+  void setSecondary(const Element &new_element);
+
+  bool setSoundEffect(const Sound* new_sound_effect);
 
   void setScope(const ActionScope &new_scope);
 
   void setThumbnail(const Frame* new_thumbnail);
 
-  bool setMessage(const std::string &message);
+  bool setMessage(const std::string &new_message);
 
   bool setValue(const uint &new_value);
 };

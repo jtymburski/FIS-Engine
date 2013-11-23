@@ -426,7 +426,7 @@ const boost::unordered_map<Infliction,const char*> inflictonToString
   (ALLATKBUFF, "All Attack Buff")
   (ALLDEFBUFF, "All Defense Buff")
   (PHYBUFF, "Physical Buff")
-  (THRATK, "Thermal Buff")
+  (THRBUFF, "Thermal Buff")
   (POLBUFF, "Polar Buff")
   (PRIBUFF, "Primal Buff")
   (CHGBUFF, "Charged Buff")

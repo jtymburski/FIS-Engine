@@ -19,12 +19,13 @@
 /*=============================================================================
  * CONSTANTS
  *============================================================================*/
-const size_t Skill::kMAX_ACTIONS =   10;
-const uint Skill::kMAX_COOLDOWN  =   10;
-const uint Skill::kMAX_COST      = 5000;
-const size_t kMAX_NAME_LENGTH    =   70;
-const size_t kMAX_DESC_LENGTH    =  500;
-const uint Skill::kMAX_VALUE     =   10;
+const size_t Skill::kMAX_ACTIONS       =   10;
+const uint   Skill::kMAX_COOLDOWN      =   10;
+const uint   Skill::kMAX_COST          = 5000;
+const size_t Skill::kMAX_MESG_LENGTH   =   70;
+const size_t Skill::kMAX_NAME_LENGTH   =   60;
+const size_t Skill::kMAX_DESC_LENGTH   =  500;
+const uint   Skill::kMAX_VALUE         =   10;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -51,6 +52,19 @@ Skill::Skill(const std::string &name)
   setName(name);
 }
 
+Skill::Skill(const std::string &name, const ActionScope &skill_scope,
+	         const Action* effects, const float &chance)
+{
+  classSetup();
+  setName(name);
+  setScope(skill_scope);
+
+  if (addAction(effect, chance))
+    flags |= SkillFlags::VALID;
+
+  flagSetup();
+}
+
 /*
  * Description:
  *
@@ -63,7 +77,10 @@ Skill::Skill(const std::string &name, const ActionScope &skill_scope,
   classSetup();
   setName(name);
   setScope(skill_scope);
-  addActions(effects, chances);
+
+  if (addActions(effects, chances))
+    flags |= SkillFlags::VALID;
+
   flagSetup();
 }
 
@@ -106,7 +123,27 @@ void Skill::classSetup()
  */
 void Skill::flagSetup()
 {
+  //TODO: Offensive/Defensive/Neutral categories?
 
+  for (auto it = effects.begin(); it != effects.end(); ++it)
+  {
+    ActionFlags &action_flags = (*it)->getFlags();
+
+    if ((action_flags & ActionFlags::ALTER) == ActionFlags::ALTER)
+      flags |= SkillFlags::ALTERING;
+
+    if ((action_flags & ActionFlags::INFLICT) == ActionFlags::INFLICT)
+      flags |= SkillFlags::INFLICTING;
+
+    if ((action_flags & ActionFlags::RELIEVE) == ActionFlags::RELIEVE)
+      flags |= SkillFlags::RELIEVING;
+
+    if ((action_flags & ActionFlags::REVIVE) == ActionFlags::REVIVE)
+      flags |= SkillFlags::REVIVING;
+
+    if ((action_flags & ActionFlags:ASSIGN) == ActionFlags::ASSIGN)
+      flags |= SkillFlags::ASSIGNING;
+  }
 }
 
 /*=============================================================================
@@ -191,17 +228,17 @@ float Skill::getChance(const uint &index)
   return 0;
 }
 
-std::vector<float> getChances()
+std::vector<float> Skill::getChances()
 {
   return chances;
 }
 
-std::string getDescription()
+std::string Skill::getDescription()
 {
   return description;
 }
 
-Action* getEffect(const uint &index)
+Action* Skill::getEffect(const uint &index)
 {
   if (index < effects.size())
     return effects[index];
@@ -209,92 +246,156 @@ Action* getEffect(const uint &index)
   return nullptr;
 }
 
-std::vector<Action*> getEffects()
+std::vector<Action*> Skill::getEffects()
 {
   return effects;
 }
 
-SkillFlags getFlags()
+SkillFlags Skill::getFlags()
 {
   return flags;
 }
 
-std::string getName()
+std::string Skill::getName()
 {
   return name;
 }
 
-Sound* getSoundEffect()
+Element Skill::getPrimary()
+{
+  return primary;
+}
+
+Element Skill::getSecondary()
+{
+  return secondary;
+}
+
+Sound* Skill::getSoundEffect()
 {
   return sound_effect;
 }
 
-ActionScope getScope()
+ActionScope Skill::getScope()
 {
   return scope;
 }
 
-Frame* getThumbnail()
+Frame* Skill::getThumbnail()
 {
   return thumbnail;
 }
 
-std::string getMessage()
+std::string Skill::getMessage()
 {
   return message;
 }
 
-uint getValue()
+uint Skill::getValue()
 {
   return value;
 }
 
-bool setAnimation(const Sprite* new_animation)
+bool Skill::setAnimation(const Sprite* new_animation)
 {
-  if (new_animation )
+  if (new_animation != nullptr)
+  {
+    animation = new_animation;
+
+    return true;
+  }
+
+  animation = nullptr;
+
+  return false;
 }
 
-bool setCooldown(const uint &new_value)
+bool Skill::setCooldown(const uint &new_value)
 {
+  if (new_value < kMAX_COOLDOWN)
+  {
+    cooldown = new_value;
 
+    return true;
+  }
+
+  return false;
 }
 
-void setChance(const float &new_chance)
+void Skill::setChance(const float &new_chance)
 {
+  chance = new_chance;
 
+  if (chance > 1)
+    chance = 1;
 }
 
-bool setDescription(const std::string &new_description)
+bool Skill::setDescription(const std::string &new_description)
 {
+  if (new_description.size() < kMAX_DESC_LENGTH)
+  {
+    description = new_description;
 
+    return true;
+  }
+
+  return false;
 }
 
-bool setName(const std::string &new_name)
+bool Skill::setName(const std::string &new_name)
 {
+  if (new_name.size() < kMAX_NAME_LENGTH)
+  {
+    name = new_name;
+    return true;
+  }
 
+  return false;
 }
 
-void setSoundEffect(const Sound* new_sound_effect)
+//TODO
+bool Skill::setSoundEffect(const Sound* new_sound_effect)
 {
+  if (new_sound_effect != nullptr)
+  {
+    sound_effect = new_sound_effect;
 
+    return true;
+  }
+  
+  return false;
 }
 
-void setScope(const ActionScope &new_scope)
+void Skill::setScope(const ActionScope &new_scope)
 {
-
+  scope = new_scope;
 }
 
-void setThumbnail(const Frame* new_thumbnail)
+void Skill::setThumbnail(const Frame* new_thumbnail)
 {
-
+  thumbnail = new_thumbnail;
 }
 
-bool setMessage(const std::string &message)
+bool Skill::setMessage(const std::string &new_message)
 {
+  if (new_message.size() < kMAX_MESG_LENGTH)
+  {
+    message = new_message;
+    
+    return true;
+  }
 
+  return false;
 }
 
-bool setValue(const uint &new_value)
+bool Skill::setValue(const uint &new_value)
 {
+  if (new_value < kMAX_VALUE)
+  {
+    value = new_value;
 
+    return true;
+  }
+
+  return false;
 }
