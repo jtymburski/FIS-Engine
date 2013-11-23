@@ -358,6 +358,11 @@ int Action::getBase()
   return base;
 }
 
+ActionFlags Action::getFlags()
+{
+  return action_flags;
+}
+
 int Action::getID()
 {
   return id;

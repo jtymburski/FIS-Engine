@@ -167,7 +167,7 @@ public:
 
   int getBase();
 
-  ActionFlags getActionFlags();
+  ActionFlags getFlags();
 
   int getID();
 
