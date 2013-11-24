@@ -6,20 +6,15 @@
  *              only handles playing a single sound at one time. If you click
  *              play while it's still playing, it will stop the previous
  *              execution. However, if you create multiple sound files, SDL 
- *              allows up to 8 files being mixed together at once before
+ *              allows up to x files being mixed together at once before
  *              returning the channel full error.
  *
  * TODO:
- *  - Add sound adjustments for modifying the volume this individual sound
- *    plays at.
- *  - Music vs. samples. Set this up since music will always be the backend
- *    and can be globally called to stop.
  ******************************************************************************/
 #include "Sound.h"
 
 /* Constant Implementation - see header file for descriptions */
 const short Sound::kINFINITE_LOOP = -1;
-const short Sound::kUNSET_CHANNEL = -1;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -33,32 +28,27 @@ const short Sound::kUNSET_CHANNEL = -1;
  */
 Sound::Sound()
 {
-  channel = kUNSET_CHANNEL;
-  path.clear();
-  sound = NULL;
-  sound_set = false;
-
-  setPlayCount(0);
+  channel = SoundChannels::UNASSIGNED;
+  fade_time = 0;
+  loop_count = 0;
+  raw_data = NULL;
+  volume = MIX_MAX_VOLUME;
 }
 
 /*
  * Description: Constructor function - Sets up a sound with the path given
- *              and with a loop count to play it for.
+ *              and with a loop count to play it for and the channel to play on.
  *
- * Inputs: std::string path - the path to the audio file (in WAV)
- *         int loop_count: the number of time you want the audio to loop.
- *                         Default is 0. If a 0 is used, it will automatically
- *                         default to 1 loop.
+ * Inputs: SoundChannels channel - the channel reference to play on
+ *         std::string path - the path to the audio file
+ *         int loop_count - the number of time you want the audio to loop.
+ *                          Default is 1 time repeat.
  */
-Sound::Sound(std::string path, int loop_count)
+Sound::Sound(SoundChannels channel, std::string path, int loop_count) : Sound()
 {
-  channel = kUNSET_CHANNEL;
-  path.clear();
-  sound = NULL;
-  sound_set = false;
-
+  setChannel(channel);
   setSoundFile(path);
-  setPlayCount(loop_count);
+  setLoopCount(loop_count);
 }
 
 /* 
@@ -74,15 +64,64 @@ Sound::~Sound()
  *============================================================================*/
 
 /*
+ * Description: This function handles a rudimentary cross-fading between two
+ *              channels. This takes a channel ID and tries to play this sound
+ *              first and if successful, begins to stop the given channel ID. 
+ *              This uses the fade time from the new class fading in to fade out
+ *              the other class.
+ *
+ * Inputs: int channel - the channel ID, used for sound mixing
+ * Output: none
+ */
+void Sound::crossFade(int channel)
+{
+  /* Attempt to play the current audio file */
+  bool success = play();
+  
+  /* If successful, begin to transition the passed in function out */
+  if(success)
+  {
+    if(fade_time > 0)
+      Mix_FadeOutChannel(channel, fade_time);
+    else
+      Mix_HaltChannel(channel);
+  }
+}
+  
+/*
  * Description: Returns the channel that the sound file is currently playing on.
- *              This will be the unset channel value (-1) if it's not playing.
+ *              This will be the UNASSIGNED mode if it's unset.
+ *
+ * Inputs: none
+ * Output: SoundChannels - the channel enum indicator
+ */
+SoundChannels Sound::getChannel()
+{
+  return channel;
+}
+
+/*
+ * Description: Returns the channel that the sound file is currently playing on.
+ *              This will be the unset channel value (-1) if it's unset.
  *
  * Inputs: none
  * Output: int - the channel integer
  */
-int Sound::getChannel()
+int Sound::getChannelInt()
 {
-  return channel;
+  return static_cast<int>(channel);
+}
+
+/*
+ * Description: Returns the time to fade in or out this sound class when play
+ *              or stop is called. The time is stored in milliseconds.
+ *
+ * Inputs: none
+ * Output: uint32_t - the fade time, in milliseconds
+ */
+uint32_t Sound::getFadeTime()
+{
+  return fade_time;
 }
 
 /* 
@@ -93,100 +132,102 @@ int Sound::getChannel()
  * Inputs: none
  * Output: int - returns the number of times the audio will play for
  */
-int Sound::getPlayCount()
+int Sound::getLoopCount()
 {
   if(loop_count == kINFINITE_LOOP)
     return loop_count;
   return loop_count + 1;
 }
 
-/* 
- * Description: Play slot. This handles playing the sound file that was
- *              configured in this class. It will use the number of loops
- *              setup as well as the file. If the file was playing, it
- *              will stop it before. Therefore, it will act as a reset as
- *              well. If errors occur, they are pushed through qDebug()
- *              to the terminal.
+/*
+ * Description: Returns the raw chunk data of the loaded audio file. This
+ *              returns NULL if no audio file is set.
  *
  * Inputs: none
- * Output: none
+ * Output: Mix_Chunk* - the chunk struct for the audio file
  */
-void Sound::play()
+Mix_Chunk* Sound::getRawData()
 {
-  /* Ensure the channel is stopped if it was in use */
-  stop();
-
-  /* Attempt to initialize the sound file if it isn't initialized */
-  if(!sound_set && !path.empty())
-    setSoundFile(path);
-
-  /* Only proceed if the sound SDL layer is ready to run */
-  if(sound_set)
-  {
-    /* Try to play on a new channel */
-    channel = Mix_PlayChannel(-1, sound, loop_count);
-    if(channel == kUNSET_CHANNEL)
-      std::cerr << "[WARNING] Unable to play WAV file: " << Mix_GetError()
-                << std::endl;
-  }
+  return raw_data;
 }
 
 /*
- * Description: Plays the internal sound file only once. This is designed as a
- *              fast call and does not save the channel in the class and just
- *              dumps the sound file on the first channel available. If fails, 
- *              -1 is returned. Note that this does not attempt to check for
- *              errors or set the sound file if possible.
+ * Description: Returns the volume that the chunk is currently set at.
+ *              This is a number from 0 -> 128, as defined by SDL.
  *
  * Inputs: none
- * Output: int - channel that is playing. -1 if invalid
+ * Output: uint8_t - the volume integer.
  */
-int Sound::playOnce()
+uint8_t Sound::getVolume()
 {
-  if(sound_set)
-  {
-    return Mix_PlayChannel(-1, sound, 0);
-  }
-  
-  return -1;
+  return volume;
 }
 
 /* 
- * Description: Sets the sound to be played the next time the play() 
- *              function is called. This tries to open it and if it
- *              fails, it will not be set and the class will be notified
- *              as well as the terminal. If the sound file was set and this
- *              set was unsuccessful, there will be no sound file set anymore.
+ * Description: Play function. This handles playing the sound file that was
+ *              configured in this class. It will use the number of loops
+ *              setup as well as the file. If the file was playing, it
+ *              will stop it before. Therefore, it will act as a reset as
+ *              well. If errors occur, they are pushed through stderr. If fade
+ *              time is greater than 0, it will execute a fade on starting and
+ *              stopping.
  *
- * Inputs: std::string path - the path to the sound to add
- * Output: bool - status if the setting of the sound file was successful
+ * Inputs: bool stop_channel - should the channel be stopped regardless of what
+ *                             is playing.
+ * Output: bool - if the play call was successful
  */
-bool Sound::setSoundFile(std::string path)
+bool Sound::play(bool stop_channel)
 {
-  /* Set the path file first */
-  if(!path.empty())
-    this->path = path;
-
-  /* Next, attempt and load the file */
-  if(!this->path.empty())
+  bool success = false;
+  
+  /* Only proceed if the sound chunk is set and if the stop was successful */
+  if(raw_data != NULL && channel != SoundChannels::UNASSIGNED 
+                      && stop(stop_channel))
   {
-    unsetSoundFile(false);
-    sound = Mix_LoadWAV(this->path.c_str());
-
-    /* Determine if the setting of the sound was valid */
-    if(sound == NULL)
-    {
-      std::cerr << "[WARNING] Unable to load WAV file: "
-                << Mix_GetError() << std::endl;
-      return false;
-    }
-
-    sound_set = true;
-    return true;
+    /* Try to play on a new channel */
+    int play_channel = -1;
+    if(fade_time > 0)
+      play_channel = 
+            Mix_FadeInChannel(getChannelInt(), raw_data, loop_count, fade_time);
+    else
+      play_channel = Mix_PlayChannel(getChannelInt(), raw_data, loop_count);
+      
+    /* Check the status of the played channel */
+    if(play_channel < 0)
+      std::cerr << "[WARNING] Unable to play sound file: " << Mix_GetError()
+                << std::endl;
+    else
+      success = true;
   }
+  
+  return success;
+}
 
-  std::cerr << "[WARNING] Unable to load empty WAV file path." << std::endl;
-  return false;
+/*
+ * Description: Sets the channel that the audio file should be played on. If 
+ *              the sound is currently playing, stop it first.
+ *
+ * Inputs: SoundChannels channel - the channel enumerator for the allocated 
+ *                                 channels.
+ * Output: none
+ */
+void Sound::setChannel(SoundChannels channel)
+{
+  if(stop(false))
+    this->channel = channel;
+}
+
+/*
+ * Description: Sets the fade time for starting and stopping the sound. This is
+ *              a value in milliseconds. If set to 0, there will be no fade
+ *              effect.
+ *
+ * Inputs: uint32_t time - the time in milliseconds
+ * Output: none
+ */
+void Sound::setFadeTime(uint32_t time)
+{
+  fade_time = time;
 }
 
 /* 
@@ -201,18 +242,14 @@ bool Sound::setSoundFile(std::string path)
  * Output: bool - status if play count set was successful. If it isn't, it 
  *                will default to 1 play.
  */
-bool Sound::setPlayCount(int play_count)
+void Sound::setLoopCount(int loop_count)
 {
-  if(play_count < 0)
-    loop_count = kINFINITE_LOOP;
-  else if(play_count > 0)
-    loop_count = play_count - 1;
+  if(loop_count < 0)
+    this->loop_count = kINFINITE_LOOP;
+  else if(loop_count > 0)
+    this->loop_count = loop_count - 1;
   else
-  {
     loop_count = 0;
-    return false;
-  }
-  return true;
 }
 
 /*
@@ -222,27 +259,101 @@ bool Sound::setPlayCount(int play_count)
  * Inputs: none
  * Output: none
  */
-void Sound::setPlayForever()
+void Sound::setLoopForever()
 {
   loop_count = kINFINITE_LOOP;
 }
 
 /* 
- * Description: Stop slot. This handles stopping the sound file that was
- *              configured in this class. It will first check if the channel
- *              integer is set and if it isn't, it will halt the channel.
- *              Note: if the channel is already stopped, due to the number
- *              of loops expiring, this function won't fail and it will
- *              just notify the class that the audio has been stopped.
+ * Description: Sets the sound to be played the next time the play() 
+ *              function is called. This tries to open it and if it
+ *              fails, it will not be set and the class will be notified
+ *              as well as the terminal. If the sound file was set and this
+ *              set was unsuccessful, there will be no sound file set anymore.
  *
- * Inputs: none
+ * Inputs: std::string path - the path to the sound to add
+ * Output: bool - status if the setting of the sound file was successful
+ */
+bool Sound::setSoundFile(std::string path)
+{
+  /* Attempt and load the file */
+  if(!path.empty())
+  {
+    Mix_Chunk* sound = Mix_LoadWAV(path.c_str());
+
+    /* Determine if the setting of the sound was valid */
+    if(sound == NULL)
+    {
+      std::cerr << "[WARNING] Unable to load WAV file: "
+                << Mix_GetError() << std::endl;
+      return false;
+    }
+    
+    /* Unset the old and set the new data */
+    unsetSoundFile();
+    raw_data = sound;
+    Mix_VolumeChunk(raw_data, volume);
+    return true;
+  }
+
+  std::cerr << "[WARNING] Unable to load empty WAV file path." << std::endl;
+  return false;
+}
+
+/*
+ * Description: Sets the volume to play the mixed sound file at. This is a
+ *              constant integer between 0 and 128. This can be set while the
+ *              file is being played without stopping it.
+ *
+ * Inputs: uint8_t volume - the volume integer to set it to
  * Output: none
  */
-void Sound::stop()
+void Sound::setVolume(uint8_t volume)
 {
-  if(channel != kUNSET_CHANNEL && Mix_GetChunk(channel) == sound)
-    Mix_HaltChannel(channel);
-  channel = kUNSET_CHANNEL;
+  if(volume > MIX_MAX_VOLUME)
+    this->volume = MIX_MAX_VOLUME;
+  this->volume = volume;
+  
+  /* Change the chunk volume related to this file */
+  if(raw_data != NULL)
+    Mix_VolumeChunk(raw_data, volume);
+}
+
+/* 
+ * Description: Stop function. This handles stopping the sound file that was
+ *              configured in this class. It will fade out the sound file if
+ *              the fade time is greater than 0. If the input is true, it will
+ *              halt the channel regardless of if this class has the chunk
+ *              that is playing on it.
+ *
+ * Inputs: bool stop_channel - if the channel should be stopped regardless if 
+ *                             this class is the chunk that's playing
+ * Output: bool - status if the stop occurred
+ */
+bool Sound::stop(bool stop_channel)
+{
+  if(channel != SoundChannels::UNASSIGNED)
+  {
+    int channel_id = getChannelInt();
+    
+    /* Stop the playback, if relevant */
+    if(stop_channel || Mix_GetChunk(channel_id) == raw_data)
+    {
+      if(fade_time > 0)
+        Mix_FadeOutChannel(channel_id, fade_time);
+      else
+        Mix_HaltChannel(channel_id);
+    }
+    
+    /* Check the status of the playing */
+    if(!Mix_Playing(channel_id) || 
+       Mix_FadingChannel(channel_id) == MIX_FADING_OUT || 
+       Mix_FadingChannel(channel_id) == MIX_FADING_IN)
+      return true;
+    return false;
+  }
+  
+  return true;
 }
 
 /* 
@@ -255,20 +366,13 @@ void Sound::stop()
  * Inputs: bool clear_path - clear the path stored in the class as well
  * Output: none
  */
-void Sound::unsetSoundFile(bool clear_path)
+void Sound::unsetSoundFile()
 {
-  stop();
+  /* Just stop this class, if it's the playing one */
+  stop(false);
   
   /* Free the sound chunk */
-  if(sound_set)
-  {
-    Mix_FreeChunk(sound);
-    sound_set = false;
-  }
-
-  /* Clears the path, if asked */
-  if(clear_path)
-    path.clear();
-  
-  sound = NULL;
+  if(raw_data != NULL)
+    Mix_FreeChunk(raw_data);
+  raw_data = NULL;
 }
