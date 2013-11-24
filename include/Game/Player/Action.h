@@ -72,7 +72,7 @@
 #include <string>  /* std::stoi */
 #include <vector>
 
-#include "EnumDb.cc"
+#include "EnumDb.h"
 #include "EnumFlags.h"
 #include "Helpers.h"
 

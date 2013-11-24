@@ -14,6 +14,7 @@ endif
 
 CFLAGS = -c -std=c++11 -Wall -Wextra
 INCLUDES = -Iinclude
+
 LIBS += -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf
 # WINDOWS only?! Helps the cmd not appear when running the app separately.
 # This stops all output to the command line though...
@@ -34,9 +35,9 @@ else
 endif
 
 SOURCES=src/Application.cc \
-        src/EnumDb.cc \
         src/Frame.cc \
         src/Game/Game.cc \
+        src/Game/Player/Action.cc \
         src/Helpers.cc \
         src/Main.cc \
         src/Music.cc \
