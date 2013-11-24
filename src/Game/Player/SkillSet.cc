@@ -7,7 +7,7 @@
 * Notes
 * -----
 *
-* [1]:
+* [1]: A SkillSet may also have individually enabled/disabled Skills.
 *
 * See .h file for TODOs
 *******************************************************************************/
@@ -107,9 +107,15 @@ std::deque<SkillSetElements> SkillSet::calcUniques(const std::deque<SkillSetElem
    
 void SkillSet::cleanUp()
 {
-  // Sort skill elements by ID
-  // Use std::unique to only keep unique elements
-  // Remove invalid skills
+  sort(SkillSorts:ID);
+
+  std::deque<SkillListElement> unique_elements = calcUniques(skill_elements);
+
+  for (auto it = unique_elements.begin(); it != unique_elements.begin(); ++it)
+    if (!(*it).skill->isValid())
+      unique_elements.erase(it);
+
+  skill_elements = unique_elements;
 }
 
 void SkillSet::copySelf(const SkillSet &source)
@@ -229,8 +235,116 @@ bool SkillSet::removeSkill(const uint &id)
   return !(index == -1);
 }
 
-//TODO
-// sort()
+void SkillSet::sort(const SkillSorts &sort_type, bool ascending)
+{
+  if (sort_type == SkillSorts::COOLDOWN)
+  {
+    std::sort(skill_elements.begin(), skill_elements.end(), 
+    	      [](SkillSet a, SkillSet b)
+    	      {
+    	        if (ascending)
+    	          return a.skill->getCooldown() < b.skill->getCooldown();
+
+    	        return a.skill->getCooldown() > b.skill->getCooldown();
+    	      });
+  }
+  else if (sort_type == SkillSorts::COST)
+  {
+    std::sort(skill_elements.begin(), skill_elements.end(),
+    	      [](SkillSet a, SkillSet b)
+    	      {
+                if (ascending)
+                  return a.skill->getCost() < b.skill->getCost();
+
+                return a.skill->getCost() > b.skill->getCost();
+    	      });
+  }
+  else if (sort_type == SkillSorts::ID)
+  {
+    std::sort(skill_elements.begin(), skill_elements.end(),
+    	      [](SkillSet a, SkillSet b)
+    	      {
+                if (ascending)
+                  return a.skill->getID() < b.skill->getID();
+
+                return a.skill->getID() > b.skill->getID();
+    	      });
+  }
+  else if (sort_type == SkillSorts::NAME)
+  {
+    std::sort(skill_elements.begin(), skill_elements.end(),
+    	      [](SkillSet a, SkillSet b)
+    	      {
+                if (ascending)
+                  return a.skill->getName() < b.skill->getName();
+
+                return a.skill->getName() > b.skill->getName();
+    	      });
+  }
+  else if (sort_type == SkillSorts::PRIMARY)
+  {
+    std::sort(skill_elements.begin(), skill_elements.end(),
+    	      [](SkillSet a, SkillSet b)
+    	      {
+                if (ascending)
+                {
+                  return static_cast<uint>(a.skill->getPrimary()) < 
+                         static_cast<uint>(b.skill->getPrimary());
+                }
+
+                return static_cast<uint>(a.skill->getPrimary()) > 
+                       static_cast<uint>(b.skill->getPrimary())
+    	      });
+  }
+  else if (sort_type == SkillSorts::SECONDARY)
+  {
+    std::sort(skill_elements.begin(), skill_elements.end(),
+    	      [](SkillSet a, SkillSet b)
+    	      {
+                if (ascending)
+                {
+                  return static_cast<uint>(a.skill->getSecondary()) < 
+                         static_cast<uint>(b.skill->getSecondary());
+                }
+
+                return static_cast<uint>(a.skill->getSecondary()) > 
+                       static_cast<uint>(b.skill->getSecondary())
+    	      });
+  }
+  else if (sort_type == SkillSorts::POINT_VALUE)
+  {
+    std::sort(skill_elements.begin(), skill_elements.end(),
+    	      [](SkillSet a, SkillSet b)
+    	      {
+                if (ascending)
+                  return a.skill->getValue() < b.skill->getValue();
+
+                return a.skill->getValue() > b.skill->getValue();
+    	      });
+  }
+  else if (sort_type == SkillSorts::LEVEL_REQ)
+  {
+    std::sort(skill_elements.begin(), skill_elements.end(),
+    	      [](SkillSet a, SkillSet b)
+    	      {
+                if (ascending)
+                  return a.level_required < b.level_required;
+
+                return a.level_required > b.level_required;
+    	      });
+  }
+  else if (sort_type == SkillSorts::ENABLED)
+  {
+    std::sort(skill_elements.begin(), skill_elements.end(),
+    	      [](SkillSet a, SkillSet b)
+    	      {
+                if (ascending)
+                  return a.enabled < b.enabled;
+
+                return a.enabled > b.enabled;
+    	      });
+  }
+}
 
 std::vector<bool> SkillSet::getAllEnabled()
 {

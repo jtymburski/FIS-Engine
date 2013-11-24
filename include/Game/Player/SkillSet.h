@@ -29,6 +29,8 @@
 #include <vector>
 
 #include "Game/Player/Skill.h"
+#include "EnumDb.cc"
+#include "Helpers.h"
 
 struct SkillSetElement
 {
@@ -53,14 +55,14 @@ public:
 
   ~SkillSet();
 
+private:
+
+  std::deque<SkillSetElement> skill_elements;
+
   /* ------------ Constants --------------- */
   const bool   kENABLED_DEFAULT;
   const size_t kMAX_SKILLS;
   const uint   kMAX_UNLOCK_LEVEL;
-
-private:
-
-  std::deque<SkillSetElement> skill_elements;
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -68,7 +70,7 @@ private:
  private:
    uint calcLowestLevel(const &uint skill_id);
 
-   static uint calcUniques(const std::deque<SkillSetElements> &skill_elements);
+   static uint calcUniques(const std::deque<SkillSetElements> &check_elements);
    
    void cleanUp();
 
@@ -79,14 +81,14 @@ private:
  *============================================================================*/
 public:
 
-  bool addSkill(const Skill* skill, const uint &req_level = 1, 
+  bool addSkill(const Skill* skill, uint &req_level = 1, 
   	            const bool &enabled = true);
 
   bool addSkills(const std::vector<Skill*> skills, 
   	             const std::vector<uint> &req_levels,
   	             const std::vector<bool> &enabled);
 
-  bool addSkills(const std::deque<SkillSetElements> &skill_elements);
+  bool addSkills(const std::deque<SkillSetElements> &new_elements);
 
   void clear();
 
@@ -94,14 +96,15 @@ public:
 
   bool removeSkill(const uint &id);
 
-  //TODO
-  // sort()
+  void sort(const SkillSorts &sort_type, bool ascending = true);
 
   std::vector<bool> getAllEnabled();
 
   std::deque<SkillSetElements> getElements();
 
   bool getEnabled(const uint &index);
+
+  int getIndexOfID(const uint &id);
 
   std::string getName(const uint &index);
 

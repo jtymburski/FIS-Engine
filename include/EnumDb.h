@@ -55,7 +55,10 @@ enum class Infliction : std::uint64_t;
 /* The various types of parties which occur in the game */
 enum class PartyType : std::uint8_t;
 
-/* Description: The ranks a Person may hold */
+/* The ranks a Person may hold */
 enum class Ranks : std::uint16_t;
+
+/* The ways in which Skills can be sorted */
+enum class SkillSorts : std::uint32_t;
 
 #endif // ENUMDB_H
