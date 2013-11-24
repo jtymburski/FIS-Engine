@@ -115,7 +115,7 @@ int Helpers::rollXS(const int &x_sides, const int &s_times)
  */
 void Helpers::seed()
 {
-  std::srand(std::time(NULL));
+  std::srand(time(NULL));
 }
 
 /*=============================================================================

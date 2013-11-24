@@ -197,7 +197,7 @@ enum class Direction
  * NIHIL    > FIRE
  * NONELEMENTAL - there is no element
  */
-enum class Element : std::uint
+enum class Element : std::uint32_t
 { 
   PHYSICAL,
   FIRE,
@@ -321,7 +321,7 @@ enum class PartyType : std::uint8_t
 /* 
  * Description: The ranks a Person may hold 
  */
-enum class Ranks : std::uint32_t
+enum class Ranks : std::uint16_t
 { 
   NUBEAR,
   CUB,

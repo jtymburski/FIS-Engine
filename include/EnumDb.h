@@ -38,7 +38,7 @@ enum class DialogCategory;
 enum class Direction;
 
 /* Elements of the Game. Elements have weaknesses and strengths */
-enum class Element : std::uint8_t;
+enum class Element : std::uint32_t;
 
 /*  Slots which equipment can fit into */
 enum class EquipmentSlots : std::uint8_t;
