@@ -115,7 +115,7 @@ int Helpers::rollXS(const int &x_sides, const int &s_times)
  */
 void Helpers::seed()
 {
-  srand(time(NULL));
+  std::srand(std::time(NULL));
 }
 
 /*=============================================================================
@@ -158,7 +158,7 @@ std::vector<int> Helpers::buildExponentialTable(const int &min, const int &max,
  *
  * Notes: - This function requires the < and > operators to be overloaded
  *
- * Inputs: T &value - ref to object to be set within a range
+ * Inputs: T &value  - ref to object to be set within a range
  *         size_t &a - ref to one of the boundaries
  *         size_t &b - ref to one of the boundaries
  * Output: T - object after it has been set within the range
