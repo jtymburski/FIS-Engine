@@ -12,7 +12,7 @@ else
 	endif
 endif
 
-CFLAGS = -c -std=c++11 -Wall
+CFLAGS = -c -std=c++11 -Wall -Wextra
 INCLUDES = -Iinclude
 LIBS += -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf
 # WINDOWS only?! Helps the cmd not appear when running the app separately.
