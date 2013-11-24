@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "Frame.h"
+#include "Music.h"
 #include "Options.h"
 #include "Sound.h"
 #include "Text.h"
@@ -40,9 +41,11 @@ private:
   /* The background frame to render */
   Frame background;
   
-  /* Background audio during title screen */
-  Sound background_sound;
-
+  /* Background music during title screen */
+  Music background_music;
+  Sound test1;
+  Sound test2;
+  
   /* Indication for the title screen menu's position */
   uint8_t cursor_index;
 

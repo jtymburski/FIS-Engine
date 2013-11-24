@@ -39,6 +39,7 @@ SOURCES=src/Application.cc \
         src/Game/Game.cc \
         src/Helpers.cc \
         src/Main.cc \
+        src/Music.cc \
         src/Options.cc \
         src/Sound.cc \
         src/Sprite.cc \

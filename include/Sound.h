@@ -17,6 +17,21 @@
 #include <SDL2/SDL_mixer.h>
 #include <string>
 
+/* Enumerator class for sound */
+enum class SoundChannels : int
+{
+  UNASSIGNED = -1,
+  MUSIC1     = 0,
+  MUSIC2     = 1,
+  WEATHER1   = 2,
+  WEATHER2   = 3,
+  MENUS      = 4,
+  TILES      = 5,
+  THINGS     = 6,
+  SECTORS    = 7,
+  TRIGGERS   = 8
+};
+
 class Sound
 {
 public:
@@ -24,66 +39,83 @@ public:
   Sound();
 
   /* Constructor: Sets up all the pertinent data to create a sound */
-  Sound(std::string path, int loop_count = 0);
+  Sound(SoundChannels channel, std::string path, int loop_count = 0);
 
   /* Destructor function */
   ~Sound();
 
 private:
   /* The channel number the sound will be played on */
-  int channel;
+  SoundChannels channel;
 
+  /* The time to fade the sound in. If 0, no fade */
+  uint32_t fade_time;
+  
   /* The number of times to play the sound. It will be loop_count+1 
    * except for -1, which is infinite loop */
   int loop_count;
 
-  /* The path for the played sound file */
-  std::string path;
-
   /* The raw data of the sound in RAM */
-  Mix_Chunk* sound;
+  Mix_Chunk* raw_data;
 
-  /* If the sound has been set */
-  bool sound_set;
-
+  /* The volume that the chunk will play at */
+  uint8_t volume;
+  
   /* --------------------- CONSTANTS --------------------- */
 private:
   const static short kINFINITE_LOOP; /* Infinite loop special character */
-  const static short kUNSET_CHANNEL; /* Unset channel definition */
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Cross fade the given channel out with the current class in */
+  void crossFade(int channel);
+  
   /* Returns the channel that the music is playing on. Useful for calling mix
    * calls to get feedback on the sound */
-  int getChannel();
+  SoundChannels getChannel();
+  int getChannelInt();
+  
+  /* Returns the time that the chunk will be faded in or out */
+  uint32_t getFadeTime();
   
   /* Returns the loop count, the number of times it will play for */
-  int getPlayCount();
+  int getLoopCount();
 
-  /* Play slot. If sound is set, it will play the sound for the given number
+  /* Returns the raw chunk data, of the loaded sound. NULL if inactive */
+  Mix_Chunk* getRawData();
+  
+  /* Returns the volume of the sound chunk */
+  uint8_t getVolume();
+  
+  /* Play function. If sound is set, it will play the sound for the given number
    * of loops */
-  void play();
+  bool play(bool stop_channel = true);
   
-  /* Plays the stored sound file only once without keeping track of the running
-   * channel. */
-  int playOnce();
+  /* Sets the channel integer to be used for playing the chunk */
+  void setChannel(SoundChannels channel);
   
+  /* Sets the fade time for the sound chunk sequence (in msec) */
+  void setFadeTime(uint32_t time);
+  
+  /* Set the number of times to play the song for. If 0, defaults to 1 */
+  void setLoopCount(int loop_count);
+
+  /* Set the sound to loop infinitely, until stop() is called */
+  void setLoopForever();
+
   /* Trys to set the sound file to the given path */
   bool setSoundFile(std::string path);
   
-  /* Set the number of times to play the song for. If 0, defaults to 1 */
-  bool setPlayCount(int play_count);
-
-  /* Set the sound to loop infinitely, until stop() is called */
-  void setPlayForever();
-
-  /* Stop slot. Will stop the sound, if playing */
-  void stop();
+  /* Sets the volume that the chunk will be played at. */
+  void setVolume(uint8_t volume);
+  
+  /* Stop function. Will stop the sound, if playing */
+  bool stop(bool stop_channel = true);
   
   /* Unset the sound file and frees the memory */
-  void unsetSoundFile(bool clear_path = true);
+  void unsetSoundFile();
 };
 
 #endif // SOUND_H

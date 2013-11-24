@@ -34,11 +34,22 @@ TitleScreen::TitleScreen(Options* running_config)
   system_options = NULL;
 
   /* Sound setup */
-  background_sound.setSoundFile("sound/ambience/background_menu_sound.wav");
-  background_sound.setPlayForever();
-  background_sound.play();
+  background_music.setMusicFile("sound/ambience/background_menu_sound.wav");
+  background_music.setPlayForever();
+  //background_music.play();
+  menu_click_sound.setChannel(SoundChannels::MENUS);
   menu_click_sound.setSoundFile("sound/functional/menu_click.wav");
-  menu_click_sound.setPlayCount(1);
+
+  /* TESTING OF SOUND CHANNELS CROSSFADING */
+  test1.setChannel(SoundChannels::MUSIC1);
+  test1.setSoundFile("sound/1.wav");
+  test1.setLoopForever();
+  test1.setFadeTime(30000);
+  test1.play();
+  test2.setChannel(SoundChannels::MUSIC2);
+  test2.setSoundFile("sound/2.wav");
+  test2.setLoopForever();
+  test2.setFadeTime(30000);
   
   /* Set up the configuration, if applicable */
   setConfiguration(running_config);
@@ -168,8 +179,23 @@ void TitleScreen::keyDownEvent(SDL_Keysym symbol)
   }
   else if(symbol.sym == SDLK_ESCAPE)
   {
-    cursor_index = kNUM_MENU_ITEMS - 1;
-    menu_click_sound.play();
+    if(cursor_index != (kNUM_MENU_ITEMS - 1))
+    {
+      cursor_index = kNUM_MENU_ITEMS - 1;
+      menu_click_sound.play();
+    }
+  }
+  else if(symbol.sym == SDLK_F1)
+  {
+    test2.crossFade(test1.getChannelInt());
+  }
+  else if(symbol.sym == SDLK_F2)
+  {
+    test1.crossFade(test2.getChannelInt());
+  }
+  else if(symbol.sym == SDLK_F3)
+  {
+    test1.setVolume(32);
   }
 }
 
