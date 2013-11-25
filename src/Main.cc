@@ -60,13 +60,30 @@ int main(int argc, char** argv)
   
   TinyXML2::XMLDocument doc;
   TinyXML2::XMLPrinter printer;
-  doc.LoadFile("maps/test_04");
-  doc.Print(&printer); // TODO? How to print.
-  
-  //if(doc.LoadFile("maps/test_04") == TinyXML2::XML_SUCCESS)
-  //{
-  //  std::cout << "XML load was okay.\n";
-  //}
+  if(!doc.LoadFile("maps/test_04"))
+  {
+    /* Node information */
+    std::cout << "XML File Load Successful." << std::endl;
+    TinyXML2::XMLNode* prime_node = doc.FirstChild()->NextSibling();
+    TinyXML2::XMLNode* child_node = prime_node->FirstChild();
+    TinyXML2::XMLNode* child2_node = child_node->FirstChild();
+    std::cout << "Sequence information: " << prime_node->Value() << " " 
+              << child_node->Value() << " " << child2_node->Value()
+              << std::endl;
+              
+    /* Element information */
+    TinyXML2::XMLElement* child_element = child_node->ToElement();
+    TinyXML2::XMLElement* child2_element = child2_node->ToElement();
+    std::cout << "Element: " << child_element->Name() << " \"" 
+              << child_element->GetText() << "\" " << child2_element 
+              << std::endl;
+    
+    /* Attribute information */
+    const TinyXML2::XMLAttribute* child_attribute = 
+                                                child_element->FirstAttribute();
+    std::cout << "Attribute: " << child_attribute->Name() << " " 
+              << child_attribute->Value() << std::endl;
+  }
 
   /* Initialize SDL libraries */
   bool success = initSDL();

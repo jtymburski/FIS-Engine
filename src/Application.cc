@@ -29,6 +29,7 @@ Application::Application()
   
   /* Sets the current mode */
   changeMode(TITLESCREEN);
+  title_screen.enableView(true);
 }
 
 Application::~Application()

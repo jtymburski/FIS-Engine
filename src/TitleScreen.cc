@@ -91,8 +91,8 @@ bool TitleScreen::setMenu(SDL_Renderer* renderer)
 {
   if(system_options != NULL)
   {
-    SDL_Color tinted_color = {20, 153, 78};
-    SDL_Color plain_color = {255, 255, 255};
+    SDL_Color tinted_color = {20, 153, 78, 255};
+    SDL_Color plain_color = {255, 255, 255, 255};
     TTF_Font* new_font = Text::createFont(system_options->getFont(), 
                                           kFONT_SIZE, TTF_STYLE_BOLD);
     if(new_font != NULL)
@@ -176,12 +176,6 @@ TitleScreen::MenuItems TitleScreen::getAction()
   }
   
   return action;
-}
-  
-/* Check if there's an active action */
-bool TitleScreen::isActionOnQueue()
-{
-  return (action != NONE);
 }
   
 /* The key up and down events to be handled by the class */
@@ -301,5 +295,7 @@ bool TitleScreen::update(int cycle_time)
   {
     nav_time = 0;
   }
+  
+  return (action != NONE);
 }
  

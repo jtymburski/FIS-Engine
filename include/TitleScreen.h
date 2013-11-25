@@ -107,9 +107,6 @@ public:
   /* Returns the active action */
   MenuItems getAction();
   
-  /* Check if there's an active action */
-  bool isActionOnQueue();
-  
   /* The key up and down events to be handled by the class */
   void keyDownEvent(SDL_KeyboardEvent event);
   void keyUpEvent(SDL_KeyboardEvent event);
