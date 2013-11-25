@@ -43,14 +43,17 @@ private:
   
   /* Background music during title screen */
   Music background_music;
-  Sound test1;
-  Sound test2;
   
   /* Indication for the title screen menu's position */
   uint8_t cursor_index;
 
   /* The font that is being used throughout the program */
   TTF_Font* font;
+  
+  /* The navigation direction keys indicator */
+  bool nav_down;
+  uint16_t nav_time;
+  bool nav_up;
   
   /* Menu click audio, during selection changes */
   Sound menu_click_sound;
@@ -68,7 +71,8 @@ private:
   /* ------------------ Constants ------------------ */
   const static uint8_t kFONT_SIZE; /* The size of the font for rendering */
   const static std::string kMENU_ITEMS[]; /* The stored menu items */
-  const static short kNUM_MENU_ITEMS;   /* Number of menu items in screen */
+  const static uint16_t kNAV_TIME_LIMIT; /* The key click time */
+  const static uint8_t kNUM_MENU_ITEMS; /* Number of menu items in screen */
   const static uint16_t kTEXT_GAP; /* The gap between the rows of text */
   const static uint16_t kTEXT_MARGIN; /* The margin between the text and edge
                                        * of the screen */
@@ -77,6 +81,12 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Decrements the selected option */
+  void decrementSelected();
+  
+  /* Increments the selected option */
+  void incrementSelected();
+  
   /* Sets the selected item. This gets polled by another class */
   void setAction();
   
@@ -90,6 +100,10 @@ private:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Enables or disables the view. This includes any initialization for before
+   * or after it was visible */
+  void enableView(bool enable);
+  
   /* Returns the active action */
   MenuItems getAction();
   
@@ -97,17 +111,20 @@ public:
   bool isActionOnQueue();
   
   /* The key up and down events to be handled by the class */
-  void keyDownEvent(SDL_Keysym symbol);
-  void keyUpEvent(SDL_Keysym symbol);
+  void keyDownEvent(SDL_KeyboardEvent event);
+  void keyUpEvent(SDL_KeyboardEvent event);
 
   /* Renders the title screen */
   bool render(SDL_Renderer* renderer);
-  
+
   /* Sets the background frames to be rendered */
   bool setBackground(std::string path, SDL_Renderer* renderer);
   
   /* Sets the running configuration, from the options class */
   bool setConfiguration(Options* running_config);
+  
+  /* Updates the title screen. Necessary for visual updates */
+  bool update(int cycle_time);
 };
 
 #endif // TITLESCREEN_H

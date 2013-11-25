@@ -14,7 +14,7 @@
 #include "Music.h"
 
 /* Constant Implementation - see header file for descriptions */
-const short Music::kFADE_TIME = 750;
+const short Music::kFADE_TIME = 5000;
 const short Music::kINFINITE_LOOP = -1;
 
 /*=============================================================================

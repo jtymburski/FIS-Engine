@@ -113,8 +113,8 @@ private:
  *===========================================================================*/
 public:
   /* The key up and down events to be handled by the class */
-  bool keyDownEvent(SDL_Keysym symbol);
-  void keyUpEvent(SDL_Keysym symbol);
+  bool keyDownEvent(SDL_KeyboardEvent event);
+  void keyUpEvent(SDL_KeyboardEvent event);
 
   /* Renders the title screen */
   bool render(SDL_Renderer* renderer);

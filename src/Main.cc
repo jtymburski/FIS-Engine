@@ -6,6 +6,7 @@
  *              necessary subsystems and starts up the application.
  ******************************************************************************/
 #include "Application.h"
+#include "TinyXML.h"
 
 bool initSDL()
 {
@@ -51,9 +52,22 @@ bool initSDL()
 
 int main(int argc, char** argv)
 {
+  (void)argc;
+  (void)argv;
+  
   /* The initial game seeding - for random number generation */
   Helpers::seed();
   
+  TinyXML2::XMLDocument doc;
+  TinyXML2::XMLPrinter printer;
+  doc.LoadFile("maps/test_04");
+  doc.Print(&printer); // TODO? How to print.
+  
+  //if(doc.LoadFile("maps/test_04") == TinyXML2::XML_SUCCESS)
+  //{
+  //  std::cout << "XML load was okay.\n";
+  //}
+
   /* Initialize SDL libraries */
   bool success = initSDL();
   

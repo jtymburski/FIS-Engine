@@ -45,6 +45,7 @@ SOURCES=src/Application.cc \
         src/Sound.cc \
         src/Sprite.cc \
         src/Text.cc \
+        src/TinyXML.cc \
         src/TitleScreen.cc
 
 OBJECTS=$(SOURCES:.cc=.o)

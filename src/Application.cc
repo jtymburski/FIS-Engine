@@ -20,13 +20,15 @@ Application::Application()
 {
   /* Initialize the variables */
   initialized = false;
-  mode = TITLESCREEN;
   renderer = NULL;
   window = NULL;
   
   /* Set the title screen parameters */
   game_handler.setConfiguration(&system_options);
   title_screen.setConfiguration(&system_options);
+  
+  /* Sets the current mode */
+  changeMode(TITLESCREEN);
 }
 
 Application::~Application()
@@ -36,7 +38,7 @@ Application::~Application()
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
-  
+
 /* Change the mode that the application is running */
 bool Application::changeMode(AppMode mode)
 {
@@ -45,8 +47,18 @@ bool Application::changeMode(AppMode mode)
   /* Run logic to determine if mode switch is allowed - currently empty */
   
   /* If allowed, make change */
-  if(allow)
+  if(allow && this->mode != mode)
+  {
+    /* Changes to execute on the views closing */
+    if(this->mode == TITLESCREEN)
+      title_screen.enableView(false);
+    
     this->mode = mode;
+    
+    /* Changes to execute on the views opening */
+    if(this->mode == TITLESCREEN)
+      title_screen.enableView(true);
+  }
     
   return allow;
 }
@@ -66,29 +78,29 @@ void Application::handleEvents()
     /* Otherwise, pass the key down events on to the active view */
     else if(event.type == SDL_KEYDOWN)
     {
-      SDL_Keysym symbol = event.key.keysym;
+      SDL_KeyboardEvent press_event = event.key;
       
       /* Send the key to the relevant view */
       if(mode == TITLESCREEN)
       {
-        title_screen.keyDownEvent(symbol);
+        title_screen.keyDownEvent(press_event);
       }
       else if(mode == GAME)
       {
         /* If the key event returns true, exit the game view */
-        if(game_handler.keyDownEvent(symbol))
+        if(game_handler.keyDownEvent(press_event))
           changeMode(TITLESCREEN);
       }
     }
     else if(event.type == SDL_KEYUP)
     {
-      SDL_Keysym symbol = event.key.keysym;
+      SDL_KeyboardEvent release_event = event.key;
       
       /* Send the key to the relevant view */
       if(mode == TITLESCREEN)
-        title_screen.keyUpEvent(symbol);
+        title_screen.keyUpEvent(release_event);
       else if(mode == GAME)
-        game_handler.keyUpEvent(symbol);
+        game_handler.keyUpEvent(release_event);
     }
   }
 }
@@ -111,9 +123,10 @@ bool Application::updateViews(int cycle_time)
   /* Handle any appropriate actions of the individual views */
   if(mode == TITLESCREEN)
   {
-    /* Check if there is a title screen action */
-    if(title_screen.isActionOnQueue())
+    /* Update the title screen, which returns if an action is available */
+    if(title_screen.update(cycle_time))
     {
+      /* If action is available, get it, and parse it to change the mode */
       TitleScreen::MenuItems action_item = title_screen.getAction();
       if(action_item == TitleScreen::EXIT)
         changeMode(EXIT);

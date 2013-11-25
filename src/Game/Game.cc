@@ -193,20 +193,20 @@ void Game::teleportThing(MapPerson* target, int x, int y, int section_id)
  *===========================================================================*/
 
 /* The key down events to be handled by the class */
-bool Game::keyDownEvent(SDL_Keysym symbol)
+bool Game::keyDownEvent(SDL_KeyboardEvent event)
 {
   /* Exit the game, game has finished processing */
-  if(symbol.sym == SDLK_ESCAPE)
+  if(event.keysym.sym == SDLK_ESCAPE)
   {
     return true;
   }
   /* Switch the view to the map */
-  else if(symbol.sym == SDLK_F1)
+  else if(event.keysym.sym == SDLK_F1)
   {
     // TODO: Change view to map
   }
   /* Switch the view to the battle */
-  else if(symbol.sym == SDLK_F2)
+  else if(event.keysym.sym == SDLK_F2)
   {
     // TODO: Change view to battle
   }
@@ -220,7 +220,7 @@ bool Game::keyDownEvent(SDL_Keysym symbol)
 }
 
 /* The key up events to be handled by the class */
-void Game::keyUpEvent(SDL_Keysym symbol)
+void Game::keyUpEvent(SDL_KeyboardEvent event)
 {
   // TODO: Send up keys to relevant views
 }

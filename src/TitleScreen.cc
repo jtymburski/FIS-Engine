@@ -15,7 +15,8 @@ const uint8_t TitleScreen::kFONT_SIZE = 28;
 const std::string TitleScreen::kMENU_ITEMS[]   = {"Play Game",
                                                   "Options",
                                                   "Exit"};
-const short TitleScreen::kNUM_MENU_ITEMS = 3;
+const uint16_t TitleScreen::kNAV_TIME_LIMIT = 200;
+const uint8_t TitleScreen::kNUM_MENU_ITEMS = 3;
 const uint16_t TitleScreen::kTEXT_GAP = 65;
 const uint16_t TitleScreen::kTEXT_MARGIN = 75;
 
@@ -30,26 +31,17 @@ TitleScreen::TitleScreen(Options* running_config)
   action = NONE;
   cursor_index = 0;
   font = NULL;
+  nav_down = false;
+  nav_time = 0;
+  nav_up = false;
   render_index = 0;
   system_options = NULL;
 
   /* Sound setup */
   background_music.setMusicFile("sound/ambience/background_menu_sound.wav");
   background_music.setPlayForever();
-  //background_music.play();
   menu_click_sound.setChannel(SoundChannels::MENUS);
   menu_click_sound.setSoundFile("sound/functional/menu_click.wav");
-
-  /* TESTING OF SOUND CHANNELS CROSSFADING */
-  test1.setChannel(SoundChannels::MUSIC1);
-  test1.setSoundFile("sound/1.wav");
-  test1.setLoopForever();
-  test1.setFadeTime(30000);
-  test1.play();
-  test2.setChannel(SoundChannels::MUSIC2);
-  test2.setSoundFile("sound/2.wav");
-  test2.setLoopForever();
-  test2.setFadeTime(30000);
   
   /* Set up the configuration, if applicable */
   setConfiguration(running_config);
@@ -58,6 +50,7 @@ TitleScreen::TitleScreen(Options* running_config)
 /* Destructor function */
 TitleScreen::~TitleScreen()
 {
+  background_music.stop(false);
   system_options = NULL;
   unsetMenu();
 }
@@ -66,6 +59,26 @@ TitleScreen::~TitleScreen()
  * PRIVATE FUNCTIONS
  *============================================================================*/
 
+/* Decrements the selected option */
+void TitleScreen::decrementSelected()
+{
+  if(cursor_index == 0)
+    cursor_index = kNUM_MENU_ITEMS;
+  cursor_index--;
+  
+  menu_click_sound.play();
+}
+  
+/* Increments the selected option */
+void TitleScreen::incrementSelected()
+{
+  cursor_index++;
+  if(cursor_index == kNUM_MENU_ITEMS)
+    cursor_index = 0;
+    
+  menu_click_sound.play();
+}
+  
 /* Sets the selected item. This gets polled by another class */
 void TitleScreen::setAction()
 {
@@ -136,6 +149,22 @@ void TitleScreen::unsetMenu()
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
+/* Enables or disables the view. This includes any initialization for before
+ * or after it was visible */
+void TitleScreen::enableView(bool enable)
+{
+  /* Enables all relevant control for the view */
+  if(enable)
+  {
+    background_music.play();
+  }
+  /* Disables all relevant control for the view */
+  else
+  {
+    background_music.stop();
+  }
+}
+ 
 /* Returns the active action */
 TitleScreen::MenuItems TitleScreen::getAction()
 {
@@ -157,27 +186,23 @@ bool TitleScreen::isActionOnQueue()
   
 /* The key up and down events to be handled by the class */
 /* The key down event handler */
-void TitleScreen::keyDownEvent(SDL_Keysym symbol)
+void TitleScreen::keyDownEvent(SDL_KeyboardEvent event)
 {
-  if(symbol.sym == SDLK_DOWN)
+  if(event.keysym.sym == SDLK_DOWN && event.repeat == 0)
   {
-    cursor_index++;
-    if(cursor_index == kNUM_MENU_ITEMS)
-      cursor_index = 0;
-    menu_click_sound.play();
+    incrementSelected();
+    nav_down = true;
   }
-  else if(symbol.sym == SDLK_UP)
+  else if(event.keysym.sym == SDLK_UP && event.repeat == 0)
   {
-    if(cursor_index == 0)
-      cursor_index = kNUM_MENU_ITEMS;
-    cursor_index--;
-    menu_click_sound.play();
+    decrementSelected();
+    nav_up = true;
   }
-  else if(symbol.sym == SDLK_RETURN)
+  else if(event.keysym.sym == SDLK_RETURN)
   {
     setAction();
   }
-  else if(symbol.sym == SDLK_ESCAPE)
+  else if(event.keysym.sym == SDLK_ESCAPE)
   {
     if(cursor_index != (kNUM_MENU_ITEMS - 1))
     {
@@ -185,23 +210,19 @@ void TitleScreen::keyDownEvent(SDL_Keysym symbol)
       menu_click_sound.play();
     }
   }
-  else if(symbol.sym == SDLK_F1)
-  {
-    test2.crossFade(test1.getChannelInt());
-  }
-  else if(symbol.sym == SDLK_F2)
-  {
-    test1.crossFade(test2.getChannelInt());
-  }
-  else if(symbol.sym == SDLK_F3)
-  {
-    test1.setVolume(32);
-  }
 }
 
 /* The key up event handler */
-void TitleScreen::keyUpEvent(SDL_Keysym symbol)
+void TitleScreen::keyUpEvent(SDL_KeyboardEvent event)
 {
+  if(event.keysym.sym == SDLK_DOWN)
+  {
+    nav_down = false;
+  }
+  else if(event.keysym.sym == SDLK_UP)
+  {
+    nav_up = false;
+  }
 }
 
 /* Renders the title screen */
@@ -250,3 +271,35 @@ bool TitleScreen::setConfiguration(Options* running_config)
   
   return false;
 }
+
+/* Updates the title screen. Necessary for visual updates */
+bool TitleScreen::update(int cycle_time)
+{
+  /* Increment the nav time */
+  nav_time += cycle_time;
+  
+  /* If the down key is pressed and not up */
+  if(nav_down && !nav_up)
+  {
+    if(nav_time >= kNAV_TIME_LIMIT)
+    {
+      incrementSelected();
+      nav_time -= kNAV_TIME_LIMIT;
+    }
+  }
+  /* If the up key is pressed but not down */
+  else if(nav_up && !nav_down)
+  {
+    if(nav_time >= kNAV_TIME_LIMIT)
+    {
+      decrementSelected();
+      nav_time -= kNAV_TIME_LIMIT;
+    }
+  }
+  /* Otherwise, just clear the buffers */
+  else
+  {
+    nav_time = 0;
+  }
+}
+ 
