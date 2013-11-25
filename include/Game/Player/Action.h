@@ -69,6 +69,7 @@
 #define ACTION_H
 
 #include <climits> /* INT_MAX */
+#include <iostream>
 #include <string>  /* std::stoi */
 #include <vector>
 
@@ -135,8 +136,8 @@ private:
   int variance;
 
   /* ------------ Constants --------------- */
-  static const int kDEFAULT_ID;  /* ID for a default Action object */
-  static const char kDELIMITER;  /* The delimiter for string parsing */
+  static const int  kDEFAULT_ID;  /* ID for a default Action object */
+  static const char kDELIMITER;   /* The delimiter for string parsing */
   static const char kDELIMITER_2; /* The secondary delimiter */
 
 /*=============================================================================
@@ -160,6 +161,14 @@ private:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+
+  void print();
+
+  bool actionFlag(ActionFlags test_flag);
+
+  bool atkFlag(IgnoreFlags test_flag);
+
+  bool defFlag(IgnoreFlags test_flag);
 
   Attribute getAttribute();
 

@@ -115,7 +115,7 @@ int Helpers::rollXS(const int &x_sides, const int &s_times)
  */
 void Helpers::seed()
 {
-  std::srand(time(NULL));
+  std::srand(time(0));
 }
 
 /*=============================================================================
@@ -187,6 +187,8 @@ T Helpers::setWithinRange(T &value, const size_t &a, const size_t &b)
  * Example: std::string test = "Hello,sunshine,,what,a,beautiful,day";
  *          std::vector<std::string> temp_list;
  *          split(test, ',', temp_list);
+ * 
+ * Note: Does not give an empty final element.
  *
  * Inputs: const std::string &line - the line to split
  *         char delim - the character delimiter

@@ -46,7 +46,7 @@
 * 1,ALTER,THAG,,,,AMOUNT.50,AMOUNT.15
 * will alter Thermal Aggression of target by 50 +/- 15
 *
-* 1,ALTER,VITA,,PHYSICAL,PHYSICAL.THERMAL,100,AMOUNT.50,AMOUNT.10
+* 1,ALTER,VITA,,PHYSICAL,PHYSICAL.THERMAL,AMOUNT.50,AMOUNT.10
 * will damage target ignoring user's phys. atk and target's phys. and ther. def
 * at 50 +/- 15 points
 *
@@ -94,7 +94,8 @@ Action::Action()
       variance(0)
 {
   action_flags &= static_cast<ActionFlags>(0);
-  action_flags &= static_cast<ActionFlags>(0);
+  ignore_atk   &= static_cast<IgnoreFlags>(0);
+  ignore_def   &= static_cast<IgnoreFlags>(0);
 }
 
 Action::Action(const std::string &raw)
@@ -135,7 +136,9 @@ bool Action::parse(const std::string &raw)
 
   Helpers::split(raw, kDELIMITER, sub_strings);
 
-  if (sub_strings.size() == 8)
+  std::cout << "size is: " << sub_strings.size() << std::endl;
+
+  if (sub_strings.size() == 7 || sub_strings.size() == 8)
   {
   	/* Parse the ID */
     id = std::stoi(sub_strings.at(0));
@@ -145,16 +148,17 @@ bool Action::parse(const std::string &raw)
 
     /* ALTER and ASSIGN keywords relate to attributes */
     if (action_flags == ActionFlags::ALTER || 
-    	action_flags == ActionFlags::ASSIGN)
+       	action_flags == ActionFlags::ASSIGN)
     {
       valid_action &= parseAttribute(sub_strings.at(2));
     }
 
     /* INFLICT and RELIEVE keywords relate to ailments */
     else if (action_flags == ActionFlags::INFLICT || 
-    	     action_flags == ActionFlags::RELIEVE)
+    	       action_flags == ActionFlags::RELIEVE)
     {
       valid_action &= parseAilment(sub_strings.at(2));
+      std::cout << "valid after ailment: " << valid_action << std::endl;
     }
     
     /* Parse min & max durations */
@@ -176,20 +180,35 @@ bool Action::parse(const std::string &raw)
     if (sub_strings.at(5) != "")
       parseIgnoreFlags(ignore_def, sub_strings.at(5));
 
-    /* Parse base change and variance */
-    std::vector<std::string> base_values;
-    std::vector<std::string> variance_values;
-
-    Helpers::split(sub_strings.at(6), kDELIMITER_2, base_values);
-    Helpers::split(sub_strings.at(7), kDELIMITER_2, variance_values);
+    /* Parse base change */
+    if (sub_strings.at(6) != "" && sub_strings.at(7) != "")
+    {
+      std::vector<std::string> base_values;
+      Helpers::split(sub_strings.at(6), kDELIMITER_2, base_values);
     
-    if (base_values.at(0) == "PC")
-      action_flags |= ActionFlags::BASE_PC;
-    if (variance_values.at(0) == "PC")
-      action_flags |= ActionFlags::VARI_PC;
+      if (base_values.at(0) == "PC")
+        action_flags |= ActionFlags::BASE_PC;
+      
+      base = std::stoi(base_values.at(1));
+    }
+ 
+    /* Parse variance [check if size is right - no empty end on split() ] */
+    if (sub_strings.size() == 8 && sub_strings.at(7) != "")
+    {
+      std::vector<std::string> variance_values;
+      Helpers::split(sub_strings.at(7), kDELIMITER_2, variance_values);
 
-    base = std::stoi(base_values.at(1));
-    variance = std::stoi(variance_values.at(1));
+      if (variance_values.at(0) == "PC")
+        action_flags |= ActionFlags::VARI_PC;
+
+      variance = std::stoi(variance_values.at(1));
+    }
+  }
+  else
+  {
+    valid_action = false;
+    std::cerr << "Parsing invalid action: " << raw << std::endl;
+    std::cout << "Parsing invalid action: " << raw << std::endl;
   }
 
   return valid_action;
@@ -342,6 +361,62 @@ bool Action::setDuration(const int &min_value, const int &max_value)
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
+
+void Action::print()
+{
+  std::cout << "Action: " << id << std::endl;
+
+  std::cout << "--- Action Flags --- " << std::endl;
+  std::cout << "ALTER: " << actionFlag(ActionFlags::ALTER) << std::endl;
+  std::cout << "INFLICT: " << actionFlag(ActionFlags::INFLICT) << std::endl;
+  std::cout << "RELIEVE: " << actionFlag(ActionFlags::RELIEVE) << std::endl;
+  std::cout << "ASSIGN: " << actionFlag(ActionFlags::ASSIGN) << std::endl;
+  std::cout << "REVIVE: " << actionFlag(ActionFlags::REVIVE) << std::endl;
+  std::cout << "BASE_PC: " << actionFlag(ActionFlags::BASE_PC) << std::endl;
+  std::cout << "VARI_PC: " << actionFlag(ActionFlags::VARI_PC) << std::endl;
+  std::cout << "VALID: " << actionFlag(ActionFlags::VALID) << std::endl;
+
+  std::cout << "--- Igore Atk Flags --- " << std::endl;
+  std::cout << "PHYS: " << atkFlag(IgnoreFlags::PHYSICAL) << std::endl;
+  std::cout << "THER: " << atkFlag(IgnoreFlags::THERMAL) << std::endl;
+  std::cout << "POLA: " << atkFlag(IgnoreFlags::POLAR) << std::endl;
+  std::cout << "PRIM: " << atkFlag(IgnoreFlags::PRIMAL) << std::endl;
+  std::cout << "CHAR: " << atkFlag(IgnoreFlags::CHARGED) << std::endl;
+  std::cout << "CYBR: " << atkFlag(IgnoreFlags::CYBERNETIC) << std::endl;
+  std::cout << "NIHI: " << atkFlag(IgnoreFlags::NIHIL) << std::endl;
+
+  std::cout << "--- Igore Def Flags --- " << std::endl;
+  std::cout << "PHYS: " << defFlag(IgnoreFlags::PHYSICAL) << std::endl;
+  std::cout << "THER: " << defFlag(IgnoreFlags::THERMAL) << std::endl;
+  std::cout << "POLA: " << defFlag(IgnoreFlags::POLAR) << std::endl;
+  std::cout << "PRIM: " << defFlag(IgnoreFlags::PRIMAL) << std::endl;
+  std::cout << "CHAR: " << defFlag(IgnoreFlags::CHARGED) << std::endl;
+  std::cout << "CYBR: " << defFlag(IgnoreFlags::CYBERNETIC) << std::endl;
+  std::cout << "NIHI: " << defFlag(IgnoreFlags::NIHIL) << std::endl;
+
+  // TODO Print the string of the ailment the action inflicts or relieves 
+
+  std::cout << "Min Duration: " << min_duration << std::endl;
+  std::cout << "Max Duration: " << max_duration << std::endl;
+  std::cout << "Variance: " << variance << std::endl;
+  std::cout << "Base Change: " << base << std::endl;
+  std::cout << std::endl;
+}
+
+bool Action::actionFlag(ActionFlags test_flag)
+{
+  return static_cast<bool>((action_flags & test_flag) == test_flag);
+}
+
+bool Action::atkFlag(IgnoreFlags test_flag)
+{
+  return static_cast<bool>((ignore_atk & test_flag) == test_flag);
+}
+
+bool Action::defFlag(IgnoreFlags test_flag)
+{
+  return static_cast<bool>((ignore_def & test_flag) == test_flag);
+}
 
 Attribute Action::getAttribute()
 {

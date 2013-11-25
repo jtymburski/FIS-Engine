@@ -84,10 +84,10 @@ public:
   int getIndex(const Attribute &stat);
 
   /* Returns the long form name of an attribtue given an enumerated value */
-  std::string getLongName(const Attribute &stat);
+  static std::string getLongName(const Attribute &stat);
 
   /* Returns the short form name of an attribute given an enumerated value */
-  std::string getName(const Attribute &stat);
+  static std::string getName(const Attribute &stat);
 
   /* Methods for returning the value of a stat given either an index, an
      enumerated value, or a string name (short or long) */

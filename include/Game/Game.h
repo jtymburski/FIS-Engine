@@ -19,6 +19,7 @@
 //#include "Game/Player/Player.h"
 //#include "Game/VictoryScreen.h"
 //#include "MathHelper.h"
+#include "Game/Player/Action.h"
 #include "Options.h"
 
 class Game
