@@ -6,6 +6,7 @@
  *              necessary subsystems and starts up the application.
  ******************************************************************************/
 #include "Application.h"
+#include "Helpers.h"
 #include "Md5.h"
 #include "TinyXML.h"
 
@@ -59,6 +60,7 @@ int main(int argc, char** argv)
   /* The initial game seeding - for random number generation */
   Helpers::seed();
   
+  /* Reading XML - testing */
   TinyXML2::XMLDocument doc;
   TinyXML2::XMLPrinter printer;
   if(!doc.LoadFile("maps/test_04"))
@@ -84,11 +86,46 @@ int main(int argc, char** argv)
                                                 child_element->FirstAttribute();
     std::cout << "Attribute: " << child_attribute->Name() << " " 
               << child_attribute->Value() << std::endl;
+    std::cout << "-------------------------------------------------------" 
+              << std::endl;
+    
+    /* Output file information */
+    doc.Print(&printer);
+    std::string output(printer.CStr());
+    std::vector<std::string> output_lines;
+    Helpers::split(output, '\n', output_lines);
+    for(uint16_t i = 0; i < output_lines.size(); i++)
+      std::cout << output_lines[i] << std::endl;
+    std::cout << "-------------------------------------------------------" 
+              << std::endl;
   }
+
+  /* Writing XML - testing */
+  TinyXML2::XMLDocument doc2;
+  TinyXML2::XMLElement* element = doc2.NewElement("game");
+  doc2.InsertEndChild(element);
+  TinyXML2::XMLElement* element2 = doc2.NewElement("battle");
+  element2->SetAttribute("index", 4);
+  //element2->SetValue("This is a fancy config");
+  element->InsertEndChild(element2);
+  element2->InsertEndChild(doc2.NewText("This is a fancy config"));
+  doc2.InsertEndChild(doc2.NewElement("mini"));
+  /* Output file information */
+  TinyXML2::XMLPrinter printer2;
+  doc2.Print(&printer2);
+  std::string output2(printer2.CStr());
+  std::vector<std::string> output2_lines;
+  Helpers::split(output2, '\n', output2_lines);
+  for(uint16_t i = 0; i < output2_lines.size(); i++)
+    std::cout << output2_lines[i] << std::endl;
+  std::cout << "-------------------------------------------------------" 
+            << std::endl;
 
   /* Testing Md5 */
   std::cout << "MD5: " << MD5::compute("Hello sunshine") << std::endl;
   std::cout << "MD5: " << MD5::compute("Sarah Chou") << std::endl;
+  std::cout << "-------------------------------------------------------" 
+            << std::endl;
   
   /* Initialize SDL libraries */
   bool success = initSDL();

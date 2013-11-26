@@ -20,8 +20,9 @@ must not be misrepresented as being the original software.
 3. This notice may not be removed or altered from any source
 distribution.
 
-Modifications:
- - Jordan Tymburski on November 24, 2013 - changed namespace name
+Modifications by Jordan Tymburski:
+ - November 24, 2013: changed namespace name from tinyxml2 to TinyXML2
+ - November 26, 2013: changed printing spaces from 4 to 2
 */
 
 #include "TinyXML.h"
@@ -1837,7 +1838,7 @@ void XMLPrinter::Print( const char* format, ... )
 void XMLPrinter::PrintSpace( int depth )
 {
     for( int i=0; i<depth; ++i ) {
-        Print( "    " );
+        Print( "  " );
     }
 }
 

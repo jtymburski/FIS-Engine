@@ -21,8 +21,9 @@ must not be misrepresented as being the original software.
 3. This notice may not be removed or altered from any source
 distribution.
 
-Modifications:
- - Jordan Tymburski on November 24, 2013 - changed namespace name
+Modifications by Jordan Tymburski:
+ - November 24, 2013: changed namespace name from tinyxml2 to TinyXML2
+ - November 26, 2013: changed printing spaces from 4 to 2
 */
 
 #ifndef TINYXML2_INCLUDED
@@ -144,16 +145,15 @@ class StrPair
 {
 public:
     enum {
-        NEEDS_ENTITY_PROCESSING			= 0x01,
-        NEEDS_NEWLINE_NORMALIZATION		= 0x02,
-        COLLAPSE_WHITESPACE	                = 0x04,
-
-        TEXT_ELEMENT		            	= NEEDS_ENTITY_PROCESSING | NEEDS_NEWLINE_NORMALIZATION,
-        TEXT_ELEMENT_LEAVE_ENTITIES		= NEEDS_NEWLINE_NORMALIZATION,
-        ATTRIBUTE_NAME		            	= 0,
-        ATTRIBUTE_VALUE		            	= NEEDS_ENTITY_PROCESSING | NEEDS_NEWLINE_NORMALIZATION,
-        ATTRIBUTE_VALUE_LEAVE_ENTITIES  	= NEEDS_NEWLINE_NORMALIZATION,
-        COMMENT				        = NEEDS_NEWLINE_NORMALIZATION
+        NEEDS_ENTITY_PROCESSING			   = 0x01,
+        NEEDS_NEWLINE_NORMALIZATION    = 0x02,
+        COLLAPSE_WHITESPACE            = 0x04,
+        TEXT_ELEMENT                   = NEEDS_ENTITY_PROCESSING | NEEDS_NEWLINE_NORMALIZATION,
+        TEXT_ELEMENT_LEAVE_ENTITIES    = NEEDS_NEWLINE_NORMALIZATION,
+        ATTRIBUTE_NAME                 = 0,
+        ATTRIBUTE_VALUE                = NEEDS_ENTITY_PROCESSING | NEEDS_NEWLINE_NORMALIZATION,
+        ATTRIBUTE_VALUE_LEAVE_ENTITIES = NEEDS_NEWLINE_NORMALIZATION,
+        COMMENT                        = NEEDS_NEWLINE_NORMALIZATION
     };
 
     StrPair() : _flags( 0 ), _start( 0 ), _end( 0 ) {}
