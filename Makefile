@@ -41,13 +41,15 @@ SOURCES=src/Application.cc \
         src/Game/Player/Skill.cc \
         src/Helpers.cc \
         src/Main.cc \
+        src/Md5.cc \
         src/Music.cc \
         src/Options.cc \
         src/Sound.cc \
         src/Sprite.cc \
         src/Text.cc \
         src/TinyXML.cc \
-        src/TitleScreen.cc
+        src/TitleScreen.cc \
+        src/XmlData.cc
 
 OBJECTS=$(SOURCES:.cc=.o)
 

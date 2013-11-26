@@ -15,12 +15,13 @@
 #include "Sprite.h"
 
 /* Constant Implementation - see header file for descriptions */
-const short Sprite::kDEFAULT_ANIMATE_TIME = 250;
+const uint16_t Sprite::kDEFAULT_ANIMATE_TIME = 250;
 const float Sprite::kDEFAULT_BRIGHTNESS = 1.0;
 const uint8_t Sprite::kDEFAULT_COLOR = 255;
 const uint8_t Sprite::kDEFAULT_OPACITY = 255;
-const short Sprite::kDOUBLE_DIGITS = 10;
-const short Sprite::kUNSET_ANIMATE_TIME = -1;
+const uint8_t Sprite::kDOUBLE_DIGITS = 10;
+const float Sprite::kMAX_BRIGHTNESS = 2.0;
+const uint16_t Sprite::kUNSET_ANIMATE_TIME = -1;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -637,24 +638,34 @@ bool Sprite::setAtFirst()
 /*
  * Description: Sets the brightness that the entire sprite sequence will be
  *              rendered at. It's range is 0-0.99: darker than default, 1.0: 
- *              default brightness, 1.0+: brighter.
+ *              default brightness, 1.01-2.00: brighter.
  *
  * Inputs: float brightness - the brightness value (0+, 1.0 default)
- * Output: bool - if the set succeeded (brightness in proper range)
+ * Output: bool - if the set was in proper range. If out of range, it gets 
+ *                locked to the correct range. 
  */
 bool Sprite::setBrightness(float brightness)
 {
-  /* Only allow the change if the brightness is a positive number */
-  if(brightness >= 0.0)
+  bool in_limits = true;
+  
+  /* Check to ensure that sprite brightness is within bounds */
+  if(brightness < 0.0)
   {
-    this->brightness = brightness;
-    setColorMod();
-    texture_update = true;
-    
-    return true;
+    brightness = 0.0;
+    in_limits = false;
+  }
+  else if(brightness > kMAX_BRIGHTNESS)
+  {
+    brightness = kMAX_BRIGHTNESS;
+    in_limits = false;
   }
   
-  return false;
+  /* Update the class brightness */
+  this->brightness = brightness;
+  setColorMod();
+  texture_update = true;
+  
+  return in_limits;
 }
 
 /* Sets the color balance of the sprite */
@@ -825,10 +836,6 @@ void Sprite::updateSprite(int cycle_time, SDL_Renderer* renderer)
     {
       elapsed_time -= animation_time;
       shiftNext();
-    }
-    else if(elapsed_time < 0)
-    {
-      elapsed_time = 0;
     }
   }
   

@@ -44,8 +44,8 @@ public:
 
 private:
   /* Animation time */
-  short animation_time;
-  short elapsed_time;
+  uint16_t animation_time;
+  uint16_t elapsed_time;
   
   /* The stored brightness for rendering */
   float brightness;
@@ -84,12 +84,13 @@ private:
   SDL_Texture* white_mask;
   
   /*------------------- Constants -----------------------*/
-  const static short kDEFAULT_ANIMATE_TIME; /* The default animation time */
+  const static uint16_t kDEFAULT_ANIMATE_TIME; /* The default animation time */
   const static float kDEFAULT_BRIGHTNESS; /* the default brightness value */
   const static uint8_t kDEFAULT_COLOR; /* the default color rating */
   const static uint8_t kDEFAULT_OPACITY; /* the default rendered alpha */
-  const static short kDOUBLE_DIGITS; /* the borderline to double digits */
-  const static short kUNSET_ANIMATE_TIME; /* The unset animate time value */
+  const static uint8_t kDOUBLE_DIGITS; /* the borderline to double digits */
+  const static float kMAX_BRIGHTNESS; /* The max brightness value */
+  const static uint16_t kUNSET_ANIMATE_TIME; /* The unset animate time value */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS

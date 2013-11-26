@@ -6,6 +6,7 @@
  *              necessary subsystems and starts up the application.
  ******************************************************************************/
 #include "Application.h"
+#include "Md5.h"
 #include "TinyXML.h"
 
 bool initSDL()
@@ -85,6 +86,10 @@ int main(int argc, char** argv)
               << child_attribute->Value() << std::endl;
   }
 
+  /* Testing Md5 */
+  std::cout << "MD5: " << MD5::compute("Hello sunshine") << std::endl;
+  std::cout << "MD5: " << MD5::compute("Sarah Chou") << std::endl;
+  
   /* Initialize SDL libraries */
   bool success = initSDL();
   
