@@ -18,9 +18,9 @@
  * CONSTANTS
  *============================================================================*/
 
-const bool   SkillSet::kENABLED_DEFAULT  = true;
-const size_t SkillSet::kMAX_SKILLS       =  400;
-const uint   SkillSet::kMAX_UNLOCK_LEVEL =  127;
+const bool   SkillSet::kENABLED_DEFAULT  =  true;
+const size_t SkillSet::kMAX_SKILLS       = 10000;
+const uint   SkillSet::kMAX_UNLOCK_LEVEL =   127;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -356,9 +356,15 @@ std::vector<bool> SkillSet::getAllEnabled()
   return enabled;
 }
 
-std::deque<SkillSetElements> SkillSet::getElements()
+std::deque<SkillSetElements> SkillSet::getElements(const uint &at_level)
 {
-  return skill_elements;
+  std::deque<SkillSetElements> skills;
+
+  for (auto it = skill_elements.begin(); it != skill_elements.end(); ++it)
+    if ((*it).req_level <= at_level)
+      skills.push_back((*it));
+
+  return skills;
 }
 
 bool SkillSet::getEnabled(const uint &index)

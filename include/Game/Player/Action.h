@@ -176,8 +176,6 @@ public:
 
   int getBase();
 
-  ActionFlags getFlags();
-
   int getID();
 
   IgnoreFlags getIgnoreAtk();

@@ -133,7 +133,7 @@ AttributeSet::AttributeSet(const std::vector<uint> &new_values)
 {
   if (new_values.size() == kNUM_VALUES)
     values = new_values;
-  else
+  else 
     for (uint i = 0; i < kNUM_VALUES; i++)
       values.push_back(kDEFAULT);
 

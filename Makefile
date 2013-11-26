@@ -38,6 +38,7 @@ SOURCES=src/Application.cc \
         src/Frame.cc \
         src/Game/Game.cc \
         src/Game/Player/Action.cc \
+        src/Game/Player/Skill.cc \
         src/Helpers.cc \
         src/Main.cc \
         src/Music.cc \

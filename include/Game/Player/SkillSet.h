@@ -59,9 +59,9 @@ private:
   std::deque<SkillSetElement> skill_elements;
 
   /* ------------ Constants --------------- */
-  const bool   kENABLED_DEFAULT;
-  const size_t kMAX_SKILLS;
-  const uint   kMAX_UNLOCK_LEVEL;
+  const bool   kENABLED_DEFAULT;  /* Are skills enabled by default? */
+  const size_t kMAX_SKILLS;       /* ? Problems with adding mass skills */
+  const uint   kMAX_UNLOCK_LEVEL; /* Maximum level a skill can be unlocked at */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -99,7 +99,7 @@ public:
 
   std::vector<bool> getAllEnabled();
 
-  std::deque<SkillSetElements> getElements();
+  std::deque<SkillSetElements> getElements(const uint &at_level);
 
   bool getEnabled(const uint &index);
 

@@ -22,6 +22,7 @@
  *
  * ALWAYS - the action may be used in Battle and in Menu
  * BATTLE - the action may only be used in Battle
+ 
  * MENU   - the action may only be used in Menu
  * NONE   - the action has no usable scenario
  */

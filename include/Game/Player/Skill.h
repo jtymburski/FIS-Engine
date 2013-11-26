@@ -15,6 +15,7 @@
 *
 * TODO
 * ----
+* - Is copy constructor needed? (ID Problem) [11-23-13]
 * - Possible OFENSIVE/DEFENSIVE/NEUTRAL categories (set in flags)? [11-23-13]
 * - Testing [11-22-13]
 * - Conventions [11-22-13]
@@ -23,13 +24,14 @@
 #ifndef SKILL_H
 #define SKILL_H
 
+#include <algorithm> /* std::sort */
 #include <vector>
 
 #include "Game/Player/Action.h"
-//#include "Game/Sound.h"
-#include "Game/Sprite.h"
 #include "EnumDb.h"
 #include "EnumFlags.h"
+#include "Sound.h"
+#include "Sprite.h"
 
 ENUM_FLAGS(SkillFlags)
 enum class SkillFlags
@@ -53,10 +55,10 @@ public:
 
   Skill(const std::string &name);
 
-  Skill(const std::string &name, const ActionScope &skill_scope,
-        const Action* effect, const float &chance);
+  Skill(const int &id, const std::string &name, const ActionScope &scope,
+        Action* effect, const float &chance);
 
-  Skill(const std::string &name, const ActionScope &skill_scope, 
+  Skill(const int &id, const std::string &name, const ActionScope &scope, 
   	    const std::vector<Action*> &effects, const std::vector<float> &chances);
 
   ~Skill();
@@ -65,17 +67,19 @@ private:
 
   Sprite* animation;
 
-  uint cooldown;
+  uint8_t cooldown;
+
+  uint16_t cost;
 
   std::string description;
 
   std::vector<Action*> effects;
 
-  std::vector<float> effect_chance;
+  std::vector<float> chances;
 
   SkillFlags flags;
 
-  uint cost;
+  unsigned int id;
 
   std::string name;
 
@@ -91,16 +95,17 @@ private:
 
   std::string message;
 
-  uint value;
+  uint8_t value;
 
   /* ------------ Constants --------------- */
-  static const size_t kMAX_ACTIONS;     /* Maximum # of actions in a skill */
-  static const uint   kMAX_COOLDOWN;    /* Maximum turn cooldown time */
-  static const uint   kMAX_COST;        /* Highest possible cost for a skill */
-  static const size_t kMAX_MESG_LENGTH; /* Maximum length for using message */
-  static const size_t kMAX_NAME_LENGTH; /* Maximum length for a valid name */
-  static const size_t kMAX_DESC_LENGTH; /* Maximum length for a valid desc */
-  static const uint   kMAX_VALUE;       /* Maximum assigned point value */
+  static const size_t   kMAX_ACTIONS;     /* Maximum # of actions in a skill */
+  static const uint8_t  kMAX_COOLDOWN;    /* Maximum turn cooldown time */
+  static const uint16_t kMAX_COST;        /* Highest possible cost for a skill */
+  static const size_t   kMAX_MESG_LENGTH; /* Maximum length for using message */
+  static const size_t   kMAX_NAME_LENGTH; /* Maximum length for a valid name */
+  static const size_t   kMAX_DESC_LENGTH; /* Maximum length for a valid desc */
+  static const uint8_t  kMAX_VALUE;       /* Maximum assigned point value */
+  static const int      kUNSET_ID;        /* ID for an unset Skill */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -118,27 +123,34 @@ private:
  *============================================================================*/
 public:
 
-  bool addAction(const Action* new_action, const float &new_chance);
+  bool addAction(Action* new_action, const float &new_chance);
+
+  bool addActions(const std::vector<Action*> &new_actions, 
+                  const std::vector<float> &new_chances);
 
   bool isValid();
 
-  bool removeAction(const uint &index);
+  void print();
+
+  bool removeAction(const uint8_t &index);
 
   Sprite* getAnimation();
  
-  uint getCooldown();
+  uint8_t getCooldown();
 
-  float getChance(const uint &index);
+  float getChance(const uint8_t &index);
 
   std::vector<float> getChances();
 
   std::string getDescription();
 
-  Action* getEffect(const uint &index);
+  Action* getEffect(const uint8_t &index);
 
   std::vector<Action*> getEffects();
 
-  SkillFlags getFlags();
+  bool getFlag(SkillFlags test_flag);
+
+  int getID();
 
   std::string getName();
 
@@ -154,33 +166,35 @@ public:
 
   std::string getMessage();
 
-  uint getValue();
+  uint8_t getValue();
 
-  bool setAnimation(const Sprite* new_animation);
+  bool setAnimation(Sprite* const new_animation);
 
-  bool setCooldown(const uint &new_value);
-
-  void setChance(const float &new_chance);
+  bool setCooldown(const uint8_t &new_value);
 
   bool setDescription(const std::string &new_description);
 
+  void setFlag(const SkillFlags &flag, const bool &set_value = true);
+
+  bool setID(const unsigned int &new_id);
+  
   bool setName(const std::string &new_name);
 
   void setPrimary(const Element &new_element);
 
   void setSecondary(const Element &new_element);
 
-  bool setSoundEffect(const Sound* new_sound_effect);
+  bool setSoundEffect(Sound* const new_sound_effect);
 
   void setScope(const ActionScope &new_scope);
 
-  void setThumbnail(const Frame* new_thumbnail);
+  void setThumbnail(Frame* const new_thumbnail);
 
   bool setMessage(const std::string &new_message);
 
-  bool setValue(const uint &new_value);
-};
+  bool setValue(const uint8_t &new_value);
 
-Skill& operator=(const Skill &source);
+  Skill& operator=(const Skill &source);
+};
 
 #endif //SKILL_H

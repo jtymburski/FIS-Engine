@@ -52,7 +52,7 @@ private:
   static const size_t             kMAX_DESC_LENGTH; /* Maximum desc size */
   static const std::vector<float> kTIER_MODIFIER;   /* Stat modifiers */
   static const std::vector<int>   kTIER_LEVELS;     /* Levels at tier up */
-  static const std:;vector<float> kTIER_MASSES;     /* Mass modifiers */
+  static const std::vector<float> kTIER_MASSES;     /* Mass modifiers */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -79,7 +79,7 @@ public:
   SkillSet* getSkillSet();
 
   /* Obtains the stats at a given tier */
-  const AttributeSet& getStats(const uint &tier);
+  AttributeSet getStats(const uint &tier);
 
   Frame* getThumb(const uint &index);
 
@@ -87,7 +87,7 @@ public:
 
   bool setSkills(const SkillSet* new_skills);
 
-  void setThumbs(std::vector<Frame*> thumbnails);
+  bool setThumbs(const std::vector<Frame*> &thumbnails);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
