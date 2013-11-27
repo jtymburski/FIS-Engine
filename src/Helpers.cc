@@ -119,6 +119,31 @@ void Helpers::seed()
 }
 
 /*=============================================================================
+ * GRAMMAR FUNCTIONS
+ *============================================================================*/
+
+//TODO - Boost map?
+std::string Helpers::elementToString(const Element &element)
+{
+  if (element == Element::PHYSICAL)
+    return "PHYSICIAL";
+  if (element == Element::FIRE)
+    return "FIRE";
+  if (element == Element::FOREST)
+    return "FOREST";
+  if (element == Element::ICE)
+    return "ICE";
+  if (element == Element::ELECTRIC)
+    return "ELECTRIC";
+  if (element == Element::DIGITAL)
+    return "DIGITAL";
+  if (element == Element::NIHIL)
+    return "VOID";
+  return "";
+}
+
+
+/*=============================================================================
  * GENERAL HELPER FUNCTIONS
  *============================================================================*/
 

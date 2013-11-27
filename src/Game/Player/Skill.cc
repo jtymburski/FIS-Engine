@@ -242,6 +242,33 @@ bool Skill::isValid()
   return valid;
 }
 
+void Skill::print()
+{
+  std::cout << "--- Skill ----\n";
+  std::cout << "Skill ID: " << id;
+  std::cout << "Name: " << name << std::endl;
+  std::cout << "Animation set? " << !(animation == nullptr) << std::endl;
+  std::cout << "Cooldown: " << cooldown << std::endl; 
+  std::cout << "Cost: " << cost << std::endl;
+  std::cout << "Description: " << description << std::endl;
+  std::cout << "# Effects: " << effects.size() << std::endl;
+  std::cout << "# Chances: " << chances.size() << std::endl;
+  std::cout << "Primary Element" << Helpers::elementToString(primary) << std::endl;
+  std::cout << "Secondary Element" << Helpers::elementToString(secondary) << std::endl;
+  std::cout << "Sound effect set?" << !(sound_effect == nullptr) << std::endl;
+  std::cout << "[void]Action scope: " << std::endl;
+  std::cout << "Thumb Set?" << !(thumbnail == nullptr) << std::endl;
+  std::cout << "Point Value: " << value << std::endl;
+  std::cout << "----" << std::endl;
+  std::cout << "ALTERING: " << getFlag(SkillFlags::ALTERING) << std::endl;
+  std::cout << "HEALING: " << getFlag(SkillFlags::HEALING) << std::endl;
+  std::cout << "INFLICTING: " << getFlag(SkillFlags::INFLICTING) << std::endl;
+  std::cout << "RELIEVING: " << getFlag(SkillFlags::RELIEVING) << std::endl;
+  std::cout << "REVIVING: " << getFlag(SkillFlags::REVIVING) << std::endl;
+  std::cout << "ASSIGNING: " << getFlag(SkillFlags::ASSIGNING) << std::endl;
+  std::cout << "VALID: " << getFlag(SkillFlags::VALID) << std::endl;
+}
+
 bool Skill::removeAction(const uint8_t &index)
 {
   if ((effects.size() == chances.size()) && index < effects.size())

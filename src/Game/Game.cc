@@ -94,17 +94,15 @@ Game::~Game()
 /* Set up the battle - old battle needs to be deleted prior to calling */
 void Game::setupBattle()
 {
-  /*
   std::vector<Action> actions;
   actions.push_back(Action("1,ALTER,THAG,,,,AMOUNT.50,AMOUNT.15"));
-  actions.push_back(Action("2,ALTER,VITA,,PHYSICAL,PHYSICAL.THERMAL,PC.50,PC.10"));
   actions.push_back(Action("3,INFLICT,POISON,2.7,,,,,"));
   actions.push_back(Action("4,RELIEVE,CURSE,,,,,"));
   actions.push_back(Action("5,REVIVE,,,,,PC.25,AMOUNT.50"));
 
-  for (Action a : actions)
-    a.print();
-  */
+  //for (Action a : actions)
+  //  a.print();
+  
 }
 
 /* Set up the map - old map needs to be deleted prior to calling */

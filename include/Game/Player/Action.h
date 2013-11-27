@@ -133,12 +133,17 @@ private:
   int min_duration;
   int max_duration;
 
-  int variance;
+  unsigned int variance;
 
   /* ------------ Constants --------------- */
-  static const int  kDEFAULT_ID;  /* ID for a default Action object */
-  static const char kDELIMITER;   /* The delimiter for string parsing */
-  static const char kDELIMITER_2; /* The secondary delimiter */
+  static const bool         kDEBUG_ENABLED; /* Show parse warning messages? */
+  static const int          kDEFAULT_ID;  /* ID for a default Action object */
+  static const int          kDEFAULT_MIN; /* Default turn minimum for ailment */
+  static const int          kDEFAULT_MAX; /* Default turn maximum for ailment */
+  static const char         kDELIMITER;   /* The delimiter for string parsing */
+  static const char         kDELIMITER_2; /* The secondary delimiter */
+  static const int          kMAX_BASE_PC; /* Max % value for Base change */
+  static const unsigned int kMAX_VARIANCE_PC; /* Max % value for Variance */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -154,6 +159,8 @@ private:
   bool parseAttribute(const std::string &attr_parse);
   
   void parseIgnoreFlags(IgnoreFlags& flag_set, const std::string &flags);
+
+  void parseWarning(const std::string &warning, const std::string &raw);
 
   bool setDuration(const int &min_value, const int &max_value);
 

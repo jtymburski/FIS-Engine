@@ -1,3 +1,4 @@
+
 /*******************************************************************************
  * Class Name: N/A - int main implementation
  * Date Created: November 17, 2013
@@ -89,7 +90,7 @@ int main(int argc, char** argv)
     std::cout << "-------------------------------------------------------" 
               << std::endl;
     
-    /* Output file information */
+    /* Output file information 
     doc.Print(&printer);
     std::string output(printer.CStr());
     std::vector<std::string> output_lines;
@@ -98,9 +99,10 @@ int main(int argc, char** argv)
       std::cout << output_lines[i] << std::endl;
     std::cout << "-------------------------------------------------------" 
               << std::endl;
+    */
   }
 
-  /* Writing XML - testing */
+  /* Writing XML - testing 
   TinyXML2::XMLDocument doc2;
   TinyXML2::XMLElement* element = doc2.NewElement("game");
   doc2.InsertEndChild(element);
@@ -110,7 +112,7 @@ int main(int argc, char** argv)
   element->InsertEndChild(element2);
   element2->InsertEndChild(doc2.NewText("This is a fancy config"));
   doc2.InsertEndChild(doc2.NewElement("mini"));
-  /* Output file information */
+  /* Output file information 
   TinyXML2::XMLPrinter printer2;
   doc2.Print(&printer2);
   std::string output2(printer2.CStr());

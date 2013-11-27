@@ -68,9 +68,14 @@
  * CONSTANTS - See implementation for details
  *============================================================================*/
 
-const int  Action::kDEFAULT_ID  = INT_MAX;
-const char Action::kDELIMITER   = ',';
-const char Action::kDELIMITER_2 = '.';
+const bool         Action::kDEBUG_ENABLED = true;
+const int          Action::kDEFAULT_ID  = INT_MAX;
+const int          Action::kDEFAULT_MIN = 1;
+const int          Action::kDEFAULT_MAX = 2;
+const char         Action::kDELIMITER   = ',';
+const char         Action::kDELIMITER_2 = '.';
+const int          Action::kMAX_BASE_PC = 100;
+const unsigned int Action::kMAX_VARIANCE_PC = 1000;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -132,8 +137,6 @@ Action::~Action() {}
 bool Action::parse(const std::string &raw)
 {
   std::vector<std::string> sub_strings;
-  bool valid_action = true;
-
   Helpers::split(raw, kDELIMITER, sub_strings);
 
   std::cout << "size is: " << sub_strings.size() << std::endl;
@@ -144,33 +147,30 @@ bool Action::parse(const std::string &raw)
     id = std::stoi(sub_strings.at(0));
 
   	/* Parse the initial action keyword */
-    valid_action &= parseActionKeyword(sub_strings.at(1));
+    parseActionKeyword(sub_strings.at(1));
 
     /* ALTER and ASSIGN keywords relate to attributes */
-    if (action_flags == ActionFlags::ALTER || 
-       	action_flags == ActionFlags::ASSIGN)
-    {
-      valid_action &= parseAttribute(sub_strings.at(2));
-    }
+    if (actionFlag(ActionFlags::ALTER) || actionFlag(ActionFlags::ASSIGN))
+      parseAttribute(sub_strings.at(2));
 
     /* INFLICT and RELIEVE keywords relate to ailments */
-    else if (action_flags == ActionFlags::INFLICT || 
-    	       action_flags == ActionFlags::RELIEVE)
-    {
-      valid_action &= parseAilment(sub_strings.at(2));
-      std::cout << "valid after ailment: " << valid_action << std::endl;
-    }
-    
+    else if(actionFlag(ActionFlags::INFLICT)||actionFlag(ActionFlags::RELIEVE))
+      parseAilment(sub_strings.at(2));
+  
     /* Parse min & max durations */
     if (sub_strings.at(3) != "")
     {
-      std::vector<std::string> duration;
+      std::vector<std::string> turns;
+      Helpers::split(sub_strings.at(3), kDELIMITER_2, turns);
 
-      Helpers::split(sub_strings.at(3), kDELIMITER_2, duration);
-
-      valid_action &= setDuration(std::stoi(duration.at(0)), 
-      	                          std::stoi(duration.at(1)));
+      if (turns.size() == 2)
+        setDuration(std::stoi(turns.at(0)), std::stoi(turns.at(1)));
+      else
+        parseWarning("invalid duration size", raw);
     }
+    else if (sub_strings.at(3) == "")
+      if (actionFlag(ActionFlags::INFLICT) || actionFlag(ActionFlags::RELIEVE))
+        setDuration(kDEFAULT_MIN, kDEFAULT_MAX);
 
     /* Parse ignore_atk flags */
     if (sub_strings.at(4) != "")
@@ -181,15 +181,22 @@ bool Action::parse(const std::string &raw)
       parseIgnoreFlags(ignore_def, sub_strings.at(5));
 
     /* Parse base change */
-    if (sub_strings.at(6) != "" && sub_strings.at(7) != "")
+    if (sub_strings.at(6) != "")
     {
       std::vector<std::string> base_values;
       Helpers::split(sub_strings.at(6), kDELIMITER_2, base_values);
-    
-      if (base_values.at(0) == "PC")
-        action_flags |= ActionFlags::BASE_PC;
       
-      base = std::stoi(base_values.at(1));
+      if (base_values.size() == 2)
+      {
+        if (base_values.at(0) == "PC")
+          action_flags |= ActionFlags::BASE_PC;
+        else if (base_values.at(0) != "AMOUNT")
+          parseWarning("invalid base keyword", raw);
+      
+        base = std::stoi(base_values.at(1));
+      }
+      else
+        parseWarning("wrong # arguments in base parse", raw);
     }
  
     /* Parse variance [check if size is right - no empty end on split() ] */
@@ -198,20 +205,30 @@ bool Action::parse(const std::string &raw)
       std::vector<std::string> variance_values;
       Helpers::split(sub_strings.at(7), kDELIMITER_2, variance_values);
 
-      if (variance_values.at(0) == "PC")
-        action_flags |= ActionFlags::VARI_PC;
+      if (variance_values.size() == 2)
+      {
+        if (variance_values.at(0) == "PC")
+          action_flags |= ActionFlags::VARI_PC;
+        else if (variance_values.at(0) != "AMOUNT")
+          parseWarning("invalid variance keyword", raw);
 
-      variance = std::stoi(variance_values.at(1));
+        variance = std::stoi(variance_values.at(1));
+      }
+      else
+        parseWarning("wrong # arguments in variance parse", raw);
     }
+
+    /* Warning Checking */
+    if (actionFlag(ActionFlags::BASE_PC) && variance > kMAX_BASE_PC)
+      parseWarning("base percent value higher than permitted", raw);
+
+    if (actionFlag(ActionFlags::VARI_PC) && variance > kMAX_VARIANCE_PC)
+      parseWarning("variance percent value higher than permitted", raw);
   }
   else
-  {
-    valid_action = false;
-    std::cerr << "Parsing invalid action: " << raw << std::endl;
-    std::cout << "Parsing invalid action: " << raw << std::endl;
-  }
-
-  return valid_action;
+    parseWarning("invalid sub string size", raw);
+  
+  return actionFlag(ActionFlags::VALID);
 }
 
 bool Action::parseAilment(const std::string &ailm)
@@ -259,6 +276,7 @@ bool Action::parseAilment(const std::string &ailm)
   if (ailment != Infliction::INVALID)
     return true;
 
+  parseWarning("attempting to parse ailment", ailm);
   return false;
 }
 
@@ -275,7 +293,10 @@ bool Action::parseActionKeyword(const std::string &action_keyword)
   else if (action_keyword == "REVIVE")
     action_flags |= ActionFlags::REVIVE;
   else
+  {
+    parseWarning("attempting to parse keyword", action_keyword);
     return false;
+  }
 
   return true;
 }
@@ -306,6 +327,7 @@ bool Action::parseAttribute(const std::string &attr_parse)
   if (attribute != Attribute::NONE)
     return true;
 
+  parseWarning("attempting to parse attribute", attr_parse);
   return false;
 }
 
@@ -341,6 +363,17 @@ void Action::parseIgnoreFlags(IgnoreFlags& flag_set, const std::string &flags)
     else if (s == "NIHIL")
       flag_set |= IgnoreFlags::NIHIL;
   }
+
+  if (static_cast<int>(ignore_atk) == 0)
+    parseWarning("attempting to parse ignore flags", flags);
+}
+
+void Action::parseWarning(const std::string &warning, const std::string &raw)
+{
+  if (kDEBUG_ENABLED)
+    std::cout << "Action Error: " << warning << " on: " << raw << std::endl;
+
+  action_flags &= ~ActionFlags::VALID;
 }
 
 bool Action::setDuration(const int &min_value, const int &max_value)
@@ -355,6 +388,7 @@ bool Action::setDuration(const int &min_value, const int &max_value)
   min_duration = -1;
   max_duration = -1;
 
+  parseWarning("attempting to parse min, max value", "");
   return false;
 }
 
@@ -394,6 +428,7 @@ void Action::print()
   std::cout << "CYBR: " << defFlag(IgnoreFlags::CYBERNETIC) << std::endl;
   std::cout << "NIHI: " << defFlag(IgnoreFlags::NIHIL) << std::endl;
 
+  // TODO Print the string of the attribute the action alters or assigns
   // TODO Print the string of the ailment the action inflicts or relieves 
 
   std::cout << "Min Duration: " << min_duration << std::endl;

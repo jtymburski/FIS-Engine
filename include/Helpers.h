@@ -26,6 +26,8 @@
 #include <time.h>    /* time */
 #include <vector>
 
+ #include "EnumDb.h"
+
 class Helpers
 {
 /*=============================================================================
@@ -49,6 +51,12 @@ public:
 
   /* Seeds the random number generator */
   static void seed();
+
+/*=============================================================================
+ * GRAMMAR FUNCTIONS
+ *============================================================================*/
+
+static std::string elementToString(const Element &element);
 
 /*=============================================================================
  * GENERAL HELPER FUNCTIONS
