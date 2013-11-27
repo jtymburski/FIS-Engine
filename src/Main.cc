@@ -7,9 +7,12 @@
  *              necessary subsystems and starts up the application.
  ******************************************************************************/
 #include "Application.h"
+#include "FileHandler.h"
 #include "Helpers.h"
 #include "Md5.h"
 #include "TinyXML.h"
+
+#include <ctime>
 
 bool initSDL()
 {
@@ -90,7 +93,7 @@ int main(int argc, char** argv)
     std::cout << "-------------------------------------------------------" 
               << std::endl;
     
-    /* Output file information 
+    /* Output file information */
     doc.Print(&printer);
     std::string output(printer.CStr());
     std::vector<std::string> output_lines;
@@ -99,10 +102,9 @@ int main(int argc, char** argv)
       std::cout << output_lines[i] << std::endl;
     std::cout << "-------------------------------------------------------" 
               << std::endl;
-    */
   }
 
-  /* Writing XML - testing 
+  /* Writing XML - testing */
   TinyXML2::XMLDocument doc2;
   TinyXML2::XMLElement* element = doc2.NewElement("game");
   doc2.InsertEndChild(element);
@@ -112,7 +114,7 @@ int main(int argc, char** argv)
   element->InsertEndChild(element2);
   element2->InsertEndChild(doc2.NewText("This is a fancy config"));
   doc2.InsertEndChild(doc2.NewElement("mini"));
-  /* Output file information 
+  /* Output file information */
   TinyXML2::XMLPrinter printer2;
   doc2.Print(&printer2);
   std::string output2(printer2.CStr());
@@ -128,6 +130,13 @@ int main(int argc, char** argv)
   std::cout << "MD5: " << MD5::compute("Sarah Chou") << std::endl;
   std::cout << "-------------------------------------------------------" 
             << std::endl;
+  
+  /* Time test */
+  std::time_t t = time(0);
+  std::cout << std::ctime(&t) << std::endl;
+  
+  /* File handler testing */
+  //FileHandler fh("test.txt", true, false, false);
   
   /* Initialize SDL libraries */
   bool success = initSDL();

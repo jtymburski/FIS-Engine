@@ -35,6 +35,7 @@ else
 endif
 
 SOURCES=src/Application.cc \
+        src/FileHandler.cc \
         src/Frame.cc \
         src/Game/Game.cc \
         src/Game/Player/Action.cc \
