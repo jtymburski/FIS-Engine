@@ -133,7 +133,7 @@ private:
   int min_duration;
   int max_duration;
 
-  unsigned int variance;
+  uint32_t variance;
 
   /* ------------ Constants --------------- */
   static const bool         kDEBUG_ENABLED; /* Show parse warning messages? */
@@ -143,7 +143,7 @@ private:
   static const char         kDELIMITER;   /* The delimiter for string parsing */
   static const char         kDELIMITER_2; /* The secondary delimiter */
   static const int          kMAX_BASE_PC; /* Max % value for Base change */
-  static const unsigned int kMAX_VARIANCE_PC; /* Max % value for Variance */
+  static const uint32_t     kMAX_VARIANCE_PC; /* Max % value for Variance */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS

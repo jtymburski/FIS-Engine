@@ -75,7 +75,7 @@ const int          Action::kDEFAULT_MAX = 2;
 const char         Action::kDELIMITER   = ',';
 const char         Action::kDELIMITER_2 = '.';
 const int          Action::kMAX_BASE_PC = 100;
-const unsigned int Action::kMAX_VARIANCE_PC = 1000;
+const uint32_t     Action::kMAX_VARIANCE_PC = 1000;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -138,8 +138,6 @@ bool Action::parse(const std::string &raw)
 {
   std::vector<std::string> sub_strings;
   Helpers::split(raw, kDELIMITER, sub_strings);
-
-  std::cout << "size is: " << sub_strings.size() << std::endl;
 
   if (sub_strings.size() == 7 || sub_strings.size() == 8)
   {

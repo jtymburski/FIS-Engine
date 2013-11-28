@@ -94,14 +94,28 @@ Game::~Game()
 /* Set up the battle - old battle needs to be deleted prior to calling */
 void Game::setupBattle()
 {
-  std::vector<Action> actions;
-  actions.push_back(Action("1,ALTER,THAG,,,,AMOUNT.50,AMOUNT.15"));
-  actions.push_back(Action("3,INFLICT,POISON,2.7,,,,,"));
-  actions.push_back(Action("4,RELIEVE,CURSE,,,,,"));
-  actions.push_back(Action("5,REVIVE,,,,,PC.25,AMOUNT.50"));
+  /* Action Testing */
+  std::vector<Action*> actions;
+  std::vector<float> chances = {0.50, 0.40, 0.12, 0.46};
+  actions.push_back(new Action("1,ALTER,THAG,,,,AMOUNT.50,AMOUNT.15"));
+  actions.push_back(new Action("3,INFLICT,POISON,2.7,,,,,"));
+  actions.push_back(new Action("4,RELIEVE,CURSE,,,,,"));
+  actions.push_back(new Action("5,REVIVE,,,,,PC.25,AMOUNT.50"));
+  Action* special = new Action("5,REVIVE,,,,,PC.25,AMOUNT.50");
 
   //for (Action a : actions)
   //  a.print();
+
+  /* Skill Testing */
+  std::vector<Skill*> skills;
+  Skill* super_attack = new Skill(14, "Super Attack",ActionScope::ONE_ENEMY,special,1.14);
+  super_attack->addActions(actions, chances);
+
+  skills.push_back(super_attack);
+
+  //for (Skill* s : skills)
+  //  s->print();
+
   
 }
 

@@ -22,12 +22,12 @@
  * CONSTANTS
  *============================================================================*/
 const size_t   Skill::kMAX_ACTIONS       =   10;
-const uint8_t  Skill::kMAX_COOLDOWN      =   10;
-const uint16_t Skill::kMAX_COST          = 5000;
+const uint32_t Skill::kMAX_COOLDOWN      =   10;
+const uint32_t Skill::kMAX_COST          = 5000;
 const size_t   Skill::kMAX_MESG_LENGTH   =   70;
 const size_t   Skill::kMAX_NAME_LENGTH   =   60;
 const size_t   Skill::kMAX_DESC_LENGTH   =  500;
-const uint8_t  Skill::kMAX_VALUE         =   10;
+const uint32_t Skill::kMAX_VALUE         =   10;
 const int      Skill::kUNSET_ID          =   -1;
 
 /*=============================================================================
@@ -80,8 +80,6 @@ Skill::Skill(const int &id, const std::string &name, const ActionScope &scope,
 
   if (addAction(effect, chance))
     setFlag(SkillFlags::VALID);
-
-  flagSetup();
 }
 
 /*
@@ -174,8 +172,14 @@ void Skill::flagSetup()
 
   for (auto it = effects.begin(); it != effects.end(); ++it)
   {
+
     if ((*it)->actionFlag(ActionFlags::ALTER))
+    {
       setFlag(SkillFlags::ALTERING);
+
+      if ((*it)->getAttribute() == Attribute::VITA && (*it)->getBase() > 0)
+        setFlag(SkillFlags::HEALING);
+    }
 
     else if ((*it)->actionFlag(ActionFlags::INFLICT))
       setFlag(SkillFlags::INFLICTING);
@@ -184,28 +188,38 @@ void Skill::flagSetup()
       setFlag(SkillFlags::RELIEVING);
 
     else if ((*it)->actionFlag(ActionFlags::REVIVE))
+    {
       setFlag(SkillFlags::REVIVING);
+      setFlag(SkillFlags::HEALING);
+    }
 
     else if ((*it)->actionFlag(ActionFlags::ASSIGN))
+    {
       setFlag(SkillFlags::ASSIGNING);
-  }
+
+      if ((*it)->getAttribute() == Attribute::VITA && (*it)->getBase() > 0)
+        setFlag(SkillFlags::HEALING);
+    }
+
+  } 
 }
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
-bool Skill::addAction(Action* new_action, const float &new_chance)
+bool Skill::addAction(Action* new_action, const float &new_chance, 
+                      const bool &single)
 {
-  if (effects.size() < kMAX_ACTIONS)
+  if (effects.size() < kMAX_ACTIONS && new_action != nullptr)
   {
-    if (new_action != nullptr)
-    {
-      effects.push_back(new_action);
-      chances.push_back(new_chance);
+    effects.push_back(new_action);
+    chances.push_back(new_chance);
 
-      return true;
-    }
+    if (single)
+      flagSetup();
+
+    return true;
   }
 
   return false;
@@ -218,11 +232,11 @@ bool Skill::addActions(const std::vector<Action*> &new_actions,
 
   if (new_actions.size() == new_chances.size())
   {
-    auto it_e = effects.begin();
-    auto it_c = chances.begin();
+    auto it_e = new_actions.begin();
+    auto it_c = new_chances.begin();
 
-    for ( ; it_e != effects.end(), it_c != chances.end(); ++it_e, ++it_c)
-      if (!addAction((*it_e), (*it_c)))
+    for ( ; it_e != new_actions.end(), it_c != new_chances.end(); ++it_e, ++it_c)
+      if (!addAction((*it_e), (*it_c)), false)
         valid = false;
   }
 
@@ -245,19 +259,21 @@ bool Skill::isValid()
 void Skill::print()
 {
   std::cout << "--- Skill ----\n";
-  std::cout << "Skill ID: " << id;
+  std::cout << "Skill ID: " << id << std::endl;
   std::cout << "Name: " << name << std::endl;
   std::cout << "Animation set? " << !(animation == nullptr) << std::endl;
   std::cout << "Cooldown: " << cooldown << std::endl; 
   std::cout << "Cost: " << cost << std::endl;
   std::cout << "Description: " << description << std::endl;
+
   std::cout << "# Effects: " << effects.size() << std::endl;
   std::cout << "# Chances: " << chances.size() << std::endl;
+
   std::cout << "Primary Element" << Helpers::elementToString(primary) << std::endl;
   std::cout << "Secondary Element" << Helpers::elementToString(secondary) << std::endl;
-  std::cout << "Sound effect set?" << !(sound_effect == nullptr) << std::endl;
+  std::cout << "Sound effect set? " << !(sound_effect == nullptr) << std::endl;
   std::cout << "[void]Action scope: " << std::endl;
-  std::cout << "Thumb Set?" << !(thumbnail == nullptr) << std::endl;
+  std::cout << "Thumb Set? " << !(thumbnail == nullptr) << std::endl;
   std::cout << "Point Value: " << value << std::endl;
   std::cout << "----" << std::endl;
   std::cout << "ALTERING: " << getFlag(SkillFlags::ALTERING) << std::endl;
@@ -269,7 +285,7 @@ void Skill::print()
   std::cout << "VALID: " << getFlag(SkillFlags::VALID) << std::endl;
 }
 
-bool Skill::removeAction(const uint8_t &index)
+bool Skill::removeAction(const uint32_t &index)
 {
   if ((effects.size() == chances.size()) && index < effects.size())
   {
@@ -287,12 +303,12 @@ Sprite* Skill::getAnimation()
   return animation;
 }
  
-uint8_t Skill::getCooldown()
+uint32_t Skill::getCooldown()
 {
   return cooldown;
 }
 
-float Skill::getChance(const uint8_t &index)
+float Skill::getChance(const uint32_t &index)
 {
   if (index < effects.size())
     return chances[index];
@@ -310,7 +326,7 @@ std::string Skill::getDescription()
   return description;
 }
 
-Action* Skill::getEffect(const uint8_t &index)
+Action* Skill::getEffect(const uint32_t &index)
 {
   if (index < effects.size())
     return effects[index];
@@ -368,7 +384,7 @@ std::string Skill::getMessage()
   return message;
 }
 
-uint8_t Skill::getValue()
+uint32_t Skill::getValue()
 {
   return value;
 }
@@ -387,7 +403,7 @@ bool Skill::setAnimation(Sprite* const new_animation)
   return false;
 }
 
-bool Skill::setCooldown(const uint8_t &new_value)
+bool Skill::setCooldown(const uint32_t &new_value)
 {
   if (new_value < kMAX_COOLDOWN)
   {
@@ -471,7 +487,7 @@ bool Skill::setMessage(const std::string &new_message)
   return false;
 }
 
-bool Skill::setValue(const uint8_t &new_value)
+bool Skill::setValue(const uint32_t &new_value)
 {
   if (new_value < kMAX_VALUE)
   {

@@ -67,9 +67,9 @@ private:
 
   Sprite* animation;
 
-  uint8_t cooldown;
+  uint32_t cooldown;
 
-  uint16_t cost;
+  uint32_t cost;
 
   std::string description;
 
@@ -79,7 +79,7 @@ private:
 
   SkillFlags flags;
 
-  unsigned int id;
+  int id;
 
   std::string name;
 
@@ -95,16 +95,16 @@ private:
 
   std::string message;
 
-  uint8_t value;
+  uint32_t value;
 
   /* ------------ Constants --------------- */
   static const size_t   kMAX_ACTIONS;     /* Maximum # of actions in a skill */
-  static const uint8_t  kMAX_COOLDOWN;    /* Maximum turn cooldown time */
-  static const uint16_t kMAX_COST;        /* Highest possible cost for a skill */
+  static const uint32_t kMAX_COOLDOWN;    /* Maximum turn cooldown time */
+  static const uint32_t kMAX_COST;        /* Highest possible cost for a skill */
   static const size_t   kMAX_MESG_LENGTH; /* Maximum length for using message */
   static const size_t   kMAX_NAME_LENGTH; /* Maximum length for a valid name */
   static const size_t   kMAX_DESC_LENGTH; /* Maximum length for a valid desc */
-  static const uint8_t  kMAX_VALUE;       /* Maximum assigned point value */
+  static const uint32_t kMAX_VALUE;       /* Maximum assigned point value */
   static const int      kUNSET_ID;        /* ID for an unset Skill */
 
 /*=============================================================================
@@ -123,7 +123,8 @@ private:
  *============================================================================*/
 public:
 
-  bool addAction(Action* new_action, const float &new_chance);
+  bool addAction(Action* new_action, const float &new_chance, 
+                 const bool &single = true);
 
   bool addActions(const std::vector<Action*> &new_actions, 
                   const std::vector<float> &new_chances);
@@ -132,19 +133,19 @@ public:
 
   void print();
 
-  bool removeAction(const uint8_t &index);
+  bool removeAction(const uint32_t &index);
 
   Sprite* getAnimation();
  
-  uint8_t getCooldown();
+  uint32_t getCooldown();
 
-  float getChance(const uint8_t &index);
+  float getChance(const uint32_t &index);
 
   std::vector<float> getChances();
 
   std::string getDescription();
 
-  Action* getEffect(const uint8_t &index);
+  Action* getEffect(const uint32_t &index);
 
   std::vector<Action*> getEffects();
 
@@ -166,11 +167,11 @@ public:
 
   std::string getMessage();
 
-  uint8_t getValue();
+  uint32_t getValue();
 
   bool setAnimation(Sprite* const new_animation);
 
-  bool setCooldown(const uint8_t &new_value);
+  bool setCooldown(const uint32_t &new_value);
 
   bool setDescription(const std::string &new_description);
 
@@ -192,7 +193,7 @@ public:
 
   bool setMessage(const std::string &new_message);
 
-  bool setValue(const uint8_t &new_value);
+  bool setValue(const uint32_t &new_value);
 
   Skill& operator=(const Skill &source);
 };
