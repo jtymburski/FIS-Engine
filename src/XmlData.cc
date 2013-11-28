@@ -233,7 +233,7 @@ bool XmlData::addDataOfType(std::string data)
 }
 
 /* 
- * Description: Add an element to the class. It adds it to the top of the
+ * Description: Add an element to the class. It adds it to the back of the
  *              stack. The key and value strings are left to default to empty
  *              and unused. If the key is not empty, then it is set in XML
  *              as an indicator for the element.
@@ -303,6 +303,36 @@ bool XmlData::clearData()
   return true;
 }
 
+/*
+ * Description: Flips all elements that are currently in the stack to the other
+ *              order. This is a convenience function, since prepending stuff
+ *              onto an array multiple times will be slower than just flipping
+ *              all the elements once at the end of the call. Relevant for how
+ *              parsing is done with the TinyXML2 library.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void XmlData::flipElements()
+{
+  std::vector<std::string> flipped_elements;
+  std::vector<std::string> flipped_keys;
+  std::vector<std::string> flipped_values;
+  
+  /* Flip all the elements */
+  for(int i = element.size() - 1; i >= 0; i--)
+  {
+    flipped_elements.push_back(element[i]);
+    flipped_keys.push_back(key[i]);
+    flipped_values.push_back(value[i]);
+  }
+  
+  /* Swap the vectors */
+  element = flipped_elements;
+  key = flipped_keys;
+  value =flipped_values;
+}
+  
 /* 
  * Description: Returns the data stored in the class, if it's a bool. If it's 
  *              not, success is set to false.
