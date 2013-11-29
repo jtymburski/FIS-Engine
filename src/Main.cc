@@ -7,7 +7,6 @@
  *              necessary subsystems and starts up the application.
  ******************************************************************************/
 #include "Application.h"
-#include "FileHandler.h" // TODO: Test and Remove
 #include "Helpers.h"
 
 bool initSDL()
