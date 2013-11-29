@@ -35,7 +35,7 @@ struct SkillSetElement
 {
   Skill* skill;
 
-  uint level_available;
+  size_t level_available;
 
   bool enabled;
 };
@@ -61,7 +61,7 @@ private:
   /* ------------ Constants --------------- */
   const bool   kENABLED_DEFAULT;  /* Are skills enabled by default? */
   const size_t kMAX_SKILLS;       /* ? Problems with adding mass skills */
-  const uint   kMAX_UNLOCK_LEVEL; /* Maximum level a skill can be unlocked at */
+  const size_t kMAX_UNLOCK_LEVEL; /* Maximum level a skill can be unlocked at */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -90,6 +90,8 @@ public:
   bool addSkills(const std::deque<SkillSetElements> &new_elements);
 
   void clear();
+
+  void print();
 
   bool removeSkill(const uint &index);
 

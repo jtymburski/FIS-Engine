@@ -205,6 +205,19 @@ void SkillSet::clear()
   skill_elements.clear();
 }
 
+void SkillSet::print()
+{
+  uint32_t index = 0;
+
+  for (SkillSetElement element : skill_elements)
+  {
+    std::cout << "Element Index: " << index++ << std::endl;
+    std::cout << "Skill Name: " << element.skill->getName() << std::endl;
+    std::cout << "Lev. Req. " << element.level_avilable << std::endl;
+    std::cout << "Enabled? " << element.enabled << std::endl;
+  }
+}
+
 int SkillSet::getIndexOfID(const uint &id)
 {
   for (size_t i = 0; i < skill_elements.size(); i++)
