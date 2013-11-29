@@ -15,7 +15,7 @@
 
 //#include "Game/Battle/Battle.h"
 //#include "Game/EventHandler.h"
-//#include "Game/Map/Map.h"
+#include "Game/Map/Map.h"
 //#include "Game/Player/Player.h"
 //#include "Game/VictoryScreen.h"
 //#include "MathHelper.h"
@@ -48,7 +48,7 @@ private:
   Options* game_config;
 
   /* The current loaded map */
-  //Map* game_map; // TODO: Make non-pointer?
+  Map* game_map; // TODO: Make non-pointer?
 
   /* The maps in the game */
   //QVector<Map*> levels;

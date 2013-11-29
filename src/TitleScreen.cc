@@ -182,26 +182,29 @@ TitleScreen::MenuItems TitleScreen::getAction()
 /* The key down event handler */
 void TitleScreen::keyDownEvent(SDL_KeyboardEvent event)
 {
-  if(event.keysym.sym == SDLK_DOWN && event.repeat == 0)
+  if(system_options != NULL)
   {
-    incrementSelected();
-    nav_down = true;
-  }
-  else if(event.keysym.sym == SDLK_UP && event.repeat == 0)
-  {
-    decrementSelected();
-    nav_up = true;
-  }
-  else if(event.keysym.sym == SDLK_RETURN)
-  {
-    setAction();
-  }
-  else if(event.keysym.sym == SDLK_ESCAPE)
-  {
-    if(cursor_index != (kNUM_MENU_ITEMS - 1))
+    if(event.keysym.sym == SDLK_DOWN && event.repeat == 0)
     {
-      cursor_index = kNUM_MENU_ITEMS - 1;
-      menu_click_sound.play();
+      incrementSelected();
+      nav_down = true;
+    }
+    else if(event.keysym.sym == SDLK_UP && event.repeat == 0)
+    {
+      decrementSelected();
+      nav_up = true;
+    }
+    else if(event.keysym.sym == SDLK_RETURN)
+    {
+      setAction();
+    }
+    else if(event.keysym.sym == SDLK_ESCAPE)
+    {
+      if(cursor_index != (kNUM_MENU_ITEMS - 1))
+      {
+        cursor_index = kNUM_MENU_ITEMS - 1;
+        menu_click_sound.play();
+      }
     }
   }
 }
@@ -209,13 +212,16 @@ void TitleScreen::keyDownEvent(SDL_KeyboardEvent event)
 /* The key up event handler */
 void TitleScreen::keyUpEvent(SDL_KeyboardEvent event)
 {
-  if(event.keysym.sym == SDLK_DOWN)
+  if(system_options != NULL)
   {
-    nav_down = false;
-  }
-  else if(event.keysym.sym == SDLK_UP)
-  {
-    nav_up = false;
+    if(event.keysym.sym == SDLK_DOWN)
+    {
+      nav_down = false;
+    }
+    else if(event.keysym.sym == SDLK_UP)
+    {
+      nav_up = false;
+    }
   }
 }
 

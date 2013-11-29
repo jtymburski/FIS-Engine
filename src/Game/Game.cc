@@ -27,15 +27,18 @@
 /* Constructor function */
 Game::Game(Options* running_config)
 {
+  /* Initalize class variables */
   game_config = NULL;
-  mode = MAP;
+  game_map = NULL;
+  mode = DISABLED;
   
+  /* Set game configuration */
   setConfiguration(running_config);
 
-//  game_config = running_config;
-//  setParent(parent);
+  /* Set up the render classes */
 //  setupGame();
   setupBattle();
+  setupMap();
 }
 
 /* Destructor function */
@@ -56,11 +59,11 @@ Game::~Game()
 //  }
 
   /* Delete map */
-//  if(game_map != 0)
-//  {
-//    delete game_map;
-//    game_map = 0;
-//  }
+ if(game_map != NULL)
+ {
+   delete game_map;
+   game_map = NULL;
+ }
 }
 
 /*============================================================================
@@ -122,16 +125,10 @@ void Game::setupBattle()
 /* Set up the map - old map needs to be deleted prior to calling */
 void Game::setupMap()
 {
-//  /* Sets up the map format and map with vsync and double buffering forced on */
-//  /* TODO: add checking if OpenGL is not enabled */
-//  QGLFormat gl_format(QGL::SampleBuffers);
-//  gl_format.setDoubleBuffer(true);
-//  if(game_config.isVsyncEnabled())
-//    gl_format.setSwapInterval(1);
-//  else
-//    gl_format.setSwapInterval(0);
-//  game_map = new Map(gl_format, game_config, &event_handler);
-//
+  /* Create the map */
+  game_map = new Map(game_config);//, &event_handler);
+  mode = MAP;
+  
 //  /* Load the map - temporary location */
 //  game_map->loadMap("maps/test_04");
 }
@@ -215,17 +212,18 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
   /* Switch the view to the map */
   else if(event.keysym.sym == SDLK_F1)
   {
-    // TODO: Change view to map
+    mode = MAP;
   }
   /* Switch the view to the battle */
   else if(event.keysym.sym == SDLK_F2)
   {
-    // TODO: Change view to battle
+    mode = BATTLE;
   }
   /* Otherwise, send keys to the active view */
   else
   {
-    // TODO: Send keys to active view
+    if(mode == MAP)
+      return game_map->keyDownEvent(event);
   }
   
   return false;
@@ -234,13 +232,15 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
 /* The key up events to be handled by the class */
 void Game::keyUpEvent(SDL_KeyboardEvent event)
 {
-  // TODO: Send up keys to relevant views
+  if(mode == MAP)
+    game_map->keyUpEvent(event);
 }
 
 /* Renders the title screen */
 bool Game::render(SDL_Renderer* renderer)
 {
-  // TODO: Send the render call to the relevant view
+  if(mode == MAP)
+    return game_map->render(renderer);
   
   return true;
 }
@@ -260,7 +260,8 @@ bool Game::setConfiguration(Options* running_config)
 /* Updates the game state. Returns true if the class is finished */
 bool Game::update(int cycle_time)
 {
-  // TODO: Send the update sequence to the relevant view
+  if(mode == MAP)
+    return game_map->update(cycle_time);
   
   return false;
 }
