@@ -239,6 +239,9 @@ void Game::keyUpEvent(SDL_KeyboardEvent event)
 /* Renders the title screen */
 bool Game::render(SDL_Renderer* renderer)
 {
+  if(!game_map->isLoaded())
+   game_map->loadMap("maps/test_04", renderer);
+  
   if(mode == MAP)
     return game_map->render(renderer);
   
@@ -258,10 +261,10 @@ bool Game::setConfiguration(Options* running_config)
 }
 
 /* Updates the game state. Returns true if the class is finished */
-bool Game::update(int cycle_time)
+bool Game::update(int cycle_time, SDL_Renderer* renderer)
 {
   if(mode == MAP)
-    return game_map->update(cycle_time);
+    return game_map->update(cycle_time, renderer);
   
   return false;
 }

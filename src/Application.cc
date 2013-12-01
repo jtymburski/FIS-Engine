@@ -138,7 +138,7 @@ bool Application::updateViews(int cycle_time)
   /* Otherwise, update the game and check if the game is finished */
   else if(mode == GAME)
   {
-    if(game_handler.update(cycle_time))
+    if(game_handler.update(cycle_time, renderer))
       changeMode(TITLESCREEN);
   }
   /* If exit, return true to notify the running thread the application is 
@@ -247,22 +247,23 @@ bool Application::run()
     Frame white_mask("sprites/white_mask.png", renderer);
     SDL_SetTextureBlendMode(white_mask.getTexture(), SDL_BLENDMODE_ADD);
     
-    Sprite image_sprite("sprites/raven_AA_D|3|.png", renderer);
+    Sprite image_sprite;
+    image_sprite.insertFrames("sprites/raven_AA_D|3|.png", renderer);
     image_sprite.setWhiteMask(white_mask.getTexture());
     image_sprite.setBrightness(1.2f);
     image_sprite.setColorBalance(128, 128, 255);
     //image_sprite.flipHorizontal();
     //image_sprite.flipVertical(true);
-    image_sprite.updateSprite(0, renderer);
+    image_sprite.update(0, renderer);
     
     Sprite bubby_sprite("sprites/bubby_AA_A00.png", renderer);
     bubby_sprite.setWhiteMask(white_mask.getTexture());
     bubby_sprite.setOpacity(128);
-    bubby_sprite.updateSprite(0, renderer);
+    bubby_sprite.update(0, renderer);
     
     Sprite coin_sprite("sprites/coins_AA_A00.png", renderer);
     coin_sprite.setWhiteMask(white_mask.getTexture());
-    coin_sprite.updateSprite(0, renderer);
+    coin_sprite.update(0, renderer);
     
     /* Main application loop */
     while(!quit)
@@ -310,23 +311,23 @@ bool Application::run()
       /* Clear screen */
       SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
       SDL_RenderClear(renderer);
-      
-      /* Render the application view */
-      render(cycle_time);
-      
+
       // TODO: Remove - Sprite rendering
       image_sprite.setBrightness(brightness2);
       image_sprite.setRotation(angle);
-      image_sprite.updateSprite(10, renderer);
+      image_sprite.update(10, renderer);
       image_sprite.render(renderer, 512, 512);
       
       bubby_sprite.setBrightness(brightness);
-      bubby_sprite.updateSprite(10, renderer);
+      bubby_sprite.update(10, renderer);
       bubby_sprite.render(renderer, 512, 525);
       
       coin_sprite.setBrightness(brightness);
-      coin_sprite.updateSprite(10, renderer);
+      coin_sprite.update(10, renderer);
       coin_sprite.render(renderer, 700, 300);
+      
+      /* Render the application view */
+      render(cycle_time);
       
       /* Update screen */
       SDL_RenderPresent(renderer);

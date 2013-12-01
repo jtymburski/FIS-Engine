@@ -11,6 +11,7 @@
  *
  * TODO:
  *   1. Add reverse function: 1(head)->2->3->4  -->  4(head)->3->2->1
+ *   2. Sound added for particular sprite (category based)
 *******************************************************************************/
 #include "Sprite.h"
 
@@ -21,7 +22,6 @@ const uint8_t Sprite::kDEFAULT_COLOR = 255;
 const uint8_t Sprite::kDEFAULT_OPACITY = 255;
 const uint8_t Sprite::kDOUBLE_DIGITS = 10;
 const float Sprite::kMAX_BRIGHTNESS = 2.0;
-const uint16_t Sprite::kUNSET_ANIMATE_TIME = -1;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -42,8 +42,9 @@ Sprite::Sprite()
   color_blue = kDEFAULT_COLOR;
   current = NULL;
   elapsed_time = 0;
-  head = NULL;
   flip = SDL_FLIP_NONE;
+  head = NULL;
+  id = 0;
   opacity = kDEFAULT_OPACITY;
   rotation_angle = 0;
   size = 0;
@@ -57,33 +58,22 @@ Sprite::Sprite()
  * Description: Constructor function - Set up one image, using the string path
  *              with an integer rotated angle.
  *
- * Input: QString image_path - image path to set as one sprite
- *        int rotate_angle - the degree angle to rotate the image at the path
+ * Input: std::string image_path - image path to set as one sprite
+ *        SDL_Renderer* renderer - the rendering engine for creating the image
  */
 Sprite::Sprite(std::string path, SDL_Renderer* renderer) : Sprite()
 {
-  /* See if the tile needs a split sequence - do it if relevant */
-  std::vector<std::string> split_path;
-  Helpers::split(path, '|', split_path);
-  if(split_path.size() == 3)
-  {
-    insertSequence(split_path[0], std::stoi(split_path[1]), 
-                   split_path[2], renderer);
-  }
-  else
-  {
-    insertFirst(path, renderer);
-  }
+  insertFirst(path, renderer);
 }
 
 /* 
  * Description: Constructor function - Set up sequence of images with an
  *              integer rotated angle.
  *
- * Input: QString head_path - the start part of the path
+ * Input: std::string head_path - the start part of the path
  *        int num_frames - the number of frames in this path sequence
- *        QString tail_path - the end of the path, after the count index
- *        int rotate_angle - the degree to rotate all the images at
+ *        std::string tail_path - the end of the path, after the count index
+ *        SDL_Renderer* renderer - the rendering engine for creating the images
  */
 Sprite::Sprite(std::string head_path, int num_frames,
                std::string tail_path, SDL_Renderer* renderer) : Sprite()
@@ -96,17 +86,28 @@ Sprite::Sprite(std::string head_path, int num_frames,
  */
 Sprite::~Sprite()
 {
+  /* Delete all class data */
   removeAll();
-  
   SDL_DestroyTexture(texture);
+  
+  /* Reset variables back to blank */
+  current = NULL;
+  head = NULL;
   texture = NULL;
+  white_mask = NULL;
 }
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
 
-/* Sets the color modification with the texture */
+/* Description: Sets the texture color modification on the sprite texture. This
+ *              is based on the internal stored red, green, blue values which
+ *              can be changed using setColorBalance().
+ *
+ * Inputs: none
+ * Output: none
+ */
 void Sprite::setColorMod()
 {
   if(brightness < kDEFAULT_BRIGHTNESS)
@@ -123,6 +124,65 @@ void Sprite::setColorMod()
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
+
+/*
+ * Description: Add the file data information, based on the xml data pointer
+ *              retrieved from the file handler during an XML read. The internal
+ *              elements get offset based on the given index.
+ *
+ * Inputs: XmlData data - the xml data storage class
+ *         int index - the element offset index to the sprite data
+ *         SDL_Renderer* renderer - the rendering engine to add the info
+ * Output: bool - true if the add was successful
+ */
+bool Sprite::addFileInformation(XmlData data, int index, 
+                                              SDL_Renderer* renderer)
+{
+  std::string element = data.getElement(index);
+  bool success = true;
+  
+  /* Splits the element, for underlying categorization */
+  std::vector<std::string> split_element;
+  Helpers::split(element, '_', split_element);
+  
+  /* Parse the sprite information - based on the element tag name */
+  if(element == "animation")
+    setAnimationTime(data.getDataInteger());
+  else if(element == "brightness")
+    success &= setBrightness(data.getDataFloat());
+  else if(element == "color_b")
+    setColorBalance(color_red, color_green, data.getDataInteger());
+  else if(element == "color_g")
+    setColorBalance(color_red, data.getDataInteger(), color_blue);
+  else if(element == "color_r")
+    setColorBalance(data.getDataInteger(), color_green, color_blue);
+  else if(element == "forward")
+  {
+    if(data.getDataBool())
+      success &= setDirectionForward();
+    else
+      success &= setDirectionReverse();
+  }
+  else if(element == "opacity")
+    setOpacity(data.getDataInteger());
+  else if(split_element.at(0) == "path")
+  {
+    success &= insertFrames(data.getDataString(), renderer);
+    
+    /* If there is element adjustments, do those changes */
+    if(split_element.size() > 1)
+    {
+      split_element.erase(split_element.begin());
+      success &= execImageAdjustments(split_element);
+    }
+  }
+  else if(element == "rotation")
+    setRotation(data.getDataInteger());
+  else if(element == "sound") // TODO
+    std::cout << "Sprite Sound: " << data.getDataString() << std::endl;
+  
+  return success;
+}
 
 /*
  * Description: Executes an image adjustment based on string data that is stored
@@ -177,7 +237,12 @@ bool Sprite::execImageAdjustments(std::vector<std::string> adjustments)
   return success;
 }
 
-/* Flips the sprite SDL image - either horizontal or vertical */
+/*
+ * Description: Sets the horizontal flip of the rendering texture.
+ *
+ * Inputs: bool flip - true if the horizontal flip should occur from the default
+ * Output: none
+ */
 void Sprite::flipHorizontal(bool flip)
 {
   /* Enables / Disables the horizontal flip */
@@ -189,7 +254,12 @@ void Sprite::flipHorizontal(bool flip)
                static_cast<SDL_RendererFlip>(this->flip & ~SDL_FLIP_HORIZONTAL);
 }
 
-/* Flips the sprite SDL image - either horizontal or vertical */
+/*
+ * Description: Sets the vertical flip of the rendering texture.
+ *
+ * Inputs: bool flip - true if the vertical flip should occur from the default
+ * Output: none
+ */
 void Sprite::flipVertical(bool flip)
 {
   /* Enables / Disables the vertical flip */
@@ -260,6 +330,17 @@ Frame* Sprite::getCurrentAndShift()
 Frame* Sprite::getFirstFrame()
 {
   return head;
+}
+
+/*
+ * Description: Returns the numerical identifier for the sprite texture.
+ *
+ * Inputs: none
+ * Output: uin16_t - an integer from 0 - 65535 (16 bit unsigned integer)
+ */
+uint16_t Sprite::getId()
+{
+  return id;
 }
 
 /* 
@@ -390,6 +471,31 @@ bool Sprite::insertFirst(std::string path, SDL_Renderer* renderer)
     head = NULL;
   }
   return false;
+}
+
+/*
+ * Description: Insert the frames based on a single path. This is a helper
+ *              function that differentiates between a multiple frame path
+ *              and a single path. The differentiation occurs between two 
+ *              vertical bars -> "path_|2|.png". This will send the path node
+ *              to the insertSequence for the two frames: path_00.png, 
+ *              path_01.png. If no vertical bars, it just tries and adds the 
+ *              single path.
+ *
+ * Inputs: std::string path - the path frame to add
+ *         SDL_Renderer* renderer - the rendering engine for the frames
+ * Output: bool - returns if successful
+ */
+bool Sprite::insertFrames(std::string path, SDL_Renderer* renderer)
+{
+  /* Split the path and see if it split. If it did, insert sequence. Otherwise
+   * insert the single frame at tail. */
+  std::vector<std::string> split_path;
+  Helpers::split(path, '|', split_path);
+  if(split_path.size() == 3)
+    return insertSequence(split_path[0], std::stoi(split_path[1]), 
+                          split_path[2], renderer);
+  return insertTail(path, renderer);
 }
 
 /* 
@@ -578,6 +684,18 @@ bool Sprite::removeTail()
 }
 
 /* Render the texture to the given renderer with the given parameters */
+/*
+ * Description: Renders the sprite data, utilizing a x and y coordinate, and a
+ *              width and height value, if relevant. If width and height aren't
+ *              entered, it uses the texture size.
+ *
+ * Inputs: SDL_Renderer* renderer - the rendering engine for the sprite texture
+ *         int x - the x coordinate on the painted viewport
+ *         int y - the y coordinate on the painted viewport
+ *         int h - the height of the texture painted
+ *         int w - the width of the texture painted
+ * Output: bool - status if the render was successful
+ */
 bool Sprite::render(SDL_Renderer* renderer, int x, int y, int h, int w)
 {
   if(current != NULL && renderer != NULL)
@@ -607,14 +725,12 @@ bool Sprite::render(SDL_Renderer* renderer, int x, int y, int h, int w)
  * Description: Sets the animation time between frame changes. Gets called from
  *              the update call below for updating the frames in the sequence.
  *
- * Inputs: short time - the update time in milliseconds
+ * Inputs: uint16_t time - the update time in milliseconds
  * Output: none
  */
-void Sprite::setAnimationTime(short time)
+void Sprite::setAnimationTime(uint16_t time)
 {
   /* Set the new animation time */
-  if(time < 0)
-    animation_time = kUNSET_ANIMATE_TIME;
   animation_time = time;
   
   /* Reset the elapsed time */
@@ -668,7 +784,16 @@ bool Sprite::setBrightness(float brightness)
   return in_limits;
 }
 
-/* Sets the color balance of the sprite */
+/*
+ * Description: Sets the color balance of the rendered texture. If each value is
+ *              at 255, that is full color saturation. As the numbers get
+ *              lowered, the color is pulled from the rendered texture.
+ * 
+ * Inputs: uint8_t red - the red color 0-255 rating (255 full)
+ *         uint8_t green - the green color 0-255 rating (255 full)
+ *         uint8_t blue - the blue color 0-255 rating (255 full)
+ * Output: none
+ */
 void Sprite::setColorBalance(uint8_t red, uint8_t green, uint8_t blue)
 {
   color_red = red;
@@ -706,6 +831,25 @@ bool Sprite::setDirectionReverse()
   return true;
 }
 
+/*
+ * Description: Sets the numerical identifier for the sprite. It can only be a
+ *              number greater than or equal to 0 and less than 65535.
+ *
+ * Inputs: uint16_t id - the new identifier
+ * Output: none
+ */
+void Sprite::setId(uint16_t id)
+{
+  this->id = id;
+}
+
+/*
+ * Description: Sets the sprite opacity. It utilizes an 8 bit unsigned number
+ *              where is 0 is fully transparent and 255 is fully opaque.
+ *
+ * Inputs: uint8_t opacity - the opacity rating
+ * Output: none
+ */
 void Sprite::setOpacity(uint8_t opacity)
 {
   this->opacity = opacity;
@@ -724,6 +868,15 @@ void Sprite::setRotation(int angle)
   rotation_angle = angle;
 }
 
+/*
+ * Description: Sets the white mask texture for downblending to create the 
+ *              simulation of brightness, if the brightness value is greater
+ *              than 1. If not set and brightness is above 1.0, this will result
+ *              in untested results.
+ *
+ * Inputs: SDL_Texture* texture - the white mask texture pointer
+ * Output: bool - the success of setting the white mask
+ */
 bool Sprite::setWhiteMask(SDL_Texture* texture)
 {
   if(texture != NULL)
@@ -826,7 +979,7 @@ bool Sprite::switchDirection()
  * Inputs: int cycle_time - the update time that has elapsed, in milliseconds
  * Output: none
  */
-void Sprite::updateSprite(int cycle_time, SDL_Renderer* renderer)
+void Sprite::update(int cycle_time, SDL_Renderer* renderer)
 {
   /* Start by updating the animation and shifting, if necessary */
   if(size > 1 && cycle_time > 0 && animation_time > 0)

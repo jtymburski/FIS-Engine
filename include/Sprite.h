@@ -12,10 +12,12 @@
 #ifndef SPRITE_H
 #define SPRITE_H
 
+#include <iostream>
 #include <vector>
 
 #include "Helpers.h"
 #include "Frame.h"
+#include "XmlData.h"
 
 class Sprite
 {
@@ -61,6 +63,9 @@ private:
   /* The first frame */
   Frame* head;
 
+  /* The sprite ID, useful when keeping track of a large number of sprites */
+  uint16_t id;
+  
   /* How the SDL texture should be flipped while rendering */
   SDL_RendererFlip flip;
 
@@ -90,7 +95,6 @@ private:
   const static uint8_t kDEFAULT_OPACITY; /* the default rendered alpha */
   const static uint8_t kDOUBLE_DIGITS; /* the borderline to double digits */
   const static float kMAX_BRIGHTNESS; /* The max brightness value */
-  const static uint16_t kUNSET_ANIMATE_TIME; /* The unset animate time value */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -103,6 +107,9 @@ private:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Adds sprite information from the XML data classifier from the file */
+  bool addFileInformation(XmlData data, int index, SDL_Renderer* renderer);
+
   /* Executes the necessary image adjustments, as per the file data handlers */
   bool execImageAdjustment(std::string adjustment);
   bool execImageAdjustments(std::vector<std::string> adjustments);
@@ -126,6 +133,9 @@ public:
   /* Returns the head frame */
   Frame* getFirstFrame();
  
+  /* Returns the ID */
+  uint16_t getId();
+  
   /* Returns the position that the linked list pointer is at */
   int getPosition();
 
@@ -139,6 +149,10 @@ public:
    * Note: This isn't for inserting the head, just the first one */
   bool insertFirst(std::string path, SDL_Renderer* renderer);
 
+  /* This inserts all the given frames at the tail. If there are any "|" 
+   * delimiters, it splits the path and adds the sequence */
+  bool insertFrames(std::string path, SDL_Renderer* renderer);
+  
   /* Inserts a sequence of images that are stored. This allows for 
    * quick insertion of stored frames
    * For example: head_path = ":/animation/image_"
@@ -173,7 +187,7 @@ public:
                                       int h = 0, int w = 0);
 
   /* Sets the frame animation time (in ms) */
-  void setAnimationTime(short time);
+  void setAnimationTime(uint16_t time);
   
   /* Asserts that the current pointer in the linked list is at the head */
   bool setAtFirst();
@@ -190,6 +204,9 @@ public:
   /* Asserts the direction is reverse for when accessing the linked list */
   bool setDirectionReverse();
 
+  /* Sets the numerical identifier */
+  void setId(uint16_t id);
+  
   /* Sets the opacity rating */
   void setOpacity(uint8_t opacity);
   
@@ -209,7 +226,7 @@ public:
   bool switchDirection();
 
   /* Updates the frames within the sprite */
-  void updateSprite(int cycle_time, SDL_Renderer* renderer);
+  void update(int cycle_time, SDL_Renderer* renderer);
   
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
