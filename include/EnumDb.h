@@ -227,20 +227,6 @@ enum class EquipmentSlots : std::uint8_t
   LEGS
 };
 
-/* 
- * Description: The event classification - for what the event will do 
- */
-enum class EventClassifier 
-{
-  NOEVENT        = 0,
-  GIVEITEM       = 1,
-  RUNBATTLE      = 2, 
-  RUNMAP         = 3,
-  TELEPORTPLAYER = 4,
-  TELEPORTTHING  = 5,
-  TARTCONVO      = 6 
-};
-
 /*
  * Description: Possible states of sorting for inventory items
  */
