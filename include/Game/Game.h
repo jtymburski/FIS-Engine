@@ -14,7 +14,7 @@
 #include <SDL2/SDL.h>
 
 //#include "Game/Battle/Battle.h"
-//#include "Game/EventHandler.h"
+#include "Game/EventHandler.h"
 #include "Game/Map/Map.h"
 //#include "Game/Player/Player.h"
 //#include "Game/VictoryScreen.h"
@@ -39,7 +39,7 @@ public:
 
 private:
   /* Handles all events throughout the game. */
-  //EventHandler event_handler;
+  EventHandler event_handler;
   
   /* A current battle pointer */
   //Battle* game_battle;
@@ -69,10 +69,7 @@ private:
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
-private:
-  /* Connect the event handler to the game */
-//  void connectEvents();
-  
+private:  
   /* Set up the battle */
   void setupBattle();
 

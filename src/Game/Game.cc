@@ -47,10 +47,6 @@ Game::~Game()
   game_config = NULL;
   mode = DISABLED;
 
-//  /* Clear out the widgets in the stack */
-//  while(count() > 0)
-//    removeWidget(widget(0));
-//
 //  /* Delete battle */
 //  if(game_battle != 0)
 //  {
@@ -69,30 +65,6 @@ Game::~Game()
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
-  
-/* Connect the event handler to the game */
-/*void Game::connectEvents()
-{
-  QObject::connect(&event_handler, SIGNAL(giveItem(int, int)),
-                   this,           SLOT(giveItem(int, int)));
-
-  QObject::connect(
-              &event_handler, 
-              SIGNAL(initConversation(Conversation*, MapPerson*, MapThing*)), 
-              this, 
-              SLOT(initConversation(Conversation*, MapPerson*, MapThing*)));
-  
-  QObject::connect(&event_handler, SIGNAL(pickupItem(MapItem*, bool)),
-                   this,           SLOT(pickupItem(MapItem*, bool)));
-
-  QObject::connect(&event_handler, SIGNAL(startBattle()), 
-                   this,           SLOT(startBattle()));
-
-  QObject::connect(&event_handler, 
-                   SIGNAL(teleportThing(MapPerson*, int, int, int)), 
-                   this,           
-                   SLOT(teleportThing(MapPerson*, int, int, int)));
-}*/
 
 /* Set up the battle - old battle needs to be deleted prior to calling */
 void Game::setupBattle()
@@ -126,7 +98,7 @@ void Game::setupBattle()
 void Game::setupMap()
 {
   /* Create the map */
-  game_map = new Map(game_config);//, &event_handler);
+  game_map = new Map(game_config, &event_handler);
   mode = MAP;
   
 //  /* Load the map - temporary location */
