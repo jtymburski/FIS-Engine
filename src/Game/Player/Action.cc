@@ -136,8 +136,7 @@ Action::~Action() {}
  */
 bool Action::parse(const std::string &raw)
 {
-  std::vector<std::string> sub_strings;
-  Helpers::split(raw, kDELIMITER, sub_strings);
+  std::vector<std::string> sub_strings = Helpers::split(raw, kDELIMITER);
 
   if (sub_strings.size() == 7 || sub_strings.size() == 8)
   {
@@ -158,8 +157,8 @@ bool Action::parse(const std::string &raw)
     /* Parse min & max durations */
     if (sub_strings.at(3) != "")
     {
-      std::vector<std::string> turns;
-      Helpers::split(sub_strings.at(3), kDELIMITER_2, turns);
+      std::vector<std::string> turns = 
+                                Helpers::split(sub_strings.at(3), kDELIMITER_2);
 
       if (turns.size() == 2)
         setDuration(std::stoi(turns.at(0)), std::stoi(turns.at(1)));
@@ -181,8 +180,8 @@ bool Action::parse(const std::string &raw)
     /* Parse base change */
     if (sub_strings.at(6) != "")
     {
-      std::vector<std::string> base_values;
-      Helpers::split(sub_strings.at(6), kDELIMITER_2, base_values);
+      std::vector<std::string> base_values = 
+                                Helpers::split(sub_strings.at(6), kDELIMITER_2);
       
       if (base_values.size() == 2)
       {
@@ -200,8 +199,8 @@ bool Action::parse(const std::string &raw)
     /* Parse variance [check if size is right - no empty end on split() ] */
     if (sub_strings.size() == 8 && sub_strings.at(7) != "")
     {
-      std::vector<std::string> variance_values;
-      Helpers::split(sub_strings.at(7), kDELIMITER_2, variance_values);
+      std::vector<std::string> variance_values = 
+                                Helpers::split(sub_strings.at(7), kDELIMITER_2);
 
       if (variance_values.size() == 2)
       {
@@ -331,9 +330,7 @@ bool Action::parseAttribute(const std::string &attr_parse)
 
 void Action::parseIgnoreFlags(IgnoreFlags& flag_set, const std::string &flags)
 {
-  std::vector<std::string> sub_strings;
-
-  Helpers::split(flags, kDELIMITER_2, sub_strings);
+  std::vector<std::string> sub_strings = Helpers::split(flags, kDELIMITER_2);
 
   for (std::string s : sub_strings)
   {

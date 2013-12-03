@@ -70,15 +70,26 @@ Sprite::Sprite(std::string path, SDL_Renderer* renderer) : Sprite()
  * Description: Constructor function - Set up sequence of images with an
  *              integer rotated angle.
  *
- * Input: std::string head_path - the start part of the path
- *        int num_frames - the number of frames in this path sequence
- *        std::string tail_path - the end of the path, after the count index
- *        SDL_Renderer* renderer - the rendering engine for creating the images
+ * Inputs: std::string head_path - the start part of the path
+ *         int num_frames - the number of frames in this path sequence
+ *         std::string tail_path - the end of the path, after the count index
+ *         SDL_Renderer* renderer - the rendering engine for creating the images
  */
 Sprite::Sprite(std::string head_path, int num_frames,
                std::string tail_path, SDL_Renderer* renderer) : Sprite()
 {
   insertSequence(head_path, num_frames, tail_path, renderer);
+}
+
+/*
+ * Description: The copy constructor to transfer all non-graphical parameters
+ *              from the master sprite to this one.
+ *
+ * Inputs: const Sprite &source - the source sprite data to copy over
+ */
+Sprite::Sprite(const Sprite &source)
+{
+  copySelf(source);
 }
 
 /* 
@@ -100,6 +111,28 @@ Sprite::~Sprite()
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
+
+/*
+ * Description: The copy function that is called by any copying methods in the
+ *              class. Utilized by the copy constructor and the copy operator.
+ *
+ * Inputs: const Sprite &source - the reference sprite class
+ * Output: none
+ */
+void Sprite::copySelf(const Sprite &source)
+{
+  setAnimationTime(source.getAnimationTime());
+  setBrightness(source.getBrightness());
+  setColorBalance(source.getColorRed(), source.getColorGreen(), 
+                                        source.getColorBlue());
+  if(source.isDirectionForward())
+    setDirectionForward();
+  else
+    setDirectionReverse();
+  setOpacity(source.getOpacity());
+  setRotation(source.getRotation());
+  //setSound(); // TODO: Future?
+}
 
 /* Description: Sets the texture color modification on the sprite texture. This
  *              is based on the internal stored red, green, blue values which
@@ -142,8 +175,7 @@ bool Sprite::addFileInformation(XmlData data, int index,
   bool success = true;
   
   /* Splits the element, for underlying categorization */
-  std::vector<std::string> split_element;
-  Helpers::split(element, '_', split_element);
+  std::vector<std::string> split_element = Helpers::split(element, '_');
   
   /* Parse the sprite information - based on the element tag name */
   if(element == "animation")
@@ -277,7 +309,7 @@ void Sprite::flipVertical(bool flip)
  * Inputs: none
  * Output: short - the animation time in milliseconds
  */
-short Sprite::getAnimationTime()
+short Sprite::getAnimationTime() const
 {
   return animation_time;
 }
@@ -290,9 +322,45 @@ short Sprite::getAnimationTime()
  * Output: float - the brightness indicator 
  *                (<1: darker, 1: default, >1: lighter)
  */
-float Sprite::getBrightness()
+float Sprite::getBrightness() const
 {
   return brightness;
+}
+
+/*
+ * Description: Returns the color distribution evenness, according to the blue
+ *              RGB value. Rated from 0 to 255. (255 full saturation).
+ *
+ * Inputs: none
+ * Output: uint8_t - the rated blue RGB value
+ */
+uint8_t Sprite::getColorBlue() const
+{
+  return color_blue;
+}
+
+/*
+ * Description: Returns the color distribution evenness, according to the green
+ *              RGB value. Rated from 0 to 255. (255 full saturation).
+ *
+ * Inputs: none
+ * Output: uint8_t - the rated green RGB value
+ */
+uint8_t Sprite::getColorGreen() const
+{
+  return color_green;
+}
+
+/*
+ * Description: Returns the color distribution evenness, according to the red
+ *              RGB value. Rated from 0 to 255. (255 full saturation).
+ *
+ * Inputs: none
+ * Output: uint8_t - the rated red RGB value
+ */
+uint8_t Sprite::getColorRed() const
+{
+  return color_red;
 }
 
 /* 
@@ -338,9 +406,20 @@ Frame* Sprite::getFirstFrame()
  * Inputs: none
  * Output: uin16_t - an integer from 0 - 65535 (16 bit unsigned integer)
  */
-uint16_t Sprite::getId()
+uint16_t Sprite::getId() const
 {
   return id;
+}
+
+/*
+ * Description: Returns the opacity that the sprite is rendered at.
+ *
+ * Inputs: none
+ * Output: uint8_t - the opacity value, from 0-255. 255 full opaque
+ */
+uint8_t Sprite::getOpacity() const
+{
+  return opacity;
 }
 
 /* 
@@ -363,13 +442,24 @@ int Sprite::getPosition()
   return location;
 }
 
+/*
+ * Description: Returns the rotation angle for rendering the texture, in degrees
+ *
+ * Inputs: none
+ * Output: int - the angle, in degrees
+ */
+int Sprite::getRotation() const
+{
+  return rotation_angle;
+}
+
 /* 
  * Description: Returns the size of the sequence 
  *
  * Inputs: none
  * Output: int - the size of the sprite list
  */
-int Sprite::getSize()
+int Sprite::getSize() const
 {
   return size;
 }
@@ -490,8 +580,7 @@ bool Sprite::insertFrames(std::string path, SDL_Renderer* renderer)
 {
   /* Split the path and see if it split. If it did, insert sequence. Otherwise
    * insert the single frame at tail. */
-  std::vector<std::string> split_path;
-  Helpers::split(path, '|', split_path);
+  std::vector<std::string> split_path = Helpers::split(path, '|');
   if(split_path.size() == 3)
     return insertSequence(split_path[0], std::stoi(split_path[1]), 
                           split_path[2], renderer);
@@ -592,7 +681,7 @@ bool Sprite::isAtEnd()
  * Inputs: none
  * Output: bool - status if the direction is forward. False if reverse.
  */
-bool Sprite::isDirectionForward()
+bool Sprite::isDirectionForward() const
 {
   return (sequence == FORWARD);
 }
@@ -1017,6 +1106,30 @@ void Sprite::update(int cycle_time, SDL_Renderer* renderer)
     SDL_SetRenderTarget(renderer, NULL);
     texture_update = false;
   }
+}
+
+/*=============================================================================
+ * OPERATOR FUNCTIONS
+ *============================================================================*/
+
+/*
+ * Description: Copy operator construction. This is called when the variable
+ *              already exists and equal operator used with another sprite.
+ *
+ * Inputs: const Sprite &source - the source class constructor
+ * Output: Sprite& - pointer to the copied class
+ */
+Sprite& Sprite::operator= (const Sprite &source)
+{
+  /* Check for self assignment */
+  if(this == &source)
+    return *this;
+  
+  /* Do the copy */
+  copySelf(source);
+
+  /* Return the copied object */
+  return *this;
 }
 
 /*============================================================================

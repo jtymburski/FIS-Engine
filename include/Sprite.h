@@ -32,6 +32,9 @@ public:
   Sprite(std::string head_path, int num_frames, 
          std::string tail_path, SDL_Renderer* renderer);
 
+  /* Copy constructor */
+  Sprite(const Sprite &source);
+  
   /* Destructor function */
   ~Sprite();
 
@@ -100,6 +103,9 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Copy function, to be called by a copy or equal operator constructor */
+  void copySelf(const Sprite &source);
+  
   /* Sets the color modification with the texture */
   void setColorMod();
   
@@ -119,10 +125,15 @@ public:
   void flipVertical(bool flip = true);
   
   /* Returns the total animation time between frame changes */
-  short getAnimationTime();
+  short getAnimationTime() const;
   
   /* Gets the brightness (0-0.99: darker, 1.0: same, 1.0+: brighter) */
-  float getBrightness();
+  float getBrightness() const;
+  
+  /* Gets the color balance in the spectrum */
+  uint8_t getColorBlue() const;
+  uint8_t getColorGreen() const;
+  uint8_t getColorRed() const;
   
   /* Gets the current frame */
   Frame* getCurrent();
@@ -134,13 +145,19 @@ public:
   Frame* getFirstFrame();
  
   /* Returns the ID */
-  uint16_t getId();
+  uint16_t getId() const;
+  
+  /* Returns the opacity that it is rendered at */
+  uint8_t getOpacity() const;
   
   /* Returns the position that the linked list pointer is at */
   int getPosition();
 
+  /* Returns the rotation angle for rendering */
+  int getRotation() const;
+  
   /* Returns the size of the sequence */
-  int getSize();
+  int getSize() const;
   
   /* Inserts the image into the sprite sequence at the given position */
   bool insert(std::string path, SDL_Renderer* renderer, int position);
@@ -171,7 +188,7 @@ public:
   bool isAtEnd();
 
   /* Returns if the direction parsing the frames is forward */
-  bool isDirectionForward();
+  bool isDirectionForward() const;
 
   /* Removes the frame in the sequence at the given position */
   bool remove(int position);
@@ -227,7 +244,13 @@ public:
 
   /* Updates the frames within the sprite */
   void update(int cycle_time, SDL_Renderer* renderer);
-  
+
+/*============================================================================
+ * OPERATOR FUNCTIONS
+ *===========================================================================*/
+public:
+  Sprite& operator= (const Sprite &source);
+
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/

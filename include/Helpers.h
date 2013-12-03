@@ -72,8 +72,7 @@ public:
   static T setWithinRange(T &value, const size_t &a, const size_t &b);
   
   /* Splits the string using the given delimiter */
-  static std::vector<std::string> split(const std::string &s, char delim,
-                                        std::vector<std::string> &elements);
+  static std::vector<std::string> split(const std::string &s, char delim);
 };
 
 #endif // HELPERS_H

@@ -204,26 +204,21 @@ T Helpers::setWithinRange(T &value, const size_t &a, const size_t &b)
 
 /*
  * Description: A split function that works with a string line and a character
- *              delimiter to cut the string line into a set of tokens. The 
- *              array elements needs to be entered into the function and is
- *              also returned. This function returns empty strings if they
- *              are delimited.
+ *              delimiter to cut the string line into a set of tokens. This 
+ *              function returns empty strings if they are delimited.
  *
  * Example: std::string test = "Hello,sunshine,,what,a,beautiful,day";
- *          std::vector<std::string> temp_list;
- *          split(test, ',', temp_list);
+ *          std::vector<std::string> temp_list = split(test, ',');
  * 
  * Note: Does not give an empty final element.
  *
  * Inputs: const std::string &line - the line to split
  *         char delim - the character delimiter
- *         std::vector<std::string> &elements - the array of elements to store
- *                                              the tokenized string
- * Output: std::vector<std::string> - the same array returned.
+ * Output: std::vector<std::string> - the split strings in array returned.
  */
-std::vector<std::string> Helpers::split(const std::string &line, char delim, 
-                                        std::vector<std::string> &elements)
+std::vector<std::string> Helpers::split(const std::string &line, char delim)
 {
+  std::vector<std::string> elements;
   std::string item;
   std::stringstream ss(line);
   

@@ -86,8 +86,7 @@ bool Tile::addPassability(std::string data, std::string classifier,
 {
   bool success = true;
   Direction new_direction = Direction::DIRECTIONLESS;
-  std::vector<std::string> data_list;
-  Helpers::split(data, ',', data_list);
+  std::vector<std::string> data_list = Helpers::split(data, ',');
   
   /* Loop through each value of the data list to add */
   for(uint16_t i = 0; i < data_list.size(); i++)
