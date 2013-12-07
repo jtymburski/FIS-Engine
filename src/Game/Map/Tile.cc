@@ -646,6 +646,7 @@ bool Tile::renderLower(SDL_Renderer* renderer, int offset_x, int offset_y)
   bool success = true;
   int pixel_x = getPixelX() - offset_x;
   int pixel_y = getPixelY() - offset_y;
+  //std::cout << pixel_x << " " << pixel_y << std::endl;
   
   /* Only proceed if the status isn't off */
   if(status != OFF)
@@ -655,7 +656,7 @@ bool Tile::renderLower(SDL_Renderer* renderer, int offset_x, int offset_y)
       /* Paint the base first */
       if(base != NULL)
         success &= base->render(renderer, pixel_x, pixel_y);
-
+      
       /* Then the enhancer sprite */
       if(enhancer != NULL)
         success &= enhancer->render(renderer, pixel_x, pixel_y);

@@ -212,7 +212,7 @@ void Game::keyUpEvent(SDL_KeyboardEvent event)
 bool Game::render(SDL_Renderer* renderer)
 {
   if(!game_map->isLoaded())
-   game_map->loadMap("maps/test_04", renderer);
+   game_map->loadMap("maps/test_05", renderer);
   
   if(mode == MAP)
     return game_map->render(renderer);
