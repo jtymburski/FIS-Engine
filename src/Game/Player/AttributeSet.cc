@@ -534,8 +534,9 @@ AttributeSet& AttributeSet::operator= (const AttributeSet &source)
  */
 AttributeSet& AttributeSet::operator+=(const AttributeSet& rhs)
 {
-  for (size_t i = 0; i < kNUM_VALUES; i++)
-    this->values[i] = this->values[i] + rhs.values[i];
+  if (!this->getFlag(AttributeState::CONSTANT))
+    for (size_t i = 0; i < kNUM_VALUES; i++)
+      this->values[i] = this->values[i] + rhs.values[i];
 
   /* Assert the new values are within range */
   this->cleanUp();
@@ -553,8 +554,9 @@ AttributeSet& AttributeSet::operator+=(const AttributeSet& rhs)
  */
 AttributeSet& AttributeSet::operator-=(const AttributeSet& rhs)
 {
-  for (size_t i = 0; i < kNUM_VALUES; i++)
-    this->values[i] = this->values[i] - rhs.values[i];
+  if (!this->getFlag(AttributeState::CONSTANT))
+    for (size_t i = 0; i < kNUM_VALUES; i++)
+      this->values[i] = this->values[i] - rhs.values[i];
 
   /* Assert the new values are within range */
   this->cleanUp();

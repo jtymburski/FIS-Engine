@@ -17,8 +17,6 @@
 * ----
 * - Is copy constructor needed? (ID Problem) [11-23-13]
 * - Possible OFENSIVE/DEFENSIVE/NEUTRAL categories (set in flags)? [11-23-13]
-* - Testing [11-22-13]
-* - Conventions [11-22-13]
 *******************************************************************************/
 
 #ifndef SKILL_H
@@ -33,6 +31,7 @@
 #include "Sound.h"
 #include "Sprite.h"
 
+/* SkillFlags enumerated flags for classification of skill types */
 ENUM_FLAGS(SkillFlags)
 enum class SkillFlags
 {
@@ -48,53 +47,73 @@ enum class SkillFlags
 class Skill
 {
 public:
-
+  /* Constructs a default Skill object */
   Skill();
 
+  /* Skill Copy constructor */
   Skill(const Skill &source);
 
+  /* Basic Skill constructor given a name */
   Skill(const std::string &name);
 
+  /* General Skill construction with one effect */
   Skill(const int &id, const std::string &name, const ActionScope &scope,
         Action* effect, const float &chance);
 
+  /* General skill construction with multiple effects */
   Skill(const int &id, const std::string &name, const ActionScope &scope, 
   	    const std::vector<Action*> &effects, const std::vector<float> &chances);
 
+  /* Annihilates a Skill object */
   ~Skill();
 
 private:
-
+  /* Pointer to the animation played by the Skill during Battle */
   Sprite* animation;
 
+  /* Amount of turns the Skill takes to use */
   uint32_t cooldown;
 
+  /* Cost of the Skill measured in QD */
   uint32_t cost;
 
+  /* Description of the Skill */
   std::string description;
 
+  /* Vector of effects the Skill does during use */
   std::vector<Action*> effects;
 
+  /* Vector of chances correlating to the chance each effect has */
   std::vector<float> chances;
 
+  /* Set of SkillFlags for skill categorization */
   SkillFlags flags;
 
+  /* The ID of the Skill */
   int id;
 
+  /* String name of the Skill */
   std::string name;
 
+  /* Primary elemental strength of the Skill */
   Element primary;
 
+  /* Secondary elemental strength of the Skill */
   Element secondary;
 
+  /* Pointer to the sound effect on use of the Skill */
   Sound* sound_effect;
 
+  /* Scope of use of the action (one enemey, one ally, etc.) */
   ActionScope scope;
 
+  /* Pointer to the thumbnail of the Skill */
   Frame* thumbnail;
 
+  /* String message displayed upon use of the Skill */
   std::string message;
 
+  /* Arbitrary point value of the Skill (for AI-use) */
   uint32_t value;
 
   /* ------------ Constants --------------- */
@@ -111,90 +130,131 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
-
+  /* Method for setting up the class */
   void classSetup();
 
+  /* Common function for assignment/copy constructor */
   void copySelf(const Skill &source);
 
+  /* Determines the Skill classification based on contained effects */
   void flagSetup();
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
-
+  /* Attempts to add an action given a chance to the effect list */
   bool addAction(Action* new_action, const float &new_chance, 
                  const bool &single = true);
 
+  /* Attempts to add a vector of effects to the Skill */
   bool addActions(const std::vector<Action*> &new_actions, 
                   const std::vector<float> &new_chances);
 
+  /* Determines if the Skill is valid */
   bool isValid();
 
+  /* Prints out the information about the current Skill state */
   void print();
 
+  /* Attempts to remove an action from the vector of effects by index */
   bool removeAction(const uint32_t &index);
 
+  /* Returns a pointer to the animation sprite */
   Sprite* getAnimation();
  
+  /* Returns the cooldown of the Skill */
   uint32_t getCooldown();
 
+  /* Returns the chance of a given effect */
   float getChance(const uint32_t &index);
 
+  /* Returns the vector of chances for the effects */
   std::vector<float> getChances();
 
+  /* Returns the string description */
   std::string getDescription();
 
+  /* Returns the effect of a given index */
   Action* getEffect(const uint32_t &index);
 
+  /* Returns the vector of effects of the Skill */
   std::vector<Action*> getEffects();
 
+  /* Returns the evaluation of a given SkillFlags flag */
   bool getFlag(SkillFlags test_flag);
 
+  /* Returns the ID of the Skill */
   int getID();
 
+  /* Returns the string name */
   std::string getName();
 
+  /* Returns the primary element */
   Element getPrimary();
 
+  /* Returns the secondary element */
   Element getSecondary();
 
+  /* Returns the sound effect */
   Sound* getSoundEffect();
 
+  /* Returns the enumerated scope */
   ActionScope getScope();
 
+  /* Returns the thumbnail */
   Frame* getThumbnail();
 
+  /* Returns the using message */
   std::string getMessage();
 
+  /* Returns the point value */
   uint32_t getValue();
 
-  bool setAnimation(Sprite* const new_animation);
+  /* Assigns a new using animation */
+  bool setAnimation(Sprite* new_animation);
 
+  /* Assigns a new cooldown */
   bool setCooldown(const uint32_t &new_value);
 
+  /* Assigns a new description */
   bool setDescription(const std::string &new_description);
 
+  /* Assigns a given flag to a value */
   void setFlag(const SkillFlags &flag, const bool &set_value = true);
 
-  bool setID(const unsigned int &new_id);
+  /* Assigns an ID to the Skill */
+  bool setID(const int &new_id);
   
+  /* Assigns a string name to the skill */
   bool setName(const std::string &new_name);
 
+  /* Assigns a new primary elemental strength */
   void setPrimary(const Element &new_element);
 
+  /* Assigns a new secondary elemental strength */
   void setSecondary(const Element &new_element);
 
-  bool setSoundEffect(Sound* const new_sound_effect);
+  /* Assigns a new sound effect */
+  bool setSoundEffect(Sound* new_sound_effect);
 
+  /* Assigns a new action scope */
   void setScope(const ActionScope &new_scope);
 
-  void setThumbnail(Frame* const new_thumbnail);
+  /* Assigns a new thumbnail */
+  void setThumbnail(Frame* new_thumbnail);
 
+  /* Assigns a new using message */
   bool setMessage(const std::string &new_message);
 
+  /* Assigns a new point value */
   bool setValue(const uint32_t &new_value);
 
+/*=============================================================================
+ * OVERLOADED OPERATORS
+ *============================================================================*/
+public:
+  /* Overloaded = operator */
   Skill& operator=(const Skill &source);
 };
 

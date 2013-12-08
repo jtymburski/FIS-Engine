@@ -18,7 +18,7 @@
 
 #include "Game/Player/Skill.h"
 
-/*=============================================================================
+/*===============================f==============================================
  * CONSTANTS
  *============================================================================*/
 const size_t   Skill::kMAX_ACTIONS       =   10;
@@ -35,9 +35,9 @@ const int      Skill::kUNSET_ID          =   -1;
  *============================================================================*/
 
 /*
- * Description:
+ * Description: Constructs a default (invalid) Skill object.
  *
- * Inputs:
+ * Inputs: none
  */
 Skill::Skill()
 {
@@ -45,9 +45,9 @@ Skill::Skill()
 }
 
 /*
- * Description:
+ * Description: Copy constructor given a source Skill.
  *
- * Inputs:
+ * Inputs: none
  */
 Skill::Skill(const Skill &source)
 {
@@ -55,9 +55,9 @@ Skill::Skill(const Skill &source)
 }
 
 /*
- * Description:
+ * Description: Constructs a basic empty Skill given a name.
  *
- * Inputs:
+ * Inputs: name - string name for the Skill
  */
 Skill::Skill(const std::string &name)
 {
@@ -66,9 +66,14 @@ Skill::Skill(const std::string &name)
 }
 
 /*
- * Description:
+ * Description: General construction of a Skill given an ID, name, scope and 
+ *              a single effect with a chance for it occuring.
  *
- * Inputs:
+ * Inputs: id - the ID number for the Skill
+ *         name - string name for the Skill
+ *         scope - enumerated conditions of use for the effects of the Skill
+ *         effect - pointer to an action which the Skill will do
+ *         chance - float chance for the action to take place.
  */
 Skill::Skill(const int &id, const std::string &name, const ActionScope &scope,
 	           Action* effect, const float &chance)
@@ -78,14 +83,20 @@ Skill::Skill(const int &id, const std::string &name, const ActionScope &scope,
   setName(name);
   setScope(scope);
 
+  /* The skill will be valid of the action is able to be added */
   if (addAction(effect, chance))
     setFlag(SkillFlags::VALID);
 }
 
 /*
- * Description:
+ * Description: General construction of a Skill given an ID, name, scope and
+ *              a vector of effects with corresponding vector of chances.
  *
- * Inputs:
+ * Inputs: id - the ID number for the Skill
+ *         name - string name for the Skill
+ *         scope - enumerated conditions of use for the effects of the Skill
+ *         effects - vector of effects the action does
+ *         chances - vector of chances relating to the effects
  */
 Skill::Skill(const int &id, const std::string &name, const ActionScope &scope, 
 	           const std::vector<Action*> &effects, 
@@ -96,14 +107,16 @@ Skill::Skill(const int &id, const std::string &name, const ActionScope &scope,
   setName(name);
   setScope(scope);
 
+  /* The skill will be valid of all the actions are able to be added */
   if (addActions(effects, chances))
     setFlag(SkillFlags::VALID);
 
+  /* Flags need to be determined since a single addition did not take place */
   flagSetup();
 }
 
 /*
- * Description:
+ * Description: Annihilates a SKill object
  */
 Skill::~Skill() {}
 
@@ -113,10 +126,10 @@ Skill::~Skill() {}
  *============================================================================*/
 
 /*
- * Description:
+ * Description: Does the initial setup for the Skill class.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: none
  */
 void Skill::classSetup()
 {
@@ -137,10 +150,11 @@ void Skill::classSetup()
 }
 
 /*
- * Description:
+ * Description: Common function for copy construction between the copy
+ *              constructor and assignment operator.
  *
- * Inputs:
- * Output:
+ * Inputs: source - source object to copy from
+ * Output: none
  */
 void Skill::copySelf(const Skill &source)
 {
@@ -161,10 +175,12 @@ void Skill::copySelf(const Skill &source)
 }
 
 /*
- * Description:
+ * Description: Assigns the SkillFlag (categorization of Skill types) based
+ *              on the ActionKeywords and related of each action effect
+ *              contained in the Skill.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: none
  */
 void Skill::flagSetup()
 {
@@ -208,6 +224,15 @@ void Skill::flagSetup()
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
+/*
+ * Description: Attempts to add an action with a chance for it occuring
+ *              to those already included in the Skill.
+ *
+ * Inputs: new_action - pointer to the action to be added to the Skill
+ *         new_chance - chance for the action to occur
+ *         single - boolean whether to call flagSetup (only needs one call)
+ * Output: bool - true if the effect can and was added
+ */
 bool Skill::addAction(Action* new_action, const float &new_chance, 
                       const bool &single)
 {
@@ -225,6 +250,14 @@ bool Skill::addAction(Action* new_action, const float &new_chance,
   return false;
 }
 
+/*
+ * Description: Attempts to add a number of effects to the Skill given a vector
+ *              of Action ptrs and a vector of chances to go with them.
+ *
+ * Inputs: new_actions - vector of pointers to effects to be added
+ *         new_chances - vector of chances corresponding to the effects
+ * Output: bool - true if all the actions were successfully added
+ */
 bool Skill::addActions(const std::vector<Action*> &new_actions, 
 	                     const std::vector<float> &new_chances)
 {
@@ -232,17 +265,35 @@ bool Skill::addActions(const std::vector<Action*> &new_actions,
 
   if (new_actions.size() == new_chances.size())
   {
+    /* Temporarily store the effects and chances */
+    auto temp_effects = effects;
+    auto temp_chances = chances;
+
     auto it_e = new_actions.begin();
     auto it_c = new_chances.begin();
 
-    for ( ; it_e != new_actions.end(), it_c != new_chances.end(); ++it_e, ++it_c)
+    for (; it_e != new_actions.end(), it_c != new_chances.end(); ++it_e, ++it_c)
       if (!addAction((*it_e), (*it_c)), false)
         valid = false;
+
+    /* Undo the additions if they were not valid */
+    if (!valid)
+    {
+      effects = temp_effects;
+      chances = temp_chances;
+    }
+
   }
 
   return valid;
 }
 
+/*
+ * Description: Evaluates and returns  the validity of the current Skill object.
+ *
+ * Inputs: none
+ * Output: bool - validity of the current Skill object
+ */
 bool Skill::isValid()
 {
   bool valid = true;
@@ -256,6 +307,12 @@ bool Skill::isValid()
   return valid;
 }
 
+/*
+ * Description: Outputs [std::cout] the current state of the Skill
+ *
+ * Inputs: none
+ * Output: none
+ */
 void Skill::print()
 {
   std::cout << "--- Skill ----\n";
@@ -285,6 +342,12 @@ void Skill::print()
   std::cout << "VALID: " << getFlag(SkillFlags::VALID) << std::endl;
 }
 
+/*
+ * Description: Attempts to remove an action from the Skill being give an index.
+ *
+ * Inputs: index - the index of the skill to be removed
+ * Output: bool - true if the skill was removed
+ */
 bool Skill::removeAction(const uint32_t &index)
 {
   if ((effects.size() == chances.size()) && index < effects.size())
@@ -298,16 +361,34 @@ bool Skill::removeAction(const uint32_t &index)
   return false;
 }
 
+/*
+ * Description: Returns a pointer to the using animation of the Skill.
+ *
+ * Inputs: none
+ * Output: Sprite* 
+ */
 Sprite* Skill::getAnimation()
 {
   return animation;
 }
  
+/*
+ * Description: Returns the cooldown of the Skill
+ *
+ * Inputs: none
+ * Output: uint32_t - the Skill's cooldown
+ */
 uint32_t Skill::getCooldown()
 {
   return cooldown;
 }
 
+/*
+ * Description: Returns the chance of an effect of a given index, if it exists
+ *
+ * Inputs: index - the index to be checked for a chance
+ * Output: float - the chance of the given effect index, or 0.
+ */
 float Skill::getChance(const uint32_t &index)
 {
   if (index < effects.size())
@@ -316,16 +397,34 @@ float Skill::getChance(const uint32_t &index)
   return 0;
 }
 
+/*
+ * Description: Returns the complete vector of chances
+ *
+ * Inputs: none
+ * Output: std::vector<float> - the complete vector of chances of the Skill
+ */
 std::vector<float> Skill::getChances()
 {
   return chances;
 }
 
+/*
+ * Description: Returns the string description of the Skill
+ *
+ * Inputs: none
+ * Output: std::string - the string description
+ */
 std::string Skill::getDescription()
 {
   return description;
 }
 
+/*
+ * Description: Returns the effect of a given index.
+ *
+ * Inputs: uint32_t - index of effect to be checked
+ * Output: Action* - ptr to the effect at the index, or nullptr
+ */
 Action* Skill::getEffect(const uint32_t &index)
 {
   if (index < effects.size())
@@ -334,75 +433,147 @@ Action* Skill::getEffect(const uint32_t &index)
   return nullptr;
 }
 
+/*
+ * Description: Returns the complete vector of effects
+ *
+ * Inputs: none
+ * Output: std::vector<Action*> - the vector of effects of the Skill
+ */
 std::vector<Action*> Skill::getEffects()
 {
   return effects;
 }
 
+/*
+ * Description: Evaluates and returns a given SkillFlags by comparing it to
+ *              the current flag set to a bit-wise of itself.
+ *
+ * Inputs: test_flag - the flag to be evaluated
+ * Output: bool - the evaluation of the given flag
+ */
 bool Skill::getFlag(SkillFlags test_flag)
 {
   return static_cast<bool>((flags & test_flag) == test_flag);
 }
 
+/*
+ * Description: Returns the ID of the Skill.
+ *
+ * Inputs: none
+ * Output: int - the ID of the Skill.
+ */
 int Skill::getID()
 {
   return id;
 }
 
+/*
+ * Description: Returns the string name of the Skill
+ *
+ * Inputs: none
+ * Output: std::string - the name of the Skill
+ */
 std::string Skill::getName()
 {
   return name;
 }
 
+/*
+ * Description: Returns the primary elemental strength
+ *
+ * Inputs: none
+ * Output: Element - enumerated element [primary Skill strength]
+ */
 Element Skill::getPrimary()
 {
   return primary;
 }
 
+/*
+ * Description: Returns the secondary elemental strength
+ *
+ * Inputs: none
+ * Output: Element - enumerated element [secondary Skill strength]
+ */
 Element Skill::getSecondary()
 {
   return secondary;
 }
 
+/*
+ * Description: Returns the pointer to the sound effect
+ *
+ * Inputs: none
+ * Output: Sound* - pointer to the sound effect
+ */
 Sound* Skill::getSoundEffect()
 {
   return sound_effect;
 }
 
+/*
+ * Description: Returns the ActionScope (usage condition)
+ *
+ * Inputs: none
+ * Output: ActionScope - enumerated usage condition
+ */
 ActionScope Skill::getScope()
 {
   return scope;
 }
 
+/*
+ * Description: Returns the Skill's thumbnail
+ *
+ * Inputs: none
+ * Output: Frame* - ptr to the thumbnail
+ */
 Frame* Skill::getThumbnail()
 {
   return thumbnail;
 }
 
+/*
+ * Description: Returns the string message
+ *
+ * Inputs: none
+ * Output: std::string - the message displayed upon Skill use
+ */
 std::string Skill::getMessage()
 {
   return message;
 }
 
+/*
+ * Description: Returns the assigned point value of the Skill
+ *
+ * Inputs: none
+ * Output: uint32_t - the assigned point value of the Skill
+ */
 uint32_t Skill::getValue()
 {
   return value;
 }
 
-bool Skill::setAnimation(Sprite* const new_animation)
+/*
+ * Description: Assigns a new animation to the Skill
+ *
+ * Inputs: Sprite* - pointer to the new animation
+ * Output: bool - true if the new animation is nullptr
+ */
+bool Skill::setAnimation(Sprite* new_animation)
 {
-  if (new_animation != nullptr)
-  {
-    animation = new_animation;
+  animation = new_animation;
 
-    return true;
-  }
-
-  animation = nullptr;
-
-  return false;
+  return (animation != nullptr);
 }
 
+/*
+ * Description: Assigns a new cooldown to the Skill.
+ *
+ * Inputs: uint32_t - new value for the cooldown.
+ * Output: bool - true if the new cooldown value is within range.
+ */
 bool Skill::setCooldown(const uint32_t &new_value)
 {
   if (new_value < kMAX_COOLDOWN)
@@ -412,9 +583,17 @@ bool Skill::setCooldown(const uint32_t &new_value)
     return true;
   }
 
+  cooldown = 0;
+
   return false;
 }
 
+/*
+ * Description: Assigns a new string description for the Skill.
+ *
+ * Inputs: new_description - new string description for the Skill
+ * Output: bool - true if the new description was in range
+ */
 bool Skill::setDescription(const std::string &new_description)
 {
   if (new_description.size() < kMAX_DESC_LENGTH)
@@ -424,28 +603,52 @@ bool Skill::setDescription(const std::string &new_description)
     return true;
   }
 
+  description = "";
+
   return false;
 }
 
+/*
+ * Description: Assigns a given SkillFlags flag to a value
+ *
+ * Inputs: flag - const ref to a flag object to be changed
+ *         set_value - value to change the flag to
+ * Output: none
+ */
 void Skill::setFlag(const SkillFlags &flag, const bool &set_value)
 {
   (set_value) ? (flags |= flag) : (flags &= flag);
 }
 
+/*
+ * Description: Assigs a new string name to the Skill
+ *
+ * Inputs: new_name - new name to be assigned
+ * Output: bool - true if the new name size was within range
+ */
 bool Skill::setName(const std::string &new_name)
 {
   if (new_name.size() < kMAX_NAME_LENGTH)
   {
     name = new_name;
+
     return true;
   }
+
+  name = "";
 
   return false;
 }
 
-bool Skill::setID(const unsigned int &new_id)
+/*
+ * Description: Assigns a new id to the skill.
+ *
+ * Inputs: new_id - the ID to assign the skill to
+ * Output: bool - true if the ID was assigned (can't reassign a set ID)
+ */
+bool Skill::setID(const int &new_id)
 {
-  if(static_cast<int>(new_id) == kUNSET_ID || static_cast<int>(id) != kUNSET_ID)
+  if (new_id == kUNSET_ID || id != kUNSET_ID)
     return false;
 
   id = new_id;
@@ -453,28 +656,47 @@ bool Skill::setID(const unsigned int &new_id)
   return true;
 }
 
-bool Skill::setSoundEffect(Sound* const new_sound_effect)
+/*
+ * Description: Assigns a new sound effect to the Skill
+ *
+ * Inputs: new_sound_effect - new sound effect for the use of the Skill
+ * Output: bool - true if the new sound effect is not nullptr
+ */
+bool Skill::setSoundEffect(Sound* new_sound_effect)
 {
-  if (new_sound_effect != nullptr)
-  {
-    sound_effect = new_sound_effect;
+  sound_effect = new_sound_effect;
 
-    return true;
-  }
-  
-  return false;
+  return (sound_effect != nullptr);
 }
 
+/*
+ * Description: Assigns a new ActionScope (conditions of usage)
+ *
+ * Inputs: new_scope - new enumerated scope of use for the Skill
+ * Output: none
+ */
 void Skill::setScope(const ActionScope &new_scope)
 {
   scope = new_scope;
 }
 
-void Skill::setThumbnail(Frame* const new_thumbnail)
+/*
+ * Description: Assigns a new thumbnail to the Skill
+ *
+ * Inputs: new_thumbnail - thumbnail to be assigned to the Skill
+ * Output: none
+ */
+void Skill::setThumbnail(Frame* new_thumbnail)
 {
   thumbnail = new_thumbnail;
 }
 
+/*
+ * Description: Assigns a new using message.
+ *
+ * Inputs: new_message - new using message string
+ * Output: bool - true if the new message was within range
+ */
 bool Skill::setMessage(const std::string &new_message)
 {
   if (new_message.size() < kMAX_MESG_LENGTH)
@@ -487,6 +709,12 @@ bool Skill::setMessage(const std::string &new_message)
   return false;
 }
 
+/*
+ * Description: Assigns a new point value for use with AI decisions.
+ *
+ * Inputs: new_value - new point value for the skill
+ * Output: bool - true if the point value is within range
+ */
 bool Skill::setValue(const uint32_t &new_value)
 {
   if (new_value < kMAX_VALUE)
@@ -499,6 +727,16 @@ bool Skill::setValue(const uint32_t &new_value)
   return false;
 }
 
+/*=============================================================================
+ * OVERLOADED OPERATORS
+ *============================================================================*/
+
+/*
+ * Description: Overloaded assignment operator
+ *
+ * Inputs: source - source object to copy from
+ * Output: Skill& - reference to the copied object
+ */
 Skill& Skill::operator=(const Skill &source)
 {
   /* Check for self assignment */

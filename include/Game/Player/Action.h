@@ -77,6 +77,7 @@
 #include "EnumFlags.h"
 #include "Helpers.h"
 
+/* ActionFlags for storing the type of Action */
 ENUM_FLAGS(ActionFlags)
 enum class ActionFlags
 {
@@ -90,6 +91,7 @@ enum class ActionFlags
   VALID    = 1 << 7  /* The validity of the action */
 };
 
+/* IgnoreFlags for storing which elemental atk/def stats are ignored */
 ENUM_FLAGS(IgnoreFlags)
 enum class IgnoreFlags
 {
@@ -105,7 +107,6 @@ enum class IgnoreFlags
 class Action
 {
 public:
-
   /* Constructs a default Action object */
   Action();
 
@@ -116,23 +117,30 @@ public:
   ~Action();
 
 private:
-
+  /* Set of ActionFlags for the current action */
   ActionFlags action_flags;
 
+  /* Enumerated attribute which the action may alter */
   Attribute attribute;
 
+  /* Enumerated infliction which the action may inflict/relieve */
   Infliction ailment;
 
+  /* Base value (amt. or pc in flag) by which to change the attribute by */
   int base;
 
+  /* ID of the current Action [parsed in] */
   int id;
 
+  /* Two ignore flag sets in relation to atk & def attributes */
   IgnoreFlags ignore_atk;
   IgnoreFlags ignore_def;
 
+  /* Minimum and maximum duration an infliction will last for */
   int min_duration;
   int max_duration;
 
+  /* Amount of variance on the base value that can take place */
   uint32_t variance;
 
   /* ------------ Constants --------------- */
@@ -149,49 +157,61 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
-
+  /* Main function for parsing the raw string */
   bool parse(const std::string &raw);
 
+  /* Sub-method for parsing the string containing the ailment */
   bool parseAilment(const std::string &ailm_parse);
 
+  /* Sub-method for parsing the string containing the action kewyord */
   bool parseActionKeyword(const std::string &action_keyword);
 
+  /* Sub-method for parsing the string containing the affected attribute */
   bool parseAttribute(const std::string &attr_parse);
   
+  /* Sub-method for parsing the ignore atk and ignore def flags */
   void parseIgnoreFlags(IgnoreFlags& flag_set, const std::string &flags);
 
+  /* Emits a warning from a given string and turns off the VALID flag */
   void parseWarning(const std::string &warning, const std::string &raw);
 
+  /* Assigns an infliction duration returning the validity of the assignment */
   bool setDuration(const int &min_value, const int &max_value);
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
-
+  /* Prints out the state of the current Action */
   void print();
 
+  /* Evaluates a given action flag */
   bool actionFlag(ActionFlags test_flag);
 
+  /* Evaluates a given ignore atk flag */
   bool atkFlag(IgnoreFlags test_flag);
 
+  /* Evaluates a given ignore def flag */
   bool defFlag(IgnoreFlags test_flag);
 
+  /* Returns the Attribute the action may alter/assign */
   Attribute getAttribute();
 
+  /* Returns the infliction the action may inflict/relieve */
   Infliction getAilment();
 
+  /* Returns the base change */
   int getBase();
 
+  /* Returns the ID of the Action */
   int getID();
 
-  IgnoreFlags getIgnoreAtk();
-  IgnoreFlags getIgnoreDef();
-
+  /* Methods for returning the min and max portions of the duration */
   int getMin();
   int getMax();
 
-  float getVariance();
+  /* Returns the variance of the Action */
+  uint32_t getVariance();
 };
 
 #endif //ACTION_H

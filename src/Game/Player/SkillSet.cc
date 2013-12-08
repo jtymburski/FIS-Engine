@@ -20,7 +20,7 @@
 
 const bool   SkillSet::kENABLED_DEFAULT  =  true;
 const size_t SkillSet::kMAX_SKILLS       = 10000;
-const uint   SkillSet::kMAX_UNLOCK_LEVEL =   127;
+const size_t SkillSet::kMAX_UNLOCK_LEVEL =   127;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS

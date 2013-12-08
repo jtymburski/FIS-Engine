@@ -103,6 +103,11 @@ Action::Action()
   ignore_def   &= static_cast<IgnoreFlags>(0);
 }
 
+/*
+ * Description: Constructs a default Action object given a raw string to parse
+ *
+ * Inputs: raw - the raw string to be parsed
+ */
 Action::Action(const std::string &raw)
     : action_flags(static_cast<ActionFlags>(0)),
       attribute(Attribute::NONE),
@@ -129,10 +134,12 @@ Action::~Action() {}
  *============================================================================*/
 
 /*
- * Description:
+ * Description: Primary method for parsing the raw string. Divides the string up
+ *              into workable sections, calling sub-methods on the sub-string
+ *              portions--checking for errors and along the way.
  *
- * Inputs:
- * Output:
+ * Inputs: raw - the raw string to be parsed into an action
+ * Output: bool - the final validity of the Action
  */
 bool Action::parse(const std::string &raw)
 {
@@ -157,8 +164,8 @@ bool Action::parse(const std::string &raw)
     /* Parse min & max durations */
     if (sub_strings.at(3) != "")
     {
-      std::vector<std::string> turns = 
-                                Helpers::split(sub_strings.at(3), kDELIMITER_2);
+      std::vector<std::string> turns =
+          Helpers::split(sub_strings.at(3), kDELIMITER_2);
 
       if (turns.size() == 2)
         setDuration(std::stoi(turns.at(0)), std::stoi(turns.at(1)));
@@ -181,7 +188,7 @@ bool Action::parse(const std::string &raw)
     if (sub_strings.at(6) != "")
     {
       std::vector<std::string> base_values = 
-                                Helpers::split(sub_strings.at(6), kDELIMITER_2);
+          Helpers::split(sub_strings.at(6), kDELIMITER_2);
       
       if (base_values.size() == 2)
       {
@@ -200,7 +207,7 @@ bool Action::parse(const std::string &raw)
     if (sub_strings.size() == 8 && sub_strings.at(7) != "")
     {
       std::vector<std::string> variance_values = 
-                                Helpers::split(sub_strings.at(7), kDELIMITER_2);
+          Helpers::split(sub_strings.at(7), kDELIMITER_2);
 
       if (variance_values.size() == 2)
       {
@@ -228,6 +235,15 @@ bool Action::parse(const std::string &raw)
   return actionFlag(ActionFlags::VALID);
 }
 
+/*
+ * Description: Sub-method for parsing the sub-string containing the infliction
+ *              the action may inflict or relieve. Uses string compare to assign
+ *              an enumerated value. If the infliction was not found, a warning
+ *              is emitted and the parse fails.
+ *
+ * Inputs: ailm - string containing the ailment inflicted/relieved
+ * Output: bool - validity of the ailment parse
+ */
 bool Action::parseAilment(const std::string &ailm)
 {
   if      (ailm == "POISON")      ailment = Infliction::POISON;
@@ -277,6 +293,14 @@ bool Action::parseAilment(const std::string &ailm)
   return false;
 }
 
+/*
+ * Description: Sub-method for parsing the sub-string containing the action
+ *              keyword. Uses a string compare to determine the keyword, else
+ *              a warning is emitted and the parse fails.
+ *
+ * Inputs: action_keyword - string containing the action keyword
+ * Output: bool - validity of the keyword parse
+ */
 bool Action::parseActionKeyword(const std::string &action_keyword)
 {
   if (action_keyword == "ALTER")
@@ -298,6 +322,15 @@ bool Action::parseActionKeyword(const std::string &action_keyword)
   return true;
 }
 
+/*
+ * Description: Sub-method for parsing the sub-string containing the attribute
+ *              which the action may affect (via alteration or assigmment).
+ *              Determination via string compare, else the method emits a
+ *              warning and the parse fails.
+ *
+ * Inputs: attr_parse - string containing the affected attribute
+ * Output: bool - validity o the attribute parse
+ */
 bool Action::parseAttribute(const std::string &attr_parse)
 {
   if (attr_parse == "VITA") attribute = Attribute::VITA;
@@ -328,6 +361,15 @@ bool Action::parseAttribute(const std::string &attr_parse)
   return false;
 }
 
+/*
+ * Description: Sub-method for parsing the sub-string containing the ignore
+ *              flags. Passes in an IgnoreFlags parameter to be able to
+ *              use the function for both atk and def flag sets.
+ *
+ * Inputs: flag_sets - the particular set of flags (atk or def) to assign to
+ *         flags - the sub-string containing the elemental ignore flags
+ * Output: none
+ */
 void Action::parseIgnoreFlags(IgnoreFlags& flag_set, const std::string &flags)
 {
   std::vector<std::string> sub_strings = Helpers::split(flags, kDELIMITER_2);
@@ -363,17 +405,36 @@ void Action::parseIgnoreFlags(IgnoreFlags& flag_set, const std::string &flags)
     parseWarning("attempting to parse ignore flags", flags);
 }
 
+/*
+ * Description: Method for printing out a standardized warning emitted by
+ *              the parsing functions.  The warning is only emitted if the
+ *              debug mode for attribute (constant) is enabled. Also turns off
+ *              the flag representing the validity of the action.
+ *
+ * Inputs: warning - string containing the specific warning text
+ *         raw - string containing the raw info dump related to the warning
+ * Output: none
+ */
 void Action::parseWarning(const std::string &warning, const std::string &raw)
 {
   if (kDEBUG_ENABLED)
-    std::cout << "Action Error: " << warning << " on: " << raw << std::endl;
+    std::cerr << "Action Error: " << warning << " on: " << raw << std::endl;
 
   action_flags &= ~ActionFlags::VALID;
 }
 
+/*
+ * Description: Method for assigning the duration the infliction of the Action
+ *              may last for given min and max values. Fails if the values are
+ *              not valid.
+ *
+ * Inputs: min_value - minimum # of turns the infliction can last for
+ *         max_value - maximum # of turns the infliction can last for
+ * Output: bool - the validity of the duration assignment
+ */
 bool Action::setDuration(const int &min_value, const int &max_value)
 {
-  if (max_value >= min_value)
+  if (max_value >= min_value && min_value >= 0 && max_value >= 0)
   {
     min_duration = min_value;
     max_duration = max_value;
@@ -391,19 +452,29 @@ bool Action::setDuration(const int &min_value, const int &max_value)
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
+/*
+ * Description: Method for printing out all the info describing the state of the
+ *              current action in an easy to view format. [std::cout display]
+ *
+ * Inputs: none
+ * Output: none
+ *
+ * TODO [12-08-13] Print the string of the attribute the action alters or assigns
+ * TODO [12-08-13] Print the string of the ailment the action inflicts or relieves 
+ */
 void Action::print()
 {
   std::cout << "Action: " << id << std::endl;
 
   std::cout << "--- Action Flags --- " << std::endl;
-  std::cout << "ALTER: " << actionFlag(ActionFlags::ALTER) << std::endl;
+  std::cout << "ALTER: "   << actionFlag(ActionFlags::ALTER) << std::endl;
   std::cout << "INFLICT: " << actionFlag(ActionFlags::INFLICT) << std::endl;
   std::cout << "RELIEVE: " << actionFlag(ActionFlags::RELIEVE) << std::endl;
-  std::cout << "ASSIGN: " << actionFlag(ActionFlags::ASSIGN) << std::endl;
-  std::cout << "REVIVE: " << actionFlag(ActionFlags::REVIVE) << std::endl;
+  std::cout << "ASSIGN: "  << actionFlag(ActionFlags::ASSIGN) << std::endl;
+  std::cout << "REVIVE: "  << actionFlag(ActionFlags::REVIVE) << std::endl;
   std::cout << "BASE_PC: " << actionFlag(ActionFlags::BASE_PC) << std::endl;
   std::cout << "VARI_PC: " << actionFlag(ActionFlags::VARI_PC) << std::endl;
-  std::cout << "VALID: " << actionFlag(ActionFlags::VALID) << std::endl;
+  std::cout << "VALID: "   << actionFlag(ActionFlags::VALID) << std::endl;
 
   std::cout << "--- Igore Atk Flags --- " << std::endl;
   std::cout << "PHYS: " << atkFlag(IgnoreFlags::PHYSICAL) << std::endl;
@@ -423,72 +494,122 @@ void Action::print()
   std::cout << "CYBR: " << defFlag(IgnoreFlags::CYBERNETIC) << std::endl;
   std::cout << "NIHI: " << defFlag(IgnoreFlags::NIHIL) << std::endl;
 
-  // TODO Print the string of the attribute the action alters or assigns
-  // TODO Print the string of the ailment the action inflicts or relieves 
-
   std::cout << "Min Duration: " << min_duration << std::endl;
   std::cout << "Max Duration: " << max_duration << std::endl;
-  std::cout << "Variance: " << variance << std::endl;
-  std::cout << "Base Change: " << base << std::endl;
+  std::cout << "Variance: "     << variance << std::endl;
+  std::cout << "Base Change: "  << base << std::endl;
   std::cout << std::endl;
 }
 
+/*
+ * Description: Returns the evaluation of a given ActionFlag flag or set of 
+ *              flags by comparing them after a bit-wise and to the current set.
+ *
+ * Inputs: none
+ * Output: bool - evaluation of the given flag
+ */
 bool Action::actionFlag(ActionFlags test_flag)
 {
   return static_cast<bool>((action_flags & test_flag) == test_flag);
 }
 
+/*
+ * Description: Returns the evaluation of a given ignore atk flag or set of 
+ *              flags by comparing them after a bit-wise and to the current set.
+ *
+ * Inputs: none
+ * Output: bool - evaluation of the given flag
+ */
 bool Action::atkFlag(IgnoreFlags test_flag)
 {
   return static_cast<bool>((ignore_atk & test_flag) == test_flag);
 }
 
+/*
+ * Description: Returns the evaluation of a given ignore def flag or set of 
+ *              flags by comparing them after a bit-wise and to the current set.
+ *
+ * Inputs: none
+ * Output: bool - evaluation of the givenflag
+ */
 bool Action::defFlag(IgnoreFlags test_flag)
 {
   return static_cast<bool>((ignore_def & test_flag) == test_flag);
 }
 
+/*
+ * Description: Returns the enumerated value of the attribute the action affects
+ *
+ * Inputs: none
+ * Output: Attribute - enumerated atribute the action affects
+ */
 Attribute Action::getAttribute()
 {
   return attribute;
 }
 
+/*
+ * Description: Returns the enumerated infliction the action affects
+ *
+ * Inputs: none
+ * Output: Infliction - enumerated attribute the action affects
+ */
 Infliction Action::getAilment()
 {
   return ailment;
 }
 
+/*
+ * Description: Returns the base value by which the Action alters an attribute
+ *
+ * Inputs: none
+ * Output: int - the base value of the Action
+ */
 int Action::getBase()
 {
   return base;
 }
 
+/*
+ * Description: Returns the ID of the Action
+ *
+ * Inputs: none
+ * Output: int - the ID of the Action
+ */
 int Action::getID()
 {
   return id;
 }
 
-IgnoreFlags Action::getIgnoreAtk()
-{
-  return ignore_atk;
-}
-
-IgnoreFlags Action::getIgnoreDef()
-{
-  return ignore_def;
-}
-
+/*
+ * Description: Returns the minimum duration of the Action
+ *
+ * Inputs: none
+ * Output: int - the minimum duration of the Action
+ */
 int Action::getMin()
 {
   return min_duration;
 }
 
+/*
+ * Description: Returns the maximum duration of the Action
+ *
+ * Inputs: none
+ * Output: int - the maximum duration of the Action
+ */
 int Action::getMax()
 {
   return max_duration;
 }
 
-float Action::getVariance()
+/*
+ * Description: Returns the variance of the Action
+ *
+ * Inputs: none
+ * Output: uint32_t - the variance on the Base value
+ */
+uint32_t Action::getVariance()
 {
   return variance;
 }
