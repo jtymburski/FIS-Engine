@@ -270,11 +270,8 @@ bool Application::run()
     {
       // TODO: Remove - Sprite logic during rendering
       angle++;
-      if(angle == 180)
-        image_sprite.flipVertical(true);
-      else if(angle == 360)
+      if(angle == 360)
       {
-        image_sprite.flipVertical(false);
         image_sprite.removeTail();
         angle = 0;
       }

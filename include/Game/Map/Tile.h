@@ -214,8 +214,8 @@ public:
   void setY(int16_t y);
   
   /* Updates the relevent enter and exit events, from file data */
-  bool updateEnterEvent(XmlData data, int file_index, int section_index);
-  bool updateExitEvent(XmlData data, int file_index, int section_index);
+  bool updateEnterEvent(XmlData data, int file_index, uint16_t section_index);
+  bool updateExitEvent(XmlData data, int file_index, uint16_t section_index);
   
   /* Unsets the base layer(s) */
   void unsetBase();

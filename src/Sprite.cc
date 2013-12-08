@@ -42,7 +42,6 @@ Sprite::Sprite()
   color_blue = kDEFAULT_COLOR;
   current = NULL;
   elapsed_time = 0;
-  flip = SDL_FLIP_NONE;
   head = NULL;
   id = 0;
   opacity = kDEFAULT_OPACITY;
@@ -199,13 +198,22 @@ bool Sprite::addFileInformation(XmlData data, int index,
     setOpacity(data.getDataInteger());
   else if(split_element.at(0) == "path")
   {
-    success &= insertFrames(data.getDataString(), renderer);
-    
-    /* If there is element adjustments, do those changes */
-    if(split_element.size() > 1)
+    std::vector<Frame*> new_frames = insertFrames(data.getDataString(), 
+                                                 renderer);
+    if(new_frames.size() > 0)
     {
-      split_element.erase(split_element.begin());
-      success &= execImageAdjustments(split_element);
+      /* If there is element adjustments, do those changes */
+      if(split_element.size() > 1)
+      {
+        split_element.erase(split_element.begin());
+        
+        for(uint16_t i = 0; i < new_frames.size(); i++)
+          success &= new_frames[i]->execImageAdjustments(split_element);
+      }
+    }
+    else
+    {
+      success = false;
     }
   }
   else if(element == "rotation")
@@ -214,92 +222,6 @@ bool Sprite::addFileInformation(XmlData data, int index,
     std::cout << "Sprite Sound: " << data.getDataString() << std::endl;
   
   return success;
-}
-
-/*
- * Description: Executes an image adjustment based on string data that is stored
- *              within the file. Usually tied to the path of the sprite to 
- *              indicate any extra adjustments.
- *
- * Inputs: std::string adjustment - the adjustment string (90, 180, 270, VF, HF)
- *                                - 90, 180, 270: angle of rotation
- *                                - VF, HF: horizontal or vertical flip
- * Output: bool - status if successful
- */
-bool Sprite::execImageAdjustment(std::string adjustment)
-{
-  bool success = true;
-  
-  /* Parse the adjustment and do the appropriate activity */
-  if(adjustment == "90" || adjustment == "180" || adjustment == "270")
-  {
-    setRotation(getAngle(adjustment));
-  }
-  else if(adjustment == "VF" || adjustment == "vf")
-  {
-    flipVertical();
-  }
-  else if(adjustment == "HF" || adjustment == "hf")
-  {
-    flipHorizontal();
-  }
-  else
-  {
-    success = false;
-  }
-  
-  return success;
-}
-
-/*
- * Description: Executes a set of image adjustments using a list of strings.
- *              See execImageAdjustment() for more details
- *
- * Inputs: vector<string> adjustments - a stack of all adjustments
- * Output: bool - status if successful
- */
-bool Sprite::execImageAdjustments(std::vector<std::string> adjustments)
-{
-  bool success = true;
-  
-  /* Run through all the adjustments and execute them */
-  for(size_t i = 0; i < adjustments.size(); i++)
-    success &= execImageAdjustment(adjustments[i]);
-    
-  return success;
-}
-
-/*
- * Description: Sets the horizontal flip of the rendering texture.
- *
- * Inputs: bool flip - true if the horizontal flip should occur from the default
- * Output: none
- */
-void Sprite::flipHorizontal(bool flip)
-{
-  /* Enables / Disables the horizontal flip */
-  if(flip)
-    this->flip = 
-               static_cast<SDL_RendererFlip>(this->flip |  SDL_FLIP_HORIZONTAL);
-  else
-    this->flip = 
-               static_cast<SDL_RendererFlip>(this->flip & ~SDL_FLIP_HORIZONTAL);
-}
-
-/*
- * Description: Sets the vertical flip of the rendering texture.
- *
- * Inputs: bool flip - true if the vertical flip should occur from the default
- * Output: none
- */
-void Sprite::flipVertical(bool flip)
-{
-  /* Enables / Disables the vertical flip */
-  if(flip)
-    this->flip = static_cast<SDL_RendererFlip>(this->flip | SDL_FLIP_VERTICAL);
-  else
-    this->flip = 
-                 static_cast<SDL_RendererFlip>(this->flip & ~SDL_FLIP_VERTICAL);
 }
   
 /*
@@ -471,9 +393,9 @@ int Sprite::getSize() const
  * Inputs: std::string path - the path to the image to add
  *         SDL_Renderer* renderer - the rendering engine pointer
  *         int position - the location in the linked list sequence
- * Output: bool - status if insert is successful
+ * Output: Frame* - the frame that was inserted. NULL if failed
  */
-bool Sprite::insert(std::string path, SDL_Renderer* renderer, int position)
+Frame* Sprite::insert(std::string path, SDL_Renderer* renderer, int position)
 {
   Frame* next_frame;
   Frame* new_frame;
@@ -508,12 +430,13 @@ bool Sprite::insert(std::string path, SDL_Renderer* renderer, int position)
         head = new_frame;
 
       size++;
-      return true;
+      return new_frame;
     }
     delete new_frame;
+    new_frame = NULL;
   }
 
-  return false;
+  return new_frame;
 }
 
 /* 
@@ -524,9 +447,9 @@ bool Sprite::insert(std::string path, SDL_Renderer* renderer, int position)
  *
  * Inputs: std::string path - the path to the image to add
  *         SDL_Renderer* renderer - the rendering engine pointer
- * Output: bool - status if insertion was successful
+ * Output: Frame* - the frame that was inserted. NULL if failed
  */
-bool Sprite::insertFirst(std::string path, SDL_Renderer* renderer)
+Frame* Sprite::insertFirst(std::string path, SDL_Renderer* renderer)
 {
   if(size == 0)
   {
@@ -553,14 +476,16 @@ bool Sprite::insertFirst(std::string path, SDL_Renderer* renderer)
         size = 1;
         texture_update = true;
       
-        return true;
+        return head;
       }
     }
 
     delete head;
     head = NULL;
   }
-  return false;
+  
+  Frame* null_frame = NULL;
+  return null_frame;
 }
 
 /*
@@ -574,9 +499,10 @@ bool Sprite::insertFirst(std::string path, SDL_Renderer* renderer)
  *
  * Inputs: std::string path - the path frame to add
  *         SDL_Renderer* renderer - the rendering engine for the frames
- * Output: bool - returns if successful
+ * Output: std::vector<Frame*> - the stack of frames that were inserted
  */
-bool Sprite::insertFrames(std::string path, SDL_Renderer* renderer)
+std::vector<Frame*> Sprite::insertFrames(std::string path, 
+                                         SDL_Renderer* renderer)
 {
   /* Split the path and see if it split. If it did, insert sequence. Otherwise
    * insert the single frame at tail. */
@@ -584,45 +510,55 @@ bool Sprite::insertFrames(std::string path, SDL_Renderer* renderer)
   if(split_path.size() == 3)
     return insertSequence(split_path[0], std::stoi(split_path[1]), 
                           split_path[2], renderer);
-  return insertTail(path, renderer);
+  
+  /* Otherwise, put the frame on the tail (single frame) */
+  Frame* tail_frame = insertTail(path, renderer);
+  std::vector<Frame*> stack;
+  if(tail_frame != NULL)
+    stack.push_back(tail_frame);
+  return stack;
 }
 
 /* 
  * Description: Inserts a sequence of images that are stored. This allows for 
  * quick insertion of stored frames.
  * For example: head_path = ":/animation/image_"
- *              num_frames = 5
+ *              count = 5
  *              tail_path = ".png"
  *   This will allow for image_00.png -> image_04.png to be added into
  *   a sequence 
  *
  * Inputs: std::string head_path - see above for explanation
- *         int num_frames - see above for explanation
+ *         int count - see above for explanation
  *         std::string tail_path - see above for explanation
  *         SDL_Renderer* renderer - the rendering engine pointer
- * Output: bool - status if insertion was succesful
+ * Output: std::vector<Frame*> - the stack of frames that were inserted
  */
-bool Sprite::insertSequence(std::string head_path, int num_frames, 
-		                        std::string tail_path, SDL_Renderer* renderer)
+std::vector<Frame*> Sprite::insertSequence(std::string head_path, int count, 
+		                                       std::string tail_path, 
+                                           SDL_Renderer* renderer)
 {
+  std::vector<Frame*> stack;
   bool status = true;
   
   /* Test if there are sufficient frames */
-  if(num_frames <= 0)
+  if(count <= 0)
     status = false;
 
   /* Store the initial condition */
   int old_size = size;
 
   /* Parse all the frames in the sequence */
-  for(int i = 0; i < num_frames; i++)
+  for(int i = 0; i < count; i++)
   {
     if(i >= kDOUBLE_DIGITS)
-      status = status & insertTail(head_path + std::to_string(i) + tail_path,
-                                   renderer);
+      stack.push_back(insertTail(head_path + std::to_string(i) + tail_path,
+                                 renderer));
     else
-      status = status & insertTail(head_path + "0" + std::to_string(i) + 
-		                               tail_path, renderer);
+      stack.push_back(insertTail(head_path + "0" + std::to_string(i) + 
+		                             tail_path, renderer));
+                                 
+     status &= (stack.back() != NULL);
   }
 
   /* If the sequence failed, delete the created pointers */
@@ -630,9 +566,10 @@ bool Sprite::insertSequence(std::string head_path, int num_frames,
   {
     while(size != old_size)
       removeTail();
+    stack.clear();
   }
 
-  return status;
+  return stack;
 }
 
 /* 
@@ -641,9 +578,9 @@ bool Sprite::insertSequence(std::string head_path, int num_frames,
  *
  * Inputs: std::string path - the path to the image to add
  *         SDL_Renderer* renderer - the rendering engine pointer
- * Output: bool - status if insertion was successful
+ * Output: Frame* - the frame that was inserted. NULL if failed
  */
-bool Sprite::insertTail(std::string path, SDL_Renderer* renderer)
+Frame* Sprite::insertTail(std::string path, SDL_Renderer* renderer)
 {
   return insert(path, renderer, size);
 }
@@ -801,10 +738,10 @@ bool Sprite::render(SDL_Renderer* renderer, int x, int y, int h, int w)
       rect.h = h;
       rect.w = w;
     }
-
+    
     /* Render and return status */
     return (SDL_RenderCopyEx(renderer, texture, NULL, &rect, 
-                             rotation_angle, NULL, flip) == 0);
+                             rotation_angle, NULL, SDL_FLIP_NONE) == 0);
   }
   
   return false;

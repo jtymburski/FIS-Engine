@@ -646,7 +646,6 @@ bool Tile::renderLower(SDL_Renderer* renderer, int offset_x, int offset_y)
   bool success = true;
   int pixel_x = getPixelX() - offset_x;
   int pixel_y = getPixelY() - offset_y;
-  //std::cout << pixel_x << " " << pixel_y << std::endl;
   
   /* Only proceed if the status isn't off */
   if(status != OFF)
@@ -1063,7 +1062,8 @@ void Tile::setY(int16_t y)
  *         int section_index - the relevant map section index
  * Output: bool - returns if the call was successful
  */
-bool Tile::updateEnterEvent(XmlData data, int file_index, int section_index)
+bool Tile::updateEnterEvent(XmlData data, int file_index, 
+                                          uint16_t section_index)
 {
   /* Ensure that the event handler is relevant */
   if(event_handler != NULL)
@@ -1086,7 +1086,7 @@ bool Tile::updateEnterEvent(XmlData data, int file_index, int section_index)
  *         int section_index - the relevant map section index
  * Output: bool - returns if the call was successful
  */
-bool Tile::updateExitEvent(XmlData data, int file_index, int section_index)
+bool Tile::updateExitEvent(XmlData data, int file_index, uint16_t section_index)
 {
   /* Ensure that the event handler is relevant */
   if(event_handler != NULL)
@@ -1094,6 +1094,7 @@ bool Tile::updateExitEvent(XmlData data, int file_index, int section_index)
     /* Update the exit event */
     exit_event = event_handler->updateEvent(exit_event, data, 
                                             file_index, section_index);
+    
     return true;
   }
   

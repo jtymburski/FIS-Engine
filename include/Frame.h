@@ -11,9 +11,11 @@
 #define FRAME_H
 
 #include <cstdio>
+#include <iostream>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <string>
+#include <vector>
 
 class Frame
 {
@@ -25,10 +27,17 @@ public:
   Frame(std::string path, SDL_Renderer* renderer, 
         Frame* previous = NULL, Frame* next = NULL);
 
+  /* Constructor function - path, adjustments, and previous/next inits */
+  Frame(std::string path, std::vector<std::string> adjustments, 
+        SDL_Renderer* renderer, Frame* previous = NULL, Frame* next = NULL);
+  
   /* Destructor function */
   ~Frame();
   
 private:
+  /* How the SDL texture should be flipped while rendering */
+  SDL_RendererFlip flip;
+  
   /* The height of the stored texture */
   int height;
   
@@ -51,6 +60,17 @@ private:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Executes the necessary image adjustments, as per the file data handlers */
+  bool execImageAdjustment(std::string adjustment);
+  bool execImageAdjustments(std::vector<std::string> adjustments);
+  
+  /* Flips the sprite SDL image - either horizontal or vertical */
+  void flipHorizontal(bool flip = true);
+  void flipVertical(bool flip = true);
+  
+  /* Returns the flip indication, for rendering */
+  SDL_RendererFlip getFlip();
+  
   /* Returns the height of the texture */
   int getHeight();
   
@@ -81,7 +101,9 @@ public:
 
   /* Sets the frame texture */
   bool setTexture(std::string path, SDL_Renderer* renderer);
-  
+  bool setTexture(std::string path, std::vector<std::string> adjustments, 
+                                    SDL_Renderer* renderer);
+
   /* Unsets the texture, if one is set */
   void unsetTexture();
 };

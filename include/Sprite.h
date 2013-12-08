@@ -68,9 +68,6 @@ private:
 
   /* The sprite ID, useful when keeping track of a large number of sprites */
   uint16_t id;
-  
-  /* How the SDL texture should be flipped while rendering */
-  SDL_RendererFlip flip;
 
   /* Sets the opacity of the rendered sprite */
   uint8_t opacity;
@@ -115,14 +112,6 @@ private:
 public:
   /* Adds sprite information from the XML data classifier from the file */
   bool addFileInformation(XmlData data, int index, SDL_Renderer* renderer);
-
-  /* Executes the necessary image adjustments, as per the file data handlers */
-  bool execImageAdjustment(std::string adjustment);
-  bool execImageAdjustments(std::vector<std::string> adjustments);
-  
-  /* Flips the sprite SDL image - either horizontal or vertical */
-  void flipHorizontal(bool flip = true);
-  void flipVertical(bool flip = true);
   
   /* Returns the total animation time between frame changes */
   short getAnimationTime() const;
@@ -160,29 +149,30 @@ public:
   int getSize() const;
   
   /* Inserts the image into the sprite sequence at the given position */
-  bool insert(std::string path, SDL_Renderer* renderer, int position);
-
+  Frame* insert(std::string path, SDL_Renderer* renderer, int position);
+  
   /* Inserts the first image if the frame sequence is empty
    * Note: This isn't for inserting the head, just the first one */
-  bool insertFirst(std::string path, SDL_Renderer* renderer);
-
+  Frame* insertFirst(std::string path, SDL_Renderer* renderer);
+  
   /* This inserts all the given frames at the tail. If there are any "|" 
    * delimiters, it splits the path and adds the sequence */
-  bool insertFrames(std::string path, SDL_Renderer* renderer);
+  std::vector<Frame*> insertFrames(std::string path, SDL_Renderer* renderer);
   
   /* Inserts a sequence of images that are stored. This allows for 
    * quick insertion of stored frames
    * For example: head_path = ":/animation/image_"
-   *              num_frames = 5
+   *              count = 5
    *              file_type = ".png"
    *   This will allow for image_00.png -> image_04.png to be added into
    *   a sequence */
-  bool insertSequence(std::string head_path, int num_frames, 
-                      std::string tail_path, SDL_Renderer* renderer);
-
+  std::vector<Frame*> insertSequence(std::string head_path, int count, 
+                                     std::string tail_path, 
+                                     SDL_Renderer* renderer);
+  
   /* Inserts the image at the end of the sprite sequence */
-  bool insertTail(std::string path, SDL_Renderer* renderer);
-
+  Frame* insertTail(std::string path, SDL_Renderer* renderer);
+  
   /* Returns if the linked list pointer is at the head or at the tail */
   bool isAtFirst();
   bool isAtEnd();

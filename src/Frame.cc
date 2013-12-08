@@ -23,6 +23,7 @@
 Frame::Frame()
 {
   /* Initialize variables */
+  flip = SDL_FLIP_NONE;
   height = 0;
   image_set = false;
   next = NULL;
@@ -41,18 +42,28 @@ Frame::Frame()
  *         Frame* next - pointer to next frame, default to NULL
  */
 Frame::Frame(std::string path, SDL_Renderer* renderer, 
-             Frame* previous, Frame* next)
+             Frame* previous, Frame* next) : Frame()
 {
-  /* Initialize variables */
-  height = 0;
-  image_set = false;
-  next = NULL;
-  previous = NULL;
-  texture = NULL;
-  width = 0;
-  
-  /* Sets the class parameters */
   setTexture(path, renderer);
+  setPrevious(previous);
+  setNext(next);
+}
+
+/*
+ * Description: Constructor function for this class. Takes path, adjustment
+ *              stack, renderer, and pointers for other frames.
+ *
+ * Inputs: std::string path - the path to the image to create
+ *         std::vector<std::string> adjustments - the flip adjustment stack
+ *         SDL_Renderer* renderer - the image renderer to handle the texture
+ *         Frame* previous - pointer to previous frame, default to NULL
+ *         Frame* next - pointer to next frame, default to NULL
+ */
+Frame::Frame(std::string path, std::vector<std::string> adjustments, 
+             SDL_Renderer* renderer, Frame* previous, Frame* next) : Frame()
+{
+  setTexture(path, renderer);
+  execImageAdjustments(adjustments);
   setPrevious(previous);
   setNext(next);
 }
@@ -71,6 +82,98 @@ Frame::~Frame()
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
+/*
+ * Description: Executes an image adjustment based on string data that is stored
+ *              within the file. Usually tied to the path of the sprite to 
+ *              indicate any extra adjustments.
+ *
+ * Inputs: std::string adjustment - the adjustment string (VF, HF)
+ *                                - VF, HF: horizontal or vertical flip
+ * Output: bool - status if successful
+ */
+bool Frame::execImageAdjustment(std::string adjustment)
+{
+  bool success = true;
+  
+  /* Parse the adjustment and do the appropriate activity */
+  if(adjustment == "VF" || adjustment == "vf")
+  {
+    flipVertical();
+  }
+  else if(adjustment == "HF" || adjustment == "hf")
+  {
+    flipHorizontal();
+  }
+  else
+  {
+    success = false;
+  }
+  
+  return success;
+}
+
+/*
+ * Description: Executes a set of image adjustments using a list of strings.
+ *              See execImageAdjustment() for more details
+ *
+ * Inputs: vector<string> adjustments - a stack of all adjustments
+ * Output: bool - status if successful
+ */
+bool Frame::execImageAdjustments(std::vector<std::string> adjustments)
+{
+  bool success = true;
+  
+  /* Run through all the adjustments and execute them */
+  for(size_t i = 0; i < adjustments.size(); i++)
+    success &= execImageAdjustment(adjustments[i]);
+    
+  return success;
+}
+
+/*
+ * Description: Sets the horizontal flip of the rendering texture.
+ *
+ * Inputs: bool flip - true if the horizontal flip should occur from the default
+ * Output: none
+ */
+void Frame::flipHorizontal(bool flip)
+{
+  /* Enables / Disables the horizontal flip */
+  if(flip)
+    this->flip = 
+               static_cast<SDL_RendererFlip>(this->flip |  SDL_FLIP_HORIZONTAL);
+  else
+    this->flip = 
+               static_cast<SDL_RendererFlip>(this->flip & ~SDL_FLIP_HORIZONTAL);
+}
+
+/*
+ * Description: Sets the vertical flip of the rendering texture.
+ *
+ * Inputs: bool flip - true if the vertical flip should occur from the default
+ * Output: none
+ */
+void Frame::flipVertical(bool flip)
+{
+  /* Enables / Disables the vertical flip */
+  if(flip)
+    this->flip = static_cast<SDL_RendererFlip>(this->flip | SDL_FLIP_VERTICAL);
+  else
+    this->flip = 
+                 static_cast<SDL_RendererFlip>(this->flip & ~SDL_FLIP_VERTICAL);
+}
+
+/*
+ * Description: Returns the flip rating of the frame (from SDL).
+ *
+ * Inputs: none
+ * Output: SDL_RendererFlip - the rendering struct flip
+ */
+SDL_RendererFlip Frame::getFlip()
+{
+  return flip;
+}
+  
 /*
  * Description: Returns the height of the texture stored in the class. Is 0 if
  *              the image isn't set.
@@ -170,7 +273,8 @@ bool Frame::render(SDL_Renderer* renderer, int x, int y, int h, int w)
     }
     
     /* Render and return status */
-    return (SDL_RenderCopy(renderer, getTexture(), NULL, &rect) == 0);
+    return (SDL_RenderCopyEx(renderer, getTexture(), NULL, 
+                           &rect, 0, NULL, flip) == 0);
   }
   
   return false;
@@ -243,6 +347,29 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer)
            path.c_str(), IMG_GetError());
     success = false;
   }
+  
+  return success;
+}
+
+/*
+ * Description: Sets the SDL frame texture from a path file. This requires that
+ *              the extension appropriately defines the file in order to 
+ *              properly work. If the image can be loaded, it automatically
+ *              unsets the previous texture and sets this as the new one. It 
+ *              also takes a stack of adjustments for flipping.
+ *
+ * Inputs: std::string path - the path to the image
+ *         std::vector<std::string> adjustments - adjustment flip stack
+ *         SDL_Renderer* renderer - the renderer to associate the texture with
+ * Output: bool - the success of loading the texture
+ */
+bool Frame::setTexture(std::string path, std::vector<std::string> adjustments, 
+                                         SDL_Renderer* renderer)
+{
+  bool success = true;
+  
+  success &= execImageAdjustments(adjustments);
+  success &= setTexture(path, renderer);
   
   return success;
 }
