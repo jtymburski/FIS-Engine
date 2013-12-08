@@ -24,12 +24,13 @@ public:
   Frame();
 
   /* Constructor function - path and next pointer initialization */
-  Frame(std::string path, SDL_Renderer* renderer, 
+  Frame(std::string path, SDL_Renderer* renderer, uint16_t angle = 0, 
         Frame* previous = NULL, Frame* next = NULL);
 
   /* Constructor function - path, adjustments, and previous/next inits */
   Frame(std::string path, std::vector<std::string> adjustments, 
-        SDL_Renderer* renderer, Frame* previous = NULL, Frame* next = NULL);
+        SDL_Renderer* renderer, uint16_t angle = 0, Frame* previous = NULL, 
+        Frame* next = NULL);
   
   /* Destructor function */
   ~Frame();
@@ -100,9 +101,9 @@ public:
   bool setPrevious(Frame* previous);
 
   /* Sets the frame texture */
-  bool setTexture(std::string path, SDL_Renderer* renderer);
+  bool setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle = 0);
   bool setTexture(std::string path, std::vector<std::string> adjustments, 
-                                    SDL_Renderer* renderer);
+                                    SDL_Renderer* renderer, uint16_t angle = 0);
 
   /* Unsets the texture, if one is set */
   void unsetTexture();

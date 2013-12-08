@@ -133,6 +133,23 @@ void Sprite::copySelf(const Sprite &source)
   //setSound(); // TODO: Future?
 }
 
+/* Returns the angle, if one exists in the list of modifications */
+// TODO: Comment
+uint16_t Sprite::parseAdjustments(std::vector<std::string> adjustments)
+{
+  uint16_t angle = 0;
+  
+  /* Run through all the adjustments */
+  for(uint16_t i = 0; i < adjustments.size(); i++)
+  {
+    angle = getAngle(adjustments[i]);
+    if(angle > 0)
+      return angle;
+  }
+  
+  return angle;
+}
+
 /* Description: Sets the texture color modification on the sprite texture. This
  *              is based on the internal stored red, green, blue values which
  *              can be changed using setColorBalance().
@@ -198,8 +215,10 @@ bool Sprite::addFileInformation(XmlData data, int index,
     setOpacity(data.getDataInteger());
   else if(split_element.at(0) == "path")
   {
-    std::vector<Frame*> new_frames = insertFrames(data.getDataString(), 
-                                                 renderer);
+    uint16_t angle = parseAdjustments(split_element);
+    std::vector<Frame*> new_frames = 
+                            insertFrames(data.getDataString(), renderer, angle);
+    
     if(new_frames.size() > 0)
     {
       /* If there is element adjustments, do those changes */
@@ -393,9 +412,11 @@ int Sprite::getSize() const
  * Inputs: std::string path - the path to the image to add
  *         SDL_Renderer* renderer - the rendering engine pointer
  *         int position - the location in the linked list sequence
+ *         uint16_t angle - angle for frame based rotation (must be mod 90)
  * Output: Frame* - the frame that was inserted. NULL if failed
  */
-Frame* Sprite::insert(std::string path, SDL_Renderer* renderer, int position)
+Frame* Sprite::insert(std::string path, SDL_Renderer* renderer, int position, 
+                                                                uint16_t angle)
 {
   Frame* next_frame;
   Frame* new_frame;
@@ -404,11 +425,11 @@ Frame* Sprite::insert(std::string path, SDL_Renderer* renderer, int position)
   /* Only add if the size is within the bounds of the sprite */
   if(size == 0)
   {
-    return insertFirst(path, renderer);
+    return insertFirst(path, renderer, angle);
   }
   else if(position <= size && position >= 0)
   {
-    new_frame = new Frame(path, renderer);
+    new_frame = new Frame(path, renderer, angle);
 
     if(new_frame->isImageSet())
     {
@@ -447,13 +468,15 @@ Frame* Sprite::insert(std::string path, SDL_Renderer* renderer, int position)
  *
  * Inputs: std::string path - the path to the image to add
  *         SDL_Renderer* renderer - the rendering engine pointer
+ *         uint16_t angle - angle for frame based rotation (must be mod 90)
  * Output: Frame* - the frame that was inserted. NULL if failed
  */
-Frame* Sprite::insertFirst(std::string path, SDL_Renderer* renderer)
+Frame* Sprite::insertFirst(std::string path, SDL_Renderer* renderer, 
+                                             uint16_t angle)
 {
   if(size == 0)
   {
-    head = new Frame(path, renderer);
+    head = new Frame(path, renderer, angle);
     if(head->isImageSet())
     {
       /* First set the rendering texture, if unset */
@@ -499,20 +522,21 @@ Frame* Sprite::insertFirst(std::string path, SDL_Renderer* renderer)
  *
  * Inputs: std::string path - the path frame to add
  *         SDL_Renderer* renderer - the rendering engine for the frames
+ *         uint16_t angle - angle for frame based rotation (must be mod 90)
  * Output: std::vector<Frame*> - the stack of frames that were inserted
  */
 std::vector<Frame*> Sprite::insertFrames(std::string path, 
-                                         SDL_Renderer* renderer)
+                                         SDL_Renderer* renderer, uint16_t angle)
 {
   /* Split the path and see if it split. If it did, insert sequence. Otherwise
    * insert the single frame at tail. */
   std::vector<std::string> split_path = Helpers::split(path, '|');
   if(split_path.size() == 3)
     return insertSequence(split_path[0], std::stoi(split_path[1]), 
-                          split_path[2], renderer);
+                          split_path[2], renderer, angle);
   
   /* Otherwise, put the frame on the tail (single frame) */
-  Frame* tail_frame = insertTail(path, renderer);
+  Frame* tail_frame = insertTail(path, renderer, angle);
   std::vector<Frame*> stack;
   if(tail_frame != NULL)
     stack.push_back(tail_frame);
@@ -532,11 +556,13 @@ std::vector<Frame*> Sprite::insertFrames(std::string path,
  *         int count - see above for explanation
  *         std::string tail_path - see above for explanation
  *         SDL_Renderer* renderer - the rendering engine pointer
+ *         uint16_t angle - angle for frame based rotation (must be mod 90)
  * Output: std::vector<Frame*> - the stack of frames that were inserted
  */
 std::vector<Frame*> Sprite::insertSequence(std::string head_path, int count, 
 		                                       std::string tail_path, 
-                                           SDL_Renderer* renderer)
+                                           SDL_Renderer* renderer, 
+                                           uint16_t angle)
 {
   std::vector<Frame*> stack;
   bool status = true;
@@ -553,10 +579,10 @@ std::vector<Frame*> Sprite::insertSequence(std::string head_path, int count,
   {
     if(i >= kDOUBLE_DIGITS)
       stack.push_back(insertTail(head_path + std::to_string(i) + tail_path,
-                                 renderer));
+                                 renderer, angle));
     else
       stack.push_back(insertTail(head_path + "0" + std::to_string(i) + 
-		                             tail_path, renderer));
+		                             tail_path, renderer, angle));
                                  
      status &= (stack.back() != NULL);
   }
@@ -578,11 +604,13 @@ std::vector<Frame*> Sprite::insertSequence(std::string head_path, int count,
  *
  * Inputs: std::string path - the path to the image to add
  *         SDL_Renderer* renderer - the rendering engine pointer
+ *         uint16_t angle - angle for frame based rotation (must be mod 90)
  * Output: Frame* - the frame that was inserted. NULL if failed
  */
-Frame* Sprite::insertTail(std::string path, SDL_Renderer* renderer)
+Frame* Sprite::insertTail(std::string path, SDL_Renderer* renderer, 
+                                            uint16_t angle)
 {
-  return insert(path, renderer, size);
+  return insert(path, renderer, size, angle);
 }
 
 /* 
@@ -738,10 +766,11 @@ bool Sprite::render(SDL_Renderer* renderer, int x, int y, int h, int w)
       rect.h = h;
       rect.w = w;
     }
-    
+
     /* Render and return status */
     return (SDL_RenderCopyEx(renderer, texture, NULL, &rect, 
-                             rotation_angle, NULL, SDL_FLIP_NONE) == 0);
+                            static_cast<double>(rotation_angle), NULL, 
+                            SDL_FLIP_NONE) == 0);
   }
   
   return false;
@@ -1107,7 +1136,7 @@ int Sprite::getAngle(RotatedAngle angle)
   if(angle == CLOCKWISE)
     return 90;
   else if(angle == COUNTERCLOCKWISE)
-    return -90;
+    return 270;
   else if(angle == HALFCIRCLE)
     return 180;
   return 0;

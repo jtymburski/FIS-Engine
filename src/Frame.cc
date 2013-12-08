@@ -38,13 +38,14 @@ Frame::Frame()
  *
  * Inputs: std::string path - the path to the image to create
  *         SDL_Renderer* renderer - the image renderer to handle the texture
+ *         uint16_t angle - angle for frame sequence rotation (mod 90)
  *         Frame* previous - pointer to previous frame, default to NULL
  *         Frame* next - pointer to next frame, default to NULL
  */
-Frame::Frame(std::string path, SDL_Renderer* renderer, 
+Frame::Frame(std::string path, SDL_Renderer* renderer, uint16_t angle,
              Frame* previous, Frame* next) : Frame()
 {
-  setTexture(path, renderer);
+  setTexture(path, renderer, angle);
   setPrevious(previous);
   setNext(next);
 }
@@ -56,13 +57,15 @@ Frame::Frame(std::string path, SDL_Renderer* renderer,
  * Inputs: std::string path - the path to the image to create
  *         std::vector<std::string> adjustments - the flip adjustment stack
  *         SDL_Renderer* renderer - the image renderer to handle the texture
+ *         uint16_t angle - angle for frame based rotation (must be mod 90)
  *         Frame* previous - pointer to previous frame, default to NULL
  *         Frame* next - pointer to next frame, default to NULL
  */
 Frame::Frame(std::string path, std::vector<std::string> adjustments, 
-             SDL_Renderer* renderer, Frame* previous, Frame* next) : Frame()
+             SDL_Renderer* renderer, uint16_t angle, Frame* previous, 
+             Frame* next) : Frame()
 {
-  setTexture(path, renderer);
+  setTexture(path, renderer, angle);
   execImageAdjustments(adjustments);
   setPrevious(previous);
   setNext(next);
@@ -312,9 +315,10 @@ bool Frame::setPrevious(Frame* previous)
  *
  * Inputs: std::string path - the path to the image
  *         SDL_Renderer* renderer - the renderer to associate the texture with
+ *         uint16_t angle - the angle to texture rotate (only works for mod 90)
  * Output: bool - the success of loading the texture
  */
-bool Frame::setTexture(std::string path, SDL_Renderer* renderer)
+bool Frame::setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle)
 {
   bool success = true;
   
@@ -324,6 +328,45 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer)
   /* If successful, unset previous and set the new texture */
   if(loaded_surface != NULL && renderer != NULL)
   {
+    /* Angle surface modification - only works for %90 angles */
+    if(angle > 0 && loaded_surface->h == loaded_surface->w && 
+       loaded_surface->format->BytesPerPixel == 4)
+    {
+      uint32_t* pixels = static_cast<uint32_t*>(loaded_surface->pixels);
+      std::vector< std::vector<uint32_t> > pixels_original;
+
+      /* Make a copy of the original pixels */
+      for(int i = 0; i < loaded_surface->h; i++)
+      {
+        std::vector<uint32_t> pixels_row;
+        
+        for(int j = 0; j < loaded_surface->w; j++)
+          pixels_row.push_back(pixels[i*loaded_surface->h + j]);
+        pixels_original.push_back(pixels_row);
+      }
+
+      /* Shift the pixels */
+      for(uint32_t i = 0; i < pixels_original.size(); i++)
+      {
+        for(uint32_t j = 0; j < pixels_original[i].size(); j++)
+        {
+          int index = 0;
+
+          /* Do the shift, based on which angle to use */
+          if(angle == 90)
+            index = j*loaded_surface->w + (loaded_surface->h - i - 1);
+          else if(angle == 180)
+            index = (loaded_surface->w - i - 1)*loaded_surface->w + 
+                    (loaded_surface->h - j - 1);
+          else if(angle == 270)
+            index = (loaded_surface->w - j - 1)*loaded_surface->w + i;
+          
+          pixels[index] = pixels_original[i][j];
+        }
+      }
+    }
+    
+    /* Create the texture from the surface */
     unsetTexture();
     texture = SDL_CreateTextureFromSurface(renderer, loaded_surface);
     image_set = true;
@@ -361,15 +404,16 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer)
  * Inputs: std::string path - the path to the image
  *         std::vector<std::string> adjustments - adjustment flip stack
  *         SDL_Renderer* renderer - the renderer to associate the texture with
+ *         uint16_t angle - the angle to texture rotate (only works for mod 90)
  * Output: bool - the success of loading the texture
  */
 bool Frame::setTexture(std::string path, std::vector<std::string> adjustments, 
-                                         SDL_Renderer* renderer)
+                                         SDL_Renderer* renderer, uint16_t angle)
 {
   bool success = true;
-  
+
   success &= execImageAdjustments(adjustments);
-  success &= setTexture(path, renderer);
+  success &= setTexture(path, renderer, angle);
   
   return success;
 }

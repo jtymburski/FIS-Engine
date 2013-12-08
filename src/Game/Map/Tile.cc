@@ -911,7 +911,7 @@ bool Tile::setLower(Sprite* lower)
 bool Tile::setLowerPassability(uint8_t index, Direction dir, bool set_value)
 {
   /* Only set if the lower layer is valid and in the right range */
-  if(index < kLOWER_COUNT_MAX && lower[index] != NULL)
+  if(index < kLOWER_COUNT_MAX && index < lower.size() && lower[index] != NULL)
   {
     if(dir == Direction::DIRECTIONLESS && set_value)
       lower_passability[index] = static_cast<uint8_t>(Direction::DIRECTIONLESS);

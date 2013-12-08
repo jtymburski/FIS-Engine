@@ -1178,8 +1178,21 @@ bool Map::isLoaded()
 /* The key up and down events to be handled by the class */
 bool Map::keyDownEvent(SDL_KeyboardEvent event)
 {
-  std::cout << event.keysym.sym << std::endl;
-
+  if(event.keysym.sym == SDLK_1)
+  {
+    if(geography.size() > 0)
+      map_index = 0;
+  }
+  else if(event.keysym.sym == SDLK_2)
+  {
+    if(geography.size() > 1)
+      map_index = 1;
+  }
+  else
+  {
+    std::cout << event.keysym.sym << std::endl;
+  }
+  
   return false;
 }
 
@@ -1373,12 +1386,17 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
 bool Map::render(SDL_Renderer* renderer)
 {
   bool success = true;
-  if(geography.size() > 0)
+  if(geography.size() > map_index)
   {
-    for(uint16_t i = 0; i < geography[0].size(); i++)
-      for(uint16_t j = 0; j < geography[0][i].size(); j++)
+    for(uint16_t i = 0; i < geography[map_index].size(); i++)
+      for(uint16_t j = 0; j < geography[map_index][i].size(); j++)
+      {
         if(i < 25 && j < 25)
-          geography[0][i][j]->renderLower(renderer, 0, 0);
+        {
+          geography[map_index][i][j]->renderLower(renderer, 0, 0);
+          geography[map_index][i][j]->renderUpper(renderer, 0, 0);
+        }
+      }
   }
   
   return success;

@@ -103,6 +103,9 @@ private:
   /* Copy function, to be called by a copy or equal operator constructor */
   void copySelf(const Sprite &source);
   
+  /* Returns the angle, if one exists in the list of modifications */
+  uint16_t parseAdjustments(std::vector<std::string> adjustments);
+  
   /* Sets the color modification with the texture */
   void setColorMod();
   
@@ -149,15 +152,18 @@ public:
   int getSize() const;
   
   /* Inserts the image into the sprite sequence at the given position */
-  Frame* insert(std::string path, SDL_Renderer* renderer, int position);
+  Frame* insert(std::string path, SDL_Renderer* renderer, int position, 
+                                                          uint16_t angle = 0);
   
   /* Inserts the first image if the frame sequence is empty
    * Note: This isn't for inserting the head, just the first one */
-  Frame* insertFirst(std::string path, SDL_Renderer* renderer);
+  Frame* insertFirst(std::string path, SDL_Renderer* renderer, 
+                                       uint16_t angle = 0);
   
   /* This inserts all the given frames at the tail. If there are any "|" 
    * delimiters, it splits the path and adds the sequence */
-  std::vector<Frame*> insertFrames(std::string path, SDL_Renderer* renderer);
+  std::vector<Frame*> insertFrames(std::string path, SDL_Renderer* renderer, 
+                                                     uint16_t angle = 0);
   
   /* Inserts a sequence of images that are stored. This allows for 
    * quick insertion of stored frames
@@ -168,10 +174,12 @@ public:
    *   a sequence */
   std::vector<Frame*> insertSequence(std::string head_path, int count, 
                                      std::string tail_path, 
-                                     SDL_Renderer* renderer);
+                                     SDL_Renderer* renderer, 
+                                     uint16_t angle = 0);
   
   /* Inserts the image at the end of the sprite sequence */
-  Frame* insertTail(std::string path, SDL_Renderer* renderer);
+  Frame* insertTail(std::string path, SDL_Renderer* renderer, 
+                                      uint16_t angle = 0);
   
   /* Returns if the linked list pointer is at the head or at the tail */
   bool isAtFirst();
