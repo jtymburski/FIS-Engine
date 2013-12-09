@@ -22,7 +22,7 @@
 // #include "Game/Map/MapMenu.h"
 // #include "Game/Map/MapNPC.h"
 // #include "Game/Map/MapStatusBar.h"
-// #include "Game/Map/MapThing.h"
+#include "Game/Map/MapThing.h"
 // #include "Game/Map/MapViewport.h"
 // #include "Game/Map/Sector.h"
 #include "Game/Map/Tile.h"
@@ -63,7 +63,7 @@ private:
   // QList<MapItem*> items;
   // QList<MapPerson*> persons;
   // MapPerson* player; /* The actively controlled player */
-  // QList<MapThing*> things;
+  std::vector<MapThing*> things;
 
   // /* The sectors on the map (for rooms, caves, houses etc) */
   // QList<Sector> sectors;
@@ -229,7 +229,7 @@ public:
   // /* Picks up the total number of the item */
   // bool pickupItem(MapItem* item);
   
-  /* Renders the title screen */
+  /* Renders the map */
   bool render(SDL_Renderer* renderer);
 
   /* Sets the running configuration, from the options class */

@@ -1322,7 +1322,7 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
       // if(player != 0)
         // viewport->lockOn(player);
     // }
-
+    
     /* Initialize sprites */
     for(uint16_t i = 0; i < tile_sprites.size(); i++)
       tile_sprites[i]->update(0, renderer);

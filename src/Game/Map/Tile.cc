@@ -654,16 +654,17 @@ bool Tile::renderLower(SDL_Renderer* renderer, int offset_x, int offset_y)
     {
       /* Paint the base first */
       if(base != NULL)
-        success &= base->render(renderer, pixel_x, pixel_y);
+        success &= base->render(renderer, pixel_x, pixel_y, width, height);
       
       /* Then the enhancer sprite */
       if(enhancer != NULL)
-        success &= enhancer->render(renderer, pixel_x, pixel_y);
+        success &= enhancer->render(renderer, pixel_x, pixel_y, width, height);
 
       /* Then Paint the set of lower layers */
       for(uint8_t i = 0; i < lower.size(); i++)
         if(lower[i] != NULL)
-          success &= lower[i]->render(renderer, pixel_x, pixel_y);
+          success &= lower[i]->render(renderer, pixel_x, pixel_y, 
+                                                width, height);
     }
     // else if(status == BLANKED)
     // { // TODO: blanking painting
@@ -705,7 +706,8 @@ bool Tile::renderUpper(SDL_Renderer* renderer, int offset_x, int offset_y)
       /* Paint the upper set, if set */
       for(uint8_t i = 0; i < upper.size(); i++)
         if(upper[i] != 0)
-          success &= upper[i]->render(renderer, pixel_x, pixel_y);
+          success &= upper[i]->render(renderer, pixel_x, pixel_y, 
+                                                width, height);
     }
   }
   return success;

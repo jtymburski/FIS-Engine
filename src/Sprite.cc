@@ -746,11 +746,11 @@ bool Sprite::removeTail()
  * Inputs: SDL_Renderer* renderer - the rendering engine for the sprite texture
  *         int x - the x coordinate on the painted viewport
  *         int y - the y coordinate on the painted viewport
- *         int h - the height of the texture painted
  *         int w - the width of the texture painted
+ *         int h - the height of the texture painted
  * Output: bool - status if the render was successful
  */
-bool Sprite::render(SDL_Renderer* renderer, int x, int y, int h, int w)
+bool Sprite::render(SDL_Renderer* renderer, int x, int y, int w, int h)
 {
   if(current != NULL && renderer != NULL)
   {
@@ -802,6 +802,7 @@ void Sprite::setAnimationTime(uint16_t time)
 bool Sprite::setAtFirst()
 {
   current = head;
+  elapsed_time = 0;
   texture_update = true;
   return true;
 }
@@ -978,11 +979,11 @@ bool Sprite::shift(int position)
  *       However, if the size of the sprite is only one frame, the head will
  *       still be selected.
  *
- * Inputs: bool skipHead - allows for the head of the list to be skipped
- *                         while shifting.
+ * Inputs: bool skip_head - allows for the head of the list to be skipped
+ *                          while shifting.
  * Output: bool - status if shift to next was successful
  */
-bool Sprite::shiftNext(bool skipHead)
+bool Sprite::shiftNext(bool skip_head)
 {
   Frame* old_current = current;
 
@@ -990,14 +991,14 @@ bool Sprite::shiftNext(bool skipHead)
   {
     if(sequence == FORWARD)
     {
-      if(!skipHead || current->getNext() != head)
+      if(!skip_head || current->getNext() != head)
         current = current->getNext();
       else
         current = current->getNext()->getNext();
     }
     else
     {
-      if(!skipHead || current->getPrevious() != head)
+      if(!skip_head || current->getPrevious() != head)
         current = current->getPrevious();
       else
         current = current->getPrevious()->getPrevious();
@@ -1032,9 +1033,11 @@ bool Sprite::switchDirection()
  *              animation.
  *
  * Inputs: int cycle_time - the update time that has elapsed, in milliseconds
+ *         SDL_Renderer* renderer - the graphical rendering engine pointer
+ *         bool skip_head - skip the head frame when updating?
  * Output: none
  */
-void Sprite::update(int cycle_time, SDL_Renderer* renderer)
+void Sprite::update(int cycle_time, SDL_Renderer* renderer, bool skip_head)
 {
   /* Start by updating the animation and shifting, if necessary */
   if(size > 1 && cycle_time > 0 && animation_time > 0)
@@ -1043,7 +1046,7 @@ void Sprite::update(int cycle_time, SDL_Renderer* renderer)
     if(elapsed_time > animation_time)
     {
       elapsed_time -= animation_time;
-      shiftNext();
+      shiftNext(skip_head);
     }
   }
   

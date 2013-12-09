@@ -199,7 +199,7 @@ public:
 
   /* Render the texture to the given renderer with the given parameters */
   bool render(SDL_Renderer* renderer, int x = 0, int y = 0, 
-                                      int h = 0, int w = 0);
+                                      int w = 0, int h = 0);
 
   /* Sets the frame animation time (in ms) */
   void setAnimationTime(uint16_t time);
@@ -235,13 +235,13 @@ public:
   bool shift(int position);
 
   /* Shifts to the next frame in the sprite */
-  bool shiftNext(bool skipHead = false);
+  bool shiftNext(bool skip_head = false);
 
   /* Switches the direction that the linked list is parsed in */
   bool switchDirection();
 
   /* Updates the frames within the sprite */
-  void update(int cycle_time, SDL_Renderer* renderer);
+  void update(int cycle_time, SDL_Renderer* renderer, bool skip_head = false);
 
 /*============================================================================
  * OPERATOR FUNCTIONS
