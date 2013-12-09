@@ -44,6 +44,7 @@ SOURCES=src/Application.cc \
         src/Game/Map/Tile.cc \
         src/Game/Player/Action.cc \
         src/Game/Player/Skill.cc \
+        src/Game/Player/SkillSet.cc \
         src/Helpers.cc \
         src/Main.cc \
         src/Md5.cc \

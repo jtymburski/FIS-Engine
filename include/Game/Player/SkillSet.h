@@ -23,12 +23,12 @@
 #ifndef SKILLSET_H
 #define SKILLSET_H
 
-#include <algorithm> /* std::sort */
+#include <algorithm> /* std::sort, std::find */
 #include <deque>
 #include <vector>
 
 #include "Game/Player/Skill.h"
-#include "EnumDb.cc"
+#include "EnumDb.h"
 #include "Helpers.h"
 
 struct SkillSetElement
@@ -48,9 +48,9 @@ public:
 
   SkillSet(const SkillSet &source);
 
-  SkillSet(const Skill* skill, const uint &level = 1);
+  SkillSet(Skill* skill, const uint32_t &level);
 
-  SkillSet(const std::vector<Skill*> &skills, const std::vector<uint> &levels); 
+  SkillSet(const std::vector<Skill*> &skills, const std::vector<uint32_t> &levels); 
 
   ~SkillSet();
 
@@ -59,17 +59,19 @@ private:
   std::deque<SkillSetElement> skill_elements;
 
   /* ------------ Constants --------------- */
-  const bool   kENABLED_DEFAULT;  /* Are skills enabled by default? */
-  const size_t kMAX_SKILLS;       /* ? Problems with adding mass skills */
-  const size_t kMAX_UNLOCK_LEVEL; /* Maximum level a skill can be unlocked at */
+  static const bool   kENABLED_DEFAULT;  /* Are skills enabled by default? */
+  static const size_t kMAX_SKILLS;       /* ? Problems with adding mass skills */
+  static const size_t kMIN_UNLOCK_LEVEL; /* Minimum level a skill can be unlocked at */
+  static const size_t kMAX_UNLOCK_LEVEL; /* Maximum level a skill can be unlocked at */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
  private:
-   uint calcLowestLevel(const &uint skill_id);
+   uint32_t calcLowestLevel(const uint32_t &skill_id);
 
-   static uint calcUniques(const std::deque<SkillSetElements> &check_elements);
+   static std::deque<SkillSetElement> 
+                calcUniques(const std::deque<SkillSetElement> &check_elements);
    
    void cleanUp();
 
@@ -80,42 +82,42 @@ private:
  *============================================================================*/
 public:
 
-  bool addSkill(const Skill* skill, uint &req_level = 1, 
-  	            const bool &enabled = true);
+  bool addSkill(Skill* skill, const uint32_t &req_level, 
+  	            const bool enabled = true);
 
   bool addSkills(const std::vector<Skill*> skills, 
-  	             const std::vector<uint> &req_levels,
+  	             const std::vector<uint32_t> &req_levels,
   	             const std::vector<bool> &enabled);
 
-  bool addSkills(const std::deque<SkillSetElements> &new_elements);
+  bool addSkills(const std::deque<SkillSetElement> &new_elements);
 
   void clear();
 
   void print();
 
-  bool removeSkill(const uint &index);
+  bool rSkillIndex(const uint32_t &index);
 
-  bool removeSkill(const uint &id);
+  bool rSkillID(const uint32_t &id);
 
   void sort(const SkillSorts &sort_type, bool ascending = true);
 
   std::vector<bool> getAllEnabled();
 
-  std::deque<SkillSetElements> getElements(const uint &at_level);
+  std::deque<SkillSetElement> getElements(const uint32_t &at_level);
 
-  bool getEnabled(const uint &index);
+  bool getEnabled(const uint32_t &index);
 
-  int getIndexOfID(const uint &id);
+  int getIndexOfID(const uint32_t &id);
 
-  std::string getName(const uint &index);
+  std::string getName(const uint32_t &index);
 
   std::vector<std::string> getNames();
 
-  uint getLevel(const uint &index);
+  uint32_t getLevel(const uint32_t &index);
 
-  std::vector<uint> getLevels();
+  std::vector<uint32_t> getLevels();
 
-  bool setState(const uint &index, const bool &state = true);
+  bool setState(const uint32_t &index, const bool &state = true);
 
 /*============================================================================
  * OPERATOR FUNCTIONS

@@ -21,6 +21,7 @@
 const bool   SkillSet::kENABLED_DEFAULT  =  true;
 const size_t SkillSet::kMAX_SKILLS       = 10000;
 const size_t SkillSet::kMAX_UNLOCK_LEVEL =   127;
+const size_t SkillSet::kMIN_UNLOCK_LEVEL =     1;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -48,7 +49,7 @@ SkillSet::SkillSet(const SkillSet &source)
  *
  * Inputs:
  */
-SkillSet::SkillSet(const Skill* skill, const uint &level = 1)
+SkillSet::SkillSet(Skill* skill, const uint32_t &level)
 {
   addSkill(skill, level, kENABLED_DEFAULT);
 }
@@ -58,7 +59,7 @@ SkillSet::SkillSet(const Skill* skill, const uint &level = 1)
  *
  * Inputs:
  */
-SkillSet::SkillSet(const std::vector<Skill*> &skills, const std::vector<uint> &levels)
+SkillSet::SkillSet(const std::vector<Skill*> &skills, const std::vector<uint32_t> &levels)
 {
   std::vector<bool> enabled_values(levels.size(), kENABLED_DEFAULT);
   addSkills(skills, levels, enabled_values);
@@ -73,12 +74,12 @@ SkillSet::~SkillSet() {}
  * PRIVATE FUNCTIONS
  *============================================================================*/
 
-uint SkillSet::calcLowestLevel(const &uint skill_id)
+uint32_t SkillSet::calcLowestLevel(const uint32_t &skill_id)
 {
-  uint min_level = kMAX_UNLOCK_LEVEL;
+  uint32_t min_level = kMAX_UNLOCK_LEVEL;
 
   for (SkillSetElement element : skill_elements)
-    if (element.skill->getID() == skill_id)
+    if (element.skill->getID() == static_cast<int>(skill_id))
       if (element.level_available < min_level)
         min_level = element.level_available;
   
@@ -86,16 +87,16 @@ uint SkillSet::calcLowestLevel(const &uint skill_id)
 }
 
 //STATIC
-std::deque<SkillSetElements> SkillSet::calcUniques(const std::deque<SkillSetElements> &check_elements)
+std::deque<SkillSetElement> SkillSet::calcUniques(const std::deque<SkillSetElement> &check_elements)
 {
-  std::vector<uint> uniques;
-  std::deque<SkillSetElements> unique_elements;
+  std::vector<uint32_t> uniques;
+  std::deque<SkillSetElement> unique_elements;
 
   for (SkillSetElement element : check_elements)
   {
-    const uint &curr_id = element.skill->getID();
+    const uint32_t &curr_id = element.skill->getID();
 
-    if (!uniques.contains(curr_id)
+    if (std::find(uniques.begin(), uniques.end(), curr_id) != uniques.end())
     {
       uniques.push_back(curr_id);
       unique_elements.push_back(element);
@@ -107,9 +108,9 @@ std::deque<SkillSetElements> SkillSet::calcUniques(const std::deque<SkillSetElem
    
 void SkillSet::cleanUp()
 {
-  sort(SkillSorts:ID);
+  sort(SkillSorts::ID);
 
-  std::deque<SkillListElement> unique_elements = calcUniques(skill_elements);
+  std::deque<SkillSetElement> unique_elements = calcUniques(skill_elements);
 
   for (auto it = unique_elements.begin(); it != unique_elements.begin(); ++it)
     if (!(*it).skill->isValid())
@@ -127,22 +128,20 @@ void SkillSet::copySelf(const SkillSet &source)
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
-bool SkillSet::addSkill(const Skill* skill, uint &req_level, 
-  	                    const bool &enabled)
+bool SkillSet::addSkill(Skill* skill, const uint32_t &req_level, 
+  	                    const bool enabled)
 {
   if (skill_elements.size() < kMAX_SKILLS)
   {
-    if ((skill->getFlags() & SkillFlags::VALID) == SkillFlags::VALID)
+    if (skill->getFlag(SkillFlags::VALID))
     {
       SkillSetElement new_element;
-
-      Helpers::setWithinRange(req_level, 1, kMAX_UNLOCK_LEVEL);
 
       new_element.skill = skill;
       new_element.level_available = req_level;
       new_element.enabled = enabled;
 
-      skill_elements.push_back(skill_elements);
+      skill_elements.push_back(new_element);
 
       return true;
     }
@@ -152,7 +151,7 @@ bool SkillSet::addSkill(const Skill* skill, uint &req_level,
 }
 
 bool SkillSet::addSkills(const std::vector<Skill*> skills, 
-  	                     const std::vector<uint> &req_levels,
+  	                     const std::vector<uint32_t> &req_levels,
   	                     const std::vector<bool> &enabled)
 {
   bool success = true;
@@ -182,9 +181,9 @@ bool SkillSet::addSkills(const std::vector<Skill*> skills,
   return success;
 }
 
-bool SkillSet::addSkills(const std::deque<SkillSetElements> &new_elements)
+bool SkillSet::addSkills(const std::deque<SkillSetElement> &new_elements)
 {
-  std::deque<SkillListElement> unique_elements = calcUniques(new_elements)
+  std::deque<SkillSetElement> unique_elements = calcUniques(new_elements);
 
   if (skill_elements.size() + unique_elements.size() < kMAX_SKILLS)
   {
@@ -213,20 +212,23 @@ void SkillSet::print()
   {
     std::cout << "Element Index: " << index++ << std::endl;
     std::cout << "Skill Name: " << element.skill->getName() << std::endl;
-    std::cout << "Lev. Req. " << element.level_avilable << std::endl;
+    std::cout << "Lev. Req. " << element.level_available << std::endl;
     std::cout << "Enabled? " << element.enabled << std::endl;
   }
 }
 
-int SkillSet::getIndexOfID(const uint &id)
+int SkillSet::getIndexOfID(const uint32_t &id)
 {
-  for (size_t i = 0; i < skill_elements.size(); i++)
-    if (skill_elements.at(skill_elements.begin() + i).skill->getID() == id)
-      return static_cast<int>(i);
+  int i = 0;
+
+  for (auto it = skill_elements.begin(); it != skill_elements.end(); ++it, i++)
+    if ((*it).skill->getID() == static_cast<int>(id))
+      return i;
+
   return -1;
 }
 
-bool SkillSet::removeSkill(const uint &index)
+bool SkillSet::rSkillIndex(const uint32_t &index)
 {
   if (index < skill_elements.size())
   {
@@ -238,7 +240,7 @@ bool SkillSet::removeSkill(const uint &index)
   return false;
 }
 
-bool SkillSet::removeSkill(const uint &id)
+bool SkillSet::rSkillID(const uint32_t &id)
 {
   int index = getIndexOfID(id);
 
@@ -250,6 +252,7 @@ bool SkillSet::removeSkill(const uint &id)
 
 void SkillSet::sort(const SkillSorts &sort_type, bool ascending)
 {
+  /*
   if (sort_type == SkillSorts::COOLDOWN)
   {
     std::sort(skill_elements.begin(), skill_elements.end(), 
@@ -301,12 +304,12 @@ void SkillSet::sort(const SkillSorts &sort_type, bool ascending)
     	      {
                 if (ascending)
                 {
-                  return static_cast<uint>(a.skill->getPrimary()) < 
-                         static_cast<uint>(b.skill->getPrimary());
+                  return static_cast<uint32_t>(a.skill->getPrimary()) < 
+                         static_cast<uint32_t>(b.skill->getPrimary());
                 }
 
-                return static_cast<uint>(a.skill->getPrimary()) > 
-                       static_cast<uint>(b.skill->getPrimary())
+                return static_cast<uint32_t>(a.skill->getPrimary()) > 
+                       static_cast<uint32_t>(b.skill->getPrimary())
     	      });
   }
   else if (sort_type == SkillSorts::SECONDARY)
@@ -316,12 +319,12 @@ void SkillSet::sort(const SkillSorts &sort_type, bool ascending)
     	      {
                 if (ascending)
                 {
-                  return static_cast<uint>(a.skill->getSecondary()) < 
-                         static_cast<uint>(b.skill->getSecondary());
+                  return static_cast<uint32_t>(a.skill->getSecondary()) < 
+                         static_cast<uint32_t>(b.skill->getSecondary());
                 }
 
-                return static_cast<uint>(a.skill->getSecondary()) > 
-                       static_cast<uint>(b.skill->getSecondary())
+                return static_cast<uint32_t>(a.skill->getSecondary()) > 
+                       static_cast<uint32_t>(b.skill->getSecondary())
     	      });
   }
   else if (sort_type == SkillSorts::POINT_VALUE)
@@ -357,6 +360,7 @@ void SkillSet::sort(const SkillSorts &sort_type, bool ascending)
                 return a.enabled > b.enabled;
     	      });
   }
+  */
 }
 
 std::vector<bool> SkillSet::getAllEnabled()
@@ -369,27 +373,31 @@ std::vector<bool> SkillSet::getAllEnabled()
   return enabled;
 }
 
-std::deque<SkillSetElements> SkillSet::getElements(const uint &at_level)
+std::deque<SkillSetElement> SkillSet::getElements(const uint32_t &at_level)
 {
-  std::deque<SkillSetElements> skills;
+  std::deque<SkillSetElement> skills;
 
   for (auto it = skill_elements.begin(); it != skill_elements.end(); ++it)
-    if ((*it).req_level <= at_level)
+    if ((*it).level_available <= at_level)
       skills.push_back((*it));
 
   return skills;
 }
 
-bool SkillSet::getEnabled(const uint &index)
+bool SkillSet::getEnabled(const uint32_t &index)
 {
   if (index < skill_elements.size())
     return skill_elements.at(index).enabled;
+
+  return false;
 }
 
-std::string SkillSet::getName(const uint &index)
+std::string SkillSet::getName(const uint32_t &index)
 {
   if (index < skill_elements.size())
     return skill_elements.at(index).skill->getName();
+
+  return "";
 }
 
 std::vector<std::string> SkillSet::getNames()
@@ -402,15 +410,17 @@ std::vector<std::string> SkillSet::getNames()
   return names;
 }
 
-uint SkillSet::getLevel(const uint &index)
+uint32_t SkillSet::getLevel(const uint32_t &index)
 {
   if (index < skill_elements.size())
     return skill_elements.at(index).level_available;
+
+  return kMAX_UNLOCK_LEVEL + 1;
 }
 
-std::vector<uint> SkillSet::getLevels()
+std::vector<uint32_t> SkillSet::getLevels()
 {
-  std::vector<uint> levels;
+  std::vector<uint32_t> levels;
 
   for (SkillSetElement element : skill_elements)
     levels.push_back(element.level_available);
@@ -418,10 +428,16 @@ std::vector<uint> SkillSet::getLevels()
   return levels;
 }
 
-bool SkillSet::setState(const uint &index, const bool &state)
+bool SkillSet::setState(const uint32_t &index, const bool &state)
 {
   if (index < skill_elements.size())
+  {
     skill_elements[index].enabled = state;
+
+    return true;
+  }
+
+  return false;
 }
 
 /*=============================================================================
@@ -450,8 +466,8 @@ SkillSet& SkillSet::operator+=(const SkillSet &rhs)
 
 SkillSet& SkillSet::operator-=(const SkillSet &rhs)
 {
-  for (SkillListElement element : rhs.skill_elements)
-    removeSkill(element.skill->getID());
+  for (SkillSetElement element : rhs.skill_elements)
+    rSkillID(element.skill->getID());
 
   return *this;
 }
