@@ -29,7 +29,7 @@ const uint8_t Map::kFILE_GAME_TYPE = 1;
 const uint8_t Map::kFILE_SECTION_ID = 2;
 const uint8_t Map::kFILE_TILE_COLUMN = 5;
 const uint8_t Map::kFILE_TILE_ROW = 4;
-// const short Map::kPLAYER_ID = 0;
+const uint8_t Map::kPLAYER_ID = 0;
 const uint16_t Map::kTILE_SIZE = 64;
 // const short Map::kZOOM_TILE_SIZE = 16;
 
@@ -44,6 +44,8 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   this->event_handler = event_handler;
   loaded = false;
   map_index = 0;
+  player = NULL;
+  running = false;
   system_options = NULL;
   
   /* Set options configuration */
@@ -359,34 +361,34 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
       things.push_back(modified_thing);
     }
   }
-  // else if(identifier == "mapperson" || identifier == "mapnpc")
-  // {
-    // /* Search for the existing map object */
-    // while(modified_thing == 0 && index < persons.size())
-    // {
-      // if(persons[index]->getID() == id)
-        // modified_thing = persons[index];
-      // index++;
-    // }
+  else if(identifier == "mapperson" || identifier == "mapnpc")
+  {
+    /* Search for the existing map object */
+    while(modified_thing == NULL && index < persons.size())
+    {
+      if(persons[index]->getID() == id)
+        modified_thing = persons[index];
+      index++;
+    }
 
-    // /* Create a new person if one does not exist */
-    // if(modified_thing == 0)
-    // {
-      // if(identifier == "mapperson")
-        // modified_thing = new MapPerson(tile_width, tile_height);
+    /* Create a new person if one does not exist */
+    if(modified_thing == 0)
+    {
+      if(identifier == "mapperson")
+        modified_thing = new MapPerson(tile_width, tile_height);
       // else
         // modified_thing = new MapNPC(tile_width, tile_height);
-      // modified_thing->setEventHandler(event_handler);
-      // modified_thing->setID(id);
+      modified_thing->setEventHandler(event_handler);
+      modified_thing->setID(id);
       
-      // /* If the ID is the player ID, tie to the player */
-      // if(id == kPLAYER_ID)
-        // player = (MapPerson*)modified_thing;
+      /* If the ID is the player ID, tie to the player */
+      if(id == kPLAYER_ID)
+        player = static_cast<MapPerson*>(modified_thing);
       
-      // /* Append the new one */
-      // persons.append((MapPerson*)modified_thing);
-    // }
-  // }
+      /* Append the new one */
+      persons.push_back(static_cast<MapPerson*>(modified_thing));
+    }
+  }
   // else if(identifier == "mapitem")
   // {
     // /* Search for the existing map object */
@@ -1188,9 +1190,16 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
     if(geography.size() > 1)
       map_index = 1;
   }
-  else
+  else if(player != NULL)
   {
-    std::cout << event.keysym.sym << std::endl;
+    if((event.keysym.sym == SDLK_LSHIFT || event.keysym.sym == SDLK_RSHIFT) && 
+       !running)
+    {
+      running = true;
+      player->setSpeed(player->getSpeed() * 2);
+    }
+    else
+      player->keyDownEvent(event);
   }
   
   return false;
@@ -1198,7 +1207,17 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
 
 void Map::keyUpEvent(SDL_KeyboardEvent event)
 {
-
+  if(player != NULL)
+  {
+    if((event.keysym.sym == SDLK_LSHIFT || event.keysym.sym == SDLK_RSHIFT) && 
+       running)
+    {
+      running = false;
+      player->setSpeed(player->getSpeed() / 2);
+    }
+    else
+      player->keyUpEvent(event);
+  }
 }
 
 // TODO: Separate file add success and XML read success to parse error
@@ -1323,25 +1342,10 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
         // viewport->lockOn(player);
     // }
     
-    /* Initialize sprites */
-    for(uint16_t i = 0; i < tile_sprites.size(); i++)
-      tile_sprites[i]->update(0, renderer);
-      
     /* TODO: Testing - Remove */
-    if(geography.size() > 0 && geography[0].size() > 3 && geography[0][3].size() > 3)
-      geography[0][3][3]->setStatus(Tile::BLANKED);
-    
-    // for(int i = 0; i < geography.size(); i++)
-      // for(int j = 0; j < geography[i].size(); j++)
-        // for(int k = 0; k < geography[i][j].size(); k++) 
-          // geography[i][j][k]->initializeGl();
-   
-    // for(int i = 0; i < items.size(); i++)
-      // items[i]->initializeGl();
-    // for(int i = 0; i < persons.size(); i++)
-      // persons[i]->initializeGl();
-    // for(int i = 0; i < things.size(); i++)
-      // things[i]->initializeGl();
+    if(geography.size() > 0 && geography[0].size() > 3 
+                            && geography[0][3].size() > 3)
+      geography[0][3][3]->setStatus(Tile::OFF);
   }
   loaded = success;
 
@@ -1405,7 +1409,17 @@ bool Map::render(SDL_Renderer* renderer)
     
     /* Render Map Things */
     for(uint16_t i = 0; i < things.size(); i++)
-      things[i]->render(renderer, 0, 0);
+    {
+      if(things[i]->getMapSection() == map_index)
+        things[i]->render(renderer, 0, 0);
+    }
+    
+    /* Render Map Persons (and NPCs) */
+    for(uint16_t i = 0; i < persons.size(); i++)
+    {
+      if(persons[i]->getMapSection() == map_index)
+        persons[i]->render(renderer, 0, 0);
+    }
     
     /* Render upper half of tile */
     for(uint16_t i = 0; i < geography[map_index].size(); i++)
@@ -1477,6 +1491,20 @@ bool Map::setConfiguration(Options* running_config)
   // }
 // }
 
+void Map::unfocus()
+{
+  /* If player is set, clear movement */
+  if(player != NULL)
+  {
+    player->keyFlush();
+    
+    /* If player was running, reset it */
+    if(running)
+      player->setSpeed(player->getSpeed() / 2);
+    running = false;
+  } 
+}
+
 void Map::unloadMap()
 {
   /* Reset the index and applicable parameters */
@@ -1493,15 +1521,15 @@ void Map::unloadMap()
   // }
   // items.clear();
 
-  // /* Delete all persons */
-  // for(int i = 0; i < persons.size(); i++)
-  // {
-    // if(persons[i] != 0)
-      // delete persons[i];
-    // persons[i] = 0;
-  // }
-  // persons.clear();
-
+  /* Delete the persons */
+  for(uint16_t i = 0; i < persons.size(); i++)
+  {
+    if(persons[i] != NULL)
+      delete persons[i];
+    persons[i] = NULL;
+  }
+  persons.clear();
+  
   /* Delete the things */
   for(uint16_t i = 0; i < things.size(); i++)
   {
@@ -1510,7 +1538,7 @@ void Map::unloadMap()
     things[i] = NULL;
   }
   things.clear();
-
+  
   /* Delete all the tiles that have been set */
   for(uint16_t i = 0; i < geography.size(); i++)
   {
@@ -1545,15 +1573,58 @@ void Map::unloadMap()
 }
 
 /* Updates the game state */
-bool Map::update(int cycle_time, SDL_Renderer* renderer)
+bool Map::update(int cycle_time)
 {
   /* Update the sprite animation */
   for(uint16_t i = 0; i < tile_sprites.size(); i++)
-    tile_sprites[i]->update(cycle_time, renderer);
+    tile_sprites[i]->update(cycle_time);
+
+  /* Update persons for movement and animation */
+  for(uint16_t i = 0; i < persons.size(); i++)
+  {
+    if(persons[i] != NULL)
+    {
+      Tile* next_tile = NULL;
+
+      if(persons[i]->getMapSection() == map_index && 
+         persons[i]->getTile() != NULL)
+      {
+        uint16_t tile_x = persons[i]->getTile()->getX();
+        uint16_t tile_y = persons[i]->getTile()->getY();
+
+        /* Based on the move request, provide the next tile in line using the
+         * current centered tile and move request */
+        switch(persons[i]->getPredictedMoveRequest())
+        {
+          case Direction::NORTH:
+            if(tile_y-- > 0)
+              next_tile = geography[map_index][tile_x][tile_y];
+            break;
+          case Direction::EAST:
+            if(++tile_x < geography[map_index].size())
+              next_tile = geography[map_index][tile_x][tile_y];
+            break;
+          case Direction::SOUTH:
+            if(++tile_y < geography[map_index][tile_x].size())
+              next_tile = geography[map_index][tile_x][tile_y];
+            break;
+          case Direction::WEST:
+            if(tile_x-- > 0)
+              next_tile = geography[map_index][tile_x][tile_y];
+            break;
+          case Direction::DIRECTIONLESS:
+            next_tile = NULL;
+        }
+      }
+
+      /* Proceed to update the thing */
+      persons[i]->update(cycle_time, next_tile);
+    }
+  }
   
   /* Update map things */
   for(uint16_t i = 0; i < things.size(); i++)
-    things[i]->update(cycle_time, renderer, NULL);
+    things[i]->update(cycle_time, NULL);
   
   return false;
 }

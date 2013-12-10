@@ -72,14 +72,12 @@ MapThing::~MapThing()
  *              of the thing as well as calls to the sprite holder
  * 
  * Inputs: int cycle_time - the msec time between the last animate call
- *         SDL_Renderer* renderer - the graphical rendering engine
  *         bool reset - Resets the animation back to head. Used for either 
  *                      restarting animation or stopping it.
  *         bool skip_head - Skip the head of the list of frames
  * Output: bool - a status on the animate, if the frame sequence changed.
  */
-bool MapThing::animate(int cycle_time, SDL_Renderer* renderer, 
-                                       bool reset, bool skip_head)
+bool MapThing::animate(int cycle_time, bool reset, bool skip_head)
 {
   /* Check if an animation can occur */
   if(frames != NULL)
@@ -89,9 +87,9 @@ bool MapThing::animate(int cycle_time, SDL_Renderer* renderer,
       frames->setAtFirst();
     
     if(reset)
-      frames->update(0, renderer, skip_head);
+      frames->update(0, skip_head);
     else
-      frames->update(cycle_time, renderer, skip_head);
+      frames->update(cycle_time, skip_head);
     
     return true;
   }
@@ -349,6 +347,7 @@ void MapThing::clear()
   tile_section = 0;
   
   /* Resets the class parameters */
+  MapThing::clearAllMovement();
   setDescription("");
   setEventHandler(NULL);
   setID(kUNSET_ID);
@@ -374,6 +373,7 @@ void MapThing::clear()
  */
 void MapThing::clearAllMovement()
 {
+  movement = Direction::DIRECTIONLESS;
 }
 
 /*
@@ -937,11 +937,10 @@ bool MapThing::setWidth(uint16_t new_width)
  *              sequencing or movement and such. Called on the tick.
  *
  * Inputs: int cycle_time - the ms time to update the movement/animation
- *         SDL_Renderer* renderer - the rendering graphical engine pointer
  *         Tile* next_tile - the next tile that the thing is moving towards
  * Output: none 
  */
-void MapThing::update(int cycle_time, SDL_Renderer* renderer, Tile* next_tile)
+void MapThing::update(int cycle_time, Tile* next_tile)
 {
   (void)next_tile;
   
@@ -951,7 +950,7 @@ void MapThing::update(int cycle_time, SDL_Renderer* renderer, Tile* next_tile)
     moveThing(cycle_time);
 
     /* Animate the thing */
-    animate(cycle_time, renderer);
+    animate(cycle_time);
   }
 }
 

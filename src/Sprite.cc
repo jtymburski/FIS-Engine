@@ -192,7 +192,7 @@ bool Sprite::addFileInformation(XmlData data, int index,
   
   /* Splits the element, for underlying categorization */
   std::vector<std::string> split_element = Helpers::split(element, '_');
-  
+
   /* Parse the sprite information - based on the element tag name */
   if(element == "animation")
     setAnimationTime(data.getDataInteger());
@@ -754,6 +754,32 @@ bool Sprite::render(SDL_Renderer* renderer, int x, int y, int w, int h)
 {
   if(current != NULL && renderer != NULL)
   {
+    /* Proceed to update the running texture if it's changed */
+    if(texture_update)
+    {
+      SDL_SetRenderTarget(renderer, texture);
+      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0);
+      SDL_RenderClear(renderer);
+      
+      /* Render current frame */
+      current->render(renderer);
+      
+      /* Render white mask, if relevant */
+      if(brightness > kDEFAULT_BRIGHTNESS && white_mask != NULL)
+      {
+        double bright_mod = (brightness - kDEFAULT_BRIGHTNESS);
+        if(bright_mod > kDEFAULT_BRIGHTNESS)
+          bright_mod = kDEFAULT_BRIGHTNESS;
+        
+        SDL_SetTextureAlphaMod(white_mask, 255 * brightness);
+        SDL_RenderCopy(renderer, white_mask, NULL, NULL);
+      }
+      
+      /* Release the renderer and end the update */
+      SDL_SetRenderTarget(renderer, NULL);
+      texture_update = false;
+    }
+  
     SDL_Rect rect;
     rect.x = x;
     rect.y = y;
@@ -1033,12 +1059,15 @@ bool Sprite::switchDirection()
  *              animation.
  *
  * Inputs: int cycle_time - the update time that has elapsed, in milliseconds
- *         SDL_Renderer* renderer - the graphical rendering engine pointer
  *         bool skip_head - skip the head frame when updating?
  * Output: none
  */
-void Sprite::update(int cycle_time, SDL_Renderer* renderer, bool skip_head)
+void Sprite::update(int cycle_time, bool skip_head)
 {
+  /* If skip head is triggered, but it is at head, skip to next */
+  if(skip_head && isAtFirst())
+    shiftNext(skip_head);
+  
   /* Start by updating the animation and shifting, if necessary */
   if(size > 1 && cycle_time > 0 && animation_time > 0)
   {
@@ -1048,32 +1077,6 @@ void Sprite::update(int cycle_time, SDL_Renderer* renderer, bool skip_head)
       elapsed_time -= animation_time;
       shiftNext(skip_head);
     }
-  }
-  
-  /* Proceed to update the running texture if it's changed */
-  if(texture_update && size > 0)
-  {
-    SDL_SetRenderTarget(renderer, texture);
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0);
-    SDL_RenderClear(renderer);
-    
-    /* Render current frame */
-    current->render(renderer);
-    
-    /* Render white mask, if relevant */
-    if(brightness > kDEFAULT_BRIGHTNESS && white_mask != NULL)
-    {
-      double bright_mod = (brightness - kDEFAULT_BRIGHTNESS);
-      if(bright_mod > kDEFAULT_BRIGHTNESS)
-        bright_mod = kDEFAULT_BRIGHTNESS;
-      
-      SDL_SetTextureAlphaMod(white_mask, 255 * brightness);
-      SDL_RenderCopy(renderer, white_mask, NULL, NULL);
-    }
-    
-    /* Release the renderer and end the update */
-    SDL_SetRenderTarget(renderer, NULL);
-    texture_update = false;
   }
 }
 

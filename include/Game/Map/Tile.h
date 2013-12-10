@@ -30,8 +30,8 @@ class Tile
 public:
   /* Constructor functions */
   Tile();
-  Tile(EventHandler* event_handler, int width, int height, 
-       int x = 0, int y = 0);
+  Tile(EventHandler* event_handler, uint16_t width, uint16_t height, 
+       uint16_t x = 0, uint16_t y = 0);
 
   /* Destructor function */
   ~Tile();
@@ -45,8 +45,8 @@ private:
   /* Basic information for the tile */
   uint16_t height;
   uint16_t width;
-  int16_t x;
-  int16_t y;
+  uint16_t x;
+  uint16_t y;
   TileStatus status;
 
   /* The base information */
@@ -135,8 +135,8 @@ public:
   uint16_t getWidth();
 
   /* Returns the coordinates of the Tile (x or y) */
-  int16_t getX();
-  int16_t getY();
+  uint16_t getX();
+  uint16_t getY();
 
   /* Inserts the lower and upper onto the stack (where applicable). This
    * functionality is essentially entirely handled by Layer */
@@ -210,8 +210,8 @@ public:
   void setWidth(uint16_t width);
 
   /* Sets the coordinate location of the tile (and all corresponding layers) */
-  void setX(int16_t x);
-  void setY(int16_t y);
+  void setX(uint16_t x);
+  void setY(uint16_t y);
   
   /* Updates the relevent enter and exit events, from file data */
   bool updateEnterEvent(XmlData data, int file_index, uint16_t section_index);

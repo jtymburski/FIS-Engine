@@ -75,8 +75,7 @@ protected:
  *===========================================================================*/
 protected:
   /* Animates the thing, if it has multiple frames */
-  bool animate(int cycle_time, SDL_Renderer* renderer, 
-               bool reset = false, bool skip_head = false);
+  bool animate(int cycle_time, bool reset = false, bool skip_head = false);
  
   /* Is the thing almost centered on a tile (less than 1 pulse away) */
   bool isAlmostOnTile(int cycle_time);
@@ -222,7 +221,7 @@ public:
   bool setWidth(uint16_t new_width);
 
   /* Updates the thing, called on the tick */
-  virtual void update(int cycle_time, SDL_Renderer* renderer, Tile* next_tile);
+  virtual void update(int cycle_time, Tile* next_tile);
   
   /* Unsets the thing frames, in the class */
   void unsetFrames(bool delete_frames = true);

@@ -41,12 +41,13 @@ Tile::Tile()
  *              overall control (Map).
  *
  * Inputs: EventHandler* event_handler - the handler for all events
- *         int width - the width of the tile in pixels
- *         int height - the height of the tile in pixels
- *         int x - the x location respective to the parent (in tile count)
- *         int y - the y location respective to the parent (in tile count)
+ *         uint16_t width - the width of the tile in pixels
+ *         uint16_t height - the height of the tile in pixels
+ *         uint16_t x - the x location respective to the parent (in tile count)
+ *         uint16_t y - the y location respective to the parent (in tile count)
  */
-Tile::Tile(EventHandler* event_handler, int width, int height, int x, int y) 
+Tile::Tile(EventHandler* event_handler, uint16_t width, uint16_t height, 
+                                        uint16_t x, uint16_t y) 
     : Tile()
 {
   /* Reset the parameters based on this alternate constructor */
@@ -471,9 +472,9 @@ uint16_t Tile::getWidth()
  *              width and height changes and only is a reference.
  *
  * Inputs: none
- * Output: int16_t - the x coordinate, in tile count
+ * Output: uint16_t - the x coordinate, in tile count
  */
-int16_t Tile::getX()
+uint16_t Tile::getX()
 {
   return x;
 }
@@ -483,9 +484,9 @@ int16_t Tile::getX()
  *              width and height changes and only is a reference.
  *
  * Inputs: none
- * Output: int16_t - the y coordinate, in tile count
+ * Output: uint16_t - the y coordinate, in tile count
  */
-int16_t Tile::getY()
+uint16_t Tile::getY()
 {
   return y;
 }
@@ -1032,10 +1033,10 @@ void Tile::setWidth(uint16_t width)
 /*
  * Description: Sets the X coordinate of the tile. 
  *
- * Inputs: int16_t x - the tile x coordinate, in tile count
+ * Inputs: uint16_t x - the tile x coordinate, in tile count
  * Output: none
  */
-void Tile::setX(int16_t x)
+void Tile::setX(uint16_t x)
 {
   this->x = x;
 }
@@ -1043,10 +1044,10 @@ void Tile::setX(int16_t x)
 /*
  * Description: Sets the Y coordinate of the tile.
  *
- * Inputs: int16_t y - the tile y coordinate, in tile count
+ * Inputs: uint16_t y - the tile y coordinate, in tile count
  * Output: none
  */
-void Tile::setY(int16_t y)
+void Tile::setY(uint16_t y)
 {
   this->y = y;
 }

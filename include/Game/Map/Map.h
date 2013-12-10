@@ -21,6 +21,7 @@
 // #include "Game/Map/MapItem.h"
 // #include "Game/Map/MapMenu.h"
 // #include "Game/Map/MapNPC.h"
+#include "Game/Map/MapPerson.h"
 // #include "Game/Map/MapStatusBar.h"
 #include "Game/Map/MapThing.h"
 // #include "Game/Map/MapViewport.h"
@@ -61,8 +62,9 @@ private:
 
   // /* The players info on the map */
   // QList<MapItem*> items;
-  // QList<MapPerson*> persons;
-  // MapPerson* player; /* The actively controlled player */
+  std::vector<MapPerson*> persons;
+  MapPerson* player; /* The actively controlled player */
+  bool running;
   std::vector<MapThing*> things;
 
   // /* The sectors on the map (for rooms, caves, houses etc) */
@@ -107,7 +109,7 @@ private:
   const static uint8_t kFILE_SECTION_ID; /* The section identifier, for file */
   const static uint8_t kFILE_TILE_COLUMN; /* The tile depth in XML of column */
   const static uint8_t kFILE_TILE_ROW; /* The tile depth in XML of row */
-  // const static short kPLAYER_ID;     /* The player ID for computer control */
+  const static uint8_t kPLAYER_ID;     /* The player ID for computer control */
   const static uint16_t kTILE_SIZE; /* The default tile size, when no zoom */
   // const static short kZOOM_TILE_SIZE;  /* The tile size, when zoomed out */
 
@@ -242,11 +244,14 @@ public:
   // /* Teleport a thing, based on the given coordinates */
   // void teleportThing(int id, int tile_x, int tile_y, int section_id = -1);
 
+  /* Handles all the necessary clean up when map focus is lost */
+  void unfocus();
+  
   /* Unload the map, if there is one loaded */
   void unloadMap();
 
   /* Updates the game state */
-  bool update(int cycle_time, SDL_Renderer* renderer);
+  bool update(int cycle_time);
   
   // /* Updates the map - called by the cycle timer call from game */
   // void updateMap(int cycle_time);

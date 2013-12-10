@@ -138,7 +138,7 @@ bool Application::updateViews(int cycle_time)
   /* Otherwise, update the game and check if the game is finished */
   else if(mode == GAME)
   {
-    if(game_handler.update(cycle_time, renderer))
+    if(game_handler.update(cycle_time))
       changeMode(TITLESCREEN);
   }
   /* If exit, return true to notify the running thread the application is 

@@ -120,7 +120,7 @@ public:
   bool setConfiguration(Options* running_config);
 
   /* Updates the game state */
-  bool update(int cycle_time, SDL_Renderer* renderer);
+  bool update(int cycle_time);
 };
 
 #endif // GAME_H

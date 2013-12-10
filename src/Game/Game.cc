@@ -196,6 +196,8 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
   /* Exit the game, game has finished processing */
   if(event.keysym.sym == SDLK_ESCAPE)
   {
+    if(game_map != NULL)
+      game_map->unfocus();
     return true;
   }
   /* Switch the view to the map */
@@ -250,10 +252,10 @@ bool Game::setConfiguration(Options* running_config)
 }
 
 /* Updates the game state. Returns true if the class is finished */
-bool Game::update(int cycle_time, SDL_Renderer* renderer)
+bool Game::update(int cycle_time)
 {
   if(mode == MAP)
-    return game_map->update(cycle_time, renderer);
+    return game_map->update(cycle_time);
   
   return false;
 }
