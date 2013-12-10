@@ -14,6 +14,8 @@
 * See .h file for TODOs
 *******************************************************************************/
 
+#include "Game/Player/Flavour.h"
+
 /*=============================================================================
  * CONSTANTS - See .h file for details
  *============================================================================*/
@@ -22,11 +24,13 @@ const size_t Flavour::kMAX_DESC_LENGTH = 100;
 const std::vector<float> Flavour::kTIER_MODIFIERS = 
 {0.0, 1.0, 1.25, 1.5};
 
-const std::vector<uint> Flavour::kTIER_LEVELS =
+const std::vector<uint32_t> Flavour::kTIER_LEVELS =
 {5, 10, 15, 20};
 
 const std::vector<float> Flavour::kTIER_MASSES = 
 {1.0, 1.0, 2.0, 4.0};
+
+std::vector<Flavour*> Flavour::flavour_list = {};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -38,11 +42,13 @@ const std::vector<float> Flavour::kTIER_MASSES =
  * Inputs: none
  */
 Flavour::Flavour()
+  : base_stats(AttributeSet()),
+    base_mass(0.0),
+    description(""),
+    name(""),
+    skill_list(nullptr)
 {
-  base_mass   = 0;
-  description = "";
-  name        = "";
-  skill_list  = nullptr;
+
 }
 
 /*
@@ -56,7 +62,7 @@ Flavour::Flavour()
  *         skills - pointer to a set of skills the Flavour unlocks for a Person
  */
 Flavour::Flavour(const std::string &flavour_name, const AttributeSet &min_stats,
-	             const double &min_mass, const SkillSet* skills)
+	             const double &min_mass, SkillSet* skills)
   : base_stats(min_stats),
     base_mass(min_mass),
     description(""),
@@ -64,7 +70,7 @@ Flavour::Flavour(const std::string &flavour_name, const AttributeSet &min_stats,
     skill_list(skills)
 {
   if (!addFlavour(this))
-    std::cerr << "Error: Duplicating flavour" << this->geName() << std::endl;
+    std::cerr << "Error: Duplicating flavour" << this->getName() << std::endl;
 }
 
 /*
@@ -106,7 +112,7 @@ bool Flavour::isFlavour(Flavour* flavour_check)
 {
   for (Flavour* flavour : flavour_list)
   {
-    std::string &f_name = flavour->getName();
+    std::string f_name = flavour->getName();
 
     if (f_name == flavour_check->getName() && f_name != "")
       return true;
@@ -126,7 +132,7 @@ bool Flavour::isFlavour(Flavour* flavour_check)
  * Inputs: none
  * Output: AttributeSet - const ref. to the base stats
  */
-const AtributeSet& Flavour::getBaseStats()
+AttributeSet Flavour::getBaseStats()
 {
   return base_stats;
 }
@@ -155,8 +161,8 @@ double Flavour::getMass(const uint32_t &tier)
 
   if (tier < kTIER_MASSES.size())
   {
-    for (auto i = 0; i < tier; i++)
-      mass *= kTIER_MASSES.at(i);
+    for (auto it = kTIER_MASSES.begin(); it != kTIER_MASSES.end(); ++it)
+      mass *= (*it);
 
     return mass;
   }
@@ -215,9 +221,14 @@ AttributeSet Flavour::getStats(const uint32_t &tier)
 
   if (tier < kTIER_MODIFIERS.size())
   {
-    for (uint i = 0; i < tier; i++)
-      for (uint j = 0; j < AttributeSet::getSize(); j++)
-        stats.setStat(j, getStat(j) * kTIER_MODIFIERS(i + 1));
+    for (uint32_t i = 0; i < tier; i++)
+    {
+      for (uint32_t j = 0; j < AttributeSet::getSize(); j++)
+      {
+        auto value = stats.getStat(j) * kTIER_MODIFIERS.at(i + 1);
+        stats.setStat(j, value);
+      }
+    }
 
     return stats;
   }
@@ -231,10 +242,12 @@ AttributeSet Flavour::getStats(const uint32_t &tier)
  * Inputs: index - the tier of the Bubby to return the thumbnail for.
  * Output: Frame* - ptr to the thumbnail of the sprite of the flavour tier.
  */
-Frame* getThumb(const uint32_t &index)
+Frame* Flavour::getThumb(const uint32_t &index)
 {
   if (index < thumbnails.size())
-    retrn thumbnails.at(index);
+    return thumbnails.at(index);
+
+  return nullptr;
 }
 
 /*
@@ -263,7 +276,7 @@ bool Flavour::setDescription(const std::string& new_description)
  * Inputs: new_skills - ptr to the new SkillSet
  * Output: bool - true if the SkillSet is null.
  */
-bool Flavour::setSkills(const SkillSet* new_skills)
+bool Flavour::setSkills(SkillSet* new_skills)
 {
   skill_list = new_skills;
 
@@ -281,7 +294,7 @@ bool Flavour::setThumbs(const std::vector<Frame*> &new_thumbnails)
 {
   bool can_add = true;
 
-  if (new_thumbnails.size() == kTIER_LEVELS.size())\
+  if (new_thumbnails.size() == kTIER_LEVELS.size())
     for (auto it = new_thumbnails.begin(); it != new_thumbnails.end(); ++it)
       can_add &= !((*it) == nullptr);
   
@@ -304,7 +317,7 @@ bool Flavour::setThumbs(const std::vector<Frame*> &new_thumbnails)
  */
 std::vector<Flavour*> Flavour::getFlavours()
 {
-  std::vector<std::string> temp_strings;
+  std::vector<Flavour*> temp_strings;
 
   for (auto it = flavour_list.begin(); it != flavour_list.end(); ++it)
     temp_strings.push_back(*it);

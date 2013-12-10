@@ -79,8 +79,7 @@ public:
                                                 const int &iter);
 
   /* Assign a value within lower and upper boundaries */
-  template<class T> 
-  static T setWithinRange(T &value, const size_t &a, const size_t &b);
+  static void setWithinRange(int &value, const int &a, const int &b);
   
   /* Splits the string using the given delimiter */
   static std::vector<std::string> split(const std::string &s, char delim);

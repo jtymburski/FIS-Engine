@@ -52,21 +52,21 @@ const std::vector<std::string> AttributeSet::kLONG_NAMES =
   "MANNA"
 };
 
-const std::vector<uint> AttributeSet::kPRESET1 =
+const std::vector<int> AttributeSet::kPRESET1 =
   {100, 30, 15, 10, 
     15, 10, 15, 10, 
     25, 15, 15, 10, 
     15, 10, 15, 10, 
     10, 10, 5, 1};
 
-const std::vector<uint> AttributeSet::kPRESET2 =
+const std::vector<int> AttributeSet::kPRESET2 =
   {200, 55, 35, 25,
    20, 14, 20, 14,
    35, 28, 20, 10,
    18, 7, 18, 7,
    20, 20, 10, 1 };
 
-const std::vector<uint> AttributeSet::kPRESET3 =
+const std::vector<int> AttributeSet::kPRESET3 =
   {1000, 200, 75, 45,
    60, 40, 60, 40,
    80, 75, 80, 75,
@@ -111,7 +111,7 @@ AttributeSet::AttributeSet(const int &preset_level, const bool &personal,
 
   /* Assert the values are within range, setup class */
   cleanUp();
-  classSetup(personal, constant)
+  classSetup(personal, constant);
 }
 
 /*
@@ -127,11 +127,11 @@ AttributeSet::AttributeSet(const AttributeSet &source)
 
 /*
  * Description: Normal constructor: constructs an AttributeSet given a
- *              std::vector<uint> of values to be assigned. This
+ *              std::vector<int> of values to be assigned. This
  *              vector must be of size kNUM_VALUES or the values will
  *              be set to default.
  *
- * Inputs: std::vector<uint> new_values - vector of values to be set
+ * Inputs: std::vector<int> new_values - vector of values to be set
  */
 AttributeSet::AttributeSet(const std::vector<int> &new_values, 
                            const bool &personal, const bool &constant)
@@ -143,6 +143,7 @@ AttributeSet::AttributeSet(const std::vector<int> &new_values,
       values.push_back(kDEFAULT);
 
   cleanUp();
+  classSetup(personal, constant);
 }
 
 /*
@@ -158,7 +159,7 @@ AttributeSet::~AttributeSet() {}
  * Description: Constructs an AttributeSet based on presets which are 
  *              pre-initialized and configured values of stats.
  *
- * Inputs: const uint &level - const ref to which preset to use
+ * Inputs: const size_t &level - const ref to which preset to use
  * Output: none
  */
 void AttributeSet::buildAsPreset(const size_t &level)
@@ -185,8 +186,6 @@ void AttributeSet::buildAsPreset(const size_t &level)
  */
 void AttributeSet::classSetup(const bool &personal, const bool &constant)
 {
-  flags = static_cast<int>(0);
-
   if (personal)
     flags |= AttributeState::PERSONAL;
   if (constant)
@@ -215,11 +214,12 @@ void AttributeSet::copySelf(const AttributeSet &source)
  */
 void AttributeSet::cleanUp()
 {
-  assert (values.size() == kNUM_VALUES);
+  if (values.size() != kNUM_VALUES)
+    std::cerr << "Error: Wrong number values in AttributeSet" << std::endl;
 
-  auto &min_value = kMIN_VALUE;
+  int min_value = kMIN_VALUE;
 
-  if (getFlag(AttributeState::PERSONAL)
+  if (getFlag(AttributeState::PERSONAL))
     min_value = kMIN_P_VALUE;
 
   if (!getFlag(AttributeState::CONSTANT))
@@ -234,24 +234,24 @@ void AttributeSet::cleanUp()
 /*
  * Description: Alters the stat at a given index by an amount
  *
- * Inputs: const uint &index - the index of the stat to be altered
+ * Inputs: const int &index - the index of the stat to be altered
  *         const int &amount - the amount by which to alter the stat (+/-)
  * Output: bool - true if the index was a valid stat
  */
 bool AttributeSet::alterStat(const int &index, const int &amount)
 {
-  if (getflag(AttributeState::CONSTANT))
+  if (getFlag(AttributeState::CONSTANT))
     return false;
 
   if (index != -1 && index < static_cast<int>(kNUM_VALUES))
   {
-    auto &min_value = kMIN_VALUE;
+    int min_value = kMIN_VALUE;
 
     if (getFlag(AttributeState::PERSONAL))
-      min_vaue = kMIN_P_VALUE;
+      min_value = kMIN_P_VALUE;
 
     values[index] += amount;
-    Helpers::setWithinRange(values[index], kMIN_VALUE, kMAX_VALUE);
+    Helpers::setWithinRange(values[index], min_value, kMAX_VALUE);
 
     return true;
   }
@@ -261,7 +261,7 @@ bool AttributeSet::alterStat(const int &index, const int &amount)
 
 /*
  * Description: Alters the stat of a given enumerated value by an amount.
- *              Calls the alterStat(uint index, int amount) function.
+ *              Calls the alterStat(int index, int amount) function.
  *
  * Inputs: const Attribute &stat - enumerated Attribute value to be altered
  *         const int &amount - the amount by which to alter the stat (+/-) 
@@ -297,31 +297,17 @@ bool AttributeSet::getFlag(AttributeState test_flag)
   return static_cast<bool>((flags & test_flag) == test_flag);
 }
 
-/*
- * Description: Returns the index of a given enumerated Attribute, or
- *              returns -1 if the index was not found.
- *
- * Inputs: const Attribute &stat - enumerated attribute to find the index for
- * Output: int - the index of the corresponding attribute (if it exists)
- */
-int AttributeSet::getIndex(const Attribute &stat)
-{
-  if (stat < Attribute::NONE)
-    return stat;
-
-  return -1;
-}
 
 /*
  * Description: Returns the value of a stat at a given index, if the index
  *              is within range, else it returns -1 (an impossible value)
  *
- * Inputs: const uint &index - const ref. to the index to be retrieved (def. 0)
+ * Inputs: const int &index - const ref. to the index to be retrieved (def. 0)
  * Output: int - the value of the stat at the index, else -1
  */
 int AttributeSet::getStat(const int &index)
 {
-  if (index != -1 && index < values.size())
+  if (index != -1 && index < static_cast<int>(values.size()))
     return values[index];
 
   return -1;
@@ -356,7 +342,7 @@ int AttributeSet::getStat(const std::string &name)
  * Description: Attempts to assign a stat at a given index to a value.
  *              Returns the truth of the assignment.
  *
- * Inputs: const uint &index - the index of the stat to be assigned
+ * Inputs: const int &index - the index of the stat to be assigned
  *         const int &value - the value to assign the stat to
  * Output: bool - the truth of the assignment
  */
@@ -365,9 +351,9 @@ bool AttributeSet::setStat(const int &index, const int &value)
   if (getFlag(AttributeState::CONSTANT))
     return false;
 
-  if (index != -1 && index < kNUM_VALUES)
+  if (index != -1 && index < static_cast<int>(kNUM_VALUES))
   {
-    auto &min_value = kMIN_VALUE;
+    auto min_value = kMIN_VALUE;
 
     if (getFlag(AttributeState::PERSONAL))
       min_value = kMIN_P_VALUE;
@@ -388,7 +374,7 @@ bool AttributeSet::setStat(const int &index, const int &value)
  *         const int &value - the value to assign to the stat
  * Output: bool - the truth of the assignment
  */
-bool AttributeSet::setStat(const Attribute &stat, int value)
+bool AttributeSet::setStat(const Attribute &stat, const int &value)
 {
   return setStat(getIndex(stat), value);
 }
@@ -409,6 +395,21 @@ bool AttributeSet::setStat(const std::string &name, const int &value)
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
+
+/*
+ * Description: Returns the index of a given enumerated Attribute, or
+ *              returns -1 if the index was not found.
+ *
+ * Inputs: const Attribute &stat - enumerated attribute to find the index for
+ * Output: int - the index of the corresponding attribute (if it exists)
+ */
+int AttributeSet::getIndex(const Attribute &stat)
+{
+  if (stat < Attribute::NONE)
+    return getIndex(stat);
+
+  return -1;
+}
 
 /*
  * Description: Returns the index of an attribute given a name (short or long)
@@ -432,7 +433,7 @@ int AttributeSet::getIndex(const std::string &name)
  * Description: Returns the size of an attribute set (the value of kNUM_VALUES)
  *
  * Inputs: none
- * Output: uint - the number of values contained in an attribute set
+ * Output: size_t - the number of values contained in an attribute set
  */
 size_t AttributeSet::getSize()
 {
@@ -459,7 +460,7 @@ std::string AttributeSet::getLongName(const Attribute &stat)
 /*
  * Description: Returns the long-form name of an attribute at a given index.
  *
- * Inputs: const uint &index - the index to return the long-form name of
+ * Inputs: const size_t &index - the index to return the long-form name of
  * Output: std::string - the string stored in kLONG_NAMES[index]
  */
 std::string AttributeSet::getLongName(const size_t &index)
@@ -490,7 +491,7 @@ std::string AttributeSet::getName(const Attribute &stat)
 /*
  * Description: Returns the short-form name of an attribute at a given index
  *
- * Inputs: const uint &index - the index to return the short-form name of
+ * Inputs: const size_t &index - the index to return the short-form name of
  * Output: std::string - the string stored in kLONG_NAMES[index]
  */
 std::string AttributeSet::getName(const size_t &index)

@@ -18,9 +18,18 @@
 #define ATTRIBUTESET_H
 
 #include <vector>
+#include <iostream>
 
 #include "EnumDb.h"
+#include "EnumFlags.h"
 #include "Helpers.h"
+
+ENUM_FLAGS(AttributeState)
+enum class AttributeState
+{
+  PERSONAL = 1 << 0,
+  CONSTANT = 1 << 1
+};
 
 class AttributeSet
 {
@@ -41,13 +50,6 @@ public:
 
   /* Annihilates an AttributeSet object */
   ~AttributeSet();
-
-  ENUM_FLAGS(AttributeState)
-  enum class AttributeState
-  {
-    PERSONAL = 1 << 0
-    CONSTANT = 1 << 1
-  };
 
 private:
   /* Flags for the state of the Attribtue */
@@ -99,9 +101,6 @@ public:
   /* Evaluate a given AttributeState enumerated flag */
   bool getFlag(AttributeState test_flag);
 
-  /* Method for getting the index of an attribute by an enum  */
-  int getIndex(const Attribute &stat);
-
   /* Methods for returning the value of a stat given either an index, an
      enumerated value, or a string name (short or long) */
   int getStat(const int &index = 0);
@@ -110,7 +109,7 @@ public:
 
   /* Methods for assigning a new value to a stat given either an index, an
    * enumerated value, or a string name (short or long) */
-  bool setStat(const int &index, int value);
+  bool setStat(const int &index, const int &value);
   bool setStat(const Attribute &stat, const int &value);
   bool setStat(const std::string &name, const int &value);
 
@@ -118,6 +117,9 @@ public:
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Method for getting the index of an attribute by an enum  */
+  static int getIndex(const Attribute &stat);
+
   /* Method for returning the index of an attribute given a name */
   static int getIndex(const std::string &name);
 

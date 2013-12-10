@@ -43,6 +43,8 @@ SOURCES=src/Application.cc \
         src/Game/Map/MapThing.cc \
         src/Game/Map/Tile.cc \
         src/Game/Player/Action.cc \
+        src/Game/Player/AttributeSet.cc \
+        src/Game/Player/Flavour.cc \
         src/Game/Player/Skill.cc \
         src/Game/Player/SkillSet.cc \
         src/Helpers.cc \

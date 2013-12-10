@@ -233,8 +233,7 @@ std::vector<int> Helpers::buildExponentialTable(const int &min, const int &max,
  *         size_t &b - ref to one of the boundaries
  * Output: T - object after it has been set within the range
  */
-template<class T> 
-T Helpers::setWithinRange(T &value, const size_t &a, const size_t &b)
+void Helpers::setWithinRange(int &value, const int &a, const int &b)
 {
   auto min = std::min(a, b);
   auto max = std::max(a, b);
@@ -243,8 +242,6 @@ T Helpers::setWithinRange(T &value, const size_t &a, const size_t &b)
     value = min;
   else if (value > max)
     value = max;
-
-  return value;
 }
 
 /*

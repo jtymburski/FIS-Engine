@@ -18,9 +18,11 @@
 #ifndef FLAVOUR_H
 #define FLAVOUR_H
 
+#include <vector> 
+
 #include "Game/Player/AttributeSet.h"
 #include "Game/Player/SkillSet.h"
-#include "Game/Frame.h"
+#include "Frame.h"
 
 class Flavour
 {
@@ -30,14 +32,14 @@ public:
 
   /* Constructs a normal Flavour object given a name and stats */
   Flavour(const std::string &flavour_name, const AttributeSet &min_stats,
-  	      const double &min_mass, const SkillSet* skills = nullptr);
+  	      const double &min_mass, SkillSet* skills = nullptr);
 
   /* Annihilates a Flavour object */
   ~Flavour();
 
 private:
   /* Ref to the base attribute set (const -> unchanging) */
-  const AttributeSet &base_stats;
+  AttributeSet base_stats;
 
   /* The base mass of the Bubby Flavour (mass at Tier 0) */
   const double base_mass;
@@ -58,10 +60,10 @@ private:
   std::vector<Frame*> thumbnails;
 
   /* ------------ Constants --------------- */
-  static const size_t             kMAX_DESC_LENGTH; /* Maximum desc size */
-  static const std::vector<float> kTIER_MODIFIER;   /* Stat modifiers */
-  static const std::vector<int>   kTIER_LEVELS;     /* Levels at tier up */
-  static const std::vector<float> kTIER_MASSES;     /* Mass modifiers */
+  static const size_t                kMAX_DESC_LENGTH;  /* Maximum desc size */
+  static const std::vector<float>    kTIER_MODIFIERS;   /* Stat modifiers */
+  static const std::vector<uint32_t> kTIER_LEVELS;      /* Levels at tier up */
+  static const std::vector<float>    kTIER_MASSES;      /* Mass modifiers */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -71,41 +73,41 @@ private:
   static bool addFlavour(Flavour* new_flavour);
 
   /* Evaluates whether a given flavour exists */
-  static bool Flavour::isFlavour(Flavour* flavour_check);
+  static bool isFlavour(Flavour* flavour_check);
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
   /* Returns the base stats of the Flavour */
-  const AttributeSet& getBaseStats();
+  AttributeSet getBaseStats();
 
   /* Returns the description of the Flavour */
-  std::string getDescription();
+  const std::string& getDescription();
 
   /* Returns the current mass of the Flavour at a given tier */
-  double getMass(const uint &tier = 0);
+  double getMass(const uint32_t &tier = 0);
 
   /* Returns the string name of the Flavour */
   const std::string& getName();
 
   /* Returns a deque of SkillSetElements the flavour unlocks at a given level */
-  std::deque<SkillSetElement> getSkills(const uint &at_level);
+  std::deque<SkillSetElement> getSkills(const uint32_t &at_level);
 
   /* Returns a pointer to the skill set for the Flavour */
   SkillSet* getSkillSet();
 
   /* Obtains the stats at a given tier */
-  AttributeSet getStats(const uint &tier);
+  AttributeSet getStats(const uint32_t &tier);
 
   /* Returns the thumbnail of the Flavour at a given tier */
-  Frame* getThumb(const uint &index);
+  Frame* getThumb(const uint32_t &index);
 
   /* Assigns a new description to the flavour */
   bool setDescription(const std::string& new_description);
 
   /* Assigns a new set of skills to the Flavour */
-  bool setSkills(const SkillSet* new_skills);
+  bool setSkills(SkillSet* new_skills);
 
   /* Assigns a new vector of thumbnails to the flavour */
   bool setThumbs(const std::vector<Frame*> &thumbnails);
@@ -115,7 +117,7 @@ public:
  *============================================================================*/
 public:
   /* Returns a vector of strings of the flavour names */
-  static std::vector<std::string> getFlavours();
+  static std::vector<Flavour*> getFlavours();
 
 };
 
