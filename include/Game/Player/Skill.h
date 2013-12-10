@@ -166,6 +166,9 @@ public:
   /* Returns the cooldown of the Skill */
   uint32_t getCooldown();
 
+  /* Returns the cost of the Skill */
+  uint32_t getCost();
+
   /* Returns the chance of a given effect */
   float getChance(const uint32_t &index);
 

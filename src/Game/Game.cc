@@ -76,22 +76,39 @@ void Game::setupBattle()
   actions.push_back(new Action("3,INFLICT,POISON,2.7,,,,,"));
   actions.push_back(new Action("4,RELIEVE,CURSE,,,,,"));
   actions.push_back(new Action("5,REVIVE,,,,,PC.25,AMOUNT.50"));
-  Action* special = new Action("5,REVIVE,,,,,PC.25,AMOUNT.50");
-
-  //for (Action a : actions)
-  //  a.print();
+  Action* special = new Action("6,Rasdf,,,,,PC.25,AMOUNT.50");
 
   /* Skill Testing */
   std::vector<Skill*> skills;
-  Skill* super_attack = new Skill(14, "Super Attack",ActionScope::ONE_ENEMY,special,1.14);
-  super_attack->addActions(actions, chances);
 
-  skills.push_back(super_attack);
+  Skill* normal_attack = new Skill(13, "Attack",ActionScope::ONE_TARGET,actions[0],0.75);
+  normal_attack->addActions(actions, chances);
+
+  skills.push_back(normal_attack);
+  skills.push_back(new Skill(400, "Super Attack",ActionScope::ONE_ENEMY,special,0.65));
+  skills.push_back(new Skill(3, "Poison Attack",ActionScope::ONE_ENEMY,actions[1],0.79));
+  skills.push_back(new Skill(35, "Crappy Attack",ActionScope::NO_SCOPE,special,1.00));
+
+  std::vector<uint32_t> levels;
 
   //for (Skill* s : skills)
-  //  s->print();
+  //{
+    //s->print();
+    levels.push_back(levels.size());
+  //}
+
+  SkillSet* set1 = new SkillSet(skills, levels);
 
   
+  //set1->print(true);
+
+  set1->sort(SkillSorts::ID, true);
+
+  //set1->print(true);
+
+  set1->sort(SkillSorts::ID, false);
+
+  //set1->print(true);
 }
 
 /* Set up the map - old map needs to be deleted prior to calling */

@@ -202,16 +202,16 @@ enum class Direction
  * NIHIL    > FIRE
  * NONELEMENTAL - there is no element
  */
-enum class Element : std::uint32_t
+enum class Element : std::uint8_t
 { 
-  PHYSICAL,
-  FIRE,
-  FOREST,
-  ICE,
-  ELECTRIC,
-  DIGITAL,
-  NIHIL,
-  NONE
+  PHYSICAL = 1 << 1,
+  FIRE     = 1 << 2,
+  FOREST   = 1 << 3,
+  ICE      = 1 << 4,
+  ELECTRIC = 1 << 5,
+  DIGITAL  = 1 << 6,
+  NIHIL    = 1 << 7,
+  NONE     = 1 << 0,
 };
 
 /*
@@ -241,7 +241,6 @@ enum class ObjectSorts : std::uint8_t
   MASS,
   VALUEPERMASS
 };
-
 
 /*
  * Description: Infliction enumeration represents the possible ailments / 

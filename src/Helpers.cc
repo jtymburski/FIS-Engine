@@ -142,6 +142,51 @@ std::string Helpers::elementToString(const Element &element)
   return "";
 }
 
+/*=============================================================================
+ * PLAYER / BATTLE HELPER FUNCTIONS
+ *============================================================================*/
+
+/*
+ * Description: Determines and returns the element which a given element is
+ *              strong against.
+ *
+ * Inputs: element - enumeration of an Element to find a strength for
+ * Output: Element - the enumeration of the Element's strength
+ */
+Element Helpers::getStrength(const Element& element)
+{
+  uint8_t strength = static_cast<uint8_t>(element);
+
+  if (strength <= (1 >> 1))
+    return Element::NONE;
+  else if (strength == 1 >> 2)
+    return Element::NIHIL;
+  else
+    strength = strength >> 1;
+
+  return static_cast<Element>(strength);
+}
+
+/*
+ * Description: Determines and returns the element which a given element is
+ *              weak against.
+ *
+ * Inputs: element - enumeration of an Element to find a weakness for
+ * Output: Element - the enumeration of the Element's weakness
+ */
+Element Helpers::getWeakness(const Element& element)
+{
+  uint8_t weakness = static_cast<uint8_t>(element);
+
+  if (weakness <= (1 >> 1))
+    return Element::NONE;
+  else if (weakness == 1 >> 7)
+    return Element::FIRE;
+  else
+    weakness = weakness >> 7;
+
+  return static_cast<Element>(weakness);
+}
 
 /*=============================================================================
  * GENERAL HELPER FUNCTIONS

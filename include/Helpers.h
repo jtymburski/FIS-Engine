@@ -55,8 +55,19 @@ public:
 /*=============================================================================
  * GRAMMAR FUNCTIONS
  *============================================================================*/
+public:
+  /* Converts an enumerated element to a String */
+  static std::string elementToString(const Element &element);
 
-static std::string elementToString(const Element &element);
+/*=============================================================================
+ * PLAYER / BATTLE HELPER FUNCTIONS
+ *============================================================================*/
+public:
+  /* Returns the elemental strength to a given element */
+  static Element getStrength(const Element &element);
+
+  /* Returns the elemental weakness to a given element */
+  static Element getWeakness(const Element &element);
 
 /*=============================================================================
  * GENERAL HELPER FUNCTIONS
@@ -73,6 +84,8 @@ public:
   
   /* Splits the string using the given delimiter */
   static std::vector<std::string> split(const std::string &s, char delim);
+
+
 };
 
 #endif // HELPERS_H

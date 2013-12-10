@@ -84,8 +84,8 @@ Skill::Skill(const int &id, const std::string &name, const ActionScope &scope,
   setScope(scope);
 
   /* The skill will be valid of the action is able to be added */
-  if (addAction(effect, chance))
-    setFlag(SkillFlags::VALID);
+  addAction(effect, chance);
+  setFlag(SkillFlags::VALID, this->isValid());
 }
 
 /*
@@ -108,8 +108,8 @@ Skill::Skill(const int &id, const std::string &name, const ActionScope &scope,
   setScope(scope);
 
   /* The skill will be valid of all the actions are able to be added */
-  if (addActions(effects, chances))
-    setFlag(SkillFlags::VALID);
+  addActions(effects, chances);
+  setFlag(SkillFlags::VALID, this->isValid());
 
   /* Flags need to be determined since a single addition did not take place */
   flagSetup();
@@ -236,7 +236,7 @@ void Skill::flagSetup()
 bool Skill::addAction(Action* new_action, const float &new_chance, 
                       const bool &single)
 {
-  if (effects.size() < kMAX_ACTIONS && new_action != nullptr)
+  if (new_action != nullptr && effects.size() < kMAX_ACTIONS)
   {
     effects.push_back(new_action);
     chances.push_back(new_chance);
@@ -246,7 +246,7 @@ bool Skill::addAction(Action* new_action, const float &new_chance,
 
     return true;
   }
-
+ 
   return false;
 }
 
@@ -299,7 +299,7 @@ bool Skill::isValid()
   bool valid = true;
 
   for (auto it = effects.begin(); it != effects.end(); ++it)
-    if ((*it)->actionFlag(ActionFlags::VALID))
+    if (!(*it)->actionFlag(ActionFlags::VALID))
       valid = false;
 
   valid  &= (effects.size() == chances.size());
@@ -381,6 +381,17 @@ Sprite* Skill::getAnimation()
 uint32_t Skill::getCooldown()
 {
   return cooldown;
+}
+
+/*
+ * Description: Returns the cost of the Skill
+ *
+ * Inputs: none
+ * Output: uint32_t - the Skill's cost
+ */
+uint32_t Skill::getCost()
+{
+  return cost;
 }
 
 /*

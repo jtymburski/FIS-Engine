@@ -93,7 +93,7 @@ public:
 
   void clear();
 
-  void print();
+  void print(const bool simple = false);
 
   bool rSkillIndex(const uint32_t &index);
 

@@ -120,8 +120,7 @@ Action::Action(const std::string &raw)
       max_duration(0),
       variance(0)
 {
-  if (parse(raw))
-    action_flags |= ActionFlags::VALID;
+  parse(raw);
 }
 
 /*
@@ -143,6 +142,7 @@ Action::~Action() {}
  */
 bool Action::parse(const std::string &raw)
 {
+  action_flags |= ActionFlags::VALID;
   std::vector<std::string> sub_strings = Helpers::split(raw, kDELIMITER);
 
   if (sub_strings.size() == 7 || sub_strings.size() == 8)
