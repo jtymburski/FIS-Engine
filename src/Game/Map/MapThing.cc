@@ -273,18 +273,13 @@ bool MapThing::tileMoveStart(Tile* next_tile)
 bool MapThing::addThingInformation(XmlData data, int file_index, 
                                    int section_index, SDL_Renderer* renderer)
 {
-  std::vector<std::string> elements = data.getTailElements(file_index + 1);
+  std::vector<std::string> elements = data.getTailElements(file_index);
   std::vector<std::string> identifiers = 
-                           Helpers::split(data.getElement(file_index + 1), '_');
+                           Helpers::split(data.getElement(file_index), '_');
   std::string identifier = identifiers.at(0);
   bool success = true;
   
   /* Parse the identifier for setting the thing information */
-  /*---------------------- ANIMATION ------------------*/
-  // if(identifier == "animation" && elements.size() == 1)
-  // {
-    // success &= setAnimationSpeed(data.getDataInteger(&success));
-  // }
   /*--------------------- DESCRIPTION -----------------*/
   if(identifier == "description" && elements.size() == 1)
   {
@@ -301,7 +296,7 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
     if(event_handler != NULL)
     {
       interact_event = event_handler->
-              updateEvent(interact_event, data, file_index + 2, section_index);
+              updateEvent(interact_event, data, file_index + 1, section_index);
     }
     else
       success = false;
@@ -311,11 +306,6 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
   {
     setName(data.getDataString(&success));
   }
-  /*--------------------- OPACITY -----------------*/
-  // else if(identifier == "opacity" && elements.size() == 1)
-  // {
-    // setOpacity(data.getDataFloat(&success));
-  // }
   /*--------------------- SPEED -----------------*/
   else if(identifier == "speed" && elements.size() == 1)
   {
@@ -326,7 +316,7 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
   {
     if(frames == NULL)
       frames = new Sprite();
-    success &= frames->addFileInformation(data, file_index + 2, renderer);
+    success &= frames->addFileInformation(data, file_index + 1, renderer);
   }
  
   return success;

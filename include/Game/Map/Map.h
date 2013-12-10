@@ -127,8 +127,9 @@ private:
                      // QList<QString> adjustments, int section_index, 
                      // XmlData data);
 
-  // /* Adds thing data, as per data from the file */
-  // bool addThingData(XmlData data, int section_index);
+  /* Adds thing data, as per data from the file */
+  bool addThingData(XmlData data, uint16_t section_index, 
+                                  SDL_Renderer* renderer);
 
   /* Initiates a section block of map. Triggered from the file data */
   bool initiateMapSection(uint16_t section_index, int width, int height);

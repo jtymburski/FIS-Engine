@@ -666,16 +666,12 @@ bool Tile::renderLower(SDL_Renderer* renderer, int offset_x, int offset_y)
           success &= lower[i]->render(renderer, pixel_x, pixel_y, 
                                                 width, height);
     }
-    // else if(status == BLANKED)
-    // { // TODO: blanking painting
-      // glColor4f(0.0, 0.0, 0.0, 1.0);
-      // glBegin(GL_QUADS);
-        // glVertex3f(pixel_x, pixel_y + height, 0);
-        // glVertex3f(pixel_x, pixel_y, 0);
-        // glVertex3f(pixel_x + width, pixel_y, 0);
-        // glVertex3f(pixel_x + width, pixel_y + height, 0);
-      // glEnd();
-    // }
+    else if(status == BLANKED)
+    {
+      SDL_Rect tile_rect = {pixel_x, pixel_y, width, height};
+      SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);		
+      SDL_RenderFillRect(renderer, &tile_rect);
+    }
   }
   
   return success;

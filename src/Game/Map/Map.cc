@@ -326,40 +326,39 @@ bool Map::addTileData(XmlData data, uint16_t section_index)
   // return success;
 // }
 
-// bool Map::addThingData(XmlData data, int section_index)
-// {
-  // QString identifier = data.getElement(kFILE_CLASSIFIER);
-  // int id = data.getKeyValue(kFILE_CLASSIFIER).toInt();
-  // int index = 0;
-  // MapThing* modified_thing = 0;
+bool Map::addThingData(XmlData data, uint16_t section_index, 
+                                     SDL_Renderer* renderer)
+{
+  std::string identifier = data.getElement(kFILE_CLASSIFIER);
+  uint16_t id = std::stoul(data.getKeyValue(kFILE_CLASSIFIER));
+  uint16_t index = 0;
+  MapThing* modified_thing = NULL;
   
-  // /* Identify which thing to be created */
-  // if(identifier == "mapthing" || identifier == "mapio")
-  // {
-    // /* Search for the existing map object */
-    // while(modified_thing == 0 && index < things.size())
-    // {
-      // if(things[index]->getID() == id)
-        // modified_thing = things[index];
-      // index++;
-    // }
+  /* Identify which thing to be created */
+  if(identifier == "mapthing" || identifier == "mapio")
+  {
+    /* Search for the existing map object */
+    while(modified_thing == NULL && index < things.size())
+    {
+      if(things[index]->getID() == id)
+        modified_thing = things[index];
+      index++;
+    }
 
-    // /* Create a new thing if one does not exist */
-    // if(modified_thing == 0)
-    // {
-      // if(identifier == "mapthing")
-        // modified_thing = new MapThing(0, tile_width, tile_height);
-      // else
-        // modified_thing = new MapInteractiveObject(tile_width, tile_height);
-      // modified_thing->setEventHandler(event_handler);
-      // modified_thing->setID(id);
+    /* Create a new thing if one does not exist */
+    if(modified_thing == NULL)
+    {
+      if(identifier == "mapthing")
+        modified_thing = new MapThing(NULL, tile_width, tile_height);
+      //else
+      //  modified_thing = new MapInteractiveObject(tile_width, tile_height);
+      modified_thing->setEventHandler(event_handler);
+      modified_thing->setID(id);
       
-      // /* Append the new one */
-      // things.append(modified_thing);
-    // }
-    
-    // qDebug() << "1: " << identifier << " " << modified_thing;
-  // }
+      /* Append the new one */
+      things.push_back(modified_thing);
+    }
+  }
   // else if(identifier == "mapperson" || identifier == "mapnpc")
   // {
     // /* Search for the existing map object */
@@ -411,38 +410,39 @@ bool Map::addTileData(XmlData data, uint16_t section_index)
     // }
   // }
   
-  // /* Proceed to update the thing information from the XML data */
-  // if(modified_thing != 0)
-  // {
-    // /* Handle the startpoint case if it's the identifying element */
-    // if(data.getElement(kFILE_CLASSIFIER + 1) == "startpoint")
-    // {
-      // QStringList points = data.getDataString().split(",");
-      // if(points.size() == 2) /* There needs to be an x and y point */
-      // {
-        // int x = points[0].toInt();
-        // int y = points[1].toInt();
+  /* Proceed to update the thing information from the XML data */
+  if(modified_thing != NULL)
+  {
+    /* Handle the startpoint case if it's the identifying element */
+    if(data.getElement(kFILE_CLASSIFIER + 1) == "startpoint")
+    {
+      std::vector<std::string> points = 
+                                      Helpers::split(data.getDataString(), ',');
+      if(points.size() == 2) /* There needs to be an x and y point */
+      {
+        uint32_t x = std::stoul(points[0]);
+        uint32_t y = std::stoul(points[1]);
 
-        // /* Check if the tile data is relevant */
-        // if(geography.size() > section_index && 
-           // geography[section_index].size() > x && 
-           // geography[section_index][x].size() > y)
-        // {
-          // return modified_thing->setStartingTile(section_index, 
-                                          // geography[section_index][x][y], true);
-        // }
-      // }      
+        /* Check if the tile data is relevant */
+        if(geography.size() > section_index && 
+           geography[section_index].size() > x && 
+           geography[section_index][x].size() > y)
+        {
+          return modified_thing->setStartingTile(section_index, 
+                                          geography[section_index][x][y], true);
+        }
+      }      
       
-      // return false;
-    // }
+      return false;
+    }
    
-    // /* Otherwise, add the thing information (virtual function) */
-    // return modified_thing->addThingInformation(data, kFILE_CLASSIFIER, 
-                                                     // section_index);
-  // }
+    /* Otherwise, add the thing information (virtual function) */
+    return modified_thing->addThingInformation(data, kFILE_CLASSIFIER + 1, 
+                                               section_index, renderer);
+  }
 
-  // return false;
-// }s
+  return false;
+}
 
 bool Map::initiateMapSection(uint16_t section_index, int width, int height)
 {
@@ -1289,15 +1289,15 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
             {
               success &= addTileData(data, index);
             }
-            // /* Thing data */
-            // else if(data.getElement(kFILE_CLASSIFIER) == "mapthing" || 
-                    // data.getElement(kFILE_CLASSIFIER) == "mapperson" ||
-                    // data.getElement(kFILE_CLASSIFIER) == "mapnpc" ||
-                    // data.getElement(kFILE_CLASSIFIER) == "mapitem" || 
-                    // data.getElement(kFILE_CLASSIFIER) == "mapio")
-            // {
-              // success &= addThingData(data, index);
-            // }
+            /* Thing data */
+            else if(data.getElement(kFILE_CLASSIFIER) == "mapthing" || 
+                    data.getElement(kFILE_CLASSIFIER) == "mapperson" ||
+                    data.getElement(kFILE_CLASSIFIER) == "mapnpc" ||
+                    data.getElement(kFILE_CLASSIFIER) == "mapitem" || 
+                    data.getElement(kFILE_CLASSIFIER) == "mapio")
+            {
+              success &= addThingData(data, index, renderer);
+            }
           }
         }
       }
@@ -1326,7 +1326,11 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
     /* Initialize sprites */
     for(uint16_t i = 0; i < tile_sprites.size(); i++)
       tile_sprites[i]->update(0, renderer);
-
+      
+    /* TODO: Testing - Remove */
+    if(geography.size() > 0 && geography[0].size() > 3 && geography[0][3].size() > 3)
+      geography[0][3][3]->setStatus(Tile::BLANKED);
+    
     // for(int i = 0; i < geography.size(); i++)
       // for(int j = 0; j < geography[i].size(); j++)
         // for(int k = 0; k < geography[i][j].size(); k++) 
@@ -1386,17 +1390,32 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
 bool Map::render(SDL_Renderer* renderer)
 {
   bool success = true;
+  
   if(geography.size() > map_index)
   {
+    /* Render lower half of tile */
     for(uint16_t i = 0; i < geography[map_index].size(); i++)
+    {
       for(uint16_t j = 0; j < geography[map_index][i].size(); j++)
       {
         if(i < 25 && j < 25)
-        {
           geography[map_index][i][j]->renderLower(renderer, 0, 0);
-          geography[map_index][i][j]->renderUpper(renderer, 0, 0);
-        }
       }
+    }
+    
+    /* Render Map Things */
+    for(uint16_t i = 0; i < things.size(); i++)
+      things[i]->render(renderer, 0, 0);
+    
+    /* Render upper half of tile */
+    for(uint16_t i = 0; i < geography[map_index].size(); i++)
+    {
+      for(uint16_t j = 0; j < geography[map_index][i].size(); j++)
+      {
+        if(i < 25 && j < 25)
+          geography[map_index][i][j]->renderUpper(renderer, 0, 0);
+      }
+    }
   }
   
   return success;
@@ -1483,14 +1502,14 @@ void Map::unloadMap()
   // }
   // persons.clear();
 
-  // /* Delete the things */
-  // for(int i = 0; i < things.size(); i++)
-  // {
-    // if(things[i] != 0)
-      // delete things[i];
-    // things[i] = 0;
-  // }
-  // things.clear();
+  /* Delete the things */
+  for(uint16_t i = 0; i < things.size(); i++)
+  {
+    if(things[i] != NULL)
+      delete things[i];
+    things[i] = NULL;
+  }
+  things.clear();
 
   /* Delete all the tiles that have been set */
   for(uint16_t i = 0; i < geography.size(); i++)
@@ -1531,6 +1550,10 @@ bool Map::update(int cycle_time, SDL_Renderer* renderer)
   /* Update the sprite animation */
   for(uint16_t i = 0; i < tile_sprites.size(); i++)
     tile_sprites[i]->update(cycle_time, renderer);
+  
+  /* Update map things */
+  for(uint16_t i = 0; i < things.size(); i++)
+    things[i]->update(cycle_time, renderer, NULL);
   
   return false;
 }
