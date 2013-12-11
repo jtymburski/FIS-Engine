@@ -48,7 +48,14 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   running = false;
   system_options = NULL;
   
+  /* Configure the width / height of tiles and sets default zooming */
+  tile_height = kTILE_SIZE;
+  tile_width = kTILE_SIZE;
+  // zoom_in = false;
+  // zoom_out = false;
+  
   /* Set options configuration */
+  viewport.setTileSize(tile_width, tile_height);
   setConfiguration(running_config);
 
   // /* Configure the scene */
@@ -58,12 +65,6 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   // persons.clear();
   // player = 0;
   // things.clear();
-
-  /* Configure the width / height of tiles and sets default zooming */
-  tile_height = kTILE_SIZE;
-  tile_width = kTILE_SIZE;
-  // zoom_in = false;
-  // zoom_out = false;
   
   // /* Configure the FPS animation and time elapsed, and reset to 0 */
   // paint_animation = 0;
@@ -85,20 +86,12 @@ Map::Map(Options* running_config, EventHandler* event_handler)
           // this, SLOT(getThingData(QList<int>)));
   // connect(&map_dialog, SIGNAL(finishThingTarget()), 
           // this, SLOT(finishThingTarget()));
-
-  // /* Setup the viewport */
-  // viewport = new MapViewport(running_config.getScreenWidth(), 
-                             // running_config.getScreenHeight(), 
-                             // tile_width, tile_height);
-
-  // /* Initialize the event handler, for map creation */
-  // this->event_handler = event_handler;
 }
 
 /* Destructor function */
 Map::~Map()
 {
-  // unloadMap();
+  unloadMap();
 }
 
 /*============================================================================
@@ -1183,12 +1176,20 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
   if(event.keysym.sym == SDLK_1)
   {
     if(geography.size() > 0)
+    {
       map_index = 0;
+      viewport.setMapSize(geography[map_index].size(), 
+                          geography[map_index][0].size());
+    }
   }
   else if(event.keysym.sym == SDLK_2)
   {
     if(geography.size() > 1)
+    {
       map_index = 1;
+      viewport.setMapSize(geography[map_index].size(), 
+                          geography[map_index][0].size());
+    }
   }
   else if(player != NULL)
   {
@@ -1334,13 +1335,14 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
   }
   else
   {
-    // if(geography[map_index].size() > 0)
-    // {
-      // viewport->setMapSize(geography[map_index].size(), 
-                           // geography[map_index][0].size());
-      // if(player != 0)
-        // viewport->lockOn(player);
-    // }
+    if(geography[map_index].size() > 0)
+    {
+      viewport.setMapSize(geography[map_index].size(), 
+                          geography[map_index][0].size());
+
+      if(player != NULL)
+        viewport.lockOn(player);
+    }
     
     /* TODO: Testing - Remove */
     if(geography.size() > 0 && geography[0].size() > 3 
@@ -1397,39 +1399,49 @@ bool Map::render(SDL_Renderer* renderer)
   
   if(geography.size() > map_index)
   {
+    /* Grab the variables for viewport */
+    uint16_t tile_x_start = viewport.getXTileStart();
+    uint16_t tile_x_end = viewport.getXTileEnd();
+    uint16_t tile_y_start = viewport.getYTileStart();
+    uint16_t tile_y_end = viewport.getYTileEnd();
+    float x_offset = viewport.getX();
+    int x_start = viewport.getXStart();
+    int x_end = viewport.getXEnd();
+    float y_offset = viewport.getY();
+    int y_start = viewport.getYStart();
+    int y_end = viewport.getYEnd();
+    
     /* Render lower half of tile */
-    for(uint16_t i = 0; i < geography[map_index].size(); i++)
-    {
-      for(uint16_t j = 0; j < geography[map_index][i].size(); j++)
-      {
-        if(i < 25 && j < 25)
-          geography[map_index][i][j]->renderLower(renderer, 0, 0);
-      }
-    }
+    for(uint16_t i = tile_x_start; i < tile_x_end; i++)
+      for(uint16_t j = tile_y_start; j < tile_y_end; j++)
+        geography[map_index][i][j]->renderLower(renderer, x_offset, y_offset);
     
     /* Render Map Things */
     for(uint16_t i = 0; i < things.size(); i++)
     {
-      if(things[i]->getMapSection() == map_index)
-        things[i]->render(renderer, 0, 0);
+      if(things[i]->getMapSection() == map_index && 
+         things[i]->getX() >= x_start && things[i]->getX() <= x_end && 
+         things[i]->getY() >= y_start && things[i]->getY() <= y_end)
+      {
+        things[i]->render(renderer, x_offset, y_offset);
+      }
     }
     
     /* Render Map Persons (and NPCs) */
     for(uint16_t i = 0; i < persons.size(); i++)
     {
-      if(persons[i]->getMapSection() == map_index)
-        persons[i]->render(renderer, 0, 0);
+      if(persons[i]->getMapSection() == map_index && 
+         persons[i]->getX() >= x_start && persons[i]->getX() <= x_end && 
+         persons[i]->getY() >= y_start && persons[i]->getY() <= y_end)
+      {
+        persons[i]->render(renderer, x_offset, y_offset);
+      }
     }
     
     /* Render upper half of tile */
-    for(uint16_t i = 0; i < geography[map_index].size(); i++)
-    {
-      for(uint16_t j = 0; j < geography[map_index][i].size(); j++)
-      {
-        if(i < 25 && j < 25)
-          geography[map_index][i][j]->renderUpper(renderer, 0, 0);
-      }
-    }
+    for(uint16_t i = tile_x_start; i < tile_x_end; i++)
+      for(uint16_t j = tile_y_start; j < tile_y_end; j++)
+        geography[map_index][i][j]->renderUpper(renderer, x_offset, y_offset);
   }
   
   return success;
@@ -1441,6 +1453,11 @@ bool Map::setConfiguration(Options* running_config)
   if(running_config != NULL)
   {
     system_options = running_config;
+    
+    /* Update the viewport information */
+    viewport.setSize(running_config->getScreenWidth(), 
+                     running_config->getScreenHeight());
+    
     return true;
   }
   
@@ -1563,9 +1580,9 @@ void Map::unloadMap()
   }
   tile_sprites.clear();
   
-  // /* Reset the viewport */
-  // viewport->setMapSize(0, 0);
-  // viewport->lockOn(0, 0);
+  /* Reset the viewport */
+  viewport.setMapSize(0, 0);
+  viewport.lockOn(0, 0);
 
   /* Clear the remaining and disable the loading */
   // clear();
@@ -1625,6 +1642,9 @@ bool Map::update(int cycle_time)
   /* Update map things */
   for(uint16_t i = 0; i < things.size(); i++)
     things[i]->update(cycle_time, NULL);
+  
+  /* Finally, update the viewport */
+  viewport.update();
   
   return false;
 }

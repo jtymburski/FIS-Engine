@@ -245,6 +245,11 @@ bool Game::setConfiguration(Options* running_config)
   if(running_config != NULL)
   {
     game_config = running_config;
+    
+    /* Set in secondary classes */
+    if(game_map != NULL)
+      game_map->setConfiguration(running_config);
+    
     return true;
   }
   

@@ -42,6 +42,7 @@ SOURCES=src/Application.cc \
         src/Game/Map/Map.cc \
         src/Game/Map/MapPerson.cc \
         src/Game/Map/MapThing.cc \
+        src/Game/Map/MapViewport.cc \
         src/Game/Map/Tile.cc \
         src/Game/Player/Action.cc \
         src/Game/Player/AttributeSet.cc \

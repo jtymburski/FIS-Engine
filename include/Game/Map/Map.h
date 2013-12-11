@@ -24,7 +24,7 @@
 #include "Game/Map/MapPerson.h"
 // #include "Game/Map/MapStatusBar.h"
 #include "Game/Map/MapThing.h"
-// #include "Game/Map/MapViewport.h"
+#include "Game/Map/MapViewport.h"
 // #include "Game/Map/Sector.h"
 #include "Game/Map/Tile.h"
 // #include "Game/Weather.h"
@@ -80,8 +80,8 @@ private:
   // /* The time that has elapsed for each draw cycle */
   // int time_elapsed;
 
-  // /* The viewport for the map, controlled by QGraphicsView */
-  // MapViewport* viewport;
+  /* The viewport for the map, controls positioning */
+  MapViewport viewport;
 
   // /* Weather effect on the overall map (May be pushed to the sector level at 
    // * a later time) */
