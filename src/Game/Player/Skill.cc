@@ -628,7 +628,7 @@ bool Skill::setDescription(const std::string &new_description)
  */
 void Skill::setFlag(const SkillFlags &flag, const bool &set_value)
 {
-  (set_value) ? (flags |= flag) : (flags &= flag);
+  (set_value) ? (flags |= flag) : (flags &= ~flag);
 }
 
 /*

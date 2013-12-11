@@ -232,6 +232,22 @@ void AttributeSet::cleanUp()
  *============================================================================*/
 
 /*
+ * Description: Prints [std::cout] the values of the AttributeSet
+ *
+ * Inputs: simple - boolean value whether to show simple or large format
+ * Output: 
+ */
+void AttributeSet::print(const bool &simple)
+{
+  if (simple)
+    for (int value: values)
+      std::cout << value << " ";
+  else
+    for (std::string name: kSHORT_NAMES)
+      std::cout << name << " " << getStat(name) << std::endl;
+}
+
+/*
  * Description: Alters the stat at a given index by an amount
  *
  * Inputs: const int &index - the index of the stat to be altered

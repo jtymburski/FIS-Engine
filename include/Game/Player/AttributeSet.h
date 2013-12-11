@@ -92,6 +92,9 @@ private:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Print out the values of the Attribute Set */
+  void print(const bool &simple = false);
+  
   /* Methods for altering a stat by a given amount given either an index,
    * enumerated value of the Attribute, or a string name (short or long */
   bool alterStat(const int &index, const int &amount);
