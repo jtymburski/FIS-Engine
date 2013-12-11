@@ -16,6 +16,7 @@ class MapItem;
 class MapPerson;
 class MapThing;
 
+#include <iostream>
 #include <string>
 #include <vector>
 

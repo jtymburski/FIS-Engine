@@ -597,12 +597,12 @@ float MapThing::getY()
  *
  * Inputs: MapPerson* initiator - the pointer to the person that initiated it
  * Output: bool - if the call can occur (Event handler needs to be set
- */ // TODO - fix parameter
-bool MapThing::interact()//MapPerson* initiator)
+ */
+bool MapThing::interact(MapPerson* initiator)
 {
   if(event_handler != NULL)
   {
-    //event_handler->executeEvent(interact_event, initiator, this);
+    event_handler->executeEvent(interact_event, initiator, this);
     return true;
   }
 

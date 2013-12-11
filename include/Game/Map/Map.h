@@ -20,7 +20,7 @@
 // #include "Game/Map/MapInteractiveObject.h"
 // #include "Game/Map/MapItem.h"
 // #include "Game/Map/MapMenu.h"
-// #include "Game/Map/MapNPC.h"
+#include "Game/Map/MapNPC.h"
 #include "Game/Map/MapPerson.h"
 // #include "Game/Map/MapStatusBar.h"
 #include "Game/Map/MapThing.h"
@@ -136,8 +136,8 @@ private:
   /* Initiates a section block of map. Triggered from the file data */
   bool initiateMapSection(uint16_t section_index, int width, int height);
   
-  // /* Initiates a thing action, based on the action key being hit */
-  // void initiateThingInteraction();
+  /* Initiates a thing action, based on the action key being hit */
+  void initiateThingInteraction();
  
   /* Parse coordinate info from file to give the designated tile coordinates
    * to update */

@@ -1,14 +1,14 @@
-/******************************************************************************
-* Class Name: MapPerson
-* Date Created: Dec 2 2012
-* Inheritance: MapThing
-* Description: The MapPerson class. An addition on top of MapThing that 
-*              expands the Thing into possible states to allow for walking
-*              in multiple directions and on multiple surfaces. At present, 
-*              it allows for the 4 directions (N,S,E,W) all on one surface
-*              (Ground). Future expansion is available for other surfaces
-*              such as water, flying, etc.
-******************************************************************************/
+/*******************************************************************************
+ * Class Name: MapPerson
+ * Date Created: Dec 2 2012
+ * Inheritance: MapThing
+ * Description: The MapPerson class. An addition on top of MapThing that 
+ *              expands the Thing into possible states to allow for walking
+ *              in multiple directions and on multiple surfaces. At present, 
+ *              it allows for the 4 directions (N,S,E,W) all on one surface
+ *              (Ground). Future expansion is available for other surfaces
+ *              such as water, flying, etc.
+ ******************************************************************************/
 #include "Game/Map/MapPerson.h"
 
 /* Constant Implementation - see header file for descriptions */

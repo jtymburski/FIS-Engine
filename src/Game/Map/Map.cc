@@ -365,12 +365,12 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
     }
 
     /* Create a new person if one does not exist */
-    if(modified_thing == 0)
+    if(modified_thing == NULL)
     {
       if(identifier == "mapperson")
         modified_thing = new MapPerson(tile_width, tile_height);
-      // else
-        // modified_thing = new MapNPC(tile_width, tile_height);
+      else
+        modified_thing = new MapNPC(tile_width, tile_height);
       modified_thing->setEventHandler(event_handler);
       modified_thing->setID(id);
       
@@ -472,57 +472,68 @@ bool Map::initiateMapSection(uint16_t section_index, int width, int height)
   return false;
 }
 
-// /* Initiates a thing action, based on the action key being hit */
-// void Map::initiateThingInteraction()
-// {
-  // if(player != 0)
-  // {
-    // bool interacted = false;
-    // int x = player->getTile()->getX();
-    // int y = player->getTile()->getY();
+/* Initiates a thing action, based on the action key being hit */
+void Map::initiateThingInteraction()
+{
+  if(player != NULL)
+  {
+    bool interacted = false;
+    bool out_of_range = false;
+    uint16_t x = player->getTile()->getX();
+    uint16_t y = player->getTile()->getY();
 
-    // /* Determine the direction and offset coordinate tile selection */
-    // EnumDb::Direction direction = player->getDirection();
-    // if(direction == EnumDb::NORTH)
-      // y--;
-    // else if(direction == EnumDb::EAST)
-      // x++;
-    // else if(direction == EnumDb::SOUTH)
-      // y++;
-    // else if(direction == EnumDb::WEST)
-      // x--;
-    // /* Throw X out of bounds if no direction */
-    // else
-      // x = -1;
+    /* Determine the direction and offset coordinate tile selection */
+    Direction direction = player->getDirection();
+    if(direction == Direction::NORTH)
+    {
+      if(y == 0)
+        out_of_range = true;
+      else
+        y--;
+    }
+    else if(direction == Direction::EAST)
+      x++;
+    else if(direction == Direction::SOUTH)
+      y++;
+    else if(direction == Direction::WEST)
+    {
+      if(x == 0)
+        out_of_range = true;
+      else
+        x--;
+    }
+    /* Throw X out of bounds if no direction */
+    else
+      out_of_range = true;
 
-    // /* Aquire the thing, that's being pointed at and try to interact */
-    // int index = map_index;
-    // if(x >= 0 && x < geography[index].size() && 
-       // y >= 0 && y < geography[index][0].size())
-    // {
-      // if(geography[index][x][y]->isPersonSet() &&
-         // geography[index][x][y]->getPerson()->getTile()->getX() == x &&
-         // geography[index][x][y]->getPerson()->getTile()->getY() == y)
-      // {
-        // geography[index][x][y]->getPerson()->interact(player);
-        // interacted = true;
-      // }
-      // else if(geography[index][x][y]->isThingSet())
-      // {
-        // geography[index][x][y]->getThing()->interact(player);
-        // interacted = true;
-      // }
-    // }
+    /* Aquire the thing, that's being pointed at and try to interact */
+    if(!out_of_range && x < geography[map_index].size() && 
+       y < geography[map_index][0].size())
+    {
+      if(geography[map_index][x][y]->isPersonSet() &&
+         geography[map_index][x][y]->getPerson()->getTile()->getX() == x &&
+         geography[map_index][x][y]->getPerson()->getTile()->getY() == y)
+      {
+        geography[map_index][x][y]->getPerson()->interact(player);
+        interacted = true;
+      }
+      else if(geography[map_index][x][y]->isThingSet())
+      {
+        geography[map_index][x][y]->getThing()->interact(player);
+        interacted = true;
+      }
+    }
     
-    // /* If there was no thing to interact with, proceed to try and pickup the
-     // * tile item. */
+    // TODO: Uncomment - item interaction
+    /* If there was no thing to interact with, proceed to try and pickup the
+     * tile item. */
     // if(!interacted && player->getTile()->getItem() != 0 && 
        // player->getTile()->getItem()->getCount() > 0 && event_handler != 0)
     // {
       // event_handler->executePickup(player->getTile()->getItem());
     // }
-  // }
-// }
+  }
+}
 
 /* Parse coordinate info from file to give the designated tile coordinates
  * to update */
@@ -1190,6 +1201,10 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
       viewport.setMapSize(geography[map_index].size(), 
                           geography[map_index][0].size());
     }
+  }
+  else if(event.keysym.sym == SDLK_SPACE)
+  {
+    initiateThingInteraction();
   }
   else if(player != NULL)
   {

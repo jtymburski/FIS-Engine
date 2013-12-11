@@ -172,6 +172,8 @@ Event EventHandler::deleteEvent(Event event)
 void EventHandler::executeEvent(Event event, MapPerson* initiator, 
                                              MapThing* source)
 {
+  std::cout << "Event Executed." << std::endl;
+  
   /* Create the executed event queue entry */
   EventExecution executed_event;
   executed_event.event = event;

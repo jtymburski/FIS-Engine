@@ -259,8 +259,16 @@ bool Game::setConfiguration(Options* running_config)
 /* Updates the game state. Returns true if the class is finished */
 bool Game::update(int cycle_time)
 {
+  /* Event poll testing */
+  if(event_handler.pollEventType() != EventClassifier::NOEVENT)
+  {
+    std::cout << "Event: " << static_cast<int>(event_handler.pollEventType()) 
+              << std::endl;
+    event_handler.pollClear();
+  }
+  
   if(mode == MAP)
     return game_map->update(cycle_time);
-  
+
   return false;
 }

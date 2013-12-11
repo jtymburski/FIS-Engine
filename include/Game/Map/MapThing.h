@@ -162,7 +162,7 @@ public:
   float getY();
   
   /* Starts interaction (conversation, giving something, etc) */
-  virtual bool interact();//MapPerson* initiator); // TODO: Add
+  virtual bool interact(MapPerson* initiator);
   
   /* Returns if there is a move request for the given thing */
   virtual bool isMoveRequested();
