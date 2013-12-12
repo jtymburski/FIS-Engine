@@ -17,6 +17,7 @@
 #include "Game/EventHandler.h"
 #include "Game/Map/Map.h"
 //#include "Game/Player/Player.h"
+ #include "Game/Player/Item.h"
 //#include "Game/VictoryScreen.h"
 //#include "MathHelper.h"
 #include "Game/Player/SkillSet.h"

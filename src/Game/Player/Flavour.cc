@@ -19,16 +19,19 @@
 /*=============================================================================
  * CONSTANTS - See .h file for details
  *============================================================================*/
-const size_t Flavour::kMAX_DESC_LENGTH = 100;
-
 const std::vector<float> Flavour::kTIER_MODIFIERS = 
 {0.0, 1.0, 1.25, 1.5};
 
 const std::vector<uint32_t> Flavour::kTIER_LEVELS =
-{5, 10, 15, 20};
+{0, 1, 11, 21};
 
 const std::vector<float> Flavour::kTIER_MASSES = 
 {1.0, 1.0, 2.0, 4.0};
+
+const std::vector<float> Flavour::kTIER_VALUES =
+{1.0, 4.0, 4.0, 4.0};
+
+const uint32_t Flavour::kMAX_LVL = 30;
 
 std::vector<Flavour*> Flavour::flavour_list = {};
 
@@ -42,13 +45,15 @@ std::vector<Flavour*> Flavour::flavour_list = {};
  * Inputs: none
  */
 Flavour::Flavour()
-  : base_stats(AttributeSet()),
-    base_mass(0.0),
-    description(""),
-    name(""),
-    skill_list(nullptr)
+  : base_stats(AttributeSet())
+  , base_mass(0.0)
+  , base_value(0)
+  , description("")
+  , name("")
+  , skill_list(nullptr) 
 {
-
+  if (!addFlavour(this))
+    std::cerr << "Error: Duplicating flavour" << this->getName() << std::endl;
 }
 
 /*
@@ -62,12 +67,14 @@ Flavour::Flavour()
  *         skills - pointer to a set of skills the Flavour unlocks for a Person
  */
 Flavour::Flavour(const std::string &flavour_name, const AttributeSet &min_stats,
-	             const double &min_mass, SkillSet* skills)
-  : base_stats(min_stats),
-    base_mass(min_mass),
-    description(""),
-    name(flavour_name),
-    skill_list(skills)
+	               const double &min_mass, const uint32_t &min_value,
+                 SkillSet* skills)
+  : base_stats(min_stats)
+  , base_mass(min_mass)
+  , base_value(min_value)
+  , description("")
+  , name(flavour_name)
+  , skill_list(skills)
 {
   if (!addFlavour(this))
     std::cerr << "Error: Duplicating flavour" << this->getName() << std::endl;
@@ -146,6 +153,19 @@ AttributeSet Flavour::getBaseStats()
 const std::string& Flavour::getDescription()
 {
   return description;
+}
+
+uint32_t Flavour::getLevels(const uint32_t &tier)
+{
+  if (tier < static_cast<uint32_t>(kTIER_LEVELS.size()))
+    return kTIER_LEVELS.at(tier);
+
+  return 0;
+}
+
+uint32_t Flavour::getMaxLevel()
+{
+  return kMAX_LVL;
 }
 
 /*
@@ -237,7 +257,8 @@ AttributeSet Flavour::getStats(const uint32_t &tier)
 }
 
 /*
- * Description: Returns a pointer to the thumbnail of the Flavour at a given tier.
+ * Description: Returns a pointer to the thumbnail of the Flavour at a given 
+ *              tier.
  *
  * Inputs: index - the tier of the Bubby to return the thumbnail for.
  * Output: Frame* - ptr to the thumbnail of the sprite of the flavour tier.
@@ -250,6 +271,26 @@ Frame* Flavour::getThumb(const uint32_t &index)
   return nullptr;
 }
 
+uint32_t Flavour::getTiers()
+{
+  return kTIER_LEVELS.size();
+}
+
+uint32_t Flavour::getValue(const uint32_t &tier)
+{
+  uint32_t value = base_value;
+
+  if (tier < kTIER_VALUES.size())
+  {
+    for (auto it = kTIER_VALUES.begin(); it != kTIER_VALUES.end(); ++it)
+      value *= (*it);
+
+    return static_cast<uint32_t>(value);
+  }
+
+  return 0;
+}
+
 /*
  * Description: Attempts to assign a new description to the flavour, and returns
  *              true if the asignment was within range.
@@ -259,7 +300,7 @@ Frame* Flavour::getThumb(const uint32_t &index)
  */
 bool Flavour::setDescription(const std::string& new_description)
 {
-  if (new_description.size() <= kMAX_DESC_LENGTH)
+  if (new_description.size() <= StringDB::kMAX_DESC)
   {
     description = new_description;
 

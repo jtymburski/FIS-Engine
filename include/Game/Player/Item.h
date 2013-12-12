@@ -75,6 +75,8 @@ public:
 
   Item(const Item &source);
 
+  Item(Item&& source);
+
   Item(const std::string &name, const uint32_t &value,
   	   Frame* thumbnail = nullptr, const double &mass = 0.0);
 
@@ -133,9 +135,6 @@ protected:
   uint32_t value;
 
   /* ------------ Constants --------------- */
-  static const size_t   kMAX_BRIEF_DESC; /* Maximum length of Brief desc. */
-  static const size_t   kMAX_DESC;       /* Maximum length of normal desc. */
-  static const size_t   kMAX_USE_MSG;    /* Maximum length of max use msg */
   static const double   kMAX_MASS;       /* Maximum mass of an Item */
   static const double   kMIN_MASS;       /* Minimum mass */
   static const uint32_t kMAX_VALUE;      /* Maximum value of an Item */
@@ -147,7 +146,11 @@ private:
   
   void classSetup();
 
-  void copySelf(const Item &source);
+  void copySelf(const Item& source);
+
+  static void swap(Item& object, Item& source);
+
+  static void unsetAll(Item* object);
 
   void setID(const uint32_t &value);
 
@@ -187,7 +190,7 @@ protected:
 
   void setName(const std::string &new_name);
 
-  void setPrefix(const std::string &new_prefix);
+  bool setPrefix(const std::string &new_prefix);
 
   void setOccasion(const ActionOccasion &new_occasion);
 
@@ -241,7 +244,10 @@ public:
  *============================================================================*/
 public:
   /* Overloaded = operator for copy construction */
-  Item& operator= (const Item &source);
+  Item& operator=(const Item &source);
+
+  /* Overloaded move assignment operator */
+  Item& operator=(Item&& source);
 };
 
 #endif //ITEM_H

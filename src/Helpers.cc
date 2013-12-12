@@ -203,15 +203,15 @@ Element Helpers::getWeakness(const Element& element)
  *         const int &iter - const ref int of the # of iterations for the table
  * Output: std::vector<int> - the vector containing the constructed table
  */
-std::vector<int> Helpers::buildExponentialTable(const int &min, const int &max, 
-                                                                const int &iter)
+std::vector<uint32_t> Helpers::buildExpTable(const uint32_t &min, const uint32_t &max, 
+                                             const uint32_t &iter)
 {
-  std::vector<int> table;
+  std::vector<uint32_t> table;
 
   auto b = log((double)max / min) / (iter - 1);
   auto a = (double)min / (exp(b) - 1.0);
 
-  for  (auto i = 1; i <= iter; i++)
+  for  (uint32_t i = 1; i <= iter; i++)
   {
     auto old_exp = round(a * exp(b * (i - 1)));
     auto new_exp = round(a * exp(b * i));

@@ -44,15 +44,9 @@ class SkillSet
 {
 public:
 
-  SkillSet();
-
-  SkillSet(const SkillSet &source);
-
   SkillSet(Skill* skill, const uint32_t &level);
 
   SkillSet(const std::vector<Skill*> &skills, const std::vector<uint32_t> &levels); 
-
-  ~SkillSet();
 
 private:
 
@@ -74,8 +68,6 @@ private:
                 calcUniques(const std::deque<SkillSetElement> &check_elements);
    
    void cleanUp();
-
-   void copySelf(const SkillSet &source);
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
@@ -123,8 +115,6 @@ public:
  * OPERATOR FUNCTIONS
  *===========================================================================*/
 public:
-  SkillSet& operator=(const SkillSet& source);
-
   SkillSet& operator+=(const SkillSet &rhs);
 
   SkillSet& operator-=(const SkillSet &rhs);

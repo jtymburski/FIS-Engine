@@ -75,8 +75,8 @@ public:
 public:
   /* Builds an exponentially growing table from min to max with iter
    * iterations */
-  static std::vector<int> buildExponentialTable(const int &min, const int &max, 
-                                                const int &iter);
+  static std::vector<uint32_t> buildExpTable(const uint32_t &min, const uint32_t &max, 
+                                             const uint32_t &iter);
 
   /* Assign a value within lower and upper boundaries */
   static void setWithinRange(int &value, const int &a, const int &b);

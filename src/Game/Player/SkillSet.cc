@@ -32,23 +32,6 @@ const size_t SkillSet::kMIN_UNLOCK_LEVEL =     1;
  *
  * Inputs:
  */
-SkillSet::SkillSet() {}
-
-/*
- * Description:
- *
- * Inputs:
- */
-SkillSet::SkillSet(const SkillSet &source)
-{
-  copySelf(source);
-}
-
-/*
- * Description:
- *
- * Inputs:
- */
 SkillSet::SkillSet(Skill* skill, const uint32_t &level)
 {
   addSkill(skill, level, kENABLED_DEFAULT);
@@ -65,15 +48,16 @@ SkillSet::SkillSet(const std::vector<Skill*> &skills, const std::vector<uint32_t
   addSkills(skills, levels, enabled_values);
 }
 
-/*
- * Description:
- */
-SkillSet::~SkillSet() {}
-
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
 
+/*
+ * Description: 
+ *
+ * Inputs: 
+ * Output: 
+ */
 uint32_t SkillSet::calcLowestLevel(const uint32_t &skill_id)
 {
   uint32_t min_level = kMAX_UNLOCK_LEVEL;
@@ -86,7 +70,12 @@ uint32_t SkillSet::calcLowestLevel(const uint32_t &skill_id)
   return min_level;
 }
 
-//STATIC
+/*
+ * Description:
+ *
+ * Inputs: 
+ * Output: 
+ */
 std::deque<SkillSetElement> SkillSet::calcUniques(const std::deque<SkillSetElement> &check_elements)
 {
   std::vector<uint32_t> uniques;
@@ -119,11 +108,6 @@ void SkillSet::cleanUp()
       unique_elements.erase(it);
 
   skill_elements = unique_elements;
-}
-
-void SkillSet::copySelf(const SkillSet &source)
-{
-  skill_elements = source.skill_elements;
 }
 
 /*=============================================================================
@@ -476,21 +460,8 @@ bool SkillSet::setState(const uint32_t &index, const bool &state)
 }
 
 /*=============================================================================
- * OPERATOR
+ * OPERATOR FUNCTIONS
  *============================================================================*/
-
- SkillSet& SkillSet::operator=(const SkillSet& source)
- {
-  /* Check for self assignment */
-  if (this == &source)
-    return *this;
-
-  /* Do the copy */
-  copySelf(source);
-
-  /* Return the copied object */
-  return *this;
- }
 
 SkillSet& SkillSet::operator+=(const SkillSet &rhs)
 {

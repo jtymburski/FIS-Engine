@@ -18,9 +18,6 @@
  * CONSTANTS
  *============================================================================*/
 
-const size_t   Item::kMAX_BRIEF_DESC =        70;
-const size_t   Item::kMAX_DESC       =       500;
-const size_t   Item::kMAX_USE_MSG    =        40;
 const double   Item::kMAX_MASS       =      5000;
 const double   Item::kMIN_MASS       =     -1000;
 const uint32_t Item::kMAX_VALUE      = 100000000;
@@ -32,21 +29,45 @@ int Item::id = 0;
  *============================================================================*/
 
 /*
- * Description:
+ * Description: Default constructor - constructs a default Item object
  *
  * Inputs:
  */
 Item::Item()
 {
   classSetup();
+  setID(++id);
 }
 
+/*
+ * Description: Copy constructor - copies a source Item object
+ *
+ * Inputs:
+ */
 Item::Item(const Item &source)
 {
   classSetup();
   copySelf(source);
+  setID(++id);
 }
 
+/*
+ * Description: Move constructor
+ *
+ * Inputs:
+ */
+Item::Item(Item&& source)
+{
+  unsetAll(this);
+  swap(*this, source);
+  setID(++id);
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ */
 Item::Item(const std::string &name, const uint32_t &value, Frame* thumbnail,
 	       const double &mass)
 {
@@ -55,21 +76,30 @@ Item::Item(const std::string &name, const uint32_t &value, Frame* thumbnail,
   setValue(value);
   setThumbnail(thumbnail);
   setMass(mass);
+  setID(++id);
 }
 
 /*
  * Description: Annihilates an Item object
  */
-Item::~Item() {}
+Item::~Item()
+{
+  unsetAll(this);
+}
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 void Item::classSetup()
 {
-  setID(++id);
-
+  my_id = 0;
   base_item = nullptr;
   buff_set = AttributeSet();
   brief_description = StringDB::kDEFAULT_ITEM_DESC;
@@ -95,11 +125,86 @@ void Item::classSetup()
  * Output:
  */
 void Item::copySelf(const Item &source)
-{  
-  //TODO [12-11-13]
+{ 
+  my_id = source.my_id;
+  base_item = source.base_item;
+  buff_set = source.buff_set;
+  brief_description = source.brief_description;
+  description = source.description;
+  composition = source.composition;
+  flags = source.flags;
+  mass = source.mass;
   name = source.name;
+  prefix = source.prefix;
+  occasion = source.occasion;
+  thumbnail = source.thumbnail;
+  using_skill = source.using_skill;
+  using_animation = source.using_animation;
+  using_message = source.using_message;
+  using_sound = source.using_sound;
+  value = source.value;
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void Item::swap(Item& object, Item& source)
+{
+  std::swap(object.my_id, source.my_id);
+  std::swap(object.base_item, source.base_item);
+  std::swap(object.buff_set, source.buff_set);
+  std::swap(object.brief_description, source.brief_description);
+  std::swap(object.description, source.description);
+  std::swap(object.composition, source.composition);
+  std::swap(object.flags, source.flags);
+  std::swap(object.mass, source.mass);
+  std::swap(object.name, source.name);
+  std::swap(object.prefix, source.prefix);
+  std::swap(object.occasion, source.occasion);
+  std::swap(object.thumbnail, source.thumbnail);
+  std::swap(object.using_skill, source.using_skill);
+  std::swap(object.using_animation, source.using_animation);
+  std::swap(object.using_message, source.using_message);
+  std::swap(object.using_sound, source.using_sound);
+  std::swap(object.value, source.value);
+}
+
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void Item::unsetAll(Item* object)
+{
+  object->id = 0;
+  object->base_item = nullptr;
+  object->buff_set = AttributeSet();
+  object->brief_description = "";
+  object->description = "";
+  object->composition = static_cast<Material>(0);
+  object->flags = static_cast<ItemFlags>(0);
+  object->mass = 0;
+  object->name = "";
+  object->prefix = "";
+  object->occasion = ActionOccasion::NONE;
+  object->thumbnail = nullptr;
+  object->using_skill = nullptr;
+  object->using_animation = nullptr;
+  object->using_message = "";
+  object->using_sound = nullptr;
+  object->value = 0;
+}
+
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 void Item::setID(const uint32_t &value)
 {
   my_id = value;
@@ -117,19 +222,40 @@ void Item::setID(const uint32_t &value)
  */
 void Item::print()
 {
-
+  std::cout << "--- Item ---\n";
+  printInfo();
+  printFlags();
+  std::cout << "------------\n";
 }
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 AttributeSet Item::getBuffSet()
 {
   return buff_set;
 }
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 double Item::getMass()
 {
   return mass;
 }
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 uint32_t Item::getValue()
 {
   return value;
@@ -139,6 +265,12 @@ uint32_t Item::getValue()
  * PROTECTED FUNCTIONS
  *============================================================================*/
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 void Item::printFlags()
 {
   std::cout << "CONSUMED: " << getFlag(ItemFlags::CONSUMED) << std::endl;
@@ -171,6 +303,12 @@ void Item::printFlags()
   std::cout << "CHARGED: " << getMaterial(Material::CHARGED) << std::endl;
 }
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 void Item::printInfo(const bool &basic)
 {
   if (basic)
@@ -217,15 +355,27 @@ bool Item::setBase(Item* item_base)
   return true;
 }
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 void Item::setBuffSet(const AttributeSet &new_buff_set)
 {
   buff_set = new_buff_set;
   setBase(nullptr);
 }
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 bool Item::setBriefDescription(const std::string &new_brief_description)
 {
-  if (new_brief_description.size() <= kMAX_BRIEF_DESC)
+  if (new_brief_description.size() <= StringDB::kMAX_BRIEF_DESC)
   {
     setBase(nullptr);
     brief_description = new_brief_description;
@@ -237,9 +387,15 @@ bool Item::setBriefDescription(const std::string &new_brief_description)
   return false;
 }
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 bool Item::setDescription(const std::string &new_description)
 {
-  if (new_description.size() <= kMAX_DESC)
+  if (new_description.size() <= StringDB::kMAX_DESC)
   {
     setBase(nullptr);
     description = new_description;
@@ -251,6 +407,12 @@ bool Item::setDescription(const std::string &new_description)
   return false;
 }
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 void Item::setFlag(ItemFlags flag, const bool &set_value)
 {
   if (getFlag(ItemFlags::SET_BASE_ITEM))
@@ -259,30 +421,67 @@ void Item::setFlag(ItemFlags flag, const bool &set_value)
   (set_value) ? (flags |= flag) : (flags &= ~flag);
 }
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 void Item::setMaterial(Material flag, const bool &set_value)
 {
   setBase(nullptr);
   (set_value) ? (composition |= flag) : (composition &= ~flag);
 }
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 void Item::setName(const std::string &new_name)
 {
   setBase(nullptr);
   name = new_name;
 }
 
-void Item::setPrefix(const std::string &new_prefix)
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+bool Item::setPrefix(const std::string &new_prefix)
 {
-  setBase(nullptr);
-  prefix = new_prefix;
+  if (new_prefix.size() <= StringDB::kMAX_PREFIX)
+  {
+    setBase(nullptr);
+    prefix = new_prefix;
+
+    return true;
+  }
+
+  return false;
 }
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 void Item::setOccasion(const ActionOccasion &new_occasion)
 {
   setBase(nullptr);
   occasion = new_occasion;
 }
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 bool Item::setMass(const double &new_mass)
 {
   if (new_mass >= kMIN_MASS && new_mass <= kMAX_MASS)
@@ -296,6 +495,12 @@ bool Item::setMass(const double &new_mass)
   return false;
 }
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 bool Item::setThumbnail(Frame* new_thumbnail)
 {
   setBase(nullptr);
@@ -304,6 +509,12 @@ bool Item::setThumbnail(Frame* new_thumbnail)
   return (new_thumbnail != nullptr);
 }
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 bool Item::setUseAnimation(Sprite* new_animation)
 {
   setBase(nullptr);
@@ -312,9 +523,15 @@ bool Item::setUseAnimation(Sprite* new_animation)
   return (new_animation != nullptr);
 }
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 bool Item::setUseMessage(const std::string &new_message)
 {
-  if (new_message.size() <= kMAX_USE_MSG)
+  if (new_message.size() <= StringDB::kMAX_USE_MSG)
   {
     using_message = new_message;
 
@@ -324,6 +541,12 @@ bool Item::setUseMessage(const std::string &new_message)
   return false;
 }
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 bool Item::setUseSkill(Skill* new_skill)
 {
   using_skill = new_skill;
@@ -331,6 +554,12 @@ bool Item::setUseSkill(Skill* new_skill)
   return (new_skill != nullptr);
 }
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 bool Item::setUseSound(Sound* new_sound)
 {
   using_sound = new_sound;
@@ -338,6 +567,12 @@ bool Item::setUseSound(Sound* new_sound)
   return (new_sound != nullptr);
 }
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 bool Item::setValue(const uint32_t &new_value)
 {
   if (new_value <= kMAX_VALUE)
@@ -354,16 +589,34 @@ bool Item::setValue(const uint32_t &new_value)
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 bool Item::isBaseItem()
 {
   return (base_item != nullptr);
 }
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 std::string Item::getBriefDescription()
 {
   return brief_description;
 }
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 std::string Item::getDescription()
 {
   return description;
@@ -391,36 +644,78 @@ bool Item::getMaterial(Material test_flag)
   return static_cast<bool>((composition & test_flag) == test_flag);
 }
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 std::string Item::getName()
 {
   return name;
 }
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 std::string Item::getPrefix()
 {
   return prefix;
 }
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 ActionOccasion Item::getOccasion()
 {
   return occasion;
 }
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 Frame* Item::getThumb()
 {
   return thumbnail;
 }
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 Sprite* Item::getUseAnimation()
 {
   return using_animation;
 }
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 std::string Item::getUseMessage()
 {
   return using_message;
 }
 
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 Sound* Item::getUseSound()
 {
   return using_sound;
@@ -438,13 +733,33 @@ Sound* Item::getUseSound()
  */
  Item& Item::operator=(const Item &source)
  {
-  /* Check for self assignment */
-  if (this == &source)
-    return *this;
+  /* Copy if not self-assignment */
+  if (this != &source)
+  {
+    copySelf(source);
+    setID(++id);
+  }
 
-  /* Do the copy */
-  copySelf(source);
-
-  /* Return the copied object */
   return *this;
  }
+
+ /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+Item& Item::operator=(Item&& source)
+{
+  unsetAll(this);
+
+  /* Move-copy if not self-assignment */
+  if (this != &source)
+  {
+    swap(*this, source);
+    setID(++id);
+    unsetAll(&source);
+  }
+
+  return *this;
+}
