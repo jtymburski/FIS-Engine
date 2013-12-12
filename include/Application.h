@@ -59,12 +59,18 @@ private:
   /* The displayed title screen for the game */
   TitleScreen title_screen;
   
+  /* Update handling variables */
+  uint8_t update_rate;
+  uint8_t update_sync;
+  
   /* The window to be displayed when the application is started */
   SDL_Window* window;
   
   /*------------------- Constants -----------------------*/
-  //const static short kTICK_DELAY; /* The tick time, in ms */
-
+  const static uint8_t kUPDATE_CHANGE_LIMIT; /* The # of different frame times
+                                              * allowed */
+  const static uint8_t kUPDATE_RATE; /* The minimum ms per update sequence */
+  
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
@@ -78,6 +84,9 @@ private:
   /* Renders the current view and all relevant visual data */
   void render(uint32_t cycle_time);
 
+  /* Update the cycle time and return the update time sequence */
+  int updateCycleTime(int cycle_time);
+  
   /* Handles actions in views, depending on what's active */
   bool updateViews(int cycle_time);
 

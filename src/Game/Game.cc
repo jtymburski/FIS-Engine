@@ -268,7 +268,7 @@ bool Game::update(int cycle_time)
   }
 
   if(mode == MAP)
-    return game_map->update(16);//cycle_time);
+    return game_map->update(cycle_time);
 
   return false;
 }

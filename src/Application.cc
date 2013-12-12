@@ -10,7 +10,8 @@
 #include "Application.h"
 
 /* Constant Implementation - see header file for descriptions */
-//const short Application::kTICK_DELAY = 10;
+const uint8_t Application::kUPDATE_CHANGE_LIMIT = 5;
+const uint8_t Application::kUPDATE_RATE = 16;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -22,6 +23,10 @@ Application::Application()
   initialized = false;
   renderer = NULL;
   window = NULL;
+  
+  /* Initialize update variables */
+  update_rate = kUPDATE_RATE;
+  update_sync = 0;
   
   /* Set the title screen parameters */
   game_handler.setConfiguration(&system_options);
@@ -115,6 +120,48 @@ void Application::render(uint32_t cycle_time)
     game_handler.render(renderer);
   else if(mode == OPTIONS)
     cycle_time = cycle_time; // DO OPTIONS EXECUTION
+}
+
+/* Returns the latched cycle time */
+int Application::updateCycleTime(int cycle_time)
+{
+  uint8_t update_step = kUPDATE_RATE / 2;
+  uint8_t update_time = 0;
+  
+  /* Parse the cycle time and find the category */
+  if(cycle_time < 0)
+  {
+    update_time = 0;
+  }
+  else if(cycle_time < kUPDATE_RATE)
+  {
+    update_time = kUPDATE_RATE;
+  }
+  else
+  {
+    update_time = cycle_time + update_step;
+    update_time = (update_time / kUPDATE_RATE) * kUPDATE_RATE;
+  }
+  
+  /* Check if the update time is different */
+  if(update_time == update_rate)
+  {
+    if(update_sync > 0)
+      update_sync--;
+  }
+  else
+  {
+    update_sync++;
+  }
+  
+  /* Determine if an update is required */
+  if(update_sync > kUPDATE_CHANGE_LIMIT)
+  {
+    update_rate = update_time;
+    update_sync = 0;
+  }
+  
+  return update_rate;
 }
 
 bool Application::updateViews(int cycle_time)
@@ -296,6 +343,8 @@ bool Application::run()
        * sequence for rendering */
       uint32_t cycle_time = SDL_GetTicks() - ticks;
       ticks = SDL_GetTicks();
+      if(system_options.isVsyncEnabled())
+        cycle_time = updateCycleTime(cycle_time);
       
       /* Handle events - key press, window events, and such */
       handleEvents();
