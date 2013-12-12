@@ -171,6 +171,7 @@ float MapThing::moveAmount(int cycle_time)
   float move_amount = ((speed * cycle_time) / 1000.0);
   if(move_amount > width)
     move_amount = width;
+
   return move_amount;
 }
 
