@@ -1,7 +1,7 @@
 /*******************************************************************************
 * Class Name: Bubby [Declaration]
 * Date Created: December 12th, 2013
-* Inheritance: Subclass of Item
+* Inheritance: Public from Item
 * Description: Bubby subclass defines details to define experience, level
 *              flavour, and tier of a Bubby Item.
 *
@@ -18,7 +18,6 @@
 * TODO
 * ----
 * Testing [12-12-13]
-* Conventions [12-12-13]
 *******************************************************************************/
 
 #ifndef BUBBY_H
@@ -57,57 +56,68 @@ private:
   Flavour* const type;
 
   /* ------------ Constants --------------- */
-  static const uint32_t kMIN_EXP;
-  static const uint32_t kMAX_LEVEL_EXP;
-  static const uint32_t kMAX_EXP;
+  static const uint32_t kMIN_EXP;         /* Starting experience value */
+  static const uint32_t kMAX_LEVEL_EXP;   /* Experience required for last lvl */
+  static const uint32_t kMAX_EXP;         /* Abs. maximum experience value */
   
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
+private:
+  /* Builds the experience table for the Bubby levels */
+  static void buildExpTable();
 
-/* Builds the */
-static bool buildExpTable();
+  /* Increments the Bubby's level */
+  bool levelUp();
 
-bool levelUp();
+  /* Increments the Bubby's tier */
+  void tierUp();
+  
+  /* Updates the thumbnail to the one stored in the Flavour for the curr tier */
+  bool updateThumb();
 
-void tierUp();
-
-bool updateThumb();
-
-bool updateExp();
+  /* Updates the experience to the minimum req. for the curr level */
+  bool updateExp();
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
+public:
+  /* Attempts to add experience to the Bubby and returns if successful */
+  bool addExperience(const uint32_t &amount);
 
-bool addExperience(const uint32_t &amount);
+  /* Prints out the information for the Bubby */
+  void print(const bool& print_table = false, const bool& item_info = false);
 
-void print(const bool& print_table = false, const bool& item_info = false);
+  /* This method MUST be called to upgrade the Bubby from Tier 0 to Tier 1 */
+  bool upgrade();
 
-bool upgrade();
+  /* Returns the level */
+  uint32_t getLevel();
 
-uint32_t getLevel();
+  /* Returns the minimum level required for the Bubby to reach the next tier */
+  uint32_t getLevelNext();
 
-uint32_t getLevelNext();
+  /* Returns the mass at the current tier (determined from Flavour */
+  double getMass();
 
-double getMass();
+  /* Calculates and returns the stats the Bubby will provide on a Signature */
+  AttributeSet getStats();
 
-AttributeSet getStats();
+  /* Returns the tier */
+  uint32_t getTier();
 
-uint32_t getTier();
+  /* Return the Flavour [type] of the Bubby by ref */
+  Flavour& getType();
 
-Flavour* getType();
+  /* Returns the total exp */
+  uint32_t getExp();
 
-uint32_t getExp();
+  /* Returns the exp required to reach the next level */
+  uint32_t getExpNext();
 
-uint32_t getExpNext();
-
-uint32_t getValue();
-
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
-
+  /* Returns the value [currency] worth */
+  uint32_t getValue();
 };
 
 #endif //BUBBY_H

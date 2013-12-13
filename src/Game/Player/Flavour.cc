@@ -83,11 +83,6 @@ Flavour::Flavour(const int &game_id, const std::string &flavour_name,
     std::cerr << "Error: Duplicating flavour" << this->getName() << std::endl;
 }
 
-/*
- * Description: Annihilates a Flavour object
- */
-Flavour::~Flavour() {}
-
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
@@ -134,6 +129,29 @@ bool Flavour::isFlavour(Flavour* flavour_check)
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
+
+void Flavour::print(const bool &print_list)
+{
+  std::cout << "--- Flavour ----\n";
+  base_stats.print();
+  std::cout << "Base Mass: " << base_mass << "\n";
+  std::cout << "Base Value: " << base_value << "\n";
+  std::cout << "Description: " << description << "\n";
+  std::cout << "Game_ID: " << game_id << "\n";
+  std::cout << "Name: " << name << "\n";
+  std::cout << "SkillList Set? " << (skill_list != nullptr) << "\n";
+  std::cout << "# Thumbnails " << thumbnails.size() << "\n";
+ 
+  /* Print out the static list of Flavours */
+  if (print_list)
+  {
+    std::cout << "Flavour List:\n";
+    for (Flavour* flavour : flavour_list)
+      std::cout << flavour->getName() << "\n";
+  }
+
+  std::cout << "--- / Flavour ---\n";
+}
 
 /*
  * Description: Returns a reference to the attribute set for the base stats of
@@ -238,7 +256,7 @@ SkillSet* Flavour::getSkillSet()
  */
 AttributeSet Flavour::getStats(const uint32_t &tier)
 {
-  AttributeSet stats = getBaseStats();
+  auto stats = getBaseStats();
 
   if (tier < kTIER_MODIFIERS.size())
   {
@@ -284,13 +302,13 @@ uint32_t Flavour::getValue(const uint32_t &tier)
 
   if (tier < kTIER_VALUES.size())
   {
-    for (auto it = kTIER_VALUES.begin(); it != kTIER_VALUES.end(); ++it)
+    for (auto it = begin(kTIER_VALUES); it != end(kTIER_VALUES); ++it)
       value *= (*it);
 
     return static_cast<uint32_t>(value);
   }
 
-  return 0;
+  return value;
 }
 
 /*
@@ -338,7 +356,7 @@ bool Flavour::setThumbs(const std::vector<Frame*> &new_thumbnails)
   bool can_add = true;
 
   if (new_thumbnails.size() == kTIER_LEVELS.size())
-    for (auto it = new_thumbnails.begin(); it != new_thumbnails.end(); ++it)
+    for (auto it = begin(new_thumbnails); it != end(new_thumbnails); ++it)
       can_add &= !((*it) == nullptr);
   
   if (can_add)
@@ -360,12 +378,7 @@ bool Flavour::setThumbs(const std::vector<Frame*> &new_thumbnails)
  */
 std::vector<Flavour*> Flavour::getFlavours()
 {
-  std::vector<Flavour*> temp_strings;
-
-  for (auto it = flavour_list.begin(); it != flavour_list.end(); ++it)
-    temp_strings.push_back(*it);
-
-  return temp_strings;
+  return flavour_list;
 }
 
 /*

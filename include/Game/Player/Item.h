@@ -24,6 +24,7 @@
 #include <iostream>
 
 #include "Game/Player/AttributeSet.h"
+#include "Game/Player/Flavour.h"
 #include "Game/Player/Skill.h"
 #include "EnumDb.h"
 #include "EnumFlags.h"
@@ -78,6 +79,8 @@ public:
 
   /* Mvoe constructor - constructs copy of Item with r.value ref */
   Item(Item&& source);
+
+  Item(Flavour* const source);
 
   /* Base Item constructor - constructs an Item given a game ID and basics */
   Item(const uint32_t &game_id, const std::string &name, const uint32_t &value,

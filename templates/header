@@ -1,8 +1,8 @@
 /*******************************************************************************
-* Class Name: x [Declaration]
-* Date Created: 
-* Inheritance: 
-* Description:
+* Class Name: [Declaration]
+* Date Created: December 13th, 2013
+* Inheritance: None
+* Description: 
 *
 * Notes
 * -----
@@ -11,11 +11,10 @@
 *
 * TODO
 * ----
-* X - [MM-DD-YY]
 *******************************************************************************/
 
-#ifndef CLASSNAME_H
-#define CLASSNAME_H
+#ifndef SIGNATURE_H
+#define SIGNATURE_H
 
   /* ------------ Constants --------------- */
 

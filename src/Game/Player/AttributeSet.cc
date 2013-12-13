@@ -224,7 +224,7 @@ void AttributeSet::cleanUp()
 
   if (!getFlag(AttributeState::CONSTANT))
     for (auto it = values.begin(); it != values.end(); ++it)
-      Helpers::setWithinRange((*it), min_value, kMAX_VALUE);
+      (*it) = Helpers::setWithinRange((*it), min_value, kMAX_VALUE);
 }
 
 /*=============================================================================
@@ -244,7 +244,7 @@ void AttributeSet::print(const bool &simple)
       std::cout << value << " ";
   else
     for (std::string name: kSHORT_NAMES)
-      std::cout << name << " " << getStat(name) << std::endl;
+      std::cout << name << " " << getStat(name) << "\n";
 }
 
 /*
@@ -267,7 +267,7 @@ bool AttributeSet::alterStat(const int &index, const int &amount)
       min_value = kMIN_P_VALUE;
 
     values[index] += amount;
-    Helpers::setWithinRange(values[index], min_value, kMAX_VALUE);
+    values[index] = Helpers::setWithinRange<int>(values[index], min_value, kMAX_VALUE);
 
     return true;
   }
@@ -386,7 +386,7 @@ bool AttributeSet::setStat(const int &index, const int &value)
       min_value = kMIN_P_VALUE;
 
     values[index] = value;
-    Helpers::setWithinRange(values[index], min_value, kMAX_VALUE);
+    values[index] = Helpers::setWithinRange(values[index], min_value, kMAX_VALUE);
     return true;
   }
 

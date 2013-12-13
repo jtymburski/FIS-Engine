@@ -30,6 +30,12 @@
 
 class Helpers
 {
+public:
+/*=============================================================================
+ * TEMPLATE FUNCTIONS
+ *============================================================================*/  
+  #include "Helpers.tcc" /* Template Implementation */
+
 /*=============================================================================
  * RANDOM GENERATOR FUNCTIONS
  *============================================================================*/
@@ -77,10 +83,6 @@ public:
    * iterations */
   static std::vector<uint32_t> buildExpTable(const uint32_t &min, const uint32_t &max, 
                                              const uint32_t &iter);
-
-  /* Assign a value within lower and upper boundaries */
-  static void setWithinRange(int &value, const int &a, const int &b);
-  
   /* Splits the string using the given delimiter */
   static std::vector<std::string> split(const std::string &s, char delim);
 

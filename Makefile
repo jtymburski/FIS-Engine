@@ -50,6 +50,7 @@ SOURCES=src/Application.cc \
         src/Game/Player/Bubby.cc \
         src/Game/Player/Flavour.cc \
         src/Game/Player/Item.cc \
+        src/Game/Player/Signature.cc \
         src/Game/Player/Skill.cc \
         src/Game/Player/SkillSet.cc \
         src/Helpers.cc \

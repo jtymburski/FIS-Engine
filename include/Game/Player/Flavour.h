@@ -36,9 +36,6 @@ public:
           const AttributeSet &min_stats, const double &min_mass, 
           const uint32_t &min_value, SkillSet* skills = nullptr);
 
-  /* Annihilates a Flavour object */
-  ~Flavour();
-
 private:
   /* Ref to the base attribute set (const -> unchanging) */
   AttributeSet base_stats;
@@ -89,6 +86,9 @@ private:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Prints out the info of the Flavour */
+  void print(const bool &print_list = false);
+
   /* Returns the base stats of the Flavour */
   AttributeSet getBaseStats();
 
@@ -117,7 +117,7 @@ public:
   Frame* getThumb(const uint32_t &index);
 
   /* Returns the value of a Flavour at a given tier */
-  uint32_t getValue(const uint32_t &tier);
+  uint32_t getValue(const uint32_t &tier = 0);
 
   /* Assigns a new description to the flavour */
   bool setDescription(const std::string& new_description);

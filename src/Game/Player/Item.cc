@@ -21,7 +21,7 @@
 const double   Item::kMAX_MASS       =      5000;
 const double   Item::kMIN_MASS       =     -1000;
 const uint32_t Item::kMAX_VALUE      = 100000000;
-const int      Item::kUNSET_ID       = -1;
+const int      Item::kUNSET_ID       =        -1;
 
 int Item::id = 0;
 
@@ -66,6 +66,18 @@ Item::Item(Item&& source)
   unsetAll(this);
   swap(*this, source);
   setID(++id);
+}
+
+Item::Item(Flavour* const source)
+  : game_id(source->getGameID())
+  , my_id(++id)
+{
+  classSetup();
+  setName(source->getName());
+  setBuffSet(source->getStats());
+  // setBriefDescription(source->getBriefDescription());
+  setDescription(source->getDescription());
+  setName(source->getName());
 }
 
 /*
@@ -618,7 +630,7 @@ bool Item::setDescription(const std::string &new_description)
  */
 void Item::setFlag(ItemFlags flag, const bool &set_value)
 {
-  ItemFlags temp_flags = flags;
+  auto temp_flags = flags;
 
   (set_value) ? (flags |= flag) : (flags &= ~flag);
 
@@ -636,7 +648,7 @@ void Item::setFlag(ItemFlags flag, const bool &set_value)
  */
 void Item::setMaterial(Material flag, const bool &set_value)
 {
-  Material temp_composition = composition;
+  auto temp_composition = composition;
 
   (set_value) ? (composition |= flag) : (composition &= ~flag);
 

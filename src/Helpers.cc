@@ -221,28 +221,7 @@ std::vector<uint32_t> Helpers::buildExpTable(const uint32_t &min, const uint32_t
   return table;
 }
 
-/*
- * Description: Template function which takes a reference to an object 
- *              and puts it within two bounds given by a and b (can be
- *              any order)
- *
- * Notes: - This function requires the < and > operators to be overloaded
- *
- * Inputs: T &value  - ref to object to be set within a range
- *         size_t &a - ref to one of the boundaries
- *         size_t &b - ref to one of the boundaries
- * Output: T - object after it has been set within the range
- */
-void Helpers::setWithinRange(int &value, const int &a, const int &b)
-{
-  auto min = std::min(a, b);
-  auto max = std::max(a, b);
 
-  if (value < min)
-    value = min;
-  else if (value > max)
-    value = max;
-}
 
 /*
  * Description: A split function that works with a string line and a character

@@ -69,16 +69,21 @@ Game::~Game()
 /* Set up the battle - old battle needs to be deleted prior to calling */
 void Game::setupBattle()
 {
-  /* Action Testing */
+  bool enable_test = false;
+
+  if (enable_test)
+  {
+
+  // Action Testing
   std::vector<Action*> actions;
   std::vector<float> chances = {0.50, 0.40, 0.12, 0.46};
   actions.push_back(new Action("1,ALTER,THAG,,,,AMOUNT.50,AMOUNT.15"));
   actions.push_back(new Action("3,INFLICT,POISON,2.7,,,,,"));
   actions.push_back(new Action("4,RELIEVE,CURSE,,,,,"));
   actions.push_back(new Action("5,REVIVE,,,,,PC.25,AMOUNT.50"));
-  Action* special = new Action("6,Rasdf,,,,,PC.25,AMOUNT.50");
+  Action* special = new Action("6,ALTER,VITA,,,,PC.25,AMOUNT.50");
 
-  /* Skill Testing */
+  // Skill Testing
   std::vector<Skill*> skills;
 
   Skill* normal_attack = new Skill(13, "Attack",ActionScope::ONE_TARGET,actions[0],0.75);
@@ -97,18 +102,41 @@ void Game::setupBattle()
     levels.push_back(levels.size());
   //}
 
+  // Skill Set Testing
   SkillSet* set1 = new SkillSet(skills, levels);
+  set1->sort(SkillSorts::ENABLED);
 
-  
-  //set1->print(true);
+  std::vector<Bubby*> bubby_pointas;
 
-  set1->sort(SkillSorts::ID, true);
+  // General Item Testing
 
-  //set1->print(true);
+  // Flavour Testing
+  Flavour* spark = new Flavour(101, "Spark", AttributeSet(1), 1.04, 35);
+  Flavour* tumor = new Flavour(102, "Tumor", AttributeSet(2), 1.09, 65);
+  Flavour* moldy = new Flavour(103, "Moldy", AttributeSet(1), 1.11, 48);
 
-  set1->sort(SkillSorts::ID, false);
+  spark->print();
 
-  //set1->print(true);
+  // Bubby Testing
+  for (int i = 0; i < 10; i++)
+  {
+    bubby_pointas.push_back(new Bubby(spark));
+    bubby_pointas.push_back(new Bubby(tumor));
+    bubby_pointas.push_back(new Bubby(moldy));
+  }
+
+  bubby_pointas.at(0)->print(true, true);
+
+  // Signature Testing
+
+
+  // Equipment Testing
+
+  } // end enable test
+  else
+  {
+    std::cout << "hey kevin if u see this u r kewl <3\n";
+  }
 }
 
 /* Set up the map - old map needs to be deleted prior to calling */
