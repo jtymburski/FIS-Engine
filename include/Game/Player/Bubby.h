@@ -8,11 +8,17 @@
 * Notes
 * -----
 *
-* [1]:
+* [1]: All Bubbies have a "Flavour" (type) and a Bubby of a certain flavour is
+*      identical to another Bubby of the same flavour except for: tier, level, 
+*      and experience.
+*  
+* [2]: This class reimplements virtual functions from Item: getMass(), 
+*      getValue(), getThumb(), getStats()
 *
 * TODO
 * ----
-* X - [MM-DD-YY]
+* Testing [12-12-13]
+* Conventions [12-12-13]
 *******************************************************************************/
 
 #ifndef BUBBY_H
@@ -27,20 +33,28 @@
 class Bubby : public Item
 {
 public:
+  /* Default constructor: constructs a default Bubby */
+  Bubby();
 
+  /* Constructs a Bubby object with a flavour at a certain tier */
   Bubby(Flavour* parent, const uint32_t &tier = 0);
 
 private:
 
+  /* Experience values for levels of Bubby */
   static std::vector<uint32_t> exp_table;
 
+  /* The level of the Bubby */
   uint32_t level;
 
+  /* The tier [size on signature] of the Bubby */
   uint32_t tier;
 
+  /* Total experience the Bubby has earned in Battle */
   uint32_t total_exp;
 
-  Flavour* type;
+  /* Ptr to the type of Bubby */
+  Flavour* const type;
 
   /* ------------ Constants --------------- */
   static const uint32_t kMIN_EXP;
@@ -51,7 +65,8 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 
-bool buildExpTable();
+/* Builds the */
+static bool buildExpTable();
 
 bool levelUp();
 

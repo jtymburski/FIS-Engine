@@ -355,6 +355,17 @@ int AttributeSet::getStat(const std::string &name)
 }
 
 /*
+ * Description: Returns the entire vector of values of the AttributeSet
+ *
+ * Inputs: none
+ * Output: std::vector<int> - vector of values
+ */
+std::vector<int> AttributeSet::getValues()
+{
+  return values;
+}
+
+/*
  * Description: Attempts to assign a stat at a given index to a value.
  *              Returns the truth of the assignment.
  *
@@ -612,4 +623,30 @@ inline AttributeSet operator-(AttributeSet lhs, const AttributeSet& rhs)
   lhs -= rhs;
 
   return lhs;
+}
+
+/*
+ * Description: Overlaoded equivalency operator for asserting two
+ *              Attributes have equivalent values and flags.
+ *
+ * Inputs: const AttributeSet& lhs - the left expression AS
+ *         const AttributeSet& rhs - the right expression AS
+ * Output: bool - truth if lhs and rhs are equivalent
+ */
+bool AttributeSet::operator==(const AttributeSet& rhs)
+{
+  return ((values == rhs.values) && (flags == rhs.flags));
+}
+
+/*
+ * Description: Overlaoded not equivalency operator for asserting two
+ *              Attributes have equivalent values and flags.
+ *
+ * Inputs: const AttributeSet& lhs - the left expression AS
+ *         const AttributeSet& rhs - the right expression AS
+ * Output: bool - truth if lhs and rhs are not equivalent
+ */
+bool AttributeSet::operator!=(const AttributeSet& rhs)
+{
+  return !(this->operator==(rhs));
 }

@@ -110,6 +110,9 @@ public:
   int getStat(const Attribute &stat);
   int getStat(const std::string &name);
 
+  /* Returns the vector of values */
+  std::vector<int> getValues();
+
   /* Methods for assigning a new value to a stat given either an index, an
    * enumerated value, or a string name (short or long) */
   bool setStat(const int &index, const int &value);
@@ -153,6 +156,12 @@ public:
 
   /* Overloaded -= operator for subtractive assignment */
   AttributeSet& operator-=(const AttributeSet& rhs);
+
+  /* Overloaded == operator for comparing AttributeSets */
+  bool operator==(const AttributeSet &rhs);
+
+  /* Overloade != operator for comparing AttributeSets */
+  bool operator!=(const AttributeSet &rhs);
 };
 
 /* Overloaded + operator for AttributeSet additions */
@@ -160,5 +169,6 @@ inline AttributeSet operator+(AttributeSet lhs, const AttributeSet &rhs);
 
 /* Overloaded - operator for AttributeSet subtractions */
 inline AttributeSet operator-(AttributeSet lhs, const AttributeSet &rhs);
+
 
 #endif //ATTRIBUTESET_H

@@ -70,26 +70,27 @@ enum class Material
 class Item
 {
 public:
-
+  /* Default Item constructor - constructs a basic Item object */
   Item();
 
+  /* Copy constructor - constructs copy of base Item with unique ID */
   Item(const Item &source);
 
+  /* Mvoe constructor - constructs copy of Item with r.value ref */
   Item(Item&& source);
 
-  Item(const std::string &name, const uint32_t &value,
-  	   Frame* thumbnail = nullptr, const double &mass = 0.0);
+  /* Base Item constructor - constructs an Item given a game ID and basics */
+  Item(const uint32_t &game_id, const std::string &name, const uint32_t &value,
+       Frame* thumbnail = nullptr, const double &mass = 0.0);
 
+  /* Annihilates an Item object */
   ~Item();
 
 private:
-
+  /* Static ID counter for the Item class */
   static int id;
 
 protected:
-
-  int my_id;
-
   /* Pointer to the Base Item, null if the Item has changed in any way */
   Item* base_item;
 
@@ -106,8 +107,14 @@ protected:
   /* Flag set for the type of the current item */
   ItemFlags flags;
 
+  /* Game ID (Base Item ID#) of the Item */
+  const int game_id;
+
   /* Mass of the Item */
   double mass;
+
+  /* The item-only ID of the current Item object */
+  int my_id;
 
   /* The name of the Item and an attached prefix (ex. Bottles) */
   std::string name;
@@ -138,106 +145,149 @@ protected:
   static const double   kMAX_MASS;       /* Maximum mass of an Item */
   static const double   kMIN_MASS;       /* Minimum mass */
   static const uint32_t kMAX_VALUE;      /* Maximum value of an Item */
+  static const int      kUNSET_ID;       /* Game_ID unset value */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
-  
+  /* Sets up the Item class with basic values */
   void classSetup();
 
+  /* Copies a const ref source Item object to this object */
   void copySelf(const Item& source);
 
+  /* Static function for swappin two item object's data (ex. move construct) */
   static void swap(Item& object, Item& source);
 
+  /* Unsets all the Item data for deletion */
   static void unsetAll(Item* object);
 
+  /* Assigns a unique ID to the Item */
   void setID(const uint32_t &value);
 
 /*=============================================================================
  * VIRTUAL FUNCTIONS
  *============================================================================*/
 public:
-
+  /* Prints out the Item information */
   virtual void print();
 
-  virtual AttributeSet getBuffSet();
+  /* Returns the buff_set */
+  virtual AttributeSet getStats();
 
+  /* Returns the mass of the Item */
   virtual double getMass();
 
+  /* Returns the value of the Item */
   virtual uint32_t getValue();
 
 /*=============================================================================
  * PROTECTED FUNCTIONS
  *============================================================================*/
 protected:
-
-  void printFlags();
-
-  void printInfo(const bool &basic = false);
-
+  /* Assigns the base item pointer */
   bool setBase(Item* item_base);
-
-  void setBuffSet(const AttributeSet &new_buff_set);
-
-  bool setBriefDescription(const std::string &new_brief_description);
-
-  bool setDescription(const std::string &new_description);
-
-  void setFlag(ItemFlags flag, const bool &set_value = true);
-
-  void setMaterial(Material flag, const bool &set_value = true);
-
-  void setName(const std::string &new_name);
-
-  bool setPrefix(const std::string &new_prefix);
-
-  void setOccasion(const ActionOccasion &new_occasion);
-
-  bool setMass(const double &new_mass);
-
-  bool setThumbnail(Frame* new_thumbnail);
-
-  bool setUseAnimation(Sprite* new_animation);
-
-  bool setUseMessage(const std::string &new_message);
-
-  bool setUseSkill(Skill* new_skill);
-
-  bool setUseSound(Sound* new_sound);
-
-  bool setValue(const uint32_t &new_value);
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
-
+  /* Evaluates and returns whether the cur. object is a base item */
   bool isBaseItem();
 
+  /* Prints the value of the flags of the Item */
+  void printFlags();
+
+  /* Prints out the basic info of the Item, in simple or complex formats */
+  void printInfo(const bool &basic = false);
+
+  /* Returns the brief description */
   std::string getBriefDescription();
 
+  /* Returns the description */
   std::string getDescription();
 
+  /* Evaluates and returns a given Item flag value */
   bool getFlag(ItemFlags test_flag);
 
+  /* Returns the game_id (base item ID) of the object or kUNSET_ID */
+  int getGameID();
+
+  /* Returns the unique ID of the Item */
+  int getID();
+
+  /* Evaluates and returns a given material composition flag */
   bool getMaterial(Material composition);
 
+  /* Returns the string name of the Item */
   std::string getName();
 
+  /* Returns the prefix of the Item */
   std::string getPrefix();
 
+  /* Returns the occasion [conditions of use] of the Item */
   ActionOccasion getOccasion();
 
+  /* Returns the ptr to the thumbnail */
   Frame* getThumb();
 
+  /* Returns the ptr to the using animation */
   Sprite* getUseAnimation();
 
+  /* Returns the using message */
   std::string getUseMessage();
 
+  /* Returns the using skill */
   Skill* getUseSkill();
 
+  /* Returns the sound effect */
   Sound* getUseSound();
+
+  /* Assigns a new buff set */
+  void setBuffSet(const AttributeSet &new_buff_set);
+
+  /* Attempts to assign a new brief description */
+  bool setBriefDescription(const std::string &new_brief_description);
+
+  /* Attempts to assign a new description */
+  bool setDescription(const std::string &new_description);
+
+  /* Assigns a given ItemFlags flag to a given value */
+  void setFlag(ItemFlags flag, const bool &set_value = true);
+
+  /* Assigns a given material composition flag a given value */
+  void setMaterial(Material flag, const bool &set_value = true);
+
+  /* Attempts to assign a new string name */
+  bool setName(const std::string &new_name);
+
+  /* Attempts to assign a new string prefix */
+  bool setPrefix(const std::string &new_prefix);
+
+  /* Assigns a new occasion [conditions of use] */
+  void setOccasion(const ActionOccasion &new_occasion);
+
+  /* Attempts to assign a new mass */
+  bool setMass(const double &new_mass);
+
+  /* Assigns a new icon image, returns true if the new image is not null */
+  bool setThumbnail(Frame* new_thumbnail);
+
+  /* Assigns a new animation, returns true if the new animation is not null */
+  bool setUseAnimation(Sprite* new_animation);
+
+  /* Attempts to assign a new using message */
+  bool setUseMessage(const std::string &new_message);
+
+  /* Assigns a new use skill, returns true if the new skill is not null */
+  bool setUseSkill(Skill* new_skill);
+
+  /* Assigns a new sound effect, returns true if the new sound is not null */
+  bool setUseSound(Sound* new_sound);
+
+  /* Attempts to set a new value for the Item */
+  bool setValue(const uint32_t &new_value);
 
 /*=============================================================================
  * OPERATOR FUNCTIONS

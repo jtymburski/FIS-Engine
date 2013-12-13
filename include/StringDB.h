@@ -45,6 +45,7 @@ static const std::string kDEFAULT_ITEM_USE_MSG = "has been used";
 static const size_t kMAX_BRIEF_DESC  = 70;
 static const size_t kMAX_DESC        = 500;
 static const size_t kMAX_PREFIX      = 15;
+static const size_t kMAX_NAME        = 40;
 static const size_t kMAX_USE_MSG     = 40;
 
 };

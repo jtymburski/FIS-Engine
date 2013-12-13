@@ -32,9 +32,9 @@ public:
   Flavour();
 
   /* Constructs a normal Flavour object given a name and stats */
-  Flavour(const std::string &flavour_name, const AttributeSet &min_stats,
-  	      const double &min_mass, const uint32_t &min_value, 
-          SkillSet* skills = nullptr);
+  Flavour(const int &game_id, const std::string &flavour_name, 
+          const AttributeSet &min_stats, const double &min_mass, 
+          const uint32_t &min_value, SkillSet* skills = nullptr);
 
   /* Annihilates a Flavour object */
   ~Flavour();
@@ -51,6 +51,9 @@ private:
 
   /* Description of the flavour */
   std::string description;
+
+  /* The corresponding Game ID (non-unique) value for a Bubby of this flv */
+  const int game_id;
 
   /* Standing list of all flavours in the game */
   static std::vector<Flavour*> flavour_list;
@@ -70,6 +73,7 @@ private:
   static const std::vector<float>    kTIER_MASSES;      /* Mass modifiers */
   static const std::vector<float>    kTIER_VALUES;      /* Value modifiers */
   static const uint32_t              kMAX_LVL;          /* Max lvl */
+  static const int                   kUNSET_ID;         /* Def. ID value */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -91,14 +95,11 @@ public:
   /* Returns the description of the Flavour */
   const std::string& getDescription();
 
-  /* Returns the minimum level at a given tier */
-  static uint32_t getLevels(const uint32_t &tier = 0);
+  /* Returns the Game ID of the Flavour */
+  const int& getGameID();
 
   /* Returns the current mass of the Flavour at a given tier */
   double getMass(const uint32_t &tier = 0);
-
-  /* Returns the maximum level of a Bubby */
-  static uint32_t getMaxLevel();
 
   /* Returns the string name of the Flavour */
   const std::string& getName();
@@ -112,12 +113,10 @@ public:
   /* Obtains the stats at a given tier */
   AttributeSet getStats(const uint32_t &tier = 0);
   
-    /* Returns the thumbnail of the Flavour at a given tier */
+  /* Returns the thumbnail of the Flavour at a given tier */
   Frame* getThumb(const uint32_t &index);
 
-  /* Returns the # of tiers of a Bubby */
-  static uint32_t getTiers();
-
+  /* Returns the value of a Flavour at a given tier */
   uint32_t getValue(const uint32_t &tier);
 
   /* Assigns a new description to the flavour */
@@ -135,6 +134,15 @@ public:
 public:
   /* Returns a vector of strings of the flavour names */
   static std::vector<Flavour*> getFlavours();
+
+  /* Returns the minimum level at a given tier */
+  static uint32_t getLevels(const uint32_t &tier = 0);
+
+  /* Returns the maximum level of a Bubby */
+  static uint32_t getMaxLevel();
+
+    /* Returns the # of tiers of a Bubby */
+  static uint32_t getTiers();
 
 };
 

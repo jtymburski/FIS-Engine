@@ -31,7 +31,8 @@ const std::vector<float> Flavour::kTIER_MASSES =
 const std::vector<float> Flavour::kTIER_VALUES =
 {1.0, 4.0, 4.0, 4.0};
 
-const uint32_t Flavour::kMAX_LVL = 30;
+const uint32_t Flavour::kMAX_LVL  = 30;
+const int      Flavour::kUNSET_ID = -1;
 
 std::vector<Flavour*> Flavour::flavour_list = {};
 
@@ -49,6 +50,7 @@ Flavour::Flavour()
   , base_mass(0.0)
   , base_value(0)
   , description("")
+  , game_id(kUNSET_ID)
   , name("")
   , skill_list(nullptr) 
 {
@@ -66,13 +68,14 @@ Flavour::Flavour()
  *         min_mass - the mass of a Tier 0 Bubby of this flavour
  *         skills - pointer to a set of skills the Flavour unlocks for a Person
  */
-Flavour::Flavour(const std::string &flavour_name, const AttributeSet &min_stats,
-	               const double &min_mass, const uint32_t &min_value,
-                 SkillSet* skills)
+Flavour::Flavour(const int &game_id, const std::string &flavour_name, 
+                 const AttributeSet &min_stats, const double &min_mass,
+                 const uint32_t &min_value, SkillSet* skills)
   : base_stats(min_stats)
   , base_mass(min_mass)
   , base_value(min_value)
   , description("")
+  , game_id(game_id)
   , name(flavour_name)
   , skill_list(skills)
 {
@@ -155,17 +158,15 @@ const std::string& Flavour::getDescription()
   return description;
 }
 
-uint32_t Flavour::getLevels(const uint32_t &tier)
+/*
+ * Description: Returns the unique game ID of the flavour
+ *
+ * Inputs: none
+ * Output: const int& - const ref to the game ID
+ */
+const int& Flavour::getGameID()
 {
-  if (tier < static_cast<uint32_t>(kTIER_LEVELS.size()))
-    return kTIER_LEVELS.at(tier);
-
-  return 0;
-}
-
-uint32_t Flavour::getMaxLevel()
-{
-  return kMAX_LVL;
+  return game_id;
 }
 
 /*
@@ -271,11 +272,12 @@ Frame* Flavour::getThumb(const uint32_t &index)
   return nullptr;
 }
 
-uint32_t Flavour::getTiers()
-{
-  return kTIER_LEVELS.size();
-}
-
+/*
+ * Description: Returns the value of a Bubby of the Flavour at a given tier
+ *
+ * Inputs: tier - the tier to find the value at
+ * Output: uint32_t - the value of the Bubby of this flavour at the given tier
+ */
 uint32_t Flavour::getValue(const uint32_t &tier)
 {
   uint32_t value = base_value;
@@ -364,4 +366,41 @@ std::vector<Flavour*> Flavour::getFlavours()
     temp_strings.push_back(*it);
 
   return temp_strings;
+}
+
+/*
+ * Description: Returns the minimum level at a given tier.
+ *
+ * Inputs: tier - the tier to find the level required to reach.
+ * Output: uint32_t - the min level required to reach the given tier
+ */
+uint32_t Flavour::getLevels(const uint32_t &tier)
+{
+  if (tier < static_cast<uint32_t>(kTIER_LEVELS.size()))
+    return kTIER_LEVELS.at(tier);
+
+  return 0;
+}
+
+/*
+ * Description: Returns the maximum level a Bubby can reach
+ *
+ * Inputs: none
+ * Output: uint32_t - the maximum level a Bubby can reach
+ */
+uint32_t Flavour::getMaxLevel()
+{
+  return kMAX_LVL;
+}
+
+/*
+ * Description: Returns the number of tiers a Bubby can go through (including
+ *              the base 0 tier)
+ *
+ * Inputs: none
+ * Output: uint32_t - the number of tiers for Bubbies
+ */
+uint32_t Flavour::getTiers()
+{
+  return kTIER_LEVELS.size();
 }

@@ -15,12 +15,13 @@
 #include "Game/Player/Item.h"
 
 /*=============================================================================
- * CONSTANTS
+ * CONSTANTS - See implementation for details
  *============================================================================*/
 
 const double   Item::kMAX_MASS       =      5000;
 const double   Item::kMIN_MASS       =     -1000;
 const uint32_t Item::kMAX_VALUE      = 100000000;
+const int      Item::kUNSET_ID       = -1;
 
 int Item::id = 0;
 
@@ -29,34 +30,38 @@ int Item::id = 0;
  *============================================================================*/
 
 /*
- * Description: Default constructor - constructs a default Item object
+ * Description: Default constructor - constructs a default Item object.
  *
- * Inputs:
+ * Inputs: none
  */
 Item::Item()
+  : game_id(kUNSET_ID)
+  , my_id(++id)
 {
   classSetup();
-  setID(++id);
 }
 
 /*
- * Description: Copy constructor - copies a source Item object
+ * Description: Copy constructor - copies a source Item object. Constructs
+ *              the new Item object as a copy of the base item with a UNIQUE
+ *              ID my_id, but equivalent game_id.
  *
- * Inputs:
+ * Inputs: source - const ref. of an Item object to be copied
  */
 Item::Item(const Item &source)
+  : game_id(source.game_id)
+  , my_id(++id) /* Assign the game ID of the base object */
 {
-  classSetup();
   copySelf(source);
-  setID(++id);
 }
 
 /*
- * Description: Move constructor
+ * Description: Move constructor - constructs an Item from an r.value ref.
  *
- * Inputs:
+ * Inputs: source - r.value ref to an Item
  */
 Item::Item(Item&& source)
+  : game_id(source.game_id)
 {
   unsetAll(this);
   swap(*this, source);
@@ -64,23 +69,32 @@ Item::Item(Item&& source)
 }
 
 /*
- * Description:
+ * Description: Base Item construction - constructs an Item with a game_id, 
+ *              name, value, icon and mass.
  *
- * Inputs:
+ * Inputs: game_id - the game ID (base ID of the item)
+ *         name - the name to be assigned to the Item
+ *         value - value (currency) for the Item
+ *         thumbnail - icon for the Item
+ *         mass - base mass for the Item
  */
-Item::Item(const std::string &name, const uint32_t &value, Frame* thumbnail,
-	       const double &mass)
+Item::Item(const uint32_t &game_id, const std::string &name, 
+	       const uint32_t &value, Frame* thumbnail, const double &mass)
+  : game_id(game_id)
+  , my_id(++id) /* Assign the game ID */
 {
   classSetup();
   setName(name);
   setValue(value);
   setThumbnail(thumbnail);
   setMass(mass);
-  setID(++id);
+  
+  /* Assign the Base Item ptr and flag */
+  setBase(this);
 }
 
 /*
- * Description: Annihilates an Item object
+ * Description: Annihilates an Item object.
  */
 Item::~Item()
 {
@@ -92,14 +106,15 @@ Item::~Item()
  *============================================================================*/
 
  /*
- * Description:
+ * Description: Sets the Item class to default values. Private function that
+ *              should NEVER be called outside of construction or assignment
+ *              operations.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: none
  */
 void Item::classSetup()
 {
-  my_id = 0;
   base_item = nullptr;
   buff_set = AttributeSet();
   brief_description = StringDB::kDEFAULT_ITEM_DESC;
@@ -119,14 +134,14 @@ void Item::classSetup()
 }
 
 /*
- * Description:
+ * Description: Copies a const source Item to the current object. Should NEVER
+ *              be called outside of construction or assignment operators.
  *
- * Inputs:
- * Output:
+ * Inputs: source - const ref to Item object to be copied.
+ * Output: none
  */
 void Item::copySelf(const Item &source)
 { 
-  my_id = source.my_id;
   base_item = source.base_item;
   buff_set = source.buff_set;
   brief_description = source.brief_description;
@@ -146,10 +161,12 @@ void Item::copySelf(const Item &source)
 }
 
 /*
- * Description:
+ * Description: Swaps the data of two Item objects using std::swap. If called
+ *              during a move, the ID should be updated after calling.
  *
- * Inputs:
- * Output:
+ * Inputs: object - lhs Item to be swapped
+ *         source - rhs Item to be swapped
+ * Output: none
  */
 void Item::swap(Item& object, Item& source)
 {
@@ -173,9 +190,10 @@ void Item::swap(Item& object, Item& source)
 }
 
  /*
- * Description:
+ * Description: Unsets all the values of a given Item object
+ *              to destrucable ready-values.
  *
- * Inputs:
+ * Inputs: object - ptr to an Item object to be unset
  * Output:
  */
 void Item::unsetAll(Item* object)
@@ -200,10 +218,12 @@ void Item::unsetAll(Item* object)
 }
 
  /*
- * Description:
+ * Description: Private method for assigning the my_id (not game_id) of the Item
+ *              (generally should be called with ++id for incrementing the
+ *               static id counter of the Item class)
  *
- * Inputs:
- * Output:
+ * Inputs: value - the value to be assigned for the ID
+ * Output: none
  */
 void Item::setID(const uint32_t &value)
 {
@@ -215,10 +235,11 @@ void Item::setID(const uint32_t &value)
  *============================================================================*/
 
 /*
- * Description:
+ * Description: Virtual method for printing out the Item. Calls sub-methods
+ *              for printing out the Item info and flags
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: none
  */
 void Item::print()
 {
@@ -229,21 +250,21 @@ void Item::print()
 }
 
  /*
- * Description:
+ * Description: Virtual method which returns the current stats of the Item.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: AttributeSet - the stats of the 
  */
-AttributeSet Item::getBuffSet()
+AttributeSet Item::getStats()
 {
   return buff_set;
 }
 
  /*
- * Description:
+ * Description: Virtual method which returns the mass of the Item.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: double - the mass of the Item
  */
 double Item::getMass()
 {
@@ -251,10 +272,10 @@ double Item::getMass()
 }
 
  /*
- * Description:
+ * Description: Virtual method which returns the value of the Item.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: uint32_t - the value of the Item
  */
 uint32_t Item::getValue()
 {
@@ -265,319 +286,23 @@ uint32_t Item::getValue()
  * PROTECTED FUNCTIONS
  *============================================================================*/
 
- /*
- * Description:
- *
- * Inputs:
- * Output:
- */
-void Item::printFlags()
-{
-  std::cout << "CONSUMED: " << getFlag(ItemFlags::CONSUMED) << std::endl;
-  std::cout << "OFFENSIVE: " << getFlag(ItemFlags::OFFENSIVE) << std::endl;
-  std::cout << "DEFENSIVE: " << getFlag(ItemFlags::DEFENSIVE) << std::endl;
-  std::cout << "EQUIPMENT: " << getFlag(ItemFlags::EQUIPMENT) << std::endl;
-  std::cout << "BUBBY: " << getFlag(ItemFlags::BUBBY) << std::endl;
-  std::cout << "KEY_ITEM: " << getFlag(ItemFlags::KEY_ITEM) << std::endl;
-  std::cout << "MATERIAL: " << getFlag(ItemFlags::MATERIAL) << std::endl;
-  std::cout << "GENE_COMP: " << getFlag(ItemFlags::GENE_COMP) << std::endl;
-  std::cout << "STAT_ALTERING: " << getFlag(ItemFlags::STAT_ALTERING) 
-            << std::endl;
-  std::cout << "SKILL_LEARNING: " << getFlag(ItemFlags::SKILL_LEARNING) 
-            << std::endl;
-  std::cout << "HEALING_ITEM: " << getFlag(ItemFlags::HEALING_ITEM) 
-            << std::endl;
-  std::cout << "RELIEVING_ITEM: " << getFlag(ItemFlags::RELIEVING_ITEM) 
-            << std::endl;
-  std::cout << "SET_BASE_ITEM: " << getFlag(ItemFlags::SET_BASE_ITEM) 
-            << std::endl;
-  std::cout << "METALLIC: " << getMaterial(Material::METALLIC) << std::endl;
-  std::cout << "INSULATED: " << getMaterial(Material::INSULATED) << std::endl;
-  std::cout << "ANTIMATTER: " << getMaterial(Material::ANTIMATTER) << std::endl;
-  std::cout << "DARKMATTER: " << getMaterial(Material::DARKMATTER) << std::endl;
-  std::cout << "ENERGY: " << getMaterial(Material::ENERGY) << std::endl;
-  std::cout << "DARK_ENERGY: " << getMaterial(Material::DARK_ENERGY) 
-            << std::endl;
-  std::cout << "ICE: " << getMaterial(Material::ICE) << std::endl;
-  std::cout << "PLASMA: " << getMaterial(Material::PLASMA) << std::endl;
-  std::cout << "CHARGED: " << getMaterial(Material::CHARGED) << std::endl;
-}
-
- /*
- * Description:
- *
- * Inputs:
- * Output:
- */
-void Item::printInfo(const bool &basic)
-{
-  if (basic)
-  {
-    std::cout << my_id << " N: " << name << " M: " << mass << " V: " << value 
-              << std::endl;
-  }
-  else
-  {
-    std::cout << "ID: " << my_id << std::endl;
-    std::cout << "Base Item? " << !(base_item == nullptr) << std::endl;
-    std::cout << "Buff_Set: " << std::endl; 
-    buff_set.print(basic);
-    std::cout << std::endl;
-    std::cout << "Brief Description: " << brief_description << std::endl;
-    std::cout << "Description: " << description << std::endl;
-    std::cout << "Mass: " << mass << std::endl;
-    std::cout << "Name: " << name << std::endl;
-    std::cout << "Prefix: " << prefix << std::endl;
-    std::cout << "[void]Occasion: " << std::endl;
-    std::cout << "Thumbnail? " << !(thumbnail == nullptr) << std::endl;
-    std::cout << "Use Skill? " << !(using_skill == nullptr) << std::endl;
-    std::cout << "Use Animation? " << !(using_animation == nullptr) << std::endl;
-    std::cout << "Use Message: " << using_message << std::endl;
-    std::cout << "Use Sound? " << !(using_sound == nullptr) << std::endl;
-    std::cout << "Value: " << value << std::endl;
-  }
-}
-
 /*
- * Description:
+ * Description: Attempts to assign a Base item to the Item. This function
+ *              can only be called ONCE per Item since once a base Item is
+ *              set, the set base flag is set (which cannot be unset)
  *
- * Inputs:
- * Output:
+ * Inputs: item_base - base item to be assigned to the item
+ * Output: bool - true if base_item was unset before and is now not null
  */
 bool Item::setBase(Item* item_base)
 {
   if (getFlag(ItemFlags::SET_BASE_ITEM))
     return false;
 
-  base_item = item_base;
-  setFlag(ItemFlags::SET_BASE_ITEM, true);
-
-  return true;
-}
-
- /*
- * Description:
- *
- * Inputs:
- * Output:
- */
-void Item::setBuffSet(const AttributeSet &new_buff_set)
-{
-  buff_set = new_buff_set;
-  setBase(nullptr);
-}
-
- /*
- * Description:
- *
- * Inputs:
- * Output:
- */
-bool Item::setBriefDescription(const std::string &new_brief_description)
-{
-  if (new_brief_description.size() <= StringDB::kMAX_BRIEF_DESC)
+  if (item_base != nullptr)
   {
-    setBase(nullptr);
-    brief_description = new_brief_description;
-    
-
-    return true;
-  }
-
-  return false;
-}
-
- /*
- * Description:
- *
- * Inputs:
- * Output:
- */
-bool Item::setDescription(const std::string &new_description)
-{
-  if (new_description.size() <= StringDB::kMAX_DESC)
-  {
-    setBase(nullptr);
-    description = new_description;
-    
-
-    return true;
-  }
-
-  return false;
-}
-
- /*
- * Description:
- *
- * Inputs:
- * Output:
- */
-void Item::setFlag(ItemFlags flag, const bool &set_value)
-{
-  if (getFlag(ItemFlags::SET_BASE_ITEM))
-    setBase(nullptr);
-
-  (set_value) ? (flags |= flag) : (flags &= ~flag);
-}
-
- /*
- * Description:
- *
- * Inputs:
- * Output:
- */
-void Item::setMaterial(Material flag, const bool &set_value)
-{
-  setBase(nullptr);
-  (set_value) ? (composition |= flag) : (composition &= ~flag);
-}
-
- /*
- * Description:
- *
- * Inputs:
- * Output:
- */
-void Item::setName(const std::string &new_name)
-{
-  setBase(nullptr);
-  name = new_name;
-}
-
- /*
- * Description:
- *
- * Inputs:
- * Output:
- */
-bool Item::setPrefix(const std::string &new_prefix)
-{
-  if (new_prefix.size() <= StringDB::kMAX_PREFIX)
-  {
-    setBase(nullptr);
-    prefix = new_prefix;
-
-    return true;
-  }
-
-  return false;
-}
-
- /*
- * Description:
- *
- * Inputs:
- * Output:
- */
-void Item::setOccasion(const ActionOccasion &new_occasion)
-{
-  setBase(nullptr);
-  occasion = new_occasion;
-}
-
- /*
- * Description:
- *
- * Inputs:
- * Output:
- */
-bool Item::setMass(const double &new_mass)
-{
-  if (new_mass >= kMIN_MASS && new_mass <= kMAX_MASS)
-  {
-    setBase(nullptr);
-    mass = new_mass;
-    
-    return true;
-  }
-  
-  return false;
-}
-
- /*
- * Description:
- *
- * Inputs:
- * Output:
- */
-bool Item::setThumbnail(Frame* new_thumbnail)
-{
-  setBase(nullptr);
-  thumbnail = new_thumbnail;
-
-  return (new_thumbnail != nullptr);
-}
-
- /*
- * Description:
- *
- * Inputs:
- * Output:
- */
-bool Item::setUseAnimation(Sprite* new_animation)
-{
-  setBase(nullptr);
-  using_animation = new_animation;
-
-  return (new_animation != nullptr);
-}
-
- /*
- * Description:
- *
- * Inputs:
- * Output:
- */
-bool Item::setUseMessage(const std::string &new_message)
-{
-  if (new_message.size() <= StringDB::kMAX_USE_MSG)
-  {
-    using_message = new_message;
-
-    return true;
-  }
-
-  return false;
-}
-
- /*
- * Description:
- *
- * Inputs:
- * Output:
- */
-bool Item::setUseSkill(Skill* new_skill)
-{
-  using_skill = new_skill;
-
-  return (new_skill != nullptr);
-}
-
- /*
- * Description:
- *
- * Inputs:
- * Output:
- */
-bool Item::setUseSound(Sound* new_sound)
-{
-  using_sound = new_sound;
-
-  return (new_sound != nullptr);
-}
-
- /*
- * Description:
- *
- * Inputs:
- * Output:
- */
-bool Item::setValue(const uint32_t &new_value)
-{
-  if (new_value <= kMAX_VALUE)
-  {
-    value = new_value;
+    base_item = item_base;
+    setFlag(ItemFlags::SET_BASE_ITEM, true);
 
     return true;
   }
@@ -589,33 +314,112 @@ bool Item::setValue(const uint32_t &new_value)
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
- /*
- * Description:
+/*
+ * Description: Evalates and returns whether the current Item is a base item.
+ *              The current Item is a base item if the following conditions are
+ *              met:
+ * 
+ *              I] A game_id [base item ID] is set to other than KUNSET_ID
+ *             II] The Flag for SET_BASE_ITEM is set to true
+ *            III] The base_item ptr is non-null
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: bool - true if the current object is a base item
  */
 bool Item::isBaseItem()
 {
-  return (base_item != nullptr);
+  if (getFlag(ItemFlags::SET_BASE_ITEM))
+    return (base_item != nullptr);
+  
+  return true;
+}
+
+/*
+ * Description: Prints out the state of the both flags (regular and material)
+ *              of the Item object.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Item::printFlags()
+{
+  std::cout << "CONSUMED: " << getFlag(ItemFlags::CONSUMED) << "\n";
+  std::cout << "OFFENSIVE: " << getFlag(ItemFlags::OFFENSIVE) << "\n";
+  std::cout << "DEFENSIVE: " << getFlag(ItemFlags::DEFENSIVE) << "\n";
+  std::cout << "EQUIPMENT: " << getFlag(ItemFlags::EQUIPMENT) << "\n";
+  std::cout << "BUBBY: " << getFlag(ItemFlags::BUBBY) << "\n";
+  std::cout << "KEY_ITEM: " << getFlag(ItemFlags::KEY_ITEM) << "\n";
+  std::cout << "MATERIAL: " << getFlag(ItemFlags::MATERIAL) << "\n";
+  std::cout << "GENE_COMP: " << getFlag(ItemFlags::GENE_COMP) << "\n";
+  std::cout << "STAT_ALTERING: " << getFlag(ItemFlags::STAT_ALTERING) << "\n";
+  std::cout << "SKILL_LEARNING: " << getFlag(ItemFlags::SKILL_LEARNING) << "\n";
+  std::cout << "HEALING_ITEM: " << getFlag(ItemFlags::HEALING_ITEM) << "\n";
+  std::cout << "RELIEVING_ITEM: " << getFlag(ItemFlags::RELIEVING_ITEM) << "\n";
+  std::cout << "SET_BASE_ITEM: " << getFlag(ItemFlags::SET_BASE_ITEM) << "\n";
+  std::cout << "METALLIC: " << getMaterial(Material::METALLIC) << "\n";
+  std::cout << "INSULATED: " << getMaterial(Material::INSULATED) << "\n";
+  std::cout << "ANTIMATTER: " << getMaterial(Material::ANTIMATTER) << "\n";
+  std::cout << "DARKMATTER: " << getMaterial(Material::DARKMATTER) << "\n";
+  std::cout << "ENERGY: " << getMaterial(Material::ENERGY) << "\n";
+  std::cout << "DARK_ENERGY: " << getMaterial(Material::DARK_ENERGY) << "\n";
+  std::cout << "ICE: " << getMaterial(Material::ICE) << "\n";
+  std::cout << "PLASMA: " << getMaterial(Material::PLASMA) << "\n";
+  std::cout << "CHARGED: " << getMaterial(Material::CHARGED) << "\n";
 }
 
  /*
- * Description:
+ * Description: Prints out the information of the Item object [std::cout]
  *
- * Inputs:
- * Output:
+ * Inputs: basic - boolean whether to display a simple format or not
+ * Output: none
+ */
+void Item::printInfo(const bool &basic)
+{
+  if (basic)
+  {
+    std::cout << "ID: " << my_id << "Game ID: " << game_id << " N: " << name 
+              << " M: " << mass << " V: " << value << "\n";
+  }
+  else
+  {
+    std::cout << "ID: " << my_id << "\n";
+    std::cout << "Base Item? " << !(base_item == nullptr) << "\n";
+    std::cout << "Brief Description: " << brief_description << "\n";
+    std::cout << "Description: " << description << "\n";
+    std::cout << "Game ID: " << game_id << "\n";
+    std::cout << "Mass: " << mass << "\n";
+    std::cout << "Name: " << name << "\n";
+    std::cout << "Prefix: " << prefix << "\n";
+    std::cout << "[void]Occasion: " << "\n";
+    std::cout << "Thumbnail? " << !(thumbnail == nullptr) << "\n";
+    std::cout << "Use Skill? " << !(using_skill == nullptr) << "\n";
+    std::cout << "Use Animation? " << !(using_animation == nullptr) << "\n";
+    std::cout << "Use Message: " << using_message << "\n";
+    std::cout << "Use Sound? " << !(using_sound == nullptr) << "\n";
+    std::cout << "Value: " << value << "\n";
+
+    std::cout << "Buff_Set: " << "\n"; 
+    buff_set.print(basic);
+    std::cout << "\n";
+  }
+}
+
+/*
+ * Description: Returns the string brief description of the Item
+ *
+ * Inputs: none
+ * Output: std::string - the brief description of the Item
  */
 std::string Item::getBriefDescription()
 {
   return brief_description;
 }
 
- /*
- * Description:
+/*
+ * Description: Returns the string description of the Item
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: std::string - description of the Item
  */
 std::string Item::getDescription()
 {
@@ -623,10 +427,36 @@ std::string Item::getDescription()
 }
 
 /*
- * Description:
+ * Description: Returns the game id (base item ID) of the current Item, if
+ *              the Item is still a base Item.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: int - the game_id of the Item or kUNSET_ID, if it's not a base item
+ */
+int Item::getGameID()
+{
+  if (isBaseItem())
+    return game_id;
+
+  return kUNSET_ID;
+}
+
+/*
+ * Description: Returns the actual unique ID (my_id) of the current Item.
+ * 
+ * Inputs: none
+ * Output: int - the actual unique ID of the current item
+ */
+int Item::getID()
+{
+  return my_id;
+}
+
+/*
+ * Description: Evaluates and returns the value of a given ItemFlags flag
+ *
+ * Inputs: test_flag - ItemFlags flag to check the value for
+ * Output: bool - value of the given ItemFlags flag
  */
 bool Item::getFlag(ItemFlags test_flag)
 {
@@ -634,10 +464,10 @@ bool Item::getFlag(ItemFlags test_flag)
 }
 
 /*
- * Description:
+ * Description: Evaluates and returns the value of a given Material flag.
  *
- * Inputs:
- * Output:
+ * Inputs: test_flag - Material composition flag to check the value for
+ * Output: bool - value of the given material composition flag
  */
 bool Item::getMaterial(Material test_flag)
 {
@@ -645,10 +475,10 @@ bool Item::getMaterial(Material test_flag)
 }
 
  /*
- * Description:
+ * Description: Returns the string name of the Item (ex. Sword of Space)
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: std::string - the string name of the Item
  */
 std::string Item::getName()
 {
@@ -656,10 +486,10 @@ std::string Item::getName()
 }
 
  /*
- * Description:
+ * Description: Returns the string prefix of the Item (ex. "bottles")
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: std::string - prefix of the Item
  */
 std::string Item::getPrefix()
 {
@@ -667,10 +497,10 @@ std::string Item::getPrefix()
 }
 
  /*
- * Description:
+ * Description: Returns the occasion (conditions of use) of the Item (B vs. M)
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: ActionOccasion - enumerated use conditions of the Item
  */
 ActionOccasion Item::getOccasion()
 {
@@ -678,10 +508,10 @@ ActionOccasion Item::getOccasion()
 }
 
  /*
- * Description:
+ * Description: Returns a ptr to the thumbnail of the Item.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: Frame* - ptr to the thumbnail of the Item
  */
 Frame* Item::getThumb()
 {
@@ -689,10 +519,10 @@ Frame* Item::getThumb()
 }
 
  /*
- * Description:
+ * Description: Returns a ptr to the using animation of the Item
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: Sprite* - ptr to the animation of the use effect of the Item
  */
 Sprite* Item::getUseAnimation()
 {
@@ -700,10 +530,10 @@ Sprite* Item::getUseAnimation()
 }
 
  /*
- * Description:
+ * Description: Returns the using message of the Item
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: std::string - the message the Item displays upon use
  */
 std::string Item::getUseMessage()
 {
@@ -711,14 +541,298 @@ std::string Item::getUseMessage()
 }
 
  /*
- * Description:
+ * Description: Returns a ptr to the sound effect of the Item.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: Sound* - ptr to the sound effect of the Item
  */
 Sound* Item::getUseSound()
 {
   return using_sound;
+}
+
+ /*
+ * Description: Assigns a new AttributeSet for the Item.
+ *
+ * Inputs: new_buff_set - new AttributeSet to assign to the Item
+ * Output: none
+ */
+void Item::setBuffSet(const AttributeSet &new_buff_set)
+{
+  if (!(buff_set == new_buff_set))
+    setBase(nullptr);
+
+  buff_set = new_buff_set;
+}
+
+ /*
+ * Description: Attempts to assign a new brief description to the Item and
+ *              returns the outcome of the assignment.
+ *
+ * Inputs: new_brief_description - new string to assign br. desc for
+ * Output: bool - outcome of the assignment
+ */
+bool Item::setBriefDescription(const std::string &new_brief_description)
+{
+  if (new_brief_description.size() <= StringDB::kMAX_BRIEF_DESC)
+  {
+  	if (new_brief_description != brief_description)
+      setBase(nullptr);
+
+    brief_description = new_brief_description;
+
+    return true;
+  }
+
+  return false;
+}
+
+ /*
+ * Description: Attempts to assign a new string description to the Item and
+ *              returns the outcome of the assignment
+ *  
+ * Inputs: new_description - descripion of the Item
+ * Output: bool - outcome of the description assignment
+ */
+bool Item::setDescription(const std::string &new_description)
+{
+  if (new_description.size() <= StringDB::kMAX_DESC)
+  {
+  	if (new_description != description)
+      setBase(nullptr);
+
+    description = new_description;
+    
+    return true;
+  }
+
+  return false;
+}
+
+ /*
+ * Description: Assigns a given ItemFlags flag a given boolean value.
+ *
+ * Inputs: flag - ItemFlags flag to be set
+ *         set_value - value to set the given flag to
+ * Output: none
+ */
+void Item::setFlag(ItemFlags flag, const bool &set_value)
+{
+  ItemFlags temp_flags = flags;
+
+  (set_value) ? (flags |= flag) : (flags &= ~flag);
+
+  if ((temp_flags & ItemFlags::SET_BASE_ITEM) == ItemFlags::SET_BASE_ITEM)
+    if (temp_flags != flags)
+      setBase(nullptr);
+}
+
+ /*
+ * Description: Assigns a given Material composition a given value.
+ *
+ * Inputs: flag - Material composition flag to be assigned a value
+ *         set_value - value to assign to the flag
+ * Output: none
+ */
+void Item::setMaterial(Material flag, const bool &set_value)
+{
+  Material temp_composition = composition;
+
+  (set_value) ? (composition |= flag) : (composition &= ~flag);
+
+  if (composition != temp_composition)
+    setBase(nullptr);
+}
+
+ /*
+ * Description: Attempts to assign a new string name to the Item
+ *
+ * Inputs: new_name - new string name to assign to the Item
+ * Output: bool - the outcome of the name assignment
+ */
+bool Item::setName(const std::string &new_name)
+{
+  if (new_name.size() <= StringDB::kMAX_NAME)
+  {
+    if (new_name != name)
+      setBase(nullptr);
+
+    name = new_name;
+
+    return true;
+  }
+
+  return false;
+}
+
+ /*
+ * Description: Attempts to assign a new prefix to the Item and returns the 
+ *              outcome of the assignment
+ *
+ * Inputs: new_prefix - string prefix for the Item
+ * Output: bool - the outcome of the assignment
+ */
+bool Item::setPrefix(const std::string &new_prefix)
+{
+  if (new_prefix.size() <= StringDB::kMAX_PREFIX)
+  {
+    if (new_prefix != prefix)
+      setBase(nullptr);
+
+    prefix = new_prefix;
+
+    return true;
+  }
+
+  return false;
+}
+
+ /*
+ * Description: Assigns a new occasion to the Item.
+ *
+ * Inputs: new_occasion - action occasion (conditions of use) of the Item
+ * Output: none
+ */
+void Item::setOccasion(const ActionOccasion &new_occasion)
+{
+  if (new_occasion != occasion)
+    setBase(nullptr);
+
+  occasion = new_occasion;
+}
+
+ /*
+ * Description: Attempts to assign a new mass for the Item and returns the
+ *              outcome of the assignment.
+ *
+ * Inputs: new_mass - the new mass to be assigned
+ * Output: bool - outcome of the assignment
+ */
+bool Item::setMass(const double &new_mass)
+{
+  if (new_mass >= kMIN_MASS && new_mass <= kMAX_MASS)
+  {
+    if (new_mass != mass)
+      setBase(nullptr);
+
+    mass = new_mass;
+    
+    return true;
+  }
+  
+  return false;
+}
+
+ /*
+ * Description: Attempts to assign a new thumbnail ptr (icon image) to the Item
+ *              and return true if the new thumbnail is not null.
+ *
+ * Inputs: new_thumbnail - ptr to a new thumb frame for the Item
+ * Output: bool - true if the new Frame ptr is not null
+ */
+bool Item::setThumbnail(Frame* new_thumbnail)
+{
+  if (new_thumbnail != thumbnail)
+     setBase(nullptr);
+
+  thumbnail = new_thumbnail;
+
+  return (new_thumbnail != nullptr);
+}
+
+ /*
+ * Description: Attempts to assign a new usage animation to the Item and returns
+ *              true if the new animation is not null.
+ *
+ * Inputs: new_animation - new animation to be assigned
+ * Output: bool - true if the new animation is not null
+ */
+bool Item::setUseAnimation(Sprite* new_animation)
+{
+  if (new_animation != using_animation)
+    setBase(nullptr);
+
+  using_animation = new_animation;
+
+  return (new_animation != nullptr);
+}
+
+ /*
+ * Description: Attempts to assign a new usage message to the Item and 
+ *              returns the outcome of the assignment.
+ *
+ * Inputs: new_message - new message to attempted to be assigned
+ * Output: bool - true if the new message was assigned
+ */
+bool Item::setUseMessage(const std::string &new_message)
+{
+  if (new_message.size() <= StringDB::kMAX_USE_MSG)
+  {
+    if (new_message != using_message)
+      setBase(nullptr);
+
+    using_message = new_message;
+
+    return true;
+  }
+
+  return false;
+}
+
+ /*
+ * Description: Attempts to assign a new skill use effect to the Item and 
+ *              returns true if the new skill effect is not null.
+ *
+ * Inputs: new_skill - ptr to the new usage skill for the Item
+ * Output: bool - true if the new usage skill is not null
+ */
+bool Item::setUseSkill(Skill* new_skill)
+{
+  if (new_skill != using_skill)
+    setBase(nullptr);
+
+  using_skill = new_skill;
+
+  return (new_skill != nullptr);
+}
+
+ /*
+ * Description: Attempts to assign a new sound effect to the Item and returns
+ *              true if the new assignment is not null.
+ *
+ * Inputs: new_sound - ptr to a new sound effect for the Item
+ * Output: bool = true if the new soun ptr is not null
+ */
+bool Item::setUseSound(Sound* new_sound)
+{
+  if (new_sound != using_sound)
+    setBase(nullptr);
+
+  using_sound = new_sound;
+
+  return (new_sound != nullptr);
+}
+
+ /*
+ * Description: Attempts to assign a new value to the value of the Item
+ *              and returns the outcome of the assignment.
+ *
+ * Inputs: new_value - new value to assign for the Item
+ * Output: bool - true if the value was assigned
+ */
+bool Item::setValue(const uint32_t &new_value)
+{
+  if (new_value <= kMAX_VALUE)
+  {
+  	if (new_value != value)
+  	  setBase(nullptr);
+
+    value = new_value;
+
+    return true;
+  }
+
+  return false;
 }
 
 /*=============================================================================
@@ -726,10 +840,12 @@ Sound* Item::getUseSound()
  *============================================================================*/
 
  /*
- * Description:
+ * Description: Overloaded assignment operator - copies source object into
+ *              this using common copySelf() function after self-assignment 
+ *              check and returns the copied object.
  *
- * Inputs:
- * Output:
+ * Inputs: source - the object to be copied.
+ * Output: Item& - return the copied object by ref.
  */
  Item& Item::operator=(const Item &source)
  {
@@ -744,10 +860,13 @@ Sound* Item::getUseSound()
  }
 
  /*
- * Description:
+ * Description: Move assignment operator, unsets the current object then
+ *              uses std::swap to swap the data of the object with the source
+ *              object without calling copy constructor, then unsets the
+ *              source object and returns the copied object by ref.
  *
- * Inputs:
- * Output:
+ * Inputs: source - r.value ref of an Item
+ * Output: Item& - copy of the r.value ref returned by ref
  */
 Item& Item::operator=(Item&& source)
 {
