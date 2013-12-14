@@ -130,7 +130,8 @@ Signature::Signature(const size_t x, const size_t y, const bool random)
     std::cerr << "Invalid sig of size: " << x << " by " << y << "\n";
 }
 
-Signature::Signature(const size_t x, const size_t y, std::vector<uint8Pair> closed_cells)
+Signature::Signature(const size_t x, const size_t y, 
+	                 std::vector<uint8Pair> closed_cells)
   : flags(static_cast<SigState>(0))
 {
   classSetup(true);
@@ -174,13 +175,24 @@ void Signature::clearAndBuild(const size_t x, const size_t y)
   }
 }
 
-/*=============================================================================
- * VIRTUAL FUNCTIONS
- *============================================================================*/
+uint8Pair Signature::getTopLeft(const uint8 a, const uint8 b)
+{
+  auto cell_bubby = getBubby(a, b);
 
-/*=============================================================================
- * PROTECTED FUNCTIONS
- *============================================================================*/
+  if (cell_bubby != nullptr)
+  {
+    if (cell_bubby->getTier() == 1)
+      return std::make_pair(a, b);
+
+    for (auto it_r = begin(cells); it_r != end(cells); ++it_r)
+      for (auto it_e = begin(*it_r); it_e != end(*it_r); ++it_e)
+        if ((*it_e).getBubby() != nullptr)
+          if ((*it_e).getBubby()->getID() == cell_bubby->getID())
+            return std::make_pair((*it_e).getX(), (*it_e).getY());
+  }
+
+  return std::make_pair(kMAX_X + 1, kMAX_Y + 1);
+}
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
@@ -263,12 +275,16 @@ bool Signature::isOpen(const uint8 a, const uint8 b, const uint8 tier)
   return is_open;
 }
 
-//TODO
 bool Signature::inRange(const uint8 a, const uint8 b)
 {
-  (void)a;
-  (void)b;
-  return true;
+  if (a < cells.size())
+  {
+    if (cells.size() > 0)
+      if (b < cells.at(0).size())
+        return true;
+  }
+
+  return false;
 }
 
 bool Signature::open(const uint8 a, const uint8 b)
@@ -283,10 +299,58 @@ bool Signature::open(const uint8 a, const uint8 b)
   return false;
 }
 
-//TODO
-void Signature::print()
-{
 
+void Signature::print(const bool print_cells)
+{
+  std::cout << "--- Signature ---\n";
+  std::cout << "Size: X: " << cells.size() << " Y: ";
+
+  if (cells.size() > 0)
+    std::cout << cells.at(0).size();
+  else
+    std::cout << 0;
+  std::cout << "\n";
+
+  std::cout << "BUBBABLE: " << getFlag(SigState::BUBBABLE) << "\n";
+  std::cout << "UNLOCKABLE: " << getFlag(SigState::UNLOCKABLE) << "\n";
+  std::cout << "SIZEABLE: " << getFlag(SigState::SIZEABLE) << "\n";
+  std::cout << "LINKABLE: " << getFlag(SigState::LINKABLE) << "\n";
+  std::cout << "RECIPE_MODE: " << getFlag(SigState::RECIPE_MODE) << "\n";
+ 
+  for (auto it_r = begin(cells); it_r != end(cells); ++it_r)
+  {
+    std::string line{"| "};
+
+    for (auto it_e = begin(*it_r); it_e != end(*it_r); ++it_e)
+    {
+      if (print_cells)
+      {
+        std::cout << "--- Cell ---\n";
+        std::cout << "Bubby Ptr?" << ((*it_e).getBubby() != nullptr) << "\n";
+        std::cout << "Link Tier: " << (*it_e).getLinkTier() << "\n";
+        std::cout << "State: " << Helpers::cellToStr((*it_e).getState()) << "\n";
+        std::cout << "X: " << (*it_e).getX() << " Y: " << (*it_e).getY() << "\n";
+        std::cout << "--- /Cell ---\n";
+      }
+      else
+      {
+        if ((*it_e).getState() == CellState::OPEN)
+          line += " O |";
+        else if ((*it_e).getState() == CellState::BUBBY)
+          line += " B |";
+        else if ((*it_e).getState() == CellState::CLOSED)
+          line += " C |";
+        else if ((*it_e).getState() == CellState::BLOCKED)
+          line += " X |";
+        else if ((*it_e).getState() == CellState::LINK)
+          line += " L |";
+        else if ((*it_e).getState() == CellState::E_LINK)
+          line += " E |";
+      }
+   }
+     if (!(print_cells))
+       std::cout << line << "\n";
+  }
 }
 
 Bubby* Signature::unattachBubby(const uint8 a, const uint8 b)
@@ -296,10 +360,12 @@ Bubby* Signature::unattachBubby(const uint8 a, const uint8 b)
   if (cell_bubby != nullptr)
   {
     auto tier = static_cast<uint8>(cell_bubby->getTier());
+    auto top_left = getTopLeft(a, b);
 
-    for (auto i = a; i < a + tier; i++)
-      for (auto j = b; j < b + tier; j++)
-        cells[i][j].setState(CellState::OPEN);
+    if (inRange(top_left.first, top_left.second))
+      for (auto i = top_left.first; i < top_left.first + tier; i++)
+        for (auto j = top_left.second; j < top_left.second + tier; j++)
+          cells[i][j].setState(CellState::OPEN);
   }
   
   return cell_bubby;
@@ -328,6 +394,66 @@ std::vector<Bubby*> Signature::getBubbies()
 bool Signature::getFlag(SigState test_flag)
 {
   return static_cast<bool>((flags & test_flag) == test_flag);
+}
+
+uint8 Signature::getHighestTier(Flavour* flavour_check)
+{
+  auto tier = 0;
+
+  for (auto it_r = begin(cells); it_r != end(cells); ++it_r)
+  {
+    for (auto it_e = begin(*it_r); it_e != end(*it_r); ++it_e)
+    {
+      if ((*it_e).getBubby() != nullptr)
+      {
+        auto cell_bubby = (*it_e).getBubby();
+
+        if (cell_bubby->getType() == flavour_check &&
+        	cell_bubby->getTier() > static_cast<uint32_t>(tier))
+          tier = cell_bubby->getTier();
+      }
+    }
+  }
+
+  return tier;
+}
+
+double Signature::getMass()
+{
+  auto temp_mass = 0.0;
+
+  for (auto it_r = begin(cells); it_r != end(cells); ++it_r)
+    for (auto it_e = begin(*it_r); it_e != end(*it_r); ++it_e)
+      if ((*it_e).getBubby() != nullptr)
+        temp_mass += (*it_e).getBubby()->getMass();
+
+  return temp_mass;
+}
+
+std::vector<Flavour*> Signature::getUniqueFlavours()
+{
+  std::vector<Flavour*> flavour_list;
+  std::vector<int> ids;
+  
+  for (auto it_r = begin(cells); it_r != end(cells); ++it_r)
+  {
+    for (auto it_e = begin(*it_r); it_e != end(*it_r); ++it_e)
+    {
+      if ((*it_e).getBubby() != nullptr)
+      {
+        auto type = (*it_e).getBubby()->getType();
+        auto result = std::find(begin(ids), end(ids), type->getGameID());
+
+        if (result != end(ids))
+        {
+          flavour_list.push_back(type);
+          ids.push_back(type->getGameID());	
+        }
+      }
+    }
+  }
+
+  return flavour_list;
 }
 
 void Signature::setConfig(SigState new_config)

@@ -108,7 +108,7 @@ public:
   uint32_t getTier();
 
   /* Return the Flavour [type] of the Bubby by ref */
-  Flavour& getType();
+  Flavour* getType();
 
   /* Returns the total exp */
   uint32_t getExp();

@@ -144,6 +144,8 @@ private:
 
   void clearAndBuild(const size_t x, const size_t y);
 
+  uint8Pair getTopLeft(const uint8 a, const uint8 b);
+
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
@@ -162,7 +164,7 @@ public:
 
   bool open(const uint8 a, const uint8 b);
 
-  void print();
+  void print(const bool print_cells = false);
 
   Bubby* unattachBubby(const uint8 a, const uint8 b);
 

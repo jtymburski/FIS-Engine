@@ -73,6 +73,9 @@ public:
   /* Converts an enumerated element to a String */
   static std::string elementToString(const Element &element);
 
+  /* Convert enumerated CellState to String */
+  static std::string cellToStr(const CellState &cell_state);
+
 /*=============================================================================
  * PLAYER / BATTLE HELPER FUNCTIONS
  *============================================================================*/

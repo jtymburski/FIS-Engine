@@ -146,6 +146,26 @@ std::string Helpers::elementToString(const Element &element)
     return "DIGITAL";
   if (element == Element::NIHIL)
     return "VOID";
+  
+  return "";
+}
+
+//TODO - Boost map?
+std::string Helpers::cellToStr(const CellState &cell_state)
+{
+  if (cell_state == CellState::OPEN)
+    return "OPEN";
+  if (cell_state == CellState::BUBBY)
+    return "BUBBY";
+  if (cell_state == CellState::CLOSED)
+    return "CLOSED";
+  if (cell_state == CellState::BLOCKED)
+    return "BLOCKED";
+  if (cell_state == CellState::LINK)
+    return "LINK";
+  if (cell_state == CellState::E_LINK)
+    return "E_LINK";
+
   return "";
 }
 
