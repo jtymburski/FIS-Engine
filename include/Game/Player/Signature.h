@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Class Name: Signature [Declaration]
+* Class Name: Signature & Cell [Declaration]
 * Date Created: December 13th, 2013
 * Inheritance: None
 * Description: A Signature is an abstraction of a 2-D X by Y grid where on 
@@ -10,6 +10,10 @@
 *
 *              A Signature also allows a Bubby to gain experience as only a 
 *              Bubby that is attached to a Signature can gain experience.
+*
+*              A Cell is an element in the 2D Cell Matrix of a Signature.
+*              A Cell ha a coordinate [x, y], a ptr to a Bubby object that
+*              may be stored on it, and an enumerated state (open, closed, etc.)
 *
 * Notes
 * -----
@@ -33,30 +37,12 @@
 #include "EnumFlags.h"
 #include "Helpers.h"
 
+/* Shorthand types */
 using std::begin;
 using std::end;
-
 using uint32 = uint32_t;
-using uint8  =  uint8_t;
-
+using uint8 =  uint8_t;
 using uint8Pair = std::pair<const uint8, const uint8>;
-
-/* Signature Link object, level of ability and whether it is elemental */
-class Cell
-{
-public:
-  /* Cell constructor */
-  Cell(const uint8 a, const uint8 b);
-
-  /* Clear the cell */
-  void clear();
-
-  /* Cell Data */
-  Bubby* bubby_ptr;
-  CellState state;
-  const uint8 x;
-  const uint8 y;
-};
 
 /* Enumerated Signature State flags - Signature configuration */
 ENUM_FLAGS(SigState)
@@ -69,8 +55,60 @@ enum class SigState
   RECIPE_MODE = 1 << 4  /* Signature for Gene Machine mode */
 };
 
-using CellRow    =    std::vector<Cell>;
+/*******************************************************************************
+* Class Name: Cell [Declaration]
+* Inheritance: None
+*******************************************************************************/
+struct Cell
+{
+public:
+  /* Cell constructor */
+  Cell(const uint8 a, const uint8 b);
+
+private:
+  /* Cell Data */
+  Bubby* bubby_ptr;
+  CellState state;
+  uint8 link_tier;
+  const uint8 x;
+  const uint8 y;
+
+/*=============================================================================
+ * CELL PUBLIC FUNCTIONS
+ *============================================================================*/
+public:
+  /* Clear the cell */
+  void clear();
+
+  /* Get the ptr to the Bubby of the Cell */
+  Bubby* getBubby();
+
+  /* Returns the current link tier level at the Cell */
+  uint8 getLinkTier();
+
+  /* Returns the current state of the Cell */
+  CellState getState();
+
+  /* Returns the x-index of the Cell in the Sig Matrix */
+  uint8 getX();
+
+  /* Returns the y-index of the Cell in the Sig Matrix */
+  uint8 getY();
+
+  /* Assigns a new state to the Cell */
+  void setState(const CellState new_state, Bubby* const new_bubby = nullptr,
+  	            const uint8 new_link_tier = 0);
+
+};
+
+/* Alias for 1-D and 2-D Cell vectors */
+using CellRow = std::vector<Cell>;
 using CellMatrix = std::vector<CellRow>;
+
+/*******************************************************************************
+* Class Name: Signature [Implementation]
+* Inheritance: None
+*******************************************************************************/
 
 class Signature
 {
@@ -159,10 +197,6 @@ public:
   /* Methods for returning possible tiers of Links and E-Links */
   static uint8 getMaxLinkTier();
   static uint8 getMaxELinkTier();
-
-/*============================================================================
- * OPERATOR FUNCTIONS
- *===========================================================================*/
 };
 
 #endif //SIGNATURE_H

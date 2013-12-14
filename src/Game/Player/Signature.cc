@@ -1,16 +1,21 @@
 /*******************************************************************************
-* Class Name: Cell [Implementation]
-* Description:
-*
-* Notes
-* -----
-*
-* [1]:
+* File Name: Signature & Cell [Implementation]
+* Date Created: December 13th, 2013
 *
 * See .h file for TODOs
 *******************************************************************************/
 
 #include "Game/Player/Signature.h"
+
+/*******************************************************************************
+* Class Name: Cell [Implementation]
+* Inheritance: None
+* Description: A Cell is an element in the 2D Cell Matrix of a Signature.
+*              A Cell ha a coordinate [x, y], a ptr to a Bubby object that
+*              may be stored on it, and an enumerated state (open, closed, etc.)
+*
+* See .h file for TODOs
+*******************************************************************************/
 
 /*=============================================================================
  * CELL CONSTRUCTORS / DESTRUCTORS
@@ -19,6 +24,7 @@
 Cell::Cell(const uint8 a, const uint8 b)
   : bubby_ptr(nullptr)
   , state(CellState::OPEN)
+  , link_tier(0)
   , x(a)
   , y(b)
 {}
@@ -33,9 +39,50 @@ void Cell::clear()
   state     = CellState::OPEN;
 }
 
+Bubby* Cell::getBubby()
+{
+  return bubby_ptr;
+}
+
+uint8 Cell::getLinkTier()
+{
+  return link_tier;
+}
+
+CellState Cell::getState()
+{
+  return state;
+}
+
+uint8 Cell::getX()
+{
+  return x;
+}
+
+uint8 Cell::getY()
+{
+  return y;
+}
+
+void Cell::setState(const CellState new_state, Bubby* const new_bubby,
+	                const uint8 new_link_tier)
+{
+  state      = new_state;
+  bubby_ptr  = new_bubby;
+  link_tier  = new_link_tier;
+}
+
 /*******************************************************************************
 * Class Name: Signature [Implementation]
-* Description:
+* Inheritance: None
+* Description: A Signature is an abstraction of a 2-D X by Y grid where on 
+*              Bubby objects and Signature Link objects can be placed. This
+*              allows equipment customization for Persons as players may choose
+*              to use Bubbies which amplify their Person's (battle actor) stats
+*              in a desired way.
+*
+*              A Signature also allows a Bubby to gain experience as only a 
+*              Bubby that is attached to a Signature can gain experience.
 *
 * Notes
 * -----
@@ -53,6 +100,8 @@ const size_t Signature::kMIN_X  {1};
 const size_t Signature::kMIN_Y  {1};
 const size_t Signature::kMAX_X {10};
 const size_t Signature::kMAX_Y {10};
+const uint8 Signature::kMAX_LINK_TIER{15};
+const uint8 Signature::kMAX_E_LINK_TIER{15};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -158,14 +207,8 @@ bool Signature::attach(const uint8 a, const uint8 b, Bubby* new_bubby)
 
     /* Determine and assign States to all required cells */
     for (auto i = a; i < a + tier; i++)
-    {
       for (auto j = b; j < b + tier; j++)
-      {
-        cells[i][j].state = CellState::BUBBY;
-        cells[i][j].bubby_ptr = new_bubby;
-      }
-    }
-    
+        cells[i][j].setState(CellState::BUBBY, new_bubby);
   }
 
   return can_attach;
@@ -175,7 +218,7 @@ bool Signature::close(const uint8 a, const uint8 b)
 {
   if (isOpen(a, b))
   {
-    cells[a][b].state = CellState::CLOSED;
+    cells[a][b].setState(CellState::CLOSED);
 
     return true;
   }
@@ -187,8 +230,8 @@ bool Signature::hasID(const int id_check)
 {
   for (auto it_r = begin(cells); it_r != end(cells); ++it_r)
     for (auto it_e = begin(*it_r); it_e != end(*it_r); ++it_e)
-      if ((*it_e).bubby_ptr != nullptr)
-        if ((*it_e).bubby_ptr->getID() == id_check)
+      if ((*it_e).getBubby() != nullptr)
+        if ((*it_e).getBubby()->getID() == id_check)
           return true;
 
   return false;
@@ -200,7 +243,7 @@ bool Signature::isEmpty()
 
   for (auto it_r = begin(cells); it_r != end(cells); ++it_r)
     for (auto it_e = begin(*it_r); it_e != end(*it_r); ++it_e)
-      empty &= (*it_e).state == CellState::OPEN;
+      empty &= (*it_e).getState() == CellState::OPEN;
 
   return empty;
 }
@@ -215,7 +258,7 @@ bool Signature::isOpen(const uint8 a, const uint8 b, const uint8 tier)
   for (auto i = a; i < a + tier; i++)
     for (auto j = b; j < b + tier; j++)
       if (inRange(i, j))
-        is_open &= (cells[i][j].state == CellState::OPEN);
+        is_open &= (cells.at(i).at(j).getState() == CellState::OPEN);
 
   return is_open;
 }
@@ -230,9 +273,9 @@ bool Signature::inRange(const uint8 a, const uint8 b)
 
 bool Signature::open(const uint8 a, const uint8 b)
 {
-  if (inRange(a, b) && cells.at(a).at(b).state == CellState::CLOSED)
+  if (inRange(a, b) && cells.at(a).at(b).getState() == CellState::CLOSED)
   {
-    cells[a][b].state = CellState::OPEN;
+    cells[a][b].setState(CellState::OPEN);
 
     return true;
   }
@@ -255,13 +298,8 @@ Bubby* Signature::unattachBubby(const uint8 a, const uint8 b)
     auto tier = static_cast<uint8>(cell_bubby->getTier());
 
     for (auto i = a; i < a + tier; i++)
-    {
       for (auto j = b; j < b + tier; j++)
-      {
-        cells[i][j].state = CellState::OPEN;
-        cells[i][j].bubby_ptr = nullptr;
-      }
-    }
+        cells[i][j].setState(CellState::OPEN);
   }
   
   return cell_bubby;
@@ -270,7 +308,7 @@ Bubby* Signature::unattachBubby(const uint8 a, const uint8 b)
 Bubby* Signature::getBubby(const uint8 a, const uint8 b)
 {
   if (inRange(a, b))
-    return cells[a][b].bubby_ptr;
+    return cells.at(a).at(b).getBubby();
 
   return nullptr;
 }
@@ -281,8 +319,8 @@ std::vector<Bubby*> Signature::getBubbies()
 
   for (auto it_r = begin(cells); it_r != end(cells); ++it_r)
     for (auto it_e = begin(*it_r); it_e != end(*it_r); ++it_e)
-      if ((*it_e).state == CellState::BUBBY)
-        bubby_vec.push_back((*it_e).bubby_ptr);
+      if ((*it_e).getState() == CellState::BUBBY)
+        bubby_vec.push_back((*it_e).getBubby());
 
   return bubby_vec;
 }
@@ -317,6 +355,32 @@ bool Signature::setSize(const size_t new_x, const size_t new_y)
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
 
-/*=============================================================================
- * OPERATOR FUNCTIONS
- *============================================================================*/
+size_t Signature::getMaxX()
+{
+  return kMAX_X;
+}
+
+size_t Signature::getMaxY()
+{
+  return kMAX_Y;
+}
+
+size_t Signature::getMinX()
+{
+  return kMIN_X;
+}
+
+size_t Signature::getMinY()
+{
+  return kMIN_Y;
+}
+
+uint8 Signature::getMaxLinkTier()
+{
+  return kMAX_LINK_TIER;
+}
+
+uint8 Signature::getMaxELinkTier()
+{
+  return kMAX_E_LINK_TIER;
+}
