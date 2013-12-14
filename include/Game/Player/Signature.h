@@ -41,7 +41,7 @@
 using std::begin;
 using std::end;
 using uint32 = uint32_t;
-using uint8 =  uint8_t;
+using uint8 = uint8_t;
 using uint8Pair = std::pair<const uint8, const uint8>;
 
 /* Enumerated Signature State flags - Signature configuration */
@@ -179,6 +179,8 @@ public:
   double getMass();
 
   std::vector<Flavour*> getUniqueFlavours();
+
+  uint32 getValue();
 
   void setConfig(SigState new_config);
 

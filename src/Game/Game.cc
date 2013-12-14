@@ -69,7 +69,7 @@ Game::~Game()
 /* Set up the battle - old battle needs to be deleted prior to calling */
 void Game::setupBattle()
 {
-  bool enable_test = true;
+  bool enable_test = false;
 
   if (enable_test)
   {
@@ -80,18 +80,19 @@ void Game::setupBattle()
 
   std::vector<int> values(length, 0);
 
-  for (auto i = 0; i < length * 1000; i++)
+  for (auto i = 0; i < length * 100; i++)
   {
     auto value = Helpers::randU32();
     std::cout << value << std::endl;
     //values[value]++;
   }
-  for (auto i = 0; i < length * 1000; i++)
+  for (auto i = 0; i < length * 100; i++)
   {
     auto value = Helpers::randU64();
     std::cout << value << std::endl;
     //values[value]++;
   }
+  std::cout << "Done!\n";
 
 
   //auto index = 0;

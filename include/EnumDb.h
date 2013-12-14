@@ -239,7 +239,7 @@ enum class Element : std::uint8_t
  * Description: Equipment slots which represent compartments on a person which
  *              will hold the equipments on the person because of reasons.
  */
-enum class EquipmentSlots : std::uint8_t
+enum class EquipSlots : std::uint8_t
 {
   HEAD,
   LARM,

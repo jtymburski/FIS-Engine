@@ -456,6 +456,18 @@ std::vector<Flavour*> Signature::getUniqueFlavours()
   return flavour_list;
 }
 
+uint32 Signature::getValue()
+{
+  uint32 temp_value = 0;
+
+  for (auto it_r = begin(cells); it_r != end(cells); ++it_r)
+    for (auto it_e = begin(*it_r); it_e != end(*it_r); ++it_e)
+      if ((*it_e).getBubby() != nullptr)
+        temp_value += (*it_e).getBubby()->getValue();
+    
+  return temp_value;
+}
+
 void Signature::setConfig(SigState new_config)
 {
   flags = new_config;
