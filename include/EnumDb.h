@@ -169,6 +169,27 @@ enum class Attribute : std::uint32_t
 };
 
 /*
+ * Description: CellState enumerations for the possible states of a Cell
+ *              (part of Equipment signature)
+ *
+ * OPEN - the cell can have objects placed onto it and has no Bubby
+ * BUBBY - the cell is occupied by a Bubby object
+ * CLOSED - the cell is currently locked (but may be unlocked)
+ * BLOCKED - for all purposes, the cell does not really exist
+ * LINK - the cell is occupied by a link object
+ * E_LINK - the cell is occupied by an elemental link object
+ */
+enum class CellState : std::uint32_t
+{
+  OPEN,
+  BUBBY,
+  CLOSED,
+  BLOCKED,
+  LINK,
+  E_LINK
+};
+
+/*
  * Description: Dialog category for the talking in map
  */
 enum class DialogCategory

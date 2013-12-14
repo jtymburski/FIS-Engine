@@ -56,9 +56,6 @@ int main(int argc, char** argv)
   (void)argc;
   (void)argv;
   
-  /* The initial game seeding - for random number generation */
-  Helpers::seed();
-  
   /* Initialize SDL libraries */
   bool success = initSDL();
   

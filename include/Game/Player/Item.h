@@ -37,19 +37,19 @@
 ENUM_FLAGS(ItemFlags)
 enum class ItemFlags
 {
-  CONSUMED       = 1 << 2,
-  OFFENSIVE      = 1 << 3,
-  DEFENSIVE      = 1 << 4,
-  EQUIPMENT      = 1 << 5,
-  BUBBY          = 1 << 6,
-  KEY_ITEM       = 1 << 7,
-  MATERIAL       = 1 << 8,
-  GENE_COMP      = 1 << 9,
-  STAT_ALTERING  = 1 << 10,
-  SKILL_LEARNING = 1 << 11,
-  HEALING_ITEM   = 1 << 12,
-  RELIEVING_ITEM = 1 << 13,
-  SET_BASE_ITEM  = 1 << 14
+  CONSUMED       = 1 << 0,
+  OFFENSIVE      = 1 << 1,
+  DEFENSIVE      = 1 << 2,
+  EQUIPMENT      = 1 << 3,
+  BUBBY          = 1 << 4,
+  KEY_ITEM       = 1 << 5,
+  MATERIAL       = 1 << 6,
+  GENE_COMP      = 1 << 7,
+  STAT_ALTERING  = 1 << 8,
+  SKILL_LEARNING = 1 << 9,
+  HEALING_ITEM   = 1 << 10,
+  RELIEVING_ITEM = 1 << 11,
+  SET_BASE_ITEM  = 1 << 12
 };
 
 /* Material flags describing the composition of an Item */

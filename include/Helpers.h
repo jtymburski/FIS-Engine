@@ -14,16 +14,15 @@
  *
  * TODO
  * ----
- *  - Random # generator - use Mersene Twister [11-18-13]
  ******************************************************************************/
 #ifndef HELPERS_H
 #define HELPERS_H
 
 #include <algorithm> /* std::min(), std::max() */
+#include <chrono>
+#include <random>
 #include <sstream>
-#include <stdlib.h>  /* srand, rand */
 #include <string>
-#include <time.h>    /* time */
 #include <vector>
 
 #include "EnumDb.h"
@@ -39,6 +38,12 @@ public:
 /*=============================================================================
  * RANDOM GENERATOR FUNCTIONS
  *============================================================================*/
+private:
+  /* Mersenne Twister Engines */
+  static const unsigned int seed_original;
+  static std::mt19937 rand_eng;
+  static std::mt19937_64 rand_64_eng;
+
 public:
   /* Decides whether a percent_chance occurs or not */
   static bool chanceHappens(const uint32_t &pc_chance, const uint32_t &mag);
@@ -49,14 +54,17 @@ public:
   /* Generates a random number between 0 and max - 1, equal distribution */
   static int randInt(const int &max);
 
-  /* Generates a Gaussian uniform integer between min and max */
-  static int randUniform(const int &a, const int &b);
+  /* Generates a uniform integer between min and max */
+  static int randU(const int &a, const int &b);
+
+  /* Generates and returns an unsigned p-random 32-bit unsigned int */
+  static uint32_t randU32();
+
+  /* Generates and returns an unsigned p-random 64-bit unsigned int */
+  static uint64_t randU64();
 
   /* Rolls an X-Sided die S times */
   static int rollXS(const int &x_sides, const int &s_times);
-
-  /* Seeds the random number generator */
-  static void seed();
 
 /*=============================================================================
  * GRAMMAR FUNCTIONS
@@ -85,7 +93,6 @@ public:
                                              const uint32_t &iter);
   /* Splits the string using the given delimiter */
   static std::vector<std::string> split(const std::string &s, char delim);
-
 
 };
 

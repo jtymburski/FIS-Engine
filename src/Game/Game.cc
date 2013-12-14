@@ -74,6 +74,31 @@ void Game::setupBattle()
   if (enable_test)
   {
 
+  // Helpers Testing
+  //auto start  =   1;
+  auto length =  10;
+
+  std::vector<int> values(length, 0);
+
+  for (auto i = 0; i < length * 1000; i++)
+  {
+    auto value = Helpers::randU32();
+    std::cout << value << std::endl;
+    //values[value]++;
+  }
+  for (auto i = 0; i < length * 1000; i++)
+  {
+    auto value = Helpers::randU64();
+    std::cout << value << std::endl;
+    //values[value]++;
+  }
+
+
+  //auto index = 0;
+  //for (auto value : values)
+  //  std::cout << index++ << " " << value << "\n";
+
+  /*
   // Action Testing
   std::vector<Action*> actions;
   std::vector<float> chances = {0.50, 0.40, 0.12, 0.46};
@@ -82,7 +107,7 @@ void Game::setupBattle()
   actions.push_back(new Action("4,RELIEVE,CURSE,,,,,"));
   actions.push_back(new Action("5,REVIVE,,,,,PC.25,AMOUNT.50"));
   Action* special = new Action("6,ALTER,VITA,,,,PC.25,AMOUNT.50");
-
+  
   // Skill Testing
   std::vector<Skill*> skills;
 
@@ -125,14 +150,15 @@ void Game::setupBattle()
     bubby_pointas.push_back(new Bubby(moldy));
   }
 
-  bubby_pointas.at(0)->print(true, true);
+  //bubby_pointas.at(0)->print(true, true);
 
   // Signature Testing
 
 
   // Equipment Testing
-
+  */
   } // end enable test
+  
   else
   {
     std::cout << "hey kevin if u see this u r kewl <3\n";

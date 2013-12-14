@@ -12,6 +12,7 @@
 #define GAME_H
 
 #include <SDL2/SDL.h>
+#include <chrono>
 
 //#include "Game/Battle/Battle.h"
 #include "Game/EventHandler.h"

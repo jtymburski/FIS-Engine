@@ -20,6 +20,12 @@
  * RANDOM GENERATOR FUNCTIONS
  *============================================================================*/
 
+const unsigned int Helpers::seed_original = 
+                    std::chrono::system_clock::now().time_since_epoch().count();
+                   
+std::mt19937 Helpers::rand_eng(seed_original);
+std::mt19937_64 Helpers::rand_64_eng(seed_original);
+
 /*
  * Description: Determines if a certain event will occur, given a chance. The
  *              accuracy (or magnitude of accuracy) can be changed using the
@@ -43,7 +49,7 @@ bool Helpers::chanceHappens(const uint32_t &pc_chance, const uint32_t &mag)
   if (pc_chance <= 0)
     return false;
 
-  auto random = randUniform(1, static_cast<int>(mag));
+  auto random = randU(1, static_cast<int>(mag));
 
   if (static_cast<uint32_t>(random) <= pc_chance) 
     return true;
@@ -58,35 +64,47 @@ bool Helpers::chanceHappens(const uint32_t &pc_chance, const uint32_t &mag)
  */
 bool Helpers::flipCoin()
 {
-  return rand() % 2;
+  return randU(0, 1);
 }
 
 /*
- * Description: Generates a number between one and a given value - 1
- *              and returns the result.
+ * Description: Generates a uniform random integer in the range [0, max]
+ *              and returns the result
  *
  * Inputs: const int &max - ref to the maximum value
- * Output: int - generated number between 0 and max -1
+ * Output: int - generated number in the range [0, max]
  */
 int Helpers::randInt(const int &max)
 {
-  return rand() % max;
+  return randU(0, max);
 }
 
 /*
- * Description: Generates a Gaussian uniform integer between two given bounds
- *              (can be any order) and returns the result.
+ * Description: Generates a uniform integer between two given bounds
+ *              (can be any order) of the form [a, b]
  *
  * Inputs: const int &a - const ref to one of the bounds
  8         const int &b - const ref to one of the bounds
  * Output: int - the generated number between the two bounds
  */
-int Helpers::randUniform(const int &a, const int &b)
+int Helpers::randU(const int &a, const int &b)
 {
   auto min = std::min(a, b);
   auto max = std::max(a, b);
 
-  return (rand() % (max - min + 1)) + min;
+  std::uniform_int_distribution<int> distribution(min, max);
+  
+  return distribution(rand_eng);
+}
+
+uint32_t Helpers::randU32()
+{
+  return rand_eng();
+}
+
+uint64_t Helpers::randU64()
+{
+  return rand_64_eng();
 }
 
 /*
@@ -102,20 +120,9 @@ int Helpers::rollXS(const int &x_sides, const int &s_times)
   auto total = 0;
 
   for (auto i = 0; i < s_times; i++)
-    total += randInt(x_sides + 1);
+    total += randU(0, x_sides + 1);
 
   return total;
-}
-
-/*
- * Description: Seeds the random number generator.
- *
- * Inputs: none
- * Output: none
- */
-void Helpers::seed()
-{
-  std::srand(time(0));
 }
 
 /*=============================================================================
@@ -220,8 +227,6 @@ std::vector<uint32_t> Helpers::buildExpTable(const uint32_t &min, const uint32_t
 
   return table;
 }
-
-
 
 /*
  * Description: A split function that works with a string line and a character
