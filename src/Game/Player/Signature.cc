@@ -468,6 +468,17 @@ uint32 Signature::getValue()
   return temp_value;
 }
 
+uint8 Signature::getX()
+{
+  return cells.size();
+}
+
+uint8 Signature::getY()
+{
+  if (getX() > 0)
+    return cells.at(0).size();
+}
+
 void Signature::setConfig(SigState new_config)
 {
   flags = new_config;

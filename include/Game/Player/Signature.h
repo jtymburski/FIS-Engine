@@ -182,6 +182,10 @@ public:
 
   uint32 getValue();
 
+  uint8 getX();
+
+  uint8 getY();
+
   void setConfig(SigState new_config);
 
   void setFlag(SigState flag, const bool set_value = true);
