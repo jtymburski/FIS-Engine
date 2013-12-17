@@ -125,7 +125,7 @@ void Application::render(uint32_t cycle_time)
 /* Returns the latched cycle time */
 int Application::updateCycleTime(int cycle_time)
 {
-  uint8_t update_step = kUPDATE_RATE / 2;
+  // uint8_t update_step = kUPDATE_RATE / 2;
   uint8_t update_time = 0;
   
   /* Parse the cycle time and find the category */
@@ -133,35 +133,35 @@ int Application::updateCycleTime(int cycle_time)
   {
     update_time = 0;
   }
-  else if(cycle_time < kUPDATE_RATE)
+  else if(cycle_time <= kUPDATE_RATE)
   {
     update_time = kUPDATE_RATE;
   }
   else
   {
-    update_time = cycle_time + update_step;
-    update_time = (update_time / kUPDATE_RATE) * kUPDATE_RATE;
+    update_time = ((cycle_time + kUPDATE_RATE / 2) / kUPDATE_RATE) 
+                                                   * kUPDATE_RATE;
   }
   
-  /* Check if the update time is different */
-  if(update_time == update_rate)
-  {
-    if(update_sync > 0)
-      update_sync--;
-  }
-  else
-  {
-    update_sync++;
-  }
+  // /* Check if the update time is different */
+  // if(update_time == update_rate)
+  // {
+    // if(update_sync > 0)
+      // update_sync--;
+  // }
+  // else
+  // {
+    // update_sync++;
+  // }
   
-  /* Determine if an update is required */
-  if(update_sync > kUPDATE_CHANGE_LIMIT)
-  {
-    update_rate = update_time;
-    update_sync = 0;
-  }
-  
-  return update_rate;
+  // /* Determine if an update is required */
+  // if(update_sync > kUPDATE_CHANGE_LIMIT)
+  // {
+    // update_rate = update_time;
+    // update_sync = 0;
+  // }
+
+  return update_time;
 }
 
 bool Application::updateViews(int cycle_time)
