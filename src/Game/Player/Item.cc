@@ -341,7 +341,10 @@ bool Item::setBase(Item* item_base)
 bool Item::isBaseItem()
 {
   if (getFlag(ItemFlags::SET_BASE_ITEM))
-    return (base_item != nullptr);
+  {
+    std::cout << "Checking base Item ptr" << std::endl;
+    return (base_item == nullptr);
+  }
   
   return true;
 }
@@ -395,7 +398,7 @@ void Item::printInfo(const bool &basic)
   else
   {
     std::cout << "ID: " << my_id << "\n";
-    std::cout << "Base Item? " << !(base_item == nullptr) << "\n";
+    std::cout << "Base Item? " << isBaseItem() << "\n";
     std::cout << "Brief Description: " << brief_description << "\n";
     std::cout << "Description: " << description << "\n";
     std::cout << "Game ID: " << game_id << "\n";

@@ -40,8 +40,8 @@
 /* Shorthand types */
 using std::begin;
 using std::end;
-using uint32 = uint32_t;
-using uint8 = uint8_t;
+using uint32    = uint32_t;
+using uint8     = uint8_t;
 using uint8Pair = std::pair<const uint8, const uint8>;
 
 /* Enumerated Signature State flags - Signature configuration */
@@ -102,7 +102,7 @@ public:
 };
 
 /* Alias for 1-D and 2-D Cell vectors */
-using CellRow = std::vector<Cell>;
+using CellRow    = std::vector<Cell>;
 using CellMatrix = std::vector<CellRow>;
 
 /*******************************************************************************
@@ -182,13 +182,13 @@ public:
 
   uint32 getValue();
 
-  uint8 getX();
+  uint8 getX() const;
 
-  uint8 getY();
+  uint8 getY() const;
 
-  void setConfig(SigState new_config);
+  void setConfig(const SigState new_config);
 
-  void setFlag(SigState flag, const bool set_value = true);
+  void setFlag(const SigState flag, const bool set_value = true);
 
   bool setSize(const size_t new_x, const size_t new_y);
 
@@ -197,14 +197,14 @@ public:
  *============================================================================*/
 public:
   /* Methods for returning the possible sizes of a Signature */
-  static size_t getMaxX();
-  static size_t getMaxY();
-  static size_t getMinX();
-  static size_t getMinY();
+  static constexpr size_t getMaxX() noexcept;
+  static constexpr size_t getMaxY() noexcept;
+  static constexpr size_t getMinX() noexcept;
+  static constexpr size_t getMinY() noexcept;
 
   /* Methods for returning possible tiers of Links and E-Links */
-  static uint8 getMaxLinkTier();
-  static uint8 getMaxELinkTier();
+  static constexpr uint8 getMaxLinkTier() noexcept;
+  static constexpr uint8 getMaxELinkTier() noexcept;
 };
 
 #endif //SIGNATURE_H

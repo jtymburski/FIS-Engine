@@ -468,23 +468,25 @@ uint32 Signature::getValue()
   return temp_value;
 }
 
-uint8 Signature::getX()
+uint8 Signature::getX() const 
 {
   return cells.size();
 }
 
-uint8 Signature::getY()
+uint8 Signature::getY() const 
 {
   if (getX() > 0)
     return cells.at(0).size();
+
+  return 0;
 }
 
-void Signature::setConfig(SigState new_config)
+void Signature::setConfig(const SigState new_config)
 {
   flags = new_config;
 }
 
-void Signature::setFlag(SigState flag, const bool set_value)
+void Signature::setFlag(const SigState flag, const bool set_value)
 {
   (set_value) ? (flags |= flag) : (flags &= ~flag);
 }
@@ -504,32 +506,32 @@ bool Signature::setSize(const size_t new_x, const size_t new_y)
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
 
-size_t Signature::getMaxX()
+constexpr size_t Signature::getMaxX() noexcept
 {
   return kMAX_X;
 }
 
-size_t Signature::getMaxY()
+constexpr size_t Signature::getMaxY() noexcept
 {
   return kMAX_Y;
 }
 
-size_t Signature::getMinX()
+constexpr size_t Signature::getMinX() noexcept
 {
   return kMIN_X;
 }
 
-size_t Signature::getMinY()
+constexpr size_t Signature::getMinY() noexcept
 {
   return kMIN_Y;
 }
 
-uint8 Signature::getMaxLinkTier()
+constexpr uint8 Signature::getMaxLinkTier() noexcept
 {
   return kMAX_LINK_TIER;
 }
 
-uint8 Signature::getMaxELinkTier()
+constexpr uint8 Signature::getMaxELinkTier() noexcept
 {
   return kMAX_E_LINK_TIER;
 }

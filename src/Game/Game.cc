@@ -80,26 +80,25 @@ void Game::setupBattle()
 
   std::vector<int> values(length, 0);
 
-  for (auto i = 0; i < length * 100; i++)
-  {
-    auto value = Helpers::randU32();
-    std::cout << value << std::endl;
+  //for (auto i = 0; i < length * 100; i++)
+  //{
+   // auto value = Helpers::randU32();
+    //std::cout << value << std::endl;
     //values[value]++;
-  }
-  for (auto i = 0; i < length * 100; i++)
-  {
-    auto value = Helpers::randU64();
-    std::cout << value << std::endl;
+  //}
+  //for (auto i = 0; i < length * 100; i++)
+  //{
+    //auto value = Helpers::randU64();
+    //std::cout << value << std::endl;
     //values[value]++;
-  }
-  std::cout << "Done!\n";
+  //}
+  //std::cout << "Done!\n";
 
 
   //auto index = 0;
   //for (auto value : values)
   //  std::cout << index++ << " " << value << "\n";
 
-  /*
   // Action Testing
   std::vector<Action*> actions;
   std::vector<float> chances = {0.50, 0.40, 0.12, 0.46};
@@ -135,6 +134,11 @@ void Game::setupBattle()
   std::vector<Bubby*> bubby_pointas;
 
   // General Item Testing
+  Item forty_six{46, "Item Forty Six", 75, nullptr, 1.08};
+
+  forty_six.setValue(78);
+
+  forty_six.print();
 
   // Flavour Testing
   Flavour* spark = new Flavour(101, "Spark", AttributeSet(1), 1.04, 35);
@@ -157,7 +161,7 @@ void Game::setupBattle()
 
 
   // Equipment Testing
-  */
+  
   } // end enable test
   
   else

@@ -17,11 +17,14 @@
 #define EQUIPMENT_H
 
 #include <iostream>
+#include <memory>
 
-#include "Game/Player/EnumDb.h"
-#include "Game/Player/EnumFlags.h"
+#include "EnumDB.h"
+#include "EnumFlags.h"
+#include "Frame.h"
 #include "Game/Player/Item.h"
 #include "Game/Player/Signature.h"
+#include "Game/Player/SkillSet.h"
 
 ENUM_FLAGS(EquipState)
 enum class EquipState
@@ -33,23 +36,14 @@ enum class EquipState
 class Equipment : public Item
 {
 public:
-
-  Equipment();
-
-  Equipment(const Equipment& source);
-
-  Equipment(Equipment&& source);
-
   Equipment(const uint32_t game_id, const std::string name, 
   	        const uint32_t value, const uint32_t mass,
-  	        Sprite* thumb, const size_t x, const size_t y);
-
-  ~Equipment();
+  	        Frame* thumb, const size_t x, const size_t y);
 
 private:
 
   /* Pointer to the signature */
-  Signature* equip_signature;
+  std::shared_ptr<Signature> equip_signature;
 
   /* Equipment flags */
   EquipState equip_flags;
@@ -67,8 +61,6 @@ private:
 private:
   void createSig(const size_t size_x, const size_t size_y);
 
-  void unsetAll();
-
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
@@ -81,11 +73,11 @@ public:
 
   double getMass();
 
-  bool getEquipFlag(EquipmentState flags);
+  bool getEquipFlag(EquipState flags);
 
-  EquipSlots getEqupSlot();
+  EquipSlots getEquipSlot();
 
-  Signature* getSignature();
+  std::shared_ptr<Signature> getSignature();
 
   SkillSet* getSkills();
 
@@ -97,7 +89,11 @@ public:
 
   void setEquipFlag(const EquipState flags, const bool set_value = false);
 
-  void setEquipSlot(const EquipmentSlot new_equip_slot);
+  void setEquipSlot(const EquipSlots new_equip_slot);
+
+  Equipment& operator=(const Equipment& source);
+
+  Equipment& operator=(Equipment&& source);
 };
 
 #endif //EQUIPMENT_H
