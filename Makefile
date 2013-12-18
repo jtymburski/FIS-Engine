@@ -2,35 +2,40 @@ CC = g++
 
 # Pre-additions for platform specific libraries
 ifeq ($(OS),Windows_NT)
+	# Windows parameters
 	LIBS = -lmingw32 -lSDL2main
 else
 	UNAME_S := $(shell uname -s)
 	ifeq ($(UNAME_S),Linux)
-		# Linux params
+		# Linux parameters
 	else
-		# MAC params
+		# MAC parameters
 	endif
 endif
 
 CFLAGS = -c -std=c++11 -Wall -Wextra
 INCLUDES = -Iinclude
 
-LIBS += -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf
 # WINDOWS only?! Helps the cmd not appear when running the app separately.
 # This stops all output to the command line though...
 # -Wl,-subsystem,windows
-LNFLAGS=-Wl,-O1
+#LNFLAGS=-Wl,-O1
 EXECUTABLE=bin/Univursa
 
 # Post-additions for platform specific libraries
 ifeq ($(OS),Windows_NT)
-	# Windows params
+	# Windows parameters
+	LIBS += -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf
+	LNFLAGS=-Wl,-O1
 else
 	UNAME_S := $(shell uname -s)
 	ifeq ($(UNAME_S),Linux)
-		# Linux params
+		# Linux parameters
+		LIBS += -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf
+		LNFLAGS=-Wl,-O1
 	else
-		# MAC params
+		# MAC parameters
+		LIBS += -framework SDL2 -framework SDL2_image -framework SDL2_mixer -framework SDL2_ttf -framework Cocoa
 	endif
 endif
 
