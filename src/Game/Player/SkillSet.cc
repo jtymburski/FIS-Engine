@@ -478,16 +478,16 @@ SkillSet& SkillSet::operator-=(const SkillSet &rhs)
   return *this;
 }
 
-inline SkillSet operator+(SkillSet lhs, const SkillSet &rhs)
+SkillSet& SkillSet::operator+(const SkillSet &rhs)
 {
-  lhs += rhs;
+  *this += rhs;
 
-  return lhs;
+  return *this;
 }
 
-inline SkillSet operator-(SkillSet lhs, const SkillSet &rhs)
+SkillSet& SkillSet::operator-(const SkillSet &rhs)
 {
-  lhs -= rhs;
+  *this -= rhs;
 
-  return lhs;
+  return *this;
 }

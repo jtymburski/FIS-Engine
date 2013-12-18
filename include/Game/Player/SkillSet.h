@@ -118,11 +118,10 @@ public:
   SkillSet& operator+=(const SkillSet &rhs);
 
   SkillSet& operator-=(const SkillSet &rhs);
+
+  SkillSet& operator+(const SkillSet &rhs);
+
+  SkillSet& operator-(const SkillSet &rhs);
 };
-
-inline SkillSet operator+(SkillSet lhs, const SkillSet &rhs);
-
-inline SkillSet operator-(SkillSet lhs, const SkillSet &rhs);
-
 
 #endif //SKILLSET_H

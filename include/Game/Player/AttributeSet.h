@@ -154,6 +154,12 @@ public:
   /* Overloaded += operator for compound assignment */
   AttributeSet& operator+=(const AttributeSet& rhs);
 
+  /* Overloaded + operator for AttributeSet additions */
+  AttributeSet& operator+(const AttributeSet& rhs);
+
+  /* Overloaded - operator for Attribute subtractions */
+  AttributeSet& operator-(const AttributeSet& rhs);
+
   /* Overloaded -= operator for subtractive assignment */
   AttributeSet& operator-=(const AttributeSet& rhs);
 
@@ -163,12 +169,5 @@ public:
   /* Overloade != operator for comparing AttributeSets */
   bool operator!=(const AttributeSet &rhs);
 };
-
-/* Overloaded + operator for AttributeSet additions */
-inline AttributeSet operator+(AttributeSet lhs, const AttributeSet &rhs);
-
-/* Overloaded - operator for AttributeSet subtractions */
-inline AttributeSet operator-(AttributeSet lhs, const AttributeSet &rhs);
-
 
 #endif //ATTRIBUTESET_H

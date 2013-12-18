@@ -26,6 +26,7 @@
 * Pathfinding Chains - [12-13-13]
 * Gene Machine Recipes [12-13-13]
 *******************************************************************************/
+
 #ifndef SIGNATURE_H
 #define SIGNATURE_H
 
@@ -168,6 +169,8 @@ public:
 
   Bubby* unattachBubby(const uint8 a, const uint8 b);
 
+  AttributeSet getBonusStats();
+
   Bubby* getBubby(const uint8 a, const uint8 b);
 
   std::vector<Bubby*> getBubbies();
@@ -177,6 +180,8 @@ public:
   uint8 getHighestTier(Flavour* flavour_check);
 
   double getMass();
+
+  SkillSet* getSkillBonus();
 
   std::vector<Flavour*> getUniqueFlavours();
 

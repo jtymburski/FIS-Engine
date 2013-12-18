@@ -53,7 +53,6 @@ private:
 
   /* Skill Sets */
   SkillSet* base_skill_list;
-  SkillSet* temp_skill_list;
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -79,7 +78,7 @@ public:
 
   std::shared_ptr<Signature> getSignature();
 
-  SkillSet* getSkills();
+  SkillSet getSkills();
 
   AttributeSet getStats();
 

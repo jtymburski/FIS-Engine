@@ -601,12 +601,12 @@ AttributeSet& AttributeSet::operator-=(const AttributeSet& rhs)
  *         const AttributeSet &rhs - the right side expression AttributeSet
  * Output: AttributeSet - the new object after addition
  */
-inline AttributeSet operator+(AttributeSet lhs, const AttributeSet &rhs)
+AttributeSet& AttributeSet::operator+(const AttributeSet &rhs)
 {
   /* Reuse compound addition operator */
-  lhs += rhs;
+  *this += rhs;
 
-  return lhs;
+  return *this;
 }
 
 /*
@@ -617,12 +617,12 @@ inline AttributeSet operator+(AttributeSet lhs, const AttributeSet &rhs)
  *         const AttributeSet& rhs - the right expression AS
  * Output: AttributeSet - the left hand expression after subtration
  */
-inline AttributeSet operator-(AttributeSet lhs, const AttributeSet& rhs)
+AttributeSet& AttributeSet::operator-(const AttributeSet& rhs)
 {
   /* Reuse the compound subtraction operator */
-  lhs -= rhs;
+  *this -= rhs;
 
-  return lhs;
+  return *this;
 }
 
 /*

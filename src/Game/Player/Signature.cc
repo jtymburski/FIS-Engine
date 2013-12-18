@@ -371,6 +371,12 @@ Bubby* Signature::unattachBubby(const uint8 a, const uint8 b)
   return cell_bubby;
 }
 
+AttributeSet Signature::getBonusStats()
+{
+  //TODO: Stat bonus computation
+  return AttributeSet();
+}
+
 Bubby* Signature::getBubby(const uint8 a, const uint8 b)
 {
   if (inRange(a, b))
@@ -428,6 +434,12 @@ double Signature::getMass()
         temp_mass += (*it_e).getBubby()->getMass();
 
   return temp_mass;
+}
+
+SkillSet* Signature::getSkillBonus()
+{
+  //TODO: Find skill Bonus
+  return nullptr;
 }
 
 std::vector<Flavour*> Signature::getUniqueFlavours()
