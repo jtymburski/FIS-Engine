@@ -580,7 +580,9 @@ bool MapPerson::setStartingTile(uint16_t section_id, Tile* new_tile,
     /* Set the new tile */
     tile_main = new_tile;
     this->x = tile_main->getPixelX();
+    this->x_raw = this->x * kRAW_MULTIPLIER;
     this->y = tile_main->getPixelY();
+    this->y_raw = this->y * kRAW_MULTIPLIER;
     tile_main->setPerson(this, no_events);
     tile_section = section_id;
     
@@ -703,7 +705,7 @@ void MapPerson::update(int cycle_time, Tile* next_tile)
     /* If there is no move request, stop movement */
     else
     {
-      if(tile_main != 0)
+      if(tile_main != NULL)
       {
         x = tile_main->getPixelX();
         y = tile_main->getPixelY();

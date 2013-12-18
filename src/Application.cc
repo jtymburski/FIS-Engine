@@ -345,15 +345,15 @@ bool Application::run()
       ticks = SDL_GetTicks();
       if(system_options.isVsyncEnabled())
         cycle_time = updateCycleTime(cycle_time);
-      
+
       /* Handle events - key press, window events, and such */
       handleEvents();
-      
+
       /* Update the view control (moving sprites, players, etc.)
        * This returns true if the application should shut down */
       if(updateViews(cycle_time))
         quit = true;
-      
+
       /* Clear screen */
       SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
       SDL_RenderClear(renderer);
@@ -374,7 +374,7 @@ bool Application::run()
       
       /* Render the application view */
       render(cycle_time);
-      
+
       /* Update screen */
       SDL_RenderPresent(renderer);
     }

@@ -44,8 +44,12 @@ protected:
   Tile* tile_previous;
   uint16_t tile_section;
   uint16_t width;
-  float x;
-  float y;
+  int x;
+  int x_raw;
+  int y;
+  int y_raw;
+  //float x;
+  //float y;
 
   /* The target for this thing. If set, it cannot be targetted by others */
   MapThing* target;
@@ -68,6 +72,7 @@ protected:
   /* -------------------------- Constants ------------------------- */
   const static uint16_t kDEFAULT_SPEED; /* The default thing speed */
   const static int kPLAYER_ID; /* The player ID */
+  const static uint8_t kRAW_MULTIPLIER; /* The coordinate raw multiplier */
   const static int kUNSET_ID; /* The placeholder unset ID */
 
 /*============================================================================
@@ -84,7 +89,7 @@ protected:
   bool isMoveAllowed(Tile* next_tile);
   
   /* Move the thing, based on the internal direction */
-  float moveAmount(int cycle_time);
+  int moveAmount(int cycle_time);
   void moveThing(int cycle_time);
 
   /* Sets the new direction that the class is moving in */
@@ -158,8 +163,8 @@ public:
   uint16_t getWidth();
 
   /* Returns the location of the thing */
-  float getX();
-  float getY();
+  int getX();
+  int getY();
   
   /* Starts interaction (conversation, giving something, etc) */
   virtual bool interact(MapPerson* initiator);
