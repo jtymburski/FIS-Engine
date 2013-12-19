@@ -1060,13 +1060,18 @@ bool Sprite::switchDirection()
  *
  * Inputs: int cycle_time - the update time that has elapsed, in milliseconds
  *         bool skip_head - skip the head frame when updating?
- * Output: none
+ * Output: bool - returns if the frame changed
  */
-void Sprite::update(int cycle_time, bool skip_head)
+bool Sprite::update(int cycle_time, bool skip_head)
 {
+  bool shift = false;
+  
   /* If skip head is triggered, but it is at head, skip to next */
   if(skip_head && isAtFirst())
+  {
     shiftNext(skip_head);
+    shift = true;
+  }
   
   /* Start by updating the animation and shifting, if necessary */
   if(size > 1 && cycle_time > 0 && animation_time > 0)
@@ -1076,8 +1081,11 @@ void Sprite::update(int cycle_time, bool skip_head)
     {
       elapsed_time -= animation_time;
       shiftNext(skip_head);
+      shift = true;
     }
   }
+  
+  return shift;
 }
 
 /*=============================================================================

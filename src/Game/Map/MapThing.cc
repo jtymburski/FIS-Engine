@@ -80,22 +80,25 @@ MapThing::~MapThing()
  */
 bool MapThing::animate(int cycle_time, bool reset, bool skip_head)
 {
+  bool shift = false;
+  
   /* Check if an animation can occur */
   if(frames != NULL)
   {
     /* Reset back to head */
     if(reset && !skip_head && !frames->isAtFirst())
+    {
       frames->setAtFirst();
+      shift = true;
+    }
     
     if(reset)
-      frames->update(0, skip_head);
+      shift |= frames->update(0, skip_head);
     else
-      frames->update(cycle_time, skip_head);
-    
-    return true;
+      shift |= frames->update(cycle_time, skip_head);
   }
   
-  return false;
+  return shift;
 }
 
 /* 
@@ -170,6 +173,7 @@ bool MapThing::isMoveAllowed(Tile* next_tile)
 int MapThing::moveAmount(int cycle_time)
 {
   int move_amount = cycle_time * speed * 0.125;
+  //int move_amount = 2 * speed;
   if(move_amount > width)
     move_amount = width;
   
@@ -927,6 +931,23 @@ bool MapThing::setTarget(MapThing* target)
     return true;
   }
   
+  return false;
+}
+
+/*
+ * Description: Sets the white mask texture for downblending to create the 
+ *              simulation of brightness, if the brightness value is greater
+ *              than 1. If not set and brightness is above 1.0, this will result
+ *              in untested results. Done through all sprites that have already
+ *              been created. (Virtual to all things)
+ *
+ * Inputs: SDL_Texture* texture - the white mask texture pointer
+ * Output: bool - the success of setting the white mask
+ */
+bool MapThing::setWhiteMask(SDL_Texture* texture)
+{
+  if(frames != NULL)
+    return frames->setWhiteMask(texture);
   return false;
 }
 

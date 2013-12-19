@@ -222,6 +222,9 @@ public:
   /* Sets the target map thing, fails if there is already a target */
   bool setTarget(MapThing* target);
   
+  /* Sets the white mask texture, for tuning brightness */
+  virtual bool setWhiteMask(SDL_Texture* texture);
+  
   /* Sets the things width classification */
   bool setWidth(uint16_t new_width);
 

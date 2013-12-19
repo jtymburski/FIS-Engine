@@ -10,6 +10,12 @@
 ******************************************************************************/
 #include "Game/EventHandler.h"
 
+/* Constant Implementation - see header file for descriptions */
+const uint8_t EventHandler::kTELEPORT_ID = 0;
+const uint8_t EventHandler::kTELEPORT_SECTION = 3;
+const uint8_t EventHandler::kTELEPORT_X = 1;
+const uint8_t EventHandler::kTELEPORT_Y = 2;
+
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
@@ -81,7 +87,7 @@ void EventHandler::setConversationValues(Conversation* reference, XmlData data,
                                          int index, int section_index)
 {
   /* Only proceed if the reference convo is not NULL */
-  if(reference != 0)
+  if(reference != NULL)
   {
     std::string element = data.getElement(index);
 
@@ -114,7 +120,7 @@ Event EventHandler::createConversationEvent(Conversation* new_conversation)
   new_event.classification = EventClassifier::STARTCONVO;
 
   /* Use the existing conversation if it exists. Otherwise create new one */
-  if(new_conversation != 0)
+  if(new_conversation != NULL)
     new_event.convo = new_conversation;
   else
   { // TODO: Redundant to createEmptyConvo() function above
@@ -140,8 +146,8 @@ Event EventHandler::createStartBattleEvent()
 }
 
 /* Creates a teleport event */
-Event EventHandler::createTeleportEvent(int thing_id, int tile_x, 
-                                        int tile_y, int section_id)
+Event EventHandler::createTeleportEvent(int thing_id, uint16_t tile_x, 
+                                        uint16_t tile_y, uint16_t section_id)
 {
   /* Create the event and identify */
   Event new_event = createEventTemplate();
@@ -290,10 +296,10 @@ bool EventHandler::pollTeleportThing(int* thing_id, int* x, int* y,
      x != NULL && y != NULL && section_id != NULL && 
      event_queue[queue_index].event.ints.size() == 4)
   {
-    *thing_id = event_queue[queue_index].event.ints[0];
-    *x = event_queue[queue_index].event.ints[1];
-    *y = event_queue[queue_index].event.ints[2];
-    *section_id = event_queue[queue_index].event.ints[3];
+    *thing_id = event_queue[queue_index].event.ints[kTELEPORT_ID];
+    *x = event_queue[queue_index].event.ints[kTELEPORT_X];
+    *y = event_queue[queue_index].event.ints[kTELEPORT_Y];
+    *section_id = event_queue[queue_index].event.ints[kTELEPORT_SECTION];
     
     return true;
   }
@@ -307,7 +313,7 @@ Event EventHandler::EventHandler::updateEvent(Event event, XmlData data,
 {
   EventClassifier category = EventClassifier::NOEVENT;
   std::string category_str = data.getElement(file_index);
-
+  
   /* Determine the category of the event that is being updated */
   if(category_str == "giveitem")
     category = EventClassifier::GIVEITEM;
@@ -343,13 +349,23 @@ Event EventHandler::EventHandler::updateEvent(Event event, XmlData data,
   }
   else if(category == EventClassifier::TELEPORTTHING)
   {
-    /* Split the key value for the coord and id (id,x,y,section_id) */
-    std::vector<std::string> list = Helpers::split(data.getDataString(), ',');
-    
-    /* If the list has enough elements, create the event */
-    if(list.size() == 4)
-      event = createTeleportEvent(std::stoi(list[0]), std::stoi(list[1]),
-                                  std::stoi(list[2]), std::stoi(list[3]));
+    /* If the event is not the teleport event, delete it and create one */
+    if(event.classification != EventClassifier::TELEPORTTHING)
+    {
+      event = deleteEvent(event);
+      event = createTeleportEvent();
+    }
+
+    /* Parse the event classifiers */
+    std::string teleport_element = data.getElement(file_index + 1);
+    if(teleport_element == "id")
+      event.ints.at(kTELEPORT_ID) = data.getDataInteger();
+    if(teleport_element == "x")
+      event.ints.at(kTELEPORT_X) = data.getDataInteger();
+    else if(teleport_element == "y")
+      event.ints.at(kTELEPORT_Y) = data.getDataInteger();
+    else if(teleport_element == "section")
+      event.ints.at(kTELEPORT_SECTION) = data.getDataInteger();
   }
   else if(category == EventClassifier::STARTCONVO)
   {

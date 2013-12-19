@@ -345,8 +345,8 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
     {
       if(identifier == "mapthing")
         modified_thing = new MapThing(NULL, tile_width, tile_height);
-      //else
-      //  modified_thing = new MapInteractiveObject(tile_width, tile_height);
+      else
+        modified_thing = new MapInteractiveObject(tile_width, tile_height);
       modified_thing->setEventHandler(event_handler);
       modified_thing->setID(id);
 
@@ -430,7 +430,7 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
       
       return false;
     }
-   
+
     /* Otherwise, add the thing information (virtual function) */
     return modified_thing->addThingInformation(data, kFILE_CLASSIFIER + 1, 
                                                section_index, renderer);
@@ -1368,6 +1368,14 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
       if(player != NULL)
         viewport.lockOn(player);
     }
+    
+    /* Go through all map things and add applicable modifications */
+    //for(uint16_t i = 0; i < items.size(); i++)
+    //  items[i]->setWhiteMask(white_mask.getTexture());
+    for(uint16_t i = 0; i < persons.size(); i++)
+      persons[i]->setWhiteMask(white_mask.getTexture());
+    for(uint16_t i = 0; i < things.size(); i++)
+      things[i]->setWhiteMask(white_mask.getTexture());
     
     /* TODO: Testing - Remove */
     if(geography.size() > 0 && geography[0].size() > 3 
