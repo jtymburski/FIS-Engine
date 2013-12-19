@@ -1311,7 +1311,7 @@ bool FileHandler::start()
     /* If the system is in read and encryption, check validity of file */
     if(!file_write && encryption_enabled)
       success &= readMd5();
-
+    
     /* Open the file stream */
     if(success)
       success &= fileOpen();

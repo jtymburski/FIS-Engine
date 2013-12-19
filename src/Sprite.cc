@@ -182,10 +182,11 @@ void Sprite::setColorMod()
  * Inputs: XmlData data - the xml data storage class
  *         int index - the element offset index to the sprite data
  *         SDL_Renderer* renderer - the rendering engine to add the info
+ *         std::string base_path - the base path for resources
  * Output: bool - true if the add was successful
  */
 bool Sprite::addFileInformation(XmlData data, int index, 
-                                              SDL_Renderer* renderer)
+                                SDL_Renderer* renderer, std::string base_path)
 {
   std::string element = data.getElement(index);
   bool success = true;
@@ -217,7 +218,7 @@ bool Sprite::addFileInformation(XmlData data, int index,
   {
     uint16_t angle = parseAdjustments(split_element);
     std::vector<Frame*> new_frames = 
-                            insertFrames(data.getDataString(), renderer, angle);
+                insertFrames(base_path + data.getDataString(), renderer, angle);
     
     if(new_frames.size() > 0)
     {

@@ -49,7 +49,8 @@ public:
   /* Adds item information from the XML file. Will be virtually re-called
    * by all children for proper operation */
   virtual bool addThingInformation(XmlData data, int file_index, 
-                                   int section_index, SDL_Renderer* renderer);
+                                   int section_index, SDL_Renderer* renderer, 
+                                   std::string base_path = "");
 
   /* Returns the class descriptor, useful for casting */
   virtual std::string classDescriptor();

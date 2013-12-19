@@ -42,6 +42,9 @@ public:
   ~Map();
 
 private:
+  /* The base system path to the resources */
+  std::string base_path;
+  
   /* A reference blank event for setting events in the game */
   EventHandler* event_handler;
   

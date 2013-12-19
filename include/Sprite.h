@@ -114,7 +114,8 @@ private:
  *============================================================================*/
 public:
   /* Adds sprite information from the XML data classifier from the file */
-  bool addFileInformation(XmlData data, int index, SDL_Renderer* renderer);
+  bool addFileInformation(XmlData data, int index, SDL_Renderer* renderer, 
+                          std::string base_path = "");
   
   /* Returns the total animation time between frame changes */
   short getAnimationTime() const;

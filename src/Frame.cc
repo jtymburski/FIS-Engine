@@ -419,6 +419,32 @@ bool Frame::setTexture(std::string path, std::vector<std::string> adjustments,
 }
 
 /*
+ * Description: Sets the texture using a pre-created texture pointer. Once this
+ *              set occurs, it binds to that texture and will perform deletion
+ *              when it is finished. Unexpected results will happen if deletion
+ *              occurs outside of this class.
+ *
+ * Inputs: SDL_Texture* texture - the created texture pointer
+ * Output: bool - status if the texture was set
+ */
+bool Frame::setTexture(SDL_Texture* texture)
+{
+  if(texture != NULL)
+  {
+    unsetTexture();
+    
+    /* Set the new texture and appropriate parameters */
+    this->texture = texture;
+    image_set = true;
+    SDL_QueryTexture(texture, NULL, NULL, &height, &width);
+    
+    return true;
+  }
+  
+  return false;
+}
+
+/*
  * Description: Unsets the texture, if it has been stored in the class.
  *              Otherwise, this call does nothing. After called, there is no
  *              image data to render.

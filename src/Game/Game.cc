@@ -28,6 +28,7 @@
 Game::Game(Options* running_config)
 {
   /* Initalize class variables */
+  base_path = "";
   game_config = NULL;
   game_map = NULL;
   mode = DISABLED;
@@ -304,7 +305,7 @@ void Game::keyUpEvent(SDL_KeyboardEvent event)
 bool Game::render(SDL_Renderer* renderer)
 {
   if(!game_map->isLoaded())
-   game_map->loadMap("maps/test_05", renderer);
+   game_map->loadMap(base_path + "maps/test_05", renderer);
 
   if(mode == MAP)
     return game_map->render(renderer);
@@ -318,6 +319,7 @@ bool Game::setConfiguration(Options* running_config)
   if(running_config != NULL)
   {
     game_config = running_config;
+    base_path = game_config->getBasePath();
     
     /* Set in secondary classes */
     if(game_map != NULL)

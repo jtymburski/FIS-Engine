@@ -283,10 +283,12 @@ bool MapPerson::tileMoveStart(Tile* next_tile)
  *         int file_index - the index in the xml data where this detail begins
  *         int section_index - the map section index of the person
  *         SDL_Renderer* renderer - the graphical rendering engine pointer
+ *         std::string base_path - the base path for resources
  * Output: bool - status if successful
  */
 bool MapPerson::addThingInformation(XmlData data, int file_index, 
-                                    int section_index, SDL_Renderer* renderer)
+                                    int section_index, SDL_Renderer* renderer, 
+                                    std::string base_path)
 {
   std::vector<std::string> elements = data.getTailElements(file_index);
   bool success = true;
@@ -332,7 +334,8 @@ bool MapPerson::addThingInformation(XmlData data, int file_index,
         
         /* Proceed with the add once valid frames are acquired */
         if(frames != NULL)
-          success &= frames->addFileInformation(data, file_index + 3, renderer);
+          success &= frames->addFileInformation(data, file_index + 3, 
+                                                renderer, base_path);
       }
       else
       {
@@ -343,7 +346,8 @@ bool MapPerson::addThingInformation(XmlData data, int file_index,
   
   /* Proceed to parent */
   return (success && MapThing::addThingInformation(data, file_index, 
-                                                   section_index, renderer));
+                                                   section_index, renderer, 
+                                                   base_path));
 }
 
 /*

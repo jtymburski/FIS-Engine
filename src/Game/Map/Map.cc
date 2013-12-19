@@ -41,6 +41,7 @@ const uint16_t Map::kTILE_SIZE = 64;
 Map::Map(Options* running_config, EventHandler* event_handler)
 {
   /* Set initial variables */
+  base_path = "";
   this->event_handler = event_handler;
   loaded = false;
   map_index = 0;
@@ -141,7 +142,8 @@ bool Map::addSpriteData(XmlData data, std::string id,
         *access_sprite = *copy_sprite;
     }
     
-    return access_sprite->addFileInformation(data, file_index, renderer);
+    return access_sprite->addFileInformation(data, file_index, 
+                                             renderer, base_path);
   }
   
   return false;
@@ -433,7 +435,8 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
 
     /* Otherwise, add the thing information (virtual function) */
     return modified_thing->addThingInformation(data, kFILE_CLASSIFIER + 1, 
-                                               section_index, renderer);
+                                               section_index, renderer, 
+                                               base_path);
   }
 
   return false;
@@ -1255,8 +1258,19 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
   /* Set up the white mask, if it isn't done */
   if(!white_mask.isImageSet())
   {
-    white_mask.setTexture("sprites/white_mask.png", renderer);
-    SDL_SetTextureBlendMode(white_mask.getTexture(), SDL_BLENDMODE_ADD);
+    SDL_Texture* texture = SDL_CreateTexture(renderer, 
+                                             SDL_PIXELFORMAT_RGBA8888, 
+                                             SDL_TEXTUREACCESS_TARGET, 
+                                             kTILE_SIZE, kTILE_SIZE);
+    SDL_SetRenderTarget(renderer, texture);
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderClear(renderer);
+    SDL_RenderDrawRect(renderer, NULL);
+    SDL_SetRenderTarget(renderer, NULL);
+    
+    /* Set the new texture as the white mask (with additive blending) */
+    SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_ADD);
+    white_mask.setTexture(texture);
   }
   
   /* Start the map read */
@@ -1496,6 +1510,7 @@ bool Map::setConfiguration(Options* running_config)
   if(running_config != NULL)
   {
     system_options = running_config;
+    base_path = system_options->getBasePath();
     
     /* Update the viewport information */
     viewport.setSize(running_config->getScreenWidth(), 

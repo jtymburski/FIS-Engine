@@ -9,6 +9,8 @@
 #include "Application.h"
 #include "Helpers.h"
 
+#include <unistd.h>
+
 bool initSDL()
 {
   bool success = true;
@@ -56,18 +58,26 @@ int main(int argc, char** argv)
   (void)argc;
   (void)argv;
   
+  /* Get the base directory to the executable, which will be the location of
+   * all applicable resources */
+  char* directory = SDL_GetBasePath();
+  std::string dir_string(directory);
+  SDL_free(directory);
+  
   /* Initialize SDL libraries */
   bool success = initSDL();
   
   if(success)
   {
     /* Create the application and start the run loop */
-    Application game_app;
-    if(game_app.initialize())
-      game_app.run();
+    Application* game_app = new Application(dir_string);
+    if(game_app->initialize())
+      game_app->run();
   
     /* Clean up the application, after the run loop is finished */
-    game_app.uninitialize();
+    game_app->uninitialize();
+    delete game_app;
+    game_app = NULL;
   }
   
   /* Clean up SDL libraries */

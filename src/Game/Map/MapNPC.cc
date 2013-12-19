@@ -147,10 +147,13 @@ bool MapNPC::insertNode(uint16_t index, Path* node)
  * Inputs: XmlData data - the read XML data
  *         int file_index - the index in the xml data where this detail begins
  *         int section_index - the map section index of the npc
+ *         SDL_Renderer* renderer - the graphical rendering engine pointer
+ *         std::string base_path - the base path for resources
  * Output: bool - status if successful
  */
 bool MapNPC::addThingInformation(XmlData data, int file_index, 
-                                 int section_index, SDL_Renderer* renderer)
+                                 int section_index, SDL_Renderer* renderer, 
+                                 std::string base_path)
 {
   std::vector<std::string> elements = data.getTailElements(file_index);
   std::string identifier = data.getElement(file_index);
@@ -218,7 +221,8 @@ bool MapNPC::addThingInformation(XmlData data, int file_index,
   
   /* Proceed to parent */
   return (success && MapPerson::addThingInformation(data, file_index, 
-                                                    section_index, renderer));
+                                                    section_index, renderer, 
+                                                    base_path));
 }
 
 /* Returns the class descriptor, useful for casting */

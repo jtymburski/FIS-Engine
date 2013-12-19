@@ -29,6 +29,7 @@ TitleScreen::TitleScreen(Options* running_config)
 {
   /* Initial parameter setup */
   action = NONE;
+  base_path = "";
   cursor_index = 0;
   font = NULL;
   nav_down = false;
@@ -36,12 +37,6 @@ TitleScreen::TitleScreen(Options* running_config)
   nav_up = false;
   render_index = 0;
   system_options = NULL;
-
-  /* Sound setup */
-  background_music.setMusicFile("sound/ambience/background_menu_sound.wav");
-  background_music.setPlayForever();
-  menu_click_sound.setChannel(SoundChannels::MENUS);
-  menu_click_sound.setSoundFile("sound/functional/menu_click.wav");
   
   /* Set up the configuration, if applicable */
   setConfiguration(running_config);
@@ -257,7 +252,7 @@ bool TitleScreen::render(SDL_Renderer* renderer)
 
 bool TitleScreen::setBackground(std::string path, SDL_Renderer* renderer)
 {
-  return background.setTexture(path, renderer);
+  return background.setTexture(base_path + path, renderer);
 }
 
 /* Sets the running configuration, from the options class */
@@ -266,10 +261,22 @@ bool TitleScreen::setConfiguration(Options* running_config)
   if(running_config != NULL)
   {
     system_options = running_config;
+    base_path = system_options->getBasePath();
     return true;
   }
   
   return false;
+}
+
+/* Sets the music in the title screen - TODO: Encapsulate in file load? */
+void TitleScreen::setMusic()
+{
+  /* Sound setup */
+  background_music.setMusicFile(base_path + 
+                                "sound/ambience/background_menu_sound.wav");
+  background_music.setPlayForever();
+  menu_click_sound.setChannel(SoundChannels::MENUS);
+  menu_click_sound.setSoundFile(base_path + "sound/functional/menu_click.wav");
 }
 
 /* Updates the title screen. Necessary for visual updates */

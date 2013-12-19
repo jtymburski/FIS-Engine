@@ -31,8 +31,9 @@ const uint16_t Options::kRESOLUTIONS_Y[] = {704, 768, 1080};
  *============================================================================*/
 
 /* Constructor function */
-Options::Options()
+Options::Options(std::string base_path)
 {
+  this->base_path = base_path;
   setAllToDefault();
 }
 
@@ -55,6 +56,7 @@ void Options::copySelf(const Options &source)
   /* Battle Options */
   ailment_update_state = source.ailment_update_state;
   battle_hud_state = source.ailment_update_state;
+  base_path = source.base_path;
   battle_mode = source.battle_mode;
 
   resolution_x  = source.resolution_x;
@@ -115,13 +117,14 @@ void Options::setLinearFiltering(bool linear_filtering)
   {
     /* Set texture filtering to linear */
     if(!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0"))
-      std::cerr << "[WARNING] Unable to enable linear filtering.";
+      std::cerr << "[WARNING] Unable to enable linear filtering." << std::endl;
   }
   else
   {
     /* Set texture filtering to nearest pixel */
     if(!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0"))
-      std::cerr << "[WARNING] Unable to enable nearest pixel filtering.";
+      std::cerr << "[WARNING] Unable to enable nearest pixel filtering." 
+                << std::endl;
   }
 }
 
@@ -146,14 +149,15 @@ void Options::setVsync(bool enabled)
 bool Options::confirmFontSetup()
 {
   bool success = true;
-  TTF_Font* test_font = TTF_OpenFont(kFONTS[font].c_str(), 14);
+  std::string path = base_path + kFONTS[font];
+  TTF_Font* test_font = TTF_OpenFont(path.c_str(), 14);
   
   /* If the font setup fails, output the error alert */
   if(test_font == NULL)
   {
     std::cerr << "[ERROR] The font " << kFONTS[font] 
               << " could not be loaded. SDL_ttf error: " << TTF_GetError() 
-              << "\n";
+              << std::endl;
     success = false;
   }
   
@@ -164,6 +168,11 @@ bool Options::confirmFontSetup()
 Options::BattleOptions Options::getAilmentUpdateState()
 {
   return ailment_update_state;
+}
+
+std::string Options::getBasePath()
+{
+  return base_path;
 }
 
 Options::BattleOptions Options::getBattleHudState()

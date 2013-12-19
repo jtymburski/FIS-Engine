@@ -20,7 +20,7 @@ class Options
 {
 public:
   /* Constructor(s) */
-  Options();
+  Options(std::string base_path = "");
 
   /* Copy constructor */
   Options(const Options &source);
@@ -40,6 +40,9 @@ private:
   /* Amount of information to display during ailment updates */
   BattleOptions ailment_update_state;
 
+  /* The base string path for accessing file information */
+  std::string base_path;
+  
   /* Amount of information to display on the Battle HUD */
   BattleOptions battle_hud_state;
 
@@ -123,6 +126,9 @@ public:
   /* Returns the current state of ailment updates */
   BattleOptions getAilmentUpdateState();
 
+  /* Returns the program configured base path, used for pathing throughout */
+  std::string getBasePath();
+  
   /* Returns the current state of battle hud display */
   BattleOptions getBattleHudState();
 

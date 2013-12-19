@@ -104,6 +104,7 @@ public:
   bool setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle = 0);
   bool setTexture(std::string path, std::vector<std::string> adjustments, 
                                     SDL_Renderer* renderer, uint16_t angle = 0);
+  bool setTexture(SDL_Texture* texture);
 
   /* Unsets the texture, if one is set */
   void unsetTexture();

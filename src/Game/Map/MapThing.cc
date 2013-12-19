@@ -284,10 +284,13 @@ bool MapThing::tileMoveStart(Tile* next_tile)
  * Inputs: XmlData data - the read XML data
  *         int file_index - the index in the xml data where this detail begins
  *         int section_index - the map section index of the thing
+ *         SDL_Renderer* renderer - the graphical rendering engine pointer
+ *         std::string base_path - the base path for resources
  * Output: bool - status if successful
  */
 bool MapThing::addThingInformation(XmlData data, int file_index, 
-                                   int section_index, SDL_Renderer* renderer)
+                                   int section_index, SDL_Renderer* renderer, 
+                                   std::string base_path)
 {
   std::vector<std::string> elements = data.getTailElements(file_index);
   std::vector<std::string> identifiers = 
@@ -304,7 +307,8 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
   /*--------------------- DIALOG IMAGE -----------------*/
   else if(identifier == "image" && elements.size() == 1)
   {
-    success &= setDialogImage(data.getDataString(&success), renderer);
+    success &= setDialogImage(base_path + data.getDataString(&success), 
+                              renderer);
   }
   /*--------------------- EVENT -----------------*/
   else if(identifier == "event")
@@ -332,7 +336,8 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
   {
     if(frames == NULL)
       frames = new Sprite();
-    success &= frames->addFileInformation(data, file_index + 1, renderer);
+    success &= frames->addFileInformation(data, file_index + 1, 
+                                          renderer, base_path);
   }
   /*--------------------- VISIBILITY -----------------*/
   else if(identifier == "visible")

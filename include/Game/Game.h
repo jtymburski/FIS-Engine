@@ -41,6 +41,9 @@ public:
                  VICTORY_SCREEN = 3};
 
 private:
+  /* The computed base path for resources in the application */
+  std::string base_path;
+  
   /* Handles all events throughout the game. */
   EventHandler event_handler;
   

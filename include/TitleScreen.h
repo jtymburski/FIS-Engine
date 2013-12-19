@@ -44,6 +44,9 @@ private:
   /* Background music during title screen */
   Music background_music;
   
+  /* The base path, for all rendering */
+  std::string base_path;
+  
   /* Indication for the title screen menu's position */
   uint8_t cursor_index;
 
@@ -119,6 +122,9 @@ public:
   
   /* Sets the running configuration, from the options class */
   bool setConfiguration(Options* running_config);
+  
+  /* Sets the music in the title screen - TODO: Encapsulate in file load? */
+  void setMusic();
   
   /* Updates the title screen. Necessary for visual updates */
   bool update(int cycle_time);

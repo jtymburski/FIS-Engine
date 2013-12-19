@@ -17,11 +17,13 @@ const uint8_t Application::kUPDATE_RATE = 16;
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
 
-Application::Application()
+Application::Application(std::string base_path)
 {
   /* Initialize the variables */
+  this->base_path = base_path;
   initialized = false;
   renderer = NULL;
+  system_options = new Options(base_path);
   window = NULL;
   
   /* Initialize update variables */
@@ -29,16 +31,20 @@ Application::Application()
   update_sync = 0;
   
   /* Set the title screen parameters */
-  game_handler.setConfiguration(&system_options);
-  title_screen.setConfiguration(&system_options);
+  game_handler.setConfiguration(system_options);
+  title_screen.setConfiguration(system_options);
   
   /* Sets the current mode */
+  title_screen.setMusic();
   changeMode(TITLESCREEN);
   title_screen.enableView(true);
 }
 
 Application::~Application()
 {
+  /* Clear the options class */
+  delete system_options;
+  system_options = NULL;
 }
 
 /*=============================================================================
@@ -214,8 +220,8 @@ bool Application::initialize()
     /* Create window for display */
     window = SDL_CreateWindow("Univursa", SDL_WINDOWPOS_CENTERED, 
                               SDL_WINDOWPOS_CENTERED, 
-                              system_options.getScreenWidth(), 
-                              system_options.getScreenHeight(), 
+                              system_options->getScreenWidth(), 
+                              system_options->getScreenHeight(), 
                               SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
     if(window == NULL)
     {
@@ -230,7 +236,7 @@ bool Application::initialize()
   {
     /* Set up the renderer flags */
     uint32_t flags = SDL_RENDERER_ACCELERATED;
-    if(system_options.isVsyncEnabled())
+    if(system_options->isVsyncEnabled())
       flags |= SDL_RENDERER_PRESENTVSYNC;
     
     /* Create the renderer */
@@ -248,7 +254,7 @@ bool Application::initialize()
   }
   
   /* Test the font engine */
-  if(!system_options.confirmFontSetup())
+  if(!system_options->confirmFontSetup())
   {
     std::cerr << "[ERROR] Could not create font. This is either a library "
               << "issue or the font files are missing or invalid." << std::endl;
@@ -259,7 +265,7 @@ bool Application::initialize()
   initialized = true;
   if(success)
   {
-    /* Set the title screen background */
+    /* Set the title screen background - TODO: Encapsulate in load?? */
     title_screen.setBackground("pictures/univursatitle.png", renderer);
   }
   /* Uninitialize everything, if the init sequence failed */
@@ -283,68 +289,16 @@ bool Application::run()
   bool quit = false;
   uint32_t ticks = 0;
   
-  // TODO: Remove - testing variables
-  int angle = 0;
-  double brightness = 1.0;
-  double brightness2 = 1.0;
-  bool increasing = true;
-  
   if(isInitialized())
   {
-    // TODO: Remove - sprite setup
-    Frame white_mask("sprites/white_mask.png", renderer);
-    SDL_SetTextureBlendMode(white_mask.getTexture(), SDL_BLENDMODE_ADD);
-    
-    Sprite image_sprite;
-    image_sprite.insertFrames("sprites/raven_AA_D|3|.png", renderer);
-    image_sprite.setWhiteMask(white_mask.getTexture());
-    image_sprite.setBrightness(1.2f);
-    image_sprite.setColorBalance(128, 128, 255);
-    //image_sprite.flipHorizontal();
-    //image_sprite.flipVertical(true);
-    image_sprite.update(0, renderer);
-    
-    Sprite bubby_sprite("sprites/bubby_AA_A00.png", renderer);
-    bubby_sprite.setWhiteMask(white_mask.getTexture());
-    bubby_sprite.setOpacity(128);
-    bubby_sprite.update(0, renderer);
-    
-    Sprite coin_sprite("sprites/coins_AA_A00.png", renderer);
-    coin_sprite.setWhiteMask(white_mask.getTexture());
-    coin_sprite.update(0, renderer);
-    
     /* Main application loop */
     while(!quit)
     {
-      // TODO: Remove - Sprite logic during rendering
-      angle++;
-      if(angle == 360)
-      {
-        image_sprite.removeTail();
-        angle = 0;
-      }
-      
-      if(increasing)
-      {
-        brightness += 0.01;
-        if(brightness > 1.3)
-          increasing = false;
-      }
-      else
-      {
-        brightness -= 0.01;
-        if(brightness <= 1.0)
-          increasing = true;
-      }
-      brightness2 += 0.01;
-      if(brightness2 >= 2.0)
-        brightness2 = 0.0;
-
       /* Determine the previous cycle time for using throughout the update
        * sequence for rendering */
       uint32_t cycle_time = SDL_GetTicks() - ticks;
       ticks = SDL_GetTicks();
-      if(system_options.isVsyncEnabled())
+      if(system_options->isVsyncEnabled())
         cycle_time = updateCycleTime(cycle_time);
 
       //if(cycle_time < 16)
@@ -361,20 +315,6 @@ bool Application::run()
       /* Clear screen */
       SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
       SDL_RenderClear(renderer);
-
-      // TODO: Remove - Sprite rendering
-      image_sprite.setBrightness(brightness2);
-      image_sprite.setRotation(angle);
-      image_sprite.update(10, renderer);
-      image_sprite.render(renderer, 512, 512);
-      
-      bubby_sprite.setBrightness(brightness);
-      bubby_sprite.update(10, renderer);
-      bubby_sprite.render(renderer, 512, 525);
-      
-      coin_sprite.setBrightness(brightness);
-      coin_sprite.update(10, renderer);
-      coin_sprite.render(renderer, 700, 300);
       
       /* Render the application view */
       render(cycle_time);

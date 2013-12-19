@@ -20,7 +20,7 @@ INCLUDES = -Iinclude
 # This stops all output to the command line though...
 # -Wl,-subsystem,windows
 #LNFLAGS=-Wl,-O1
-EXECUTABLE=bin/Univursa
+EXECUTABLE=Univursa
 
 # Post-additions for platform specific libraries
 ifeq ($(OS),Windows_NT)

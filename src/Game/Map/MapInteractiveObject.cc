@@ -288,11 +288,24 @@ bool MapInteractiveObject::shiftPrevious()
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
-/* Adds IO information from the XML file. Will be virtually re-called
- * by all children for proper operation */
+/*
+ * Description: Adds IO information from the XML file. This will be
+ *              virtually called by children where the child will deal with
+ *              additional sets needed and then pass call to this. Works off
+ *              reading the XML file in a strict manner. Passes call to parent
+ *              after it is complete.
+ *
+ * Inputs: XmlData data - the read XML data
+ *         int file_index - the index in the xml data where this detail begins
+ *         int section_index - the map section index of the npc
+ *         SDL_Renderer* renderer - the graphical rendering engine pointer
+ *         std::string base_path - the base path for resources
+ * Output: bool - status if successful
+ */
 bool MapInteractiveObject::addThingInformation(XmlData data, int file_index, 
                                                int section_index, 
-                                               SDL_Renderer* renderer)
+                                               SDL_Renderer* renderer, 
+                                               std::string base_path)
 {
   std::vector<std::string> elements = data.getTailElements(file_index);
   std::string identifier = data.getElement(file_index);
@@ -342,7 +355,8 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
           if(elements[2] == "sprite")
           {
             success &= modified_node->state->getSprite()->
-                            addFileInformation(data, file_index + 3, renderer);
+                            addFileInformation(data, file_index + 3, 
+                                               renderer, base_path);
           }
           /*--------------------- INTERACTION -----------------*/
           else if(elements[2] == "interaction")
@@ -410,7 +424,8 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
           if(elements[2] == "sprite")
           {
             success &= modified_node->transition->
-                            addFileInformation(data, file_index + 3, renderer);
+                            addFileInformation(data, file_index + 3, 
+                                               renderer, base_path);
           }
         }
 
@@ -426,7 +441,8 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
   }
 
   return (success && MapThing::addThingInformation(data, file_index, 
-                                                   section_index, renderer));
+                                                   section_index, renderer, 
+                                                   base_path));
 }
 
 /* Returns the class descriptor, useful for casting */

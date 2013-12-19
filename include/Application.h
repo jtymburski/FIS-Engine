@@ -27,7 +27,7 @@ class Application
 {
 public:
   /* Constructor function */
-  Application();
+  Application(std::string base_path = "");
 
   /* Destructor function */
   ~Application();
@@ -40,6 +40,9 @@ public:
                EXIT        = 3};
 
 private:
+  /* The base path, for accessing resources */
+  std::string base_path;
+  
   /* The running game */
   Game game_handler;
 
@@ -54,7 +57,7 @@ private:
   SDL_Renderer* renderer;
   
   /* All options available for the system */
-  Options system_options;
+  Options* system_options;
 
   /* The displayed title screen for the game */
   TitleScreen title_screen;
