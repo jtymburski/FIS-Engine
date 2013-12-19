@@ -241,7 +241,7 @@ public:
   bool switchDirection();
 
   /* Updates the frames within the sprite */
-  void update(int cycle_time, bool skip_head = false);
+  bool update(int cycle_time, bool skip_head = false);
 
 /*============================================================================
  * OPERATOR FUNCTIONS

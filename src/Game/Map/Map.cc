@@ -328,7 +328,7 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
   uint16_t id = std::stoul(data.getKeyValue(kFILE_CLASSIFIER));
   uint16_t index = 0;
   MapThing* modified_thing = NULL;
-  
+
   /* Identify which thing to be created */
   if(identifier == "mapthing" || identifier == "mapio")
   {
@@ -345,11 +345,11 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
     {
       if(identifier == "mapthing")
         modified_thing = new MapThing(NULL, tile_width, tile_height);
-      //else
-      //  modified_thing = new MapInteractiveObject(tile_width, tile_height);
+      else
+        modified_thing = new MapInteractiveObject(tile_width, tile_height);
       modified_thing->setEventHandler(event_handler);
       modified_thing->setID(id);
-      
+
       /* Append the new one */
       things.push_back(modified_thing);
     }
@@ -404,7 +404,7 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
       // items.append((MapItem*)modified_thing);
     // }
   // }
-  
+
   /* Proceed to update the thing information from the XML data */
   if(modified_thing != NULL)
   {
@@ -430,7 +430,7 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
       
       return false;
     }
-   
+
     /* Otherwise, add the thing information (virtual function) */
     return modified_thing->addThingInformation(data, kFILE_CLASSIFIER + 1, 
                                                section_index, renderer);
@@ -1214,6 +1214,15 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
       running = true;
       player->setSpeed(player->getSpeed() * 2);
     }
+    else if(event.keysym.sym == SDLK_3)
+    {
+      viewport.lockOn(player);
+    }
+    else if(event.keysym.sym == SDLK_4)
+    {
+      if(persons.size() >= 1)
+        viewport.lockOn(persons[1]);
+    }
     else
       player->keyDownEvent(event);
   }
@@ -1300,6 +1309,7 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
               width = -1;
             }
           }
+
           /* Parse the data, if it is relevant to the map */
           if(height == -1 && data.getElement(kFILE_CLASSIFIER) == "height")
           {
@@ -1358,6 +1368,14 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
       if(player != NULL)
         viewport.lockOn(player);
     }
+    
+    /* Go through all map things and add applicable modifications */
+    //for(uint16_t i = 0; i < items.size(); i++)
+    //  items[i]->setWhiteMask(white_mask.getTexture());
+    for(uint16_t i = 0; i < persons.size(); i++)
+      persons[i]->setWhiteMask(white_mask.getTexture());
+    for(uint16_t i = 0; i < things.size(); i++)
+      things[i]->setWhiteMask(white_mask.getTexture());
     
     /* TODO: Testing - Remove */
     if(geography.size() > 0 && geography[0].size() > 3 
@@ -1425,12 +1443,12 @@ bool Map::render(SDL_Renderer* renderer)
     float y_offset = viewport.getY();
     int y_start = viewport.getYStart();
     int y_end = viewport.getYEnd();
-    
+
     /* Render lower half of tile */
     for(uint16_t i = tile_x_start; i < tile_x_end; i++)
       for(uint16_t j = tile_y_start; j < tile_y_end; j++)
         geography[map_index][i][j]->renderLower(renderer, x_offset, y_offset);
-    
+
     /* Render Map Things */
     for(uint16_t i = 0; i < things.size(); i++)
     {
@@ -1441,7 +1459,7 @@ bool Map::render(SDL_Renderer* renderer)
         things[i]->render(renderer, x_offset, y_offset);
       }
     }
-    
+
     /* Render Map Persons (and NPCs) */
     for(uint16_t i = 0; i < persons.size(); i++)
     {
@@ -1452,7 +1470,7 @@ bool Map::render(SDL_Renderer* renderer)
         persons[i]->render(renderer, x_offset, y_offset);
       }
     }
-    
+
     /* Render upper half of tile */
     for(uint16_t i = tile_x_start; i < tile_x_end; i++)
       for(uint16_t j = tile_y_start; j < tile_y_end; j++)

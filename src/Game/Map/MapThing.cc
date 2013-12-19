@@ -12,8 +12,9 @@
 #include "Game/Map/MapThing.h"
 
 /* Constant Implementation - see header file for descriptions */
-const uint16_t MapThing::kDEFAULT_SPEED = 150;
+const uint16_t MapThing::kDEFAULT_SPEED = 10;
 const int MapThing::kPLAYER_ID = 0;
+const uint8_t MapThing::kRAW_MULTIPLIER = 10;
 const int MapThing::kUNSET_ID = -1;
 
 /*============================================================================
@@ -79,22 +80,25 @@ MapThing::~MapThing()
  */
 bool MapThing::animate(int cycle_time, bool reset, bool skip_head)
 {
+  bool shift = false;
+  
   /* Check if an animation can occur */
   if(frames != NULL)
   {
     /* Reset back to head */
     if(reset && !skip_head && !frames->isAtFirst())
+    {
       frames->setAtFirst();
+      shift = true;
+    }
     
     if(reset)
-      frames->update(0, skip_head);
+      shift |= frames->update(0, skip_head);
     else
-      frames->update(cycle_time, skip_head);
-    
-    return true;
+      shift |= frames->update(cycle_time, skip_head);
   }
   
-  return false;
+  return shift;
 }
 
 /* 
@@ -125,7 +129,7 @@ bool MapThing::isAlmostOnTile(int cycle_time)
     else
       y_diff = y - y_diff;
 
-    return (moveAmount(cycle_time) >= (x_diff + y_diff));
+    return ((moveAmount(cycle_time) / kRAW_MULTIPLIER) >= (x_diff + y_diff));
   }
   
   return false;
@@ -161,14 +165,15 @@ bool MapThing::isMoveAllowed(Tile* next_tile)
 /* 
  * Description: Calculates the move amount based on the cycle time and the 
  *              speed for how many pixels should be shifted. The calculation
- *              is based on 10ms for 1 pixel at speed 100.
+ *              is based on 16ms for 2 pixel at speed 10.
  * 
  * Inputs: int cycle_time - the time since the last update call
- * Output: float - the move amount in pixels
+ * Output: int - the move amount in pixels x 10
  */
-float MapThing::moveAmount(int cycle_time)
+int MapThing::moveAmount(int cycle_time)
 {
-  float move_amount = ((speed * cycle_time) / 1000.0);
+  int move_amount = cycle_time * speed * 0.125;
+  //int move_amount = 2 * speed;
   if(move_amount > width)
     move_amount = width;
   
@@ -184,16 +189,28 @@ float MapThing::moveAmount(int cycle_time)
  */
 void MapThing::moveThing(int cycle_time)
 {
-  float move_amount = moveAmount(cycle_time);
+  int move_amount = moveAmount(cycle_time);
   
   if(movement == Direction::EAST)
-    x += move_amount;
+  {
+    x_raw += move_amount;
+    x = x_raw / kRAW_MULTIPLIER;
+  }
   else if(movement == Direction::WEST)
-    x -= move_amount;
+  {
+    x_raw -= move_amount;
+    x = x_raw / kRAW_MULTIPLIER;
+  }
   else if(movement == Direction::SOUTH)
-    y += move_amount;
+  {
+    y_raw += move_amount;
+    y = y_raw / kRAW_MULTIPLIER;
+  }
   else if(movement == Direction::NORTH)
-    y -= move_amount;
+  {
+    y_raw -= move_amount;
+    y = y_raw / kRAW_MULTIPLIER;
+  }
 }
 
 /* 
@@ -357,10 +374,12 @@ void MapThing::clear()
   setSpeed(kDEFAULT_SPEED);
   target = NULL;
   
-  height = 0;
-  width = 0;
-  x = 0.0;
-  y = 0.0;
+  height = 1;
+  width = 1;
+  x = 0;
+  x_raw = 0;
+  y = 0;
+  y_raw = 0;
 
   unsetFrames();
 }
@@ -573,9 +592,9 @@ uint16_t MapThing::getWidth()
  * Description: Returns the top left X coordinate of the thing
  * 
  * Inputs: none
- * Output: float - the X coordinate, in pixels, of the top left corner
+ * Output: int - the X coordinate, in pixels, of the top left corner
  */
-float MapThing::getX()
+int MapThing::getX()
 {
   return x;
 }
@@ -584,9 +603,9 @@ float MapThing::getX()
  * Description: Returns the top left Y coordinate of the thing
  * 
  * Inputs: none
- * Output: float - the Y coordinate, in pixels, of the top left corner
+ * Output: int - the Y coordinate, in pixels, of the top left corner
  */
-float MapThing::getY()
+int MapThing::getY()
 {
   return y;
 }
@@ -641,8 +660,8 @@ bool MapThing::isMoving()
  */
 bool MapThing::isOnTile()
 {
-  return ((static_cast<int>(x) % getWidth() == 0) && 
-         (static_cast<int>(y) % getHeight() == 0));
+  return (x % getWidth() == 0) && 
+         (y % getHeight() == 0);
 }
 
 /*
@@ -663,8 +682,8 @@ bool MapThing::isPassable()
  *              and if it is set within the thing class.
  * 
  * Inputs: SDL_Renderer* renderer - the graphical rendering engine pointer
- *         float offset_x - the paint offset in the x direction
- *         float offset_y - the paint offset in the y direction
+ *         int offset_x - the paint offset in the x direction
+ *         int offset_y - the paint offset in the y direction
  * Output: bool - if the render succeeded
  */
 bool MapThing::render(SDL_Renderer* renderer, int offset_x, int offset_y)
@@ -878,10 +897,12 @@ bool MapThing::setStartingTile(uint16_t section_id, Tile* new_tile,
     /* Set the new tile */
     tile_main = new_tile;
     this->x = tile_main->getPixelX();
+    this->x_raw = this->x * kRAW_MULTIPLIER;
     this->y = tile_main->getPixelY();
+    this->y_raw = this->y * kRAW_MULTIPLIER;
     tile_main->setThing(this);
     tile_section = section_id;
-    
+
     return true;
   }
 
@@ -910,6 +931,23 @@ bool MapThing::setTarget(MapThing* target)
     return true;
   }
   
+  return false;
+}
+
+/*
+ * Description: Sets the white mask texture for downblending to create the 
+ *              simulation of brightness, if the brightness value is greater
+ *              than 1. If not set and brightness is above 1.0, this will result
+ *              in untested results. Done through all sprites that have already
+ *              been created. (Virtual to all things)
+ *
+ * Inputs: SDL_Texture* texture - the white mask texture pointer
+ * Output: bool - the success of setting the white mask
+ */
+bool MapThing::setWhiteMask(SDL_Texture* texture)
+{
+  if(frames != NULL)
+    return frames->setWhiteMask(texture);
   return false;
 }
 
@@ -944,7 +982,7 @@ bool MapThing::setWidth(uint16_t new_width)
 void MapThing::update(int cycle_time, Tile* next_tile)
 {
   (void)next_tile;
-  
+
   if(tile_main != NULL)
   {
     /* Move the thing */
@@ -985,6 +1023,8 @@ void MapThing::unsetStartingTile(bool no_events)
   tile_main = NULL;
   
   /* Resets the coordinates */
-  this->x = 0.0;
-  this->y = 0.0;
+  this->x = 0;
+  this->x_raw = 0;
+  this->y = 0;
+  this->y_raw = 0;
 }

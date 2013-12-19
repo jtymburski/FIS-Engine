@@ -93,7 +93,7 @@ public:
 
   /* Sets the node movement state - how it traverses */
   void setNodeState(NodeState state);
-  
+
   /* Updates the thing, based on the tick - reimplemented */
   void update(int cycle_time, Tile* next_tile);
 };

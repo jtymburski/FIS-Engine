@@ -580,7 +580,9 @@ bool MapPerson::setStartingTile(uint16_t section_id, Tile* new_tile,
     /* Set the new tile */
     tile_main = new_tile;
     this->x = tile_main->getPixelX();
+    this->x_raw = this->x * kRAW_MULTIPLIER;
     this->y = tile_main->getPixelY();
+    this->y_raw = this->y * kRAW_MULTIPLIER;
     tile_main->setPerson(this, no_events);
     tile_section = section_id;
     
@@ -639,6 +641,27 @@ void MapPerson::setSurface(SurfaceClassifier surface)
   Sprite* current = getState(surface, direction);
   if(current != NULL)
     MapThing::setFrames(current, false);
+}
+
+/*
+ * Description: Sets the white mask texture for downblending to create the 
+ *              simulation of brightness, if the brightness value is greater
+ *              than 1. If not set and brightness is above 1.0, this will result
+ *              in untested results. Done through all sprites that have already
+ *              been created. (Virtual to all things)
+ *
+ * Inputs: SDL_Texture* texture - the white mask texture pointer
+ * Output: bool - the success of setting the white mask
+ */
+bool MapPerson::setWhiteMask(SDL_Texture* texture)
+{
+  bool success = true;
+  
+  for(uint16_t i = 0; i < states.size(); i++)
+    for(uint16_t j = 0; j < states[i].size(); j++)
+      success &= states[i][j]->setWhiteMask(texture);
+  
+  return success;
 }
 
 /*
@@ -703,7 +726,7 @@ void MapPerson::update(int cycle_time, Tile* next_tile)
     /* If there is no move request, stop movement */
     else
     {
-      if(tile_main != 0)
+      if(tile_main != NULL)
       {
         x = tile_main->getPixelX();
         y = tile_main->getPixelY();

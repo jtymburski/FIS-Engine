@@ -127,6 +127,7 @@ int Application::updateCycleTime(int cycle_time)
 {
   // uint8_t update_step = kUPDATE_RATE / 2;
   uint8_t update_time = 0;
+  //std::cout << "Cycle time: " << cycle_time << std::endl;
   
   /* Parse the cycle time and find the category */
   if(cycle_time < 0)
@@ -338,22 +339,25 @@ bool Application::run()
       brightness2 += 0.01;
       if(brightness2 >= 2.0)
         brightness2 = 0.0;
-      
+
       /* Determine the previous cycle time for using throughout the update
        * sequence for rendering */
       uint32_t cycle_time = SDL_GetTicks() - ticks;
       ticks = SDL_GetTicks();
       if(system_options.isVsyncEnabled())
         cycle_time = updateCycleTime(cycle_time);
+
+      //if(cycle_time < 16)
+      //  SDL_Delay(16-cycle_time);
       
       /* Handle events - key press, window events, and such */
       handleEvents();
-      
+
       /* Update the view control (moving sprites, players, etc.)
        * This returns true if the application should shut down */
       if(updateViews(cycle_time))
         quit = true;
-      
+
       /* Clear screen */
       SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
       SDL_RenderClear(renderer);
@@ -374,7 +378,7 @@ bool Application::run()
       
       /* Render the application view */
       render(cycle_time);
-      
+
       /* Update screen */
       SDL_RenderPresent(renderer);
     }

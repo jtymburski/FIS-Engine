@@ -93,6 +93,12 @@ private:
   /* The event queue index, for parsing the queue */
   uint16_t queue_index;
   
+  /* -------------------------- Constants ------------------------- */
+  const static uint8_t kTELEPORT_ID; /* Teleport thing ID index */
+  const static uint8_t kTELEPORT_SECTION; /* Teleport thing section index */
+  const static uint8_t kTELEPORT_X; /* Teleport thing X index */
+  const static uint8_t kTELEPORT_Y; /* Teleport thing Y index */
+  
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
@@ -126,8 +132,8 @@ public:
   Event createStartBattleEvent();
   
   /* Creates a teleport event */
-  Event createTeleportEvent(int thing_id, int tile_x, int tile_y, 
-                                                      int section_id = -1);
+  Event createTeleportEvent(int thing_id = 0, uint16_t tile_x = 0, 
+                            uint16_t tile_y = 0, uint16_t section_id = 0);
 
   /* Deletes the given event. Just clears the relevant memory */
   Event deleteEvent(Event event);
