@@ -18,7 +18,7 @@
 #include "Game/EventHandler.h"
 // #include "Game/Map/MapDialog.h"
 #include "Game/Map/MapInteractiveObject.h"
-// #include "Game/Map/MapItem.h"
+#include "Game/Map/MapItem.h"
 // #include "Game/Map/MapMenu.h"
 #include "Game/Map/MapNPC.h"
 #include "Game/Map/MapPerson.h"
@@ -61,7 +61,7 @@ private:
   // MapStatusBar map_status_bar; // TODO: Remove
 
   // /* The players info on the map */
-  // QList<MapItem*> items;
+  std::vector<MapItem*> items;
   std::vector<MapPerson*> persons;
   MapPerson* player; /* The actively controlled player */
   bool running;

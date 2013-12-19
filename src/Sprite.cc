@@ -260,10 +260,10 @@ short Sprite::getAnimationTime() const
  *              rendered at.
  *
  * Inputs: none
- * Output: float - the brightness indicator 
+ * Output: double - the brightness indicator 
  *                (<1: darker, 1: default, >1: lighter)
  */
-float Sprite::getBrightness() const
+double Sprite::getBrightness() const
 {
   return brightness;
 }
@@ -771,7 +771,7 @@ bool Sprite::render(SDL_Renderer* renderer, int x, int y, int w, int h)
         if(bright_mod > kDEFAULT_BRIGHTNESS)
           bright_mod = kDEFAULT_BRIGHTNESS;
         
-        SDL_SetTextureAlphaMod(white_mask, 255 * brightness);
+        SDL_SetTextureAlphaMod(white_mask, 255 * bright_mod);
         SDL_RenderCopy(renderer, white_mask, NULL, NULL);
       }
       
@@ -838,11 +838,11 @@ bool Sprite::setAtFirst()
  *              rendered at. It's range is 0-0.99: darker than default, 1.0: 
  *              default brightness, 1.01-2.00: brighter.
  *
- * Inputs: float brightness - the brightness value (0+, 1.0 default)
+ * Inputs: double brightness - the brightness value (0+, 1.0 default)
  * Output: bool - if the set was in proper range. If out of range, it gets 
  *                locked to the correct range. 
  */
-bool Sprite::setBrightness(float brightness)
+bool Sprite::setBrightness(double brightness)
 {
   bool in_limits = true;
   

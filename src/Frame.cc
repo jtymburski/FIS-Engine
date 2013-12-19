@@ -378,16 +378,16 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle)
   else if(loaded_surface != NULL)
   {
     SDL_FreeSurface(loaded_surface);
-    printf("[WARNING] Renderer required to set texture in frame for \"%s\".\n",
-           path.c_str());
+    std::cerr << "[WARNING] Renderer required to set texture in frame for \""
+              << path.c_str() << "\"" << std::endl;;
     success = false;
   }
   /* If the surface is unset, notify the terminal with the failed surface */
   else
   {
     /* Otherwise, return failed success */
-    printf("[WARNING] Unable to load image \"%s\". SDL_image error: %s\n", 
-           path.c_str(), IMG_GetError());
+    std::cerr << "[WARNING] Unable to load image \"" << path 
+              << "\". SDL_image error: " << IMG_GetError() << std::endl;
     success = false;
   }
   

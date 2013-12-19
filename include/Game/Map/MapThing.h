@@ -43,13 +43,12 @@ protected:
   Tile* tile_main;
   Tile* tile_previous;
   uint16_t tile_section;
+  bool visible;
   uint16_t width;
   int x;
   int x_raw;
   int y;
   int y_raw;
-  //float x;
-  //float y;
 
   /* The target for this thing. If set, it cannot be targetted by others */
   MapThing* target;
@@ -181,6 +180,9 @@ public:
   /* Is the thing passable - can you walk in it? */
   virtual bool isPassable();
 
+  /* Returns if the thing is visible / rendered on the screen */
+  virtual bool isVisible();
+  
   /* Renders the Map Thing */
   bool render(SDL_Renderer* renderer, int offset_x, int offset_y);
  
@@ -221,6 +223,9 @@ public:
 
   /* Sets the target map thing, fails if there is already a target */
   bool setTarget(MapThing* target);
+  
+  /* Sets the visibility of the rendering thing */
+  void setVisibility(bool visible);
   
   /* Sets the white mask texture, for tuning brightness */
   virtual bool setWhiteMask(SDL_Texture* texture);

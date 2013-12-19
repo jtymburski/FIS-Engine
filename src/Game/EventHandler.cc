@@ -191,6 +191,7 @@ void EventHandler::executeEvent(Event event, MapPerson* initiator,
 }
 
 /* Executes a pickup item event */
+// TODO: Walkover variable needed??
 void EventHandler::executePickup(MapItem* item, bool walkover)
 {
   /* Create the event and identify */

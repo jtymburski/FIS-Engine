@@ -334,6 +334,11 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
       frames = new Sprite();
     success &= frames->addFileInformation(data, file_index + 1, renderer);
   }
+  /*--------------------- VISIBILITY -----------------*/
+  else if(identifier == "visible")
+  {
+    setVisibility(data.getDataBool(&success));
+  }
  
   return success;
 }
@@ -375,6 +380,7 @@ void MapThing::clear()
   target = NULL;
   
   height = 1;
+  visible = true;
   width = 1;
   x = 0;
   x_raw = 0;
@@ -676,6 +682,17 @@ bool MapThing::isPassable()
   return false;
 }
 
+/*
+ * Description: Returns if the thing is visible for rendering.
+ *
+ * Inputs: none
+ * Output: bool - visibility status
+ */
+bool MapThing::isVisible()
+{
+  return visible;
+}
+
 /* 
  * Description: The render function for the thing. This takes the active state
  *              and renders it based on location and offset (from paint engine)
@@ -688,7 +705,7 @@ bool MapThing::isPassable()
  */
 bool MapThing::render(SDL_Renderer* renderer, int offset_x, int offset_y)
 {
-  if(frames != NULL && tile_main != NULL)
+  if(isVisible() && frames != NULL && tile_main != NULL)
   {
     int render_x = x - offset_x;
     int render_y = y - offset_y;
@@ -932,6 +949,17 @@ bool MapThing::setTarget(MapThing* target)
   }
   
   return false;
+}
+
+/* Description: Sets if the thing is visible or not through the rendering 
+ *              engine.
+ *
+ * Inputs: bool visible - status if the thing will be visible
+ * Output: none
+ */
+void MapThing::setVisibility(bool visible)
+{
+  this->visible = visible;
 }
 
 /*

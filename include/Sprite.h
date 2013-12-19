@@ -53,7 +53,7 @@ private:
   uint16_t elapsed_time;
   
   /* The stored brightness for rendering */
-  float brightness;
+  double brightness;
   
   /* Color values to indicate the composition of the image */
   uint8_t color_red;
@@ -120,7 +120,7 @@ public:
   short getAnimationTime() const;
   
   /* Gets the brightness (0-0.99: darker, 1.0: same, 1.0+: brighter) */
-  float getBrightness() const;
+  double getBrightness() const;
   
   /* Gets the color balance in the spectrum */
   uint8_t getColorBlue() const;
@@ -208,7 +208,7 @@ public:
   bool setAtFirst();
   
   /* Sets the brightness (0-0.99: darker, 1.0: same, 1.0+: brighter) */
-  bool setBrightness(float brightness);
+  bool setBrightness(double brightness);
   
   /* Sets the color balance of the sprite */
   void setColorBalance(uint8_t red, uint8_t green, uint8_t blue);

@@ -382,28 +382,28 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
       persons.push_back(static_cast<MapPerson*>(modified_thing));
     }
   }
-  // else if(identifier == "mapitem")
-  // {
-    // /* Search for the existing map object */
-    // while(modified_thing == 0 && index < items.size())
-    // {
-      // if(items[index]->getID() == id)
-        // modified_thing = items[index];
-      // index++;
-    // }
+  else if(identifier == "mapitem")
+  {
+    /* Search for the existing map object */
+    while(modified_thing == NULL && index < items.size())
+    {
+      if(items[index]->getID() == id)
+        modified_thing = items[index];
+      index++;
+    }
     
-    // /* If no item found, create one */
-    // if(modified_thing == 0)
-    // {
-      // /* Create the new thing */
-      // modified_thing = new MapItem(0, tile_width, tile_height);
-      // modified_thing->setEventHandler(event_handler);
-      // modified_thing->setID(id);
+    /* If no item found, create one */
+    if(modified_thing == NULL)
+    {
+      /* Create the new thing */
+      modified_thing = new MapItem(NULL, tile_width, tile_height);
+      modified_thing->setEventHandler(event_handler);
+      modified_thing->setID(id);
       
-      // /* Append the new one */
-      // items.append((MapItem*)modified_thing);
-    // }
-  // }
+      /* Append the new one */
+      items.push_back(static_cast<MapItem*>(modified_thing));
+    }
+  }
 
   /* Proceed to update the thing information from the XML data */
   if(modified_thing != NULL)
@@ -524,14 +524,13 @@ void Map::initiateThingInteraction()
       }
     }
     
-    // TODO: Uncomment - item interaction
     /* If there was no thing to interact with, proceed to try and pickup the
      * tile item. */
-    // if(!interacted && player->getTile()->getItem() != 0 && 
-       // player->getTile()->getItem()->getCount() > 0 && event_handler != 0)
-    // {
-      // event_handler->executePickup(player->getTile()->getItem());
-    // }
+    if(!interacted && player->getTile()->getItem() != NULL && 
+       player->getTile()->getItem()->getCount() > 0 && event_handler != NULL)
+    {
+      event_handler->executePickup(player->getTile()->getItem());
+    }
   }
 }
 
@@ -1370,8 +1369,8 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
     }
     
     /* Go through all map things and add applicable modifications */
-    //for(uint16_t i = 0; i < items.size(); i++)
-    //  items[i]->setWhiteMask(white_mask.getTexture());
+    for(uint16_t i = 0; i < items.size(); i++)
+     items[i]->setWhiteMask(white_mask.getTexture());
     for(uint16_t i = 0; i < persons.size(); i++)
       persons[i]->setWhiteMask(white_mask.getTexture());
     for(uint16_t i = 0; i < things.size(); i++)
@@ -1449,6 +1448,17 @@ bool Map::render(SDL_Renderer* renderer)
       for(uint16_t j = tile_y_start; j < tile_y_end; j++)
         geography[map_index][i][j]->renderLower(renderer, x_offset, y_offset);
 
+    /* Render Map Items */
+    for(uint16_t i = 0; i < items.size(); i++)
+    {
+      if(items[i]->getMapSection() == map_index && 
+         items[i]->getX() >= x_start && items[i]->getX() <= x_end && 
+         items[i]->getY() >= y_start && items[i]->getY() <= y_end)
+      {
+        items[i]->render(renderer, x_offset, y_offset);
+      }
+    }
+    
     /* Render Map Things */
     for(uint16_t i = 0; i < things.size(); i++)
     {
@@ -1629,6 +1639,10 @@ bool Map::update(int cycle_time)
   for(uint16_t i = 0; i < tile_sprites.size(); i++)
     tile_sprites[i]->update(cycle_time);
 
+  /* Update map items */
+  for(uint16_t i = 0; i < items.size(); i++)
+    items[i]->update(cycle_time, NULL);
+    
   /* Update persons for movement and animation */
   for(uint16_t i = 0; i < persons.size(); i++)
   {
