@@ -36,7 +36,7 @@ const uint8_t Inventory::kMAX_EACH_ITEM = 99;
  *
  * Inputs:
  */
-Inventory::Inventory(const uint32 game_id, const std::string name, 
+Inventory::Inventory(const uint32_t game_id, const std::string name, 
 	                   Frame* thumb)
   : curr_mass(0)
   , bubby_limit(0)
@@ -78,13 +78,14 @@ double Inventory::calcMass()
 bool Inventory::sortItems(const ObjectSorts sort_type, std::vector<Item*> item_vec,
 	                        const bool ascending)
 {
+	/* Sort types 
   ID,
   NAME,
   FLAVOUR,
   LEVEL,
   VALUE,
   MASS,
-  VALUEPERMASS
+  VALUEPERMASS */
 	
   if (sort_type == ObjectSorts::ID)
   {

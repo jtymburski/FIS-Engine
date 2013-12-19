@@ -19,11 +19,15 @@
 #define HELPERS_H
 
 #include <algorithm> /* std::min(), std::max() */
+#include <cctype>
 #include <chrono>
+#include <functional>
+#include <locale>
 #include <random>
 #include <sstream>
 #include <string>
-#include <vector>
+#include <vector> 
+#include <cctype>
 
 #include "EnumDb.h"
 
@@ -94,9 +98,14 @@ public:
    * iterations */
   static std::vector<uint32_t> buildExpTable(const uint32_t &min, const uint32_t &max, 
                                              const uint32_t &iter);
+
   /* Splits the string using the given delimiter */
   static std::vector<std::string> split(const std::string &s, char delim);
 
+  /* Methods for trimming whitespace from std::strings */
+  static std::string& ltrim(std::string &s);
+  static std::string& rtrim(std::string &s);
+  static std::string& trim(std::string &s);
 };
 
 #endif // HELPERS_H

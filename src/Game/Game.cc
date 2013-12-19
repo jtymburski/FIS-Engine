@@ -73,27 +73,41 @@ void Game::setupBattle()
 
   if (enable_test)
   {
+  //Begin time test
+  using namespace std::chrono;
+
+  system_clock::time_point tp = system_clock::now();
+  system_clock::duration dtn = tp.time_since_epoch();
+  std::cout << "Starting clock: " << dtn.count() << std::endl;
+
+  std::vector<std::string> the_strings(1000000, " abcd ");
+
+  for (auto &s : the_strings)
+    s = Helpers::trim(s);
 
   // Helpers Testing
-  //auto start  =   1;
   auto length =  10;
 
   std::vector<int> values(length, 0);
 
-  //for (auto i = 0; i < length * 100; i++)
-  //{
-   // auto value = Helpers::randU32();
+  for (auto i = 0; i < length * 100; i++)
+  {
+    //auto value = Helpers::randU32();
     //std::cout << value << std::endl;
     //values[value]++;
-  //}
-  //for (auto i = 0; i < length * 100; i++)
-  //{
+  }
+  for (auto i = 0; i < length * 100; i++)
+  {
     //auto value = Helpers::randU64();
     //std::cout << value << std::endl;
     //values[value]++;
-  //}
-  //std::cout << "Done!\n";
+  }
 
+  //system_clock::time_point tp2 = system_clock::now();
+  //system_clock::duration dtn2 = tp2.time_since_epoch();
+  //std::cout << "Ending clock: " << dtn2.count() << std::endl;
+  //std::cout << "Periods elapsed: " << (dtn2.count() - dtn.count()) / 1000 << std::endl;
+  
 
   //auto index = 0;
   //for (auto value : values)

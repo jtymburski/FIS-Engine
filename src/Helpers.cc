@@ -97,11 +97,25 @@ int Helpers::randU(const int &a, const int &b)
   return distribution(rand_eng);
 }
 
+/*
+ * Description: Generates a random 32-bit integer using std::mt1993 and returns
+ *              the result.
+ *
+ * Inputs: none
+ * Output: uint32_t - pseudo random 32 bit integer
+ */
 uint32_t Helpers::randU32()
 {
   return rand_eng();
 }
 
+/*
+ * Description: Generates a random 64-bit integer using std::mt19937_64
+ *              and returns the result.
+ *
+ * Inputs: none
+ * Output: uint64_t - randomly generated 64-bit integer
+ */
 uint64_t Helpers::randU64()
 {
   return rand_64_eng();
@@ -273,4 +287,43 @@ std::vector<std::string> Helpers::split(const std::string &line, char delim)
     elements.push_back(item);
   
   return elements;
+}
+
+/*
+ * Description Trims white space from the left side of a std::string
+ *
+ * Inputs: std::string &s - the string to trim whitespace from
+ * Output: std::string& - the string with the whitespace removed
+ */
+ std::string& Helpers::ltrim(std::string &s) 
+{
+  s.erase(begin(s), std::find_if(begin(s), end(s), 
+          std::not1(std::ptr_fun<int, int>(std::isspace))));
+
+  return s;
+}
+
+/*
+ * Description Trims white space from the right side of a std::string
+ *
+ * Inputs: std::string &s - the string to trim whitespace from
+ * Output: std::string& - the string with the whitespace removed
+ */
+std::string& Helpers::rtrim(std::string &s)
+{
+  s.erase(std::find_if(s.rbegin(), s.rend(), 
+          std::not1(std::ptr_fun<int, int>(std::isspace))).base(), end(s));
+  
+  return s;
+}
+
+/*
+ * Description Trims white space from both sides of a std::string
+ *
+ * Inputs: std::string &s - the string to trim whitespace from
+ * Output: std::string& - the string with the whitespace removed
+ */
+std::string& Helpers::trim(std::string &s)
+{
+  return ltrim(rtrim(s));
 }

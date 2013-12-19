@@ -22,6 +22,7 @@
 //#include "Game/VictoryScreen.h"
 //#include "MathHelper.h"
 #include "Game/Player/SkillSet.h"
+#include "Helpers.h"
 #include "Options.h"
 
 class Game
