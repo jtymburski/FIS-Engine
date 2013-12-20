@@ -149,7 +149,7 @@ int Application::updateCycleTime(int cycle_time)
     update_time = ((cycle_time + kUPDATE_RATE / 2) / kUPDATE_RATE) 
                                                    * kUPDATE_RATE;
   }
-  
+
   // /* Check if the update time is different */
   // if(update_time == update_rate)
   // {
@@ -222,7 +222,7 @@ bool Application::initialize()
                               SDL_WINDOWPOS_CENTERED, 
                               system_options->getScreenWidth(), 
                               system_options->getScreenHeight(), 
-                              SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
+                              SDL_WINDOW_SHOWN);//| SDL_WINDOW_FULLSCREEN);
     if(window == NULL)
     {
       std::cerr << "[ERROR] Window could not be created. SDL error: " 
@@ -249,7 +249,7 @@ bool Application::initialize()
     }
     else
     {
-      SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+      SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
     }
   }
   
@@ -286,6 +286,8 @@ bool Application::isInitialized()
 /* Runs the application */
 bool Application::run()
 {
+  uint32_t count = 0;
+  uint32_t cycle_time = kUPDATE_RATE;
   bool quit = false;
   uint32_t ticks = 0;
   
@@ -296,13 +298,19 @@ bool Application::run()
     {
       /* Determine the previous cycle time for using throughout the update
        * sequence for rendering */
-      uint32_t cycle_time = SDL_GetTicks() - ticks;
-      ticks = SDL_GetTicks();
-      if(system_options->isVsyncEnabled())
-        cycle_time = updateCycleTime(cycle_time);
-
-      //if(cycle_time < 16)
-      //  SDL_Delay(16-cycle_time);
+      uint32_t new_ticks = SDL_GetTicks();
+      if(new_ticks > ticks + 1000)
+      {
+        cycle_time = 1000 / count;
+        count = 0;
+        ticks = new_ticks;
+      }
+      //std::cout << cycle_time << std::endl;
+      //uint32_t new_time = SDL_GetTicks();
+      //uint32_t cycle_time = new_time - ticks;
+      //ticks = new_time;
+      //if(system_options->isVsyncEnabled())
+      //  cycle_time = updateCycleTime(cycle_time);
       
       /* Handle events - key press, window events, and such */
       handleEvents();
@@ -321,6 +329,11 @@ bool Application::run()
 
       /* Update screen */
       SDL_RenderPresent(renderer);
+      count++;
+      
+      /* Delay if VSync is not enabled */
+      if(!system_options->isVsyncEnabled())
+        SDL_Delay(10);
     }
         
     return true;
