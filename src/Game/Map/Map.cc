@@ -1390,6 +1390,16 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
     for(uint16_t i = 0; i < things.size(); i++)
       things[i]->setWhiteMask(white_mask.getTexture());
     
+    /* Load map dialog sprites - TODO: In file? */
+    map_dialog.loadImageConversation("sprites/Overlay/dialog.png", renderer);
+    map_dialog.loadImageNameLeft("sprites/Overlay/dialog_corner.png", renderer);
+    map_dialog.loadImageNameRight("sprites/Overlay/dialog_corner.png", 
+                                  renderer);
+    map_dialog.loadImagePickupBottom("sprites/Overlay/notification_corner.png", 
+                                     renderer);
+    map_dialog.loadImagePickupTop("sprites/Overlay/notification_corner.png", 
+                                  renderer);
+    
     /* TODO: Testing - Remove */
     if(geography.size() > 0 && geography[0].size() > 3 
                             && geography[0][3].size() > 3)
@@ -1499,6 +1509,9 @@ bool Map::render(SDL_Renderer* renderer)
     for(uint16_t i = tile_x_start; i < tile_x_end; i++)
       for(uint16_t j = tile_y_start; j < tile_y_end; j++)
         geography[map_index][i][j]->renderUpper(renderer, x_offset, y_offset);
+    
+    /* Render the map dialog */
+    map_dialog.render(renderer);
   }
   
   return success;

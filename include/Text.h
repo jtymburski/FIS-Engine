@@ -9,9 +9,13 @@
 #ifndef TEXT_H
 #define TEXT_H
 
+#include <iostream> // TODO: Delete
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <string>
+#include <vector>
+
+#include "Helpers.h"
 
 class Text
 {
@@ -78,6 +82,12 @@ public:
   /* Create a font, based on the font parameters. Null if fails */
   static TTF_Font* createFont(std::string font_path, int font_size, 
                               int font_style = TTF_STYLE_NORMAL);
+                              
+  /* Takes a string of characters and splits it to fit a line after it is 
+   * rendered by the given font. */
+  static std::vector<std::string> splitLine(TTF_Font* font, std::string text, 
+                                            int line_width, 
+                                            bool elided = false);
 };
 
 #endif // TEXT_H

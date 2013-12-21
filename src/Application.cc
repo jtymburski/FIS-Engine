@@ -250,6 +250,7 @@ bool Application::initialize()
     else
     {
       SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
+      SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     }
   }
   
@@ -286,7 +287,7 @@ bool Application::isInitialized()
 /* Runs the application */
 bool Application::run()
 {
-  uint32_t count = 0;
+  uint32_t count = 1;
   uint32_t cycle_time = kUPDATE_RATE;
   bool quit = false;
   uint32_t ticks = 0;

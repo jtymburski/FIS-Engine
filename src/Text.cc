@@ -261,7 +261,17 @@ void Text::unsetTexture()
  * PUBLIC STATIC FUNCTIONS
  *===========================================================================*/
 
-/* Create a font, based on the font parameters. Null if fails */
+/*
+ * Description: Creates a font given a font path string and size. Will add
+ *              styles as well if they are passed in by the user (OR multiple 
+ *              styles if you want). The font styles are part of the 
+ *              TTF_STYLE_* enumerators.
+ *
+ * Inputs: std::string font_path - the path to the font to open
+ *         int font_size - the point size, based on 72DPI
+ *         int font_style - the set of styles for the font
+ * Output: TTF_Font* - a new font pointer (deleted by caller). NULL if fails
+ */
 TTF_Font* Text::createFont(std::string font_path, int font_size,
                                                   int font_style)
 {
@@ -272,4 +282,129 @@ TTF_Font* Text::createFont(std::string font_path, int font_size,
     TTF_SetFontStyle(new_font, font_style);
 
   return new_font;
+}
+
+/*
+ * Description: Splits a line into the appropriate widths, based on the
+ *              rendering font. This will seg fault if the font is NULL or 
+ *              unset. For non-elided split, if the width is less than a single
+ *              word size, it will still include the one word. For elided,
+ *              if the width is too short, it will just be "...". The returned
+ *              vector of lines will be of the appropriate length when rendered
+ *              with the same font.
+ *
+ * Inputs: TTF_Font* font - the rendering font (must be non-NULL)
+ *         std::string text - the sequence of characters to split
+ *         int line_width - the limited length of line to delimit to
+ *         bool elided - if the line should be cut off at a single line. If 
+ *                       cut shorter then text, add ...
+ * Output: std::vector<std::string> - stack of lines, as per line_width
+ */
+std::vector<std::string> Text::splitLine(TTF_Font* font, std::string text, 
+                                         int line_width, bool elided)
+{
+  int dot_width = 0;
+  std::vector<std::string> line_stack;
+  int space_width = 0;
+  bool success = true;
+  int width = 0;
+  std::vector<std::string> words = Helpers::split(text, ' ');
+  std::vector<int> word_widths;
+  
+  /* Get the widths of all words */
+  for(uint16_t i = 0; i < words.size(); i++)
+  {
+    success &= (TTF_SizeText(font, words[i].c_str(), &width, NULL) == 0);
+    word_widths.push_back(width);
+  }
+  success &= (TTF_SizeText(font, " ", &space_width, NULL) == 0);
+  success &= (TTF_SizeText(font, ".", &dot_width, NULL) == 0);
+
+  /* Proceed if font sizing was successful */
+  if(success)
+  {
+    bool done = false;
+    uint16_t index = 0;
+    std::string line = "";
+    width = 0;
+    
+    /* If elided, it sets the line to the under line length. If it's greater,
+     * it adds ... after the last word */
+    if(elided)
+    {
+      /* Modify the line width to expect the final 3 dots */
+      line_width -= (dot_width * 3);
+      
+      while(index < words.size() && !done)
+      {
+        /* Calculate the check width, to compare against line width */
+        int check_width = width + word_widths[index];
+        if(index != 0)
+          check_width += space_width;
+        
+        /* Run the check, if greater, end line fill sequence */
+        if(check_width > line_width)
+          done = true;
+        /* Otherwise, append the word */
+        else
+        {
+          if(index != 0)
+          {
+            line += " ";
+            width += space_width;
+          }
+          line += words[index];
+          width += word_widths[index];
+          index++;
+        }
+      }
+      
+      /* Add the final ... and push word to vector */
+      if(done)
+        line += "...";
+      line_stack.push_back(line);
+    }
+    /* Otherwise, this creates a sequence of lines, where each line is less
+     * than the limit of line length unless one word is longer than length */
+    else
+    {
+      bool first_word = true;
+      
+      /* Loop through all the words */
+      while(index < words.size())
+      {
+        /* If it's the first word, force it onto the stack */
+        if(first_word)
+        {
+          line += words[index];
+          width += word_widths[index];
+          first_word = false;
+          index++;
+        }
+        /* Otherwise, check if the new word will make the line too long 
+         * If so, push the previous line and clear to make way for the new
+         * word */
+        else if((width + space_width + word_widths[index]) > line_width)
+        {
+          line_stack.push_back(line);
+          line.clear();
+          width = 0;
+          first_word = true;
+        }
+        /* Otherwise, the word can be appended. Do so, and shift the index */
+        else
+        {
+          line += " " + words[index];
+          width += space_width + word_widths[index];
+          index++;
+        }
+      }
+      
+      /* Append the final line if not null */
+      if(!line.empty())
+        line_stack.push_back(line);
+    }
+  }
+
+  return line_stack;
 }

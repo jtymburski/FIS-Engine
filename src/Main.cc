@@ -8,6 +8,7 @@
  ******************************************************************************/
 #include "Application.h"
 #include "Helpers.h"
+#include "Text.h" // TODO - delete, testing
 
 #include <unistd.h>
 

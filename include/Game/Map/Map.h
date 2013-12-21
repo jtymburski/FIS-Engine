@@ -16,7 +16,7 @@
 
 #include "FileHandler.h"
 #include "Game/EventHandler.h"
-// #include "Game/Map/MapDialog.h"
+#include "Game/Map/MapDialog.h"
 #include "Game/Map/MapInteractiveObject.h"
 #include "Game/Map/MapItem.h"
 // #include "Game/Map/MapMenu.h"
@@ -56,8 +56,8 @@ private:
   /* Indication if the map has been loaded */
   bool loaded;
 
-  // /* The menus and dialogs on top of the map */
-  // MapDialog map_dialog;
+  /* The menus and dialogs on top of the map */
+  MapDialog map_dialog;
   // MapMenu map_menu;
 
   // /* The status bar on the map */
