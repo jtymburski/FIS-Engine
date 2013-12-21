@@ -49,9 +49,9 @@ static T setWithinRange(T &value, const T &l_bound, const T &r_bound)
   auto max = std::max(l_bound, r_bound);
 
   if (value < min)      
-    value = min;
+    return min;
   else if (value > max)
-    value = max;
+    return max;
   
   return value;
 }

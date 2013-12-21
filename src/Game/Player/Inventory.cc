@@ -78,6 +78,8 @@ double Inventory::calcMass()
 bool Inventory::sortBubbies(Bubby_It begin, Bubby_It stop, 
 	                          const ObjectSorts &sort_type, const bool &asc)
 {
+  bool sorted = false;
+
   if (sort_type == ObjectSorts::ID)
   {
     std::sort(begin, stop,
@@ -88,6 +90,8 @@ bool Inventory::sortBubbies(Bubby_It begin, Bubby_It stop,
 
                 return b->getID() < a->getID();
               });
+
+    sorted = true;
   }
   else if (sort_type == ObjectSorts::NAME)
   {
@@ -99,10 +103,12 @@ bool Inventory::sortBubbies(Bubby_It begin, Bubby_It stop,
 
                 return b->getName() < a->getName();
               });
+
+    sorted = true;
   }
   else if (sort_type == ObjectSorts::FLAVOUR)
   {
-    std::sort(begin(), end(),
+    std::sort(begin, stop,
               [&](Bubby* const a, Bubby* const b) -> bool
               {
                 if (asc)
@@ -110,10 +116,12 @@ bool Inventory::sortBubbies(Bubby_It begin, Bubby_It stop,
 
                 return b->getType() < a->getType();
               });
+
+    sorted = true;
   }
   else if (sort_type == ObjectSorts::LEVEL)
   {
-    std::sort(begin, end,
+    std::sort(begin, stop,
               [&](Bubby* const a, Bubby* const b) -> bool
               {
                 if (a->getLevel() == b->getLevel())
@@ -123,14 +131,13 @@ bool Inventory::sortBubbies(Bubby_It begin, Bubby_It stop,
 
                   return b->getExp() < a->getExp();
                 }
-                else
-                {
-                  if (asc)
-                    return a->getLevel() < b->getLevel();
+                if (asc)
+                  return a->getLevel() < b->getLevel();
 
-                  return b->getLevel() < a->getLevel();
-                }
+                return b->getLevel() < a->getLevel();
               });
+
+    sorted = true;
   }
   else if (sort_type == ObjectSorts::VALUE)
   {
@@ -142,6 +149,8 @@ bool Inventory::sortBubbies(Bubby_It begin, Bubby_It stop,
 
                 return a->getValue() > b->getValue();
               });
+
+    sorted = true;
   }
   else if (sort_type == ObjectSorts::MASS)
   {
@@ -153,31 +162,39 @@ bool Inventory::sortBubbies(Bubby_It begin, Bubby_It stop,
 
                 return a->getMass() > b->getMass();
               });
+
+    sorted = true;
   }
   else if (sort_type == ObjectSorts::VALUEPERMASS)
   {
     std::sort(begin, stop,
-              [&](Equipment* const a, Equipment* const b) -> bool
+              [&](Bubby* const a, Bubby* const b) -> bool
               {
                 if (asc)
                 {
-                 return ((static_cast<double>(a->getValue() /
-                          static_cast<double>(a->getMass()) < 
-                        (static_cast<double>(b->getValue() /
-                         static_cast<double>(b->getMass()));
+                  return ((static_cast<double>(a->getValue()) /
+                           static_cast<double>(a->getMass())) < 
+                          (static_cast<double>(b->getValue()) /
+                           static_cast<double>(b->getMass())));
                 }
                 
-                return ((static_cast<double>(a->getValue() /
-                         static_cast<double>(a->getMass()) > 
-                        (static_cast<double>(b->getValue() /
+                return ((static_cast<double>(a->getValue()) /
+                         static_cast<double>(a->getMass())) > 
+                        (static_cast<double>(b->getValue())) /
                          static_cast<double>(b->getMass()));
               });
+
+    sorted = true;
   }
+
+  return sorted;
 }
 
-bool Inventory::sortEquipments(Equip_It begin, Equip_It end, 
+bool Inventory::sortEquipments(Equip_It begin, Equip_It stop, 
 	                             const ObjectSorts &sort_type, const bool &asc)
 {
+  bool sorted = false;
+
   if (sort_type == ObjectSorts::ID)
   {
     std::sort(begin, stop,
@@ -188,6 +205,8 @@ bool Inventory::sortEquipments(Equip_It begin, Equip_It end,
 
                 return b->getID() < a->getID();
               });
+
+    sorted = true;
   }
   else if (sort_type == ObjectSorts::NAME)
   {
@@ -199,6 +218,8 @@ bool Inventory::sortEquipments(Equip_It begin, Equip_It end,
 
                 return b->getName() < a->getName();
               });
+
+    sorted = true;
   }
   else if (sort_type == ObjectSorts::VALUE)
   {
@@ -210,6 +231,8 @@ bool Inventory::sortEquipments(Equip_It begin, Equip_It end,
 
                 return a->getValue() > b->getValue();
               });
+
+    sorted = true;
   }
   else if (sort_type == ObjectSorts::MASS)
   {
@@ -221,6 +244,8 @@ bool Inventory::sortEquipments(Equip_It begin, Equip_It end,
 
                 return a->getMass() > b->getMass();
               });
+
+    sorted = true;
   }
   else if (sort_type == ObjectSorts::VALUEPERMASS)
   {
@@ -229,23 +254,29 @@ bool Inventory::sortEquipments(Equip_It begin, Equip_It end,
               {
                 if (asc)
                 {
-                 return ((static_cast<double>(a->getValue() /
-                          static_cast<double>(a->getMass()) < 
-                        (static_cast<double>(b->getValue() /
-                         static_cast<double>(b->getMass()));
+                  return ((static_cast<double>(a->getValue()) /
+                           static_cast<double>(a->getMass())) < 
+                          (static_cast<double>(b->getValue()) /
+                           static_cast<double>(b->getMass())));
                 }
                 
-                return ((static_cast<double>(a->getValue() /
-                         static_cast<double>(a->getMass()) > 
-                        (static_cast<double>(b->getValue() /
+                return ((static_cast<double>(a->getValue()) /
+                         static_cast<double>(a->getMass())) > 
+                        (static_cast<double>(b->getValue())) /
                          static_cast<double>(b->getMass()));
               });
+
+    sorted = true;
   }
+
+  return sorted;
 }
 
-bool Inventory::sortItems(Item_It begin, Item_It end, 
+bool Inventory::sortItems(Item_It begin, Item_It stop, 
 	                        const ObjectSorts &sort_type, const bool &asc)
 {
+  bool sorted = false;
+
   if (sort_type == ObjectSorts::ID)
   {
     std::sort(begin, stop,
@@ -256,6 +287,8 @@ bool Inventory::sortItems(Item_It begin, Item_It end,
 
                 return b->getID() < a->getID();
               });
+
+    sorted = true;
   }
   else if (sort_type == ObjectSorts::NAME)
   {
@@ -267,6 +300,8 @@ bool Inventory::sortItems(Item_It begin, Item_It end,
 
                 return b->getName() < a->getName();
               });
+
+    sorted = true;
   }
   else if (sort_type == ObjectSorts::VALUE)
   {
@@ -278,6 +313,8 @@ bool Inventory::sortItems(Item_It begin, Item_It end,
 
                 return a->getValue() > b->getValue();
               });
+
+    sorted = true;
   }
   else if (sort_type == ObjectSorts::MASS)
   {
@@ -289,6 +326,8 @@ bool Inventory::sortItems(Item_It begin, Item_It end,
 
                 return a->getMass() > b->getMass();
               });
+
+    sorted = true;
   }
   else if (sort_type == ObjectSorts::VALUEPERMASS)
   {
@@ -297,23 +336,23 @@ bool Inventory::sortItems(Item_It begin, Item_It end,
               {
                 if (asc)
                 {
-                 return ((static_cast<double>(a->getValue() /
-                          static_cast<double>(a->getMass()) < 
-                        (static_cast<double>(b->getValue() /
-                         static_cast<double>(b->getMass()));
+                 return ((static_cast<double>(a->getValue()) /
+                          static_cast<double>(a->getMass())) < 
+                        (static_cast<double>(b->getValue()) /
+                         static_cast<double>(b->getMass())));
                 }
                 
-                return ((static_cast<double>(a->getValue() /
-                         static_cast<double>(a->getMass()) > 
-                        (static_cast<double>(b->getValue() /
+                return ((static_cast<double>(a->getValue()) /
+                         static_cast<double>(a->getMass())) > 
+                        (static_cast<double>(b->getValue())) /
                          static_cast<double>(b->getMass()));
               });
+
+    sorted = true;
   }
+
+  return sorted;
 }
-
-
-
-  
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
@@ -376,6 +415,27 @@ bool Inventory::addItem(Item* new_item, const bool bypass)
   return can_add;
 }
 
+/* Checks if an Item in the inventory matches a given unique ID */
+bool Inventory::contains(const int &id_check)
+{
+  for (auto bubby : bubbies)
+    if (bubby != nullptr)
+      if (bubby->getID() == id_check)
+        return true;
+
+  for (auto equipment : equipments)
+    if (equipment != nullptr)
+      if (equipment->getID() == id_check)
+        return true;
+
+  for (auto item : items)
+    if (item != nullptr)
+      if (item->getID() == id_check)
+        return true;
+
+  return false;
+}
+
 /* Prints out the state of the inventory */
 void Inventory::print(bool simple)
 {
@@ -430,6 +490,8 @@ bool Inventory::removeItem(uint32_t index)
 
     return true;
   }
+
+
   return false;
 }
 
@@ -440,14 +502,27 @@ bool Inventory::sort(const ObjectSorts sort_type, SortObjects object_to_sort,
   switch (object_to_sort)
   {
     case(SortObjects::BUBBIES):
-      return sortBubbies(sort_type, ascending);
+    {
+      return sortBubbies(begin(bubbies), end(bubbies), sort_type, ascending);
       break;
+    }
     case(SortObjects::EQUIPMENTS):
-      return sortEquipments(sort_type, ascending);
+    {
+      return sortEquipments(begin(equipments), end(equipments), sort_type, 
+      	                    ascending);
       break;
+    }
     case(SortObjects::ITEMS):
-      return sortItems(sort_type, ascending);
+    {
+      return sortItems(begin(items), end(items), sort_type, ascending);
       break;
+    }
+    case(SortObjects::KEY_ITEMS):
+    {
+      auto key_items = getKeyItems();
+      return sortItems(begin(key_items), end(key_items), sort_type, ascending);
+      break;
+    }
     default:
       break;
   }
@@ -468,7 +543,7 @@ std::vector<Item*> Inventory::getBattleItems()
 
   for (auto battle_item : items)
     if (battle_item != nullptr)
-      if (battle_item->getOccasion() == ActionOccasion::BATTLE);
+      if (battle_item->getOccasion() == ActionOccasion::BATTLE)
         battle_items.push_back(battle_item);
 
   return battle_items;
@@ -486,10 +561,32 @@ std::vector<Bubby*> Inventory::getBubbies()
   return bubbies;
 }
 
+/* Counts # of items with a given Game ID in the inventory */
+uint32_t Inventory::getCount(const int &game_id)
+{
+  uint32_t count = 0;
+
+  for (auto bubby : bubbies)
+    if (bubby != nullptr)
+      if (bubby->getGameID() == game_id)
+        count++;
+  
+  if (count == 0)
+    for (auto equipment : equipments)
+      if (equipment != nullptr)
+        if (equipment->getGameID() == game_id)
+          count++;
+
+  if (count == 0)
+    return getItemCount(game_id);
+
+  return count;
+}
+
 /* Returns the currently set equipment limit */
 uint32_t Inventory::getEquipmentLimit()
 {
-  return equipment_limit;
+  return equip_limit;
 }
 
 /* Returns a vector of all equipment */
@@ -511,7 +608,7 @@ std::vector<Item*> Inventory::getItems()
 }
  
 /* Returns the count of a given Item game id */
-uint8_t Inventory::getItemCount(uint32_t game_id)
+uint8_t Inventory::getItemCount(const int &game_id)
 {
   uint8_t count = 0;
 
@@ -530,7 +627,7 @@ uint32_t Inventory::getItemEachLimit()
 }
 
 /* Returns the vector of all key items */
-std::vector<Item*> getKeyItems()
+std::vector<Item*> Inventory::getKeyItems()
 {
   std::vector<Item*> key_items;
 
@@ -543,7 +640,7 @@ std::vector<Item*> getKeyItems()
 }
 
 /* Returns the mass limit */
-double Inventory::getMassLimit();
+double Inventory::getMassLimit()
 {
   return mass_limit;
 }
@@ -606,17 +703,9 @@ bool Inventory::setImages(Frame* const new_backdrop, Frame* const new_thumbnail)
  	                         const uint32_t item_lim, const uint8_t item_ea,
  	                         const double mass_lim)
 {
-  //bubby_limit = Helpers::setWithinRange(bubby_lim, kMIN_ITEM, kMAX_ITEM);
+  //bubby_limit = Helpers::setWithinRange(bubby_lim, 0, 4);
   //equip_limit = Helpers::setWithinRange(equip_lim, kMIN_ITEM, kMAX_ITEM);
   //item_limit = Helpers::setWithinRange(item_lim, kMIN_ITEM, kMAX_ITEM);
-  //item_ea = Helpers::setWithinRange(item_ea, kMIN_EACH_ITEM, kMAX_EACH_ITEM);
+ //item_each_limit=Helpers::setWithinRange(item_ea,kMIN_EACH_ITEM,kMAX_EACH_ITEM);
   //mass_limit = Helpers::setWithinRange(mass_lim, kMIN_MASS, kMAX_MASS);
 }
-
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
-
-/*=============================================================================
- * OPERATOR FUNCTIONS
- *============================================================================*/

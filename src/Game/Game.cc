@@ -75,16 +75,16 @@ void Game::setupBattle()
   if (enable_test)
   {
   //Begin time test
-  using namespace std::chrono;
+  //using namespace std::chrono;
 
-  system_clock::time_point tp = system_clock::now();
-  system_clock::duration dtn = tp.time_since_epoch();
-  std::cout << "Starting clock: " << dtn.count() << std::endl;
+  //system_clock::time_point tp = system_clock::now();
+  //system_clock::duration dtn = tp.time_since_epoch();
+  //std::cout << "Starting clock: " << dtn.count() << std::endl;
 
-  std::vector<std::string> the_strings(1000000, " abcd ");
+  //std::vector<std::string> the_strings(1000000, " abcd ");
 
-  for (auto &s : the_strings)
-    s = Helpers::trim(s);
+  //for (auto &s : the_strings)
+  // s = Helpers::trim(s);
 
   // Helpers Testing
   auto length =  10;
@@ -93,16 +93,17 @@ void Game::setupBattle()
 
   for (auto i = 0; i < length * 100; i++)
   {
-    //auto value = Helpers::randU32();
-    //std::cout << value << std::endl;
+    auto value = Helpers::randU32();
+    std::cout << value << std::endl;
     //values[value]++;
   }
-  for (auto i = 0; i < length * 100; i++)
+  for (auto i = 0; i < length * 100000; i++)
   {
-    //auto value = Helpers::randU64();
+    auto value = Helpers::randU64();
     //std::cout << value << std::endl;
     //values[value]++;
   }
+  std::cout << "DONE!" << std::endl;
 
   //system_clock::time_point tp2 = system_clock::now();
   //system_clock::duration dtn2 = tp2.time_since_epoch();
@@ -115,6 +116,7 @@ void Game::setupBattle()
   //  std::cout << index++ << " " << value << "\n";
 
   // Action Testing
+  /*
   std::vector<Action*> actions;
   std::vector<float> chances = {0.50, 0.40, 0.12, 0.46};
   actions.push_back(new Action("1,ALTER,THAG,,,,AMOUNT.50,AMOUNT.15"));
@@ -176,9 +178,9 @@ void Game::setupBattle()
 
 
   // Equipment Testing
-  
+  */
   } // end enable test
-  
+ 
   else
   {
     std::cout << "hey kevin if u see this u r kewl <3\n";
