@@ -102,6 +102,8 @@ public:
 
 };
 
+using CellRow = std::vector<Cell>;
+using CellMatrix = std::vector<CellRow>;
 
 /*******************************************************************************
 * Class Name: Signature [Implementation]
