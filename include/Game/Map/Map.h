@@ -49,7 +49,7 @@ private:
   EventHandler* event_handler;
   
   // /* The actual tiles that comprise a map, dynamically sized */
-  std::vector< std::vector< std::vector<Tile*> > > geography;
+  std::vector<std::vector<std::vector<Tile*>>> geography;
   uint16_t map_index;
   std::vector<Sprite*> tile_sprites;
 

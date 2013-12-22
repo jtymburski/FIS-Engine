@@ -26,8 +26,7 @@
 #include <random>
 #include <sstream>
 #include <string>
-#include <vector> 
-#include <cctype>
+#include <vector>
 
 #include "EnumDb.h"
 
@@ -99,13 +98,20 @@ public:
   static std::vector<uint32_t> buildExpTable(const uint32_t &min, const uint32_t &max, 
                                              const uint32_t &iter);
 
+  /* Methods for trimming white space from left and right of string ends */
+  static std::string& ltrim(std::string &s);
+  static std::string& rtrim(std::string &s);
+
   /* Splits the string using the given delimiter */
   static std::vector<std::string> split(const std::string &s, char delim);
 
-  /* Methods for trimming whitespace from std::strings */
-  static std::string& ltrim(std::string &s);
-  static std::string& rtrim(std::string &s);
+  /* Methods for trimming whitespace from both ends of std::strings */
   static std::string& trim(std::string &s);
+
+  /* Splits the unique parts of a list by returning the beginning of the list
+   * where they can be erased from */
+  //template<class T> 
+  //static T uniqueSplit(T begin, T const end);
 };
 
 #endif // HELPERS_H

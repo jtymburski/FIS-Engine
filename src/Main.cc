@@ -8,7 +8,6 @@
  ******************************************************************************/
 #include "Application.h"
 #include "Helpers.h"
-#include "Text.h" // TODO - delete, testing
 
 #include <unistd.h>
 
@@ -68,6 +67,18 @@ int main(int argc, char** argv)
   /* Initialize SDL libraries */
   bool success = initSDL();
   
+  /* Test helpers function */
+  std::cout << "-------------------------------" << std::endl;
+  std::vector<int> list{1,4,5,6,7,9,1,34,4,2};
+  for(auto i = list.begin(); i != list.end(); i++)
+    std::cout << *i << std::endl;
+  std::cout << "-------------------------------" << std::endl;
+  //list.erase(uniquify(list.begin(), list.end()), list.end());
+  list.erase(Helpers::uniqueSplit(list.begin(), list.end()), list.end());
+  for(auto i = list.begin(); i != list.end(); i++)
+    std::cout << *i << std::endl;
+  std::cout << "-------------------------------" << std::endl;
+
   if(success)
   {
     /* Create the application and start the run loop */

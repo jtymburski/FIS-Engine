@@ -244,7 +244,8 @@ Element Helpers::getWeakness(const Element& element)
  *         const int &iter - const ref int of the # of iterations for the table
  * Output: std::vector<int> - the vector containing the constructed table
  */
-std::vector<uint32_t> Helpers::buildExpTable(const uint32_t &min, const uint32_t &max, 
+std::vector<uint32_t> Helpers::buildExpTable(const uint32_t &min, 
+                                             const uint32_t &max, 
                                              const uint32_t &iter)
 {
   std::vector<uint32_t> table;
@@ -260,33 +261,6 @@ std::vector<uint32_t> Helpers::buildExpTable(const uint32_t &min, const uint32_t
   }
 
   return table;
-}
-
-/*
- * Description: A split function that works with a string line and a character
- *              delimiter to cut the string line into a set of tokens. This
- *              function returns empty strings if they are delimited.
- *
- * Example: std::string test = "Hello,sunshine,,what,a,beautiful,day";
- *          std::vector<std::string> temp_list = split(test, ',');
- * 
- * Note: Does not give an empty final element.
- *
- * Inputs: const std::string &line - the line to split
- *         char delim - the character delimiter
- * Output: std::vector<std::string> - the split strings in array returned.
- */
-std::vector<std::string> Helpers::split(const std::string &line, char delim)
-{
-  std::vector<std::string> elements;
-  std::string item;
-  std::stringstream ss(line);
-  
-  /* Parse the string and separate as per each delimiter */
-  while(std::getline(ss, item, delim))
-    elements.push_back(item);
-  
-  return elements;
 }
 
 /*
@@ -315,6 +289,33 @@ std::string& Helpers::rtrim(std::string &s)
           std::not1(std::ptr_fun<int, int>(std::isspace))).base(), end(s));
   
   return s;
+}
+
+/*
+ * Description: A split function that works with a string line and a character
+ *              delimiter to cut the string line into a set of tokens. This
+ *              function returns empty strings if they are delimited.
+ *
+ * Example: std::string test = "Hello,sunshine,,what,a,beautiful,day";
+ *          std::vector<std::string> temp_list = split(test, ',');
+ * 
+ * Note: Does not give an empty final element.
+ *
+ * Inputs: const std::string &line - the line to split
+ *         char delim - the character delimiter
+ * Output: std::vector<std::string> - the split strings in array returned.
+ */
+std::vector<std::string> Helpers::split(const std::string &line, char delim)
+{
+  std::vector<std::string> elements;
+  std::string item;
+  std::stringstream ss(line);
+  
+  /* Parse the string and separate as per each delimiter */
+  while(std::getline(ss, item, delim))
+    elements.push_back(item);
+  
+  return elements;
 }
 
 /*

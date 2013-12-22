@@ -1,10 +1,10 @@
-/******************************************************************************
-* Class Name: MapDialog
-* Date Created: August 7, 2013
-* Inheritance: none
-* Description: The dialog display at the bottom of the map. Offers either
-*              conversation options and display or notifications.
-******************************************************************************/
+/*******************************************************************************
+ * Class Name: MapDialog
+ * Date Created: August 7, 2013
+ * Inheritance: none
+ * Description: The dialog display at the bottom of the map. Offers either
+ *              conversation options and display or notifications.
+ ******************************************************************************/
 #ifndef MAPDIALOG_H
 #define MAPDIALOG_H
 
@@ -15,6 +15,7 @@
 #include "Game/EventHandler.h"
 #include "Game/Map/MapPerson.h"
 #include "Game/Map/MapThing.h"
+#include "Helpers.h"
 #include "Options.h"
 #include "Text.h"
 
@@ -66,6 +67,9 @@ private:
   /* The system options, used for rendering, settings, etc. */
   Options* system_options;
   
+  /* Used thing data for the current rendering application */
+  std::vector<MapThing*> thing_data;
+  
   /* -------------------------- Constants ------------------------- */
   //const static float kBUBBLES_ANIMATE; /* The text too long animation time */
 
@@ -73,6 +77,8 @@ private:
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 private:
+  /* Computes all IDs that are needed for displaying the conversation */
+  std::vector<int> calculateThingList(Conversation convo);
 
 /*============================================================================
  * PUBLIC FUNCTIONS

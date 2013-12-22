@@ -1,22 +1,22 @@
-/******************************************************************************
-* Class Name: MapDialog
-* Date Created: August 7, 2013
-* Inheritance: none
-* Description: The dialog display at the bottom of the map. Offers either
-*              conversation options and display or notifications.
-*
-* TODO:
-*  - Number entry, text entry. Shop mode? Also, built into conversation
-*  - On a very dark background, the black highlight is kind of unnoticeable
-*
-* Want List:
-*  - Text HTML like response to allow for color changes
-*    - <b> - bold
-*    - <u> - underline
-*    - <i> - italic
-*    - <color r g b> - color change
-*    - <id 12> - id to text name reference change
-******************************************************************************/
+/*******************************************************************************
+ * Class Name: MapDialog
+ * Date Created: August 7, 2013
+ * Inheritance: none
+ * Description: The dialog display at the bottom of the map. Offers either
+ *              conversation options and display or notifications.
+ *
+ * TODO:
+ *  - Number entry, text entry. Shop mode? Also, built into conversation
+ *  - On a very dark background, the black highlight is kind of unnoticeable
+ *
+ * Want List:
+ *  - Text HTML like response to allow for color changes
+ *    - <b> - bold
+ *    - <u> - underline
+ *    - <i> - italic
+ *    - <color r g b> - color change
+ *    - <id 12> - id to text name reference change
+ ******************************************************************************/
 #include "Game/Map/MapDialog.h"
 
 /* Constant Implementation - see header file for descriptions */
@@ -29,6 +29,10 @@
 /* Constructor function */
 MapDialog::MapDialog(Options* running_config)
 {
+  uint32_t index = 4000000000;
+  std::cout << index << std::endl;
+  std::cout << static_cast<int>(index) << std::endl;
+  
   /* Reset new variables */
   system_options = NULL;
   
@@ -46,6 +50,24 @@ MapDialog::~MapDialog()
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 
+/* Computes all IDs that are needed for displaying the conversation */
+// TODO: This will still need to add the target thing, wherever relevant
+std::vector<int> MapDialog::calculateThingList(Conversation convo)
+{
+  std::vector<int> list;
+ 
+  /* Recursively get all other IDs from embedded conversations */
+  for(auto i = convo.next.begin(); i != convo.next.end(); i++)
+  {
+    std::vector<int> computed_list = calculateThingList(*i);
+    list.insert(list.end(), computed_list.begin(), computed_list.end());
+  }
+
+  /* Append final ID for the current conversation */
+  list.push_back(convo.thing_id);
+
+  return list;
+}
 
 /*============================================================================
  * PUBLIC FUNCTIONS
