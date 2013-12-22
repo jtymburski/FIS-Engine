@@ -102,9 +102,6 @@ public:
 
 };
 
-/* Alias for 1-D and 2-D Cell vectors */
-using CellRow    = std::vector<Cell>;
-using CellMatrix = std::vector<CellRow>;
 
 /*******************************************************************************
 * Class Name: Signature [Implementation]

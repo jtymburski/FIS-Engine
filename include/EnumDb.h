@@ -12,9 +12,9 @@
 //#include <boost/unordered_map.hpp>
 #include <cstdint>
 
-/*============================================================================
+/*==============================================================================
  * GLOBAL ENUMS
- *===========================================================================*/
+ *============================================================================*/
 
 /*
  * Description: Possible occasions for an action (scenarios where the action
@@ -33,6 +33,7 @@ enum class ActionOccasion : std::uint8_t
   MENU,
   NONE
 };
+
 
 /*
  * Description: Possible target scopes may have in Battle

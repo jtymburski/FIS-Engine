@@ -205,6 +205,10 @@ void AttributeSet::copySelf(const AttributeSet &source)
   flags  = source.flags;
 }
 
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
+
 /*
  * Description: Assigns all the values (statS) contained in the AttributeSet to
  *              values within kMIN_VALUE and kMAX_VALUE.
@@ -226,10 +230,6 @@ void AttributeSet::cleanUp()
     for (auto it = values.begin(); it != values.end(); ++it)
       (*it) = Helpers::setWithinRange((*it), min_value, kMAX_VALUE);
 }
-
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
 
 /*
  * Description: Prints [std::cout] the values of the AttributeSet
@@ -378,7 +378,7 @@ bool AttributeSet::setStat(const int &index, const int &value)
   if (getFlag(AttributeState::CONSTANT))
     return false;
 
-  if (index != -1 && index < static_cast<int>(kNUM_VALUES))
+  if (index >= 0 && index < static_cast<int>(kNUM_VALUES))
   {
     auto min_value = kMIN_VALUE;
 

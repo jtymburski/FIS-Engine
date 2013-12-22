@@ -42,6 +42,11 @@ static const std::string kDEFAULT_ITEM_NAME    = "Unknown";
 static const std::string kDEFAULT_ITEM_PREFIX  = "items";
 static const std::string kDEFAULT_ITEM_USE_MSG = "has been used";
 
+/* ------------ Cat/Race Strings --------------- */
+static const std::string kDEFAULT_CAT_NAME = "Battle Class";
+static const std::string kDEFAULT_DENONYM  = "Battle Classian";
+static const std::string kDEFAULT_CAT_DESC = "A generic Battle Class";
+
 static const size_t kMAX_BRIEF_DESC  = 70;
 static const size_t kMAX_DESC        = 500;
 static const size_t kMAX_PREFIX      = 15;

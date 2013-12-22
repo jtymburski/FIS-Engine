@@ -85,13 +85,13 @@ private:
   /* Method for copy constructor / assignment operator */
   void copySelf(const AttributeSet &source);
 
-  /* Assert all values are within range--including size of values */
-  void cleanUp();
-
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Assert all values are within range--including size of values */
+  void cleanUp();
+
   /* Print out the values of the Attribute Set */
   void print(const bool &simple = false);
   

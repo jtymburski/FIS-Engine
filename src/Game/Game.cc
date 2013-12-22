@@ -87,23 +87,23 @@ void Game::setupBattle()
   // s = Helpers::trim(s);
 
   // Helpers Testing
-  auto length =  10;
+  //auto length =  10;
 
-  std::vector<int> values(length, 0);
+  //std::vector<int> values(length, 0);
 
-  for (auto i = 0; i < length * 100; i++)
-  {
-    auto value = Helpers::randU32();
-    std::cout << value << std::endl;
-    //values[value]++;
-  }
-  for (auto i = 0; i < length * 100000; i++)
-  {
-    auto value = Helpers::randU64();
+  //for (auto i = 0; i < length * 100; i++)
+  //{
+    //auto value = Helpers::randU32();
     //std::cout << value << std::endl;
     //values[value]++;
-  }
-  std::cout << "DONE!" << std::endl;
+  //}
+  //for (auto i = 0; i < length * 100000; i++)
+  //{
+    //auto value = Helpers::randU64();
+    //std::cout << value << std::endl;
+    //values[value]++;
+  //}
+  //std::cout << "DONE!" << std::endl;
 
   //system_clock::time_point tp2 = system_clock::now();
   //system_clock::duration dtn2 = tp2.time_since_epoch();
