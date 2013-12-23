@@ -136,6 +136,9 @@ private:
   bool addThingData(XmlData data, uint16_t section_index, 
                                   SDL_Renderer* renderer);
 
+  /* Returns a stack of map things that correspond to the ID stack */
+  std::vector<MapThing*> getThingData(std::vector<int> thing_ids);
+
   /* Initiates a section block of map. Triggered from the file data */
   bool initiateMapSection(uint16_t section_index, int width, int height);
   

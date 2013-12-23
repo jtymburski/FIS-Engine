@@ -53,6 +53,22 @@ public:
   enum DialogMode{DISABLED, CONVERSATION, NOTIFICATION, SHOP};
   
 private:
+  /* The currently running conversation information */
+  Conversation conversation_info;
+  bool conversation_ready;
+  bool conversation_waiting;
+
+  /* The two render fonts, for displaying any text */
+  TTF_Font* font_normal;
+  TTF_Font* font_title;
+
+  /* The running dialog mode and status - used for display control */
+  DialogMode dialog_mode;
+  DialogStatus dialog_status;
+
+  /* The event handler information */
+  EventHandler* event_handler;
+
   /* The frame controller for displaying the conversation and pickup */
   Frame frame_convo; 
   Frame frame_pickup;
@@ -68,6 +84,8 @@ private:
   Options* system_options;
   
   /* Used thing data for the current rendering application */
+  MapPerson* target;
+  MapThing* thing_active;
   std::vector<MapThing*> thing_data;
   
   /* -------------------------- Constants ------------------------- */
@@ -80,10 +98,39 @@ private:
   /* Computes all IDs that are needed for displaying the conversation */
   std::vector<int> calculateThingList(Conversation convo);
 
+  /* Clears all stored pointer data within the class */
+  void clearData();
+
+  /* Creates the rendering fonts, based on the system options font path */
+  bool createFonts();
+
+  /* Deletes the rendering fonts, if they've been created */
+  void deleteFonts();
+
+  /* Functions to acquire thing data, for painting to the screen */
+  MapThing* getThingReference(int id);
+
+  /* Sets up the active conversation pointer to prepare for screen rendering */
+  void setupConversation(SDL_Renderer* renderer);
+
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Returns the thing IDs from the waiting conversation - return nothing if
+   * the conversation isn't waiting */
+  std::vector<int> getConversationIDs();
+
+  /* Initializes a conversation with the two given people. */
+  bool initConversation(Conversation* dialog_info, MapPerson* target);
+  bool initConversation(Conversation dialog_info, MapPerson* target);
+
+  /* Returns if the conversation is waiting for thing data to be setup */
+  bool isConversationWaiting();
+
+  /* Are the rendering images set */
+  bool isImagesSet(bool conversation = true, bool pickup = false);
+
   /* Key Down/Flush/Up events handled */
   void keyDownEvent(SDL_KeyboardEvent event);
   void keyFlush();
@@ -102,6 +149,12 @@ public:
   /* Sets the running configuration, from the options class */
   bool setConfiguration(Options* running_config);
   
+  /* Set the conversation things as per to IDs from getConversationIDs() */
+  bool setConversationThings(std::vector<MapThing*> things);
+
+  /* Sets the event handler */
+  void setEventHandler(EventHandler* event_handler);
+
   /* Updates the thing, called on the tick */
   void update(int cycle_time);
 

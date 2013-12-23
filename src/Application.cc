@@ -93,7 +93,16 @@ void Application::handleEvents()
       SDL_KeyboardEvent press_event = event.key;
       
       /* Send the key to the relevant view */
-      if(mode == TITLESCREEN)
+      if(press_event.keysym.sym == SDLK_F7)
+      {
+        SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+
+      }
+      else if(press_event.keysym.sym == SDLK_F8)
+      {
+        SDL_SetWindowFullscreen(window, 0);
+      }
+      else if(mode == TITLESCREEN)
       {
         title_screen.keyDownEvent(press_event);
       }
@@ -222,7 +231,7 @@ bool Application::initialize()
                               SDL_WINDOWPOS_CENTERED, 
                               system_options->getScreenWidth(), 
                               system_options->getScreenHeight(), 
-                              SDL_WINDOW_SHOWN);//| SDL_WINDOW_FULLSCREEN);
+                              SDL_WINDOW_SHOWN);// | SDL_WINDOW_FULLSCREEN);
     if(window == NULL)
     {
       std::cerr << "[ERROR] Window could not be created. SDL error: " 

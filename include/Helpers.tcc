@@ -112,7 +112,7 @@ static T uniqueSplit(T begin, T const end)
   /* Reserve the appropriate vector size and push all iterators onto it */
   std::vector<T> v;
   v.reserve(static_cast<size_t>(std::distance(begin, end)));
-  for (T i = begin; i != end; ++i)
+  for (T i = begin; i != end; i++)
   {
     v.push_back(i); 
   }
@@ -128,14 +128,14 @@ static T uniqueSplit(T begin, T const end)
   /* Now go through and swap all the iterators that are unique to the front of
    * the list */
   size_t j = 0;
-  for (T i = begin; i != end && j != v.size(); ++i)
+  for (T i = begin; i != end && j != v.size(); i++)
   {
-      if (i == v[j])
-      {
-          std::iter_swap(i, begin);
-          ++j;
-          ++begin;
-      }
+    if (i == v[j])
+    {
+      std::iter_swap(i, begin);
+      j++;
+      begin++;
+    }
   }
   
   return begin;

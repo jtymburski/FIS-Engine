@@ -76,6 +76,7 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   // //setMinimumSize(2000, 2000);
 
   // /* Set up the map displays */
+  map_dialog.setEventHandler(event_handler);
   // //map_dialog.setFont(QFont("Times", 10));
   // map_dialog.setDialogImage("sprites/Map/Overlay/dialog.png");
   // map_dialog.setEventHandler(event_handler);
@@ -440,6 +441,59 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
   }
 
   return false;
+}
+
+std::vector<MapThing*> Map::getThingData(std::vector<int> thing_ids)
+{
+  std::vector<MapThing*> used_things;
+
+  /* Loop through all the ids to find the associated things */
+  for(auto i = thing_ids.begin(); i != thing_ids.end(); i++)
+  {
+    /* Only continue if the ID is valid and >= 0 */
+    if(*i >= 0)
+    {
+      bool found = false;
+
+      /* Loop through things */
+      for(auto j = things.begin(); j != things.end(); j++)
+      {
+        if(!found && *i == (*j)->getID())
+        {
+          used_things.push_back(*j);
+          found = true;
+        }
+      }
+
+      /* Loop through persons */
+      if(!found)
+      {
+        for(auto j = persons.begin(); j != persons.end(); j++)
+        {
+          if(!found && *i == (*j)->getID())
+          {
+            used_things.push_back(static_cast<MapThing*>(*j));
+            found = true;
+          }
+        }
+      }
+
+      /* Loop through items */
+      if(!found)
+      {
+        for(auto j = items.begin(); j != items.end(); j++)
+        {
+          if(!found && *i == (*j)->getID())
+          {
+            used_things.push_back(static_cast<MapThing*>(*j));
+            found = true;
+          }
+        }
+      }
+    }
+  }
+
+  return used_things;
 }
 
 bool Map::initiateMapSection(uint16_t section_index, int width, int height)
@@ -1400,6 +1454,25 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
     map_dialog.loadImagePickupTop("sprites/Overlay/notification_corner.png", 
                                   renderer);
     
+    /* Create a test conversation */
+    Conversation test_convo;
+    test_convo.thing_id = 0;
+    Conversation test_convo2;
+    test_convo2.thing_id = 1;
+    Conversation test_convo3;
+    test_convo3.thing_id = 1000;
+    test_convo2.next.push_back(test_convo3);
+    test_convo.next.push_back(test_convo2);
+    test_convo2.thing_id = -1;
+    test_convo.next.push_back(test_convo2);
+
+    /* TODO: Test - remove: Load into dialog */
+    if(map_dialog.initConversation(test_convo, player))
+    {
+      std::vector<int> list = map_dialog.getConversationIDs();
+      map_dialog.setConversationThings(getThingData(list));
+    }
+
     /* TODO: Testing - Remove */
     if(geography.size() > 0 && geography[0].size() > 3 
                             && geography[0][3].size() > 3)
@@ -1528,7 +1601,10 @@ bool Map::setConfiguration(Options* running_config)
     /* Update the viewport information */
     viewport.setSize(running_config->getScreenWidth(), 
                      running_config->getScreenHeight());
-    
+
+    /* Update the map dialog information */
+    map_dialog.setConfiguration(running_config);
+
     return true;
   }
   

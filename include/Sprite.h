@@ -213,6 +213,9 @@ public:
   
   /* Sets the color balance of the sprite */
   void setColorBalance(uint8_t red, uint8_t green, uint8_t blue);
+  void setColorBlue(uint8_t color);
+  void setColorGreen(uint8_t color);
+  void setColorRed(uint8_t color);
   
   /* Asserts the direction is forward for when accessing the linked list */
   bool setDirectionForward();

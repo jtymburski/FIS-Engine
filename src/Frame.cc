@@ -254,11 +254,11 @@ bool Frame::isImageSet()
  * Inputs: SDL_Renderer* renderer - the rendering context for the GPU
  *         int x - the x pixel location of the top left
  *         int y - the y pixel location of the top left
- *         int h - the height to render (in pixels)
  *         int w - the width to render (in pixels)
+ *         int h - the height to render (in pixels)
  * Output: bool - status if the render occurred
  */
-bool Frame::render(SDL_Renderer* renderer, int x, int y, int h, int w)
+bool Frame::render(SDL_Renderer* renderer, int x, int y, int w, int h)
 {
   if(isImageSet() && renderer != NULL)
   {
@@ -321,7 +321,7 @@ bool Frame::setPrevious(Frame* previous)
 bool Frame::setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle)
 {
   bool success = true;
-  
+
 	/* Attempt to load the image */
   SDL_Surface* loaded_surface = IMG_Load(path.c_str());
   
@@ -436,7 +436,7 @@ bool Frame::setTexture(SDL_Texture* texture)
     /* Set the new texture and appropriate parameters */
     this->texture = texture;
     image_set = true;
-    SDL_QueryTexture(texture, NULL, NULL, &height, &width);
+    SDL_QueryTexture(texture, NULL, NULL, &width, &height);
     
     return true;
   }

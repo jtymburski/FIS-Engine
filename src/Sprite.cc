@@ -886,6 +886,51 @@ void Sprite::setColorBalance(uint8_t red, uint8_t green, uint8_t blue)
   setColorMod();
 }
 
+/*
+ * Description: Sets the color mask rating of blue for the rendered texture. If
+ *              the value is at 255, that is full color saturation. As the
+ *              number gets lowered, the color is pulled from the rendered
+ *              texture.
+ *
+ * Inputs: uint8_t color - the color 0-255 rating (255 full)
+ * Output: none
+ */
+void Sprite::setColorBlue(uint8_t color)
+{
+  color_blue = color;
+  setColorMod();
+}
+
+/*
+ * Description: Sets the color mask rating of green for the rendered texture. If
+ *              the value is at 255, that is full color saturation. As the
+ *              number gets lowered, the color is pulled from the rendered
+ *              texture.
+ *
+ * Inputs: uint8_t color - the color 0-255 rating (255 full)
+ * Output: none
+ */
+void Sprite::setColorGreen(uint8_t color)
+{
+  color_green = color;
+  setColorMod();
+}
+
+/*
+ * Description: Sets the color mask rating of red for the rendered texture. If
+ *              the value is at 255, that is full color saturation. As the
+ *              number gets lowered, the color is pulled from the rendered
+ *              texture.
+ *
+ * Inputs: uint8_t color - the color 0-255 rating (255 full)
+ * Output: none
+ */
+void Sprite::setColorRed(uint8_t color)
+{
+  color_red = color;
+  setColorMod();
+}
+
 /* 
  * Description: Sets the direction that the linked list is navigated to
  *              FORWARD. In other words, accessing the *next pointer when

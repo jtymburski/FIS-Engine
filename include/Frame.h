@@ -92,7 +92,7 @@ public:
 
   /* Render the texture to the given renderer with the given parameters */
   bool render(SDL_Renderer* renderer, int x = 0, int y = 0, 
-                                      int h = 0, int w = 0);
+                                      int w = 0, int h = 0);
   
   /* Set next frame */
   bool setNext(Frame* next);
