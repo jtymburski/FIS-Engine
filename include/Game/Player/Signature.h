@@ -150,6 +150,8 @@ private:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  bool addExp(const uint32_t amount);
+
   bool attach(const uint8 a, const uint8 b, Bubby* new_bubby);
 
   bool close(const uint8 a, const uint8 b);

@@ -135,8 +135,8 @@ void Person::setupClass()
   /* Setup the class for a Base Person */
   if (base_person == nullptr)
   {
-    battle_flags = static_cast<BattleState>(0);
-    person_flags = static_cast<PersonState(0);
+    battle_flags = static_cast<BState>(0);
+    person_flags = static_cast<PState(0);
     //person_record{};
 
     updateRank();
@@ -285,14 +285,14 @@ void Person::updateBaseSkills()
 /* Updates the level of the person based on their current total experience */
 void Person::updateLevel()
 {
-  if (getPersonFlag(PersonState::CAN_LEVEL_UP)))
+  if (getPFlag(PState::CAN_LEVEL_UP)))
   {
     auto before = level;
 
     level = getLevelAt(total_exp);
 
     if (level == kNUM_LEVELS)
-      setPersonFlag(PersonState::MAX_LVL));
+      setPFlag(PState::MAX_LVL));
 
     if (level != before)
       updateStats();
@@ -345,6 +345,10 @@ void Person::updateSkills()
   curr_skills.clear();
   curr_skills  = learned_skills;
   curr_skills += base_skills;
+
+  for (auto equipment : equipments)
+    if (equipment != nullptr)
+      curr_skills += equipment->getSkills();
 }
 
 /* Updates the rank of the Person based on their Person record */
@@ -381,7 +385,7 @@ bool Person::addExp(const uint32_t &amount, const bool &update)
 {
   auto can_add = false;
 
-  if (getPersonFlag(PersonState::CAN_GAIN_EXP))
+  if (getPFlag(PState::CAN_GAIN_EXP))
   {
     if (total_exp + amount < kMAX_EXP)
     { 
@@ -393,10 +397,15 @@ bool Person::addExp(const uint32_t &amount, const bool &update)
       total_exp = kMAX_EXP;
       can_add = true;
     }
+
+    for (auto equipment : equipments)
+      if (equipment != nullptr)
+        equipment->getSignature()->addExp(amount);
   }
   
   if (can_add && update)
     updateLevel();
+
 }
 
 /* Prepares the person for entering Battle (flags, Attributes etc.) */
@@ -404,31 +413,32 @@ void Person::battlePrep()
 {
   curr_stats = curr_max_stats;
   temp_max_stats = curr_max_stats;
-  setBattleFlag(BattleState::IN_BATTLE, true);
-  setBattleFlag(BattleState::ALIVE, true);
-  setBattleFlag(BattleState::ATK_ENABLED, true);
-  setBattleFlag(BattleState::SKL_ENABLED, true);
-  setBattleFlag(BattleState::ITM_ENABLED, true);
+  
+  setBFlag(BState::IN_BATTLE, true);
+  setBFlag(BState::ALIVE, true);
+  setBFlag(BState::ATK_ENABLED, true);
+  setBFlag(BState::SKL_ENABLED, true);
+  setBFlag(BState::ITM_ENABLED, true);
 
-  // TODO - BattleState flags - Run enabled false for mini-bosses? [12-23-13]
+  // TODO - BState flags - Run enabled false for mini-bosses? [12-23-13]
   //      - Def, Grd, Imp enabled by class?
-  setBattleFlag(BattleState::DEF_ENABLED, true);
-  setBattleFlag(BattleState::GRD_ENABLED, true);
-  setBattleFlag(BattleState::IMP_ENABLED, true);
-  setBattleFlag(BattleState::RUN_ENABLED, true);
-  setBattleFlag(BattleState::PAS_ENABLED, true);
+  setBFlag(BState::DEF_ENABLED, true);
+  setBFlag(BState::GRD_ENABLED, true);
+  setBFlag(BState::IMP_ENABLED, true);
+  setBFlag(BState::RUN_ENABLED, true);
+  setBFlag(BState::PAS_ENABLED, true);
 
-  setBattleFlag(BattleState::SKIP_NEXT_TURN, false);
-  setBattleFlag(BattleState::MISS_NEXT_TARGET, false);
-  setBattleFlag(BattleState::NEXT_ATK_NO_EFFECT, false);
-  setBattleFlag(BattleState::IS_BUBBY, false);
-  setBattleFlag(BattleState::TWO_SKILLS, false);
-  setBattleFlag(BattleState::THREE_SKILLS, false);
-  setBattleFlag(BattleState::HALF_COST, false);
-  setBattleFlag(BattleState::REFLECT, false);
-  setBattleFlag(BattleState::BOND, false);
-  setBattleFlag(BattleState::BONDED, false);
-  setBattleFlag(BattleState::REVIVABLE, false);
+  setBFlag(BState::SKIP_NEXT_TURN, false);
+  setBFlag(BState::MISS_NEXT_TARGET, false);
+  setBFlag(BState::NEXT_ATK_NO_EFFECT, false);
+  setBFlag(BState::IS_BUBBY, false);
+  setBFlag(BState::TWO_SKILLS, false);
+  setBFlag(BState::THREE_SKILLS, false);
+  setBFlag(BState::HALF_COST, false);
+  setBFlag(BState::REFLECT, false);
+  setBFlag(BState::BOND, false);
+  setBFlag(BState::BONDED, false);
+  setBFlag(BState::REVIVABLE, false);
 }
 
 /* Clears the skills the player has learned */
@@ -445,7 +455,7 @@ bool Person::doDmg(const uint32_t &amount)
 
   if (curr_stats.getStat(Attribute::VITA) == 0)
   {
-    setBattleFlag(BattleState::ALIVE, false);
+    setBFlag(BState::ALIVE, false);
 
     return true;
   }
@@ -457,7 +467,94 @@ bool Person::doDmg(const uint32_t &amount)
 void Person::print(const bool &simple, const bool &equips,
                    const bool &flags, const bool &skills)
 {
-  
+  if (simple)
+  {
+    std::cout << "GID: " << game_id << " MID: " << my_id << " Name: " << name
+              << " Level: " << level << " Exp: " << total_exp << "\n";
+  }
+  else
+  {
+    std::cout << "Game ID: " << game_id << "\n";
+    std::cout << "My ID: " << my_id << "\n";
+    std::cout << "Base Person?" << (base_person != nullptr) << "\n";
+    std::cout << "Battle Class: " << battle_class->getName() << "\n";
+    std::cout << "Race? " << race->getName() << "\n";
+    std::cout << "Name: " << name << "\n";
+    std::cout << "[void]Rank" << "\n";
+    std::cout << "Primary: " << elementToString(primary) << "\n";
+    std::cout << "Secondary: " << elementToString(secondary) << "\n";
+    std::cout << "[void]Prim Curve: " << "\n";
+    std::cout << "[void]Secd Curve: " << "\n";
+    std::cout << "Base Stats: " << base_stats.print(true) << "\n";
+    std::cout << "Base Max: " << base_stats.print(true) << "\n";
+    std::cout << "Curr Stats: " << curr_stats.print(true) << "\n";
+    std::cout << "Curr Max Stats: " curr_max_stats.print(true) << "\n";
+    std::cout << "Temp Max Stats: " << temp_max_stats.print(true) << "\n";
+    std::cout << "Dmg Modifier: " << dmg_mod << "\n";
+    std::cout << "Exp Modifier: " << exp_mod << "\n";
+    std::cout << "Item Drops: " << item_drops.size() << "\n";
+    std::cout << "Credit Drop: " << credit_drop << "\n";
+    std::cout << "Exp Drop: " << exp_drop << "\n";
+    std::cout << "Level: " << level << "\n";
+    std::cout << "Total Exp: " << total_exp << "\n";
+    std::cout << "First Person? " << (first_person != nullptr) << "\n";
+    std::cout << "Third Person? " << (third_person != nullptr) << "\n";
+    std::cout << "Fp Bubbified? " << (fp_bubbified_sprite != nullptr) << "\n";
+    std::cout << "Tp Bubbified? " << (tp_bubbified_sprite != nullptr) << "\n";
+
+    if (skills)
+    {
+      base_skills.print();
+      curr_skills.print();
+      learned_skills.print();
+    }
+
+    if (equips)
+      for (auto equipment : equipments)
+        if (equipment != nullptr)
+          equipment->print();
+
+    if (flags)
+    {
+      std::cout << "IN_BATTLE: " << getPFlag(PState::IN_BATTLE) << "\n";
+      std::cout << "ALIVE: " << getPFlag(PState::ALIVE) << "\n";
+      std::cout << "ATK_ENABLED: " << getPFlag(PState::ATK_ENABLED) << "\n";
+      std::cout << "SKL_ENABLED: " << getPFlag(PState::SKL_ENABLED) << "\n";
+      std::cout << "ITM_ENABLED: " << getPFlag(PState::ITM_ENABLED) << "\n";
+      std::cout << "DEF_ENABLED: " << getPFlag(PState::DEF_ENABLED) << "\n";
+      std::cout << "GRD_ENABLED: " << getPFlag(PState::GRD_ENABLED) << "\n";
+      std::cout << "IMP_ENABLED: " << getPFlag(PState::IMP_ENABLED) << "\n";
+      std::cout << "RUN_ENABLED: " << getPFlag(PState::RUN_ENABLED) << "\n";
+      std::cout << "PAS_ENABLED: " << getPFlag(PState::PAS_ENABLED) << "\n";
+      std::cout << "SKIP_NEXT_TURN: " << getPFlag(PState::SKIP_NEXT_TURN) 
+                << "\n";
+      std::cout << "MISS_NEXT_TARGET: " << getPFlag(PState::MISS_NEXT_TARGET) 
+                << "\n";
+      std::cout << "NEXT_ATK_NO_EFFECT: " << getPFlag(PState::NEXT_ATK_NO_EFFECT) 
+                << "\n";
+      std::cout << "IS_BUBBY: " << getPFlag(PState::IS_BUBBY) << "\n";
+      std::cout << "TWO_SKILLS: " << getPFlag(PState::TWO_SKILLS) << "\n";
+      std::cout << "THREE_SKILLS: " << getPFlag(PState::THREE_SKILLS) << "\n";
+      std::cout << "HALF_COST: " << getPFlag(PState::HALF_COST) << "\n";
+      std::cout << "REFLECT: " << getPFlag(PState::REFLECT) << "\n";
+      std::cout << "BOND: " << getPFlag(PState::BOND) << "\n";
+      std::cout << "BONDED: " << getPFlag(PState::BONDED) << "\n";
+      std::cout << "REVIVABLE: " << getPFlag(PState::REVIVABLE) << "\n";
+      std::cout << "SLEUTH: " << getBFlaG(BState::SLEUTH) << "\n";
+      std::cout << "BEARACKS: " << getBFlaG(BState::BEARACKS) << "\n";
+      std::cout << "MAIN: " << getBFlaG(BState::MAIN) << "\n";
+      std::cout << "FINAL: " << getBFlaG(BState::FINAL) << "\n";
+      std::cout << "BOSS: " << getBFlaG(BState::BOSS) << "\n";
+      std::cout << "MINI_BOSS: " << getBFlaG(BState::MINI_BOSS) << "\n";
+      std::cout << "CAN_GAIN_EXP: " << getBFlaG(BState::CAN_GAIN_EXP) << "\n";
+      std::cout << "CAN_LEVEL_UP: " << getBFlaG(BState::CAN_LEVEL_UP) << "\n";
+      std::cout << "CAN_LEARN_SKILLS: " << getBFlaG(BState::CAN_LEARN_SKILLS) 
+                << "\n";
+      std::cout << "CAN_CHANGE_EQUIP: " << getBFlaG(BState::CAN_CHANGE_EQUIP) 
+                << "\n";
+      std::cout << "MAX_LVL: " << getBFlaG(BState::MAX_LVL) << "\n";
+    }
+  }
 }
 
 /* Removes the equipment from a given slot */
@@ -509,14 +606,14 @@ uint32_t Person::getMyID()
   return my_id;
 }
 
-/* Evaluates and returns the state of a given BattleState flag */
-bool Person::getBattleFlag(const BattleState &test_flag)
+/* Evaluates and returns the state of a given BState flag */
+bool Person::getBFlag(const BState &test_flag)
 {
   return static_cast<bool>((person_flags & test_flag) == battle_flags); 
 }
 
-/* Evaluates and returns the state of a given PersonState flag */
-bool Person::getPersonFlag(cost PersonState &test_flag)
+/* Evaluates and returns the state of a given PState flag */
+bool Person::getPFlag(cost PState &test_flag)
 {
   return static_cast<bool>((person_flags & test_flag) == person_flags);
 }
@@ -679,14 +776,14 @@ uint32_t Person::getTotalExp()
 /* Grabs the curr first person frame (based on BUBBIFIED flags) */
 Frame* Person::getFirstPerson()
 {
-  if (getPersonFlag(PersonState::BUBBIFIED))
+  if (getPFlag(PState::BUBBIFIED))
     return fp_bubbified_sprite;
   return first_person;
 }
 
 Frame* Person::getThirdPerson()
 {
-  if (getPersonFlag(PersonState::BUBBIFIED))
+  if (getPFlag(PState::BUBBIFIED))
     return tp_bubbified_sprite;
   return third_person;
 }
@@ -698,13 +795,13 @@ std::vector<const uint32_t> Person::getItemDrops()
 }
 
 /* Evaluates and returns a given battle state flag */
-void Person::setBattleFlag(const BattleState &flag, const bool set_value)
+void Person::setBFlag(const BState &flag, const bool set_value)
 {
   (set_value) ? (battle_flags |= flag) : (battle_flags &= ~flag);
 }
 
 /* Evaluates and returns a given person state flag */
-void Person::setPersonFlag(const PersonState &flag, const bool set_value)
+void Person::setPFlag(const PState &flag, const bool set_value)
 {
   (set_value) ? : (person_flags |= flag) : (person_flags &= ~flag);  
 }

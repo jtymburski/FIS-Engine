@@ -198,6 +198,18 @@ uint8Pair Signature::getTopLeft(const uint8 a, const uint8 b)
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
+bool Signature::addExp(const uint32_t amount)
+{
+  auto bubbies = getBubbies();
+  auto added   = true;
+
+  for (auto bubby : bubbies)
+    if (bubby != nullptr)
+      added &= bubby->addExperience(amount);
+
+  return added;
+}
+
 bool Signature::attach(const uint8 a, const uint8 b, Bubby* new_bubby)
 {
   /* Assert the Signature can have Bubbies added to it */
