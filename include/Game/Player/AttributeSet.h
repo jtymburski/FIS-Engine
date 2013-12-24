@@ -126,6 +126,12 @@ public:
   /* Method for getting the index of an attribute by an enum  */
   static int getIndex(const Attribute &stat);
 
+  /* Returns the element of the corresponding offensive statistic for an elmt */
+  static int getOffensiveIndex(const Element &stat);
+
+  /* Returns the element of the corresponding defensive statistic for an elmt */
+  static int getDefensiveIndex(const Element &stat);
+
   /* Method for returning the index of an attribute given a name */
   static int getIndex(const std::string &name);
 

@@ -144,29 +144,29 @@ enum class ActorDeath : std::uint16_t
  * MANN - Manna - luck which has various effects on outcomes/earnings etc.
  * NOAT - No Attribute - the enumeration does not describe an attribute
  */
-enum class Attribute : std::uint32_t
+enum class Attribute : std::uint8_t
 { 
-  VITA, 
-  QTDR, 
-  PHAG, 
-  PHFD, 
-  THAG, 
-  THFD,
-  PRAG, 
-  PRFD,
-  POAG, 
-  POFD,
-  CHAG, 
-  CHFD,
-  CYAG, 
-  CYFD,
-  NIAG, 
-  NIFD,
-  MMNT,
-  LIMB,
-  UNBR,
-  MANN,
-  NONE
+  VITA = 0, 
+  QTDR = 1, 
+  PHAG = 2, 
+  PHFD = 3, 
+  THAG = 4, 
+  THFD = 5,
+  PRAG = 6, 
+  PRFD = 7,
+  POAG = 8, 
+  POFD = 9,
+  CHAG = 10, 
+  CHFD = 11,
+  CYAG = 12, 
+  CYFD = 13,
+  NIAG = 14, 
+  NIFD = 15,
+  MMNT = 16,
+  LIMB = 17,
+  UNBR = 18,
+  MANN = 19,
+  NONE = 20
 };
 
 /*

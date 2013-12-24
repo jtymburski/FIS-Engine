@@ -25,7 +25,7 @@ THE SOFTWARE.
 /*
 Usage sample:
 
-#indlude "enum_flags.h"
+#include "enum_flags.h"
 
 ENUM_FLAGS(Fruit)
 enum class Fruit

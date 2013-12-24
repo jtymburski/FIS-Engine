@@ -433,7 +433,73 @@ bool AttributeSet::setStat(const std::string &name, const int &value)
 int AttributeSet::getIndex(const Attribute &stat)
 {
   if (stat < Attribute::NONE)
-    return getIndex(stat);
+  return static_cast<uint8_t>(stat);
+
+  return -1;
+}
+
+/*
+ * Description: Returns the index of an Element's corresponding offensive
+ *              attribute.
+ *
+ * Inputs: const Element &stat - enumerated Element to find offensive index for
+ * Output: int - the index of the corresponding attribute (if it exists)
+ */
+int AttributeSet::getOffensiveIndex(const Element &stat)
+{
+  switch (stat)
+  {
+    case(Element::PHYSICAL):
+      return getIndex(Attribute::PHAG);
+    case(Element::FIRE):
+      return getIndex(Attribute::THAG);
+    case (Element::FOREST):
+      return getIndex(Attribute::POAG);
+    case (Element::ELECTRIC):
+      return getIndex(Attribute::CHAG);
+    case (Element::DIGITAL):
+      return getIndex(Attribute::CYAG);
+    case (Element::NIHIL):
+      return getIndex(Attribute::NIAG);
+    case (Element::NONE):
+      return getIndex(Attribute::NONE);
+    default:
+      std::cerr << "Warning: obtaining offensive index of bad Element value\n";
+      break;
+  }
+
+  return -1;
+}
+
+/*
+ * Description: Returns the index of an Element's corresponding defensive
+ *              attribute.
+ *
+ * Inputs: const Element &stat - enumerated Element to find defensive index for
+ * Output: int - the index of the corresponding attribute (if it exists)
+ */
+int AttributeSet::getDefensiveIndex(const Element &stat)
+{
+  switch (stat)
+  {
+    case(Element::PHYSICAL):
+      return getIndex(Attribute::PHFD);
+    case(Element::FIRE):
+      return getIndex(Attribute::THFD);
+    case (Element::FOREST):
+      return getIndex(Attribute::POFD);
+    case (Element::ELECTRIC):
+      return getIndex(Attribute::CHFD);
+    case (Element::DIGITAL):
+      return getIndex(Attribute::CYFD);
+    case (Element::NIHIL):
+      return getIndex(Attribute::NIFD);
+    case (Element::NONE):
+      return getIndex(Attribute::NONE);
+    default:
+      std::cerr << "Warning: obtaining defensive index of bad Element value\n";
+      break;
+  }
 
   return -1;
 }
