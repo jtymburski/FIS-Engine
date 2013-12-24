@@ -52,30 +52,28 @@ const std::vector<std::string> AttributeSet::kLONG_NAMES =
   "MANNA"
 };
 
-const std::vector<int> AttributeSet::kPRESET1 =
-  {100, 30, 15, 10, 
+const std::vector<std::vector<int>> AttributeSet::kPRESETS =
+{
+  {100, 30, 15, 10, /* Weak Stats */
     15, 10, 15, 10, 
     25, 15, 15, 10, 
     15, 10, 15, 10, 
-    10, 10, 5, 1};
+    10, 10, 5, 1},
 
-const std::vector<int> AttributeSet::kPRESET2 =
-  {200, 55, 35, 25,
+  {200, 55, 35, 25, /* Normal Stats */
    20, 14, 20, 14,
    35, 28, 20, 10,
    18, 7, 18, 7,
-   20, 20, 10, 1 };
+   20, 20, 10, 1 },
 
-const std::vector<int> AttributeSet::kPRESET3 =
-  {1000, 200, 75, 45,
+  {1000, 200, 75, 45, /* Medium, strong physical, polar stats */
    60, 40, 60, 40,
    80, 75, 80, 75,
    60, 40, 60, 40,
-   40, 50, 25, 5};
+   40, 50, 25, 5}
+};
 
 const int    AttributeSet::kDEFAULT        =      0;
-const size_t AttributeSet::kNUM_PRESETS    =      3;
-const size_t AttributeSet::kNUM_VALUES     =     20;
 const int    AttributeSet::kMIN_VALUE      = -49999;
 const int    AttributeSet::kMIN_P_VALUE    =      0;
 const int    AttributeSet::kMAX_VALUE      =  99999; 
@@ -89,7 +87,7 @@ const int    AttributeSet::kMAX_VALUE      =  99999;
  *
  * Inputs: none
  */
- AttributeSet::AttributeSet()
+AttributeSet::AttributeSet()
 {
   buildAsPreset(0);
 
@@ -115,20 +113,9 @@ AttributeSet::AttributeSet(const int &preset_level, const bool &personal,
 }
 
 /*
- * Description: Copy constructor
- *
- * Inputs: const Attribute &source - const ref to the source object
- */
-AttributeSet::AttributeSet(const AttributeSet &source)
-{
-  /* Common copy function between assignment operator */
-  copySelf(source);
-}
-
-/*
  * Description: Normal constructor: constructs an AttributeSet given a
  *              std::vector<int> of values to be assigned. This
- *              vector must be of size kNUM_VALUES or the values will
+ *              vector must be of size kSHORT_NAMES.size() or the values will
  *              be set to default.
  *
  * Inputs: std::vector<int> new_values - vector of values to be set
@@ -136,20 +123,15 @@ AttributeSet::AttributeSet(const AttributeSet &source)
 AttributeSet::AttributeSet(const std::vector<int> &new_values, 
                            const bool &personal, const bool &constant)
 {
-  if (new_values.size() == kNUM_VALUES)
+  if (new_values.size() == kSHORT_NAMES.size())
     values = new_values;
   else 
-    for (size_t i = 0; i < kNUM_VALUES; i++)
+    for (size_t i = 0; i < kSHORT_NAMES.size(); i++)
       values.push_back(kDEFAULT);
 
   cleanUp();
   classSetup(personal, constant);
 }
-
-/*
- * Description: Annihilates an AttributeSet object
- */
-AttributeSet::~AttributeSet() {}
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -164,16 +146,10 @@ AttributeSet::~AttributeSet() {}
  */
 void AttributeSet::buildAsPreset(const size_t &level)
 {
-  std::vector<int> default_values(kNUM_VALUES, kDEFAULT);
-
-  if (level == 0 || level > kNUM_PRESETS)
-    values = default_values;
-  else if (level == 1)
-    values = kPRESET1;
-  else if (level == 2)
-    values = kPRESET2;
-  else if (level == 3)
-    values = kPRESET3;
+  if (level == 0 || level > kPRESETS.size())
+    values = std::vector<int>(kSHORT_NAMES.size(), kDEFAULT);
+  else
+    values = kPRESETS.at(level - 1);
 }
 
 /*
@@ -192,19 +168,6 @@ void AttributeSet::classSetup(const bool &personal, const bool &constant)
     flags |= AttributeState::CONSTANT;
 }
 
-/*
- * Description: Common function for copy constructor and assignment operator.
- *              Coppies the current object from the source's values.
- *
- * Inputs: const Attribute &source - const ref of the object to be copied
- * Output: none
- */
-void AttributeSet::copySelf(const AttributeSet &source)
-{
-  values = source.values;
-  flags  = source.flags;
-}
-
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
@@ -218,7 +181,7 @@ void AttributeSet::copySelf(const AttributeSet &source)
  */
 void AttributeSet::cleanUp()
 {
-  if (values.size() != kNUM_VALUES)
+  if (values.size() != kSHORT_NAMES.size())
     std::cerr << "Error: Wrong number values in AttributeSet" << std::endl;
 
   int min_value = kMIN_VALUE;
@@ -228,7 +191,7 @@ void AttributeSet::cleanUp()
 
   if (!getFlag(AttributeState::CONSTANT))
     for (auto it = values.begin(); it != values.end(); ++it)
-      (*it) = Helpers::setWithinRange((*it), min_value, kMAX_VALUE);
+      (*it) = Helpers::setInRange((*it), min_value, kMAX_VALUE);
 }
 
 /*
@@ -239,12 +202,16 @@ void AttributeSet::cleanUp()
  */
 void AttributeSet::print(const bool &simple)
 {
+  std::cout << "--- Attribute Set ---\n";
+
   if (simple)
     for (int value: values)
       std::cout << value << " ";
   else
     for (std::string name: kSHORT_NAMES)
       std::cout << name << " " << getStat(name) << "\n";
+
+  std::cout << "\n";
 }
 
 /*
@@ -259,7 +226,7 @@ bool AttributeSet::alterStat(const int &index, const int &amount)
   if (getFlag(AttributeState::CONSTANT))
     return false;
 
-  if (index != -1 && index < static_cast<int>(kNUM_VALUES))
+  if (index > 0 && index < static_cast<int>(kSHORT_NAMES.size()))
   {
     int min_value = kMIN_VALUE;
 
@@ -267,7 +234,7 @@ bool AttributeSet::alterStat(const int &index, const int &amount)
       min_value = kMIN_P_VALUE;
 
     values[index] += amount;
-    values[index] = Helpers::setWithinRange<int>(values[index], min_value, kMAX_VALUE);
+    values[index] = Helpers::setInRange<int>(values[index], min_value, kMAX_VALUE);
 
     return true;
   }
@@ -285,7 +252,7 @@ bool AttributeSet::alterStat(const int &index, const int &amount)
  */
 bool AttributeSet::alterStat(const Attribute &stat, const int &amount)
 {
-  return alterStat(stat, amount);
+  return alterStat(getIndex(stat), amount);
 }
 
 /*
@@ -308,7 +275,7 @@ bool AttributeSet::alterStat(const std::string &name, const int &amount)
  * Inputs: test_flag - enumerated AttributeState flags to be tested
  * Output: bool - true if the test_flag is equivalent to the current state
  */
-bool AttributeSet::getFlag(AttributeState test_flag)
+bool AttributeSet::getFlag(AttributeState test_flag) const
 {
   return static_cast<bool>((flags & test_flag) == test_flag);
 }
@@ -321,7 +288,7 @@ bool AttributeSet::getFlag(AttributeState test_flag)
  * Inputs: const int &index - const ref. to the index to be retrieved (def. 0)
  * Output: int - the value of the stat at the index, else -1
  */
-int AttributeSet::getStat(const int &index)
+int AttributeSet::getStat(const int &index) const
 {
   if (index != -1 && index < static_cast<int>(values.size()))
     return values[index];
@@ -337,7 +304,7 @@ int AttributeSet::getStat(const int &index)
  * Inputs: const Attribute &stat - enumerated value representing an attribute
  * Output: int - the value of the stat corresponding to the enum value, or -1
  */
-int AttributeSet::getStat(const Attribute &stat)
+int AttributeSet::getStat(const Attribute &stat) const
 {
   return getStat(getIndex(stat));
 }
@@ -349,20 +316,9 @@ int AttributeSet::getStat(const Attribute &stat)
  * Inputs: const std::string &name - name of stat to check value for
  * Output: int - the value of the stat if it exists, else -1
  */
-int AttributeSet::getStat(const std::string &name)
+int AttributeSet::getStat(const std::string &name) const
 {
   return getStat(getIndex(name));
-}
-
-/*
- * Description: Returns the entire vector of values of the AttributeSet
- *
- * Inputs: none
- * Output: std::vector<int> - vector of values
- */
-std::vector<int> AttributeSet::getValues()
-{
-  return values;
 }
 
 /*
@@ -378,7 +334,7 @@ bool AttributeSet::setStat(const int &index, const int &value)
   if (getFlag(AttributeState::CONSTANT))
     return false;
 
-  if (index >= 0 && index < static_cast<int>(kNUM_VALUES))
+  if (index >= 0 && index < static_cast<int>(kSHORT_NAMES.size()))
   {
     auto min_value = kMIN_VALUE;
 
@@ -386,7 +342,7 @@ bool AttributeSet::setStat(const int &index, const int &value)
       min_value = kMIN_P_VALUE;
 
     values[index] = value;
-    values[index] = Helpers::setWithinRange(values[index], min_value, kMAX_VALUE);
+    values[index] = Helpers::setInRange(values[index], min_value, kMAX_VALUE);
     return true;
   }
 
@@ -433,7 +389,7 @@ bool AttributeSet::setStat(const std::string &name, const int &value)
 int AttributeSet::getIndex(const Attribute &stat)
 {
   if (stat < Attribute::NONE)
-  return static_cast<uint8_t>(stat);
+    return static_cast<uint8_t>(stat);
 
   return -1;
 }
@@ -514,7 +470,7 @@ int AttributeSet::getDefensiveIndex(const Element &stat)
 int AttributeSet::getIndex(const std::string &name)
 {
   /* Find the index in the vector of short or long names */
-  for (size_t i = 0; i < kNUM_VALUES; i++)
+  for (size_t i = 0; i < kSHORT_NAMES.size(); i++)
     if (kSHORT_NAMES[i] == name || kLONG_NAMES[i] == name)
       return i;
 
@@ -523,14 +479,15 @@ int AttributeSet::getIndex(const std::string &name)
 }
 
 /*
- * Description: Returns the size of an attribute set (the value of kNUM_VALUES)
+ * Description: Returns the size of an attribute set (the value of 
+ *              kSHORT_NAMES.size())
  *
  * Inputs: none
  * Output: size_t - the number of values contained in an attribute set
  */
 size_t AttributeSet::getSize()
 {
-  return kNUM_VALUES;
+  return kSHORT_NAMES.size();
 }
 
 /*
@@ -540,9 +497,9 @@ size_t AttributeSet::getSize()
  * Inputs: const Attribute &stat - the enum. stat to find the name for
  * Output: std::string - the long version of the attributes name (if it exists)
  */
-std::string AttributeSet::getLongName(const Attribute &stat)
+std::string AttributeSet::getLongName(const Attribute &s)
 {
-  auto index = getIndex(stat);
+  auto index = getIndex(s);
 
   if (index != -1)
     return kLONG_NAMES[index];
@@ -556,9 +513,9 @@ std::string AttributeSet::getLongName(const Attribute &stat)
  * Inputs: const size_t &index - the index to return the long-form name of
  * Output: std::string - the string stored in kLONG_NAMES[index]
  */
-std::string AttributeSet::getLongName(const size_t &index)
+std::string AttributeSet::getLongName(const size_t &index) 
 {
-  if (index < kNUM_VALUES)
+  if (index < kSHORT_NAMES.size())
     return kLONG_NAMES[index];
 
   return "";
@@ -571,7 +528,7 @@ std::string AttributeSet::getLongName(const size_t &index)
  * Inputs: const Attribute &stat - the enumerated attribute to find the name for
  * Output: std::string - the short version of the attributes name (if it exists)
  */
-std::string AttributeSet::getName(const Attribute &stat)
+std::string AttributeSet::getName(const Attribute &stat) 
 {
   auto index = getIndex(stat);
 
@@ -587,9 +544,9 @@ std::string AttributeSet::getName(const Attribute &stat)
  * Inputs: const size_t &index - the index to return the short-form name of
  * Output: std::string - the string stored in kLONG_NAMES[index]
  */
-std::string AttributeSet::getName(const size_t &index)
+std::string AttributeSet::getName(const size_t &index) 
 {
-  if (index < kNUM_VALUES)
+  if (index < kSHORT_NAMES.size())
     return kSHORT_NAMES[index];
 
   return "";
@@ -600,26 +557,6 @@ std::string AttributeSet::getName(const size_t &index)
  *============================================================================*/
 
 /*
- * Description: Overloaded assignment operator. Checks for self-assignment, then
- *              calls copySelf on the given object as the common copying
- *              method between this function and the copy constructor.
- *
- * Inputs: const AttributeSet& source - the source object to be copied
- * Output: AttributeSet& - ref to the copied object
- */
-AttributeSet& AttributeSet::operator= (const AttributeSet &source)
-{
-  /* Check for self assignment */
-  if (this == &source)
-    return *this;
-
-  copySelf(source);
-  
-  /* Return the copied object by ref */
-  return *this;
-}
-
-/*
  * Description: Overloaded compound assignment operator. Adds a given 
  *              AttributeSet (rhs) to the current object and returns itself.
  *
@@ -628,9 +565,15 @@ AttributeSet& AttributeSet::operator= (const AttributeSet &source)
  */
 AttributeSet& AttributeSet::operator+=(const AttributeSet& rhs)
 {
+  /* Inherit flags from rhs */
+  this->classSetup(rhs.getFlag(AttributeState::PERSONAL), 
+                   rhs.getFlag(AttributeState::CONSTANT));
+
   if (!this->getFlag(AttributeState::CONSTANT))
-    for (size_t i = 0; i < kNUM_VALUES; i++)
+  {
+    for (size_t i = 0; i < kSHORT_NAMES.size(); i++)
       this->values[i] = this->values[i] + rhs.values[i];
+  }
 
   /* Assert the new values are within range */
   this->cleanUp();
@@ -648,9 +591,15 @@ AttributeSet& AttributeSet::operator+=(const AttributeSet& rhs)
  */
 AttributeSet& AttributeSet::operator-=(const AttributeSet& rhs)
 {
+  /* Inherit flags from rhs */
+  this->classSetup(rhs.getFlag(AttributeState::PERSONAL), 
+                   rhs.getFlag(AttributeState::CONSTANT));
+
   if (!this->getFlag(AttributeState::CONSTANT))
-    for (size_t i = 0; i < kNUM_VALUES; i++)
+  {
+    for (size_t i = 0; i < kSHORT_NAMES.size(); i++)
       this->values[i] = this->values[i] - rhs.values[i];
+  }
 
   /* Assert the new values are within range */
   this->cleanUp();

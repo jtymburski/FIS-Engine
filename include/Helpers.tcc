@@ -81,7 +81,7 @@ static bool isInRange(const T &value, const T &l_bound, const T &r_bound)
  * Output: T - object after it has been set within the range
  */
 template<typename T, typename U> 
-static T setWithinRange(T &value, const U &l_bound, const U &r_bound)
+static T setInRange(T &value, const U &l_bound, const U &r_bound)
 {
   auto min = std::min(l_bound, r_bound);
   auto max = std::max(l_bound, r_bound);

@@ -106,8 +106,8 @@ Person::~Person()
             equipment == getEquip(RARM))
         {
           delete equipment;
-          
         }
+
         equipment = nullptr;
       }
     }
