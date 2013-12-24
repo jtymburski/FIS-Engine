@@ -26,6 +26,14 @@ Equipment::Equipment(const uint32_t game_id, const std::string name,
   createSig(x, y);
 }
 
+Equipment::~Equipment()
+{
+  if (equip_signature != nullptr)
+    delete equip_signature;
+
+  equip_signature = nullptr;
+}
+
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -39,7 +47,7 @@ Equipment::Equipment(const uint32_t game_id, const std::string name,
  */
 void Equipment::createSig(const size_t size_x, const size_t size_y)
 {
-  std::shared_ptr<Signature>{new Signature(size_x, size_y)};
+  equip_signature = new Signature(size_x, size_y);
 }
 
 /*=============================================================================
@@ -94,7 +102,7 @@ EquipSlots Equipment::getEquipSlot()
   return equip_slot;
 }
 
-std::shared_ptr<Signature> Equipment::getSignature()
+Signature* Equipment::getSignature()
 {
   return equip_signature;
 }

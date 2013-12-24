@@ -40,10 +40,12 @@ public:
   	        const uint32_t value, const uint32_t mass,
   	        Frame* thumb, const size_t x, const size_t y);
 
+  ~Equipment();
+
 private:
 
   /* Pointer to the signature */
-  std::shared_ptr<Signature> equip_signature;
+  Signature* equip_signature;
 
   /* Equipment flags */
   EquipState equip_flags;
@@ -76,7 +78,7 @@ public:
 
   EquipSlots getEquipSlot();
 
-  std::shared_ptr<Signature> getSignature();
+  Signature* getSignature();
 
   SkillSet getSkills();
 
