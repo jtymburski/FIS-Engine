@@ -24,16 +24,23 @@
 #include "EnumFlags.h"
 #include "Helpers.h"
 
+/* AttributeState flags */
 ENUM_FLAGS(AttributeState)
 enum class AttributeState
 {
-  PERSONAL = 1 << 0,
-  CONSTANT = 1 << 1
+  PERSONAL = 1 << 0, /* Is this AttributeSet restricted to Personal values?   */
+  CONSTANT = 1 << 1  /* Is this AttributeSet restricted to unchanging values? */
 };
 
 class AttributeSet
 {
 public:
+  /* Default move-constructor */
+  AttributeSet(AttributeSet&&) = default;
+
+  /* Default copy-constructor */
+  AttributeSet(const AttributeSet&) = default;
+
   /* Default constructor */
   AttributeSet();
 
@@ -41,36 +48,29 @@ public:
   AttributeSet(const int &preset_level, const bool &personal = false,
                const bool &constant = false);
 
-  /* Copy constructor */
-  AttributeSet(const AttributeSet &source);
-
   /* Construct and AttributeSet from a vector of values */
   AttributeSet(const std::vector<int> &new_values, const bool &personal = false,
                const bool &constant = false);
 
-  /* Annihilates an AttributeSet object */
-  ~AttributeSet();
+  /* Default destructor */
+  ~AttributeSet() = default;
 
 private:
   /* Flags for the state of the Attribtue */
-  AttributeState flags;
+  AttributeState flags{static_cast<AttributeState>(0)};
 
   /* The values of the statistics within the AttributeSet */
-  std::vector<int> values;
+  std::vector<int> values{};
 
   /* ------------ Constants --------------- */
-  static const std::vector<std::string> kSHORT_NAMES; /* The names of Attrs */
-  static const std::vector<std::string> kLONG_NAMES;  /* Full names of Attrs */
-  static const std::vector<int> kPRESET1; /* Basic starting stats */
-  static const std::vector<int> kPRESET2; /* Weak stats */
-  static const std::vector<int> kPRESET3; /* Medium stats */
+  static const std::vector<std::string> kSHORT_NAMES;  /* The names of Attrs  */
+  static const std::vector<std::string> kLONG_NAMES;   /* Full names of Attrs */
+  static const std::vector<std::vector<int>> kPRESETS; /* Pre-built stats     */
 
-  static const int    kDEFAULT;     /* Default value for a min stat */
-  static const size_t kNUM_PRESETS; /* The number of presets one may build from */
-  static const size_t kNUM_VALUES;  /* The number of values in an AttributeSet */
-  static const int    kMIN_P_VALUE; /* The minimum value for a p. set */
-  static const int    kMIN_VALUE;   /* The minimum value of any stat */
-  static const int    kMAX_VALUE;   /* The maximum value of any stat */
+  static const int kDEFAULT;     /* Default value for a min stat   */
+  static const int kMIN_P_VALUE; /* The minimum value for a p. set */
+  static const int kMIN_VALUE;   /* The minimum value of any stat  */
+  static const int kMAX_VALUE;   /* The maximum value of any stat  */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -81,9 +81,6 @@ private:
 
   /* Basic setup for construction */
   void classSetup(const bool &personal, const bool &constant);
-
-  /* Method for copy constructor / assignment operator */
-  void copySelf(const AttributeSet &source);
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
@@ -102,16 +99,13 @@ public:
   bool alterStat(const std::string &name, const int &amount);
 
   /* Evaluate a given AttributeState enumerated flag */
-  bool getFlag(AttributeState test_flag);
+  bool getFlag(AttributeState test_flag) const;
 
   /* Methods for returning the value of a stat given either an index, an
      enumerated value, or a string name (short or long) */
-  int getStat(const int &index = 0);
-  int getStat(const Attribute &stat);
-  int getStat(const std::string &name);
-
-  /* Returns the vector of values */
-  std::vector<int> getValues();
+  int getStat(const int &index = 0) const;
+  int getStat(const Attribute &stat) const;
+  int getStat(const std::string &name) const;
 
   /* Methods for assigning a new value to a stat given either an index, an
    * enumerated value, or a string name (short or long) */
@@ -139,7 +133,7 @@ public:
   static size_t getSize();
 
   /* Returns the long form name of an attribtue given an enumerated value */
-  static std::string getLongName(const Attribute &stat);
+  static std::string getLongName(const Attribute &s);
 
   /* Returns the long-form name of an attribute at a given index */
   static std::string getLongName(const size_t &index);
@@ -154,8 +148,11 @@ public:
  * OPERATOR FUNCTIONS
  *===========================================================================*/ 
 public:
-  /* Overloaded = operator for copying */
-  AttributeSet& operator=(const AttributeSet &source);
+  /* Default move-assignment operator */
+  AttributeSet& operator=(AttributeSet&&) = default;
+
+  /* Default assignment operator */
+  AttributeSet& operator=(const AttributeSet&) = default;
 
   /* Overloaded += operator for compound assignment */
   AttributeSet& operator+=(const AttributeSet& rhs);

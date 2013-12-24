@@ -703,9 +703,9 @@ bool Inventory::setImages(Frame* const new_backdrop, Frame* const new_thumbnail)
  	                         const uint32_t item_lim, const uint8_t item_ea,
  	                         const double mass_lim)
 {
-  bubby_limit = Helpers::setWithinRange(bubby_lim, 0, 4);
-  equip_limit = Helpers::setWithinRange(equip_lim, kMIN_ITEM, kMAX_ITEM);
-  item_limit = Helpers::setWithinRange(item_lim, kMIN_ITEM, kMAX_ITEM);
- item_each_limit=Helpers::setWithinRange(item_ea,kMIN_EACH_ITEM,kMAX_EACH_ITEM);
-  mass_limit = Helpers::setWithinRange(mass_lim, kMIN_MASS, kMAX_MASS);
+  bubby_limit = Helpers::setInRange(bubby_lim, 0, 4);
+  equip_limit = Helpers::setInRange(equip_lim, kMIN_ITEM, kMAX_ITEM);
+  item_limit = Helpers::setInRange(item_lim, kMIN_ITEM, kMAX_ITEM);
+ item_each_limit=Helpers::setInRange(item_ea,kMIN_EACH_ITEM,kMAX_EACH_ITEM);
+  mass_limit = Helpers::setInRange(mass_lim, kMIN_MASS, kMAX_MASS);
 }

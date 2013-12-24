@@ -70,7 +70,7 @@ Game::~Game()
 /* Set up the battle - old battle needs to be deleted prior to calling */
 void Game::setupBattle()
 {
-  bool enable_test = false;
+  bool enable_test = true;
 
   if (enable_test)
   {
@@ -110,6 +110,26 @@ void Game::setupBattle()
   //std::cout << "Ending clock: " << dtn2.count() << std::endl;
   //std::cout << "Periods elapsed: " << (dtn2.count() - dtn.count()) / 1000 << std::endl;
   
+  // AttributeSet testing
+
+  AttributeSet as1;
+  AttributeSet as2(0);
+  AttributeSet as3(1, true);
+  AttributeSet as4(2);
+  AttributeSet as5(3);
+  AttributeSet as6(4);
+
+  for (int i = 0; i < 100; i++)
+    as1 += as3;
+
+  as4 = as3;
+  as5 = as3;
+  as5.alterStat("VITA", 1);
+
+  if (as3 == as4)
+    std::cout << "1true\n";
+  if (as3 == as5)
+    std::cout << "2true\n";
 
   //auto index = 0;
   //for (auto value : values)
