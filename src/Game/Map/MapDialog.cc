@@ -20,9 +20,13 @@
 #include "Game/Map/MapDialog.h"
 
 /* Constant Implementation - see header file for descriptions */
+const uint8_t MapDialog::kBORDER_WIDTH = 3;
+const uint8_t MapDialog::kHIGHLIGHT_MARGIN = 5;
 const uint8_t MapDialog::kLINE_SPACING = 8;
 const uint8_t MapDialog::kMARGIN_SIDES = 50;
 const uint8_t MapDialog::kMARGIN_TOP = 50;
+const uint8_t MapDialog::kNAME_BOX_OFFSET = 45;
+const float MapDialog::kOPACITY_BACKEND = 0.65;
 const uint8_t MapDialog::kOPTION_OFFSET = 50;
 const float MapDialog::kSHIFT_TIME = 3.704;
 const uint8_t MapDialog::kTEXT_LINES = 4;
@@ -75,12 +79,28 @@ std::vector<int> MapDialog::calculateThingList(Conversation convo)
 }
 
 /* -------------------------------------------------------------------------- */
+void MapDialog::clearConversation(Conversation* convo)
+{
+  if(convo != NULL)
+  {
+    /* Recursively get all other IDs from embedded conversations */
+    for(auto i = convo->next.begin(); i != convo->next.end(); i++)
+      clearConversation(&(*i));
+    convo->text = "";
+    convo->thing_id = -1;
+    convo->next.clear();
+  }
+}
+
+/* -------------------------------------------------------------------------- */
 void MapDialog::clearData()
 {
+  clearConversation(&conversation_info);
   conversation_ready = false;
   conversation_update = false;
   conversation_waiting = false;
   dialog_mode = DISABLED;
+  dialog_status = OFF;
   dialog_offset = 0.0;
   dialog_option = 0;
   dialog_option_top = 0;
@@ -91,9 +111,14 @@ void MapDialog::clearData()
   system_options = NULL;
   target = NULL;
   text_index = 0.0;
+  text_index_max = 0;
+  text_lines.clear();
+  text_options.clear();
+  text_strings.clear();
   text_top = 0;
   text_update = false;
   thing_active = NULL;
+  thing_data.clear();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -156,6 +181,7 @@ MapThing* MapDialog::getThingReference(int id)
   return thing_reference;
 }
 
+/* -------------------------------------------------------------------------- */
 void MapDialog::renderOptions(SDL_Renderer* renderer, 
                               std::vector<std::string> options)
 {
@@ -174,15 +200,16 @@ void MapDialog::renderOptions(SDL_Renderer* renderer,
   }
 }
 
+/* -------------------------------------------------------------------------- */
 void MapDialog::setConversation(Conversation* new_convo)
 {
   /* Clear the old conversation */
+  clearConversation(&conversation_info);
   conversation_info.text = "";
   conversation_info.thing_id = -1;
   conversation_info.category = DialogCategory::TEXT;
   if(event_handler != NULL)
     conversation_info.action_event = event_handler->createBlankEvent();
-  conversation_info.next.clear();
 
   /* Insert new conversation */
   if(new_convo != NULL)
@@ -202,7 +229,7 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
   int render_height = img_convo.getHeight();
   int render_width = img_convo.getWidth();
   int txt_length = img_convo.getWidth() - (kMARGIN_SIDES << 1);
-//std::cout << "A" << std::endl;
+
   /* Set the active thing data plus grab image frame */
   thing_active = getThingReference(conversation_info.thing_id);
   if(thing_active != NULL)
@@ -219,7 +246,7 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
     if(width_modifier > kMARGIN_SIDES)
       txt_length -= (width_modifier - kMARGIN_SIDES);
   }
-//std::cout << "B" << std::endl;
+
   /* Create the name information */
   std::string name = "";
   Text name_text;
@@ -233,7 +260,7 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
     if((img_convo.getHeight() + img_name_l.getHeight()) > render_height)
       render_height = img_convo.getHeight() + img_name_l.getHeight();
   }
-//std::cout << "C" << std::endl;
+
   /* Render texture creation and setup */
   SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                                            SDL_TEXTUREACCESS_TARGET, 
@@ -242,34 +269,35 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
   SDL_SetRenderTarget(renderer, texture);
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
   SDL_RenderClear(renderer);
-//std::cout << "D" << std::endl;
+
   /* Render images onto texture */
   int convo_y = render_height - img_convo.getHeight();
   img_convo.render(renderer, 0, convo_y);
   if(dialog_frame != NULL)
     dialog_frame->render(renderer, render_width - dialog_frame->getWidth(), 
                                    render_height - dialog_frame->getHeight());
-  //std::cout << "E" << std::endl;
+  
+  /* Handle name rendering, if it exists */
   if(!name.empty())
   {
     /* Draw corners to name box */
     int textbox_height = img_name_l.getHeight();
-    img_name_l.render(renderer, 45, convo_y - textbox_height);
+    img_name_l.render(renderer, kNAME_BOX_OFFSET, convo_y - textbox_height);
     img_name_r.render(renderer, 
-                      45 + img_name_l.getWidth() + name_text.getWidth(), 
-                      convo_y - textbox_height);
-//std::cout << "F" << std::endl;
+                kNAME_BOX_OFFSET + img_name_l.getWidth() + name_text.getWidth(), 
+                convo_y - textbox_height);
+
     /* Draw top white bar encapsulating text */
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_Rect src_rect;
-    src_rect.x = 45 + img_name_l.getWidth();
+    src_rect.x = kNAME_BOX_OFFSET + img_name_l.getWidth();
     src_rect.y = convo_y - textbox_height;
     src_rect.w = name_text.getWidth();
-    src_rect.h = 3;
+    src_rect.h = kBORDER_WIDTH;
     SDL_RenderFillRect(renderer, &src_rect);
-//std::cout << "G" << std::endl;
+
     /* Draw opaque fill under text */
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255*0.65);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255 * kOPACITY_BACKEND);
     src_rect.y += src_rect.h;
     src_rect.h = textbox_height - src_rect.h;
     SDL_RenderFillRect(renderer, &src_rect);
@@ -280,10 +308,10 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
                      src_rect.y + (src_rect.h - name_text.getHeight()) / 2);
   } 
   SDL_SetRenderTarget(renderer, NULL);
-//std::cout << "H" << std::endl;
+
   /* Create the base frame display texture */
   frame_convo.setTexture(texture);
-//std::cout << "I" << std::endl;
+
   /* Determine the length of the viewing area and split text lines */
   std::string txt_line = conversation_info.text;
   if(font_normal != NULL)
@@ -291,26 +319,18 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
     if(conversation_info.next.size() > 1)
     {
       text_strings = Text::splitLine(font_normal, txt_line, txt_length, true);
-      //std::cout << "1A" << std::endl;
+
       /* Fill the options */
       int options_length = txt_length - kOPTION_OFFSET;
       std::vector<std::string> options_text;
-      //std::cout << "1B: " << options_length << std::endl;
-      //for(uint16_t i = 0; i < conversation_info.next.size(); i++)
-      //  std::cout << "TEST: " << conversation_info.next[i].text << std::endl;
 
       for(auto i = conversation_info.next.begin(); 
                i != conversation_info.next.end(); i++)
       {
-        //std::cout << "INFO: " << (font_normal == NULL) << " " << (*i).text << std::endl;
-        std::vector<std::string> str = Text::splitLine(font_normal, (*i).text, options_length, true);
-        //std::cout << "LENGTH: " << str.size() << std::endl;
-        options_text.push_back(str.at(0));
-           //Text::splitLine(font_normal, (*i).text, options_length, true).at(0));
+        options_text.push_back(
+           Text::splitLine(font_normal, (*i).text, options_length, true).at(0));
       }
-      //std::cout << "1" << std::endl;
       renderOptions(renderer, options_text);
-      //std::cout << "2" << std::endl;
     }
     else
     {
@@ -320,13 +340,13 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
 
     setupRenderText(text_strings, true);
   }
-//std::cout << "J" << std::endl;
+
   /* Modify the offset if it's above the new limits */
   if(dialog_offset > 0.0)
     dialog_offset = frame_convo.getHeight();
   dialog_option = 0;
   dialog_option_top = 0;
-//std::cout << "K" << std::endl;
+
   // /* Get and set up all the pertinent thing data */
   // dialog_text_index = 0;
   // int img_width = 0;
@@ -492,19 +512,41 @@ void MapDialog::keyDownEvent(SDL_KeyboardEvent event)
   {
     if(isConversationActive() && dialog_status == ON)
     {
+      /* If the letters still need to be displayed, finish */
       if(text_index < text_index_max)
       {
         text_index = text_index_max;
         text_update = true;
       }
-      else if(conversation_info.next.size() > 0)
-      {
-        conversation_info = conversation_info.next[dialog_option];
-        conversation_update = true;
-      }
-      else
+      /* Otherwise, if end of conversation has been reached, start to hide it */
+      else if(conversation_info.next.size() == 0)
       {
         dialog_status = HIDING;
+      }
+      /* Otherwise, there is a next conversation. Proceed */
+      else
+      {
+        bool multiple = (conversation_info.next.size() > 1);
+        
+        /* Do the initial conversation shift */
+        //executeEvent();
+        Conversation new_convo = conversation_info.next[dialog_option];
+        setConversation(&new_convo);
+        
+        /* If multiple options, shift to the next one */
+        if(multiple)
+        {
+          //executeEvent();
+          if(conversation_info.next.size() == 0)
+            dialog_status = HIDING;
+          else
+          {
+            Conversation new_convo2 = conversation_info.next[0];
+            setConversation(&new_convo2);  
+          }
+        }
+        
+        conversation_update = true;
       }
     }
   }
@@ -651,17 +693,31 @@ bool MapDialog::render(SDL_Renderer* renderer)
       /* Render the options, if applicable */
       if(conversation_info.next.size() > 1 && text_index >= text_index_max)
       {
-        uint16_t index = dialog_option_top;
+        uint8_t index = dialog_option_top;
         y_index += (kLINE_SPACING << 1);
 
         /* Loop through and render them all, properly offset */
         while(index < text_options.size() && 
               index < (dialog_option_top + kTEXT_OPTIONS))
         {
+          /* If this option is the active one, render a highlight box under */
+          if(index == dialog_option)
+          {
+            uint8_t m = kHIGHLIGHT_MARGIN;
+            SDL_Rect highlight_rect = {0, 0, 0, 0};
+            highlight_rect.x = x_index + kMARGIN_SIDES + kOPTION_OFFSET - m;
+            highlight_rect.y = y_index - m;
+            highlight_rect.w = text_options[index]->getWidth() + (m << 1);
+            highlight_rect.h = text_options[index]->getHeight() + (m << 1);
+
+            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 45);
+            SDL_RenderFillRect(renderer, &highlight_rect);
+          }
+          
+          /* Finally, render the option text and increment index */
           text_options[index]->render(renderer, 
                              x_index + kMARGIN_SIDES + kOPTION_OFFSET, y_index);
           y_index += text_options[index]->getHeight() + (kLINE_SPACING << 1);
-
           index++;
         }
       }

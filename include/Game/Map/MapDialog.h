@@ -105,9 +105,13 @@ private:
   bool text_update;
 
   /* -------------------------- Constants ------------------------- */
+  const static uint8_t kBORDER_WIDTH; /* The border width around the dialogs */
+  const static uint8_t kHIGHLIGHT_MARGIN; /* Highlighted option margin pixels */
   const static uint8_t kLINE_SPACING; /* The spacing between lines of font */
   const static uint8_t kMARGIN_SIDES; /* The left and right margin size */
   const static uint8_t kMARGIN_TOP; /* The top margin size */
+  const static uint8_t kNAME_BOX_OFFSET; /* Name box dialog x offset */
+  const static float kOPACITY_BACKEND; /* Backend display box opacity */
   const static uint8_t kOPTION_OFFSET; /* The offset of the options from text */
   const static float kSHIFT_TIME; /* Time to make the display visible */
   const static uint8_t kTEXT_LINES; /* The max number of lines displayed */
@@ -121,6 +125,9 @@ private:
   /* Computes all IDs that are needed for displaying the conversation */
   std::vector<int> calculateThingList(Conversation convo);
 
+  /* Clears the vector conversation data */
+  void clearConversation(Conversation* convo);
+  
   /* Clears all stored pointer data within the class */
   void clearData();
 
