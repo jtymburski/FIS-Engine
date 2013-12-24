@@ -1258,10 +1258,79 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
                           geography[map_index][0].size());
     }
   }
-  else if(event.keysym.sym == SDLK_SPACE)
+  else if(map_dialog.isConversationActive())
+    map_dialog.keyDownEvent(event);
+  else if(event.keysym.sym == SDLK_0)
   {
-    initiateThingInteraction();
+    Conversation convo;// = new Conversation;
+    convo.category = DialogCategory::TEXT;
+    //convo->action_event = blank_event;
+    convo.text = "This is the initial conversation point that will start it. ";
+    convo.text += "How can this continue? It must pursue to complete ";
+    convo.text += "embodiment. Ok, maybe I'll just keep typing until I break ";
+    convo.text += "the entire compiler.";
+    convo.thing_id = 0;
+    Conversation test1, test2, test3, test4, test5;
+    test1.category = DialogCategory::TEXT;
+    //test1.action_event = blank_event;
+    test1.text = "This is a test to see how data runs. The line will split ";
+    test1.text += "once unless it is an option based selection in which case ";
+    test1.text += "it will restrict."; 
+    test1.thing_id = 3;
+    test2.category = DialogCategory::TEXT;
+    //test2.action_event = blank_event;
+    test2.text = "This is a no man case. See what happens!! Ok, this is the ";
+    test2.text += "too long case where the lines never cease to exist and the ";
+    test2.text += "points aren't for real. I'm feeling a bit hungry though ";
+    test2.text += "so I don't know if I'll have the stamina to clean up this ";
+    test2.text += "case in all it's glory. Repeat: ";
+    test2.text += test2.text;
+    test2.text += test2.text;
+    test2.thing_id = 2;
+    test2.next.push_back(test1);
+    test3.category = DialogCategory::TEXT;
+    //test3.action_event = blank_event;
+    test3.text = "Back to finish off with a clean case with a couple of lines.";
+    test3.text += " So this requires me to write a bunch of BS to try and fill";
+    test3.text += " these lines.";
+    test3.text += test3.text;
+    test3.text += test3.text;
+    test3.thing_id = 24;
+    test3.next.push_back(test2);
+    test4.category = DialogCategory::TEXT;
+    //test4.action_event = blank_event;
+    test4.text = "Option 1 - This goes on and on and on and on and on and ";
+    test4.text += "lorem ipsum. This is way too long to be an option. Loser";
+    test4.thing_id = -1;
+    test4.next.push_back(test2);
+    test5.category = DialogCategory::TEXT;
+    //test5.action_event = blank_event;
+    test5.text = "Option 2";
+    test5.thing_id = -1;
+    test5.next.push_back(test3);
+    test1.next.push_back(test4);
+    test1.next.push_back(test5);
+    test4.text = "Option 3";
+    test1.next.push_back(test4);
+    test5.text = "Option 4";
+    test1.next.push_back(test5);
+    test4.text = "Option 5";
+    test1.next.push_back(test4);
+    test5.text = "Option 6";
+    test1.next.push_back(test5);
+    convo.next.push_back(test1);
+
+    /* Run the conversation and then delete */
+    if(map_dialog.initConversation(convo, player))
+    {
+      std::vector<int> list = map_dialog.getConversationIDs();
+      map_dialog.setConversationThings(getThingData(list));
+    }
+
+    //delete convo;
   }
+  else if(event.keysym.sym == SDLK_SPACE)
+    initiateThingInteraction();
   else if(player != NULL)
   {
     if((event.keysym.sym == SDLK_LSHIFT || event.keysym.sym == SDLK_RSHIFT) && 
@@ -1288,7 +1357,9 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
 
 void Map::keyUpEvent(SDL_KeyboardEvent event)
 {
-  if(player != NULL)
+  if(map_dialog.isConversationActive())
+    map_dialog.keyUpEvent(event);
+  else if(player != NULL)
   {
     if((event.keysym.sym == SDLK_LSHIFT || event.keysym.sym == SDLK_RSHIFT) && 
        running)
@@ -1446,32 +1517,10 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
     
     /* Load map dialog sprites - TODO: In file? */
     map_dialog.loadImageConversation("sprites/Overlay/dialog.png", renderer);
-    map_dialog.loadImageNameLeft("sprites/Overlay/dialog_corner.png", renderer);
-    map_dialog.loadImageNameRight("sprites/Overlay/dialog_corner.png", 
-                                  renderer);
-    map_dialog.loadImagePickupBottom("sprites/Overlay/notification_corner.png", 
-                                     renderer);
-    map_dialog.loadImagePickupTop("sprites/Overlay/notification_corner.png", 
-                                  renderer);
-    
-    /* Create a test conversation */
-    Conversation test_convo;
-    test_convo.thing_id = 0;
-    Conversation test_convo2;
-    test_convo2.thing_id = 1;
-    Conversation test_convo3;
-    test_convo3.thing_id = 1000;
-    test_convo2.next.push_back(test_convo3);
-    test_convo.next.push_back(test_convo2);
-    test_convo2.thing_id = -1;
-    test_convo.next.push_back(test_convo2);
-
-    /* TODO: Test - remove: Load into dialog */
-    if(map_dialog.initConversation(test_convo, player))
-    {
-      std::vector<int> list = map_dialog.getConversationIDs();
-      map_dialog.setConversationThings(getThingData(list));
-    }
+    map_dialog.loadImageNameLeftRight(
+                                 "sprites/Overlay/dialog_corner.png", renderer);
+    map_dialog.loadImagePickupTopBottom(
+                           "sprites/Overlay/notification_corner.png", renderer);
 
     /* TODO: Testing - Remove */
     if(geography.size() > 0 && geography[0].size() > 3 
@@ -1794,7 +1843,8 @@ bool Map::update(int cycle_time)
   for(uint16_t i = 0; i < things.size(); i++)
     things[i]->update(cycle_time, NULL);
   
-  /* Finally, update the viewport */
+  /* Finally, update the viewport and dialog */
+  map_dialog.update(cycle_time);
   viewport.update();
   
   return false;

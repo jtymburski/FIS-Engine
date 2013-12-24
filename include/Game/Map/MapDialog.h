@@ -56,18 +56,25 @@ private:
   /* The currently running conversation information */
   Conversation conversation_info;
   bool conversation_ready;
+  bool conversation_update;
   bool conversation_waiting;
-
-  /* The two render fonts, for displaying any text */
-  TTF_Font* font_normal;
-  TTF_Font* font_title;
 
   /* The running dialog mode and status - used for display control */
   DialogMode dialog_mode;
   DialogStatus dialog_status;
 
+  /* Boolean control of text dialog */
+  float dialog_offset;
+  uint8_t dialog_option;
+  uint8_t dialog_option_top;
+  //bool dialog_shift_enable;
+
   /* The event handler information */
   EventHandler* event_handler;
+
+  /* The two render fonts, for displaying any text */
+  TTF_Font* font_normal;
+  TTF_Font* font_title;
 
   /* The frame controller for displaying the conversation and pickup */
   Frame frame_convo; 
@@ -88,8 +95,24 @@ private:
   MapThing* thing_active;
   std::vector<MapThing*> thing_data;
   
+  /* Text rendering pointers */
+  float text_index;
+  uint16_t text_index_max;
+  std::vector<Text*> text_lines;
+  std::vector<Text*> text_options;
+  std::vector<std::string> text_strings;
+  uint16_t text_top;
+  bool text_update;
+
   /* -------------------------- Constants ------------------------- */
-  //const static float kBUBBLES_ANIMATE; /* The text too long animation time */
+  const static uint8_t kLINE_SPACING; /* The spacing between lines of font */
+  const static uint8_t kMARGIN_SIDES; /* The left and right margin size */
+  const static uint8_t kMARGIN_TOP; /* The top margin size */
+  const static uint8_t kOPTION_OFFSET; /* The offset of the options from text */
+  const static float kSHIFT_TIME; /* Time to make the display visible */
+  const static uint8_t kTEXT_LINES; /* The max number of lines displayed */
+  const static uint8_t kTEXT_OPTIONS; /* The max number of options displayed */
+  const static float kTEXT_DISPLAY_SPEED; /* The character display speed */
 
  /*============================================================================
  * PRIVATE FUNCTIONS
@@ -110,8 +133,19 @@ private:
   /* Functions to acquire thing data, for painting to the screen */
   MapThing* getThingReference(int id);
 
+  /* Render the options. Deletes previous options, if they exist */
+  void renderOptions(SDL_Renderer* renderer, 
+                     std::vector<std::string> options = {});
+
+  /* Sets the conversation - internal to the class */
+  void setConversation(Conversation* new_convo = NULL);
+
   /* Sets up the active conversation pointer to prepare for screen rendering */
   void setupConversation(SDL_Renderer* renderer);
+
+  /* Setup the render text display. Also manages deletion of Text pointers */
+  void setupRenderText(std::vector<std::string> lines = {}, 
+                       bool delete_old = false);
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -124,6 +158,9 @@ public:
   /* Initializes a conversation with the two given people. */
   bool initConversation(Conversation* dialog_info, MapPerson* target);
   bool initConversation(Conversation dialog_info, MapPerson* target);
+
+  /* Returns if there is an active conversation (needs key presses passed in) */
+  bool isConversationActive();
 
   /* Returns if the conversation is waiting for thing data to be setup */
   bool isConversationWaiting();
@@ -138,10 +175,8 @@ public:
 
   /* Loads all appropriate image data for rendering */
   bool loadImageConversation(std::string path, SDL_Renderer* renderer);
-  bool loadImageNameLeft(std::string path, SDL_Renderer* renderer);
-  bool loadImageNameRight(std::string path, SDL_Renderer* renderer);
-  bool loadImagePickupBottom(std::string path, SDL_Renderer* renderer);
-  bool loadImagePickupTop(std::string path, SDL_Renderer* renderer);
+  bool loadImageNameLeftRight(std::string path, SDL_Renderer* renderer);
+  bool loadImagePickupTopBottom(std::string path, SDL_Renderer* renderer);
 
   /* Renders the Map Thing */
   bool render(SDL_Renderer* renderer);

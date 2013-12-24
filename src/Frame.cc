@@ -277,10 +277,23 @@ bool Frame::render(SDL_Renderer* renderer, int x, int y, int w, int h)
     
     /* Render and return status */
     return (SDL_RenderCopyEx(renderer, getTexture(), NULL, 
-                           &rect, 0, NULL, flip) == 0);
+                             &rect, 0, NULL, flip) == 0);
   }
   
   return false;
+}
+
+/* 
+ * Description: Sets the rendering alpha modification. Needs to be set for each
+ *              texture as this just emulates the call to SDL.
+ *
+ * Inputs: uint8_t alpha - the alpha rating (255 - fully opaque, 0 - invisible)
+ * Output: none
+ */
+void Frame::setAlpha(uint8_t alpha)
+{
+  if(getTexture() != NULL)
+    SDL_SetTextureAlphaMod(getTexture(), alpha);
 }
 
 /* 

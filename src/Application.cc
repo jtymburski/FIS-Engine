@@ -343,7 +343,7 @@ bool Application::run()
       
       /* Delay if VSync is not enabled */
       if(!system_options->isVsyncEnabled())
-        SDL_Delay(10);
+        SDL_Delay(12);
     }
         
     return true;
