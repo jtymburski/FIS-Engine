@@ -21,8 +21,14 @@
 
 /* Constant Implementation - see header file for descriptions */
 const uint8_t MapDialog::kBORDER_WIDTH = 3;
+const float MapDialog::kBUBBLES_ANIMATE = 277.67;
+const uint8_t MapDialog::kBUBBLES_COUNT = 3;
+const uint8_t MapDialog::kBUBBLES_OFFSET = 16;
+const uint8_t MapDialog::kBUBBLES_SPACING = 7;
+const uint16_t MapDialog::kCURSOR_ANIMATE = 300;
+const uint8_t MapDialog::kCURSOR_HEIGHT = 8;
 const uint8_t MapDialog::kHIGHLIGHT_MARGIN = 5;
-const uint8_t MapDialog::kLINE_SPACING = 8;
+const uint8_t MapDialog::kLINE_SPACING = 12;
 const uint8_t MapDialog::kMARGIN_SIDES = 50;
 const uint8_t MapDialog::kMARGIN_TOP = 50;
 const uint8_t MapDialog::kNAME_BOX_OFFSET = 45;
@@ -95,6 +101,9 @@ void MapDialog::clearConversation(Conversation* convo)
 /* -------------------------------------------------------------------------- */
 void MapDialog::clearData()
 {
+  animation_cursor = 0.0;
+  animation_cursor_up = true;
+  animation_shifter = 0.0;
   clearConversation(&conversation_info);
   conversation_ready = false;
   conversation_update = false;
@@ -165,6 +174,16 @@ void MapDialog::deleteFonts()
 
   TTF_CloseFont(font_title);
   font_title = NULL;
+}
+
+/* -------------------------------------------------------------------------- */
+void MapDialog::executeEvent()
+{
+  if(event_handler != NULL && 
+     conversation_info.action_event.classification != EventClassifier::NOEVENT)
+  {
+    event_handler->executeEvent(conversation_info.action_event, target);
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -529,14 +548,14 @@ void MapDialog::keyDownEvent(SDL_KeyboardEvent event)
         bool multiple = (conversation_info.next.size() > 1);
         
         /* Do the initial conversation shift */
-        //executeEvent();
+        executeEvent();
         Conversation new_convo = conversation_info.next[dialog_option];
         setConversation(&new_convo);
         
         /* If multiple options, shift to the next one */
         if(multiple)
         {
-          //executeEvent();
+          executeEvent();
           if(conversation_info.next.size() == 0)
             dialog_status = HIDING;
           else
@@ -591,6 +610,23 @@ bool MapDialog::loadImageConversation(std::string path, SDL_Renderer* renderer)
 }
 
 /* -------------------------------------------------------------------------- */
+bool MapDialog::loadImageDialogShifts(std::string path_next, 
+                                      std::string path_more, 
+                                      SDL_Renderer* renderer)
+{
+  bool success = true;
+  
+  std::string base_path = "";
+  if(system_options != NULL)
+    base_path = system_options->getBasePath();
+    
+  /* Set all the frame information */
+  success &= img_convo_m.setTexture(base_path + path_more, renderer);
+  success &= img_convo_n.setTexture(base_path + path_next, renderer);
+  
+  return success;
+}
+/* -------------------------------------------------------------------------- */
 bool MapDialog::loadImageNameLeftRight(std::string path, SDL_Renderer* renderer)
 {
   bool success = true;
@@ -602,6 +638,26 @@ bool MapDialog::loadImageNameLeftRight(std::string path, SDL_Renderer* renderer)
   img_name_r.flipHorizontal();
   success &= img_name_r.setTexture(base_path + path, renderer);
   return (success & img_name_l.setTexture(base_path + path, renderer));
+}
+
+/* -------------------------------------------------------------------------- */
+bool MapDialog::loadImageOptions(std::string path_circle, 
+                                 std::string path_triangle, 
+                                 SDL_Renderer* renderer)
+{
+  bool success = true;
+  
+  std::string base_path = "";
+  if(system_options != NULL)
+    base_path = system_options->getBasePath();
+    
+  /* Set all the frame information */
+  success &= img_opt_c.setTexture(base_path + path_circle, renderer);
+  success &= img_opt_u.setTexture(base_path + path_triangle, renderer);
+  img_opt_d.flipVertical();
+  success &= img_opt_d.setTexture(base_path + path_triangle, renderer);
+  
+  return success;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -676,6 +732,7 @@ bool MapDialog::render(SDL_Renderer* renderer)
     }
 
     /* Compute y base index and proceed to render text */
+    x_index += kMARGIN_SIDES;
     y_index = system_options->getScreenHeight() - img_convo.getHeight() 
                                                 + kMARGIN_TOP;
     if(dialog_status == ON)
@@ -685,7 +742,7 @@ bool MapDialog::render(SDL_Renderer* renderer)
       {
         if(i < text_lines.size())
         {
-          text_lines[i]->render(renderer, x_index + kMARGIN_SIDES, y_index);
+          text_lines[i]->render(renderer, x_index, y_index);
           y_index += text_lines[i]->getHeight() + kLINE_SPACING;
         }
       }
@@ -694,7 +751,7 @@ bool MapDialog::render(SDL_Renderer* renderer)
       if(conversation_info.next.size() > 1 && text_index >= text_index_max)
       {
         uint8_t index = dialog_option_top;
-        y_index += (kLINE_SPACING << 1);
+        y_index += kLINE_SPACING;
 
         /* Loop through and render them all, properly offset */
         while(index < text_options.size() && 
@@ -705,7 +762,7 @@ bool MapDialog::render(SDL_Renderer* renderer)
           {
             uint8_t m = kHIGHLIGHT_MARGIN;
             SDL_Rect highlight_rect = {0, 0, 0, 0};
-            highlight_rect.x = x_index + kMARGIN_SIDES + kOPTION_OFFSET - m;
+            highlight_rect.x = x_index + kOPTION_OFFSET - m;
             highlight_rect.y = y_index - m;
             highlight_rect.w = text_options[index]->getWidth() + (m << 1);
             highlight_rect.h = text_options[index]->getHeight() + (m << 1);
@@ -714,16 +771,75 @@ bool MapDialog::render(SDL_Renderer* renderer)
             SDL_RenderFillRect(renderer, &highlight_rect);
           }
           
+          /* Determine if there is more than the display options */
+          if(conversation_info.next.size() > kTEXT_OPTIONS)
+          {
+            Frame* frame = NULL;
+            
+            /* If it's the top option, render beside */
+            if(index == dialog_option_top)
+            {
+              if(dialog_option_top == 0)
+                frame = &img_opt_c;
+              else
+                frame = &img_opt_u;
+            }
+            
+            /* If it's the bottom option, render beside */
+            if(index == (dialog_option_top + kTEXT_OPTIONS - 1))
+            {
+              if(index == (conversation_info.next.size() - 1))
+                frame = &img_opt_c;
+              else
+                frame = &img_opt_d;
+            }
+            
+            /* Render the frame if non-null and set */
+            if(frame != NULL)
+              frame->render(renderer, x_index + (kOPTION_OFFSET 
+                                              - frame->getWidth() - 1) / 2, 
+                            y_index + (text_options[index]->getHeight() 
+                                    - frame->getHeight()) / 2);
+          }
+          
           /* Finally, render the option text and increment index */
           text_options[index]->render(renderer, 
-                             x_index + kMARGIN_SIDES + kOPTION_OFFSET, y_index);
+                             x_index + kOPTION_OFFSET, y_index);
           y_index += text_options[index]->getHeight() + (kLINE_SPACING << 1);
           index++;
         }
       }
+      /* Otherwise, check the parameters for displaying the dialog shifters */
+      else if(text_index >= text_index_max)
+      {
+        x_index += (img_convo.getWidth() / 2 - kMARGIN_SIDES);
+        
+        /* If the display is not done, show the shifting more pointers */
+        uint16_t top_index = text_top + kTEXT_LINES;
+        if(top_index < text_strings.size())
+        {
+          uint16_t offset = kBUBBLES_OFFSET;
+          
+          for(uint8_t i = kBUBBLES_COUNT; i > 0; i--)
+          {
+            if(animation_shifter >= i)
+              img_convo_m.render(renderer, x_index - img_convo_m.getWidth() / 2, 
+                                 system_options->getScreenHeight() - offset);
+            offset += kBUBBLES_SPACING;
+          }
+        }
+        /* Else, the words have ended. Show the next shifter arrow */
+        else
+        {
+          img_convo_n.render(renderer, x_index - img_convo_n.getWidth() / 2, 
+                             system_options->getScreenHeight() 
+                                  - img_convo_n.getHeight() 
+                                  - static_cast<int>(animation_cursor));
+        }
+      }
     }
   }
-
+  
   // // TODO
   // int convo_x = (1216 - img_convo.getWidth()) / 2;
   // int convo_y = 704 - img_convo.getHeight();
@@ -874,7 +990,7 @@ void MapDialog::update(int cycle_time)
         //   if(dialog_shift_offset >= dialog_shift_max)
         //     dialogShiftEnable(false);
         // }
-        if(text_index < text_index_max)
+        if(text_index < text_index_max) // else
         {
           text_index += cycle_time / kTEXT_DISPLAY_SPEED;
           if(text_index > text_index_max)
@@ -882,34 +998,34 @@ void MapDialog::update(int cycle_time)
           text_update = true;
         }
 
-        // /* Up motion */
-        // if(animation_cursor_up)
-        // {
-        //   animation_cursor += cycle_time * kCURSOR_NEXT_SIZE 
-        //                                  / kCURSOR_NEXT_TIME;
-        //   if(animation_cursor >= kCURSOR_NEXT_SIZE)
-        //   {
-        //     animation_cursor = kCURSOR_NEXT_SIZE;
-        //     animation_cursor_up = false;
-        //   }
-        // }
-        // /* Down motion */
-        // else
-        // {
-        //   animation_cursor -= cycle_time * kCURSOR_NEXT_SIZE 
-        //                                  / kCURSOR_NEXT_TIME;
-        //   if(animation_cursor <= 0)
-        //   {
-        //     animation_cursor = 0;
-        //     animation_cursor_up = true;
-        //   }
-        // }
+        /* Up motion */
+        if(animation_cursor_up)
+        {
+          animation_cursor += 1.0 * cycle_time * kCURSOR_HEIGHT 
+                                               / kCURSOR_ANIMATE;
+          if(animation_cursor >= kCURSOR_HEIGHT)
+          {
+            animation_cursor = kCURSOR_HEIGHT;
+            animation_cursor_up = false;
+          }
+        }
+        /* Down motion */
+        else
+        {
+          animation_cursor -= 1.0 * cycle_time * kCURSOR_HEIGHT 
+                                               / kCURSOR_ANIMATE;
+          if(animation_cursor <= 0)
+          {
+            animation_cursor = 0;
+            animation_cursor_up = true;
+          }
+        }
 
         /* The animating shifter, for text that is too long to fit in the 
          * viewing window */
-        // animation_shifter += cycle_time / kBUBBLES_ANIMATE;
-        // if(animation_shifter >= (kBUBBLES_COUNT + 1))
-        //   animation_shifter = 0;
+        animation_shifter += cycle_time / kBUBBLES_ANIMATE;
+        if(animation_shifter >= (kBUBBLES_COUNT + 1))
+          animation_shifter = 0;
       }
     }
   }

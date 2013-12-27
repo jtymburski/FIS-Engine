@@ -53,6 +53,11 @@ public:
   enum DialogMode{DISABLED, CONVERSATION, NOTIFICATION, SHOP};
   
 private:
+  /* Animation shifters */
+  float animation_cursor;
+  bool animation_cursor_up;
+  float animation_shifter;
+  
   /* The currently running conversation information */
   Conversation conversation_info;
   bool conversation_ready;
@@ -81,11 +86,16 @@ private:
   Frame frame_pickup;
   
   /* Image frames to be loaded for rendering */
-  Frame img_convo;
-  Frame img_name_l;
-  Frame img_name_r;
-  Frame img_pick_b;
-  Frame img_pick_t;
+  Frame img_convo; /* Main Dialog display */
+  Frame img_convo_m; /* Conversation more to display indicator */
+  Frame img_convo_n; /* Conversation next arrow */
+  Frame img_name_l; /* Left dialog name display corner */
+  Frame img_name_r; /* Right dialog name display corner */
+  Frame img_opt_c; /* Option Circle */
+  Frame img_opt_d; /* Option Down Arrow */
+  Frame img_opt_u; /* Option Up Arrow */
+  Frame img_pick_b; /* Bottom pickup display corner */
+  Frame img_pick_t; /* Top pickup display corner */
   
   /* The system options, used for rendering, settings, etc. */
   Options* system_options;
@@ -106,6 +116,12 @@ private:
 
   /* -------------------------- Constants ------------------------- */
   const static uint8_t kBORDER_WIDTH; /* The border width around the dialogs */
+  const static float kBUBBLES_ANIMATE; /* The animation speed per bubble */
+  const static uint8_t kBUBBLES_COUNT; /* The number of shifting bubbles */
+  const static uint8_t kBUBBLES_OFFSET; /* The offset from the bottom */
+  const static uint8_t kBUBBLES_SPACING; /* The spacing between bubbles */
+  const static uint16_t kCURSOR_ANIMATE; /* The cursor animation time */
+  const static uint8_t kCURSOR_HEIGHT; /* The cursor height on animation */
   const static uint8_t kHIGHLIGHT_MARGIN; /* Highlighted option margin pixels */
   const static uint8_t kLINE_SPACING; /* The spacing between lines of font */
   const static uint8_t kMARGIN_SIDES; /* The left and right margin size */
@@ -137,6 +153,9 @@ private:
   /* Deletes the rendering fonts, if they've been created */
   void deleteFonts();
 
+  /* Executes an event, triggered from a conversation */
+  void executeEvent();
+  
   /* Functions to acquire thing data, for painting to the screen */
   MapThing* getThingReference(int id);
 
@@ -182,7 +201,11 @@ public:
 
   /* Loads all appropriate image data for rendering */
   bool loadImageConversation(std::string path, SDL_Renderer* renderer);
+  bool loadImageDialogShifts(std::string path_next, std::string path_more, 
+                             SDL_Renderer* renderer);
   bool loadImageNameLeftRight(std::string path, SDL_Renderer* renderer);
+  bool loadImageOptions(std::string path_circle, std::string path_triangle, 
+                        SDL_Renderer* renderer);
   bool loadImagePickupTopBottom(std::string path, SDL_Renderer* renderer);
 
   /* Renders the Map Thing */

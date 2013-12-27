@@ -1262,23 +1262,25 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
     map_dialog.keyDownEvent(event);
   else if(event.keysym.sym == SDLK_0)
   {
-    Conversation convo;// = new Conversation;
-    convo.category = DialogCategory::TEXT;
-    //convo->action_event = blank_event;
-    convo.text = "This is the initial conversation point that will start it. ";
-    convo.text += "How can this continue? It must pursue to complete ";
-    convo.text += "embodiment. Ok, maybe I'll just keep typing until I break ";
-    convo.text += "the entire compiler.";
-    convo.thing_id = 0;
+    Event blank_event = event_handler->createBlankEvent();
+    
+    Conversation* convo = new Conversation;
+    convo->category = DialogCategory::TEXT;
+    convo->action_event = blank_event;
+    convo->text = "This is the initial conversation point that will start it. ";
+    convo->text += "How can this continue? It must pursue to complete ";
+    convo->text += "embodiment. Ok, maybe I'll just keep typing until I break ";
+    convo->text += "the entire compiler.";
+    convo->thing_id = 0;
     Conversation test1, test2, test3, test4, test5;
     test1.category = DialogCategory::TEXT;
-    //test1.action_event = blank_event;
+    test1.action_event = blank_event;
     test1.text = "This is a test to see how data runs. The line will split ";
     test1.text += "once unless it is an option based selection in which case ";
     test1.text += "it will restrict."; 
     test1.thing_id = 3;
     test2.category = DialogCategory::TEXT;
-    //test2.action_event = blank_event;
+    test2.action_event = blank_event;
     test2.text = "This is a no man case. See what happens!! Ok, this is the ";
     test2.text += "too long case where the lines never cease to exist and the ";
     test2.text += "points aren't for real. I'm feeling a bit hungry though ";
@@ -1289,7 +1291,7 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
     test2.thing_id = 2;
     test2.next.push_back(test1);
     test3.category = DialogCategory::TEXT;
-    //test3.action_event = blank_event;
+    test3.action_event = event_handler->createStartBattleEvent();
     test3.text = "Back to finish off with a clean case with a couple of lines.";
     test3.text += " So this requires me to write a bunch of BS to try and fill";
     test3.text += " these lines.";
@@ -1298,13 +1300,13 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
     test3.thing_id = 24;
     test3.next.push_back(test2);
     test4.category = DialogCategory::TEXT;
-    //test4.action_event = blank_event;
+    test4.action_event = blank_event;
     test4.text = "Option 1 - This goes on and on and on and on and on and ";
     test4.text += "lorem ipsum. This is way too long to be an option. Loser";
     test4.thing_id = -1;
     test4.next.push_back(test2);
     test5.category = DialogCategory::TEXT;
-    //test5.action_event = blank_event;
+    test5.action_event = blank_event;
     test5.text = "Option 2";
     test5.thing_id = -1;
     test5.next.push_back(test3);
@@ -1318,7 +1320,7 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
     test1.next.push_back(test4);
     test5.text = "Option 6";
     test1.next.push_back(test5);
-    convo.next.push_back(test1);
+    convo->next.push_back(test1);
 
     /* Run the conversation and then delete */
     if(map_dialog.initConversation(convo, player))
@@ -1327,7 +1329,7 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
       map_dialog.setConversationThings(getThingData(list));
     }
 
-    //delete convo;
+    delete convo;
   }
   else if(event.keysym.sym == SDLK_SPACE)
     initiateThingInteraction();
@@ -1517,8 +1519,14 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
     
     /* Load map dialog sprites - TODO: In file? */
     map_dialog.loadImageConversation("sprites/Overlay/dialog.png", renderer);
+    map_dialog.loadImageDialogShifts("sprites/Overlay/dialog_next.png", 
+                                     "sprites/Overlay/dialog_extender.png", 
+                                     renderer);
     map_dialog.loadImageNameLeftRight(
                                  "sprites/Overlay/dialog_corner.png", renderer);
+    map_dialog.loadImageOptions("sprites/Overlay/option_circle.png", 
+                                "sprites/Overlay/option_triangle.png", 
+                                renderer);
     map_dialog.loadImagePickupTopBottom(
                            "sprites/Overlay/notification_corner.png", renderer);
 
