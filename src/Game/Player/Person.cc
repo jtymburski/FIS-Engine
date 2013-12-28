@@ -64,14 +64,10 @@ const std::vector<float> Person::kSECD_MODS =
  *
  * Inputs:
  */
-Person::Person(const uint32_t &game_id, const std::string &name, 
-               Category* const battle_class, Category* const race_class)
-  : game_id{game_id}
+Person::Person(Person* const source)
+  : game_id{source.game_id}
   , my_id{++id}
-  , base_person{nullptr}
-  , battle_class{battle_class}
-  , race{race_class}
-  , name{name}
+  , base_person{source}
 {
   setupClass();
 }
@@ -81,10 +77,14 @@ Person::Person(const uint32_t &game_id, const std::string &name,
  *
  * Inputs:
  */
-Person::Person(Person* const source)
-  : game_id{source.game_id}
+Person::Person(const uint32_t &game_id, const std::string &name, 
+               Category* const battle_class, Category* const race_class)
+  : game_id{game_id}
   , my_id{++id}
-  , base_person{source}
+  , base_person{nullptr}
+  , battle_class{battle_class}
+  , race{race_class}
+  , name{name}
 {
   setupClass();
 }
@@ -425,7 +425,7 @@ void Person::battlePrep()
   setBFlag(BState::DEF_ENABLED, true);
   setBFlag(BState::GRD_ENABLED, true);
   setBFlag(BState::IMP_ENABLED, true);
-  setBFlag(BState::RUN_ENABLED, true);
+  setBFlag(BState::RUN_ENABLED, true);^(.)
   setBFlag(BState::PAS_ENABLED, true);
 
   setBFlag(BState::SKIP_NEXT_TURN, false);
@@ -530,8 +530,8 @@ void Person::print(const bool &simple, const bool &equips,
                 << "\n";
       std::cout << "MISS_NEXT_TARGET: " << getPFlag(PState::MISS_NEXT_TARGET) 
                 << "\n";
-      std::cout << "NEXT_ATK_NO_EFFECT: " << getPFlag(PState::NEXT_ATK_NO_EFFECT) 
-                << "\n";
+      std::cout << "NEXT_ATK_NO_EFFECT: " 
+                << getPFlag(PState::NEXT_ATK_NO_EFFECT) << "\n";
       std::cout << "IS_BUBBY: " << getPFlag(PState::IS_BUBBY) << "\n";
       std::cout << "TWO_SKILLS: " << getPFlag(PState::TWO_SKILLS) << "\n";
       std::cout << "THREE_SKILLS: " << getPFlag(PState::THREE_SKILLS) << "\n";

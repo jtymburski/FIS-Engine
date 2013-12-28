@@ -70,7 +70,7 @@ Game::~Game()
 /* Set up the battle - old battle needs to be deleted prior to calling */
 void Game::setupBattle()
 {
-  bool enable_test = true;
+  bool enable_test = false;
 
   if (enable_test)
   {
@@ -125,11 +125,6 @@ void Game::setupBattle()
   as4 = as3;
   as5 = as3;
   as5.alterStat("VITA", 1);
-
-  if (as3 == as4)
-    std::cout << "1true\n";
-  if (as3 == as5)
-    std::cout << "2true\n";
 
   //auto index = 0;
   //for (auto value : values)

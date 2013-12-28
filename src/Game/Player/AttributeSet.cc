@@ -73,10 +73,10 @@ const std::vector<std::vector<int>> AttributeSet::kPRESETS =
    40, 50, 25, 5}
 };
 
-const int    AttributeSet::kDEFAULT        =      0;
-const int    AttributeSet::kMIN_VALUE      = -49999;
-const int    AttributeSet::kMIN_P_VALUE    =      0;
-const int    AttributeSet::kMAX_VALUE      =  99999; 
+const int AttributeSet::kDEFAULT        =      0;
+const int AttributeSet::kMIN_VALUE      = -49999;
+const int AttributeSet::kMIN_P_VALUE    =      0;
+const int AttributeSet::kMAX_VALUE      =  99999; 
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -200,7 +200,7 @@ void AttributeSet::cleanUp()
  * Inputs: simple - boolean value whether to show simple or large format
  * Output: 
  */
-void AttributeSet::print(const bool &simple)
+void AttributeSet::print(const bool &simple) const
 {
   std::cout << "--- Attribute Set ---\n";
 
