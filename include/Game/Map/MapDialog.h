@@ -163,6 +163,9 @@ private:
   void renderOptions(SDL_Renderer* renderer, 
                      std::vector<std::string> options = {});
 
+  /* Sets the alpha of all rendering textures on the dialog */
+  void setAlpha(uint8_t alpha);
+  
   /* Sets the conversation - internal to the class */
   void setConversation(Conversation* new_convo = NULL);
 

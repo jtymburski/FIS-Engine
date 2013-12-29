@@ -36,6 +36,9 @@ public:
   ~Frame();
   
 private:
+  /* The stored alpha value for rendering */
+  uint8_t alpha;
+  
   /* How the SDL texture should be flipped while rendering */
   SDL_RendererFlip flip;
   
@@ -57,6 +60,9 @@ private:
   /* The width of the stored texture */
   int width;
 
+  /*------------------- Constants -----------------------*/
+  const static uint8_t kDEFAULT_ALPHA; /* The default alpha rating */
+  
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
@@ -68,6 +74,9 @@ public:
   /* Flips the sprite SDL image - either horizontal or vertical */
   void flipHorizontal(bool flip = true);
   void flipVertical(bool flip = true);
+  
+  /* Returns the alpha setting of the stored texture */
+  uint8_t getAlpha();
   
   /* Returns the flip indication, for rendering */
   SDL_RendererFlip getFlip();

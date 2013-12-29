@@ -28,6 +28,9 @@ public:
   ~Text();
 
 private:
+  /* The texture alpha rating */
+  uint8_t alpha;
+  
   /* The height of the texture */
   int height;
   
@@ -41,10 +44,16 @@ private:
   /* The width of the texture */
   int width;
 
+  /*------------------- Constants -----------------------*/
+  const static uint8_t kDEFAULT_ALPHA; /* The default alpha rating */
+  
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Returns the alpha rating of the texture */
+  uint8_t getAlpha();
+  
   /* Gets the font used for creating textures */
   TTF_Font* getFont();
   
@@ -60,6 +69,9 @@ public:
   /* Render the texture to the given renderer with the given parameters */
   bool render(SDL_Renderer* renderer, int x = 0, int y = 0);
 
+  /* Sets the alpha rating of the texture */
+  void setAlpha(uint8_t alpha);
+  
   /* Sets up the font, that is used for rendering the text */
   bool setFont(std::string font_path, int font_size, 
                                       int font_style = TTF_STYLE_NORMAL);
