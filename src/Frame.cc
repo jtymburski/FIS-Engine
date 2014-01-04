@@ -9,6 +9,9 @@
  ******************************************************************************/
 #include "Frame.h"
 
+/* Constant Implementation - see header file for descriptions */
+const uint8_t Frame::kDEFAULT_ALPHA = 255;
+
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
@@ -23,6 +26,7 @@
 Frame::Frame()
 {
   /* Initialize variables */
+  alpha = kDEFAULT_ALPHA;
   flip = SDL_FLIP_NONE;
   height = 0;
   image_set = false;
@@ -167,6 +171,18 @@ void Frame::flipVertical(bool flip)
 }
 
 /*
+ * Description: Returns the alpha rating of the frame. This is set whenever
+ *              new textures are set.
+ *
+ * Inputs: none
+ * Output: uint8_t - the alpha rating (0=invisible, 255=fully opaque)
+ */
+uint8_t Frame::getAlpha()
+{
+  return alpha;
+}
+
+/*
  * Description: Returns the flip rating of the frame (from SDL).
  *
  * Inputs: none
@@ -292,8 +308,8 @@ bool Frame::render(SDL_Renderer* renderer, int x, int y, int w, int h)
  */
 void Frame::setAlpha(uint8_t alpha)
 {
-  if(getTexture() != NULL)
-    SDL_SetTextureAlphaMod(getTexture(), alpha);
+  this->alpha = alpha;
+  SDL_SetTextureAlphaMod(getTexture(), alpha);
 }
 
 /* 
@@ -386,6 +402,9 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle)
     height = loaded_surface->h;
     width = loaded_surface->w;
     SDL_FreeSurface(loaded_surface);
+    
+    /* Finally, set the alpha rating */
+    setAlpha(alpha);
   }
   /* If the renderer is NULL, unload the surface */
   else if(loaded_surface != NULL)
@@ -450,6 +469,7 @@ bool Frame::setTexture(SDL_Texture* texture)
     this->texture = texture;
     image_set = true;
     SDL_QueryTexture(texture, NULL, NULL, &width, &height);
+    setAlpha(alpha);
     
     return true;
   }

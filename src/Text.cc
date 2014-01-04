@@ -8,6 +8,9 @@
  ******************************************************************************/
 #include "Text.h"
 
+/* Constant Implementation - see header file for descriptions */
+const uint8_t Text::kDEFAULT_ALPHA = 255;
+
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
@@ -21,6 +24,7 @@
  */
 Text::Text()
 {
+  alpha = kDEFAULT_ALPHA;
   delete_font = false;
   height = 0;
   render_font = NULL;
@@ -67,6 +71,18 @@ Text::~Text()
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
+/*
+ * Description: Returns the alpha rating for the generated text. Sets
+ *              automatically for any new lines of text.
+ *
+ * Inputs: none
+ * Output: uint8_t - alpha opacity rating (0=invisible, 255=fully opaque)
+ */
+uint8_t Text::getAlpha()
+{
+  return alpha;
+}
+ 
 /*
  * Description: Returns the stored font. NULL if unset.
  *
@@ -139,6 +155,19 @@ bool Text::render(SDL_Renderer* renderer, int x, int y)
   }
   
   return false;
+}
+
+/*
+ * Description: Sets the alpha for the text generated texture. This will be set
+ *              for the current generated texture and all new ones.
+ *
+ * Inputs: uint8_t alpha - the alpha rating (0=invisible, 255=fully opaque)
+ * Output: none
+ */
+void Text::setAlpha(uint8_t alpha)
+{
+  this->alpha = alpha;
+  SDL_SetTextureAlphaMod(getTexture(), alpha);
 }
 
 /*
@@ -220,6 +249,7 @@ bool Text::setText(SDL_Renderer* renderer, std::string text,
         texture = text_texture;
         height = text_surface->h;
         width = text_surface->w;
+        setAlpha(alpha);
         success = true;
       }
       

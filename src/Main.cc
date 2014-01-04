@@ -57,7 +57,7 @@ int main(int argc, char** argv)
 {
   (void)argc;
   (void)argv;
-  
+
   /* Get the base directory to the executable, which will be the location of
    * all applicable resources */
   char* directory = SDL_GetBasePath();

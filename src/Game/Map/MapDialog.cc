@@ -34,7 +34,7 @@ const uint8_t MapDialog::kMARGIN_TOP = 50;
 const uint8_t MapDialog::kNAME_BOX_OFFSET = 45;
 const float MapDialog::kOPACITY_BACKEND = 0.65;
 const uint8_t MapDialog::kOPTION_OFFSET = 50;
-const float MapDialog::kSHIFT_TIME = 3.704;
+const float MapDialog::kSHIFT_TIME = 3;//.704;
 const uint8_t MapDialog::kTEXT_LINES = 4;
 const uint8_t MapDialog::kTEXT_OPTIONS = 3;
 const float MapDialog::kTEXT_DISPLAY_SPEED = 33.33;
@@ -139,7 +139,7 @@ bool MapDialog::createFonts()
   {
     /* Try and create the new fonts */
     TTF_Font* regular_font = Text::createFont(system_options->getBasePath() + 
-                                              system_options->getFont(), 18);
+                                              system_options->getFont(), 20);
     TTF_Font* title_font = Text::createFont(system_options->getBasePath() + 
                                             system_options->getFont(), 
                                             20, TTF_STYLE_BOLD);
@@ -217,6 +217,25 @@ void MapDialog::renderOptions(SDL_Renderer* renderer,
     t->setText(renderer, *i, {255,255,255,255});
     text_options.push_back(t);
   }
+}
+
+/* -------------------------------------------------------------------------- */
+void MapDialog::setAlpha(uint8_t alpha)
+{
+  /* Sets the frame alpha ratings */
+  frame_convo.setAlpha(alpha);
+  frame_pickup.setAlpha(alpha);
+  img_convo_m.setAlpha(alpha);
+  img_convo_n.setAlpha(alpha);
+  img_opt_c.setAlpha(alpha);
+  img_opt_d.setAlpha(alpha);
+  img_opt_u.setAlpha(alpha);
+  
+  /* Set the text alpha */
+  for(auto i = text_lines.begin(); i != text_lines.end(); i++)
+   (*i)->setAlpha(alpha);
+  for(auto i = text_options.begin(); i != text_options.end(); i++)
+   (*i)->setAlpha(alpha);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -532,10 +551,24 @@ void MapDialog::keyDownEvent(SDL_KeyboardEvent event)
     if(isConversationActive() && dialog_status == ON)
     {
       /* If the letters still need to be displayed, finish */
+      uint16_t text_bottom = text_top + kTEXT_LINES;
       if(text_index < text_index_max)
       {
         text_index = text_index_max;
         text_update = true;
+      }
+      /* Otherwise, check if the dialog needs to be shifted */
+      else if(text_bottom < text_strings.size())
+      {
+        text_top += (kTEXT_LINES - 1);
+        text_index = text_strings[text_top].size();
+        text_index_max = 0;
+        
+        for(uint16_t i = text_top; i < (text_top + kTEXT_LINES); i++)
+        {
+          if(i < text_strings.size())
+            text_index_max += text_strings[i].size();
+        }
       }
       /* Otherwise, if end of conversation has been reached, start to hide it */
       else if(conversation_info.next.size() == 0)
@@ -582,6 +615,14 @@ void MapDialog::keyDownEvent(SDL_KeyboardEvent event)
       dialog_option = conversation_info.next.size() - 1;
     if(dialog_option >= (dialog_option_top + kTEXT_OPTIONS))
       dialog_option_top = dialog_option - kTEXT_OPTIONS + 1;
+  }
+  else if(event.keysym.sym == SDLK_4)
+  {
+    setAlpha(128);
+  }
+  else if(event.keysym.sym == SDLK_5)
+  {
+    setAlpha(255);
   }
 }
 
