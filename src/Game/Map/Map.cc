@@ -1260,8 +1260,10 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
   }
   else if(event.keysym.sym == SDLK_p)
     map_dialog.setPaused(!map_dialog.isPaused());
-  else if(map_dialog.isConversationActive())
-    map_dialog.keyDownEvent(event);
+  else if(event.keysym.sym == SDLK_8)
+    map_dialog.initNotification("Hello sunshine, what a glorious day and I'll keep writing forever and forever and forever and forever and forever and forever and forFU.", 0, true);
+  else if(event.keysym.sym == SDLK_9)
+    map_dialog.initNotification("Hello sunshine, what a glorious day and I'll keep writing forever and forever and forever and forever and forever and forever and forFU.");
   else if(event.keysym.sym == SDLK_0)
   {
     Event blank_event = event_handler->createBlankEvent();
@@ -1333,6 +1335,8 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
 
     delete convo;
   }
+  else if(map_dialog.isConversationActive())
+    map_dialog.keyDownEvent(event);
   else if(event.keysym.sym == SDLK_SPACE)
     initiateThingInteraction();
   else if(player != NULL)

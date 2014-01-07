@@ -7,7 +7,6 @@
  *
  * TODO:
  *  - Number entry, text entry. Shop mode? Also, built into conversation
- *  - On a very dark background, the black highlight is kind of unnoticeable
  *
  * Want List:
  *  - Text HTML like response to allow for color changes
@@ -31,6 +30,7 @@ const uint8_t MapDialog::kHIGHLIGHT_MARGIN = 5;
 const uint8_t MapDialog::kLINE_SPACING = 12;
 const uint8_t MapDialog::kMARGIN_SIDES = 50;
 const uint8_t MapDialog::kMARGIN_TOP = 50;
+const uint16_t MapDialog::kMSEC_PER_WORD = 333;
 const uint8_t MapDialog::kNAME_BOX_OFFSET = 45;
 const float MapDialog::kOPACITY_BACKEND = 0.65;
 const uint8_t MapDialog::kOPACITY_MAX = 255;
@@ -123,6 +123,7 @@ void MapDialog::clearData()
   event_handler = NULL;
   font_normal = NULL;
   font_title = NULL;
+  notification_time = 0;
   paused = false;
   system_options = NULL;
   target = NULL;
@@ -234,8 +235,8 @@ void MapDialog::setAlpha(uint8_t alpha)
   dialog_alpha = alpha;
   
   /* Sets the frame alpha ratings */
-  frame_convo.setAlpha(alpha);
-  frame_pickup.setAlpha(alpha);
+  frame_bottom.setAlpha(alpha);
+  frame_right.setAlpha(alpha);
   img_convo_m.setAlpha(alpha);
   img_convo_n.setAlpha(alpha);
   img_opt_c.setAlpha(alpha);
@@ -359,7 +360,7 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
   SDL_SetRenderTarget(renderer, NULL);
 
   /* Create the base frame display texture */
-  frame_convo.setTexture(texture);
+  frame_bottom.setTexture(texture);
 
   /* Determine the length of the viewing area and split text lines */
   std::string txt_line = conversation_info.text;
@@ -391,10 +392,72 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
   }
 
   /* Modify the offset if it's above the new limits */
+  dialog_mode = CONVERSATION;
   if(dialog_offset > 0.0)
-    dialog_offset = frame_convo.getHeight();
+    dialog_offset = frame_bottom.getHeight();
   dialog_option = 0;
   dialog_option_top = 0;
+}
+
+bool MapDialog::setupNotification(SDL_Renderer* renderer)
+{
+  /* Only proceed if there is a notification available */
+  if(!notification_queue.empty())
+  {
+    int line_width = img_convo.getWidth() - (kMARGIN_SIDES << 1);
+    int render_height = kLINE_SPACING + kLINE_SPACING;
+    int render_width = img_convo.getWidth();
+    Notification to_display = notification_queue.front();
+    
+    /* Split text and create text */
+    std::vector<std::string> line_set = Text::splitLine(
+                               font_normal, to_display.text, line_width, false);
+    std::vector<Text*> rendered_lines;
+    for(auto i = line_set.begin(); i != line_set.end(); i++)
+    {
+      Text* single_line = new Text(font_normal);
+      single_line->setText(renderer, *i, {255, 255, 255, kOPACITY_MAX});
+      rendered_lines.push_back(single_line);
+      
+      render_height += single_line->getHeight() + kLINE_SPACING;
+    }
+    
+    /* Create rendering texture */
+    SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                                             SDL_TEXTUREACCESS_TARGET, 
+                                             render_width, render_height);
+    SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderTarget(renderer, texture);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_RenderClear(renderer);
+    
+    /* Render main frame */
+    int y_index = 0;
+    img_convo.render(renderer, 0, y_index);
+    y_index += kLINE_SPACING + kLINE_SPACING;
+    
+    /* Render text */
+    for(auto i = rendered_lines.begin(); i != rendered_lines.end(); i++)
+    {
+      int x_index = (render_width - (*i)->getWidth()) / 2;
+      (*i)->render(renderer, x_index, y_index);
+      y_index += (*i)->getHeight() + kLINE_SPACING;
+      
+      delete (*i);
+    }
+    SDL_SetRenderTarget(renderer, NULL);
+    
+    /* Create the base frame display texture and set the mode */
+    frame_bottom.setTexture(texture);
+    dialog_mode = NOTIFICATION;
+    dialog_offset = 0.0;
+    dialog_status = SHOWING;
+    notification_time = to_display.time_visible;
+    
+    return true;
+  }
+  
+  return false;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -472,6 +535,46 @@ bool MapDialog::initConversation(Conversation dialog_info, MapPerson* target)
   return false;
 }
 
+/* Initializes a notification, using a string to be printed */
+/* -------------------------------------------------------------------------- */
+bool MapDialog::initNotification(std::string notification, int time_visible, 
+                                                           bool single_line)
+{
+  if(img_convo.isImageSet() && !notification.empty())
+  {
+    /* Calculate the available space */
+    int width = img_convo.getWidth() - (kMARGIN_SIDES << 1);
+    if(width < 0)
+      width = 0;
+    
+    /* Chop to single line if required */
+    if(single_line)
+      notification = Text::splitLine(font_normal, notification, 
+                                                  width, true).front();
+          
+    /* Calculate the display time if invalid */
+    if(time_visible <= 0)
+    {
+      std::vector<std::string> words = Helpers::split(notification, ' ');
+      time_visible = (words.size() * kMSEC_PER_WORD) + kMSEC_PER_WORD;
+    }
+    
+    /* Set up the queue entry */
+    Notification queue_entry;
+    queue_entry.text = notification;
+    queue_entry.thing_image = NULL;
+    queue_entry.thing_count = 0;
+    queue_entry.time_visible = time_visible;
+    
+    /* Append to running queue */
+    notification_queue.push_back(queue_entry);
+    
+    return true;
+  }
+  
+  return false;
+}
+                        
 /* -------------------------------------------------------------------------- */
 bool MapDialog::isConversationActive()
 {
@@ -542,7 +645,7 @@ void MapDialog::keyDownEvent(SDL_KeyboardEvent event)
           text_offset_max = (TTF_FontHeight(font_normal) + (kLINE_SPACING)) 
                           * (kTEXT_LINES - 1);
         }
-        /* Otherwise, if end of conversation has been reached, start to hide it */
+        /* Otherwise, if end of conversation is reached, start hiding it */
         else if(conversation_info.next.size() == 0)
         {
           dialog_status = HIDING;
@@ -695,7 +798,7 @@ bool MapDialog::render(SDL_Renderer* renderer)
   uint16_t y_index = 0;
 
   /* If the conversation has changed, update the rendering sprites/data */
-  if(conversation_ready || conversation_update)
+  if((dialog_mode == DISABLED && conversation_ready) || conversation_update)
   {
     setupConversation(renderer);
 
@@ -706,16 +809,23 @@ bool MapDialog::render(SDL_Renderer* renderer)
     }
     conversation_ready = false;
     conversation_update = false;
-    dialog_mode = CONVERSATION;
   }
-
+  /* Otherwise, try to initiate a notification */
+  else if(dialog_mode == DISABLED)
+  {
+    setupNotification(renderer);
+  }
+  
+  /* Render the main frame (same for both notificaiton and conversation */
+  x_index = (system_options->getScreenWidth() - img_convo.getWidth()) / 2;
+  if(dialog_mode == CONVERSATION || dialog_mode == NOTIFICATION)
+  {
+    frame_bottom.render(renderer, x_index, 
+                        system_options->getScreenHeight() - dialog_offset);
+  }
+  
   if(dialog_mode == CONVERSATION)
   {
-    /* Render the main frame */
-    x_index = (system_options->getScreenWidth() - img_convo.getWidth()) / 2;
-    frame_convo.render(renderer, x_index, 
-                       system_options->getScreenHeight() - dialog_offset);
-
     /* Compute the new parts of the rendering text */
     if(text_update)
     {
@@ -902,7 +1012,6 @@ bool MapDialog::render(SDL_Renderer* renderer)
 /* -------------------------------------------------------------------------- */
 bool MapDialog::setConfiguration(Options* running_config)
 {
-  std::cout << running_config << std::endl;
   if(running_config != NULL)
   {
     system_options = running_config;
@@ -973,7 +1082,7 @@ void MapDialog::update(int cycle_time)
       if(dialog_status == HIDING)
         dialog_offset = 0.0;
       else if(dialog_status == SHOWING)
-        dialog_offset = frame_convo.getHeight();
+        dialog_offset = frame_bottom.getHeight();
         
       /* Complete the pickup animation sequence */
       //if(pickup_status == HIDING)
@@ -1007,62 +1116,67 @@ void MapDialog::update(int cycle_time)
         dialog_status = OFF;
         dialog_offset = 0.0;
         
+        /* Clean up conversation */
         if(dialog_mode == CONVERSATION)
         {
           renderOptions(NULL);
           setupRenderText();
           setConversation();
         }
-        // /* If notification, remove the first ptr */
-        // if(dialog_mode == NOTIFICATION)
-        // {
-        //   dialog_mode = DISABLED;
-
-        //   if(conversation_waiting)
-        //   {
-        //     if((notification_queue[0].time_visible >> 1) > dialog_time)
-        //       notification_queue[0].time_visible = 
-        //                              (notification_queue[0].time_visible >> 1);
-        //     setupConversation();
-        //     conversation_waiting = false;
-        //   }
-        //   else
-        //   {
-        //     notification_queue.removeFirst();
-        //   }
-        // }
-        // else
-        // {
-          dialog_mode = DISABLED;
-        // }
-
-        /* Set up the next notification, if there is one in the queue */
-        // initiateNextNotification();
+        /* Or clean up the notification */
+        else if(dialog_mode == NOTIFICATION)
+        {
+          /* If a conversation caused this pause, minimize the time visible */
+          if(conversation_ready)
+          {
+            if((notification_queue.front().time_visible / 2) 
+               > notification_time)
+            {
+              notification_queue.front().time_visible /= 2;
+            }
+          }
+          else
+          {
+            notification_queue.erase(notification_queue.begin());
+          }
+        }
+        
+        dialog_mode = DISABLED;
       }
     }
     /* If showing, shift the display onto the screen */
     else if(dialog_status == SHOWING)
     {
       dialog_offset += cycle_time / kSHIFT_TIME; // ~4.5 @ 16.666 ms
-      if(dialog_offset >= frame_convo.getHeight())
+      if(dialog_offset >= frame_bottom.getHeight())
       {
         dialog_status = ON;
-        dialog_offset = frame_convo.getHeight();
+        dialog_offset = frame_bottom.getHeight();
       }
     }
     /* If ON, do action appropriate to the dialog mode */
     else if(dialog_status == ON)
     {
       /* This controls how long the notification box is displayed */
-      // if(dialog_mode == NOTIFICATION)
-      // {
-      //   dialog_time -= cycle_time;
-      //   if(dialog_time < 0)
-      //     dialog_status = HIDING;
-      // }
+      if(dialog_mode == NOTIFICATION)
+      {
+        if(conversation_ready)
+        {
+          dialog_status = HIDING;
+        }
+        else if(cycle_time >= notification_time)
+        {
+          notification_time = 0;
+          dialog_status = HIDING;
+        }
+        else
+        {
+          notification_time -= cycle_time;
+        }
+      }
       /* This controls the bouncing cursor at the bottom of each conversational
        * box to signal going to the next set */
-      if(isConversationActive())
+      else if(isConversationActive())
       {
         /* Shift the text up, if scrolling to more information */
         if(text_offset_max > 0)

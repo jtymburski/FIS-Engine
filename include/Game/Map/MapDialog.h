@@ -85,8 +85,8 @@ private:
   TTF_Font* font_title;
 
   /* The frame controller for displaying the conversation and pickup */
-  Frame frame_convo; 
-  Frame frame_pickup;
+  Frame frame_bottom; 
+  Frame frame_right;
   
   /* Image frames to be loaded for rendering */
   Frame img_convo; /* Main Dialog display */
@@ -99,6 +99,10 @@ private:
   Frame img_opt_u; /* Option Up Arrow */
   Frame img_pick_b; /* Bottom pickup display corner */
   Frame img_pick_t; /* Top pickup display corner */
+  
+  /* The queue that holds all notifications that need to be displayed */
+  std::vector<Notification> notification_queue;
+  uint16_t notification_time;
   
   /* The paused control settings */
   bool paused;
@@ -137,6 +141,7 @@ private:
   const static uint8_t kLINE_SPACING; /* The spacing between lines of font */
   const static uint8_t kMARGIN_SIDES; /* The left and right margin size */
   const static uint8_t kMARGIN_TOP; /* The top margin size */
+  const static uint16_t kMSEC_PER_WORD; /* The read speed per word */
   const static uint8_t kNAME_BOX_OFFSET; /* Name box dialog x offset */
   const static float kOPACITY_BACKEND; /* Backend display box opacity */
   const static uint8_t kOPACITY_MAX; /* The max opacity rating (between 0-max */
@@ -186,6 +191,9 @@ private:
   /* Sets up the active conversation pointer to prepare for screen rendering */
   void setupConversation(SDL_Renderer* renderer);
 
+  /* Sets up the top waiting queued notification, to be displayed */
+  bool setupNotification(SDL_Renderer* renderer);
+  
   /* Setup the render text display. Also manages deletion of Text pointers */
   void setupRenderText(std::vector<std::string> lines = {}, 
                        bool delete_old = false);
@@ -201,6 +209,10 @@ public:
   /* Initializes a conversation with the two given people. */
   bool initConversation(Conversation* dialog_info, MapPerson* target);
   bool initConversation(Conversation dialog_info, MapPerson* target);
+
+  /* Initializes a notification, using a string to be printed */
+  bool initNotification(std::string notification, int time_visible = -1, 
+                        bool single_line = false);
 
   /* Returns if there is an active conversation (needs key presses passed in) */
   bool isConversationActive();
