@@ -246,6 +246,7 @@ bool Text::setText(SDL_Renderer* renderer, std::string text,
       {
         /* Set the internal class texture */
         unsetTexture();
+        alpha = text_color.a;
         texture = text_texture;
         height = text_surface->h;
         width = text_surface->w;

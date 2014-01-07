@@ -33,11 +33,14 @@ const uint8_t MapDialog::kMARGIN_SIDES = 50;
 const uint8_t MapDialog::kMARGIN_TOP = 50;
 const uint8_t MapDialog::kNAME_BOX_OFFSET = 45;
 const float MapDialog::kOPACITY_BACKEND = 0.65;
+const uint8_t MapDialog::kOPACITY_MAX = 255;
 const uint8_t MapDialog::kOPTION_OFFSET = 50;
+const uint16_t MapDialog::kPAUSE_TIME = 750;
 const float MapDialog::kSHIFT_TIME = 3;//.704;
 const uint8_t MapDialog::kTEXT_LINES = 4;
 const uint8_t MapDialog::kTEXT_OPTIONS = 3;
 const float MapDialog::kTEXT_DISPLAY_SPEED = 33.33;
+const float MapDialog::kTEXT_SHIFT = 5.704;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -48,6 +51,9 @@ MapDialog::MapDialog(Options* running_config)
 {
   /* Set class parameters */
   clearData();
+  sound_click.setVolume(32);
+  sound_click.setChannel(SoundChannels::MENUS);
+  
   setConfiguration(running_config);
 }
 
@@ -66,7 +72,6 @@ MapDialog::~MapDialog()
  *===========================================================================*/
 
 /* Computes all IDs that are needed for displaying the conversation */
-// TODO: This will still need to add the target thing, wherever relevant
 std::vector<int> MapDialog::calculateThingList(Conversation convo)
 {
   std::vector<int> list;
@@ -108,6 +113,7 @@ void MapDialog::clearData()
   conversation_ready = false;
   conversation_update = false;
   conversation_waiting = false;
+  dialog_alpha = kOPACITY_MAX;
   dialog_mode = DISABLED;
   dialog_status = OFF;
   dialog_offset = 0.0;
@@ -117,11 +123,14 @@ void MapDialog::clearData()
   event_handler = NULL;
   font_normal = NULL;
   font_title = NULL;
+  paused = false;
   system_options = NULL;
   target = NULL;
   text_index = 0.0;
   text_index_max = 0;
   text_lines.clear();
+  text_offset = 0.0;
+  text_offset_max = 0;
   text_options.clear();
   text_strings.clear();
   text_top = 0;
@@ -214,7 +223,7 @@ void MapDialog::renderOptions(SDL_Renderer* renderer,
   {
     Text* t = new Text(font_normal);
     t->setFont(font_normal);
-    t->setText(renderer, *i, {255,255,255,255});
+    t->setText(renderer, *i, {255, 255, 255, dialog_alpha});
     text_options.push_back(t);
   }
 }
@@ -222,6 +231,8 @@ void MapDialog::renderOptions(SDL_Renderer* renderer,
 /* -------------------------------------------------------------------------- */
 void MapDialog::setAlpha(uint8_t alpha)
 {
+  dialog_alpha = alpha;
+  
   /* Sets the frame alpha ratings */
   frame_convo.setAlpha(alpha);
   frame_pickup.setAlpha(alpha);
@@ -292,7 +303,7 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
    name = thing_active->getName();
   if(!name.empty())
   {
-    SDL_Color text_color = {255, 255, 255, 255};
+    SDL_Color text_color = {255, 255, 255, kOPACITY_MAX};
     name_text.setFont(font_title);
     name_text.setText(renderer, name, text_color);
     if((img_convo.getHeight() + img_name_l.getHeight()) > render_height)
@@ -326,7 +337,7 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
                 convo_y - textbox_height);
 
     /* Draw top white bar encapsulating text */
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, kOPACITY_MAX);
     SDL_Rect src_rect;
     src_rect.x = kNAME_BOX_OFFSET + img_name_l.getWidth();
     src_rect.y = convo_y - textbox_height;
@@ -335,7 +346,7 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
     SDL_RenderFillRect(renderer, &src_rect);
 
     /* Draw opaque fill under text */
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255 * kOPACITY_BACKEND);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, kOPACITY_MAX * kOPACITY_BACKEND);
     src_rect.y += src_rect.h;
     src_rect.h = textbox_height - src_rect.h;
     SDL_RenderFillRect(renderer, &src_rect);
@@ -384,56 +395,6 @@ void MapDialog::setupConversation(SDL_Renderer* renderer)
     dialog_offset = frame_convo.getHeight();
   dialog_option = 0;
   dialog_option_top = 0;
-
-  // /* Get and set up all the pertinent thing data */
-  // dialog_text_index = 0;
-  // int img_width = 0;
-  // Frame* thing_frame = 0;
-  // if(getThingPtr(conversation_info.thing_id))
-  //   thing_frame = thing->getDialogImage();
-  // if(thing_frame != 0)
-  //   img_width = thing_frame->getImage().width();
-  
-  // /* Now work on the text length vs. viewable area */
-  // display_font.setPointSize(kFONT_SIZE);
-  // QFontMetrics normal_font(display_font);
-  // int txt_length = dialog_display.getImage().width() - kMARGIN_SIDES
-  //                - (img_width >> 1);
-  // if((img_width >> 1) < kMARGIN_SIDES)
-  //   txt_length -= kMARGIN_SIDES;
-  // QString txt_line = conversation_info.text;
-
-  // /* Split up the text as per the visible viewing area */
-  // if(conversation_info.next.size() > 1)
-  // {
-  //   txt_line = normal_font.elidedText(txt_line, Qt::ElideRight, txt_length);
-
-  //   /* Fill the options */
-  //   int options_length = txt_length - kOPTION_OFFSET;
-  //   options_text.clear();
-  //   for(int i = 0; i < conversation_info.next.size(); i++)
-  //     options_text.append(normal_font.elidedText(
-  //              conversation_info.next[i].text, Qt::ElideRight, options_length));
-  // }
-  // dialog_text = lineSplitter(txt_line, txt_length, display_font);
-  
-  // /* Clear the option and index counters */
-  // dialog_option = 0;
-  // dialog_option_top = 0;
-  // dialog_shift_enable = false;
-  // dialog_shift_offset = 0;
-
-  // /* Reset the conversation text display */
-  // resetConversationTextDisplay();
-  
-  // /* Only occurs on first time running - initiates animation sequence */
-  // if(dialog_mode == DISABLED)
-  // {
-  //   dialog_mode = CONVERSATION;
-
-  //   /* Initiate animation sequence */
-  //   initiateAnimation(display_font);
-  // }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -448,7 +409,11 @@ void MapDialog::setupRenderText(std::vector<std::string> lines, bool delete_old)
 
     /* Create a new stack of the applicable text handlers */
     for(uint16_t i = 0; i < lines.size(); i++)
-      text_lines.push_back(new Text(font_normal));
+    {
+      Text* line_text = new Text(font_normal);
+      line_text->setAlpha(dialog_alpha);
+      text_lines.push_back(line_text);
+    }
     text_index = 0.0;
     text_index_max = 0;
     text_top = 0;
@@ -542,87 +507,93 @@ bool MapDialog::isImagesSet(bool conversation, bool pickup)
   return loaded;
 }
 
+/* -------------------------------------------------------------------------- */
+bool MapDialog::isPaused()
+{
+  return paused;
+}
+
 /* Key Down events handled */
 /* -------------------------------------------------------------------------- */
 void MapDialog::keyDownEvent(SDL_KeyboardEvent event)
 {
-  if(event.keysym.sym == SDLK_SPACE && event.repeat == 0)
+  if(!paused && dialog_alpha == kOPACITY_MAX)
   {
-    if(isConversationActive() && dialog_status == ON)
+    if(event.keysym.sym == SDLK_SPACE && event.repeat == 0)
     {
-      /* If the letters still need to be displayed, finish */
-      uint16_t text_bottom = text_top + kTEXT_LINES;
-      if(text_index < text_index_max)
+      if(isConversationActive() && dialog_status == ON)
       {
-        text_index = text_index_max;
-        text_update = true;
-      }
-      /* Otherwise, check if the dialog needs to be shifted */
-      else if(text_bottom < text_strings.size())
-      {
-        text_top += (kTEXT_LINES - 1);
-        text_index = text_strings[text_top].size();
-        text_index_max = 0;
-        
-        for(uint16_t i = text_top; i < (text_top + kTEXT_LINES); i++)
+        uint16_t text_bottom = text_top + kTEXT_LINES;
+        /* If the dialog letters are being shifted, finish the shift */
+        if(text_offset_max != 0)
         {
-          if(i < text_strings.size())
-            text_index_max += text_strings[i].size();
+          text_offset = text_offset_max;
         }
-      }
-      /* Otherwise, if end of conversation has been reached, start to hide it */
-      else if(conversation_info.next.size() == 0)
-      {
-        dialog_status = HIDING;
-      }
-      /* Otherwise, there is a next conversation. Proceed */
-      else
-      {
-        bool multiple = (conversation_info.next.size() > 1);
-        
-        /* Do the initial conversation shift */
-        executeEvent();
-        Conversation new_convo = conversation_info.next[dialog_option];
-        setConversation(&new_convo);
-        
-        /* If multiple options, shift to the next one */
-        if(multiple)
+        /* If the letters still need to be displayed, finish */
+        else if(text_index < text_index_max)
         {
+          text_index = text_index_max;
+          text_update = true;
+        }
+        /* Otherwise, check if the dialog needs to be shifted */
+        else if(text_bottom < text_strings.size())
+        {
+          text_offset = 0.0;
+          text_offset_max = (TTF_FontHeight(font_normal) + (kLINE_SPACING)) 
+                          * (kTEXT_LINES - 1);
+        }
+        /* Otherwise, if end of conversation has been reached, start to hide it */
+        else if(conversation_info.next.size() == 0)
+        {
+          dialog_status = HIDING;
+        }
+        /* Otherwise, there is a next conversation. Proceed */
+        else
+        {
+          bool multiple = (conversation_info.next.size() > 1);
+          
+          /* Do the initial conversation shift */
           executeEvent();
-          if(conversation_info.next.size() == 0)
-            dialog_status = HIDING;
-          else
+          Conversation new_convo = conversation_info.next[dialog_option];
+          setConversation(&new_convo);
+          
+          /* If multiple options, shift to the next one */
+          if(multiple)
           {
-            Conversation new_convo2 = conversation_info.next[0];
-            setConversation(&new_convo2);  
+            executeEvent();
+            if(conversation_info.next.size() == 0)
+              dialog_status = HIDING;
+            else
+            {
+              Conversation new_convo2 = conversation_info.next[0];
+              setConversation(&new_convo2);  
+            }
           }
+          
+          conversation_update = true;
         }
-        
-        conversation_update = true;
       }
     }
-  }
-  else if(event.keysym.sym == SDLK_UP && text_index >= text_index_max)
-  {
-    if(dialog_option > 0)
-      dialog_option--;
-    if(dialog_option < dialog_option_top)
-      dialog_option_top = dialog_option;
-  }
-  else if(event.keysym.sym == SDLK_DOWN && text_index >= text_index_max)
-  {
-    if(++dialog_option >= conversation_info.next.size())
-      dialog_option = conversation_info.next.size() - 1;
-    if(dialog_option >= (dialog_option_top + kTEXT_OPTIONS))
-      dialog_option_top = dialog_option - kTEXT_OPTIONS + 1;
-  }
-  else if(event.keysym.sym == SDLK_4)
-  {
-    setAlpha(128);
-  }
-  else if(event.keysym.sym == SDLK_5)
-  {
-    setAlpha(255);
+    else if(event.keysym.sym == SDLK_UP && text_index >= text_index_max)
+    {
+      if(dialog_option > 0)
+      {
+        dialog_option--;
+        sound_click.play();
+      }
+      if(dialog_option < dialog_option_top)
+        dialog_option_top = dialog_option;
+    }
+    else if(event.keysym.sym == SDLK_DOWN && text_index >= text_index_max)
+    {
+      if(dialog_option < (conversation_info.next.size() - 1))
+      {
+        dialog_option++;
+        sound_click.play();
+      }
+      if(dialog_option >= (dialog_option_top + kTEXT_OPTIONS))
+        dialog_option_top = dialog_option - kTEXT_OPTIONS + 1;
+    }
   }
 }
 
@@ -758,13 +729,14 @@ bool MapDialog::render(SDL_Renderer* renderer)
         if(length >= text_strings[index].size())
         {
           text_lines[index]->setText(renderer, 
-                   text_strings[index], {255, 255, 255, 255});
+                            text_strings[index], {255, 255, 255, dialog_alpha});
           length -= text_strings[index].size();
         }
         else
         {
           text_lines[index]->setText(renderer, 
-                   text_strings[index].substr(0, length), {255, 255, 255, 255});
+                                     text_strings[index].substr(0, length), 
+                                     {255, 255, 255, dialog_alpha});
           length = 0;
         }
         index++;
@@ -778,12 +750,29 @@ bool MapDialog::render(SDL_Renderer* renderer)
                                                 + kMARGIN_TOP;
     if(dialog_status == ON)
     {
+      /* Get the line offset, for alpha rendering */
+      float line_offset = 0.0;
+      if(text_offset_max > 0)
+        line_offset = text_offset * (kTEXT_LINES - 1) / text_offset_max;
+      
       /* Render the applicable text lines */
       for(uint16_t i = text_top; i < (text_top + kTEXT_LINES); i++)
       {
+        /* Check in on the opacity for text offset shift */
+        uint16_t index_rating = i - text_top;
+        if(text_offset_max > 0)
+        {
+          if(line_offset >= (index_rating + 1))
+            text_lines[i]->setAlpha(0);
+          else if(static_cast<int>(line_offset) == index_rating)
+            text_lines[i]->setAlpha(
+                               dialog_alpha*(1 - (line_offset - index_rating)));
+        }
+        
+        /* Proceed to render the text, if it's in the valid range */
         if(i < text_lines.size())
         {
-          text_lines[i]->render(renderer, x_index, y_index);
+          text_lines[i]->render(renderer, x_index, y_index - text_offset);
           y_index += text_lines[i]->getHeight() + kLINE_SPACING;
         }
       }
@@ -857,7 +846,7 @@ bool MapDialog::render(SDL_Renderer* renderer)
         
         /* If the display is not done, show the shifting more pointers */
         uint16_t top_index = text_top + kTEXT_LINES;
-        if(top_index < text_strings.size())
+        if(top_index < text_strings.size() && text_offset_max == 0)
         {
           uint16_t offset = kBUBBLES_OFFSET;
           
@@ -870,7 +859,7 @@ bool MapDialog::render(SDL_Renderer* renderer)
           }
         }
         /* Else, the words have ended. Show the next shifter arrow */
-        else
+        else if(text_offset_max == 0)
         {
           img_convo_n.render(renderer, x_index - img_convo_n.getWidth() / 2, 
                              system_options->getScreenHeight() 
@@ -913,11 +902,14 @@ bool MapDialog::render(SDL_Renderer* renderer)
 /* -------------------------------------------------------------------------- */
 bool MapDialog::setConfiguration(Options* running_config)
 {
+  std::cout << running_config << std::endl;
   if(running_config != NULL)
   {
     system_options = running_config;
     createFonts();
 
+    sound_click.setSoundFile(system_options->getBasePath() + 
+                             "sound/functional/menu_click.wav");
     return true;
   }
   
@@ -951,12 +943,60 @@ void MapDialog::setEventHandler(EventHandler* event_handler)
   this->event_handler = event_handler;
 }
 
+/* -------------------------------------------------------------------------- */
+void MapDialog::setPaused(bool paused)
+{
+  this->paused = paused;
+}
+
 /* Updates the thing, called on the tick */
 /* -------------------------------------------------------------------------- */
 void MapDialog::update(int cycle_time)
 {
+  /* Modify the opacity of the dialog information based on the paused status */
+  if(paused && dialog_alpha > 0)
+  {
+    float alpha_diff = cycle_time * 1.0 * kOPACITY_MAX / kPAUSE_TIME;
+    if(alpha_diff < 1)
+      alpha_diff = 1.0;
+      
+    /* Compute the change in alpha */
+    if(alpha_diff >= dialog_alpha)
+      setAlpha(0);
+    else
+      setAlpha(dialog_alpha - alpha_diff);
+    
+    /* If the dialog alpha reaches 0, do the cleanup */
+    if(dialog_alpha == 0)
+    {
+      /* Complete the animation sequence if it's occurring during a pause */
+      if(dialog_status == HIDING)
+        dialog_offset = 0.0;
+      else if(dialog_status == SHOWING)
+        dialog_offset = frame_convo.getHeight();
+        
+      /* Complete the pickup animation sequence */
+      //if(pickup_status == HIDING)
+      //  pickup_offset = 0;
+      //else if(pickup_status == SHOWING)
+      //  pickup_offset = pickup_width;
+    }
+  }
+  else if(!paused && dialog_alpha < kOPACITY_MAX)
+  {
+    float alpha_diff = cycle_time * 1.0 * kOPACITY_MAX / kPAUSE_TIME;
+    if(alpha_diff < 1)
+      alpha_diff = 1.0;
+      
+    /* Compute the change in alpha */
+    if(dialog_alpha + alpha_diff > kOPACITY_MAX)
+      setAlpha(kOPACITY_MAX);
+    else
+      setAlpha(dialog_alpha + alpha_diff);
+  }
+  
   /* Ignore all updating if paused */
-  if(true)//!paused)
+  if(!paused && dialog_alpha == kOPACITY_MAX)
   {
     /* If hiding, shift the display onto the screen */
     if(dialog_status == HIDING)
@@ -1024,14 +1064,30 @@ void MapDialog::update(int cycle_time)
        * box to signal going to the next set */
       if(isConversationActive())
       {
-        /* Increment the dialog letters display */
-        // if(dialog_shift_enable)
-        // {
-        //   dialog_shift_offset += cycle_time / kSHIFT_OFFSET;
-        //   if(dialog_shift_offset >= dialog_shift_max)
-        //     dialogShiftEnable(false);
-        // }
-        if(text_index < text_index_max) // else
+        /* Shift the text up, if scrolling to more information */
+        if(text_offset_max > 0)
+        {
+          text_offset += cycle_time / kTEXT_SHIFT;
+          if(text_offset >= text_offset_max)
+          {
+            text_offset = 0.0;
+            text_offset_max = 0;
+            
+            /* Finally, shift the text so new fonts are rendered */
+            animation_shifter = 0.0;
+            text_top += (kTEXT_LINES - 1);
+            text_index = text_strings[text_top].size();
+            text_index_max = 0;
+            
+            for(uint16_t i = text_top; i < (text_top + kTEXT_LINES); i++)
+            {
+              if(i < text_strings.size())
+                text_index_max += text_strings[i].size();
+            }
+          }
+        }
+        /* Shift the letters displayed, if not entirely displayed */
+        else if(text_index < text_index_max)
         {
           text_index += cycle_time / kTEXT_DISPLAY_SPEED;
           if(text_index > text_index_max)

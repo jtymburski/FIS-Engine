@@ -17,6 +17,7 @@
 #include "Game/Map/MapThing.h"
 #include "Helpers.h"
 #include "Options.h"
+#include "Sound.h"
 #include "Text.h"
 
 /* Notification queue structure */
@@ -64,6 +65,9 @@ private:
   bool conversation_update;
   bool conversation_waiting;
 
+  /* The dialog alpha rating (for how visible) */
+  uint8_t dialog_alpha;
+  
   /* The running dialog mode and status - used for display control */
   DialogMode dialog_mode;
   DialogStatus dialog_status;
@@ -72,7 +76,6 @@ private:
   float dialog_offset;
   uint8_t dialog_option;
   uint8_t dialog_option_top;
-  //bool dialog_shift_enable;
 
   /* The event handler information */
   EventHandler* event_handler;
@@ -97,6 +100,12 @@ private:
   Frame img_pick_b; /* Bottom pickup display corner */
   Frame img_pick_t; /* Top pickup display corner */
   
+  /* The paused control settings */
+  bool paused;
+ 
+  /* Sounds used throughout the menu system */
+  Sound sound_click;
+  
   /* The system options, used for rendering, settings, etc. */
   Options* system_options;
   
@@ -109,6 +118,8 @@ private:
   float text_index;
   uint16_t text_index_max;
   std::vector<Text*> text_lines;
+  float text_offset;
+  uint16_t text_offset_max;
   std::vector<Text*> text_options;
   std::vector<std::string> text_strings;
   uint16_t text_top;
@@ -128,11 +139,14 @@ private:
   const static uint8_t kMARGIN_TOP; /* The top margin size */
   const static uint8_t kNAME_BOX_OFFSET; /* Name box dialog x offset */
   const static float kOPACITY_BACKEND; /* Backend display box opacity */
+  const static uint8_t kOPACITY_MAX; /* The max opacity rating (between 0-max */
   const static uint8_t kOPTION_OFFSET; /* The offset of the options from text */
+  const static uint16_t kPAUSE_TIME; /* The time to hide or show the dialog */
   const static float kSHIFT_TIME; /* Time to make the display visible */
   const static uint8_t kTEXT_LINES; /* The max number of lines displayed */
   const static uint8_t kTEXT_OPTIONS; /* The max number of options displayed */
   const static float kTEXT_DISPLAY_SPEED; /* The character display speed */
+  const static float kTEXT_SHIFT; /* The speed at which the text shifts up */
 
  /*============================================================================
  * PRIVATE FUNCTIONS
@@ -197,6 +211,9 @@ public:
   /* Are the rendering images set */
   bool isImagesSet(bool conversation = true, bool pickup = false);
 
+  /* Returns if the class control system is paused */
+  bool isPaused();
+  
   /* Key Down/Flush/Up events handled */
   void keyDownEvent(SDL_KeyboardEvent event);
   void keyFlush();
@@ -223,6 +240,9 @@ public:
   /* Sets the event handler */
   void setEventHandler(EventHandler* event_handler);
 
+  /* Sets if the class control is paused */
+  void setPaused(bool paused);
+  
   /* Updates the thing, called on the tick */
   void update(int cycle_time);
 

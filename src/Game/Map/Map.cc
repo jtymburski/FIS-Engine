@@ -1258,6 +1258,8 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
                           geography[map_index][0].size());
     }
   }
+  else if(event.keysym.sym == SDLK_p)
+    map_dialog.setPaused(!map_dialog.isPaused());
   else if(map_dialog.isConversationActive())
     map_dialog.keyDownEvent(event);
   else if(event.keysym.sym == SDLK_0)
