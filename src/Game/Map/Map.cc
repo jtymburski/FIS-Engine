@@ -1260,8 +1260,12 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
   }
   else if(event.keysym.sym == SDLK_p)
     map_dialog.setPaused(!map_dialog.isPaused());
+  else if(event.keysym.sym == SDLK_6)
+    map_dialog.initPickup(items[1]->getDialogImage(), 15, 2500);
+  else if(event.keysym.sym == SDLK_7)
+    map_dialog.initPickup(items.front()->getDialogImage(), 5);
   else if(event.keysym.sym == SDLK_8)
-    map_dialog.initNotification("Hello sunshine, what a glorious day and I'll keep writing forever and forever and forever and forever and forever and forever and forFU.", 0, true);
+    map_dialog.initNotification("Hello sunshine, what a glorious day and I'll keep writing forever and forever and forever and forever and forever and forever and forFU.", true, 0);
   else if(event.keysym.sym == SDLK_9)
     map_dialog.initNotification("Hello sunshine, what a glorious day and I'll keep writing forever and forever and forever and forever and forever and forever and forFU.");
   else if(event.keysym.sym == SDLK_0)
