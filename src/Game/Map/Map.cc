@@ -1238,10 +1238,15 @@ bool Map::initConversation(Conversation* convo, MapThing* source)
   return false;
 }
 
-// bool Map::initNotification(QString notification)
-// {
-  // return map_dialog.initNotification(notification);
-// }
+bool Map::initNotification(std::string notification)
+{
+  return map_dialog.initNotification(notification);
+}
+
+bool Map::initNotification(Frame* image, int count)
+{
+  return map_dialog.initPickup(image, count);
+}
 
 // /* Checks whether the viewport contains any tiles with the given sector */
 // bool Map::isInSector(int index)
@@ -1439,9 +1444,13 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
     int height = -1;
     int index = -1;
     int width = -1;
-    data = fh.readXmlData(&done, &success);
+    
     do
     {
+      /* Read set of XML data */
+      data = fh.readXmlData(&done, &success);
+      
+      /* Parse map data */
       if(data.getElement(kFILE_GAME_TYPE) == "map")
       {
         if(data.getElement(kFILE_SECTION_ID) == "sprite" &&
@@ -1514,10 +1523,7 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
           }
         }
       }
-      
-      /* Get the next element */
-      data = fh.readXmlData(&done, &success);
-    } while(!done && success);
+    } while(!done);// && success); // TODO: Success in loop??
   }
   success &= fh.stop();
   
@@ -1583,28 +1589,19 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
 // {
 // }
 
-// /* Proceeds to pickup the total number of this marked item */
-// bool Map::pickupItem(MapItem* item)
-// {
-  // if(item != 0)
-  // {
-    // Frame* dialog_image = item->getDialogImage();
-    // Sprite* map_image = item->getFrames();
+/* Proceeds to pickup the total number of this marked item */
+bool Map::pickupItem(MapItem* item)
+{
+  if(item != NULL)
+  {
+    /* Set the on map count to 0 */
+    item->setCount(0);
     
-    // /* Show pickup dialog */
-    // if(dialog_image != 0 && dialog_image->isImageSet())
-      // map_dialog.initPickup(dialog_image, item->getCount());
-    // else if(map_image != 0 && map_image->getSize() > 0)
-      // map_dialog.initPickup(map_image->getFirstFrame(), item->getCount());
-      
-    // /* Finally, set the on map count to 0 */
-    // item->setCount(0);
-    
-    // return true;
-  // }
+    return true;
+  }
   
-  // return false;
-// }
+  return false;
+}
 
 /* Renders the title screen */
 bool Map::render(SDL_Renderer* renderer)

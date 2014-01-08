@@ -213,8 +213,9 @@ public:
   /* Initiates a conversation, within the map. */
   bool initConversation(Conversation* convo, MapThing* source);
 
-  // /* Initiates a notification, within the map */
-  // bool initNotification(QString notification);
+  /* Initiates a notification, within the map (either string or image based) */
+  bool initNotification(std::string notification);
+  bool initNotification(Frame* image, int count);
 
   // /* Checks whether the viewport contains any tiles with the given sector */
   // bool isInSector(int index);
@@ -237,8 +238,8 @@ public:
   // /* Causes the thing you are moving into to start its interactive action */
   // void passOver();
 
-  // /* Picks up the total number of the item */
-  // bool pickupItem(MapItem* item);
+  /* Picks up the total number of the item */
+  bool pickupItem(MapItem* item);
   
   /* Renders the map */
   bool render(SDL_Renderer* renderer);

@@ -87,7 +87,7 @@ public:
        Frame* thumbnail = nullptr, const double &mass = 0.0);
 
   /* Annihilates an Item object */
-  ~Item();
+  virtual ~Item();
 
 private:
   /* Static ID counter for the Item class */

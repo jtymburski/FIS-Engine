@@ -93,7 +93,10 @@ public:
   /* Create a font, based on the font parameters. Null if fails */
   static TTF_Font* createFont(std::string font_path, int font_size, 
                               int font_style = TTF_STYLE_NORMAL);
-                              
+
+  /* Takes an integer and properly formats it with thousands separators */
+  static std::string formatNum(uint32_t number);
+  
   /* Takes a string of characters and splits it to fit a line after it is 
    * rendered by the given font. */
   static std::vector<std::string> splitLine(TTF_Font* font, std::string text, 

@@ -37,7 +37,6 @@ Game::Game(Options* running_config)
   setConfiguration(running_config);
 
   /* Set up the render classes */
-//  setupGame();
   setupBattle();
   setupMap();
 }
@@ -56,11 +55,16 @@ Game::~Game()
 //  }
 
   /* Delete map */
- if(game_map != NULL)
- {
-   delete game_map;
-   game_map = NULL;
- }
+  if(game_map != NULL)
+  {
+    delete game_map;
+    game_map = NULL;
+  }
+ 
+  /* Delete all game items */
+  for(auto i = item_list.begin(); i != item_list.end(); i++)
+    delete (*i);
+  item_list.clear();
 }
 
 /*============================================================================
@@ -70,21 +74,36 @@ Game::~Game()
 /* A give item event, based on an ID and count (triggered from stored event */
 bool Game::eventGiveItem(int id, int count)
 {
-  // TODO: The item insertion into inventory
-  bool item_inserted = true;
-  
+  /* Attempt to find the item */
+  Item* found_item = NULL;
+  for(auto i = item_list.begin(); i != item_list.end(); i++)
+    if((*i)->getGameID() == id)
+      found_item = (*i);
+
   /* If the item was inserted, display pickup notification */
-  if(item_inserted)
+  if(found_item != NULL)
   {
-  
+    // TODO: Attempt insert. For now, according to variable
+    bool inserted = true;
+    
+    /* If inserted, notify that the pickup was a success */
+    if(inserted)
+    {
+      if(game_map != NULL)
+        game_map->initNotification(found_item->getThumb(), count);
+      return true;
+    }
+    /* Otherwise, notify that item could not be received */
+    else
+    {
+      if(game_map != NULL)
+        game_map->initNotification("Insufficient room in inventory to fit " + 
+                                   std::to_string(count) + " " + 
+                                   found_item->getName());
+    }
   }
-  /* Otherwise, display text about no more room */
-  else
-  {
   
-  }
-  
-  return item_inserted;
+  return false;
 }
   
  /* Initiates a conversation event */
@@ -94,42 +113,24 @@ bool Game::eventGiveItem(int id, int count)
     game_map->initConversation(convo, source);
 }
 
+/* Initiates a notification event (in map) */
+void Game::eventInitNotification(std::string notification)
+{
+  if(game_map != NULL)
+    game_map->initNotification(notification);
+}
+
 /* The pickup item event - from walking over or triggering from action key */
 void Game::eventPickupItem(MapItem* item, bool walkover)
 {
   if(item != NULL && item->isWalkover() == walkover)
   {
-    bool was_inserted = eventGiveItem(item->getID(), item->getCount());
+    bool was_inserted = eventGiveItem(item->getCoreID(), item->getCount());
     
     /* If the insert was successful, pickup the item */
-    //if(game_map != NULL && was_inserted)
-    //  game_map->pickupItem(item);
+    if(game_map != NULL && was_inserted)
+     game_map->pickupItem(item);
   }
-  // if(item != 0 && item->isWalkover() == walkover)
-  // {
-    // bool was_inserted = giveItem(item->getID(), item->getCount());
-    
-    /* Only proceed if it was inserted */
-    /*if(game_map != 0)
-    {
-      if(was_inserted)
-      {
-        game_map->pickupItem(item);
-      }
-      else
-      {
-        QString notification = "Inventory too full to pick up ";
-        if(item->getCount() > 1)
-          notification += QString::number(item->getCount()) + " " + 
-                          item->getName();
-        else
-          notification += "the " + item->getName();
-        notification += ".";
-        
-        game_map->initNotification(notification);
-      }
-    }
-  }*/
 }
 
 /* Starts a battle event. Using the given information - TODO */
@@ -154,7 +155,23 @@ void Game::pollEvents()
     /* Poll classification */
     if(classification == EventClassifier::GIVEITEM)
     {
-    
+      int id;
+      int count;
+      event_handler.pollGiveItem(&id, &count);
+      eventGiveItem(id, count);
+    }
+    else if(classification == EventClassifier::NOTIFICATION)
+    {
+      std::string notification;
+      event_handler.pollNotification(&notification);
+      eventInitNotification(notification);
+    }
+    else if(classification == EventClassifier::PICKUPITEM)
+    {
+      MapItem* item;
+      bool walkover;
+      event_handler.pollPickupItem(&item, &walkover);
+      eventPickupItem(item, walkover);
     }
     else if(classification == EventClassifier::RUNBATTLE)
     {
@@ -164,12 +181,6 @@ void Game::pollEvents()
     {
     
     }
-    else if(classification == EventClassifier::TELEPORTTHING)
-    {
-      int thing_id, x, y, section_id;
-      event_handler.pollTeleportThing(&thing_id, &x, &y, &section_id);
-      eventTeleportThing(thing_id, x, y, section_id);
-    }
     else if(classification == EventClassifier::STARTCONVO)
     {
       Conversation* convo;
@@ -177,10 +188,13 @@ void Game::pollEvents()
       event_handler.pollConversation(&convo, &source);
       eventInitConversation(convo, source);
     }
-    else if(classification == EventClassifier::PICKUPITEM)
+    else if(classification == EventClassifier::TELEPORTTHING)
     {
-    
+      int thing_id, x, y, section_id;
+      event_handler.pollTeleportThing(&thing_id, &x, &y, &section_id);
+      eventTeleportThing(thing_id, x, y, section_id);
     }
+
   } while(event_handler.pollEvent());
   
   event_handler.pollClear();
@@ -338,47 +352,6 @@ void Game::setupMap()
 }
 
 /*============================================================================
- * PUBLIC SLOTS
- *===========================================================================*/
-
-/* Returns the number of items actually inserted into inventory. If less than
- * count, it only could fit that many */
-/*bool Game::giveItem(int id, int count)
-{
-  // TODO: connect to player and inventory
-  return true;
-}
-
-void Game::pickupItem(MapItem* item, bool walkover)
-{
-  if(item != 0 && item->isWalkover() == walkover)
-  {
-    bool was_inserted = giveItem(item->getID(), item->getCount());*/
-    
-    /* Only proceed if it was inserted */
-    /*if(game_map != 0)
-    {
-      if(was_inserted)
-      {
-        game_map->pickupItem(item);
-      }
-      else
-      {
-        QString notification = "Inventory too full to pick up ";
-        if(item->getCount() > 1)
-          notification += QString::number(item->getCount()) + " " + 
-                          item->getName();
-        else
-          notification += "the " + item->getName();
-        notification += ".";
-        
-        game_map->initNotification(notification);
-      }
-    }
-  }
-}*/
-
-/*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
@@ -422,6 +395,22 @@ void Game::keyUpEvent(SDL_KeyboardEvent event)
 /* Renders the title screen */
 bool Game::render(SDL_Renderer* renderer)
 {
+  /* Create temporary list of items - TODO: Pull into file */
+  if(item_list.empty())
+  {
+    Item* item1 = new Item(5, "Sword of Power", 125, 
+                           new Frame("sprites/sword_AA_A00.png", renderer));
+    Item* item2 = new Item(7, "Frost Bubby", 5, 
+                           new Frame("sprites/Battle/Bubbies/frosty_t1.png", 
+                                     renderer));
+    Item* item3 = new Item(0, "Coins", 1, 
+                           new Frame("sprites/coins_AA_A00.png", renderer));
+    
+    item_list.push_back(item1);
+    item_list.push_back(item2);
+    item_list.push_back(item3);
+  }
+  
   if(!game_map->isLoaded())
    game_map->loadMap(base_path + "maps/test_05", renderer);
 

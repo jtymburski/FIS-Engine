@@ -102,7 +102,7 @@ Item::Item(const uint32_t &game_id, const std::string &name,
   setMass(mass);
   
   /* Assign the Base Item ptr and flag */
-  setBase(this);
+  //setBase(this);
 }
 
 /*
@@ -221,6 +221,8 @@ void Item::unsetAll(Item* object)
   object->name = "";
   object->prefix = "";
   object->occasion = ActionOccasion::NONE;
+  if(object->thumbnail != nullptr)
+    delete object->thumbnail;
   object->thumbnail = nullptr;
   object->using_skill = nullptr;
   object->using_animation = nullptr;
@@ -333,7 +335,7 @@ bool Item::setBase(Item* item_base)
  * 
  *              I] A game_id [base item ID] is set to other than KUNSET_ID
  *             II] The Flag for SET_BASE_ITEM is set to true
- *            III] The base_item ptr is non-null
+ *            III] The base_item ptr is null
  *
  * Inputs: none
  * Output: bool - true if the current object is a base item

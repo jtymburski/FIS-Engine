@@ -315,6 +315,30 @@ TTF_Font* Text::createFont(std::string font_path, int font_size,
   return new_font;
 }
 
+std::string Text::formatNum(uint32_t number)
+{
+  std::string str_num;
+  int index = 0;
+  
+  /* Handle 0 case */
+  if(number == 0)
+    return "0";
+  
+  while(number > 0)
+  {
+    /* Add comma to front if another sequence is about to be parsed */
+    if(index != 0 && index % 3 == 0)
+      str_num = "," + str_num;
+      
+    int digit = number % 10;
+    str_num = std::to_string(digit) + str_num;
+    number /= 10;
+    index++;
+  }
+  
+  return str_num;
+}
+
 /*
  * Description: Splits a line into the appropriate widths, based on the
  *              rendering font. This will seg fault if the font is NULL or 

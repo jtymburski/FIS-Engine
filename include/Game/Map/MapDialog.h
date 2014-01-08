@@ -25,7 +25,7 @@ struct Notification
 {
   std::string text;
   Frame* thing_image;
-  uint16_t thing_count;
+  uint32_t thing_count;
   uint16_t time_visible;
 };
 
@@ -112,6 +112,7 @@ private:
   std::vector<Notification> pickup_queue;
   DialogStatus pickup_status;
   uint16_t pickup_time;
+  bool pickup_update;
   
   /* Sounds used throughout the menu system */
   Sound sound_click;
@@ -204,7 +205,7 @@ private:
   void setupNotification(SDL_Renderer* renderer);
  
   /* Sets up the top waiting pickup queued notification, to be displayed */
-  void setupPickup(SDL_Renderer* renderer);
+  void setupPickup(SDL_Renderer* renderer, bool update = false);
   
   /* Setup the render text display. Also manages deletion of Text pointers */
   void setupRenderText(std::vector<std::string> lines = {}, 

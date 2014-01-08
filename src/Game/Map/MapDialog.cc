@@ -163,6 +163,7 @@ void MapDialog::clearData()
   pickup_offset = 0.0;
   pickup_status = OFF;
   pickup_time = 0;
+  pickup_update = false;
   system_options = NULL;
   target = NULL;
   text_index = 0.0;
@@ -566,7 +567,7 @@ void MapDialog::setupNotification(SDL_Renderer* renderer)
  * Inputs: SDL_Renderer* renderer - the graphical engine rendering reference
  * Output: none
  */
-void MapDialog::setupPickup(SDL_Renderer* renderer)
+void MapDialog::setupPickup(SDL_Renderer* renderer, bool update)
 {
   Notification pickup = pickup_queue.front();
   int render_height = img_pick_t.getHeight() + pickup.thing_image->getHeight() 
@@ -576,7 +577,7 @@ void MapDialog::setupPickup(SDL_Renderer* renderer)
 
   /* Set up the text information */
   Text pickup_txt(font_normal);
-  pickup_txt.setText(renderer, "x " + std::to_string(pickup.thing_count), 
+  pickup_txt.setText(renderer, "x " + Text::formatNum(pickup.thing_count), 
                      {255, 255, 255, kOPACITY_MAX});
   render_width += pickup_txt.getWidth();
   
@@ -640,9 +641,18 @@ void MapDialog::setupPickup(SDL_Renderer* renderer)
   /* Create the base frame display texture for the right hand notification */
   SDL_SetRenderTarget(renderer, NULL);
   frame_right.setTexture(texture);
-  pickup_status = SHOWING;
-  pickup_offset = 0.0;
-  pickup_time = pickup.time_visible;
+  
+  if(!update)
+  {
+    pickup_status = SHOWING;
+    pickup_offset = 0.0;
+    pickup_time = pickup.time_visible;
+  }
+  else
+  {
+    if(pickup_status == ON)
+      pickup_offset = frame_right.getWidth();
+  }
 }
 
 /*
@@ -831,19 +841,54 @@ bool MapDialog::initPickup(Frame* thing_image, int thing_count,
   if(thing_image != NULL && thing_image->isImageSet() && thing_count > 0 
                          && isImagesSet(false, true))
   {
-    Notification pickup;
-    pickup.text = "";
-    pickup.thing_image = thing_image;
-    pickup.thing_count = thing_count;
+    uint16_t notification_index = 0;
+    bool notification_found = false;
+
+    /* First check to see if a pickup already exists */
+    for(uint16_t i = 0; i < pickup_queue.size(); i++)
+    {
+      if(!notification_found && pickup_queue[i].thing_image == thing_image)
+      {
+        notification_index = i;
+        notification_found = true;
+      }
+    }
     
-    /* Determine time visible, if given time is invalid */
-    if(time_visible <= 0)
-      pickup.time_visible = kPICKUP_DISPLAY_TIME;
+    /* Check if it's the head of the list and it's hiding. If so, don't add to
+     * existing */
+    if(notification_index == 0 && pickup_status == HIDING)
+      notification_found = false;
+    
+    /* If the notification is found, update the current one */
+    if(notification_found)
+    {
+      pickup_queue[notification_index].thing_count += thing_count;
+      
+      /* If it is the head of the list and it's currently being shown, reset
+       * time */
+      if(notification_index == 0 && pickup_status != OFF)
+        pickup_time = pickup_queue[notification_index].time_visible;
+        
+      pickup_update = true;
+    }
+    /* Otherwise, create new pickup event */
     else
-      pickup.time_visible = time_visible;
-  
-    /* Push onto stack */
-    pickup_queue.push_back(pickup);
+    {
+      Notification pickup;
+      pickup.text = "";
+      pickup.thing_image = thing_image;
+      pickup.thing_count = thing_count;
+      
+      /* Determine time visible, if given time is invalid */
+      if(time_visible <= 0)
+        pickup.time_visible = kPICKUP_DISPLAY_TIME;
+      else
+        pickup.time_visible = time_visible;
+    
+      /* Push onto stack */
+      pickup_queue.push_back(pickup);
+    }
+
     
     return true;
   }
@@ -1368,6 +1413,13 @@ bool MapDialog::render(SDL_Renderer* renderer)
   }
   if(pickup_status != OFF)
   {
+    /* If the pickup needs an update, update it first */
+    if(pickup_update)
+    {
+      setupPickup(renderer, pickup_update);
+      pickup_update = false;
+    }
+    
     frame_right.render(renderer, 
                        system_options->getScreenWidth() - pickup_offset, 
                        kPICKUP_Y);
