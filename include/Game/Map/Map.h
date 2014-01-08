@@ -150,6 +150,9 @@ private:
   bool parseCoordinateInfo(std::string row, std::string col, uint16_t index,
                            uint16_t* r_start, uint16_t* r_end, 
                            uint16_t* c_start, uint16_t* c_end);
+                           
+  /* Changes the map section index - what is displayed */
+  bool setSectionIndex(uint16_t index);
   
   /* Splits the ID into a vector of IDs */
   std::vector< std::vector<uint16_t> > splitIdString(std::string id, 
@@ -207,9 +210,8 @@ public:
   // /* Initial call when map is displayed */
   // void initialization();
 
-  // /* Initiates a conversation, within the map. */
-  // bool initConversation(Conversation* convo, MapPerson* initiator, 
-                                             // MapThing* source);
+  /* Initiates a conversation, within the map. */
+  bool initConversation(Conversation* convo, MapThing* source);
 
   // /* Initiates a notification, within the map */
   // bool initNotification(QString notification);
@@ -244,11 +246,8 @@ public:
   /* Sets the running configuration, from the options class */
   bool setConfiguration(Options* running_config);
   
-  // /* Changes the map section index - what is displayed */
-  // bool setSectionIndex(int index);
-  
-  // /* Teleport a thing, based on the given coordinates */
-  // void teleportThing(int id, int tile_x, int tile_y, int section_id = -1);
+  /* Teleport a thing, based on the given coordinates */
+  void teleportThing(int id, int tile_x, int tile_y, int section_id);
 
   /* Handles all the necessary clean up when map focus is lost */
   void unfocus();

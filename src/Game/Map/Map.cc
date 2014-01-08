@@ -623,6 +623,20 @@ bool Map::parseCoordinateInfo(std::string row, std::string col, uint16_t index,
   return false;
 }
 
+/* Changes the map section index - what is displayed */
+bool Map::setSectionIndex(uint16_t index)
+{
+  if(index < geography.size() && geography[index].size() > 0)
+  {
+    map_index = index;
+    viewport.setMapSize(geography[index].size(), geography[index][0].size());
+    
+    return true;
+  }
+  
+  return false;
+}
+
 /* Splits the ID into a vector of IDs */
 std::vector< std::vector<uint16_t> > Map::splitIdString(std::string id, 
                                                         bool matrix)
@@ -1201,24 +1215,28 @@ std::vector< std::vector<uint16_t> > Map::splitIdString(std::string id,
   // player->setFocus();
 // }
 
-// bool Map::initConversation(Conversation* convo, MapPerson* initiator, 
-                                                // MapThing* source)
-// {
-  // if(player != 0 && map_dialog.initConversation(convo, initiator))
-  // {
-    // player->keyFlush();
+bool Map::initConversation(Conversation* convo, MapThing* source)
+{
+  if(player != NULL && player->getTarget() == NULL 
+                    && map_dialog.initConversation(convo, player))
+  {
+    /* Finalize conversation setup */
+    std::vector<int> list = map_dialog.getConversationIDs();
+    map_dialog.setConversationThings(getThingData(list));
+    
+    /* Flush player keys */
+    player->keyFlush();
 
-    // /* Set the targets */
-    // if(initiator != 0)
-      // initiator->setTarget(source);
-    // if(source != 0)
-      // source->setTarget(initiator);
+    /* Set the targets */
+    player->setTarget(source);
+    if(source != NULL)
+      source->setTarget(player);
 
-    // return true;
-  // }
+    return true;
+  }
 
-  // return false;
-// }
+  return false;
+}
 
 // bool Map::initNotification(QString notification)
 // {
@@ -1677,50 +1695,41 @@ bool Map::setConfiguration(Options* running_config)
   
   return false;
 }
-
-// /* Changes the map section index - what is displayed */
-// bool Map::setSectionIndex(int index)
-// {
-  // if(index >= 0 && index < geography.size() && geography[index].size() > 0)
-  // {
-    // map_index = index;
-    // viewport->setMapSize(geography[index].size(), geography[index][0].size());
-    
-    // return true;
-  // }
-  
-  // return false;
-// }
   
 // Possibly make the teleport add the ability of shifting map thing
-// void Map::teleportThing(int id, int tile_x, int tile_y, int section_id)
-// {
-  // /* If the section id is below 0, then set to internal map index */
-  // if(section_id < 0)
-    // section_id = map_index;
+void Map::teleportThing(int id, int tile_x, int tile_y, int section_id)
+{
+  /* If the section id is below 0, then set to internal map index */
+  if(section_id < 0)
+    section_id = map_index;
   
-  // /* Ensure that the tile x and y is within the range */
-  // if(section_id < geography.size() && 
-     // geography[section_id].size() > tile_x && tile_x >= 0 && 
-     // geography[section_id][tile_x].size() > tile_y && tile_y >= 0)
-  // {
-    // /* Change the starting tile for the thing */
-    // for(int i = 0; i < persons.size(); i++)
-    // {
-      // if(persons[i]->getID() == id)
-      // {
-        // if(persons[i]->setStartingTile(section_id, 
-                                       // geography[section_id][tile_x][tile_y]))
-        // {
-          // map_dialog.endConversation();
-          // if(map_index != section_id)
-            // setSectionIndex(section_id);
-          // persons[i]->clearAllMovement();
-        // }
-      // }
-    // }
-  // }
-// }
+  if(tile_x >= 0 && tile_y >= 0 && section_id >= 0)
+  {
+    uint16_t x = tile_x;
+    uint16_t y = tile_y;
+    uint16_t section = section_id;
+    
+    /* Ensure that the tile x and y is within the range */
+    if(section < geography.size() && geography[section].size() > x 
+                                  && geography[section][x].size() > y)
+    {
+      /* Change the starting tile for the thing */
+      for(auto i = persons.begin(); i != persons.end(); i++)
+      {
+        if((*i)->getID() == id)
+        {
+          if((*i)->setStartingTile(section, geography[section][x][y]))
+          {
+            //map_dialog.endConversation();
+            if(map_index != section)
+              setSectionIndex(section);
+            (*i)->clearAllMovement();
+          }
+        }
+      }
+    }
+  }
+}
 
 void Map::unfocus()
 {
@@ -1806,6 +1815,16 @@ void Map::unloadMap()
 /* Updates the game state */
 bool Map::update(int cycle_time)
 {
+  /* Check on player interaction */
+  if(player != NULL && player->getTarget() != NULL 
+                    && !map_dialog.isConversationActive() 
+                    && !map_dialog.isConversationReady() 
+                    && !map_dialog.isConversationWaiting())
+  {
+    player->getTarget()->clearTarget();
+    player->clearTarget();
+  }
+  
   /* Update the sprite animation */
   for(uint16_t i = 0; i < tile_sprites.size(); i++)
     tile_sprites[i]->update(cycle_time);

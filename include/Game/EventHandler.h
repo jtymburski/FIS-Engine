@@ -148,8 +148,7 @@ public:
   void pollClear(); // NEW
   
   /* Poll a conversation event. Only true if this event is next on queue */
-  bool pollConversation(Conversation** convo, MapPerson** initiator, 
-                                              MapThing** source); // NEW
+  bool pollConversation(Conversation** convo, MapThing** source); // NEW
 
   /* Poll a give item event */
   bool pollGiveItem(int* id, int* count); // NEW

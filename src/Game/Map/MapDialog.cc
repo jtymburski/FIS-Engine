@@ -863,6 +863,17 @@ bool MapDialog::isConversationActive()
 }
 
 /*
+ * Description: Checks if a conversation is ready to be displayed but not active
+ *
+ * Inputs: none
+ * Output: bool - true if there is an ready conversation
+ */
+bool MapDialog::isConversationReady()
+{
+  return conversation_ready;
+}
+
+/*
  * Description: Returns if there is a conversation waiting for final
  *              configuration. This is finished with getConversationIDs() and
  *              then getting the appropriate thing pointers and calling 
@@ -957,6 +968,7 @@ void MapDialog::keyDownEvent(SDL_KeyboardEvent event)
         else if(conversation_info.next.size() == 0)
         {
           dialog_status = HIDING;
+          executeEvent();
         }
         /* Otherwise, there is a next conversation. Proceed */
         else

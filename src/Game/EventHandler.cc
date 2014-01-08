@@ -178,8 +178,6 @@ Event EventHandler::deleteEvent(Event event)
 void EventHandler::executeEvent(Event event, MapPerson* initiator, 
                                              MapThing* source)
 {
-  std::cout << "Event Executed." << std::endl;
-  
   /* Create the executed event queue entry */
   EventExecution executed_event;
   executed_event.event = event;
@@ -212,14 +210,12 @@ void EventHandler::pollClear()
 }
 
 /* Poll a conversation event. Only true if this event is next on queue */
-bool EventHandler::pollConversation(Conversation** convo, MapPerson** initiator, 
-                                                          MapThing** source)
+bool EventHandler::pollConversation(Conversation** convo, MapThing** source)
 {
   if(pollEventType() == EventClassifier::STARTCONVO && convo != NULL && 
-     initiator != NULL && source != NULL)
+     source != NULL)
   {
     *convo = event_queue[queue_index].event.convo;
-    *initiator = event_queue[queue_index].initiator;
     *source = event_queue[queue_index].source;
     
     return true;

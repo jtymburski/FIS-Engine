@@ -67,6 +67,125 @@ Game::~Game()
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 
+/* A give item event, based on an ID and count (triggered from stored event */
+bool Game::eventGiveItem(int id, int count)
+{
+  // TODO: The item insertion into inventory
+  bool item_inserted = true;
+  
+  /* If the item was inserted, display pickup notification */
+  if(item_inserted)
+  {
+  
+  }
+  /* Otherwise, display text about no more room */
+  else
+  {
+  
+  }
+  
+  return item_inserted;
+}
+  
+ /* Initiates a conversation event */
+ void Game::eventInitConversation(Conversation* convo, MapThing* source)
+{
+  if(game_map != NULL)
+    game_map->initConversation(convo, source);
+}
+
+/* The pickup item event - from walking over or triggering from action key */
+void Game::eventPickupItem(MapItem* item, bool walkover)
+{
+  if(item != NULL && item->isWalkover() == walkover)
+  {
+    bool was_inserted = eventGiveItem(item->getID(), item->getCount());
+    
+    /* If the insert was successful, pickup the item */
+    //if(game_map != NULL && was_inserted)
+    //  game_map->pickupItem(item);
+  }
+  // if(item != 0 && item->isWalkover() == walkover)
+  // {
+    // bool was_inserted = giveItem(item->getID(), item->getCount());
+    
+    /* Only proceed if it was inserted */
+    /*if(game_map != 0)
+    {
+      if(was_inserted)
+      {
+        game_map->pickupItem(item);
+      }
+      else
+      {
+        QString notification = "Inventory too full to pick up ";
+        if(item->getCount() > 1)
+          notification += QString::number(item->getCount()) + " " + 
+                          item->getName();
+        else
+          notification += "the " + item->getName();
+        notification += ".";
+        
+        game_map->initNotification(notification);
+      }
+    }
+  }*/
+}
+
+/* Starts a battle event. Using the given information - TODO */
+void Game::eventStartBattle()
+{
+  mode = BATTLE;
+}
+
+/* Teleport thing event, based on ID and coordinates */
+void Game::eventTeleportThing(int thing_id, int x, int y, int section_id)
+{
+  if(game_map != NULL)
+    game_map->teleportThing(thing_id, x, y, section_id);
+}
+  
+void Game::pollEvents()
+{
+  do
+  {
+    EventClassifier classification = event_handler.pollEventType();
+    
+    /* Poll classification */
+    if(classification == EventClassifier::GIVEITEM)
+    {
+    
+    }
+    else if(classification == EventClassifier::RUNBATTLE)
+    {
+      eventStartBattle();
+    }
+    else if(classification == EventClassifier::RUNMAP)
+    {
+    
+    }
+    else if(classification == EventClassifier::TELEPORTTHING)
+    {
+      int thing_id, x, y, section_id;
+      event_handler.pollTeleportThing(&thing_id, &x, &y, &section_id);
+      eventTeleportThing(thing_id, x, y, section_id);
+    }
+    else if(classification == EventClassifier::STARTCONVO)
+    {
+      Conversation* convo;
+      MapThing* source;
+      event_handler.pollConversation(&convo, &source);
+      eventInitConversation(convo, source);
+    }
+    else if(classification == EventClassifier::PICKUPITEM)
+    {
+    
+    }
+  } while(event_handler.pollEvent());
+  
+  event_handler.pollClear();
+}
+
 /* Set up the battle - old battle needs to be deleted prior to calling */
 void Game::setupBattle()
 {
@@ -230,13 +349,6 @@ void Game::setupMap()
   return true;
 }
 
-void Game::initConversation(Conversation* convo, MapPerson* initiator, 
-                                                 MapThing* source)
-{
-  if(game_map != 0)
-    game_map->initConversation(convo, initiator, source);
-}
-
 void Game::pickupItem(MapItem* item, bool walkover)
 {
   if(item != 0 && item->isWalkover() == walkover)
@@ -263,22 +375,6 @@ void Game::pickupItem(MapItem* item, bool walkover)
         game_map->initNotification(notification);
       }
     }
-  }
-}
-
-void Game::startBattle()
-{
-  switchGameMode(BATTLE);
-}
-
-void Game::teleportThing(MapPerson* target, int x, int y, int section_id)
-{
-  if(game_map != 0 && target != 0)
-  {
-    if(section_id < 0)
-      game_map->teleportThing(target->getID(), x, y);
-    else
-      game_map->teleportThing(target->getID(), x, y, section_id);
   }
 }*/
 
@@ -356,13 +452,8 @@ bool Game::setConfiguration(Options* running_config)
 /* Updates the game state. Returns true if the class is finished */
 bool Game::update(int cycle_time)
 {
-  /* Event poll testing */
-  if(event_handler.pollEventType() != EventClassifier::NOEVENT)
-  {
-    std::cout << "Event: " << static_cast<int>(event_handler.pollEventType()) 
-              << std::endl;
-    event_handler.pollClear();
-  }
+  /* Poll System Events */
+  pollEvents();
 
   if(mode == MAP)
     return game_map->update(cycle_time);

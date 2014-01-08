@@ -234,6 +234,9 @@ public:
   /* Returns if there is an active conversation (needs key presses passed in) */
   bool isConversationActive();
 
+  /* Returns if there is a ready conversation just waiting to be displayed */
+  bool isConversationReady();
+  
   /* Returns if the conversation is waiting for thing data to be setup */
   bool isConversationWaiting();
 
