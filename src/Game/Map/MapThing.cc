@@ -798,9 +798,10 @@ bool MapThing::setHeight(uint16_t new_height)
 {
   if(new_height > 0)
   {
-    float height_tiles = y / height;
+    float height_tiles = y * 1.0 / height;
     height = new_height;
     y = height_tiles * height;
+    y_raw = y * kRAW_MULTIPLIER;
     return true;
   }
 
@@ -995,9 +996,10 @@ bool MapThing::setWidth(uint16_t new_width)
 {
   if(new_width > 0)
   {
-    float width_tiles = x / width;
+    float width_tiles = x * 1.0 / width;
     width = new_width;
     x = width_tiles * width;
+    x_raw = x * kRAW_MULTIPLIER;
     return true;
   }
 

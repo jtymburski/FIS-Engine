@@ -189,7 +189,9 @@ bool MapItem::setStartingTile(uint16_t section_id, Tile* new_tile,
     /* Set the new tile */
     tile_main = new_tile;
     this->x = tile_main->getPixelX();
+    this->x_raw = this->x * kRAW_MULTIPLIER;
     this->y = tile_main->getPixelY();
+    this->y_raw = this->y * kRAW_MULTIPLIER;
     tile_main->setItem(this);
     tile_section = section_id;
     
