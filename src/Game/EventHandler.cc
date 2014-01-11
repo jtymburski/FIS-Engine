@@ -11,6 +11,8 @@
 #include "Game/EventHandler.h"
 
 /* Constant Implementation - see header file for descriptions */
+const uint8_t EventHandler::kGIVE_ITEM_COUNT = 1;
+const uint8_t EventHandler::kGIVE_ITEM_ID = 0;
 const uint8_t EventHandler::kTELEPORT_ID = 0;
 const uint8_t EventHandler::kTELEPORT_SECTION = 3;
 const uint8_t EventHandler::kTELEPORT_X = 1;
@@ -134,6 +136,36 @@ Event EventHandler::createConversationEvent(Conversation* new_conversation)
   return new_event;
 }
 
+/* Creates a give item event, with the appropriate parameters */
+Event EventHandler::createGiveItemEvent(int id, int count)
+{
+  /* Create the event and identify */
+  Event new_event = createEventTemplate();
+  new_event.classification = EventClassifier::GIVEITEM;
+
+  /* Fill in the event specific information */
+  new_event.ints.push_back(id);
+  new_event.ints.push_back(count);
+
+  return new_event;
+}
+
+Event EventHandler::createNotificationEvent(std::string notification)
+{
+  /* Create the event and identify */
+  Event new_event = createEventTemplate();
+  
+  if(!notification.empty())
+  {
+    new_event.classification = EventClassifier::NOTIFICATION;
+    
+    /* Set up the rest of the event */
+    new_event.strings.push_back(notification);
+  }
+  
+  return new_event;
+}
+
 /* Creates a start battle event */
 /* TODO: Add parameters. Battle not ready */
 Event EventHandler::createStartBattleEvent()
@@ -178,8 +210,6 @@ Event EventHandler::deleteEvent(Event event)
 void EventHandler::executeEvent(Event event, MapPerson* initiator, 
                                              MapThing* source)
 {
-  std::cout << "Event Executed." << std::endl;
-  
   /* Create the executed event queue entry */
   EventExecution executed_event;
   executed_event.event = event;
@@ -212,14 +242,12 @@ void EventHandler::pollClear()
 }
 
 /* Poll a conversation event. Only true if this event is next on queue */
-bool EventHandler::pollConversation(Conversation** convo, MapPerson** initiator, 
-                                                          MapThing** source)
+bool EventHandler::pollConversation(Conversation** convo, MapThing** source)
 {
   if(pollEventType() == EventClassifier::STARTCONVO && convo != NULL && 
-     initiator != NULL && source != NULL)
+     source != NULL)
   {
     *convo = event_queue[queue_index].event.convo;
-    *initiator = event_queue[queue_index].initiator;
     *source = event_queue[queue_index].source;
     
     return true;
@@ -234,8 +262,8 @@ bool EventHandler::pollGiveItem(int* id, int* count)
   if(pollEventType() == EventClassifier::GIVEITEM && id != NULL && 
      count != NULL && event_queue[queue_index].event.ints.size() == 2)
   {
-    *id = event_queue[queue_index].event.ints[0];
-    *count = event_queue[queue_index].event.ints[1];
+    *id = event_queue[queue_index].event.ints[kGIVE_ITEM_ID];
+    *count = event_queue[queue_index].event.ints[kGIVE_ITEM_COUNT];
     
     return true;
   }
@@ -265,6 +293,20 @@ EventClassifier EventHandler::pollEventType()
   return EventClassifier::NOEVENT;
 }
 
+/* Poll a notification event */
+bool EventHandler::pollNotification(std::string* notification)
+{
+  if(pollEventType() == EventClassifier::NOTIFICATION && notification != NULL &&
+     event_queue[queue_index].event.strings.size() == 1)
+  {
+    *notification = event_queue[queue_index].event.strings.front();
+    
+    return true;
+  }
+  
+  return false;
+}
+  
 /* Poll a pickup item event */
 bool EventHandler::pollPickupItem(MapItem** item, bool* walkover)
 {
@@ -318,27 +360,43 @@ Event EventHandler::EventHandler::updateEvent(Event event, XmlData data,
   /* Determine the category of the event that is being updated */
   if(category_str == "giveitem")
     category = EventClassifier::GIVEITEM;
+  else if(category_str == "notification")
+    category = EventClassifier::NOTIFICATION;
   else if(category_str == "startbattle")
     category = EventClassifier::RUNBATTLE;
   else if(category_str == "startmap")
     category = EventClassifier::RUNMAP;
-  else if(category_str == "teleportthing")
-    category = EventClassifier::TELEPORTTHING;
   else if(category_str == "conversation")
     category = EventClassifier::STARTCONVO;
+  else if(category_str == "teleportthing")
+    category = EventClassifier::TELEPORTTHING;
 
   /* If the category doesn't match, create a new event */
   if(category != event.classification)
   {
     event = deleteEvent(event);
-    if(category == EventClassifier::STARTCONVO)
+    
+    if(category == EventClassifier::GIVEITEM)
+      event = createGiveItemEvent();
+    else if(category == EventClassifier::STARTCONVO)
       event = createConversationEvent();
+    else if(category == EventClassifier::TELEPORTTHING)
+      event = createTeleportEvent();
   }
 
   /* Proceed to set up the event with the marked changes */
   if(category == EventClassifier::GIVEITEM)
   {
-    // TODO
+    /* Parse the event classifiers */
+    std::string give_item_element = data.getElement(file_index + 1);
+    if(give_item_element == "id")
+      event.ints.at(kGIVE_ITEM_ID) = data.getDataInteger();
+    else if(give_item_element == "count")
+      event.ints.at(kGIVE_ITEM_COUNT) = data.getDataInteger();
+  }
+  else if(category == EventClassifier::NOTIFICATION)
+  {
+    event = createNotificationEvent(data.getDataString());
   }
   else if(category == EventClassifier::RUNBATTLE)
   {
@@ -347,26 +405,6 @@ Event EventHandler::EventHandler::updateEvent(Event event, XmlData data,
   else if(category == EventClassifier::RUNMAP)
   {
     // TODO
-  }
-  else if(category == EventClassifier::TELEPORTTHING)
-  {
-    /* If the event is not the teleport event, delete it and create one */
-    if(event.classification != EventClassifier::TELEPORTTHING)
-    {
-      event = deleteEvent(event);
-      event = createTeleportEvent();
-    }
-
-    /* Parse the event classifiers */
-    std::string teleport_element = data.getElement(file_index + 1);
-    if(teleport_element == "id")
-      event.ints.at(kTELEPORT_ID) = data.getDataInteger();
-    if(teleport_element == "x")
-      event.ints.at(kTELEPORT_X) = data.getDataInteger();
-    else if(teleport_element == "y")
-      event.ints.at(kTELEPORT_Y) = data.getDataInteger();
-    else if(teleport_element == "section")
-      event.ints.at(kTELEPORT_SECTION) = data.getDataInteger();
   }
   else if(category == EventClassifier::STARTCONVO)
   {
@@ -385,6 +423,19 @@ Event EventHandler::EventHandler::updateEvent(Event event, XmlData data,
       Conversation* edited_convo = getConversation(event.convo, index_list);
       setConversationValues(edited_convo, data, file_index + 1, section_index);
     }
+  }
+  else if(category == EventClassifier::TELEPORTTHING)
+  {
+    /* Parse the event classifiers */
+    std::string teleport_element = data.getElement(file_index + 1);
+    if(teleport_element == "id")
+      event.ints.at(kTELEPORT_ID) = data.getDataInteger();
+    if(teleport_element == "x")
+      event.ints.at(kTELEPORT_X) = data.getDataInteger();
+    else if(teleport_element == "y")
+      event.ints.at(kTELEPORT_Y) = data.getDataInteger();
+    else if(teleport_element == "section")
+      event.ints.at(kTELEPORT_SECTION) = data.getDataInteger();
   }
 
   return event;

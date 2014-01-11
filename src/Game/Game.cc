@@ -37,7 +37,6 @@ Game::Game(Options* running_config)
   setConfiguration(running_config);
 
   /* Set up the render classes */
-//  setupGame();
   setupBattle();
   setupMap();
 }
@@ -56,21 +55,155 @@ Game::~Game()
 //  }
 
   /* Delete map */
- if(game_map != NULL)
- {
-   delete game_map;
-   game_map = NULL;
- }
+  if(game_map != NULL)
+  {
+    delete game_map;
+    game_map = NULL;
+  }
+ 
+  /* Delete all game items */
+  for(auto i = item_list.begin(); i != item_list.end(); i++)
+    delete (*i);
+  item_list.clear();
 }
 
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 
+/* A give item event, based on an ID and count (triggered from stored event */
+bool Game::eventGiveItem(int id, int count)
+{
+  /* Attempt to find the item */
+  Item* found_item = NULL;
+  for(auto i = item_list.begin(); i != item_list.end(); i++)
+    if((*i)->getGameID() == id)
+      found_item = (*i);
+
+  /* If the item was inserted, display pickup notification */
+  if(found_item != NULL)
+  {
+    // TODO: Attempt insert. For now, according to variable
+    bool inserted = true;
+    
+    /* If inserted, notify that the pickup was a success */
+    if(inserted)
+    {
+      if(game_map != NULL)
+        game_map->initNotification(found_item->getThumb(), count);
+      return true;
+    }
+    /* Otherwise, notify that item could not be received */
+    else
+    {
+      if(game_map != NULL)
+        game_map->initNotification("Insufficient room in inventory to fit " + 
+                                   std::to_string(count) + " " + 
+                                   found_item->getName());
+    }
+  }
+  
+  return false;
+}
+  
+ /* Initiates a conversation event */
+ void Game::eventInitConversation(Conversation* convo, MapThing* source)
+{
+  if(game_map != NULL)
+    game_map->initConversation(convo, source);
+}
+
+/* Initiates a notification event (in map) */
+void Game::eventInitNotification(std::string notification)
+{
+  if(game_map != NULL)
+    game_map->initNotification(notification);
+}
+
+/* The pickup item event - from walking over or triggering from action key */
+void Game::eventPickupItem(MapItem* item, bool walkover)
+{
+  if(item != NULL && item->isWalkover() == walkover)
+  {
+    bool was_inserted = eventGiveItem(item->getCoreID(), item->getCount());
+    
+    /* If the insert was successful, pickup the item */
+    if(game_map != NULL && was_inserted)
+     game_map->pickupItem(item);
+  }
+}
+
+/* Starts a battle event. Using the given information - TODO */
+void Game::eventStartBattle()
+{
+  mode = BATTLE;
+}
+
+/* Teleport thing event, based on ID and coordinates */
+void Game::eventTeleportThing(int thing_id, int x, int y, int section_id)
+{
+  if(game_map != NULL)
+    game_map->teleportThing(thing_id, x, y, section_id);
+}
+  
+void Game::pollEvents()
+{
+  do
+  {
+    EventClassifier classification = event_handler.pollEventType();
+    
+    /* Poll classification */
+    if(classification == EventClassifier::GIVEITEM)
+    {
+      int id;
+      int count;
+      event_handler.pollGiveItem(&id, &count);
+      eventGiveItem(id, count);
+    }
+    else if(classification == EventClassifier::NOTIFICATION)
+    {
+      std::string notification;
+      event_handler.pollNotification(&notification);
+      eventInitNotification(notification);
+    }
+    else if(classification == EventClassifier::PICKUPITEM)
+    {
+      MapItem* item;
+      bool walkover;
+      event_handler.pollPickupItem(&item, &walkover);
+      eventPickupItem(item, walkover);
+    }
+    else if(classification == EventClassifier::RUNBATTLE)
+    {
+      eventStartBattle();
+    }
+    else if(classification == EventClassifier::RUNMAP)
+    {
+    
+    }
+    else if(classification == EventClassifier::STARTCONVO)
+    {
+      Conversation* convo;
+      MapThing* source;
+      event_handler.pollConversation(&convo, &source);
+      eventInitConversation(convo, source);
+    }
+    else if(classification == EventClassifier::TELEPORTTHING)
+    {
+      int thing_id, x, y, section_id;
+      event_handler.pollTeleportThing(&thing_id, &x, &y, &section_id);
+      eventTeleportThing(thing_id, x, y, section_id);
+    }
+
+  } while(event_handler.pollEvent());
+  
+  event_handler.pollClear();
+}
+
 /* Set up the battle - old battle needs to be deleted prior to calling */
 void Game::setupBattle()
 {
-  bool enable_test = false;
+  bool enable_test = true;
 
   if (enable_test)
   {
@@ -125,6 +258,11 @@ void Game::setupBattle()
   as4 = as3;
   as5 = as3;
   as5.alterStat("VITA", 1);
+
+  if (as3 == as4)
+    std::cout << "1true\n";
+  if (as3 == as5)
+    std::cout << "2true\n";
 
   //auto index = 0;
   //for (auto value : values)
@@ -214,70 +352,6 @@ void Game::setupMap()
 }
 
 /*============================================================================
- * PUBLIC SLOTS
- *===========================================================================*/
-
-/* Returns the number of items actually inserted into inventory. If less than
- * count, it only could fit that many */
-/*bool Game::giveItem(int id, int count)
-{
-  // TODO: connect to player and inventory
-  return true;
-}
-
-void Game::initConversation(Conversation* convo, MapPerson* initiator, 
-                                                 MapThing* source)
-{
-  if(game_map != 0)
-    game_map->initConversation(convo, initiator, source);
-}
-
-void Game::pickupItem(MapItem* item, bool walkover)
-{
-  if(item != 0 && item->isWalkover() == walkover)
-  {
-    bool was_inserted = giveItem(item->getID(), item->getCount());*/
-    
-    /* Only proceed if it was inserted */
-    /*if(game_map != 0)
-    {
-      if(was_inserted)
-      {
-        game_map->pickupItem(item);
-      }
-      else
-      {
-        QString notification = "Inventory too full to pick up ";
-        if(item->getCount() > 1)
-          notification += QString::number(item->getCount()) + " " + 
-                          item->getName();
-        else
-          notification += "the " + item->getName();
-        notification += ".";
-        
-        game_map->initNotification(notification);
-      }
-    }
-  }
-}
-
-void Game::startBattle()
-{
-  switchGameMode(BATTLE);
-}
-
-void Game::teleportThing(MapPerson* target, int x, int y, int section_id)
-{
-  if(game_map != 0 && target != 0)
-  {
-    if(section_id < 0)
-      game_map->teleportThing(target->getID(), x, y);
-    else
-      game_map->teleportThing(target->getID(), x, y, section_id);
-  }
-}*/
-
-/*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
@@ -321,6 +395,22 @@ void Game::keyUpEvent(SDL_KeyboardEvent event)
 /* Renders the title screen */
 bool Game::render(SDL_Renderer* renderer)
 {
+  /* Create temporary list of items - TODO: Pull into file */
+  if(item_list.empty())
+  {
+    Item* item1 = new Item(5, "Sword of Power", 125, 
+                           new Frame("sprites/sword_AA_A00.png", renderer));
+    Item* item2 = new Item(7, "Frost Bubby", 5, 
+                           new Frame("sprites/Battle/Bubbies/frosty_t1.png", 
+                                     renderer));
+    Item* item3 = new Item(0, "Coins", 1, 
+                           new Frame("sprites/coins_AA_A00.png", renderer));
+    
+    item_list.push_back(item1);
+    item_list.push_back(item2);
+    item_list.push_back(item3);
+  }
+  
   if(!game_map->isLoaded())
    game_map->loadMap(base_path + "maps/test_05", renderer);
 
@@ -351,13 +441,8 @@ bool Game::setConfiguration(Options* running_config)
 /* Updates the game state. Returns true if the class is finished */
 bool Game::update(int cycle_time)
 {
-  /* Event poll testing */
-  if(event_handler.pollEventType() != EventClassifier::NOEVENT)
-  {
-    std::cout << "Event: " << static_cast<int>(event_handler.pollEventType()) 
-              << std::endl;
-    event_handler.pollClear();
-  }
+  /* Poll System Events */
+  pollEvents();
 
   if(mode == MAP)
     return game_map->update(cycle_time);

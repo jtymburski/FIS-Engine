@@ -27,6 +27,9 @@ private:
   /* Status if the item is being brightened. Otherwise, darken it */
   bool brighter;
   
+  /* The core ID that is connected to the game item */
+  int core_id;
+  
   /* The number of items available */
   uint16_t count;
 
@@ -37,11 +40,12 @@ private:
   bool walkover;
   
   /* -------------------------- Constants ------------------------- */
-  const static short kDEFAULT_COUNT; /* Default number of items on setup */
+  const static uint8_t kDEFAULT_COUNT; /* Default number of items on setup */
   const static float kDELTA_TIME_ONE_POINT; /* otal time for 1.0 change */
   const static float kMAX_BRIGHTNESS; /* The max brightness setting */
   const static float kMIN_BRIGHTNESS; /* The min brightness setting */
-
+  const static int kUNSET_ID; /* The unset ID value */
+  
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
@@ -58,6 +62,9 @@ public:
   /* Clears out the item construct, void of painting */
   void clear();
   
+  /* Returns the core (game representation) ID. -1 if unset */
+  int getCoreID();
+  
   /* Returns the count of how many of these items are available */
   uint16_t getCount();
   
@@ -66,6 +73,9 @@ public:
   
   /* Returns if the item is picked up merely by walking over it */
   bool isWalkover();
+  
+  /* Sets the core (game representation) ID. If invalid, sets to -1 */
+  void setCoreID(int id);
   
   /* Sets the number of this item */
   void setCount(uint16_t count);

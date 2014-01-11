@@ -56,6 +56,9 @@ private:
   /* The current loaded map */
   Map* game_map; // TODO: Make non-pointer?
 
+  /* List of all available items in the game */
+  std::vector<Item*> item_list;
+  
   /* The maps in the game */
   //QVector<Map*> levels;
   //QList<QString> level_list;
@@ -75,41 +78,34 @@ private:
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
-private:  
+private:
+  /* A give item event, based on an ID and count (triggered from stored event */
+  bool eventGiveItem(int id, int count);
+  
+  /* Initiates a conversation event */
+  void eventInitConversation(Conversation* convo, MapThing* source);
+
+  /* Initiates a notification event (in map) */
+  void eventInitNotification(std::string notification);
+  
+  /* The pickup item event - from walking over or triggering from action key */
+  void eventPickupItem(MapItem* item, bool walkover);
+  
+  /* Starts a battle event. Using the given information - TODO */
+  void eventStartBattle();
+  
+  /* Teleport thing event, based on ID and coordinates */
+  void eventTeleportThing(int thing_id, int x, int y, int section_id);
+  
+  /* Polls events running from the event handler. Triggered from other places
+   * in the game */
+  void pollEvents();
+  
   /* Set up the battle */
   void setupBattle();
 
-  /* Sets up the game - called on first creation */
-//  void setupGame();
-
   /* Set up the map */
   void setupMap();
-
-/*============================================================================
- * SIGNALS
- *===========================================================================*/
-//signals:
-//  void closeGame();
-
-/*============================================================================
- * PUBLIC SLOTS
- *===========================================================================*/
-//public slots:
-  /* Gives the player an item, based on the id and number of that id */
-//  bool giveItem(int id, int count);
-  
-  /* Initiates a conversation */
-//  void initConversation(Conversation* convo, MapPerson* initiator, 
-//                                             MapThing* source);
-  
-  /* Executes a pickup event on map */  
-//  void pickupItem(MapItem* item, bool walkover);
-  
-  /* Starts a battle */
-//  void startBattle();
-  
-  /* Teleports the player stored within the map */
-//  void teleportThing(MapPerson* target, int x, int y, int section_id);
 
 /*============================================================================
  * PUBLIC FUNCTIONS

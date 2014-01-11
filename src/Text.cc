@@ -246,6 +246,7 @@ bool Text::setText(SDL_Renderer* renderer, std::string text,
       {
         /* Set the internal class texture */
         unsetTexture();
+        alpha = text_color.a;
         texture = text_texture;
         height = text_surface->h;
         width = text_surface->w;
@@ -312,6 +313,30 @@ TTF_Font* Text::createFont(std::string font_path, int font_size,
     TTF_SetFontStyle(new_font, font_style);
 
   return new_font;
+}
+
+std::string Text::formatNum(uint32_t number)
+{
+  std::string str_num;
+  int index = 0;
+  
+  /* Handle 0 case */
+  if(number == 0)
+    return "0";
+  
+  while(number > 0)
+  {
+    /* Add comma to front if another sequence is about to be parsed */
+    if(index != 0 && index % 3 == 0)
+      str_num = "," + str_num;
+      
+    int digit = number % 10;
+    str_num = std::to_string(digit) + str_num;
+    number /= 10;
+    index++;
+  }
+  
+  return str_num;
 }
 
 /*

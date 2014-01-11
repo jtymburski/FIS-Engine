@@ -31,13 +31,32 @@ const std::vector<float> Flavour::kTIER_MASSES =
 const std::vector<float> Flavour::kTIER_VALUES =
 {1.0, 4.0, 4.0, 4.0};
 
-const uint32_t Flavour::kMAX_LVL{30};
+const uint32_t Flavour::kMAX_LVL  = 30;
+const int      Flavour::kUNSET_ID = -1;
 
 std::vector<Flavour*> Flavour::flavour_list = {};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
+
+/*
+ * Description: Creates a default Flavour object
+ *
+ * Inputs: none
+ */
+Flavour::Flavour()
+  : base_stats(AttributeSet())
+  , base_mass(0.0)
+  , base_value(0)
+  , description("")
+  , game_id(kUNSET_ID)
+  , name("")
+  , skill_list(nullptr) 
+{
+  if (!addFlavour(this))
+    std::cerr << "Error: Duplicating flavour" << this->getName() << std::endl;
+}
 
 /*
  * Description: Creates a normal Flavour object given a name and stats, also
@@ -52,13 +71,13 @@ std::vector<Flavour*> Flavour::flavour_list = {};
 Flavour::Flavour(const int &game_id, const std::string &flavour_name, 
                  const AttributeSet &min_stats, const double &min_mass,
                  const uint32_t &min_value, SkillSet* skills)
-  : game_id{game_id}
-  , base_stats{min_stats}
-  , base_mass{min_mass}
-  , base_value{min_value}
-  , description{""}
-  , name{flavour_name}
-  , skill_list{skills}
+  : base_stats(min_stats)
+  , base_mass(min_mass)
+  , base_value(min_value)
+  , description("")
+  , game_id(game_id)
+  , name(flavour_name)
+  , skill_list(skills)
 {
   if (!addFlavour(this))
     std::cerr << "Error: Duplicating flavour" << this->getName() << std::endl;
@@ -115,7 +134,6 @@ void Flavour::print(const bool &print_list)
 {
   std::cout << "--- Flavour ----\n";
   base_stats.print();
-  
   std::cout << "Base Mass: " << base_mass << "\n";
   std::cout << "Base Value: " << base_value << "\n";
   std::cout << "Description: " << description << "\n";
@@ -347,7 +365,7 @@ bool Flavour::setThumbs(const std::vector<Frame*> &new_thumbnails)
   return can_add;
 }
 
-/*=============================================================================
+ /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
 

@@ -9,10 +9,11 @@
 #include "Game/Map/MapItem.h"
 
 /* Constant Implementation - see header file for descriptions */
-const short MapItem::kDEFAULT_COUNT = 1;
+const uint8_t MapItem::kDEFAULT_COUNT = 1;
 const float MapItem::kDELTA_TIME_ONE_POINT = 3000.0;
 const float MapItem::kMAX_BRIGHTNESS = 1.2;
 const float MapItem::kMIN_BRIGHTNESS = 1.0;
+const int MapItem::kUNSET_ID = -1;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -22,6 +23,7 @@ const float MapItem::kMIN_BRIGHTNESS = 1.0;
 MapItem::MapItem() : MapThing()
 {
   brighter = false;
+  core_id = kUNSET_ID;
   visible = true;
   walkover = false;
   
@@ -73,15 +75,22 @@ bool MapItem::addThingInformation(XmlData data, int file_index,
   bool success = true;
   
   /* Parse the identifier for setting the item information */
+  /*--------------------- CORE ID --------------------*/
+  if(identifier == "core_id" && elements.size() == 1)
+  {
+    int id = data.getDataInteger(&success);
+    if(success)
+      setCoreID(id);
+  }
   /*--------------------- COUNT --------------------*/
-  if(identifier == "count" && elements.size() == 1)
+  else if(identifier == "count" && elements.size() == 1)
   {
     int count = data.getDataInteger(&success);
     if(success)
       setCount(count);
   }
   /*--------------------- WALKOVER --------------------*/
-  if(identifier == "walkover" && elements.size() == 1)
+  else if(identifier == "walkover" && elements.size() == 1)
   {
     bool walkover = data.getDataBool(&success);
     if(success)
@@ -111,6 +120,12 @@ void MapItem::clear()
   MapThing::clear();
 }
 
+/* Returns the core (game representation) ID. -1 if unset */
+int MapItem::getCoreID()
+{
+  return core_id;
+}
+
 /* Returns the count of how many of these items are available */
 uint16_t MapItem::getCount()
 {
@@ -120,9 +135,8 @@ uint16_t MapItem::getCount()
 /* Returns if the Map Item can be seen */
 bool MapItem::isVisible()
 {
-  return true;
   if(count > 0)
-    return true;
+    return MapThing::isVisible();
   return false;
 }
   
@@ -130,6 +144,15 @@ bool MapItem::isVisible()
 bool MapItem::isWalkover()
 {
   return walkover;
+}
+
+/* Sets the core (game representation) ID. If invalid, sets to -1 */
+void MapItem::setCoreID(int id)
+{
+  if(id >= 0)
+    core_id = id;
+  else
+    core_id = kUNSET_ID;
 }
 
 /* Sets the number of this item */
@@ -166,7 +189,9 @@ bool MapItem::setStartingTile(uint16_t section_id, Tile* new_tile,
     /* Set the new tile */
     tile_main = new_tile;
     this->x = tile_main->getPixelX();
+    this->x_raw = this->x * kRAW_MULTIPLIER;
     this->y = tile_main->getPixelY();
+    this->y_raw = this->y * kRAW_MULTIPLIER;
     tile_main->setItem(this);
     tile_section = section_id;
     

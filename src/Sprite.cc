@@ -759,7 +759,7 @@ bool Sprite::render(SDL_Renderer* renderer, int x, int y, int w, int h)
     if(texture_update)
     {
       SDL_SetRenderTarget(renderer, texture);
-      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0);
+      SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
       SDL_RenderClear(renderer);
       
       /* Render current frame */

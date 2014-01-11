@@ -31,11 +31,12 @@ enum class EventClassifier
 {
   NOEVENT        = 0,
   GIVEITEM       = 1,
-  RUNBATTLE      = 2, 
-  RUNMAP         = 3,
-  TELEPORTTHING  = 4,
-  STARTCONVO     = 5,
-  PICKUPITEM     = 6
+  NOTIFICATION   = 2,
+  PICKUPITEM     = 3,
+  RUNBATTLE      = 4, 
+  RUNMAP         = 5,
+  TELEPORTTHING  = 6,
+  STARTCONVO     = 7
 };
 
 /* 
@@ -46,6 +47,7 @@ struct Event
   EventClassifier classification;
   Conversation* convo;
   std::vector<int> ints;
+  std::vector<std::string> strings;
 };
 
 /* 
@@ -94,6 +96,8 @@ private:
   uint16_t queue_index;
   
   /* -------------------------- Constants ------------------------- */
+  const static uint8_t kGIVE_ITEM_COUNT; /* give item count index */
+  const static uint8_t kGIVE_ITEM_ID; /* Give item ID index */
   const static uint8_t kTELEPORT_ID; /* Teleport thing ID index */
   const static uint8_t kTELEPORT_SECTION; /* Teleport thing section index */
   const static uint8_t kTELEPORT_X; /* Teleport thing X index */
@@ -128,6 +132,12 @@ public:
   /* Creates the conversation initiation event */
   Event createConversationEvent(Conversation* new_conversation = NULL);
 
+  /* Creates a give item event, with the appropriate parameters */
+  Event createGiveItemEvent(int id = 0, int count = 0);
+  
+  /* Creates a notification event, that can fire and result in visible text */
+  Event createNotificationEvent(std::string notification);
+  
   /* Creates a start battle event */
   Event createStartBattleEvent();
   
@@ -148,8 +158,7 @@ public:
   void pollClear(); // NEW
   
   /* Poll a conversation event. Only true if this event is next on queue */
-  bool pollConversation(Conversation** convo, MapPerson** initiator, 
-                                              MapThing** source); // NEW
+  bool pollConversation(Conversation** convo, MapThing** source); // NEW
 
   /* Poll a give item event */
   bool pollGiveItem(int* id, int* count); // NEW
@@ -160,6 +169,9 @@ public:
   
   /* Returns the current event type, to be polled by the management class */
   EventClassifier pollEventType(); // NEW
+  
+  /* Poll a notification event */
+  bool pollNotification(std::string* notification);
   
   /* Poll a pickup item event */
   bool pollPickupItem(MapItem** item, bool* walkover); // NEW

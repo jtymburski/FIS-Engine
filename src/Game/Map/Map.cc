@@ -31,7 +31,7 @@ const uint8_t Map::kFILE_TILE_COLUMN = 5;
 const uint8_t Map::kFILE_TILE_ROW = 4;
 const uint8_t Map::kPLAYER_ID = 0;
 const uint16_t Map::kTILE_SIZE = 64;
-// const short Map::kZOOM_TILE_SIZE = 16;
+const uint16_t Map::kZOOM_TILE_SIZE = 16;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -52,8 +52,8 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   /* Configure the width / height of tiles and sets default zooming */
   tile_height = kTILE_SIZE;
   tile_width = kTILE_SIZE;
-  // zoom_in = false;
-  // zoom_out = false;
+  zoom_in = false;
+  zoom_out = false;
   
   /* Set options configuration */
   viewport.setTileSize(tile_width, tile_height);
@@ -623,6 +623,20 @@ bool Map::parseCoordinateInfo(std::string row, std::string col, uint16_t index,
   return false;
 }
 
+/* Changes the map section index - what is displayed */
+bool Map::setSectionIndex(uint16_t index)
+{
+  if(index < geography.size() && geography[index].size() > 0)
+  {
+    map_index = index;
+    viewport.setMapSize(geography[index].size(), geography[index][0].size());
+    
+    return true;
+  }
+  
+  return false;
+}
+
 /* Splits the ID into a vector of IDs */
 std::vector< std::vector<uint16_t> > Map::splitIdString(std::string id, 
                                                         bool matrix)
@@ -690,500 +704,83 @@ std::vector< std::vector<uint16_t> > Map::splitIdString(std::string id,
   return id_stack;
 }
 
-// /* Updates the height and width, based on zoom factors */
-// void Map::updateTileSize()
-// {
-  // bool updated = false;
+/* Updates the height and width, based on zoom factors */
+void Map::updateTileSize()
+{
+  bool updated = false;
   
-  // /* Try and zoom out the map */
-  // if(zoom_out)
-  // {
-    // /* Modify the tile height and width, limited by the constants */
-    // tile_height--;
-    // tile_width--;
-    // if(tile_height < kZOOM_TILE_SIZE || tile_width < kZOOM_TILE_SIZE)
-    // {
-      // tile_height = kZOOM_TILE_SIZE;
-      // tile_width = kZOOM_TILE_SIZE;
-      // zoom_out = false;
-    // }
+  /* Try and zoom out the map */
+  if(zoom_out)
+  {
+    /* Modify the tile height and width, limited by the constants */
+    tile_height--;
+    tile_width--;
+    if(tile_height < kZOOM_TILE_SIZE || tile_width < kZOOM_TILE_SIZE)
+    {
+      tile_height = kZOOM_TILE_SIZE;
+      tile_width = kZOOM_TILE_SIZE;
+      zoom_out = false;
+    }
     
-    // updated = true;
-  // }
-  // /* Otherwise, try and zoom back in */
-  // else if(zoom_in)
-  // {
-    // /* Modify the tile height and width, limited by the constants */
-    // tile_height++;
-    // tile_width++;
-    // if(tile_height > kTILE_SIZE || tile_width > kTILE_SIZE)
-    // {
-      // tile_height = kTILE_SIZE;
-      // tile_width = kTILE_SIZE;
-      // zoom_in = false;
-    // }
+    updated = true;
+  }
+  /* Otherwise, try and zoom back in */
+  else if(zoom_in)
+  {
+    /* Modify the tile height and width, limited by the constants */
+    tile_height++;
+    tile_width++;
+    if(tile_height > kTILE_SIZE || tile_width > kTILE_SIZE)
+    {
+      tile_height = kTILE_SIZE;
+      tile_width = kTILE_SIZE;
+      zoom_in = false;
+    }
     
-    // updated = true;
-  // }
+    updated = true;
+  }
   
-  // /* If updated, update the height and width everywhere */
-  // if(updated)
-  // {
-    // /* Update map tiles */
-    // for(int i = 0; i < geography.size(); i++)
-      // for(int j = 0; j < geography[i].size(); j++)
-        // for(int k = 0; k < geography[i][j].size(); k++)
-        // {
-          // geography[i][j][k]->setHeight(tile_height);
-          // geography[i][j][k]->setWidth(tile_width);
-        // }
+  /* If updated, update the height and width everywhere */
+  if(updated)
+  {
+    /* Update map tiles */
+    for(uint16_t i = 0; i < geography.size(); i++)
+      for(uint16_t j = 0; j < geography[i].size(); j++)
+        for(uint16_t k = 0; k < geography[i][j].size(); k++)
+        {
+          geography[i][j][k]->setHeight(tile_height);
+          geography[i][j][k]->setWidth(tile_width);
+        }
         
-    // /* Update map things */
-    // for(int i = 0; i < things.size(); i++)
-    // {
-      // things[i]->setHeight(tile_height);
-      // things[i]->setWidth(tile_width);
-    // }
+    /* Update map things */
+    for(uint16_t i = 0; i < things.size(); i++)
+    {
+      things[i]->setHeight(tile_height);
+      things[i]->setWidth(tile_width);
+    }
     
-    // /* Update map items */
-    // for(int i = 0; i < items.size(); i++)
-    // {
-      // items[i]->setHeight(tile_height);
-      // items[i]->setWidth(tile_width);
-    // }
+    /* Update map items */
+    for(uint16_t i = 0; i < items.size(); i++)
+    {
+      items[i]->setHeight(tile_height);
+      items[i]->setWidth(tile_width);
+    }
     
-    // /* Update map persons */
-    // for(int i = 0; i < persons.size(); i++)
-    // {
-      // persons[i]->setHeight(tile_height);
-      // persons[i]->setWidth(tile_width);
-    // }
+    /* Update map persons */
+    for(uint16_t i = 0; i < persons.size(); i++)
+    {
+      persons[i]->setHeight(tile_height);
+      persons[i]->setWidth(tile_width);
+    }
     
-    // /* Update viewport */
-    // if(viewport != 0)
-      // viewport->setTileSize(tile_width, tile_height);
-  // }
-// }
-  
-// /*============================================================================
- // * PROTECTED FUNCTIONS
- // *===========================================================================*/
+    /* Update viewport */
+    viewport.setTileSize(tile_width, tile_height);
+  }
+}
 
-// /* TODO: Possibly add it so that any map can keep updating? This might get too
- // *       heavy. 
- // *       Should updates be restricted to a larger space around the viewport
- // *       and no more? */
-// void Map::animate(short time_since_last)
-// {
-  // /* Only proceed if the animation time is positive */
-  // if(time_since_last > 0)
-  // {
-    // /* The movement handling for persons */
-    // for(int i = 0; i < persons.size(); i++)
-    // {
-      // if(persons[i] != 0)
-      // {
-        // Tile* next_tile = 0;
-
-        // if(persons[i]->getMapSection() == map_index && 
-           // persons[i]->getTile() != 0)
-        // {
-          // int tile_x = persons[i]->getTile()->getX();
-          // int tile_y = persons[i]->getTile()->getY();
-
-          // /* Based on the move request, provide the next tile in line using the
-           // * current centered tile and move request */
-          // switch(persons[i]->getPredictedMoveRequest())
-          // {
-            // case EnumDb::NORTH:
-              // if(--tile_y >= 0)
-                // next_tile = geography[map_index][tile_x][tile_y];
-              // break;
-            // case EnumDb::EAST:
-              // if(++tile_x < geography[map_index].size())
-                // next_tile = geography[map_index][tile_x][tile_y];
-              // break;
-            // case EnumDb::SOUTH:
-              // if(++tile_y < geography[map_index][tile_x].size())
-                // next_tile = geography[map_index][tile_x][tile_y];
-              // break;
-            // case EnumDb::WEST:
-              // if(--tile_x >= 0)
-                // next_tile = geography[map_index][tile_x][tile_y];
-              // break;
-            // case EnumDb::DIRECTIONLESS:
-              // next_tile = 0;
-          // }
-        // }
-
-        // /* Proceed to update the thing */
-        // persons[i]->updateThing(time_since_last, next_tile);
-      // }
-    // }
-
-    // /* Update the sprites on the map (tiles) */
-    // for(int i = 0; i < tile_sprites.size(); i++)
-    // {
-      // if(tile_sprites[i] != 0)
-        // tile_sprites[i]->updateSprite(time_since_last);
-    // }
-    
-    // /* Update items on the map */
-    // for(int i = 0; i < items.size(); i++)
-    // {
-      // if(items[i] != 0)
-        // items[i]->updateThing(time_since_last, 0);
-    // }
-
-    // /* Update things on the map */
-    // for(int i = 0; i < things.size(); i++)
-    // {
-      // if(things[i] != 0)
-        // things[i]->updateThing(time_since_last, 0);
-    // }
-
-    // /* Animate the displays on the screen */
-    // map_dialog.update(time_since_last);
-  // }
-// }
-
-// void Map::initializeGL()
-// {
-  // glDisable(GL_TEXTURE_2D);
-  // glDisable(GL_DEPTH_TEST);
-  // glDisable(GL_COLOR_MATERIAL);
-  // glEnable(GL_BLEND);
-  // glEnable(GL_CULL_FACE); // Performance Add? Only for 3d
-  // glEnable(GL_POLYGON_SMOOTH); // Causes strange lines drawn between tiles
-  // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  // glClearColor(0, 0, 0, 0);
-
-  // /* Initialize Gl in other classes */
-  // map_dialog.initializeGl();
-// }
-
-// void Map::keyPressEvent(QKeyEvent* key_event)
-// {
-  // if(key_event->key() == Qt::Key_Escape)
-  // {
-    // if(player != 0)
-    // {
-      // player->clearAllMovement();
-      // player->setSpeed(150);
-    // }
-    // emit closeMap();
-  // }
-  // else if(key_event->key() == Qt::Key_P)
-    // map_dialog.setPaused(!map_dialog.isPaused());
-  // else if(key_event->key() == Qt::Key_1 && player != 0)
-    // player->resetPosition();
-  // else if(key_event->key() == Qt::Key_4)
-    // map_dialog.initNotification("Testing", 1000, true);
-  // else if(key_event->key() == Qt::Key_5)
-    // map_dialog.initNotification("This is a really long message. It goes on and on without end. Who makes notifications this long except for crazy deranged eutherlytes. Yes, I made a new word. You want to fight about it?");//map_dialog.haltDialog();
-  // else if(key_event->key() == Qt::Key_6)
-    // map_dialog.initNotification("This is a really long message. It goes on and on without end. Who makes notifications this long except for crazy deranged eutherlytes. Yes, I made a new word. You want to fight about it?", 5000, true);
-  // else if(map_dialog.isInConversation())
-    // map_dialog.keyPress(key_event);
-  // else if(key_event->key() == Qt::Key_Shift && !key_event->isAutoRepeat())
-  // {
-    // if(player != 0)
-      // player->setSpeed(300);
-  // }
-  // else if(key_event->key() == Qt::Key_Space)
-    // initiateThingInteraction();
-  // else if(key_event->key() == Qt::Key_Down || key_event->key() == Qt::Key_Up ||
-          // key_event->key() == Qt::Key_Right || key_event->key() == Qt::Key_Left)
-  // {
-    // if(player != 0)
-      // player->keyPress(key_event);
-  // }
-  // else if(key_event->key() == Qt::Key_F1)
-    // zoom_out = true;
-  // else if(key_event->key() == Qt::Key_F2)
-    // zoom_in = true;
-  // else if(key_event->key() == Qt::Key_F3)
-    // viewport->lockOn(persons[1]);
-  // else if(key_event->key() == Qt::Key_F4)
-    // viewport->lockOn(player);
-  // else if(key_event->key() == Qt::Key_F5)
-    // qDebug() << "Player steps: " << player->getStepCount();
-  // else if(key_event->key() == Qt::Key_0)
-  // {
-    // Event blank_event = event_handler->createBlankEvent();
-    
-    // Conversation* convo = new Conversation;
-    // convo->category = EnumDb::TEXT;
-    // convo->action_event = blank_event;
-    // convo->text = "This is the initial conversation point that will start it. ";
-    // convo->text += "How can this continue? It must pursue to complete ";
-    // convo->text += "embodiment. Ok, maybe I'll just keep typing until I break ";
-    // convo->text += "the entire compiler.";
-    // convo->thing_id = 0;
-    // Conversation test1, test2, test3, test4, test5;
-    // test1.category = EnumDb::TEXT;
-    // test1.action_event = blank_event;
-    // test1.text = "This is a test to see how the data performs. The line will split once ";
-    // test1.text += "unless it is an option based selection in which case it will restrict."; 
-    // test1.thing_id = 3;
-    // test2.category = EnumDb::TEXT;
-    // test2.action_event = blank_event;
-    // test2.text = "This is a no man case. See what happens!! Ok, this is the ";
-    // test2.text += "too long case where the lines never cease to exist and the ";
-    // test2.text += "points aren't for real. I'm feeling a bit hungry though ";
-    // test2.text += "so I don't know if I'll have the stamina to clean up this ";
-    // test2.text += "case in all it's glory. Repeat: ";
-    // test2.text += test2.text;
-    // test2.text += test2.text;
-    // test2.thing_id = 2;
-    // test2.next.append(test1);
-    // test3.category = EnumDb::TEXT;
-    // test3.action_event = blank_event;
-    // test3.text = "Back to finish off with a clean case with a couple of lines.";
-    // test3.text += " So this requires me to write a bunch of BS to try and fill";
-    // test3.text += " these lines.";
-    // test3.text += test3.text;
-    // test3.text += test3.text;
-    // test3.thing_id = 24;
-    // test3.next.append(test2);
-    // test4.category = EnumDb::TEXT;
-    // test4.action_event = blank_event;
-    // test4.text = "Option 1 - This goes on and on and on and on and on and lorem ipsum. This is way too long to be an option. Loser";
-    // test4.thing_id = -1;
-    // test4.next.append(test2);
-    // test5.category = EnumDb::TEXT;
-    // test5.action_event = blank_event;
-    // test5.text = "Option 2";
-    // test5.thing_id = -1;
-    // test5.next.append(test3);
-    // test1.next.append(test4);
-    // test1.next.append(test5);
-    // test4.text = "Option 3";
-    // test1.next.append(test4);
-    // test5.text = "Option 4";
-    // test1.next.append(test5);
-    // test4.text = "Option 5";
-    // test1.next.append(test4);
-    // test5.text = "Option 6";
-    // test1.next.append(test5);
-    // convo->next.append(test1);
-    // event_handler->executeEvent(event_handler->createConversationEvent(convo),
-                                // player);
-    
-    // delete convo;
-  // }
-// }
-
-// void Map::keyReleaseEvent(QKeyEvent* key_event)
-// {
-  // if(map_dialog.isInConversation())
-    // map_dialog.keyRelease(key_event);
-  // else if(key_event->key() == Qt::Key_Down || key_event->key() == Qt::Key_Up ||
-          // key_event->key() == Qt::Key_Right || key_event->key() == Qt::Key_Left)
-  // {
-    // if(player != 0)
-      // player->keyRelease(key_event);
-  // }
-  // else if(key_event->key() == Qt::Key_Shift && !key_event->isAutoRepeat())
-  // {
-    // if(player != 0)
-      // player->setSpeed(150);
-  // }
-// }
-
-// /* TODO: might need to restrict animation for things out of the display
- // *       due to lag (high number of Things). Further testing required.
- // *
- // * Seem to be getting more consistent results for displaying, and it seems
- // * better with vsync disabled */
-// void Map::paintGL()
-// {
-  // /* Start a QTimer to determine time elapsed for painting */
-  // QTime time;
-  // time.start();
-  
-  // /* Swap the buffers from the last call - put it on top or bottom? */
-  // swapBuffers();
-  // qDebug() << "1: " << time.elapsed();
-
-  // /* Start by setting the context and clearing the screen buffers */
-  // makeCurrent();
-  // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  // glPushMatrix();
-
-  // /* Only proceed if the map is loaded */
-  // if(loaded)
-  // {
-    // /* Animate the map based on the elapsed time and then update
-     // * the viewport due to the animate */
-    // animate(time_elapsed);
-    // viewport->updateView();
-
-    // /* Grab the variables for viewport */
-    // int tile_x_start = viewport->getXTileStart();
-    // int tile_x_end = viewport->getXTileEnd();
-    // int tile_y_start = viewport->getYTileStart();
-    // int tile_y_end = viewport->getYTileEnd();
-    // float x_offset = viewport->getX();
-    // int x_start = viewport->getXStart();
-    // int x_end = viewport->getXEnd();
-    // float y_offset = viewport->getY();
-    // int y_start = viewport->getYStart();
-    // int y_end = viewport->getYEnd();
-    
-    // /* Paint the lower half */
-    // for(int i = tile_x_start; i < tile_x_end; i++)
-      // for(int j = tile_y_start; j < tile_y_end; j++)
-        // geography[map_index][i][j]->paintLower(x_offset, y_offset);
-
-    // /* Paint the walkover objects */
-    // for(int i = tile_x_start; i < tile_x_end; i++)
-    // {
-      // for(int j = tile_y_start; j < tile_y_end; j++)
-      // {
-        // if(geography[map_index][i][j]->isItemSet() && 
-           // geography[map_index][i][j]->getItem()->getCount() > 0)
-        // {
-          // geography[map_index][i][j]->getItem()->
-                                                  // paintGl(x_offset, y_offset);
-        // }
-      // }
-    // }
-
-    // /* Paint all things on the map */
-    // for(int i = 0; i < things.size(); i++)
-    // {
-      // if(things[i] != 0 && things[i]->getMapSection() == map_index && 
-         // things[i]->getX() >= x_start && things[i]->getX() <= x_end && 
-         // things[i]->getY() >= y_start && things[i]->getY() <= y_end)
-      // {
-        // things[i]->paintGl(x_offset, y_offset);
-      // }
-    // }
-
-    // /* Paint all persons on the map */
-    // for(int i = 0; i < persons.size(); i++)
-    // {
-      // if(persons[i] != 0 && persons[i]->getMapSection() == map_index && 
-         // persons[i]->getX() >= x_start && persons[i]->getX() <= x_end && 
-         // persons[i]->getY() >= y_start && persons[i]->getY() <= y_end)
-      // {
-        // persons[i]->paintGl(x_offset, y_offset);
-      // }
-    // }
-
-    // /* Paint the upper half */
-    // for(int i = tile_x_start; i < tile_x_end; i++)
-      // for(int j = tile_y_start; j < tile_y_end; j++)
-        // geography[map_index][i][j]->paintUpper(x_offset, y_offset);
-
-    // /* Paint the dialog */
-    // map_dialog.paintGl(this);
-  // }
-
-  // /* Paint the frame rate */
-  // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  // glColor4f(0.0, 0.0, 0.0, 0.5);
-  // glBegin(GL_QUADS);
-    // glVertex3f(7, 40, 0);//7,40
-    // glVertex3f(7, 10, 0);//7,10
-    // glVertex3f(64, 10, 0);//64,10
-    // glVertex3f(64, 40, 0);//64,40
-  // glEnd();
-  // glColor4f(1.0, 1.0, 1.0, 1.0);
-  // renderText(20, 30, frames_per_second);
-
-  // /* Clean up the drawing procedure */
-  // glFlush();
-  // glPopMatrix();
-  // glFinish();
-  
-  // /* Determine the FPS sample rate */
-  // if(paint_animation <= 0)
-  // {
-    // frames_per_second.setNum(paint_frames /(paint_time / 1000.0), 'f', 2);
-    // paint_animation = 20;
-  // }
-  // paint_animation--;
-
-  // /* Check the FPS monitor to see if it needs to be reset */
-  // if((paint_frames % 100) == 0)
-  // {
-    // paint_frames = 0;
-    // paint_time = 0;
-  // }
-  // paint_frames++;
-  // paint_time += time_elapsed;
-  
-  // /* Finish by swapping the buffers and then restarting the timer to update 
-   // * the map again */
-  // swapBuffers();
-// }
-
-// void Map::resizeGL(int width, int height) 
-// {
-  // glViewport(0, 0, width, height);
-  // glMatrixMode(GL_PROJECTION);
-  // glLoadIdentity();
-  // gluOrtho2D(0, width, height, 0); // set origin to bottom left corner
-  // glMatrixMode(GL_MODELVIEW);
-  // glLoadIdentity();
-// }
-
-// /*============================================================================
- // * PUBLIC SLOTS
- // *===========================================================================*/
-
-// void Map::finishThingTarget()
-// {
-  // if(player != 0)
-  // {
-    // if(player->getTarget() != 0)
-      // player->getTarget()->clearTarget();
-    // player->clearTarget();
-  // }
-// }
-
-// void Map::getThingData(QList<int> thing_ids)
-// {
-  // QList<MapThing*> used_things;
-
-  // /* Loop through all the ids to find the associated things */
-  // for(int i = 0; i < thing_ids.size(); i++)
-  // {
-    // /* Only continue if the ID is valid and >= than 0 */
-    // if(thing_ids[i] >= 0)
-    // {
-      // /* Compile a list of all MapThings */
-      // QList<MapThing*> combined = things;
-      // for(int k = 0; k < items.size(); k++)
-        // combined.append((MapThing*)items[k]);
-      // for(int k = 0; k < persons.size(); k++)
-        // combined.append((MapThing*)persons[k]);
-
-      // bool found = false;
-      // int j = 0;
-
-      // /* Loop through the stack of things to find the associated ID */
-      // while(!found && j < combined.size())
-      // {
-        // if(combined[j]->getID() == thing_ids[i])
-        // {
-          // used_things.append(combined[j]);
-          // found = true;
-        // }
-        // j++;
-      // }
-    // }
-  // }
-
-  // /* Set the dialog with the new stack of things */
-  // map_dialog.setThingData(used_things);
-// }
-
-// /*============================================================================
- // * PUBLIC FUNCTIONS
- // *===========================================================================*/
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
 
 // MapPerson* Map::getPlayer()
 // {
@@ -1201,29 +798,38 @@ std::vector< std::vector<uint16_t> > Map::splitIdString(std::string id,
   // player->setFocus();
 // }
 
-// bool Map::initConversation(Conversation* convo, MapPerson* initiator, 
-                                                // MapThing* source)
-// {
-  // if(player != 0 && map_dialog.initConversation(convo, initiator))
-  // {
-    // player->keyFlush();
+bool Map::initConversation(Conversation* convo, MapThing* source)
+{
+  if(player != NULL && player->getTarget() == NULL 
+                    && map_dialog.initConversation(convo, player))
+  {
+    /* Finalize conversation setup */
+    std::vector<int> list = map_dialog.getConversationIDs();
+    map_dialog.setConversationThings(getThingData(list));
+    
+    /* Flush player keys */
+    player->keyFlush();
 
-    // /* Set the targets */
-    // if(initiator != 0)
-      // initiator->setTarget(source);
-    // if(source != 0)
-      // source->setTarget(initiator);
+    /* Set the targets */
+    player->setTarget(source);
+    if(source != NULL)
+      source->setTarget(player);
 
-    // return true;
-  // }
+    return true;
+  }
 
-  // return false;
-// }
+  return false;
+}
 
-// bool Map::initNotification(QString notification)
-// {
-  // return map_dialog.initNotification(notification);
-// }
+bool Map::initNotification(std::string notification)
+{
+  return map_dialog.initNotification(notification);
+}
+
+bool Map::initNotification(Frame* image, int count)
+{
+  return map_dialog.initPickup(image, count);
+}
 
 // /* Checks whether the viewport contains any tiles with the given sector */
 // bool Map::isInSector(int index)
@@ -1258,8 +864,16 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
                           geography[map_index][0].size());
     }
   }
-  else if(map_dialog.isConversationActive())
-    map_dialog.keyDownEvent(event);
+  else if(event.keysym.sym == SDLK_p)
+    map_dialog.setPaused(!map_dialog.isPaused());
+  else if(event.keysym.sym == SDLK_6)
+    map_dialog.initPickup(items[1]->getDialogImage(), 15, 2500);
+  else if(event.keysym.sym == SDLK_7)
+    map_dialog.initPickup(items.front()->getDialogImage(), 5);
+  else if(event.keysym.sym == SDLK_8)
+    map_dialog.initNotification("Hello sunshine, what a glorious day and I'll keep writing forever and forever and forever and forever and forever and forever and forFU.", true, 0);
+  else if(event.keysym.sym == SDLK_9)
+    map_dialog.initNotification("Hello sunshine, what a glorious day and I'll keep writing forever and forever and forever and forever and forever and forever and forFU.");
   else if(event.keysym.sym == SDLK_0)
   {
     Event blank_event = event_handler->createBlankEvent();
@@ -1331,8 +945,14 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
 
     delete convo;
   }
+  else if(map_dialog.isConversationActive())
+    map_dialog.keyDownEvent(event);
   else if(event.keysym.sym == SDLK_SPACE)
     initiateThingInteraction();
+  else if(event.keysym.sym == SDLK_z)
+    zoom_out = true;
+  else if(event.keysym.sym == SDLK_x)
+    zoom_in = true;
   else if(player != NULL)
   {
     if((event.keysym.sym == SDLK_LSHIFT || event.keysym.sym == SDLK_RSHIFT) && 
@@ -1411,9 +1031,13 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
     int height = -1;
     int index = -1;
     int width = -1;
-    data = fh.readXmlData(&done, &success);
+    
     do
     {
+      /* Read set of XML data */
+      data = fh.readXmlData(&done, &success);
+      
+      /* Parse map data */
       if(data.getElement(kFILE_GAME_TYPE) == "map")
       {
         if(data.getElement(kFILE_SECTION_ID) == "sprite" &&
@@ -1486,10 +1110,7 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
           }
         }
       }
-      
-      /* Get the next element */
-      data = fh.readXmlData(&done, &success);
-    } while(!done && success);
+    } while(!done);// && success); // TODO: Success in loop??
   }
   success &= fh.stop();
   
@@ -1540,43 +1161,19 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
   return success;
 }
 
-// /* Checks the tile you are attempting to enter for passibility of the given
- // * direction */
-// bool Map::passible(EnumDb::Direction dir, int x, int y)
-// {
-  // (void)dir;//warning
-  // (void)x;//warning
-  // (void)y;//warning
-  // return true;
-// }
-
-// /* Causes the thing you are moving into to start its interactive action */
-// void Map::passOver()
-// {
-// }
-
-// /* Proceeds to pickup the total number of this marked item */
-// bool Map::pickupItem(MapItem* item)
-// {
-  // if(item != 0)
-  // {
-    // Frame* dialog_image = item->getDialogImage();
-    // Sprite* map_image = item->getFrames();
+/* Proceeds to pickup the total number of this marked item */
+bool Map::pickupItem(MapItem* item)
+{
+  if(item != NULL)
+  {
+    /* Set the on map count to 0 */
+    item->setCount(0);
     
-    // /* Show pickup dialog */
-    // if(dialog_image != 0 && dialog_image->isImageSet())
-      // map_dialog.initPickup(dialog_image, item->getCount());
-    // else if(map_image != 0 && map_image->getSize() > 0)
-      // map_dialog.initPickup(map_image->getFirstFrame(), item->getCount());
-      
-    // /* Finally, set the on map count to 0 */
-    // item->setCount(0);
-    
-    // return true;
-  // }
+    return true;
+  }
   
-  // return false;
-// }
+  return false;
+}
 
 /* Renders the title screen */
 bool Map::render(SDL_Renderer* renderer)
@@ -1667,50 +1264,41 @@ bool Map::setConfiguration(Options* running_config)
   
   return false;
 }
-
-// /* Changes the map section index - what is displayed */
-// bool Map::setSectionIndex(int index)
-// {
-  // if(index >= 0 && index < geography.size() && geography[index].size() > 0)
-  // {
-    // map_index = index;
-    // viewport->setMapSize(geography[index].size(), geography[index][0].size());
-    
-    // return true;
-  // }
-  
-  // return false;
-// }
   
 // Possibly make the teleport add the ability of shifting map thing
-// void Map::teleportThing(int id, int tile_x, int tile_y, int section_id)
-// {
-  // /* If the section id is below 0, then set to internal map index */
-  // if(section_id < 0)
-    // section_id = map_index;
+void Map::teleportThing(int id, int tile_x, int tile_y, int section_id)
+{
+  /* If the section id is below 0, then set to internal map index */
+  if(section_id < 0)
+    section_id = map_index;
   
-  // /* Ensure that the tile x and y is within the range */
-  // if(section_id < geography.size() && 
-     // geography[section_id].size() > tile_x && tile_x >= 0 && 
-     // geography[section_id][tile_x].size() > tile_y && tile_y >= 0)
-  // {
-    // /* Change the starting tile for the thing */
-    // for(int i = 0; i < persons.size(); i++)
-    // {
-      // if(persons[i]->getID() == id)
-      // {
-        // if(persons[i]->setStartingTile(section_id, 
-                                       // geography[section_id][tile_x][tile_y]))
-        // {
-          // map_dialog.endConversation();
-          // if(map_index != section_id)
-            // setSectionIndex(section_id);
-          // persons[i]->clearAllMovement();
-        // }
-      // }
-    // }
-  // }
-// }
+  if(tile_x >= 0 && tile_y >= 0 && section_id >= 0)
+  {
+    uint16_t x = tile_x;
+    uint16_t y = tile_y;
+    uint16_t section = section_id;
+    
+    /* Ensure that the tile x and y is within the range */
+    if(section < geography.size() && geography[section].size() > x 
+                                  && geography[section][x].size() > y)
+    {
+      /* Change the starting tile for the thing */
+      for(auto i = persons.begin(); i != persons.end(); i++)
+      {
+        if((*i)->getID() == id)
+        {
+          if((*i)->setStartingTile(section, geography[section][x][y]))
+          {
+            //map_dialog.endConversation();
+            if(map_index != section)
+              setSectionIndex(section);
+            (*i)->clearAllMovement();
+          }
+        }
+      }
+    }
+  }
+}
 
 void Map::unfocus()
 {
@@ -1733,14 +1321,14 @@ void Map::unloadMap()
   tile_height = kTILE_SIZE;
   tile_width = kTILE_SIZE;
   
-  // /* Delete the items */
-  // for(int i = 0; i < items.size(); i++)
-  // {
-    // if(items[i] != 0)
-      // delete items[i];
-    // items[i] = 0;
-  // }
-  // items.clear();
+  /* Delete the items */
+  for(uint16_t i = 0; i < items.size(); i++)
+  {
+    if(items[i] != NULL)
+      delete items[i];
+    items[i] = NULL;
+  }
+  items.clear();
 
   /* Delete the persons */
   for(uint16_t i = 0; i < persons.size(); i++)
@@ -1796,6 +1384,16 @@ void Map::unloadMap()
 /* Updates the game state */
 bool Map::update(int cycle_time)
 {
+  /* Check on player interaction */
+  if(player != NULL && player->getTarget() != NULL 
+                    && !map_dialog.isConversationActive() 
+                    && !map_dialog.isConversationReady() 
+                    && !map_dialog.isConversationWaiting())
+  {
+    player->getTarget()->clearTarget();
+    player->clearTarget();
+  }
+  
   /* Update the sprite animation */
   for(uint16_t i = 0; i < tile_sprites.size(); i++)
     tile_sprites[i]->update(cycle_time);
@@ -1853,15 +1451,8 @@ bool Map::update(int cycle_time)
   
   /* Finally, update the viewport and dialog */
   map_dialog.update(cycle_time);
+  updateTileSize();
   viewport.update();
   
   return false;
 }
-
-// /* Updates the map - called by the cycle timer call from game */
-// void Map::updateMap(int cycle_time)
-// {
-  // time_elapsed = cycle_time;
-  // updateTileSize();
-  // updateGL();
-// }

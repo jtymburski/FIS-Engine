@@ -32,17 +32,15 @@ static const std::string kRUN = "Flee";
 
 /* ------------ Equip Strings --------------- */
 static const std::string kHEAD_SLOT = "Head";
-static const std::string kARM_SLOT  = "Limb";
+static const std::string kARM_SLOT = "Limb";
 static const std::string kBODY_SLOT = "Torso";
 static const std::string kLEGS_SLOT = "Lower Body";
 
 /* ------------ Object Strings --------------- */
-static const std::string kDEFAULT_ITEM_DESC    {"Unknown item"};
-static const std::string kDEFAULT_ITEM_NAME    {"Unknown"};
-static const std::string kDEFAULT_ITEM_PREFIX  {"items"};
-static const std::string kDEFAULT_ITEM_USE_MSG {"has been used"};
-static const std::string kDEFAULT_BUBBY_PREFIX {"bubbies"};
-static const std::string kBUBBY_FULL_NAME      {"Bonding and Union Based Biological Interlaced Entity"};
+static const std::string kDEFAULT_ITEM_DESC    = "Unknown item";
+static const std::string kDEFAULT_ITEM_NAME    = "Unknown";
+static const std::string kDEFAULT_ITEM_PREFIX  = "items";
+static const std::string kDEFAULT_ITEM_USE_MSG = "has been used";
 
 /* ------------ Cat/Race Strings --------------- */
 static const std::string kDEFAULT_CAT_NAME = "Battle Class";

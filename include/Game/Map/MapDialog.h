@@ -17,6 +17,7 @@
 #include "Game/Map/MapThing.h"
 #include "Helpers.h"
 #include "Options.h"
+#include "Sound.h"
 #include "Text.h"
 
 /* Notification queue structure */
@@ -24,7 +25,7 @@ struct Notification
 {
   std::string text;
   Frame* thing_image;
-  uint16_t thing_count;
+  uint32_t thing_count;
   uint16_t time_visible;
 };
 
@@ -64,6 +65,9 @@ private:
   bool conversation_update;
   bool conversation_waiting;
 
+  /* The dialog alpha rating (for how visible) */
+  uint8_t dialog_alpha;
+  
   /* The running dialog mode and status - used for display control */
   DialogMode dialog_mode;
   DialogStatus dialog_status;
@@ -72,7 +76,6 @@ private:
   float dialog_offset;
   uint8_t dialog_option;
   uint8_t dialog_option_top;
-  //bool dialog_shift_enable;
 
   /* The event handler information */
   EventHandler* event_handler;
@@ -82,8 +85,8 @@ private:
   TTF_Font* font_title;
 
   /* The frame controller for displaying the conversation and pickup */
-  Frame frame_convo; 
-  Frame frame_pickup;
+  Frame frame_bottom; 
+  Frame frame_right;
   
   /* Image frames to be loaded for rendering */
   Frame img_convo; /* Main Dialog display */
@@ -97,6 +100,23 @@ private:
   Frame img_pick_b; /* Bottom pickup display corner */
   Frame img_pick_t; /* Top pickup display corner */
   
+  /* The queue that holds all bottom notifications that need to be displayed */
+  std::vector<Notification> notification_queue;
+  uint16_t notification_time;
+  
+  /* The paused control settings */
+  bool paused;
+ 
+  /* The pickup notification queue (right hand side) */
+  float pickup_offset;
+  std::vector<Notification> pickup_queue;
+  DialogStatus pickup_status;
+  uint16_t pickup_time;
+  bool pickup_update;
+  
+  /* Sounds used throughout the menu system */
+  Sound sound_click;
+  
   /* The system options, used for rendering, settings, etc. */
   Options* system_options;
   
@@ -109,6 +129,8 @@ private:
   float text_index;
   uint16_t text_index_max;
   std::vector<Text*> text_lines;
+  float text_offset;
+  uint16_t text_offset_max;
   std::vector<Text*> text_options;
   std::vector<std::string> text_strings;
   uint16_t text_top;
@@ -126,17 +148,24 @@ private:
   const static uint8_t kLINE_SPACING; /* The spacing between lines of font */
   const static uint8_t kMARGIN_SIDES; /* The left and right margin size */
   const static uint8_t kMARGIN_TOP; /* The top margin size */
+  const static uint16_t kMSEC_PER_WORD; /* The read speed per word */
   const static uint8_t kNAME_BOX_OFFSET; /* Name box dialog x offset */
   const static float kOPACITY_BACKEND; /* Backend display box opacity */
+  const static uint8_t kOPACITY_MAX; /* The max opacity rating (between 0-max */
   const static uint8_t kOPTION_OFFSET; /* The offset of the options from text */
+  const static uint16_t kPAUSE_TIME; /* The time to hide or show the dialog */
+  const static uint16_t kPICKUP_DISPLAY_TIME; /* Default pickup display time */
+  const static uint8_t kPICKUP_TEXT_MARGIN; /* Margin between image and text */
+  const static uint16_t kPICKUP_Y; /* The top left y coordinate */
   const static float kSHIFT_TIME; /* Time to make the display visible */
   const static uint8_t kTEXT_LINES; /* The max number of lines displayed */
   const static uint8_t kTEXT_OPTIONS; /* The max number of options displayed */
   const static float kTEXT_DISPLAY_SPEED; /* The character display speed */
+  const static float kTEXT_SHIFT; /* The speed at which the text shifts up */
 
  /*============================================================================
  * PRIVATE FUNCTIONS
- *===========================================================================*/
+ *============================================================================*/
 private:
   /* Computes all IDs that are needed for displaying the conversation */
   std::vector<int> calculateThingList(Conversation convo);
@@ -172,13 +201,19 @@ private:
   /* Sets up the active conversation pointer to prepare for screen rendering */
   void setupConversation(SDL_Renderer* renderer);
 
+  /* Sets up the top waiting queued notification, to be displayed */
+  void setupNotification(SDL_Renderer* renderer);
+ 
+  /* Sets up the top waiting pickup queued notification, to be displayed */
+  void setupPickup(SDL_Renderer* renderer, bool update = false);
+  
   /* Setup the render text display. Also manages deletion of Text pointers */
   void setupRenderText(std::vector<std::string> lines = {}, 
                        bool delete_old = false);
 
-/*============================================================================
+/*=============================================================================
  * PUBLIC FUNCTIONS
- *===========================================================================*/
+ *============================================================================*/
 public:
   /* Returns the thing IDs from the waiting conversation - return nothing if
    * the conversation isn't waiting */
@@ -188,15 +223,30 @@ public:
   bool initConversation(Conversation* dialog_info, MapPerson* target);
   bool initConversation(Conversation dialog_info, MapPerson* target);
 
+  /* Initializes a notification, using a string to be printed */
+  bool initNotification(std::string notification, bool single_line = false, 
+                                                  int time_visible = -1);
+
+  /* Initiailizes a pickup notification. These show up isolated from the
+   * notification and conversation sequencing */
+  bool initPickup(Frame* thing_image, int thing_count = 1, 
+                                      int time_visible = -1);
+  
   /* Returns if there is an active conversation (needs key presses passed in) */
   bool isConversationActive();
 
+  /* Returns if there is a ready conversation just waiting to be displayed */
+  bool isConversationReady();
+  
   /* Returns if the conversation is waiting for thing data to be setup */
   bool isConversationWaiting();
 
   /* Are the rendering images set */
   bool isImagesSet(bool conversation = true, bool pickup = false);
 
+  /* Returns if the class control system is paused */
+  bool isPaused();
+  
   /* Key Down/Flush/Up events handled */
   void keyDownEvent(SDL_KeyboardEvent event);
   void keyFlush();
@@ -223,13 +273,11 @@ public:
   /* Sets the event handler */
   void setEventHandler(EventHandler* event_handler);
 
+  /* Sets if the class control is paused */
+  void setPaused(bool paused);
+  
   /* Updates the thing, called on the tick */
   void update(int cycle_time);
-
-/*============================================================================
- * PUBLIC STATIC FUNCTIONS
- *===========================================================================*/
-public:
 };
 
 #endif // MAPDIALOG_H

@@ -25,24 +25,20 @@
 #include "Frame.h"
 #include "StringDB.h"
 
-class Item;
-
 class Flavour
 {
-  friend Item;
-
 public:
+  /* Constructs a default Flavour object */
+  Flavour();
+
   /* Constructs a normal Flavour object given a name and stats */
   Flavour(const int &game_id, const std::string &flavour_name, 
           const AttributeSet &min_stats, const double &min_mass, 
           const uint32_t &min_value, SkillSet* skills = nullptr);
 
 private:
-  /* The corresponding Game ID (non-unique) value for a Bubby of this flv */
-  const int game_id;
-
-  /* Flavour's AttributeSet (const -> unchanging) */
-  const AttributeSet base_stats;
+  /* Ref to the base attribute set (const -> unchanging) */
+  AttributeSet base_stats;
 
   /* The base mass of the Bubby Flavour (mass at Tier 0) */
   const double base_mass;
@@ -52,6 +48,9 @@ private:
 
   /* Description of the flavour */
   std::string description;
+
+  /* The corresponding Game ID (non-unique) value for a Bubby of this flv */
+  const int game_id;
 
   /* Standing list of all flavours in the game */
   static std::vector<Flavour*> flavour_list;
@@ -71,6 +70,7 @@ private:
   static const std::vector<float>    kTIER_MASSES;      /* Mass modifiers */
   static const std::vector<float>    kTIER_VALUES;      /* Value modifiers */
   static const uint32_t              kMAX_LVL;          /* Max lvl */
+  static const int                   kUNSET_ID;         /* Def. ID value */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS

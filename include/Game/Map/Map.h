@@ -93,9 +93,9 @@ private:
   /* The texture white mask used for sprite brightness */
   Frame white_mask;
   
-  // /* Status of the zoom on the map */
-  // bool zoom_in;
-  // bool zoom_out;
+  /* Status of the zoom on the map */
+  bool zoom_in;
+  bool zoom_out;
   
   // /* The painting monitoring parameters */
   // QString frames_per_second;
@@ -114,7 +114,7 @@ private:
   const static uint8_t kFILE_TILE_ROW; /* The tile depth in XML of row */
   const static uint8_t kPLAYER_ID;     /* The player ID for computer control */
   const static uint16_t kTILE_SIZE; /* The default tile size, when no zoom */
-  // const static short kZOOM_TILE_SIZE;  /* The tile size, when zoomed out */
+  const static uint16_t kZOOM_TILE_SIZE;  /* The tile size, when zoomed out */
 
 /*============================================================================
  * PRIVATE FUNCTIONS
@@ -150,49 +150,16 @@ private:
   bool parseCoordinateInfo(std::string row, std::string col, uint16_t index,
                            uint16_t* r_start, uint16_t* r_end, 
                            uint16_t* c_start, uint16_t* c_end);
+                           
+  /* Changes the map section index - what is displayed */
+  bool setSectionIndex(uint16_t index);
   
   /* Splits the ID into a vector of IDs */
   std::vector< std::vector<uint16_t> > splitIdString(std::string id, 
                                                      bool matrix = false);
 
-  // /* Updates the height and width, based on zoom factors */
-  // void updateTileSize();
-  
-/*============================================================================
- * PROTECTED FUNCTIONS
- *===========================================================================*/
-protected:
-  // /* Animates the map */
-  // void animate(short time_since_last);
-
-  // /* GL initialization call */
-  // void initializeGL();
-
-  // /* Key Press/Release Events */
-  // void keyPressEvent(QKeyEvent* key_event);
-  // void keyReleaseEvent(QKeyEvent* key_event);
-
-  // /* GL painting call */
-  // void paintGL();
-  
-  // /* GL resize call */
-  // void resizeGL(int width, int height);
-
-/*============================================================================
- * SIGNALS
- *===========================================================================*/
-// signals:
-  // void closeMap();
- 
-/*============================================================================
- * PUBLIC SLOTS
- *===========================================================================*/
-// public slots:
-  // /* Complete the action sequence with the thing */
-  // void finishThingTarget();
-  
-  // /* Acquires the thing data and sets it in the dialog class, if applicable */
-  // void getThingData(QList<int> thing_ids);
+  /* Updates the height and width, based on zoom factors */
+  void updateTileSize();
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -207,12 +174,12 @@ public:
   // /* Initial call when map is displayed */
   // void initialization();
 
-  // /* Initiates a conversation, within the map. */
-  // bool initConversation(Conversation* convo, MapPerson* initiator, 
-                                             // MapThing* source);
+  /* Initiates a conversation, within the map. */
+  bool initConversation(Conversation* convo, MapThing* source);
 
-  // /* Initiates a notification, within the map */
-  // bool initNotification(QString notification);
+  /* Initiates a notification, within the map (either string or image based) */
+  bool initNotification(std::string notification);
+  bool initNotification(Frame* image, int count);
 
   // /* Checks whether the viewport contains any tiles with the given sector */
   // bool isInSector(int index);
@@ -228,15 +195,8 @@ public:
   bool loadMap(std::string file, SDL_Renderer* renderer, 
                                  bool encryption = false);
 
-  // /* Checks the tile you are attempting to enter for passibility of the given
-  // direction */
-  // bool passible(EnumDb::Direction dir, int x, int y);
-
-  // /* Causes the thing you are moving into to start its interactive action */
-  // void passOver();
-
-  // /* Picks up the total number of the item */
-  // bool pickupItem(MapItem* item);
+  /* Picks up the total number of the item */
+  bool pickupItem(MapItem* item);
   
   /* Renders the map */
   bool render(SDL_Renderer* renderer);
@@ -244,11 +204,8 @@ public:
   /* Sets the running configuration, from the options class */
   bool setConfiguration(Options* running_config);
   
-  // /* Changes the map section index - what is displayed */
-  // bool setSectionIndex(int index);
-  
-  // /* Teleport a thing, based on the given coordinates */
-  // void teleportThing(int id, int tile_x, int tile_y, int section_id = -1);
+  /* Teleport a thing, based on the given coordinates */
+  void teleportThing(int id, int tile_x, int tile_y, int section_id);
 
   /* Handles all the necessary clean up when map focus is lost */
   void unfocus();
@@ -258,9 +215,6 @@ public:
 
   /* Updates the game state */
   bool update(int cycle_time);
-  
-  // /* Updates the map - called by the cycle timer call from game */
-  // void updateMap(int cycle_time);
 };
 
 #endif // MAP_H
