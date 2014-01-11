@@ -73,6 +73,12 @@ public:
  * GRAMMAR FUNCTIONS
  *============================================================================*/
 public:
+  /* Decides between "a" or "an" */
+  static std::string a_An(const std::string& noun);
+
+  /* Determines whether a given character is a vowel */
+  static bool isVowel(const char &c);
+
   /* Converts an enumerated element to a String */
   static std::string elementToString(const Element &element);
 

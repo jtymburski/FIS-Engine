@@ -115,6 +115,7 @@ void Flavour::print(const bool &print_list)
 {
   std::cout << "--- Flavour ----\n";
   base_stats.print();
+  
   std::cout << "Base Mass: " << base_mass << "\n";
   std::cout << "Base Value: " << base_value << "\n";
   std::cout << "Description: " << description << "\n";
@@ -346,7 +347,7 @@ bool Flavour::setThumbs(const std::vector<Frame*> &new_thumbnails)
   return can_add;
 }
 
- /*=============================================================================
+/*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
 

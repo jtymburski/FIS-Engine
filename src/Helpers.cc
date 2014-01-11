@@ -143,6 +143,50 @@ int Helpers::rollXS(const int &x_sides, const int &s_times)
  * GRAMMAR FUNCTIONS
  *============================================================================*/
 
+std::string Helpers::a_An(const std::string &noun)
+{
+  if (noun.size() == 0)
+    return "";
+
+  auto a_an        = "a";
+  const auto lower = noun;
+
+  for (auto c : lower)
+    c = tolower(c);
+
+  const auto &initial = noun.at(0);
+
+  /* General vowel vs. consonant rule ("u" is usually consonant) */
+  if (lower.size() == 1)
+  {
+    if (isVowel(initial) && initial != 'u')
+      a_an = "an";
+    a_an = "a";
+  }
+
+  /* Generally words that start with vowels are "an" */
+  if (isVowel(initial))
+    a_an = "an";
+
+  if ((initial == 'y') && !isVowel(lower.at(1)))
+    a_an = "a";
+
+  /* Some exceptions for consonant and vowel sounds (e.g. "a eulogy") */
+  if (lower.substr(0, 2) == "eu" || lower.substr(0, 3) == "one" || 
+      lower.substr(0, 3) == "uni")
+    a_an = "a";
+  else if (lower.substr(0, 3) == "hon")
+    a_an = "an";
+
+  return a_an;
+}
+
+bool Helpers::isVowel(const char &c)
+{
+  return (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u' ||
+          c == 'A' || c == 'E' || c == 'I' || c == 'O' || c == 'U');
+}
+
 //TODO - Boost map?
 std::string Helpers::elementToString(const Element &element)
 {
