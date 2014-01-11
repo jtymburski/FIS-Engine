@@ -7,6 +7,9 @@
  *              setup and overall insight and control. The painting control
  *              won't be handled here and this will just act as an intermediate
  *              data highway / event handler.
+ *
+ *
+ * //TODO: Starting inventory items [01-11-14]
  ******************************************************************************/
 #ifndef GAME_H
 #define GAME_H
@@ -20,7 +23,7 @@
 //#include "Game/Player/Player.h"
  #include "Game/Player/Bubby.h"
 //#include "Game/VictoryScreen.h"
-//#include "MathHelper.h"
+#include "Game/Player/Inventory.h" //TODO
 #include "Game/Player/SkillSet.h"
 #include "Helpers.h"
 #include "Options.h"
@@ -32,7 +35,7 @@ class Game
 {
 public:
   /* Constructor function */
-  Game(Options* running_config = NULL);
+  Game(Options* running_config = nullptr);
 
   /* Destructor function */
   ~Game();
@@ -59,6 +62,9 @@ private:
   /* The current loaded map */
   Map* game_map; // TODO: Make non-pointer?
 
+  /* The game starting inventory */
+  Inventory* game_inventory; //TODO: Make part of player?
+
   /* List of all available items in the game */
   std::vector<Item*> item_list;
   
@@ -77,6 +83,9 @@ private:
   
   /* A current victory screen pointer */
   //VictoryScreen* victory_screen;
+
+  /* ------------ Constants --------------- */
+  static const uint32_t kMONEY_ITEM_ID;
 
 /*============================================================================
  * PRIVATE FUNCTIONS
@@ -109,6 +118,9 @@ private:
 
   /* Set up the map */
   void setupMap();
+
+  /* Sets up the default player inventory */
+  void setupPlayerInventory();
 
 /*============================================================================
  * PUBLIC FUNCTIONS

@@ -19,6 +19,7 @@
  *============================================================================*/
 
 uint32_t Inventory::id = 0;
+uint32_t Inventory::money_id = 0;
 
 const double Inventory::kMIN_MASS = 100.00;
 const double Inventory::kMAX_MASS = 5000.00;
@@ -70,7 +71,7 @@ double Inventory::calcMass()
     temp_mass += equipment->getMass();
 
   for (auto item : items)
-    temp_mass += item->getMass();
+    temp_mass += item.first->getMass();
 
   return temp_mass;
 }
@@ -275,6 +276,12 @@ bool Inventory::sortEquipments(Equip_It begin, Equip_It stop,
 bool Inventory::sortItems(Item_It begin, Item_It stop, 
 	                        const ObjectSorts &sort_type, const bool &asc)
 {
+  (void)begin; //warning
+  (void)stop; //warning
+  (void)sort_type; //warning
+  (void)asc; //warning
+
+  /*
   bool sorted = false;
 
   if (sort_type == ObjectSorts::ID)
@@ -352,6 +359,43 @@ bool Inventory::sortItems(Item_It begin, Item_It stop,
   }
 
   return sorted;
+  */
+
+  return true; //TODO
+}
+
+bool Inventory::increaseCount(const uint32_t &game_id)
+{
+  auto item_index = getItemIndex(game_id);
+
+  if (item_index == -1)
+    return false;
+
+  auto item_count = items.at(item_index).second;
+
+  if (item_count == 0 || item_count == item_each_limit)
+    return false;
+
+  items[item_index].second++;
+
+  return true;
+}
+
+bool Inventory::decreaseCount(const uint32_t &game_id)
+{
+  auto item_index = getItemIndex(game_id);
+
+  if (item_index == -1)
+    return false;
+
+  auto item_count = items.at(item_index).second;
+
+  if (item_count == 0)
+    return false;
+
+  items[item_index].second++;
+
+  return true;
 }
 
 /*=============================================================================
@@ -397,8 +441,10 @@ bool Inventory::addEquipment(Equipment* new_equipment, const bool bypass)
 /* Adds an item to the Inventory */
 bool Inventory::addItem(Item* new_item, const bool bypass)
 {
-  auto can_add = items.size() < item_limit;
+  auto can_add = getItemTotalCount() < item_limit;
   can_add &= (new_item != nullptr);
+
+  auto count = getItemCount(new_item->getGameID());
 
   if (can_add && (!bypass || new_item->getFlag(ItemFlags::KEY_ITEM)))
   {
@@ -408,7 +454,11 @@ bool Inventory::addItem(Item* new_item, const bool bypass)
 
   if (can_add)
   {
-    items.push_back(new_item);
+    if (count == 0)
+      items.push_back(std::make_pair(new_item, 1));
+    else
+      increaseCount(new_item->getGameID());
+
     curr_mass += new_item->getMass();
   }
 
@@ -429,8 +479,8 @@ bool Inventory::contains(const int &id_check)
         return true;
 
   for (auto item : items)
-    if (item != nullptr)
-      if (item->getID() == id_check)
+    if (item.first != nullptr)
+      if (item.first->getID() == id_check)
         return true;
 
   return false;
@@ -491,7 +541,6 @@ bool Inventory::removeItem(uint32_t index)
     return true;
   }
 
-
   return false;
 }
 
@@ -514,13 +563,13 @@ bool Inventory::sort(const ObjectSorts sort_type, SortObjects object_to_sort,
     }
     case(SortObjects::ITEMS):
     {
-      return sortItems(begin(items), end(items), sort_type, ascending);
+      //return sortItems(begin(items), end(items), sort_type, ascending);
       break;
     }
     case(SortObjects::KEY_ITEMS):
     {
       auto key_items = getKeyItems();
-      return sortItems(begin(key_items), end(key_items), sort_type, ascending);
+      //return sortItems(begin(key_items), end(key_items), sort_type, ascending);
       break;
     }
     default:
@@ -537,13 +586,13 @@ Frame* Inventory::getBackdrop()
 }
 
 /* Returns a vector of all items useable in battle */
-std::vector<Item*> Inventory::getBattleItems()
+std::vector<std::pair<Item*, uint8_t>> Inventory::getBattleItems()
 {
-  std::vector<Item*> battle_items;
+  std::vector<std::pair<Item*, uint8_t>> battle_items;
 
   for (auto battle_item : items)
-    if (battle_item != nullptr)
-      if (battle_item->getOccasion() == ActionOccasion::BATTLE)
+    if (battle_item.first != nullptr)
+      if (battle_item.first->getOccasion() == ActionOccasion::BATTLE)
         battle_items.push_back(battle_item);
 
   return battle_items;
@@ -595,6 +644,18 @@ std::vector<Equipment*> Inventory::getEquipments()
   return equipments;
 }
 
+/* Returns the index of an Item ID in the vector */
+int32_t Inventory::getItemIndex(const uint32_t &game_id)
+{
+  auto index = -1;
+
+  for (auto it = begin(items); it != end(items); ++it, ++index)
+    if ((*it).first->getGameID() == static_cast<int32_t>(game_id))
+      return index;
+
+  return index;
+}
+
 /* Returns the currently set item limit */
 uint32_t Inventory::getItemLimit()
 {
@@ -602,22 +663,20 @@ uint32_t Inventory::getItemLimit()
 }
 
 /* Returns the vector of all standard items */
-std::vector<Item*> Inventory::getItems()
+std::vector<std::pair<Item*, uint8_t>> Inventory::getItems()
 {
   return items;
 }
  
 /* Returns the count of a given Item game id */
-uint8_t Inventory::getItemCount(const int &game_id)
+uint32_t Inventory::getItemCount(const int &game_id)
 {
-  uint8_t count = 0;
-
   for (auto item : items)
-    if (item != nullptr)
-      if (item->getGameID() == game_id)
-        count++;
+    if (item.first != nullptr)
+      if (item.first->getGameID() == game_id)
+        return item.second;
 
-  return count;
+  return 0;
 }
 
 /* Returns the currently set item each limit */
@@ -626,15 +685,26 @@ uint32_t Inventory::getItemEachLimit()
   return item_each_limit;
 }
 
+uint32_t Inventory::getItemTotalCount()
+{
+  uint32_t total = 0;
+
+  for (auto item : items)
+    if (item.first != nullptr)
+      total += item.second;
+
+  return total;
+}
+
 /* Returns the vector of all key items */
 std::vector<Item*> Inventory::getKeyItems()
 {
   std::vector<Item*> key_items;
 
   for (auto item : items)
-    if (item != nullptr)
-      if (item->getFlag(ItemFlags::KEY_ITEM))
-        key_items.push_back(item);
+    if (item.first != nullptr)
+      if (item.first->getFlag(ItemFlags::KEY_ITEM))
+        key_items.push_back(item.first);
 
   return key_items;
 }
@@ -700,12 +770,21 @@ bool Inventory::setImages(Frame* const new_backdrop, Frame* const new_thumbnail)
  * Output:
  */
  void Inventory::setLimits(const uint32_t bubby_lim, const uint32_t equip_lim,
- 	                         const uint32_t item_lim, const uint8_t item_ea,
+ 	                         const uint32_t item_lim, const uint8_t item_e,
  	                         const double mass_lim)
 {
   bubby_limit = Helpers::setInRange(bubby_lim, 0, 4);
   equip_limit = Helpers::setInRange(equip_lim, kMIN_ITEM, kMAX_ITEM);
   item_limit = Helpers::setInRange(item_lim, kMIN_ITEM, kMAX_ITEM);
- item_each_limit=Helpers::setInRange(item_ea,kMIN_EACH_ITEM,kMAX_EACH_ITEM);
+  item_each_limit = Helpers::setInRange(item_e, kMIN_EACH_ITEM, kMAX_EACH_ITEM);
   mass_limit = Helpers::setInRange(mass_lim, kMIN_MASS, kMAX_MASS);
+}
+
+/*=============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
+
+void Inventory::setMoneyID(const uint32_t &new_money_id)
+{
+  money_id = new_money_id;
 }

@@ -20,6 +20,12 @@
 
 #include "Game/Game.h"
 
+/*=============================================================================
+ * CONSTANTS
+ *============================================================================*/
+
+const uint32_t Game::kMONEY_ITEM_ID{0};
+
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
@@ -29,14 +35,15 @@ Game::Game(Options* running_config)
 {
   /* Initalize class variables */
   base_path = "";
-  game_config = NULL;
-  game_map = NULL;
+  game_config = nullptr;
+  game_map = nullptr;
   mode = DISABLED;
   
   /* Set game configuration */
   setConfiguration(running_config);
 
   /* Set up the render classes */
+  setupPlayerInventory();
   setupBattle();
   setupMap();
 }
@@ -44,21 +51,27 @@ Game::Game(Options* running_config)
 /* Destructor function */
 Game::~Game()
 {
-  game_config = NULL;
+  game_config = nullptr;
   mode = DISABLED;
 
 //  /* Delete battle */
-//  if(game_battle != 0)
+//  if(game_battle != nullptr)
 //  {
 //    delete game_battle;
-//    game_battle = 0;
+//    game_battle = nullptr;
 //  }
 
   /* Delete map */
-  if(game_map != NULL)
+  if(game_map != nullptr)
   {
     delete game_map;
-    game_map = NULL;
+    game_map = nullptr;
+  }
+
+  if(game_inventory != nullptr)
+  {
+    delete game_inventory;
+    game_inventory = nullptr;
   }
  
   /* Delete all game items */
@@ -76,13 +89,13 @@ Game::~Game()
 bool Game::eventGiveItem(int id, int count)
 {
   /* Attempt to find the item */
-  Item* found_item = NULL;
+  Item* found_item = nullptr;
   for(auto i = item_list.begin(); i != item_list.end(); i++)
     if((*i)->getGameID() == id)
       found_item = (*i);
 
   /* If the item was inserted, display pickup notification */
-  if(found_item != NULL)
+  if(found_item != nullptr)
   {
     // TODO: Attempt insert. For now, according to variable
     bool inserted = true;
@@ -90,14 +103,14 @@ bool Game::eventGiveItem(int id, int count)
     /* If inserted, notify that the pickup was a success */
     if(inserted)
     {
-      if(game_map != NULL)
+      if(game_map != nullptr)
         game_map->initNotification(found_item->getThumb(), count);
       return true;
     }
     /* Otherwise, notify that item could not be received */
     else
     {
-      if(game_map != NULL)
+      if(game_map != nullptr)
         game_map->initNotification("Insufficient room in inventory to fit " + 
                                    std::to_string(count) + " " + 
                                    found_item->getName());
@@ -110,26 +123,26 @@ bool Game::eventGiveItem(int id, int count)
  /* Initiates a conversation event */
  void Game::eventInitConversation(Conversation* convo, MapThing* source)
 {
-  if(game_map != NULL)
+  if(game_map != nullptr)
     game_map->initConversation(convo, source);
 }
 
 /* Initiates a notification event (in map) */
 void Game::eventInitNotification(std::string notification)
 {
-  if(game_map != NULL)
+  if(game_map != nullptr)
     game_map->initNotification(notification);
 }
 
 /* The pickup item event - from walking over or triggering from action key */
 void Game::eventPickupItem(MapItem* item, bool walkover)
 {
-  if(item != NULL && item->isWalkover() == walkover)
+  if(item != nullptr && item->isWalkover() == walkover)
   {
     bool was_inserted = eventGiveItem(item->getCoreID(), item->getCount());
     
     /* If the insert was successful, pickup the item */
-    if(game_map != NULL && was_inserted)
+    if(game_map != nullptr && was_inserted)
      game_map->pickupItem(item);
   }
 }
@@ -143,7 +156,7 @@ void Game::eventStartBattle()
 /* Teleport thing event, based on ID and coordinates */
 void Game::eventTeleportThing(int thing_id, int x, int y, int section_id)
 {
-  if(game_map != NULL)
+  if(game_map != nullptr)
     game_map->teleportThing(thing_id, x, y, section_id);
 }
   
@@ -352,6 +365,19 @@ void Game::setupMap()
 //  game_map->loadMap("maps/test_04");
 }
 
+/* Sets up the default player inventory */
+void Game::setupPlayerInventory()
+{
+  /* Create the inventory */
+  game_inventory = new Inventory(0, "Default Inventory", nullptr);
+
+  /* General inventory setup */
+  Inventory::setMoneyID(kMONEY_ITEM_ID);
+
+  /* Add starting items to the Inventory */
+  //TODO: Starting items [01-11-14]
+}
+
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
@@ -362,7 +388,7 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
   /* Exit the game, game has finished processing */
   if(event.keysym.sym == SDLK_ESCAPE)
   {
-    if(game_map != NULL)
+    if(game_map != nullptr)
       game_map->unfocus();
     return true;
   }
@@ -424,7 +450,7 @@ bool Game::render(SDL_Renderer* renderer)
 /* Set the running configuration, from the options class */
 bool Game::setConfiguration(Options* running_config)
 {
-  if(running_config != NULL)
+  if(running_config != nullptr)
   {
     game_config = running_config;
     base_path = game_config->getBasePath();
