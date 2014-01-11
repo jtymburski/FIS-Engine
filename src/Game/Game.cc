@@ -399,17 +399,17 @@ bool Game::render(SDL_Renderer* renderer)
   /* Create temporary list of items - TODO: Pull into file */
   if(item_list.empty())
   {
-    //Item* item1 = new Item(5, "Sword of Power", 125, 
-    //                       new Frame("sprites/sword_AA_A00.png", renderer));
-    //Item* item2 = new Item(7, "Frost Bubby", 5, 
-    //                       new Frame("sprites/Battle/Bubbies/frosty_t1.png", 
-    //                                 renderer));
-    //Item* item3 = new Item(0, "Coins", 1, 
-    //                       new Frame("sprites/coins_AA_A00.png", renderer));
+    Item* item1 = new Item(5, "Sword of Power", 125, 
+                          new Frame("sprites/sword_AA_A00.png", renderer));
+    Item* item2 = new Item(7, "Frost Bubby", 5, 
+                           new Frame("sprites/Battle/Bubbies/frosty_t1.png", 
+                                     renderer));
+    Item* item3 = new Item(0, "Coins", 1, 
+                           new Frame("sprites/coins_AA_A00.png", renderer));
     
-    //item_list.push_back(item1);
-    //item_list.push_back(item2);
-    //item_list.push_back(item3);
+    item_list.push_back(item1);
+    item_list.push_back(item2);
+    item_list.push_back(item3);
   }
   
   if(!game_map->isLoaded())

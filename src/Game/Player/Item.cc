@@ -86,6 +86,11 @@ Item::Item(const int32_t &game_id, const std::string &name,
   setupClass();
 }
 
+Item::~Item()
+{
+  unsetAll(this);
+}
+
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
@@ -104,16 +109,18 @@ void Item::setupClass()
   if (base_item == nullptr)
   {
     buff_set = AttributeSet();
+    
     brief_description = StringDB::kDEFAULT_ITEM_DESC;
     description = StringDB::kDEFAULT_ITEM_DESC;
     composition = static_cast<Material>(0);
     flags = static_cast<ItemFlags>(0);
     prefix = StringDB::kDEFAULT_ITEM_PREFIX;
     occasion = ActionOccasion::NONE;
+    
     using_skill = nullptr;
     using_animation = nullptr;
-    using_message = nullptr;
-    using_sound = nullptr;
+    using_message = "";
+    using_sound = nullptr;  
   }
 
   /* Setup the class as a copy of the Base Item */
@@ -157,6 +164,11 @@ void Item::unsetAll(Item* object)
   object->name = "";
   object->prefix = "";
   object->occasion = ActionOccasion::NONE;
+
+  // TODO: Is each Item really going to take care of its own thumbnail? */
+  if (object->thumbnail != nullptr)
+    delete object->thumbnail;
+
   object->thumbnail = nullptr;
   object->using_skill = nullptr;
   object->using_animation = nullptr;

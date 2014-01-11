@@ -82,6 +82,8 @@ public:
   Item(const int32_t &game_id, const std::string &name, const uint32_t &value,
        Frame* thumbnail = nullptr, const double &mass = 0.0);
 
+  virtual ~Item();
+
 private:
   /* Static ID counter for the Item class */
   static int id;
