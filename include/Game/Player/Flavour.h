@@ -25,8 +25,13 @@
 #include "Frame.h"
 #include "StringDB.h"
 
+/* Forward declare for friends with Item */
+class Item;
+
 class Flavour
 {
+  friend Item;
+
 public:
   /* Constructs a default Flavour object */
   Flavour();

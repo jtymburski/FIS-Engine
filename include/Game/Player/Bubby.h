@@ -32,9 +32,6 @@
 class Bubby : public Item
 {
 public:
-  /* Default constructor: constructs a default Bubby */
-  Bubby();
-
   /* Constructs a Bubby object with a flavour at a certain tier */
   Bubby(Flavour* parent, const uint32_t &tier = 0);
 

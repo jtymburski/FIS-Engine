@@ -37,22 +37,6 @@ std::vector<uint32_t> Bubby::exp_table = {};
  *============================================================================*/
 
 /*
- * Description: Default construct: constructs a default Bubby, blank Bubby
- *              object. Calls the default Item constructor.
- *
- * Inputs: none
- */
-Bubby::Bubby()
-  : Item()
-  , level(0)
-  , tier(0)
-  , total_exp(kMIN_EXP)
-  , type(nullptr)
-{
-  buildExpTable();
-}
-
-/*
  * Description: General constructor: constructs a Bubby object with a given 
  *              Flavour type, and uses the info in the Flavour to 
  *              construct the Item portion of the Bubby.

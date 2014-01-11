@@ -18,66 +18,49 @@
  * CONSTANTS - See implementation for details
  *============================================================================*/
 
-const double   Item::kMAX_MASS       =      5000;
-const double   Item::kMIN_MASS       =     -1000;
-const uint32_t Item::kMAX_VALUE      = 100000000;
-const int      Item::kUNSET_ID       =        -1;
+const double   Item::kMAX_MASS{5000};
+const double   Item::kMIN_MASS{-1000};
+const uint32_t Item::kMAX_VALUE{100000000};
 
-int Item::id = 0;
+int Item::id{0};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
 
 /*
- * Description: Default constructor - constructs a default Item object.
+ * Description:
  *
- * Inputs: none
+ * Inputs:
  */
-Item::Item()
-  : game_id(kUNSET_ID)
-  , my_id(++id)
-{
-  classSetup();
-}
-
-/*
- * Description: Copy constructor - copies a source Item object. Constructs
- *              the new Item object as a copy of the base item with a UNIQUE
- *              ID my_id, but equivalent game_id.
- *
- * Inputs: source - const ref. of an Item object to be copied
- */
-Item::Item(const Item &source)
-  : game_id(source.game_id)
-  , my_id(++id) /* Assign the game ID of the base object */
-{
-  copySelf(source);
-}
-
-/*
- * Description: Move constructor - constructs an Item from an r.value ref.
- *
- * Inputs: source - r.value ref to an Item
- */
-Item::Item(Item&& source)
-  : game_id(source.game_id)
-{
-  unsetAll(this);
-  swap(*this, source);
-  setID(++id);
-}
-
 Item::Item(Flavour* const source)
-  : game_id(source->getGameID())
-  , my_id(++id)
+  : game_id{source->game_id}
+  , my_id{++id}
 {
-  classSetup();
-  setName(source->getName());
-  setBuffSet(source->getStats());
-  // setBriefDescription(source->getBriefDescription());
-  setDescription(source->getDescription());
-  setName(source->getName());
+  setupClass();
+
+  buff_set = source->base_stats;
+  mass = source->base_mass;
+  value = source->base_value;
+  description = source->description;
+  name = source->name;
+  prefix = StringDB::kDEFAULT_BUBBY_PREFIX;
+  occasion = ActionOccasion::NONE;
+
+  this->setFlag(ItemFlags::BUBBY, true);
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ */
+Item::Item(Item* const source)
+  : game_id{source->game_id}
+  , my_id{++id}
+  , base_item{source}
+{
+  setupClass();
 }
 
 /*
@@ -90,27 +73,17 @@ Item::Item(Flavour* const source)
  *         thumbnail - icon for the Item
  *         mass - base mass for the Item
  */
-Item::Item(const uint32_t &game_id, const std::string &name, 
-	       const uint32_t &value, Frame* thumbnail, const double &mass)
-  : game_id(game_id)
-  , my_id(++id) /* Assign the game ID */
+Item::Item(const int32_t &game_id, const std::string &name, 
+           const uint32_t &value, Frame* thumbnail, const double &mass)
+  : game_id{game_id}
+  , my_id{++id}
+  , base_item{nullptr}
+  , mass{mass}
+  , name{name}
+  , thumbnail{thumbnail}
+  , value{value}
 {
-  classSetup();
-  setName(name);
-  setValue(value);
-  setThumbnail(thumbnail);
-  setMass(mass);
-  
-  /* Assign the Base Item ptr and flag */
-  //setBase(this);
-}
-
-/*
- * Description: Annihilates an Item object.
- */
-Item::~Item()
-{
-  unsetAll(this);
+  setupClass();
 }
 
 /*=============================================================================
@@ -125,80 +98,43 @@ Item::~Item()
  * Inputs: none
  * Output: none
  */
-void Item::classSetup()
+void Item::setupClass()
 {
-  base_item = nullptr;
-  buff_set = AttributeSet();
-  brief_description = StringDB::kDEFAULT_ITEM_DESC;
-  description = StringDB::kDEFAULT_ITEM_DESC;
-  composition = static_cast<Material>(0);
-  flags = static_cast<ItemFlags>(0);
-  mass = 0;
-  name = StringDB::kDEFAULT_ITEM_NAME;
-  prefix = StringDB::kDEFAULT_ITEM_PREFIX;
-  occasion = ActionOccasion::NONE;
-  thumbnail = nullptr;
-  using_skill = nullptr;
-  using_animation = nullptr;
-  using_message = StringDB::kDEFAULT_ITEM_USE_MSG;
-  using_sound = nullptr;
-  value = 0;
-}
+  /* Setup the class as a standalone Item */
+  if (base_item == nullptr)
+  {
+    buff_set = AttributeSet();
+    brief_description = StringDB::kDEFAULT_ITEM_DESC;
+    description = StringDB::kDEFAULT_ITEM_DESC;
+    composition = static_cast<Material>(0);
+    flags = static_cast<ItemFlags>(0);
+    prefix = StringDB::kDEFAULT_ITEM_PREFIX;
+    occasion = ActionOccasion::NONE;
+    using_skill = nullptr;
+    using_animation = nullptr;
+    using_message = nullptr;
+    using_sound = nullptr;
+  }
 
-/*
- * Description: Copies a const source Item to the current object. Should NEVER
- *              be called outside of construction or assignment operators.
- *
- * Inputs: source - const ref to Item object to be copied.
- * Output: none
- */
-void Item::copySelf(const Item &source)
-{ 
-  base_item = source.base_item;
-  buff_set = source.buff_set;
-  brief_description = source.brief_description;
-  description = source.description;
-  composition = source.composition;
-  flags = source.flags;
-  mass = source.mass;
-  name = source.name;
-  prefix = source.prefix;
-  occasion = source.occasion;
-  thumbnail = source.thumbnail;
-  using_skill = source.using_skill;
-  using_animation = source.using_animation;
-  using_message = source.using_message;
-  using_sound = source.using_sound;
-  value = source.value;
-}
-
-/*
- * Description: Swaps the data of two Item objects using std::swap. If called
- *              during a move, the ID should be updated after calling.
- *
- * Inputs: object - lhs Item to be swapped
- *         source - rhs Item to be swapped
- * Output: none
- */
-void Item::swap(Item& object, Item& source)
-{
-  std::swap(object.my_id, source.my_id);
-  std::swap(object.base_item, source.base_item);
-  std::swap(object.buff_set, source.buff_set);
-  std::swap(object.brief_description, source.brief_description);
-  std::swap(object.description, source.description);
-  std::swap(object.composition, source.composition);
-  std::swap(object.flags, source.flags);
-  std::swap(object.mass, source.mass);
-  std::swap(object.name, source.name);
-  std::swap(object.prefix, source.prefix);
-  std::swap(object.occasion, source.occasion);
-  std::swap(object.thumbnail, source.thumbnail);
-  std::swap(object.using_skill, source.using_skill);
-  std::swap(object.using_animation, source.using_animation);
-  std::swap(object.using_message, source.using_message);
-  std::swap(object.using_sound, source.using_sound);
-  std::swap(object.value, source.value);
+  /* Setup the class as a copy of the Base Item */
+  else
+  {
+    buff_set = base_item->buff_set;
+    brief_description = base_item->brief_description;
+    description = base_item->description;
+    composition = base_item->composition;
+    flags = base_item->flags;
+    mass = base_item->mass;
+    name = base_item->name;
+    prefix = base_item->prefix;
+    occasion = base_item->occasion;
+    thumbnail = base_item->thumbnail;
+    using_skill = base_item->using_skill;
+    using_animation = base_item->using_animation;
+    using_message = base_item->using_message;
+    using_sound = base_item->using_sound;
+    value = base_item->value;
+  }
 }
 
  /*
@@ -221,8 +157,6 @@ void Item::unsetAll(Item* object)
   object->name = "";
   object->prefix = "";
   object->occasion = ActionOccasion::NONE;
-  if(object->thumbnail != nullptr)
-    delete object->thumbnail;
   object->thumbnail = nullptr;
   object->using_skill = nullptr;
   object->using_animation = nullptr;
@@ -231,26 +165,12 @@ void Item::unsetAll(Item* object)
   object->value = 0;
 }
 
- /*
- * Description: Private method for assigning the my_id (not game_id) of the Item
- *              (generally should be called with ++id for incrementing the
- *               static id counter of the Item class)
- *
- * Inputs: value - the value to be assigned for the ID
- * Output: none
- */
-void Item::setID(const uint32_t &value)
-{
-  my_id = value;
-}
-
 /*=============================================================================
  * VIRTUAL FUNCTIONS
  *============================================================================*/
 
 /*
- * Description: Virtual method for printing out the Item. Calls sub-methods
- *              for printing out the Item info and flags
+ * Description:
  *
  * Inputs: none
  * Output: none
@@ -297,58 +217,18 @@ uint32_t Item::getValue()
 }
 
 /*=============================================================================
- * PROTECTED FUNCTIONS
- *============================================================================*/
-
-/*
- * Description: Attempts to assign a Base item to the Item. This function
- *              can only be called ONCE per Item since once a base Item is
- *              set, the set base flag is set (which cannot be unset)
- *
- * Inputs: item_base - base item to be assigned to the item
- * Output: bool - true if base_item was unset before and is now not null
- */
-bool Item::setBase(Item* item_base)
-{
-  if (getFlag(ItemFlags::SET_BASE_ITEM))
-    return false;
-
-  if (item_base != nullptr)
-  {
-    base_item = item_base;
-    setFlag(ItemFlags::SET_BASE_ITEM, true);
-
-    return true;
-  }
-
-  return false;
-}
-
-/*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
 /*
- * Description: Evalates and returns whether the current Item is a base item.
- *              The current Item is a base item if the following conditions are
- *              met:
- * 
- *              I] A game_id [base item ID] is set to other than KUNSET_ID
- *             II] The Flag for SET_BASE_ITEM is set to true
- *            III] The base_item ptr is null
+ * Description: 
  *
- * Inputs: none
- * Output: bool - true if the current object is a base item
+ * Inputs:
+ * Output:
  */
 bool Item::isBaseItem()
 {
-  if (getFlag(ItemFlags::SET_BASE_ITEM))
-  {
-    std::cout << "Checking base Item ptr" << std::endl;
-    return (base_item == nullptr);
-  }
-  
-  return true;
+  return (base_item != nullptr);
 }
 
 /*
@@ -372,7 +252,6 @@ void Item::printFlags()
   std::cout << "SKILL_LEARNING: " << getFlag(ItemFlags::SKILL_LEARNING) << "\n";
   std::cout << "HEALING_ITEM: " << getFlag(ItemFlags::HEALING_ITEM) << "\n";
   std::cout << "RELIEVING_ITEM: " << getFlag(ItemFlags::RELIEVING_ITEM) << "\n";
-  std::cout << "SET_BASE_ITEM: " << getFlag(ItemFlags::SET_BASE_ITEM) << "\n";
   std::cout << "METALLIC: " << getMaterial(Material::METALLIC) << "\n";
   std::cout << "INSULATED: " << getMaterial(Material::INSULATED) << "\n";
   std::cout << "ANTIMATTER: " << getMaterial(Material::ANTIMATTER) << "\n";
@@ -444,18 +323,14 @@ std::string Item::getDescription()
 }
 
 /*
- * Description: Returns the game id (base item ID) of the current Item, if
- *              the Item is still a base Item.
+ * Description: Returns the game id (base item ID) of the current Item
  *
  * Inputs: none
- * Output: int - the game_id of the Item or kUNSET_ID, if it's not a base item
+ * Output: int - the game_id of the Item
  */
 int Item::getGameID()
 {
-  if (isBaseItem())
-    return game_id;
-
-  return kUNSET_ID;
+  return game_id;
 }
 
 /*
@@ -576,9 +451,6 @@ Sound* Item::getUseSound()
  */
 void Item::setBuffSet(const AttributeSet &new_buff_set)
 {
-  if (!(buff_set == new_buff_set))
-    setBase(nullptr);
-
   buff_set = new_buff_set;
 }
 
@@ -593,9 +465,6 @@ bool Item::setBriefDescription(const std::string &new_brief_description)
 {
   if (new_brief_description.size() <= StringDB::kMAX_BRIEF_DESC)
   {
-  	if (new_brief_description != brief_description)
-      setBase(nullptr);
-
     brief_description = new_brief_description;
 
     return true;
@@ -615,9 +484,6 @@ bool Item::setDescription(const std::string &new_description)
 {
   if (new_description.size() <= StringDB::kMAX_DESC)
   {
-  	if (new_description != description)
-      setBase(nullptr);
-
     description = new_description;
     
     return true;
@@ -635,13 +501,7 @@ bool Item::setDescription(const std::string &new_description)
  */
 void Item::setFlag(ItemFlags flag, const bool &set_value)
 {
-  auto temp_flags = flags;
-
   (set_value) ? (flags |= flag) : (flags &= ~flag);
-
-  if ((temp_flags & ItemFlags::SET_BASE_ITEM) == ItemFlags::SET_BASE_ITEM)
-    if (temp_flags != flags)
-      setBase(nullptr);
 }
 
  /*
@@ -653,12 +513,7 @@ void Item::setFlag(ItemFlags flag, const bool &set_value)
  */
 void Item::setMaterial(Material flag, const bool &set_value)
 {
-  auto temp_composition = composition;
-
   (set_value) ? (composition |= flag) : (composition &= ~flag);
-
-  if (composition != temp_composition)
-    setBase(nullptr);
 }
 
  /*
@@ -671,9 +526,6 @@ bool Item::setName(const std::string &new_name)
 {
   if (new_name.size() <= StringDB::kMAX_NAME)
   {
-    if (new_name != name)
-      setBase(nullptr);
-
     name = new_name;
 
     return true;
@@ -693,9 +545,6 @@ bool Item::setPrefix(const std::string &new_prefix)
 {
   if (new_prefix.size() <= StringDB::kMAX_PREFIX)
   {
-    if (new_prefix != prefix)
-      setBase(nullptr);
-
     prefix = new_prefix;
 
     return true;
@@ -712,9 +561,6 @@ bool Item::setPrefix(const std::string &new_prefix)
  */
 void Item::setOccasion(const ActionOccasion &new_occasion)
 {
-  if (new_occasion != occasion)
-    setBase(nullptr);
-
   occasion = new_occasion;
 }
 
@@ -729,9 +575,6 @@ bool Item::setMass(const double &new_mass)
 {
   if (new_mass >= kMIN_MASS && new_mass <= kMAX_MASS)
   {
-    if (new_mass != mass)
-      setBase(nullptr);
-
     mass = new_mass;
     
     return true;
@@ -749,9 +592,6 @@ bool Item::setMass(const double &new_mass)
  */
 bool Item::setThumbnail(Frame* new_thumbnail)
 {
-  if (new_thumbnail != thumbnail)
-     setBase(nullptr);
-
   thumbnail = new_thumbnail;
 
   return (new_thumbnail != nullptr);
@@ -766,9 +606,6 @@ bool Item::setThumbnail(Frame* new_thumbnail)
  */
 bool Item::setUseAnimation(Sprite* new_animation)
 {
-  if (new_animation != using_animation)
-    setBase(nullptr);
-
   using_animation = new_animation;
 
   return (new_animation != nullptr);
@@ -785,9 +622,6 @@ bool Item::setUseMessage(const std::string &new_message)
 {
   if (new_message.size() <= StringDB::kMAX_USE_MSG)
   {
-    if (new_message != using_message)
-      setBase(nullptr);
-
     using_message = new_message;
 
     return true;
@@ -805,9 +639,6 @@ bool Item::setUseMessage(const std::string &new_message)
  */
 bool Item::setUseSkill(Skill* new_skill)
 {
-  if (new_skill != using_skill)
-    setBase(nullptr);
-
   using_skill = new_skill;
 
   return (new_skill != nullptr);
@@ -822,9 +653,6 @@ bool Item::setUseSkill(Skill* new_skill)
  */
 bool Item::setUseSound(Sound* new_sound)
 {
-  if (new_sound != using_sound)
-    setBase(nullptr);
-
   using_sound = new_sound;
 
   return (new_sound != nullptr);
@@ -841,61 +669,10 @@ bool Item::setValue(const uint32_t &new_value)
 {
   if (new_value <= kMAX_VALUE)
   {
-  	if (new_value != value)
-  	  setBase(nullptr);
-
     value = new_value;
 
     return true;
   }
 
   return false;
-}
-
-/*=============================================================================
- * OPERATOR FUNCTIONS
- *============================================================================*/
-
- /*
- * Description: Overloaded assignment operator - copies source object into
- *              this using common copySelf() function after self-assignment 
- *              check and returns the copied object.
- *
- * Inputs: source - the object to be copied.
- * Output: Item& - return the copied object by ref.
- */
- Item& Item::operator=(const Item &source)
- {
-  /* Copy if not self-assignment */
-  if (this != &source)
-  {
-    copySelf(source);
-    setID(++id);
-  }
-
-  return *this;
- }
-
- /*
- * Description: Move assignment operator, unsets the current object then
- *              uses std::swap to swap the data of the object with the source
- *              object without calling copy constructor, then unsets the
- *              source object and returns the copied object by ref.
- *
- * Inputs: source - r.value ref of an Item
- * Output: Item& - copy of the r.value ref returned by ref
- */
-Item& Item::operator=(Item&& source)
-{
-  unsetAll(this);
-
-  /* Move-copy if not self-assignment */
-  if (this != &source)
-  {
-    swap(*this, source);
-    setID(++id);
-    unsetAll(&source);
-  }
-
-  return *this;
 }

@@ -25,6 +25,9 @@
 #include "Helpers.h"
 #include "Options.h"
 
+using std::begin;
+using std::end;
+
 class Game
 {
 public:

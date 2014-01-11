@@ -49,7 +49,6 @@ enum class ItemFlags
   SKILL_LEARNING = 1 << 9,
   HEALING_ITEM   = 1 << 10,
   RELIEVING_ITEM = 1 << 11,
-  SET_BASE_ITEM  = 1 << 12
 };
 
 /* Material flags describing the composition of an Item */
@@ -70,30 +69,29 @@ enum class Material
 
 class Item
 {
+  friend Flavour;
+  
 public:
-  /* Default Item constructor - constructs a basic Item object */
-  Item();
-
-  /* Copy constructor - constructs copy of base Item with unique ID */
-  Item(const Item &source);
-
-  /* Mvoe constructor - constructs copy of Item with r.value ref */
-  Item(Item&& source);
-
+  /* Constructs a T0-Bubby based on a flaour pointer */
   Item(Flavour* const source);
 
-  /* Base Item constructor - constructs an Item given a game ID and basics */
-  Item(const uint32_t &game_id, const std::string &name, const uint32_t &value,
-       Frame* thumbnail = nullptr, const double &mass = 0.0);
+  /* Constructs an item given a source pointer */
+  Item(Item* const source);
 
-  /* Annihilates an Item object */
-  virtual ~Item();
+  /* Base Item constructor - constructs an Item given a game ID and basics */
+  Item(const int32_t &game_id, const std::string &name, const uint32_t &value,
+       Frame* thumbnail = nullptr, const double &mass = 0.0);
 
 private:
   /* Static ID counter for the Item class */
   static int id;
 
 protected:
+
+  /* Unique and non-unique IDs for the Item */
+  const int game_id;
+  int my_id;
+
   /* Pointer to the Base Item, null if the Item has changed in any way */
   Item* base_item;
 
@@ -110,14 +108,8 @@ protected:
   /* Flag set for the type of the current item */
   ItemFlags flags;
 
-  /* Game ID (Base Item ID#) of the Item */
-  const int game_id;
-
   /* Mass of the Item */
   double mass;
-
-  /* The item-only ID of the current Item object */
-  int my_id;
 
   /* The name of the Item and an attached prefix (ex. Bottles) */
   std::string name;
@@ -148,14 +140,13 @@ protected:
   static const double   kMAX_MASS;       /* Maximum mass of an Item */
   static const double   kMIN_MASS;       /* Minimum mass */
   static const uint32_t kMAX_VALUE;      /* Maximum value of an Item */
-  static const int      kUNSET_ID;       /* Game_ID unset value */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
   /* Sets up the Item class with basic values */
-  void classSetup();
+  void setupClass();
 
   /* Copies a const ref source Item object to this object */
   void copySelf(const Item& source);
@@ -165,9 +156,6 @@ private:
 
   /* Unsets all the Item data for deletion */
   static void unsetAll(Item* object);
-
-  /* Assigns a unique ID to the Item */
-  void setID(const uint32_t &value);
 
 /*=============================================================================
  * VIRTUAL FUNCTIONS
@@ -184,13 +172,6 @@ public:
 
   /* Returns the value of the Item */
   virtual uint32_t getValue();
-
-/*=============================================================================
- * PROTECTED FUNCTIONS
- *============================================================================*/
-protected:
-  /* Assigns the base item pointer */
-  bool setBase(Item* item_base);
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
@@ -291,16 +272,6 @@ public:
 
   /* Attempts to set a new value for the Item */
   bool setValue(const uint32_t &new_value);
-
-/*=============================================================================
- * OPERATOR FUNCTIONS
- *============================================================================*/
-public:
-  /* Overloaded = operator for copy construction */
-  Item& operator=(const Item &source);
-
-  /* Overloaded move assignment operator */
-  Item& operator=(Item&& source);
 };
 
 #endif //ITEM_H
