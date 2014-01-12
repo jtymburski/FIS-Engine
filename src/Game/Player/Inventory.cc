@@ -497,12 +497,26 @@ void Inventory::print(bool simple)
     std::cout << "Equipment: " << equipments.size() << "/" << equip_limit
               << "\n";
   }
+  else
+  {
+    std::cout << "Bubbies:\n";
 
-  std::cout << "Bubbies:\n";
+    for (auto bubby : bubbies)
+      if (bubby != nullptr)
+        std::cout << bubby->getName() << "\n";
 
-  for (auto bubby : bubbies)
-    if (bubby != nullptr)
-      std::cout << bubby->getName();
+    std::cout << "\nEquipments:\n";
+
+    for (auto equipment : equipments)
+      if (equipment != nullptr)
+        std::cout << equipment->getName() << "\n";
+
+    std::cout << "\nItems:\n";
+
+    for (auto item : items)
+      if (item.first != nullptr)
+        std::cout << item.first->getName() << " " << item.second << "\n";
+  }
 }
 
 /* Removes a Bubby from the Inventory at a given index */
