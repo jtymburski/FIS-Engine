@@ -120,6 +120,14 @@ public:
 
   /* Unsets the texture, if one is set */
   void unsetTexture();
+
+/*=============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
+public:
+  /* Creates a right hand triangle, given the parameters and a renderer */
+  static bool renderRHTriangle(uint32_t x, uint32_t y, uint16_t height, 
+                               SDL_Renderer* renderer, bool reverse = false);
 };
 
 #endif // FRAME_H

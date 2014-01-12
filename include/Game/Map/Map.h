@@ -16,6 +16,7 @@
 
 #include "FileHandler.h"
 #include "Game/EventHandler.h"
+#include "Game/Map/ItemStore.h"
 #include "Game/Map/MapDialog.h"
 #include "Game/Map/MapInteractiveObject.h"
 #include "Game/Map/MapItem.h"
@@ -48,7 +49,10 @@ private:
   /* A reference blank event for setting events in the game */
   EventHandler* event_handler;
   
-  // /* The actual tiles that comprise a map, dynamically sized */
+  /* The item store menu */
+  ItemStore item_menu;
+
+  /* The actual tiles that comprise a map, dynamically sized */
   std::vector<std::vector<std::vector<Tile*>>> geography;
   uint16_t map_index;
   std::vector<Sprite*> tile_sprites;

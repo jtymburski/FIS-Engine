@@ -44,6 +44,7 @@ SOURCES=src/Application.cc \
         src/Frame.cc \
         src/Game/EventHandler.cc \
         src/Game/Game.cc \
+        src/Game/Map/ItemStore.cc \
         src/Game/Map/Map.cc \
         src/Game/Map/MapDialog.cc \
         src/Game/Map/MapInteractiveObject.cc \

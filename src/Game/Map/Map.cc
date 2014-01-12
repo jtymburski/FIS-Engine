@@ -73,21 +73,9 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   // paint_time = 0;
   // time_elapsed = 0;
 
-  // //setMinimumSize(2000, 2000);
-
-  // /* Set up the map displays */
+  /* Set up the map displays */
+  item_menu.setEventHandler(event_handler);
   map_dialog.setEventHandler(event_handler);
-  // //map_dialog.setFont(QFont("Times", 10));
-  // map_dialog.setDialogImage("sprites/Map/Overlay/dialog.png");
-  // map_dialog.setEventHandler(event_handler);
-  // map_dialog.setViewportDimension(running_config.getScreenWidth(), 
-                                  // running_config.getScreenHeight());
-
-  // /* Necessary connections for child functions */
-  // connect(&map_dialog, SIGNAL(setThingData(QList<int>)), 
-          // this, SLOT(getThingData(QList<int>)));
-  // connect(&map_dialog, SIGNAL(finishThingTarget()), 
-          // this, SLOT(finishThingTarget()));
 }
 
 /* Destructor function */
@@ -1138,6 +1126,11 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
     for(uint16_t i = 0; i < things.size(); i++)
       things[i]->setWhiteMask(white_mask.getTexture());
     
+    /* Load the item menu sprites - TODO: In file? */
+    item_menu.loadImageBackend("sprites/Overlay/item_store_left.png", 
+                               "sprites/Overlay/item_store_right.png", 
+                               renderer);
+
     /* Load map dialog sprites - TODO: In file? */
     map_dialog.loadImageConversation("sprites/Overlay/dialog.png", renderer);
     map_dialog.loadImageDialogShifts("sprites/Overlay/dialog_next.png", 
@@ -1237,7 +1230,8 @@ bool Map::render(SDL_Renderer* renderer)
       for(uint16_t j = tile_y_start; j < tile_y_end; j++)
         geography[map_index][i][j]->renderUpper(renderer, x_offset, y_offset);
     
-    /* Render the map dialog */
+    /* Render the map dialogs / pop-ups */
+    item_menu.render(renderer);
     map_dialog.render(renderer);
   }
   
@@ -1256,7 +1250,8 @@ bool Map::setConfiguration(Options* running_config)
     viewport.setSize(running_config->getScreenWidth(), 
                      running_config->getScreenHeight());
 
-    /* Update the map dialog information */
+    /* Update the dialogs with options information */
+    item_menu.setConfiguration(running_config);
     map_dialog.setConfiguration(running_config);
 
     return true;
@@ -1449,7 +1444,8 @@ bool Map::update(int cycle_time)
   for(uint16_t i = 0; i < things.size(); i++)
     things[i]->update(cycle_time, NULL);
   
-  /* Finally, update the viewport and dialog */
+  /* Finally, update the viewport and dialogs */
+  item_menu.update(cycle_time);
   map_dialog.update(cycle_time);
   updateTileSize();
   viewport.update();

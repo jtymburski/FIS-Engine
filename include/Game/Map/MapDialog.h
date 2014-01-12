@@ -261,7 +261,7 @@ public:
                         SDL_Renderer* renderer);
   bool loadImagePickupTopBottom(std::string path, SDL_Renderer* renderer);
 
-  /* Renders the Map Thing */
+  /* Renders the Map Dialog */
   bool render(SDL_Renderer* renderer);
 
   /* Sets the running configuration, from the options class */
@@ -276,7 +276,7 @@ public:
   /* Sets if the class control is paused */
   void setPaused(bool paused);
   
-  /* Updates the thing, called on the tick */
+  /* Updates the map dialog, called on the tick */
   void update(int cycle_time);
 };
 

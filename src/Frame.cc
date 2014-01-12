@@ -496,3 +496,30 @@ void Frame::unsetTexture()
     width = 0;
   }
 }
+
+/*=============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
+
+/* Creates a right hand triangle, given the parameters and a renderer */
+bool Frame::renderRHTriangle(uint32_t x, uint32_t y, uint16_t height, 
+                             SDL_Renderer* renderer, bool reverse)
+{
+  bool success = true;
+
+  for(uint16_t i = 0; i < height; i++)
+  {
+    SDL_Rect rect;
+    if(reverse)
+      rect.x = x - i;
+    else
+      rect.x = x;
+    rect.y = y + i;
+    rect.w = i;
+    rect.h = 1;
+
+    SDL_RenderFillRect(renderer, &rect);
+  }
+
+  return success;
+}
