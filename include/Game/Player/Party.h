@@ -37,9 +37,16 @@ enum class PartyState
 class Party
 {
 public:
-  Party(Person* main, PartyType party_type, Inventory* inv = nullptr);
+  /* Constructs a Party given a main character and a type of Party */
+  Party(const Person* main, const PartyType &type, 
+        const Inventory* inv = nullptr);
 
-  ~Party();
+  /* Constructs a Party given a vector of Person ptrs as members */
+  Party(const std::vector<const Person*> members, const PartyType &type,
+        const Inventory* inv = nullptr);
+
+  /* Annihilates a Party object */
+  ~Party() = default;
 
 private:
   /* The members who are currently in the Party */
@@ -64,24 +71,84 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Implements the battle use effect of a given item (by game_id) */
+  void battleUseItem(const uint32_t &game_id, const uint8_t &index);
+
+  /* Implements the menu use effect of a given item (by game_id) */
+  void menuUseItem(const uint32_t &game_id, const uint8_t &index);
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Attempts to add a person to the party */
   bool addMember(Person* new_member);
+ 
+  /* Clears all members of the party except the primary member */
+  bool clearParty();
 
-  bool removeMember(const uint32_t &index);
+  /* Evaluates whether the current party contains a boss */
+  bool hasBoss();
 
+  /* Evaluates whether the current party contains a final boss */
+  bool hasFinalBoss();
+
+  /* Evaluates whether the current party contains a mini boss */
+  bool hasMiniBoss();
+
+  /* Prints out the state of the Party */
+  void print(bool simple = false);
+
+  /* Attempts to a remove a member of the party by a given index */
+  bool removeMember(const uint8_t &index);
+
+  /* Attempts to remove a member of the party by a given string name */
+  bool removeMember(const std::string &name);
+
+  /* Uses an item (given by game_id) on a given member (index) of a use type */
+  bool useItem(const uint32_t &game_id, uint8_t index, ActionOccasion use_type);
+
+  /* Calculates and returns the average speed of the Party */
+  int32_t getAverageSpeed();
+
+  /* Returns a vector of indexes of all KO'd party members */
+  std::vector<uint32_t> getDeadMembers();
+
+  /* Evaluates and returns a given PartyState flag */
+  bool getFlag(const PartyState &test_flag);
+
+  /* Returns the pointer to the current inventory of the Party */
   Inventory* getInventory();
-  
+
+  /* Returns a vector of the indexes of all non-KO'd party members */
+  std::vector<uint32_t> getLivingMembers();
+
+  /* Returns the current maximum size of the party */
   uint32_t getMaxSize();
 
-  Person* getMember(const uint32_t &index);
+  /* Obtains a ptr to a member of a given index, if the index is valid */
+  Person* getMember(const uint8_t &index);
 
+  /* Returns the string name a party member at a given index, if valid */
+  std::string getMemberName(const uint8_t &index);
+
+  /* Returns the enumerated type of the Party */
   PartyType getPartyType();
 
+  /* Calculates and returns the total speed of the Party */
+  int32_t getTotalSpeed();
 
+  /* Attempts to assign a new maximum size of the Party */
+  bool setMaxSize(const uint8_t &new_max_size);
+
+  /* Assigns a new inventory to the Party */
+  bool setInventory(Inventory* new_inventory);
+
+  /* Attempts to assign a new primary member of the Party */
+  bool setMainMember(const uint8_t &new_main);
+
+  /* Assigns a given PartyState flag a given value */
+  void setFlag(const PartyFlag &flag, const bool set_value = true);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS

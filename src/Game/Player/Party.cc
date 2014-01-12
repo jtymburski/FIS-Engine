@@ -1,8 +1,10 @@
 /*******************************************************************************
-* Class Name: x [Implementation]
-* Date Created: 
-* Inheritance: 
-* Description:
+* Class Name: Party [Implementation]
+* Date Created: January 11th, 2014
+* Inheritance: None 
+* Description: Party is an object designed to hold a number of persons, such as
+*              your sleuth (maximum of five members) or the members of your
+*              barracks on the ship, or a group of foes you will face in battle
 *
 * Notes
 * -----
@@ -25,6 +27,21 @@
  *
  * Inputs:
  */
+Party::Party(const Person* main, const PartyType &type,
+             const Inventory* inv)
+  : party_type(party_type)
+  , inventory(inv)
+{
+
+}
+
+Party::Party(const std::vector<const Person*> members, const PartyType &type, 
+             const Inventory* inv)
+  : party_type(party_type)
+  , inventory(inv)
+{
+
+}
 
 /*
  * Description:
@@ -40,23 +57,185 @@
  * Inputs:
  * Output:
  */
+/* Implements the battle use effect of a given item (by game_id) */
+void Party::battleUseItem(const uint32_t &game_id, const uint8_t &index)
+{
 
-/*=============================================================================
- * VIRTUAL FUNCTIONS
- *============================================================================*/
+}
 
-/*=============================================================================
- * PROTECTED FUNCTIONS
- *============================================================================*/
+/* Implements the menu use effect of a given item (by game_id) */
+void Party::menuUseItem(const uint32_t &game_id, const uint8_t &index)
+{
+
+}
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
- /*=============================================================================
+/* Attempts to add a person to the party */
+bool Party::addMember(Person* new_member)
+{
+
+}
+
+/* Clears all members of the party except the primary member */
+bool Party::clearParty()
+{
+
+}
+
+/* Evaluates whether the current party contains a boss */
+bool Party::hasBoss()
+{
+
+}
+
+/* Evaluates whether the current party contains a final boss */
+bool Party::hasFinalBoss()
+{
+
+}
+
+/* Evaluates whether the current party contains a mini boss */
+bool Party::hasMiniBoss()
+{
+
+}
+
+/* Prints out the state of the Party */
+void Paryt::print(bool simple = false)
+{
+
+}
+
+/* Attempts to a remove a member of the party by a given index */
+bool Party::removeMember(const uint8_t &index)
+{
+
+}
+
+/* Attempts to remove a member of the party by a given string name */
+bool Party::removeMember(const std::string &name)
+{
+
+}
+
+/* Uses an item (given by game_id) on a given member (index) of a use type */
+bool Party::useItem(const uint32_t &game_id, const uint8_t &index, 
+                    const ActionOccasion &use_type)
+{
+
+}
+
+/* Calculates and returns the average speed of the Party */
+int32_t Party::getAverageSpeed()
+{
+
+}
+
+/* Returns a vector of indexes of all KO'd party members */
+std::vector<uint32_t> Party::getDeadMembers()
+{
+
+}
+
+/* Evaluates and returns a given PartyState flag */
+bool Party::getFlag(const PartyState &test_flag)
+{
+
+}
+
+/* Returns the pointer to the current inventory of the Party */
+Inventory* Party::getInventory()
+{
+
+}
+
+/* Returns a vector of the indexes of all non-KO'd party members */
+std::vector<uint32_t> Party::getLivingMembers()
+{
+
+}
+
+/* Returns the current maximum size of the party */
+uint32_t Party::getMaxSize()
+{
+
+}
+
+/* Obtains a ptr to a member of a given index, if the index is valid */
+Person* Party::getMember(const uint8_t &index)
+{
+
+}
+
+/* Returns the string name a party member at a given index, if valid */
+std::string Party::getMemberName(const uint8_t &index)
+{
+
+}
+
+/* Returns the enumerated type of the Party */
+PartyType Party::getPartyType()
+{
+
+}
+
+/* Calculates and returns the total speed of the Party */
+int32_t Party::getTotalSpeed()
+{
+
+}
+
+/* Attempts to assign a new maximum size of the Party */
+bool Party::setMaxSize(const uint8_t &new_max_size)
+{
+
+}
+
+/* Assigns a new inventory to the Party */
+bool Party::setInventory(Inventory* new_inventory)
+{
+
+}
+
+/* Attempts to assign a new primary member of the Party */
+bool Party::setMainMember(const uint8_t &new_main)
+{
+
+}
+
+/* Assigns a given PartyState flag a given value */
+void Party::setFlag(const PartyFlag &flag, const bool set_value = true)
+{
+
+}
+
+/*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
 
-/*=============================================================================
- * OPERATOR FUNCTIONS
- *============================================================================*/
+/* Returns the total maximum size of members */
+uint8_t Party::getMaxMembers()
+{
+
+}
+
+/* Returns the maximum size of the Bearacks */
+uint8_t Party::getMaxBearacks()
+{
+
+}
+
+/* Returns the maximum size of the Sleuth */
+uint8_t Party::getMaxSleuth()
+{
+
+}
+
+/* Returns the maximum size of the foes */
+uint8_t Party::getMaxFoes()
+{
+  
+}
