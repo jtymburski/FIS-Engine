@@ -374,6 +374,8 @@ float Person::getCurveModifier(const ElementCurve &curve,
 
   if (index < kSECD_MODS.size())
     return kSECD_MODS.at(index);
+
+  return 0;
 }
 
 /*=============================================================================
@@ -485,11 +487,15 @@ void Person::print(const bool &simple, const bool &equips,
     std::cout << "Secondary: " << elementToString(secondary) << "\n";
     std::cout << "[void]Prim Curve: " << "\n";
     std::cout << "[void]Secd Curve: " << "\n";
+    
     std::cout << "Base Stats: " << base_stats.print(true) << "\n";
     std::cout << "Base Max: " << base_stats.print(true) << "\n";
     std::cout << "Curr Stats: " << curr_stats.print(true) << "\n";
     std::cout << "Curr Max Stats: " curr_max_stats.print(true) << "\n";
-    std::cout << "Temp Max Stats: " << temp_max_stats.print(true) << "\n";
+    std::cout << "Temp Max Stats: ";
+    temp_max_stats.print(true)
+    std::cout << "\n";
+
     std::cout << "Dmg Modifier: " << dmg_mod << "\n";
     std::cout << "Exp Modifier: " << exp_mod << "\n";
     std::cout << "Item Drops: " << item_drops.size() << "\n";
@@ -516,43 +522,45 @@ void Person::print(const bool &simple, const bool &equips,
 
     if (flags)
     {
-      std::cout << "IN_BATTLE: " << getPFlag(PState::IN_BATTLE) << "\n";
-      std::cout << "ALIVE: " << getPFlag(PState::ALIVE) << "\n";
-      std::cout << "ATK_ENABLED: " << getPFlag(PState::ATK_ENABLED) << "\n";
-      std::cout << "SKL_ENABLED: " << getPFlag(PState::SKL_ENABLED) << "\n";
-      std::cout << "ITM_ENABLED: " << getPFlag(PState::ITM_ENABLED) << "\n";
-      std::cout << "DEF_ENABLED: " << getPFlag(PState::DEF_ENABLED) << "\n";
-      std::cout << "GRD_ENABLED: " << getPFlag(PState::GRD_ENABLED) << "\n";
-      std::cout << "IMP_ENABLED: " << getPFlag(PState::IMP_ENABLED) << "\n";
-      std::cout << "RUN_ENABLED: " << getPFlag(PState::RUN_ENABLED) << "\n";
-      std::cout << "PAS_ENABLED: " << getPFlag(PState::PAS_ENABLED) << "\n";
-      std::cout << "SKIP_NEXT_TURN: " << getPFlag(PState::SKIP_NEXT_TURN) 
+      std::cout << "IN_BATTLE: " << getBFlag(BState::IN_BATTLE) << "\n";
+      std::cout << "ALIVE: " << getBFlag(BState::ALIVE) << "\n";
+      std::cout << "ATK_ENABLED: " << getBFlag(BState::ATK_ENABLED) << "\n";
+      std::cout << "SKL_ENABLED: " << getBFlag(BState::SKL_ENABLED) << "\n";
+      std::cout << "ITM_ENABLED: " << getBFlag(BState::ITM_ENABLED) << "\n";
+      std::cout << "DEF_ENABLED: " << getBFlag(BState::DEF_ENABLED) << "\n";
+      std::cout << "GRD_ENABLED: " << getBFlag(BState::GRD_ENABLED) << "\n";
+      std::cout << "IMP_ENABLED: " << getBFlag(BState::IMP_ENABLED) << "\n";
+      std::cout << "RUN_ENABLED: " << getBFlag(BState::RUN_ENABLED) << "\n";
+      std::cout << "PAS_ENABLED: " << getBFlag(BState::PAS_ENABLED) << "\n";
+      std::cout << "SKIP_NEXT_TURN: " << getBFlag(BState::SKIP_NEXT_TURN) 
                 << "\n";
-      std::cout << "MISS_NEXT_TARGET: " << getPFlag(PState::MISS_NEXT_TARGET) 
+      std::cout << "MISS_NEXT_TARGET: " << getBFlag(BState::MISS_NEXT_TARGET) 
                 << "\n";
-      std::cout << "NEXT_ATK_NO_EFFECT: " << getPFlag(PState::NEXT_ATK_NO_EFFECT) 
+      std::cout << "NEXT_ATK_NO_EFFECT: " << getBFlag(BState::NEXT_ATK_NO_EFFECT) 
                 << "\n";
-      std::cout << "IS_BUBBY: " << getPFlag(PState::IS_BUBBY) << "\n";
-      std::cout << "TWO_SKILLS: " << getPFlag(PState::TWO_SKILLS) << "\n";
-      std::cout << "THREE_SKILLS: " << getPFlag(PState::THREE_SKILLS) << "\n";
-      std::cout << "HALF_COST: " << getPFlag(PState::HALF_COST) << "\n";
-      std::cout << "REFLECT: " << getPFlag(PState::REFLECT) << "\n";
-      std::cout << "BOND: " << getPFlag(PState::BOND) << "\n";
-      std::cout << "BONDED: " << getPFlag(PState::BONDED) << "\n";
-      std::cout << "REVIVABLE: " << getPFlag(PState::REVIVABLE) << "\n";
-      std::cout << "SLEUTH: " << getBFlaG(BState::SLEUTH) << "\n";
-      std::cout << "BEARACKS: " << getBFlaG(BState::BEARACKS) << "\n";
-      std::cout << "MAIN: " << getBFlaG(BState::MAIN) << "\n";
-      std::cout << "FINAL: " << getBFlaG(BState::FINAL) << "\n";
-      std::cout << "BOSS: " << getBFlaG(BState::BOSS) << "\n";
-      std::cout << "MINI_BOSS: " << getBFlaG(BState::MINI_BOSS) << "\n";
-      std::cout << "CAN_GAIN_EXP: " << getBFlaG(BState::CAN_GAIN_EXP) << "\n";
-      std::cout << "CAN_LEVEL_UP: " << getBFlaG(BState::CAN_LEVEL_UP) << "\n";
-      std::cout << "CAN_LEARN_SKILLS: " << getBFlaG(BState::CAN_LEARN_SKILLS) 
+      std::cout << "IS_BUBBY: " << getBFlag(BState::IS_BUBBY) << "\n";
+      std::cout << "TWO_SKILLS: " << getBFlag(BState::TWO_SKILLS) << "\n";
+      std::cout << "THREE_SKILLS: " << getBFlag(BState::THREE_SKILLS) << "\n";
+      std::cout << "HALF_COST: " << getBFlag(BState::HALF_COST) << "\n";
+      std::cout << "REFLECT: " << getBFlag(BState::REFLECT) << "\n";
+      std::cout << "BOND: " << getBFlag(BState::BOND) << "\n";
+      std::cout << "BONDED: " << getBFlag(BState::BONDED) << "\n";
+      std::cout << "REVIVABLE: " << getBFlag(BState::REVIVABLE) << "\n";
+      
+
+      std::cout << "SLEUTH: " << getPFlag(PState::SLEUTH) << "\n";
+      std::cout << "BEARACKS: " << getPFlag(PState::BEARACKS) << "\n";
+      std::cout << "MAIN: " << getPFlag(PState::MAIN) << "\n";
+      std::cout << "FINAL: " << getPFlag(PState::FINAL) << "\n";
+      std::cout << "BOSS: " << getPFlag(PState::BOSS) << "\n";
+      std::cout << "MINI_BOSS: " << getPFlag(PState::MINI_BOSS) << "\n";
+      std::cout << "CAN_GAIN_EXP: " << getPFlag(PState::CAN_GAIN_EXP) << "\n";
+      std::cout << "CAN_LEVEL_UP: " << getPFlag(PState::CAN_LEVEL_UP) << "\n";
+      std::cout << "CAN_LEARN_SKILLS: " << getPFlag(PState::CAN_LEARN_SKILLS) 
                 << "\n";
-      std::cout << "CAN_CHANGE_EQUIP: " << getBFlaG(BState::CAN_CHANGE_EQUIP) 
+      std::cout << "CAN_CHANGE_EQUIP: " << getPFlag(PState::CAN_CHANGE_EQUIP) 
                 << "\n";
-      std::cout << "MAX_LVL: " << getBFlaG(BState::MAX_LVL) << "\n";
+      std::cout << "MAX_LVL: " << getPFlag(PState::MAX_LVL) << "\n";
     }
   }
 }
@@ -609,7 +617,7 @@ uint32_t Person::getMyID()
 /* Evaluates and returns the state of a given BState flag */
 bool Person::getBFlag(const BState &test_flag)
 {
-  return static_cast<bool>((person_flags & test_flag) == battle_flags); 
+  return static_cast<bool>((battle_flags & test_flag) == battle_flags); 
 }
 
 /* Evaluates and returns the state of a given PState flag */
@@ -776,14 +784,14 @@ uint32_t Person::getTotalExp()
 /* Grabs the curr first person frame (based on BUBBIFIED flags) */
 Frame* Person::getFirstPerson()
 {
-  if (getPFlag(PState::BUBBIFIED))
+  if (getBFlag(BState::IS_BUBBY))
     return fp_bubbified_sprite;
   return first_person;
 }
 
 Frame* Person::getThirdPerson()
 {
-  if (getPFlag(PState::BUBBIFIED))
+  if (getBFlag(BState::IS_BUBBY))
     return tp_bubbified_sprite;
   return third_person;
 }
@@ -803,7 +811,7 @@ void Person::setBFlag(const BState &flag, const bool set_value)
 /* Evaluates and returns a given person state flag */
 void Person::setPFlag(const PState &flag, const bool set_value)
 {
-  (set_value) ? : (person_flags |= flag) : (person_flags &= ~flag);  
+  (set_value) ? (person_flags |= flag) : (person_flags &= ~flag);  
 }
 
 /* Assigns a new curr Attr set */
@@ -822,9 +830,9 @@ bool Person::setCurr(const AttributeSet& new_curr_set)
 /* Assigns a new curr max Attr set */
 bool Person::setCurrMax(const AttributeSet& new_curr_max_set)
 {
-  if (curr_max_set.getFlag(AttributeState::PERSONAL))
+  if (curr_max_stats.getFlag(AttributeState::PERSONAL))
   {
-    curr_max_stats = new_curr_set;
+    curr_max_stats = new_curr_max_set;
 
     return true;
   }
@@ -848,7 +856,7 @@ bool Person::setTemp(const AttributeSet& new_temp_set)
 /* Assigns a new damage modifier value */
 bool Person::setDmgMod(const float &new_dmg_mod)
 {
-  if (Helpers::isInRange(new_dmg_mod, kMIN_DMG_MOD, kMAX_DMG_MOD))
+  if (Helpers::isInRange(new_dmg_mod, kMIN_DMG_MODI, kMAX_DMG_MODI))
   {
     dmg_mod = new_dmg_mod;
 
@@ -859,9 +867,9 @@ bool Person::setDmgMod(const float &new_dmg_mod)
 }
 
 /* Assigns a new experience modifier value */
-bool setExpMod(const float &new_exp_mod)
+bool Person::setExpMod(const float &new_exp_mod)
 {
-  if (Helpers::isInRange(new_exp_mod, kMIN_EXP_MOD, kMAX_EXP_MOD))
+  if (Helpers::isInRange(new_exp_mod, kMIN_EXP_MODI, kMAX_EXP_MODI))
   {
     exp_mod = new_exp_mod;
 
@@ -874,13 +882,13 @@ bool setExpMod(const float &new_exp_mod)
 /* Attempts to assign a given equipment slot a given equipment pointer */
 bool Person::setEquip(const EquipSlots &slot, Equipment* const new_equip)
 {
-  if (new_equip == nullptr || slot != = new_equip->getEquipSlot())
+  if (new_equip == nullptr || slot != new_equip->getEquipSlot())
     return false;
 
   if (new_equip->getEquipFlag(EquipState::EQUIPPED))
     return false;
 
-  if (new_equip.getEquipFlag(EquipState::TWO_HANDED)
+  if (new_equip.getEquipFlag(EquipState::TWO_HANDED))
   {
     if (getEquip(EquipSlots::LARM) == nullptr && 
         getEquip(EquipSlots::RARM) == nullptr)
@@ -890,7 +898,9 @@ bool Person::setEquip(const EquipSlots &slot, Equipment* const new_equip)
     }
   }
   else
+  {
     getEquip(slot) = new_equip;
+  }
 
   return true;
 }
@@ -936,8 +946,8 @@ void Person::setSprites(Frame* const new_fp, Frame* const new_tp,
 {
   first_person = new_fp;
   third_person = new_tp;
-  first_person_bubby = new_fp_bubby;
-  third_person_bubby = new_tp_bubby;
+  fp_bubbified_sprite = new_fp_bubby;
+  tp_bubbified_sprite = new_tp_bubby;
 }
 
 /*=============================================================================

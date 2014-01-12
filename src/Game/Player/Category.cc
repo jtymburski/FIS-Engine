@@ -22,7 +22,10 @@
  * CONSTANTS - See .h file for description
  *============================================================================*/
 
-bool Category::attr_set_built = false;
+bool Category::attr_sets_built = false;
+
+AttributeSet Category::max_stats = AttributeSet();
+AttributeSet Category::min_stats = AttributeSet();
 
 const std::vector<int> Category::kMIN_VALUES =
   {50, 15,  7,  7,
@@ -55,7 +58,7 @@ Category::Category(const std::string &name)
   , name(StringDB::kDEFAULT_CAT_NAME)
   , skill_set(nullptr)
 {
-  if (!attr_set_built)
+  if (!attr_sets_built)
     buildAttrSets();
 
   cleanUpStats();
@@ -71,12 +74,12 @@ Category::Category(const std::string &name, const std::string &denonym,
   	               SkillSet* const skills)
   : base_stats(base_stats)
   , top_stats(top_stats)
-  , description(kDEFAULT_CAT_DESC)
+  , description(StringDB::kDEFAULT_CAT_DESC)
   , denonym(denonym)
   , name(name)
   , skill_set(skills)
 {
-  if (!attr_set_built)
+  if (!attr_sets_built)
     buildAttrSets();
 
   cleanUpStats();
@@ -146,13 +149,13 @@ bool Category::removeImmunity(const Infliction &rem_immunity)
   return false;
 }
 
-void print(const bool &simple)
+void Category::print(const bool &simple)
 {
   std::cout << "--- Category ---\n";
   std::cout << "Name: " << name << "\n";
   std::cout << "Description: " << description << "\n";
   std::cout << "Denonym: " << denonym << "\n";
-  std::cout << "Skill Set? " << (skill_Set != nullptr) << "\n";
+  std::cout << "Skill Set? " << (skill_set != nullptr) << "\n";
   std::cout << "Attr Sets Built? " << attr_sets_built << "\n";
   std::cout << "Immunities Size: " << immunities.size() << "\n";
   

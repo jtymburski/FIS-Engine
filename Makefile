@@ -57,11 +57,12 @@ SOURCES=src/Application.cc \
         src/Game/Map/Tile.cc \
         src/Game/Player/Action.cc \
         src/Game/Player/AttributeSet.cc \
+        src/Game/Player/Category.cc \
         src/Game/Player/Bubby.cc \
         src/Game/Player/Equipment.cc \
         src/Game/Player/Flavour.cc \
-        src/Game/Player/Item.cc \
         src/Game/Player/Inventory.cc \
+        src/Game/Player/Item.cc \
         src/Game/Player/Signature.cc \
         src/Game/Player/Skill.cc \
         src/Game/Player/SkillSet.cc \
