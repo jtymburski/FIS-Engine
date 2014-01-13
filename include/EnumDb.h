@@ -250,21 +250,6 @@ enum class EquipSlots : std::uint8_t
 };
 
 /*
- * Description: Possible states of sorting for inventory items
- */
-enum class ObjectSorts : std::uint8_t
-{ 
-  UNSORTED,
-  ID,
-  NAME,
-  FLAVOUR,
-  LEVEL,
-  VALUE,
-  MASS,
-  VALUEPERMASS
-};
-
-/*
  * Description: Infliction enumeration represents the possible ailments / 
  *              status buffs that an actor can have inflicted upon them
  *
@@ -312,6 +297,31 @@ enum class Infliction : std::uint64_t
   METATETHER,
   STUBULATE,
   INVALID
+};
+
+enum class ItemCategory : std::uint8_t
+{
+  NOCATEGORY,
+  BUBBY,
+  EQUIPMENT,
+  KEYITEM,
+  MONEY,
+  NORMALITEM
+};
+
+/*
+ * Description: Possible states of sorting for inventory items
+ */
+enum class ObjectSorts : std::uint8_t
+{ 
+  UNSORTED,
+  ID,
+  NAME,
+  FLAVOUR,
+  LEVEL,
+  VALUE,
+  MASS,
+  VALUEPERMASS
 };
 
 /*
@@ -362,6 +372,19 @@ enum class SkillSorts : std::uint32_t
   POINT_VALUE,
   LEVEL_REQ,
   ENABLED
+};
+
+/* The window display classifier to define how it's displayed:
+ *  OFF - not showing
+ *  SHOWING - rising from the bottom
+ *  ON - fully displayed
+ *  HIDING - lowering to the bottom */
+enum class WindowStatus : std::uint8_t
+{
+  OFF, 
+  SHOWING, 
+  ON, 
+  HIDING
 };
 
 /*============================================================================

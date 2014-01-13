@@ -150,18 +150,17 @@ void MapDialog::clearData()
   conversation_waiting = false;
   dialog_alpha = kOPACITY_MAX;
   dialog_mode = DISABLED;
-  dialog_status = OFF;
+  dialog_status = WindowStatus::OFF;
   dialog_offset = 0.0;
   dialog_option = 0;
   dialog_option_top = 0;
-  dialog_status = OFF;
   event_handler = NULL;
   font_normal = NULL;
   font_title = NULL;
   notification_time = 0;
   paused = false;
   pickup_offset = 0.0;
-  pickup_status = OFF;
+  pickup_status = WindowStatus::OFF;
   pickup_time = 0;
   pickup_update = false;
   system_options = NULL;
@@ -554,7 +553,7 @@ void MapDialog::setupNotification(SDL_Renderer* renderer)
   frame_bottom.setTexture(texture);
   dialog_mode = NOTIFICATION;
   dialog_offset = 0.0;
-  dialog_status = SHOWING;
+  dialog_status = WindowStatus::SHOWING;
   notification_time = to_display.time_visible;
 }
 
@@ -644,13 +643,13 @@ void MapDialog::setupPickup(SDL_Renderer* renderer, bool update)
   
   if(!update)
   {
-    pickup_status = SHOWING;
+    pickup_status = WindowStatus::SHOWING;
     pickup_offset = 0.0;
     pickup_time = pickup.time_visible;
   }
   else
   {
-    if(pickup_status == ON)
+    if(pickup_status == WindowStatus::ON)
       pickup_offset = frame_right.getWidth();
   }
 }
@@ -856,7 +855,7 @@ bool MapDialog::initPickup(Frame* thing_image, int thing_count,
     
     /* Check if it's the head of the list and it's hiding. If so, don't add to
      * existing */
-    if(notification_index == 0 && pickup_status == HIDING)
+    if(notification_index == 0 && pickup_status == WindowStatus::HIDING)
       notification_found = false;
     
     /* If the notification is found, update the current one */
@@ -866,7 +865,7 @@ bool MapDialog::initPickup(Frame* thing_image, int thing_count,
       
       /* If it is the head of the list and it's currently being shown, reset
        * time */
-      if(notification_index == 0 && pickup_status != OFF)
+      if(notification_index == 0 && pickup_status != WindowStatus::OFF)
         pickup_time = pickup_queue[notification_index].time_visible;
         
       pickup_update = true;
@@ -988,7 +987,7 @@ void MapDialog::keyDownEvent(SDL_KeyboardEvent event)
   {
     if(event.keysym.sym == SDLK_SPACE && event.repeat == 0)
     {
-      if(isConversationActive() && dialog_status == ON)
+      if(isConversationActive() && dialog_status == WindowStatus::ON)
       {
         uint16_t text_bottom = text_top + kTEXT_LINES;
         /* If the dialog letters are being shifted, finish the shift */
@@ -1012,7 +1011,7 @@ void MapDialog::keyDownEvent(SDL_KeyboardEvent event)
         /* Otherwise, if end of conversation is reached, start hiding it */
         else if(conversation_info.next.size() == 0)
         {
-          dialog_status = HIDING;
+          dialog_status = WindowStatus::HIDING;
           executeEvent();
         }
         /* Otherwise, there is a next conversation. Proceed */
@@ -1030,7 +1029,7 @@ void MapDialog::keyDownEvent(SDL_KeyboardEvent event)
           {
             executeEvent();
             if(conversation_info.next.size() == 0)
-              dialog_status = HIDING;
+              dialog_status = WindowStatus::HIDING;
             else
             {
               Conversation new_convo2 = conversation_info.next[0];
@@ -1230,7 +1229,7 @@ bool MapDialog::render(SDL_Renderer* renderer)
 
     if(conversation_ready)
     {
-      dialog_status = SHOWING;
+      dialog_status = WindowStatus::SHOWING;
       dialog_offset = 0.0;
     }
     conversation_ready = false;
@@ -1284,7 +1283,7 @@ bool MapDialog::render(SDL_Renderer* renderer)
     x_index += kMARGIN_SIDES;
     y_index = system_options->getScreenHeight() - img_convo.getHeight() 
                                                 + kMARGIN_TOP;
-    if(dialog_status == ON)
+    if(dialog_status == WindowStatus::ON)
     {
       /* Get the line offset, for alpha rendering */
       float line_offset = 0.0;
@@ -1407,11 +1406,11 @@ bool MapDialog::render(SDL_Renderer* renderer)
   }
   
   /* Setup (if applicable) and render the pickup portion */
-  if(pickup_status == OFF && !pickup_queue.empty())
+  if(pickup_status == WindowStatus::OFF && !pickup_queue.empty())
   {
     setupPickup(renderer);
   }
-  if(pickup_status != OFF)
+  if(pickup_status != WindowStatus::OFF)
   {
     /* If the pickup needs an update, update it first */
     if(pickup_update)
@@ -1526,15 +1525,15 @@ void MapDialog::update(int cycle_time)
     if(dialog_alpha == 0)
     {
       /* Complete the animation sequence if it's occurring during a pause */
-      if(dialog_status == HIDING)
+      if(dialog_status == WindowStatus::HIDING)
         dialog_offset = 0.0;
-      else if(dialog_status == SHOWING)
+      else if(dialog_status == WindowStatus::SHOWING)
         dialog_offset = frame_bottom.getHeight();
         
       /* Complete the pickup animation sequence */
-      if(pickup_status == HIDING)
+      if(pickup_status == WindowStatus::HIDING)
        pickup_offset = 0.0;
-      else if(pickup_status == SHOWING)
+      else if(pickup_status == WindowStatus::SHOWING)
        pickup_offset = frame_right.getWidth();
     }
   }
@@ -1555,12 +1554,12 @@ void MapDialog::update(int cycle_time)
   if(!paused && dialog_alpha == kOPACITY_MAX)
   {
     /* If hiding, shift the display onto the screen */
-    if(dialog_status == HIDING)
+    if(dialog_status == WindowStatus::HIDING)
     {
       dialog_offset -= cycle_time / kSHIFT_TIME;
       if(dialog_offset <= 0.0)
       {
-        dialog_status = OFF;
+        dialog_status = WindowStatus::OFF;
         dialog_offset = 0.0;
         
         /* Clean up conversation */
@@ -1592,29 +1591,29 @@ void MapDialog::update(int cycle_time)
       }
     }
     /* If showing, shift the display onto the screen */
-    else if(dialog_status == SHOWING)
+    else if(dialog_status == WindowStatus::SHOWING)
     {
       dialog_offset += cycle_time / kSHIFT_TIME; // ~4.5 @ 16.666 ms
       if(dialog_offset >= frame_bottom.getHeight())
       {
-        dialog_status = ON;
+        dialog_status = WindowStatus::ON;
         dialog_offset = frame_bottom.getHeight();
       }
     }
     /* If ON, do action appropriate to the dialog mode */
-    else if(dialog_status == ON)
+    else if(dialog_status == WindowStatus::ON)
     {
       /* This controls how long the notification box is displayed */
       if(dialog_mode == NOTIFICATION)
       {
         if(conversation_ready)
         {
-          dialog_status = HIDING;
+          dialog_status = WindowStatus::HIDING;
         }
         else if(cycle_time >= notification_time)
         {
           notification_time = 0;
-          dialog_status = HIDING;
+          dialog_status = WindowStatus::HIDING;
         }
         else
         {
@@ -1688,12 +1687,12 @@ void MapDialog::update(int cycle_time)
     }
     
     /* The portion that updates the pickup notification - if hiding */
-    if(pickup_status == HIDING)
+    if(pickup_status == WindowStatus::HIDING)
     {
       pickup_offset -= cycle_time * 1.0 / kSHIFT_TIME;
       if(pickup_offset <= 0.0)
       {
-        pickup_status = OFF;
+        pickup_status = WindowStatus::OFF;
         pickup_offset = 0.0;
         
         /* Remove from queue since completed */
@@ -1701,22 +1700,22 @@ void MapDialog::update(int cycle_time)
       }
     }
     /* If showing, shift it out until fully visible */
-    else if(pickup_status == SHOWING)
+    else if(pickup_status == WindowStatus::SHOWING)
     {
       pickup_offset += cycle_time / kSHIFT_TIME;
       if(pickup_offset >= frame_right.getWidth())
       {
-        pickup_status = ON;
+        pickup_status = WindowStatus::ON;
         pickup_offset = frame_right.getWidth();
       }
     }
     /* If visible, display for the duration as set of the pickup time */
-    else if(pickup_status == ON)
+    else if(pickup_status == WindowStatus::ON)
     {
       if(cycle_time > pickup_time)
       {
         pickup_time = 0;
-        pickup_status = HIDING;
+        pickup_status = WindowStatus::HIDING;
       }
       else
       {

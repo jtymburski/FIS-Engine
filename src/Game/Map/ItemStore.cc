@@ -21,7 +21,9 @@
 const uint16_t ItemStore::kBACKEND_RIGHT_X = 119;
 const uint16_t ItemStore::kBACKEND_RIGHT_Y = 330;
 const uint8_t ItemStore::kBACKEND_TITLE_HEIGHT = 42;
+const uint8_t ItemStore::kGRID_ALPHA = 64;
 const uint8_t ItemStore::kGRID_HEIGHT = 4;
+const uint8_t ItemStore::kGRID_SIZE = 8;
 const uint8_t ItemStore::kGRID_WIDTH = 5;
 const uint8_t ItemStore::kTILE_SIZE = 64;
 
@@ -63,6 +65,7 @@ void ItemStore::clearData()
 {
   event_handler = NULL;
   font_title = NULL;
+  store_status = WindowStatus::OFF;
   system_options = NULL;
 }
 
@@ -163,8 +166,10 @@ void ItemStore::setupMainView(SDL_Renderer* renderer, std::string title)
     SDL_RenderFillRect(renderer, &rect);
 
     /* Triangles around name */
-    Frame::renderRHTriangle(rect.x, rect.y, kBACKEND_TITLE_HEIGHT, renderer, true);
-    Frame::renderRHTriangle(rect.x + rect.w, rect.y, kBACKEND_TITLE_HEIGHT, renderer);
+    Frame::renderRHTriangle(rect.x, rect.y, kBACKEND_TITLE_HEIGHT, 
+                            renderer, true);
+    Frame::renderRHTriangle(rect.x + rect.w, rect.y, kBACKEND_TITLE_HEIGHT, 
+                            renderer);
 
     /* Name text */
     title_text.render(renderer, rect.x, 
@@ -209,12 +214,69 @@ void ItemStore::setupMainView(SDL_Renderer* renderer, std::string title)
   int grid_y = (img_backend_left.getHeight() - kGRID_HEIGHT * kTILE_SIZE) / 2;
   if(!title.empty())
     grid_y += kBACKEND_TITLE_HEIGHT;
-  SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-  for(uint8_t i = 0; i <= kGRID_WIDTH; i++)
+  SDL_SetRenderDrawColor(renderer, 255, 255, 255, kGRID_ALPHA);
+  for(uint8_t i = 0; i < kGRID_WIDTH; i++)
   {
-    for(uint8_t j = 0; j <= kGRID_HEIGHT; j++)
-    {
-      SDL_RenderDrawPoint(renderer, grid_x + i*kTILE_SIZE, grid_y + j*kTILE_SIZE);
+    for(uint8_t j = 0; j < kGRID_HEIGHT; j++)
+    { 
+      SDL_Rect rects[8];
+
+      /* Top left corner */
+      rects[0] = {grid_x + i*kTILE_SIZE, 
+                  grid_y + j*kTILE_SIZE, kGRID_SIZE + 1, 1};
+      rects[1] = {rects[0].x, rects[0].y + 1, 1, kGRID_SIZE};
+
+      /* Top right corner */
+      rects[2] = {rects[0].x + kTILE_SIZE - kGRID_SIZE - 1, 
+                  rects[0].y, kGRID_SIZE + 1, 1};
+      rects[3] = {rects[0].x + kTILE_SIZE - 1, rects[0].y + 1, 1, kGRID_SIZE};
+
+      /* Bottom left corner */
+      rects[4] = {rects[0].x, rects[0].y + kTILE_SIZE - 1, kGRID_SIZE + 1, 1};
+      rects[5] = {rects[0].x, 
+                  rects[0].y + kTILE_SIZE - kGRID_SIZE - 1, 1, kGRID_SIZE};
+
+      /* Bottom right corner */
+      rects[6] = {rects[4].x + kTILE_SIZE - kGRID_SIZE - 1, 
+                  rects[4].y, kGRID_SIZE + 1, 1};
+      rects[7] = {rects[4].x + kTILE_SIZE - 1, rects[5].y, 1, kGRID_SIZE};
+
+      /* Modifications for vertical edges */
+      if(i == 0)
+      {
+        rects[0].x--;
+        rects[0].w++;
+        rects[1].x--;
+        rects[1].w++;
+        rects[4].x--;
+        rects[4].w++;
+        rects[5].x--;
+        rects[5].w++;
+      }
+      else if(i == (kGRID_WIDTH - 1))
+      {
+        rects[2].w++;
+        rects[3].w++;
+        rects[6].w++;
+        rects[7].w++;
+      }
+
+      /* Modifications for horizontal edges */
+      if(j == 0)
+      {
+        rects[0].y--;
+        rects[0].h++;
+        rects[2].y--;
+        rects[2].h++;
+      }
+      else if(j == (kGRID_HEIGHT - 1))
+      {
+        rects[4].h++;
+        rects[6].h++;
+      }
+
+      /* Paint call for all rects */
+      SDL_RenderFillRects(renderer, rects, 8);
     }
   }
 
@@ -239,6 +301,18 @@ void ItemStore::setupSecondaryView(SDL_Renderer* renderer)
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
+
+bool ItemStore::initDisplay(std::vector<Item*> items, 
+                            std::vector<uint32_t> counts, 
+                            std::vector<int32_t> cost_modifiers, 
+                            std::vector<ItemCategory> categories)
+{
+  /* Run through all items */
+  for(uint32_t i = 0; i < items.size(); i++)
+  {
+
+  }
+}
 
 /* Key Down/Up events handled */
 void ItemStore::keyDownEvent(SDL_KeyboardEvent event)

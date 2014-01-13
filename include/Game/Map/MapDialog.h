@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "EnumDb.h"
 #include "Frame.h"
 #include "Game/EventHandler.h"
 #include "Game/Map/MapPerson.h"
@@ -37,14 +38,7 @@ public:
 
   /* Destructor function */
   ~MapDialog();
-
-  /* The dialog display classifier to define how it's displayed:
-   *  OFF - not showing
-   *  SHOWING - rising from the bottom
-   *  ON - fully displayed
-   *  HIDING - lowering to the bottom */
-  enum DialogStatus{OFF, SHOWING, ON, HIDING};
-
+  
   // TODO: add the shop implementation [2013-08-20]
   /* The dialog mode classifier to define the running mode:
    *  DISABLED - The dialog is not in use
@@ -70,7 +64,7 @@ private:
   
   /* The running dialog mode and status - used for display control */
   DialogMode dialog_mode;
-  DialogStatus dialog_status;
+  WindowStatus dialog_status;
 
   /* Boolean control of text dialog */
   float dialog_offset;
@@ -110,7 +104,7 @@ private:
   /* The pickup notification queue (right hand side) */
   float pickup_offset;
   std::vector<Notification> pickup_queue;
-  DialogStatus pickup_status;
+  WindowStatus pickup_status;
   uint16_t pickup_time;
   bool pickup_update;
   
