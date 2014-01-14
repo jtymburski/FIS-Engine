@@ -55,7 +55,7 @@ Category::Category(const std::string &name)
   , top_stats(AttributeSet())
   , description(StringDB::kDEFAULT_CAT_DESC)
   , denonym(StringDB::kDEFAULT_DENONYM)
-  , name(StringDB::kDEFAULT_CAT_NAME)
+  , name(name)
   , skill_set(nullptr)
 {
   if (!attr_sets_built)
