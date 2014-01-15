@@ -40,6 +40,8 @@ public:
   	        const uint32_t value, const uint32_t mass,
   	        Frame* thumb, const size_t x, const size_t y);
 
+  Equipment(Equipment* const source);
+
   ~Equipment();
 
 private:

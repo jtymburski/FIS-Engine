@@ -43,6 +43,7 @@ struct SkillSetElement
 class SkillSet
 {
 public:
+  SkillSet();
 
   SkillSet(Skill* skill, const uint32_t &level);
 

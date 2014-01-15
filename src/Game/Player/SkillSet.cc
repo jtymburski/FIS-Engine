@@ -27,6 +27,11 @@ const size_t SkillSet::kMIN_UNLOCK_LEVEL =     1;
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
 
+SkillSet::SkillSet()
+{
+
+}
+
 /*
  * Description:
  *

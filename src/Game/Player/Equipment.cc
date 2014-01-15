@@ -26,6 +26,13 @@ Equipment::Equipment(const uint32_t game_id, const std::string name,
   createSig(x, y);
 }
 
+Equipment::Equipment(Equipment* const source) 
+  : Item(source)
+{
+  //TODO: Check empty signature? [01-14-14]
+  createSig(source->getSignature()->getX(), source->getSignature()->getY());
+}
+
 Equipment::~Equipment()
 {
   if (equip_signature != nullptr)
