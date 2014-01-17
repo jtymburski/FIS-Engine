@@ -19,7 +19,7 @@
 #include <iostream>
 #include <memory>
 
-#include "EnumDB.h"
+#include "EnumDb.h"
 #include "EnumFlags.h"
 #include "Frame.h"
 #include "Game/Player/Item.h"

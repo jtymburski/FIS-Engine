@@ -22,7 +22,7 @@
 
 #include "Game/Player/Inventory.h"
 #include "Game/Player/Person.h"
-#include "EnumDB.h"
+#include "EnumDb.h"
 #include "EnumFlags.h"
 
 ENUM_FLAGS(PartyState)

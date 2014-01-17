@@ -25,7 +25,7 @@
 
 #include "Game/Player/AttributeSet.h"
 #include "Game/Player/SkillSet.h"
-#include "EnumDB.h"
+#include "EnumDb.h"
 #include "StringDB.h"
 
 class Category
