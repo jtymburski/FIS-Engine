@@ -165,7 +165,7 @@ void Item::unsetAll(Item* object)
   object->prefix = "";
   object->occasion = ActionOccasion::NONE;
 
-  // TODO: Is each Item really going to take care of its own thumbnail? */
+  /* Each Item will delete it's own thumbnail */
   if (object->thumbnail != nullptr)
     delete object->thumbnail;
 
@@ -252,6 +252,7 @@ bool Item::isBaseItem()
  */
 void Item::printFlags()
 {
+  /* Print ItemState flags */
   std::cout << "CONSUMED: " << getFlag(ItemFlags::CONSUMED) << "\n";
   std::cout << "OFFENSIVE: " << getFlag(ItemFlags::OFFENSIVE) << "\n";
   std::cout << "DEFENSIVE: " << getFlag(ItemFlags::DEFENSIVE) << "\n";
@@ -264,21 +265,24 @@ void Item::printFlags()
   std::cout << "SKILL_LEARNING: " << getFlag(ItemFlags::SKILL_LEARNING) << "\n";
   std::cout << "HEALING_ITEM: " << getFlag(ItemFlags::HEALING_ITEM) << "\n";
   std::cout << "RELIEVING_ITEM: " << getFlag(ItemFlags::RELIEVING_ITEM) << "\n";
+  
 
-  // TODO: PRINT MATERIAL FLAGS [01-16-14]
-  // WOODEN       = 1 << 0,
-  // STEEL        = 1 << 1,
-  // BRASS        = 1 << 2,
-  // TITANIUM     = 1 << 3,
-  // GRAPHENE     = 1 << 4,
-  // PHYSICAL     = 1 << 5,
-  // NON_PHYSICAL = 1 << 6,
-  // FIRE         = 1 << 7,
-  // FOREST       = 1 << 8,
-  // ICE          = 1 << 9,
-  // ELECTRIC     = 1 << 10,
-  // DIGITAL      = 1 << 11,
-  // NIHIL        = 1 << 12
+  /* Print Material (composition) flags -- alloys etc. */
+  std::cout << "WOODEN: "    << getMaterial(Material::WOODEN)        << "\n";
+  std::cout << "OFFENSIVE: " << getMaterial(Material::STEEL)         << "\n";
+  std::cout << "BRASS: "     << getMaterial(Material::BRASS)         << "\n";
+  std::cout << "TITANIUM: "  << getMaterial(Material::TITANIUM)      << "\n";
+  std::cout << "GRAPHENE: "  << getMaterial(Material::GRAPHENE)      << "\n";
+
+  /* Material alloys -- see StringDB.h for the actual name */
+  std::cout << "PHYSICAL: "     << getMaterial(Material::PHYSICAL)     << "\n";
+  std::cout << "NON_PHYSICAL: " << getMaterial(Material::NON_PHYSICAL) << "\n";
+  std::cout << "FIRE: "         << getMaterial(Material::FIRE)         << "\n";
+  std::cout << "FOREST: "       << getMaterial(Material::FOREST)       << "\n";
+  std::cout << "ICE: "          << getMaterial(Material::ICE)          << "\n";
+  std::cout << "ELECTRIC: "     << getMaterial(Material::ELECTRIC)     << "\n";
+  std::cout << "DIGITAL: "      << getMaterial(Material::DIGITAL)      << "\n";
+  std::cout << "NIHIL: "        << getMaterial(Material::NIHIL)        << "\n";
 }
 
  /*

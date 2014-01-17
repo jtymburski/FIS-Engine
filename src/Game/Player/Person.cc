@@ -431,10 +431,10 @@ void Person::battlePrep()
 
   // TODO - BState flags - Run enabled false for mini-bosses? [12-23-13]
   //      - Def, Grd, Imp enabled by class?
-  setBFlag(BState::DEF_ENABLED, true);
-  setBFlag(BState::GRD_ENABLED, true);
-  setBFlag(BState::IMP_ENABLED, true);
-  setBFlag(BState::RUN_ENABLED, true);
+  setBFlag(BState::DEF_ENABLED, true); //TODO: enabled by class?
+  setBFlag(BState::GRD_ENABLED, true); //TODO: enabled by class?
+  setBFlag(BState::IMP_ENABLED, true); //TODO: enabled by class?
+  setBFlag(BState::RUN_ENABLED, true); //TODO: enabled by enemy party?
   setBFlag(BState::PAS_ENABLED, true);
 
   setBFlag(BState::SKIP_NEXT_TURN, false);
@@ -746,24 +746,37 @@ float Person::getExpMod()
 /* Returns a pointer to the equipment a given slot */
 Equipment* Person::getEquip(const EquipSlots &equip_slot)
 {
-  switch (equip_slot)
-  {
-    case (EquipSlots::HEAD):
-      return equipments.at(0);
-    case (EquipSlots::LARM):
-      return equipments.at(1);
-    case (EquipSlots::RARM):
-      return equipments.at(2);
-    case (EquipSlots::BODY):
-      return equipments.at(3);
-    case (EquipSlots::LEGS):
-      return equipments.at(4);
-    default:
-      std::cerr << "Error: Checking invalid equipment slot";
-      break;
-  }
+  auto index = getEquipIndex(equip_slot);
+
+  if (index < equipments.size())
+    return equipments.at(index);
 
   return nullptr;
+}
+
+/* Grab the corresponding index of a given EquipSlots enumeration */
+uint32_t Person::getEquipIndex(const EquipSlots &equip_slot)
+{
+  if (static_cast<uint8_t>(equip_slot) < equipments.size())
+  {
+    switch (equip_slot)
+    {
+      case (EquipSlots::HEAD):
+        return 0;
+      case (EquipSlots::LARM):
+        return 1;
+      case (EquipSlots::RARM):
+        return 2;
+      case (EquipSlots::BODY):
+        return 3;
+      case (EquipSlots::LEGS):
+        return 4;
+      default:
+        std::cerr << "Error: Checking invalid EquipSlots enum";
+        break;
+    }
+  }
+  return equipments.size() + 1;
 }
 
 /* Returns the credit drop reward */

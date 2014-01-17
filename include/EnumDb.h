@@ -233,7 +233,7 @@ enum class Element : std::uint8_t
   ELECTRIC = 1 << 5,
   DIGITAL  = 1 << 6,
   NIHIL    = 1 << 7,
-  NONE     = 1 << 0,
+  NONE     = 1 << 0
 };
 
 /*
@@ -242,11 +242,11 @@ enum class Element : std::uint8_t
  */
 enum class EquipSlots : std::uint8_t
 {
-  HEAD,
-  LARM,
-  RARM,
-  BODY,
-  LEGS
+  HEAD = 0,
+  LARM = 1,
+  RARM = 2,
+  BODY = 3,
+  LEGS = 4
 };
 
 /*
