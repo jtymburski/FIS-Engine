@@ -21,7 +21,7 @@
 #include <vector>
 
 #include "Game/Player/Inventory.h"
-//#include "Game/Player/Person.h"
+#include "Game/Player/Person.h"
 #include "EnumDB.h"
 #include "EnumFlags.h"
 

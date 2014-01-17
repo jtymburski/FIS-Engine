@@ -232,31 +232,31 @@
 
 // }
 
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
+// /*=============================================================================
+//  * PUBLIC STATIC FUNCTIONS
+//  *============================================================================*/
 
 
-/* Returns the total maximum size of members 
-uint8_t Party::getMaxMembers()
-{
-  return kMAX_MEMBERS;
-}
+// /* Returns the total maximum size of members */
+// uint8_t Party::getMaxMembers()
+// {
+//   return kMAX_MEMBERS;
+// }
 
-/* Returns the maximum size of the Bearacks 
-uint8_t Party::getMaxBearacks()
-{
-  return kMAX_MEMBERS_BEARACKS;
-}
+// /* Returns the maximum size of the Bearacks */
+// uint8_t Party::getMaxBearacks()
+// {
+//   return kMAX_MEMBERS_BEARACKS;
+// }
 
-/* Returns the maximum size of the Sleuth 
-uint8_t Party::getMaxSleuth()
-{
-  return kMAX_MEMBERS_SLEUTH;
-}
+// /* Returns the maximum size of the Sleuth */
+// uint8_t Party::getMaxSleuth()
+// {
+//   return kMAX_MEMBERS_SLEUTH;
+// }
 
-/* Returns the maximum size of the foes 
-uint8_t Party::getMaxFoes()
-{
-  return kMAX_MEMBERS_FOES;
-}
+// /* Returns the maximum size of the foes */
+// uint8_t Party::getMaxFoes()
+// {
+//   return kMAX_MEMBERS_FOES;
+// }
