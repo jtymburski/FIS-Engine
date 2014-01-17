@@ -48,23 +48,26 @@ enum class ItemFlags
   STAT_ALTERING  = 1 << 8,
   SKILL_LEARNING = 1 << 9,
   HEALING_ITEM   = 1 << 10,
-  RELIEVING_ITEM = 1 << 11,
+  RELIEVING_ITEM = 1 << 11
 };
 
 /* Material flags describing the composition of an Item */
 ENUM_FLAGS(Material)
 enum class Material
 {
-  METALLIC    = 1 << 0,
-  WOODEN      = 1 << 1,
-  INSULATED   = 1 << 2,
-  ANTIMATTER  = 1 << 3,
-  DARKMATTER  = 1 << 4,
-  ENERGY      = 1 << 5,
-  DARK_ENERGY = 1 << 6,
-  ICE         = 1 << 7,
-  PLASMA      = 1 << 8,
-  CHARGED     = 1 << 9,
+  WOODEN       = 1 << 0,
+  STEEL        = 1 << 1,
+  BRASS        = 1 << 2,
+  TITANIUM     = 1 << 3,
+  GRAPHENE     = 1 << 4,
+  PHYSICAL     = 1 << 5,
+  NON_PHYSICAL = 1 << 6,
+  FIRE         = 1 << 7,
+  FOREST       = 1 << 8,
+  ICE          = 1 << 9,
+  ELECTRIC     = 1 << 10,
+  DIGITAL      = 1 << 11,
+  NIHIL        = 1 << 12
 };
 
 class Item

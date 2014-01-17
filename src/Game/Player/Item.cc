@@ -264,15 +264,21 @@ void Item::printFlags()
   std::cout << "SKILL_LEARNING: " << getFlag(ItemFlags::SKILL_LEARNING) << "\n";
   std::cout << "HEALING_ITEM: " << getFlag(ItemFlags::HEALING_ITEM) << "\n";
   std::cout << "RELIEVING_ITEM: " << getFlag(ItemFlags::RELIEVING_ITEM) << "\n";
-  std::cout << "METALLIC: " << getMaterial(Material::METALLIC) << "\n";
-  std::cout << "INSULATED: " << getMaterial(Material::INSULATED) << "\n";
-  std::cout << "ANTIMATTER: " << getMaterial(Material::ANTIMATTER) << "\n";
-  std::cout << "DARKMATTER: " << getMaterial(Material::DARKMATTER) << "\n";
-  std::cout << "ENERGY: " << getMaterial(Material::ENERGY) << "\n";
-  std::cout << "DARK_ENERGY: " << getMaterial(Material::DARK_ENERGY) << "\n";
-  std::cout << "ICE: " << getMaterial(Material::ICE) << "\n";
-  std::cout << "PLASMA: " << getMaterial(Material::PLASMA) << "\n";
-  std::cout << "CHARGED: " << getMaterial(Material::CHARGED) << "\n";
+
+  // TODO: PRINT MATERIAL FLAGS [01-16-14]
+  // WOODEN       = 1 << 0,
+  // STEEL        = 1 << 1,
+  // BRASS        = 1 << 2,
+  // TITANIUM     = 1 << 3,
+  // GRAPHENE     = 1 << 4,
+  // PHYSICAL     = 1 << 5,
+  // NON_PHYSICAL = 1 << 6,
+  // FIRE         = 1 << 7,
+  // FOREST       = 1 << 8,
+  // ICE          = 1 << 9,
+  // ELECTRIC     = 1 << 10,
+  // DIGITAL      = 1 << 11,
+  // NIHIL        = 1 << 12
 }
 
  /*
