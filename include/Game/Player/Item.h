@@ -29,7 +29,7 @@
 #include "EnumFlags.h"
 #include "Helpers.h"
 #include "Sprite.h"
-#include "StringDB.h"
+#include "StringDb.h"
 #include "Sound.h"
 
 /* Item flags describing the type of an Item */

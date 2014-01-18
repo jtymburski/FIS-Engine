@@ -20,48 +20,53 @@
  * CONSTANTS
  *============================================================================*/
 
-// const uint8_t Party::kMAX_MEMBERS{5};
-// const uint8_t Party::kMAX_MEMBERS_BEARACKS{50};
-// const uint8_t Party::kMAX_MEMBERS_SLEUTH{5};
-// const uint8_t Party::kMAX_MEMBERS_FOES{5};
+const uint8_t Party::kMAX_MEMBERS{5};
+const uint8_t Party::kMAX_MEMBERS_BEARACKS{50};
+const uint8_t Party::kMAX_MEMBERS_SLEUTH{5};
+const uint8_t Party::kMAX_MEMBERS_FOES{5};
 
-// /*=============================================================================
-//  * CONSTRUCTORS / DESTRUCTORS
-//  *============================================================================*/
+/*=============================================================================
+ * CONSTRUCTORS / DESTRUCTORS
+ *============================================================================*/
 
-// /*
-//  * Description:
-//  *
-//  * Inputs:
-//  */
-// Party::Party(Person* const main, const PartyType &type, const uint8_t &max,
-//              Inventory* const inv)
-//   : max_size(max)
-//   , party_type(type)
-//   , pouch(inv)
-// {
-//   if (main == nullptr)
-//     std::cerr << "Error: Creating party with null main member\n";
+/*
+ * Description:
+ *
+ * Inputs:
+ */
+Party::Party(Person* const main, const PartyType &type, const uint8_t &max,
+             Inventory* const inv)
+  : max_size{max}
+  , party_type{type}
+  , pouch{inv}
+{
+  if (main == nullptr)
+    std::cerr << "Error: Creating party with null main member\n";
 
-//   members.push_back(main);
-// }
+  members.push_back(main);
+}
 
-// Party::Party(std::vector<Person*> members, const PartyType &type, 
-//              const uint8_t &max, Inventory* const inv)
-//   : max_size(max)
-//   , party_type(type)
-//   , pouch(inv)
-// {
-//   for (auto member : members)
-//   {
-//     if (member == nullptr)
-//       std::cerr << "Error: Creating party with null members\n";
-//     if (members.size() < max_size)
-//       members.push_back(member);
-//     else
-//       std::cerr << "Error: Creating party with too large of size\n";
-//   }
-// }
+/*
+ * Description:
+ *
+ * Inputs:
+ */
+Party::Party(std::vector<Person*> members, const uint8_t &max, 
+             const PartyType &type, Inventory* const inv)
+  : max_size{max}
+  , party_type{type}
+  , pouch{inv}
+{
+  for (auto member : members)
+  {
+    if (member == nullptr)
+      std::cerr << "Error: Creating party with null members\n";
+    if (members.size() < max_size)
+      members.push_back(member);
+    else
+      std::cerr << "Error: Creating party with too large of size\n";
+  }
+}
 
 /*
  * Description:
@@ -77,186 +82,294 @@
  * Inputs:
  * Output:
  */
-// /* Implements the battle use effect of a given item (by game_id) */
-// void Party::battleUseItem(const uint32_t &game_id, const uint8_t &index)
-// {
+/* Implements the battle use effect of a given item (by game_id) */
+void Party::battleUseItem(const uint32_t &game_id, const uint8_t &index)
+{
+  //TODO: Battle use Item function [01-18-14]
+  (void)game_id;//warning
+  (void)index;//warning
+}
 
-// }
+/* Implements the menu use effect of a given item (by game_id) */
+void Party::menuUseItem(const uint32_t &game_id, const uint8_t &index)
+{
+  //TODO: Menu use Item function [01-18-14]
+  (void)game_id;//warning
+  (void)index;//warning
+}
 
-// /* Implements the menu use effect of a given item (by game_id) */
-// void Party::menuUseItem(const uint32_t &game_id, const uint8_t &index)
-// {
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
 
-// }
+/* Attempts to add a person to the party */
+bool Party::addMember(Person* const new_member)
+{
+  if (getFlag(PartyState::CAN_ADD_MEMBERS))
+  {
+    if (members.size() < max_size)
+    {
+      if (new_member != nullptr)
+      {
+        members.push_back(new_member);
 
-// /*=============================================================================
-//  * PUBLIC FUNCTIONS
-//  *============================================================================*/
+        return true;
+      }
+    }
+  }
 
-// /* Attempts to add a person to the party */
-// bool Party::addMember(Person* const new_member)
-// {
+  return false;
+}
 
-// }
+/* Clears all members of the party except the primary member */
+bool Party::clearParty()
+{
+  auto main_member = members.at(0);
 
-// /* Clears all members of the party except the primary member */
-// bool Party::clearParty()
-// {
+  members.clear();
+  members.push_back(main_member);
 
-// }
+  if (main_member != nullptr)
+    return true;
 
-// /* Evaluates whether the current party contains a boss */
-// bool Party::hasBoss()
-// {
+  return false;
+}
 
-// }
+/* Evaluates whether the current party contains a boss */
+bool Party::hasBoss()
+{
+  for (auto it = begin(members); it != end(members); ++it)
+    if ((*it)->getPFlag(PState::BOSS))
+      return true;
 
-//  Evaluates whether the current party contains a final boss 
-// bool Party::hasFinalBoss()
-// {
+  return true;
+}
 
-// }
+/* Evaluates whether the current party contains a final boss */
+bool Party::hasFinalBoss()
+{
+  for (auto it = begin(members); it != end(members); ++it)
+    if ((*it)->getPFlag(PState::FINAL))
+      return true;
 
-// /* Evaluates whether the current party contains a mini boss */
-// bool Party::hasMiniBoss()
-// {
+  return false;
+}
 
-// }
+/* Evaluates whether the current party contains a mini boss */
+bool Party::hasMiniBoss()
+{
+  for (auto it = begin(members); it != end(members); ++it)
+    if ((*it)->getPFlag(PState::MINI_BOSS))
+      return true;
 
-// /* Prints out the state of the Party */
-// void Party::print(bool simple)
-// {
+  return false;
+}
 
-// }
+/* Prints out the state of the Party */
+void Party::print(bool simple)
+{
+  (void)simple;//warning
+}
 
-// /* Attempts to a remove a member of the party by a given index */
-// bool Party::removeMember(const uint8_t &index)
-// {
+/* Attempts to a remove a member of the party by a given index */
+bool Party::removeMember(const uint8_t &index)
+{
+  if (index < members.size() && members.size() > 1)
+  {
+    members.erase(begin(members) + index);
 
-// }
+    return true;
+  }
 
-// /* Attempts to remove a member of the party by a given string name */
-// bool Party::removeMember(const std::string &name)
-// {
+  return false;
+}
 
-// }
+/* Attempts to remove a member of the party by a given string name */
+bool Party::removeMember(const std::string &name)
+{
+  if (members.size() == 1)
+    return false;
 
-// /* Uses an item (given by game_id) on a given member (index) of a use type */
-// bool Party::useItem(const uint32_t &game_id, const uint8_t &index, 
-//                     const ActionOccasion &use_type)
-// {
+  for (auto it = begin(members); it != end(members); ++it)
+  {
+    if ((*it)->getName() == name)
+    {
+      members.erase(it);
 
-// }
+      return true;
+    }
+  }
 
-// /* Calculates and returns the average speed of the Party */
-// int32_t Party::getAverageSpeed()
-// {
+  return false;
+}
 
-// }
+/* Uses an item (given by game_id) on a given member (index) of a use type */
+bool Party::useItem(const uint32_t &game_id, const uint8_t &index, 
+                    const ActionOccasion &use_type)
+{
+  //TODO: Use item function [01-18-13]
+  (void)game_id;//warning
+  (void)index;//warning
+  (void)use_type;//warning
+  return true;//warning
+}
 
-// /* Returns a vector of indexes of all KO'd party members */
-// std::vector<uint32_t> Party::getDeadMembers()
-// {
+/* Calculates and returns the average speed of the Party */
+int32_t Party::getAverageSpeed()
+{
+  return getTotalSpeed() / members.size();
+}
 
-// }
+/* Returns a vector of indexes of all KO'd party members */
+std::vector<uint32_t> Party::getDeadMembers()
+{
+  std::vector<uint32_t> dead_members;
 
-// /* Evaluates and returns a given PartyState flag */
-// bool Party::getFlag(const PartyState &test_flag)
-// {
+  auto index = 0;
+  for (auto it = begin(members); it != end(members); ++it, index++)
+    if (!(*it)->getBFlag(BState::ALIVE))
+      dead_members.push_back(index);
 
-// }
+  return dead_members;
+}
 
-// /* Returns the pointer to the current inventory of the Party */
-// Inventory* Party::getInventory()
-// {
+/* Evaluates and returns a given PartyState flag */
+bool Party::getFlag(const PartyState &test_flag)
+{
+  return static_cast<bool>((flags & test_flag) == flags);
+}
 
-// }
+/* Returns the pointer to the current inventory of the Party */
+Inventory* Party::getInventory()
+{
+  return pouch;
+}
 
-// /* Returns a vector of the indexes of all non-KO'd party members */
-// std::vector<uint32_t> Party::getLivingMembers()
-// {
+/* Returns a vector of the indexes of all non-KO'd party members */
+std::vector<uint32_t> Party::getLivingMembers()
+{
+  std::vector<uint32_t> living_members;
 
-// }
+  auto index = 0;
+  for (auto it = begin(members); it != end(members); ++it, index++)
+    if ((*it)->getBFlag(BState::ALIVE))
+      living_members.push_back(index);
 
-// /* Returns the current maximum size of the party */
-// uint32_t Party::getMaxSize()
-// {
+  return living_members;
+}
 
-// }
+/* Returns the current maximum size of the party */
+uint32_t Party::getMaxSize()
+{
+  return max_size;
+}
 
-// /* Obtains a ptr to a member of a given index, if the index is valid */
-// Person* Party::getMember(const uint8_t &index)
-// {
+/* Obtains a ptr to a member of a given index, if the index is valid */
+Person* Party::getMember(const uint8_t &index)
+{
+  if (index < members.size())
+    return members.at(index);
 
-// }
+  return nullptr;
+}
 
-// /* Returns the string name a party member at a given index, if valid */
-// std::string Party::getMemberName(const uint8_t &index)
-// {
+/* Returns the string name a party member at a given index, if valid */
+std::string Party::getMemberName(const uint8_t &index)
+{
+  if (index < members.size())
+    return members.at(index)->getName();
 
-// }
+  return "";
+}
 
-// /* Returns the enumerated type of the Party */
-// PartyType Party::getPartyType()
-// {
+/* Returns the enumerated type of the Party */
+PartyType Party::getPartyType()
+{
+  return party_type;
+}
 
-// }
+/* Calculates and returns the total speed of the Party */
+int64_t Party::getTotalSpeed()
+{
+  int64_t total_speed{0};
 
-// /* Calculates and returns the total speed of the Party */
-// int32_t Party::getTotalSpeed()
-// {
+  for (auto it = begin(members); it != end(members); ++it)
+    total_speed += (*it)->getCurr().getStat(Attribute::MMNT);
 
-// }
+  return total_speed;
+}
 
-// /* Attempts to assign a new maximum size of the Party */
-// bool Party::setMaxSize(const uint8_t &new_max_size)
-// {
+/* Attempts to assign a new maximum size of the Party */
+bool Party::setMaxSize(const uint8_t &new_max_size)
+{
+  if (new_max_size <= kMAX_MEMBERS && members.size() <= new_max_size)
+  {
+    max_size = new_max_size;
 
-// }
+    return true;
+  }
 
-// /* Assigns a new inventory to the Party */
-// bool Party::setInventory(Inventory* const new_inventory)
-// {
+  return false;
+}
 
-// }
+/* Assigns a new inventory to the Party */
+bool Party::setInventory(Inventory* const new_inventory)
+{
+  if (new_inventory != nullptr)
+  {
+    pouch = new_inventory;
+    return true;
+  }
 
-// /* Attempts to assign a new primary member of the Party */
-// bool Party::setMainMember(const uint8_t &new_main)
-// {
+  return false;
+}
 
-// }
+/* Attempts to assign a new primary member of the Party */
+bool Party::setMainMember(const uint8_t &new_main)
+{
+  if (new_main != 0 && new_main < members.size())
+  {
+    auto old_main = members.at(0);
 
-// /* Assigns a given PartyState flag a given value */
-// void Party::setFlag(const PartyState &flag, const bool &set_value)
-// {
+    members[0]        =  members.at(new_main);
+    members[new_main] = old_main;
 
-// }
+    return true;
+  }
 
-// /*=============================================================================
-//  * PUBLIC STATIC FUNCTIONS
-//  *============================================================================*/
+  return false;
+}
 
+/* Assigns a given PartyState flag a given value */
+void Party::setFlag(const PartyState &flag, const bool &set_value)
+{
+  (set_value) ? (flags |= flag) : (flags &= ~flag);
+}
 
-// /* Returns the total maximum size of members */
-// uint8_t Party::getMaxMembers()
-// {
-//   return kMAX_MEMBERS;
-// }
+/*=============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
 
-// /* Returns the maximum size of the Bearacks */
-// uint8_t Party::getMaxBearacks()
-// {
-//   return kMAX_MEMBERS_BEARACKS;
-// }
+/* Returns the total maximum size of members */
+uint8_t Party::getMaxMembers()
+{
+  return kMAX_MEMBERS;
+}
 
-// /* Returns the maximum size of the Sleuth */
-// uint8_t Party::getMaxSleuth()
-// {
-//   return kMAX_MEMBERS_SLEUTH;
-// }
+/* Returns the maximum size of the Bearacks */
+uint8_t Party::getMaxBearacks()
+{
+  return kMAX_MEMBERS_BEARACKS;
+}
 
-// /* Returns the maximum size of the foes */
-// uint8_t Party::getMaxFoes()
-// {
-//   return kMAX_MEMBERS_FOES;
-// }
+/* Returns the maximum size of the Sleuth */
+uint8_t Party::getMaxSleuth()
+{
+  return kMAX_MEMBERS_SLEUTH;
+}
+
+/* Returns the maximum size of the foes */
+uint8_t Party::getMaxFoes()
+{
+  return kMAX_MEMBERS_FOES;
+}

@@ -25,9 +25,9 @@
 
 #include "Game/Player/AttributeSet.h"
 #include "Game/Player/SkillSet.h"
-#include "EnumDB.h"
+#include "EnumDb.h"
 #include "EnumFlags.h"
-#include "StringDB.h"
+#include "StringDb.h"
 
 ENUM_FLAGS(CategoryState)
 enum class CategoryState

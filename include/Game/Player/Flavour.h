@@ -23,7 +23,7 @@
 #include "Game/Player/AttributeSet.h"
 #include "Game/Player/SkillSet.h"
 #include "Frame.h"
-#include "StringDB.h"
+#include "StringDb.h"
 
 /* Forward declare for friends with Item */
 class Item;

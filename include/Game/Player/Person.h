@@ -145,7 +145,7 @@ private:
   SkillSet base_skills;
   SkillSet curr_skills;
   SkillSet learned_skills;
-  
+
   /* Current modifier to damage for action outcomes (default = 1.00) */
   float dmg_mod;
 

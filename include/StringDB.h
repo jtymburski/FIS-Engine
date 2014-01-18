@@ -18,7 +18,7 @@
 #ifndef STRINGDB_H
 #define STRINGDB_H
 
-namespace StringDB
+namespace StringDb
 {
 /* ------------ System Strings --------------- */
 static const std::string kDEFAULT_PLAYER   = "Berran";

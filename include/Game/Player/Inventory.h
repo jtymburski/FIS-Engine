@@ -26,7 +26,7 @@
 #include "EnumFlags.h"
 #include "Frame.h"
 #include "Helpers.h"
-#include "StringDB.h"
+#include "StringDb.h"
 
 using Bubby_It = std::vector<Bubby*>::iterator;
 using Equip_It = std::vector<Equipment*>::iterator;
