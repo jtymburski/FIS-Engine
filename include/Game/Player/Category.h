@@ -25,14 +25,25 @@
 
 #include "Game/Player/AttributeSet.h"
 #include "Game/Player/SkillSet.h"
-#include "EnumDb.h"
+#include "EnumDB.h"
+#include "EnumFlags.h"
 #include "StringDB.h"
+
+ENUM_FLAGS(CategoryState)
+enum class CategoryState
+{
+  DEF_ENABLED = 1 << 0,
+  GRD_ENABLED = 1 << 1,
+  IMP_ENABLED = 1 << 2
+};
 
 class Category
 {
 public:
+  /* Creates an empty category with just a name */
   Category(const std::string &name);
 
+  /* Constructs a normal category with stat values and a SkillSet */
   Category(const std::string &name, const std::string &denonym, 
   	       const AttributeSet &base_stats, const AttributeSet &max_stats, 
   	       SkillSet* const skills = nullptr);
@@ -46,6 +57,8 @@ private:
 
   static AttributeSet max_stats;
   static AttributeSet min_stats;
+
+  CategoryState flags;
 
   std::string description;
   std::string denonym;
@@ -65,6 +78,8 @@ private:
 private:
   void buildAttrSets();
 
+  void classSetup();
+
   void cleanUpStats();
 
 /*=============================================================================
@@ -83,6 +98,8 @@ public:
 
   std::string getDenonym();
 
+  bool getFlag(const CategoryState &test_flag);
+
   std::string getName();
 
   AttributeSet& getBaseSet();
@@ -94,6 +111,8 @@ public:
   bool setDescription(const std::string &new_description);
 
   bool setDenonym(const std::string &new_denonym);
+
+  void setFlag(const CategoryState &flag, const bool &set_value = true);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS

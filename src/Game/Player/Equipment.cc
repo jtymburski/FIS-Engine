@@ -18,10 +18,11 @@
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
 
-Equipment::Equipment(const uint32_t game_id, const std::string name, 
-  	                 const uint32_t value, const uint32_t mass,
-  	                 Frame* thumb, const size_t x, const size_t y)
-  : Item(game_id, name, value, thumb, mass)
+Equipment::Equipment(const uint32_t &game_id, const std::string &name, 
+  	                 const uint32_t &value, const uint32_t &mass, 
+                     const uint32_t &dura, Frame* thumb, const size_t &x, 
+                     const size_t &y)
+  : Item(game_id, name, value, thumb, mass, dura)
 {
   createSig(x, y);
 }

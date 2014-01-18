@@ -429,12 +429,13 @@ void Person::battlePrep()
   setBFlag(BState::SKL_ENABLED, true);
   setBFlag(BState::ITM_ENABLED, true);
 
-  // TODO - BState flags - Run enabled false for mini-bosses? [12-23-13]
-  //      - Def, Grd, Imp enabled by class?
-  setBFlag(BState::DEF_ENABLED, true); //TODO: enabled by class?
-  setBFlag(BState::GRD_ENABLED, true); //TODO: enabled by class?
-  setBFlag(BState::IMP_ENABLED, true); //TODO: enabled by class?
-  setBFlag(BState::RUN_ENABLED, true); //TODO: enabled by enemy party?
+  setBFlag(BState::DEF_ENABLED, 
+           battle_class->getFlag(CategoryState::DEF_ENABLED));
+  setBFlag(BState::GRD_ENABLED, 
+           battle_class->getFlag(CategoryState::GRD_ENABLED)); 
+  setBFlag(BState::IMP_ENABLED,
+           battle_class->getFlag(CategoryState::IMP_ENABLED));
+  setBFlag(BState::RUN_ENABLED, true); 
   setBFlag(BState::PAS_ENABLED, true);
 
   setBFlag(BState::SKIP_NEXT_TURN, false);
@@ -915,15 +916,13 @@ bool Person::setEquip(const EquipSlots &slot, Equipment* new_equip)
     if (getEquip(EquipSlots::LARM) == nullptr && 
         getEquip(EquipSlots::RARM) == nullptr)
     {
-      //TODO: Grab equip slot function [01-14-14] 
-      //getEquip(EquipSlots::LARM) = new_equip;
-      //getEquip(EquipSlots::RARM) = new_equip;
+      equipments[getEquipIndex(EquipSlots::LARM)] = new_equip;
+      equipments[getEquipIndex(EquipSlots::RARM)] = new_equip;
     }
   }
   else
   {
-    //TODO: Grab equip slot function [01-14-14] 
-    //getEquip(slot) = new_equip;
+    equipments[getEquipIndex(slot)] = new_equip;
   }
 
   return true;
@@ -987,10 +986,14 @@ uint32_t Person::getExpAt(const uint8_t &level)
   return kMAX_EXP + 1;
 }
 
+/* Grabs the level corresponding to a given experience value */
 uint8_t Person::getLevelAt(const uint32_t &experience)
 {
-  //TODO: Get level at function [11-14-14]
-  return experience;//warning
+  for (size_t i = 0; i < exp_table.size(); i++)
+    if (exp_table.at(i) >= experience)
+      return i + 1;
+
+  return exp_table.size() + 1;
 }
 
 /* Grabs the number the total number of levels for Person progression */

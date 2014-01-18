@@ -18,11 +18,15 @@
  * CONSTANTS - See implementation for details
  *============================================================================*/
 
-const double   Item::kMAX_MASS{5000};
-const double   Item::kMIN_MASS{-1000};
-const uint32_t Item::kMAX_VALUE{100000000};
-
+/* Static ID Counter */
 int Item::id{0};
+
+/* Static Class Constants */
+const uint32_t Item::kMAX_DURA{100000};
+const double   Item::kMAX_MASS{5000};
+const uint32_t Item::kMAX_VALUE{100000000};
+const uint32_t Item::kMIN_DURA{1};
+const double   Item::kMIN_MASS{-1000};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -74,10 +78,12 @@ Item::Item(Item* const source)
  *         mass - base mass for the Item
  */
 Item::Item(const int32_t &game_id, const std::string &name, 
-           const uint32_t &value, Frame* thumbnail, const double &mass)
+           const uint32_t &value, Frame* thumbnail, const double &mass, 
+           const uint32_t &dura)
   : game_id{game_id}
   , my_id{++id}
   , base_item{nullptr}
+  , max_durability{dura}
   , mass{mass}
   , name{name}
   , thumbnail{thumbnail}
@@ -113,6 +119,7 @@ void Item::setupClass()
     brief_description = StringDB::kDEFAULT_ITEM_DESC;
     description = StringDB::kDEFAULT_ITEM_DESC;
     composition = static_cast<Material>(0);
+    durability = max_durability;
     flags = static_cast<ItemFlags>(0);
     prefix = StringDB::kDEFAULT_ITEM_PREFIX;
     occasion = ActionOccasion::NONE;
@@ -129,6 +136,8 @@ void Item::setupClass()
     buff_set = base_item->buff_set;
     brief_description = base_item->brief_description;
     description = base_item->description;
+    max_durability = base_item->max_durability;
+    durability = max_durability;
     composition = base_item->composition;
     flags = base_item->flags;
     mass = base_item->mass;
@@ -158,6 +167,8 @@ void Item::unsetAll(Item* object)
   object->buff_set = AttributeSet();
   object->brief_description = "";
   object->description = "";
+  object->durability = kMIN_DURA;
+  object->max_durability = kMIN_DURA;
   object->composition = static_cast<Material>(0);
   object->flags = static_cast<ItemFlags>(0);
   object->mass = 0;
@@ -345,6 +356,17 @@ std::string Item::getDescription()
 }
 
 /*
+ * Description: Returns the current durability value of the Item
+ *
+ * Inputs: none
+ * Output: uint32_t - the durability value
+ */
+uint32_t Item::getDurability()
+{
+  return durability;
+}
+
+/*
  * Description: Returns the game id (base item ID) of the current Item
  *
  * Inputs: none
@@ -388,7 +410,18 @@ bool Item::getMaterial(Material test_flag)
   return static_cast<bool>((composition & test_flag) == test_flag);
 }
 
- /*
+/*
+ * Description: Returns the maximum durability value
+ *
+ * Inputs: none
+ * Output: uint32_t - the maximum value of durability
+ */
+uint32_t Item::getMaxDurability()
+{
+  return max_durability;
+}
+
+/*
  * Description: Returns the string name of the Item (ex. Sword of Space)
  *
  * Inputs: none
@@ -399,7 +432,7 @@ std::string Item::getName()
   return name;
 }
 
- /*
+/*
  * Description: Returns the string prefix of the Item (ex. "bottles")
  *
  * Inputs: none
@@ -410,7 +443,7 @@ std::string Item::getPrefix()
   return prefix;
 }
 
- /*
+/*
  * Description: Returns the occasion (conditions of use) of the Item (B vs. M)
  *
  * Inputs: none
@@ -495,7 +528,7 @@ bool Item::setBriefDescription(const std::string &new_brief_description)
   return false;
 }
 
- /*
+/*
  * Description: Attempts to assign a new string description to the Item and
  *              returns the outcome of the assignment
  *  
@@ -511,6 +544,25 @@ bool Item::setDescription(const std::string &new_description)
     return true;
   }
 
+  return false;
+}
+
+/*
+ * Description: Attempts to assign a new current durability value to the Item,
+ *              but will fail if the new durability value is beyond the Item's
+ *              maximum durability.
+ *  
+ * Inputs: new_durability - new durability value for the Item
+ * Output: bool- outcome of the description assignment
+ */
+bool Item::setDurability(const uint32_t &new_durability)
+{
+  if (new_durability <= max_durability)
+  {
+    durability = new_durability;
+    return true;
+  }
+  
   return false;
 }
 

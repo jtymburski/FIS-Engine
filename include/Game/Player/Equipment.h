@@ -26,6 +26,7 @@
 #include "Game/Player/Signature.h"
 #include "Game/Player/SkillSet.h"
 
+/* Flags unique to equipments */
 ENUM_FLAGS(EquipState)
 enum class EquipState
 { 
@@ -36,16 +37,18 @@ enum class EquipState
 class Equipment : public Item
 {
 public:
-  Equipment(const uint32_t game_id, const std::string name, 
-  	        const uint32_t value, const uint32_t mass,
-  	        Frame* thumb, const size_t x, const size_t y);
+  /* Constructs a base equipment item */
+  Equipment(const uint32_t &game_id, const std::string &name, 
+  	        const uint32_t &value, const uint32_t &mass, const uint32_t &dura,
+  	        Frame* thumb, const size_t &x, const size_t &y);
 
+  /* Creates an equipment that is a copy of another equipment */
   Equipment(Equipment* const source);
 
+  /* Annihilates an equipment object */
   ~Equipment();
 
 private:
-
   /* Pointer to the signature */
   Signature* equip_signature;
 
@@ -62,41 +65,51 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Creates a new signature of a given size */
   void createSig(const size_t size_x, const size_t size_y);
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Prints out the state of the Equipment */
   void print(const bool print_signature = false, const bool item_info = false);
 
+  /* Returns the base skill set */
   SkillSet* getBaseSkills();
 
+  /* Returns the base stat set */
   AttributeSet getBaseStats();
 
+  /* Returns the mass */
   double getMass();
 
+  /* Evaluates and returns a given EquipState flag */
   bool getEquipFlag(EquipState flags);
 
+  /* Grabs the EquipSlot this equipment can be placed on */
   EquipSlots getEquipSlot();
 
+  /* Returns a pointer to the Signature */
   Signature* getSignature();
 
+  /* Returns a ptr to the SkillSet including the Signature's skills */
   SkillSet getSkills();
 
+  /* Returns the Equipment's current total stat buff */
   AttributeSet getStats();
 
+  /* Returns the value of the equipment (based on value of the Signature) */
   uint32_t getValue();
 
+  /* Assigns a new base skill set ptr */
   bool setBaseSkills(SkillSet* new_base_skills);
 
+  /* Assigns a given EquipState flag to a given value */
   void setEquipFlag(const EquipState flags, const bool set_value = false);
 
+  /* Assigns a new equip slot for the Equipment */
   void setEquipSlot(const EquipSlots new_equip_slot);
-
-  Equipment& operator=(const Equipment& source);
-
-  Equipment& operator=(Equipment&& source);
 };
 
 #endif //EQUIPMENT_H

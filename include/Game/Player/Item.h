@@ -82,7 +82,8 @@ public:
 
   /* Base Item constructor - constructs an Item given a game ID and basics */
   Item(const int32_t &game_id, const std::string &name, const uint32_t &value,
-       Frame* thumbnail = nullptr, const double &mass = 0.0);
+       Frame* thumbnail = nullptr, const double &mass = 0.0, 
+       const uint32_t &dura = kMIN_DURA);
 
   virtual ~Item();
 
@@ -108,6 +109,10 @@ protected:
 
   /* Material composition of the Item */
   Material composition;
+
+  /* Item Durability */
+  uint32_t max_durability;
+  uint32_t durability;
 
   /* Flag set for the type of the current item */
   ItemFlags flags;
@@ -141,9 +146,11 @@ protected:
   uint32_t value;
 
   /* ------------ Constants --------------- */
+  static const uint32_t kMAX_DURA;       /* Maximum durability */
   static const double   kMAX_MASS;       /* Maximum mass of an Item */
-  static const double   kMIN_MASS;       /* Minimum mass */
   static const uint32_t kMAX_VALUE;      /* Maximum value of an Item */
+  static const uint32_t kMIN_DURA;       /* Minimum durability */
+  static const double   kMIN_MASS;       /* Minimum mass */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -196,6 +203,9 @@ public:
   /* Returns the description */
   std::string getDescription();
 
+  /* Returns the current durability */
+  uint32_t getDurability();
+
   /* Evaluates and returns a given Item flag value */
   bool getFlag(ItemFlags test_flag);
 
@@ -207,6 +217,9 @@ public:
 
   /* Evaluates and returns a given material composition flag */
   bool getMaterial(Material composition);
+
+  /* Returns the maximum durability of the Item */
+  uint32_t getMaxDurability();
 
   /* Returns the string name of the Item */
   std::string getName();
@@ -240,6 +253,9 @@ public:
 
   /* Attempts to assign a new description */
   bool setDescription(const std::string &new_description);
+
+  /* Assigns a new durability to the item */
+  bool setDurability(const uint32_t &new_durability);
 
   /* Assigns a given ItemFlags flag to a given value */
   void setFlag(ItemFlags flag, const bool &set_value = true);

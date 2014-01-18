@@ -62,6 +62,7 @@ Category::Category(const std::string &name)
     buildAttrSets();
 
   cleanUpStats();
+  classSetup();
 }
 
 /*
@@ -83,6 +84,7 @@ Category::Category(const std::string &name, const std::string &denonym,
     buildAttrSets();
 
   cleanUpStats();
+  classSetup();
 }
 
 /*=============================================================================
@@ -101,6 +103,14 @@ void Category::buildAttrSets()
   max_stats.cleanUp();
   min_stats = AttributeSet(kMIN_VALUES);
   min_stats.cleanUp();
+}
+
+void Category::classSetup()
+{
+  flags = static_cast<CategoryState>(0);
+  setFlag(CategoryState::DEF_ENABLED, true);
+  setFlag(CategoryState::GRD_ENABLED, true);
+  setFlag(CategoryState::IMP_ENABLED, false);
 }
 
 void Category::cleanUpStats()
@@ -166,6 +176,10 @@ void Category::print(const bool &simple)
     std::cout << "Top Stats: \n";
     top_stats.print();
   }
+
+  std::cout << "DEF? " << getFlag(CategoryState::DEF_ENABLED) << "\n";
+  std::cout << "GRD? " << getFlag(CategoryState::GRD_ENABLED) << "\n";
+  std::cout << "IMP? " << getFlag(CategoryState::IMP_ENABLED) << "\n";
 }
 
 std::string Category::getDescription()
@@ -176,6 +190,11 @@ std::string Category::getDescription()
 std::string Category::getDenonym()
 {
   return denonym;
+}
+
+bool Category::getFlag(const CategoryState &test_flag)
+{
+  return static_cast<bool>((flags & test_flag) == flags);
 }
 
 std::string Category::getName()
@@ -220,6 +239,11 @@ bool Category::setDenonym(const std::string &new_denonym)
   }
 
   return false;
+}
+
+void Category::setFlag(const CategoryState &flag, const bool &set_value)
+{
+  (set_value) ? (flags |= flag) : (flags &= ~flag);
 }
 
 /*=============================================================================
