@@ -108,6 +108,9 @@ private:
 private:
   double calcMass();
 
+  bool sort0Bubbies(Bubby0_It begin, Bubby0_It stop,
+                    const ObjectSorts &sort_type, const bool &asc = true);
+
   bool sortBubbies(Bubby_It begin, Bubby_It stop, const ObjectSorts &sort_type, 
   	               const bool &asc = true);
 

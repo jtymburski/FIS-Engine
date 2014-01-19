@@ -76,28 +76,77 @@ double Inventory::calcMass()
   return temp_mass;
 }
 
+bool Inventory::sort0Bubbies(Bubby0_It begin, Bubby0_It stop,
+                             const ObjectSorts &sort_type, const bool &asc)
+{
+  auto sorted = false;
+
+  if (sort_type == ObjectSorts::ID)
+  {
+    std::sort(begin, stop, 
+              [&](const std::pair<Bubby*, uint8_t> &a, 
+                  const std::pair<Bubby*, uint8_t> &b) -> bool
+              {
+                if (asc)
+                  return a.first->getID() < b.first->getID();
+
+                return b.first->getID() < a.first->getID();
+              });
+
+    sorted = true;
+  }
+  else if (sort_type == ObjectSorts::NAME)
+  {
+    std::sort(begin, stop,
+              [&](const std::pair<Bubby*, uint8_t> &a,
+                  const std::pair<Bubby*, uint8_t> &b) -> bool
+              {
+                if (asc)
+                  return a.first->getID() < b.first->getID();
+
+                return b.first->getID() < a.first->getID();
+              });
+
+    sorted = true;
+  }
+  // else if (sort_type == ObjectSorts::FLAVOUR)
+  // {
+  //   std::sort(begin, stop)
+  // }
+  // else if (sort_type == ObjectSorts::VALUE)
+  // {
+
+  // }
+  // else if (sort_type == ObjectSorts::MASS)
+  // {
+
+  // }
+  // else if (sort_type == ObjectSorts::VALUEPERMASS)
+  // {
+
+  // }
+  
+  return sorted;
+}
+
 bool Inventory::sortBubbies(Bubby_It begin, Bubby_It stop, 
 	                          const ObjectSorts &sort_type, const bool &asc)
 {
-  bool sorted = false;
-  (void)begin;//warning
-  (void)stop;//warning
-  (void)sort_type;//warning
-  (void)asc;//warning
+  auto sorted = false;
 
-  // if (sort_type == ObjectSorts::ID)
-  // {
-  //   std::sort(begin, stop,
-  //             [&](Bubby* const a, Bubby* const b) -> bool
-  //             {
-  //               if (asc)
-  //                 return a->getID() < b->getID();
+  if (sort_type == ObjectSorts::ID)
+  {
+    std::sort(begin, stop,
+              [&](Bubby* const a, Bubby* const b) -> bool
+              {
+                if (asc)
+                  return a->getID() < b->getID();
 
-  //               return b->getID() < a->getID();
-  //             });
+                return b->getID() < a->getID();
+              });
 
-  //   sorted = true;
-  // }
+    sorted = true;
+  }
   // else if (sort_type == ObjectSorts::NAME)
   // {
   //   std::sort(begin, stop,

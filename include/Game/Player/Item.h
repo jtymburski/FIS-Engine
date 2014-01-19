@@ -44,10 +44,12 @@ enum class ItemFlags
   KEY_ITEM       = 1 << 5,
   MATERIAL       = 1 << 6,
   GENE_COMP      = 1 << 7,
-  STAT_ALTERING  = 1 << 8,
-  SKILL_LEARNING = 1 << 9,
-  HEALING_ITEM   = 1 << 10,
-  RELIEVING_ITEM = 1 << 11
+  NO_CATEGORY    = 1 << 8,
+  STAT_ALTERING  = 1 << 9,
+  SKILL_LEARNING = 1 << 10,
+  HEALING_ITEM   = 1 << 11,
+  RELIEVING_ITEM = 1 << 12,
+  MONEY          = 1 << 13
 };
 
 /* Material flags describing the composition of an Item */

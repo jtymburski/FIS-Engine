@@ -299,16 +299,6 @@ enum class Infliction : std::uint64_t
   INVALID
 };
 
-enum class ItemCategory : std::uint8_t
-{
-  NOCATEGORY,
-  BUBBY,
-  EQUIPMENT,
-  KEYITEM,
-  MONEY,
-  NORMALITEM
-};
-
 /*
  * Description: Possible states of sorting for inventory items
  */
