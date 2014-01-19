@@ -87,7 +87,7 @@ OBJECTS=$(SOURCES:.cc=.o)
 all: $(EXECUTABLE)
 
 $(EXECUTABLE): $(OBJECTS)
-	$(CC) $(LNFLAGS) -o $@ $(OBJECTS) $(LIBS)
+	$(CC) $(LNFLAGS) -g -o $@ $(OBJECTS) $(LIBS)
 
 .cc.o:
 	$(CC) $(CFLAGS) $(INCLUDES) $< -o $@
