@@ -67,7 +67,11 @@ void ItemStore::clearData()
 {
   event_handler = NULL;
   font_title = NULL;
+  frame_setup = false;
+  store_alpha = 0;
+  store_mode = VIEW;
   store_status = WindowStatus::OFF;
+  store_title = "";
   system_options = NULL;
 }
 
