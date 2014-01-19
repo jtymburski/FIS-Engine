@@ -116,15 +116,18 @@ Signature::Signature(const size_t x, const size_t y, const bool random)
 {
   classSetup(true);
 
-  if (setSize(x, y) && random)
+  if (setSize(x, y))
   {
-  	/* Random # closed cells */
-    auto cells = Helpers::randInt(static_cast<int>(x) * static_cast<int>(y));
+    if (random)
+    {
+    	/* Random # closed cells */
+      auto cells = Helpers::randInt(static_cast<int>(x) * static_cast<int>(y));
 
-    /* Randomly close that number of cells -- some may be repeats */
-    for (int i = 0; i < cells; i++)
-      close(static_cast<uint8>(Helpers::randInt(kMAX_X)), 
-      	    static_cast<uint8>(Helpers::randInt(kMAX_Y)));
+      /* Randomly close that number of cells -- some may be repeats */
+      for (int i = 0; i < cells; i++)
+        close(static_cast<uint8>(Helpers::randInt(kMAX_X)), 
+        	    static_cast<uint8>(Helpers::randInt(kMAX_Y)));
+    }
   }
   else
     std::cerr << "Invalid sig of size: " << x << " by " << y << "\n";
@@ -155,6 +158,7 @@ Signature::Signature(const size_t x, const size_t y,
    if (bubbable)
      setFlag(SigState::BUBBABLE, true);
 
+   setFlag(SigState::SIZEABLE, true);
    setFlag(SigState::UNLOCKABLE, true);
    setFlag(SigState::LINKABLE, true);
    setFlag(SigState::RECIPE_MODE, false);

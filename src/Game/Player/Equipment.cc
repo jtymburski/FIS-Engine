@@ -30,7 +30,9 @@ Equipment::Equipment(const uint32_t &game_id, const std::string &name,
 Equipment::Equipment(Equipment* const source) 
   : Item(source)
 {
-  //TODO: Check empty signature? [01-14-14]
+  if (source->getSignature() == nullptr || !source->getSignature()->isEmpty())
+    std::cerr << "Warning: Cloning equipment with non-empty Signature\n";
+
   createSig(source->getSignature()->getX(), source->getSignature()->getY());
 }
 

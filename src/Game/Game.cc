@@ -217,7 +217,7 @@ void Game::pollEvents()
 /* Set up the battle - old battle needs to be deleted prior to calling */
 void Game::setupBattle()
 {
-  bool enable_test = true;
+  bool enable_test = false;
 
   if (enable_test)
   {
@@ -273,17 +273,16 @@ void Game::setupBattle()
   as5 = as3;
   as5.alterStat("VITA", 1);
 
-  if (as3 == as4)
-    std::cout << "1true\n";
-  if (as3 == as5)
-    std::cout << "2true\n";
+  //if (as3 == as4)
+  //  std::cout << "1true\n";
+  //if (as3 == as5)
+  //  std::cout << "2true\n";
 
   //auto index = 0;
   //for (auto value : values)
   //  std::cout << index++ << " " << value << "\n";
 
   // Action Testing
-  /*
   std::vector<Action*> actions;
   std::vector<float> chances = {0.50, 0.40, 0.12, 0.46};
   actions.push_back(new Action("1,ALTER,THAG,,,,AMOUNT.50,AMOUNT.15"));
@@ -305,11 +304,11 @@ void Game::setupBattle()
 
   std::vector<uint32_t> levels;
 
-  //for (Skill* s : skills)
-  //{
-    //s->print();
+  for (Skill* s : skills)
+  {
+    s->print();
     levels.push_back(levels.size());
-  //}
+  }
 
   // Skill Set Testing
   SkillSet* set1 = new SkillSet(skills, levels);
@@ -320,24 +319,22 @@ void Game::setupBattle()
   // General Item Testing
   Item forty_six{46, "Item Forty Six", 75, nullptr, 1.08};
 
-  forty_six.setValue(78);
+  //forty_six.setValue(78);
 
-  forty_six.print();
+  //forty_six.print();
 
   // Flavour Testing
-  Flavour* spark = new Flavour(101, "Spark", AttributeSet(1), 1.04, 35);
-  Flavour* tumor = new Flavour(102, "Tumor", AttributeSet(2), 1.09, 65);
-  Flavour* moldy = new Flavour(103, "Moldy", AttributeSet(1), 1.11, 48);
-
-  spark->print();
-
+  //Flavour* spark = new Flavour(101, "Spark", as1 + as2, 1.04, 35);
+  //Flavour* tumor = new Flavour(102, "Tumor", AttributeSet(2), 1.09, 65);
+  //Flavour* moldy = new Flavour(103, "Moldy", AttributeSet(1), 1.11, 48);
   // Bubby Testing
-  for (int i = 0; i < 10; i++)
-  {
-    bubby_pointas.push_back(new Bubby(spark));
-    bubby_pointas.push_back(new Bubby(tumor));
-    bubby_pointas.push_back(new Bubby(moldy));
-  }
+  //for (int i = 0; i < 10; i++)
+  //{
+    //bubby_pointas.push_back(new Bubby(spark));
+    //bubby_pointas.push_back(new Bubby(tumor));
+    //bubby_pointas.push_back(new Bubby(moldy));
+  //}
+
 
   //bubby_pointas.at(0)->print(true, true);
 
@@ -345,7 +342,12 @@ void Game::setupBattle()
 
 
   // Equipment Testing
-  */
+  Equipment* fated = new Equipment(201, "Fated Oak Saber", 1, 15, 100, nullptr, 10, 10);
+  
+  fated->getSignature()->print();
+
+
+
   } // end enable test
  
   else

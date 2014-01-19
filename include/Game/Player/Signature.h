@@ -158,7 +158,7 @@ public:
 
   bool hasID(const int id_check);
 
-  inline bool isEmpty();
+  bool isEmpty();
 
   bool isOpen(const uint8 a, const uint8 b, const uint8 tier = 1);
 
