@@ -52,13 +52,15 @@ static const std::string kFIRE_ALLOY_STR          = "effretus";
 static const std::string kFOREST_ALLOY_STR        = "floriver";
 static const std::string kICE_ALLOY_STR           = "avalonium";
 static const std::string kELECTRIC_ALLOY_STR      = "niobium";
-static const std::string kDIGITAL_ALLOY_STR       = "vacantus";
+static const std::string kDIGITAL_ALLOY_STR       = "ravizer";
+static const std::string kNIHIL_ALLOY_STR         = "vacantus";
 
 /* ------------ Cat/Race Strings --------------- */
 static const std::string kDEFAULT_CAT_NAME = "Battle Class";
 static const std::string kDEFAULT_DENONYM  = "Battle Classian";
 static const std::string kDEFAULT_CAT_DESC = "A generic Battle Class";
 
+/* ------------ Limits --------------- */
 static const size_t kMAX_BRIEF_DESC  = 70;
 static const size_t kMAX_DESC        = 500;
 static const size_t kMAX_PREFIX      = 15;

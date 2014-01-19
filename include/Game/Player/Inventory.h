@@ -196,6 +196,9 @@ public:
   /* Returns the vector of all key items */
   std::vector<Item*> getKeyItems();
 
+  /* Calculates and returns the mass */
+  double getMass();
+  
   /* Returns the mass limit */
   double getMassLimit();
 

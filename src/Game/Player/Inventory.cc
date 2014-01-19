@@ -723,6 +723,12 @@ std::vector<Item*> Inventory::getKeyItems()
   return key_items;
 }
 
+/* Returns the total mass stored in the inventory */
+double Inventory::getMass()
+{
+  return calcMass();
+}
+
 /* Returns the mass limit */
 double Inventory::getMassLimit()
 {

@@ -13,6 +13,7 @@
 *
 * TODO
 * ----
+* - Print function [01-18-14]
 *******************************************************************************/
 
 #ifndef PLAYER_H
@@ -33,7 +34,7 @@ private:
   Party* bearacks;
 
   /* Current gravity experienced by player */
-  double gravity;
+  uint32_t gravity;
 
   /* Current value of credits */
   uint32_t credits;
@@ -44,18 +45,11 @@ private:
   static const uint32_t kMAX_CREDITS;
 
 /*=============================================================================
- * PRIVATE FUNCTIONS
- *============================================================================*/
-private:
-  /* Calculates the carry weight of the player (based off mass & gravity) */
-  double calcCarryWeight();
-
-/*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
   /* Attempt to add an amount of credits to the current total */
-  bool addCredits(const int32_t &value);
+  bool addCredits(const uint32_t &value);
 
   /* Returns the current credit value */
   uint32_t getCredits();
@@ -76,41 +70,41 @@ public:
   void print();
 
   /* Removes a sleuth member by index by calling Party's remove function */
-  bool removeSleuthMember(const int32_t &index);
+  bool removeSleuthMember(const uint32_t &index);
 
   /* Removes a sleuth member by name by calling Party's remove function */
-  bool removeSleuthMember(const std::string &value);
+  bool removeSleuthMember(const std::string &name);
 
   /* Removes a bearacks member by index by calling Party's remove function */
   bool removeBearacksMember(const uint32_t &index);
 
   /* Removes a bearacks member by name by calling Party's remove function */
-  bool removeBearacksMember(const std::sring &value);
+  bool removeBearacksMember(const std::string &name);
 
   /* Sets the amount of money the player has */
-  void setCredits(const uint32_t &value);
+  bool setCredits(const uint32_t &value);
 
   /* Sets the sleuth party WARNING: DANGEROUS FUNCTION */
   void setSleuth(Party* const new_sleuth);
 
   /* Sets the bearcks party WARNING: Possibly a dangerous function */
-  void setBearacks(Party* const = nullptr);
+  void setBearacks(Party* const new_bearacks = nullptr);
 
   /* Assigns the gravity the player is experiencing */
-  void setGravity(double new_value);
+  bool setGravity(const uint32_t &new_value);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
 public:
   /* Return the defaul gravity */
-  static uint32_t getDefaultGravity() const;
+  static uint32_t getDefaultGravity();
 
   /* Return the starting credits of the player */
-  static uint32_t getStartingCredits() const;
+  static uint32_t getStartingCredits();
 
   /* Return the maximum credits */
-  static uint32_t getMaxCredits() const;
+  static uint32_t getMaxCredits();
 };
 
 #endif //PLAYER_H
