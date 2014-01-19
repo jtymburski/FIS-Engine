@@ -15,6 +15,7 @@
  *
  * TODO
  * ----
+ * 1. Add pause function. Similar to map dialog pause
  ******************************************************************************/
 
 #ifndef ITEMSTORE_H
@@ -71,13 +72,17 @@ private:
   Frame img_backend_right;
 
   /* The stack of items available in the store view */
+  uint8_t store_alpha;
+  StoreMode store_mode;
   std::vector<ItemDisplay> store_stack;
   WindowStatus store_status;
+  std::string store_title;
 
   /* The system options, used for rendering, settings, etc */
   Options* system_options;
 
   /* -------------------------- Constants ------------------------- */
+  const static uint8_t kALPHA_MAX; /* The max alpha rating for frames */
   const static uint16_t kBACKEND_RIGHT_X; /* Right backend x offset render */
   const static uint16_t kBACKEND_RIGHT_Y; /* Right backend y offset render */
   const static uint8_t kBACKEND_TITLE_HEIGHT; /* Backend title render box */
@@ -85,6 +90,7 @@ private:
   const static uint8_t kGRID_HEIGHT; /* The grid height, in tile sections */
   const static uint8_t kGRID_SIZE; /* The grid coordinate size, in pixels */
   const static uint8_t kGRID_WIDTH; /* The grid width, in tile sections */
+  const static uint16_t kSHOW_TIME; /* The time to hide or show the store */
   const static uint8_t kTILE_SIZE; /* The tile size, to fit in the grid */
 
 /*=============================================================================
@@ -100,6 +106,9 @@ private:
   /* Deletes the rendering fonts, if they've been created */
   void deleteFonts();
 
+  /* Sets the alpha of all rendering textures on the dialog */
+  void setAlpha(uint8_t alpha);
+  
   /* Sets up the views, to be rendered on the screen */
   void setupMainView(SDL_Renderer* renderer, std::string title = "");
   void setupSecondaryView(SDL_Renderer* renderer);
@@ -116,12 +125,18 @@ private:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Closes the active display */
+  void close();
+  
   /* Initializes the item store display */
   bool initDisplay(StoreMode mode, std::vector<Item*> items, 
                    std::vector<uint32_t> counts, 
                    std::vector<int32_t> cost_modifiers,
                    std::string name = "", bool show_empty = false);
 
+  /* Returns if the item store is currently active */
+  bool isActive();
+  
   /* Key Down/Up events handled */
   void keyDownEvent(SDL_KeyboardEvent event);
   void keyUpEvent(SDL_KeyboardEvent event);

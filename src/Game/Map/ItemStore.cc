@@ -18,6 +18,7 @@
 #include "Game/Map/ItemStore.h"
 
 /* Constant Implementation - see header file for descriptions */
+const uint8_t ItemStore::kALPHA_MAX = 255;
 const uint16_t ItemStore::kBACKEND_RIGHT_X = 119;
 const uint16_t ItemStore::kBACKEND_RIGHT_Y = 330;
 const uint8_t ItemStore::kBACKEND_TITLE_HEIGHT = 42;
@@ -25,6 +26,7 @@ const uint8_t ItemStore::kGRID_ALPHA = 64;
 const uint8_t ItemStore::kGRID_HEIGHT = 4;
 const uint8_t ItemStore::kGRID_SIZE = 8;
 const uint8_t ItemStore::kGRID_WIDTH = 5;
+const uint16_t ItemStore::kSHOW_TIME = 750;
 const uint8_t ItemStore::kTILE_SIZE = 64;
 
 /*=============================================================================
@@ -127,6 +129,16 @@ void ItemStore::deleteFonts()
 
   TTF_CloseFont(font_title);
   font_title = NULL;
+}
+
+/* Sets the alpha of all rendering textures on the dialog */
+void ItemStore::setAlpha(uint8_t alpha)
+{
+  store_alpha = alpha;
+  
+  /* Update the alpha of all the frames */
+  frame_main.setAlpha(alpha);
+  img_backend_right.setAlpha(alpha);
 }
 
 /* Sets up the views, to be rendered on the screen */
@@ -302,6 +314,13 @@ void ItemStore::setupSecondaryView(SDL_Renderer* renderer)
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
+/* Closes the active display */
+void ItemStore::close()
+{
+  if(store_status == WindowStatus::ON || store_status == WindowStatus::SHOWING)
+    store_status = WindowStatus::HIDING;
+}
+
 bool ItemStore::initDisplay(StoreMode mode, std::vector<Item*> items, 
                             std::vector<uint32_t> counts, 
                             std::vector<int32_t> cost_modifiers, 
@@ -336,7 +355,7 @@ bool ItemStore::initDisplay(StoreMode mode, std::vector<Item*> items,
                 (cost_modifiers[0] * -1) <= cost_signed)
           new_item.cost += cost_modifiers[0];
           
-        /* Modify the category, if applicable */
+        /* Modify the item category, if applicable */
         if(items[i]->getFlag(ItemFlags::EQUIPMENT))
           new_item.category = ItemFlags::EQUIPMENT;
         else if(items[i]->getFlag(ItemFlags::BUBBY))
@@ -354,11 +373,21 @@ bool ItemStore::initDisplay(StoreMode mode, std::vector<Item*> items,
       }
     }
     
+    /* Final setup of configuration variables */
     frame_setup = true;
+    store_mode = mode;
+    store_title = name;
     return true;
   }
   
   return false;
+}
+
+/* Returns if the item store is currently active */
+bool ItemStore::isActive()
+{
+  return (store_status != WindowStatus::OFF && 
+          store_status != WindowStatus::HIDING);
 }
 
 /* Key Down/Up events handled */
@@ -392,16 +421,36 @@ bool ItemStore::loadImageBackend(std::string left, std::string right,
 /* Renders the Item Store */
 bool ItemStore::render(SDL_Renderer* renderer)
 {
-  if(!frame_main.isImageSet())
-    setupMainView(renderer, "Joe's Store");
+  /* Check if the main frame needs to be setup */
+  if(frame_setup)
+  {
+    setupMainView(renderer, store_title);
+    frame_setup = false;
+    store_status = WindowStatus::SHOWING;
+    setAlpha(0);
+  }
 
-  int x = 100;
-  int y = 100;
+  /* Render the item store */
+  if(store_status != WindowStatus::OFF)
+  {
+    int x = 0;
+    int y = 0;
+    
+    /* Try to set the render location */
+    if(system_options != NULL)
+    {
+      x = (system_options->getScreenWidth() - frame_main.getWidth() 
+            - img_backend_right.getWidth() + kBACKEND_RIGHT_X) / 2;
+      y = (system_options->getScreenHeight() - frame_main.getHeight() 
+            - img_backend_right.getHeight() + kBACKEND_RIGHT_Y) / 2;
+    }
 
-  frame_main.render(renderer, x, y);
-  img_backend_right.render(renderer, 
-                           x + frame_main.getWidth() - kBACKEND_RIGHT_X, 
-                           y + frame_main.getHeight() - kBACKEND_RIGHT_Y);
+    /* Render the frames */
+    frame_main.render(renderer, x, y);
+    img_backend_right.render(renderer, 
+                             x + frame_main.getWidth() - kBACKEND_RIGHT_X, 
+                             y + frame_main.getHeight() - kBACKEND_RIGHT_Y);
+  }
 }
 
 /* Sets the running configuration, from the options class */
@@ -427,7 +476,42 @@ void ItemStore::setEventHandler(EventHandler* event_handler)
 /* Updates the item store, called on the tick */
 void ItemStore::update(int cycle_time)
 {
-
+  /* When the item store is showing, up the alpha until fully visible */
+  if(store_status == WindowStatus::SHOWING)
+  {
+    /* Determine the differential alpha for showing */
+    float alpha_diff = cycle_time * 1.0 * kALPHA_MAX / kSHOW_TIME;
+    if(alpha_diff < 1)
+      alpha_diff = 1.0;
+    
+    /* Compute the change in alpha */
+    if(store_alpha + alpha_diff >= kALPHA_MAX)
+      setAlpha(kALPHA_MAX);
+    else
+      setAlpha(store_alpha + alpha_diff);
+      
+    /* If the alpha has reached max, set the status as fully on */
+    if(store_alpha == kALPHA_MAX)
+      store_status = WindowStatus::ON;
+  }
+  /* When the item store is hiding, down the alpha until fully invisible */
+  else if(store_status == WindowStatus::HIDING)
+  {
+    /* Determine the differential alpha for hiding */
+    float alpha_diff = cycle_time * 1.0 * kALPHA_MAX / kSHOW_TIME;
+    if(alpha_diff < 1)
+      alpha_diff = 1.0;
+      
+    /* Compute the change in alpha */
+    if(alpha_diff >= store_alpha)
+      setAlpha(0);
+    else
+      setAlpha(store_alpha - alpha_diff);
+    
+    /* If the alpha has reached 0, clear the store status */
+    if(store_alpha == 0)
+      store_status = WindowStatus::OFF;
+  }
 }
 
 /*=============================================================================

@@ -819,6 +819,22 @@ bool Map::initNotification(Frame* image, int count)
   return map_dialog.initPickup(image, count);
 }
 
+/* Initializes item store display, within the map */
+bool Map::initStore(ItemStore::StoreMode mode, std::vector<Item*> items,
+                    std::vector<uint32_t> counts,
+                    std::vector<int32_t> cost_modifiers,
+                    std::string name, bool show_empty)
+{
+  bool status = item_menu.initDisplay(mode, items, counts, 
+                                      cost_modifiers, name, show_empty);
+  
+  /* If successful, flush player keys */
+  if(status)
+    player->keyFlush();
+  
+  return true;
+}
+
 // /* Checks whether the viewport contains any tiles with the given sector */
 // bool Map::isInSector(int index)
 // {
@@ -852,6 +868,19 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
                           geography[map_index][0].size());
     }
   }
+  /* Exit the map, map has finished processing */
+  else if(event.keysym.sym == SDLK_ESCAPE)
+  {
+    if(item_menu.isActive())
+      item_menu.close();
+    else
+    {
+      unfocus();
+      return true;
+    }
+  }
+  else if(item_menu.isActive())
+    item_menu.keyDownEvent(event);
   else if(event.keysym.sym == SDLK_p)
     map_dialog.setPaused(!map_dialog.isPaused());
   else if(event.keysym.sym == SDLK_6)
@@ -967,7 +996,9 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
 
 void Map::keyUpEvent(SDL_KeyboardEvent event)
 {
-  if(map_dialog.isConversationActive())
+  if(item_menu.isActive())
+    item_menu.keyUpEvent(event);
+  else if(map_dialog.isConversationActive())
     map_dialog.keyUpEvent(event);
   else if(player != NULL)
   {

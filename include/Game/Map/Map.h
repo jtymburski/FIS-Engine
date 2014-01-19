@@ -185,6 +185,12 @@ public:
   bool initNotification(std::string notification);
   bool initNotification(Frame* image, int count);
 
+  /* Initializes item store display, within the map */
+  bool initStore(ItemStore::StoreMode mode, std::vector<Item*> items,
+                 std::vector<uint32_t> counts,
+                 std::vector<int32_t> cost_modifiers,
+                 std::string name = "", bool show_empty = false);
+  
   // /* Checks whether the viewport contains any tiles with the given sector */
   // bool isInSector(int index);
 

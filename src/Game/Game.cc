@@ -388,12 +388,11 @@ void Game::setupPlayerInventory()
 bool Game::keyDownEvent(SDL_KeyboardEvent event)
 {
   /* Exit the game, game has finished processing */
-  if(event.keysym.sym == SDLK_ESCAPE)
+  if(mode == BATTLE && event.keysym.sym == SDLK_ESCAPE)
   {
-    if(game_map != nullptr)
-      game_map->unfocus();
     return true;
   }
+  /* TESTING section - probably remove at end */
   /* Switch the view to the map */
   else if(event.keysym.sym == SDLK_F1)
   {
@@ -403,6 +402,25 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
   else if(event.keysym.sym == SDLK_F2)
   {
     mode = BATTLE;
+  }
+  /* Show item store dialog in map */
+  else if(event.keysym.sym == SDLK_5)
+  {
+    if(game_map != NULL)
+    {
+      std::vector<Item*> items;
+      items.push_back(item_list[0]);
+      items.push_back(item_list[0]);
+      std::vector<uint32_t> counts;
+      counts.push_back(2);
+      counts.push_back(3);
+      std::vector<int32_t> cost_modifiers;
+      cost_modifiers.push_back(0);
+      cost_modifiers.push_back(10);
+      
+      game_map->initStore(ItemStore::BUY, items, counts, 
+                          cost_modifiers, "Sam's Store", false);
+    }
   }
   /* Otherwise, send keys to the active view */
   else
