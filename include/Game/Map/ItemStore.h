@@ -23,7 +23,7 @@
 #include "EnumDb.h"
 #include "Frame.h"
 #include "Game/EventHandler.h"
- #include "Game/Player/Item.h"
+#include "Game/Player/Item.h"
 #include "Options.h"
 #include "Text.h"
 
@@ -33,7 +33,7 @@ struct ItemDisplay
   Item* item;
   uint32_t count;
   uint32_t cost;
-  ItemCategory category;
+  ItemFlags category;
 };
 
 class ItemStore
@@ -61,7 +61,8 @@ private:
 
   /* Rendered frames, that are displayed */
   Frame frame_main;
-
+  bool frame_setup;
+  
   /* The necessary rendering fonts, for displaying all text */
   TTF_Font* font_title;
 
@@ -116,9 +117,10 @@ private:
  *============================================================================*/
 public:
   /* Initializes the item store display */
-  bool initDisplay(std::vector<Item*> items, std::vector<uint32_t> counts, 
-                   std::vector<int32_t> cost_modifiers, 
-                   std::vector<ItemCategory> categories);
+  bool initDisplay(StoreMode mode, std::vector<Item*> items, 
+                   std::vector<uint32_t> counts, 
+                   std::vector<int32_t> cost_modifiers,
+                   std::string name = "", bool show_empty = false);
 
   /* Key Down/Up events handled */
   void keyDownEvent(SDL_KeyboardEvent event);
