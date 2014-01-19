@@ -311,7 +311,8 @@ enum class ObjectSorts : std::uint8_t
   LEVEL,
   VALUE,
   MASS,
-  VALUEPERMASS
+  VALUEPERMASS,
+  COUNT
 };
 
 /*
