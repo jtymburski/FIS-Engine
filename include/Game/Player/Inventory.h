@@ -28,9 +28,10 @@
 #include "Helpers.h"
 #include "StringDb.h"
 
-using Bubby_It = std::vector<Bubby*>::iterator;
-using Equip_It = std::vector<Equipment*>::iterator;
-using Item_It  = std::vector<std::pair<Item*, uint8_t>>::iterator;
+using Bubby_It  = std::vector<Bubby*>::iterator;
+using Bubby0_It = std::vector<std::pair<Bubby*, uint8_t>>::iterator;
+using Equip_It  = std::vector<Equipment*>::iterator;
+using Item_It   = std::vector<std::pair<Item*, uint8_t>>::iterator;
 
 ENUM_FLAGS(InvState)
 enum class InvState
@@ -58,9 +59,10 @@ private:
   InvState flags;
 
   /* Items */
-  std::vector<Bubby*>     bubbies;
-  std::vector<Equipment*> equipments;
-  std::vector<std::pair<Item*, uint8_t>> items;
+  std::vector<Bubby*>                     bubbies;
+  std::vector<std::pair<Bubby*, uint8_t>> zero_bubbies;
+  std::vector<Equipment*>                 equipments;
+  std::vector<std::pair<Item*, uint8_t>>  items;
 
   /* Current Mass */
   double curr_mass;
@@ -69,8 +71,8 @@ private:
   uint32_t bubby_limit;
   uint32_t equip_limit;
   uint32_t item_limit;
-  uint8_t item_each_limit;
-  double mass_limit;
+  uint8_t  item_each_limit;
+  double   mass_limit;
 
   /* Running ID counter */
   static uint32_t id;
@@ -115,9 +117,13 @@ private:
   bool sortItems(Item_It begin, Item_It end, const ObjectSorts &sort_type, 
   	             const bool &asc = true);
 
-  bool increaseCount(const uint32_t &game_id);
+  bool increaseBubbyCount(const uint32_t &game_id);
 
-  bool decreaseCount(const uint32_t &game_id);
+  bool increaseItemCount(const uint32_t &game_id);
+
+  bool decreaseBubbyCount(const uint32_t &game_id);
+
+  bool decreaseItemCount(const uint32_t &game_id);
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
@@ -160,8 +166,17 @@ public:
   /* Returns a vector of all items useable in battle */
   std::vector<std::pair<Item*, uint8_t>> getBattleItems();
 
+  /* Returns the count of Bubbies of a given game_id */
+  uint32_t getBubbyCount(const uint32_t &game_id);
+
+  /* Returns the index on the vector of a given Bubby zero ID */
+  int32_t getBubbyIndex(const uint32_t &game_id);
+
   /* Returns the currently set bubby limit */
   uint32_t getBubbyLimit();
+
+  /* Returns the total count of T0 and TX Bubbies */
+  uint32_t getTotalBubbyCount();
 
    /* Returns a vector of all Bubbies */
   std::vector<Bubby*> getBubbies();
@@ -183,9 +198,9 @@ public:
 
   /* Returns the vector of all standard items */
   std::vector<std::pair<Item*, uint8_t>> getItems();
- 
+
   /* Returns the count of a given Item game id */
-  uint32_t getItemCount(const int &game_id);
+  uint32_t getItemCount(const uint32_t &game_id);
 
   /* Returns the currently set item each limit */
   uint32_t getItemEachLimit();

@@ -21,12 +21,12 @@
 uint32_t Inventory::id = 0;
 uint32_t Inventory::money_id = 0;
 
-const double Inventory::kMIN_MASS = 100.00;
-const double Inventory::kMAX_MASS = 5000.00;
-const uint32_t Inventory::kMIN_ITEM = 40;
-const uint32_t Inventory::kMAX_ITEM = 25000;
-const uint8_t Inventory::kMIN_EACH_ITEM = 10;
-const uint8_t Inventory::kMAX_EACH_ITEM = 99;
+const double   Inventory::kMIN_MASS      =  100.00;
+const double   Inventory::kMAX_MASS      = 5000.00;
+const uint32_t Inventory::kMIN_ITEM      =      40;
+const uint32_t Inventory::kMAX_ITEM      =   25000;
+const uint8_t  Inventory::kMIN_EACH_ITEM =      10;
+const uint8_t  Inventory::kMAX_EACH_ITEM =      99;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -80,113 +80,117 @@ bool Inventory::sortBubbies(Bubby_It begin, Bubby_It stop,
 	                          const ObjectSorts &sort_type, const bool &asc)
 {
   bool sorted = false;
+  (void)begin;//warning
+  (void)stop;//warning
+  (void)sort_type;//warning
+  (void)asc;//warning
 
-  if (sort_type == ObjectSorts::ID)
-  {
-    std::sort(begin, stop,
-              [&](Bubby* const a, Bubby* const b) -> bool
-              {
-                if (asc)
-                  return a->getID() < b->getID();
+  // if (sort_type == ObjectSorts::ID)
+  // {
+  //   std::sort(begin, stop,
+  //             [&](Bubby* const a, Bubby* const b) -> bool
+  //             {
+  //               if (asc)
+  //                 return a->getID() < b->getID();
 
-                return b->getID() < a->getID();
-              });
+  //               return b->getID() < a->getID();
+  //             });
 
-    sorted = true;
-  }
-  else if (sort_type == ObjectSorts::NAME)
-  {
-    std::sort(begin, stop,
-              [&](Bubby* const a, Bubby* const b) -> bool
-              {
-                if (asc)
-                  return a->getName() < b->getName();
+  //   sorted = true;
+  // }
+  // else if (sort_type == ObjectSorts::NAME)
+  // {
+  //   std::sort(begin, stop,
+  //             [&](Bubby* const a, Bubby* const b) -> bool
+  //             {
+  //               if (asc)
+  //                 return a->getName() < b->getName();
 
-                return b->getName() < a->getName();
-              });
+  //               return b->getName() < a->getName();
+  //             });
 
-    sorted = true;
-  }
-  else if (sort_type == ObjectSorts::FLAVOUR)
-  {
-    std::sort(begin, stop,
-              [&](Bubby* const a, Bubby* const b) -> bool
-              {
-                if (asc)
-                  return a->getType() < b->getType();
+  //   sorted = true;
+  // }
+  // else if (sort_type == ObjectSorts::FLAVOUR)
+  // {
+  //   std::sort(begin, stop,
+  //             [&](Bubby* const a, Bubby* const b) -> bool
+  //             {
+  //               if (asc)
+  //                 return a->getType() < b->getType();
 
-                return b->getType() < a->getType();
-              });
+  //               return b->getType() < a->getType();
+  //             });
 
-    sorted = true;
-  }
-  else if (sort_type == ObjectSorts::LEVEL)
-  {
-    std::sort(begin, stop,
-              [&](Bubby* const a, Bubby* const b) -> bool
-              {
-                if (a->getLevel() == b->getLevel())
-                {
-                  if (asc)
-                    return a->getExp() < b->getExp();
+  //   sorted = true;
+  // }
+  // else if (sort_type == ObjectSorts::LEVEL)
+  // {
+  //   std::sort(begin, stop,
+  //             [&](Bubby* const a, Bubby* const b) -> bool
+  //             {
+  //               if (a->getLevel() == b->getLevel())
+  //               {
+  //                 if (asc)
+  //                   return a->getExp() < b->getExp();
 
-                  return b->getExp() < a->getExp();
-                }
-                if (asc)
-                  return a->getLevel() < b->getLevel();
+  //                 return b->getExp() < a->getExp();
+  //               }
+  //               if (asc)
+  //                 return a->getLevel() < b->getLevel();
 
-                return b->getLevel() < a->getLevel();
-              });
+  //               return b->getLevel() < a->getLevel();
+  //             });
 
-    sorted = true;
-  }
-  else if (sort_type == ObjectSorts::VALUE)
-  {
-    std::sort(begin, stop,
-              [&](Bubby* const a, Bubby* const b) -> bool
-              {
-                if (asc)
-                  return a->getValue() < b->getValue();
+  //   sorted = true;
+  // }
+  // else if (sort_type == ObjectSorts::VALUE)
+  // {
+  //   std::sort(begin, stop,
+  //             [&](Bubby* const a, Bubby* const b) -> bool
+  //             {
+  //               if (asc)
+  //                 return a->getValue() < b->getValue();
 
-                return a->getValue() > b->getValue();
-              });
+  //               return a->getValue() > b->getValue();
+  //             });
 
-    sorted = true;
-  }
-  else if (sort_type == ObjectSorts::MASS)
-  {
-    std::sort(begin, stop,
-              [&](Bubby* const a, Bubby* const b) -> bool
-              {
-                if (asc)
-                  return a->getMass() < b->getMass();
+  //   sorted = true;
+  // }
+  // else if (sort_type == ObjectSorts::MASS)
+  // {
+  //   std::sort(begin, stop,
+  //             [&](Bubby* const a, Bubby* const b) -> bool
+  //             {
+  //               if (asc)
+  //                 return a->getMass() < b->getMass();
 
-                return a->getMass() > b->getMass();
-              });
+  //               return a->getMass() > b->getMass();
+  //             });
 
-    sorted = true;
-  }
-  else if (sort_type == ObjectSorts::VALUEPERMASS)
-  {
-    std::sort(begin, stop,
-              [&](Bubby* const a, Bubby* const b) -> bool
-              {
-                if (asc)
-                {
-                  return ((static_cast<double>(a->getValue()) /
-                           static_cast<double>(a->getMass())) < 
-                          (static_cast<double>(b->getValue()) /
-                           static_cast<double>(b->getMass())));
-                }
+  //   sorted = true;
+  // }
+  // else if (sort_type == ObjectSorts::VALUEPERMASS)
+  // {
+  //   std::sort(begin, stop,
+  //             [&](Bubby* const a, Bubby* const b) -> bool
+  //             {
+  //               if (asc)
+  //               {
+  //                 return ((static_cast<double>(a->getValue()) /
+  //                          static_cast<double>(a->getMass())) < 
+  //                         (static_cast<double>(b->getValue()) /
+  //                          static_cast<double>(b->getMass())));
+  //               }
                 
-                return ((static_cast<double>(a->getValue()) /
-                         static_cast<double>(a->getMass())) > 
-                        (static_cast<double>(b->getValue())) /
-                         static_cast<double>(b->getMass()));
-              });
+  //               return ((static_cast<double>(a->getValue()) /
+  //                        static_cast<double>(a->getMass())) > 
+  //                       (static_cast<double>(b->getValue())) /
+  //                        static_cast<double>(b->getMass()));
+  //             });
 
-    sorted = true;
-  }
+  //   sorted = true;
+  // }
 
   return sorted;
 }
@@ -364,7 +368,24 @@ bool Inventory::sortItems(Item_It begin, Item_It stop,
   return true; //TODO
 }
 
-bool Inventory::increaseCount(const uint32_t &game_id)
+bool Inventory::increaseBubbyCount(const uint32_t &game_id)
+{
+  auto bubby_index = getBubbyIndex(game_id);
+
+  if (bubby_index == -1)
+    return false;
+
+  auto bubby_count = zero_bubbies.at(bubby_index).second;
+
+  if (bubby_count == 0)
+    return false;
+
+  zero_bubbies[bubby_index].second++;
+
+  return false;
+}
+
+bool Inventory::increaseItemCount(const uint32_t &game_id)
 {
   auto item_index = getItemIndex(game_id);
 
@@ -381,7 +402,24 @@ bool Inventory::increaseCount(const uint32_t &game_id)
   return true;
 }
 
-bool Inventory::decreaseCount(const uint32_t &game_id)
+bool Inventory::decreaseBubbyCount(const uint32_t &game_id)
+{
+  auto bubby_index = getBubbyIndex(game_id);
+
+  if (bubby_index == -1)
+    return false;
+
+  auto bubby_count = zero_bubbies.at(bubby_index).second;
+
+  if (bubby_count == 0)
+    return false;
+
+  zero_bubbies[bubby_index].second--;
+
+  return false;
+}
+
+bool Inventory::decreaseItemCount(const uint32_t &game_id)
 {
   auto item_index = getItemIndex(game_id);
 
@@ -393,7 +431,7 @@ bool Inventory::decreaseCount(const uint32_t &game_id)
   if (item_count == 0)
     return false;
 
-  items[item_index].second++;
+  items[item_index].second--;
 
   return true;
 }
@@ -405,15 +443,32 @@ bool Inventory::decreaseCount(const uint32_t &game_id)
 /* Attempts to add a Bubby */
 bool Inventory::addBubby(Bubby* new_bubby, bool bypass)
 {
-  auto can_add = bubbies.size() < bubby_limit;
-  can_add &= (new_bubby != nullptr);
+  auto can_add = getTotalBubbyCount() < bubby_limit;
   
+  auto count = 0;
+
+  if (new_bubby != nullptr)
+    count = getBubbyCount(new_bubby->getGameID());
+  else 
+    can_add = false;
+
   if (can_add && !bypass)
     can_add &= (new_bubby->getMass() + curr_mass) <= mass_limit;
 
   if (can_add)
   {
-    bubbies.push_back(new_bubby);
+    if (new_bubby->getTier() == 0)
+    {
+      if (count == 0)
+        zero_bubbies.push_back(std::make_pair(new_bubby, 1));
+      else
+        increaseBubbyCount(new_bubby->getGameID());
+    }
+    else
+    {
+      bubbies.push_back(new_bubby);  
+    }
+
     curr_mass += new_bubby->getMass();
   }
 
@@ -444,11 +499,16 @@ bool Inventory::addItem(Item* new_item, const bool bypass)
   auto can_add = getItemTotalCount() < item_limit;
   can_add &= (new_item != nullptr);
 
-  auto count = getItemCount(new_item->getGameID());
+  auto count = 0;
+
+  if (new_item != nullptr)
+    count = getItemCount(new_item->getGameID());
+  else
+    can_add = false;
 
   if (can_add && (!bypass || new_item->getFlag(ItemFlags::KEY_ITEM)))
   {
-    can_add &= (new_item->getMass() + curr_mass) < mass_limit;
+    can_add &= (new_item->getMass() + curr_mass) <= mass_limit;
     can_add &= getCount(new_item->getGameID()) <= item_each_limit;
   }
 
@@ -457,7 +517,7 @@ bool Inventory::addItem(Item* new_item, const bool bypass)
     if (count == 0)
       items.push_back(std::make_pair(new_item, 1));
     else
-      increaseCount(new_item->getGameID());
+      increaseItemCount(new_item->getGameID());
 
     curr_mass += new_item->getMass();
   }
@@ -612,10 +672,51 @@ std::vector<std::pair<Item*, uint8_t>> Inventory::getBattleItems()
   return battle_items;
 }
 
+/* Returns the count of Bubbies of a given game_id - only checks T0 bubbies */
+uint32_t Inventory::getBubbyCount(const uint32_t &game_id)
+{
+  for (auto it = begin(zero_bubbies); it != end(zero_bubbies); ++it)
+    if ((*it).first != nullptr)
+      if ((*it).first->getGameID() == static_cast<int32_t>(game_id))
+        return (*it).second;
+
+  return 0;
+}
+
+/* Returns the index on the vector of a given Bubby zero ID */
+int32_t Inventory::getBubbyIndex(const uint32_t &game_id)
+{
+  auto index = -1;
+
+  for (auto it = begin(zero_bubbies); it != end(zero_bubbies); ++it, index++)
+    if ((*it).first != nullptr)
+      if ((*it).first->getGameID() == static_cast<int32_t>(game_id))
+        return index;
+
+  return index;
+}
+
 /* Returns the currently set bubby limit */
 uint32_t Inventory::getBubbyLimit()
 {
   return bubby_limit;
+}
+
+/* Returns the total count of T0 and TX bubbies */
+uint32_t Inventory::getTotalBubbyCount()
+{
+  auto total = 0;
+
+  /* First, add up values of each T0 Bubby */
+  for (auto it = begin(zero_bubbies); it != end(zero_bubbies); ++it)
+    if ((*it).first != nullptr)
+      total += (*it).second;
+
+  /* Then add the # of TX bubbies */
+  total += bubbies.size();
+
+  return total;
+
 }
 
 /* Returns a vector of all Bubbies */
@@ -664,8 +765,9 @@ int32_t Inventory::getItemIndex(const uint32_t &game_id)
   auto index = -1;
 
   for (auto it = begin(items); it != end(items); ++it, ++index)
-    if ((*it).first->getGameID() == static_cast<int32_t>(game_id))
-      return index;
+    if ((*it).first != nullptr)
+      if ((*it).first->getGameID() == static_cast<int32_t>(game_id))
+        return index;
 
   return index;
 }
@@ -683,11 +785,11 @@ std::vector<std::pair<Item*, uint8_t>> Inventory::getItems()
 }
  
 /* Returns the count of a given Item game id */
-uint32_t Inventory::getItemCount(const int &game_id)
+uint32_t Inventory::getItemCount(const uint32_t &game_id)
 {
   for (auto item : items)
     if (item.first != nullptr)
-      if (item.first->getGameID() == game_id)
+      if (item.first->getGameID() == static_cast<int32_t>(game_id))
         return item.second;
 
   return 0;
@@ -793,11 +895,11 @@ bool Inventory::setImages(Frame* const new_backdrop, Frame* const new_thumbnail)
  	                         const uint32_t item_lim, const uint8_t item_e,
  	                         const double mass_lim)
 {
-  bubby_limit = Helpers::setInRange(bubby_lim, 0, 4);
-  equip_limit = Helpers::setInRange(equip_lim, kMIN_ITEM, kMAX_ITEM);
-  item_limit = Helpers::setInRange(item_lim, kMIN_ITEM, kMAX_ITEM);
+  bubby_limit     = Helpers::setInRange(bubby_lim, 0, 4);
+  equip_limit     = Helpers::setInRange(equip_lim, kMIN_ITEM, kMAX_ITEM);
+  item_limit      = Helpers::setInRange(item_lim, kMIN_ITEM, kMAX_ITEM);
   item_each_limit = Helpers::setInRange(item_e, kMIN_EACH_ITEM, kMAX_EACH_ITEM);
-  mass_limit = Helpers::setInRange(mass_lim, kMIN_MASS, kMAX_MASS);
+  mass_limit      = Helpers::setInRange(mass_lim, kMIN_MASS, kMAX_MASS);
 }
 
 /*=============================================================================

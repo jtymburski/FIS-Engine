@@ -44,6 +44,7 @@ Player::Player(Party* sleuth, Party* bearacks)
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
+/* Attempts to add an amount of credits to the player's total */
 bool Player::addCredits(const uint32_t &value)
 {
   auto added = false;
