@@ -11,6 +11,8 @@
 *
 * TODO
 * ----
+* - Fix key item sorts [01-18-14]
+* - Class testing & conventions [01-18-14]
 *******************************************************************************/
 
 #ifndef INVENTORY_H
@@ -52,7 +54,7 @@ public:
   	        Frame* thumb = nullptr);
 
   enum class SortObjects
-  { BUBBIES, EQUIPMENTS, ITEMS, KEY_ITEMS };
+  { ZERO_BUBBIES, BUBBIES, EQUIPMENTS, ITEMS, KEY_ITEMS };
 
 private:
   /* Flag state of the Inventory */
@@ -108,7 +110,7 @@ private:
 private:
   double calcMass();
 
-  bool sort0Bubbies(Bubby0_It begin, Bubby0_It stop,
+  bool sortZeroBubbies(Bubby0_It begin, Bubby0_It stop,
                     const ObjectSorts &sort_type, const bool &asc = true);
 
   bool sortBubbies(Bubby_It begin, Bubby_It stop, const ObjectSorts &sort_type, 
@@ -146,6 +148,9 @@ public:
 
   /* Prints out the state of the inventory */
 	void print(bool simple = true);
+
+  /* Removes a Tier-0 Bubby from the Inventory at a given index */
+  bool removeZeroBubby(uint32_t index);
 
   /* Removes a Bubby from the Inventory at a given index */
 	bool removeBubby(uint32_t index);

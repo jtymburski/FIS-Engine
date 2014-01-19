@@ -76,7 +76,8 @@ double Inventory::calcMass()
   return temp_mass;
 }
 
-bool Inventory::sort0Bubbies(Bubby0_It begin, Bubby0_It stop,
+/* Sorts the vector of Tier 0 bubbies (the ones that have counts) */
+bool Inventory::sortZeroBubbies(Bubby0_It begin, Bubby0_It stop,
                              const ObjectSorts &sort_type, const bool &asc)
 {
   auto sorted = false;
@@ -676,12 +677,26 @@ void Inventory::print(bool simple)
   {
   	std::cout << "ID: " << id << " M: " << curr_mass << " N: " << name << "\n";
     std::cout << "Items: " << items.size() << "/" << item_limit << "\n";
-    std::cout << "Bubbies: " << bubbies.size() << "/" << bubby_limit << "\n";
+    std::cout << "Zero Bubbies: " << zero_bubbies.size() << "\n";
+    std::cout << "Bubbies: " << bubbies.size()  << "\n";
+    std::cout << "Total Bubbies: " << getTotalBubbyCount() << "/" << bubby_limit
+              << "\n";
     std::cout << "Equipment: " << equipments.size() << "/" << equip_limit
               << "\n";
   }
   else
   {
+    std::cout << "Tier 0 Bubbies:\n";
+
+    for (auto bubby_pair : zero_bubbies)
+    {
+      if (bubby_pair.first != nullptr)
+      {
+        std::cout << bubby_pair.first->getName() << " " << bubby_pair.second 
+        << "\n";
+      }
+    }
+
     std::cout << "Bubbies:\n";
 
     for (auto bubby : bubbies)
@@ -700,6 +715,24 @@ void Inventory::print(bool simple)
       if (item.first != nullptr)
         std::cout << item.first->getName() << " " << item.second << "\n";
   }
+}
+
+/* Removes a zero bubby from the inventory */
+bool Inventory::removeZeroBubby(uint32_t index)
+{
+  if (index < zero_bubbies.size())
+  {
+    if (zero_bubbies.at(index).first != nullptr)
+    {
+      if (getBubbyCount(zero_bubbies.at(index).first->getGameID()))
+        decreaseBubbyCount(zero_bubbies.at(index).first->getGameID());
+      else
+        zero_bubbies.erase(begin(zero_bubbies) + index);
+    }
+    return true;
+  }
+
+  return false;
 }
 
 /* Removes a Bubby from the Inventory at a given index */
@@ -733,7 +766,13 @@ bool Inventory::removeItem(uint32_t index)
 {
   if (index < items.size())
   {
-    items.erase(begin(items) + index);
+    if (items.at(index).first != nullptr)
+    {
+      if (getItemCount(items.at(index).first->getGameID()) > 1)
+        decreaseItemCount(items.at(index).first->getGameID());
+      else
+        items.erase(begin(items) + index);
+    }
 
     return true;
   }
@@ -747,25 +786,32 @@ bool Inventory::sort(const ObjectSorts sort_type, SortObjects object_to_sort,
 {
   switch (object_to_sort)
   {
-    case(SortObjects::BUBBIES):
+    case (SortObjects::ZERO_BUBBIES):
+    {
+      return sortZeroBubbies(begin(zero_bubbies), end(zero_bubbies), sort_type, 
+             ascending);
+      break;
+    }
+    case (SortObjects::BUBBIES):
     {
       return sortBubbies(begin(bubbies), end(bubbies), sort_type, ascending);
       break;
     }
-    case(SortObjects::EQUIPMENTS):
+    case (SortObjects::EQUIPMENTS):
     {
       return sortEquipments(begin(equipments), end(equipments), sort_type, 
       	                    ascending);
       break;
     }
-    case(SortObjects::ITEMS):
+    case (SortObjects::ITEMS):
     {
-      //return sortItems(begin(items), end(items), sort_type, ascending);
+      return sortItems(begin(items), end(items), sort_type, ascending);
       break;
     }
-    case(SortObjects::KEY_ITEMS):
+    case (SortObjects::KEY_ITEMS):
     {
-      auto key_items = getKeyItems();
+      //TODO: Fix key items [01-18-14]
+      //auto key_items = getKeyItems();
       //return sortItems(begin(key_items), end(key_items), sort_type, ascending);
       break;
     }
