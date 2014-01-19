@@ -754,7 +754,7 @@ bool Inventory::getFlag(const InvState test_flag)
 
 bool Inventory::setDescription(const std::string new_description)
 {
-  if (new_description.size() < StringDB::kMAX_BRIEF_DESC)
+  if (new_description.size() < StringDb::kMAX_BRIEF_DESC)
   {
     description = new_description;
 

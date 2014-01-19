@@ -65,6 +65,7 @@ SOURCES=src/Application.cc \
         src/Game/Player/Item.cc \
         src/Game/Player/Party.cc \
         src/Game/Player/Person.cc \
+        src/Game/Player/Player.cc \
         src/Game/Player/Signature.cc \
         src/Game/Player/Skill.cc \
         src/Game/Player/SkillSet.cc \

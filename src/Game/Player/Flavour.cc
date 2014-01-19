@@ -320,7 +320,7 @@ uint32_t Flavour::getValue(const uint32_t &tier)
  */
 bool Flavour::setDescription(const std::string& new_description)
 {
-  if (new_description.size() <= StringDB::kMAX_DESC)
+  if (new_description.size() <= StringDb::kMAX_DESC)
   {
     description = new_description;
 

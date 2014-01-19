@@ -48,7 +48,7 @@ Item::Item(Flavour* const source)
   value = source->base_value;
   description = source->description;
   name = source->name;
-  prefix = StringDB::kDEFAULT_BUBBY_PREFIX;
+  prefix = StringDb::kDEFAULT_BUBBY_PREFIX;
   occasion = ActionOccasion::NONE;
 
   this->setFlag(ItemFlags::BUBBY, true);
@@ -116,12 +116,12 @@ void Item::setupClass()
   {
     buff_set = AttributeSet();
     
-    brief_description = StringDB::kDEFAULT_ITEM_DESC;
-    description = StringDB::kDEFAULT_ITEM_DESC;
+    brief_description = StringDb::kDEFAULT_ITEM_DESC;
+    description = StringDb::kDEFAULT_ITEM_DESC;
     composition = static_cast<Material>(0);
     durability = max_durability;
     flags = static_cast<ItemFlags>(0);
-    prefix = StringDB::kDEFAULT_ITEM_PREFIX;
+    prefix = StringDb::kDEFAULT_ITEM_PREFIX;
     occasion = ActionOccasion::NONE;
     
     using_skill = nullptr;
@@ -285,7 +285,7 @@ void Item::printFlags()
   std::cout << "TITANIUM: "  << getMaterial(Material::TITANIUM)      << "\n";
   std::cout << "GRAPHENE: "  << getMaterial(Material::GRAPHENE)      << "\n";
 
-  /* Material alloys -- see StringDB.h for the actual name */
+  /* Material alloys -- see StringDb.h for the actual name */
   std::cout << "PHYSICAL: "     << getMaterial(Material::PHYSICAL)     << "\n";
   std::cout << "NON_PHYSICAL: " << getMaterial(Material::NON_PHYSICAL) << "\n";
   std::cout << "FIRE: "         << getMaterial(Material::FIRE)         << "\n";
@@ -518,7 +518,7 @@ void Item::setBuffSet(const AttributeSet &new_buff_set)
  */
 bool Item::setBriefDescription(const std::string &new_brief_description)
 {
-  if (new_brief_description.size() <= StringDB::kMAX_BRIEF_DESC)
+  if (new_brief_description.size() <= StringDb::kMAX_BRIEF_DESC)
   {
     brief_description = new_brief_description;
 
@@ -537,7 +537,7 @@ bool Item::setBriefDescription(const std::string &new_brief_description)
  */
 bool Item::setDescription(const std::string &new_description)
 {
-  if (new_description.size() <= StringDB::kMAX_DESC)
+  if (new_description.size() <= StringDb::kMAX_DESC)
   {
     description = new_description;
     
@@ -598,7 +598,7 @@ void Item::setMaterial(Material flag, const bool &set_value)
  */
 bool Item::setName(const std::string &new_name)
 {
-  if (new_name.size() <= StringDB::kMAX_NAME)
+  if (new_name.size() <= StringDb::kMAX_NAME)
   {
     name = new_name;
 
@@ -617,7 +617,7 @@ bool Item::setName(const std::string &new_name)
  */
 bool Item::setPrefix(const std::string &new_prefix)
 {
-  if (new_prefix.size() <= StringDB::kMAX_PREFIX)
+  if (new_prefix.size() <= StringDb::kMAX_PREFIX)
   {
     prefix = new_prefix;
 
@@ -694,7 +694,7 @@ bool Item::setUseAnimation(Sprite* new_animation)
  */
 bool Item::setUseMessage(const std::string &new_message)
 {
-  if (new_message.size() <= StringDB::kMAX_USE_MSG)
+  if (new_message.size() <= StringDb::kMAX_USE_MSG)
   {
     using_message = new_message;
 

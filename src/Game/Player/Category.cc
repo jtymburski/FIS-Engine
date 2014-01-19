@@ -53,8 +53,8 @@ const std::vector<int> Category::kMAX_VALUES =
 Category::Category(const std::string &name)
   : base_stats(AttributeSet())
   , top_stats(AttributeSet())
-  , description(StringDB::kDEFAULT_CAT_DESC)
-  , denonym(StringDB::kDEFAULT_DENONYM)
+  , description(StringDb::kDEFAULT_CAT_DESC)
+  , denonym(StringDb::kDEFAULT_DENONYM)
   , name(name)
   , skill_set(nullptr)
 {
@@ -75,7 +75,7 @@ Category::Category(const std::string &name, const std::string &denonym,
   	               SkillSet* const skills)
   : base_stats(base_stats)
   , top_stats(top_stats)
-  , description(StringDB::kDEFAULT_CAT_DESC)
+  , description(StringDb::kDEFAULT_CAT_DESC)
   , denonym(denonym)
   , name(name)
   , skill_set(skills)
@@ -219,7 +219,7 @@ AttributeSet& Category::getTopSet()
 
 bool Category::setDescription(const std::string &new_description)
 {
-  if (new_description.size() <= StringDB::kMAX_BRIEF_DESC)
+  if (new_description.size() <= StringDb::kMAX_BRIEF_DESC)
   {
     description = new_description;
 
@@ -231,7 +231,7 @@ bool Category::setDescription(const std::string &new_description)
 
 bool Category::setDenonym(const std::string &new_denonym)
 {
-  if (new_denonym.size() <= StringDB::kMAX_NAME)
+  if (new_denonym.size() <= StringDb::kMAX_NAME)
   {
     denonym = new_denonym;
 
