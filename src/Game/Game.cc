@@ -319,9 +319,13 @@ void Game::setupBattle()
   Item* unique_item = new Item(46, "Unique Item", 75, nullptr, 1.08);
   Item* new_potion  = new Item(potion);
 
-  //forty_six.setValue(78);
-
-  //forty_six.print();
+  // Key Item Testing
+  Item* master_key  = new Item(115, "Master Key", nullptr);
+  Item* master_key2 = new Item(master_key);
+  Item* super_box = new Item(116, "Super Box", nullptr);
+  Item* boxxy_box = new Item(117, "Boxxy Box", nullptr);
+  Item* epic_sword_comp = new Item(118, "Epic Sword Comp", nullptr);
+  Item* alpha_omega = new Item(119, "Alpha Omega", nullptr);
 
   // Flavour Testing
   Flavour* spark = new Flavour(101, "Spark", as1 + as2, 1.04, 35);
@@ -353,6 +357,13 @@ void Game::setupBattle()
   test_pouch->addItem(new_potion);
   test_pouch->addItem(unique_item);
 
+  test_pouch->addItem(master_key);
+  test_pouch->addItem(master_key2);
+  test_pouch->addItem(super_box);
+  test_pouch->addItem(boxxy_box);
+  test_pouch->addItem(epic_sword_comp);
+  test_pouch->addItem(alpha_omega);
+
   test_pouch->addBubby(second);
   test_pouch->addBubby(first);
   test_pouch->addBubby(second);
@@ -377,10 +388,19 @@ void Game::setupBattle()
   // test_pouch->sort(ObjectSorts::NAME, SortObjects::EQUIPMENTS, false);
   // test_pouch->print(false);
 
-  test_pouch->removeEquipID(fated->getGameID());
-  test_pouch->removeEquipID(suit->getGameID());
+  //test_pouch->removeEquipID(fated->getGameID());
+  //test_pouch->removeEquipID(suit->getGameID());
+  //test_pouch->removeItemID(master_key->getGameID());
+  //test_pouch->removeItemIndex(2);
+  //test_pouch->removeItemID(unique_item->getGameID());
 
+  test_pouch->sort(ObjectSorts::NAME, SortObjects::ITEMS, true);
   test_pouch->print(false);
+
+  auto key_items = test_pouch->getKeyItems();
+
+  for (auto it = begin(key_items); it != end(key_items); ++it)
+    std::cout << "Item: " << (*it).first->getName() << " " << static_cast<int>((*it).second) << "\n";
 
   } // end enable test
  

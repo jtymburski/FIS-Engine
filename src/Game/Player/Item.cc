@@ -93,6 +93,29 @@ Item::Item(const int32_t &game_id, const std::string &name,
   setupClass();
 }
 
+/*
+ * Description: Key (Also Base Item) constructor - constructs a Key item
+ *
+ * Inputs: game_id - the game ID (base ID of the item)
+ *         name - the name to be assigned to the Item
+ *         thumbnail - icon for the Item
+ */
+Item::Item(const int32_t &game_id, const std::string &name,
+           Frame* thumbnail)
+  : game_id{game_id}
+  , my_id{++id}
+  , base_item{nullptr}
+  , max_durability{0}
+  , mass{0.0}
+  , name{name}
+  , thumbnail{thumbnail}
+  , value{0}
+{
+  setupClass();
+  setFlag(ItemFlags::KEY_ITEM, true);
+}
+
+
 Item::~Item()
 {
   unsetAll(this);
@@ -125,10 +148,10 @@ void Item::setupClass()
     prefix = StringDb::kDEFAULT_ITEM_PREFIX;
     occasion = ActionOccasion::NONE;
     
-    using_skill = nullptr;
+    using_skill     = nullptr;
     using_animation = nullptr;
-    using_message = "";
-    using_sound = nullptr;  
+    using_message   = "";
+    using_sound     = nullptr;  
   }
 
   /* Setup the class as a copy of the Base Item */

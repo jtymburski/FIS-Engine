@@ -87,6 +87,11 @@ public:
        Frame* thumbnail = nullptr, const double &mass = 0.0, 
        const uint32_t &dura = kMIN_DURA);
 
+  /* Key Item constructor */
+  Item(const int32_t &ame_id, const std::string &name, 
+       Frame* thumbnail = nullptr);
+
+  /* Annihilates an Item object */
   virtual ~Item();
 
 private:

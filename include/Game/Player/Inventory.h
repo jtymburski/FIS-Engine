@@ -11,7 +11,6 @@
 *
 * TODO
 * ----
-* - Fix key item sorts [01-18-14]
 * - Class testing & conventions [01-18-14]
 *******************************************************************************/
 
@@ -230,7 +229,7 @@ public:
   uint32_t getItemTotalCount();
 
   /* Returns the vector of all key items */
-  std::vector<Item*> getKeyItems();
+  std::vector<std::pair<Item*, uint8_t>> getKeyItems();
 
   /* Calculates and returns the mass */
   double getMass();

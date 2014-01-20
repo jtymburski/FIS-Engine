@@ -901,13 +901,6 @@ bool Inventory::sort(const ObjectSorts sort_type, SortObjects object_to_sort,
       return sortItems(begin(items), end(items), sort_type, ascending);
       break;
     }
-    case (SortObjects::KEY_ITEMS):
-    {
-      //TODO: Fix key items [01-18-14]
-      //auto key_items = getKeyItems();
-      //return sortItems(begin(key_items), end(key_items), sort_type, ascending);
-      break;
-    }
     default:
       break;
   }
@@ -1099,14 +1092,14 @@ uint32_t Inventory::getItemTotalCount()
 }
 
 /* Returns the vector of all key items */
-std::vector<Item*> Inventory::getKeyItems()
+std::vector<std::pair<Item*, uint8_t>> Inventory::getKeyItems()
 {
-  std::vector<Item*> key_items;
+  std::vector<std::pair<Item*, uint8_t>> key_items;
 
   for (auto item : items)
     if (item.first != nullptr)
       if (item.first->getFlag(ItemFlags::KEY_ITEM))
-        key_items.push_back(item.first);
+        key_items.push_back(item);
 
   return key_items;
 }

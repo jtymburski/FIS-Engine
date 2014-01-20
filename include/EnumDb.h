@@ -371,7 +371,6 @@ enum class SortObjects : std::uint32_t
   BUBBIES, 
   EQUIPMENTS, 
   ITEMS, 
-  KEY_ITEMS
 };
 
 /* The window display classifier to define how it's displayed:

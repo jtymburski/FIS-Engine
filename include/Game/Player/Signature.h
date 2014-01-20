@@ -22,9 +22,9 @@
 *
 * TODO
 * ----
-* Signature Links    - [12-13-13]
-* Pathfinding Chains - [12-13-13]
-* Gene Machine Recipes [12-13-13]
+* - Signature Links    - [12-13-13]
+* - Pathfinding Chains - [12-13-13]
+* - Gene Machine Recipes [12-13-13]
 *******************************************************************************/
 
 #ifndef SIGNATURE_H
