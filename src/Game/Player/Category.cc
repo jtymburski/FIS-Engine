@@ -22,10 +22,10 @@
  * CONSTANTS - See .h file for description
  *============================================================================*/
 
-bool Category::attr_sets_built = false;
+bool Category::attr_sets_built{false};
 
-AttributeSet Category::max_stats = AttributeSet();
-AttributeSet Category::min_stats = AttributeSet();
+AttributeSet Category::max_stats{AttributeSet()};
+AttributeSet Category::min_stats{AttributeSet()};
 
 const std::vector<int> Category::kMIN_VALUES =
   {50, 15,  7,  7,
@@ -51,12 +51,12 @@ const std::vector<int> Category::kMAX_VALUES =
  * Inputs:
  */
 Category::Category(const std::string &name)
-  : base_stats(AttributeSet())
-  , top_stats(AttributeSet())
-  , description(StringDb::kDEFAULT_CAT_DESC)
-  , denonym(StringDb::kDEFAULT_DENONYM)
-  , name(name)
-  , skill_set(nullptr)
+  : base_stats{AttributeSet()}
+  , top_stats{AttributeSet()}
+  , description{StringDb::kDEFAULT_CAT_DESC}
+  , denonym{StringDb::kDEFAULT_DENONYM}
+  , name{name}
+  , skill_set{nullptr}
 {
   if (!attr_sets_built)
     buildAttrSets();
@@ -73,12 +73,12 @@ Category::Category(const std::string &name)
 Category::Category(const std::string &name, const std::string &denonym, 
   	               const AttributeSet &base_stats, const AttributeSet &top_stats, 
   	               SkillSet* const skills)
-  : base_stats(base_stats)
-  , top_stats(top_stats)
-  , description(StringDb::kDEFAULT_CAT_DESC)
-  , denonym(denonym)
-  , name(name)
-  , skill_set(skills)
+  : base_stats{base_stats}
+  , top_stats{top_stats}
+  , description{StringDb::kDEFAULT_CAT_DESC}
+  , denonym{denonym}
+  , name{name}
+  , skill_set{skills}
 {
   if (!attr_sets_built)
     buildAttrSets();
@@ -123,6 +123,18 @@ void Category::cleanUpStats()
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
+bool Category::addEquippable(const EquipClass &new_equip_class)
+{
+  if (!isEquippable(new_equip_class))
+  {
+    equippables.push_back(new_equip_class);
+
+    return true;
+  }
+
+  return false;
+}
+
 bool Category::addImmunity(const Infliction &new_immunity)
 {
   if (!isImmune(new_immunity))
@@ -135,6 +147,15 @@ bool Category::addImmunity(const Infliction &new_immunity)
   return false;
 }
 
+bool Category::isEquippable(const EquipClass &check_equip_class)
+{
+  for (auto equip : equippables)
+    if (equip == check_equip_class)
+      return true;
+
+  return false;
+}
+
 bool Category::isImmune(const Infliction &check_immunity)
 {
   for (auto ailment : immunities)
@@ -142,6 +163,21 @@ bool Category::isImmune(const Infliction &check_immunity)
       return true;
 
  return false;
+}
+
+bool Category::removeEquippable(const EquipClass &rem_equip_class)
+{
+  for (auto it = begin(equippables); it != end(equippables); ++it)
+  {
+    if ((*it) == rem_equip_class)
+    {
+      equippables.erase(it);
+
+      return true;
+    }
+  }
+
+  return false;
 }
 
 bool Category::removeImmunity(const Infliction &rem_immunity)
@@ -167,8 +203,9 @@ void Category::print(const bool &simple)
   std::cout << "Denonym: " << denonym << "\n";
   std::cout << "Skill Set? " << (skill_set != nullptr) << "\n";
   std::cout << "Attr Sets Built? " << attr_sets_built << "\n";
+  std::cout << "Equippables Size: " << equippables.size() << "\n";
   std::cout << "Immunities Size: " << immunities.size() << "\n";
-  
+
   if (!simple)
   {
     std::cout << "Base Stats: \n";

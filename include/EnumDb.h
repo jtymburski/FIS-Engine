@@ -236,6 +236,15 @@ enum class Element : std::uint8_t
   NONE     = 1 << 0
 };
 
+enum class EquipClass : std::uint32_t
+{
+  STAFF,
+  SWORD,
+  CLAWS,
+  LIGHT_ARMOR,
+  HEAVY_ARMOR
+};
+
 /*
  * Description: Equipment slots which represent compartments on a person which
  *              will hold the equipments on the person because of reasons.

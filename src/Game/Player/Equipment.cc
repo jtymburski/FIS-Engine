@@ -70,7 +70,6 @@ void Equipment::print(const bool print_signature, const bool item_info)
   std::cout << "Equip Signature? " << (equip_signature != nullptr) << "\n";
   std::cout << "[void]Equip Slot: " << "\n";
   std::cout << "Base Skill List? " << (base_skill_list != nullptr) << "\n";
-
   std::cout << "TWO_HANDED: " << getEquipFlag(EquipState::TWO_HANDED) << "\n";
   std::cout << "EQUIPPED: " << getEquipFlag(EquipState::EQUIPPED) << "\n";
 

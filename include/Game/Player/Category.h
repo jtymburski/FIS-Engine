@@ -66,6 +66,10 @@ private:
 
   SkillSet* const skill_set;
 
+  /* Vector of equipment types which the category can equip */
+  std::vector<EquipClass> equippables;
+
+  /* Vector of inflictions which the clas is immune to */
 	std::vector<Infliction> immunities;
 
   /* ------------ Constants --------------- */
@@ -86,9 +90,15 @@ private:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  bool addEquippable(const EquipClass &new_equip_class);
+
   bool addImmunity(const Infliction &new_immunity);
 
+  bool isEquippable(const EquipClass &check_equip_class);
+
   bool isImmune(const Infliction &check_immunity);
+
+  bool removeEquippable(const EquipClass &rem_equip_class);
 
   bool removeImmunity(const Infliction &rem_immunity);
 
