@@ -25,6 +25,7 @@
 #include "Game/Player/Item.h"
 #include "Game/Player/Bubby.h"
 #include "Game/Player/Equipment.h"
+#include "EnumDb.h"
 #include "EnumFlags.h"
 #include "Frame.h"
 #include "Helpers.h"
@@ -52,9 +53,6 @@ public:
 	/* Constructs an Inventory using an ID, name, and Icon image */
   Inventory(const uint32_t game_id, const std::string name = "", 
   	        Frame* thumb = nullptr);
-
-  enum class SortObjects
-  { ZERO_BUBBIES, BUBBIES, EQUIPMENTS, ITEMS, KEY_ITEMS };
 
 private:
   /* Flag state of the Inventory */

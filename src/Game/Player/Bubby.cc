@@ -26,11 +26,11 @@
  * CONSTANTS - See implementation for details
  *============================================================================*/
 
-const uint32_t Bubby::kMIN_EXP = 75;
-const uint32_t Bubby::kMAX_LEVEL_EXP = 1000000;
-const uint32_t Bubby::kMAX_EXP = 10000000;
+const uint32_t Bubby::kMIN_EXP       = 75;
+const uint32_t Bubby::kMAX_LEVEL_EXP = 858585;
+const uint32_t Bubby::kMAX_EXP       = 1500000;
 
-std::vector<uint32_t> Bubby::exp_table = {};
+std::vector<uint32_t> Bubby::exp_table{};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -46,10 +46,10 @@ std::vector<uint32_t> Bubby::exp_table = {};
  */
 Bubby::Bubby(Flavour* const parent, const uint32_t &tier)
   : Item(parent)
-  , level(0)
-  , tier(tier)
-  , total_exp(kMIN_EXP)
-  , type(parent)
+  , level{0}
+  , tier{tier}
+  , total_exp{kMIN_EXP}
+  , type{parent}
 {
   buildExpTable();
 
@@ -65,8 +65,6 @@ Bubby::Bubby(Flavour* const parent, const uint32_t &tier)
     /* Update the exp. to reflect the current level's min. value */
     updateExp();
   }
-
-  setFlag(ItemFlags::BUBBY, true);
 }
 
 /*=============================================================================
@@ -86,8 +84,20 @@ void Bubby::buildExpTable()
     uint32_t levels = Flavour::getMaxLevel();
 
     if (levels > 0)
-      exp_table = Helpers::buildExpTable(kMIN_EXP, kMAX_EXP, levels);
+      exp_table = Helpers::buildExpTable(kMIN_EXP, kMAX_LEVEL_EXP, levels + 1);
   }
+}
+
+bool Bubby::canAddExperience()
+{
+  /* Max Tier can always add experience */
+  if (getTier() == Flavour::getTiers() - 1)
+    return true;
+
+  if (level >= Flavour::getLevels(getTier() + 1) - 1)
+    return false;
+
+  return true;
 }
 
 /*
@@ -99,15 +109,16 @@ void Bubby::buildExpTable()
  */
 bool Bubby::levelUp()
 {
+  if (level >= Flavour::getMaxLevel())
+    return false;
+
   auto temp_level = level;
 
-  while (level <= Flavour::getMaxLevel() && total_exp >= exp_table.at(level))
-  {
+  while (total_exp >= exp_table.at(level))
     level++;
 
-    if (tier != Flavour::getTiers() - 1 && level >= Flavour::getLevels(tier))
-      tierUp();
-  }
+  if (level < Flavour::getMaxLevel() && level == Flavour::getLevels(getTier() + 1))
+    updateExp();
 
   return (temp_level == level);
 }
@@ -171,18 +182,19 @@ bool Bubby::updateExp()
  */
 bool Bubby::addExperience(const uint32_t &amount)
 {
-  if (total_exp + amount <= kMAX_EXP)
+  if (tier != 0)
   {
-    total_exp += amount;
-
-    /* Call level up to check for level up */
-    if (tier != 0)
+    if (canAddExperience() && total_exp + amount <= kMAX_EXP)
+    {
+      std::cout << "adding experience" << "\n";
+      total_exp += amount;
       levelUp();
+    }
+    else if (total_exp + amount >= kMAX_EXP)
+      total_exp = kMAX_EXP;
 
     return true;
   }
-
-  total_exp = kMAX_EXP;
 
   return false;
 }
@@ -226,11 +238,13 @@ void Bubby::print(const bool &print_table, const bool &item_info)
  */
 bool Bubby::upgrade()
 {
-  if (tier == 0)
+  if (tier < Flavour::getTiers() - 1)
   {
-    /* Tier up, find the level starting at Tier 1 and update the exp */
+    /* Tier up */
     tierUp();
-    level = Flavour::getLevels(1);
+
+    /* Find the level at which Tier 1 starts */
+    level = Flavour::getLevels(getTier());
     updateExp();
 
     return true;

@@ -61,6 +61,9 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Determines whether experience can be added */
+  bool canAddExperience();
+  
   /* Builds the experience table for the Bubby levels */
   static void buildExpTable();
 

@@ -91,13 +91,13 @@ public:
 
 private:
   /* Static ID counter for the Item class */
-  static int id;
+  static int32_t id;
 
 protected:
 
   /* Unique and non-unique IDs for the Item */
-  const int game_id;
-  int my_id;
+  const int32_t game_id;
+  int32_t my_id;
 
   /* Pointer to the Base Item, null if the Item has changed in any way */
   Item* base_item;
@@ -212,10 +212,10 @@ public:
   bool getFlag(ItemFlags test_flag);
 
   /* Returns the game_id (base item ID) of the object or kUNSET_ID */
-  int getGameID();
+  int32_t getGameID();
 
   /* Returns the unique ID of the Item */
-  int getID();
+  int32_t getID();
 
   /* Evaluates and returns a given material composition flag */
   bool getMaterial(Material composition);

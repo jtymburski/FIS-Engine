@@ -19,22 +19,18 @@
 /*=============================================================================
  * CONSTANTS - See .h file for details
  *============================================================================*/
-const std::vector<float> Flavour::kTIER_MODIFIERS = 
-{0.0, 1.0, 1.25, 1.5};
+const std::vector<float> Flavour::kTIER_MODIFIERS{0.0, 1.0, 1.25, 1.5};
 
-const std::vector<uint32_t> Flavour::kTIER_LEVELS =
-{0, 1, 11, 21};
+const std::vector<uint32_t> Flavour::kTIER_LEVELS{0, 1, 11, 21};
 
-const std::vector<float> Flavour::kTIER_MASSES = 
-{1.0, 1.0, 2.0, 4.0};
+const std::vector<float> Flavour::kTIER_MASSES{1.0, 1.0, 2.0, 4.0};
 
-const std::vector<float> Flavour::kTIER_VALUES =
-{1.0, 4.0, 4.0, 4.0};
+const std::vector<float> Flavour::kTIER_VALUES{1.0, 4.0, 4.0, 4.0};
 
-const uint32_t Flavour::kMAX_LVL  = 30;
-const int      Flavour::kUNSET_ID = -1;
+const uint32_t Flavour::kMAX_LVL{30};
+const int      Flavour::kUNSET_ID{-1};
 
-std::vector<Flavour*> Flavour::flavour_list = {};
+std::vector<Flavour*> Flavour::flavour_list{};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -46,13 +42,13 @@ std::vector<Flavour*> Flavour::flavour_list = {};
  * Inputs: none
  */
 Flavour::Flavour()
-  : base_stats(AttributeSet())
-  , base_mass(0.0)
-  , base_value(0)
-  , description("")
-  , game_id(kUNSET_ID)
-  , name("")
-  , skill_list(nullptr) 
+  : base_stats{AttributeSet()}
+  , base_mass{0.0}
+  , base_value{0}
+  , description{""}
+  , game_id{kUNSET_ID}
+  , name{""}
+  , skill_list{nullptr}
 {
   if (!addFlavour(this))
     std::cerr << "Error: Duplicating flavour" << this->getName() << std::endl;
@@ -71,13 +67,13 @@ Flavour::Flavour()
 Flavour::Flavour(const int &game_id, const std::string &flavour_name, 
                  const AttributeSet &min_stats, const double &min_mass,
                  const uint32_t &min_value, SkillSet* skills)
-  : base_stats(min_stats)
-  , base_mass(min_mass)
-  , base_value(min_value)
-  , description("")
-  , game_id(game_id)
-  , name(flavour_name)
-  , skill_list(skills)
+  : base_stats{min_stats}
+  , base_mass{min_mass}
+  , base_value{min_value}
+  , description{""}
+  , game_id{game_id}
+  , name{flavour_name}
+  , skill_list{skills}
 {
   if (!addFlavour(this))
     std::cerr << "Error: Duplicating flavour" << this->getName() << std::endl;

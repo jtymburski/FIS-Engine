@@ -365,6 +365,15 @@ enum class SkillSorts : std::uint32_t
   ENABLED
 };
 
+enum class SortObjects : std::uint32_t
+{ 
+  ZERO_BUBBIES, 
+  BUBBIES, 
+  EQUIPMENTS, 
+  ITEMS, 
+  KEY_ITEMS
+};
+
 /* The window display classifier to define how it's displayed:
  *  OFF - not showing
  *  SHOWING - rising from the bottom

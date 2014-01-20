@@ -283,70 +283,112 @@ void Game::setupBattle()
   //  std::cout << index++ << " " << value << "\n";
 
   // Action Testing
-  std::vector<Action*> actions;
-  std::vector<float> chances = {0.50, 0.40, 0.12, 0.46};
-  actions.push_back(new Action("1,ALTER,THAG,,,,AMOUNT.50,AMOUNT.15"));
-  actions.push_back(new Action("3,INFLICT,POISON,2.7,,,,,"));
-  actions.push_back(new Action("4,RELIEVE,CURSE,,,,,"));
-  actions.push_back(new Action("5,REVIVE,,,,,PC.25,AMOUNT.50"));
-  Action* special = new Action("6,ALTER,VITA,,,,PC.25,AMOUNT.50");
+  // std::vector<Action*> actions;
+  // std::vector<float> chances = {0.50, 0.40, 0.12, 0.46};
+  // actions.push_back(new Action("1,ALTER,THAG,,,,AMOUNT.50,AMOUNT.15"));
+  // actions.push_back(new Action("3,INFLICT,POISON,2.7,,,,,"));
+  // actions.push_back(new Action("4,RELIEVE,CURSE,,,,,"));
+  // actions.push_back(new Action("5,REVIVE,,,,,PC.25,AMOUNT.50"));
+  // Action* special = new Action("6,ALTER,VITA,,,,PC.25,AMOUNT.50");
   
-  // Skill Testing
-  std::vector<Skill*> skills;
+  // // Skill Testing
+  // std::vector<Skill*> skills;
 
-  Skill* normal_attack = new Skill(13, "Attack",ActionScope::ONE_TARGET,actions[0],0.75);
-  normal_attack->addActions(actions, chances);
+  // Skill* normal_attack = new Skill(13, "Attack",ActionScope::ONE_TARGET,actions[0],0.75);
+  // normal_attack->addActions(actions, chances);
 
-  skills.push_back(normal_attack);
-  skills.push_back(new Skill(400, "Super Attack",ActionScope::ONE_ENEMY,special,0.65));
-  skills.push_back(new Skill(3, "Poison Attack",ActionScope::ONE_ENEMY,actions[1],0.79));
-  skills.push_back(new Skill(35, "Crappy Attack",ActionScope::NO_SCOPE,special,1.00));
+  // skills.push_back(normal_attack);
+  // skills.push_back(new Skill(400, "Super Attack",ActionScope::ONE_ENEMY,special,0.65));
+  // skills.push_back(new Skill(3, "Poison Attack",ActionScope::ONE_ENEMY,actions[1],0.79));
+  // skills.push_back(new Skill(35, "Crappy Attack",ActionScope::NO_SCOPE,special,1.00));
 
-  std::vector<uint32_t> levels;
+  // std::vector<uint32_t> levels;
 
-  for (Skill* s : skills)
-  {
-    s->print();
-    levels.push_back(levels.size());
-  }
+  //for (Skill* s : skills)
+  //{
+  //  s->print();
+  //  levels.push_back(levels.size());
+  //}
 
   // Skill Set Testing
-  SkillSet* set1 = new SkillSet(skills, levels);
-  set1->sort(SkillSorts::ENABLED);
-
-  std::vector<Bubby*> bubby_pointas;
+  //SkillSet* set1 = new SkillSet(skills, levels);
+  //set1->sort(SkillSorts::ENABLED);
 
   // General Item Testing
-  Item forty_six{46, "Item Forty Six", 75, nullptr, 1.08};
+  Item* potion      = new Item(45, "Potion", 70, nullptr, 1.01);
+  Item* unique_item = new Item(46, "Unique Item", 75, nullptr, 1.08);
+  Item* new_potion  = new Item(potion);
 
   //forty_six.setValue(78);
 
   //forty_six.print();
 
   // Flavour Testing
-  //Flavour* spark = new Flavour(101, "Spark", as1 + as2, 1.04, 35);
-  //Flavour* tumor = new Flavour(102, "Tumor", AttributeSet(2), 1.09, 65);
-  //Flavour* moldy = new Flavour(103, "Moldy", AttributeSet(1), 1.11, 48);
-  // Bubby Testing
-  //for (int i = 0; i < 10; i++)
-  //{
-    //bubby_pointas.push_back(new Bubby(spark));
-    //bubby_pointas.push_back(new Bubby(tumor));
-    //bubby_pointas.push_back(new Bubby(moldy));
-  //}
+  Flavour* spark = new Flavour(101, "Spark", as1 + as2, 1.04, 35);
+  Flavour* tumor = new Flavour(102, "Tumor", AttributeSet(2), 1.09, 65);
+  Flavour* moldy = new Flavour(103, "Moldy", AttributeSet(1), 1.11, 48);
 
+  Bubby* first  = new Bubby(spark);
+  Bubby* second = new Bubby(moldy);
+  Bubby* third  = new Bubby(tumor);
+  Bubby* fourth = new Bubby(spark, 1);
+  Bubby* fifth  = new Bubby(moldy, 1);
 
-  //bubby_pointas.at(0)->print(true, true);
+  fourth->print();
 
   // Signature Testing
 
 
   // Equipment Testing
-  Equipment* fated = new Equipment(201, "Fated Oak Saber", 1, 15, 100, nullptr, 10, 10);
-  
-  fated->getSignature()->print();
+  Equipment* fated = new Equipment(201, "Fated Oak Saber", 1, 1, 100, nullptr, 10, 10);
+  Equipment* suit  = new Equipment(202, "Suit", 100, 3, 100, nullptr, 10, 10);
 
+  // fated->getSignature()->print();
 
+  // Inventory Testing
+  Inventory* test_pouch = new Inventory(1001, "Test Pouch", nullptr);
+  test_pouch->addItem(potion);
+  test_pouch->addItem(unique_item);
+  test_pouch->addItem(new_potion);
+  test_pouch->addItem(new_potion);
+  test_pouch->addItem(unique_item);
+
+  test_pouch->addBubby(first);
+  test_pouch->addBubby(first);
+    test_pouch->addBubby(first);
+  test_pouch->addBubby(first);
+    test_pouch->addBubby(first);
+  test_pouch->addBubby(first);
+    test_pouch->addBubby(first);
+  test_pouch->addBubby(first);
+    test_pouch->addBubby(first);
+  test_pouch->addBubby(first);
+  test_pouch->addBubby(first);
+  test_pouch->addBubby(second);
+    test_pouch->addBubby(first);
+  test_pouch->addBubby(second);
+    test_pouch->addBubby(first);
+  test_pouch->addBubby(second);
+    test_pouch->addBubby(first);
+  test_pouch->addBubby(second);
+  test_pouch->addBubby(third);
+  test_pouch->addBubby(third);
+
+  test_pouch->addBubby(fourth);
+  test_pouch->addBubby(fourth);
+  test_pouch->addBubby(fifth);
+  test_pouch->addBubby(fifth);
+
+  test_pouch->addEquipment(fated);
+  test_pouch->addEquipment(suit);
+
+  test_pouch->print(false);
+
+  std::cout << " ----- Sorting ------ \n";
+
+  test_pouch->sort(ObjectSorts::NAME, SortObjects::EQUIPMENTS, false);
+
+  test_pouch->print(false);
 
   } // end enable test
  

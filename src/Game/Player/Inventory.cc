@@ -21,9 +21,9 @@
 uint32_t Inventory::id = 0;
 uint32_t Inventory::money_id = 0;
 
-const double   Inventory::kMIN_MASS      =  100.00;
+const double   Inventory::kMIN_MASS      =  300.00;
 const double   Inventory::kMAX_MASS      = 5000.00;
-const uint32_t Inventory::kMIN_ITEM      =      40;
+const uint32_t Inventory::kMIN_ITEM      =      50;
 const uint32_t Inventory::kMAX_ITEM      =   25000;
 const uint8_t  Inventory::kMIN_EACH_ITEM =      10;
 const uint8_t  Inventory::kMAX_EACH_ITEM =      99;
@@ -638,7 +638,7 @@ bool Inventory::addItem(Item* new_item, const bool bypass)
 
   if (can_add)
   {
-    if (count == 0)
+    if (count == 0 || new_item->isBaseItem())
       items.push_back(std::make_pair(new_item, 1));
     else
       increaseItemCount(new_item->getGameID());
@@ -673,18 +673,17 @@ bool Inventory::contains(const int &id_check)
 /* Prints out the state of the inventory */
 void Inventory::print(bool simple)
 {
-  if (simple)
-  {
-  	std::cout << "ID: " << id << " M: " << curr_mass << " N: " << name << "\n";
-    std::cout << "Items: " << items.size() << "/" << item_limit << "\n";
-    std::cout << "Zero Bubbies: " << zero_bubbies.size() << "\n";
-    std::cout << "Bubbies: " << bubbies.size()  << "\n";
-    std::cout << "Total Bubbies: " << getTotalBubbyCount() << "/" << bubby_limit
-              << "\n";
-    std::cout << "Equipment: " << equipments.size() << "/" << equip_limit
-              << "\n";
-  }
-  else
+  std::cout << "---- Inventory: " << name << " ----\n";
+
+  std::cout << "ID: " << id << " M: " << curr_mass << " N: " << name << "\n";
+  std::cout << "# Unique Items: " << items.size() << "\n";
+  std::cout << "Total Items: " << getItemTotalCount() << "/" << item_limit << "\n";
+  std::cout << "# Unique Zero Bubbies: " << zero_bubbies.size() << "\n";
+  std::cout << "# Unique TX Bubbies: " << bubbies.size()  << "\n";
+  std::cout << "Total Bubbies: " << getTotalBubbyCount() << "/" << bubby_limit
+            << "\n";
+  std::cout << "Equipment: " << equipments.size() << "/" << equip_limit << "\n";
+  if (!simple)
   {
     std::cout << "Tier 0 Bubbies:\n";
 
@@ -692,12 +691,12 @@ void Inventory::print(bool simple)
     {
       if (bubby_pair.first != nullptr)
       {
-        std::cout << bubby_pair.first->getName() << " " << bubby_pair.second 
+        std::cout << bubby_pair.first->getName() << " " << static_cast<int>(bubby_pair.second) 
         << "\n";
       }
     }
 
-    std::cout << "Bubbies:\n";
+    std::cout << "\nBubbies:\n";
 
     for (auto bubby : bubbies)
       if (bubby != nullptr)
@@ -713,8 +712,10 @@ void Inventory::print(bool simple)
 
     for (auto item : items)
       if (item.first != nullptr)
-        std::cout << item.first->getName() << " " << item.second << "\n";
+        std::cout << item.first->getName() << " " << static_cast<int>(item.second) << "\n";
   }
+  
+  std::cout << "--- / Inventory ---\n";
 }
 
 /* Removes a zero bubby from the inventory */
@@ -857,10 +858,14 @@ int32_t Inventory::getBubbyIndex(const uint32_t &game_id)
 {
   auto index = -1;
 
-  for (auto it = begin(zero_bubbies); it != end(zero_bubbies); ++it, index++)
+  for (auto it = begin(zero_bubbies); it != end(zero_bubbies); ++it)
+  {
+    index++;
+
     if ((*it).first != nullptr)
       if ((*it).first->getGameID() == static_cast<int32_t>(game_id))
         return index;
+  }
 
   return index;
 }
@@ -933,10 +938,13 @@ int32_t Inventory::getItemIndex(const uint32_t &game_id)
 {
   auto index = -1;
 
-  for (auto it = begin(items); it != end(items); ++it, ++index)
+  for (auto it = begin(items); it != end(items); ++it)
+  {
+    index++;
     if ((*it).first != nullptr)
       if ((*it).first->getGameID() == static_cast<int32_t>(game_id))
         return index;
+  }
 
   return index;
 }
@@ -1064,7 +1072,7 @@ bool Inventory::setImages(Frame* const new_backdrop, Frame* const new_thumbnail)
  	                         const uint32_t item_lim, const uint8_t item_e,
  	                         const double mass_lim)
 {
-  bubby_limit     = Helpers::setInRange(bubby_lim, 0, 4);
+  bubby_limit     = Helpers::setInRange(bubby_lim, kMIN_ITEM, kMAX_ITEM);
   equip_limit     = Helpers::setInRange(equip_lim, kMIN_ITEM, kMAX_ITEM);
   item_limit      = Helpers::setInRange(item_lim, kMIN_ITEM, kMAX_ITEM);
   item_each_limit = Helpers::setInRange(item_e, kMIN_EACH_ITEM, kMAX_EACH_ITEM);

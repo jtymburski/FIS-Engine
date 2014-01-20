@@ -19,7 +19,7 @@
  *============================================================================*/
 
 /* Static ID Counter */
-int Item::id{0};
+int32_t Item::id{0};
 
 /* Static Class Constants */
 const uint32_t Item::kMAX_DURA{100000};
@@ -40,6 +40,7 @@ const double   Item::kMIN_MASS{-1000};
 Item::Item(Flavour* const source)
   : game_id{source->game_id}
   , my_id{++id}
+  , base_item{nullptr}
 {
   setupClass();
 
@@ -251,7 +252,7 @@ uint32_t Item::getValue()
  */
 bool Item::isBaseItem()
 {
-  return (base_item != nullptr);
+  return (base_item == nullptr);
 }
 
 /*
@@ -370,9 +371,9 @@ uint32_t Item::getDurability()
  * Description: Returns the game id (base item ID) of the current Item
  *
  * Inputs: none
- * Output: int - the game_id of the Item
+ * Output: int32_t - the game_id of the Item
  */
-int Item::getGameID()
+int32_t Item::getGameID()
 {
   return game_id;
 }
@@ -381,9 +382,9 @@ int Item::getGameID()
  * Description: Returns the actual unique ID (my_id) of the current Item.
  * 
  * Inputs: none
- * Output: int - the actual unique ID of the current item
+ * Output: int32_t - the actual unique ID of the current item
  */
-int Item::getID()
+int32_t Item::getID()
 {
   return my_id;
 }
