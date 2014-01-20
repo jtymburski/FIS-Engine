@@ -786,7 +786,7 @@ bool MapDialog::initConversation(Conversation dialog_info, MapPerson* target)
 bool MapDialog::initNotification(std::string notification, bool single_line,
                                                            int time_visible)
 {
-  if(img_convo.isImageSet() && !notification.empty())
+  if(img_convo.isTextureSet() && !notification.empty())
   {
     /* Calculate the available space */
     int width = img_convo.getWidth() - (kMARGIN_SIDES << 1);
@@ -837,7 +837,7 @@ bool MapDialog::initNotification(std::string notification, bool single_line,
 bool MapDialog::initPickup(Frame* thing_image, int thing_count, 
                                                int time_visible)
 {
-  if(thing_image != NULL && thing_image->isImageSet() && thing_count > 0 
+  if(thing_image != NULL && thing_image->isTextureSet() && thing_count > 0 
                          && isImagesSet(false, true))
   {
     uint16_t notification_index = 0;
@@ -947,16 +947,16 @@ bool MapDialog::isImagesSet(bool conversation, bool pickup)
   /* Check conversation image data */
   if(conversation)
   {
-    loaded &= img_convo.isImageSet();
-    loaded &= img_name_l.isImageSet();
-    loaded &= img_name_r.isImageSet();
+    loaded &= img_convo.isTextureSet();
+    loaded &= img_name_l.isTextureSet();
+    loaded &= img_name_r.isTextureSet();
   }
 
   /* Check pickup image data */
   if(pickup)
   {
-    loaded &= img_pick_b.isImageSet();
-    loaded &= img_pick_t.isImageSet();
+    loaded &= img_pick_b.isTextureSet();
+    loaded &= img_pick_t.isTextureSet();
   }
 
   return loaded;

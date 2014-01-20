@@ -309,7 +309,7 @@ bool Application::run()
   text2.setFont("fonts/colab_light.otf", 16, TTF_STYLE_BOLD);
   TTF_SetFontOutline(text2.getFont(), 2);
   text2.setText(renderer, "341", {0, 0, 0, 255});
-
+  
   if(isInitialized())
   {
     /* Main application loop */
@@ -349,7 +349,7 @@ bool Application::run()
       /* Font testing - TODO: Remove */
       text2.render(renderer, 48, 48);
       text1.render(renderer, 50, 50);
-
+      
       /* Update screen */
       SDL_RenderPresent(renderer);
       count++;

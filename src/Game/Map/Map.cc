@@ -123,7 +123,7 @@ bool Map::addSpriteData(XmlData data, std::string id,
     {
       access_sprite = new Sprite();
       access_sprite->setId(access_id);
-      access_sprite->setWhiteMask(white_mask.getTexture());
+      access_sprite->setWhiteMask(white_mask.getTextureActive());
       tile_sprites.push_back(access_sprite);
       
       /* If the copy sprite isn't null, copy the data into the new sprite */
@@ -868,6 +868,12 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
                           geography[map_index][0].size());
     }
   }
+  else if(event.keysym.sym == SDLK_g)
+  {
+    bool enable = !tile_sprites[0]->isGreyScale();
+    for(auto i = tile_sprites.begin(); i != tile_sprites.end(); i++)
+      (*i)->useGreyScale(enable);
+  }
   /* Exit the map, map has finished processing */
   else if(event.keysym.sym == SDLK_ESCAPE)
   {
@@ -1022,7 +1028,7 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
   XmlData data;
 
   /* Set up the white mask, if it isn't done */
-  if(!white_mask.isImageSet())
+  if(!white_mask.isTextureSet())
   {
     SDL_Texture* texture = SDL_CreateTexture(renderer, 
                                              SDL_PIXELFORMAT_RGBA8888, 
@@ -1151,11 +1157,11 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
     
     /* Go through all map things and add applicable modifications */
     for(uint16_t i = 0; i < items.size(); i++)
-     items[i]->setWhiteMask(white_mask.getTexture());
+     items[i]->setWhiteMask(white_mask.getTextureActive());
     for(uint16_t i = 0; i < persons.size(); i++)
-      persons[i]->setWhiteMask(white_mask.getTexture());
+      persons[i]->setWhiteMask(white_mask.getTextureActive());
     for(uint16_t i = 0; i < things.size(); i++)
-      things[i]->setWhiteMask(white_mask.getTexture());
+      things[i]->setWhiteMask(white_mask.getTextureActive());
     
     /* Load the item menu sprites - TODO: In file? */
     item_menu.loadImageBackend("sprites/Overlay/item_store_left.png", 

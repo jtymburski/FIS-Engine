@@ -28,11 +28,12 @@ Frame::Frame()
   /* Initialize variables */
   alpha = kDEFAULT_ALPHA;
   flip = SDL_FLIP_NONE;
+  grey_scale = false;
   height = 0;
-  image_set = false;
   next = NULL;
   previous = NULL;
   texture = NULL;
+  texture_grey = NULL;
   width = 0;
 }
 
@@ -228,15 +229,34 @@ Frame* Frame::getPrevious()
 }
 
 /*
+ * Description: Returns the texture, based on the grey scale boolean. If true,
+ *              it returns the grey scale texture and if false, returns the
+ *              normal texture. NULL if unset.
+ *
+ * Inputs: bool grey_scale - boolean to choose grey scale texture or not
+ * Output: SDL_Texture* - texture handle pointer
+ */
+SDL_Texture* Frame::getTexture(bool grey_scale)
+{
+  if(grey_scale)
+    return texture_grey;
+  return texture;
+}
+
+/*
  * Description: Returns the SDL texture that is being stored in the frame.
  *              It is not necessarily NULL if the texture isn't set. Call 
- *              isImageSet() to determine if it's been set.
+ *              isTextureSet() to determine if it's been set. isGreyScale()
+ *              function indicates whether the returned texture is the greyscale
+ *              version of the active texture or not.
  *
  * Inputs: none
  * Output: SDL_Texture* - the SDL texture of the image
  */
-SDL_Texture* Frame::getTexture()
+SDL_Texture* Frame::getTextureActive()
 {
+  if(grey_scale)
+    return texture_grey;
   return texture;
 }
 
@@ -252,15 +272,28 @@ int Frame::getWidth()
   return width;
 }
 
-/* 
- * Description: Returns if an image is stored in this frame
+/*
+ * Description: Checks if the grey scale texture is the active texture.
  *
  * Inputs: none
+ * Output: bool - status if the grey scale texture is the active texture
+ */
+bool Frame::isGreyScale()
+{
+  return grey_scale;
+}
+
+/* 
+ * Description: Returns if a texture is stored in this frame
+ *
+ * Inputs: bool grey_scale - set to true to check the grey scale texture
  * Output: bool - Status if an image is actually set
  */
-bool Frame::isImageSet()
+bool Frame::isTextureSet(bool grey_scale)
 {
-  return image_set;
+  if(grey_scale)
+    return (texture_grey != NULL);
+  return (texture != NULL);
 }
 
 /*
@@ -276,7 +309,7 @@ bool Frame::isImageSet()
  */
 bool Frame::render(SDL_Renderer* renderer, int x, int y, int w, int h)
 {
-  if(isImageSet() && renderer != NULL)
+  if(isTextureSet(grey_scale) && renderer != NULL)
   {
     SDL_Rect rect;
     rect.x = x;
@@ -292,8 +325,51 @@ bool Frame::render(SDL_Renderer* renderer, int x, int y, int w, int h)
     }
     
     /* Render and return status */
-    return (SDL_RenderCopyEx(renderer, getTexture(), NULL, 
+    return (SDL_RenderCopyEx(renderer, getTextureActive(), NULL, 
                              &rect, 0, NULL, flip) == 0);
+  }
+  
+  return false;
+}
+
+/*
+ * Description: Renders the grey scale texture at the base and then renders the
+ *              colored texture above that at the given alpha value. This is 
+ *              used for blending the greyscale to color and vice versa. Fails
+ *              if there is no grey scale texture.
+ *
+ * Inputs: SDL_Renderer* renderer - the rendering context for the GPU
+ *         uint8_t alpha - the alpha rating of the colored texture
+ *         int x - the x pixel location of the top left
+ *         int y - the y pixel location of the top left
+ *         int w - the width to render (in pixels)
+ *         int h - the height to render (in pixels)
+ * Output: bool - status if the render occurred
+ */
+bool Frame::renderBoth(SDL_Renderer* renderer, uint8_t alpha, int x, int y, 
+                                                              int w, int h)
+{
+  if(isTextureSet() && isTextureSet(true) && renderer != NULL)
+  {
+    uint8_t old_alpha = getAlpha();
+    bool grey_scale = isGreyScale();
+    bool success = true;
+    
+    /* Render grey scale texture */
+    useGreyScale(true);
+    setAlpha(255);
+    success &= render(renderer, x, y, w, h);
+    
+    /* Render colored texture */
+    useGreyScale(false);
+    setAlpha(alpha);
+    success &= render(renderer, x, y, w, h);
+    
+    /* Return to normal parameters */
+    useGreyScale(grey_scale);
+    setAlpha(old_alpha);
+    
+    return success;
   }
   
   return false;
@@ -309,7 +385,8 @@ bool Frame::render(SDL_Renderer* renderer, int x, int y, int w, int h)
 void Frame::setAlpha(uint8_t alpha)
 {
   this->alpha = alpha;
-  SDL_SetTextureAlphaMod(getTexture(), alpha);
+  SDL_SetTextureAlphaMod(texture, alpha);
+  SDL_SetTextureAlphaMod(texture_grey, alpha);
 }
 
 /* 
@@ -345,9 +422,11 @@ bool Frame::setPrevious(Frame* previous)
  * Inputs: std::string path - the path to the image
  *         SDL_Renderer* renderer - the renderer to associate the texture with
  *         uint16_t angle - the angle to texture rotate (only works for mod 90)
+ *         bool enable_greyscale - should a greyscale texture be created?
  * Output: bool - the success of loading the texture
  */
-bool Frame::setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle)
+bool Frame::setTexture(std::string path, SDL_Renderer* renderer, 
+                       uint16_t angle, bool enable_greyscale)
 {
   bool success = true;
 
@@ -357,6 +436,9 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle)
   /* If successful, unset previous and set the new texture */
   if(loaded_surface != NULL && renderer != NULL)
   {
+    /* Unset the previous texture */
+    unsetTexture();
+    
     /* Angle surface modification - only works for %90 angles */
     if(angle > 0 && loaded_surface->h == loaded_surface->w && 
        loaded_surface->format->BytesPerPixel == 4)
@@ -394,17 +476,54 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle)
         }
       }
     }
-    
+
     /* Create the texture from the surface */
-    unsetTexture();
     texture = SDL_CreateTextureFromSurface(renderer, loaded_surface);
-    image_set = true;
     height = loaded_surface->h;
     width = loaded_surface->w;
-    SDL_FreeSurface(loaded_surface);
+    
+    /* Create the greyscale texture, if applicable */
+    if(enable_greyscale && loaded_surface->format->BytesPerPixel == 4)
+    {
+      SDL_Surface* grey_surface = SDL_ConvertSurface(
+                                     loaded_surface, loaded_surface->format, 0);
+      
+      /* Change all the pixels to greyscale */
+      uint32_t* grey_pixels = static_cast<uint32_t*>(grey_surface->pixels);
+      
+      /* Parse each pixel and modify it's value */
+      for(int i = 0; i < grey_surface->h; i++)
+      { 
+        for(int j = 0; j < grey_surface->w; j++)
+        {
+          uint32_t* pixel = &grey_pixels[i*loaded_surface->h + j];
+          
+          /* Get the color data */
+          SDL_Color color;
+          SDL_GetRGBA(*pixel, grey_surface->format, &color.r, &color.g, 
+                                                   &color.b, &color.a);
+
+          /* Modify the color data -> to greyscale */
+          color.r = 0.21 * color.r + 0.71 * color.g + 0.07 * color.b;
+          color.g = color.r;
+          color.b = color.r;
+          
+          /* Insert the new color data */
+          *pixel = SDL_MapRGBA(grey_surface->format, color.r, color.g, 
+                                                     color.b, color.a);
+        }
+      }
+      
+      /* Create greyscale texture and then clean up */
+      texture_grey = SDL_CreateTextureFromSurface(renderer, grey_surface);
+      SDL_FreeSurface(grey_surface);
+    }
     
     /* Finally, set the alpha rating */
     setAlpha(alpha);
+    
+    /* Clean Up */
+    SDL_FreeSurface(loaded_surface);
   }
   /* If the renderer is NULL, unload the surface */
   else if(loaded_surface != NULL)
@@ -437,15 +556,17 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle)
  *         std::vector<std::string> adjustments - adjustment flip stack
  *         SDL_Renderer* renderer - the renderer to associate the texture with
  *         uint16_t angle - the angle to texture rotate (only works for mod 90)
+ *         bool enable_greyscale - should a greyscale texture be created?
  * Output: bool - the success of loading the texture
  */
 bool Frame::setTexture(std::string path, std::vector<std::string> adjustments, 
-                                         SDL_Renderer* renderer, uint16_t angle)
+                                         SDL_Renderer* renderer, uint16_t angle,
+                                         bool enable_greyscale)
 {
   bool success = true;
 
   success &= execImageAdjustments(adjustments);
-  success &= setTexture(path, renderer, angle);
+  success &= setTexture(path, renderer, angle, enable_greyscale);
   
   return success;
 }
@@ -463,12 +584,15 @@ bool Frame::setTexture(SDL_Texture* texture)
 {
   if(texture != NULL)
   {
+    uint32_t format;
+    
+    /* Clean up the existing texture */
     unsetTexture();
     
     /* Set the new texture and appropriate parameters */
     this->texture = texture;
-    image_set = true;
-    SDL_QueryTexture(texture, NULL, NULL, &width, &height);
+    SDL_QueryTexture(texture, &format, NULL, &width, &height);
+    
     setAlpha(alpha);
     
     return true;
@@ -487,14 +611,45 @@ bool Frame::setTexture(SDL_Texture* texture)
  */
 void Frame::unsetTexture()
 {
-  if(image_set)
-  {
+  /* Delete main texture */
+  if(texture != NULL)
     SDL_DestroyTexture(texture);
-    texture = NULL;
-    image_set = false;
-    height = 0;
-    width = 0;
+  texture = NULL;
+  
+  /* Delete greyscale texture */
+  if(texture_grey != NULL)
+    SDL_DestroyTexture(texture_grey);
+  texture_grey = NULL;
+  
+  /* Clear class parameters */
+  grey_scale = false;
+  height = 0;
+  width = 0;
+}
+
+/*
+ * Description: The enable to use the grey scale texture or the colored texture
+ *              as the active one. If enable is true, the grey scale texture is
+ *              selected and if false, the colored texture is selected. Fails
+ *              if the grey scale texture is not set.
+ *
+ * Inputs: bool enable - true for grey scale texture, false for colored texture
+ * Output: bool - status if set was successful
+ */
+bool Frame::useGreyScale(bool enable)
+{
+  if(enable && isTextureSet(true))
+  {
+    grey_scale = true;
+    return true;
   }
+  else if(!enable)
+  {
+    grey_scale = false;
+    return true;
+  }
+  
+  return false;
 }
 
 /*=============================================================================

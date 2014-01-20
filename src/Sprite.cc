@@ -20,6 +20,7 @@ const uint16_t Sprite::kDEFAULT_ANIMATE_TIME = 250;
 const float Sprite::kDEFAULT_BRIGHTNESS = 1.0;
 const uint8_t Sprite::kDEFAULT_COLOR = 255;
 const uint8_t Sprite::kDEFAULT_OPACITY = 255;
+const uint8_t Sprite::kDELTA_GREY_SCALE = 2;
 const uint8_t Sprite::kDOUBLE_DIGITS = 10;
 const float Sprite::kMAX_BRIGHTNESS = 2.0;
 
@@ -42,6 +43,8 @@ Sprite::Sprite()
   color_blue = kDEFAULT_COLOR;
   current = NULL;
   elapsed_time = 0;
+  grey_scale_alpha = kDEFAULT_OPACITY;
+  grey_scale_update = false;
   head = NULL;
   id = 0;
   opacity = kDEFAULT_OPACITY;
@@ -133,8 +136,15 @@ void Sprite::copySelf(const Sprite &source)
   //setSound(); // TODO: Future?
 }
 
-/* Returns the angle, if one exists in the list of modifications */
-// TODO: Comment
+/*
+ * Description: Parses the string sequence of angle adjustments. Returns the
+ *              first angle that is greater than 0 (the only used one),
+ *              otherwise it returns 0.
+ *
+ * Inputs: std::vector<std::string> adjustments - the string sequence of 
+ *                                                angle adjustments
+ * Output: uint16_t - the unsigned angle
+ */
 uint16_t Sprite::parseAdjustments(std::vector<std::string> adjustments)
 {
   uint16_t angle = 0;
@@ -432,7 +442,7 @@ Frame* Sprite::insert(std::string path, SDL_Renderer* renderer, int position,
   {
     new_frame = new Frame(path, renderer, angle);
 
-    if(new_frame->isImageSet())
+    if(new_frame->isTextureSet())
     {
       next_frame = head;
 
@@ -478,7 +488,7 @@ Frame* Sprite::insertFirst(std::string path, SDL_Renderer* renderer,
   if(size == 0)
   {
     head = new Frame(path, renderer, angle);
-    if(head->isImageSet())
+    if(head->isTextureSet())
     {
       /* First set the rendering texture, if unset */
       if(texture == NULL)
@@ -653,6 +663,21 @@ bool Sprite::isDirectionForward() const
 }
 
 /* 
+ * Description: Checks if the sprite sequence is grey scale enabled. This 
+ *              operates by only checking the head frame (which should be the
+ *              same as all the others).
+ *
+ * Inputs: none
+ * Output: bool - status if the frame sequence grey scale mode is enabled
+ */
+bool Sprite::isGreyScale()
+{
+  if(head != NULL)
+    return head->isGreyScale();
+  return false;
+}
+  
+/* 
  * Description: Removes the frame in the sequence at the given position 
  *
  * Inputs: int position - the position of the frame to remove in the linked
@@ -756,14 +781,17 @@ bool Sprite::render(SDL_Renderer* renderer, int x, int y, int w, int h)
   if(current != NULL && renderer != NULL)
   {
     /* Proceed to update the running texture if it's changed */
-    if(texture_update)
+    if(texture_update || grey_scale_alpha)
     {
       SDL_SetRenderTarget(renderer, texture);
       SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
       SDL_RenderClear(renderer);
       
       /* Render current frame */
-      current->render(renderer);
+      if(grey_scale_alpha)
+        current->renderBoth(renderer, grey_scale_alpha);
+      else
+        current->render(renderer);
       
       /* Render white mask, if relevant */
       if(brightness > kDEFAULT_BRIGHTNESS && white_mask != NULL)
@@ -1119,6 +1147,37 @@ bool Sprite::update(int cycle_time, bool skip_head)
     shift = true;
   }
   
+  /* Do grey scale checking, for animation */
+  if(grey_scale_update)
+  {
+    if(head->isGreyScale())
+    {
+      if(grey_scale_alpha - kDELTA_GREY_SCALE <= 0)
+      {
+        grey_scale_alpha = 0;
+        grey_scale_update = false;
+        texture_update = true;
+      }
+      else
+      {
+        grey_scale_alpha -= kDELTA_GREY_SCALE;
+      }
+    }
+    else
+    {
+      if(grey_scale_alpha + kDELTA_GREY_SCALE >= kDEFAULT_OPACITY)
+      {
+        grey_scale_alpha = kDEFAULT_OPACITY;
+        grey_scale_update = false;
+        texture_update = true;
+      }
+      else
+      {
+        grey_scale_alpha += kDELTA_GREY_SCALE;
+      }
+    }
+  }
+  
   /* Start by updating the animation and shifting, if necessary */
   if(size > 1 && cycle_time > 0 && animation_time > 0)
   {
@@ -1132,6 +1191,44 @@ bool Sprite::update(int cycle_time, bool skip_head)
   }
   
   return shift;
+}
+
+/*
+ * Description: Sets if all the frames in the sequence of sprite should use
+ *              the grey scale texture. This only succeeds if the grey scale
+ *              texture is enabled and there are frames to set. This also starts
+ *              the blending process for showing the transition between color
+ *              and grey scale.
+ *
+ * Inputs: bool enable - true for grey scale textures, false for color
+ * bool - status if the set changed the grey scale setting
+ */
+bool Sprite::useGreyScale(bool enable)
+{
+  if(head != NULL && head->isGreyScale() != enable)
+  {
+    bool success = true;
+    Frame* temp = head;
+    
+    do
+    {
+      success &= temp->useGreyScale(enable);
+      temp = temp->getNext();
+    }
+    while(temp != head);
+    
+    if(success)
+    {
+      grey_scale_update = true;
+      if(enable)
+        grey_scale_alpha = kDEFAULT_OPACITY;
+      else
+        grey_scale_alpha = 0;
+    }
+    
+    return success;
+  }
+  return false;
 }
 
 /*=============================================================================

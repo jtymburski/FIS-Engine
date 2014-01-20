@@ -231,7 +231,7 @@ bool TitleScreen::render(SDL_Renderer* renderer)
       setMenu(renderer);
     
     /* Render the background */
-    SDL_RenderCopy(renderer, background.getTexture(), NULL, NULL);
+    SDL_RenderCopy(renderer, background.getTextureActive(), NULL, NULL);
     
     /* Paint the selected options on the screen */
     for(uint8_t i = 0; i < selected_options.size(); i++)

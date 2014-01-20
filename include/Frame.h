@@ -42,11 +42,11 @@ private:
   /* How the SDL texture should be flipped while rendering */
   SDL_RendererFlip flip;
   
+  /* Indicator if the grey scale texture is active */
+  bool grey_scale;
+  
   /* The height of the stored texture */
   int height;
-  
-  /* Asserts that the image has been set */
-  bool image_set;
   
   /* The next element in the linked list */
   Frame* next;
@@ -56,6 +56,7 @@ private:
 
   /* The texture for this frame */
   SDL_Texture* texture;
+  SDL_Texture* texture_grey;
   
   /* The width of the stored texture */
   int width;
@@ -91,17 +92,23 @@ public:
   Frame* getPrevious();
 
   /* Returns the 2D SDL texture to be painted */
-  SDL_Texture* getTexture();
+  SDL_Texture* getTexture(bool grey_scale = false);
+  SDL_Texture* getTextureActive();
   
   /* Returns the width of the texture */
   int getWidth();
   
+  /* Returns if the grey scale mode is active */
+  bool isGreyScale();
+  
   /* Returns if an image is set */
-  bool isImageSet();
+  bool isTextureSet(bool grey_scale = false);
 
   /* Render the texture to the given renderer with the given parameters */
   bool render(SDL_Renderer* renderer, int x = 0, int y = 0,
                                       int w = 0, int h = 0);
+  bool renderBoth(SDL_Renderer* renderer, uint8_t alpha, int x = 0, int y = 0, 
+                                                         int w = 0, int h = 0);
   
   /* Sets the alpha rating of the texture rendering */
   void setAlpha(uint8_t alpha = 255);
@@ -113,13 +120,18 @@ public:
   bool setPrevious(Frame* previous);
 
   /* Sets the frame texture */
-  bool setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle = 0);
+  bool setTexture(std::string path, SDL_Renderer* renderer, 
+                  uint16_t angle = 0, bool enable_greyscale = true);
   bool setTexture(std::string path, std::vector<std::string> adjustments, 
-                                    SDL_Renderer* renderer, uint16_t angle = 0);
+                  SDL_Renderer* renderer, uint16_t angle = 0, 
+                  bool enable_greyscale = true);
   bool setTexture(SDL_Texture* texture);
 
   /* Unsets the texture, if one is set */
   void unsetTexture();
+  
+  /* Sets if the greyscale texture is active and returned on getTexture() */
+  bool useGreyScale(bool enable);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS

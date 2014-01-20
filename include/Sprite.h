@@ -63,6 +63,10 @@ private:
   /* The current frame */
   Frame* current;
 
+  /* Grey scale control information */
+  uint8_t grey_scale_alpha;
+  bool grey_scale_update;
+  
   /* The first frame */
   Frame* head;
 
@@ -93,6 +97,7 @@ private:
   const static float kDEFAULT_BRIGHTNESS; /* the default brightness value */
   const static uint8_t kDEFAULT_COLOR; /* the default color rating */
   const static uint8_t kDEFAULT_OPACITY; /* the default rendered alpha */
+  const static uint8_t kDELTA_GREY_SCALE; /* Delta grey scale alpha */
   const static uint8_t kDOUBLE_DIGITS; /* the borderline to double digits */
   const static float kMAX_BRIGHTNESS; /* The max brightness value */
 
@@ -189,6 +194,9 @@ public:
   /* Returns if the direction parsing the frames is forward */
   bool isDirectionForward() const;
 
+  /* Returns if the grey scale mode is active */
+  bool isGreyScale();
+  
   /* Removes the frame in the sequence at the given position */
   bool remove(int position);
 
@@ -247,6 +255,9 @@ public:
   /* Updates the frames within the sprite */
   bool update(int cycle_time, bool skip_head = false);
 
+  /* Sets if the greyscale texture is active and returned on getTexture() */
+  bool useGreyScale(bool enable);
+  
 /*============================================================================
  * OPERATOR FUNCTIONS
  *===========================================================================*/
