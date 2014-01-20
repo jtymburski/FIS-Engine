@@ -353,23 +353,12 @@ void Game::setupBattle()
   test_pouch->addItem(new_potion);
   test_pouch->addItem(unique_item);
 
-  test_pouch->addBubby(first);
-  test_pouch->addBubby(first);
-    test_pouch->addBubby(first);
-  test_pouch->addBubby(first);
-    test_pouch->addBubby(first);
-  test_pouch->addBubby(first);
-    test_pouch->addBubby(first);
-  test_pouch->addBubby(first);
-    test_pouch->addBubby(first);
-  test_pouch->addBubby(first);
+  test_pouch->addBubby(second);
   test_pouch->addBubby(first);
   test_pouch->addBubby(second);
-    test_pouch->addBubby(first);
+  test_pouch->addBubby(first);
   test_pouch->addBubby(second);
-    test_pouch->addBubby(first);
-  test_pouch->addBubby(second);
-    test_pouch->addBubby(first);
+  test_pouch->addBubby(first);
   test_pouch->addBubby(second);
   test_pouch->addBubby(third);
   test_pouch->addBubby(third);
@@ -384,9 +373,12 @@ void Game::setupBattle()
 
   test_pouch->print(false);
 
-  std::cout << " ----- Sorting ------ \n";
+  // std::cout << " ----- Sorting ------ \n";
+  // test_pouch->sort(ObjectSorts::NAME, SortObjects::EQUIPMENTS, false);
+  // test_pouch->print(false);
 
-  test_pouch->sort(ObjectSorts::NAME, SortObjects::EQUIPMENTS, false);
+  test_pouch->removeEquipID(fated->getGameID());
+  test_pouch->removeEquipID(suit->getGameID());
 
   test_pouch->print(false);
 

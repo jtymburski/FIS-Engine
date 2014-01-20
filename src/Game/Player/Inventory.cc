@@ -494,7 +494,7 @@ bool Inventory::sortItems(Item_It begin, Item_It stop,
 
 bool Inventory::increaseBubbyCount(const uint32_t &game_id)
 {
-  auto bubby_index = getBubbyIndex(game_id);
+  auto bubby_index = getZeroBubbyIndex(game_id);
 
   if (bubby_index == -1)
     return false;
@@ -528,7 +528,7 @@ bool Inventory::increaseItemCount(const uint32_t &game_id)
 
 bool Inventory::decreaseBubbyCount(const uint32_t &game_id)
 {
-  auto bubby_index = getBubbyIndex(game_id);
+  auto bubby_index = getZeroBubbyIndex(game_id);
 
   if (bubby_index == -1)
     return false;
@@ -719,25 +719,50 @@ void Inventory::print(bool simple)
 }
 
 /* Removes a zero bubby from the inventory */
-bool Inventory::removeZeroBubby(uint32_t index)
+bool Inventory::removeZeroBubbyIndex(const uint32_t &index)
 {
   if (index < zero_bubbies.size())
   {
     if (zero_bubbies.at(index).first != nullptr)
     {
+      curr_mass -= zero_bubbies.at(index).first->getMass();
+
       if (getBubbyCount(zero_bubbies.at(index).first->getGameID()))
         decreaseBubbyCount(zero_bubbies.at(index).first->getGameID());
       else
         zero_bubbies.erase(begin(zero_bubbies) + index);
     }
+
     return true;
   }
 
   return false;
 }
 
+bool Inventory::removeZeroBubbyID(const uint32_t &game_id)
+{
+  for (auto it = begin(zero_bubbies); it != end(zero_bubbies); ++it)
+  {
+    if ((*it).first != nullptr)
+    {
+      if ((*it).first->getGameID() == static_cast<int32_t>(game_id))
+      {
+        auto bubby_index = getZeroBubbyIndex(game_id);
+        curr_mass -= zero_bubbies.at(bubby_index).first->getMass();
+
+        if (getBubbyCount(game_id) > 1)
+          decreaseBubbyCount(bubby_index);
+        else
+          zero_bubbies.erase(it);
+      }
+    }
+  }
+
+  return false;
+}
+
 /* Removes a Bubby from the Inventory at a given index */
-bool Inventory::removeBubby(uint32_t index)
+bool Inventory::removeBubbyIndex(const uint32_t &index)
 {
   if (index < bubbies.size())
   {
@@ -749,33 +774,100 @@ bool Inventory::removeBubby(uint32_t index)
   return false;
 }
 
-/* Removes an equipment at a given index */
-bool Inventory::removeEquipment(uint32_t index)
+/* Removes a TX bubby by a given game ID value */
+bool Inventory::removeBubbyID(const uint32_t &game_id)
 {
-  if (index < equipments.size())
+  for (auto it = begin(bubbies); it != end(bubbies); ++it)
   {
-    equipments.erase(begin(equipments) + index);
+    if ((*it) != nullptr)
+    {
+      if ((*it)->getGameID() == static_cast<int32_t>(game_id))
+      {
+        bubbies.erase(it);
+        curr_mass -= (*it)->getMass();
+      }
+    }
 
     return true;
   }
 
   return false;
 }
+
+/* Removes an equipment at a given index */
+bool Inventory::removeEquipIndex(const uint32_t &index)
+{
+  if (index < equipments.size())
+  {
+    curr_mass -= equipments.at(index)->getMass();
+    equipments.erase(begin(equipments) + index);
+    return true;
+  }
+
+  return false;
+}
+
+/* Removes an equipment by a game ID */
+bool Inventory::removeEquipID(const uint32_t &game_id)
+{
+  for (auto it = begin(equipments); it != end(equipments); ++it)
+  {
+    if ((*it) != nullptr)
+    {
+      if ((*it)->getGameID() == static_cast<int32_t>(game_id))
+      {
+        equipments.erase(it);
+        curr_mass -= (*it)->getMass();
+
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
  
 /* Removes an item at a given index */
-bool Inventory::removeItem(uint32_t index)
+bool Inventory::removeItemIndex(const uint32_t &index)
 {
   if (index < items.size())
   {
     if (items.at(index).first != nullptr)
     {
+      curr_mass -= items.at(index).first->getMass();
+
       if (getItemCount(items.at(index).first->getGameID()) > 1)
         decreaseItemCount(items.at(index).first->getGameID());
       else
         items.erase(begin(items) + index);
-    }
 
-    return true;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool Inventory::removeItemID(const uint32_t &game_id)
+{
+  for (auto it = begin(items); it != end(items); ++it)
+  {
+    if ((*it).first != nullptr)
+    {
+      if ((*it).first->getGameID() == static_cast<int32_t>(game_id))
+      {
+        auto item_index = getItemIndex(game_id);
+
+        curr_mass -= items.at(item_index).first->getMass();
+
+        if (getItemCount(game_id) > 1)
+          decreaseItemCount(item_index);
+        else
+          items.erase(it);
+
+        return true;
+      }
+    }
   }
 
   return false;
@@ -853,8 +945,25 @@ uint32_t Inventory::getBubbyCount(const uint32_t &game_id)
   return 0;
 }
 
-/* Returns the index on the vector of a given Bubby zero ID */
+/* Returns the index on the vector of TX bubbies of a given game ID */
 int32_t Inventory::getBubbyIndex(const uint32_t &game_id)
+{
+  auto index = -1;
+
+  for (auto it = begin(bubbies); it != end(bubbies); ++it)
+  {
+    index++;
+
+    if ((*it) != nullptr)
+      if ((*it)->getGameID() == static_cast<int32_t>(game_id))
+        return index;
+  }
+
+  return index;
+}
+
+/* Returns the index on the vector of a given Bubby zero ID */
+int32_t Inventory::getZeroBubbyIndex(const uint32_t &game_id)
 {
   auto index = -1;
 

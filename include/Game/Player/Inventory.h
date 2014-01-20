@@ -148,16 +148,28 @@ public:
 	void print(bool simple = true);
 
   /* Removes a Tier-0 Bubby from the Inventory at a given index */
-  bool removeZeroBubby(uint32_t index);
+  bool removeZeroBubbyIndex(const uint32_t &index);
+
+  /* Removes a Tier-0 Bubby by a given index game ID */
+  bool removeZeroBubbyID(const uint32_t &game_id);
 
   /* Removes a Bubby from the Inventory at a given index */
-	bool removeBubby(uint32_t index);
+	bool removeBubbyIndex(const uint32_t &index);
+
+  /* Removes a TX bubby by a given game ID value */
+  bool removeBubbyID(const uint32_t &game_id);
 
   /* Removes an equipment at a given index */
-	bool removeEquipment(uint32_t index);
+	bool removeEquipIndex(const uint32_t &index);
+
+  /* Removes an equipment by a game ID */
+  bool removeEquipID(const uint32_t &game_id);
  
   /* Removes an item at a given index */
-  bool removeItem(uint32_t index);
+  bool removeItemIndex(const uint32_t &index);
+
+  /* Removes an item by a given game ID */
+  bool removeItemID(const uint32_t &game_id);
 
   /* Sorts an object in the inventory a certain way */
 	bool sort(ObjectSorts sort_by, SortObjects object_to_sort, 
@@ -174,6 +186,9 @@ public:
 
   /* Returns the count of Bubbies of a given game_id */
   uint32_t getBubbyCount(const uint32_t &game_id);
+
+  /* Returns the index on the vector of TX bubbies of a given game ID */
+  int32_t getZeroBubbyIndex(const uint32_t &game_id);
 
   /* Returns the index on the vector of a given Bubby zero ID */
   int32_t getBubbyIndex(const uint32_t &game_id);
