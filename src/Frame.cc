@@ -357,7 +357,7 @@ bool Frame::renderBoth(SDL_Renderer* renderer, uint8_t alpha, int x, int y,
     
     /* Render grey scale texture */
     useGreyScale(true);
-    setAlpha(255);
+    setAlpha(kDEFAULT_ALPHA - alpha);
     success &= render(renderer, x, y, w, h);
     
     /* Render colored texture */
@@ -452,7 +452,7 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer,
         std::vector<uint32_t> pixels_row;
         
         for(int j = 0; j < loaded_surface->w; j++)
-          pixels_row.push_back(pixels[i*loaded_surface->h + j]);
+          pixels_row.push_back(pixels[i*loaded_surface->w + j]);
         pixels_original.push_back(pixels_row);
       }
 
@@ -471,7 +471,7 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer,
                     (loaded_surface->h - j - 1);
           else if(angle == 270)
             index = (loaded_surface->w - j - 1)*loaded_surface->w + i;
-          
+         
           pixels[index] = pixels_original[i][j];
         }
       }
@@ -496,12 +496,12 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer,
       { 
         for(int j = 0; j < grey_surface->w; j++)
         {
-          uint32_t* pixel = &grey_pixels[i*loaded_surface->h + j];
+          uint32_t* pixel = &grey_pixels[i*loaded_surface->w + j];
           
           /* Get the color data */
           SDL_Color color;
           SDL_GetRGBA(*pixel, grey_surface->format, &color.r, &color.g, 
-                                                   &color.b, &color.a);
+                                                    &color.b, &color.a);
 
           /* Modify the color data -> to greyscale */
           color.r = 0.21 * color.r + 0.71 * color.g + 0.07 * color.b;

@@ -37,6 +37,7 @@ Sprite::Sprite()
 {
   /* Reset the class parameters */
   animation_time = kDEFAULT_ANIMATE_TIME;
+  elapsed_time = 0;
   brightness = kDEFAULT_BRIGHTNESS;
   color_red = kDEFAULT_COLOR;
   color_green = kDEFAULT_COLOR;
@@ -781,16 +782,17 @@ bool Sprite::render(SDL_Renderer* renderer, int x, int y, int w, int h)
   if(current != NULL && renderer != NULL)
   {
     /* Proceed to update the running texture if it's changed */
-    if(texture_update || grey_scale_alpha)
+    if(texture_update || grey_scale_update)
     {
       SDL_SetRenderTarget(renderer, texture);
       SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
       SDL_RenderClear(renderer);
-      
+     
       /* Render current frame */
-      if(grey_scale_alpha)
+      if(grey_scale_update)
         current->renderBoth(renderer, grey_scale_alpha);
       else
+        //current->renderBoth(renderer, 128);
         current->render(renderer);
       
       /* Render white mask, if relevant */
