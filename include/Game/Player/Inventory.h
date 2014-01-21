@@ -53,6 +53,9 @@ public:
   Inventory(const uint32_t game_id, const std::string name = "", 
   	        Frame* thumb = nullptr);
 
+  /* Annihilates an Inventory object */
+  ~Inventory();
+
 private:
   /* Flag state of the Inventory */
   InvState flags;
@@ -139,6 +142,9 @@ public:
 
   /* Adds an item to the Inventory */
 	bool addItem(Item* new_item, const bool bypass = false);
+
+  /* Clears the memory of the inventory and the vectors of data */
+  void clear(const bool &free = true);
 
   /* Check if a given item ID exists in the inventory */
 	bool contains(const int &id_check);

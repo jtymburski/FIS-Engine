@@ -20,8 +20,8 @@
 //#include "Game/Battle/Battle.h"
 #include "Game/EventHandler.h"
 #include "Game/Map/Map.h"
-//#include "Game/Player/Player.h"
- #include "Game/Player/Bubby.h"
+#include "Game/Player/Player.h"
+#include "Game/Player/Bubby.h"
 //#include "Game/VictoryScreen.h"
 #include "Game/Player/Inventory.h" //TODO
 #include "Game/Player/SkillSet.h"

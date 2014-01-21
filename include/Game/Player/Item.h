@@ -99,7 +99,6 @@ private:
   static int32_t id;
 
 protected:
-
   /* Unique and non-unique IDs for the Item */
   const int32_t game_id;
   int32_t my_id;

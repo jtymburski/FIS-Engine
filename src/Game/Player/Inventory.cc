@@ -55,6 +55,11 @@ Inventory::Inventory(const uint32_t game_id, const std::string name,
   setLimits(kMIN_ITEM, kMIN_ITEM, kMIN_ITEM, kMIN_EACH_ITEM, kMIN_MASS);
 }
 
+Inventory::~Inventory()
+{
+  clear(true);
+}
+
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
@@ -647,6 +652,59 @@ bool Inventory::addItem(Item* new_item, const bool bypass)
   }
 
   return can_add;
+}
+
+/* Clears the memory of the inventory and the vectors of data */
+void Inventory::clear(const bool &free)
+{
+  if (free)
+  {
+    /* One-each of Tier 0 bubbies are required to be deleted upon removal */
+    for (auto zero_bubby : zero_bubbies)
+    {
+      if (zero_bubby.first != nullptr)
+      {
+        delete zero_bubby.first;
+        zero_bubby.first = nullptr;
+      }
+    }
+
+    /* Each non-tier-zero Bubby is required to be deleted */
+    for (auto bubby: bubbies)
+    {
+      if (bubby != nullptr)
+      {
+        delete bubby;
+        bubby = nullptr;
+      }
+    }
+
+    /* Each equipment is required to be deleted */
+    for (auto equip : equipments)
+    {
+      if (equip != nullptr)
+      {
+        delete equip;
+        equip = nullptr;
+      }
+    }
+
+    /* Each index of the items is required to be deleted */
+    for (auto item : items)
+    {
+      if (item.first != nullptr)
+      {
+        delete item.first;
+        item.first = nullptr;
+      }
+    }
+  }
+
+  /* Empty the vectors */
+  zero_bubbies.clear();
+  bubbies.clear();
+  equipments.clear();
+  items.clear();
 }
 
 /* Checks if an Item in the inventory matches a given unique ID */

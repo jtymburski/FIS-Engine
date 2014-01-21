@@ -258,61 +258,44 @@ void Game::setupBattle()
   //std::cout << "Periods elapsed: " << (dtn2.count() - dtn.count()) / 1000 << std::endl;
   
   // AttributeSet testing
+  AttributeSet min_scion_set(0);
+  AttributeSet max_scion_set(1, true);
+  AttributeSet min_hex_set(2);
+  AttributeSet max_hex_set(3);
+  AttributeSet spark_set(1);
+  AttributeSet tumor_set(1);
+  AttributeSet moldy_set(1);
 
-  AttributeSet as1;
-  AttributeSet as2(0);
-  AttributeSet as3(1, true);
-  AttributeSet as4(2);
-  AttributeSet as5(3);
-  AttributeSet as6(4);
-
-  for (int i = 0; i < 100; i++)
-    as1 += as3;
-
-  as4 = as3;
-  as5 = as3;
-  as5.alterStat("VITA", 1);
-
-  //if (as3 == as4)
-  //  std::cout << "1true\n";
-  //if (as3 == as5)
-  //  std::cout << "2true\n";
-
-  //auto index = 0;
-  //for (auto value : values)
-  //  std::cout << index++ << " " << value << "\n";
-
-  // Action Testing
-  // std::vector<Action*> actions;
-  // std::vector<float> chances = {0.50, 0.40, 0.12, 0.46};
-  // actions.push_back(new Action("1,ALTER,THAG,,,,AMOUNT.50,AMOUNT.15"));
-  // actions.push_back(new Action("3,INFLICT,POISON,2.7,,,,,"));
-  // actions.push_back(new Action("4,RELIEVE,CURSE,,,,,"));
-  // actions.push_back(new Action("5,REVIVE,,,,,PC.25,AMOUNT.50"));
-  // Action* special = new Action("6,ALTER,VITA,,,,PC.25,AMOUNT.50");
+  //Action Testing
+  std::vector<Action*> actions;
+  std::vector<float> chances = {0.50, 0.40, 0.12, 0.46};
+  actions.push_back(new Action("1,ALTER,THAG,,,,AMOUNT.50,AMOUNT.15"));
+  actions.push_back(new Action("3,INFLICT,POISON,2.7,,,,,"));
+  actions.push_back(new Action("4,RELIEVE,CURSE,,,,,"));
+  actions.push_back(new Action("5,REVIVE,,,,,PC.25,AMOUNT.50"));
+  Action* special = new Action("6,ALTER,VITA,,,,PC.25,AMOUNT.50");
   
-  // // Skill Testing
-  // std::vector<Skill*> skills;
+  // Skill Testing
+  std::vector<Skill*> skills;
 
-  // Skill* normal_attack = new Skill(13, "Attack",ActionScope::ONE_TARGET,actions[0],0.75);
-  // normal_attack->addActions(actions, chances);
+  Skill* normal_attack = new Skill(13, "Attack",ActionScope::ONE_TARGET,actions[0],0.75);
+  normal_attack->addActions(actions, chances);
 
-  // skills.push_back(normal_attack);
-  // skills.push_back(new Skill(400, "Super Attack",ActionScope::ONE_ENEMY,special,0.65));
-  // skills.push_back(new Skill(3, "Poison Attack",ActionScope::ONE_ENEMY,actions[1],0.79));
-  // skills.push_back(new Skill(35, "Crappy Attack",ActionScope::NO_SCOPE,special,1.00));
+  skills.push_back(normal_attack);
+  skills.push_back(new Skill(400, "Super Attack",ActionScope::ONE_ENEMY,special,0.65));
+  skills.push_back(new Skill(3, "Poison Attack",ActionScope::ONE_ENEMY,actions[1],0.79));
+  skills.push_back(new Skill(35, "Crappy Attack",ActionScope::NO_SCOPE,special,1.00));
 
-  // std::vector<uint32_t> levels;
+  std::vector<uint32_t> levels;
 
-  //for (Skill* s : skills)
-  //{
-  //  s->print();
-  //  levels.push_back(levels.size());
-  //}
+  for (auto it = begin(skills); it != end(skills); ++it)
+    levels.push_back(levels.size());
 
-  // Skill Set Testing
-  //SkillSet* set1 = new SkillSet(skills, levels);
-  //set1->sort(SkillSorts::ENABLED);
+  // SkillSet Testing
+  SkillSet* scion_skills = new SkillSet(skills, levels);
+  SkillSet* hex_skills = scion_skills;
+
+  hex_skills->rSkillIndex(1);
 
   // General Item Testing
   Item* potion      = new Item(45, "Potion", 70, nullptr, 1.01);
@@ -328,9 +311,9 @@ void Game::setupBattle()
   Item* alpha_omega = new Item(119, "Alpha Omega", nullptr);
 
   // Flavour Testing
-  Flavour* spark = new Flavour(101, "Spark", as1 + as2, 1.04, 35);
-  Flavour* tumor = new Flavour(102, "Tumor", AttributeSet(2), 1.09, 65);
-  Flavour* moldy = new Flavour(103, "Moldy", AttributeSet(1), 1.11, 48);
+  Flavour* spark = new Flavour(101, "Spark", spark_set, 1.04, 35);
+  Flavour* tumor = new Flavour(102, "Tumor", tumor_set, 1.09, 65);
+  Flavour* moldy = new Flavour(103, "Moldy", moldy_set, 1.11, 48);
 
   Bubby* first  = new Bubby(spark);
   Bubby* second = new Bubby(moldy);
@@ -338,16 +321,11 @@ void Game::setupBattle()
   Bubby* fourth = new Bubby(spark, 1);
   Bubby* fifth  = new Bubby(moldy, 1);
 
-  fourth->print();
-
   // Signature Testing
-
 
   // Equipment Testing
   Equipment* fated = new Equipment(201, "Fated Oak Saber", 1, 1, 100, nullptr, 10, 10);
   Equipment* suit  = new Equipment(202, "Suit", 100, 3, 100, nullptr, 10, 10);
-
-  // fated->getSignature()->print();
 
   // Inventory Testing
   Inventory* test_pouch = new Inventory(1001, "Test Pouch", nullptr);
@@ -382,25 +360,33 @@ void Game::setupBattle()
   test_pouch->addEquipment(fated);
   test_pouch->addEquipment(suit);
 
-  test_pouch->print(false);
+  // Inventory Sorting Testing
+  test_pouch->sort(ObjectSorts::NAME, SortObjects::EQUIPMENTS, false);
 
-  // std::cout << " ----- Sorting ------ \n";
-  // test_pouch->sort(ObjectSorts::NAME, SortObjects::EQUIPMENTS, false);
-  // test_pouch->print(false);
-
-  //test_pouch->removeEquipID(fated->getGameID());
-  //test_pouch->removeEquipID(suit->getGameID());
-  //test_pouch->removeItemID(master_key->getGameID());
-  //test_pouch->removeItemIndex(2);
-  //test_pouch->removeItemID(unique_item->getGameID());
+  test_pouch->removeEquipID(fated->getGameID());
+  test_pouch->removeEquipID(suit->getGameID());
+  test_pouch->removeItemID(master_key->getGameID());
+  test_pouch->removeItemIndex(2);
+  test_pouch->removeItemID(unique_item->getGameID());
 
   test_pouch->sort(ObjectSorts::NAME, SortObjects::ITEMS, true);
-  test_pouch->print(false);
 
   auto key_items = test_pouch->getKeyItems();
 
-  for (auto it = begin(key_items); it != end(key_items); ++it)
-    std::cout << "Item: " << (*it).first->getName() << " " << static_cast<int>((*it).second) << "\n";
+  //for (auto it = begin(key_items); it != end(key_items); ++it)
+  //{
+  //  std::cout << "Item: " << (*it).first->getName() << " " 
+  //            << static_cast<int>((*it).second) << "\n";
+  //}
+
+  // Category Testing
+  Category* blood_scion = new Category("Blood Scion", "Scion", min_scion_set, 
+                                       max_scion_set, scion_skills);
+  Category* hexblade = new Category("Hexblade", "Hexblader", min_hex_set, 
+                                    max_hex_set, hex_skills);
+
+  blood_scion->print();
+  hexblade->print();
 
   } // end enable test
  
