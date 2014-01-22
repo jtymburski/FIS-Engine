@@ -99,40 +99,48 @@ Category::Category(const std::string &name, const std::string &denonym,
  */
 void Category::buildAttrSets()
 {
-  max_stats = AttributeSet(kMIN_VALUES);
+  max_stats = AttributeSet(kMIN_VALUES, true, true);
   max_stats.cleanUp();
-  min_stats = AttributeSet(kMIN_VALUES);
+  min_stats = AttributeSet(kMIN_VALUES, true, true);
   min_stats.cleanUp();
+
+  attr_sets_built = true;
 }
 
 void Category::classSetup()
 {
-  flags = static_cast<CategoryState>(0);
+  cat_flags = static_cast<CategoryState>(0);
   setFlag(CategoryState::DEF_ENABLED, true);
   setFlag(CategoryState::GRD_ENABLED, true);
   setFlag(CategoryState::IMP_ENABLED, false);
+  setFlag(CategoryState::E_STAFF, false);
+  setFlag(CategoryState::E_SWORD, false);
 }
 
 void Category::cleanUpStats()
 {
-  max_stats.cleanUp();
-  min_stats.cleanUp();
+  base_stats.cleanUp();
+  top_stats.cleanUp();
 }
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
-bool Category::addEquippable(const EquipClass &new_equip_class)
+bool Category::canEquip(Equipment* const check)
 {
-  if (!isEquippable(new_equip_class))
-  {
-    equippables.push_back(new_equip_class);
+  //TODO: Actual classes of equipment [01-21-14]
+  if (check == nullptr)
+    return false;
 
-    return true;
-  }
+  bool can_equip = true;
 
-  return false;
+  if (check->getEquipFlag(EquipState::STAFF))
+    can_equip &=  getFlag(CategoryState::E_STAFF);
+  if (check->getEquipFlag(EquipState::SWORD))
+    can_equip &= getFlag(CategoryState::E_SWORD);
+
+  return can_equip;
 }
 
 bool Category::addImmunity(const Infliction &new_immunity)
@@ -147,15 +155,6 @@ bool Category::addImmunity(const Infliction &new_immunity)
   return false;
 }
 
-bool Category::isEquippable(const EquipClass &check_equip_class)
-{
-  for (auto equip : equippables)
-    if (equip == check_equip_class)
-      return true;
-
-  return false;
-}
-
 bool Category::isImmune(const Infliction &check_immunity)
 {
   for (auto ailment : immunities)
@@ -163,21 +162,6 @@ bool Category::isImmune(const Infliction &check_immunity)
       return true;
 
  return false;
-}
-
-bool Category::removeEquippable(const EquipClass &rem_equip_class)
-{
-  for (auto it = begin(equippables); it != end(equippables); ++it)
-  {
-    if ((*it) == rem_equip_class)
-    {
-      equippables.erase(it);
-
-      return true;
-    }
-  }
-
-  return false;
 }
 
 bool Category::removeImmunity(const Infliction &rem_immunity)
@@ -195,28 +179,33 @@ bool Category::removeImmunity(const Infliction &rem_immunity)
   return false;
 }
 
-void Category::print(const bool &simple)
+void Category::print(const bool &simple, const bool &flags)
 {
   std::cout << "--- Category ---\n";
   std::cout << "Name: " << name << "\n";
   std::cout << "Description: " << description << "\n";
   std::cout << "Denonym: " << denonym << "\n";
-  std::cout << "Skill Set? " << (skill_set != nullptr) << "\n";
-  std::cout << "Attr Sets Built? " << attr_sets_built << "\n";
-  std::cout << "Equippables Size: " << equippables.size() << "\n";
-  std::cout << "Immunities Size: " << immunities.size() << "\n";
+  std::cout << "Skill Set Attached? " << (skill_set != nullptr) << "\n";
+  //std::cout << "Attr Sets Built? " << attr_sets_built << "\n";
+  std::cout << "Immunities Size: " << immunities.size() << "\n\n";
 
   if (!simple)
   {
     std::cout << "Base Stats: \n";
-    base_stats.print();
-    std::cout << "Top Stats: \n";
-    top_stats.print();
+    base_stats.print(true);
+    std::cout << "\nTop Stats: \n";
+    top_stats.print(true);
+    std::cout << "\n";
   }
 
-  std::cout << "DEF? " << getFlag(CategoryState::DEF_ENABLED) << "\n";
-  std::cout << "GRD? " << getFlag(CategoryState::GRD_ENABLED) << "\n";
-  std::cout << "IMP? " << getFlag(CategoryState::IMP_ENABLED) << "\n";
+  if (flags)
+  {
+    std::cout << "DEF? " << getFlag(CategoryState::DEF_ENABLED) << "\n";
+    std::cout << "GRD? " << getFlag(CategoryState::GRD_ENABLED) << "\n";
+    std::cout << "IMP? " << getFlag(CategoryState::IMP_ENABLED) << "\n";
+    std::cout << "E_STAFF? " << getFlag(CategoryState::E_STAFF) << "\n";
+    std::cout << "E_SWORD? " << getFlag(CategoryState::E_SWORD) << "\n\n";
+  }
 }
 
 std::string Category::getDescription()
@@ -231,7 +220,7 @@ std::string Category::getDenonym()
 
 bool Category::getFlag(const CategoryState &test_flag)
 {
-  return static_cast<bool>((flags & test_flag) == flags);
+  return static_cast<bool>((cat_flags & test_flag) == test_flag);
 }
 
 std::string Category::getName()
@@ -278,9 +267,9 @@ bool Category::setDenonym(const std::string &new_denonym)
   return false;
 }
 
-void Category::setFlag(const CategoryState &flag, const bool &set_value)
+void Category::setFlag(const CategoryState &flags, const bool &set_value)
 {
-  (set_value) ? (flags |= flag) : (flags &= ~flag);
+  (set_value) ? (cat_flags |= flags) : (cat_flags &= ~flags);
 }
 
 /*=============================================================================

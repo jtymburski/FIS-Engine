@@ -128,7 +128,7 @@ public:
 
   /* Method for returning the index of an attribute given a name */
   static int getIndex(const std::string &name);
-
+  
   /* Returns the size of an attribute set (static -- returns kNUM_VALUES) */
   static size_t getSize();
 

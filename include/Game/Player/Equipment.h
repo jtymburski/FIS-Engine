@@ -11,6 +11,7 @@
 *
 * TODO
 * ----
+* - Develop actual classes of Equipment [01-21-14]
 *******************************************************************************/
 
 #ifndef EQUIPMENT_H
@@ -30,8 +31,11 @@
 ENUM_FLAGS(EquipState)
 enum class EquipState
 { 
-  TWO_HANDED = 1 << 0,
-  EQUIPPED   = 1 << 1
+  TWO_HANDED  = 1 << 0,
+  EQUIPPED    = 1 << 1,
+  STAFF       = 1 << 2,
+  SWORD       = 1 << 3
+  //TODO: Develop classes of equipments,
 };
 
 class Equipment : public Item

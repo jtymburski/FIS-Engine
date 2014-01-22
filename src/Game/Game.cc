@@ -217,7 +217,7 @@ void Game::pollEvents()
 /* Set up the battle - old battle needs to be deleted prior to calling */
 void Game::setupBattle()
 {
-  bool enable_test = false;
+  bool enable_test = true;
 
   if (enable_test)
   {
@@ -382,10 +382,15 @@ void Game::setupBattle()
   // Category Testing
   Category* blood_scion = new Category("Blood Scion", "Scion", min_scion_set, 
                                        max_scion_set, scion_skills);
+  blood_scion->setDescription("User of blood magicks.");
+  blood_scion->setFlag(CategoryState::E_STAFF, true);
+
   Category* hexblade = new Category("Hexblade", "Hexblader", min_hex_set, 
                                     max_hex_set, hex_skills);
+  hexblade->setDescription("User of many weapons");
+  hexblade->setFlag(CategoryState::E_SWORD, true);
 
-  blood_scion->print();
+  blood_scion->print(true, true);
   hexblade->print();
 
   } // end enable test
