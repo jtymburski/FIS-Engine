@@ -98,10 +98,6 @@ public:
   ~Person();
 
 private:
-  /* Curve of Elemental modifiers - fast to slow progression */
-	enum class ElementCurve : uint8_t
-	{ XS = 1, S = 2, A = 3, B = 4, C = 5, D = 6};
-
 	/* Person IDs */
 	int game_id;
 	int my_id;
@@ -196,6 +192,9 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Loads the default values for the Person */
+  void loadDefaults();
+
   /* Sets up the class, based on whether base_person is assigned or not */
   void setupClass();
 
@@ -345,6 +344,11 @@ public:
 
   /* Evaluates and returns a given person state flag */
   void setPFlag(const PState &flag, const bool &set_value = true);
+
+  /* Assigns curve modifiers for the person (change's level progression) */
+  void setCurves(Element prim, ElementCurve prim_curve,
+                 Element secd, ElementCurve secd_curve,
+                 const bool &update_level = false);
 
   /* Assigns a new curr Attr set */
   bool setCurr(const AttributeSet& new_curr_set);

@@ -24,10 +24,10 @@
 #include <iostream>
 #include <vector>
 
-#include "Game/Player/Equipment.h"
 #include "EnumDb.h"
 #include "EnumFlags.h"
 #include "StringDb.h"
+#include "Game/Player/Equipment.h"
 
 /* Category state flags - primarily for enabling battle features
  * and describing the types of equipment a member can equip 

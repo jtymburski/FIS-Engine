@@ -25,9 +25,9 @@
 
 #include <iostream>
 
+#include "Helpers.h"
 #include "Game/Player/Flavour.h"
 #include "Game/Player/Item.h"
-#include "Helpers.h"
 
 class Bubby : public Item
 {

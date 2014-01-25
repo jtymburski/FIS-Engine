@@ -236,6 +236,26 @@ enum class Element : std::uint8_t
   NONE     = 1 << 0
 };
 
+/* Description: Curve of Elemental modifiers - fast to slow progression
+ *              [increase on top of normal progression]
+ * 
+ * XS - Godlike
+ *  S - Extremely powerful 
+ *  A - Powerful
+ *  B - Strong
+ *  C - Moderate
+ *  D - Normal
+ */
+enum class ElementCurve : uint8_t
+{ 
+  XS = 0, 
+  S  = 1, 
+  A  = 2, 
+  B  = 3,
+  C  = 4, 
+  D  = 5
+};
+
 /*
  * Description: Equipment slots which represent compartments on a person which
  *              will hold the equipments on the person because of reasons.

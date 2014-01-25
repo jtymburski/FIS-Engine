@@ -217,7 +217,7 @@ void Game::pollEvents()
 /* Set up the battle - old battle needs to be deleted prior to calling */
 void Game::setupBattle()
 {
-  bool enable_test = true;
+  bool enable_test = false;
 
   if (enable_test)
   {
@@ -385,13 +385,15 @@ void Game::setupBattle()
   blood_scion->setDescription("User of blood magicks.");
   blood_scion->setFlag(CategoryState::E_STAFF, true);
 
-  Category* hexblade = new Category("Hexblade", "Hexblader", min_hex_set, 
+  Category* bear = new Category("Bear", "Bears", min_hex_set, 
                                     max_hex_set, hex_skills);
-  hexblade->setDescription("User of many weapons");
-  hexblade->setFlag(CategoryState::E_SWORD, true);
+  bear->setDescription("Has a right to bear arms.");
 
-  blood_scion->print(true, true);
-  hexblade->print();
+  Person* berran = new Person(455, "Berran", blood_scion, bear);
+  berran->setCurves(Element::FIRE, ElementCurve::S, 
+                    Element::PHYSICAL, ElementCurve::B);
+  berran->setLoot(25, 150, {14, 12, 16});
+  berran->print(false, true, true, true);
 
   } // end enable test
  

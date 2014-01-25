@@ -122,6 +122,49 @@ Person::~Person()
  * PRIVATE FUNCTIONS
  *============================================================================*/
 
+void Person::loadDefaults()
+{
+  battle_flags = static_cast<BState>(0);
+  person_flags = static_cast<PState>(0);
+
+  //person_record{};
+
+  updateRank();
+
+  primary = Element::NONE;
+  secondary = Element::NONE;
+  primary_curve = ElementCurve::D;
+  secondary_curve = ElementCurve::D;
+
+  level     = 1;
+  total_exp = kMIN_LVL_EXP;
+
+  updateLevel();
+  updateBaseStats();
+
+  curr_stats     = base_stats;
+  curr_max_stats = base_stats;
+  temp_max_stats = base_stats;
+
+  learned_skills = SkillSet();
+  updateBaseSkills();
+  curr_skills = base_skills;
+
+  dmg_mod = 1.000;
+  exp_mod = 1.000;
+
+  for (size_t a = 0; a < kNUM_EQUIP_SLOTS; a++)
+    equipments.push_back(nullptr);
+
+  credit_drop = 0;
+  exp_drop = 0;
+
+  first_person = nullptr;
+  third_person = nullptr;
+  fp_bubbified_sprite = nullptr;
+  tp_bubbified_sprite = nullptr;
+}
+
 /*
  * Description:
  *
@@ -138,42 +181,7 @@ void Person::setupClass()
   /* Setup the class for a Base Person */
   if (base_person == nullptr)
   {
-    battle_flags = static_cast<BState>(0);
-    person_flags = static_cast<PState>(0);
-    //person_record{};
-
-    updateRank();
-
-    primary = Element::NONE;
-    secondary = Element::NONE;
-    primary_curve = ElementCurve::D;
-    secondary_curve = ElementCurve::D;
-
-    total_exp = kMIN_LVL_EXP;
-    updateLevel();
-    updateBaseStats();
-
-    curr_stats     = base_stats;
-    curr_max_stats = base_stats;
-    temp_max_stats = base_stats;
-
-    learned_skills = SkillSet();
-    updateBaseSkills();
-    curr_skills = base_skills;
-
-    dmg_mod = 1.000;
-    exp_mod = 1.000;
-
-    for (size_t a = 0; a < kNUM_EQUIP_SLOTS; a++)
-      equipments.push_back(nullptr);
-
-    credit_drop = 0;
-    exp_drop = 0;
-
-    first_person = nullptr;
-    third_person = nullptr;
-    fp_bubbified_sprite = nullptr;
-    tp_bubbified_sprite = nullptr;
+    loadDefaults();
   }
 
   /* Setup the class as a copy of the Base Person */
@@ -229,40 +237,49 @@ void Person::setupClass()
 /* Recalculates the Person's base and base_max stats based on categories */
 void Person::updateBaseStats()
 {
-  AttributeSet temp = battle_class->getBaseSet() + race_class->getBaseSet();
+  AttributeSet temp    = battle_class->getBaseSet() + race_class->getBaseSet();
   AttributeSet temp_max = battle_class->getTopSet() + race_class->getTopSet();
 
   std::vector<int32_t> prim_indexes;
   std::vector<int32_t> secd_indexes;
   
-  prim_indexes.push_back(AttributeSet::getOffensiveIndex(primary));
-  prim_indexes.push_back(AttributeSet::getDefensiveIndex(primary));
-  secd_indexes.push_back(AttributeSet::getOffensiveIndex(secondary));
-  secd_indexes.push_back(AttributeSet::getDefensiveIndex(secondary));
-
-  auto p_mod = getCurveModifier(primary_curve, true);
-  auto s_mod = getCurveModifier(secondary_curve, false);
-
-  for (auto index : prim_indexes)
+  if (primary != Element::NONE)
   {
-    if (index != -1)
-    {
-      auto a = std::floor(static_cast<float>(temp.getStat(index)) * p_mod);
-      auto b = std::floor(static_cast<float>(temp_max.getStat(index)) * p_mod);
+    prim_indexes.push_back(AttributeSet::getOffensiveIndex(primary));
+    prim_indexes.push_back(AttributeSet::getDefensiveIndex(primary));
 
-      temp.setStat(index, a);
-      temp_max.setStat(index, b);
+    auto p_mod = getCurveModifier(primary_curve, true);
+
+    for (auto index : prim_indexes)
+    {
+      if (index != -1)
+      {
+        auto a = std::floor(static_cast<float>(temp.getStat(index)) * p_mod);
+        auto b = std::floor(static_cast<float>(temp_max.getStat(index))*p_mod);
+
+        temp.setStat(index, a);
+        temp_max.setStat(index, b);
+      }
     }
   }
-  for (auto index : secd_indexes)
-  {
-    if (index != -1)
-    {
-      auto a = std::floor(static_cast<float>(temp.getStat(index)) * s_mod);
-      auto b = std::floor(static_cast<float>(temp_max.getStat(index)) * s_mod);
 
-      temp.setStat(index, a);
-      temp_max.setStat(index, b);
+  if (secondary != Element::NONE)
+  {
+    secd_indexes.push_back(AttributeSet::getOffensiveIndex(secondary));
+    secd_indexes.push_back(AttributeSet::getDefensiveIndex(secondary));
+
+    auto s_mod = getCurveModifier(secondary_curve, false);
+
+    for (auto index : secd_indexes)
+    {
+      if (index != -1)
+      {
+        auto a = std::floor(static_cast<float>(temp.getStat(index)) * s_mod);
+        auto b = std::floor(static_cast<float>(temp_max.getStat(index))*s_mod);
+
+        temp.setStat(index, a);
+        temp_max.setStat(index, b);
+      }
     }
   }
 
@@ -310,17 +327,17 @@ void Person::updateStats()
 {
   if (level == 1)
   {
-    curr_stats = base_stats;
+    curr_stats     = base_stats;
     curr_max_stats = base_stats;
   }
   else if (level == kNUM_LEVELS)
   {
-    curr_stats = base_max_stats;
+    curr_stats     = base_max_stats;
     curr_max_stats = base_max_stats;
   }
   else
   {
-    curr_stats = AttributeSet(0, true);
+    curr_stats     = AttributeSet(0, true);
     curr_max_stats = AttributeSet(0, true);
 
     for (size_t i = 0; i < AttributeSet::getSize(); i++)
@@ -339,7 +356,7 @@ void Person::updateStats()
 
   for (auto equipment : equipments)
     if (equipment != nullptr)
-      temp_max_stats += equipment->getStats();
+     temp_max_stats += equipment->getStats();
 
   curr_stats.cleanUp();
   curr_max_stats.cleanUp();
@@ -477,50 +494,64 @@ bool Person::doDmg(const uint32_t &amount)
 void Person::print(const bool &simple, const bool &equips,
                    const bool &flags, const bool &skills)
 {
+  std::cout << "==== Person: " << getName() << " ====\n";
   if (simple)
   {
     std::cout << "GID: " << game_id << " MID: " << my_id << " Name: " << name
-              << " Level: " << level << " Exp: " << total_exp << "\n";
+              << " Level: " << static_cast<int>(level) << " Exp: " << total_exp << "\n";
   }
   else
   {
     std::cout << "Game ID: " << game_id << "\n";
     std::cout << "My ID: " << my_id << "\n";
-    std::cout << "Base Person?" << (base_person != nullptr) << "\n";
+    std::cout << "Base Person? " << (base_person == nullptr) << "\n";
     std::cout << "Battle Class: " << battle_class->getName() << "\n";
     std::cout << "Race? " << race_class->getName() << "\n";
     std::cout << "Name: " << name << "\n";
-    std::cout << "[void]Rank" << "\n";
+    std::cout << "[void]Rank " << "\n";
     std::cout << "Primary: " << Helpers::elementToString(primary) << "\n";
-    std::cout << "Secondary: " << Helpers::elementToString(secondary) << "\n";
-    std::cout << "[void]Prim Curve: " << "\n";
-    std::cout << "[void]Secd Curve: " << "\n";
-    
-    //std::cout << "Base Stats: " << base_stats.print(true) << "\n";
-    //std::cout << "Base Max: " << base_stats.print(true) << "\n";
-    //std::cout << "Curr Stats: " << curr_stats.print(true) << "\n";
-    //std::cout << "Curr Max Stats: " << curr_max_stats.print(true) << "\n";
-    //std::cout << "Temp Max Stats: ";
-    //temp_max_stats.print(true);
-    //std::cout << "\n";
-
-    std::cout << "Dmg Modifier: " << dmg_mod << "\n";
+    std::cout << "Secondary: " << Helpers::elementToString(secondary);
+    std::cout << "\n[void]Prim Curve: " << static_cast<int>(primary_curve);
+    std::cout << "\n[void]Secd Curve: " << static_cast<int>(secondary_curve);
+    std::cout << "\nDmg Modifier: " << dmg_mod << "\n";
     std::cout << "Exp Modifier: " << exp_mod << "\n";
     std::cout << "Item Drops: " << item_drops.size() << "\n";
     std::cout << "Credit Drop: " << credit_drop << "\n";
     std::cout << "Exp Drop: " << exp_drop << "\n";
-    std::cout << "Level: " << level << "\n";
+    std::cout << "Level: " << static_cast<int>(level) << "\n";
     std::cout << "Total Exp: " << total_exp << "\n";
     std::cout << "First Person? " << (first_person != nullptr) << "\n";
     std::cout << "Third Person? " << (third_person != nullptr) << "\n";
     std::cout << "Fp Bubbified? " << (fp_bubbified_sprite != nullptr) << "\n";
     std::cout << "Tp Bubbified? " << (tp_bubbified_sprite != nullptr) << "\n";
 
+    std::cout << "Base Stats: ";
+    base_stats.print(true);
+    std::cout << "\n";
+    std::cout << "Base Max Stats: ";
+    base_stats.print(true);
+    std::cout << "\n";
+    std::cout << "Curr Stats: ";
+    curr_stats.print(true);
+    std::cout << "\n";
+    std::cout << "Curr Max Stats: ";
+    curr_max_stats.print(true);
+    std::cout << "\n";
+    std::cout << "Temp Max Stats: ";
+    temp_max_stats.print(true);
+    std::cout << "\n";
+
     if (skills)
     {
+      std::cout << "Base Skill Set: ";
       base_skills.print();
+      std::cout << "\n";
+      std::cout << "Curr Skill Set: ";
       curr_skills.print();
+      std::cout << "\n";
+      std::cout << "Learned Skills: ";
       learned_skills.print();
+      std::cout << "\n";
     }
 
     if (equips)
@@ -530,6 +561,7 @@ void Person::print(const bool &simple, const bool &equips,
 
     if (flags)
     {
+      std::cout << "--- Battle State Flags ---\n";
       std::cout << "IN_BATTLE: " << getBFlag(BState::IN_BATTLE) << "\n";
       std::cout << "ALIVE: " << getBFlag(BState::ALIVE) << "\n";
       std::cout << "ATK_ENABLED: " << getBFlag(BState::ATK_ENABLED) << "\n";
@@ -553,9 +585,9 @@ void Person::print(const bool &simple, const bool &equips,
       std::cout << "REFLECT: " << getBFlag(BState::REFLECT) << "\n";
       std::cout << "BOND: " << getBFlag(BState::BOND) << "\n";
       std::cout << "BONDED: " << getBFlag(BState::BONDED) << "\n";
-      std::cout << "REVIVABLE: " << getBFlag(BState::REVIVABLE) << "\n";
-      
-
+      std::cout << "REVIVABLE: " << getBFlag(BState::REVIVABLE) << "\n\n";
+ 
+      std::cout << "--- Person State Flags ---\n";
       std::cout << "SLEUTH: " << getPFlag(PState::SLEUTH) << "\n";
       std::cout << "BEARACKS: " << getPFlag(PState::BEARACKS) << "\n";
       std::cout << "MAIN: " << getPFlag(PState::MAIN) << "\n";
@@ -571,6 +603,7 @@ void Person::print(const bool &simple, const bool &equips,
       std::cout << "MAX_LVL: " << getPFlag(PState::MAX_LVL) << "\n";
     }
   }
+  std::cout << "--- // Person ---\n\n";
 }
 
 /* Removes the equipment from a given slot */
@@ -627,13 +660,13 @@ uint32_t Person::getMyID()
 /* Evaluates and returns the state of a given BState flag */
 bool Person::getBFlag(const BState &test_flag)
 {
-  return static_cast<bool>((battle_flags & test_flag) == battle_flags); 
+  return static_cast<bool>((battle_flags & test_flag) == test_flag); 
 }
 
 /* Evaluates and returns the state of a given PState flag */
 bool Person::getPFlag(const PState &test_flag)
 {
-  return static_cast<bool>((person_flags & test_flag) == person_flags);
+  return static_cast<bool>((person_flags & test_flag) == test_flag);
 }
 
 /* Returns a pointer to the assigned base person */
@@ -679,13 +712,13 @@ Element Person::getSecondary()
 }
 
 /* Return the enumerated curve of prim. elemental progression */
-Person::ElementCurve Person::getPrimaryCurve()
+ElementCurve Person::getPrimaryCurve()
 {
   return primary_curve;
 }
 
 /* Return the enumerated curve of secd. elemental progression */
-Person::ElementCurve Person::getSecondaryCurve()
+ElementCurve Person::getSecondaryCurve()
 {
   return secondary_curve;
 }
@@ -835,6 +868,23 @@ void Person::setBFlag(const BState &flag, const bool &set_value)
 void Person::setPFlag(const PState &flag, const bool &set_value)
 {
   (set_value) ? (person_flags |= flag) : (person_flags &= ~flag);  
+}
+
+/* Assigns curve modifiers for the person (change's level progression) */
+void Person::setCurves(Element prim, ElementCurve prim_curve,
+                       Element secd, ElementCurve secd_curve,
+                       const bool &update_level)
+{
+  primary         = prim;
+  secondary       = secd;
+  primary_curve   = prim_curve;
+  secondary_curve = secd_curve;
+
+  if (update_level)
+  {
+    updateBaseStats();
+    updateStats();
+  }
 }
 
 /* Assigns a new curr Attr set */
