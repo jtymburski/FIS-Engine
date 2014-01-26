@@ -28,7 +28,7 @@ const size_t   Skill::kMAX_MESG_LENGTH   =   70;
 const size_t   Skill::kMAX_NAME_LENGTH   =   60;
 const size_t   Skill::kMAX_DESC_LENGTH   =  500;
 const uint32_t Skill::kMAX_VALUE         =   10;
-const int      Skill::kUNSET_ID          =   -1;
+const int32_t  Skill::kUNSET_ID          =   -1;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -40,19 +40,20 @@ const int      Skill::kUNSET_ID          =   -1;
  * Inputs: none
  */
 Skill::Skill()
-{
-  classSetup();
-}
-
-/*
- * Description: Copy constructor given a source Skill.
- *
- * Inputs: none
- */
-Skill::Skill(const Skill &source)
-{
-  copySelf(source);
-}
+  : animation{nullptr}
+  , cooldown{0}
+  , cost{0}
+  , description{0}
+  , flags{static_cast<SkillFlags>(0)}
+  , id{kUNSET_ID}
+  , primary{Element::NONE}
+  , secondary{Element::NONE}
+  , sound_effect{nullptr}
+  , scope{ActionScope::NO_SCOPE}
+  , thumbnail{nullptr}
+  , message{""}
+  , value{0}
+{}
 
 /*
  * Description: Constructs a basic empty Skill given a name.
@@ -60,8 +61,8 @@ Skill::Skill(const Skill &source)
  * Inputs: name - string name for the Skill
  */
 Skill::Skill(const std::string &name)
+  : Skill::Skill()
 {
-  classSetup();
   setName(name);
 }
 
@@ -77,8 +78,8 @@ Skill::Skill(const std::string &name)
  */
 Skill::Skill(const int &id, const std::string &name, const ActionScope &scope,
 	           Action* effect, const float &chance)
+  : Skill::Skill()
 {
-  classSetup();
   setID(id);
   setName(name);
   setScope(scope);
@@ -102,7 +103,6 @@ Skill::Skill(const int &id, const std::string &name, const ActionScope &scope,
 	           const std::vector<Action*> &effects, 
 	           const std::vector<float> &chances)
 {
-  classSetup();
   setID(id);
   setName(name);
   setScope(scope);
@@ -115,64 +115,9 @@ Skill::Skill(const int &id, const std::string &name, const ActionScope &scope,
   flagSetup();
 }
 
-/*
- * Description: Annihilates a SKill object
- */
-Skill::~Skill() {}
-
-
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
-
-/*
- * Description: Does the initial setup for the Skill class.
- *
- * Inputs: none
- * Output: none
- */
-void Skill::classSetup()
-{
-  animation = nullptr;
-  cooldown = 0;
-  cost = 0;
-  description = "";
-  flags = static_cast<SkillFlags>(0);
-  name = "";
-  id = kUNSET_ID;
-  primary = Element::NONE;
-  secondary = Element::NONE;
-  sound_effect = nullptr;
-  scope = ActionScope::NO_SCOPE;
-  thumbnail = nullptr;
-  message = "";
-  value = 0;
-}
-
-/*
- * Description: Common function for copy construction between the copy
- *              constructor and assignment operator.
- *
- * Inputs: source - source object to copy from
- * Output: none
- */
-void Skill::copySelf(const Skill &source)
-{
-  animation    = source.animation;
-  cooldown     = source.cooldown;
-  cost         = source.cost;
-  description  = source.description;
-  flags        = source.flags;
-  id           = source.id;  //TODO? [11-23-13]
-  name         = source.name;
-  primary      = source.primary;
-  secondary    = source.secondary;
-  sound_effect = source.sound_effect;
-  scope        = source.scope;
-  thumbnail    = source.thumbnail;
-  message      = source.message;
-  value        = source.value;
-}
 
 /*
  * Description: Assigns the SkillFlag (categorization of Skill types) based
@@ -184,11 +129,8 @@ void Skill::copySelf(const Skill &source)
  */
 void Skill::flagSetup()
 {
-  //TODO: Offensive/Defensive/Neutral categories? [11-25-13]
-
   for (auto it = effects.begin(); it != effects.end(); ++it)
   {
-
     if ((*it)->actionFlag(ActionFlags::ALTER))
     {
       setFlag(SkillFlags::ALTERING);
@@ -216,7 +158,6 @@ void Skill::flagSetup()
       if ((*it)->getAttribute() == Attribute::VITA && (*it)->getBase() > 0)
         setFlag(SkillFlags::HEALING);
     }
-
   } 
 }
 
@@ -736,27 +677,4 @@ bool Skill::setValue(const uint32_t &new_value)
   }
 
   return false;
-}
-
-/*=============================================================================
- * OVERLOADED OPERATORS
- *============================================================================*/
-
-/*
- * Description: Overloaded assignment operator
- *
- * Inputs: source - source object to copy from
- * Output: Skill& - reference to the copied object
- */
-Skill& Skill::operator=(const Skill &source)
-{
-  /* Check for self assignment */
-  if (this == &source)
-    return *this;
-
-  /* Do the copy */
-  copySelf(source);
-
-  /* Return the copied object */
-  return *this;
 }

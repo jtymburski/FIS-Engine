@@ -35,8 +35,6 @@
 #ifndef PERSON_H
 #define PERSON_H
 
-#include <vector>
-
 #include "Game/Player/Category.h"
 #include "Game/Player/Equipment.h"
 

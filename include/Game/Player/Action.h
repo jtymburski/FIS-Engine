@@ -61,19 +61,15 @@
 *
 * TODO
 * ----
-* - !!! CLASS UNTESTED - Testing [11-20-13]
-* - Conventions [11-19-13]
+* - [12-08-13] Print the string of the attribute the action alters or assigns
+* - [12-08-13] Print the string of the ailment the action inflicts or relieves 
 *******************************************************************************/
 
 #ifndef ACTION_H
 #define ACTION_H
 
-#include <climits> /* INT_MAX */
 #include <iostream>
-#include <string>  /* std::stoi */
-#include <vector>
 
-#include "EnumDb.h"
 #include "EnumFlags.h"
 #include "Helpers.h"
 
@@ -113,8 +109,8 @@ public:
   /* Constructs an Action object by parsing a string */
   Action(const std::string &raw);
 
-  /* Annihilates an action object */
-  ~Action();
+  /* Annihilates an action object - default destructor */
+  ~Action() = default;
 
 private:
   /* Set of ActionFlags for the current action */
@@ -127,10 +123,10 @@ private:
   Infliction ailment;
 
   /* Base value (amt. or pc in flag) by which to change the attribute by */
-  int base;
+  int32_t base;
 
   /* ID of the current Action [parsed in] */
-  int id;
+  int32_t id;
 
   /* Two ignore flag sets in relation to atk & def attributes */
   IgnoreFlags ignore_atk;
@@ -144,14 +140,14 @@ private:
   uint32_t variance;
 
   /* ------------ Constants --------------- */
-  static const bool         kDEBUG_ENABLED; /* Show parse warning messages? */
-  static const int          kDEFAULT_ID;  /* ID for a default Action object */
-  static const int          kDEFAULT_MIN; /* Default turn minimum for ailment */
-  static const int          kDEFAULT_MAX; /* Default turn maximum for ailment */
-  static const char         kDELIMITER;   /* The delimiter for string parsing */
-  static const char         kDELIMITER_2; /* The secondary delimiter */
-  static const int          kMAX_BASE_PC; /* Max % value for Base change */
-  static const uint32_t     kMAX_VARIANCE_PC; /* Max % value for Variance */
+  static const bool     kDEBUG_ENABLED; /* Show parse warning messages? */
+  static const int32_t  kDEFAULT_MIN; /* Default turn minimum for ailment */
+  static const int32_t  kDEFAULT_MAX; /* Default turn maximum for ailment */
+  static const char     kDELIMITER;   /* The delimiter for string parsing */
+  static const char     kDELIMITER_2; /* The secondary delimiter */
+  static const int32_t  kMAX_BASE_PC; /* Max % value for Base change */
+  static const uint32_t kMAX_VARIANCE_PC; /* Max % value for Variance */
+  static const int32_t  kUNSET_ID;  /* ID for a default Action object */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS

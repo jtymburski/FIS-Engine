@@ -68,14 +68,14 @@
  * CONSTANTS - See implementation for details
  *============================================================================*/
 
-const bool         Action::kDEBUG_ENABLED = true;
-const int          Action::kDEFAULT_ID  = INT_MAX;
-const int          Action::kDEFAULT_MIN = 1;
-const int          Action::kDEFAULT_MAX = 2;
-const char         Action::kDELIMITER   = ',';
-const char         Action::kDELIMITER_2 = '.';
-const int          Action::kMAX_BASE_PC = 100;
-const uint32_t     Action::kMAX_VARIANCE_PC = 1000;
+const bool     Action::kDEBUG_ENABLED   = true;
+const int32_t  Action::kDEFAULT_MIN     = 1;
+const int32_t  Action::kDEFAULT_MAX     = 2;
+const char     Action::kDELIMITER       = ',';
+const char     Action::kDELIMITER_2     = '.';
+const int32_t  Action::kMAX_BASE_PC     = 100;
+const uint32_t Action::kMAX_VARIANCE_PC = 1000;
+const int32_t  Action::kUNSET_ID        = -1;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -87,46 +87,28 @@ const uint32_t     Action::kMAX_VARIANCE_PC = 1000;
  * Inputs: none
  */
 Action::Action()
-    : action_flags(static_cast<ActionFlags>(0)),
-      attribute(Attribute::NONE),
-      ailment(Infliction::INVALID),
-      base(0),
-      id(kDEFAULT_ID),
-      ignore_atk(static_cast<IgnoreFlags>(0)),
-      ignore_def(static_cast<IgnoreFlags>(0)),
-      min_duration(0),
-      max_duration(0),
-      variance(0)
-{
-  action_flags &= static_cast<ActionFlags>(0);
-  ignore_atk   &= static_cast<IgnoreFlags>(0);
-  ignore_def   &= static_cast<IgnoreFlags>(0);
-}
+    : action_flags{static_cast<ActionFlags>(0)}
+    , attribute{Attribute::NONE}
+    , ailment{Infliction::INVALID}
+    , base{0}
+    , id{kUNSET_ID}
+    , ignore_atk{static_cast<IgnoreFlags>(0)}
+    , ignore_def{static_cast<IgnoreFlags>(0)}
+    , min_duration(0)
+    , max_duration(0)
+    , variance(0)
+{}
 
 /*
  * Description: Constructs a default Action object given a raw string to parse
  *
- * Inputs: raw - the raw string to be parsed
+ * Inputs: std::string raw - the raw string to be parsed
  */
 Action::Action(const std::string &raw)
-    : action_flags(static_cast<ActionFlags>(0)),
-      attribute(Attribute::NONE),
-      ailment(Infliction::INVALID),
-      base(0),
-      id(kDEFAULT_ID),
-      ignore_atk(static_cast<IgnoreFlags>(0)),
-      ignore_def(static_cast<IgnoreFlags>(0)),
-      min_duration(0),
-      max_duration(0),
-      variance(0)
+    : Action::Action()
 {
   parse(raw);
 }
-
-/*
- * Description: Annihilates an action object
- */
-Action::~Action() {}
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -458,9 +440,6 @@ bool Action::setDuration(const int &min_value, const int &max_value)
  *
  * Inputs: none
  * Output: none
- *
- * TODO [12-08-13] Print the string of the attribute the action alters or assigns
- * TODO [12-08-13] Print the string of the ailment the action inflicts or relieves 
  */
 void Action::print()
 {

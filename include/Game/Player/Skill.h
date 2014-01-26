@@ -15,7 +15,6 @@
 *
 * TODO
 * ----
-* - Is copy constructor needed? (ID Problem) [11-23-13]
 * - Possible OFENSIVE/DEFENSIVE/NEUTRAL categories (set in flags)? [11-23-13]
 *******************************************************************************/
 
@@ -23,11 +22,8 @@
 #define SKILL_H
 
 #include <algorithm> /* std::sort */
-#include <vector>
 
 #include "Game/Player/Action.h"
-#include "EnumDb.h"
-#include "EnumFlags.h"
 #include "Sound.h"
 #include "Sprite.h"
 
@@ -50,9 +46,6 @@ public:
   /* Constructs a default Skill object */
   Skill();
 
-  /* Skill Copy constructor */
-  Skill(const Skill &source);
-
   /* Basic Skill constructor given a name */
   Skill(const std::string &name);
 
@@ -65,7 +58,7 @@ public:
   	    const std::vector<Action*> &effects, const std::vector<float> &chances);
 
   /* Annihilates a Skill object */
-  ~Skill();
+  ~Skill() = default;
 
 private:
   /* Pointer to the animation played by the Skill during Battle */
@@ -90,7 +83,7 @@ private:
   SkillFlags flags;
 
   /* The ID of the Skill */
-  int id;
+  int32_t id;
 
   /* String name of the Skill */
   std::string name;
@@ -130,12 +123,6 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
-  /* Method for setting up the class */
-  void classSetup();
-
-  /* Common function for assignment/copy constructor */
-  void copySelf(const Skill &source);
-
   /* Determines the Skill classification based on contained effects */
   void flagSetup();
 
@@ -252,13 +239,6 @@ public:
 
   /* Assigns a new point value */
   bool setValue(const uint32_t &new_value);
-
-/*=============================================================================
- * OVERLOADED OPERATORS
- *============================================================================*/
-public:
-  /* Overloaded = operator */
-  Skill& operator=(const Skill &source);
 };
 
 #endif //SKILL_H

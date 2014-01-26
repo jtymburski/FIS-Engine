@@ -217,7 +217,7 @@ void Game::pollEvents()
 /* Set up the battle - old battle needs to be deleted prior to calling */
 void Game::setupBattle()
 {
-  bool enable_test = true;
+  bool enable_test = false;
 
   if (enable_test)
   {
