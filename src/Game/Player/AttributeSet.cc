@@ -70,7 +70,13 @@ const std::vector<std::vector<int>> AttributeSet::kPRESETS =
    60, 40, 60, 40,
    80, 75, 80, 75,
    60, 40, 60, 40,
-   40, 50, 25, 5}
+   40, 50, 25, 5},
+
+  {5000, 3000, 250, 250, /* Potential top end set */
+   250,   250, 250, 250,
+   250,   250, 250, 250,
+   250,   250, 250, 250,
+   150,   150,  55,  19}
 };
 
 const int    AttributeSet::kDEFAULT        =      0;

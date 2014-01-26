@@ -217,7 +217,7 @@ void Game::pollEvents()
 /* Set up the battle - old battle needs to be deleted prior to calling */
 void Game::setupBattle()
 {
-  bool enable_test = false;
+  bool enable_test = true;
 
   if (enable_test)
   {
@@ -266,6 +266,10 @@ void Game::setupBattle()
   AttributeSet tumor_set(1);
   AttributeSet moldy_set(1);
 
+  AttributeSet min_human_set = min_hex_set;
+  min_human_set.setStat(Attribute::VITA, 200);
+  AttributeSet max_human_set(3, true);
+
   //Action Testing
   std::vector<Action*> actions;
   std::vector<float> chances = {0.50, 0.40, 0.12, 0.46};
@@ -273,12 +277,19 @@ void Game::setupBattle()
   actions.push_back(new Action("3,INFLICT,POISON,2.7,,,,,"));
   actions.push_back(new Action("4,RELIEVE,CURSE,,,,,"));
   actions.push_back(new Action("5,REVIVE,,,,,PC.25,AMOUNT.50"));
-  Action* special = new Action("6,ALTER,VITA,,,,PC.25,AMOUNT.50");
+  actions.push_back(new Action("7,INFLICT,BURN,3.5,,,,,"));
+  actions.push_back(new Action("8,ALTER,VITA,,,,AMOUNT.100,PC.10"));
+  actions.push_back(new Action("9,ALTER,VITA,,,,AMOUNT.75,PC.5"));
+
+  Action* special = new Action("10,ALTER,VITA,,,,PC.25,AMOUNT.50");
   
   // Skill Testing
   std::vector<Skill*> skills;
+  std::vector<Skill*> other_skills;
 
   Skill* normal_attack = new Skill(13, "Attack",ActionScope::ONE_TARGET,actions[0],0.75);
+  Skill* medium_attack = new Skill(14, "Med. Attack",ActionScope::ONE_TARGET,actions[5],0.85);
+  Skill* hard_attack   = new Skill(15, "Hard Attack",ActionScope::ONE_TARGET,actions[6],0.90);
   normal_attack->addActions(actions, chances);
 
   skills.push_back(normal_attack);
@@ -286,14 +297,22 @@ void Game::setupBattle()
   skills.push_back(new Skill(3, "Poison Attack",ActionScope::ONE_ENEMY,actions[1],0.79));
   skills.push_back(new Skill(35, "Crappy Attack",ActionScope::NO_SCOPE,special,1.00));
 
+  other_skills.push_back(medium_attack);
+  other_skills.push_back(hard_attack);
+
   std::vector<uint32_t> levels;
+  std::vector<uint32_t> other_levels;
 
   for (auto it = begin(skills); it != end(skills); ++it)
     levels.push_back(levels.size());
 
+  for (auto it = begin(skills); it != end(skills); ++it)
+    other_levels.push_back(1);
+
   // SkillSet Testing
   SkillSet* scion_skills = new SkillSet(skills, levels);
-  SkillSet* hex_skills = scion_skills;
+  SkillSet* hex_skills   = scion_skills;
+  SkillSet* other_skill_set = new SkillSet(other_skills, other_levels);
 
   hex_skills->rSkillIndex(1);
 
@@ -370,6 +389,7 @@ void Game::setupBattle()
   test_pouch->removeItemID(unique_item->getGameID());
 
   test_pouch->sort(ObjectSorts::NAME, SortObjects::ITEMS, true);
+  test_pouch->print(false);
 
   auto key_items = test_pouch->getKeyItems();
 
@@ -387,13 +407,16 @@ void Game::setupBattle()
 
   Category* bear = new Category("Bear", "Bears", min_hex_set, 
                                     max_hex_set, hex_skills);
+  Category* human = new Category("Human", "Humans", min_human_set, max_human_set, other_skill_set);
   bear->setDescription("Has a right to bear arms.");
 
+
+  /* Person Testing */
   Person* berran = new Person(455, "Berran", blood_scion, bear);
   berran->setCurves(Element::FIRE, ElementCurve::S, 
                     Element::PHYSICAL, ElementCurve::B);
   berran->setLoot(25, 150, {14, 12, 16});
-  berran->print(false, true, true, true);
+  //berran->print(false, true, true, true);
 
   } // end enable test
  
