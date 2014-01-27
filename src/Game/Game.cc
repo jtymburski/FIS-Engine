@@ -217,7 +217,7 @@ void Game::pollEvents()
 /* Set up the battle - old battle needs to be deleted prior to calling */
 void Game::setupBattle()
 {
-  bool enable_test = false;
+  bool enable_test = true;
 
   if (enable_test)
   {
@@ -295,7 +295,7 @@ void Game::setupBattle()
   skills.push_back(normal_attack);
   skills.push_back(new Skill(400, "Super Attack",ActionScope::ONE_ENEMY,special,0.65));
   skills.push_back(new Skill(3, "Poison Attack",ActionScope::ONE_ENEMY,actions[1],0.79));
-  skills.push_back(new Skill(35, "Crappy Attack",ActionScope::NO_SCOPE,special,1.00));
+  skills.push_back(new Skill(35, "Crappy Attack",ActionScope::ONE_TARGET,special,1.00));
 
   other_skills.push_back(medium_attack);
   other_skills.push_back(hard_attack);
@@ -314,109 +314,111 @@ void Game::setupBattle()
   SkillSet* hex_skills   = scion_skills;
   SkillSet* other_skill_set = new SkillSet(other_skills, other_levels);
 
-  hex_skills->rSkillIndex(1);
+  scion_skills->print();
+  hex_skills->print();
+  other_skill_set->print();
+  
+  // // General Item Testing
+  // Item* potion      = new Item(45, "Potion", 70, nullptr, 1.01);
+  // Item* unique_item = new Item(46, "Unique Item", 75, nullptr, 1.08);
+  // Item* new_potion  = new Item(potion);
 
-  // General Item Testing
-  Item* potion      = new Item(45, "Potion", 70, nullptr, 1.01);
-  Item* unique_item = new Item(46, "Unique Item", 75, nullptr, 1.08);
-  Item* new_potion  = new Item(potion);
+  // // Key Item Testing
+  // Item* master_key  = new Item(115, "Master Key", nullptr);
+  // Item* master_key2 = new Item(master_key);
+  // Item* super_box = new Item(116, "Super Box", nullptr);
+  // Item* boxxy_box = new Item(117, "Boxxy Box", nullptr);
+  // Item* epic_sword_comp = new Item(118, "Epic Sword Comp", nullptr);
+  // Item* alpha_omega = new Item(119, "Alpha Omega", nullptr);
 
-  // Key Item Testing
-  Item* master_key  = new Item(115, "Master Key", nullptr);
-  Item* master_key2 = new Item(master_key);
-  Item* super_box = new Item(116, "Super Box", nullptr);
-  Item* boxxy_box = new Item(117, "Boxxy Box", nullptr);
-  Item* epic_sword_comp = new Item(118, "Epic Sword Comp", nullptr);
-  Item* alpha_omega = new Item(119, "Alpha Omega", nullptr);
+  // // Flavour Testing
+  // Flavour* spark = new Flavour(101, "Spark", spark_set, 1.04, 35);
+  // Flavour* tumor = new Flavour(102, "Tumor", tumor_set, 1.09, 65);
+  // Flavour* moldy = new Flavour(103, "Moldy", moldy_set, 1.11, 48);
 
-  // Flavour Testing
-  Flavour* spark = new Flavour(101, "Spark", spark_set, 1.04, 35);
-  Flavour* tumor = new Flavour(102, "Tumor", tumor_set, 1.09, 65);
-  Flavour* moldy = new Flavour(103, "Moldy", moldy_set, 1.11, 48);
+  // Bubby* first  = new Bubby(spark);
+  // Bubby* second = new Bubby(moldy);
+  // Bubby* third  = new Bubby(tumor);
+  // Bubby* fourth = new Bubby(spark, 1);
+  // Bubby* fifth  = new Bubby(moldy, 1);
 
-  Bubby* first  = new Bubby(spark);
-  Bubby* second = new Bubby(moldy);
-  Bubby* third  = new Bubby(tumor);
-  Bubby* fourth = new Bubby(spark, 1);
-  Bubby* fifth  = new Bubby(moldy, 1);
+  // // Signature Testing
 
-  // Signature Testing
+  // // Equipment Testing
+  // Equipment* fated = new Equipment(201, "Fated Oak Saber", 1, 1, 100, nullptr, 10, 10);
+  // Equipment* suit  = new Equipment(202, "Suit", 100, 3, 100, nullptr, 10, 10);
 
-  // Equipment Testing
-  Equipment* fated = new Equipment(201, "Fated Oak Saber", 1, 1, 100, nullptr, 10, 10);
-  Equipment* suit  = new Equipment(202, "Suit", 100, 3, 100, nullptr, 10, 10);
+  // // Inventory Testing
+  // Inventory* test_pouch = new Inventory(1001, "Test Pouch", nullptr);
+  // test_pouch->addItem(potion);
+  // test_pouch->addItem(unique_item);
+  // test_pouch->addItem(new_potion);
+  // test_pouch->addItem(new_potion);
+  // test_pouch->addItem(unique_item);
 
-  // Inventory Testing
-  Inventory* test_pouch = new Inventory(1001, "Test Pouch", nullptr);
-  test_pouch->addItem(potion);
-  test_pouch->addItem(unique_item);
-  test_pouch->addItem(new_potion);
-  test_pouch->addItem(new_potion);
-  test_pouch->addItem(unique_item);
+  // test_pouch->addItem(master_key);
+  // test_pouch->addItem(master_key2);
+  // test_pouch->addItem(super_box);
+  // test_pouch->addItem(boxxy_box);
+  // test_pouch->addItem(epic_sword_comp);
+  // test_pouch->addItem(alpha_omega);
 
-  test_pouch->addItem(master_key);
-  test_pouch->addItem(master_key2);
-  test_pouch->addItem(super_box);
-  test_pouch->addItem(boxxy_box);
-  test_pouch->addItem(epic_sword_comp);
-  test_pouch->addItem(alpha_omega);
+  // test_pouch->addBubby(second);
+  // test_pouch->addBubby(first);
+  // test_pouch->addBubby(second);
+  // test_pouch->addBubby(first);
+  // test_pouch->addBubby(second);
+  // test_pouch->addBubby(first);
+  // test_pouch->addBubby(second);
+  // test_pouch->addBubby(third);
+  // test_pouch->addBubby(third);
 
-  test_pouch->addBubby(second);
-  test_pouch->addBubby(first);
-  test_pouch->addBubby(second);
-  test_pouch->addBubby(first);
-  test_pouch->addBubby(second);
-  test_pouch->addBubby(first);
-  test_pouch->addBubby(second);
-  test_pouch->addBubby(third);
-  test_pouch->addBubby(third);
+  // test_pouch->addBubby(fourth);
+  // test_pouch->addBubby(fourth);
+  // test_pouch->addBubby(fifth);
+  // test_pouch->addBubby(fifth);
 
-  test_pouch->addBubby(fourth);
-  test_pouch->addBubby(fourth);
-  test_pouch->addBubby(fifth);
-  test_pouch->addBubby(fifth);
+  // test_pouch->addEquipment(fated);
+  // test_pouch->addEquipment(suit);
 
-  test_pouch->addEquipment(fated);
-  test_pouch->addEquipment(suit);
+  // // Inventory Sorting Testing
+  // test_pouch->sort(ObjectSorts::NAME, SortObjects::EQUIPMENTS, false);
 
-  // Inventory Sorting Testing
-  test_pouch->sort(ObjectSorts::NAME, SortObjects::EQUIPMENTS, false);
+  // test_pouch->removeEquipID(fated->getGameID());
+  // test_pouch->removeEquipID(suit->getGameID());
+  // test_pouch->removeItemID(master_key->getGameID());
+  // test_pouch->removeItemIndex(2);
+  // test_pouch->removeItemID(unique_item->getGameID());
 
-  test_pouch->removeEquipID(fated->getGameID());
-  test_pouch->removeEquipID(suit->getGameID());
-  test_pouch->removeItemID(master_key->getGameID());
-  test_pouch->removeItemIndex(2);
-  test_pouch->removeItemID(unique_item->getGameID());
+  // test_pouch->sort(ObjectSorts::NAME, SortObjects::ITEMS, true);
+  // test_pouch->print(false);
 
-  test_pouch->sort(ObjectSorts::NAME, SortObjects::ITEMS, true);
-  test_pouch->print(false);
+  // auto key_items = test_pouch->getKeyItems();
 
-  auto key_items = test_pouch->getKeyItems();
+  // //for (auto it = begin(key_items); it != end(key_items); ++it)
+  // //{
+  // //  std::cout << "Item: " << (*it).first->getName() << " " 
+  // //            << static_cast<int>((*it).second) << "\n";
+  // //}
 
-  //for (auto it = begin(key_items); it != end(key_items); ++it)
-  //{
-  //  std::cout << "Item: " << (*it).first->getName() << " " 
-  //            << static_cast<int>((*it).second) << "\n";
-  //}
+  // // Category Testing
+  // Category* blood_scion = new Category("Blood Scion", "Scion", min_scion_set, 
+  //                                      max_scion_set, scion_skills);
+  // blood_scion->setDescription("User of blood magicks.");
+  // blood_scion->setFlag(CategoryState::E_STAFF, true);
 
-  // Category Testing
-  Category* blood_scion = new Category("Blood Scion", "Scion", min_scion_set, 
-                                       max_scion_set, scion_skills);
-  blood_scion->setDescription("User of blood magicks.");
-  blood_scion->setFlag(CategoryState::E_STAFF, true);
-
-  Category* bear = new Category("Bear", "Bears", min_hex_set, 
-                                    max_hex_set, hex_skills);
-  Category* human = new Category("Human", "Humans", min_human_set, max_human_set, other_skill_set);
-  bear->setDescription("Has a right to bear arms.");
+  // Category* bear = new Category("Bear", "Bears", min_hex_set, 
+  //                                   max_hex_set, hex_skills);
+  // Category* human = new Category("Human", "Humans", min_human_set, max_human_set, other_skill_set);
+  // bear->setDescription("Has a right to bear arms.");
 
 
-  /* Person Testing */
-  Person* berran = new Person(455, "Berran", blood_scion, bear);
-  berran->setCurves(Element::FIRE, ElementCurve::S, 
-                    Element::PHYSICAL, ElementCurve::B);
-  berran->setLoot(25, 150, {14, 12, 16});
-  //berran->print(false, true, true, true);
+  // /* Person Testing */
+  // Person* berran = new Person(455, "Berran", blood_scion, bear);
+  // berran->setCurves(Element::FIRE, ElementCurve::S, 
+  //                   Element::PHYSICAL, ElementCurve::B);
+  // berran->setLoot(25, 150, {14, 12, 16});
+  // berran->print(false, true, true, true);
 
   } // end enable test
  

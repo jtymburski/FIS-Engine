@@ -221,9 +221,9 @@ const std::string& Flavour::getName()
  *              level by using the skill set function.
  *
  * Inputs: at_level - the level to determine skill unlocks for
- * Output: std::deque<SSE> - skill set elements unlocked by the given level
+ * Output: std::vector<SSE> - skill set elements unlocked by the given level
  */
-std::deque<SkillSetElement> Flavour::getSkills(const uint32_t &at_level)
+std::vector<SetElement> Flavour::getSkills(const uint32_t &at_level)
 {
   return skill_list->getElements(at_level);
 }

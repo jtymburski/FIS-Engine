@@ -109,8 +109,8 @@ public:
   /* Returns the string name of the Flavour */
   const std::string& getName();
 
-  /* Returns a deque of SkillSetElements the flavour unlocks at a given level */
-  std::deque<SkillSetElement> getSkills(const uint32_t &at_level);
+  /* Returns a vector of SetElements the flavour unlocks at a given level */
+  std::vector<SetElement> getSkills(const uint32_t &at_level);
 
   /* Returns a pointer to the skill set for the Flavour */
   SkillSet* getSkillSet();

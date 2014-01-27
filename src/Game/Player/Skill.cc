@@ -86,7 +86,6 @@ Skill::Skill(const int &id, const std::string &name, const ActionScope &scope,
 
   /* The skill will be valid of the action is able to be added */
   addAction(effect, chance);
-  setFlag(SkillFlags::VALID, this->isValid());
 }
 
 /*
@@ -102,14 +101,14 @@ Skill::Skill(const int &id, const std::string &name, const ActionScope &scope,
 Skill::Skill(const int &id, const std::string &name, const ActionScope &scope, 
 	           const std::vector<Action*> &effects, 
 	           const std::vector<float> &chances)
+  : Skill::Skill()
 {
   setID(id);
   setName(name);
   setScope(scope);
 
-  /* The skill will be valid of all the actions are able to be added */
+  /* The skill will be valid if all the actions are able to be added */
   addActions(effects, chances);
-  setFlag(SkillFlags::VALID, this->isValid());
 
   /* Flags need to be determined since a single addition did not take place */
   flagSetup();
@@ -158,7 +157,9 @@ void Skill::flagSetup()
       if ((*it)->getAttribute() == Attribute::VITA && (*it)->getBase() > 0)
         setFlag(SkillFlags::HEALING);
     }
-  } 
+  }
+
+  setFlag(SkillFlags::VALID, this->isValid());
 }
 
 /*=============================================================================
@@ -240,10 +241,11 @@ bool Skill::isValid()
   bool valid = true;
 
   for (auto it = effects.begin(); it != effects.end(); ++it)
-    if (!(*it)->actionFlag(ActionFlags::VALID))
-      valid = false;
+    valid &= (*it)->actionFlag(ActionFlags::VALID);
 
-  valid  &= (effects.size() == chances.size());
+  valid &= (effects.size() == chances.size());
+  valid &= (id != kUNSET_ID);
+  valid &= (scope != ActionScope::NO_SCOPE);
 
   return valid;
 }
