@@ -541,7 +541,7 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer,
               << "\". SDL_image error: " << IMG_GetError() << std::endl;
     success = false;
   }
-  
+ 
   return success;
 }
 
