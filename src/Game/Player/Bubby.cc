@@ -25,11 +25,12 @@
 /*=============================================================================
  * CONSTANTS - See implementation for details
  *============================================================================*/
-
+ 
 const uint32_t Bubby::kMIN_EXP       = 75;
 const uint32_t Bubby::kMAX_LEVEL_EXP = 858585;
 const uint32_t Bubby::kMAX_EXP       = 1500000;
 
+/* The exp table level up values */
 std::vector<uint32_t> Bubby::exp_table{};
 
 /*=============================================================================

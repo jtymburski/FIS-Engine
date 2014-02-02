@@ -41,9 +41,10 @@ enum class InvState
   PLAYER_STORAGE = 1 << 0,
   SHIP_STORAGE   = 1 << 1,
   ENEMY_STORAGE  = 1 << 3,
-  UPGRADEABLE    = 1 << 4,
-  OVERWEIGHT     = 1 << 5,
-  ENABLED        = 1 << 6
+  SHOP_STORAGE   = 1 << 4,
+  UPGRADEABLE    = 1 << 5,
+  OVERWEIGHT     = 1 << 6,
+  ENABLED        = 1 << 7
 };
 
 class Inventory
@@ -108,7 +109,7 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
-  double calcMass();
+  void calcMass();
 
   bool sortZeroBubbies(Bubby0_It begin, Bubby0_It stop,
                     const ObjectSorts &sort_type, const bool &asc = true);
@@ -122,26 +123,29 @@ private:
   bool sortItems(Item_It begin, Item_It end, const ObjectSorts &sort_type, 
   	             const bool &asc = true);
 
-  bool increaseBubbyCount(const uint32_t &game_id);
+  bool increaseBubbyCount(const uint32_t &game_id, const uint16_t &amount = 1);
 
-  bool increaseItemCount(const uint32_t &game_id);
+  bool increaseItemCount(const uint32_t &game_id, const uint16_t &amount = 1);
 
-  bool decreaseBubbyCount(const uint32_t &game_id);
+  bool decreaseBubbyCount(const uint32_t &game_id, const uint16_t &amount = 1);
 
-  bool decreaseItemCount(const uint32_t &game_id);
+  bool decreaseItemCount(const uint32_t &game_id, const uint16_t &amount = 1);
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
 	/* Attempts to add a Bubby */
-	bool addBubby(Bubby* new_bubby, const bool bypass = false);
+	bool addBubby(Bubby* new_bubby, const uint16_t &amount = 1, 
+                const bool bypass = false);
 
   /* Attempts to add an equipment */
-	bool addEquipment(Equipment* new_equipment, const bool bypass = false);
+	bool addEquipment(Equipment* new_equipment, const uint16_t &amount = 1, 
+                    const bool bypass = false);
 
   /* Adds an item to the Inventory */
-	bool addItem(Item* new_item, const bool bypass = false);
+	bool addItem(Item* new_item, const uint16_t &amount = 1, 
+               const bool bypass = false);
 
   /* Clears the memory of the inventory and the vectors of data */
   void clear(const bool &free = true);
@@ -149,14 +153,23 @@ public:
   /* Check if a given item ID exists in the inventory */
 	bool contains(const int &id_check);
 
+  /* Calcs and returns the number of spaces in the Inv. for a given Equip */
+  int32_t hasRoomEquip(Equipment* const equip);
+
+  /* Calcs and returns the number of spaces in the Inv. for a given Bubby */
+  int32_t hasRoomBubby(Bubby* const bubby);
+
+  /* Calcs and returns the number of spaces in the Inv. for a given Item */
+  int32_t hasRoomItem(Item* const check_item);
+
   /* Prints out the state of the inventory */
 	void print(bool simple = true);
 
   /* Removes a Tier-0 Bubby from the Inventory at a given index */
-  bool removeZeroBubbyIndex(const uint32_t &index);
+  bool removeZeroBubbyIndex(const uint32_t &index, const uint16_t &amount = 1);
 
   /* Removes a Tier-0 Bubby by a given index game ID */
-  bool removeZeroBubbyID(const uint32_t &game_id);
+  bool removeZeroBubbyID(const uint32_t &game_id, const uint16_t &amount = 1);
 
   /* Removes a Bubby from the Inventory at a given index */
 	bool removeBubbyIndex(const uint32_t &index);
@@ -171,10 +184,10 @@ public:
   bool removeEquipID(const uint32_t &game_id);
  
   /* Removes an item at a given index */
-  bool removeItemIndex(const uint32_t &index);
+  bool removeItemIndex(const uint32_t &index, const uint16_t &amount = 1);
 
   /* Removes an item by a given game ID */
-  bool removeItemID(const uint32_t &game_id);
+  bool removeItemID(const uint32_t &game_id, const uint16_t &amount = 1);
 
   /* Sorts an object in the inventory a certain way */
 	bool sort(ObjectSorts sort_by, SortObjects object_to_sort, 
@@ -186,17 +199,17 @@ public:
   /* Returns the backdrop of the inventory */
   Frame* getBackdrop();
 
-  /* Returns a vector of all items useable in battle */
-  std::vector<std::pair<Item*, uint8_t>> getBattleItems();
-
   /* Returns the count of Bubbies of a given game_id */
   uint32_t getBubbyCount(const uint32_t &game_id);
 
-  /* Returns the index on the vector of TX bubbies of a given game ID */
-  int32_t getZeroBubbyIndex(const uint32_t &game_id);
+  /* Returns the index on the vector of T0 bubbies of a given game ID */
+  int32_t getBubbyZeroIndex(const uint32_t &game_id);
 
-  /* Returns the index on the vector of a given Bubby zero ID */
+  /* Returns the index on the Bubby TX vector of a given game ID */
   int32_t getBubbyIndex(const uint32_t &game_id);
+
+  /* Returns the index of a given equipment game id */
+  int32_t getEquipIndex(const uint32_t &game_id);
 
   /* Returns the currently set bubby limit */
   uint32_t getBubbyLimit();
@@ -204,26 +217,17 @@ public:
   /* Returns the total count of T0 and TX Bubbies */
   uint32_t getTotalBubbyCount();
 
-   /* Returns a vector of all Bubbies */
-  std::vector<Bubby*> getBubbies();
-
   /* Counts the # items with a given Game ID */
   uint32_t getCount(const int &game_id);
 
   /* Returns the currently set equipment limit */
   uint32_t getEquipmentLimit();
 
-  /* Returns a vector of all equipment */
-  std::vector<Equipment*> getEquipments();
-
   /* Returns the index of an item ID in the vector */
   int32_t getItemIndex(const uint32_t &game_id);
 
   /* Returns the currently set item limit */
   uint32_t getItemLimit();
-
-  /* Returns the vector of all standard items */
-  std::vector<std::pair<Item*, uint8_t>> getItems();
 
   /* Returns the count of a given Item game id */
   uint32_t getItemCount(const uint32_t &game_id);
@@ -232,10 +236,25 @@ public:
   uint32_t getItemEachLimit();
 
   /* Returns the total # of items in the Inventory */
-  uint32_t getItemTotalCount();
+  uint32_t getItemTotalCount(const bool &count_keys = false);
+
+  /* Returns a vector of all items useable in battle */
+  std::vector<std::pair<Item*, uint8_t>> getBattleItems();
+
+  /* Returns a vector of all Bubbies */
+  std::vector<Bubby*> getBubbies();
+
+  /* Returns a vector of all equipment */
+  std::vector<Equipment*> getEquipments();
+
+  /* Returns the vector of all standard items */
+  std::vector<std::pair<Item*, uint8_t>> getItems();
 
   /* Returns the vector of all key items */
   std::vector<std::pair<Item*, uint8_t>> getKeyItems();
+
+  /* Returns the vector of all zero bubbies */
+  std::vector<std::pair<Bubby*, uint8_t>> getZeroBubbies();
 
   /* Calculates and returns the mass */
   double getMass();

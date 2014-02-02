@@ -46,9 +46,9 @@ const std::vector<int> Category::kMAX_VALUES =
  *============================================================================*/
 
 /*
- * Description:
+ * Description: Constructs a basic Category object given a string name
  *
- * Inputs:
+ * Inputs: name - the name of the Category to be constructed
  */
 Category::Category(const std::string &name)
   : base_stats{AttributeSet()}
@@ -66,9 +66,14 @@ Category::Category(const std::string &name)
 }
 
 /*
- * Description:
+ * Description: Constructs a normal Category object given starting and ending
+ *              stat values.
  *
- * Inputs:
+ * Inputs: name - string name of the Category
+ *         denoym - the denonym for the persons of the Category (ex. Bears)
+ *         base_stats - the level min stats for the Category
+ *         top_stats - the level max stats for the Category
+ *         skills - pointer to the SkillSet the Category graints to a person
  */
 Category::Category(const std::string &name, const std::string &denonym, 
   	               const AttributeSet &base_stats, const AttributeSet &top_stats, 
@@ -92,14 +97,14 @@ Category::Category(const std::string &name, const std::string &denonym,
  *============================================================================*/
 
 /*
- * Description:
+ * Description: Constructs the maximum and minimum values for AttributeSets.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: none
  */
 void Category::buildAttrSets()
 {
-  max_stats = AttributeSet(kMIN_VALUES, true, true);
+  max_stats = AttributeSet(kMAX_VALUES, true, true);
   max_stats.cleanUp();
   min_stats = AttributeSet(kMIN_VALUES, true, true);
   min_stats.cleanUp();
@@ -107,6 +112,12 @@ void Category::buildAttrSets()
   attr_sets_built = true;
 }
 
+/*
+ * Description: Method to set up default flags for the Category.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void Category::classSetup()
 {
   cat_flags = static_cast<CategoryState>(0);
@@ -117,6 +128,13 @@ void Category::classSetup()
   setFlag(CategoryState::E_SWORD, false);
 }
 
+/*
+ * Description: Cleans up the AttributeSets of the Category, the stats at
+ *              starting level and the stats at maximum level.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void Category::cleanUpStats()
 {
   base_stats.cleanUp();
@@ -127,6 +145,12 @@ void Category::cleanUpStats()
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
+/*
+ * Description: 
+ *
+ * Inputs: 
+ * Output: 
+ */
 bool Category::canEquip(Equipment* const check)
 {
   //TODO: Actual classes of equipment [01-21-14]
@@ -143,6 +167,12 @@ bool Category::canEquip(Equipment* const check)
   return can_equip;
 }
 
+/*
+ * Description:
+ *
+ * Inputs: 
+ * Output: 
+ */
 bool Category::addImmunity(const Infliction &new_immunity)
 {
   if (!isImmune(new_immunity))
@@ -155,6 +185,12 @@ bool Category::addImmunity(const Infliction &new_immunity)
   return false;
 }
 
+/*
+ * Description:
+ *
+ * Inputs: 
+ * Output: 
+ */
 bool Category::isImmune(const Infliction &check_immunity)
 {
   for (auto ailment : immunities)
@@ -164,6 +200,12 @@ bool Category::isImmune(const Infliction &check_immunity)
  return false;
 }
 
+/*
+ * Description:
+ *
+ * Inputs: 
+ * Output: 
+ */
 bool Category::removeImmunity(const Infliction &rem_immunity)
 {
   for (auto it = begin(immunities); it != end(immunities); ++it)
@@ -179,6 +221,12 @@ bool Category::removeImmunity(const Infliction &rem_immunity)
   return false;
 }
 
+/*
+ * Description:
+ *
+ * Inputs: 
+ * Output: 
+ */
 void Category::print(const bool &simple, const bool &flags)
 {
   std::cout << "--- Category ---\n";
@@ -208,41 +256,89 @@ void Category::print(const bool &simple, const bool &flags)
   }
 }
 
+/*
+ * Description:
+ *
+ * Inputs: 
+ * Output: 
+ */
 std::string Category::getDescription()
 {
   return description;
 }
 
+/*
+ * Description:
+ *
+ * Inputs: 
+ * Output: 
+ */
 std::string Category::getDenonym()
 {
   return denonym;
 }
 
+/*
+ * Description:
+ *
+ * Inputs: 
+ * Output: 
+ */
 bool Category::getFlag(const CategoryState &test_flag)
 {
   return static_cast<bool>((cat_flags & test_flag) == test_flag);
 }
 
+/*
+ * Description:
+ *
+ * Inputs: 
+ * Output: 
+ */
 std::string Category::getName()
 {
   return name;
 }
 
+/*
+ * Description:
+ *
+ * Inputs: 
+ * Output: 
+ */
 AttributeSet& Category::getBaseSet()
 {
   return base_stats;
 }
 
+/*
+ * Description:
+ *
+ * Inputs: 
+ * Output: 
+ */
 SkillSet* Category::getSkills()
 {
   return skill_set;
 }
 
+/*
+ * Description:
+ *
+ * Inputs: 
+ * Output: 
+ */
 AttributeSet& Category::getTopSet()
 {
   return top_stats;
 }
 
+/*
+ * Description:
+ *
+ * Inputs: 
+ * Output: 
+ */
 bool Category::setDescription(const std::string &new_description)
 {
   if (new_description.size() <= StringDb::kMAX_BRIEF_DESC)
@@ -255,6 +351,12 @@ bool Category::setDescription(const std::string &new_description)
   return false;
 }
 
+/*
+ * Description: Assigns a new string denonym to the category
+ *
+ * Inputs: new_denonym - string denonym to be assigned
+ * Output: bool - true if the assignment is successful
+ */
 bool Category::setDenonym(const std::string &new_denonym)
 {
   if (new_denonym.size() <= StringDb::kMAX_NAME)
@@ -267,6 +369,13 @@ bool Category::setDenonym(const std::string &new_denonym)
   return false;
 }
 
+/*
+ * Description: Assigns a given CategoryState flag to a given value.
+ *
+ * Inputs: flags - the given flag to be assigned a value
+ *         set_value - the boolean value to assign to the flag
+ * Output: none
+ */
 void Category::setFlag(const CategoryState &flags, const bool &set_value)
 {
   (set_value) ? (cat_flags |= flags) : (cat_flags &= ~flags);
@@ -276,11 +385,25 @@ void Category::setFlag(const CategoryState &flags, const bool &set_value)
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
 
+/*
+ * Description: Returns a reference to the absolute maximum stats for a 
+ *              Category.
+ *
+ * Inputs: none
+ * Output: AttributeSet& - reference to the maximum set
+ */
 AttributeSet& Category::getMaxSet()
 {
   return max_stats;
 }
 
+/*
+ * Description: Returns a reference to the absolute minimum stats for a
+ *              Category.
+ *
+ * Inputs: none
+ * Output: AttributeSet& - reference to the minimum set
+ */
 AttributeSet& Category::getMinSet()
 {
   return min_stats;

@@ -8,7 +8,6 @@
 *              sorted by level, by cost of the skill, by the assigned point
 *              value (for AI), by the elements the skill uses, etc.
 *              
-*
 * Notes
 * -----
 *
