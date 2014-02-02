@@ -313,14 +313,12 @@ bool Tile::getLowerPassability(Direction dir)
     passability = false;
 
     for(uint8_t i = 0; i < lower_passability.size(); i++)
-      if(lower[i] != 0)
-        passability |= getLowerPassability(i, dir);
+      passability |= getLowerPassability(i, dir);
   }
   else
   {
     for(uint8_t i = 0; i < lower_passability.size(); i++)
-      if(lower[i] != 0)
-        passability &= getLowerPassability(i, dir);
+      passability &= getLowerPassability(i, dir);
   }
 
   return passability;
