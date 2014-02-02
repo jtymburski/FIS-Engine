@@ -118,7 +118,7 @@ Item::Item(const int32_t &game_id, const std::string &name,
 
 Item::~Item()
 {
-  unsetAll(this);
+  unsetAll();
 }
 
 /*=============================================================================
@@ -181,35 +181,35 @@ void Item::setupClass()
  * Description: Unsets all the values of a given Item object
  *              to destrucable ready-values.
  *
- * Inputs: object - ptr to an Item object to be unset
- * Output:
+ * Inputs: none
+ * Output: none
  */
-void Item::unsetAll(Item* object)
+void Item::unsetAll()
 {
-  object->id = 0;
-  object->base_item = nullptr;
-  object->buff_set = AttributeSet();
-  object->brief_description = "";
-  object->description = "";
-  object->durability = kMIN_DURA;
-  object->max_durability = kMIN_DURA;
-  object->composition = static_cast<Material>(0);
-  object->flags = static_cast<ItemFlags>(0);
-  object->mass = 0;
-  object->name = "";
-  object->prefix = "";
-  object->occasion = ActionOccasion::NONE;
-
-  /* Each Item will delete it's own thumbnail */
-  if (object->thumbnail != nullptr)
-    delete object->thumbnail;
-
-  object->thumbnail = nullptr;
-  object->using_skill = nullptr;
-  object->using_animation = nullptr;
-  object->using_message = "";
-  object->using_sound = nullptr;
-  object->value = 0;
+  /* Unset the thumbnail, only if it's a base */
+  if(base_item == nullptr && thumbnail != nullptr)
+    delete thumbnail;
+  
+  /* Clear variables in the class */
+  id = 0;
+  base_item = nullptr;
+  buff_set = AttributeSet();
+  brief_description = "";
+  description = "";
+  durability = kMIN_DURA;
+  max_durability = kMIN_DURA;
+  composition = static_cast<Material>(0);
+  flags = static_cast<ItemFlags>(0);
+  mass = 0;
+  name = "";
+  prefix = "";
+  occasion = ActionOccasion::NONE;
+  thumbnail = nullptr;
+  using_skill = nullptr;
+  using_animation = nullptr;
+  using_message = "";
+  using_sound = nullptr;
+  value = 0;
 }
 
 /*=============================================================================

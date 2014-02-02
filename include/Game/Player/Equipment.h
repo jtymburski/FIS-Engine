@@ -1,18 +1,19 @@
 /*******************************************************************************
-* Class Name: Equipment [Declaration]
-* Date Created: December 14th, 2013
-* Inheritance: None
-* Description: 
-*
-* Notes
-* -----
-*
-* [1]:
-*
-* TODO
-* ----
-* - Develop actual classes of Equipment [01-21-14]
-*******************************************************************************/
+ * Class Name: Equipment [Declaration]
+ * Date Created: December 14th, 2013
+ * Inheritance: Item
+ * Description: Handles the equipment specialization of items which adds 
+ *              signature implementation to the stock item to allow for bubby
+ *              addition.
+ *
+ * Notes
+ * -----
+ * [1]:
+ *
+ * TODO
+ * ----
+ * - Develop actual classes of Equipment [01-21-14]
+ ******************************************************************************/
 
 #ifndef EQUIPMENT_H
 #define EQUIPMENT_H

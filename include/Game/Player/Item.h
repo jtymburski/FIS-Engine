@@ -172,7 +172,7 @@ private:
   static void swap(Item& object, Item& source);
 
   /* Unsets all the Item data for deletion */
-  static void unsetAll(Item* object);
+  void unsetAll();
 
 /*=============================================================================
  * VIRTUAL FUNCTIONS
@@ -237,7 +237,7 @@ public:
   ActionOccasion getOccasion();
 
   /* Returns the ptr to the thumbnail */
-  Frame* getThumb();
+  virtual Frame* getThumb();
 
   /* Returns the ptr to the using animation */
   Sprite* getUseAnimation();

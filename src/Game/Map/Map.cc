@@ -826,7 +826,7 @@ bool Map::initStore(ItemStore::StoreMode mode, std::vector<Item*> items,
                     std::string name, bool show_empty)
 {
   bool status = item_menu.initDisplay(mode, items, counts, 
-                                      cost_modifiers, name, show_empty);
+                                      cost_modifiers, name);//, show_empty);
   
   /* If successful, flush player keys */
   if(status)

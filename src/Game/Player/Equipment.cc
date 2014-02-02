@@ -1,17 +1,17 @@
 /*******************************************************************************
-* Class Name: x [Implementation]
-* Date Created: 
-* Inheritance: 
-* Description:
-*
-* Notes
-* -----
-*
-* [1]:
-*
-* See .h file for TODOs
-*******************************************************************************/
-
+ * Class Name: Equipment [Implementation]
+ * Date Created: Decmber 14, 2013
+ * Inheritance: Item
+ * Description: Handles the equipment specialization of items which adds 
+ *              signature implementation to the stock item to allow for bubby
+ *              addition.
+ *
+ * Notes
+ * -----
+ * [1]:
+ *
+ * See .h file for TODOs
+ ******************************************************************************/
 #include "Game/Player/Equipment.h"
 
 /*=============================================================================
@@ -25,6 +25,8 @@ Equipment::Equipment(const uint32_t &game_id, const std::string &name,
   : Item(game_id, name, value, thumb, mass, dura)
 {
   createSig(x, y);
+  
+  this->setFlag(ItemFlags::EQUIPMENT, true);
 }
 
 Equipment::Equipment(Equipment* const source) 
@@ -34,13 +36,13 @@ Equipment::Equipment(Equipment* const source)
     std::cerr << "Warning: Cloning equipment with non-empty Signature\n";
 
   createSig(source->getSignature()->getX(), source->getSignature()->getY());
+  this->setFlag(ItemFlags::EQUIPMENT, true);
 }
 
 Equipment::~Equipment()
 {
   if (equip_signature != nullptr)
     delete equip_signature;
-
   equip_signature = nullptr;
 }
 

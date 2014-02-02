@@ -11,7 +11,7 @@
  * Notes
  * -----
  *
- * [1]:
+ * [1]: See design for implementation
  *
  * See .h file for TODOs
  ******************************************************************************/
@@ -328,62 +328,70 @@ void ItemStore::close()
 bool ItemStore::initDisplay(StoreMode mode, std::vector<Item*> items, 
                             std::vector<uint32_t> counts, 
                             std::vector<int32_t> cost_modifiers, 
-                            std::string name, bool show_empty)
+                            std::string name)
 {
   /* Only proceed if the store is not being used */
   if(store_status == WindowStatus::OFF)
   {
-    /* Clear the current store stack */
-    store_stack.clear();
+    // /* Clear the current store stack */
+    // store_stack.clear();
     
-    /* Run through all items */
-    for(uint32_t i = 0; i < items.size(); i++)
-    {
-      /* Only proceed if the counts is large enough and if it should be shown
-       * based on empty qualifications (depending on show_empty) variable */
-      if(items[i] != NULL && counts.size() > i && 
-         ((!show_empty && counts[i] > 0) || show_empty))
-      {
-        /* Create the initial display item */
-        ItemDisplay new_item;
-        new_item.item = items[i];
-        new_item.count = counts[i];
-        new_item.cost = items[i]->getValue();
-        new_item.category = ItemFlags::NO_CATEGORY;
+    // /* Run through all items */
+    // for(uint32_t i = 0; i < items.size(); i++)
+    // {
+      // /* Only proceed if the counts is large enough and if it should be shown
+       // * based on empty qualifications (depending on show_empty) variable */
+      // if(items[i] != NULL && counts.size() > i && 
+         // ((!show_empty && counts[i] > 0) || show_empty))
+      // {
+        // /* Create the initial display item */
+        // ItemDisplay new_item;
+        // new_item.item = items[i];
+        // new_item.count = counts[i];
+        // new_item.cost = items[i]->getValue();
+        // new_item.category = ItemFlags::NO_CATEGORY;
         
-        /* Modify the cost, if applicable */
-        int32_t cost_signed = new_item.cost;
-        if(cost_modifiers.size() > i && (cost_modifiers[i] * -1) <= cost_signed)
-          new_item.cost += cost_modifiers[i];
-        else if(cost_modifiers.size() == 1 && 
-                (cost_modifiers[0] * -1) <= cost_signed)
-          new_item.cost += cost_modifiers[0];
+        // /* Modify the cost, if applicable */
+        // int32_t cost_signed = new_item.cost;
+        // if(cost_modifiers.size() > i && (cost_modifiers[i] * -1) <= cost_signed)
+          // new_item.cost += cost_modifiers[i];
+        // else if(cost_modifiers.size() == 1 && 
+                // (cost_modifiers[0] * -1) <= cost_signed)
+          // new_item.cost += cost_modifiers[0];
           
-        /* Modify the item category, if applicable */
-        if(items[i]->getFlag(ItemFlags::EQUIPMENT))
-          new_item.category = ItemFlags::EQUIPMENT;
-        else if(items[i]->getFlag(ItemFlags::BUBBY))
-          new_item.category = ItemFlags::BUBBY;
-        else if(items[i]->getFlag(ItemFlags::KEY_ITEM))
-          new_item.category = ItemFlags::KEY_ITEM;
-        else if(items[i]->getFlag(ItemFlags::MONEY))
-          new_item.category = ItemFlags::MONEY;
-        else if(!items[i]->getFlag(ItemFlags::NO_CATEGORY))
-          new_item.category = ItemFlags::CONSUMED;
+        // /* Modify the item category, if applicable */
+        // if(items[i]->getFlag(ItemFlags::EQUIPMENT))
+          // new_item.category = ItemFlags::EQUIPMENT;
+        // else if(items[i]->getFlag(ItemFlags::BUBBY))
+          // new_item.category = ItemFlags::BUBBY;
+        // else if(items[i]->getFlag(ItemFlags::KEY_ITEM))
+          // new_item.category = ItemFlags::KEY_ITEM;
+        // else if(items[i]->getFlag(ItemFlags::MONEY))
+          // new_item.category = ItemFlags::MONEY;
+        // else if(!items[i]->getFlag(ItemFlags::NO_CATEGORY))
+          // new_item.category = ItemFlags::CONSUMED;
         
-        /* Push it onto the stack */
-        if(new_item.category != ItemFlags::KEY_ITEM)
-          store_stack.push_back(new_item);
-      }
-    }
+        // /* Push it onto the stack */
+        // if(new_item.category != ItemFlags::KEY_ITEM)
+          // store_stack.push_back(new_item);
+      // }
+    // }
     
-    /* Final setup of configuration variables */
-    frame_setup = true;
-    store_mode = mode;
-    store_title = name;
+    // /* Final setup of configuration variables */
+    // frame_setup = true;
+    // store_mode = mode;
+    // store_title = name;
+    
     return true;
   }
   
+  /* If here, call failed. Delete items passed in */
+  for(auto item : items)
+  {
+    if(item != NULL)
+      delete item;
+    item = NULL;
+  }
   return false;
 }
 

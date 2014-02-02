@@ -134,22 +134,6 @@ bool Bubby::levelUp()
 void Bubby::tierUp()
 {
   tier++;
-  updateThumb();
-}
-
-/*
- * Description: Updates the thumbnail at the current tier using the
- *              vector of thumbs stored in the flavour.
- *
- * Inputs: none
- * Output: bool - true if the thumbnail was set and not null
- */
-bool Bubby::updateThumb()
-{
-  if (type != nullptr)
-    return setThumbnail(type->getThumb(tier));
-
-  return false;
 }
 
 /*
@@ -293,7 +277,7 @@ double Bubby::getMass()
 
   return 0.0;
 }
-
+  
 /*
  * Description: Returns the Bubby's current stat boost by ref.
  *
@@ -307,6 +291,20 @@ AttributeSet Bubby::getStats()
 
   /* If the Bubby is a default object, return a default set */
   return AttributeSet();
+}
+
+/*
+ * Description: Returns the tier thumbnail, for displaying on the screen.
+ *              Virtual function to take control away from the parent item.
+ *
+ * Inputs: none
+ * Output: Frame* - pointer to frame display data
+ */
+Frame* Bubby::getThumb()
+{
+  if(type != nullptr)
+    return type->getThumb(tier);
+  return nullptr;
 }
 
 /*

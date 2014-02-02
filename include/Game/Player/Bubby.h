@@ -104,6 +104,9 @@ public:
   /* Calculates and returns the stats the Bubby will provide on a Signature */
   AttributeSet getStats();
 
+  /* Returns the ptr to the thumbnail */
+  Frame* getThumb();
+  
   /* Returns the tier */
   uint32_t getTier();
 

@@ -24,7 +24,7 @@
 #include "EnumDb.h"
 #include "Frame.h"
 #include "Game/EventHandler.h"
-#include "Game/Player/Item.h"
+#include "Game/Player/Inventory.h"
 #include "Options.h"
 #include "Text.h"
 
@@ -48,13 +48,12 @@ public:
 
   /* The item store mode which defines what the operation of the item selection
    * will do:
-   * VIEW - just view the items
+   * VIEW - just view the items (possibly use?)
    * BUY - player can buy the selected items
    * SELL - player can sell the selected items
    * TAKE - player can take the selected items
-   * USE - player can use the selected items
    */
-   enum StoreMode{VIEW, BUY, SELL, TAKE, USE};
+   enum StoreMode{VIEW, BUY, SELL, TAKE};
 
 private:
   /* The event handler information */
@@ -71,6 +70,7 @@ private:
   Frame img_backend_left;
   Frame img_backend_right;
 
+  //Inventory
   /* The stack of items available in the store view */
   uint8_t store_alpha;
   StoreMode store_mode;
@@ -131,8 +131,7 @@ public:
   /* Initializes the item store display */
   bool initDisplay(StoreMode mode, std::vector<Item*> items, 
                    std::vector<uint32_t> counts, 
-                   std::vector<int32_t> cost_modifiers,
-                   std::string name = "", bool show_empty = false);
+                   std::vector<int32_t> cost_modifiers, std::string name = "");
 
   /* Returns if the item store is currently active */
   bool isActive();
