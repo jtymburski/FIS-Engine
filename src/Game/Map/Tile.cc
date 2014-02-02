@@ -501,8 +501,7 @@ uint16_t Tile::getY()
  */
 bool Tile::insertLower(Sprite* lower, uint8_t index)
 {
-  if(lower != NULL && lower->getSize() > 0 && 
-     index < kLOWER_COUNT_MAX)
+  if(lower != NULL && index < kLOWER_COUNT_MAX)
   {
     /* Increase the size of lower if it isn't big enough */
     Sprite* null_sprite = NULL;
@@ -536,8 +535,7 @@ bool Tile::insertLower(Sprite* lower, uint8_t index)
  */
 bool Tile::insertUpper(Sprite* upper, uint8_t index)
 {
-  if(upper != 0 && upper->getSize() > 0 && 
-     index < kUPPER_COUNT_MAX)
+  if(upper != 0 && index < kUPPER_COUNT_MAX)
   {
     /* Increase the size of upper if it isn't big enough */
     Sprite* null_sprite = NULL;
@@ -720,11 +718,14 @@ bool Tile::renderUpper(SDL_Renderer* renderer, int offset_x, int offset_y)
  */
 bool Tile::setBase(Sprite* base)
 {
-  if(base != NULL && base->getSize() > 0)
+  if(base != NULL)
   {
     unsetBase();
     this->base = base;
-    base_passability = static_cast<uint8_t>(Direction::DIRECTIONLESS);
+    setBasePassability(Direction::NORTH, true);
+    setBasePassability(Direction::EAST, true);
+    setBasePassability(Direction::SOUTH, true);
+    setBasePassability(Direction::WEST, true);
 
     return true;
   }
@@ -766,7 +767,7 @@ bool Tile::setBasePassability(Direction dir, bool set_value)
  */
 bool Tile::setEnhancer(Sprite* enhancer)
 {
-  if(enhancer != NULL && enhancer->getSize() > 0)
+  if(enhancer != NULL)
   {
     unsetEnhancer();
     this->enhancer = enhancer;
@@ -882,7 +883,7 @@ bool Tile::setItem(MapItem* item)
  */
 bool Tile::setLower(Sprite* lower)
 {
-  if(lower != NULL && lower->getSize() > 0)
+  if(lower != NULL)
   {
     Sprite* null_sprite = NULL;
 
@@ -1009,7 +1010,7 @@ bool Tile::setThing(MapThing* thing)
  */
 bool Tile::setUpper(Sprite* upper)
 {
-  if(upper != NULL && upper->getSize() > 0)
+  if(upper != NULL)
   {
     unsetUpper();
     this->upper[0] = upper;
