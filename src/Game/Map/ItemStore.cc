@@ -68,6 +68,7 @@ void ItemStore::clearData()
   event_handler = NULL;
   font_title = NULL;
   frame_setup = false;
+  inventory_active = NULL;
   store_alpha = 0;
   store_mode = VIEW;
   store_status = WindowStatus::OFF;
@@ -325,14 +326,23 @@ void ItemStore::close()
     store_status = WindowStatus::HIDING;
 }
 
+// NOTE: Any items passed in here will be deleted and handled. DO NOT ACCESS
+// DATA after this class call returns.
+// TODO: Seg faulting on deletion of data...why??
 bool ItemStore::initDisplay(StoreMode mode, std::vector<Item*> items, 
                             std::vector<uint32_t> counts, 
                             std::vector<int32_t> cost_modifiers, 
                             std::string name)
 {
-  /* Only proceed if the store is not being used */
-  if(store_status == WindowStatus::OFF)
-  {
+  // bool success = false;
+  
+  // /* Only proceed if the store is not being used */
+  // if(store_status == WindowStatus::OFF)
+  // {
+    // bool show_empty = (mode == BUY);
+    // inventory_active = new Inventory(0);
+    // inventory_active->setFlag(InvState::SHOP_STORAGE);
+    
     // /* Clear the current store stack */
     // store_stack.clear();
     
@@ -344,6 +354,21 @@ bool ItemStore::initDisplay(StoreMode mode, std::vector<Item*> items,
       // if(items[i] != NULL && counts.size() > i && 
          // ((!show_empty && counts[i] > 0) || show_empty))
       // {
+        // /* Check if the inventory has room */
+        // if(inventory_active->hasRoom(items[i], counts[i]) >= counts[i])
+        // {
+          // /* Add and deal with left over data */
+          // AddStatus status = inventory_active->add(items[i], counts[i]);
+          // if(status == AddStatus::GOOD_DELETE)
+          // {
+          
+          // }
+          // else if(status == AddStatus::GOOD_KEEP)
+          // {
+          
+          // }
+        // }
+        
         // /* Create the initial display item */
         // ItemDisplay new_item;
         // new_item.item = items[i];
@@ -382,17 +407,18 @@ bool ItemStore::initDisplay(StoreMode mode, std::vector<Item*> items,
     // store_mode = mode;
     // store_title = name;
     
-    return true;
-  }
+    // success = true;
+  // }
   
-  /* If here, call failed. Delete items passed in */
+  /* Do clean-up on all items not set to NULL (and used) */
   for(auto item : items)
   {
-    if(item != NULL)
-      delete item;
+    //if(item != NULL)
+    //  delete item;
     item = NULL;
   }
-  return false;
+  
+  // return success;
 }
 
 /* Returns if the item store is currently active */

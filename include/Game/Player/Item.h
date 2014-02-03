@@ -1,21 +1,21 @@
 /*******************************************************************************
-* Class Name: Item [Header]
-* Date Created: December 9th, 2013
-* Inheritance: None
-* Description: An Item is an object contained within the inventory of a party. 
-*              An Item may be a key item which is important for the progression
-*              through the game, some sort of material or component, an item
-*              that has a use in Battle or Menu (does some skill, etc.), or
-*              one of the Item sub-classes: Equipment or Bubby.
-*
-* Notes
-* -----
-*
-* [1]:
-*
-* TODO
-* ----
-*******************************************************************************/
+ * Class Name: Item [Header]
+ * Date Created: December 9th, 2013
+ * Inheritance: None
+ * Description: An Item is an object contained within the inventory of a party. 
+ *              An Item may be a key item which is important for the progression
+ *              through the game, some sort of material or component, an item
+ *              that has a use in Battle or Menu (does some skill, etc.), or
+ *              one of the Item sub-classes: Equipment or Bubby.
+ *
+ * Notes
+ * -----
+ *
+ * [1]:
+ *
+ * TODO
+ * ----
+ ******************************************************************************/
 
 #ifndef ITEM_H
 #define ITEM_H
@@ -150,7 +150,8 @@ protected:
 
   /* Value of the item (in the shop) */
   uint32_t value;
-
+  int32_t value_modifier;
+  
   /* ------------ Constants --------------- */
   static const uint32_t kMAX_DURA;       /* Maximum durability */
   static const double   kMAX_MASS;       /* Maximum mass of an Item */
@@ -298,6 +299,9 @@ public:
 
   /* Attempts to set a new value for the Item */
   bool setValue(const uint32_t &new_value);
+  
+  /* Sets the modifier value, to affect the set value */
+  void setValueModifier(const int32_t &new_value);
 };
 
 #endif //ITEM_H

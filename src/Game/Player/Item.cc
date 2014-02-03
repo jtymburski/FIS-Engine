@@ -1,17 +1,20 @@
 /*******************************************************************************
-* Class Name: x [Implementation]
-* Date Created: 
-* Inheritance: 
-* Description:
-*
-* Notes
-* -----
-*
-* [1]:
-*
-* See .h file for TODOs
-*******************************************************************************/
-
+ * Class Name: Item [Implementation]
+ * Date Created: December 9th, 2013
+ * Inheritance: none
+ * Description: An Item is an object contained within the inventory of a party. 
+ *              An Item may be a key item which is important for the progression
+ *              through the game, some sort of material or component, an item
+ *              that has a use in Battle or Menu (does some skill, etc.), or
+ *              one of the Item sub-classes: Equipment or Bubby.
+ *
+ * Notes
+ * -----
+ *
+ * [1]:
+ *
+ * See .h file for TODOs
+ ******************************************************************************/
 #include "Game/Player/Item.h"
 
 /*=============================================================================
@@ -136,6 +139,9 @@ Item::~Item()
  */
 void Item::setupClass()
 {
+  /* Clear some variables that are the same between both */
+  value_modifier = 0;
+  
   /* Setup the class as a standalone Item */
   if (base_item == nullptr)
   {
@@ -175,6 +181,7 @@ void Item::setupClass()
     using_message = base_item->using_message;
     using_sound = base_item->using_sound;
     value = base_item->value;
+    value_modifier = base_item->value_modifier;
   }
 }
 
@@ -261,7 +268,14 @@ double Item::getMass()
  */
 uint32_t Item::getValue()
 {
-  return value;
+  int32_t calc_value = value + value_modifier;
+  
+  /* Check bounds */
+  if(calc_value < 0)
+    return 0;
+  else if(static_cast<uint32_t>(calc_value) > kMAX_VALUE)
+    return kMAX_VALUE;
+  return calc_value;
 }
 
 /*=============================================================================
@@ -757,7 +771,7 @@ bool Item::setUseSound(Sound* new_sound)
   return (new_sound != nullptr);
 }
 
- /*
+/*
  * Description: Attempts to assign a new value to the value of the Item
  *              and returns the outcome of the assignment.
  *
@@ -774,4 +788,17 @@ bool Item::setValue(const uint32_t &new_value)
   }
 
   return false;
+}
+
+/*
+ * Description: Assigns a modifier value which is computed against the value
+ *              when getValue() is called. 
+ *              and returns the outcome of the assignment.
+ *
+ * Inputs: new_value - new value to assign for the Item
+ * Output: bool - true if the value was assigned
+ */
+void Item::setValueModifier(const int32_t &new_value)
+{
+  value_modifier = new_value;
 }

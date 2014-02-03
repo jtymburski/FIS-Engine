@@ -359,8 +359,8 @@ void Game::setupBattle()
   
   auto new_potion2 = new Item(new_potion);
 
-  auto test = test_pouch->addItem(new_potion);
-  test      = test_pouch->addItem(new_potion2);
+  auto test = test_pouch->add(new_potion);
+  test      = test_pouch->add(new_potion2);
 
   //test = test_pouch->addItem(new_potion, 4);
   if (test == AddStatus::GOOD_DELETE)
@@ -376,7 +376,7 @@ void Game::setupBattle()
   else
     std::cout << "Addition failed\n";
 
-  test = test_pouch->addBubby(first, 7);
+  test = test_pouch->add(first, 7);
   if (test == AddStatus::GOOD_DELETE)
   {
     std::cout << "deleting first bubby\n";
@@ -390,7 +390,7 @@ void Game::setupBattle()
   else
     std::cout << "Addition failed\n";
 
-  test = test_pouch->addBubby(second, 3);
+  test = test_pouch->add(second, 3);
   if (test == AddStatus::GOOD_DELETE)
   {
     std::cout << "deleting second bubby\n";

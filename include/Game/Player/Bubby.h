@@ -1,24 +1,24 @@
 /*******************************************************************************
-* Class Name: Bubby [Declaration]
-* Date Created: December 12th, 2013
-* Inheritance: Public from Item
-* Description: Bubby subclass defines details to define experience, level
-*              flavour, and tier of a Bubby Item.
-*
-* Notes
-* -----
-*
-* [1]: All Bubbies have a "Flavour" (type) and a Bubby of a certain flavour is
-*      identical to another Bubby of the same flavour except for: tier, level, 
-*      and experience.
-*  
-* [2]: This class reimplements virtual functions from Item: getMass(), 
-*      getValue(), getThumb(), getStats()
-*
-* TODO
-* ----
-* Testing [12-12-13]
-*******************************************************************************/
+ * Class Name: Bubby [Declaration]
+ * Date Created: December 12th, 2013
+ * Inheritance: Public from Item
+ * Description: Bubby subclass defines details to define experience, level
+ *              flavour, and tier of a Bubby Item.
+ *
+ * Notes
+ * -----
+ *
+ * [1]: All Bubbies have a "Flavour" (type) and a Bubby of a certain flavour is
+ *      identical to another Bubby of the same flavour except for: tier, level, 
+ *      and experience.
+ *  
+ * [2]: This class reimplements virtual functions from Item: getMass(), 
+ *      getValue(), getThumb(), getStats()
+ *
+ * TODO
+ * ----
+ * Testing [12-12-13]
+ ******************************************************************************/
 
 #ifndef BUBBY_H
 #define BUBBY_H

@@ -13,7 +13,6 @@
 * ----
 * - Class testing & conventions [01-18-14]
 *******************************************************************************/
-
 #ifndef INVENTORY_H
 #define INVENTORY_H
 
@@ -136,15 +135,15 @@ private:
  *============================================================================*/
 public:
 	/* Attempts to add a Bubby */
-	AddStatus addBubby(Bubby* new_bubby, const uint32_t &amount = 1, 
-                     bool bypass = false);
+	AddStatus add(Bubby* new_bubby, const uint32_t &amount = 1, 
+                bool bypass = false);
 
   /* Attempts to add an equipment */
-	AddStatus addEquipment(Equipment* new_equipment, const uint32_t &amount = 1, 
-                         bool bypass = false);
+	AddStatus add(Equipment* new_equipment, const uint32_t &amount = 1, 
+                bool bypass = false);
 
   /* Adds an item to the Inventory */
-	AddStatus addItem(Item* new_item, const uint32_t &amount = 1, 
+	AddStatus add(Item* new_item, const uint32_t &amount = 1, 
                     bool bypass = false);
 
   /* Clears the memory of the inventory and the vectors of data */
@@ -154,13 +153,13 @@ public:
 	bool contains(const int &id_check);
 
   /* Calcs and returns the number of spaces in the Inv. for a given Equip */
-  uint32_t hasRoomEquip(Equipment* const equip, uint32_t amount = 1);
+  uint32_t hasRoom(Equipment* const equip, uint32_t amount = 1);
 
   /* Calcs and returns the number of spaces in the Inv. for a given Bubby */
-  uint32_t hasRoomBubby(Bubby* const bubby, uint32_t amount = 1);
+  uint32_t hasRoom(Bubby* const bubby, uint32_t amount = 1);
 
   /* Calcs and returns the number of spaces in the Inv. for a given Item */
-  uint32_t hasRoomItem(Item* const item, uint32_t amount = 1);
+  uint32_t hasRoom(Item* const item, uint32_t amount = 1);
 
   /* Prints out the state of the inventory */
 	void print(bool simple = true);

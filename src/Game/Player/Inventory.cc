@@ -590,7 +590,111 @@ bool Inventory::decreaseItemCount(const uint32_t &game_id,
  *============================================================================*/
 
 /* Attempts to add a Bubby */
-AddStatus Inventory::addBubby(Bubby* new_bubby, const uint32_t &amount, 
+AddStatus Inventory::add(Bubby* new_bubby, const uint32_t &amount, 
+                         bool bypass)
+{
+  AddStatus status = AddStatus::FAIL;
+  bypass |= getFlag(InvState::SHOP_STORAGE);
+
+  if(amount > 0)
+  {
+    auto spaces = hasRoom(new_bubby, amount);
+
+    if (new_bubby != nullptr && (spaces >= amount || bypass))
+    {
+      if (new_bubby->getTier() == 0)
+      {
+        if (getBubbyZeroCount(new_bubby->getGameID()) == 0)
+        {
+          zero_bubbies.push_back(std::make_pair(new_bubby, amount));
+          calcMass();
+
+          status = AddStatus::GOOD_KEEP;
+        }
+        else
+        {
+          increaseBubbyCount(new_bubby->getGameID(), amount);
+          calcMass();
+
+          status = AddStatus::GOOD_DELETE;
+        }
+      }
+      else
+      {
+        if(getFlag(InvState::SHOP_STORAGE))
+        {
+          // /* Check if the bubby exists already */
+          // int32_t index = getBubbyIndex(new_bubby->getGameID());
+          // if(index >= 0)
+          // {
+            // bubbies[index]->
+          // }
+          // else
+          // {
+          
+          // }
+        }
+        else
+        {
+          bubbies.push_back(new_bubby);
+
+          for (uint32_t i = 1; i < amount; i++)
+            bubbies.push_back(new Bubby(new_bubby->getType()));
+
+          calcMass();
+
+          status = AddStatus::GOOD_KEEP;
+        }
+      }
+    }
+  }
+
+  /* Update the add status, if the shop flag is set since shops delete no
+   * items and need to be managed from an outside source */
+  if(status == AddStatus::GOOD_KEEP && getFlag(InvState::SHOP_STORAGE))
+    status = AddStatus::GOOD_DELETE;
+  
+  return status;
+}
+
+/* Attempts to add an equipment */
+AddStatus Inventory::add(Equipment* new_equipment, const uint32_t &amount, 
+                         bool bypass)
+{
+  AddStatus status = AddStatus::FAIL;
+
+  if(amount > 0)
+  {
+    bypass |= getFlag(InvState::SHOP_STORAGE);
+
+    auto spaces = hasRoom(new_equipment, amount);
+
+    if (new_equipment != nullptr && (spaces >= amount || bypass))
+    {
+      equipments.push_back(new_equipment);
+
+      for (uint32_t i = 1; i < amount; i++)
+        equipments.push_back(new Equipment(new_equipment));
+
+      calcMass();
+
+      if(getFlag(InvState::SHOP_STORAGE))
+        status = AddStatus::GOOD_DELETE;
+      else
+        status = AddStatus::GOOD_KEEP;
+    }
+  }
+  
+  /* Update the add status, if the shop flag is set since shops delete no
+   * items and need to be managed from an outside source */
+  if(status == AddStatus::GOOD_KEEP && getFlag(InvState::SHOP_STORAGE))
+    status = AddStatus::GOOD_DELETE;
+  
+  return status;
+}
+
+/* Adds an item to the Inventory */
+AddStatus Inventory::add(Item* new_item, const uint32_t &amount, 
                          bool bypass)
 {
   if (amount == 0)
@@ -598,79 +702,7 @@ AddStatus Inventory::addBubby(Bubby* new_bubby, const uint32_t &amount,
 
   bypass |= getFlag(InvState::SHOP_STORAGE);
 
-  auto spaces = hasRoomBubby(new_bubby, amount);
-
-  if (new_bubby != nullptr && (spaces >= amount || bypass))
-  {
-    if (new_bubby->getTier() == 0)
-    {
-      if (getBubbyZeroCount(new_bubby->getGameID()) == 0)
-      {
-        zero_bubbies.push_back(std::make_pair(new_bubby, amount));
-        calcMass();
-
-        return AddStatus::GOOD_KEEP;
-      }
-      else
-      {
-        increaseBubbyCount(new_bubby->getGameID(), amount);
-        calcMass();
-
-        return AddStatus::GOOD_DELETE;
-      }
-    }
-    else
-    {
-      bubbies.push_back(new_bubby);
-
-      for (uint32_t i = 1; i < amount; i++)
-        bubbies.push_back(new Bubby(new_bubby->getType()));
-
-      calcMass();
-
-      return AddStatus::GOOD_KEEP;
-    }
-  }
-
-  return AddStatus::FAIL;
-}
-
-/* Attempts to add an equipment */
-AddStatus Inventory::addEquipment(Equipment* new_equipment, const uint32_t &amount, 
-                             bool bypass)
-{
-  if (amount == 0)
-    return AddStatus::FAIL;
-
-  bypass |= getFlag(InvState::SHOP_STORAGE);
-
-  auto spaces = hasRoomEquip(new_equipment, amount);
-
-  if (new_equipment != nullptr && (spaces >= amount || bypass))
-  {
-    equipments.push_back(new_equipment);
-
-    for (uint32_t i = 1; i < amount; i++)
-      equipments.push_back(new Equipment(new_equipment));
-
-    calcMass();
-
-    return AddStatus::GOOD_KEEP;
-  }
-
-  return AddStatus::FAIL;
-}
-
-/* Adds an item to the Inventory */
-AddStatus Inventory::addItem(Item* new_item, const uint32_t &amount, 
-                             bool bypass)
-{
-  if (amount == 0)
-    return AddStatus::FAIL;
-
-  bypass |= getFlag(InvState::SHOP_STORAGE);
-
-  auto spaces = hasRoomItem(new_item, amount);
+  auto spaces = hasRoom(new_item, amount);
 
   if (amount > 0 && new_item != nullptr && (spaces >= amount || bypass))
   {
@@ -779,7 +811,7 @@ bool Inventory::contains(const int &id_check)
 }
 
 /* Calcs and returns the number of spaces in the Inv. for a given Equip */
-uint32_t Inventory::hasRoomEquip(Equipment* const equip, uint32_t n)
+uint32_t Inventory::hasRoom(Equipment* const equip, uint32_t n)
 {
   if (equip == nullptr)
     return 0;
@@ -795,7 +827,7 @@ uint32_t Inventory::hasRoomEquip(Equipment* const equip, uint32_t n)
 }
 
 /* Calcs and returns the number of spaces in the Inv. for a given Bubby */
-uint32_t Inventory::hasRoomBubby(Bubby* const bubby, uint32_t n)
+uint32_t Inventory::hasRoom(Bubby* const bubby, uint32_t n)
 {
   if (bubby == nullptr)
     return 0;
@@ -816,7 +848,7 @@ uint32_t Inventory::hasRoomBubby(Bubby* const bubby, uint32_t n)
 }
 
 /* Calcs and returns the number of spaces in the Inv. for a given Item */
-uint32_t Inventory::hasRoomItem(Item* const item, uint32_t n)
+uint32_t Inventory::hasRoom(Item* const item, uint32_t n)
 {
   if (item == nullptr)
     return 0;
@@ -1109,18 +1141,14 @@ uint32_t Inventory::getBubbyZeroCount(const uint32_t &game_id)
 /* Returns the index on the vector of TX bubbies of a given game ID */
 int32_t Inventory::getBubbyIndex(const uint32_t &game_id)
 {
-  auto index = -1;
-
-  for (auto it = begin(bubbies); it != end(bubbies); ++it)
+  for(uint32_t i = 0; i < bubbies.size(); i++)
   {
-    index++;
-
-    if ((*it) != nullptr)
-      if ((*it)->getGameID() == static_cast<int32_t>(game_id))
-        return index;
+    if (bubbies[i] != nullptr)
+      if (bubbies[i]->getGameID() == static_cast<int32_t>(game_id))
+        return i;
   }
-  return index;
-
+  
+  return -1;
 }
 
 /* Returns the index of a given equipment game id */

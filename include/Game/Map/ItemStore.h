@@ -29,13 +29,13 @@
 #include "Text.h"
 
 /* Notification queue structure */
-struct ItemDisplay
-{
-  Item* item;
-  uint32_t count;
-  uint32_t cost;
-  ItemFlags category;
-};
+//struct ItemDisplay
+//{
+//  Item* item;
+//  uint32_t count;
+//  uint32_t cost;
+//  ItemFlags category;
+//};
 
 class ItemStore
 {
@@ -70,11 +70,14 @@ private:
   Frame img_backend_left;
   Frame img_backend_right;
 
-  //Inventory
+  /* Active inventory being displayed by the store view */
+  Inventory* inventory_active;
+  std::vector<std::pair<Item*, bool>> inventory_items;
+  
   /* The stack of items available in the store view */
   uint8_t store_alpha;
   StoreMode store_mode;
-  std::vector<ItemDisplay> store_stack;
+  //std::vector<ItemDisplay> store_stack;
   WindowStatus store_status;
   std::string store_title;
 
