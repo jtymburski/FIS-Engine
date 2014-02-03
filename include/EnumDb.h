@@ -66,6 +66,14 @@ enum class ActionScope : std::uint16_t
   NO_SCOPE 
 };
 
+enum class AddStatus : std::uint8_t
+{
+  GOOD_DELETE,
+  GOOD_KEEP,
+  FAIL,
+  UNKNOWN
+};
+
 /*
  * Description: Possible action types an actor in Battle may take.
  *

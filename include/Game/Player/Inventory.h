@@ -31,9 +31,9 @@
 #include "StringDb.h"
 
 using Bubby_It  = std::vector<Bubby*>::iterator;
-using Bubby0_It = std::vector<std::pair<Bubby*, uint8_t>>::iterator;
+using Bubby0_It = std::vector<std::pair<Bubby*, uint16_t>>::iterator;
 using Equip_It  = std::vector<Equipment*>::iterator;
-using Item_It   = std::vector<std::pair<Item*, uint8_t>>::iterator;
+using Item_It   = std::vector<std::pair<Item*, uint16_t>>::iterator;
 
 ENUM_FLAGS(InvState)
 enum class InvState
@@ -62,10 +62,10 @@ private:
   InvState flags;
 
   /* Items */
-  std::vector<Bubby*>                     bubbies;
-  std::vector<std::pair<Bubby*, uint8_t>> zero_bubbies;
-  std::vector<Equipment*>                 equipments;
-  std::vector<std::pair<Item*, uint8_t>>  items;
+  std::vector<Bubby*>                      bubbies;
+  std::vector<std::pair<Bubby*, uint16_t>> zero_bubbies;
+  std::vector<Equipment*>                  equipments;
+  std::vector<std::pair<Item*, uint16_t>>  items;
 
   /* Current Mass */
   double curr_mass;
@@ -74,7 +74,7 @@ private:
   uint32_t bubby_limit;
   uint32_t equip_limit;
   uint32_t item_limit;
-  uint8_t  item_each_limit;
+  uint16_t item_each_limit;
   double   mass_limit;
 
   /* Running ID counter */
@@ -102,8 +102,8 @@ private:
   static const double   kMAX_MASS;
   static const uint32_t kMIN_ITEM;
   static const uint32_t kMAX_ITEM;
-  static const uint8_t  kMIN_EACH_ITEM;
-  static const uint8_t  kMAX_EACH_ITEM;
+  static const uint16_t  kMIN_EACH_ITEM;
+  static const uint16_t  kMAX_EACH_ITEM;
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -136,16 +136,16 @@ private:
  *============================================================================*/
 public:
 	/* Attempts to add a Bubby */
-	bool addBubby(Bubby* new_bubby, const uint16_t &amount = 1, 
-                const bool bypass = false);
+	bool addBubby(Bubby* new_bubby, const uint32_t &amount = 1, 
+                bool bypass = false);
 
   /* Attempts to add an equipment */
-	bool addEquipment(Equipment* new_equipment, const uint16_t &amount = 1, 
-                    const bool bypass = false);
+	bool addEquipment(Equipment* new_equipment, const uint32_t &amount = 1, 
+                    bool bypass = false);
 
   /* Adds an item to the Inventory */
-	bool addItem(Item* new_item, const uint16_t &amount = 1, 
-               const bool bypass = false);
+	bool addItem(Item* new_item, const uint32_t &amount = 1, 
+               bool bypass = false);
 
   /* Clears the memory of the inventory and the vectors of data */
   void clear(const bool &free = true);
@@ -154,13 +154,13 @@ public:
 	bool contains(const int &id_check);
 
   /* Calcs and returns the number of spaces in the Inv. for a given Equip */
-  int32_t hasRoomEquip(Equipment* const equip);
+  uint32_t hasRoomEquip(Equipment* const equip, uint32_t amount = 1);
 
   /* Calcs and returns the number of spaces in the Inv. for a given Bubby */
-  int32_t hasRoomBubby(Bubby* const bubby);
+  uint32_t hasRoomBubby(Bubby* const bubby, uint32_t amount = 1);
 
   /* Calcs and returns the number of spaces in the Inv. for a given Item */
-  int32_t hasRoomItem(Item* const check_item);
+  uint32_t hasRoomItem(Item* const item, uint32_t amount = 1);
 
   /* Prints out the state of the inventory */
 	void print(bool simple = true);
@@ -194,16 +194,22 @@ public:
 		        const bool ascending = false);
 
 	/* Evaluates and returns the value of a given Inventory flag */
-	bool getFlag(const InvState test_flag);
+	bool getFlag(const InvState &test_flag);
 
   /* Returns the backdrop of the inventory */
   Frame* getBackdrop();
 
-  /* Returns the count of Bubbies of a given game_id */
+  /* Returns the count of TX Bubbies of a given game_id */
   uint32_t getBubbyCount(const uint32_t &game_id);
+
+  /* Returns the count of T0 Bubbies of a given game_id */
+  uint32_t getBubbyZeroCount(const uint32_t &game_id);
 
   /* Returns the index on the vector of T0 bubbies of a given game ID */
   int32_t getBubbyZeroIndex(const uint32_t &game_id);
+
+  /* Counts the # of equipments of a given game ID */
+  int32_t getEquipCount(const uint32_t &game_id);
 
   /* Returns the index on the Bubby TX vector of a given game ID */
   int32_t getBubbyIndex(const uint32_t &game_id);
@@ -218,7 +224,7 @@ public:
   uint32_t getTotalBubbyCount();
 
   /* Counts the # items with a given Game ID */
-  uint32_t getCount(const int &game_id);
+  uint32_t getCount(const uint32_t &game_id);
 
   /* Returns the currently set equipment limit */
   uint32_t getEquipmentLimit();
@@ -239,7 +245,7 @@ public:
   uint32_t getItemTotalCount(const bool &count_keys = false);
 
   /* Returns a vector of all items useable in battle */
-  std::vector<std::pair<Item*, uint8_t>> getBattleItems();
+  std::vector<std::pair<Item*, uint16_t>> getBattleItems();
 
   /* Returns a vector of all Bubbies */
   std::vector<Bubby*> getBubbies();
@@ -248,13 +254,13 @@ public:
   std::vector<Equipment*> getEquipments();
 
   /* Returns the vector of all standard items */
-  std::vector<std::pair<Item*, uint8_t>> getItems();
+  std::vector<std::pair<Item*, uint16_t>> getItems();
 
   /* Returns the vector of all key items */
-  std::vector<std::pair<Item*, uint8_t>> getKeyItems();
+  std::vector<std::pair<Item*, uint16_t>> getKeyItems();
 
   /* Returns the vector of all zero bubbies */
-  std::vector<std::pair<Bubby*, uint8_t>> getZeroBubbies();
+  std::vector<std::pair<Bubby*, uint16_t>> getZeroBubbies();
 
   /* Calculates and returns the mass */
   double getMass();
@@ -281,7 +287,7 @@ public:
 
   /* Assigns new limits given parameters */
   void setLimits(const uint32_t bubby_lim, const uint32_t equip_lim, 
-  	             const uint32_t item_lim, const uint8_t item_e, 
+  	             const uint32_t item_lim, const uint16_t item_e, 
   	             const double mass_lim);
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS

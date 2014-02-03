@@ -41,6 +41,7 @@ Item::Item(Flavour* const source)
   : game_id{source->game_id}
   , my_id{++id}
   , base_item{nullptr}
+  , thumbnail{nullptr}
 {
   setupClass();
 

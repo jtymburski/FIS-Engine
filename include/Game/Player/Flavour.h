@@ -146,7 +146,7 @@ public:
   /* Returns the maximum level of a Bubby */
   static uint32_t getMaxLevel();
 
-    /* Returns the # of tiers of a Bubby */
+  /* Returns the # of tiers of a Bubby */
   static uint32_t getTiers();
 
 };

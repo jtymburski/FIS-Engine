@@ -35,6 +35,7 @@ Game::Game(Options* running_config)
 {
   /* Initalize class variables */
   base_path = "";
+  game_inventory = nullptr;
   game_config = nullptr;
   game_map = nullptr;
   mode = DISABLED;
@@ -70,8 +71,8 @@ Game::~Game()
 
   if(game_inventory != nullptr)
   {
-    delete game_inventory;
-    game_inventory = nullptr;
+   delete game_inventory;
+   game_inventory = nullptr;
   }
  
   /* Delete all game items */
@@ -314,10 +315,10 @@ void Game::setupBattle()
   SkillSet* hex_skills   = scion_skills;
   SkillSet* other_skill_set = new SkillSet(other_skills, other_levels);
 
-  // scion_skills->print();
-  // hex_skills->print();
-  // other_skill_set->print();
-  
+  //scion_skills->print();
+  //hex_skills->print();
+  //other_skill_set->print();
+
   // General Item Testing
   Item* potion      = new Item(45, "Potion", 70, nullptr, 1.01);
   Item* unique_item = new Item(46, "Unique Item", 75, nullptr, 1.08);
@@ -326,10 +327,10 @@ void Game::setupBattle()
   // Key Item Testing
   Item* master_key  = new Item(115, "Master Key", nullptr);
   Item* master_key2 = new Item(master_key);
-  Item* super_box = new Item(116, "Super Box", nullptr);
-  Item* boxxy_box = new Item(117, "Boxxy Box", nullptr);
-  Item* epic_sword_comp = new Item(118, "Epic Sword Comp", nullptr);
-  Item* alpha_omega = new Item(119, "Alpha Omega", nullptr);
+  // Item* super_box = new Item(116, "Super Box", nullptr);
+  // Item* boxxy_box = new Item(117, "Boxxy Box", nullptr);
+  // Item* epic_sword_comp = new Item(118, "Epic Sword Comp", nullptr);
+  // Item* alpha_omega = new Item(119, "Alpha Omega", nullptr);
 
   // Flavour Testing
   Flavour* spark = new Flavour(101, "Spark", spark_set, 1.04, 35);
@@ -349,81 +350,85 @@ void Game::setupBattle()
   Equipment* suit  = new Equipment(202, "Suit", 100, 3, 100, nullptr, 10, 10);
 
   // Inventory Testing
-  Inventory* test_pouch = new Inventory(1001, "Test Pouch", nullptr);
+  Inventory* test_pouch = new Inventory(1006, "Test Pouchey");
   test_pouch->setFlag(InvState::SHOP_STORAGE, false);
 
-  //test_pouch->hasRoomItem(potion);
+  //test_pouch->addItem(new_potion, 10);
+  //test_pouch->addItem(unique_item, 6);
+  //test_pouch->addItem(unique_item);
+  test_pouch->addItem(master_key2, 66);
+  //test_pouch->addItem(super_box);
+  //test_pouch->addItem(boxxy_box);
+  //test_pouch->addItem(epic_sword_comp);
+  //test_pouch->addItem(alpha_omega);
 
-  // test_pouch->addItem(new_potion, 10);
-  // test_pouch->addItem(unique_item, 2);
-  // //test_pouch->addItem(new_potion);
-  // //test_pouch->addItem(new_potion);
-  // test_pouch->addItem(unique_item);
-  // test_pouch->addItem(master_key2, 10);
-  // test_pouch->addItem(super_box);
-  // test_pouch->addItem(boxxy_box);
-  // test_pouch->addItem(epic_sword_comp);
-  // test_pouch->addItem(alpha_omega);
+  test_pouch->addBubby(second, 9);
+  test_pouch->addBubby(first, 9);
+  test_pouch->addBubby(fifth, 5);
 
-  test_pouch->addBubby(second);
-  test_pouch->addBubby(first);
-  test_pouch->addBubby(second);
-  test_pouch->addBubby(first);
-  test_pouch->addBubby(second);
-  test_pouch->addBubby(first);
-  test_pouch->addBubby(second);
-  test_pouch->addBubby(third);
-  test_pouch->addBubby(third);
+  //test_pouch->removeBubbyID(fifth->getGameID());
+  //test_pouch->removeBubbyID(fifth->getGameID());
+  //test_pouch->removeBubbyID(fifth->getGameID());
 
-  test_pouch->addBubby(fourth);
-  test_pouch->addBubby(fourth);
-  test_pouch->addBubby(fifth);
-  test_pouch->addBubby(fifth);
+  //test_pouch->removeBubbyID(fifth->getGameID());
+  //test_pouch->removeBubbyID(fifth->getGameID());
+  //test_pouch->removeBubbyID(fifth->getGameID());
+  
+  test_pouch->addBubby(fourth, 2);
 
-  test_pouch->removeBubbyID(fourth->getGameID());
-  test_pouch->removeBubbyIndex(0);
+  //test_pouch->removeBubbyID(fifth->getGameID());
+  //test_pouch->addBubby(fifth);
+
+  //test_pouch->removeBubbyID(fifth->getGameID());
+  //test_pouch->removeBubbyIndex(0);
+  //test_pouch->removeBubbyIndex(0);
+  //test_pouch->removeBubbyIndex(0);
+  //test_pouch->removeBubbyIndex(0);
+  //test_pouch->removeBubbyIndex(0);
+
+  //test_pouch->addBubby(fifth);
+  //test_pouch->addBubby(fifth);
+  //test_pouch->addBubby(fifth, 1);
 
   test_pouch->addEquipment(fated);
   test_pouch->addEquipment(suit);
-
   test_pouch->removeEquipID(fated->getGameID());
+  test_pouch->removeEquipID(suit->getGameID());
 
 
-  // test_pouch->removeEquipID(fated->getGameID());
-  // test_pouch->removeEquipID(suit->getGameID());
-  // test_pouch->removeItemID(master_key->getGameID());
-  // test_pouch->removeItemIndex(2);
-  // test_pouch->removeItemID(unique_item->getGameID());
   
   test_pouch->print(false);
 
-  std::cout << "Spaces: " << test_pouch->hasRoomItem(potion) << std::endl;
+  // auto key_items = test_pouch->getKeyItems();
 
-  auto key_items = test_pouch->getKeyItems();
-
-  for (auto it = begin(key_items); it != end(key_items); ++it)
-  {
-   std::cout << "Item: " << (*it).first->getName() << " " 
-            << static_cast<int>((*it).second) << "\n";
-  }
+  // for (auto it = begin(key_items); it != end(key_items); ++it)
+  // {
+  //  std::cout << "Item: " << (*it).first->getName() << " " 
+  //           << static_cast<int>((*it).second) << "\n";
+  // }
 
   // Category Testing
-  Category* blood_scion = new Category("Blood Scion", "Scion", min_scion_set, 
-                                       max_scion_set, scion_skills);
-  blood_scion->setDescription("User of blood magicks.");
-  blood_scion->setFlag(CategoryState::E_STAFF, true);
+  // Category* blood_scion = new Category("Blood Scion", "Scion", min_scion_set, 
+  //                                      max_scion_set, scion_skills);
+  // blood_scion->setDescription("User of blood magicks.");
+  // blood_scion->setFlag(CategoryState::E_STAFF, true);
 
-  Category* bear = new Category("Bear", "Bears", min_hex_set, 
-                                    max_hex_set, hex_skills);
-  Category* human = new Category("Human", "Humans", min_human_set, max_human_set, other_skill_set);
-  bear->setDescription("Has a right to bear arms.");
+  // Category* bear = new Category("Bear", "Bears", min_hex_set, 
+  //                                   max_hex_set, hex_skills);
+  // Category* human = new Category("Human", "Humans", min_human_set, max_human_set, other_skill_set);
+  // bear->setDescription("Has a right to bear arms.");
 
-  /* Person Testing */
-  Person* berran = new Person(455, "Berran", blood_scion, bear);
-  berran->setCurves(Element::FIRE, ElementCurve::S, 
-                    Element::PHYSICAL, ElementCurve::B);
-  berran->setLoot(25, 150, {14, 12, 16});
+  // /* Person Testing */
+  // Person* berran = new Person(455, "Berran", blood_scion, bear);
+  // berran->setCurves(Element::FIRE, ElementCurve::S, 
+  //                   Element::PHYSICAL, ElementCurve::B);
+  // berran->setLoot(25, 150, {14, 12, 16});
   //berran->print(false, true, true, true);
+
+  delete test_pouch;
+  //delete spark;
+  //delete moldy;
+  //delete tumor;
 
   } // end enable test
  
@@ -448,7 +453,7 @@ void Game::setupMap()
 void Game::setupPlayerInventory()
 {
   /* Create the inventory */
-  game_inventory = new Inventory(0, "Default Inventory", nullptr);
+  game_inventory = new Inventory(7, "Default Inventory", nullptr);
 
   /* General inventory setup */
   Inventory::setMoneyID(kMONEY_ITEM_ID);

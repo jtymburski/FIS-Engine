@@ -35,6 +35,8 @@ public:
   /* Constructs a Bubby object with a flavour at a certain tier */
   Bubby(Flavour* parent, const uint32_t &tier = 0);
 
+  ~Bubby() = default;
+
 private:
 
   /* Experience values for levels of Bubby */

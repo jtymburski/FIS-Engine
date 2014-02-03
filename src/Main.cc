@@ -78,6 +78,7 @@ int main(int argc, char** argv)
     game_app->uninitialize();
     delete game_app;
     game_app = NULL;
+
   }
   
   /* Clean up SDL libraries */
