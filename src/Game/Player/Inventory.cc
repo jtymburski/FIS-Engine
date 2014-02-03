@@ -18,7 +18,7 @@
  * CONSTANTS
  *============================================================================*/
 
-uint32_t Inventory::id = 0;
+uint32_t Inventory::id       = 0;
 uint32_t Inventory::money_id = 0;
 
 const double   Inventory::kMIN_MASS      =     200.00;
@@ -594,11 +594,11 @@ bool Inventory::decreaseItemCount(const uint32_t &game_id,
  *============================================================================*/
 
 /* Attempts to add a Bubby */
-bool Inventory::addBubby(Bubby* new_bubby, const uint32_t &amount, 
+AddStatus Inventory::addBubby(Bubby* new_bubby, const uint32_t &amount, 
                          bool bypass)
 {
   if (amount == 0)
-    return false;
+    return AddStatus::FAIL;
 
   bypass |= getFlag(InvState::SHOP_STORAGE);
 
@@ -609,9 +609,19 @@ bool Inventory::addBubby(Bubby* new_bubby, const uint32_t &amount,
     if (new_bubby->getTier() == 0)
     {
       if (getBubbyZeroCount(new_bubby->getGameID()) == 0)
+      {
         zero_bubbies.push_back(std::make_pair(new_bubby, amount));
+        calcMass();
+
+        return AddStatus::GOOD_KEEP;
+      }
       else
+      {
         increaseBubbyCount(new_bubby->getGameID(), amount);
+        calcMass();
+
+        return AddStatus::GOOD_DELETE;
+      }
     }
     else
     {
@@ -619,22 +629,22 @@ bool Inventory::addBubby(Bubby* new_bubby, const uint32_t &amount,
 
       for (uint32_t i = 1; i < amount; i++)
         bubbies.push_back(new Bubby(new_bubby->getType()));
+
+      calcMass();
+
+      return AddStatus::GOOD_KEEP;
     }
-
-    calcMass();
-
-    return true;
   }
 
-  return false;
+  return AddStatus::FAIL;
 }
 
 /* Attempts to add an equipment */
-bool Inventory::addEquipment(Equipment* new_equipment, const uint32_t &amount, 
+AddStatus Inventory::addEquipment(Equipment* new_equipment, const uint32_t &amount, 
                              bool bypass)
 {
   if (amount == 0)
-    return false;
+    return AddStatus::FAIL;
 
   bypass |= getFlag(InvState::SHOP_STORAGE);
 
@@ -649,18 +659,18 @@ bool Inventory::addEquipment(Equipment* new_equipment, const uint32_t &amount,
 
     calcMass();
 
-    return true;
+    return AddStatus::GOOD_KEEP;
   }
 
-  return false;
+  return AddStatus::FAIL;
 }
 
 /* Adds an item to the Inventory */
-bool Inventory::addItem(Item* new_item, const uint32_t &amount, 
-                        bool bypass)
+AddStatus Inventory::addItem(Item* new_item, const uint32_t &amount, 
+                             bool bypass)
 {
   if (amount == 0)
-    return false;
+    return AddStatus::FAIL;
 
   bypass |= getFlag(InvState::SHOP_STORAGE);
 
@@ -669,19 +679,33 @@ bool Inventory::addItem(Item* new_item, const uint32_t &amount,
   if (new_item != nullptr && (spaces >= amount || bypass))
   {
     if (new_item->isBaseItem())
+    {
       for (uint32_t i = 0; i < amount; i++)
         items.push_back(std::make_pair(new_item, 1));
-    else if (getItemCount(new_item->getGameID()) == 0)
-      items.push_back(std::make_pair(new_item, amount));
-    else
-      increaseItemCount(new_item->getGameID(), amount);
-    
-    calcMass();
 
-    return true;
+      calcMass();
+
+      return AddStatus::GOOD_KEEP;
+    }
+    else if (getItemCount(new_item->getGameID()) == 0)
+    {
+      items.push_back(std::make_pair(new_item, amount));
+      calcMass();
+
+      return AddStatus::GOOD_KEEP;
+    }
+    else
+    {
+      increaseItemCount(new_item->getGameID(), amount);
+      calcMass();
+
+      return AddStatus::GOOD_DELETE;
+    }
+
+
   }
 
-  return false;
+  return AddStatus::FAIL;
 }
 
 /* Clears the memory of the inventory and the vectors of data */

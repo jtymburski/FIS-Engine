@@ -136,16 +136,16 @@ private:
  *============================================================================*/
 public:
 	/* Attempts to add a Bubby */
-	bool addBubby(Bubby* new_bubby, const uint32_t &amount = 1, 
-                bool bypass = false);
+	AddStatus addBubby(Bubby* new_bubby, const uint32_t &amount = 1, 
+                     bool bypass = false);
 
   /* Attempts to add an equipment */
-	bool addEquipment(Equipment* new_equipment, const uint32_t &amount = 1, 
-                    bool bypass = false);
+	AddStatus addEquipment(Equipment* new_equipment, const uint32_t &amount = 1, 
+                         bool bypass = false);
 
   /* Adds an item to the Inventory */
-	bool addItem(Item* new_item, const uint32_t &amount = 1, 
-               bool bypass = false);
+	AddStatus addItem(Item* new_item, const uint32_t &amount = 1, 
+                    bool bypass = false);
 
   /* Clears the memory of the inventory and the vectors of data */
   void clear(const bool &free = true);
