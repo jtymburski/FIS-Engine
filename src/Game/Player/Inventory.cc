@@ -60,10 +60,7 @@ Inventory::Inventory(const uint32_t game_id, const std::string name,
 
 Inventory::~Inventory()
 {
-  if (getFlag(InvState::SHOP_STORAGE))
-    clear(false);
-  else
-    clear(true);
+  clear(!getFlag(InvState::SHOP_STORAGE));
 }
 
 /*=============================================================================
@@ -85,7 +82,6 @@ void Inventory::calcMass()
 
   for (auto equipment : equipments)
     if (equipment != nullptr)
-
       temp_mass += equipment->getMass();
 
   for (auto item : items)
@@ -676,7 +672,7 @@ AddStatus Inventory::addItem(Item* new_item, const uint32_t &amount,
 
   auto spaces = hasRoomItem(new_item, amount);
 
-  if (new_item != nullptr && (spaces >= amount || bypass))
+  if (amount > 0 && new_item != nullptr && (spaces >= amount || bypass))
   {
     if (new_item->isBaseItem())
     {
@@ -701,8 +697,6 @@ AddStatus Inventory::addItem(Item* new_item, const uint32_t &amount,
 
       return AddStatus::GOOD_DELETE;
     }
-
-
   }
 
   return AddStatus::FAIL;
@@ -713,6 +707,7 @@ void Inventory::clear(const bool &free)
 {
   if (free)
   {
+    std::cout << "deleting zero bubbies\n";
     /* One-each of Tier 0 bubbies are required to be deleted upon removal */
     for (auto zero_bubby : zero_bubbies)
     {
@@ -722,6 +717,7 @@ void Inventory::clear(const bool &free)
       zero_bubby.first = nullptr;
     }
 
+    std::cout << "deleting bubbies\n";
     /* Each non-tier-zero Bubby is required to be deleted */
     for (auto bubby: bubbies)
     {
@@ -731,6 +727,7 @@ void Inventory::clear(const bool &free)
       bubby = nullptr;
     }
 
+    std::cout << "deleting equipments\n";
     /* Each equipment is required to be deleted */
     for (auto equip : equipments)
     {
@@ -740,16 +737,19 @@ void Inventory::clear(const bool &free)
       equip = nullptr;
     }
 
+    std::cout << "deleting items\n";
     /* Each index of the items is required to be deleted */
     for (auto item : items)
     {
+
       if (item.first != nullptr)
-        delete item.first;
+        delete item.first; 
 
       item.first = nullptr;
     }
   }
 
+  std::cout << "clearing vectors\n";
   /* Empty the vectors */
   zero_bubbies.clear();
   bubbies.clear();

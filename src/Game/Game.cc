@@ -338,7 +338,7 @@ void Game::setupBattle()
   Flavour* moldy = new Flavour(103, "Moldy", moldy_set, 1.11, 48);
 
   Bubby* first  = new Bubby(spark);
-  Bubby* second = new Bubby(moldy);
+  Bubby* second = new Bubby(spark);
   Bubby* third  = new Bubby(tumor);
   Bubby* fourth = new Bubby(spark, 1);
   Bubby* fifth  = new Bubby(moldy, 1);
@@ -356,25 +356,61 @@ void Game::setupBattle()
   //test_pouch->addItem(new_potion, 10);
   //test_pouch->addItem(unique_item, 6);
   //test_pouch->addItem(unique_item);
-  test_pouch->addItem(master_key2, 66);
-  //test_pouch->addItem(super_box);
-  //test_pouch->addItem(boxxy_box);
-  //test_pouch->addItem(epic_sword_comp);
-  //test_pouch->addItem(alpha_omega);
-
-  test_pouch->addBubby(second, 9);
-  test_pouch->addBubby(first, 9);
-  test_pouch->addBubby(fifth, 5);
-
-  //test_pouch->removeBubbyID(fifth->getGameID());
-  //test_pouch->removeBubbyID(fifth->getGameID());
-  //test_pouch->removeBubbyID(fifth->getGameID());
-
-  //test_pouch->removeBubbyID(fifth->getGameID());
-  //test_pouch->removeBubbyID(fifth->getGameID());
-  //test_pouch->removeBubbyID(fifth->getGameID());
   
-  test_pouch->addBubby(fourth, 2);
+  auto new_potion2 = new Item(new_potion);
+
+  auto test = test_pouch->addItem(new_potion);
+  test      = test_pouch->addItem(new_potion2);
+
+  //test = test_pouch->addItem(new_potion, 4);
+  if (test == AddStatus::GOOD_DELETE)
+  {
+    std::cout << "deleting new_potion\n";
+    delete new_potion2;
+    new_potion2 = nullptr;
+  }
+  else if (test == AddStatus::GOOD_KEEP)
+  {
+    std::cout << "Successful addition to keep\n";
+  }
+  else
+    std::cout << "Addition failed\n";
+
+  test = test_pouch->addBubby(first, 7);
+  if (test == AddStatus::GOOD_DELETE)
+  {
+    std::cout << "deleting first bubby\n";
+    delete first;
+    first = nullptr;
+  }
+  else if (test == AddStatus::GOOD_KEEP)
+  {
+    std::cout << "Successful addition to keep\n";
+  }
+  else
+    std::cout << "Addition failed\n";
+
+  test = test_pouch->addBubby(second, 3);
+  if (test == AddStatus::GOOD_DELETE)
+  {
+    std::cout << "deleting second bubby\n";
+    delete second;
+    second = nullptr;
+  }
+  else if (test == AddStatus::GOOD_KEEP)
+  {
+    std::cout << "Successful addition to keep\n";
+  }
+  else
+    std::cout << "Addition failed\n";
+
+  //test_pouch->removeBubbyID(fifth->getGameID());
+  //test_pouch->removeBubbyID(fifth->getGameID());
+  //test_pouch->removeBubbyID(fifth->getGameID());
+
+  //test_pouch->removeBubbyID(fifth->getGameID());
+  //test_pouch->removeBubbyID(fifth->getGameID());
+  //test_pouch->removeBubbyID(fifth->getGameID());
 
   //test_pouch->removeBubbyID(fifth->getGameID());
   //test_pouch->addBubby(fifth);
@@ -390,13 +426,11 @@ void Game::setupBattle()
   //test_pouch->addBubby(fifth);
   //test_pouch->addBubby(fifth, 1);
 
-  test_pouch->addEquipment(fated);
-  test_pouch->addEquipment(suit);
-  test_pouch->removeEquipID(fated->getGameID());
-  test_pouch->removeEquipID(suit->getGameID());
+  //test_pouch->addEquipment(fated);
+  //test_pouch->addEquipment(suit);
+  //test_pouch->removeEquipID(fated->getGameID());
+  //test_pouch->removeEquipID(suit->getGameID());
 
-
-  
   test_pouch->print(false);
 
   // auto key_items = test_pouch->getKeyItems();
