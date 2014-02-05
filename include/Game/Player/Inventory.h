@@ -111,15 +111,15 @@ private:
   void calcMass();
 
   bool sortZeroBubbies(Bubby0_It begin, Bubby0_It stop,
-                    const ObjectSorts &sort_type, const bool &asc = true);
+                    const SortType &sort_type, const bool &asc = true);
 
-  bool sortBubbies(Bubby_It begin, Bubby_It stop, const ObjectSorts &sort_type, 
+  bool sortBubbies(Bubby_It begin, Bubby_It stop, const SortType &sort_type, 
   	               const bool &asc = true);
 
   bool sortEquipments(Equip_It begin, Equip_It end, 
-                      const ObjectSorts &sort_type, const bool &asc = true);
+                      const SortType &sort_type, const bool &asc = true);
 
-  bool sortItems(Item_It begin, Item_It end, const ObjectSorts &sort_type, 
+  bool sortItems(Item_It begin, Item_It end, const SortType &sort_type, 
   	             const bool &asc = true);
 
   bool increaseBubbyCount(const uint32_t &game_id, const uint16_t &amount = 1);
@@ -189,7 +189,7 @@ public:
   bool removeItemID(const uint32_t &game_id, const uint16_t &amount = 1);
 
   /* Sorts an object in the inventory a certain way */
-	bool sort(ObjectSorts sort_by, SortObjects object_to_sort, 
+	bool sort(SortType sort_by, SortObjects object_to_sort, 
 		        const bool ascending = false);
 
 	/* Evaluates and returns the value of a given Inventory flag */

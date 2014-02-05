@@ -91,422 +91,6 @@ void Inventory::calcMass()
   curr_mass = temp_mass;
 }
 
-/* Sorts the vector of Tier 0 bubbies (the ones that have counts) */
-bool Inventory::sortZeroBubbies(Bubby0_It begin, Bubby0_It stop,
-                                const ObjectSorts &sort_type, const bool &asc)
-{
-  auto sorted = false;
-
-  if (sort_type == ObjectSorts::ID)
-  {
-    std::sort(begin, stop, 
-              [&](const std::pair<Bubby*, uint16_t> &a, 
-                  const std::pair<Bubby*, uint16_t> &b) -> bool
-              {
-                if (asc)
-                  return a.first->getID() < b.first->getID();
-
-                return b.first->getID() < a.first->getID();
-              });
-
-    sorted = true;
-  }
-  else if (sort_type == ObjectSorts::NAME)
-  {
-    std::sort(begin, stop,
-              [&](const std::pair<Bubby*, uint16_t> &a,
-                  const std::pair<Bubby*, uint16_t> &b) -> bool
-              {
-                if (asc)
-                  return a.first->getID() < b.first->getID();
-
-                return b.first->getID() < a.first->getID();
-              });
-
-    sorted = true;
-  }
-  else if (sort_type == ObjectSorts::FLAVOUR)
-  {
-    std::sort(begin, stop,
-              [&](const std::pair<Bubby*, uint16_t> &a,
-                  const std::pair<Bubby*, uint16_t> &b) -> bool
-              {
-                if (asc)
-                  return a.first->getType()->getName() < 
-                         b.first->getType()->getName();
-
-                return b.first->getType()->getName() < 
-                       b.first->getType()->getName();
-              });
-
-    sorted = true;
-  }
-  else if (sort_type == ObjectSorts::VALUE)
-  {
-    std::sort(begin, stop,
-              [&](const std::pair<Bubby*, uint16_t> &a,
-                  const std::pair<Bubby*, uint16_t> &b) -> bool
-              {
-                if (asc)
-                  return a.first->getValue() < b.first->getValue();
-
-                return b.first->getValue() < a.first->getValue();
-              });
-
-    sorted = true;
-  }
-  else if (sort_type == ObjectSorts::MASS)
-  {
-    std::sort(begin, stop,
-              [&](const std::pair<Bubby*, uint16_t> &a,
-                  const std::pair<Bubby*, uint16_t> &b) -> bool
-              {
-                if (asc)
-                  return a.first->getMass() < b.first->getMass();
-
-                return b.first->getMass() < a.first->getMass();
-              });
-
-    sorted = true;
-  }
-  else if (sort_type == ObjectSorts::VALUEPERMASS)
-  {
-    std::sort(begin, stop,
-              [&](const std::pair<Bubby*, uint16_t> &a,
-                  const std::pair<Bubby*, uint16_t> &b) -> bool
-              {
-                if (asc)
-                {
-                  return ((static_cast<double>(a.first->getValue()) /
-                           static_cast<double>(a.first->getMass())) < 
-                          (static_cast<double>(b.first->getValue()) /
-                           static_cast<double>(b.first->getMass())));
-                }
-                
-                return ((static_cast<double>(a.first->getValue()) /
-                         static_cast<double>(a.first->getMass())) > 
-                        (static_cast<double>(b.first->getValue())) /
-                         static_cast<double>(b.first->getMass()));
-              });
-
-    sorted = true;
-  }
-  else if (sort_type == ObjectSorts::COUNT)
-  {
-    std::sort(begin, stop,
-              [&](const std::pair<Bubby*, uint16_t> &a,
-                  const std::pair<Bubby*, uint16_t> &b) -> bool
-              {
-                if (asc)
-                  return a.second < b.second;
-
-                return b.second < a.second;
-              });
-              
-    sorted = true;
-  }
-
-  return sorted;
-}
-
-bool Inventory::sortBubbies(Bubby_It begin, Bubby_It stop, 
-	                          const ObjectSorts &sort_type, const bool &asc)
-{
-  auto sorted = false;
-
-  if (sort_type == ObjectSorts::ID)
-  {
-    std::sort(begin, stop,
-              [&](Bubby* const a, Bubby* const b) -> bool
-              {
-                if (asc)
-                  return a->getID() < b->getID();
-
-                return b->getID() < a->getID();
-              });
-
-    sorted = true;
-  }
-  else if (sort_type == ObjectSorts::NAME)
-  {
-    std::sort(begin, stop,
-              [&](Bubby* const a, Bubby* const b) -> bool
-              {
-                if (asc)
-                  return a->getName() < b->getName();
-
-                return b->getName() < a->getName();
-              });
-
-    sorted = true;
-  }
-  else if (sort_type == ObjectSorts::FLAVOUR)
-  {
-    std::sort(begin, stop,
-              [&](Bubby* const a, Bubby* const b) -> bool
-              {
-                if (asc)
-                  return a->getType() < b->getType();
-
-                return b->getType() < a->getType();
-              });
-
-    sorted = true;
-  }
-  else if (sort_type == ObjectSorts::LEVEL)
-  {
-    std::sort(begin, stop,
-              [&](Bubby* const a, Bubby* const b) -> bool
-              {
-                if (a->getLevel() == b->getLevel())
-                {
-                  if (asc)
-                    return a->getExp() < b->getExp();
-
-                  return b->getExp() < a->getExp();
-                }
-                if (asc)
-                  return a->getLevel() < b->getLevel();
-
-                return b->getLevel() < a->getLevel();
-              });
-  
-    sorted = true;
-  }
-  else if (sort_type == ObjectSorts::VALUE)
-  {
-    std::sort(begin, stop,
-              [&](Bubby* const a, Bubby* const b) -> bool
-              {
-                if (asc)
-                  return a->getValue() < b->getValue();
-
-                return a->getValue() > b->getValue();
-              });
-
-    sorted = true;
-  }
-  else if (sort_type == ObjectSorts::MASS)
-  {
-    std::sort(begin, stop,
-              [&](Bubby* const a, Bubby* const b) -> bool
-              {
-                if (asc)
-                  return a->getMass() < b->getMass();
-
-                return a->getMass() > b->getMass();
-              });
-
-    sorted = true;
-  }
-  else if (sort_type == ObjectSorts::VALUEPERMASS)
-  {
-    std::sort(begin, stop,
-              [&](Bubby* const a, Bubby* const b) -> bool
-              {
-                if (asc)
-                {
-                  return ((static_cast<double>(a->getValue()) /
-                           static_cast<double>(a->getMass())) < 
-                          (static_cast<double>(b->getValue()) /
-                           static_cast<double>(b->getMass())));
-                }
-                
-                return ((static_cast<double>(a->getValue()) /
-                         static_cast<double>(a->getMass())) > 
-                        (static_cast<double>(b->getValue())) /
-                         static_cast<double>(b->getMass()));
-              });
-
-    sorted = true;
-  }
-
-  return sorted;
-}
-
-bool Inventory::sortEquipments(Equip_It begin, Equip_It stop, 
-	                             const ObjectSorts &sort_type, const bool &asc)
-{
-  bool sorted = false;
-
-  if (sort_type == ObjectSorts::ID)
-  {
-    std::sort(begin, stop,
-              [&](Equipment* const a, Equipment* const b) -> bool
-              {
-                if (asc)
-                  return a->getID() < b->getID();
-
-                return b->getID() < a->getID();
-              });
-
-    sorted = true;
-  }
-  else if (sort_type == ObjectSorts::NAME)
-  {
-    std::sort(begin, stop,
-              [&](Equipment* const a, Equipment* const b) -> bool
-              {
-                if (asc)
-                  return a->getName() < b->getName();
-
-                return b->getName() < a->getName();
-              });
-
-    sorted = true;
-  }
-  else if (sort_type == ObjectSorts::VALUE)
-  {
-    std::sort(begin, stop,
-              [&](Equipment* const a, Equipment* const b) -> bool
-              {
-                if (asc)
-                  return a->getValue() < b->getValue();
-
-                return a->getValue() > b->getValue();
-              });
-
-    sorted = true;
-  }
-  else if (sort_type == ObjectSorts::MASS)
-  {
-    std::sort(begin, stop,
-              [&](Equipment* const a, Equipment* const b) -> bool
-              {
-                if (asc)
-                  return a->getMass() < b->getMass();
-
-                return a->getMass() > b->getMass();
-              });
-
-    sorted = true;
-  }
-  else if (sort_type == ObjectSorts::VALUEPERMASS)
-  {
-    std::sort(begin, stop,
-              [&](Equipment* const a, Equipment* const b) -> bool
-              {
-                if (asc)
-                {
-                  return ((static_cast<double>(a->getValue()) /
-                           static_cast<double>(a->getMass())) < 
-                          (static_cast<double>(b->getValue()) /
-                           static_cast<double>(b->getMass())));
-                }
-                
-                return ((static_cast<double>(a->getValue()) /
-                         static_cast<double>(a->getMass())) > 
-                        (static_cast<double>(b->getValue())) /
-                         static_cast<double>(b->getMass()));
-              });
-
-    sorted = true;
-  }
-
-  return sorted;
-}
-
-bool Inventory::sortItems(Item_It begin, Item_It stop, 
-	                        const ObjectSorts &sort_type, const bool &asc)
-{
-  bool sorted = false;
-
-  if (sort_type == ObjectSorts::ID)
-  {
-    std::sort(begin, stop,
-              [&](const std::pair<Item*, uint16_t> &a,
-                  const std::pair<Item*, uint16_t> &b)
-              {
-                if (asc)
-                  return a.first->getID() < b.first->getID();
-
-                return b.first->getID() < a.first->getID();
-              });
-
-    sorted = true;
-  }
-  else if (sort_type == ObjectSorts::NAME)
-  {
-    std::sort(begin, stop,
-              [&](const std::pair<Item*, uint16_t> &a,
-                  const std::pair<Item*, uint16_t> &b)
-              {
-                if (asc)
-                  return a.first->getName() < b.first->getName();
-
-                return b.first->getName() < a.first->getName();
-              });
-
-    sorted = true;
-  }
-  else if (sort_type == ObjectSorts::VALUE)
-  {
-    std::sort(begin, stop,
-              [&](const std::pair<Item*, uint16_t> &a,
-                  const std::pair<Item*, uint16_t> &b)
-              {
-                if (asc)
-                  return a.first->getValue() < b.first->getValue();
-
-                return b.first->getValue() < a.first->getValue();
-              });
-
-    sorted = true;
-  }
-  else if (sort_type == ObjectSorts::MASS)
-  {
-    std::sort(begin, stop,
-              [&](const std::pair<Item*, uint16_t> &a,
-                  const std::pair<Item*, uint16_t> &b)
-              {
-                if (asc)
-                 return a.first->getMass() < b.first->getMass();
-
-                return b.first->getMass() < a.first->getMass();
-              });
-
-    sorted = true;
-  }
-  else if (sort_type == ObjectSorts::VALUEPERMASS)
-  {
-    std::sort(begin, stop,
-              [&](const std::pair<Item*, uint16_t> &a,
-                  const std::pair<Item*, uint16_t> &b)
-              {
-                if (asc)
-                {
-                  return ((static_cast<double>(a.first->getValue()) /
-                           static_cast<double>(a.first->getMass())) < 
-                          (static_cast<double>(b.first->getValue()) /
-                           static_cast<double>(b.first->getMass())));
-                }
-
-                return ((static_cast<double>(a.first->getValue()) /
-                         static_cast<double>(a.first->getMass())) > 
-                        (static_cast<double>(b.first->getValue())) /
-                         static_cast<double>(b.first->getMass()));
-              });
-
-    sorted = true;
-  }
-  else if (sort_type == ObjectSorts::COUNT)
-  {
-    std::sort(begin, stop,
-              [&](const std::pair<Item*, uint16_t> &a,
-                  const std::pair<Item*, uint16_t> &b) -> bool
-              {
-                if (asc)
-                  return a.second < b.second;
-
-                return b.second < a.second;
-              });
-              
-    sorted = true; 
-  }
-
-  return sorted;
-}
-
 bool Inventory::increaseBubbyCount(const uint32_t &game_id, 
                                    const uint16_t &amount)
 {
@@ -593,10 +177,10 @@ bool Inventory::decreaseItemCount(const uint32_t &game_id,
 AddStatus Inventory::add(Bubby* new_bubby, const uint32_t &amount, 
                          bool bypass)
 {
-  AddStatus status = AddStatus::FAIL;
+  auto status = AddStatus::FAIL;
   bypass |= getFlag(InvState::SHOP_STORAGE);
 
-  if(amount > 0)
+  if (amount > 0)
   {
     auto spaces = hasRoom(new_bubby, amount);
 
@@ -621,7 +205,7 @@ AddStatus Inventory::add(Bubby* new_bubby, const uint32_t &amount,
       }
       else
       {
-        if(getFlag(InvState::SHOP_STORAGE))
+        if (getFlag(InvState::SHOP_STORAGE))
         {
           // /* Check if the bubby exists already */
           // int32_t index = getBubbyIndex(new_bubby->getGameID());
@@ -661,9 +245,9 @@ AddStatus Inventory::add(Bubby* new_bubby, const uint32_t &amount,
 AddStatus Inventory::add(Equipment* new_equipment, const uint32_t &amount, 
                          bool bypass)
 {
-  AddStatus status = AddStatus::FAIL;
+  auto status = AddStatus::FAIL;
 
-  if(amount > 0)
+  if (amount > 0)
   {
     bypass |= getFlag(InvState::SHOP_STORAGE);
 
@@ -678,7 +262,7 @@ AddStatus Inventory::add(Equipment* new_equipment, const uint32_t &amount,
 
       calcMass();
 
-      if(getFlag(InvState::SHOP_STORAGE))
+      if (getFlag(InvState::SHOP_STORAGE))
         status = AddStatus::GOOD_DELETE;
       else
         status = AddStatus::GOOD_KEEP;
@@ -687,7 +271,7 @@ AddStatus Inventory::add(Equipment* new_equipment, const uint32_t &amount,
   
   /* Update the add status, if the shop flag is set since shops delete no
    * items and need to be managed from an outside source */
-  if(status == AddStatus::GOOD_KEEP && getFlag(InvState::SHOP_STORAGE))
+  if (status == AddStatus::GOOD_KEEP && getFlag(InvState::SHOP_STORAGE))
     status = AddStatus::GOOD_DELETE;
   
   return status;
@@ -739,7 +323,6 @@ void Inventory::clear(const bool &free)
 {
   if (free)
   {
-    std::cout << "deleting zero bubbies\n";
     /* One-each of Tier 0 bubbies are required to be deleted upon removal */
     for (auto zero_bubby : zero_bubbies)
     {
@@ -749,7 +332,6 @@ void Inventory::clear(const bool &free)
       zero_bubby.first = nullptr;
     }
 
-    std::cout << "deleting bubbies\n";
     /* Each non-tier-zero Bubby is required to be deleted */
     for (auto bubby: bubbies)
     {
@@ -759,7 +341,6 @@ void Inventory::clear(const bool &free)
       bubby = nullptr;
     }
 
-    std::cout << "deleting equipments\n";
     /* Each equipment is required to be deleted */
     for (auto equip : equipments)
     {
@@ -769,7 +350,6 @@ void Inventory::clear(const bool &free)
       equip = nullptr;
     }
 
-    std::cout << "deleting items\n";
     /* Each index of the items is required to be deleted */
     for (auto item : items)
     {
@@ -781,7 +361,6 @@ void Inventory::clear(const bool &free)
     }
   }
 
-  std::cout << "clearing vectors\n";
   /* Empty the vectors */
   zero_bubbies.clear();
   bubbies.clear();
@@ -965,9 +544,7 @@ bool Inventory::removeBubbyIndex(const uint32_t &index)
       delete bubbies[index];
 
     bubbies[index] = nullptr;
-
-    bubbies.erase(std::remove(begin(bubbies), end(bubbies), bubbies[0]), bubbies.end());
-
+    bubbies.erase(bubbies.begin() + index);
     calcMass();
 
     return true;
@@ -1056,39 +633,176 @@ bool Inventory::removeItemID(const uint32_t &game_id,
 }
 
 /* Sorts an object in the inventory a certain way */
-bool Inventory::sort(const ObjectSorts sort_type, SortObjects object_to_sort, 
+bool Inventory::sort(const SortType sort_type, SortObjects object, 
 	                   const bool ascending)
 {
-  switch (object_to_sort)
+  auto sort_status = false;
+
+  switch (object)
   {
     case (SortObjects::ZERO_BUBBIES):
     {
-      return sortZeroBubbies(begin(zero_bubbies), end(zero_bubbies), sort_type, 
-             ascending);
+      if (sort_type == SortType::COUNT)
+      {
+        std::sort(begin(zero_bubbies), end(zero_bubbies), 
+                  Helpers::CompPairByCount());
+        sort_status = true;
+      }
+      else if (sort_type == SortType::ID)
+      {
+        std::sort(begin(zero_bubbies), end(zero_bubbies), 
+                  Helpers::CompPairByID());
+        sort_status = true;
+      }
+      else if (sort_type == SortType::MASS)
+      {
+        std::sort(begin(zero_bubbies), end(zero_bubbies), 
+                  Helpers::CompPairByMass());
+        sort_status = true;
+      }
+      else if (sort_type == SortType::NAME)
+      {
+        std::sort(begin(zero_bubbies), end(zero_bubbies), 
+                  Helpers::CompPairByName());
+        sort_status = true;
+      }
+      else if (sort_type == SortType::VALUE)
+      {
+        std::sort(begin(zero_bubbies), end(zero_bubbies), 
+                  Helpers::CompPairByValue());
+        sort_status = true;
+      }
+      else if (sort_type == SortType::VALUEPERMASS)
+      {
+        std::sort(begin(zero_bubbies), end(zero_bubbies), 
+                  Helpers::CompPairByValueMass());
+        sort_status = true;
+      }
+
       break;
     }
     case (SortObjects::BUBBIES):
     {
-      return sortBubbies(begin(bubbies), end(bubbies), sort_type, ascending);
-      
+      if (sort_type == SortType::ID)
+      {
+        std::sort(begin(bubbies), end(bubbies), Helpers::CompByID());
+        sort_status = true;
+      }
+      else if (sort_type == SortType::MASS)
+      {
+        std::sort(begin(bubbies), end(bubbies), Helpers::CompByMass());
+        sort_status = true;
+      }
+      else if (sort_type == SortType::NAME)
+      {
+        std::sort(begin(bubbies), end(bubbies), Helpers::CompByName());
+        sort_status = true;
+      }
+      else if (sort_type == SortType::VALUE)
+      {
+        std::sort(begin(bubbies), end(bubbies), Helpers::CompByValue());
+        sort_status = true;
+      }
+      else if (sort_type == SortType::VALUEPERMASS)
+      {
+        std::sort(begin(bubbies), end(bubbies), Helpers::CompByValueMass());
+        sort_status = true;
+      }
+
       break;
     }
     case (SortObjects::EQUIPMENTS):
     {
-      return sortEquipments(begin(equipments), end(equipments), sort_type, 
-      	                    ascending);
+      if (sort_type == SortType::ID)
+      {
+        std::sort(begin(equipments), end(equipments), Helpers::CompByID());
+        sort_status = true;
+      }
+      if (sort_type == SortType::MASS)
+      {
+        std::sort(begin(equipments), end(equipments), Helpers::CompByMass());
+        sort_status = true;
+      }
+      if (sort_type == SortType::NAME)
+      {
+        std::sort(begin(equipments), end(equipments), Helpers::CompByName());
+        sort_status = true;
+      }
+      if (sort_type == SortType::VALUE)
+      {
+        std::sort(begin(equipments), end(equipments), Helpers::CompByID());
+        sort_status = true;
+      }
+      if (sort_type == SortType::VALUEPERMASS)
+      {
+        std::sort(begin(equipments), end(equipments), 
+                  Helpers::CompByValueMass());
+        sort_status = true;
+      }
+
       break;
     }
     case (SortObjects::ITEMS):
     {
-      return sortItems(begin(items), end(items), sort_type, ascending);
+      if (sort_type == SortType::COUNT)
+      {
+        std::sort(begin(items), end(items), Helpers::CompPairByCount());
+        sort_status = true;
+      }
+      else if (sort_type == SortType::ID)
+      {
+        std::sort(begin(items), end(items), Helpers::CompPairByID());
+        sort_status = true;
+      }
+      else if (sort_type == SortType::MASS)
+      {
+        std::sort(begin(items), end(items), Helpers::CompPairByMass());
+        sort_status = true;
+      }
+      else if (sort_type == SortType::NAME)
+      {
+        std::sort(begin(items), end(items), Helpers::CompPairByName());
+        sort_status = true;
+      }
+      else if (sort_type == SortType::VALUE)
+      {
+        std::sort(begin(items), end(items), Helpers::CompPairByValue());
+        sort_status = true;
+      }
+      else if (sort_type == SortType::VALUEPERMASS)
+      {
+        std::sort(begin(items), end(items), Helpers::CompPairByValueMass());
+        sort_status = true;
+      }
+
       break;
     }
     default:
       break;
   }
 
-  return false;
+  if (sort_status && !ascending)
+  {
+    switch (object)
+    {
+      case (SortObjects::BUBBIES):
+        std::reverse(begin(bubbies), end(bubbies));
+        break;
+      case (SortObjects::ZERO_BUBBIES):
+        std::reverse(begin(zero_bubbies), end(zero_bubbies));
+        break;
+      case (SortObjects::EQUIPMENTS):
+        std::reverse(begin(equipments), end(equipments));
+        break;
+      case (SortObjects::ITEMS):
+        std::reverse(begin(items), end(items));
+        break;
+      default:
+        break;
+    }
+  }
+
+  return sort_status;
 }
 
 /* Returns the backdrop of the inventory */

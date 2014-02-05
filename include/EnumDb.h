@@ -330,9 +330,8 @@ enum class Infliction : std::uint64_t
 /*
  * Description: Possible states of sorting for inventory items
  */
-enum class ObjectSorts : std::uint8_t
+enum class SortType : std::uint8_t
 { 
-  UNSORTED,
   ID,
   NAME,
   FLAVOUR,

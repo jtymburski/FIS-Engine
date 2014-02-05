@@ -13,6 +13,115 @@
  ******************************************************************************/
 
 /*=============================================================================
+ * TEMPLATE FUNCTORS
+ *============================================================================*/
+
+struct CompByID
+{
+  template<class T>
+  bool operator()(T* const a, T* const b) const
+  {
+    return a->getID() < b->getID();
+  }
+};
+
+struct CompByMass
+{
+  template<class T>
+  bool operator()(T* const a, T* const b) const
+  {
+    return a->getMass() < b->getMass();
+  }
+};
+
+struct CompByName
+{
+  template<class T>
+  bool operator()(T* const a, T* const b) const
+  {
+    return a->getName() < b->getName();
+  }
+};
+
+struct CompByValue
+{
+  template<class T>
+  bool operator()(T* const a, T* const b) const
+  {
+    return a->getValue() < b->getValue();
+  }
+};
+
+struct CompByValueMass
+{
+  template<class T>
+  bool operator()(T* const a, T* const b) const
+  {
+    return ((static_cast<double>(a->getValue()) /
+             static_cast<double>(a->getMass())) < 
+            (static_cast<double>(b->getValue()) /
+             static_cast<double>(b->getMass())));
+  }
+};
+
+struct CompPairByCount
+{
+  template<class T, class U>
+  bool operator()(const std::pair<T*, U> &a, const std::pair<T*, U> &b) const
+  {
+    return a.second < b.second;
+  }
+};
+
+struct CompPairByID
+{
+  template<class T, class U>
+  bool operator()(const std::pair<T*, U> &a, const std::pair<T*, U> &b) const
+  {
+    return a.first->getID() < b.first->getID();
+  }
+};
+
+struct CompPairByMass
+{
+  template<class T, class U>
+  bool operator()(const std::pair<T*, U> &a, const std::pair<T*, U> &b) const
+  {
+    return a.first->getMass() < b.first->getMass();
+  }
+};
+
+struct CompPairByName
+{
+  template<class T, class U>
+  bool operator()(const std::pair<T*, U> &a, const std::pair<T*, U> &b) const
+  {
+    return a.first->getName() < b.first->getName();
+  }
+};
+
+struct CompPairByValue
+{
+  template<class T, class U>
+  bool operator()(const std::pair<T*, U> &a, const std::pair<T*, U> &b) const
+  {
+    return a.first->getValue() < b.first->getValue();
+  }
+};
+
+struct CompPairByValueMass
+{
+  template<class T, class U>
+  bool operator()(const std::pair<T*, U> &a, const std::pair<T*, U> &b) const
+  {
+    return ((static_cast<double>(a.first->getValue()) /
+             static_cast<double>(a.first->getMass())) < 
+            (static_cast<double>(b.first->getValue()) /
+             static_cast<double>(b.first->getMass())));
+  }
+};
+
+/*=============================================================================
  * TEMPLATE STRUCTURES
  *============================================================================*/
 

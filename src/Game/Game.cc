@@ -218,7 +218,7 @@ void Game::pollEvents()
 /* Set up the battle - old battle needs to be deleted prior to calling */
 void Game::setupBattle()
 {
-  bool enable_test = true;
+  bool enable_test = false;
 
   if (enable_test)
   {
@@ -311,22 +311,22 @@ void Game::setupBattle()
     other_levels.push_back(1);
 
   // SkillSet Testing
-  SkillSet* scion_skills = new SkillSet(skills, levels);
-  SkillSet* hex_skills   = scion_skills;
-  SkillSet* other_skill_set = new SkillSet(other_skills, other_levels);
+  // SkillSet* scion_skills = new SkillSet(skills, levels);
+  // SkillSet* hex_skills   = scion_skills;
+  // SkillSet* other_skill_set = new SkillSet(other_skills, other_levels);
 
   //scion_skills->print();
   //hex_skills->print();
   //other_skill_set->print();
 
   // General Item Testing
-  Item* potion      = new Item(45, "Potion", 70, nullptr, 1.01);
-  Item* unique_item = new Item(46, "Unique Item", 75, nullptr, 1.08);
-  Item* new_potion  = new Item(potion);
+  // Item* potion      = new Item(45, "Potion", 70, nullptr, 1.01);
+  // Item* unique_item = new Item(46, "Unique Item", 75, nullptr, 1.08);
+  // Item* new_potion  = new Item(potion);
 
   // Key Item Testing
-  Item* master_key  = new Item(115, "Master Key", nullptr);
-  Item* master_key2 = new Item(master_key);
+  // Item* master_key  = new Item(115, "Master Key", nullptr);
+  // Item* master_key2 = new Item(master_key);
   // Item* super_box = new Item(116, "Super Box", nullptr);
   // Item* boxxy_box = new Item(117, "Boxxy Box", nullptr);
   // Item* epic_sword_comp = new Item(118, "Epic Sword Comp", nullptr);
@@ -340,14 +340,15 @@ void Game::setupBattle()
   Bubby* first  = new Bubby(spark);
   Bubby* second = new Bubby(spark);
   Bubby* third  = new Bubby(tumor);
-  Bubby* fourth = new Bubby(spark, 1);
-  Bubby* fifth  = new Bubby(moldy, 1);
+  Bubby* fourth = new Bubby(moldy);
+  Bubby* fifth = new Bubby(tumor);
+  Bubby* sixth = new Bubby(moldy);
 
   // Signature Testing
 
   // Equipment Testing
-  Equipment* fated = new Equipment(201, "Fated Oak Saber", 1, 1, 100, nullptr, 10, 10);
-  Equipment* suit  = new Equipment(202, "Suit", 100, 3, 100, nullptr, 10, 10);
+  // Equipment* fated = new Equipment(201, "Fated Oak Saber", 1, 1, 100, nullptr, 10, 10);
+  // Equipment* suit  = new Equipment(202, "Suit", 100, 3, 100, nullptr, 10, 10);
 
   // Inventory Testing
   Inventory* test_pouch = new Inventory(1006, "Test Pouchey");
@@ -356,53 +357,54 @@ void Game::setupBattle()
   //test_pouch->addItem(new_potion, 10);
   //test_pouch->addItem(unique_item, 6);
   //test_pouch->addItem(unique_item);
-  
-  auto new_potion2 = new Item(new_potion);
-
-  auto test = test_pouch->add(new_potion);
-  test      = test_pouch->add(new_potion2);
+  test_pouch->add(first);
+  test_pouch->add(second);
+  test_pouch->add(third);
+  test_pouch->add(fourth);
+  test_pouch->add(fifth);
+  test_pouch->add(sixth);
 
   //test = test_pouch->addItem(new_potion, 4);
-  if (test == AddStatus::GOOD_DELETE)
-  {
-    std::cout << "deleting new_potion\n";
-    delete new_potion2;
-    new_potion2 = nullptr;
-  }
-  else if (test == AddStatus::GOOD_KEEP)
-  {
-    std::cout << "Successful addition to keep\n";
-  }
-  else
-    std::cout << "Addition failed\n";
+  // if (test == AddStatus::GOOD_DELETE)
+  // {
+  //   std::cout << "deleting new_potion\n";
+  //   delete new_potion2;
+  //   new_potion2 = nullptr;
+  // }
+  // else if (test == AddStatus::GOOD_KEEP)
+  // {
+  //   std::cout << "Successful addition to keep\n";
+  // }
+  // else
+  //   std::cout << "Addition failed\n";
 
-  test = test_pouch->add(first, 7);
-  if (test == AddStatus::GOOD_DELETE)
-  {
-    std::cout << "deleting first bubby\n";
-    delete first;
-    first = nullptr;
-  }
-  else if (test == AddStatus::GOOD_KEEP)
-  {
-    std::cout << "Successful addition to keep\n";
-  }
-  else
-    std::cout << "Addition failed\n";
+  // test = test_pouch->add(first, 7);
+  // if (test == AddStatus::GOOD_DELETE)
+  // {
+  //   std::cout << "deleting first bubby\n";
+  //   delete first;
+  //   first = nullptr;
+  // }
+  // else if (test == AddStatus::GOOD_KEEP)
+  // {
+  //   std::cout << "Successful addition to keep\n";
+  // }
+  // else
+  //   std::cout << "Addition failed\n";
 
-  test = test_pouch->add(second, 3);
-  if (test == AddStatus::GOOD_DELETE)
-  {
-    std::cout << "deleting second bubby\n";
-    delete second;
-    second = nullptr;
-  }
-  else if (test == AddStatus::GOOD_KEEP)
-  {
-    std::cout << "Successful addition to keep\n";
-  }
-  else
-    std::cout << "Addition failed\n";
+  // test = test_pouch->add(second, 3);
+  // if (test == AddStatus::GOOD_DELETE)
+  // {
+  //   std::cout << "deleting second bubby\n";
+  //   delete second;
+  //   second = nullptr;
+  // }
+  // else if (test == AddStatus::GOOD_KEEP)
+  // {
+  //   std::cout << "Successful addition to keep\n";
+  // }
+  // else
+  //   std::cout << "Addition failed\n";
 
   //test_pouch->removeBubbyID(fifth->getGameID());
   //test_pouch->removeBubbyID(fifth->getGameID());
@@ -430,6 +432,9 @@ void Game::setupBattle()
   //test_pouch->addEquipment(suit);
   //test_pouch->removeEquipID(fated->getGameID());
   //test_pouch->removeEquipID(suit->getGameID());
+
+  test_pouch->print(false);
+  test_pouch->sort(SortType::NAME, SortObjects::ZERO_BUBBIES, false);
 
   test_pouch->print(false);
 
