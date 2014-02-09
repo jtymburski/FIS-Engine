@@ -99,23 +99,8 @@ Person::Person(Person* const source)
  */
 Person::~Person()
 {
-  if (base_person != nullptr)
-  {
-    /* Delete the equipments that were created from the base person */
-    for (auto equipment : equipments)
-    {
-      if (equipment != nullptr)
-      {
-        if (!(equipment->getEquipFlag(EquipState::TWO_HANDED) &&
-            equipment == getEquip(EquipSlots::RARM)))
-        {
-          delete equipment;
-        }
-
-        equipment = nullptr;
-      }
-    }
-  }
+  /* Unset everything and clear memory */
+  unsetAll(true);
 }
 
 /*=============================================================================
@@ -131,9 +116,9 @@ void Person::loadDefaults()
 
   updateRank();
 
-  primary = Element::NONE;
-  secondary = Element::NONE;
-  primary_curve = ElementCurve::D;
+  primary         = Element::NONE;
+  secondary       = Element::NONE;
+  primary_curve   = ElementCurve::D;
   secondary_curve = ElementCurve::D;
 
   level     = 1;
@@ -146,9 +131,16 @@ void Person::loadDefaults()
   curr_max_stats = base_stats;
   temp_max_stats = base_stats;
 
-  learned_skills = SkillSet();
-  updateBaseSkills();
-  curr_skills = base_skills;
+  if (base_skills != nullptr)
+    std::cerr << "[Warning]: Missing deletion of base skills\n";
+  if (curr_skills != nullptr)
+    std::cerr << "[Warning]: Missing deletion of curr skills\n";
+  if (learned_skills != nullptr)
+    std::cerr << "[Warning]: Mising deletion of temp skills\n";
+
+  base_skills    = nullptr;
+  curr_skills    = nullptr;
+  learned_skills = nullptr;
 
   dmg_mod = 1.000;
   exp_mod = 1.000;
@@ -234,6 +226,37 @@ void Person::setupClass()
   }
 }
 
+void Person::unsetAll(const bool &clear)
+{
+  if (clear)
+  {
+    /* Delete the equipments contained within the person */
+    for (auto equipment : equipments)
+    {
+      if (equipment != nullptr)
+      {
+        if (!(equipment->getEquipFlag(EquipState::TWO_HANDED) &&
+              equipment == getEquip(EquipSlots::RARM)))
+          delete equipment;  
+
+        equipment = nullptr;
+      }
+    }
+
+    /* Delete the skills sets */
+    if (base_skills != nullptr)
+      delete base_skills;
+    if (curr_skills != nullptr)
+      delete curr_skills;
+    if (learned_skills != nullptr)
+      delete learned_skills;
+  }
+
+  base_skills    = nullptr;
+  curr_skills    = nullptr;
+  learned_skills = nullptr;
+}
+
 /* Recalculates the Person's base and base_max stats based on categories */
 void Person::updateBaseStats()
 {
@@ -294,13 +317,12 @@ void Person::updateBaseStats()
 
 void Person::updateBaseSkills()
 {
-  base_skills.clear();
-  base_skills = SkillSet();
+  base_skills->clear();
 
   if (battle_class->getSkills() != nullptr)
-    base_skills += *(battle_class->getSkills());
+    *base_skills += *(battle_class->getSkills());
   if (race_class->getSkills() != nullptr)
-    base_skills += *(race_class->getSkills());
+    *base_skills += *(race_class->getSkills());
 
   updateSkills();
 }
@@ -365,13 +387,14 @@ void Person::updateStats()
 
 void Person::updateSkills()
 {
-  curr_skills.clear();
-  curr_skills  = learned_skills;
-  curr_skills += base_skills;
+  curr_skills->clear();
+
+  *curr_skills  += *learned_skills;
+  *curr_skills  += *base_skills;
 
   for (auto equipment : equipments)
     if (equipment != nullptr)
-      curr_skills += equipment->getSkills();
+      *curr_skills += equipment->getSkills();
 }
 
 /* Updates the rank of the Person based on their Person record */
@@ -471,7 +494,7 @@ void Person::battlePrep()
 /* Clears the skills the player has learned */
 void Person::clearLearnedSkills()
 {
-  learned_skills.clear();
+  learned_skills->clear();
   updateSkills();
 }
 
@@ -544,13 +567,13 @@ void Person::print(const bool &simple, const bool &equips,
     if (skills)
     {
       std::cout << "Base Skill Set: ";
-      base_skills.print();
+      base_skills->print();
       std::cout << "\n";
       std::cout << "Curr Skill Set: ";
-      curr_skills.print();
+      curr_skills->print();
       std::cout << "\n";
       std::cout << "Learned Skills: ";
-      learned_skills.print();
+      learned_skills->print();
       std::cout << "\n";
     }
 
@@ -754,13 +777,13 @@ AttributeSet& Person::getTemp()
 }
 
 /* Returns the base skills of the Person */
-SkillSet& Person::getBaseSkills()
+SkillSet* Person::getBaseSkills()
 {
   return base_skills;
 }
 
 /* Returns the assigned current skills of the Person */
-SkillSet& Person::getCurrSkills()
+SkillSet* Person::getCurrSkills()
 {
   return curr_skills;
 }

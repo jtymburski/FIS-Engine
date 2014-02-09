@@ -26,7 +26,6 @@
 * curr_max_stats - possible reachable stat values after Battle modifiers
 * temp_max_stats - the normal value of stats before Batle modifiers
 *
-*
 * TODO
 * ----
 * - PersonRecord [12-21-13]
@@ -136,9 +135,9 @@ private:
   AttributeSet temp_max_stats;
 
   /* Skill sets fro the Person */
-  SkillSet base_skills;
-  SkillSet curr_skills;
-  SkillSet learned_skills;
+  SkillSet* base_skills;
+  SkillSet* curr_skills;
+  SkillSet* learned_skills;
 
   /* Current modifier to damage for action outcomes (default = 1.00) */
   float dmg_mod;
@@ -195,6 +194,9 @@ private:
 
   /* Sets up the class, based on whether base_person is assigned or not */
   void setupClass();
+
+  /* Unsets all members of the class, bools to clear memory */
+  void unsetAll(const bool &clear = false);
 
   /* Recalculates the Person's base and base_max stats based on categories */
   void updateBaseStats();
@@ -299,10 +301,10 @@ public:
   AttributeSet& getTemp();
 
   /* Returns the base skills of the Person */
-  SkillSet& getBaseSkills();
+  SkillSet* getBaseSkills();
 
   /* Returns the assigned current skills of the Person */
-  SkillSet& getCurrSkills();
+  SkillSet* getCurrSkills();
 
   /* Returns the damage modifier value */
   float getDmgMod();
