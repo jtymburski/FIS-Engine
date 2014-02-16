@@ -42,7 +42,7 @@ const uint32_t Person::kMAX_EXP_DROP{1000000}; /* 1 million */
 const size_t   Person::kMAX_ITEM_DROPS{5};
 const uint32_t Person::kMAX_LVL_EXP{100000000}; /* 100 million */   
 const uint32_t Person::kMIN_EXP{0};   
-const uint32_t Person::kMIN_LVL_EXP{10};   
+const uint32_t Person::kMIN_LVL_EXP{500};   
 const float Person::kMIN_DMG_MODI{ 0.01};    
 const float Person::kMAX_DMG_MODI{10.00};
 const float Person::kMIN_EXP_MODI{ 0.10};
@@ -111,6 +111,8 @@ void Person::loadDefaults()
 {
   battle_flags = static_cast<BState>(0);
   person_flags = static_cast<PState>(0);
+  setPFlag(PState::CAN_GAIN_EXP, true);
+  setPFlag(PState::CAN_LEVEL_UP, true);
 
   //person_record{};
 
@@ -128,8 +130,8 @@ void Person::loadDefaults()
   updateBaseStats();
 
   curr_stats     = base_stats;
-  curr_max_stats = base_stats;
-  temp_max_stats = base_stats;
+  curr_max_stats = base_max_stats;
+  temp_max_stats = base_max_stats;
 
   if (base_skills != nullptr)
     std::cerr << "[Warning]: Missing deletion of base skills\n";
@@ -266,7 +268,7 @@ void Person::unsetAll(const bool &clear)
 /* Recalculates the Person's base and base_max stats based on categories */
 void Person::updateBaseStats()
 {
-  AttributeSet temp    = battle_class->getBaseSet() + race_class->getBaseSet();
+  AttributeSet temp     = battle_class->getBaseSet() + race_class->getBaseSet();
   AttributeSet temp_max = battle_class->getTopSet() + race_class->getTopSet();
 
   std::vector<int32_t> prim_indexes;
@@ -359,7 +361,7 @@ void Person::updateStats()
   if (level == 1)
   {
     curr_stats     = base_stats;
-    curr_max_stats = base_stats;
+    curr_max_stats = base_max_stats;
   }
   else if (level == kNUM_LEVELS)
   {
@@ -449,8 +451,12 @@ bool Person::addExp(const uint32_t &amount, const bool &update)
 
   if (getPFlag(PState::CAN_GAIN_EXP))
   {
+    auto amount = std::floor(total_exp * exp_mod);
+    std::cout << "Adding: " << amount << " to exp \n";
+
     if (total_exp + amount < kMAX_EXP)
     { 
+      std::cout << "adding: " << amount << " exp\n";
       total_exp += amount;
       can_add = true;
     }
@@ -566,7 +572,7 @@ void Person::print(const bool &simple, const bool &equips,
     base_stats.print(true);
     std::cout << "\n";
     std::cout << "Base Max Stats: ";
-    base_stats.print(true);
+    base_max_stats.print(true);
     std::cout << "\n";
     std::cout << "Curr Stats: ";
     curr_stats.print(true);
@@ -616,13 +622,11 @@ void Person::print(const bool &simple, const bool &equips,
       std::cout << "IMP_ENABLED: " << getBFlag(BState::IMP_ENABLED) << "\n";
       std::cout << "RUN_ENABLED: " << getBFlag(BState::RUN_ENABLED) << "\n";
       std::cout << "PAS_ENABLED: " << getBFlag(BState::PAS_ENABLED) << "\n";
-      std::cout << "SKIP_NEXT_TURN: " << getBFlag(BState::SKIP_NEXT_TURN) 
-                << "\n";
-      std::cout << "MISS_NEXT_TARGET: " << getBFlag(BState::MISS_NEXT_TARGET) 
-                << "\n";
-      std::cout << "NEXT_ATK_NO_EFFECT: " << getBFlag(BState::NEXT_ATK_NO_EFFECT) 
-                << "\n";
-      std::cout << "IS_BUBBY: " << getBFlag(BState::IS_BUBBY) << "\n";
+      std::cout << "SKIP_NEXT_TURN: " << getBFlag(BState::SKIP_NEXT_TURN);
+      std::cout << "\nMISS_NEXT_TARGET: " << getBFlag(BState::MISS_NEXT_TARGET);
+      std::cout << "\nNEXT_ATK_NO_EFFECT: " 
+                << getBFlag(BState::NEXT_ATK_NO_EFFECT);
+      std::cout << "\nIS_BUBBY: " << getBFlag(BState::IS_BUBBY) << "\n";
       std::cout << "TWO_SKILLS: " << getBFlag(BState::TWO_SKILLS) << "\n";
       std::cout << "THREE_SKILLS: " << getBFlag(BState::THREE_SKILLS) << "\n";
       std::cout << "HALF_COST: " << getBFlag(BState::HALF_COST) << "\n";

@@ -218,7 +218,7 @@ void Game::pollEvents()
 /* Set up the battle - old battle needs to be deleted prior to calling */
 void Game::setupBattle()
 {
-  bool enable_test = false;
+  bool enable_test = true;
 
   if (enable_test)
   {
@@ -259,10 +259,10 @@ void Game::setupBattle()
   //std::cout << "Periods elapsed: " << (dtn2.count() - dtn.count()) / 1000 << std::endl;
   
   // AttributeSet testing
-  AttributeSet min_scion_set(0);
-  AttributeSet max_scion_set(1, true);
-  AttributeSet min_hex_set(2);
-  AttributeSet max_hex_set(3);
+  AttributeSet min_scion_set(0, true);
+  AttributeSet max_scion_set(3, true);
+  AttributeSet min_hex_set(2, true);
+  AttributeSet max_hex_set(3, true);
   AttributeSet spark_set(1);
   AttributeSet tumor_set(1);
   AttributeSet moldy_set(1);
@@ -433,10 +433,10 @@ void Game::setupBattle()
   //test_pouch->removeEquipID(fated->getGameID());
   //test_pouch->removeEquipID(suit->getGameID());
 
-  test_pouch->print(false);
+  //test_pouch->print(false);
   test_pouch->sort(SortType::NAME, SortObjects::ZERO_BUBBIES, false);
 
-  test_pouch->print(false);
+  //test_pouch->print(false);
 
   // auto key_items = test_pouch->getKeyItems();
 
@@ -462,7 +462,9 @@ void Game::setupBattle()
   berran->setCurves(Element::FIRE, ElementCurve::S, 
                     Element::PHYSICAL, ElementCurve::B);
   berran->setLoot(25, 150, {14, 12, 16});
-  berran->print(false, true, true, true);
+  berran->setExpMod(1.5);
+  berran->addExp(1000, true);
+  berran->print(false, false, false, false);
 
   delete test_pouch;
   //delete spark;
