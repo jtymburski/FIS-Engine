@@ -311,9 +311,9 @@ void Game::setupBattle()
     other_levels.push_back(1);
 
   // SkillSet Testing
-  // SkillSet* scion_skills = new SkillSet(skills, levels);
-  // SkillSet* hex_skills   = scion_skills;
-  // SkillSet* other_skill_set = new SkillSet(other_skills, other_levels);
+  SkillSet* scion_skills = new SkillSet(skills, levels);
+  SkillSet* hex_skills   = scion_skills;
+  SkillSet* other_skill_set = new SkillSet(other_skills, other_levels);
 
   //scion_skills->print();
   //hex_skills->print();
@@ -447,22 +447,22 @@ void Game::setupBattle()
   // }
 
   // Category Testing
-  // Category* blood_scion = new Category("Blood Scion", "Scion", min_scion_set, 
-  //                                      max_scion_set, scion_skills);
-  // blood_scion->setDescription("User of blood magicks.");
-  // blood_scion->setFlag(CategoryState::E_STAFF, true);
+  Category* blood_scion = new Category("Blood Scion", "Scion", min_scion_set, 
+                                       max_scion_set, scion_skills);
+  blood_scion->setDescription("User of blood magicks.");
+  blood_scion->setFlag(CategoryState::E_STAFF, true);
 
-  // Category* bear = new Category("Bear", "Bears", min_hex_set, 
-  //                                   max_hex_set, hex_skills);
-  // Category* human = new Category("Human", "Humans", min_human_set, max_human_set, other_skill_set);
-  // bear->setDescription("Has a right to bear arms.");
+  Category* bear = new Category("Bear", "Bears", min_hex_set, 
+                                    max_hex_set, hex_skills);
+  Category* human = new Category("Human", "Humans", min_human_set, max_human_set, other_skill_set);
+  bear->setDescription("Has a right to bear arms.");
 
-  // /* Person Testing */
-  // Person* berran = new Person(455, "Berran", blood_scion, bear);
-  // berran->setCurves(Element::FIRE, ElementCurve::S, 
-  //                   Element::PHYSICAL, ElementCurve::B);
-  // berran->setLoot(25, 150, {14, 12, 16});
-  //berran->print(false, true, true, true);
+  // Person Testing
+  Person* berran = new Person(455, "Berran", blood_scion, bear);
+  berran->setCurves(Element::FIRE, ElementCurve::S, 
+                    Element::PHYSICAL, ElementCurve::B);
+  berran->setLoot(25, 150, {14, 12, 16});
+  berran->print(false, true, true, true);
 
   delete test_pouch;
   //delete spark;

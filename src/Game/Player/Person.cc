@@ -136,11 +136,13 @@ void Person::loadDefaults()
   if (curr_skills != nullptr)
     std::cerr << "[Warning]: Missing deletion of curr skills\n";
   if (learned_skills != nullptr)
-    std::cerr << "[Warning]: Mising deletion of temp skills\n";
+    std::cerr << "[Warning]: Missing deletion of temp skills\n";
 
   base_skills    = nullptr;
   curr_skills    = nullptr;
   learned_skills = nullptr;
+
+  updateBaseSkills();
 
   dmg_mod = 1.000;
   exp_mod = 1.000;
@@ -167,6 +169,10 @@ void Person::loadDefaults()
 /* Sets up the class, based on whether base_person is assigned or not */
 void Person::setupClass()
 {
+  base_skills    = nullptr;
+  curr_skills    = nullptr;
+  learned_skills = nullptr;
+
   if (exp_table.empty())
     buildExpTable();
 
@@ -317,7 +323,10 @@ void Person::updateBaseStats()
 
 void Person::updateBaseSkills()
 {
-  base_skills->clear();
+  if (base_skills != nullptr)
+    base_skills->clear();
+  else
+    base_skills = new SkillSet();
 
   if (battle_class->getSkills() != nullptr)
     *base_skills += *(battle_class->getSkills());
@@ -387,10 +396,15 @@ void Person::updateStats()
 
 void Person::updateSkills()
 {
-  curr_skills->clear();
+  if (curr_skills != nullptr)
+    curr_skills->clear();
+  else
+    curr_skills = new SkillSet();
 
-  *curr_skills  += *learned_skills;
-  *curr_skills  += *base_skills;
+  if (learned_skills != nullptr)
+    *curr_skills  += *learned_skills;
+  if (base_skills != nullptr)
+    *curr_skills  += *base_skills;
 
   for (auto equipment : equipments)
     if (equipment != nullptr)
@@ -567,13 +581,20 @@ void Person::print(const bool &simple, const bool &equips,
     if (skills)
     {
       std::cout << "Base Skill Set: ";
-      base_skills->print();
-      std::cout << "\n";
-      std::cout << "Curr Skill Set: ";
-      curr_skills->print();
-      std::cout << "\n";
-      std::cout << "Learned Skills: ";
-      learned_skills->print();
+
+      if (base_skills != nullptr)
+        base_skills->print();
+
+      std::cout << "\nCurr Skill Set: ";
+
+      if (curr_skills != nullptr)
+        curr_skills->print();
+
+      std::cout << "\nLearned Skills: ";
+
+      if (learned_skills != nullptr)
+        learned_skills->print();
+
       std::cout << "\n";
     }
 
