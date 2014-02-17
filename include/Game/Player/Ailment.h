@@ -58,7 +58,7 @@ class Ailment
 public:
 
   /* Minimal Constructor */
-  Ailment(Person* victim, const Infliction &type, Person* inflictor = nullptr,
+  Ailment(Person* ail_victim, const Infliction &type, Person* inflictor = nullptr,
           const uint16_t &max_turns = 1, const uint16_t &min_turns = 1,
           const double &chance = 0);
 
@@ -70,12 +70,13 @@ private:
   Infliction type;
 
   /* Chance the status effect will wear off per turn (>1 = 100%, 0 = 0%) */
-  float chance;
+  double chance;
 
   /* Set of flags for the current ailment */
   AilState flag_set;
 
   /* Durations of the status_ailment (>KMAX_TURNS = INFINITY) */
+  uint16_t min_turns_left;
   uint16_t max_turns_left;
   uint16_t turns_occured;
 
@@ -112,7 +113,7 @@ private:
   static const double kUNBBUFF_PC; /* % value by which to incr unbbuff stats */
   static const double kMOMBUFF_PC; /* % value by which to incr momuff stats */
   static const double kVITBUFF_PC; /* %  by which to incr vitality stats */
-  static const double kQTMNBUFF_PC; /* % values by which to incr QD stats */
+  static const double kQDBUFF_PC; /* % values by which to incr QD stats */
   static const double kROOTBOUND_PC; /* % values by which rootbound increases */
   static const double kHIBERNATION_INIT; /* % value for initial hibernation */
   static const double kHIBERNATION_INCR; /* % value by which to increase Hib */
@@ -146,6 +147,13 @@ private:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+
+  void death();
+
+  void update();
+
+  void reset();
+
   /* Undoes the effect (if exits) to the victim before curing */
   void unapply();
 
@@ -153,7 +161,7 @@ public:
   void print(const bool &simple = true, const bool &flags = false);
 
   /* Evaluates an ailment flag or flags */
-  bool getFlag(const AilState &flags);
+  bool getFlag(AilState flags);
 
   /* Returns the Inflictor of the ailment */
   Person* getInflictor();
@@ -168,7 +176,8 @@ public:
   Person* getVictim();
 
   /* Sets the duration of the ailment */
-  void setDuration(const uint16_t max_turns, const double &chance = 0);
+  void setDuration(const uint16_t &min_turns, const uint16_t &max_turns, 
+                   const double &chance = 0);
 
   /* Sets the value of an AilmentFlag to a set_value, defaulting to true */
   void setFlag(const AilState &flags, const bool &set_value = true);

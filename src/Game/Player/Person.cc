@@ -111,8 +111,11 @@ void Person::loadDefaults()
 {
   battle_flags = static_cast<BState>(0);
   person_flags = static_cast<PState>(0);
+
   setPFlag(PState::CAN_GAIN_EXP, true);
   setPFlag(PState::CAN_LEVEL_UP, true);
+  setPFlag(PState::CAN_LEARN_SKILLS, true);
+  setPFlag(PState::CAN_CHANGE_EQUIP, true);
 
   //person_record{};
 
@@ -451,13 +454,11 @@ bool Person::addExp(const uint32_t &amount, const bool &update)
 
   if (getPFlag(PState::CAN_GAIN_EXP))
   {
-    auto amount = std::floor(total_exp * exp_mod);
-    std::cout << "Adding: " << amount << " to exp \n";
+    auto mod_amount = std::floor(total_exp * exp_mod);
 
-    if (total_exp + amount < kMAX_EXP)
+    if (total_exp + mod_amount < kMAX_EXP)
     { 
-      std::cout << "adding: " << amount << " exp\n";
-      total_exp += amount;
+      total_exp += mod_amount;
       can_add = true;
     }
     else if (total_exp != kMAX_EXP)
@@ -521,6 +522,7 @@ void Person::clearLearnedSkills()
 /* Shorthand function for dealing damage, returns true if the Person KO's */
 bool Person::doDmg(const uint32_t &amount)
 {
+  std::cout << "dealing " << amount << "damage to person" << "\n";
   curr_stats.alterStat(Attribute::VITA, -amount);
 
   if (curr_stats.getStat(Attribute::VITA) == 0)
@@ -541,7 +543,8 @@ void Person::print(const bool &simple, const bool &equips,
   if (simple)
   {
     std::cout << "GID: " << game_id << " MID: " << my_id << " Name: " << name
-              << " Level: " << static_cast<int>(level) << " Exp: " << total_exp << "\n";
+              << " Level: " << static_cast<int>(level) << " Exp: " << total_exp
+              << "\n";
   }
   else
   {

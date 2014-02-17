@@ -113,6 +113,9 @@ public:
   /* Returns the vector of the enabled values */
   std::vector<bool> getAllEnabled();
 
+  /* Returns a SetElement at a given index */
+  SetElement getElement(uint32_t &index);
+
   /* Returns the vector of SetElements */
   std::vector<SetElement> getElements(const uint32_t &at_level);
 
@@ -133,6 +136,9 @@ public:
 
   /* Returns the vector of all level required values */
   std::vector<uint32_t> getLevels();
+
+  /* Returns the number of skill elements */
+  uint32_t getSize();
 
   /* Assigns an enabled state to a SetElement at a given index */
   bool setState(const uint32_t &index, const bool &state = true);

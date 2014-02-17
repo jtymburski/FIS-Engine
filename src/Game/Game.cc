@@ -218,7 +218,7 @@ void Game::pollEvents()
 /* Set up the battle - old battle needs to be deleted prior to calling */
 void Game::setupBattle()
 {
-  bool enable_test = true;
+  bool enable_test = false;
 
   if (enable_test)
   {
@@ -464,7 +464,10 @@ void Game::setupBattle()
   berran->setLoot(25, 150, {14, 12, 16});
   berran->setExpMod(1.5);
   berran->addExp(1000, true);
-  berran->print(false, false, false, false);
+  berran->battlePrep();
+  berran->doDmg(145);
+
+  berran->print(false, true, true, false);
 
   delete test_pouch;
   //delete spark;

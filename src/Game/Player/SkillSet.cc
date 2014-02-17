@@ -489,6 +489,21 @@ std::vector<bool> SkillSet::getAllEnabled()
 }
 
 /* 
+ * Description: Returns a set element at a given index if it exists.
+ *
+ * Inputs: index - index to check for a skill set element
+ * Output: SetElement - the element at the index or a default element.
+ */
+SetElement SkillSet::getElement(uint32_t &index)
+{
+  if (index < skill_elements.size())
+    return skill_elements.at(index);
+
+  SetElement empty;
+  return empty;
+}
+
+/* 
  * Description: Compiles and returns a vector of SetElements which have
  *              level required values at or below a given value.
  *
@@ -579,6 +594,17 @@ std::vector<uint32_t> SkillSet::getLevels()
     levels.push_back(element.level_available);
 
   return levels;
+}
+
+/* 
+ * Description: Returns the number of elements in the skill set
+ *
+ * Inputs: none
+ * Output: uint32_t - the size of the skill set
+ */
+uint32_t SkillSet::getSize()
+{
+  return skill_elements.size();
 }
 
 /* 
