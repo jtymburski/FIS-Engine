@@ -107,7 +107,7 @@ private:
   PState person_flags;
 
   /* Record of the Person */ //TODO [12-21-13]
-  //PersonRecord person_record;
+  //Record person_record;
 
   /* Categories of battle class and person */
   Category* battle_class;

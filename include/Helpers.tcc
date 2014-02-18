@@ -16,54 +16,6 @@
  * TEMPLATE FUNCTORS
  *============================================================================*/
 
-struct CompByID
-{
-  template<class T>
-  bool operator()(T* const a, T* const b) const
-  {
-    return a->getID() < b->getID();
-  }
-};
-
-struct CompByMass
-{
-  template<class T>
-  bool operator()(T* const a, T* const b) const
-  {
-    return a->getMass() < b->getMass();
-  }
-};
-
-struct CompByName
-{
-  template<class T>
-  bool operator()(T* const a, T* const b) const
-  {
-    return a->getName() < b->getName();
-  }
-};
-
-struct CompByValue
-{
-  template<class T>
-  bool operator()(T* const a, T* const b) const
-  {
-    return a->getValue() < b->getValue();
-  }
-};
-
-struct CompByValueMass
-{
-  template<class T>
-  bool operator()(T* const a, T* const b) const
-  {
-    return ((static_cast<double>(a->getValue()) /
-             static_cast<double>(a->getMass())) < 
-            (static_cast<double>(b->getValue()) /
-             static_cast<double>(b->getMass())));
-  }
-};
-
 struct CompPairByCount
 {
   template<class T, class U>
