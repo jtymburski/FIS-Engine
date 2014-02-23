@@ -218,7 +218,7 @@ void Game::pollEvents()
 /* Set up the battle - old battle needs to be deleted prior to calling */
 void Game::setupBattle()
 {
-  bool enable_test = false;
+  bool enable_test = true;
 
   if (enable_test)
   {
@@ -321,7 +321,7 @@ void Game::setupBattle()
 
   // General Item Testing
   // Item* potion      = new Item(45, "Potion", 70, nullptr, 1.01);
-  //Item* unique_item = new Item(46, "Unique Item", 75, nullptr, 1.08);
+  // Item* unique_item = new Item(46, "Unique Item", 75, nullptr, 1.08);
   // Item* new_potion  = new Item(potion);
 
   // Key Item Testing
@@ -347,8 +347,8 @@ void Game::setupBattle()
   // Signature Testing
 
   // Equipment Testing
-  // Equipment* fated = new Equipment(201, "Fated Oak Saber", 1, 1, 100, nullptr, 10, 10);
-  // Equipment* suit  = new Equipment(202, "Suit", 100, 3, 100, nullptr, 10, 10);
+  //Equipment* fated = new Equipment(201, "Fated Oak Saber", 1, 1, 100, nullptr, 10, 10);
+  //Equipment* suit  = new Equipment(202, "Suit", 100, 3, 100, nullptr, 10, 10);
 
   // Inventory Testing
   // Inventory* test_pouch = new Inventory(1006, "Test Pouchey");
@@ -463,29 +463,43 @@ void Game::setupBattle()
   // }
 
   // Category Testing
-  // Category* blood_scion = new Category("Blood Scion", "Scion", min_scion_set, 
-  //                                      max_scion_set, scion_skills);
-  // blood_scion->setDescription("User of blood magicks.");
-  // blood_scion->setFlag(CategoryState::E_STAFF, true);
+  Category* blood_scion = new Category("Blood Scion", "Scion", min_scion_set, 
+                                       max_scion_set, scion_skills);
+  blood_scion->setDescription("User of blood magicks.");
+  blood_scion->setFlag(CategoryState::E_STAFF, true);
 
-  // Category* bear = new Category("Bear", "Bears", min_hex_set, 
-  //                                   max_hex_set, hex_skills);
-  // Category* human = new Category("Human", "Humans", min_human_set, max_human_set, other_skill_set);
-  // bear->setDescription("Has a right to bear arms.");
+  Category* bear = new Category("Bear", "Bears", min_hex_set, 
+                                    max_hex_set, hex_skills);
+  Category* human = new Category("Human", "Humans", min_human_set, max_human_set, other_skill_set);
+  bear->setDescription("Has a right to bear arms.");
 
-  // // Person Testing
-  // Person* berran = new Person(455, "Berran", blood_scion, bear);
-  // Person* arcadius = new Person(456, "Arcadius", blood_scion, human);
-  // Person* malgidus = new Person(457, "Malgidu", blood_scion, bear);
+  // Person Testing
+  Person* berran   = new Person(455, "Berran", blood_scion, bear);
+  Person* arcadius = new Person(456, "Arcadius", blood_scion, human);
+  Person* malgidus = new Person(457, "Malgidu", blood_scion, bear);
 
-  // arcadius
-  // berran->setCurves(Element::FIRE, ElementCurve::S, 
-  //                   Element::PHYSICAL, ElementCurve::B);
-  // berran->setLoot(25, 150, {14, 12, 16});
-  // berran->setExpMod(1.5);
-  // berran->addExp(1000, true);
-  // berran->battlePrep();
-  // berran->doDmg(145);
+  Person* cloud_dude = new Person(555, "Cloud Dude", blood_scion, bear);
+  Person* ball_man = new Person(556, "Ball Man", blood_scion, bear);
+  Person* thruster_barrow = new Person(557, "Thruster Barrow", blood_scion, human); 
+
+  Party* allies = new Party(berran, PartyType::SLEUTH, 5, nullptr);
+  Party* foes   = new Party(cloud_dude, PartyType::REGULAR_FOE, 5, nullptr);
+
+  allies->addMember(arcadius);
+  allies->addMember(malgidus);
+  foes->addMember(ball_man);
+  foes->addMember(thruster_barrow);
+
+  allies->print();
+  foes->print();
+  
+  berran->setCurves(Element::FIRE, ElementCurve::S, 
+                    Element::PHYSICAL, ElementCurve::B);
+  berran->setLoot(25, 150, {14, 12, 16});
+  berran->setExpMod(1.5);
+  berran->addExp(1000, true);
+  berran->battlePrep();
+  berran->doDmg(145);
 
   // berran->print(false, true, true, false);
 

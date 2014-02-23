@@ -166,9 +166,37 @@ bool Party::hasMiniBoss()
 }
 
 /* Prints out the state of the Party */
-void Party::print(bool simple)
+void Party::print(const bool &simple, const bool &flags)
 {
-  (void)simple;//warning
+  std::cout << "=== Party ===\n";
+  std::cout << "# Members: " << members.size() << "\n";
+  std::cout << "Max Size: " << (int)max_size << "\n";
+  std::cout << "Party State:[VOID]" << "\n";
+  std::cout << "Pouch Assigned? " << (pouch != nullptr) << "\n";
+
+  if (!simple)
+  {
+    std::cout << "----------\n";
+    for (auto member : members)
+      std::cout << "Member: " << member->getName() << "\n";
+
+  
+    std::cout << "Average Speed: " << getAverageSpeed() << "\n\n";
+
+
+
+  }
+
+  if (flags)
+  {
+    std::cout << "ADD: " << getFlag(PartyState::CAN_ADD_MEMBERS);
+    std::cout << "\nREMOVE: " << getFlag(PartyState::CAN_REMOVE_MEMBERS);
+    std::cout << "\nITEM USE: " << getFlag(PartyState::ITEM_USE_ENABLED);
+    std::cout << "\nADD ITEMS: " << getFlag(PartyState::CAN_ADD_ITEMS);
+    std::cout << "\nREMOVE ITEMS: " << getFlag(PartyState::CAN_REMOVE_ITEMS);
+    std::cout << "ENCOUNTERS: " << getFlag(PartyState::ENCOUNTERS_ENABLED);
+    std::cout << "\n";
+  }
 }
 
 /* Attempts to a remove a member of the party by a given index */

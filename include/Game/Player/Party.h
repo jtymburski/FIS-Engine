@@ -101,7 +101,7 @@ public:
   bool hasMiniBoss();
 
   /* Prints out the state of the Party */
-  void print(bool simple = false);
+  void print(const bool &simple = false, const bool &flags = false);
 
   /* Attempts to a remove a member of the party by a given index */
   bool removeMember(const uint8_t &index);
