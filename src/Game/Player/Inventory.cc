@@ -164,7 +164,7 @@ bool Inventory::decreaseCount(const uint32_t &game_id, const uint16_t &amount)
 
       if (count > 0)
       {
-        equipments[index].second += amount;
+        equipments[index].second -= amount;
         decreased = true;
       }
     }
@@ -206,7 +206,7 @@ AddStatus Inventory::add(Bubby* new_bubby, const uint32_t &amount,
 
     if (new_bubby != nullptr && (spaces >= amount || bypass))
     {
-      if (new_bubby->getTier() == 0)
+      if (new_bubby->getTier() == 0 || getFlag(InvState::SHOP_STORAGE))
       {
         if (getBubbyCount(new_bubby->getGameID(), new_bubby->getTier()) == 0)
         {
@@ -223,42 +223,33 @@ AddStatus Inventory::add(Bubby* new_bubby, const uint32_t &amount,
           status = AddStatus::GOOD_DELETE;
         }
       }
+      else if (getBubbyCount(new_bubby->getGameID(), new_bubby->getTier()) == 0)
+      {
+        bubbies.push_back(std::make_pair(new_bubby, amount));
+        calcMass();
+
+        status = AddStatus::GOOD_KEEP;
+      }
       else
       {
-        if (getFlag(InvState::SHOP_STORAGE))
+        bubbies.push_back(std::make_pair(new_bubby, 1));
+
+        for (uint32_t i = 1; i < amount; i++)
         {
-          // /* Check if the bubby exists already */
-          // int32_t index = getBubbyIndex(new_bubby->getGameID());
-          // if(index >= 0)
-          // {
-            // bubbies[index]->
-          // }
-          // else
-          // {
-          
-          // }
+          auto created_bubby = new Bubby(new_bubby->getType());
+          bubbies.push_back(std::make_pair(created_bubby, amount));
         }
-        else
-        {
-          bubbies.push_back(std::make_pair(new_bubby, 1));
 
-          for (uint32_t i = 1; i < amount; i++)
-          {
-            auto created_bubby = new Bubby(new_bubby->getType());
-            bubbies.push_back(std::make_pair(created_bubby, 1));
-          }
+        calcMass();
 
-          calcMass();
-
-          status = AddStatus::GOOD_KEEP;
-        }
+        status = AddStatus::GOOD_KEEP;
       }
-    }
+    } 
   }
 
   /* Update the add status, if the shop flag is set since shops delete no
    * items and need to be managed from an outside source */
-  if(status == AddStatus::GOOD_KEEP && getFlag(InvState::SHOP_STORAGE))
+  if (status == AddStatus::GOOD_KEEP && getFlag(InvState::SHOP_STORAGE))
     status = AddStatus::GOOD_DELETE;
   
   return status;
@@ -278,12 +269,25 @@ AddStatus Inventory::add(Equipment* new_equipment, const uint32_t &amount,
 
     if (new_equipment != nullptr && (spaces >= amount || bypass))
     {
-      equipments.push_back(std::make_pair(new_equipment, 1));
-
-      for (uint32_t i = 1; i < amount; i++)
+      if (getFlag(InvState::SHOP_STORAGE))
+      { 
+        if (getEquipCount(new_equipment->getGameID()) > 0)
+          increaseCount(new_equipment->getGameID(), amount);
+        else
+        {
+          auto created_equip = new Equipment(new_equipment);
+          equipments.push_back(std::make_pair(created_equip, amount));
+        }
+      }
+      else
       {
-        auto created_equip = new Equipment(new_equipment);
-        equipments.push_back(std::make_pair(created_equip, 1));
+        equipments.push_back(std::make_pair(new_equipment, 1));
+
+        for (uint32_t i = 1; i < amount; i++)
+        {
+          auto created_equip = new Equipment(new_equipment);
+          equipments.push_back(std::make_pair(created_equip, 1));
+        }
       }
 
       calcMass();
@@ -353,7 +357,12 @@ void Inventory::clear(const bool &free)
     for (auto bubby: bubbies)
     {
       if (bubby.first != nullptr)
+      {
+        if (getFlag(InvState::SHOP_STORAGE))
+          std::cerr << "[ERROR]: Deleting bubby in shop storage inventory\n";
+
         delete bubby.first;
+      }
 
       bubby.first = nullptr;
     }
@@ -362,7 +371,12 @@ void Inventory::clear(const bool &free)
     for (auto equip : equipments)
     {
       if (equip.first != nullptr)
+      {
+        if (getFlag(InvState::SHOP_STORAGE))
+          std::cerr << "[ERROR]: Deleting equip in shop storage inventory\n";
+
         delete equip.first;
+      }
 
       equip.first = nullptr;
     }
@@ -370,9 +384,13 @@ void Inventory::clear(const bool &free)
     /* Each index of the items is required to be deleted */
     for (auto item : items)
     {
-
       if (item.first != nullptr)
+      {
+        if (getFlag(InvState::SHOP_STORAGE))
+          std::cerr << "[ERROR]: Deleting item in shop storage inventory\n";
+
         delete item.first; 
+      }
 
       item.first = nullptr;
     }
@@ -498,8 +516,8 @@ void Inventory::print(bool simple)
   std::cout << "ID: " << id << " M: " << getMass() << " / " << mass_limit;
   std::cout << "\n# Unique Items: " << items.size() << "\n";
   std::cout << "# Unique Bubbies: " << bubbies.size()  << "\n";
-  std::cout << "Bubbies: " << getBubbyTotalCount() << "/" << bubby_limit<< "\n";
-  std::cout << "Equips:  " << equipments.size()    << "/" << equip_limit<< "\n";
+  std::cout << "# Unique Bubbies: " << getBubbyTotalCount() << "/" << bubby_limit<< "\n";
+  std::cout << "# Unique Equips:  " << equipments.size()    << "/" << equip_limit<< "\n";
   std::cout << "Items:   " << getItemTotalCount()  << "/" << item_limit << "\n";
 
   if (!simple)
@@ -510,8 +528,8 @@ void Inventory::print(bool simple)
     {
       if (bubby.first != nullptr)
       {
-        std::cout << bubby.first->getName() << " "
-                  << static_cast<int>(bubby.second) << "\n";
+        std::cout << bubby.first->getName() << " T: " << bubby.first->getTier()
+                  << " " << static_cast<int>(bubby.second) << "\n";
       }
     }
 
@@ -541,6 +559,38 @@ void Inventory::print(bool simple)
   std::cout << "--- / Inventory ---\n\n";
 }
 
+/* Attempts to remove any item given a game ID and an amount to rem */
+bool Inventory::removeID(const uint32_t &game_id, const uint16_t &amount)
+{
+  bool removed = false;
+
+  removed &= removeBubbyID(game_id, amount);
+
+  if (!removed)
+    removed &= removeEquipID(game_id, amount);
+
+  if (!removed)
+    removed &= removeItemID(game_id, amount);
+
+  return removed;
+}
+
+/* Attempts to remove any item given a unique ID and an amount to rem */
+bool Inventory::removeUID(const uint32_t &game_id, const uint16_t &amount)
+{
+  bool removed = false;
+
+  removed &= removeBubbyUID(game_id, amount);
+
+  if (!removed)
+    removed &= removeEquipUID(game_id, amount);
+
+  if (!removed)
+    removed &= removeItemUID(game_id, amount);
+
+  return removed;
+}
+
 /* Removes a bubby from the inventory */
 bool Inventory::removeBubbyIndex(const uint32_t &index, 
                                      const uint16_t &amount)
@@ -555,7 +605,9 @@ bool Inventory::removeBubbyIndex(const uint32_t &index,
         decreaseCount(bubbies.at(index).first->getGameID(), amount);
       else if (count == amount)
       {
-        delete bubbies[index].first;
+        if (!getFlag(InvState::SHOP_STORAGE))
+          delete bubbies[index].first;
+
         bubbies[index].first = nullptr;
         bubbies.erase(begin(bubbies) + index);
       }
@@ -582,6 +634,23 @@ bool Inventory::removeBubbyID(const uint32_t &game_id,
   return false;
 }
 
+/* Remove a Bubby from the Inventory by a given unique item ID value */
+bool Inventory::removeBubbyUID(const uint32_t &unique_id,
+                                  const uint16_t &amount)
+{
+  auto bubby_index = -1;
+
+  for (uint32_t i = 0; i < bubbies.size(); i++)
+    if (bubbies[i].first != nullptr)
+      if (bubbies[i].first->getID() == static_cast<int32_t>(unique_id))
+        bubby_index = i;
+  
+  if (bubby_index != -1)
+    return removeBubbyIndex(bubby_index, amount);
+
+  return false;
+}
+
 /* Removes an equipment at a given index */
 bool Inventory::removeEquipIndex(const uint32_t &index,
                                  const uint16_t &amount)
@@ -590,13 +659,19 @@ bool Inventory::removeEquipIndex(const uint32_t &index,
   {
     if (bubbies.at(index).first != nullptr)
     {
-      auto count = bubbies[index].second;
+      auto count = equipments[index].second;
 
       if (count > 1 && count > amount)
+      {
+        std::cout << "count: " << count << " count > 1 && count > amount\n";
         decreaseCount(equipments.at(index).first->getGameID(), amount);
+      }
       else if (count == amount)
       {
-        delete equipments[index].first;
+        std::cout << "count == amount\n";
+        if (!getFlag(InvState::SHOP_STORAGE))
+          delete equipments[index].first;
+
         equipments[index].first = nullptr;
         equipments.erase(begin(equipments) + index);
       }
@@ -624,6 +699,23 @@ bool Inventory::removeEquipID(const uint32_t &game_id, const uint16_t &amount)
   return false;
 }
  
+/* Remove an equipment from the Inventory by a given unique item ID value */
+bool Inventory::removeEquipUID(const uint32_t &unique_id,
+                               const uint16_t &amount)
+{
+  auto equip_index = -1;
+
+  for (uint32_t i = 0; i < equipments.size(); i++)
+    if (equipments[i].first != nullptr)
+      if (equipments[i].first->getID() == static_cast<int32_t>(unique_id))
+        equip_index = i;
+  
+  if (equip_index != -1)
+    return removeEquipIndex(equip_index, amount);
+
+  return false;
+}
+
 /* Removes an item at a given index */
 bool Inventory::removeItemIndex(const uint32_t &index,
                                 const uint16_t &amount)
@@ -638,7 +730,9 @@ bool Inventory::removeItemIndex(const uint32_t &index,
         decreaseCount(items.at(index).first->getGameID(), amount);
       else if (count == amount)
       {
-        delete items[index].first;
+        if (!getFlag(InvState::SHOP_STORAGE))
+          delete items[index].first;
+
         items[index].first = nullptr;
         items.erase(begin(items) + index);
       }
@@ -660,6 +754,23 @@ bool Inventory::removeItemID(const uint32_t &game_id, const uint16_t &amount)
 
   if (item_index != -1)
     return removeItemIndex(game_id, amount);
+
+  return false;
+}
+
+/* Remove an item from the Inventory by a given unique item ID value */
+bool Inventory::removeItemUID(const uint32_t &unique_id,
+                               const uint16_t &amount)
+{
+  auto item_index = -1;
+
+  for (uint32_t i = 0; i < items.size(); i++)
+    if (items[i].first != nullptr)
+      if (items[i].first->getID() == static_cast<int32_t>(unique_id))
+        item_index = i;
+  
+  if (item_index != -1)
+    return removeItemIndex(item_index, amount);
 
   return false;
 }

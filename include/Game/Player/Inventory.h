@@ -146,11 +146,20 @@ public:
   /* Prints out the state of the inventory */
 	void print(bool simple = true);
 
+  /* Attempts to remove any item given a game ID and an amount to rem */
+  bool removeID(const uint32_t &game_id, const uint16_t &amount = 1);
+
+  /* Attempts to remove any item given a unique ID and an amount to rem */
+  bool removeUID(const uint32_t &unique_id, const uint16_t &amount = 1);
+
   /* Removes a Bubby from the Inventory at a given index */
 	bool removeBubbyIndex(const uint32_t &index, const uint16_t &amount = 1);
 
-  /* Removes a TX bubby by a given game ID value */
+  /* Removes a Bubby by a given game ID value */
   bool removeBubbyID(const uint32_t &game_id, const uint16_t &amount = 1);
+
+  /* Remove a Bubby from the Inventory by a given unique item ID value */
+  bool removeBubbyUID(const uint32_t &unique_id, const uint16_t &amount = 1);
 
   /* Removes an equipment at a given index */
 	bool removeEquipIndex(const uint32_t &index, const uint16_t &amount = 1);
@@ -158,12 +167,18 @@ public:
   /* Removes an equipment by a game ID */
   bool removeEquipID(const uint32_t &game_id, const uint16_t &amount = 1);
  
+  /* Remove an equipment from the Inventory by a given unique item ID value */
+  bool removeEquipUID(const uint32_t &unique_id, const uint16_t &amount = 1);
+  
   /* Removes an item at a given index */
   bool removeItemIndex(const uint32_t &index, const uint16_t &amount = 1);
 
   /* Removes an item by a given game ID */
   bool removeItemID(const uint32_t &game_id, const uint16_t &amount = 1);
 
+  /* Remove an item from the Inventory by a given unique item ID value */
+  bool removeItemUID(const uint32_t &unique_id, const uint16_t &amount = 1);
+  
   /* Sorts an object in the inventory a certain way */
 	bool sort(SortType sort_by, SortObjects object_to_sort, 
 		        const bool ascending = false);

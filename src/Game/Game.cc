@@ -218,7 +218,7 @@ void Game::pollEvents()
 /* Set up the battle - old battle needs to be deleted prior to calling */
 void Game::setupBattle()
 {
-  bool enable_test = true;
+  bool enable_test = false;
 
   if (enable_test)
   {
@@ -320,47 +320,64 @@ void Game::setupBattle()
   //other_skill_set->print();
 
   // General Item Testing
-  Item* potion      = new Item(45, "Potion", 70, nullptr, 1.01);
+  // Item* potion      = new Item(45, "Potion", 70, nullptr, 1.01);
   //Item* unique_item = new Item(46, "Unique Item", 75, nullptr, 1.08);
-  Item* new_potion  = new Item(potion);
+  // Item* new_potion  = new Item(potion);
 
   // Key Item Testing
-  Item* master_key  = new Item(115, "Master Key", nullptr);
-  Item* master_key2 = new Item(master_key);
-  Item* super_box = new Item(116, "Super Box", nullptr);
-  Item* boxxy_box = new Item(117, "Boxxy Box", nullptr);
-  Item* epic_sword_comp = new Item(118, "Epic Sword Comp", nullptr);
-  Item* alpha_omega = new Item(119, "Alpha Omega", nullptr);
+  // Item* master_key  = new Item(115, "Master Key", nullptr);
+  // Item* master_key2 = new Item(master_key);
+  // Item* super_box = new Item(116, "Super Box", nullptr);
+  // Item* boxxy_box = new Item(117, "Boxxy Box", nullptr);
+  // Item* epic_sword_comp = new Item(118, "Epic Sword Comp", nullptr);
+  // Item* alpha_omega = new Item(119, "Alpha Omega", nullptr);
 
   // Flavour Testing
-  Flavour* spark = new Flavour(101, "Spark", spark_set, 1.04, 35);
-  Flavour* tumor = new Flavour(102, "Tumor", tumor_set, 1.09, 65);
-  Flavour* moldy = new Flavour(103, "Moldy", moldy_set, 1.11, 48);
+  // Flavour* spark = new Flavour(101, "Spark", spark_set, 1.04, 35);
+  // Flavour* tumor = new Flavour(102, "Tumor", tumor_set, 1.09, 65);
+  // Flavour* moldy = new Flavour(103, "Moldy", moldy_set, 1.11, 48);
 
-  Bubby* first  = new Bubby(spark);
-  Bubby* second = new Bubby(spark);
-  Bubby* third  = new Bubby(tumor);
-  Bubby* fourth = new Bubby(moldy);
-  Bubby* fifth = new Bubby(tumor);
-  Bubby* sixth = new Bubby(moldy);
+  // Bubby* first  = new Bubby(spark);
+  // Bubby* second = new Bubby(spark, 1);
+  // Bubby* third  = new Bubby(tumor,1);
+  // Bubby* fourth = new Bubby(moldy);
+  // Bubby* fifth = new Bubby(tumor,2);
+  // Bubby* sixth = new Bubby(moldy,2);
 
   // Signature Testing
 
   // Equipment Testing
-  Equipment* fated = new Equipment(201, "Fated Oak Saber", 1, 1, 100, nullptr, 10, 10);
-  Equipment* suit  = new Equipment(202, "Suit", 100, 3, 100, nullptr, 10, 10);
+  // Equipment* fated = new Equipment(201, "Fated Oak Saber", 1, 1, 100, nullptr, 10, 10);
+  // Equipment* suit  = new Equipment(202, "Suit", 100, 3, 100, nullptr, 10, 10);
 
   // Inventory Testing
-  Inventory* test_pouch = new Inventory(1006, "Test Pouchey");
-  test_pouch->setFlag(InvState::SHOP_STORAGE, false);
+  // Inventory* test_pouch = new Inventory(1006, "Test Pouchey");
+  // Inventory* test_shoppy = new Inventory(1007, "Test Shoppy");
+  // test_pouch->setFlag(InvState::SHOP_STORAGE, false);
+  // test_shoppy->setFlag(InvState::SHOP_STORAGE, true);
 
-  test_pouch->add(new_potion, 10);
-  test_pouch->add(first);
-  test_pouch->add(second);
-  test_pouch->add(third);
-  test_pouch->add(fourth);
-  test_pouch->add(fifth);
-  test_pouch->add(sixth);
+  //test_pouch->add(new_potion, 10);
+  // test_pouch->add(first, 6);
+  // test_pouch->add(first, 3);
+  // test_pouch->add(second, 3);
+  // test_pouch->add(third, 2);
+  // test_pouch->add(fourth, 3);
+  // test_pouch->removeBubbyID(first->getGameID(), 2);
+  // test_pouch->add(fifth, 3);
+  // test_pouch->add(sixth, 4);
+  // test_pouch->add(fated, 2);
+  // test_pouch->add(suit, 1);
+
+  // test_shoppy->add(new_potion, 110);
+  // test_shoppy->add(first, 1012);
+  // test_shoppy->add(second, 1140);
+  // test_shoppy->add(first, 1410);
+  // test_shoppy->add(first, 10116);
+  // test_shoppy->add(fated, 6401);
+  // test_shoppy->add(suit, 18);
+
+  // test_shoppy->removeEquipID(suit->getGameID(), 18);
+  // test_shoppy->removeEquipID(fated->getGameID(), 6401);
 
   //test = test_pouch->addItem(new_potion, 4);
   // if (test == AddStatus::GOOD_DELETE)
@@ -431,7 +448,8 @@ void Game::setupBattle()
   //test_pouch->removeEquipID(fated->getGameID());
   //test_pouch->removeEquipID(suit->getGameID());
 
-  test_pouch->print(true);
+  // test_pouch->print(false);
+  // test_shoppy->print(false);
 
   // test_pouch->sort(SortType::NAME, SortObjects::ZERO_BUBBIES, false);
   // test_pouch->print(false);
