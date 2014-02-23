@@ -20,10 +20,9 @@
  * CONSTANTS
  *============================================================================*/
 
-const uint8_t Party::kMAX_MEMBERS{5};
 const uint8_t Party::kMAX_MEMBERS_BEARACKS{50};
 const uint8_t Party::kMAX_MEMBERS_SLEUTH{5};
-const uint8_t Party::kMAX_MEMBERS_FOES{5};
+const uint8_t Party::kMAX_MEMBERS_FOES{10};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -36,14 +35,16 @@ const uint8_t Party::kMAX_MEMBERS_FOES{5};
  */
 Party::Party(Person* const main, const PartyType &type, const uint8_t &max,
              Inventory* const inv)
-  : max_size{max}
-  , party_type{type}
-  , pouch{inv}
 {
+  loadDefaults();
+
   if (main == nullptr)
     std::cerr << "Error: Creating party with null main member\n";
 
   members.push_back(main);
+  party_type = type;
+  setMaxSize(max);
+  pouch = inv;
 }
 
 /*
@@ -53,10 +54,9 @@ Party::Party(Person* const main, const PartyType &type, const uint8_t &max,
  */
 Party::Party(std::vector<Person*> members, const uint8_t &max, 
              const PartyType &type, Inventory* const inv)
-  : max_size{max}
-  , party_type{type}
-  , pouch{inv}
 {
+  loadDefaults();
+
   for (auto member : members)
   {
     if (member == nullptr)
@@ -66,6 +66,10 @@ Party::Party(std::vector<Person*> members, const uint8_t &max,
     else
       std::cerr << "Error: Creating party with too large of size\n";
   }
+
+  party_type = type;
+  setMaxSize(max);
+  pouch = inv;
 }
 
 /*
@@ -75,6 +79,21 @@ Party::Party(std::vector<Person*> members, const uint8_t &max,
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
+
+void Party::loadDefaults()
+{
+  flags = static_cast<PartyState>(0);
+  max_size = kMAX_MEMBERS_SLEUTH;
+  party_type = PartyType::REGULAR_FOE;
+  pouch = nullptr;
+
+  setFlag(PartyState::CAN_ADD_MEMBERS, true);
+  setFlag(PartyState::CAN_REMOVE_MEMBERS, true);
+  setFlag(PartyState::ITEM_USE_ENABLED, true);
+  setFlag(PartyState::CAN_ADD_ITEMS, true);
+  setFlag(PartyState::CAN_REMOVE_ITEMS, true);
+  setFlag(PartyState::ENCOUNTERS_ENABLED, true);
+}
 
 /*
  * Description:
@@ -105,12 +124,16 @@ void Party::menuUseItem(const uint32_t &game_id, const uint8_t &index)
 /* Attempts to add a person to the party */
 bool Party::addMember(Person* const new_member)
 {
+  std::cout << "adding member\n";
   if (getFlag(PartyState::CAN_ADD_MEMBERS))
   {
+    std::cout << "Can add members = true\n";
     if (members.size() < max_size)
     {
+      std::cout << "members.size() < max_size\n";
       if (new_member != nullptr)
       {
+        std::cout << "member != nullptr\n";
         members.push_back(new_member);
 
         return true;
@@ -142,7 +165,7 @@ bool Party::hasBoss()
     if ((*it)->getPFlag(PState::BOSS))
       return true;
 
-  return true;
+  return false;
 }
 
 /* Evaluates whether the current party contains a final boss */
@@ -181,10 +204,13 @@ void Party::print(const bool &simple, const bool &flags)
       std::cout << "Member: " << member->getName() << "\n";
 
   
-    std::cout << "Average Speed: " << getAverageSpeed() << "\n\n";
-
-
-
+    std::cout << "Average Speed: " << getAverageSpeed() << "\n";
+    std::cout << "Total Speed: " << getTotalSpeed() << "\n";
+    std::cout << "Has Boss?: " << hasBoss() << "\n";
+    std::cout << "Has Final Boss?: " << hasFinalBoss() << "\n";
+    std::cout << "Has Mini Boss?: " << hasMiniBoss() << "\n";
+    std::cout << "# Dead Members: " << getDeadMembers().size() << "\n";
+    std::cout << "# Living Members: " << getLivingMembers().size() << "\n\n";
   }
 
   if (flags)
@@ -245,7 +271,7 @@ bool Party::useItem(const uint32_t &game_id, const uint8_t &index,
 /* Calculates and returns the average speed of the Party */
 int32_t Party::getAverageSpeed()
 {
-  return getTotalSpeed() / members.size();
+  return (getTotalSpeed() / members.size());
 }
 
 /* Returns a vector of indexes of all KO'd party members */
@@ -264,7 +290,7 @@ std::vector<uint32_t> Party::getDeadMembers()
 /* Evaluates and returns a given PartyState flag */
 bool Party::getFlag(const PartyState &test_flag)
 {
-  return static_cast<bool>((flags & test_flag) == flags);
+  return static_cast<bool>((flags & test_flag) == test_flag);
 }
 
 /* Returns the pointer to the current inventory of the Party */
@@ -330,7 +356,16 @@ int64_t Party::getTotalSpeed()
 /* Attempts to assign a new maximum size of the Party */
 bool Party::setMaxSize(const uint8_t &new_max_size)
 {
-  if (new_max_size <= kMAX_MEMBERS && members.size() <= new_max_size)
+  auto limit = 0;
+
+  if (party_type == PartyType::SLEUTH)
+    limit = kMAX_MEMBERS_SLEUTH;
+  else if (party_type == PartyType::BEARACKS)
+    limit = kMAX_MEMBERS_BEARACKS;
+  else
+    limit = kMAX_MEMBERS_FOES;
+
+  if (new_max_size <= limit && members.size() <= new_max_size)
   {
     max_size = new_max_size;
 
@@ -377,12 +412,6 @@ void Party::setFlag(const PartyState &flag, const bool &set_value)
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
-
-/* Returns the total maximum size of members */
-uint8_t Party::getMaxMembers()
-{
-  return kMAX_MEMBERS;
-}
 
 /* Returns the maximum size of the Bearacks */
 uint8_t Party::getMaxBearacks()

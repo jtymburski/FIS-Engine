@@ -66,7 +66,6 @@ private:
   Inventory* pouch;
   
   /* ------------ Constants --------------- */
-  static const uint8_t kMAX_MEMBERS;
   static const uint8_t kMAX_MEMBERS_BEARACKS;
   static const uint8_t kMAX_MEMBERS_SLEUTH;
   static const uint8_t kMAX_MEMBERS_FOES;
@@ -75,6 +74,10 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+
+  /* Loads the default settings for a Party */
+  void loadDefaults();
+
   /* Implements the battle use effect of a given item (by game_id) */
   void battleUseItem(const uint32_t &game_id, const uint8_t &index);
 
@@ -159,9 +162,6 @@ public:
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
 public:
-  /* Returns the total maximum size of members */
-  static uint8_t getMaxMembers();
-
   /* Returns the maximum size of the Bearacks */
   static uint8_t getMaxBearacks();
 
