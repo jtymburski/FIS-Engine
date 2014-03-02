@@ -720,10 +720,10 @@ bool Tile::setBase(Sprite* base)
   {
     unsetBase();
     this->base = base;
-    setBasePassability(Direction::NORTH, true);
-    setBasePassability(Direction::EAST, true);
-    setBasePassability(Direction::SOUTH, true);
-    setBasePassability(Direction::WEST, true);
+    setBasePassability(Direction::NORTH, false);
+    setBasePassability(Direction::EAST, false);
+    setBasePassability(Direction::SOUTH, false);
+    setBasePassability(Direction::WEST, false);
 
     return true;
   }
