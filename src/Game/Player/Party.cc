@@ -124,16 +124,12 @@ void Party::menuUseItem(const uint32_t &game_id, const uint8_t &index)
 /* Attempts to add a person to the party */
 bool Party::addMember(Person* const new_member)
 {
-  std::cout << "adding member\n";
   if (getFlag(PartyState::CAN_ADD_MEMBERS))
   {
-    std::cout << "Can add members = true\n";
     if (members.size() < max_size)
     {
-      std::cout << "members.size() < max_size\n";
       if (new_member != nullptr)
       {
-        std::cout << "member != nullptr\n";
         members.push_back(new_member);
 
         return true;
@@ -266,6 +262,12 @@ bool Party::useItem(const uint32_t &game_id, const uint8_t &index,
   (void)index;//warning
   (void)use_type;//warning
   return true;//warning
+}
+
+/* Return the size of the party */
+uint32_t Party::getSize()
+{
+  return members.size();
 }
 
 /* Calculates and returns the average speed of the Party */

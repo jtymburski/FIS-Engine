@@ -63,7 +63,7 @@ public:
           const double &chance = 0);
 
   /* Annihilates an AttributeSet object */
-  ~Ailment();
+  ~Ailment() = default;
 
 private:
   /* Inflinction of the Ailment */

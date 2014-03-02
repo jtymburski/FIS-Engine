@@ -143,6 +143,9 @@ public:
   /* Returns the enumerated type of the Party */
   PartyType getPartyType();
 
+  /* Return the size of the party */
+  uint32_t getSize();
+
   /* Calculates and returns the total speed of the Party */
   int64_t getTotalSpeed();
 

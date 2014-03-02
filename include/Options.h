@@ -16,6 +16,21 @@
 #include <SDL2/SDL_ttf.h>
 #include <string>
 
+enum class BattleOptions
+{
+  FOREST_WALK,
+  BEARLY_DIFFICULT,
+  GRIZZLY
+};
+
+enum class BattleMode
+{
+  TEXT_DEBUG,
+  TEXT_NORMAL,
+  GUI_DEBUG,
+  GUI_NORMAL
+};
+
 class Options
 {
 public:
@@ -27,14 +42,6 @@ public:
 
   /* Destructor */
   ~Options();
-
-  /* Battle Options */
-  enum BattleOptions { BEARWALK,
-                       BEARLY_DIFFICULT,
-                       GRIZZLY };
-
-  enum BattleMode { DEBUG,
-                    GUI };
 
 private:
   /* Amount of information to display during ailment updates */

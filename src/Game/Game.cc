@@ -476,7 +476,7 @@ void Game::setupBattle()
   // Person Testing
   Person* berran   = new Person(455, "Berran", blood_scion, bear);
   Person* arcadius = new Person(456, "Arcadius", blood_scion, human);
-  Person* malgidus = new Person(457, "Malgidu", blood_scion, bear);
+  Person* malgidus = new Person(457, "Malgidus", blood_scion, bear);
 
   Person* cloud_dude = new Person(555, "Cloud Dude", blood_scion, bear);
   Person* ball_man = new Person(556, "Ball Man", blood_scion, bear);
@@ -490,6 +490,11 @@ void Game::setupBattle()
 
   foes->addMember(ball_man);
   foes->addMember(thruster_barrow);
+
+  for (uint32_t i = 0; i < allies->getSize(); i++)
+    allies->getMember(i)->battlePrep();
+  for (uint32_t i = 0; i < foes->getSize(); i++)
+    foes->getMember(i)->battlePrep();
 
   allies->print();
   foes->print();

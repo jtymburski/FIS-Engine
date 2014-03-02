@@ -67,9 +67,9 @@ void Options::copySelf(const Options &source)
 void Options::setAllToDefault()
 {
   /* Battle Options */
-  setAilmentUpdateState(BEARWALK);
-  setBattleHudState(BEARWALK);
-  setBattleMode(DEBUG);
+  setAilmentUpdateState(BattleOptions::FOREST_WALK);
+  setBattleHudState(BattleOptions::FOREST_WALK);
+  setBattleMode(BattleMode::TEXT_DEBUG);
 
   setFont(0, true);
   setLinearFiltering(false);
@@ -165,7 +165,7 @@ bool Options::confirmFontSetup()
   return success;
 }
 
-Options::BattleOptions Options::getAilmentUpdateState()
+BattleOptions Options::getAilmentUpdateState()
 {
   return ailment_update_state;
 }
@@ -175,12 +175,12 @@ std::string Options::getBasePath()
   return base_path;
 }
 
-Options::BattleOptions Options::getBattleHudState()
+BattleOptions Options::getBattleHudState()
 {
   return battle_hud_state;
 }
 
-Options::BattleMode Options::getBattleMode()
+BattleMode Options::getBattleMode()
 {
   return battle_mode;
 }
