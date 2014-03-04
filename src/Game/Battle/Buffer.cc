@@ -181,6 +181,8 @@ bool Buffer::isNextValid()
 {
   if (index + 1 < action_buffer.size())
     return checkValid(getIndex(index + 1));
+
+  return false;
 }
 
 void Buffer::print(const bool &simple)

@@ -123,7 +123,7 @@ class Battle
 {
 public:
   /* Constructs a party given two parties and configured options */
-  Battle(Party* const friends, Party* const foes, const Options &config);
+  Battle(Party* const friends, Party* const foes);
 
   /* Annihilates a Battle object */
   ~Battle();
@@ -170,7 +170,7 @@ private:
   Party* foes;
 
   /* Running config */
-  Options config;
+  Options* config;
 
   /* Dimensions of the screen */
   uint8_t screen_height;
@@ -295,23 +295,20 @@ private:
   /* Updates the Battle to the next state */
   void setNextTurnState();
 
-  /* Assings the running config */
-  void setRunningConfig(const Options &config);
+  /* Assigns a new value for the screen width */
+  void setScreenHeight(const uint16_t &new_value);
 
   /* Assigns a new value for the screen width */
-  void setScreenHeight(const uint8_t &new_value);
-
-  /* Assigns a new value for the screen width */
-  void setScreenWidth(const uint8_t &new_value);
+  void setScreenWidth(const uint16_t &new_value);
 
   /* Assigns a new value to the elapsed time */
-  void setTimeElapsed(const uint8_t &new_value);
+  void setTimeElapsed(const int32_t &new_value);
 
   /* Assigns thee time elapsed this turn */
-  void setTimeElapsedThisTurn(const uint8_t &new_value);
+  void setTimeElapsedThisTurn(const int32_t &new_value);
 
   /* Assigns a new value to the turns elapsed */
-  void setTurnsElapsed(const uint8_t &new_value);
+  void setTurnsElapsed(const uint16_t &new_value);
 
   /* Assigns a new turn mode to the Battle */
   void setTurnMode(const TurnMode &new_turn_mode);
@@ -332,7 +329,7 @@ public:
   void printTurnState();
 
   /* Update the cycle time of Battle */
-  void updateBattle(int32_t cycle_time);
+  bool update(int32_t cycle_time);
 
   /* Returns the ailment update mode currently set */
   BattleOptions getAilmentUpdateMode();
@@ -369,6 +366,9 @@ public:
 
   /* Returns the enumerated turn state of the Battle */
   TurnState getTurnState();
+
+  /* Assings the running config */
+  bool setConfiguration(Options* const config);
 
   /* Assign a value to a CombatState flag */
   void setBattleFlag(CombatState flags, const bool &set_value = true);

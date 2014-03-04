@@ -17,7 +17,7 @@
 #include <SDL2/SDL.h>
 #include <chrono>
 
-//#include "Game/Battle/Battle.h"
+#include "Game/Battle/Battle.h"
 #include "Game/EventHandler.h"
 #include "Game/Map/Map.h"
 #include "Game/Player/Player.h"
@@ -41,10 +41,10 @@ public:
   ~Game();
 
   /* The game mode operator, for controlling the visible widget */
-  enum GameMode {DISABLED       = 0, 
-                 MAP            = 1, 
-                 BATTLE         = 2, 
-                 VICTORY_SCREEN = 3};
+  enum GameMode { DISABLED       = 0, 
+                  MAP            = 1, 
+                  BATTLE         = 2, 
+                  VICTORY_SCREEN = 3 };
 
 private:
   /* The computed base path for resources in the application */
@@ -54,7 +54,7 @@ private:
   EventHandler event_handler;
   
   /* A current battle pointer */
-  //Battle* game_battle;
+  Battle* game_battle;
   
   /* The configuration for the display of the game */
   Options* game_config;
@@ -133,6 +133,9 @@ public:
   /* Renders the title screen */
   bool render(SDL_Renderer* renderer);
   
+  /* Runs the test battle */
+  void runTestBattle();
+
   /* Set the running configuration, from the options class */
   bool setConfiguration(Options* running_config);
 

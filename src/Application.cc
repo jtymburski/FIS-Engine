@@ -18,6 +18,7 @@ const uint8_t Application::kUPDATE_RATE = 16;
  *============================================================================*/
 
 Application::Application(std::string base_path)
+
 {
   /* Initialize the variables */
   this->base_path = base_path;
@@ -187,6 +188,7 @@ bool Application::updateViews(int cycle_time)
   /* Handle any appropriate actions of the individual views */
   if(mode == TITLESCREEN)
   {
+
     /* Update the title screen, which returns if an action is available */
     if(title_screen.update(cycle_time))
     {

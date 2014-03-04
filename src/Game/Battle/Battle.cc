@@ -70,14 +70,12 @@ const float    Battle::kDOUBLE_ELM_DIS_MODIFIER  =  0.74;
  * Inputs:
  */
 /* Constructs a party given two parties and configured options */
-Battle::Battle(Party* const friends, Party* const foes, const Options &config)
+Battle::Battle(Party* const friends, Party* const foes)
   : friends(friends)
   , foes(foes)
-  , config(config)
 {
   setupClass();
   determineTurnMode();
-  setRunningConfig(config);
   loadBattleStateFlags();
 
   // info_bar = new BattleInfoBar(getScreenWidth(), getScreenHeight(), this);
@@ -86,7 +84,7 @@ Battle::Battle(Party* const friends, Party* const foes, const Options &config)
   //                                  getScreenHeight(), this);
   action_buffer = new Buffer();
 
-  setBattleFlag(CombatState::PHASE_DONE);
+  setBattleFlag(CombatState::PHASE_DONE, true);
 }
 
 /*
@@ -211,7 +209,7 @@ void Battle::cleanUp()
 
   action_buffer->update();
 
-  setBattleFlag(CombatState::PHASE_DONE);
+  setBattleFlag(CombatState::PHASE_DONE, true);
 
   //TODO: Auto win turns elapsed [03-01-2014]
   if (turns_elapsed == 7)
@@ -276,6 +274,7 @@ void Battle::loadBattleStateFlags()
   setBattleFlag(CombatState::VICTORY, false);
   setBattleFlag(CombatState::OUTCOME_DONE, false);
   setBattleFlag(CombatState::ERROR_STATE, false);
+  setBattleFlag(CombatState::FLAGS_CONFIGURED, true);
 }
 
 /* Orders the actions on the buffer by speed of the aggressor */
@@ -399,14 +398,26 @@ bool Battle::setupClass()
   // info_bar = nullptr;
   // menu = nullptr;
   // status_bar = nullptr;
+
   action_buffer = nullptr;
-  bg = nullptr;
+  bg            = nullptr;
+  config        = nullptr;
   status_bar_bg = nullptr;
+
+  ailment_update_mode = BattleOptions::FOREST_WALK;
+  hud_display_mode    = BattleOptions::FOREST_WALK;
+  battle_mode         = BattleMode::TEXT_DEBUG;
+  turn_mode           = TurnMode::FRIENDS_FIRST;
   flags = static_cast<CombatState>(0);
-  time_elapsed = 0;
+
+  screen_height          = 0;
+  screen_width           = 0;
+  time_elapsed           = 0;
   time_elapsed_this_turn = 0;
-  turns_elapsed = 0;
+  turns_elapsed          = 0;
+
   turn_state = TurnState::BEGIN;
+  setBattleFlag(CombatState::CONFIGURED, true);
 
   return true;
 }
@@ -555,7 +566,7 @@ void Battle::setNextTurnState()
       }
       else if (turn_mode == TurnMode::ENEMIES_FIRST)
       {
-        setTurnState(TurnState::SELECT_ACTION_ENEMY);
+        setTurnState(TurnState::SELECT_ACTION_ALLY);
         selectUserActions();
       }
     }
@@ -583,45 +594,32 @@ void Battle::setNextTurnState()
   }
 }
 
-/* Assings the running config */
-void Battle::setRunningConfig(const Options &new_config)
-{
-  config = new_config;
-
-  setScreenHeight(config.getScreenHeight());
-  setScreenWidth(config.getScreenWidth());
-
-  setAilmentUpdateMode(config.getAilmentUpdateState());
-  setHudDisplayMode(config.getBattleHudState());
-  setBattleMode(config.getBattleMode());
-}
-
 /* Assigns a new value for the screen width */
-void Battle::setScreenHeight(const uint8_t &new_value)
+void Battle::setScreenHeight(const uint16_t &new_value)
 {
   screen_height = new_value;
 }
 
 /* Assigns a new value for the screen width */
-void Battle::setScreenWidth(const uint8_t &new_value)
+void Battle::setScreenWidth(const uint16_t &new_value)
 {
   screen_width = new_value;
 }
 
 /* Assigns a new value to the elapsed time */
-void Battle::setTimeElapsed(const uint8_t &new_value)
+void Battle::setTimeElapsed(const int32_t &new_value)
 {
   time_elapsed = new_value;
 }
 
 /* Assigns thee time elapsed this turn */
-void Battle::setTimeElapsedThisTurn(const uint8_t &new_value)
+void Battle::setTimeElapsedThisTurn(const int32_t &new_value)
 {
   time_elapsed_this_turn = new_value;
 }
 
 /* Assigns a new value to the turns elapsed */
-void Battle::setTurnsElapsed(const uint8_t &new_value)
+void Battle::setTurnsElapsed(const uint16_t &new_value)
 {
   turns_elapsed = new_value;
 }
@@ -677,6 +675,7 @@ void Battle::printAll(const bool &simple, const bool &flags, const bool &party)
     std::cout << "\nTime Elapsed: " << time_elapsed;
     std::cout << "\nTurns Elapsed: " << turns_elapsed;
     //std::cout << "\n# Enemy Bars: " << enemy_bars.size();
+    std::cout << "\n\n";
 
     if (flags)
     {
@@ -689,6 +688,7 @@ void Battle::printAll(const bool &simple, const bool &flags, const bool &party)
       std::cout << "\nOUTCOME_DONE: " 
                 << getBattleFlag(CombatState::OUTCOME_DONE);
       std::cout << "\nERROR_STATE: " << getBattleFlag(CombatState::ERROR_STATE);
+      std::cout << "\n\n";
     }
 
     if (party)
@@ -697,7 +697,7 @@ void Battle::printAll(const bool &simple, const bool &flags, const bool &party)
     // menu->printInfo() TODO: [03-01-14]
   }
 
-  std::cout << "==== / Battle ====\n";
+  std::cout << "==== / Battle ====\n\n";
 }
 
 void Battle::printPartyState()
@@ -745,13 +745,19 @@ void Battle::printTurnState()
 }
 
 /* Update the cycle time of Battle */
-void Battle::updateBattle(int32_t cycle_time)
+bool Battle::update(int32_t cycle_time)
 {
   setTimeElapsed(cycle_time);
+
   // update(); TODO: Update the battle interface
 
   if (getBattleFlag(CombatState::PHASE_DONE))
+  {
+    std::cout << "setting next turn state" << std::endl;
     setNextTurnState();
+  }
+
+  return false;
 }
 
 /* Returns the ailment update mode currently set */
@@ -833,10 +839,30 @@ TurnState Battle::getTurnState()
   return turn_state;
 }
 
-/* Assign a value to a CombatState flag */
-void Battle::setBattleFlag(CombatState flags, const bool &set_value)
+/* Assings the running config */
+bool Battle::setConfiguration(Options* const new_config)
 {
-  (set_value) ? (flags |= flags) : (flags &= ~flags);
+  if (config != nullptr)
+  {
+    config = new_config;
+
+    setScreenHeight(config->getScreenHeight());
+    setScreenWidth(config->getScreenWidth());
+
+    setAilmentUpdateMode(config->getAilmentUpdateState());
+    setHudDisplayMode(config->getBattleHudState());
+    setBattleMode(config->getBattleMode());
+
+    return true;
+  }
+
+  return false;
+}
+
+/* Assign a value to a CombatState flag */
+void Battle::setBattleFlag(CombatState flag, const bool &set_value)
+{
+  (set_value) ? (flags |= flag) : (flags &= ~flag);
 }
 
 /*=============================================================================

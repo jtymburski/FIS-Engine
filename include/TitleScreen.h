@@ -127,7 +127,7 @@ public:
   void setMusic();
   
   /* Updates the title screen. Necessary for visual updates */
-  bool update(int cycle_time);
+  bool update(int32_t cycle_time);
 };
 
 #endif // TITLESCREEN_H

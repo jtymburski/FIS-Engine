@@ -271,8 +271,10 @@ void Person::unsetAll(const bool &clear)
 /* Recalculates the Person's base and base_max stats based on categories */
 void Person::updateBaseStats()
 {
-  AttributeSet temp     = battle_class->getBaseSet() + race_class->getBaseSet();
-  AttributeSet temp_max = battle_class->getTopSet() + race_class->getTopSet();
+  auto temp     = battle_class->getBaseSet();
+  auto temp_max = battle_class->getTopSet();
+  temp     += race_class->getBaseSet();
+  temp_max += race_class->getTopSet();
 
   std::vector<int32_t> prim_indexes;
   std::vector<int32_t> secd_indexes;
