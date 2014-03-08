@@ -8,6 +8,10 @@
 #ifndef ENUMDB_H
 #define ENUMDB_H
 
+#ifndef UDEBUG
+  #define UDEBUG
+#endif
+
 //#include <boost/assign/list_of.hpp>
 //#include <boost/unordered_map.hpp>
 #include <cstdint>

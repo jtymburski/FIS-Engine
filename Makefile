@@ -46,6 +46,7 @@ SOURCES=src/Application.cc \
         src/Game/Game.cc \
         src/Game/Battle/Battle.cc \
         src/Game/Battle/Buffer.cc \
+        src/Game/Battle/InfoBar.cc \
         src/Game/Map/ItemStore.cc \
         src/Game/Map/Map.cc \
         src/Game/Map/MapDialog.cc \

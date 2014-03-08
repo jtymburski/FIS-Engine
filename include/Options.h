@@ -25,10 +25,8 @@ enum class BattleOptions
 
 enum class BattleMode
 {
-  TEXT_DEBUG,
-  TEXT_NORMAL,
-  GUI_DEBUG,
-  GUI_NORMAL
+  TEXT,
+  GUI
 };
 
 class Options

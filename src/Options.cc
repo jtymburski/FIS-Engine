@@ -69,7 +69,7 @@ void Options::setAllToDefault()
   /* Battle Options */
   setAilmentUpdateState(BattleOptions::FOREST_WALK);
   setBattleHudState(BattleOptions::FOREST_WALK);
-  setBattleMode(BattleMode::TEXT_DEBUG);
+  setBattleMode(BattleMode::TEXT);
 
   setFont(0, true);
   setLinearFiltering(false);

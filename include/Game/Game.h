@@ -14,6 +14,10 @@
 #ifndef GAME_H
 #define GAME_H
 
+#ifndef BATTLE_DEBUG
+  #define BATTLE_DEBUG
+#endif
+
 #include <SDL2/SDL.h>
 #include <chrono>
 
@@ -69,8 +73,8 @@ private:
   std::vector<Item*> item_list;
   
   /* The maps in the game */
-  //QVector<Map*> levels;
-  //QList<QString> level_list;
+  //std::vector<Map*> levels;
+  //std::vector<std::string> level_list;
 
   /* The level number currently on */
   //int level_num;
@@ -87,9 +91,9 @@ private:
   /* ------------ Constants --------------- */
   static const uint32_t kMONEY_ITEM_ID;
 
-/*============================================================================
+/*=============================================================================
  * PRIVATE FUNCTIONS
- *===========================================================================*/
+ *============================================================================*/
 private:
   /* A give item event, based on an ID and count (triggered from stored event */
   bool eventGiveItem(int id, int count);

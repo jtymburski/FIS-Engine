@@ -140,17 +140,15 @@ bool Battle::addAilment(Ailment* const new_ailment)
   auto person_ailments = getPersonAilments(new_ailment->getVictim()).size();
   can_add &= person_ailments < kMAX_EACH_AILMENTS;
 
-  // if (can_add)
-  // {
-  //   auto vic_name = new_ailment->getVictim()->getName();
-  //   auto ail_name = static_cast<int32_t>(new_ailment->getType());
-
-  //   if (getBattleMode() == BattleMode::TEXT_DEBUG)
+  // #ifdef UDEBUG
+  //   if (can_add)
   //   {
-  //     // info_bar->addMessage({"Inflicting ailment: " + ail_name + " on " + 
-  //     //                       vic_name});
+  //     auto vic_name = new_ailment->getVictim()->getName();
+  //     auto ail_name = static_cast<int32_t>(new_ailment->getType());
+  //     info_bar->addMessage({"Inflicting ailment: " + ail_name + " on " + 
+  //                           vic_name});
   //   }
-  // }
+  // #endif
 
   return can_add;
 }
@@ -170,8 +168,9 @@ void Battle::battleWon()
      // money
      // items
 
-  if (getBattleMode() == BattleMode::TEXT_DEBUG)
-    std::cout << "Battle victorious! :-)\n";
+#ifdef UDEBUG
+  std::cout << "Battle victorious! :-)\n";
+#endif
 
   setBattleFlag(CombatState::OUTCOME_DONE);
   setNextTurnState();
@@ -182,8 +181,9 @@ void Battle::battleLost()
 {
   // return to title?
 
-  if (getBattleMode() == BattleMode::TEXT_DEBUG)
-    std::cout << "Battle lost! :-(\n";
+#ifdef UDEBUG
+  std::cout << "Battle lost! :-(\n";
+#endif
 
   setBattleFlag(CombatState::OUTCOME_DONE);
   setNextTurnState();
@@ -235,9 +235,12 @@ void Battle::determineTurnMode()
 /* Deals with general upkeep (i.e. weather) */
 void Battle::generalUpkeep()
 {
-  /* Print out the party state in debug mode */
-  if (getBattleMode() == BattleMode::TEXT_DEBUG)
+#ifdef UDEBUG
+  printPartyState();
+#else 
+  if (battle_mode == BattleMode::TEXT)
     printPartyState();
+#endif
 
   //TODO: Weather updates [03-01-14]
 
@@ -406,7 +409,7 @@ bool Battle::setupClass()
 
   ailment_update_mode = BattleOptions::FOREST_WALK;
   hud_display_mode    = BattleOptions::FOREST_WALK;
-  battle_mode         = BattleMode::TEXT_DEBUG;
+  battle_mode         = BattleMode::TEXT;
   turn_mode           = TurnMode::FRIENDS_FIRST;
   flags = static_cast<CombatState>(0);
 
@@ -635,8 +638,10 @@ void Battle::setTurnState(const TurnState &new_turn_state)
 {
   turn_state = new_turn_state;
 
-  if (getBattleMode() == BattleMode::TEXT_DEBUG)
-    printTurnState();
+#ifdef UDEBUG
+  printTurnState();
+#endif
+
 }
 
 /*=============================================================================

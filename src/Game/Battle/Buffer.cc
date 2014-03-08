@@ -28,7 +28,12 @@ const uint16_t Buffer::kMAXIMUM_COOLDOWN{10};
 
 Buffer::Buffer()
   : index{0}
-{}
+{
+#ifdef UDEBUG
+  std::cout << "hahaha we're debugging" << std::endl;
+#endif
+
+}
 
 /*=============================================================================
  * PRIVATE FUNCTIONS

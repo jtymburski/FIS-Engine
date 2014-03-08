@@ -44,7 +44,6 @@ Game::Game(Options* running_config)
   setConfiguration(running_config);
 
   /* Set up the render classes */
-  setupBattle();
   setupPlayerInventory();
   setupMap();
 }
@@ -151,7 +150,7 @@ void Game::eventPickupItem(MapItem* item, bool walkover)
 /* Starts a battle event. Using the given information - TODO */
 void Game::eventStartBattle()
 {
-  runTestBattle();
+  setupBattle();
   mode = BATTLE;
 }
 
@@ -219,7 +218,7 @@ void Game::pollEvents()
 /* Set up the battle - old battle needs to be deleted prior to calling */
 void Game::setupBattle()
 {
-  bool enable_test = false;
+  bool enable_test = true;
 
   if (enable_test)
   {
@@ -422,129 +421,7 @@ void Game::setupBattle()
   // delete spark;
   // delete moldy;
   // delete tumor
-
-  } // end enable test
-  else
-  {
-    std::cout << "hey kevin if u see this u r kewl <3\n";
-  }
-}
-
-/* Set up the map - old map needs to be deleted prior to calling */
-void Game::setupMap()
-{
-  /* Create the map */
-  game_map = new Map(game_config, &event_handler);
-  mode = MAP;
-  
-//  /* Load the map - temporary location */
-//  game_map->loadMap("maps/test_04");
-}
-
-/* Sets up the default player inventory */
-void Game::setupPlayerInventory()
-{
-  /* Create the inventory */
-  game_inventory = new Inventory(7, "Default Inventory", nullptr);
-
-  /* General inventory setup */
-  Inventory::setMoneyID(kMONEY_ITEM_ID);
-
-  /* Add starting items to the Inventory */
-  //TODO: Starting items [01-11-14]
-}
-
-/*============================================================================
- * PUBLIC FUNCTIONS
- *===========================================================================*/
-
-/* The key down events to be handled by the class */
-bool Game::keyDownEvent(SDL_KeyboardEvent event)
-{
-  /* Exit the game, game has finished processing */
-  if(mode == BATTLE && event.keysym.sym == SDLK_ESCAPE)
-  {
-    return true;
-  }
-  /* TESTING section - probably remove at end */
-  /* Switch the view to the map */
-  else if(event.keysym.sym == SDLK_F1)
-  {
-    mode = MAP;
-  }
-  /* Switch the view to the battle */
-  else if(event.keysym.sym == SDLK_F2)
-  {
-    runTestBattle();
-    mode = BATTLE;
-  }
-  /* Show item store dialog in map */
-  else if(event.keysym.sym == SDLK_5)
-  {
-    if(game_map != NULL)
-    {
-      std::vector<Item*> items;
-      items.push_back(item_list[0]);
-      items.push_back(item_list[0]);
-      std::vector<uint32_t> counts;
-      counts.push_back(2);
-      counts.push_back(3);
-      std::vector<int32_t> cost_modifiers;
-      cost_modifiers.push_back(0);
-      cost_modifiers.push_back(10);
-      
-      game_map->initStore(ItemStore::BUY, items, counts, 
-                          cost_modifiers, "Not Kevin's Store", false);
-    }
-  }
-  /* Otherwise, send keys to the active view */
-  else
-  {
-    if(mode == MAP)
-      return game_map->keyDownEvent(event);
-  }
-  
-  return false;
-}
-
-/* The key up events to be handled by the class */
-void Game::keyUpEvent(SDL_KeyboardEvent event)
-{
-  if(mode == MAP)
-    game_map->keyUpEvent(event);
-}
-
-/* Renders the title screen */
-bool Game::render(SDL_Renderer* renderer)
-{
-  /* Create temporary list of items - TODO: Pull into file */
-  if(item_list.empty())
-  {
-    Item* item1 = new Item(5, "Sword of Power", 125, 
-                          new Frame("sprites/sword_AA_A00.png", renderer));
-    Item* item2 = new Item(7, "Frost Bubby", 5, 
-                           new Frame("sprites/Battle/Bubbies/frosty_t1.png", 
-                                     renderer));
-    Item* item3 = new Item(0, "Coins", 1, 
-                           new Frame("sprites/coins_AA_A00.png", renderer));
-    
-    item_list.push_back(item1);
-    item_list.push_back(item2);
-    item_list.push_back(item3);
-  }
-  
-  if(!game_map->isLoaded())
-   game_map->loadMap(base_path + "maps/test_05", renderer);
-
-  if(mode == MAP)
-    return game_map->render(renderer);
-  
-  return true;
-}
-
-void Game::runTestBattle()
-{
- // AttributeSet testing
+    // AttributeSet testing
   AttributeSet min_scion_set(1, true);
   AttributeSet max_scion_set(3, true);
   AttributeSet min_hex_set(2, true);
@@ -635,6 +512,124 @@ void Game::runTestBattle()
     foes->getMember(i)->battlePrep();
 
   game_battle = new Battle(allies, foes);
+
+  } // end enable test
+  else
+  {
+    std::cout << "hey kevin if u see this u r kewl <3\n";
+  }
+}
+
+/* Set up the map - old map needs to be deleted prior to calling */
+void Game::setupMap()
+{
+  /* Create the map */
+  game_map = new Map(game_config, &event_handler);
+  mode = MAP;
+  
+//  /* Load the map - temporary location */
+//  game_map->loadMap("maps/test_04");
+}
+
+/* Sets up the default player inventory */
+void Game::setupPlayerInventory()
+{
+  /* Create the inventory */
+  game_inventory = new Inventory(7, "Default Inventory", nullptr);
+
+  /* General inventory setup */
+  Inventory::setMoneyID(kMONEY_ITEM_ID);
+
+  /* Add starting items to the Inventory */
+  //TODO: Starting items [01-11-14]
+}
+
+/*============================================================================
+ * PUBLIC FUNCTIONS
+ *===========================================================================*/
+
+/* The key down events to be handled by the class */
+bool Game::keyDownEvent(SDL_KeyboardEvent event)
+{
+  /* Exit the game, game has finished processing */
+  if(mode == BATTLE && event.keysym.sym == SDLK_ESCAPE)
+  {
+    return true;
+  }
+  /* TESTING section - probably remove at end */
+  /* Switch the view to the map */
+  else if(event.keysym.sym == SDLK_F1)
+  {
+    mode = MAP;
+  }
+  /* Switch the view to the battle */
+  else if(event.keysym.sym == SDLK_F2)
+  {
+    setupBattle();
+    mode = BATTLE;
+  }
+  /* Show item store dialog in map */
+  else if(event.keysym.sym == SDLK_5)
+  {
+    if (game_map != nullptr)
+    {
+      std::vector<Item*> items;
+      items.push_back(item_list[0]);
+      items.push_back(item_list[0]);
+      std::vector<uint32_t> counts;
+      counts.push_back(2);
+      counts.push_back(3);
+      std::vector<int32_t> cost_modifiers;
+      cost_modifiers.push_back(0);
+      cost_modifiers.push_back(10);
+      
+      game_map->initStore(ItemStore::BUY, items, counts, 
+                          cost_modifiers, "Is Ttly Kevin's Store", false);
+    }
+  }
+  /* Otherwise, send keys to the active view */
+  else
+  {
+    if(mode == MAP)
+      return game_map->keyDownEvent(event);
+  }
+  
+  return false;
+}
+
+/* The key up events to be handled by the class */
+void Game::keyUpEvent(SDL_KeyboardEvent event)
+{
+  if(mode == MAP)
+    game_map->keyUpEvent(event);
+}
+
+/* Renders the title screen */
+bool Game::render(SDL_Renderer* renderer)
+{
+  /* Create temporary list of items - TODO: Pull into file */
+  if(item_list.empty())
+  {
+    Item* item1 = new Item(5, "Sword of Power", 125, 
+                          new Frame("sprites/sword_AA_A00.png", renderer));
+    Item* item2 = new Item(7, "Frost Bubby", 5, 
+                           new Frame("sprites/Battle/Bubbies/frosty_t1.png", 
+                                     renderer));
+    Item* item3 = new Item(0, "Coins", 1, 
+                           new Frame("sprites/coins_AA_A00.png", renderer));
+    
+    item_list.push_back(item1);
+    item_list.push_back(item2);
+    item_list.push_back(item3);
+  }
+  
+  if(!game_map->isLoaded())
+   game_map->loadMap(base_path + "maps/test_05", renderer);
+
+  if(mode == MAP)
+    return game_map->render(renderer);
+  
+  return true;
 }
 
 /* Set the running configuration, from the options class */
