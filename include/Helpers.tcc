@@ -73,6 +73,34 @@ struct CompPairByValueMass
   }
 };
 
+struct CompMomentum
+{
+  template<class T>
+  bool operator()(const T &a, const T &b) const
+  {
+    return a.user->getCurr().getStat("MMTM") < 
+           b.user->getCurr().getStat("MMTM");
+  }
+};
+
+struct CompItemFirst
+{
+  template<class T>
+  bool operator()(const T &a, const T &b) const
+  {
+    return (a.item_used != nullptr && b.item_used == nullptr);
+  }
+};
+
+struct CompSkillFirst
+{
+  template<class T>
+  bool operator()(const T &a, const T &b) const
+  {
+    return (a.skill_used != nullptr && b.skill_used == nullptr);
+  }
+};
+
 /*=============================================================================
  * TEMPLATE STRUCTURES
  *============================================================================*/

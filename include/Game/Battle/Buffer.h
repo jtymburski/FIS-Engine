@@ -27,6 +27,14 @@ enum class BufferType
   NONE
 };
 
+enum class BufferSorts
+{
+  ITEM_FIRST,
+  SKILL_FIRST,
+  MOMENTUM
+};
+
+
 struct BufferAction
 {
   uint32_t cooldown;
@@ -69,10 +77,6 @@ private:
 
   bool decrementCooldown(const uint32_t &index);
 
-  void clearAll();
-
-  void clearInvalid();
-
   BufferAction& getIndex(const uint32_t &index);
 
 /*=============================================================================
@@ -84,6 +88,12 @@ public:
 
   bool add(Person* const user, Item* const item_used, 
            std::vector<Person*> targets, const uint32_t &cooldown = 0);
+
+  bool add(BufferAction &action);
+
+  void clearAll();
+
+  void clearInvalid();
 
   bool isNextValid();
 
@@ -109,6 +119,11 @@ public:
 public:
   /* */
   static uint16_t getMaxSize();
+
+  /*  */
+  static bool sort(std::vector<BufferAction> actions, BufferSorts buffer_sorts);
+
+
 };
 
 #endif //BUFFER_H

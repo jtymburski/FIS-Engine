@@ -103,12 +103,6 @@ bool Buffer::decrementCooldown(const uint32_t &index)
   return false;
 }
 
-void Buffer::clearAll()
-{
-  action_buffer.clear();
-  index = 0;
-}
-
 BufferAction& Buffer::getIndex(const uint32_t &index)
 {
   if (index < action_buffer.size())
@@ -158,16 +152,33 @@ bool Buffer::add(Person* const user, Item* const item_used,
   new_elm.targets    = targets;
   new_elm.type       = BufferType::ITEM;
 
-  auto add = checkValid(new_elm);
+  return add(new_elm);
+}
+
+bool Buffer::add(BufferAction &action)
+{
+  auto add = checkValid(action);
+  add &= (action.cooldown <= kMAXIMUM_COOLDOWN);
+  add &= (action.targets.size() <= kMAXIMUM_TARGETS);
 
   if (add)
   {
-    action_buffer.push_back(new_elm);
+    action_buffer.push_back(action);
 
     return true;
   }
+  else
+  {
+    std::cerr << "[Cerr] Adding invalid action buffer. \n";
+  }
 
   return false;
+}
+
+void Buffer::clearAll()
+{
+  action_buffer.clear();
+  index = 0;
 }
 
 void Buffer::clearInvalid()
@@ -328,4 +339,31 @@ bool Buffer::setNext()
 uint16_t Buffer::getMaxSize()
 {
   return kMAXIMUM_ELEMENTS;
+}
+
+bool sort(std::vector<BufferAction> actions, BufferSorts buffer_sorts)
+{
+  auto sorted = false;
+
+  if (buffer_sorts == BufferSorts::ITEM_FIRST)
+  {
+    std::stable_sort(begin(actions), end(actions), Helpers::CompItemFirst());
+    sorted = true;
+  }
+  else if (buffer_sorts == BufferSorts::SKILL_FIRST)
+  {
+    std::stable_sort(begin(actions), end(actions), Helpers::CompSkillFirst());
+    sorted = true;
+  }
+  else if (buffer_sorts == BufferSorts::MOMENTUM)
+  {
+    std::stable_sort(begin(actions), end(actions), Helpers::CompMomentum());
+    sorted = true;
+  }
+  else
+  {
+    std::cerr << "[Error]: Unknown buffer sorting method \n";
+  }
+
+  return sorted;
 }

@@ -140,15 +140,22 @@ bool Battle::addAilment(Ailment* const new_ailment)
   auto person_ailments = getPersonAilments(new_ailment->getVictim()).size();
   can_add &= person_ailments < kMAX_EACH_AILMENTS;
 
-  // #ifdef UDEBUG
-  //   if (can_add)
-  //   {
-  //     auto vic_name = new_ailment->getVictim()->getName();
-  //     auto ail_name = static_cast<int32_t>(new_ailment->getType());
-  //     info_bar->addMessage({"Inflicting ailment: " + ail_name + " on " + 
-  //                           vic_name});
-  //   }
-  // #endif
+  if (can_add)
+  {
+    auto vic_name = new_ailment->getVictim()->getName();
+    auto ail_name = static_cast<int32_t>(new_ailment->getType());
+
+#ifdef UDEBUG
+    std::cout << "Inflicting ailment: " << + ail_name + " on " + vic_name 
+              << "\n";
+#else
+  if (battle_mode == BattleMode::TEXT)
+    std::cout << "Inflicting ailment: " << ail_name << " on " << vic_name 
+              << "\n";
+#endif
+ 
+    //TODO: Add ailment infliction to Info Bar [03-16-14]
+  }
 
   return can_add;
 }
@@ -184,7 +191,6 @@ void Battle::battleLost()
 #ifdef UDEBUG
   std::cout << "Battle lost! :-(\n";
 #endif
-
   setBattleFlag(CombatState::OUTCOME_DONE);
   setNextTurnState();
 }
@@ -201,8 +207,9 @@ bool Battle::checkPartyDeath(Party* const check_party)
 /* Cleanup before the end of a Battle turn */
 void Battle::cleanUp()
 {
-  // clear stack of actions (takes place when all actions done anyway)
-  // clear other data
+  action_buffer->clearAll();
+
+  // TODO: clear any other data upon turn end? [03-16-14]
 
   /* Increment the turn counter */
   turns_elapsed++;
@@ -211,7 +218,7 @@ void Battle::cleanUp()
 
   setBattleFlag(CombatState::PHASE_DONE, true);
 
-  //TODO: Auto win turns elapsed [03-01-2014]
+  // TODO: Auto win turns elapsed [03-01-14]
   if (turns_elapsed == 7)
     setBattleFlag(CombatState::VICTORY);
 }
@@ -283,9 +290,11 @@ void Battle::loadBattleStateFlags()
 /* Orders the actions on the buffer by speed of the aggressor */
 void Battle::orderActions()
 {
-  // Items are fast -- item buffer first
-  // Skills are slow
-    // Sort skills by momentum of the skill user
+  /* Re-order item actions first */
+
+
+  /* Sorts skills by momentum of the skill user */
+
 
   /* Order action state complete */
   setBattleFlag(CombatState::PHASE_DONE);
