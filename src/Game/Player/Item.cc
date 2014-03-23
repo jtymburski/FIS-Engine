@@ -36,9 +36,9 @@ const double   Item::kMIN_MASS{-1000};
  *============================================================================*/
 
 /*
- * Description:
+ * Description: Constructs an Item (technically a Bubby) given a Flavour object.
  *
- * Inputs:
+ * Inputs: Flavour* - pointer to a flavour object for the item's likeness
  */
 Item::Item(Flavour* const source)
   : game_id{source->game_id}
@@ -60,9 +60,9 @@ Item::Item(Flavour* const source)
 }
 
 /*
- * Description:
+ * Description: Constructs an item given an Item pointer to be copied from
  *
- * Inputs:
+ * Inputs: Item* - pointer to an item object to be copied
  */
 Item::Item(Item* const source)
   : game_id{source->game_id}
@@ -119,7 +119,10 @@ Item::Item(const int32_t &game_id, const std::string &name,
   setFlag(ItemFlags::KEY_ITEM, true);
 }
 
-
+/*
+ * Descripption: Annihilates an Item object
+ *
+ */
 Item::~Item()
 {
   unsetAll();

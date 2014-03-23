@@ -106,10 +106,13 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Calculates the current mass of the Inventory */
   void calcMass();
 
+  /* Increases the count of an item of a given game ID by a given amount */
   bool increaseCount(const uint32_t &game_id, const uint16_t &amount = 1);
 
+  /* Decreases the count of an item of a given game ID by a given amount */
   bool decreaseCount(const uint32_t &game_id, const uint16_t &amount = 1);
 
 /*=============================================================================
@@ -238,10 +241,13 @@ public:
   /* Returns the vector of all key items */
   std::vector<std::pair<Item*, uint16_t>> getKeyItems();
 
+  /* Returns a vector of each Bubby */
   std::vector<Bubby*> getUniqueBubbies();
 
+  /* Returns a vector of each Equipment */
   std::vector<Equipment*> getUniqueEquipments();
 
+  /* Returns a vector of each Item */
   std::vector<Item*> getUniqueItems();
 
   /* Calculates and returns the mass */

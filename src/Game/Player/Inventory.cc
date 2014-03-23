@@ -15,7 +15,7 @@
 #include "Game/Player/Inventory.h"
 
 /*=============================================================================
- * CONSTANTS
+ * CONSTANTS - See implementation for details
  *============================================================================*/
 
 uint32_t Inventory::id       = 0;
@@ -33,7 +33,12 @@ const uint16_t  Inventory::kMAX_EACH_ITEM =        105;
  *============================================================================*/
 
 /*
- * Description:
+ * Description: Constructs an Inventory object given an ID for it, a name
+ *              and a pointer to a thumbnail.
+ *
+ * Note [1]: Inventories by default are created empty, upgradeable, with
+ *           default limit values and not of non-shop storage type. To change
+ *           to a stop storage inventory the flag must be set after const.
  *
  * Inputs:
  */
@@ -58,6 +63,10 @@ Inventory::Inventory(const uint32_t game_id, const std::string name,
   setLimits(kMIN_ITEM, kMIN_ITEM, kMIN_ITEM, kMIN_EACH_ITEM, kMIN_MASS);
 }
 
+/*
+ * Description: Annihilates an Inventory object
+ *
+ */
 Inventory::~Inventory()
 {
   clear(!getFlag(InvState::SHOP_STORAGE));
@@ -67,7 +76,13 @@ Inventory::~Inventory()
  * PRIVATE FUNCTIONS
  *============================================================================*/
 
-/* Calculates the total mass contained within the Invetory */
+/*
+ * Description: Calculates the total mass of the Inventory by adding up the
+ *              masses of bubbies, equipments, and items.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void Inventory::calcMass()
 {
   double temp_mass{0.0};
@@ -87,6 +102,18 @@ void Inventory::calcMass()
   curr_mass = temp_mass;
 }
 
+/*
+ * Description: Increases the count of an item with a given game ID contained
+ *              within the inventor by an amount. Will search through each
+ *              bubbies, equipments then items and increase the first instance
+ *              found by the amount.
+ *
+ * Note [1]: This function does not check if the inventory has room as this
+ *           is a private function and hasRoom should have already been called.
+ *
+ * Inputs: game_id - the game ID of an item to increase the count for
+ * Output: amount - the amount to increase the count by
+ */
 bool Inventory::increaseCount(const uint32_t &game_id, const uint16_t &amount)
 {
   auto increased = false;
@@ -138,6 +165,15 @@ bool Inventory::increaseCount(const uint32_t &game_id, const uint16_t &amount)
   return increased;
 }
 
+/*
+ * Description: Decreases the count of an item with a given game ID contained
+ *              within the inventor by an amount. Will search through each
+ *              bubbies, equipments then items and increase the first instance
+ *              found by the amount.
+ *
+ * Inputs: game_id - the game ID of an item to decrease the count for
+ * Output: amount - the amount to decrease the count by
+ */
 bool Inventory::decreaseCount(const uint32_t &game_id, const uint16_t &amount)
 {
   auto decreased = false;
@@ -193,7 +229,19 @@ bool Inventory::decreaseCount(const uint32_t &game_id, const uint16_t &amount)
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
-/* Attempts to add a Bubby */
+/*
+ * Description: Attempts to add an amount of bubby objects given a Bubby object
+ *              pointer to the inventory, if the Inventory has room for them
+ *              unless bypass is true.
+ *
+ * Note [1]: If the Inventory is a shop storage, the value of bypass is
+ *           irrelevant.
+ * 
+ * Inputs: Bubby* new_bubby - a Bubby object to be added into the inventory.
+ *         amount - the amount of Bubby objects to be added
+ *         bypass - true if limit checks are to be bypassed
+ * Output: AddStatus - enumerated values of the status of addition
+ */
 AddStatus Inventory::add(Bubby* new_bubby, const uint32_t &amount, 
                          bool bypass)
 {
@@ -255,7 +303,19 @@ AddStatus Inventory::add(Bubby* new_bubby, const uint32_t &amount,
   return status;
 }
 
-/* Attempts to add an equipment */
+/*
+ * Description: Attempts to add an amount of equipment objects given an equip
+ *              object pointer to the inventory, if the Inventory has room for
+ *              them unless bypass is true.
+ *
+ * Note [1]: If the Inventory is a shop storage, the value of bypass is
+ *           irrelevant.
+ * 
+ * Inputs: Equipment* new_equipment - an equip object to be added
+ *         amount - the amount of Bubby objects to be added
+ *         bypass - true if limit checks are to be bypassed
+ * Output: AddStatus - enumerated values of the status of addition
+ */
 AddStatus Inventory::add(Equipment* new_equipment, const uint32_t &amount, 
                          bool bypass)
 {
@@ -307,7 +367,19 @@ AddStatus Inventory::add(Equipment* new_equipment, const uint32_t &amount,
   return status;
 }
 
-/* Adds an item to the Inventory */
+/*
+ * Description: Attempts to add an amount of item objects given an Item object
+ *              pointer to the inventory, if the Inventory has room for them
+ *              unless bypass is true.
+ *
+ * Note [1]: If the Inventory is a shop storage, the value of bypass is
+ *           irrelevant.
+ * 
+ * Inputs: Item* new_item - an Item object to be added into the inventory.
+ *         amount - the amount of Bubby objects to be added
+ *         bypass - true if limit checks are to be bypassed
+ * Output: AddStatus - enumerated values of the status of addition
+ */
 AddStatus Inventory::add(Item* new_item, const uint32_t &amount, 
                          bool bypass)
 {
@@ -348,7 +420,13 @@ AddStatus Inventory::add(Item* new_item, const uint32_t &amount,
   return AddStatus::FAIL;
 }
 
-/* Clears the memory of the inventory and the vectors of data */
+/*
+ * Description: Clears the vectors of Inventory objects and potentially
+ *              frees the memory of the objects.
+ *
+ * Inputs: free - boolean whether to free the objects' memory
+ * Output: none
+ */
 void Inventory::clear(const bool &free)
 {
   if (free)
@@ -402,7 +480,12 @@ void Inventory::clear(const bool &free)
   items.clear();
 }
 
-/* Checks if an Item in the inventory matches a given unique ID */
+/*
+ * Description: Checks if an Item in the inventory matches a given unique ID
+ *
+ * Inputs: id_check - checks if an object is contained within an inventory
+ * Output: bool - true if an object matching the ID is contained within
+ */
 bool Inventory::contains(const int32_t &id_check)
 {
   for (auto bubby : bubbies)
@@ -423,35 +506,13 @@ bool Inventory::contains(const int32_t &id_check)
   return false;
 }
 
-/* Calcs and returns the number of spaces in the Inv. for a given Equip */
-uint32_t Inventory::hasRoom(Equipment* const equip, uint32_t n)
-{
-  auto need_check = true;
-
-  if (equip == nullptr)
-  {
-    need_check = false;
-    n = 0;
-  }
-
-  if (getFlag(InvState::SHOP_STORAGE))
-  {
-    need_check = false;
-    n = kMAX_ITEM;
-  }
-
-  if (need_check)
-  {
-    n = std::min(equip_limit - getEquipCount(equip->getGameID()), n);
-
-    auto lim = std::floor((mass_limit - getMass()) / equip->getMass());
-    n = std::min(static_cast<uint32_t>(lim), n);
-  }
-
-  return n;
-}
-
-/* Calcs and returns the number of spaces in the Inv. for a given Bubby */
+/*
+ * Description: Checks if a Bubby in the inventory matches a given unique ID
+ *
+ * Inputs: b - pointer to a bubby object to be checked room for
+ *         n - the maximum number of objects to be checked for
+ * Output: int32_t - the # of the bubbies of given type the inventory has room
+ */
 uint32_t Inventory::hasRoom(Bubby* const b, uint32_t n)
 {
   auto need_check = true;
@@ -481,7 +542,47 @@ uint32_t Inventory::hasRoom(Bubby* const b, uint32_t n)
   return n;
 }
 
-/* Calcs and returns the number of spaces in the Inv. for a given Item */
+/*
+ * Description: Checks how many of n equipments may be added to the inventory.
+ *
+ * Inputs: equip - pointer to an equipment object to be checked room for
+ *         n - the maximum number of objects to be checked for
+ * Output: int32_t - the # of the equipment the inventory has room for
+ */
+uint32_t Inventory::hasRoom(Equipment* const equip, uint32_t n)
+{
+  auto need_check = true;
+
+  if (equip == nullptr)
+  {
+    need_check = false;
+    n = 0;
+  }
+
+  if (getFlag(InvState::SHOP_STORAGE))
+  {
+    need_check = false;
+    n = kMAX_ITEM;
+  }
+
+  if (need_check)
+  {
+    n = std::min(equip_limit - getEquipCount(equip->getGameID()), n);
+
+    auto lim = std::floor((mass_limit - getMass()) / equip->getMass());
+    n = std::min(static_cast<uint32_t>(lim), n);
+  }
+
+  return n;
+}
+
+/*
+ * Description: Checks if an Item in the inventory matches a given unique ID
+ *
+ * Inputs: item - pointer to an item object to be checked room for
+ *         n - the maximum number of objects to be checked for
+ * Output: int32_t - the # of the items of given type the inventory has room
+ */
 uint32_t Inventory::hasRoom(Item* const item, uint32_t n)
 {
   bool need_check = true;
@@ -509,7 +610,12 @@ uint32_t Inventory::hasRoom(Item* const item, uint32_t n)
   return n;
 }
 
-/* Prints out the state of the inventory */
+/*
+ * Description: Prints out the information of the Inventory
+ *
+ * Inputs: simple - boolean value for printing out a simplified version.
+ * Output: none
+ */
 void Inventory::print(bool simple)
 {
   std::cout << "\n---- Inventory: " << name << " ----\n";
@@ -559,7 +665,15 @@ void Inventory::print(bool simple)
   std::cout << "--- / Inventory ---\n\n";
 }
 
-/* Attempts to remove any item given a game ID and an amount to rem */
+/*
+ * Description: Removes an item by a given game ID. First attempts to remove
+ *              a bubby, then equipment, then an item. Returns the success of
+ *              the attempted removal.
+ *
+ * Inputs: game_id - the game ID wanting to be removed
+ *         amount - the amount wanting to be removed
+ * Output: bool - true if the removal was successful
+ */
 bool Inventory::removeID(const uint32_t &game_id, const uint16_t &amount)
 {
   bool removed = false;
@@ -575,8 +689,16 @@ bool Inventory::removeID(const uint32_t &game_id, const uint16_t &amount)
   return removed;
 }
 
-/* Attempts to remove any item given a unique ID and an amount to rem */
-bool Inventory::removeUID(const uint32_t &game_id, const uint16_t &amount)
+/*
+ * Description: Removes an item by a given unique ID. First attempts to remove
+ *              a bubby, then equipment, then an item. Returns the success of
+ *              the attempted removal.
+ *
+ * Inputs: unique_id - the uniquie ID wanting to be removed 
+ *         amount    - the amount wanting to be removed
+ * Output: bool - true if the removal was successful
+ */
+bool Inventory::removeUID(const uint32_t &unique_id, const uint16_t &amount)
 {
   bool removed = false;
 
@@ -591,7 +713,13 @@ bool Inventory::removeUID(const uint32_t &game_id, const uint16_t &amount)
   return removed;
 }
 
-/* Removes a bubby from the inventory */
+/*
+ * Description: Attempts to remove an amount of Bubbies at a given index.
+ *
+ * Inputs: index - the index of Bubbies to be removed
+ *         amount - the amount of Bubbies to be removed
+ * Output: bool - true if the removal was successful
+ */
 bool Inventory::removeBubbyIndex(const uint32_t &index, 
                                      const uint16_t &amount)
 {
@@ -623,6 +751,13 @@ bool Inventory::removeBubbyIndex(const uint32_t &index,
   return false;
 }
 
+/*
+ * Description: Attempts to remove Bubbies by a given game ID
+ *
+ * Inputs: game_id - the game ID of Bubbies to be removed
+ *         amount - the amount of Bubbies to be removed
+ * Output: bool - true if the removal was successful
+ */
 bool Inventory::removeBubbyID(const uint32_t &game_id,
                                   const uint16_t &amount)
 {
@@ -634,7 +769,13 @@ bool Inventory::removeBubbyID(const uint32_t &game_id,
   return false;
 }
 
-/* Remove a Bubby from the Inventory by a given unique item ID value */
+/*
+ * Description: Attempts to remove Bubbies by a given unique ID
+ *
+ * Inputs: unique_id - the unique ID of Bubbies to be removed
+ *         amount - the amount of Bubbies to be removed
+ * Output: bool - true if the removal was successful
+ */
 bool Inventory::removeBubbyUID(const uint32_t &unique_id,
                                   const uint16_t &amount)
 {
@@ -651,7 +792,13 @@ bool Inventory::removeBubbyUID(const uint32_t &unique_id,
   return false;
 }
 
-/* Removes an equipment at a given index */
+/*
+ * Description: Attempts to remove equipments by a given index
+ *
+ * Inputs: index - the index of equipments to be removed
+ *         amount - the amount of Bubbies to be removed
+ * Output: bool - true if the removal was successful
+ */
 bool Inventory::removeEquipIndex(const uint32_t &index,
                                  const uint16_t &amount)
 { 
@@ -688,7 +835,13 @@ bool Inventory::removeEquipIndex(const uint32_t &index,
   return false;
 }
 
-/* Removes an equipment by a game ID */
+/*
+ * Description: Attempts to remove equipments by an ID
+ *
+ * Inputs: game_id - the game ID of equipments to be removed
+ *         amount - the amount of equipment of the given ID to be removed
+ * Output: bool - true if the removal was successful
+ */
 bool Inventory::removeEquipID(const uint32_t &game_id, const uint16_t &amount)
 {
   auto equip_index = getEquipIndex(game_id);
@@ -699,7 +852,14 @@ bool Inventory::removeEquipID(const uint32_t &game_id, const uint16_t &amount)
   return false;
 }
  
-/* Remove an equipment from the Inventory by a given unique item ID value */
+/*
+ * Description: Remove an equipment from the Inventory by a given unique item
+ *              ID value
+ *
+ * Inputs: unique_id - the unique ID of equipment to be removed
+ *         amount - the amount of Bubbies to be removed
+ * Output: bool - true if the removal was successful
+ */
 bool Inventory::removeEquipUID(const uint32_t &unique_id,
                                const uint16_t &amount)
 {
@@ -716,7 +876,13 @@ bool Inventory::removeEquipUID(const uint32_t &unique_id,
   return false;
 }
 
-/* Removes an item at a given index */
+/*
+ * Description: Attempts to remove Items by a given index
+ *
+ * Inputs: index - the Item index to be removed
+ *         amount - the amount of Items at the index to be removed
+ * Output: bool - true if the removal was successful
+ */
 bool Inventory::removeItemIndex(const uint32_t &index,
                                 const uint16_t &amount)
 {
@@ -748,6 +914,13 @@ bool Inventory::removeItemIndex(const uint32_t &index,
   return false;
 }
 
+/*
+ * Description: Attempts to remove an Item by a given game ID
+ *
+ * Inputs: game_id - game ID of an item to be removed
+ *         amount - the amount of Items of the game ID to be removed
+ * Output: bool - true if the removal was successful
+ */
 bool Inventory::removeItemID(const uint32_t &game_id, const uint16_t &amount)
 {
   auto item_index = getItemIndex(game_id);
@@ -758,7 +931,13 @@ bool Inventory::removeItemID(const uint32_t &game_id, const uint16_t &amount)
   return false;
 }
 
-/* Remove an item from the Inventory by a given unique item ID value */
+/*
+ * Description: Attempts to remove an amount of Item of a given unique ID 
+ *
+ * Inputs: unique_id - the unique Item ID to be removed
+ *         amount - the amount of Items of the unique ID to be removed
+ * Output: bool - true if the removal was successful
+ */
 bool Inventory::removeItemUID(const uint32_t &unique_id,
                                const uint16_t &amount)
 {
@@ -775,7 +954,15 @@ bool Inventory::removeItemUID(const uint32_t &unique_id,
   return false;
 }
 
-/* Sorts an object in the inventory a certain way */
+/*
+ * Description: Attempts to sort a given object by a given SortType in asc or
+ *              desc order.
+ *
+ * Inputs: sort_type - the type of sort to be performed
+ *         object - the object to perform the sort on
+ *         ascending - whether to perform the sort in asc or desc order
+ * Output: bool - the outcome of th sort
+ */
 bool Inventory::sort(const SortType sort_type, SortObjects object, 
 	                   const bool ascending)
 {
@@ -883,6 +1070,7 @@ bool Inventory::sort(const SortType sort_type, SortObjects object,
       break;
   }
 
+  /* Swap the order of the elements in the object if asc is false */
   if (sort_status && !ascending)
   {
     switch (object)
@@ -904,13 +1092,23 @@ bool Inventory::sort(const SortType sort_type, SortObjects object,
   return sort_status;
 }
 
-/* Returns the backdrop of the inventory */
+/*
+ * Description: Returns the pointer to the backdrop of the Inventory
+ *
+ * Inputs: none
+ * Output: Frame* - pointer to the backdrop
+ */
 Frame* Inventory::getBackdrop()
 {
   return backdrop;
 }
 
-/* Returns the count of Bubbies of a given game_id - only checks T0 bubbies */
+/*
+ * Description: 
+ *
+ * Inputs: 
+ * Output: 
+ */
 uint32_t Inventory::getBubbyCount(const uint32_t &game_id, const uint16_t &tier)
 {
   for (auto it = begin(bubbies); it != end(bubbies); ++it)
@@ -926,13 +1124,24 @@ uint32_t Inventory::getBubbyCount(const uint32_t &game_id, const uint16_t &tier)
   return 0;
 }
 
-/* Returns the currently set bubby limit */
+/*
+ * Description: Returns the currently assigned bubby_limit 
+ *
+ * Inputs: none
+ * Output: uint32_t - the total bubby_limit
+ */
+
 uint32_t Inventory::getBubbyLimit()
 {
   return bubby_limit;
 }
 
-/* Returns the total count of T0 and TX bubbies */
+/*
+ * Description: Calculates and returns the total count of T0 & TX bubbies
+ *
+ * Inputs: none
+ * Output: uint32_t - the total count of bubbies in the inventory.
+ */
 uint32_t Inventory::getBubbyTotalCount()
 {
   auto total = 0;
@@ -945,7 +1154,12 @@ uint32_t Inventory::getBubbyTotalCount()
   return total;
 }
 
-/* Counts the # of equipments of a given game ID */
+/*
+ * Description: Returns the total number of equipment of given game_id type.
+ *
+ * Inputs: game_id - the game ID to check the equipment count for
+ * Output: int32_t - the count of the equipment at the given game_id 
+ */
 int32_t Inventory::getEquipCount(const uint32_t &game_id)
 {
   for (auto it = begin(equipments); it != end(equipments); ++it)
@@ -956,13 +1170,23 @@ int32_t Inventory::getEquipCount(const uint32_t &game_id)
   return 0;
 }
 
-/* Returns the currently set equipment limit */
+/*
+ * Description: Returns the currently assigned equipment limit.
+ *
+ * Inputs: none
+ * Output: uint32_t - the current equip limit
+ */
 uint32_t Inventory::getEquipmentLimit()
 {
   return equip_limit;
 }
 
-/* Returns the index on the vector of TX bubbies of a given game ID */
+/*
+ * Description: Returns the index of bubbies on a given game ID
+ *
+ * Inputs: game_id - the game ID to find the index on bubbies for
+ * Output: int32_t - the index of Bubby having the given game ID
+ */
 int32_t Inventory::getBubbyIndex(const uint32_t &game_id)
 {
   for (uint32_t i = 0; i < bubbies.size(); i++)
@@ -973,7 +1197,12 @@ int32_t Inventory::getBubbyIndex(const uint32_t &game_id)
   return -1;
 }
 
-/* Returns the index of a given equipment game id */
+/*
+ * Description: Returns the index of a given equipment game ID
+ *
+ * Inputs: game_id - the game ID to find the equipment index for
+ * Output: int32_t - the index of equipment having the given game ID
+ */
 int32_t Inventory::getEquipIndex(const uint32_t &game_id)
 {
   for (uint32_t i = 0; i < equipments.size(); i++)
@@ -984,7 +1213,12 @@ int32_t Inventory::getEquipIndex(const uint32_t &game_id)
   return -1;
 }
 
-/* Returns the index of an Item ID in the vector */
+/*
+ * Description: Returns the index of a given item game ID
+ *
+ * Inputs: game_id - the game ID to find the equipment index for
+ * Output: int32_t - the index of item having the given game ID
+ */
 int32_t Inventory::getItemIndex(const uint32_t &game_id)
 {
   for (uint32_t i = 0; i < items.size(); i++)
@@ -995,29 +1229,56 @@ int32_t Inventory::getItemIndex(const uint32_t &game_id)
   return -1;
 }
 
-/* Returns the currently set item limit */
+/*
+ * Description: Returns the currently assigned item limit
+ *
+ * Inputs: none
+ * Output: uint32_t - the current item limit assigned
+ */
 uint32_t Inventory::getItemLimit()
 {
   return item_limit;
 }
 
+/*
+ * Description: Returns the vector of bubbies 
+ *
+ * Inputs: none
+ * Output: std::vector<std::pair<Bubby*, uint16_t>> - vector of bubbies
+ */
 std::vector<std::pair<Bubby*, uint16_t>> Inventory::getBubbies()
 {
   return bubbies;
 }
 
-/* Returns a vector of all equipment */
+/*
+ * Description: Returns the vector of equipment
+ *
+ * Inputs: none
+ * Output: std::vector<std::pair<Equipment*, uint16_t>> - vector of equipment
+ */
 std::vector<std::pair<Equipment*, uint16_t>> Inventory::getEquipments()
 {
   return equipments;
 }
 
+/*
+ * Description: Returns the vector of item
+ *
+ * Inputs: none
+ * Output: std::vector<std::pair<Item*, uint16_t>> - vector of items
+ */
 std::vector<std::pair<Item*, uint16_t>> Inventory::getItems()
 {
   return items;
 }
 
-/* Returns a vector of all items useable in battle */
+/*
+ * Description: Compiles and returns a vector an amount of battle items
+ *
+ * Inputs: none
+ * Output: std::vector<std::pair<Item*, uint16_t>> - vector of battle items
+ */
 std::vector<std::pair<Item*, uint16_t>> Inventory::getBattleItems()
 {
   std::vector<std::pair<Item*, uint16_t>> battle_items;
@@ -1035,7 +1296,12 @@ std::vector<std::pair<Item*, uint16_t>> Inventory::getBattleItems()
   return battle_items;
 }
 
-/* Returns the vector of all key items */
+/*
+ * Description: Compiles and returns a vector of key items
+ *
+ * Inputs: none
+ * Output: std::vector<std::pair<Item*, uint16_t>> - vector of key items
+ */
 std::vector<std::pair<Item*, uint16_t>> Inventory::getKeyItems()
 {
   std::vector<std::pair<Item*, uint16_t>> key_items;
@@ -1048,7 +1314,12 @@ std::vector<std::pair<Item*, uint16_t>> Inventory::getKeyItems()
   return key_items;
 }
 
-/* Returns a vector of all Bubbies */
+/*
+ * Description: Returns a vector of one of each bubby
+ *
+ * Inputs: none
+ * Output: std::vector<Bubby*> - a vector of each bubby
+ */
 std::vector<Bubby*> Inventory::getUniqueBubbies()
 {
   std::vector<Bubby*> temps;
@@ -1060,7 +1331,12 @@ std::vector<Bubby*> Inventory::getUniqueBubbies()
   return temps;
 }
 
-/* Returns a vector of all equipment */
+/*
+ * Description: Returns a vector of one of each bubby
+ *
+ * Inputs: none
+ * Output: std::vector<Bubby*> - a vector of each bubby
+ */
 std::vector<Equipment*> Inventory::getUniqueEquipments()
 {
   std::vector<Equipment*> temps;
@@ -1072,6 +1348,12 @@ std::vector<Equipment*> Inventory::getUniqueEquipments()
   return temps;
 }
 
+/*
+ * Description: Returns a vector of one of each item
+ *
+ * Inputs: none
+ * Output: std::vector<Item*> - a vector of each item
+ */
 std::vector<Item*> Inventory::getUniqueItems()
 {
   std::vector<Item*> temps;
@@ -1082,8 +1364,13 @@ std::vector<Item*> Inventory::getUniqueItems()
 
   return temps;
 }
- 
-/* Returns the count of a given Item game id */
+
+/*
+ * Description: Returns the count of a given Item game ID
+ *
+ * Inputs: game_id - the game ID to find the item count for
+ * Output: uint32_t - the count of the item of the given game ID
+ */
 uint32_t Inventory::getItemCount(const uint32_t &game_id)
 {
   for (auto item : items)
@@ -1094,12 +1381,23 @@ uint32_t Inventory::getItemCount(const uint32_t &game_id)
   return 0;
 }
 
-/* Returns the currently set item each limit */
+/*
+ * Description: Returns the currently assigned item each limit
+ *
+ * Inputs: none
+ * Output: uint32_t - the item each limit
+ */
 uint32_t Inventory::getItemEachLimit()
 {
   return item_each_limit;
 }
 
+/*
+ * Description: Returns the total number of items contained in the iventory
+ *
+ * Inputs: count_keys - boolean value whether to include key item counts
+ * Output: uint32_t - the total item count
+ */
 uint32_t Inventory::getItemTotalCount(const bool &count_keys)
 {
   uint32_t total = 0;
@@ -1112,7 +1410,13 @@ uint32_t Inventory::getItemTotalCount(const bool &count_keys)
   return total;
 }
 
-/* Returns the total mass stored in the inventory */
+/*
+ * Description: Returns the total mass stored in the inventory (first calls
+ *              a function to calculate it)
+ *
+ * Inputs: none
+ * Output: double - the total mass of the Inventory
+ */
 double Inventory::getMass()
 {
   calcMass();
@@ -1120,35 +1424,68 @@ double Inventory::getMass()
   return curr_mass;
 }
 
-/* Returns the mass limit */
+/*
+ * Description: Returns the mass limit of the Inventory
+ *
+ * Inputs: none
+ * Output: double - the mass limit of the Inventory
+ */
 double Inventory::getMassLimit()
 {
   return mass_limit;
 }
 
-/* Returns the thumbnail image of the Inventory */
+/*
+ * Description: Returns the thumbnail image of the Inventory
+ *
+ * Inputs: none
+ * Output: Frame* - ptr to the thumbnail image
+ */
 Frame* Inventory::getThumbnail()
 {
   return thumbnail;
 }
 
+/*
+ * Description: Returns the description of the inventory
+ *
+ * Inputs: none
+ * Output: std::string - the string description of the Inventory
+ */
 /* Returns the description of the Inventory */
 std::string Inventory::getDescription()
 {
   return description;
 }
 
-/* Returns the name of the Inventory */
+/*
+ * Description: Returns the string name of the Inventory
+ *
+ * Inputs: none
+ * Output: std::string - the string name of the Inventory
+ */
 std::string Inventory::getName()
 {
   return name;
 }
 
+/*
+ * Description: Returns the value of a given InvState flag
+ *
+ * Inputs: test_flag - test flag to check the value for
+ * Output: bool - the value of the flag
+ */
 bool Inventory::getFlag(const InvState &test_flag)
 {
   return static_cast<bool>((test_flag & flags) == test_flag);
 }
 
+/*
+ * Description: Returns the string description of the Inventory
+ *
+ * Inputs: std::string - the new description for the Inventory
+ * Output: bool - true if the new description is within range
+ */
 bool Inventory::setDescription(const std::string new_description)
 {
   if (new_description.size() < StringDb::kMAX_BRIEF_DESC)
@@ -1161,11 +1498,25 @@ bool Inventory::setDescription(const std::string new_description)
   return false;
 }
 
+/*
+ * Description: Assigns a given InvState flag a given boolean value
+ *
+ * Inputs: InvState flag - the flag to be assigned a value
+ *         set_value - the boolean value to assign to the flag
+ * Output: none
+ */
 void Inventory::setFlag(const InvState flag, const bool set_value)
 {
   (set_value) ? (flags |= flag) : (flags ^= ~flag);
 }
 
+/*
+ * Description: Assigns backdrop and thumbnail images to the Inventory
+ *
+ * Inputs: new_backdrop - the new backdrop image to assign for the Inventory
+ *         new_thumbnail - the new thumbnail image to assign for the Inventory
+ * Output: bool - true if both images are not nullptr
+ */
 bool Inventory::setImages(Frame* const new_backdrop, Frame* const new_thumbnail)
 {
   backdrop  = new_backdrop;
@@ -1174,6 +1525,17 @@ bool Inventory::setImages(Frame* const new_backdrop, Frame* const new_thumbnail)
   return (new_backdrop != nullptr && new_thumbnail != nullptr);
 }
 
+/*
+ * Description: Assigns a new set of limits to the Inventory. This function
+ *              will cause all limits to be set within valid ranges.
+ *
+ * Inputs: bubby_lim - new limit to the maximum number of bubbies
+ *         equip_lim - new limit to the maximum number of equipments
+ *         item_lim - new limit to the maximum number of items
+ *         item_e - new limit to the maximum number of each items
+ *         mass_lim - new limit to the total mass of the inventory
+ * Output: none
+ */
 void Inventory::setLimits(const uint32_t bubby_lim, const uint32_t equip_lim,
  	                        const uint32_t item_lim, const uint16_t item_e,
  	                        const double mass_lim)
@@ -1189,6 +1551,12 @@ void Inventory::setLimits(const uint32_t bubby_lim, const uint32_t equip_lim,
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
 
+/*
+ * Description: Assigns an ID to be used for the purpose of currency only
+ *
+ * Inputs: new_money_id - new ID for money
+ * Output: none
+ */
 void Inventory::setMoneyID(const uint32_t &new_money_id)
 {
   money_id = new_money_id;
