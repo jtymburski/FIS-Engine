@@ -32,7 +32,7 @@
 #include "Game/Player/Person.h"
 
 /*=============================================================================
- * CONSTANTS
+ * CONSTANTS - See implementation for details
  *============================================================================*/
 const size_t   Person::kNUM_LEVELS{127};     
 const size_t   Person::kNUM_EQUIP_SLOTS{5}; 
@@ -65,9 +65,13 @@ const std::vector<float> Person::kSECD_MODS =
  *============================================================================*/
 
 /*
- * Description:
+ * Description: Constructs a base person object given a unique ID, name,
+ *              battle_class, race_class.
  *
- * Inputs:
+ * Inputs: game_id - the game ID of the base person to be created
+ *         name - string name of the person to be created
+ *         battle_class - pointer to the battle class
+ *         race_class - pointer to the race class
  */
 Person::Person(const int32_t &game_id, const std::string &name, 
                Category* const battle_class, Category* const race_class)
@@ -82,9 +86,9 @@ Person::Person(const int32_t &game_id, const std::string &name,
 }
 
 /*
- * Description:
+ * Description: Creates a copy of a base person from a pointer to a base person
  *
- * Inputs:
+ * Inputs: Person* - pointer to the base person 
  */
 Person::Person(Person* const source)
   : game_id{source->game_id}
@@ -95,7 +99,7 @@ Person::Person(Person* const source)
 }
 
 /*
- * Description:
+ * Description: Annihilates a Person object
  */
 Person::~Person()
 {
@@ -107,6 +111,12 @@ Person::~Person()
  * PRIVATE FUNCTIONS
  *============================================================================*/
 
+/*
+ * Description: Loads the default settings for a Person
+ *
+ * Inputs: none
+ * Output: none
+ */
 void Person::loadDefaults()
 {
   battle_flags = static_cast<BState>(0);
@@ -165,13 +175,13 @@ void Person::loadDefaults()
 }
 
 /*
- * Description:
+ * Description: Performs the basic setup for a person such as building the
+ *              experience table and dynamically allocates equipment. The base
+ *              setup changes whether the Person is a base person or not.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: none
  */
-
-/* Sets up the class, based on whether base_person is assigned or not */
 void Person::setupClass()
 {
   base_skills    = nullptr;
@@ -237,6 +247,12 @@ void Person::setupClass()
   }
 }
 
+/*
+ * Description: Unsets all the parameters of a person.
+ *
+ * Inputs: bool - clears the memory of anything dynamically allocated by Person
+ * Output: none
+ */
 void Person::unsetAll(const bool &clear)
 {
   if (clear)
@@ -268,7 +284,13 @@ void Person::unsetAll(const bool &clear)
   learned_skills = nullptr;
 }
 
-/* Recalculates the Person's base and base_max stats based on categories */
+/*
+ * Description: Recalculates the Person's base stats and base max stats based
+ *              on their battle class and their race class.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void Person::updateBaseStats()
 {
   auto temp     = battle_class->getBaseSet();
@@ -328,6 +350,13 @@ void Person::updateBaseStats()
   updateStats();
 }
 
+/*
+ * Description: Updates the base skills of the Person based on the battle class
+ *              and the race class.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void Person::updateBaseSkills()
 {
   if (base_skills != nullptr)
@@ -343,6 +372,13 @@ void Person::updateBaseSkills()
   updateSkills();
 }
 
+/*
+ * Description: Updates he level of the Person based on their curren total
+ *              experience.
+ *
+ * Inputs: none
+ * Output: none
+ */
 /* Updates the level of the person based on their current total experience */
 void Person::updateLevel()
 {
@@ -360,7 +396,13 @@ void Person::updateLevel()
   }
 }
 
-/* Updates the current stats of the Person based on their current level */
+/*
+ * Description: Updates the current stats and current max stats of the Person 
+ *              based on their level.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void Person::updateStats()
 {
   if (level == 1)
@@ -401,6 +443,14 @@ void Person::updateStats()
   temp_max_stats.cleanUp();
 }
 
+/*
+ * Description: Updates the current total SkillSet of the person. This means
+ *              adding the skills granted by equipment and the learned skills
+ *              of the Person to the base skills.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void Person::updateSkills()
 {
   if (curr_skills != nullptr)
@@ -418,18 +468,37 @@ void Person::updateSkills()
       *curr_skills += equipment->getSkills();
 }
 
-/* Updates the rank of the Person based on their Person record */
+/*
+ * Description: Updates the rank of the Person based on their person record.
+ *
+ * Inputs: none
+ * Output: nones
+ */
 void Person::updateRank()
 {
   //rank = person_record.getRank();
 }
 
-/* Constructs the table of experience values given the current constants */
+/*
+ * Description: Constructs the static table of experience values given the
+ *              current level constants.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void Person::buildExpTable()
 {
   exp_table = Helpers::buildExpTable(kMIN_LVL_EXP, kMAX_LVL_EXP, kNUM_LEVELS);
 }
 
+/*
+ * Description: Returns the curve modifier value of a given curve value based
+ *              on a bool whether to check the primary or secondary values.
+ *
+ * Inputs: curve - enumerated element Curve to be checked.
+ *         bool - true if to check primary, false for secondary.
+ * Output: float - the obtained curve modifier
+ */
 /* Returns the curve modifier given a curve value and whether to check prim */
 float Person::getCurveModifier(const ElementCurve &curve, 
                                const bool primary)
@@ -449,7 +518,14 @@ float Person::getCurveModifier(const ElementCurve &curve,
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
-/* Adds an amount of experience and may update the level */
+/*
+ * Description: Adds an unsigned amount of experience to the Person and a levels
+ *              them up (if necessary) if the update bool is assigned.
+ *
+ * Inputs: amount - the amount of experience to be added
+ *         update - a boolean value whether to be updated
+ * Output: bool - true if the experience was added successfully
+ */
 bool Person::addExp(const uint32_t &amount, const bool &update)
 {
   auto can_add = false;
@@ -480,7 +556,12 @@ bool Person::addExp(const uint32_t &amount, const bool &update)
   return can_add;
 }
 
-/* Prepares the person for entering Battle (flags, Attributes etc.) */
+/*
+ * Description: Prepares a person for entering Battle (flags, Attributes, etc.)
+ *
+ * Inputs: none
+ * Output: none
+ */
 void Person::battlePrep()
 {
   curr_stats = curr_max_stats;
@@ -514,14 +595,25 @@ void Person::battlePrep()
   setBFlag(BState::REVIVABLE, false);
 }
 
-/* Clears the skills the player has learned */
+/*
+ * Description: Clears the learned skills of the Person
+ *
+ * Inputs: none
+ * Output: none
+ */
 void Person::clearLearnedSkills()
 {
   learned_skills->clear();
   updateSkills();
 }
 
-/* Shorthand function for dealing damage, returns true if the Person KO's */
+/*
+ * Description: Shorthand function for dealing damage to the Person. Returns
+ *              true if the Person's HP is 0 after the damage takes place.
+ *
+ * Inputs: amount - amount of damage to deal
+ * Output: bool - true if the Person is now dead
+ */
 bool Person::doDmg(const uint32_t &amount)
 {
   std::cout << "dealing " << amount << "damage to person" << "\n";
@@ -537,7 +629,15 @@ bool Person::doDmg(const uint32_t &amount)
   return false;
 }
 
-/* Method for printing out the data of the class */
+/*
+ * Description: Method for printing out the data describing a person
+ *
+ * Inputs: simple - true for a simplified version of a person, false otherwise
+ *         equips - true to print out the equipment of the person
+ *         flags - true to print out each flag of the person
+ *         skills - true to print out information for each skill
+ * Output: none
+ */
 void Person::print(const bool &simple, const bool &equips,
                    const bool &flags, const bool &skills)
 {
@@ -659,7 +759,16 @@ void Person::print(const bool &simple, const bool &equips,
   std::cout << "--- // Person ---\n\n";
 }
 
-/* Removes the equipment from a given slot */
+/*
+ * Description: Attempts to remove equipment from a given equip slot. Removes
+ *              true if an equipment at that slot was found and it was removed.
+ *
+ * Note [1]: This function will cause a memory leak unless the equipment is
+ *           grabbed before the removal takes place!
+ *
+ * Inputs: equip_slot - enumerated equip slot to remove the equipment for
+ * Output: bool - true if a piece of equipment was there and removed
+ */
 bool Person::removeEquip(const EquipSlots &equip_slot)
 {
   auto removed = false;
@@ -698,139 +807,254 @@ bool Person::removeEquip(const EquipSlots &equip_slot)
   return removed;
 }
 
-/* Returns the game_id (not unique) of the Person */
+/*
+ * Description: Returns the non-unique game ID of the Person
+ *
+ * Inputs: none
+ * Output: uint32_t - game ID of the Person
+ */
 uint32_t Person::getGameID()
 {
   return game_id;
 }
 
-/* Returns the my_id (unique) of the Person */
+/*
+ * Description: Returns the unique my_id of the Person
+ *
+ * Inputs: none
+ * Output: uint32_t - the unique ID of the Person
+ */
 uint32_t Person::getMyID()
 {
   return my_id;
 }
 
-/* Evaluates and returns the state of a given BState flag */
+/*
+ * Description: Evaluates and returns the state of a given BState flag
+ *
+ * Inputs: test_flag - BState flag to find the value for
+ * Output: bool - the value of the given flag to check
+ */
 bool Person::getBFlag(const BState &test_flag)
 {
   return static_cast<bool>((battle_flags & test_flag) == test_flag); 
 }
 
-/* Evaluates and returns the state of a given PState flag */
+/*
+ * Description: Evaluates and returns the state of a given PState flag
+ *
+ * Inputs: test_flag - PState flag to find the value for
+ * Output: bool - the value of the given flag to check
+ */
 bool Person::getPFlag(const PState &test_flag)
 {
   return static_cast<bool>((person_flags & test_flag) == test_flag);
 }
 
-/* Returns a pointer to the assigned base person */
+/*
+ * Description: Returns a pointer to the assigned base person
+ *
+ * Inputs: none
+ * Output: Person* - pointer to the assigned base person
+ */
 Person* Person::getBasePerson()
 {
   return base_person;
 }
 
-/* Returns a pointer to the battle class category */
+/*
+ * Description: Returns a pointer to the battle class category
+ *
+ * Inputs: none
+ * Output: Category* - pointer to the base class
+ */
 Category* Person::getClass()
 {
   return battle_class;
 }
 
-/* Returns a pointer to the race category */
+/*
+ * Description: Returns a pointer to the race class category
+ *
+ * Inputs: none
+ * Output: Category* - pointer to the race class
+ */
 Category* Person::getRace()
 {
   return race_class;
 }
 
-/* Returns the string name */
+/*
+ * Description: Returns the string name of the Person
+ *
+ * Inputs: none
+ * Output: std::string - string name of the Person
+ */
 std::string Person::getName()
 {
   return name;
 }
 
-/* Returns the enumerated rank of the Person */
+/*
+ * Description: Returns the enumerated rank of the Person
+ *
+ * Inputs: none
+ * Output: Ranks - enumerated rank of the Person
+ */
 Ranks Person::getRank()
 {
   return rank;
 }
 
-/* Returns the primary elemental affiliation */
+/*
+ * Description: Returns the enumerated primary affiliation of the Person
+ *
+ * Inputs: none
+ * Output: Element - the enumerated primary affiliation of the Person
+ */
 Element Person::getPrimary()
 {
   return primary;
 }
 
-/* Return the secondary elemental affiliation */
+/*
+ * Description: Returns the enumerated secondary affiliation of the Person
+ *
+ * Inputs: none
+ * Output: Element - the enumerated secondary affiliation of the Person
+ */
 Element Person::getSecondary()
 {
   return secondary;
 }
 
-/* Return the enumerated curve of prim. elemental progression */
+/*
+ * Description: Return the enumerated curve of prim. elemental progression
+ *
+ * Inputs: none
+ * Output: ElementCurve - the enumerated curve of prim. elemental progression
+ */
 ElementCurve Person::getPrimaryCurve()
 {
   return primary_curve;
 }
 
-/* Return the enumerated curve of secd. elemental progression */
+/*
+ * Description: Return the enumerated curve of secd. elemental progression
+ *
+ * Inputs: none
+ * Output: ElementCurve - the enumerated curve of secd. elemental progression
+ */
 ElementCurve Person::getSecondaryCurve()
 {
   return secondary_curve;
 }
 
-/* Returns a reference to the base stats */
+/*
+ * Description: Return a reference to the base stats of the Person
+ *
+ * Inputs: none
+ * Output: AttributeSet& - ref. to the base stats of the Person
+ */
 AttributeSet& Person::getBase()
 {
   return base_stats;
 }
 
-/* Returns a ref to the base max stats */
+/*
+ * Description: Return a reference to the base max stats of the Person
+ *
+ * Inputs: none
+ * Output: AttributeSet& - ref. to the base max stats of the Person
+ */
 AttributeSet& Person::getBaseMax()
 {
   return base_max_stats;
 }
 
-/* Returns a ref to the curr stats */
+/*
+ * Description: Returns a reference to the current stats of the Person
+ *
+ * Inputs: none
+ * Output: AttributeSet& - ref. to the curr stats of the Person
+ */
 AttributeSet& Person::getCurr()
 {
   return curr_stats;
 }
 
-/* Returns a ref to the curr max stats */
+/*
+ * Description: Returns a reference to the current max stats of the Person
+ *
+ * Inputs: none
+ * Output: AttributeSet& - ref. to the curr max stats of the Person
+ */
 AttributeSet& Person::getCurrMax()
 {
   return curr_max_stats;
 }
 
-/* Returns the temp stats */
+/*
+ * Description: Return the temp stats of the Person
+ *
+ * Inputs: none
+ * Output: AttributeSet& - ref. to the temp stats of the Person
+ */
 AttributeSet& Person::getTemp()
 {
   return temp_max_stats;
 }
 
-/* Returns the base skills of the Person */
+/*
+ * Description: Returns the pointer to the base skills of the Person
+ *
+ * Inputs: none
+ * Output: SkillSet* - pointer to the base skills of the Person
+ */
 SkillSet* Person::getBaseSkills()
 {
   return base_skills;
 }
 
-/* Returns the assigned current skills of the Person */
+/*
+ * Description: Returns the current SkillSet of the Person.
+ *
+ * Inputs: none
+ * Output: SkillSet* - pointer to the current SkillSet of the Person
+ */
 SkillSet* Person::getCurrSkills()
 {
   return curr_skills;
 }
 
-/* Returns the damage modifier value */
+/*
+ * Description: Returns the damage modifier of the Person
+ *
+ * Inputs: none
+ * Output: float - the damage modifier of the Person.
+ */
 float Person::getDmgMod()
 {
   return dmg_mod;
 }
 
-/* Returns the experience modifier value */
+/*
+ * Description: Returns the experience modifier of the Person
+ *
+ * Inputs: none
+ * Output: float - the experience modifier of the Person.
+ */
 float Person::getExpMod()
 {
   return exp_mod; 
 }
 
-/* Returns a pointer to the equipment a given slot */
+/*
+ * Description: Returns a pointer to the equipment a given slot
+ *
+ * Inputs: equip_slot - the equip slot to check the equipment for 
+ * Output: Equipment* - pointer to the equipment at the enumerated slot
+ */
 Equipment* Person::getEquip(const EquipSlots &equip_slot)
 {
   auto index = getEquipIndex(equip_slot);
@@ -841,7 +1065,12 @@ Equipment* Person::getEquip(const EquipSlots &equip_slot)
   return nullptr;
 }
 
-/* Grab the corresponding index of a given EquipSlots enumeration */
+/*
+ * Description: Grabs the corresponding index of a given EquipSlots enumeration
+ *
+ * Inputs: none
+ * Output: uint32_t - the mapped index of a given equip slot
+ */
 uint32_t Person::getEquipIndex(const EquipSlots &equip_slot)
 {
   if (static_cast<uint8_t>(equip_slot) < equipments.size())
@@ -866,31 +1095,57 @@ uint32_t Person::getEquipIndex(const EquipSlots &equip_slot)
   return equipments.size() + 1;
 }
 
-/* Returns the credit drop reward */
+/*
+ * Description: Returns the assigned credit drop awarded upon defeat of this
+ *
+ * Inputs: none
+ * Output: uint32_t - the credit drop awarded
+ */
 uint32_t Person::getCreditDrop()
 {
   return credit_drop;
 }
 
-/* Returns the exp drop reward */
+/*
+ * Description: Returns the assigned exp drop awarded upon defeat of this
+ *
+ * Inputs: none
+ * Output: uint32_t - the experience drop awarded
+ */
 uint32_t Person::getExpDrop()
 {
   return exp_drop;
 }
 
-/* Returns the current level */
+/*
+ * Description: Returns the level of the person
+ *
+ * Inputs: none
+ * Output: uint8_t - the level of the Person
+ */
 uint8_t Person::getLevel()
 {
   return level;
 }
 
-/* Returns the total experience earned */
+/*
+ * Description: Returns the total experience of the Person
+ *
+ * Inputs: none
+ * Output: uint32_t - the total experience of the Person
+ */
 uint32_t Person::getTotalExp()
 {
   return total_exp;
 }
 
-/* Grabs the curr first person frame (based on BUBBIFIED flags) */
+/*
+ * Description: Grabs the currentassigned first person frame (based on the
+ *              IS_BUBBY BState flag)
+ *
+ * Inputs: none
+ * Output: Frame* - pointer to the correct current first person sprite
+ */
 Frame* Person::getFirstPerson()
 {
   if (getBFlag(BState::IS_BUBBY))
@@ -898,6 +1153,13 @@ Frame* Person::getFirstPerson()
   return first_person;
 }
 
+/*
+ * Description: Grabs the current assigned third person frame (based on the
+ *              IS_BUBBY BState flag)
+ *
+ * Inputs: none
+ * Output: Frame* - pointer to the correct current third person sprite
+ */
 Frame* Person::getThirdPerson()
 {
   if (getBFlag(BState::IS_BUBBY))
@@ -905,25 +1167,52 @@ Frame* Person::getThirdPerson()
   return third_person;
 }
 
+/*
+ * Description: Grabs the vector of item IDs the person can drop
+ *
+ * Inputs: none
+ * Output: std::vector<uint32_t> - the vector of item drops.
+ */
 /* Grabs the vector of item IDs the person can drop */
 std::vector<uint32_t> Person::getItemDrops()
 {
   return item_drops;
 }
 
-/* Evaluates and returns a given battle state flag */
+/*
+ * Description: Assigns a given BState flag a given set value
+ *
+ * Inputs: flag - the BState flag to be assigned a value
+ *         set_value - the value to assign the flag to
+ * Output: none
+ */
 void Person::setBFlag(const BState &flag, const bool &set_value)
 {
   (set_value) ? (battle_flags |= flag) : (battle_flags &= ~flag);
 }
 
-/* Evaluates and returns a given person state flag */
+/*
+ * Description: Evaluates and returns a given PState flag
+ *
+ * Inputs: flag - the PState flag to be assigned a value
+ *         set_value - the value to assign the flag to
+ * Output: none
+ */
 void Person::setPFlag(const PState &flag, const bool &set_value)
 {
   (set_value) ? (person_flags |= flag) : (person_flags &= ~flag);  
 }
 
-/* Assigns curve modifiers for the person (change's level progression) */
+/*
+ * Description: Assigns a curve modifiers for the person (Change's level
+ *              progression)
+ *
+ * Inputs: prim - enumerated element for primary affiliation
+ *         prim_curve - enumerated curve progress rate for primary elmt
+ *         secd - enumerated element for secondary affiliation
+ *         secd_curve - enumerated curve progress rate for secondary elmt
+ * Output: none
+ */
 void Person::setCurves(Element prim, ElementCurve prim_curve,
                        Element secd, ElementCurve secd_curve,
                        const bool &update_level)
@@ -940,7 +1229,12 @@ void Person::setCurves(Element prim, ElementCurve prim_curve,
   }
 }
 
-/* Assigns a new curr Attr set */
+/*
+ * Description: Assigns a new current attribute set
+ *
+ * Inputs: new_curr_set - const ref. to an AttributeSet to be assigned
+ * Output: bool - true if the assignment was successful
+ */
 bool Person::setCurr(const AttributeSet& new_curr_set)
 {
   if (new_curr_set.getFlag(AttributeState::PERSONAL))
@@ -953,7 +1247,12 @@ bool Person::setCurr(const AttributeSet& new_curr_set)
   return false;
 }
 
-/* Assigns a new curr max Attr set */
+/*
+ * Description: Assign a new current max attribute set
+ *
+ * Inputs: new_curr_max_set - const ref. to an AttributeSet to be assigned
+ * Output: bool - true if the assignment was successfully
+ */
 bool Person::setCurrMax(const AttributeSet& new_curr_max_set)
 {
   if (curr_max_stats.getFlag(AttributeState::PERSONAL))
@@ -966,7 +1265,12 @@ bool Person::setCurrMax(const AttributeSet& new_curr_max_set)
   return false;  
 }
 
-/* Assigns a new temp attr set */
+/*
+ * Description: Assign a new current temp attribute set
+ *
+ * Inputs: new_temp_set - const ref. to an AttributeSet to be assigned
+ * Output: bool - true if the assignment was successfully
+ */
 bool Person::setTemp(const AttributeSet& new_temp_set)
 {
   if (new_temp_set.getFlag(AttributeState::PERSONAL))
@@ -979,7 +1283,12 @@ bool Person::setTemp(const AttributeSet& new_temp_set)
   return false;
 }
 
-/* Assigns a new damage modifier value */
+/*
+ * Description: Attempts to assign a new damage modifier value.
+ *
+ * Inputs: new_dmg_mod - float value that is a new dmg modifier value
+ * Output: bool - true if the new value was within range
+ */
 bool Person::setDmgMod(const float &new_dmg_mod)
 {
   if (Helpers::isInRange(new_dmg_mod, kMIN_DMG_MODI, kMAX_DMG_MODI))
@@ -992,7 +1301,12 @@ bool Person::setDmgMod(const float &new_dmg_mod)
   return false;
 }
 
-/* Assigns a new experience modifier value */
+/*
+ * Description: Attempts to assign a new experience modifier value.
+ *
+ * Inputs: new_exp_mod - float value that is a new exp modifier value
+ * Output: bool - true if the nw value was within range
+ */
 bool Person::setExpMod(const float &new_exp_mod)
 {
   if (Helpers::isInRange(new_exp_mod, kMIN_EXP_MODI, kMAX_EXP_MODI))
@@ -1005,7 +1319,14 @@ bool Person::setExpMod(const float &new_exp_mod)
   return false;
 }
 
-/* Attempts to assign a given equipment slot a given equipment pointer */
+/*
+ * Description: Attempts to assign a given equipment slot a given equipment
+ *              pointer.
+ *
+ * Inputs: slot - enumerated EquipSlots -- the slot to be equipped
+ *         new_equip - pointer to the equipment to be equipped
+ * Output: bool - true if the equipment was attached successfully 
+ */
 bool Person::setEquip(const EquipSlots &slot, Equipment* new_equip)
 {
   if (new_equip == nullptr || slot != new_equip->getEquipSlot())
@@ -1031,7 +1352,14 @@ bool Person::setEquip(const EquipSlots &slot, Equipment* new_equip)
   return true;
 }
 
-
+/*
+ * Description: Attempts to assign a new loop set for the Person
+ *
+ * Inputs: new_credit_drop - new value to be assigned as credit drop loot
+ *         new_exp_drop - new value to be assigned for experience drop loot
+ *         new_item_drops - new item drop IDs for drop loot
+ * Output: bool - true if the loot assignment was successful
+ */
 /* Attempts to assign a new loop set for the person */
 bool Person::setLoot(const uint32_t &new_credit_drop, 
                      const uint32_t &new_exp_drop, 
@@ -1066,7 +1394,15 @@ bool Person::setLoot(const uint32_t &new_credit_drop,
   return all_set;
 }
 
-/* Assigns the sprite pointers for the person */
+/*
+ * Description: Assigns new sprite pointers for the Person
+ *
+ * Inputs: new_fp - pointer to a first person sprite
+ *         new_tp - pointer to a third person sprite
+ *         new_fp_bubby - pointer to a first person Bubbified sprite
+ *         new_tp_bubby - pointer to a third person Bubbified sprite
+ * Output: none
+ */
 void Person::setSprites(Frame* const new_fp, Frame* const new_tp,
                         Frame* const new_fp_bubby, Frame* const new_tp_bubby)
 {
@@ -1080,7 +1416,13 @@ void Person::setSprites(Frame* const new_fp, Frame* const new_tp,
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
 
-/* Grabs the experience required to reach a given level */
+/*
+ * Description: Grabs the experience required to reach a given level by 
+ *              accessing the experience table.
+ *
+ * Inputs: level - the level to be checked for
+ * Output: uint32_t - the minimum experience required to reach that level
+ */
 uint32_t Person::getExpAt(const uint8_t &level)
 {
   if (level != 0 && level <= kNUM_LEVELS)
@@ -1089,7 +1431,12 @@ uint32_t Person::getExpAt(const uint8_t &level)
   return kMAX_EXP + 1;
 }
 
-/* Grabs the level corresponding to a given experience value */
+/*
+ * Description: Grabs the level corresponding to a given experience value
+ *
+ * Inputs: experience - the experience to find a level for
+ * Output: uint8_t - the highest level reachable at the given experience
+ */
 uint8_t Person::getLevelAt(const uint32_t &experience)
 {
   for (size_t i = 0; i < exp_table.size(); i++)
@@ -1099,79 +1446,146 @@ uint8_t Person::getLevelAt(const uint32_t &experience)
   return exp_table.size() + 1;
 }
 
-/* Grabs the number the total number of levels for Person progression */
+/*
+ * Description: Grabs the number of total levels for Person progression
+ *
+ * Inputs: non
+ * Output: size_t - kNUM_LEVELS - the highest level reachable
+ */
 size_t Person::getNumLevels()
 {
   return kNUM_LEVELS; 
 }
 
-/* Grabs the number of equipment slots a Person has */
+/*
+ * Description: Grabs the number of equipment slots a Person has
+ *
+ * Inputs: none
+ * Output: size_t - kNUM_EQUIP_SLOTS - the number of equipment slots for Persons
+ */
 size_t Person::getNumEquipSlots()
 {
   return kNUM_EQUIP_SLOTS;
 }
 
+/*
+ * Description: Returns the minimum experience possible.
+ *
+ * Inputs: none
+ * Output: uint32_t - kMIN_EXP - the lowest possible experience
+ */
 /* Returns the minimum experience possible */
 uint32_t Person::getMinExp()
 {
   return kMIN_EXP; 
 }
 
-/* Returns the maximum experience possible */
+/*
+ * Description: Returns the maximum experience possible
+ *
+ * Inputs: none
+ * Output: uint32_t - kMAX_EXP - the maximum experience possible
+ */
 uint32_t Person::getMaxExp()
 {
   return kMAX_EXP;
 }
 
-/* Returns the minimum level experience */
+/*
+ * Description: Returns the minimum level experience
+ *
+ * Inputs: none
+ * Output: uint32_t - kMIN_LVL_EXP - experience required at the lowest level
+ */
 uint32_t Person::getMinLvlExp()
 {
   return kMIN_LVL_EXP;
 }
 
-/* Returns theexperience at the final level */
+/*
+ * Description: Returns the experience required at the final level
+ *
+ * Inputs: none
+ * Output: uint32_t - kMAX_LVL_EXP - the experience req. at the highets level
+ */
 uint32_t Person::getMaxLvlExp()
 {
   return kMAX_LVL_EXP;
 }
 
-/* Returns the maximum possible credit drop */
+/*
+ * Description: Returns the maximum possible credit drop
+ *
+ * Inputs: none
+ * Output: uint32_t - kMAX_CREDIT_DROP - the maximum possible credit drop
+ */
 uint32_t Person::getMaxCreditDrop()
 {
   return kMAX_CREDIT_DROP;
 }
 
-/* Returns the maximum experience a Person can reward */
+/*
+ * Description: Returns the maximum experience awarded by a single Person
+ *
+ * Inputs: none
+ * Output: uint32_t - kMAX_EXP_DROP - the maximum experience awarded by a Person
+ */
 uint32_t Person::getMaxExpDrop()
 {
   return kMAX_EXP_DROP;
 }
 
-/* Returns the maximmum # of item drops a Person can reward */
+/*
+ * Description: Returns the maximum number of item drops a Person can reward
+ *
+ * Inputs: none
+ * Output: uint32_t - kMAX_ITEM_DROPS - the maximum number of item drops
+ */
 uint32_t Person::getMaxItemDrops()
 {
   return kMAX_ITEM_DROPS;
 }
 
-/* Returns the minimum damage modifier possible */
+/*
+ * Description: Returns the minimum damage modifier possible
+ *
+ * Inputs: none
+ * Output: float - kMIN_DMG_MODI - the minimum damage modifier possible
+ */
 float Person::getMinDmgModi()
 {
   return kMIN_DMG_MODI;
 }
 
+/*
+ * Description: Returns the maximum damage modifier possible
+ *
+ * Inputs: none
+ * Output: float - kMAX_DMG_MODI - the maximum damage modifier possible
+ */
 /* Returns the maximum damage modifier possible */
 float Person::getMaxDmgModi()
 {
   return kMAX_DMG_MODI;
 }
 
-/* Returns the minimum experience modifier possible */
+/*
+ * Description: Returns the minimum damage modifier possible
+ *
+ * Inputs: none
+ * Output: float - kMIN_EXP_MODI - the minimum damage modifier possible
+ */
 float Person::getMinExpModi()
 {
   return kMIN_EXP_MODI;
 }
 
-/* Returns the maximum experience modifier possible */
+/*
+ * Description: Returns the max experience modifier
+ *
+ * Inputs: none
+ * Output: float - kMAX_EXP_MODI - the maximum damage modifier possible
+ */
 float Person::getMaxExpModi()
 {
   return kMAX_EXP_MODI;
