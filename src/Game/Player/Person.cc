@@ -1180,6 +1180,52 @@ std::vector<uint32_t> Person::getItemDrops()
 }
 
 /*
+ * Description: Calculates a vector of Skill ptrs containing all Skills the
+ *              Person has current access to use for the Battle based upon
+ *              their attribute values and the current settings of flags.
+ *
+ * Inputs: none
+ * Output: std::vector<Skill*> - vector of pointers to useable skills
+ */
+/* Calculates and determines current useable skills for Battle */
+std::vector<Skill*> Person::getUseableSkills()
+{
+  std::vector<Skill*> useable_skills;
+
+  auto elements = curr_skills->getElements(level);
+
+  for (auto it = begin(elements); it != end(elements); ++it)
+  {
+    auto add_skill = false;
+  
+    if ((*it).enabled)
+    {
+      auto skill_cost = (*it).skill->getCost();
+
+      if (getBFlag(BState::HALF_COST))
+        if (skill_cost != 1)
+          skill_cost /= 2;
+
+      if (skill_cost == 0)
+        add_skill &= getBFlag(BState::ATK_ENABLED);
+      else
+        add_skill &= getBFlag(BState::SKL_ENABLED);
+
+      add_skill &= (skill_cost < curr_stats.getStat(Attribute::QTDR));
+
+      if (getBFlag(BState::IS_BUBBY))
+        //TODO: Ailment::getMaxBubbyQD value [04-18-14]
+        add_skill &= (*it).skill->getCost() > 5;
+
+      if (add_skill)
+        useable_skills.push_back((*it).skill);
+    }
+  }
+
+  return useable_skills;
+}
+
+/*
  * Description: Assigns a given BState flag a given set value
  *
  * Inputs: flag - the BState flag to be assigned a value

@@ -1073,3 +1073,19 @@ void Ailment::reset()
   max_turns_left += turns_occured;
   turns_occured = 0;
 }
+
+/*============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
+
+/*
+ * Description: Returns the maximum QD cost for a Skill useable by a Bubbified
+ *              person.
+ *
+ * Inputs: none
+ * Output: none
+ */
+uint32_t Ailment::getMaxBubbyQD()
+{
+  return kBUBBIFY_MAX_QD;
+}

@@ -645,7 +645,10 @@ bool Game::setConfiguration(Options* running_config)
       game_map->setConfiguration(running_config);
 
     if(game_battle != nullptr)
+    {
+      std::cout << "Setting running config: " << running_config << std::endl;
       game_battle->setConfiguration(running_config);
+    }
 
     return true;
   }

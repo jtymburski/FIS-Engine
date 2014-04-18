@@ -28,18 +28,18 @@ AttributeSet Category::max_stats{AttributeSet()};
 AttributeSet Category::min_stats{AttributeSet()};
 
 const std::vector<int> Category::kMIN_VALUES =
-  {50, 15,  7,  7,
+{  50, 15,  7,  7,
     5,  3,  5,  3,
     5,  3,  5,  3,
     5,  3,  5,  3,
     4,  4,  4,  0};
   
 const std::vector<int> Category::kMAX_VALUES =
- {50000, 5000, 7000, 7000,
-   5500, 5500, 5500, 5500,
-   5500, 5500, 5500, 5500,
-   5500, 5500, 5500, 5500,
-   2000, 2000, 2000,  200};
+ { 50000, 5000, 7000, 7000,
+    5500, 5500, 5500, 5500,
+    5500, 5500, 5500, 5500,
+    5500, 5500, 5500, 5500,
+    2000, 2000, 2000,  200};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS

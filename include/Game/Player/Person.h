@@ -83,6 +83,9 @@ enum class PState
 
 class Person
 {
+
+  friend class Ailment;
+  
 public:
   /* Base Person object constructor */
   Person(const int32_t &game_id, const std::string &name, 
@@ -338,6 +341,9 @@ public:
 
   /* Grabs the vector of item IDs the person can drop */
   std::vector<uint32_t> getItemDrops();
+
+  /* Calculates and determines current useable skills for Battle */
+  std::vector<Skill*> getUseableSkills();
 
   /* Evaluates and returns a given battle state flag */
   void setBFlag(const BState &flag, const bool &set_value = true);

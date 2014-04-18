@@ -15,7 +15,7 @@
 #include "Game/Battle/Battle.h"
 
 /*=============================================================================
- * CONSTANTS
+ * CONSTANT
  *============================================================================*/
 
 /* ------------ Menu Constants --------------- */
@@ -78,11 +78,12 @@ Battle::Battle(Party* const friends, Party* const foes)
   determineTurnMode();
   loadBattleStateFlags();
 
-  // info_bar = new BattleInfoBar(getScreenWidth(), getScreenHeight(), this);
-  // menu = new BattleMenu(config, this);
+  // info_bar = new BattleInfg, this);
+  
   // status_bar = new BattleStatusBar(getFriends(), getScreenWidth(), 
   //                                  getScreenHeight(), this);
   action_buffer = new Buffer();
+  menu          = new BattleMenu();
 
   setBattleFlag(CombatState::PHASE_DONE, true);
 }
@@ -101,9 +102,9 @@ Battle::~Battle()
   //   delete info_bar;
   // info_bar = nullptr;
 
-  // if (menu != nullptr)
-  //   delete menu;
-  // menu = nullptr;
+  if (menu != nullptr)
+    delete menu;
+  menu = nullptr;
 
   // if (status_bar != nullptr)
   //   delete status_bar;
@@ -290,6 +291,7 @@ void Battle::loadBattleStateFlags()
 /* Orders the actions on the buffer by speed of the aggressor */
 void Battle::orderActions()
 {
+  //for (auto it =)
   /* Re-order item actions first */
 
 
@@ -375,7 +377,7 @@ void Battle::selectEnemyActions()
 {
   // Calculate method by which for AI to choose actions
     // Easy AI:
-      // Choose from skkill list
+      // Choose from skill list
       // Prioritize by skill value, each value point adds chance of using
       // offensive factor if HP > 35%
       // defensive factor if HP < 35%
@@ -387,8 +389,34 @@ void Battle::selectEnemyActions()
 /* Calculates user actions and add them to the buffer */
 void Battle::selectUserActions()
 {
-  // Choose actions from menu
-    // Choose skill from list of valid skills available
+  /* Choose actions for each person */
+  auto users = friends->getLivingMembers();
+  std::vector<Skill*> available_skills;
+  std::vector<std::pair<Item*, uint16_t>> available_items;
+
+  for (auto it = begin(users); it != end(users); ++ it)
+  {
+    /* Obtain the users currently available skills */
+    available_skills = friends->getMember(*it)->getUseableSkills();
+
+    if (friends->getInventory() != nullptr)
+      available_items  = friends->getInventory()->getBattleItems();
+
+    /* Assign the skills currently selectable on the BattleMenu */
+    menu->reset();
+    menu->setSelectableSkills(available_skills);
+    menu->setSelectableItems(available_items);
+
+    /* Get a user selected choice from the menu (choice is index of skills) */
+    if (menu->selectAction())
+    {
+      // auto action_type    = menu->getActionType();
+      // auto action_index   = menu->getActionIndex();
+      // auto action_targets = menu->getActionTargets();
+    }
+
+  }
+
     // Find valid targets for the skill
       // Select target from list
     // Add skill from skill buffer
@@ -856,9 +884,13 @@ TurnState Battle::getTurnState()
 /* Assings the running config */
 bool Battle::setConfiguration(Options* const new_config)
 {
+  /*
   if (config != nullptr)
   {
     config = new_config;
+
+    if (menu != nullptr)
+      menu->setConfiguration(config);
 
     setScreenHeight(config->getScreenHeight());
     setScreenWidth(config->getScreenWidth());
@@ -869,7 +901,7 @@ bool Battle::setConfiguration(Options* const new_config)
 
     return true;
   }
-
+  */
   return false;
 }
 

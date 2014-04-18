@@ -21,6 +21,11 @@
  * CELL CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
 
+/*
+ * Description:
+ *
+ * Inputs: 
+ */
 Cell::Cell(const uint8 a, const uint8 b)
   : bubby_ptr(nullptr)
   , state(CellState::OPEN)
@@ -33,37 +38,79 @@ Cell::Cell(const uint8 a, const uint8 b)
  * CELL PUBLIC FUNCTIONS
  *============================================================================*/
 
+/*
+ * Description:
+ *
+ * Inputs: 
+ * Output:
+ */
 void Cell::clear()
 {
   bubby_ptr = nullptr;
   state     = CellState::OPEN;
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 Bubby* Cell::getBubby()
 {
   return bubby_ptr;
 }
 
+/*
+ * Description:
+ *
+ * Inputs: 
+ * Output:
+ */
 uint8 Cell::getLinkTier()
 {
   return link_tier;
 }
 
+/*
+ * Description:
+ *
+ * Inputs: 
+ * Output:
+ */
 CellState Cell::getState()
 {
   return state;
 }
 
+/*
+ * Description:
+ *
+ * Inputs: 
+ * Output:
+ */
 uint8 Cell::getX()
 {
   return x;
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 uint8 Cell::getY()
 {
   return y;
 }
 
+/*
+ * Description:
+ *
+ * Inputs: 
+ * Output:
+ */
 void Cell::setState(const CellState new_state, Bubby* const new_bubby,
 	                const uint8 new_link_tier)
 {
@@ -107,11 +154,21 @@ const uint8 Signature::kMAX_E_LINK_TIER{15};
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
 
+/*
+ * Description:
+ *
+ * Inputs: 
+ */
 Signature::Signature()
 {
   classSetup(false);
 }
 
+/*
+ * Description:
+ *
+ * Inputs: 
+ */
 Signature::Signature(const size_t x, const size_t y, const bool random)
 {
   classSetup(true);
@@ -133,6 +190,11 @@ Signature::Signature(const size_t x, const size_t y, const bool random)
     std::cerr << "Invalid sig of size: " << x << " by " << y << "\n";
 }
 
+/*
+ * Description:
+ *
+ * Inputs: 
+ */
 Signature::Signature(const size_t x, const size_t y, 
 	                 std::vector<uint8Pair> closed_cells)
   : flags(static_cast<SigState>(0))
@@ -151,6 +213,12 @@ Signature::Signature(const size_t x, const size_t y,
  * PRIVATE FUNCTIONS
  *============================================================================*/
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
  void Signature::classSetup(const bool bubbable)
  {
    flags = static_cast<SigState>(0);

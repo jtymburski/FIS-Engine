@@ -186,6 +186,12 @@ public:
   bool setNewVictim(Person* new_victim, Person* new_inflictor = nullptr,
                     const bool &refresh_turns = false);
 
+/*============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
+public:
+  /* Returns the maximum QD value for Skill useable by Bubbified person */
+  static uint32_t getMaxBubbyQD();
 };
 
 #endif // AILMENT_H
