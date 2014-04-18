@@ -80,7 +80,7 @@ private:
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
- *============================================================================*/
+ *==========================================================================*/
 private:
   /* Checks the validity of a given BufferAction element */
   bool checkValid(BufferAction& elm);
@@ -90,6 +90,9 @@ private:
 
   /* Returns a ref. to a BufferAction at a given index */
   BufferAction& getIndex(const uint32_t &index);
+
+  /* Sorts a vector of Buffer actions by a given buffer sort */
+  bool sort(BufferSorts buffer_sorts);
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
@@ -148,9 +151,6 @@ public:
 public:
   /* Returns the maximum possible size of the Buffer */
   static uint16_t getMaxSize();
-
-  /* Sorts a vector of Buffer actions by a given buffer sort */
-  static bool sort(std::vector<BufferAction> actions, BufferSorts buffer_sorts);
 
 };
 

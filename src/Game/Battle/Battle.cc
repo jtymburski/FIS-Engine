@@ -154,7 +154,7 @@ bool Battle::addAilment(Ailment* const new_ailment)
     std::cout << "Inflicting ailment: " << ail_name << " on " << vic_name 
               << "\n";
 #endif
- 
+  
     //TODO: Add ailment infliction to Info Bar [03-16-14]
   }
 
@@ -291,12 +291,16 @@ void Battle::loadBattleStateFlags()
 /* Orders the actions on the buffer by speed of the aggressor */
 void Battle::orderActions()
 {
-  //for (auto it =)
-  /* Re-order item actions first */
+  std::cout << "Action state prior to sorting: " << std::endl;
+  action_buffer->print();
+  std::cout << std::endl;
 
+  /* Re-order item actions first, and skills by momentum of the user */
+  action_buffer->reorder(BufferSorts::ITEM_FIRST, BufferSorts::MOMENTUM);
 
-  /* Sorts skills by momentum of the skill user */
-
+  std::cout << "Action state after sorting: " << std::endl;
+  action_buffer->print();
+  std::cout << std::endl;
 
   /* Order action state complete */
   setBattleFlag(CombatState::PHASE_DONE);
@@ -884,7 +888,6 @@ TurnState Battle::getTurnState()
 /* Assings the running config */
 bool Battle::setConfiguration(Options* const new_config)
 {
-  /*
   if (config != nullptr)
   {
     config = new_config;
@@ -901,7 +904,6 @@ bool Battle::setConfiguration(Options* const new_config)
 
     return true;
   }
-  */
   return false;
 }
 

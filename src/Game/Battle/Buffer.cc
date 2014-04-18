@@ -134,6 +134,46 @@ BufferAction& Buffer::getIndex(const uint32_t &index)
   return action_buffer.at(0);
 }
 
+/*
+ * Description: Sorts a given vector of BufferActions by a given enumerated
+ *              sort type using std stable sort. Returns true if the sorting
+ *              actually took place.
+ *
+ * Inputs: actions - the vector of actions to be sorted
+ *         buffer_sorts - the enumerated sort to be performed
+ * Output: bool - true if the sorting took place
+ */
+bool Buffer::sort(BufferSorts buffer_sorts)
+{
+  auto sorted = false;
+
+  if (buffer_sorts == BufferSorts::ITEM_FIRST)
+  {
+    std::stable_sort(begin(action_buffer), end(action_buffer), Helpers::CompItemFirst());
+    sorted = true;
+  }
+  else if (buffer_sorts == BufferSorts::SKILL_FIRST)
+  {
+    std::stable_sort(begin(action_buffer), end(action_buffer), Helpers::CompSkillFirst());
+    sorted = true;
+  }
+  else if (buffer_sorts == BufferSorts::MOMENTUM)
+  {
+    std::stable_sort(begin(action_buffer), end(action_buffer), Helpers::CompMomentum());
+    sorted = true;
+  }
+  else if (buffer_sorts == BufferSorts::NONE)
+  {
+    sorted = true;
+  }
+  else
+  {
+    std::cerr << "[Error]: Unknown buffer sorting method \n";
+  }
+
+  return sorted;
+}
+
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
@@ -432,8 +472,8 @@ std::vector<Person*> Buffer::getTargets()
  * Description: Attempts to assign the next index of the buffer and returns
  *              true if a next index was found.
  *
- * Inputs: 
- * Output: 
+ * Inputs: none
+ * Output: bool - true if there exists a next buffer action which to get to
  */
 bool Buffer::setNext()
 {
@@ -444,8 +484,29 @@ bool Buffer::setNext()
     return true;
   }
 
-  clearAll();
   return false;
+}
+
+/*
+ * Description: Reorders the Buffer based on two different sorting methods,
+ *              primary and secondary.
+ *
+ * Inputs: primary - the primary way by which to sort the elements
+ *         secondary - the secondary way by which to sort the elements
+ * Output: bool - true if the sorts were performed successfully.
+ */
+bool Buffer::reorder(BufferSorts primary, BufferSorts secondary)
+{
+  auto success = true;
+
+  /* Sort the elements by secondary values first */
+  if (secondary != BufferSorts::NONE)
+    success &= Buffer::sort(secondary);
+
+  /* Then, reorder elements with stable sort by the primary desired method */
+  success &= Buffer::sort(primary);
+
+  return success;
 }
 
 /*=============================================================================
@@ -461,40 +522,4 @@ bool Buffer::setNext()
 uint16_t Buffer::getMaxSize()
 {
   return kMAXIMUM_ELEMENTS;
-}
-
-/*
- * Description: Sorts a given vector of BufferActions by a given enumerated
- *              sort type using std stable sort. Returns true if the sorting
- *              actually took place.
- *
- * Inputs: actions - the vector of actions to be sorted
- *         buffer_sorts - the enumerated sort to be performed
- * Output: bool - true if the sorting took place
- */
-bool sort(std::vector<BufferAction> actions, BufferSorts buffer_sorts)
-{
-  auto sorted = false;
-
-  if (buffer_sorts == BufferSorts::ITEM_FIRST)
-  {
-    std::stable_sort(begin(actions), end(actions), Helpers::CompItemFirst());
-    sorted = true;
-  }
-  else if (buffer_sorts == BufferSorts::SKILL_FIRST)
-  {
-    std::stable_sort(begin(actions), end(actions), Helpers::CompSkillFirst());
-    sorted = true;
-  }
-  else if (buffer_sorts == BufferSorts::MOMENTUM)
-  {
-    std::stable_sort(begin(actions), end(actions), Helpers::CompMomentum());
-    sorted = true;
-  }
-  else
-  {
-    std::cerr << "[Error]: Unknown buffer sorting method \n";
-  }
-
-  return sorted;
 }

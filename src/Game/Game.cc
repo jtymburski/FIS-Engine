@@ -35,6 +35,7 @@ Game::Game(Options* running_config)
 {
   /* Initalize class variables */
   base_path = "";
+  game_battle    = nullptr;
   game_inventory = nullptr;
   game_config    = nullptr;
   game_map       = nullptr;
@@ -638,15 +639,15 @@ bool Game::setConfiguration(Options* running_config)
   if(running_config != nullptr)
   {
     game_config = running_config;
-    base_path = game_config->getBasePath();
+    base_path   = game_config->getBasePath();
     
     /* Set in secondary classes */
     if(game_map != nullptr)
       game_map->setConfiguration(running_config);
 
-    if(game_battle != nullptr)
+    if (game_battle != nullptr)
     {
-      std::cout << "Setting running config: " << running_config << std::endl;
+      std::cout << "Setting running config: " << running_config << " on battle: " << game_battle << std::endl;
       game_battle->setConfiguration(running_config);
     }
 
