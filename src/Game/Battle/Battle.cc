@@ -161,6 +161,12 @@ bool Battle::addAilment(Ailment* const new_ailment)
   return can_add;
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Called when the Battle has been won */
 void Battle::battleWon()
 {
@@ -184,6 +190,12 @@ void Battle::battleWon()
   setNextTurnState();
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Called when the Battle has been lost */
 void Battle::battleLost()
 {
@@ -196,6 +208,12 @@ void Battle::battleLost()
   setNextTurnState();
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Returns enumeration of party death [None, Friends, Foes, Both] */
 bool Battle::checkPartyDeath(Party* const check_party)
 {
@@ -205,6 +223,12 @@ bool Battle::checkPartyDeath(Party* const check_party)
   return false;
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Cleanup before the end of a Battle turn */
 void Battle::cleanUp()
 {
@@ -224,6 +248,12 @@ void Battle::cleanUp()
     setBattleFlag(CombatState::VICTORY);
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Determines the turn progression of the Battle (based on speed) */
 void Battle::determineTurnMode()
 {
@@ -240,6 +270,12 @@ void Battle::determineTurnMode()
   }
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Deals with general upkeep (i.e. weather) */
 void Battle::generalUpkeep()
 {
@@ -256,6 +292,12 @@ void Battle::generalUpkeep()
   setBattleFlag(CombatState::PHASE_DONE);
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Sets the flags of BattleState at the beginning of the Battle */
 void Battle::loadBattleStateFlags()
 {
@@ -288,6 +330,12 @@ void Battle::loadBattleStateFlags()
   setBattleFlag(CombatState::FLAGS_CONFIGURED, true);
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Orders the actions on the buffer by speed of the aggressor */
 void Battle::orderActions()
 {
@@ -306,7 +354,12 @@ void Battle::orderActions()
   setBattleFlag(CombatState::PHASE_DONE);
 }
 
-/* Actually performs the actions in the buffer */
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 void Battle::performAction()
 {
   //TODO: Perform actions [03-01-14]
@@ -407,7 +460,7 @@ void Battle::selectUserActions()
       available_items  = friends->getInventory()->getBattleItems();
 
     /* Assign the skills currently selectable on the BattleMenu */
-    menu->reset();
+    menu->reset(target_index + 1);
     menu->setSelectableSkills(available_skills);
     menu->setSelectableItems(available_items);
 

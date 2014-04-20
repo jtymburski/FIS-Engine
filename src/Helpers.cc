@@ -227,6 +227,26 @@ std::string Helpers::cellToStr(const CellState &cell_state)
   return "";
 }
 
+std::string Helpers::actionTypeToStr(const ActionType &action_type)
+{
+  if (action_type == ActionType::SKILL)
+    return "SKILL";
+  else if (action_type == ActionType::ITEM)
+    return "ITEM";
+  else if (action_type == ActionType::DEFEND)
+    return "DEFEND";
+  else if (action_type == ActionType::IMPLODE)
+    return "IMPLODE";
+  else if (action_type == ActionType::RUN)
+    return "RUN";
+  else if (action_type == ActionType::PASS)
+    return "PASS";
+  else if (action_type == ActionType::NONE)
+    return "NONE";
+
+  return "";
+}
+
 /*=============================================================================
  * PLAYER / BATTLE HELPER FUNCTIONS
  *============================================================================*/

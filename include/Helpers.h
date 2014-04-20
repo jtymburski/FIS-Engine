@@ -85,6 +85,9 @@ public:
   /* Convert enumerated CellState to String */
   static std::string cellToStr(const CellState &cell_state);
 
+  /* Convert enumerated Action Type to String */
+  static std::string actionTypeToStr(const ActionType &action_type);
+
 /*=============================================================================
  * PLAYER / BATTLE HELPER FUNCTIONS
  *============================================================================*/
@@ -94,6 +97,8 @@ public:
 
   /* Returns the elemental weakness to a given element */
   static Element getWeakness(const Element &element);
+
+
 
 /*=============================================================================
  * GENERAL HELPER FUNCTIONS
