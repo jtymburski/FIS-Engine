@@ -13,7 +13,7 @@
 *
 * [1]: The Action is parsed from a string with convention as follows:
 *
-* [ID],[ALTER/INFLICT/RELIEVE/ASSIGN/REVIVE/ABSORB],,[MIN].[MAX],
+* [ID],[ALTER/INFLICT/RELIEVE/ASSIGN/REVIVE/ABSORB],[MIN].[MAX],
 * [IGNORE ATK ELEMENT 1].[IGNORE ATK ELEMENT 2]...,
 * [IGNORE DEF ELEMENT 1].[IGNORE DEF ELEMENT 2]...,
 * [TARGET'S ATTR/AILMENT],[AMOUNT/PC].[BASE],[AMOUNT/PC].[VARIANCE],
@@ -47,20 +47,20 @@
 *
 * [2]: Example actions and their intended effects:
 *
-* 1,ALTER,,,,THAG,PC.50,AMOUNT.15,NONE,95
+* 1,ALTER,,,,THAG,PC.50,AMOUNT.15,,95
 * will alter Thermal Aggression of target by 50 +/- 15 with 95% ch. of occuring
 *
-* 1,ALTER,,PHYSICAL,PHYSICAL.THERMAL,VITA,AMOUNT.50,AMOUNT.10,NONE,95
+* 1,ALTER,,PHYSICAL,PHYSICAL.THERMAL,VITA,AMOUNT.50,AMOUNT.10,,95
 * will damage target ignoring user's phys. atk and target's phys. and ther. def
 * at 50 +/- 15 points with 95% chance of occurence
 *
-* 1,INFLICT2.7,,POISON,,,NONE,75
+* 1,INFLICT,2.7,,POISON,,,,75
 * will inflict poison lasting 2-7 turns with 75% chance of occuring
 *
-* 1,RELIEVE,CURSE,,,,,,
-* will relieve curse
+* 1,RELIEVE,,,,CURSE,,,100
+* will relieve curse 100% of the time
 *
-* 1,REVIVE,,,,,PC.25,AMOUNT.50
+* 1,REVIVE,,,,VITA,PC.25,AMOUNT.50,,100
 * will revive a KO'd target with 25% +/- 15 VITA
 *
 * See .h file for TODOs
@@ -141,38 +141,38 @@ bool Action::parse(const std::string &raw)
     parseActionKeyword(sub_strings.at(1));
   
     /* Parse min & max durations */
-    if (sub_strings.at(3) != "")
+    if (sub_strings.at(2) != "")
     {
       std::vector<std::string> turns =
-          Helpers::split(sub_strings.at(3), kDELIMITER_2);
+          Helpers::split(sub_strings.at(2), kDELIMITER_2);
 
       if (turns.size() == 2)
         setDuration(std::stoi(turns.at(0)), std::stoi(turns.at(1)));
       else
         parseWarning("invalid duration size", raw);
     }
-    else if (sub_strings.at(3) == "")
+    else if (sub_strings.at(2) == "")
       if (actionFlag(ActionFlags::INFLICT) || actionFlag(ActionFlags::RELIEVE))
         setDuration(kDEFAULT_MIN, kDEFAULT_MAX);
 
     /* Parse ignore_atk flags */
-    if (sub_strings.at(4) != "")
-      parseIgnoreFlags(ignore_atk, sub_strings.at(4));
+    if (sub_strings.at(3) != "")
+      parseIgnoreFlags(ignore_atk, sub_strings.at(3));
 
     /* Parse ignore def flags */
-    if (sub_strings.at(5) != "")
-      parseIgnoreFlags(ignore_def, sub_strings.at(5));
+    if (sub_strings.at(4) != "")
+      parseIgnoreFlags(ignore_def, sub_strings.at(4));
 
     /* Parse Target attribute -- ALTER/ASSIGN/ABSORB keywords relate to it */
     if (actionFlag(ActionFlags::ALTER) || actionFlag(ActionFlags::ASSIGN) ||
         actionFlag(ActionFlags::ABSORB))
     {
-      parseAttribute(sub_strings.at(2), true);
+      parseAttribute(sub_strings.at(5), true);
     }
 
     /* INFLICT and RELIEVE keywords relate to ailments */
     else if(actionFlag(ActionFlags::INFLICT)||actionFlag(ActionFlags::RELIEVE))
-      parseAilment(sub_strings.at(2));
+      parseAilment(sub_strings.at(5));
 
     /* Parse base change */
     if (sub_strings.at(6) != "")
@@ -194,7 +194,7 @@ bool Action::parse(const std::string &raw)
     }
  
     /* Parse variance [check if size is right - no empty end on split() ] */
-    if (sub_strings.size() == 8 && sub_strings.at(7) != "")
+    if (sub_strings.at(7) != "")
     {
       std::vector<std::string> variance_values = 
           Helpers::split(sub_strings.at(7), kDELIMITER_2);
@@ -227,8 +227,13 @@ bool Action::parse(const std::string &raw)
     }
 
     /* Parse the chance occuring of the action */
-    auto parse_chance = std::stoi(sub_strings.at(9));
-    parseChance(parse_chance);
+    if (sub_strings.size() == 10 && sub_strings.at(9) != "")
+    {
+      auto parse_chance = std::stoi(sub_strings.at(9));
+      parseChance(parse_chance);
+    }
+    else
+      parseWarning("attempting to parse action chance", raw);
   }
   else
     parseWarning("invalid sub string size", raw);
@@ -356,7 +361,7 @@ bool Action::parseAttribute(const std::string &attr_parse, const bool &target)
   else if (attr_parse == "UNBR") attr = Attribute::UNBR;
   else if (attr_parse == "MANN") attr = Attribute::MANN;
 
-  if (attr != Attribute::NONE)
+  if (attr != Attribute::NONE || (!target && attr_parse == ""))
   {
     (target) ? (target_attribute = attr) : (user_attribute = attr);
 
@@ -475,7 +480,7 @@ bool Action::setDuration(const int &min_value, const int &max_value)
  */
 void Action::print()
 {
-  std::cout << "Action: " << id << std::endl;
+  std::cout << "=== Action: " << id << " === " << std::endl;
 
   std::cout << "--- Action Flags --- " << std::endl;
   std::cout << "ALTER: "   << actionFlag(ActionFlags::ALTER) << std::endl;
@@ -483,6 +488,7 @@ void Action::print()
   std::cout << "RELIEVE: " << actionFlag(ActionFlags::RELIEVE) << std::endl;
   std::cout << "ASSIGN: "  << actionFlag(ActionFlags::ASSIGN) << std::endl;
   std::cout << "REVIVE: "  << actionFlag(ActionFlags::REVIVE) << std::endl;
+  std::cout << "ABSORB: "  << actionFlag(ActionFlags::ABSORB) << std::endl;
   std::cout << "BASE_PC: " << actionFlag(ActionFlags::BASE_PC) << std::endl;
   std::cout << "VARI_PC: " << actionFlag(ActionFlags::VARI_PC) << std::endl;
   std::cout << "VALID: "   << actionFlag(ActionFlags::VALID) << std::endl;
@@ -507,9 +513,10 @@ void Action::print()
 
   std::cout << "Min Duration: " << min_duration << std::endl;
   std::cout << "Max Duration: " << max_duration << std::endl;
-  std::cout << "Variance: "     << variance << std::endl;
   std::cout << "Base Change: "  << base << std::endl;
-  std::cout << std::endl;
+  std::cout << "Variance: "     << variance << std::endl;
+  std::cout << "Chance: " << chance << std::endl;
+  std::cout << "=== / Action === " << std::endl;
 }
 
 /*

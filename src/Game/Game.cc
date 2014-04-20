@@ -424,96 +424,97 @@ void Game::setupBattle()
   // delete tumor
     // AttributeSet testing
     
-  // AttributeSet min_scion_set(1, true);
-  // AttributeSet max_scion_set(3, true);
-  // AttributeSet min_hex_set(2, true);
-  // AttributeSet max_hex_set(3, true);
-  // AttributeSet spark_set(1);
-  // AttributeSet tumor_set(1);
-  // AttributeSet moldy_set(1);
+  AttributeSet min_scion_set(1, true);
+  AttributeSet max_scion_set(3, true);
+  AttributeSet min_hex_set(2, true);
+  AttributeSet max_hex_set(3, true);
+  AttributeSet spark_set(1);
+  AttributeSet tumor_set(1);
+  AttributeSet moldy_set(1);
 
-  // AttributeSet min_human_set = min_hex_set;
-  // min_human_set.setStat(Attribute::VITA, 200);
-  // AttributeSet max_human_set(3, true);
+  AttributeSet min_human_set = min_hex_set;
+  min_human_set.setStat(Attribute::VITA, 200);
+  AttributeSet max_human_set(3, true);
 
-  // //Action Testing
-  // std::vector<Action*> actions;
-  // std::vector<float> chances = {0.50, 0.40, 0.12, 0.46};
-  // actions.push_back(new Action("1,ALTER,THAG,,,,AMOUNT.50,AMOUNT.15"));
-  // actions.push_back(new Action("3,INFLICT,POISON,2.7,,,,,"));
-  // actions.push_back(new Action("4,RELIEVE,CURSE,,,,,"));
-  // actions.push_back(new Action("5,REVIVE,,,,,PC.25,AMOUNT.50"));
-  // actions.push_back(new Action("7,INFLICT,BURN,3.5,,,,,"));
-  // actions.push_back(new Action("8,ALTER,VITA,,,,AMOUNT.100,PC.10"));
-  // actions.push_back(new Action("9,ALTER,VITA,,,,AMOUNT.75,PC.5"));
-
-  // Action* special = new Action("10,ALTER,VITA,,,,PC.25,AMOUNT.50");
+  //Action Testing
+  std::vector<Action*> actions;
+  std::vector<float> chances = {0.50, 0.40, 0.12, 0.46};
+  actions.push_back(new Action("1,ALTER,,,,THAG,PC.50,AMOUNT.15,,95"));
+  actions.push_back(new Action("2,ALTER,,PHYSICAL,PHYSICAL.THERMAL,VITA,AMOUNT.50,AMOUNT.10,,95"));
+  actions.push_back(new Action("3,INFLICT,2.7,,,POISON,,,,75"));
+  actions.push_back(new Action("4,REVIVE,,,,VITA,PC.25,AMOUNT.50,,100"));
+  actions.push_back(new Action("5,INFLICT,3.5,,,BURN,,,,85"));
+  actions.push_back(new Action("6,ALTER,,,,VITA,AMOUNT.100,PC.10,,95"));
+  actions.push_back(new Action("7,ALTER,,,,VITA,AMOUNT.210,PC.15,,96"));
+  Action* special = new Action("8,ALTER,,,,VITA,PC.25,AMOUNT.50,,98");
   
-  // // Skill Testing
-  // std::vector<Skill*> skills;
-  // std::vector<Skill*> other_skills;
+  actions[3]->print();
 
-  // Skill* normal_attack = new Skill(13, "Attack",ActionScope::ONE_TARGET,actions[0],0.75);
-  // Skill* medium_attack = new Skill(14, "Med. Attack",ActionScope::ONE_TARGET,actions[5],0.85);
-  // Skill* hard_attack   = new Skill(15, "Hard Attack",ActionScope::ONE_TARGET,actions[6],0.90);
-  // normal_attack->addActions(actions, chances);
+  // Skill Testing
+  std::vector<Skill*> skills;
+  std::vector<Skill*> other_skills;
 
-  // skills.push_back(normal_attack);
-  // skills.push_back(new Skill(400, "Super Attack",ActionScope::ONE_ENEMY,special,0.65));
-  // skills.push_back(new Skill(3, "Poison Attack",ActionScope::ONE_ENEMY,actions[1],0.79));
-  // skills.push_back(new Skill(35, "Crappy Attack",ActionScope::ONE_TARGET,special,1.00));
+  Skill* normal_attack = new Skill(13, "Attack",ActionScope::ONE_TARGET,actions[0],0.75);
+  Skill* medium_attack = new Skill(14, "Med. Attack",ActionScope::ONE_TARGET,actions[5],0.85);
+  Skill* hard_attack   = new Skill(15, "Hard Attack",ActionScope::ONE_TARGET,actions[6],0.90);
+  normal_attack->addActions(actions, chances);
 
-  // other_skills.push_back(medium_attack);
-  // other_skills.push_back(hard_attack);
+  skills.push_back(normal_attack);
+  skills.push_back(new Skill(400, "Super Attack",ActionScope::ONE_ENEMY,special,0.65));
+  skills.push_back(new Skill(3, "Poison Attack",ActionScope::ONE_ENEMY,actions[1],0.79));
+  skills.push_back(new Skill(35, "Crappy Attack",ActionScope::ONE_TARGET,special,1.00));
 
-  // std::vector<uint32_t> levels;
-  // std::vector<uint32_t> other_levels;
+  other_skills.push_back(medium_attack);
+  other_skills.push_back(hard_attack);
 
-  // for (auto it = begin(skills); it != end(skills); ++it)
-  //   levels.push_back(levels.size());
+  std::vector<uint32_t> levels;
+  std::vector<uint32_t> other_levels;
 
-  // for (auto it = begin(skills); it != end(skills); ++it)
-  //   other_levels.push_back(1);
+  for (auto it = begin(skills); it != end(skills); ++it)
+    levels.push_back(levels.size());
 
-  // // SkillSet Testing
-  // SkillSet* scion_skills = new SkillSet(skills, levels);
-  // SkillSet* hex_skills   = scion_skills;
-  // SkillSet* other_skill_set = new SkillSet(other_skills, other_levels);
+  for (auto it = begin(skills); it != end(skills); ++it)
+    other_levels.push_back(1);
 
-  // // Category Testing
-  // Category* blood_scion = new Category("Blood Scion", "Scion", min_scion_set, 
-  //                                      max_scion_set, scion_skills);
-  // blood_scion->setDescription("User of blood magicks.");
-  // blood_scion->setFlag(CategoryState::E_STAFF, true);
+  // SkillSet Testing
+  SkillSet* scion_skills = new SkillSet(skills, levels);
+  SkillSet* hex_skills   = scion_skills;
+  SkillSet* other_skill_set = new SkillSet(other_skills, other_levels);
 
-  // Category* bear = new Category("Bear", "Bears", min_hex_set, 
-  //                                   max_hex_set, hex_skills);
-  // Category* human = new Category("Human", "Humans", min_human_set, max_human_set, other_skill_set);
-  // bear->setDescription("Has a right to bear arms.");
+  // Category Testing
+  Category* blood_scion = new Category("Blood Scion", "Scion", min_scion_set, 
+                                       max_scion_set, scion_skills);
+  blood_scion->setDescription("User of blood magicks.");
+  blood_scion->setFlag(CategoryState::E_STAFF, true);
 
-  // // Person Testing
-  // Person* berran          = new Person(455, "Berran", blood_scion, bear);
-  // Person* arcadius        = new Person(456, "Arcadius", blood_scion, human);
-  // Person* malgidus        = new Person(457, "Malgidus", blood_scion, bear);
-  // Person* cloud_dude      = new Person(555, "Cloud Dude", blood_scion, bear);
-  // Person* ball_man        = new Person(556, "Ball Man", blood_scion, bear);
-  // Person* thruster_barrow = new Person(557, "Thruster Barrow", blood_scion, human); 
+  Category* bear = new Category("Bear", "Bears", min_hex_set, 
+                                    max_hex_set, hex_skills);
+  Category* human = new Category("Human", "Humans", min_human_set, max_human_set, other_skill_set);
+  bear->setDescription("Has a right to bear arms.");
 
-  // Party* allies = new Party(berran, PartyType::SLEUTH, 5, nullptr);
-  // Party* foes   = new Party(cloud_dude, PartyType::REGULAR_FOE, 5, nullptr);
+  // Person Testing
+  Person* berran          = new Person(455, "Berran", blood_scion, bear);
+  Person* arcadius        = new Person(456, "Arcadius", blood_scion, human);
+  Person* malgidus        = new Person(457, "Malgidus", blood_scion, bear);
+  Person* cloud_dude      = new Person(555, "Cloud Dude", blood_scion, bear);
+  Person* ball_man        = new Person(556, "Ball Man", blood_scion, bear);
+  Person* thruster_barrow = new Person(557, "Thruster Barrow", blood_scion, human); 
 
-  // allies->addMember(arcadius);
-  // allies->addMember(malgidus);
+  Party* allies = new Party(berran, PartyType::SLEUTH, 5, nullptr);
+  Party* foes   = new Party(cloud_dude, PartyType::REGULAR_FOE, 5, nullptr);
 
-  // foes->addMember(ball_man);
-  // foes->addMember(thruster_barrow);
+  allies->addMember(arcadius);
+  allies->addMember(malgidus);
 
-  // for (uint32_t i = 0; i < allies->getSize(); i++)
-  //   allies->getMember(i)->battlePrep();
-  // for (uint32_t i = 0; i < foes->getSize(); i++)
-  //   foes->getMember(i)->battlePrep();
+  foes->addMember(ball_man);
+  foes->addMember(thruster_barrow);
 
-  // game_battle = new Battle(allies, foes);
+  for (uint32_t i = 0; i < allies->getSize(); i++)
+    allies->getMember(i)->battlePrep();
+  for (uint32_t i = 0; i < foes->getSize(); i++)
+    foes->getMember(i)->battlePrep();
+
+  game_battle = new Battle(allies, foes);
 
   } // end enable test
   else

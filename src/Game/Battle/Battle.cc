@@ -446,6 +446,10 @@ void Battle::selectEnemyActions()
 /* Calculates user actions and add them to the buffer */
 void Battle::selectUserActions()
 {
+#ifdef UDEBUG
+  std::cout << "Selecting User Actions" << std::endl;
+#endif
+
   /* Choose actions for each person */
   auto users = friends->getLivingMembers();
   std::vector<Skill*> available_skills;
@@ -463,7 +467,8 @@ void Battle::selectUserActions()
     menu->reset(target_index + 1);
     menu->setSelectableSkills(available_skills);
     menu->setSelectableItems(available_items);
-
+    
+    std::cout << "Set menu for next person index" << std::endl;
     /* Get a user selected choice from the menu (choice is index of skills) */
     if (menu->selectAction())
     {

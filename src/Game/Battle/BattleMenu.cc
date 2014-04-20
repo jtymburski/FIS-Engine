@@ -82,7 +82,7 @@ void BattleMenu::reset(const uint32_t &new_person_index)
  */
 bool BattleMenu::selectAction()
 {
-  if (config->getBattleMode() == BattleMode::TEXT)
+  if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
     std::cout << "Select action for index:" << person_index << "\n";
 
   return true;
@@ -159,8 +159,6 @@ void BattleMenu::printItems()
  */
 bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
 {
-  auto previous_layer = layer_index;
-
   if (event.keysym.sym == SDLK_UP)
   {
     if (element_index == 0)
@@ -214,7 +212,7 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
   {
     if (layer_index == 1)
     {
-      action_type == ActionType::NONE;
+      action_type = ActionType::NONE;
       layer_index = 0;
       element_index = 0;
     }

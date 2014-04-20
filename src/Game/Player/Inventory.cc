@@ -702,13 +702,13 @@ bool Inventory::removeUID(const uint32_t &unique_id, const uint16_t &amount)
 {
   bool removed = false;
 
-  removed &= removeBubbyUID(game_id, amount);
+  removed &= removeBubbyUID(unique_id, amount);
 
   if (!removed)
-    removed &= removeEquipUID(game_id, amount);
+    removed &= removeEquipUID(unique_id, amount);
 
   if (!removed)
-    removed &= removeItemUID(game_id, amount);
+    removed &= removeItemUID(unique_id, amount);
 
   return removed;
 }
