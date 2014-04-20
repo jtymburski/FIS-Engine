@@ -64,6 +64,7 @@ enum class ActionScope : std::uint16_t
   ALL_ALLIES,
   ONE_ALLY_KO,
   ALL_ALLIES_KO,
+  ONE_PARTY,
   ALL_TARGETS,
   NOT_USER,
   ALL_NOT_USER,

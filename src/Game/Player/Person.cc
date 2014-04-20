@@ -1200,7 +1200,7 @@ std::vector<Skill*> Person::getUseableSkills()
   
     if ((*it).enabled)
     {
-      auto skill_cost = (*it).skill->getCost();
+      int32_t skill_cost = static_cast<int32_t>((*it).skill->getCost());
 
       if (getBFlag(BState::HALF_COST))
         if (skill_cost != 1)

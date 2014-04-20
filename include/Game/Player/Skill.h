@@ -37,7 +37,8 @@ enum class SkillFlags
   RELIEVING  = 1 << 3,
   REVIVING   = 1 << 4,
   ASSIGNING  = 1 << 5,
-  VALID      = 1 << 6
+  ABSORBING  = 1 << 6,
+  VALID      = 1 << 7
 };
 
 class Skill

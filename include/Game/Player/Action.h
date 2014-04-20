@@ -82,9 +82,10 @@ enum class ActionFlags
   RELIEVE  = 1 << 2, /* RELIEVE a given ailment */
   ASSIGN   = 1 << 3, /* ASSIGN an attribute to a given value */
   REVIVE   = 1 << 4, /* REVIVE un-KOs target with base HP */
-  BASE_PC  = 1 << 5, /* True if the base is a % value and not an abs. one */
-  VARI_PC  = 1 << 6, /* True if the variance is a % value and not an abs. one */
-  VALID    = 1 << 7  /* The validity of the action */
+  ABSORB   = 1 << 5, /* ABSORB user's ATTR by target's ATTR */
+  BASE_PC  = 1 << 6, /* True if the base is a % value and not an abs. one */
+  VARI_PC  = 1 << 7, /* True if the variance is a % value and not an abs. one */
+  VALID    = 1 << 8  /* The validity of the action */
 };
 
 /* IgnoreFlags for storing which elemental atk/def stats are ignored */
@@ -116,14 +117,18 @@ private:
   /* Set of ActionFlags for the current action */
   ActionFlags action_flags;
 
-  /* Enumerated attribute which the action may alter */
-  Attribute attribute;
+  /* Enumerated attributes which the action may alter */
+  Attribute target_attribute;
+  Attribute user_attribute;
 
   /* Enumerated infliction which the action may inflict/relieve */
   Infliction ailment;
 
   /* Base value (amt. or pc in flag) by which to change the attribute by */
   int32_t base;
+
+  /* Chance of the action occuring */
+  int32_t chance;
 
   /* ID of the current Action [parsed in] */
   int32_t id;
@@ -163,8 +168,11 @@ private:
   bool parseActionKeyword(const std::string &action_keyword);
 
   /* Sub-method for parsing the string containing the affected attribute */
-  bool parseAttribute(const std::string &attr_parse);
+  bool parseAttribute(const std::string &attr_parse, const bool &target);
   
+  /* Parse the chance occuring */
+  void parseChance(const int32_t &parse_chance);
+
   /* Sub-method for parsing the ignore atk and ignore def flags */
   void parseIgnoreFlags(IgnoreFlags& flag_set, const std::string &flags);
 
@@ -190,8 +198,9 @@ public:
   /* Evaluates a given ignore def flag */
   bool defFlag(IgnoreFlags test_flag);
 
-  /* Returns the Attribute the action may alter/assign */
-  Attribute getAttribute();
+  /* Returns the Attribute the action may alter/assign for user and target */
+  Attribute getUserAttribute();
+  Attribute getTargetAttribute();
 
   /* Returns the infliction the action may inflict/relieve */
   Infliction getAilment();

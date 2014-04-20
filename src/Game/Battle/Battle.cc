@@ -885,7 +885,163 @@ TurnState Battle::getTurnState()
   return turn_state;
 }
 
-/* Assings the running config */
+/* Returns the index integer of a a given Person ptr */
+int32_t Battle::getTarget(Person* battle_member)
+{
+  for (uint32_t i = 0; i < friends->getSize(); i++)
+    if (friends->getMember(i) == battle_member)
+      return static_cast<int32_t>(i);
+
+  for (uint32_t i = 0; i < foes->getSize(); i++)
+    if (foes->getMember(i) == battle_member)
+      return static_cast<int32_t>(i) - foes->getSize();
+
+  return 0;
+}
+
+/*  */
+Person* Battle::getPerson(const int32_t &index)
+{
+  if (index < 0)
+  {
+    if ((index + static_cast<int32_t>(foes->getSize())) > -1)
+      return foes->getMember(index + foes->getSize());
+  }
+  else if (index > 0)
+  {
+    if (index < static_cast<int32_t>(friends->getSize()))
+      return friends->getMember(index);
+  }
+
+  return nullptr;
+}
+
+/* Calculate and return all BattleMember indexes */
+std::vector<int32_t> Battle::getAllTargets()
+{
+  auto all_targets = getFriendsTargets();
+  auto foes_targets = getFoesTargets();
+
+  all_targets.insert(end(all_targets), begin(all_targets), end(all_targets));
+
+  return all_targets;
+}
+
+/* Obtains all friendly battle member indexes */
+std::vector<int32_t> Battle::getFriendsTargets(const bool &only_ko)
+{
+  std::vector<int32_t> friends_targets;
+
+  for (uint32_t i = 0; i < friends->getSize(); i++)
+  {
+    auto member = foes->getMember(i);
+
+    if (!only_ko || !member->getBFlag(BState::ALIVE))
+      friends_targets.push_back(getTarget(friends->getMember(i)));
+  }
+
+  return friends_targets;
+}
+
+/* Obtains all unfriendly battle member indexes */
+std::vector<int32_t> Battle::getFoesTargets(const bool &only_ko)
+{
+  std::vector<int32_t> foes_targets;
+
+  for (uint32_t i = 0; i < foes->getSize(); i++)
+  {
+    auto member = foes->getMember(i);
+
+    if (!only_ko || !member->getBFlag(BState::ALIVE))
+      foes_targets.push_back(getTarget(foes->getMember(i)));
+  }
+
+  return foes_targets;
+}
+
+/*  */
+std::vector<ActionType> Battle::getValidActions(int32_t index)
+{
+  std::vector<ActionType> valid_action_types;
+  auto member = getPerson(index);
+
+  if (member != nullptr)
+  {
+    if (member->getBFlag(BState::ATK_ENABLED) || 
+        member->getBFlag(BState::SKL_ENABLED))
+      valid_action_types.push_back(ActionType::SKILL);
+    
+    if (member->getBFlag(BState::ITM_ENABLED))
+      valid_action_types.push_back(ActionType::ITEM);
+
+    if (member->getBFlag(BState::DEF_ENABLED))
+      valid_action_types.push_back(ActionType::DEFEND);
+
+    if (member->getBFlag(BState::GRD_ENABLED))
+      valid_action_types.push_back(ActionType::GUARD);
+
+    if (member->getBFlag(BState::IMP_ENABLED))
+      valid_action_types.push_back(ActionType::IMPLODE);
+
+    if (member->getBFlag(BState::RUN_ENABLED))
+      valid_action_types.push_back(ActionType::RUN);
+
+    if (member->getBFlag(BState::PAS_ENABLED))
+      valid_action_types.push_back(ActionType::PASS);
+  }
+
+  return valid_action_types;
+}
+
+/* Obtains a vector of battle member indexes for a given user and scope */
+std::vector<int32_t> Battle::getValidTargets(int32_t index, 
+                                             ActionScope action_scope)
+{
+  std::vector<int32_t> valid_targets;
+
+  if (action_scope == ActionScope::ONE_TARGET  ||
+      action_scope == ActionScope::ALL_TARGETS ||
+      action_scope == ActionScope::ONE_PARTY)
+  {
+    valid_targets = getAllTargets();
+  }
+  else if (action_scope == ActionScope::NOT_USER ||
+           action_scope == ActionScope::ALL_NOT_USER)
+  {
+    valid_targets = getAllTargets();
+    std::remove(begin(valid_targets), end(valid_targets), index);
+  }
+  else if (action_scope == ActionScope::ONE_ENEMY   ||
+           action_scope == ActionScope::TWO_ENEMIES ||
+           action_scope == ActionScope::ALL_ENEMIES)
+  {
+    if (index > 0)
+      valid_targets = getFoesTargets();
+    else if (index < 0)
+      valid_targets = getFriendsTargets();
+  } 
+  else if (action_scope == ActionScope::ONE_ALLY   ||
+           action_scope == ActionScope::TWO_ALLIES ||
+           action_scope == ActionScope::ALL_ALLIES)
+  {
+    if (index > 0)
+      valid_targets = getFriendsTargets();
+    else if (index < 0)
+      valid_targets = getFoesTargets();
+  }
+  else if (action_scope == ActionScope::ONE_ALLY_KO ||
+           action_scope == ActionScope::ALL_ALLIES_KO)
+  {
+    if (index > 0)
+      valid_targets = getFriendsTargets(true);
+    else if (index < 0)
+      valid_targets = getFoesTargets(true);
+  }
+  
+  return valid_targets;
+}
+
+/* Assigns the running config */
 bool Battle::setConfiguration(Options* const new_config)
 {
   if (config != nullptr)
@@ -903,7 +1059,9 @@ bool Battle::setConfiguration(Options* const new_config)
     setBattleMode(config->getBattleMode());
 
     return true;
+
   }
+
   return false;
 }
 

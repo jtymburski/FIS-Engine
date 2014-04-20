@@ -27,10 +27,10 @@
  *
  * Inputs:
  */
- BattleMenu::BattleMenu()
- {
-
- }
+BattleMenu::BattleMenu()
+{
+  config = nullptr;
+}
 
 /*
  * Description:
@@ -61,7 +61,10 @@ void BattleMenu::reset()
 {
   menu_items.clear();
   menu_skills.clear();
+  valid_targets.clear();
+  selected_targets.clear();
 
+  selection_complete = false;
   action_type   = ActionType::NONE;
   action_index  = -1;
   action_targets.clear();
@@ -72,9 +75,23 @@ void BattleMenu::reset()
 
 bool BattleMenu::selectAction()
 {
-  //TODO: Action selection proccess [04-13-14]
-  return true;//WARNING
+  auto text     = false;
+  auto selected = false;
 
+  if (config != nullptr)
+    if (config->getBattleMode() == BattleMode::TEXT)
+      text = true;
+
+  while (!selected)
+  {
+    if (text)
+    {
+      std::cout << "Select User Action" << std::endl;      
+    }
+
+  }
+
+  return true;
 }
 
 /*

@@ -134,7 +134,7 @@ void Skill::flagSetup()
     {
       setFlag(SkillFlags::ALTERING);
 
-      if ((*it)->getAttribute() == Attribute::VITA && (*it)->getBase() > 0)
+      if ((*it)->getUserAttribute() == Attribute::VITA && (*it)->getBase() > 0)
         setFlag(SkillFlags::HEALING);
     }
 
@@ -154,8 +154,12 @@ void Skill::flagSetup()
     {
       setFlag(SkillFlags::ASSIGNING);
 
-      if ((*it)->getAttribute() == Attribute::VITA && (*it)->getBase() > 0)
+      if ((*it)->getUserAttribute() == Attribute::VITA && (*it)->getBase() > 0)
         setFlag(SkillFlags::HEALING);
+    }
+    else if ((*it)->actionFlag(ActionFlags::ABSORB))
+    {
+      setFlag(SkillFlags::ABSORBING);
     }
   }
 

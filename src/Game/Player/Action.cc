@@ -13,15 +13,15 @@
 *
 * [1]: The Action is parsed from a string with convention as follows:
 *
-* [ID],[ALTER/INFLICT/RELIEVE/ASSIGN],[ATTRIBUTE/AILMENT],[MIN].[MAX],
+* [ID],[ALTER/INFLICT/RELIEVE/ASSIGN/REVIVE/ABSORB],,[MIN].[MAX],
 * [IGNORE ATK ELEMENT 1].[IGNORE ATK ELEMENT 2]...,
 * [IGNORE DEF ELEMENT 1].[IGNORE DEF ELEMENT 2]...,
-* [AMOUNT/PC].[BASE],[AMOUNT/PC].[VARIANCE]
+* [TARGET'S ATTR/AILMENT],[AMOUNT/PC].[BASE],[AMOUNT/PC].[VARIANCE],
+* [USER'S ATTR],[CHANCE]
 *
 * Where:
 *   - ID - the unique ID that represents the action
-*   - ALTER/INFLICT/RELIEVE/ASSIGN/REVIVE keywords - see ActionFlags enum
-*   - ATTRIBUTE/AILMENT - the affected attribute or ailment by the key words
+*   - ALTER/INFLICT/RELIEVE/ASSIGN/REVIVE/ABSORB keywords - see ActionFlags enum
 *   - MIN.MAX - the duration an inflicted ailment will persist
 *   - IGNORE ATK ELMENTs - a list of valid elements which when set, will not
 *                          include the action user's corresponding offensive
@@ -33,25 +33,29 @@
 *                           elemental statistics into battle calculations.
 *                         - can use ALL for all elements or ELEMENTAL for
 *                           everything non-physical
+*   - TARGET'S ATTR/AILMENT - the affected attribute or ailment of the target
+*                             based on the key words.
 *   - BASE - the base power of the action (amount an attribute is affected)\
 *          - negative values will be used only when the ALTER key word is set
 *   - AMOUNT/PC - decides between utilizing base and variance as an amount 
 *                 (+ or -) value or as a factor (%) value
 *   - VARIANCE - the variance (even distribution) which base may change by
 *              - may be set to -1 for the highest possible variance
+*   - USER's ATTR - the affected attribute of the user based on ABSORB keyword
+*   - CHANCE - the chance of the action happening if the Skill used happens
 * -----
 *
 * [2]: Example actions and their intended effects:
 *
-* 1,ALTER,THAG,,,,AMOUNT.50,AMOUNT.15
-* will alter Thermal Aggression of target by 50 +/- 15
+* 1,ALTER,,,,THAG,PC.50,AMOUNT.15,NONE,95
+* will alter Thermal Aggression of target by 50 +/- 15 with 95% ch. of occuring
 *
-* 1,ALTER,VITA,,PHYSICAL,PHYSICAL.THERMAL,AMOUNT.50,AMOUNT.10
+* 1,ALTER,,PHYSICAL,PHYSICAL.THERMAL,VITA,AMOUNT.50,AMOUNT.10,NONE,95
 * will damage target ignoring user's phys. atk and target's phys. and ther. def
-* at 50 +/- 15 points
+* at 50 +/- 15 points with 95% chance of occurence
 *
-* 1,INFLICT,POISON,2.7,,,,,
-* will inflict poison lasting 2-7 turns
+* 1,INFLICT2.7,,POISON,,,NONE,75
+* will inflict poison lasting 2-7 turns with 75% chance of occuring
 *
 * 1,RELIEVE,CURSE,,,,,,
 * will relieve curse
@@ -61,7 +65,6 @@
 *
 * See .h file for TODOs
 *******************************************************************************/
-
 #include "Game/Player/Action.h"
 
 /*=============================================================================
@@ -88,9 +91,11 @@ const int32_t  Action::kUNSET_ID        = -1;
  */
 Action::Action()
     : action_flags{static_cast<ActionFlags>(0)}
-    , attribute{Attribute::NONE}
+    , target_attribute{Attribute::NONE}
+    , user_attribute{Attribute::NONE}
     , ailment{Infliction::INVALID}
     , base{0}
+    , chance{0}
     , id{kUNSET_ID}
     , ignore_atk{static_cast<IgnoreFlags>(0)}
     , ignore_def{static_cast<IgnoreFlags>(0)}
@@ -127,21 +132,13 @@ bool Action::parse(const std::string &raw)
   action_flags |= ActionFlags::VALID;
   std::vector<std::string> sub_strings = Helpers::split(raw, kDELIMITER);
 
-  if (sub_strings.size() == 7 || sub_strings.size() == 8)
+  if (sub_strings.size() == 9 || sub_strings.size() == 10)
   {
   	/* Parse the ID */
     id = std::stoi(sub_strings.at(0));
 
   	/* Parse the initial action keyword */
     parseActionKeyword(sub_strings.at(1));
-
-    /* ALTER and ASSIGN keywords relate to attributes */
-    if (actionFlag(ActionFlags::ALTER) || actionFlag(ActionFlags::ASSIGN))
-      parseAttribute(sub_strings.at(2));
-
-    /* INFLICT and RELIEVE keywords relate to ailments */
-    else if(actionFlag(ActionFlags::INFLICT)||actionFlag(ActionFlags::RELIEVE))
-      parseAilment(sub_strings.at(2));
   
     /* Parse min & max durations */
     if (sub_strings.at(3) != "")
@@ -165,6 +162,17 @@ bool Action::parse(const std::string &raw)
     /* Parse ignore def flags */
     if (sub_strings.at(5) != "")
       parseIgnoreFlags(ignore_def, sub_strings.at(5));
+
+    /* Parse Target attribute -- ALTER/ASSIGN/ABSORB keywords relate to it */
+    if (actionFlag(ActionFlags::ALTER) || actionFlag(ActionFlags::ASSIGN) ||
+        actionFlag(ActionFlags::ABSORB))
+    {
+      parseAttribute(sub_strings.at(2), true);
+    }
+
+    /* INFLICT and RELIEVE keywords relate to ailments */
+    else if(actionFlag(ActionFlags::INFLICT)||actionFlag(ActionFlags::RELIEVE))
+      parseAilment(sub_strings.at(2));
 
     /* Parse base change */
     if (sub_strings.at(6) != "")
@@ -210,6 +218,17 @@ bool Action::parse(const std::string &raw)
 
     if (actionFlag(ActionFlags::VARI_PC) && variance > kMAX_VARIANCE_PC)
       parseWarning("variance percent value higher than permitted", raw);
+
+    /* Parse USER attribute -- ALTER/ASSIGN/ABSORB keywords relate to it */
+    if (actionFlag(ActionFlags::ALTER) || actionFlag(ActionFlags::ASSIGN) ||
+        actionFlag(ActionFlags::ABSORB))
+    {
+      parseAttribute(sub_strings.at(8), false);
+    }
+
+    /* Parse the chance occuring of the action */
+    auto parse_chance = std::stoi(sub_strings.at(9));
+    parseChance(parse_chance);
   }
   else
     parseWarning("invalid sub string size", raw);
@@ -253,7 +272,7 @@ bool Action::parseAilment(const std::string &ailm)
   else if (ailm == "CHGBUFF")     ailment = Infliction::CHGBUFF;
   else if (ailm == "CYBBUFF")     ailment = Infliction::CYBBUFF;
   else if (ailm == "NIHBUFF")     ailment = Infliction::NIHBUFF;
-  else if (ailm == "LIMBUFF")     ailment = Infliction::LIMBUFF;
+  // else if (ailm == "LIMBUFF")     ailment = Infliction::LIMBUFF;
   else if (ailm == "UNBBUFF")     ailment = Infliction::UNBBUFF;
   else if (ailm == "MOMBUFF")     ailment = Infliction::MOMBUFF; 
   else if (ailm == "VITBUFF")     ailment = Infliction::VITBUFF; 
@@ -313,34 +332,47 @@ bool Action::parseActionKeyword(const std::string &action_keyword)
  * Inputs: attr_parse - string containing the affected attribute
  * Output: bool - validity o the attribute parse
  */
-bool Action::parseAttribute(const std::string &attr_parse)
+bool Action::parseAttribute(const std::string &attr_parse, const bool &target)
 {
-  if (attr_parse == "VITA") attribute = Attribute::VITA;
-  if (attr_parse == "QTDR") attribute = Attribute::QTDR;
-  if (attr_parse == "PHAG") attribute = Attribute::PHAG;
-  if (attr_parse == "PHFD") attribute = Attribute::PHFD;
-  if (attr_parse == "THAG") attribute = Attribute::THAG;
-  if (attr_parse == "THFD") attribute = Attribute::THFD;
-  if (attr_parse == "PRAG") attribute = Attribute::PRAG;
-  if (attr_parse == "PRFD") attribute = Attribute::PRFD;
-  if (attr_parse == "POAG") attribute = Attribute::POAG;
-  if (attr_parse == "POFD") attribute = Attribute::POFD;
-  if (attr_parse == "CHAG") attribute = Attribute::CHAG;
-  if (attr_parse == "CHFD") attribute = Attribute::CHFD;
-  if (attr_parse == "CYAG") attribute = Attribute::CYAG;
-  if (attr_parse == "CYFD") attribute = Attribute::CYFD;
-  if (attr_parse == "NIAG") attribute = Attribute::NIAG;
-  if (attr_parse == "NIFD") attribute = Attribute::NIFD;
-  if (attr_parse == "MMNT") attribute = Attribute::MMNT;
-  if (attr_parse == "LIMB") attribute = Attribute::LIMB;
-  if (attr_parse == "UNBR") attribute = Attribute::UNBR;
-  if (attr_parse == "MANN") attribute = Attribute::MANN;
+  auto attr = Attribute::NONE;
 
-  if (attribute != Attribute::NONE)
+  if (attr_parse == "VITA")      attr = Attribute::VITA;
+  else if (attr_parse == "QTDR") attr = Attribute::QTDR;
+  else if (attr_parse == "PHAG") attr = Attribute::PHAG;
+  else if (attr_parse == "PHFD") attr = Attribute::PHFD;
+  else if (attr_parse == "THAG") attr = Attribute::THAG;
+  else if (attr_parse == "THFD") attr = Attribute::THFD;
+  else if (attr_parse == "PRAG") attr = Attribute::PRAG;
+  else if (attr_parse == "PRFD") attr = Attribute::PRFD;
+  else if (attr_parse == "POAG") attr = Attribute::POAG;
+  else if (attr_parse == "POFD") attr = Attribute::POFD;
+  else if (attr_parse == "CHAG") attr = Attribute::CHAG;
+  else if (attr_parse == "CHFD") attr = Attribute::CHFD;
+  else if (attr_parse == "CYAG") attr = Attribute::CYAG;
+  else if (attr_parse == "CYFD") attr = Attribute::CYFD;
+  else if (attr_parse == "NIAG") attr = Attribute::NIAG;
+  else if (attr_parse == "NIFD") attr = Attribute::NIFD;
+  else if (attr_parse == "MMNT") attr = Attribute::MMNT;
+  else if (attr_parse == "UNBR") attr = Attribute::UNBR;
+  else if (attr_parse == "MANN") attr = Attribute::MANN;
+
+  if (attr != Attribute::NONE)
+  {
+    (target) ? (target_attribute = attr) : (user_attribute = attr);
+
     return true;
+  }
 
   parseWarning("attempting to parse attribute", attr_parse);
   return false;
+}
+
+void Action::parseChance(const int32_t &parse_chance)
+{
+  if (parse_chance > 0)
+    (parse_chance > 100) ? (chance = 100) : (chance = parse_chance);
+  else
+    chance = 0;
 }
 
 /*
@@ -522,9 +554,14 @@ bool Action::defFlag(IgnoreFlags test_flag)
  * Inputs: none
  * Output: Attribute - enumerated atribute the action affects
  */
-Attribute Action::getAttribute()
+Attribute Action::getUserAttribute()
 {
-  return attribute;
+  return user_attribute;
+}
+
+Attribute Action::getTargetAttribute()
+{
+  return target_attribute;
 }
 
 /*
