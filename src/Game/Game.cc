@@ -509,6 +509,12 @@ void Game::setupBattle()
   foes->addMember(ball_man);
   foes->addMember(thruster_barrow);
 
+  Inventory* ally_inventory = new Inventory(16, "Ally Inventory", nullptr);
+  Inventory* foes_inventory  = new Inventory(17, "Foe Inventory", nullptr);
+
+  allies->setInventory(ally_inventory);
+  foes->setInventory(foes_inventory);
+
   for (uint32_t i = 0; i < allies->getSize(); i++)
     allies->getMember(i)->battlePrep();
   for (uint32_t i = 0; i < foes->getSize(); i++)
@@ -595,6 +601,8 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
   {
     if(mode == MAP)
       return game_map->keyDownEvent(event);
+    else if(mode == BATTLE)
+      return game_battle->keyDownEvent(event);
   }
   
   return false;
@@ -669,7 +677,16 @@ bool Game::update(int32_t cycle_time)
     return game_map->update(cycle_time);
 
   if(mode == BATTLE && game_battle != nullptr)
+  {
+    if (!game_battle->getBattleFlag(CombatState::CONFIGURED))
+    {
+      game_battle->setConfiguration(game_config);
+    }
+    else
+      std::cout << "ho ho ho" << std::endl;
+
     return game_battle->update(cycle_time);
+  }
 
   return false;
 }

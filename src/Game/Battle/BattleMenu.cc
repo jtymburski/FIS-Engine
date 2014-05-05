@@ -29,7 +29,8 @@
  */
 BattleMenu::BattleMenu()
 {
-  config = nullptr;
+  selection_complete = false;
+  config             = nullptr;
 }
 
 /*
@@ -50,6 +51,11 @@ BattleMenu::BattleMenu()
 /*============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
+
+bool BattleMenu::isActionSelected()
+{
+  return selection_complete;
+}
 
 /*
  * Description:
@@ -72,6 +78,7 @@ void BattleMenu::reset(const uint32_t &new_person_index)
   layer_index   = -1;
   element_index = -1;
   person_index = new_person_index;
+  window_status = WindowStatus::ON;
 }
 
 /*
@@ -164,70 +171,70 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
     if (element_index == 0)
       element_index = getMaxIndex();
   }
-  else if (event.keysym.sym == SDLK_DOWN)
-  {
+  // else if (event.keysym.sym == SDLK_DOWN)
+  // {
 
-  }
-  else if (event.keysym.sym == SDLK_a)
-  {
-    action_type = valid_actions.at(element_index);
+  // }
+  // else if (event.keysym.sym == SDLK_a)
+  // {
+  //   action_type = valid_actions.at(element_index);
 
-    if (layer_index == 0)
-    {
-      if (config->getBattleMode() == BattleMode::TEXT)
-      {
-        std::cout << "Selecting current action: " 
-                  << Helpers::actionTypeToStr(action_type)
-                  << "\n";
-      }
+  //   if (layer_index == 0)
+  //   {
+  //     if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
+  //     {
+  //       std::cout << "Selecting current action: " 
+  //                 << Helpers::actionTypeToStr(action_type)
+  //                 << "\n";
+  //     }
 
-      layer_index = 1;
+  //     layer_index = 1;
 
-      if (action_type == ActionType::DEFEND  || 
-          action_type == ActionType::IMPLODE || 
-          action_type == ActionType::PASS)
-      {
-        selection_complete = true;
-      }
-    }
-    else if (layer_index == 1)
-    {
-      if (action_type == ActionType::SKILL || action_type == ActionType::ITEM)
-      {
-        action_index = element_index;
-        layer_index = 2;
-        element_index = 0;
-      }
-      else if (action_type == ActionType::GUARD)
-        action_targets.push_back(action_index);
-    }
-    else if (layer_index == 3)
-    {
-      action_targets = selected_targets;
-      selection_complete = true;
-    }
+  //     if (action_type == ActionType::DEFEND  || 
+  //         action_type == ActionType::IMPLODE || 
+  //         action_type == ActionType::PASS)
+  //     {
+  //       selection_complete = true;
+  //     }
+  //   }
+  //   else if (layer_index == 1)
+  //   {
+  //     if (action_type == ActionType::SKILL || action_type == ActionType::ITEM)
+  //     {
+  //       action_index = element_index;
+  //       layer_index = 2;
+  //       element_index = 0;
+  //     }
+  //     else if (action_type == ActionType::GUARD)
+  //       action_targets.push_back(action_index);
+  //   }
+  //   else if (layer_index == 3)
+  //   {
+  //     action_targets = selected_targets;
+  //     selection_complete = true;
+  //   }
 
-  }
-  else if (event.keysym.sym == SDLK_b)
-  {
-    if (layer_index == 1)
-    {
-      action_type = ActionType::NONE;
-      layer_index = 0;
-      element_index = 0;
-    }
-    else if (layer_index == 2)
-    {
+  // }
+  // else if (event.keysym.sym == SDLK_b)
+  // {
+  //   if (layer_index == 1)
+  //   {
+  //     action_type = ActionType::NONE;
+  //     layer_index = 0;
+  //     element_index = 0;
+  //   }
+  //   else if (layer_index == 2)
+  //   {
 
-    }
-    else if (layer_index == 3)
-    {
-      //TODO: Pop off the last added target selection depending on ActionScope
-    }
+  //   }
+  //   else if (layer_index == 3)
+  //   {
+  //     //TODO: Pop off the last added target selection depending on ActionScope
+  //   }
 
-  }
+  // }
 
-  if (config->getBattleMode() == BattleMode::TEXT)
+  if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
   {
     if (layer_index == 0)
       printValidActions();
@@ -239,8 +246,10 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
     if (selection_complete)
       std::cout << "Selection complete! \n";
   }
+  else if (config == nullptr)
+    std::cout << "Config if nullptr" << std::endl;
 
-  return true;
+  return false;
 }
 
 /*
@@ -296,6 +305,11 @@ int32_t BattleMenu::getMaxIndex()
   }
 
   return 0;
+}
+
+WindowStatus BattleMenu::getWindowStatus()
+{
+  return window_status;
 }
 
 /*

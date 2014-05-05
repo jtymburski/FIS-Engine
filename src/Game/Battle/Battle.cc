@@ -327,7 +327,6 @@ void Battle::loadBattleStateFlags()
   setBattleFlag(CombatState::VICTORY, false);
   setBattleFlag(CombatState::OUTCOME_DONE, false);
   setBattleFlag(CombatState::ERROR_STATE, false);
-  setBattleFlag(CombatState::FLAGS_CONFIGURED, true);
 }
 
 /*
@@ -450,34 +449,86 @@ void Battle::selectUserActions()
   std::cout << "Selecting User Actions" << std::endl;
 #endif
 
-  /* Choose actions for each person */
-  auto users = friends->getLivingMembers();
-  std::vector<Skill*> available_skills;
-  std::vector<std::pair<Item*, uint16_t>> available_items;
-
-  for (auto it = begin(users); it != end(users); ++ it)
+  /* If a menu action has been selected, update to the next person index. If 
+     the index is at the highest level, set the select user action phase done */
+  if (person_index == 0 || menu->isActionSelected())
   {
-    /* Obtain the users currently available skills */
-    available_skills = friends->getMember(*it)->getUseableSkills();
-
-    if (friends->getInventory() != nullptr)
-      available_items  = friends->getInventory()->getBattleItems();
-
-    /* Assign the skills currently selectable on the BattleMenu */
-    menu->reset(target_index + 1);
-    menu->setSelectableSkills(available_skills);
-    menu->setSelectableItems(available_items);
-    
-    std::cout << "Set menu for next person index" << std::endl;
-    /* Get a user selected choice from the menu (choice is index of skills) */
-    if (menu->selectAction())
+    /* If an action has been selected for a valid person index, grab the info.
+       and load it into the buffer */
+    if (person_index > 0 && menu->isActionSelected())
     {
-      // auto action_type    = menu->getActionType();
-      // auto action_index   = menu->getActionIndex();
-      // auto action_targets = menu->getActionTargets();
+      auto person_user    = getPerson(person_index);
+      auto action_type    = menu->getActionType();
+      auto action_index   = menu->getActionIndex();
+      auto action_targets = menu->getActionTargets();
+
+      /* Build the vector Person ptrs from the target index vector */
+      std::vector<Person*> person_targets;
+
+      for (auto it = begin(action_targets); it != end(action_targets); ++it)
+        person_targets.push_back(getPerson(*it));
+        
+      /* Push the actions on to the Buffer */
+      if (action_type == ActionType::SKILL)
+      {
+        auto selected_skill = person_user->getUseableSkills().at(action_index);
+        action_buffer->add(person_user, selected_skill, person_targets, 0);
+      
+        // TODO: Reduce the person's QD upon selection of skill [05-04-14]
+      }
+      else if (action_type == ActionType::ITEM)
+      {
+        auto selected_item = 
+               friends->getInventory()->getBattleItems().at(action_index).first;
+        action_buffer->add(person_user, selected_item, person_targets, 0);
+       
+        //TODO: Remove the potentially used item from the inventory [05-04-14]
+      }
+      else if (action_type == ActionType::DEFEND  || 
+               action_type == ActionType::GUARD   ||
+               action_type == ActionType::IMPLODE ||
+               action_type == ActionType::RUN     ||
+               action_type == ActionType::PASS)
+      {
+        action_buffer->add(person_user, action_type, person_targets, 0);
+      }
+      else
+      {
+        std::cerr << "[Error]: Invalid action selected\n";
+      }
+
     }
 
+    /* If the menu has an action seleted, set the person index to next */
+    if (static_cast<uint32_t>(person_index + 1) < 
+        friends->getLivingMembers().size() && 
+        person_index > -1)
+    {
+      std::cout << "incrementing person index" << std::endl;
+      auto person = getPerson(++person_index);
+
+      if (person != nullptr)
+      {
+#ifdef UDEBUG
+        std::cout << "Selecting action for: " << person->getName() << std::endl;
+#endif 
+        /* Reload the menu information for the next person */
+        menu->reset(person_index);
+        menu->setSelectableSkills(person->getUseableSkills());
+        menu->setSelectableItems(friends->getInventory()->getBattleItems());
+      }
+      else
+      {
+        std::cerr << "[Error]: Selection action for invalid person\n";
+      }
+    }
+    else
+    {
+      /* Set the phase complete on the max person index */
+      setBattleFlag(CombatState::PHASE_DONE);
+    }
   }
+    /* Grabs the selected action's information */
 
     // Find valid targets for the skill
       // Select target from list
@@ -491,7 +542,6 @@ void Battle::selectUserActions()
       // Remove item from inventory
 
   /* Select user action state complete */
-  setBattleFlag(CombatState::PHASE_DONE);
 }
 
 /* Load default configuration of the battle */
@@ -512,6 +562,7 @@ bool Battle::setupClass()
   turn_mode           = TurnMode::FRIENDS_FIRST;
   flags = static_cast<CombatState>(0);
 
+  person_index           = 0;
   screen_height          = 0;
   screen_width           = 0;
   time_elapsed           = 0;
@@ -519,7 +570,6 @@ bool Battle::setupClass()
   turns_elapsed          = 0;
 
   turn_state = TurnState::BEGIN;
-  setBattleFlag(CombatState::CONFIGURED, true);
 
   return true;
 }
@@ -588,6 +638,7 @@ void Battle::setNextTurnState()
 {
  /* Set the CURRENT_STATE to incomplete */
   setBattleFlag(CombatState::PHASE_DONE, false);
+  setBattleFlag(CombatState::ACTION_DONE, false);
 
   /* If the Battle victory/loss has been complete, go to Destruct */
   if (getBattleFlag(CombatState::OUTCOME_DONE))
@@ -747,6 +798,23 @@ void Battle::setTurnState(const TurnState &new_turn_state)
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
+/* */
+bool Battle::keyDownEvent(SDL_KeyboardEvent event)
+{
+  std::cout << "Key down event!" << std::endl;
+
+  if (menu->getWindowStatus() == WindowStatus::ON)
+    return menu->keyDownEvent(event);
+
+  return false;
+}
+
+/* */
+bool Battle::isPartyDead()
+{
+
+}
+
 /* Methods to print information about the Battle */
 void Battle::printAll(const bool &simple, const bool &flags, const bool &party)
 {
@@ -787,6 +855,7 @@ void Battle::printAll(const bool &simple, const bool &flags, const bool &party)
       std::cout << "\nFLAGS_CONFIGURED: " 
                 << getBattleFlag(CombatState::FLAGS_CONFIGURED);
       std::cout << "\nPHASE_DONE: " << getBattleFlag(CombatState::PHASE_DONE);
+      std::cout << "\nACTION_DONE: " << getBattleFlag(CombatState::ACTION_DONE);
       std::cout << "\nVICTORY: " << getBattleFlag(CombatState::VICTORY);
       std::cout << "\nLOSS: " << getBattleFlag(CombatState::LOSS);
       std::cout << "\nOUTCOME_DONE: " 
@@ -1116,8 +1185,8 @@ bool Battle::setConfiguration(Options* const new_config)
     setHudDisplayMode(config->getBattleHudState());
     setBattleMode(config->getBattleMode());
 
+    setBattleFlag(CombatState::CONFIGURED, true);
     return true;
-
   }
 
   return false;

@@ -20,14 +20,6 @@
 #include "Game/Player/Skill.h"
 #include "Game/Player/Person.h"
 
-/* Enumerated types of Battle Buffers */
-enum class BufferType
-{
-  SKILL,
-  ITEM,
-  NONE
-};
-
 /* Enumerated method of sorting for the Buffer objects */
 enum class BufferSorts
 {
@@ -40,6 +32,7 @@ enum class BufferSorts
 /* A buffer element */
 struct BufferAction
 {
+
   /* The number of turns to remain in the buffer */
   uint32_t cooldown;
 
@@ -54,7 +47,7 @@ struct BufferAction
   std::vector<Person*> targets;
 
   /* Enumerated type of buffer (SKILL or ITEM or NONE) */
-  BufferType type;
+  ActionType type;
 
   /* The validity of the element */
   bool valid;
@@ -104,6 +97,9 @@ public:
 
   /* Creates and adds a new Item BufferAction element given params */
   bool add(Person* const user, Item* const item_used, 
+           std::vector<Person*> targets, const uint32_t &cooldown = 0);
+
+  bool add(Person* const user, ActionType const &buffer_type,
            std::vector<Person*> targets, const uint32_t &cooldown = 0);
 
   /* Adds a given BufferAction element to the vector */

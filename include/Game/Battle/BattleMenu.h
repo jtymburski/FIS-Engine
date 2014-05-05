@@ -12,7 +12,7 @@
 *      <Skill>           
 *      <Item>                  --- <Select items> ------   <Item dependable>
 *      <Guard>                 -------------------------   <Non-self target>
-       <Run>                   -------------------------   -----------------
+*      <Run>                   -------------------------   -----------------
 *
 * TODO
 * ----
@@ -62,6 +62,9 @@ private:
   /* Currently assigned options */
   Options* config;
 
+  /* The window status of the BattleMenu */
+  WindowStatus window_status;
+
   /* Menu indexes */
   int32_t person_index;
   int32_t layer_index;
@@ -90,6 +93,9 @@ private:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Returns the state of the current menu selection */
+  bool isActionSelected();
+
   /* Resets the menu data to be used for a new Person */
   void reset(const uint32_t &new_person_index);
 
@@ -119,6 +125,9 @@ public:
 
   /* Finds the maximum index for the current layer */
   int32_t getMaxIndex();
+
+  /* Returns the window status of the BattleMenu */
+  WindowStatus getWindowStatus();
 
   /* Assigns a new selectable list of actions */
   bool setSelectableActions(std::vector<ActionType> new_valid_actions);

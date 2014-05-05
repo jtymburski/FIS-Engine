@@ -76,13 +76,13 @@ bool Buffer::checkValid(BufferAction& elm)
       is_valid &= (*it)->getBFlag(BState::IN_BATTLE);
     }
 
-    if (elm.type == BufferType::SKILL)
+    if (elm.type == ActionType::SKILL)
     {
       /* Action skill must not be null and skill use must be enabled */
       is_valid &= !(elm.skill_used == nullptr);
       is_valid &= elm.user->getBFlag(BState::SKL_ENABLED);
     }
-    else if (elm.type == BufferType::ITEM)
+    else if (elm.type == ActionType::ITEM)
     {
       /* Action item must not be null and item use must be enabled */
       is_valid &= !(elm.item_used == nullptr);
@@ -197,7 +197,7 @@ bool Buffer::add(Person* const user, Skill* const skill_used,
   new_elm.item_used  = nullptr;
   new_elm.skill_used = skill_used;
   new_elm.targets    = targets;
-  new_elm.type       = BufferType::SKILL;
+  new_elm.type       = ActionType::SKILL;
 
   auto add = checkValid(new_elm);
 
@@ -230,7 +230,31 @@ bool Buffer::add(Person* const user, Item* const item_used,
   new_elm.item_used  = item_used;
   new_elm.skill_used = nullptr;
   new_elm.targets    = targets;
-  new_elm.type       = BufferType::ITEM;
+  new_elm.type       = ActionType::ITEM;
+
+  return add(new_elm);
+}
+
+/*
+ * Description: 
+ *
+ * Inputs: 
+ *         
+ *         
+ *         
+ * Output: 
+ */
+bool Buffer::add(Person* const user, ActionType const &buffer_type,
+                 std::vector<Person*> targets, const uint32_t &cooldown)
+{
+  BufferAction new_elm;
+
+  new_elm.cooldown   = cooldown;
+  new_elm.user       = user;
+  new_elm.item_used  = nullptr;
+  new_elm.skill_used = nullptr;
+  new_elm.targets    = targets;
+  new_elm.type       = buffer_type;
 
   return add(new_elm);
 }
@@ -320,21 +344,21 @@ void Buffer::print(const bool &simple)
   {
     for (auto it = begin(action_buffer); it != end(action_buffer); ++it)
     {
-      if ((*it).type == BufferType::SKILL)
+      if ((*it).type == ActionType::SKILL)
       {
         if ((*it).skill_used != nullptr)
           std::cout << "Skill Name: " << (*it).skill_used->getName() << "\n";
         else
           std::cout << "[Warning]: Skill buffer has null skill\n";
       }
-      else if ((*it).type == BufferType::ITEM)
+      else if ((*it).type == ActionType::ITEM)
       {
         if ((*it).item_used != nullptr)
           std::cout << "Item Name: " << (*it).item_used->getName() << "\n";
         else
           std::cout << "[Warning]: Item buffer has null skill\n";
       }
-      else if ((*it).type  == BufferType::NONE)
+      else if ((*it).type  == ActionType::NONE)
         std::cout << "[Warning]: No buffer type set\n";
 
       std::cout << "Cooldown: " << (*it).cooldown << "\n";

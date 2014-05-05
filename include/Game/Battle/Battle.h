@@ -84,15 +84,16 @@ enum class CombatState
 {
   CONFIGURED       = 1 << 0,
   FLAGS_CONFIGURED = 1 << 1,
-  PHASE_DONE       = 1 << 2,
-  VICTORY          = 1 << 3,
-  LOSS             = 1 << 4,
-  OUTCOME_DONE     = 1 << 5,
-  ERROR_STATE      = 1 << 6,
-  RANDOM_ENCOUNTER = 1 << 7,
-  MINI_BOSS        = 1 << 8,
-  BOSS             = 1 << 9,
-  FINAL_BOSS       = 1 << 10
+  ACTION_DONE      = 1 << 2,
+  PHASE_DONE       = 1 << 3,
+  VICTORY          = 1 << 4,
+  LOSS             = 1 << 5,
+  OUTCOME_DONE     = 1 << 6,
+  ERROR_STATE      = 1 << 7,
+  RANDOM_ENCOUNTER = 1 << 8,
+  MINI_BOSS        = 1 << 9,
+  BOSS             = 1 << 10,
+  FINAL_BOSS       = 1 << 11
 };
 
 /* Enumerated values for turn mode */
@@ -171,6 +172,9 @@ private:
   /* Running config */
   Options* config;
 
+  /* Current index for action selection/outcomes */
+  int32_t person_index;
+  
   /* Dimensions of the screen */
   uint8_t screen_height;
   uint8_t screen_width;
@@ -319,6 +323,8 @@ private:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  bool keyDownEvent(SDL_KeyboardEvent event);
+
   /* Returns true if all members of a party have died */
   bool isPartyDead();
 
