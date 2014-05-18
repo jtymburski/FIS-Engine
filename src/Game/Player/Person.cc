@@ -363,11 +363,17 @@ void Person::updateBaseSkills()
     base_skills->clear();
   else
     base_skills = new SkillSet();
+  
+  std::cout << "Battle class skills: " << battle_class->getSkills()->getSize() << std::endl;
+
 
   if (battle_class->getSkills() != nullptr)
-    *base_skills += *(battle_class->getSkills());
+    *base_skills = *base_skills + *(battle_class->getSkills());
+  
+  std::cout << "Race class skills: " << race_class->getSkills()->getSize() << std::endl;
+
   if (race_class->getSkills() != nullptr)
-    *base_skills += *(race_class->getSkills());
+    *base_skills = *base_skills + *(race_class->getSkills());
 
   updateSkills();
 }

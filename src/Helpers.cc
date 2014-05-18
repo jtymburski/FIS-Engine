@@ -181,6 +181,12 @@ std::string Helpers::a_An(const std::string &noun)
   return a_an;
 }
 
+void Helpers::flushConsole(const char &c)
+{
+  for (int i = 0; i < 100; i++)
+    std::cout << c << std::endl;
+}
+
 bool Helpers::isVowel(const char &c)
 {
   return (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u' ||
@@ -235,6 +241,8 @@ std::string Helpers::actionTypeToStr(const ActionType &action_type)
     return "ITEM";
   else if (action_type == ActionType::DEFEND)
     return "DEFEND";
+  else if (action_type == ActionType::GUARD)
+    return "GUARD";
   else if (action_type == ActionType::IMPLODE)
     return "IMPLODE";
   else if (action_type == ActionType::RUN)

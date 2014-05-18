@@ -448,7 +448,7 @@ void Game::setupBattle()
   actions.push_back(new Action("7,ALTER,,,,VITA,AMOUNT.210,PC.15,,96"));
   Action* special = new Action("8,ALTER,,,,VITA,PC.25,AMOUNT.50,,98");
   
-  actions[3]->print();
+  //actions[3]->print();
 
   // Skill Testing
   std::vector<Skill*> skills;
@@ -471,14 +471,14 @@ void Game::setupBattle()
   std::vector<uint32_t> other_levels;
 
   for (auto it = begin(skills); it != end(skills); ++it)
-    levels.push_back(levels.size());
+    levels.push_back(1);
 
   for (auto it = begin(skills); it != end(skills); ++it)
     other_levels.push_back(1);
 
   // SkillSet Testing
-  SkillSet* scion_skills = new SkillSet(skills, levels);
-  SkillSet* hex_skills   = scion_skills;
+  SkillSet* scion_skills    = new SkillSet(skills, levels);
+  SkillSet* hex_skills      = scion_skills;
   SkillSet* other_skill_set = new SkillSet(other_skills, other_levels);
 
   // Category Testing
@@ -499,6 +499,10 @@ void Game::setupBattle()
   Person* cloud_dude      = new Person(555, "Cloud Dude", blood_scion, bear);
   Person* ball_man        = new Person(556, "Ball Man", blood_scion, bear);
   Person* thruster_barrow = new Person(557, "Thruster Barrow", blood_scion, human); 
+ 
+  std::cout << " === Arcadius ==== " << std::endl;
+  arcadius->getBaseSkills()->print();
+  arcadius->getCurrSkills()->print();
 
   Party* allies = new Party(berran, PartyType::SLEUTH, 5, nullptr);
   Party* foes   = new Party(cloud_dude, PartyType::REGULAR_FOE, 5, nullptr);
@@ -520,7 +524,7 @@ void Game::setupBattle()
   for (uint32_t i = 0; i < foes->getSize(); i++)
     foes->getMember(i)->battlePrep();
 
-  game_battle = new Battle(allies, foes);
+  game_battle = new Battle(game_config, allies, foes);
 
   } // end enable test
   else
@@ -656,10 +660,7 @@ bool Game::setConfiguration(Options* running_config)
       game_map->setConfiguration(running_config);
 
     if (game_battle != nullptr)
-    {
-      std::cout << "Setting running config: " << running_config << " on battle: " << game_battle << std::endl;
       game_battle->setConfiguration(running_config);
-    }
 
     return true;
   }
@@ -677,16 +678,7 @@ bool Game::update(int32_t cycle_time)
     return game_map->update(cycle_time);
 
   if(mode == BATTLE && game_battle != nullptr)
-  {
-    if (!game_battle->getBattleFlag(CombatState::CONFIGURED))
-    {
-      game_battle->setConfiguration(game_config);
-    }
-    else
-      std::cout << "ho ho ho" << std::endl;
-
     return game_battle->update(cycle_time);
-  }
 
   return false;
 }

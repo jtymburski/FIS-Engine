@@ -123,7 +123,8 @@ class Battle
 {
 public:
   /* Constructs a party given two parties and configured options */
-  Battle(Party* const friends, Party* const foes);
+  Battle(Options* const running_config, Party* const friends, 
+         Party* const foes);
 
   /* Annihilates a Battle object */
   ~Battle();

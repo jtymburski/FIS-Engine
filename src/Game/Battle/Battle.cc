@@ -70,7 +70,7 @@ const float    Battle::kDOUBLE_ELM_DIS_MODIFIER  =  0.74;
  * Inputs:
  */
 /* Constructs a party given two parties and configured options */
-Battle::Battle(Party* const friends, Party* const foes)
+Battle::Battle(Options* running_config, Party* const friends, Party* const foes)
   : friends(friends)
   , foes(foes)
 {
@@ -85,6 +85,7 @@ Battle::Battle(Party* const friends, Party* const foes)
   action_buffer = new Buffer();
   menu          = new BattleMenu();
 
+  setConfiguration(running_config);
   setBattleFlag(CombatState::PHASE_DONE, true);
 }
 
@@ -513,9 +514,10 @@ void Battle::selectUserActions()
         std::cout << "Selecting action for: " << person->getName() << std::endl;
 #endif 
         /* Reload the menu information for the next person */
-        menu->reset(person_index);
+        menu->setSelectableActions(getValidActions(person_index));
         menu->setSelectableSkills(person->getUseableSkills());
         menu->setSelectableItems(friends->getInventory()->getBattleItems());
+        menu->reset(person_index);
       }
       else
       {
@@ -537,9 +539,9 @@ void Battle::selectUserActions()
 
     // Find Battle Usable items in inventory
     // Select item
-      // Find valid targets
-      // Choose from targets
-      // Remove item from inventory
+    // Find valid targets
+    // Choose from targets
+    // Remove item from inventory
 
   /* Select user action state complete */
 }
@@ -801,6 +803,7 @@ void Battle::setTurnState(const TurnState &new_turn_state)
 /* */
 bool Battle::keyDownEvent(SDL_KeyboardEvent event)
 {
+  Helpers::flushConsole();
   std::cout << "Key down event!" << std::endl;
 
   if (menu->getWindowStatus() == WindowStatus::ON)
@@ -812,7 +815,7 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
 /* */
 bool Battle::isPartyDead()
 {
-
+  return (friends->getLivingMembers().size() == 0);
 }
 
 /* Methods to print information about the Battle */
@@ -926,8 +929,39 @@ bool Battle::update(int32_t cycle_time)
 
   if (getBattleFlag(CombatState::PHASE_DONE))
   {
-    std::cout << "setting next turn state" << std::endl;
+#ifdef UDEBUG
+    std::cout << "Phase done, setting next turn state." << std::endl;
+#endif
     setNextTurnState();
+  }
+
+  /* During menu, if an action type has been chosen, inject valid targets for
+   * the scope of the particular action type [if required] */
+  else if (turn_state == TurnState::SELECT_ACTION_ALLY)
+  {
+    if (menu->isActionTypeSelected())
+    {
+      auto action_type  = menu->getActionType();
+      auto action_index = menu->getActionIndex();
+
+      if (action_type == ActionType::SKILL)
+      {
+        auto skill_scope = menu->getMenuSkills().at(action_index)->getScope();
+        menu->setSelectableTargets(getValidTargets(person_index, skill_scope));
+      }
+      else if (action_type == ActionType::ITEM)
+      {
+        auto item_ptr   = menu->getMenuItems().at(action_index).first;
+        auto item_scope = item_ptr->getUseSkill()->getScope();
+
+        menu->setSelectableTargets(getValidTargets(person_index, item_scope));
+      }
+      else if (action_type == ActionType::GUARD)
+      {
+        auto targets = getValidTargets(person_index, ActionScope::NOT_USER);
+        menu->setSelectableTargets(targets);
+      }
+    }
   }
 
   return false;
@@ -1171,12 +1205,12 @@ std::vector<int32_t> Battle::getValidTargets(int32_t index,
 /* Assigns the running config */
 bool Battle::setConfiguration(Options* const new_config)
 {
-  if (config != nullptr)
+  if (new_config != nullptr)
   {
     config = new_config;
 
     if (menu != nullptr)
-      menu->setConfiguration(config);
+      menu->setConfiguration(new_config);
 
     setScreenHeight(config->getScreenHeight());
     setScreenWidth(config->getScreenWidth());

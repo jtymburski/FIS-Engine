@@ -530,6 +530,17 @@ std::string Item::getUseMessage()
 }
 
  /*
+ * Description: 
+ *
+ * Inputs: 
+ * Output: 
+ */
+Skill* Item::getUseSkill()
+{
+  return using_skill;
+}
+
+ /*
  * Description: Returns a ptr to the sound effect of the Item.
  *
  * Inputs: none

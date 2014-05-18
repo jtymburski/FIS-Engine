@@ -93,6 +93,9 @@ private:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Returns the state of a chosen type of action */
+  bool isActionTypeSelected();
+
   /* Returns the state of the current menu selection */
   bool isActionSelected();
 
@@ -104,6 +107,9 @@ public:
 
   /* Layer 0 printing of actions to choose from */
   void printValidActions();
+
+  /* Prints out the state of the menu */
+  void printMenuState();
 
   /* Layer 1 printing of skills to choose from */
   void printSkills();
@@ -117,7 +123,7 @@ public:
   /* Obtains the selected enumerated ActionType */
   ActionType getActionType();
   
-  /* Obtains the index of  */
+  /* Obtains the index of action (Skill or Item lists) chosen */
   int32_t getActionIndex();
 
   /* Obtains user selected targets for the action from the Menu */
@@ -125,6 +131,12 @@ public:
 
   /* Finds the maximum index for the current layer */
   int32_t getMaxIndex();
+
+  /* Returns the current selectable skills on the menu */
+  std::vector<Skill*> getMenuSkills();
+
+  /* Returns the current selectable items on the menu */
+  std::vector<std::pair<Item*, uint16_t>> getMenuItems();
 
   /* Returns the window status of the BattleMenu */
   WindowStatus getWindowStatus();
@@ -137,6 +149,9 @@ public:
 
   /* Assigns new selectable list of skills for the menu */
   bool setSelectableSkills(std::vector<Skill*> new_menu_skills);
+
+  /* Assigns valid targets for the menu */
+  bool setSelectableTargets(std::vector<int32_t> valid_targets);
  
   /* Assigns the running configuration of the menu */
   bool setConfiguration(Options* new_config);

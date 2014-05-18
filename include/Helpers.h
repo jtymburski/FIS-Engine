@@ -22,6 +22,7 @@
 #include <cctype>
 #include <chrono>
 #include <functional>
+#include <iostream>
 #include <locale>
 #include <random>
 #include <sstream>
@@ -78,6 +79,9 @@ public:
 
   /* Determines whether a given character is a vowel */
   static bool isVowel(const char &c);
+
+  /* Flush the console with [blank] input */
+  static void flushConsole(const char &c = ' ');
 
   /* Converts an enumerated element to a String */
   static std::string elementToString(const Element &element);
