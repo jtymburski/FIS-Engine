@@ -292,7 +292,7 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
       }
       else if (action_type == ActionType::ITEM)
       {
-        if (static_cast<uint32_t>(element_index < menu_items.size()))
+        if (static_cast<uint32_t>(element_index) < menu_items.size())
         {
           action_index = element_index;
 
@@ -307,7 +307,7 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
       /* Selection of item index -> move to target menu */
       else if (action_type == ActionType::ITEM)
       {
-        if (element_index < menu_items.size())
+        if (static_cast<uint32_t>(element_index) < menu_items.size())
           action_index = element_index;
 
       }

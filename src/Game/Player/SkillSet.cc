@@ -191,14 +191,14 @@ bool SkillSet::addSkills(const std::vector<Skill*> skills,
 
     while (!done)
     {
-      ++it_s;
-      ++it_r;
-      ++it_e;
-
       if (it_s != skills.end() && it_r != req_levels.end() && it_e != enabled.end())
         success &= addSkill((*it_s), (*it_r), (*it_e));
       else
         done = true;
+
+      ++it_s;
+      ++it_r;
+      ++it_e;
     }
   }
 
