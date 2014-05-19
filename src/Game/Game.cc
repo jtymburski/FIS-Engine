@@ -459,9 +459,6 @@ void Game::setupBattle()
   Skill* hard_attack   = new Skill(15, "Hard Attack",ActionScope::ONE_TARGET,actions[6],0.90);
   normal_attack->addActions(actions, chances);
 
-  normal_attack->print();
-  medium_attack->print();
-
   skills.push_back(normal_attack);
   skills.push_back(new Skill(400, "Super Attack",ActionScope::ONE_ENEMY,special,0.65));
   skills.push_back(new Skill(3, "Poison Attack",ActionScope::ONE_ENEMY,actions[1],0.79));
@@ -469,7 +466,7 @@ void Game::setupBattle()
 
   other_skills.push_back(medium_attack);
   other_skills.push_back(hard_attack);
-
+  
   std::vector<uint32_t> levels;
   std::vector<uint32_t> other_levels;
 
@@ -484,11 +481,12 @@ void Game::setupBattle()
   SkillSet* hex_skills      = scion_skills;
   SkillSet* other_skill_set = new SkillSet(other_skills, other_levels);
 
-  scion_skills->print();
+  SkillSet* combined_set = new SkillSet();
+  combined_set = hex_skills;
 
-  hex_skills->print();
+  *combined_set += *other_skill_set;
 
-  other_skill_set->print();
+  combined_set->print();
 
   // Category Testing
   Category* blood_scion = new Category("Blood Scion", "Scion", min_scion_set, 

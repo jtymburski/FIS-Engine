@@ -218,22 +218,17 @@ bool SkillSet::addSkills(const std::vector<Skill*> skills,
 bool SkillSet::addSkills(const std::vector<SetElement> &new_elements,
                          const bool &bypass)
 {
-  std::cout << "Adding skills: " << new_elements.size() << std::endl;
-
   std::vector<SetElement> unique_elements = calcUniques(new_elements);
 
-  std::cout << "Adding unique elements: " << unique_elements.size() << std::endl;
-  
   if (skill_elements.size() + unique_elements.size() < kMAX_SKILLS ||
       bypass)
   {
-    for (SetElement element : unique_elements)
-    {
+    for (auto element : unique_elements)
       skill_elements.push_back(element);
-      cleanUp();
 
-      return true;
-    }
+    cleanUp();
+
+    return true;
   }
 
   return false;
