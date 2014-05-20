@@ -154,7 +154,12 @@ bool BattleMenu::removeLastTarget(const bool &clear_all)
 /* Methods for containing code for each key action */
 void BattleMenu::keyDownAlpha(const char &c)
 {
-  (void)c;//TODO: WARNING
+  std::cout << "Key down alpha: " << c << std::endl;
+
+  auto index = menu_skills->getIndexOfAlpha(c);
+
+  if (index != -1)
+    element_index = index;
 }
 
 void BattleMenu::keyDownCancel()
@@ -523,59 +528,11 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
     keyDownSelect();
   else if (event.keysym.sym == SDLK_BACKSPACE)
     keyDownCancel();
-  else if (event.keysym.sym == SDLK_a)
-    keyDownAlpha('a');
-  else if (event.keysym.sym == SDLK_b)
-    keyDownAlpha('b');
-  else if (event.keysym.sym == SDLK_c)
-    keyDownAlpha('c');
-  else if (event.keysym.sym == SDLK_d)
-    keyDownAlpha('d');
-  else if (event.keysym.sym == SDLK_e)
-    keyDownAlpha('e');
-  else if (event.keysym.sym == SDLK_f)
-    keyDownAlpha('f');
-  else if (event.keysym.sym == SDLK_g)
-    keyDownAlpha('g');
-  else if (event.keysym.sym == SDLK_h)
-    keyDownAlpha('h');
-  else if (event.keysym.sym == SDLK_i)
-    keyDownAlpha('i');
-  else if (event.keysym.sym == SDLK_j)
-    keyDownAlpha('j');
-  else if (event.keysym.sym == SDLK_k)
-    keyDownAlpha('k');
-  else if (event.keysym.sym == SDLK_l)
-    keyDownAlpha('l');
-  else if (event.keysym.sym == SDLK_m)
-    keyDownAlpha('m');
-  else if (event.keysym.sym == SDLK_n)
-    keyDownAlpha('n');
-  else if (event.keysym.sym == SDLK_o)
-    keyDownAlpha('o');
-  else if (event.keysym.sym == SDLK_p)
-    keyDownAlpha('p');
-  else if (event.keysym.sym == SDLK_q)
-    keyDownAlpha('q');
-  else if (event.keysym.sym == SDLK_r)
-    keyDownAlpha('r');
-  else if (event.keysym.sym == SDLK_s)
-    keyDownAlpha('s');
-  else if (event.keysym.sym == SDLK_t)
-    keyDownAlpha('t');
-  else if (event.keysym.sym == SDLK_u)
-    keyDownAlpha('u');
-  else if (event.keysym.sym == SDLK_v)
-    keyDownAlpha('v');
-  else if (event.keysym.sym == SDLK_w)
-    keyDownAlpha('w');
-  else if (event.keysym.sym == SDLK_x)
-    keyDownAlpha('x');
-  else if (event.keysym.sym == SDLK_y)
-    keyDownAlpha('y');
-  else if (event.keysym.sym == SDLK_z)
-    keyDownAlpha('z');
-
+  else if (static_cast<int>(event.keysym.sym) >= 'a' &&
+           static_cast<int>(event.keysym.sym) <= 'z')
+  {
+    keyDownAlpha(static_cast<int>(event.keysym.sym));
+  }
 
   if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
   {

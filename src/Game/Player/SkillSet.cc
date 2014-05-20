@@ -296,6 +296,29 @@ int32_t SkillSet::getIndexOfID(const uint32_t &id)
 }
 
 /* 
+ * Description: Returns the index along the vector of skill elements whose name
+ *              matches the given char.
+ *
+ * Inputs: alpha - beginning char to find name of Skill for
+ * Output: int32_t - first index of the skill found with that name
+ */
+int32_t SkillSet::getIndexOfAlpha(const char &alpha)
+{
+  int i = 0;
+
+  for (auto it = begin(skill_elements); it != end(skill_elements); ++it, i++)
+  {
+    if ((*it).skill->getName().size() > 0 &&
+        tolower((*it).skill->getName().at(0)) == alpha)
+    {
+      return i;
+    }
+  }
+
+  return -1;
+}
+
+/* 
  * Description: Removes a SetElement from the vector at a given index and 
  *              returns true if the element was removed.
  *

@@ -125,6 +125,9 @@ public:
   /* Returns the index of a given Skill ID (if found) */
   int32_t getIndexOfID(const uint32_t &id);
 
+  /* Returns the first index of a name beginning with the desird char */
+  int32_t getIndexOfAlpha(const char &alpha);
+
   /* Returns the string name of a Skill at a given index */
   std::string getName(const uint32_t &index);
 
