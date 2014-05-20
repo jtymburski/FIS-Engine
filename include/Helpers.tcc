@@ -101,6 +101,89 @@ struct CompSkillFirst
   }
 };
 
+struct CompSkillCooldown
+{
+  template<class T>
+  bool operator()(const T &a, const T &b) const
+  {
+    return a.skill->getCooldown() < b.skill->getCooldown();
+  }
+};
+
+struct CompSkillCost
+{
+  template<class T>
+  bool operator()(const T &a, const T&b) const
+  {
+    return a.skill->getCost() < b.skill->getCost();
+  }
+};
+
+struct CompSkillID
+{
+  template<class T>
+  bool operator()(const T &a, const T &b) const
+  {
+    return a.skill->getID() < b.skill->getID();
+  }
+};
+
+struct CompSkillName
+{
+  template<class T>
+  bool operator()(const T &a, const T &b) const
+  {
+    return a.skill->getName() < b.skill->getName();
+  }
+};
+
+struct CompSkillPrimary
+{
+  template<class T>
+  bool operator()(const T &a, const T &b) const
+  {
+    return static_cast<uint32_t>(a.skill->getPrimary()) <
+           static_cast<uint32_t>(b.skill->getPrimary());
+  }
+};
+
+struct CompSkillSecondary
+{
+  template<class T>
+  bool operator()(const T &a, const T &b) const
+  {
+    return static_cast<uint32_t>(a.skill->getSecondary()) <
+           static_cast<uint32_t>(b.skill->getSecondary());
+  }
+};
+
+struct CompSkillPoint
+{
+  template<class T>
+  bool operator()(const T &a, const T &b) const
+  {
+    return a.skill->getValue() < b.skill->getValue();
+  }
+};
+
+struct CompLevelRequired
+{
+  template<class T>
+  bool operator()(const T &a, const T &b) const
+  {
+    return a.level_available < b.level_available;
+  }
+};
+
+struct CompEnabled
+{
+  template<class T>
+  bool operator()(const T &a, const T &b) const
+  {
+    return a.enabled < b.enabled;
+  }
+};
+
 /*=============================================================================
  * TEMPLATE STRUCTURES
  *============================================================================*/

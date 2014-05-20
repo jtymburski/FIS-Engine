@@ -514,10 +514,12 @@ void Battle::selectUserActions()
         std::cout << "Selecting action for: " << person->getName() << std::endl;
 #endif 
         /* Reload the menu information for the next person */
-        menu->setSelectableActions(getValidActions(person_index));
-        menu->setSelectableSkills(person->getUseableSkills());
-        menu->setSelectableItems(friends->getInventory()->getBattleItems());
         menu->reset(person_index);
+        menu->setPersonLevel(person->getLevel());
+        menu->setSelectableActions(getValidActions(person_index));
+        menu->setSelectableSkills(person->getCurrSkills());
+        menu->setSelectableItems(friends->getInventory()->getBattleItems());
+        menu->printMenuState();
       }
       else
       {
@@ -804,7 +806,6 @@ void Battle::setTurnState(const TurnState &new_turn_state)
 bool Battle::keyDownEvent(SDL_KeyboardEvent event)
 {
   Helpers::flushConsole();
-  std::cout << "Key down event!" << std::endl;
 
   if (menu->getWindowStatus() == WindowStatus::ON)
     return menu->keyDownEvent(event);
@@ -939,15 +940,44 @@ bool Battle::update(int32_t cycle_time)
    * the scope of the particular action type [if required] */
   else if (turn_state == TurnState::SELECT_ACTION_ALLY)
   {
+    ActionType action_type = ActionType::NONE;
+
     if (menu->isActionTypeSelected())
     {
-      auto action_type  = menu->getActionType();
+      action_type = menu->getActionType();
+
+      if (action_type == ActionType::GUARD)
+      {
+        auto targets = getValidTargets(person_index, ActionScope::NOT_USER);
+        menu->setSelectableTargets(targets);
+      }
+    }
+
+    /* If the action index has been assigned and targets have not been assigned
+     * yet (for that action index), find the scope of that action the user
+     * wishes to use and inject the valid targets into the menu */
+    if (menu->getActionIndex() != -1 && 
+        !menu->getMenuFlag(BattleMenuState::TARGETS_ASSIGNED))
+    {
       auto action_index = menu->getActionIndex();
 
       if (action_type == ActionType::SKILL)
       {
-        auto skill_scope = menu->getMenuSkills().at(action_index)->getScope();
-        menu->setSelectableTargets(getValidTargets(person_index, skill_scope));
+        auto skill_element = menu->getMenuSkills()->getElement(action_index);
+        auto skill_scope = skill_element.skill->getScope();
+
+#ifdef UDEBUG
+        std::cout << "Finding selectable targets for skill with scope: "
+                  << Helpers::actionScopeToStr(skill_scope) << std::endl;
+#endif
+
+        auto valid_targets = getValidTargets(person_index, skill_scope);
+
+        if (menu->setSelectableTargets(valid_targets))
+          menu->setMenuFlag(BattleMenuState::TARGETS_ASSIGNED);
+
+        Helpers::flushConsole();
+        menu->printMenuState();
       }
       else if (action_type == ActionType::ITEM)
       {
@@ -956,12 +986,8 @@ bool Battle::update(int32_t cycle_time)
 
         menu->setSelectableTargets(getValidTargets(person_index, item_scope));
       }
-      else if (action_type == ActionType::GUARD)
-      {
-        auto targets = getValidTargets(person_index, ActionScope::NOT_USER);
-        menu->setSelectableTargets(targets);
-      }
     }
+
   }
 
   return false;
@@ -980,7 +1006,7 @@ BattleMode Battle::getBattleMode()
 }
 
 /* Return the value of a given CombatState flag */
-bool Battle::getBattleFlag(CombatState test_flag)
+bool Battle::getBattleFlag(const CombatState &test_flag)
 {
   return static_cast<bool>((flags & test_flag) == test_flag);
 }

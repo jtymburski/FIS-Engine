@@ -466,7 +466,7 @@ void Game::setupBattle()
 
   other_skills.push_back(medium_attack);
   other_skills.push_back(hard_attack);
-  
+
   std::vector<uint32_t> levels;
   std::vector<uint32_t> other_levels;
 
@@ -480,13 +480,6 @@ void Game::setupBattle()
   SkillSet* scion_skills    = new SkillSet(skills, levels);
   SkillSet* hex_skills      = scion_skills;
   SkillSet* other_skill_set = new SkillSet(other_skills, other_levels);
-
-  SkillSet* combined_set = new SkillSet();
-  combined_set = hex_skills;
-
-  *combined_set += *other_skill_set;
-
-  combined_set->print();
 
   // Category Testing
   Category* blood_scion = new Category("Blood Scion", "Scion", min_scion_set, 

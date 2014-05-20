@@ -344,7 +344,7 @@ public:
   BattleMode getBattleMode();
 
   /* Return the value of a given CombatState flag */
-  bool getBattleFlag(CombatState test_flag);
+  bool getBattleFlag(const CombatState &test_flag);
 
   /* Returns the friends pointer of the Battle */
   Party* getFriends();

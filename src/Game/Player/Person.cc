@@ -363,14 +363,9 @@ void Person::updateBaseSkills()
     base_skills->clear();
   else
     base_skills = new SkillSet();
-  
-  std::cout << "Battle class skills: " << battle_class->getSkills()->getSize() << std::endl;
-
 
   if (battle_class->getSkills() != nullptr)
     *base_skills = *base_skills + *(battle_class->getSkills());
-  
-  std::cout << "Race class skills: " << race_class->getSkills()->getSize() << std::endl;
 
   if (race_class->getSkills() != nullptr)
     *base_skills = *base_skills + *(race_class->getSkills());
@@ -466,6 +461,7 @@ void Person::updateSkills()
 
   if (learned_skills != nullptr)
     *curr_skills  += *learned_skills;
+
   if (base_skills != nullptr)
     *curr_skills  += *base_skills;
 
@@ -1202,10 +1198,11 @@ std::vector<Skill*> Person::getUseableSkills()
 
   for (auto it = begin(elements); it != end(elements); ++it)
   {
-    auto add_skill = false;
+    auto add_skill = true;
   
     if ((*it).enabled)
     {
+
       int32_t skill_cost = static_cast<int32_t>((*it).skill->getCost());
 
       if (getBFlag(BState::HALF_COST))

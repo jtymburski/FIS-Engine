@@ -108,13 +108,13 @@ public:
   bool removeID(const uint32_t &id);
 
   /* Sorts the SetElements by a given sort type */
-  void sort(const SkillSorts &sort_type, bool ascending = true);
+  bool sort(const SkillSorts &sort_type, bool ascending = true);
 
   /* Returns the vector of the enabled values */
   std::vector<bool> getAllEnabled();
 
   /* Returns a SetElement at a given index */
-  SetElement getElement(uint32_t &index);
+  SetElement getElement(const uint32_t &index);
 
   /* Returns the vector of SetElements */
   std::vector<SetElement> getElements(const uint32_t &at_level);

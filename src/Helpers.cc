@@ -255,6 +255,40 @@ std::string Helpers::actionTypeToStr(const ActionType &action_type)
   return "";
 }
 
+std::string Helpers::actionScopeToStr(const ActionScope &action_scope)
+{
+  if (action_scope == ActionScope::ONE_TARGET)
+    return "ONE_TARGET";
+  else if (action_scope == ActionScope::ONE_ENEMY)
+    return "ONE_ENEMY";
+  else if (action_scope == ActionScope::TWO_ENEMIES)
+    return "TWO_ENEMIES";
+  else if (action_scope == ActionScope::ALL_ENEMIES)
+    return "ALL_ENEMIES";
+  else if (action_scope == ActionScope::ONE_ALLY)
+    return "ONE_ALLY";
+  else if (action_scope == ActionScope::TWO_ALLIES)
+    return "TWO_ALLIES";
+  else if (action_scope == ActionScope::ALL_ALLIES)
+    return "ALL_ALLIES";
+  else if (action_scope == ActionScope::ONE_ALLY_KO)
+    return "ONE_ALLY_KO";
+  else if (action_scope == ActionScope::ALL_ALLIES_KO)
+    return "ALL_ALLIES_KO";
+  else if (action_scope == ActionScope::ONE_PARTY)
+    return "ONE_PARTY";
+  else if (action_scope == ActionScope::ALL_TARGETS)
+    return "ALL_TARGETS";
+  else if (action_scope == ActionScope::NOT_USER)
+    return "NOT_USER";
+  else if (action_scope == ActionScope::ALL_NOT_USER)
+    return "ALL_NOT_USER";
+  else if (action_scope == ActionScope::NO_SCOPE)
+    return "NO_SCOPE";
+
+  return "";
+}
+
 /*=============================================================================
  * PLAYER / BATTLE HELPER FUNCTIONS
  *============================================================================*/

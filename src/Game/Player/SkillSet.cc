@@ -339,136 +339,88 @@ bool SkillSet::removeID(const uint32_t &id)
  *         ascending - whether to sort in asc. or desc. order
  * Output: none
  */
-void SkillSet::sort(const SkillSorts &sort_type, bool ascending)
+bool SkillSet::sort(const SkillSorts &sort_type, bool ascending)
 {
+  auto sort_status = false;
 
   /* Sort the SSEs by their Skill's cooldown value */
   if (sort_type == SkillSorts::COOLDOWN)
   {
-    std::sort(skill_elements.begin(), skill_elements.end(),
-              [&](const SetElement &a, const SetElement &b) -> bool
-              {
-                if (ascending)
-                  return a.skill->getCooldown() < b.skill->getCooldown();
-
-                return a.skill->getCooldown() > b.skill->getCooldown();
-              });
+    std::sort(begin(skill_elements), end(skill_elements), 
+              Helpers::CompSkillCooldown());
+    sort_status = true;
   }
-  
+ 
   /* Sort the SSEs by their Skill's QD cost */
   else if (sort_type == SkillSorts::COST)
   {
-    std::sort(skill_elements.begin(), skill_elements.end(),
-            [&](const SetElement &a, const SetElement &b) -> bool
-            {
-                if (ascending)
-                  return a.skill->getCost() < b.skill->getCost();
-
-                return a.skill->getCost() > b.skill->getCost();
-            });
+    std::sort(begin(skill_elements), end(skill_elements), 
+              Helpers::CompSkillCost());
+    sort_status = true;
   }
   
   /* Sort the SSEs by their Skill's ID # */
   else if (sort_type == SkillSorts::ID)
   {
-    std::sort(skill_elements.begin(), skill_elements.end(),
-              [&](const SetElement &a, const SetElement &b) -> bool
-              {
-                if (ascending)
-                  return a.skill->getID() < b.skill->getID();
-
-                return a.skill->getID() > b.skill->getID();
-              });
+    std::sort(begin(skill_elements), end(skill_elements), 
+              Helpers::CompSkillID());
+    sort_status = true;
   }
   
   /* Sort the SSEs by their Skill's name */
   else if (sort_type == SkillSorts::NAME)
   {
-    std::sort(skill_elements.begin(), skill_elements.end(),
-    	      [&](const SetElement &a, const SetElement &b) -> bool
-    	      {
-                if (ascending)
-                  return a.skill->getName() < b.skill->getName();
-
-                return a.skill->getName() > b.skill->getName();
-    	      });
+    std::sort(begin(skill_elements), end(skill_elements), 
+              Helpers::CompSkillName());
+    sort_status = true;
   }
   
   /* Sort the SSEs by their Skill's primary elemental attribute
        Ascending Order: NONE, PHYS, TH, PO, PR, CY, DI, VO */
   else if (sort_type == SkillSorts::PRIMARY)
   {
-    std::sort(skill_elements.begin(), skill_elements.end(),
-    	      [&](const SetElement &a, const SetElement &b) -> bool
-    	      {
-                if (ascending)
-                {
-                  return static_cast<uint32_t>(a.skill->getPrimary()) < 
-                         static_cast<uint32_t>(b.skill->getPrimary());
-                }
-
-                return static_cast<uint32_t>(a.skill->getPrimary()) > 
-                       static_cast<uint32_t>(b.skill->getPrimary());
-    	      });
+    std::sort(begin(skill_elements), end(skill_elements), 
+              Helpers::CompSkillPrimary());
+    sort_status = true;
   }
   
   /* Sort the SSEs by their Skill's secondary elemental attribute
        Ascending Order: NONE, PHYS, TH, PO, PR, CY, DI, VO */
   else if (sort_type == SkillSorts::SECONDARY)
   {
-    std::sort(skill_elements.begin(), skill_elements.end(),
-    	      [&](const SetElement &a, const SetElement &b) -> bool
-    	      {
-                if (ascending)
-                {
-                  return static_cast<uint32_t>(a.skill->getSecondary()) < 
-                         static_cast<uint32_t>(b.skill->getSecondary());
-                }
-
-                return static_cast<uint32_t>(a.skill->getSecondary()) > 
-                       static_cast<uint32_t>(b.skill->getSecondary());
-    	      });
+    std::sort(begin(skill_elements), end(skill_elements), 
+              Helpers::CompSkillSecondary());
+    sort_status = true;
   }
 
   /* Sort the SSEs by their Skill's arbitrary point value */
   else if (sort_type == SkillSorts::POINT_VALUE)
   {
-    std::sort(skill_elements.begin(), skill_elements.end(),
-    	      [&](const SetElement &a, const SetElement &b) -> bool
-    	      {
-                if (ascending)
-                  return a.skill->getValue() < b.skill->getValue();
-
-                return a.skill->getValue() > b.skill->getValue();
-    	      });
+    std::sort(begin(skill_elements), end(skill_elements), 
+              Helpers::CompSkillPoint());
+    sort_status = true;
   }
 
   /* Sort the SSEs by the level required for their use */
   else if (sort_type == SkillSorts::LEVEL_REQ)
   {
-    std::sort(skill_elements.begin(), skill_elements.end(),
-              [&](const SetElement &a, const SetElement &b) -> bool
-              {
-                if (ascending)
-                  return a.level_available < b.level_available;
-
-                return a.level_available > b.level_available;
-              });
+    std::sort(begin(skill_elements), end(skill_elements), 
+              Helpers::CompLevelRequired());
+    sort_status = true;
   }
 
   /* Sort the SSEs by their enabled value. Ascending Order: Enable, Disable */
   else if (sort_type == SkillSorts::ENABLED)
   {
-    std::sort(skill_elements.begin(), skill_elements.end(),
-    	      [&](const SetElement &a, const SetElement &b) -> bool
-    	      {
-              if (ascending)
-                return a.enabled < b.enabled;
-
-              return a.enabled > b.enabled;
-    	      });
+    std::sort(begin(skill_elements), end(skill_elements), 
+              Helpers::CompEnabled());
+    sort_status = true;
   }
-  
+
+  if (sort_status && !ascending)
+    std::reverse(begin(skill_elements), end(skill_elements));
+
+  return sort_status;
 }
 
 /* 
@@ -493,7 +445,7 @@ std::vector<bool> SkillSet::getAllEnabled()
  * Inputs: index - index to check for a skill set element
  * Output: SetElement - the element at the index or a default element.
  */
-SetElement SkillSet::getElement(uint32_t &index)
+SetElement SkillSet::getElement(const uint32_t &index)
 {
   if (index < skill_elements.size())
     return skill_elements.at(index);

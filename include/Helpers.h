@@ -92,6 +92,9 @@ public:
   /* Convert enumerated Action Type to String */
   static std::string actionTypeToStr(const ActionType &action_type);
 
+  /* Convert enumerated Action Scope to String */
+  static std::string actionScopeToStr(const ActionScope &action_scope);
+
 /*=============================================================================
  * PLAYER / BATTLE HELPER FUNCTIONS
  *============================================================================*/
@@ -101,8 +104,6 @@ public:
 
   /* Returns the elemental weakness to a given element */
   static Element getWeakness(const Element &element);
-
-
 
 /*=============================================================================
  * GENERAL HELPER FUNCTIONS
