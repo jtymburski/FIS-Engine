@@ -34,10 +34,6 @@ BattleMenu::BattleMenu()
   config             = nullptr;
 }
 
-/*
- * Description:
- */
-
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
@@ -45,9 +41,11 @@ BattleMenu::BattleMenu()
 /* Decrease and increment the menu layers */
 bool BattleMenu::decrementLayer(const int32_t &new_layer_index)
 {
+  auto success = false;
+
   if (new_layer_index <= 3)
   {
-
+    success = true;
   }
 
   if (new_layer_index <= 2)
@@ -55,13 +53,15 @@ bool BattleMenu::decrementLayer(const int32_t &new_layer_index)
     valid_targets.clear();
     selected_targets.clear();
 
-    action_index  = 0;
-    element_index = 0;
-    layer_index   = 2;
+    action_index  = -1;
+    action_scope  = ActionScope::NO_SCOPE;
+    element_index =  0;
+    layer_index   =  2;
           
     setMenuFlag(BattleMenuState::TARGETS_ASSIGNED, false);
     setMenuFlag(BattleMenuState::SCOPE_ASSIGNED, false);
-
+ 
+    success = true;
   }
 
   if (new_layer_index <= 1)
@@ -70,9 +70,10 @@ bool BattleMenu::decrementLayer(const int32_t &new_layer_index)
     layer_index   = 1;
     element_index = 0;
 
+    success = true;
   }
 
-  return true;
+  return success;
 }
 
 bool BattleMenu::incrementLayer(const int32_t &new_layer_index)
@@ -129,7 +130,11 @@ bool BattleMenu::addTarget(const int32_t &new_target)
 
 bool BattleMenu::removeLastTarget(const bool &clear_all)
 {
-  if (clear_all)
+  if (clear_all && selected_targets.size() == 0)
+  {
+    return true;
+  }
+  else if (clear_all)
   {
     valid_targets.clear();
     selected_targets.clear();
@@ -137,18 +142,18 @@ bool BattleMenu::removeLastTarget(const bool &clear_all)
     /* Make sure Battle update will assign new targets */
     setMenuFlag(BattleMenuState::TARGETS_ASSIGNED, false);
 
-    return true;
+    return false;
   }
 
-  if (valid_targets.size() > 0)
+  if (selected_targets.size() > 0)
   {
     valid_targets.push_back(*(end(selected_targets) - 1));
     selected_targets.pop_back();
 
-    return true;
+    return false;
   }
 
-  return false;
+  return true;
 }
 
 /* Methods for containing code for each key action */
@@ -206,7 +211,13 @@ void BattleMenu::keyDownCancel()
       }
       else
       {
-        removeLastTarget(true);
+        if (removeLastTarget(true))
+        {
+          std::cout << "Remove last target was true" << std::endl;
+          decrement_to_layer = 2;
+        }
+        else
+          std::cout << "Removing last target: false" << std::endl;
       }
     }
   }
@@ -472,7 +483,7 @@ void BattleMenu::printTargets(const bool &print_selected)
 
   if (print_selected)
   {
-    std::cout << "Selected Targets: ";
+    std::cout << "Selected Targets: " << std::endl;
 
     for (auto it = begin(selected_targets); it != end(selected_targets); ++it)
       std::cout << *it << " ";
@@ -480,6 +491,7 @@ void BattleMenu::printTargets(const bool &print_selected)
     std::cout << std::endl;
   }
 
+  std::cout << "Valid Targets Remaining: " << std::endl;
   for (auto it = begin(valid_targets); it != end(valid_targets); ++it, ++index)
   {
     if (index == element_index)

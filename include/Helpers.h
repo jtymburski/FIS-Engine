@@ -123,11 +123,6 @@ public:
 
   /* Methods for trimming whitespace from both ends of std::strings */
   static std::string& trim(std::string &s);
-
-  /* Splits the unique parts of a list by returning the beginning of the list
-   * where they can be erased from */
-  //template<class T> 
-  //static T uniqueSplit(T begin, T const end);
 };
 
 #endif // HELPERS_H

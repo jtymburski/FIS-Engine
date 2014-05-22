@@ -945,7 +945,7 @@ bool Battle::update(int32_t cycle_time)
     if (menu->isActionTypeSelected())
     {
       action_type = menu->getActionType();
-
+      
       if (action_type == ActionType::GUARD)
       {
         auto targets = getValidTargets(person_index, ActionScope::NOT_USER);
@@ -959,6 +959,7 @@ bool Battle::update(int32_t cycle_time)
     if (menu->getActionIndex() != -1 && 
         !menu->getMenuFlag(BattleMenuState::TARGETS_ASSIGNED))
     {
+      std::cout << "Setting selectable targets!" << std::endl;
       auto action_index = menu->getActionIndex();
 
       if (action_type == ActionType::SKILL)
@@ -975,6 +976,9 @@ bool Battle::update(int32_t cycle_time)
 
         if (menu->setSelectableTargets(valid_targets))
           menu->setMenuFlag(BattleMenuState::TARGETS_ASSIGNED);
+
+        menu->setActionScope(skill_scope);
+        menu->setMenuFlag(BattleMenuState::SCOPE_ASSIGNED);
 
         Helpers::flushConsole();
         menu->printMenuState();
@@ -1075,10 +1079,12 @@ TurnState Battle::getTurnState()
 /* Returns the index integer of a a given Person ptr */
 int32_t Battle::getTarget(Person* battle_member)
 {
+  std::cout << "checking friends target" << std::endl;
   for (uint32_t i = 0; i < friends->getSize(); i++)
     if (friends->getMember(i) == battle_member)
       return static_cast<int32_t>(i);
 
+  std::cout << "checking foes target" << std::endl;
   for (uint32_t i = 0; i < foes->getSize(); i++)
     if (foes->getMember(i) == battle_member)
       return static_cast<int32_t>(i) - foes->getSize();
@@ -1106,10 +1112,10 @@ Person* Battle::getPerson(const int32_t &index)
 /* Calculate and return all BattleMember indexes */
 std::vector<int32_t> Battle::getAllTargets()
 {
-  auto all_targets = getFriendsTargets();
+  auto all_targets =  getFriendsTargets();
   auto foes_targets = getFoesTargets();
 
-  all_targets.insert(end(all_targets), begin(all_targets), end(all_targets));
+  all_targets.insert(end(all_targets), begin(foes_targets), end(foes_targets));
 
   return all_targets;
 }
@@ -1225,6 +1231,10 @@ std::vector<int32_t> Battle::getValidTargets(int32_t index,
       valid_targets = getFoesTargets(true);
   }
   
+  std::cout << "=== Valid targets ===" << std::endl;
+  for (auto it = begin(valid_targets); it != end(valid_targets); ++it)
+    std::cout << *it << std::endl;
+
   return valid_targets;
 }
 
