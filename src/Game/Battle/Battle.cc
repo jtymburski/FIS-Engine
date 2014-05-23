@@ -510,9 +510,6 @@ void Battle::selectUserActions()
 
       if (person != nullptr)
       {
-#ifdef UDEBUG
-        std::cout << "Selecting action for: " << person->getName() << std::endl;
-#endif 
         /* Reload the menu information for the next person */
         menu->reset(person_index);
         menu->setPersonLevel(person->getLevel());
@@ -1218,6 +1215,10 @@ std::vector<int32_t> Battle::getValidTargets(int32_t index,
   {
     valid_targets = getAllTargets();
     std::remove(begin(valid_targets), end(valid_targets), index);
+    valid_targets.pop_back();
+
+    for (auto it = begin(valid_targets); it != end(valid_targets); ++it)
+      std::cout << *it << std::endl;
   }
   else if (action_scope == ActionScope::ONE_ENEMY   ||
            action_scope == ActionScope::TWO_ENEMIES ||

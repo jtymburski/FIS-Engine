@@ -45,22 +45,24 @@ bool BattleMenu::decrementLayer(const int32_t &new_layer_index)
 
   if (new_layer_index <= 3)
   {
+    valid_targets.clear();
+    selected_targets.clear();
+
+    element_index = 0;
+    layer_index   = 3;
+
+    setMenuFlag(BattleMenuState::TARGETS_ASSIGNED, false);
+    setMenuFlag(BattleMenuState::SCOPE_ASSIGNED, false);
+
     success = true;
   }
 
   if (new_layer_index <= 2)
   {
-    valid_targets.clear();
-    selected_targets.clear();
-
     action_index  = -1;
     action_scope  = ActionScope::NO_SCOPE;
-    element_index =  0;
-    layer_index   =  2;
+    layer_index = 2;
           
-    setMenuFlag(BattleMenuState::TARGETS_ASSIGNED, false);
-    setMenuFlag(BattleMenuState::SCOPE_ASSIGNED, false);
- 
     success = true;
   }
 
@@ -68,7 +70,6 @@ bool BattleMenu::decrementLayer(const int32_t &new_layer_index)
   {
     action_type   = ActionType::NONE;
     layer_index   = 1;
-    element_index = 0;
 
     success = true;
   }
@@ -98,7 +99,7 @@ bool BattleMenu::incrementLayer(const int32_t &new_layer_index)
 
   else if (new_layer_index == 4)
   {
-    layer_index = 3;
+    layer_index = 4;
 
     return true;
   }
@@ -119,8 +120,10 @@ bool BattleMenu::addTarget(const int32_t &new_target)
 
   if (it != end(valid_targets))
   {
-    valid_targets.erase(it);
+    std::cout << "found target!" << std::endl;
     selected_targets.push_back(*it);
+    valid_targets.erase(it);
+
 
     return true;
   }
@@ -204,7 +207,7 @@ void BattleMenu::keyDownCancel()
       {
         /* If the size is greater than 0, pop the last selected target off,
            or go back to the skill selection menu */
-        if (selected_targets.size() > 1)
+        if (selected_targets.size() > 0)
           removeLastTarget();
         else
           decrement_to_layer = 2;
@@ -220,6 +223,10 @@ void BattleMenu::keyDownCancel()
           std::cout << "Removing last target: false" << std::endl;
       }
     }
+  }
+  else if (layer_index == 4)
+  {
+    decrement_to_layer = 3;
   }
   
   if (decrement_to_layer != -1)
@@ -362,7 +369,30 @@ void BattleMenu::keyDownSelect()
   {
     if (action_type == ActionType::SKILL)
     {
+      if (action_scope == ActionScope::ALL_ENEMIES   ||
+          action_scope == ActionScope::ALL_ALLIES    ||
+          action_scope == ActionScope::ALL_ALLIES_KO ||
+          action_scope == ActionScope::ALL_TARGETS   ||
+          action_scope == ActionScope::ALL_NOT_USER)
+      {
+        while (valid_targets.size() > 0)
+          addTarget(valid_targets.at(valid_targets.size() - 1));
 
+        layer_to_increment = 4;
+      }
+      else if (action_scope == ActionScope::TWO_ENEMIES ||
+          action_scope == ActionScope::TWO_ALLIES)
+      {
+        addTarget(valid_targets.at(element_index));
+
+        if (selected_targets.size() == 2)
+          layer_to_increment = 4;
+      }
+      else
+      {
+        addTarget(valid_targets.at(element_index));
+        layer_to_increment = 4;
+      }
     }
     else if (action_type == ActionType::ITEM)
     {
@@ -370,7 +400,7 @@ void BattleMenu::keyDownSelect()
     }
     else if (action_type == ActionType::GUARD)
     {
-      selected_targets.push_back(action_index);
+      addTarget(valid_targets.at(element_index));
       action_targets     = selected_targets;
       layer_to_increment = 4;
     }
@@ -558,7 +588,7 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
   if (event.keysym.sym == SDLK_UP || event.keysym.sym == SDLK_DOWN)
   {
     change_index = true;
-    
+
     if (action_type == ActionType::SKILL)
     {
       if (action_scope == ActionScope::ONE_PARTY)
@@ -592,7 +622,9 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
 
   if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
   {
-    std::cout << "Selecting action for person index: " << person_index << std::endl;
+    std::cout << "Selecting action (scope: " 
+              << Helpers::actionScopeToStr(action_scope)
+              << ") for person index: " << person_index << std::endl;
     printMenuState();
 
     if (selection_verified)
@@ -611,7 +643,7 @@ void BattleMenu::printMenuState()
   else if (layer_index == 2 && action_type == ActionType::ITEM)
     printItems();
   else if (layer_index == 3)
-    printTargets();
+    printTargets(true);
   else if (layer_index == 4)
   {
     std::cout << "Action Type: " << Helpers::actionTypeToStr(action_type)
@@ -624,10 +656,10 @@ void BattleMenu::printMenuState()
     else
       std::cout << "NONE";
 
-    std::cout << " targeting person indexes: ";
+    std::cout << std::endl << "Targeting person indexes: ";
 
     for (auto it = begin(selected_targets); it != end(selected_targets); ++it)
-      std::cout << (*it);
+      std::cout << (*it) << ", ";
 
     std::cout << std::endl << "Select this action?" << std::endl;
   }
