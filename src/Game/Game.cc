@@ -446,6 +446,7 @@ void Game::setupBattle()
   actions.push_back(new Action("5,INFLICT,3.5,,,BURN,,,,85"));
   actions.push_back(new Action("6,ALTER,,,,VITA,AMOUNT.100,PC.10,,95"));
   actions.push_back(new Action("7,ALTER,,,,VITA,AMOUNT.210,PC.15,,96"));
+  actions.push_back(new Action("7,ALTER,,,,VITA,AMOUNT.265,PC.15,,97"));
   Action* special = new Action("8,ALTER,,,,VITA,PC.25,AMOUNT.50,,98");
   
   //actions[3]->print();
@@ -455,17 +456,31 @@ void Game::setupBattle()
   std::vector<Skill*> other_skills;
 
   Skill* normal_attack = new Skill(13, "Attack",ActionScope::ONE_TARGET,actions[0],0.75);
-  Skill* medium_attack = new Skill(14, "Med. Attack",ActionScope::ONE_TARGET,actions[5],0.85);
-  Skill* hard_attack   = new Skill(15, "Hard Attack",ActionScope::ONE_TARGET,actions[6],0.90);
+  Skill* medium_attack = new Skill(14, "Med. Attack",ActionScope::ONE_ENEMY,actions[5],0.85);
+  Skill* hard_attack   = new Skill(15, "Hard Attack",ActionScope::TWO_ENEMIES,actions[6],0.90);
+  Skill* ultra_attack  = new Skill(16, "Ultra Attack",ActionScope::ALL_ENEMIES,actions[7],0.91);
+  Skill* one_ally_ko   = new Skill(17, "One Ally Ko",ActionScope::ONE_ALLY_KO,actions[7],0.91);
+  Skill* all_allies_ko = new Skill(18, "All Allies Ko",ActionScope::ALL_ALLIES_KO,actions[7],0.92);
+  Skill* one_party     = new Skill(19, "One Party",ActionScope::ONE_PARTY,actions[7],0.91);
+  Skill* all_targets   = new Skill(20, "All Targets",ActionScope::ALL_TARGETS,actions[7],0.92);
+  Skill* not_user      = new Skill(21, "Not User",ActionScope::NOT_USER,actions[7],0.92);
+  Skill* all_not_user  = new Skill(22, "All Not User",ActionScope::ALL_NOT_USER,actions[7],0.93);
   normal_attack->addActions(actions, chances);
 
   skills.push_back(normal_attack);
-  skills.push_back(new Skill(400, "Super Attack",ActionScope::ONE_ENEMY,special,0.65));
-  skills.push_back(new Skill(3, "Poison Attack",ActionScope::ONE_ENEMY,actions[1],0.79));
-  skills.push_back(new Skill(35, "Crappy Attack",ActionScope::ONE_TARGET,special,1.00));
+  skills.push_back(new Skill(400, "Super Attack",ActionScope::ONE_ALLY,special,0.65));
+  skills.push_back(new Skill(3, "Poison Attack",ActionScope::TWO_ALLIES,actions[1],0.79));
+  skills.push_back(new Skill(35, "Crappy Attack",ActionScope::ALL_ALLIES,special,1.00));
 
   other_skills.push_back(medium_attack);
   other_skills.push_back(hard_attack);
+  other_skills.push_back(ultra_attack);
+  other_skills.push_back(one_ally_ko);
+  other_skills.push_back(all_allies_ko);
+  other_skills.push_back(one_party);
+  other_skills.push_back(all_targets);
+  other_skills.push_back(not_user);
+  other_skills.push_back(all_not_user);
 
   std::vector<uint32_t> levels;
   std::vector<uint32_t> other_levels;

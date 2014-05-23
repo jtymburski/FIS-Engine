@@ -807,6 +807,11 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
 {
   Helpers::flushConsole();
 
+#ifdef UDEBUG
+  if (event.keysym.sym == SDLK_LEFT)
+    printPartyState();
+#endif
+
   if (menu->getWindowStatus() == WindowStatus::ON)
     return menu->keyDownEvent(event);
 
@@ -883,14 +888,21 @@ void Battle::printPartyState()
   for (uint32_t i = 0; i < friends->getSize(); i++)
   {
     auto temp = friends->getMember(i);
-    std::cout << temp->getName() << " " << temp->getCurr().getStat(0) << "\n";
+    std::cout << "[" << i << "] - " << temp->getName() << "\n" 
+              << "VITA: " << temp->getCurr().getStat(0) << "\n"
+              << "QTDR: " << temp->getCurr().getStat(1) << "\n\n";
   }
 
   std::cout << "---- Foes ----\n";
   for (uint32_t i = 0; i < foes->getSize(); i++)
   {
     auto temp = foes->getMember(i);
-    std::cout << temp->getName() << " " << temp->getCurr().getStat(0) << "\n";
+
+    std::cout << "[" 
+              << static_cast<int32_t>(static_cast<int32_t>(i) - foes->getSize()) 
+              << "] - " << temp->getName() << "\n" 
+              << "VITA: " << temp->getCurr().getStat(0) << "\n"
+              << "QTDR: " << temp->getCurr().getStat(1) << "\n\n";
   }
 }
 
@@ -959,7 +971,7 @@ bool Battle::update(int32_t cycle_time)
     if (menu->getActionIndex() != -1 && 
         !menu->getMenuFlag(BattleMenuState::TARGETS_ASSIGNED))
     {
-      std::cout << "Setting selectable targets!" << std::endl;
+      Helpers::flushConsole();
       auto action_index = menu->getActionIndex();
 
       if (action_type == ActionType::SKILL)
@@ -974,13 +986,18 @@ bool Battle::update(int32_t cycle_time)
 
         auto valid_targets = getValidTargets(person_index, skill_scope);
 
-        if (menu->setSelectableTargets(valid_targets))
-          menu->setMenuFlag(BattleMenuState::TARGETS_ASSIGNED);
+        if (!menu->setSelectableTargets(valid_targets))
+        {
+#ifdef UDEBUG
+          std::cout << "No selectable targets found! Select another skill!"
+                    << std::endl;
+#endif
+        }
 
+        menu->setMenuFlag(BattleMenuState::TARGETS_ASSIGNED);
         menu->setActionScope(skill_scope);
         menu->setMenuFlag(BattleMenuState::SCOPE_ASSIGNED);
 
-        Helpers::flushConsole();
         menu->printMenuState();
       }
       else if (action_type == ActionType::ITEM)
@@ -1079,12 +1096,10 @@ TurnState Battle::getTurnState()
 /* Returns the index integer of a a given Person ptr */
 int32_t Battle::getTarget(Person* battle_member)
 {
-  std::cout << "checking friends target" << std::endl;
   for (uint32_t i = 0; i < friends->getSize(); i++)
     if (friends->getMember(i) == battle_member)
       return static_cast<int32_t>(i);
 
-  std::cout << "checking foes target" << std::endl;
   for (uint32_t i = 0; i < foes->getSize(); i++)
     if (foes->getMember(i) == battle_member)
       return static_cast<int32_t>(i) - foes->getSize();
@@ -1231,10 +1246,6 @@ std::vector<int32_t> Battle::getValidTargets(int32_t index,
       valid_targets = getFoesTargets(true);
   }
   
-  std::cout << "=== Valid targets ===" << std::endl;
-  for (auto it = begin(valid_targets); it != end(valid_targets); ++it)
-    std::cout << *it << std::endl;
-
   return valid_targets;
 }
 

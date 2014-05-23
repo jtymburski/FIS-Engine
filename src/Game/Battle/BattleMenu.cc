@@ -360,7 +360,15 @@ void BattleMenu::keyDownSelect()
   }
   else if (layer_index == 3)
   {
-    if (action_type == ActionType::GUARD)
+    if (action_type == ActionType::SKILL)
+    {
+
+    }
+    else if (action_type == ActionType::ITEM)
+    {
+
+    }
+    else if (action_type == ActionType::GUARD)
     {
       selected_targets.push_back(action_index);
       action_targets     = selected_targets;
@@ -494,10 +502,23 @@ void BattleMenu::printTargets(const bool &print_selected)
   std::cout << "Valid Targets Remaining: " << std::endl;
   for (auto it = begin(valid_targets); it != end(valid_targets); ++it, ++index)
   {
-    if (index == element_index)
+    /* If the index matches the element index or if the action scope is always
+     * highlighting, display an 'X' on it
+     * The following action scopes will always choose all selectable targets:
+     * ALL_ENEMIES, ALL_ALLIES, ALL_ALLIES_KO, ALL_TARGETS, ALL_NOT_USER */
+    if (action_scope == ActionScope::ALL_ALLIES || 
+        action_scope == ActionScope::ALL_ENEMIES ||
+        action_scope == ActionScope::ALL_ALLIES_KO || 
+        action_scope == ActionScope::ALL_TARGETS ||
+        action_scope == ActionScope::ALL_NOT_USER  ||
+        index == element_index)
+    {
       std::cout << "[X]";
+    }
     else
+    {
       std::cout << "[ ]";
+    }
 
     std::cout << " --- " << (*it) << std::endl;
   }
@@ -532,10 +553,33 @@ void BattleMenu::printItems()
  */
 bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
 {
-  if (event.keysym.sym      == SDLK_UP)
-    keyDownDecrement();
-  else if (event.keysym.sym == SDLK_DOWN)
-    keyDownIncrement();
+  auto change_index = false;
+
+  if (event.keysym.sym == SDLK_UP || event.keysym.sym == SDLK_DOWN)
+  {
+    change_index = true;
+    
+    if (action_type == ActionType::SKILL)
+    {
+      if (action_scope == ActionScope::ONE_PARTY)
+      {
+        change_index = false;
+
+        if (element_index == 0)
+          element_index = getMaxIndex();
+        else if (element_index == getMaxIndex())
+          element_index = 0;
+      }
+    }
+  }
+
+  if (change_index)
+  {
+    if (event.keysym.sym == SDLK_UP)
+      keyDownDecrement();
+    else if (event.keysym.sym == SDLK_DOWN)
+      keyDownIncrement();
+  }
   else if (event.keysym.sym == SDLK_RETURN)
     keyDownSelect();
   else if (event.keysym.sym == SDLK_BACKSPACE)
@@ -548,6 +592,7 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
 
   if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
   {
+    std::cout << "Selecting action for person index: " << person_index << std::endl;
     printMenuState();
 
     if (selection_verified)
