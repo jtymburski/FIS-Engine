@@ -42,7 +42,7 @@ class BattleMenu
 {
 public:
   /* BattleMenu */
-  BattleMenu();
+  BattleMenu(Options* running_config);
 
 private:
   /* Valid action types for the current person index */
@@ -113,7 +113,6 @@ private:
   void keyDownDecrement();
   void keyDownIncrement();
   void keyDownSelect();
-
 
 /*=============================================================================
  * PUBLIC FUNCTIONS

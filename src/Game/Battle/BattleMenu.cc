@@ -27,12 +27,20 @@
  *
  * Inputs:
  */
-BattleMenu::BattleMenu()
-  : flags(static_cast<BattleMenuState>(0))
-{
-  selection_verified = false;
-  config             = nullptr;
-}
+BattleMenu::BattleMenu(Options* running_config)
+  : menu_skills{nullptr}
+  , selection_verified{false}
+  , action_type{ActionType::NONE}
+  , action_scope{ActionScope::NO_SCOPE}
+  , action_index{-1}
+  , config{running_config}
+  , flags{static_cast<BattleMenuState>(0)}
+  , window_status{WindowStatus::OFF}
+  , person_index{0}
+  , person_level{0}
+  , layer_index{0}
+  , element_index{-1}
+{}
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -84,7 +92,6 @@ bool BattleMenu::incrementLayer(const int32_t &new_layer_index)
 
   if (new_layer_index == 2)
   {
-    std::cout << "Incrementing to layer 2!" << std::endl;
     layer_index = 2;
 
     return true;
@@ -120,10 +127,14 @@ bool BattleMenu::addTarget(const int32_t &new_target)
 
   if (it != end(valid_targets))
   {
-    std::cout << "found target!" << std::endl;
+    std::cout << "Selected pushing back: " << *it;
     selected_targets.push_back(*it);
     valid_targets.erase(it);
 
+    if (valid_targets.size() > 0)
+      element_index = 0;
+    else
+      element_index = -1;
 
     return true;
   }
@@ -150,6 +161,7 @@ bool BattleMenu::removeLastTarget(const bool &clear_all)
 
   if (selected_targets.size() > 0)
   {
+    std::cout << "Valid pushing back: " << *(end(selected_targets) - 1);
     valid_targets.push_back(*(end(selected_targets) - 1));
     selected_targets.pop_back();
 
@@ -162,8 +174,6 @@ bool BattleMenu::removeLastTarget(const bool &clear_all)
 /* Methods for containing code for each key action */
 void BattleMenu::keyDownAlpha(const char &c)
 {
-  std::cout << "Key down alpha: " << c << std::endl;
-
   auto index = menu_skills->getIndexOfAlpha(c);
 
   if (index != -1)
@@ -216,11 +226,8 @@ void BattleMenu::keyDownCancel()
       {
         if (removeLastTarget(true))
         {
-          std::cout << "Remove last target was true" << std::endl;
           decrement_to_layer = 2;
         }
-        else
-          std::cout << "Removing last target: false" << std::endl;
       }
     }
   }
@@ -311,13 +318,16 @@ void BattleMenu::keyDownSelect()
     }
     
     /* DEFEND, IMPLODE, RUN, PASS actions require no other menus -> done */
-    else if (action_type == ActionType::DEFEND  || 
-             action_type == ActionType::IMPLODE || 
-             action_type == ActionType::RUN     ||
+    else if (action_type == ActionType::DEFEND)
+    {
+      layer_to_increment = 3;
+    } 
+
+    else if (action_type == ActionType::RUN ||
              action_type == ActionType::PASS)
     {
       layer_to_increment = 4;
-    }  
+    }
   }
   
   else if (layer_index == 2)
@@ -330,18 +340,7 @@ void BattleMenu::keyDownSelect()
           //TODO: Conditions of increment?
           layer_to_increment = 3;
 
-#ifdef UDEBUG
-          std::cout << "Selecting Skill element index: " << element_index 
-                    << std::endl;
-#endif
-
           action_index = element_index;
-
-          if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
-          {
-            std::cout << "Selecting skill element: " << element_index 
-                      << std::endl;
-          }
         }
       }
       else if (action_type == ActionType::ITEM)
@@ -351,17 +350,7 @@ void BattleMenu::keyDownSelect()
           //TODO: Conditions of increment?
           layer_to_increment = 3;
 
-#ifdef UDEBUG
-          std::cout << "Selecting Skill element index: " << element_index 
-                    << std::endl;
-#endif       
           action_index = element_index;
-
-          if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
-          {
-            std::cout << "Selecting item element: " << element_index 
-                      << std::endl;
-          }
         } 
       }
   }
@@ -375,35 +364,54 @@ void BattleMenu::keyDownSelect()
           action_scope == ActionScope::ALL_TARGETS   ||
           action_scope == ActionScope::ALL_NOT_USER)
       {
-        while (valid_targets.size() > 0)
+        while (valid_targets.size() > 0 && element_index != -1)
           addTarget(valid_targets.at(valid_targets.size() - 1));
 
-        layer_to_increment = 4;
+        if (selected_targets.size() > 0)
+          layer_to_increment = 4;
       }
       else if (action_scope == ActionScope::TWO_ENEMIES ||
           action_scope == ActionScope::TWO_ALLIES)
       {
-        addTarget(valid_targets.at(element_index));
+        if (valid_targets.size() > 0 && element_index != -1)
+          addTarget(valid_targets.at(element_index));
 
         if (selected_targets.size() == 2)
           layer_to_increment = 4;
       }
       else
       {
-        addTarget(valid_targets.at(element_index));
-        layer_to_increment = 4;
-      }
+        if (valid_targets.size() > 0 && element_index != -1)
+        {
+          addTarget(valid_targets.at(element_index));
+          layer_to_increment = 4;
+        }
+      } 
     }
     else if (action_type == ActionType::ITEM)
     {
 
     }
-    else if (action_type == ActionType::GUARD)
+    else if (action_type == ActionType::DEFEND ||
+             action_type == ActionType::GUARD  ||
+             action_type == ActionType::IMPLODE)
     {
-      addTarget(valid_targets.at(element_index));
-      action_targets     = selected_targets;
+      if (valid_targets.size() > 0 && element_index != -1)
+      {
+        addTarget(valid_targets.at(element_index));
+        action_targets     = selected_targets;
+        layer_to_increment = 4;
+      }
+    }
+    else if (action_type == ActionType::RUN ||
+             action_type == ActionType::PASS)
+    {
       layer_to_increment = 4;
     }
+  }
+  else if (layer_index == 4)
+  {
+    selection_verified = true;  
   }
 
   if (layer_to_increment != -1)
@@ -521,7 +529,8 @@ void BattleMenu::printTargets(const bool &print_selected)
 
   if (print_selected)
   {
-    std::cout << "Selected Targets: " << std::endl;
+    if (selected_targets.size() > 0)
+      std::cout << "Selected Targets: " << std::endl;
 
     for (auto it = begin(selected_targets); it != end(selected_targets); ++it)
       std::cout << *it << " ";
@@ -536,10 +545,10 @@ void BattleMenu::printTargets(const bool &print_selected)
      * highlighting, display an 'X' on it
      * The following action scopes will always choose all selectable targets:
      * ALL_ENEMIES, ALL_ALLIES, ALL_ALLIES_KO, ALL_TARGETS, ALL_NOT_USER */
-    if (action_scope == ActionScope::ALL_ALLIES || 
-        action_scope == ActionScope::ALL_ENEMIES ||
+    if (action_scope == ActionScope::ALL_ALLIES    || 
+        action_scope == ActionScope::ALL_ENEMIES   ||
         action_scope == ActionScope::ALL_ALLIES_KO || 
-        action_scope == ActionScope::ALL_TARGETS ||
+        action_scope == ActionScope::ALL_TARGETS   ||
         action_scope == ActionScope::ALL_NOT_USER  ||
         index == element_index)
     {

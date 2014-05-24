@@ -83,7 +83,7 @@ Battle::Battle(Options* running_config, Party* const friends, Party* const foes)
   // status_bar = new BattleStatusBar(getFriends(), getScreenWidth(), 
   //                                  getScreenHeight(), this);
   action_buffer = new Buffer();
-  menu          = new BattleMenu();
+  menu          = new BattleMenu(running_config);
 
   setConfiguration(running_config);
   setBattleFlag(CombatState::PHASE_DONE, true);
@@ -885,7 +885,7 @@ void Battle::printPartyState()
   for (uint32_t i = 0; i < friends->getSize(); i++)
   {
     auto temp = friends->getMember(i);
-    std::cout << "[" << i << "] - " << temp->getName() << "\n" 
+    std::cout << "[" << i + 1 << "] - " << temp->getName() << "\n" 
               << "VITA: " << temp->getCurr().getStat(0) << "\n"
               << "QTDR: " << temp->getCurr().getStat(1) << "\n\n";
   }
@@ -954,58 +954,66 @@ bool Battle::update(int32_t cycle_time)
     if (menu->isActionTypeSelected())
     {
       action_type = menu->getActionType();
-      
-      if (action_type == ActionType::GUARD)
-      {
-        auto targets = getValidTargets(person_index, ActionScope::NOT_USER);
-        menu->setSelectableTargets(targets);
-      }
     }
 
     /* If the action index has been assigned and targets have not been assigned
      * yet (for that action index), find the scope of that action the user
      * wishes to use and inject the valid targets into the menu */
-    if (menu->getActionIndex() != -1 && 
-        !menu->getMenuFlag(BattleMenuState::TARGETS_ASSIGNED))
+    if ((menu->getActionIndex() != -1 || 
+         menu->getActionType() == ActionType::DEFEND ||
+         menu->getActionType() == ActionType::GUARD  ||
+         menu->getActionType() == ActionType::IMPLODE) && 
+         !menu->getMenuFlag(BattleMenuState::TARGETS_ASSIGNED))
     {
       Helpers::flushConsole();
       auto action_index = menu->getActionIndex();
+      auto scope   = ActionScope::NO_SCOPE;
 
       if (action_type == ActionType::SKILL)
       {
         auto skill_element = menu->getMenuSkills()->getElement(action_index);
-        auto skill_scope = skill_element.skill->getScope();
+        scope = skill_element.skill->getScope();
+      }
+      else if (action_type == ActionType::ITEM)
+      {
+        auto item_ptr = menu->getMenuItems().at(action_index).first;
+        scope = item_ptr->getUseSkill()->getScope();
+      }
+      else if (action_type == ActionType::DEFEND || 
+               action_type == ActionType::IMPLODE)
+      {
+        scope = ActionScope::USER;
+      }
+      else if (action_type == ActionType::GUARD)
+      {
+        scope = ActionScope::ONE_ALLY_NOT_USER;
+      }
 
-#ifdef UDEBUG
-        std::cout << "Finding selectable targets for skill with scope: "
-                  << Helpers::actionScopeToStr(skill_scope) << std::endl;
-#endif
+      if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
+      {
+        std::cout << "Finding selectable targets for action with scope: "
+                  << Helpers::actionScopeToStr(scope) << std::endl;
+      }
 
-        auto valid_targets = getValidTargets(person_index, skill_scope);
-
-        if (!menu->setSelectableTargets(valid_targets))
+      auto valid_targets = getValidTargets(person_index, scope);
+      menu->setMenuFlag(BattleMenuState::TARGETS_ASSIGNED);
+      
+      if (!menu->setSelectableTargets(valid_targets))
+      {
+        if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
         {
-#ifdef UDEBUG
-          std::cout << "No selectable targets found! Select another skill!"
+          std::cout << "No selectable targets found! Select another action index!"
                     << std::endl;
-#endif
         }
-
-        menu->setMenuFlag(BattleMenuState::TARGETS_ASSIGNED);
-        menu->setActionScope(skill_scope);
+      }
+      else
+      {
+        menu->setActionScope(scope);
         menu->setMenuFlag(BattleMenuState::SCOPE_ASSIGNED);
 
         menu->printMenuState();
       }
-      else if (action_type == ActionType::ITEM)
-      {
-        auto item_ptr   = menu->getMenuItems().at(action_index).first;
-        auto item_scope = item_ptr->getUseSkill()->getScope();
-
-        menu->setSelectableTargets(getValidTargets(person_index, item_scope));
-      }
     }
-
   }
 
   return false;
@@ -1095,7 +1103,7 @@ int32_t Battle::getTarget(Person* battle_member)
 {
   for (uint32_t i = 0; i < friends->getSize(); i++)
     if (friends->getMember(i) == battle_member)
-      return static_cast<int32_t>(i);
+      return static_cast<int32_t>(i) + 1;
 
   for (uint32_t i = 0; i < foes->getSize(); i++)
     if (foes->getMember(i) == battle_member)
@@ -1204,9 +1212,13 @@ std::vector<int32_t> Battle::getValidTargets(int32_t index,
 {
   std::vector<int32_t> valid_targets;
 
-  if (action_scope == ActionScope::ONE_TARGET  ||
-      action_scope == ActionScope::ALL_TARGETS ||
-      action_scope == ActionScope::ONE_PARTY)
+  if (action_scope == ActionScope::USER)
+  {
+    valid_targets.push_back(index);
+  }
+  else if (action_scope == ActionScope::ONE_TARGET  ||
+           action_scope == ActionScope::ALL_TARGETS ||
+           action_scope == ActionScope::ONE_PARTY)
   {
     valid_targets = getAllTargets();
   }
@@ -1216,9 +1228,16 @@ std::vector<int32_t> Battle::getValidTargets(int32_t index,
     valid_targets = getAllTargets();
     std::remove(begin(valid_targets), end(valid_targets), index);
     valid_targets.pop_back();
+  }
+  else if (action_scope == ActionScope::ONE_ALLY_NOT_USER)
+  {
+    if (index > 0)
+      valid_targets = getFriendsTargets();
+    else if (index < 0)
+      valid_targets = getFoesTargets();
 
-    for (auto it = begin(valid_targets); it != end(valid_targets); ++it)
-      std::cout << *it << std::endl;
+    std::remove(begin(valid_targets), end(valid_targets), index);
+    valid_targets.pop_back();
   }
   else if (action_scope == ActionScope::ONE_ENEMY   ||
            action_scope == ActionScope::TWO_ENEMIES ||
@@ -1255,6 +1274,7 @@ bool Battle::setConfiguration(Options* const new_config)
 {
   if (new_config != nullptr)
   {
+    std::cout << "Setting configuration" << std::endl;
     config = new_config;
 
     if (menu != nullptr)

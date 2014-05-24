@@ -257,7 +257,9 @@ std::string Helpers::actionTypeToStr(const ActionType &action_type)
 
 std::string Helpers::actionScopeToStr(const ActionScope &action_scope)
 {
-  if (action_scope == ActionScope::ONE_TARGET)
+  if (action_scope == ActionScope::USER)
+    return "USER";
+  else if (action_scope == ActionScope::ONE_TARGET)
     return "ONE_TARGET";
   else if (action_scope == ActionScope::ONE_ENEMY)
     return "ONE_ENEMY";
@@ -267,6 +269,8 @@ std::string Helpers::actionScopeToStr(const ActionScope &action_scope)
     return "ALL_ENEMIES";
   else if (action_scope == ActionScope::ONE_ALLY)
     return "ONE_ALLY";
+  else if (action_scope == ActionScope::ONE_ALLY_NOT_USER)
+    return "ONE_ALLY_NOT_USER";
   else if (action_scope == ActionScope::TWO_ALLIES)
     return "TWO_ALLIES";
   else if (action_scope == ActionScope::ALL_ALLIES)

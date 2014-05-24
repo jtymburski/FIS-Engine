@@ -455,8 +455,8 @@ void Game::setupBattle()
   std::vector<Skill*> skills;
   std::vector<Skill*> other_skills;
 
-  Skill* normal_attack = new Skill(13, "Attack",ActionScope::ONE_TARGET,actions[0],0.75);
-  Skill* medium_attack = new Skill(14, "Med. Attack",ActionScope::ONE_ENEMY,actions[5],0.85);
+  Skill* normal_attack = new Skill(13, "User",ActionScope::USER,actions[0],0.75);
+  Skill* medium_attack = new Skill(14, "Ally Not User",ActionScope::ONE_ALLY_NOT_USER,actions[5],0.85);
   Skill* hard_attack   = new Skill(15, "Hard Attack",ActionScope::TWO_ENEMIES,actions[6],0.90);
   Skill* ultra_attack  = new Skill(16, "Ultra Attack",ActionScope::ALL_ENEMIES,actions[7],0.91);
   Skill* one_ally_ko   = new Skill(17, "One Ally Ko",ActionScope::ONE_ALLY_KO,actions[7],0.91);
