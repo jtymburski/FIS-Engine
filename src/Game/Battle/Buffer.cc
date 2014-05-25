@@ -33,11 +33,7 @@ const uint16_t Buffer::kMAXIMUM_COOLDOWN{10};
  */
 Buffer::Buffer()
   : index{0}
-{
-#ifdef UDEBUG
-  std::cout << "hahaha we're debugging" << std::endl;
-#endif
-}
+{}
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -56,8 +52,11 @@ bool Buffer::checkValid(BufferAction& elm)
 
   /* Assert the user is not null, the targets are not empty */
   is_valid &= !(elm.user == nullptr);
-  is_valid &= !elm.targets.empty();
-  is_valid &= elm.targets.size() < kMAXIMUM_TARGETS;
+
+  if (elm.type == ActionType::SKILL || elm.type == ActionType::ITEM)
+    is_valid &= !elm.targets.empty();
+
+  is_valid &= elm.targets.size() <= kMAXIMUM_TARGETS;
 
   /* Assign a valid value to the cooldown */
   Helpers::setInRange(elm.cooldown, static_cast<uint16_t>(0), 
@@ -88,7 +87,7 @@ bool Buffer::checkValid(BufferAction& elm)
       is_valid &= !(elm.item_used == nullptr);
       is_valid &= elm.user->getBFlag(BState::ITM_ENABLED);
     }
-    else
+    else if (elm.type == ActionType::NONE)
     {
      is_valid = false;
     }
@@ -286,7 +285,7 @@ bool Buffer::add(BufferAction &action)
 }
 
 /*
- * Description: Clears all the elements of the Buffer
+ * Description: Clears all the elements of e Buffer
  *
  * Inputs: none
  * Output: none
@@ -337,13 +336,14 @@ bool Buffer::isNextValid()
  */
 void Buffer::print(const bool &simple)
 {
-  std::cout << " --- Buffer --- ";
-  std::cout << "Size: " << action_buffer.size() << " I:" << index << "\n";
+  std::cout << " --- Buffer --- \n";
+  std::cout << "Size: " << action_buffer.size() << " Index:" << index << "\n";
 
   if (!simple)
   {
     for (auto it = begin(action_buffer); it != end(action_buffer); ++it)
     {
+      std::cout << "Action Type: " << Helpers::actionTypeToStr((*it).type) << std::endl;
       if ((*it).type == ActionType::SKILL)
       {
         if ((*it).skill_used != nullptr)
@@ -376,7 +376,7 @@ void Buffer::print(const bool &simple)
           std::cout << "Target is nullptr\n";
       }
 
-      std::cout << "Valid: " << (*it).valid;
+      std::cout << "Valid: " << (*it).valid << std::endl << std::endl;
     }
   }
 }

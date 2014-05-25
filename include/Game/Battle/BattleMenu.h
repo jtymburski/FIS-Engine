@@ -34,8 +34,9 @@ using std::end;
 ENUM_FLAGS(BattleMenuState)
 enum class BattleMenuState
 {
-  TARGETS_ASSIGNED = 1 << 0,
-  SCOPE_ASSIGNED   = 1 << 1
+  TARGETS_ASSIGNED  = 1 << 0,
+  SCOPE_ASSIGNED    = 1 << 1,
+  SELECTION_VERIFIED = 1 << 2
 };
 
 class BattleMenu
@@ -58,9 +59,6 @@ private:
   std::vector<int32_t> valid_targets;
   std::vector<int32_t> selected_targets;
 
-  /* Boolean to represent an action selection completed */
-  bool selection_verified;
-
   /* The type of the action that was chosen (if selection_completed) */ 
   ActionType action_type;
 
@@ -69,9 +67,6 @@ private:
 
   /* The index along the corresponding action which was chosen (if selected) */
   int32_t action_index;
-
-  /* The vector of targets which were chosen for the action */
-  std::vector<int32_t> action_targets;
 
   /* Currently assigned options */
   Options* config;
@@ -105,9 +100,10 @@ private:
 
   /* Adding and removing target selections */
   bool addTarget(const int32_t &new_target);
+  bool addPartyTargets(const int32_t &party_index);
   bool removeLastTarget(const bool &clear_all = false);
 
-  /* Methods for containing code for each key action */
+  /* Methods for containing code for each key addition */
   void keyDownAlpha(const char &c);
   void keyDownCancel();
   void keyDownDecrement();

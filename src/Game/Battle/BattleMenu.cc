@@ -29,7 +29,6 @@
  */
 BattleMenu::BattleMenu(Options* running_config)
   : menu_skills{nullptr}
-  , selection_verified{false}
   , action_type{ActionType::NONE}
   , action_scope{ActionScope::NO_SCOPE}
   , action_index{-1}
@@ -127,7 +126,6 @@ bool BattleMenu::addTarget(const int32_t &new_target)
 
   if (it != end(valid_targets))
   {
-    std::cout << "Selected pushing back: " << *it;
     selected_targets.push_back(*it);
     valid_targets.erase(it);
 
@@ -140,6 +138,30 @@ bool BattleMenu::addTarget(const int32_t &new_target)
   }
 
   return false;
+}
+
+/* Adds all the targets of the same party given a party index */
+bool BattleMenu::addPartyTargets(const int32_t &party_index)
+{
+  auto success = false;
+  auto original = valid_targets;
+  
+  for (auto it = begin(original); it != end(original); ++it)
+  {
+    if ((*it < 0 && party_index < 0) || (*it > 0 && party_index > 0))
+    {
+      auto jt = std::find(begin(valid_targets), end(valid_targets), *it);
+     
+      if (jt != end(valid_targets))
+        valid_targets.pop_back();
+
+      selected_targets.push_back(*it);
+
+      success = true;
+    }
+  }
+
+  return success;
 }
 
 bool BattleMenu::removeLastTarget(const bool &clear_all)
@@ -161,7 +183,6 @@ bool BattleMenu::removeLastTarget(const bool &clear_all)
 
   if (selected_targets.size() > 0)
   {
-    std::cout << "Valid pushing back: " << *(end(selected_targets) - 1);
     valid_targets.push_back(*(end(selected_targets) - 1));
     selected_targets.pop_back();
 
@@ -190,22 +211,17 @@ void BattleMenu::keyDownCancel()
   }
   else if (layer_index == 3)
   {
-    /* Hitting cancel on a GUARD action will reset the action_type */
-    if (action_type == ActionType::GUARD)
-    {
-      decrement_to_layer = 1;
-    }
-      /* Back on a SKILL or ITEM action will remove the last added target,
-       * which depends on the scope of the action:
-       *
-       *    TWO_ENEMIES   - previous single target cleared
-       *    TWO_ALLIES    - previous single target cleared
-       *
-       *    NO_SCOPE      - invalid
-       *
-       *    all others    - clear vector
-       */
-    else if (action_type == ActionType::SKILL ||
+    /* Back on a SKILL or ITEM action will remove the last added target,
+     * which depends on the scope of the action:
+     *
+     *    TWO_ENEMIES   - previous single target cleared
+     *    TWO_ALLIES    - previous single target cleared
+     *
+     *    NO_SCOPE      - invalid
+     *
+     *    all others    - clear vector
+     */
+    if (action_type == ActionType::SKILL ||
              action_type == ActionType::ITEM)
     {
       if (action_scope == ActionScope::NO_SCOPE)
@@ -229,6 +245,12 @@ void BattleMenu::keyDownCancel()
           decrement_to_layer = 2;
         }
       }
+    }
+    /* Hitting cancel on a GUARD action will reset the action_type */
+    else if (action_type == ActionType::GUARD ||
+             action_type == ActionType::DEFEND)
+    {
+      decrement_to_layer = 1;
     }
   }
   else if (layer_index == 4)
@@ -358,11 +380,18 @@ void BattleMenu::keyDownSelect()
   {
     if (action_type == ActionType::SKILL)
     {
-      if (action_scope == ActionScope::ALL_ENEMIES   ||
-          action_scope == ActionScope::ALL_ALLIES    ||
-          action_scope == ActionScope::ALL_ALLIES_KO ||
-          action_scope == ActionScope::ALL_TARGETS   ||
-          action_scope == ActionScope::ALL_NOT_USER)
+      if (action_scope == ActionScope::ONE_PARTY)
+      {
+        addPartyTargets(valid_targets.at(element_index));
+
+        if (selected_targets.size() > 0)
+          layer_to_increment = 4;
+      }
+      else if (action_scope == ActionScope::ALL_ENEMIES   ||
+               action_scope == ActionScope::ALL_ALLIES    ||
+               action_scope == ActionScope::ALL_ALLIES_KO ||
+               action_scope == ActionScope::ALL_TARGETS   ||
+               action_scope == ActionScope::ALL_NOT_USER)
       {
         while (valid_targets.size() > 0 && element_index != -1)
           addTarget(valid_targets.at(valid_targets.size() - 1));
@@ -399,7 +428,6 @@ void BattleMenu::keyDownSelect()
       if (valid_targets.size() > 0 && element_index != -1)
       {
         addTarget(valid_targets.at(element_index));
-        action_targets     = selected_targets;
         layer_to_increment = 4;
       }
     }
@@ -411,7 +439,7 @@ void BattleMenu::keyDownSelect()
   }
   else if (layer_index == 4)
   {
-    selection_verified = true;  
+    setMenuFlag(BattleMenuState::SELECTION_VERIFIED, true);
   }
 
   if (layer_to_increment != -1)
@@ -428,11 +456,6 @@ bool BattleMenu::isActionTypeSelected()
   return (action_type != ActionType::NONE);
 }
 
-bool BattleMenu::isActionSelected()
-{
-  return selection_verified;
-}
-
 /*
  * Description:
  *
@@ -446,11 +469,10 @@ void BattleMenu::reset(const uint32_t &new_person_index)
   valid_targets.clear();
   selected_targets.clear();
 
-  selection_verified = false;
+  setMenuFlag(BattleMenuState::SELECTION_VERIFIED, false);
   action_type   = ActionType::NONE;
   action_index  = -1;
   action_scope  = ActionScope::NO_SCOPE;
-  action_targets.clear();
 
   setMenuFlag(BattleMenuState::TARGETS_ASSIGNED, false);
   setMenuFlag(BattleMenuState::SCOPE_ASSIGNED, false);
@@ -461,8 +483,8 @@ void BattleMenu::reset(const uint32_t &new_person_index)
   person_level = 0;
   window_status = WindowStatus::ON;
 
-  if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
-    printMenuState();
+  // if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
+  //   printMenuState();
 }
 
 /*
@@ -498,6 +520,8 @@ void BattleMenu::printValidActions()
 
     std::cout << " --- " << Helpers::actionTypeToStr(*it) << std::endl;
   }
+
+  std::cout << std::endl;
 }
 
 /*
@@ -636,8 +660,8 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
               << ") for person index: " << person_index << std::endl;
     printMenuState();
 
-    if (selection_verified)
-      std::cout << "Action has been chosen from menu!" << std::endl;
+    if (getMenuFlag(BattleMenuState::SELECTION_VERIFIED))
+      std::cout << "Selection has been verified!" << std::endl;
   }
 
   return false;
@@ -704,7 +728,7 @@ int32_t BattleMenu::getActionIndex()
  */
 std::vector<int32_t> BattleMenu::getActionTargets()
 {
-  return action_targets;
+  return selected_targets;
 }
 
 int32_t BattleMenu::getMaxIndex()
@@ -715,10 +739,6 @@ int32_t BattleMenu::getMaxIndex()
     return menu_skills->getSize() - 1;
   else if (layer_index == 2 && action_type == ActionType::ITEM)
     return menu_items.size() - 1;
-  else if (layer_index == 2 && action_type == ActionType::GUARD)
-  {
-    //TODO: Determine maximum targets for Guarding
-  }
   else if (layer_index == 2)
     return 0;
   else if (layer_index == 3)

@@ -234,6 +234,7 @@ bool Battle::checkPartyDeath(Party* const check_party)
 void Battle::cleanUp()
 {
   action_buffer->clearAll();
+  person_index = 0;
 
   // TODO: clear any other data upon turn end? [03-16-14]
 
@@ -447,68 +448,87 @@ void Battle::selectEnemyActions()
 void Battle::selectUserActions()
 {
 #ifdef UDEBUG
-  std::cout << "Selecting User Actions" << std::endl;
+  std::cout << "Selecting User Actions: " << person_index <<  std::endl;
 #endif
+
+  /* If an action has been selected for a valid person index, grab the info.
+      and load it into the buffer */
+  if (person_index > 0 &&
+      menu->getMenuFlag(BattleMenuState::SELECTION_VERIFIED))
+  {
+    auto person_user    = getPerson(person_index);
+    auto action_type    = menu->getActionType();
+    auto action_index   = menu->getActionIndex();
+    auto action_targets = menu->getActionTargets();
+
+    /* Build the vector Person ptrs from the target index vector */
+    std::vector<Person*> person_targets;
+
+    for (auto it = begin(action_targets); it != end(action_targets); ++it)
+      person_targets.push_back(getPerson(*it));
+        
+    /* Push the actions on to the Buffer */
+    if (action_type == ActionType::SKILL)
+    {
+      auto selected_skill = person_user->getUseableSkills().at(action_index);
+
+      if (!action_buffer->add(person_user, selected_skill, person_targets, 0))
+      {
+#ifdef UDEBUG
+        std::cout << "[Error]: Action buffer addition failure!" << std::endl;
+#endif
+      }
+      
+      // TODO: Reduce the person's QD upon selection of skill [05-04-14]
+    }
+    else if (action_type == ActionType::ITEM)
+    {
+      auto selected_item = 
+        friends->getInventory()->getBattleItems().at(action_index).first;
+      
+      if (!action_buffer->add(person_user, selected_item, person_targets, 0))
+      {
+#ifdef UDEBUG
+        std::cout << "[Error]: Action buffer addition failure!" << std::endl;
+#endif
+      }
+       
+      //TODO: Remove the potentially used item from the inventory [05-04-14]
+    }
+    else if (action_type == ActionType::DEFEND  || 
+             action_type == ActionType::GUARD   ||
+             action_type == ActionType::IMPLODE ||
+             action_type == ActionType::RUN     ||
+             action_type == ActionType::PASS)
+    {
+      if (!action_buffer->add(person_user, action_type, person_targets, 0))
+      {
+#ifdef UDEBUG
+        std::cout << "[Error]: Action bufer addition failure! " << std::endl;
+#endif
+      }
+    }
+    else
+    {
+      std::cerr << "[Error]: Invalid action selected\n";
+    }
+#ifdef UDEBUG
+    std::cout << "Incrementing ally menu selection index" << std::endl;
+#endif
+
+    person_index++;
+  }
 
   /* If a menu action has been selected, update to the next person index. If 
      the index is at the highest level, set the select user action phase done */
-  if (person_index == 0 || menu->isActionSelected())
+  if ((static_cast<uint32_t>(person_index) <= 
+      friends->getSize()) && person_index > -1)
   {
-    /* If an action has been selected for a valid person index, grab the info.
-       and load it into the buffer */
-    if (person_index > 0 && menu->isActionSelected())
+    auto person = getPerson(person_index);
+
+    if (person != nullptr)
     {
-      auto person_user    = getPerson(person_index);
-      auto action_type    = menu->getActionType();
-      auto action_index   = menu->getActionIndex();
-      auto action_targets = menu->getActionTargets();
-
-      /* Build the vector Person ptrs from the target index vector */
-      std::vector<Person*> person_targets;
-
-      for (auto it = begin(action_targets); it != end(action_targets); ++it)
-        person_targets.push_back(getPerson(*it));
-        
-      /* Push the actions on to the Buffer */
-      if (action_type == ActionType::SKILL)
-      {
-        auto selected_skill = person_user->getUseableSkills().at(action_index);
-        action_buffer->add(person_user, selected_skill, person_targets, 0);
-      
-        // TODO: Reduce the person's QD upon selection of skill [05-04-14]
-      }
-      else if (action_type == ActionType::ITEM)
-      {
-        auto selected_item = 
-               friends->getInventory()->getBattleItems().at(action_index).first;
-        action_buffer->add(person_user, selected_item, person_targets, 0);
-       
-        //TODO: Remove the potentially used item from the inventory [05-04-14]
-      }
-      else if (action_type == ActionType::DEFEND  || 
-               action_type == ActionType::GUARD   ||
-               action_type == ActionType::IMPLODE ||
-               action_type == ActionType::RUN     ||
-               action_type == ActionType::PASS)
-      {
-        action_buffer->add(person_user, action_type, person_targets, 0);
-      }
-      else
-      {
-        std::cerr << "[Error]: Invalid action selected\n";
-      }
-
-    }
-
-    /* If the menu has an action seleted, set the person index to next */
-    if (static_cast<uint32_t>(person_index + 1) < 
-        friends->getLivingMembers().size() && 
-        person_index > -1)
-    {
-      std::cout << "incrementing person index" << std::endl;
-      auto person = getPerson(++person_index);
-
-      if (person != nullptr)
+      if (person->getBFlag(BState::ALIVE))
       {
         /* Reload the menu information for the next person */
         menu->reset(person_index);
@@ -516,33 +536,31 @@ void Battle::selectUserActions()
         menu->setSelectableActions(getValidActions(person_index));
         menu->setSelectableSkills(person->getCurrSkills());
         menu->setSelectableItems(friends->getInventory()->getBattleItems());
+        
         menu->printMenuState();
       }
       else
       {
-        std::cerr << "[Error]: Selection action for invalid person\n";
+#ifdef UDEBUG
+        std::cout << "Person index: " << person_index << "cannot select action"
+                  << std::endl;
+#endif
       }
     }
     else
     {
-      /* Set the phase complete on the max person index */
-      setBattleFlag(CombatState::PHASE_DONE);
+      std::cerr << "[Error]: Selection action for invalid person\n";
     }
   }
-    /* Grabs the selected action's information */
+  else 
+  {
+#ifdef UDEBUG
+    std::cout << "Ally menu selection complete!" << std::endl;
+#endif
 
-    // Find valid targets for the skill
-      // Select target from list
-    // Add skill from skill buffer
-    // Remove required QD from person
-
-    // Find Battle Usable items in inventory
-    // Select item
-    // Find valid targets
-    // Choose from targets
-    // Remove item from inventory
-
-  /* Select user action state complete */
+    /* Set the phase complete on the max person index */
+    setBattleFlag(CombatState::PHASE_DONE);
+  }
 }
 
 /* Load default configuration of the battle */
@@ -684,11 +702,15 @@ void Battle::setNextTurnState()
       if (turn_mode == TurnMode::FRIENDS_FIRST)
       {
         setTurnState(TurnState::SELECT_ACTION_ALLY);
+
+        person_index = 1;
         selectUserActions();
       }
       else if (turn_mode == TurnMode::ENEMIES_FIRST)
       {
         setTurnState(TurnState::SELECT_ACTION_ENEMY);
+
+        person_index = -1;
         selectEnemyActions();
       }
     }
@@ -700,6 +722,8 @@ void Battle::setNextTurnState()
       if (turn_mode == TurnMode::FRIENDS_FIRST)
       {
         setTurnState(TurnState::SELECT_ACTION_ENEMY);
+
+        person_index = -1;
         selectEnemyActions();
       }
       else if (turn_mode == TurnMode::ENEMIES_FIRST)
@@ -721,6 +745,8 @@ void Battle::setNextTurnState()
       else if (turn_mode == TurnMode::ENEMIES_FIRST)
       {
         setTurnState(TurnState::SELECT_ACTION_ALLY);
+        
+        person_index = 1;
         selectUserActions();
       }
     }
@@ -729,19 +755,18 @@ void Battle::setNextTurnState()
     else if (turn_state == TurnState::ORDER_ACTIONS)
     {
       setTurnState(TurnState::PROCESS_ACTIONS);
-      cleanUp();
     }
 
     /* After the actions are processed, Battle turn clean up occurs */
     else if (turn_state == TurnState::PROCESS_ACTIONS)
     {
       setTurnState(TurnState::CLEAN_UP);
-      cleanUp();
     }
 
     /* After the end of the turn, loop restarts at general upkeep */
     else if (turn_state == TurnState::CLEAN_UP)
     {
+      cleanUp();
       setTurnState(TurnState::GENERAL_UPKEEP);
       generalUpkeep();
     }
@@ -807,6 +832,8 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
 #ifdef UDEBUG
   if (event.keysym.sym == SDLK_LEFT)
     printPartyState();
+  else if (event.keysym.sym == SDLK_RIGHT)
+    action_buffer->print(false);
 #endif
 
   if (menu->getWindowStatus() == WindowStatus::ON)
@@ -949,69 +976,75 @@ bool Battle::update(int32_t cycle_time)
    * the scope of the particular action type [if required] */
   else if (turn_state == TurnState::SELECT_ACTION_ALLY)
   {
-    ActionType action_type = ActionType::NONE;
-
-    if (menu->isActionTypeSelected())
+    if (menu->getMenuFlag(BattleMenuState::SELECTION_VERIFIED))
     {
-      action_type = menu->getActionType();
+      selectUserActions();
     }
-
-    /* If the action index has been assigned and targets have not been assigned
-     * yet (for that action index), find the scope of that action the user
-     * wishes to use and inject the valid targets into the menu */
-    if ((menu->getActionIndex() != -1 || 
-         menu->getActionType() == ActionType::DEFEND ||
-         menu->getActionType() == ActionType::GUARD  ||
-         menu->getActionType() == ActionType::IMPLODE) && 
-         !menu->getMenuFlag(BattleMenuState::TARGETS_ASSIGNED))
+    else
     {
-      Helpers::flushConsole();
-      auto action_index = menu->getActionIndex();
-      auto scope   = ActionScope::NO_SCOPE;
-
-      if (action_type == ActionType::SKILL)
+      ActionType action_type = ActionType::NONE;
+    
+      if (menu->isActionTypeSelected())
       {
-        auto skill_element = menu->getMenuSkills()->getElement(action_index);
-        scope = skill_element.skill->getScope();
-      }
-      else if (action_type == ActionType::ITEM)
-      {
-        auto item_ptr = menu->getMenuItems().at(action_index).first;
-        scope = item_ptr->getUseSkill()->getScope();
-      }
-      else if (action_type == ActionType::DEFEND || 
-               action_type == ActionType::IMPLODE)
-      {
-        scope = ActionScope::USER;
-      }
-      else if (action_type == ActionType::GUARD)
-      {
-        scope = ActionScope::ONE_ALLY_NOT_USER;
+        action_type = menu->getActionType();
       }
 
-      if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
+      /* If the action index has been assigned and targets have not been assigned
+       * yet (for that action index), find the scope of that action the user
+       * wishes to use and inject the valid targets into the menu */
+      if ((menu->getActionIndex() != -1 || 
+           menu->getActionType() == ActionType::DEFEND ||
+           menu->getActionType() == ActionType::GUARD  ||
+           menu->getActionType() == ActionType::IMPLODE) && 
+           !menu->getMenuFlag(BattleMenuState::TARGETS_ASSIGNED))
       {
-        std::cout << "Finding selectable targets for action with scope: "
-                  << Helpers::actionScopeToStr(scope) << std::endl;
-      }
+        auto action_index = menu->getActionIndex();
+        auto scope   = ActionScope::NO_SCOPE;
 
-      auto valid_targets = getValidTargets(person_index, scope);
-      menu->setMenuFlag(BattleMenuState::TARGETS_ASSIGNED);
-      
-      if (!menu->setSelectableTargets(valid_targets))
-      {
+        if (action_type == ActionType::SKILL)
+        {
+          auto skill_element = menu->getMenuSkills()->getElement(action_index);
+          scope = skill_element.skill->getScope();
+        }
+        else if (action_type == ActionType::ITEM)
+        {
+          auto item_ptr = menu->getMenuItems().at(action_index).first;
+          scope = item_ptr->getUseSkill()->getScope();
+        }
+        else if (action_type == ActionType::DEFEND || 
+                 action_type == ActionType::IMPLODE)
+        {
+          scope = ActionScope::USER;
+        }
+        else if (action_type == ActionType::GUARD)
+        {
+          scope = ActionScope::ONE_ALLY_NOT_USER;
+        }
+
         if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
         {
-          std::cout << "No selectable targets found! Select another action index!"
-                    << std::endl;
+          std::cout << "Finding selectable targets for action with scope: "
+                    << Helpers::actionScopeToStr(scope) << std::endl;
         }
-      }
-      else
-      {
-        menu->setActionScope(scope);
-        menu->setMenuFlag(BattleMenuState::SCOPE_ASSIGNED);
 
-        menu->printMenuState();
+        auto valid_targets = getValidTargets(person_index, scope);
+        menu->setMenuFlag(BattleMenuState::TARGETS_ASSIGNED);
+      
+        if (!menu->setSelectableTargets(valid_targets))
+        {
+          if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
+          {
+            std::cout << "No selectable targets found! Select another action index!"
+                      << std::endl;
+          }
+        }
+        else
+        {
+          menu->setActionScope(scope);
+          menu->setMenuFlag(BattleMenuState::SCOPE_ASSIGNED);
+
+          menu->printMenuState();
+        }
       }
     }
   }
@@ -1122,8 +1155,8 @@ Person* Battle::getPerson(const int32_t &index)
   }
   else if (index > 0)
   {
-    if (index < static_cast<int32_t>(friends->getSize()))
-      return friends->getMember(index);
+    if (index - 1 < static_cast<int32_t>(friends->getSize()))
+      return friends->getMember(index - 1);
   }
 
   return nullptr;
