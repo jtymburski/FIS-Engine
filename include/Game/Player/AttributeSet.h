@@ -129,6 +129,9 @@ public:
   /* Method for returning the index of an attribute given a name */
   static int getIndex(const std::string &name);
   
+  /* Returns the max value for an attribute */
+  static uint16_t getMaxValue();
+
   /* Returns the size of an attribute set (static -- returns kNUM_VALUES) */
   static size_t getSize();
 

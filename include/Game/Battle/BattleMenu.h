@@ -48,6 +48,9 @@ public:
   BattleMenu(Options* running_config);
 
 private:
+  /* The QTDR cost paid for a selected action */
+  int32_t qtdr_cost_paid;
+
   /* Valid action types for the current person index */
   std::vector<ActionType> valid_actions;
 

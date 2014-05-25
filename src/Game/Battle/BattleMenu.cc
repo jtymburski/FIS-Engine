@@ -28,7 +28,8 @@
  * Inputs:
  */
 BattleMenu::BattleMenu(Options* running_config)
-  : menu_skills{nullptr}
+  : qtdr_cost_paid{0}
+  , menu_skills{nullptr}
   , action_type{ActionType::NONE}
   , action_scope{ActionScope::NO_SCOPE}
   , config{running_config}
@@ -73,6 +74,17 @@ bool BattleMenu::decrementLayer(const int32_t &new_layer_index)
 
   if (new_layer_index <= 2)
   {
+    if (qtdr_cost_paid != 0)
+    {
+      if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
+      {
+        std::cout << "Replacing " << qtdr_cost_paid << " QD paid for action." 
+                  << std::endl;
+      }
+      
+      current_user->getCurr().alterStat("QTDR", qtdr_cost_paid);
+    }
+
     setMenuFlag(BattleMenuState::ACTION_SELECTED, false);
 
     action_scope  = ActionScope::NO_SCOPE;
@@ -417,10 +429,27 @@ void BattleMenu::keyDownSelect()
       {
         if (static_cast<uint32_t>(element_index) < menu_skills->getSize())
         {
-          //TODO: Conditions of increment?
           layer_to_increment = 3;
 
+          /* Grab the selected skill */
           selected_skill = menu_skills->getElement(element_index).skill;
+
+          /* Decrease the current user's QD by the cost required */
+          auto true_cost = current_user->getTrueCost(selected_skill);
+
+          if (true_cost <= current_user->getCurr().getStat("QTDR"))
+          {
+            if (config != nullptr && 
+                config->getBattleMode() == BattleMode::TEXT)
+            {
+              std::cout << "Decreasing " << current_user->getName() << "s QTDR"
+                        << " by " << true_cost << "." << std::endl;
+            }
+
+            qtdr_cost_paid = true_cost;
+            current_user->getCurr().alterStat("QTDR", -true_cost);
+          }
+
         }
       }
       else if (action_type == ActionType::ITEM)
@@ -568,9 +597,10 @@ void BattleMenu::unsetAll()
   action_scope = ActionScope::NO_SCOPE;
   flags = static_cast<BattleMenuState>(0);
 
-  person_index  = 0;
-  layer_index   = 1;
-  element_index = 0;
+  qtdr_cost_paid = 0;
+  person_index   = 0;
+  layer_index    = 1;
+  element_index  = 0;
 
   //TODO: Window/rendering status on unset?
   window_status = WindowStatus::ON;

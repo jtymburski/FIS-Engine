@@ -250,6 +250,9 @@ public:
   /* Removes the equipment from a given slot */
   bool removeEquip(const EquipSlots &equip_slot);
 
+  /* Find the true cost for a Skill to the Person's QD */
+  int16_t getTrueCost(Skill* test_skill);
+
   /* Returns the game_id (not unique) of the Person */
   uint32_t getGameID();
 
@@ -261,6 +264,8 @@ public:
 
   /* Evaluates and returns the state of a given PState flag */
   bool getPFlag(const PState &test_flag);
+
+  uint32_t getSkillCost();
 
   /* Returns a pointer to the assigned base person */
   Person* getBasePerson();

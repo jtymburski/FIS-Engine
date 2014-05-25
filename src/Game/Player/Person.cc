@@ -1147,6 +1147,28 @@ uint32_t Person::getTotalExp()
   return total_exp;
 }
 
+/* Find the true cost for a Skill to the Person's QD */
+int16_t Person::getTrueCost(Skill* test_skill)
+{
+  if (temp_skills != nullptr)
+  {
+    auto elements = temp_skills->getElements(level);
+
+    for (auto it = begin(elements); it != end(elements); ++it)
+    {
+      if ((*it).skill == test_skill)
+      {
+        if (getBFlag(BState::HALF_COST))
+          return (*it).skill->getCost() / 2;
+
+        return (*it).skill->getCost();
+      }
+    }
+  }
+
+  return AttributeSet::getMaxValue();
+}
+
 /*
  * Description: Grabs the currentassigned first person frame (based on the
  *              IS_BUBBY BState flag)

@@ -496,6 +496,12 @@ size_t AttributeSet::getSize()
   return kSHORT_NAMES.size();
 }
 
+uint16_t AttributeSet::getMaxValue()
+{
+  return static_cast<uint16_t>(kMAX_VALUE);
+}
+
+
 /*
  * Description: Returns the long form name version of an attribute given
  *              an enumerated attribute. If not found, returns the empty string.
