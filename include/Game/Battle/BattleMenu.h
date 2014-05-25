@@ -23,6 +23,7 @@
 #include "EnumFlags.h"
 #include "EnumDb.h"
 #include "Options.h"
+#include "Game/Player/Person.h"
 #include "Game/Player/Item.h"
 #include "Game/Player/SkillSet.h"
 
@@ -34,9 +35,10 @@ using std::end;
 ENUM_FLAGS(BattleMenuState)
 enum class BattleMenuState
 {
-  TARGETS_ASSIGNED  = 1 << 0,
-  SCOPE_ASSIGNED    = 1 << 1,
-  SELECTION_VERIFIED = 1 << 2
+  ACTION_SELECTED    = 1 << 0,
+  TARGETS_ASSIGNED   = 1 << 1,
+  SCOPE_ASSIGNED     = 1 << 2,
+  SELECTION_VERIFIED = 1 << 3
 };
 
 class BattleMenu
@@ -52,7 +54,7 @@ private:
   /* The current selectable items on the menu */
   std::vector<std::pair<Item*, uint16_t>> menu_items;
 
-  /* The current selectable skills on the menu */
+  /* Current skill set for Skills to be chosen from */
   SkillSet* menu_skills;
 
   /* Remaining valid targets that can be chosen and already chosen targets */
@@ -65,21 +67,24 @@ private:
   /* The scope of the action */
   ActionScope action_scope;
 
-  /* The index along the corresponding action which was chosen (if selected) */
-  int32_t action_index;
-
   /* Currently assigned options */
   Options* config;
+
+  /* Potentially selected object pointers */
+  Skill* selected_skill;
+  Item*   selected_item;
 
   /* Set of BattleMenuState flags */
   BattleMenuState flags;
 
   /* The window status of the BattleMenu */
   WindowStatus window_status;
+  
+  /* Pointer to the current user of the Battle menu */
+  Person* current_user;
 
   /* Menu indexes */
   int32_t person_index;
-  int32_t person_level;
   int32_t layer_index;
   int32_t element_index;
 
@@ -95,9 +100,6 @@ private:
   /* Increment the current menu layer */
   bool incrementLayer(const int32_t &new_layer_index);
 
-  /* Assign the index of the current layer based on alpha-substrings */
-  bool setIndex(const std::string &subset);
-
   /* Adding and removing target selections */
   bool addTarget(const int32_t &new_target);
   bool addPartyTargets(const int32_t &party_index);
@@ -110,10 +112,16 @@ private:
   void keyDownIncrement();
   void keyDownSelect();
 
+  /* Compiles and returns a vector of valid actions for the current user */
+  std::vector<ActionType> getValidActions();
+
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Unset all BattleMenu information (for end of selection, etc) */
+  void unsetAll();
+
   /* Returns the state of a chosen type of action */
   bool isActionTypeSelected();
 
@@ -121,10 +129,7 @@ public:
   bool isActionSelected();
 
   /* Resets the menu data to be used for a new Person */
-  void reset(const uint32_t &new_person_index);
-
-  /* Gets the user to select an action and targets for an action */
-  bool selectAction();
+  void reset(Person* const new_user, const uint32_t &new_person_index);
 
   /* Layer 2 printing of items to choose from */
   void printItems();
@@ -165,20 +170,20 @@ public:
   /* Returns the current selectable items on the menu */
   std::vector<std::pair<Item*, uint16_t>> getMenuItems();
 
+  /* The currently selected Skill (if set) */
+  Skill* getSelectedSkill();
+
+  /* The currently selected Item (if set) */
+  Item* getSelectedItem();
+
   /* Returns the window status of the BattleMenu */
   WindowStatus getWindowStatus();
 
   /* Assigns the scope of the skill when a skill has been chosen */
   void setActionScope(const ActionScope &new_action_scope);
 
-  /* Assigns a new selectable list of actions */
-  bool setSelectableActions(std::vector<ActionType> new_valid_actions);
-
   /* Assigns a new selectable list of items for the menu */
   bool setSelectableItems(std::vector<std::pair<Item*, uint16_t>> new_menu_items);
-
-  /* Assigns new selectable list of skills for the menu */
-  bool setSelectableSkills(SkillSet* new_menu_skills);
 
   /* Assigns valid targets for the menu */
   bool setSelectableTargets(std::vector<int32_t> valid_targets);
@@ -188,20 +193,6 @@ public:
 
   /* Assigns a BattleMenuState flag a given value */
   void setMenuFlag(BattleMenuState flags, const bool &set_value = true);
-
-  /* Assigns a new person index to choose an action for */
-  void setPersonIndex(const int32_t &new_person_index);
-
-  /* Assigns a new person level to choose an action for */
-  void setPersonLevel(const int32_t &new_person_level);
-
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
-
-/*============================================================================
- * OPERATOR FUNCTIONS
- *===========================================================================*/
 };
 
 #endif //BATTLEMENU_H

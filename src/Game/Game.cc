@@ -468,7 +468,7 @@ void Game::setupBattle()
   normal_attack->addActions(actions, chances);
 
   skills.push_back(normal_attack);
-  skills.push_back(new Skill(400, "Super Attack",ActionScope::ONE_ALLY,special,0.65));
+  skills.push_back(new Skill(400, "Super Attack",ActionScope::ONE_ALLY,special,0.65,6));
   skills.push_back(new Skill(3, "Poison Attack",ActionScope::TWO_ALLIES,actions[1],0.79));
   skills.push_back(new Skill(35, "Crappy Attack",ActionScope::ALL_ALLIES,special,1.00));
 

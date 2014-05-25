@@ -156,6 +156,7 @@ void Person::loadDefaults()
   base_skills    = nullptr;
   curr_skills    = nullptr;
   learned_skills = nullptr;
+  temp_skills    = nullptr;
 
   updateBaseSkills();
 
@@ -187,7 +188,8 @@ void Person::setupClass()
   base_skills    = nullptr;
   curr_skills    = nullptr;
   learned_skills = nullptr;
-
+  temp_skills    = nullptr
+;
   if (exp_table.empty())
     buildExpTable();
 
@@ -219,6 +221,7 @@ void Person::setupClass()
     base_skills = base_person->base_skills;
     curr_skills = base_person->curr_skills;
     learned_skills = base_person->learned_skills;
+    temp_skills = base_person->temp_skills;
     dmg_mod = base_person->dmg_mod;
     exp_mod = base_person->exp_mod;
 
@@ -277,11 +280,14 @@ void Person::unsetAll(const bool &clear)
       delete curr_skills;
     if (learned_skills != nullptr)
       delete learned_skills;
+    if (temp_skills != nullptr)
+      delete temp_skills;
   }
 
   base_skills    = nullptr;
   curr_skills    = nullptr;
   learned_skills = nullptr;
+  temp_skills    = nullptr;
 }
 
 /*
@@ -1125,7 +1131,7 @@ uint32_t Person::getExpDrop()
  * Inputs: none
  * Output: uint8_t - the level of the Person
  */
-uint8_t Person::getLevel()
+uint16_t Person::getLevel()
 {
   return level;
 }
@@ -1187,13 +1193,20 @@ std::vector<uint32_t> Person::getItemDrops()
  *              their attribute values and the current settings of flags.
  *
  * Inputs: none
- * Output: std::vector<Skill*> - vector of pointers to useable skills
+ * Output: SkillSet* useable skills
  */
 /* Calculates and determines current useable skills for Battle */
-std::vector<Skill*> Person::getUseableSkills()
+SkillSet* Person::getUseableSkills()
 {
-  std::vector<Skill*> useable_skills;
+  /* Delete the old temp skills ptr if set */
+  if (temp_skills != nullptr)
+    delete temp_skills;
 
+  /* Create a new temporary skills ptr */
+  temp_skills = new SkillSet();
+
+  /* Grab the SetElement useable from curr skills ptr at a given lvl */
+  std::vector<SetElement> useable_skills;
   auto elements = curr_skills->getElements(level);
 
   for (auto it = begin(elements); it != end(elements); ++it)
@@ -1205,27 +1218,35 @@ std::vector<Skill*> Person::getUseableSkills()
 
       int32_t skill_cost = static_cast<int32_t>((*it).skill->getCost());
 
+      /* Adjust for Half Cost of skills */
       if (getBFlag(BState::HALF_COST))
         if (skill_cost != 1)
           skill_cost /= 2;
 
+      /* If the adjusted QD cost is 0, assert that ATK is enabled */
       if (skill_cost == 0)
         add_skill &= getBFlag(BState::ATK_ENABLED);
+      /* If the adjusted QD cost is > 0, asert that SKL is enabled */
       else
         add_skill &= getBFlag(BState::SKL_ENABLED);
 
       add_skill &= (skill_cost < curr_stats.getStat(Attribute::QTDR));
 
+      /* Adjust for maximum allowable QD cost for being Bubbified */
       if (getBFlag(BState::IS_BUBBY))
         //TODO: Ailment::getMaxBubbyQD value [04-18-14]
         add_skill &= (*it).skill->getCost() > 5;
 
+      /* If the skill can still be added, push it to the useable elements */
       if (add_skill)
-        useable_skills.push_back((*it).skill);
+        useable_skills.push_back(*it);
     }
   }
 
-  return useable_skills;
+  if (temp_skills->addSkills(useable_skills))
+    return temp_skills;
+
+  return nullptr;
 }
 
 /*
@@ -1486,7 +1507,7 @@ uint32_t Person::getExpAt(const uint8_t &level)
  * Inputs: experience - the experience to find a level for
  * Output: uint8_t - the highest level reachable at the given experience
  */
-uint8_t Person::getLevelAt(const uint32_t &experience)
+uint16_t Person::getLevelAt(const uint32_t &experience)
 {
   for (size_t i = 0; i < exp_table.size(); i++)
     if (exp_table.at(i) >= experience)

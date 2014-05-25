@@ -198,17 +198,17 @@ std::string Helpers::elementToString(const Element &element)
 {
   if (element == Element::PHYSICAL)
     return "PHYSICIAL";
-  if (element == Element::FIRE)
+  else if (element == Element::FIRE)
     return "FIRE";
-  if (element == Element::FOREST)
+  else if (element == Element::FOREST)
     return "FOREST";
-  if (element == Element::ICE)
+  else if (element == Element::ICE)
     return "ICE";
-  if (element == Element::ELECTRIC)
+  else if (element == Element::ELECTRIC)
     return "ELECTRIC";
-  if (element == Element::DIGITAL)
+  else if (element == Element::DIGITAL)
     return "DIGITAL";
-  if (element == Element::NIHIL)
+  else if (element == Element::NIHIL)
     return "VOID";
   
   return "";
@@ -219,15 +219,15 @@ std::string Helpers::cellToStr(const CellState &cell_state)
 {
   if (cell_state == CellState::OPEN)
     return "OPEN";
-  if (cell_state == CellState::BUBBY)
+  else if (cell_state == CellState::BUBBY)
     return "BUBBY";
-  if (cell_state == CellState::CLOSED)
+  else if (cell_state == CellState::CLOSED)
     return "CLOSED";
-  if (cell_state == CellState::BLOCKED)
+  else if (cell_state == CellState::BLOCKED)
     return "BLOCKED";
-  if (cell_state == CellState::LINK)
+  else if (cell_state == CellState::LINK)
     return "LINK";
-  if (cell_state == CellState::E_LINK)
+  else if (cell_state == CellState::E_LINK)
     return "E_LINK";
 
   return "";

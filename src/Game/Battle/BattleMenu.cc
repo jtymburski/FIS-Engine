@@ -31,12 +31,13 @@ BattleMenu::BattleMenu(Options* running_config)
   : menu_skills{nullptr}
   , action_type{ActionType::NONE}
   , action_scope{ActionScope::NO_SCOPE}
-  , action_index{-1}
   , config{running_config}
+  , selected_skill{nullptr}
+  , selected_item{nullptr}
   , flags{static_cast<BattleMenuState>(0)}
   , window_status{WindowStatus::OFF}
+  , current_user{nullptr}
   , person_index{0}
-  , person_level{0}
   , layer_index{0}
   , element_index{-1}
 {}
@@ -45,6 +46,12 @@ BattleMenu::BattleMenu(Options* running_config)
  * PRIVATE FUNCTIONS
  *============================================================================*/
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 /* Decrease and increment the menu layers */
 bool BattleMenu::decrementLayer(const int32_t &new_layer_index)
 {
@@ -66,7 +73,8 @@ bool BattleMenu::decrementLayer(const int32_t &new_layer_index)
 
   if (new_layer_index <= 2)
   {
-    action_index  = -1;
+    setMenuFlag(BattleMenuState::ACTION_SELECTED, false);
+
     action_scope  = ActionScope::NO_SCOPE;
     layer_index = 2;
           
@@ -84,6 +92,12 @@ bool BattleMenu::decrementLayer(const int32_t &new_layer_index)
   return success;
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 bool BattleMenu::incrementLayer(const int32_t &new_layer_index)
 {
   if (layer_index != new_layer_index)
@@ -98,6 +112,7 @@ bool BattleMenu::incrementLayer(const int32_t &new_layer_index)
 
   else if (new_layer_index == 3)
   {
+    setMenuFlag(BattleMenuState::ACTION_SELECTED);
     layer_index = 3;
     
     return true;
@@ -105,6 +120,7 @@ bool BattleMenu::incrementLayer(const int32_t &new_layer_index)
 
   else if (new_layer_index == 4)
   {
+    setMenuFlag(BattleMenuState::ACTION_SELECTED);
     layer_index = 4;
 
     return true;
@@ -112,13 +128,13 @@ bool BattleMenu::incrementLayer(const int32_t &new_layer_index)
 
   return false;
 }
-  
-bool BattleMenu::setIndex(const std::string &subset)
-{
-  (void)subset;//TODO: WARNING
-  return false;
-}
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 /* Adding and removing target selections */
 bool BattleMenu::addTarget(const int32_t &new_target)
 {
@@ -140,6 +156,12 @@ bool BattleMenu::addTarget(const int32_t &new_target)
   return false;
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 /* Adds all the targets of the same party given a party index */
 bool BattleMenu::addPartyTargets(const int32_t &party_index)
 {
@@ -164,6 +186,12 @@ bool BattleMenu::addPartyTargets(const int32_t &party_index)
   return success;
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 bool BattleMenu::removeLastTarget(const bool &clear_all)
 {
   if (clear_all && selected_targets.size() == 0)
@@ -192,6 +220,12 @@ bool BattleMenu::removeLastTarget(const bool &clear_all)
   return true;
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 /* Methods for containing code for each key action */
 void BattleMenu::keyDownAlpha(const char &c)
 {
@@ -201,6 +235,12 @@ void BattleMenu::keyDownAlpha(const char &c)
     element_index = index;
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 void BattleMenu::keyDownCancel()
 {
   auto decrement_to_layer = -1;
@@ -222,7 +262,7 @@ void BattleMenu::keyDownCancel()
      *    all others    - clear vector
      */
     if (action_type == ActionType::SKILL ||
-             action_type == ActionType::ITEM)
+        action_type == ActionType::ITEM)
     {
       if (action_scope == ActionScope::NO_SCOPE)
       {
@@ -262,6 +302,12 @@ void BattleMenu::keyDownCancel()
     decrementLayer(decrement_to_layer);
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 void BattleMenu::keyDownDecrement()
 {
   /* Move to the last index if on the first index */
@@ -271,6 +317,12 @@ void BattleMenu::keyDownDecrement()
     element_index--;
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 void BattleMenu::keyDownIncrement()
 {
   /* Increment the viewing index if it is less than the max index */
@@ -281,6 +333,12 @@ void BattleMenu::keyDownIncrement()
     element_index = 0;
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 void BattleMenu::keyDownSelect()
 {
   auto layer_to_increment = -1;
@@ -362,7 +420,7 @@ void BattleMenu::keyDownSelect()
           //TODO: Conditions of increment?
           layer_to_increment = 3;
 
-          action_index = element_index;
+          selected_skill = menu_skills->getElement(element_index).skill;
         }
       }
       else if (action_type == ActionType::ITEM)
@@ -372,7 +430,7 @@ void BattleMenu::keyDownSelect()
           //TODO: Conditions of increment?
           layer_to_increment = 3;
 
-          action_index = element_index;
+          selected_item = menu_items.at(element_index).first;
         } 
       }
   }
@@ -446,11 +504,84 @@ void BattleMenu::keyDownSelect()
     incrementLayer(layer_to_increment);
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+std::vector<ActionType> BattleMenu::getValidActions()
+{
+  std::vector<ActionType> valid_action_types;
+
+  if (current_user != nullptr)
+  {
+    if (current_user->getBFlag(BState::ATK_ENABLED) || 
+        current_user->getBFlag(BState::SKL_ENABLED))
+      valid_action_types.push_back(ActionType::SKILL);
+    
+    if (current_user->getBFlag(BState::ITM_ENABLED))
+      valid_action_types.push_back(ActionType::ITEM);
+
+    if (current_user->getBFlag(BState::DEF_ENABLED))
+      valid_action_types.push_back(ActionType::DEFEND);
+
+    if (current_user->getBFlag(BState::GRD_ENABLED))
+      valid_action_types.push_back(ActionType::GUARD);
+
+    if (current_user->getBFlag(BState::IMP_ENABLED))
+      valid_action_types.push_back(ActionType::IMPLODE);
+
+    if (current_user->getBFlag(BState::RUN_ENABLED))
+      valid_action_types.push_back(ActionType::RUN);
+
+    if (current_user->getBFlag(BState::PAS_ENABLED))
+      valid_action_types.push_back(ActionType::PASS);
+  }
+
+  return valid_action_types;
+}
 
 /*============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void BattleMenu::unsetAll()
+{
+  valid_actions.clear();
+  menu_items.clear();
+  valid_targets.clear();
+  selected_targets.clear();
+
+  menu_skills    = nullptr;
+  selected_skill = nullptr;
+  selected_item  = nullptr;
+  current_user   = nullptr;
+
+  action_type = ActionType::NONE;
+  action_scope = ActionScope::NO_SCOPE;
+  flags = static_cast<BattleMenuState>(0);
+
+  person_index  = 0;
+  layer_index   = 1;
+  element_index = 0;
+
+  //TODO: Window/rendering status on unset?
+  window_status = WindowStatus::ON;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 bool BattleMenu::isActionTypeSelected()
 {
   return (action_type != ActionType::NONE);
@@ -462,43 +593,18 @@ bool BattleMenu::isActionTypeSelected()
  * Inputs:
  * Output:
  */
-void BattleMenu::reset(const uint32_t &new_person_index)
+void BattleMenu::reset(Person* const new_user, const uint32_t &new_person_index)
 {
-  menu_items.clear();
-  menu_skills = nullptr;
-  valid_targets.clear();
-  selected_targets.clear();
+  unsetAll();
 
-  setMenuFlag(BattleMenuState::SELECTION_VERIFIED, false);
-  action_type   = ActionType::NONE;
-  action_index  = -1;
-  action_scope  = ActionScope::NO_SCOPE;
-
-  setMenuFlag(BattleMenuState::TARGETS_ASSIGNED, false);
-  setMenuFlag(BattleMenuState::SCOPE_ASSIGNED, false);
-
-  layer_index   = 1;
-  element_index = 0;
+  current_user = new_user;
   person_index = new_person_index;
-  person_level = 0;
-  window_status = WindowStatus::ON;
 
-  // if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
-  //   printMenuState();
-}
-
-/*
- * Description:
- *
- * Inputs:
- * Output:
- */
-bool BattleMenu::selectAction()
-{
-  if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
-    std::cout << "Select action for index:" << person_index << std::endl;
-
-  return true;
+  if (current_user != nullptr)
+  {
+    menu_skills   = current_user->getUseableSkills();
+    valid_actions = getValidActions();
+  }
 }
 
 /*
@@ -518,7 +624,7 @@ void BattleMenu::printValidActions()
     else
       std::cout << "[ ]";
 
-    std::cout << " --- " << Helpers::actionTypeToStr(*it) << std::endl;
+    std::cout << " -- " << Helpers::actionTypeToStr(*it) << std::endl;
   }
 
   std::cout << std::endl;
@@ -532,21 +638,31 @@ void BattleMenu::printValidActions()
  */
 void BattleMenu::printSkills()
 {
-  auto index = 0;
-  auto elements = menu_skills->getElements(person_level);
-  std::cout << "Printing skills!" << std::endl;
-
-  for (auto it = begin(elements); it != end(elements); ++it, ++index)
+  if (current_user != nullptr)
   {
-    if (index == element_index)
-      std::cout << "[X]";
-    else
-      std::cout << "[ ]";
+    auto index = 0;
+    auto elements = menu_skills->getElements(current_user->getLevel());
 
-    std::cout << " --- " << (*it).skill->getName() << std::endl;
+    for (auto it = begin(elements); it != end(elements); ++it, ++index)
+    {
+      if (index == element_index)
+        std::cout << "[X]";
+      else
+        std::cout << "[ ]";
+  
+      std::cout << " -- [ " << (*it).skill->getCost() << " QD ] -- [Lv. " 
+                << (*it).level_available << " ] " 
+                << (*it).skill->getName() << std::endl;
+    }
   }
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 void BattleMenu::printTargets(const bool &print_selected)
 {
   auto index = 0;
@@ -655,9 +771,12 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
 
   if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
   {
-    std::cout << "Selecting action (scope: " 
-              << Helpers::actionScopeToStr(action_scope)
-              << ") for person index: " << person_index << std::endl;
+    if (current_user != nullptr)
+    {
+      std::cout << "Selecting action for person index: " << person_index 
+                << " named: " << current_user->getName()  << std::endl;
+    }
+
     printMenuState();
 
     if (getMenuFlag(BattleMenuState::SELECTION_VERIFIED))
@@ -667,6 +786,12 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
   return false;
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 void BattleMenu::printMenuState()
 {
   if (layer_index == 1)
@@ -683,9 +808,9 @@ void BattleMenu::printMenuState()
               << " with action index name: ";
 
     if (action_type == ActionType::SKILL)
-      std::cout << menu_skills->getElement(action_index).skill->getName();
+      std::cout << selected_skill->getName();
     else if (action_type == ActionType::ITEM)
-      std::cout << menu_items.at(action_index).first->getName();
+      std::cout << selected_item->getName();
     else
       std::cout << "NONE";
 
@@ -715,9 +840,9 @@ ActionType BattleMenu::getActionType()
  * Inputs:
  * Output:
  */
-int32_t BattleMenu::getActionIndex()
+std::vector<int32_t> BattleMenu::getActionTargets()
 {
-  return action_index;
+  return selected_targets;
 }
 
 /*
@@ -726,11 +851,6 @@ int32_t BattleMenu::getActionIndex()
  * Inputs:
  * Output:
  */
-std::vector<int32_t> BattleMenu::getActionTargets()
-{
-  return selected_targets;
-}
-
 int32_t BattleMenu::getMaxIndex()
 {
   if (layer_index == 1)
@@ -747,34 +867,15 @@ int32_t BattleMenu::getMaxIndex()
   return 0;
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 bool BattleMenu::getMenuFlag(const BattleMenuState &test_flag)
 {
   return static_cast<bool>((flags & test_flag) == test_flag);
-}
-
-SkillSet* BattleMenu::getMenuSkills()
-{
-  return menu_skills;
-}
-
-std::vector<std::pair<Item*, uint16_t>> BattleMenu::getMenuItems()
-{
-  return menu_items;
-}
-
-WindowStatus BattleMenu::getWindowStatus()
-{
-  return window_status;
-}
-
-void BattleMenu::setActionScope(const ActionScope &new_action_scope)
-{
-  action_scope = new_action_scope;
-}
-
-void BattleMenu::setMenuFlag(BattleMenuState flag, const bool &set_value)
-{
-  (set_value) ? (flags |= flag) : (flags &= ~flag);
 }
 
 /*
@@ -783,11 +884,75 @@ void BattleMenu::setMenuFlag(BattleMenuState flag, const bool &set_value)
  * Inputs:
  * Output:
  */
-bool BattleMenu::setSelectableActions(std::vector<ActionType> new_valid_actions)
+SkillSet* BattleMenu::getMenuSkills()
 {
-  valid_actions = new_valid_actions;
+  return menu_skills;
+}
 
-  return (!valid_actions.empty());
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+Skill* BattleMenu::getSelectedSkill()
+{
+  return selected_skill;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+Item* BattleMenu::getSelectedItem()
+{
+  return selected_item;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+std::vector<std::pair<Item*, uint16_t>> BattleMenu::getMenuItems()
+{
+  return menu_items;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+WindowStatus BattleMenu::getWindowStatus()
+{
+  return window_status;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void BattleMenu::setActionScope(const ActionScope &new_action_scope)
+{
+  action_scope = new_action_scope;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void BattleMenu::setMenuFlag(BattleMenuState flag, const bool &set_value)
+{
+  (set_value) ? (flags |= flag) : (flags &= ~flag);
 }
 
 /*
@@ -810,16 +975,6 @@ bool BattleMenu::setSelectableItems(std::vector<std::pair<Item*, uint16_t>>
  * Inputs:
  * Output:
  */
-bool BattleMenu::setSelectableSkills(SkillSet* new_menu_skills)
-{
-  menu_skills = new_menu_skills;
-
-  if (menu_skills != nullptr)
-    menu_skills->sort(SkillSorts::NAME);
-
-  return (new_menu_skills != nullptr);
-}
-
 bool BattleMenu::setSelectableTargets(std::vector<int32_t> new_menu_targets)
 {
   valid_targets = new_menu_targets;
@@ -839,27 +994,3 @@ bool BattleMenu::setConfiguration(Options* new_config)
 
   return (config != nullptr);
 }
-
-/*
- * Description:
- *
- * Inputs:
- * Output:
- */
-void BattleMenu::setPersonIndex(const int32_t &new_person_index)
-{
-  person_index = new_person_index; 
-}
-
-void BattleMenu::setPersonLevel(const int32_t &new_person_level)
-{
-  person_level = new_person_level;
-}
-
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
-
-/*=============================================================================
- * OPERATOR FUNCTIONS
- *============================================================================*/

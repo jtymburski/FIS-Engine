@@ -77,12 +77,13 @@ Skill::Skill(const std::string &name)
  *         chance - float chance for the action to take place.
  */
 Skill::Skill(const int &id, const std::string &name, const ActionScope &scope,
-	           Action* effect, const float &chance)
+	           Action* effect, const float &chance, const uint32_t &cost)
   : Skill::Skill()
 {
   setID(id);
   setName(name);
   setScope(scope);
+  setCost(cost);
 
   /* The skill will be valid of the action is able to be added */
   addAction(effect, chance);
@@ -100,12 +101,13 @@ Skill::Skill(const int &id, const std::string &name, const ActionScope &scope,
  */
 Skill::Skill(const int &id, const std::string &name, const ActionScope &scope, 
 	           const std::vector<Action*> &effects, 
-	           const std::vector<float> &chances)
+	           const std::vector<float> &chances, const uint32_t &cost)
   : Skill::Skill()
 {
   setID(id);
   setName(name);
   setScope(scope);
+  setCost(cost);
 
   /* The skill will be valid if all the actions are able to be added */
   addActions(effects, chances);
@@ -544,6 +546,13 @@ bool Skill::setCooldown(const uint32_t &new_value)
   cooldown = 0;
 
   return false;
+}
+
+bool Skill::setCost(const uint32_t &new_value)
+{
+  cost = new_value;
+
+  return (cost <= kMAX_COST);
 }
 
 /*

@@ -343,7 +343,7 @@ void Battle::loadBattleStateFlags()
 /* Orders the actions on the buffer by speed of the aggressor */
 void Battle::orderActions()
 {
-  std::cout << "Action state prior to sorting: " << std::endl;
+  std::cout << "Action buffer state prior to sorting: " << std::endl;
   action_buffer->print();
   std::cout << std::endl;
 
@@ -445,10 +445,10 @@ void Battle::selectEnemyActions()
   // Easy AI:
   if (person_index > 0)
   {
-    float factor           = 1.00;
-    auto action_chosen     = false;
-    auto can_choose_action = true;
-    auto e_user   = getPerson(person_index);
+    // float factor           = 1.00;
+    // auto action_chosen     = false;
+    // auto can_choose_action = true;
+    // auto e_user   = getPerson(person_index);
 
     // if (e_user != nullptr)
     // {
@@ -502,7 +502,6 @@ void Battle::selectUserActions()
   {
     auto person_user    = getPerson(person_index);
     auto action_type    = menu->getActionType();
-    auto action_index   = menu->getActionIndex();
     auto action_targets = menu->getActionTargets();
 
     /* Build the vector Person ptrs from the target index vector */
@@ -514,7 +513,7 @@ void Battle::selectUserActions()
     /* Push the actions on to the Buffer */
     if (action_type == ActionType::SKILL)
     {
-      auto selected_skill = person_user->getUseableSkills().at(action_index);
+      auto selected_skill = menu->getSelectedSkill();
 
       if (!action_buffer->add(person_user, selected_skill, person_targets, 0))
       {
@@ -527,8 +526,7 @@ void Battle::selectUserActions()
     }
     else if (action_type == ActionType::ITEM)
     {
-      auto selected_item = 
-        friends->getInventory()->getBattleItems().at(action_index).first;
+      auto selected_item = menu->getSelectedItem();
       
       if (!action_buffer->add(person_user, selected_item, person_targets, 0))
       {
@@ -575,13 +573,11 @@ void Battle::selectUserActions()
       if (person->getBFlag(BState::ALIVE))
       {
         /* Reload the menu information for the next person */
-        menu->reset(person_index);
-        menu->setPersonLevel(person->getLevel());
-        menu->setSelectableActions(getValidActions(person_index));
-        menu->setSelectableSkills(person->getCurrSkills());
+        menu->reset(getPerson(person_index), person_index);
         menu->setSelectableItems(friends->getInventory()->getBattleItems());
-        
-        menu->printMenuState();
+    
+        if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
+          menu->printMenuState();
       }
       else
       {
@@ -954,23 +950,22 @@ void Battle::printPartyState()
 {
   std::cout << "---- Friends ----\n";
   for (uint32_t i = 0; i < friends->getSize(); i++)
-  {
-    auto temp = friends->getMember(i);
-    std::cout << "[" << i + 1 << "] - " << temp->getName() << "\n" 
-              << "VITA: " << temp->getCurr().getStat(0) << "\n"
-              << "QTDR: " << temp->getCurr().getStat(1) << "\n\n";
-  }
+    printPersonState(friends->getMember(i), i + 1);
 
   std::cout << "---- Foes ----\n";
   for (uint32_t i = 0; i < foes->getSize(); i++)
-  {
-    auto temp = foes->getMember(i);
+    printPersonState(foes->getMember(i), i - foes->getSize());
+}
 
-    std::cout << "[" 
-              << static_cast<int32_t>(static_cast<int32_t>(i) - foes->getSize()) 
-              << "] - " << temp->getName() << "\n" 
-              << "VITA: " << temp->getCurr().getStat(0) << "\n"
-              << "QTDR: " << temp->getCurr().getStat(1) << "\n\n";
+void Battle::printPersonState(Person* const member, 
+                              const int32_t &person_index)
+{
+  if (member != nullptr)
+  {
+    std::cout << "[" << person_index + 1 << "] - " << member->getName() 
+              << " [ Lv. " << member->getLevel() << " ] << \n" 
+              << "VITA: " << member->getCurr().getStat(0) << "\n"
+              << "QTDR: " << member->getCurr().getStat(1) << "\n\n";
   }
 }
 
@@ -1036,24 +1031,21 @@ bool Battle::update(int32_t cycle_time)
       /* If the action index has been assigned and targets have not been assigned
        * yet (for that action index), find the scope of that action the user
        * wishes to use and inject the valid targets into the menu */
-      if ((menu->getActionIndex() != -1 || 
+      if ((menu->getMenuFlag(BattleMenuState::ACTION_SELECTED) || 
            menu->getActionType() == ActionType::DEFEND ||
            menu->getActionType() == ActionType::GUARD  ||
            menu->getActionType() == ActionType::IMPLODE) && 
            !menu->getMenuFlag(BattleMenuState::TARGETS_ASSIGNED))
       {
-        auto action_index = menu->getActionIndex();
-        auto scope   = ActionScope::NO_SCOPE;
+        auto scope = ActionScope::NO_SCOPE;
 
         if (action_type == ActionType::SKILL)
         {
-          auto skill_element = menu->getMenuSkills()->getElement(action_index);
-          scope = skill_element.skill->getScope();
+          scope = menu->getSelectedSkill()->getScope();
         }
         else if (action_type == ActionType::ITEM)
         {
-          auto item_ptr = menu->getMenuItems().at(action_index).first;
-          scope = item_ptr->getUseSkill()->getScope();
+          scope = menu->getSelectedItem()->getUseSkill()->getScope();
         }
         else if (action_type == ActionType::DEFEND || 
                  action_type == ActionType::IMPLODE)
@@ -1249,40 +1241,6 @@ std::vector<int32_t> Battle::getFoesTargets(const bool &only_ko)
   return foes_targets;
 }
 
-/*  */
-std::vector<ActionType> Battle::getValidActions(int32_t index)
-{
-  std::vector<ActionType> valid_action_types;
-  auto member = getPerson(index);
-
-  if (member != nullptr)
-  {
-    if (member->getBFlag(BState::ATK_ENABLED) || 
-        member->getBFlag(BState::SKL_ENABLED))
-      valid_action_types.push_back(ActionType::SKILL);
-    
-    if (member->getBFlag(BState::ITM_ENABLED))
-      valid_action_types.push_back(ActionType::ITEM);
-
-    if (member->getBFlag(BState::DEF_ENABLED))
-      valid_action_types.push_back(ActionType::DEFEND);
-
-    if (member->getBFlag(BState::GRD_ENABLED))
-      valid_action_types.push_back(ActionType::GUARD);
-
-    if (member->getBFlag(BState::IMP_ENABLED))
-      valid_action_types.push_back(ActionType::IMPLODE);
-
-    if (member->getBFlag(BState::RUN_ENABLED))
-      valid_action_types.push_back(ActionType::RUN);
-
-    if (member->getBFlag(BState::PAS_ENABLED))
-      valid_action_types.push_back(ActionType::PASS);
-  }
-
-  return valid_action_types;
-}
-
 /* Obtains a vector of battle member indexes for a given user and scope */
 std::vector<int32_t> Battle::getValidTargets(int32_t index, 
                                              ActionScope action_scope)
@@ -1351,7 +1309,10 @@ bool Battle::setConfiguration(Options* const new_config)
 {
   if (new_config != nullptr)
   {
-    std::cout << "Setting configuration" << std::endl;
+#ifdef UDEBUG
+    std::cout << "Assigning Battle Configuration!" << std::endl;
+#endif
+    
     config = new_config;
 
     if (menu != nullptr)

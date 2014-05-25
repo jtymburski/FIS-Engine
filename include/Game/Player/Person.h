@@ -141,6 +141,7 @@ private:
   SkillSet* base_skills;
   SkillSet* curr_skills;
   SkillSet* learned_skills;
+  SkillSet* temp_skills;
 
   /* Current modifier to damage for action outcomes (default = 1.00) */
   float dmg_mod;
@@ -157,7 +158,7 @@ private:
   uint32_t exp_drop;
 
   /* Experience and level of the Person */
-  uint8_t level;
+  uint16_t level;
   uint32_t total_exp;
 
   /* Frames for a Person */
@@ -328,7 +329,7 @@ public:
   uint32_t getExpDrop();
 
   /* Returns the current level */
-  uint8_t getLevel();
+  uint16_t getLevel();
 
   /* Returns the total experience earned */
   uint32_t getTotalExp();
@@ -343,7 +344,7 @@ public:
   std::vector<uint32_t> getItemDrops();
 
   /* Calculates and determines current useable skills for Battle */
-  std::vector<Skill*> getUseableSkills();
+  SkillSet* getUseableSkills();
 
   /* Evaluates and returns a given battle state flag */
   void setBFlag(const BState &flag, const bool &set_value = true);
@@ -391,7 +392,7 @@ public:
   static uint32_t getExpAt(const uint8_t &level);
 
   /* Grabs the highest level at a certain experience value */
-  static uint8_t getLevelAt(const uint32_t &experience);
+  static uint16_t getLevelAt(const uint32_t &experience);
 
   /* Grabs the number the total number of levels for Person progression */
   static size_t getNumLevels();

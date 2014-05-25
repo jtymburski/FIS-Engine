@@ -52,11 +52,12 @@ public:
 
   /* General Skill construction with one effect */
   Skill(const int &id, const std::string &name, const ActionScope &scope,
-        Action* effect, const float &chance);
+        Action* effect, const float &chance, const uint32_t &cost = 0);
 
   /* General skill construction with multiple effects */
   Skill(const int &id, const std::string &name, const ActionScope &scope, 
-  	    const std::vector<Action*> &effects, const std::vector<float> &chances);
+  	    const std::vector<Action*> &effects, const std::vector<float> &chances,
+        const uint32_t &cost = 0);
 
   /* Annihilates a Skill object */
   ~Skill() = default;
@@ -207,6 +208,9 @@ public:
 
   /* Assigns a new cooldown */
   bool setCooldown(const uint32_t &new_value);
+
+  /* Assigns a new cost to the skill */
+  bool setCost(const uint32_t &new_value);
 
   /* Assigns a new description */
   bool setDescription(const std::string &new_description);
