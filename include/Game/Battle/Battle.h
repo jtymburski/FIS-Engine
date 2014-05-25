@@ -226,6 +226,9 @@ private:
   static const float    kDOUBLE_ELM_ADV_MODIFIER;
   static const float    kDOUBLE_ELM_DIS_MODIFIER;
 
+  static const float kEASY_AI_OFF_FACTOR;
+  static const float kEASY_AI_DEF_FACTOR;
+
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/

@@ -582,6 +582,23 @@ uint32_t SkillSet::getSize()
 }
 
 /* 
+ * Description:
+ *
+ * Inputs:
+ * Output: 
+ */
+std::vector<uint32_t> SkillSet::getValues()
+{
+  std::vector<uint32_t> skill_values;
+
+  for (auto it = begin(skill_elements); it != end(skill_elements); ++it)
+    if ((*it).skill != nullptr)
+      skill_values.push_back((*it).skill->getValue());
+
+  return skill_values;
+}
+
+/* 
  * Description: Assigns a SetElement of a given index a given enabled state
  *
  * Inputs: index - the index to assign the enabled state

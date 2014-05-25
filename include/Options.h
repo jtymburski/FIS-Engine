@@ -127,7 +127,7 @@ private:
 public:
   /* Function to confirm the setup of the font */
   bool confirmFontSetup();
-  
+
   /* Returns the current state of ailment updates */
   BattleOptions getAilmentUpdateState();
 

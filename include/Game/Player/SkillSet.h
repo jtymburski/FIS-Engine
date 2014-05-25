@@ -143,6 +143,9 @@ public:
   /* Returns the number of skill elements */
   uint32_t getSize();
 
+  /* Builds the vector of values for each skill index */
+  std::vector<uint32_t> getValues();
+
   /* Assigns an enabled state to a SetElement at a given index */
   bool setState(const uint32_t &index, const bool &state = true);
 
