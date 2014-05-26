@@ -216,7 +216,7 @@ bool Inventory::decreaseCount(const uint32_t &game_id, const uint16_t &amount)
 
       if (count > 0)
       {
-        items[index].second += amount;
+        items[index].second -= amount;
         decreased = true;
       }
     }
@@ -384,7 +384,9 @@ AddStatus Inventory::add(Item* new_item, const uint32_t &amount,
                          bool bypass)
 {
   if (amount == 0)
+  {
     return AddStatus::FAIL;
+  }
 
   bypass |= getFlag(InvState::SHOP_STORAGE);
 
@@ -405,7 +407,7 @@ AddStatus Inventory::add(Item* new_item, const uint32_t &amount,
     {
       items.push_back(std::make_pair(new_item, amount));
       calcMass();
-
+ 
       return AddStatus::GOOD_KEEP;
     }
     else
@@ -416,7 +418,7 @@ AddStatus Inventory::add(Item* new_item, const uint32_t &amount,
       return AddStatus::GOOD_DELETE;
     }
   }
-
+  
   return AddStatus::FAIL;
 }
 
@@ -891,9 +893,11 @@ bool Inventory::removeItemIndex(const uint32_t &index,
     if (items.at(index).first != nullptr)
     {
       auto count = items[index].second;
-
+   
       if (count > 1 && count > amount)
+      {
         decreaseCount(items.at(index).first->getGameID(), amount);
+      }
       else if (count == amount)
       {
         if (!getFlag(InvState::SHOP_STORAGE))
@@ -903,7 +907,9 @@ bool Inventory::removeItemIndex(const uint32_t &index,
         items.erase(begin(items) + index);
       }
       else
+      {
         return false;
+      }
 
       calcMass();
 
@@ -926,7 +932,9 @@ bool Inventory::removeItemID(const uint32_t &game_id, const uint16_t &amount)
   auto item_index = getItemIndex(game_id);
 
   if (item_index != -1)
-    return removeItemIndex(game_id, amount);
+  {
+    return removeItemIndex(item_index, amount);
+  }
 
   return false;
 }
@@ -1287,9 +1295,12 @@ std::vector<std::pair<Item*, uint16_t>> Inventory::getBattleItems()
   {
     if (battle_item.first != nullptr)
     {
-      if (battle_item.first->getOccasion() == ActionOccasion::BATTLE ||
-          battle_item.first->getOccasion() == ActionOccasion::ALWAYS)
+      if ((battle_item.first->getOccasion() == ActionOccasion::BATTLE ||
+           battle_item.first->getOccasion() == ActionOccasion::ALWAYS) &&
+           battle_item.first->getUseSkill() != nullptr)
+      {
         battle_items.push_back(battle_item);
+      }
     }
   }
 

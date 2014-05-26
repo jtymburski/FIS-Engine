@@ -60,6 +60,9 @@ const float    Battle::kSECD_ELM_DIS_MODIFIER    =  0.93;
 const float    Battle::kDOUBLE_ELM_ADV_MODIFIER  =  1.30;
 const float    Battle::kDOUBLE_ELM_DIS_MODIFIER  =  0.74;
 
+/* Easy AI Offensive Factor
+ * Easy AI Defensive Factor
+ */
 const float Battle::kEASY_AI_OFF_FACTOR{1.35};
 const float Battle::kEASY_AI_DEF_FACTOR{1.50};
 
@@ -524,10 +527,20 @@ void Battle::selectUserActions()
     {
       auto selected_item = menu->getSelectedItem();
       
-      if (!action_buffer->add(person_user, selected_item, person_targets, 0))
+      if (action_buffer->add(person_user, selected_item, person_targets, 0))
         buffer_addition = true;
 
-      //TODO: Remove the potentially used item from the inventory [05-04-14]
+      if (buffer_addition)
+      {
+        if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
+        {
+          std::cout << "Removing " << selected_item->getName() << " from "
+                    << "inventory and implementing to buffer." << std::endl;
+        }
+      }
+ 
+      friends->getInventory()->removeItemID(selected_item->getGameID());
+      menu->setSelectableItems(friends->getInventory()->getBattleItems());
     }
     else if (action_type == ActionType::DEFEND  || 
              action_type == ActionType::GUARD   ||
@@ -559,16 +572,14 @@ void Battle::selectUserActions()
 
     auto increment_index = false;
 
-    auto person = getPerson(person_index);
-
     if ((person_user->getBFlag(BState::SELECTED_ACTION) && 
         !person_user->getBFlag(BState::TWO_SKILLS) && 
         !person_user->getBFlag(BState::THREE_SKILLS)) ||
         (person_user->getBFlag(BState::SELECTED_2ND_ACTION) &&
          person_user->getBFlag(BState::TWO_SKILLS) &&
         !person_user->getBFlag(BState::THREE_SKILLS)) ||
-         person_user->getBFlag(BState::SELECTED_3RD_ACTION) &&
-         person_user->getBFlag(BState::THREE_SKILLS))
+        (person_user->getBFlag(BState::SELECTED_3RD_ACTION) &&
+         person_user->getBFlag(BState::THREE_SKILLS)))
     {
       increment_index = true;
     }
@@ -590,7 +601,9 @@ void Battle::selectUserActions()
       {
         /* Reload the menu information for the next person */
         menu->reset(getPerson(person_index), person_index);
-        menu->setSelectableItems(friends->getInventory()->getBattleItems());
+
+        if (friends->getInventory() != nullptr)
+          menu->setSelectableItems(friends->getInventory()->getBattleItems());
     
         if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
           menu->printMenuState();
@@ -886,10 +899,18 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
   Helpers::flushConsole();
 
 #ifdef UDEBUG
-  if (event.keysym.sym == SDLK_LEFT)
+  if (event.keysym.sym == SDLK_INSERT)
     printPartyState();
-  else if (event.keysym.sym == SDLK_RIGHT)
+  else if (event.keysym.sym == SDLK_DELETE)
+    printTurnState();
+  else if (event.keysym.sym == SDLK_HOME)
     action_buffer->print(false);
+  else if (event.keysym.sym == SDLK_END)
+    action_buffer->print(true);
+  else if (event.keysym.sym == SDLK_PAGEUP)
+    printInventory(friends);
+  else if (event.keysym.sym == SDLK_PAGEDOWN)
+    printInventory(foes);
 #endif
 
   if (menu->getWindowStatus() == WindowStatus::ON)
@@ -982,6 +1003,19 @@ void Battle::printPersonState(Person* const member,
               << " [ Lv. " << member->getLevel() << " ] << \n" 
               << "VITA: " << member->getCurr().getStat(0) << "\n"
               << "QTDR: " << member->getCurr().getStat(1) << "\n\n";
+  }
+}
+
+void Battle::printInventory(Party* const target_party)
+{
+  if (target_party != nullptr && target_party->getInventory() != nullptr)
+  { 
+    target_party->getInventory()->print();
+  }
+  else
+  {
+    std::cout << "[Warning]: Attempting to print null party or null inventory."
+              << std::endl;
   }
 }
 
@@ -1463,4 +1497,14 @@ float Battle::getDoubleElmAdvMod()
 float Battle::getDoubleElmDisMod()
 {
   return kDOUBLE_ELM_DIS_MODIFIER;
+}
+
+float Battle::getEasyAIOffFactor()
+{
+  return kEASY_AI_OFF_FACTOR;
+}
+
+float Battle::getEasyAIDefFactor()
+{
+  return kEASY_AI_DEF_FACTOR;
 }

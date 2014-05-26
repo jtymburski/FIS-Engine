@@ -425,48 +425,47 @@ void BattleMenu::keyDownSelect()
   
   else if (layer_index == 2)
   {
-      /* Selection of skill index -> move to target menu */
-      if (action_type == ActionType::SKILL)
+    /* Selection of skill index -> move to target menu */
+    if (action_type == ActionType::SKILL)
+    {
+      if (static_cast<uint32_t>(element_index) < menu_skills->getSize())
       {
-        if (static_cast<uint32_t>(element_index) < menu_skills->getSize())
+        layer_to_increment = 3;
+
+        /* Grab the selected skill */
+        selected_skill = menu_skills->getElement(element_index).skill;
+
+        /* Decrease the current user's QD by the cost required */
+        auto true_cost = current_user->getTrueCost(selected_skill);
+
+        if (true_cost <= current_user->getCurr().getStat("QTDR"))
         {
-          layer_to_increment = 3;
-
-          /* Grab the selected skill */
-          selected_skill = menu_skills->getElement(element_index).skill;
-
-          /* Decrease the current user's QD by the cost required */
-          auto true_cost = current_user->getTrueCost(selected_skill);
-
-          if (true_cost <= current_user->getCurr().getStat("QTDR"))
+          if (config != nullptr && 
+              config->getBattleMode() == BattleMode::TEXT)
           {
-            if (config != nullptr && 
-                config->getBattleMode() == BattleMode::TEXT)
-            {
-              std::cout << "Decreasing " << current_user->getName() << "s QTDR"
-                        << " by " << true_cost << "." << std::endl;
-            }
-
-            qtdr_cost_paid = true_cost;
-            current_user->getCurr().alterStat("QTDR", -true_cost);
+            std::cout << "Decreasing " << current_user->getName() << "s QTDR"
+                      << " by " << true_cost << "." << std::endl;
           }
 
+          qtdr_cost_paid = true_cost;
+          current_user->getCurr().alterStat("QTDR", -true_cost);
         }
       }
-      else if (action_type == ActionType::ITEM)
+    }
+    else if (action_type == ActionType::ITEM)
+    {
+      if (static_cast<uint32_t>(element_index) < menu_items.size())
       {
-        if (static_cast<uint32_t>(element_index) < menu_items.size())
-        {
-          //TODO: Conditions of increment?
-          layer_to_increment = 3;
+        layer_to_increment = 3;
 
-          selected_item = menu_items.at(element_index).first;
-        } 
-      }
+        selected_item = menu_items.at(element_index).first;
+      } 
+    }
   }
   else if (layer_index == 3)
   {
-    if (action_type == ActionType::SKILL)
+    if (action_type == ActionType::SKILL ||
+        action_type == ActionType::ITEM)
     {
       if (action_scope == ActionScope::ONE_PARTY)
       {
@@ -504,10 +503,6 @@ void BattleMenu::keyDownSelect()
           layer_to_increment = 4;
         }
       } 
-    }
-    else if (action_type == ActionType::ITEM)
-    {
-
     }
     else if (action_type == ActionType::DEFEND ||
              action_type == ActionType::GUARD  ||
@@ -751,7 +746,8 @@ void BattleMenu::printItems()
     else
       std::cout << "[ ]";
 
-    std::cout << " --- " << (*it).first->getName() << std::endl;
+    std::cout << " --- " << (*it).first->getName() << " -- [ " 
+              << (*it).second << " ]" << std::endl;
   }
 }
 

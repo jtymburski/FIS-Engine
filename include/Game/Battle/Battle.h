@@ -336,6 +336,7 @@ public:
   void printAll(const bool &simple, const bool &flags, const bool &party);
   void printPartyState();
   void printPersonState(Person* const member, const int32_t &person_index);
+  void printInventory(Party* const target_party);
   void printTurnState();
 
   /* Update the cycle time of Battle */
@@ -429,6 +430,10 @@ public:
   static float getSecdElmDisMod();
   static float getDoubleElmAdvMod();
   static float getDoubleElmDisMod();
+
+  /* Public static gets for AI modifier values */
+  static float getEasyAIOffFactor();
+  static float getEasyAIDefFactor();
 };
 
 #endif //BATTLE_H

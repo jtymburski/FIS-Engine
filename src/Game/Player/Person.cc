@@ -606,6 +606,13 @@ void Person::battlePrep()
   setBFlag(BState::SELECTED_3RD_ACTION, false);
 }
 
+/*
+ * Description: Prepares the person for the beginning of a turn during a
+ *              battle.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void Person::battleTurnPrep()
 {
   setBFlag(BState::SELECTED_ACTION, false);

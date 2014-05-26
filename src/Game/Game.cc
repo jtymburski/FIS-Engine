@@ -264,9 +264,21 @@ void Game::setupBattle()
   //other_skill_set->print();
 
   // General Item Testing
-  // Item* potion      = new Item(45, "Potion", 70, nullptr, 1.01);
-  // Item* unique_item = new Item(46, "Unique Item", 75, nullptr, 1.08);
-  // Item* new_potion  = new Item(potion);
+  Item* potion      = new Item(45, "Potion", 70, nullptr, 1.01);
+  potion->setFlag(ItemFlags::CONSUMED, true);
+  potion->setFlag(ItemFlags::DEFENSIVE, true);
+  potion->setFlag(ItemFlags::HEALING_ITEM, true);
+  potion->setOccasion(ActionOccasion::ALWAYS);
+
+  Item* bubby_bomb  = new Item(47, "Bubby Bomb", 85, nullptr, 2.62);
+  bubby_bomb->setFlag(ItemFlags::CONSUMED, true);
+  bubby_bomb->setFlag(ItemFlags::OFFENSIVE, true);
+  bubby_bomb->setOccasion(ActionOccasion::BATTLE);
+
+  //Item* unique_item = new Item(46, "Unique Item", 75, nullptr, 1.08);
+
+  Item* new_potion     = new Item(potion);
+  Item* new_bubby_bomb = new Item(bubby_bomb);
 
   // Key Item Testing
   // Item* master_key  = new Item(115, "Master Key", nullptr);
@@ -294,12 +306,6 @@ void Game::setupBattle()
   //Equipment* fated = new Equipment(201, "Fated Oak Saber", 1, 1, 100, nullptr, 10, 10);
   //Equipment* suit  = new Equipment(202, "Suit", 100, 3, 100, nullptr, 10, 10);
 
-  // Inventory Testing
-  // Inventory* test_pouch = new Inventory(1006, "Test Pouchey");
-  // Inventory* test_shoppy = new Inventory(1007, "Test Shoppy");
-  // test_pouch->setFlag(InvState::SHOP_STORAGE, false);
-  // test_shoppy->setFlag(InvState::SHOP_STORAGE, true);
-
   //test_pouch->add(new_potion, 10);
   // test_pouch->add(first, 6);
   // test_pouch->add(first, 3);
@@ -322,48 +328,6 @@ void Game::setupBattle()
 
   // test_shoppy->removeEquipID(suit->getGameID(), 18);
   // test_shoppy->removeEquipID(fated->getGameID(), 6401);
-
-  //test = test_pouch->addItem(new_potion, 4);
-  // if (test == AddStatus::GOOD_DELETE)
-  // {
-  //   std::cout << "deleting new_potion\n";
-  //   delete new_potion2;
-  //   new_potion2 = nullptr;
-  // }
-  // else if (test == AddStatus::GOOD_KEEP)
-  // {
-  //   std::cout << "Successful addition to keep\n";
-  // }
-  // else
-  //   std::cout << "Addition failed\n";
-
-  // test = test_pouch->add(first, 7);
-  // if (test == AddStatus::GOOD_DELETE)
-  // {
-  //   std::cout << "deleting first bubby\n";
-  //   delete first;
-  //   first = nullptr;
-  // }
-  // else if (test == AddStatus::GOOD_KEEP)
-  // {
-  //   std::cout << "Successful addition to keep\n";
-  // }
-  // else
-  //   std::cout << "Addition failed\n";
-
-  // test = test_pouch->add(second, 3);
-  // if (test == AddStatus::GOOD_DELETE)
-  // {
-  //   std::cout << "deleting second bubby\n";
-  //   delete second;
-  //   second = nullptr;
-  // }
-  // else if (test == AddStatus::GOOD_KEEP)
-  // {
-  //   std::cout << "Successful addition to keep\n";
-  // }
-  // else
-  //   std::cout << "Addition failed\n";
 
   //test_pouch->removeBubbyID(fifth->getGameID());
   //test_pouch->removeBubbyID(fifth->getGameID());
@@ -392,9 +356,6 @@ void Game::setupBattle()
   //test_pouch->removeEquipID(fated->getGameID());
   //test_pouch->removeEquipID(suit->getGameID());
 
-  // test_pouch->print(false);
-  // test_shoppy->print(false);
-
   // test_pouch->sort(SortType::NAME, SortObjects::ZERO_BUBBIES, false);
   // test_pouch->print(false);
 
@@ -422,8 +383,8 @@ void Game::setupBattle()
   // delete spark;
   // delete moldy;
   // delete tumor
-    // AttributeSet testing
-    
+  
+  // AttributeSet testing
   AttributeSet min_scion_set(1, true);
   AttributeSet max_scion_set(3, true);
   AttributeSet min_hex_set(2, true);
@@ -455,22 +416,25 @@ void Game::setupBattle()
   std::vector<Skill*> skills;
   std::vector<Skill*> other_skills;
 
-  Skill* normal_attack = new Skill(13, "User",ActionScope::USER,actions[0],0.75);
-  Skill* medium_attack = new Skill(14, "Ally Not User",ActionScope::ONE_ALLY_NOT_USER,actions[5],0.85);
-  Skill* hard_attack   = new Skill(15, "Hard Attack",ActionScope::TWO_ENEMIES,actions[6],0.90);
-  Skill* ultra_attack  = new Skill(16, "Ultra Attack",ActionScope::ALL_ENEMIES,actions[7],0.91);
-  Skill* one_ally_ko   = new Skill(17, "One Ally Ko",ActionScope::ONE_ALLY_KO,actions[7],0.91);
-  Skill* all_allies_ko = new Skill(18, "All Allies Ko",ActionScope::ALL_ALLIES_KO,actions[7],0.92);
-  Skill* one_party     = new Skill(19, "One Party",ActionScope::ONE_PARTY,actions[7],0.91);
-  Skill* all_targets   = new Skill(20, "All Targets",ActionScope::ALL_TARGETS,actions[7],0.92);
-  Skill* not_user      = new Skill(21, "Not User",ActionScope::NOT_USER,actions[7],0.92);
-  Skill* all_not_user  = new Skill(22, "All Not User",ActionScope::ALL_NOT_USER,actions[7],0.93);
+  Skill* normal_attack = new Skill(13, "User",ActionScope::ONE_ENEMY,actions[0],0.75,12);
+  Skill* medium_attack = new Skill(14, "Ally Not User",ActionScope::ONE_ALLY_NOT_USER,actions[5],0.85,75);
+  Skill* hard_attack   = new Skill(15, "Hard Attack",ActionScope::TWO_ENEMIES,actions[6],0.90,188);
+  Skill* ultra_attack  = new Skill(16, "Ultra Attack",ActionScope::ALL_ENEMIES,actions[7],0.91,399);
+  Skill* one_ally_ko   = new Skill(17, "One Ally Ko",ActionScope::ONE_ALLY_KO,actions[7],0.91,450);
+  Skill* all_allies_ko = new Skill(18, "All Allies Ko",ActionScope::ALL_ALLIES_KO,actions[7],0.92,450);
+  Skill* one_party     = new Skill(19, "One Party",ActionScope::ONE_PARTY,actions[7],0.91,100);
+  Skill* all_targets   = new Skill(20, "All Targets",ActionScope::ALL_TARGETS,actions[7],0.92,2);
+  Skill* not_user      = new Skill(21, "Not User",ActionScope::NOT_USER,actions[7],0.92,45);
+  Skill* all_not_user  = new Skill(22, "All Not User",ActionScope::ALL_NOT_USER,actions[7],0.93,36);
   normal_attack->addActions(actions, chances);
+
+  new_potion->setUseSkill(medium_attack);
+  new_bubby_bomb->setUseSkill(normal_attack);
 
   skills.push_back(normal_attack);
   skills.push_back(new Skill(400, "Super Attack",ActionScope::ONE_ALLY,special,0.65,6));
-  skills.push_back(new Skill(3, "Poison Attack",ActionScope::TWO_ALLIES,actions[1],0.79));
-  skills.push_back(new Skill(35, "Crappy Attack",ActionScope::ALL_ALLIES,special,1.00));
+  skills.push_back(new Skill(3, "Poison Attack",ActionScope::TWO_ALLIES,actions[1],0.79,16));
+  skills.push_back(new Skill(35, "Crappy Attack",ActionScope::ALL_ALLIES,special,1.00,26));
 
   other_skills.push_back(medium_attack);
   other_skills.push_back(hard_attack);
@@ -513,11 +477,7 @@ void Game::setupBattle()
   Person* malgidus        = new Person(457, "Malgidus", blood_scion, bear);
   Person* cloud_dude      = new Person(555, "Cloud Dude", blood_scion, bear);
   Person* ball_man        = new Person(556, "Ball Man", blood_scion, bear);
-  Person* thruster_barrow = new Person(557, "Thruster Barrow", blood_scion, human); 
- 
-  std::cout << " === Arcadius ==== " << std::endl;
-  arcadius->getBaseSkills()->print();
-  arcadius->getCurrSkills()->print();
+  Person* thruster_barrow = new Person(557, "Thruster Barrow", blood_scion, human);
 
   Party* allies = new Party(berran, PartyType::SLEUTH, 5, nullptr);
   Party* foes   = new Party(cloud_dude, PartyType::REGULAR_FOE, 5, nullptr);
@@ -528,11 +488,22 @@ void Game::setupBattle()
   foes->addMember(ball_man);
   foes->addMember(thruster_barrow);
 
-  Inventory* ally_inventory = new Inventory(16, "Ally Inventory", nullptr);
-  Inventory* foes_inventory  = new Inventory(17, "Foe Inventory", nullptr);
+  // Inventory Testing
+  Inventory* friends_pouch = new Inventory(1006, "Test Friends Pouch");
+  Inventory* foes_pouch    = new Inventory(1007, "Test Foes Pouch");
 
-  allies->setInventory(ally_inventory);
-  foes->setInventory(foes_inventory);
+  friends_pouch->setFlag(InvState::PLAYER_STORAGE, true);
+  friends_pouch->setFlag(InvState::SHOP_STORAGE, false);
+  foes_pouch->setFlag(InvState::SHOP_STORAGE, false);
+
+  friends_pouch->add(new_potion, 2);
+  friends_pouch->add(new_bubby_bomb, 3);
+
+  foes_pouch->add(new_potion, 1);
+  foes_pouch->add(new_bubby_bomb, 1);
+
+  allies->setInventory(friends_pouch);
+  foes->setInventory(foes_pouch);
 
   for (uint32_t i = 0; i < allies->getSize(); i++)
     allies->getMember(i)->battlePrep();
