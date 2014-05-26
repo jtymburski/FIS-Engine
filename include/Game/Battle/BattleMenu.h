@@ -7,15 +7,20 @@
 * Notes
 * -----
 *
-* [1]: [Action Type Layer]  -- [Action Selection Layer] -- [Target Layer]
-*      -------------------     ------------------------    --------------
-*      <Skill>           
-*      <Item>                  --- <Select items> ------   <Item dependable>
-*      <Guard>                 -------------------------   <Non-self target>
-*      <Run>                   -------------------------   -----------------
+* [1]: [1: Action Type Layer] - [2: Selection Layer] -    [3: Target Layer]
+*      -------------------     ------------------------   -----------------
+*      <Skill>                 --- <Select skill> ------  <Skill dependable>
+*      <Item>                  --- <Select items> ------  <Item dependable>
+*      <Defend>                -------------------------  <Self target>
+*      <Guard>                 -------------------------  <Ally Non-self target>
+*      <Implode>               -------------------------  <Self>
+*      <Run>                   -------------------------  ----------------- 
+*      <Pass>                  -------------------------  -----------------
 *
-* TODO
-* ----
+*      [4: Verification Layer]
+*      -----------------------
+*      All -> Confirm [Y/N]
+*
 *******************************************************************************/
 #ifndef BATTLEMENU_H
 #define BATTLEMENU_H

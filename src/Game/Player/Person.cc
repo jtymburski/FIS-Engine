@@ -601,6 +601,16 @@ void Person::battlePrep()
   setBFlag(BState::BOND, false);
   setBFlag(BState::BONDED, false);
   setBFlag(BState::REVIVABLE, false);
+  setBFlag(BState::SELECTED_ACTION, false);
+  setBFlag(BState::SELECTED_2ND_ACTION, false);
+  setBFlag(BState::SELECTED_3RD_ACTION, false);
+}
+
+void Person::battleTurnPrep()
+{
+  setBFlag(BState::SELECTED_ACTION, false);
+  setBFlag(BState::SELECTED_2ND_ACTION, false);
+  setBFlag(BState::SELECTED_3RD_ACTION, false);
 }
 
 /*

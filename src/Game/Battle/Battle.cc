@@ -372,7 +372,7 @@ void Battle::performAction()
 /* Deals with character related upkeep */
 void Battle::personalUpkeep(Person* const target)
 {
-  (void)target; //TOOD: [Warning]
+  target->battleTurnPrep();
   // clear flags for new turn (temp flags?)
   // process ailments
     // damage ailments
@@ -503,6 +503,7 @@ void Battle::selectUserActions()
     auto person_user    = getPerson(person_index);
     auto action_type    = menu->getActionType();
     auto action_targets = menu->getActionTargets();
+    auto buffer_addition = false;
 
     /* Build the vector Person ptrs from the target index vector */
     std::vector<Person*> person_targets;
@@ -515,26 +516,17 @@ void Battle::selectUserActions()
     {
       auto selected_skill = menu->getSelectedSkill();
 
-      if (!action_buffer->add(person_user, selected_skill, person_targets, 0))
-      {
-#ifdef UDEBUG
-        std::cout << "[Error]: Action buffer addition failure!" << std::endl;
-#endif
-      }
+      if (action_buffer->add(person_user, selected_skill, person_targets, 0))
+        buffer_addition = true;
       
-      // TODO: Reduce the person's QD upon selection of skill [05-04-14]
     }
     else if (action_type == ActionType::ITEM)
     {
       auto selected_item = menu->getSelectedItem();
       
       if (!action_buffer->add(person_user, selected_item, person_targets, 0))
-      {
-#ifdef UDEBUG
-        std::cout << "[Error]: Action buffer addition failure!" << std::endl;
-#endif
-      }
-       
+        buffer_addition = true;
+
       //TODO: Remove the potentially used item from the inventory [05-04-14]
     }
     else if (action_type == ActionType::DEFEND  || 
@@ -543,22 +535,46 @@ void Battle::selectUserActions()
              action_type == ActionType::RUN     ||
              action_type == ActionType::PASS)
     {
-      if (!action_buffer->add(person_user, action_type, person_targets, 0))
-      {
-#ifdef UDEBUG
-        std::cout << "[Error]: Action bufer addition failure! " << std::endl;
-#endif
-      }
+      if (action_buffer->add(person_user, action_type, person_targets, 0))
+        buffer_addition = true;
     }
     else
     {
       std::cerr << "[Error]: Invalid action selected\n";
     }
-#ifdef UDEBUG
-    std::cout << "Incrementing ally menu selection index" << std::endl;
-#endif
 
-    person_index++;
+    if (buffer_addition)
+    {
+      if (person_user->getBFlag(BState::SELECTED_2ND_ACTION))
+        person_user->setBFlag(BState::SELECTED_3RD_ACTION);
+      else if (person_user->getBFlag(BState::SELECTED_ACTION))
+        person_user->setBFlag(BState::SELECTED_2ND_ACTION);
+      else
+        person_user->setBFlag(BState::SELECTED_ACTION);
+    }
+    else
+    {
+      std::cerr << "[Error]: Action buffer addition failure!" << std::endl;   
+    }
+
+    auto increment_index = false;
+
+    auto person = getPerson(person_index);
+
+    if ((person_user->getBFlag(BState::SELECTED_ACTION) && 
+        !person_user->getBFlag(BState::TWO_SKILLS) && 
+        !person_user->getBFlag(BState::THREE_SKILLS)) ||
+        (person_user->getBFlag(BState::SELECTED_2ND_ACTION) &&
+         person_user->getBFlag(BState::TWO_SKILLS) &&
+        !person_user->getBFlag(BState::THREE_SKILLS)) ||
+         person_user->getBFlag(BState::SELECTED_3RD_ACTION) &&
+         person_user->getBFlag(BState::THREE_SKILLS))
+    {
+      increment_index = true;
+    }
+
+    if (increment_index)
+        person_index++;
   }
 
   /* If a menu action has been selected, update to the next person index. If 

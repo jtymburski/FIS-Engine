@@ -61,7 +61,10 @@ enum class BState
   REFLECT            = 1 << 17, /* Will the person reflect elemental skills? */
   BOND               = 1 << 18, /* Is the person under 'Bond'? */
   BONDED             = 1 << 19, /* Person bonded to someone under 'Bond' ?*/
-  REVIVABLE          = 1 << 20  /* Can this person be revived if they are KO? */
+  REVIVABLE          = 1 << 20, /* Can this person be revived if they are KO? */
+  SELECTED_ACTION    = 1 << 21, /* Has this person selected an action? */
+  SELECTED_2ND_ACTION = 1 << 22, /* Has this person selected a 2nd action? */
+  SELECTED_3RD_ACTION = 1 << 23, /* Has this person selected a 3rd action? */
 };
 
 /* PState Flags - flags which have impacts outside of Battle */
@@ -236,6 +239,7 @@ public:
 
   /* Prepares the person for entering Battle (flags, Attributes etc.) */
   void battlePrep();
+  void battleTurnPrep();
 
   /* Clears the skills the player has learned */
   void clearLearnedSkills();

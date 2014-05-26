@@ -83,6 +83,7 @@ bool BattleMenu::decrementLayer(const int32_t &new_layer_index)
       }
       
       current_user->getCurr().alterStat("QTDR", qtdr_cost_paid);
+      qtdr_cost_paid = 0;
     }
 
     setMenuFlag(BattleMenuState::ACTION_SELECTED, false);
@@ -835,7 +836,7 @@ void BattleMenu::printMenuState()
   else if (layer_index == 4)
   {
     std::cout << "Action Type: " << Helpers::actionTypeToStr(action_type)
-              << " with action index name: ";
+              << " with name: ";
 
     if (action_type == ActionType::SKILL)
       std::cout << selected_skill->getName();
