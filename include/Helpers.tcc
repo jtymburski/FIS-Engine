@@ -231,8 +231,16 @@ struct value_less
  * TEMPLATE FUNCTIONS
  *============================================================================*/
 
+/*
+ * Description: Normalized a list of probabilities between two iterators.
+ *
+ * Inputs: begin - it. to beginning of probabilities to normalize
+ *         end   - it. to end of probabilities to normalize
+ *         
+ * Output: bool - true if the sum of the probabilities was non-zero
+ */
 template <typename T>
-static bool noramlize(T begin, T end)
+static bool normalize(T begin, T end)
 {
   auto sum = 0.0;
 
@@ -250,6 +258,15 @@ static bool noramlize(T begin, T end)
   return false;
 }
 
+/*
+ * Description: Normalizes a list of probabilities based on second components
+ *              of paired objects
+ *
+ * Inputs: begin - it. to beginning of probabilities to normalize
+ *         end   - it. to ending probabilities to normalize
+ *         
+ * Output: bool - true if the sum of the probabilities was non-zero
+ */
 template<typename T>
 static bool normalizePair(T begin, T end)
 {
@@ -269,6 +286,18 @@ static bool normalizePair(T begin, T end)
   return false;
 }
 
+/*
+ * Description: Given a random double value, and an assumed sorted normalized
+ *              distribution between two iterators of paired values, selects
+ *              an iterator where the sum first reaches the given random value
+ *              based upon the second part of the pair.
+ *
+ * Inputs: random - a previously selected random value for normalized comparison
+ *         begin  - the (assumed) lowest value of the normalized dist.
+ *         end    - the (assumed) highest value of the normalized dist.
+ *         
+ * Output: T - iterator to the chosen normalized pair
+ */
 template<typename T>
 static T selectNormalizedPair(const double &random, T begin, T end)
 {
@@ -290,7 +319,6 @@ static T selectNormalizedPair(const double &random, T begin, T end)
 
   return end;
 }
-
 
 /*
  * Description: Template function to determine if a value is within a 

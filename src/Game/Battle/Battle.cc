@@ -65,7 +65,7 @@ const float    Battle::kDOUBLE_ELM_DIS_MODIFIER  =  0.74;
  */
 const float Battle::kEASY_AI_OFF_FACTOR{1.35};
 const float Battle::kEASY_AI_DEF_FACTOR{1.50};
-
+const EasyAITarget Battle::kEASY_AI_DEFAULT_TARGET{EasyAITarget::RANDOM};
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
@@ -448,9 +448,10 @@ void Battle::selectEnemyActions()
   // Easy AI:
   if (person_index < 0)
   {
+    auto select_self_team  = false;
     auto def_factor        = false;
     auto can_choose_skill  = true;
-    auto selected_skill    = false;
+    auto chosen_skill      = false;
     auto e_user   = getPerson(person_index);
 
     if (e_user != nullptr)
@@ -501,13 +502,17 @@ void Battle::selectEnemyActions()
         auto rand_float = Helpers::randFloat(0, 1);
         auto rand_it = Helpers::selectNormalizedPair(rand_float, 
                                                 begin(skill_ps), end(skill_ps));
+        auto selected_skill = (*rand_it).first.skill;
+        auto skill_scope = selected_skill->getScope();
 
         if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
         {
           if (rand_it != end(skill_ps))
           {
            std::cout << "Enemy selection of random skill: " 
-                     << (*rand_it).first.skill->getName() << std::endl;
+                     << selected_skill->getName() << " with scope: " 
+                     << Helpers::actionScopeToStr(selected_skill->getScope())
+                     << std::endl;
           }
           else
           {
@@ -515,20 +520,108 @@ void Battle::selectEnemyActions()
           }
         }
 
-        // TODO[06-01-14] Enemy target selection
+        auto valid_targets = getValidTargets(person_index, 
+                                             selected_skill->getScope());
+
+        for (auto it = begin(valid_targets); it != end(valid_targets); ++it)
+          std::cout << *it << std::endl;
+
+        std::vector<int32_t> selected_targets;
+
+        if (getEasyAIDefaultTarget() == EasyAITarget::RANDOM && 
+            valid_targets.size() > 0)
+        {
+          /* Randomly select targets based on the scope of the skill, broken 
+           * down by: one target, two targets (generally on same team), and
+           * a party of targets, or just all available targets
+           * 
+           * TODO: Choose which party to attack base on the parameters of the
+           *       Skill? [06-01-14]
+           */
+         
+          if (skill_scope == ActionScope::USER)
+          {
+            /* Select just the user of the skill */
+            selected_targets.push_back(person_index);
+          }
+          else if (skill_scope == ActionScope::ONE_TARGET        ||
+                   skill_scope == ActionScope::ONE_ENEMY         ||
+                   skill_scope == ActionScope::ONE_ALLY          ||
+                   skill_scope == ActionScope::ONE_ALLY_NOT_USER ||
+                   skill_scope == ActionScope::ONE_ALLY_KO       ||
+                   skill_scope == ActionScope::NOT_USER)
+          {
+            /* Select one potential valid target from an appropriate team */
+            auto rand_index = Helpers::randU(0, valid_targets.size() - 1);
+            selected_targets.push_back(valid_targets.at(rand_index));
+            valid_targets.erase(begin(valid_targets) + rand_index);
+
+          }
+          else if (valid_targets.size() >= 2 &&
+                   (skill_scope == ActionScope::TWO_ENEMIES || 
+                    skill_scope == ActionScope::TWO_ALLIES))
+          {
+            auto rand_index = Helpers::randU(0, valid_targets.size() - 1);
+            selected_targets.push_back(valid_targets.at(rand_index));
+            valid_targets.erase(begin(valid_targets) + rand_index);
+            
+            rand_index = Helpers::randU(0, valid_targets.size() - 1);
+            selected_targets.push_back(valid_targets.at(rand_index));
+            valid_targets.erase(begin(valid_targets) + rand_index);
+          }
+          else if (skill_scope == ActionScope::ALL_ENEMIES ||
+                   skill_scope == ActionScope::ALL_ALLIES  ||
+                   skill_scope == ActionScope::ALL_ALLIES_KO ||
+                   skill_scope == ActionScope::ALL_TARGETS ||
+                   skill_scope  == ActionScope::ALL_NOT_USER)
+
+          {
+            /* Select all potential targets */
+            selected_targets = valid_targets;
+          }
+          else
+          {
+            std::cout << "OH GOD WHAT DID I FORGET?" << std::endl;
+          }
+
+          if (selected_targets.size() > 0)
+            chosen_skill = true;
+
+          for (auto it = begin(selected_targets); it != end(selected_targets); ++it)
+            std::cout << (*it) << std::endl;
+        }
       }
 
-      if (!selected_skill)
+      if (!chosen_skill)
       {
         if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
           std::cout << "Enemy unable to select skill" << std::endl;
+      }
+      else
+      {
+        if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
+        {
+          std::cout << "Enemy skill has been chosen for person index " 
+                    << person_index << std::endl;
+        }
+
+        person_index--;
       }
       
     }
   }
 
-  /* Select enemy action state complete */
-  setBattleFlag(CombatState::PHASE_DONE);
+  if (person_index >= -static_cast<int32_t>(foes->getSize()) && 
+      person_index < -1)
+  {
+  
+  }
+  else
+  {
+    /* Select enemy action state complete */
+    setBattleFlag(CombatState::PHASE_DONE);  
+  }    
+
 
 }
 
@@ -1040,8 +1133,8 @@ void Battle::printPersonState(Person* const member,
 {
   if (member != nullptr)
   {
-    std::cout << "[" << person_index + 1 << "] - " << member->getName() 
-              << " [ Lv. " << member->getLevel() << " ] << \n" 
+    std::cout << "[" << person_index << "] - " << member->getName();
+    std::cout << " [ Lv. " << member->getLevel() << " ] << \n" 
               << "VITA: " << member->getCurr().getStat(0) << "\n"
               << "QTDR: " << member->getCurr().getStat(1) << "\n\n";
   }
@@ -1548,4 +1641,9 @@ float Battle::getEasyAIOffFactor()
 float Battle::getEasyAIDefFactor()
 {
   return kEASY_AI_DEF_FACTOR;
+}
+
+EasyAITarget Battle::getEasyAIDefaultTarget()
+{
+  return kEASY_AI_DEFAULT_TARGET;
 }

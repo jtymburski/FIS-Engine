@@ -226,8 +226,10 @@ private:
   static const float    kDOUBLE_ELM_ADV_MODIFIER;
   static const float    kDOUBLE_ELM_DIS_MODIFIER;
 
+  /* ------------ Easy AI Battle Modifiers ------------ */
   static const float kEASY_AI_OFF_FACTOR;
   static const float kEASY_AI_DEF_FACTOR;
+  static const EasyAITarget kEASY_AI_DEFAULT_TARGET;
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -434,6 +436,7 @@ public:
   /* Public static gets for AI modifier values */
   static float getEasyAIOffFactor();
   static float getEasyAIDefFactor();
+  EasyAITarget getEasyAIDefaultTarget();
 };
 
 #endif //BATTLE_H

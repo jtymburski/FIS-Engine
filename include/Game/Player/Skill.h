@@ -31,14 +31,17 @@
 ENUM_FLAGS(SkillFlags)
 enum class SkillFlags
 {
-  ALTERING   = 1 << 0,
-  HEALING    = 1 << 1,
-  INFLICTING = 1 << 2,
-  RELIEVING  = 1 << 3,
-  REVIVING   = 1 << 4,
-  ASSIGNING  = 1 << 5,
-  ABSORBING  = 1 << 6,
-  VALID      = 1 << 7
+  OFFENSIVE  = 1 << 0,
+  DEFENSIVE  = 1 << 1,
+  NEUTRAL    = 1 << 2,
+  ALTERING   = 1 << 3,
+  HEALING    = 1 << 4,
+  INFLICTING = 1 << 5,
+  RELIEVING  = 1 << 6,
+  REVIVING   = 1 << 7,
+  ASSIGNING  = 1 << 8,
+  ABSORBING  = 1 << 9,
+  VALID      = 1 << 10
 };
 
 class Skill
@@ -115,7 +118,7 @@ private:
   static const uint32_t kDEFAULT_VALUE;   /* Default value (points) */
   static const size_t   kMAX_ACTIONS;     /* Maximum # of actions in a skill */
   static const uint32_t kMAX_COOLDOWN;    /* Maximum turn cooldown time */
-  static const uint32_t kMAX_COST;        /* Highest possible cost for a skill */
+  static const uint32_t kMAX_COST;        /* Highest possible cost for skill */
   static const size_t   kMAX_MESG_LENGTH; /* Maximum length for using message */
   static const size_t   kMAX_NAME_LENGTH; /* Maximum length for a valid name */
   static const size_t   kMAX_DESC_LENGTH; /* Maximum length for a valid desc */
