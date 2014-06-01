@@ -277,12 +277,13 @@ static T selectNormalizedPair(const double &random, T begin, T end)
   if (random >= 0)
   {
     auto current = begin;
+    sum += (*current).second;
 
-    do
+    while (sum <= random)
     {
-      sum += (*current).second;
       current++;
-    } while ((sum <= random) && current != end);
+      sum += (*current).second;
+    }
 
     return current;
   }

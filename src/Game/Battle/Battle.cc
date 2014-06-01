@@ -496,7 +496,7 @@ void Battle::selectEnemyActions()
         }
 
         std::sort(begin(skill_ps), end(skill_ps), Helpers::CompProbability());
-       Helpers::normalizePair(begin(skill_ps), end(skill_ps));
+        Helpers::normalizePair(begin(skill_ps), end(skill_ps));
  
         auto rand_float = Helpers::randFloat(0, 1);
         auto rand_it = Helpers::selectNormalizedPair(rand_float, 
