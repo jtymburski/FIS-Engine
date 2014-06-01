@@ -502,7 +502,7 @@ void Battle::selectEnemyActions()
         auto rand_it = Helpers::selectNormalizedPair(rand_float, 
                                                 begin(skill_ps), end(skill_ps));
 
-        if (config != nullptr && config->getBattleMode(BatleMode::TEXT))
+        if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
         {
           if (rand_it != end(skill_ps))
           {
@@ -520,7 +520,7 @@ void Battle::selectEnemyActions()
 
       if (!selected_skill)
       {
-        if (config !=- nullptr && config->getBattleMode(BattleMode::TEXT))
+        if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
           std::cout << "Enemy unable to select skill" << std::endl;
       }
       
