@@ -112,6 +112,7 @@ private:
   uint32_t value;
 
   /* ------------ Constants --------------- */
+  static const uint32_t kDEFAULT_VALUE;   /* Default value (points) */
   static const size_t   kMAX_ACTIONS;     /* Maximum # of actions in a skill */
   static const uint32_t kMAX_COOLDOWN;    /* Maximum turn cooldown time */
   static const uint32_t kMAX_COST;        /* Highest possible cost for a skill */

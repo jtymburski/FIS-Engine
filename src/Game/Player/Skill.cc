@@ -21,6 +21,7 @@
 /*===============================f==============================================
  * CONSTANTS
  *============================================================================*/
+const uint32_t Skill::kDEFAULT_VALUE     =    1;
 const size_t   Skill::kMAX_ACTIONS       =   10;
 const uint32_t Skill::kMAX_COOLDOWN      =   10;
 const uint32_t Skill::kMAX_COST          = 5000;
@@ -84,6 +85,7 @@ Skill::Skill(const int &id, const std::string &name, const ActionScope &scope,
   setName(name);
   setScope(scope);
   setCost(cost);
+  setValue(kDEFAULT_VALUE);
 
   /* The skill will be valid of the action is able to be added */
   addAction(effect, chance);

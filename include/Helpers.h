@@ -55,6 +55,9 @@ public:
   /* Generates a random coin flip */
   static bool flipCoin();
 
+  /* Generates a random float between min and max */
+  static float randFloat(const float &min, const float &max);
+
   /* Generates a random number between 0 and max - 1, equal distribution */
   static int randInt(const int &max);
 

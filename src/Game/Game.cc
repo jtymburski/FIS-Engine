@@ -275,8 +275,7 @@ void Game::setupBattle()
   bubby_bomb->setFlag(ItemFlags::OFFENSIVE, true);
   bubby_bomb->setOccasion(ActionOccasion::BATTLE);
 
-  //Item* unique_item = new Item(46, "Unique Item", 75, nullptr, 1.08);
-
+  //Item* unique_item = new Item(46, "Unique Item", 75, nullptr, 1.08);s
   Item* new_potion     = new Item(potion);
   Item* new_bubby_bomb = new Item(bubby_bomb);
 
@@ -428,6 +427,17 @@ void Game::setupBattle()
   Skill* all_not_user  = new Skill(22, "All Not User",ActionScope::ALL_NOT_USER,actions[7],0.93,36);
   normal_attack->addActions(actions, chances);
 
+  normal_attack->setValue(4);
+  medium_attack->setValue(4);
+  hard_attack->setValue(5);
+  ultra_attack->setValue(5);
+  one_ally_ko->setValue(1);
+  all_allies_ko->setValue(1);
+  one_party->setValue(2);
+  all_targets->setValue(2);
+  not_user->setValue(2);
+  all_not_user->setValue(2);
+
   new_potion->setUseSkill(medium_attack);
   new_bubby_bomb->setUseSkill(normal_attack);
 
@@ -435,6 +445,9 @@ void Game::setupBattle()
   skills.push_back(new Skill(400, "Super Attack",ActionScope::ONE_ALLY,special,0.65,6));
   skills.push_back(new Skill(3, "Poison Attack",ActionScope::TWO_ALLIES,actions[1],0.79,16));
   skills.push_back(new Skill(35, "Crappy Attack",ActionScope::ALL_ALLIES,special,1.00,26));
+  skills[0]->setValue(2);
+  skills[1]->setValue(3);
+  skills[2]->setValue(4);
 
   other_skills.push_back(medium_attack);
   other_skills.push_back(hard_attack);

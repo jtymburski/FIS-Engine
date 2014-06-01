@@ -73,6 +73,15 @@ struct CompPairByValueMass
   }
 };
 
+struct CompProbability
+{
+  template <class T, class U>
+  bool operator()(const std::pair<T, U> &a, const std::pair<T, U> &b) const
+  {
+    return (static_cast<double>(a.second < b.second));
+  }
+};
+
 struct CompMomentum
 {
   template<class T>
@@ -221,6 +230,66 @@ struct value_less
 /*=============================================================================
  * TEMPLATE FUNCTIONS
  *============================================================================*/
+
+template <typename T>
+static bool noramlize(T begin, T end)
+{
+  auto sum = 0.0;
+
+  for (auto it = begin; it != end; ++it)
+    sum += (*it);
+
+  if (sum != 0)
+  {
+    for (auto it = begin; it != end; ++it)
+      (*it) /= sum;
+
+    return true;
+  }
+
+  return false;
+}
+
+template<typename T>
+static bool normalizePair(T begin, T end)
+{
+  auto sum = 0.0;
+
+  for (auto it = begin; it != end; ++it)
+    sum += (*it).second;
+
+  if (sum != 0)
+  {
+    for (auto it = begin; it != end; ++it)
+      (*it).second /= sum;
+
+    return true;
+  }
+
+  return false;
+}
+
+template<typename T>
+static T selectNormalizedPair(const double &random, T begin, T end)
+{
+  auto sum = 0.0;
+
+  if (random >= 0)
+  {
+    auto current = begin;
+
+    do
+    {
+      sum += (*current).second;
+      current++;
+    } while ((sum <= random) && current != end);
+
+    return current;
+  }
+
+  return end;
+}
+
 
 /*
  * Description: Template function to determine if a value is within a 

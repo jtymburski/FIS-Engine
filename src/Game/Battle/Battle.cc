@@ -446,46 +446,87 @@ void Battle::selectEnemyActions()
   //TODO: AI Module for person action selection [05-24-14]
 
   // Easy AI:
-  if (person_index > 0)
+  if (person_index < 0)
   {
-    // float factor           = 1.00;
-    // auto action_chosen     = false;
-    // auto can_choose_action = true;
-    // auto e_user   = getPerson(person_index);
+    auto def_factor        = false;
+    auto can_choose_skill  = true;
+    auto selected_skill    = false;
+    auto e_user   = getPerson(person_index);
 
-    // if (e_user != nullptr)
-    // {
-    //   auto e_skills = e_user->getUseableSkills();
-    //   std::vector<uint32_t> skill_values;
+    if (e_user != nullptr)
+    {
+      auto e_skills = e_user->getUseableSkills();
+      std::vector<uint32_t> skill_values;
 
-    //   if (e_skills != nullptr)
-    //     skill_values  = e_skills->getValues();
+      if (e_skills != nullptr)
+        skill_values  = e_skills->getValues();
 
-    //   if (e_skills.size() == 0 || (skill_values.size() != 
-    //                                e_skills.size()))
-    //   {
-    //     can_choose_action = false;
-    //   }
+      if (e_skills->getSize() == 0 || (skill_values.size() != 
+                                       e_skills->getSize()))
+      { 
+        can_choose_skill = false;
+      }
 
-    //   if (can_choose_action)
-    //   {
-    //     if (static_cast<int32_t>(e_user.getCurr().getStat("VITA"))    * 35 <
-    //         static_cast<int32_t>(e_user.getCurrMax().getStat("VITA")) * 100)
-    //     {
-    //       factor = kEASY_AI_OFF_FACTOR;
-    //     }
-    //     else
-    //     {
-    //       factor = kEASY_AI_DEF_FACTOR;
-    //     }
+      if (can_choose_skill)
+      {
+        if (static_cast<int32_t>(e_user->getCurr().getStat("VITA"))    * 35 <
+            static_cast<int32_t>(e_user->getCurrMax().getStat("VITA")) * 100)
+        {
+          def_factor = true;
+        }
 
-    //   }
+        // Build the array of probabilities assosciated with skills
+        auto e_skill_elements = e_skills->getElements(e_user->getLevel());
+        std::vector<std::pair<SetElement, float>> skill_ps;
 
-      // Choose from skill list
-      // Prioritize by skill value, each value point adds chance of using
-      // offensive factor if HP > 35%
-      // defensive factor if HP < 35%
+        for (auto it = begin(e_skill_elements); it != end(e_skill_elements); ++it)
+        {
+          auto factor = 1.00;
+    
+          if (def_factor && (*it).skill->getFlag(SkillFlags::HEALING))
+            factor = getEasyAIOffFactor();
+          else
+            factor = getEasyAIDefFactor();
+        
+          auto probability = (*it).skill->getValue() * factor;
+          std::pair<SetElement, float> new_elm;
+          new_elm.first = *it;
+          new_elm.second = probability;
+          skill_ps.push_back(new_elm);
+        }
+
+        std::sort(begin(skill_ps), end(skill_ps), Helpers::CompProbability());
+       Helpers::normalizePair(begin(skill_ps), end(skill_ps));
+ 
+        auto rand_float = Helpers::randFloat(0, 1);
+        auto rand_it = Helpers::selectNormalizedPair(rand_float, 
+                                                begin(skill_ps), end(skill_ps));
+
+        if (config != nullptr && config->getBattleMode(BatleMode::TEXT))
+        {
+          if (rand_it != end(skill_ps))
+          {
+           std::cout << "Enemy selection of random skill: " 
+                     << (*rand_it).first.skill->getName() << std::endl;
+          }
+          else
+          {
+            std::cout << "[Error]: Enemy skill selection failure!" << std::endl;
+          }
+        }
+
+        // TODO[06-01-14] Enemy target selection
+      }
+
+      if (!selected_skill)
+      {
+        if (config !=- nullptr && config->getBattleMode(BattleMode::TEXT))
+          std::cout << "Enemy unable to select skill" << std::endl;
+      }
+      
     }
+  }
+
   /* Select enemy action state complete */
   setBattleFlag(CombatState::PHASE_DONE);
 

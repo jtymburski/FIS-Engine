@@ -67,6 +67,16 @@ bool Helpers::flipCoin()
   return randU(0, 1);
 }
 
+float Helpers::randFloat(const float &a, const float &b)
+{
+  auto min = std::min(a, b);
+  auto max = std::max(a, b);
+
+  std::uniform_real_distribution<float> distribution(min, max);
+
+  return distribution(rand_eng);
+}
+
 /*
  * Description: Generates a uniform random integer in the range [0, max]
  *              and returns the result
