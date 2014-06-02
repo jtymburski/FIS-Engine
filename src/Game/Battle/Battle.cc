@@ -448,6 +448,10 @@ void Battle::selectEnemyActions()
   // Easy AI:
   if (person_index < 0)
   {
+    Skill* selected_skill = nullptr;
+    Item* selected_item   = nullptr;
+    std::vector<int32_t> selected_targets;
+
     auto select_self_team  = false;
     auto def_factor        = false;
     auto can_choose_skill  = true;
@@ -502,31 +506,18 @@ void Battle::selectEnemyActions()
         auto rand_float = Helpers::randFloat(0, 1);
         auto rand_it = Helpers::selectNormalizedPair(rand_float, 
                                                 begin(skill_ps), end(skill_ps));
-        auto selected_skill = (*rand_it).first.skill;
+        selected_skill = (*rand_it).first.skill;
         auto skill_scope = selected_skill->getScope();
 
         if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
-        {
-          if (rand_it != end(skill_ps))
-          {
-           std::cout << "Enemy selection of random skill: " 
-                     << selected_skill->getName() << " with scope: " 
-                     << Helpers::actionScopeToStr(selected_skill->getScope())
-                     << std::endl;
-          }
-          else
-          {
+          if (rand_it == end(skill_ps))
             std::cout << "[Error]: Enemy skill selection failure!" << std::endl;
-          }
-        }
 
         auto valid_targets = getValidTargets(person_index, 
                                              selected_skill->getScope());
 
         for (auto it = begin(valid_targets); it != end(valid_targets); ++it)
           std::cout << *it << std::endl;
-
-        std::vector<int32_t> selected_targets;
 
         if (getEasyAIDefaultTarget() == EasyAITarget::RANDOM && 
             valid_targets.size() > 0)
@@ -581,7 +572,8 @@ void Battle::selectEnemyActions()
           }
           else
           {
-            std::cout << "OH GOD WHAT DID I FORGET?" << std::endl;
+            std::cout << "[Error]: Unable to utilize ActionScope for enemy"
+                      << " target selection." << std::endl;
           }
 
           if (selected_targets.size() > 0)
@@ -595,14 +587,27 @@ void Battle::selectEnemyActions()
       if (!chosen_skill)
       {
         if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
-          std::cout << "Enemy unable to select skill" << std::endl;
+        {
+          std::cout << "Enemy was unable to select their desired skill" 
+                    << std::endl;
+        }
       }
       else
       {
         if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
         {
-          std::cout << "Enemy skill has been chosen for person index " 
-                    << person_index << std::endl;
+          std::cout << std::endl << "Enemy selection of random skill: " 
+                    << selected_skill->getName() << " with scope: " 
+                    << Helpers::actionScopeToStr(selected_skill->getScope())
+                    << std::endl << "Targeting person indexes: ";
+        
+          for (auto it = begin(selected_targets); it != end(selected_targets); 
+               ++it)
+          {
+            std::cout << *it << ",";
+          }
+
+          std::cout << std::endl;
         }
 
         person_index--;
