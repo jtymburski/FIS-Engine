@@ -32,7 +32,6 @@ enum class BufferSorts
 /* A buffer element */
 struct BufferAction
 {
-
   /* The number of turns to remain in the buffer */
   uint32_t cooldown;
 

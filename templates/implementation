@@ -1,8 +1,9 @@
 /*******************************************************************************
-* Class Name: Battle [Implementation]
-* Date Created: February 23rd, 2014
+* Class Name: AI Module [Implementation]
+* Date Created: June 22, 2014
 * Inheritance: None
-* Description:
+* Description: The AI Module is an object describing the difficulty and 
+*              personality for enemy decision making in Battle.
 *
 * Notes
 * -----

@@ -60,12 +60,6 @@ const float    Battle::kSECD_ELM_DIS_MODIFIER    =  0.93;
 const float    Battle::kDOUBLE_ELM_ADV_MODIFIER  =  1.30;
 const float    Battle::kDOUBLE_ELM_DIS_MODIFIER  =  0.74;
 
-/* Easy AI Offensive Factor
- * Easy AI Defensive Factor
- */
-const float Battle::kEASY_AI_OFF_FACTOR{1.35};
-const float Battle::kEASY_AI_DEF_FACTOR{1.50};
-const EasyAITarget Battle::kEASY_AI_DEFAULT_TARGET{EasyAITarget::RANDOM};
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
@@ -439,6 +433,7 @@ void Battle::recalculateAilments(Person* const target)
 /* Calculates enemy actions and add them to the buffer */
 void Battle::selectEnemyActions()
 {
+  /*
 #ifdef UDEBUG
   std::cout << "Selecting Enemy Actions: " << person_index << std::endl;
 #endif 
@@ -452,12 +447,14 @@ void Battle::selectEnemyActions()
     Item* selected_item   = nullptr;
     std::vector<int32_t> selected_targets;
 
-    auto select_self_team  = false;
     auto def_factor        = false;
     auto can_choose_skill  = true;
     auto chosen_skill      = false;
     auto e_user   = getPerson(person_index);
 
+    //TODO: Choose between using an item or a skill in the inventory? 
+
+    
     if (e_user != nullptr)
     {
       auto e_skills = e_user->getUseableSkills();
@@ -525,14 +522,11 @@ void Battle::selectEnemyActions()
           /* Randomly select targets based on the scope of the skill, broken 
            * down by: one target, two targets (generally on same team), and
            * a party of targets, or just all available targets
-           * 
-           * TODO: Choose which party to attack base on the parameters of the
-           *       Skill? [06-01-14]
-           */
+           
          
           if (skill_scope == ActionScope::USER)
           {
-            /* Select just the user of the skill */
+            /* Select just the user of the skill 
             selected_targets.push_back(person_index);
           }
           else if (skill_scope == ActionScope::ONE_TARGET        ||
@@ -542,7 +536,13 @@ void Battle::selectEnemyActions()
                    skill_scope == ActionScope::ONE_ALLY_KO       ||
                    skill_scope == ActionScope::NOT_USER)
           {
-            /* Select one potential valid target from an appropriate team */
+            /* Select targets from the appropriate team 
+            if (selected_skill->getFlag(SkillFlags::OFFENSIVE))
+              valid_targets = getPartyTargets(person_index * -1);
+            else if (selected_skill->getFlag(SkillFlags::DEFENSIVE))
+              valid_targets = getPartyTargets(person_index);
+
+            /* Select a target from that appropriate team 
             auto rand_index = Helpers::randU(0, valid_targets.size() - 1);
             selected_targets.push_back(valid_targets.at(rand_index));
             valid_targets.erase(begin(valid_targets) + rand_index);
@@ -567,7 +567,7 @@ void Battle::selectEnemyActions()
                    skill_scope  == ActionScope::ALL_NOT_USER)
 
           {
-            /* Select all potential targets */
+            /* Select all potential targets 
             selected_targets = valid_targets;
           }
           else
@@ -622,12 +622,12 @@ void Battle::selectEnemyActions()
   
   }
   else
-  {
-    /* Select enemy action state complete */
+  
+    /* Select enemy action state complete 
     setBattleFlag(CombatState::PHASE_DONE);  
   }    
 
-
+*/
 }
 
 /* Calculates user actions and add them to the buffer */
@@ -736,7 +736,9 @@ void Battle::selectUserActions()
 
     if (person != nullptr)
     {
-      if (person->getBFlag(BState::ALIVE))
+      if (person->getBFlag(BState::ALIVE) && 
+         (person->getBFlag(BState::IN_BATTLE)) &&
+         !person->getBFlag(BState::SKIP_NEXT_TURN))
       {
         /* Reload the menu information for the next person */
         menu->reset(getPerson(person_index), person_index);
@@ -1430,6 +1432,17 @@ std::vector<int32_t> Battle::getFoesTargets(const bool &only_ko)
   return foes_targets;
 }
 
+/* Obtains a vector of targets matching the signage */
+std::vector<int32_t> Battle::getPartyTargets(int32_t check_index)
+{
+  if (check_index < 0 )
+    return getFoesTargets();
+  else
+    return getFriendsTargets();
+
+  return getFriendsTargets();
+}
+
 /* Obtains a vector of battle member indexes for a given user and scope */
 std::vector<int32_t> Battle::getValidTargets(int32_t index, 
                                              ActionScope action_scope)
@@ -1636,19 +1649,4 @@ float Battle::getDoubleElmAdvMod()
 float Battle::getDoubleElmDisMod()
 {
   return kDOUBLE_ELM_DIS_MODIFIER;
-}
-
-float Battle::getEasyAIOffFactor()
-{
-  return kEASY_AI_OFF_FACTOR;
-}
-
-float Battle::getEasyAIDefFactor()
-{
-  return kEASY_AI_DEF_FACTOR;
-}
-
-EasyAITarget Battle::getEasyAIDefaultTarget()
-{
-  return kEASY_AI_DEFAULT_TARGET;
 }

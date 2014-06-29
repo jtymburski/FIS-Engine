@@ -44,6 +44,7 @@ SOURCES=src/Application.cc \
         src/Frame.cc \
         src/Game/EventHandler.cc \
         src/Game/Game.cc \
+        src/Game/Battle/AIModule.cc \
         src/Game/Battle/Battle.cc \
         src/Game/Battle/BattleMenu.cc \
         src/Game/Battle/Buffer.cc \

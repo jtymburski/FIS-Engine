@@ -226,11 +226,6 @@ private:
   static const float    kDOUBLE_ELM_ADV_MODIFIER;
   static const float    kDOUBLE_ELM_DIS_MODIFIER;
 
-  /* ------------ Easy AI Battle Modifiers ------------ */
-  static const float kEASY_AI_OFF_FACTOR;
-  static const float kEASY_AI_DEF_FACTOR;
-  static const EasyAITarget kEASY_AI_DEFAULT_TARGET;
-
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
@@ -329,6 +324,7 @@ private:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  /* */
   bool keyDownEvent(SDL_KeyboardEvent event);
 
   /* Returns true if all members of a party have died */
@@ -393,7 +389,10 @@ public:
   std::vector<int32_t> getFriendsTargets(const bool &only_ko = false);
   
   /* Obtains the list of foes target indexes */
-  std::vector<int32_t>  getFoesTargets(const bool &only_ko = false);
+  std::vector<int32_t> getFoesTargets(const bool &only_ko = false);
+
+  /* Obtains a vector of targets matching the signage */
+  std::vector<int32_t> getPartyTargets(int32_t check_index);
 
   /* Obtains a vector of battle member indexes for a given user and scope */
   std::vector<int32_t> getValidTargets(int32_t index, ActionScope action_scope);
@@ -432,11 +431,6 @@ public:
   static float getSecdElmDisMod();
   static float getDoubleElmAdvMod();
   static float getDoubleElmDisMod();
-
-  /* Public static gets for AI modifier values */
-  static float getEasyAIOffFactor();
-  static float getEasyAIDefFactor();
-  EasyAITarget getEasyAIDefaultTarget();
 };
 
 #endif //BATTLE_H

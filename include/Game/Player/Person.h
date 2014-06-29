@@ -34,6 +34,9 @@
 #ifndef PERSON_H
 #define PERSON_H
 
+class AIModule;
+
+#include "Game/Battle/AIModule.h"
 #include "Game/Player/Category.h"
 #include "Game/Player/Equipment.h"
 
@@ -101,6 +104,9 @@ public:
   ~Person();
 
 private:
+  /* AI Module */
+  AIModule* ai_module;
+
 	/* Person IDs */
 	int game_id;
 	int my_id;
@@ -253,6 +259,15 @@ public:
 
   /* Removes the equipment from a given slot */
   bool removeEquip(const EquipSlots &equip_slot);
+
+  /* Resets the AI module for a new turn */
+  bool resetAI();
+
+  /* Updates the AI module based upon the current flags */
+  bool updateAI();
+
+  /* Returns a pointer to the AI module */
+  AIModule* getAI();
 
   /* Find the true cost for a Skill to the Person's QD */
   int16_t getTrueCost(Skill* test_skill);

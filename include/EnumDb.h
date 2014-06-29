@@ -229,20 +229,6 @@ enum class Direction
 };
 
 /*
- * Description: Enumerated types of selection for Easy AI
- *
- * RANDOM - randomly selects targets until filled for the skill
- * WEAKEST_HP_FIRST - targets the weakest enemy if atking/ally if healing
- * STRONGEST_FIRST - targets the most powerful target first
- */
-enum class EasyAITarget
-{
-  RANDOM           = 1 << 0,
-  WEAKEST_HP_FIRST = 1 << 1,
-  STRONGEST_FIRST  = 1 << 2
-};
-
-/*
  * Description: Elements of the Game. Elements have weaknesses and strengths
  *
  * PHYSICAL - pure physical element

@@ -1,8 +1,9 @@
 /*******************************************************************************
-* Class Name: Battle [Declaration]
-* Date Created: February 23rd, 2014
+* Class Name: AI Module [Declaration]
+* Date Created: June 22, 2014
 * Inheritance: None
-* Description: 
+* Description: The AI Module is an object describing the difficulty and 
+*              personality for enemy decision making in Battle.
 *
 * Notes
 * -----
@@ -13,8 +14,29 @@
 * ----
 *******************************************************************************/
 
-#ifndef SIGNATURE_H
-#define SIGNATURE_H
+#ifndef AIMODULE_H
+#define AIMODULE_H
+
+#include "EnumFlags.h"
+#include "EnumDb.h"
+
+ENUM_FLAGS(AIState)
+{
+  
+};
+
+enum class AIDifficulty
+{
+  RANDOM,
+  PRIORITY,
+  TACTICAL,
+  DEEP_THOUGHT
+};
+
+enum class AIPersonality
+{
+  
+}
 
   /* ------------ Constants --------------- */
 
@@ -42,4 +64,4 @@
  * OPERATOR FUNCTIONS
  *===========================================================================*/
 
-#endif //CLASSNAME_H
+#endif //AIMODULE_H

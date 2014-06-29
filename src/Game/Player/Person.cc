@@ -29,6 +29,7 @@
 * See .h file for TODOs
 *******************************************************************************/
 
+#include "Game/Battle/AIModule.h"
 #include "Game/Player/Person.h"
 
 /*=============================================================================
@@ -119,6 +120,8 @@ Person::~Person()
  */
 void Person::loadDefaults()
 {
+  ai_module = nullptr;
+
   battle_flags = static_cast<BState>(0);
   person_flags = static_cast<PState>(0);
 
@@ -188,8 +191,8 @@ void Person::setupClass()
   base_skills    = nullptr;
   curr_skills    = nullptr;
   learned_skills = nullptr;
-  temp_skills    = nullptr
-;
+  temp_skills    = nullptr;
+
   if (exp_table.empty())
     buildExpTable();
 
@@ -202,6 +205,14 @@ void Person::setupClass()
   /* Setup the class as a copy of the Base Person */
   else
   {
+    /* Deep copied AI Module */
+    if (base_person->ai_module != nullptr)
+    {
+      ai_module = new AIModule(base_person->ai_module->getDifficulty(),
+                               base_person->ai_module->getPrimPersonality(),
+                               base_person->ai_module->getSecdPersonality());
+    }
+
     battle_flags = base_person->battle_flags;
     person_flags = base_person->person_flags;
     //person_record = base-person->person_record;
@@ -260,6 +271,10 @@ void Person::unsetAll(const bool &clear)
 {
   if (clear)
   {
+    /* Delete the AI module */
+    if (ai_module != nullptr)
+      delete ai_module;
+
     /* Delete the equipments contained within the person */
     for (auto equipment : equipments)
     {
@@ -284,10 +299,14 @@ void Person::unsetAll(const bool &clear)
       delete temp_skills;
   }
 
+  ai_module      = nullptr;
   base_skills    = nullptr;
   curr_skills    = nullptr;
   learned_skills = nullptr;
   temp_skills    = nullptr;
+
+  for (auto equipment: equipments)
+    equipment = nullptr;
 }
 
 /*
@@ -830,6 +849,43 @@ bool Person::removeEquip(const EquipSlots &equip_slot)
   }
 
   return removed;
+}
+
+bool Person::resetAI()
+{
+  if (ai_module == nullptr)
+    return false;
+
+  ai_module->incrementTurns();
+  ai_module->resetForNewTurn();
+
+  return true;
+}
+
+/*
+ * Description: 
+ *
+ * Inputs: 
+ * Output: 
+ */
+bool Person::updateAI()
+{
+  if (ai_module == nullptr)
+    return false;
+
+  return true;
+  //TODO
+}
+
+/*
+ * Description: 
+ *
+ * Inputs:
+ * Output: 
+ */
+AIModule* Person::getAI()
+{
+  return ai_module;
 }
 
 /*
