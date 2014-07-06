@@ -276,15 +276,13 @@ void Person::unsetAll(const bool &clear)
       delete ai_module;
 
     /* Delete the equipments contained within the person */
-    for (auto equipment : equipments)
+    for (auto equipment_index : equipments)
     {
-      if (equipment != nullptr)
+      if (equipment_index != nullptr)
       {
-        if (!(equipment->getEquipFlag(EquipState::TWO_HANDED) &&
-              equipment == getEquip(EquipSlots::RARM)))
-          delete equipment;  
-
-        equipment = nullptr;
+        if (!(equipment_index->getEquipFlag(EquipState::TWO_HANDED) &&
+              equipment_index == getEquip(EquipSlots::RARM)))
+          delete equipment_index;  
       }
     }
 
@@ -305,8 +303,8 @@ void Person::unsetAll(const bool &clear)
   learned_skills = nullptr;
   temp_skills    = nullptr;
 
-  for (auto equipment: equipments)
-    equipment = nullptr;
+  for (auto equipment_index : equipments)
+    equipment_index = nullptr;
 }
 
 /*
@@ -652,6 +650,34 @@ void Person::clearLearnedSkills()
 }
 
 /*
+ * Description: Creates a new AIModule for the person given a difficulty and
+ *              a primary and secodary personality type
+ *
+ * Inputs: diff - the difficulty the AI will have
+ *         prim_personality - the primary personality for the AI
+ *         secd_personality - the secondary personality for the AI
+ * Output: bool - true if the old AIModule underwent annihilation
+ */
+bool Person::createAI(const AIDifficulty &diff, 
+                      const AIPersonality &prim_personality,
+                      const AIPersonality &secd_personality)
+{
+  auto destroyed = false;
+
+  if (ai_module != nullptr)
+  {
+    delete ai_module;
+    ai_module = nullptr;
+    destroyed = true;
+  }
+
+  ai_module = new AIModule (diff, prim_personality, secd_personality);
+  ai_module->setParent(this);
+
+  return destroyed;
+}
+
+/*
  * Description: Shorthand function for dealing damage to the Person. Returns
  *              true if the Person's HP is 0 after the damage takes place.
  *
@@ -857,24 +883,9 @@ bool Person::resetAI()
     return false;
 
   ai_module->incrementTurns();
-  ai_module->resetForNewTurn();
+  ai_module->resetForNewTurn(this);
 
   return true;
-}
-
-/*
- * Description: 
- *
- * Inputs: 
- * Output: 
- */
-bool Person::updateAI()
-{
-  if (ai_module == nullptr)
-    return false;
-
-  return true;
-  //TODO
 }
 
 /*
@@ -1220,6 +1231,20 @@ uint32_t Person::getTotalExp()
   return total_exp;
 }
 
+/*
+ * Description: 
+ *
+ * Inputs: 
+ * Output:
+ */
+uint16_t Person::getQDPercent()
+{
+  auto curr_qd = getCurr().getStat("QTDR");
+  auto max_qd  = getCurrMax().getStat("QTDR");
+
+  return static_cast<uint16_t>(floor((curr_qd * 100) / max_qd));
+}
+
 /* Find the true cost for a Skill to the Person's QD */
 int16_t Person::getTrueCost(Skill* test_skill)
 {
@@ -1342,6 +1367,42 @@ SkillSet* Person::getUseableSkills()
     return temp_skills;
 
   return nullptr;
+}
+
+/*
+ * Description: Calculates and prints the valid action types which this person
+ *              may perform in a battle in their current state
+ *
+ * Inputs: none
+ * Output: std::vector<ActionType> - vector of enuemrated action types possible
+ */
+std::vector<ActionType> Person::getValidActions()
+{
+  std::vector<ActionType> valid_action_types;
+
+  if (getBFlag(BState::ATK_ENABLED) || 
+      getBFlag(BState::SKL_ENABLED))
+    valid_action_types.push_back(ActionType::SKILL);
+    
+  if (getBFlag(BState::ITM_ENABLED))
+    valid_action_types.push_back(ActionType::ITEM);
+
+  if (getBFlag(BState::DEF_ENABLED))
+    valid_action_types.push_back(ActionType::DEFEND);
+
+  if (getBFlag(BState::GRD_ENABLED))
+    valid_action_types.push_back(ActionType::GUARD);
+
+  if (getBFlag(BState::IMP_ENABLED))
+    valid_action_types.push_back(ActionType::IMPLODE);
+
+  if (getBFlag(BState::RUN_ENABLED))
+    valid_action_types.push_back(ActionType::RUN);
+
+  if (getBFlag(BState::PAS_ENABLED))
+    valid_action_types.push_back(ActionType::PASS);
+
+  return valid_action_types;
 }
 
 /*

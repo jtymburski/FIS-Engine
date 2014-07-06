@@ -215,6 +215,29 @@ void Battle::battleLost()
  * Inputs:
  * Outputs:
  */
+bool Battle::canIncrementIndex(Person* check_person)
+{
+  if ((check_person->getBFlag(BState::SELECTED_ACTION) && 
+      !check_person->getBFlag(BState::TWO_SKILLS) && 
+      !check_person->getBFlag(BState::THREE_SKILLS)) ||
+      (check_person->getBFlag(BState::SELECTED_2ND_ACTION) &&
+       check_person->getBFlag(BState::TWO_SKILLS) &&
+      !check_person->getBFlag(BState::THREE_SKILLS)) ||
+      (check_person->getBFlag(BState::SELECTED_3RD_ACTION) &&
+       check_person->getBFlag(BState::THREE_SKILLS)))
+  {
+    return true;
+  }
+
+  return false;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Returns enumeration of party death [None, Friends, Foes, Both] */
 bool Battle::checkPartyDeath(Party* const check_party)
 {
@@ -433,201 +456,120 @@ void Battle::recalculateAilments(Person* const target)
 /* Calculates enemy actions and add them to the buffer */
 void Battle::selectEnemyActions()
 {
-  /*
 #ifdef UDEBUG
   std::cout << "Selecting Enemy Actions: " << person_index << std::endl;
 #endif 
 
-  //TODO: AI Module for person action selection [05-24-14]
-
-  // Easy AI:
-  if (person_index < 0)
+  if (person_index < 0 && curr_module != nullptr &&
+      curr_module->getFlag(AIState::SELECTION_COMPLETE))
   {
-    Skill* selected_skill = nullptr;
-    Item* selected_item   = nullptr;
-    std::vector<int32_t> selected_targets;
+    auto buffer_addition = false;
 
-    auto def_factor        = false;
-    auto can_choose_skill  = true;
-    auto chosen_skill      = false;
-    auto e_user   = getPerson(person_index);
+    auto person_user     = getPerson(person_index);
+    auto action_type     = curr_module->getActionType();
+    auto action_targets  = curr_module->getChosenTargets();
 
-    //TODO: Choose between using an item or a skill in the inventory? 
-
-    
-    if (e_user != nullptr)
+    if (action_type == ActionType::SKILL)
     {
-      auto e_skills = e_user->getUseableSkills();
-      std::vector<uint32_t> skill_values;
+      auto selected_skill = curr_module->getSelectedSkill();
 
-      if (e_skills != nullptr)
-        skill_values  = e_skills->getValues();
+      if (action_buffer->add(person_user, selected_skill, action_targets, 0))
+        buffer_addition = true;
+    }
+    else if (action_type == ActionType::ITEM)
+    {
+      auto selected_item = menu->getSelectedItem();
 
-      if (e_skills->getSize() == 0 || (skill_values.size() != 
-                                       e_skills->getSize()))
-      { 
-        can_choose_skill = false;
-      }
-
-      if (can_choose_skill)
-      {
-        if (static_cast<int32_t>(e_user->getCurr().getStat("VITA"))    * 35 <
-            static_cast<int32_t>(e_user->getCurrMax().getStat("VITA")) * 100)
-        {
-          def_factor = true;
-        }
-
-        // Build the array of probabilities assosciated with skills
-        auto e_skill_elements = e_skills->getElements(e_user->getLevel());
-        std::vector<std::pair<SetElement, float>> skill_ps;
-
-        for (auto it = begin(e_skill_elements); it != end(e_skill_elements); ++it)
-        {
-          auto factor = 1.00;
+      if (action_buffer->add(person_user, selected_item, action_targets, 0))
+        buffer_addition = true;
     
-          if (def_factor && (*it).skill->getFlag(SkillFlags::HEALING))
-            factor = getEasyAIOffFactor();
-          else
-            factor = getEasyAIDefFactor();
-        
-          auto probability = (*it).skill->getValue() * factor;
-          std::pair<SetElement, float> new_elm;
-          new_elm.first = *it;
-          new_elm.second = probability;
-          skill_ps.push_back(new_elm);
-        }
-
-        std::sort(begin(skill_ps), end(skill_ps), Helpers::CompProbability());
-        Helpers::normalizePair(begin(skill_ps), end(skill_ps));
- 
-        auto rand_float = Helpers::randFloat(0, 1);
-        auto rand_it = Helpers::selectNormalizedPair(rand_float, 
-                                                begin(skill_ps), end(skill_ps));
-        selected_skill = (*rand_it).first.skill;
-        auto skill_scope = selected_skill->getScope();
-
-        if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
-          if (rand_it == end(skill_ps))
-            std::cout << "[Error]: Enemy skill selection failure!" << std::endl;
-
-        auto valid_targets = getValidTargets(person_index, 
-                                             selected_skill->getScope());
-
-        for (auto it = begin(valid_targets); it != end(valid_targets); ++it)
-          std::cout << *it << std::endl;
-
-        if (getEasyAIDefaultTarget() == EasyAITarget::RANDOM && 
-            valid_targets.size() > 0)
-        {
-          /* Randomly select targets based on the scope of the skill, broken 
-           * down by: one target, two targets (generally on same team), and
-           * a party of targets, or just all available targets
-           
-         
-          if (skill_scope == ActionScope::USER)
-          {
-            /* Select just the user of the skill 
-            selected_targets.push_back(person_index);
-          }
-          else if (skill_scope == ActionScope::ONE_TARGET        ||
-                   skill_scope == ActionScope::ONE_ENEMY         ||
-                   skill_scope == ActionScope::ONE_ALLY          ||
-                   skill_scope == ActionScope::ONE_ALLY_NOT_USER ||
-                   skill_scope == ActionScope::ONE_ALLY_KO       ||
-                   skill_scope == ActionScope::NOT_USER)
-          {
-            /* Select targets from the appropriate team 
-            if (selected_skill->getFlag(SkillFlags::OFFENSIVE))
-              valid_targets = getPartyTargets(person_index * -1);
-            else if (selected_skill->getFlag(SkillFlags::DEFENSIVE))
-              valid_targets = getPartyTargets(person_index);
-
-            /* Select a target from that appropriate team 
-            auto rand_index = Helpers::randU(0, valid_targets.size() - 1);
-            selected_targets.push_back(valid_targets.at(rand_index));
-            valid_targets.erase(begin(valid_targets) + rand_index);
-
-          }
-          else if (valid_targets.size() >= 2 &&
-                   (skill_scope == ActionScope::TWO_ENEMIES || 
-                    skill_scope == ActionScope::TWO_ALLIES))
-          {
-            auto rand_index = Helpers::randU(0, valid_targets.size() - 1);
-            selected_targets.push_back(valid_targets.at(rand_index));
-            valid_targets.erase(begin(valid_targets) + rand_index);
-            
-            rand_index = Helpers::randU(0, valid_targets.size() - 1);
-            selected_targets.push_back(valid_targets.at(rand_index));
-            valid_targets.erase(begin(valid_targets) + rand_index);
-          }
-          else if (skill_scope == ActionScope::ALL_ENEMIES ||
-                   skill_scope == ActionScope::ALL_ALLIES  ||
-                   skill_scope == ActionScope::ALL_ALLIES_KO ||
-                   skill_scope == ActionScope::ALL_TARGETS ||
-                   skill_scope  == ActionScope::ALL_NOT_USER)
-
-          {
-            /* Select all potential targets 
-            selected_targets = valid_targets;
-          }
-          else
-          {
-            std::cout << "[Error]: Unable to utilize ActionScope for enemy"
-                      << " target selection." << std::endl;
-          }
-
-          if (selected_targets.size() > 0)
-            chosen_skill = true;
-
-          for (auto it = begin(selected_targets); it != end(selected_targets); ++it)
-            std::cout << (*it) << std::endl;
-        }
-      }
-
-      if (!chosen_skill)
+      if (buffer_addition)
       {
         if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
         {
-          std::cout << "Enemy was unable to select their desired skill" 
-                    << std::endl;
+          std::cout << "Removing " << selected_item->getName() << " from "
+                    << "inventory and implementing to buffer." << std::endl;
         }
+
+        foes->getInventory()->removeItemID(selected_item->getGameID());
+        curr_module->setItems(foes->getInventory()->getBattleItems());
       }
+    }
+    else if (action_type == ActionType::DEFEND  ||
+             action_type == ActionType::GUARD   ||
+             action_type == ActionType::IMPLODE ||
+             action_type == ActionType::RUN     ||
+             action_type == ActionType::PASS)
+    {
+      if (action_buffer->add(person_user, action_type, action_targets, 0))
+        buffer_addition = true;
+    }
+    else
+    {
+      std::cerr << "[Error]: Enemy selection fo invalid action type\n";
+    }
+
+    if (buffer_addition)
+    {
+      if (person_user->getBFlag(BState::SELECTED_2ND_ACTION))
+        person_user->setBFlag(BState::SELECTED_3RD_ACTION);
+      else if (person_user->getBFlag(BState::SELECTED_ACTION))
+        person_user->setBFlag(BState::SELECTED_2ND_ACTION);
       else
-      {
-        if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
-        {
-          std::cout << std::endl << "Enemy selection of random skill: " 
-                    << selected_skill->getName() << " with scope: " 
-                    << Helpers::actionScopeToStr(selected_skill->getScope())
-                    << std::endl << "Targeting person indexes: ";
-        
-          for (auto it = begin(selected_targets); it != end(selected_targets); 
-               ++it)
-          {
-            std::cout << *it << ",";
-          }
+        person_user->setBFlag(BState::SELECTED_ACTION);
 
-          std::cout << std::endl;
-        }
-
+      if (canIncrementIndex(person_user))
         person_index--;
-      }
-      
+
+    }
+    else
+    {
+      std::cerr << "[Error]: Action buffer addition failure!" << std::endl;   
     }
   }
 
-  if (person_index >= -static_cast<int32_t>(foes->getSize()) && 
-      person_index < -1)
+  /* Assert the person index exists in the Foes scope (-5 to -1) */
+  if (person_index < 0 && 
+      person_index >= (-1 * static_cast<int32_t>(foes->getSize())))
   {
-  
+    auto person_user = getPerson(person_index);
+
+    /* If no curr module or IF the current selection is complete */
+    if (curr_module == nullptr || !person_user->getBFlag(BState::SKIP_NEXT_TURN))
+    {
+      /* Obtain the AI Module for the current person */
+      auto curr_person = getPerson(person_index);
+      curr_module = curr_person->getAI();
+
+      /* If the module exists, get it ready for a new turn */
+      if (curr_module != nullptr)
+      {
+        /* Reset the AI Module for a new turn decision, assign data */
+        curr_person->resetAI();
+        curr_module->setItems(foes->getInventory()->getBattleItems());
+      }
+    }
+    else if (person_user->getBFlag(BState::SKIP_NEXT_TURN))
+    {
+      /* */
+      person_index--;
+    }
+    else if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
+    {
+      std::cout << "[Error] Null AI module for Selecting Enemy Action!"
+                << std::endl;
+    }
+
   }
   else
-  
-    /* Select enemy action state complete 
-    setBattleFlag(CombatState::PHASE_DONE);  
-  }    
+  {
+#ifdef UDEBUG
+    std::cout << "Enemy action selection complete!" << std::endl;
+#endif
 
-*/
+    /* Mark the enemy selection phase as complete on the max index */
+    setBattleFlag(CombatState::PHASE_DONE);
+  }
 }
 
 /* Calculates user actions and add them to the buffer */
@@ -676,10 +618,10 @@ void Battle::selectUserActions()
           std::cout << "Removing " << selected_item->getName() << " from "
                     << "inventory and implementing to buffer." << std::endl;
         }
+
+        friends->getInventory()->removeItemID(selected_item->getGameID());
+        menu->setSelectableItems(friends->getInventory()->getBattleItems());
       }
- 
-      friends->getInventory()->removeItemID(selected_item->getGameID());
-      menu->setSelectableItems(friends->getInventory()->getBattleItems());
     }
     else if (action_type == ActionType::DEFEND  || 
              action_type == ActionType::GUARD   ||
@@ -709,21 +651,7 @@ void Battle::selectUserActions()
       std::cerr << "[Error]: Action buffer addition failure!" << std::endl;   
     }
 
-    auto increment_index = false;
-
-    if ((person_user->getBFlag(BState::SELECTED_ACTION) && 
-        !person_user->getBFlag(BState::TWO_SKILLS) && 
-        !person_user->getBFlag(BState::THREE_SKILLS)) ||
-        (person_user->getBFlag(BState::SELECTED_2ND_ACTION) &&
-         person_user->getBFlag(BState::TWO_SKILLS) &&
-        !person_user->getBFlag(BState::THREE_SKILLS)) ||
-        (person_user->getBFlag(BState::SELECTED_3RD_ACTION) &&
-         person_user->getBFlag(BState::THREE_SKILLS)))
-    {
-      increment_index = true;
-    }
-
-    if (increment_index)
+    if (canIncrementIndex(person_user))
         person_index++;
   }
 
@@ -736,9 +664,7 @@ void Battle::selectUserActions()
 
     if (person != nullptr)
     {
-      if (person->getBFlag(BState::ALIVE) && 
-         (person->getBFlag(BState::IN_BATTLE)) &&
-         !person->getBFlag(BState::SKIP_NEXT_TURN))
+      if (!person->getBFlag(BState::SKIP_NEXT_TURN))
       {
         /* Reload the menu information for the next person */
         menu->reset(getPerson(person_index), person_index);
@@ -751,10 +677,7 @@ void Battle::selectUserActions()
       }
       else
       {
-#ifdef UDEBUG
-        std::cout << "Person index: " << person_index << "cannot select action"
-                  << std::endl;
-#endif
+ 
       }
     }
     else
@@ -776,6 +699,8 @@ void Battle::selectUserActions()
 /* Load default configuration of the battle */
 bool Battle::setupClass()
 {
+  curr_module = nullptr;
+
   // info_bar = nullptr;
   // menu = nullptr;
   // status_bar = nullptr;
@@ -1275,7 +1200,75 @@ bool Battle::update(int32_t cycle_time)
       }
     }
   }
+  else if (turn_state == TurnState::SELECT_ACTION_ENEMY)
+  {
+    ActionType action_type = ActionType::NONE;
 
+    if (curr_module != nullptr) 
+    {     
+      if ((curr_module->getFlag(AIState::ACTION_TYPE_CHOSEN) ||
+           curr_module->getActionType() == ActionType::DEFEND ||
+           curr_module->getActionType() == ActionType::GUARD ||
+           curr_module->getActionType() == ActionType::IMPLODE) &&
+           !curr_module->getFlag(AIState::TARGETS_ASSIGNED))
+      {
+        auto scope = ActionScope::NO_SCOPE;
+   
+        if (action_type == ActionType::SKILL)
+        {
+          scope = curr_module->getSelectedSkill()->getScope();
+        }
+        else if (action_type == ActionType::ITEM)
+        {
+          scope = curr_module->getSelectedItem()->getUseSkill()->getScope();
+        }
+        else if (action_type == ActionType::DEFEND || 
+                 action_type == ActionType::IMPLODE)
+        {
+          scope = ActionScope::USER;
+        }
+        else if (action_type == ActionType::GUARD)
+        {
+          scope = ActionScope::ONE_ALLY_NOT_USER;
+        }
+
+        if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
+        {
+          std::cout << "Finding selectable targets for enemy action w/ scope: "
+                    << Helpers::actionScopeToStr(scope) << std::endl;
+        }
+
+        auto valid_targets = getValidTargets(person_index, scope);
+        std::vector<Person*> friends_persons;
+        std::vector<Person*> foes_persons;
+
+        for (auto target : valid_targets)
+        {
+          if (target < 0)
+            friends_persons.push_back(getPerson(target));
+          else
+            foes_persons.push_back(getPerson(target));
+        }
+
+        if (curr_module->setFriendTargets(friends_persons) &&
+            curr_module->setFoeTargets(foes_persons))
+        {
+          curr_module->setFlag(AIState::TARGETS_ASSIGNED, true);
+
+          if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
+          {
+            std::cout << "[Error]: Enemy chose skill with no targets! "
+                      << std::endl;
+          }         
+        }
+        else
+        {
+          curr_module->setActionScope(scope);
+        }
+      }
+    }
+  }
+  
   return false;
 }
 

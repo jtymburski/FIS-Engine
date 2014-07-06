@@ -529,44 +529,6 @@ void BattleMenu::keyDownSelect()
     incrementLayer(layer_to_increment);
 }
 
-/*
- * Description:
- *
- * Inputs:
- * Output:
- */
-std::vector<ActionType> BattleMenu::getValidActions()
-{
-  std::vector<ActionType> valid_action_types;
-
-  if (current_user != nullptr)
-  {
-    if (current_user->getBFlag(BState::ATK_ENABLED) || 
-        current_user->getBFlag(BState::SKL_ENABLED))
-      valid_action_types.push_back(ActionType::SKILL);
-    
-    if (current_user->getBFlag(BState::ITM_ENABLED))
-      valid_action_types.push_back(ActionType::ITEM);
-
-    if (current_user->getBFlag(BState::DEF_ENABLED))
-      valid_action_types.push_back(ActionType::DEFEND);
-
-    if (current_user->getBFlag(BState::GRD_ENABLED))
-      valid_action_types.push_back(ActionType::GUARD);
-
-    if (current_user->getBFlag(BState::IMP_ENABLED))
-      valid_action_types.push_back(ActionType::IMPLODE);
-
-    if (current_user->getBFlag(BState::RUN_ENABLED))
-      valid_action_types.push_back(ActionType::RUN);
-
-    if (current_user->getBFlag(BState::PAS_ENABLED))
-      valid_action_types.push_back(ActionType::PASS);
-  }
-
-  return valid_action_types;
-}
-
 /*============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
@@ -629,7 +591,7 @@ void BattleMenu::reset(Person* const new_user, const uint32_t &new_person_index)
   if (current_user != nullptr)
   {
     menu_skills   = current_user->getUseableSkills();
-    valid_actions = getValidActions();
+    valid_actions = current_user->getValidActions();
   }
 }
 

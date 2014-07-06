@@ -23,6 +23,7 @@ class Person;
 #include "Game/Player/Skill.h"
 #include "EnumFlags.h"
 #include "EnumDb.h"
+#include "Helpers.h"
 #include "Options.h"
 
 #include <vector>
@@ -30,55 +31,13 @@ class Person;
 ENUM_FLAGS(AIState)
 enum class AIState
 {
-  ACTION_TYPE_CHOSEN    = 1 << 0,
-  ACTION_INDEX_CHOSEN   = 1 << 1,
-  ACTION_TARGETS_CHOSEN = 1 << 2,
-  SELECTION_COMPLETE    = 1 << 3,
-  ADD_TO_RECORD         = 1 << 4
-};
-
-/*
- * Description: 
- *
- */
-enum class AIDifficulty
-{
-  RANDOM,       /* Randomly chooses action types, indexes, targets */
-  PRIORITY,     /* Chooses actions based on arbitrary priority values */
-  TACTICAL,     /* Tactically chooses combinations of actions */
-  DEEP_THOUGHT  /* Computes possible actions to determine the best outcome */
-};
-
-/*
- * Description: 
- *
- */
-enum class AIPersonality
-{
-  MODERATOR,   /* Generic personality type */
-  AGGRESSOR,   /* Focuses on actions damage the opposing team */
-  DEFENDER,    /* Focuses actions on increasing one-self */
-  PROTECTOR,   /* Focuses on actions protecting teammates (including self) */
-  RETALIATOR,  /* Changes priority targeting if hit by a certain enemy */
-  MASOCHISTIC, /* Performs self-destructive behaviour */
-  ANNIHILATOR, /* Attempts to perform the most damage possible, at any cost */
-  RUNNER,      /* Focuses on running or becoming able to run */
-  PASSER,      /* Focuses on doing nothing */
-  NONE         /* No personality type - error */
-};
-
-/*
- * Description: Enumerated types of selection for AI
- *
- * RANDOM - randomly selects targets until filled for the skill
- * WEAKEST_HP_FIRST - targets the weakest enemy if atking/ally if healing
- * STRONGEST_FIRST  - targets the most powerful target first
- */
-enum class AITarget
-{
-  RANDOM           = 1 << 0,
-  LOWEST_HP_FIRST  = 1 << 1,
-  STRONGEST_FIRST  = 1 << 2
+  ACTION_TYPE_CHOSEN    = 1 << 1,
+  ACTION_INDEX_CHOSEN   = 1 << 2,
+  ACTION_TARGETS_CHOSEN = 1 << 3,
+  SCOPE_ASSIGNED        = 1 << 4,
+  TARGETS_ASSIGNED      = 1 << 5,
+  SELECTION_COMPLETE    = 1 << 6,
+  ADD_TO_RECORD         = 1 << 7
 };
 
 /*
@@ -129,9 +88,15 @@ private:
   std::vector<ActionType> valid_action_types;
   ActionType chosen_action_type;
 
+  /* The scope of the selected action (found and injected by Battle) */
+  ActionScope action_scope;
+
   /* Valid skills and items */
-  std::vector<Skill*> valid_skills;
-  std::vector<Item*>  valid_items;
+  SkillSet* valid_skills;
+  std::vector<std::pair<Item*, uint16_t>>  valid_items;
+  
+  /* Parent of the AI Module */
+  Person* parent;
 
   /* A chosen skill or item */
   int32_t chosen_action_index;
@@ -140,8 +105,11 @@ private:
   Skill* chosen_skill;
   Item* chosen_item;
 
-  /* Remaining and chosen persons */
-  std::vector<Person*> remaining_targets;
+  /* Possible friend and foe targets to choose from */
+  std::vector<Person*> friend_targets;
+  std::vector<Person*> foe_targets;
+
+  /* Vector of chosen targets */
   std::vector<Person*> chosen_targets;
 
   /* A record of the actions this AI module has performed */
@@ -154,6 +122,15 @@ private:
   uint16_t turns_elapsed_battle;
   uint16_t battles_elapsed;
 
+  /* Computed chances for using the various types of actions */
+  float skill_chance;
+  float item_chance;
+  float guard_chance;
+  float defend_chance;
+  float implode_chance;
+  float run_chance;
+  float pass_chance;
+
   /* Running configuration of the game */
   Options* running_config;
 
@@ -163,14 +140,20 @@ private:
   static const uint32_t kMAXIMUM_RECORD_SIZE;
 
   /* ------------ Random AI Modifiers ------------ */
-  static const float kRANDOM_AI_OFF_FACTOR;
-  static const float kRANDOM_AI_DEF_FACTOR;
-  static const AITarget kRANDOM_AI_DEFAULT_TARGET;
+  static const float kRAI_OFF_FACTOR;
+  static const float kRAI_DEF_FACTOR;
+  static const float kRAI_BASE_SKILL_FACTOR;
+  static const float kRAI_BASE_ITEM_FACTOR;
+  static const float kRAI_LEAN_TO_ITEM_FACTOR;
+  static const AITarget kRAI_DEFAULT_TARGET;
 
   /* ------------ Priority AI Modifiers ------------ */
-  static const float kPRIORITY_AI_OFF_FACTOR;
-  static const float kPRIORITY_AI_DEF_FACTOR;
-  static const AITarget kPRIORITY_AI_DEFAULT_TARGET;
+  static const float kPAI_OFF_FACTOR;
+  static const float kPAI_DEF_FACTOR;
+  static const float kPAI_BASE_SKILL_FACTOR;
+  static const float kPAI_BASE_ITEM_FACTOR;
+  static const float kPAI_LEAN_TO_ITEM_FACTOR;
+  static const AITarget kPAI_DEFAULT_TARGET;
 
   /* ------------ Tactical AI Modifiers ------------ */
   // TODO
@@ -182,6 +165,30 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Computes the chances of an AI using the various types of actions */
+  void calculateActionTypeChances();
+
+  /* Evaluates and returns whether any action may take place */
+  bool canSelectAction();
+ 
+  /* Evaluates and returns whether a Skill action is possible */
+  bool canSelectSkill();
+
+  /* Evaluates and returns whether an Item action is possible */
+  bool canSelectItem();
+
+  /* Selects an action for a random-level AI */
+  bool selectRandomAction();
+
+  /* Selects an action for a priority-level AI */
+  bool selectPriorityAction();
+
+  /* Selects an action for a tactical-level AI */
+  bool selectTacticalAction();
+  
+  /* Selects an action for a deep-thought level AI */
+  bool selectDeepThoughtAction();
+
   /* Loads the default parameters of an AI into current object */
   void loadDefaults();
 
@@ -192,19 +199,29 @@ public:
   /* Adds the current action selection to the record */
   bool addActionToRecord();
 
+  /* Given the current data the module has available, computes an action */
+  bool calculateAction();
+
   /* Increment functions */
   void incrementActions();
   void incrementTurns();
   void incrementBattles();
 
+  /* Print out the state of the AI Module */
+  void print(const bool &simple = true, const bool &print_flags = false,
+             const bool &print_record = false);
+
   /* Resets the AI for a new turn */
-  void resetForNewTurn();
+  void resetForNewTurn(Person* const parent = nullptr);
 
   /* Resets the AI for a new battle */
   void resetForNewBattle();
 
+  /* Returns the scope of the selected action (if assigned) */
+  ActionScope getActionScope();
+
   /* Returns the value of a given AIState flag */
-  bool getAIFlag(const AIState &test_flag);
+  bool getFlag(const AIState &test_flag);
 
   /* Returns the selected action type */
   ActionType getActionType();
@@ -218,6 +235,9 @@ public:
   /* Returns the current difficulty of the AI */
   AIDifficulty getDifficulty();
 
+  /* Returns the parent */
+  Person* getParent();
+
   /* Returns the current personality of the AI */
   AIPersonality getPrimPersonality();
   AIPersonality getSecdPersonality();
@@ -226,27 +246,40 @@ public:
   uint16_t getActionsElapsed();
   uint16_t getActionsElapsedTotal();
 
+  /* Chosen selected skills and items */
+  Skill* getSelectedSkill();
+  Item* getSelectedItem();
+
   /* Returns the # of elapsed turns */
   uint16_t getTurnsElapsed();
   uint16_t getTurnsElapsedTotal();
  
   /* Assign a value to a AIState flag */
-  void setAIFlag(AIState flags, const bool &set_value = true);
+  void setFlag(AIState flags, const bool &set_value = true);
+
+  /* Assigns a new action scope */
+  bool setActionScope(const ActionScope &new_action_scope);
 
   /* Assigns the vector of valid action types */
   bool setActionTypes(std::vector<ActionType> new_valid_action_types);
 
   /* Assigns the vector of valid skills */
-  bool setSkills(std::vector<Skill*> new_skills);
+  bool setSkills(SkillSet* const new_skills);
 
   /* Assigns the vector of valid items */
-  bool setItems(std::vector<Item*> new_items);
+  bool setItems(std::vector<std::pair<Item*, uint16_t>> new_items);
 
-  /* Assigns the vector of valid targets */
-  bool setTargets(std::vector<Person*> new_valid_targets);
+  /* Assigns the vector of valid friend targets */
+  bool setFriendTargets(std::vector<Person*> new_valid_targets);
+
+  /* Assigns the vector of valid foe targets */
+  bool setFoeTargets(std::vector<Person*> new_valid_targets);
 
   /* Assigns a new difficulty */
   bool setDifficulty(const AIDifficulty &new_difficulty);
+
+  /* Assigns a parent person */
+  bool setParent(Person* const new_parent);
 
   /* Assigns the primary personality */
   bool setPrimPersonality(const AIPersonality &new_personality);
@@ -256,24 +289,6 @@ public:
 
   /* Assigns a new running config to the AI Module */
   bool setRunningConfig(Options* const new_running_config);
-
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
-public:
-  /* Public static gets for AI difficulty and personality */
-  static AIDifficulty getDefaultDifficulty();
-  static AIPersonality getDefaultPersonality();
-
-  /* Public static gets for Random AI modifier values */  
-  static float getRandomOffFactor();
-  static float getRandomDefFactor();
-  static AITarget getRandomDefaultTarget();
-
-  /* Public static gets for Priority AI modifier values */
-  static float getPriorityOffFactor();
-  static float getPriorityDefFactor();
-  static AITarget getPriorityDefaultTarget();
 };
 
 #endif //AIMODULE_H

@@ -250,6 +250,10 @@ public:
   /* Clears the skills the player has learned */
   void clearLearnedSkills();
 
+  /* Creates an AI module given a difficulty and personalities */
+  bool createAI(const AIDifficulty &diff, const AIPersonality &prim_personality,
+                const AIPersonality &secd_personality);
+
   /* Shorthand function for dealing damage, returns true if the Person KO's */
   bool doDmg(const uint32_t &amount);
 
@@ -263,11 +267,11 @@ public:
   /* Resets the AI module for a new turn */
   bool resetAI();
 
-  /* Updates the AI module based upon the current flags */
-  bool updateAI();
-
   /* Returns a pointer to the AI module */
   AIModule* getAI();
+
+  /* Returns the real % QD value of the maximum QD */
+  uint16_t getQDPercent();
 
   /* Find the true cost for a Skill to the Person's QD */
   int16_t getTrueCost(Skill* test_skill);
@@ -283,8 +287,6 @@ public:
 
   /* Evaluates and returns the state of a given PState flag */
   bool getPFlag(const PState &test_flag);
-
-  uint32_t getSkillCost();
 
   /* Returns a pointer to the assigned base person */
   Person* getBasePerson();
@@ -369,6 +371,9 @@ public:
 
   /* Calculates and determines current useable skills for Battle */
   SkillSet* getUseableSkills();
+
+  /* Returns a vector of valid enumerated action types */
+  std::vector<ActionType> getValidActions();
 
   /* Evaluates and returns a given battle state flag */
   void setBFlag(const BState &flag, const bool &set_value = true);

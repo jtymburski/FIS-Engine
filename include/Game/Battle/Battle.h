@@ -133,6 +133,9 @@ private:
   /* Pairs of unique-ID vs. Ailment pointers for ailments */
   std::vector<std::pair<uint32_t, Ailment*>> ailments;
 
+  /* The current AI Module */
+  AIModule* curr_module;
+
   /* The Battle Info Bar */
   //InfoBar* info_bar;
 
@@ -238,6 +241,9 @@ private:
 
   /* Called when the Battle has been lost */
   void battleLost();
+
+  /* Determines whether the current person has selected all actions */
+  bool canIncrementIndex(Person* check_person);
 
   /* Returns enumeration of party death [None, Friends, Foes, Both] */
   bool checkPartyDeath(Party* const check_party);

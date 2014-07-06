@@ -73,6 +73,54 @@ enum class ActionScope : std::uint16_t
   NO_SCOPE 
 };
 
+/*
+ * Description: Enumerated types of difficulty an AI may have
+ *
+ */
+enum class AIDifficulty
+{
+  RANDOM,       /* Randomly chooses action types, indexes, targets */
+  PRIORITY,     /* Chooses actions based on arbitrary priority values */
+  TACTICAL,     /* Tactically chooses combinations of actions */
+  DEEP_THOUGHT  /* Computes possible actions to determine the best outcome */
+};
+
+/*
+ * Description: Enumerated types of personality an AI may have
+ *
+ */
+enum class AIPersonality
+{
+  MODERATOR,   /* Generic personality type */
+  AGGRESSOR,   /* Focuses on actions damage the opposing team */
+  DEFENDER,    /* Focuses actions on increasing one-self */
+  PROTECTOR,   /* Focuses on actions protecting teammates (including self) */
+  RETALIATOR,  /* Changes priority targeting if hit by a certain enemy */
+  MASOCHISTIC, /* Performs self-destructive behaviour */
+  ANNIHILATOR, /* Attempts to perform the most damage possible, at any cost */
+  RUNNER,      /* Focuses on running or becoming able to run */
+  PASSER,      /* Focuses on doing nothing */
+  NONE         /* No personality type - error */
+};
+
+/*:
+ * Description: Enumerated types of selection for AI
+ *
+ * RANDOM - randomly selects targets until filled for the skill
+ * WEAKEST_HP_FIRST - targets the weakest enemy if atking/ally if healing
+ * STRONGEST_FIRST  - targets the most powerful target first
+ */
+enum class AITarget
+{
+  RANDOM           = 1 << 0,
+  LOWEST_HP_FIRST  = 1 << 1,
+  STRONGEST_FIRST  = 1 << 2
+};
+
+/*:
+ * Description: 
+ *
+ */
 enum class AddStatus : std::uint8_t
 {
   GOOD_DELETE,
@@ -424,34 +472,7 @@ enum class WindowStatus : std::uint8_t
  * CONSTANTS
  *===========================================================================*/
 
-/* scopeToString - converts ActionScope to string 
- const boost::unordered_map<ActionScope, const char*> scopeToString 
-   = map_list_of
-   (ONE_TARGET, "Single Target")
-   (ONE_ENEMY, "Single Enemy")
-   (TWO_ENEMIES, "Two Enemies")
-   (ALL_ENEMIES, "All Enemies")
-   (ONE_ALLY, "Single Ally")
-   (ALL_ALLIES, "All Allies")
-   (ONE_ALLY_KO, "Single Incapacitated Ally")
-   (ALL_ALLIES_KO, "All Incapacitated Allies")
-   (NOT_USER, "Single Target Except User")
-   (ALL_NOT_USER, "Everyone Except User")
-   (NO_SCOPE, "No Target");
-
-actionTypeToString - converts ActionType to string 
-const boost::unordered_map<ActionType, const char*> actionTypeToString
-  = map_list_of
-  (SKILL, "SKILL")
-  (ITEM, "Item")
-  (DEFEND, "Defend")
-  (GUARD, "Guard")
-  (IMPLODE, "Implode")
-  (RUN, "RUN")
-  (PASS, "PASS")
-  (NONE, "NO ACTION TYPE");
-
-actorDeathToString - converts ActorDeath to string 
+/* actorDeathToString - converts ActorDeath to string 
 const boost::unordered_map<ActorDeath, const char*> actorDeathToString
   = map_list_of
   (STANDARD_DMG, "Damage")

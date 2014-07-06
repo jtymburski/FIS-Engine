@@ -98,6 +98,12 @@ public:
   /* Convert enumerated Action Scope to String */
   static std::string actionScopeToStr(const ActionScope &action_scope);
 
+  /* Convert enumerated AI Difficulty to String */
+  static std::string aiDifficultyToStr(const AIDifficulty &ai_difficulty);
+
+  /* Convert enumerated AI Personality to String */
+  static std::string aiPersonalityToStr(const AIPersonality &ai_personality);
+
 /*=============================================================================
  * PLAYER / BATTLE HELPER FUNCTIONS
  *============================================================================*/

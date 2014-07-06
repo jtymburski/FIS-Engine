@@ -303,6 +303,48 @@ std::string Helpers::actionScopeToStr(const ActionScope &action_scope)
   return "";
 }
 
+/* Convert enumerated AI Difficulty to String */
+std::string Helpers::aiDifficultyToStr(const AIDifficulty &ai_difficulty)
+{
+  if (ai_difficulty == AIDifficulty::RANDOM)
+    return "RANDOM";
+  else if (ai_difficulty == AIDifficulty::PRIORITY)
+    return "PRIORITY";
+  else if (ai_difficulty == AIDifficulty::TACTICAL)
+    return "TACTICAL";
+  else if (ai_difficulty == AIDifficulty::DEEP_THOUGHT)
+    return "DEEP_THOUGHT";
+
+  return "";
+}
+
+/* Convert enumerated AI Personality to String */
+std::string Helpers::aiPersonalityToStr(const AIPersonality &ai_personality)
+{
+  if (ai_personality == AIPersonality::MODERATOR)
+    return "MODERATOR";
+  else if (ai_personality == AIPersonality::AGGRESSOR)
+    return "AGGRESSOR";
+  else if (ai_personality == AIPersonality::DEFENDER)
+    return "DEFENDER";
+  else if (ai_personality == AIPersonality::PROTECTOR)
+    return "PROTECTOR";
+  else if (ai_personality == AIPersonality::RETALIATOR)
+    return "RETALIATOR";
+  else if (ai_personality == AIPersonality::MASOCHISTIC)
+    return "MASOCHISTIC";
+  else if (ai_personality == AIPersonality::ANNIHILATOR)
+    return "ANNIHILATOR";
+  else if (ai_personality == AIPersonality::RUNNER)
+    return "RUNNER";
+  else if (ai_personality == AIPersonality::PASSER)
+    return "PASSER";
+  else if (ai_personality == AIPersonality::NONE)
+    return "NONE";
+
+  return "";
+}
+
 /*=============================================================================
  * PLAYER / BATTLE HELPER FUNCTIONS
  *============================================================================*/
