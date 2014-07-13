@@ -67,6 +67,13 @@ bool Helpers::flipCoin()
   return randU(0, 1);
 }
 
+/*
+ * Description: Calculates a random float between a and b (min/max independant)
+ *
+ * Inputs: a - one bound to find a random float for
+ *         b - other bound to find a random float for
+ * Output: float - random float between the two bounds
+ */
 float Helpers::randFloat(const float &a, const float &b)
 {
   auto min = std::min(a, b);

@@ -24,8 +24,15 @@ const AIDifficulty AIModule::kDEFAULT_DIFFICULTY{AIDifficulty::RANDOM};
 const AIPersonality AIModule::kDEFAULT_PERSONALITY{AIPersonality::MODERATOR};
 const uint32_t AIModule::kMAXIMUM_RECORD_SIZE{500};
 
+/* General AI Variance
+ */
+const float AIModule::kGAI_VARIANCE{0.05};
+
 /* Random AI Offensive Factor
  * Random AI Defensive Factor
+ * Random AI Base Skill Factor
+ * Random AI Base Item Factor
+ * Random AI Lean To Item Factor
  * Random AI Default Target 
  */
 const float AIModule::kRAI_OFF_FACTOR{1.35};
@@ -37,6 +44,9 @@ const AITarget AIModule::kRAI_DEFAULT_TARGET{AITarget::RANDOM};
 
 /* Priority AI Offensive Factor
  * Priority AI Defensive Factor
+ * Priority AI Base Skill Factor
+ * Priority AI Base Item Factor
+ * Priority AI Lean To Item Factor
  * Priority AI Default Target 
  */
 const float AIModule::kPAI_OFF_FACTOR{1.35};
@@ -99,34 +109,46 @@ void AIModule::calculateActionTypeChances()
 
   /* Compute the factors for choosing each available action type
    * 
-   * Skill - the more skills the user has, the more lean to using a Skill
-   * Item - the less QD the user has, the more lean to using an Item
+   * Skill - based on the base skill factor
+   * Item  - the less QD the user has, the more lean to using an Item
    */
+  auto qd_percent  = parent->getQDPercent();
 
-  auto qd_percent = parent->getQDPercent();
+  auto skills_size = 0;
 
-  auto total_item_lean_factor = 0;
+  if (valid_skills != nullptr)
+    skills_size = valid_skills->getSize();
 
-  if (difficulty == AIDifficulty::RANDOM)
-  {
-    skill_chance = kRAI_BASE_SKILL_FACTOR;
-    item_chance  = kRAI_BASE_ITEM_FACTOR;
-    total_item_lean_factor = qd_percent * kRAI_LEAN_TO_ITEM_FACTOR;
-  }
-  else if (difficulty == AIDifficulty::PRIORITY)
-  {
-    skill_chance = kPAI_BASE_SKILL_FACTOR;
-    item_chance  = kPAI_BASE_ITEM_FACTOR;
-    total_item_lean_factor = qd_percent * kPAI_LEAN_TO_ITEM_FACTOR;
-  }
-  
   if (can_choose_skill)
   {
+    auto skill_lean_factor = 0;
+
+    if (difficulty == AIDifficulty::RANDOM)
+      skill_lean_factor = kRAI_BASE_SKILL_FACTOR;
+    else if (difficulty == AIDifficulty::PRIORITY)
+      skill_lean_factor = kPAI_BASE_SKILL_FACTOR;
+
+    /* Adjust the skill lean factor and apply to chance to use skill */
+    skill_chance = calcFloatValVariance(skill_lean_factor);
   }
 
   if (can_choose_item)
   {
+    auto item_lean_factor = 0;
 
+    if (difficulty == AIDifficulty::RANDOM)
+    {
+      item_chance  = kRAI_BASE_ITEM_FACTOR;
+      item_lean_factor = qd_percent * kRAI_LEAN_TO_ITEM_FACTOR;
+    }
+    else if (difficulty == AIDifficulty::PRIORITY)
+    {
+      item_chance  = kPAI_BASE_ITEM_FACTOR;
+      item_lean_factor = qd_percent * kPAI_LEAN_TO_ITEM_FACTOR;
+    }
+  
+    /* Adjust item lean factor with variance and apply to item chance */
+    item_chance = calcFloatValVariance(item_lean_factor);
   }
 }
 
@@ -156,7 +178,15 @@ bool AIModule::canSelectAction()
  */
 bool AIModule::canSelectSkill()
 {
-  return !(valid_skills->getSize() == 0);
+  auto found_skill = false;
+
+  for (auto valid_action_type : valid_action_types)
+    found_skill |= (valid_action_type == ActionType::SKILL);
+
+  if (found_skill)
+    return !(valid_skills->getSize() == 0);
+
+  return false;
 }
 
 /*
@@ -167,7 +197,112 @@ bool AIModule::canSelectSkill()
  */
 bool AIModule::canSelectItem()
 {
-  return true;
+  auto found_item = false;
+
+  for (auto valid_action_type : valid_action_types)
+    found_item |= (valid_action_type == ActionType::ITEM);
+
+  if (found_item)
+    return !(valid_items.size() == 0);
+
+  return false;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+bool AIModule::canSelectGuard()
+{
+  auto found_guard = false;
+
+  for (auto valid_action_type : valid_action_types)
+    found_guard |= (valid_action_type == ActionType::GUARD);
+
+  return found_guard;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+bool AIModule::canSelectDefend()
+{
+  auto found_defend = false;
+
+  for (auto valid_action_type : valid_action_types)
+    found_defend |= (valid_action_type == ActionType::DEFEND);
+
+  return found_defend;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+bool AIModule::canSelectImplode()
+{
+  auto found_implode = false;
+
+  for (auto valid_action_type : valid_action_types)
+    found_implode |= (valid_action_type == ActionType::IMPLODE);
+
+  return found_implode;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+bool AIModule::canSelectRun()
+{
+  auto found_run = false;
+
+  for (auto valid_action_type : valid_action_types)
+    found_run |= (valid_action_type == ActionType::RUN);
+
+  return found_run;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+bool AIModule::canSelectPass()
+{
+  auto found_pass = false;
+
+  for (auto valid_action_type : valid_action_types)
+    found_pass |= (valid_action_type == ActionType::PASS);
+
+  return found_pass;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+float AIModule::calcFloatValVariance(const float &base_value)
+{
+  auto min_var = kGAI_VARIANCE;
+  auto max_var = kGAI_VARIANCE;
+
+  if (base_value < min_var)
+    min_var = base_value;
+
+  return Helpers::randFloat(base_value - min_var, base_value + max_var);
 }
 
 /*
@@ -386,9 +521,21 @@ void AIModule::print(const bool &simple, const bool &print_flags,
               << "E. Targets Size: " << foe_targets.size()
               << " C. Targets Size: " << chosen_targets.size()
               << " A.R. Size: " << action_record.size() << "\n";
+
+    std::cout << "Sk. Ch. " << skill_chance << " It. Ch. " << item_chance << "\n"
+                   << " Gr. Ch. " << guard_chance << " Df. Ch. " << defend_chance << "\n"
+                  << " Im. Ch. " << implode_chance << " Rn. Ch. " << run_chance << "\n";
   }
   else
   {
+    std::cout << "Skill Chance:  "  << skill_chance << "\n";
+    std::cout << "Item Chance: "    << item_chance << "\n";
+    std::cout << "Guard Chance: "   << guard_chance << "\n";
+    std::cout << "Defend Chance: "  << defend_chance << "\n";
+    std::cout << "Implode Chance: " << implode_chance << "\n";
+    std::cout << "Run Chance: "     << run_chance << "\n";
+    std::cout << "Pass Chance: "    << pass_chance << "\n";
+
     std::cout << "Difficulty: " << Helpers::aiDifficultyToStr(difficulty);
     std::cout << "\nPrimary Personality: " 
               << Helpers::aiPersonalityToStr(prim_personality) << "\n";

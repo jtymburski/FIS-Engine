@@ -139,6 +139,9 @@ private:
   static const AIPersonality kDEFAULT_PERSONALITY;
   static const uint32_t kMAXIMUM_RECORD_SIZE;
 
+  /* ------------ General AI Modifiers ------------ */
+  static const float kGAI_VARIANCE;
+
   /* ------------ Random AI Modifiers ------------ */
   static const float kRAI_OFF_FACTOR;
   static const float kRAI_DEF_FACTOR;
@@ -176,6 +179,24 @@ private:
 
   /* Evaluates and returns whether an Item action is possible */
   bool canSelectItem();
+
+  /* Evaluates and returns whether a guard action is possible */
+  bool canSelectGuard();
+
+  /* Evaluates and returns whether a defend action is possible */
+  bool canSelectDefend();
+
+  /* Evaluates and returns whether an implode action is possible */
+  bool canSelectImplode();
+
+  /* Evaluates and returns whether a run action is possible */
+  bool canSelectRun();
+
+  /* Evaluates and returns whether a pass action is possible */
+  bool canSelectPass();
+
+  /* Returns a float value between variance - base, variance + base */
+  float calcFloatValVariance(const float &base_value);
 
   /* Selects an action for a random-level AI */
   bool selectRandomAction();
