@@ -104,8 +104,13 @@ AIModule::AIModule(const AIDifficulty &diff,
 void AIModule::calculateActionTypeChances()
 {
   /* First check if Skills or Items can be chosen */
-  auto can_choose_skill = canSelectSkill();
-  auto can_choose_item  = canSelectItem();
+  auto can_choose_skill   = canSelectSkill();
+  auto can_choose_item    = canSelectItem();
+  auto can_choose_defend  = canSelectDefend();
+  auto can_choose_guard   = canSelectGuard();
+  auto can_choose_implode = canSelectImplode();
+  auto can_choose_run     = canSelectRun();
+  auto can_choose_pass    = canSelectPass();
 
   /* Compute the factors for choosing each available action type
    * 
@@ -149,6 +154,31 @@ void AIModule::calculateActionTypeChances()
   
     /* Adjust item lean factor with variance and apply to item chance */
     item_chance = calcFloatValVariance(item_lean_factor);
+  }
+
+  if (can_choose_guard)
+  {
+    //TODO: Guarding selection option for enemies [07-12-14]
+  }
+
+  if (can_choose_defend)
+  {
+    //TODO: Defending selection option for enemies [07-12-14]
+  }
+
+  if (can_choose_implode)
+  {
+    //TODO: Imploding selection option for enemies [07-12-14]
+  }
+
+  if (can_choose_run)
+  {
+    //TODO: Running selection option for enemies [07-12-14]
+  }
+
+  if (can_choose_pass)
+  {
+    //TODO: Passing selection option for enemies [07-12-14]
   }
 }
 
@@ -393,6 +423,14 @@ void AIModule::loadDefaults()
   actions_elapsed_battle = 0;
   turns_elapsed_battle   = 0;
 
+  skill_chance   = 0;
+  item_chance    = 0;
+  guard_chance   = 0;
+  defend_chance  = 0;
+  implode_chance = 0;
+  run_chance     = 0;
+  pass_chance    = 0;
+
   running_config = nullptr;
 }
 
@@ -501,15 +539,26 @@ void AIModule::print(const bool &simple, const bool &print_flags,
 
   if (simple)
   {
+    std::cout << "Parent: ";
+
+    if (parent == nullptr)
+      std::cout << "nullptr \n";
+    else
+      std::cout << parent->getName() << "\n";
+
     std::cout << "D: " << Helpers::aiDifficultyToStr(difficulty) << " PP: " 
               << Helpers::aiPersonalityToStr(prim_personality) << " SP: "
               << Helpers::aiPersonalityToStr(secd_personality) << "\n";
    
-    std::cout << "VAT Size: " << valid_action_types.size() << "Chosen AT: "
+    std::cout << "VAT Size: " << valid_action_types.size() << " Chosen AT: "
               << Helpers::actionTypeToStr(chosen_action_type) << "\n";
-    std::cout << "Sk Size: " << valid_skills->getSize() << " It Size: " 
-              << valid_items.size() << "\n";
-    std::cout << "QD Paid: " << qd_cost_paid << "Action Index: " 
+
+    if (valid_skills != nullptr)
+    {
+      std::cout << "Sk Size: " << valid_skills->getSize() << " It Size: " 
+                << valid_items.size() << "\n";
+    }
+    std::cout << "QD Paid: " << qd_cost_paid << " Action Index: " 
               << chosen_action_index << "\n";
 
     if (chosen_skill != nullptr)
@@ -517,14 +566,15 @@ void AIModule::print(const bool &simple, const bool &print_flags,
     if (chosen_item != nullptr)
       std::cout << "C. Item: " << chosen_item->getName() << "\n";
 
-    std::cout << "A. Targets Size: " << friend_targets.size()
-              << "E. Targets Size: " << foe_targets.size()
-              << " C. Targets Size: " << chosen_targets.size()
-              << " A.R. Size: " << action_record.size() << "\n";
+    std::cout << "A. Targets Size: "  << friend_targets.size()
+              << " E. Targets Size: " << foe_targets.size() << "\n"
+              << "C. Targets Size: " << chosen_targets.size()
+              << " A.R. Size: "       << action_record.size() << "\n";
 
-    std::cout << "Sk. Ch. " << skill_chance << " It. Ch. " << item_chance << "\n"
-                   << " Gr. Ch. " << guard_chance << " Df. Ch. " << defend_chance << "\n"
-                  << " Im. Ch. " << implode_chance << " Rn. Ch. " << run_chance << "\n";
+    std::cout << "Sk. Ch: " << skill_chance << " It. Ch: " << item_chance 
+              << "\n" << "Gr. Ch: " << guard_chance << " Df. Ch: " 
+              << defend_chance << "\n" << "Im. Ch: " << implode_chance 
+              << " Rn. Ch: " << run_chance << "\n";
   }
   else
   {
@@ -659,7 +709,7 @@ void AIModule::print(const bool &simple, const bool &print_flags,
     std::cout << "Action Record Size: " << action_record.size() << std::endl;
   }
 
-  std::cout << " === // AI Module === " << std::endl;
+  std::cout << " === // AI Module ===\n" << std::endl;
 }
 
 /*

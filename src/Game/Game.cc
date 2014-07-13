@@ -501,6 +501,18 @@ void Game::setupBattle()
   foes->addMember(ball_man);
   foes->addMember(thruster_barrow);
 
+  AIModule* cloud_dude_module = new AIModule();
+  cloud_dude_module->setParent(cloud_dude);
+  cloud_dude->setAI(cloud_dude_module);
+
+  AIModule* ball_man_module = new AIModule();
+  ball_man_module->setParent(ball_man);
+  ball_man->setAI(ball_man_module);
+
+  AIModule* thruster_barrow_module = new AIModule();
+  thruster_barrow_module->setParent(thruster_barrow);
+  thruster_barrow->setAI(thruster_barrow_module);
+
   // Inventory Testing
   Inventory* friends_pouch = new Inventory(1006, "Test Friends Pouch");
   Inventory* foes_pouch    = new Inventory(1007, "Test Foes Pouch");

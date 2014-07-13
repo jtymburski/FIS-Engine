@@ -74,6 +74,18 @@ Battle::Battle(Options* running_config, Party* const friends, Party* const foes)
   : friends(friends)
   , foes(foes)
 {
+  if (checkAIModules())
+  {
+#ifdef UDEBUG
+    std::cout << "AI Modules configuration good!" << std::endl;
+#endif
+  }
+  else
+  {
+    std::cerr << "[Error] Crtical Error: AI Moudles for enemies bad!"
+              << std::endl;
+  }
+
   setupClass();
   determineTurnMode();
   loadBattleStateFlags();
@@ -207,6 +219,30 @@ void Battle::battleLost()
 #endif
   setBattleFlag(CombatState::OUTCOME_DONE);
   setNextTurnState();
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Outputs:
+ */
+bool Battle::checkAIModules()
+{
+  auto modules_good = true;
+
+  for (size_t i = 0; i < foes->getSize(); i++)
+  {
+    auto member = foes->getMember(i);
+
+    if (member != nullptr)
+    {
+      modules_good &= (member->getAI() != nullptr);
+      modules_good &= (member == (member->getAI()->getParent()));
+    }
+  }
+
+  return modules_good;
 }
 
 /*

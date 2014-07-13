@@ -1406,6 +1406,17 @@ std::vector<ActionType> Person::getValidActions()
 }
 
 /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+void Person::setAI(AIModule* const new_ai_module)
+{
+  ai_module = new_ai_module;
+}
+
+/*
  * Description: Assigns a given BState flag a given set value
  *
  * Inputs: flag - the BState flag to be assigned a value

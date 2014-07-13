@@ -242,6 +242,9 @@ private:
   /* Called when the Battle has been lost */
   void battleLost();
 
+  /* Asserts all AI modules are set for the enemy parties */
+  bool checkAIModules();
+
   /* Determines whether the current person has selected all actions */
   bool canIncrementIndex(Person* check_person);
 

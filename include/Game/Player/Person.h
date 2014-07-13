@@ -375,6 +375,9 @@ public:
   /* Returns a vector of valid enumerated action types */
   std::vector<ActionType> getValidActions();
 
+  /* Assigns a new AI Module for the person */
+  void setAI(AIModule* const new_ai_module);
+
   /* Evaluates and returns a given battle state flag */
   void setBFlag(const BState &flag, const bool &set_value = true);
 
