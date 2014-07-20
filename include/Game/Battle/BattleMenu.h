@@ -20,7 +20,6 @@
 *      [4: Verification Layer]
 *      -----------------------
 *      All -> Confirm [Y/N]
-*
 *******************************************************************************/
 #ifndef BATTLEMENU_H
 #define BATTLEMENU_H

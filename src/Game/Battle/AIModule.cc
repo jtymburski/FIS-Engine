@@ -38,8 +38,8 @@ const float AIModule::kGAI_VARIANCE{0.05};
 const float AIModule::kRAI_OFF_FACTOR{1.35};
 const float AIModule::kRAI_DEF_FACTOR{1.50};
 const float AIModule::kRAI_BASE_SKILL_FACTOR{0.500};
-const float AIModule::kRAI_BASE_ITEM_FACTOR{0.400};
-const float AIModule::kRAI_LEAN_TO_ITEM_FACTOR{0.001};
+const float AIModule::kRAI_BASE_ITEM_FACTOR{0.200};
+const float AIModule::kRAI_LEAN_TO_ITEM_FACTOR{0.005};
 const AITarget AIModule::kRAI_DEFAULT_TARGET{AITarget::RANDOM};
 
 /* Priority AI Offensive Factor
@@ -52,8 +52,8 @@ const AITarget AIModule::kRAI_DEFAULT_TARGET{AITarget::RANDOM};
 const float AIModule::kPAI_OFF_FACTOR{1.35};
 const float AIModule::kPAI_DEF_FACTOR{1.50};
 const float AIModule::kPAI_BASE_SKILL_FACTOR{0.500};
-const float AIModule::kPAI_BASE_ITEM_FACTOR{0.400};
-const float AIModule::kPAI_LEAN_TO_ITEM_FACTOR{0.007};
+const float AIModule::kPAI_BASE_ITEM_FACTOR{0.420};
+const float AIModule::kPAI_LEAN_TO_ITEM_FACTOR{0.008};
 const AITarget AIModule::kPAI_DEFAULT_TARGET{AITarget::LOWEST_HP_FIRST};
 
 /* Tactical AI //TODO
@@ -118,15 +118,15 @@ void AIModule::calculateActionTypeChances()
    * Item  - the less QD the user has, the more lean to using an Item
    */
   auto qd_percent  = parent->getQDPercent();
-
   auto skills_size = 0;
+  std::vector<std::pair<ActionType, float>> act_typ_chances;
 
   if (valid_skills != nullptr)
     skills_size = valid_skills->getSize();
 
   if (can_choose_skill)
   {
-    auto skill_lean_factor = 0;
+    float skill_lean_factor = 0;
 
     if (difficulty == AIDifficulty::RANDOM)
       skill_lean_factor = kRAI_BASE_SKILL_FACTOR;
@@ -135,25 +135,29 @@ void AIModule::calculateActionTypeChances()
 
     /* Adjust the skill lean factor and apply to chance to use skill */
     skill_chance = calcFloatValVariance(skill_lean_factor);
+    act_typ_chances.push_back(std::make_pair(ActionType::SKILL, skill_chance));
   }
 
   if (can_choose_item)
   {
-    auto item_lean_factor = 0;
+    float item_lean_factor = 0;
 
     if (difficulty == AIDifficulty::RANDOM)
     {
-      item_chance  = kRAI_BASE_ITEM_FACTOR;
-      item_lean_factor = qd_percent * kRAI_LEAN_TO_ITEM_FACTOR;
+      item_lean_factor  = AIModule::kRAI_BASE_ITEM_FACTOR;
+      item_lean_factor += (100 - qd_percent) * kRAI_LEAN_TO_ITEM_FACTOR;
+      item_chance       = item_lean_factor;
     }
     else if (difficulty == AIDifficulty::PRIORITY)
     {
-      item_chance  = kPAI_BASE_ITEM_FACTOR;
-      item_lean_factor = qd_percent * kPAI_LEAN_TO_ITEM_FACTOR;
+      item_lean_factor  = kPAI_BASE_ITEM_FACTOR;
+      item_lean_factor += (100 - qd_percent) * kPAI_LEAN_TO_ITEM_FACTOR;
+      item_chance       = item_lean_factor;
     }
   
     /* Adjust item lean factor with variance and apply to item chance */
     item_chance = calcFloatValVariance(item_lean_factor);
+    act_typ_chances.push_back(std::make_pair(ActionType::ITEM, item_chance));
   }
 
   if (can_choose_guard)
@@ -175,11 +179,24 @@ void AIModule::calculateActionTypeChances()
   {
     //TODO: Running selection option for enemies [07-12-14]
   }
+  
 
   if (can_choose_pass)
   {
     //TODO: Passing selection option for enemies [07-12-14]
   }
+
+  /* Build a normalized distributino of the calculated action type chances,
+   * and randomly select a an action type based on the probability weights */
+  auto it_big = begin(act_typ_chances);
+  auto it_end = end(act_typ_chances);
+  auto ra_flt = Helpers::randFloat(0, 1);
+
+  Helpers::normalizePair(it_big, it_end);
+  auto it = Helpers::selectNormalizedPair(ra_flt, it_big, it_end);
+
+  /*  Assign the chosen action type */
+  chosen_action_type = (*it).first;
 }
 
 /*
@@ -343,6 +360,8 @@ float AIModule::calcFloatValVariance(const float &base_value)
  */
 bool AIModule::selectRandomAction()
 {
+  /* Choose between the action type based on calculated action type chances */
+  std::vector<float> act_typ_chances;
 
   return false;
 }
@@ -422,6 +441,7 @@ void AIModule::loadDefaults()
   turns_elapsed_total    = 0;
   actions_elapsed_battle = 0;
   turns_elapsed_battle   = 0;
+  battles_elapsed        = 0;
 
   skill_chance   = 0;
   item_chance    = 0;
@@ -475,6 +495,8 @@ bool AIModule::addActionToRecord()
 bool AIModule::calculateAction()
 {
   auto action_selected = false;
+
+  calculateActionTypeChances();
 
   if (canSelectAction())
   {
@@ -704,11 +726,7 @@ void AIModule::print(const bool &simple, const bool &print_flags,
     }
 
   }
-  else
-  {
-    std::cout << "Action Record Size: " << action_record.size() << std::endl;
-  }
-
+  
   std::cout << " === // AI Module ===\n" << std::endl;
 }
 

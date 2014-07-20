@@ -583,6 +583,7 @@ void Battle::selectEnemyActions()
         /* Reset the AI Module for a new turn decision, assign data */
         curr_person->resetAI();
         curr_module->setItems(foes->getInventory()->getBattleItems());
+
       }
     }
     else if (person_user->getBFlag(BState::SKIP_NEXT_TURN))
@@ -1084,6 +1085,7 @@ void Battle::printAll(const bool &simple, const bool &flags, const bool &party)
 
   std::cout << "==== / Battle ====\n\n";
 }
+
 
 void Battle::printPartyState()
 {

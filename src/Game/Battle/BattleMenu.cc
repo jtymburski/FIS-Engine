@@ -23,7 +23,9 @@
  *============================================================================*/
 
 /*
- * Description:
+ * Description: BattleMenu general constructor. Constructs a new BattleMenu
+ *              object with default settings given a pointer to the current
+ *              options configuration.
  *
  * Inputs:
  */
