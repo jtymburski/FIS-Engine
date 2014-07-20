@@ -583,7 +583,7 @@ void Battle::selectEnemyActions()
         /* Reset the AI Module for a new turn decision, assign data */
         curr_person->resetAI();
         curr_module->setItems(foes->getInventory()->getBattleItems());
-
+        curr_module->calculateAction();
       }
     }
     else if (person_user->getBFlag(BState::SKIP_NEXT_TURN))
@@ -1244,7 +1244,7 @@ bool Battle::update(int32_t cycle_time)
 
     if (curr_module != nullptr) 
     {     
-      if ((curr_module->getFlag(AIState::ACTION_TYPE_CHOSEN) ||
+      if ((curr_module->getFlag(AIState::ACTION_INDEX_CHOSEN) ||
            curr_module->getActionType() == ActionType::DEFEND ||
            curr_module->getActionType() == ActionType::GUARD ||
            curr_module->getActionType() == ActionType::IMPLODE) &&
@@ -1288,21 +1288,11 @@ bool Battle::update(int32_t cycle_time)
             foes_persons.push_back(getPerson(target));
         }
 
-        if (curr_module->setFriendTargets(friends_persons) &&
-            curr_module->setFoeTargets(foes_persons))
-        {
-          curr_module->setFlag(AIState::TARGETS_ASSIGNED, true);
-
-          if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
-          {
-            std::cout << "[Error]: Enemy chose skill with no targets! "
-                      << std::endl;
-          }         
-        }
-        else
-        {
-          curr_module->setActionScope(scope);
-        }
+        curr_module->setActionScope(scope);
+        curr_module->setFriendTargets(friends_persons);
+        curr_module->setFoeTargets(foes_persons);
+        curr_module->setFlag(AIState::TARGETS_ASSIGNED, true);
+        curr_module->print();
       }
     }
   }

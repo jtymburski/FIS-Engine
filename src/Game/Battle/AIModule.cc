@@ -111,7 +111,7 @@ void AIModule::calculateActionTypeChances()
   auto can_choose_implode = canSelectImplode();
   auto can_choose_run     = canSelectRun();
   auto can_choose_pass    = canSelectPass();
-
+ 
   /* Compute the factors for choosing each available action type
    * 
    * Skill - based on the base skill factor
@@ -123,7 +123,7 @@ void AIModule::calculateActionTypeChances()
 
   if (valid_skills != nullptr)
     skills_size = valid_skills->getSize();
-
+  
   if (can_choose_skill)
   {
     float skill_lean_factor = 0;
@@ -180,23 +180,33 @@ void AIModule::calculateActionTypeChances()
     //TODO: Running selection option for enemies [07-12-14]
   }
   
-
   if (can_choose_pass)
   {
     //TODO: Passing selection option for enemies [07-12-14]
   }
 
-  /* Build a normalized distributino of the calculated action type chances,
-   * and randomly select a an action type based on the probability weights */
-  auto it_big = begin(act_typ_chances);
-  auto it_end = end(act_typ_chances);
-  auto ra_flt = Helpers::randFloat(0, 1);
+  if (act_typ_chances.size() > 0)
+  {
+    /* Build a normalized distributino of the calculated action type chances,
+     * and randomly select a an action type based on the probability weights */
+    auto it_beg = begin(act_typ_chances);
+    auto it_end = end(act_typ_chances);
+    auto ra_flt = Helpers::randFloat(0, 1);
 
-  Helpers::normalizePair(it_big, it_end);
-  auto it = Helpers::selectNormalizedPair(ra_flt, it_big, it_end);
+    Helpers::normalizePair(it_beg, it_end);
+    auto it = Helpers::selectNormalizedPair(ra_flt, it_beg, it_end);
 
-  /*  Assign the chosen action type */
-  chosen_action_type = (*it).first;
+    /*  Assign the chosen action type */
+    chosen_action_type = (*it).first;
+    }
+  else
+  {
+#ifdef UDEBUG
+    std::cout << "[Warning] Enemy has no valid action types available." << std::endl;
+#endif
+  }
+
+  setFlag(AIState::ACTION_TYPE_CHOSEN, true);
 }
 
 /*
@@ -360,10 +370,58 @@ float AIModule::calcFloatValVariance(const float &base_value)
  */
 bool AIModule::selectRandomAction()
 {
-  /* Choose between the action type based on calculated action type chances */
-  std::vector<float> act_typ_chances;
+  auto action_index_selected = false;
 
-  return false;
+  /* Randomly select possible actions based on the selected action type */
+  if (chosen_action_type == ActionType::SKILL)
+  {
+    auto skills_size = valid_skills->getSize();
+    auto rand_value = Helpers::randU(1, skills_size);
+  
+    chosen_skill = valid_skills->getElement(rand_value - 1).skill;
+    chosen_action_index = rand_value;
+    action_index_selected = true;
+  }
+  else if (chosen_action_type == ActionType::ITEM)
+  {
+    auto items_size = valid_items.size();
+    auto rand_value = Helpers::randU(1, items_size);
+
+    chosen_item = valid_items.at(rand_value - 1).first;
+    chosen_action_index = rand_value;
+    action_index_selected = true;
+  }
+  else if (chosen_action_type == ActionType::GUARD)
+  {
+    //TODO: Action index selection [07-20-14]
+  }
+  else if (chosen_action_type == ActionType::DEFEND)
+  {
+    //TODO: Action index selection [07-20-14]
+  }
+  else if (chosen_action_type == ActionType::IMPLODE)
+  {
+    //TODO: Action index selection [07-20-14]
+  }
+  else if (chosen_action_type == ActionType::RUN)
+  {
+    //TODO: Action index selection [07-20-14]
+  }
+  else if (chosen_action_type == ActionType::PASS)
+  {
+    //TODO: Action index selection [07-20-14]
+  }
+  else
+  {
+#ifdef UDEBUG
+    std::cout << "[Error]: Invalid Action type chosen by enemy." << std::endl;
+#endif
+  }
+
+  if (action_index_selected)
+    setFlag(AIState::ACTION_INDEX_CHOSEN, true);
+
+  return action_index_selected;
 }
 
 /*
@@ -374,7 +432,56 @@ bool AIModule::selectRandomAction()
  */
 bool AIModule::selectPriorityAction()
 {
-  return false;
+  auto action_index_selected = false;
+
+  /* Randomly select possible actions based on the selected action type */
+  if (chosen_action_type == ActionType::SKILL)
+  {
+    //auto skill_elements = valid_skills->getElements(parent->getLevel());
+
+
+
+
+
+    action_index_selected = true;
+  }
+  else if (chosen_action_type == ActionType::ITEM)
+  {
+
+
+    action_index_selected = true;
+  }
+  else if (chosen_action_type == ActionType::GUARD)
+  {
+    //TODO: Action index selection [07-20-14]
+  }
+  else if (chosen_action_type == ActionType::DEFEND)
+  {
+    //TODO: Action index selection [07-20-14]
+  }
+  else if (chosen_action_type == ActionType::IMPLODE)
+  {
+    //TODO: Action index selection [07-20-14]
+  }
+  else if (chosen_action_type == ActionType::RUN)
+  {
+    //TODO: Action index selection [07-20-14]
+  }
+  else if (chosen_action_type == ActionType::PASS)
+  {
+    //TODO: Action index selection [07-20-14]
+  }
+  else
+  {
+#ifdef UDEBUG
+    std::cout << "[Error]: Invalid Action type chosen by enemy." << std::endl;
+#endif
+  }
+
+  if (action_index_selected)
+    setFlag(AIState::ACTION_INDEX_CHOSEN, true);
+
+  return action_index_selected;
 }
 
 /*
@@ -1041,7 +1148,7 @@ bool AIModule::setFriendTargets(std::vector<Person*> new_valid_targets)
 {
   friend_targets = new_valid_targets;
 
-  return !(friend_targets.size() == 0);
+  return true;
 }
 
 /*
@@ -1054,7 +1161,7 @@ bool AIModule::setFoeTargets(std::vector<Person*> new_valid_targets)
 {
   foe_targets = new_valid_targets;
 
-  return !(foe_targets.size() == 0);
+  return true;
 }
 
 /*

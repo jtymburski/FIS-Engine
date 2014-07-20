@@ -17,6 +17,7 @@
 
 #include "EnumDb.h"
 #include "Game/Battle/AIModule.h"
+#include "Game/Player/Person.h"
 
 #include <iostream>
 #include <vector>
@@ -48,7 +49,8 @@ private:
  *============================================================================*/
 public:
   /* Runs tests on calculating the determination of action type choices */
-  bool aiActionTypeTests(const uint32_t &num_times, AIModule* const module);
+  bool aiActionTypeTests(const uint32_t &num_times, AIModule* const module,
+                         std::vector<std::pair<Item*, uint16_t> > valid_items);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
