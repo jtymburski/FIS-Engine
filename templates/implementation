@@ -1,9 +1,8 @@
 /*******************************************************************************
-* Class Name: AI Module [Implementation]
+* Class Name: ClassName [Implementation]
 * Date Created: June 22, 2014
 * Inheritance: None
-* Description: The AI Module is an object describing the difficulty and 
-*              personality for enemy decision making in Battle.
+* Description: 
 *
 * Notes
 * -----
@@ -26,6 +25,10 @@
  *
  * Inputs:
  */
+ ClassName::ClassName()
+ {
+ 
+ }
 
 /*
  * Description:

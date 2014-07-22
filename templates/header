@@ -1,9 +1,8 @@
 /*******************************************************************************
-* Class Name: AI Module [Declaration]
+* Class Name: ClassName [Declaration]
 * Date Created: June 22, 2014
 * Inheritance: None
-* Description: The AI Module is an object describing the difficulty and 
-*              personality for enemy decision making in Battle.
+* Description: 
 *
 * Notes
 * -----
@@ -14,54 +13,47 @@
 * ----
 *******************************************************************************/
 
-#ifndef AIMODULE_H
-#define AIMODULE_H
+#ifndef CLASSNAME_H
+#define CLASSNAME_H
 
-#include "EnumFlags.h"
-#include "EnumDb.h"
-
-ENUM_FLAGS(AIState)
+class ClassName
 {
-  
-};
+public:
 
-enum class AIDifficulty
-{
-  RANDOM,
-  PRIORITY,
-  TACTICAL,
-  DEEP_THOUGHT
-};
-
-enum class AIPersonality
-{
-  
-}
+private:
 
   /* ------------ Constants --------------- */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
+private:
 
 /*=============================================================================
  * VIRTUAL FUNCTIONS
  *============================================================================*/
+public:
 
 /*=============================================================================
  * PROTECTED FUNCTIONS
  *============================================================================*/
+protected:
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
+public:
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
+public:
 
 /*============================================================================
  * OPERATOR FUNCTIONS
  *===========================================================================*/
+public:
 
-#endif //AIMODULE_H
+};
+
+#endif //CLASSNAME_H

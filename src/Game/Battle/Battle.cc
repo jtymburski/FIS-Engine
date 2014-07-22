@@ -492,13 +492,12 @@ void Battle::recalculateAilments(Person* const target)
 /* Calculates enemy actions and add them to the buffer */
 void Battle::selectEnemyActions()
 {
-#ifdef UDEBUG
-  std::cout << "Selecting Enemy Actions: " << person_index << std::endl;
-#endif 
-
   if (person_index < 0 && curr_module != nullptr &&
       curr_module->getFlag(AIState::SELECTION_COMPLETE))
   {
+    #ifdef UDEBUG
+  std::cout << "Attempting to Add Enemy Actions: " << person_index << std::endl;
+#endif 
     auto buffer_addition = false;
 
     auto person_user     = getPerson(person_index);
@@ -1232,7 +1231,6 @@ bool Battle::update(int32_t cycle_time)
         {
           menu->setActionScope(scope);
           menu->setMenuFlag(BattleMenuState::SCOPE_ASSIGNED);
-
           menu->printMenuState();
         }
       }
@@ -1240,10 +1238,10 @@ bool Battle::update(int32_t cycle_time)
   }
   else if (turn_state == TurnState::SELECT_ACTION_ENEMY)
   {
-    ActionType action_type = ActionType::NONE;
-
     if (curr_module != nullptr) 
-    {     
+    {
+      auto action_type = curr_module->getActionType();
+
       if ((curr_module->getFlag(AIState::ACTION_INDEX_CHOSEN) ||
            curr_module->getActionType() == ActionType::DEFEND ||
            curr_module->getActionType() == ActionType::GUARD ||
@@ -1292,7 +1290,12 @@ bool Battle::update(int32_t cycle_time)
         curr_module->setFriendTargets(friends_persons);
         curr_module->setFoeTargets(foes_persons);
         curr_module->setFlag(AIState::TARGETS_ASSIGNED, true);
-        curr_module->print();
+        curr_module->calculateTargets();
+      }
+      else if (curr_module->getFlag(AIState::SELECTION_COMPLETE))
+      {
+        /* Set to the next enemy selection or finish enemy selections */
+        selectEnemyActions();
       }
     }
   }

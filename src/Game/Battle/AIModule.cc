@@ -114,12 +114,32 @@ AIModule::AIModule(const AIDifficulty &diff,
  *============================================================================*/
 
 /*
- * Description:
+ * Description: Adds a random target from a given vector of available targets
+ *              to the chosen target vector and returns a ptr to the chosen
+ *              target
  *
- * Inputs:
- * Output:
+ * Inputs: std::vector<Person*> available_targets
+ * Output: Person* - the chosen target which was added
  */
-/* Constructs a uniform probability distributon from Skills */
+Person* AIModule::addRandomTarget(std::vector<Person*> available_targets)
+{
+  auto rand_value = Helpers::randU(1, available_targets.size());
+  auto target = available_targets.at(rand_value - 1);
+
+  if (target != nullptr)
+    chosen_targets.push_back(target);
+
+  return target;
+}
+
+/*
+ * Description: Constructs a uniformd distribution between valid skill choices
+ *              and their probabilities based on the arbitrary value level of
+ *              the skill.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void AIModule::buildUniformSkills()
 {
   auto skill_elements = valid_skills->getElements(Person::getNumLevels());
@@ -279,7 +299,7 @@ void AIModule::calculateActionTypeChances()
 
     /*  Assign the chosen action type */
     chosen_action_type = (*it).first;
-    }
+  }
   else
   {
 #ifdef UDEBUG
@@ -511,6 +531,118 @@ bool AIModule::selectRandomAction()
  * Inputs:
  * Output:
  */
+bool AIModule::selectRandomTargets()
+{
+  auto successful = false;
+  Person* target_ptr  = nullptr;
+
+  if (action_scope == ActionScope::ONE_ENEMY)
+  {
+    target_ptr = addRandomTarget(foe_targets);
+  }
+  else if (action_scope == ActionScope::ONE_ALLY || 
+           action_scope == ActionScope::ONE_ALLY_NOT_USER ||
+           action_scope == ActionScope::ONE_ALLY_KO)
+  {
+    target_ptr = addRandomTarget(friend_targets);
+  }
+  else if (action_scope == ActionScope::ONE_TARGET ||
+           action_scope == ActionScope::NOT_USER)
+  {
+    auto temp_vector = foe_targets;
+    temp_vector.insert(end(temp_vector), begin(foe_targets), end(foe_targets));
+    target_ptr = addRandomTarget(temp_vector);
+  }
+
+  if (target_ptr != nullptr)
+    successful = true;
+
+  if (!successful)
+  {
+    if (action_scope == ActionScope::USER)
+    {
+      chosen_targets.push_back(parent);
+      successful = true;
+    }
+    else if (action_scope == ActionScope::TWO_ENEMIES)
+    {
+      target_ptr = addRandomTarget(foe_targets);
+      
+      if (target_ptr != nullptr)
+      {
+        for (size_t i = 0; i < foe_targets.size(); i++)
+          if (foe_targets.at(i) == target_ptr)
+            foe_targets.erase(begin(foe_targets) + i);
+        
+        if (foe_targets.size() > 0)
+          target_ptr = addRandomTarget(foe_targets);
+      } 
+    }
+    else if (action_scope == ActionScope::TWO_ALLIES)
+    {
+      target_ptr = addRandomTarget(friend_targets);
+
+      if (target_ptr != nullptr)
+      {
+        for (size_t i = 0; i < friend_targets.size(); i++)
+          if (friend_targets.at(i) == target_ptr)
+            friend_targets.erase(begin(friend_targets) + i);
+
+        if (friend_targets.size() > 0)
+          target_ptr = addRandomTarget(friend_targets);
+      }
+    }
+
+    if (target_ptr != nullptr)
+      successful = true;
+  }
+
+  if (!successful)
+  {
+    if (action_scope == ActionScope::ALL_ALLIES ||
+        action_scope == ActionScope::ALL_ALLIES_KO)
+    {
+      chosen_targets = friend_targets;
+      successful = true;
+    }
+    else if (action_scope == ActionScope::ALL_ENEMIES)
+    {
+      chosen_targets = foe_targets;
+      successful = true;
+    }
+    else if (action_scope == ActionScope::ALL_TARGETS ||
+             action_scope == ActionScope::ALL_NOT_USER)
+    {
+      chosen_targets = friend_targets;
+      chosen_targets.insert(end(chosen_targets), begin(foe_targets), 
+                            end(foe_targets));
+      successful = true;
+    }
+    else if (action_scope == ActionScope::ONE_PARTY)
+    {
+      auto rand_bool = Helpers::flipCoin();
+      chosen_targets = foe_targets;
+
+      if (rand_bool)
+        chosen_targets = friend_targets;
+    }
+  }
+
+  if (successful)
+  {
+    setFlag(AIState::ACTION_TARGETS_CHOSEN, true);
+    setFlag(AIState::SELECTION_COMPLETE, true);
+  }
+
+  return successful;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 bool AIModule::selectPriorityAction()
 {
   auto action_index_selected = false;
@@ -569,6 +701,17 @@ bool AIModule::selectPriorityAction()
  * Inputs:
  * Output:
  */
+bool AIModule::selectPriorityTargets()
+{
+  return true;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 bool AIModule::selectTacticalAction()
 {
   return false;
@@ -580,7 +723,29 @@ bool AIModule::selectTacticalAction()
  * Inputs:
  * Output:
  */
+bool AIModule::selectTacticalTargets()
+{
+  return false;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 bool AIModule::selectDeepThoughtAction()
+{
+  return false;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+bool AIModule::selectDeepThoughtTargets()
 {
   return false;
 }
@@ -644,8 +809,17 @@ void AIModule::loadDefaults()
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 bool AIModule::addActionToRecord()
 {
+  if (!getFlag(AIState::ADD_TO_RECORD))
+    return true;
+
   if (action_record.size() < static_cast<uint32_t>(kMAXIMUM_RECORD_SIZE))
   {
     bool valid_action = true;
@@ -678,6 +852,12 @@ bool AIModule::addActionToRecord()
   return false;
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 bool AIModule::calculateAction()
 {
   auto action_selected = false;
@@ -697,6 +877,28 @@ bool AIModule::calculateAction()
   }
 
   return action_selected;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+bool AIModule::calculateTargets()
+{
+  auto targets_selected = false;
+
+  if (difficulty == AIDifficulty::RANDOM)
+    targets_selected = selectRandomTargets();
+  else if (difficulty == AIDifficulty::PRIORITY)
+    targets_selected = selectPriorityTargets();
+  else if (difficulty == AIDifficulty::TACTICAL)
+    targets_selected = selectTacticalTargets();
+  else if (difficulty == AIDifficulty::DEEP_THOUGHT)
+    targets_selected = selectDeepThoughtTargets();
+
+  return targets_selected;
 }
 
 /*
@@ -931,8 +1133,8 @@ void AIModule::resetForNewTurn(Person* const parent)
   setFlag(AIState::TARGETS_ASSIGNED, false);
   setFlag(AIState::SELECTION_COMPLETE, false);
 
-  chosen_action_type   = ActionType::NONE;
-  action_scope = ActionScope::NO_SCOPE;
+  chosen_action_type = ActionType::NONE;
+  action_scope       = ActionScope::NO_SCOPE;
 
   valid_skills = nullptr;
 

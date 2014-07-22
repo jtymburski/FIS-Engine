@@ -171,6 +171,9 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Adds a random enemy target to the chosen targets */
+  Person* addRandomTarget(std::vector<Person*> available_targets);
+
   /* Constructs a uniform probability distributon for Skills */
   void buildUniformSkills();
 
@@ -210,14 +213,26 @@ private:
   /* Selects an action for a random-level AI */
   bool selectRandomAction();
 
+  /* Selects action targets for the current selected action for random AI */
+  bool selectRandomTargets();
+
   /* Selects an action for a priority-level AI */
   bool selectPriorityAction();
 
+  /* Selects targets for the current selected action for Priority level AI */
+  bool selectPriorityTargets();
+
   /* Selects an action for a tactical-level AI */
   bool selectTacticalAction();
+
+  /* Selects action targets for current action for tactical level AI */
+  bool selectTacticalTargets();
   
   /* Selects an action for a deep-thought level AI */
   bool selectDeepThoughtAction();
+
+  /* Selects action targets for current action for deep-thought level AI */
+  bool selectDeepThoughtTargets();
 
   /* Loads the default parameters of an AI into current object */
   void loadDefaults();
@@ -231,6 +246,7 @@ public:
 
   /* Given the current data the module has available, computes an action */
   bool calculateAction();
+  bool calculateTargets();
 
   /* Increment functions */
   void incrementActions();
