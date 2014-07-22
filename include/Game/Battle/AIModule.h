@@ -94,6 +94,10 @@ private:
   SkillSet* valid_skills;
   std::vector<std::pair<Item*, uint16_t>>  valid_items;
   
+  /* Probability distribution of skill and item possibilities */
+  std::vector<std::pair<Skill*, uint32_t>> skill_probabilities;
+  std::vector<std::pair<Item*, uint32_t>>   item_probabilities;
+
   /* Parent of the AI Module */
   Person* parent;
 
@@ -167,6 +171,12 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Constructs a uniform probability distributon from Skills */
+  void buildUniformSkills();
+
+  /* Constructs a uniform probability distribution from Items */
+  bool buildUniformItems();
+
   /* Computes the chances of an AI using the various types of actions */
   void calculateActionTypeChances();
 

@@ -80,6 +80,12 @@ AIModule::AIModule()
   loadDefaults();
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 AIModule::AIModule(const AIDifficulty &diff,
                    const AIPersonality &prim_personality)
 {
@@ -89,6 +95,12 @@ AIModule::AIModule(const AIDifficulty &diff,
   this->prim_personality = prim_personality;
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 AIModule::AIModule(const AIDifficulty &diff, 
                    const AIPersonality &prim_personality,
                    const AIPersonality &secd_personality)
@@ -101,6 +113,75 @@ AIModule::AIModule(const AIDifficulty &diff,
  * PRIVATE FUNCTIONS
  *============================================================================*/
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+/* Constructs a uniform probability distributon from Skills */
+void AIModule::buildUniformSkills()
+{
+  auto skill_elements = valid_skills->getElements(Person::getNumLevels());
+
+  for (auto element : skill_elements)
+  {
+    auto skill_pair = std::make_pair(element.skill, element.skill->getValue());
+    skill_probabilities.push_back(skill_pair);
+  }
+
+  Helpers::normalizePair(begin(skill_probabilities), end(skill_probabilities)); 
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+/* Constructs a uniform probability distribution from Items */
+bool AIModule::buildUniformItems()
+{
+  auto error_occured = false;
+
+  for (auto item_element : valid_items)
+  {
+    auto item_ptr = item_element.first;
+
+    if (item_ptr != nullptr)
+    {
+      auto item_skill = item_ptr->getUseSkill();
+
+      if (item_skill != nullptr)
+      {
+        auto item_prob = item_element.first->getUseSkill()->getValue();  
+        item_probabilities.push_back(std::make_pair(item_ptr, item_prob));
+      }
+      else
+      {
+        std::cerr << "[Error]: Null skill use for item ptr" << std::endl;
+        error_occured = true;
+      }
+    }
+    else
+    {
+      std::cerr << "[Error]: Null item ptr" << std::endl;
+      error_occured = true;
+    }
+  }
+  
+  if (!error_occured)
+    Helpers::normalizePair(begin(item_probabilities), end(item_probabilities));
+
+  return error_occured;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 void AIModule::calculateActionTypeChances()
 {
   /* First check if Skills or Items can be chosen */
@@ -437,17 +518,15 @@ bool AIModule::selectPriorityAction()
   /* Randomly select possible actions based on the selected action type */
   if (chosen_action_type == ActionType::SKILL)
   {
-    //auto skill_elements = valid_skills->getElements(parent->getLevel());
+    buildUniformSkills();
 
-
-
-
-
+    auto skill_elements = valid_skills->getElements(parent->getLevel());
+    
     action_index_selected = true;
   }
   else if (chosen_action_type == ActionType::ITEM)
   {
-
+    buildUniformItems();
 
     action_index_selected = true;
   }
@@ -864,6 +943,8 @@ void AIModule::resetForNewTurn(Person* const parent)
   chosen_skill        = nullptr;
   chosen_item         = nullptr;
 
+  skill_probabilities.clear();
+  item_probabilities.clear();
   friend_targets.clear();
   foe_targets.clear();
   chosen_targets.clear();
