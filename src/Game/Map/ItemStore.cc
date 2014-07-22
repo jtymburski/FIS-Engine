@@ -304,7 +304,7 @@ void ItemStore::setupMainView(SDL_Renderer* renderer, std::string title)
 
 void ItemStore::setupSecondaryView(SDL_Renderer* renderer)
 {
-
+  (void)renderer;//WARNING
 }
 
 /*=============================================================================
@@ -415,10 +415,12 @@ bool ItemStore::initDisplay(StoreMode mode, std::vector<Item*> items,
   {
     //if(item != NULL)
     //  delete item;
-    item = NULL;
+
+    // item = NULL; //WARNING [REMOVE WHEN USING DELETE]
   }
   
   // return success;
+  return true; //WARNING
 }
 
 /* Returns if the item store is currently active */

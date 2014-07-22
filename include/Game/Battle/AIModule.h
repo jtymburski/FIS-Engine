@@ -171,10 +171,10 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
-  /* Constructs a uniform probability distributon from Skills */
+  /* Constructs a uniform probability distributon for Skills */
   void buildUniformSkills();
 
-  /* Constructs a uniform probability distribution from Items */
+  /* Constructs a uniform probability distribution for Items */
   bool buildUniformItems();
 
   /* Computes the chances of an AI using the various types of actions */

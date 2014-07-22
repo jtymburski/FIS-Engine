@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Class Name: BattleMenu [Declaration]
+* ClassBattle Name: Menu [Declaration]
 * Date Created: April 13th, 2018
 * Inheritance: None
 * Description: 

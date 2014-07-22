@@ -199,11 +199,11 @@ void AIModule::calculateActionTypeChances()
    * Item  - the less QD the user has, the more lean to using an Item
    */
   auto qd_percent  = parent->getQDPercent();
-  auto skills_size = 0;
+  // auto skills_size = 0;
   std::vector<std::pair<ActionType, float>> act_typ_chances;
 
-  if (valid_skills != nullptr)
-    skills_size = valid_skills->getSize();
+  // if (valid_skills != nullptr)
+  //   skills_size = valid_skills->getSize();
   
   if (can_choose_skill)
   {

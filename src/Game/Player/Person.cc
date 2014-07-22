@@ -284,6 +284,8 @@ void Person::unsetAll(const bool &clear)
               equipment_index == getEquip(EquipSlots::RARM)))
           delete equipment_index;  
       }
+
+      equipment_index = nullptr;
     }
 
     /* Delete the skills sets */
@@ -302,9 +304,6 @@ void Person::unsetAll(const bool &clear)
   curr_skills    = nullptr;
   learned_skills = nullptr;
   temp_skills    = nullptr;
-
-  for (auto equipment_index : equipments)
-    equipment_index = nullptr;
 }
 
 /*
