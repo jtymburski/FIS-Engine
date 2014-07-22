@@ -144,6 +144,11 @@ private:
 
   /* ------------ General AI Modifiers ------------ */
   static const float kGAI_VARIANCE;
+  static const float kGAI_BASE_GUARD_FACTOR;
+  static const float kGAI_BASE_IMPLODE_FACTOR;
+  static const float kGAI_BASE_DEFEND_FACTOR;
+  static const float kGAI_BASE_RUN_FACTOR;
+  static const float kGAI_BASE_PASS_FACTOR;
 
   /* ------------ Random AI Modifiers ------------ */
   static const float kRAI_OFF_FACTOR;
@@ -191,21 +196,6 @@ private:
 
   /* Evaluates and returns whether an Item action is possible */
   bool canSelectItem();
-
-  /* Evaluates and returns whether a guard action is possible */
-  bool canSelectGuard();
-
-  /* Evaluates and returns whether a defend action is possible */
-  bool canSelectDefend();
-
-  /* Evaluates and returns whether an implode action is possible */
-  bool canSelectImplode();
-
-  /* Evaluates and returns whether a run action is possible */
-  bool canSelectRun();
-
-  /* Evaluates and returns whether a pass action is possible */
-  bool canSelectPass();
 
   /* Returns a float value between variance - base, variance + base */
   float calcFloatValVariance(const float &base_value);

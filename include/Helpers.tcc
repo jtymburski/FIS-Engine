@@ -232,6 +232,26 @@ struct value_less
  *============================================================================*/
 
 /*
+ * Description: Enum Vector Search : Searches for a given enumerated value in a
+ *              given vector of the same enumerated type. Outputs true if found
+ *
+ * Inputs: enum_to_find - the enumerated value of type T to look for
+ *         enumerated_vector - a vector of type T of possible enumerated values
+ * Output: bool - true if enum_to_find was found in the enumerated vector.
+ */
+template<typename T>
+static bool enumVectorSearch(const T &enum_to_find, 
+                             std::vector<T> enumerated_vector)
+{
+  auto found = false;
+
+  for (auto enum_index : enumerated_vector)
+    found |= (enum_index == enum_to_find);
+
+  return found;
+}
+
+/*
  * Description: Normalized a list of probabilities between two iterators.
  *
  * Inputs: begin - it. to beginning of probabilities to normalize

@@ -27,6 +27,11 @@ const uint32_t AIModule::kMAXIMUM_RECORD_SIZE{500};
 /* General AI Variance
  */
 const float AIModule::kGAI_VARIANCE{0.05};
+const float AIModule::kGAI_BASE_GUARD_FACTOR{0.10};
+const float AIModule::kGAI_BASE_IMPLODE_FACTOR{0.25};
+const float AIModule::kGAI_BASE_DEFEND_FACTOR{0.10};
+const float AIModule::kGAI_BASE_RUN_FACTOR{0.01};
+const float AIModule::kGAI_BASE_PASS_FACTOR{0.01};
 
 /* Random AI Offensive Factor
  * Random AI Defensive Factor
@@ -207,11 +212,6 @@ void AIModule::calculateActionTypeChances()
   /* First check if Skills or Items can be chosen */
   auto can_choose_skill   = canSelectSkill();
   auto can_choose_item    = canSelectItem();
-  auto can_choose_defend  = canSelectDefend();
-  auto can_choose_guard   = canSelectGuard();
-  auto can_choose_implode = canSelectImplode();
-  auto can_choose_run     = canSelectRun();
-  auto can_choose_pass    = canSelectPass();
  
   /* Compute the factors for choosing each available action type
    * 
@@ -261,29 +261,36 @@ void AIModule::calculateActionTypeChances()
     act_typ_chances.push_back(std::make_pair(ActionType::ITEM, item_chance));
   }
 
-  if (can_choose_guard)
+  if (Helpers::enumVectorSearch(ActionType::GUARD, valid_action_types))
   {
-    //TODO: Guarding selection option for enemies [07-12-14]
+    guard_chance = kGAI_BASE_GUARD_FACTOR;
+    act_typ_chances.push_back(std::make_pair(ActionType::GUARD, guard_chance));
   }
 
-  if (can_choose_defend)
+  if (Helpers::enumVectorSearch(ActionType::DEFEND, valid_action_types))
   {
-    //TODO: Defending selection option for enemies [07-12-14]
+    defend_chance = kGAI_BASE_DEFEND_FACTOR;
+    act_typ_chances.push_back(std::make_pair(ActionType::DEFEND, 
+                                              defend_chance));
   }
 
-  if (can_choose_implode)
+  if (Helpers::enumVectorSearch(ActionType::IMPLODE, valid_action_types))
   {
-    //TODO: Imploding selection option for enemies [07-12-14]
+    implode_chance = kGAI_BASE_IMPLODE_FACTOR;
+    act_typ_chances.push_back(std::make_pair(ActionType::IMPLODE, 
+                                              implode_chance));
   }
 
-  if (can_choose_run)
+  if (Helpers::enumVectorSearch(ActionType::RUN, valid_action_types))
   {
-    //TODO: Running selection option for enemies [07-12-14]
+    run_chance = kGAI_BASE_RUN_FACTOR;
+    act_typ_chances.push_back(std::make_pair(ActionType::RUN, run_chance));
   }
   
-  if (can_choose_pass)
+  if (Helpers::enumVectorSearch(ActionType::PASS, valid_action_types))
   {
-    //TODO: Passing selection option for enemies [07-12-14]
+    pass_chance = kGAI_BASE_PASS_FACTOR;
+    act_typ_chances.push_back(std::make_pair(ActionType::PASS, pass_chance));
   }
 
   if (act_typ_chances.size() > 0)
@@ -336,10 +343,8 @@ bool AIModule::canSelectAction()
  */
 bool AIModule::canSelectSkill()
 {
-  auto found_skill = false;
-
-  for (auto valid_action_type : valid_action_types)
-    found_skill |= (valid_action_type == ActionType::SKILL);
+  auto found_skill = Helpers::enumVectorSearch(ActionType::SKILL, 
+                                               valid_action_types);
 
   if (found_skill)
     return !(valid_skills->getSize() == 0);
@@ -355,95 +360,13 @@ bool AIModule::canSelectSkill()
  */
 bool AIModule::canSelectItem()
 {
-  auto found_item = false;
-
-  for (auto valid_action_type : valid_action_types)
-    found_item |= (valid_action_type == ActionType::ITEM);
+  auto found_item = Helpers::enumVectorSearch(ActionType::ITEM, 
+                                              valid_action_types);
 
   if (found_item)
     return !(valid_items.size() == 0);
 
   return false;
-}
-
-/*
- * Description:
- *
- * Inputs:
- * Output:
- */
-bool AIModule::canSelectGuard()
-{
-  auto found_guard = false;
-
-  for (auto valid_action_type : valid_action_types)
-    found_guard |= (valid_action_type == ActionType::GUARD);
-
-  return found_guard;
-}
-
-/*
- * Description:
- *
- * Inputs:
- * Output:
- */
-bool AIModule::canSelectDefend()
-{
-  auto found_defend = false;
-
-  for (auto valid_action_type : valid_action_types)
-    found_defend |= (valid_action_type == ActionType::DEFEND);
-
-  return found_defend;
-}
-
-/*
- * Description:
- *
- * Inputs:
- * Output:
- */
-bool AIModule::canSelectImplode()
-{
-  auto found_implode = false;
-
-  for (auto valid_action_type : valid_action_types)
-    found_implode |= (valid_action_type == ActionType::IMPLODE);
-
-  return found_implode;
-}
-
-/*
- * Description:
- *
- * Inputs:
- * Output:
- */
-bool AIModule::canSelectRun()
-{
-  auto found_run = false;
-
-  for (auto valid_action_type : valid_action_types)
-    found_run |= (valid_action_type == ActionType::RUN);
-
-  return found_run;
-}
-
-/*
- * Description:
- *
- * Inputs:
- * Output:
- */
-bool AIModule::canSelectPass()
-{
-  auto found_pass = false;
-
-  for (auto valid_action_type : valid_action_types)
-    found_pass |= (valid_action_type == ActionType::PASS);
-
-  return found_pass;
 }
 
 /*
