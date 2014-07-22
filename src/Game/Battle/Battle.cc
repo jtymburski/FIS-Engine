@@ -301,6 +301,8 @@ void Battle::cleanUp()
   turns_elapsed++;
 
   action_buffer->update();
+  menu->unsetAll();
+
 
   setBattleFlag(CombatState::PHASE_DONE, true);
 
@@ -439,6 +441,11 @@ void Battle::personalUpkeep(Person* const target)
 /* Process the actions (Items & Skills) in the buffer */
 void Battle::processActions()
 {
+
+#ifdef UDEBUG
+  std::cout << "Processing actions on buffer." << std::endl;
+#endif
+
   // get list of actions for skills and items
   // if run, attempt to run
   // if defend, incresae def. by some factor
@@ -926,18 +933,19 @@ void Battle::setNextTurnState()
     else if (turn_state == TurnState::ORDER_ACTIONS)
     {
       setTurnState(TurnState::PROCESS_ACTIONS);
+      processActions();
     }
 
     /* After the actions are processed, Battle turn clean up occurs */
     else if (turn_state == TurnState::PROCESS_ACTIONS)
     {
       setTurnState(TurnState::CLEAN_UP);
+      cleanUp();
     }
 
     /* After the end of the turn, loop restarts at general upkeep */
     else if (turn_state == TurnState::CLEAN_UP)
     {
-      cleanUp();
       setTurnState(TurnState::GENERAL_UPKEEP);
       generalUpkeep();
     }
