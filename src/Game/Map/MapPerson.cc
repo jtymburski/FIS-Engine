@@ -91,6 +91,7 @@ MapPerson::~MapPerson()
 void MapPerson::initializeStates()
 {
   states.clear();
+  states_secondary.clear();
 
   for(uint8_t i = 0; i < kTOTAL_SURFACES; i++)
   {
@@ -99,6 +100,7 @@ void MapPerson::initializeStates()
     for(uint8_t j = 0; j < kTOTAL_DIRECTIONS; j++)
       row.push_back(NULL);
     states.push_back(row);
+    states_secondary.push_back(row);
   }
 }
 
@@ -467,8 +469,33 @@ Sprite* MapPerson::getState(SurfaceClassifier surface, Direction direction)
   int surface_index = static_cast<int>(surface);
   int dir_index = dirToInt(direction);
   
-  if(surface_index >= 0 && dir_index >= 0)
+  if(surface_index >= 0 && dir_index >= 0 &&
+     surface_index < states.size() && dir_index < states[surface_index].size())
     return states[surface_index][dir_index];
+    
+  Sprite* null_sprite = NULL;
+  return null_sprite;
+}
+
+/*
+ * Description: Returns the secondary sprite state that is connected with the 
+ *              surface definition and the direction. Returns NULL if unset or
+ *              invalid.
+ *
+ * Inputs: SurfaceClassifier surface - the surface that the person is on
+ *         Direction direction - the direction moving in
+ * Sprite* - the secondary state sprite pointer, that defines the image pointer
+ */
+Sprite* MapPerson::getStateSecondary(SurfaceClassifier surface, 
+                                     Direction direction)
+{
+  int surface_index = static_cast<int>(surface);
+  int dir_index = dirToInt(direction);
+  
+  if(surface_index >= 0 && dir_index >= 0 && 
+     surface_index < states_secondary.size() &&
+     dir_index < states_secondary[surface_index].size())
+    return states_secondary[surface_index][dir_index];
     
   Sprite* null_sprite = NULL;
   return null_sprite;

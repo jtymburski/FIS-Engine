@@ -38,9 +38,10 @@ private:
   uint16_t starting_section;
   Tile* starting_tile;
 
-  /* Set of all states for person. 1st layer is surface (water, ground, etc)
-   * and then 2nd layer is direction facing */
+  /* Set of all states for person. 1st index is surface (water, ground, etc)
+   * and then 2nd index is direction facing */
   std::vector< std::vector<Sprite*> > states;
+  std::vector< std::vector<Sprite*> > states_secondary;
 
   /* A counter of steps made on the map */
   uint32_t steps;
@@ -120,7 +121,8 @@ public:
   
   /* Returns the state at the defined surface and direction */
   Sprite* getState(SurfaceClassifier surface, Direction direction);
-  
+  Sprite* getStateSecondary(SurfaceClassifier surface, Direction direction);
+
   /* Returns the surface that this person resides on */
   SurfaceClassifier getSurface();
   
@@ -141,6 +143,7 @@ public:
 
   /* Sets a new state to add into the states list */
   bool setState(SurfaceClassifier surface, Direction direction, Sprite* frames);
+  bool setStateSecondary(SurfaceClassifier surface, Direction direction, Sprite* frames); // TODO
 
   /* Sets the surface that the person travels on */
   void setSurface(SurfaceClassifier surface);
@@ -153,7 +156,8 @@ public:
 
   /* Unsets a state, if it exists, to remove from the stack of states */
   void unsetState(SurfaceClassifier surface, Direction direction);
-  
+  void unsetStateSecondary(SurfaceClassifier surface, Direction direction); // TODO
+
   /* Unsets the starting tile */
   void unsetStartingTile(bool no_events = false);
 };
