@@ -79,7 +79,7 @@ protected:
  *===========================================================================*/
 protected:
   /* Animates the thing, if it has multiple frames */
-  bool animate(int cycle_time, bool reset = false, bool skip_head = false);
+  virtual bool animate(int cycle_time, bool reset = false, bool skip_head = false);
  
   /* Is the thing almost centered on a tile (less than 1 pulse away) */
   bool isAlmostOnTile(int cycle_time);

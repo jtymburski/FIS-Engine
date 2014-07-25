@@ -257,61 +257,6 @@ bool Map::addTileData(XmlData data, uint16_t section_index)
   return false;
 }
 
-// /* Adds a tile sprite, based on the path and some XMLData */
-// TODO: Add search existing sprites to see if it exists
-// bool Map::addTileSprite(QString path, int x_diff, int y_diff, 
-                        // QList<QString> adjustments, int section_index, 
-                        // XmlData data)
-// {
-  // bool success = false;
-
-  // /* Run through this list, checking ranges and add the corresponding
-   // * tiles, only if the sprite data is legitimate */
-  // Sprite* tile_frames = new Sprite(path);
-  // tile_frames->execImageAdjustments(adjustments);
-  // if(tile_frames->getSize() > 0)
-  // {
-    // /* Split up the coordinates for the tile sprite */
-    // QStringList row_list = data.getKeyValue(kFILE_TILE_ROW).split(",");
-    // QStringList col_list = data.getKeyValue(kFILE_TILE_COLUMN).split(",");
-    // for(int i = 0; i < row_list.size(); i++) /* Coordinate set index */
-    // {
-      // QStringList rows = row_list[i].split("-"); /* x range for coordinate */
-      // QStringList cols = col_list[i].split("-"); /* y range for coordinate */
-
-      // /* Shift through all the rows and column pairs of the coordinate */
-      // for(int r = rows[0].toInt(); r <= rows[rows.size() - 1].toInt(); r++)
-      // {
-        // for(int c = cols[0].toInt(); c <= cols[cols.size() - 1].toInt(); c++)
-        // {
-          // int x = r + x_diff;
-          // int y = c + y_diff;
-
-          // if(section_index >= 0 && section_index < geography.size() && 
-             // x >= 0 && x < geography[section_index].size() && 
-             // y >= 0 && y < geography[section_index][x].size())
-          // {
-            // success |= geography[section_index][x][y]->
-                  // addSprite(tile_frames, data.getElement(kFILE_CLASSIFIER), 
-                                         // data.getKeyValue(kFILE_CLASSIFIER));
-          // }
-        // }
-      // }
-    // }
-  // }
-
-  // /* If successful, add the data to the stack. Else, delete it */
-  // if(success)
-    // tile_sprites.append(tile_frames);
-  // else
-  // {
-    // delete tile_frames;
-    // qDebug() << "[ERROR] Map sprite add fail with path: " + path;
-  // }
-
-  // return success;
-// }
-
 bool Map::addThingData(XmlData data, uint16_t section_index, 
                                      SDL_Renderer* renderer)
 {

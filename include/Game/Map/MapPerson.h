@@ -31,6 +31,7 @@ public:
 
 private:
   /* The direction of the player and the current movement direction */
+  Sprite* active_secondary;
   Direction direction;
   std::vector<Direction> movement_stack;
 
@@ -71,6 +72,9 @@ private:
 protected:
   /* Add movement direction to the stack */
   void addDirection(Direction direction);
+
+  /* Animates the person, if it has multiple frames */
+  bool animate(int cycle_time, bool reset = false, bool skip_head = false);
 
   /* Direction enumerator to/from integer converters */
   int dirToInt(Direction dir);
@@ -147,7 +151,7 @@ public:
   /* Sets a new state to add into the states list */
   bool setState(SurfaceClassifier surface, Direction direction, Sprite* frames);
   bool setStateSecondary(SurfaceClassifier surface, 
-                         Direction direction, Sprite* frames); // TODO
+                         Direction direction, Sprite* frames);
 
   /* Sets the surface that the person travels on */
   void setSurface(SurfaceClassifier surface);
@@ -160,7 +164,7 @@ public:
 
   /* Unsets a state, if it exists, to remove from the stack of states */
   void unsetState(SurfaceClassifier surface, Direction direction);
-  void unsetStateSecondary(SurfaceClassifier surface, Direction direction); // TODO
+  void unsetStateSecondary(SurfaceClassifier surface, Direction direction);
 
   /* Unsets the starting tile */
   void unsetStartingTile(bool no_events = false);

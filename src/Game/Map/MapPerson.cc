@@ -8,6 +8,9 @@
  *              it allows for the 4 directions (N,S,E,W) all on one surface
  *              (Ground). Future expansion is available for other surfaces
  *              such as water, flying, etc.
+ *
+ * TODO: Glitch - when running up and then reverse part way through tile, 
+ *                the guy floats for a tiny period of time [2014-07-25]
  ******************************************************************************/
 #include "Game/Map/MapPerson.h"
 
@@ -33,6 +36,7 @@ const uint8_t MapPerson::kTOTAL_SURFACES   = 1;
 MapPerson::MapPerson() : MapThing()
 {
   initializeStates();
+  active_secondary = NULL;
   starting_section = 0;
   starting_tile = NULL;
   steps = 0;
@@ -58,6 +62,7 @@ MapPerson::MapPerson(uint16_t width, uint16_t height, std::string name,
           : MapThing(NULL, width, height, name, description, id)
 {
   initializeStates();
+  active_secondary = NULL;
   starting_section = 0;
   starting_tile = NULL;
   steps = 0;
@@ -127,6 +132,54 @@ void MapPerson::addDirection(Direction direction)
   /* If it doesn't exist, push it onto the stack */
   if(!contains)
     movement_stack.push_back(direction);
+}
+
+/* 
+ * Description: Animates the frames of the person, based on the animate offset
+ *              of the person as well as calls to the sprite holder
+ * 
+ * Inputs: int cycle_time - the msec time between the last animate call
+ *         bool reset - Resets the animation back to head. Used for either 
+ *                      restarting animation or stopping it.
+ *         bool skip_head - Skip the head of the list of frames
+ * Output: bool - a status on the animate, if the frame sequence changed.
+ */
+bool MapPerson::animate(int cycle_time, bool reset, bool skip_head)
+{
+  bool shift = false;
+  Sprite* frames = getFrames();
+ 
+  /* Check if an animation can occur */
+  if(frames != NULL)
+  {
+    /* Reset back to head */
+    if(reset && !skip_head && !frames->isAtFirst())
+    {
+      frames->setAtFirst();
+      if(active_secondary != NULL)
+        active_secondary->setAtFirst();
+
+      shift = true;
+    }
+    
+    if(reset)
+    {
+      shift |= frames->update(0, skip_head);
+      if(active_secondary != NULL)
+        active_secondary->update(0, skip_head);
+    }
+    else
+    {
+      if(frames->update(cycle_time, skip_head))
+      {
+        if(active_secondary != NULL)
+          active_secondary->shiftNext(skip_head);
+        shift = true;
+      }
+    }
+  }
+  
+  return shift;
 }
 
 /* 
@@ -217,7 +270,10 @@ bool MapPerson::setDirection(Direction direction, bool set_movement)
   if(surface_index >= 0 && dir_index >= 0)
   {
     if(changed && states[surface_index][dir_index] != NULL)
+    {
       MapThing::setFrames(states[surface_index][dir_index], false);
+      active_secondary = getStateSecondary(surface, direction);
+    }
 
     /* Finally set the in class direction */
     this->direction = direction;
@@ -301,7 +357,7 @@ bool MapPerson::addThingInformation(XmlData data, int file_index,
     std::vector<std::string> identifiers = Helpers::split(elements[2], '_');
 
     /*--------------------- FRAMES -----------------*/
-    if(elements[2] == "sprite")
+    if(elements[2] == "sprite" || elements[2] == "spritetop")
     {
       /* Create the surface identifier */
       SurfaceClassifier surface = GROUND;
@@ -322,18 +378,38 @@ bool MapPerson::addThingInformation(XmlData data, int file_index,
       /* Only proceed if the direction was a valid direction */
       if(direction != Direction::DIRECTIONLESS)
       {
-        Sprite* frames = getState(surface, direction);
-        if(frames == NULL)
+        Sprite* frames = NULL;
+
+        /* Determine if it's the main sprite or the secondary top sprite */
+        if(elements[2] == "sprite") /* Main Lower Sprite */
         {
-          frames = new Sprite();
-          if(!setState(surface, direction, frames))
+          frames = getState(surface, direction);
+          if(frames == NULL)
           {
-            delete frames;
-            frames = NULL;
-            success = false;
+            frames = new Sprite();
+            if(!setState(surface, direction, frames))
+            {
+              delete frames;
+              frames = NULL;
+              success = false;
+            }
           }
         }
-        
+        else /* Sprite Upper Top */
+        {
+          frames = getStateSecondary(surface, direction);
+          if(frames == NULL)
+          {
+            frames = new Sprite();
+            if(!setStateSecondary(surface, direction, frames))
+            {
+              delete frames;
+              frames = NULL;
+              success = false;
+            }
+          }
+        }
+
         /* Proceed with the add once valid frames are acquired */
         if(frames != NULL)
           success &= frames->addFileInformation(data, file_index + 3, 
@@ -382,6 +458,7 @@ void MapPerson::clear()
   }
   
   /* Clear direction and movement information */
+  active_secondary = NULL;
   direction = Direction::NORTH;
   clearAllMovement();
   starting_tile = NULL;
@@ -574,22 +651,28 @@ void MapPerson::keyUpEvent(SDL_KeyboardEvent event)
     removeDirection(Direction::WEST);
 }
 
-/* Renders the uppper half on the person */
-// TODO
+/* 
+ * Description: The render secondary function for [erspm. This takes the 
+ *              active secondary state and renders it based on location and 
+ *              offset (from paint engine) and if it is set within the person 
+ *              class.
+ * 
+ * Inputs: SDL_Renderer* renderer - the graphical rendering engine pointer
+ *         int offset_x - the paint offset in the x direction
+ *         int offset_y - the paint offset in the y direction
+ * Output: bool - if the render succeeded
+ */
 bool MapPerson::renderSecondary(SDL_Renderer* renderer, 
                                 int offset_x, int offset_y)
 {
   if(isVisible() && frames != NULL && tile_main != NULL)
   {
-    /* Get the secondary frames */
-    Sprite* secondary = getStateSecondary(surface, direction);
-    
-    if(secondary != NULL)
+    if(active_secondary != NULL)
     {
       int render_x = x - offset_x;
-      int render_y = y - offset_y;
+      int render_y = y - offset_y - width;
       
-      frames->render(renderer, render_x, render_y, width, height);
+      active_secondary->render(renderer, render_x, render_y, width, height);
       return true;
     }
   }
@@ -700,7 +783,12 @@ bool MapPerson::setStateSecondary(SurfaceClassifier surface,
   {
     unsetStateSecondary(surface, direction);
     states_secondary[static_cast<int>(surface)][dirToInt(direction)] = frames;
-    
+   
+    /* If the updated state is the active one, automatically set the printable
+     * sprite */
+    if(this->surface == surface && this->direction == direction)
+      active_secondary = frames;
+ 
     return true;
   }
 
@@ -866,6 +954,10 @@ void MapPerson::unsetStateSecondary(SurfaceClassifier surface,
   {
     delete state;
     states[static_cast<int>(surface)][dirToInt(direction)] = NULL;
+
+    /* Clear out the parent call if the direction or surface lines up */
+    if(this->surface == surface && this->direction == direction)
+      active_secondary = NULL;
   }
 }
 
