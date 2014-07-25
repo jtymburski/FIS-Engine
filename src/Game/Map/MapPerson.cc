@@ -470,7 +470,8 @@ Sprite* MapPerson::getState(SurfaceClassifier surface, Direction direction)
   int dir_index = dirToInt(direction);
   
   if(surface_index >= 0 && dir_index >= 0 &&
-     surface_index < states.size() && dir_index < states[surface_index].size())
+     surface_index < static_cast<int>(states.size()) && 
+     dir_index < static_cast<int>(states[surface_index].size()))
     return states[surface_index][dir_index];
     
   Sprite* null_sprite = NULL;
@@ -493,8 +494,8 @@ Sprite* MapPerson::getStateSecondary(SurfaceClassifier surface,
   int dir_index = dirToInt(direction);
   
   if(surface_index >= 0 && dir_index >= 0 && 
-     surface_index < states_secondary.size() &&
-     dir_index < states_secondary[surface_index].size())
+     surface_index < static_cast<int>(states_secondary.size()) &&
+     dir_index < static_cast<int>(states_secondary[surface_index].size()))
     return states_secondary[surface_index][dir_index];
     
   Sprite* null_sprite = NULL;
@@ -571,6 +572,28 @@ void MapPerson::keyUpEvent(SDL_KeyboardEvent event)
     removeDirection(Direction::EAST);
   else if(event.keysym.sym == SDLK_LEFT)
     removeDirection(Direction::WEST);
+}
+
+/* Renders the uppper half on the person */
+// TODO
+bool MapPerson::renderSecondary(SDL_Renderer* renderer, 
+                                int offset_x, int offset_y)
+{
+  if(isVisible() && frames != NULL && tile_main != NULL)
+  {
+    /* Get the secondary frames */
+    Sprite* secondary = getStateSecondary(surface, direction);
+    
+    if(secondary != NULL)
+    {
+      int render_x = x - offset_x;
+      int render_y = y - offset_y;
+      
+      frames->render(renderer, render_x, render_y, width, height);
+      return true;
+    }
+  }
+  return false;
 }
 
 /*
@@ -651,6 +674,32 @@ bool MapPerson::setState(SurfaceClassifier surface,
      * sprite */
     if(this->surface == surface && this->direction == direction)
       MapThing::setFrames(frames, false);
+    
+    return true;
+  }
+
+  return false;
+}
+
+/* 
+ * Description: Sets a secondary state within the class, based on the double 
+ *              set of enumerators, for surface and direction. This will
+ *              automatically unset a state that is currently in its place, if 
+ *              one does exist. 
+ * 
+ * Inputs: SurfaceClassifier surface - the surface classifier for the state
+ *         Direction direction - the direction for the state
+ *         Sprite* frames - the frame data to set the secondary state at
+ * Output: bool - if the call was successful
+ */
+bool MapPerson::setStateSecondary(SurfaceClassifier surface, 
+                                  Direction direction, Sprite* frames)
+{
+  /* Only proceed with insertion if the sprite and state data is valid */
+  if(frames != NULL)
+  {
+    unsetStateSecondary(surface, direction);
+    states_secondary[static_cast<int>(surface)][dirToInt(direction)] = frames;
     
     return true;
   }
@@ -797,6 +846,26 @@ void MapPerson::unsetState(SurfaceClassifier surface,
     /* Clear out the parent call if the direction or surface lines up */
     if(this->surface == surface && this->direction == direction)
       MapThing::unsetFrames(false);
+  }
+}
+
+/* 
+ * Description: Unsets the secondary state in this class based on the two
+ *              classifiers. This includes the appropriate delete functionality
+ *              for the stored pointers.
+ * 
+ * Inputs: SurfaceClassifier surface - the surface classifier for the state
+ *         Direction direction - the direction for the state
+ * Output: none
+ */
+void MapPerson::unsetStateSecondary(SurfaceClassifier surface, 
+                                    Direction direction)
+{
+  Sprite* state = getStateSecondary(surface, direction);
+  if(state != NULL)
+  {
+    delete state;
+    states[static_cast<int>(surface)][dirToInt(direction)] = NULL;
   }
 }
 

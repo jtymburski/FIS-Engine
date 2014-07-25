@@ -134,6 +134,9 @@ public:
   void keyFlush();
   void keyUpEvent(SDL_KeyboardEvent event);
   
+  /* Renders the uppper half on the person */
+  bool renderSecondary(SDL_Renderer* renderer, int offset_x, int offset_y);
+  
   /* Resets the tile position */
   bool resetPosition();
   
@@ -143,7 +146,8 @@ public:
 
   /* Sets a new state to add into the states list */
   bool setState(SurfaceClassifier surface, Direction direction, Sprite* frames);
-  bool setStateSecondary(SurfaceClassifier surface, Direction direction, Sprite* frames); // TODO
+  bool setStateSecondary(SurfaceClassifier surface, 
+                         Direction direction, Sprite* frames); // TODO
 
   /* Sets the surface that the person travels on */
   void setSurface(SurfaceClassifier surface);

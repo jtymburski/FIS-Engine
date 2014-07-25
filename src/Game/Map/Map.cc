@@ -1262,6 +1262,17 @@ bool Map::render(SDL_Renderer* renderer)
       }
     }
 
+    /* Render Secondary Map Persons (and NPCs) */
+    for(uint16_t i = 0; i < persons.size(); i++)
+    {
+      if(persons[i]->getMapSection() == map_index && 
+         persons[i]->getX() >= x_start && persons[i]->getX() <= x_end && 
+         persons[i]->getY() >= y_start && persons[i]->getY() <= y_end)
+      {
+        persons[i]->renderSecondary(renderer, x_offset, y_offset);
+      }
+    }
+    
     /* Render upper half of tile */
     for(uint16_t i = tile_x_start; i < tile_x_end; i++)
       for(uint16_t j = tile_y_start; j < tile_y_end; j++)
