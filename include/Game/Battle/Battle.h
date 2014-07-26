@@ -272,6 +272,10 @@ private:
   /* Deals with character related upkeep */
   void personalUpkeep(Person* const target);
 
+  /* Processes an individual action from a user against targets */
+  void processSkill(Person* user, std::vector<Person*> targets, 
+                     Skill* action);
+
   /* Process the actions (Items & Skills) in the buffer */
   void processActions();
 

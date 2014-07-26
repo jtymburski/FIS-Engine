@@ -438,20 +438,13 @@ void Battle::personalUpkeep(Person* const target)
     // recalulate ailment factors
 }
 
-/* Process the actions (Items & Skills) in the buffer */
-void Battle::processActions()
+void Battle::processSkill(Person* user, std::vector<Person*> targets, Skill* action)
 {
+  auto effects = action->getEffects();
 
-#ifdef UDEBUG
-  std::cout << "Processing actions on buffer." << std::endl;
-#endif
-
-  // get list of actions for skills and items
-  // if run, attempt to run
-  // if defend, incresae def. by some factor
-  // do Action   [+ critical, + miss rate]
-  // if cooldown == 0
-    // if offensive attack
+  for (auto it = begin(effects); it != end(effects); ++it)
+  {
+        // if offensive attack
       // find stats related to the skill of the user
       // find stats related to the skill of each target
       // for each target
@@ -469,18 +462,131 @@ void Battle::processActions()
           // deal the damage
         // check party death upon each damage dealt
         // output info to BIB
+
+    if (action->getFlag(SkillFlags::OFFENSIVE))
+    {
+
+    }
+    else if (action->getFlag(SkillFlags::DEFENSIVE))
+    {
+
+    }
+
+    if ((*it)->actionFlag(ActionFlags::INFLICT))
+    {
     // if infliction
       // check for immunities
         // if not immune, chance for infliction
         // if successful, recalculate ailments
         // if failed, output message
+    }
+    else if ((*it)->actionFlag(ActionFlags::RELIEVE))
+    {
+    // if relieving, if chance occurs,
+      // remove ailment if exists
+      // update ailments
+    }
+    else if ((*it)->actionFlag(ActionFlags::ASSIGN))
+    {
     // stat changing? TBD
       // find each stat to change
       // find by amount or by factor
         // incr. stats by amt. or factor
-    // if relieving, if chance occurs,
-      // remove ailment if exists
-      // update ailments
+    }
+    else if ((*it)->actionFlag(ActionFlags::REVIVE))
+    {
+
+    }
+    else if ((*it)->actionFlag(ActionFlags::ABSORB))
+    {
+
+    }
+  }
+}
+
+/* Process the actions (Items & Skills) in the buffer */
+void Battle::processActions()
+{
+#ifdef UDEBUG
+  std::cout << "Processing actions on buffer." << std::endl;
+#endif
+
+  auto curr_action = ActionType::NONE;
+
+  do
+  {
+    curr_action = action_buffer->getActionType();
+    auto can_process = true;
+
+    if (curr_action == ActionType::SKILL)
+    {
+      if (action_buffer->getSkill() != nullptr)
+      {
+        if (action_buffer->getSkill()->getCooldown() == 0)
+        {
+          processSkill(action_buffer->getUser(), action_buffer->getTargets(), 
+                       action_buffer->getSkill());
+        }
+      }
+      else
+      {
+        can_process = false;
+      }
+    }
+    else if (curr_action == ActionType::ITEM)
+    {
+      if (action_buffer->getItem() != nullptr && 
+          action_buffer->getItem()->getUseSkill() != nullptr)
+      {
+        if (action_buffer->getItem()->getUseSkill()->getCooldown() == 0)
+        {
+          processSkill(action_buffer->getUser(), action_buffer->getTargets(),
+                       action_buffer->getItem()->getUseSkill());
+        }
+      }
+      else
+      {
+        can_process = false;
+      }
+    }
+    else if (curr_action == ActionType::DEFEND)
+    {
+      // Defend oneself (increase defenses by some factor)
+    }
+    else if (curr_action == ActionType::GUARD)
+    {
+      // Guard the appropriate target
+    }
+    else if (curr_action == ActionType::IMPLODE)
+    {
+      // Annihilate self in catastrophic hit against opponents!
+    }
+    else if (curr_action == ActionType::RUN)
+    {
+      // Attempt to run!
+    }
+    else if (curr_action == ActionType::PASS)
+    {
+      // Pass the turn, do nothing!
+    }
+    else
+    {
+      std::cout << "[Error]: Attempting to process invalid action type!" 
+                << std::endl;
+    }
+
+#ifdef UDEBUG
+    if (!can_process)
+      std::cout << "[Error]: Couldn't process current action!" << std::endl;
+    else
+      std::cout << "Processed current action!" << std::endl;
+#endif
+
+  } while (action_buffer->setNext());
+
+#ifdef UDEBUG
+  std::cout << "Finished processing actions, phase complete." << std::endl;
+#endif
 
   /* Process Action stae complete */
   setBattleFlag(CombatState::PHASE_DONE);

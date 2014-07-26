@@ -125,11 +125,17 @@ public:
   /* Updates the cooldown of each BufferAction element */
   void update(const bool &clear = false);
 
+  /* Returns the action type for the current index */
+  ActionType getActionType();
+
   /* Obtains the Person ptr for the current element index */
   Person* getUser();
 
   /* Obtains the Skill ptr for the current element index */
   Skill* getSkill();
+
+  /* Obtains the Item ptr for the current element index */
+  Item* getItem();
 
   /* Obtains the target vector for current element index */
   std::vector<Person*> getTargets();

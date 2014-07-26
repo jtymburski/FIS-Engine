@@ -452,6 +452,21 @@ void Buffer::update(const bool &clear)
 }
 
 /*
+ * Description: Returns the enumerated action type for the current index on
+ *              the Buffer.
+ *
+ * Inputs: none 
+ * Output: ActionType -- enumerated action type for the current index
+ */
+ActionType Buffer::getActionType()
+{
+  if (checkValid(getIndex(index)))
+    return getIndex(index).type;
+
+  return ActionType::NONE;
+}
+
+/*
  * Description: Returns the pointer to the person of the current index's user.
  *
  * Inputs: none 
@@ -475,6 +490,20 @@ Skill* Buffer::getSkill()
 {
   if (checkValid(getIndex(index)))
     return getIndex(index).skill_used;
+
+  return nullptr;
+}
+
+/*
+ * Description: Returns the pointer to the current index's item 
+ *
+ * Inputs: none
+ * Output: Item* - ptr to the current index's item
+ */
+Item* Buffer::getItem()
+{
+  if (checkValid(getIndex(index)))
+    return getIndex(index).item_used;
 
   return nullptr;
 }
