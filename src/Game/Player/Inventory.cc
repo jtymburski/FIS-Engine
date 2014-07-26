@@ -901,7 +901,10 @@ bool Inventory::removeItemIndex(const uint32_t &index,
       else if (count == amount)
       {
         if (!getFlag(InvState::SHOP_STORAGE))
-          delete items[index].first;
+        {
+          std::cout << "//TODO: Do not delete the pointer here??" << std::endl;
+          //delete items[index].first;
+        }
 
         items[index].first = nullptr;
         items.erase(begin(items) + index);
@@ -932,9 +935,7 @@ bool Inventory::removeItemID(const uint32_t &game_id, const uint16_t &amount)
   auto item_index = getItemIndex(game_id);
 
   if (item_index != -1)
-  {
     return removeItemIndex(item_index, amount);
-  }
 
   return false;
 }

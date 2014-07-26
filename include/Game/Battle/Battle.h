@@ -204,6 +204,37 @@ private:
   // Currently active weather condition
   // Weather* weather_condition
 
+  /* Action Processing Variables */
+  Attribute prim_off;
+  Attribute prim_def;
+  Attribute secd_off;
+  Attribute secd_def;
+
+  AttributeSet temp_user_stats;
+  AttributeSet temp_user_max_stats;
+  std::vector<AttributeSet> temp_target_stats;
+  std::vector<AttributeSet> temp_target_max_stats;
+
+  Person* curr_user;
+  Person* curr_target;
+  Action* curr_action;
+  Skill*  curr_skill;
+
+  bool prim_strength;
+  bool secd_strength;
+  bool prim_weakness;
+  bool secd_weakness;
+
+  int32_t p_target_index;
+
+  int16_t prim_user_off;
+  int16_t prim_user_def;
+  int16_t secd_user_off;
+  int16_t secd_user_def;
+
+  float critical_chance;
+  float miss_chance;
+
   /* ------------ Menu Constants --------------- */
   static const uint16_t kGENERAL_UPKEEP_DELAY;
   static const uint16_t kBATTLE_MENU_DELAY;
@@ -217,9 +248,9 @@ private:
   static const float    kDEF_PRIM_ELM_MODIFIER;
   static const float    kOFF_SECD_ELM_MODIFIER;
   static const float    kDEF_SECD_ELM_MODIFIER;
-  static const float    kOFF_CRIT_MODIFIER;
-  static const float    kDEF_CRIT_MODIFIER;
-  static const float    kBASE_CRIT_MODIFIER;
+  static const float    kBASE_CRIT_CHANCE;
+  static const float    kCRIT_MODIFIER;
+  static const float    kCRIT_LVL_MODIFIER;
   static const float    kDODGE_MODIFIER;
   static const float    kDODGE_PER_LEVEL_MODIFIER;
   static const float    kPRIM_ELM_ADV_MODIFIER;
@@ -242,11 +273,14 @@ private:
   /* Called when the Battle has been lost */
   void battleLost();
 
+  /* Determines whether the current person has selected all actions */
+  bool canIncrementIndex(Person* check_person);
+
   /* Asserts all AI modules are set for the enemy parties */
   bool checkAIModules();
 
-  /* Determines whether the current person has selected all actions */
-  bool canIncrementIndex(Person* check_person);
+  /* Cleans up the action variables (sets to default upon instantiation too) */
+  void clearActionVariables();
 
   /* Returns enumeration of party death [None, Friends, Foes, Both] */
   bool checkPartyDeath(Party* const check_party);
@@ -272,9 +306,12 @@ private:
   /* Deals with character related upkeep */
   void personalUpkeep(Person* const target);
 
+  /* Calculates action variables for the curr User/Action/Targ combination */
+  void buildTargetVariables(Skill* curr_skill);
+
   /* Processes an individual action from a user against targets */
   void processSkill(Person* user, std::vector<Person*> targets, 
-                     Skill* action);
+                    Skill* curr_skill);
 
   /* Process the actions (Items & Skills) in the buffer */
   void processActions();
@@ -433,9 +470,6 @@ public:
   static float getDefPrimElmMod();
   static float getOffSecdElmMod();
   static float getDefSecdElmMod();
-  static float getOffCritMod();
-  static float getDefCritMod();
-  static float getBaseCritMod();
   static float getDodgeMod();
   static float getDogePerLvlMod();
   static float getPrimElmAdvMod();

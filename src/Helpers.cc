@@ -160,6 +160,12 @@ int Helpers::rollXS(const int &x_sides, const int &s_times)
  * GRAMMAR FUNCTIONS
  *============================================================================*/
 
+/*
+ * Description: 
+ *
+ * Inputs: 
+ * Output: 
+ */
 std::string Helpers::a_An(const std::string &noun)
 {
   if (noun.size() == 0)
@@ -198,19 +204,36 @@ std::string Helpers::a_An(const std::string &noun)
   return a_an;
 }
 
+/*
+ * Description: 
+ *
+ * Inputs: 
+ * Output: 
+ */
 void Helpers::flushConsole(const char &c)
 {
   for (int i = 0; i < 100; i++)
     std::cout << c << std::endl;
 }
 
+/*
+ * Description: 
+ *
+ * Inputs: 
+ * Output: 
+ */
 bool Helpers::isVowel(const char &c)
 {
   return (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u' ||
           c == 'A' || c == 'E' || c == 'I' || c == 'O' || c == 'U');
 }
 
-//TODO - Boost map?
+/*
+ * Description: 
+ *
+ * Inputs: 
+ * Output: 
+ */
 std::string Helpers::elementToString(const Element &element)
 {
   if (element == Element::PHYSICAL)
@@ -231,7 +254,12 @@ std::string Helpers::elementToString(const Element &element)
   return "";
 }
 
-//TODO - Boost map?
+/*
+ * Description: 
+ *
+ * Inputs: 
+ * Output: 
+ */
 std::string Helpers::cellToStr(const CellState &cell_state)
 {
   if (cell_state == CellState::OPEN)
@@ -250,6 +278,12 @@ std::string Helpers::cellToStr(const CellState &cell_state)
   return "";
 }
 
+/*
+ * Description: 
+ *
+ * Inputs: 
+ * Output: 
+ */
 std::string Helpers::actionTypeToStr(const ActionType &action_type)
 {
   if (action_type == ActionType::SKILL)
@@ -272,6 +306,12 @@ std::string Helpers::actionTypeToStr(const ActionType &action_type)
   return "";
 }
 
+/*
+ * Description: 
+ *
+ * Inputs: 
+ * Output: 
+ */
 std::string Helpers::actionScopeToStr(const ActionScope &action_scope)
 {
   if (action_scope == ActionScope::USER)
@@ -310,6 +350,12 @@ std::string Helpers::actionScopeToStr(const ActionScope &action_scope)
   return "";
 }
 
+/*
+ * Description: 
+ *
+ * Inputs: 
+ * Output: 
+ */
 /* Convert enumerated AI Difficulty to String */
 std::string Helpers::aiDifficultyToStr(const AIDifficulty &ai_difficulty)
 {
@@ -325,6 +371,12 @@ std::string Helpers::aiDifficultyToStr(const AIDifficulty &ai_difficulty)
   return "";
 }
 
+/*
+ * Description: 
+ *
+ * Inputs: 
+ * Output: 
+ */
 /* Convert enumerated AI Personality to String */
 std::string Helpers::aiPersonalityToStr(const AIPersonality &ai_personality)
 {
@@ -355,6 +407,33 @@ std::string Helpers::aiPersonalityToStr(const AIPersonality &ai_personality)
 /*=============================================================================
  * PLAYER / BATTLE HELPER FUNCTIONS
  *============================================================================*/
+
+/*
+ * Description: Returns the pair of corresponding offensive/defensive attributes
+ *              which related to a given enumerated element
+ *
+ * Inputs: element - Enumerated element type to find attributes for
+ * Output: std::pair<Attr, Attr> - the corresponding off/def enumerated attrs.
+ */
+std::pair<Attribute, Attribute> Helpers::elementToStats(const Element &element)
+{
+  if (element == Element::PHYSICAL)
+    return std::make_pair(Attribute::PHAG, Attribute::PHFD);
+  else if (element == Element::FIRE)
+    return std::make_pair(Attribute::THAG, Attribute::THFD);
+  else if (element == Element::FOREST)
+    return std::make_pair(Attribute::PRAG, Attribute::PRFD);
+  else if (element == Element::ICE)
+    return std::make_pair(Attribute::POAG, Attribute::POFD);
+  else if (element == Element::ELECTRIC)
+    return std::make_pair(Attribute::CHAG, Attribute::CHFD);
+  else if (element == Element::DIGITAL)
+    return std::make_pair(Attribute::CYAG, Attribute::CYFD);
+  else if (element == Element::NIHIL)
+    return std::make_pair(Attribute::NIAG, Attribute::NIFD);
+  
+  return std::make_pair(Attribute::NONE, Attribute::NONE);
+}
 
 /*
  * Description: Determines and returns the element which a given element is

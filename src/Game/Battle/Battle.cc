@@ -28,8 +28,7 @@ const uint16_t Battle::kBATTLE_MENU_DELAY    = 400; /* Personal menu delay */
  * Defensive Primary Element Modifier
  * Offensive Secondary Element Modifier
  * Defensive Secondary Element Modifier
- * Offensive Critical Hit Chance [Unbearability] Modifier
- * Defensive Critical Hit Chance [Unbearability] Modifier
+
  * Base Critical Hit Chance [Unbearability] Modifier
  * Dodge Chance [Limbertude] Modifier
  * Dodge Chance [Limbertude] Per Level Modifier
@@ -48,9 +47,9 @@ const float    Battle::kOFF_PRIM_ELM_MODIFIER    =  1.07;
 const float    Battle::kDEF_PRIM_ELM_MODIFIER    =  1.04;
 const float    Battle::kOFF_SECD_ELM_MODIFIER    =  1.05;
 const float    Battle::kDEF_SECD_ELM_MODIFIER    =  1.03;
-const float    Battle::kOFF_CRIT_MODIFIER        =  1.10;
-const float    Battle::kDEF_CRIT_MODIFIER        =  0.90;
-const float    Battle::kBASE_CRIT_MODIFIER       =  1.25;
+const float    Battle::kBASE_CRIT_CHANCE         =  0.10;
+const float    Battle::kCRIT_MODIFIER            =  0.0008;
+const float    Battle::kCRIT_LVL_MODIFIER        =  0.012;
 const float    Battle::kDODGE_MODIFIER           =  1.10;
 const float    Battle::kDODGE_PER_LEVEL_MODIFIER =  1.04;
 const float    Battle::kPRIM_ELM_ADV_MODIFIER    =  1.15;
@@ -268,6 +267,40 @@ bool Battle::canIncrementIndex(Person* check_person)
   return false;
 }
 
+void Battle::clearActionVariables()
+{
+  prim_off = Attribute::NONE;
+  prim_def = Attribute::NONE;
+  secd_off = Attribute::NONE;
+  secd_def = Attribute::NONE;
+
+  temp_user_stats     = AttributeSet();
+  temp_user_max_stats = AttributeSet();
+
+  temp_target_stats.clear();
+  temp_target_max_stats.clear();
+
+  Person* curr_user   = nullptr;
+  Person* curr_target = nullptr;
+  Action* curr_action = nullptr;
+  Skill* curr_skill   = nullptr;
+
+  prim_strength = false;
+  secd_strength = false;
+  prim_weakness = false;
+  secd_weakness = false;
+
+  p_target_index = 0;
+
+  prim_user_off = 0;
+  prim_user_def = 0;
+  secd_user_off = 0;
+  secd_user_def = 0;
+
+  float critical_chance = 0.00;
+  float miss_chance    = 0.00;
+}
+
 /*
  * Description:
  *
@@ -294,15 +327,15 @@ void Battle::cleanUp()
 {
   action_buffer->clearAll();
   person_index = 0;
-
-  // TODO: clear any other data upon turn end? [03-16-14]
+ 
+  /* Clean all action processing related variables */
+  clearActionVariables();
 
   /* Increment the turn counter */
   turns_elapsed++;
 
   action_buffer->update();
   menu->unsetAll();
-
 
   setBattleFlag(CombatState::PHASE_DONE, true);
 
@@ -438,41 +471,219 @@ void Battle::personalUpkeep(Person* const target)
     // recalulate ailment factors
 }
 
-void Battle::processSkill(Person* user, std::vector<Person*> targets, Skill* action)
+void Battle::buildTargetVariables(Skill* curr_skill)
 {
-  auto effects = action->getEffects();
+  /* Build variables for the current target */
+  auto prim_targ_off = temp_target_stats.at(p_target_index).getStat(prim_off);
+  auto prim_targ_def = temp_target_stats.at(p_target_index).getStat(prim_def);
+  auto secd_targ_off = temp_target_stats.at(p_target_index).getStat(secd_off);
+  auto secd_targ_def = temp_target_stats.at(p_target_index).getStat(secd_def);
+ 
+  prim_strength = false; /* If the opponent's prim element is str */
+  secd_strength = false; /* If the opponent's secd element is str */
+  prim_weakness = false; /* If the opponent's prim element is weak */
+  secd_weakness = false; /* If the opponent's secd element is weak */
 
+  /* If the user's prim element is weak against the target's */
+  if (curr_user->getPrimary() == Helpers::getStrength(curr_target->getPrimary()))
+    prim_strength = true;
+
+  /* If the user's secd element is weak against the target's */
+  if (curr_user->getSecondary() == Helpers::getStrength(curr_target->getSecondary()))
+    secd_strength = true;
+
+  /* If the user's prim element is strong against the target's */
+  if (curr_user->getPrimary() == Helpers::getWeakness(curr_target->getPrimary()))
+    prim_weakness = true;
+  
+  /* If the user's secd element is strong against the target's */
+  if (curr_user->getSecondary() == Helpers::getWeakness(curr_target->getSecondary()))
+    secd_weakness = true;
+
+  if (prim_weakness && !secd_weakness)
+  {
+    if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
+    {
+      prim_user_off *= kPRIM_ELM_ADV_MODIFIER;
+      secd_user_off *= kPRIM_ELM_ADV_MODIFIER;
+    }
+    else if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
+    {
+      prim_user_def *= kPRIM_ELM_ADV_MODIFIER;
+      secd_user_def *= kPRIM_ELM_ADV_MODIFIER;
+    }
+  }
+  else if (!prim_weakness && secd_weakness)
+  {
+    if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
+    {
+      prim_user_off *= kSECD_ELM_ADV_MODIFIER;
+      secd_user_off *= kSECD_ELM_ADV_MODIFIER;
+    }
+    else if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
+    {
+      prim_user_off *= kSECD_ELM_ADV_MODIFIER;
+      secd_user_def *= kSECD_ELM_ADV_MODIFIER;
+    }
+  }
+  else if (prim_weakness && secd_weakness)
+  {
+    if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
+    {
+      prim_user_off *= kDOUBLE_ELM_ADV_MODIFIER;
+      secd_user_off *= kDOUBLE_ELM_ADV_MODIFIER;
+    }
+    else if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
+    {
+      prim_user_off *= kDOUBLE_ELM_ADV_MODIFIER;
+      secd_user_def *= kDOUBLE_ELM_ADV_MODIFIER;
+    }
+  }
+  else if (prim_strength && !secd_strength)
+  {
+    if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
+    {
+      prim_targ_off *= kPRIM_ELM_ADV_MODIFIER;
+      secd_targ_off *= kPRIM_ELM_ADV_MODIFIER;
+    }
+    else if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
+    {
+      prim_targ_def *= kPRIM_ELM_ADV_MODIFIER;
+      secd_targ_def *= kPRIM_ELM_ADV_MODIFIER;
+    }
+  }
+  else if (!prim_strength && secd_strength)
+  {
+    if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
+    {
+      prim_targ_off *= kSECD_ELM_ADV_MODIFIER;
+      secd_targ_off *= kSECD_ELM_ADV_MODIFIER;
+    }
+    else if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
+    {
+      prim_targ_off *= kSECD_ELM_ADV_MODIFIER;
+      secd_targ_def *= kSECD_ELM_ADV_MODIFIER;
+    }
+  }
+  else if (prim_strength && secd_strength)
+  {
+    if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
+    {
+      prim_targ_off *= kDOUBLE_ELM_ADV_MODIFIER;
+      secd_targ_off *= kDOUBLE_ELM_ADV_MODIFIER;
+    }
+    else if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
+    {
+      prim_targ_off *= kDOUBLE_ELM_ADV_MODIFIER;
+      secd_targ_def *= kDOUBLE_ELM_ADV_MODIFIER;
+    }
+  }
+
+  auto crit_happens = false;
+  critical_chance = kBASE_CRIT_CHANCE;
+  auto crit_mod = (temp_user_stats.getStat(Attribute::UNBR) * kCRIT_MODIFIER);
+  auto lvl_diff = (curr_user->getLevel() - curr_target->getLevel());
+  auto crit_lvl_mod = lvl_diff * kCRIT_LVL_MODIFIER;
+
+  critical_chance += crit_mod + crit_lvl_mod;
+
+  if (critical_chance > 0)
+  {
+    uint32_t crit_pc_1000 = floor(critical_chance * 1000);
+    if (Helpers::chanceHappens(crit_pc_1000, 1000))
+      crit_happens = true;
+  }
+
+  if (crit_happens)
+  {
+    // Multiply affected stats by crit factor
+  }
+
+  // Determine hit rate
+  // Add variance
+}
+
+void Battle::processSkill(Person* user, std::vector<Person*> targets, 
+                          Skill* curr_skill)
+{
+  /* Assign the current user and grab the list of effects of the Skill */
+  curr_user = user;
+  auto effects = curr_skill->getEffects();
+  
+  /* Grab the enumerated attribute types related to the elements of the Skill */
+  auto prim_stats = Helpers::elementToStats(curr_skill->getPrimary());
+  auto secd_stats = Helpers::elementToStats(curr_skill->getSecondary());
+  prim_off = prim_stats.first;
+  prim_def = prim_stats.second;
+  secd_off = secd_stats.first;
+  secd_def = secd_stats.second;
+
+  /* Perform each action on the skill */
   for (auto it = begin(effects); it != end(effects); ++it)
   {
-        // if offensive attack
-      // find stats related to the skill of the user
-      // find stats related to the skill of each target
-      // for each target
-        // deal damage based on these skill values
+    curr_action = *it;
+
+    /* Create a temporary copy of the User's current stats */
+    temp_user_stats = AttributeSet(user->getCurr());
+    temp_user_max_stats = AttributeSet(user->getCurrMax());
+
+    /* Build vectors of curr and curr_max stas for each target */
+    for (auto jt = begin(targets); jt != end(targets); ++jt)
+    {
+      temp_target_stats.push_back(AttributeSet((*jt)->getCurr()));
+      temp_target_max_stats.push_back(AttributeSet((*jt)->getCurrMax()));
+    }
+
+    std::cout << "location 1" << std::endl;
+    /* Variables related to action and to skill elements */
+    auto user_attr = (*it)->getUserAttribute();
+    auto targ_attr = (*it)->getTargetAttribute();
+
+    prim_user_off = temp_user_stats.getStat(prim_off);
+    prim_user_def = temp_user_stats.getStat(prim_def);
+    secd_user_off = temp_user_stats.getStat(secd_off);
+    secd_user_def = temp_user_stats.getStat(secd_def);
+
+        std::cout << "location 2" << std::endl;
+    if (user->getPrimary() == curr_skill->getPrimary())
+    {
+      prim_user_off *= kOFF_PRIM_ELM_MODIFIER;
+      prim_user_def *= kDEF_PRIM_ELM_MODIFIER;
+    }
+    else if (user->getSecondary() == curr_skill->getSecondary())
+    {
+      secd_user_off *= kOFF_SECD_ELM_MODIFIER;
+      secd_user_def *= kDEF_SECD_ELM_MODIFIER;
+    }
+
+    auto test = (*it)->actionFlag(ActionFlags::ALTER);
+    std::cout << "location 3" << std::endl;
+    if ((*it)->actionFlag(ActionFlags::ALTER))
+    {
+      p_target_index = 0;
+
+      for (auto jt = begin(targets); jt != end(targets); ++jt, p_target_index++)
+      {
+        /* Build the variables and calculate factors for the current target */
+        curr_target = *jt;
+        std::cout << "building target variabels" << std::endl;
+        buildTargetVariables(curr_skill);
+        std::cout << "built target variabels" << std::endl;
+
+        if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
+        {
           // NOTES: CHECK FOR IGNORE FLAGS ALONG THE WAY
-          // primary factor modifier * prim element of user
-          // secondary factor modifier * secd element of user
-          // find elemental strengths/weaknesses
-            // add modifiers (one way, two ways, one way or one way
-          // determine crit chance
-            // if so, multiply by crit factor
-          // determine hit rate
-          // if so, add variance
-          // determine ratio of target based on prim/secd elements
-          // deal the damage
-        // check party death upon each damage dealt
-        // output info to BIB
+          // deal damage based on computed values
+          // check party death upon each damage dealt
+          // output info to BIB
+        }
+        else if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
+        {
 
-    if (action->getFlag(SkillFlags::OFFENSIVE))
-    {
-
+        }          
+      }
     }
-    else if (action->getFlag(SkillFlags::DEFENSIVE))
-    {
-
-    }
-
-    if ((*it)->actionFlag(ActionFlags::INFLICT))
+    else if ((*it)->actionFlag(ActionFlags::INFLICT))
     {
     // if infliction
       // check for immunities
@@ -501,7 +712,9 @@ void Battle::processSkill(Person* user, std::vector<Person*> targets, Skill* act
     {
 
     }
+    std::cout << "location 4" << std::endl;
   }
+  std::cout << "location 5" << std::endl;
 }
 
 /* Process the actions (Items & Skills) in the buffer */
@@ -511,19 +724,22 @@ void Battle::processActions()
   std::cout << "Processing actions on buffer." << std::endl;
 #endif
 
-  auto curr_action = ActionType::NONE;
+  auto curr_action_type = ActionType::NONE;
 
   do
   {
-    curr_action = action_buffer->getActionType();
+    curr_action_type = action_buffer->getActionType();
     auto can_process = true;
 
-    if (curr_action == ActionType::SKILL)
+    if (curr_action_type == ActionType::SKILL)
     {
       if (action_buffer->getSkill() != nullptr)
       {
         if (action_buffer->getSkill()->getCooldown() == 0)
         {
+#ifdef UDEBUG
+          std::cout << "Processing skill action!" << std::endl;
+#endif
           processSkill(action_buffer->getUser(), action_buffer->getTargets(), 
                        action_buffer->getSkill());
         }
@@ -533,13 +749,16 @@ void Battle::processActions()
         can_process = false;
       }
     }
-    else if (curr_action == ActionType::ITEM)
+    else if (curr_action_type == ActionType::ITEM)
     {
       if (action_buffer->getItem() != nullptr && 
           action_buffer->getItem()->getUseSkill() != nullptr)
       {
         if (action_buffer->getItem()->getUseSkill()->getCooldown() == 0)
         {
+#ifdef UDEBUG
+          std::cout << "Processing item skill action!" << std::endl;
+#endif
           processSkill(action_buffer->getUser(), action_buffer->getTargets(),
                        action_buffer->getItem()->getUseSkill());
         }
@@ -549,23 +768,23 @@ void Battle::processActions()
         can_process = false;
       }
     }
-    else if (curr_action == ActionType::DEFEND)
+    else if (curr_action_type == ActionType::DEFEND)
     {
       // Defend oneself (increase defenses by some factor)
     }
-    else if (curr_action == ActionType::GUARD)
+    else if (curr_action_type == ActionType::GUARD)
     {
       // Guard the appropriate target
     }
-    else if (curr_action == ActionType::IMPLODE)
+    else if (curr_action_type == ActionType::IMPLODE)
     {
       // Annihilate self in catastrophic hit against opponents!
     }
-    else if (curr_action == ActionType::RUN)
+    else if (curr_action_type == ActionType::RUN)
     {
       // Attempt to run!
     }
-    else if (curr_action == ActionType::PASS)
+    else if (curr_action_type == ActionType::PASS)
     {
       // Pass the turn, do nothing!
     }
@@ -608,11 +827,10 @@ void Battle::selectEnemyActions()
   if (person_index < 0 && curr_module != nullptr &&
       curr_module->getFlag(AIState::SELECTION_COMPLETE))
   {
-    #ifdef UDEBUG
+#ifdef UDEBUG
   std::cout << "Attempting to Add Enemy Actions: " << person_index << std::endl;
 #endif 
     auto buffer_addition = false;
-
     auto person_user     = getPerson(person_index);
     auto action_type     = curr_module->getActionType();
     auto action_targets  = curr_module->getChosenTargets();
@@ -628,11 +846,13 @@ void Battle::selectEnemyActions()
     {
       auto selected_item = curr_module->getSelectedItem();
 
+      std::cout << "Attempting to add" << selected_item->getName() << "to buffer. " << std::endl;
       if (action_buffer->add(person_user, selected_item, action_targets, 0))
         buffer_addition = true;
     
       if (buffer_addition)
       {
+        std::cout << "Added " << selected_item->getName() << "to buffer. " << std::endl;
         if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
         {
           std::cout << "Removing " << selected_item->getName() << " from "
@@ -641,6 +861,8 @@ void Battle::selectEnemyActions()
 
         foes->getInventory()->removeItemID(selected_item->getGameID());
         curr_module->setItems(foes->getInventory()->getBattleItems());
+
+        std::cout << "Does this delete the pointer? " << selected_item->getName() << "to buffer. " << std::endl;
       }
     }
     else if (action_type == ActionType::DEFEND  ||
@@ -680,6 +902,7 @@ void Battle::selectEnemyActions()
   if (person_index < 0 && 
       person_index >= (-1 * static_cast<int32_t>(foes->getSize())))
   {
+    std::cout << "Preparing ai module for next person index" << std::endl;
     auto person_user = getPerson(person_index);
 
     /* If no curr module or IF the current selection is complete */
@@ -1373,7 +1596,9 @@ bool Battle::update(int32_t cycle_time)
           scope = curr_module->getSelectedItem()->getUseSkill()->getScope();
         }
         else if (action_type == ActionType::DEFEND || 
-                 action_type == ActionType::IMPLODE)
+                 action_type == ActionType::IMPLODE ||
+                 action_type == ActionType::RUN ||
+                 action_type == ActionType::PASS)
         {
           scope = ActionScope::USER;
         }
@@ -1732,21 +1957,6 @@ float Battle::getOffSecdElmMod()
 float Battle::getDefSecdElmMod()
 {
   return kDEF_SECD_ELM_MODIFIER;
-}
-
-float Battle::getOffCritMod()
-{
-  return kOFF_CRIT_MODIFIER;
-}
-
-float Battle::getDefCritMod()
-{
-  return kDEF_CRIT_MODIFIER;
-}
-
-float Battle::getBaseCritMod()
-{
-  return kBASE_CRIT_MODIFIER;
 }
 
 float Battle::getDodgeMod()

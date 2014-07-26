@@ -423,6 +423,7 @@ bool AIModule::selectRandomAction()
     auto rand_value = Helpers::randU(1, items_size);
 
     chosen_item = valid_items[rand_value - 1].first;
+    std::cout << "Chosen item name: " << chosen_item->getName() << std::endl;
     chosen_action_index = rand_value;
     action_index_selected = true;
   }

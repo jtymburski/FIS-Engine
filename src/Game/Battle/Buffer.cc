@@ -86,6 +86,10 @@ bool Buffer::checkValid(BufferAction& elm)
     {
       /* Action item must not be null and item use must be enabled */
       is_valid &= !(elm.item_used == nullptr);
+
+      if (is_valid)
+        is_valid &= !(elm.item_used->getUseSkill() == nullptr);
+
       is_valid &= elm.user->getBFlag(BState::ITM_ENABLED);
     }
     else if (elm.type == ActionType::NONE)
@@ -187,15 +191,15 @@ bool Buffer::sort(BufferSorts buffer_sorts)
  *         cooldown - The number of turns the action will take to perform
  * Output: bool - true if the addition takes places successfully
  */
-bool Buffer::add(Person* const user, Skill* const skill_used, 
+bool Buffer::add(Person* const new_user, Skill* const new_skill_used, 
                  std::vector<Person*> targets, const uint32_t &cooldown)
 {
   BufferAction new_elm;
 
   new_elm.cooldown   = cooldown;
-  new_elm.user       = user;
+  new_elm.user       = new_user;
   new_elm.item_used  = nullptr;
-  new_elm.skill_used = skill_used;
+  new_elm.skill_used = new_skill_used;
   new_elm.targets    = targets;
   new_elm.type       = ActionType::SKILL;
 
@@ -220,14 +224,16 @@ bool Buffer::add(Person* const user, Skill* const skill_used,
  *         cooldown - The number of turns the action will take to perform
  * Output: bool - true if the addition takes places successfully
  */
-bool Buffer::add(Person* const user, Item* const item_used, 
+bool Buffer::add(Person* const new_user, Item* const new_item_used, 
                  std::vector<Person*> targets, const uint32_t &cooldown)
-{  
+{ 
   BufferAction new_elm;
 
+  std::cout << "Adding item to action bufer" << new_item_used->getName() << std::endl;
+
   new_elm.cooldown   = cooldown;
-  new_elm.user       = user;
-  new_elm.item_used  = item_used;
+  new_elm.user       = new_user;
+  new_elm.item_used  = new_item_used;
   new_elm.skill_used = nullptr;
   new_elm.targets    = targets;
   new_elm.type       = ActionType::ITEM;
