@@ -75,6 +75,7 @@ bool Buffer::checkValid(BufferAction& elm)
       is_valid &= (*it)->getBFlag(BState::IN_BATTLE);
     }
 
+
     if (elm.type == ActionType::SKILL)
     {
       /* Action skill must not be null and skill use must be enabled */

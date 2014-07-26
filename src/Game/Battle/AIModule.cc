@@ -16,6 +16,10 @@
 #include "Game/Battle/AIModule.h"
 #include "Game/Player/Person.h"
 
+/*=============================================================================
+ * CONSTANTS
+ *============================================================================*/
+
 /* Default Difficulty
  * Default Personality
  * Maximum Record Size
@@ -68,17 +72,13 @@ const AITarget AIModule::kPAI_DEFAULT_TARGET{AITarget::LOWEST_HP_FIRST};
  */
 
 /*=============================================================================
- * CONSTANTS
- *============================================================================*/
-
-/*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
 
 /*
- * Description:
+ * Description: Constructs an AI module object with default parameters.
  *
- * Inputs:
+ * Inputs: none
  */
 AIModule::AIModule()
 {
@@ -86,10 +86,10 @@ AIModule::AIModule()
 }
 
 /*
- * Description:
+ * Description: Constructs an AI object given a difficulty and a personality.
  *
- * Inputs:
- * Output:
+ * Inputs: diff - the difficulty of the new AI
+ *         prim_personality - the personality to make the AI
  */
 AIModule::AIModule(const AIDifficulty &diff,
                    const AIPersonality &prim_personality)
@@ -101,10 +101,12 @@ AIModule::AIModule(const AIDifficulty &diff,
 }
 
 /*
- * Description:
+ * Description: Constructs an AI object given a difficulty and a primary and
+ *              secondary personality.
  *
- * Inputs:
- * Output:
+ * Inputs: diff - the difficulty of the new AI
+ *         prim_personality - the personality to make the AI
+ *         secd_personality - minor personality effects for secd personality
  */
 AIModule::AIModule(const AIDifficulty &diff, 
                    const AIPersonality &prim_personality,
@@ -138,7 +140,7 @@ Person* AIModule::addRandomTarget(std::vector<Person*> available_targets)
 }
 
 /*
- * Description: Constructs a uniformd distribution between valid skill choices
+ * Description: Constructs a uniform distribution between valid skill choices
  *              and their probabilities based on the arbitrary value level of
  *              the skill.
  *
@@ -159,10 +161,12 @@ void AIModule::buildUniformSkills()
 }
 
 /*
- * Description:
+ * Description: Constructs a unfiorm probability distribution for the list of 
+ *              possible items to use based upon each item's skill use's 
+ *              arbitrary value.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: bool - true if there were no problems in creating the distribution
  */
 /* Constructs a uniform probability distribution from Items */
 bool AIModule::buildUniformItems()
@@ -202,10 +206,12 @@ bool AIModule::buildUniformItems()
 }
 
 /*
- * Description:
+ * Description: Calculates probabilities for an AI to choose between taking
+ *              an action of a certain type (SKILL, ITEM, etc.) for all levels
+ *              of AI. Generally, skill will be among the highest choice.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: none
  */
 void AIModule::calculateActionTypeChances()
 {
@@ -314,14 +320,16 @@ void AIModule::calculateActionTypeChances()
 #endif
   }
 
+  /* Set flag so Battle knows that the action type has been chosen */
   setFlag(AIState::ACTION_TYPE_CHOSEN, true);
 }
 
 /*
- * Description:
+ * Description: Asserts that the AI module is in a state where an appropriate
+ *              action choice can be made.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: bool - true if an action can be made
  */
 bool AIModule::canSelectAction()
 {
@@ -336,10 +344,10 @@ bool AIModule::canSelectAction()
 }
 
 /*
- * Description:
+ * Description: Asserts that SKILL is a valid action type to be chosen
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: bool - true if SKILL is a valid action type
  */
 bool AIModule::canSelectSkill()
 {
@@ -353,10 +361,10 @@ bool AIModule::canSelectSkill()
 }
 
 /*
- * Description:
+ * Description: Asserts that ITEM is a valid action type to be chosen
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: bool - true if ITEM is a valid action type
  */
 bool AIModule::canSelectItem()
 {
@@ -370,10 +378,12 @@ bool AIModule::canSelectItem()
 }
 
 /*
- * Description:
+ * Description: Given a base_value of float, calculates a random value based
+ *              upon the kGAI_VARIANCE for that float value to allow for some
+ *              playful variance in number calculations.
  *
- * Inputs:
- * Output:
+ * Inputs: base_value - starting float value
+ * Output: float - the new value with some randomness calculated in
  */
 float AIModule::calcFloatValVariance(const float &base_value)
 {
@@ -387,10 +397,11 @@ float AIModule::calcFloatValVariance(const float &base_value)
 }
 
 /*
- * Description:
+ * Description: Selects an action for a Random level AI based on the already
+ *              chosen type of action.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: bool - true if an action was able to take place
  */
 bool AIModule::selectRandomAction()
 {
@@ -411,29 +422,17 @@ bool AIModule::selectRandomAction()
     auto items_size = valid_items.size();
     auto rand_value = Helpers::randU(1, items_size);
 
-    chosen_item = valid_items.at(rand_value - 1).first;
+    chosen_item = valid_items[rand_value - 1].first;
     chosen_action_index = rand_value;
     action_index_selected = true;
   }
-  else if (chosen_action_type == ActionType::GUARD)
+  else if (chosen_action_type == ActionType::GUARD ||
+           chosen_action_type == ActionType::DEFEND ||
+           chosen_action_type == ActionType::IMPLODE ||
+           chosen_action_type == ActionType::RUN ||
+           chosen_action_type == ActionType::PASS)
   {
-    //TODO: Action index selection [07-20-14]
-  }
-  else if (chosen_action_type == ActionType::DEFEND)
-  {
-    //TODO: Action index selection [07-20-14]
-  }
-  else if (chosen_action_type == ActionType::IMPLODE)
-  {
-    //TODO: Action index selection [07-20-14]
-  }
-  else if (chosen_action_type == ActionType::RUN)
-  {
-    //TODO: Action index selection [07-20-14]
-  }
-  else if (chosen_action_type == ActionType::PASS)
-  {
-    //TODO: Action index selection [07-20-14]
+    action_index_selected = true;
   }
   else
   {
@@ -748,13 +747,6 @@ bool AIModule::addActionToRecord()
     bool valid_action = true;
 
     valid_action &= (chosen_action_type != ActionType::NONE);
-
-    if (chosen_skill != nullptr && chosen_item != nullptr)
-      valid_action = false;
-
-    if ((chosen_skill != nullptr || chosen_item != nullptr) &&
-        chosen_targets.empty())
-      valid_action = false;
 
     if (valid_action)
     {
@@ -1358,10 +1350,10 @@ bool AIModule::setFriendTargets(std::vector<Person*> new_valid_targets)
 }
 
 /*
- * Description:
+ * Description: Assigns a new vector of foe targets for the AI Module to choose
  *
- * Inputs:
- * Output:
+ * Inputs: new_valid_targets - the vector of foe pointers to choose as targets
+ * Output: bool - true
  */
 bool AIModule::setFoeTargets(std::vector<Person*> new_valid_targets)
 {
@@ -1371,10 +1363,10 @@ bool AIModule::setFoeTargets(std::vector<Person*> new_valid_targets)
 }
 
 /*
- * Description:
+ * Description: Assigns a new level of difficulty for the AI
  *
- * Inputs:
- * Output:
+ * Inputs: new_difficulty - enumerated difficulty to be assigned to the AI
+ * Output: bool - true if difficulty has been changed
  */
 bool AIModule::setDifficulty(const AIDifficulty &new_difficulty)
 {
@@ -1389,10 +1381,10 @@ bool AIModule::setDifficulty(const AIDifficulty &new_difficulty)
 }
 
 /*
- * Description:
+ * Description: Assigns a new parent for the AI module
  *
- * Inputs:
- * Output:
+ * Inputs: new_parent - pointer to the new parent object
+ * Output: bool - true if the new parent is nullptr (valid parent)
  */
 bool AIModule::setParent(Person* const new_parent)
 {
@@ -1402,10 +1394,10 @@ bool AIModule::setParent(Person* const new_parent)
 }
 
 /*
- * Description:
+ * Description: Assigns a new primary personality for the AI module
  *
- * Inputs:
- * Output:
+ * Inputs: new_personality - new enumerated personality type to be assigned
+ * Output: bool - true if the personality type was changed
  */
 bool AIModule::setPrimPersonality(const AIPersonality &new_personality)
 {
@@ -1420,10 +1412,10 @@ bool AIModule::setPrimPersonality(const AIPersonality &new_personality)
 }
 
 /*
- * Description:
+ * Description: Assigns a new secondary personality for the AI module
  *
- * Inputs:
- * Output:
+ * Inputs: new_personality - new enumerated personality type to be assigned
+ * Output: bool - true if the personality type was changed
  */
 bool AIModule::setSecdPersonality(const AIPersonality &new_personality)
 {
@@ -1438,10 +1430,10 @@ bool AIModule::setSecdPersonality(const AIPersonality &new_personality)
 }
 
 /*
- * Description:
+ * Description: Assigns a new running config for the AI module
  *
- * Inputs:
- * Output:
+ * Inputs: new_running_config - ptr to options for a new running configuration
+ * Output: bool - true if the running config was assigned
  */
 bool AIModule::setRunningConfig(Options* const new_running_config)
 {

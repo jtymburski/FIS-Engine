@@ -537,7 +537,7 @@ void Game::setupBattle()
   for (uint32_t i = 0; i < foes->getSize(); i++)
     foes->getMember(i)->battlePrep();
 
-  ai_module_tester.aiActionTypeTests(10000, cloud_dude_module, 
+  ai_module_tester.aiActionTypeTests(0, cloud_dude_module, 
                                      foes->getInventory()->getBattleItems());
 
 

@@ -520,7 +520,7 @@ void Battle::selectEnemyActions()
     }
     else if (action_type == ActionType::ITEM)
     {
-      auto selected_item = menu->getSelectedItem();
+      auto selected_item = curr_module->getSelectedItem();
 
       if (action_buffer->add(person_user, selected_item, action_targets, 0))
         buffer_addition = true;
@@ -566,7 +566,7 @@ void Battle::selectEnemyActions()
     }
     else
     {
-      std::cerr << "[Error]: Action buffer addition failure!" << std::endl;   
+      std::cout << "[Error]: Action buffer addition failure!" << std::endl;   
     }
   }
 
