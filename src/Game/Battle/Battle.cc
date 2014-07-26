@@ -48,6 +48,7 @@ const float    Battle::kDEF_PRIM_ELM_MODIFIER    =  1.04;
 const float    Battle::kOFF_SECD_ELM_MODIFIER    =  1.05;
 const float    Battle::kDEF_SECD_ELM_MODIFIER    =  1.03;
 const float    Battle::kBASE_CRIT_CHANCE         =  0.10;
+const float    Battle::kOFF_CRIT_FACTOR          =  1.25;
 const float    Battle::kCRIT_MODIFIER            =  0.0008;
 const float    Battle::kCRIT_LVL_MODIFIER        =  0.012;
 const float    Battle::kDODGE_MODIFIER           =  1.10;
@@ -159,7 +160,7 @@ bool Battle::addAilment(Ailment* const new_ailment)
     auto ail_name = static_cast<int32_t>(new_ailment->getType());
 
 #ifdef UDEBUG
-    std::cout << "Inflicting ailment: " << + ail_name + " on " + vic_name 
+    std::cout << "Inflicting ailment: " << ail_name + " on " + vic_name 
               << "\n";
 #else
   if (battle_mode == BattleMode::TEXT)
@@ -280,11 +281,14 @@ void Battle::clearActionVariables()
   temp_target_stats.clear();
   temp_target_max_stats.clear();
 
-  Person* curr_user   = nullptr;
-  Person* curr_target = nullptr;
-  Action* curr_action = nullptr;
-  Skill* curr_skill   = nullptr;
+  std::cout << "ASSIGNING CURR USER" << std::endl;
+  curr_user   = nullptr;
+  curr_target = nullptr;
+  curr_action = nullptr;
+  curr_skill   = nullptr;
 
+  crit_happens   = false;
+  action_happens = false;
   prim_strength = false;
   secd_strength = false;
   prim_weakness = false;
@@ -298,7 +302,7 @@ void Battle::clearActionVariables()
   secd_user_def = 0;
 
   float critical_chance = 0.00;
-  float miss_chance    = 0.00;
+  float miss_chance     = 0.00;
 }
 
 /*
@@ -474,6 +478,7 @@ void Battle::personalUpkeep(Person* const target)
 void Battle::buildTargetVariables(Skill* curr_skill)
 {
   /* Build variables for the current target */
+  auto targ_attrs = temp_target_stats.at(p_target_index);
   auto prim_targ_off = temp_target_stats.at(p_target_index).getStat(prim_off);
   auto prim_targ_def = temp_target_stats.at(p_target_index).getStat(prim_def);
   auto secd_targ_off = temp_target_stats.at(p_target_index).getStat(secd_off);
@@ -579,8 +584,11 @@ void Battle::buildTargetVariables(Skill* curr_skill)
     }
   }
 
-  auto crit_happens = false;
+  crit_happens  = false;
+  action_happens = true;
+
   critical_chance = kBASE_CRIT_CHANCE;
+
   auto crit_mod = (temp_user_stats.getStat(Attribute::UNBR) * kCRIT_MODIFIER);
   auto lvl_diff = (curr_user->getLevel() - curr_target->getLevel());
   auto crit_lvl_mod = lvl_diff * kCRIT_LVL_MODIFIER;
@@ -596,11 +604,22 @@ void Battle::buildTargetVariables(Skill* curr_skill)
 
   if (crit_happens)
   {
-    // Multiply affected stats by crit factor
+    targ_attrs.setStat(Attribute::PHAG, targ_attrs.getStat(Attribute::PHAG) * 
+                                        kOFF_CRIT_FACTOR);
+    prim_user_off *= kOFF_CRIT_FACTOR;
+    secd_user_off *= kOFF_CRIT_FACTOR;
   }
 
-  // Determine hit rate
-  // Add variance
+  miss_chance = temp_target_stats.at(p_target_index).getStat(Attribute::LIMB);
+  miss_chance *= kDODGE_MODIFIER;
+  miss_chance += (-lvl_diff) * kDODGE_PER_LEVEL_MODIFIER;
+
+  if (miss_chance > 0)
+  {
+    uint32_t miss_pc_1000 = floor(miss_chance * 1000);
+    if (Helpers::chanceHappens(miss_pc_1000, 1000))
+      action_happens = false;
+  }
 }
 
 void Battle::processSkill(Person* user, std::vector<Person*> targets, 
@@ -1097,6 +1116,8 @@ bool Battle::setupClass()
 
   turn_state = TurnState::BEGIN;
 
+  clearActionVariables();
+
   return true;
 }
 
@@ -1338,9 +1359,9 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
   Helpers::flushConsole();
 
 #ifdef UDEBUG
-  if (event.keysym.sym == SDLK_INSERT)
+  if (event.keysym.sym == SDLK_PAUSE)
     printPartyState();
-  else if (event.keysym.sym == SDLK_DELETE)
+  else if (event.keysym.sym == SDLK_PRINTSCREEN)
     printTurnState();
   else if (event.keysym.sym == SDLK_HOME)
     action_buffer->print(false);
@@ -1350,6 +1371,8 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
     printInventory(friends);
   else if (event.keysym.sym == SDLK_PAGEDOWN)
     printInventory(foes);
+  else if (event.keysym.sym == SDLK_DELETE)
+    printTargetVariables(false);
 #endif
 
   if (menu->getWindowStatus() == WindowStatus::ON)
@@ -1454,9 +1477,57 @@ void Battle::printInventory(Party* const target_party)
   }
   else
   {
-    std::cout << "[Warning]: Attempting to print null party or null inventory."
+    std::cout << "[Warning]: Attempting to print ynull party or null inventory."
               << std::endl;
   }
+}
+
+void Battle::printTargetVariables(const bool &print_target_stats)
+{
+  std::cout << "---- Current User/Action/Target Variables ----\n";
+  std::cout << "Primary Off Attr:     " << AttributeSet::getName(prim_off);
+  std::cout << "\nPrimary Def Attr:   " << AttributeSet::getName(prim_def);
+  std::cout << "\nSecondary Off Attr: " << AttributeSet::getName(secd_off);
+  std::cout << "\nSecondary Def Attr: " << AttributeSet::getName(secd_def);
+
+  std::cout << "\n--- Temp User Stats: ---\n";
+  temp_user_stats.print();
+  //temp_user_max_stats.print();
+
+  if (print_target_stats)
+  {
+    for (auto it = begin(temp_target_stats); it != end(temp_target_stats); ++it)
+      (*it).print();
+    for (auto it = begin(temp_target_max_stats)
+         ; it != end(temp_target_max_stats)
+         ; ++it)
+    {
+      (*it).print();
+    }
+  }
+
+  if (curr_user != nullptr)
+    std::cout << "Curr User: " << curr_user->getName();
+  if (curr_target != nullptr)
+    std::cout << "\nCurr Target: " << curr_target->getName();
+  if (curr_action != nullptr)
+    std::cout << "\nCurr Action: " << curr_action->getID();
+  if (curr_skill != nullptr)
+    std::cout << "\nCurr Skill: " << curr_skill->getName();
+
+  std::cout << "\nCrit Happens? "    << crit_happens;
+  std::cout << "\nAction Happens? "  << action_happens;
+  std::cout << "\nPrim Strength? "   << prim_strength;
+  std::cout << "\nSecd Strength? "   << secd_strength;
+  std::cout << "\nPrim Weakness? "   << prim_weakness;
+  std::cout << "\nSecd Weakness? "   << secd_weakness;
+  std::cout << "\nP Target Index: "  << p_target_index;
+  std::cout << "\n\nPrim User Off: " << prim_user_off;
+  std::cout << "\nPrim User Def: "   << prim_user_def;
+  std::cout << "\nSecd User Off: "   << secd_user_off;
+  std::cout << "\nSecd User Def:"    << secd_user_def;
+  std::cout << "\nCritical Chance: " << critical_chance;
+  std::cout << "\nMiss Chance: "     << miss_chance << "\n";
 }
 
 void Battle::printTurnState()

@@ -220,6 +220,9 @@ private:
   Action* curr_action;
   Skill*  curr_skill;
 
+  bool crit_happens;
+  bool action_happens;
+
   bool prim_strength;
   bool secd_strength;
   bool prim_weakness;
@@ -248,6 +251,7 @@ private:
   static const float    kDEF_PRIM_ELM_MODIFIER;
   static const float    kOFF_SECD_ELM_MODIFIER;
   static const float    kDEF_SECD_ELM_MODIFIER;
+  static const float    kOFF_CRIT_FACTOR;
   static const float    kBASE_CRIT_CHANCE;
   static const float    kCRIT_MODIFIER;
   static const float    kCRIT_LVL_MODIFIER;
@@ -385,6 +389,7 @@ public:
   void printPartyState();
   void printPersonState(Person* const member, const int32_t &person_index);
   void printInventory(Party* const target_party);
+  void printTargetVariables(const bool &print_target_stats = false);
   void printTurnState();
 
   /* Update the cycle time of Battle */
