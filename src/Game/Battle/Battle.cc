@@ -253,117 +253,104 @@ int32_t calcBaseDamage(const float &crit_factor)
  */
 void Battle::calcElementalMods()
 {
-  /* Build variables for the current target */
+  /* Grab the temp attribute set for the curent processing target index */
   auto targ_attrs = temp_target_stats.at(p_target_index);
 
-  auto prim_user_off = temp_user_stats.getStat(prim_off);
-  auto prim_user_def = temp_user_stats.getStat(prim_def);
-  auto secd_user_off = temp_user_stats.getStat(secd_off);
-  auto secd_user_def = temp_user_stats.getStat(secd_def);
-  auto prim_targ_off = temp_target_stats.at(p_target_index).getStat(prim_off);
-  auto prim_targ_def = temp_target_stats.at(p_target_index).getStat(prim_def);
-  auto secd_targ_off = temp_target_stats.at(p_target_index).getStat(secd_off);
-  auto secd_targ_def = temp_target_stats.at(p_target_index).getStat(secd_def);
- 
+  /* Determine the correct stats to apply the modifier to */
+  auto prim_user_stat = Attribute::NONE;
+  auto secd_user_stat = Attribute::NONE;
+  auto prim_targ_stat = Attribute::NONE;
+  auto secd_targ_stat = Attribute::NONE;
+
+  if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
+  {
+    prim_user_stat = prim_off;
+    secd_user_stat = secd_off;
+    prim_targ_stat = prim_def;
+    secd_targ_stat = secd_def;
+  }
+  else if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
+  {
+    //TODO: Elemental modifiers for defensive skills?
+  }
+
+  auto prim_user_mod = temp_user_stats.getStat(prim_user_stat);
+  auto secd_user_mod = temp_user_stats.getStat(secd_user_stat);
+
+  auto prim_targ_mod = targ_attrs.getStat(prim_targ_stat);
+  auto secd_targ_mod = targ_attrs.getStat(secd_targ_stat);
+
   auto prim_strength = false; /* If the opponent's prim element is str */
   auto secd_strength = false; /* If the opponent's secd element is str */
   auto prim_weakness = false; /* If the opponent's prim element is weak */
   auto secd_weakness = false; /* If the opponent's secd element is weak */
 
+  if (curr_skill->getPrimary() != Element::NONE)
+  {
   /* If the user's prim element is weak against the target's */
-  if (curr_user->getPrimary() == Helpers::getStrength(curr_target->getPrimary()))
-    prim_strength = true;
+    if (curr_skill->getPrimary() == 
+        Helpers::getStrength(curr_target->getPrimary()))
+      prim_strength = true;
 
-  /* If the user's secd element is weak against the target's */
-  if (curr_user->getSecondary() == Helpers::getStrength(curr_target->getSecondary()))
-    secd_strength = true;
+    /* If the user's prim element is strong against the target's */
+    if (curr_skill->getPrimary() == 
+        Helpers::getWeakness(curr_target->getPrimary()))
+      prim_weakness = true;
+  }
 
-  /* If the user's prim element is strong against the target's */
-  if (curr_user->getPrimary() == Helpers::getWeakness(curr_target->getPrimary()))
-    prim_weakness = true;
-  
-  /* If the user's secd element is strong against the target's */
-  if (curr_user->getSecondary() == Helpers::getWeakness(curr_target->getSecondary()))
-    secd_weakness = true;
+  if (curr_skill->getSecondary() != Element::NONE)
+  {
+    /* If the user's secd element is weak against the target's */
+    if (curr_skill->getSecondary() == 
+        Helpers::getStrength(curr_target->getSecondary()))
+      secd_strength = true;    
 
-  if (prim_weakness && !secd_weakness)
-  {
-    if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
-    {
-      prim_user_off *= kPRIM_ELM_ADV_MODIFIER;
-      secd_user_off *= kPRIM_ELM_ADV_MODIFIER;
-    }
-    else if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
-    {
-      prim_user_def *= kPRIM_ELM_ADV_MODIFIER;
-      secd_user_def *= kPRIM_ELM_ADV_MODIFIER;
-    }
+    /* If the user's secd element is strong against the target's */
+    if (curr_skill->getSecondary() == 
+        Helpers::getWeakness(curr_target->getSecondary()))
+      secd_weakness = true;
   }
-  else if (!prim_weakness && secd_weakness)
+
+  if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
   {
-    if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
+    /* User is strong in primary elemental case */
+    if (prim_weakness && !secd_weakness)
     {
-      prim_user_off *= kSECD_ELM_ADV_MODIFIER;
-      secd_user_off *= kSECD_ELM_ADV_MODIFIER;
+      prim_user_mod *= kPRIM_ELM_ADV_MODIFIER;
     }
-    else if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
+    /* User is strong in secondary elemental case */
+    else if (!prim_weakness && secd_weakness)
     {
-      prim_user_off *= kSECD_ELM_ADV_MODIFIER;
-      secd_user_def *= kSECD_ELM_ADV_MODIFIER;
+      secd_user_mod *= kSECD_ELM_ADV_MODIFIER;
     }
+    /* User is strong in both elemental cases */
+    else if (prim_weakness && secd_weakness)
+    {
+      prim_user_mod *= kDOUBLE_ELM_ADV_MODIFIER;
+      secd_user_mod *= kDOUBLE_ELM_ADV_MODIFIER;
+    }
+    /* Opponent is strong in primary elemental case */
+    else if (prim_strength && !secd_strength)
+    {
+      prim_targ_mod *= kPRIM_ELM_ADV_MODIFIER;
+    }
+    /* Opponent is strong in secondary elemental case */
+    else if (!prim_strength && secd_strength)
+    {
+      secd_targ_mod *= kSECD_ELM_ADV_MODIFIER;
+    }
+    /* Opponent is strong in both elemental cases */
+    else if (prim_strength && secd_strength)
+    {
+      prim_targ_mod *= kDOUBLE_ELM_ADV_MODIFIER;
+      secd_targ_mod *= kDOUBLE_ELM_ADV_MODIFIER;
+   }
   }
-  else if (prim_weakness && secd_weakness)
-  {
-    if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
-    {
-      prim_user_off *= kDOUBLE_ELM_ADV_MODIFIER;
-      secd_user_off *= kDOUBLE_ELM_ADV_MODIFIER;
-    }
-    else if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
-    {
-      prim_user_off *= kDOUBLE_ELM_ADV_MODIFIER;
-      secd_user_def *= kDOUBLE_ELM_ADV_MODIFIER;
-    }
-  }
-  else if (prim_strength && !secd_strength)
-  {
-    if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
-    {
-      prim_targ_off *= kPRIM_ELM_ADV_MODIFIER;
-      secd_targ_off *= kPRIM_ELM_ADV_MODIFIER;
-    }
-    else if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
-    {
-      prim_targ_def *= kPRIM_ELM_ADV_MODIFIER;
-      secd_targ_def *= kPRIM_ELM_ADV_MODIFIER;
-    }
-  }
-  else if (!prim_strength && secd_strength)
-  {
-    if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
-    {
-      prim_targ_off *= kSECD_ELM_ADV_MODIFIER;
-      secd_targ_off *= kSECD_ELM_ADV_MODIFIER;
-    }
-    else if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
-    {
-      prim_targ_off *= kSECD_ELM_ADV_MODIFIER;
-      secd_targ_def *= kSECD_ELM_ADV_MODIFIER;
-    }
-  }
-  else if (prim_strength && secd_strength)
-  {
-    if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
-    {
-      prim_targ_off *= kDOUBLE_ELM_ADV_MODIFIER;
-      secd_targ_off *= kDOUBLE_ELM_ADV_MODIFIER;
-    }
-    else if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
-    {
-      prim_targ_off *= kDOUBLE_ELM_ADV_MODIFIER;
-      secd_targ_def *= kDOUBLE_ELM_ADV_MODIFIER;
-    }
-  }
+
+  temp_user_stats.setStat(prim_user_stat, prim_user_mod);
+  temp_user_stats.setStat(secd_user_stat, secd_user_mod);
+  targ_attrs.setStat(prim_targ_stat, prim_targ_mod);
+  targ_attrs.setStat(secd_targ_stat, secd_targ_mod);
 }
 
 /*
@@ -747,8 +734,8 @@ void Battle::processSkill(std::vector<Person*> targets)
     }
 
     /* User and target attribute for the current action */
-    auto user_attr = (*it)->getUserAttribute();
-    auto targ_attr = (*it)->getTargetAttribute();
+    // auto user_attr = (*it)->getUserAttribute();
+    // auto targ_attr = (*it)->getTargetAttribute();
  
     /* User ref. vars related to prim/secd skill attributes, -1 if Attr:NONE */
     auto prim_user_off = temp_user_stats.getStat(prim_off);
@@ -779,7 +766,7 @@ void Battle::processSkill(std::vector<Person*> targets)
         
         if (!doesActionMiss())
         {
-          auto crit_factor = 1.00;
+          //auto crit_factor = 1.00;
 
           calcElementalMods();
 
