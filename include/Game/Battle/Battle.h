@@ -253,7 +253,10 @@ private:
   static const float    kDOUBLE_ELM_ADV_MODIFIER;
   static const float    kDOUBLE_ELM_DIS_MODIFIER;
 
-  static const float    kMANNA_DMG_MODIFIER;
+  static const float    kMANNA_POW_MODIFIER;
+  static const float    kMANNA_DEF_MODIFIER;
+  static const float    kUSER_POW_MODIFIER;
+  static const float    kTARG_DEF_MODIFIER;
 
   static const float    kOFF_CRIT_FACTOR;
   static const float    kBASE_CRIT_CHANCE;
@@ -282,7 +285,7 @@ private:
   void calcElementalMods();
 
   /* Calculates the Crit Factor to be applied to the damage */
-  void calcCritFactor();
+  float calcCritFactor();
 
   /* */
   int16_t calcLevelDifference();

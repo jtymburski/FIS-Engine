@@ -63,14 +63,17 @@ const float    Battle::kSECD_ELM_DIS_MODIFIER       =  0.93;
 const float    Battle::kDOUBLE_ELM_ADV_MODIFIER     =  1.30;
 const float    Battle::kDOUBLE_ELM_DIS_MODIFIER     =  0.74;
 
-const float    Battle::kMANNA_DMG_MODIFIER          =  1.00;
+const float    Battle::kMANNA_POW_MODIFIER          =  1.00;
+const float    Battle::kMANNA_DEF_MODIFIER          =  1.00;
+const float    Battle::kUSER_POW_MODIFIER           =  4.00;
+const float    Battle::kTARG_DEF_MODIFIER           =  2.90;
 
-const float    Battle::kBASE_CRIT_CHANCE            =  0.10;
-const float    Battle::kOFF_CRIT_FACTOR             =  1.25;
+const float    Battle::kBASE_CRIT_CHANCE            =   0.10;
+const float    Battle::kOFF_CRIT_FACTOR             =   1.25;
 const float    Battle::kCRIT_MODIFIER               = 0.0008;
 const float    Battle::kCRIT_LVL_MODIFIER           =  0.012;
-const float    Battle::kDODGE_MODIFIER              = 1.10;
-const float    Battle::kDODGE_PER_LEVEL_MODIFIER    = 1.04;
+const float    Battle::kDODGE_MODIFIER              =   1.10;
+const float    Battle::kDODGE_PER_LEVEL_MODIFIER    =   1.04;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -239,10 +242,121 @@ void Battle::battleLost()
  * Inputs:
  * Outputs:
  */
-int32_t calcBaseDamage(const float &crit_factor)
+int32_t Battle::calcBaseDamage(const float &crit_factor)
 {
-  (void)crit_factor;//WARNING
-  return -1; //TODO
+  auto targ_attrs = temp_target_stats.at(p_target_index);
+
+  int32_t base_user_pow = 0;
+  int32_t base_targ_def = 0;
+
+  int32_t phys_pow_val  = 0;
+  int32_t phys_def_val  = 0;
+  int32_t elm1_pow_val  = 0;
+  int32_t elm1_def_val  = 0;
+  int32_t elm2_pow_val  = 0;
+  int32_t elm2_def_val  = 0;
+  int32_t luck_pow_val  = 0;
+  int32_t luck_def_val  = 0;
+  
+  calcElementalMods();
+
+  /* Always calculate physical power into the equation */
+  phys_pow_val = temp_user_stats.getStat(Attribute::PHAG);
+  phys_pow_val *= kOFF_PHYS_MODIFIER;
+
+  phys_def_val = temp_user_stats.getStat(Attribute::PHFD);
+  phys_def_val *= kDEF_PHYS_MODIFIER;
+
+  /* Primary elemental affiliation bonuses */
+  if (curr_skill->getPrimary() != Element::NONE)
+  {
+    if (curr_user->getPrimary() == curr_skill->getPrimary() ||
+       curr_user->getPrimary() == curr_skill->getSecondary())
+    {
+      elm1_pow_val  = temp_user_stats.getStat(prim_off);
+      elm1_pow_val *= kOFF_PRIM_ELM_MATCH_MODIFIER;
+    }
+    
+    if (curr_target->getPrimary() == curr_skill->getPrimary() ||
+        curr_target->getPrimary() == curr_skill->getSecondary())
+    {
+      elm1_pow_val  = targ_attrs.getStat(prim_def);
+      elm2_def_val *= kDEF_PRIM_ELM_MATCH_MODIFIER;
+    }
+  }
+ 
+  /* Secondary elemental affiliation bonuses */
+  if (curr_skill->getSecondary() != Element::NONE)
+  {
+    if (curr_user->getSecondary() == curr_skill->getPrimary() ||
+        curr_user->getSecondary() == curr_skill->getSecondary())
+    {
+      elm1_pow_val  = temp_user_stats.getStat(secd_off);
+      elm2_pow_val *= kOFF_SECD_ELM_MATCH_MODIFIER;
+    }
+
+    if (curr_target->getSecondary() == curr_skill->getPrimary() ||
+        curr_target->getSecondary() == curr_skill->getSecondary())
+    {
+      elm2_pow_val  = targ_attrs.getStat(secd_def);
+      elm2_def_val *= kDEF_SECD_ELM_MATCH_MODIFIER;
+    }
+  }
+
+  /* Additional bonuses - luck power/defense values */
+  luck_pow_val  = temp_user_stats.getStat(Attribute::MANN);
+  luck_pow_val *= kMANNA_POW_MODIFIER;
+
+  luck_def_val  = targ_attrs.getStat(Attribute::MANN);
+  luck_def_val *= kMANNA_DEF_MODIFIER;
+
+  /* Summation of base power / defense */
+  base_user_pow  = phys_pow_val + elm1_pow_val + elm2_pow_val + luck_pow_val;
+  base_user_pow *= kUSER_POW_MODIFIER;
+
+  base_targ_def  = phys_def_val + elm1_def_val + elm2_def_val + luck_def_val;
+  base_targ_def *= kTARG_DEF_MODIFIER;
+
+  auto base_damage = base_user_pow - base_targ_def;
+  base_damage     *= crit_factor;
+
+#ifdef UDEBUG
+  std::cout << "Base damage calculation: " << base_damage << std::endl;
+#endif
+
+  /* Addition of the power of the action */
+  auto action_damage = curr_action->getBase();
+  int32_t action_val    = 0;
+
+  if (curr_action->actionFlag(ActionFlags::BASE_PC))
+  {
+    auto base_pc = static_cast<float>(action_damage) / 100;
+    action_damage = base_pc * temp_user_stats.getStat(Attribute::VITA);
+  }
+
+  base_damage += action_damage;
+
+  /* Addition of the variance of the action */
+  auto base_var   = curr_action->getVariance();
+  int32_t var_val = 0;
+
+  if (curr_action->actionFlag(ActionFlags::VARI_PC))
+  {
+    auto var_pc = static_cast<float>(base_var) / 100;
+    var_val   = var_pc * base_damage;
+  }
+  else
+  {
+    var_val = base_var;
+  }
+
+  base_damage = Helpers::randU(base_damage - var_val, base_damage + var_val);
+  
+#ifdef UDEBUG
+  std::cout << "Final damage calculation: " << base_damage << std::endl;
+#endif
+
+  return base_damage;
 }
 
 /*
@@ -359,9 +473,10 @@ void Battle::calcElementalMods()
  * Inputs:
  * Outputs:
  */
-void Battle::calcCritFactor()
+float Battle::calcCritFactor()
 {
-
+  //TODO: Crit factor calculation
+  return 1.00;
 }
 
 /*
@@ -766,15 +881,25 @@ void Battle::processSkill(std::vector<Person*> targets)
         
         if (!doesActionMiss())
         {
-          //auto crit_factor = 1.00;
+          auto crit_factor = 1.00;
 
           calcElementalMods();
 
           //TODO
-          //if (doesActionCrit())
-          //  crit_factor = calcCritFactor();
+          if (doesActionCrit())
+            crit_factor = calcCritFactor();
 
-          // auto base_damage = calcBaseDamage(crit_factor);
+          auto base_damage = calcBaseDamage(crit_factor);
+          
+          if (curr_target->doDmg(base_damage))
+          {
+            // Person has died
+          }
+
+          if (checkPartyDeath(friends))
+            setBattleFlag(CombatState::LOSS, true);
+          else if (checkPartyDeath(foes))
+            setBattleFlag(CombatState::VICTORY, true);
         }
 
         if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
@@ -1153,7 +1278,8 @@ void Battle::selectUserActions()
 
     if (person != nullptr)
     {
-      if (!person->getBFlag(BState::SKIP_NEXT_TURN))
+      if (!person->getBFlag(BState::SKIP_NEXT_TURN) && 
+          person->getBFlag(BState::ALIVE))
       {
         /* Reload the menu information for the next person */
         menu->reset(getPerson(person_index), person_index);
@@ -1164,9 +1290,9 @@ void Battle::selectUserActions()
         if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
           menu->printMenuState();
       }
-      else
+      else if (!person->getBFlag(BState::ALIVE))
       {
- 
+        person_index++;
       }
     }
     else

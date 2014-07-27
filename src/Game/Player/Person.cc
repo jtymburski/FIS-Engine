@@ -689,9 +689,9 @@ bool Person::createAI(const AIDifficulty &diff,
  */
 bool Person::doDmg(const uint32_t &amount)
 {
-  std::cout << "dealing " << amount << "damage to person" << "\n";
+  curr_stats.print(true);
   curr_stats.alterStat(Attribute::VITA, -amount);
-
+  
   if (curr_stats.getStat(Attribute::VITA) == 0)
   {
     setBFlag(BState::ALIVE, false);
@@ -1240,10 +1240,24 @@ uint32_t Person::getTotalExp()
  * Inputs: 
  * Output:
  */
+uint16_t Person::getVitaPercent()
+{
+  auto curr_vita = getCurr().getStat(Attribute::VITA);
+  auto max_vita  = getCurr().getStat(Attribute::VITA);
+
+  return static_cast<uint16_t>(floor((curr_vita * 100) / max_vita));
+}
+
+/*
+ * Description: 
+ *
+ * Inputs: 
+ * Output:
+ */
 uint16_t Person::getQDPercent()
 {
-  auto curr_qd = getCurr().getStat("QTDR");
-  auto max_qd  = getCurrMax().getStat("QTDR");
+  auto curr_qd = getCurr().getStat(Attribute::QTDR);
+  auto max_qd  = getCurrMax().getStat(Attribute::QTDR);
 
   return static_cast<uint16_t>(floor((curr_qd * 100) / max_qd));
 }

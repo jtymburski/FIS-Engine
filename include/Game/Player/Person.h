@@ -271,6 +271,9 @@ public:
   /* Returns a pointer to the AI module */
   AIModule* getAI();
 
+  /* Returns the real % VITA value of the maximum VITA */
+  uint16_t getVitaPercent();
+
   /* Returns the real % QD value of the maximum QD */
   uint16_t getQDPercent();
 

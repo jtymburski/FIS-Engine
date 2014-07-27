@@ -232,7 +232,7 @@ bool AttributeSet::alterStat(const int &index, const int &amount)
   if (getFlag(AttributeState::CONSTANT))
     return false;
 
-  if (index > 0 && index < static_cast<int>(kSHORT_NAMES.size()))
+  if (index >= 0 && index < static_cast<int>(kSHORT_NAMES.size()))
   {
     int min_value = kMIN_VALUE;
 
