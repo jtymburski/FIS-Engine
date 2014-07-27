@@ -620,6 +620,10 @@ void Person::battlePrep()
   setBFlag(BState::SELECTED_ACTION, false);
   setBFlag(BState::SELECTED_2ND_ACTION, false);
   setBFlag(BState::SELECTED_3RD_ACTION, false);
+
+  //TODO: Critical hits based upon race/class or person dependant?
+  setBFlag(BState::CAN_CRIT, true);
+  setBFlag(BState::CAN_BE_CRIT, true);
 }
 
 /*

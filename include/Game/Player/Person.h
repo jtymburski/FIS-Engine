@@ -68,6 +68,8 @@ enum class BState
   SELECTED_ACTION    = 1 << 21, /* Has this person selected an action? */
   SELECTED_2ND_ACTION = 1 << 22, /* Has this person selected a 2nd action? */
   SELECTED_3RD_ACTION = 1 << 23, /* Has this person selected a 3rd action? */
+  CAN_CRIT            = 1 << 24, /* Can this person crit against a target? */
+  CAN_BE_CRIT         = 1 << 25, /* Can this person have crit's against them? */
 };
 
 /* PState Flags - flags which have impacts outside of Battle */
@@ -89,7 +91,6 @@ enum class PState
 
 class Person
 {
-
   friend class Ailment;
   
 public:

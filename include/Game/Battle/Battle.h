@@ -220,23 +220,8 @@ private:
   Action* curr_action;
   Skill*  curr_skill;
 
-  bool crit_happens;
-  bool action_happens;
-
-  bool prim_strength;
-  bool secd_strength;
-  bool prim_weakness;
-  bool secd_weakness;
-
-  int32_t p_target_index;
-
-  int16_t prim_user_off;
-  int16_t prim_user_def;
-  int16_t secd_user_off;
-  int16_t secd_user_def;
-
-  float critical_chance;
-  float miss_chance;
+  /* Current pocessing target index */
+  uint32_t p_target_index;
 
   /* ------------ Menu Constants --------------- */
   static const uint16_t kGENERAL_UPKEEP_DELAY;
@@ -247,22 +232,35 @@ private:
   static const uint16_t kMAX_EACH_AILMENTS;
   static const uint16_t kMAXIMUM_DAMAGE;
   static const uint16_t kMINIMUM_DAMAGE;
+
+  static const float    kOFF_PHYS_MODIFIER;
+  static const float    kDEF_PHYS_MODIFIER;
+  static const float    kOFF_PRIM_ELM_MATCH_MODIFIER;
+  static const float    kDEF_PRIM_ELM_MATCH_MODIFIER;
+  static const float    kOFF_SECD_ELM_MATCH_MODIFIER;
+  static const float    kDEF_SECD_ELM_MATCH_MODIFIER;
+
   static const float    kOFF_PRIM_ELM_MODIFIER;
   static const float    kDEF_PRIM_ELM_MODIFIER;
   static const float    kOFF_SECD_ELM_MODIFIER;
   static const float    kDEF_SECD_ELM_MODIFIER;
+
+  static const float    kPRIM_ELM_ADV_MODIFIER;
+  static const float    kPRIM_ELM_DIS_MODIFIER;
+  static const float    kSECD_ELM_ADV_MODIFIER;
+  static const float    kSECD_ELM_DIS_MODIFIER;
+
+  static const float    kDOUBLE_ELM_ADV_MODIFIER;
+  static const float    kDOUBLE_ELM_DIS_MODIFIER;
+
+  static const float    kMANNA_DMG_MODIFIER;
+
   static const float    kOFF_CRIT_FACTOR;
   static const float    kBASE_CRIT_CHANCE;
   static const float    kCRIT_MODIFIER;
   static const float    kCRIT_LVL_MODIFIER;
   static const float    kDODGE_MODIFIER;
   static const float    kDODGE_PER_LEVEL_MODIFIER;
-  static const float    kPRIM_ELM_ADV_MODIFIER;
-  static const float    kPRIM_ELM_DIS_MODIFIER;
-  static const float    kSECD_ELM_ADV_MODIFIER;
-  static const float    kSECD_ELM_DIS_MODIFIER;
-  static const float    kDOUBLE_ELM_ADV_MODIFIER;
-  static const float    kDOUBLE_ELM_DIS_MODIFIER;
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -276,6 +274,18 @@ private:
 
   /* Called when the Battle has been lost */
   void battleLost();
+
+  /* Calculates the base damage for the current action/target setup */
+  int32_t calcBaseDamage(const float &crit_factor);
+
+  /* Calculates the modifiers to be used for curr skill elemental adv setup */
+  void calcElementalMods();
+
+  /* Calculates the Crit Factor to be applied to the damage */
+  void calcCritFactor();
+
+  /* */
+  int16_t calcLevelDifference();
 
   /* Determines whether the current person has selected all actions */
   bool canIncrementIndex(Person* check_person);
@@ -295,6 +305,15 @@ private:
   /* Determines the turn progression of the Battle (based on speed) */
   void determineTurnMode();
 
+  /* Calculates crit chances and determines whether a critical will occur */
+  bool doesActionCrit();
+
+  /* Calculates skill missing chance and determines if the skill miss */
+  bool doesSkillMiss();
+
+  /* Calculates miss chance and determines whether an action miss will occur */
+  bool doesActionMiss();
+
   /* Deals with general upkeep (i.e. weather) */
   void generalUpkeep();
 
@@ -310,12 +329,8 @@ private:
   /* Deals with character related upkeep */
   void personalUpkeep(Person* const target);
 
-  /* Calculates action variables for the curr User/Action/Targ combination */
-  void buildTargetVariables(Skill* curr_skill);
-
   /* Processes an individual action from a user against targets */
-  void processSkill(Person* user, std::vector<Person*> targets, 
-                    Skill* curr_skill);
+  void processSkill(std::vector<Person*> targets);
 
   /* Process the actions (Items & Skills) in the buffer */
   void processActions();

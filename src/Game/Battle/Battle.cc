@@ -43,22 +43,34 @@ const uint16_t Battle::kMAX_AILMENTS             =    50;
 const uint16_t Battle::kMAX_EACH_AILMENTS        =     5;
 const uint16_t Battle::kMINIMUM_DAMAGE           =     1;
 const uint16_t Battle::kMAXIMUM_DAMAGE           = 29999;
-const float    Battle::kOFF_PRIM_ELM_MODIFIER    =  1.07;
-const float    Battle::kDEF_PRIM_ELM_MODIFIER    =  1.04;
-const float    Battle::kOFF_SECD_ELM_MODIFIER    =  1.05;
-const float    Battle::kDEF_SECD_ELM_MODIFIER    =  1.03;
-const float    Battle::kBASE_CRIT_CHANCE         =  0.10;
-const float    Battle::kOFF_CRIT_FACTOR          =  1.25;
-const float    Battle::kCRIT_MODIFIER            =  0.0008;
-const float    Battle::kCRIT_LVL_MODIFIER        =  0.012;
-const float    Battle::kDODGE_MODIFIER           =  1.10;
-const float    Battle::kDODGE_PER_LEVEL_MODIFIER =  1.04;
-const float    Battle::kPRIM_ELM_ADV_MODIFIER    =  1.15;
-const float    Battle::kPRIM_ELM_DIS_MODIFIER    =  0.87;
-const float    Battle::kSECD_ELM_ADV_MODIFIER    =  1.10;
-const float    Battle::kSECD_ELM_DIS_MODIFIER    =  0.93;
-const float    Battle::kDOUBLE_ELM_ADV_MODIFIER  =  1.30;
-const float    Battle::kDOUBLE_ELM_DIS_MODIFIER  =  0.74;
+
+const float    Battle::kOFF_PHYS_MODIFIER           = 1.00;
+const float    Battle::kDEF_PHYS_MODIFIER           = 1.00;
+const float    Battle::kOFF_PRIM_ELM_MATCH_MODIFIER = 1.05;
+const float    Battle::kDEF_PRIM_ELM_MATCH_MODIFIER = 1.04;
+const float    Battle::kOFF_SECD_ELM_MATCH_MODIFIER = 1.03;
+const float    Battle::kDEF_SECD_ELM_MATCH_MODIFIER = 1.02;
+
+const float    Battle::kOFF_PRIM_ELM_MODIFIER       =  1.00;
+const float    Battle::kDEF_PRIM_ELM_MODIFIER       =  1.00;
+const float    Battle::kOFF_SECD_ELM_MODIFIER       =  1.00;
+const float    Battle::kDEF_SECD_ELM_MODIFIER       =  1.00;
+
+const float    Battle::kPRIM_ELM_ADV_MODIFIER       =  1.15;
+const float    Battle::kPRIM_ELM_DIS_MODIFIER       =  0.87;
+const float    Battle::kSECD_ELM_ADV_MODIFIER       =  1.10;
+const float    Battle::kSECD_ELM_DIS_MODIFIER       =  0.93;
+const float    Battle::kDOUBLE_ELM_ADV_MODIFIER     =  1.30;
+const float    Battle::kDOUBLE_ELM_DIS_MODIFIER     =  0.74;
+
+const float    Battle::kMANNA_DMG_MODIFIER          =  1.00;
+
+const float    Battle::kBASE_CRIT_CHANCE            =  0.10;
+const float    Battle::kOFF_CRIT_FACTOR             =  1.25;
+const float    Battle::kCRIT_MODIFIER               = 0.0008;
+const float    Battle::kCRIT_LVL_MODIFIER           =  0.012;
+const float    Battle::kDODGE_MODIFIER              = 1.10;
+const float    Battle::kDODGE_PER_LEVEL_MODIFIER    = 1.04;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -227,6 +239,161 @@ void Battle::battleLost()
  * Inputs:
  * Outputs:
  */
+int32_t calcBaseDamage(const float &crit_factor)
+{
+  (void)crit_factor;//WARNING
+  return -1; //TODO
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Outputs:
+ */
+void Battle::calcElementalMods()
+{
+  /* Build variables for the current target */
+  auto targ_attrs = temp_target_stats.at(p_target_index);
+
+  auto prim_user_off = temp_user_stats.getStat(prim_off);
+  auto prim_user_def = temp_user_stats.getStat(prim_def);
+  auto secd_user_off = temp_user_stats.getStat(secd_off);
+  auto secd_user_def = temp_user_stats.getStat(secd_def);
+  auto prim_targ_off = temp_target_stats.at(p_target_index).getStat(prim_off);
+  auto prim_targ_def = temp_target_stats.at(p_target_index).getStat(prim_def);
+  auto secd_targ_off = temp_target_stats.at(p_target_index).getStat(secd_off);
+  auto secd_targ_def = temp_target_stats.at(p_target_index).getStat(secd_def);
+ 
+  auto prim_strength = false; /* If the opponent's prim element is str */
+  auto secd_strength = false; /* If the opponent's secd element is str */
+  auto prim_weakness = false; /* If the opponent's prim element is weak */
+  auto secd_weakness = false; /* If the opponent's secd element is weak */
+
+  /* If the user's prim element is weak against the target's */
+  if (curr_user->getPrimary() == Helpers::getStrength(curr_target->getPrimary()))
+    prim_strength = true;
+
+  /* If the user's secd element is weak against the target's */
+  if (curr_user->getSecondary() == Helpers::getStrength(curr_target->getSecondary()))
+    secd_strength = true;
+
+  /* If the user's prim element is strong against the target's */
+  if (curr_user->getPrimary() == Helpers::getWeakness(curr_target->getPrimary()))
+    prim_weakness = true;
+  
+  /* If the user's secd element is strong against the target's */
+  if (curr_user->getSecondary() == Helpers::getWeakness(curr_target->getSecondary()))
+    secd_weakness = true;
+
+  if (prim_weakness && !secd_weakness)
+  {
+    if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
+    {
+      prim_user_off *= kPRIM_ELM_ADV_MODIFIER;
+      secd_user_off *= kPRIM_ELM_ADV_MODIFIER;
+    }
+    else if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
+    {
+      prim_user_def *= kPRIM_ELM_ADV_MODIFIER;
+      secd_user_def *= kPRIM_ELM_ADV_MODIFIER;
+    }
+  }
+  else if (!prim_weakness && secd_weakness)
+  {
+    if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
+    {
+      prim_user_off *= kSECD_ELM_ADV_MODIFIER;
+      secd_user_off *= kSECD_ELM_ADV_MODIFIER;
+    }
+    else if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
+    {
+      prim_user_off *= kSECD_ELM_ADV_MODIFIER;
+      secd_user_def *= kSECD_ELM_ADV_MODIFIER;
+    }
+  }
+  else if (prim_weakness && secd_weakness)
+  {
+    if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
+    {
+      prim_user_off *= kDOUBLE_ELM_ADV_MODIFIER;
+      secd_user_off *= kDOUBLE_ELM_ADV_MODIFIER;
+    }
+    else if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
+    {
+      prim_user_off *= kDOUBLE_ELM_ADV_MODIFIER;
+      secd_user_def *= kDOUBLE_ELM_ADV_MODIFIER;
+    }
+  }
+  else if (prim_strength && !secd_strength)
+  {
+    if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
+    {
+      prim_targ_off *= kPRIM_ELM_ADV_MODIFIER;
+      secd_targ_off *= kPRIM_ELM_ADV_MODIFIER;
+    }
+    else if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
+    {
+      prim_targ_def *= kPRIM_ELM_ADV_MODIFIER;
+      secd_targ_def *= kPRIM_ELM_ADV_MODIFIER;
+    }
+  }
+  else if (!prim_strength && secd_strength)
+  {
+    if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
+    {
+      prim_targ_off *= kSECD_ELM_ADV_MODIFIER;
+      secd_targ_off *= kSECD_ELM_ADV_MODIFIER;
+    }
+    else if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
+    {
+      prim_targ_off *= kSECD_ELM_ADV_MODIFIER;
+      secd_targ_def *= kSECD_ELM_ADV_MODIFIER;
+    }
+  }
+  else if (prim_strength && secd_strength)
+  {
+    if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
+    {
+      prim_targ_off *= kDOUBLE_ELM_ADV_MODIFIER;
+      secd_targ_off *= kDOUBLE_ELM_ADV_MODIFIER;
+    }
+    else if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
+    {
+      prim_targ_off *= kDOUBLE_ELM_ADV_MODIFIER;
+      secd_targ_def *= kDOUBLE_ELM_ADV_MODIFIER;
+    }
+  }
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Outputs:
+ */
+void Battle::calcCritFactor()
+{
+
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Outputs:
+ */
+int16_t Battle::calcLevelDifference()
+{
+  return curr_user->getLevel() - curr_target->getLevel();
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Outputs:
+ */
 bool Battle::checkAIModules()
 {
   auto modules_good = true;
@@ -268,6 +435,12 @@ bool Battle::canIncrementIndex(Person* check_person)
   return false;
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Outputs:
+ */
 void Battle::clearActionVariables()
 {
   prim_off = Attribute::NONE;
@@ -281,28 +454,12 @@ void Battle::clearActionVariables()
   temp_target_stats.clear();
   temp_target_max_stats.clear();
 
-  std::cout << "ASSIGNING CURR USER" << std::endl;
-  curr_user   = nullptr;
-  curr_target = nullptr;
-  curr_action = nullptr;
+  curr_user    = nullptr;
+  curr_target  = nullptr;
+  curr_action  = nullptr;
   curr_skill   = nullptr;
 
-  crit_happens   = false;
-  action_happens = false;
-  prim_strength = false;
-  secd_strength = false;
-  prim_weakness = false;
-  secd_weakness = false;
-
   p_target_index = 0;
-
-  prim_user_off = 0;
-  prim_user_def = 0;
-  secd_user_off = 0;
-  secd_user_def = 0;
-
-  float critical_chance = 0.00;
-  float miss_chance     = 0.00;
 }
 
 /*
@@ -368,6 +525,85 @@ void Battle::determineTurnMode()
     else
       setTurnMode(TurnMode::ENEMIES_FIRST);
   }
+}
+
+/*
+ * Description: Determines whether the current action will crit against the
+ *              current target.
+ *
+ * Inputs:  none
+ * Outputs: bool - true if the current action will crit against the curr target.
+ */
+bool Battle::doesActionCrit()
+{
+  auto crit_possible = true;
+  auto crit_happens  = false;
+
+  crit_possible &= curr_user->getBFlag(BState::CAN_CRIT);
+  crit_possible &= curr_target->getBFlag(BState::CAN_BE_CRIT);
+
+  if (crit_possible)
+  {
+    auto critical_chance = kBASE_CRIT_CHANCE;
+    auto crit_mod = (temp_user_stats.getStat(Attribute::UNBR) * kCRIT_MODIFIER);
+    auto crit_lvl_mod = calcLevelDifference() * kCRIT_LVL_MODIFIER;
+
+    critical_chance += crit_mod + crit_lvl_mod;
+
+    if (critical_chance > 0)
+    {
+      uint32_t crit_pc_1000 = floor(critical_chance * 1000);
+      if (Helpers::chanceHappens(crit_pc_1000, 1000))
+        crit_happens = true;
+    }
+  }
+
+  return crit_happens;
+}
+
+/*
+ * Description: Determines whether the current skill will entirely miss or
+ *              if the processing of each of its actions will have a chance of
+ *              occuring.
+ *
+ * Inputs:  none
+ * Outputs: bool - true if the current skill will entirely miss
+ */
+bool Battle::doesSkillMiss()
+{
+  auto skill_hits = true;
+
+  skill_hits &= curr_skill->isValid();
+  skill_hits &= curr_user->getBFlag(BState::SKL_ENABLED);
+  skill_hits &= curr_user->getBFlag(BState::MISS_NEXT_TARGET);
+
+  return skill_hits;
+}
+
+/*
+ * Description: Determines whether the current action will miss its current
+ *              target. 
+ *
+ * Inputs:  none
+ * Outputs: bool - true if the current action will miss the current target
+ */
+bool Battle::doesActionMiss()
+{
+  auto action_happens = true;
+
+  auto miss_ch = temp_target_stats.at(p_target_index).getStat(Attribute::LIMB);
+  miss_ch *= kDODGE_MODIFIER;
+
+  miss_ch += (-calcLevelDifference()) * kDODGE_PER_LEVEL_MODIFIER;
+
+  if (miss_ch > 0)
+  {
+    uint32_t miss_pc_1000 = floor(miss_ch * 1000);
+    if (Helpers::chanceHappens(miss_pc_1000, 1000))
+      action_happens = false;
+  }
+
+  return action_happens;
 }
 
 /*
@@ -475,158 +711,15 @@ void Battle::personalUpkeep(Person* const target)
     // recalulate ailment factors
 }
 
-void Battle::buildTargetVariables(Skill* curr_skill)
-{
-  /* Build variables for the current target */
-  auto targ_attrs = temp_target_stats.at(p_target_index);
-  auto prim_targ_off = temp_target_stats.at(p_target_index).getStat(prim_off);
-  auto prim_targ_def = temp_target_stats.at(p_target_index).getStat(prim_def);
-  auto secd_targ_off = temp_target_stats.at(p_target_index).getStat(secd_off);
-  auto secd_targ_def = temp_target_stats.at(p_target_index).getStat(secd_def);
- 
-  prim_strength = false; /* If the opponent's prim element is str */
-  secd_strength = false; /* If the opponent's secd element is str */
-  prim_weakness = false; /* If the opponent's prim element is weak */
-  secd_weakness = false; /* If the opponent's secd element is weak */
-
-  /* If the user's prim element is weak against the target's */
-  if (curr_user->getPrimary() == Helpers::getStrength(curr_target->getPrimary()))
-    prim_strength = true;
-
-  /* If the user's secd element is weak against the target's */
-  if (curr_user->getSecondary() == Helpers::getStrength(curr_target->getSecondary()))
-    secd_strength = true;
-
-  /* If the user's prim element is strong against the target's */
-  if (curr_user->getPrimary() == Helpers::getWeakness(curr_target->getPrimary()))
-    prim_weakness = true;
-  
-  /* If the user's secd element is strong against the target's */
-  if (curr_user->getSecondary() == Helpers::getWeakness(curr_target->getSecondary()))
-    secd_weakness = true;
-
-  if (prim_weakness && !secd_weakness)
-  {
-    if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
-    {
-      prim_user_off *= kPRIM_ELM_ADV_MODIFIER;
-      secd_user_off *= kPRIM_ELM_ADV_MODIFIER;
-    }
-    else if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
-    {
-      prim_user_def *= kPRIM_ELM_ADV_MODIFIER;
-      secd_user_def *= kPRIM_ELM_ADV_MODIFIER;
-    }
-  }
-  else if (!prim_weakness && secd_weakness)
-  {
-    if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
-    {
-      prim_user_off *= kSECD_ELM_ADV_MODIFIER;
-      secd_user_off *= kSECD_ELM_ADV_MODIFIER;
-    }
-    else if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
-    {
-      prim_user_off *= kSECD_ELM_ADV_MODIFIER;
-      secd_user_def *= kSECD_ELM_ADV_MODIFIER;
-    }
-  }
-  else if (prim_weakness && secd_weakness)
-  {
-    if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
-    {
-      prim_user_off *= kDOUBLE_ELM_ADV_MODIFIER;
-      secd_user_off *= kDOUBLE_ELM_ADV_MODIFIER;
-    }
-    else if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
-    {
-      prim_user_off *= kDOUBLE_ELM_ADV_MODIFIER;
-      secd_user_def *= kDOUBLE_ELM_ADV_MODIFIER;
-    }
-  }
-  else if (prim_strength && !secd_strength)
-  {
-    if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
-    {
-      prim_targ_off *= kPRIM_ELM_ADV_MODIFIER;
-      secd_targ_off *= kPRIM_ELM_ADV_MODIFIER;
-    }
-    else if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
-    {
-      prim_targ_def *= kPRIM_ELM_ADV_MODIFIER;
-      secd_targ_def *= kPRIM_ELM_ADV_MODIFIER;
-    }
-  }
-  else if (!prim_strength && secd_strength)
-  {
-    if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
-    {
-      prim_targ_off *= kSECD_ELM_ADV_MODIFIER;
-      secd_targ_off *= kSECD_ELM_ADV_MODIFIER;
-    }
-    else if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
-    {
-      prim_targ_off *= kSECD_ELM_ADV_MODIFIER;
-      secd_targ_def *= kSECD_ELM_ADV_MODIFIER;
-    }
-  }
-  else if (prim_strength && secd_strength)
-  {
-    if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
-    {
-      prim_targ_off *= kDOUBLE_ELM_ADV_MODIFIER;
-      secd_targ_off *= kDOUBLE_ELM_ADV_MODIFIER;
-    }
-    else if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
-    {
-      prim_targ_off *= kDOUBLE_ELM_ADV_MODIFIER;
-      secd_targ_def *= kDOUBLE_ELM_ADV_MODIFIER;
-    }
-  }
-
-  crit_happens  = false;
-  action_happens = true;
-
-  critical_chance = kBASE_CRIT_CHANCE;
-
-  auto crit_mod = (temp_user_stats.getStat(Attribute::UNBR) * kCRIT_MODIFIER);
-  auto lvl_diff = (curr_user->getLevel() - curr_target->getLevel());
-  auto crit_lvl_mod = lvl_diff * kCRIT_LVL_MODIFIER;
-
-  critical_chance += crit_mod + crit_lvl_mod;
-
-  if (critical_chance > 0)
-  {
-    uint32_t crit_pc_1000 = floor(critical_chance * 1000);
-    if (Helpers::chanceHappens(crit_pc_1000, 1000))
-      crit_happens = true;
-  }
-
-  if (crit_happens)
-  {
-    targ_attrs.setStat(Attribute::PHAG, targ_attrs.getStat(Attribute::PHAG) * 
-                                        kOFF_CRIT_FACTOR);
-    prim_user_off *= kOFF_CRIT_FACTOR;
-    secd_user_off *= kOFF_CRIT_FACTOR;
-  }
-
-  miss_chance = temp_target_stats.at(p_target_index).getStat(Attribute::LIMB);
-  miss_chance *= kDODGE_MODIFIER;
-  miss_chance += (-lvl_diff) * kDODGE_PER_LEVEL_MODIFIER;
-
-  if (miss_chance > 0)
-  {
-    uint32_t miss_pc_1000 = floor(miss_chance * 1000);
-    if (Helpers::chanceHappens(miss_pc_1000, 1000))
-      action_happens = false;
-  }
-}
-
-void Battle::processSkill(Person* user, std::vector<Person*> targets, 
-                          Skill* curr_skill)
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
+void Battle::processSkill(std::vector<Person*> targets)
 {
   /* Assign the current user and grab the list of effects of the Skill */
-  curr_user = user;
   auto effects = curr_skill->getEffects();
   
   /* Grab the enumerated attribute types related to the elements of the Skill */
@@ -642,9 +735,9 @@ void Battle::processSkill(Person* user, std::vector<Person*> targets,
   {
     curr_action = *it;
 
-    /* Create a temporary copy of the User's current stats */
-    temp_user_stats = AttributeSet(user->getCurr());
-    temp_user_max_stats = AttributeSet(user->getCurrMax());
+    /* Update the temporary copy of the User's current stats */
+    temp_user_stats     = AttributeSet(curr_user->getCurr());
+    temp_user_max_stats = AttributeSet(curr_user->getCurrMax());
 
     /* Build vectors of curr and curr_max stas for each target */
     for (auto jt = begin(targets); jt != end(targets); ++jt)
@@ -653,30 +746,28 @@ void Battle::processSkill(Person* user, std::vector<Person*> targets,
       temp_target_max_stats.push_back(AttributeSet((*jt)->getCurrMax()));
     }
 
-    std::cout << "location 1" << std::endl;
-    /* Variables related to action and to skill elements */
+    /* User and target attribute for the current action */
     auto user_attr = (*it)->getUserAttribute();
     auto targ_attr = (*it)->getTargetAttribute();
+ 
+    /* User ref. vars related to prim/secd skill attributes, -1 if Attr:NONE */
+    auto prim_user_off = temp_user_stats.getStat(prim_off);
+    auto prim_user_def = temp_user_stats.getStat(prim_def);
+    auto secd_user_off = temp_user_stats.getStat(secd_off);
+    auto secd_user_def = temp_user_stats.getStat(secd_def);
 
-    prim_user_off = temp_user_stats.getStat(prim_off);
-    prim_user_def = temp_user_stats.getStat(prim_def);
-    secd_user_off = temp_user_stats.getStat(secd_off);
-    secd_user_def = temp_user_stats.getStat(secd_def);
-
-        std::cout << "location 2" << std::endl;
-    if (user->getPrimary() == curr_skill->getPrimary())
+    if (curr_user->getPrimary() == curr_skill->getPrimary())
     {
       prim_user_off *= kOFF_PRIM_ELM_MODIFIER;
       prim_user_def *= kDEF_PRIM_ELM_MODIFIER;
     }
-    else if (user->getSecondary() == curr_skill->getSecondary())
+    else if (curr_user->getSecondary() == curr_skill->getSecondary())
     {
       secd_user_off *= kOFF_SECD_ELM_MODIFIER;
       secd_user_def *= kDEF_SECD_ELM_MODIFIER;
     }
 
     auto test = (*it)->actionFlag(ActionFlags::ALTER);
-    std::cout << "location 3" << std::endl;
     if ((*it)->actionFlag(ActionFlags::ALTER))
     {
       p_target_index = 0;
@@ -685,9 +776,19 @@ void Battle::processSkill(Person* user, std::vector<Person*> targets,
       {
         /* Build the variables and calculate factors for the current target */
         curr_target = *jt;
-        std::cout << "building target variabels" << std::endl;
-        buildTargetVariables(curr_skill);
-        std::cout << "built target variabels" << std::endl;
+        
+        if (!doesActionMiss())
+        {
+          auto crit_factor = 1.00;
+
+          calcElementalMods();
+
+          //TODO
+          //if (doesActionCrit())
+          //  crit_factor = calcCritFactor();
+
+          // auto base_damage = calcBaseDamage(crit_factor);
+        }
 
         if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
         {
@@ -731,16 +832,20 @@ void Battle::processSkill(Person* user, std::vector<Person*> targets,
     {
 
     }
-    std::cout << "location 4" << std::endl;
   }
-  std::cout << "location 5" << std::endl;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Process the actions (Items & Skills) in the buffer */
 void Battle::processActions()
 {
 #ifdef UDEBUG
-  std::cout << "Processing actions on buffer." << std::endl;
+  std::cout << "Begin processing actions on buffer." << std::endl;
 #endif
 
   auto curr_action_type = ActionType::NONE;
@@ -748,6 +853,8 @@ void Battle::processActions()
   do
   {
     curr_action_type = action_buffer->getActionType();
+    curr_user        = action_buffer->getUser();
+
     auto can_process = true;
 
     if (curr_action_type == ActionType::SKILL)
@@ -756,11 +863,10 @@ void Battle::processActions()
       {
         if (action_buffer->getSkill()->getCooldown() == 0)
         {
-#ifdef UDEBUG
-          std::cout << "Processing skill action!" << std::endl;
-#endif
-          processSkill(action_buffer->getUser(), action_buffer->getTargets(), 
-                       action_buffer->getSkill());
+          curr_skill = action_buffer->getSkill();
+
+          if (!doesSkillMiss())
+            processSkill(action_buffer->getTargets());
         }
       }
       else
@@ -775,11 +881,10 @@ void Battle::processActions()
       {
         if (action_buffer->getItem()->getUseSkill()->getCooldown() == 0)
         {
-#ifdef UDEBUG
-          std::cout << "Processing item skill action!" << std::endl;
-#endif
-          processSkill(action_buffer->getUser(), action_buffer->getTargets(),
-                       action_buffer->getItem()->getUseSkill());
+          curr_skill = action_buffer->getItem()->getUseSkill();
+
+          if (!doesSkillMiss())
+            processSkill(action_buffer->getTargets());
         }
       }
       else
@@ -816,20 +921,24 @@ void Battle::processActions()
 #ifdef UDEBUG
     if (!can_process)
       std::cout << "[Error]: Couldn't process current action!" << std::endl;
-    else
-      std::cout << "Processed current action!" << std::endl;
 #endif
 
   } while (action_buffer->setNext());
 
 #ifdef UDEBUG
-  std::cout << "Finished processing actions, phase complete." << std::endl;
+  std::cout << "End processing actions." << std::endl;
 #endif
 
   /* Process Action stae complete */
   setBattleFlag(CombatState::PHASE_DONE);
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Recalculates the ailments after they have been altered */
 void Battle::recalculateAilments(Person* const target)
 {
@@ -840,6 +949,12 @@ void Battle::recalculateAilments(Person* const target)
   // disenstubulate factor
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Calculates enemy actions and add them to the buffer */
 void Battle::selectEnemyActions()
 {
@@ -865,13 +980,11 @@ void Battle::selectEnemyActions()
     {
       auto selected_item = curr_module->getSelectedItem();
 
-      std::cout << "Attempting to add" << selected_item->getName() << "to buffer. " << std::endl;
       if (action_buffer->add(person_user, selected_item, action_targets, 0))
         buffer_addition = true;
     
       if (buffer_addition)
       {
-        std::cout << "Added " << selected_item->getName() << "to buffer. " << std::endl;
         if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
         {
           std::cout << "Removing " << selected_item->getName() << " from "
@@ -880,8 +993,6 @@ void Battle::selectEnemyActions()
 
         foes->getInventory()->removeItemID(selected_item->getGameID());
         curr_module->setItems(foes->getInventory()->getBattleItems());
-
-        std::cout << "Does this delete the pointer? " << selected_item->getName() << "to buffer. " << std::endl;
       }
     }
     else if (action_type == ActionType::DEFEND  ||
@@ -1087,6 +1198,12 @@ void Battle::selectUserActions()
   }
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Load default configuration of the battle */
 bool Battle::setupClass()
 {
@@ -1121,6 +1238,12 @@ bool Battle::setupClass()
   return true;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Method which calls personal upkeeps */
 void Battle::upkeep()
 {
@@ -1136,6 +1259,12 @@ void Battle::upkeep()
   setBattleFlag(CombatState::PHASE_DONE);
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Assigns a new value to the ailment update mode */
 void Battle::setAilmentUpdateMode(const BattleOptions &new_value)
 {
@@ -1148,6 +1277,12 @@ void Battle::setBattleMode(const BattleMode &new_value)
   battle_mode = new_value;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Assigns the friends party of the Battle */
 bool Battle::setFriends(Party* const new_friends)
 {
@@ -1161,6 +1296,12 @@ bool Battle::setFriends(Party* const new_friends)
   return false;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Assigns the foes party of the Battle */
 bool Battle::setFoes(Party* const new_foes)
 {
@@ -1174,12 +1315,24 @@ bool Battle::setFoes(Party* const new_foes)
   return false;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Assigns a new value to the hud display mode */
 void Battle::setHudDisplayMode(const BattleOptions &new_value)
 {
   hud_display_mode = new_value;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Updates the Battle to the next state */
 void Battle::setNextTurnState()
 {
@@ -1302,42 +1455,84 @@ void Battle::setNextTurnState()
   }
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Assigns a new value for the screen width */
 void Battle::setScreenHeight(const uint16_t &new_value)
 {
   screen_height = new_value;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Assigns a new value for the screen width */
 void Battle::setScreenWidth(const uint16_t &new_value)
 {
   screen_width = new_value;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Assigns a new value to the elapsed time */
 void Battle::setTimeElapsed(const int32_t &new_value)
 {
   time_elapsed = new_value;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Assigns thee time elapsed this turn */
 void Battle::setTimeElapsedThisTurn(const int32_t &new_value)
 {
   time_elapsed_this_turn = new_value;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Assigns a new value to the turns elapsed */
 void Battle::setTurnsElapsed(const uint16_t &new_value)
 {
   turns_elapsed = new_value;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Assigns a new turn mode to the Battle */
 void Battle::setTurnMode(const TurnMode &new_turn_mode)
 {
   turn_mode = new_turn_mode;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Updates the turn state of the Battle */
 void Battle::setTurnState(const TurnState &new_turn_state)
 {
@@ -1353,7 +1548,12 @@ void Battle::setTurnState(const TurnState &new_turn_state)
  * PUBLIC FUNCTIONS
  *============================================================================*/
 
-/* */
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 bool Battle::keyDownEvent(SDL_KeyboardEvent event)
 {
   Helpers::flushConsole();
@@ -1381,12 +1581,24 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
   return false;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* */
 bool Battle::isPartyDead()
 {
   return (friends->getLivingMembers().size() == 0);
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Methods to print information about the Battle */
 void Battle::printAll(const bool &simple, const bool &flags, const bool &party)
 {
@@ -1445,7 +1657,12 @@ void Battle::printAll(const bool &simple, const bool &flags, const bool &party)
   std::cout << "==== / Battle ====\n\n";
 }
 
-
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 void Battle::printPartyState()
 {
   std::cout << "---- Friends ----\n";
@@ -1457,6 +1674,12 @@ void Battle::printPartyState()
     printPersonState(foes->getMember(i), i - foes->getSize());
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 void Battle::printPersonState(Person* const member, 
                               const int32_t &person_index)
 {
@@ -1469,6 +1692,12 @@ void Battle::printPersonState(Person* const member,
   }
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 void Battle::printInventory(Party* const target_party)
 {
   if (target_party != nullptr && target_party->getInventory() != nullptr)
@@ -1482,54 +1711,66 @@ void Battle::printInventory(Party* const target_party)
   }
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 void Battle::printTargetVariables(const bool &print_target_stats)
 {
-  std::cout << "---- Current User/Action/Target Variables ----\n";
-  std::cout << "Primary Off Attr:     " << AttributeSet::getName(prim_off);
-  std::cout << "\nPrimary Def Attr:   " << AttributeSet::getName(prim_def);
-  std::cout << "\nSecondary Off Attr: " << AttributeSet::getName(secd_off);
-  std::cout << "\nSecondary Def Attr: " << AttributeSet::getName(secd_def);
+  // std::cout << "---- Current User/Action/Target Variables ----\n";
+  // std::cout << "Primary Off Attr:     " << AttributeSet::getName(prim_off);
+  // std::cout << "\nPrimary Def Attr:   " << AttributeSet::getName(prim_def);
+  // std::cout << "\nSecondary Off Attr: " << AttributeSet::getName(secd_off);
+  // std::cout << "\nSecondary Def Attr: " << AttributeSet::getName(secd_def);
 
-  std::cout << "\n--- Temp User Stats: ---\n";
-  temp_user_stats.print();
-  //temp_user_max_stats.print();
+  // std::cout << "\n--- Temp User Stats: ---\n";
+  // temp_user_stats.print();
+  // //temp_user_max_stats.print();
 
-  if (print_target_stats)
-  {
-    for (auto it = begin(temp_target_stats); it != end(temp_target_stats); ++it)
-      (*it).print();
-    for (auto it = begin(temp_target_max_stats)
-         ; it != end(temp_target_max_stats)
-         ; ++it)
-    {
-      (*it).print();
-    }
-  }
+  // if (print_target_stats)
+  // {
+  //   for (auto it = begin(temp_target_stats); it != end(temp_target_stats); ++it)
+  //     (*it).print();
+  //   for (auto it = begin(temp_target_max_stats)
+  //        ; it != end(temp_target_max_stats)
+  //        ; ++it)
+  //   {
+  //     (*it).print();
+  //   }
+  // }
 
-  if (curr_user != nullptr)
-    std::cout << "Curr User: " << curr_user->getName();
-  if (curr_target != nullptr)
-    std::cout << "\nCurr Target: " << curr_target->getName();
-  if (curr_action != nullptr)
-    std::cout << "\nCurr Action: " << curr_action->getID();
-  if (curr_skill != nullptr)
-    std::cout << "\nCurr Skill: " << curr_skill->getName();
+  // if (curr_user != nullptr)
+  //   std::cout << "Curr User: " << curr_user->getName();
+  // if (curr_target != nullptr)
+  //   std::cout << "\nCurr Target: " << curr_target->getName();
+  // if (curr_action != nullptr)
+  //   std::cout << "\nCurr Action: " << curr_action->getID();
+  // if (curr_skill != nullptr)
+  //   std::cout << "\nCurr Skill: " << curr_skill->getName();
 
-  std::cout << "\nCrit Happens? "    << crit_happens;
-  std::cout << "\nAction Happens? "  << action_happens;
-  std::cout << "\nPrim Strength? "   << prim_strength;
-  std::cout << "\nSecd Strength? "   << secd_strength;
-  std::cout << "\nPrim Weakness? "   << prim_weakness;
-  std::cout << "\nSecd Weakness? "   << secd_weakness;
-  std::cout << "\nP Target Index: "  << p_target_index;
-  std::cout << "\n\nPrim User Off: " << prim_user_off;
-  std::cout << "\nPrim User Def: "   << prim_user_def;
-  std::cout << "\nSecd User Off: "   << secd_user_off;
-  std::cout << "\nSecd User Def:"    << secd_user_def;
-  std::cout << "\nCritical Chance: " << critical_chance;
-  std::cout << "\nMiss Chance: "     << miss_chance << "\n";
+  // std::cout << "\nCrit Happens? "    << crit_happens;
+  // std::cout << "\nAction Happens? "  << action_happens;
+  // std::cout << "\nPrim Strength? "   << prim_strength;
+  // std::cout << "\nSecd Strength? "   << secd_strength;
+  // std::cout << "\nPrim Weakness? "   << prim_weakness;
+  // std::cout << "\nSecd Weakness? "   << secd_weakness;
+  // std::cout << "\nP Target Index: "  << p_target_index;
+  // std::cout << "\n\nPrim User Off: " << prim_user_off;
+  // std::cout << "\nPrim User Def: "   << prim_user_def;
+  // std::cout << "\nSecd User Off: "   << secd_user_off;
+  // std::cout << "\nSecd User Def:"    << secd_user_def;
+  // std::cout << "\nCritical Chance: " << critical_chance;
+  // std::cout << "\nMiss Chance: "     << miss_chance << "\n";
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 void Battle::printTurnState()
 {
   std::cout << "Current battle state: ";
@@ -1557,6 +1798,12 @@ void Battle::printTurnState()
     std::cout << "DESTRUCT\n";
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Update the cycle time of Battle */
 bool Battle::update(int32_t cycle_time)
 {
@@ -1713,54 +1960,108 @@ bool Battle::update(int32_t cycle_time)
   return false;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Returns the ailment update mode currently set */
 BattleOptions Battle::getAilmentUpdateMode()
 {
   return ailment_update_mode;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Returns the assigned Battle display mode */
 BattleMode Battle::getBattleMode()
 {
   return battle_mode;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Return the value of a given CombatState flag */
 bool Battle::getBattleFlag(const CombatState &test_flag)
 {
   return static_cast<bool>((flags & test_flag) == test_flag);
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Returns the friends pointer of the Battle */
 Party* Battle::getFriends()
 {
   return friends;
 } 
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Returns the foes pointer of the Battle */
 Party* Battle::getFoes()
 {
   return foes;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Returns the hud display mode currently set */
 BattleOptions Battle::getHudDisplayMode()
 {
   return hud_display_mode;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Returns the value of the screen height */
 uint32_t Battle::getScreenHeight()
 {
   return screen_height;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Returns the value of the screen width */
 uint32_t Battle::getScreenWidth()
 {
   return screen_width;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Evaluates and returns a vector of ailments for a given person */
 std::vector<Ailment*> Battle::getPersonAilments(Person* const target)
 {
@@ -1774,24 +2075,48 @@ std::vector<Ailment*> Battle::getPersonAilments(Person* const target)
   return person_ailments;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Returns the value of the turns elapsed */
 uint32_t Battle::getTurnsElapsed()
 {
   return turns_elapsed;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Returns the elapsed time of the Battle */
 uint32_t Battle::getTimeElapsed()
 {
   return time_elapsed;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Returns the enumerated turn state of the Battle */
 TurnState Battle::getTurnState()
 {
   return turn_state;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Returns the index integer of a a given Person ptr */
 int32_t Battle::getTarget(Person* battle_member)
 {
@@ -1806,6 +2131,12 @@ int32_t Battle::getTarget(Person* battle_member)
   return 0;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /*  */
 Person* Battle::getPerson(const int32_t &index)
 {
@@ -1823,6 +2154,12 @@ Person* Battle::getPerson(const int32_t &index)
   return nullptr;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Calculate and return all BattleMember indexes */
 std::vector<int32_t> Battle::getAllTargets()
 {
@@ -1834,6 +2171,12 @@ std::vector<int32_t> Battle::getAllTargets()
   return all_targets;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Obtains all friendly battle member indexes */
 std::vector<int32_t> Battle::getFriendsTargets(const bool &only_ko)
 {
@@ -1850,6 +2193,12 @@ std::vector<int32_t> Battle::getFriendsTargets(const bool &only_ko)
   return friends_targets;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Obtains all unfriendly battle member indexes */
 std::vector<int32_t> Battle::getFoesTargets(const bool &only_ko)
 {
@@ -1866,6 +2215,12 @@ std::vector<int32_t> Battle::getFoesTargets(const bool &only_ko)
   return foes_targets;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Obtains a vector of targets matching the signage */
 std::vector<int32_t> Battle::getPartyTargets(int32_t check_index)
 {
@@ -1877,6 +2232,12 @@ std::vector<int32_t> Battle::getPartyTargets(int32_t check_index)
   return getFriendsTargets();
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Obtains a vector of battle member indexes for a given user and scope */
 std::vector<int32_t> Battle::getValidTargets(int32_t index, 
                                              ActionScope action_scope)
@@ -1940,6 +2301,12 @@ std::vector<int32_t> Battle::getValidTargets(int32_t index,
   return valid_targets;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Assigns the running config */
 bool Battle::setConfiguration(Options* const new_config)
 {
@@ -1968,6 +2335,12 @@ bool Battle::setConfiguration(Options* const new_config)
   return false;
 }
 
+/*
+ * Description: Actually performs the actions in the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 /* Assign a value to a CombatState flag */
 void Battle::setBattleFlag(CombatState flag, const bool &set_value)
 {
