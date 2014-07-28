@@ -357,7 +357,8 @@ bool MapPerson::addThingInformation(XmlData data, int file_index,
     std::vector<std::string> identifiers = Helpers::split(elements[2], '_');
 
     /*--------------------- FRAMES -----------------*/
-    if(elements[2] == "sprite" || elements[2] == "spritetop")
+    if(elements[2] == "spritebot" || elements[2] == "spritetop" || 
+                                     elements[2] == "sprite")
     {
       /* Create the surface identifier */
       SurfaceClassifier surface = GROUND;
@@ -381,7 +382,7 @@ bool MapPerson::addThingInformation(XmlData data, int file_index,
         Sprite* frames = NULL;
 
         /* Determine if it's the main sprite or the secondary top sprite */
-        if(elements[2] == "sprite") /* Main Lower Sprite */
+        if(elements[2] == "spritebot") /* Main Lower Sprite */
         {
           frames = getState(surface, direction);
           if(frames == NULL)
@@ -395,7 +396,7 @@ bool MapPerson::addThingInformation(XmlData data, int file_index,
             }
           }
         }
-        else /* Sprite Upper Top */
+        else if(elements[2] == "spritetop") /* Sprite Upper Top */
         {
           frames = getStateSecondary(surface, direction);
           if(frames == NULL)
