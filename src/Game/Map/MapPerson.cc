@@ -828,7 +828,8 @@ bool MapPerson::setWhiteMask(SDL_Texture* texture)
   
   for(uint16_t i = 0; i < states.size(); i++)
     for(uint16_t j = 0; j < states[i].size(); j++)
-      success &= states[i][j]->setWhiteMask(texture);
+      if(states[i][j] != NULL)
+        success &= states[i][j]->setWhiteMask(texture);
   
   return success;
 }
