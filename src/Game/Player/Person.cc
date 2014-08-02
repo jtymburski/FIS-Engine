@@ -689,10 +689,9 @@ bool Person::createAI(const AIDifficulty &diff,
  */
 bool Person::doDmg(const uint32_t &amount)
 {
-  curr_stats.print(true);
   curr_stats.alterStat(Attribute::VITA, -amount);
   
-  if (curr_stats.getStat(Attribute::VITA) == 0)
+  if (curr_stats.getStat(Attribute::VITA) <= 0)
   {
     setBFlag(BState::ALIVE, false);
 

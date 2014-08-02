@@ -219,6 +219,7 @@ private:
   Person* curr_target;
   Action* curr_action;
   Skill*  curr_skill;
+  Item*   curr_item;
 
   /* Current pocessing target index */
   uint32_t p_target_index;
@@ -277,6 +278,12 @@ private:
 
   /* Called when the Battle has been lost */
   void battleLost();
+
+  /* Attempt to add the current module settings to the action buffer */
+  bool bufferEnemyAction();
+
+  /* Attempt to add the current menu settings to the action buffer */
+  bool bufferUserAction();
 
   /* Calculates the base damage for the current action/target setup */
   int32_t calcBaseDamage(const float &crit_factor);
@@ -350,6 +357,9 @@ private:
   /* Load default configuration of the battle */
   bool setupClass();
 
+  /* Determines whether a potential person index can select an action */
+  bool testPersonIndex(const int32_t &test_index);
+
   /* Method which calls personal upkeeps */
   void upkeep();
 
@@ -367,6 +377,9 @@ private:
 
   /* Assigns a new value to the hud display mode */
   void setHudDisplayMode(const BattleOptions &new_value);
+  
+  /* Updates the person selection index to the next valid one */
+  bool setNextPersonIndex();
 
   /* Updates the Battle to the next state */
   void setNextTurnState();
@@ -459,10 +472,10 @@ public:
   std::vector<int32_t> getAllTargets();
 
   /* Obtains the list of friends target indexes */
-  std::vector<int32_t> getFriendsTargets(const bool &only_ko = false);
+  std::vector<int32_t> getFriendsTargets(const bool &ko = false);
   
   /* Obtains the list of foes target indexes */
-  std::vector<int32_t> getFoesTargets(const bool &only_ko = false);
+  std::vector<int32_t> getFoesTargets(const bool &ko = false);
 
   /* Obtains a vector of targets matching the signage */
   std::vector<int32_t> getPartyTargets(int32_t check_index);

@@ -242,6 +242,86 @@ void Battle::battleLost()
  * Inputs:
  * Outputs:
  */
+bool Battle::bufferEnemyAction()
+{
+  auto buffered      = false;
+
+  curr_user = getPerson(person_index);
+
+  auto action_type    = curr_module->getActionType();
+  auto action_targets = curr_module->getChosenTargets();
+
+  if (action_type == ActionType::SKILL)
+  {
+    curr_skill = curr_module->getSelectedSkill();
+    buffered = action_buffer->add(curr_user, curr_skill, action_targets, 0);
+
+    if (config->getBattleMode() == BattleMode::GUI)
+    {
+      //TODO: Battle Front End [08-01-14]
+    }
+  }
+  else if (action_type == ActionType::ITEM)
+  {
+    curr_item = curr_module->getSelectedItem();
+    buffered = action_buffer->add(curr_user, curr_item, action_targets, 0);
+
+    if (buffered)
+    {
+      if (config->getBattleMode() == BattleMode::TEXT)
+      {
+        std::cout << "Removing " << curr_item->getName() << " from "
+                  << "inventory and implementing to buffer." << std::endl;
+      }
+      else if (buffered && config->getBattleMode() == BattleMode::GUI)
+      {
+        //TODO: Battle Front End [08-01-14]
+      }
+
+      /* Remove the item from the inventory, update module with current items */
+      foes->getInventory()->removeItemID(curr_item->getGameID());
+      curr_module->setItems(foes->getInventory()->getBattleItems());
+    }
+  }
+  else if (action_type == ActionType::DEFEND  ||
+           action_type == ActionType::GUARD   ||
+           action_type == ActionType::IMPLODE ||
+           action_type == ActionType::RUN     ||
+           action_type == ActionType::PASS)
+  {
+    buffered = action_buffer->add(curr_user, action_type, action_targets, 0);
+  }
+  else
+  {
+    std::cerr << "[Error]: Enemy action selection has invalid action type\n";
+  }
+
+  if (buffered)
+  {
+    if (curr_user->getBFlag(BState::SELECTED_2ND_ACTION))
+      curr_user->setBFlag(BState::SELECTED_3RD_ACTION);
+    else if (curr_user->getBFlag(BState::SELECTED_ACTION))
+      curr_user->setBFlag(BState::SELECTED_2ND_ACTION);
+    else
+      curr_user->setBFlag(BState::SELECTED_ACTION);
+
+    if (canIncrementIndex(curr_user))
+      return setNextPersonIndex();
+  }
+  else
+  {
+    std::cout << "[Error]: Action buffer addition failure!" << std::endl;   
+  }
+
+  return false;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Outputs:
+ */
 int32_t Battle::calcBaseDamage(const float &crit_factor)
 {
   auto targ_attrs = temp_target_stats.at(p_target_index);
@@ -320,9 +400,9 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
   auto base_damage = base_user_pow - base_targ_def;
   base_damage     *= crit_factor;
 
-#ifdef UDEBUG
-  std::cout << "Base damage calculation: " << base_damage << std::endl;
-#endif
+// #ifdef UDEBUG
+//   std::cout << "Base damage calculation: " << base_damage << std::endl;
+// #endif
 
   /* Addition of the power of the action */
   auto action_damage = curr_action->getBase();
@@ -352,9 +432,9 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
 
   base_damage = Helpers::randU(base_damage - var_val, base_damage + var_val);
   
-#ifdef UDEBUG
-  std::cout << "Final damage calculation: " << base_damage << std::endl;
-#endif
+// #ifdef UDEBUG
+//   std::cout << "Final damage calculation: " << base_damage << std::endl;
+// #endif
 
   return base_damage;
 }
@@ -556,21 +636,21 @@ void Battle::clearActionVariables()
   temp_target_stats.clear();
   temp_target_max_stats.clear();
 
-  curr_user    = nullptr;
-  curr_target  = nullptr;
-  curr_action  = nullptr;
-  curr_skill   = nullptr;
+  curr_user   = nullptr;
+  curr_target = nullptr;
+  curr_action = nullptr;
+  curr_skill  = nullptr;
+  curr_item   = nullptr;
 
   p_target_index = 0;
 }
 
 /*
- * Description:
+ * Description: Returns enumeration of party death [None, Friends, Foes, Both]
  *
  * Inputs:
  * Outputs:
  */
-/* Returns enumeration of party death [None, Friends, Foes, Both] */
 bool Battle::checkPartyDeath(Party* const check_party)
 {
   if (check_party->getLivingMembers().size() == 0)
@@ -580,12 +660,11 @@ bool Battle::checkPartyDeath(Party* const check_party)
 }
 
 /*
- * Description:
+ * Description: Cleanup before the end of a Battle turn
  *
  * Inputs:
  * Outputs:
  */
-/* Cleanup before the end of a Battle turn */
 void Battle::cleanUp()
 {
   action_buffer->clearAll();
@@ -608,12 +687,11 @@ void Battle::cleanUp()
 }
 
 /*
- * Description:
+ * Description: Determines the turn progression of the Battle (based on speed)
  *
  * Inputs:
  * Outputs:
  */
-/* Determines the turn progression of the Battle (based on speed) */
 void Battle::determineTurnMode()
 {
   if (friends->getTotalSpeed() > foes->getTotalSpeed())
@@ -869,7 +947,6 @@ void Battle::processSkill(std::vector<Person*> targets)
       secd_user_def *= kDEF_SECD_ELM_MODIFIER;
     }
 
-    auto test = (*it)->actionFlag(ActionFlags::ALTER);
     if ((*it)->actionFlag(ActionFlags::ALTER))
     {
       p_target_index = 0;
@@ -1046,12 +1123,11 @@ void Battle::processActions()
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Recalculates the ailments after they have been altered
  *
  * Inputs:
  * Outputs:
  */
-/* Recalculates the ailments after they have been altered */
 void Battle::recalculateAilments(Person* const target)
 {
   (void)target; //TODO: [Warning]
@@ -1062,128 +1138,122 @@ void Battle::recalculateAilments(Person* const target)
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Calculates enemy actions and add them to the buffer
  *
  * Inputs:
  * Outputs:
  */
-/* Calculates enemy actions and add them to the buffer */
 void Battle::selectEnemyActions()
 {
-  if (person_index < 0 && curr_module != nullptr &&
-      curr_module->getFlag(AIState::SELECTION_COMPLETE))
+  auto update_module = false;
+
+  /* If the current module selection is complete, attempt to add it into the 
+   * buffer. bufferEnemyAction() will update the person index if needed */
+  if (curr_module == nullptr)
   {
-#ifdef UDEBUG
-  std::cout << "Attempting to Add Enemy Actions: " << person_index << std::endl;
-#endif 
-    auto buffer_addition = false;
-    auto person_user     = getPerson(person_index);
-    auto action_type     = curr_module->getActionType();
-    auto action_targets  = curr_module->getChosenTargets();
+    if (!testPersonIndex(person_index))
+      setNextPersonIndex();
 
-    if (action_type == ActionType::SKILL)
-    {
-      auto selected_skill = curr_module->getSelectedSkill();
-
-      if (action_buffer->add(person_user, selected_skill, action_targets, 0))
-        buffer_addition = true;
-    }
-    else if (action_type == ActionType::ITEM)
-    {
-      auto selected_item = curr_module->getSelectedItem();
-
-      if (action_buffer->add(person_user, selected_item, action_targets, 0))
-        buffer_addition = true;
-    
-      if (buffer_addition)
-      {
-        if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
-        {
-          std::cout << "Removing " << selected_item->getName() << " from "
-                    << "inventory and implementing to buffer." << std::endl;
-        }
-
-        foes->getInventory()->removeItemID(selected_item->getGameID());
-        curr_module->setItems(foes->getInventory()->getBattleItems());
-      }
-    }
-    else if (action_type == ActionType::DEFEND  ||
-             action_type == ActionType::GUARD   ||
-             action_type == ActionType::IMPLODE ||
-             action_type == ActionType::RUN     ||
-             action_type == ActionType::PASS)
-    {
-      if (action_buffer->add(person_user, action_type, action_targets, 0))
-        buffer_addition = true;
-    }
-    else
-    {
-      std::cerr << "[Error]: Enemy selection fo invalid action type\n";
-    }
-
-    if (buffer_addition)
-    {
-      if (person_user->getBFlag(BState::SELECTED_2ND_ACTION))
-        person_user->setBFlag(BState::SELECTED_3RD_ACTION);
-      else if (person_user->getBFlag(BState::SELECTED_ACTION))
-        person_user->setBFlag(BState::SELECTED_2ND_ACTION);
-      else
-        person_user->setBFlag(BState::SELECTED_ACTION);
-
-      if (canIncrementIndex(person_user))
-        person_index--;
-
-    }
-    else
-    {
-      std::cout << "[Error]: Action buffer addition failure!" << std::endl;   
-    }
+    update_module = true;
   }
+  else if (curr_module->getFlag(AIState::SELECTION_COMPLETE))
+    update_module = bufferEnemyAction();
 
   /* Assert the person index exists in the Foes scope (-5 to -1) */
-  if (person_index < 0 && 
-      person_index >= (-1 * static_cast<int32_t>(foes->getSize())))
+  if (update_module)
   {
-    std::cout << "Preparing ai module for next person index" << std::endl;
-    auto person_user = getPerson(person_index);
+    std::cout << "Preparing AIModule for person index" << person_index << std::endl;
+    curr_user = getPerson(person_index);
+    curr_module = curr_user->getAI();
 
-    /* If no curr module or IF the current selection is complete */
-    if (curr_module == nullptr || !person_user->getBFlag(BState::SKIP_NEXT_TURN))
-    {
-      /* Obtain the AI Module for the current person */
-      auto curr_person = getPerson(person_index);
-      curr_module = curr_person->getAI();
-
-      /* If the module exists, get it ready for a new turn */
-      if (curr_module != nullptr)
-      {
-        /* Reset the AI Module for a new turn decision, assign data */
-        curr_person->resetAI();
-        curr_module->setItems(foes->getInventory()->getBattleItems());
-        curr_module->calculateAction();
-      }
-    }
-    else if (person_user->getBFlag(BState::SKIP_NEXT_TURN))
-    {
-      /* */
-      person_index--;
-    }
-    else if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
-    {
-      std::cout << "[Error] Null AI module for Selecting Enemy Action!"
-                << std::endl;
-    }
-
+    /* Reset the AI Module for a new turn decision, assign data */
+    curr_user->resetAI();
+    curr_module->setItems(foes->getInventory()->getBattleItems());
+    curr_module->calculateAction();
   }
   else
   {
 #ifdef UDEBUG
-    std::cout << "Enemy action selection complete!" << std::endl;
+    std::cout << "Enemy selection of actions complete" << std::endl;
 #endif
 
     /* Mark the enemy selection phase as complete on the max index */
     setBattleFlag(CombatState::PHASE_DONE);
   }
+}
+
+bool Battle::bufferUserAction()
+{
+  auto buffered       = false;
+  auto action_type    = menu->getActionType();
+  auto action_targets = menu->getActionTargets();
+
+  curr_user     = getPerson(person_index);
+
+  /* Build the vector Person ptrs from the target index vector */
+  std::vector<Person*> person_targets;
+
+  for (auto it = begin(action_targets); it != end(action_targets); ++it)
+    person_targets.push_back(getPerson(*it));
+        
+  /* Push the actions on to the Buffer */
+  if (action_type == ActionType::SKILL)
+  {
+    curr_skill = menu->getSelectedSkill();
+    buffered = action_buffer->add(curr_user, curr_skill, person_targets, 0);
+  }
+  else if (action_type == ActionType::ITEM)
+  {
+    curr_item = menu->getSelectedItem();
+    buffered = action_buffer->add(curr_user, curr_item, person_targets, 0);
+
+    if (buffered)
+    {
+      if (config->getBattleMode() == BattleMode::TEXT)
+      {
+        std::cout << "Removing " << curr_item->getName() << " from "
+                  << "inventory and adding to buffer." << std::endl;
+      }
+      else if (config->getBattleMode() == BattleMode::GUI)
+      {
+        //TODO: Battle Front End [08-01-14]
+      }
+      
+      friends->getInventory()->removeItemID(curr_item->getGameID());
+      menu->setSelectableItems(friends->getInventory()->getBattleItems());
+    }
+  }
+  else if (action_type == ActionType::DEFEND  || 
+           action_type == ActionType::GUARD   ||
+           action_type == ActionType::IMPLODE ||
+           action_type == ActionType::RUN     ||
+           action_type == ActionType::PASS)
+  {
+    buffered = action_buffer->add(curr_user, action_type, person_targets, 0);
+  }
+  else
+  {
+    std::cout << "[Error]: Invalid action selected\n";
+  }
+
+  if (buffered)
+  {
+    if (curr_user->getBFlag(BState::SELECTED_2ND_ACTION))
+      curr_user->setBFlag(BState::SELECTED_3RD_ACTION);
+    else if (curr_user->getBFlag(BState::SELECTED_ACTION))
+      curr_user->setBFlag(BState::SELECTED_2ND_ACTION);
+    else
+      curr_user->setBFlag(BState::SELECTED_ACTION);
+
+    if (canIncrementIndex(curr_user))
+      return setNextPersonIndex();
+  }
+  else
+  {
+    std::cout << "[Error]: Action buffer addition failure!" << std::endl;   
+  }
+
+  return false;
 }
 
 /* Calculates user actions and add them to the buffer */
@@ -1193,106 +1263,45 @@ void Battle::selectUserActions()
   std::cout << "Selecting User Actions: " << person_index <<  std::endl;
 #endif
 
+  auto update_menu = false;
+
   /* If an action has been selected for a valid person index, grab the info.
       and load it into the buffer */
-  if (person_index > 0 &&
+  if (person_index == 1)
+  {
+    if (!testPersonIndex(person_index))
+      setNextPersonIndex();
+
+    update_menu = true;
+  }
+  if (person_index > 0 && 
       menu->getMenuFlag(BattleMenuState::SELECTION_VERIFIED))
   {
-    auto person_user    = getPerson(person_index);
-    auto action_type    = menu->getActionType();
-    auto action_targets = menu->getActionTargets();
-    auto buffer_addition = false;
-
-    /* Build the vector Person ptrs from the target index vector */
-    std::vector<Person*> person_targets;
-
-    for (auto it = begin(action_targets); it != end(action_targets); ++it)
-      person_targets.push_back(getPerson(*it));
-        
-    /* Push the actions on to the Buffer */
-    if (action_type == ActionType::SKILL)
-    {
-      auto selected_skill = menu->getSelectedSkill();
-
-      if (action_buffer->add(person_user, selected_skill, person_targets, 0))
-        buffer_addition = true;
-      
-    }
-    else if (action_type == ActionType::ITEM)
-    {
-      auto selected_item = menu->getSelectedItem();
-      
-      if (action_buffer->add(person_user, selected_item, person_targets, 0))
-        buffer_addition = true;
-
-      if (buffer_addition)
-      {
-        if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
-        {
-          std::cout << "Removing " << selected_item->getName() << " from "
-                    << "inventory and implementing to buffer." << std::endl;
-        }
-
-        friends->getInventory()->removeItemID(selected_item->getGameID());
-        menu->setSelectableItems(friends->getInventory()->getBattleItems());
-      }
-    }
-    else if (action_type == ActionType::DEFEND  || 
-             action_type == ActionType::GUARD   ||
-             action_type == ActionType::IMPLODE ||
-             action_type == ActionType::RUN     ||
-             action_type == ActionType::PASS)
-    {
-      if (action_buffer->add(person_user, action_type, person_targets, 0))
-        buffer_addition = true;
-    }
-    else
-    {
-      std::cerr << "[Error]: Invalid action selected\n";
-    }
-
-    if (buffer_addition)
-    {
-      if (person_user->getBFlag(BState::SELECTED_2ND_ACTION))
-        person_user->setBFlag(BState::SELECTED_3RD_ACTION);
-      else if (person_user->getBFlag(BState::SELECTED_ACTION))
-        person_user->setBFlag(BState::SELECTED_2ND_ACTION);
-      else
-        person_user->setBFlag(BState::SELECTED_ACTION);
-    }
-    else
-    {
-      std::cerr << "[Error]: Action buffer addition failure!" << std::endl;   
-    }
-
-    if (canIncrementIndex(person_user))
-        person_index++;
+    update_menu = bufferUserAction();
   }
 
   /* If a menu action has been selected, update to the next person index. If 
      the index is at the highest level, set the select user action phase done */
-  if ((static_cast<uint32_t>(person_index) <= 
-      friends->getSize()) && person_index > -1)
+  if (update_menu)
   {
+    std::cout << "Preparing battle menu for selection for person index: " << person_index << std::endl;
     auto person = getPerson(person_index);
 
     if (person != nullptr)
     {
-      if (!person->getBFlag(BState::SKIP_NEXT_TURN) && 
-          person->getBFlag(BState::ALIVE))
-      {
-        /* Reload the menu information for the next person */
-        menu->reset(getPerson(person_index), person_index);
+      /* Reload the menu information for the next person */
+      menu->reset(getPerson(person_index), person_index);
 
-        if (friends->getInventory() != nullptr)
-          menu->setSelectableItems(friends->getInventory()->getBattleItems());
+      if (friends->getInventory() != nullptr)
+        menu->setSelectableItems(friends->getInventory()->getBattleItems());
     
-        if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
-          menu->printMenuState();
-      }
-      else if (!person->getBFlag(BState::ALIVE))
+      if (config->getBattleMode() == BattleMode::TEXT)
       {
-        person_index++;
+        menu->printMenuState();
+      }
+      else if (config->getBattleMode() == BattleMode::GUI)
+      {
+        (void)menu;//TODO: Battle Front End [08-01-14]
       }
     }
     else
@@ -1303,21 +1312,19 @@ void Battle::selectUserActions()
   else 
   {
 #ifdef UDEBUG
-    std::cout << "Ally menu selection complete!" << std::endl;
+    std::cout << "User selection of actions complete" << std::endl;
 #endif
-
     /* Set the phase complete on the max person index */
     setBattleFlag(CombatState::PHASE_DONE);
   }
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Load default configuration of the battle 
  *
  * Inputs:
  * Outputs:
  */
-/* Load default configuration of the battle */
 bool Battle::setupClass()
 {
   curr_module = nullptr;
@@ -1352,12 +1359,30 @@ bool Battle::setupClass()
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description:
  *
  * Inputs:
  * Outputs:
  */
-/* Method which calls personal upkeeps */
+bool Battle::testPersonIndex(const int32_t &test_index)
+{
+  auto test_person = getPerson(test_index);
+
+  if (test_person->getBFlag(BState::ALIVE) && 
+      !test_person->getBFlag(BState::SKIP_NEXT_TURN))
+  {
+    return true;
+  }
+ 
+  return false;
+}
+
+/*
+ * Description: Method which calls personal upkeeps
+ *
+ * Inputs:
+ * Outputs:
+ */
 void Battle::upkeep()
 {
   /* Friends update */
@@ -1373,30 +1398,33 @@ void Battle::upkeep()
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Assigns a new value to the ailment update mode
  *
  * Inputs:
  * Outputs:
  */
-/* Assigns a new value to the ailment update mode */
 void Battle::setAilmentUpdateMode(const BattleOptions &new_value)
 {
   ailment_update_mode = new_value;
 }
 
-/* Assigns a new value to the battle output mode */
+/*
+ * Description: Assigns a new value to the battle output mode
+ *
+ * Inputs:
+ * Outputs:
+ */
 void Battle::setBattleMode(const BattleMode &new_value)
 {
   battle_mode = new_value;
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Assigns the friends party of the Battle
  *
  * Inputs:
  * Outputs:
  */
-/* Assigns the friends party of the Battle */
 bool Battle::setFriends(Party* const new_friends)
 {
   if (new_friends != nullptr)
@@ -1410,12 +1438,11 @@ bool Battle::setFriends(Party* const new_friends)
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Assigns the foes party of the Battle
  *
  * Inputs:
  * Outputs:
  */
-/* Assigns the foes party of the Battle */
 bool Battle::setFoes(Party* const new_foes)
 {
   if (new_foes != nullptr)
@@ -1429,24 +1456,22 @@ bool Battle::setFoes(Party* const new_foes)
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Assigns a new value to the hud display mode
  *
  * Inputs:
  * Outputs:
  */
-/* Assigns a new value to the hud display mode */
 void Battle::setHudDisplayMode(const BattleOptions &new_value)
 {
   hud_display_mode = new_value;
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Updates the Battle to the next state
  *
  * Inputs:
  * Outputs:
  */
-/* Updates the Battle to the next state */
 void Battle::setNextTurnState()
 {
  /* Set the CURRENT_STATE to incomplete */
@@ -1568,85 +1593,124 @@ void Battle::setNextTurnState()
   }
 }
 
+bool Battle::setNextPersonIndex()
+{
+  std::cout << "Setting next person index from current index: " << person_index << std::endl;
+  auto valid_person = false;
+
+  if (turn_state == TurnState::SELECT_ACTION_ENEMY)
+  {
+    for (int32_t i = person_index;
+         (i >= (-1 * static_cast<int32_t>(foes->getSize()))) && !valid_person; 
+         i--)
+    {
+      std::cout << "i: " << i << std::endl;
+      std::cout << "foes size: " << -1 * static_cast<int32_t>(foes->getSize());
+      std::cout << "test index: " << testPersonIndex(i) << std::endl;
+      if ((i < person_index) && testPersonIndex(i))
+      {
+        person_index = i;
+        valid_person = true;
+      }
+    }
+  }
+  else if (turn_state == TurnState::SELECT_ACTION_ALLY)
+  {
+    for (int32_t i = person_index; 
+         (i <= static_cast<int32_t>(friends->getSize())) && !valid_person; 
+         i++)
+    {
+      std::cout << "i: " << i << std::endl;
+      std::cout << "friends size: " << friends->getSize();
+      std::cout << "test index: " << testPersonIndex(i) << std::endl;
+      if ((i > person_index) && testPersonIndex(i))
+      {
+        person_index = i;
+        valid_person = true;
+      }
+    }
+  }
+
+  if (valid_person)
+    std::cout << "Next valid person index chosen: " << person_index << std::endl;
+  else
+    std::cout << "Non valid person index chosen: " << person_index << std::endl;
+
+  return valid_person;
+}
+
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Assigns a new value for the screen width
  *
  * Inputs:
  * Outputs:
  */
-/* Assigns a new value for the screen width */
 void Battle::setScreenHeight(const uint16_t &new_value)
 {
   screen_height = new_value;
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Assigns a new value for the screen width
  *
  * Inputs:
  * Outputs:
  */
-/* Assigns a new value for the screen width */
 void Battle::setScreenWidth(const uint16_t &new_value)
 {
   screen_width = new_value;
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Assigns a new value to the elapsed time
  *
  * Inputs:
  * Outputs:
  */
-/* Assigns a new value to the elapsed time */
 void Battle::setTimeElapsed(const int32_t &new_value)
 {
   time_elapsed = new_value;
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Assigns thee time elapsed this turn
  *
  * Inputs:
  * Outputs:
  */
-/* Assigns thee time elapsed this turn */
 void Battle::setTimeElapsedThisTurn(const int32_t &new_value)
 {
   time_elapsed_this_turn = new_value;
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Assigns a new value to the turns elapsed
  *
  * Inputs:
  * Outputs:
  */
-/* Assigns a new value to the turns elapsed */
 void Battle::setTurnsElapsed(const uint16_t &new_value)
 {
   turns_elapsed = new_value;
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Assigns a new turn mode to the Battle
  *
  * Inputs:
  * Outputs:
  */
-/* Assigns a new turn mode to the Battle */
 void Battle::setTurnMode(const TurnMode &new_turn_mode)
 {
   turn_mode = new_turn_mode;
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Updates the turn state of the Battle
  *
  * Inputs:
  * Outputs:
  */
-/* Updates the turn state of the Battle */
 void Battle::setTurnState(const TurnState &new_turn_state)
 {
   turn_state = new_turn_state;
@@ -1662,7 +1726,7 @@ void Battle::setTurnState(const TurnState &new_turn_state)
  *============================================================================*/
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: 
  *
  * Inputs:
  * Outputs:
@@ -1695,24 +1759,22 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: 
  *
  * Inputs:
  * Outputs:
  */
-/* */
 bool Battle::isPartyDead()
 {
   return (friends->getLivingMembers().size() == 0);
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Methods to print information about the Battle
  *
  * Inputs:
  * Outputs:
  */
-/* Methods to print information about the Battle */
 void Battle::printAll(const bool &simple, const bool &flags, const bool &party)
 {
   std::cout << "==== Battle ====\n";
@@ -1832,6 +1894,7 @@ void Battle::printInventory(Party* const target_party)
  */
 void Battle::printTargetVariables(const bool &print_target_stats)
 {
+  (void)print_target_stats;//WARNING
   // std::cout << "---- Current User/Action/Target Variables ----\n";
   // std::cout << "Primary Off Attr:     " << AttributeSet::getName(prim_off);
   // std::cout << "\nPrimary Def Attr:   " << AttributeSet::getName(prim_def);
@@ -1912,12 +1975,11 @@ void Battle::printTurnState()
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Update the cycle time of Battle
  *
  * Inputs:
  * Outputs:
  */
-/* Update the cycle time of Battle */
 bool Battle::update(int32_t cycle_time)
 {
   setTimeElapsed(cycle_time);
@@ -1943,67 +2005,65 @@ bool Battle::update(int32_t cycle_time)
     else
     {
       ActionType action_type = ActionType::NONE;
-    
+     
       if (menu->isActionTypeSelected())
-      {
         action_type = menu->getActionType();
-      }
 
       /* If the action index has been assigned and targets have not been assigned
        * yet (for that action index), find the scope of that action the user
        * wishes to use and inject the valid targets into the menu */
-      if ((menu->getMenuFlag(BattleMenuState::ACTION_SELECTED) || 
-           menu->getActionType() == ActionType::DEFEND ||
-           menu->getActionType() == ActionType::GUARD  ||
-           menu->getActionType() == ActionType::IMPLODE) && 
-           !menu->getMenuFlag(BattleMenuState::TARGETS_ASSIGNED))
-      {
-        auto scope = ActionScope::NO_SCOPE;
+        if ((menu->getMenuFlag(BattleMenuState::ACTION_SELECTED) || 
+             menu->getActionType() == ActionType::DEFEND ||
+             menu->getActionType() == ActionType::GUARD  ||
+             menu->getActionType() == ActionType::IMPLODE) && 
+            !menu->getMenuFlag(BattleMenuState::TARGETS_ASSIGNED))
+        {
+          auto scope = ActionScope::NO_SCOPE;
 
-        if (action_type == ActionType::SKILL)
-        {
-          scope = menu->getSelectedSkill()->getScope();
-        }
-        else if (action_type == ActionType::ITEM)
-        {
-          scope = menu->getSelectedItem()->getUseSkill()->getScope();
-        }
-        else if (action_type == ActionType::DEFEND || 
-                 action_type == ActionType::IMPLODE)
-        {
-          scope = ActionScope::USER;
-        }
-        else if (action_type == ActionType::GUARD)
-        {
-          scope = ActionScope::ONE_ALLY_NOT_USER;
-        }
+          if (action_type == ActionType::SKILL)
+          {
+            scope = menu->getSelectedSkill()->getScope();
+          }
+          else if (action_type == ActionType::ITEM)
+          {
+            scope = menu->getSelectedItem()->getUseSkill()->getScope();
+          }
+          else if (action_type == ActionType::DEFEND || 
+                   action_type == ActionType::IMPLODE)
+          {
+            scope = ActionScope::USER;
+          }
+          else if (action_type == ActionType::GUARD)
+          {
+            scope = ActionScope::ONE_ALLY_NOT_USER;
+          }
 
-        if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
-        {
-          std::cout << "Finding selectable targets for action with scope: "
-                    << Helpers::actionScopeToStr(scope) << std::endl;
-        }
-
-        auto valid_targets = getValidTargets(person_index, scope);
-        menu->setMenuFlag(BattleMenuState::TARGETS_ASSIGNED);
-      
-        if (!menu->setSelectableTargets(valid_targets))
-        {
           if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
           {
-            std::cout << "No selectable targets found! Select another action index!"
-                      << std::endl;
+            std::cout << "Finding selectable targets for action with scope: "
+                      << Helpers::actionScopeToStr(scope) << std::endl;
           }
-        }
-        else
-        {
-          menu->setActionScope(scope);
-          menu->setMenuFlag(BattleMenuState::SCOPE_ASSIGNED);
-          menu->printMenuState();
+
+          auto valid_targets = getValidTargets(person_index, scope);
+          menu->setMenuFlag(BattleMenuState::TARGETS_ASSIGNED);
+      
+          if (!menu->setSelectableTargets(valid_targets))
+          {
+            if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
+            {
+              std::cout << "No selectable targets found! Select another action"
+                        << " index!" << std::endl;
+            }
+          }
+          else
+          {
+            menu->setActionScope(scope);
+            menu->setMenuFlag(BattleMenuState::SCOPE_ASSIGNED);
+            menu->printMenuState();
+          }
         }
       }
     }
-  }
   else if (turn_state == TurnState::SELECT_ACTION_ENEMY)
   {
     if (curr_module != nullptr) 
@@ -2074,108 +2134,99 @@ bool Battle::update(int32_t cycle_time)
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Returns the ailment update mode currently set
  *
  * Inputs:
  * Outputs:
  */
-/* Returns the ailment update mode currently set */
 BattleOptions Battle::getAilmentUpdateMode()
 {
   return ailment_update_mode;
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Returns the assigned Battle display mode
  *
  * Inputs:
  * Outputs:
  */
-/* Returns the assigned Battle display mode */
 BattleMode Battle::getBattleMode()
 {
   return battle_mode;
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Return the value of a given CombatState flag
  *
  * Inputs:
  * Outputs:
  */
-/* Return the value of a given CombatState flag */
 bool Battle::getBattleFlag(const CombatState &test_flag)
 {
   return static_cast<bool>((flags & test_flag) == test_flag);
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Returns the friends pointer of the Battle
  *
  * Inputs:
  * Outputs:
  */
-/* Returns the friends pointer of the Battle */
 Party* Battle::getFriends()
 {
   return friends;
 } 
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Returns the foes pointer of the Battle
  *
  * Inputs:
  * Outputs:
  */
-/* Returns the foes pointer of the Battle */
 Party* Battle::getFoes()
 {
   return foes;
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Returns the hud display mode currently set
  *
  * Inputs:
  * Outputs:
  */
-/* Returns the hud display mode currently set */
 BattleOptions Battle::getHudDisplayMode()
 {
   return hud_display_mode;
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Returns the value of the screen height 
  *
  * Inputs:
  * Outputs:
  */
-/* Returns the value of the screen height */
 uint32_t Battle::getScreenHeight()
 {
   return screen_height;
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Returns the value of the screen width
  *
  * Inputs:
  * Outputs:
  */
-/* Returns the value of the screen width */
 uint32_t Battle::getScreenWidth()
 {
   return screen_width;
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Evaluates and returns a vector of ailments for a given person
  *
  * Inputs:
  * Outputs:
  */
-/* Evaluates and returns a vector of ailments for a given person */
 std::vector<Ailment*> Battle::getPersonAilments(Person* const target)
 {
   std::vector<Ailment*> person_ailments;
@@ -2189,48 +2240,45 @@ std::vector<Ailment*> Battle::getPersonAilments(Person* const target)
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Returns the value of the turns elapsed
  *
  * Inputs:
  * Outputs:
  */
-/* Returns the value of the turns elapsed */
 uint32_t Battle::getTurnsElapsed()
 {
   return turns_elapsed;
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Returns the elapsed time of the Battle
  *
  * Inputs:
  * Outputs:
  */
-/* Returns the elapsed time of the Battle */
 uint32_t Battle::getTimeElapsed()
 {
   return time_elapsed;
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Returns the enumerated turn state of the Battle
  *
  * Inputs:
  * Outputs:
  */
-/* Returns the enumerated turn state of the Battle */
 TurnState Battle::getTurnState()
 {
   return turn_state;
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Returns the index integer of a a given Person ptr
  *
  * Inputs:
  * Outputs:
  */
-/* Returns the index integer of a a given Person ptr */
+/*  */
 int32_t Battle::getTarget(Person* battle_member)
 {
   for (uint32_t i = 0; i < friends->getSize(); i++)
@@ -2250,7 +2298,6 @@ int32_t Battle::getTarget(Person* battle_member)
  * Inputs:
  * Outputs:
  */
-/*  */
 Person* Battle::getPerson(const int32_t &index)
 {
   if (index < 0)
@@ -2268,12 +2315,11 @@ Person* Battle::getPerson(const int32_t &index)
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Calculate and return all BattleMember indexes
  *
  * Inputs:
  * Outputs:
  */
-/* Calculate and return all BattleMember indexes */
 std::vector<int32_t> Battle::getAllTargets()
 {
   auto all_targets =  getFriendsTargets();
@@ -2285,21 +2331,24 @@ std::vector<int32_t> Battle::getAllTargets()
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Obtains all friendly battle member indexes
  *
  * Inputs:
  * Outputs:
  */
-/* Obtains all friendly battle member indexes */
-std::vector<int32_t> Battle::getFriendsTargets(const bool &only_ko)
+std::vector<int32_t> Battle::getFriendsTargets(const bool &ko)
 {
   std::vector<int32_t> friends_targets;
 
   for (uint32_t i = 0; i < friends->getSize(); i++)
   {
-    auto member = foes->getMember(i);
+    auto member       = friends->getMember(i);
+    auto valid_target = false;
 
-    if (!only_ko || !member->getBFlag(BState::ALIVE))
+    valid_target |= (ko  && !member->getBFlag(BState::ALIVE));
+    valid_target |= (!ko && member->getBFlag(BState::ALIVE));
+    
+    if (valid_target)
       friends_targets.push_back(getTarget(friends->getMember(i)));
   }
 
@@ -2307,21 +2356,24 @@ std::vector<int32_t> Battle::getFriendsTargets(const bool &only_ko)
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Obtains all unfriendly battle member indexes
  *
  * Inputs:
  * Outputs:
  */
-/* Obtains all unfriendly battle member indexes */
-std::vector<int32_t> Battle::getFoesTargets(const bool &only_ko)
+std::vector<int32_t> Battle::getFoesTargets(const bool &ko)
 {
   std::vector<int32_t> foes_targets;
 
   for (uint32_t i = 0; i < foes->getSize(); i++)
   {
-    auto member = foes->getMember(i);
+    auto member       = foes->getMember(i);
+    auto valid_target = false;
 
-    if (!only_ko || !member->getBFlag(BState::ALIVE))
+    valid_target |= (ko && !member->getBFlag(BState::ALIVE));
+    valid_target |= (!ko && member->getBFlag(BState::ALIVE));
+
+    if (valid_target)
       foes_targets.push_back(getTarget(foes->getMember(i)));
   }
 
@@ -2329,12 +2381,11 @@ std::vector<int32_t> Battle::getFoesTargets(const bool &only_ko)
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Obtains a vector of targets matching the signage
  *
  * Inputs:
  * Outputs:
  */
-/* Obtains a vector of targets matching the signage */
 std::vector<int32_t> Battle::getPartyTargets(int32_t check_index)
 {
   if (check_index < 0 )
@@ -2346,12 +2397,12 @@ std::vector<int32_t> Battle::getPartyTargets(int32_t check_index)
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Obtains a vector of battle member indexes for a given user and 
+ *              scope
  *
  * Inputs:
  * Outputs:
  */
-/* Obtains a vector of battle member indexes for a given user and scope */
 std::vector<int32_t> Battle::getValidTargets(int32_t index, 
                                              ActionScope action_scope)
 {
@@ -2415,12 +2466,11 @@ std::vector<int32_t> Battle::getValidTargets(int32_t index,
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Assigns the running config
  *
  * Inputs:
  * Outputs:
  */
-/* Assigns the running config */
 bool Battle::setConfiguration(Options* const new_config)
 {
   if (new_config != nullptr)
@@ -2449,12 +2499,12 @@ bool Battle::setConfiguration(Options* const new_config)
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Assign a value to a CombatState flag
  *
  * Inputs:
  * Outputs:
  */
-/* Assign a value to a CombatState flag */
+
 void Battle::setBattleFlag(CombatState flag, const bool &set_value)
 {
   (set_value) ? (flags |= flag) : (flags &= ~flag);
