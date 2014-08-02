@@ -86,8 +86,8 @@ const float    Battle::kDODGE_PER_LEVEL_MODIFIER    =   1.04;
  */
 /* Constructs a party given two parties and configured options */
 Battle::Battle(Options* running_config, Party* const friends, Party* const foes)
-  : friends(friends)
-  , foes(foes)
+      : friends(friends)
+      , foes(foes)
 {
   if (checkAIModules())
   {
@@ -314,6 +314,131 @@ bool Battle::bufferEnemyAction()
   }
 
   return false;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Outputs:
+ */
+bool Battle::bufferUserAction()
+{
+  auto buffered       = false;
+  auto action_type    = menu->getActionType();
+  auto action_targets = menu->getActionTargets();
+
+  curr_user     = getPerson(person_index);
+
+  /* Build the vector Person ptrs from the target index vector */
+  std::vector<Person*> person_targets;
+
+  for (auto it = begin(action_targets); it != end(action_targets); ++it)
+    person_targets.push_back(getPerson(*it));
+        
+  /* Push the actions on to the Buffer */
+  if (action_type == ActionType::SKILL)
+  {
+    curr_skill = menu->getSelectedSkill();
+    buffered = action_buffer->add(curr_user, curr_skill, person_targets, 0);
+  }
+  else if (action_type == ActionType::ITEM)
+  {
+    curr_item = menu->getSelectedItem();
+    buffered = action_buffer->add(curr_user, curr_item, person_targets, 0);
+
+    if (buffered)
+    {
+      if (config->getBattleMode() == BattleMode::TEXT)
+      {
+        std::cout << "Removing " << curr_item->getName() << " from "
+                  << "inventory and adding to buffer." << std::endl;
+      }
+      else if (config->getBattleMode() == BattleMode::GUI)
+      {
+        //TODO: Battle Front End [08-01-14]
+      }
+      
+      friends->getInventory()->removeItemID(curr_item->getGameID());
+      menu->setSelectableItems(friends->getInventory()->getBattleItems());
+    }
+  }
+  else if (action_type == ActionType::DEFEND  || 
+           action_type == ActionType::GUARD   ||
+           action_type == ActionType::IMPLODE ||
+           action_type == ActionType::RUN     ||
+           action_type == ActionType::PASS)
+  {
+    buffered = action_buffer->add(curr_user, action_type, person_targets, 0);
+  }
+  else
+  {
+    std::cout << "[Error]: Invalid action selected\n";
+  }
+
+  if (buffered)
+  {
+    if (curr_user->getBFlag(BState::SELECTED_2ND_ACTION))
+      curr_user->setBFlag(BState::SELECTED_3RD_ACTION);
+    else if (curr_user->getBFlag(BState::SELECTED_ACTION))
+      curr_user->setBFlag(BState::SELECTED_2ND_ACTION);
+    else
+      curr_user->setBFlag(BState::SELECTED_ACTION);
+
+    if (canIncrementIndex(curr_user))
+      return setNextPersonIndex();
+  }
+  else
+  {
+    std::cout << "[Error]: Action buffer addition failure!" << std::endl;   
+  }
+
+  return false;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Outputs:
+ */
+std::vector<BattleSkill> Battle::buildBattleSkills(const int32_t &p_index,
+    SkillSet* const useable_skills)
+{
+  curr_user = getPerson(p_index);
+  std::vector<BattleSkill> battle_skills;
+
+  if (curr_user != nullptr)
+  {
+    auto skill_elements = useable_skills->getElements(curr_user->getLevel());
+
+    for (auto it = begin(skill_elements); it != end(skill_elements); ++it)
+    {
+      auto targets = getValidTargets(p_index, (*it).skill->getScope());
+      
+      auto all_targets = getPersonsFromIndexes(targets);
+      std::vector<Person*> friends_targets;
+      std::vector<Person*> foes_targets;
+      
+      for (auto target: all_targets)
+      {
+        if (friends->isInParty(target))
+          friends_targets.push_back(target);
+        else
+          foes_targets.push_back(target);
+      }
+
+      BattleSkill new_battle_skill;
+      new_battle_skill.skill           = (*it).skill;
+      new_battle_skill.all_targets     = all_targets;
+      new_battle_skill.ally_targets = friends_targets;
+      new_battle_skill.foe_targets    = foes_targets;
+
+      battle_skills.push_back(new_battle_skill);
+    }
+  }
+
+  return battle_skills;
 }
 
 /*
@@ -1180,80 +1305,6 @@ void Battle::selectEnemyActions()
     /* Mark the enemy selection phase as complete on the max index */
     setBattleFlag(CombatState::PHASE_DONE);
   }
-}
-
-bool Battle::bufferUserAction()
-{
-  auto buffered       = false;
-  auto action_type    = menu->getActionType();
-  auto action_targets = menu->getActionTargets();
-
-  curr_user     = getPerson(person_index);
-
-  /* Build the vector Person ptrs from the target index vector */
-  std::vector<Person*> person_targets;
-
-  for (auto it = begin(action_targets); it != end(action_targets); ++it)
-    person_targets.push_back(getPerson(*it));
-        
-  /* Push the actions on to the Buffer */
-  if (action_type == ActionType::SKILL)
-  {
-    curr_skill = menu->getSelectedSkill();
-    buffered = action_buffer->add(curr_user, curr_skill, person_targets, 0);
-  }
-  else if (action_type == ActionType::ITEM)
-  {
-    curr_item = menu->getSelectedItem();
-    buffered = action_buffer->add(curr_user, curr_item, person_targets, 0);
-
-    if (buffered)
-    {
-      if (config->getBattleMode() == BattleMode::TEXT)
-      {
-        std::cout << "Removing " << curr_item->getName() << " from "
-                  << "inventory and adding to buffer." << std::endl;
-      }
-      else if (config->getBattleMode() == BattleMode::GUI)
-      {
-        //TODO: Battle Front End [08-01-14]
-      }
-      
-      friends->getInventory()->removeItemID(curr_item->getGameID());
-      menu->setSelectableItems(friends->getInventory()->getBattleItems());
-    }
-  }
-  else if (action_type == ActionType::DEFEND  || 
-           action_type == ActionType::GUARD   ||
-           action_type == ActionType::IMPLODE ||
-           action_type == ActionType::RUN     ||
-           action_type == ActionType::PASS)
-  {
-    buffered = action_buffer->add(curr_user, action_type, person_targets, 0);
-  }
-  else
-  {
-    std::cout << "[Error]: Invalid action selected\n";
-  }
-
-  if (buffered)
-  {
-    if (curr_user->getBFlag(BState::SELECTED_2ND_ACTION))
-      curr_user->setBFlag(BState::SELECTED_3RD_ACTION);
-    else if (curr_user->getBFlag(BState::SELECTED_ACTION))
-      curr_user->setBFlag(BState::SELECTED_2ND_ACTION);
-    else
-      curr_user->setBFlag(BState::SELECTED_ACTION);
-
-    if (canIncrementIndex(curr_user))
-      return setNextPersonIndex();
-  }
-  else
-  {
-    std::cout << "[Error]: Action buffer addition failure!" << std::endl;   
-  }
-
-  return false;
 }
 
 /* Calculates user actions and add them to the buffer */
@@ -2396,6 +2447,17 @@ std::vector<int32_t> Battle::getPartyTargets(int32_t check_index)
   return getFriendsTargets();
 }
 
+std::vector<Person*> Battle::getPersonsFromIndexes(std::vector<int32_t> indexes)
+{
+  std::vector<Person*> persons;
+
+  for (auto it = begin(indexes); it != end(indexes); ++it)
+    if (getPerson(*it) != nullptr)
+      persons.push_back(getPerson(*it));
+
+  return persons;
+}
+
 /*
  * Description: Obtains a vector of battle member indexes for a given user and 
  *              scope
@@ -2404,7 +2466,7 @@ std::vector<int32_t> Battle::getPartyTargets(int32_t check_index)
  * Outputs:
  */
 std::vector<int32_t> Battle::getValidTargets(int32_t index, 
-                                             ActionScope action_scope)
+    ActionScope action_scope)
 {
   std::vector<int32_t> valid_targets;
 

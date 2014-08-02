@@ -75,13 +75,13 @@ const std::vector<float> Person::kSECD_MODS =
  *         race_class - pointer to the race class
  */
 Person::Person(const int32_t &game_id, const std::string &name, 
-               Category* const battle_class, Category* const race_class)
-  : game_id{game_id}
-  , my_id{++id}
-  , base_person{nullptr}
-  , battle_class{battle_class}
-  , race_class{race_class}
-  , name{name}
+    Category* const battle_class, Category* const race_class)
+      : game_id{game_id}
+      , my_id{++id}
+      , base_person{nullptr}
+      , battle_class{battle_class}
+      , race_class{race_class}
+      , name{name}
 {
   setupClass();
 }
@@ -92,9 +92,9 @@ Person::Person(const int32_t &game_id, const std::string &name,
  * Inputs: Person* - pointer to the base person 
  */
 Person::Person(Person* const source)
-  : game_id{source->game_id}
-  , my_id{++id}
-  , base_person{source}
+    : game_id{source->game_id}
+    , my_id{++id}
+    , base_person{source}
 {
   setupClass();
 }

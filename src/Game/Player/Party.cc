@@ -184,6 +184,16 @@ bool Party::hasMiniBoss()
   return false;
 }
 
+/* Determines whether a given person is in the Party */
+bool Party::isInParty(Person* const check_person)
+{
+  for (auto it = begin(members); it != end(members); ++it)
+    if ((*it) == check_person)
+      return true;
+
+  return false;
+}
+
 /* Prints out the state of the Party */
 void Party::print(const bool &simple, const bool &flags)
 {

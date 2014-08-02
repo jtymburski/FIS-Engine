@@ -103,6 +103,9 @@ public:
   /* Evaluates whether the current party contains a mini boss */
   bool hasMiniBoss();
 
+  /* Checks if a given person is in the party */
+  bool isInParty(Person* const check_person);
+
   /* Prints out the state of the Party */
   void print(const bool &simple = false, const bool &flags = false);
 
