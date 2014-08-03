@@ -358,7 +358,7 @@ bool MapPerson::addThingInformation(XmlData data, int file_index,
 
     /*--------------------- FRAMES -----------------*/
     if(elements[2] == "spritebot" || elements[2] == "spritetop" || 
-                                     elements[2] == "sprite")
+                                     elements[2] == "sprites")
     {
       /* Create the surface identifier */
       SurfaceClassifier surface = GROUND;
@@ -380,7 +380,8 @@ bool MapPerson::addThingInformation(XmlData data, int file_index,
       if(direction != Direction::DIRECTIONLESS)
       {
         Sprite* frames = NULL;
-
+        Sprite* frames_upper = NULL;
+        
         /* Determine if it's the main sprite or the secondary top sprite */
         if(elements[2] == "spritebot") /* Main Lower Sprite */
         {
@@ -398,23 +399,32 @@ bool MapPerson::addThingInformation(XmlData data, int file_index,
         }
         else if(elements[2] == "spritetop") /* Sprite Upper Top */
         {
-          frames = getStateSecondary(surface, direction);
-          if(frames == NULL)
+          frames_upper = getStateSecondary(surface, direction);
+          if(frames_upper == NULL)
           {
-            frames = new Sprite();
-            if(!setStateSecondary(surface, direction, frames))
+            frames_upper = new Sprite();
+            if(!setStateSecondary(surface, direction, frames_upper))
             {
-              delete frames;
-              frames = NULL;
+              delete frames_upper;
+              frames_upper = NULL;
               success = false;
             }
           }
         }
+        else if(elements[2] == "sprites") /* Combined sprite */
+        {
+          std::cout << elements[3] << std::endl;
+          //Helpers::split();
+        }
 
-        /* Proceed with the add once valid frames are acquired */
+        /* Proceed with the add once valid frames are acquired. This will
+           add both the upper and lower frames for the person, if possible */
         if(frames != NULL)
           success &= frames->addFileInformation(data, file_index + 3, 
                                                 renderer, base_path);
+        if(frames_upper != NULL)
+          success &= frames_upper->addFileInformation(data, file_index + 3,
+                                                      renderer, base_path);
       }
       else
       {

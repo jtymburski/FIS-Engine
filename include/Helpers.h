@@ -123,8 +123,8 @@ public:
 public:
   /* Builds an exponentially growing table from min to max with iter
    * iterations */
-  static std::vector<uint32_t> buildExpTable(const uint32_t &min, const uint32_t &max, 
-                                             const uint32_t &iter);
+  static std::vector<uint32_t> buildExpTable(const uint32_t &min, 
+      const uint32_t &max, const uint32_t &iter);
 
   /* Methods for trimming white space from left and right of string ends */
   static std::string& ltrim(std::string &s);
