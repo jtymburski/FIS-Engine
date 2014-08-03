@@ -501,7 +501,7 @@ void Game::setupBattle()
   foes->addMember(ball_man);
   foes->addMember(thruster_barrow);
 
-  AIModuleTester ai_module_tester;
+  // AIModuleTester ai_module_tester;
 
   AIModule* cloud_dude_module = new AIModule();
   cloud_dude_module->setParent(cloud_dude);
@@ -537,9 +537,8 @@ void Game::setupBattle()
   for (uint32_t i = 0; i < foes->getSize(); i++)
     foes->getMember(i)->battlePrep();
 
-  ai_module_tester.aiActionTypeTests(0, cloud_dude_module, 
-                                     foes->getInventory()->getBattleItems());
-
+  // ai_module_tester.aiActionTypeTests(0, cloud_dude_module, 
+  //                                    foes->getInventory()->getBattleItems());
 
   game_battle = new Battle(game_config, allies, foes);
 

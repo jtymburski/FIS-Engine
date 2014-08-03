@@ -20,9 +20,11 @@
 * than 5, personalUpkeep is called (Step 2).  Else, BattleMenu
 * deactivates and processEnemyActions() is called (Step 4).
 *
+* [NOW WRONG]
 * 4. processEnemyActions() uses the enemies scripts to add actions to the
 * stack, after which orderActions() is called.
 *
+* [NOW WRONG]
 * 5. orderActions() reorders the stack based on speed and status ailments,
 * performActions() is then called.
 *
@@ -77,15 +79,6 @@
 
 using std::begin;
 using std::end;
-
-struct BattleSkill
-{
-  Skill* skill;
-
-  std::vector<Person*> all_targets;
-  std::vector<Person*> ally_targets;
-  std::vector<Person*> foe_targets;
-};
 
 /* CombatState enumerated flags */
 ENUM_FLAGS(CombatState)
@@ -296,7 +289,10 @@ private:
   
   /* Builds the vector of structs for skills and assosciated targets */
   std::vector<BattleSkill> buildBattleSkills(const int32_t &index, 
-                                             SkillSet* skill_set);
+      SkillSet* skill_set);
+
+  std::vector<BattleItem> buildBattleItems(const int32_t &index, 
+      std::vector<std::pair<Item*, uint16_t>> items);
 
   /* Calculates the base damage for the current action/target setup */
   int32_t calcBaseDamage(const float &crit_factor);
@@ -345,9 +341,6 @@ private:
 
   /* Orders the actions on the buffer by speed of the aggressor */
   void orderActions();
-
-  /* Actually performs the actions in the buffer */
-  void performAction();
 
   /* Deals with character related upkeep */
   void personalUpkeep(Person* const target);

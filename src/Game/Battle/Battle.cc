@@ -86,8 +86,8 @@ const float    Battle::kDODGE_PER_LEVEL_MODIFIER    =   1.04;
  */
 /* Constructs a party given two parties and configured options */
 Battle::Battle(Options* running_config, Party* const friends, Party* const foes)
-      : friends(friends)
-      , foes(foes)
+    : friends(friends)
+    , foes(foes)
 {
   if (checkAIModules())
   {
@@ -157,12 +157,11 @@ Battle::~Battle()
  *============================================================================*/
 
 /*
- * Description:
+ * Description: Attempts to add an ailment to the vector of ailments
  *
  * Inputs:
  * Output:
  */
-/* Attempts to add an ailment to the vector of ailments */
 bool Battle::addAilment(Ailment* const new_ailment)
 {
   auto can_add = ailments.size() < kMAX_AILMENTS;
@@ -190,12 +189,11 @@ bool Battle::addAilment(Ailment* const new_ailment)
 }
 
 /*
- * Description:
+ * Description: Called when the Battle has been won
  *
  * Inputs:
  * Outputs:
  */
-/* Called when the Battle has been won */
 void Battle::battleWon()
 {
   //call victory
@@ -219,12 +217,11 @@ void Battle::battleWon()
 }
 
 /*
- * Description:
+ * Description: Called when the Battle has been lost
  *
  * Inputs:
  * Outputs:
  */
-/* Called when the Battle has been lost */
 void Battle::battleLost()
 {
   // return to title?
@@ -280,7 +277,11 @@ bool Battle::bufferEnemyAction()
 
       /* Remove the item from the inventory, update module with current items */
       foes->getInventory()->removeItemID(curr_item->getGameID());
-      curr_module->setItems(foes->getInventory()->getBattleItems());
+
+      /* Grab the vector of pairs of item/amts and build battl item vector
+       * and inject back into the AI Module for selection */
+      auto items = foes->getInventory()->getBattleItems();
+      curr_module->setItems(buildBattleItems(person_index, items));
     }
   }
   else if (action_type == ActionType::DEFEND  ||
@@ -360,7 +361,9 @@ bool Battle::bufferUserAction()
       }
       
       friends->getInventory()->removeItemID(curr_item->getGameID());
-      menu->setSelectableItems(friends->getInventory()->getBattleItems());
+
+      auto items = friends->getInventory()->getBattleItems();
+      menu->setSelectableItems(buildBattleItems(person_index, items));
     }
   }
   else if (action_type == ActionType::DEFEND  || 
@@ -394,6 +397,53 @@ bool Battle::bufferUserAction()
   }
 
   return false;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Outputs:
+ */
+std::vector<BattleItem> Battle::buildBattleItems(const int32_t &p_index,
+  std::vector<std::pair<Item*, uint16_t>> items)
+{
+  curr_user = getPerson(p_index);
+  std::vector<BattleItem> battle_items;
+
+  if (curr_user != nullptr)
+  {
+    for (auto it = begin(items); it != end(items); ++it)
+    {
+
+      auto targets = getValidTargets(p_index, 
+                                     (*it).first->getUseSkill()->getScope());
+      
+      auto all_targets = getPersonsFromIndexes(targets);
+      std::vector<Person*> friends_targets;
+      std::vector<Person*> foes_targets;
+      
+      for (auto target: all_targets)
+      {
+        if (friends->isInParty(target))
+          friends_targets.push_back(target);
+        else
+          foes_targets.push_back(target);
+      }
+
+      BattleItem new_battle_item;
+      new_battle_item.item = (*it).first;
+      new_battle_item.item_skill = (*it).first->getUseSkill();
+      new_battle_item.amount = (*it).second;
+      new_battle_item.all_targets  = all_targets;
+      new_battle_item.ally_targets = friends_targets;
+      new_battle_item.foe_targets  = foes_targets;
+
+      battle_items.push_back(new_battle_item);
+    }
+  }
+
+  return battle_items;
 }
 
 /*
@@ -912,12 +962,11 @@ bool Battle::doesActionMiss()
 }
 
 /*
- * Description:
+ * Description: Deals with general upkeep (i.e. weather)
  *
  * Inputs:
  * Outputs:
  */
-/* Deals with general upkeep (i.e. weather) */
 void Battle::generalUpkeep()
 {
 #ifdef UDEBUG
@@ -934,12 +983,11 @@ void Battle::generalUpkeep()
 }
 
 /*
- * Description:
+ * Description: Sets the flags of BattleState at the beginning of the Battle
  *
  * Inputs:
  * Outputs:
  */
-/* Sets the flags of BattleState at the beginning of the Battle */
 void Battle::loadBattleStateFlags()
 {
   setBattleFlag(CombatState::RANDOM_ENCOUNTER, true);
@@ -971,12 +1019,11 @@ void Battle::loadBattleStateFlags()
 }
 
 /*
- * Description:
+ * Description: Orders the actions on the buffer by speed of the aggressor
  *
  * Inputs:
  * Outputs:
  */
-/* Orders the actions on the buffer by speed of the aggressor */
 void Battle::orderActions()
 {
   std::cout << "Action buffer state prior to sorting: " << std::endl;
@@ -994,17 +1041,6 @@ void Battle::orderActions()
   setBattleFlag(CombatState::PHASE_DONE);
 }
 
-/*
- * Description: Actually performs the actions in the buffer
- *
- * Inputs:
- * Outputs:
- */
-void Battle::performAction()
-{
-  //TODO: Perform actions [03-01-14]
-}
-
 /* Deals with character related upkeep */
 void Battle::personalUpkeep(Person* const target)
 {
@@ -1017,7 +1053,7 @@ void Battle::personalUpkeep(Person* const target)
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: 
  *
  * Inputs:
  * Outputs:
@@ -1150,12 +1186,11 @@ void Battle::processSkill(std::vector<Person*> targets)
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Process the actions (Items & Skills) in the buffer
  *
  * Inputs:
  * Outputs:
  */
-/* Process the actions (Items & Skills) in the buffer */
 void Battle::processActions()
 {
 #ifdef UDEBUG
@@ -1293,7 +1328,9 @@ void Battle::selectEnemyActions()
 
     /* Reset the AI Module for a new turn decision, assign data */
     curr_user->resetAI();
-    curr_module->setItems(foes->getInventory()->getBattleItems());
+
+    auto items = friends->getInventory()->getBattleItems();
+    curr_module->setItems(buildBattleItems(person_index, items));
     curr_module->calculateAction();
   }
   else
@@ -1307,7 +1344,12 @@ void Battle::selectEnemyActions()
   }
 }
 
-/* Calculates user actions and add them to the buffer */
+/*
+ * Description: Calculates user actions and add them to the buffer
+ *
+ * Inputs:
+ * Outputs:
+ */
 void Battle::selectUserActions()
 {
 #ifdef UDEBUG
@@ -1336,15 +1378,21 @@ void Battle::selectUserActions()
   if (update_menu)
   {
     std::cout << "Preparing battle menu for selection for person index: " << person_index << std::endl;
-    auto person = getPerson(person_index);
+    curr_user = getPerson(person_index);
 
-    if (person != nullptr)
+    if (curr_user != nullptr)
     {
       /* Reload the menu information for the next person */
-      menu->reset(getPerson(person_index), person_index);
+      menu->reset(curr_user, person_index);
+      
+      auto skills = curr_user->getUseableSkills();
+      menu->setSelectableSkills(buildBattleSkills(person_index, skills));
 
       if (friends->getInventory() != nullptr)
-        menu->setSelectableItems(friends->getInventory()->getBattleItems());
+      {
+        auto items = friends->getInventory()->getBattleItems();
+        menu->setSelectableItems(buildBattleItems(person_index, items));
+      }
     
       if (config->getBattleMode() == BattleMode::TEXT)
       {
@@ -1644,6 +1692,12 @@ void Battle::setNextTurnState()
   }
 }
 
+/*
+ * Description:
+ *
+ * Inputs:
+ * Outputs:
+ */
 bool Battle::setNextPersonIndex()
 {
   std::cout << "Setting next person index from current index: " << person_index << std::endl;

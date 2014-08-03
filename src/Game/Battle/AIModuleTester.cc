@@ -59,8 +59,7 @@
  *============================================================================*/
 
 bool AIModuleTester::aiActionTypeTests(const uint32_t &num_times,
-                                       AIModule* const module,
-                           std::vector<std::pair<Item*, uint16_t> > valid_items)
+    AIModule* const module, std::vector<BattleItem> valid_items)
 {
   if (module == nullptr)
     return false;

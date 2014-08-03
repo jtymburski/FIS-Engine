@@ -171,7 +171,7 @@ void Person::loadDefaults()
 
   credit_drop = 0;
   exp_drop = 0;
-
+  
   first_person = nullptr;
   third_person = nullptr;
   fp_bubbified_sprite = nullptr;

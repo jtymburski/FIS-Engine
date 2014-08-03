@@ -40,6 +40,28 @@ class AIModule;
 #include "Game/Player/Category.h"
 #include "Game/Player/Equipment.h"
 
+/* Structure representing a skill and its possible targets for targ. selec. */
+struct BattleSkill
+{
+  Skill* skill;
+
+  std::vector<Person*> all_targets;
+  std::vector<Person*> ally_targets;
+  std::vector<Person*> foe_targets;
+};
+
+/* Structure representing an item and its amt and possible targets */
+struct BattleItem
+{
+  Item* item;
+  Skill* item_skill;
+  uint32_t amount;
+
+  std::vector<Person*> all_targets;
+  std::vector<Person*> ally_targets;
+  std::vector<Person*> foe_targets;
+};
+
 /* BState Flags - Flags which describe only battle-related flags */
 ENUM_FLAGS(BState)
 enum class BState

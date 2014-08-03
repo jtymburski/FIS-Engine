@@ -31,7 +31,6 @@
  */
 BattleMenu::BattleMenu(Options* running_config)
   : qtdr_cost_paid{0}
-  , menu_skills{nullptr}
   , action_type{ActionType::NONE}
   , action_scope{ActionScope::NO_SCOPE}
   , config{running_config}
@@ -244,7 +243,9 @@ bool BattleMenu::removeLastTarget(const bool &clear_all)
 /* Methods for containing code for each key action */
 void BattleMenu::keyDownAlpha(const char &c)
 {
-  auto index = menu_skills->getIndexOfAlpha(c);
+  //auto index = menu_skills->getIndexOfAlpha(c);
+  (void)c;
+  auto index = -1; //TODO: Redo menu alpha skill selection.
 
   if (index != -1)
     element_index = index;
@@ -373,7 +374,7 @@ void BattleMenu::keyDownSelect()
     /* Assert there are skills if the chosen action type is SKILL */
     if (action_type == ActionType::SKILL)
     {
-      if (menu_skills->getSize() > 0)
+      if (menu_skills.size() > 0)
         layer_to_increment = 2;
 
       if (layer_to_increment == -1)
@@ -430,12 +431,12 @@ void BattleMenu::keyDownSelect()
     /* Selection of skill index -> move to target menu */
     if (action_type == ActionType::SKILL)
     {
-      if (static_cast<uint32_t>(element_index) < menu_skills->getSize())
+      if (static_cast<uint32_t>(element_index) < menu_skills.size())
       {
         layer_to_increment = 3;
 
         /* Grab the selected skill */
-        selected_skill = menu_skills->getElement(element_index).skill;
+        selected_skill = menu_skills.at(element_index).skill;
 
         /* Decrease the current user's QD by the cost required */
         auto true_cost = current_user->getTrueCost(selected_skill);
@@ -460,7 +461,7 @@ void BattleMenu::keyDownSelect()
       {
         layer_to_increment = 3;
 
-        selected_item = menu_items.at(element_index).first;
+        selected_item = menu_items.at(element_index).item;
       } 
     }
   }
@@ -547,8 +548,8 @@ void BattleMenu::unsetAll()
   menu_items.clear();
   valid_targets.clear();
   selected_targets.clear();
+  menu_skills.clear();
 
-  menu_skills    = nullptr;
   selected_skill = nullptr;
   selected_item  = nullptr;
   current_user   = nullptr;
@@ -583,6 +584,27 @@ bool BattleMenu::isActionTypeSelected()
  * Inputs:
  * Output:
  */
+bool BattleMenu::indexHasTargets()
+{
+  auto index_has_targets = false;
+
+  if (element_index != -1)
+  {
+    if (action_type == ActionType::SKILL)
+      index_has_targets |= !menu_skills.at(element_index).all_targets.empty();
+    else if (action_type == ActionType::ITEM)
+      index_has_targets |= !menu_items.at(element_index).all_targets.empty();
+  }
+
+  return index_has_targets;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 void BattleMenu::reset(Person* const new_user, const uint32_t &new_person_index)
 {
   unsetAll();
@@ -592,7 +614,7 @@ void BattleMenu::reset(Person* const new_user, const uint32_t &new_person_index)
 
   if (current_user != nullptr)
   {
-    menu_skills   = current_user->getUseableSkills();
+    //menu_skills   = current_user->getUseableSkills();
     valid_actions = current_user->getValidActions();
   }
 }
@@ -631,17 +653,16 @@ void BattleMenu::printSkills()
   if (current_user != nullptr)
   {
     auto index = 0;
-    auto elements = menu_skills->getElements(current_user->getLevel());
+    //auto elements = menu_skills->getElements(current_user->getLevel());
 
-    for (auto it = begin(elements); it != end(elements); ++it, ++index)
+    for (auto it = begin(menu_skills); it != end(menu_skills); ++it, ++index)
     {
       if (index == element_index)
         std::cout << "[X]";
       else
         std::cout << "[ ]";
   
-      std::cout << " -- [ " << (*it).skill->getCost() << " QD ] -- [Lv. " 
-                << (*it).level_available << " ] " 
+      std::cout << " -- [ " << (*it).skill->getCost() << " QD ] -- "
                 << (*it).skill->getName() << std::endl;
     }
   }
@@ -710,8 +731,17 @@ void BattleMenu::printItems()
     else
       std::cout << "[ ]";
 
-    std::cout << " --- " << (*it).first->getName() << " -- [ " 
-              << (*it).second << " ]" << std::endl;
+    std::cout << " --- " << (*it).item->getName() << " -- [ " 
+              << (*it).amount << " ] -- [";
+
+    for (auto jt = begin((*it).all_targets); 
+         jt != end((*it).all_targets); 
+         ++ jt)
+    {
+      std::cout << (*jt)->getName() << ", ";
+    }
+    
+    std::cout << "]" << std::endl;
   }
 }
 
@@ -847,7 +877,7 @@ int32_t BattleMenu::getMaxIndex()
   if (layer_index == 1)
     return valid_actions.size() - 1;
   else if (layer_index == 2 && action_type == ActionType::SKILL)
-    return menu_skills->getSize() - 1;
+    return menu_skills.size() - 1;
   else if (layer_index == 2 && action_type == ActionType::ITEM)
     return menu_items.size() - 1;
   else if (layer_index == 2)
@@ -875,7 +905,7 @@ bool BattleMenu::getMenuFlag(const BattleMenuState &test_flag)
  * Inputs:
  * Output:
  */
-SkillSet* BattleMenu::getMenuSkills()
+std::vector<BattleSkill> BattleMenu::getMenuSkills()
 {
   return menu_skills;
 }
@@ -908,7 +938,7 @@ Item* BattleMenu::getSelectedItem()
  * Inputs:
  * Output:
  */
-std::vector<std::pair<Item*, uint16_t>> BattleMenu::getMenuItems()
+std::vector<BattleItem> BattleMenu::getMenuItems()
 {
   return menu_items;
 }
@@ -952,12 +982,24 @@ void BattleMenu::setMenuFlag(BattleMenuState flag, const bool &set_value)
  * Inputs:
  * Output:
  */
-bool BattleMenu::setSelectableItems(std::vector<std::pair<Item*, uint16_t>> 
-                                                                 new_menu_items)
+bool BattleMenu::setSelectableSkills(std::vector<BattleSkill> new_menu_skills)
+{
+  menu_skills = new_menu_skills;
+
+  return !menu_skills.empty();
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+bool BattleMenu::setSelectableItems(std::vector<BattleItem> new_menu_items)
 {
   menu_items = new_menu_items;
 
-  return (!menu_items.empty());
+  return !menu_items.empty();
 }
 
 /*

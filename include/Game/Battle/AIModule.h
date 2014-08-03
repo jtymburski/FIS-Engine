@@ -16,6 +16,8 @@
 #ifndef AIMODULE_H
 #define AIMODULE_H
 
+struct BattleSkill;
+struct BattleItem;
 class Person;
 
 #include "Game/Player/Item.h"
@@ -72,7 +74,7 @@ public:
 
   /* General AI constructor - constucts with diff and two personalities */
   AIModule(const AIDifficulty &diff,   const AIPersonality &prim_personality,
-           const AIPersonality &secd_personality);
+      const AIPersonality &secd_personality);
 
 private:
   /* The difficulty and personality of the Enemy */
@@ -91,12 +93,12 @@ private:
   ActionScope action_scope;
 
   /* Valid skills and items */
-  SkillSet* valid_skills;
-  std::vector<std::pair<Item*, uint16_t>>  valid_items;
+  std::vector<BattleSkill> valid_skills;
+  std::vector<BattleItem>  valid_items;
   
   /* Probability distribution of skill and item possibilities */
   std::vector<std::pair<Skill*, uint32_t>> skill_probabilities;
-  std::vector<std::pair<Item*, uint32_t>>   item_probabilities;
+  std::vector<std::pair<Item*, uint32_t>>  item_probabilities;
 
   /* Parent of the AI Module */
   Person* parent;
@@ -106,7 +108,7 @@ private:
   int32_t qd_cost_paid;
 
   Skill* chosen_skill;
-  Item* chosen_item;
+  Item*  chosen_item;
 
   /* Possible friend and foe targets to choose from */
   std::vector<Person*> friend_targets;
@@ -300,10 +302,10 @@ public:
   bool setActionTypes(std::vector<ActionType> new_valid_action_types);
 
   /* Assigns the vector of valid skills */
-  bool setSkills(SkillSet* const new_skills);
+  bool setSkills(std::vector<BattleSkill> new_skills);
 
   /* Assigns the vector of valid items */
-  bool setItems(std::vector<std::pair<Item*, uint16_t>> new_items);
+  bool setItems(std::vector<BattleItem> new_items);
 
   /* Assigns the vector of valid friend targets */
   bool setFriendTargets(std::vector<Person*> new_valid_targets);

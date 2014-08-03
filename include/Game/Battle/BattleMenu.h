@@ -59,10 +59,10 @@ private:
   std::vector<ActionType> valid_actions;
 
   /* The current selectable items on the menu */
-  std::vector<std::pair<Item*, uint16_t>> menu_items;
+  std::vector<BattleItem> menu_items;
 
   /* Current skill set for Skills to be chosen from */
-  SkillSet* menu_skills;
+  std::vector<BattleSkill> menu_skills;
 
   /* Remaining valid targets that can be chosen and already chosen targets */
   std::vector<int32_t> valid_targets;
@@ -135,6 +135,9 @@ public:
   /* Returns the state of the current menu selection */
   bool isActionSelected();
 
+  /* Returns whether the current action index has valid targets */
+  bool indexHasTargets();
+
   /* Resets the menu data to be used for a new Person */
   void reset(Person* const new_user, const uint32_t &new_person_index);
 
@@ -172,10 +175,10 @@ public:
   bool getMenuFlag(const BattleMenuState &test_flag);
 
   /* Returns the current selectable skills on the menu */
-  SkillSet* getMenuSkills();
+  std::vector<BattleSkill> getMenuSkills();
 
   /* Returns the current selectable items on the menu */
-  std::vector<std::pair<Item*, uint16_t>> getMenuItems();
+  std::vector<BattleItem> getMenuItems();
 
   /* The currently selected Skill (if set) */
   Skill* getSelectedSkill();
@@ -189,8 +192,11 @@ public:
   /* Assigns the scope of the skill when a skill has been chosen */
   void setActionScope(const ActionScope &new_action_scope);
 
+  /* Assigns the vector of BattleSkills to choose from */
+  bool setSelectableSkills(std::vector<BattleSkill> new_menu_skills);
+
   /* Assigns a new selectable list of items for the menu */
-  bool setSelectableItems(std::vector<std::pair<Item*, uint16_t>> new_menu_items);
+  bool setSelectableItems(std::vector<BattleItem> new_menu_items);
 
   /* Assigns valid targets for the menu */
   bool setSelectableTargets(std::vector<int32_t> valid_targets);

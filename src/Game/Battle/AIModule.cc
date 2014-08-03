@@ -149,11 +149,10 @@ Person* AIModule::addRandomTarget(std::vector<Person*> available_targets)
  */
 void AIModule::buildUniformSkills()
 {
-  auto skill_elements = valid_skills->getElements(Person::getNumLevels());
-
-  for (auto element : skill_elements)
+  for (auto battle_skill : valid_skills)
   {
-    auto skill_pair = std::make_pair(element.skill, element.skill->getValue());
+    auto skill_pair = std::make_pair(battle_skill.skill, 
+                                     battle_skill.skill->getValue());
     skill_probabilities.push_back(skill_pair);
   }
 
@@ -172,19 +171,18 @@ void AIModule::buildUniformSkills()
 bool AIModule::buildUniformItems()
 {
   auto error_occured = false;
+  item_probabilities.clear();
 
-  for (auto item_element : valid_items)
+  for (auto battle_item : valid_items)
   {
-    auto item_ptr = item_element.first;
-
-    if (item_ptr != nullptr)
+    if (battle_item.item != nullptr)
     {
-      auto item_skill = item_ptr->getUseSkill();
+      auto item_skill = battle_item.item->getUseSkill();
 
       if (item_skill != nullptr)
       {
-        auto item_prob = item_element.first->getUseSkill()->getValue();  
-        item_probabilities.push_back(std::make_pair(item_ptr, item_prob));
+        auto value = item_skill->getValue();  
+        item_probabilities.push_back(std::make_pair(battle_item.item, value));
       }
       else
       {
@@ -225,12 +223,8 @@ void AIModule::calculateActionTypeChances()
    * Item  - the less QD the user has, the more lean to using an Item
    */
   auto qd_percent  = parent->getQDPercent();
-  // auto skills_size = 0;
   std::vector<std::pair<ActionType, float>> act_typ_chances;
 
-  // if (valid_skills != nullptr)
-  //   skills_size = valid_skills->getSize();
-  
   if (can_choose_skill)
   {
     float skill_lean_factor = 0;
@@ -355,7 +349,7 @@ bool AIModule::canSelectSkill()
                                                valid_action_types);
 
   if (found_skill)
-    return !(valid_skills->getSize() == 0);
+    return !(valid_skills.size() == 0);
 
   return false;
 }
@@ -410,10 +404,10 @@ bool AIModule::selectRandomAction()
   /* Randomly select possible actions based on the selected action type */
   if (chosen_action_type == ActionType::SKILL)
   {
-    auto skills_size = valid_skills->getSize();
+    auto skills_size = valid_skills.size();
     auto rand_value = Helpers::randU(1, skills_size);
   
-    chosen_skill = valid_skills->getElement(rand_value - 1).skill;
+    chosen_skill = valid_skills.at(rand_value - 1).skill;
     chosen_action_index = rand_value;
     action_index_selected = true;
   }
@@ -422,8 +416,7 @@ bool AIModule::selectRandomAction()
     auto items_size = valid_items.size();
     auto rand_value = Helpers::randU(1, items_size);
 
-    chosen_item = valid_items[rand_value - 1].first;
-    std::cout << "Chosen item name: " << chosen_item->getName() << std::endl;
+    chosen_item = valid_items[rand_value - 1].item;
     chosen_action_index = rand_value;
     action_index_selected = true;
   }
@@ -575,8 +568,6 @@ bool AIModule::selectPriorityAction()
   {
     buildUniformSkills();
 
-    auto skill_elements = valid_skills->getElements(parent->getLevel());
-    
     action_index_selected = true;
   }
   else if (chosen_action_type == ActionType::ITEM)
@@ -696,7 +687,7 @@ void AIModule::loadDefaults()
   valid_action_types.clear();
   chosen_action_type = ActionType::NONE;
 
-  valid_skills = nullptr;
+  valid_skills.clear();
   valid_items.clear();
 
   chosen_action_index = -1;
@@ -879,11 +870,11 @@ void AIModule::print(const bool &simple, const bool &print_flags,
     std::cout << "VAT Size: " << valid_action_types.size() << " Chosen AT: "
               << Helpers::actionTypeToStr(chosen_action_type) << "\n";
 
-    if (valid_skills != nullptr)
-    {
-      std::cout << "Sk Size: " << valid_skills->getSize() << " It Size: " 
-                << valid_items.size() << "\n";
-    }
+    // if (valid_skills != nullptr)
+    // {
+    //   std::cout << "Sk Size: " << valid_skills->getSize() << " It Size: " 
+    //             << valid_items.size() << "\n";
+    // }
     std::cout << "QD Paid: " << qd_cost_paid << " Action Index: " 
               << chosen_action_index << "\n";
 
@@ -931,17 +922,17 @@ void AIModule::print(const bool &simple, const bool &print_flags,
  
     if (parent != nullptr)
     {
-      auto set_elements = valid_skills->getElements(parent->getLevel());
-      for (auto element : set_elements)
-        if (element.skill != nullptr)
-          std::cout << element.skill->getName() << "\n";
+      // auto set_elements = valid_skills->getElements(parent->getLevel());
+      // for (auto element : set_elements)
+      //   if (element.skill != nullptr)
+      //     std::cout << element.skill->getName() << "\n";
     }
 
     std::cout << "Valid Items: " <<"\n";
 
     for (auto item : valid_items)
-      if (item.first != nullptr)
-        std::cout << item.first->getName() << "\n";
+      if (item.item != nullptr)
+        std::cout << item.item->getName() << "\n";
 
     std::cout << "Chosen Action Index: " << chosen_action_index << "\n";
     std::cout << "QD Cost Paid: " << qd_cost_paid << "\n";
@@ -1052,8 +1043,7 @@ void AIModule::resetForNewTurn(Person* const parent)
   chosen_action_type = ActionType::NONE;
   action_scope       = ActionScope::NO_SCOPE;
 
-  valid_skills = nullptr;
-
+  valid_skills.clear();
   valid_items.clear();
 
   chosen_action_index = -1;
@@ -1068,10 +1058,7 @@ void AIModule::resetForNewTurn(Person* const parent)
   chosen_targets.clear();
 
   if (parent != nullptr)
-  {
     valid_action_types = parent->getValidActions();
-    valid_skills       = parent->getUseableSkills();
-  }
 }
 
 /*
@@ -1303,18 +1290,11 @@ bool AIModule::setActionTypes(std::vector<ActionType> new_valid_action_types)
  * Inputs:
  * Output:
  */
-bool AIModule::setSkills(SkillSet* const new_skills)
+bool AIModule::setSkills(std::vector<BattleSkill> new_skills)
 {
-  if (new_skills != nullptr)
-  {
-    valid_skills = new_skills;
+  valid_skills = new_skills;
 
-    return true;
-  }
-
-  valid_skills = nullptr;
-
-  return false;
+  return (valid_skills.size() != 0);
 }
 
 /*
@@ -1323,7 +1303,7 @@ bool AIModule::setSkills(SkillSet* const new_skills)
  * Inputs:
  * Output:
  */
-bool AIModule::setItems(std::vector<std::pair<Item*, uint16_t>> new_items)
+bool AIModule::setItems(std::vector<BattleItem> new_items)
 {
   if (new_items.size() > 0)
   {

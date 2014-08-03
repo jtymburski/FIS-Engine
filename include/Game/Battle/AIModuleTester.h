@@ -50,7 +50,7 @@ private:
 public:
   /* Runs tests on calculating the determination of action type choices */
   bool aiActionTypeTests(const uint32_t &num_times, AIModule* const module,
-                         std::vector<std::pair<Item*, uint16_t> > valid_items);
+      std::vector<BattleItem> valid_items);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
