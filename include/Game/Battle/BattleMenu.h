@@ -135,6 +135,9 @@ public:
   /* Returns the state of the current menu selection */
   bool isActionSelected();
 
+  /* Returns whether some index of the current selected type has targets */
+  bool someIndexHasTargets();
+
   /* Returns whether the current action index has valid targets */
   bool indexHasTargets();
 

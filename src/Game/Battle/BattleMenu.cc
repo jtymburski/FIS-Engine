@@ -328,9 +328,25 @@ void BattleMenu::keyDownDecrement()
 {
   /* Move to the last index if on the first index */
   if (element_index == 0)
+  {
     element_index = getMaxIndex();
+
+    if (action_type != ActionType::NONE && valid_targets.empty())
+    {
+      for (; !indexHasTargets(); )
+        element_index--;
+    }
+  }
   else
+  {
     element_index--;
+
+    if (action_type != ActionType::NONE && valid_targets.empty())
+    {
+      for (; !indexHasTargets(); )
+        element_index--;  
+    }
+  }
 }
 
 /*
@@ -343,10 +359,26 @@ void BattleMenu::keyDownIncrement()
 {
   /* Increment the viewing index if it is less than the max index */
   if (element_index < getMaxIndex())
+  {
     element_index++;
+
+    if (action_type != ActionType::NONE && valid_targets.empty())
+    {
+      for (; !indexHasTargets(); )
+        element_index++;;
+    }
+  }
   /* Otherwise, set to the top index */
   else
+  {
     element_index = 0;
+
+    if (action_type != ActionType::NONE && valid_targets.empty())
+    {
+      for (; !indexHasTargets(); )
+        element_index++;
+    }
+  }
 }
 
 /*
@@ -364,9 +396,9 @@ void BattleMenu::keyDownSelect()
     if (static_cast<uint32_t>(element_index) < valid_actions.size())
       action_type = valid_actions.at(element_index);
 
-    if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
+    if (config->getBattleMode() == BattleMode::TEXT)
     {
-      std::cout << "Attempting selection of current action: " 
+      std::cout << "Attempting selection of current action type: " 
                 << Helpers::actionTypeToStr(action_type)
                 << std::endl;
     }
@@ -374,16 +406,16 @@ void BattleMenu::keyDownSelect()
     /* Assert there are skills if the chosen action type is SKILL */
     if (action_type == ActionType::SKILL)
     {
-      if (menu_skills.size() > 0)
+      if (menu_skills.size() > 0 && someIndexHasTargets())
         layer_to_increment = 2;
 
       if (layer_to_increment == -1)
       {
         action_type = ActionType::NONE;
 
-        if (config != nullptr && config->getBattleMode() == BattleMode::TEXT) 
+        if (config->getBattleMode() == BattleMode::TEXT) 
         {
-          std::cout << "No skills available please select another action" 
+          std::cout << "No valid skills available, please select another action" 
                     << std::endl;            
         }         
       }
@@ -392,7 +424,7 @@ void BattleMenu::keyDownSelect()
     /* Else, assert there are items if the chosen action type is ITEM */
     else if (action_type == ActionType::ITEM)
     {
-      if (menu_items.size() > 0)
+      if (menu_items.size() > 0 && someIndexHasTargets())
         layer_to_increment = 2;
 
       if (layer_to_increment == -1)
@@ -584,19 +616,66 @@ bool BattleMenu::isActionTypeSelected()
  * Inputs:
  * Output:
  */
-bool BattleMenu::indexHasTargets()
+bool BattleMenu::someIndexHasTargets()
 {
-  auto index_has_targets = false;
+  auto has_targets     = false;
+  auto old_index       = element_index;
+  auto old_layer_index = layer_index;
 
   if (element_index != -1)
   {
-    if (action_type == ActionType::SKILL)
-      index_has_targets |= !menu_skills.at(element_index).all_targets.empty();
-    else if (action_type == ActionType::ITEM)
-      index_has_targets |= !menu_items.at(element_index).all_targets.empty();
+    if ((action_type == ActionType::SKILL && !menu_skills.empty()) ||
+        (action_type == ActionType::ITEM && !menu_items.empty()))
+    {
+      layer_index = 2;
+
+      for (element_index = 0; element_index <= getMaxIndex(); element_index++)
+        has_targets |= indexHasTargets();
+    }
   }
 
-  return index_has_targets;
+  element_index = old_index;
+  layer_index   = old_layer_index;
+
+  return has_targets;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+bool BattleMenu::indexHasTargets()
+{
+  auto has_targets = false;
+
+  if (element_index != -1 && layer_index == 2)
+  {
+    if (action_type == ActionType::SKILL)
+      has_targets |= !menu_skills.at(element_index).all_targets.empty();
+    else if (action_type == ActionType::ITEM)
+      has_targets |= !menu_items.at(element_index).all_targets.empty();
+  }
+  else if (element_index != -1 && layer_index == 3)
+  {
+    if (action_type == ActionType::SKILL)
+    {
+      if (action_scope == ActionScope::TWO_ALLIES)
+        has_targets |= menu_skills.at(element_index).all_targets.size() >= 2;
+      else if (action_scope == ActionScope::TWO_ENEMIES)
+        has_targets |= menu_skills.at(element_index).all_targets.size() >= 2;
+    }
+    else if (action_type == ActionType::ITEM)
+    {
+      if (action_scope == ActionScope::TWO_ALLIES)
+        has_targets |= menu_items.at(element_index).all_targets.size() >= 2;
+      else if (action_scope == ActionScope::TWO_ENEMIES)
+        has_targets |= menu_items.at(element_index).all_targets.size() >= 2; 
+    }
+  }
+
+  return has_targets;
 }
 
 /*
@@ -663,7 +742,18 @@ void BattleMenu::printSkills()
         std::cout << "[ ]";
   
       std::cout << " -- [ " << (*it).skill->getCost() << " QD ] -- "
-                << (*it).skill->getName() << std::endl;
+                << (*it).skill->getName() << " -- [";
+
+      for (auto jt = begin((*it).all_targets); jt != end((*it).all_targets); ++jt)
+      {
+        if (jt == begin((*it).all_targets))
+          std::cout << (*jt)->getName();
+        else
+          std::cout << ", " << (*jt)->getName();
+      }
+
+      std::cout << "]" << std::endl;
+
     }
   }
 }
@@ -861,6 +951,17 @@ ActionType BattleMenu::getActionType()
  * Inputs:
  * Output:
  */
+int32_t BattleMenu::getActionIndex()
+{
+  return element_index;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
 std::vector<int32_t> BattleMenu::getActionTargets()
 {
   return selected_targets;
@@ -1010,6 +1111,7 @@ bool BattleMenu::setSelectableItems(std::vector<BattleItem> new_menu_items)
  */
 bool BattleMenu::setSelectableTargets(std::vector<int32_t> new_menu_targets)
 {
+  std::cout << "Assigning selectable targets size: " << new_menu_targets.size() << std::endl;
   valid_targets = new_menu_targets;
 
   return (!valid_targets.empty());

@@ -489,6 +489,12 @@ public:
   /* Build a vector of person pointers from a vector of person indexes */
   std::vector<Person*> getPersonsFromIndexes(std::vector<int32_t> indexes);
 
+  /* */
+  std::vector<int32_t> getIndexesOfPersons(std::vector<Person*> persons);
+
+  /* */
+  int32_t getIndexOfPerson(Person* check_person);
+
   /* Obtains a vector of battle member indexes for a given user and scope */
   std::vector<int32_t> getValidTargets(int32_t index, ActionScope action_scope);
 

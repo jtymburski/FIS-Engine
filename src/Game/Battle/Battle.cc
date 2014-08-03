@@ -581,7 +581,6 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
 
   /* Addition of the power of the action */
   auto action_damage = curr_action->getBase();
-  int32_t action_val    = 0;
 
   if (curr_action->actionFlag(ActionFlags::BASE_PC))
   {
@@ -1377,7 +1376,6 @@ void Battle::selectUserActions()
      the index is at the highest level, set the select user action phase done */
   if (update_menu)
   {
-    std::cout << "Preparing battle menu for selection for person index: " << person_index << std::endl;
     curr_user = getPerson(person_index);
 
     if (curr_user != nullptr)
@@ -1700,7 +1698,6 @@ void Battle::setNextTurnState()
  */
 bool Battle::setNextPersonIndex()
 {
-  std::cout << "Setting next person index from current index: " << person_index << std::endl;
   auto valid_person = false;
 
   if (turn_state == TurnState::SELECT_ACTION_ENEMY)
@@ -1709,9 +1706,6 @@ bool Battle::setNextPersonIndex()
          (i >= (-1 * static_cast<int32_t>(foes->getSize()))) && !valid_person; 
          i--)
     {
-      std::cout << "i: " << i << std::endl;
-      std::cout << "foes size: " << -1 * static_cast<int32_t>(foes->getSize());
-      std::cout << "test index: " << testPersonIndex(i) << std::endl;
       if ((i < person_index) && testPersonIndex(i))
       {
         person_index = i;
@@ -1725,9 +1719,6 @@ bool Battle::setNextPersonIndex()
          (i <= static_cast<int32_t>(friends->getSize())) && !valid_person; 
          i++)
     {
-      std::cout << "i: " << i << std::endl;
-      std::cout << "friends size: " << friends->getSize();
-      std::cout << "test index: " << testPersonIndex(i) << std::endl;
       if ((i > person_index) && testPersonIndex(i))
       {
         person_index = i;
@@ -1735,11 +1726,6 @@ bool Battle::setNextPersonIndex()
       }
     }
   }
-
-  if (valid_person)
-    std::cout << "Next valid person index chosen: " << person_index << std::endl;
-  else
-    std::cout << "Non valid person index chosen: " << person_index << std::endl;
 
   return valid_person;
 }
@@ -2143,16 +2129,18 @@ bool Battle::update(int32_t cycle_time)
             scope = ActionScope::ONE_ALLY_NOT_USER;
           }
 
-          if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
+          if (config->getBattleMode() == BattleMode::TEXT)
           {
             std::cout << "Finding selectable targets for action with scope: "
                       << Helpers::actionScopeToStr(scope) << std::endl;
           }
 
-          auto valid_targets = getValidTargets(person_index, scope);
+          auto battle_skill = menu->getMenuSkills().at(menu->getActionIndex());
+          auto skill_targets = getIndexesOfPersons(battle_skill.all_targets);
+          
           menu->setMenuFlag(BattleMenuState::TARGETS_ASSIGNED);
       
-          if (!menu->setSelectableTargets(valid_targets))
+          if (!menu->setSelectableTargets(skill_targets))
           {
             if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
             {
@@ -2501,6 +2489,12 @@ std::vector<int32_t> Battle::getPartyTargets(int32_t check_index)
   return getFriendsTargets();
 }
 
+/*
+ * Description: 
+ *
+ * Inputs:
+ * Outputs:
+ */
 std::vector<Person*> Battle::getPersonsFromIndexes(std::vector<int32_t> indexes)
 {
   std::vector<Person*> persons;
@@ -2510,6 +2504,46 @@ std::vector<Person*> Battle::getPersonsFromIndexes(std::vector<int32_t> indexes)
       persons.push_back(getPerson(*it));
 
   return persons;
+}
+
+/*
+ * Description: 
+ *
+ * Inputs:
+ * Outputs:
+ */
+std::vector<int32_t> Battle::getIndexesOfPersons(std::vector<Person*> persons)
+{
+  std::vector<int32_t> indexes;
+
+  for (auto it = begin(persons); it != end(persons); ++it)
+  {
+    auto p_index = getIndexOfPerson(*it);
+
+    if (p_index != 0)
+      indexes.push_back(p_index);
+  }
+
+  return indexes;
+}
+
+/*
+ * Description: 
+ *
+ * Inputs:
+ * Outputs:
+ */
+int32_t Battle::getIndexOfPerson(Person* check_person)
+{
+  for (uint32_t i = 0; i < friends->getSize(); i++)
+    if (check_person == friends->getMember(i))
+      return static_cast<int32_t>(i + 1);
+
+  for (uint32_t i = 0; i < foes->getSize(); i++)
+    if (check_person == foes->getMember(i))
+      return (static_cast<int32_t>(i) * -1) - 1;
+
+  return 0;
 }
 
 /*
