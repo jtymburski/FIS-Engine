@@ -118,6 +118,7 @@ enum class TurnState
   CLEAN_UP,             /* Cleanup after turn, turn incr. etc. */
   LOSS,                 /* Loss stage returns to title */
   VICTORY,              /* Victory displays the victory screen */
+  RUNNING,              /* Running condition */
   DESTRUCT              /* Battle should be destructed */
 };
 

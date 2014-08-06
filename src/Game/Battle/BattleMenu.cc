@@ -65,6 +65,8 @@ bool BattleMenu::decrementLayer(const int32_t &new_layer_index)
     selected_targets.clear();
 
     element_index = 0;
+    //TODO: element index must be valid [08-03-14]
+
     layer_index   = 3;
 
     setMenuFlag(BattleMenuState::TARGETS_ASSIGNED, false);
@@ -662,16 +664,16 @@ bool BattleMenu::indexHasTargets()
     if (action_type == ActionType::SKILL)
     {
       if (action_scope == ActionScope::TWO_ALLIES)
-        has_targets |= menu_skills.at(element_index).all_targets.size() >= 2;
+        has_targets |= menu_skills.at(element_index).ally_targets.size() >= 2;
       else if (action_scope == ActionScope::TWO_ENEMIES)
-        has_targets |= menu_skills.at(element_index).all_targets.size() >= 2;
+        has_targets |= menu_skills.at(element_index).foe_targets.size() >= 2;
     }
     else if (action_type == ActionType::ITEM)
     {
       if (action_scope == ActionScope::TWO_ALLIES)
-        has_targets |= menu_items.at(element_index).all_targets.size() >= 2;
+        has_targets |= menu_items.at(element_index).ally_targets.size() >= 2;
       else if (action_scope == ActionScope::TWO_ENEMIES)
-        has_targets |= menu_items.at(element_index).all_targets.size() >= 2; 
+        has_targets |= menu_items.at(element_index).foe_targets.size() >= 2; 
     }
   }
 

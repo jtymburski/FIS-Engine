@@ -334,6 +334,11 @@ bool ItemStore::initDisplay(StoreMode mode, std::vector<Item*> items,
                             std::vector<int32_t> cost_modifiers, 
                             std::string name)
 {
+  (void)mode; //TODO: WARNING
+  (void)items; //TODO: WARNING
+  (void)counts; //TODO: WARNING
+  (void)cost_modifiers; //TODO: WARNING
+  (void)name; //TODO: WARNING
   // bool success = false;
   
   // /* Only proceed if the store is not being used */
@@ -411,13 +416,13 @@ bool ItemStore::initDisplay(StoreMode mode, std::vector<Item*> items,
   // }
   
   /* Do clean-up on all items not set to NULL (and used) */
-  for(auto item : items)
-  {
+  //for(auto item : items)
+  //{
     //if(item != NULL)
     //  delete item;
 
     // item = NULL; //WARNING [REMOVE WHEN USING DELETE]
-  }
+  //}
   
   // return success;
   return true; //WARNING
@@ -433,12 +438,12 @@ bool ItemStore::isActive()
 /* Key Down/Up events handled */
 void ItemStore::keyDownEvent(SDL_KeyboardEvent event)
 {
-
+  (void)event;//TODO: WARNING
 }
 
 void ItemStore::keyUpEvent(SDL_KeyboardEvent event)
 {
-
+  (void)event;//TODO: WARNING
 }
 
 bool ItemStore::loadImageBackend(std::string left, std::string right, 
@@ -491,6 +496,8 @@ bool ItemStore::render(SDL_Renderer* renderer)
                              x + frame_main.getWidth() - kBACKEND_RIGHT_X, 
                              y + frame_main.getHeight() - kBACKEND_RIGHT_Y);
   }
+
+  return true;//TODO: WARNING
 }
 
 /* Sets the running configuration, from the options class */
