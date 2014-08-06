@@ -464,8 +464,7 @@ bool AIModule::battleSkillValid(const BattleSkill &battle_skill)
       has_targets = true;
   }
 
-  return true;
-}
+  return has_targets;
 
 /*
  * Description: Selects an action for a Random level AI based on the already
