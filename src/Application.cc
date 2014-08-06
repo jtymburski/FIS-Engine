@@ -320,16 +320,16 @@ bool Application::run()
       /* Determine the previous cycle time for using throughout the update
        * sequence for rendering */
       uint32_t new_ticks = SDL_GetTicks();
-      if(new_ticks > ticks + 1000)
+      if(new_ticks > ticks + 200)
       {
-        cycle_time = 1000 / count;
+        cycle_time = 200 / count;
         count = 0;
         ticks = new_ticks;
       }
+
       //std::cout << cycle_time << std::endl;
-      //uint32_t new_time = SDL_GetTicks();
-      //uint32_t cycle_time = new_time - ticks;
-      //ticks = new_time;
+      //cycle_time = new_ticks - ticks;
+      //ticks = new_ticks;
       //if(system_options->isVsyncEnabled())
       //  cycle_time = updateCycleTime(cycle_time);
       
