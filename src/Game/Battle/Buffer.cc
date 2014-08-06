@@ -353,14 +353,29 @@ void Buffer::print(const bool &simple)
       if ((*it).type == ActionType::SKILL)
       {
         if ((*it).skill_used != nullptr)
+        {
           std::cout << "Skill Name: " << (*it).skill_used->getName() << "\n";
+          std::cout << "Skill Scope: " 
+                    << Helpers::actionScopeToStr((*it).skill_used->getScope()) 
+                    << "\n";
+        }
         else
+        {
           std::cout << "[Warning]: Skill buffer has null skill\n";
+        }
       }
       else if ((*it).type == ActionType::ITEM)
       {
         if ((*it).item_used != nullptr)
-          std::cout << "Item Name: " << (*it).item_used->getName() << "\n";
+        {
+          std::cout << "Item Name: " << (*it).item_used->getName();
+          std::cout << "\nItem Skill Name: " 
+                    << (*it).item_used->getUseSkill()->getName();
+
+          auto action_scope = ((*it).item_used->getUseSkill()->getScope());
+          std::cout << "\nItem Skill Scope: "
+                    << Helpers::actionScopeToStr(action_scope) << "\n";
+        }
         else
           std::cout << "[Warning]: Item buffer has null skill\n";
       }

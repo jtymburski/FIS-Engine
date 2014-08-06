@@ -19,7 +19,7 @@
  *============================================================================*/
 
 /* ------------ Menu Constants --------------- */
-const uint16_t Battle::kGENERAL_UPKEEP_DELAY = 500; /* Time prior info bar msg */
+const uint16_t Battle::kGENERAL_UPKEEP_DELAY = 500; /* Time prior info bar */
 const uint16_t Battle::kBATTLE_MENU_DELAY    = 400; /* Personal menu delay */
 
 /* ------------ Battle Damage Calculation Modifiers ---------------

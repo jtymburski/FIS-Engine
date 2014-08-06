@@ -202,6 +202,15 @@ private:
   /* Returns a float value between variance - base, variance + base */
   float calcFloatValVariance(const float &base_value);
 
+  /* Clear invalid Skill and Item choices */
+  bool clearInvalid();
+
+  /* Determines whether a given BattleSkill has valid targets */
+  bool battleSkillValid(const BattleSkill& battle_skill);
+
+  /* Determines whether a given BattleItem has valid targets */
+  bool battleItemValid(const BattleItem &batle_item);
+
   /* Selects an action for a random-level AI */
   bool selectRandomAction();
 

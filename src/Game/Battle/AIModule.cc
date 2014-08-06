@@ -214,8 +214,8 @@ bool AIModule::buildUniformItems()
 void AIModule::calculateActionTypeChances()
 {
   /* First check if Skills or Items can be chosen */
-  auto can_choose_skill   = canSelectSkill();
-  auto can_choose_item    = canSelectItem();
+  auto can_choose_skill = canSelectSkill();
+  auto can_choose_item  = canSelectItem();
  
   /* Compute the factors for choosing each available action type
    * 
@@ -310,7 +310,8 @@ void AIModule::calculateActionTypeChances()
   else
   {
 #ifdef UDEBUG
-    std::cout << "[Warning] Enemy has no valid action types available." << std::endl;
+    std::cout << "[Warning] Enemy has no valid action types available." 
+              << std::endl;
 #endif
   }
 
@@ -349,7 +350,14 @@ bool AIModule::canSelectSkill()
                                                valid_action_types);
 
   if (found_skill)
-    return !(valid_skills.size() == 0);
+  {
+    auto target_found = false;
+
+    for (auto it = begin(valid_skills); it != end(valid_skills); ++it)
+      target_found |= battleSkillValid(*it);
+
+    return target_found;
+  }
 
   return false;
 }
@@ -366,7 +374,14 @@ bool AIModule::canSelectItem()
                                               valid_action_types);
 
   if (found_item)
-    return !(valid_items.size() == 0);
+  {
+    auto target_found = false;
+
+    for (auto it = begin(valid_items); it != end(valid_items); ++it)
+      target_found |= battleItemValid(*it);
+
+    return target_found;
+  }
 
   return false;
 }
@@ -390,6 +405,68 @@ float AIModule::calcFloatValVariance(const float &base_value)
   return Helpers::randFloat(base_value - min_var, base_value + max_var);
 }
 
+bool AIModule::clearInvalid()
+{
+  valid_items.erase(std::remove_if(begin(valid_items), end(valid_items), 
+      [&](const BattleItem &battle_item) -> bool
+      {
+        return battleItemValid(battle_item);
+      }), 
+      end(valid_items));
+  valid_skills.erase(std::remove_if(begin(valid_skills), end(valid_skills),
+      [&](const BattleSkill &battle_skill) -> bool
+      {
+        return battleSkillValid(battle_skill);
+      }), end(valid_skills));
+
+  return true;
+}
+
+bool AIModule::battleItemValid(const BattleItem &battle_item)
+{
+  auto target_found = false;
+
+  if (battle_item.item_skill->getScope() == ActionScope::TWO_ENEMIES)
+  {
+    if (battle_item.foe_targets.size() >= 2)
+      target_found = true;
+  }
+  else if (battle_item.item_skill->getScope() == ActionScope::TWO_ALLIES)
+  {
+    if (battle_item.ally_targets.size() >= 2)
+      target_found = true;
+  }
+  else if (!battle_item.all_targets.empty())
+  {
+    target_found = true;
+  }
+
+  return target_found;
+}
+
+
+bool AIModule::battleSkillValid(const BattleSkill &battle_skill)
+{
+  auto has_targets = false;
+
+  if (battle_skill.skill->getScope() == ActionScope::TWO_ENEMIES)
+  {
+    if (battle_skill.foe_targets.size() >= 2)
+      has_targets = true;
+  }
+  else if (battle_skill.skill->getScope() == ActionScope::TWO_ALLIES)
+  {
+    if (battle_skill.ally_targets.size() >= 2)
+      has_targets = true;
+  }
+  else if (!battle_skill.all_targets.empty())
+  {
+      has_targets = true;
+  }
+
+  return has_targets;
+}
+
 /*
  * Description: Selects an action for a Random level AI based on the already
  *              chosen type of action.
@@ -406,7 +483,7 @@ bool AIModule::selectRandomAction()
   {
     auto skills_size = valid_skills.size();
     auto rand_value = Helpers::randU(1, skills_size);
-  
+
     chosen_skill = valid_skills.at(rand_value - 1).skill;
     chosen_action_index = rand_value;
     action_index_selected = true;
@@ -773,6 +850,9 @@ bool AIModule::calculateAction()
 
   if (canSelectAction())
   {
+    /* Clear the invalid selections of BattleItem/BattleSkill selections */
+    clearInvalid();
+
     if (difficulty == AIDifficulty::RANDOM)
       action_selected = selectRandomAction();
     else if (difficulty == AIDifficulty::PRIORITY)
