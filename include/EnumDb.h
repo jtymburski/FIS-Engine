@@ -148,6 +148,7 @@ enum class ActionType : std::uint8_t
   DEFEND,
   GUARD,
   IMPLODE,
+  INSPECT,
   RUN,
   PASS,
   NONE 

@@ -13,7 +13,7 @@
 *
 * [1]: The Action is parsed from a string with convention as follows:
 *
-* [ID],[ALTER/INFLICT/RELIEVE/ASSIGN/REVIVE/ABSORB],[MIN].[MAX],
+* [ID],[DAMAGE/ALTER/INFLICT/RELIEVE/ASSIGN/REVIVE/ABSORB],[MIN].[MAX],
 * [IGNORE ATK ELEMENT 1].[IGNORE ATK ELEMENT 2]...,
 * [IGNORE DEF ELEMENT 1].[IGNORE DEF ELEMENT 2]...,
 * [TARGET'S ATTR/AILMENT],[AMOUNT/PC].[BASE],[AMOUNT/PC].[VARIANCE],
@@ -164,8 +164,8 @@ bool Action::parse(const std::string &raw)
       parseIgnoreFlags(ignore_def, sub_strings.at(4));
 
     /* Parse Target attribute -- ALTER/ASSIGN/ABSORB keywords relate to it */
-    if (actionFlag(ActionFlags::ALTER) || actionFlag(ActionFlags::ASSIGN) ||
-        actionFlag(ActionFlags::ABSORB))
+    if (actionFlag(ActionFlags::DAMAGE)  || actionFlag(ActionFlags::ALTER) || 
+        actionFlag(ActionFlags::ASSIGN) || actionFlag(ActionFlags::ABSORB))
     {
       parseAttribute(sub_strings.at(5), true);
     }
@@ -220,8 +220,8 @@ bool Action::parse(const std::string &raw)
       parseWarning("variance percent value higher than permitted", raw);
 
     /* Parse USER attribute -- ALTER/ASSIGN/ABSORB keywords relate to it */
-    if (actionFlag(ActionFlags::ALTER) || actionFlag(ActionFlags::ASSIGN) ||
-        actionFlag(ActionFlags::ABSORB))
+    if (actionFlag(ActionFlags::DAMAGE) || actionFlag(ActionFlags::ALTER) || 
+        actionFlag(ActionFlags::ASSIGN) || actionFlag(ActionFlags::ABSORB))
     {
       parseAttribute(sub_strings.at(8), false);
     }
@@ -309,7 +309,9 @@ bool Action::parseAilment(const std::string &ailm)
  */
 bool Action::parseActionKeyword(const std::string &action_keyword)
 {
-  if (action_keyword == "ALTER")
+  if (action_keyword == "DAMAGE")
+    action_flags |= ActionFlags::DAMAGE;
+  else if (action_keyword == "ALTER")
     action_flags |= ActionFlags::ALTER;
   else if (action_keyword == "INFLICT")
     action_flags |= ActionFlags::INFLICT;
@@ -335,6 +337,7 @@ bool Action::parseActionKeyword(const std::string &action_keyword)
  *              warning and the parse fails.
  *
  * Inputs: attr_parse - string containing the affected attribute
+ *         target     - are we parsing a target attribute?
  * Output: bool - validity o the attribute parse
  */
 bool Action::parseAttribute(const std::string &attr_parse, const bool &target)
@@ -483,40 +486,41 @@ void Action::print()
   std::cout << "=== Action: " << id << " === " << std::endl;
 
   std::cout << "--- Action Flags --- " << std::endl;
-  std::cout << "ALTER: "   << actionFlag(ActionFlags::ALTER) << std::endl;
+  std::cout << "DAMAGE: "  << actionFlag(ActionFlags::DAMAGE)  << std::endl;
+  std::cout << "ALTER: "   << actionFlag(ActionFlags::ALTER)   << std::endl;
   std::cout << "INFLICT: " << actionFlag(ActionFlags::INFLICT) << std::endl;
   std::cout << "RELIEVE: " << actionFlag(ActionFlags::RELIEVE) << std::endl;
-  std::cout << "ASSIGN: "  << actionFlag(ActionFlags::ASSIGN) << std::endl;
-  std::cout << "REVIVE: "  << actionFlag(ActionFlags::REVIVE) << std::endl;
-  std::cout << "ABSORB: "  << actionFlag(ActionFlags::ABSORB) << std::endl;
+  std::cout << "ASSIGN: "  << actionFlag(ActionFlags::ASSIGN)  << std::endl;
+  std::cout << "REVIVE: "  << actionFlag(ActionFlags::REVIVE)  << std::endl;
+  std::cout << "ABSORB: "  << actionFlag(ActionFlags::ABSORB)  << std::endl;
   std::cout << "BASE_PC: " << actionFlag(ActionFlags::BASE_PC) << std::endl;
   std::cout << "VARI_PC: " << actionFlag(ActionFlags::VARI_PC) << std::endl;
-  std::cout << "VALID: "   << actionFlag(ActionFlags::VALID) << std::endl;
+  std::cout << "VALID: "   << actionFlag(ActionFlags::VALID)   << std::endl;
 
   std::cout << "--- Igore Atk Flags --- " << std::endl;
-  std::cout << "PHYS: " << atkFlag(IgnoreFlags::PHYSICAL) << std::endl;
-  std::cout << "THER: " << atkFlag(IgnoreFlags::THERMAL) << std::endl;
-  std::cout << "POLA: " << atkFlag(IgnoreFlags::POLAR) << std::endl;
-  std::cout << "PRIM: " << atkFlag(IgnoreFlags::PRIMAL) << std::endl;
-  std::cout << "CHAR: " << atkFlag(IgnoreFlags::CHARGED) << std::endl;
+  std::cout << "PHYS: " << atkFlag(IgnoreFlags::PHYSICAL)   << std::endl;
+  std::cout << "THER: " << atkFlag(IgnoreFlags::THERMAL)    << std::endl;
+  std::cout << "POLA: " << atkFlag(IgnoreFlags::POLAR)      << std::endl;
+  std::cout << "PRIM: " << atkFlag(IgnoreFlags::PRIMAL)     << std::endl;
+  std::cout << "CHAR: " << atkFlag(IgnoreFlags::CHARGED)    << std::endl;
   std::cout << "CYBR: " << atkFlag(IgnoreFlags::CYBERNETIC) << std::endl;
-  std::cout << "NIHI: " << atkFlag(IgnoreFlags::NIHIL) << std::endl;
+  std::cout << "NIHI: " << atkFlag(IgnoreFlags::NIHIL)      << std::endl;
 
   std::cout << "--- Igore Def Flags --- " << std::endl;
-  std::cout << "PHYS: " << defFlag(IgnoreFlags::PHYSICAL) << std::endl;
-  std::cout << "THER: " << defFlag(IgnoreFlags::THERMAL) << std::endl;
-  std::cout << "POLA: " << defFlag(IgnoreFlags::POLAR) << std::endl;
-  std::cout << "PRIM: " << defFlag(IgnoreFlags::PRIMAL) << std::endl;
-  std::cout << "CHAR: " << defFlag(IgnoreFlags::CHARGED) << std::endl;
+  std::cout << "PHYS: " << defFlag(IgnoreFlags::PHYSICAL)   << std::endl;
+  std::cout << "THER: " << defFlag(IgnoreFlags::THERMAL)    << std::endl;
+  std::cout << "POLA: " << defFlag(IgnoreFlags::POLAR)      << std::endl;
+  std::cout << "PRIM: " << defFlag(IgnoreFlags::PRIMAL)     << std::endl;
+  std::cout << "CHAR: " << defFlag(IgnoreFlags::CHARGED)    << std::endl;
   std::cout << "CYBR: " << defFlag(IgnoreFlags::CYBERNETIC) << std::endl;
-  std::cout << "NIHI: " << defFlag(IgnoreFlags::NIHIL) << std::endl;
+  std::cout << "NIHI: " << defFlag(IgnoreFlags::NIHIL)      << std::endl;
 
   std::cout << "Min Duration: " << min_duration << std::endl;
   std::cout << "Max Duration: " << max_duration << std::endl;
-  std::cout << "Base Change: "  << base << std::endl;
-  std::cout << "Variance: "     << variance << std::endl;
-  std::cout << "Chance: " << chance << std::endl;
-  std::cout << "=== / Action === " << std::endl;
+  std::cout << "Base Change: "  << base         << std::endl;
+  std::cout << "Variance: "     << variance     << std::endl;
+  std::cout << "Chance: " << chance             << std::endl;
+  std::cout << "=== / Action === "              << std::endl;
 }
 
 /*

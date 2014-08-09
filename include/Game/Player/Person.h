@@ -74,24 +74,25 @@ enum class BState
   DEF_ENABLED        = 1 << 5, /* Can the person use 'Defend'? */
   GRD_ENABLED        = 1 << 6, /* Can the person use 'Guard?' */
   IMP_ENABLED        = 1 << 7, /* Can the person use 'Implode'? */
-  RUN_ENABLED        = 1 << 8, /* Can the person use 'Run'? */
-  PAS_ENABLED        = 1 << 9, /* Can the person use 'Pass'? */
-  SKIP_NEXT_TURN     = 1 << 10, /* Will the person skip their next turn? */
-  MISS_NEXT_TARGET   = 1 << 11, /* Will the person's next action miss? */
-  NEXT_ATK_NO_EFFECT = 1 << 12, /* Will the person's next atk have no effect? */
-  IS_BUBBY           = 1 << 13, /* Is the person 'Bubbified'? */
-  TWO_SKILLS         = 1 << 14, /* Can the person use two skills per turn? */
-  THREE_SKILLS       = 1 << 15, /* Can the person use three skills per turn? */
-  HALF_COST          = 1 << 16, /* Is person's skill cost halved? */
-  REFLECT            = 1 << 17, /* Will the person reflect elemental skills? */
-  BOND               = 1 << 18, /* Is the person under 'Bond'? */
-  BONDED             = 1 << 19, /* Person bonded to someone under 'Bond' ?*/
-  REVIVABLE          = 1 << 20, /* Can this person be revived if they are KO? */
-  SELECTED_ACTION    = 1 << 21, /* Has this person selected an action? */
-  SELECTED_2ND_ACTION = 1 << 22, /* Has this person selected a 2nd action? */
-  SELECTED_3RD_ACTION = 1 << 23, /* Has this person selected a 3rd action? */
-  CAN_CRIT            = 1 << 24, /* Can this person crit against a target? */
-  CAN_BE_CRIT         = 1 << 25, /* Can this person have crit's against them? */
+  INS_ENABLED        = 1 << 8, /* Can the person use 'Inspect' ? */
+  RUN_ENABLED        = 1 << 9, /* Can the person use 'Run'? */
+  PAS_ENABLED        = 1 << 10, /* Can the person use 'Pass'? */
+  SKIP_NEXT_TURN     = 1 << 11, /* Will the person skip their next turn? */
+  MISS_NEXT_TARGET   = 1 << 12, /* Will the person's next action miss? */
+  NEXT_ATK_NO_EFFECT = 1 << 13, /* Will the person's next atk have no effect? */
+  IS_BUBBY           = 1 << 14, /* Is the person 'Bubbified'? */
+  TWO_SKILLS         = 1 << 15, /* Can the person use two skills per turn? */
+  THREE_SKILLS       = 1 << 16, /* Can the person use three skills per turn? */
+  HALF_COST          = 1 << 17, /* Is person's skill cost halved? */
+  REFLECT            = 1 << 18, /* Will the person reflect elemental skills? */
+  BOND               = 1 << 19, /* Is the person under 'Bond'? */
+  BONDED             = 1 << 20, /* Person bonded to someone under 'Bond' ?*/
+  REVIVABLE          = 1 << 21, /* Can this person be revived if they are KO? */
+  SELECTED_ACTION    = 1 << 22, /* Has this person selected an action? */
+  SELECTED_2ND_ACTION = 1 << 23, /* Has this person selected a 2nd action? */
+  SELECTED_3RD_ACTION = 1 << 24, /* Has this person selected a 3rd action? */
+  CAN_CRIT            = 1 << 25, /* Can this person crit against a target? */
+  CAN_BE_CRIT         = 1 << 26, /* Can this person have crit's against them? */
 };
 
 /* PState Flags - flags which have impacts outside of Battle */

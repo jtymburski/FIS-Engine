@@ -177,7 +177,6 @@ Ailment::Ailment(Person* ail_victim, const Infliction &ail_type,
  */
 bool Ailment::apply()
 {
-
   if (victim == nullptr)
     return false;
 
@@ -197,11 +196,14 @@ bool Ailment::apply()
   if (type == Infliction::POISON)
   {
     damage = kPOISON_DMG_MIN;
+
     if (damage < (kPOISON_DMG_INIT * kHEALTH))
       damage = kPOISON_DMG_INIT * kHEALTH;
+
     if (turns_occured > 0)
         for (int i = 0; i < turns_occured; i++)
           damage *= kPOISON_DMG_INCR;
+
     if (damage > kPOISON_DMG_MAX)
       damage = kPOISON_DMG_MAX;
 
@@ -692,8 +694,8 @@ void Ailment::unapply()
   /* On removing Berserk, the person's abilities need to be re-enabled */
   if (getType() == Infliction::BERSERK)
   {
-    victim->setBFlag(BState::RUN_ENABLED,      true);
-    victim->setBFlag(BState::SKL_ENABLED,    true);
+    victim->setBFlag(BState::RUN_ENABLED, true);
+    victim->setBFlag(BState::SKL_ENABLED, true);
     victim->setBFlag(BState::ITM_ENABLED, true);
 
     victim->setDmgMod(1);
@@ -702,7 +704,7 @@ void Ailment::unapply()
   /* Silence - When silence is removed, skills need to be recalculated */
   else if (getType() == Infliction::SILENCE)
   {
-
+    //TODO: Reasons for skills to still be disabled on unapplication of SILENCE?
     for (uint32_t i = 0; i < skills->getSize(); i++)
       skills->setState(i, true);
   }
@@ -870,7 +872,9 @@ void Ailment::print(const bool &simple, const bool &flags)
 
   if (simple)
   {
-  
+    std::cout << "Ch" << chance << " T Lf: " << max_turns_left 
+              << " T Oc: " << turns_occured << "\n";
+    std::cout << "Vic: " << victim->getName() << "\n";
   }
   else
   {

@@ -595,7 +595,8 @@ void Person::battlePrep()
   setBFlag(BState::ALIVE, true);
   setBFlag(BState::ATK_ENABLED, true);
   setBFlag(BState::SKL_ENABLED, true);
-  setBFlag(BState::ITM_ENABLED, true);
+  setBFlag(BState::ITM_ENABLED, false); //TODO: Temporarily disabled [08-09-14]
+  setBFlag(BState::INS_ENABLED, false); //TODO: What enables inspect? [08-09-14]
 
   setBFlag(BState::DEF_ENABLED, 
            battle_class->getFlag(CategoryState::DEF_ENABLED));

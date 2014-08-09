@@ -13,7 +13,7 @@
 *
 * [1]: The Action is parsed from a string with convention as follows:
 *
-* [ID],[ALTER/INFLICT/RELIEVE/ASSIGN],[ATTRIBUTE/AILMENT],[MIN].[MAX],
+* [ID],[DAMAGE/ALTER/INFLICT/RELIEVE/ASSIGN],[ATTRIBUTE/AILMENT],[MIN].[MAX],
 * [IGNORE ATK ELEMENT 1].[IGNORE ATK ELEMENT 2]...,
 * [IGNORE DEF ELEMENT 1].[IGNORE DEF ELEMENT 2]...,
 * [AMOUNT/PC].[BASE],[AMOUNT/PC].[VARIANCE]
@@ -77,15 +77,16 @@
 ENUM_FLAGS(ActionFlags)
 enum class ActionFlags
 {
-  ALTER    = 1 << 0, /* ALTER an attribute by a given value */
-  INFLICT  = 1 << 1, /* INFLICT a given ailment for a duration */
-  RELIEVE  = 1 << 2, /* RELIEVE a given ailment */
-  ASSIGN   = 1 << 3, /* ASSIGN an attribute to a given value */
-  REVIVE   = 1 << 4, /* REVIVE un-KOs target with base HP */
-  ABSORB   = 1 << 5, /* ABSORB user's ATTR by target's ATTR */
-  BASE_PC  = 1 << 6, /* True if the base is a % value and not an abs. one */
-  VARI_PC  = 1 << 7, /* True if the variance is a % value and not an abs. one */
-  VALID    = 1 << 8  /* The validity of the action */
+  DAMAGE   = 1 << 0,
+  ALTER    = 1 << 1, /* ALTER an attribute by a given value */
+  INFLICT  = 1 << 2, /* INFLICT a given ailment for a duration */
+  RELIEVE  = 1 << 3, /* RELIEVE a given ailment */
+  ASSIGN   = 1 << 4, /* ASSIGN an attribute to a given value */
+  REVIVE   = 1 << 5, /* REVIVE un-KOs target with base HP */
+  ABSORB   = 1 << 6, /* ABSORB user's ATTR by target's ATTR */
+  BASE_PC  = 1 << 7, /* True if the base is a % value and not an abs. one */
+  VARI_PC  = 1 << 8, /* True if the variance is a % value and not an abs. one */
+  VALID    = 1 << 9  /* The validity of the action */
 };
 
 /* IgnoreFlags for storing which elemental atk/def stats are ignored */

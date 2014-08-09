@@ -148,10 +148,13 @@ private:
  *============================================================================*/
 public:
 
+  /*  */
   void death();
 
+  /* Updates the ailment for upkeep condition */
   void update();
 
+  /* Reset the ailment to default conditions */
   void reset();
 
   /* Undoes the effect (if exits) to the victim before curing */

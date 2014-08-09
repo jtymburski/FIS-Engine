@@ -467,25 +467,37 @@ void BattleMenu::keyDownSelect()
     {
       if (static_cast<uint32_t>(element_index) < menu_skills.size())
       {
-        layer_to_increment = 3;
-
-        /* Grab the selected skill */
-        selected_skill = menu_skills.at(element_index).skill;
-
-        /* Decrease the current user's QD by the cost required */
-        auto true_cost = current_user->getTrueCost(selected_skill);
-
-        if (true_cost <= current_user->getCurr().getStat("QTDR"))
+        if (indexHasTargets())
         {
-          if (config != nullptr && 
-              config->getBattleMode() == BattleMode::TEXT)
-          {
-            std::cout << "Decreasing " << current_user->getName() << "s QTDR"
-                      << " by " << true_cost << "." << std::endl;
-          }
+          std::cout << "Index has targets!" << std::endl;
+          layer_to_increment = 3;
+        
+          /* Grab the selected skill */
+          selected_skill = menu_skills.at(element_index).skill;
 
-          qtdr_cost_paid = true_cost;
-          current_user->getCurr().alterStat("QTDR", -true_cost);
+          /* Decrease the current user's QD by the cost required */
+          auto true_cost = current_user->getTrueCost(selected_skill);
+
+          if (true_cost <= current_user->getCurr().getStat("QTDR"))
+          {
+            if (config != nullptr && 
+                config->getBattleMode() == BattleMode::TEXT)
+            {
+              std::cout << "Decreasing " << current_user->getName() << "s QTDR"
+                        << " by " << true_cost << "." << std::endl;
+            }
+ 
+            qtdr_cost_paid = true_cost;
+            current_user->getCurr().alterStat("QTDR", -true_cost);
+          }
+        }
+        else if (config->getBattleMode() == BattleMode::TEXT)
+        {
+          std::cout << "Selected skill index has invalid targets" << std::endl;
+        }
+        else if (config->getBattleMode() == BattleMode::GUI)
+        {
+          //TODO: Error selection of invalid index. 
         }
       }
     }
@@ -632,7 +644,7 @@ bool BattleMenu::someIndexHasTargets()
       layer_index = 2;
 
       for (element_index = 0; element_index <= getMaxIndex(); element_index++)
-        has_targets |= indexHasTargets();
+        has_targets |= indexHasTargets(true);
     }
   }
 
@@ -648,32 +660,41 @@ bool BattleMenu::someIndexHasTargets()
  * Inputs:
  * Output:
  */
-bool BattleMenu::indexHasTargets()
+bool BattleMenu::indexHasTargets(const bool &checking_all)
 {
   auto has_targets = false;
+  std::cout << "checking all " << checking_all << std::endl;
 
-  if (element_index != -1 && layer_index == 2)
+  if (checking_all)
   {
     if (action_type == ActionType::SKILL)
       has_targets |= !menu_skills.at(element_index).all_targets.empty();
     else if (action_type == ActionType::ITEM)
       has_targets |= !menu_items.at(element_index).all_targets.empty();
   }
-  else if (element_index != -1 && layer_index == 3)
+  else if (element_index != -1 && layer_index == 2)
   {
     if (action_type == ActionType::SKILL)
     {
+      action_scope = menu_skills.at(element_index).skill->getScope();
+
       if (action_scope == ActionScope::TWO_ALLIES)
         has_targets |= menu_skills.at(element_index).ally_targets.size() >= 2;
       else if (action_scope == ActionScope::TWO_ENEMIES)
         has_targets |= menu_skills.at(element_index).foe_targets.size() >= 2;
+      else
+        has_targets |= menu_skills.at(element_index).all_targets.size() > 0;
     }
     else if (action_type == ActionType::ITEM)
     {
+      action_scope = menu_items.at(element_index).item_skill->getScope();
+      
       if (action_scope == ActionScope::TWO_ALLIES)
         has_targets |= menu_items.at(element_index).ally_targets.size() >= 2;
       else if (action_scope == ActionScope::TWO_ENEMIES)
-        has_targets |= menu_items.at(element_index).foe_targets.size() >= 2; 
+        has_targets |= menu_items.at(element_index).foe_targets.size() >= 2;
+      else
+        has_targets |= menu_items.at(element_index).all_targets.size() > 0;
     }
   }
 

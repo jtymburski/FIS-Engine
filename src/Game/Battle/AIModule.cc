@@ -140,6 +140,68 @@ Person* AIModule::addRandomTarget(std::vector<Person*> available_targets)
 }
 
 /*
+ * Description: Determines whether a given BattleItem object is fit for
+ *              selection by the AI module. For example, a BattleItem
+ *              with scope TWO ENEMIES must have at least two enemies
+ *              selectable.
+ *
+ * Inputs: battle_item - constructed BattleSkill object to be tested
+ * Output: bool - true if the given BattleSkill object is fit for selection
+ */
+bool AIModule::battleItemValid(const BattleItem &battle_item)
+{
+  auto target_found = false;
+
+  if (battle_item.item_skill->getScope() == ActionScope::TWO_ENEMIES)
+  {
+    if (battle_item.foe_targets.size() >= 2)
+      target_found = true;
+  }
+  else if (battle_item.item_skill->getScope() == ActionScope::TWO_ALLIES)
+  {
+    if (battle_item.ally_targets.size() >= 2)
+      target_found = true;
+  }
+  else if (!battle_item.all_targets.empty())
+  {
+    target_found = true;
+  }
+
+  return target_found;
+}
+
+/*
+ * Description: Determines whether a given BattleSkill object is fit for
+ *              selection by the AI module. For example, a BattleSkill
+ *              with scope TWO ENEMIES must have at least two enemies
+ *              selectable.
+ *
+ * Inputs: battle_skill - constructed BattleSkill object to be tested
+ * Output: bool - true if the given BattleSkill object is fit for selection
+ */
+bool AIModule::battleSkillValid(const BattleSkill &battle_skill)
+{
+  auto has_targets = false;
+
+  if (battle_skill.skill->getScope() == ActionScope::TWO_ENEMIES)
+  {
+    if (battle_skill.foe_targets.size() >= 2)
+      has_targets = true;
+  }
+  else if (battle_skill.skill->getScope() == ActionScope::TWO_ALLIES)
+  {
+    if (battle_skill.ally_targets.size() >= 2)
+      has_targets = true;
+  }
+  else if (!battle_skill.all_targets.empty())
+  {
+      has_targets = true;
+  }
+
+  return has_targets;
+}
+
+/*
  * Description: Constructs a uniform distribution between valid skill choices
  *              and their probabilities based on the arbitrary value level of
  *              the skill.
@@ -420,51 +482,6 @@ bool AIModule::clearInvalid()
       }), end(valid_skills));
 
   return true;
-}
-
-bool AIModule::battleItemValid(const BattleItem &battle_item)
-{
-  auto target_found = false;
-
-  if (battle_item.item_skill->getScope() == ActionScope::TWO_ENEMIES)
-  {
-    if (battle_item.foe_targets.size() >= 2)
-      target_found = true;
-  }
-  else if (battle_item.item_skill->getScope() == ActionScope::TWO_ALLIES)
-  {
-    if (battle_item.ally_targets.size() >= 2)
-      target_found = true;
-  }
-  else if (!battle_item.all_targets.empty())
-  {
-    target_found = true;
-  }
-
-  return target_found;
-}
-
-
-bool AIModule::battleSkillValid(const BattleSkill &battle_skill)
-{
-  auto has_targets = false;
-
-  if (battle_skill.skill->getScope() == ActionScope::TWO_ENEMIES)
-  {
-    if (battle_skill.foe_targets.size() >= 2)
-      has_targets = true;
-  }
-  else if (battle_skill.skill->getScope() == ActionScope::TWO_ALLIES)
-  {
-    if (battle_skill.ally_targets.size() >= 2)
-      has_targets = true;
-  }
-  else if (!battle_skill.all_targets.empty())
-  {
-      has_targets = true;
-  }
-
-  return has_targets;
 }
 
 /*
@@ -1190,10 +1207,11 @@ ActionType AIModule::getActionType()
 }
 
 /*
- * Description:
+ * Description: Returns the currently selected action index, ex. along
+ *              the vector of BattleItem/BattleSkill
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: int32_t - the currently selected action index
  */
 int32_t AIModule::getActionIndex()
 {
@@ -1201,10 +1219,10 @@ int32_t AIModule::getActionIndex()
 }
 
 /*
- * Description:
+ * Description: Returns the vector of chosen targets
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: std::vector<Person*> - vector of ptrs of targets
  */
 std::vector<Person*> AIModule::getChosenTargets()
 {
@@ -1212,10 +1230,10 @@ std::vector<Person*> AIModule::getChosenTargets()
 }
 
 /*
- * Description:
+ * Description: Returns the difficulty of the AI
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: AIDifficulty - the enumerated difficulty of the module
  */
 AIDifficulty AIModule::getDifficulty()
 {
@@ -1223,10 +1241,10 @@ AIDifficulty AIModule::getDifficulty()
 }
 
 /*
- * Description:
+ * Description: Returns the parent of the AIModule
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: Person* - ptr to the parent object
  */
 Person* AIModule::getParent()
 {
@@ -1234,10 +1252,10 @@ Person* AIModule::getParent()
 }
 
 /*
- * Description:
+ * Description: Returns the primary enumerated personality type
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: AIPersonality - the enumerated personality type
  */
 AIPersonality AIModule::getPrimPersonality()
 {
@@ -1245,10 +1263,10 @@ AIPersonality AIModule::getPrimPersonality()
 }
 
 /*
- * Description:
+ * Description: Returns the enumerated secondary personality type
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: AIPersonality - the enumerated personality type
  */
 AIPersonality AIModule::getSecdPersonality()
 {
@@ -1256,10 +1274,10 @@ AIPersonality AIModule::getSecdPersonality()
 }
 
 /*
- * Description:
+ * Description: Returns the currently selected Skill
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: Skill* - ptr to the Skill the AI module will use
  */
 Skill* AIModule::getSelectedSkill()
 {
@@ -1267,10 +1285,10 @@ Skill* AIModule::getSelectedSkill()
 }
 
 /*
- * Description:
+ * Description: Returns the currently selected Item from the AI Module.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: Item* - ptr to the Item the AI module will use.
  */
 Item* AIModule::getSelectedItem()
 {
@@ -1278,10 +1296,10 @@ Item* AIModule::getSelectedItem()
 }
 
 /*
- * Description:
+ * Description: Returns the number of actions this AI module has taken total
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: uint16_t - the number of actions this AI module has ever taken.
  */
 uint16_t AIModule::getActionsElapsedTotal()
 {
@@ -1289,10 +1307,10 @@ uint16_t AIModule::getActionsElapsedTotal()
 }
 
 /*
- * Description:
+ * Description: Returns the number of turns that this AI module has taken total
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: uint16_t - the number of turns this AI module has ever taken.
  */
 uint16_t AIModule::getTurnsElapsedTotal()
 {
@@ -1300,10 +1318,11 @@ uint16_t AIModule::getTurnsElapsedTotal()
 }
 
 /*
- * Description:
+ * Description: Returns the number of actions that this AI module has taken
+ *              (up to 3 per turn) during the current battle.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: uint16_t - the number of actions AI module has taken this battle
  */
 uint16_t AIModule::getActionsElapsed()
 {
@@ -1311,10 +1330,11 @@ uint16_t AIModule::getActionsElapsed()
 }
 
 /*
- * Description:
+ * Description: Returns the number of turns that this AI module has taken
+ *              during the current Battle.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: uint16_t - the number of turns AI module has taken this battle
  */
 uint16_t AIModule::getTurnsElapsed()
 {
@@ -1322,10 +1342,11 @@ uint16_t AIModule::getTurnsElapsed()
 }
 
 /*
- * Description:
+ * Description: Assigns a given AIState flag a given boolean value.
  *
- * Inputs:
- * Output:
+ * Inputs: flag - enumerated flag to be assigned the given value.
+ *         set_value - boolean value to set the flag to.
+ * Output: none
  */
 void AIModule::setFlag(AIState flag, const bool &set_value)
 {
@@ -1333,10 +1354,10 @@ void AIModule::setFlag(AIState flag, const bool &set_value)
 }
 
 /*
- * Description:
+ * Description: Assigns the scope of the action for the current selected action
  *
- * Inputs:
- * Output:
+ * Inputs: new_action_scope - enumerated ActionScope assigned
+ * Output: bool - true if the ActionScope has a valid scope
  */
 bool AIModule::setActionScope(const ActionScope &new_action_scope)
 {
@@ -1352,10 +1373,12 @@ bool AIModule::setActionScope(const ActionScope &new_action_scope)
 }
 
 /*
- * Description:
+ * Description: Assigns the vector of valid action types that the AI may
+ *              choose from. This list is generally grabbed from Person and
+ *              this function called by Battle.
  *
- * Inputs:
- * Output:
+ * Inputs: new_valid_action_types - the vector of valid action types
+ * Output: bool - true if the action types are possible
  */
 bool AIModule::setActionTypes(std::vector<ActionType> new_valid_action_types)
 {
@@ -1365,10 +1388,12 @@ bool AIModule::setActionTypes(std::vector<ActionType> new_valid_action_types)
 }
 
 /*
- * Description:
+ * Description: Assigns the vector of BattleSkills (constructed in Battle
+ *              containing the skill and potential targets) that the
+ *              AI module may choose from.
  *
- * Inputs:
- * Output:
+ * Inputs: new_skills - vector of BattleSkill of new items.
+ * Output: bool - true if the assignment of new skills is non-zero size.
  */
 bool AIModule::setSkills(std::vector<BattleSkill> new_skills)
 {
@@ -1378,30 +1403,25 @@ bool AIModule::setSkills(std::vector<BattleSkill> new_skills)
 }
 
 /*
- * Description:
+ * Description: Assigns the vector of BattleItems (constructed in Battle
+ *              containing the Item's skill and potential targets) that the
+ *              AI module may choose from.
  *
- * Inputs:
- * Output:
+ * Inputs: new_items - vector of BattleItem objects
+ * Output: bool - true if the assignment of new items is non-zero size.
  */
 bool AIModule::setItems(std::vector<BattleItem> new_items)
 {
-  if (new_items.size() > 0)
-  {
-    valid_items = new_items;
+  valid_items = new_items;
 
-    return true;
-  }
-
-  valid_items.clear();
-
-  return false;
+  return (valid_items.size() != 0);
 }
 
 /*
- * Description:
+ * Description: Assigns the vector of friends targets which maybe chosen from.
  *
- * Inputs:
- * Output:
+ * Inputs: new_valid_targets - vector of persons which represent allies.
+ * Output: bool - truism
  */
 bool AIModule::setFriendTargets(std::vector<Person*> new_valid_targets)
 {
@@ -1414,7 +1434,7 @@ bool AIModule::setFriendTargets(std::vector<Person*> new_valid_targets)
  * Description: Assigns a new vector of foe targets for the AI Module to choose
  *
  * Inputs: new_valid_targets - the vector of foe pointers to choose as targets
- * Output: bool - true
+ * Output: bool - truism
  */
 bool AIModule::setFoeTargets(std::vector<Person*> new_valid_targets)
 {
