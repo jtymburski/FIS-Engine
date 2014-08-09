@@ -22,7 +22,8 @@
 
 const unsigned int Helpers::seed_original = 
                     std::chrono::system_clock::now().time_since_epoch().count();
-                   
+SDL_Texture* white_mask = NULL;
+             
 std::mt19937 Helpers::rand_eng(seed_original);
 std::mt19937_64 Helpers::rand_64_eng(seed_original);
 
@@ -575,4 +576,24 @@ std::vector<std::string> Helpers::split(const std::string &line, char delim)
 std::string& Helpers::trim(std::string &s)
 {
   return ltrim(rtrim(s));
+}
+
+/*=============================================================================
+ * GRAPHICAL HELPER FUNCTIONS
+ *============================================================================*/
+
+/* Creates the white texture to use - needs to be called to init */
+// TODO: Comment and functionality
+bool Helpers::createWhiteMask(std::string path)
+{
+  bool todo = false;
+  return todo;
+}
+
+/* Returns the static white texture created. NULL if not initialized */
+// TODO: Comment and functionality
+SDL_Texture* Helpers::getWhiteMask()
+{
+  SDL_Texture* todo = NULL;
+  return todo;
 }

@@ -28,6 +28,8 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 
 #include "EnumDb.h"
 
@@ -47,6 +49,7 @@ private:
   static const unsigned int seed_original;
   static std::mt19937 rand_eng;
   static std::mt19937_64 rand_64_eng;
+  static SDL_Texture* white_mask; /* White mask for rendering brightness */
 
 public:
   /* Decides whether a percent_chance occurs or not */
@@ -135,6 +138,16 @@ public:
 
   /* Methods for trimming whitespace from both ends of std::strings */
   static std::string& trim(std::string &s);
+  
+/*=============================================================================
+ * GRAPHICAL HELPER FUNCTIONS
+ *============================================================================*/
+public:
+  /* Creates the white mask to use - needs to be called to init */
+  static bool createWhiteMask(std::string path);
+  
+  /* Returns the static white mask created. NULL if not initialized */
+  static SDL_Texture* getWhiteMask();
 };
 
 #endif // HELPERS_H
