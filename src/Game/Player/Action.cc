@@ -214,7 +214,7 @@ bool Action::parse(const std::string &raw)
     }
 
     /* Warning Checking */
-    if (actionFlag(ActionFlags::BASE_PC) && variance > kMAX_BASE_PC)
+    if (actionFlag(ActionFlags::BASE_PC) && base > kMAX_BASE_PC)
       parseWarning("base percent value higher than permitted", raw);
 
     if (actionFlag(ActionFlags::VARI_PC) && variance > kMAX_VARIANCE_PC)

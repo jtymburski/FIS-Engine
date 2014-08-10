@@ -284,10 +284,17 @@ void Game::setupBattle()
 {
   /* Build Player data */
   auto build_actions = buildActions(base_path + "data\\actions");
+  auto build_skills  = false;
 
   if (build_actions)
-    std::cout << "Actions built from file success!" << std::endl;
-  //buildSkillS();
+  {
+#ifdef UDEBUG
+    std::cout << "Actions built from file success! Size: " << action_list.size() 
+              << std::endl;
+#endif
+
+    // build_skills = buildSkills(base_path + "data\\skills");
+  }
 
   //Begin time test
   //using namespace std::chrono;
@@ -654,7 +661,6 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
   /* Switch the view to the battle */
   else if(event.keysym.sym == SDLK_F2)
   {
-    setupBattle();
     mode = BATTLE;
   }
   /* Show item store dialog in map */
@@ -760,7 +766,7 @@ bool Game::update(int32_t cycle_time)
 }
 
 /* Returns a pointer to a given action by index or by ID */
-Action* Game::getAction(const bool &index, const bool& by_id)
+Action* Game::getAction(const int32_t &index, const bool& by_id)
 {
   if (by_id)
   {
@@ -772,6 +778,7 @@ Action* Game::getAction(const bool &index, const bool& by_id)
   {
     return action_list.at(index);
   }
-
+ 
+  std::cout << "returning nullptr" << std::endl;
   return nullptr;
 }

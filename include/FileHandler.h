@@ -176,7 +176,7 @@ private:
    * parent's sibling */
   TinyXML2::XMLNode* xmlNextNode(TinyXML2::XMLNode* starting_node);
   
-  /* Starts the XML writing procedure */
+  /* Starts the XML reading procedure */
   bool xmlReadStart();
 
   /* Finishes the XML writing procedure */

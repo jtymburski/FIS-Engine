@@ -590,7 +590,7 @@ void Signature::setFlag(const SigState flag, const bool set_value)
 bool Signature::setSize(const size_t new_x, const size_t new_y)
 {
   auto can_set  = Helpers::isInRange(new_x, kMIN_X, kMAX_X);
-       can_set &= Helpers::isInRange(new_y, kMIN_X, kMAX_X);
+  can_set &= Helpers::isInRange(new_y, kMIN_X, kMAX_X);
  
   if (can_set && isEmpty() && getFlag(SigState::SIZEABLE))
     clearAndBuild(new_x, new_y);

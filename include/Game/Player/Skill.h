@@ -35,13 +35,14 @@ enum class SkillFlags
   DEFENSIVE  = 1 << 1,
   NEUTRAL    = 1 << 2,
   ALTERING   = 1 << 3,
-  HEALING    = 1 << 4,
-  INFLICTING = 1 << 5,
-  RELIEVING  = 1 << 6,
-  REVIVING   = 1 << 7,
-  ASSIGNING  = 1 << 8,
-  ABSORBING  = 1 << 9,
-  VALID      = 1 << 10
+  DAMAGING   = 1 << 4,
+  HEALING    = 1 << 5,
+  INFLICTING = 1 << 6,
+  RELIEVING  = 1 << 7,
+  REVIVING   = 1 << 8,
+  ASSIGNING  = 1 << 9,
+  ABSORBING  = 1 << 10,
+  VALID      = 1 << 11
 };
 
 class Skill
@@ -59,7 +60,7 @@ public:
 
   /* General skill construction with multiple effects */
   Skill(const int &id, const std::string &name, const ActionScope &scope, 
-  	    const std::vector<Action*> &effects, const std::vector<float> &chances,
+  	    const std::vector<Action*> &effects, const float &chance,
         const uint32_t &cost = 0);
 
   /* Annihilates a Skill object */
@@ -81,8 +82,8 @@ private:
   /* Vector of effects the Skill does during use */
   std::vector<Action*> effects;
 
-  /* Vector of chances correlating to the chance each effect has */
-  std::vector<float> chances;
+  /* Chance the skill has overall to hit (100 = always hit) */
+  float chance;
 
   /* Set of SkillFlags for skill categorization */
   SkillFlags flags;
@@ -117,6 +118,7 @@ private:
   /* ------------ Constants --------------- */
   static const uint32_t kDEFAULT_VALUE;   /* Default value (points) */
   static const size_t   kMAX_ACTIONS;     /* Maximum # of actions in a skill */
+  static const float    kMAX_CHANCE;      /* Maximum value of chance */
   static const uint32_t kMAX_COOLDOWN;    /* Maximum turn cooldown time */
   static const uint32_t kMAX_COST;        /* Highest possible cost for skill */
   static const size_t   kMAX_MESG_LENGTH; /* Maximum length for using message */
@@ -137,12 +139,10 @@ private:
  *============================================================================*/
 public:
   /* Attempts to add an action given a chance to the effect list */
-  bool addAction(Action* new_action, const float &new_chance, 
-                 const bool &single = true);
+  bool addAction(Action* new_action, const bool &single = true);
 
   /* Attempts to add a vector of effects to the Skill */
-  bool addActions(const std::vector<Action*> &new_actions, 
-                  const std::vector<float> &new_chances);
+  bool addActions(const std::vector<Action*> &new_actions);
 
   /* Determines if the Skill is valid */
   bool isValid();
@@ -163,10 +163,7 @@ public:
   uint32_t getCost();
 
   /* Returns the chance of a given effect */
-  float getChance(const uint32_t &index);
-
-  /* Returns the vector of chances for the effects */
-  std::vector<float> getChances();
+  float getChance();
 
   /* Returns the string description */
   std::string getDescription();
@@ -215,6 +212,9 @@ public:
 
   /* Assigns a new cost to the skill */
   bool setCost(const uint32_t &new_value);
+
+  /* Assigns a new chance to the skill */
+  bool setChance(const float &new_chance);
 
   /* Assigns a new description */
   bool setDescription(const std::string &new_description);

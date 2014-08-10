@@ -155,7 +155,7 @@ public:
   bool update(int cycle_time);
 
   /* Returns a pointer to a given action by index or by ID */
-  Action* getAction(const bool &index, const bool& by_id = false);
+  Action* getAction(const int32_t &index, const bool& by_id = false);
 };
 
 #endif // GAME_H
