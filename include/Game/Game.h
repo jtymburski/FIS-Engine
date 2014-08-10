@@ -101,6 +101,7 @@ private:
 private:
   /* Constructs the vector of all actions */
   bool buildActions(const std::string &path, bool encryption = false);
+  bool buildSkills(const std::string &path, bool encryption = false);
 
   /* A give item event, based on an ID and count (triggered from stored event */
   bool eventGiveItem(int id, int count);
@@ -152,6 +153,9 @@ public:
 
   /* Updates the game state */
   bool update(int cycle_time);
+
+  /* Returns a pointer to a given action by index or by ID */
+  Action* getAction(const bool &index, const bool& by_id = false);
 };
 
 #endif // GAME_H

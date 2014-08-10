@@ -114,7 +114,7 @@ bool Game::buildActions(const std::string &file, bool encryption)
       action_list.push_back(temp_action);
 
       if (!temp_action->actionFlag(ActionFlags::VALID))
-        std::cerr << "[Error] Parsing invalid action: " << std::endl;
+        std::cerr << "[Error] Parsing invalid action" << std::endl;
     }
   }
 
@@ -122,7 +122,29 @@ bool Game::buildActions(const std::string &file, bool encryption)
     success &= fh.stop();
 
   if (!success)
-    std::cerr <<"[Error] build actions from file." << std::endl;
+    std::cerr <<"[Error] building actions from file." << std::endl;
+
+  return success;
+}
+
+bool Game::buildSkills(const std::string &file, bool encryption)
+{
+  auto done    = false;
+  auto success = true;
+  FileHandler fh(file, false, false, encryption);
+
+  success &= fh.start();
+
+  for (; success && !done; )
+  {
+
+  }
+  
+  if (success)
+    success &= fh.stop();
+
+  if (!success)
+    std::cerr <<"[Error] building skills from file." << std::endl;
 
   return success;
 }
@@ -735,4 +757,21 @@ bool Game::update(int32_t cycle_time)
     return game_battle->update(cycle_time);
 
   return false;
+}
+
+/* Returns a pointer to a given action by index or by ID */
+Action* Game::getAction(const bool &index, const bool& by_id)
+{
+  if (by_id)
+  {
+    for (auto it = begin(action_list); it != end(action_list); ++it)
+      if ((*it)->getID() == index)
+        return (*it);
+  }
+  else if (index < action_list.size())
+  {
+    return action_list.at(index);
+  }
+
+  return nullptr;
 }
