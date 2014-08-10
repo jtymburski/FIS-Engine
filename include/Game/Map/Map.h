@@ -94,9 +94,6 @@ private:
    // * a later time) */
   // Weather* weather_effect;
 
-  /* The texture white mask used for sprite brightness */
-  Frame white_mask;
-  
   /* Status of the zoom on the map */
   bool zoom_in;
   bool zoom_out;
@@ -108,8 +105,8 @@ private:
   // int paint_time;
 
   // /*------------------- Constants -----------------------*/
-  // const static int kDOUBLE_DIGITS;    /* The point when integers are more than
-                                      // * a single digit */
+  // const static int kDOUBLE_DIGITS;    /* The point when integers are more
+  //                                      * than a single digit */
   // const static int kELEMENT_DATA;     /* Element data type for sprite */
   const static uint8_t kFILE_CLASSIFIER; /* The file tile classification text */
   const static uint8_t kFILE_GAME_TYPE; /* The game type classifier */
@@ -117,7 +114,6 @@ private:
   const static uint8_t kFILE_TILE_COLUMN; /* The tile depth in XML of column */
   const static uint8_t kFILE_TILE_ROW; /* The tile depth in XML of row */
   const static uint8_t kPLAYER_ID;     /* The player ID for computer control */
-  const static uint16_t kTILE_SIZE; /* The default tile size, when no zoom */
   const static uint16_t kZOOM_TILE_SIZE;  /* The tile size, when zoomed out */
 
 /*============================================================================

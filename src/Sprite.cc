@@ -54,7 +54,6 @@ Sprite::Sprite()
   sequence = FORWARD;
   texture = NULL;
   texture_update = false;
-  white_mask = NULL;
 }
 
 /* 
@@ -108,7 +107,6 @@ Sprite::~Sprite()
   current = NULL;
   head = NULL;
   texture = NULL;
-  white_mask = NULL;
 }
 
 /*=============================================================================
@@ -796,6 +794,7 @@ bool Sprite::render(SDL_Renderer* renderer, int x, int y, int w, int h)
         current->render(renderer);
       
       /* Render white mask, if relevant */
+      SDL_Texture* white_mask = Helpers::getWhiteMask();
       if(brightness > kDEFAULT_BRIGHTNESS && white_mask != NULL)
       {
         double bright_mod = (brightness - kDEFAULT_BRIGHTNESS);
@@ -1024,26 +1023,6 @@ void Sprite::setOpacity(uint8_t opacity)
 void Sprite::setRotation(int angle)
 {
   rotation_angle = angle;
-}
-
-/*
- * Description: Sets the white mask texture for downblending to create the 
- *              simulation of brightness, if the brightness value is greater
- *              than 1. If not set and brightness is above 1.0, this will result
- *              in untested results.
- *
- * Inputs: SDL_Texture* texture - the white mask texture pointer
- * Output: bool - the success of setting the white mask
- */
-bool Sprite::setWhiteMask(SDL_Texture* texture)
-{
-  if(texture != NULL)
-  {
-    white_mask = texture;
-    return true;
-  }
-  
-  return false;
 }
 
 /* 

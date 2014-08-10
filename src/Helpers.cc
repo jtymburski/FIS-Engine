@@ -16,14 +16,17 @@
  ******************************************************************************/
 #include "Helpers.h"
 
+/* Constant Implementation - see header file for descriptions */
+const uint16_t Helpers::kTILE_SIZE = 64;
+
 /*=============================================================================
  * RANDOM GENERATOR FUNCTIONS
  *============================================================================*/
 
 const unsigned int Helpers::seed_original = 
                     std::chrono::system_clock::now().time_since_epoch().count();
-SDL_Texture* white_mask = NULL;
-             
+SDL_Texture* Helpers::white_mask = NULL;
+
 std::mt19937 Helpers::rand_eng(seed_original);
 std::mt19937_64 Helpers::rand_64_eng(seed_original);
 
@@ -512,6 +515,13 @@ std::vector<uint32_t> Helpers::buildExpTable(const uint32_t &min,
   return table;
 }
 
+/* Get render tile size */
+// TODO: Comment
+uint16_t Helpers::getTileSize()
+{
+  return kTILE_SIZE;
+}
+
 /*
  * Description Trims white space from the left side of a std::string
  *
@@ -582,18 +592,54 @@ std::string& Helpers::trim(std::string &s)
  * GRAPHICAL HELPER FUNCTIONS
  *============================================================================*/
 
-/* Creates the white texture to use - needs to be called to init */
-// TODO: Comment and functionality
-bool Helpers::createWhiteMask(std::string path)
+/*
+ * Description: Creates the white mask (only needs to be called once for the
+ *              duration of the game) that allows the engine to manipulate
+ *              brightness.
+ *
+ * Inputs: SDL_Renderer* renderer - the graphical rendering engine
+ * Output: none
+ */
+void Helpers::createWhiteMask(SDL_Renderer* renderer)
 {
-  bool todo = false;
-  return todo;
+  if(white_mask == NULL)
+  {
+    white_mask = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, 
+                                             SDL_TEXTUREACCESS_TARGET, 
+                                             kTILE_SIZE, kTILE_SIZE);
+    SDL_SetRenderTarget(renderer, white_mask);
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderClear(renderer);
+    SDL_RenderDrawRect(renderer, NULL);
+    SDL_SetRenderTarget(renderer, NULL);
+    
+    /* Set the new texture as the white mask (with additive blending) */
+    SDL_SetTextureBlendMode(white_mask, SDL_BLENDMODE_ADD);
+  }
 }
 
-/* Returns the static white texture created. NULL if not initialized */
-// TODO: Comment and functionality
+/*
+ * Description: Deletes the white mask, created on an earlier step. Only
+ *              needs to be done once upon the entire close of the application.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Helpers::deleteWhiteMask()
+{
+  if(white_mask != NULL)
+    SDL_DestroyTexture(white_mask);
+  white_mask = NULL;
+}
+
+/* 
+ * Description: Returns the white mask for rendering on screen. Do not delete
+ *              this pointer.
+ *
+ * Inputs: none
+ * Output: SDL_Texture* - the brightmap texture
+ */
 SDL_Texture* Helpers::getWhiteMask()
 {
-  SDL_Texture* todo = NULL;
-  return todo;
+  return white_mask;
 }

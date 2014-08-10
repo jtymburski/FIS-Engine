@@ -122,9 +122,6 @@ public:
   bool setState(MapState* state, bool passable = false);
   bool setState(Sprite* transition, bool passable = false);
 
-  /* Sets the white mask texture, for tuning brightness */
-  virtual bool setWhiteMask(SDL_Texture* texture);
-  
   /* Updates the thing, based on the tick */
   virtual void update(int cycle_time, Tile* next_tile);
 

@@ -581,37 +581,6 @@ bool MapInteractiveObject::setState(Sprite* transition, bool passable)
   return false;
 }
 
-/*
- * Description: Sets the white mask texture for downblending to create the 
- *              simulation of brightness, if the brightness value is greater
- *              than 1. If not set and brightness is above 1.0, this will result
- *              in untested results. Done through all sprites that have already
- *              been created. (Virtual to all things)
- *
- * Inputs: SDL_Texture* texture - the white mask texture pointer
- * Output: bool - the success of setting the white mask
- */
-bool MapInteractiveObject::setWhiteMask(SDL_Texture* texture)
-{
-  StateNode* parser = node_head;
-  bool success = true;
-
-  /* Determine the length of the node sequence by parsing through it */
-  while(parser != NULL)
-  {
-    /* Determine if state or transition */
-    if(parser->state != NULL)
-      success &= parser->state->getSprite()->setWhiteMask(texture);
-    if(parser->transition != NULL)
-      success &= parser->transition->setWhiteMask(texture);
-    
-    /* Move to the next node */
-    parser = parser->next;
-  }
-
-  return success;
-}
-
 /* Updates the thing, based on the tick */
 void MapInteractiveObject::update(int cycle_time, Tile* next_tile)
 {

@@ -228,9 +228,6 @@ public:
   /* Sets the visibility of the rendering thing */
   void setVisibility(bool visible);
   
-  /* Sets the white mask texture, for tuning brightness */
-  virtual bool setWhiteMask(SDL_Texture* texture);
-  
   /* Sets the things width classification */
   bool setWidth(uint16_t new_width);
 

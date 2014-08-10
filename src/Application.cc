@@ -262,6 +262,9 @@ bool Application::initialize()
     {
       SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
       SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
+      /* Create helper graphical portions */
+      Helpers::createWhiteMask(renderer);
     }
   }
   
@@ -373,7 +376,10 @@ void Application::uninitialize()
   {
     /* Clean up the renderer */
     if(renderer != NULL)
+    {
+      Helpers::deleteWhiteMask();
       SDL_DestroyRenderer(renderer);
+    }
     renderer = NULL;
   
     /* Clean up the window */

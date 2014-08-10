@@ -25,11 +25,11 @@
 #include <iostream>
 #include <locale>
 #include <random>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
 
 #include "EnumDb.h"
 
@@ -49,7 +49,10 @@ private:
   static const unsigned int seed_original;
   static std::mt19937 rand_eng;
   static std::mt19937_64 rand_64_eng;
-  static SDL_Texture* white_mask; /* White mask for rendering brightness */
+  static SDL_Texture* white_mask; /* Brightness manipulator */
+
+  // /*------------------- Constants -----------------------*/
+  const static uint16_t kTILE_SIZE; /* The default tile size for game */
 
 public:
   /* Decides whether a percent_chance occurs or not */
@@ -129,6 +132,9 @@ public:
   static std::vector<uint32_t> buildExpTable(const uint32_t &min, 
       const uint32_t &max, const uint32_t &iter);
 
+  /* Get render tile size */
+  static uint16_t getTileSize();
+
   /* Methods for trimming white space from left and right of string ends */
   static std::string& ltrim(std::string &s);
   static std::string& rtrim(std::string &s);
@@ -144,8 +150,11 @@ public:
  *============================================================================*/
 public:
   /* Creates the white mask to use - needs to be called to init */
-  static bool createWhiteMask(std::string path);
+  static void createWhiteMask(SDL_Renderer* renderer);
   
+  /* Deletes the white mask - when game shut down */
+  static void deleteWhiteMask();
+
   /* Returns the static white mask created. NULL if not initialized */
   static SDL_Texture* getWhiteMask();
 };

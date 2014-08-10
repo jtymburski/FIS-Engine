@@ -89,9 +89,6 @@ private:
   SDL_Texture* texture;
   bool texture_update;
   
-  /* Sets the white mask that can be used for modifying the brightness */
-  SDL_Texture* white_mask;
-  
   /*------------------- Constants -----------------------*/
   const static uint16_t kDEFAULT_ANIMATE_TIME; /* The default animation time */
   const static float kDEFAULT_BRIGHTNESS; /* the default brightness value */
@@ -239,9 +236,6 @@ public:
   
   /* Sets the rotation for all frames to be rendered at */
   void setRotation(int angle);
-  
-  /* Sets the white mask texture, for tuning brightness */
-  bool setWhiteMask(SDL_Texture* texture);
   
   /* Shifts to the given position in the sequence */
   bool shift(int position);

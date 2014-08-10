@@ -823,28 +823,6 @@ void MapPerson::setSurface(SurfaceClassifier surface)
 }
 
 /*
- * Description: Sets the white mask texture for downblending to create the 
- *              simulation of brightness, if the brightness value is greater
- *              than 1. If not set and brightness is above 1.0, this will result
- *              in untested results. Done through all sprites that have already
- *              been created. (Virtual to all things)
- *
- * Inputs: SDL_Texture* texture - the white mask texture pointer
- * Output: bool - the success of setting the white mask
- */
-bool MapPerson::setWhiteMask(SDL_Texture* texture)
-{
-  bool success = true;
-  
-  for(uint16_t i = 0; i < states.size(); i++)
-    for(uint16_t j = 0; j < states[i].size(); j++)
-      if(states[i][j] != NULL)
-        success &= states[i][j]->setWhiteMask(texture);
-  
-  return success;
-}
-
-/*
  * Description: Updates the state of the person. This can include animation
  *              sequencing or movement and such. Called on the tick.
  *

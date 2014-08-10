@@ -969,23 +969,6 @@ void MapThing::setVisibility(bool visible)
 }
 
 /*
- * Description: Sets the white mask texture for downblending to create the 
- *              simulation of brightness, if the brightness value is greater
- *              than 1. If not set and brightness is above 1.0, this will result
- *              in untested results. Done through all sprites that have already
- *              been created. (Virtual to all things)
- *
- * Inputs: SDL_Texture* texture - the white mask texture pointer
- * Output: bool - the success of setting the white mask
- */
-bool MapThing::setWhiteMask(SDL_Texture* texture)
-{
-  if(frames != NULL)
-    return frames->setWhiteMask(texture);
-  return false;
-}
-
-/*
  * Description: Sets the new tile width for the thing. This number must
  *              be greater than 0 and if it's not, the call will fail.
  *

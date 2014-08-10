@@ -30,7 +30,6 @@ const uint8_t Map::kFILE_SECTION_ID = 2;
 const uint8_t Map::kFILE_TILE_COLUMN = 5;
 const uint8_t Map::kFILE_TILE_ROW = 4;
 const uint8_t Map::kPLAYER_ID = 0;
-const uint16_t Map::kTILE_SIZE = 64;
 const uint16_t Map::kZOOM_TILE_SIZE = 16;
 
 /*============================================================================
@@ -50,8 +49,8 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   system_options = NULL;
   
   /* Configure the width / height of tiles and sets default zooming */
-  tile_height = kTILE_SIZE;
-  tile_width = kTILE_SIZE;
+  tile_height = Helpers::getTileSize();
+  tile_width = tile_height;
   zoom_in = false;
   zoom_out = false;
   
@@ -123,7 +122,6 @@ bool Map::addSpriteData(XmlData data, std::string id,
     {
       access_sprite = new Sprite();
       access_sprite->setId(access_id);
-      access_sprite->setWhiteMask(white_mask.getTextureActive());
       tile_sprites.push_back(access_sprite);
       
       /* If the copy sprite isn't null, copy the data into the new sprite */
@@ -663,10 +661,11 @@ void Map::updateTileSize()
     /* Modify the tile height and width, limited by the constants */
     tile_height++;
     tile_width++;
-    if(tile_height > kTILE_SIZE || tile_width > kTILE_SIZE)
+    if(tile_height > Helpers::getTileSize() || 
+       tile_width > Helpers::getTileSize())
     {
-      tile_height = kTILE_SIZE;
-      tile_width = kTILE_SIZE;
+      tile_height = Helpers::getTileSize();
+      tile_width = Helpers::getTileSize();
       zoom_in = false;
     }
     
@@ -972,24 +971,6 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
   FileHandler fh(file, false, true, encryption);
   XmlData data;
 
-  /* Set up the white mask, if it isn't done */
-  if(!white_mask.isTextureSet())
-  {
-    SDL_Texture* texture = SDL_CreateTexture(renderer, 
-                                             SDL_PIXELFORMAT_RGBA8888, 
-                                             SDL_TEXTUREACCESS_TARGET, 
-                                             kTILE_SIZE, kTILE_SIZE);
-    SDL_SetRenderTarget(renderer, texture);
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_RenderClear(renderer);
-    SDL_RenderDrawRect(renderer, NULL);
-    SDL_SetRenderTarget(renderer, NULL);
-    
-    /* Set the new texture as the white mask (with additive blending) */
-    SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_ADD);
-    white_mask.setTexture(texture);
-  }
-  
   /* Start the map read */
   success &= fh.start();
   std::cout << "Date: " << fh.getDate() << std::endl; // TODO: Remove
@@ -1099,14 +1080,6 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
       if(player != NULL)
         viewport.lockOn(player);
     }
-    
-    /* Go through all map things and add applicable modifications */
-    for(uint16_t i = 0; i < items.size(); i++)
-     items[i]->setWhiteMask(white_mask.getTextureActive());
-    for(uint16_t i = 0; i < persons.size(); i++)
-      persons[i]->setWhiteMask(white_mask.getTextureActive());
-    for(uint16_t i = 0; i < things.size(); i++)
-      things[i]->setWhiteMask(white_mask.getTextureActive());
     
     /* Load the item menu sprites - TODO: In file? */
     item_menu.loadImageBackend("sprites/Overlay/item_store_left.png", 
@@ -1306,8 +1279,8 @@ void Map::unloadMap()
 {
   /* Reset the index and applicable parameters */
   map_index = 0;
-  tile_height = kTILE_SIZE;
-  tile_width = kTILE_SIZE;
+  tile_height = Helpers::getTileSize();
+  tile_width = tile_height;
   
   /* Delete the items */
   for(uint16_t i = 0; i < items.size(); i++)
