@@ -66,6 +66,7 @@
 * See .h file for TODOs
 *******************************************************************************/
 #include "Game/Player/Action.h"
+#include "Game/Player/AttributeSet.h"
 
 /*=============================================================================
  * CONSTANTS - See implementation for details
@@ -478,49 +479,58 @@ bool Action::setDuration(const int &min_value, const int &max_value)
  * Description: Method for printing out all the info describing the state of the
  *              current action in an easy to view format. [std::cout display]
  *
- * Inputs: none
+ * Inputs: print_action - whether to print the action flags 
+ *         print_ignore - whether to print the ignore flags
  * Output: none
  */
-void Action::print()
+void Action::print(const bool &print_action, const bool& print_ignore)
 {
-  std::cout << "=== Action: " << id << " === " << std::endl;
-
-  std::cout << "--- Action Flags --- " << std::endl;
-  std::cout << "DAMAGE: "  << actionFlag(ActionFlags::DAMAGE)  << std::endl;
-  std::cout << "ALTER: "   << actionFlag(ActionFlags::ALTER)   << std::endl;
-  std::cout << "INFLICT: " << actionFlag(ActionFlags::INFLICT) << std::endl;
-  std::cout << "RELIEVE: " << actionFlag(ActionFlags::RELIEVE) << std::endl;
-  std::cout << "ASSIGN: "  << actionFlag(ActionFlags::ASSIGN)  << std::endl;
-  std::cout << "REVIVE: "  << actionFlag(ActionFlags::REVIVE)  << std::endl;
-  std::cout << "ABSORB: "  << actionFlag(ActionFlags::ABSORB)  << std::endl;
-  std::cout << "BASE_PC: " << actionFlag(ActionFlags::BASE_PC) << std::endl;
-  std::cout << "VARI_PC: " << actionFlag(ActionFlags::VARI_PC) << std::endl;
-  std::cout << "VALID: "   << actionFlag(ActionFlags::VALID)   << std::endl;
-
-  std::cout << "--- Igore Atk Flags --- " << std::endl;
-  std::cout << "PHYS: " << atkFlag(IgnoreFlags::PHYSICAL)   << std::endl;
-  std::cout << "THER: " << atkFlag(IgnoreFlags::THERMAL)    << std::endl;
-  std::cout << "POLA: " << atkFlag(IgnoreFlags::POLAR)      << std::endl;
-  std::cout << "PRIM: " << atkFlag(IgnoreFlags::PRIMAL)     << std::endl;
-  std::cout << "CHAR: " << atkFlag(IgnoreFlags::CHARGED)    << std::endl;
-  std::cout << "CYBR: " << atkFlag(IgnoreFlags::CYBERNETIC) << std::endl;
-  std::cout << "NIHI: " << atkFlag(IgnoreFlags::NIHIL)      << std::endl;
-
-  std::cout << "--- Igore Def Flags --- " << std::endl;
-  std::cout << "PHYS: " << defFlag(IgnoreFlags::PHYSICAL)   << std::endl;
-  std::cout << "THER: " << defFlag(IgnoreFlags::THERMAL)    << std::endl;
-  std::cout << "POLA: " << defFlag(IgnoreFlags::POLAR)      << std::endl;
-  std::cout << "PRIM: " << defFlag(IgnoreFlags::PRIMAL)     << std::endl;
-  std::cout << "CHAR: " << defFlag(IgnoreFlags::CHARGED)    << std::endl;
-  std::cout << "CYBR: " << defFlag(IgnoreFlags::CYBERNETIC) << std::endl;
-  std::cout << "NIHI: " << defFlag(IgnoreFlags::NIHIL)      << std::endl;
-
-  std::cout << "Min Duration: " << min_duration << std::endl;
+  std::cout << "=== Action: " << id << " === ";
+  std::cout << "\nUser Attr: " << AttributeSet::getName(user_attribute);
+  std::cout << "\nTarg Attr: " << AttributeSet::getName(target_attribute);
+  std::cout << "\nMin Duration: " << min_duration << std::endl;
   std::cout << "Max Duration: " << max_duration << std::endl;
   std::cout << "Base Change: "  << base         << std::endl;
   std::cout << "Variance: "     << variance     << std::endl;
   std::cout << "Chance: " << chance             << std::endl;
-  std::cout << "=== / Action === "              << std::endl;
+
+  if (print_action)
+  {
+    std::cout << "--- Action Flags --- " << std::endl;
+    std::cout << "DAMAGE: "  << actionFlag(ActionFlags::DAMAGE)  << std::endl;
+    std::cout << "ALTER: "   << actionFlag(ActionFlags::ALTER)   << std::endl;
+    std::cout << "INFLICT: " << actionFlag(ActionFlags::INFLICT) << std::endl;
+    std::cout << "RELIEVE: " << actionFlag(ActionFlags::RELIEVE) << std::endl;
+    std::cout << "ASSIGN: "  << actionFlag(ActionFlags::ASSIGN)  << std::endl;
+    std::cout << "REVIVE: "  << actionFlag(ActionFlags::REVIVE)  << std::endl;
+    std::cout << "ABSORB: "  << actionFlag(ActionFlags::ABSORB)  << std::endl;
+    std::cout << "BASE_PC: " << actionFlag(ActionFlags::BASE_PC) << std::endl;
+    std::cout << "VARI_PC: " << actionFlag(ActionFlags::VARI_PC) << std::endl;
+    std::cout << "VALID: "   << actionFlag(ActionFlags::VALID)   << std::endl;
+  }
+
+  if (print_ignore)
+  {
+    std::cout << "--- Igore Atk Flags --- " << std::endl;
+    std::cout << "PHYS: " << atkFlag(IgnoreFlags::PHYSICAL)   << std::endl;
+    std::cout << "THER: " << atkFlag(IgnoreFlags::THERMAL)    << std::endl;
+    std::cout << "POLA: " << atkFlag(IgnoreFlags::POLAR)      << std::endl;
+    std::cout << "PRIM: " << atkFlag(IgnoreFlags::PRIMAL)     << std::endl;
+    std::cout << "CHAR: " << atkFlag(IgnoreFlags::CHARGED)    << std::endl;
+    std::cout << "CYBR: " << atkFlag(IgnoreFlags::CYBERNETIC) << std::endl;
+    std::cout << "NIHI: " << atkFlag(IgnoreFlags::NIHIL)      << std::endl;
+
+    std::cout << "--- Igore Def Flags --- " << std::endl;
+    std::cout << "PHYS: " << defFlag(IgnoreFlags::PHYSICAL)   << std::endl;
+    std::cout << "THER: " << defFlag(IgnoreFlags::THERMAL)    << std::endl;
+    std::cout << "POLA: " << defFlag(IgnoreFlags::POLAR)      << std::endl;
+    std::cout << "PRIM: " << defFlag(IgnoreFlags::PRIMAL)     << std::endl;
+    std::cout << "CHAR: " << defFlag(IgnoreFlags::CHARGED)    << std::endl;
+    std::cout << "CYBR: " << defFlag(IgnoreFlags::CYBERNETIC) << std::endl;
+    std::cout << "NIHI: " << defFlag(IgnoreFlags::NIHIL)      << std::endl;
+  }
+
+  std::cout << "=== / Action === " << std::endl;
 }
 
 /*

@@ -644,7 +644,7 @@ bool BattleMenu::someIndexHasTargets()
       layer_index = 2;
 
       for (element_index = 0; element_index <= getMaxIndex(); element_index++)
-        has_targets |= indexHasTargets(true);
+        has_targets |= indexHasTargets();
     }
   }
 
@@ -655,24 +655,18 @@ bool BattleMenu::someIndexHasTargets()
 }
 
 /*
- * Description:
+ * Description: Determines whether the current selected index (of a Skill or
+ *              Item selection) has valid targets to be chosen. If not,
+ *              the selection should not be able to be be chosen.
  *
- * Inputs:
- * Output:
+ * Inputs: checking_all - if this function is called from someIndexHasTargets
+ * Output: bool - true if the index is valid
  */
-bool BattleMenu::indexHasTargets(const bool &checking_all)
+bool BattleMenu::indexHasTargets()
 {
   auto has_targets = false;
-  std::cout << "checking all " << checking_all << std::endl;
 
-  if (checking_all)
-  {
-    if (action_type == ActionType::SKILL)
-      has_targets |= !menu_skills.at(element_index).all_targets.empty();
-    else if (action_type == ActionType::ITEM)
-      has_targets |= !menu_items.at(element_index).all_targets.empty();
-  }
-  else if (element_index != -1 && layer_index == 2)
+  if (element_index != -1 && layer_index == 2)
   {
     if (action_type == ActionType::SKILL)
     {
@@ -688,7 +682,7 @@ bool BattleMenu::indexHasTargets(const bool &checking_all)
     else if (action_type == ActionType::ITEM)
     {
       action_scope = menu_items.at(element_index).item_skill->getScope();
-      
+
       if (action_scope == ActionScope::TWO_ALLIES)
         has_targets |= menu_items.at(element_index).ally_targets.size() >= 2;
       else if (action_scope == ActionScope::TWO_ENEMIES)

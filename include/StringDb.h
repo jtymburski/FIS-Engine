@@ -34,7 +34,7 @@ static const std::string kRUN = "Flee";
 static const std::string kHEAD_SLOT = "Head";
 static const std::string kARM_SLOT  = "Limb";
 static const std::string kBODY_SLOT = "Torso";
-static const std::string kLEGS_SLOT = "Lower Body";
+static const std::string kLEGS_SLOT = "Lower";
 
 /* ============= Object Strings ============= */
 

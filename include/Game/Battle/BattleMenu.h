@@ -139,7 +139,7 @@ public:
   bool someIndexHasTargets();
 
   /* Returns whether the current action index has valid targets */
-  bool indexHasTargets(const bool &checking_all = false);
+  bool indexHasTargets();
 
   /* Resets the menu data to be used for a new Person */
   void reset(Person* const new_user, const uint32_t &new_person_index);

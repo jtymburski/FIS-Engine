@@ -45,6 +45,7 @@ Game::Game(Options* running_config)
   setConfiguration(running_config);
 
   /* Set up the render classes */
+  setupBattle();
   setupPlayerInventory();
   setupMap();
 }
@@ -74,17 +75,57 @@ Game::~Game()
    delete game_inventory;
    game_inventory = nullptr;
   }
- 
+
+  /* Delete all game actions */
+  for(auto it = begin(action_list); it != end(action_list); ++it)
+    delete(*it);
+
   /* Delete all game items */
   for(auto i = begin(item_list); i != end(item_list); i++)
     delete (*i);
 
+
+
+  action_list.clear();
   item_list.clear();  // does nothing?
 }
 
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
+
+/* Compile and build vector of all actions from the action file */
+bool Game::buildActions(const std::string &file, bool encryption)
+{
+  auto done    = false;
+  auto success = true;
+  FileHandler fh(file, false, false, encryption);
+
+  success &= fh.start();
+
+  for (; success && !done ;)
+  {
+    std::string line = "";
+    line = fh.readRegularLine(&done, &success);
+      
+    if (success && !line.empty() && line.at(0) != '/')
+    {
+      Action* temp_action = new Action(line);
+      action_list.push_back(temp_action);
+
+      if (!temp_action->actionFlag(ActionFlags::VALID))
+        std::cerr << "[Error] Parsing invalid action: " << std::endl;
+    }
+  }
+
+  if (success)
+    success &= fh.stop();
+
+  if (!success)
+    std::cerr <<"[Error] build actions from file." << std::endl;
+
+  return success;
+}
 
 /* A give item event, based on an ID and count (triggered from stored event */
 bool Game::eventGiveItem(int id, int count)
@@ -151,7 +192,7 @@ void Game::eventPickupItem(MapItem* item, bool walkover)
 /* Starts a battle event. Using the given information - TODO */
 void Game::eventStartBattle()
 {
-  setupBattle();
+  //TODO: run battle here? setupBattle();
   mode = BATTLE;
 }
 
@@ -219,10 +260,13 @@ void Game::pollEvents()
 /* Set up the battle - old battle needs to be deleted prior to calling */
 void Game::setupBattle()
 {
-  bool enable_test = true;
+  /* Build Player data */
+  auto build_actions = buildActions(base_path + "data\\actions");
 
-  if (enable_test)
-  {
+  if (build_actions)
+    std::cout << "Actions built from file success!" << std::endl;
+  //buildSkillS();
+
   //Begin time test
   //using namespace std::chrono;
 
@@ -264,20 +308,20 @@ void Game::setupBattle()
   //other_skill_set->print();
 
   // General Item Testing
-  Item* potion      = new Item(45, "Potion", 70, nullptr, 1.01);
-  potion->setFlag(ItemFlags::CONSUMED, true);
-  potion->setFlag(ItemFlags::DEFENSIVE, true);
-  potion->setFlag(ItemFlags::HEALING_ITEM, true);
-  potion->setOccasion(ActionOccasion::ALWAYS);
+  // Item* potion      = new Item(45, "Potion", 70, nullptr, 1.01);
+  // potion->setFlag(ItemFlags::CONSUMED, true);
+  // potion->setFlag(ItemFlags::DEFENSIVE, true);
+  // potion->setFlag(ItemFlags::HEALING_ITEM, true);
+  // potion->setOccasion(ActionOccasion::ALWAYS);
 
-  Item* bubby_bomb  = new Item(47, "Bubby Bomb", 85, nullptr, 2.62);
-  bubby_bomb->setFlag(ItemFlags::CONSUMED, true);
-  bubby_bomb->setFlag(ItemFlags::OFFENSIVE, true);
-  bubby_bomb->setOccasion(ActionOccasion::BATTLE);
+  // Item* bubby_bomb  = new Item(47, "Bubby Bomb", 85, nullptr, 2.62);
+  // bubby_bomb->setFlag(ItemFlags::CONSUMED, true);
+  // bubby_bomb->setFlag(ItemFlags::OFFENSIVE, true);
+  // bubby_bomb->setOccasion(ActionOccasion::BATTLE);
 
-  //Item* unique_item = new Item(46, "Unique Item", 75, nullptr, 1.08);s
-  Item* new_potion     = new Item(potion);
-  Item* new_bubby_bomb = new Item(bubby_bomb);
+  // //Item* unique_item = new Item(46, "Unique Item", 75, nullptr, 1.08);s
+  // Item* new_potion     = new Item(potion);
+  // Item* new_bubby_bomb = new Item(bubby_bomb);
 
   // Key Item Testing
   // Item* master_key  = new Item(115, "Master Key", nullptr);
@@ -384,169 +428,163 @@ void Game::setupBattle()
   // delete tumor
   
   // AttributeSet testing
-  AttributeSet min_scion_set(1, true);
-  AttributeSet max_scion_set(3, true);
-  AttributeSet min_hex_set(2, true);
-  AttributeSet max_hex_set(3, true);
-  AttributeSet spark_set(1);
-  AttributeSet tumor_set(1);
-  AttributeSet moldy_set(1);
+  // AttributeSet min_scion_set(1, true);
+  // AttributeSet max_scion_set(3, true);
+  // AttributeSet min_hex_set(2, true);
+  // AttributeSet max_hex_set(3, true);
+  // AttributeSet spark_set(1);
+  // AttributeSet tumor_set(1);
+  // AttributeSet moldy_set(1);
 
-  AttributeSet min_human_set = min_hex_set;
-  min_human_set.setStat(Attribute::VITA, 200);
-  AttributeSet max_human_set(3, true);
+  // AttributeSet min_human_set = min_hex_set;
+  // min_human_set.setStat(Attribute::VITA, 200);
+  // AttributeSet max_human_set(3, true);
 
-  //Action Testing
-  std::vector<Action*> actions;
-  std::vector<float> chances = {0.50, 0.40, 0.12, 0.46};
-  actions.push_back(new Action("1,ALTER,,,,THAG,PC.50,AMOUNT.15,,95"));
-  actions.push_back(new Action("2,ALTER,,PHYSICAL,PHYSICAL.THERMAL,VITA,AMOUNT.50,AMOUNT.10,,95"));
-  actions.push_back(new Action("3,INFLICT,2.7,,,POISON,,,,75"));
-  actions.push_back(new Action("4,REVIVE,,,,VITA,PC.25,AMOUNT.50,,100"));
-  actions.push_back(new Action("5,INFLICT,3.5,,,BURN,,,,85"));
-  actions.push_back(new Action("6,ALTER,,,,VITA,AMOUNT.100,PC.10,,95"));
-  actions.push_back(new Action("7,ALTER,,,,VITA,AMOUNT.210,PC.15,,96"));
-  actions.push_back(new Action("7,ALTER,,,,VITA,AMOUNT.265,PC.15,,97"));
-  Action* special = new Action("8,ALTER,,,,VITA,PC.25,AMOUNT.50,,98");
+  // //Action Testing
+  // std::vector<Action*> actions;
+  // std::vector<float> chances = {0.50, 0.40, 0.12, 0.46};
+  // actions.push_back(new Action("1,ALTER,,,,THAG,PC.50,AMOUNT.15,,95"));
+  // actions.push_back(new Action("2,ALTER,,PHYSICAL,PHYSICAL.THERMAL,VITA,AMOUNT.50,AMOUNT.10,,95"));
+  // actions.push_back(new Action("3,INFLICT,2.7,,,POISON,,,,75"));
+  // actions.push_back(new Action("4,REVIVE,,,,VITA,PC.25,AMOUNT.50,,100"));
+  // actions.push_back(new Action("5,INFLICT,3.5,,,BURN,,,,85"));
+  // actions.push_back(new Action("6,ALTER,,,,VITA,AMOUNT.100,PC.10,,95"));
+  // actions.push_back(new Action("7,ALTER,,,,VITA,AMOUNT.210,PC.15,,96"));
+  // actions.push_back(new Action("7,ALTER,,,,VITA,AMOUNT.265,PC.15,,97"));
+  // Action* special = new Action("8,ALTER,,,,VITA,PC.25,AMOUNT.50,,98");
   
-  //actions[3]->print();
+  // //actions[3]->print();
 
-  // Skill Testing
-  std::vector<Skill*> skills;
-  std::vector<Skill*> other_skills;
+  // // Skill Testing
+  // std::vector<Skill*> skills;
+  // std::vector<Skill*> other_skills;
 
-  Skill* normal_attack = new Skill(13, "User",ActionScope::ONE_ENEMY,actions[0],0.75,12);
-  Skill* medium_attack = new Skill(14, "Ally Not User",ActionScope::ONE_ALLY_NOT_USER,actions[5],0.85,75);
-  Skill* hard_attack   = new Skill(15, "Hard Attack",ActionScope::TWO_ENEMIES,actions[6],0.90,188);
-  Skill* ultra_attack  = new Skill(16, "Ultra Attack",ActionScope::ALL_ENEMIES,actions[7],0.91,399);
-  Skill* one_ally_ko   = new Skill(17, "One Ally Ko",ActionScope::ONE_ALLY_KO,actions[7],0.91,450);
-  Skill* all_allies_ko = new Skill(18, "All Allies Ko",ActionScope::ALL_ALLIES_KO,actions[7],0.92,450);
-  Skill* one_party     = new Skill(19, "One Party",ActionScope::ONE_PARTY,actions[7],0.91,100);
-  Skill* all_targets   = new Skill(20, "All Targets",ActionScope::ALL_TARGETS,actions[7],0.92,2);
-  Skill* not_user      = new Skill(21, "Not User",ActionScope::NOT_USER,actions[7],0.92,45);
-  Skill* all_not_user  = new Skill(22, "All Not User",ActionScope::ALL_NOT_USER,actions[7],0.93,36);
-  normal_attack->addActions(actions, chances);
+  // Skill* normal_attack = new Skill(13, "User",ActionScope::ONE_ENEMY,actions[0],0.75,12);
+  // Skill* medium_attack = new Skill(14, "Ally Not User",ActionScope::ONE_ALLY_NOT_USER,actions[5],0.85,75);
+  // Skill* hard_attack   = new Skill(15, "Hard Attack",ActionScope::TWO_ENEMIES,actions[6],0.90,188);
+  // Skill* ultra_attack  = new Skill(16, "Ultra Attack",ActionScope::ALL_ENEMIES,actions[7],0.91,399);
+  // Skill* one_ally_ko   = new Skill(17, "One Ally Ko",ActionScope::ONE_ALLY_KO,actions[7],0.91,450);
+  // Skill* all_allies_ko = new Skill(18, "All Allies Ko",ActionScope::ALL_ALLIES_KO,actions[7],0.92,450);
+  // Skill* one_party     = new Skill(19, "One Party",ActionScope::ONE_PARTY,actions[7],0.91,100);
+  // Skill* all_targets   = new Skill(20, "All Targets",ActionScope::ALL_TARGETS,actions[7],0.92,2);
+  // Skill* not_user      = new Skill(21, "Not User",ActionScope::NOT_USER,actions[7],0.92,45);
+  // Skill* all_not_user  = new Skill(22, "All Not User",ActionScope::ALL_NOT_USER,actions[7],0.93,36);
+  // normal_attack->addActions(actions, chances);
 
-  normal_attack->setValue(4);
-  medium_attack->setValue(4);
-  hard_attack->setValue(5);
-  ultra_attack->setValue(5);
-  one_ally_ko->setValue(1);
-  all_allies_ko->setValue(1);
-  one_party->setValue(2);
-  all_targets->setValue(2);
-  not_user->setValue(2);
-  all_not_user->setValue(2);
+  // normal_attack->setValue(4);
+  // medium_attack->setValue(4);
+  // hard_attack->setValue(5);
+  // ultra_attack->setValue(5);
+  // one_ally_ko->setValue(1);
+  // all_allies_ko->setValue(1);
+  // one_party->setValue(2);
+  // all_targets->setValue(2);
+  // not_user->setValue(2);
+  // all_not_user->setValue(2);
 
-  new_potion->setUseSkill(medium_attack);
-  new_bubby_bomb->setUseSkill(normal_attack);
+  // new_potion->setUseSkill(medium_attack);
+  // new_bubby_bomb->setUseSkill(normal_attack);
 
-  skills.push_back(normal_attack);
-  skills.push_back(new Skill(400, "Super Attack",ActionScope::ONE_ALLY,special,0.65,6));
-  skills.push_back(new Skill(3, "Poison Attack",ActionScope::TWO_ALLIES,actions[1],0.79,16));
-  skills.push_back(new Skill(35, "Crappy Attack",ActionScope::ALL_ALLIES,special,1.00,26));
-  skills[0]->setValue(2);
-  skills[1]->setValue(3);
-  skills[2]->setValue(4);
+  // skills.push_back(normal_attack);
+  // skills.push_back(new Skill(400, "Super Attack",ActionScope::ONE_ALLY,special,0.65,6));
+  // skills.push_back(new Skill(3, "Poison Attack",ActionScope::TWO_ALLIES,actions[1],0.79,16));
+  // skills.push_back(new Skill(35, "Crappy Attack",ActionScope::ALL_ALLIES,special,1.00,26));
+  // skills[0]->setValue(2);
+  // skills[1]->setValue(3);
+  // skills[2]->setValue(4);
 
-  other_skills.push_back(medium_attack);
-  other_skills.push_back(hard_attack);
-  other_skills.push_back(ultra_attack);
-  other_skills.push_back(one_ally_ko);
-  other_skills.push_back(all_allies_ko);
-  other_skills.push_back(one_party);
-  other_skills.push_back(all_targets);
-  other_skills.push_back(not_user);
-  other_skills.push_back(all_not_user);
+  // other_skills.push_back(medium_attack);
+  // other_skills.push_back(hard_attack);
+  // other_skills.push_back(ultra_attack);
+  // other_skills.push_back(one_ally_ko);
+  // other_skills.push_back(all_allies_ko);
+  // other_skills.push_back(one_party);
+  // other_skills.push_back(all_targets);
+  // other_skills.push_back(not_user);
+  // other_skills.push_back(all_not_user);
 
-  std::vector<uint32_t> levels;
-  std::vector<uint32_t> other_levels;
+  // std::vector<uint32_t> levels;
+  // std::vector<uint32_t> other_levels;
 
-  for (auto it = begin(skills); it != end(skills); ++it)
-    levels.push_back(1);
+  // for (auto it = begin(skills); it != end(skills); ++it)
+  //   levels.push_back(1);
 
-  for (auto it = begin(other_skills); it != end(other_skills); ++it)
-    other_levels.push_back(1);
+  // for (auto it = begin(other_skills); it != end(other_skills); ++it)
+  //   other_levels.push_back(1);
 
-  // SkillSet Testing
-  SkillSet* scion_skills    = new SkillSet(skills, levels);
-  SkillSet* hex_skills      = scion_skills;
-  SkillSet* other_skill_set = new SkillSet(other_skills, other_levels);
+  // // SkillSet Testing
+  // SkillSet* scion_skills    = new SkillSet(skills, levels);
+  // SkillSet* hex_skills      = scion_skills;
+  // SkillSet* other_skill_set = new SkillSet(other_skills, other_levels);
 
-  // Category Testing
-  Category* blood_scion = new Category("Blood Scion", "Scion", min_scion_set, 
-                                       max_scion_set, scion_skills);
-  blood_scion->setDescription("User of blood magicks.");
-  blood_scion->setFlag(CategoryState::E_STAFF, true);
+  // // Category Testing
+  // Category* blood_scion = new Category("Blood Scion", "Scion", min_scion_set, 
+  //                                      max_scion_set, scion_skills);
+  // blood_scion->setDescription("User of blood magicks.");
+  // blood_scion->setFlag(CategoryState::E_STAFF, true);
 
-  Category* bear = new Category("Bear", "Bears", min_hex_set, 
-                                    max_hex_set, hex_skills);
-  Category* human = new Category("Human", "Humans", min_human_set, max_human_set, other_skill_set);
-  bear->setDescription("Has a right to bear arms.");
+  // Category* bear = new Category("Bear", "Bears", min_hex_set, 
+  //                                   max_hex_set, hex_skills);
+  // Category* human = new Category("Human", "Humans", min_human_set, max_human_set, other_skill_set);
+  // bear->setDescription("Has a right to bear arms.");
 
-  // Person Testing
-  Person* berran          = new Person(455, "Berran", blood_scion, bear);
-  Person* arcadius        = new Person(456, "Arcadius", blood_scion, human);
-  Person* malgidus        = new Person(457, "Malgidus", blood_scion, bear);
-  Person* cloud_dude      = new Person(555, "Cloud Dude", blood_scion, bear);
-  Person* ball_man        = new Person(556, "Ball Man", blood_scion, bear);
-  Person* thruster_barrow = new Person(557, "Thruster Barrow", blood_scion, human);
+  // // Person Testing
+  // Person* berran          = new Person(455, "Berran", blood_scion, bear);
+  // Person* arcadius        = new Person(456, "Arcadius", blood_scion, human);
+  // Person* malgidus        = new Person(457, "Malgidus", blood_scion, bear);
+  // Person* cloud_dude      = new Person(555, "Cloud Dude", blood_scion, bear);
+  // Person* ball_man        = new Person(556, "Ball Man", blood_scion, bear);
+  // Person* thruster_barrow = new Person(557, "Thruster Barrow", blood_scion, human);
 
-  Party* allies = new Party(berran, PartyType::SLEUTH, 5, nullptr);
-  Party* foes   = new Party(cloud_dude, PartyType::REGULAR_FOE, 5, nullptr);
+  // Party* allies = new Party(berran, PartyType::SLEUTH, 5, nullptr);
+  // Party* foes   = new Party(cloud_dude, PartyType::REGULAR_FOE, 5, nullptr);
 
-  allies->addMember(arcadius);
-  allies->addMember(malgidus);
+  // allies->addMember(arcadius);
+  // allies->addMember(malgidus);
 
-  foes->addMember(ball_man);
-  foes->addMember(thruster_barrow);
+  // foes->addMember(ball_man);
+  // foes->addMember(thruster_barrow);
 
-  // AIModuleTester ai_module_tester;
+  // // AIModuleTester ai_module_tester;
 
-  AIModule* cloud_dude_module = new AIModule();
-  cloud_dude_module->setParent(cloud_dude);
-  cloud_dude->setAI(cloud_dude_module);
+  // AIModule* cloud_dude_module = new AIModule();
+  // cloud_dude_module->setParent(cloud_dude);
+  // cloud_dude->setAI(cloud_dude_module);
 
-  AIModule* ball_man_module = new AIModule();
-  ball_man_module->setParent(ball_man);
-  ball_man->setAI(ball_man_module);
+  // AIModule* ball_man_module = new AIModule();
+  // ball_man_module->setParent(ball_man);
+  // ball_man->setAI(ball_man_module);
 
-  AIModule* thruster_barrow_module = new AIModule();
-  thruster_barrow_module->setParent(thruster_barrow);
-  thruster_barrow->setAI(thruster_barrow_module);
+  // AIModule* thruster_barrow_module = new AIModule();
+  // thruster_barrow_module->setParent(thruster_barrow);
+  // thruster_barrow->setAI(thruster_barrow_module);
 
-  // Inventory Testing
-  Inventory* friends_pouch = new Inventory(1006, "Test Friends Pouch");
-  Inventory* foes_pouch    = new Inventory(1007, "Test Foes Pouch");
+  // // Inventory Testing
+  // Inventory* friends_pouch = new Inventory(1006, "Test Friends Pouch");
+  // Inventory* foes_pouch    = new Inventory(1007, "Test Foes Pouch");
 
-  friends_pouch->setFlag(InvState::PLAYER_STORAGE, true);
-  friends_pouch->setFlag(InvState::SHOP_STORAGE, false);
-  foes_pouch->setFlag(InvState::SHOP_STORAGE, false);
+  // friends_pouch->setFlag(InvState::PLAYER_STORAGE, true);
+  // friends_pouch->setFlag(InvState::SHOP_STORAGE, false);
+  // foes_pouch->setFlag(InvState::SHOP_STORAGE, false);
 
-  friends_pouch->add(new_potion, 2);
-  friends_pouch->add(new_bubby_bomb, 3);
+  // friends_pouch->add(new_potion, 2);
+  // friends_pouch->add(new_bubby_bomb, 3);
 
-  foes_pouch->add(new_potion, 1);
-  foes_pouch->add(new_bubby_bomb, 1);
+  // foes_pouch->add(new_potion, 1);
+  // foes_pouch->add(new_bubby_bomb, 1);
 
-  allies->setInventory(friends_pouch);
-  foes->setInventory(foes_pouch);
+  // allies->setInventory(friends_pouch);
+  // foes->setInventory(foes_pouch);
 
-  for (uint32_t i = 0; i < allies->getSize(); i++)
-    allies->getMember(i)->battlePrep();
-  for (uint32_t i = 0; i < foes->getSize(); i++)
-    foes->getMember(i)->battlePrep();
+  // for (uint32_t i = 0; i < allies->getSize(); i++)
+  //   allies->getMember(i)->battlePrep();
+  // for (uint32_t i = 0; i < foes->getSize(); i++)
+  //   foes->getMember(i)->battlePrep();
 
-  // ai_module_tester.aiActionTypeTests(0, cloud_dude_module, 
-  //                                    foes->getInventory()->getBattleItems());
+  // // ai_module_tester.aiActionTypeTests(0, cloud_dude_module, 
+  // //                                    foes->getInventory()->getBattleItems());
 
-  game_battle = new Battle(game_config, allies, foes);
-
-  } // end enable test
-  else
-  {
-    std::cout << "hey kevin if u see this u r kewl <3\n";
-  }
+  // game_battle = new Battle(game_config, allies, foes);
 }
 
 /* Set up the map - old map needs to be deleted prior to calling */

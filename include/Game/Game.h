@@ -70,6 +70,9 @@ private:
   /* The game starting inventory */
   Inventory* game_inventory; //TODO: Make part of player?
 
+  /* List of all actions */
+  std::vector<Action*> action_list;
+
   /* List of all available items in the game */
   std::vector<Item*> item_list;
   
@@ -96,6 +99,9 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Constructs the vector of all actions */
+  bool buildActions(const std::string &path, bool encryption = false);
+
   /* A give item event, based on an ID and count (triggered from stored event */
   bool eventGiveItem(int id, int count);
   
@@ -117,7 +123,7 @@ private:
   /* Polls events running from the event handler. Triggered from other places
    * in the game */
   void pollEvents();
-  
+
   /* Set up the battle */
   void setupBattle();
 

@@ -572,23 +572,15 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
   base_targ_def  = phys_def_val + elm1_def_val + elm2_def_val + luck_def_val;
   base_targ_def *= kTARG_DEF_MODIFIER;
 
-  auto base_damage = base_user_pow - base_targ_def;
-  base_damage     *= crit_factor;
-
-// #ifdef UDEBUG
-//   std::cout << "Base damage calculation: " << base_damage << std::endl;
-// #endif
-
   /* Addition of the power of the action */
-  auto action_damage = curr_action->getBase();
+  auto action_power = curr_action->getBase();
 
+  /* If the action power is a percentage, add a pc of total user power */
   if (curr_action->actionFlag(ActionFlags::BASE_PC))
   {
-    auto base_pc = static_cast<float>(action_damage) / 100;
-    action_damage = base_pc * temp_user_stats.getStat(Attribute::VITA);
+    auto base_pc = static_cast<float>(action_power) / 100;
+    action_power = base_pc * base_user_pow;
   }
-
-  base_damage += action_damage;
 
   /* Addition of the variance of the action */
   auto base_var   = curr_action->getVariance();
@@ -597,18 +589,24 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
   if (curr_action->actionFlag(ActionFlags::VARI_PC))
   {
     auto var_pc = static_cast<float>(base_var) / 100;
-    var_val   = var_pc * base_damage;
+    var_val   = var_pc * action_power;
   }
   else
   {
     var_val = base_var;
   }
 
-  base_damage = Helpers::randU(base_damage - var_val, base_damage + var_val);
-  
-// #ifdef UDEBUG
-//   std::cout << "Final damage calculation: " << base_damage << std::endl;
-// #endif
+  action_power = Helpers::randU(action_power - var_val, action_power + var_val);
+
+  auto base_damage = base_user_pow + action_power - base_targ_def;
+  base_damage     *= crit_factor;
+
+#ifdef UDEBUG
+  std::cout << "Base user power: " << base_user_pow << std::endl;
+  std::cout << "Action power to add: " << action_power << std::endl;
+  std::cout << "Base user def: " << base_targ_def << std::endl;
+  std::cout << "Base damage after crit: " << base_damage << std::endl;
+#endif
 
   return base_damage;
 }

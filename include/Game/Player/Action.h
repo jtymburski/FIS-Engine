@@ -13,10 +13,11 @@
 *
 * [1]: The Action is parsed from a string with convention as follows:
 *
-* [ID],[DAMAGE/ALTER/INFLICT/RELIEVE/ASSIGN],[ATTRIBUTE/AILMENT],[MIN].[MAX],
+* [ID],[DAMAGE/ALTER/INFLICT/RELIEVE/ASSIGN/REVIVE/ABSORB],[MIN].[MAX],
 * [IGNORE ATK ELEMENT 1].[IGNORE ATK ELEMENT 2]...,
 * [IGNORE DEF ELEMENT 1].[IGNORE DEF ELEMENT 2]...,
-* [AMOUNT/PC].[BASE],[AMOUNT/PC].[VARIANCE]
+* [TARGET'S ATTR/AILMENT],[AMOUNT/PC].[BASE],[AMOUNT/PC].[VARIANCE],
+* [USER'S ATTR],[CHANCE]
 *
 * Where:
 *   - ID - the unique ID that represents the action
@@ -43,21 +44,6 @@
 *
 * [2]: Example actions and their intended effects:
 *
-* 1,ALTER,THAG,,,,AMOUNT.50,AMOUNT.15
-* will alter Thermal Aggression of target by 50 +/- 15
-*
-* 1,ALTER,VITA,,PHYSICAL,PHYSICAL.THERMAL,100,AMOUNT.50,AMOUNT.10
-* will damage target ignoring user's phys. atk and target's phys. and ther. def
-* at 50 +/- 15 points
-*
-* 1,INFLICT,POISON,2.7,,,,,
-* will inflict poison lasting 2-7 turns
-*
-* 1,RELIEVE,CURSE,,,,,,
-* will relieve curse
-*
-* 1,REVIVE,,,,,PC.25,AMOUNT.50
-* will revive a KO'd target with 25% +/- 15 VITA
 *
 * TODO
 * ----
@@ -73,11 +59,13 @@
 #include "EnumFlags.h"
 #include "Helpers.h"
 
+class AttributeSet;
+
 /* ActionFlags for storing the type of Action */
 ENUM_FLAGS(ActionFlags)
 enum class ActionFlags
 {
-  DAMAGE   = 1 << 0,
+  DAMAGE   = 1 << 0, /* DAMAGE the VITA of the target */
   ALTER    = 1 << 1, /* ALTER an attribute by a given value */
   INFLICT  = 1 << 2, /* INFLICT a given ailment for a duration */
   RELIEVE  = 1 << 3, /* RELIEVE a given ailment */
@@ -188,7 +176,7 @@ private:
  *============================================================================*/
 public:
   /* Prints out the state of the current Action */
-  void print();
+  void print(const bool &print_action = true, const bool &print_ignore = false);
 
   /* Evaluates a given action flag */
   bool actionFlag(ActionFlags test_flag);
