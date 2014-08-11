@@ -131,6 +131,8 @@ bool Game::buildSkills(const std::string &file, bool encryption)
 {
   auto done    = false;
   auto success = true;
+
+  /* Build each file in the directory */
   FileHandler fh(file, false, false, encryption);
 
   success &= fh.start();

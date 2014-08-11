@@ -98,6 +98,19 @@ enum class CombatState
   FINAL_BOSS       = 1 << 11
 };
 
+ENUM_FLAGS(IgnoreState)
+enum class IgnoreState
+{
+  IGNORE_PHYS_ATK = 1 << 0,
+  IGNORE_PHYS_DEF = 1 << 1,
+  IGNORE_PRIM_ATK = 1 << 2,
+  IGNORE_PRIM_DEF = 1 << 3,
+  IGNORE_SECD_ATK = 1 << 4,
+  IGNORE_SECD_DEF = 1 << 5,
+  IGNORE_LUCK_ATK = 1 << 6,
+  IGNORE_LUCK_DEF = 1 << 7
+};
+
 /* Enumerated values for turn mode */
 enum class TurnMode
 {
@@ -171,6 +184,7 @@ private:
 
   /* CombatState flag set */
   CombatState flags;
+  IgnoreState ignore_flags;
 
   /* Pointers to the battling parties */
   Party* friends;
@@ -303,6 +317,9 @@ private:
 
   /* Calculates the Crit Factor to be applied to the damage */
   float calcCritFactor();
+  
+  /* Calculate the current ignore state flags */
+  bool calcIgnoreState();
 
   /* */
   int16_t calcLevelDifference();
@@ -442,6 +459,9 @@ public:
   /* Return the value of a given CombatState flag */
   bool getBattleFlag(const CombatState &test_flag);
 
+  /* Return the value of a given IgnoreState flag */
+  bool getIgnoreFlag(const IgnoreState &test_flag);
+
   /* Returns the friends pointer of the Battle */
   Party* getFriends();
 
@@ -490,10 +510,10 @@ public:
   /* Build a vector of person pointers from a vector of person indexes */
   std::vector<Person*> getPersonsFromIndexes(std::vector<int32_t> indexes);
 
-  /* */
+  /* Build a vector of person indexes from a vector of person pointers */
   std::vector<int32_t> getIndexesOfPersons(std::vector<Person*> persons);
 
-  /* */
+  /* Get the index of a person from its pointer */
   int32_t getIndexOfPerson(Person* check_person);
 
   /* Obtains a vector of battle member indexes for a given user and scope */
@@ -504,6 +524,9 @@ public:
 
   /* Assign a value to a CombatState flag */
   void setBattleFlag(CombatState flags, const bool &set_value = true);
+
+  /* Assign a value to an IgnoreState flag */
+  void setIgnoreFlag(IgnoreState flags, const bool &set_value = true);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS

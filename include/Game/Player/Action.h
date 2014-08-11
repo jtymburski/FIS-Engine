@@ -87,7 +87,8 @@ enum class IgnoreFlags
   PRIMAL     = 1 << 3,
   CHARGED    = 1 << 4,
   CYBERNETIC = 1 << 5,
-  NIHIL      = 1 << 6
+  NIHIL      = 1 << 6,
+  LUCK       = 1 << 7
 };
 
 class Action

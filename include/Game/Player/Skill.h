@@ -24,6 +24,8 @@
 #include <algorithm> /* std::sort */
 
 #include "Game/Player/Action.h"
+#include "FileHandler.h"
+#include "XmlData.h"
 #include "Sound.h"
 #include "Sprite.h"
 
@@ -131,6 +133,9 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Add effect data */
+  bool addEffectData(XmlData);
+
   /* Determines the Skill classification based on contained effects */
   void flagSetup();
 
@@ -146,6 +151,10 @@ public:
 
   /* Determines if the Skill is valid */
   bool isValid();
+
+  /* Load the skill from file */
+  // bool loadSkill(std::string file, SDL_RENDERER* renderer,
+  //     bool encryption = false);
 
   /* Prints out the information about the current Skill state */
   void print();

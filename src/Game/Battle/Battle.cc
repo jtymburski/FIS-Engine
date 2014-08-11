@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Class Name: Battle [Implementation]
+Class Name: Battle [Implementation]
 * Date Created: February 23rd, 2014
 * Inheritance: None
 * Description:
@@ -512,6 +512,13 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
   int32_t elm2_def_val  = 0;
   int32_t luck_pow_val  = 0;
   int32_t luck_def_val  = 0;
+
+  bool ignore_phys_atk = false;
+  bool ignore_phys_def = false;
+  auto ignore_prim_atk = false;
+  auto ignore_prim_def = false;
+  auto ignore_secd_atk = false;
+  auto ignroe_secd_def = false;
   
   calcElementalMods();
 
@@ -526,7 +533,7 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
   if (curr_skill->getPrimary() != Element::NONE)
   {
     if (curr_user->getPrimary() == curr_skill->getPrimary() ||
-       curr_user->getPrimary() == curr_skill->getSecondary())
+        curr_user->getPrimary() == curr_skill->getSecondary())
     {
       elm1_pow_val  = temp_user_stats.getStat(prim_off);
       elm1_pow_val *= kOFF_PRIM_ELM_MATCH_MODIFIER;
@@ -731,6 +738,106 @@ float Battle::calcCritFactor()
   return 1.00;
 }
 
+bool Battle::calcIgnoreState()
+{
+  auto success = false;
+
+  if (curr_action != nullptr && curr_skill != nullptr)
+  {
+    /* Offensive Action */
+    if (curr_skill->getFlag(SkillFlags::OFFENSIVE) ||
+        curr_skill->getFlag(SkillFlags::DEFENSIVE))
+    {
+      auto IG_PHYS_ATK = IgnoreState::IGNORE_PHYS_ATK;
+      auto IG_PHYS_DEF = IgnoreState::IGNORE_PHYS_DEF;
+      auto IG_PRIM_ATK = IgnoreState::IGNORE_PRIM_ATK;
+      auto IG_PRIM_DEF = IgnoreState::IGNORE_PRIM_DEF;
+      auto IG_SECD_ATK = IgnoreState::IGNORE_SECD_ATK;
+      auto IG_SECD_DEF = IgnoreState::IGNORE_SECD_DEF;
+      auto IG_LUCK_ATK = IgnoreState::IGNORE_LUCK_ATK;
+      auto IG_LUCK_DEF = IgnoreState::IGNORE_LUCK_DEF;
+
+      if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
+      {
+        IG_PHYS_ATK = IgnoreState::IGNORE_PHYS_DEF;
+        IG_PHYS_DEF = IgnoreState::IGNORE_PHYS_ATK;
+        IG_PRIM_ATK = IgnoreState::IGNORE_PRIM_DEF;
+        IG_PRIM_DEF = IgnoreState::IGNORE_PRIM_ATK;
+        IG_SECD_ATK = IgnoreState::IGNORE_SECD_DEF;
+        IG_SECD_DEF = IgnoreState::IGNORE_SECD_ATK;
+        IG_LUCK_DEF = IgnoreState::IGNORE_LUCK_ATK;
+        IG_LUCK_ATK = IgnoreState::IGNORE_LUCK_DEF;
+      }
+
+      if (curr_action->atkFlag(IgnoreFlags::PHYSICAL))
+        setIgnoreFlag(IgnoreState::IGNORE_PHYS_ATK);
+      if (curr_action->defFlag(IgnoreFlags::PHYSICAL))
+        setIgnoreFlag(IgnoreState::IGNORE_PHYS_DEF);
+
+      if (curr_action->atkFlag(IgnoreFlags::LUCK))
+        setIgnoreFlag(IgnoreState::IGNORE_LUCK_ATK);
+      if (curr_action->defFlag(IgnoreFlags::LUCK))
+        setIgnoreFlag(IgnoreState::IGNORE_LUCK_DEF);
+
+      if (prim_off == Attribute::THAG)
+        setIgnoreFlag(IG_PRIM_ATK, curr_action->atkFlag(IgnoreFlags::THERMAL));
+      else if (prim_off == Attribute::POAG)
+        setIgnoreFlag(IG_PRIM_ATK, curr_action->atkFlag(IgnoreFlags::POLAR));
+      else if (prim_off == Attribute::PRAG)
+        setIgnoreFlag(IG_PRIM_ATK, curr_action->atkFlag(IgnoreFlags::PRIMAL));
+      else if (prim_off == Attribute::CHAG)
+        setIgnoreFlag(IG_PRIM_ATK, curr_action->atkFlag(IgnoreFlags::CHARGED));
+      else if (prim_off == Attribute::CYAG)
+       setIgnoreFlag(IG_PRIM_ATK,curr_action->atkFlag(IgnoreFlags::CYBERNETIC));
+      else if (prim_off == Attribute::NIAG)
+        setIgnoreFlag(IG_PRIM_ATK, curr_action->atkFlag(IgnoreFlags::NIHIL));
+
+      if (prim_def == Attribute::THFD)
+        setIgnoreFlag(IG_PRIM_DEF, curr_action->defFlag(IgnoreFlags::THERMAL));
+      else if (prim_def == Attribute::POFD)
+        setIgnoreFlag(IG_PRIM_DEF, curr_action->defFlag(IgnoreFlags::POLAR));
+      else if (prim_def == Attribute::PRFD)
+        setIgnoreFlag(IG_PRIM_DEF, curr_action->defFlag(IgnoreFlags::PRIMAL));
+      else if (prim_def == Attribute::CHFD)
+        setIgnoreFlag(IG_PRIM_DEF, curr_action->defFlag(IgnoreFlags::CHARGED));
+      else if (prim_def == Attribute::CYFD)
+       setIgnoreFlag(IG_PRIM_DEF,curr_action->defFlag(IgnoreFlags::CYBERNETIC));
+      else if (prim_def == Attribute::NIFD)
+        setIgnoreFlag(IG_PRIM_DEF, curr_action->defFlag(IgnoreFlags::NIHIL));
+
+      if (secd_off == Attribute::THAG)
+        setIgnoreFlag(IG_SECD_ATK, curr_action->atkFlag(IgnoreFlags::THERMAL));
+      else if (secd_off == Attribute::POAG)
+        setIgnoreFlag(IG_SECD_ATK, curr_action->atkFlag(IgnoreFlags::POLAR));
+      else if (secd_def == Attribute::PRAG)
+        setIgnoreFlag(IG_SECD_ATK, curr_action->atkFlag(IgnoreFlags::PRIMAL));
+      else if (secd_def == Attribute::CHAG)
+        setIgnoreFlag(IG_SECD_ATK, curr_action->atkFlag(IgnoreFlags::CHARGED));
+      else if (secd_off == Attribute::CYAG)
+       setIgnoreFlag(IG_SECD_ATK,curr_action->atkFlag(IgnoreFlags::CYBERNETIC));
+      else if (secd_off == Attribute::NIAG)
+        setIgnoreFlag(IG_SECD_ATK, curr_action->atkFlag(IgnoreFlags::NIHIL));
+
+      if (secd_def == Attribute::THFD)
+        setIgnoreFlag(IG_SECD_DEF, curr_action->defFlag(IgnoreFlags::THERMAL));
+      else if (secd_def == Attribute::POFD)
+        setIgnoreFlag(IG_SECD_DEF, curr_action->defFlag(IgnoreFlags::POLAR));
+      else if (secd_def == Attribute::PRFD)
+        setIgnoreFlag(IG_SECD_DEF, curr_action->defFlag(IgnoreFlags::PRIMAL));
+      else if (secd_def == Attribute::CHFD)
+        setIgnoreFlag(IG_SECD_DEF, curr_action->defFlag(IgnoreFlags::CHARGED));
+      else if (secd_def == Attribute::CYFD)
+       setIgnoreFlag(IG_SECD_DEF,curr_action->defFlag(IgnoreFlags::CYBERNETIC));
+      else if (secd_def == Attribute::NIAG)
+        setIgnoreFlag(IG_SECD_DEF, curr_action->defFlag(IgnoreFlags::NIHIL));
+    }
+
+    success = true;
+  }
+
+  return success;
+}
+
 /*
  * Description:
  *
@@ -813,6 +920,8 @@ void Battle::clearActionVariables()
   curr_action = nullptr;
   curr_skill  = nullptr;
   curr_item   = nullptr;
+
+  ignore_flags = static_cast<IgnoreState>(0);
 
   p_target_index = 0;
 }
@@ -2258,6 +2367,17 @@ bool Battle::getBattleFlag(const CombatState &test_flag)
 }
 
 /*
+ * Description: Return the value of a given IgnoreState flag
+ *
+ * Inputs:
+ * Outputs:
+ */
+bool Battle::getIgnoreFlag(const IgnoreState &test_flag)
+{
+  return static_cast<bool>((ignore_flags & test_flag) == test_flag);
+}
+
+/*
  * Description: Returns the friends pointer of the Battle
  *
  * Inputs:
@@ -2652,10 +2772,20 @@ bool Battle::setConfiguration(Options* const new_config)
  * Inputs:
  * Outputs:
  */
-
 void Battle::setBattleFlag(CombatState flag, const bool &set_value)
 {
   (set_value) ? (flags |= flag) : (flags &= ~flag);
+}
+
+/*
+ * Description: Assign a value to an IgnoreState flag
+ *
+ * Inputs:
+ * Outputs:
+ */
+void Battle::setIgnoreFlag(IgnoreState flag, const bool &set_value)
+{
+  (set_value) ? (ignore_flags |= flag) : (ignore_flags &= ~flag);
 }
 
 /*=============================================================================
