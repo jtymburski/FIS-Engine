@@ -80,9 +80,16 @@ Equipment::~Equipment()
  *         size_y - the y-dimension of signature to be created.
  * Output: none
  */
-void Equipment::createSig(const size_t size_x, const size_t size_y)
+bool Equipment::createSig(const size_t size_x, const size_t size_y)
 {
-  equip_signature = new Signature(size_x, size_y);
+  if (equip_signature == nullptr)
+  {
+    equip_signature = new Signature(size_x, size_y);
+
+    return true;
+  }
+
+  return false;
 }
 
 /*=============================================================================

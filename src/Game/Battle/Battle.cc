@@ -513,13 +513,8 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
   int32_t luck_pow_val  = 0;
   int32_t luck_def_val  = 0;
 
-  bool ignore_phys_atk = false;
-  bool ignore_phys_def = false;
-  auto ignore_prim_atk = false;
-  auto ignore_prim_def = false;
-  auto ignore_secd_atk = false;
-  auto ignroe_secd_def = false;
-  
+
+  calcIgnoreState();
   calcElementalMods();
 
   /* Always calculate physical power into the equation */
@@ -754,8 +749,9 @@ bool Battle::calcIgnoreState()
       auto IG_PRIM_DEF = IgnoreState::IGNORE_PRIM_DEF;
       auto IG_SECD_ATK = IgnoreState::IGNORE_SECD_ATK;
       auto IG_SECD_DEF = IgnoreState::IGNORE_SECD_DEF;
-      auto IG_LUCK_ATK = IgnoreState::IGNORE_LUCK_ATK;
-      auto IG_LUCK_DEF = IgnoreState::IGNORE_LUCK_DEF;
+      // TODO: Luck ignore flags in action [08-12-14]
+      // auto IG_LUCK_ATK = IgnoreState::IGNORE_LUCK_ATK;
+      // auto IG_LUCK_DEF = IgnoreState::IGNORE_LUCK_DEF;
 
       if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
       {
@@ -765,14 +761,15 @@ bool Battle::calcIgnoreState()
         IG_PRIM_DEF = IgnoreState::IGNORE_PRIM_ATK;
         IG_SECD_ATK = IgnoreState::IGNORE_SECD_DEF;
         IG_SECD_DEF = IgnoreState::IGNORE_SECD_ATK;
-        IG_LUCK_DEF = IgnoreState::IGNORE_LUCK_ATK;
-        IG_LUCK_ATK = IgnoreState::IGNORE_LUCK_DEF;
+        // TODO: Luck ignore flags in action [08-12-14]
+        // IG_LUCK_DEF = IgnoreState::IGNORE_LUCK_ATK;
+        // IG_LUCK_ATK = IgnoreState::IGNORE_LUCK_DEF;
       }
 
       if (curr_action->atkFlag(IgnoreFlags::PHYSICAL))
-        setIgnoreFlag(IgnoreState::IGNORE_PHYS_ATK);
+        setIgnoreFlag(IG_PHYS_ATK);
       if (curr_action->defFlag(IgnoreFlags::PHYSICAL))
-        setIgnoreFlag(IgnoreState::IGNORE_PHYS_DEF);
+        setIgnoreFlag(IG_PHYS_DEF);
 
       if (curr_action->atkFlag(IgnoreFlags::LUCK))
         setIgnoreFlag(IgnoreState::IGNORE_LUCK_ATK);

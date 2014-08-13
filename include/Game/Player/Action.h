@@ -21,7 +21,7 @@
 *
 * Where:
 *   - ID - the unique ID that represents the action
-*   - ALTER/INFLICT/RELIEVE/ASSIGN/REVIVE keywords - see ActionFlags enum
+*   - DAMAGE/ALTER/INFLICT/RELIEVE/ASSIGN/REVIVE keywords - see ActionFlags enum
 *   - ATTRIBUTE/AILMENT - the affected attribute or ailment by the key words
 *   - MIN.MAX - the duration an inflicted ailment will persist
 *   - IGNORE ATK ELMENTs - a list of valid elements which when set, will not

@@ -33,18 +33,21 @@ const uint8_t Party::kMAX_MEMBERS_FOES{10};
  *
  * Inputs:
  */
-Party::Party(Person* const main, const PartyType &type, const uint8_t &max,
-             Inventory* const inv)
+Party::Party(const int32_t &my_id, Person* const main, const PartyType &type, 
+             const uint8_t &max, Inventory* const inv)
+    : id{my_id}
 {
   loadDefaults();
 
   if (main == nullptr)
-    std::cerr << "Error: Creating party with null main member\n";
-
-  members.push_back(main);
-  party_type = type;
-  setMaxSize(max);
-  pouch = inv;
+    std::cerr << "[Error] Creating party with null main member" << std::endl;
+  else
+  {
+    members.push_back(main);
+    party_type = type;
+    setMaxSize(max);
+    pouch = inv;
+  }
 }
 
 /*
@@ -52,8 +55,9 @@ Party::Party(Person* const main, const PartyType &type, const uint8_t &max,
  *
  * Inputs:
  */
-Party::Party(std::vector<Person*> members, const uint8_t &max, 
-             const PartyType &type, Inventory* const inv)
+Party::Party(const int32_t &my_id, std::vector<Person*> members, 
+             const uint8_t &max, const PartyType &type, Inventory* const inv)
+    : id{my_id}
 {
   loadDefaults();
 

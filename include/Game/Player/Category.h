@@ -47,12 +47,12 @@ class Category
 {
 public:
   /* Creates an empty category with just a name */
-  Category(const std::string &name);
+  Category(const int32_t &id, const std::string &name);
 
   /* Constructs a normal category with stat values and a SkillSet */
-  Category(const std::string &name, const std::string &denonym, 
-  	       const AttributeSet &base_stats, const AttributeSet &max_stats, 
-  	       SkillSet* const skills = nullptr);
+  Category(const int32_t &id, const std::string &name, 
+           const std::string &denonym, const AttributeSet &base_stats, 
+           const AttributeSet &max_stats, SkillSet* const skills = nullptr);
 
 private:
   /* Has the attribute min and max sets been built? */
@@ -76,6 +76,9 @@ private:
 
   /* Pointer to a SkillSet which the category unlocks */
   SkillSet* const skill_set;
+
+  /* ID of the Category */
+  int32_t id;
 
   /* Vector of inflictions which the clas is immune to */
 	std::vector<Infliction> immunities;

@@ -42,11 +42,11 @@ class Party
 {
 public:
   /* Constructs a Party given a main character and a type of Party */
-  Party(Person* const main, const PartyType &type, const uint8_t &max,
-        Inventory* const inv = nullptr);
+  Party(const int32_t &my_id, Person* const main, const PartyType &type, 
+        const uint8_t &max, Inventory* const inv = nullptr);
 
   /* Constructs a Party given a vector of Person ptrs as members */
-  Party(std::vector<Person*> members, const uint8_t &max, 
+  Party(const int32_t &my_id, std::vector<Person*> members, const uint8_t &max, 
         const PartyType &type, Inventory* const inv = nullptr);
 
 private:
@@ -61,6 +61,9 @@ private:
 
   /* The type of the Party */
   PartyType party_type;
+ 
+  /* The ID of the party */
+  const int32_t id;
 
   /* The inventory for the party */
   Inventory* pouch;

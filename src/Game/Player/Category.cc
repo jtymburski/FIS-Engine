@@ -48,10 +48,13 @@ const std::vector<int> Category::kMAX_VALUES =
 /*
  * Description: Constructs a basic Category object given a string name
  *
- * Inputs: name - the name of the Category to be constructed
+ * Inputs: my_id - the unique ID of the category
+ *         name  - the unique name of the category
+ *
  */
-Category::Category(const std::string &name)
-  : base_stats{AttributeSet()}
+Category::Category(const int32_t &my_id, const std::string &name)
+  : id{my_id}
+  , base_stats{AttributeSet()}
   , top_stats{AttributeSet()}
   , description{StringDb::kDEFAULT_CAT_DESC}
   , denonym{StringDb::kDEFAULT_DENONYM}
@@ -69,16 +72,18 @@ Category::Category(const std::string &name)
  * Description: Constructs a normal Category object given starting and ending
  *              stat values.
  *
- * Inputs: name - string name of the Category
+ * Inputs: my_id - the unique ID of the Category
+ *         name - string name of the Category
  *         denoym - the denonym for the persons of the Category (ex. Bears)
  *         base_stats - the level min stats for the Category
  *         top_stats - the level max stats for the Category
  *         skills - pointer to the SkillSet the Category graints to a person
  */
-Category::Category(const std::string &name, const std::string &denonym, 
-  	               const AttributeSet &base_stats, const AttributeSet &top_stats, 
-  	               SkillSet* const skills)
-  : base_stats{base_stats}
+Category::Category(const int32_t &my_id, const std::string &name, 
+                   const std::string &denonym, const AttributeSet &base_stats, 
+                   const AttributeSet &top_stats, SkillSet* const skills)
+  : id(my_id)
+  , base_stats{base_stats}
   , top_stats{top_stats}
   , description{StringDb::kDEFAULT_CAT_DESC}
   , denonym{denonym}

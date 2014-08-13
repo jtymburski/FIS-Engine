@@ -71,7 +71,7 @@ private:
  *============================================================================*/
 private:
   /* Creates a new signature of a given size */
-  void createSig(const size_t size_x, const size_t size_y);
+  bool createSig(const size_t size_x, const size_t size_y);
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
