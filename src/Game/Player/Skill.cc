@@ -15,21 +15,20 @@
 *
 * See .h file for TODOs
 *******************************************************************************/
-
 #include "Game/Player/Skill.h"
 
-/*===============================f==============================================
+/*==============================================================================
  * CONSTANTS
  *============================================================================*/
-const uint32_t Skill::kDEFAULT_VALUE     =      1;
+const uint16_t Skill::kDEFAULT_VALUE     =      1;
 const size_t   Skill::kMAX_ACTIONS       =     10;
-const float    Skill::kMAX_CHANCE        = 100.00;
-const uint32_t Skill::kMAX_COOLDOWN      =     10;
+const float    Skill::kMAX_CHANCE        =    100;
+const uint16_t Skill::kMAX_COOLDOWN      =     10;
 const uint32_t Skill::kMAX_COST          =   5000;
 const size_t   Skill::kMAX_MESG_LENGTH   =     70;
 const size_t   Skill::kMAX_NAME_LENGTH   =     60;
 const size_t   Skill::kMAX_DESC_LENGTH   =    500;
-const uint32_t Skill::kMAX_VALUE         =     10;
+const uint16_t Skill::kMAX_VALUE         =     10;
 const int32_t  Skill::kUNSET_ID          =     -1;
 
 /*=============================================================================
@@ -43,18 +42,18 @@ const int32_t  Skill::kUNSET_ID          =     -1;
  */
 Skill::Skill()
   : animation{nullptr}
+  , chance{0}
   , cooldown{0}
   , cost{0}
   , description{0}
-  , chance{0}
   , flags{static_cast<SkillFlags>(0)}
   , id{kUNSET_ID}
+  , message{""}
   , primary{Element::NONE}
   , secondary{Element::NONE}
   , sound_effect{nullptr}
   , scope{ActionScope::NO_SCOPE}
   , thumbnail{nullptr}
-  , message{""}
   , value{0}
 {}
 
@@ -78,6 +77,7 @@ Skill::Skill(const std::string &name)
  *         scope - enumerated conditions of use for the effects of the Skill
  *         effect - pointer to an action which the Skill will do
  *         chance - float chance for the action to take place.
+ *         cost - the cost of the skill in QD
  */
 Skill::Skill(const int &id, const std::string &name, const ActionScope &scope,
 	           Action* effect, const float &chance, const uint32_t &cost)
@@ -103,6 +103,7 @@ Skill::Skill(const int &id, const std::string &name, const ActionScope &scope,
  *         scope - enumerated conditions of use for the effects of the Skill
  *         effects - vector of effects the action does
  *         chance - chance of all the effects happening
+ *         cost - the cost of the skill in QD
  */
 Skill::Skill(const int &id, const std::string &name, const ActionScope &scope, 
 	           const std::vector<Action*> &effects, 
@@ -325,6 +326,17 @@ Sprite* Skill::getAnimation()
 }
  
 /*
+ * Description: Returns the chance of an effect of a given index, if it exists
+ *
+ * Inputs: index - the index to be checked for a chance
+ * Output: float - the chance of the given effect index, or 0.
+ */
+float Skill::getChance()
+{
+  return chance;
+}
+
+/*
  * Description: Returns the cooldown of the Skill
  *
  * Inputs: none
@@ -344,17 +356,6 @@ uint32_t Skill::getCooldown()
 uint32_t Skill::getCost()
 {
   return cost;
-}
-
-/*
- * Description: Returns the chance of an effect of a given index, if it exists
- *
- * Inputs: index - the index to be checked for a chance
- * Output: float - the chance of the given effect index, or 0.
- */
-float Skill::getChance()
-{
-  return chance;
 }
 
 /*
@@ -415,6 +416,18 @@ int Skill::getID()
 {
   return id;
 }
+
+/*
+ * Description: Returns the string message
+ *
+ * Inputs: none
+ * Output: std::string - the message displayed upon Skill use
+ */
+std::string Skill::getMessage()
+{
+  return message;
+}
+
 
 /*
  * Description: Returns the string name of the Skill
@@ -483,17 +496,6 @@ Frame* Skill::getThumbnail()
 }
 
 /*
- * Description: Returns the string message
- *
- * Inputs: none
- * Output: std::string - the message displayed upon Skill use
- */
-std::string Skill::getMessage()
-{
-  return message;
-}
-
-/*
  * Description: Returns the assigned point value of the Skill
  *
  * Inputs: none
@@ -518,6 +520,31 @@ bool Skill::setAnimation(Sprite* new_animation)
 }
 
 /*
+ * Description: Assign a new chance for occuring to the skill. Return true 
+ *              if the chance is under the max_value and above zero.
+ *
+ * Inputs: new_chance - new chance for the Skill to occur
+ * Output: bool - true if the chance was assigned without altering.
+ */
+bool Skill::setChance(const float &new_chance)
+{
+  if (new_chance <= kMAX_CHANCE && new_chance > 0)
+  {
+    chance = new_chance;
+
+    return true;
+  }
+  else if (new_chance > 0)
+  {
+    chance = kMAX_CHANCE;
+  }
+
+  chance = 0;
+
+  return false;
+}
+
+/*
  * Description: Assigns a new cooldown to the Skill.
  *
  * Inputs: uint32_t - new value for the cooldown.
@@ -538,10 +565,11 @@ bool Skill::setCooldown(const uint32_t &new_value)
 }
 
 /*
- * Description: 
+ * Description: Attempts to assign the cost of the Skill. If the cost is above
+ *              the maximum allowable, assign the highest possible cost.
  *
- * Inputs: 
- * Output: 
+ * Inputs: new_value - the new cost for the Skill
+ * Output: bool - true if the cost was assigned without altering
  */
 bool Skill::setCost(const uint32_t &new_value)
 {
@@ -552,23 +580,7 @@ bool Skill::setCost(const uint32_t &new_value)
     return true;
   }
 
-  return false;
-}
-
-/*
- * Description: 
- *
- * Inputs: 
- * Output:
- */
-bool Skill::setChance(const float &new_chance)
-{
-  if (new_chance <= kMAX_CHANCE)
-  {
-    chance = new_chance;
-
-    return true;
-  }
+  value = kMAX_VALUE;
 
   return false;
 }
@@ -631,7 +643,7 @@ bool Skill::setName(const std::string &new_name)
  * Inputs: new_id - the ID to assign the skill to
  * Output: bool - true if the ID was assigned (can't reassign a set ID)
  */
-bool Skill::setID(const int &new_id)
+bool Skill::setID(const int32_t &new_id)
 {
   if (new_id == kUNSET_ID || id != kUNSET_ID)
     return false;
@@ -639,6 +651,24 @@ bool Skill::setID(const int &new_id)
   id = new_id;
 
   return true;
+}
+
+/*
+ * Description: Assigns a new using message.
+ *
+ * Inputs: new_message - new using message string
+ * Output: bool - true if the new message was within range
+ */
+bool Skill::setMessage(const std::string &new_message)
+{
+  if (new_message.size() < kMAX_MESG_LENGTH)
+  {
+    message = new_message;
+    
+    return true;
+  }
+
+  return false;
 }
 
 /*
@@ -674,24 +704,6 @@ void Skill::setScope(const ActionScope &new_scope)
 void Skill::setThumbnail(Frame* new_thumbnail)
 {
   thumbnail = new_thumbnail;
-}
-
-/*
- * Description: Assigns a new using message.
- *
- * Inputs: new_message - new using message string
- * Output: bool - true if the new message was within range
- */
-bool Skill::setMessage(const std::string &new_message)
-{
-  if (new_message.size() < kMAX_MESG_LENGTH)
-  {
-    message = new_message;
-    
-    return true;
-  }
-
-  return false;
 }
 
 /*

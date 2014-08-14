@@ -2,7 +2,11 @@
 * Class Name: SkillSet [Implementation]
 * Date Created: November 23rd, 2013
 * Inheritance: None
-* Description:
+* Description: A SkillSet is a container for a list of skills and the level
+*              required to be usable. A SkillSet is contained in a BubbyFlavour,
+*              Race, Category, Person, Equipment, Item. A SkillList can be
+*              sorted by level, by cost of the skill, by the assigned point
+*              value (for AI), by the elements the skill uses, etc.
 *
 * Notes
 * -----
@@ -11,7 +15,6 @@
 *
 * See .h file for TODOs
 *******************************************************************************/
-
 #include "Game/Player/SkillSet.h"
 
 /*=============================================================================
@@ -81,11 +84,12 @@ uint32_t SkillSet::calcLowestLevel(const uint32_t &skill_id)
 }
 
 /* 
- * Description:
+ * Description: Calculates a unique set of SetElements by checking all the IDs
+ *              of Skills in the SkillSet and only adding the first occurence of
+ *              each ID, then returns the resultant vector.
  *
- * Inputs: 
- * Output: 
- * TODO: Is this function needed if we just check for IDs before addition ?
+ * Inputs: std::vector<SetElement> - a vector of set elements to find uniques of
+ * Output: std::vector<SetElement> - a vector of unique set elements
  */
 std::vector<SetElement> SkillSet::calcUniques(const std::vector<SetElement> 
                                               &check_elements)
@@ -110,11 +114,12 @@ std::vector<SetElement> SkillSet::calcUniques(const std::vector<SetElement>
 }
 
 /* 
- * Description:
+ * Description: Cleans up the SkillSet by erasing Skills which are invalid. This
+ *              function checks the validity of each Skill by running its valid
+ *              function again.
  *
- * Inputs: 
- * Output: 
- * TODO: Is this function needed? [01-26-14]
+ * Inputs: none
+ * Output: none 
  */
 void SkillSet::cleanUp()
 {
@@ -149,11 +154,15 @@ bool SkillSet::addSkill(Skill* skill, const uint32_t &req_level,
   {
     if (skill->getFlag(SkillFlags::VALID))
     {
-
       SetElement new_element;
 
       new_element.skill = skill;
-      new_element.level_available = req_level;
+
+      if (req_level <= kMAX_UNLOCK_LEVEL)
+        new_element.level_available = req_level;
+      else
+        new_element.level_available = kMAX_UNLOCK_LEVEL;
+
       new_element.enabled = enabled;
 
       skill_elements.push_back(new_element);
@@ -189,7 +198,7 @@ bool SkillSet::addSkills(const std::vector<Skill*> skills,
     auto it_e = enabled.begin();
     bool done = false;
 
-    while (!done)
+    for(; done ; )
     {
       if (it_s != skills.end() && it_r != req_levels.end() && it_e != enabled.end())
         success &= addSkill((*it_s), (*it_r), (*it_e));
@@ -251,7 +260,7 @@ void SkillSet::clear()
  * Inputs: simple - boolean whether to output a simplified version
  * Output: none
  */
-void SkillSet::print(const bool simple)
+void SkillSet::print(const bool &simple)
 {
   uint32_t index = 0;
 
@@ -282,7 +291,7 @@ void SkillSet::print(const bool simple)
  *              not found, returns -1.
  *
  * Inputs: id - the Skill ID to check the vector for
- * Output: 
+ * Output: int32_t - the index of a given SkillID, or -1 if not found.
  */
 int32_t SkillSet::getIndexOfID(const uint32_t &id)
 {
@@ -582,10 +591,10 @@ uint32_t SkillSet::getSize()
 }
 
 /* 
- * Description:
+ * Description: Returns the vector of values in the SkillSet
  *
- * Inputs:
- * Output: 
+ * Inputs: none
+ * Output: std::vector<uint32_t> - the vector of values of skills in the set
  */
 std::vector<uint32_t> SkillSet::getValues()
 {

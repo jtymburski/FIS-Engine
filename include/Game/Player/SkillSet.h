@@ -15,14 +15,13 @@
 *
 * TODO
 * ----
+* [08-13-14] SkillSet construction from XML Data
 *******************************************************************************/
-
 #ifndef SKILLSET_H
 #define SKILLSET_H
 
 #include "Game/Player/Skill.h"
 #include "EnumDb.h"
-#include "Helpers.h"
 
 /* A SkillSet is a vector of these SetElements */
 struct SetElement
@@ -68,14 +67,14 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
  private:
-  /* */
+  /* Returns the lowest level required of a given Skill ID */
   uint32_t calcLowestLevel(const uint32_t &skill_id);
 
-  /* */
+  /* Returns unique set elements (by unique Skill IDs) */
   static std::vector<SetElement> 
                 calcUniques(const std::vector<SetElement> &check_elements);
   
-  /* */
+  /* Cleans up the skill set */
   void cleanUp();
 
 /*=============================================================================
@@ -83,7 +82,7 @@ private:
  *============================================================================*/
 public:
   /* Attempts to add a single skill */
-  bool addSkill(Skill* skill, const uint32_t &req_level, 
+  bool addSkill(Skill* skill, const uint32_t &req_level = 200, 
   	            const bool enabled = true);
 
   /* Attempts to add a vector of skills */
@@ -99,7 +98,7 @@ public:
   void clear();
 
   /* Prints out the state of the object */
-  void print(const bool simple = false);
+  void print(const bool &simple = false);
 
   /* Removes a SetElement by a given index */
   bool removeIndex(const uint32_t &index);
@@ -128,26 +127,26 @@ public:
   /* Returns the first index of a name beginning with the desird char */
   int32_t getIndexOfAlpha(const char &alpha);
 
-  /* Returns the string name of a Skill at a given index */
-  std::string getName(const uint32_t &index);
-
-  /* Returns a compiled list of string names for the Skills */
-  std::vector<std::string> getNames();
-
   /* Returns the level req. of a Skill at a given index */
   uint32_t getLevel(const uint32_t &index);
 
   /* Returns the vector of all level required values */
   std::vector<uint32_t> getLevels();
 
+  /* Returns the string name of a Skill at a given index */
+  std::string getName(const uint32_t &index);
+
+  /* Returns a compiled list of string names for the Skills */
+  std::vector<std::string> getNames();
+
   /* Returns the number of skill elements */
   uint32_t getSize();
 
-  /* Builds the vector of values for each skill index */
-  std::vector<uint32_t> getValues();
-
   /* Assigns an enabled state to a SetElement at a given index */
   bool setState(const uint32_t &index, const bool &state = true);
+
+  /* Builds the vector of values for each skill index */
+  std::vector<uint32_t> getValues();
 
 /*============================================================================
  * OPERATOR FUNCTIONS

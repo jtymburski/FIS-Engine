@@ -11,21 +11,19 @@
 * Notes
 * -----
 *
-* [1]:
+* [1]: A Skill is a possible selection for a BattleAction. When a Skill is 
+*      chosen, its cost in QD is removed from the user (unless the Skill is 
+*      a skill from an Item). When the action is performed, each Action (effect)
+*      in the skill performs an effect on the selected targets.
 *
 * TODO
 * ----
-* - Possible OFENSIVE/DEFENSIVE/NEUTRAL categories (set in flags)? [11-23-13]
+* [08-13-14] Skill construction from XML Data
 *******************************************************************************/
-
 #ifndef SKILL_H
 #define SKILL_H
 
-#include <algorithm> /* std::sort */
-
 #include "Game/Player/Action.h"
-#include "FileHandler.h"
-#include "XmlData.h"
 #include "Sound.h"
 #include "Sprite.h"
 
@@ -33,18 +31,18 @@
 ENUM_FLAGS(SkillFlags)
 enum class SkillFlags
 {
-  OFFENSIVE  = 1 << 0,
-  DEFENSIVE  = 1 << 1,
-  NEUTRAL    = 1 << 2,
-  ALTERING   = 1 << 3,
-  DAMAGING   = 1 << 4,
-  HEALING    = 1 << 5,
-  INFLICTING = 1 << 6,
-  RELIEVING  = 1 << 7,
-  REVIVING   = 1 << 8,
-  ASSIGNING  = 1 << 9,
-  ABSORBING  = 1 << 10,
-  VALID      = 1 << 11
+  OFFENSIVE  = 1 << 0, /* Is this skill OFFENSIVE against targets (does dmg)? */
+  DEFENSIVE  = 1 << 1, /* Is this skill beneficial to its targets? */
+  NEUTRAL    = 1 << 2, /* Is this skill not-offensive and not-defensive? */
+  ALTERING   = 1 << 3, /* Does this skill contain an ALTERING effect? */
+  DAMAGING   = 1 << 4, /* Does this skill contain a DAMAGING effect? */
+  HEALING    = 1 << 5, /* Does this skill contain a HEALING effect? */
+  INFLICTING = 1 << 6, /* Does this skill contain an INFLICTING effect? */
+  RELIEVING  = 1 << 7, /* Does this skill contain a RELIEVING effect? */
+  REVIVING   = 1 << 8, /* Does this skill contain a REVIVING effect? */
+  ASSIGNING  = 1 << 9, /* Doe sthis skill contain an ASSIGNING effect? */
+  ABSORBING  = 1 << 10, /* Does this skill contain an ABSORBING effect? */
+  VALID      = 1 << 11  /* Is this a valid skill? */
 };
 
 class Skill
@@ -65,15 +63,15 @@ public:
   	    const std::vector<Action*> &effects, const float &chance,
         const uint32_t &cost = 0);
 
-  /* Annihilates a Skill object */
-  ~Skill() = default;
-
 private:
   /* Pointer to the animation played by the Skill during Battle */
   Sprite* animation;
 
+  /* Chance the skill has overall to hit (100 = always hit) */
+  float chance;
+
   /* Amount of turns the Skill takes to use */
-  uint32_t cooldown;
+  uint16_t cooldown;
 
   /* Cost of the Skill measured in QD */
   uint32_t cost;
@@ -84,14 +82,14 @@ private:
   /* Vector of effects the Skill does during use */
   std::vector<Action*> effects;
 
-  /* Chance the skill has overall to hit (100 = always hit) */
-  float chance;
-
   /* Set of SkillFlags for skill categorization */
   SkillFlags flags;
 
   /* The ID of the Skill */
   int32_t id;
+
+  /* String message displayed upon use of the Skill */
+  std::string message;
 
   /* String name of the Skill */
   std::string name;
@@ -111,30 +109,27 @@ private:
   /* Pointer to the thumbnail of the Skill */
   Frame* thumbnail;
 
-  /* String message displayed upon use of the Skill */
-  std::string message;
-
   /* Arbitrary point value of the Skill (for AI-use) */
-  uint32_t value;
+  uint16_t value;
 
   /* ------------ Constants --------------- */
-  static const uint32_t kDEFAULT_VALUE;   /* Default value (points) */
+  static const uint16_t kDEFAULT_VALUE;   /* Default value (points) */
   static const size_t   kMAX_ACTIONS;     /* Maximum # of actions in a skill */
   static const float    kMAX_CHANCE;      /* Maximum value of chance */
-  static const uint32_t kMAX_COOLDOWN;    /* Maximum turn cooldown time */
+  static const uint16_t kMAX_COOLDOWN;    /* Maximum turn cooldown time */
   static const uint32_t kMAX_COST;        /* Highest possible cost for skill */
+  static const size_t   kMAX_DESC_LENGTH; /* Maximum length for a valid desc */
   static const size_t   kMAX_MESG_LENGTH; /* Maximum length for using message */
   static const size_t   kMAX_NAME_LENGTH; /* Maximum length for a valid name */
-  static const size_t   kMAX_DESC_LENGTH; /* Maximum length for a valid desc */
-  static const uint32_t kMAX_VALUE;       /* Maximum assigned point value */
-  static const int      kUNSET_ID;        /* ID for an unset Skill */
+  static const uint16_t kMAX_VALUE;       /* Maximum assigned point value */
+  static const int32_t  kUNSET_ID;        /* ID for an unset Skill */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
   /* Add effect data */
-  bool addEffectData(XmlData);
+  bool addEffectData();
 
   /* Determines the Skill classification based on contained effects */
   void flagSetup();
@@ -152,10 +147,6 @@ public:
   /* Determines if the Skill is valid */
   bool isValid();
 
-  /* Load the skill from file */
-  // bool loadSkill(std::string file, SDL_RENDERER* renderer,
-  //     bool encryption = false);
-
   /* Prints out the information about the current Skill state */
   void print();
 
@@ -165,14 +156,14 @@ public:
   /* Returns a pointer to the animation sprite */
   Sprite* getAnimation();
  
+  /* Returns the chance of a given effect */
+  float getChance();
+
   /* Returns the cooldown of the Skill */
   uint32_t getCooldown();
 
   /* Returns the cost of the Skill */
   uint32_t getCost();
-
-  /* Returns the chance of a given effect */
-  float getChance();
 
   /* Returns the string description */
   std::string getDescription();
@@ -189,6 +180,9 @@ public:
   /* Returns the ID of the Skill */
   int getID();
 
+  /* Returns the using message */
+  std::string getMessage();
+
   /* Returns the string name */
   std::string getName();
 
@@ -198,17 +192,14 @@ public:
   /* Returns the secondary element */
   Element getSecondary();
 
-  /* Returns the sound effect */
-  Sound* getSoundEffect();
-
   /* Returns the enumerated scope */
   ActionScope getScope();
 
+  /* Returns the sound effect */
+  Sound* getSoundEffect();
+
   /* Returns the thumbnail */
   Frame* getThumbnail();
-
-  /* Returns the using message */
-  std::string getMessage();
 
   /* Returns the point value */
   uint32_t getValue();
@@ -216,14 +207,14 @@ public:
   /* Assigns a new using animation */
   bool setAnimation(Sprite* new_animation);
 
+  /* Assigns a new chance to the skill */
+  bool setChance(const float &new_chance);
+
   /* Assigns a new cooldown */
   bool setCooldown(const uint32_t &new_value);
 
   /* Assigns a new cost to the skill */
   bool setCost(const uint32_t &new_value);
-
-  /* Assigns a new chance to the skill */
-  bool setChance(const float &new_chance);
 
   /* Assigns a new description */
   bool setDescription(const std::string &new_description);
@@ -232,8 +223,11 @@ public:
   void setFlag(const SkillFlags &flag, const bool &set_value = true);
 
   /* Assigns an ID to the Skill */
-  bool setID(const int &new_id);
+  bool setID(const int32_t &new_id);
   
+  /* Assigns a new using message */
+  bool setMessage(const std::string &new_message);
+
   /* Assigns a string name to the skill */
   bool setName(const std::string &new_name);
 
@@ -251,9 +245,6 @@ public:
 
   /* Assigns a new thumbnail */
   void setThumbnail(Frame* new_thumbnail);
-
-  /* Assigns a new using message */
-  bool setMessage(const std::string &new_message);
 
   /* Assigns a new point value */
   bool setValue(const uint32_t &new_value);
