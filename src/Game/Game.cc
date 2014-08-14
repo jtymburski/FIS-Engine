@@ -285,7 +285,7 @@ void Game::pollEvents()
 void Game::setupBattle()
 {
   /* Build Player data */
-  auto build_actions = buildActions(base_path + "data\\actions");
+  auto build_actions = buildActions(base_path + "data\\player\\actions");
   auto build_skills  = false;
 
   if (build_actions)
