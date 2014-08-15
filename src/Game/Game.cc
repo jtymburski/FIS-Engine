@@ -99,54 +99,30 @@ bool Game::buildActions(const std::string &file, bool encryption)
 {
   auto done    = false;
   auto success = true;
-  FileHandler fh(file, false, false, encryption);
+  // FileHandler fh(file, false, false, encryption);
 
-  success &= fh.start();
+  // success &= fh.start();
 
-  for (; success && !done ;)
-  {
-    std::string line = "";
-    line = fh.readRegularLine(&done, &success);
+  // for (; success && !done ;)
+  // {
+  //   std::string line = "";
+  //   line = fh.readRegularLine(&done, &success);
       
-    if (success && !line.empty() && line.at(0) != '/')
-    {
-      Action* temp_action = new Action(line);
-      action_list.push_back(temp_action);
+  //   if (success && !line.empty() && line.at(0) != '/')
+  //   {
+  //     Action* temp_action = new Action(line);
+  //     action_list.push_back(temp_action);
 
-      if (!temp_action->actionFlag(ActionFlags::VALID))
-        std::cerr << "[Error] Parsing invalid action" << std::endl;
-    }
-  }
+  //     if (!temp_action->actionFlag(ActionFlags::VALID))
+  //       std::cerr << "[Error] Parsing invalid action" << std::endl;
+  //   }
+  // }
 
-  if (success)
-    success &= fh.stop();
+  // if (success)
+  //   success &= fh.stop();
 
-  if (!success)
-    std::cerr <<"[Error] building actions from file." << std::endl;
-
-  return success;
-}
-
-bool Game::buildSkills(const std::string &file, bool encryption)
-{
-  auto done    = false;
-  auto success = true;
-
-  /* Build each file in the directory */
-  FileHandler fh(file, false, false, encryption);
-
-  success &= fh.start();
-
-  for (; success && !done; )
-  {
-
-  }
-  
-  if (success)
-    success &= fh.stop();
-
-  if (!success)
-    std::cerr <<"[Error] building skills from file." << std::endl;
+  // if (!success)
+  //   std::cerr <<"[Error] building actions from file." << std::endl;
 
   return success;
 }
@@ -286,7 +262,6 @@ void Game::setupBattle()
 {
   /* Build Player data */
   auto build_actions = buildActions(base_path + "data\\player\\actions");
-  auto build_skills  = false;
 
   if (build_actions)
   {
@@ -294,8 +269,6 @@ void Game::setupBattle()
     std::cout << "Actions built from file success! Size: " << action_list.size() 
               << std::endl;
 #endif
-
-    // build_skills = buildSkills(base_path + "data\\skills");
   }
 
   //Begin time test
