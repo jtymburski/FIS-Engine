@@ -228,7 +228,7 @@ bool Sprite::addFileInformation(XmlData data, int index,
     uint16_t angle = parseAdjustments(split_element);
     std::vector<Frame*> new_frames = 
                 insertFrames(base_path + data.getDataString(), renderer, angle);
-    
+ 
     if(new_frames.size() > 0)
     {
       /* If there is element adjustments, do those changes */

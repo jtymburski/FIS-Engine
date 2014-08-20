@@ -112,11 +112,7 @@ bool Frame::execImageAdjustment(std::string adjustment)
   {
     flipHorizontal();
   }
-  else
-  {
-    success = false;
-  }
-  
+ 
   return success;
 }
 

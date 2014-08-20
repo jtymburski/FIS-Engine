@@ -695,8 +695,9 @@ bool Game::render(SDL_Renderer* renderer)
     item_list.push_back(item3);
   }
   
+  /* Map initialization location */
   if(!game_map->isLoaded())
-   game_map->loadMap(base_path + "maps/test_05", renderer);
+   game_map->loadMap(base_path + "maps/test_06", renderer);
 
   if(mode == MAP)
     return game_map->render(renderer);

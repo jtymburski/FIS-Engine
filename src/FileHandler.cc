@@ -1196,9 +1196,9 @@ XmlData FileHandler::readXmlData(bool* done, bool* success)
   }
   
   /* Set status', if the pointers are available */
-  if(done != 0)
+  if(done != NULL)
     *done = finished;
-  if(success != 0)
+  if(success != NULL)
     *success = !failed;
 
   return data;

@@ -104,7 +104,7 @@ bool Map::addSpriteData(XmlData data, std::string id,
     access_id = std::stoi(id_set.back());
     copy_id = std::stoi(id_set.front());
   }
-  
+
   /* Only move forward if the access id is valid */
   if(access_id > 0)
   {
@@ -128,7 +128,7 @@ bool Map::addSpriteData(XmlData data, std::string id,
       if(copy_sprite != NULL)
         *access_sprite = *copy_sprite;
     }
-    
+
     return access_sprite->addFileInformation(data, file_index, 
                                              renderer, base_path);
   }
@@ -967,6 +967,7 @@ void Map::keyUpEvent(SDL_KeyboardEvent event)
 bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
 {
   bool done = false;
+  bool read_success = true;
   bool success = true;
   FileHandler fh(file, false, true, encryption);
   XmlData data;
@@ -986,8 +987,9 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
     do
     {
       /* Read set of XML data */
-      data = fh.readXmlData(&done, &success);
-      
+      data = fh.readXmlData(&done, &read_success);
+      success &= read_success;
+
       /* Parse map data */
       if(data.getElement(kFILE_GAME_TYPE) == "map")
       {
@@ -1063,8 +1065,9 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
       }
     } while(!done);// && success); // TODO: Success in loop??
   }
+
   success &= fh.stop();
-  
+ 
   /* If the map load failed, unload the map */
   if(!success)
   {
