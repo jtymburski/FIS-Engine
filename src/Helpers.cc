@@ -577,6 +577,43 @@ std::vector<std::string> Helpers::split(const std::string &line, char delim)
   return elements;
 }
 
+/* Splites the string into a grid based on the sprite naming convention */
+// TODO: Comment and functionality
+std::vector<std::vector<std::string>> Helpers::spriteGridSplitter(
+    std::string path)
+{
+  /* Step 1: split on '[' -> finish with std::vector<std::string> */
+
+  /* Step 2: Parse each string from 1 to n, and split on the ']' character 
+           -> Finish with std::vector<std::string> for each */
+
+  /* Step 3: For each string vector from step 2, check the compatibility 
+             of the first string. Has to be "Capital Letter"-"Capital Letter"
+             If it is not, use the original string.
+             Otherwise, return all the rest of the string, after ']' with
+             each letter in the range.
+           -> Finishes with std::vector<std::string> of 1-n size 
+           Note: only 2 good splits are valid. all remainder return string */
+
+  /* Step 4: Re-assemble all the strings together and create every possible
+             iteration assembled in the right order.
+           Note: some complications: if [A-B]B, it needs to assemble a set 
+                 with two columns and one row {AA},{BA}
+                 If A[A-B], it needs to assemble a set with two rows and
+                 one column. -> will have to do some analyze objects */
+
+  // TESTING - temporary
+  std::vector<std::vector<std::string>> set;
+  std::vector<std::string> line;
+  line.push_back("test");
+  line.push_back("this");
+  line.push_back("is");
+  line.push_back("a");
+  set.push_back(line);
+  set.push_back(line);
+  return set;
+}
+
 /*
  * Description Trims white space from both sides of a std::string
  *

@@ -58,6 +58,18 @@ int main(int argc, char** argv)
   (void)argc;
   (void)argv;
 
+  /* TODO - remove: testing */
+  std::vector<std::vector<std::string>> set = 
+      Helpers::spriteGridSplitter("Test01_[A-B][A-B]_U00.png");
+  std::cout << "-- START TEST --" << std::endl;
+  for(uint32_t i = 0; i < set.size(); i++)
+  {
+    for(uint32_t j = 0; j < set[i].size(); j++)
+      std::cout << set[i][j] << " ";
+    std::cout << std::endl;
+  }
+  std::cout << "-- END TEST --" << std::endl;
+  
   /* Get the base directory to the executable, which will be the location of
    * all applicable resources */
   char* directory = SDL_GetBasePath();

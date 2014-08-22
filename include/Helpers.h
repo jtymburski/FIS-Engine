@@ -142,6 +142,10 @@ public:
   /* Splits the string using the given delimiter */
   static std::vector<std::string> split(const std::string &s, char delim);
 
+  /* Splites the string into a grid based on the sprite naming convention */
+  static std::vector<std::vector<std::string>> spriteGridSplitter(
+    std::string path);
+
   /* Methods for trimming whitespace from both ends of std::strings */
   static std::string& trim(std::string &s);
   
