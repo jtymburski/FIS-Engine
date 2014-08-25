@@ -61,7 +61,7 @@ public:
   double getCarryWeight();
 
   /* Returns the gravity being experiencd by the player */
-  double getGravity();
+  uint32_t getGravity();
  
  /* Gets the sleuth party */
   Party* getSleuth();

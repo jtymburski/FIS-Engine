@@ -25,10 +25,10 @@
 int32_t Item::id{0};
 
 /* Static Class Constants */
-const uint32_t Item::kMAX_DURA{100000};
+const uint32_t Item::kMAX_DURABILITY{100000};
 const double   Item::kMAX_MASS{5000};
 const uint32_t Item::kMAX_VALUE{100000000};
-const uint32_t Item::kMIN_DURA{1};
+const uint32_t Item::kMIN_DURABILITY{0};
 const double   Item::kMIN_MASS{-1000};
 
 /*=============================================================================
@@ -41,10 +41,10 @@ const double   Item::kMIN_MASS{-1000};
  * Inputs: Flavour* - pointer to a flavour object for the item's likeness
  */
 Item::Item(Flavour* const source)
-  : game_id{source->game_id}
-  , my_id{++id}
-  , base_item{nullptr}
-  , thumbnail{nullptr}
+    : game_id{source->game_id}
+    , my_id{++id}
+    , base_item{nullptr}
+    , thumbnail{nullptr}
 {
   setupClass();
 
@@ -65,9 +65,9 @@ Item::Item(Flavour* const source)
  * Inputs: Item* - pointer to an item object to be copied
  */
 Item::Item(Item* const source)
-  : game_id{source->game_id}
-  , my_id{++id}
-  , base_item{source}
+    : game_id{source->game_id}
+    , my_id{++id}
+    , base_item{source}
 {
   setupClass();
 }
@@ -83,16 +83,16 @@ Item::Item(Item* const source)
  *         mass - base mass for the Item
  */
 Item::Item(const int32_t &game_id, const std::string &name, 
-           const uint32_t &value, Frame* thumbnail, const double &mass, 
-           const uint32_t &dura)
-  : game_id{game_id}
-  , my_id{++id}
-  , base_item{nullptr}
-  , max_durability{dura}
-  , mass{mass}
-  , name{name}
-  , thumbnail{thumbnail}
-  , value{value}
+    const uint32_t &value, Frame* thumbnail, const double &mass, 
+    const uint32_t &dura)
+      : game_id{game_id}
+      , my_id{++id}
+      , base_item{nullptr}
+      , max_durability{dura}
+      , mass{mass}
+      , name{name}
+      , thumbnail{thumbnail}
+      , value{value}
 {
   setupClass();
 }
@@ -104,16 +104,15 @@ Item::Item(const int32_t &game_id, const std::string &name,
  *         name - the name to be assigned to the Item
  *         thumbnail - icon for the Item
  */
-Item::Item(const int32_t &game_id, const std::string &name,
-           Frame* thumbnail)
-  : game_id{game_id}
-  , my_id{++id}
-  , base_item{nullptr}
-  , max_durability{0}
-  , mass{0.0}
-  , name{name}
-  , thumbnail{thumbnail}
-  , value{0}
+Item::Item(const int32_t &game_id, const std::string &name, Frame* thumbnail)
+    : game_id{game_id}
+    , my_id{++id}
+    , base_item{nullptr}
+    , max_durability{0}
+    , mass{0.0}
+    , name{name}
+    , thumbnail{thumbnail}
+    , value{0}
 {
   setupClass();
   setFlag(ItemFlags::KEY_ITEM, true);
@@ -198,7 +197,7 @@ void Item::setupClass()
 void Item::unsetAll()
 {
   /* Unset the thumbnail, only if it's a base */
-  if(base_item == nullptr && thumbnail != nullptr)
+  if (base_item == nullptr && thumbnail != nullptr)
     delete thumbnail;
   
   /* Clear variables in the class */
@@ -207,8 +206,8 @@ void Item::unsetAll()
   buff_set = AttributeSet();
   brief_description = "";
   description = "";
-  durability = kMIN_DURA;
-  max_durability = kMIN_DURA;
+  durability = kMIN_DURABILITY;
+  max_durability = kMIN_DURABILITY;
   composition = static_cast<Material>(0);
   flags = static_cast<ItemFlags>(0);
   mass = 0;
@@ -318,7 +317,6 @@ void Item::printFlags()
   std::cout << "SKILL_LEARNING: " << getFlag(ItemFlags::SKILL_LEARNING) << "\n";
   std::cout << "HEALING_ITEM: " << getFlag(ItemFlags::HEALING_ITEM) << "\n";
   std::cout << "RELIEVING_ITEM: " << getFlag(ItemFlags::RELIEVING_ITEM) << "\n";
-  
 
   /* Print Material (composition) flags -- alloys etc. */
   std::cout << "WOODEN: "    << getMaterial(Material::WOODEN)        << "\n";

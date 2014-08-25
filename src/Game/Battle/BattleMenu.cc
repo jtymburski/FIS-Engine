@@ -27,21 +27,21 @@
  *              object with default settings given a pointer to the current
  *              options configuration.
  *
- * Inputs:
+ * Inputs: Options* running_config - pointer to a running config assignment.
  */
 BattleMenu::BattleMenu(Options* running_config)
-  : qtdr_cost_paid{0}
-  , action_type{ActionType::NONE}
-  , action_scope{ActionScope::NO_SCOPE}
-  , config{running_config}
-  , selected_skill{nullptr}
-  , selected_item{nullptr}
-  , flags{static_cast<BattleMenuState>(0)}
-  , window_status{WindowStatus::OFF}
-  , current_user{nullptr}
-  , person_index{0}
-  , layer_index{0}
-  , element_index{-1}
+    : qtdr_cost_paid{0}
+    , action_type{ActionType::NONE}
+    , action_scope{ActionScope::NO_SCOPE}
+    , config{running_config}
+    , selected_skill{nullptr}
+    , selected_item{nullptr}
+    , flags{static_cast<BattleMenuState>(0)}
+    , window_status{WindowStatus::OFF}
+    , current_user{nullptr}
+    , person_index{0}
+    , layer_index{0}
+    , element_index{-1}
 {}
 
 /*=============================================================================
@@ -49,12 +49,12 @@ BattleMenu::BattleMenu(Options* running_config)
  *============================================================================*/
 
 /*
- * Description:
+ * Description: Decrement a menu layer to a given layer index. Performs all
+ *              necessary updating and reworking to do this.
  *
- * Inputs:
- * Output:
+ * Inputs: int32_t new_layer_index - index of new layer to go to.
+ * Output: bool - true if the decrement was successful.
  */
-/* Decrease and increment the menu layers */
 bool BattleMenu::decrementLayer(const int32_t &new_layer_index)
 {
   auto success = false;
@@ -109,10 +109,11 @@ bool BattleMenu::decrementLayer(const int32_t &new_layer_index)
 }
 
 /*
- * Description:
+ * Description: Increments the BattleMenu to a given layer index. Performs
+ *              all necessary updating to make this happen,
  *
- * Inputs:
- * Output:
+ * Inputs: int32_t - new layer index for the Battle menu
+ * Output: bool - true if the incrementing occurs correctly
  */
 bool BattleMenu::incrementLayer(const int32_t &new_layer_index)
 {
@@ -146,12 +147,13 @@ bool BattleMenu::incrementLayer(const int32_t &new_layer_index)
 }
 
 /*
- * Description:
+ * Description: Adds a new target by inded value to the array of selected 
+ *              targets and removes this new target from the vector of remaining
+ *              valid targets.
  *
- * Inputs:
- * Output:
+ * Inputs: int32_t - index [can be +/- depending on party] of target to add
+ * Output: bool - true if the target was added succesfully.
  */
-/* Adding and removing target selections */
 bool BattleMenu::addTarget(const int32_t &new_target)
 {
   auto it = std::find(begin(valid_targets), end(valid_targets), new_target);
@@ -173,12 +175,14 @@ bool BattleMenu::addTarget(const int32_t &new_target)
 }
 
 /*
- * Description:
+ * Description: Add all the targets of the same party of a given Index (based
+ *              on whether the given index is positive or negative) to the
+ *              vector of selected targets and remove them all from valid 
+ *              targets (although the selection should be complete)
  *
- * Inputs:
- * Output:
+ * Inputs: int32_t party_index - given index of member to be added to targets
+ * Output: bool - true if all party targets were added.
  */
-/* Adds all the targets of the same party given a party index */
 bool BattleMenu::addPartyTargets(const int32_t &party_index)
 {
   auto success = false;
@@ -203,10 +207,10 @@ bool BattleMenu::addPartyTargets(const int32_t &party_index)
 }
 
 /*
- * Description:
+ * Description: Attempts to remove the last added target.
  *
- * Inputs:
- * Output:
+ * Inputs: bool clear_all - whether to clear all the target assignments.
+ * Output: bool - true if ???
  */
 bool BattleMenu::removeLastTarget(const bool &clear_all)
 {
@@ -237,7 +241,7 @@ bool BattleMenu::removeLastTarget(const bool &clear_all)
 }
 
 /*
- * Description:
+ * Description: Jump to element index based on alha numeric keys.
  *
  * Inputs:
  * Output:
@@ -247,17 +251,18 @@ void BattleMenu::keyDownAlpha(const char &c)
 {
   //auto index = menu_skills->getIndexOfAlpha(c);
   (void)c;
-  auto index = -1; //TODO: Redo menu alpha skill selection.
+  auto index = -1; //TODO: [08-24-14] Redo menu alpha skill selection.
 
   if (index != -1)
     element_index = index;
 }
 
 /*
- * Description:
+ * Description: Method for holding what happens when the player hits the
+ *              cancel Key.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: none
  */
 void BattleMenu::keyDownCancel()
 {
@@ -321,10 +326,10 @@ void BattleMenu::keyDownCancel()
 }
 
 /*
- * Description:
+ * Description: Method for what happens when the player hits the decrement key.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: none
  */
 void BattleMenu::keyDownDecrement()
 {
@@ -352,10 +357,10 @@ void BattleMenu::keyDownDecrement()
 }
 
 /*
- * Description:
+ * Description: Method for what happens when the player hits the increment key.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: none
  */
 void BattleMenu::keyDownIncrement()
 {
@@ -384,10 +389,10 @@ void BattleMenu::keyDownIncrement()
 }
 
 /*
- * Description:
+ * Description: Method for what happens when the player hits the select key.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: none
  */
 void BattleMenu::keyDownSelect()
 {
@@ -583,10 +588,11 @@ void BattleMenu::keyDownSelect()
  *============================================================================*/
 
 /*
- * Description:
+ * Description: Unset all the battle menu parameters to default, thereby getting
+ *              it ready for a new person/new tur.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: none
  */
 void BattleMenu::unsetAll()
 {
@@ -614,10 +620,11 @@ void BattleMenu::unsetAll()
 }
 
 /*
- * Description:
+ * Description: Determines whether an ActionType has been chosen for current
+ *              menu selection occurence.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: bool - true if an action type has been selected for das Menu.
  */
 bool BattleMenu::isActionTypeSelected()
 {
@@ -625,10 +632,11 @@ bool BattleMenu::isActionTypeSelected()
 }
 
 /*
- * Description:
+ * Description: Determines whether there is some index of the current element
+ *              which has a valid target selection possible.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: bool - true if there exists valid target selections for curr. elm.
  */
 bool BattleMenu::someIndexHasTargets()
 {
@@ -696,10 +704,12 @@ bool BattleMenu::indexHasTargets()
 }
 
 /*
- * Description:
+ * Description: Resets the BattleMenu for a new user for a new turn, given
+ *              a pointer to the user and the index they correspond to.
  *
- * Inputs:
- * Output:
+ * Inputs: Person* new_user - pointer to the new person
+ *         uint32_t new_person_index - corresponding index of the person
+ * Output: none
  */
 void BattleMenu::reset(Person* const new_user, const uint32_t &new_person_index)
 {
@@ -716,10 +726,10 @@ void BattleMenu::reset(Person* const new_user, const uint32_t &new_person_index)
 }
 
 /*
- * Description:
+ * Description: Prints out the valid actions types for the non-GUI battle.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: none
  */
 void BattleMenu::printValidActions()
 {
@@ -739,10 +749,11 @@ void BattleMenu::printValidActions()
 }
 
 /*
- * Description:
+ * Description: Prints out the list of available skills for the current menu 
+ *              setup.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: none
  */
 void BattleMenu::printSkills()
 {
@@ -776,10 +787,10 @@ void BattleMenu::printSkills()
 }
 
 /*
- * Description:
+ * Description: Prints out the target selection for current selectable targets.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: bool - whether to print selected targets or not.
  */
 void BattleMenu::printTargets(const bool &print_selected)
 {
@@ -822,10 +833,10 @@ void BattleMenu::printTargets(const bool &print_selected)
 }
 
 /*
- * Description:
+ * Description: Prints out the available items for the BattleMenu.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: none
  */
 void BattleMenu::printItems()
 {
@@ -853,10 +864,10 @@ void BattleMenu::printItems()
 }
 
 /*
- * Description:
+ * Description: Method for processing keydown events.
  *
- * Inputs:
- * Output:
+ * Inputs: SDL_KeyboardEvent event - the key down event.
+ * Output: bool - true if ???
  */
 bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
 {
@@ -915,10 +926,11 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
 }
 
 /*
- * Description:
+ * Description: Prints out the state of the menu for a non-gui battle based 
+ *              on the current layering index.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: none
  */
 void BattleMenu::printMenuState()
 {
@@ -952,7 +964,9 @@ void BattleMenu::printMenuState()
 }
 
 /*
- * Description:
+ * Description: Returns enumerated action type for the selected action. This
+ *              will be ActionType::NONE if no action type is currently
+ *              selected.
  *
  * Inputs:
  * Output:
@@ -963,10 +977,11 @@ ActionType BattleMenu::getActionType()
 }
 
 /*
- * Description:
+ * Description: Returns the selected index of current action (ex. the index
+ *              along the vector of items/skills which is selected).
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: int32_t - the index of the selected acion
  */
 int32_t BattleMenu::getActionIndex()
 {
@@ -974,10 +989,11 @@ int32_t BattleMenu::getActionIndex()
 }
 
 /*
- * Description:
+ * Description: Returns the list of action target indexes which were selected
+ *              by the user of the action.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: std::vector<int32_t> - vector of indexes of selected targets
  */
 std::vector<int32_t> BattleMenu::getActionTargets()
 {
@@ -985,10 +1001,11 @@ std::vector<int32_t> BattleMenu::getActionTargets()
 }
 
 /*
- * Description:
+ * Description: Returns the current value for maximum selection index based
+ *              on the layering of hte menu.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: int32_t - the maximum selectable index
  */
 int32_t BattleMenu::getMaxIndex()
 {
@@ -1007,10 +1024,10 @@ int32_t BattleMenu::getMaxIndex()
 }
 
 /*
- * Description:
+ * Description: Returns the value of a given BattleMenuState flag
  *
- * Inputs:
- * Output:
+ * Inputs: test_flag - enumerated flag to test the value for
+ * Output: bool - the boolean value of the flag
  */
 bool BattleMenu::getMenuFlag(const BattleMenuState &test_flag)
 {
@@ -1018,10 +1035,10 @@ bool BattleMenu::getMenuFlag(const BattleMenuState &test_flag)
 }
 
 /*
- * Description:
+ * Description: Returns a vector of BattleSkill objects.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: std::vector<BattleSkill> - the vector of BattleSkill objects.
  */
 std::vector<BattleSkill> BattleMenu::getMenuSkills()
 {
@@ -1029,10 +1046,10 @@ std::vector<BattleSkill> BattleMenu::getMenuSkills()
 }
 
 /*
- * Description:
+ * Description: Returns the pointer to the currently selected Skill object.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: Skill* - pointer to the currently selected Skill object.
  */
 Skill* BattleMenu::getSelectedSkill()
 {
@@ -1040,10 +1057,10 @@ Skill* BattleMenu::getSelectedSkill()
 }
 
 /*
- * Description:
+ * Description: Returns the pointer to the currently selected item objet.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: Item* - pointer to the Item object selected.
  */
 Item* BattleMenu::getSelectedItem()
 {
@@ -1051,10 +1068,10 @@ Item* BattleMenu::getSelectedItem()
 }
 
 /*
- * Description:
+ * Description: Returns the vector of BattleMenu objects.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: std::vector<BattleItem> - the vector of Battle item objects.
  */
 std::vector<BattleItem> BattleMenu::getMenuItems()
 {
@@ -1062,10 +1079,10 @@ std::vector<BattleItem> BattleMenu::getMenuItems()
 }
 
 /*
- * Description:
+ * Description: Returns the enumerated WindowSatus of the BattleMenu.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: WindowStatus - enumerated window status.
  */
 WindowStatus BattleMenu::getWindowStatus()
 {
@@ -1073,10 +1090,11 @@ WindowStatus BattleMenu::getWindowStatus()
 }
 
 /*
- * Description:
+ * Description: Assigns an ActionScope, depending on conditions, of the
+ *              currently selected action.
  *
- * Inputs:
- * Output:
+ * Inputs: ActionScope new_action_scope - new enumerated scope for the action.
+ * Output: none
  */
 void BattleMenu::setActionScope(const ActionScope &new_action_scope)
 {
@@ -1084,10 +1102,11 @@ void BattleMenu::setActionScope(const ActionScope &new_action_scope)
 }
 
 /*
- * Description:
+ * Description: Assigns a BattleMenuState flag a given set value.
  *
- * Inputs:
- * Output:
+ * Inputs: BattleMenuState flag - flag to be assigned a value.
+ *         bool set_value - value to assign the flag to.
+ * Output: none
  */
 void BattleMenu::setMenuFlag(BattleMenuState flag, const bool &set_value)
 {
@@ -1095,10 +1114,10 @@ void BattleMenu::setMenuFlag(BattleMenuState flag, const bool &set_value)
 }
 
 /*
- * Description:
+ * Description: Assigns the selectable vector of BattleSkills to the Menu.
  *
- * Inputs:
- * Output:
+ * Inputs: std::vector<BattleSkill> new_menu_skills - new menu skill vector
+ * Output: bool - true if the new Battle skills were non-empty.
  */
 bool BattleMenu::setSelectableSkills(std::vector<BattleSkill> new_menu_skills)
 {
@@ -1108,10 +1127,10 @@ bool BattleMenu::setSelectableSkills(std::vector<BattleSkill> new_menu_skills)
 }
 
 /*
- * Description:
+ * Description: Assigns a vector of selectable Battle Items to the Menu.
  *
- * Inputs:
- * Output:
+ * Inputs: std::vector<BattleItem> - vector of BattleItems.
+ * Output: bool - true if the vector was non-empty.
  */
 bool BattleMenu::setSelectableItems(std::vector<BattleItem> new_menu_items)
 {
@@ -1121,24 +1140,23 @@ bool BattleMenu::setSelectableItems(std::vector<BattleItem> new_menu_items)
 }
 
 /*
- * Description:
+ * Description: Assigns a vector of selectable targets (index values in vec).
  *
- * Inputs:
- * Output:
+ * Inputs: std::vector<int32_t> new_menu_targets - the taget indexes
+ * Output: bool - true if the targets are not empty.
  */
 bool BattleMenu::setSelectableTargets(std::vector<int32_t> new_menu_targets)
 {
-  std::cout << "Assigning selectable targets size: " << new_menu_targets.size() << std::endl;
   valid_targets = new_menu_targets;
 
   return (!valid_targets.empty());
 }
 
 /*
- * Description:
+ * Description: Assigns a configuration to the BattleMenu.
  *
- * Inputs:
- * Output:
+ * Inputs: Options* new_config - configuration for the BattleMenu
+ * Output: bool - true if the config was not nullptr
  */
 bool BattleMenu::setConfiguration(Options* new_config)
 {

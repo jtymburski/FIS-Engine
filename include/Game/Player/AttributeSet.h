@@ -35,14 +35,14 @@ enum class AttributeState
 class AttributeSet
 {
 public:
+  /* Default constructor */
+  AttributeSet();
+
   /* Default move-constructor */
   AttributeSet(AttributeSet&&) = default;
 
   /* Default copy-constructor */
   AttributeSet(const AttributeSet&) = default;
-
-  /* Default constructor */
-  AttributeSet();
 
   /* Preset constructor */
   AttributeSet(const int &preset_level, const bool &personal = false,

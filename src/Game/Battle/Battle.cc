@@ -80,11 +80,12 @@ const float    Battle::kDODGE_PER_LEVEL_MODIFIER    =   1.04;
  *============================================================================*/
 
 /*
- * Description:
+ * Description: Constructs a Battle, given a pointer to Options and two Parties.
  *
- * Inputs:
+ * Inputs: Options* running_config - running config assignment
+ *         Party* const friends - pointer to friends party
+ *         Party* const foes - pointer to foes party
  */
-/* Constructs a party given two parties and configured options */
 Battle::Battle(Options* running_config, Party* const friends, Party* const foes)
     : friends(friends)
     , foes(foes)
@@ -117,7 +118,7 @@ Battle::Battle(Options* running_config, Party* const friends, Party* const foes)
 }
 
 /*
- * Description:
+ * Description: Battle annihilator! Clears away everything! Kaboom!
  */
 Battle::~Battle()
 {
@@ -159,8 +160,9 @@ Battle::~Battle()
 /*
  * Description: Attempts to add an ailment to the vector of ailments
  *
- * Inputs:
- * Output:
+ * Inputs: Ailment* const new_ailment - pointer to a new ailment object.
+ * Output: bool true if the ailment infliction was kosher
+ * TODO:: [08-24-14] So many corner cases.
  */
 bool Battle::addAilment(Ailment* const new_ailment)
 {
@@ -193,6 +195,7 @@ bool Battle::addAilment(Ailment* const new_ailment)
  *
  * Inputs:
  * Outputs:
+ * //TODO: [08-24-14]
  */
 void Battle::battleWon()
 {
@@ -221,6 +224,7 @@ void Battle::battleWon()
  *
  * Inputs:
  * Outputs:
+ * //TODO [08-24-14]
  */
 void Battle::battleLost()
 {
@@ -234,10 +238,16 @@ void Battle::battleLost()
 }
 
 /*
- * Description:
+ * Description: Buffers an enemy action based on the current Person Index.
+ *              This function will use the AI Module of the Person Index to
+ *              get the enemy to select an action. From the AI Module, this
+ *              function will grab the necessary information and compile it
+ *              into a proper Buffer addition and determine whether the
+ *              Enemy should select another action, or to increment the 
+ *              person index, or assign the Buffer Enemy Actions phase complete.
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Outputs: bool - true if an action was successfully buffered
  */
 bool Battle::bufferEnemyAction()
 {
@@ -318,10 +328,16 @@ bool Battle::bufferEnemyAction()
 }
 
 /*
- * Description:
+ * Description: This function is similar to bufferEnemyAction, but uses the
+ *              BattleMenu class to determine a selected action instead of
+ *              an AI Module for the person. This function only grabs
+ *              info from the menu, the Menu is actually UPDATED FOR NEW PEOPLE
+ *              in Battle::update (or called from there). This function will
+ *              grab the menu selected information and add it to the buffer if
+ *              possible, and update the person index as necessary.
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Outputs: bool - true if a Buffer was successful
  */
 bool Battle::bufferUserAction()
 {
@@ -400,13 +416,17 @@ bool Battle::bufferUserAction()
 }
 
 /*
- * Description:
+ * Description: Builds the vector of BattleItem objects. Given a person index
+ *              to build the item for, and a pair of Item, and amount objects,
+ *              this method will build the BattleItems to be selected from in
+ *              the BattleMenu and AI Module.
  *
- * Inputs:
- * Outputs:
+ * Inputs: const int32_t p_index - the person index to build the items for.
+ *         pair<Item, uint16_t> - the items and amounts of items selectable
+ * Outputs: std::vector<BattleItem> - the construced vector of BattleItems
  */
 std::vector<BattleItem> Battle::buildBattleItems(const int32_t &p_index,
-  std::vector<std::pair<Item*, uint16_t>> items)
+    std::vector<std::pair<Item*, uint16_t>> items)
 {
   curr_user = getPerson(p_index);
   std::vector<BattleItem> battle_items;
@@ -447,10 +467,12 @@ std::vector<BattleItem> Battle::buildBattleItems(const int32_t &p_index,
 }
 
 /*
- * Description:
+ * Description: Constructs the vector of BattleSkill objects given a person 
+ *              index, and a SkillSet of useable skills.
  *
- * Inputs:
- * Outputs:
+ * Inputs: int32_t p_index - the person index to the select the skills for.
+ *         SkillSet* useable_skills - set of useable skills.
+ * Outputs: std::vetor<BattleSkill> - constructed vector of BattleSkills
  */
 std::vector<BattleSkill> Battle::buildBattleSkills(const int32_t &p_index,
     SkillSet* const useable_skills)
@@ -492,10 +514,13 @@ std::vector<BattleSkill> Battle::buildBattleSkills(const int32_t &p_index,
 }
 
 /*
- * Description:
+ * Description: This function calculates the base damage of an action during 
+ *              battle. To do this, this function will also call functions like
+ *              calcIgnoreFlags and calcElementalMods (elemental modifications
+ *              have a huge impact on the actual damage resultant).
  *
- * Inputs:
- * Outputs:
+ * Inputs: float crit_factor - the already determined crit factor to use
+ * Outputs: int32_t - the base damage of the current action
  */
 int32_t Battle::calcBaseDamage(const float &crit_factor)
 {
@@ -512,7 +537,6 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
   int32_t elm2_def_val  = 0;
   int32_t luck_pow_val  = 0;
   int32_t luck_def_val  = 0;
-
 
   calcIgnoreState();
   calcElementalMods();
@@ -722,7 +746,7 @@ void Battle::calcElementalMods()
 }
 
 /*
- * Description:
+ * Description: Calculates the crit factor for the Battle. 
  *
  * Inputs:
  * Outputs:
@@ -733,6 +757,12 @@ float Battle::calcCritFactor()
   return 1.00;
 }
 
+/*
+ * Description:
+ *
+ * Inputs: 
+ * Output: 
+ */
 bool Battle::calcIgnoreState()
 {
   auto success = false;

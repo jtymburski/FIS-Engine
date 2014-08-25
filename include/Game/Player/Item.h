@@ -11,7 +11,13 @@
  * Notes
  * -----
  *
- * [1]:
+ * [1]: Items are constructed primarily in one of two ways. First, base items
+ *      are one-ofs, constructed from the item list in XML. These are your
+ *      game ID items. All normal items that will be used in the game are
+ *      created as copies of these items. These items will share almost all
+ *      the same data as their parents, but will have unique IDs assosciated
+ *      with them. Subclasses like Bubbies will also have altering data like
+ *      level, experience, etc.
  *
  * TODO
  * ----
@@ -61,14 +67,14 @@ enum class Material
   BRASS        = 1 << 2,
   TITANIUM     = 1 << 3,
   GRAPHENE     = 1 << 4,
-  PHYSICAL     = 1 << 5,
-  NON_PHYSICAL = 1 << 6,
-  FIRE         = 1 << 7,
-  FOREST       = 1 << 8,
-  ICE          = 1 << 9,
-  ELECTRIC     = 1 << 10,
-  DIGITAL      = 1 << 11,
-  NIHIL        = 1 << 12
+  PHYSICAL     = 1 << 5,  /* Bartite */
+  NON_PHYSICAL = 1 << 6,  /* Cyllion */
+  FIRE         = 1 << 7,  /* Effretus */
+  FOREST       = 1 << 8,  /* Floriver */
+  ICE          = 1 << 9,  /* Avalonium */
+  ELECTRIC     = 1 << 10, /* Niobium */
+  DIGITAL      = 1 << 11, /* Ravizer */
+  NIHIL        = 1 << 12  /* Vacantus */
 };
 
 class Item
@@ -84,12 +90,12 @@ public:
 
   /* Base Item constructor - constructs an Item given a game ID and basics */
   Item(const int32_t &game_id, const std::string &name, const uint32_t &value,
-       Frame* thumbnail = nullptr, const double &mass = 0.0, 
-       const uint32_t &dura = kMIN_DURA);
+      Frame* thumbnail = nullptr, const double &mass = 0.0, 
+      const uint32_t &dura = kMIN_DURABILITY);
 
   /* Key Item constructor */
   Item(const int32_t &ame_id, const std::string &name, 
-       Frame* thumbnail = nullptr);
+      Frame* thumbnail = nullptr);
 
   /* Annihilates an Item object */
   virtual ~Item();
@@ -150,13 +156,13 @@ protected:
 
   /* Value of the item (in the shop) */
   uint32_t value;
-  int32_t value_modifier;
+  int32_t  value_modifier;
   
   /* ------------ Constants --------------- */
-  static const uint32_t kMAX_DURA;       /* Maximum durability */
+  static const uint32_t kMAX_DURABILITY; /* Maximum durability */
   static const double   kMAX_MASS;       /* Maximum mass of an Item */
   static const uint32_t kMAX_VALUE;      /* Maximum value of an Item */
-  static const uint32_t kMIN_DURA;       /* Minimum durability */
+  static const uint32_t kMIN_DURABILITY; /* Minimum durability */
   static const double   kMIN_MASS;       /* Minimum mass */
 
 /*=============================================================================

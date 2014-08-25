@@ -61,7 +61,7 @@ static const std::string kDEFAULT_DENONYM  = "Battle Classian";
 static const std::string kDEFAULT_CAT_DESC = "A generic Battle Class";
 
 /* ------------ Limits --------------- */
-static const size_t kMAX_BRIEF_DESC  = 70;
+static const size_t kMAX_BRIEF_DESC  = 80;
 static const size_t kMAX_DESC        = 500;
 static const size_t kMAX_PREFIX      = 15;
 static const size_t kMAX_NAME        = 40;

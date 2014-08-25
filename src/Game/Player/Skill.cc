@@ -41,20 +41,20 @@ const int32_t  Skill::kUNSET_ID          =     -1;
  * Inputs: none
  */
 Skill::Skill()
-  : animation{nullptr}
-  , chance{0}
-  , cooldown{0}
-  , cost{0}
-  , description{0}
-  , flags{static_cast<SkillFlags>(0)}
-  , id{kUNSET_ID}
-  , message{""}
-  , primary{Element::NONE}
-  , secondary{Element::NONE}
-  , sound_effect{nullptr}
-  , scope{ActionScope::NO_SCOPE}
-  , thumbnail{nullptr}
-  , value{0}
+    : animation{nullptr}
+    , chance{0}
+    , cooldown{0}
+    , cost{0}
+    , description{0}
+    , flags{static_cast<SkillFlags>(0)}
+    , id{kUNSET_ID}
+    , message{""}
+    , primary{Element::NONE}
+    , secondary{Element::NONE}
+    , sound_effect{nullptr}
+    , scope{ActionScope::NO_SCOPE}
+    , thumbnail{nullptr}
+    , value{0}
 {}
 
 /*
@@ -63,7 +63,7 @@ Skill::Skill()
  * Inputs: name - string name for the Skill
  */
 Skill::Skill(const std::string &name)
-  : Skill::Skill()
+    : Skill::Skill()
 {
   setName(name);
 }
@@ -80,8 +80,8 @@ Skill::Skill(const std::string &name)
  *         cost - the cost of the skill in QD
  */
 Skill::Skill(const int &id, const std::string &name, const ActionScope &scope,
-	           Action* effect, const float &chance, const uint32_t &cost)
-  : Skill::Skill()
+    Action* effect, const float &chance, const uint32_t &cost)
+      : Skill::Skill()
 {
   setID(id);
   setName(name);
@@ -106,9 +106,9 @@ Skill::Skill(const int &id, const std::string &name, const ActionScope &scope,
  *         cost - the cost of the skill in QD
  */
 Skill::Skill(const int &id, const std::string &name, const ActionScope &scope, 
-	           const std::vector<Action*> &effects, 
-	           const float &chance, const uint32_t &cost)
-  : Skill::Skill()
+    const std::vector<Action*> &effects, 
+    const float &chance, const uint32_t &cost)
+      : Skill::Skill()
 {
   setID(id);
   setName(name);
@@ -280,11 +280,11 @@ void Skill::print()
 
   std::cout << "# Effects: " << effects.size() << std::endl;
 
-  std::cout << "Primary Element" << Helpers::elementToString(primary) << std::endl;
-  std::cout << "Secondary Element" << Helpers::elementToString(secondary) << std::endl;
-  std::cout << "Sound effect set? " << !(sound_effect == nullptr) << std::endl;
-  std::cout << "[void]Action scope: " << std::endl;
-  std::cout << "Thumb Set? " << !(thumbnail == nullptr) << std::endl;
+  std::cout << "Primary Element" << Helpers::elementToString(primary);
+  std::cout << "\nSecondary Element" << Helpers::elementToString(secondary);
+  std::cout << "\nSound effect set? " << !(sound_effect == nullptr);
+  std::cout << "\nAction scope: " << Helpers::actionScopeToStr(scope);
+  std::cout << "\nThumb Set? " << !(thumbnail == nullptr) << std::endl;
   std::cout << "Point Value: " << value << std::endl;
   std::cout << "----" << std::endl;
   std::cout << "ALTERING: " << getFlag(SkillFlags::ALTERING) << std::endl;
