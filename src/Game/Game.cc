@@ -97,8 +97,9 @@ Game::~Game()
 /* Compile and build vector of all actions from the action file */
 bool Game::buildActions(const std::string &file, bool encryption)
 {
-  auto done    = false;
+  // auto done    = false;
   auto success = true;
+  (void)encryption;//TODO: WARNING
   // FileHandler fh(file, false, false, encryption);
 
   // success &= fh.start();
@@ -750,7 +751,7 @@ Action* Game::getAction(const int32_t &index, const bool& by_id)
       if ((*it)->getID() == index)
         return (*it);
   }
-  else if (index < action_list.size())
+  else if (static_cast<uint32_t>(index) < action_list.size())
   {
     return action_list.at(index);
   }

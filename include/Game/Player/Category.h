@@ -47,10 +47,10 @@ class Category
 {
 public:
   /* Creates an empty category with just a name */
-  Category(const int32_t &id, const std::string &name);
+  Category(const int32_t &my_id, const std::string &name);
 
   /* Constructs a normal category with stat values and a SkillSet */
-  Category(const int32_t &id, const std::string &name, 
+  Category(const int32_t &my_id, const std::string &name, 
            const std::string &denonym, const AttributeSet &base_stats, 
            const AttributeSet &max_stats, SkillSet* const skills = nullptr);
 

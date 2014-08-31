@@ -53,13 +53,13 @@ const std::vector<int> Category::kMAX_VALUES =
  *
  */
 Category::Category(const int32_t &my_id, const std::string &name)
-  : id{my_id}
-  , base_stats{AttributeSet()}
+  : base_stats{AttributeSet()}
   , top_stats{AttributeSet()}
   , description{StringDb::kDEFAULT_CAT_DESC}
   , denonym{StringDb::kDEFAULT_DENONYM}
   , name{name}
   , skill_set{nullptr}
+  , id{my_id}
 {
   if (!attr_sets_built)
     buildAttrSets();
@@ -82,13 +82,13 @@ Category::Category(const int32_t &my_id, const std::string &name)
 Category::Category(const int32_t &my_id, const std::string &name, 
                    const std::string &denonym, const AttributeSet &base_stats, 
                    const AttributeSet &top_stats, SkillSet* const skills)
-  : id(my_id)
-  , base_stats{base_stats}
+  : base_stats{base_stats}
   , top_stats{top_stats}
   , description{StringDb::kDEFAULT_CAT_DESC}
   , denonym{denonym}
   , name{name}
   , skill_set{skills}
+  , id(my_id)
 {
   if (!attr_sets_built)
     buildAttrSets();

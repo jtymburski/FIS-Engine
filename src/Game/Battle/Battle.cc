@@ -193,9 +193,9 @@ bool Battle::addAilment(Ailment* const new_ailment)
 /*
  * Description: Called when the Battle has been won
  *
- * Inputs:
- * Outputs:
- * //TODO: [08-24-14]
+ * Inputs: none
+ * Output: none
+ * //TODO: [08-24-14] Finish victory functions
  */
 void Battle::battleWon()
 {
@@ -220,11 +220,12 @@ void Battle::battleWon()
 }
 
 /*
- * Description: Called when the Battle has been lost
+ * Description: Called when the Battle has been lost. Battle lost generally 
+ *              results in a return to title (event handler?)
  *
- * Inputs:
- * Outputs:
- * //TODO [08-24-14]
+ * Inputs: none
+ * Output: none
+ * //TODO [08-24-14]: Finish battle lost functionality
  */
 void Battle::battleLost()
 {
@@ -247,7 +248,7 @@ void Battle::battleLost()
  *              person index, or assign the Buffer Enemy Actions phase complete.
  *
  * Inputs: none
- * Outputs: bool - true if an action was successfully buffered
+ * Output: bool - true if an action was successfully buffered
  */
 bool Battle::bufferEnemyAction()
 {
@@ -337,7 +338,7 @@ bool Battle::bufferEnemyAction()
  *              possible, and update the person index as necessary.
  *
  * Inputs: none
- * Outputs: bool - true if a Buffer was successful
+ * Output: bool - true if a Buffer was successful
  */
 bool Battle::bufferUserAction()
 {
@@ -423,7 +424,7 @@ bool Battle::bufferUserAction()
  *
  * Inputs: const int32_t p_index - the person index to build the items for.
  *         pair<Item, uint16_t> - the items and amounts of items selectable
- * Outputs: std::vector<BattleItem> - the construced vector of BattleItems
+ * Output: std::vector<BattleItem> - the construced vector of BattleItems
  */
 std::vector<BattleItem> Battle::buildBattleItems(const int32_t &p_index,
     std::vector<std::pair<Item*, uint16_t>> items)
@@ -472,7 +473,7 @@ std::vector<BattleItem> Battle::buildBattleItems(const int32_t &p_index,
  *
  * Inputs: int32_t p_index - the person index to the select the skills for.
  *         SkillSet* useable_skills - set of useable skills.
- * Outputs: std::vetor<BattleSkill> - constructed vector of BattleSkills
+ * Output: std::vetor<BattleSkill> - constructed vector of BattleSkills
  */
 std::vector<BattleSkill> Battle::buildBattleSkills(const int32_t &p_index,
     SkillSet* const useable_skills)
@@ -520,7 +521,7 @@ std::vector<BattleSkill> Battle::buildBattleSkills(const int32_t &p_index,
  *              have a huge impact on the actual damage resultant).
  *
  * Inputs: float crit_factor - the already determined crit factor to use
- * Outputs: int32_t - the base damage of the current action
+ * Output: int32_t - the base damage of the current action
  */
 int32_t Battle::calcBaseDamage(const float &crit_factor)
 {
@@ -638,7 +639,9 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
 }
 
 /*
- * Description:
+ * Description: This function calculates elemental modifiers for the current
+ *              action/person/target outcome processing. Damage is modified
+ *              if the 
  *
  * Inputs:
  * Outputs:
@@ -866,10 +869,12 @@ bool Battle::calcIgnoreState()
 }
 
 /*
- * Description:
+ * Description: Determines the level difference between the current user and the
+ *              current target. A negative value means the target's level is 
+ *              greater.
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Output: int16_t - the difference in level value
  */
 int16_t Battle::calcLevelDifference()
 {
@@ -877,10 +882,12 @@ int16_t Battle::calcLevelDifference()
 }
 
 /*
- * Description:
+ * Description: Asserts that every member in the Foes party has a valid AI
+ *              Module (assigned with a parent matching each member) before
+ *              larger problems occur.
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Output: bool - the validity of all AI Modules on the foes party
  */
 bool Battle::checkAIModules()
 {
@@ -901,10 +908,12 @@ bool Battle::checkAIModules()
 }
 
 /*
- * Description:
+ * Description: Determines whether the battle processing can be incremented or
+ *              whether the current person index needs to select another action
+ *              based on the person's battle flags.
  *
- * Inputs:
- * Outputs:
+ * Inputs: Person* - person to check whether to increment action selection for
+ * Output: bool - true if action selection should be incremented
  */
 bool Battle::canIncrementIndex(Person* check_person)
 {
@@ -924,10 +933,11 @@ bool Battle::canIncrementIndex(Person* check_person)
 }
 
 /*
- * Description:
+ * Description: Clears action variables, prepping it for a new action/person/
+ *              target combination for turn processing.
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Output: none
  */
 void Battle::clearActionVariables()
 {
@@ -956,8 +966,8 @@ void Battle::clearActionVariables()
 /*
  * Description: Returns enumeration of party death [None, Friends, Foes, Both]
  *
- * Inputs:
- * Outputs:
+ * Inputs: Party* - party to check death for.
+ * Output: bool - true if the size of the living members vector is zero
  */
 bool Battle::checkPartyDeath(Party* const check_party)
 {
@@ -968,10 +978,12 @@ bool Battle::checkPartyDeath(Party* const check_party)
 }
 
 /*
- * Description: Cleanup before the end of a Battle turn
+ * Description: Cleanup before the end of a Battle turn. Clears the action
+ *              buffer, resets person index, the action variables. Updates
+ *              the turns elapsed and menu fora new turn.
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Output: none
  */
 void Battle::cleanUp()
 {
@@ -995,10 +1007,15 @@ void Battle::cleanUp()
 }
 
 /*
- * Description: Determines the turn progression of the Battle (based on speed)
+ * Description: Determines the turn progression of the Battle. The party with
+ *              the total greatest speed will generally go first. In the rare
+ *              case that the party's have equal speed, the first party will
+ *              randomly go first. Note that it really has little consequence
+ *              in the outcome of Battle which parties go first since actions
+ *              are ordered based upon user momentum.
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Output: none
  */
 void Battle::determineTurnMode()
 {
@@ -1019,8 +1036,8 @@ void Battle::determineTurnMode()
  * Description: Determines whether the current action will crit against the
  *              current target.
  *
- * Inputs:  none
- * Outputs: bool - true if the current action will crit against the curr target.
+ * Inputs: none
+ * Output: bool - true if the current action will crit against the curr target.
  */
 bool Battle::doesActionCrit()
 {
@@ -1054,8 +1071,8 @@ bool Battle::doesActionCrit()
  *              if the processing of each of its actions will have a chance of
  *              occuring.
  *
- * Inputs:  none
- * Outputs: bool - true if the current skill will entirely miss
+ * Inputs: none
+ * Output: bool - true if the current skill will entirely miss
  */
 bool Battle::doesSkillMiss()
 {
@@ -1072,8 +1089,8 @@ bool Battle::doesSkillMiss()
  * Description: Determines whether the current action will miss its current
  *              target. 
  *
- * Inputs:  none
- * Outputs: bool - true if the current action will miss the current target
+ * Inputs: none
+ * Output: bool - true if the current action will miss the current target
  */
 bool Battle::doesActionMiss()
 {
@@ -1095,13 +1112,16 @@ bool Battle::doesActionMiss()
 }
 
 /*
- * Description: Deals with general upkeep (i.e. weather)
+ * Description: Deals with general upkeep including effects brought on by
+ *              the current battle circumstances like weather that aren't
+ *              or can't be dealt with in personal upkeep functions.
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Output: none
  */
 void Battle::generalUpkeep()
 {
+  /* Print out the party state if either in UDEBUG or in TEXT battle mode */
 #ifdef UDEBUG
   printPartyState();
 #else 
@@ -1116,10 +1136,14 @@ void Battle::generalUpkeep()
 }
 
 /*
- * Description: Sets the flags of BattleState at the beginning of the Battle
+ * Description: Sets the flags of BattleState at the beginning of the Battle.
+ *              By default, all Battles will be a random encounter unless
+ *              there exists a person in the foes party which is: a mini-boss,
+ *              a boss, or final boss. Also sets other flags to their default
+ *              (undone) state.
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Output: none
  */
 void Battle::loadBattleStateFlags()
 {
@@ -1152,29 +1176,30 @@ void Battle::loadBattleStateFlags()
 }
 
 /*
- * Description: Orders the actions on the buffer by speed of the aggressor
+ * Description: Orders the actions on the buffer by speed of the aggressor. 
+ *              By default, items will be take precedence over other actions
+ *              (this is one advantage of items vs. skills), then the remaining
+ *              actions will be sorted by the user of the action's momentum.
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Output: none
  */
 void Battle::orderActions()
 {
-  std::cout << "Action buffer state prior to sorting: " << std::endl;
-  action_buffer->print();
-  std::cout << std::endl;
-
   /* Re-order item actions first, and skills by momentum of the user */
   action_buffer->reorder(BufferSorts::ITEM_FIRST, BufferSorts::MOMENTUM);
-
-  std::cout << "Action state after sorting: " << std::endl;
-  action_buffer->print();
-  std::cout << std::endl;
 
   /* Order action state complete */
   setBattleFlag(CombatState::PHASE_DONE);
 }
 
-/* Deals with character related upkeep */
+/*
+ * Description: Deals with personal-related upkeep (such as processing damaging
+ *              ailments, stat recalculations), at the beginning of each turn.
+ *
+ * Inputs: Person* - target person to perform upkeep for
+ * Output: none
+ */
 void Battle::personalUpkeep(Person* const target)
 {
   target->battleTurnPrep();
@@ -1186,10 +1211,12 @@ void Battle::personalUpkeep(Person* const target)
 }
 
 /*
- * Description: 
+ * Description: Processes the current Skill (or Item->Skill) action selected
+ *              for each action in the Skill against a vector of targets which
+ *              were selected as targets of the Skill
  *
- * Inputs:
- * Outputs:
+ * Inputs: std::vector<Person*> - vector of targets for processing of curr Skill
+ * Output: none
  */
 void Battle::processSkill(std::vector<Person*> targets)
 {
@@ -1319,10 +1346,12 @@ void Battle::processSkill(std::vector<Person*> targets)
 }
 
 /*
- * Description: Process the actions (Items & Skills) in the buffer
+ * Description: Process the action selections (Items/Skills/Guard/etc.) in the
+ *              buffer after they've been ordered. Will call functions like
+ *              processSkill(std::vector<Person*> targets) to achieve this.
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Output: none
  */
 void Battle::processActions()
 {
@@ -1416,10 +1445,14 @@ void Battle::processActions()
 }
 
 /*
- * Description: Recalculates the ailments after they have been altered
+ * Description: Recalculates the ailments modification factors for a given
+ *              Person* inflcited by all ailments. For proper reversible stat
+ *              buffs, both the multiplicative effects and additive effects
+ *              must be separately calculated and re-applied carefully to base
+ *              stats.
  *
- * Inputs:
- * Outputs:
+ * Inputs: Person* - person to recalculate ailment modification factors for 
+ * Output: none
  */
 void Battle::recalculateAilments(Person* const target)
 {
@@ -1431,10 +1464,11 @@ void Battle::recalculateAilments(Person* const target)
 }
 
 /*
- * Description: Calculates enemy actions and add them to the buffer
+ * Description: Sets up enemy AI Modules for a new person index to call
+ *              bufferEnemyAction() to actually grab the data.
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Output: none
  */
 void Battle::selectEnemyActions()
 {
@@ -1478,10 +1512,11 @@ void Battle::selectEnemyActions()
 }
 
 /*
- * Description: Calculates user actions and add them to the buffer
+ * Description: Iterates through the person indexes for users to call 
+ *              bufferUserActions() for each index to actually get data.
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Output: none
  */
 void Battle::selectUserActions()
 {
@@ -1553,8 +1588,8 @@ void Battle::selectUserActions()
 /*
  * Description: Load default configuration of the battle 
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Output: bool - true
  */
 bool Battle::setupClass()
 {
@@ -1590,10 +1625,12 @@ bool Battle::setupClass()
 }
 
 /*
- * Description:
+ * Description: Tests whether a person index is valid. If the person index is
+ *              an invalid person, if the person is alive and if the person
+ *              is no set to skip their next turn, this function returns true.
  *
- * Inputs:
- * Outputs:
+ * Inputs: int32_t - the person index to test if it is valid for action sel.
+ * Output: bool - the validity of the person index for action selection
  */
 bool Battle::testPersonIndex(const int32_t &test_index)
 {
@@ -1609,10 +1646,11 @@ bool Battle::testPersonIndex(const int32_t &test_index)
 }
 
 /*
- * Description: Method which calls personal upkeeps
+ * Description: Upkeep function which calls each personal upkeep for each 
+ *              member in both friends and foes party.
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Output: none
  */
 void Battle::upkeep()
 {
@@ -1631,8 +1669,8 @@ void Battle::upkeep()
 /*
  * Description: Assigns a new value to the ailment update mode
  *
- * Inputs:
- * Outputs:
+ * Inputs: BattleOptions - new enumerated options for Battle
+ * Output: none
  */
 void Battle::setAilmentUpdateMode(const BattleOptions &new_value)
 {
@@ -1642,8 +1680,8 @@ void Battle::setAilmentUpdateMode(const BattleOptions &new_value)
 /*
  * Description: Assigns a new value to the battle output mode
  *
- * Inputs:
- * Outputs:
+ * Inputs: BattleMode - new enumerated BattleMode (TEXT/GUI)
+ * Output: none
  */
 void Battle::setBattleMode(const BattleMode &new_value)
 {
@@ -1653,8 +1691,8 @@ void Battle::setBattleMode(const BattleMode &new_value)
 /*
  * Description: Assigns the friends party of the Battle
  *
- * Inputs:
- * Outputs:
+ * Inputs: Party* - pointer to friends party
+ * Output: bool - true if the new pointer was not null
  */
 bool Battle::setFriends(Party* const new_friends)
 {
@@ -1671,8 +1709,8 @@ bool Battle::setFriends(Party* const new_friends)
 /*
  * Description: Assigns the foes party of the Battle
  *
- * Inputs:
- * Outputs:
+ * Inputs: Party* foes - new foes party 
+ * Output: bool - true if the foes party was not nullptr
  */
 bool Battle::setFoes(Party* const new_foes)
 {
@@ -1689,8 +1727,8 @@ bool Battle::setFoes(Party* const new_foes)
 /*
  * Description: Assigns a new value to the hud display mode
  *
- * Inputs:
- * Outputs:
+ * Inputs: BattleOptions - enumerated BattleOptions for hud display mode
+ * Output: non
  */
 void Battle::setHudDisplayMode(const BattleOptions &new_value)
 {
@@ -1698,10 +1736,11 @@ void Battle::setHudDisplayMode(const BattleOptions &new_value)
 }
 
 /*
- * Description: Updates the Battle to the next state
+ * Description: Updates the Battle to the next state based on its present state.
+ *              Refreshes the phase and action done flags.
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Output: none
  */
 void Battle::setNextTurnState()
 {
@@ -1825,10 +1864,13 @@ void Battle::setNextTurnState()
 }
 
 /*
- * Description:
+ * Description: Assigns the next person index. If In selection action enemy,
+ *              finds the next person index which needs action selected. Same
+ *              for selection of user actions. If no next person is needed,
+ *              this function returns false.
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Output: bool - whether the next person index was set and is valid
  */
 bool Battle::setNextPersonIndex()
 {
@@ -1867,8 +1909,8 @@ bool Battle::setNextPersonIndex()
 /*
  * Description: Assigns a new value for the screen width
  *
- * Inputs:
- * Outputs:
+ * Inputs: uint16_t new_value - new value for the screen height
+ * Output: none
  */
 void Battle::setScreenHeight(const uint16_t &new_value)
 {
@@ -1878,8 +1920,8 @@ void Battle::setScreenHeight(const uint16_t &new_value)
 /*
  * Description: Assigns a new value for the screen width
  *
- * Inputs:
- * Outputs:
+ * Inputs: uint16_t new_value - the new value for the screen width
+ * Output: none
  */
 void Battle::setScreenWidth(const uint16_t &new_value)
 {
@@ -1889,8 +1931,8 @@ void Battle::setScreenWidth(const uint16_t &new_value)
 /*
  * Description: Assigns a new value to the elapsed time
  *
- * Inputs:
- * Outputs:
+ * Inputs: int32-t new_value - new value for total time elapsed in battle
+ * Output: none
  */
 void Battle::setTimeElapsed(const int32_t &new_value)
 {
@@ -1900,8 +1942,8 @@ void Battle::setTimeElapsed(const int32_t &new_value)
 /*
  * Description: Assigns thee time elapsed this turn
  *
- * Inputs:
- * Outputs:
+ * Inputs: int32_t - new value for time elapsed this turn
+ * Output: none
  */
 void Battle::setTimeElapsedThisTurn(const int32_t &new_value)
 {
@@ -1911,8 +1953,8 @@ void Battle::setTimeElapsedThisTurn(const int32_t &new_value)
 /*
  * Description: Assigns a new value to the turns elapsed
  *
- * Inputs:
- * Outputs:
+ * Inputs: uint16_t new_value - the new value for the turns elapsed
+ * Output: none
  */
 void Battle::setTurnsElapsed(const uint16_t &new_value)
 {
@@ -1922,8 +1964,8 @@ void Battle::setTurnsElapsed(const uint16_t &new_value)
 /*
  * Description: Assigns a new turn mode to the Battle
  *
- * Inputs:
- * Outputs:
+ * Inputs: TurnMode - new enumerated turn mode (FRIENDS_FIRST, etc.)
+ * Output: none
  */
 void Battle::setTurnMode(const TurnMode &new_turn_mode)
 {
@@ -1931,10 +1973,10 @@ void Battle::setTurnMode(const TurnMode &new_turn_mode)
 }
 
 /*
- * Description: Updates the turn state of the Battle
+ * Description: Updates the turn state of the Battle. Prints it if in UDEBUG
  *
- * Inputs:
- * Outputs:
+ * Inputs: TurnState - new enumerated turn state for the Battle (UPKEEP, etc.)
+ * Output: none
  */
 void Battle::setTurnState(const TurnState &new_turn_state)
 {
@@ -1951,10 +1993,11 @@ void Battle::setTurnState(const TurnState &new_turn_state)
  *============================================================================*/
 
 /*
- * Description: 
+ * Description: Process key down events for user selection of actions/outcome
+ *              of battle.
  *
- * Inputs:
- * Outputs:
+ * Inputs: SDL_KeyboardEvent - the key down event
+ * Output: bool - false
  */
 bool Battle::keyDownEvent(SDL_KeyboardEvent event)
 {
@@ -1984,21 +2027,12 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
 }
 
 /*
- * Description: 
+ * Description: Method to print information about the Battle.
  *
- * Inputs:
- * Outputs:
- */
-bool Battle::isPartyDead()
-{
-  return (friends->getLivingMembers().size() == 0);
-}
-
-/*
- * Description: Methods to print information about the Battle
- *
- * Inputs:
- * Outputs:
+ * Inputs: bool simple - true if to show a simple output of Battle information
+ *         bool flags - true if to print out state of all flags
+ *         bool party - true if to print out party state
+ * Output: none
  */
 void Battle::printAll(const bool &simple, const bool &flags, const bool &party)
 {
@@ -2058,10 +2092,11 @@ void Battle::printAll(const bool &simple, const bool &flags, const bool &party)
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Print out the etailed information for each person in friends
+ *              and foes to the console.
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Output: none
  */
 void Battle::printPartyState()
 {
@@ -2075,10 +2110,12 @@ void Battle::printPartyState()
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Prints out the state of a given person and their corresponding
+ *              person index.
  *
- * Inputs:
- * Outputs:
+ * Inputs: Person* - pointer to the member which to print out VITA/QTDR for
+ *         int32_t - the person index of the person (only for display purposes)
+ * Outputs: none
  */
 void Battle::printPersonState(Person* const member, 
                               const int32_t &person_index)
@@ -2093,10 +2130,10 @@ void Battle::printPersonState(Person* const member,
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: 
  *
  * Inputs:
- * Outputs:
+ * Output:
  */
 void Battle::printInventory(Party* const target_party)
 {
@@ -2112,10 +2149,10 @@ void Battle::printInventory(Party* const target_party)
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: 
  *
  * Inputs:
- * Outputs:
+ * Output:
  */
 void Battle::printTargetVariables(const bool &print_target_stats)
 {
@@ -2167,10 +2204,10 @@ void Battle::printTargetVariables(const bool &print_target_stats)
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description:
  *
  * Inputs:
- * Outputs:
+ * Output:
  */
 void Battle::printTurnState()
 {
@@ -2200,10 +2237,10 @@ void Battle::printTurnState()
 }
 
 /*
- * Description: Update the cycle time of Battle
+ * Description:
  *
  * Inputs:
- * Outputs:
+ * Output:
  */
 bool Battle::update(int32_t cycle_time)
 {
@@ -2363,8 +2400,8 @@ bool Battle::update(int32_t cycle_time)
 /*
  * Description: Returns the ailment update mode currently set
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Output: BattleOptions - enumerated BattleOptions for ailment update mode
  */
 BattleOptions Battle::getAilmentUpdateMode()
 {
@@ -2374,8 +2411,8 @@ BattleOptions Battle::getAilmentUpdateMode()
 /*
  * Description: Returns the assigned Battle display mode
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Output: BattleMode - enumerated mode of Battle (TEXT/GUI)
  */
 BattleMode Battle::getBattleMode()
 {
@@ -2385,8 +2422,8 @@ BattleMode Battle::getBattleMode()
 /*
  * Description: Return the value of a given CombatState flag
  *
- * Inputs:
- * Outputs:
+ * Inputs: CombatState test_flag - flag which to find the value for
+ * Output: bool - boolean value of the given flag
  */
 bool Battle::getBattleFlag(const CombatState &test_flag)
 {
@@ -2396,8 +2433,8 @@ bool Battle::getBattleFlag(const CombatState &test_flag)
 /*
  * Description: Return the value of a given IgnoreState flag
  *
- * Inputs:
- * Outputs:
+ * Inputs: IgnoreState - flag which to find the value for
+ * Output: bool - boolean value of the given flag
  */
 bool Battle::getIgnoreFlag(const IgnoreState &test_flag)
 {
@@ -2407,8 +2444,8 @@ bool Battle::getIgnoreFlag(const IgnoreState &test_flag)
 /*
  * Description: Returns the friends pointer of the Battle
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Output: Party* - pointer to the Friends party
  */
 Party* Battle::getFriends()
 {
@@ -2418,8 +2455,8 @@ Party* Battle::getFriends()
 /*
  * Description: Returns the foes pointer of the Battle
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Output: Party* - pointer to the Foes party
  */
 Party* Battle::getFoes()
 {
@@ -2429,8 +2466,8 @@ Party* Battle::getFoes()
 /*
  * Description: Returns the hud display mode currently set
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Output: BattleOptions - enumerated Battle options set by running config
  */
 BattleOptions Battle::getHudDisplayMode()
 {
@@ -2440,8 +2477,8 @@ BattleOptions Battle::getHudDisplayMode()
 /*
  * Description: Returns the value of the screen height 
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Output: uint32_t - the set height of the screen
  */
 uint32_t Battle::getScreenHeight()
 {
@@ -2449,10 +2486,10 @@ uint32_t Battle::getScreenHeight()
 }
 
 /*
- * Description: Returns the value of the screen width
+ * Description: Returns the value of the screen width.
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Output: uint32_t - the set width of the screen
  */
 uint32_t Battle::getScreenWidth()
 {
@@ -2460,10 +2497,10 @@ uint32_t Battle::getScreenWidth()
 }
 
 /*
- * Description: Evaluates and returns a vector of ailments for a given person
+ * Description: Evaluates and returns a vector of ailments for a given person.
  *
- * Inputs:
- * Outputs:
+ * Inputs: Person* - person pointer to find all the ailment pointers for
+ * Output: std::vector<Ailment*> - vector of ailments inflicting the Person
  */
 std::vector<Ailment*> Battle::getPersonAilments(Person* const target)
 {
@@ -2478,10 +2515,11 @@ std::vector<Ailment*> Battle::getPersonAilments(Person* const target)
 }
 
 /*
- * Description: Returns the value of the turns elapsed
+ * Description: Returns the value of the turns elapsed. Notice that the current
+ *              turn number is turns elapsed + 1.
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Output: uint32_t - the total number of turns elapsed completely
  */
 uint32_t Battle::getTurnsElapsed()
 {
@@ -2489,10 +2527,10 @@ uint32_t Battle::getTurnsElapsed()
 }
 
 /*
- * Description: Returns the elapsed time of the Battle
+ * Description: Returns the elapsed time of the Battle.
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Output: uint32_t - the amount of time that has been elapsed
  */
 uint32_t Battle::getTimeElapsed()
 {
@@ -2502,8 +2540,8 @@ uint32_t Battle::getTimeElapsed()
 /*
  * Description: Returns the enumerated turn state of the Battle
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Output: TurnState - enumerated turn state of the Battle
  */
 TurnState Battle::getTurnState()
 {
@@ -2511,12 +2549,12 @@ TurnState Battle::getTurnState()
 }
 
 /*
- * Description: Returns the index integer of a a given Person ptr
+ * Description: Returns the index integer of a a given Person ptr, or 0 if no
+ *              pointer 
  *
- * Inputs:
- * Outputs:
+ * Inputs: Person* - returns the corresponding index of a given Person pointer
+ * Output: int32_t - the corresponding index of the given pointer
  */
-/*  */
 int32_t Battle::getTarget(Person* battle_member)
 {
   for (uint32_t i = 0; i < friends->getSize(); i++)
@@ -2531,10 +2569,11 @@ int32_t Battle::getTarget(Person* battle_member)
 }
 
 /*
- * Description: Actually performs the actions in the buffer
+ * Description: Converts an index for a person to the corresponding Person*,
+ *              or returns nullptr if there is no matching Person*
  *
- * Inputs:
- * Outputs:
+ * Inputs: index - the index given for wanting the corresponding Person ptr
+ * Output: Person* - pointer for the given index
  */
 Person* Battle::getPerson(const int32_t &index)
 {
@@ -2553,10 +2592,11 @@ Person* Battle::getPerson(const int32_t &index)
 }
 
 /*
- * Description: Calculate and return all BattleMember indexes
+ * Description: Compiles a vector of all possible targets in the current Battle
+ *              from both the friends and foes party.
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Output: std::vector<int32_t> - indexes of all possible targets
  */
 std::vector<int32_t> Battle::getAllTargets()
 {
@@ -2569,10 +2609,11 @@ std::vector<int32_t> Battle::getAllTargets()
 }
 
 /*
- * Description: Obtains all friendly battle member indexes
+ * Description: Obtains all friendly battle member indexes. Will grab all living
+ *              members or all dead members of the Foes party.
  *
- * Inputs:
- * Outputs:
+ * Inputs: ko - whether to grab dead members. If false, will grab living members
+ * Output: std::vector<int32_t> - indexes of needed persons in the Friends party
  */
 std::vector<int32_t> Battle::getFriendsTargets(const bool &ko)
 {
@@ -2594,10 +2635,11 @@ std::vector<int32_t> Battle::getFriendsTargets(const bool &ko)
 }
 
 /*
- * Description: Obtains all unfriendly battle member indexes
+ * Description: Obtains all unfriendly battle member indexes. Will grab all
+ *              living members or all dead members in the Foes party.
  *
- * Inputs:
- * Outputs:
+ * Inputs: ko - whether to grab dead members. If false, will grab living members
+ * Output: std::vector<int32_t> - indexes of needed persons in the Foes party
  */
 std::vector<int32_t> Battle::getFoesTargets(const bool &ko)
 {
@@ -2619,10 +2661,13 @@ std::vector<int32_t> Battle::getFoesTargets(const bool &ko)
 }
 
 /*
- * Description: Obtains a vector of targets matching the signage
+ * Description: Obtains a vector of targets indexes for all members of a party
+ *              given the index of one member of the party. This is trivial
+ *              because all members of the same party will have the same signage
+ *              (positive or negtaive).
  *
- * Inputs:
- * Outputs:
+ * Inputs: int32_t check_index - a member of the party to find all targets for
+ * Output: std::vector<int32_t> - constructed vector of all party indexes
  */
 std::vector<int32_t> Battle::getPartyTargets(int32_t check_index)
 {
@@ -2635,10 +2680,11 @@ std::vector<int32_t> Battle::getPartyTargets(int32_t check_index)
 }
 
 /*
- * Description: 
+ * Description: Function for converting integer person indexes into their
+ *              respective Person pointers.
  *
- * Inputs:
- * Outputs:
+ * Inputs: std::vector<int32_t> - vector of integer person indexes
+ * Output: std::vector<Person*> - vector of corresponding Person pointers
  */
 std::vector<Person*> Battle::getPersonsFromIndexes(std::vector<int32_t> indexes)
 {
@@ -2652,10 +2698,11 @@ std::vector<Person*> Battle::getPersonsFromIndexes(std::vector<int32_t> indexes)
 }
 
 /*
- * Description: 
+ * Description: Function for converting Person pointers to their respective
+ *              person indexes.
  *
- * Inputs:
- * Outputs:
+ * Inputs: std::vector<Person*> - vector of Person pointers to find indexes of
+ * Output: std::vector<int32_t> - vector of corresponding integer indexes
  */
 std::vector<int32_t> Battle::getIndexesOfPersons(std::vector<Person*> persons)
 {
@@ -2673,17 +2720,19 @@ std::vector<int32_t> Battle::getIndexesOfPersons(std::vector<Person*> persons)
 }
 
 /*
- * Description: 
+ * Description: Determines a person index value given a Person* to find it for.
  *
- * Inputs:
- * Outputs:
+ * Inputs: Person* check_person - the person pointer to find the index of
+ * Output: int32_t - the corresponding integer person index
  */
 int32_t Battle::getIndexOfPerson(Person* check_person)
 {
+  /* For Friends members, their person index is party_index + 1  (1 - 5) */
   for (uint32_t i = 0; i < friends->getSize(); i++)
     if (check_person == friends->getMember(i))
       return static_cast<int32_t>(i + 1);
-
+  
+  /* For Foes members, their index is (-1 * party_index) - 1) (-1 to -5) */
   for (uint32_t i = 0; i < foes->getSize(); i++)
     if (check_person == foes->getMember(i))
       return (static_cast<int32_t>(i) * -1) - 1;
@@ -2693,10 +2742,12 @@ int32_t Battle::getIndexOfPerson(Person* check_person)
 
 /*
  * Description: Obtains a vector of battle member indexes for a given user and 
- *              scope
+ *              scope. This checks all targets which the user can target
+ *              based on the scope. (ex. NOT_USER is everybody but the user).
  *
- * Inputs:
- * Outputs:
+ * Inputs: int32_t index - the person index for the user to check targets for
+ *         ActionScope action_scope - the scope relating to targets
+ * Output: std::vector<int32_t> - constructed vector of valid person targets
  */
 std::vector<int32_t> Battle::getValidTargets(int32_t index, 
     ActionScope action_scope)
@@ -2761,10 +2812,13 @@ std::vector<int32_t> Battle::getValidTargets(int32_t index,
 }
 
 /*
- * Description: Assigns the running config
+ * Description: Assigns the running config. If the new config is not null, 
+ *              will call functions to assign screen width, enumerated display
+ *              modes based upon the option and turns the configured flag
+ *              to true.
  *
- * Inputs:
- * Outputs:
+ * Inputs: Options* - pointer to running config to be assigned
+ * Outputs: bool - true if the new configuration was asssigned
  */
 bool Battle::setConfiguration(Options* const new_config)
 {
@@ -2796,8 +2850,9 @@ bool Battle::setConfiguration(Options* const new_config)
 /*
  * Description: Assign a value to a CombatState flag
  *
- * Inputs:
- * Outputs:
+ * Inputs: CombatState flag - flag to assign value to
+ *         set_value - boolean value to assign to given flag
+ * Output: none
  */
 void Battle::setBattleFlag(CombatState flag, const bool &set_value)
 {
@@ -2807,8 +2862,9 @@ void Battle::setBattleFlag(CombatState flag, const bool &set_value)
 /*
  * Description: Assign a value to an IgnoreState flag
  *
- * Inputs:
- * Outputs:
+ * Inputs: IgnoreState flag - flag to assign value to
+ *         set_value - boolean value to assign to given flag
+ * Output: none
  */
 void Battle::setIgnoreFlag(IgnoreState flag, const bool &set_value)
 {

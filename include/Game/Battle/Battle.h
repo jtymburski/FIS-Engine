@@ -433,11 +433,8 @@ private:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
-  /* */
+  /* Processing key down events for the Battle */
   bool keyDownEvent(SDL_KeyboardEvent event);
-
-  /* Returns true if all members of a party have died */
-  bool isPartyDead();
 
   /* Methods to print information about the Battle */
   void printAll(const bool &simple, const bool &flags, const bool &party);
