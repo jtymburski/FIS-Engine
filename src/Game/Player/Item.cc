@@ -154,9 +154,10 @@ void Item::setupClass()
     composition = static_cast<Material>(0);
     durability = max_durability;
     flags = static_cast<ItemFlags>(0);
+    item_tier= ItemTier::NONE;
     prefix = StringDb::kDEFAULT_ITEM_PREFIX;
     occasion = ActionOccasion::NONE;
-    
+
     using_skill     = nullptr;
     using_animation = nullptr;
     using_message   = "";
@@ -173,6 +174,7 @@ void Item::setupClass()
     durability = max_durability;
     composition = base_item->composition;
     flags = base_item->flags;
+    item_tier = base_item->item_tier;
     mass = base_item->mass;
     name = base_item->name;
     prefix = base_item->prefix;
@@ -210,6 +212,7 @@ void Item::unsetAll()
   max_durability = kMIN_DURABILITY;
   composition = static_cast<Material>(0);
   flags = static_cast<ItemFlags>(0);
+  item_tier = ItemTier::NONE;
   mass = 0;
   name = "";
   prefix = "";
@@ -429,6 +432,17 @@ int32_t Item::getID()
 }
 
 /*
+ * Description: Returns the assigned enumerated tier level for the item.
+ * 
+ * Inputs: 
+ * Output: ItemTier - enumerated Item tier for the item.
+ */
+ItemTier Item::getItemTier()
+{
+  return item_tier;
+}
+
+/*
  * Description: Evaluates and returns the value of a given ItemFlags flag
  *
  * Inputs: test_flag - ItemFlags flag to check the value for
@@ -629,7 +643,18 @@ void Item::setFlag(ItemFlags flag, const bool &set_value)
   (set_value) ? (flags |= flag) : (flags &= ~flag);
 }
 
- /*
+/*
+ * Description: Assigns a new enumerated ItemTier level to the item.
+ *
+ * Inputs: new_item_tier - new tier level for the item.
+ * Output: none
+ */
+void Item::setItemTier(const ItemTier &new_item_tier)
+{
+  item_tier = new_item_tier;
+}
+
+/*
  * Description: Assigns a given Material composition a given value.
  *
  * Inputs: flag - Material composition flag to be assigned a value

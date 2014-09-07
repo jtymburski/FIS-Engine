@@ -384,6 +384,20 @@ enum class Infliction : std::uint64_t
 };
 
 /*
+ * Description:
+ */
+enum class ItemTier : std::uint8_t
+{
+  TRASH,
+  COMMON,
+  UNCOMMON,
+  RARE,
+  VERYRARE,
+  LEGENDARY,
+  NONE
+};
+
+/*
  * Description: Possible states of sorting for inventory items
  */
 enum class SortType : std::uint8_t

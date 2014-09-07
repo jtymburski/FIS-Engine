@@ -129,6 +129,9 @@ protected:
   /* Flag set for the type of the current item */
   ItemFlags flags;
 
+  /* Tiered level of item (TRASH, UNCOMMON, etc.) */
+  ItemTier item_tier;
+
   /* Mass of the Item */
   double mass;
 
@@ -171,12 +174,6 @@ protected:
 private:
   /* Sets up the Item class with basic values */
   void setupClass();
-
-  /* Copies a const ref source Item object to this object */
-  void copySelf(const Item& source);
-
-  /* Static function for swappin two item object's data (ex. move construct) */
-  static void swap(Item& object, Item& source);
 
   /* Unsets all the Item data for deletion */
   void unsetAll();
@@ -228,6 +225,9 @@ public:
   /* Returns the unique ID of the Item */
   int32_t getID();
 
+  /* Returns the enumerated ItemTier of the Item */
+  ItemTier getItemTier();
+
   /* Evaluates and returns a given material composition flag */
   bool getMaterial(Material composition);
 
@@ -272,6 +272,9 @@ public:
 
   /* Assigns a given ItemFlags flag to a given value */
   void setFlag(ItemFlags flag, const bool &set_value = true);
+
+  /* Assigns a new item tier for the item */
+  void setItemTier(const ItemTier &new_item_tier);
 
   /* Assigns a given material composition flag a given value */
   void setMaterial(Material flag, const bool &set_value = true);
