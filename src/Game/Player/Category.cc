@@ -15,7 +15,6 @@
 *
 * See .h file for TODOs
 *******************************************************************************/
-
 #include "Game/Player/Category.h"
 
 /*=============================================================================
@@ -50,16 +49,15 @@ const std::vector<int> Category::kMAX_VALUES =
  *
  * Inputs: my_id - the unique ID of the category
  *         name  - the unique name of the category
- *
  */
 Category::Category(const int32_t &my_id, const std::string &name)
-  : base_stats{AttributeSet()}
-  , top_stats{AttributeSet()}
-  , description{StringDb::kDEFAULT_CAT_DESC}
-  , denonym{StringDb::kDEFAULT_DENONYM}
-  , name{name}
-  , skill_set{nullptr}
-  , id{my_id}
+    : base_stats{AttributeSet()}
+    , top_stats{AttributeSet()}
+    , description{StringDb::kDEFAULT_CAT_DESC}
+    , denonym{StringDb::kDEFAULT_DENONYM}
+    , name{name}
+    , skill_set{nullptr}
+    , id{my_id}
 {
   if (!attr_sets_built)
     buildAttrSets();
@@ -78,17 +76,18 @@ Category::Category(const int32_t &my_id, const std::string &name)
  *         base_stats - the level min stats for the Category
  *         top_stats - the level max stats for the Category
  *         skills - pointer to the SkillSet the Category graints to a person
+ *         my_id - ID of the Category
  */
 Category::Category(const int32_t &my_id, const std::string &name, 
-                   const std::string &denonym, const AttributeSet &base_stats, 
-                   const AttributeSet &top_stats, SkillSet* const skills)
-  : base_stats{base_stats}
-  , top_stats{top_stats}
-  , description{StringDb::kDEFAULT_CAT_DESC}
-  , denonym{denonym}
-  , name{name}
-  , skill_set{skills}
-  , id(my_id)
+    const std::string &denonym, const AttributeSet &base_stats, 
+    const AttributeSet &top_stats, SkillSet* const skills)
+      : base_stats{base_stats}
+      , top_stats{top_stats}
+      , description{StringDb::kDEFAULT_CAT_DESC}
+      , denonym{denonym}
+      , name{name}
+      , skill_set{skills}
+      , id{my_id}
 {
   if (!attr_sets_built)
     buildAttrSets();
@@ -151,10 +150,12 @@ void Category::cleanUpStats()
  *============================================================================*/
 
 /*
- * Description: 
+ * Description: Determines whether a given piece of Equipment can be equipped
+ *              based on the EquipState flags like Staff and Sword, etc. Some
+ *              categories should not be able to equip all types of equipment.
  *
- * Inputs: 
- * Output: 
+ * Inputs: Equipment* const check - equipment to check 
+ * Output: bool - whether persons of the category can equip the equipment
  */
 bool Category::canEquip(Equipment* const check)
 {
@@ -173,10 +174,11 @@ bool Category::canEquip(Equipment* const check)
 }
 
 /*
- * Description:
+ * Description: Adds an infliction immunity to the category. This function
+ *              will use isImmune() to check for duplicate immunities.
  *
- * Inputs: 
- * Output: 
+ * Inputs: Infliction - the immunity to add to the category.
+ * Output: bool - whether the immunity addition was added
  */
 bool Category::addImmunity(const Infliction &new_immunity)
 {
@@ -191,10 +193,11 @@ bool Category::addImmunity(const Infliction &new_immunity)
 }
 
 /*
- * Description:
+ * Description: Determines whether a person of the given Category is immune
+ *              to a given infliction type.
  *
- * Inputs: 
- * Output: 
+ * Inputs: Infliction - enumerated infliction to check for immunity
+ * Output: bool - true if a person of this Category is immune
  */
 bool Category::isImmune(const Infliction &check_immunity)
 {
@@ -206,10 +209,12 @@ bool Category::isImmune(const Infliction &check_immunity)
 }
 
 /*
- * Description:
+ * Description: Attempts to remove a given Infliction enumeration from
+ *              the immunties of the Category. Returns true if the infliction
+ *              was remove successfully.
  *
- * Inputs: 
- * Output: 
+ * Inputs: Infliction - enumerated infliction to be removed from immunities. 
+ * Output: bool - true if the immunity was found and removed
  */
 bool Category::removeImmunity(const Infliction &rem_immunity)
 {
@@ -227,10 +232,11 @@ bool Category::removeImmunity(const Infliction &rem_immunity)
 }
 
 /*
- * Description:
+ * Description: Prints out the information of the Category.
  *
- * Inputs: 
- * Output: 
+ * Inputs: simple - whether to print out a simple version of the category
+ *         flags - whether to print out the flags of the category
+ * Output: none
  */
 void Category::print(const bool &simple, const bool &flags)
 {
@@ -257,15 +263,16 @@ void Category::print(const bool &simple, const bool &flags)
     std::cout << "GRD? " << getFlag(CategoryState::GRD_ENABLED) << "\n";
     std::cout << "IMP? " << getFlag(CategoryState::IMP_ENABLED) << "\n";
     std::cout << "E_STAFF? " << getFlag(CategoryState::E_STAFF) << "\n";
-    std::cout << "E_SWORD? " << getFlag(CategoryState::E_SWORD) << "\n\n";
+    std::cout << "E_SWORD? " << getFlag(CategoryState::E_SWORD) << "\n";
+    std::cout << "E_CLAWS? " << getFlag(CategoryState::E_SWORD) << "\n\n";
   }
 }
 
 /*
- * Description:
+ * Description: Returns the string description of the Category
  *
- * Inputs: 
- * Output: 
+ * Inputs: none
+ * Output: std::string - description of the Category
  */
 std::string Category::getDescription()
 {
@@ -273,10 +280,10 @@ std::string Category::getDescription()
 }
 
 /*
- * Description:
+ * Description: Returns the string denonym of the Category
  *
- * Inputs: 
- * Output: 
+ * Inputs: none
+ * Output: std::string - denonym of the Category (ex. Humans)
  */
 std::string Category::getDenonym()
 {
@@ -284,10 +291,10 @@ std::string Category::getDenonym()
 }
 
 /*
- * Description:
+ * Description: Returns a given CategoryState flag.
  *
- * Inputs: 
- * Output: 
+ * Inputs: CategoryState test_flag - flag to find the boolean value for
+ * Output: bool - the boolean value of the flag
  */
 bool Category::getFlag(const CategoryState &test_flag)
 {
@@ -295,10 +302,10 @@ bool Category::getFlag(const CategoryState &test_flag)
 }
 
 /*
- * Description:
+ * Description: Returns the ID of the Category
  *
- * Inputs: 
- * Output: 
+ * Inputs: none
+ * Output: int32_t - the ID of the Category
  */
 int32_t Category::getID()
 {
@@ -306,10 +313,10 @@ int32_t Category::getID()
 }
 
 /*
- * Description:
+ * Description: Returns the string name of the Category
  *
- * Inputs: 
- * Output: 
+ * Inputs: none
+ * Output: std::string - name of the Category
  */
 std::string Category::getName()
 {
@@ -317,10 +324,10 @@ std::string Category::getName()
 }
 
 /*
- * Description:
+ * Description: Returns the base attribute set for the Category
  *
- * Inputs: 
- * Output: 
+ * Inputs: none
+ * Output: AttributeSet& - ref. to the base attribute set
  */
 AttributeSet& Category::getBaseSet()
 {
@@ -328,10 +335,10 @@ AttributeSet& Category::getBaseSet()
 }
 
 /*
- * Description:
+ * Description: Returns the SkillSet which persons of the Category are granted
  *
- * Inputs: 
- * Output: 
+ * Inputs: none
+ * Output: SkillSet* - pointer to the SkillSet
  */
 SkillSet* Category::getSkills()
 {
@@ -339,10 +346,11 @@ SkillSet* Category::getSkills()
 }
 
 /*
- * Description:
+ * Description: Returns the top attribute set (max level stats) for Persons
+ *              of this Category.
  *
- * Inputs: 
- * Output: 
+ * Inputs: none
+ * Output: AttributeSet& - top attribute set values 
  */
 AttributeSet& Category::getTopSet()
 {
@@ -350,10 +358,10 @@ AttributeSet& Category::getTopSet()
 }
 
 /*
- * Description:
+ * Description: Assigns a description to the Category
  *
- * Inputs: 
- * Output: 
+ * Inputs: std::string new_description - the description for the Category
+ * Output: bool - whether the description is within size requirements
  */
 bool Category::setDescription(const std::string &new_description)
 {
