@@ -14,7 +14,6 @@
  * ----
  * - Develop actual classes of Equipment [01-21-14]
  ******************************************************************************/
-
 #ifndef EQUIPMENT_H
 #define EQUIPMENT_H
 

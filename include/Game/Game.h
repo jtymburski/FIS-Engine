@@ -14,10 +14,6 @@
 #ifndef GAME_H
 #define GAME_H
 
-#ifndef BATTLE_DEBUG
-  #define BATTLE_DEBUG
-#endif
-
 #include <SDL2/SDL.h>
 #include <chrono>
 
@@ -29,8 +25,6 @@
 #include "Game/Player/Bubby.h"
 //#include "Game/VictoryScreen.h"
 #include "Game/Player/Inventory.h" //TODO
-#include "Game/Player/SkillSet.h"
-#include "Helpers.h"
 #include "Options.h"
 
 using std::begin;
@@ -46,10 +40,13 @@ public:
   ~Game();
 
   /* The game mode operator, for controlling the visible widget */
-  enum GameMode { DISABLED       = 0, 
-                  MAP            = 1, 
-                  BATTLE         = 2, 
-                  VICTORY_SCREEN = 3 };
+  enum GameMode 
+  {
+    DISABLED       = 0, 
+    MAP            = 1, 
+    BATTLE         = 2, 
+    VICTORY_SCREEN = 3 
+  };
 
 private:
   /* The computed base path for resources in the application */
@@ -73,10 +70,26 @@ private:
   /* List of all actions */
   std::vector<Action*> action_list;
 
+  /* List of all Battle Class categories */
+  std::vector<Category*> battle_class_list;
+
+  /* List of all Race categories */
+  std::vector<Category*> race_list;
+
+  /* List of all flavours */
+  std::vector<Flavour*> flavour_list;
+
+  /* List of all skills */
+  std::vector<Skill*> skill_list;
+
+  /* List of all base persons */
+  std::vector<Person*> base_person_list;
+
   /* List of all available items in the game */
-  std::vector<Item*> item_list;
+  std::vector<Item*> base_item_list;
   
   /* The maps in the game */
+  // [09-07-14] TODO: Recommend Map*, std::string pair ?
   //std::vector<Map*> levels;
   //std::vector<std::string> level_list;
 
@@ -99,10 +112,6 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
-  /* Constructs the vector of all actions */
-  bool buildActions(const std::string &path, bool encryption = false);
-  bool buildSkills(const std::string &path, bool encryption = false);
-
   /* A give item event, based on an ID and count (triggered from stored event */
   bool eventGiveItem(int id, int count);
   
@@ -154,8 +163,26 @@ public:
   /* Updates the game state */
   bool update(int cycle_time);
 
-  /* Returns a pointer to a given action by index or by ID */
-  Action* getAction(const int32_t &index, const bool& by_id = false);
+  /* Returns a pointer to an action by index or by ID */
+  Action* getAction(const int32_t &index, const bool &by_id = true);
+
+  /* Returns a pointer to a battle class by index or by ID */
+  Category* getBattleClass(const int32_t &index, const bool &by_id = true);
+
+  /* Returns a pointer to a race category by index or by ID */
+  Category* getCategory(const int32_t &index, const bool &by_id = true);
+
+  /* Returns a pointer to a flavour by index or by ID */
+  Flavour* getFlavour(const int32_t &index, const bool &by_id = true);
+
+  /* Returns a pointer to a skill by index or by ID */
+  Skill* getSkill(const int32_t &index, const bool &by_id = true);
+
+  /* Returns a pointer to a person by index or by ID */
+  Person* getPerson(const int32_t &index, const bool &by_id = true);
+
+  /* Returns a pointer to a person by index or by ID */
+  Item* getItem(const int32_t &index, const bool &by_id = true);
 };
 
 #endif // GAME_H

@@ -300,6 +300,17 @@ bool Category::getFlag(const CategoryState &test_flag)
  * Inputs: 
  * Output: 
  */
+int32_t Category::getID()
+{
+  return id;
+}
+
+/*
+ * Description:
+ *
+ * Inputs: 
+ * Output: 
+ */
 std::string Category::getName()
 {
   return name;

@@ -133,8 +133,8 @@ private:
   AIModule* ai_module;
 
 	/* Person IDs */
-	int game_id;
-	int my_id;
+	int32_t game_id;
+	int32_t my_id;
 	
 	/* Pointer to the base person */
   Person* base_person;
@@ -305,10 +305,10 @@ public:
   int16_t getTrueCost(Skill* test_skill);
 
   /* Returns the game_id (not unique) of the Person */
-  uint32_t getGameID();
+  int32_t getGameID();
 
   /* Returns the my_id (unique) of the Person */
-  uint32_t getMyID();
+  int32_t getMyID();
 
   /* Evaluates and returns the state of a given BState flag */
   bool getBFlag(const BState &test_flag);

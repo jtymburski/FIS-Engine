@@ -39,7 +39,8 @@ enum class CategoryState
   GRD_ENABLED = 1 << 1,
   IMP_ENABLED = 1 << 2,
   E_STAFF     = 1 << 3,
-  E_SWORD     = 1 << 4
+  E_SWORD     = 1 << 4,
+  E_CLAWS     = 1 << 5
   //TODO: Develop classes of equipments
 };
 
@@ -127,6 +128,9 @@ public:
   
   /* Evaluates and returns a given CategoryState flag */
   bool getFlag(const CategoryState &test_flag);
+
+  /* Returns th ID of the Category */
+  int32_t getID();
 
   /* Returns the string name */
   std::string getName();

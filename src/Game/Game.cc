@@ -17,7 +17,6 @@
  *  4. Add speed up button to allow the game to accelerate movement and
  *     everything else. Do it by multiplying the time elapsed.
  ******************************************************************************/
-
 #include "Game/Game.h"
 
 /*=============================================================================
@@ -80,62 +79,43 @@ Game::~Game()
   for(auto it = begin(action_list); it != end(action_list); ++it)
     delete(*it);
 
-  /* Delete all game items */
-  for(auto i = begin(item_list); i != end(item_list); i++)
-    delete (*i);
+  /* Delete battle class categories actions */
+  for(auto it = begin(battle_class_list); it != end(battle_class_list); ++it)
+    delete(*it);
 
+  /* Delete all race categories*/
+  for(auto it = begin(race_list); it != end(race_list); ++it)
+    delete(*it);
 
+  /* Delete all flavour categories */
+  for(auto it = begin(flavour_list); it != end(flavour_list); ++it)
+    delete(*it);
 
-  action_list.clear();
-  item_list.clear();  // does nothing?
+  /* Delete all skills */
+  for(auto it = begin(skill_list); it != end(skill_list); ++it)
+    delete(*it);
+
+  /* Delete all game actions */
+  for(auto it = begin(base_person_list); it != end(base_person_list); ++it)
+    delete(*it);
+
+  /* Delete all game base items */
+  for(auto it = begin(base_item_list); it != end(base_item_list); ++it)
+    delete(*it);
 }
 
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 
-/* Compile and build vector of all actions from the action file */
-bool Game::buildActions(const std::string &file, bool encryption)
-{
-  // auto done    = false;
-  auto success = true;
-  (void)encryption;//TODO: WARNING
-  // FileHandler fh(file, false, false, encryption);
-
-  // success &= fh.start();
-
-  // for (; success && !done ;)
-  // {
-  //   std::string line = "";
-  //   line = fh.readRegularLine(&done, &success);
-      
-  //   if (success && !line.empty() && line.at(0) != '/')
-  //   {
-  //     Action* temp_action = new Action(line);
-  //     action_list.push_back(temp_action);
-
-  //     if (!temp_action->actionFlag(ActionFlags::VALID))
-  //       std::cerr << "[Error] Parsing invalid action" << std::endl;
-  //   }
-  // }
-
-  // if (success)
-  //   success &= fh.stop();
-
-  // if (!success)
-  //   std::cerr <<"[Error] building actions from file." << std::endl;
-
-  return success;
-}
-
 /* A give item event, based on an ID and count (triggered from stored event */
 bool Game::eventGiveItem(int id, int count)
 {
   /* Attempt to find the item */
   Item* found_item = nullptr;
-  for(auto i = item_list.begin(); i != item_list.end(); i++)
-    if((*i)->getGameID() == id)
-      found_item = (*i);
+  for(auto it = base_item_list.begin(); it != base_item_list.end(); it++)
+    if((*it)->getGameID() == id)
+      found_item = (*it);
 
   /* If the item was inserted, display pickup notification */
   if(found_item != nullptr)
@@ -261,17 +241,6 @@ void Game::pollEvents()
 /* Set up the battle - old battle needs to be deleted prior to calling */
 void Game::setupBattle()
 {
-  /* Build Player data */
-  auto build_actions = buildActions(base_path + "data\\player\\actions");
-
-  if (build_actions)
-  {
-#ifdef UDEBUG
-    std::cout << "Actions built from file success! Size: " << action_list.size() 
-              << std::endl;
-#endif
-  }
-
   //Begin time test
   //using namespace std::chrono;
 
@@ -645,8 +614,8 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
     if (game_map != nullptr)
     {
       std::vector<Item*> items;
-      items.push_back(item_list[0]);
-      items.push_back(item_list[0]);
+      items.push_back(base_item_list[0]);
+      items.push_back(base_item_list[0]);
       std::vector<uint32_t> counts;
       counts.push_back(2);
       counts.push_back(3);
@@ -681,7 +650,7 @@ void Game::keyUpEvent(SDL_KeyboardEvent event)
 bool Game::render(SDL_Renderer* renderer)
 {
   /* Create temporary list of items - TODO: Pull into file */
-  if(item_list.empty())
+  if(base_item_list.empty())
   {
     Item* item1 = new Item(5, "Sword of Power", 125, 
                           new Frame("sprites/Map/_TEST/sword_AA_A00.png", renderer));
@@ -691,9 +660,9 @@ bool Game::render(SDL_Renderer* renderer)
     Item* item3 = new Item(0, "Coins", 1, 
                            new Frame("sprites/Map/_TEST/coins_AA_A00.png", renderer));
     
-    item_list.push_back(item1);
-    item_list.push_back(item2);
-    item_list.push_back(item3);
+    base_item_list.push_back(item1);
+    base_item_list.push_back(item2);
+    base_item_list.push_back(item3);
   }
   
   /* Map initialization location */
@@ -756,6 +725,107 @@ Action* Game::getAction(const int32_t &index, const bool& by_id)
     return action_list.at(index);
   }
  
-  std::cout << "returning nullptr" << std::endl;
+  return nullptr;
+}
+
+/* Returns a pointer to a battle class by index or by ID */
+Category* Game::getBattleClass(const int32_t &index, const bool &by_id)
+{
+  if (by_id)
+  {
+    for (auto it = begin(battle_class_list); it != end(battle_class_list); ++it)
+      if ((*it)->getID() == index)
+        return (*it);
+  }
+  else if (static_cast<uint32_t>(index) < battle_class_list.size())
+  {
+    return battle_class_list.at(index);
+  }
+
+  return nullptr;
+}
+
+/* Returns a pointer to a race category by index or by ID */
+Category* Game::getCategory(const int32_t &index, const bool &by_id)
+{
+  if (by_id)
+  {
+    for (auto it = begin(race_list); it != end(race_list); ++it)
+      if ((*it)->getID() == index)
+        return (*it);
+  }
+  else if (static_cast<uint32_t>(index) < race_list.size())
+  {
+    return race_list.at(index);
+  }
+
+  return nullptr;
+}
+
+/* Returns a pointer to a flavour by index or by ID */
+Flavour* Game::getFlavour(const int32_t &index, const bool &by_id)
+{
+  if (by_id)
+  {
+    for (auto it = begin(flavour_list); it != end(flavour_list); ++it)
+      if ((*it)->getGameID() == index)
+        return (*it);
+  }
+  else if (static_cast<uint32_t>(index) < flavour_list.size())
+  {
+    return flavour_list.at(index);
+  }
+
+  return nullptr;
+}
+
+/* Returns a pointer to a skill by index or by ID */
+Skill* Game::getSkill(const int32_t &index, const bool &by_id)
+{
+  if (by_id)
+  {
+    for (auto it = begin(skill_list); it != end(skill_list); ++it)
+      if ((*it)->getID() == index)
+        return (*it);
+  }
+  else if (static_cast<uint32_t>(index) < skill_list.size())
+  {
+    return skill_list.at(index);
+  }
+
+  return nullptr;
+}
+
+/* Returns a pointer to a person by index or by ID */
+Person* Game::getPerson(const int32_t &index, const bool &by_id)
+{
+  if (by_id)
+  {
+    for (auto it = begin(base_person_list); it != end(base_person_list); ++it)
+      if ((*it)->getGameID() == index)
+        return (*it);
+  }
+  else if (static_cast<uint32_t>(index) < base_person_list.size())
+  {
+    return base_person_list.at(index);
+  }
+
+  return nullptr;
+}
+
+/* Returns a pointer to a person by index or by ID */
+Item* Game::getItem(const int32_t &index, const bool &by_id)
+{
+  if (by_id)
+  {
+    for (auto it = begin(base_item_list); it != end(base_item_list); ++it)
+      if ((*it)->getGameID() == index)
+        return (*it);
+  }
+  else if (static_cast<uint32_t>(index) < base_item_list.size())
+  {
+    return base_item_list.at(index);
+  }
+
   return nullptr;
 }

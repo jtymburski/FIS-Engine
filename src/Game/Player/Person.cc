@@ -908,7 +908,7 @@ AIModule* Person::getAI()
  * Inputs: none
  * Output: uint32_t - game ID of the Person
  */
-uint32_t Person::getGameID()
+int32_t Person::getGameID()
 {
   return game_id;
 }
@@ -919,7 +919,7 @@ uint32_t Person::getGameID()
  * Inputs: none
  * Output: uint32_t - the unique ID of the Person
  */
-uint32_t Person::getMyID()
+int32_t Person::getMyID()
 {
   return my_id;
 }

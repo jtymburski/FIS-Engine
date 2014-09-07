@@ -19,7 +19,6 @@
  * ----
  * Testing [12-12-13]
  ******************************************************************************/
-
 #ifndef BUBBY_H
 #define BUBBY_H
 
@@ -40,7 +39,7 @@ public:
 
 private:
 
-  /* Experience values for levels of Bubby */
+  /* Experience values for levels of Bubbiesby */
   static std::vector<uint32_t> exp_table;
 
   /* The level of the Bubby */
