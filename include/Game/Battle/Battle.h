@@ -73,7 +73,6 @@
 #include "Game/Battle/Buffer.h"
 #include "Game/Battle/InfoBar.h"
 #include "Game/Battle/BattleMenu.h"
-// #include "Game/Battle/StatusBar.h"
 #include "Game/Player/Ailment.h"
 #include "Game/Player/Party.h"
 

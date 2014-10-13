@@ -92,8 +92,10 @@ enum class BState
   SELECTED_3RD_ACTION = 1 << 24, /* Has this person selected a 3rd action? */
   CAN_CRIT            = 1 << 25, /* Can this person crit against a target? */
   CAN_BE_CRIT         = 1 << 26, /* Can this person have crit's against them? */
-  GUARDED             = 1 << 27, /* Is this person being guarded? */
-  SHIELDED            = 1 << 28, /* Is this person shielded from damage? */
+  DEFENDING           = 1 << 27, /* Is this person defending currently? */
+  GUARDED             = 1 << 28, /* Is this person being guarded? */
+  GUARDING            = 1 << 29, /* Is this person guarding? */
+  SHIELDED            = 1 << 30, /* Is this person shielded from damage? */
 };
 
 /* PState Flags - flags which have impacts outside of Battle */
