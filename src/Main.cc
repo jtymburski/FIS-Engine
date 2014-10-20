@@ -59,9 +59,12 @@ int main(int argc, char** argv)
   (void)argv;
 
   /* TODO - remove: testing */
-  std::vector<std::vector<std::string>> set = 
-      Helpers::spriteGridSplitter("Test01_[A-B][A-B]_U00.png");
   std::cout << "-- START TEST --" << std::endl;
+  std::string element = "Test01_[A-C][A-E]_U00.png";
+  std::cout << "Starting Element: " << element << std::endl;
+  std::vector<std::vector<std::string>> set = 
+      Helpers::spriteGridSplitter(element);
+  std::cout << "Result:" << std::endl;
   for(uint32_t i = 0; i < set.size(); i++)
   {
     for(uint32_t j = 0; j < set[i].size(); j++)

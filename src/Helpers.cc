@@ -579,38 +579,185 @@ std::vector<std::string> Helpers::split(const std::string &line, char delim)
 
 /* Splites the string into a grid based on the sprite naming convention */
 // TODO: Comment and functionality
+/*
+ * Description: Takes a string in the designed format for sprite handling and
+ *              separates it via the letter range.
+ *
+ * Example: std::string test = "Test01_[A-C][A-B]_U00.png";
+ *          Vector becomes: AA BA CA
+ *                          AB BB CB -> in the appropriate string format
+ * 
+ * Inputs: const std::string path - the starting sprite path
+ * Output: std::vector<std::vector<std::string>> - a matrix of paths (in X
+ *         and Y direction). As shown in the example above.
+ */
 std::vector<std::vector<std::string>> Helpers::spriteGridSplitter(
     std::string path)
 {
-  /* Step 1: split on '[' -> finish with std::vector<std::string> */
+  /* Split string on '[' */
+  std::vector<std::string> first_split = split(path, '[');
+  
+  /* Parse each string and split on the ']' character */
+  std::vector<std::string> split_strings;
+  std::vector<uint32_t> range_ids;
+  int range_count = 0; /* Max of 2 */
+  for(uint32_t i = 0; i < first_split.size(); i++)
+  {
+    std::vector<std::string> second_split = split(first_split[i], ']');
 
-  /* Step 2: Parse each string from 1 to n, and split on the ']' character 
-           -> Finish with std::vector<std::string> for each */
+    if(second_split.size() == 1 && second_split.front() == first_split[i])
+    {
+      split_strings.push_back(second_split.front());
+    }
+    else if(second_split.size() >= 1)
+    {
+      /* Check if the first string in the set is valid in the 'A-B' category */
+      std::vector<std::string> range_split = split(second_split.front(), '-');
+      if(range_count < 2 && range_split.size() == 2 && 
+         range_split.front().size() == 1 && 
+         range_split.back().size() == 1 &&
+         range_split.front().front() >= 'A' &&
+         range_split.front().front() <= 'Z' &&
+         range_split.back().front() >= 'A' &&
+         range_split.back().front() <= 'Z' &&
+         range_split.front().front() <= range_split.back().front())
+      {
+        /* String contains a correct range (Eg A-B) */
+        if(range_split.front().front() < range_split.back().front())
+        {
+          split_strings.push_back(second_split.front());
+          range_ids.push_back(split_strings.size() - 1);
+          range_count++;
+        }
+        /* String contains a range that's identical (Eg B-B) */
+        else
+        {
+          split_strings.push_back(range_split.front());
+        }
 
-  /* Step 3: For each string vector from step 2, check the compatibility 
-             of the first string. Has to be "Capital Letter"-"Capital Letter"
-             If it is not, use the original string.
-             Otherwise, return all the rest of the string, after ']' with
-             each letter in the range.
-           -> Finishes with std::vector<std::string> of 1-n size 
-           Note: only 2 good splits are valid. all remainder return string */
+        for(uint32_t j = 1; j < second_split.size(); j++)
+          split_strings.push_back(second_split[j]);
+      }
+      /* String either contains an invalid range or no range */
+      else
+      {
+        std::string combined_version = "";
+        for(uint32_t j = 0; j < second_split.size(); j++)
+          combined_version += second_split[j];
+        split_strings.push_back(combined_version);
+      }
+    }
+  }
+ 
+  /* Create a linear list of all paths generated from the single path */
+  uint32_t j = 0;
+  uint32_t range1 = 0;
+  uint32_t range2 = 0;
+  std::vector<std::string> linear_set;
+  for(uint32_t i = 0; i < split_strings.size(); i++)
+  {
+    /* Check if the parsing needs to handle a range */
+    if(j < range_ids.size() && range_ids[j] == i)
+    {
+      uint32_t base_elements = linear_set.size();
+      std::vector<std::string> range_str = split(split_strings[i], '-');
+      uint32_t new_elements = range_str.back().front() - 
+                              range_str.front().front();
 
-  /* Step 4: Re-assemble all the strings together and create every possible
-             iteration assembled in the right order.
-           Note: some complications: if [A-B]B, it needs to assemble a set 
-                 with two columns and one row {AA},{BA}
-                 If A[A-B], it needs to assemble a set with two rows and
-                 one column. -> will have to do some analyze objects */
+      /* Store the number of elements in the appropriate variable */
+      if(j == 0)
+        range1 = new_elements + 1;
+      else
+        range2 = new_elements + 1;
 
-  // TESTING - temporary
+      /* Duplicate enough elements for the new range */
+      for(uint32_t k = 0; k < new_elements; k++)
+        for(uint32_t m = 0; m < base_elements; m++)
+          linear_set.push_back(linear_set[m]);
+
+      /* Now append the ranges for each on to the end */
+      for(uint32_t k = 0; k < linear_set.size(); k++)
+      {
+        char element = range_str.front().front() + (k / base_elements);
+        linear_set[k] += element;
+      }
+
+      j++;
+    }
+    /* ... or a single element */
+    else
+    {
+      if(linear_set.size() == 0)
+      {
+        linear_set.push_back(split_strings[i]);
+      }
+      else
+      {
+        for(uint32_t k = 0; k < linear_set.size(); k++)
+          linear_set[k].append(split_strings[i]);
+      }
+    }
+  }
+
+  /* Sort the linear list into a 2D array */
   std::vector<std::vector<std::string>> set;
-  std::vector<std::string> line;
-  line.push_back("test");
-  line.push_back("this");
-  line.push_back("is");
-  line.push_back("a");
-  set.push_back(line);
-  set.push_back(line);
+  if(range1 > 0 && range2 > 0)
+  {
+    for(uint32_t i = 0; i < range2; i++)
+    {
+      std::vector<std::string> set_row;
+      for(uint32_t j = 0; j < range1; j++)
+        set_row.push_back(linear_set[i*range1+j]);
+      set.push_back(set_row);
+    }
+  }
+  else if(range1 > 0)
+  {
+    /* Find the differential location */
+    uint32_t index = 0;
+    bool found = false;
+    for(uint32_t i = 0; i < linear_set.front().size(); i++)
+    {
+      if(!found && linear_set.front()[i] != linear_set.back()[i])
+      {
+        index = i;
+        found = true;
+      }
+    }
+
+    /* Determine if it's x or y direction */
+    bool x_dir = true;
+    if(index > 0 && linear_set.front()[index] >= 'A' && 
+                    linear_set.front()[index - 1] <= 'Z')
+      x_dir = false;
+
+    /* Handle it accordingly */
+    if(x_dir)
+    {
+      std::vector<std::string> set_row;
+      for(uint32_t i = 0; i < linear_set.size(); i++)
+        set_row.push_back(linear_set[i]);
+      set.push_back(set_row);
+    }
+    else
+    {
+      std::vector<std::string> set_row;
+      for(uint32_t i = 0; i < linear_set.size(); i++)
+      {
+        set_row.push_back(linear_set[i]);
+        set.push_back(set_row);
+        set_row.clear();
+      }
+    }
+  }
+  /* Otherwise, it's just a single element */
+  else if(linear_set.size() > 0)
+  {
+    std::vector<std::string> set_row;
+    set_row.push_back(linear_set.front());
+    set.push_back(set_row);
+  }
+
   return set;
 }
 
