@@ -122,6 +122,9 @@ void Person::loadDefaults()
 {
   ai_module = nullptr;
 
+  guardee = nullptr;
+  guard   = nullptr;
+
   battle_flags = static_cast<BState>(0);
   person_flags = static_cast<PState>(0);
 
@@ -212,9 +215,12 @@ void Person::setupClass()
                                base_person->ai_module->getPrimPersonality(),
                                base_person->ai_module->getSecdPersonality());
     }
-
+    
+    guardee      = base_person->guardee;
+    guard        = base_person->guard;
     battle_flags = base_person->battle_flags;
     person_flags = base_person->person_flags;
+    // TODO: Dynamic initialization of record? [10-25-14]
     //person_record = base-person->person_record;
     battle_class = base_person->battle_class;
     race_class = base_person->race_class;
@@ -963,6 +969,28 @@ Person* Person::getBasePerson()
 }
 
 /*
+ * Description: Returns the pointer to the person who is guarding this person
+ *
+ * Inputs: none
+ * Output: Person* - person guarding this person
+ */
+Person* Person::getGuard()
+{
+  return guard;
+}
+
+/*
+ * Description: Returns the pointer to the person being guarded by this person
+ *
+ * Inputs: none
+ * Output: Person* - the person being guarded
+ */
+Person* Person::getGuardee()
+{
+  return guardee;
+}
+
+/*
  * Description: Returns a pointer to the battle class category
  *
  * Inputs: none
@@ -1612,14 +1640,57 @@ bool Person::setEquip(const EquipSlots &slot, Equipment* new_equip)
 }
 
 /*
- * Description: Attempts to assign a new loop set for the Person
+ * Description: Assigns a new guard (person guarding this object)
+ *
+ * Inputs: Person* - the new guard for this person
+ * Output: bool - true if the guard was assigned
+ */
+bool Person::setGuard(Person* const new_guard)
+{
+  /* If this person is guarding someone, the guard cannot be made, or if this
+   * is trying to be as assigned to a guard to self */
+  if (guardee == nullptr && new_guard != nullptr && this != new_guard)
+  {
+    setBFlag(BState::GUARDED, true);
+    setBFlag(BState::GUARDING, false);
+    guard = new_guard;
+
+    return true;
+  }
+
+  return false;
+}
+
+/*
+ * Description: Assigns a new person to be guarded
+ *
+ * Inputs: Person* - the new person being guarded by this person
+ * Output: bool - true if the guarding person was assigned
+ */
+bool Person::setGuardee(Person* const new_guardee)
+{
+  /* If this has a guard, they cannot guard someone else. They cannot be guarded
+   * by themselves as well */
+  if (guard == nullptr && new_guardee != nullptr && this != new_guardee)
+  {
+    setBFlag(BState::GUARDING, true);
+    setBFlag(BState::GUARDED, false);
+    guardee = new_guardee;
+
+    return true;
+  }
+
+  return false;
+}
+
+/*
+ * Description: Attempts to assign a new loot set for the Person
  *
  * Inputs: new_credit_drop - new value to be assigned as credit drop loot
  *         new_exp_drop - new value to be assigned for experience drop loot
  *         new_item_drops - new item drop IDs for drop loot
  * Output: bool - true if the loot assignment was successful
  */
-/* Attempts to assign a new loop set for the person */
 bool Person::setLoot(const uint32_t &new_credit_drop, 
                      const uint32_t &new_exp_drop, 
                      const std::vector<uint32_t> &new_item_drops)

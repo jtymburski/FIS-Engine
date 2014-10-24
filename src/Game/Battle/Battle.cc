@@ -71,6 +71,7 @@ const float    Battle::kBASE_CRIT_CHANCE            =   0.10;
 const float    Battle::kOFF_CRIT_FACTOR             =   1.25;
 const float    Battle::kCRIT_MODIFIER               = 0.0008;
 const float    Battle::kCRIT_LVL_MODIFIER           =  0.012;
+const float    Battle::kCRIT_DEFENDING_MODIFIER     =   0.70;
 const float    Battle::kCRIT_GUARDED_MODIFIER       =   0.65;
 const float    Battle::kCRIT_SHIELDED_MODIFIER      =   0.50;
 
@@ -1060,11 +1061,13 @@ bool Battle::doesActionCrit()
   if (crit_possible)
   {
     auto crit_chance = kBASE_CRIT_CHANCE;
-    auto crit_mod = (temp_user_stats.getStat(Attribute::UNBR) * kCRIT_MODIFIER);
+    auto crit_mod = temp_user_stats.getStat(Attribute::UNBR) * kCRIT_MODIFIER;
     auto crit_lvl_mod = calcLevelDifference() * kCRIT_LVL_MODIFIER;
 
     crit_chance += crit_mod + crit_lvl_mod;
 
+    if (curr_target->getBFlag(BState::DEFENDING))
+      crit_chance *= kCRIT_DEFENDING_MODIFIER;
     if (curr_target->getBFlag(BState::GUARDED))
       crit_chance *= kCRIT_GUARDED_MODIFIER;
     if (curr_target->getBFlag(BState::SHIELDED))
@@ -1420,10 +1423,13 @@ void Battle::processActions()
     }
     else if (curr_action_type == ActionType::DEFEND)
     {
-      // Defend oneself (increase defenses by some factor)
+      /* Current user is now defending themselves from damage actions */
+      curr_user->setBFlag(BState::DEFENDING, true);
     }
     else if (curr_action_type == ActionType::GUARD)
     {
+      /* Current user is now guarding the target person */
+      curr_user->setBFlag(BState::GUARDING, true);
       // Guard the appropriate target
     }
     else if (curr_action_type == ActionType::IMPLODE)

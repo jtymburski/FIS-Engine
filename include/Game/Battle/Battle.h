@@ -279,6 +279,7 @@ private:
   static const float    kBASE_CRIT_CHANCE;
   static const float    kCRIT_MODIFIER;
   static const float    kCRIT_LVL_MODIFIER;
+  static const float    kCRIT_DEFENDING_MODIFIER;
   static const float    kCRIT_GUARDED_MODIFIER;
   static const float    kCRIT_SHIELDED_MODIFIER;
 

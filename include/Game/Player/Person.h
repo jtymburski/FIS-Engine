@@ -140,6 +140,8 @@ private:
 	
 	/* Pointer to the base person */
   Person* base_person;
+  Person* guardee;
+  Person* guard;
 
   /* Flags for the curent Battle State and Person State */
   BState battle_flags;
@@ -321,6 +323,12 @@ public:
   /* Returns a pointer to the assigned base person */
   Person* getBasePerson();
 
+  /* Return the person guarding this person */
+  Person* getGuard();
+
+  /* Return the person guarded by this person */
+  Person* getGuardee();
+
   /* Returns a pointer to the battle class category */
   Category* getClass();
 
@@ -436,6 +444,13 @@ public:
 
   /* Attempts to assign a given equipment slot a given equipment pointer */
   bool setEquip(const EquipSlots &equip_slot, Equipment* new_equipment);
+
+  /* Assigns a new guard (person guarding this object) */
+  bool setGuard(Person* const new_guard);
+
+  /* Assign a new person this person is guarding */
+  bool setGuardee(Person* const new_guarding_person);
+
 
   /* Attempts to assign a new loop set for the person */
   bool setLoot(const uint32_t &new_credit_drop, const uint32_t &new_exp_drop, 
