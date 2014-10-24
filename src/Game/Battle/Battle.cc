@@ -71,6 +71,9 @@ const float    Battle::kBASE_CRIT_CHANCE            =   0.10;
 const float    Battle::kOFF_CRIT_FACTOR             =   1.25;
 const float    Battle::kCRIT_MODIFIER               = 0.0008;
 const float    Battle::kCRIT_LVL_MODIFIER           =  0.012;
+const float    Battle::kCRIT_GUARDED_MODIFIER       =   0.65;
+const float    Battle::kCRIT_SHIELDED_MODIFIER      =   0.50;
+
 const float    Battle::kDODGE_MODIFIER              =   1.10;
 const float    Battle::kDODGE_PER_LEVEL_MODIFIER    =   1.04;
 
@@ -625,6 +628,7 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
   action_power = Helpers::randU(action_power - var_val, action_power + var_val);
 
   auto base_damage = base_user_pow + action_power - base_targ_def;
+
   base_damage     *= crit_factor;
 
 #ifdef UDEBUG
@@ -1033,13 +1037,20 @@ void Battle::determineTurnMode()
 
 /*
  * Description: Determines whether the current action will crit against the
- *              current target.
- *
+ *              current target. This chance is determined by the base crit
+ *              chance, a modifier based on the value of the action user's
+ *              UNBR stat. In addition, bonus critical chance occurs
+ *              proportional to the level difference of the action user's 
+ *              level and the action target's level.
+ *               
  * Inputs: none
  * Output: bool - true if the current action will crit against the curr target.
  */
 bool Battle::doesActionCrit()
 {
+  if (curr_user == nullptr || curr_target == nullptr)
+    return false;
+
   auto crit_possible = true;
   auto crit_happens  = false;
 
@@ -1048,15 +1059,20 @@ bool Battle::doesActionCrit()
 
   if (crit_possible)
   {
-    auto critical_chance = kBASE_CRIT_CHANCE;
+    auto crit_chance = kBASE_CRIT_CHANCE;
     auto crit_mod = (temp_user_stats.getStat(Attribute::UNBR) * kCRIT_MODIFIER);
     auto crit_lvl_mod = calcLevelDifference() * kCRIT_LVL_MODIFIER;
 
-    critical_chance += crit_mod + crit_lvl_mod;
+    crit_chance += crit_mod + crit_lvl_mod;
 
-    if (critical_chance > 0)
+    if (curr_target->getBFlag(BState::GUARDED))
+      crit_chance *= kCRIT_GUARDED_MODIFIER;
+    if (curr_target->getBFlag(BState::SHIELDED))
+      crit_chance *= kCRIT_SHIELDED_MODIFIER;
+
+    if (crit_chance > 0)
     {
-      uint32_t crit_pc_1000 = floor(critical_chance * 1000);
+      uint32_t crit_pc_1000 = floor(crit_chance * 1000);
       if (Helpers::chanceHappens(crit_pc_1000, 1000))
         crit_happens = true;
     }
