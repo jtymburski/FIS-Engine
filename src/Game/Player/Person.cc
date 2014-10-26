@@ -714,6 +714,44 @@ bool Person::doDmg(const uint32_t &amount)
 }
 
 /*
+ * Description: Determines whether the person is a power defender (whether they
+ *              can persist in defending against multiple attacks)
+ *
+ * Inputs: none
+ * Output: bool - true if the person is a power defender
+ */
+bool Person::isPowerDefender()
+{
+  /* If either battle class or race class allows the person to be a power
+   * defender, the person will be said to be a power defender */
+  if (battle_class->getFlag(CategoryState::POWER_DEFENDER) ||
+      race_class->getFlag(CategoryState::POWER_DEFENDER))
+  {
+    return true;
+  }
+
+  return false;
+}
+
+/*
+ * Description: Determines whether the person is a power guarder (whether they
+ *              can persist in shielding their guardee from multiple attacks)
+ *
+ * Inputs: none
+ * Output: bool - true if person is a power guarder
+ */
+bool Person::isPowerGuarder()
+{
+  if (battle_class->getFlag(CategoryState::POWER_GUARDER)  ||
+      race_class->getFlag(CategoryState::POWER_GUARDER))
+  {
+    return true;
+  }
+
+  return false;
+}
+
+/*
  * Description: Method for printing out the data describing a person
  *
  * Inputs: simple - true for a simplified version of a person, false otherwise
@@ -891,6 +929,13 @@ bool Person::removeEquip(const EquipSlots &equip_slot)
   return removed;
 }
 
+
+/*
+ * Description: 
+ *
+ * Inputs:
+ * Output: 
+ */
 bool Person::resetAI()
 {
   if (ai_module == nullptr)
@@ -901,6 +946,65 @@ bool Person::resetAI()
 
   return true;
 }
+
+/*
+ * Description: Resets the Person pointer guard and GUARDED flag of this person
+ *              and returns true if the guard status has properly changed.
+ *
+ * Inputs: none
+ * Output: bool - true if the guard status was reset properly
+ */
+bool Person::resetGuard()
+{
+  bool good_reset = false;
+
+  /* Proper reset if guard was assigned as well as GUARDED flag */
+  good_reset &= (guard != nullptr && getBFlag(BState::GUARDED));
+
+  /* Unassign the guard and turn off GUARDED flag */
+  guard = nullptr;
+  setBFlag(BState::GUARDED, false);
+
+  return good_reset;
+}
+
+/*
+ * Description: Resets the defending status of the person. Returns true if
+ *              the defending status was removed from a defending state.
+ *
+ * Inputs: none
+ * Output: bool - true if the person was defending and now no longer is
+ */
+bool Person::resetDefend()
+{
+  bool good_defend = false;
+
+  good_defend &= getBFlag(BState::DEFENDING);
+
+  setBFlag(BState::DEFENDING, false);
+
+  return good_defend;
+}
+
+/*
+ * Description: Resets the guarding status of this person. Returns true if
+ *              this person was guarding a person and now no longer is.
+ *
+ * Inputs: none
+ * Output: bool - true if guarding state was set and no longer is
+ */
+bool Person::resetGuardee()
+{
+  bool good_reset = false;
+
+  good_reset &= (guardee != nullptr && getBFlag(BState::GUARDING));
+
+  guardee = nullptr;
+  setBFlag(BState::GUARDING, false);
+
+  return good_reset;
+}
+
 
 /*
  * Description: 

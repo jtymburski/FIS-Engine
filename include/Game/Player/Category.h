@@ -39,9 +39,10 @@ enum class CategoryState
   GRD_ENABLED    = 1 << 1,
   IMP_ENABLED    = 1 << 2,
   POWER_DEFENDER = 1 << 3,
-  E_STAFF        = 1 << 4,
-  E_SWORD        = 1 << 5,
-  E_CLAWS        = 1 << 6
+  POWER_GUARDER  = 1 << 4,
+  E_STAFF        = 1 << 5,
+  E_SWORD        = 1 << 6,
+  E_CLAWS        = 1 << 7
   //TODO: Develop classes of equipments
 };
 

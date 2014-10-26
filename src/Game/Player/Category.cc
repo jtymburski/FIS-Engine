@@ -129,6 +129,7 @@ void Category::classSetup()
   setFlag(CategoryState::GRD_ENABLED, true);
   setFlag(CategoryState::IMP_ENABLED, false);
   setFlag(CategoryState::POWER_DEFENDER, false);
+  setFlag(CategoryState::POWER_GUARDER, false);
   setFlag(CategoryState::E_STAFF, false);
   setFlag(CategoryState::E_SWORD, false);
 }
@@ -264,6 +265,7 @@ void Category::print(const bool &simple, const bool &flags)
     std::cout << "\nGRD? " << getFlag(CategoryState::GRD_ENABLED);
     std::cout << "\nIMP? " << getFlag(CategoryState::IMP_ENABLED);
     std::cout << "\nPOWER_DEFENDER? " << getFlag(CategoryState::POWER_DEFENDER);
+    std::cout << "\nPOWER_GUARDER? " << getFlag(CategoryState::POWER_GUARDER);
     std::cout << "\nE_STAFF? " << getFlag(CategoryState::E_STAFF);
     std::cout << "\nE_SWORD? " << getFlag(CategoryState::E_SWORD);
     std::cout << "\nE_CLAWS? " << getFlag(CategoryState::E_SWORD) << "\n";

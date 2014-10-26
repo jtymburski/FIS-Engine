@@ -286,6 +286,12 @@ public:
   /* Shorthand function for dealing damage, returns true if the Person KO's */
   bool doDmg(const uint32_t &amount);
 
+  /* Determines if the person is a power defender */
+  bool isPowerDefender();
+
+  /* Determines if the person is a power guarder */
+  bool isPowerGuarder();
+
   /* Method for printing out the data of the class */
   void print(const bool &simple = true, const bool &equips = false,
              const bool &flags = false, const bool &skills = false);
@@ -295,6 +301,15 @@ public:
 
   /* Resets the AI module for a new turn */
   bool resetAI();
+
+  /* Clear the guard status of this person */
+  bool resetGuard();
+
+  /* Clear the defend status of this person */
+  bool resetDefend();
+
+  /* Clear the guarding status of this person */
+  bool resetGuardee();
 
   /* Returns a pointer to the AI module */
   AIModule* getAI();
