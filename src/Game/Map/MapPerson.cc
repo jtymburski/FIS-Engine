@@ -354,8 +354,6 @@ bool MapPerson::addThingInformation(XmlData data, int file_index,
   /* Parse the identifier for setting the person information */
   if(elements.size() >= 3)
   {
-    std::vector<std::string> identifiers = Helpers::split(elements[2], '_');
-
     /*--------------------- FRAMES -----------------*/
     if(elements[2] == "spritebot" || elements[2] == "spritetop" || 
                                      elements[2] == "sprites")

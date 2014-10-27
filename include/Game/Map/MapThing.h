@@ -55,6 +55,7 @@ protected:
   
   /* The main sprite frame data */
   Sprite* frames;
+  std::vector<std::vector<Sprite*>> frame_matrix;
 
   /* Movement information */
   Direction movement;
