@@ -293,9 +293,7 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
                                    std::string base_path)
 {
   std::vector<std::string> elements = data.getTailElements(file_index);
-  std::vector<std::string> identifiers = 
-                           Helpers::split(data.getElement(file_index), '_');
-  std::string identifier = identifiers.at(0);
+  std::string identifier = data.getElement(file_index);
   bool success = true;
   
   /* Parse the identifier for setting the thing information */
@@ -331,13 +329,64 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
   {
     setSpeed(data.getDataInteger(&success));
   }
-  /*--------------------- SPRITE DATA -----------------*/
-  else if(identifier == "sprite")
+  /*------------------- OLD SPRITE DATA ---------------*/
+  else if(identifier == "sprite") // TODO: REMOVE - not needed
   {
     if(frames == NULL)
       frames = new Sprite();
     success &= frames->addFileInformation(data, file_index + 1, 
                                           renderer, base_path);
+  }
+  /*--------------------- SPRITE DATA -----------------*/
+  else if(identifier == "sprites") // TODO: Develop
+  {
+    std::cout << "Sprites setup" << std::endl;
+    
+    /* Only proceed if there are elements within the sprites element */
+    if(elements.size() > 2)
+    {
+      if(elements[1] == "multiple")
+      {
+        /* Get the range and ensure there are that many sprites in the array */
+        /* Note: if other sprites exist, make sure to copy all settings */
+        
+        /* Do an if to check if its a path or passability */
+          /* If path, get the matrix array and separate */
+            /* Then, proceed to insert the new sprites into the frame matrix */
+            /* If the sprite at the path don't exist, it'll be unset. */
+        
+          /* Else if passability, proceed to insert the passability into 
+           * the sprite - possibly put passability in the sprite itself */
+
+        std::cout << "multiple sprites" << std::endl;
+      }
+      else if(elements[1] == "x")
+      {
+        /* Make sure there's X, Y, and then another element within */
+        /* If not, fill in the matrix of sprites up to it */
+        
+        /* Check to see if the frame matrix is of size to fit the X,Y coord */
+        /* Now, with the selected sprite, mirror the functionality above
+         * for multiple but with only one path */
+        
+        // TODO
+        std::cout << "single sprite" << std::endl;
+      }
+      else if(elements[1] == "sprite")
+      {
+        /* These are the sprite settings */
+        /* Check and implement on every existing sprite in the matrix */
+        /* If there is no sprites, make one at the origin (0,0) */
+        
+        // TODO
+        std::cout << "sprite details" << std::endl;
+      }
+    }
+
+    /* Once all the implementation is done above, design render matrix */
+    /* And then, build the functions around accessing and painting */
+    /* There also needs to be the storing in Tile dealt with... */
+    std::cout << "-------------------------" << std::endl;
   }
   /*--------------------- VISIBILITY -----------------*/
   else if(identifier == "visible")
