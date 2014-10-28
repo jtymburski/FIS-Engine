@@ -99,41 +99,12 @@ Sprite::Sprite(const Sprite &source)
  */
 Sprite::~Sprite()
 {
-  /* Delete all class data */
-  removeAll();
-  SDL_DestroyTexture(texture);
-  
-  /* Reset variables back to blank */
-  current = NULL;
-  head = NULL;
-  texture = NULL;
+  clear();
 }
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
-
-/*
- * Description: The copy function that is called by any copying methods in the
- *              class. Utilized by the copy constructor and the copy operator.
- *
- * Inputs: const Sprite &source - the reference sprite class
- * Output: none
- */
-void Sprite::copySelf(const Sprite &source)
-{
-  setAnimationTime(source.getAnimationTime());
-  setBrightness(source.getBrightness());
-  setColorBalance(source.getColorRed(), source.getColorGreen(), 
-                                        source.getColorBlue());
-  if(source.isDirectionForward())
-    setDirectionForward();
-  else
-    setDirectionReverse();
-  setOpacity(source.getOpacity());
-  setRotation(source.getRotation());
-  //setSound(); // TODO: Future?
-}
 
 /*
  * Description: Parses the string sequence of angle adjustments. Returns the
@@ -178,7 +149,53 @@ void Sprite::setColorMod()
     SDL_SetTextureColorMod(texture, color_red, color_green, color_blue);
   }
 }
+
+/*=============================================================================
+ * PROTECTED FUNCTIONS
+ *============================================================================*/
+
+/*
+ * Description: Clears out all sprite info that were initialized into this
+ *              class. This includes the appropriate procedure of cleaning
+ *              up and deleting all the pointers / rendering references.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Sprite::clear()
+{
+  /* Delete all class data */
+  removeAll();
+  SDL_DestroyTexture(texture);
   
+  /* Reset variables back to blank */
+  current = NULL;
+  head = NULL;
+  texture = NULL;
+}
+
+/*
+ * Description: The copy function that is called by any copying methods in the
+ *              class. Utilized by the copy constructor and the copy operator.
+ *
+ * Inputs: const Sprite &source - the reference sprite class
+ * Output: none
+ */
+void Sprite::copySelf(const Sprite &source)
+{
+  setAnimationTime(source.getAnimationTime());
+  setBrightness(source.getBrightness());
+  setColorBalance(source.getColorRed(), source.getColorGreen(), 
+                                        source.getColorBlue());
+  if(source.isDirectionForward())
+    setDirectionForward();
+  else
+    setDirectionReverse();
+  setOpacity(source.getOpacity());
+  setRotation(source.getRotation());
+  //setSound(); // TODO: Future?
+}
+
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
