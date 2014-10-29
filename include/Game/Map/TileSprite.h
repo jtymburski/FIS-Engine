@@ -38,8 +38,8 @@ public:
   //enum TileStatus{OFF, BLANKED, ACTIVE};
 
 private:
-  /* Basic information for the tile */
-  //uint16_t height;
+  /* Passability of the tile sprite */
+  uint8_t passability;
 
   /*------------------- Constants -----------------------*/
   //const static uint8_t kLOWER_COUNT_MAX; /* The max number of lower layers */
@@ -55,10 +55,18 @@ private:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
-  /* Call to add data, as extracted from file data */
-  //bool addPassability(std::string data, std::string classifier, 
-  //                                      std::string index);
-  //bool addSprite(Sprite* frames, std::string classifier, std::string index);
+  /* Adds sprite information from the XML data classifier from the file */
+  bool addFileInformation(XmlData data, int index, SDL_Renderer* renderer, 
+                          std::string base_path = "");
+
+  /* Call to add passability, as extracted from file data */
+  bool addPassability(std::string data, std::string classifier, 
+                                        std::string index);
+  
+  /* Passability class control */
+  bool getPassability(Direction dir) const;
+  void resetPassability();
+  void setPassability(Direction dir, bool set_value);
 
 /*============================================================================
  * OPERATOR FUNCTIONS

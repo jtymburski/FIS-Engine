@@ -17,31 +17,33 @@
 
 TileSprite::TileSprite() : Sprite()
 {
-  // TODO: passability initialization
+  resetPassability();
 }
 
 TileSprite::TileSprite(std::string path, SDL_Renderer* renderer)
           : Sprite(path, renderer)
 {
-  // TODO: passability initialization
+  resetPassability();
 }
 
 TileSprite::TileSprite(std::string head_path, int num_frames, 
                        std::string tail_path, SDL_Renderer* renderer)
           : Sprite(head_path, num_frames, tail_path, renderer)
 {
-  // TODO: passability initialization
+  resetPassability();
 }
 
 /* Copy constructor */
 TileSprite::TileSprite(const TileSprite &source) : Sprite()
 {
+  resetPassability();
+
   copySelf(source);
 }
 
 TileSprite::~TileSprite()
 {
-  // TODO: Add this class cleanup
+  resetPassability();
   Sprite::clear();
 }
 
@@ -58,32 +60,84 @@ TileSprite::~TileSprite()
  */
 void TileSprite::copySelf(const TileSprite &source)
 {
-  // TODO: Passability copying
-
-  //setAnimationTime(source.getAnimationTime());
-  //setBrightness(source.getBrightness());
-  //setColorBalance(source.getColorRed(), source.getColorGreen(), 
-  //                                      source.getColorBlue());
-  //if(source.isDirectionForward())
-  //  setDirectionForward();
-  //else
-  //  setDirectionReverse();
-  //setOpacity(source.getOpacity());
-  //setRotation(source.getRotation());
-
+  /* Copy base class information */
   Sprite::copySelf(source);
+
+  /* Copy passability information */
+  if(source.getPassability(Direction::NORTH))
+    setPassability(Direction::NORTH, true);
+  if(source.getPassability(Direction::SOUTH))
+    setPassability(Direction::SOUTH, true);
+  if(source.getPassability(Direction::EAST))
+    setPassability(Direction::EAST, true);
+  if(source.getPassability(Direction::WEST))
+    setPassability(Direction::WEST, true);
 }
 
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
-/* Clear out the state definition */
-/*void MapState::clear()
+/* Adds sprite information from the XML data classifier from the file */
+/* TODO: Comment */
+bool TileSprite::addFileInformation(XmlData data, int index, 
+                                    SDL_Renderer* renderer, 
+                                    std::string base_path)
 {
-  clearEvents();
-  unsetSprite();
-}*/
+  // TODO: Functionality
+  return false;
+}
+
+/* Call to add passability, as extracted from file data */
+/* TODO: Comment */
+bool TileSprite::addPassability(std::string data, std::string classifier, 
+                                std::string index)
+{
+  // TODO: Functionality
+  return false;
+}
+
+/* 
+ * Description: Gets the passability for the sprite.
+ *
+ * Inputs: Direction dir - the direction to get the passability for
+ * Output: bool - the passability directional status
+ */
+bool TileSprite::getPassability(Direction dir) const
+{
+  if(dir == Direction::DIRECTIONLESS)
+    return (passability == static_cast<uint8_t>(Direction::DIRECTIONLESS));
+  return ((passability & static_cast<uint8_t>(dir)) > 0);
+}
+
+/* 
+ * Description: Resets the sprite passability back to default state. Default
+ *              state is no passability in all directions.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void TileSprite::resetPassability()
+{
+  setPassability(Direction::DIRECTIONLESS, true);
+}
+
+/* 
+ * Description: Sets the passability using a given direction and the 
+ *              set boolean value.
+ *
+ * Inputs: Direction dir - the direction to set
+ *         bool set_value - the value to set it to.
+ * Output: none
+ */
+void TileSprite::setPassability(Direction dir, bool set_value)
+{
+  if(dir == Direction::DIRECTIONLESS && set_value)
+    passability = static_cast<uint8_t>(Direction::DIRECTIONLESS);
+  else
+    (set_value) ? (passability |= static_cast<uint8_t>(dir)) 
+                : (passability &= ~static_cast<uint8_t>(dir));
+}
 
 /*=============================================================================
  * OPERATOR FUNCTIONS

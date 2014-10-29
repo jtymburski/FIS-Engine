@@ -8,6 +8,7 @@
  ******************************************************************************/
 #include "Application.h"
 #include "Helpers.h"
+#include "Game/Map/TileSprite.h"
 
 #include <unistd.h>
 
@@ -59,7 +60,7 @@ int main(int argc, char** argv)
   (void)argv;
 
   /* TODO - remove: testing */
-  std::cout << "-- START TEST --" << std::endl;
+  std::cout << "-- START SPLITTER TEST --" << std::endl;
   std::string element = "Test01_[A-C][A-E]_U00.png";
   std::cout << "Starting Element: " << element << std::endl;
   std::vector<std::vector<std::string>> set = 
@@ -71,8 +72,25 @@ int main(int argc, char** argv)
       std::cout << set[i][j] << " ";
     std::cout << std::endl;
   }
-  std::cout << "-- END TEST --" << std::endl;
-  
+  std::cout << "-- END SPLITTER TEST --" << std::endl;
+ 
+  /* TODO - remove: testing 2 */
+  std::cout << std::endl << "-- START SPRITE TEST --" << std::endl;
+  TileSprite s;
+  s.setBrightness(0.2);
+  s.setAnimationTime(1250);
+  s.setColorBlue(122);
+  s.setPassability(Direction::NORTH, true);
+  TileSprite s2;//(s);
+  std::cout << "Output: " << s2.getBrightness() << " " << s2.getAnimationTime() 
+            << " " << (int)s2.getColorBlue() << " " 
+            << s2.getPassability(Direction::NORTH) << std::endl;
+  s2 = s;
+  std::cout << "Output: " << s2.getBrightness() << " " << s2.getAnimationTime() 
+            << " " << (int)s2.getColorBlue() << " " 
+            << s2.getPassability(Direction::NORTH) << std::endl;
+  std::cout << "-- END SPRITE TEST --" << std::endl;
+
   /* Get the base directory to the executable, which will be the location of
    * all applicable resources */
   char* directory = SDL_GetBasePath();
