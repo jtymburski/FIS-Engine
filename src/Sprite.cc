@@ -57,7 +57,7 @@ Sprite::Sprite()
 }
 
 /* 
- * Description: Constructor function - Set up one image, using the string path
+ * Description: Constructor function - Set up one frame, using the string path
  *              with an integer rotated angle.
  *
  * Input: std::string image_path - image path to set as one sprite
@@ -69,8 +69,7 @@ Sprite::Sprite(std::string path, SDL_Renderer* renderer) : Sprite()
 }
 
 /* 
- * Description: Constructor function - Set up sequence of images with an
- *              integer rotated angle.
+ * Description: Constructor function - Set up sequence of frames.
  *
  * Inputs: std::string head_path - the start part of the path
  *         int num_frames - the number of frames in this path sequence

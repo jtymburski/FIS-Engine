@@ -9,12 +9,6 @@
 #ifndef TILESPRITE_H
 #define TILESPRITE_H
 
-//#include <string>
-//#include <vector>
-
-//#include "EnumDb.h"
-//#include "Game/EventHandler.h"
-//#include "Helpers.h"
 #include "Sprite.h"
 
 class TileSprite : public Sprite
@@ -32,17 +26,9 @@ public:
   /* Destructor function */
   ~TileSprite();
   
-  /* OFF - Not rendered at all
-   * BLANKED - Blacked out
-   * ACTIVE - Rendered */
-  //enum TileStatus{OFF, BLANKED, ACTIVE};
-
 private:
   /* Passability of the tile sprite */
   uint8_t passability;
-
-  /*------------------- Constants -----------------------*/
-  //const static uint8_t kLOWER_COUNT_MAX; /* The max number of lower layers */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -60,8 +46,7 @@ public:
                           std::string base_path = "");
 
   /* Call to add passability, as extracted from file data */
-  bool addPassability(std::string data, std::string classifier, 
-                                        std::string index);
+  void addPassability(std::string data);
   
   /* Passability class control */
   bool getPassability(Direction dir) const;

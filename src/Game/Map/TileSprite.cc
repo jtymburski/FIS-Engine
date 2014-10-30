@@ -4,28 +4,46 @@
  * Inheritance: Sprite
  * Description: This class is for sprites that exist within the tile structure
  *              of the map. It adds additional functionality for dealing with
- *              passability and any other map desired functionality.
+ *              passability and any other map desired functionality. Default
+ *              passability is NO passability.
  *****************************************************************************/
 #include "Game/Map/TileSprite.h"
-
-/* Constant Implementation - see header file for descriptions */
-//const float MapState::kMAX_OPACITY = 1.0;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
 
+/* 
+ * Description: Constructor function - Set up empty base with no frames
+ *
+ * Input: none
+ */
 TileSprite::TileSprite() : Sprite()
 {
   resetPassability();
 }
 
+/* 
+ * Description: Constructor function - Set up one frame, using the string path
+ *              with an integer rotated angle.
+ *
+ * Input: std::string path - frame path to set as one sprite
+ *        SDL_Renderer* renderer - the rendering engine for creating the image
+ */
 TileSprite::TileSprite(std::string path, SDL_Renderer* renderer)
           : Sprite(path, renderer)
 {
   resetPassability();
 }
 
+/* 
+ * Description: Constructor function - Set up sequence of frames.
+ *
+ * Inputs: std::string head_path - the start part of the path
+ *         int num_frames - the number of frames in this path sequence
+ *         std::string tail_path - the end of the path, after the count index
+ *         SDL_Renderer* renderer - the rendering engine for creating the images
+ */
 TileSprite::TileSprite(std::string head_path, int num_frames, 
                        std::string tail_path, SDL_Renderer* renderer)
           : Sprite(head_path, num_frames, tail_path, renderer)
@@ -33,7 +51,12 @@ TileSprite::TileSprite(std::string head_path, int num_frames,
   resetPassability();
 }
 
-/* Copy constructor */
+/*
+ * Description: The copy constructor to transfer all non-graphical parameters
+ *              from the master sprite to this one.
+ *
+ * Inputs: const TileSprite &source - the source sprite data to copy over
+ */
 TileSprite::TileSprite(const TileSprite &source) : Sprite()
 {
   resetPassability();
@@ -41,6 +64,9 @@ TileSprite::TileSprite(const TileSprite &source) : Sprite()
   copySelf(source);
 }
 
+/* 
+ * Description: Destructor function 
+ */
 TileSprite::~TileSprite()
 {
   resetPassability();
@@ -78,23 +104,63 @@ void TileSprite::copySelf(const TileSprite &source)
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
-/* Adds sprite information from the XML data classifier from the file */
-/* TODO: Comment */
+/*
+ * Description: Add the file data information, based on the xml data pointer
+ *              retrieved from the file handler during an XML read. The internal
+ *              elements get offset based on the given index. Passes along
+ *              to parent if no elements are found within child.
+ *
+ * Inputs: XmlData data - the xml data storage class
+ *         int index - the element offset index to the sprite data
+ *         SDL_Renderer* renderer - the rendering engine to add the info
+ *         std::string base_path - the base path for resources
+ * Output: bool - true if the add was successful
+ */
 bool TileSprite::addFileInformation(XmlData data, int index, 
                                     SDL_Renderer* renderer, 
                                     std::string base_path)
 {
-  // TODO: Functionality
-  return false;
+  std::string element = data.getElement(index);
+  bool success = true;
+  
+  /* Parse the tile sprite information - based on the element tag name */
+  if(element == "passability")
+    addPassability(data.getDataString());
+  else
+    success &= Sprite::addFileInformation(data, index, renderer, base_path);
+
+  return success;
 }
 
-/* Call to add passability, as extracted from file data */
-/* TODO: Comment */
-bool TileSprite::addPassability(std::string data, std::string classifier, 
-                                std::string index)
+/*
+ * Description: Takes a comma delimited list of direction codes and sets
+ *              the passability as true for each direction.
+ * Example: data = "N,E,S" => Makes all 3 directions passable
+ *
+ * Inputs: std::string data - comma delimited direction list
+ * Output: none
+ */
+void TileSprite::addPassability(std::string data)
 {
-  // TODO: Functionality
-  return false;
+  Direction new_direction = Direction::DIRECTIONLESS;
+  std::vector<std::string> data_list = Helpers::split(data, ',');
+  
+  /* Loop through each value of the data list to add */
+  for(uint16_t i = 0; i < data_list.size(); i++)
+  {
+    /* Determine the data identifier first */
+    if(data_list[i] == "N")
+      new_direction = Direction::NORTH;
+    else if(data_list[i] == "E")
+      new_direction = Direction::EAST;
+    else if(data_list[i] == "S")
+      new_direction = Direction::SOUTH;
+    else if(data_list[i] == "W")
+      new_direction = Direction::WEST;
+
+    /* Add the passability to the specific classifier */
+    setPassability(new_direction, true);
+  }
 }
 
 /* 

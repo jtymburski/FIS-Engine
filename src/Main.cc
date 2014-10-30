@@ -80,15 +80,19 @@ int main(int argc, char** argv)
   s.setBrightness(0.2);
   s.setAnimationTime(1250);
   s.setColorBlue(122);
-  s.setPassability(Direction::NORTH, true);
+  //s.setPassability(Direction::NORTH, true);
+  s.addPassability("N,E,S,W");
   TileSprite s2;//(s);
   std::cout << "Output: " << s2.getBrightness() << " " << s2.getAnimationTime() 
             << " " << (int)s2.getColorBlue() << " " 
             << s2.getPassability(Direction::NORTH) << std::endl;
-  s2 = s;
+  s2 = s; // Copy constructor called
   std::cout << "Output: " << s2.getBrightness() << " " << s2.getAnimationTime() 
             << " " << (int)s2.getColorBlue() << " " 
             << s2.getPassability(Direction::NORTH) << std::endl;
+  std::cout << "Passability: " << s2.getPassability(Direction::EAST) << " " 
+            << s2.getPassability(Direction::SOUTH) << " " 
+            << s2.getPassability(Direction::WEST) << std::endl;
   std::cout << "-- END SPRITE TEST --" << std::endl;
 
   /* Get the base directory to the executable, which will be the location of
