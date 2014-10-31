@@ -60,6 +60,7 @@ SOURCES=src/Application.cc \
         src/Game/Map/MapThing.cc \
         src/Game/Map/MapViewport.cc \
         src/Game/Map/Tile.cc \
+				src/Game/Map/TileSprite.cc \
         src/Game/Player/Action.cc \
         src/Game/Player/Ailment.cc \
         src/Game/Player/AttributeSet.cc \

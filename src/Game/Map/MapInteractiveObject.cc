@@ -183,7 +183,7 @@ void MapInteractiveObject::setParentFrames()
     if(node_current->state != NULL)
     {
       node_current->state->getSprite()->setAtFirst();
-      setFrames(node_current->state->getSprite(), false);
+      //setFrames(node_current->state->getSprite(), false); // TODO: Repair
       //animate(0, true, false); // TODO: Remove?
     }
     else if(node_current->transition != NULL)
@@ -191,7 +191,7 @@ void MapInteractiveObject::setParentFrames()
       Sprite* transition = node_current->transition;
       node_current->transition->setAtFirst();
       transition->setDirectionForward();
-      MapThing::setFrames(transition, false);
+      //MapThing::setFrames(transition, false); // TODO: Repair
       //animate(0, true, false); // TODO: Remove?
 
       /* Treat the sprite sequence according to the order, if it's in reverse

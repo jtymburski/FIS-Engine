@@ -18,7 +18,7 @@
 #include "Game/EventHandler.h"
 #include "Game/Map/Tile.h"
 #include "Helpers.h"
-#include "Sprite.h"
+#include "TileSprite.h"
 #include "XmlData.h"
 
 class MapThing
@@ -53,9 +53,11 @@ protected:
   /* The target for this thing. If set, it cannot be targetted by others */
   MapThing* target;
   
-  /* The main sprite frame data */
-  Sprite* frames;
-  std::vector<std::vector<Sprite*>> frame_matrix;
+  /* The OLD sprite frame data */
+  Sprite* frames; // TODO: Remove
+  
+  /* The main sprite frame data - contains passability and render depth */
+  std::vector<std::vector<TileSprite*>> frame_matrix;
 
   /* Movement information */
   Direction movement;
@@ -76,11 +78,22 @@ protected:
   const static int kUNSET_ID; /* The placeholder unset ID */
 
 /*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+private:
+  /* Get a valid frame from the matrix, if it exists (used for copying) */
+  TileSprite* getValidFrame();
+
+  /* Grow the frame matrix to the indicated size */
+  bool growMatrix(uint32_t x, uint32_t y);
+
+/*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
 protected:
   /* Animates the thing, if it has multiple frames */
-  virtual bool animate(int cycle_time, bool reset = false, bool skip_head = false);
+  virtual bool animate(int cycle_time, bool reset = false, 
+                                       bool skip_head = false);
  
   /* Is the thing almost centered on a tile (less than 1 pulse away) */
   bool isAlmostOnTile(int cycle_time);
@@ -129,7 +142,8 @@ public:
   Frame* getDialogImage();
 
   /* Returns the map frames that's defined */
-  Sprite* getFrames();
+  TileSprite* getFrame(uint32_t x, uint32_t y);
+  std::vector<std::vector<TileSprite*>> getFrames();
   
   /* Returns the height of the thing */
   uint16_t getHeight();
@@ -197,8 +211,11 @@ public:
   /* Sets the event handler */
   void setEventHandler(EventHandler* event_handler);
   
-  /* Sets the state of the thing */
-  bool setFrames(Sprite* frames, bool unset_old = true);
+  /* Sets the state frames of the thing */
+  bool setFrame(TileSprite* frame, uint32_t x, uint32_t y, 
+                bool unset_old = true);
+  bool setFrames(std::vector<std::vector<TileSprite*>> frames, 
+                 bool unset_old = false);
   
   /* Sets the things height classification */
   bool setHeight(uint16_t new_height);
@@ -236,6 +253,7 @@ public:
   virtual void update(int cycle_time, Tile* next_tile);
   
   /* Unsets the thing frames, in the class */
+  void unsetFrame(uint32_t x, uint32_t y, bool delete_frames = true);
   void unsetFrames(bool delete_frames = true);
   
   /* Unsets the starting tile */

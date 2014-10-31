@@ -147,7 +147,7 @@ void MapPerson::addDirection(Direction direction)
 bool MapPerson::animate(int cycle_time, bool reset, bool skip_head)
 {
   bool shift = false;
-  Sprite* frames = getFrames();
+  //Sprite* frames = getFrames(); // TODO: Repair
  
   /* Check if an animation can occur */
   if(frames != NULL)
@@ -270,8 +270,8 @@ bool MapPerson::setDirection(Direction direction, bool set_movement)
   if(surface_index >= 0 && dir_index >= 0)
   {
     if(changed && states[surface_index][dir_index] != NULL)
-    {
-      MapThing::setFrames(states[surface_index][dir_index], false);
+    { // TODO: Repair
+      //MapThing::setFrames(states[surface_index][dir_index], false);
       active_secondary = getStateSecondary(surface, direction);
     }
 
@@ -764,8 +764,8 @@ bool MapPerson::setState(SurfaceClassifier surface,
     
     /* If the updated state is the active one, automatically set the printable
      * sprite */
-    if(this->surface == surface && this->direction == direction)
-      MapThing::setFrames(frames, false);
+    //if(this->surface == surface && this->direction == direction)
+    //  MapThing::setFrames(frames, false); // TODO: Repair
     
     return true;
   }
@@ -816,8 +816,8 @@ void MapPerson::setSurface(SurfaceClassifier surface)
   this->surface = surface;
 
   Sprite* current = getState(surface, direction);
-  if(current != NULL)
-    MapThing::setFrames(current, false);
+  //if(current != NULL)
+  //  MapThing::setFrames(current, false); // TODO: Repair
 }
 
 /*

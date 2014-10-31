@@ -102,15 +102,22 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
-  /* Copy function, to be called by a copy or equal operator constructor */
-  void copySelf(const Sprite &source);
-  
   /* Returns the angle, if one exists in the list of modifications */
   uint16_t parseAdjustments(std::vector<std::string> adjustments);
   
   /* Sets the color modification with the texture */
   void setColorMod();
-  
+
+/*=============================================================================
+ * PROTECTED FUNCTIONS
+ *============================================================================*/
+protected:
+  /* Contains the destructor implementation (so children can call it) */
+  void clear();
+
+  /* Copy function, to be called by a copy or equal operator constructor */
+  void copySelf(const Sprite &source);
+
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
