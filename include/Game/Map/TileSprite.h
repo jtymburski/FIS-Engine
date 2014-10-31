@@ -30,6 +30,12 @@ private:
   /* Passability of the tile sprite */
   uint8_t passability;
 
+  /* Render depth - 'z' coordinate */
+  uint8_t render_depth;
+
+  /* -------------------------- Constants ------------------------- */
+  const static uint8_t kMAX_RENDER_DEPTH; /* Max render depth */
+
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
@@ -48,10 +54,18 @@ public:
   /* Call to add passability, as extracted from file data */
   void addPassability(std::string data);
   
-  /* Passability class control */
+  /* Const get functions for internal variables */
   bool getPassability(Direction dir) const;
+  uint8_t getRenderDepth() const;
+
+  /* Resets the passability to default */
   void resetPassability();
+
+  /* Sets the passability, for a particular direction */
   void setPassability(Direction dir, bool set_value);
+
+  /* Sets the render depth. 0 is the base up to max */
+  bool setRenderDepth(uint8_t depth);
 
 /*============================================================================
  * OPERATOR FUNCTIONS

@@ -49,7 +49,7 @@ MapThing::MapThing(Sprite* frames, uint16_t width, uint16_t height,
         : MapThing()
 {
   setDescription(description);
-  setFrames(frames);
+  //setFrames(frames); // TODO: Repair with constructor
   setHeight(height);
   setID(id);
   setName(name);
@@ -62,6 +62,30 @@ MapThing::MapThing(Sprite* frames, uint16_t width, uint16_t height,
 MapThing::~MapThing()
 {
   clear();
+}
+
+/*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+
+/* Get a valid frame from the matrix, if it exists (used for copying) */
+// TODO: Comment
+TileSprite* MapThing::getValidFrame()
+{
+  // TODO
+}
+
+/* Grow the frame matrix to the indicated size */
+// TODO: Comment
+bool MapThing::growMatrix(uint32_t x, uint32_t y)
+{
+  if(frame_matrix.size() == 0 || frame_matrix.size() <= x || 
+                                 frame_matrix[0].size() <= y)
+  {
+    // TODO
+  }
+
+  return false;
 }
 
 /*============================================================================
@@ -495,15 +519,41 @@ Frame* MapThing::getDialogImage()
 }
 
 /* 
- * Description: Gets the frames data of the thing. If frames isn't set, returns
- *              NULL.
+ * Description: Gets the frame data for the thing at a particular coordinate.
+ *              Coordinates are with respect to the top left of the sprite.
+ *              If out of range or the frame isn't set, it will return NULL.
+ *
+ * Inputs: uint32_t x - x coordinate in matrix
+ *         uint32_t y - y coordinate in matrix
+ * Output: TileSprite* - the pointer to the data for the frame. Do not delete
+ *                       since it would seg fault the game.
+ */
+TileSprite* MapThing::getFrame(uint32_t x, uint32_t y)
+{
+  TileSprite* frame = NULL;
+
+  if(frame_matrix.size() > x && frame_matrix[x].size() > y)
+  {
+    frame = frame_matrix[x][y];
+  }
+
+  return frame; 
+}
+
+/* 
+ * Description: Gets all the frame data for the thing, in vector form.
+ *              Coordinates are with respect to the top left of the sprite and
+ *              follow the form [x][y]. If there are none set, the matrix will 
+ *              be empty.
  *
  * Inputs: none
- * Output: Sprite* - the pointer to the data for the thing, as a Sprite
+ * Output: std::vector<std::vector<TileSprite*>> - the matrix of frame pointers
+ *             as set in the class. Do not delete any individual frame since it
+ *             would seg fault the game.
  */
-Sprite* MapThing::getFrames()
+std::vector<std::vector<TileSprite*>> MapThing::getFrames()
 {
-  return frames;
+  return frame_matrix;
 }
 
 /* 
@@ -823,17 +873,29 @@ void MapThing::setEventHandler(EventHandler* event_handler)
  *         bool unset_old - delete the old frames from memory?
  * Output: bool - returns if the thing frames were set successfully
  */
-bool MapThing::setFrames(Sprite* frames, bool unset_old)
-{
-  /* Check if the frames are valid */
-  if(frames != NULL)
-  {
-    unsetFrames(unset_old);
-    this->frames = frames;
-    return true;
-  }
+//bool MapThing::setFrames(Sprite* frames, bool unset_old)
+//{
+//  /* Check if the frames are valid */
+//  if(frames != NULL)
+//  {
+//    unsetFrames(unset_old);
+//    this->frames = frames;
+//    return true;
+//  }
+//
+//  return false;
+//}
 
-  return false;
+bool MapThing::setFrame(TileSprite* frame, uint32_t x, uint32_t y, 
+                        bool unset_old)
+{
+  // TODO: Implementation and comment
+}
+
+bool MapThing::setFrames(std::vector<std::vector<TileSprite*>> frames, 
+                         bool unset_old)
+{
+  // TODO: Implementation and comment
 }
 
 /*
@@ -1059,6 +1121,12 @@ void MapThing::update(int cycle_time, Tile* next_tile)
     animate(cycle_time);
   }
 }
+ 
+// TODO: Comment
+void MapThing::unsetFrame(uint32_t x, uint32_t y, bool delete_frames)
+{
+  // TODO: Implementation
+}
 
 /*
  * Description: Unsets the frames that are embedded in this as the Map Thing
@@ -1069,8 +1137,22 @@ void MapThing::update(int cycle_time, Tile* next_tile)
 void MapThing::unsetFrames(bool delete_frames)
 {
   if(delete_frames)
-    delete frames;
-  frames = NULL;
+  {
+    for(uint32_t i = 0; i < frame_matrix.size(); i++)
+    {
+      for(uint32_t j = 0; j < frame_matrix[i].size(); j++)
+      {
+        if(frame_matrix[i][j] != NULL)
+          delete frame_matrix[i][j];
+        frame_matrix[i][j] = NULL;
+      }
+    }
+  }
+
+  /* Clear out the array */
+  for(uint32_t i = 0; i < frame_matrix.size(); i++)
+    frame_matrix[i].clear();
+  frame_matrix.clear();
 }
 
 /*

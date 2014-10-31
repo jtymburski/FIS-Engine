@@ -9,6 +9,9 @@
  *****************************************************************************/
 #include "Game/Map/TileSprite.h"
 
+/* Constant Implementation - see header file for descriptions */
+const uint8_t TileSprite::kMAX_RENDER_DEPTH = 10;
+
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
@@ -20,6 +23,8 @@
  */
 TileSprite::TileSprite() : Sprite()
 {
+  render_depth = 0;
+
   resetPassability();
 }
 
@@ -33,6 +38,8 @@ TileSprite::TileSprite() : Sprite()
 TileSprite::TileSprite(std::string path, SDL_Renderer* renderer)
           : Sprite(path, renderer)
 {
+  render_depth = 0;
+
   resetPassability();
 }
 
@@ -48,6 +55,8 @@ TileSprite::TileSprite(std::string head_path, int num_frames,
                        std::string tail_path, SDL_Renderer* renderer)
           : Sprite(head_path, num_frames, tail_path, renderer)
 {
+  render_depth = 0;
+
   resetPassability();
 }
 
@@ -59,8 +68,9 @@ TileSprite::TileSprite(std::string head_path, int num_frames,
  */
 TileSprite::TileSprite(const TileSprite &source) : Sprite()
 {
-  resetPassability();
+  render_depth = 0;
 
+  resetPassability();
   copySelf(source);
 }
 
@@ -69,6 +79,7 @@ TileSprite::TileSprite(const TileSprite &source) : Sprite()
  */
 TileSprite::~TileSprite()
 {
+  render_depth = 0;
   resetPassability();
   Sprite::clear();
 }
@@ -98,6 +109,9 @@ void TileSprite::copySelf(const TileSprite &source)
     setPassability(Direction::EAST, true);
   if(source.getPassability(Direction::WEST))
     setPassability(Direction::WEST, true);
+
+  /* Copy render depth information */
+  setRenderDepth(source.getRenderDepth());
 }
 
 /*============================================================================
@@ -126,6 +140,8 @@ bool TileSprite::addFileInformation(XmlData data, int index,
   /* Parse the tile sprite information - based on the element tag name */
   if(element == "passability")
     addPassability(data.getDataString());
+  else if(element == "renderdepth" && data.getDataInteger() >= 0)
+    setRenderDepth(data.getDataInteger());
   else
     success &= Sprite::addFileInformation(data, index, renderer, base_path);
 
@@ -177,6 +193,17 @@ bool TileSprite::getPassability(Direction dir) const
 }
 
 /* 
+ * Description: Gets the render depth for the individual sprite.
+ *
+ * Inputs: none
+ * Output: uint8_t - render depth integer (0 is base, up to max)
+ */
+uint8_t TileSprite::getRenderDepth() const
+{
+  return render_depth;
+}
+
+/* 
  * Description: Resets the sprite passability back to default state. Default
  *              state is no passability in all directions.
  *
@@ -203,6 +230,24 @@ void TileSprite::setPassability(Direction dir, bool set_value)
   else
     (set_value) ? (passability |= static_cast<uint8_t>(dir)) 
                 : (passability &= ~static_cast<uint8_t>(dir));
+}
+
+/* 
+ * Description: Sets the render depth. Used for layering the rendering process
+ *              on individual tiles. Max is 10 (0-9).
+ *
+ * Inputs: uint8_t depth - the depth value to set it to
+ * Output: bool - status if the depth was in range. If not, nothing happens
+ */
+bool TileSprite::setRenderDepth(uint8_t depth)
+{
+  if(depth < kMAX_RENDER_DEPTH)
+  {
+    render_depth = depth;
+    return true;
+  }
+
+  return false;
 }
 
 /*=============================================================================
