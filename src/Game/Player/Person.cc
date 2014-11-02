@@ -860,7 +860,18 @@ void Person::print(const bool &simple, const bool &equips,
       std::cout << "REFLECT: " << getBFlag(BState::REFLECT) << "\n";
       std::cout << "BOND: " << getBFlag(BState::BOND) << "\n";
       std::cout << "BONDED: " << getBFlag(BState::BONDED) << "\n";
-      std::cout << "REVIVABLE: " << getBFlag(BState::REVIVABLE) << "\n\n";
+      std::cout << "REVIVABLE: " << getBFlag(BState::REVIVABLE);
+      std::cout << "\nSELECTED_ACTION: " << getBFlag(BState::SELECTED_ACTION);
+      std::cout << "\nSELECTED_2ND_ACTION: " 
+                << getBFlag(BState::SELECTED_2ND_ACTION);
+      std::cout << "\nSELECTED_3RD_ACTION: "
+                << getBFlag(BState::SELECTED_3RD_ACTION);
+      std::cout << "\nCAN_CRIT: " << getBFlag(BState::CAN_CRIT);
+      std::cout << "\nCAN_BE_CRIT: " << getBFlag(BState::CAN_BE_CRIT);
+      std::cout << "\nDEFENDING: " << getBFlag(BState::DEFENDING);
+      std::cout << "\nGUARDED: " << getBFlag(BState::GUARDED);
+      std::cout << "\nGUARDING: " << getBFlag(BState::GUARDING);
+      std::cout << "\nSHIELDED: " << getBFlag(BState::SHIELDED) << "/n";
  
       std::cout << "--- Person State Flags ---\n";
       std::cout << "SLEUTH: " << getPFlag(PState::SLEUTH) << "\n";

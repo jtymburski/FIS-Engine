@@ -1,10 +1,10 @@
-/******************************************************************************
+/*******************************************************************************
 * File Name: EnumDb [Declaration]
 * Date Created: November 12th, 2013
 * 
 * Description: EnumDatabase  contains the database of global enumerations and
 *              functions for Enum -> String
-******************************************************************************/
+*******************************************************************************/
 #ifndef ENUMDB_H
 #define ENUMDB_H
 

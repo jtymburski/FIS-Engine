@@ -23,20 +23,49 @@ const uint16_t Battle::kBATTLE_MENU_DELAY    = 400; /* Personal menu delay */
 
 /* ------------ Battle Damage Calculation Modifiers ---------------
  *
+ * Maximum Ailments (Total)
+ * Maximum Each Ailments (Per Person)
+ * Minimum Damage (Possible)
+ * Maximum Damage (Possible)
+ *
+ * Offensive Physical Modifier
+ * Defensive Physical Modifier
+ * Offensive Primary Elemental Match Modifier
+ * Defensive Primary Elemental Match Modifier
+ * Offensive Secondary Elemental Match Modifier
+ * Defensive Secondary Elemental Match Modifier
+ *
  * Offensive Primary Element Modifier
  * Defensive Primary Element Modifier
  * Offensive Secondary Element Modifier
  * Defensive Secondary Element Modifier
-
- * Base Critical Hit Chance [Unbearability] Modifier
- * Dodge Chance [Limbertude] Modifier
- * Dodge Chance [Limbertude] Per Level Modifier
+ *
  * Primary Elemental Advantage Modifier
  * Primary Elemental Disadvantage Modifier
  * Secondary Elemental Advantage Modifier
  * Secondary Elemental Disadvantage Modifier
  * Double Elemental Advantage Modifier
  * Double Elemental Disadvantage Modifier
+ *
+ * Manna Power Modifier
+ * Manna Defense Modifier
+ * User Power Modifier
+ * Target Defense Modifier
+ * 
+ * Base Critical Hit Chance
+ * Offensive Critical Factor
+ * Critical Modifier (Base)
+ * Critical Lvl Modifier (Per Level)
+ * Critical Defending Modifier (While User Defending)
+ * Crtical Guarded Modifier (While User Being Guarded)
+ * Critical Shielded Modifier (While User Being Shielded)
+ * 
+ *
+ * Dodge Chance [Limbertude] Modifier
+ * Dodge Chance [Limbertude] Per Level Modifier
+ *
+ * Defend Modifier (Base Damage Mod While Defending)
+ * Guard Modifier (Base Damage Mod While Being Guarded)
  */
 const uint16_t Battle::kMAX_AILMENTS             =    50;
 const uint16_t Battle::kMAX_EACH_AILMENTS        =     5;
@@ -77,6 +106,9 @@ const float    Battle::kCRIT_SHIELDED_MODIFIER      =   0.50;
 
 const float    Battle::kDODGE_MODIFIER              =   1.10;
 const float    Battle::kDODGE_PER_LEVEL_MODIFIER    =   1.04;
+
+const float    Battle::kDEFEND_MODIFIER             =   0.50;
+const float    Battle::kGUARD_MODIFIER              =   0.25;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -630,6 +662,20 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
 
   auto base_damage = base_user_pow + action_power - base_targ_def;
 
+  /* If the user is defending, decrease the damage taken by the defending
+   * modifier */
+  if (curr_user->getBFlag(BState::DEFENDING))
+    base_damage *= kDEFEND_MODIFIER;
+
+  /* For guardinng users, the person being guarded will take kGUARDING_MODIFIER
+   * portion of the damage, while the guard will take the remainder. */
+
+  /* For persons shielded by damage */
+
+
+
+  //SHIELED
+
   base_damage     *= crit_factor;
 
 #ifdef UDEBUG
@@ -1008,6 +1054,23 @@ void Battle::cleanUp()
   // TODO: Auto win turns elapsed [03-01-14]
   if (turns_elapsed == 7)
     setBattleFlag(CombatState::VICTORY);
+
+  /* Cleanup for each member of friends and persons */
+  for (size_t i = 0; i < friends->getSize(); i++)
+  {
+    auto member = friends->getMember(i);
+    member->resetDefend();
+    member->resetGuard();
+    member->resetGuardee();
+  }
+
+  for (size_t i = 0; i < foes->getSize(); i++)
+  {
+    auto member = foes->getMember(i);
+    member->resetDefend();
+    member->resetGuard();
+    member->resetGuardee();
+  }
 }
 
 /*
@@ -1229,6 +1292,37 @@ void Battle::personalUpkeep(Person* const target)
 }
 
 /*
+ * Description: Attempts to assign a new guard/guardee pair for the curr_user/
+ *              curr_target pair respectively, by first checking if a new 
+ *              guard pair can be made and then assigning the proper pointers. 
+ *
+ * Inputs: none
+ * Output: bool - return the outcome of the guard operation
+ */
+bool Battle::processGuard()
+{
+  auto can_guard  = true;
+  auto good_guard = true;
+
+  /* A guard/guardee combo can only be made if both the guard and guardee are
+   * not being guarded by, or guarding any persons */
+  can_guard &= curr_target->getGuard() == nullptr;
+  can_guard &= curr_target->getGuardee() == nullptr;
+  can_guard &= curr_user->getGuard() == nullptr;
+  can_guard &= curr_user->getGuardee() == nullptr;
+
+  /* If a guard ca be made, attempt to assign guardee and guarding persons.
+   * This should assign the GUARDING/GUARDED flags properly */
+  if (can_guard)
+  {
+    good_guard &= curr_user->setGuardee(curr_target);
+    good_guard &= curr_target->setGuard(curr_user);
+  }
+
+  return good_guard;
+}
+
+/*
  * Description: Processes the current Skill (or Item->Skill) action selected
  *              for each action in the Skill against a vector of targets which
  *              were selected as targets of the Skill
@@ -1309,7 +1403,17 @@ void Battle::processSkill(std::vector<Person*> targets)
           
           if (curr_target->doDmg(base_damage))
           {
-            // Person has died
+            //TODO: Person has died message
+          }
+          else
+          {
+            /* If the person was defending, unless they are a power defender,
+               reset their defending status */
+            if (!curr_target->isPowerDefender())
+            {
+              //TODO [11-02-14]: Defending reset update message.
+              curr_target->resetDefend();
+            }
           }
 
           if (checkPartyDeath(friends))
@@ -1318,17 +1422,7 @@ void Battle::processSkill(std::vector<Person*> targets)
             setBattleFlag(CombatState::VICTORY, true);
         }
 
-        if (curr_skill->getFlag(SkillFlags::OFFENSIVE))
-        {
-          // NOTES: CHECK FOR IGNORE FLAGS ALONG THE WAY
-          // deal damage based on computed values
-          // check party death upon each damage dealt
-          // output info to BIB
-        }
-        else if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
-        {
 
-        }          
       }
     }
     else if ((*it)->actionFlag(ActionFlags::INFLICT))
@@ -1428,8 +1522,15 @@ void Battle::processActions()
     }
     else if (curr_action_type == ActionType::GUARD)
     {
-      /* Current user is now guarding the target person */
-      curr_user->setBFlag(BState::GUARDING, true);
+      curr_target = action_buffer->getTargets().at(0);
+      bool good_guard = processGuard();
+
+      if (!good_guard)
+      {
+        //TODO [01-02-14]: Error in the guard operation
+        can_process = false;
+      }
+
       // Guard the appropriate target
     }
     else if (curr_action_type == ActionType::IMPLODE)

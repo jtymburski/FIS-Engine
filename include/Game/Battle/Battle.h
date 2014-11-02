@@ -286,6 +286,9 @@ private:
   static const float    kDODGE_MODIFIER;
   static const float    kDODGE_PER_LEVEL_MODIFIER;
 
+  static const float    kDEFEND_MODIFIER;
+  static const float    kGUARD_MODIFIER;
+
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
@@ -371,6 +374,9 @@ private:
 
   /* Process the actions (Items & Skills) in the buffer */
   void processActions();
+
+  /* Processes a guard action with curr_user and curr_target */
+  bool processGuard();
 
   /* Recalculates the ailments after they have been altered */
   void recalculateAilments(Person* const target);
