@@ -84,7 +84,8 @@ private:
   BufferAction& getIndex(const uint32_t &index);
 
   /* Sorts a vector of Buffer actions by a given buffer sort */
-  bool sort(BufferSorts buffer_sorts);
+  std::vector<BufferAction> sort(std::vector<BufferAction> actions, 
+      BufferSorts buffer_sorts);
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
@@ -144,7 +145,7 @@ public:
   bool setNext();
 
   /* Reorders the Buffer based off given primary and secondary sorts */
-  bool reorder(BufferSorts primary, BufferSorts secondary = BufferSorts::NONE);
+  bool reorder();
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS

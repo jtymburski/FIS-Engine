@@ -1049,8 +1049,6 @@ void Battle::cleanUp()
   action_buffer->update();
   menu->unsetAll();
 
-  setBattleFlag(CombatState::PHASE_DONE, true);
-
   // TODO: Auto win turns elapsed [03-01-14]
   if (turns_elapsed == 7)
     setBattleFlag(CombatState::VICTORY);
@@ -1071,6 +1069,8 @@ void Battle::cleanUp()
     member->resetGuard();
     member->resetGuardee();
   }
+
+  setBattleFlag(CombatState::PHASE_DONE, true);
 }
 
 /*
@@ -1267,8 +1267,8 @@ void Battle::loadBattleStateFlags()
  */
 void Battle::orderActions()
 {
-  /* Re-order item actions first, and skills by momentum of the user */
-  action_buffer->reorder(BufferSorts::ITEM_FIRST, BufferSorts::MOMENTUM);
+  /* Re-order buffer itmes based on defined oredering */
+  action_buffer->reorder();
 
   /* Order action state complete */
   setBattleFlag(CombatState::PHASE_DONE);

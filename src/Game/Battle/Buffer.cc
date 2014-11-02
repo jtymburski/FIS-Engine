@@ -146,35 +146,18 @@ BufferAction& Buffer::getIndex(const uint32_t &index)
  *         buffer_sorts - the enumerated sort to be performed
  * Output: bool - true if the sorting took place
  */
-bool Buffer::sort(BufferSorts buffer_sorts)
+std::vector<BufferAction> Buffer::sort(std::vector<BufferAction> actions, BufferSorts buffer_sorts)
 {
-  auto sorted = false;
-
   if (buffer_sorts == BufferSorts::ITEM_FIRST)
-  {
-    std::stable_sort(begin(action_buffer), end(action_buffer), Helpers::CompItemFirst());
-    sorted = true;
-  }
+    std::stable_sort(begin(actions), end(actions), Helpers::CompItemFirst());
   else if (buffer_sorts == BufferSorts::SKILL_FIRST)
-  {
-    std::stable_sort(begin(action_buffer), end(action_buffer), Helpers::CompSkillFirst());
-    sorted = true;
-  }
+    std::stable_sort(begin(actions), end(actions), Helpers::CompSkillFirst());
   else if (buffer_sorts == BufferSorts::MOMENTUM)
-  {
-    std::stable_sort(begin(action_buffer), end(action_buffer), Helpers::CompMomentum());
-    sorted = true;
-  }
-  else if (buffer_sorts == BufferSorts::NONE)
-  {
-    sorted = true;
-  }
+    std::stable_sort(begin(actions), end(actions), Helpers::CompMomentum());
   else
-  {
     std::cerr << "[Error]: Unknown buffer sorting method \n";
-  }
 
-  return sorted;
+  return actions;
 }
 
 /*=============================================================================
@@ -569,18 +552,60 @@ bool Buffer::setNext()
  *         secondary - the secondary way by which to sort the elements
  * Output: bool - true if the sorts were performed successfully.
  */
-bool Buffer::reorder(BufferSorts primary, BufferSorts secondary)
+bool Buffer::reorder()
 {
-  auto success = true;
+  /* Precedence of Action Types (each action type sorted by momentum)
+   *
+   * DEFEND
+   * GUARD
+   * ITEM 
+   * SKILL
+   * OTHER
+   */
 
-  /* Sort the elements by secondary values first */
-  if (secondary != BufferSorts::NONE)
-    success &= Buffer::sort(secondary);
+  /* For each action type, grab all BufferActions of the type */
+  std::vector<BufferAction> defend_actions;
+  std::vector<BufferAction> guard_actions;
+  std::vector<BufferAction> item_actions;
+  std::vector<BufferAction> skill_actions;
+  std::vector<BufferAction> other_actions;
 
-  /* Then, reorder elements with stable sort by the primary desired method */
-  success &= Buffer::sort(primary);
+  for (auto it = begin(action_buffer); it != end(action_buffer); ++it)
+  {
+    if ((*it).type == ActionType::DEFEND)
+      defend_actions.push_back(*it);
+    else if ((*it).type == ActionType::GUARD)
+      guard_actions.push_back(*it);
+    else if ((*it).type == ActionType::ITEM)
+      item_actions.push_back(*it);
+    else if ((*it).type == ActionType::SKILL)
+      skill_actions.push_back(*it);
+    else
+      other_actions.push_back(*it);
+  }
 
-  return success;
+
+  /* Sort each action type by greatest momentum for the user */
+  Buffer::sort(defend_actions, BufferSorts::MOMENTUM);
+  Buffer::sort(guard_actions, BufferSorts::MOMENTUM);
+  Buffer::sort(item_actions, BufferSorts::MOMENTUM);
+  Buffer::sort(skill_actions, BufferSorts::MOMENTUM);
+  Buffer::sort(other_actions, BufferSorts::MOMENTUM);
+
+  /* If the sorting succeeded, recompile each action type in order */
+  action_buffer.clear();
+  action_buffer = defend_actions;
+
+  for (auto it = begin(guard_actions); it != end(guard_actions); ++it)
+    action_buffer.push_back(*it);
+  for (auto it = begin(item_actions); it != end(item_actions); ++it)
+    action_buffer.push_back(*it);
+  for (auto it = begin(skill_actions); it != end(skill_actions); ++it)
+    action_buffer.push_back(*it);
+  for (auto it = begin(other_actions); it != end(other_actions); ++it)
+    action_buffer.push_back(*it);
+
+  return true;
 }
 
 /*=============================================================================
