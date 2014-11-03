@@ -213,9 +213,9 @@ public:
   
   /* Sets the state frames of the thing */
   bool setFrame(TileSprite* frame, uint32_t x, uint32_t y, 
-                bool unset_old = true);
-  bool setFrames(std::vector<std::vector<TileSprite*>> frames, 
-                 bool unset_old = false);
+                bool delete_old = true);
+  void setFrames(std::vector<std::vector<TileSprite*>> frames, 
+                 bool delete_old = false);
   
   /* Sets the things height classification */
   bool setHeight(uint16_t new_height);

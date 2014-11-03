@@ -478,6 +478,7 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
       }
     }
 
+    // TODO
     /* Once all the implementation is done above, design render matrix */
     /* And then, build the functions around accessing and painting */
     /* There also needs to be the storing in Tile dealt with... */
@@ -937,36 +938,55 @@ void MapThing::setEventHandler(EventHandler* event_handler)
 }
 
 /*
- * Description: Sets the frames that defines the thing.
+ * Description: Sets a single frame sequence in the matrix of the rendering
+ *              thing.
  *
- * Inputs: Sprite* frames - the new frames to define to insert into the Map
- *                          Thing. Must actually have a sprite set.
+ * Inputs: TileSprite* frame - the new frame to insert into the Map Thing
+ *                             matrix. Must actually have a sprite set.
+ *         uint32_t x - the x coordinate, relative to the top left of the 
+ *                      Map Thing render matrix.
+ *         uint32_t y - the y coordinate, relative to the top left of the
+ *                      Map Thing render matrix.
  *         bool unset_old - delete the old frames from memory?
- * Output: bool - returns if the thing frames were set successfully
+ * Output: bool - returns if the new frame was set successfully
  */
-//bool MapThing::setFrames(Sprite* frames, bool unset_old)
-//{
-//  /* Check if the frames are valid */
-//  if(frames != NULL)
-//  {
-//    unsetFrames(unset_old);
-//    this->frames = frames;
-//    return true;
-//  }
-//
-//  return false;
-//}
-
 bool MapThing::setFrame(TileSprite* frame, uint32_t x, uint32_t y, 
-                        bool unset_old)
+                        bool delete_old)
 {
-  // TODO: Implementation and comment
+  /* Only proceed if frame isn't NULL */
+  if(frame != NULL)
+  {
+    /* Grow the matrix, if necessary */
+    if(x >= frame_matrix.size() || y >= frame_matrix[0].size())
+      growMatrix(x, y);
+
+    /* Remove existing, if relevant */
+    unsetFrame(x, y, delete_old);
+
+    frame_matrix[x][y] = frame;
+
+    return true;
+  }
+
+  return false;
 }
 
-bool MapThing::setFrames(std::vector<std::vector<TileSprite*>> frames, 
-                         bool unset_old)
+/*
+ * Description: Sets the frames that defines the thing
+ *
+ * Inputs: std::vector<std::vector<TileSprite*>> frames - the new matrix of 
+ *             frames to define to insert into the thing
+ *         bool delete_old - delete the old frames from memory?
+ * Output: none
+ */
+void MapThing::setFrames(std::vector<std::vector<TileSprite*>> frames, 
+                         bool delete_old)
 {
-  // TODO: Implementation and comment
+  /* First, unset the existing sprites */
+  unsetFrames(delete_old);
+
+  /* Set the new frames */
+  frame_matrix = frames;
 }
 
 /*
