@@ -68,24 +68,95 @@ MapThing::~MapThing()
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 
-/* Get a valid frame from the matrix, if it exists (used for copying) */
-// TODO: Comment
+/* 
+ * Description: Finds a valid TileSprite in the matrix of frames, stored
+ *              within the thing. If there are no frames set, it returns
+ *              NULL. 
+ * Note: Do not delete the pointer. It'll cause issues in the class.
+ * 
+ * Inputs: none
+ * Output: TileSprite* - the tile pointer found with data
+ */
 TileSprite* MapThing::getValidFrame()
 {
-  // TODO
-}
+  bool found = false;
+  uint32_t i = 0;
+  uint32_t j = 0;
+  TileSprite* valid_frame = NULL;
 
-/* Grow the frame matrix to the indicated size */
-// TODO: Comment
-bool MapThing::growMatrix(uint32_t x, uint32_t y)
-{
-  if(frame_matrix.size() == 0 || frame_matrix.size() <= x || 
-                                 frame_matrix[0].size() <= y)
+  while(!found && i < frame_matrix.size())
   {
-    // TODO
+    j = 0;
+
+    while(!found && j < frame_matrix[i].size())
+    {
+      std::cout << frame_matrix[i][j] << std::endl;
+      if(frame_matrix[i][j] != NULL)
+      {
+        valid_frame = frame_matrix[i][j];
+        found = true;
+      }
+      j++;
+    }
+    i++;
   }
 
-  return false;
+  return valid_frame;
+}
+
+/* 
+ * Description: Grow the frame matrix to be capable of addressing a tile at
+ *              the indicated size. If the tile is already feasible, nothing
+ *              happens.
+ * 
+ * Inputs: uint32_t x - row tile coordinate, for the matrix
+ *         uint32_t y = col tile coordinate, for the matrix
+ * Output: none
+ */
+void MapThing::growMatrix(uint32_t x, uint32_t y)
+{
+  TileSprite* null_sprite = NULL;
+
+  /* Determine if the array is empty or not -> different processing */
+  if(frame_matrix.size() == 0)
+  {
+    for(uint32_t i = 0; i <= x; i++)
+    {
+      std::vector<TileSprite*> col_data;
+
+      for(uint32_t j = 0; j <= y; j++)
+        col_data.push_back(null_sprite);
+
+      frame_matrix.push_back(col_data);
+    }
+  }
+  else
+  {
+    /* First deal with the x direction, if it's less than the new dimension */
+    if(frame_matrix.size() <= x)
+    {
+      uint32_t height = frame_matrix[0].size();
+      std::vector<TileSprite*> col_data;
+
+      /* Generate the column of data */
+      for(uint32_t i = 0; i < height; i++)
+        col_data.push_back(null_sprite);
+
+      /* Push back the necessary number of columns to bring it up to size */
+      for(uint32_t i = frame_matrix.size(); i <= x; i++)
+        frame_matrix.push_back(col_data);
+    }
+
+    /* Finally, deal with the y direction - we can assume enough rows */
+    if(frame_matrix[0].size() <= y)
+    {
+      for(uint32_t i = 0; i < frame_matrix.size(); i++)
+      {
+        for(uint32_t j = frame_matrix[i].size(); j <= y; j++)
+          frame_matrix[i].push_back(null_sprite);
+      }
+    }
+  }
 }
 
 /*============================================================================
@@ -1122,10 +1193,24 @@ void MapThing::update(int cycle_time, Tile* next_tile)
   }
 }
  
-// TODO: Comment
+/*
+ * Description: Unsets an individual frame that is embedded in this as the 
+ *              Map Thing and at the x, y coordinates specified.
+ *
+ * Inputs: uint32_t x - x coordinate of frame to delete
+ *         uint32_t y - y coordinate of frame to delete
+ *         bool delete_state - should the old frames be deleted?
+ * Output: none 
+ */
+
 void MapThing::unsetFrame(uint32_t x, uint32_t y, bool delete_frames)
 {
-  // TODO: Implementation
+  if(frame_matrix.size() > x && frame_matrix[x].size() > y)
+  {
+    if(delete_frames && frame_matrix[x][y] != NULL)
+      delete frame_matrix[x][y];
+    frame_matrix[x][y] = NULL;
+  }
 }
 
 /*
@@ -1142,7 +1227,7 @@ void MapThing::unsetFrames(bool delete_frames)
     {
       for(uint32_t j = 0; j < frame_matrix[i].size(); j++)
       {
-        if(frame_matrix[i][j] != NULL)
+        //if(frame_matrix[i][j] != NULL)
           delete frame_matrix[i][j];
         frame_matrix[i][j] = NULL;
       }

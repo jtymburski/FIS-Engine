@@ -85,7 +85,7 @@ private:
   TileSprite* getValidFrame();
 
   /* Grow the frame matrix to the indicated size */
-  bool growMatrix(uint32_t x, uint32_t y);
+  void growMatrix(uint32_t x, uint32_t y);
 
 /*============================================================================
  * PROTECTED FUNCTIONS
