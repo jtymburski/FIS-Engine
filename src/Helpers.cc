@@ -516,141 +516,6 @@ std::vector<uint32_t> Helpers::buildExpTable(const uint32_t &min,
 }
 
 /*
- * Description: Returns the tile size for rendering, as defined by the stored
- *              constants.
- *
- * Inputs: none
- * Output: uint16_t - the integer representing the pixel size of a tile
- */
-uint16_t Helpers::getTileSize()
-{
-  return kTILE_SIZE;
-}
-
-/*
- * Description: Trims white space from the left side of a std::string
- *
- * Inputs: std::string &s - the string to trim whitespace from
- * Output: std::string& - the string with the whitespace removed
- */
-std::string& Helpers::ltrim(std::string &s) 
-{
-  s.erase(begin(s), std::find_if(begin(s), end(s), 
-          std::not1(std::ptr_fun<int, int>(std::isspace))));
-
-  return s;
-}
-
-/*
- * Description: Takes a string range in the format x1-x2,y1-y2 and parses to
- *              return the parts of it, in unsigned integer form. It can also
- *              handle the case where it's not a range but a single coordinate
- *              i.e. x1,y1-y2 or x1,y1
- *
- * Inputs: std::string sequence - the string sequence to parse
- *         uint32_t x_min, x_max, y_min, y_max - the range variables for the 
-                                 parsed data to return. Passed by reference.
- * Output: bool - status if the data is good and referenced vars are set
- */
-bool Helpers::parseRange(std::string sequence, uint32_t &x_min, uint32_t &x_max, 
-                         uint32_t &y_min, uint32_t &y_max)
-{
-  uint32_t x_max_tmp = 0;
-  uint32_t x_min_tmp = 0;
-  uint32_t y_max_tmp = 0;
-  uint32_t y_min_tmp = 0;
-  bool good_data = false;
-
-  /* Get the range of elements to process */
-  std::vector<std::string> range_set = split(sequence, ',');
-  if(range_set.size() == 2)
-  {
-    good_data = true;
-    std::vector<std::string> x_set = split(range_set.front(), '-');
-    std::vector<std::string> y_set = split(range_set.back(), '-');
-    
-    /* Convert the data over */
-    int new_coord = atoi(x_set.front().c_str());
-    if(new_coord < 0)
-      good_data = false;
-    x_min_tmp = new_coord;
-    
-    new_coord = atoi(x_set.back().c_str());
-    if(new_coord < 0)
-      good_data = false;
-    x_max_tmp = new_coord;
-    
-    new_coord = atoi(y_set.front().c_str());
-    if(new_coord < 0)
-      good_data = false;
-    y_min_tmp = new_coord;
-    
-    new_coord = atoi(y_set.back().c_str());
-    if(new_coord < 0)
-      good_data = false;
-    y_max_tmp = new_coord;
-
-    /* Check validity of range */
-    if(y_min_tmp > y_max_tmp || x_min_tmp > x_max_tmp)
-      good_data = false;
-  }
-  
-  /* If data is good, proceed to set the outgoing pass by reference */
-  if(good_data)
-  {
-    x_min = x_min_tmp;
-    x_max = x_max_tmp;
-    y_min = y_min_tmp;
-    y_max = y_max_tmp;
-  }
-  
-  return good_data;
-}
-
-/*
- * Description Trims white space from the right side of a std::string
- *
- * Inputs: std::string &s - the string to trim whitespace from
- * Output: std::string& - the string with the whitespace removed
- */
-std::string& Helpers::rtrim(std::string &s)
-{
-  s.erase(std::find_if(s.rbegin(), s.rend(), 
-          std::not1(std::ptr_fun<int, int>(std::isspace))).base(), end(s));
-  
-  return s;
-}
-
-/*
- * Description: A split function that works with a string line and a character
- *              delimiter to cut the string line into a set of tokens. This
- *              function returns empty strings if they are delimited.
- *
- * Example: std::string test = "Hello,sunshine,,what,a,beautiful,day";
- *          std::vector<std::string> temp_list = split(test, ',');
- * 
- * Note: Does not give an empty final element.
- *
- * Inputs: const std::string &line - the line to split
- *         char delim - the character delimiter
- * Output: std::vector<std::string> - the split strings in array returned.
- */
-std::vector<std::string> Helpers::split(const std::string &line, char delim)
-{
-  std::vector<std::string> elements;
-  std::string item;
-  std::stringstream ss(line);
-  
-  /* Parse the string and separate as per each delimiter */
-  while(std::getline(ss, item, delim))
-    elements.push_back(item);
-  
-  return elements;
-}
-
-/* Splites the string into a grid based on the sprite naming convention */
-// TODO: Comment and functionality
-/*
  * Description: Takes a string in the designed format for sprite handling and
  *              separates it via the letter range.
  *
@@ -662,7 +527,7 @@ std::vector<std::string> Helpers::split(const std::string &line, char delim)
  * Output: std::vector<std::vector<std::string>> - a matrix of paths (in X
  *         and Y direction). As shown in the example above.
  */
-std::vector<std::vector<std::string>> Helpers::spriteGridSplitter(
+std::vector<std::vector<std::string>> Helpers::frameSeparator(
     std::string path)
 {
   /* Split string on '[' */
@@ -830,6 +695,139 @@ std::vector<std::vector<std::string>> Helpers::spriteGridSplitter(
   }
 
   return set;
+}
+
+/*
+ * Description: Returns the tile size for rendering, as defined by the stored
+ *              constants.
+ *
+ * Inputs: none
+ * Output: uint16_t - the integer representing the pixel size of a tile
+ */
+uint16_t Helpers::getTileSize()
+{
+  return kTILE_SIZE;
+}
+
+/*
+ * Description: Trims white space from the left side of a std::string
+ *
+ * Inputs: std::string &s - the string to trim whitespace from
+ * Output: std::string& - the string with the whitespace removed
+ */
+std::string& Helpers::ltrim(std::string &s) 
+{
+  s.erase(begin(s), std::find_if(begin(s), end(s), 
+          std::not1(std::ptr_fun<int, int>(std::isspace))));
+
+  return s;
+}
+
+/*
+ * Description: Takes a string range in the format x1-x2,y1-y2 and parses to
+ *              return the parts of it, in unsigned integer form. It can also
+ *              handle the case where it's not a range but a single coordinate
+ *              i.e. x1,y1-y2 or x1,y1
+ *
+ * Inputs: std::string sequence - the string sequence to parse
+ *         uint32_t x_min, x_max, y_min, y_max - the range variables for the 
+                                 parsed data to return. Passed by reference.
+ * Output: bool - status if the data is good and referenced vars are set
+ */
+bool Helpers::parseRange(std::string sequence, uint32_t &x_min, uint32_t &x_max, 
+                         uint32_t &y_min, uint32_t &y_max)
+{
+  uint32_t x_max_tmp = 0;
+  uint32_t x_min_tmp = 0;
+  uint32_t y_max_tmp = 0;
+  uint32_t y_min_tmp = 0;
+  bool good_data = false;
+
+  /* Get the range of elements to process */
+  std::vector<std::string> range_set = split(sequence, ',');
+  if(range_set.size() == 2)
+  {
+    good_data = true;
+    std::vector<std::string> x_set = split(range_set.front(), '-');
+    std::vector<std::string> y_set = split(range_set.back(), '-');
+    
+    /* Convert the data over */
+    int new_coord = atoi(x_set.front().c_str());
+    if(new_coord < 0)
+      good_data = false;
+    x_min_tmp = new_coord;
+    
+    new_coord = atoi(x_set.back().c_str());
+    if(new_coord < 0)
+      good_data = false;
+    x_max_tmp = new_coord;
+    
+    new_coord = atoi(y_set.front().c_str());
+    if(new_coord < 0)
+      good_data = false;
+    y_min_tmp = new_coord;
+    
+    new_coord = atoi(y_set.back().c_str());
+    if(new_coord < 0)
+      good_data = false;
+    y_max_tmp = new_coord;
+
+    /* Check validity of range */
+    if(y_min_tmp > y_max_tmp || x_min_tmp > x_max_tmp)
+      good_data = false;
+  }
+  
+  /* If data is good, proceed to set the outgoing pass by reference */
+  if(good_data)
+  {
+    x_min = x_min_tmp;
+    x_max = x_max_tmp;
+    y_min = y_min_tmp;
+    y_max = y_max_tmp;
+  }
+  
+  return good_data;
+}
+
+/*
+ * Description Trims white space from the right side of a std::string
+ *
+ * Inputs: std::string &s - the string to trim whitespace from
+ * Output: std::string& - the string with the whitespace removed
+ */
+std::string& Helpers::rtrim(std::string &s)
+{
+  s.erase(std::find_if(s.rbegin(), s.rend(), 
+          std::not1(std::ptr_fun<int, int>(std::isspace))).base(), end(s));
+  
+  return s;
+}
+
+/*
+ * Description: A split function that works with a string line and a character
+ *              delimiter to cut the string line into a set of tokens. This
+ *              function returns empty strings if they are delimited.
+ *
+ * Example: std::string test = "Hello,sunshine,,what,a,beautiful,day";
+ *          std::vector<std::string> temp_list = split(test, ',');
+ * 
+ * Note: Does not give an empty final element.
+ *
+ * Inputs: const std::string &line - the line to split
+ *         char delim - the character delimiter
+ * Output: std::vector<std::string> - the split strings in array returned.
+ */
+std::vector<std::string> Helpers::split(const std::string &line, char delim)
+{
+  std::vector<std::string> elements;
+  std::string item;
+  std::stringstream ss(line);
+  
+  /* Parse the string and separate as per each delimiter */
+  while(std::getline(ss, item, delim))
+    elements.push_back(item);
+  
+  return elements;
 }
 
 /*

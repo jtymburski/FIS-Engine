@@ -63,8 +63,7 @@ int main(int argc, char** argv)
   std::cout << "-- START SPLITTER TEST --" << std::endl;
   std::string element = "Test01_[A-C][A-E]_U00.png";
   std::cout << "Starting Element: " << element << std::endl;
-  std::vector<std::vector<std::string>> set = 
-      Helpers::spriteGridSplitter(element);
+  std::vector<std::vector<std::string>> set = Helpers::frameSeparator(element);
   std::cout << "Result:" << std::endl;
   for(uint32_t i = 0; i < set.size(); i++)
   {

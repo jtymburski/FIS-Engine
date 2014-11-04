@@ -452,10 +452,47 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
         
         if(good_data && base_element.front() == "path")
         {
-          std::cout << "PATH! " << x_min << " " << x_max << " " 
-                    << y_min << " " << y_max << std::endl;
-          std::vector<std::vector<std::string>> str_matrix;
-          // TODO: Functionality
+          std::vector<std::vector<std::string>> str_matrix = 
+                          Helpers::frameSeparator(data.getDataString(&success));
+          TileSprite* valid_frame = getValidFrame();
+
+          /* Ensure there is at least one valid frame */
+          if(valid_frame == NULL)
+          {
+            valid_frame = new TileSprite();
+            success &= setFrame(valid_frame, 0, 0);
+          }
+
+          /* Modify x_max and y_max if matrix of strings is not large enough */
+          if((x_max - x_min) >= str_matrix.size())
+            x_max = str_matrix.size() + x_min - 1;
+          if((y_max - y_min) >= str_matrix[0].size())
+            y_max = str_matrix[0].size() + y_min - 1;
+          growMatrix(x_max, y_max);
+
+          /* Go through and set the frames in all relevant sprites */
+          for(uint32_t i = x_min; i <= x_max; i++)
+          {
+            for(uint32_t j = y_min; j <= y_max; j++)
+            {
+              if(frame_matrix[i][j] == NULL)
+                setFrame(new TileSprite(*valid_frame), i, j);
+
+              if(frame_matrix[i][j]->isFramesSet())
+                frame_matrix[i][j]->removeAll();
+
+              data.addDataOfType(str_matrix[i-x_min][j-y_min]);
+              std::cout << "HERE TEST" << std::endl;
+              success &= frame_matrix[i][j]->addFileInformation(data, 
+                                           file_index + 2, renderer, base_path);
+            }
+          }
+
+          /* NOTES: If sprite doesn't exist but it's being requested access,
+           * generate it. And then pass the path in. If, for whatever reason,
+           * there are any sprites that don't exist, clean up after...(maybe
+           * not). For now, leave the sprites in but it won't be relevant if 
+           * no path is set. */
         }
         else if(good_data && base_element.front() == "passability")
         {
@@ -490,26 +527,16 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
       }
       else if(elements[1] == "sprite")
       {
-        /* First, check if there are any valid frames in the matrix */
-        TileSprite* valid_frame = getValidFrame();
-        
-        /* If NULL, create a new sprite and insert at 0,0 with new settings */
-        if(valid_frame == NULL)
-        {
-          /* Ensure there is space for 1 element at the origin */
-          growMatrix(0, 0);
-          frame_matrix[0][0] = new TileSprite();
-          frame_matrix[0][0]->addFileInformation(data, file_index + 2, 
-                                                 renderer, base_path);
-        }
-        else
-        {
-          for(uint32_t i = 0; i < frame_matrix.size(); i++)
-            for(uint32_t j = 0; j < frame_matrix[i].size(); j++)
-              if(frame_matrix[i][j] != NULL)
-                frame_matrix[i][j]->addFileInformation(data, file_index + 2, 
-                                                       renderer, base_path);
-        }
+        /* If no valid frame, generate one at origin for settings */
+        if(getValidFrame() == NULL)
+          setFrame(new TileSprite(), 0, 0);
+
+        /* Set the new sprite setting in all frames */
+        for(uint32_t i = 0; i < frame_matrix.size(); i++)
+          for(uint32_t j = 0; j < frame_matrix[i].size(); j++)
+            if(frame_matrix[i][j] != NULL)
+              frame_matrix[i][j]->addFileInformation(data, file_index + 2, 
+                                                     renderer, base_path);
       }
     }
 
@@ -916,6 +943,10 @@ bool MapThing::isVisible()
  */
 bool MapThing::render(SDL_Renderer* renderer, int offset_x, int offset_y)
 {
+  /* TESTING: Remove - TODO: Not Working */
+  if(frame_matrix.size() > 0 && frame_matrix.front().front() != NULL)
+    frame_matrix.front().front()->render(renderer, 256, 256, 64, 64);
+
   if(isVisible() && frames != NULL && tile_main != NULL)
   {
     int render_x = x - offset_x;

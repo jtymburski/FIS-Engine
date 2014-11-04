@@ -198,6 +198,9 @@ public:
   /* Returns if the direction parsing the frames is forward */
   bool isDirectionForward() const;
 
+  /* Check if there are set frames in the sprite */
+  bool isFramesSet() const;
+
   /* Returns if the grey scale mode is active */
   bool isGreyScale();
   

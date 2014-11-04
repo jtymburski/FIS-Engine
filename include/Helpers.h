@@ -131,24 +131,26 @@ public:
    * iterations */
   static std::vector<uint32_t> buildExpTable(const uint32_t &min, 
       const uint32_t &max, const uint32_t &iter);
-
+  
+  /* Splites the string into a grid based on the frame naming convention */
+  static std::vector<std::vector<std::string>> frameSeparator(
+      std::string path);
+  
   /* Get render tile size */
   static uint16_t getTileSize();
 
-  /* Methods for trimming white space from left and right of string ends */
+  /* Methods for trimming white space from left of string ends */
   static std::string& ltrim(std::string &s);
-  static std::string& rtrim(std::string &s);
 
   /* Takes a range and parses it to determine the x and y, min and max parts */
   static bool parseRange(std::string sequence, uint32_t &x_min, uint32_t &x_max, 
                          uint32_t &y_min, uint32_t &y_max);
-  
+ 
+  /* Methods for trimming white space from right of string ends */
+  static std::string& rtrim(std::string &s);
+
   /* Splits the string using the given delimiter */
   static std::vector<std::string> split(const std::string &s, char delim);
-
-  /* Splites the string into a grid based on the sprite naming convention */
-  static std::vector<std::vector<std::string>> spriteGridSplitter(
-    std::string path);
 
   /* Methods for trimming whitespace from both ends of std::strings */
   static std::string& trim(std::string &s);
