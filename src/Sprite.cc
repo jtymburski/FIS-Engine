@@ -218,7 +218,7 @@ bool Sprite::addFileInformation(XmlData data, int index,
   
   /* Splits the element, for underlying categorization */
   std::vector<std::string> split_element = Helpers::split(element, '_');
-
+  
   /* Parse the sprite information - based on the element tag name */
   if(element == "animation")
     setAnimationTime(data.getDataInteger());

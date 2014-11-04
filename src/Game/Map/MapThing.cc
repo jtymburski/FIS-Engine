@@ -90,7 +90,6 @@ TileSprite* MapThing::getValidFrame()
 
     while(!found && j < frame_matrix[i].size())
     {
-      std::cout << frame_matrix[i][j] << std::endl;
       if(frame_matrix[i][j] != NULL)
       {
         valid_frame = frame_matrix[i][j];
@@ -433,15 +432,37 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
                                           renderer, base_path);
   }
   /*--------------------- SPRITE DATA -----------------*/
-  else if(identifier == "sprites") // TODO: Develop
+  else if(identifier == "sprites") // TODO: Develop, clean up constant refs
   {
     std::cout << "Sprites setup" << std::endl;
     
     /* Only proceed if there are elements within the sprites element */
     if(elements.size() > 2)
     {
-      if(elements[1] == "multiple")
+      if(elements[1] == "multiple" && data.getKey(file_index+1) == "range")
       {
+        uint32_t x_max = 0;
+        uint32_t x_min = 0;
+        uint32_t y_max = 0;
+        uint32_t y_min = 0;
+        bool good_data = Helpers::parseRange(data.getKeyValue(file_index + 1), 
+                                             x_min, x_max, y_min, y_max);
+        std::vector<std::string> base_element = 
+                                               Helpers::split(elements[2], '_');
+        
+        if(good_data && base_element.front() == "path")
+        {
+          std::cout << "PATH! " << x_min << " " << x_max << " " 
+                    << y_min << " " << y_max << std::endl;
+          std::vector<std::vector<std::string>> str_matrix;
+          // TODO: Functionality
+        }
+        else if(good_data && base_element.front() == "passability")
+        {
+          std::cout << "PASSABILITY!" << std::endl;
+          // TODO: Functionality
+        }
+        
         /* Get the range and ensure there are that many sprites in the array */
         /* Note: if other sprites exist, make sure to copy all settings */
         
@@ -469,12 +490,26 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
       }
       else if(elements[1] == "sprite")
       {
-        /* These are the sprite settings */
-        /* Check and implement on every existing sprite in the matrix */
-        /* If there is no sprites, make one at the origin (0,0) */
+        /* First, check if there are any valid frames in the matrix */
+        TileSprite* valid_frame = getValidFrame();
         
-        // TODO
-        std::cout << "sprite details" << std::endl;
+        /* If NULL, create a new sprite and insert at 0,0 with new settings */
+        if(valid_frame == NULL)
+        {
+          /* Ensure there is space for 1 element at the origin */
+          growMatrix(0, 0);
+          frame_matrix[0][0] = new TileSprite();
+          frame_matrix[0][0]->addFileInformation(data, file_index + 2, 
+                                                 renderer, base_path);
+        }
+        else
+        {
+          for(uint32_t i = 0; i < frame_matrix.size(); i++)
+            for(uint32_t j = 0; j < frame_matrix[i].size(); j++)
+              if(frame_matrix[i][j] != NULL)
+                frame_matrix[i][j]->addFileInformation(data, file_index + 2, 
+                                                       renderer, base_path);
+        }
       }
     }
 

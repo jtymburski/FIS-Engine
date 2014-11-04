@@ -1106,6 +1106,20 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
     if(geography.size() > 0 && geography[0].size() > 3 
                             && geography[0][3].size() > 3)
       geography[0][3][3]->setStatus(Tile::OFF);
+      
+    /* TODO: Remove - testing */
+    std::cout << "--" << std::endl;
+    if(things.size() > 0)
+    {
+      std::cout << "Size: " << things.size() << std::endl;
+      TileSprite* frame = things[0]->getFrame(0, 0);
+      std::cout << "ID: " << (int)things[0]->getID() << std::endl;
+      std::cout << "Time: " << (int)frame->getAnimationTime() << std::endl;
+      std::cout << "Opacity: " << (int)frame->getOpacity() << std::endl;
+      std::cout << "Color-B: " << (int)frame->getColorBlue() << std::endl;
+      std::cout << "Rotation: " << (int)frame->getRotation() << std::endl;
+    }
+    std::cout << "--" << std::endl;
   }
   loaded = success;
 

@@ -139,6 +139,10 @@ public:
   static std::string& ltrim(std::string &s);
   static std::string& rtrim(std::string &s);
 
+  /* Takes a range and parses it to determine the x and y, min and max parts */
+  static bool parseRange(std::string sequence, uint32_t &x_min, uint32_t &x_max, 
+                         uint32_t &y_min, uint32_t &y_max);
+  
   /* Splits the string using the given delimiter */
   static std::vector<std::string> split(const std::string &s, char delim);
 
