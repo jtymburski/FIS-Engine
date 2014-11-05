@@ -59,41 +59,6 @@ int main(int argc, char** argv)
   (void)argc;
   (void)argv;
 
-  /* TODO - remove: testing */
-  std::cout << "-- START SPLITTER TEST --" << std::endl;
-  std::string element = "Test01_[A-C][A-E]_U00.png";
-  std::cout << "Starting Element: " << element << std::endl;
-  std::vector<std::vector<std::string>> set = Helpers::frameSeparator(element);
-  std::cout << "Result:" << std::endl;
-  for(uint32_t i = 0; i < set.size(); i++)
-  {
-    for(uint32_t j = 0; j < set[i].size(); j++)
-      std::cout << set[i][j] << " ";
-    std::cout << std::endl;
-  }
-  std::cout << "-- END SPLITTER TEST --" << std::endl;
- 
-  /* TODO - remove: testing 2 */
-  std::cout << std::endl << "-- START SPRITE TEST --" << std::endl;
-  TileSprite s;
-  s.setBrightness(0.2);
-  s.setAnimationTime(1250);
-  s.setColorBlue(122);
-  //s.setPassability(Direction::NORTH, true);
-  s.addPassability("N,E,S,W");
-  TileSprite s2;//(s);
-  std::cout << "Output: " << s2.getBrightness() << " " << s2.getAnimationTime() 
-            << " " << (int)s2.getColorBlue() << " " 
-            << s2.getPassability(Direction::NORTH) << std::endl;
-  s2 = s; // Copy constructor called
-  std::cout << "Output: " << s2.getBrightness() << " " << s2.getAnimationTime() 
-            << " " << (int)s2.getColorBlue() << " " 
-            << s2.getPassability(Direction::NORTH) << std::endl;
-  std::cout << "Passability: " << s2.getPassability(Direction::EAST) << " " 
-            << s2.getPassability(Direction::SOUTH) << " " 
-            << s2.getPassability(Direction::WEST) << std::endl;
-  std::cout << "-- END SPRITE TEST --" << std::endl;
-
   /* Get the base directory to the executable, which will be the location of
    * all applicable resources */
   char* directory = SDL_GetBasePath();
@@ -102,7 +67,7 @@ int main(int argc, char** argv)
   
   /* Initialize SDL libraries */
   bool success = initSDL();
-
+  
   if(success)
   {
     /* Create the application and start the run loop */

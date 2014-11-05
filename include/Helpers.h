@@ -146,6 +146,9 @@ public:
   static bool parseRange(std::string sequence, uint32_t &x_min, uint32_t &x_max, 
                          uint32_t &y_min, uint32_t &y_max);
  
+  /* Parses a comma delimited range and separates into integers */
+  static std::vector<std::vector<uint16_t>> parseRangeSet(std::string sequence);
+  
   /* Methods for trimming white space from right of string ends */
   static std::string& rtrim(std::string &s);
 

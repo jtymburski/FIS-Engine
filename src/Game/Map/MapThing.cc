@@ -8,6 +8,10 @@
  *              MapWalkOver, MapSolid, etc. Also handles the basic setup for 
  *              name, description, id, sprite. No interaction is handled in 
  *              this class since its a generic parent.
+ *
+ * TODO: 
+ *  1. Handle what to do with sprites in the frame matrix that are unused.
+ *     Either, delete the sprite or just access the isFramesSet() and ignore.
  *****************************************************************************/
 #include "Game/Map/MapThing.h"
 
@@ -434,110 +438,133 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
   /*--------------------- SPRITE DATA -----------------*/
   else if(identifier == "sprites") // TODO: Develop, clean up constant refs
   {
-    std::cout << "Sprites setup" << std::endl;
+    /* Ensure there is at least one valid frame */
+    TileSprite* valid_frame = getValidFrame();
+    if(valid_frame == NULL)
+    {
+      valid_frame = new TileSprite();
+      success &= setFrame(valid_frame, 0, 0);
+    }
     
     /* Only proceed if there are elements within the sprites element */
-    if(elements.size() > 2)
+    if(elements.size() == 3 && elements[1] == "multiple" && 
+                               data.getKey(file_index+1) == "range")
     {
-      if(elements[1] == "multiple" && data.getKey(file_index+1) == "range")
+      uint32_t x_max = 0;
+      uint32_t x_min = 0;
+      uint32_t y_max = 0;
+      uint32_t y_min = 0;
+      bool good_data = Helpers::parseRange(data.getKeyValue(file_index + 1), 
+                                           x_min, x_max, y_min, y_max);
+      std::vector<std::string> base_element = 
+                                             Helpers::split(elements[2], '_');
+      
+      /* Check what the element inside the multiple encapsulator is */
+      if(good_data && base_element.front() == "path")
       {
-        uint32_t x_max = 0;
-        uint32_t x_min = 0;
-        uint32_t y_max = 0;
-        uint32_t y_min = 0;
-        bool good_data = Helpers::parseRange(data.getKeyValue(file_index + 1), 
-                                             x_min, x_max, y_min, y_max);
-        std::vector<std::string> base_element = 
-                                               Helpers::split(elements[2], '_');
-        
-        if(good_data && base_element.front() == "path")
+        std::vector<std::vector<std::string>> str_matrix = 
+                        Helpers::frameSeparator(data.getDataString(&success));
+
+        /* Modify x_max and y_max if matrix of strings is not large enough */
+        if((x_max - x_min) >= str_matrix.size())
+          x_max = str_matrix.size() + x_min - 1;
+        if((y_max - y_min) >= str_matrix[0].size())
+          y_max = str_matrix[0].size() + y_min - 1;
+        growMatrix(x_max, y_max);
+
+        /* Go through and set the frames in all relevant sprites */
+        for(uint32_t i = x_min; i <= x_max; i++)
         {
-          std::vector<std::vector<std::string>> str_matrix = 
-                          Helpers::frameSeparator(data.getDataString(&success));
-          TileSprite* valid_frame = getValidFrame();
-
-          /* Ensure there is at least one valid frame */
-          if(valid_frame == NULL)
+          for(uint32_t j = y_min; j <= y_max; j++)
           {
-            valid_frame = new TileSprite();
-            success &= setFrame(valid_frame, 0, 0);
+            if(frame_matrix[i][j] == NULL)
+              setFrame(new TileSprite(*valid_frame), i, j);
+
+            if(frame_matrix[i][j]->isFramesSet())
+              frame_matrix[i][j]->removeAll();
+
+            data.addDataOfType(str_matrix[i-x_min][j-y_min]);
+            success &= frame_matrix[i][j]->addFileInformation(data, 
+                                         file_index + 2, renderer, base_path);
           }
-
-          /* Modify x_max and y_max if matrix of strings is not large enough */
-          if((x_max - x_min) >= str_matrix.size())
-            x_max = str_matrix.size() + x_min - 1;
-          if((y_max - y_min) >= str_matrix[0].size())
-            y_max = str_matrix[0].size() + y_min - 1;
-          growMatrix(x_max, y_max);
-
-          /* Go through and set the frames in all relevant sprites */
-          for(uint32_t i = x_min; i <= x_max; i++)
+        }
+      }
+      else if(good_data && base_element.front() == "passability")
+      {
+        /* Ensure the range is within the range of existing sprites */
+        growMatrix(x_max, y_max);
+        
+        /* Fill the range with the passability indicated */
+        for(uint32_t i = x_min; i <= x_max; i++)
+        {
+          for(uint32_t j = y_min; j <= y_max; j++)
           {
-            for(uint32_t j = y_min; j <= y_max; j++)
-            {
-              if(frame_matrix[i][j] == NULL)
-                setFrame(new TileSprite(*valid_frame), i, j);
+            if(frame_matrix[i][j] == NULL)
+              setFrame(new TileSprite(*valid_frame), i, j);
+            
+            frame_matrix[i][j]->resetPassability();
+            frame_matrix[i][j]->addPassability(data.getDataString());
+          }
+        }
+      }
+    }
+    else if(elements.size() == 4 && elements[1] == "x" && elements[2] == "y")
+    {
+      std::vector<std::string> base_element = Helpers::split(elements[3], '_');
+      uint32_t index = 0;
+      
+      /* Get the x and y coordinate */
+      std::vector<std::vector<uint16_t>> x_set = 
+                       Helpers::parseRangeSet(data.getKeyValue(file_index + 1));
+      std::vector<std::vector<uint16_t>> y_set = 
+                       Helpers::parseRangeSet(data.getKeyValue(file_index + 2));
 
+      /* Run through all the coordinates */
+      while(index < x_set.size() && index < y_set.size())
+      {
+        /* Ensure that the range is sufficient */
+        growMatrix(x_set[index].back(), y_set[index].back());
+        
+        /* Loop through the range and add it to each one */
+        for(uint32_t i = x_set[index].front(); i <= x_set[index].back(); i++)
+        {
+          for(uint32_t j = y_set[index].front(); j <= y_set[index].back(); j++)
+          {
+            if(frame_matrix[i][j] == NULL)
+              setFrame(new TileSprite(*valid_frame), i, j);
+
+            /* Check if it's a path or passability and set the info */
+            if(base_element.front() == "path")
+            {
               if(frame_matrix[i][j]->isFramesSet())
                 frame_matrix[i][j]->removeAll();
 
-              data.addDataOfType(str_matrix[i-x_min][j-y_min]);
-              std::cout << "HERE TEST" << std::endl;
-              success &= frame_matrix[i][j]->addFileInformation(data, 
-                                           file_index + 2, renderer, base_path);
+              success &= frame_matrix[i][j]->addFileInformation(
+                                     data, file_index + 3, renderer, base_path);
+            }
+            else if(base_element.front() == "passability")
+            {
+              frame_matrix[i][j]->resetPassability();
+              frame_matrix[i][j]->addPassability(data.getDataString()); 
             }
           }
-
-          /* NOTES: If sprite doesn't exist but it's being requested access,
-           * generate it. And then pass the path in. If, for whatever reason,
-           * there are any sprites that don't exist, clean up after...(maybe
-           * not). For now, leave the sprites in but it won't be relevant if 
-           * no path is set. */
         }
-        else if(good_data && base_element.front() == "passability")
-        {
-          std::cout << "PASSABILITY!" << std::endl;
-          // TODO: Functionality
-        }
-        
-        /* Get the range and ensure there are that many sprites in the array */
-        /* Note: if other sprites exist, make sure to copy all settings */
-        
-        /* Do an if to check if its a path or passability */
-          /* If path, get the matrix array and separate */
-            /* Then, proceed to insert the new sprites into the frame matrix */
-            /* If the sprite at the path don't exist, it'll be unset. */
-        
-          /* Else if passability, proceed to insert the passability into 
-           * the sprite - possibly put passability in the sprite itself */
 
-        std::cout << "multiple sprites" << std::endl;
+        index++;
       }
-      else if(elements[1] == "x")
-      {
-        /* Make sure there's X, Y, and then another element within */
-        /* If not, fill in the matrix of sprites up to it */
-        
-        /* Check to see if the frame matrix is of size to fit the X,Y coord */
-        /* Now, with the selected sprite, mirror the functionality above
-         * for multiple but with only one path */
-        
-        // TODO
-        std::cout << "single sprite" << std::endl;
-      }
-      else if(elements[1] == "sprite")
-      {
-        /* If no valid frame, generate one at origin for settings */
-        if(getValidFrame() == NULL)
-          setFrame(new TileSprite(), 0, 0);
+    }
+    else if(elements.size() == 3 && elements[1] == "sprite")
+    {
+      /* If no valid frame, generate one at origin for settings */
+      if(getValidFrame() == NULL)
+        setFrame(new TileSprite(), 0, 0);
 
-        /* Set the new sprite setting in all frames */
-        for(uint32_t i = 0; i < frame_matrix.size(); i++)
-          for(uint32_t j = 0; j < frame_matrix[i].size(); j++)
-            if(frame_matrix[i][j] != NULL)
-              frame_matrix[i][j]->addFileInformation(data, file_index + 2, 
-                                                     renderer, base_path);
-      }
+      /* Set the new sprite setting in all frames */
+      for(uint32_t i = 0; i < frame_matrix.size(); i++)
+        for(uint32_t j = 0; j < frame_matrix[i].size(); j++)
+          if(frame_matrix[i][j] != NULL)
+            frame_matrix[i][j]->addFileInformation(data, file_index + 2, 
+                                                   renderer, base_path);
     }
 
     // TODO
@@ -944,8 +971,16 @@ bool MapThing::isVisible()
 bool MapThing::render(SDL_Renderer* renderer, int offset_x, int offset_y)
 {
   /* TESTING: Remove - TODO: Not Working */
-  if(frame_matrix.size() > 0 && frame_matrix.front().front() != NULL)
-    frame_matrix.front().front()->render(renderer, 256, 256, 64, 64);
+  for(uint32_t i = 0; i < frame_matrix.size(); i++)
+  {
+    for(uint32_t j = 0; j < frame_matrix[i].size(); j++)
+    {
+      if(frame_matrix[i][j] != NULL)
+      {
+        frame_matrix[i][j]->render(renderer, 256+64*i, 256+64*j, 64, 64);
+      }
+    }
+  }
 
   if(isVisible() && frames != NULL && tile_main != NULL)
   {

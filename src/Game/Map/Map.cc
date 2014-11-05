@@ -169,6 +169,7 @@ bool Map::addTileData(XmlData data, uint16_t section_index)
         }
         
         /* If the sprite is found, add it to the tile */
+        // TODO: Review revising to incorporate new helper function.
         if(found_sprite != NULL)
         {
           std::vector<std::string> col_list =
@@ -1111,13 +1112,16 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
     std::cout << "--" << std::endl;
     if(things.size() > 0)
     {
-      std::cout << "Size: " << things.size() << std::endl;
-      TileSprite* frame = things[0]->getFrame(0, 0);
-      std::cout << "ID: " << (int)things[0]->getID() << std::endl;
-      std::cout << "Time: " << (int)frame->getAnimationTime() << std::endl;
-      std::cout << "Opacity: " << (int)frame->getOpacity() << std::endl;
-      std::cout << "Color-B: " << (int)frame->getColorBlue() << std::endl;
-      std::cout << "Rotation: " << (int)frame->getRotation() << std::endl;
+      std::vector<std::vector<TileSprite*>> set = things.front()->getFrames();
+      for(uint32_t i = 0; i < set.size(); i++)
+        for(uint32_t j = 0; j < set[i].size(); j++)
+          if(set[i][j] != NULL)
+            std::cout << i << "," << j << ": " 
+                      << set[i][j]->getPassability(Direction::NORTH) << " " 
+                      << set[i][j]->getPassability(Direction::EAST) << " " 
+                      << set[i][j]->getPassability(Direction::SOUTH) << " " 
+                      << set[i][j]->getPassability(Direction::WEST) 
+                      << std::endl;
     }
     std::cout << "--" << std::endl;
   }

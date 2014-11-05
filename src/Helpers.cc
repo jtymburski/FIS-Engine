@@ -634,7 +634,7 @@ std::vector<std::vector<std::string>> Helpers::frameSeparator(
       }
     }
   }
-
+  
   /* Sort the linear list into a 2D array */
   std::vector<std::vector<std::string>> set;
   if(range1 > 0 && range2 > 0)
@@ -643,7 +643,7 @@ std::vector<std::vector<std::string>> Helpers::frameSeparator(
     {
       std::vector<std::string> set_row;
       for(uint32_t j = 0; j < range1; j++)
-        set_row.push_back(linear_set[i*range1+j]);
+        set_row.push_back(linear_set[i+range1*j]);
       set.push_back(set_row);
     }
   }
@@ -672,18 +672,18 @@ std::vector<std::vector<std::string>> Helpers::frameSeparator(
     {
       std::vector<std::string> set_row;
       for(uint32_t i = 0; i < linear_set.size(); i++)
-        set_row.push_back(linear_set[i]);
-      set.push_back(set_row);
-    }
-    else
-    {
-      std::vector<std::string> set_row;
-      for(uint32_t i = 0; i < linear_set.size(); i++)
       {
         set_row.push_back(linear_set[i]);
         set.push_back(set_row);
         set_row.clear();
       }
+    }
+    else
+    {
+      std::vector<std::string> set_row;
+      for(uint32_t i = 0; i < linear_set.size(); i++)
+        set_row.push_back(linear_set[i]);
+      set.push_back(set_row);
     }
   }
   /* Otherwise, it's just a single element */
@@ -790,7 +790,56 @@ bool Helpers::parseRange(std::string sequence, uint32_t &x_min, uint32_t &x_max,
 }
 
 /*
- * Description Trims white space from the right side of a std::string
+ * Description: Takes a comma delimited set of ranges and splits them into
+ *              individual ranges, within a 2d vector.
+ * Example: "12-14,10,6-2" would become 12 to 14, 10, 2 to 6 in a matrix
+ *
+ * Inputs: std::string sequence - the comma delimited sequence
+ * Output: std::vector<std::vector<uint16_t>> - the matrix of ints parsed
+ */
+std::vector<std::vector<uint16_t>> Helpers::parseRangeSet(std::string sequence)
+{
+  std::vector<std::vector<uint16_t>> set_elements;
+  
+  /* Get the range of elements to process */
+  std::vector<std::string> range_set = split(sequence, ',');
+  for(uint32_t i = 0; i < range_set.size(); i++)
+  {
+    std::vector<std::string> range = split(range_set[i], '-');
+    std::vector<uint16_t> row;
+    
+    /* If a range, push both values back */
+    if(range.size() > 1)
+    {
+      uint16_t first = atoi(range.front().c_str());
+      uint16_t second = atoi(range.back().c_str());
+      
+      /* Sort based on range */
+      if(first > second)
+      {
+        row.push_back(second);
+        row.push_back(first);
+      }
+      else
+      {
+        row.push_back(first);
+        row.push_back(second);
+      }
+    }
+    /* If only a single value, only add it */
+    else if(range.size() == 1)
+    {
+      row.push_back(atoi(range.front().c_str()));
+    }
+    
+    set_elements.push_back(row);
+  }
+
+  return set_elements;
+}
+
+/*
+ * Description: Trims white space from the right side of a std::string
  *
  * Inputs: std::string &s - the string to trim whitespace from
  * Output: std::string& - the string with the whitespace removed
