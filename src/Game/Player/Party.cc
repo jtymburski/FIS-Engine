@@ -453,13 +453,40 @@ uint32_t Party::getMaxSize()
  * Inputs: uint8_t - index to check member for.
  * Output: Person* - pointer to a the person at the given index (or nullptr)
  */
-/* Obtains a ptr to a member of a given index, if the index is valid */
 Person* Party::getMember(const uint8_t &index)
 {
   if (index < members.size())
     return members.at(index);
 
   return nullptr;
+}
+
+/*
+ * Description: Attempts to return a vector of all members in the party except
+ *              a given member. If this member is not found, a vector of all
+ *              the members of the party will be found.
+ *
+ * Inputs: Person* member - the member to be excluded from all members
+ * Output: std::vector<Person*> - a vector of members with all but given member
+ */
+std::vector<Person*> Party::findMembersExcept(Person* const member,
+    const bool &only_living)
+{
+  std::vector<Person*> temp_members;
+
+  for (auto it = begin(members); it != end(members); ++it)
+  {
+    if (*it != member)
+    {
+      /* Add the member if they are dead only if only_living is false */
+      if (only_living && (*it)->getBFlag(BState::ALIVE))
+        temp_members.push_back(*it);
+      else if (!only_living)
+        temp_members.push_back(*it);
+    }
+  }
+
+  return temp_members;
 }
 
 /*

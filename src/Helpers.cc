@@ -37,7 +37,7 @@ std::mt19937_64 Helpers::rand_64_eng(seed_original);
  *
  * Notes: example uses:
  *        - 67% chance : bool b = chanceHappens(67, 100)
- *        - 67.4% chacne: bool b = chanceHappens(674, 1000)
+ *        - 67.4% chance: bool b = chanceHappens(674, 1000)
  *        - chanceHappens(n + 1, n) -> always true
  *        - chanceHappens(0, n) -> always false
  *

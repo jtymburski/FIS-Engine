@@ -272,6 +272,21 @@ public:
   /* Adds an amount of experience and may update the level */
   bool addExp(const uint32_t &amount, const bool &update = true);
 
+  /* Return the (floored) % of exp. reached towards the next level */
+  uint16_t findExpPercent();
+
+  /* Find the amount of experience per percentage of this level */
+  int32_t findExpPerPC();
+
+  /* Determine the amount of experience earned this level */
+  uint16_t findExpThisLevel();
+
+  /* Lose an amount of experience */
+  bool loseExp(const uint32_t &amount, const bool &update = true);
+
+  /* Lose a percentage of experience towards the next level */
+  bool loseExpPercent(const uint16_t &percent);
+
   /* Prepares the person for entering Battle (flags, Attributes etc.) */
   void battlePrep();
   void battleTurnPrep();
@@ -314,11 +329,11 @@ public:
   /* Returns a pointer to the AI module */
   AIModule* getAI();
 
-  /* Returns the real % VITA value of the maximum VITA */
-  uint16_t getVitaPercent();
-
   /* Returns the real % QD value of the maximum QD */
   uint16_t getQDPercent();
+
+  /* Returns the real % VITA value of the maximum VITA */
+  uint16_t getVitaPercent();
 
   /* Find the true cost for a Skill to the Person's QD */
   int16_t getTrueCost(Skill* test_skill);

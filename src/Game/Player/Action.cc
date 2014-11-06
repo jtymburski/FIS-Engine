@@ -575,12 +575,12 @@ bool Action::defFlag(IgnoreFlags test_flag)
  * Inputs: none
  * Output: Attribute - enumerated atribute the action affects
  */
-Attribute Action::getUserAttribute()
+Attribute Action::getUserAttribute() const
 {
   return user_attribute;
 }
 
-Attribute Action::getTargetAttribute()
+Attribute Action::getTargetAttribute() const
 {
   return target_attribute;
 }
@@ -591,7 +591,7 @@ Attribute Action::getTargetAttribute()
  * Inputs: none
  * Output: Infliction - enumerated attribute the action affects
  */
-Infliction Action::getAilment()
+Infliction Action::getAilment() const
 {
   return ailment;
 }
@@ -602,7 +602,7 @@ Infliction Action::getAilment()
  * Inputs: none
  * Output: int - the base value of the Action
  */
-int Action::getBase()
+int Action::getBase() const
 {
   return base;
 }
@@ -613,7 +613,7 @@ int Action::getBase()
  * Inputs: none
  * Output: int - the ID of the Action
  */
-int Action::getID()
+int Action::getID() const
 {
   return id;
 }
@@ -624,7 +624,7 @@ int Action::getID()
  * Inputs: none
  * Output: int - the minimum duration of the Action
  */
-int Action::getMin()
+int Action::getMin() const
 {
   return min_duration;
 }
@@ -635,7 +635,7 @@ int Action::getMin()
  * Inputs: none
  * Output: int - the maximum duration of the Action
  */
-int Action::getMax()
+int Action::getMax() const
 {
   return max_duration;
 }
@@ -646,7 +646,7 @@ int Action::getMax()
  * Inputs: none
  * Output: uint32_t - the variance on the Base value
  */
-uint32_t Action::getVariance()
+uint32_t Action::getVariance() const
 {
   return variance;
 }

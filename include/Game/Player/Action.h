@@ -189,24 +189,24 @@ public:
   bool defFlag(IgnoreFlags test_flag);
 
   /* Returns the Attribute the action may alter/assign for user and target */
-  Attribute getUserAttribute();
-  Attribute getTargetAttribute();
+  Attribute getUserAttribute() const;
+  Attribute getTargetAttribute() const;
 
   /* Returns the infliction the action may inflict/relieve */
-  Infliction getAilment();
+  Infliction getAilment() const;
 
   /* Returns the base change */
-  int getBase();
+  int getBase() const;
 
   /* Returns the ID of the Action */
-  int getID();
+  int getID() const;
 
   /* Methods for returning the min and max portions of the duration */
-  int getMin();
-  int getMax();
+  int getMin() const;
+  int getMax() const;
 
   /* Returns the variance of the Action */
-  uint32_t getVariance();
+  uint32_t getVariance() const;
 };
 
 #endif //ACTION_H

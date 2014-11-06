@@ -1,4 +1,4 @@
-/*******************************************************************************
+/******************************************************************************
 * Class Name: Battle [Declaration]
 * Date Created: February 23rd, 2014
 * Inheritance: None
@@ -89,12 +89,13 @@ enum class CombatState
   PHASE_DONE       = 1 << 3,
   VICTORY          = 1 << 4,
   LOSS             = 1 << 5,
-  OUTCOME_DONE     = 1 << 6,
-  ERROR_STATE      = 1 << 7,
-  RANDOM_ENCOUNTER = 1 << 8,
-  MINI_BOSS        = 1 << 9,
-  BOSS             = 1 << 10,
-  FINAL_BOSS       = 1 << 11
+  RUN              = 1 << 6,
+  OUTCOME_DONE     = 1 << 7,
+  ERROR_STATE      = 1 << 8,
+  RANDOM_ENCOUNTER = 1 << 9,
+  MINI_BOSS        = 1 << 10,
+  BOSS             = 1 << 11,
+  FINAL_BOSS       = 1 << 12
 };
 
 ENUM_FLAGS(IgnoreState)
@@ -286,6 +287,13 @@ private:
   static const float    kDODGE_MODIFIER;
   static const float    kDODGE_PER_LEVEL_MODIFIER;
 
+  static const float    kBASE_RUN_CHANCE;
+  static const float    kUSER_RUN_MODIFIER;
+  static const float    kALLY_RUN_MODIFIER;
+  static const float    kENEMY_RUN_MODIFIER;
+  static const float    kRUN_PC_PER_POINT;
+  static const int16_t  kRUN_PC_EXP_PENALTY;
+
   static const float    kDEFEND_MODIFIER;
   static const float    kGUARD_MODIFIER;
 
@@ -296,11 +304,14 @@ private:
   /* Attempts to add an ailment to the vector of ailments */
   bool addAilment(Ailment* const new_ailment);
 
-  /* Called when the Battle has been won */
-  void battleWon();
-
   /* Called when the Battle has been lost */
   void battleLost();
+
+  /* Called when the Battle is being run from */
+  void battleRun();
+
+  /* Called when the Battle has been won */
+  void battleWon();
 
   /* Attempt to add the current module settings to the action buffer */
   bool bufferEnemyAction();
@@ -351,11 +362,14 @@ private:
   /* Calculates crit chances and determines whether a critical will occur */
   bool doesActionCrit();
 
-  /* Calculates skill missing chance and determines if the skill miss */
-  bool doesSkillMiss();
-
   /* Calculates miss chance and determines whether an action miss will occur */
   bool doesActionMiss();
+
+  /* Determines whether the current person trying to run runs */
+  bool doesCurrPersonRun();
+
+  /* Calculates skill missing chance and determines if the skill miss */
+  bool doesSkillMiss();
 
   /* Deals with general upkeep (i.e. weather) */
   void generalUpkeep();

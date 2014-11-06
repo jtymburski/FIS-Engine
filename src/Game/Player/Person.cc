@@ -587,6 +587,120 @@ bool Person::addExp(const uint32_t &amount, const bool &update)
 }
 
 /*
+ * Description: Calculate and determine the percentage of experience
+ *              gained towards the next level. If the person is at max level,
+ *              the experience towards the next level will be 100 forever.
+ *
+ * Inputs: none
+ * Output: uint16_t - percentage towards the next level
+ */
+uint16_t Person::findExpPercent()
+{
+  uint16_t pc_exp = 0;
+
+  if (level < kNUM_LEVELS)
+  {
+    auto curr_exp = findExpThisLevel();
+    auto need_exp = Person::getExpAt(level + 1) - Person::getExpAt(level);
+
+    pc_exp = static_cast<uint16_t>(floor((curr_exp * 100)/ need_exp));
+  }
+  else
+  {
+    pc_exp = 100;
+  }
+
+  return pc_exp;
+}
+
+/*
+ * Description: Find the amount of experience per percentage of this level.
+ *
+ * Inputs: none
+ * Output: uint32_t - amount of experience for 1% of this level
+ */
+int32_t Person::findExpPerPC()
+{
+  if (level < kNUM_LEVELS)
+  {
+    auto level_exp = Person::getExpAt(level + 1) - Person::getExpAt(level);
+    return static_cast<uint32_t>(floor(level_exp / 100));
+  }
+
+  return -1;
+}
+
+/*
+ * Description: Calculates and returns the experience (amount value) gained
+ *              this level, or 0 if the person is at max level.
+ *
+ * Inputs: none
+ * Output: uint16_t - experience gained at this level
+ */
+uint16_t Person::findExpThisLevel()
+{
+  auto curr_exp = 0;
+
+  if (level < kNUM_LEVELS)
+  {
+    auto level_below_exp = Person::getExpAt(level);
+    curr_exp = total_exp - level_below_exp;
+  }
+
+  return curr_exp;
+}
+
+/*
+ * Description: Removes an amount of experience from the person but not from
+ *              their equipment. 
+ *
+ * Inputs: amount - the amount to take away
+ *         update - whether to update the level
+ * Output: bool - whether the loss of experience was possible
+ */
+bool Person::loseExp(const uint32_t &amount, const bool &update)
+{
+  if (amount >= total_exp)
+    total_exp -= amount;
+  
+  if (update)
+    updateLevel();
+
+  return true;
+}
+
+/*
+ * Description: Removes a certain percentage of gained experience towards the
+ *              next level. This function will not de-level the person, nor
+ *              will it remove experience from equipment. Giving any value
+ *              larger 99 will remove all gained experience towards the next
+ *              level 
+ *
+ * Inputs: percentage - the percentage to take away gained experience.
+ * Output: bool - whether a loss of experience happened properly
+ */
+bool Person::loseExpPercent(const uint16_t &percent)
+{
+  auto lost_exp = false;
+  auto exp_pc = findExpPercent();
+
+  /* If the % to lose is greater than % gained, remove all exp this level */
+  if (percent > exp_pc)
+  {
+    auto exp_gained = findExpThisLevel();
+    total_exp -= exp_gained;
+    lost_exp = true;
+  }
+  else if (percent > 0)
+  {
+    total_exp -= findExpPerPC() * percent;
+    lost_exp = true;
+  }
+
+  return lost_exp;
+}
+
+/*
  * Description: Prepares a person for entering Battle (flags, Attributes, etc.)
  *
  * Inputs: none
@@ -1388,12 +1502,12 @@ uint32_t Person::getTotalExp()
  * Inputs: 
  * Output:
  */
-uint16_t Person::getVitaPercent()
+uint16_t Person::getQDPercent()
 {
-  auto curr_vita = getCurr().getStat(Attribute::VITA);
-  auto max_vita  = getCurr().getStat(Attribute::VITA);
+  auto curr_qd = getCurr().getStat(Attribute::QTDR);
+  auto max_qd  = getCurrMax().getStat(Attribute::QTDR);
 
-  return static_cast<uint16_t>(floor((curr_vita * 100) / max_vita));
+  return static_cast<uint16_t>(floor((curr_qd * 100) / max_qd));
 }
 
 /*
@@ -1402,13 +1516,15 @@ uint16_t Person::getVitaPercent()
  * Inputs: 
  * Output:
  */
-uint16_t Person::getQDPercent()
+uint16_t Person::getVitaPercent()
 {
-  auto curr_qd = getCurr().getStat(Attribute::QTDR);
-  auto max_qd  = getCurrMax().getStat(Attribute::QTDR);
+  auto curr_vita = getCurr().getStat(Attribute::VITA);
+  auto max_vita  = getCurr().getStat(Attribute::VITA);
 
-  return static_cast<uint16_t>(floor((curr_qd * 100) / max_qd));
+  return static_cast<uint16_t>(floor((curr_vita * 100) / max_vita));
 }
+
+
 
 /* Find the true cost for a Skill to the Person's QD */
 int16_t Person::getTrueCost(Skill* test_skill)

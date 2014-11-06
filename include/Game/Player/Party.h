@@ -97,6 +97,10 @@ public:
   /* Clears all members of the party except the primary member */
   bool clearParty();
 
+  /* Returns all the persons in the party except a given user */
+  std::vector<Person*> findMembersExcept(Person* const member, 
+      const bool &only_living = false);
+  
   /* Evaluates whether the current party contains a boss */
   bool hasBoss();
 

@@ -58,9 +58,9 @@ class Ailment
 public:
 
   /* Minimal Constructor */
-  Ailment(Person* ail_victim, const Infliction &type, Person* inflictor = nullptr,
-          const uint16_t &max_turns = 1, const uint16_t &min_turns = 1,
-          const double &chance = 0);
+  Ailment(Person* ail_victim, const Infliction &type, 
+      Person* inflictor = nullptr,  const uint16_t &max_turns = 1, 
+      const uint16_t &min_turns = 1, const double &chance = 0);
 
   /* Annihilates an AttributeSet object */
   ~Ailment() = default;

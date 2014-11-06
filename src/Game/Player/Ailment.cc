@@ -123,13 +123,13 @@ const double   Ailment::kBOND_STATS_PC       = 0.35;
  * Output
  */
 Ailment::Ailment(Person* ail_victim, const Infliction &ail_type, 
-                 Person* ail_inflictor, const uint16_t &ail_max_turns, 
-                 const uint16_t &ail_min_turns, const double &ail_chance)
-  : type{ail_type}
-  , chance{ail_chance}
-  , flag_set{static_cast<AilState>(0)}
-  , inflictor{ail_inflictor}
-  , victim{ail_victim}
+    Person* ail_inflictor, const uint16_t &ail_max_turns, 
+    const uint16_t &ail_min_turns, const double &ail_chance)
+      : type{ail_type}
+      , chance{ail_chance}
+      , flag_set{static_cast<AilState>(0)}
+      , inflictor{ail_inflictor}
+      , victim{ail_victim}
 {
   if (type == Infliction::INVALID)
   {

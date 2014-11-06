@@ -60,6 +60,11 @@ const uint16_t Battle::kBATTLE_MENU_DELAY    = 400; /* Personal menu delay */
  * Crtical Guarded Modifier (While User Being Guarded)
  * Critical Shielded Modifier (While User Being Shielded)
  * 
+ * Base Run Chance (in %)
+ * User Run Modifier (Modify user value per point of momentum)
+ * Ally Run Modifier (Modify user value per point of momentum)
+ * Enemy Run Modifier (Modify user value per point of momentum)
+ * Run PC Per Poitn (% to alter run chance by per point of momentum)
  *
  * Dodge Chance [Limbertude] Modifier
  * Dodge Chance [Limbertude] Per Level Modifier
@@ -103,6 +108,13 @@ const float    Battle::kCRIT_LVL_MODIFIER           =  0.012;
 const float    Battle::kCRIT_DEFENDING_MODIFIER     =   0.70;
 const float    Battle::kCRIT_GUARDED_MODIFIER       =   0.65;
 const float    Battle::kCRIT_SHIELDED_MODIFIER      =   0.50;
+
+const float    Battle::kBASE_RUN_CHANCE             =   0.25;
+const float    Battle::kUSER_RUN_MODIFIER           =   2.00;
+const float    Battle::kALLY_RUN_MODIFIER           =   1.00;
+const float    Battle::kENEMY_RUN_MODIFIER          =   1.00;
+const float    Battle::kRUN_PC_PER_POINT            =   0.003;
+const int16_t  Battle::kRUN_PC_EXP_PENALTY          =      5;
 
 const float    Battle::kDODGE_MODIFIER              =   1.10;
 const float    Battle::kDODGE_PER_LEVEL_MODIFIER    =   1.04;
@@ -226,6 +238,51 @@ bool Battle::addAilment(Ailment* const new_ailment)
 }
 
 /*
+ * Description: Called when the Battle has been lost. Battle lost generally 
+ *              results in a return to title (event handler?)
+ *
+ * Inputs: none
+ * Output: none
+ * //TODO [08-24-14]: Finish battle lost functionality
+ */
+void Battle::battleLost()
+{
+  // return to title?
+
+#ifdef UDEBUG
+  std::cout << "Battle lost! :-(\n";
+#endif
+
+  setBattleFlag(CombatState::OUTCOME_DONE);
+  setNextTurnState();
+}
+
+/*
+ * Description: Called when the Battle is being run from. Runners from the
+ *              battle will occur a penalty against their experience towards
+ *              the next level.
+ *
+ * Inputs: none
+ * Output: none
+ * //TODO [08-24-14]: Finish battle run functionality
+ */
+void Battle::battleRun()
+{
+
+  /* For each person on the friends team, incur a % penalty against the
+   * experience to the next level */
+  for (uint32_t i = 0; i < friends->getSize(); i++)
+    friends->getMember(i)->loseExpPercent(kRUN_PC_EXP_PENALTY);
+
+#ifdef UDEBUG
+  std::cout << "Ran from Battle! :-/\n";
+#endif
+
+  setBattleFlag(CombatState::OUTCOME_DONE);
+  setNextTurnState();
+}
+
+/*
  * Description: Called when the Battle has been won
  *
  * Inputs: none
@@ -250,25 +307,6 @@ void Battle::battleWon()
   std::cout << "Battle victorious! :-)\n";
 #endif
 
-  setBattleFlag(CombatState::OUTCOME_DONE);
-  setNextTurnState();
-}
-
-/*
- * Description: Called when the Battle has been lost. Battle lost generally 
- *              results in a return to title (event handler?)
- *
- * Inputs: none
- * Output: none
- * //TODO [08-24-14]: Finish battle lost functionality
- */
-void Battle::battleLost()
-{
-  // return to title?
-
-#ifdef UDEBUG
-  std::cout << "Battle lost! :-(\n";
-#endif
   setBattleFlag(CombatState::OUTCOME_DONE);
   setNextTurnState();
 }
@@ -1193,6 +1231,71 @@ bool Battle::doesActionMiss()
 }
 
 /*
+ * Description: Determines whether the current person succeeds in running
+ *              from the Battle.
+ *
+ * Inputs: none
+ * Output: bool - true if the current person succeeds in running
+ */
+bool Battle::doesCurrPersonRun()
+{
+  auto can_run_happen = true;
+  auto run_happens    = false;
+
+  /* First, determine if a run is possible */
+  can_run_happen &= !getBattleFlag(CombatState::BOSS);
+  can_run_happen &= !getBattleFlag(CombatState::FINAL_BOSS);
+  can_run_happen &= curr_user->getBFlag(BState::ALIVE);
+  can_run_happen &= curr_user->getBFlag(BState::RUN_ENABLED);
+  
+  if (can_run_happen)
+  {
+    /* Next, determine the chance for a run to occur. Users with higher
+     * momentum will have a higher chance of running. Parties with higher
+     * momentum will have a higher chance of running. Enemies with higher
+     * momentum will decrease the chance of a successful run */
+    std::vector<Person*> other_allies;
+    Party* other_enemies;
+    double mmnt_points = 0;
+
+    if (person_index < 0)
+    {
+      other_allies   = foes->findMembersExcept(curr_user, true);
+      other_enemies  = friends;
+    }
+    else
+    {
+      other_allies  = friends->findMembersExcept(curr_user, true);
+      other_enemies = foes;
+    }
+
+    mmnt_points += curr_user->getCurr().getStat(Attribute::MMNT) 
+                   * kUSER_RUN_MODIFIER;
+  
+    /* Add each other allies momentum by the factor of ally run modifier */
+    for (auto it = begin(other_allies); it != end(other_allies); ++it)
+      mmnt_points += (*it)->getCurr().getStat(Attribute::MMNT)
+                     * kALLY_RUN_MODIFIER;
+
+    /* Add each enemies momentum by the factor of enemy run modifier */
+    for (size_t i = 0; i < other_enemies->getSize(); i++)
+    {
+      auto enemy_stats = other_enemies->getMember(i)->getCurr();
+      mmnt_points += enemy_stats.getStat(Attribute::MMNT) * kENEMY_RUN_MODIFIER;
+    }
+
+    /* Determine the percent change based on run mmnt pc modifier */
+    auto pc_change = kRUN_PC_PER_POINT * mmnt_points;
+    auto run_chance = static_cast<int32_t>((pc_change * 100) + 
+                                          (kBASE_RUN_CHANCE * 100));
+
+    run_happens = Helpers::chanceHappens(run_chance, 100);
+  }
+
+  return run_happens;
+}
+
+/*
  * Description: Deals with general upkeep including effects brought on by
  *              the current battle circumstances like weather that aren't
  *              or can't be dealt with in personal upkeep functions.
@@ -1252,6 +1355,7 @@ void Battle::loadBattleStateFlags()
   setBattleFlag(CombatState::PHASE_DONE, false);
   setBattleFlag(CombatState::LOSS, false);
   setBattleFlag(CombatState::VICTORY, false);
+  setBattleFlag(CombatState::RUN, false);
   setBattleFlag(CombatState::OUTCOME_DONE, false);
   setBattleFlag(CombatState::ERROR_STATE, false);
 }
@@ -1539,7 +1643,16 @@ void Battle::processActions()
     }
     else if (curr_action_type == ActionType::RUN)
     {
-      // Attempt to run!
+      if (doesCurrPersonRun())
+      {
+        //TODO [11-05-14]: Run from the battle message
+        setBattleFlag(CombatState::RUN, true);
+        setBattleFlag(CombatState::PHASE_DONE, true);
+      }
+      else
+      {
+        //TODO [11-05-14]: The run attempt failed
+      }
     }
     else if (curr_action_type == ActionType::PASS)
     {
@@ -1893,6 +2006,12 @@ void Battle::setNextTurnState()
       battleLost();
     }
 
+    if (getBattleFlag(CombatState::RUN))
+    {
+      setTurnState(TurnState::RUNNING);
+      battleRun();
+    }
+
     /* After the Battle Begins, the general turn loop begins at General Upkeep */
     if (turn_state == TurnState::BEGIN)
     {
@@ -2198,6 +2317,7 @@ void Battle::printAll(const bool &simple, const bool &flags, const bool &party)
       std::cout << "\nACTION_DONE: " << getBattleFlag(CombatState::ACTION_DONE);
       std::cout << "\nVICTORY: " << getBattleFlag(CombatState::VICTORY);
       std::cout << "\nLOSS: " << getBattleFlag(CombatState::LOSS);
+      std::cout << "\nRUN: " << getBattleFlag(CombatState::RUN);
       std::cout << "\nOUTCOME_DONE: " 
                 << getBattleFlag(CombatState::OUTCOME_DONE);
       std::cout << "\nERROR_STATE: " << getBattleFlag(CombatState::ERROR_STATE);
@@ -2514,6 +2634,10 @@ bool Battle::update(int32_t cycle_time)
         selectEnemyActions();
       }
     }
+  }
+  else if (turn_state == TurnState::RUNNING)
+  {
+
   }
   
   return false;
