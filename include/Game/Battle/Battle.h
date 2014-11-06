@@ -64,6 +64,23 @@
 *
 * TODO
 * ----
+* [08-24-14]: Finish battle run functionality
+* [11-06-14]: Update personal record run from battle count 
+* [08-24-14]: Finish victory functionality
+* [08-24-14]: Finish battle lost functionality
+* [08-01-14]: Battle front end
+* [11-06-14]: Elemental modifiers for defensive skills?
+* [11-06-14]: Crit factor calculation
+* [08-12-14]: Luck ignore flags in action
+* [03-01-14]: Fix auto win turns elapsed 
+* [03-01-14]: Weather updates
+* [11-02-14]: Defending reset update message.
+* [01-02-14]: Error in the guard operation
+* [11-05-14]: Run from the battle message
+* [03-16-14]: Ailment infliction message to battle front end
+* [08-24-14]: Ailment corner cases
+* [11-06-14]: Update the battle interface
+* [11-06-14]: Event handler finish signal (battle)?
 *******************************************************************************/
 #ifndef BATTLE_H
 #define BATTLE_H
@@ -308,7 +325,7 @@ private:
   void battleLost();
 
   /* Called when the Battle is being run from */
-  void battleRun();
+  void battleRun(const bool &allies_running = true);
 
   /* Called when the Battle has been won */
   void battleWon();

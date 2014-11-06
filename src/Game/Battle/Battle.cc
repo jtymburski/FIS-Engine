@@ -231,7 +231,7 @@ bool Battle::addAilment(Ailment* const new_ailment)
               << "\n";
 #endif
   
-    //TODO: Add ailment infliction to Info Bar [03-16-14]
+    //TODO: Add ailment infliction message to battle front end [03-16-14]
   }
 
   return can_add;
@@ -260,19 +260,32 @@ void Battle::battleLost()
 /*
  * Description: Called when the Battle is being run from. Runners from the
  *              battle will occur a penalty against their experience towards
- *              the next level.
+ *              the next level. (This does not matter for enemies)
  *
  * Inputs: none
  * Output: none
  * //TODO [08-24-14]: Finish battle run functionality
  */
-void Battle::battleRun()
+void Battle::battleRun(const bool &allies_running)
 {
+#ifdef UDEBUG
+  std::cout << "Run attempt successful!\n";
+#endif
 
-  /* For each person on the friends team, incur a % penalty against the
-   * experience to the next level */
-  for (uint32_t i = 0; i < friends->getSize(); i++)
-    friends->getMember(i)->loseExpPercent(kRUN_PC_EXP_PENALTY);
+  if (allies_running)
+  {
+    /* For each person on the friends team, incur a % penalty against the
+     * experience to the next level */
+    for (uint32_t i = 0; i < friends->getSize(); i++)
+    {
+#ifdef UDEBUG
+  std::cout << friends->getMember(i)->getName() << " has lost " 
+            << kRUN_PC_EXP_PENALTY << " pc exp towards next level.\n";
+#endif
+      friends->getMember(i)->loseExpPercent(kRUN_PC_EXP_PENALTY);
+      // TODO [11-06-14] Update personal record run from battle count 
+    }
+  }
 
 #ifdef UDEBUG
   std::cout << "Ran from Battle! :-/\n";
@@ -754,7 +767,7 @@ void Battle::calcElementalMods()
   }
   else if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
   {
-    //TODO: Elemental modifiers for defensive skills?
+    //TODO [11-06-14]: Elemental modifiers for defensive skills?
   }
 
   auto prim_user_mod = temp_user_stats.getStat(prim_user_stat);
@@ -844,7 +857,7 @@ void Battle::calcElementalMods()
  */
 float Battle::calcCritFactor()
 {
-  //TODO: Crit factor calculation
+  //TODO [11-06-14]: Crit factor calculation
   return 1.00;
 }
 
@@ -870,7 +883,7 @@ bool Battle::calcIgnoreState()
       auto IG_PRIM_DEF = IgnoreState::IGNORE_PRIM_DEF;
       auto IG_SECD_ATK = IgnoreState::IGNORE_SECD_ATK;
       auto IG_SECD_DEF = IgnoreState::IGNORE_SECD_DEF;
-      // TODO: Luck ignore flags in action [08-12-14]
+      // TODO [08-12-14]: Luck ignore flags in action 
       // auto IG_LUCK_ATK = IgnoreState::IGNORE_LUCK_ATK;
       // auto IG_LUCK_DEF = IgnoreState::IGNORE_LUCK_DEF;
 
@@ -882,7 +895,7 @@ bool Battle::calcIgnoreState()
         IG_PRIM_DEF = IgnoreState::IGNORE_PRIM_ATK;
         IG_SECD_ATK = IgnoreState::IGNORE_SECD_DEF;
         IG_SECD_DEF = IgnoreState::IGNORE_SECD_ATK;
-        // TODO: Luck ignore flags in action [08-12-14]
+        // TODO [08-12-14]: Luck ignore flags in action 
         // IG_LUCK_DEF = IgnoreState::IGNORE_LUCK_ATK;
         // IG_LUCK_ATK = IgnoreState::IGNORE_LUCK_DEF;
       }
@@ -1087,7 +1100,7 @@ void Battle::cleanUp()
   action_buffer->update();
   menu->unsetAll();
 
-  // TODO: Auto win turns elapsed [03-01-14]
+  // TODO: Fix auto win turns elapsed [03-01-14]
   if (turns_elapsed == 7)
     setBattleFlag(CombatState::VICTORY);
 
@@ -1507,7 +1520,7 @@ void Battle::processSkill(std::vector<Person*> targets)
           
           if (curr_target->doDmg(base_damage))
           {
-            //TODO: Person has died message
+            //TODO [08-01-14]: Battle front end, user died message
           }
           else
           {
@@ -1631,7 +1644,7 @@ void Battle::processActions()
 
       if (!good_guard)
       {
-        //TODO [01-02-14]: Error in the guard operation
+        //TODO [01-02-14]: Error in the guard operation message
         can_process = false;
       }
 
@@ -1643,6 +1656,9 @@ void Battle::processActions()
     }
     else if (curr_action_type == ActionType::RUN)
     {
+#ifdef UDEBUG
+      std::cout << "Attempting to run." << std::endl;
+#endif
       if (doesCurrPersonRun())
       {
         //TODO [11-05-14]: Run from the battle message
@@ -1651,7 +1667,10 @@ void Battle::processActions()
       }
       else
       {
-        //TODO [11-05-14]: The run attempt failed
+        //TODO [11-05-14]: The run attempt failed message
+#ifdef UDEBUG
+        std::cout << "The run attempt has failed!" << std::endl;
+#endif
       }
     }
     else if (curr_action_type == ActionType::PASS)
@@ -1987,7 +2006,7 @@ void Battle::setNextTurnState()
   if (getBattleFlag(CombatState::OUTCOME_DONE))
   {
     setTurnState(TurnState::DESTRUCT);
-    //Todo: Eventhandler battle finish signal?
+    //TODO [11-0614]: Eventhandler battle finish signal?
   }
 
   if (getTurnState() != TurnState::DESTRUCT)
@@ -2326,8 +2345,6 @@ void Battle::printAll(const bool &simple, const bool &flags, const bool &party)
 
     if (party)
       printPartyState();
-
-    // menu->printInfo() TODO: [03-01-14]
   }
 
   std::cout << "==== / Battle ====\n\n";
@@ -2488,7 +2505,7 @@ bool Battle::update(int32_t cycle_time)
 {
   setTimeElapsed(cycle_time);
 
-  // update(); TODO: Update the battle interface
+  // update(); //TODO [11-06-14] Update the battle interface
 
   if (getBattleFlag(CombatState::PHASE_DONE))
   {
