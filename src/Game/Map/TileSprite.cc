@@ -100,18 +100,18 @@ void TileSprite::copySelf(const TileSprite &source)
   /* Copy base class information */
   Sprite::copySelf(source);
 
-  /* Copy passability information */
-  if(source.getPassability(Direction::NORTH))
+  /* Copy passability information - don't copy. Independent to each tile */
+  /*if(source.getPassability(Direction::NORTH))
     setPassability(Direction::NORTH, true);
   if(source.getPassability(Direction::SOUTH))
     setPassability(Direction::SOUTH, true);
   if(source.getPassability(Direction::EAST))
     setPassability(Direction::EAST, true);
   if(source.getPassability(Direction::WEST))
-    setPassability(Direction::WEST, true);
+    setPassability(Direction::WEST, true);*/
 
-  /* Copy render depth information */
-  setRenderDepth(source.getRenderDepth());
+  /* Copy render depth information - don't copy. Independent to each tile */
+  /*setRenderDepth(source.getRenderDepth());*/
 }
 
 /*============================================================================

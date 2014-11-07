@@ -74,8 +74,8 @@ MapThing::~MapThing()
 
 /* 
  * Description: Finds a valid TileSprite in the matrix of frames, stored
- *              within the thing. If there are no frames set, it returns
- *              NULL. 
+ *              within the thing. If there are no frames set, it will create
+ *              a blank one and place it at the origin of the render matrix. 
  * Note: Do not delete the pointer. It'll cause issues in the class.
  * 
  * Inputs: none
@@ -102,6 +102,13 @@ TileSprite* MapThing::getValidFrame()
       j++;
     }
     i++;
+  }
+    
+  /* Ensure there is at least one valid frame */
+  if(valid_frame == NULL)
+  {
+    valid_frame = new TileSprite();
+    setFrame(valid_frame, 0, 0);
   }
 
   return valid_frame;
@@ -422,6 +429,46 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
   {
     setName(data.getDataString(&success));
   }
+  /*----------------- RENDER MATRIX -----------------*/
+  else if(identifier == "rendermatrix" && elements.size() == 1)
+  {
+    std::vector<std::string> rows = 
+                             Helpers::split(data.getDataString(&success), '.');
+    std::vector<std::vector<int16_t>> render_matrix;
+    TileSprite* valid_frame = getValidFrame();
+
+    /* Parse the rendering matrix and separate into integers */
+    for(uint32_t i = 0; i < rows.size(); i++)
+    {
+      std::vector<std::string> split_set = Helpers::split(rows[i], ',');
+      std::vector<int16_t> split_int_set;
+
+      /* Do the conversion to integer */
+      for(uint32_t j = 0; j < split_set.size(); j++)
+        split_int_set.push_back(atoi(split_set[j].c_str()));
+      render_matrix.push_back(split_int_set);
+    }
+
+    /* Ensure the rendering matrix is capable of frame modifiers added */
+    if(render_matrix.size() > 0)
+      growMatrix(render_matrix.back().size(), render_matrix.size());
+
+    /* Go through and set the render matrix level in all sprites */
+    for(uint32_t j = 0; j < render_matrix.size(); j++)
+    {
+      for(uint32_t i = 0; i < render_matrix[j].size(); i++)
+      {
+        /* Only access data if it's positive */
+        if(render_matrix[j][i] >= 0)
+        {
+          /* Ensure there exists a sprite to modify, and then modify */
+          if(frame_matrix[i][j] == NULL)
+            setFrame(new TileSprite(*valid_frame), i, j);
+          frame_matrix[i][j]->setRenderDepth(render_matrix[j][i]);
+        }
+      }
+    }
+  }
   /*--------------------- SPEED -----------------*/
   else if(identifier == "speed" && elements.size() == 1)
   {
@@ -436,16 +483,11 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
                                           renderer, base_path);
   }
   /*--------------------- SPRITE DATA -----------------*/
-  else if(identifier == "sprites") // TODO: Develop, clean up constant refs
+  else if(identifier == "sprites")
   {
     /* Ensure there is at least one valid frame */
     TileSprite* valid_frame = getValidFrame();
-    if(valid_frame == NULL)
-    {
-      valid_frame = new TileSprite();
-      success &= setFrame(valid_frame, 0, 0);
-    }
-    
+
     /* Only proceed if there are elements within the sprites element */
     if(elements.size() == 3 && elements[1] == "multiple" && 
                                data.getKey(file_index+1) == "range")
@@ -468,8 +510,8 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
         /* Modify x_max and y_max if matrix of strings is not large enough */
         if((x_max - x_min) >= str_matrix.size())
           x_max = str_matrix.size() + x_min - 1;
-        if((y_max - y_min) >= str_matrix[0].size())
-          y_max = str_matrix[0].size() + y_min - 1;
+        if((y_max - y_min) >= str_matrix.front().size())
+          y_max = str_matrix.front().size() + y_min - 1;
         growMatrix(x_max, y_max);
 
         /* Go through and set the frames in all relevant sprites */
@@ -556,8 +598,7 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
     else if(elements.size() == 3 && elements[1] == "sprite")
     {
       /* If no valid frame, generate one at origin for settings */
-      if(getValidFrame() == NULL)
-        setFrame(new TileSprite(), 0, 0);
+      TileSprite* valid_frame = getValidFrame();
 
       /* Set the new sprite setting in all frames */
       for(uint32_t i = 0; i < frame_matrix.size(); i++)
@@ -566,12 +607,6 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
             frame_matrix[i][j]->addFileInformation(data, file_index + 2, 
                                                    renderer, base_path);
     }
-
-    // TODO
-    /* Once all the implementation is done above, design render matrix */
-    /* And then, build the functions around accessing and painting */
-    /* There also needs to be the storing in Tile dealt with... */
-    std::cout << "-------------------------" << std::endl;
   }
   /*--------------------- VISIBILITY -----------------*/
   else if(identifier == "visible")

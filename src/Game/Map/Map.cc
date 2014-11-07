@@ -1120,8 +1120,8 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
                       << set[i][j]->getPassability(Direction::NORTH) << " " 
                       << set[i][j]->getPassability(Direction::EAST) << " " 
                       << set[i][j]->getPassability(Direction::SOUTH) << " " 
-                      << set[i][j]->getPassability(Direction::WEST) 
-                      << std::endl;
+                      << set[i][j]->getPassability(Direction::WEST) << " "
+                      << (int)set[i][j]->getRenderDepth() << std::endl;
     }
     std::cout << "--" << std::endl;
   }
