@@ -246,6 +246,9 @@ private:
   /* Recalculates the Base skills based on categories */
   void updateBaseSkills();
 
+  /* Recalculates the stat bonuses for equipment */
+  void updateEquipStats();
+
   /* Updates the level of the person based on their current total experience */
   void updateLevel();
 

@@ -55,12 +55,12 @@ Game::~Game()
   game_config = nullptr;
   mode = DISABLED;
 
- /* Delete battle */
- if(game_battle != nullptr)
- {
-   delete game_battle;
-   game_battle = nullptr;
- }
+  /* Delete battle */
+  if(game_battle != nullptr)
+  {
+    delete game_battle;
+    game_battle = nullptr;
+  }
 
   /* Delete map */
   if(game_map != nullptr)
@@ -319,6 +319,44 @@ void Game::setupBattle()
   malgidus->battlePrep();
   malgidus->print(false, false, true, false);
 
+  // Person* arcadius = new Person(301, "Arcadius", human, bloodclaw_scion);
+  // Person* berran = new Person(301, "Berran", human, bloodclaw_scion);
+  // Person* atkst = new Person(301, "Atkst", human, bloodclaw_scion);
+  // Person* kevin = new Person(301, "Kevin", human, bloodclaw_scion);
+
+  Person* frosty = new Person(301, "Frosty", human, bloodclaw_scion);
+  AIModule* frosty_module = new AIModule();
+  frosty_module->setParent(frosty);
+  frosty->setAI(frosty_module);
+
+  // Person* cloud_dude = new Person(301, "Cloud Dude", human, bloodclaw_scion);
+  // Person* thruster_barrow = new Person(301, "Thruster Barrow", human, bloodclaw_scion);
+  // Person* dragon = new Person(301, "Dragon", human, bloodclaw_scion);
+  // Person* splurge = new Person(301, "Splurge", human, bloodclaw_scion);
+
+ // Inventory Testing
+  Inventory* friends_pouch = new Inventory(401, "Teh Pouch");
+  Inventory* foes_pouch = new Inventory(402, "Der Pouch");
+
+  // Party Testing
+  Party* friends = new Party(401, malgidus, PartyType::SLEUTH, 5, friends_pouch);
+  Party* enemies = new Party(402, frosty, PartyType::REGULAR_FOE, 5, foes_pouch);
+  
+  // Battle Testing
+  for (uint32_t i = 0; i < friends->getSize(); i++)
+    friends->getMember(i)->battlePrep();
+  for (uint32_t i = 0; i < enemies->getSize(); i++)
+    enemies->getMember(i)->battlePrep();
+
+  game_battle = new Battle(game_config, friends, enemies);
+  
+
+
+
+
+
+
+
   // Begin Time Test
   //using namespace std::chrono;
 
@@ -354,10 +392,6 @@ void Game::setupBattle()
   //system_clock::duration dtn2 = tp2.time_since_epoch();
   //std::cout << "Ending clock: " << dtn2.count() << std::endl;
   //std::cout << "Periods elapsed: " << (dtn2.count() - dtn.count()) / 1000 << std::endl;
-
-  //scion_skills->print();
-  //hex_skills->print();
-  //other_skill_set->print();
 
   // General Item Testing
   // Item* potion      = new Item(45, "Potion", 70, nullptr, 1.01);
@@ -482,34 +516,6 @@ void Game::setupBattle()
   // new_potion->setUseSkill(medium_attack);
   // new_bubby_bomb->setUseSkill(normal_attack);
 
-  // // Category Testing
-  // Category* blood_scion = new Category("Blood Scion", "Scion", min_scion_set, 
-  //                                      max_scion_set, scion_skills);
-  // blood_scion->setDescription("User of blood magicks.");
-  // blood_scion->setFlag(CategoryState::E_STAFF, true);
-
-  // Category* bear = new Category("Bear", "Bears", min_hex_set, 
-  //                                   max_hex_set, hex_skills);
-  // Category* human = new Category("Human", "Humans", min_human_set, max_human_set, other_skill_set);
-  // bear->setDescription("Has a right to bear arms.");
-
-  // // Person Testing
-  // Person* berran          = new Person(455, "Berran", blood_scion, bear);
-  // Person* arcadius        = new Person(456, "Arcadius", blood_scion, human);
-  // Person* malgidus        = new Person(457, "Malgidus", blood_scion, bear);
-  // Person* cloud_dude      = new Person(555, "Cloud Dude", blood_scion, bear);
-  // Person* ball_man        = new Person(556, "Ball Man", blood_scion, bear);
-  // Person* thruster_barrow = new Person(557, "Thruster Barrow", blood_scion, human);
-
-  // Party* allies = new Party(berran, PartyType::SLEUTH, 5, nullptr);
-  // Party* foes   = new Party(cloud_dude, PartyType::REGULAR_FOE, 5, nullptr);
-
-  // allies->addMember(arcadius);
-  // allies->addMember(malgidus);
-
-  // foes->addMember(ball_man);
-  // foes->addMember(thruster_barrow);
-
   // // AIModuleTester ai_module_tester;
 
   // AIModule* cloud_dude_module = new AIModule();
@@ -541,15 +547,8 @@ void Game::setupBattle()
   // allies->setInventory(friends_pouch);
   // foes->setInventory(foes_pouch);
 
-  // for (uint32_t i = 0; i < allies->getSize(); i++)
-  //   allies->getMember(i)->battlePrep();
-  // for (uint32_t i = 0; i < foes->getSize(); i++)
-  //   foes->getMember(i)->battlePrep();
-
   // // ai_module_tester.aiActionTypeTests(0, cloud_dude_module, 
   // //                                    foes->getInventory()->getBattleItems());
-
-  // game_battle = new Battle(game_config, allies, foes);
 }
 
 /* Set up the map - old map needs to be deleted prior to calling */

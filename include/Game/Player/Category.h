@@ -35,14 +35,21 @@
 ENUM_FLAGS(CategoryState)
 enum class CategoryState
 {
-  DEF_ENABLED    = 1 << 0,
-  GRD_ENABLED    = 1 << 1,
-  IMP_ENABLED    = 1 << 2,
-  POWER_DEFENDER = 1 << 3,
-  POWER_GUARDER  = 1 << 4,
-  E_STAFF        = 1 << 5,
-  E_SWORD        = 1 << 6,
-  E_CLAWS        = 1 << 7
+  DEF_ENABLED    = 1 <<  0,
+  GRD_ENABLED    = 1 <<  1,
+  IMP_ENABLED    = 1 <<  2,
+  POWER_DEFENDER = 1 <<  3,
+  POWER_GUARDER  = 1 <<  4,
+  E_STAFF        = 1 <<  5,
+  E_SWORD        = 1 <<  6,
+  E_CLAWS        = 1 <<  7,
+  E_SMALL_ARMS   = 1 <<  8,
+  E_LONG_ARMS    = 1 <<  9,
+  E_BIG_ARMS     = 1 << 10,
+  E_LIGHT_ARMOR  = 1 << 11,
+  E_MID_ARMOR    = 1 << 12,
+  E_HEAVY_ARMOR  = 1 << 13,
+
   //TODO: Develop classes of equipments
 };
 

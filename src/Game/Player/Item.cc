@@ -273,13 +273,12 @@ double Item::getMass()
  */
 uint32_t Item::getValue()
 {
-  int32_t calc_value = value + value_modifier;
+  auto calc_value = value + value_modifier;
   
-  /* Check bounds */
-  if(calc_value < 0)
-    return 0;
-  else if(static_cast<uint32_t>(calc_value) > kMAX_VALUE)
+  /* Check bounds (calc_value is unsigned) */
+  if (calc_value > kMAX_VALUE)
     return kMAX_VALUE;
+
   return calc_value;
 }
 

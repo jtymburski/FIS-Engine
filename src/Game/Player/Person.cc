@@ -402,6 +402,25 @@ void Person::updateBaseSkills()
 }
 
 /*
+ * Description: Updates the temp_max_stats attribute set to reflect the
+ *              curr_max_stat attribute plus the buff sets for each of the
+ *              equipped equipment.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Person::updateEquipStats()
+{
+  auto equip_bonus = AttributeSet();
+
+  for (auto it = begin(equipments); it != end(equipments); ++it)
+    if ((*it) != nullptr)
+      equip_bonus += (*it)->getStats();
+
+  temp_max_stats = curr_max_stats + equip_bonus;
+}
+
+/*
  * Description: Updates he level of the Person based on their curren total
  *              experience.
  *
@@ -709,15 +728,13 @@ bool Person::loseExpPercent(const uint16_t &percent)
 void Person::battlePrep()
 {
   curr_stats = curr_max_stats;
-
-  //TODO: Temp max stats should include equipment. [11-11-14]
-  temp_max_stats = curr_max_stats;
+  updateEquipStats();
   
   setBFlag(BState::IN_BATTLE, true);
   setBFlag(BState::ALIVE, true);
   setBFlag(BState::ATK_ENABLED, true);
   setBFlag(BState::SKL_ENABLED, true);
-  setBFlag(BState::ITM_ENABLED, false); //TODO: Temporarily disabled [08-09-14]
+  setBFlag(BState::ITM_ENABLED, false); //TODO: Temporarily disabled  [08-09-14]
   setBFlag(BState::INS_ENABLED, false); //TODO: What enables inspect? [08-09-14]
 
   setBFlag(BState::DEF_ENABLED, 
@@ -744,7 +761,7 @@ void Person::battlePrep()
   setBFlag(BState::SELECTED_2ND_ACTION, false);
   setBFlag(BState::SELECTED_3RD_ACTION, false);
 
-  //TODO: Critical hits based upon race/class or person dependant?
+  //TODO: [11-11-14] Critical hits based upon race/class or person dependant?
   setBFlag(BState::CAN_CRIT, true);
   setBFlag(BState::CAN_BE_CRIT, true);
   
@@ -897,8 +914,8 @@ void Person::print(const bool &simple, const bool &equips,
     std::cout << "[void]Rank " << "\n";
     std::cout << "Primary: " << Helpers::elementToString(primary) << "\n";
     std::cout << "Secondary: " << Helpers::elementToString(secondary);
-    std::cout << "\n[void]Prim Curve: " << static_cast<int>(primary_curve);
-    std::cout << "\n[void]Secd Curve: " << static_cast<int>(secondary_curve);
+    std::cout << "\nPrim Curve: " << static_cast<int>(primary_curve);
+    std::cout << "\nSecd Curve: " << static_cast<int>(secondary_curve);
     std::cout << "\nDmg Modifier: " << dmg_mod << "\n";
     std::cout << "Exp Modifier: " << exp_mod << "\n";
     std::cout << "Item Drops: " << item_drops.size() << "\n";
@@ -906,10 +923,11 @@ void Person::print(const bool &simple, const bool &equips,
     std::cout << "Exp Drop: " << exp_drop << "\n";
     std::cout << "Level: " << static_cast<int>(level) << "\n";
     std::cout << "Total Exp: " << total_exp << "\n";
+    std::cout << "To Next Lvl: " << findExpPerPC() << "\n";
     std::cout << "First Person? " << (first_person != nullptr) << "\n";
     std::cout << "Third Person? " << (third_person != nullptr) << "\n";
     std::cout << "Fp Bubbified? " << (fp_bubbified_sprite != nullptr) << "\n";
-    std::cout << "Tp Bubbified? " << (tp_bubbified_sprite != nullptr) << "\n";
+    std::cout << "Tp Bubbified? " << (tp_bubbified_sprite != nullptr) << "\n\n";
 
     std::cout << "Base Stats: ";
     base_stats.print(true);
@@ -987,7 +1005,7 @@ void Person::print(const bool &simple, const bool &equips,
       std::cout << "\nDEFENDING: " << getBFlag(BState::DEFENDING);
       std::cout << "\nGUARDED: " << getBFlag(BState::GUARDED);
       std::cout << "\nGUARDING: " << getBFlag(BState::GUARDING);
-      std::cout << "\nSHIELDED: " << getBFlag(BState::SHIELDED) << "/n";
+      std::cout << "\nSHIELDED: " << getBFlag(BState::SHIELDED) << "\n\n";
  
       std::cout << "--- Person State Flags ---\n";
       std::cout << "SLEUTH: " << getPFlag(PState::SLEUTH) << "\n";

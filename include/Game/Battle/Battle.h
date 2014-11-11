@@ -35,9 +35,6 @@
 * 7. action_animate emits a finished(Action *) signal which is connected to
 * changeStats(Action* battle_action), changeStats(Action* battle_action)
 * alters each Person's stats based off its parameter Action.  UpdateScene()
-* is then called.
-*
-* 8. updateScene() emits a finished() signal which is connected to
 * actionOutcome(). ActionOutcome() checks for deaths and animates
 * appropriately, if a whole party is eliminated, then all the memory
 * is cleared, and battleWon() or battleLost() is called.  If the stack is not

@@ -31,11 +31,17 @@
 ENUM_FLAGS(EquipState)
 enum class EquipState
 { 
-  TWO_HANDED  = 1 << 0,
-  EQUIPPED    = 1 << 1,
-  STAFF       = 1 << 2,
-  SWORD       = 1 << 3
-  //TODO: Develop classes of equipments,
+  TWO_HANDED  = 1 <<  0,
+  EQUIPPED    = 1 <<  1,
+  STAFF       = 1 <<  2,
+  SWORD       = 1 <<  3,
+  CLAWS       = 1 <<  4,
+  SMALL_ARMS  = 1 <<  5,
+  LONG_ARMS   = 1 <<  6,
+  BIG_ARMS    = 1 <<  7,
+  LIGHT_ARMOR = 1 <<  8,
+  MID_ARMOR   = 1 <<  9,
+  HEAVY_ARMOR = 1 << 10,
 };
 
 class Equipment : public Item

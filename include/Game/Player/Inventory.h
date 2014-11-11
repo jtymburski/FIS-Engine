@@ -283,7 +283,6 @@ public:
 public:
   /* Assigns the invalid money ID */
   static void setMoneyID(const uint32_t &new_money_id);
-
 };
 
 #endif //INVENTORY_H
