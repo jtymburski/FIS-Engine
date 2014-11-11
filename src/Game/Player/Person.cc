@@ -149,8 +149,8 @@ void Person::loadDefaults()
   updateBaseStats();
 
   curr_stats     = base_stats;
-  curr_max_stats = base_max_stats;
-  temp_max_stats = base_max_stats;
+  curr_max_stats = base_stats;
+  temp_max_stats = base_stats;
 
   if (base_skills != nullptr)
     std::cerr << "[Warning]: Missing deletion of base skills\n";
@@ -709,6 +709,8 @@ bool Person::loseExpPercent(const uint16_t &percent)
 void Person::battlePrep()
 {
   curr_stats = curr_max_stats;
+
+  //TODO: Temp max stats should include equipment. [11-11-14]
   temp_max_stats = curr_max_stats;
   
   setBFlag(BState::IN_BATTLE, true);

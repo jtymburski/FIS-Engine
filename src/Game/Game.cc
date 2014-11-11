@@ -241,7 +241,85 @@ void Game::pollEvents()
 /* Set up the battle - old battle needs to be deleted prior to calling */
 void Game::setupBattle()
 {
-  //Begin time test
+  // Test Actions
+  std::vector<Action*> damage_actions;
+  damage_actions.push_back(new Action("1,DAMAGE,,,,VITA,AMOUNT.20,AMOUNT.5,,95"));
+  damage_actions.push_back(new Action("2,DAMAGE,,,,VITA,AMOUNT.30,AMOUNT.7,,95"));
+  damage_actions.push_back(new Action("3,DAMAGE,,,,VITA,AMOUNT.40,AMOUNT.10,,95"));
+  damage_actions.push_back(new Action("4,DAMAGE,,,,VITA,AMOUNT.50,AMOUNT.15,,95"));
+  damage_actions.push_back(new Action("5,DAMAGE,,,,VITA,AMOUNT.60,AMOUNT.20,,95"));
+  damage_actions.push_back(new Action("6,DAMAGE,,,,VITA,AMOUNT.75,AMOUNT.25,,95"));
+  damage_actions.push_back(new Action("7,DAMAGE,,,,VITA,AMOUNT.90,AMOUNT.25,,95"));
+  damage_actions.push_back(new Action("8,DAMAGE,,,,VITA,AMOUNT.100,AMOUNT.30,,95"));
+  damage_actions.push_back(new Action("9,DAMAGE,,,,VITA,AMOUNT.120,AMOUNT.35,,95"));
+  damage_actions.push_back(new Action("10,DAMAGE,,,,VITA,AMOUNT.150,AMOUNT.50,,95"));
+  damage_actions.push_back(new Action("11,DAMAGE,,,,VITA,AMOUNT.20,PC.1,,95"));
+  damage_actions.push_back(new Action("12,DAMAGE,,,,VITA,AMOUNT.40,PC.5,,95"));
+  damage_actions.push_back(new Action("13,DAMAGE,,,,VITA,AMOUNT.60,PC.10,,95"));
+  damage_actions.push_back(new Action("14,DAMAGE,,,,VITA,AMOUNT.75,PC.15,,95"));
+  damage_actions.push_back(new Action("15,DAMAGE,,,,VITA,AMOUNT.100,PC.25,,95"));
+  damage_actions.push_back(new Action("16,DAMAGE,,,,VITA,AMOUNT.150,PC.30,,95"));
+  damage_actions.push_back(new Action("17,DAMAGE,,,,VITA,PC.2,PC.1,,95"));
+  damage_actions.push_back(new Action("18,DAMAGE,,,,VITA,PC.5,PC.2,,95"));
+  damage_actions.push_back(new Action("19,DAMAGE,,,,VITA,PC.10,PC.5,,95"));
+  damage_actions.push_back(new Action("20,DAMAGE,,,,VITA,PC.10,PC.9,,95"));
+  damage_actions.push_back(new Action("22,DAMAGE,,,,VITA,PC.10,PC.20,,95"));
+  damage_actions.push_back(new Action("23,DAMAGE,,,,VITA,PC.15,PC.25,,95"));
+
+  // for(auto it = begin(damage_actions); it != end(damage_actions); ++it)
+  //   std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
+
+  // Test Skills
+  Skill* physical_01 = new Skill(100, "Wee Strike", ActionScope::ONE_ENEMY, 
+      damage_actions[0], 100, 0);
+  physical_01->setPrimary(Element::PHYSICAL);
+
+  Skill* physical_02 = new Skill(101, "Whelp", ActionScope::ONE_ENEMY, 
+      damage_actions[1], 5);
+  physical_02->setPrimary(Element::PHYSICAL);
+
+  Skill* physical_03 = new Skill(102, "Two Smackeroos", 
+      ActionScope::TWO_ENEMIES, damage_actions[2], 10);
+  physical_03->setPrimary(Element::PHYSICAL);
+
+  Skill* physical_04 = new Skill(103, "Mass Smack", ActionScope::ALL_ENEMIES, 
+      damage_actions[3], 25);
+  physical_04->setPrimary(Element::PHYSICAL);
+
+  // Test Skill Sets
+  SkillSet* physical_skills = new SkillSet(physical_01, 1);
+  physical_skills->addSkill(physical_02, 1);
+  physical_skills->addSkill(physical_03, 1);
+  physical_skills->addSkill(physical_04, 1);
+
+  // Test Attribute Sets
+  AttributeSet weak_stats   = AttributeSet(1, true, false);
+  AttributeSet normal_stats = AttributeSet(2, true, false);
+  AttributeSet medium_stats = AttributeSet(3, true, false);
+  AttributeSet top_stats    = AttributeSet(4, true, false);
+
+  // Test Categories
+  Category* human = new Category(200, "Human", "human", normal_stats, 
+      top_stats, physical_skills);
+  human->setDescription("A regular old joe from Earth.");
+  human->setFlag(CategoryState::DEF_ENABLED, true);
+  human->setFlag(CategoryState::E_SWORD, true);
+
+  Category* bloodclaw_scion = new Category(201, "Bloodclaw Scion", "scions", 
+      weak_stats, medium_stats, physical_skills);
+  bloodclaw_scion->setDescription("A class of soldier excelling in physical combat.");
+  bloodclaw_scion->setFlag(CategoryState::DEF_ENABLED, true);
+  bloodclaw_scion->setFlag(CategoryState::POWER_DEFENDER, false);
+  bloodclaw_scion->setFlag(CategoryState::POWER_GUARDER, false);
+  bloodclaw_scion->setFlag(CategoryState::E_SWORD, true);
+  bloodclaw_scion->setFlag(CategoryState::E_CLAWS, true);
+
+  // Test Persons
+  Person* malgidus = new Person(300, "Malgidus", human, bloodclaw_scion);
+  malgidus->battlePrep();
+  malgidus->print(false, false, true, false);
+
+  // Begin Time Test
   //using namespace std::chrono;
 
   //system_clock::time_point tp = system_clock::now();
@@ -250,11 +328,11 @@ void Game::setupBattle()
 
   //std::vector<std::string> the_strings(1000000, " abcd ");
 
-  //for (auto &s : the_strings)
+  // for (auto &s : the_strings)
   // s = Helpers::trim(s);
 
   // Helpers Testing
-  //auto length =  10;
+  // auto length =  10;
 
   //std::vector<int> values(length, 0);
 
@@ -400,96 +478,9 @@ void Game::setupBattle()
   // delete spark;
   // delete moldy;
   // delete tumor
-  
-  // AttributeSet testing
-  // AttributeSet min_scion_set(1, true);
-  // AttributeSet max_scion_set(3, true);
-  // AttributeSet min_hex_set(2, true);
-  // AttributeSet max_hex_set(3, true);
-  // AttributeSet spark_set(1);
-  // AttributeSet tumor_set(1);
-  // AttributeSet moldy_set(1);
-
-  // AttributeSet min_human_set = min_hex_set;
-  // min_human_set.setStat(Attribute::VITA, 200);
-  // AttributeSet max_human_set(3, true);
-
-  // //Action Testing
-  // std::vector<Action*> actions;
-  // std::vector<float> chances = {0.50, 0.40, 0.12, 0.46};
-  // actions.push_back(new Action("1,ALTER,,,,THAG,PC.50,AMOUNT.15,,95"));
-  // actions.push_back(new Action("2,ALTER,,PHYSICAL,PHYSICAL.THERMAL,VITA,AMOUNT.50,AMOUNT.10,,95"));
-  // actions.push_back(new Action("3,INFLICT,2.7,,,POISON,,,,75"));
-  // actions.push_back(new Action("4,REVIVE,,,,VITA,PC.25,AMOUNT.50,,100"));
-  // actions.push_back(new Action("5,INFLICT,3.5,,,BURN,,,,85"));
-  // actions.push_back(new Action("6,ALTER,,,,VITA,AMOUNT.100,PC.10,,95"));
-  // actions.push_back(new Action("7,ALTER,,,,VITA,AMOUNT.210,PC.15,,96"));
-  // actions.push_back(new Action("7,ALTER,,,,VITA,AMOUNT.265,PC.15,,97"));
-  // Action* special = new Action("8,ALTER,,,,VITA,PC.25,AMOUNT.50,,98");
-  
-  // //actions[3]->print();
-
-  // // Skill Testing
-  // std::vector<Skill*> skills;
-  // std::vector<Skill*> other_skills;
-
-  // Skill* normal_attack = new Skill(13, "User",ActionScope::ONE_ENEMY,actions[0],0.75,12);
-  // Skill* medium_attack = new Skill(14, "Ally Not User",ActionScope::ONE_ALLY_NOT_USER,actions[5],0.85,75);
-  // Skill* hard_attack   = new Skill(15, "Hard Attack",ActionScope::TWO_ENEMIES,actions[6],0.90,188);
-  // Skill* ultra_attack  = new Skill(16, "Ultra Attack",ActionScope::ALL_ENEMIES,actions[7],0.91,399);
-  // Skill* one_ally_ko   = new Skill(17, "One Ally Ko",ActionScope::ONE_ALLY_KO,actions[7],0.91,450);
-  // Skill* all_allies_ko = new Skill(18, "All Allies Ko",ActionScope::ALL_ALLIES_KO,actions[7],0.92,450);
-  // Skill* one_party     = new Skill(19, "One Party",ActionScope::ONE_PARTY,actions[7],0.91,100);
-  // Skill* all_targets   = new Skill(20, "All Targets",ActionScope::ALL_TARGETS,actions[7],0.92,2);
-  // Skill* not_user      = new Skill(21, "Not User",ActionScope::NOT_USER,actions[7],0.92,45);
-  // Skill* all_not_user  = new Skill(22, "All Not User",ActionScope::ALL_NOT_USER,actions[7],0.93,36);
-  // normal_attack->addActions(actions, chances);
-
-  // normal_attack->setValue(4);
-  // medium_attack->setValue(4);
-  // hard_attack->setValue(5);
-  // ultra_attack->setValue(5);
-  // one_ally_ko->setValue(1);
-  // all_allies_ko->setValue(1);
-  // one_party->setValue(2);
-  // all_targets->setValue(2);
-  // not_user->setValue(2);
-  // all_not_user->setValue(2);
 
   // new_potion->setUseSkill(medium_attack);
   // new_bubby_bomb->setUseSkill(normal_attack);
-
-  // skills.push_back(normal_attack);
-  // skills.push_back(new Skill(400, "Super Attack",ActionScope::ONE_ALLY,special,0.65,6));
-  // skills.push_back(new Skill(3, "Poison Attack",ActionScope::TWO_ALLIES,actions[1],0.79,16));
-  // skills.push_back(new Skill(35, "Crappy Attack",ActionScope::ALL_ALLIES,special,1.00,26));
-  // skills[0]->setValue(2);
-  // skills[1]->setValue(3);
-  // skills[2]->setValue(4);
-
-  // other_skills.push_back(medium_attack);
-  // other_skills.push_back(hard_attack);
-  // other_skills.push_back(ultra_attack);
-  // other_skills.push_back(one_ally_ko);
-  // other_skills.push_back(all_allies_ko);
-  // other_skills.push_back(one_party);
-  // other_skills.push_back(all_targets);
-  // other_skills.push_back(not_user);
-  // other_skills.push_back(all_not_user);
-
-  // std::vector<uint32_t> levels;
-  // std::vector<uint32_t> other_levels;
-
-  // for (auto it = begin(skills); it != end(skills); ++it)
-  //   levels.push_back(1);
-
-  // for (auto it = begin(other_skills); it != end(other_skills); ++it)
-  //   other_levels.push_back(1);
-
-  // // SkillSet Testing
-  // SkillSet* scion_skills    = new SkillSet(skills, levels);
-  // SkillSet* hex_skills      = scion_skills;
-  // SkillSet* other_skill_set = new SkillSet(other_skills, other_levels);
 
   // // Category Testing
   // Category* blood_scion = new Category("Blood Scion", "Scion", min_scion_set, 

@@ -672,6 +672,28 @@ bool Skill::setMessage(const std::string &new_message)
 }
 
 /*
+ * Description: Assigns a new primary element.
+ *
+ * Inputs: Element new_element - enumerated element to assign
+ * Output: none
+ */
+void Skill::setPrimary(const Element &new_element)
+{
+  primary = new_element;
+}
+
+/*
+ * Description: Assigns a new secondary element.
+ *
+ * Inputs: Element new_element - enumerated element to assign
+ * Output: none
+ */
+void Skill::setSecondary(const Element & new_element)
+{
+  secondary = new_element;
+}
+
+/*
  * Description: Assigns a new sound effect to the Skill
  *
  * Inputs: new_sound_effect - new sound effect for the use of the Skill

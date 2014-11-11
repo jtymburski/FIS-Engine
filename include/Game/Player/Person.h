@@ -12,7 +12,7 @@
 * In & Out of Battle
 * -------------
 * base_stats - the level 1 stats of the Person calculated by battle_class + race
-* max_base_stats - the level max stats of the Person calc by battle_class + race
+* base_max_stats - the level max stats of the Person calc by battle_class + race
 * 
 * Out of Battle
 * -------------
