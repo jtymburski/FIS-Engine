@@ -597,8 +597,8 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
     }
     else if(elements.size() == 3 && elements[1] == "sprite")
     {
-      /* If no valid frame, generate one at origin for settings */
-      TileSprite* valid_frame = getValidFrame();
+      /* Generate one at origin for settings, if it doesn't exist */
+      getValidFrame();
 
       /* Set the new sprite setting in all frames */
       for(uint32_t i = 0; i < frame_matrix.size(); i++)
@@ -805,7 +805,7 @@ uint16_t MapThing::getMapSection()
  *              call is selected
  * 
  * Inputs: none
- * Output: Direction - the movement direction indicator
+ * Output: Direction - the movezment direction indicator
  */
 Direction MapThing::getMovement()
 {
@@ -1001,31 +1001,47 @@ bool MapThing::isVisible()
  * Inputs: SDL_Renderer* renderer - the graphical rendering engine pointer
  *         int offset_x - the paint offset in the x direction
  *         int offset_y - the paint offset in the y direction
- * Output: bool - if the render succeeded
+ * Output: bool - if anything was rendered
  */
+// TODO: REMOVE -> changed to a base render and an upper render
 bool MapThing::render(SDL_Renderer* renderer, int offset_x, int offset_y)
 {
-  /* TESTING: Remove - TODO: Not Working */
-  for(uint32_t i = 0; i < frame_matrix.size(); i++)
+  bool rendered = false;
+  
+  /* New render code - need to modify for layering */
+  if(isVisible())
   {
-    for(uint32_t j = 0; j < frame_matrix[i].size(); j++)
-    {
-      if(frame_matrix[i][j] != NULL)
-      {
-        frame_matrix[i][j]->render(renderer, 256+64*i, 256+64*j, 64, 64);
+    int base_x = x - offset_x;
+	int base_y = y - offset_y;
+	
+	for(uint32_t i = 0; i < frame_matrix.size(); i++)
+	{
+	  int render_x = base_x + width * i;
+	  
+	  for(uint32_t j = 0; j < frame_matrix[i].size(); j++)
+	  {
+	    if(frame_matrix[i][j] != NULL)
+		{
+		  int render_y = base_y + height * j;
+		  frame_matrix[i][j]->render(renderer, render_x, render_y, 
+		                             width, height);
+          rendered = true;
+		}
       }
-    }
+	}
   }
-
-  if(isVisible() && frames != NULL && tile_main != NULL)
+  
+  /* TODO: Remove - OLD RENDER CODE */
+  /*if(isVisible() && frames != NULL && tile_main != NULL)
   {
     int render_x = x - offset_x;
     int render_y = y - offset_y;
     
     frames->render(renderer, render_x, render_y, width, height);
     return true;
-  }
-  return false;
+  }*/
+  
+  return rendered;
 }
 
 /* 

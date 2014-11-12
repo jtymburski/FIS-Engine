@@ -199,9 +199,11 @@ public:
   /* Returns if the thing is visible / rendered on the screen */
   virtual bool isVisible();
   
-  /* Renders the Map Thing */
+  /* Renders the Map Thing - TODO: REMOVE OLD RENDER */
   bool render(SDL_Renderer* renderer, int offset_x, int offset_y);
- 
+  bool renderBase(SDL_Renderer* renderer, int offset_x, int offset_y);
+  bool renderUpper(SDL_Renderer* renderer, int offset_x, int offset_y);
+  
   /* Sets the things description */
   void setDescription(std::string new_description);
 

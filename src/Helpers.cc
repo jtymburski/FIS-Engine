@@ -17,6 +17,7 @@
 #include "Helpers.h"
 
 /* Constant Implementation - see header file for descriptions */
+const uint8_t Helpers::kMAX_RENDER_DEPTH = 10;
 const uint16_t Helpers::kTILE_SIZE = 64;
 
 /*=============================================================================
@@ -697,6 +698,19 @@ std::vector<std::vector<std::string>> Helpers::frameSeparator(
   return set;
 }
 
+/*
+ * Description: Returns the render depth of the count of things that can be
+ *              stacked on top of each other. Relevant for thing motion control
+ *              and rendering.
+ *
+ * Inputs: none
+ * Output: uint8_t - the render depth
+ */
+uint8_t Helpers::getRenderDepth()
+{
+  return kMAX_RENDER_DEPTH;
+}
+  
 /*
  * Description: Returns the tile size for rendering, as defined by the stored
  *              constants.

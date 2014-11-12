@@ -51,7 +51,8 @@ private:
   static std::mt19937_64 rand_64_eng;
   static SDL_Texture* white_mask; /* Brightness manipulator */
 
-  // /*------------------- Constants -----------------------*/
+  /*------------------- Constants -----------------------*/
+  const static uint8_t kMAX_RENDER_DEPTH; /* Max render depth */
   const static uint16_t kTILE_SIZE; /* The default tile size for game */
 
 public:
@@ -139,6 +140,9 @@ public:
   /* Get render tile size */
   static uint16_t getTileSize();
 
+  /* Get render depth for thing stacks */
+  static uint8_t getRenderDepth();
+  
   /* Methods for trimming white space from left of string ends */
   static std::string& ltrim(std::string &s);
 
