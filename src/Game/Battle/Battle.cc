@@ -338,9 +338,12 @@ void Battle::battleWon()
  */
 bool Battle::bufferEnemyAction()
 {
+  std::cout << "Buffering enemy action" << std::endl;
   auto buffered      = false;
 
   curr_user = getPerson(person_index);
+
+curr_module->print(false, true);
 
   auto action_type    = curr_module->getActionType();
   auto action_targets = curr_module->getChosenTargets();
@@ -1116,6 +1119,7 @@ void Battle::cleanUp()
   for (size_t i = 0; i < foes->getSize(); i++)
   {
     auto member = foes->getMember(i);
+    member->resetAI();
     member->resetDefend();
     member->resetGuard();
     member->resetGuardee();
@@ -1497,7 +1501,7 @@ void Battle::processSkill(std::vector<Person*> targets)
       secd_user_def *= kDEF_SECD_ELM_MODIFIER;
     }
 
-    if ((*it)->actionFlag(ActionFlags::ALTER))
+    if ((*it)->actionFlag(ActionFlags::DAMAGE))
     {
       p_target_index = 0;
 
@@ -1518,6 +1522,7 @@ void Battle::processSkill(std::vector<Person*> targets)
 
           auto base_damage = calcBaseDamage(crit_factor);
           
+          std::cout << "Base damage calculation: " << base_damage << std::endl;
           if (curr_target->doDmg(base_damage))
           {
             //TODO [08-01-14]: Battle front end, user died message
@@ -1534,9 +1539,19 @@ void Battle::processSkill(std::vector<Person*> targets)
           }
 
           if (checkPartyDeath(friends))
+          {
             setBattleFlag(CombatState::LOSS, true);
+            setNextTurnState();
+          }
           else if (checkPartyDeath(foes))
+          {
             setBattleFlag(CombatState::VICTORY, true);
+            setNextTurnState();
+          }
+        }
+        else
+        {
+          std::cout << "The action misses!" << std::endl;
         }
 
 
@@ -1606,7 +1621,14 @@ void Battle::processActions()
           curr_skill = action_buffer->getSkill();
 
           if (!doesSkillMiss())
+          {
+            std::cout << "Processing single skill" << std::endl;
             processSkill(action_buffer->getTargets());
+          }
+          else
+          {
+            std::cout << "The skill misses!" << std::endl;
+          }
         }
       }
       else
@@ -1730,7 +1752,7 @@ void Battle::selectEnemyActions()
 
   /* If the current module selection is complete, attempt to add it into the 
    * buffer. bufferEnemyAction() will update the person index if needed */
-  if (curr_module == nullptr)
+  if (curr_module == nullptr || person_index == 1)
   {
     if (!testPersonIndex(person_index))
       setNextPersonIndex();
@@ -1738,12 +1760,18 @@ void Battle::selectEnemyActions()
     update_module = true;
   }
   else if (curr_module->getFlag(AIState::SELECTION_COMPLETE))
+  {
     update_module = bufferEnemyAction();
+  }
 
   /* Assert the person index exists in the Foes scope (-5 to -1) */
   if (update_module)
   {
-    std::cout << "Preparing AIModule for person index" << person_index << std::endl;
+#ifdef UDEBUG
+    std::cout << "Preparing AIModule for person index: " << person_index 
+              << std::endl;
+#endif
+
     curr_user = getPerson(person_index);
     curr_module = curr_user->getAI();
 
@@ -1752,6 +1780,8 @@ void Battle::selectEnemyActions()
 
     auto items = friends->getInventory()->getBattleItems();
     curr_module->setItems(buildBattleItems(person_index, items));
+    auto skills = curr_user->getUseableSkills();
+    curr_module->setSkills(buildBattleSkills(person_index, skills));
     curr_module->calculateAction();
   }
   else
@@ -2006,6 +2036,7 @@ void Battle::setNextTurnState()
   if (getBattleFlag(CombatState::OUTCOME_DONE))
   {
     setTurnState(TurnState::DESTRUCT);
+    menu->unsetAll(true);
     //TODO [11-0614]: Eventhandler battle finish signal?
   }
 
@@ -2261,27 +2292,34 @@ void Battle::setTurnState(const TurnState &new_turn_state)
  */
 bool Battle::keyDownEvent(SDL_KeyboardEvent event)
 {
-  Helpers::flushConsole();
-
 #ifdef UDEBUG
-  if (event.keysym.sym == SDLK_PAUSE)
-    printPartyState();
-  else if (event.keysym.sym == SDLK_PRINTSCREEN)
-    printTurnState();
-  else if (event.keysym.sym == SDLK_HOME)
-    action_buffer->print(false);
-  else if (event.keysym.sym == SDLK_END)
-    action_buffer->print(true);
-  else if (event.keysym.sym == SDLK_PAGEUP)
-    printInventory(friends);
-  else if (event.keysym.sym == SDLK_PAGEDOWN)
-    printInventory(foes);
-  else if (event.keysym.sym == SDLK_DELETE)
-    printTargetVariables(false);
+  if (!getBattleFlag(CombatState::OUTCOME_DONE))
+  {
+    Helpers::flushConsole();
+    
+    if (event.keysym.sym == SDLK_PAUSE)
+      printPartyState();
+    else if (event.keysym.sym == SDLK_PRINTSCREEN)
+      printTurnState();
+    else if (event.keysym.sym == SDLK_HOME)
+      action_buffer->print(false);
+    else if (event.keysym.sym == SDLK_END)
+      action_buffer->print(true);
+    else if (event.keysym.sym == SDLK_PAGEUP)
+      printInventory(friends);
+    else if (event.keysym.sym == SDLK_PAGEDOWN)
+      printInventory(foes);
+    else if (event.keysym.sym == SDLK_DELETE)
+      printTargetVariables(false);
+  }
+  else
+    std::cout << "The battle is complete!" << std::endl;
 #endif
 
   if (menu->getWindowStatus() == WindowStatus::ON)
+  {
     return menu->keyDownEvent(event);
+  }
 
   return false;
 }
@@ -2402,7 +2440,7 @@ void Battle::printInventory(Party* const target_party)
   }
   else
   {
-    std::cout << "[Warning]: Attempting to print ynull party or null inventory."
+    std::cout << "[Warning]: Attempting to print null party or null inventory."
               << std::endl;
   }
 }
@@ -2618,6 +2656,7 @@ bool Battle::update(int32_t cycle_time)
         }
         else if (action_type == ActionType::GUARD)
         {
+          std::cout << "Guard action type? " << std::endl;
           scope = ActionScope::ONE_ALLY_NOT_USER;
         }
 

@@ -127,7 +127,7 @@ private:
  *============================================================================*/
 public:
   /* Unset all BattleMenu information (for end of selection, etc) */
-  void unsetAll();
+  void unsetAll(const bool &window_off = false);
 
   /* Returns the state of a chosen type of action */
   bool isActionTypeSelected();

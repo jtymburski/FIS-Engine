@@ -316,19 +316,19 @@ void Game::setupBattle()
 
   // Test Persons
   Person* malgidus = new Person(300, "Malgidus", human, bloodclaw_scion);
-  malgidus->battlePrep();
-  malgidus->print(false, false, true, false);
+  //malgidus->print(false, false, true, true);
 
   // Person* arcadius = new Person(301, "Arcadius", human, bloodclaw_scion);
   // Person* berran = new Person(301, "Berran", human, bloodclaw_scion);
   // Person* atkst = new Person(301, "Atkst", human, bloodclaw_scion);
   // Person* kevin = new Person(301, "Kevin", human, bloodclaw_scion);
+  std::vector<BattleItem> items;
 
   Person* frosty = new Person(301, "Frosty", human, bloodclaw_scion);
   AIModule* frosty_module = new AIModule();
   frosty_module->setParent(frosty);
   frosty->setAI(frosty_module);
-
+  
   // Person* cloud_dude = new Person(301, "Cloud Dude", human, bloodclaw_scion);
   // Person* thruster_barrow = new Person(301, "Thruster Barrow", human, bloodclaw_scion);
   // Person* dragon = new Person(301, "Dragon", human, bloodclaw_scion);
@@ -348,14 +348,10 @@ void Game::setupBattle()
   for (uint32_t i = 0; i < enemies->getSize(); i++)
     enemies->getMember(i)->battlePrep();
 
+  //malgidus->print(false, false, true, true);
+  //frosty->print(false, false, true, true);
+
   game_battle = new Battle(game_config, friends, enemies);
-  
-
-
-
-
-
-
 
   // Begin Time Test
   //using namespace std::chrono;

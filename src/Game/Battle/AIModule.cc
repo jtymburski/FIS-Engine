@@ -46,7 +46,7 @@ const float AIModule::kGAI_BASE_PASS_FACTOR{0.01};
  */
 const float AIModule::kRAI_OFF_FACTOR{1.35};
 const float AIModule::kRAI_DEF_FACTOR{1.50};
-const float AIModule::kRAI_BASE_SKILL_FACTOR{0.500};
+const float AIModule::kRAI_BASE_SKILL_FACTOR{0.600};
 const float AIModule::kRAI_BASE_ITEM_FACTOR{0.200};
 const float AIModule::kRAI_LEAN_TO_ITEM_FACTOR{0.005};
 const AITarget AIModule::kRAI_DEFAULT_TARGET{AITarget::RANDOM};
@@ -297,6 +297,7 @@ void AIModule::calculateActionTypeChances()
       skill_lean_factor = kPAI_BASE_SKILL_FACTOR;
 
     /* Adjust the skill lean factor and apply to chance to use skill */
+    std::cout << "Assigning skill chance!" << std::endl;
     skill_chance = calcFloatValVariance(skill_lean_factor);
     act_typ_chances.push_back(std::make_pair(ActionType::SKILL, skill_chance));
   }
@@ -357,8 +358,8 @@ void AIModule::calculateActionTypeChances()
 
   if (act_typ_chances.size() > 0)
   {
-    /* Build a normalized distributino of the calculated action type chances,
-     * and randomly select a an action type based on the probability weights */
+    /* Build a normalized distribution of the calculated action type chances,
+     * and randomly select an action type based on the probability weights */
     auto it_beg = begin(act_typ_chances);
     auto it_end = end(act_typ_chances);
     auto ra_flt = Helpers::randFloat(0, 1);
@@ -367,6 +368,10 @@ void AIModule::calculateActionTypeChances()
     auto it = Helpers::selectNormalizedPair(ra_flt, it_beg, it_end);
 
     /*  Assign the chosen action type */
+#ifdef UDEBUG
+    std::cout << "AIModule Chosen Action Type: " 
+              << Helpers::actionTypeToStr((*it).first) << std::endl;
+#endif
     chosen_action_type = (*it).first;
   }
   else
@@ -416,11 +421,15 @@ bool AIModule::canSelectSkill()
     auto target_found = false;
 
     for (auto it = begin(valid_skills); it != end(valid_skills); ++it)
+    {
+      std::cout << (*it).skill->getName();
       target_found |= battleSkillValid(*it);
+    }
 
+    std::cout << "target_found : " << target_found << std::endl;
     return target_found;
   }
-
+  
   return false;
 }
 

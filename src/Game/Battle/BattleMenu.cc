@@ -594,7 +594,7 @@ void BattleMenu::keyDownSelect()
  * Inputs: none
  * Output: none
  */
-void BattleMenu::unsetAll()
+void BattleMenu::unsetAll(const bool &window_off)
 {
   valid_actions.clear();
   menu_items.clear();
@@ -616,7 +616,10 @@ void BattleMenu::unsetAll()
   element_index  = 0;
 
   //TODO: Window/rendering status on unset?
-  window_status = WindowStatus::ON;
+  if (window_off)
+    window_status = WindowStatus::OFF;
+  else
+    window_status = WindowStatus::ON;
 }
 
 /*

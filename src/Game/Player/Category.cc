@@ -126,7 +126,7 @@ void Category::classSetup()
 {
   cat_flags = static_cast<CategoryState>(0);
   setFlag(CategoryState::DEF_ENABLED, true);
-  setFlag(CategoryState::GRD_ENABLED, true);
+  setFlag(CategoryState::GRD_ENABLED, false);
   setFlag(CategoryState::IMP_ENABLED, false);
   setFlag(CategoryState::POWER_DEFENDER, false);
   setFlag(CategoryState::POWER_GUARDER, false);
