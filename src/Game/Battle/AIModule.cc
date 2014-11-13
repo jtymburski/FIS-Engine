@@ -186,7 +186,9 @@ bool AIModule::battleSkillValid(const BattleSkill &battle_skill)
   if (battle_skill.skill->getScope() == ActionScope::TWO_ENEMIES)
   {
     if (battle_skill.foe_targets.size() >= 2)
+    {
       has_targets = true;
+    }
   }
   else if (battle_skill.skill->getScope() == ActionScope::TWO_ALLIES)
   {
@@ -297,7 +299,6 @@ void AIModule::calculateActionTypeChances()
       skill_lean_factor = kPAI_BASE_SKILL_FACTOR;
 
     /* Adjust the skill lean factor and apply to chance to use skill */
-    std::cout << "Assigning skill chance!" << std::endl;
     skill_chance = calcFloatValVariance(skill_lean_factor);
     act_typ_chances.push_back(std::make_pair(ActionType::SKILL, skill_chance));
   }
@@ -421,12 +422,8 @@ bool AIModule::canSelectSkill()
     auto target_found = false;
 
     for (auto it = begin(valid_skills); it != end(valid_skills); ++it)
-    {
-      std::cout << (*it).skill->getName();
       target_found |= battleSkillValid(*it);
-    }
 
-    std::cout << "target_found : " << target_found << std::endl;
     return target_found;
   }
   
@@ -476,18 +473,24 @@ float AIModule::calcFloatValVariance(const float &base_value)
   return Helpers::randFloat(base_value - min_var, base_value + max_var);
 }
 
+/*
+ * Description: 
+ *
+ * Inputs:
+ * Output: bool - true
+ */
 bool AIModule::clearInvalid()
 {
   valid_items.erase(std::remove_if(begin(valid_items), end(valid_items), 
       [&](const BattleItem &battle_item) -> bool
       {
-        return battleItemValid(battle_item);
+        return !battleItemValid(battle_item);
       }), 
       end(valid_items));
   valid_skills.erase(std::remove_if(begin(valid_skills), end(valid_skills),
       [&](const BattleSkill &battle_skill) -> bool
       {
-        return battleSkillValid(battle_skill);
+        return !battleSkillValid(battle_skill);
       }), end(valid_skills));
 
   return true;

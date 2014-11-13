@@ -338,12 +338,10 @@ void Battle::battleWon()
  */
 bool Battle::bufferEnemyAction()
 {
-  std::cout << "Buffering enemy action" << std::endl;
+  std::cout << "Buffering enemy action." << std::endl;
   auto buffered      = false;
 
   curr_user = getPerson(person_index);
-
-curr_module->print(false, true);
 
   auto action_type    = curr_module->getActionType();
   auto action_targets = curr_module->getChosenTargets();
@@ -719,24 +717,26 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
   /* If the user is defending, decrease the damage taken by the defending
    * modifier */
   if (curr_user->getBFlag(BState::DEFENDING))
+  {
+    std::cout << "Damage before defending: " << base_damage << std::endl;
     base_damage *= kDEFEND_MODIFIER;
+    std::cout << "Damage after defending:  " << base_damage << std::endl;
+  }
 
   /* For guardinng users, the person being guarded will take kGUARDING_MODIFIER
    * portion of the damage, while the guard will take the remainder. */
 
   /* For persons shielded by damage */
 
-
-
   //SHIELED
 
-  base_damage     *= crit_factor;
+  base_damage *= crit_factor;
 
 #ifdef UDEBUG
-  std::cout << "Base user power: " << base_user_pow << std::endl;
-  std::cout << "Action power to add: " << action_power << std::endl;
-  std::cout << "Base user def: " << base_targ_def << std::endl;
-  std::cout << "Base damage after crit: " << base_damage << std::endl;
+  std::cout << "Base user power: ----- " << base_user_pow << std::endl;
+  std::cout << "Action power add: ---- " << action_power << std::endl;
+  std::cout << "Base user def: ------- " << base_targ_def << std::endl;
+  std::cout << "Base damg aft crit: -- " << base_damage << std::endl <<std::endl;
 #endif
 
   return base_damage;
@@ -1102,10 +1102,7 @@ void Battle::cleanUp()
 
   action_buffer->update();
   menu->unsetAll();
-
-  // TODO: Fix auto win turns elapsed [03-01-14]
-  if (turns_elapsed == 7)
-    setBattleFlag(CombatState::VICTORY);
+  curr_module = nullptr;
 
   /* Cleanup for each member of friends and persons */
   for (size_t i = 0; i < friends->getSize(); i++)
@@ -1119,7 +1116,7 @@ void Battle::cleanUp()
   for (size_t i = 0; i < foes->getSize(); i++)
   {
     auto member = foes->getMember(i);
-    member->resetAI();
+//    member->resetAI();
     member->resetDefend();
     member->resetGuard();
     member->resetGuardee();
@@ -1453,6 +1450,10 @@ bool Battle::processGuard()
  */
 void Battle::processSkill(std::vector<Person*> targets)
 {
+#ifdef UDEBUG
+  std::cout << "{Skill} Processing: " << curr_skill->getName() << std::endl;
+#endif
+
   /* Assign the current user and grab the list of effects of the Skill */
   auto effects = curr_skill->getEffects();
   
@@ -1467,6 +1468,9 @@ void Battle::processSkill(std::vector<Person*> targets)
   /* Perform each action on the skill */
   for (auto it = begin(effects); it != end(effects); ++it)
   {
+#ifdef UDEBUG
+    std::cout << "{Effect} Processing" << std::endl;
+#endif
     curr_action = *it;
 
     /* Update the temporary copy of the User's current stats */
@@ -1510,6 +1514,9 @@ void Battle::processSkill(std::vector<Person*> targets)
         /* Build the variables and calculate factors for the current target */
         curr_target = *jt;
         
+#ifdef UDEBUG
+        std::cout << "{Target} Processing: " << curr_target->getName() << std::endl;
+#endif
         if (!doesActionMiss())
         {
           auto crit_factor = 1.00;
@@ -1522,7 +1529,6 @@ void Battle::processSkill(std::vector<Person*> targets)
 
           auto base_damage = calcBaseDamage(crit_factor);
           
-          std::cout << "Base damage calculation: " << base_damage << std::endl;
           if (curr_target->doDmg(base_damage))
           {
             //TODO [08-01-14]: Battle front end, user died message
@@ -1551,10 +1557,10 @@ void Battle::processSkill(std::vector<Person*> targets)
         }
         else
         {
-          std::cout << "The action misses!" << std::endl;
+#ifdef UDEBUG
+          std::cout << "{Miss} An action misses!" << std::endl;
+#endif
         }
-
-
       }
     }
     else if ((*it)->actionFlag(ActionFlags::INFLICT))
@@ -1600,7 +1606,7 @@ void Battle::processSkill(std::vector<Person*> targets)
 void Battle::processActions()
 {
 #ifdef UDEBUG
-  std::cout << "Begin processing actions on buffer." << std::endl;
+  std::cout << "Begin processing actions on buffer.\n" << std::endl;
 #endif
 
   auto curr_action_type = ActionType::NONE;
@@ -1609,6 +1615,9 @@ void Battle::processActions()
   {
     curr_action_type = action_buffer->getActionType();
     curr_user        = action_buffer->getUser();
+#ifdef UDEBUG
+    std::cout << "{User} Processing: " << curr_user->getName() << std::endl;
+#endif
 
     auto can_process = true;
 
@@ -1622,12 +1631,14 @@ void Battle::processActions()
 
           if (!doesSkillMiss())
           {
-            std::cout << "Processing single skill" << std::endl;
             processSkill(action_buffer->getTargets());
           }
           else
           {
-            std::cout << "The skill misses!" << std::endl;
+#ifdef UDEBUG
+            std::cout << "{Miss} The skill " << curr_skill->getName() 
+                      << " misses!" << std::endl;
+#endif
           }
         }
       }
@@ -1691,7 +1702,7 @@ void Battle::processActions()
       {
         //TODO [11-05-14]: The run attempt failed message
 #ifdef UDEBUG
-        std::cout << "The run attempt has failed!" << std::endl;
+        std::cout << "{Failed} The run attempt has failed!" << std::endl;
 #endif
       }
     }
@@ -1752,7 +1763,7 @@ void Battle::selectEnemyActions()
 
   /* If the current module selection is complete, attempt to add it into the 
    * buffer. bufferEnemyAction() will update the person index if needed */
-  if (curr_module == nullptr || person_index == 1)
+  if (curr_module == nullptr)
   {
     if (!testPersonIndex(person_index))
       setNextPersonIndex();
@@ -1767,9 +1778,9 @@ void Battle::selectEnemyActions()
   /* Assert the person index exists in the Foes scope (-5 to -1) */
   if (update_module)
   {
-#ifdef UDEBUG
-    std::cout << "Preparing AIModule for person index: " << person_index 
-              << std::endl;
+#ifdef UDEBUG 
+    std::cout << "Preparing AIModule for person index: " << person_index
+               << std::endl;
 #endif
 
     curr_user = getPerson(person_index);
@@ -1787,7 +1798,7 @@ void Battle::selectEnemyActions()
   else
   {
 #ifdef UDEBUG
-    std::cout << "Enemy selection of actions complete" << std::endl;
+    std::cout << "Enemy selection of actions complete." << std::endl;
 #endif
 
     /* Mark the enemy selection phase as complete on the max index */
@@ -2547,9 +2558,6 @@ bool Battle::update(int32_t cycle_time)
 
   if (getBattleFlag(CombatState::PHASE_DONE))
   {
-#ifdef UDEBUG
-    std::cout << "Phase done, setting next turn state." << std::endl;
-#endif
     setNextTurnState();
   }
 

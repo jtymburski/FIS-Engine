@@ -922,7 +922,7 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
     printMenuState();
 
     if (getMenuFlag(BattleMenuState::SELECTION_VERIFIED))
-      std::cout << "Selection has been verified!" << std::endl;
+      std::cout << "Selection has been verified!\n" << std::endl;
   }
 
   return false;
