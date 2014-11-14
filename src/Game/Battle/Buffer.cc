@@ -332,7 +332,9 @@ void Buffer::print(const bool &simple)
   {
     for (auto it = begin(action_buffer); it != end(action_buffer); ++it)
     {
-      std::cout << "Action Type: " << Helpers::actionTypeToStr((*it).type) << std::endl;
+      std::cout << "Action Type: " << Helpers::actionTypeToStr((*it).type) 
+                << std::endl;
+                
       if ((*it).type == ActionType::SKILL)
       {
         if ((*it).skill_used != nullptr)

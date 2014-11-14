@@ -720,11 +720,9 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
 
   /* If the user is defending, decrease the damage taken by the defending
    * modifier */
-  if (curr_user->getBFlag(BState::DEFENDING))
+  if (curr_target->getBFlag(BState::DEFENDING))
   {
-    std::cout << "Damage before defending: " << base_damage << std::endl;
     base_damage *= kDEFEND_MODIFIER;
-    std::cout << "Damage after defending:  " << base_damage << std::endl;
   }
 
   /* For guardinng users, the person being guarded will take kGUARDING_MODIFIER
@@ -737,10 +735,11 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
   base_damage *= crit_factor;
 
 #ifdef UDEBUG
-  std::cout << "Base user power: ----- " << base_user_pow << std::endl;
-  std::cout << "Action power add: ---- " << action_power << std::endl;
-  std::cout << "Base user def: ------- " << base_targ_def << std::endl;
-  std::cout << "Base damg aft crit: -- " << base_damage << std::endl <<std::endl;
+  std::cout << "User Power: ----- " << base_user_pow << std::endl;
+  std::cout << "Action Power: --- " << action_power << std::endl;
+  std::cout << "User Def: ------- " << base_targ_def << std::endl;
+  std::cout << "Crit Factor: ---- " << crit_factor <<std::endl;
+  std::cout << "Base Damage: ---- " << base_damage << std::endl <<std::endl;
 #endif
 
   return base_damage;
@@ -1520,7 +1519,8 @@ void Battle::processSkill(std::vector<Person*> targets)
         curr_target = *jt;
         
 #ifdef UDEBUG
-        std::cout << "{Target} Processing: " << curr_target->getName() << std::endl;
+        std::cout << "{Target} Processing: " << curr_target->getName() 
+                  << std::endl;
 #endif
         if (!doesActionMiss())
         {
@@ -1528,12 +1528,19 @@ void Battle::processSkill(std::vector<Person*> targets)
 
           calcElementalMods();
 
-          //TODO
+          //TODO [11-13-14]: Fix action critical hits
           if (doesActionCrit())
             crit_factor = calcCritFactor();
 
           auto base_damage = calcBaseDamage(crit_factor);
           
+          if (config != nullptr && getBattleMode() == BattleMode::TEXT)
+          {
+            std::cout << "{DAMAGE} " << curr_target->getName() << " receives "
+                      << base_damage << " points of damage from " 
+                      << curr_user->getName() << ".\n\n";
+          }
+
           if (curr_target->doDmg(base_damage))
           {
             //TODO [08-01-14]: Battle front end, user died message
@@ -1542,13 +1549,28 @@ void Battle::processSkill(std::vector<Person*> targets)
           {
             /* If the person was defending, unless they are a power defender,
                reset their defending status */
-            if (!curr_target->isPowerDefender())
+            if (curr_target->getBFlag(BState::DEFENDING) && 
+                !curr_target->isPowerDefender())
             {
-              //TODO [11-02-14]: Defending reset update message.
+              //TODO [11-02-14]: Defending reset update message */
               curr_target->resetDefend();
+
+              if (config != nullptr && getBattleMode() == BattleMode::TEXT)
+              {
+                std::cout << "{BREAK DEFEND} " << curr_target->getName()
+                          << " is no longer defending from damage.\n\n";
+              }
+            }
+            else if (curr_target->getBFlag(BState::DEFENDING) &&
+                     curr_target->isPowerDefender())
+            {
+              std::cout << "{PERSIST DEFEND} " << curr_target->getName() 
+                        << " continues to defend themselves from damage.\n\n";
             }
           }
 
+          /* Go to loss or victory state if the friends or foes party,
+           * respectively have no allies with VITA */
           if (checkPartyDeath(friends))
           {
             setBattleFlag(CombatState::LOSS, true);
@@ -1674,6 +1696,12 @@ void Battle::processActions()
     {
       /* Current user is now defending themselves from damage actions */
       curr_user->setBFlag(BState::DEFENDING, true);
+
+      if (config != nullptr && getBattleMode() == BattleMode::TEXT)
+      {
+        std::cout << "{DEFEND} " << curr_user->getName() << " is now defending "
+                  << "themselves from damage." << std::endl;
+      }
     }
     else if (curr_action_type == ActionType::GUARD)
     {
@@ -2083,7 +2111,7 @@ void Battle::setNextTurnState()
       battleRun();
     }
 
-    /* After the Battle Begins, the general turn loop begins at General Upkeep */
+    /* After the Battle Begins, the general turn loop begins at General Upkeep*/
     if (turn_state == TurnState::BEGIN)
     {
       setTurnState(TurnState::GENERAL_UPKEEP);
@@ -2475,6 +2503,7 @@ void Battle::printInventory(Party* const target_party)
  */
 void Battle::printTargetVariables(const bool &print_target_stats)
 {
+  //TODO: Is this function needed? [11-13-14]
   (void)print_target_stats;//WARNING
   // std::cout << "---- Current User/Action/Target Variables ----\n";
   // std::cout << "Primary Off Attr:     " << AttributeSet::getName(prim_off);
@@ -2629,7 +2658,7 @@ bool Battle::update(int32_t cycle_time)
       
           if (!menu->setSelectableTargets(skill_targets))
           {
-            if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
+            if(config != nullptr && config->getBattleMode() == BattleMode::TEXT)
             {
               std::cout << "No selectable targets found! Select another action"
                         << " index!" << std::endl;
