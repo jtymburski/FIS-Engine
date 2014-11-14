@@ -340,7 +340,7 @@ void BattleMenu::keyDownDecrement()
 
     if (action_type != ActionType::NONE && valid_targets.empty())
     {
-      for (; !indexHasTargets(); )
+      for (; !indexHasTargets() && element_index > 0; )
         element_index--;
     }
   }
@@ -350,7 +350,7 @@ void BattleMenu::keyDownDecrement()
 
     if (action_type != ActionType::NONE && valid_targets.empty())
     {
-      for (; !indexHasTargets(); )
+      for (; !indexHasTargets() && element_index > 0; )
         element_index--;  
     }
   }
@@ -364,6 +364,7 @@ void BattleMenu::keyDownDecrement()
  */
 void BattleMenu::keyDownIncrement()
 {
+  std::cout << "Max Index: " << getMaxIndex() << std::endl;
   /* Increment the viewing index if it is less than the max index */
   if (element_index < getMaxIndex())
   {
@@ -371,8 +372,21 @@ void BattleMenu::keyDownIncrement()
 
     if (action_type != ActionType::NONE && valid_targets.empty())
     {
-      for (; !indexHasTargets(); )
-        element_index++;;
+      for (; !indexHasTargets() && element_index < getMaxIndex(); )
+        element_index++;
+
+      /* If there are no valid targets at the end of the list, search
+       * through again starting at the top of the vector until one has
+       * been found. This next step ASSUMES there exists at least one
+       * valid skill (which should have been checked already).
+       */
+      if (element_index == getMaxIndex() && !indexHasTargets())
+      {
+        element_index = 0;
+
+        for (; !indexHasTargets() && element_index < getMaxIndex();)
+          element_index++;
+      }
     }
   }
   /* Otherwise, set to the top index */
@@ -493,7 +507,7 @@ void BattleMenu::keyDownSelect()
             }
  
             qtdr_cost_paid = true_cost;
-            current_user->getCurr().alterStat("QTDR", -true_cost);
+            current_user->getCurr().alterStat(Attribute::QTDR, -true_cost);
           }
         }
         else if (config->getBattleMode() == BattleMode::TEXT)
@@ -589,7 +603,7 @@ void BattleMenu::keyDownSelect()
 
 /*
  * Description: Unset all the battle menu parameters to default, thereby getting
- *              it ready for a new person/new tur.
+ *              it ready for a new person/new turn.
  *
  * Inputs: none
  * Output: none
@@ -775,7 +789,9 @@ void BattleMenu::printSkills()
       std::cout << " -- [ " << (*it).skill->getCost() << " QD ] -- "
                 << (*it).skill->getName() << " -- [";
 
-      for (auto jt = begin((*it).all_targets); jt != end((*it).all_targets); ++jt)
+      for (auto jt = begin((*it).all_targets); 
+           jt != end((*it).all_targets); 
+           ++jt)
       {
         if (jt == begin((*it).all_targets))
           std::cout << (*jt)->getName();
@@ -783,7 +799,8 @@ void BattleMenu::printSkills()
           std::cout << ", " << (*jt)->getName();
       }
 
-      std::cout << "]" << std::endl;
+      std::cout << "] - [" << Helpers::actionScopeToStr((*it).skill->getScope()) 
+                << "]"<< std::endl;
 
     }
   }

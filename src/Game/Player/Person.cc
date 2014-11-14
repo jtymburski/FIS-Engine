@@ -1651,7 +1651,7 @@ SkillSet* Person::getUseableSkills()
       else
         add_skill &= getBFlag(BState::SKL_ENABLED);
 
-      add_skill &= (skill_cost < curr_stats.getStat(Attribute::QTDR));
+      add_skill &= (skill_cost <= curr_stats.getStat(Attribute::QTDR));
 
       /* Adjust for maximum allowable QD cost for being Bubbified */
       if (getBFlag(BState::IS_BUBBY))

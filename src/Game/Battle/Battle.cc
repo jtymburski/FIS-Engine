@@ -266,13 +266,9 @@ void Battle::battleLost()
  * Output: none
  * //TODO [08-24-14]: Finish battle run functionality
  */
-void Battle::battleRun(const bool &allies_running)
+void Battle::battleRun()
 {
-#ifdef UDEBUG
-  std::cout << "Run attempt successful!\n";
-#endif
-
-  if (allies_running)
+  if (getBattleFlag(CombatState::ALLIES_RUN))
   {
     /* For each person on the friends team, incur a % penalty against the
      * experience to the next level */
@@ -283,13 +279,18 @@ void Battle::battleRun(const bool &allies_running)
             << kRUN_PC_EXP_PENALTY << " pc exp towards next level.\n";
 #endif
       friends->getMember(i)->loseExpPercent(kRUN_PC_EXP_PENALTY);
-      // TODO [11-06-14] Update personal record run from battle count 
+      // TODO [11-06-14] Update personal record run from battle count
     }
-  }
-
 #ifdef UDEBUG
-  std::cout << "Ran from Battle! :-/\n";
+  std::cout << "{ALLIES RUN} The allied team has ran from Battle! :-/\n";
 #endif
+  }
+  else if (getBattleFlag(CombatState::ENEMIES_RUN))
+  {
+#ifdef UDEBUG
+  std::cout << "{ENEMIES RUN} The foes team has ran from Battle! :-/\n";
+#endif
+  }
 
   setBattleFlag(CombatState::OUTCOME_DONE);
   setNextTurnState();
@@ -338,7 +339,6 @@ void Battle::battleWon()
  */
 bool Battle::bufferEnemyAction()
 {
-  std::cout << "Buffering enemy action." << std::endl;
   auto buffered      = false;
 
   curr_user = getPerson(person_index);
@@ -350,6 +350,10 @@ bool Battle::bufferEnemyAction()
   {
     curr_skill = curr_module->getSelectedSkill();
     buffered = action_buffer->add(curr_user, curr_skill, action_targets, 0);
+
+    /* Pay the required QTDR cost for the Skill */
+    auto true_cost = curr_user->getTrueCost(curr_skill);
+    curr_user->getCurr().alterStat(Attribute::QTDR, -true_cost);
 
     if (config->getBattleMode() == BattleMode::GUI)
     {
@@ -1369,7 +1373,8 @@ void Battle::loadBattleStateFlags()
   setBattleFlag(CombatState::PHASE_DONE, false);
   setBattleFlag(CombatState::LOSS, false);
   setBattleFlag(CombatState::VICTORY, false);
-  setBattleFlag(CombatState::RUN, false);
+  setBattleFlag(CombatState::ALLIES_RUN, false);
+  setBattleFlag(CombatState::ENEMIES_RUN, false);
   setBattleFlag(CombatState::OUTCOME_DONE, false);
   setBattleFlag(CombatState::ERROR_STATE, false);
 }
@@ -1690,12 +1695,16 @@ void Battle::processActions()
     else if (curr_action_type == ActionType::RUN)
     {
 #ifdef UDEBUG
-      std::cout << "Attempting to run." << std::endl;
+      std::cout << "{RUNNING} Attempting to run." << std::endl;
 #endif
       if (doesCurrPersonRun())
       {
         //TODO [11-05-14]: Run from the battle message
-        setBattleFlag(CombatState::RUN, true);
+        if (friends->isInParty(curr_user))
+          setBattleFlag(CombatState::ALLIES_RUN, true);
+        else
+          setBattleFlag(CombatState::ENEMIES_RUN, true);
+
         setBattleFlag(CombatState::PHASE_DONE, true);
       }
       else
@@ -1779,8 +1788,8 @@ void Battle::selectEnemyActions()
   if (update_module)
   {
 #ifdef UDEBUG 
-    std::cout << "Preparing AIModule for person index: " << person_index
-               << std::endl;
+    std::cout << "Preparing AI Module of person index: " << person_index
+               << "." << std::endl;
 #endif
 
     curr_user = getPerson(person_index);
@@ -2067,7 +2076,8 @@ void Battle::setNextTurnState()
       battleLost();
     }
 
-    if (getBattleFlag(CombatState::RUN))
+    if (getBattleFlag(CombatState::ALLIES_RUN) || 
+        getBattleFlag(CombatState::ENEMIES_RUN))
     {
       setTurnState(TurnState::RUNNING);
       battleRun();
@@ -2385,7 +2395,8 @@ void Battle::printAll(const bool &simple, const bool &flags, const bool &party)
       std::cout << "\nACTION_DONE: " << getBattleFlag(CombatState::ACTION_DONE);
       std::cout << "\nVICTORY: " << getBattleFlag(CombatState::VICTORY);
       std::cout << "\nLOSS: " << getBattleFlag(CombatState::LOSS);
-      std::cout << "\nRUN: " << getBattleFlag(CombatState::RUN);
+      std::cout << "\nALLIES_RUN: " << getBattleFlag(CombatState::ALLIES_RUN);
+      std::cout << "\nENEMIES_RUN: " << getBattleFlag(CombatState::ENEMIES_RUN);
       std::cout << "\nOUTCOME_DONE: " 
                 << getBattleFlag(CombatState::OUTCOME_DONE);
       std::cout << "\nERROR_STATE: " << getBattleFlag(CombatState::ERROR_STATE);
@@ -2408,7 +2419,7 @@ void Battle::printAll(const bool &simple, const bool &flags, const bool &party)
  */
 void Battle::printPartyState()
 {
-  std::cout << "---- Friends ----\n";
+  std::cout << "\n---- Friends ----\n";
   for (uint32_t i = 0; i < friends->getSize(); i++)
     printPersonState(friends->getMember(i), i + 1);
 

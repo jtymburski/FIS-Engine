@@ -275,15 +275,15 @@ void Game::setupBattle()
   physical_01->setPrimary(Element::PHYSICAL);
 
   Skill* physical_02 = new Skill(101, "Whelp", ActionScope::ONE_ENEMY, 
-      damage_actions[1], 5);
+      damage_actions[1], 0.50, 10);
   physical_02->setPrimary(Element::PHYSICAL);
 
   Skill* physical_03 = new Skill(102, "Two Smackeroos", 
-      ActionScope::TWO_ENEMIES, damage_actions[2], 10);
+      ActionScope::TWO_ENEMIES, damage_actions[2], 0.50, 10);
   physical_03->setPrimary(Element::PHYSICAL);
 
   Skill* physical_04 = new Skill(103, "Mass Smack", ActionScope::ALL_ENEMIES, 
-      damage_actions[3], 25);
+      damage_actions[3], 0.55, 25);
   physical_04->setPrimary(Element::PHYSICAL);
 
   // Test Skill Sets

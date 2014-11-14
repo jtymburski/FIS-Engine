@@ -16,8 +16,8 @@
 * [ID],[DAMAGE/ALTER/INFLICT/RELIEVE/ASSIGN/REVIVE/ABSORB],[MIN].[MAX],
 * [IGNORE ATK ELEMENT 1].[IGNORE ATK ELEMENT 2]...,
 * [IGNORE DEF ELEMENT 1].[IGNORE DEF ELEMENT 2]...,
-* [TARGET'S ATTR/AILMENT],[AMOUNT/PC].[BASE],[AMOUNT/PC].[VARIANCE],
-* [USER'S ATTR],[CHANCE]
+* [USER/TARGET.ATTR/AILMENT],[AMOUNT/PC].[BASE],[AMOUNT/PC].[VARIANCE],
+* [UISER/TARGET.ATTR],[CHANCE]
 *
 * Where:
 *   - ID - the unique ID that represents the action
@@ -36,6 +36,15 @@
 *                           everything non-physical
 *   - BASE - the base power of the action (amount an attribute is affected)\
 *          - negative values will be used only when the ALTER key word is set
+*   - USER/TARGET.ATTR/AILMENT - the user of the action or target of the
+*                                action's attribute or ailment which will be
+*                                mutated
+*                              - in the case of an ailment, this is the
+*                                ailment which will be inflicted on to
+*                                the user or target [developer choice].
+*   - USER/TARGET.ATTR - the user of the action or target of the action's
+*                        attribute as a factor of calculation to alter the
+*                        mutated attribute
 *   - AMOUNT/PC - decides between utilizing base and variance as an amount 
 *                 (+ or -) value or as a factor (%) value
 *   - VARIANCE - the variance (even distribution) which base may change by

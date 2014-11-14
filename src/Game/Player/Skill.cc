@@ -571,16 +571,16 @@ bool Skill::setCooldown(const uint32_t &new_value)
  * Inputs: new_value - the new cost for the Skill
  * Output: bool - true if the cost was assigned without altering
  */
-bool Skill::setCost(const uint32_t &new_value)
+bool Skill::setCost(const uint32_t &new_cost)
 {
-  if (new_value <= kMAX_VALUE)
+  if (new_cost <= kMAX_COST)
   {
-    value = new_value;
+    cost = new_cost;
 
     return true;
   }
 
-  value = kMAX_VALUE;
+  cost = kMAX_COST;
 
   return false;
 }

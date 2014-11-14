@@ -103,13 +103,14 @@ enum class CombatState
   PHASE_DONE       = 1 << 3,
   VICTORY          = 1 << 4,
   LOSS             = 1 << 5,
-  RUN              = 1 << 6,
-  OUTCOME_DONE     = 1 << 7,
-  ERROR_STATE      = 1 << 8,
-  RANDOM_ENCOUNTER = 1 << 9,
-  MINI_BOSS        = 1 << 10,
-  BOSS             = 1 << 11,
-  FINAL_BOSS       = 1 << 12
+  ALLIES_RUN       = 1 << 6,
+  ENEMIES_RUN      = 1 << 7,
+  OUTCOME_DONE     = 1 << 8,
+  ERROR_STATE      = 1 << 9,
+  RANDOM_ENCOUNTER = 1 << 10,
+  MINI_BOSS        = 1 << 11,
+  BOSS             = 1 << 12,
+  FINAL_BOSS       = 1 << 13
 };
 
 ENUM_FLAGS(IgnoreState)
@@ -322,7 +323,7 @@ private:
   void battleLost();
 
   /* Called when the Battle is being run from */
-  void battleRun(const bool &allies_running = true);
+  void battleRun();
 
   /* Called when the Battle has been won */
   void battleWon();
