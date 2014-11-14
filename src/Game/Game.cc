@@ -71,8 +71,8 @@ Game::~Game()
 
   if(game_inventory != nullptr)
   {
-   delete game_inventory;
-   game_inventory = nullptr;
+    delete game_inventory;
+    game_inventory = nullptr;
   }
 
   /* Delete all game actions */
@@ -95,8 +95,8 @@ Game::~Game()
   for(auto it = begin(skill_list); it != end(skill_list); ++it)
     delete(*it);
 
-  /* Delete all game actions */
   for(auto it = begin(base_person_list); it != end(base_person_list); ++it)
+  /* Delete all game actions */
     delete(*it);
 
   /* Delete all game base items */
@@ -348,10 +348,10 @@ void Game::setupBattle()
   for (uint32_t i = 0; i < enemies->getSize(); i++)
     enemies->getMember(i)->battlePrep();
 
+  game_battle = new Battle(game_config, friends, enemies);
+
   //malgidus->print(false, false, true, true);
   //frosty->print(false, false, true, true);
-
-  game_battle = new Battle(game_config, friends, enemies);
 
   // Begin Time Test
   //using namespace std::chrono;

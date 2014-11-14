@@ -1899,7 +1899,7 @@ void Battle::selectUserActions()
       }
       else if (config->getBattleMode() == BattleMode::GUI)
       {
-        (void)menu;//TODO: Battle Front End [08-01-14]
+        //TODO: Battle Front End [08-01-14]
       }
     }
     else
