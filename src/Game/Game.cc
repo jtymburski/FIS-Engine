@@ -294,9 +294,10 @@ void Game::setupBattle()
 
   // Test Attribute Sets
   AttributeSet weak_stats   = AttributeSet(1, true, false);
-  AttributeSet normal_stats = AttributeSet(2, true, false);
-  AttributeSet medium_stats = AttributeSet(3, true, false);
-  AttributeSet top_stats    = AttributeSet(4, true, false);
+  AttributeSet not_as_weak_stats = AttributeSet(2, true, false);
+  AttributeSet normal_stats = AttributeSet(3, true, false);
+  AttributeSet medium_stats = AttributeSet(4, true, false);
+  AttributeSet top_stats    = AttributeSet(5, true, false);
 
   // Test Categories
   Category* human = new Category(200, "Human", "human", normal_stats, 
@@ -305,7 +306,13 @@ void Game::setupBattle()
   human->setFlag(CategoryState::DEF_ENABLED, true);
   human->setFlag(CategoryState::E_SWORD, true);
 
-  Category* bloodclaw_scion = new Category(201, "Bloodclaw Scion", "scions", 
+  Category* bear = new Category(201, "Bear", "bear", normal_stats,
+    top_stats, physical_skills);
+  bear->setDescription("A sentient and intelligent bear!");
+  bear->setFlag(CategoryState::DEF_ENABLED, true);
+  bear->setFlag(CategoryState::E_CLAWS, true);
+
+  Category* bloodclaw_scion = new Category(251, "Bloodclaw Scion", "scions", 
       weak_stats, medium_stats, physical_skills);
   bloodclaw_scion->setDescription("A class of soldier excelling in physical combat.");
   bloodclaw_scion->setFlag(CategoryState::DEF_ENABLED, true);
@@ -314,17 +321,27 @@ void Game::setupBattle()
   bloodclaw_scion->setFlag(CategoryState::E_SWORD, true);
   bloodclaw_scion->setFlag(CategoryState::E_CLAWS, true);
 
+  Category* tactical_samurai = new Category(252, "Tactical Samurai", "samurai",
+      not_as_weak_stats, medium_stats, physical_skills);
+  tactical_samurai->setDescription("A class of swordsman like no other.");
+  tactical_samurai->setFlag(CategoryState::DEF_ENABLED, true);
+  tactical_samurai->setFlag(CategoryState::POWER_DEFENDER, true);
+  tactical_samurai->setFlag(CategoryState::POWER_GUARDER, false);
+  tactical_samurai->setFlag(CategoryState::E_SWORD, true);
+  tactical_samurai->setFlag(CategoryState::E_CLAWS, false);
+
   // Test Persons
   Person* malgidus = new Person(300, "Malgidus", human, bloodclaw_scion);
   //malgidus->print(false, false, true, true);
 
-  // Person* arcadius = new Person(301, "Arcadius", human, bloodclaw_scion);
-  // Person* berran = new Person(301, "Berran", human, bloodclaw_scion);
-  // Person* atkst = new Person(301, "Atkst", human, bloodclaw_scion);
-  // Person* kevin = new Person(301, "Kevin", human, bloodclaw_scion);
+  Person* arcadius = new Person(301, "Arcadius", bear, tactical_samurai);
+  Person* berran   = new Person(302, "Berran", bear, bloodclaw_scion);
+  //Person* atkst    = new Person(303, "Atkst", human, bloodclaw_scion);
+  //Person* kevin    = new Person(304, "Kevin", human, bloodclaw_scion);
+
   std::vector<BattleItem> items;
 
-  Person* frosty = new Person(301, "Frosty", human, bloodclaw_scion);
+  Person* frosty = new Person(310, "Frosty", human, bloodclaw_scion);
   AIModule* frosty_module = new AIModule();
   frosty_module->setParent(frosty);
   frosty->setAI(frosty_module);
@@ -339,7 +356,13 @@ void Game::setupBattle()
   Inventory* foes_pouch = new Inventory(402, "Der Pouch");
 
   // Party Testing
-  Party* friends = new Party(401, malgidus, PartyType::SLEUTH, 5, friends_pouch);
+  Party* friends = new Party(401, malgidus, PartyType::SLEUTH, 5,
+      friends_pouch);
+  friends->addMember(arcadius);
+  friends->addMember(berran);
+  //friends->addMember(atkst);
+  //friends->addMember(kevin);
+
   Party* enemies = new Party(402, frosty, PartyType::REGULAR_FOE, 5, foes_pouch);
   
   // Battle Testing
