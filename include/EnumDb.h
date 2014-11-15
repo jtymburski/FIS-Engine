@@ -283,6 +283,7 @@ enum class Direction
  * PHYSICAL - pure physical element
  * FIRE     > FOREST
  * FOREST   > ICE
+ * ICE > ELECTRIC
  * ELECTRIC > DIGITAL
  * DIGITAL  > NIHIL
  * NIHIL    > FIRE

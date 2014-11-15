@@ -1518,10 +1518,10 @@ void Battle::processSkill(std::vector<Person*> targets)
         /* Build the variables and calculate factors for the current target */
         curr_target = *jt;
         
-#ifdef UDEBUG
-        std::cout << "{Target} Processing: " << curr_target->getName() 
-                  << std::endl;
-#endif
+// #ifdef UDEBUG
+//         std::cout << "{Target} Processing: " << curr_target->getName() 
+//                   << std::endl;
+// #endif
         if (!doesActionMiss())
         {
           auto crit_factor = 1.00;
@@ -1536,9 +1536,12 @@ void Battle::processSkill(std::vector<Person*> targets)
           
           if (config != nullptr && getBattleMode() == BattleMode::TEXT)
           {
-            std::cout << "{DAMAGE} " << curr_target->getName() << " receives "
-                      << base_damage << " points of damage from " 
-                      << curr_user->getName() << ".\n\n";
+            if (curr_user != nullptr && curr_target != nullptr)
+            {
+              std::cout << "{DAMAGE} " << curr_target->getName() << " receives "
+                        << base_damage << " points of damage from " 
+                        << curr_user->getName() << ".\n\n";
+            }
           }
 
           if (curr_target->doDmg(base_damage))
@@ -1632,6 +1635,7 @@ void Battle::processSkill(std::vector<Person*> targets)
  */
 void Battle::processActions()
 {
+  action_buffer->print(false);
 #ifdef UDEBUG
   std::cout << "Begin processing actions on buffer.\n" << std::endl;
 #endif
@@ -1643,7 +1647,8 @@ void Battle::processActions()
     curr_action_type = action_buffer->getActionType();
     curr_user        = action_buffer->getUser();
 #ifdef UDEBUG
-    std::cout << "{User} Processing: " << curr_user->getName() << std::endl;
+    if (curr_user != nullptr)
+      std::cout << "{User} Processing: " << curr_user->getName() << std::endl;
 #endif
 
     auto can_process = true;
@@ -1663,8 +1668,11 @@ void Battle::processActions()
           else
           {
 #ifdef UDEBUG
-            std::cout << "{Miss} The skill " << curr_skill->getName() 
-                      << " misses!" << std::endl;
+            if (curr_skill != nullptr)
+            {
+              std::cout << "{Miss} The skill " << curr_skill->getName() 
+                        << " misses!" << std::endl;
+            }
 #endif
           }
         }
@@ -1710,7 +1718,7 @@ void Battle::processActions()
 
       if (!good_guard)
       {
-        //TODO [01-02-14]: Error in the guard operation message
+        //TODO [11-02-14]: Error in the guard operation message
         can_process = false;
       }
 
@@ -2596,7 +2604,8 @@ bool Battle::update(int32_t cycle_time)
 
   // update(); //TODO [11-06-14] Update the battle interface
 
-  if (getBattleFlag(CombatState::PHASE_DONE))
+  if (getBattleFlag(CombatState::PHASE_DONE) && 
+      !getBattleFlag(CombatState::OUTCOME_DONE))
   {
     setNextTurnState();
   }
@@ -2742,6 +2751,10 @@ bool Battle::update(int32_t cycle_time)
   else if (turn_state == TurnState::RUNNING)
   {
 
+  }
+  else if (turn_state == TurnState::DESTRUCT)
+  {
+    return true;
   }
   
   return false;

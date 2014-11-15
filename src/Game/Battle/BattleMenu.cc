@@ -909,6 +909,9 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
           element_index = 0;
       }
     }
+
+    if (layer_index == 4)
+      change_index = false;
   }
 
   if (change_index)
