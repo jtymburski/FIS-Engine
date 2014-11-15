@@ -97,7 +97,7 @@ private:
   //int level_num;
 
   /* The player */
-  //Player main_player;
+  //Player* main_player;
 
   /* The mode that the game is currently running at */
   GameMode mode;
