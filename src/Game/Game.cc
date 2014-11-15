@@ -372,7 +372,6 @@ void Game::setupBattle()
     enemies->getMember(i)->battlePrep();
 
   game_battle = new Battle(game_config, friends, enemies);
-  std::cout << "battle finished yeeeah" << std::endl;
 
   //malgidus->print(false, false, true, true);
   //frosty->print(false, false, true, true);

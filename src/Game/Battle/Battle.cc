@@ -137,13 +137,7 @@ Battle::Battle(Options* running_config, Party* const friends, Party* const foes)
     : friends(friends)
     , foes(foes)
 {
-  if (checkAIModules())
-  {
-#ifdef UDEBUG
-    std::cout << "AI Modules configuration good!" << std::endl;
-#endif
-  }
-  else
+  if (!checkAIModules())
   {
     std::cerr << "[Error] Crtical Error: AI Moudles for enemies bad!"
               << std::endl;
@@ -247,14 +241,16 @@ bool Battle::addAilment(Ailment* const new_ailment)
  */
 void Battle::battleLost()
 {
-  // return to title?
-
-#ifdef UDEBUG
-  std::cout << "Battle lost! :-(\n";
-#endif
+  if (getBattleMode() == BattleMode::TEXT)
+  {
+    printPartyState();
+    std::cout << "Battle lost! :-(\n";  
+  }
 
   setBattleFlag(CombatState::OUTCOME_DONE);
   setNextTurnState();
+
+  //TODO: [11-14-14] Return to title after battle lost.
 }
 
 /*
@@ -274,22 +270,24 @@ void Battle::battleRun()
      * experience to the next level */
     for (uint32_t i = 0; i < friends->getSize(); i++)
     {
-#ifdef UDEBUG
-  std::cout << friends->getMember(i)->getName() << " has lost " 
-            << kRUN_PC_EXP_PENALTY << " pc exp towards next level.\n";
-#endif
+      if (getBattleMode() == BattleMode::TEXT)
+      {
+        std::cout << friends->getMember(i)->getName() << " has lost " 
+                  << kRUN_PC_EXP_PENALTY << "% EXP towards next level.\n";
+      }
+
       friends->getMember(i)->loseExpPercent(kRUN_PC_EXP_PENALTY);
       // TODO [11-06-14] Update personal record run from battle count
     }
-#ifdef UDEBUG
-  std::cout << "{ALLIES RUN} The allied team has ran from Battle! :-/\n";
-#endif
+
+  if (getBattleMode() == BattleMode::TEXT)
+    std::cout << "\n{ALLIES RUN} The allied team has ran from Battle! :-/\n";
+
   }
   else if (getBattleFlag(CombatState::ENEMIES_RUN))
   {
-#ifdef UDEBUG
-  std::cout << "{ENEMIES RUN} The foes team has ran from Battle! :-/\n";
-#endif
+    if (getBattleMode() == BattleMode::TEXT)
+      std::cout << "{ENEMIES RUN} The foes team has ran from Battle! :-/\n";
   }
 
   setBattleFlag(CombatState::OUTCOME_DONE);
@@ -317,9 +315,11 @@ void Battle::battleWon()
      // money
      // items
 
-#ifdef UDEBUG
-  std::cout << "Battle victorious! :-)\n";
-#endif
+  if (getBattleMode() == BattleMode::TEXT)
+  {
+    printPartyState();
+    std::cout << "Battle victorious! :-)" << std::endl;
+  }
 
   setBattleFlag(CombatState::OUTCOME_DONE);
   setNextTurnState();
@@ -355,7 +355,7 @@ bool Battle::bufferEnemyAction()
     auto true_cost = curr_user->getTrueCost(curr_skill);
     curr_user->getCurr().alterStat(Attribute::QTDR, -true_cost);
 
-    if (config->getBattleMode() == BattleMode::GUI)
+    if (getBattleMode() == BattleMode::GUI)
     {
       //TODO: Battle Front End [08-01-14]
     }
@@ -367,12 +367,12 @@ bool Battle::bufferEnemyAction()
 
     if (buffered)
     {
-      if (config->getBattleMode() == BattleMode::TEXT)
+      if (getBattleMode() == BattleMode::TEXT)
       {
         std::cout << "Removing " << curr_item->getName() << " from "
                   << "inventory and implementing to buffer." << std::endl;
       }
-      else if (buffered && config->getBattleMode() == BattleMode::GUI)
+      else if (buffered && getBattleMode() == BattleMode::GUI)
       {
         //TODO: Battle Front End [08-01-14]
       }
@@ -458,12 +458,12 @@ bool Battle::bufferUserAction()
 
     if (buffered)
     {
-      if (config->getBattleMode() == BattleMode::TEXT)
+      if (getBattleMode() == BattleMode::TEXT)
       {
         std::cout << "Removing " << curr_item->getName() << " from "
                   << "inventory and adding to buffer." << std::endl;
       }
-      else if (config->getBattleMode() == BattleMode::GUI)
+      else if (getBattleMode() == BattleMode::GUI)
       {
         //TODO: Battle Front End [08-01-14]
       }
@@ -616,7 +616,7 @@ std::vector<BattleSkill> Battle::buildBattleSkills(const int32_t &p_index,
  */
 int32_t Battle::calcBaseDamage(const float &crit_factor)
 {
-  auto targ_attrs = temp_target_stats.at(p_target_index);
+  auto targ_attrs = temp_target_stats.at(pro_index);
 
   int32_t base_user_pow = 0;
   int32_t base_targ_def = 0;
@@ -756,7 +756,7 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
 void Battle::calcElementalMods()
 {
   /* Grab the temp attribute set for the curent processing target index */
-  auto targ_attrs = temp_target_stats.at(p_target_index);
+  auto targ_attrs = temp_target_stats.at(pro_index);
 
   /* Determine the correct stats to apply the modifier to */
   auto prim_user_stat = Attribute::NONE;
@@ -1067,7 +1067,7 @@ void Battle::clearActionVariables()
 
   ignore_flags = static_cast<IgnoreState>(0);
 
-  p_target_index = 0;
+  pro_index = 0;
 }
 
 /*
@@ -1232,7 +1232,7 @@ bool Battle::doesActionMiss()
 {
   auto action_happens = true;
 
-  auto miss_ch = temp_target_stats.at(p_target_index).getStat(Attribute::LIMB);
+  auto miss_ch = temp_target_stats.at(pro_index).getStat(Attribute::LIMB);
   miss_ch *= kDODGE_MODIFIER;
 
   miss_ch += (-calcLevelDifference()) * kDODGE_PER_LEVEL_MODIFIER;
@@ -1445,15 +1445,143 @@ bool Battle::processGuard()
 }
 
 /*
+ * Description: 
+ *
+ * Inputs:
+ * Output:
+ */
+bool Battle::processAlterAction(std::vector<Person*> targets)
+{
+  //TODO
+  (void)targets;
+  return false;
+}
+
+/*
+ * Description: 
+ *
+ * Inputs:
+ * Output:
+ */
+bool Battle::processAssignAction(std::vector<Person*> targets)
+{
+  //TODO
+  (void)targets;
+  return false;
+}
+
+/*
+ * Description: 
+ *
+ * Inputs:
+ * Output:
+ */
+bool Battle::processDamageAction(std::vector<Person*> targets)
+{
+  auto can_process = true;
+  auto done  = false;
+  auto death = false;
+
+  for (auto jt = begin(targets); !done && jt != end(targets); ++jt, pro_index++)
+  {
+    can_process &= (*jt) != nullptr;
+    can_process &= curr_user != nullptr;
+
+    if (can_process)
+    {
+      if (getBattleMode() == BattleMode::TEXT)
+        std::cout << "{Target} Processing: " << (*jt)->getName() << std::endl;
+    
+      /* Assign the target pointer to class variable */
+      curr_target = *jt;
+      death = false;
+        
+      if (!doesActionMiss())
+      {
+        auto actual_crit_factor = 1.00;
+  
+        calcElementalMods();
+
+        //TODO [11-13-14]: Fix action critical hits
+        if (doesActionCrit())
+          actual_crit_factor = calcCritFactor();
+
+        auto base_damage = calcBaseDamage(actual_crit_factor);
+          
+        if (getBattleMode() == BattleMode::TEXT && curr_target != nullptr)
+        {
+          std::cout << "{DAMAGE} " << curr_target->getName() << " receives "
+                    << base_damage << " points of damage from " 
+                    << curr_user->getName() << "." << std::endl;
+        }
+
+        if (curr_target->doDmg(base_damage))
+        {
+          /* If doDmg returns true, the actor has died -> check party death */
+          //TODO [08-01-14]: User has died message + battle front end msg
+          death = true;
+        }
+        else
+        {
+          /* If doDMG returns false, the actor has not died. If the actor is
+           * defending, the defending flags will have to be updated */
+          updateTargetDefense();
+        }
+
+        /* If an actor has died, check party deaths */
+        if (death)
+         done = updatePartyDeaths();
+      }
+      else 
+      {
+        if (getBattleMode() == BattleMode::TEXT)
+          std::cout << "{MISS} The action has missed. " << std::endl;
+      }
+    }
+  }
+
+  /* Returns true if a party death occured during processing */
+  return done;
+}
+
+/*
+ * Description: 
+ *
+ * Inputs:
+ * Output:
+ */
+bool Battle::processRelieveAction(std::vector<Person*> targets)
+{
+  //TODO
+  (void)targets;
+  return false;
+}
+
+/*
+ * Description: 
+ *
+ * Inputs:
+ * Output:
+ */
+bool Battle::processInflictAction(std::vector<Person*> targets)
+{
+  //TODO
+  (void)targets;
+  return false;
+}
+
+/*
  * Description: Processes the current Skill (or Item->Skill) action selected
  *              for each action in the Skill against a vector of targets which
  *              were selected as targets of the Skill
  *
  * Inputs: std::vector<Person*> - vector of targets for processing of curr Skill
- * Output: none
+ * Output: bool - whether processing to end (win cond.) after this skill
  */
-void Battle::processSkill(std::vector<Person*> targets)
+bool Battle::processSkill(std::vector<Person*> targets)
 {
+  auto done = false;
+
 #ifdef UDEBUG
   std::cout << "{Skill} Processing: " << curr_skill->getName() << std::endl;
 #endif
@@ -1464,17 +1592,19 @@ void Battle::processSkill(std::vector<Person*> targets)
   /* Grab the enumerated attribute types related to the elements of the Skill */
   auto prim_stats = Helpers::elementToStats(curr_skill->getPrimary());
   auto secd_stats = Helpers::elementToStats(curr_skill->getSecondary());
+
   prim_off = prim_stats.first;
   prim_def = prim_stats.second;
   secd_off = secd_stats.first;
   secd_def = secd_stats.second;
 
   /* Perform each action on the skill */
-  for (auto it = begin(effects); it != end(effects); ++it)
+  for (auto it = begin(effects); !done && it != end(effects); ++it)
   {
-#ifdef UDEBUG
-    std::cout << "{Effect} Processing" << std::endl;
-#endif
+    if (getBattleMode() == BattleMode::TEXT)
+      std::cout << "{Effect} Processing" << std::endl;
+
+    pro_index = 0;
     curr_action = *it;
 
     /* Update the temporary copy of the User's current stats */
@@ -1487,10 +1617,6 @@ void Battle::processSkill(std::vector<Person*> targets)
       temp_target_stats.push_back(AttributeSet((*jt)->getCurr()));
       temp_target_max_stats.push_back(AttributeSet((*jt)->getCurrMax()));
     }
-
-    /* User and target attribute for the current action */
-    // auto user_attr = (*it)->getUserAttribute();
-    // auto targ_attr = (*it)->getTargetAttribute();
  
     /* User ref. vars related to prim/secd skill attributes, -1 if Attr:NONE */
     auto prim_user_off = temp_user_stats.getStat(prim_off);
@@ -1511,87 +1637,7 @@ void Battle::processSkill(std::vector<Person*> targets)
 
     if ((*it)->actionFlag(ActionFlags::DAMAGE))
     {
-      p_target_index = 0;
-
-      for (auto jt = begin(targets); jt != end(targets); ++jt, p_target_index++)
-      {
-        /* Build the variables and calculate factors for the current target */
-        curr_target = *jt;
-        
-// #ifdef UDEBUG
-//         std::cout << "{Target} Processing: " << curr_target->getName() 
-//                   << std::endl;
-// #endif
-        if (!doesActionMiss())
-        {
-          auto crit_factor = 1.00;
-
-          calcElementalMods();
-
-          //TODO [11-13-14]: Fix action critical hits
-          if (doesActionCrit())
-            crit_factor = calcCritFactor();
-
-          auto base_damage = calcBaseDamage(crit_factor);
-          
-          if (config != nullptr && getBattleMode() == BattleMode::TEXT)
-          {
-            if (curr_user != nullptr && curr_target != nullptr)
-            {
-              std::cout << "{DAMAGE} " << curr_target->getName() << " receives "
-                        << base_damage << " points of damage from " 
-                        << curr_user->getName() << ".\n\n";
-            }
-          }
-
-          if (curr_target->doDmg(base_damage))
-          {
-            //TODO [08-01-14]: Battle front end, user died message
-          }
-          else
-          {
-            /* If the person was defending, unless they are a power defender,
-               reset their defending status */
-            if (curr_target->getBFlag(BState::DEFENDING) && 
-                !curr_target->isPowerDefender())
-            {
-              //TODO [11-02-14]: Defending reset update message */
-              curr_target->resetDefend();
-
-              if (config != nullptr && getBattleMode() == BattleMode::TEXT)
-              {
-                std::cout << "{BREAK DEFEND} " << curr_target->getName()
-                          << " is no longer defending from damage.\n\n";
-              }
-            }
-            else if (curr_target->getBFlag(BState::DEFENDING) &&
-                     curr_target->isPowerDefender())
-            {
-              std::cout << "{PERSIST DEFEND} " << curr_target->getName() 
-                        << " continues to defend themselves from damage.\n\n";
-            }
-          }
-
-          /* Go to loss or victory state if the friends or foes party,
-           * respectively have no allies with VITA */
-          if (checkPartyDeath(friends))
-          {
-            setBattleFlag(CombatState::LOSS, true);
-            setNextTurnState();
-          }
-          else if (checkPartyDeath(foes))
-          {
-            setBattleFlag(CombatState::VICTORY, true);
-            setNextTurnState();
-          }
-        }
-        else
-        {
-#ifdef UDEBUG
-          std::cout << "{Miss} An action misses!" << std::endl;
-#endif
-        }
-      }
+      done = processDamageAction(targets);
     }
     else if ((*it)->actionFlag(ActionFlags::INFLICT))
     {
@@ -1623,6 +1669,8 @@ void Battle::processSkill(std::vector<Person*> targets)
 
     }
   }
+
+  return done;
 }
 
 /*
@@ -1633,48 +1681,38 @@ void Battle::processSkill(std::vector<Person*> targets)
  * Inputs: none
  * Output: none
  */
-void Battle::processActions()
+void Battle::processBuffer()
 {
-  action_buffer->print(false);
-#ifdef UDEBUG
-  std::cout << "Begin processing actions on buffer.\n" << std::endl;
-#endif
-
+  auto done = false;
   auto curr_action_type = ActionType::NONE;
 
   do
   {
+    auto can_process = true;
     curr_action_type = action_buffer->getActionType();
     curr_user        = action_buffer->getUser();
-#ifdef UDEBUG
-    if (curr_user != nullptr)
-      std::cout << "{User} Processing: " << curr_user->getName() << std::endl;
-#endif
 
-    auto can_process = true;
+    if (getBattleMode() == BattleMode::TEXT)
+      std::cout << "\n{User} Processing: " << curr_user->getName() << std::endl;
 
     if (curr_action_type == ActionType::SKILL)
     {
-      if (action_buffer->getSkill() != nullptr)
-      {
-        if (action_buffer->getSkill()->getCooldown() == 0)
-        {
-          curr_skill = action_buffer->getSkill();
+      curr_skill = action_buffer->getSkill();
 
-          if (!doesSkillMiss())
-          {
-            processSkill(action_buffer->getTargets());
-          }
-          else
-          {
-#ifdef UDEBUG
-            if (curr_skill != nullptr)
-            {
-              std::cout << "{Miss} The skill " << curr_skill->getName() 
-                        << " misses!" << std::endl;
-            }
-#endif
-          }
+      if (curr_skill != nullptr && curr_skill->getCooldown() == 0)
+      {
+        if (!doesSkillMiss())
+        {
+          done = processSkill(action_buffer->getTargets());
+        }
+        else if (getBattleMode() == BattleMode::TEXT)
+        {
+          std::cout << "{Miss} The skill " << curr_skill->getName() 
+                    << " misses!" << std::endl;
+        }
+        else if (getBattleMode() == BattleMode::GUI)
+        {
+
         }
       }
       else
@@ -1684,28 +1722,14 @@ void Battle::processActions()
     }
     else if (curr_action_type == ActionType::ITEM)
     {
-      if (action_buffer->getItem() != nullptr && 
-          action_buffer->getItem()->getUseSkill() != nullptr)
-      {
-        if (action_buffer->getItem()->getUseSkill()->getCooldown() == 0)
-        {
-          curr_skill = action_buffer->getItem()->getUseSkill();
-
-          if (!doesSkillMiss())
-            processSkill(action_buffer->getTargets());
-        }
-      }
-      else
-      {
-        can_process = false;
-      }
+      //TODO: Item processing
     }
     else if (curr_action_type == ActionType::DEFEND)
     {
       /* Current user is now defending themselves from damage actions */
       curr_user->setBFlag(BState::DEFENDING, true);
 
-      if (config != nullptr && getBattleMode() == BattleMode::TEXT)
+      if (getBattleMode() == BattleMode::TEXT)
       {
         std::cout << "{DEFEND} " << curr_user->getName() << " is now defending "
                   << "themselves from damage." << std::endl;
@@ -1730,12 +1754,13 @@ void Battle::processActions()
     }
     else if (curr_action_type == ActionType::RUN)
     {
-#ifdef UDEBUG
-      std::cout << "{RUNNING} Attempting to run." << std::endl;
-#endif
+      if (getBattleMode() == BattleMode::TEXT)
+        std::cout << "{RUNNING} Attempting to run." << std::endl;
+
       if (doesCurrPersonRun())
       {
-        //TODO [11-05-14]: Run from the battle message
+        done = true;
+
         if (friends->isInParty(curr_user))
           setBattleFlag(CombatState::ALLIES_RUN, true);
         else
@@ -1745,10 +1770,14 @@ void Battle::processActions()
       }
       else
       {
-        //TODO [11-05-14]: The run attempt failed message
-#ifdef UDEBUG
-        std::cout << "{Failed} The run attempt has failed!" << std::endl;
-#endif
+        if (getBattleMode() == BattleMode::TEXT)
+        {
+          std::cout << "{Failed} The run attempt has failed!" << std::endl;
+        }
+        else if (getBattleMode() == BattleMode::GUI)
+        {
+          //TODO [11-05-14]: The run attempt failed message
+        }
       }
     }
     else if (curr_action_type == ActionType::PASS)
@@ -1757,20 +1786,13 @@ void Battle::processActions()
     }
     else
     {
-      std::cout << "[Error]: Attempting to process invalid action type!" 
-                << std::endl;
+      if (getBattleMode() == BattleMode::TEXT)
+        std::cout << "[Error]: Attempting to process bad action!" << std::endl;
     }
 
-#ifdef UDEBUG
-    if (!can_process)
+    if (!can_process && getBattleMode() == BattleMode::TEXT)
       std::cout << "[Error]: Couldn't process current action!" << std::endl;
-#endif
-
-  } while (action_buffer->setNext());
-
-#ifdef UDEBUG
-  std::cout << "End processing actions." << std::endl;
-#endif
+  } while (!done && action_buffer->setNext());
 
   /* Process Action stae complete */
   setBattleFlag(CombatState::PHASE_DONE);
@@ -1901,11 +1923,11 @@ void Battle::selectUserActions()
         menu->setSelectableItems(buildBattleItems(person_index, items));
       }
     
-      if (config->getBattleMode() == BattleMode::TEXT)
+      if (getBattleMode() == BattleMode::TEXT)
       {
         menu->printMenuState();
       }
-      else if (config->getBattleMode() == BattleMode::GUI)
+      else if (getBattleMode() == BattleMode::GUI)
       {
         //TODO: Battle Front End [08-01-14]
       }
@@ -2004,6 +2026,80 @@ void Battle::upkeep()
 
   /* Personal upkeep state complete */
   setBattleFlag(CombatState::PHASE_DONE);
+}
+
+/*
+ * Description:
+ *
+ * Inputs: 
+ * Output: bool - true if a party death has occured
+ */
+bool Battle::updatePartyDeaths()
+{
+  if (checkPartyDeath(friends))
+  {
+    setBattleFlag(CombatState::LOSS, true);
+    return true;
+  } 
+  else if (checkPartyDeath(foes))
+  {
+    setBattleFlag(CombatState::VICTORY, true);
+    return true;
+  }
+
+  return false;
+}
+
+/*
+ * Description: Updates the state of a defending target. If they are a power
+ *              defender, this means they are able to persist through further
+ *              hits, but a non power defender may not.
+ *
+ * Inputs: 
+ * Output: 
+ */
+bool Battle::updateTargetDefense()
+{
+  auto can_process = true;
+
+  can_process &= curr_target != nullptr;
+  can_process &= curr_user != nullptr;
+
+  if (can_process)
+  {
+    auto defending = curr_target->getBFlag(BState::DEFENDING);
+
+    /* If the person was defending, unless they'r pow. def., reset def status */
+    if (defending && !curr_target->isPowerDefender())
+    {
+      /* Reset the defense information in person class */
+      curr_target->resetDefend();
+
+      if (getBattleMode() == BattleMode::TEXT)
+      {
+        std::cout << "{BREAK DEFEND} " << curr_target->getName()
+                  << " is no longer defending from damage.\n\n";
+      }
+      else if (getBattleMode() == BattleMode::GUI)
+      {
+        //TODO: [11-14-14] Battle GUI defense breaking.  
+      }
+    }
+    else if (defending && curr_target->isPowerDefender())
+    {
+      if (getBattleMode() == BattleMode::TEXT)
+      {
+        std::cout << "{PERSIST DEFEND} " << curr_target->getName() 
+                  << " continues to defend themselves from damage.\n\n";
+      }
+      else if (getBattleMode() == BattleMode::GUI)
+      {
+        //TODO: [11-14-14] Battle GUI defense persisting.  
+      }
+    }
+  }
+
+  return can_process;
 }
 
 /*
@@ -2192,7 +2288,7 @@ void Battle::setNextTurnState()
     else if (turn_state == TurnState::ORDER_ACTIONS)
     {
       setTurnState(TurnState::PROCESS_ACTIONS);
-      processActions();
+      processBuffer();
     }
 
     /* After the actions are processed, Battle turn clean up occurs */
@@ -2366,8 +2462,6 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
       printInventory(friends);
     else if (event.keysym.sym == SDLK_PAGEDOWN)
       printInventory(foes);
-    else if (event.keysym.sym == SDLK_DELETE)
-      printTargetVariables(false);
   }
   else
     std::cout << "The battle is complete!" << std::endl;
@@ -2504,62 +2598,6 @@ void Battle::printInventory(Party* const target_party)
 }
 
 /*
- * Description: 
- *
- * Inputs:
- * Output:
- */
-void Battle::printTargetVariables(const bool &print_target_stats)
-{
-  //TODO: Is this function needed? [11-13-14]
-  (void)print_target_stats;//WARNING
-  // std::cout << "---- Current User/Action/Target Variables ----\n";
-  // std::cout << "Primary Off Attr:     " << AttributeSet::getName(prim_off);
-  // std::cout << "\nPrimary Def Attr:   " << AttributeSet::getName(prim_def);
-  // std::cout << "\nSecondary Off Attr: " << AttributeSet::getName(secd_off);
-  // std::cout << "\nSecondary Def Attr: " << AttributeSet::getName(secd_def);
-
-  // std::cout << "\n--- Temp User Stats: ---\n";
-  // temp_user_stats.print();
-  // //temp_user_max_stats.print();
-
-  // if (print_target_stats)
-  // {
-  //   for (auto it = begin(temp_target_stats); it != end(temp_target_stats); ++it)
-  //     (*it).print();
-  //   for (auto it = begin(temp_target_max_stats)
-  //        ; it != end(temp_target_max_stats)
-  //        ; ++it)
-  //   {
-  //     (*it).print();
-  //   }
-  // }
-
-  // if (curr_user != nullptr)
-  //   std::cout << "Curr User: " << curr_user->getName();
-  // if (curr_target != nullptr)
-  //   std::cout << "\nCurr Target: " << curr_target->getName();
-  // if (curr_action != nullptr)
-  //   std::cout << "\nCurr Action: " << curr_action->getID();
-  // if (curr_skill != nullptr)
-  //   std::cout << "\nCurr Skill: " << curr_skill->getName();
-
-  // std::cout << "\nCrit Happens? "    << crit_happens;
-  // std::cout << "\nAction Happens? "  << action_happens;
-  // std::cout << "\nPrim Strength? "   << prim_strength;
-  // std::cout << "\nSecd Strength? "   << secd_strength;
-  // std::cout << "\nPrim Weakness? "   << prim_weakness;
-  // std::cout << "\nSecd Weakness? "   << secd_weakness;
-  // std::cout << "\nP Target Index: "  << p_target_index;
-  // std::cout << "\n\nPrim User Off: " << prim_user_off;
-  // std::cout << "\nPrim User Def: "   << prim_user_def;
-  // std::cout << "\nSecd User Off: "   << secd_user_off;
-  // std::cout << "\nSecd User Def:"    << secd_user_def;
-  // std::cout << "\nCritical Chance: " << critical_chance;
-  // std::cout << "\nMiss Chance: "     << miss_chance << "\n";
-}
-
-/*
  * Description:
  *
  * Inputs:
@@ -2569,27 +2607,30 @@ void Battle::printTurnState()
 {
   std::cout << "Current battle state: ";
   if (turn_state == TurnState::BEGIN)
-    std::cout << "BEGIN\n";
+    std::cout << "BEGIN";
   else if (turn_state == TurnState::GENERAL_UPKEEP) 
-    std::cout << "GENERAL_UPKEEP\n";
+    std::cout << "GENERAL_UPKEEP";
   else if (turn_state == TurnState::UPKEEP)
-    std::cout << "UPKEEP\n";
+    std::cout << "UPKEEP";
   else if (turn_state == TurnState::SELECT_ACTION_ALLY)
-    std::cout << "SELECT_ACTION_ALLY\n";
+    std::cout << "SELECT_ACTION_ALLY";
   else if (turn_state == TurnState::SELECT_ACTION_ENEMY)
-    std::cout << "SELECT_ACTION_ENEMY\n";
+    std::cout << "SELECT_ACTION_ENEMY";
   else if (turn_state == TurnState::ORDER_ACTIONS)
-    std::cout << "ORDER_ACTIONS\n";
+    std::cout << "ORDER_ACTIONS";
   else if (turn_state == TurnState::PROCESS_ACTIONS)
-    std::cout << "PROCESS_ACTIONS\n";
+    std::cout << "PROCESS_ACTIONS";
   else if (turn_state == TurnState::CLEAN_UP)
-    std::cout << "CLEAN_UP\n";
+    std::cout << "CLEAN_UP";
   else if (turn_state == TurnState::LOSS)
-    std::cout << "LOSS\n";
+    std::cout << "LOSS";
   else if (turn_state == TurnState::VICTORY)
-    std::cout << "VICTORY\n";
+    std::cout << "VICTORY";
+  else if (turn_state == TurnState::RUNNING)
+    std::cout << "RUNNING";
   else if (turn_state == TurnState::DESTRUCT)
-    std::cout << "DESTRUCT\n";
+    std::cout << "DESTRUCT";
+  std::cout << std::endl;
 }
 
 /*
@@ -2654,7 +2695,7 @@ bool Battle::update(int32_t cycle_time)
             scope = ActionScope::ONE_ALLY_NOT_USER;
           }
 
-          if (config->getBattleMode() == BattleMode::TEXT)
+          if (getBattleMode() == BattleMode::TEXT)
           {
             std::cout << "Finding selectable targets for action with scope: "
                       << Helpers::actionScopeToStr(scope) << std::endl;
@@ -2667,7 +2708,7 @@ bool Battle::update(int32_t cycle_time)
       
           if (!menu->setSelectableTargets(skill_targets))
           {
-            if(config != nullptr && config->getBattleMode() == BattleMode::TEXT)
+            if (getBattleMode() == BattleMode::TEXT)
             {
               std::cout << "No selectable targets found! Select another action"
                         << " index!" << std::endl;
@@ -2717,7 +2758,7 @@ bool Battle::update(int32_t cycle_time)
           scope = ActionScope::ONE_ALLY_NOT_USER;
         }
 
-        if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
+        if (getBattleMode() == BattleMode::TEXT)
         {
           std::cout << "Finding selectable targets for enemy action w/ scope: "
                     << Helpers::actionScopeToStr(scope) << std::endl;
@@ -3187,10 +3228,6 @@ bool Battle::setConfiguration(Options* const new_config)
 {
   if (new_config != nullptr)
   {
-#ifdef UDEBUG
-    std::cout << "Assigning Battle Configuration!" << std::endl;
-#endif
-    
     config = new_config;
 
     if (menu != nullptr)

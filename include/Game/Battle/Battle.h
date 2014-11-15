@@ -110,7 +110,9 @@ enum class CombatState
   RANDOM_ENCOUNTER = 1 << 10,
   MINI_BOSS        = 1 << 11,
   BOSS             = 1 << 12,
-  FINAL_BOSS       = 1 << 13
+  FINAL_BOSS       = 1 << 13,
+  PROCESSING_SKILL = 1 << 14,
+  PROCESSING_ITEM  = 1 << 15
 };
 
 ENUM_FLAGS(IgnoreState)
@@ -254,7 +256,7 @@ private:
   Item*   curr_item;
 
   /* Current pocessing target index */
-  uint32_t p_target_index;
+  uint32_t pro_index;
 
   /* ------------ Menu Constants --------------- */
   static const uint16_t kGENERAL_UPKEEP_DELAY;
@@ -398,11 +400,26 @@ private:
   /* Deals with character related upkeep */
   void personalUpkeep(Person* const target);
 
+  /* */
+  bool processAlterAction(std::vector<Person*> targets);
+
+  /* */
+  bool processAssignAction(std::vector<Person*> targets);
+
+  /* */
+  bool processDamageAction(std::vector<Person*> targets);
+
+  /* */
+  bool processRelieveAction(std::vector<Person*> targets);
+
+  /* */
+  bool processInflictAction(std::vector<Person*> targets);
+
   /* Processes an individual action from a user against targets */
-  void processSkill(std::vector<Person*> targets);
+  bool processSkill(std::vector<Person*> targets);
 
   /* Process the actions (Items & Skills) in the buffer */
-  void processActions();
+  void processBuffer();
 
   /* Processes a guard action with curr_user and curr_target */
   bool processGuard();
@@ -424,6 +441,12 @@ private:
 
   /* Method which calls personal upkeeps */
   void upkeep();
+
+  /* Updates the LOSS/VICTORY flags based on party deaths */
+  bool updatePartyDeaths();
+
+  /* Updates the current targets defense state */
+  bool updateTargetDefense();
 
   /* Assigns a new value to the ailment update mode */
   void setAilmentUpdateMode(const BattleOptions &new_value);
@@ -479,7 +502,6 @@ public:
   void printPartyState();
   void printPersonState(Person* const member, const int32_t &person_index);
   void printInventory(Party* const target_party);
-  void printTargetVariables(const bool &print_target_stats = false);
   void printTurnState();
 
   /* Update the cycle time of Battle */

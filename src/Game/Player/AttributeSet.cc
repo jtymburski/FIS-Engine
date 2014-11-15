@@ -194,7 +194,10 @@ void AttributeSet::classSetup(const bool &personal, const bool &constant)
 void AttributeSet::cleanUp()
 {
   if (values.size() != kSHORT_NAMES.size())
-    std::cerr << "Error: Wrong number values in AttributeSet" << std::endl;
+  {
+    this->print(false);
+    std::cout << "[Warning] Wrong number values in AttributeSet" << std::endl;
+  }
 
   int min_value = kMIN_VALUE;
 
