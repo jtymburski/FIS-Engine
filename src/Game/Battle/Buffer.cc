@@ -71,10 +71,11 @@ bool Buffer::checkValid(BufferAction& elm)
     /* Iterate through each target asserting they are alive and in battle */
     for (auto it = begin(elm.targets); it != end(elm.targets); ++it)
     {
+
       is_valid &= (*it)->getBFlag(BState::ALIVE);
       is_valid &= (*it)->getBFlag(BState::IN_BATTLE);
     }
-
+ 
     if (elm.type == ActionType::SKILL)
     {
       /* Action skill must not be null and skill use must be enabled */
@@ -93,6 +94,7 @@ bool Buffer::checkValid(BufferAction& elm)
     }
     else if (elm.type == ActionType::NONE)
     {
+
      is_valid = false;
     }
   }
@@ -146,7 +148,8 @@ BufferAction& Buffer::getIndex(const uint32_t &index)
  *         buffer_sorts - the enumerated sort to be performed
  * Output: bool - true if the sorting took place
  */
-std::vector<BufferAction> Buffer::sort(std::vector<BufferAction> actions, BufferSorts buffer_sorts)
+std::vector<BufferAction> Buffer::sort(std::vector<BufferAction> actions, 
+    BufferSorts buffer_sorts)
 {
   if (buffer_sorts == BufferSorts::ITEM_FIRST)
     std::stable_sort(begin(actions), end(actions), Helpers::CompItemFirst());
@@ -198,7 +201,7 @@ bool Buffer::add(Person* const new_user, Skill* const new_skill_used,
 }
 
 /*
- * Description: Creates and adds a new Skill BufferAction element given params
+ * Description: Creates and adds a new Item BufferAction element given params
  *
  * Inputs: user - Pointer to the user of the action
  *         skill_used - Pointer to the skill being used in the action
@@ -210,8 +213,6 @@ bool Buffer::add(Person* const new_user, Item* const new_item_used,
                  std::vector<Person*> targets, const uint32_t &cooldown)
 { 
   BufferAction new_elm;
-
-  std::cout << "Adding item to action bufer" << new_item_used->getName() << std::endl;
 
   new_elm.cooldown   = cooldown;
   new_elm.user       = new_user;
@@ -413,22 +414,24 @@ bool Buffer::remove(const uint32_t &index)
  */
 bool Buffer::removeAllByUser(Person* user)
 {
-  auto removed = false;
-
   if (user == nullptr)
     return false;
 
-  for (auto it = begin(action_buffer); it != end(action_buffer); ++it)
-  {
-    if ((*it).user == user)
-    {
-      action_buffer.erase(it);
+  action_buffer.erase(std::remove_if(begin(action_buffer), 
+                                  end(action_buffer),
+                                  [&](BufferAction x) -> bool
+                                  {
+                                    return (x.user == user);
+                                  }),
+                                  end(action_buffer));
 
-      removed = true;
-    }
-  }
+  auto new_size = action_buffer.size();
 
-  return removed;
+  /* Set the index of the last possible if the index ends out of bounds */
+  if (action_buffer.size() > 0 && index > new_size - 1)
+    index = new_size - 1;
+
+  return true;
 }
 
 /*
@@ -585,7 +588,6 @@ bool Buffer::reorder()
     else
       other_actions.push_back(*it);
   }
-
 
   /* Sort each action type by greatest momentum for the user */
   Buffer::sort(defend_actions, BufferSorts::MOMENTUM);

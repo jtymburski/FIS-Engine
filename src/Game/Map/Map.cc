@@ -361,7 +361,7 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
           return modified_thing->setStartingTile(section_index, 
                                           geography[section_index][x][y], true);
         }
-      }      
+      }
       
       return false;
     }
@@ -1122,6 +1122,12 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
                       << set[i][j]->getPassability(Direction::SOUTH) << " " 
                       << set[i][j]->getPassability(Direction::WEST) << " "
                       << (int)set[i][j]->getRenderDepth() << std::endl;
+
+      std::cout << "Bounding Box: " 
+                << things.front()->getBoundingBox().x << " "
+                << things.front()->getBoundingBox().y << " "
+                << things.front()->getBoundingBox().w << " "
+                << things.front()->getBoundingBox().h << std::endl;
     }
     std::cout << "--" << std::endl;
   }

@@ -691,6 +691,21 @@ void MapThing::clearTarget()
   target = NULL;
 }
 
+SDL_Rect MapThing::getBoundingBox()
+{
+  SDL_Rect rect;
+
+  rect.x = x;
+  rect.y = y;
+  rect.w = frame_matrix.size() * width;
+  if(rect.w > 0)
+    rect.h = frame_matrix.back().size() * height;
+  else
+    rect.h = 0;
+
+  return rect;
+}
+
 /* 
  * Description: Gets the things description.
  * 
@@ -1003,7 +1018,7 @@ bool MapThing::isVisible()
  *         int offset_y - the paint offset in the y direction
  * Output: bool - if anything was rendered
  */
-// TODO: REMOVE -> changed to a base render and an upper render
+// TODO: REMOVE. changing to render only an individual tile...maybe
 bool MapThing::render(SDL_Renderer* renderer, int offset_x, int offset_y)
 {
   bool rendered = false;
@@ -1253,6 +1268,20 @@ void MapThing::setSpeed(uint16_t speed)
   this->speed = speed;
 }
 
+// TODO: Comment
+void MapThing::setStartingPoint(uint16_t section_id, uint16_t x, uint16_t y)
+{
+  /* Unset the tiles, currently in use */
+  // TODO
+
+  /* Set the new tile coordinate */
+  this->x = x;
+  this->x_raw = this->x * kRAW_MULTIPLIER;
+  this->y = y;
+  this->y_raw = this->y * kRAW_MULTIPLIER;
+  tile_section = section_id;
+}
+
 /* 
  * Description: Sets the connected tile information for the map thing. This is
  *              the initial starting point and where the thing is initially
@@ -1263,6 +1292,7 @@ void MapThing::setSpeed(uint16_t speed)
  *         bool no_events - don't execute any events when set
  * Output: bool - status if the change was able to occur
  */
+// TODO: Remove -> setStartingTiles(). The future.
 bool MapThing::setStartingTile(uint16_t section_id, Tile* new_tile, 
                                                     bool no_events)
 {
@@ -1410,6 +1440,31 @@ void MapThing::unsetFrames(bool delete_frames)
   for(uint32_t i = 0; i < frame_matrix.size(); i++)
     frame_matrix[i].clear();
   frame_matrix.clear();
+}
+
+// TODO: Comment
+void MapThing::unsetRenderTiles(bool no_events)
+{
+  (void)no_events;
+
+  for(uint16_t i = 0; i < frame_matrix.size(); i++)
+  {
+    for(uint16_t j = 0; j < frame_matrix[i].size(); j++)
+    {
+      if(frame_matrix[i][j] != NULL)
+      {
+        Tile* main = frame_matrix[i][j]->getTileMain();
+        Tile* previous = frame_matrix[i][j]->getTilePrevious();
+
+        /* Reset the thing pointers */
+        if(main != NULL)
+          main->unsetThing();
+        if(previous != NULL)
+          previous->unsetThing();
+        frame_matrix[i][j]->resetTile();
+      }
+    }
+  }
 }
 
 /*

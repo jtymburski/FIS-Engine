@@ -21,7 +21,7 @@
  *============================================================================*/
 
 const uint8_t Party::kMAX_MEMBERS_BEARACKS{50};
-const uint8_t Party::kMAX_MEMBERS_SLEUTH{5};
+const uint8_t Party::kMAX_MEMBERS_SLEUTH{10};
 const uint8_t Party::kMAX_MEMBERS_FOES{10};
 
 /*=============================================================================

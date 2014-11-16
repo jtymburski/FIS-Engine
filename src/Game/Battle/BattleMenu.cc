@@ -364,7 +364,6 @@ void BattleMenu::keyDownDecrement()
  */
 void BattleMenu::keyDownIncrement()
 {
-  std::cout << "Max Index: " << getMaxIndex() << std::endl;
   /* Increment the viewing index if it is less than the max index */
   if (element_index < getMaxIndex())
   {
@@ -737,7 +736,6 @@ void BattleMenu::reset(Person* const new_user, const uint32_t &new_person_index)
 
   if (current_user != nullptr)
   {
-    //menu_skills   = current_user->getUseableSkills();
     valid_actions = current_user->getValidActions();
   }
 }
