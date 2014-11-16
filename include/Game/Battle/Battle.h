@@ -1,4 +1,4 @@
-/******************************************************************************
+/*******************************************************************************
 * Class Name: Battle [Declaration]
 * Date Created: February 23rd, 2014
 * Inheritance: None
@@ -6,58 +6,6 @@
 *
 * Notes
 * -----
-*
-* [1]: generalUpkeep() adjusts all values based on Weather.  BattleInfoBar
-* displays info on these adjustments * after X seconds, personalUpkeep() is
-* called.
-*
-* personalUpkeep() adjusts all values of the Person represented by
-* party_index. PersonalUpkeep() then, after X seconds, activates and
-* initializes BattleMenu with party_index's relevant options.
-*
-* 3. Once an option from BattleMenu is selected processAction() is
-* called and party_index is incremented, then if it is less
-* than 5, personalUpkeep is called (Step 2).  Else, BattleMenu
-* deactivates and processEnemyActions() is called (Step 4).
-*
-* [NOW WRONG]
-* 4. processEnemyActions() uses the enemies scripts to add actions to the
-* stack, after which orderActions() is called.
-*
-* [NOW WRONG]
-* 5. orderActions() reorders the stack based on speed and status ailments,
-* performActions() is then called.
-*
-* 6. performAction() takes the first Action on the stack and loads it into
-* action_animate which then shows the Actions animation.  The Action is then
-* removed from the stack.
-*
-* 7. action_animate emits a finished(Action *) signal which is connected to
-* changeStats(Action* battle_action), changeStats(Action* battle_action)
-* alters each Person's stats based off its parameter Action.  UpdateScene()
-* actionOutcome(). ActionOutcome() checks for deaths and animates
-* appropriately, if a whole party is eliminated, then all the memory
-* is cleared, and battleWon() or battleLost() is called.  If the stack is not
-* empty, (Step 6) else reset party_index and (Step 1).
-*
-* Note: Animation has changed since this design and requires some alteration
-*     in terms of these steps.
-*
-* In Battle Action Animations
-* ----------------------------
-* Action Timer is removed
-* For actions that occur during battle, the animations will only be targets
-* of the player and centered on them. For example, there will be a sequence
-* of sprites where it will animate (based on a timer) and flash on the target
-* and possibly flash on the caster itself. These will be attached to the action
-* class and will occur during the generation of the action in the step 6? This
-* could be tied into the action paint event to draw on the battle screen These
-* would utilize the sprite class which already has a linked list to generate
-* the sequences of the animation. How would this be programmed in? Attached
-* to the database since we generated a sequence within action to program in
-* actions and commands that can be used in the battle sequence. An addition
-* to that sequence to include frames or generate generic ones that everyone
-* has to share.
 *
 * TODO
 * ----
@@ -82,13 +30,11 @@
 #ifndef BATTLE_H
 #define BATTLE_H
 
-#include "Frame.h"
-#include "Options.h"
 #include "Game/Battle/Buffer.h"
-#include "Game/Battle/InfoBar.h"
 #include "Game/Battle/BattleMenu.h"
 #include "Game/Player/Ailment.h"
 #include "Game/Player/Party.h"
+#include "Options.h"
 
 using std::begin;
 using std::end;
@@ -110,7 +56,9 @@ enum class CombatState
   RANDOM_ENCOUNTER = 1 << 10,
   MINI_BOSS        = 1 << 11,
   BOSS             = 1 << 12,
-  FINAL_BOSS       = 1 << 13
+  FINAL_BOSS       = 1 << 13,
+  PROCESSING_SKILL = 1 << 14,
+  PROCESSING_ITEM  = 1 << 15
 };
 
 ENUM_FLAGS(IgnoreState)
@@ -161,32 +109,17 @@ public:
   ~Battle();
 
 private:
+  /* The Item Buffer of the Battle */
+  Buffer* action_buffer;
+
   /* Pairs of unique-ID vs. Ailment pointers for ailments */
   std::vector<std::pair<uint32_t, Ailment*>> ailments;
 
   /* The current AI Module */
   AIModule* curr_module;
 
-  /* The Battle Info Bar */
-  //InfoBar* info_bar;
-
   /* The Battle Menu Bar */
   BattleMenu* menu;
-
-  /* The Battle Status Bar */
-  //BattleStatusBar* status_bar;
-
-  /* Vector of enemy status bars */
-  //std::vector<EnemyStatusBar*> enemy_bars;
-
-  /* The Item Buffer of the Battle */
-  Buffer* action_buffer;
-
-  /* The Background of the Battle */
-  Frame* bg;
-
-  /* The background mage of the Battle Status Bar */
-  Frame* status_bar_bg;
 
   /* Enumerated battle options for ailment updates */
   BattleOptions ailment_update_mode;
@@ -233,9 +166,6 @@ private:
   /* The turn state of the Battle */
   TurnState turn_state;
 
-  // Currently active weather condition
-  // Weather* weather_condition
-
   /* Action Processing Variables */
   Attribute prim_off;
   Attribute prim_def;
@@ -254,7 +184,7 @@ private:
   Item*   curr_item;
 
   /* Current pocessing target index */
-  uint32_t p_target_index;
+  uint32_t pro_index;
 
   /* ------------ Menu Constants --------------- */
   static const uint16_t kGENERAL_UPKEEP_DELAY;
@@ -398,11 +328,26 @@ private:
   /* Deals with character related upkeep */
   void personalUpkeep(Person* const target);
 
+  /* */
+  bool processAlterAction(std::vector<Person*> targets);
+
+  /* */
+  bool processAssignAction(std::vector<Person*> targets);
+
+  /* */
+  bool processDamageAction(std::vector<Person*> targets);
+
+  /* */
+  bool processRelieveAction(std::vector<Person*> targets);
+
+  /* */
+  bool processInflictAction(std::vector<Person*> targets);
+
   /* Processes an individual action from a user against targets */
-  void processSkill(std::vector<Person*> targets);
+  bool processSkill(std::vector<Person*> targets);
 
   /* Process the actions (Items & Skills) in the buffer */
-  void processActions();
+  void processBuffer();
 
   /* Processes a guard action with curr_user and curr_target */
   bool processGuard();
@@ -425,6 +370,18 @@ private:
   /* Method which calls personal upkeeps */
   void upkeep();
 
+  /* Sub-function of update() for ally selections */
+  void updateAllySelection();
+
+  /* Sub-function of update() for enemy selections */
+  void updateEnemySelection();
+
+  /* Updates the LOSS/VICTORY flags based on party deaths */
+  bool updatePartyDeaths();
+
+  /* Updates the current targets defense state */
+  bool updateTargetDefense();
+
   /* Assigns a new value to the ailment update mode */
   void setAilmentUpdateMode(const BattleOptions &new_value);
 
@@ -445,12 +402,6 @@ private:
 
   /* Updates the Battle to the next state */
   void setNextTurnState();
-
-  /* Assigns a new value for the screen width */
-  void setScreenHeight(const uint16_t &new_value);
-
-  /* Assigns a new value for the screen width */
-  void setScreenWidth(const uint16_t &new_value);
 
   /* Assigns a new value to the elapsed time */
   void setTimeElapsed(const int32_t &new_value);
@@ -479,7 +430,6 @@ public:
   void printPartyState();
   void printPersonState(Person* const member, const int32_t &person_index);
   void printInventory(Party* const target_party);
-  void printTargetVariables(const bool &print_target_stats = false);
   void printTurnState();
 
   /* Update the cycle time of Battle */

@@ -67,8 +67,11 @@ private:
 
   /* The things that are on the given tile - only used to store location */
   MapItem* item;
+  std::vector<MapItem*> items;
   MapPerson* person;
+  std::vector<MapPerson*> persons;
   MapThing* thing;
+  std::vector<MapThing*> things;
 
   /* The upper information */
   std::vector<Sprite*> upper;
@@ -223,18 +226,26 @@ public:
   /* Unsets the enhancer layer */
   void unsetEnhancer();
 
-  /* Unsets the item stored within the tile */
-  void unsetItem();
+  /* Unsets the item(s) stored within the tile */
+  void unsetItem(); // TODO: Remove
+  bool unsetItem(MapItem* item);
+  void unsetItems();
 
   /* Unsets the lower layer */
   void unsetLower();
   bool unsetLower(uint8_t index);
 
-  /* Unsets the stored person pointer */
-  void unsetPerson(bool no_events = false);
+  /* Unsets the stored person pointer(s) */
+  void unsetPerson(bool no_events = false); // TODO: Remove
+  bool unsetPerson(MapPerson* person, bool no_events = false);
+  bool unsetPerson(uint16_t render_level, bool no_events = false);
+  void unsetPersons(bool no_events = false);
 
-  /* Unsets the stored thing pointer */
-  void unsetThing();
+  /* Unsets the stored thing pointer(s) */
+  void unsetThing(); // TODO: Remove
+  bool unsetThing(MapThing* thing);
+  bool unsetThing(uint16_t render_level);
+  void unsetThings();
 
   /* Unsets the upper layer(s) */
   void unsetUpper();
