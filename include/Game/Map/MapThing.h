@@ -134,7 +134,10 @@ public:
 
   /* Clears the target that the map thing is currently pointing at */
   void clearTarget();
-  
+ 
+  /* Returns the bounding box of the thing */
+  SDL_Rect getBoundingBox();
+
   /* Gets the things decription */
   std::string getDescription();
 
@@ -201,8 +204,6 @@ public:
   
   /* Renders the Map Thing - TODO: REMOVE OLD RENDER */
   bool render(SDL_Renderer* renderer, int offset_x, int offset_y);
-  bool renderBase(SDL_Renderer* renderer, int offset_x, int offset_y);
-  bool renderUpper(SDL_Renderer* renderer, int offset_x, int offset_y);
   
   /* Sets the things description */
   void setDescription(std::string new_description);
@@ -237,8 +238,12 @@ public:
 
   /* Sets the things speed */
   void setSpeed(uint16_t speed);
-    
+  
+  /* Sets the starting x and y coordinate */
+  void setStartingPoint(uint16_t section_id, uint16_t x, uint16_t y);
+
   /* Set the tile to hook the map thing to */
+  // TODO: Remove?
   virtual bool setStartingTile(uint16_t section_id, Tile* new_tile, 
                                                     bool no_events = false);
 
@@ -257,8 +262,12 @@ public:
   /* Unsets the thing frames, in the class */
   void unsetFrame(uint32_t x, uint32_t y, bool delete_frames = true);
   void unsetFrames(bool delete_frames = true);
-  
+ 
+  /* Unsets the tiles that the thing is being rendered to */
+  virtual void unsetRenderTiles(bool no_events = false);
+
   /* Unsets the starting tile */
+  // TODO: Remove?
   virtual void unsetStartingTile(bool no_events = false);
 };
 

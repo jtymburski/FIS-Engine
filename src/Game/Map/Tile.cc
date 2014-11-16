@@ -1130,9 +1130,31 @@ void Tile::unsetEnhancer()
  * Inputs: none
  * Output: none
  */
+// TODO: Remove
 void Tile::unsetItem()
 {
   item = NULL;
+}
+ 
+// TODO: Comment
+bool Tile::unsetItem(MapItem* item)
+{
+  for(uint16_t i = 0; i < items.size(); i++)
+  {
+    if(items[i] == item)
+    {
+      items[i] = NULL;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+// TODO: Comment
+void Tile::unsetItems()
+{
+  items.clear();
 }
 
 /* 
@@ -1183,6 +1205,7 @@ bool Tile::unsetLower(uint8_t index)
  * Inputs: bool no_events - status if events should be ignored, default false
  * Output: none
  */
+// TODO: Remove
 void Tile::unsetPerson(bool no_events)
 {
   if(!no_events && person != NULL)
@@ -1196,6 +1219,75 @@ void Tile::unsetPerson(bool no_events)
   person = NULL;
 }
   
+// TODO: Comment
+bool Tile::unsetPerson(MapPerson* person, bool no_events)
+{
+  for(uint16_t i = 0; i < persons.size(); i++)
+  {
+    if(persons[i] == person)
+    {
+      /* Event is only applicable if it's a render level 0 on person */
+      if(i == 0 && !no_events)
+      {
+        /* Execute exit event, if applicable */
+        if(event_handler != NULL && 
+            exit_event.classification != EventClassifier::NOEVENT)
+          event_handler->executeEvent(exit_event, persons[i]);
+      }
+
+      persons[i] = NULL;
+      return true;
+    }
+  }
+
+  return false;
+}
+ 
+// TODO: Comment
+bool Tile::unsetPerson(uint16_t render_level, bool no_events)
+{
+  if(persons.size() > render_level)
+  {
+    if(persons[render_level] != NULL)
+    {
+      /* Event is only applicable if it's a render level 0 on person */
+      if(render_level == 0 && !no_events)
+      {
+        /* Execute exit event, if applicable */
+        if(event_handler != NULL && 
+            exit_event.classification != EventClassifier::NOEVENT)
+          event_handler->executeEvent(exit_event, persons[render_level]);
+      }
+
+      persons[render_level] = NULL;
+      return true;
+    }
+  }
+
+  return false;
+}
+ 
+// TODO: Comment
+void Tile::unsetPersons(bool no_events)
+{
+  if(persons.size() > 0)
+  {
+    if(persons.front() != NULL)
+    {
+      /* Event is only applicable if it's a render level 0 on person */
+      if(!no_events)
+      {
+        /* Execute exit event, if applicable */
+        if(event_handler != NULL && 
+            exit_event.classification != EventClassifier::NOEVENT)
+          event_handler->executeEvent(exit_event, persons.front());
+      }
+    }
+  }
+
+  persons.clear();
+}
+
 /*
  * Description: Unsets the map thing stored in the tile. This does not delete
  *              the pointer and merely clears it from the Tile.
@@ -1203,9 +1295,47 @@ void Tile::unsetPerson(bool no_events)
  * Inputs: none
  * Output: none
  */
+// TODO: Remove
 void Tile::unsetThing()
 {
   thing = NULL;
+}
+
+// TODO: Comment
+bool Tile::unsetThing(MapThing* thing)
+{
+  for(uint16_t i = 0; i < things.size(); i++)
+  {
+    if(things[i] == thing)
+    {
+      things[i] = NULL;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+// TODO: Comment
+bool Tile::unsetThing(uint16_t render_level)
+{
+  if(things.size() > render_level)
+  {
+    if(things[render_level] != NULL)
+    {
+      things[render_level] = NULL;
+      return true;
+    }
+  }
+
+  return false;
+
+}
+
+// TODO: Comment
+void Tile::unsetThings()
+{
+  things.clear();
 }
 
 /* 
