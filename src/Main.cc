@@ -59,6 +59,25 @@ int main(int argc, char** argv)
   (void)argc;
   (void)argv;
 
+  // TESTING: TODO - Remove
+  std::cout << "--TEST--" << std::endl;
+  Tile* t = new Tile();
+  MapThing* thing = new MapThing();
+  std::cout << "PTR: " << thing << std::endl;
+  std::cout << "Status: " << t->setThing(thing, 1) << std::endl;
+  std::cout << "PTR: " << t->getThing(1) << std::endl;
+
+  MapItem* r_item = NULL;
+  MapPerson* r_person = NULL;
+  MapThing* r_thing = NULL;
+  std::cout << "Status: " << t->getRenderThings(1, r_item, r_person, r_thing)
+            << std::endl;
+  std::cout << "RENDER: " << r_thing << std::endl;
+
+  std::cout << "Status: " << t->unsetThing(1) << std::endl;
+  std::cout << "PTR: " << t->getThing(1) << std::endl;
+  std::cout << "--END TEST--" << std::endl;
+
   /* Get the base directory to the executable, which will be the location of
    * all applicable resources */
   char* directory = SDL_GetBasePath();

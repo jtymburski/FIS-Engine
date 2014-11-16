@@ -362,14 +362,14 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
                                           geography[section_index][x][y], true);
         }
       }
-      
-      return false;
     }
-
-    /* Otherwise, add the thing information (virtual function) */
-    return modified_thing->addThingInformation(data, kFILE_CLASSIFIER + 1, 
-                                               section_index, renderer, 
-                                               base_path);
+    else
+    {
+      /* Otherwise, add the thing information (virtual function) */
+      return modified_thing->addThingInformation(data, kFILE_CLASSIFIER + 1, 
+                                                 section_index, renderer, 
+                                                 base_path);
+    }
   }
 
   return false;

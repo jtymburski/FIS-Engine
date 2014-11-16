@@ -68,8 +68,56 @@ Tile::~Tile()
 }
 
 /*============================================================================
+ * PRIVATE FUNCTIONS
+ *===========================================================================*/
+
+// TODO: Comment
+bool Tile::growPersonStack(uint16_t render_level)
+{
+  if(render_level < Helpers::getRenderDepth())
+  {
+    MapPerson* null_person = NULL;
+
+    while(persons.size() <= render_level)
+      persons.push_back(null_person);
+
+    return true;
+  }
+
+  return false;
+}
+
+// TODO: Comment
+bool Tile::growThingStack(uint16_t render_level)
+{
+  if(render_level < Helpers::getRenderDepth())
+  {
+    MapThing* null_thing = NULL;
+
+    while(things.size() <= render_level)
+      things.push_back(null_thing);
+
+    return true;
+  }
+
+  return false;
+}
+
+/*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
+
+// TODO: Comment
+bool Tile::addItem(MapItem* item)
+{
+  if(item != NULL)
+  {
+    items.push_back(item);
+    return true;
+  }
+
+  return false;
+}
 
 /* 
  * Description: Adds a passability to the given tile based on data from a file
@@ -179,10 +227,13 @@ void Tile::clear(bool just_sprites)
   /* Clear sprite layer data */
   unsetBase();
   unsetEnhancer();
-  unsetItem();
+  unsetItem(); // TODO: Remove
+  unsetItems();
   unsetLower();
-  unsetPerson();
-  unsetThing();
+  unsetPerson(); // TODO: Remove
+  unsetPersons(true);
+  unsetThing(); // TODO: Remove
+  unsetThings();
   unsetUpper();
 
   if(!just_sprites)
@@ -280,9 +331,22 @@ uint16_t Tile::getHeight()
  * Inputs: none
  * Output: MapItem* - the MapItem* pointer stored within
  */
+// TODO: Remove
 MapItem* Tile::getItem()
 {
   return item;
+}
+
+// TODO: Comment
+uint16_t Tile::getItemCount()
+{
+  return items.size();
+}
+
+// TODO: Comment
+std::vector<MapItem*> Tile::getItems()
+{
+  return items;
 }
 
 /* 
@@ -391,9 +455,27 @@ bool Tile::getPassabilityExiting(Direction dir)
  * Inputs: none
  * Output: MapPerson* - the person pointer
  */
+// TODO: Remove
 MapPerson* Tile::getPerson()
 {
   return person;
+}
+
+// TODO: Comment
+MapPerson* Tile::getPerson(uint16_t render_level)
+{
+  MapPerson* selected_person = NULL;
+
+  if(persons.size() > render_level)
+    selected_person = persons[render_level];
+
+  return selected_person;
+}
+
+// TODO: Comment
+std::vector<MapPerson*> Tile::getPersons()
+{
+  return persons;
 }
 
 /* 
@@ -420,6 +502,27 @@ int Tile::getPixelY()
   return (y * height);
 }
 
+// TODO: Comment
+bool Tile::getRenderThings(uint16_t render_level, MapItem*& item, 
+                           MapPerson*& person, MapThing*& thing)
+{
+  if(render_level < Helpers::getRenderDepth())
+  {
+    if(render_level == 0 && items.size() > 0)
+      item = items.front();
+
+    if(persons.size() > render_level)
+      person = persons[render_level];
+
+    if(things.size() > render_level)
+      thing = things[render_level];
+
+    return true;
+  }
+
+  return false;
+}
+
 /* 
  * Description: Returns the status the tile is currently classified in. Uses
  *              the enum from Layer. See the corresponding setStatus()
@@ -438,9 +541,28 @@ Tile::TileStatus Tile::getStatus()
  * Inputs: none
  * Output: MapThing* - the stored Map Thing object pointer
  */
+// TODO: Remove
 MapThing* Tile::getThing()
 {
   return thing;
+}
+
+// TODO: Comment
+MapThing* Tile::getThing(uint16_t render_level)
+{
+  MapThing* selected_thing = NULL;
+
+  if(things.size() > render_level)
+    selected_thing = things[render_level];
+
+  return selected_thing;
+
+}
+
+// TODO: Comment
+std::vector<MapThing*> Tile::getThings()
+{
+  return things;
 }
 
 /* 
@@ -578,9 +700,16 @@ bool Tile::isEnhancerSet()
  * Inputs: none
  * Output: bool - true if the item pointer is not null.
  */
+// TODO: Remove
 bool Tile::isItemSet()
 {
   return (item != NULL);
+}
+
+// TODO: Comment
+bool Tile::isItemsSet()
+{
+  return (items.size() > 0);
 }
 
 /* 
@@ -601,9 +730,28 @@ bool Tile::isLowerSet()
  * Inputs: none
  * Output: bool - true if the person pointer is set
  */
+// TODO: Remove
 bool Tile::isPersonSet()
 {
   return (person != NULL);
+}
+
+// TODO: Comment
+bool Tile::isPersonSet(uint16_t render_level)
+{
+  return (persons.size() > render_level && persons[render_level] != NULL);
+}
+
+// TODO: Comment
+bool Tile::isPersonsSet()
+{
+  bool person_set = false;
+
+  for(uint16_t i = 0; i < persons.size(); i++)
+    if(persons[i] != NULL)
+      person_set = true;
+
+  return person_set;
 }
 
 /*
@@ -613,9 +761,28 @@ bool Tile::isPersonSet()
  * Inputs:none
  * Output: bool - true if the thing pointer is set
  */
+// TODO: Remove
 bool Tile::isThingSet()
 {
   return (thing != NULL);
+}
+
+// TODO: Comment
+bool Tile::isThingSet(uint16_t render_level)
+{
+  return (things.size() > render_level && things[render_level] != NULL);
+}
+
+// TODO: Comment
+bool Tile::isThingsSet()
+{
+  bool thing_set = false;
+
+  for(uint16_t i = 0; i < things.size(); i++)
+    if(things[i] != NULL)
+      thing_set = true;
+
+  return thing_set;
 }
 
 /* 
@@ -855,6 +1022,7 @@ void Tile::setHeight(uint16_t height)
  * Inputs: MapItem* item - the item to put in the list
  * Output: bool - status if successful (item needs to be non-null)
  */
+// TODO: Remove
 bool Tile::setItem(MapItem* item)
 {
   if(item != NULL)
@@ -932,6 +1100,7 @@ bool Tile::setLowerPassability(uint8_t index, Direction dir, bool set_value)
  *         bool no_events - true if the events are disabled (default false)
  * Output: bool - true if successful (fails if person is null)
  */
+// TODO: Remove
 bool Tile::setPerson(MapPerson* person, bool no_events)
 {
   if(person != NULL)
@@ -960,6 +1129,39 @@ bool Tile::setPerson(MapPerson* person, bool no_events)
   return false;
 }
 
+// TODO: Comment
+bool Tile::setPerson(MapPerson* person, uint16_t render_level, bool no_events)
+{
+  if(person != NULL)
+  {
+    /* First, unset the existing person */
+    unsetPerson(render_level, no_events);
+
+    /* Set the new person */
+    if(growPersonStack(render_level))
+    {
+      persons[render_level] = person;
+
+      /* Execute enter event, if applicable */
+      if(!no_events && event_handler != NULL)
+      {
+        /* Pickup the item, if applicable */
+        for(uint16_t i = 0; i < items.size(); i++)
+          if(item != NULL)
+            event_handler->executePickup(items[i], true);
+      
+        /* Execute the enter event, if applicable */
+        if(enter_event.classification != EventClassifier::NOEVENT)
+          event_handler->executeEvent(enter_event, person);
+      }
+
+      return true;
+    }
+  }
+
+  return false;
+}
+
 /* 
  * Description: Sets the tile status. This allows of 3 possible states that 
  *              the tile can be in. This affects the visibility and painting \
@@ -981,6 +1183,7 @@ void Tile::setStatus(TileStatus status)
  * Inputs: MapThing* thing - the new thing pointer to inject into the tile
  * Output: bool - true if successful, fails if thing ptr is null
  */
+// TODO: Remove
 bool Tile::setThing(MapThing* thing)
 {
   if(thing != NULL)
@@ -995,6 +1198,25 @@ bool Tile::setThing(MapThing* thing)
   }
 
   return false;
+}
+
+// TODO: Comment
+bool Tile::setThing(MapThing* thing, uint16_t render_level)
+{
+  if(thing != NULL)
+  {
+    /* First, unset the existing thing */
+    unsetThing(render_level);
+
+    /* Set the new thing */
+    if(growThingStack(render_level))
+    {
+      things[render_level] = thing;
+      return true;
+    }
+  }
+
+  return false; 
 }
 
 /* 
@@ -1144,6 +1366,7 @@ bool Tile::unsetItem(MapItem* item)
     if(items[i] == item)
     {
       items[i] = NULL;
+      items.erase(items.begin()+i);
       return true;
     }
   }
