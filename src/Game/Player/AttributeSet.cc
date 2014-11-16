@@ -66,7 +66,7 @@ const std::vector<std::vector<int>> AttributeSet::kPRESETS =
     20, 15, 20, 15,
     15, 15, 10, 2},
 
-  {250, 50, 25, 25, /* Normal Stats */
+  {3000, 50, 25, 25, /* Normal Stats */
    20, 14, 20, 14,
    35, 28, 20, 10,
    18, 7, 18, 7,

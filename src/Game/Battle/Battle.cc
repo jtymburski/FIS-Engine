@@ -422,7 +422,7 @@ bool Battle::bufferEnemyAction()
 /*
  * Description: This function is similar to bufferEnemyAction, but uses the
  *              BattleMenu class to determine a selected action instead of
- *              an AI Module for the person. This function only grabs
+ *              an AI Module for the person. This function ofnly grabs
  *              info from the menu, the Menu is actually UPDATED FOR NEW PEOPLE
  *              in Battle::update (or called from there). This function will
  *              grab the menu selected information and add it to the buffer if
@@ -448,6 +448,8 @@ bool Battle::bufferUserAction()
   /* Push the actions on to the Buffer */
   if (action_type == ActionType::SKILL)
   {
+    //TODO: Buffering skill cooldowns [11-15-14]
+
     curr_skill = menu->getSelectedSkill();
     buffered = action_buffer->add(curr_user, curr_skill, person_targets, 0);
   }
@@ -496,6 +498,7 @@ bool Battle::bufferUserAction()
     else
       curr_user->setBFlag(BState::SELECTED_ACTION);
 
+    std::cout << "Can increment index: " << canIncrementIndex(curr_user) << std::endl;
     if (canIncrementIndex(curr_user))
       return setNextPersonIndex();
   }
@@ -579,9 +582,9 @@ std::vector<BattleSkill> Battle::buildBattleSkills(const int32_t &p_index,
     for (auto it = begin(skill_elements); it != end(skill_elements); ++it)
     {
       auto targets = getValidTargets(p_index, (*it).skill->getScope());
-      
       auto all_targets = getPersonsFromIndexes(targets);
       std::vector<Person*> friends_targets;
+
       std::vector<Person*> foes_targets;
       
       for (auto target: all_targets)
@@ -1324,6 +1327,9 @@ void Battle::generalUpkeep()
 {
   /* Print out the party state if either in UDEBUG or in TEXT battle mode */
 #ifdef UDEBUG
+  std::cout << "\n=============\n";
+  std::cout << "  TURN #" << turns_elapsed + 1 << std::endl;
+  std::cout << "=============" << std::endl;
   printPartyState();
 #else 
   if (battle_mode == BattleMode::TEXT)
@@ -1676,7 +1682,6 @@ bool Battle::processSkill(std::vector<Person*> targets)
     }
   }
 
-  std::cout << "Returning DONE: " << done << std::endl;
   return done;
 }
 
@@ -1699,7 +1704,7 @@ void Battle::processBuffer()
     curr_action_type = action_buffer->getActionType();
     curr_user        = action_buffer->getUser();
 
-    if (getBattleMode() == BattleMode::TEXT)
+    if (getBattleMode() == BattleMode::TEXT && curr_user != nullptr)
       std::cout << "\n{User} Processing: " << curr_user->getName() << std::endl;
 
     if (curr_action_type == ActionType::SKILL)
@@ -2558,11 +2563,14 @@ void Battle::printPartyState()
 {
   std::cout << "\n---- Friends ----\n";
   for (uint32_t i = 0; i < friends->getSize(); i++)
-    printPersonState(friends->getMember(i), i + 1);
+  {
+    printPersonState(friends->getMember(i), 
+        getIndexOfPerson(friends->getMember(i)));
+  }
 
   std::cout << "---- Foes ----\n";
   for (uint32_t i = 0; i < foes->getSize(); i++)
-    printPersonState(foes->getMember(i), i - foes->getSize());
+    printPersonState(getPerson(getIndexOfPerson(foes->getMember(i))), getIndexOfPerson(foes->getMember(i)));
 }
 
 /*
@@ -2977,7 +2985,7 @@ int32_t Battle::getTarget(Person* battle_member)
 
   for (uint32_t i = 0; i < foes->getSize(); i++)
     if (foes->getMember(i) == battle_member)
-      return static_cast<int32_t>(i) - foes->getSize();
+      return static_cast<int32_t>((i * -1) -1);
 
   return 0;
 }
@@ -2994,7 +3002,7 @@ Person* Battle::getPerson(const int32_t &index)
   if (index < 0)
   {
     if ((index + static_cast<int32_t>(foes->getSize())) > -1)
-      return foes->getMember(index + foes->getSize());
+      return foes->getMember((index * -1) - 1);
   }
   else if (index > 0)
   {
