@@ -331,20 +331,26 @@ void Game::setupBattle()
 
   // Test Persons
   Person* malgidus = new Person(300, "Malgidus", human, bloodclaw_scion);
-  //malgidus->print(false, false, true, true);
-
   Person* arcadius = new Person(301, "Arcadius", bear, tactical_samurai);
   Person* berran   = new Person(302, "Berran", bear, bloodclaw_scion);
-  //Person* atkst    = new Person(303, "Atkst", human, bloodclaw_scion);
-  //Person* kevin    = new Person(304, "Kevin", human, bloodclaw_scion);
+  Person* atkst    = new Person(303, "Atkst", human, bloodclaw_scion);
+  Person* kevin    = new Person(304, "Kevin", human, bloodclaw_scion);
+  Person* george   = new Person(305, "George", human, bloodclaw_scion);
+  Person* gregory  = new Person(306, "Gregory", human, bloodclaw_scion);
+  Person* georgina = new Person(307, "Georgina", human, bloodclaw_scion);
+  Person* gerald   = new Person(308, "Gerald", human, bloodclaw_scion);
+  Person* geoff    = new Person(309, "Geoff", human, bloodclaw_scion);
 
   std::vector<BattleItem> items;
 
   Person* frosty = new Person(310, "Frosty", human, bloodclaw_scion);
   Person* cloud_dude = new Person(311, "Cloud Dude", human, bloodclaw_scion);
-  // Person* thruster_barrow = new Person(301, "Thruster Barrow", human, bloodclaw_scion);
-  // Person* dragon = new Person(301, "Dragon", human, bloodclaw_scion);
-  // Person* splurge = new Person(301, "Splurge", human, bloodclaw_scion);
+  Person* thruster_barrow = new Person(301, "Thruster Barrow", human, bloodclaw_scion);
+  Person* dragon = new Person(301, "Dragon", human, bloodclaw_scion);
+  Person* splurge = new Person(301, "Splurge", human, bloodclaw_scion);
+  Person* schwep = new Person(301, "Schwep", human, bloodclaw_scion);
+  Person* hamburger = new Person(301, "Hamburger", human, bloodclaw_scion);
+  Person* swiss_cheese = new Person(301, "Swiss Cheese", human, bloodclaw_scion);
 
   AIModule* frosty_module = new AIModule();
   frosty_module->setParent(frosty);
@@ -354,20 +360,55 @@ void Game::setupBattle()
   cloud_module->setParent(cloud_dude);
   cloud_dude->setAI(cloud_module);
 
+  AIModule* thruster_barrow_module = new AIModule();
+  thruster_barrow_module->setParent(thruster_barrow);
+  thruster_barrow->setAI(thruster_barrow_module);
+
+  AIModule* dragon_module = new AIModule();
+  dragon_module->setParent(dragon);
+  dragon->setAI(dragon_module);
+
+  AIModule* splurge_module = new AIModule();
+  splurge_module->setParent(splurge);
+  splurge->setAI(splurge_module);
+
+  AIModule* schwep_module = new AIModule();
+  schwep_module->setParent(schwep);
+  schwep->setAI(schwep_module);
+
+  AIModule* hamburger_module = new AIModule();
+  hamburger_module->setParent(hamburger);
+  hamburger->setAI(hamburger_module);
+
+  AIModule* swiss_cheese_module = new AIModule();
+  swiss_cheese_module->setParent(swiss_cheese);
+  swiss_cheese->setAI(swiss_cheese_module);
+
  // Inventory Testinggd
   Inventory* friends_pouch = new Inventory(401, "Teh Pouch");
   Inventory* foes_pouch = new Inventory(402, "Der Pouch");
 
   // Party Testing
-  Party* friends = new Party(401, malgidus, PartyType::SLEUTH, 5,
+  Party* friends = new Party(401, malgidus, PartyType::SLEUTH, 10,
       friends_pouch);
   friends->addMember(arcadius);
   friends->addMember(berran);
-  //friends->addMember(atkst);
-  //friends->addMember(kevin);
+  friends->addMember(atkst);
+  friends->addMember(kevin);
+  friends->addMember(george);
+  friends->addMember(gregory);
+  friends->addMember(georgina);
+  friends->addMember(gerald);
+  friends->addMember(geoff);
 
-  Party* enemies = new Party(402, frosty, PartyType::REGULAR_FOE, 5, foes_pouch);
+  Party* enemies = new Party(402, frosty, PartyType::REGULAR_FOE, 10, foes_pouch);
   enemies->addMember(cloud_dude);
+  enemies->addMember(thruster_barrow);
+  enemies->addMember(dragon);
+  enemies->addMember(splurge);
+  enemies->addMember(schwep);
+  enemies->addMember(hamburger);
+  enemies->addMember(swiss_cheese);
   
   // Battle Testing
   for (uint32_t i = 0; i < friends->getSize(); i++)
@@ -625,7 +666,8 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
   /* Switch the view to the battle */
   else if(event.keysym.sym == SDLK_F2)
   {
-    eventStartBattle();
+    if (game_battle == nullptr)
+      eventStartBattle();
   }
   /* Show item store dialog in map */
   else if(event.keysym.sym == SDLK_5)
