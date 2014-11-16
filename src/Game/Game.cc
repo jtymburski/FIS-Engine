@@ -44,7 +44,6 @@ Game::Game(Options* running_config)
   setConfiguration(running_config);
 
   /* Set up the render classes */
-  setupBattle();
   setupPlayerInventory();
   setupMap();
 }
@@ -173,7 +172,7 @@ void Game::eventPickupItem(MapItem* item, bool walkover)
 /* Starts a battle event. Using the given information - TODO */
 void Game::eventStartBattle()
 {
-  //TODO: run battle here? setupBattle();
+  setupBattle();
   mode = BATTLE;
 }
 
@@ -616,11 +615,17 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
   else if(event.keysym.sym == SDLK_F1)
   {
     mode = MAP;
+
+    if (game_battle != nullptr)
+    {
+      delete game_battle;
+      game_battle = nullptr; 
+    }
   }
   /* Switch the view to the battle */
   else if(event.keysym.sym == SDLK_F2)
   {
-    mode = BATTLE;
+    eventStartBattle();
   }
   /* Show item store dialog in map */
   else if(event.keysym.sym == SDLK_5)

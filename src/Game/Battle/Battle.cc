@@ -1,5 +1,5 @@
 /*******************************************************************************
-Class Name: Battle [Implementation]
+* Class Name: Battle [Implementation]
 * Date Created: February 23rd, 2014
 * Inheritance: None
 * Description:
@@ -146,20 +146,16 @@ Battle::Battle(Options* running_config, Party* const friends, Party* const foes)
   setupClass();
   determineTurnMode();
   loadBattleStateFlags();
+  setConfiguration(running_config);
 
-  // info_bar = new BattleInfg, this);
-  
-  // status_bar = new BattleStatusBar(getFriends(), getScreenWidth(), 
-  //                                  getScreenHeight(), this);
   action_buffer = new Buffer();
   menu          = new BattleMenu(running_config);
 
-  setConfiguration(running_config);
   setBattleFlag(CombatState::PHASE_DONE, true);
 }
 
 /*
- * Description: Battle annihilator! Clears away everything! Kaboom!
+ * Description: Annihilates the Battle.
  */
 Battle::~Battle()
 {
@@ -168,30 +164,13 @@ Battle::~Battle()
       delete (*it).second;
   ailments.clear();
 
-  // if (info_bar != nullptr)
-  //   delete info_bar;
-  // info_bar = nullptr;
-
   if (menu != nullptr)
     delete menu;
   menu = nullptr;
 
-  // if (status_bar != nullptr)
-  //   delete status_bar;
-  // status_bar = nullptr;
-
   if (action_buffer != nullptr)
     delete action_buffer;
   action_buffer = nullptr;
-
-  // for (auto it = begin(enemy_bars); it != end(enemy_bars); ++it)
-  //   if ((*it) != nullptr)
-  //     delete (*it);
-  // enemy_bars.clear();
-
-  // if (status_bar_bg != nullptr)
-  //   delete status_bar_bg;
-  // status_bar_bg = nullptr;
 }
 
 /*=============================================================================
@@ -203,7 +182,6 @@ Battle::~Battle()
  *
  * Inputs: Ailment* const new_ailment - pointer to a new ailment object.
  * Output: bool true if the ailment infliction was kosher
- * TODO:: [08-24-14] So many corner cases.
  */
 bool Battle::addAilment(Ailment* const new_ailment)
 {
@@ -216,16 +194,15 @@ bool Battle::addAilment(Ailment* const new_ailment)
     auto vic_name = new_ailment->getVictim()->getName();
     auto ail_name = static_cast<int32_t>(new_ailment->getType());
 
-#ifdef UDEBUG
-    std::cout << "Inflicting ailment: " << ail_name + " on " + vic_name 
-              << "\n";
-#else
-  if (battle_mode == BattleMode::TEXT)
-    std::cout << "Inflicting ailment: " << ail_name << " on " << vic_name 
-              << "\n";
-#endif
-  
-    //TODO: Add ailment infliction message to battle front end [03-16-14]
+    if (getBattleMode() == BattleMode::TEXT)
+    {
+      std::cout << "Inflicting ailment: " << ail_name + " on " + vic_name 
+                << "\n";
+    }
+    else if (getBattleMode() == BattleMode::GUI)
+    {
+      //TODO: Add ailment infliction message to battle front end [03-16-14]
+    }
   }
 
   return can_add;
@@ -1857,11 +1834,6 @@ void Battle::selectEnemyActions()
   /* Assert the person index exists in the Foes scope (-5 to -1) */
   if (update_module)
   {
-#ifdef UDEBUG 
-    std::cout << "Preparing AI Module of person index: " << person_index
-               << "." << std::endl;
-#endif
-
     curr_user = getPerson(person_index);
     curr_module = curr_user->getAI();
 
@@ -1876,10 +1848,6 @@ void Battle::selectEnemyActions()
   }
   else
   {
-#ifdef UDEBUG
-    std::cout << "Enemy selection of actions complete." << std::endl;
-#endif
-
     /* Mark the enemy selection phase as complete on the max index */
     setBattleFlag(CombatState::PHASE_DONE);
   }
@@ -1894,10 +1862,6 @@ void Battle::selectEnemyActions()
  */
 void Battle::selectUserActions()
 {
-#ifdef UDEBUG
-  std::cout << "Selecting User Actions: " << person_index <<  std::endl;
-#endif
-
   auto update_menu = false;
 
   /* If an action has been selected for a valid person index, grab the info.
@@ -1951,9 +1915,6 @@ void Battle::selectUserActions()
   }
   else 
   {
-#ifdef UDEBUG
-    std::cout << "User selection of actions complete" << std::endl;
-#endif
     /* Set the phase complete on the max person index */
     setBattleFlag(CombatState::PHASE_DONE);
   }
@@ -1967,21 +1928,17 @@ void Battle::selectUserActions()
  */
 bool Battle::setupClass()
 {
-  curr_module = nullptr;
-
-  // info_bar = nullptr;
-  // menu = nullptr;
-  // status_bar = nullptr;
-
   action_buffer = nullptr;
-  bg            = nullptr;
+  curr_module   = nullptr;
   config        = nullptr;
-  status_bar_bg = nullptr;
+  menu          = nullptr;
 
   ailment_update_mode = BattleOptions::FOREST_WALK;
   hud_display_mode    = BattleOptions::FOREST_WALK;
   battle_mode         = BattleMode::TEXT;
   turn_mode           = TurnMode::FRIENDS_FIRST;
+  turn_state = TurnState::BEGIN;
+
   flags = static_cast<CombatState>(0);
 
   person_index           = 0;
@@ -1990,8 +1947,6 @@ bool Battle::setupClass()
   time_elapsed           = 0;
   time_elapsed_this_turn = 0;
   turns_elapsed          = 0;
-
-  turn_state = TurnState::BEGIN;
 
   clearActionVariables();
 
@@ -2038,6 +1993,144 @@ void Battle::upkeep()
 
   /* Personal upkeep state complete */
   setBattleFlag(CombatState::PHASE_DONE);
+}
+
+/*
+ * Description: 
+ *
+ * Inputs:
+ * Output: 
+ */
+void Battle::updateAllySelection()
+{
+  if (menu->getMenuFlag(BattleMenuState::SELECTION_VERIFIED))
+  {
+    selectUserActions();
+  }
+  else
+  {
+    auto action_type = ActionType::NONE;
+     
+    if (menu->isActionTypeSelected())
+      action_type = menu->getActionType();
+
+    /* If the action index has been assigned and targets have not been 
+     * assigned yet (for that action index), find the scope of that action 
+     * the user wishes to use and inject the valid targets into the menu */
+    if ((menu->getMenuFlag(BattleMenuState::ACTION_SELECTED) || 
+         menu->getActionType() == ActionType::DEFEND         ||
+         menu->getActionType() == ActionType::GUARD          ||
+         menu->getActionType() == ActionType::IMPLODE)       && 
+         !menu->getMenuFlag(BattleMenuState::TARGETS_ASSIGNED))
+    {
+      auto scope = ActionScope::NO_SCOPE;
+
+      if (action_type == ActionType::SKILL)
+        scope = menu->getSelectedSkill()->getScope();
+      else if (action_type == ActionType::ITEM)
+        scope = menu->getSelectedItem()->getUseSkill()->getScope();
+      else if (action_type == ActionType::DEFEND)
+        scope = ActionScope::USER;
+      else if (action_type == ActionType::IMPLODE)
+        scope = ActionScope::USER;
+      else if (action_type == ActionType::GUARD)
+        scope = ActionScope::ONE_ALLY_NOT_USER;
+
+      if (getBattleMode() == BattleMode::TEXT)
+      {
+        std::cout << "Finding selectable targets for action with scope: "
+                  << Helpers::actionScopeToStr(scope) << std::endl;
+      }
+
+      auto battle_skill = menu->getMenuSkills().at(menu->getActionIndex());
+      auto skill_targets = getIndexesOfPersons(battle_skill.all_targets);
+          
+      menu->setMenuFlag(BattleMenuState::TARGETS_ASSIGNED);
+      
+      if (!menu->setSelectableTargets(skill_targets))
+      {
+        if (getBattleMode() == BattleMode::TEXT)
+        {
+          std::cout << "No selectable targets found! Select another action"
+                    << " index!" << std::endl;
+        }
+      }
+      else
+      {
+        menu->setActionScope(scope);
+        menu->setMenuFlag(BattleMenuState::SCOPE_ASSIGNED);
+        menu->printMenuState();
+      }
+    }
+  }
+}
+
+/*
+ * Description: 
+ *
+ * Inputs:
+ * Output: 
+ */
+void Battle::updateEnemySelection()
+{
+  if (curr_module != nullptr) 
+  {
+    auto action_type = curr_module->getActionType();
+
+    if ((curr_module->getFlag(AIState::ACTION_INDEX_CHOSEN) ||
+         curr_module->getActionType() == ActionType::DEFEND ||
+         curr_module->getActionType() == ActionType::GUARD ||
+         curr_module->getActionType() == ActionType::IMPLODE) &&
+         !curr_module->getFlag(AIState::TARGETS_ASSIGNED))
+    {
+      auto scope = ActionScope::NO_SCOPE;
+   
+      if (action_type == ActionType::SKILL)
+        scope = curr_module->getSelectedSkill()->getScope();
+      else if (action_type == ActionType::ITEM)
+        scope = curr_module->getSelectedItem()->getUseSkill()->getScope();
+      else if (action_type == ActionType::DEFEND || 
+               action_type == ActionType::IMPLODE ||
+               action_type == ActionType::RUN ||
+               action_type == ActionType::PASS)
+      {
+        scope = ActionScope::USER;
+      }
+      else if (action_type == ActionType::GUARD)
+      {
+        scope = ActionScope::ONE_ALLY_NOT_USER;
+      }
+
+      if (getBattleMode() == BattleMode::TEXT)
+      {
+        std::cout << "Finding selectable targets for enemy action w/ scope: "
+                  << Helpers::actionScopeToStr(scope) << std::endl;
+      }
+
+      auto valid_targets = getValidTargets(person_index, scope);
+      std::vector<Person*> friends_persons;
+      std::vector<Person*> foes_persons;
+
+      for (auto target : valid_targets)
+      {
+        if (target < 0)
+          friends_persons.push_back(getPerson(target));
+        else
+          foes_persons.push_back(getPerson(target));
+      }
+
+      curr_module->setActionScope(scope);
+      curr_module->setFriendTargets(friends_persons);
+      curr_module->setFoeTargets(foes_persons);
+      curr_module->setFlag(AIState::TARGETS_ASSIGNED, true);
+      curr_module->calculateTargets();
+    }
+    else if (curr_module->getFlag(AIState::SELECTION_COMPLETE))
+    {
+      /* Set to the next enemy selection or finish enemy selections */
+      selectEnemyActions();
+    }
+  }
 }
 
 /*
@@ -2363,28 +2456,6 @@ bool Battle::setNextPersonIndex()
 }
 
 /*
- * Description: Assigns a new value for the screen width
- *
- * Inputs: uint16_t new_value - new value for the screen height
- * Output: none
- */
-void Battle::setScreenHeight(const uint16_t &new_value)
-{
-  screen_height = new_value;
-}
-
-/*
- * Description: Assigns a new value for the screen width
- *
- * Inputs: uint16_t new_value - the new value for the screen width
- * Output: none
- */
-void Battle::setScreenWidth(const uint16_t &new_value)
-{
-  screen_width = new_value;
-}
-
-/*
  * Description: Assigns a new value to the elapsed time
  *
  * Inputs: int32-t new_value - new value for total time elapsed in battle
@@ -2589,18 +2660,19 @@ void Battle::printPersonState(Person* const member,
     std::cout << "[" << person_index << "] - " << member->getName()
               << " [ Lv. " << member->getLevel() << " ] << \n" 
               << "VITA: " << member->getCurr().getStat(0) << "/" 
-              << member->getTemp().getStat(0) << " [" << member->getVitaPercent() 
-              << "%]\n" << "QTDR: " << member->getCurr().getStat(1) << "/"
+              << member->getTemp().getStat(0) << " [" 
+              << member->getVitaPercent() << "%]\n" << "QTDR: " 
+              << member->getCurr().getStat(1) << "/"
               << member->getTemp().getStat(1) << " [" << member->getQDPercent()
               << "%]\n\n";
   }
 }
 
 /*
- * Description: 
+ * Description: Prints out the inventory information for a given Party*
  *
- * Inputs:
- * Output:
+ * Inputs: Party* - pointer to print the inventory information for
+ * Output: none
  */
 void Battle::printInventory(Party* const target_party)
 {
@@ -2661,7 +2733,7 @@ bool Battle::update(int32_t cycle_time)
 {
   setTimeElapsed(cycle_time);
 
-  // update(); //TODO [11-06-14] Update the battle interface
+  // GUIupdate(); //TODO [11-06-14] Update the battle interface
 
   if (getBattleFlag(CombatState::PHASE_DONE) && 
       !getBattleFlag(CombatState::OUTCOME_DONE))
@@ -2673,139 +2745,11 @@ bool Battle::update(int32_t cycle_time)
    * the scope of the particular action type [if required] */
   else if (turn_state == TurnState::SELECT_ACTION_ALLY)
   {
-    if (menu->getMenuFlag(BattleMenuState::SELECTION_VERIFIED))
-    {
-      selectUserActions();
-    }
-    else
-    {
-      ActionType action_type = ActionType::NONE;
-     
-      if (menu->isActionTypeSelected())
-        action_type = menu->getActionType();
-
-      /* If the action index has been assigned and targets have not been assigned
-       * yet (for that action index), find the scope of that action the user
-       * wishes to use and inject the valid targets into the menu */
-        if ((menu->getMenuFlag(BattleMenuState::ACTION_SELECTED) || 
-             menu->getActionType() == ActionType::DEFEND ||
-             menu->getActionType() == ActionType::GUARD  ||
-             menu->getActionType() == ActionType::IMPLODE) && 
-            !menu->getMenuFlag(BattleMenuState::TARGETS_ASSIGNED))
-        {
-          auto scope = ActionScope::NO_SCOPE;
-
-          if (action_type == ActionType::SKILL)
-          {
-            scope = menu->getSelectedSkill()->getScope();
-          }
-          else if (action_type == ActionType::ITEM)
-          {
-            scope = menu->getSelectedItem()->getUseSkill()->getScope();
-          }
-          else if (action_type == ActionType::DEFEND || 
-                   action_type == ActionType::IMPLODE)
-          {
-            scope = ActionScope::USER;
-          }
-          else if (action_type == ActionType::GUARD)
-          {
-            scope = ActionScope::ONE_ALLY_NOT_USER;
-          }
-
-          if (getBattleMode() == BattleMode::TEXT)
-          {
-            std::cout << "Finding selectable targets for action with scope: "
-                      << Helpers::actionScopeToStr(scope) << std::endl;
-          }
-
-          auto battle_skill = menu->getMenuSkills().at(menu->getActionIndex());
-          auto skill_targets = getIndexesOfPersons(battle_skill.all_targets);
-          
-          menu->setMenuFlag(BattleMenuState::TARGETS_ASSIGNED);
-      
-          if (!menu->setSelectableTargets(skill_targets))
-          {
-            if (getBattleMode() == BattleMode::TEXT)
-            {
-              std::cout << "No selectable targets found! Select another action"
-                        << " index!" << std::endl;
-            }
-          }
-          else
-          {
-            menu->setActionScope(scope);
-            menu->setMenuFlag(BattleMenuState::SCOPE_ASSIGNED);
-            menu->printMenuState();
-          }
-        }
-      }
-    }
+    updateAllySelection();
+  }
   else if (turn_state == TurnState::SELECT_ACTION_ENEMY)
   {
-    if (curr_module != nullptr) 
-    {
-      auto action_type = curr_module->getActionType();
-
-      if ((curr_module->getFlag(AIState::ACTION_INDEX_CHOSEN) ||
-           curr_module->getActionType() == ActionType::DEFEND ||
-           curr_module->getActionType() == ActionType::GUARD ||
-           curr_module->getActionType() == ActionType::IMPLODE) &&
-           !curr_module->getFlag(AIState::TARGETS_ASSIGNED))
-      {
-        auto scope = ActionScope::NO_SCOPE;
-   
-        if (action_type == ActionType::SKILL)
-        {
-          scope = curr_module->getSelectedSkill()->getScope();
-        }
-        else if (action_type == ActionType::ITEM)
-        {
-          scope = curr_module->getSelectedItem()->getUseSkill()->getScope();
-        }
-        else if (action_type == ActionType::DEFEND || 
-                 action_type == ActionType::IMPLODE ||
-                 action_type == ActionType::RUN ||
-                 action_type == ActionType::PASS)
-        {
-          scope = ActionScope::USER;
-        }
-        else if (action_type == ActionType::GUARD)
-        {
-          std::cout << "Guard action type? " << std::endl;
-          scope = ActionScope::ONE_ALLY_NOT_USER;
-        }
-
-        if (getBattleMode() == BattleMode::TEXT)
-        {
-          std::cout << "Finding selectable targets for enemy action w/ scope: "
-                    << Helpers::actionScopeToStr(scope) << std::endl;
-        }
-
-        auto valid_targets = getValidTargets(person_index, scope);
-        std::vector<Person*> friends_persons;
-        std::vector<Person*> foes_persons;
-
-        for (auto target : valid_targets)
-        {
-          if (target < 0)
-            friends_persons.push_back(getPerson(target));
-          else
-            foes_persons.push_back(getPerson(target));
-        }
-
-        curr_module->setActionScope(scope);
-        curr_module->setFriendTargets(friends_persons);
-        curr_module->setFoeTargets(foes_persons);
-        curr_module->setFlag(AIState::TARGETS_ASSIGNED, true);
-        curr_module->calculateTargets();
-      }
-      else if (curr_module->getFlag(AIState::SELECTION_COMPLETE))
-      {
-        /* Set to the next enemy selection or finish enemy selections */
-        selectEnemyActions();
-      }
-    }
+    updateEnemySelection();
   }
   else if (turn_state == TurnState::RUNNING)
   {
@@ -3251,9 +3195,6 @@ bool Battle::setConfiguration(Options* const new_config)
     if (menu != nullptr)
       menu->setConfiguration(new_config);
 
-    setScreenHeight(config->getScreenHeight());
-    setScreenWidth(config->getScreenWidth());
-
     setAilmentUpdateMode(config->getAilmentUpdateState());
     setHudDisplayMode(config->getBattleHudState());
     setBattleMode(config->getBattleMode());
@@ -3304,7 +3245,7 @@ uint32_t Battle::getBattleMenuDelay()
   return kBATTLE_MENU_DELAY;
 }
 
-/* Public static gets for battle modifier values */
+
 uint32_t Battle::getMaxAilments()
 {
   return kMAX_AILMENTS;  

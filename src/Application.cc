@@ -272,7 +272,8 @@ bool Application::initialize()
   if(!system_options->confirmFontSetup())
   {
     std::cerr << "[ERROR] Could not create font. This is either a library "
-              << "issue or the font files are missing or invalid." << std::endl;
+              << "issue or the font files are missing or invalid." 
+              << std::endl;
     success = false;
   }
   
