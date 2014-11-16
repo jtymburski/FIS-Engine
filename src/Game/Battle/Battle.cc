@@ -78,7 +78,7 @@ const uint16_t Battle::kMINIMUM_DAMAGE           =     1;
 const uint16_t Battle::kMAXIMUM_DAMAGE           = 29999;
 
 const float    Battle::kOFF_PHYS_MODIFIER           = 1.00;
-const float    Battle::kDEF_PHYS_MODIFIER           = 1.00;
+const float    Battle::kDEF_PHYS_MODIFIER           = 1.10;
 const float    Battle::kOFF_PRIM_ELM_MATCH_MODIFIER = 1.05;
 const float    Battle::kDEF_PRIM_ELM_MATCH_MODIFIER = 1.04;
 const float    Battle::kOFF_SECD_ELM_MATCH_MODIFIER = 1.03;
@@ -97,8 +97,8 @@ const float    Battle::kDOUBLE_ELM_ADV_MODIFIER     =  1.30;
 const float    Battle::kDOUBLE_ELM_DIS_MODIFIER     =  0.74;
 
 const float    Battle::kMANNA_POW_MODIFIER          =  1.00;
-const float    Battle::kMANNA_DEF_MODIFIER          =  1.00;
-const float    Battle::kUSER_POW_MODIFIER           =  4.00;
+const float    Battle::kMANNA_DEF_MODIFIER          =  1.20;
+const float    Battle::kUSER_POW_MODIFIER           =  3.00;
 const float    Battle::kTARG_DEF_MODIFIER           =  2.90;
 
 const float    Battle::kBASE_CRIT_CHANCE            =   0.10;
@@ -1486,6 +1486,10 @@ bool Battle::processDamageAction(std::vector<Person*> targets)
   {
     can_process &= (*jt) != nullptr;
     can_process &= curr_user != nullptr;
+    
+    /* Damage actions can only be processed against targets who are alive */
+    if (can_process)
+      can_process &= (*jt)->getBFlag(BState::ALIVE);
 
     if (can_process)
     {
@@ -1528,9 +1532,12 @@ bool Battle::processDamageAction(std::vector<Person*> targets)
           updateTargetDefense();
         }
 
-        /* If an actor has died, check party deaths */
+        /* If an actor has died, update the buffer and check party deaths */
         if (death)
-         done = updatePartyDeaths();
+        {
+          action_buffer->removeAllByUser(curr_target);
+          done = updatePartyDeaths();
+        }
       }
       else 
       {
@@ -1582,9 +1589,8 @@ bool Battle::processSkill(std::vector<Person*> targets)
 {
   auto done = false;
 
-#ifdef UDEBUG
-  std::cout << "{Skill} Processing: " << curr_skill->getName() << std::endl;
-#endif
+  if (getBattleMode() == BattleMode::TEXT)
+    std::cout << "{Skill} Processing: " << curr_skill->getName() << std::endl;
 
   /* Assign the current user and grab the list of effects of the Skill */
   auto effects = curr_skill->getEffects();
@@ -1670,6 +1676,7 @@ bool Battle::processSkill(std::vector<Person*> targets)
     }
   }
 
+  std::cout << "Returning DONE: " << done << std::endl;
   return done;
 }
 
@@ -2571,10 +2578,13 @@ void Battle::printPersonState(Person* const member,
 {
   if (member != nullptr)
   {
-    std::cout << "[" << person_index << "] - " << member->getName();
-    std::cout << " [ Lv. " << member->getLevel() << " ] << \n" 
-              << "VITA: " << member->getCurr().getStat(0) << "\n"
-              << "QTDR: " << member->getCurr().getStat(1) << "\n\n";
+    std::cout << "[" << person_index << "] - " << member->getName()
+              << " [ Lv. " << member->getLevel() << " ] << \n" 
+              << "VITA: " << member->getCurr().getStat(0) << "/" 
+              << member->getTemp().getStat(0) << " [" << member->getVitaPercent() 
+              << "%]\n" << "QTDR: " << member->getCurr().getStat(1) << "/"
+              << member->getTemp().getStat(1) << " [" << member->getQDPercent()
+              << "%]\n\n";
   }
 }
 

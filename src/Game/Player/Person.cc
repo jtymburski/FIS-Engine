@@ -1525,9 +1525,14 @@ uint32_t Person::getTotalExp()
 uint16_t Person::getQDPercent()
 {
   auto curr_qd = getCurr().getStat(Attribute::QTDR);
-  auto max_qd  = getCurrMax().getStat(Attribute::QTDR);
+  auto max_qd  = getTemp().getStat(Attribute::QTDR);
 
-  return static_cast<uint16_t>(floor((curr_qd * 100) / max_qd));
+  uint16_t qtdr_pc = 0;
+
+  if (max_qd != 0)
+    qtdr_pc = static_cast<uint16_t>(floor((curr_qd * 100) / max_qd));
+
+  return qtdr_pc;
 }
 
 /*
@@ -1539,9 +1544,14 @@ uint16_t Person::getQDPercent()
 uint16_t Person::getVitaPercent()
 {
   auto curr_vita = getCurr().getStat(Attribute::VITA);
-  auto max_vita  = getCurr().getStat(Attribute::VITA);
+  auto max_vita  = getTemp().getStat(Attribute::VITA);
+  
+  uint16_t vita_pc = 0;
 
-  return static_cast<uint16_t>(floor((curr_vita * 100) / max_vita));
+  if (max_vita != 0)
+    vita_pc = static_cast<uint16_t>(floor((curr_vita * 100) / max_vita));
+  
+  return vita_pc;
 }
 
 

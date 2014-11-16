@@ -20,6 +20,9 @@
 #include "Game/Player/Skill.h"
 #include "Game/Player/Person.h"
 
+using std::begin;
+using std::end;
+
 /* Enumerated method of sorting for the Buffer objects */
 enum class BufferSorts
 {

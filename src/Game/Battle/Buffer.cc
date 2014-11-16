@@ -413,22 +413,18 @@ bool Buffer::remove(const uint32_t &index)
  */
 bool Buffer::removeAllByUser(Person* user)
 {
-  auto removed = false;
-
   if (user == nullptr)
     return false;
 
-  for (auto it = begin(action_buffer); it != end(action_buffer); ++it)
-  {
-    if ((*it).user == user)
-    {
-      action_buffer.erase(it);
+  action_buffer.erase(std::remove_if(begin(action_buffer), 
+                                  end(action_buffer),
+                                  [&](BufferAction x) -> bool
+                                  {
+                                    return (x.user == user);
+                                  }),
+                                  end(action_buffer));
 
-      removed = true;
-    }
-  }
-
-  return removed;
+  return true;
 }
 
 /*

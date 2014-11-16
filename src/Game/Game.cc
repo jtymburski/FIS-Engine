@@ -243,7 +243,7 @@ void Game::setupBattle()
 {
   // Test Actions
   std::vector<Action*> damage_actions;
-  damage_actions.push_back(new Action("1,DAMAGE,,,,VITA,AMOUNT.20,AMOUNT.5,,95"));
+  damage_actions.push_back(new Action("1,DAMAGE,,,,VITA,AMOUNT.20,AMOUNT.10,,95"));
   damage_actions.push_back(new Action("2,DAMAGE,,,,VITA,AMOUNT.30,AMOUNT.7,,95"));
   damage_actions.push_back(new Action("3,DAMAGE,,,,VITA,AMOUNT.40,AMOUNT.10,,95"));
   damage_actions.push_back(new Action("4,DAMAGE,,,,VITA,AMOUNT.50,AMOUNT.15,,95"));
@@ -342,16 +342,20 @@ void Game::setupBattle()
   std::vector<BattleItem> items;
 
   Person* frosty = new Person(310, "Frosty", human, bloodclaw_scion);
-  AIModule* frosty_module = new AIModule();
-  frosty_module->setParent(frosty);
-  frosty->setAI(frosty_module);
-  
-  // Person* cloud_dude = new Person(301, "Cloud Dude", human, bloodclaw_scion);
+  Person* cloud_dude = new Person(311, "Cloud Dude", human, bloodclaw_scion);
   // Person* thruster_barrow = new Person(301, "Thruster Barrow", human, bloodclaw_scion);
   // Person* dragon = new Person(301, "Dragon", human, bloodclaw_scion);
   // Person* splurge = new Person(301, "Splurge", human, bloodclaw_scion);
 
- // Inventory Testing
+  AIModule* frosty_module = new AIModule();
+  frosty_module->setParent(frosty);
+  frosty->setAI(frosty_module);
+
+  AIModule* cloud_module = new AIModule();
+  cloud_module->setParent(cloud_dude);
+  cloud_dude->setAI(cloud_module);
+
+ // Inventory Testinggd
   Inventory* friends_pouch = new Inventory(401, "Teh Pouch");
   Inventory* foes_pouch = new Inventory(402, "Der Pouch");
 
@@ -364,6 +368,7 @@ void Game::setupBattle()
   //friends->addMember(kevin);
 
   Party* enemies = new Party(402, frosty, PartyType::REGULAR_FOE, 5, foes_pouch);
+  enemies->addMember(cloud_dude);
   
   // Battle Testing
   for (uint32_t i = 0; i < friends->getSize(); i++)
