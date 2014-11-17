@@ -391,7 +391,7 @@ bool Battle::bufferEnemyAction()
   }
   else
   {
-    std::cout << "[Error]: Action buffer addition failure!" << std::endl;   
+    std::cerr << "[Error]: Action buffer addition failure!" << std::endl;   
   }
 
   return false;
@@ -464,7 +464,7 @@ bool Battle::bufferUserAction()
   }
   else
   {
-    std::cout << "[Error]: Invalid action selected\n";
+    std::cerr << "[Error]: Invalid action selected\n";
   }
 
   if (buffered)
@@ -476,13 +476,12 @@ bool Battle::bufferUserAction()
     else
       curr_user->setBFlag(BState::SELECTED_ACTION);
 
-    std::cout << "Can increment index: " << canIncrementIndex(curr_user) << std::endl;
     if (canIncrementIndex(curr_user))
       return setNextPersonIndex();
   }
   else
   {
-    std::cout << "[Error]: Action buffer addition failure!" << std::endl;   
+    std::cerr << "[Error]: Action buffer addition failure!" << std::endl;   
   }
 
   return false;
@@ -669,7 +668,7 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
   /* Summation of base power / defense */
   base_user_pow  = phys_pow_val + elm1_pow_val + elm2_pow_val + luck_pow_val;
   base_user_pow *= kUSER_POW_MODIFIER;
-  
+
   base_targ_def  = phys_def_val + elm1_def_val + elm2_def_val + luck_def_val;
   base_targ_def *= kTARG_DEF_MODIFIER;
 
@@ -1182,7 +1181,8 @@ bool Battle::doesActionCrit()
   {
     auto crit_chance = kBASE_CRIT_CHANCE;
     auto crit_mod = temp_user_stats.getStat(Attribute::UNBR) * kCRIT_MODIFIER;
-    auto crit_lvl_mod = calcLevelDifference(action_buffer->getTargets()) * kCRIT_LVL_MODIFIER;
+    auto crit_lvl_mod = calcLevelDifference(action_buffer->getTargets()) * 
+                                            kCRIT_LVL_MODIFIER;
 
     crit_chance += crit_mod + crit_lvl_mod;
 
@@ -1552,8 +1552,13 @@ bool Battle::processDamageAction(std::vector<Person*> targets)
         if (doesActionCrit())
           actual_crit_factor = calcCritFactor();
 
-        auto base_damage = calcBaseDamage(actual_crit_factor);
-          
+        auto base_damage  = calcBaseDamage(actual_crit_factor);
+        auto damage_mod   = curr_user->getDmgMod();
+        auto total_damage = static_cast<int32_t>(base_damage * damage_mod);
+
+        total_damage = Helpers::setInRange(total_damage, kMINIMUM_DAMAGE, 
+                                           kMAXIMUM_DAMAGE);
+        
         if (getBattleMode() == BattleMode::TEXT && curr_target != nullptr)
         {
           std::cout << "{DAMAGE} " << curr_target->getName() << " receives "
@@ -1561,7 +1566,7 @@ bool Battle::processDamageAction(std::vector<Person*> targets)
                     << curr_user->getName() << "." << std::endl;
         }
 
-        if (curr_target->doDmg(base_damage))
+        if (curr_target->doDmg(total_damage))
         {
           /* If doDmg returns true, the actor has died -> check party death */
           //TODO [08-01-14]: User has died message + battle front end msg
@@ -2700,7 +2705,7 @@ void Battle::printPartyState()
 
   std::cout << "---- Foes ----\n";
   for (uint32_t i = 0; i < foes->getSize(); i++)
-    printPersonState(getPerson(getIndexOfPerson(foes->getMember(i))), getIndexOfPerson(foes->getMember(i)));
+    printPersonState(foes->getMember(i), getIndexOfPerson(foes->getMember(i)));
 }
 
 /*

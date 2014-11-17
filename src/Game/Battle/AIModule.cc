@@ -975,7 +975,7 @@ void AIModule::print(const bool &simple, const bool &print_flags,
     std::cout << "D: " << Helpers::aiDifficultyToStr(difficulty) << " PP: " 
               << Helpers::aiPersonalityToStr(prim_personality) << " SP: "
               << Helpers::aiPersonalityToStr(secd_personality) << "\n";
-   
+  
     std::cout << "VAT Size: " << valid_action_types.size() << " Chosen AT: "
               << Helpers::actionTypeToStr(chosen_action_type) << "\n";
 

@@ -434,7 +434,6 @@ void Person::updateLevel()
   {
     auto before = level;
 
-    std::cout << "Level at: " << total_exp << " is: " << getLevelAt(total_exp) << std::endl;
     level = getLevelAt(total_exp);
 
     if (level == kNUM_LEVELS)
@@ -2033,9 +2032,9 @@ uint16_t Person::getLevelAt(const uint32_t &experience)
 {
   for (size_t i = 0; i < exp_table.size(); i++)
     if (exp_table.at(i) >= experience)
-      return i + 1;
+      return i;
 
-  return exp_table.size() + 1;
+  return exp_table.size();
 }
 
 /*
