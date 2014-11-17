@@ -127,7 +127,7 @@ private:
   int32_t base;
 
   /* Chance of the action occuring */
-  int32_t chance;
+  float chance;
 
   /* ID of the current Action [parsed in] */
   int32_t id;
@@ -170,7 +170,7 @@ private:
   bool parseAttribute(const std::string &attr_parse, const bool &target);
   
   /* Parse the chance occuring */
-  void parseChance(const int32_t &parse_chance);
+  void parseChance(const float &parse_chance);
 
   /* Sub-method for parsing the ignore atk and ignore def flags */
   void parseIgnoreFlags(IgnoreFlags& flag_set, const std::string &flags);
@@ -206,6 +206,9 @@ public:
 
   /* Returns the base change */
   int getBase() const;
+
+  /* Return the chance of the action occuring */
+  float getChance() const;
 
   /* Returns the ID of the Action */
   int getID() const;

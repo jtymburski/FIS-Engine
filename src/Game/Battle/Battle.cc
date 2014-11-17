@@ -116,8 +116,9 @@ const float    Battle::kENEMY_RUN_MODIFIER          =   1.00;
 const float    Battle::kRUN_PC_PER_POINT            =   0.003;
 const int16_t  Battle::kRUN_PC_EXP_PENALTY          =      5;
 
-const float    Battle::kDODGE_MODIFIER              =   1.10;
-const float    Battle::kDODGE_PER_LEVEL_MODIFIER    =   1.04;
+const float    Battle::kDODGE_MODIFIER              =   0.10;
+const float    Battle::kDODGE_HIGHEST_RATE_PC       =   50.0;
+const float    Battle::kDODGE_PER_LEVEL_MODIFIER    =   2.50;
 
 const float    Battle::kDEFEND_MODIFIER             =   0.50;
 const float    Battle::kGUARD_MODIFIER              =   0.25;
@@ -617,11 +618,12 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
   phys_pow_val = temp_user_stats.getStat(Attribute::PHAG);
   phys_pow_val *= kOFF_PHYS_MODIFIER;
 
-  phys_def_val = temp_user_stats.getStat(Attribute::PHFD);
+  phys_def_val = targ_attrs.getStat(Attribute::PHFD);
   phys_def_val *= kDEF_PHYS_MODIFIER;
 
   /* Primary elemental affiliation bonuses */
-  if (curr_skill->getPrimary() != Element::NONE)
+  if (curr_skill->getPrimary() != Element::NONE &&
+      curr_skill->getPrimary() != Element::PHYSICAL)
   {
     if (curr_user->getPrimary() == curr_skill->getPrimary() ||
         curr_user->getPrimary() == curr_skill->getSecondary())
@@ -633,25 +635,26 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
     if (curr_target->getPrimary() == curr_skill->getPrimary() ||
         curr_target->getPrimary() == curr_skill->getSecondary())
     {
-      elm1_pow_val  = targ_attrs.getStat(prim_def);
-      elm2_def_val *= kDEF_PRIM_ELM_MATCH_MODIFIER;
+      elm1_def_val  = targ_attrs.getStat(prim_def);
+      elm1_def_val *= kDEF_PRIM_ELM_MATCH_MODIFIER;
     }
   }
  
   /* Secondary elemental affiliation bonuses */
-  if (curr_skill->getSecondary() != Element::NONE)
+  if (curr_skill->getSecondary() != Element::NONE &&
+      curr_skill->getSecondary() != Element::PHYSICAL)
   {
     if (curr_user->getSecondary() == curr_skill->getPrimary() ||
         curr_user->getSecondary() == curr_skill->getSecondary())
     {
-      elm1_pow_val  = temp_user_stats.getStat(secd_off);
+      elm2_pow_val  = temp_user_stats.getStat(secd_off);
       elm2_pow_val *= kOFF_SECD_ELM_MATCH_MODIFIER;
     }
 
     if (curr_target->getSecondary() == curr_skill->getPrimary() ||
         curr_target->getSecondary() == curr_skill->getSecondary())
     {
-      elm2_pow_val  = targ_attrs.getStat(secd_def);
+      elm2_def_val  = targ_attrs.getStat(secd_def);
       elm2_def_val *= kDEF_SECD_ELM_MATCH_MODIFIER;
     }
   }
@@ -666,7 +669,7 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
   /* Summation of base power / defense */
   base_user_pow  = phys_pow_val + elm1_pow_val + elm2_pow_val + luck_pow_val;
   base_user_pow *= kUSER_POW_MODIFIER;
-
+  
   base_targ_def  = phys_def_val + elm1_def_val + elm2_def_val + luck_def_val;
   base_targ_def *= kTARG_DEF_MODIFIER;
 
@@ -696,7 +699,12 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
 
   action_power = Helpers::randU(action_power - var_val, action_power + var_val);
 
-  auto base_damage = base_user_pow + action_power - base_targ_def;
+  int32_t base_damage = 0;
+
+  if (base_user_pow > base_targ_def)
+    base_damage = base_user_pow + action_power - base_targ_def;
+  else if (base_user_pow <= base_targ_def)
+    base_damage = action_power;
 
   /* If the user is defending, decrease the damage taken by the defending
    * modifier */
@@ -717,7 +725,7 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
 #ifdef UDEBUG
   std::cout << "User Power: ----- " << base_user_pow << std::endl;
   std::cout << "Action Power: --- " << action_power << std::endl;
-  std::cout << "User Def: ------- " << base_targ_def << std::endl;
+  std::cout << "Target Def: ----- " << base_targ_def << std::endl;
   std::cout << "Crit Factor: ---- " << crit_factor <<std::endl;
   std::cout << "Base Damage: ---- " << base_damage << std::endl <<std::endl;
 #endif
@@ -956,16 +964,30 @@ bool Battle::calcIgnoreState()
 }
 
 /*
- * Description: Determines the level difference between the current user and the
- *              current target. A negative value means the target's level is 
- *              greater.
+ * Description: Determines the average level difference among targets
  *
  * Inputs: none
- * Output: int16_t - the difference in level value
+ * Output: int16_t - the [average] difference in level value
  */
-int16_t Battle::calcLevelDifference()
+int16_t Battle::calcLevelDifference(std::vector<Person*> targets)
 {
-  return curr_user->getLevel() - curr_target->getLevel();
+  if (curr_user != nullptr)
+  {
+    auto total_lvl = 0;
+
+    for (uint16_t i = 0; i < targets.size(); i++)
+    {
+      if (targets.at(i) != nullptr)
+        total_lvl += targets.at(i)->getLevel();
+    }
+    
+    if (total_lvl != 0)
+      return curr_user->getLevel() - (total_lvl / targets.size());
+  }
+  else
+    std::cerr << "[Error] Cannot compute level difference." << std::endl;
+
+  return 0;
 }
 
 /*
@@ -1160,7 +1182,7 @@ bool Battle::doesActionCrit()
   {
     auto crit_chance = kBASE_CRIT_CHANCE;
     auto crit_mod = temp_user_stats.getStat(Attribute::UNBR) * kCRIT_MODIFIER;
-    auto crit_lvl_mod = calcLevelDifference() * kCRIT_LVL_MODIFIER;
+    auto crit_lvl_mod = calcLevelDifference(action_buffer->getTargets()) * kCRIT_LVL_MODIFIER;
 
     crit_chance += crit_mod + crit_lvl_mod;
 
@@ -1188,17 +1210,50 @@ bool Battle::doesActionCrit()
  *              occuring.
  *
  * Inputs: none
- * Output: bool - true if the current skill will entirely miss
+ * Output: bool - true if the current skill will hit
  */
-bool Battle::doesSkillMiss()
+bool Battle::doesSkillHit(std::vector<Person*> targets)
 {
-  auto skill_hits = true;
+  auto can_process = true;
+  auto hits  = true;
 
-  skill_hits &= curr_skill->isValid();
-  skill_hits &= curr_user->getBFlag(BState::SKL_ENABLED);
-  skill_hits &= curr_user->getBFlag(BState::MISS_NEXT_TARGET);
+  can_process &= curr_skill != nullptr;
+  can_process &= curr_user != nullptr;
 
-  return skill_hits;
+  if (can_process)
+  {
+    auto can_hit = true;
+
+    can_hit &= curr_skill->isValid();
+    can_hit &= curr_user->getBFlag(BState::SKL_ENABLED);
+    can_hit &= !curr_user->getBFlag(BState::MISS_NEXT_TARGET);
+
+    if (can_hit)
+    {
+      /* Obtain the base hit rate (in XX.X%) */
+      auto hit_rate = curr_skill->getChance();
+
+      /* Obtain the average level difference in #lvls, a positive value denoting
+       * the user's level is higher -> modify it -> add to base hit chance */
+      auto level_diff = calcLevelDifference(targets);
+
+      /* Hit rate is not altered for user's who have higher levels */
+      if (level_diff < 0)
+      {
+        /* Add the (negative) mod value to the hit rate */
+        auto mod = static_cast<float>(level_diff * kDODGE_PER_LEVEL_MODIFIER);
+        auto new_hit_rate = hit_rate + mod;
+        auto lowest_hit_rate = hit_rate * (kDODGE_HIGHEST_RATE_PC / 100);
+
+        /* Assert that the hit rate is above the minimum hit rate */
+        hit_rate = Helpers::setInRange(new_hit_rate, lowest_hit_rate, hit_rate);
+      }
+ 
+      hits = Helpers::chanceHappens(static_cast<uint32_t>(hit_rate), 100);
+    }
+  }
+
+  return hits;
 }
 
 /*
@@ -1206,25 +1261,29 @@ bool Battle::doesSkillMiss()
  *              target. 
  *
  * Inputs: none
- * Output: bool - true if the current action will miss the current target
+ * Output: bool - true if the current action will hit
  */
-bool Battle::doesActionMiss()
+bool Battle::doesActionHit()
 {
-  auto action_happens = true;
+  auto can_process = true;
+  auto hit = true;
 
-  auto miss_ch = temp_target_stats.at(pro_index).getStat(Attribute::LIMB);
-  miss_ch *= kDODGE_MODIFIER;
+  can_process &= curr_user    != nullptr;
+  can_process &= curr_target  != nullptr;
+  can_process &= curr_action  != nullptr;
 
-  miss_ch += (-calcLevelDifference()) * kDODGE_PER_LEVEL_MODIFIER;
-
-  if (miss_ch > 0)
+  if (can_process)
   {
-    uint32_t miss_pc_1000 = floor(miss_ch * 1000);
-    if (Helpers::chanceHappens(miss_pc_1000, 1000))
-      action_happens = false;
+    /* Run probabilities of the action occuring */
+    hit = Helpers::chanceHappens(
+        static_cast<uint32_t>(curr_action->getChance()), 100);
+  }
+  else
+  {
+    std::cerr << "[Warning] Cannot process action missing chances" << std::endl; 
   }
 
-  return action_happens;
+  return hit;
 }
 
 /*
@@ -1483,7 +1542,7 @@ bool Battle::processDamageAction(std::vector<Person*> targets)
       curr_target = *jt;
       death = false;
         
-      if (!doesActionMiss())
+      if (doesActionHit())
       {
         auto actual_crit_factor = 1.00;
   
@@ -1690,7 +1749,7 @@ void Battle::processBuffer()
 
       if (curr_skill != nullptr && curr_skill->getCooldown() == 0)
       {
-        if (!doesSkillMiss())
+        if (doesSkillHit(action_buffer->getTargets()))
         {
           done = processSkill(action_buffer->getTargets());
         }
@@ -1996,9 +2055,9 @@ void Battle::upkeep()
 }
 
 /*
- * Description: 
+ * Description: 1`
  *
- * Inputs:
+ * Inputs:!
  * Output: 
  */
 void Battle::updateAllySelection()

@@ -242,10 +242,10 @@ void Game::setupBattle()
 {
   // Test Actions
   std::vector<Action*> damage_actions;
-  damage_actions.push_back(new Action("1,DAMAGE,,,,VITA,AMOUNT.20,AMOUNT.10,,95"));
-  damage_actions.push_back(new Action("2,DAMAGE,,,,VITA,AMOUNT.30,AMOUNT.7,,95"));
-  damage_actions.push_back(new Action("3,DAMAGE,,,,VITA,AMOUNT.40,AMOUNT.10,,95"));
-  damage_actions.push_back(new Action("4,DAMAGE,,,,VITA,AMOUNT.50,AMOUNT.15,,95"));
+  damage_actions.push_back(new Action("1,DAMAGE,,,,VITA,AMOUNT.20,AMOUNT.5,,95"));
+  damage_actions.push_back(new Action("2,DAMAGE,,,,VITA,AMOUNT.20,AMOUNT.5,,95"));
+  damage_actions.push_back(new Action("3,DAMAGE,,,,VITA,AMOUNT.20,AMOUNT.5,,95"));
+  damage_actions.push_back(new Action("4,DAMAGE,,,,VITA,AMOUNT.20,AMOUNT.5,,95"));
   damage_actions.push_back(new Action("5,DAMAGE,,,,VITA,AMOUNT.60,AMOUNT.20,,95"));
   damage_actions.push_back(new Action("6,DAMAGE,,,,VITA,AMOUNT.75,AMOUNT.25,,95"));
   damage_actions.push_back(new Action("7,DAMAGE,,,,VITA,AMOUNT.90,AMOUNT.25,,95"));
@@ -270,19 +270,19 @@ void Game::setupBattle()
 
   // Test Skills
   Skill* physical_01 = new Skill(100, "Wee Strike", ActionScope::ONE_ENEMY, 
-      damage_actions[0], 100, 0);
+      damage_actions[0], 95, 0);
   physical_01->setPrimary(Element::PHYSICAL);
 
   Skill* physical_02 = new Skill(101, "Whelp", ActionScope::ONE_ENEMY, 
-      damage_actions[1], 0.50, 10);
+      damage_actions[1],  95, 10);
   physical_02->setPrimary(Element::PHYSICAL);
 
   Skill* physical_03 = new Skill(102, "Two Smackeroos", 
-      ActionScope::TWO_ENEMIES, damage_actions[2], 0.50, 10);
+      ActionScope::TWO_ENEMIES, damage_actions[2], 95, 10);
   physical_03->setPrimary(Element::PHYSICAL);
 
   Skill* physical_04 = new Skill(103, "Mass Smack", ActionScope::ALL_ENEMIES, 
-      damage_actions[3], 0.55, 25);
+      damage_actions[3], 85, 25);
   physical_04->setPrimary(Element::PHYSICAL);
 
   // Test Skill Sets
@@ -331,19 +331,23 @@ void Game::setupBattle()
 
   // Test Persons
   Person* malgidus = new Person(300, "Malgidus", human, bloodclaw_scion);
-  Person* arcadius = new Person(301, "Arcadius", bear, tactical_samurai);
-  Person* berran   = new Person(302, "Berran", bear, bloodclaw_scion);
-  Person* atkst    = new Person(303, "Atkst", human, bloodclaw_scion);
-  Person* kevin    = new Person(304, "Kevin", human, bloodclaw_scion);
-  Person* george   = new Person(305, "George", human, bloodclaw_scion);
-  Person* gregory  = new Person(306, "Gregory", human, bloodclaw_scion);
-  Person* georgina = new Person(307, "Georgina", human, bloodclaw_scion);
-  Person* gerald   = new Person(308, "Gerald", human, bloodclaw_scion);
-  Person* geoff    = new Person(309, "Geoff", human, bloodclaw_scion);
+  malgidus->addExp(50000);
+
+  // Person* arcadius = new Person(301, "Arcadius", bear, tactical_samurai);
+  // Person* berran   = new Person(302, "Berran", bear, bloodclaw_scion);
+  // Person* atkst    = new Person(303, "Atkst", human, bloodclaw_scion);
+  // Person* kevin    = new Person(304, "Kevin", human, bloodclaw_scion);
+  // Person* george   = new Person(305, "George", human, bloodclaw_scion);
+  // Person* gregory  = new Person(306, "Gregory", human, bloodclaw_scion);
+  // Person* georgina = new Person(307, "Georgina", human, bloodclaw_scion);
+  // Person* gerald   = new Person(308, "Gerald", human, bloodclaw_scion);
+  // Person* geoff    = new Person(309, "Geoff", human, bloodclaw_scion);
 
   std::vector<BattleItem> items;
 
   Person* frosty = new Person(310, "Frosty", human, bloodclaw_scion);
+  frosty->addExp(500);
+
   Person* cloud_dude = new Person(311, "Cloud Dude", human, bloodclaw_scion);
   Person* thruster_barrow = new Person(301, "Thruster Barrow", human, bloodclaw_scion);
   Person* dragon = new Person(301, "Dragon", human, bloodclaw_scion);
@@ -391,24 +395,24 @@ void Game::setupBattle()
   // Party Testing
   Party* friends = new Party(401, malgidus, PartyType::SLEUTH, 10,
       friends_pouch);
-  friends->addMember(arcadius);
-  friends->addMember(berran);
-  friends->addMember(atkst);
-  friends->addMember(kevin);
-  friends->addMember(george);
-  friends->addMember(gregory);
-  friends->addMember(georgina);
-  friends->addMember(gerald);
-  friends->addMember(geoff);
+  // friends->addMember(arcadius);
+  // friends->addMember(berran);
+  // friends->addMember(atkst);
+  // friends->addMember(kevin);
+  // friends->addMember(george);
+  // friends->addMember(gregory);
+  // friends->addMember(georgina);
+  // friends->addMember(gerald);
+  // friends->addMember(geoff);
 
   Party* enemies = new Party(402, frosty, PartyType::REGULAR_FOE, 10, foes_pouch);
-  enemies->addMember(cloud_dude);
-  enemies->addMember(thruster_barrow);
-  enemies->addMember(dragon);
-  enemies->addMember(splurge);
-  enemies->addMember(schwep);
-  enemies->addMember(hamburger);
-  enemies->addMember(swiss_cheese);
+  // enemies->addMember(cloud_dude);
+  // enemies->addMember(thruster_barrow);
+  // enemies->addMember(dragon);
+  // enemies->addMember(splurge);
+  // enemies->addMember(schwep);
+  // enemies->addMember(hamburger);
+  // enemies->addMember(swiss_cheese);
   
   // Battle Testing
   for (uint32_t i = 0; i < friends->getSize(); i++)

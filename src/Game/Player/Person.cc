@@ -434,6 +434,7 @@ void Person::updateLevel()
   {
     auto before = level;
 
+    std::cout << "Level at: " << total_exp << " is: " << getLevelAt(total_exp) << std::endl;
     level = getLevelAt(total_exp);
 
     if (level == kNUM_LEVELS)
@@ -581,8 +582,8 @@ bool Person::addExp(const uint32_t &amount, const bool &update)
 
   if (getPFlag(PState::CAN_GAIN_EXP))
   {
-    auto mod_amount = std::floor(total_exp * exp_mod);
-
+    auto mod_amount = std::floor(amount * exp_mod);
+  
     if (total_exp + mod_amount < kMAX_EXP)
     { 
       total_exp += mod_amount;

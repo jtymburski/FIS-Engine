@@ -54,11 +54,11 @@ const std::vector<std::string> AttributeSet::kLONG_NAMES =
 
 const std::vector<std::vector<int>> AttributeSet::kPRESETS =
 {
-  {100, 25, 10, 10, /* Weak Stats */
-    15, 10, 15, 10, 
-    25, 15, 15, 10, 
-    15, 10, 15, 10, 
-    10, 10, 5, 1},
+  {100, 25, 5, 5, /* Weak Stats */
+    5, 3, 5, 3, 
+    5, 3, 5, 3, 
+    5, 3, 5, 3, 
+    5, 5, 3, 1},
 
   {150, 30, 15, 15, /* Not as Weak Stats */
     20, 15, 20, 15,
@@ -66,11 +66,11 @@ const std::vector<std::vector<int>> AttributeSet::kPRESETS =
     20, 15, 20, 15,
     15, 15, 10, 2},
 
-  {3000, 50, 25, 25, /* Normal Stats */
-   20, 14, 20, 14,
-   35, 28, 20, 10,
-   18, 7, 18, 7,
-   20, 20, 10, 1},
+  {150, 30, 5, 10, /* Normal Stats */
+    20, 15, 20, 15,
+    20, 15, 20, 15,
+    20, 15, 20, 15,
+    15, 15, 10, 2},
 
   {1000, 200, 45, 45, /* Medium, strong physical, polar stats */
    60, 40, 60, 40,
@@ -78,7 +78,7 @@ const std::vector<std::vector<int>> AttributeSet::kPRESETS =
    60, 40, 60, 40,
    40, 50, 25, 5},
 
-  {5000, 3000, 250, 250, /* Potential top end set */
+  {5000, 3000, 1000, 1000, /* Potential top end set */
    250,   250, 250, 250,
    250,   250, 250, 250,
    250,   250, 250, 250,

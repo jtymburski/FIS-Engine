@@ -230,6 +230,7 @@ private:
   static const float    kCRIT_SHIELDED_MODIFIER;
 
   static const float    kDODGE_MODIFIER;
+  static const float    kDODGE_HIGHEST_RATE_PC;
   static const float    kDODGE_PER_LEVEL_MODIFIER;
 
   static const float    kBASE_RUN_CHANCE;
@@ -283,8 +284,8 @@ private:
   /* Calculate the current ignore state flags */
   bool calcIgnoreState();
 
-  /* */
-  int16_t calcLevelDifference();
+  /* Calculates the level difference between curr_user and curr_target */
+  int16_t calcLevelDifference(std::vector<Person*> targets);
 
   /* Determines whether the current person has selected all actions */
   bool canIncrementIndex(Person* check_person);
@@ -308,13 +309,13 @@ private:
   bool doesActionCrit();
 
   /* Calculates miss chance and determines whether an action miss will occur */
-  bool doesActionMiss();
+  bool doesActionHit();
 
   /* Determines whether the current person trying to run runs */
   bool doesCurrPersonRun();
 
   /* Calculates skill missing chance and determines if the skill miss */
-  bool doesSkillMiss();
+  bool doesSkillHit(std::vector<Person*> targets);
 
   /* Deals with general upkeep (i.e. weather) */
   void generalUpkeep();

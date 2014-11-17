@@ -376,7 +376,7 @@ bool Action::parseAttribute(const std::string &attr_parse, const bool &target)
   return false;
 }
 
-void Action::parseChance(const int32_t &parse_chance)
+void Action::parseChance(const float &parse_chance)
 {
   if (parse_chance > 0)
     (parse_chance > 100) ? (chance = 100) : (chance = parse_chance);
@@ -605,6 +605,17 @@ Infliction Action::getAilment() const
 int Action::getBase() const
 {
   return base;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output: 
+ */
+float Action::getChance() const
+{
+  return chance;
 }
 
 /*
