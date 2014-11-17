@@ -182,8 +182,8 @@ bool MapItem::setStartingTile(uint16_t section_id, Tile* new_tile,
   if(new_tile != NULL)
   {
     /* Unset the main tile */
-    if(tile_main != NULL)
-      tile_main->unsetItem();
+    //if(tile_main != NULL) // TODO: Fix
+    //  tile_main->unsetItem();
     tile_main = NULL;
   
     /* Set the new tile */
@@ -192,7 +192,7 @@ bool MapItem::setStartingTile(uint16_t section_id, Tile* new_tile,
     this->x_raw = this->x * kRAW_MULTIPLIER;
     this->y = tile_main->getPixelY();
     this->y_raw = this->y * kRAW_MULTIPLIER;
-    tile_main->setItem(this);
+    //tile_main->setItem(this); // TODO:Fix
     tile_section = section_id;
     
     return true;

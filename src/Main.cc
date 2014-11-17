@@ -60,23 +60,151 @@ int main(int argc, char** argv)
   (void)argv;
 
   // TESTING: TODO - Remove
-  std::cout << "--TEST--" << std::endl;
+  //while(1) {
+  std::cout << "--THING TEST--" << std::endl;
   Tile* t = new Tile();
+  t->setStatus(Tile::ACTIVE);
   MapThing* thing = new MapThing();
   std::cout << "PTR: " << thing << std::endl;
-  std::cout << "Status: " << t->setThing(thing, 1) << std::endl;
-  std::cout << "PTR: " << t->getThing(1) << std::endl;
+  std::cout << "Is Set: " << t->isThingsSet() << " " 
+                          << t->isThingSet(2) << " "
+                          << t->isThingSet(3) << std::endl;
+  std::cout << "Status: " << t->setThing(thing, 2) << std::endl;
+  std::cout << "Is Set: " << t->isThingsSet() << " " 
+                          << t->isThingSet(2) << " "
+                          << t->isThingSet(3) << std::endl;
+  std::cout << "PTR: " << t->getThing(2) << std::endl;
+  std::vector<MapThing*> thing_set = t->getThings();
+  for(uint16_t i = 0; i < thing_set.size(); i++)
+    std::cout << "PTR-SET: " << thing_set[i] << std::endl;
+  thing_set.clear();
 
   MapItem* r_item = NULL;
   MapPerson* r_person = NULL;
   MapThing* r_thing = NULL;
-  std::cout << "Status: " << t->getRenderThings(1, r_item, r_person, r_thing)
+  std::cout << "R Status: " << t->getRenderThings(2, r_item, r_person, r_thing)
             << std::endl;
-  std::cout << "RENDER: " << r_thing << std::endl;
+  std::cout << "RENDER: " << r_thing << " " << r_person << std::endl;
 
-  std::cout << "Status: " << t->unsetThing(1) << std::endl;
-  std::cout << "PTR: " << t->getThing(1) << std::endl;
-  std::cout << "--END TEST--" << std::endl;
+  std::cout << "U Status: " << t->unsetThing(1) << std::endl;
+  t->unsetThings();
+  std::cout << "PTR: " << t->getThing(2) << std::endl;
+
+  std::cout << "PTR: " << thing << std::endl;
+  std::cout << "Is Set: " << t->isThingsSet() << " " 
+                          << t->isThingSet(0) << " "
+                          << t->isThingSet(3) << std::endl;
+  std::cout << "Status: " << t->setThing(thing, 0) << std::endl;
+  std::cout << "Is Set: " << t->isThingsSet() << " " 
+                          << t->isThingSet(0) << " "
+                          << t->isThingSet(3) << std::endl;
+  std::cout << "PTR: " << t->getThing(0) << std::endl;
+  thing_set = t->getThings();
+  for(uint16_t i = 0; i < thing_set.size(); i++)
+    std::cout << "PTR-SET: " << thing_set[i] << std::endl;
+  thing_set.clear();
+
+  delete t;
+  delete thing;
+  std::cout << "--END THING TEST--" << std::endl;
+
+  std::cout << "--PERSON TEST--" << std::endl;
+  Tile* t2 = new Tile();
+  t2->setStatus(Tile::ACTIVE);
+  MapPerson* person = new MapPerson();
+  std::cout << "PTR: " << person << std::endl;
+  std::cout << "Is Set: " << t2->isPersonsSet() << " " 
+                          << t2->isPersonSet(9) << " "
+                          << t2->isPersonSet(3) << std::endl;
+  std::cout << "Status: " << t2->setPerson(person, 9, false) << std::endl;
+  std::cout << "Is Set: " << t2->isPersonsSet() << " " 
+                          << t2->isPersonSet(9) << " "
+                          << t2->isPersonSet(3) << std::endl;
+  std::cout << "PTR: " << t2->getPerson(9) << std::endl;
+  std::vector<MapPerson*> person_set = t2->getPersons();
+  for(uint16_t i = 0; i < person_set.size(); i++)
+    std::cout << "PTR-SET: " << person_set[i] << std::endl;
+  person_set.clear();
+
+  r_item = NULL;
+  r_person = NULL;
+  r_thing = NULL;
+  std::cout << "R Status: " << t2->getRenderThings(2, r_item, r_person, r_thing)
+            << std::endl;
+  std::cout << "RENDER: " << r_thing << " " << r_person << std::endl;
+
+  std::cout << "U Status: " << t2->unsetPerson(1, true) << std::endl;
+  t2->unsetPersons();
+  std::cout << "PTR: " << t2->getPerson(2) << std::endl;
+
+  std::cout << "PTR: " << person << std::endl;
+  std::cout << "Is Set: " << t2->isPersonsSet() << " " 
+                          << t2->isPersonSet(2) << " "
+                          << t2->isPersonSet(3) << std::endl;
+  std::cout << "Status: " << t2->setPerson(person, 0, false) << std::endl;
+  std::cout << "Is Set: " << t2->isPersonsSet() << " " 
+                          << t2->isPersonSet(0) << " "
+                          << t2->isPersonSet(3) << std::endl;
+  std::cout << "PTR: " << t2->getPerson(0) << std::endl;
+  person_set = t2->getPersons();
+  for(uint16_t i = 0; i < person_set.size(); i++)
+    std::cout << "PTR-SET: " << person_set[i] << std::endl;
+  person_set.clear();
+
+  delete t2;
+  delete person;
+  std::cout << "--END PERSON TEST--" << std::endl;
+
+  std::cout << "--ITEM TEST--" << std::endl;
+  Tile* t3 = new Tile();
+  t3->setStatus(Tile::ACTIVE);
+  MapItem* item = new MapItem();
+  MapItem* item3 = new MapItem();
+  std::cout << "PTR: " << item << std::endl;
+  std::cout << "Is Set: " << t3->isItemsSet() << std::endl; 
+  std::cout << "Status: " << t3->addItem(item) << std::endl;
+  std::cout << "Is Set: " << t3->isItemsSet() << std::endl;
+  std::cout << "Status: " << t3->addItem(item3) << std::endl;
+  std::cout << "Check: " << t3->getItemCount() << std::endl;
+  std::vector<MapItem*> item_set = t3->getItems();
+  for(uint16_t i = 0; i < item_set.size(); i++)
+    std::cout << "PTR-SET: " << item_set[i] << std::endl;
+  item_set.clear();
+
+  r_item = NULL;
+  r_person = NULL;
+  r_thing = NULL;
+  std::cout << "R Status: " << t3->getRenderThings(0, r_item, r_person, r_thing)
+            << std::endl;
+  std::cout << "RENDER: " << r_thing << " " << r_person << " " 
+                          << r_item << std::endl;
+
+  MapItem* item2 = new MapItem();
+  std::cout << "U Status: " << t3->unsetItem(item3) << std::endl;
+  //t3->unsetItems();
+  std::cout << "Check: " << t3->getItemCount() << std::endl;
+  item_set = t3->getItems();
+  for(uint16_t i = 0; i < item_set.size(); i++)
+    std::cout << "PTR-SET: " << item_set[i] << std::endl;
+  item_set.clear();
+  
+  std::cout << "PTR: " << item << std::endl;
+  std::cout << "Is Set: " << t3->isItemsSet() << std::endl; 
+  std::cout << "Status: " << t3->addItem(item) << std::endl;
+  std::cout << "Is Set: " << t3->isItemsSet() << std::endl;
+  std::cout << "Check: " << t3->getItemCount() << std::endl;
+  t3->unsetItems();
+  item_set = t3->getItems();
+  for(uint16_t i = 0; i < item_set.size(); i++)
+    std::cout << "PTR-SET: " << item_set[i] << std::endl;
+  item_set.clear();
+
+  delete t3;
+  delete item;
+  delete item2;
+  delete item3;
+  std::cout << "--END ITEM TEST--" << std::endl;
+  //}
 
   /* Get the base directory to the executable, which will be the location of
    * all applicable resources */

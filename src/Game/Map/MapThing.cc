@@ -258,8 +258,10 @@ bool MapThing::isMoveAllowed(Tile* next_tile)
     bool thing_passable = true;
 
     /* Determine if the thing is passable */
-    if(next_tile->getThing() != NULL)
-      thing_passable = next_tile->getThing()->isPassable();
+    // TODO: Fix. Check render level for multiple things based on tile. 
+    // Possibly have to revise main tile below as well.
+//    if(next_tile->getThing() != NULL)
+//      thing_passable = next_tile->getThing()->isPassable();
 
     return thing_passable && tile_main->getPassabilityExiting(move_request) && 
            next_tile->getPassabilityEntering(move_request);
@@ -350,8 +352,8 @@ bool MapThing::setDirection(Direction new_direction)
  */
 void MapThing::tileMoveFinish()
 {
-  if(tile_previous != NULL)
-    tile_previous->unsetThing();
+  //if(tile_previous != NULL) // TODO: Fix
+  //  tile_previous->unsetThing();
   tile_previous = NULL;
 }
 
@@ -366,11 +368,11 @@ void MapThing::tileMoveFinish()
  */
 bool MapThing::tileMoveStart(Tile* next_tile)
 {
-  if(next_tile != NULL && !next_tile->isThingSet())
+  if(next_tile != NULL)// && !next_tile->isThingSet()) // TODO:Fix
   {
     tile_previous = tile_main;
     tile_main = next_tile;
-    tile_main->setThing(this);
+    //tile_main->setThing(this); // TODO: Fix
     return true;
   }
   return false;
@@ -1296,7 +1298,7 @@ void MapThing::setStartingPoint(uint16_t section_id, uint16_t x, uint16_t y)
 bool MapThing::setStartingTile(uint16_t section_id, Tile* new_tile, 
                                                     bool no_events)
 {
-  if(new_tile != NULL && !new_tile->isThingSet())
+  if(new_tile != NULL)// && !new_tile->isThingSet()) // TODO:Fix
   {
     /* Unset the main tile */
     unsetStartingTile(no_events);
@@ -1307,7 +1309,7 @@ bool MapThing::setStartingTile(uint16_t section_id, Tile* new_tile,
     this->x_raw = this->x * kRAW_MULTIPLIER;
     this->y = tile_main->getPixelY();
     this->y_raw = this->y * kRAW_MULTIPLIER;
-    tile_main->setThing(this);
+    //tile_main->setThing(this); // TODO: Fix
     tile_section = section_id;
 
     return true;
@@ -1457,10 +1459,10 @@ void MapThing::unsetRenderTiles(bool no_events)
         Tile* previous = frame_matrix[i][j]->getTilePrevious();
 
         /* Reset the thing pointers */
-        if(main != NULL)
-          main->unsetThing();
-        if(previous != NULL)
-          previous->unsetThing();
+        //if(main != NULL) // TODO: Fix
+        //  main->unsetThing();
+        //if(previous != NULL)
+        //  previous->unsetThing();
         frame_matrix[i][j]->resetTile();
       }
     }
@@ -1479,8 +1481,8 @@ void MapThing::unsetStartingTile(bool no_events)
   (void)no_events;
   
   /* Unset the main tile */
-  if(tile_main != NULL)
-    tile_main->unsetThing();
+  //if(tile_main != NULL) // TODO: Fix
+  //  tile_main->unsetThing();
   tile_main = NULL;
   
   /* Resets the coordinates */

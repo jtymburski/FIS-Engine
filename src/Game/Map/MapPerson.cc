@@ -294,8 +294,8 @@ bool MapPerson::setDirection(Direction direction, bool set_movement)
  */
 void MapPerson::tileMoveFinish()
 {
-  if(tile_previous != NULL)
-    tile_previous->unsetPerson(getID() != kPLAYER_ID);
+  //if(tile_previous != NULL) // TODO: Fix for new matrix person
+  //  tile_previous->unsetPerson(getID() != kPLAYER_ID);
   tile_previous = NULL;
 }
 
@@ -311,7 +311,7 @@ void MapPerson::tileMoveFinish()
  */
 bool MapPerson::tileMoveStart(Tile* next_tile)
 {
-  if(next_tile != NULL && !next_tile->isPersonSet())
+  if(next_tile != NULL)// && !next_tile->isPersonSet()) // TODO: Fix
   {
     /* Increment step counter. */
     steps++;
@@ -319,7 +319,8 @@ bool MapPerson::tileMoveStart(Tile* next_tile)
     /* Set the new main tile */
     tile_previous = tile_main;
     tile_main = next_tile;
-    tile_main->setPerson(this, getID() != kPLAYER_ID);
+    // TODO: Fix for matrix map person
+    //tile_main->setPerson(this, getID() != kPLAYER_ID);
     
     return true;
   }
@@ -715,10 +716,11 @@ bool MapPerson::resetPosition()
  *         bool no_events - don't execute any events when set
  * Output: bool - status if the change was able to occur
  */
+// TODO: Remove
 bool MapPerson::setStartingTile(uint16_t section_id, Tile* new_tile, 
                                                      bool no_events)
 {
-  if(new_tile != NULL && !new_tile->isPersonSet())
+  if(new_tile != NULL)// && !new_tile->isPersonSet()) // TODO: Fix
   {
     /* Unsets the old tile information */
     unsetStartingTile(no_events);
@@ -729,7 +731,7 @@ bool MapPerson::setStartingTile(uint16_t section_id, Tile* new_tile,
     this->x_raw = this->x * kRAW_MULTIPLIER;
     this->y = tile_main->getPixelY();
     this->y_raw = this->y * kRAW_MULTIPLIER;
-    tile_main->setPerson(this, no_events);
+    //tile_main->setPerson(this, no_events);
     tile_section = section_id;
     
     /* Store the starting tile */
@@ -962,13 +964,13 @@ void MapPerson::unsetStartingTile(bool no_events)
   setDirection(Direction::DIRECTIONLESS);
   
   /* Unset the previous tile */
-  if(tile_previous != NULL)
-    tile_previous->unsetPerson(no_events);
+  //if(tile_previous != NULL) // TODO: Fix
+  //  tile_previous->unsetPerson(no_events);
   tile_previous = NULL;
   
   /* Unset the main tile */
-  if(tile_main != NULL)
-    tile_main->unsetPerson(no_events);
+  //if(tile_main != NULL) // TODO: Fix
+  //  tile_main->unsetPerson(no_events);
   tile_main = NULL;
     
   /* Resets the coordinates */

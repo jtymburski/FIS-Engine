@@ -14,6 +14,7 @@
 
 /* Constant Implementation - see header file for descriptions */
 const uint8_t Tile::kLOWER_COUNT_MAX = 5;
+const uint8_t Tile::kMAX_ITEMS = 20;
 const uint8_t Tile::kUPPER_COUNT_MAX = 5;
 
 /*============================================================================
@@ -71,7 +72,14 @@ Tile::~Tile()
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 
-// TODO: Comment
+/*
+ * Description: This increases the person stack to allow for the indicated
+ *              render level to be set in the stack. This will not exceed
+ *              the max allowable by Helpers::getRenderDepth()
+ *
+ * Inputs: uint16_t render_level - the render level corresponding to the person
+ * Output: bool - status if the indicated level can be set
+ */
 bool Tile::growPersonStack(uint16_t render_level)
 {
   if(render_level < Helpers::getRenderDepth())
@@ -87,7 +95,14 @@ bool Tile::growPersonStack(uint16_t render_level)
   return false;
 }
 
-// TODO: Comment
+/*
+ * Description: This increases the thing stack to allow for the indicated
+ *              render level to be set in the stack. This will not exceed
+ *              the max allowable by Helpers::getRenderDepth()
+ *
+ * Inputs: uint16_t render_level - the render level corresponding to the thing
+ * Output: bool - status if the indicated level can be set
+ */
 bool Tile::growThingStack(uint16_t render_level)
 {
   if(render_level < Helpers::getRenderDepth())
@@ -107,10 +122,17 @@ bool Tile::growThingStack(uint16_t render_level)
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
-// TODO: Comment
+/*
+ * Description: Adds an item to the tile. It will only render the top one 
+ *              but can hold up to kMAX_ITEMS count. This allows for walkovers
+ *              as well as pickups.
+ *
+ * Inputs: MapItem* item - new item pointer to add to the tile
+ * Output: bool - if the item was successfully added
+ */
 bool Tile::addItem(MapItem* item)
 {
-  if(item != NULL)
+  if(item != NULL && items.size() < kMAX_ITEMS)
   {
     items.push_back(item);
     return true;
@@ -227,12 +249,9 @@ void Tile::clear(bool just_sprites)
   /* Clear sprite layer data */
   unsetBase();
   unsetEnhancer();
-  unsetItem(); // TODO: Remove
   unsetItems();
   unsetLower();
-  unsetPerson(); // TODO: Remove
   unsetPersons(true);
-  unsetThing(); // TODO: Remove
   unsetThings();
   unsetUpper();
 
@@ -277,7 +296,7 @@ bool Tile::clearEvents()
  * Inputs: none
  * Output: Sprite* - the base sprite pointer
  */
-Sprite* Tile::getBase()
+Sprite* Tile::getBase() const
 {
   return base;
 }
@@ -290,7 +309,7 @@ Sprite* Tile::getBase()
  * Inputs: Direction dir - the direction to get
  * Output: bool - the base passability directional status
  */
-bool Tile::getBasePassability(Direction dir)
+bool Tile::getBasePassability(Direction dir) const
 {
   if(base != 0)
   {
@@ -309,7 +328,7 @@ bool Tile::getBasePassability(Direction dir)
  * Inputs: none
  * Output: Sprite* - the enhancer sprite pointer
  */
-Sprite* Tile::getEnhancer()
+Sprite* Tile::getEnhancer() const
 {
   return enhancer;
 }
@@ -320,31 +339,30 @@ Sprite* Tile::getEnhancer()
  * Inputs: none
  * Output: uint16_t - the height in pixels
  */
-uint16_t Tile::getHeight()
+uint16_t Tile::getHeight() const
 {
   return height;
 }
 
 /*
- * Description: Returns the item that is stored within the class.
+ * Description: Returns the number of items sitting on the tile.
  *
  * Inputs: none
- * Output: MapItem* - the MapItem* pointer stored within
+ * Output: uint16_t - unsigned int of item count
  */
-// TODO: Remove
-MapItem* Tile::getItem()
-{
-  return item;
-}
-
-// TODO: Comment
-uint16_t Tile::getItemCount()
+uint16_t Tile::getItemCount() const
 {
   return items.size();
 }
 
-// TODO: Comment
-std::vector<MapItem*> Tile::getItems()
+/*
+ * Description: Returns a stack of all item pointers sitting on the tile.
+ *              Do not delete item pointers; it would cause unknown results.
+ *
+ * Inputs: none
+ * Output: std::vector<MapItem*> - stack of map item pointers
+ */
+std::vector<MapItem*> Tile::getItems() const
 {
   return items;
 }
@@ -355,7 +373,7 @@ std::vector<MapItem*> Tile::getItems()
  * Inputs: none
  * Output: std::vector<Sprite*> - the lower sprites, in a vector
  */
-std::vector<Sprite*> Tile::getLower()
+std::vector<Sprite*> Tile::getLower() const
 {
   return lower;
 }
@@ -368,7 +386,7 @@ std::vector<Sprite*> Tile::getLower()
  * Inputs: Direction dir - the direction to get
  * Output: bool - the lower passability directional status
  */
-bool Tile::getLowerPassability(Direction dir)
+bool Tile::getLowerPassability(Direction dir) const
 {
   bool passability = true;
 
@@ -397,7 +415,7 @@ bool Tile::getLowerPassability(Direction dir)
  *         Direction dir - the direction to get
  * Output: bool - the lower passability directional status
  */
-bool Tile::getLowerPassability(uint8_t index, Direction dir)
+bool Tile::getLowerPassability(uint8_t index, Direction dir) const
 {
   if(index < lower_passability.size() && lower[index] != NULL)
   {
@@ -409,6 +427,28 @@ bool Tile::getLowerPassability(uint8_t index, Direction dir)
   return true;
 }
 
+/*
+ * Description: Returns the max render level indicator. This allows for 
+ *              simplifying the render calculations.
+ *
+ * Inputs: none
+ * Output: uint16_t - the render depth indicator
+ */
+uint16_t Tile::getMaxRenderLevel() const
+{
+  uint16_t depth = 0;
+
+  if(things.size() > persons.size())
+    depth = things.size();
+  else
+    depth = persons.size();
+
+  if(depth == 0 && items.size() > 0)
+    depth = 1;
+
+  return depth;
+}
+
 /* 
  * Description: Gets if the tile is passable entering from the given direction.
  *              This does not take into account the status of the thing(s) and 
@@ -417,17 +457,17 @@ bool Tile::getLowerPassability(uint8_t index, Direction dir)
  * Inputs: Direction dir - the direction enumerated for passability
  * Output: bool - status if the tile passability is possible.
  */
-bool Tile::getPassabilityEntering(Direction dir)
+bool Tile::getPassabilityEntering(Direction dir) const
 {
   if(dir == Direction::NORTH)
-    return (person == NULL) && getPassabilityExiting(Direction::SOUTH);
+    return getPassabilityExiting(Direction::SOUTH);
   else if(dir == Direction::EAST)
-    return (person == NULL) && getPassabilityExiting(Direction::WEST);
+    return getPassabilityExiting(Direction::WEST);
   else if(dir == Direction::SOUTH)
-    return (person == NULL) && getPassabilityExiting(Direction::NORTH);
+    return getPassabilityExiting(Direction::NORTH);
   else if(dir == Direction::WEST)
-    return (person == NULL) && getPassabilityExiting(Direction::EAST);
-  return (person != NULL) || getPassabilityExiting(dir);
+    return getPassabilityExiting(Direction::EAST);
+  return getPassabilityExiting(dir);
 }
 
 /*
@@ -438,7 +478,7 @@ bool Tile::getPassabilityEntering(Direction dir)
  * Inputs: Direction dir - the direction enumerated for passability
  * Output: bool - status if the tile passability is possible.
  */
-bool Tile::getPassabilityExiting(Direction dir)
+bool Tile::getPassabilityExiting(Direction dir) const
 {
   if(status != OFF)
   {
@@ -450,19 +490,13 @@ bool Tile::getPassabilityExiting(Direction dir)
 }
   
 /*
- * Description: Returns the person pointer that is residing on the tile.
+ * Description: Returns the person stored on this tile at the indicated render
+ *              level. 
  *
- * Inputs: none
- * Output: MapPerson* - the person pointer
+ * Inputs: uint16_t render_level - integer of the render level on tile
+ * Output: MapPerson* - person pointer on tile. NULL if none set
  */
-// TODO: Remove
-MapPerson* Tile::getPerson()
-{
-  return person;
-}
-
-// TODO: Comment
-MapPerson* Tile::getPerson(uint16_t render_level)
+MapPerson* Tile::getPerson(uint16_t render_level) const
 {
   MapPerson* selected_person = NULL;
 
@@ -472,8 +506,16 @@ MapPerson* Tile::getPerson(uint16_t render_level)
   return selected_person;
 }
 
-// TODO: Comment
-std::vector<MapPerson*> Tile::getPersons()
+/*
+ * Description: Returns all persons stored on the tile. This is ordered based
+ *              on render level. I.e., index 4 will correspond to render level
+ *              4. If the render level is not set in the vector, it is NULL
+ *              and not used.
+ *
+ * Inputs: none
+ * Output: std::vector<MapPerson*> - stack of persons stored in tile
+ */
+std::vector<MapPerson*> Tile::getPersons() const
 {
   return persons;
 }
@@ -485,7 +527,7 @@ std::vector<MapPerson*> Tile::getPersons()
  * Inputs: none
  * Output: int - the X coordinate, in pixels
  */
-int Tile::getPixelX()
+int Tile::getPixelX() const
 {
   return (x * width);
 }
@@ -497,16 +539,27 @@ int Tile::getPixelX()
  * Inputs: none
  * Output: int - the Y coordinate, in pixels
  */
-int Tile::getPixelY()
+int Tile::getPixelY() const
 {
   return (y * height);
 }
 
-// TODO: Comment
+/*
+ * Description: Gets the render things based on the render level. This will 
+ *              return a pointer for item, person, and thing, if applicable. 
+ *              Pointers that are NULL have nothing set to render on that
+ *              level. 
+ *
+ * Inputs: uint16_t render_level - the render depth indicator
+ *         MapItem*& item - ref of item pointer to place render object
+ *         MapPerson*& person - ref of person pointer to place render object
+ *         MapThing*& thing - ref of thing pointer to place render object
+ * Output: status if the objects are valid for rendering
+ */
 bool Tile::getRenderThings(uint16_t render_level, MapItem*& item, 
-                           MapPerson*& person, MapThing*& thing)
+                           MapPerson*& person, MapThing*& thing) const
 {
-  if(render_level < Helpers::getRenderDepth())
+  if(status == ACTIVE && render_level < Helpers::getRenderDepth())
   {
     if(render_level == 0 && items.size() > 0)
       item = items.front();
@@ -530,25 +583,19 @@ bool Tile::getRenderThings(uint16_t render_level, MapItem*& item,
  * Inputs: none
  * Output: Status - public enum from layer identifying state
  */
-Tile::TileStatus Tile::getStatus()
+Tile::TileStatus Tile::getStatus() const
 {
   return status;
 }
   
 /*
- * Description: Returns the stored thing from within the tile. 
- *
- * Inputs: none
- * Output: MapThing* - the stored Map Thing object pointer
+ * Description: Returns the thing stored on this tile at the indicated render
+ *              level. 
+ * 
+ * Inputs: uint16_t render_level - integer of the render level on tile 
+ * Output: MapThing* - thing reference stored. NULL if not set
  */
-// TODO: Remove
-MapThing* Tile::getThing()
-{
-  return thing;
-}
-
-// TODO: Comment
-MapThing* Tile::getThing(uint16_t render_level)
+MapThing* Tile::getThing(uint16_t render_level) const
 {
   MapThing* selected_thing = NULL;
 
@@ -559,8 +606,16 @@ MapThing* Tile::getThing(uint16_t render_level)
 
 }
 
-// TODO: Comment
-std::vector<MapThing*> Tile::getThings()
+/*
+ * Description: Returns all things stored on the tile. This is ordered based
+ *              on render level. I.e., index 4 will correspond to render level
+ *              4. If the render level is not set in the vector, it is NULL
+ *              and not used.
+ *
+ * Inputs: none
+ * Output: std::vector<MapThing*> - stack of things stored in tile
+ */
+std::vector<MapThing*> Tile::getThings() const
 {
   return things;
 }
@@ -571,7 +626,7 @@ std::vector<MapThing*> Tile::getThings()
  * Inputs: none
  * Output: std::vector<Sprite*> - the upper sprites, in a QList
  */
-std::vector<Sprite*> Tile::getUpper()
+std::vector<Sprite*> Tile::getUpper() const
 {
   return upper;
 }
@@ -582,7 +637,7 @@ std::vector<Sprite*> Tile::getUpper()
  * Inputs: none
  * Output: uint16_t - the width in pixels
  */
-uint16_t Tile::getWidth()
+uint16_t Tile::getWidth() const
 {
   return width;
 }
@@ -594,7 +649,7 @@ uint16_t Tile::getWidth()
  * Inputs: none
  * Output: uint16_t - the x coordinate, in tile count
  */
-uint16_t Tile::getX()
+uint16_t Tile::getX() const
 {
   return x;
 }
@@ -606,7 +661,7 @@ uint16_t Tile::getX()
  * Inputs: none
  * Output: uint16_t - the y coordinate, in tile count
  */
-uint16_t Tile::getY()
+uint16_t Tile::getY() const
 {
   return y;
 }
@@ -678,7 +733,7 @@ bool Tile::insertUpper(Sprite* upper, uint8_t index)
  * Inputs: none
  * Output: bool - status if the base sprite is set
  */
-bool Tile::isBaseSet()
+bool Tile::isBaseSet() const
 {
   return (base != NULL);
 }
@@ -689,25 +744,18 @@ bool Tile::isBaseSet()
  * Inputs: none
  * Output: bool - status if the enhancer sprite is set
  */
-bool Tile::isEnhancerSet()
+bool Tile::isEnhancerSet() const
 {
   return (enhancer != NULL);
 }
 
 /*
- * Description: Returns if the item thing has been set.
+ * Description: Returns if at least one item is set and stored in the thing.
  *
  * Inputs: none
- * Output: bool - true if the item pointer is not null.
+ * Output: bool - true if there is at least one item
  */
-// TODO: Remove
-bool Tile::isItemSet()
-{
-  return (item != NULL);
-}
-
-// TODO: Comment
-bool Tile::isItemsSet()
+bool Tile::isItemsSet() const
 {
   return (items.size() > 0);
 }
@@ -718,71 +766,59 @@ bool Tile::isItemsSet()
  * Inputs: none
  * Output: bool - status if there is at least one lower sprite
  */
-bool Tile::isLowerSet()
+bool Tile::isLowerSet() const
 {
   return (lower.size() > 0);
 }
 
 /*
- * Description: Returns if the map person pointer is set and residing on the
- *              tile.
- *
- * Inputs: none
- * Output: bool - true if the person pointer is set
+ * Description: Returns if there is a person on the indicated render level.
+ * 
+ * Inputs: uint16_t render_level - the level of rendering on tile. 
+ * Output: bool - true if the person is set on that render level
  */
-// TODO: Remove
-bool Tile::isPersonSet()
-{
-  return (person != NULL);
-}
-
-// TODO: Comment
-bool Tile::isPersonSet(uint16_t render_level)
+bool Tile::isPersonSet(uint16_t render_level) const
 {
   return (persons.size() > render_level && persons[render_level] != NULL);
 }
 
-// TODO: Comment
-bool Tile::isPersonsSet()
+/*
+ * Description: Returns if at least one person is on the tile.
+ *
+ * Inputs: none
+ * Output: bool - true if there is at least one person on the tile.
+ */
+bool Tile::isPersonsSet() const
 {
-  bool person_set = false;
-
   for(uint16_t i = 0; i < persons.size(); i++)
     if(persons[i] != NULL)
-      person_set = true;
-
-  return person_set;
+      return true;
+  return false;
 }
 
 /*
- * Description: Returns if the map thing pointer is set and residing on the
- *              tile.
- *
- * Inputs:none
- * Output: bool - true if the thing pointer is set
+ * Description: Returns if there is a thing on the indicated render level.
+ * 
+ * Inputs: uint16_t render_level - the level of rendering on tile. 
+ * Output: bool - true if the thing is set on that render level
  */
-// TODO: Remove
-bool Tile::isThingSet()
-{
-  return (thing != NULL);
-}
-
-// TODO: Comment
-bool Tile::isThingSet(uint16_t render_level)
+bool Tile::isThingSet(uint16_t render_level) const
 {
   return (things.size() > render_level && things[render_level] != NULL);
 }
 
-// TODO: Comment
-bool Tile::isThingsSet()
+/*
+ * Description: Returns if at least one thing is on the tile.
+ *
+ * Inputs: none
+ * Output: bool - true if there is at least one thing on the tile.
+ */
+bool Tile::isThingsSet() const
 {
-  bool thing_set = false;
-
   for(uint16_t i = 0; i < things.size(); i++)
     if(things[i] != NULL)
-      thing_set = true;
-
-  return thing_set;
+      return true;
+  return false;
 }
 
 /* 
@@ -791,7 +827,7 @@ bool Tile::isThingsSet()
  * Inputs: none
  * Output: bool - status if there is at least one upper sprite
  */
-bool Tile::isUpperSet()
+bool Tile::isUpperSet() const
 {
   return (upper.size() > 0);
 }
@@ -856,19 +892,16 @@ bool Tile::renderUpper(SDL_Renderer* renderer, int offset_x, int offset_y)
   bool success = true;
   
   /* Only paint if the status is enabled */
-  if(status != OFF)
+  if(status == ACTIVE)
   {
-    if(status == ACTIVE)
-    {
-      int pixel_x = getPixelX() - offset_x;
-      int pixel_y = getPixelY() - offset_y;
+    int pixel_x = getPixelX() - offset_x;
+    int pixel_y = getPixelY() - offset_y;
   
-      /* Paint the upper set, if set */
-      for(uint8_t i = 0; i < upper.size(); i++)
-        if(upper[i] != 0)
-          success &= upper[i]->render(renderer, pixel_x, pixel_y, 
-                                                width, height);
-    }
+    /* Paint the upper set, if set */
+    for(uint8_t i = 0; i < upper.size(); i++)
+      if(upper[i] != NULL)
+        success &= upper[i]->render(renderer, pixel_x, pixel_y, 
+                                              width, height);
   }
   return success;
 }
@@ -1015,29 +1048,6 @@ void Tile::setHeight(uint16_t height)
   this->height = height;
 }
 
-/*
- * Description: Sets the item in the tile. This call will unset the previous
- *              item and sets it to the new one if not null. 
- *
- * Inputs: MapItem* item - the item to put in the list
- * Output: bool - status if successful (item needs to be non-null)
- */
-// TODO: Remove
-bool Tile::setItem(MapItem* item)
-{
-  if(item != NULL)
-  {
-    /* First unset all existing items */
-    unsetItem();
-
-    /* Sets the new item in the tile */
-    this->item = item;
-    return true;
-  }
-
-  return false;
-}
-
 /* 
  * Description: Sets the lower sprite stored within the tile. Only sets it if 
  *              the pointer is valid and the number of frames is greater than 
@@ -1091,45 +1101,17 @@ bool Tile::setLowerPassability(uint8_t index, Direction dir, bool set_value)
 }
 
 /*
- * Description: Sets the person stored within the tile. The stored person
- *              indicates that the person is either on the tile, walking to
- *              the tile, or walking away from. This allows to disable
- *              walk-on events, if relevant.
+ * Description: Sets a person on the tile with the designated render level.
+ *              This does not take into account if the tile is passable and
+ *              will set regardless. No events boolean allows for events to 
+ *              be used (or not). This will unset the person if one already
+ *              exists in the same place.
  *
- * Inputs: MapPerson* person - the new person pointer to set onto the tile
- *         bool no_events - true if the events are disabled (default false)
- * Output: bool - true if successful (fails if person is null)
+ * Inputs: MapPerson* person - the person to set on the tile
+ *         uint16_t render_level - the render order for placing the person
+ *         bool no_events - if events should be triggered on set
+ * Output: bool - if the person was successfully set.
  */
-// TODO: Remove
-bool Tile::setPerson(MapPerson* person, bool no_events)
-{
-  if(person != NULL)
-  {
-    /* First unset the existing person */
-    unsetPerson();
-
-    /* Set the new person */
-    this->person = person;
-
-    /* Execute enter event, if applicable */
-    if(!no_events && event_handler != NULL)
-    {
-      /* Pickup the item, if applicable */
-      if(item != NULL)
-        event_handler->executePickup(item, true);
-      
-      /* Execute the enter event, if applicable */
-      if(enter_event.classification != EventClassifier::NOEVENT)
-        event_handler->executeEvent(enter_event, person);
-    }
-
-    return true;
-  }
-
-  return false;
-}
-
-// TODO: Comment
 bool Tile::setPerson(MapPerson* person, uint16_t render_level, bool no_events)
 {
   if(person != NULL)
@@ -1147,7 +1129,7 @@ bool Tile::setPerson(MapPerson* person, uint16_t render_level, bool no_events)
       {
         /* Pickup the item, if applicable */
         for(uint16_t i = 0; i < items.size(); i++)
-          if(item != NULL)
+          if(items[i] != NULL)
             event_handler->executePickup(items[i], true);
       
         /* Execute the enter event, if applicable */
@@ -1176,31 +1158,17 @@ void Tile::setStatus(TileStatus status)
 }
 
 /*
- * Description: Sets the MapThing pointer in the class. This is the inactive
- *              object that doesn't move but can be interacted with. This will
- *              unset a different thing if it's already on the tile.
+ * Description: Sets a thing on the tile with the designated render level.
+ *              This does not take into account if the tile is passable and
+ *              will set regardless. No events boolean allows for events to 
+ *              be used (or not). This will unset the thing if one already
+ *              exists in the same place.
  *
- * Inputs: MapThing* thing - the new thing pointer to inject into the tile
- * Output: bool - true if successful, fails if thing ptr is null
+ * Inputs: MapThing* thing - the thing to set on the tile
+ *         uint16_t render_level - the render order for placing the person
+ *         bool no_events - if events should be triggered on set
+ * Output: bool - if the thing was successfully set.
  */
-// TODO: Remove
-bool Tile::setThing(MapThing* thing)
-{
-  if(thing != NULL)
-  {
-    /* First unset the existing thing */
-    unsetThing();
-
-    /* Set the new thing */
-    this->thing = thing;
-
-    return true;
-  }
-
-  return false;
-}
-
-// TODO: Comment
 bool Tile::setThing(MapThing* thing, uint16_t render_level)
 {
   if(thing != NULL)
@@ -1346,19 +1314,13 @@ void Tile::unsetEnhancer()
   enhancer = NULL;
 }
 
-/* 
- * Description: Unsets the item stored within the class.
+/*
+ * Description: Unsets the item that matches the indicated item pointer from
+ *              the stack. It will re-arrange to necessitate the removal.
  *
- * Inputs: none
- * Output: none
+ * Inputs: MapItem* item - the item pointer to remove
+ * Output: bool - true if the item was removed.
  */
-// TODO: Remove
-void Tile::unsetItem()
-{
-  item = NULL;
-}
- 
-// TODO: Comment
 bool Tile::unsetItem(MapItem* item)
 {
   for(uint16_t i = 0; i < items.size(); i++)
@@ -1374,7 +1336,12 @@ bool Tile::unsetItem(MapItem* item)
   return false;
 }
 
-// TODO: Comment
+/*
+ * Description: Unsets all items from the tile.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void Tile::unsetItems()
 {
   items.clear();
@@ -1421,28 +1388,13 @@ bool Tile::unsetLower(uint8_t index)
 }
 
 /*
- * Description: Unsets the person pointer from the tile. This does not delete
- *              the pointer and merely clears it. This allows for you to enable
- *              or disable the leave event from firing as well.
+ * Description: Unsets the person that matches the indicated person pointer from
+ *              the stack. It will re-arrange to necessitate the removal.
  *
- * Inputs: bool no_events - status if events should be ignored, default false
- * Output: none
+ * Inputs: MapPerson* person - the person pointer to remove
+ *         bool no_events - if events should be triggered on removal
+ * Output: bool - true if the person was removed.
  */
-// TODO: Remove
-void Tile::unsetPerson(bool no_events)
-{
-  if(!no_events && person != NULL)
-  {
-    /* Execute exit event, if applicable */
-    if(event_handler != NULL && 
-       exit_event.classification != EventClassifier::NOEVENT)
-      event_handler->executeEvent(exit_event, person);
-  }
-
-  person = NULL;
-}
-  
-// TODO: Comment
 bool Tile::unsetPerson(MapPerson* person, bool no_events)
 {
   for(uint16_t i = 0; i < persons.size(); i++)
@@ -1466,7 +1418,14 @@ bool Tile::unsetPerson(MapPerson* person, bool no_events)
   return false;
 }
  
-// TODO: Comment
+/*
+ * Description: Removes the person at the indicated render level. This allows
+ *              for choosing if events will trigger upon removal.
+ *
+ * Inputs: uint16_t render_level - the render depth indicator
+ *         bool no_events - if events should trigger upon removal
+ * Output: bool - if a person was removed
+ */
 bool Tile::unsetPerson(uint16_t render_level, bool no_events)
 {
   if(persons.size() > render_level)
@@ -1490,7 +1449,13 @@ bool Tile::unsetPerson(uint16_t render_level, bool no_events)
   return false;
 }
  
-// TODO: Comment
+/*
+ * Description: Unsets all persons from the tile. Allows for disabling or 
+ *              enabling events upon removal.
+ *
+ * Inputs: bool no_events - if events should be triggered upon removal
+ * Output: none
+ */
 void Tile::unsetPersons(bool no_events)
 {
   if(persons.size() > 0)
@@ -1512,19 +1477,12 @@ void Tile::unsetPersons(bool no_events)
 }
 
 /*
- * Description: Unsets the map thing stored in the tile. This does not delete
- *              the pointer and merely clears it from the Tile.
+ * Description: Unsets the thing that matches the indicated thing pointer from
+ *              the stack. It will re-arrange to necessitate the removal.
  *
- * Inputs: none
- * Output: none
+ * Inputs: MapThing* thing - the thing pointer to remove
+ * Output: bool - true if the thing was removed.
  */
-// TODO: Remove
-void Tile::unsetThing()
-{
-  thing = NULL;
-}
-
-// TODO: Comment
 bool Tile::unsetThing(MapThing* thing)
 {
   for(uint16_t i = 0; i < things.size(); i++)
@@ -1539,7 +1497,13 @@ bool Tile::unsetThing(MapThing* thing)
   return false;
 }
 
-// TODO: Comment
+/*
+ * Description: Removes the thing at the indicated render level.
+ *
+ * Inputs: uint16_t render_level - the render depth indicator
+ *         bool no_events - if events should trigger upon removal
+ * Output: bool - if a thing was removed
+ */
 bool Tile::unsetThing(uint16_t render_level)
 {
   if(things.size() > render_level)
@@ -1555,7 +1519,12 @@ bool Tile::unsetThing(uint16_t render_level)
 
 }
 
-// TODO: Comment
+/*
+ * Description: Unsets all things from the tile.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void Tile::unsetThings()
 {
   things.clear();

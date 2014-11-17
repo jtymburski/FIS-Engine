@@ -498,28 +498,28 @@ void Map::initiateThingInteraction()
     /* Aquire the thing, that's being pointed at and try to interact */
     if(!out_of_range && x < geography[map_index].size() && 
        y < geography[map_index][0].size())
-    {
-      if(geography[map_index][x][y]->isPersonSet() &&
-         geography[map_index][x][y]->getPerson()->getTile()->getX() == x &&
-         geography[map_index][x][y]->getPerson()->getTile()->getY() == y)
-      {
-        geography[map_index][x][y]->getPerson()->interact(player);
-        interacted = true;
-      }
-      else if(geography[map_index][x][y]->isThingSet())
-      {
-        geography[map_index][x][y]->getThing()->interact(player);
-        interacted = true;
-      }
+    { // TODO: Fix
+//      if(geography[map_index][x][y]->isPersonSet() &&
+//         geography[map_index][x][y]->getPerson()->getTile()->getX() == x &&
+//         geography[map_index][x][y]->getPerson()->getTile()->getY() == y)
+//      {
+//        geography[map_index][x][y]->getPerson()->interact(player);
+//        interacted = true;
+//      }
+//      else if(geography[map_index][x][y]->isThingSet())
+//      {
+//        geography[map_index][x][y]->getThing()->interact(player);
+//        interacted = true;
+//      }
     }
     
     /* If there was no thing to interact with, proceed to try and pickup the
-     * tile item. */
-    if(!interacted && player->getTile()->getItem() != NULL && 
-       player->getTile()->getItem()->getCount() > 0 && event_handler != NULL)
-    {
-      event_handler->executePickup(player->getTile()->getItem());
-    }
+     * tile item. */ // TODO: Fix item pick up with key
+    //if(!interacted && player->getTile()->getItem() != NULL && 
+    //   player->getTile()->getItem()->getCount() > 0 && event_handler != NULL)
+    //{
+    //  event_handler->executePickup(player->getTile()->getItem());
+    //}
   }
 }
 

@@ -66,11 +66,8 @@ private:
   std::vector<uint8_t> lower_passability;
 
   /* The things that are on the given tile - only used to store location */
-  MapItem* item;
   std::vector<MapItem*> items;
-  MapPerson* person;
   std::vector<MapPerson*> persons;
-  MapThing* thing;
   std::vector<MapThing*> things;
 
   /* The upper information */
@@ -78,6 +75,7 @@ private:
 
   /*------------------- Constants -----------------------*/
   const static uint8_t kLOWER_COUNT_MAX; /* The max number of lower layers */
+  const static uint8_t kMAX_ITEMS; /* The max number of items stored */
   const static uint8_t kUPPER_COUNT_MAX; /* The max number of upper layers */
 
 /*============================================================================
@@ -109,59 +107,59 @@ public:
   bool clearEvents();
   
   /* Gets the base layer and passability */
-  Sprite* getBase();
-  bool getBasePassability(Direction dir);
+  Sprite* getBase() const;
+  bool getBasePassability(Direction dir) const;
 
   /* Gets the enhancer layer */
-  Sprite* getEnhancer();
+  Sprite* getEnhancer() const;
 
   /* Returns the stored height of the tile */
-  uint16_t getHeight();
+  uint16_t getHeight() const;
   
   /* Returns the map thing pointer for the item object */
-  MapItem* getItem(); // TODO: Remove
-  uint16_t getItemCount();
-  std::vector<MapItem*> getItems();
+  uint16_t getItemCount() const;
+  std::vector<MapItem*> getItems() const;
 
   /* Gets the lower layer(s) */
-  std::vector<Sprite*> getLower();
-  bool getLowerPassability(Direction dir);
-  bool getLowerPassability(uint8_t index, Direction dir);
-  
+  std::vector<Sprite*> getLower() const;
+  bool getLowerPassability(Direction dir) const;
+  bool getLowerPassability(uint8_t index, Direction dir) const;
+ 
+  /* Returns the highest render level with applicable data */
+  uint16_t getMaxRenderLevel() const;
+
   /* Returns the passability of the tile based on direction */
-  bool getPassabilityEntering(Direction dir);
-  bool getPassabilityExiting(Direction dir);
+  bool getPassabilityEntering(Direction dir) const;
+  bool getPassabilityExiting(Direction dir) const;
   
   /* Returns the person pointer in the tile */
-  MapPerson* getPerson(); // TODO: Remove
-  MapPerson* getPerson(uint16_t render_level);
-  std::vector<MapPerson*> getPersons();
+  MapPerson* getPerson(uint16_t render_level) const;
+  std::vector<MapPerson*> getPersons() const;
 
   /* Returns the tile x and y pixel count */
-  int getPixelX();
-  int getPixelY();
+  int getPixelX() const;
+  int getPixelY() const;
 
   /* Returns the render stack for applicable things based on level */
   bool getRenderThings(uint16_t render_level, MapItem*& item, 
-                       MapPerson*& person, MapThing*& thing);
+                       MapPerson*& person, MapThing*& thing) const;
 
   /* Returns the tile status */
-  TileStatus getStatus();
+  TileStatus getStatus() const;
 
   /* Returns the map thing pointer for the generic thing */
-  MapThing* getThing(); // TODO: Remove
-  MapThing* getThing(uint16_t render_level);
-  std::vector<MapThing*> getThings();
+  MapThing* getThing(uint16_t render_level) const;
+  std::vector<MapThing*> getThings() const;
 
   /* Gets the upper layer(s) */
-  std::vector<Sprite*> getUpper();
+  std::vector<Sprite*> getUpper() const;
 
   /* Returns the width of the tile */
-  uint16_t getWidth();
+  uint16_t getWidth() const;
 
   /* Returns the coordinates of the Tile (x or y) */
-  uint16_t getX();
-  uint16_t getY();
+  uint16_t getX() const;
+  uint16_t getY() const;
 
   /* Inserts the lower and upper onto the stack (where applicable). This
    * functionality is essentially entirely handled by Layer */
@@ -169,30 +167,27 @@ public:
   bool insertUpper(Sprite* upper, uint8_t index);
 
   /* Returns if the Base Layer is set (ie. at least one) */
-  bool isBaseSet();
+  bool isBaseSet() const;
 
   /* Returns if the Enhancer Layer is set */
-  bool isEnhancerSet();
+  bool isEnhancerSet() const;
   
   /* Returns if an item thing is set */
-  bool isItemSet(); // TODO: Remove
-  bool isItemsSet();
+  bool isItemsSet() const;
   
   /* Returns if the Lower Layer is set */
-  bool isLowerSet();
+  bool isLowerSet() const;
 
   /* Returns if the map person thing is set */
-  bool isPersonSet(); // TODO: Remove
-  bool isPersonSet(uint16_t render_level);
-  bool isPersonsSet();
+  bool isPersonSet(uint16_t render_level) const;
+  bool isPersonsSet() const;
 
   /* Returns if the generic thing is set */
-  bool isThingSet(); // TODO: Remove
-  bool isThingSet(uint16_t render_level);
-  bool isThingsSet();
+  bool isThingSet(uint16_t render_level) const;
+  bool isThingsSet() const;
 
   /* Returns if the Upper Layer is set (ie. at least one) */
-  bool isUpperSet();
+  bool isUpperSet() const;
   
   /* Paints the active sprites in this tile using GL direct calls */
   bool renderLower(SDL_Renderer* renderer, int offset_x = 0, int offset_y = 0);
@@ -217,15 +212,11 @@ public:
   /* Sets the new height for the tile (must be >= 0) */
   void setHeight(uint16_t height);
 
-  /* Sets the item thing sprite */
-  bool setItem(MapItem* item); // TODO: Remove
-  
   /* Sets the lower portion of the layer(s) and the passability */
   bool setLower(Sprite* lower);
   bool setLowerPassability(uint8_t index, Direction dir, bool set_value);
 
   /* Sets the stored MapPerson sprite pointer */
-  bool setPerson(MapPerson* person, bool no_events = false); // TODO: Remove
   bool setPerson(MapPerson* person, uint16_t render_level, 
                  bool no_events = false);
 
@@ -233,7 +224,6 @@ public:
   void setStatus(TileStatus status);
 
   /* Sets the thing sprite pointer, stored within the class */
-  bool setThing(MapThing* thing); // TODO: Remove
   bool setThing(MapThing* thing, uint16_t render_level);
   
   /* Sets the upper portion of the layer */
@@ -257,7 +247,6 @@ public:
   void unsetEnhancer();
 
   /* Unsets the item(s) stored within the tile */
-  void unsetItem(); // TODO: Remove
   bool unsetItem(MapItem* item);
   void unsetItems();
 
@@ -266,13 +255,11 @@ public:
   bool unsetLower(uint8_t index);
 
   /* Unsets the stored person pointer(s) */
-  void unsetPerson(bool no_events = false); // TODO: Remove
   bool unsetPerson(MapPerson* person, bool no_events = false);
   bool unsetPerson(uint16_t render_level, bool no_events = false);
   void unsetPersons(bool no_events = false);
 
   /* Unsets the stored thing pointer(s) */
-  void unsetThing(); // TODO: Remove
   bool unsetThing(MapThing* thing);
   bool unsetThing(uint16_t render_level);
   void unsetThings();
@@ -280,9 +267,6 @@ public:
   /* Unsets the upper layer(s) */
   void unsetUpper();
   bool unsetUpper(uint8_t index);
-
-  /* Unsets the stored walkover pointer */
-  void unsetWalkOver();
 };
 
 #endif // TILE_H

@@ -619,31 +619,31 @@ void MapInteractiveObject::update(int cycle_time, Tile* next_tile)
   /* Do the walk on / walk off animation for the state */
   Tile* location = getTile();
   if(location != NULL)
-  {
-    if(person_on == NULL && location->isPersonSet() && 
-       location->getPerson()->getID() == kPLAYER_ID)
-    {
-      person_on = location->getPerson();
-
-      if(node_current != NULL && node_current->state != NULL)
-      {
-        /* Trigger walkover event, if valid */
-        node_current->state->triggerWalkoverEvent(person_on);
-
-        /* Trigger walk on interaction */
-        if(node_current->state->getInteraction() == MapState::WALKON)
-          shift();
-      }
-    }
-    else if(person_on != NULL && !location->isPersonSet())
-    {
-      /* Trigger walk off interaction */
-      if(node_current != NULL && node_current->state != NULL && 
-         node_current->state->getInteraction() == MapState::WALKOFF)
-        shift();
-
-      person_on = NULL;
-    }
+  { // TODO: Fix
+//    if(person_on == NULL && location->isPersonSet() && 
+//       location->getPerson()->getID() == kPLAYER_ID)
+//    {
+//      person_on = location->getPerson();
+//
+//      if(node_current != NULL && node_current->state != NULL)
+//      {
+//        /* Trigger walkover event, if valid */
+//        node_current->state->triggerWalkoverEvent(person_on);
+//
+//        /* Trigger walk on interaction */
+//        if(node_current->state->getInteraction() == MapState::WALKON)
+//          shift();
+//      }
+//    }
+//    else if(person_on != NULL && !location->isPersonSet())
+//    {
+//      /* Trigger walk off interaction */
+//      if(node_current != NULL && node_current->state != NULL && 
+//         node_current->state->getInteraction() == MapState::WALKOFF)
+//        shift();
+//
+//      person_on = NULL;
+//    }
   }
   
   /* Determine if the cycle time has passed on activity response */
