@@ -81,6 +81,9 @@ protected:
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 private:
+  /* Counts the valid frames */
+  uint16_t countValidFrames();
+  
   /* Get a valid frame from the matrix, if it exists (used for copying) */
   TileSprite* getValidFrame();
 
@@ -134,10 +137,15 @@ public:
 
   /* Clears the target that the map thing is currently pointing at */
   void clearTarget();
- 
+
+  /* Shrink the frame matrix to the valid size and removes all null and void
+   * pointers.  */
+  void cleanMatrix();
+
   /* Returns the bounding box of the thing */
   SDL_Rect getBoundingBox();
-
+  SDL_Rect getBoundingPixels();
+  
   /* Gets the things decription */
   std::string getDescription();
 
@@ -175,7 +183,7 @@ public:
   MapThing* getTarget();
   
   /* Returns the central tile */
-  Tile* getTile();
+  Tile* getTile(); // TODO: Delete
   
   /* Returns the width of the thing */
   uint16_t getWidth();
@@ -247,6 +255,11 @@ public:
   virtual bool setStartingTile(uint16_t section_id, Tile* new_tile, 
                                                     bool no_events = false);
 
+  /* Sets the set of tiles that the thing will be placed on. Needed after
+   * defining a starting point.*/
+  virtual bool setStartingTiles(std::vector<std::vector<Tile*>> tile_set, 
+                                bool no_events = false);
+  
   /* Sets the target map thing, fails if there is already a target */
   bool setTarget(MapThing* target);
   

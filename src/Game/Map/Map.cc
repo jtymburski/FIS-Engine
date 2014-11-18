@@ -1122,12 +1122,30 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
                       << set[i][j]->getPassability(Direction::SOUTH) << " " 
                       << set[i][j]->getPassability(Direction::WEST) << " "
                       << (int)set[i][j]->getRenderDepth() << std::endl;
-
-      std::cout << "Bounding Box: " 
+                
+      std::cout << "Bounding Box (Before): " 
                 << things.front()->getBoundingBox().x << " "
                 << things.front()->getBoundingBox().y << " "
                 << things.front()->getBoundingBox().w << " "
                 << things.front()->getBoundingBox().h << std::endl;
+      std::cout << "Bounding Box in Pixels (Before): " 
+                << things.front()->getBoundingPixels().x << " "
+                << things.front()->getBoundingPixels().y << " "
+                << things.front()->getBoundingPixels().w << " "
+                << things.front()->getBoundingPixels().h << std::endl;
+
+      things.front()->cleanMatrix();
+                
+      std::cout << "Bounding Box (After): " 
+                << things.front()->getBoundingBox().x << " "
+                << things.front()->getBoundingBox().y << " "
+                << things.front()->getBoundingBox().w << " "
+                << things.front()->getBoundingBox().h << std::endl;
+      std::cout << "Bounding Box in Pixels (After): " 
+                << things.front()->getBoundingPixels().x << " "
+                << things.front()->getBoundingPixels().y << " "
+                << things.front()->getBoundingPixels().w << " "
+                << things.front()->getBoundingPixels().h << std::endl;
     }
     std::cout << "--" << std::endl;
   }

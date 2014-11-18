@@ -72,6 +72,19 @@ MapThing::~MapThing()
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 
+// TODO: Comment
+uint16_t MapThing::countValidFrames()
+{
+  uint16_t count = 0;
+  
+  for(uint16_t i = 0; i < frame_matrix.size(); i++)
+    for(uint16_t j = 0; j < frame_matrix[i].size(); j++)
+      if(frame_matrix[i][j] != NULL && frame_matrix[i][j]->isFramesSet())
+        count++;
+  
+  return count;
+}
+
 /* 
  * Description: Finds a valid TileSprite in the matrix of frames, stored
  *              within the thing. If there are no frames set, it will create
@@ -452,8 +465,8 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
     }
 
     /* Ensure the rendering matrix is capable of frame modifiers added */
-    if(render_matrix.size() > 0)
-      growMatrix(render_matrix.back().size(), render_matrix.size());
+    if(render_matrix.size() > 0 && render_matrix.back().size() > 0)
+      growMatrix(render_matrix.back().size() - 1, render_matrix.size() - 1);
 
     /* Go through and set the render matrix level in all sprites */
     for(uint32_t j = 0; j < render_matrix.size(); j++)
@@ -528,7 +541,7 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
               frame_matrix[i][j]->removeAll();
 
             data.addDataOfType(str_matrix[i-x_min][j-y_min]);
-            success &= frame_matrix[i][j]->addFileInformation(data, 
+            frame_matrix[i][j]->addFileInformation(data, 
                                          file_index + 2, renderer, base_path);
           }
         }
@@ -583,7 +596,7 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
               if(frame_matrix[i][j]->isFramesSet())
                 frame_matrix[i][j]->removeAll();
 
-              success &= frame_matrix[i][j]->addFileInformation(
+              frame_matrix[i][j]->addFileInformation(
                                      data, file_index + 3, renderer, base_path);
             }
             else if(base_element.front() == "passability")
@@ -615,7 +628,7 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
   {
     setVisibility(data.getDataBool(&success));
   }
- 
+
   return success;
 }
   
@@ -693,7 +706,86 @@ void MapThing::clearTarget()
   target = NULL;
 }
 
+// TODO: Comment
+void MapThing::cleanMatrix()
+{
+  std::vector<int> frame_depth;
+  uint16_t max_y = 0;
+  uint16_t new_height = 1;
+  uint16_t new_width = 1;
+  
+  /* Take into account all frames and trim edges of matrix */
+  if(countValidFrames() > 0)
+  {
+    /* Count up all valid frames */
+    for(uint16_t i = 0; i < frame_matrix.size(); i++)
+    {
+      int count = -1;
+      
+      for(uint16_t j = 0; j < frame_matrix[i].size(); j++)
+      {
+        if(frame_matrix[i][j] != NULL)
+        {
+          if(frame_matrix[i][j]->isFramesSet())
+          {
+            count = j;
+          }
+          else
+          {
+            delete frame_matrix[i][j];
+            frame_matrix[i][j] = NULL;
+          }
+        }
+      }
+      
+      if(count > max_y)
+        max_y = count;
+      frame_depth.push_back(count);
+    }
+    
+    /* Set up width and height check parameters */
+    bool finished = false;
+    new_height = max_y + 1; /* Increment for size, not ref */
+    int i = frame_depth.size() - 1;
+
+    /* Find the new width */
+    while(!finished && (i >= 0))
+    {
+      if(frame_depth[i] >= 0)
+        finished = true;
+      else
+        i--;
+    }
+    new_width = i + 1; /* Increment for size, not ref */
+  }
+  
+  /* Remove parts of matrix, if new dimension is smaller */
+  if(frame_matrix.size() > new_width)
+    frame_matrix.erase(frame_matrix.begin() + new_width, frame_matrix.end());
+  for(uint16_t i = 0; i < frame_matrix.size(); i++)
+    if(frame_matrix[i].size() > new_height)
+      frame_matrix[i].erase(frame_matrix[i].begin() + new_height, 
+                            frame_matrix[i].end());
+}
+
+// TODO: Comment
 SDL_Rect MapThing::getBoundingBox()
+{
+  SDL_Rect rect;
+
+  rect.x = x / width;
+  rect.y = y / height;
+  rect.w = frame_matrix.size();
+  if(rect.w > 0)
+    rect.h = frame_matrix.back().size();
+  else
+    rect.h = 0;
+
+  return rect;
+}
+
+// TODO: Comment
+SDL_Rect MapThing::getBoundingPixels()
 {
   SDL_Rect rect;
 
@@ -895,6 +987,7 @@ MapThing* MapThing::getTarget()
  * Inputs: none
  * Output: Tile* - the tile pointer of the tile this thing resides at
  */
+// TODO: Delete
 Tile* MapThing::getTile()
 {
   return tile_main;
@@ -1315,6 +1408,14 @@ bool MapThing::setStartingTile(uint16_t section_id, Tile* new_tile,
     return true;
   }
 
+  return false;
+}
+/* Sets the set of tiles that the thing will be placed on. Needed after
+ * defining a starting point.*/
+// TODO: Comment
+bool MapThing::setStartingTiles(std::vector<std::vector<Tile*>> tile_set, 
+                                bool no_events)
+{
   return false;
 }
 
