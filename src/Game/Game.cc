@@ -309,6 +309,7 @@ void Game::setupBattle()
     top_stats, physical_skills);
   bear->setDescription("A sentient and intelligent bear!");
   bear->setFlag(CategoryState::DEF_ENABLED, true);
+  bear->setFlag(CategoryState::GRD_ENABLED, true);
   bear->setFlag(CategoryState::E_CLAWS, true);
 
   Category* bloodclaw_scion = new Category(251, "Bloodclaw Scion", "scions", 
@@ -328,16 +329,22 @@ void Game::setupBattle()
   tactical_samurai->setFlag(CategoryState::POWER_GUARDER, false);
   tactical_samurai->setFlag(CategoryState::E_SWORD, true);
   tactical_samurai->setFlag(CategoryState::E_CLAWS, false);
+
   tactical_samurai->setVitaRegenRate(RegenRate::ZERO);
+
   bear->setVitaRegenRate(RegenRate::WEAK);
+
   bloodclaw_scion->setVitaRegenRate(RegenRate::WEAK);
+
   human->setQDRegenRate(RegenRate::NORMAL);
 
   // Test Persons
   Person* malgidus = new Person(300, "Malgidus", human, tactical_samurai);
   malgidus->addExp(1500);
 
-  // Person* arcadius = new Person(301, "Arcadius", bear, tactical_samurai);
+  Person* arcadius = new Person(301, "Arcadius", bear, tactical_samurai);
+  arcadius->addExp(2100);
+
   // Person* berran   = new Person(302, "Berran", bear, bloodclaw_scion);
   // Person* atkst    = new Person(303, "Atkst", human, bloodclaw_scion);
   // Person* kevin    = new Person(304, "Kevin", human, bloodclaw_scion);
@@ -399,7 +406,7 @@ void Game::setupBattle()
   // Party Testing
   Party* friends = new Party(401, malgidus, PartyType::SLEUTH, 10,
       friends_pouch);
-  // friends->addMember(arcadius);
+  friends->addMember(arcadius);
   // friends->addMember(berran);
   // friends->addMember(atkst);
   // friends->addMember(kevin);

@@ -996,6 +996,42 @@ int16_t Battle::calcLevelDifference(std::vector<Person*> targets)
 }
 
 /*
+ * Description:
+ *
+ * Inputs:
+ * Output: 
+ */
+int32_t Battle::calcTurnRegen(Person* const target, const Attribute& attr)
+{
+  auto regen_amt = 0;
+  auto can_process = (target != nullptr);
+  can_process &= (attr == Attribute::VITA || attr == Attribute::QTDR);
+
+  if (can_process)
+  {
+    auto one_pc = static_cast<float>(target->getTemp().getStat(attr)) / 100.0;
+    auto alt_factor = getRegenFactor(target->getQDRegenRate());
+
+    if (attr == Attribute::VITA)
+      alt_factor = getRegenFactor(target->getVitaRegenRate());
+
+    regen_amt = one_pc * static_cast<float>(alt_factor);
+    auto max_amt = target->getTemp().getStat(attr);
+
+    if (target->getCurr().getStat(attr) + regen_amt >= max_amt)
+      regen_amt = max_amt - target->getCurr().getStat(attr);
+
+    target->getCurr().alterStat(attr, regen_amt);
+  }
+  else
+  {
+    std::cerr << "[Error] Bad turn regeneration calculation" << std::endl;
+  }
+
+  return regen_amt;
+}
+
+/*
  * Description: Asserts that every member in the Foes party has a valid AI
  *              Module (assigned with a parent matching each member) before
  *              larger problems occur.
@@ -1458,46 +1494,23 @@ void Battle::personalUpkeep(Person* const target)
   // process ailments
     // damage ailments
     // flag setting ailments
-    // recalulate ailment factors
+    // recalulate ailment factor
 
-  /* Regen Vitality */
-  //TODO: Pull out when doing regen ailments? [11-17-14]
-  auto stat = target->getTemp().getStat(0);
-  auto stat_one_pc = static_cast<float>(stat / 100.0);
-  auto alter_factor = getRegenFactor(target->getVitaRegenRate());
-  auto regen_amount = stat_one_pc * 
-                      static_cast<float>(alter_factor);
-  auto max_amount = target->getTemp().getStat(0);
+  auto vita_regen = calcTurnRegen(target, Attribute::VITA);
+  auto qtdr_regen = calcTurnRegen(target, Attribute::QTDR);
 
-  if (target->getCurr().getStat(0) + regen_amount >= max_amount)
-    regen_amount = max_amount - target->getCurr().getStat(0);
-
-  target->getCurr().alterStat(0, regen_amount);
-
-  if (getBattleMode() == BattleMode::TEXT && regen_amount > 0)
+  if (getBattleMode() == BattleMode::TEXT)
   {
-    std::cout << "{REGEN} " << target->getName() << " has healed "
-              << regen_amount << " VITA naturally" << std::endl;
-  }
-
-  /* Regen Quantum Drive */
-  //TODO: Pull out when doing regen ailments? [11-17-14]
-  stat = target->getTemp().getStat(1);
-  stat_one_pc = static_cast<float>(stat / 100.0);
-  alter_factor = getRegenFactor(target->getQDRegenRate());
-  regen_amount = stat_one_pc *
-                 static_cast<float>(alter_factor);
-  max_amount = target->getTemp().getStat(1);
-
-  if (target->getCurr().getStat(1) + regen_amount >= max_amount)
-    regen_amount = max_amount - target->getCurr().getStat(1);
-
-  target->getCurr().alterStat(1, regen_amount);
-
-  if (getBattleMode() == BattleMode::TEXT && regen_amount > 0)
-  {
-    std::cout << "{REGEN} " << target->getName() << " has restored " 
-              << regen_amount << " QTDR naturally" << std::endl;
+    if (vita_regen > 0) 
+    {
+      std::cout << "{REGEN} " << target->getName() << " has restored " 
+                << vita_regen << " VITA.\n";
+    }
+    if (qtdr_regen > 0)
+    {
+      std::cout << "{REGEN} " << target->getName() << " has regained "
+                << qtdr_regen << " QTDR.\n";
+    }
   }
 
   target->battleTurnPrep();
@@ -1858,11 +1871,12 @@ void Battle::processBuffer()
     else if (curr_action_type == ActionType::GUARD)
     {
       curr_target = action_buffer->getTargets().at(0);
+      std::cout << "Curr Target: " << curr_target->getName() << std::endl;
+
       bool good_guard = processGuard();
 
       if (!good_guard)
       {
-        //TODO [11-02-14]: Error in the guard operation message
         can_process = false;
       }
 
@@ -2157,6 +2171,7 @@ void Battle::updateAllySelection()
          !menu->getMenuFlag(BattleMenuState::TARGETS_ASSIGNED))
     {
       auto scope = ActionScope::NO_SCOPE;
+      std::vector<int32_t> targets;
 
       if (action_type == ActionType::SKILL)
         scope = menu->getSelectedSkill()->getScope();
@@ -2166,30 +2181,43 @@ void Battle::updateAllySelection()
         scope = ActionScope::USER;
       else if (action_type == ActionType::IMPLODE)
         scope = ActionScope::USER;
-      else if (action_type == ActionType::GUARD)
-        scope = ActionScope::ONE_ALLY_NOT_USER;
 
       if (getBattleMode() == BattleMode::TEXT)
       {
         std::cout << "Finding selectable targets for action with scope: "
                   << Helpers::actionScopeToStr(scope) << std::endl;
       }
-
-      auto battle_skill = menu->getMenuSkills().at(menu->getActionIndex());
-      auto skill_targets = getIndexesOfPersons(battle_skill.all_targets);
-          
-      menu->setMenuFlag(BattleMenuState::TARGETS_ASSIGNED);
+ 
+      if (action_type == ActionType::SKILL)
+      {
+        auto battle_skill = menu->getMenuSkills().at(menu->getActionIndex());
+        targets = getIndexesOfPersons(battle_skill.all_targets);                 
+      }
+      else if (action_type == ActionType::ITEM)
+      {
+        //auto battle_item;
+      }
+      else if (action_type == ActionType::DEFEND)
+      {
+        targets = getValidTargets(person_index, ActionScope::USER);
       
-      if (!menu->setSelectableTargets(skill_targets))
+      }
+      else if (action_type == ActionType::GUARD)
+      {
+         targets = getValidTargets(person_index, ActionScope::ONE_ALLY_NOT_USER);
+      }
+
+      if (!menu->setSelectableTargets(targets))
       {
         if (getBattleMode() == BattleMode::TEXT)
         {
           std::cout << "No selectable targets found! Select another action"
                     << " index!" << std::endl;
         }
-      }
+      }      
       else
       {
+        menu->setMenuFlag(BattleMenuState::TARGETS_ASSIGNED);
         menu->setActionScope(scope);
         menu->setMenuFlag(BattleMenuState::SCOPE_ASSIGNED);
         menu->printMenuState();
@@ -3272,10 +3300,13 @@ std::vector<int32_t> Battle::getValidTargets(int32_t index,
   }
   else if (action_scope == ActionScope::ONE_ALLY_NOT_USER)
   {
+    std::cout << "HEEEEEY YEAAAH" << std::endl;
     if (index > 0)
       valid_targets = getFriendsTargets();
     else if (index < 0)
       valid_targets = getFoesTargets();
+
+    std::cout << "valid targets: " << valid_targets.at(0) << std::endl;
 
     std::remove(begin(valid_targets), end(valid_targets), index);
     valid_targets.pop_back();
@@ -3284,6 +3315,7 @@ std::vector<int32_t> Battle::getValidTargets(int32_t index,
            action_scope == ActionScope::TWO_ENEMIES ||
            action_scope == ActionScope::ALL_ENEMIES)
   {
+    std::cout << "Heey boiiii" << std::endl;
     if (index > 0)
       valid_targets = getFoesTargets();
     else if (index < 0)

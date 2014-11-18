@@ -293,6 +293,9 @@ private:
   /* Calculates the level difference between curr_user and curr_target */
   int16_t calcLevelDifference(std::vector<Person*> targets);
 
+  /* Calculates the total regen value of a particular stat for a given person */
+  int32_t calcTurnRegen(Person* const target, const Attribute& attr);
+
   /* Determines whether the current person has selected all actions */
   bool canIncrementIndex(Person* check_person);
 

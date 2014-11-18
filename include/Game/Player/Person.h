@@ -489,7 +489,6 @@ public:
   /* Assign a new person this person is guarding */
   bool setGuardee(Person* const new_guarding_person);
 
-
   /* Attempts to assign a new loop set for the person */
   bool setLoot(const uint32_t &new_credit_drop, const uint32_t &new_exp_drop, 
                const std::vector<uint32_t> &new_item_drops);
