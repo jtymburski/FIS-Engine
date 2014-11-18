@@ -1370,8 +1370,8 @@ void Battle::generalUpkeep()
   /* Print out the party state if either in UDEBUG or in TEXT battle mode */
 #ifdef UDEBUG
   std::cout << "\n=============\n";
-  std::cout << "  TURN #" << turns_elapsed + 1 << std::endl;
-  std::cout << "=============" << std::endl;
+  std::cout << "  TURN " << Helpers::numToRoman(turns_elapsed + 1)
+            << "\n=============" << std::endl;
   printPartyState();
 #else 
   if (battle_mode == BattleMode::TEXT)
@@ -1490,7 +1490,7 @@ void Battle::personalUpkeep(Person* const target)
   max_amount = target->getTemp().getStat(1);
 
   if (target->getCurr().getStat(1) + regen_amount >= max_amount)
-    regen_amount = max_amount - target->getCurr().getStat(0);
+    regen_amount = max_amount - target->getCurr().getStat(1);
 
   target->getCurr().alterStat(1, regen_amount);
 

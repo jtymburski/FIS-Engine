@@ -111,6 +111,10 @@ public:
   /* Convert enumerated AI Personality to String */
   static std::string aiPersonalityToStr(const AIPersonality &ai_personality);
 
+  /* Get the string of a roman numeral from a value */
+  static std::string numToRoman(int value);
+
+  /* */
   static std::string regenRateToStr(const RegenRate &regen_rate);
 
 /*=============================================================================

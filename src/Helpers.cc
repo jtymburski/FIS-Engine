@@ -407,6 +407,46 @@ std::string Helpers::aiPersonalityToStr(const AIPersonality &ai_personality)
   return "";
 }
 
+std::string Helpers::numToRoman(int value)
+{
+  struct roman_values 
+  {
+    int numeral_value; 
+    std::string numeral; 
+  };
+
+  std::vector<roman_values> values
+  {
+    {1000, "M"},
+    {900, "CM"},
+    {500, "D"},
+    {400, "CD"},
+    {100, "C"},
+    {90, "XC"},
+    {50, "L"},
+    {40, "XL"},
+    {10, "X"},
+    {9, "IX"},
+    {5, "V"},
+    {4, "IV"},
+    {1, "I"},
+    {0, ""},
+  };
+ 
+  std::string result = "";
+
+  for (auto it = begin(values); it != end(values); ++it)
+  {
+    while (value >= (*it).numeral_value && value > 0)
+    {
+      result += (*it).numeral;
+      value  -= (*it).numeral_value;
+    }
+  }
+
+  return result;
+}
+
 std::string Helpers::regenRateToStr(const RegenRate &regen_rate)
 {
   if (regen_rate == RegenRate::ZERO)
