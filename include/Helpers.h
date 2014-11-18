@@ -111,6 +111,8 @@ public:
   /* Convert enumerated AI Personality to String */
   static std::string aiPersonalityToStr(const AIPersonality &ai_personality);
 
+  static std::string regenRateToStr(const RegenRate &regen_rate);
+
 /*=============================================================================
  * PLAYER / BATTLE HELPER FUNCTIONS
  *============================================================================*/

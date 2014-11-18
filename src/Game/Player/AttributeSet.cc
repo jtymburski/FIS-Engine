@@ -52,7 +52,7 @@ const std::vector<std::string> AttributeSet::kLONG_NAMES =
   "MANNA"
 };
 
-const std::vector<std::vector<int>> AttributeSet::kPRESETS =
+const std::vector<std::vector<int32_t>> AttributeSet::kPRESETS =
 {
   {100, 25, 5, 5, /* Weak Stats */
     5, 3, 5, 3, 
@@ -85,10 +85,10 @@ const std::vector<std::vector<int>> AttributeSet::kPRESETS =
    150,   150,  55,  19}
 };
 
-const int    AttributeSet::kDEFAULT        =      0;
-const int    AttributeSet::kMIN_VALUE      = -49999;
-const int    AttributeSet::kMIN_P_VALUE    =      0;
-const int    AttributeSet::kMAX_VALUE      =  99999; 
+const  int32_t AttributeSet::kDEFAULT     =      0; 
+const  int32_t AttributeSet::kMIN_VALUE   =  -9999; 
+const  int32_t AttributeSet::kMIN_P_VALUE =      0; 
+const uint32_t AttributeSet::kMAX_VALUE   = 999999; 
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -97,7 +97,7 @@ const int    AttributeSet::kMAX_VALUE      =  99999;
 /*
  * Description: Default constructor, intitializes a default Attribute set
  *
- * Inputs: none
+ * Inputs: none 
  */
 AttributeSet::AttributeSet()
 {
@@ -114,8 +114,8 @@ AttributeSet::AttributeSet()
  *
  * Inputs: const int &preset_level - const ref to the preset to set
  */
-AttributeSet::AttributeSet(const int &preset_level, const bool &personal,
-                           const bool &constant)
+AttributeSet::AttributeSet(const int32_t &preset_level, const bool &personal,
+    const bool &constant)
 {
   buildAsPreset(preset_level);
 
@@ -132,8 +132,8 @@ AttributeSet::AttributeSet(const int &preset_level, const bool &personal,
  *
  * Inputs: std::vector<int> new_values - vector of values to be set
  */
-AttributeSet::AttributeSet(const std::vector<int> &new_values, 
-                           const bool &personal, const bool &constant)
+AttributeSet::AttributeSet(const std::vector<int32_t> &new_values, 
+    const bool &personal, const bool &constant)
 {
   if (new_values.size() == kSHORT_NAMES.size())
     values = new_values;
@@ -199,14 +199,15 @@ void AttributeSet::cleanUp()
     std::cout << "[Warning] Wrong number values in AttributeSet" << std::endl;
   }
 
-  int min_value = kMIN_VALUE;
+  int32_t min_value = kMIN_VALUE;
+  int32_t max_value = static_cast<int32_t>(kMAX_VALUE);
 
   if (getFlag(AttributeState::PERSONAL))
     min_value = kMIN_P_VALUE;
 
   if (!getFlag(AttributeState::CONSTANT))
     for (auto it = values.begin(); it != values.end(); ++it)
-      (*it) = Helpers::setInRange((*it), min_value, kMAX_VALUE);
+      (*it) = Helpers::setInRange((*it), min_value, max_value);
 }
 
 /*
@@ -236,20 +237,21 @@ void AttributeSet::print(const bool &simple)
  *         const int &amount - the amount by which to alter the stat (+/-)
  * Output: bool - true if the index was a valid stat
  */
-bool AttributeSet::alterStat(const int &index, const int &amount)
+bool AttributeSet::alterStat(const int32_t &index, const int32_t &amount)
 {
   if (getFlag(AttributeState::CONSTANT))
     return false;
 
   if (index >= 0 && index < static_cast<int>(kSHORT_NAMES.size()))
   {
-    int min_value = kMIN_VALUE;
+    int32_t min_value = kMIN_VALUE;
+    int32_t max_value = static_cast<int32_t>(kMAX_VALUE);
 
     if (getFlag(AttributeState::PERSONAL))
       min_value = kMIN_P_VALUE;
 
     values[index] += amount;
-    values[index] = Helpers::setInRange<int>(values[index], min_value, kMAX_VALUE);
+    values[index] = Helpers::setInRange(values[index], min_value, max_value);
 
     return true;
   }
@@ -259,13 +261,13 @@ bool AttributeSet::alterStat(const int &index, const int &amount)
 
 /*
  * Description: Alters the stat of a given enumerated value by an amount.
- *              Calls the alterStat(int index, int amount) function.
+ *              Calls the alterStat(index, amount) function.
  *
  * Inputs: const Attribute &stat - enumerated Attribute value to be altered
  *         const int &amount - the amount by which to alter the stat (+/-) 
  * Output: bool - true if the enumeration was a valid attribute
  */
-bool AttributeSet::alterStat(const Attribute &stat, const int &amount)
+bool AttributeSet::alterStat(const Attribute &stat, const int32_t &amount)
 {
   return alterStat(getIndex(stat), amount);
 }
@@ -279,7 +281,7 @@ bool AttributeSet::alterStat(const Attribute &stat, const int &amount)
  *         const int &amount - the amount by which to alter the stat 
  * Output: bool - true if the name relates to a valid stat
  */
-bool AttributeSet::alterStat(const std::string &name, const int &amount)
+bool AttributeSet::alterStat(const std::string &name, const int32_t &amount)
 {
   return alterStat(getIndex(name), amount);
 }
@@ -303,9 +305,9 @@ bool AttributeSet::getFlag(AttributeState test_flag) const
  * Inputs: const int &index - const ref. to the index to be retrieved (def. 0)
  * Output: int - the value of the stat at the index, else -1
  */
-int AttributeSet::getStat(const int &index) const
+int32_t AttributeSet::getStat(const int32_t &index) const
 {
-  if (index != -1 && index < static_cast<int>(values.size()))
+  if (index != -1 && index < static_cast<int32_t>(values.size()))
     return values[index];
 
   return -1;
@@ -319,7 +321,7 @@ int AttributeSet::getStat(const int &index) const
  * Inputs: const Attribute &stat - enumerated value representing an attribute
  * Output: int - the value of the stat corresponding to the enum value, or -1
  */
-int AttributeSet::getStat(const Attribute &stat) const
+int32_t AttributeSet::getStat(const Attribute &stat) const
 {
   return getStat(getIndex(stat));
 }
@@ -331,7 +333,7 @@ int AttributeSet::getStat(const Attribute &stat) const
  * Inputs: const std::string &name - name of stat to check value for
  * Output: int - the value of the stat if it exists, else -1
  */
-int AttributeSet::getStat(const std::string &name) const
+int32_t AttributeSet::getStat(const std::string &name) const
 {
   return getStat(getIndex(name));
 }
@@ -340,24 +342,28 @@ int AttributeSet::getStat(const std::string &name) const
  * Description: Attempts to assign a stat at a given index to a value.
  *              Returns the truth of the assignment.
  *
- * Inputs: const int &index - the index of the stat to be assigned
- *         const int &value - the value to assign the stat to
+ * Inputs: const int32_t &index - the index of the stat to be assigned
+ *         const int32_t &value - the value to assign the stat to
  * Output: bool - the truth of the assignment
  */
-bool AttributeSet::setStat(const int &index, const int &value)
+bool AttributeSet::setStat(const int32_t &index, const int32_t &value)
 {
-  if (getFlag(AttributeState::CONSTANT))
-    return false;
+  auto can_set = true;
 
-  if (index >= 0 && index < static_cast<int>(kSHORT_NAMES.size()))
+  if (getFlag(AttributeState::CONSTANT) || index < 0)
+    can_set = false;
+
+  if (can_set && index < static_cast<int32_t>(kSHORT_NAMES.size()))
   {
     auto min_value = kMIN_VALUE;
+    auto max_value = static_cast<int32_t>(kMAX_VALUE);
 
     if (getFlag(AttributeState::PERSONAL))
       min_value = kMIN_P_VALUE;
 
     values[index] = value;
-    values[index] = Helpers::setInRange(values[index], min_value, kMAX_VALUE);
+    values[index] = Helpers::setInRange(values[index], min_value, max_value);
+
     return true;
   }
 
@@ -369,10 +375,10 @@ bool AttributeSet::setStat(const int &index, const int &value)
  *              Returns the truth of the assignment.
  *
  * Inputs: Attribute stat - enum. value of the stat to be assigned
- *         const int &value - the value to assign to the stat
+ *         const int32_t &value - the value to assign to the stat
  * Output: bool - the truth of the assignment
  */
-bool AttributeSet::setStat(const Attribute &stat, const int &value)
+bool AttributeSet::setStat(const Attribute &stat, const int32_t &value)
 {
   return setStat(getIndex(stat), value);
 }
@@ -385,7 +391,7 @@ bool AttributeSet::setStat(const Attribute &stat, const int &value)
  *         const int &value - the value to assign to the stat
  * Output: bool - the truth of the assignment
  */
-bool AttributeSet::setStat(const std::string &name, const int &value)
+bool AttributeSet::setStat(const std::string &name, const int32_t &value)
 {
   return setStat(getIndex(name), value);
 }
@@ -401,10 +407,10 @@ bool AttributeSet::setStat(const std::string &name, const int &value)
  * Inputs: const Attribute &stat - enumerated attribute to find the index for
  * Output: int - the index of the corresponding attribute (if it exists)
  */
-int AttributeSet::getIndex(const Attribute &stat)
+int32_t AttributeSet::getIndex(const Attribute &stat)
 {
   if (stat < Attribute::NONE)
-    return static_cast<uint8_t>(stat);
+    return static_cast<int32_t>(stat);
 
   return -1;
 }
@@ -416,7 +422,7 @@ int AttributeSet::getIndex(const Attribute &stat)
  * Inputs: const Element &stat - enumerated Element to find offensive index for
  * Output: int - the index of the corresponding attribute (if it exists)
  */
-int AttributeSet::getOffensiveIndex(const Element &stat)
+int32_t AttributeSet::getOffensiveIndex(const Element &stat)
 {
   switch (stat)
   {
@@ -435,7 +441,7 @@ int AttributeSet::getOffensiveIndex(const Element &stat)
     case (Element::NONE):
       return getIndex(Attribute::NONE);
     default:
-      std::cerr << "Warning: obtaining offensive index of bad Element value\n";
+      std::cerr << "[Error] Obtaining offensive index of bad Element value\n";
       break;
   }
 
@@ -449,7 +455,7 @@ int AttributeSet::getOffensiveIndex(const Element &stat)
  * Inputs: const Element &stat - enumerated Element to find defensive index for
  * Output: int - the index of the corresponding attribute (if it exists)
  */
-int AttributeSet::getDefensiveIndex(const Element &stat)
+int32_t AttributeSet::getDefensiveIndex(const Element &stat)
 {
   switch (stat)
   {
@@ -468,7 +474,7 @@ int AttributeSet::getDefensiveIndex(const Element &stat)
     case (Element::NONE):
       return getIndex(Attribute::NONE);
     default:
-      std::cerr << "Warning: obtaining defensive index of bad Element value\n";
+      std::cerr << "[Error] Obtaining defensive index of bad Element value\n";
       break;
   }
 
@@ -482,7 +488,7 @@ int AttributeSet::getDefensiveIndex(const Element &stat)
  * Inputs: const std::string &name - the name of the attribute to find index of
  * Output: int - the index of the corresponding attribute (if it exists)
  */
-int AttributeSet::getIndex(const std::string &name)
+int32_t AttributeSet::getIndex(const std::string &name)
 {
   /* Find the index in the vector of short or long names */
   for (size_t i = 0; i < kSHORT_NAMES.size(); i++)
@@ -505,11 +511,16 @@ size_t AttributeSet::getSize()
   return kSHORT_NAMES.size();
 }
 
-uint16_t AttributeSet::getMaxValue()
+/*
+ * Description: Returns the highest possible value storable in an Attr set.
+ *
+ * Inputs: none
+ * Output: uint32_t - The maximum value of an AttributeSet element
+ */
+uint32_t AttributeSet::getMaxValue()
 {
-  return static_cast<uint16_t>(kMAX_VALUE);
+  return kMAX_VALUE;
 }
-
 
 /*
  * Description: Returns the long form name version of an attribute given

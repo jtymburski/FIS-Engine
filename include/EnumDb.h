@@ -250,8 +250,7 @@ enum class CellState : std::uint32_t
   BUBBY,
   CLOSED,
   BLOCKED,
-  LINK,
-  E_LINK
+  LINK
 };
 
 /*
@@ -448,6 +447,15 @@ enum class Ranks : std::uint16_t
   ALPHABEAR,
   BOAT,
   NONE
+};
+
+enum class RegenRate : std::uint16_t
+{
+  ZERO   = 0,
+  WEAK   = 1,
+  NORMAL = 2,
+  STRONG = 3,
+  GRAND  = 4
 };
 
 enum class SkillSorts : std::uint32_t

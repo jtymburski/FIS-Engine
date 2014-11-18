@@ -175,6 +175,7 @@ private:
   AttributeSet curr_max_stats;
   AttributeSet temp_max_stats;
 
+
   /* Skill sets fro the Person */
   SkillSet* base_skills;
   SkillSet* curr_skills;
@@ -439,6 +440,10 @@ public:
 
   /* Grabs the vector of item IDs the person can drop */
   std::vector<uint32_t> getItemDrops();
+
+  /* Calculate and return the /turn RegenRates for QD & VITA */
+  RegenRate getQDRegenRate();
+  RegenRate getVitaRegenRate();
 
   /* Calculates and determines current useable skills for Battle */
   SkillSet* getUseableSkills();

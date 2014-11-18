@@ -86,6 +86,8 @@ Category::Category(const int32_t &my_id, const std::string &name,
       , description{StringDb::kDEFAULT_CAT_DESC}
       , denonym{denonym}
       , name{name}
+      , qtdr_regen_rate{RegenRate::ZERO}
+      , vita_regen_rate{RegenRate::ZERO}
       , skill_set{skills}
       , id{my_id}
 {
@@ -336,6 +338,50 @@ std::string Category::getName()
 AttributeSet& Category::getBaseSet()
 {
   return base_stats;
+}
+
+/*
+ * Description: Returns the enumerated quantum drive regeneration rate.
+ *
+ * Inputs: none
+ * Output: RegenRate - enumerated RegenRate for quantum drive
+ */
+RegenRate Category::getQDRegenRate() const
+{
+  return qtdr_regen_rate;
+}
+
+/*
+ * Description: Returns the enumerated vitality regeneration rate.
+ *
+ * Inputs: none
+ * Output: RegenRate - enuemrated RegenRate for vitality
+ */
+RegenRate Category::getVitaRegenRate() const
+{
+  return vita_regen_rate;
+}
+
+/*
+ * Description: Assigns a new enumerated quantum drive regeneration rate.
+ *
+ * Inputs: const RegenRate - ref. to a const enumerated RegenRate
+ * Output: none
+ */
+void Category::setQDRegenRate(const RegenRate &new_regen_rate)
+{
+  qtdr_regen_rate = new_regen_rate;
+}
+
+/*
+ * Description:
+ *
+ * Inputs: const &RefRate - ref. to a const enumerated RegenRate
+ * Output: none
+ */
+void Category::setVitaRegenRate(const RegenRate &new_regen_rate)
+{
+  vita_regen_rate = new_regen_rate;
 }
 
 /*

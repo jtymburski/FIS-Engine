@@ -265,8 +265,8 @@ void Game::setupBattle()
   damage_actions.push_back(new Action("22,DAMAGE,,,,VITA,PC.10,PC.20,,95"));
   damage_actions.push_back(new Action("23,DAMAGE,,,,VITA,PC.15,PC.25,,95"));
 
-  for(auto it = begin(damage_actions); it != end(damage_actions); ++it)
-    std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
+  // for(auto it = begin(damage_actions); it != end(damage_actions); ++it)
+  //   std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
 
   // Test Skills
   Skill* physical_01 = new Skill(100, "Wee Strike", ActionScope::ONE_ENEMY, 
@@ -328,10 +328,14 @@ void Game::setupBattle()
   tactical_samurai->setFlag(CategoryState::POWER_GUARDER, false);
   tactical_samurai->setFlag(CategoryState::E_SWORD, true);
   tactical_samurai->setFlag(CategoryState::E_CLAWS, false);
+  tactical_samurai->setVitaRegenRate(RegenRate::ZERO);
+  bear->setVitaRegenRate(RegenRate::WEAK);
+  bloodclaw_scion->setVitaRegenRate(RegenRate::WEAK);
+  human->setQDRegenRate(RegenRate::NORMAL);
 
   // Test Persons
-  Person* malgidus = new Person(300, "Malgidus", human, bloodclaw_scion);
-  malgidus->addExp(500);
+  Person* malgidus = new Person(300, "Malgidus", human, tactical_samurai);
+  malgidus->addExp(1500);
 
   // Person* arcadius = new Person(301, "Arcadius", bear, tactical_samurai);
   // Person* berran   = new Person(302, "Berran", bear, bloodclaw_scion);
@@ -346,9 +350,9 @@ void Game::setupBattle()
   std::vector<BattleItem> items;
 
   Person* frosty = new Person(310, "Frosty", human, bloodclaw_scion);
-  frosty->addExp(500);
+  frosty->addExp(1500);
 
-  Person* cloud_dude = new Person(311, "Cloud Dude", human, bloodclaw_scion);
+  // Person* cloud_dude = new Person(311, "Cloud Dude", human, bloodclaw_scion);
   // Person* thruster_barrow = new Person(301, "Thruster Barrow", human, bloodclaw_scion);
   // Person* dragon = new Person(301, "Dragon", human, bloodclaw_scion);
   // Person* splurge = new Person(301, "Splurge", human, bloodclaw_scion);
@@ -564,18 +568,6 @@ void Game::setupBattle()
   //           << static_cast<int>((*it).second) << "\n";
   // }
 
-  //berran->print(false, true, true, true);
-  
-  // berran->setCurves(Element::FIRE, ElementCurve::S, 
-  //                   Element::PHYSICAL, ElementCurve::B);
-  // berran->setLoot(25, 150, {14, 12, 16});
-  // berran->setExpMod(1.5);
-  // berran->addExp(1000, true);
-  // berran->battlePrep();
-  // berran->doDmg(145);
-
-  // berran->print(false, true, true, false);
-
   // delete test_pouch;
   // delete spark;
   // delete moldy;
@@ -583,40 +575,6 @@ void Game::setupBattle()
 
   // new_potion->setUseSkill(medium_attack);
   // new_bubby_bomb->setUseSkill(normal_attack);
-
-  // // AIModuleTester ai_module_tester;
-
-  // AIModule* cloud_dude_module = new AIModule();
-  // cloud_dude_module->setParent(cloud_dude);
-  // cloud_dude->setAI(cloud_dude_module);
-
-  // AIModule* ball_man_module = new AIModule();
-  // ball_man_module->setParent(ball_man);
-  // ball_man->setAI(ball_man_module);
-
-  // AIModule* thruster_barrow_module = new AIModule();
-  // thruster_barrow_module->setParent(thruster_barrow);
-  // thruster_barrow->setAI(thruster_barrow_module);
-
-  // // Inventory Testing
-  // Inventory* friends_pouch = new Inventory(1006, "Test Friends Pouch");
-  // Inventory* foes_pouch    = new Inventory(1007, "Test Foes Pouch");
-
-  // friends_pouch->setFlag(InvState::PLAYER_STORAGE, true);
-  // friends_pouch->setFlag(InvState::SHOP_STORAGE, false);
-  // foes_pouch->setFlag(InvState::SHOP_STORAGE, false);
-
-  // friends_pouch->add(new_potion, 2);
-  // friends_pouch->add(new_bubby_bomb, 3);
-
-  // foes_pouch->add(new_potion, 1);
-  // foes_pouch->add(new_bubby_bomb, 1);
-
-  // allies->setInventory(friends_pouch);
-  // foes->setInventory(foes_pouch);
-
-  // // ai_module_tester.aiActionTypeTests(0, cloud_dude_module, 
-  // //                                    foes->getInventory()->getBattleItems());
 }
 
 /* Set up the map - old map needs to be deleted prior to calling */
@@ -714,21 +672,21 @@ void Game::keyUpEvent(SDL_KeyboardEvent event)
 /* Renders the title screen */
 bool Game::render(SDL_Renderer* renderer)
 {
-  /* Create temporary list of items - TODO: Pull into file */
-  if(base_item_list.empty())
-  {
-    Item* item1 = new Item(5, "Sword of Power", 125, 
-                          new Frame("sprites/Map/_TEST/sword_AA_A00.png", renderer));
-    Item* item2 = new Item(7, "Frost Bubby", 5, 
-                           new Frame("sprites/Battle/Bubbies/frosty_t1.png", 
-                                     renderer));
-    Item* item3 = new Item(0, "Coins", 1, 
-                           new Frame("sprites/Map/_TEST/coins_AA_A00.png", renderer));
+  // TODO Create temporary list of items - Pull into file */
+  // if(base_item_list.empty())
+  // {
+  //   Item* item1 = new Item(5, "Sword of Power", 125, 
+  //                         new Frame("sprites/Map/_TEST/sword_AA_A00.png", renderer));
+  //   Item* item2 = new Item(7, "Frost Bubby", 5, 
+  //                          new Frame("sprites/Battle/Bubbies/frosty_t1.png", 
+  //                                    renderer));
+  //   Item* item3 = new Item(0, "Coins", 1, 
+  //                          new Frame("sprites/Map/_TEST/coins_AA_A00.png", renderer));
     
-    base_item_list.push_back(item1);
-    base_item_list.push_back(item2);
-    base_item_list.push_back(item3);
-  }
+  //   base_item_list.push_back(item1);
+  //   base_item_list.push_back(item2);
+  //   base_item_list.push_back(item3);
+  // }
   
   /* Map initialization location */
   if(!game_map->isLoaded())

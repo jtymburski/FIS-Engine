@@ -135,11 +135,6 @@ bool Cell::setState(const CellState new_state, Bubby* const new_bubby,
   // else if (new_state == CellState::LINK)
   //   Helpers::setInRange(valid_link_tier, 0, Signature::kMAX_LINK_TIER);
 
-  // if (new_state == CellState::E_LINK && valid_link_tier == 0)
-  //   valid_state = false;
-  // else if (new_state == CellState::E_LINK)
-  //   Helpers::setInRange(valid_link_tier, 0, Signature::kMAX_E_LINK_TIER);
-
   if (valid_state)
   {
     state      = new_state;
@@ -179,7 +174,6 @@ const size_t Signature::kMIN_Y  {1};
 const size_t Signature::kMAX_X {10};
 const size_t Signature::kMAX_Y {10};
 const uint8 Signature::kMAX_LINK_TIER{15};
-const uint8 Signature::kMAX_E_LINK_TIER{15};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -217,12 +211,14 @@ Signature::Signature(const size_t x, const size_t y, const bool random)
 
       /* Randomly close that number of cells -- some may be repeats */
       for (int i = 0; i < cells; i++)
+      {
         close(static_cast<uint8>(Helpers::randInt(kMAX_X)), 
-        	    static_cast<uint8>(Helpers::randInt(kMAX_Y)));
+            static_cast<uint8>(Helpers::randInt(kMAX_Y)));
+      }
     }
   }
   else
-    std::cerr << "Invalid sig of size: " << x << " by " << y << "\n";
+    std::cerr << "[Error] Invalid sig of size: " << x << " by " << y << "\n";
 }
 
 /*
@@ -241,11 +237,15 @@ Signature::Signature(const size_t x, const size_t y,
   classSetup(true);
 
   if (setSize(x, y))
+  {
     for (auto closed : closed_cells)
       if (isOpen(closed.first, closed.second))
         close(closed.first, closed.second);
+  }
   else
-    std::cerr << "Invalid sig of size: " << x << " by " << y << "\n";
+  {
+    std::cerr << "[Error] Invalid sig of size: " << x << " by " << y << "\n";
+  }
 }
 
 /*=============================================================================
@@ -565,8 +565,6 @@ void Signature::print(const bool print_cells)
           line += " X |";
         else if ((*it_e).getState() == CellState::LINK)
           line += " L |";
-        else if ((*it_e).getState() == CellState::E_LINK)
-          line += " E |";
       }
    }
      if (!(print_cells))
@@ -901,15 +899,4 @@ constexpr size_t Signature::getMinY() noexcept
 constexpr uint8 Signature::getMaxLinkTier() noexcept
 {
   return kMAX_LINK_TIER;
-}
-
-/*
- * Description: Returns the static value for the maximum level elemental link.
- *
- * Inputs: none
- * Output: uint8 - largest static value for elemental link tier
- */
-constexpr uint8 Signature::getMaxELinkTier() noexcept
-{
-  return kMAX_E_LINK_TIER;
 }

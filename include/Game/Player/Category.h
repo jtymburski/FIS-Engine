@@ -84,6 +84,10 @@ private:
   std::string denonym;
 	const std::string name;
 
+  /* Regen rate for the category (default: NONE) */
+  RegenRate qtdr_regen_rate;
+  RegenRate vita_regen_rate;
+
   /* Pointer to a SkillSet which the category unlocks */
   SkillSet* const skill_set;
 
@@ -147,11 +151,23 @@ public:
   /* Returns a ref. to the base attr set */
   AttributeSet& getBaseSet();
 
+  /* Return the enumerated RegenRate for quantum drive */
+  RegenRate getQDRegenRate() const;
+
+  /* Return the enumerated RegenRate for vitality */
+  RegenRate getVitaRegenRate() const;
+
   /* Returns a ptr to the SkillSet granted to a member of this Category */
   SkillSet* getSkills();
 
   /* Returns a ref. to the top attr set */
   AttributeSet& getTopSet();
+
+  /* Assign a new enumerated quantum drive regeneration rate */
+  void setQDRegenRate(const RegenRate &new_regen_rate);
+
+  /* Assign a new enumerated vitality regeneration rate */
+  void setVitaRegenRate(const RegenRate &new_regen_rate);
 
   /* Assigns a new description */
   bool setDescription(const std::string &new_description);

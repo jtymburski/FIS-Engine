@@ -134,7 +134,6 @@ private:
   static const size_t kMAX_X;
   static const size_t kMAX_Y;
   static const uint8 kMAX_LINK_TIER;
-  static const uint8 kMAX_E_LINK_TIER;
 
 /*=============================================================================
  * PRIVATE FUNCTIONS

@@ -45,12 +45,12 @@ public:
   AttributeSet(const AttributeSet&) = default;
 
   /* Preset constructor */
-  AttributeSet(const int &preset_level, const bool &personal = false,
-               const bool &constant = false);
+  AttributeSet(const int32_t &preset_level, const bool &personal = false,
+      const bool &constant = false);
 
   /* Construct and AttributeSet from a vector of values */
-  AttributeSet(const std::vector<int> &new_values, const bool &personal = false,
-               const bool &constant = false);
+  AttributeSet(const std::vector<int32_t> &new_values,
+      const bool &personal = false, const bool &constant = false);
 
   /* Default destructor */
   ~AttributeSet() = default;
@@ -60,17 +60,17 @@ private:
   AttributeState flags{static_cast<AttributeState>(0)};
 
   /* The values of the statistics within the AttributeSet */
-  std::vector<int> values{};
+  std::vector<int32_t> values{};
 
   /* ------------ Constants --------------- */
   static const std::vector<std::string> kSHORT_NAMES;  /* The names of Attrs  */
   static const std::vector<std::string> kLONG_NAMES;   /* Full names of Attrs */
-  static const std::vector<std::vector<int>> kPRESETS; /* Pre-built stats     */
+  static const std::vector<std::vector<int32_t>> kPRESETS; /* Pre-built stats */
 
-  static const int kDEFAULT;     /* Default value for a min stat   */
-  static const int kMIN_P_VALUE; /* The minimum value for a p. set */
-  static const int kMIN_VALUE;   /* The minimum value of any stat  */
-  static const int kMAX_VALUE;   /* The maximum value of any stat  */
+  static const  int32_t kDEFAULT;     /* Default value for a min stat   */
+  static const  int32_t kMIN_P_VALUE; /* The minimum value for a p. set */
+  static const  int32_t kMIN_VALUE;   /* The minimum value of any stat  */
+  static const uint32_t kMAX_VALUE;   /* The maximum value of any stat  */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -94,43 +94,43 @@ public:
   
   /* Methods for altering a stat by a given amount given either an index,
    * enumerated value of the Attribute, or a string name (short or long */
-  bool alterStat(const int &index, const int &amount);
-  bool alterStat(const Attribute &stat, const int &amount);
-  bool alterStat(const std::string &name, const int &amount);
+  bool alterStat(const int32_t &index, const int32_t &amount);
+  bool alterStat(const Attribute &stat, const int32_t &amount);
+  bool alterStat(const std::string &name, const int32_t &amount);
 
   /* Evaluate a given AttributeState enumerated flag */
   bool getFlag(AttributeState test_flag) const;
 
   /* Methods for returning the value of a stat given either an index, an
      enumerated value, or a string name (short or long) */
-  int getStat(const int &index = 0) const;
+  int getStat(const int32_t &index = 0) const;
   int getStat(const Attribute &stat) const;
   int getStat(const std::string &name) const;
 
   /* Methods for assigning a new value to a stat given either an index, an
    * enumerated value, or a string name (short or long) */
-  bool setStat(const int &index, const int &value);
-  bool setStat(const Attribute &stat, const int &value);
-  bool setStat(const std::string &name, const int &value);
+  bool setStat(const int32_t &index, const int32_t &value);
+  bool setStat(const Attribute &stat, const int32_t &value);
+  bool setStat(const std::string &name, const int32_t &value);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
 public:
   /* Method for getting the index of an attribute by an enum  */
-  static int getIndex(const Attribute &stat);
+  static int32_t getIndex(const Attribute &stat);
 
   /* Returns the element of the corresponding offensive statistic for an elmt */
-  static int getOffensiveIndex(const Element &stat);
+  static int32_t getOffensiveIndex(const Element &stat);
 
   /* Returns the element of the corresponding defensive statistic for an elmt */
-  static int getDefensiveIndex(const Element &stat);
+  static int32_t getDefensiveIndex(const Element &stat);
 
   /* Method for returning the index of an attribute given a name */
-  static int getIndex(const std::string &name);
+  static int32_t getIndex(const std::string &name);
   
   /* Returns the max value for an attribute */
-  static uint16_t getMaxValue();
+  static uint32_t getMaxValue();
 
   /* Returns the size of an attribute set (static -- returns kNUM_VALUES) */
   static size_t getSize();

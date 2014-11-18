@@ -83,7 +83,7 @@ Conversation* EventHandler::getConversation(Conversation* reference,
   return convo;
 }
 
-/* Sets the conversation values of the pointed object, based on the XML
+/* Sets the conversation values of the pointed object, gamd on the XML
  * file data */
 void EventHandler::setConversationValues(Conversation* reference, XmlData data, 
                                          int index, int section_index)

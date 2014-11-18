@@ -123,6 +123,12 @@ const float    Battle::kDODGE_PER_LEVEL_MODIFIER    =   2.50;
 const float    Battle::kDEFEND_MODIFIER             =   0.50;
 const float    Battle::kGUARD_MODIFIER              =   0.25;
 
+const int16_t Battle::kREGEN_RATE_ZERO_PC           =      0;
+const int16_t Battle::kREGEN_RATE_WEAK_PC           =      2; 
+const int16_t Battle::kREGEN_RATE_NORMAL_PC         =      4;
+const int16_t Battle::kREGEN_RATE_STRONG_PC         =      6;
+const int16_t Battle::kREGEN_RATE_GRAND_PC          =      8;
+
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
@@ -1447,12 +1453,73 @@ void Battle::orderActions()
  */
 void Battle::personalUpkeep(Person* const target)
 {
-  target->battleTurnPrep();
+  //TODO
   // clear flags for new turn (temp flags?)
   // process ailments
     // damage ailments
     // flag setting ailments
     // recalulate ailment factors
+
+  /* Regen Vitality */
+  //TODO: Pull out when doing regen ailments? [11-17-14]
+  auto stat = target->getTemp().getStat(0);
+  auto stat_one_pc = static_cast<float>(stat / 100.0);
+  auto alter_factor = getRegenFactor(target->getVitaRegenRate());
+  auto regen_amount = stat_one_pc * 
+                      static_cast<float>(alter_factor);
+  auto max_amount = target->getTemp().getStat(0);
+
+  if (target->getCurr().getStat(0) + regen_amount >= max_amount)
+    regen_amount = max_amount - target->getCurr().getStat(0);
+
+  target->getCurr().alterStat(0, regen_amount);
+
+  if (getBattleMode() == BattleMode::TEXT && regen_amount > 0)
+  {
+    std::cout << "{REGEN} " << target->getName() << " has healed "
+              << regen_amount << " VITA naturally" << std::endl;
+  }
+
+  /* Regen Quantum Drive */
+  //TODO: Pull out when doing regen ailments? [11-17-14]
+  stat = target->getTemp().getStat(1);
+  stat_one_pc = static_cast<float>(stat / 100.0);
+  alter_factor = getRegenFactor(target->getQDRegenRate());
+  regen_amount = stat_one_pc *
+                 static_cast<float>(alter_factor);
+  max_amount = target->getTemp().getStat(1);
+
+  if (target->getCurr().getStat(1) + regen_amount >= max_amount)
+    regen_amount = max_amount - target->getCurr().getStat(0);
+
+  target->getCurr().alterStat(1, regen_amount);
+
+  if (getBattleMode() == BattleMode::TEXT && regen_amount > 0)
+  {
+    std::cout << "{REGEN} " << target->getName() << " has restored " 
+              << regen_amount << " QTDR naturally" << std::endl;
+  }
+
+  target->battleTurnPrep();
+}
+
+/*
+ * Description:
+ *
+ * Inputs: 
+ * Output: 
+ */
+int16_t Battle::getRegenFactor(const RegenRate &regen_rate)
+{
+  if (regen_rate == RegenRate::WEAK)
+    return kREGEN_RATE_WEAK_PC;
+  else if (regen_rate == RegenRate::NORMAL)
+    return kREGEN_RATE_NORMAL_PC;
+  else if (regen_rate == RegenRate::STRONG)
+    return kREGEN_RATE_STRONG_PC;
+  else if (regen_rate == RegenRate::GRAND)
+    return kREGEN_RATE_GRAND_PC;
+  return kREGEN_RATE_ZERO_PC;
 }
 
 /*
@@ -2047,14 +2114,16 @@ bool Battle::testPersonIndex(const int32_t &test_index)
  */
 void Battle::upkeep()
 {
-  /* Friends update */
-  for (uint32_t i = 0; i < friends->getSize(); i++)
-    personalUpkeep(friends->getMember(i));
+  if (turns_elapsed > 0)
+  {
+    /* Friends update */
+    for (uint32_t i = 0; i < friends->getSize(); i++)
+      personalUpkeep(friends->getMember(i));
 
-  /* Foes update */
-  for (uint32_t i = 0; i < foes->getSize(); i++)
-    personalUpkeep(foes->getMember(i));
-
+    /* Foes update */
+    for (uint32_t i = 0; i < foes->getSize(); i++)
+      personalUpkeep(foes->getMember(i));
+  }
   /* Personal upkeep state complete */
   setBattleFlag(CombatState::PHASE_DONE);
 }

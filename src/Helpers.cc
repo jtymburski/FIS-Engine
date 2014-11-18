@@ -277,9 +277,7 @@ std::string Helpers::cellToStr(const CellState &cell_state)
     return "BLOCKED";
   else if (cell_state == CellState::LINK)
     return "LINK";
-  else if (cell_state == CellState::E_LINK)
-    return "E_LINK";
-
+  
   return "";
 }
 
@@ -405,6 +403,22 @@ std::string Helpers::aiPersonalityToStr(const AIPersonality &ai_personality)
     return "PASSER";
   else if (ai_personality == AIPersonality::NONE)
     return "NONE";
+
+  return "";
+}
+
+std::string Helpers::regenRateToStr(const RegenRate &regen_rate)
+{
+  if (regen_rate == RegenRate::ZERO)
+    return "ZERO";
+  else if (regen_rate == RegenRate::WEAK)
+    return "WEAK";
+  else if (regen_rate == RegenRate::NORMAL)
+    return "NORMAL";
+  else if (regen_rate == RegenRate::STRONG)
+    return "STRONG";
+  else if (regen_rate == RegenRate::GRAND)
+    return "GRAND";
 
   return "";
 }

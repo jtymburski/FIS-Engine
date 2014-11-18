@@ -927,7 +927,10 @@ void Person::print(const bool &simple, const bool &equips,
     std::cout << "First Person? " << (first_person != nullptr) << "\n";
     std::cout << "Third Person? " << (third_person != nullptr) << "\n";
     std::cout << "Fp Bubbified? " << (fp_bubbified_sprite != nullptr) << "\n";
-    std::cout << "Tp Bubbified? " << (tp_bubbified_sprite != nullptr) << "\n\n";
+    std::cout << "Tp Bubbified? " << (tp_bubbified_sprite != nullptr) << "\n";
+    std::cout << "VITA Regn: " << Helpers::regenRateToStr(getVitaRegenRate());
+    std::cout << "\nQTDR Regn: " << Helpers::regenRateToStr(getQDRegenRate());
+    std::cout << "\n\n";
 
     std::cout << "Base Stats: ";
     base_stats.print(true);
@@ -1619,6 +1622,46 @@ std::vector<uint32_t> Person::getItemDrops()
 }
 
 /*
+ * Description: Calculates the total QD regeneration rate from the battle class
+ *              and race class bonuses and returns the enumerated result.
+ *
+ * Inputs: none
+ * Output: RegenRate - enumerated regen rate for quantum drive / turn
+ */
+RegenRate Person::getQDRegenRate()
+{
+  auto total_rate = static_cast<int16_t>(battle_class->getQDRegenRate()) +
+      static_cast<int16_t>(race_class->getQDRegenRate());
+
+  if (total_rate <= static_cast<uint16_t>(RegenRate::GRAND))
+    return static_cast<RegenRate>(total_rate);
+  else
+    return RegenRate::GRAND;
+
+  return RegenRate::ZERO;
+}
+
+/*
+ * Description: Calculates the total Vita regeneration rate from the battle
+ *              class and race class bonuses and returns the enumerated result.
+ *
+ * Inputs: none
+ * Output: RegenRate - enumerated regen rate for vitality / turn
+ */
+RegenRate Person::getVitaRegenRate()
+{
+  auto total_rate = static_cast<int16_t>(battle_class->getVitaRegenRate()) +
+      static_cast<int16_t>(race_class->getVitaRegenRate());
+
+  if (total_rate <= static_cast<uint16_t>(RegenRate::GRAND))
+    return static_cast<RegenRate>(total_rate);
+  else
+    return RegenRate::GRAND;
+
+  return RegenRate::ZERO;
+}
+
+/*
  * Description: Calculates a vector of Skill ptrs containing all Skills the
  *              Person has current access to use for the Battle based upon
  *              their attribute values and the current settings of flags.
@@ -1626,7 +1669,6 @@ std::vector<uint32_t> Person::getItemDrops()
  * Inputs: none
  * Output: SkillSet* useable skills
  */
-/* Calculates and determines current useable skills for Battle */
 SkillSet* Person::getUseableSkills()
 {
   /* Delete the old temp skills ptr if set */
@@ -1661,7 +1703,7 @@ SkillSet* Person::getUseableSkills()
       else
         add_skill &= getBFlag(BState::SKL_ENABLED);
 
-      add_skill &= (skill_cost <= curr_stats.getStat(Attribute::QTDR));
+      add_skill &= (skill_cost <= temp_max_stats.getStat(Attribute::QTDR));
 
       /* Adjust for maximum allowable QD cost for being Bubbified */
       if (getBFlag(BState::IS_BUBBY))

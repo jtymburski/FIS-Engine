@@ -243,6 +243,12 @@ private:
   static const float    kDEFEND_MODIFIER;
   static const float    kGUARD_MODIFIER;
 
+  static const int16_t kREGEN_RATE_ZERO_PC;
+  static const int16_t kREGEN_RATE_WEAK_PC;
+  static const int16_t kREGEN_RATE_NORMAL_PC;
+  static const int16_t kREGEN_RATE_STRONG_PC;
+  static const int16_t kREGEN_RATE_GRAND_PC;
+
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
@@ -328,6 +334,9 @@ private:
 
   /* Deals with character related upkeep */
   void personalUpkeep(Person* const target);
+
+  /* Determines the Regen % for a given enumerated regeneration rate */
+  int16_t getRegenFactor(const RegenRate &regen_rate);
 
   /* */
   bool processAlterAction(std::vector<Person*> targets);
