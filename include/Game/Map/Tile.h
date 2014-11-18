@@ -84,8 +84,8 @@ private:
 private:
   /* Grow the things and persons stack, to allow for the current render
    * level */
-  bool growPersonStack(uint16_t render_level);
-  bool growThingStack(uint16_t render_level);
+  bool growPersonStack(uint8_t render_level);
+  bool growThingStack(uint8_t render_level);
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -133,7 +133,7 @@ public:
   bool getPassabilityExiting(Direction dir) const;
   
   /* Returns the person pointer in the tile */
-  MapPerson* getPerson(uint16_t render_level) const;
+  MapPerson* getPerson(uint8_t render_level) const;
   std::vector<MapPerson*> getPersons() const;
 
   /* Returns the tile x and y pixel count */
@@ -141,14 +141,14 @@ public:
   int getPixelY() const;
 
   /* Returns the render stack for applicable things based on level */
-  bool getRenderThings(uint16_t render_level, MapItem*& item, 
+  bool getRenderThings(uint8_t render_level, MapItem*& item, 
                        MapPerson*& person, MapThing*& thing) const;
 
   /* Returns the tile status */
   TileStatus getStatus() const;
 
   /* Returns the map thing pointer for the generic thing */
-  MapThing* getThing(uint16_t render_level) const;
+  MapThing* getThing(uint8_t render_level) const;
   std::vector<MapThing*> getThings() const;
 
   /* Gets the upper layer(s) */
@@ -179,11 +179,11 @@ public:
   bool isLowerSet() const;
 
   /* Returns if the map person thing is set */
-  bool isPersonSet(uint16_t render_level) const;
+  bool isPersonSet(uint8_t render_level) const;
   bool isPersonsSet() const;
 
   /* Returns if the generic thing is set */
-  bool isThingSet(uint16_t render_level) const;
+  bool isThingSet(uint8_t render_level) const;
   bool isThingsSet() const;
 
   /* Returns if the Upper Layer is set (ie. at least one) */
@@ -217,14 +217,14 @@ public:
   bool setLowerPassability(uint8_t index, Direction dir, bool set_value);
 
   /* Sets the stored MapPerson sprite pointer */
-  bool setPerson(MapPerson* person, uint16_t render_level, 
+  bool setPerson(MapPerson* person, uint8_t render_level, 
                  bool no_events = false);
 
   /* Sets a new status for the tile */
   void setStatus(TileStatus status);
 
   /* Sets the thing sprite pointer, stored within the class */
-  bool setThing(MapThing* thing, uint16_t render_level);
+  bool setThing(MapThing* thing, uint8_t render_level);
   
   /* Sets the upper portion of the layer */
   bool setUpper(Sprite* upper);
@@ -256,12 +256,12 @@ public:
 
   /* Unsets the stored person pointer(s) */
   bool unsetPerson(MapPerson* person, bool no_events = false);
-  bool unsetPerson(uint16_t render_level, bool no_events = false);
+  bool unsetPerson(uint8_t render_level, bool no_events = false);
   void unsetPersons(bool no_events = false);
 
   /* Unsets the stored thing pointer(s) */
   bool unsetThing(MapThing* thing);
-  bool unsetThing(uint16_t render_level);
+  bool unsetThing(uint8_t render_level);
   void unsetThings();
 
   /* Unsets the upper layer(s) */

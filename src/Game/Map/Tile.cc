@@ -77,10 +77,10 @@ Tile::~Tile()
  *              render level to be set in the stack. This will not exceed
  *              the max allowable by Helpers::getRenderDepth()
  *
- * Inputs: uint16_t render_level - the render level corresponding to the person
+ * Inputs: uint8_t render_level - the render level corresponding to the person
  * Output: bool - status if the indicated level can be set
  */
-bool Tile::growPersonStack(uint16_t render_level)
+bool Tile::growPersonStack(uint8_t render_level)
 {
   if(render_level < Helpers::getRenderDepth())
   {
@@ -100,10 +100,10 @@ bool Tile::growPersonStack(uint16_t render_level)
  *              render level to be set in the stack. This will not exceed
  *              the max allowable by Helpers::getRenderDepth()
  *
- * Inputs: uint16_t render_level - the render level corresponding to the thing
+ * Inputs: uint8_t render_level - the render level corresponding to the thing
  * Output: bool - status if the indicated level can be set
  */
-bool Tile::growThingStack(uint16_t render_level)
+bool Tile::growThingStack(uint8_t render_level)
 {
   if(render_level < Helpers::getRenderDepth())
   {
@@ -493,10 +493,10 @@ bool Tile::getPassabilityExiting(Direction dir) const
  * Description: Returns the person stored on this tile at the indicated render
  *              level. 
  *
- * Inputs: uint16_t render_level - integer of the render level on tile
+ * Inputs: uint8_t render_level - integer of the render level on tile
  * Output: MapPerson* - person pointer on tile. NULL if none set
  */
-MapPerson* Tile::getPerson(uint16_t render_level) const
+MapPerson* Tile::getPerson(uint8_t render_level) const
 {
   MapPerson* selected_person = NULL;
 
@@ -550,13 +550,13 @@ int Tile::getPixelY() const
  *              Pointers that are NULL have nothing set to render on that
  *              level. 
  *
- * Inputs: uint16_t render_level - the render depth indicator
+ * Inputs: uint8_t render_level - the render depth indicator
  *         MapItem*& item - ref of item pointer to place render object
  *         MapPerson*& person - ref of person pointer to place render object
  *         MapThing*& thing - ref of thing pointer to place render object
  * Output: status if the objects are valid for rendering
  */
-bool Tile::getRenderThings(uint16_t render_level, MapItem*& item, 
+bool Tile::getRenderThings(uint8_t render_level, MapItem*& item, 
                            MapPerson*& person, MapThing*& thing) const
 {
   if(status == ACTIVE && render_level < Helpers::getRenderDepth())
@@ -592,10 +592,10 @@ Tile::TileStatus Tile::getStatus() const
  * Description: Returns the thing stored on this tile at the indicated render
  *              level. 
  * 
- * Inputs: uint16_t render_level - integer of the render level on tile 
+ * Inputs: uint8_t render_level - integer of the render level on tile 
  * Output: MapThing* - thing reference stored. NULL if not set
  */
-MapThing* Tile::getThing(uint16_t render_level) const
+MapThing* Tile::getThing(uint8_t render_level) const
 {
   MapThing* selected_thing = NULL;
 
@@ -774,10 +774,10 @@ bool Tile::isLowerSet() const
 /*
  * Description: Returns if there is a person on the indicated render level.
  * 
- * Inputs: uint16_t render_level - the level of rendering on tile. 
+ * Inputs: uint8_t render_level - the level of rendering on tile. 
  * Output: bool - true if the person is set on that render level
  */
-bool Tile::isPersonSet(uint16_t render_level) const
+bool Tile::isPersonSet(uint8_t render_level) const
 {
   return (persons.size() > render_level && persons[render_level] != NULL);
 }
@@ -799,10 +799,10 @@ bool Tile::isPersonsSet() const
 /*
  * Description: Returns if there is a thing on the indicated render level.
  * 
- * Inputs: uint16_t render_level - the level of rendering on tile. 
+ * Inputs: uint8_t render_level - the level of rendering on tile. 
  * Output: bool - true if the thing is set on that render level
  */
-bool Tile::isThingSet(uint16_t render_level) const
+bool Tile::isThingSet(uint8_t render_level) const
 {
   return (things.size() > render_level && things[render_level] != NULL);
 }
@@ -1108,11 +1108,11 @@ bool Tile::setLowerPassability(uint8_t index, Direction dir, bool set_value)
  *              exists in the same place.
  *
  * Inputs: MapPerson* person - the person to set on the tile
- *         uint16_t render_level - the render order for placing the person
+ *         uint8_t render_level - the render order for placing the person
  *         bool no_events - if events should be triggered on set
  * Output: bool - if the person was successfully set.
  */
-bool Tile::setPerson(MapPerson* person, uint16_t render_level, bool no_events)
+bool Tile::setPerson(MapPerson* person, uint8_t render_level, bool no_events)
 {
   if(person != NULL)
   {
@@ -1165,11 +1165,11 @@ void Tile::setStatus(TileStatus status)
  *              exists in the same place.
  *
  * Inputs: MapThing* thing - the thing to set on the tile
- *         uint16_t render_level - the render order for placing the person
+ *         uint8_t render_level - the render order for placing the person
  *         bool no_events - if events should be triggered on set
  * Output: bool - if the thing was successfully set.
  */
-bool Tile::setThing(MapThing* thing, uint16_t render_level)
+bool Tile::setThing(MapThing* thing, uint8_t render_level)
 {
   if(thing != NULL)
   {
@@ -1422,11 +1422,11 @@ bool Tile::unsetPerson(MapPerson* person, bool no_events)
  * Description: Removes the person at the indicated render level. This allows
  *              for choosing if events will trigger upon removal.
  *
- * Inputs: uint16_t render_level - the render depth indicator
+ * Inputs: uint8_t render_level - the render depth indicator
  *         bool no_events - if events should trigger upon removal
  * Output: bool - if a person was removed
  */
-bool Tile::unsetPerson(uint16_t render_level, bool no_events)
+bool Tile::unsetPerson(uint8_t render_level, bool no_events)
 {
   if(persons.size() > render_level)
   {
@@ -1500,11 +1500,11 @@ bool Tile::unsetThing(MapThing* thing)
 /*
  * Description: Removes the thing at the indicated render level.
  *
- * Inputs: uint16_t render_level - the render depth indicator
+ * Inputs: uint8_t render_level - the render depth indicator
  *         bool no_events - if events should trigger upon removal
  * Output: bool - if a thing was removed
  */
-bool Tile::unsetThing(uint16_t render_level)
+bool Tile::unsetThing(uint8_t render_level)
 {
   if(things.size() > render_level)
   {

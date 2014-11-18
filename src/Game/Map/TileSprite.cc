@@ -296,6 +296,18 @@ bool TileSprite::setRenderDepth(uint8_t depth)
   return false;
 }
 
+// TODO: Comment
+bool TileSprite::setStartingTile(Tile* starting_tile)
+{
+  if(starting_tile != NULL)
+  {
+    tile_previous = NULL;
+    tile_main = starting_tile;
+    return true;
+  }
+  return false;
+}
+
 /*
  * Description: Finishes a move on the tile. This just clears the previous
  *              pointer of the tile that the sprite was on. This does not call

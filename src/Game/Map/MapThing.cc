@@ -1410,12 +1410,45 @@ bool MapThing::setStartingTile(uint16_t section_id, Tile* new_tile,
 
   return false;
 }
+
 /* Sets the set of tiles that the thing will be placed on. Needed after
  * defining a starting point.*/
 // TODO: Comment
 bool MapThing::setStartingTiles(std::vector<std::vector<Tile*>> tile_set, 
                                 bool no_events)
 {
+  bool success = true;
+
+  if(tile_set.size() > 0 && tile_set.size() == frame_matrix.size() && 
+     tile_set.front().size() == frame_matrix.front().size())
+  {
+    for(uint16_t i = 0; i < frame_matrix.size(); i++)
+    {
+      for(uint16_t j = 0; j < frame_matrix[i].size(); j++)
+      {
+        if(frame_matrix[i][j] != NULL)
+        {
+          uint8_t render_depth = frame_matrix[i][j]->getRenderDepth();
+
+          if(tile_set[i][j] != NULL && 
+             tile_set[i][j]->getThing(render_depth) != NULL)
+          {
+            success &= frame_matrix[i][j]->setStartingTile(tile_set[i][j]);
+            success &= tile_set[i][j]->setThing(this, render_depth);
+
+            // TODO: Event parsing
+          }
+          else
+          {
+            success = false;
+          }
+        }
+      }
+    }
+
+    return success;
+  }
+
   return false;
 }
 

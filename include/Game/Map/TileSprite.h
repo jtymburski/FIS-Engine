@@ -79,7 +79,10 @@ public:
 
   /* Sets the render depth. 0 is the base up to max */
   bool setRenderDepth(uint8_t depth);
-  
+ 
+  /* Sets the starting tile. */
+  bool setStartingTile(Tile* starting_tile);
+
   /* Starts and stops tile move. Relies on underlying logic for occurance */
   void tileMoveFinish();
   bool tileMoveStart(Tile* next_tile);
