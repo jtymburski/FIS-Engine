@@ -91,7 +91,7 @@ private:
   void growMatrix(uint32_t x, uint32_t y);
 
   /* This unsets the tile, at the given frame coordinate */
-  void unsetTile(uint32_t x, uint32_t y);
+  virtual void unsetTile(uint32_t x, uint32_t y, bool no_events);
   
 /*============================================================================
  * PROTECTED FUNCTIONS

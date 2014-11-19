@@ -34,7 +34,7 @@ const int MapThing::kUNSET_ID = -1;
 MapThing::MapThing()
 {
   event_handler = NULL;
-  frames = NULL;
+  frames = NULL; // TODO: Delete
   MapThing::clear();
 }
 
@@ -184,8 +184,9 @@ void MapThing::growMatrix(uint32_t x, uint32_t y)
 
 /* This unsets the tile, at the given frame coordinate */
 // TODO: Comment
-void MapThing::unsetTile(uint32_t x, uint32_t y)
+void MapThing::unsetTile(uint32_t x, uint32_t y, bool no_events)
 {
+  (void)no_events;
   uint8_t render_depth = frame_matrix[x][y]->getRenderDepth();
 
   /* Remove from main tile, if applicable */
@@ -637,6 +638,20 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
           if(frame_matrix[i][j] != NULL)
             frame_matrix[i][j]->addFileInformation(data, file_index + 2, 
                                                    renderer, base_path);
+    }
+  }
+  /*--------------------- STARTPOINT -----------------*/
+  else if(identifier == "startpoint")
+  {
+    std::vector<std::string> points = Helpers::split(data.getDataString(), ',');
+    if(points.size() == 2) /* There needs to be an x and y point */
+    {
+      setStartingLocation(section_index, std::stoul(points[0]), 
+                                         std::stoul(points[1]));
+    }
+    else
+    {
+      success = false;
     }
   }
   /*--------------------- VISIBILITY -----------------*/
@@ -1248,9 +1263,8 @@ bool MapThing::setFrame(TileSprite* frame, uint32_t x, uint32_t y,
     /* Grow the matrix, if necessary */
     if(x >= frame_matrix.size() || y >= frame_matrix[0].size())
       growMatrix(x, y);
-
-    /* Remove existing, if relevant */
-    unsetFrame(x, y, delete_old);
+    else /* Remove existing, if relevant */
+      unsetFrame(x, y, delete_old);
 
     frame_matrix[x][y] = frame;
 
@@ -1397,9 +1411,9 @@ void MapThing::setStartingLocation(uint16_t section_id, uint16_t x, uint16_t y)
   resetLocation();
 
   /* Set the new tile coordinate */
-  this->x = x;
+  this->x = x * getWidth();
   this->x_raw = this->x * kRAW_MULTIPLIER;
-  this->y = y;
+  this->y = y * getHeight();
   this->y_raw = this->y * kRAW_MULTIPLIER;
   tile_section = section_id;
 }
@@ -1418,23 +1432,26 @@ void MapThing::setStartingLocation(uint16_t section_id, uint16_t x, uint16_t y)
 bool MapThing::setStartingTile(uint16_t section_id, Tile* new_tile, 
                                                     bool no_events)
 {
-  if(new_tile != NULL)// && !new_tile->isThingSet()) // TODO:Fix
-  {
-    /* Unset the main tile */
-    unsetStartingTile(no_events);
-  
-    /* Set the new tile */
-    tile_main = new_tile;
-    this->x = tile_main->getPixelX();
-    this->x_raw = this->x * kRAW_MULTIPLIER;
-    this->y = tile_main->getPixelY();
-    this->y_raw = this->y * kRAW_MULTIPLIER;
-    //tile_main->setThing(this); // TODO: Fix
-    tile_section = section_id;
-
-    return true;
-  }
-
+  (void)section_id;
+  (void)new_tile;
+  (void)no_events;
+//  if(new_tile != NULL)// && !new_tile->isThingSet()) // TODO:Fix
+//  {
+//    /* Unset the main tile */
+//    unsetStartingTile(no_events);
+//  
+//    /* Set the new tile */
+//    tile_main = new_tile;
+//    this->x = tile_main->getPixelX();
+//    this->x_raw = this->x * kRAW_MULTIPLIER;
+//    this->y = tile_main->getPixelY();
+//    this->y_raw = this->y * kRAW_MULTIPLIER;
+//    //tile_main->setThing(this); // TODO: Fix
+//    tile_section = section_id;
+//
+//    return true;
+//  }
+//
   return false;
 }
 
@@ -1447,12 +1464,14 @@ bool MapThing::setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
   bool success = true;
 
   /* Check to confirm size of new set is equal to size of frames */
-  if(tile_set.size() > 0 && tile_set.size() == frame_matrix.size() && 
+  if(tile_set.size() > 0 && frame_matrix.size() > 0 && 
+     tile_set.size() == frame_matrix.size() && 
      tile_set.front().size() == frame_matrix.front().size())
   {
     /* Unset the existing tiles */
     unsetTiles(no_events);
-    
+   
+    /* Set the new tiles (needs calls on both ends) */
     for(uint16_t i = 0; i < frame_matrix.size(); i++)
     {
       for(uint16_t j = 0; j < frame_matrix[i].size(); j++)
@@ -1578,7 +1597,7 @@ void MapThing::unsetFrame(uint32_t x, uint32_t y, bool delete_frames)
     if(frame_matrix[x][y] != NULL)
     {
       /* Unset the tile */
-      unsetTile(x, y);
+      unsetTile(x, y, true);
       
       /* Delete the frame */
       if(delete_frames)
@@ -1586,9 +1605,6 @@ void MapThing::unsetFrame(uint32_t x, uint32_t y, bool delete_frames)
     }
     
     frame_matrix[x][y] = NULL;
-    
-    /* Clean up the bounding box */
-    //cleanMatrix(); // TODO: Delete?
   }
 }
 
@@ -1634,17 +1650,17 @@ void MapThing::unsetFrames(bool delete_frames)
 void MapThing::unsetStartingTile(bool no_events)
 {
   (void)no_events;
-  
-  /* Unset the main tile */
-  //if(tile_main != NULL) // TODO: Fix
-  //  tile_main->unsetThing();
-  tile_main = NULL;
-  
-  /* Resets the coordinates */
-  this->x = 0;
-  this->x_raw = 0;
-  this->y = 0;
-  this->y_raw = 0;
+//  
+//  /* Unset the main tile */
+//  //if(tile_main != NULL) // TODO: Fix
+//  //  tile_main->unsetThing();
+//  tile_main = NULL;
+//  
+//  /* Resets the coordinates */
+//  this->x = 0;
+//  this->x_raw = 0;
+//  this->y = 0;
+//  this->y_raw = 0;
 }
 
 // TODO: Comment
@@ -1656,5 +1672,5 @@ void MapThing::unsetTiles(bool no_events)
   for(uint16_t i = 0; i < frame_matrix.size(); i++)
     for(uint16_t j = 0; j < frame_matrix[i].size(); j++)
       if(frame_matrix[i][j] != NULL)
-        unsetTile(i, j);
+        unsetTile(i, j, no_events);
 }

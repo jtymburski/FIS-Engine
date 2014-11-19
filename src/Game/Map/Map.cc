@@ -342,35 +342,9 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
 
   /* Proceed to update the thing information from the XML data */
   if(modified_thing != NULL)
-  {
-    /* Handle the startpoint case if it's the identifying element */
-    if(data.getElement(kFILE_CLASSIFIER + 1) == "startpoint")
-    {
-      std::vector<std::string> points = 
-                                      Helpers::split(data.getDataString(), ',');
-      if(points.size() == 2) /* There needs to be an x and y point */
-      {
-        uint32_t x = std::stoul(points[0]);
-        uint32_t y = std::stoul(points[1]);
-
-        /* Check if the starting location is on map */
-        if(geography.size() > section_index && 
-           geography[section_index].size() > x && 
-           geography[section_index][x].size() > y)
-        {
-          modified_thing->setStartingLocation(section_index, x, y);
-          return true;
-        }
-      }
-    }
-    else
-    {
-      /* Otherwise, add the thing information (virtual function) */
-      return modified_thing->addThingInformation(data, kFILE_CLASSIFIER + 1, 
-                                                 section_index, renderer, 
-                                                 base_path);
-    }
-  }
+    return modified_thing->addThingInformation(data, kFILE_CLASSIFIER + 1, 
+                                               section_index, renderer, 
+                                               base_path);
 
   return false;
 }
@@ -1103,6 +1077,25 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
     map_dialog.loadImagePickupTopBottom(
                            "sprites/Overlay/notification_corner.png", renderer);
 
+    /* Thing clean-up and tile set-up */
+    for(uint16_t i = 0; i < things.size(); i++)
+    {
+      /* Clean the matrix - fixes up the rendering box */
+      things[i]->cleanMatrix();
+
+      /* Get render box and ensure there is enough space on the geography */
+      SDL_Rect render_box = things[i]->getBoundingBox();
+      uint16_t section = things[i]->getMapSection();
+      uint16_t range_x = render_box.x + render_box.w;
+      uint16_t range_y = render_box.y + render_box.h;
+      if(geography.size() > section && geography[section].size() > range_x && 
+         geography[section][range_x].size() > range_y)
+      {
+        std::cout << "TODO: Load thing #" << things[i]->getID() 
+                  << " into tiles" << std::endl;
+      }
+    }
+
     /* TODO: Testing - Remove */
     if(geography.size() > 0 && geography[0].size() > 3 
                             && geography[0][3].size() > 3)
@@ -1123,29 +1116,18 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
                       << set[i][j]->getPassability(Direction::WEST) << " "
                       << (int)set[i][j]->getRenderDepth() << std::endl;
                 
-      std::cout << "Bounding Box (Before): " 
+      std::cout << "Bounding Box: " 
                 << things.front()->getBoundingBox().x << " "
                 << things.front()->getBoundingBox().y << " "
                 << things.front()->getBoundingBox().w << " "
                 << things.front()->getBoundingBox().h << std::endl;
-      std::cout << "Bounding Box in Pixels (Before): " 
+      std::cout << "Bounding Box in Pixels: " 
                 << things.front()->getBoundingPixels().x << " "
                 << things.front()->getBoundingPixels().y << " "
                 << things.front()->getBoundingPixels().w << " "
                 << things.front()->getBoundingPixels().h << std::endl;
-
-      things.front()->cleanMatrix();
-                
-      std::cout << "Bounding Box (After): " 
-                << things.front()->getBoundingBox().x << " "
-                << things.front()->getBoundingBox().y << " "
-                << things.front()->getBoundingBox().w << " "
-                << things.front()->getBoundingBox().h << std::endl;
-      std::cout << "Bounding Box in Pixels (After): " 
-                << things.front()->getBoundingPixels().x << " "
-                << things.front()->getBoundingPixels().y << " "
-                << things.front()->getBoundingPixels().w << " "
-                << things.front()->getBoundingPixels().h << std::endl;
+      std::cout << "Coord: " << things.front()->getX() << "," 
+                             << things.front()->getY() << std::endl;
     }
     std::cout << "--" << std::endl;
   }
