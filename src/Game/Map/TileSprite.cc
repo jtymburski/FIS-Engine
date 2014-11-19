@@ -144,7 +144,7 @@ bool TileSprite::addFileInformation(XmlData data, int index,
 {
   std::string element = data.getElement(index);
   bool success = true;
-  
+
   /* Parse the tile sprite information - based on the element tag name */
   if(element == "passability")
     addPassability(data.getDataString());
@@ -235,6 +235,28 @@ Tile* TileSprite::getTilePrevious() const
   return tile_previous;
 }
 
+/*
+ * Description: Returns if the main rendering tile is set in the sprite.
+ *
+ * Inputs: none;
+ * Output: bool - true if the tile is set
+ */
+bool TileSprite::isTileMainSet() const
+{
+  return (tile_main != NULL);
+}
+
+/*
+ * Description: Returns if the previous rendering tile is set in the sprite.
+ *
+ * Inputs: none;
+ * Output: bool - true if the tile is set
+ */
+bool TileSprite::isTilePreviousSet() const
+{
+  return (tile_previous != NULL);
+}
+  
 /* 
  * Description: Resets the sprite passability back to default state. Default
  *              state is no passability in all directions.
@@ -296,12 +318,21 @@ bool TileSprite::setRenderDepth(uint8_t depth)
   return false;
 }
 
-// TODO: Comment
-bool TileSprite::setStartingTile(Tile* starting_tile)
+/*
+ * Description: Sets a new starting tile for rendering and passability handling.
+ *              This will also unset any existing tiles, if set.
+ *
+ * Inputs: Tile* new_tile - the new tile to place the frame
+ * Output: bool - true if the tile was set successfully.
+ */
+bool TileSprite::setTile(Tile* starting_tile)
 {
   if(starting_tile != NULL)
   {
-    tile_previous = NULL;
+    /* Reset the existing */
+    resetTile();
+    
+    /* Set the new */
     tile_main = starting_tile;
     return true;
   }

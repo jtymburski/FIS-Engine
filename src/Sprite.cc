@@ -88,7 +88,7 @@ Sprite::Sprite(std::string head_path, int num_frames,
  *
  * Inputs: const Sprite &source - the source sprite data to copy over
  */
-Sprite::Sprite(const Sprite &source)
+Sprite::Sprite(const Sprite &source) : Sprite()
 {
   copySelf(source);
 }
@@ -186,10 +186,12 @@ void Sprite::copySelf(const Sprite &source)
   setBrightness(source.getBrightness());
   setColorBalance(source.getColorRed(), source.getColorGreen(), 
                                         source.getColorBlue());
+
   if(source.isDirectionForward())
     setDirectionForward();
   else
     setDirectionReverse();
+  
   setOpacity(source.getOpacity());
   setRotation(source.getRotation());
   //setSound(); // TODO: Future?

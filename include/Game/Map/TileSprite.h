@@ -68,6 +68,10 @@ public:
   Tile* getTileMain() const;
   Tile* getTilePrevious() const;
   
+  /* Checks if tiles are set */
+  bool isTileMainSet() const;
+  bool isTilePreviousSet() const;
+  
   /* Resets the passability to default */
   void resetPassability();
 
@@ -81,7 +85,7 @@ public:
   bool setRenderDepth(uint8_t depth);
  
   /* Sets the starting tile. */
-  bool setStartingTile(Tile* starting_tile);
+  bool setTile(Tile* starting_tile);
 
   /* Starts and stops tile move. Relies on underlying logic for occurance */
   void tileMoveFinish();

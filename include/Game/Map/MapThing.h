@@ -90,6 +90,9 @@ private:
   /* Grow the frame matrix to the indicated size */
   void growMatrix(uint32_t x, uint32_t y);
 
+  /* This unsets the tile, at the given frame coordinate */
+  void unsetTile(uint32_t x, uint32_t y);
+  
 /*============================================================================
  * PROTECTED FUNCTIONS
  *===========================================================================*/
@@ -213,6 +216,9 @@ public:
   /* Renders the Map Thing - TODO: REMOVE OLD RENDER */
   bool render(SDL_Renderer* renderer, int offset_x, int offset_y);
   
+  /* Resets the location back to default (0,0,0), relative to the map */
+  virtual void resetLocation();
+
   /* Sets the things description */
   void setDescription(std::string new_description);
 
@@ -248,7 +254,7 @@ public:
   void setSpeed(uint16_t speed);
   
   /* Sets the starting x and y coordinate */
-  void setStartingPoint(uint16_t section_id, uint16_t x, uint16_t y);
+  void setStartingLocation(uint16_t section_id, uint16_t x, uint16_t y);
 
   /* Set the tile to hook the map thing to */
   // TODO: Remove?
@@ -275,13 +281,12 @@ public:
   /* Unsets the thing frames, in the class */
   void unsetFrame(uint32_t x, uint32_t y, bool delete_frames = true);
   void unsetFrames(bool delete_frames = true);
- 
-  /* Unsets the tiles that the thing is being rendered to */
-  virtual void unsetRenderTiles(bool no_events = false);
-
+  
   /* Unsets the starting tile */
-  // TODO: Remove?
-  virtual void unsetStartingTile(bool no_events = false);
+  virtual void unsetStartingTile(bool no_events = false); // TODO: Remove
+  
+  /* Unset the rendering tiles in the class */
+  virtual void unsetTiles(bool no_events = false); 
 };
 
 #endif // MAPTHING_H

@@ -353,13 +353,13 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
         uint32_t x = std::stoul(points[0]);
         uint32_t y = std::stoul(points[1]);
 
-        /* Check if the tile data is relevant */
+        /* Check if the starting location is on map */
         if(geography.size() > section_index && 
            geography[section_index].size() > x && 
            geography[section_index][x].size() > y)
         {
-          return modified_thing->setStartingTile(section_index, 
-                                          geography[section_index][x][y], true);
+          modified_thing->setStartingLocation(section_index, x, y);
+          return true;
         }
       }
     }
@@ -1068,7 +1068,7 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
   }
 
   success &= fh.stop();
- 
+
   /* If the map load failed, unload the map */
   if(!success)
   {
