@@ -380,7 +380,6 @@ std::string Helpers::aiDifficultyToStr(const AIDifficulty &ai_difficulty)
  * Inputs: 
  * Output: 
  */
-/* Convert enumerated AI Personality to String */
 std::string Helpers::aiPersonalityToStr(const AIPersonality &ai_personality)
 {
   if (ai_personality == AIPersonality::MODERATOR)

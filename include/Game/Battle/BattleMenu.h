@@ -36,8 +36,8 @@
 using std::begin;
 using std::end;
 
-ENUM_FLAGS(BattleMenuState)
-enum class BattleMenuState
+ENUM_FLAGS(MenuState)
+enum class MenuState
 {
   ACTION_SELECTED    = 1 << 0,
   TARGETS_ASSIGNED   = 1 << 1,
@@ -82,7 +82,7 @@ private:
   Item*   selected_item;
 
   /* Set of BattleMenuState flags */
-  BattleMenuState flags;
+  MenuState flags;
 
   /* The window status of the BattleMenu */
   WindowStatus window_status;
@@ -175,7 +175,7 @@ public:
   int32_t getMaxIndex();
 
   /* Return the value of a given BattleMenuState flag */
-  bool getMenuFlag(const BattleMenuState &test_flag);
+  bool getMenuFlag(const MenuState &test_flag);
 
   /* Returns the current selectable skills on the menu */
   std::vector<BattleSkill> getMenuSkills();
@@ -208,7 +208,7 @@ public:
   bool setConfiguration(Options* new_config);
 
   /* Assigns a BattleMenuState flag a given value */
-  void setMenuFlag(BattleMenuState flags, const bool &set_value = true);
+  void setMenuFlag(MenuState flags, const bool &set_value = true);
 };
 
 #endif //BATTLEMENU_H

@@ -122,6 +122,7 @@ const float    Battle::kDODGE_PER_LEVEL_MODIFIER    =   2.50;
 
 const float    Battle::kDEFEND_MODIFIER             =   0.50;
 const float    Battle::kGUARD_MODIFIER              =   0.25;
+const float    Battle::kSHIELDED_MODIFIER            =   0.00;
 
 const int16_t Battle::kREGEN_RATE_ZERO_PC           =      0;
 const int16_t Battle::kREGEN_RATE_WEAK_PC           =      2; 
@@ -711,12 +712,19 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
   else if (base_user_pow <= base_targ_def)
     base_damage = action_power;
 
-  /* If the user is defending, decrease the damage taken by the defending
-   * modifier */
+  /* If the user is defending, shielded or guarded  decrease the damage taken by
+   * the respective modifier values */
   if (curr_target->getBFlag(BState::DEFENDING))
-  {
     base_damage *= kDEFEND_MODIFIER;
-  }
+  if (curr_target->getBFlag(BState::SHIELDED))
+    base_damage *= kSHIELDED_MODIFIER;
+
+  if (curr_target->getBFlag(BState::GUARDED))
+    base_damage *= kGUARD_MODIFIER;
+
+  // TODO: [11-19-14] How to determine the damage taken by the Guard ? //
+  // else if (curr_target->getBFlag(BState::GUARDING))
+  //   base_damage *= (1 - kGUARD_MODIFIER);
 
   /* For guardinng users, the person being guarded will take kGUARDING_MODIFIER
    * portion of the damage, while the guard will take the remainder. */
@@ -1546,7 +1554,7 @@ int16_t Battle::getRegenFactor(const RegenRate &regen_rate)
 bool Battle::processGuard()
 {
   auto can_guard  = true;
-  auto good_guard = true;
+  auto good_guard = false;
 
   /* A guard/guardee combo can only be made if both the guard and guardee are
    * not being guarded by, or guarding any persons */
@@ -1559,9 +1567,11 @@ bool Battle::processGuard()
    * This should assign the GUARDING/GUARDED flags properly */
   if (can_guard)
   {
+    good_guard  = true;
     good_guard &= curr_user->setGuardee(curr_target);
     good_guard &= curr_target->setGuard(curr_user);
   }
+
 
   return good_guard;
 }
@@ -1871,13 +1881,26 @@ void Battle::processBuffer()
     else if (curr_action_type == ActionType::GUARD)
     {
       curr_target = action_buffer->getTargets().at(0);
-      std::cout << "Curr Target: " << curr_target->getName() << std::endl;
 
       bool good_guard = processGuard();
 
-      if (!good_guard)
+      std::cout << "Good guard? " << good_guard << std::endl;
+
+      if (good_guard)
       {
-        can_process = false;
+        if (getBattleMode() == BattleMode::TEXT)
+        {
+          std::cout << "{GUARD} " << curr_user->getName() << " is now guarding "
+                    << curr_target->getName() << " from some damage.\n";
+        }
+      }
+      else
+      {
+        if (getBattleMode() == BattleMode::TEXT)
+        {
+          std::cout << "{FAIL} " << curr_user->getName() << "'s attempt to "
+                    << "guard " << curr_target->getName() << " has failed.\n";
+        }
       }
 
       // Guard the appropriate target
@@ -2019,7 +2042,7 @@ void Battle::selectUserActions()
     update_menu = true;
   }
   if (person_index > 0 && 
-      menu->getMenuFlag(BattleMenuState::SELECTION_VERIFIED))
+      menu->getMenuFlag(MenuState::SELECTION_VERIFIED))
   {
     update_menu = bufferUserAction();
   }
@@ -2150,7 +2173,7 @@ void Battle::upkeep()
  */
 void Battle::updateAllySelection()
 {
-  if (menu->getMenuFlag(BattleMenuState::SELECTION_VERIFIED))
+  if (menu->getMenuFlag(MenuState::SELECTION_VERIFIED))
   {
     selectUserActions();
   }
@@ -2164,11 +2187,12 @@ void Battle::updateAllySelection()
     /* If the action index has been assigned and targets have not been 
      * assigned yet (for that action index), find the scope of that action 
      * the user wishes to use and inject the valid targets into the menu */
-    if ((menu->getMenuFlag(BattleMenuState::ACTION_SELECTED) || 
-         menu->getActionType() == ActionType::DEFEND         ||
+    if ((menu->getMenuFlag(MenuState::ACTION_SELECTED) || 
          menu->getActionType() == ActionType::GUARD          ||
-         menu->getActionType() == ActionType::IMPLODE)       && 
-         !menu->getMenuFlag(BattleMenuState::TARGETS_ASSIGNED))
+         menu->getActionType() == ActionType::IMPLODE)       &&
+         !(menu->getActionType() == ActionType::DEFEND)        &&
+         !(menu->getActionType() == ActionType::PASS)          &&
+         !menu->getMenuFlag(MenuState::TARGETS_ASSIGNED))
     {
       auto scope = ActionScope::NO_SCOPE;
       std::vector<int32_t> targets;
@@ -2177,8 +2201,6 @@ void Battle::updateAllySelection()
         scope = menu->getSelectedSkill()->getScope();
       else if (action_type == ActionType::ITEM)
         scope = menu->getSelectedItem()->getUseSkill()->getScope();
-      else if (action_type == ActionType::DEFEND)
-        scope = ActionScope::USER;
       else if (action_type == ActionType::IMPLODE)
         scope = ActionScope::USER;
 
@@ -2197,11 +2219,6 @@ void Battle::updateAllySelection()
       {
         //auto battle_item;
       }
-      else if (action_type == ActionType::DEFEND)
-      {
-        targets = getValidTargets(person_index, ActionScope::USER);
-      
-      }
       else if (action_type == ActionType::GUARD)
       {
          targets = getValidTargets(person_index, ActionScope::ONE_ALLY_NOT_USER);
@@ -2217,9 +2234,9 @@ void Battle::updateAllySelection()
       }      
       else
       {
-        menu->setMenuFlag(BattleMenuState::TARGETS_ASSIGNED);
+        menu->setMenuFlag(MenuState::TARGETS_ASSIGNED);
         menu->setActionScope(scope);
-        menu->setMenuFlag(BattleMenuState::SCOPE_ASSIGNED);
+        menu->setMenuFlag(MenuState::SCOPE_ASSIGNED);
         menu->printMenuState();
       }
     }
@@ -2255,6 +2272,7 @@ void Battle::updateEnemySelection()
                action_type == ActionType::RUN ||
                action_type == ActionType::PASS)
       {
+        std::cout << "Setting action type:: USER" << std::endl;
         scope = ActionScope::USER;
       }
       else if (action_type == ActionType::GUARD)
@@ -3300,13 +3318,10 @@ std::vector<int32_t> Battle::getValidTargets(int32_t index,
   }
   else if (action_scope == ActionScope::ONE_ALLY_NOT_USER)
   {
-    std::cout << "HEEEEEY YEAAAH" << std::endl;
     if (index > 0)
       valid_targets = getFriendsTargets();
     else if (index < 0)
       valid_targets = getFoesTargets();
-
-    std::cout << "valid targets: " << valid_targets.at(0) << std::endl;
 
     std::remove(begin(valid_targets), end(valid_targets), index);
     valid_targets.pop_back();
@@ -3315,7 +3330,6 @@ std::vector<int32_t> Battle::getValidTargets(int32_t index,
            action_scope == ActionScope::TWO_ENEMIES ||
            action_scope == ActionScope::ALL_ENEMIES)
   {
-    std::cout << "Heey boiiii" << std::endl;
     if (index > 0)
       valid_targets = getFoesTargets();
     else if (index < 0)

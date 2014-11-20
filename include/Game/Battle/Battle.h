@@ -242,6 +242,7 @@ private:
 
   static const float    kDEFEND_MODIFIER;
   static const float    kGUARD_MODIFIER;
+  static const float    kSHIELDED_MODIFIER;
 
   static const int16_t kREGEN_RATE_ZERO_PC;
   static const int16_t kREGEN_RATE_WEAK_PC;

@@ -36,7 +36,7 @@ BattleMenu::BattleMenu(Options* running_config)
     , config{running_config}
     , selected_skill{nullptr}
     , selected_item{nullptr}
-    , flags{static_cast<BattleMenuState>(0)}
+    , flags{static_cast<MenuState>(0)}
     , window_status{WindowStatus::OFF}
     , current_user{nullptr}
     , person_index{0}
@@ -69,8 +69,8 @@ bool BattleMenu::decrementLayer(const int32_t &new_layer_index)
 
     layer_index   = 3;
 
-    setMenuFlag(BattleMenuState::TARGETS_ASSIGNED, false);
-    setMenuFlag(BattleMenuState::SCOPE_ASSIGNED, false);
+    setMenuFlag(MenuState::TARGETS_ASSIGNED, false);
+    setMenuFlag(MenuState::SCOPE_ASSIGNED, false);
 
     success = true;
   }
@@ -89,7 +89,7 @@ bool BattleMenu::decrementLayer(const int32_t &new_layer_index)
       qtdr_cost_paid = 0;
     }
 
-    setMenuFlag(BattleMenuState::ACTION_SELECTED, false);
+    setMenuFlag(MenuState::ACTION_SELECTED, false);
 
     action_scope  = ActionScope::NO_SCOPE;
     layer_index = 2;
@@ -129,7 +129,7 @@ bool BattleMenu::incrementLayer(const int32_t &new_layer_index)
 
   else if (new_layer_index == 3)
   {
-    setMenuFlag(BattleMenuState::ACTION_SELECTED);
+    setMenuFlag(MenuState::ACTION_SELECTED);
     layer_index = 3;
     
     return true;
@@ -137,7 +137,7 @@ bool BattleMenu::incrementLayer(const int32_t &new_layer_index)
 
   else if (new_layer_index == 4)
   {
-    setMenuFlag(BattleMenuState::ACTION_SELECTED);
+    setMenuFlag(MenuState::ACTION_SELECTED);
     layer_index = 4;
 
     return true;
@@ -224,7 +224,7 @@ bool BattleMenu::removeLastTarget(const bool &clear_all)
     selected_targets.clear();
 
     /* Make sure Battle update will assign new targets */
-    setMenuFlag(BattleMenuState::TARGETS_ASSIGNED, false);
+    setMenuFlag(MenuState::TARGETS_ASSIGNED, false);
 
     return false;
   }
@@ -465,13 +465,9 @@ void BattleMenu::keyDownSelect()
       layer_to_increment = 3;
     }
     
-    /* DEFEND, IMPLODE, RUN, PASS actions require no other menus -> done */
-    else if (action_type == ActionType::DEFEND)
-    {
-      layer_to_increment = 3;
-    } 
-
-    else if (action_type == ActionType::RUN ||
+    /* DEFEND, RUN, PASS actions require no other menus -> done */
+    else if (action_type == ActionType::DEFEND ||
+             action_type == ActionType::RUN ||
              action_type == ActionType::PASS)
     {
       layer_to_increment = 4;
@@ -487,7 +483,6 @@ void BattleMenu::keyDownSelect()
       {
         if (indexHasTargets())
         {
-          std::cout << "Index has targets!" << std::endl;
           layer_to_increment = 3;
         
           /* Grab the selected skill */
@@ -589,7 +584,7 @@ void BattleMenu::keyDownSelect()
   }
   else if (layer_index == 4)
   {
-    setMenuFlag(BattleMenuState::SELECTION_VERIFIED, true);
+    setMenuFlag(MenuState::SELECTION_VERIFIED, true);
   }
 
   if (layer_to_increment != -1)
@@ -621,7 +616,7 @@ void BattleMenu::unsetAll(const bool &window_off)
 
   action_type = ActionType::NONE;
   action_scope = ActionScope::NO_SCOPE;
-  flags = static_cast<BattleMenuState>(0);
+  flags = static_cast<MenuState>(0);
 
   qtdr_cost_paid = 0;
   person_index   = 0;
@@ -939,7 +934,7 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
 
     printMenuState();
 
-    if (getMenuFlag(BattleMenuState::SELECTION_VERIFIED))
+    if (getMenuFlag(MenuState::SELECTION_VERIFIED))
       std::cout << "Selection has been verified!\n" << std::endl;
   }
 
@@ -1045,12 +1040,12 @@ int32_t BattleMenu::getMaxIndex()
 }
 
 /*
- * Description: Returns the value of a given BattleMenuState flag
+ * Description: Returns the value of a given MenuState flag
  *
  * Inputs: test_flag - enumerated flag to test the value for
  * Output: bool - the boolean value of the flag
  */
-bool BattleMenu::getMenuFlag(const BattleMenuState &test_flag)
+bool BattleMenu::getMenuFlag(const MenuState &test_flag)
 {
   return static_cast<bool>((flags & test_flag) == test_flag);
 }
@@ -1123,13 +1118,13 @@ void BattleMenu::setActionScope(const ActionScope &new_action_scope)
 }
 
 /*
- * Description: Assigns a BattleMenuState flag a given set value.
+ * Description: Assigns a MenuState flag a given set value.
  *
- * Inputs: BattleMenuState flag - flag to be assigned a value.
+ * Inputs: MenuState flag - flag to be assigned a value.
  *         bool set_value - value to assign the flag to.
  * Output: none
  */
-void BattleMenu::setMenuFlag(BattleMenuState flag, const bool &set_value)
+void BattleMenu::setMenuFlag(MenuState flag, const bool &set_value)
 {
   (set_value) ? (flags |= flag) : (flags &= ~flag);
 }
