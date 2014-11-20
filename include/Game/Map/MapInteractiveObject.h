@@ -115,8 +115,9 @@ public:
   void setInactiveTime(int time);
   
   /* Set the tile to hook the map interactive object to */
-  bool setStartingTile(uint16_t section_id, Tile* new_tile, 
-                                            bool no_events = false);
+  // TODO: Remove
+  //bool setStartingTile(uint16_t section_id, Tile* new_tile, 
+  //                                          bool no_events = false);
   
   /* Sets the states, to be painted and used */
   bool setState(MapState* state, bool passable = false);
@@ -128,8 +129,8 @@ public:
   /* Unsets all states - this handles deletion */
   void unsetStates();
   
-  /* Unsets the starting tile */
-  void unsetStartingTile(bool no_events = false);
+  /* Unsets the starting tile */ // TODO: Remove
+  //void unsetStartingTile(bool no_events = false);
 };
 
 #endif // MAPINTERACTIVEOBJECT_H

@@ -88,7 +88,7 @@ protected:
   
   /* Starts and stops tile move. Relies on underlying logic for occurance */
   void tileMoveFinish();
-  bool tileMoveStart(Tile* next_tile);
+  bool tileMoveStart(std::vector<std::vector<Tile*>> tile_set);
 
 /*============================================================================
  * PUBLIC FUNCTIONS

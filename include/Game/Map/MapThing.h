@@ -26,9 +26,11 @@ class MapThing
 public:
   /* Constructor functions */
   MapThing();
-  MapThing(Sprite* frames, uint16_t width, uint16_t height, 
-           std::string name = "", std::string description = "", 
-           int id = kUNSET_ID);
+  MapThing(uint16_t width, uint16_t height, std::string name = "", 
+           std::string description = "", int id = kUNSET_ID);
+  MapThing(std::vector<std::vector<TileSprite*>> frames, uint16_t width, 
+           uint16_t height, std::string name = "", 
+           std::string description = "", int id = kUNSET_ID);
 
   /* Destructor function */
   virtual ~MapThing();
@@ -40,9 +42,6 @@ protected:
   int id;
   std::string name;
   bool passable;
-  uint16_t tile_section;
-  uint16_t tile_x;
-  uint16_t tile_y;
   bool visible;
   uint16_t width;
   int x;
@@ -50,8 +49,12 @@ protected:
   int y;
   int y_raw;
 
-  /* The target for this thing. If set, it cannot be targetted by others */
-  MapThing* target;
+  /* Painting information */
+  Frame dialog_image;
+
+  /* The event handler information and corresponding interact event */
+  EventHandler* event_handler;
+  Event interact_event;
   
   /* The main sprite frame data - contains passability and render depth */
   std::vector<std::vector<TileSprite*>> frame_matrix;
@@ -60,13 +63,15 @@ protected:
   Direction movement;
   bool movement_paused;
   uint16_t speed;
+
+  /* The target for this thing. If set, it cannot be targetted by others */
+  MapThing* target;
   
-  /* The event handler information and corresponding interact event */
-  EventHandler* event_handler;
-  Event interact_event;
-  
-  /* Painting information */
-  Frame dialog_image;
+  /* Tile information */
+  uint16_t tile_section;
+  bool tiles_set;
+  uint16_t tile_x;
+  uint16_t tile_y;
 
   /* -------------------------- Constants ------------------------- */
   const static uint16_t kDEFAULT_SPEED; /* The default thing speed */
@@ -113,7 +118,7 @@ protected:
 
   /* Starts and stops tile move. Relies on underlying logic for occurance */
   virtual void tileMoveFinish();
-  virtual bool tileMoveStart(Tile* next_tile);
+  virtual bool tileMoveStart(std::vector<std::vector<Tile*>> tile_set);
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -182,9 +187,6 @@ public:
   /* Returns the target that this thing is pointed at */
   MapThing* getTarget();
   
-  /* Returns the central tile */
-  Tile* getTile(); // TODO: Delete
-  
   /* Returns the tile based coordinates for the top left of the thing */
   uint16_t getTileX();
   uint16_t getTileY();
@@ -210,6 +212,9 @@ public:
 
   /* Is the thing passable - can you walk in it? */
   virtual bool isPassable();
+
+  /* Is the rendering tiles set, for the frames */
+  bool isTilesSet();
 
   /* Returns if the thing is visible / rendered on the screen */
   virtual bool isVisible();
@@ -258,11 +263,6 @@ public:
   /* Sets the starting x and y coordinate */
   void setStartingLocation(uint16_t section_id, uint16_t x, uint16_t y);
 
-  /* Set the tile to hook the map thing to */
-  // TODO: Remove?
-  virtual bool setStartingTile(uint16_t section_id, Tile* new_tile, 
-                                                    bool no_events = false);
-
   /* Sets the set of tiles that the thing will be placed on. Needed after
    * defining a starting point.*/
   virtual bool setStartingTiles(std::vector<std::vector<Tile*>> tile_set, 
@@ -283,9 +283,6 @@ public:
   /* Unsets the thing frames, in the class */
   void unsetFrame(uint32_t x, uint32_t y, bool delete_frames = true);
   void unsetFrames(bool delete_frames = true);
-  
-  /* Unsets the starting tile */
-  virtual void unsetStartingTile(bool no_events = false); // TODO: Remove
   
   /* Unset the rendering tiles in the class */
   virtual void unsetTiles(bool no_events = false); 

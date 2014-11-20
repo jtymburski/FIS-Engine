@@ -281,7 +281,7 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
     if(modified_thing == NULL)
     {
       if(identifier == "mapthing")
-        modified_thing = new MapThing(NULL, tile_width, tile_height);
+        modified_thing = new MapThing(tile_width, tile_height);
       else
         modified_thing = new MapInteractiveObject(tile_width, tile_height);
       modified_thing->setEventHandler(event_handler);
@@ -444,8 +444,8 @@ void Map::initiateThingInteraction()
   {
     bool interacted = false;
     bool out_of_range = false;
-    uint16_t x = player->getTile()->getX();
-    uint16_t y = player->getTile()->getY();
+    uint16_t x = 0;//player->getTile()->getX(); // TODO: Fix
+    uint16_t y = 0;//player->getTile()->getY();
 
     /* Determine the direction and offset coordinate tile selection */
     Direction direction = player->getDirection();
@@ -1487,11 +1487,11 @@ bool Map::update(int cycle_time)
     {
       Tile* next_tile = NULL;
 
-      if(persons[i]->getMapSection() == map_index && 
-         persons[i]->getTile() != NULL)
+      if(persons[i]->getMapSection() == map_index)// && 
+         //persons[i]->getTile() != NULL) // TODO: Fix
       {
-        uint16_t tile_x = persons[i]->getTile()->getX();
-        uint16_t tile_y = persons[i]->getTile()->getY();
+        uint16_t tile_x = 0;//persons[i]->getTile()->getX(); // TODO: Fix
+        uint16_t tile_y = 0;//persons[i]->getTile()->getY();
 
         /* Based on the move request, provide the next tile in line using the
          * current centered tile and move request */

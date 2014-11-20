@@ -36,7 +36,7 @@ MapInteractiveObject::MapInteractiveObject() : MapThing()
 MapInteractiveObject::MapInteractiveObject(uint16_t width, uint16_t height, 
                                            std::string name,
                                            std::string description, int id)
-                    : MapThing(NULL, width, height, name, description, id)
+                    : MapThing(width, height, name, description, id)
 {
   action_initiator = NULL;
   node_current = NULL;
@@ -526,16 +526,17 @@ void MapInteractiveObject::setInactiveTime(int time)
   time_elapsed = 0;
 }
 
-bool MapInteractiveObject::setStartingTile(uint16_t section_id, Tile* new_tile, 
-                                           bool no_events)
-{
-  if(MapThing::setStartingTile(section_id, new_tile, no_events))
-  {
-    person_on = NULL;
-    return true;
-  }
-  return false;
-}
+// TODO: Remove
+//bool MapInteractiveObject::setStartingTile(uint16_t section_id, Tile* new_tile, 
+//                                           bool no_events)
+//{
+//  if(MapThing::setStartingTile(section_id, new_tile, no_events))
+//  {
+//    person_on = NULL;
+//    return true;
+//  }
+//  return false;
+//}
 
 bool MapInteractiveObject::setState(MapState* state, bool passable)
 {
@@ -617,7 +618,7 @@ void MapInteractiveObject::update(int cycle_time, Tile* next_tile)
   }
   
   /* Do the walk on / walk off animation for the state */
-  Tile* location = getTile();
+  Tile* location = NULL;//getTile(); // TODO: Fix
   if(location != NULL)
   { // TODO: Fix
 //    if(person_on == NULL && location->isPersonSet() && 
@@ -690,8 +691,9 @@ void MapInteractiveObject::unsetStates()
  * Inputs: bool no_events - fire no events when unsetting
  * Output: none
  */
-void MapInteractiveObject::unsetStartingTile(bool no_events)
-{ 
-  MapThing::unsetStartingTile(no_events);
-  person_on = NULL;
-}
+// TODO: Remove
+//void MapInteractiveObject::unsetStartingTile(bool no_events)
+//{ 
+//  MapThing::unsetStartingTile(no_events);
+//  person_on = NULL;
+//}

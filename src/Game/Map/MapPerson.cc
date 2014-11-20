@@ -59,7 +59,7 @@ MapPerson::MapPerson() : MapThing()
  */
 MapPerson::MapPerson(uint16_t width, uint16_t height, std::string name, 
                      std::string description, int id)
-          : MapThing(NULL, width, height, name, description, id)
+          : MapThing(width, height, name, description, id)
 {
   initializeStates();
   active_secondary = NULL;
@@ -306,13 +306,13 @@ void MapPerson::tileMoveFinish()
  *              to the old spot. This is reimplemented from MapThing since it
  *              uses "Person" instead of "Thing" in tile.
  * 
- * Inputs: Tile* next_tile - the tile to move to
+ * Inputs: std::vector<std::vector<Tile*>> tile_set - the next set of frames
  * Output: bool - if the tile start was successfully started
  */
-bool MapPerson::tileMoveStart(Tile* next_tile)
+bool MapPerson::tileMoveStart(std::vector<std::vector<Tile*>> tile_set)
 {
-  if(next_tile != NULL)// && !next_tile->isPersonSet()) // TODO: Fix
-  {
+  //if(next_tile != NULL)// && !next_tile->isPersonSet()) // TODO: Fix
+  //{
     /* Increment step counter. */
     steps++;
     
@@ -323,8 +323,8 @@ bool MapPerson::tileMoveStart(Tile* next_tile)
     //tile_main->setPerson(this, getID() != kPLAYER_ID);
     
     return true;
-  }
-  return false;
+  //}
+  //return false;
 }
 
 /*============================================================================
@@ -844,9 +844,9 @@ void MapPerson::update(int cycle_time, Tile* next_tile)
     if(getMovementPaused())
     {
       if(getTarget())
-      {
-        int delta_x = getTile()->getX() - getTarget()->getTile()->getX();
-        int delta_y = getTile()->getY() - getTarget()->getTile()->getY();
+      { // TODO: Fix
+        int delta_x = 0;//getTile()->getX() - getTarget()->getTile()->getX();
+        int delta_y = 0;//getTile()->getY() - getTarget()->getTile()->getY();
 
         if(delta_x < 0)
           setDirection(Direction::EAST, can_move);
@@ -878,8 +878,8 @@ void MapPerson::update(int cycle_time, Tile* next_tile)
       }
       
       /* If it can move, initiate tile shifting */
-      if(can_move)
-        tileMoveStart(next_tile);
+      //if(can_move) // TODO: Fix
+        //tileMoveStart(next_tile);
     }
     /* If there is no move request, stop movement */
     else

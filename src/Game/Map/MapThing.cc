@@ -36,23 +36,40 @@ MapThing::MapThing()
 /* 
  * Description: Constructor for this class. Takes data to create the thing.
  *
- * Inputs: Sprite* frames - the frame data to encapsalate by the thing
+ * Inputs: uint16_t width - the tile width of the thing
+ *         uint16_t height - the tile height of the thing
+ *         std::string name - the name of the thing, default to ""
+ *         std::string description - the description of the thing, default to ""
+ *         int id - the ID of the thing, default to -1
+ */
+MapThing::MapThing(uint16_t width, uint16_t height, std::string name, 
+                   std::string description, int id)
+        : MapThing()
+{
+  setDescription(description);
+  setHeight(height);
+  setID(id);
+  setName(name);
+  setWidth(width);
+}
+
+/* 
+ * Description: Constructor for this class. Takes data to create the thing and
+ *              also includes the frame data.
+ *
+ * Inputs: std::vector<std::vector<TileSprite*>> - the frame matrix data
  *         uint16_t width - the tile width of the thing
  *         uint16_t height - the tile height of the thing
  *         std::string name - the name of the thing, default to ""
  *         std::string description - the description of the thing, default to ""
  *         int id - the ID of the thing, default to -1
  */
-MapThing::MapThing(Sprite* frames, uint16_t width, uint16_t height, 
-                   std::string name, std::string description, int id) 
-        : MapThing()
+MapThing::MapThing(std::vector<std::vector<TileSprite*>> frames, uint16_t width,
+                   uint16_t height, std::string name, std::string description,
+                   int id)
+        : MapThing(width, height, name, description, id)
 {
-  setDescription(description);
-  //setFrames(frames); // TODO: Repair with constructor
-  setHeight(height);
-  setID(id);
-  setName(name);
-  setWidth(width);
+  setFrames(frames, true);
 }
 
 /* 
@@ -215,22 +232,27 @@ bool MapThing::animate(int cycle_time, bool reset, bool skip_head)
   bool shift = false;
   
   /* Check if an animation can occur */
-// TODO: Fix
-//  if(frames != NULL)
-//  {
-//    /* Reset back to head */
-//    if(reset && !skip_head && !frames->isAtFirst())
-//    {
-//      frames->setAtFirst();
-//      shift = true;
-//    }
-//    
-//    if(reset)
-//      shift |= frames->update(0, skip_head);
-//    else
-//      shift |= frames->update(cycle_time, skip_head);
-//  }
-  
+  for(uint16_t i = 0; i < frame_matrix.size(); i++)
+  {
+    for(uint16_t j = 0; j < frame_matrix[i].size(); j++)
+    {
+      if(frame_matrix[i][j] != NULL)
+      {
+        /* Reset back to head */
+        if(reset && !skip_head && !frame_matrix[i][j]->isAtFirst())
+        {
+          frame_matrix[i][j]->setAtFirst();
+          shift = true;
+        }
+    
+        if(reset)
+          shift |= frame_matrix[i][j]->update(0, skip_head);
+        else
+          shift |= frame_matrix[i][j]->update(cycle_time, skip_head);
+      }
+    }
+  }
+
   return shift;
 }
 
@@ -245,28 +267,22 @@ bool MapThing::animate(int cycle_time, bool reset, bool skip_head)
  */
 bool MapThing::isAlmostOnTile(int cycle_time)
 {
-// TODO: Fix
-//  if(tile_main != NULL)
-//  {
-//    int x_diff = tile_main->getPixelX();
-//    int y_diff = tile_main->getPixelY();
-//
-//    /* X differential calculations to ensure positive number */
-//    if(x_diff > x)
-//      x_diff = x_diff - x;
-//    else
-//      x_diff = x - x_diff;
-//      
-//    /* Y differential calculations to ensure positive number */
-//    if(y_diff > y)
-//      y_diff = y_diff - y;
-//    else
-//      y_diff = y - y_diff;
-//
-//    return ((moveAmount(cycle_time) / kRAW_MULTIPLIER) >= (x_diff + y_diff));
-//  }
-  
-  return false;
+  int x_diff = tile_x * width;
+  int y_diff = tile_y * height;
+
+  /* X differential calculations to ensure positive number */
+  if(x_diff > x)
+    x_diff = x_diff - x;
+  else
+    x_diff = x - x_diff;
+      
+  /* Y differential calculations to ensure positive number */
+  if(y_diff > y)
+    y_diff = y_diff - y;
+  else
+    y_diff = y - y_diff;
+
+  return ((moveAmount(cycle_time) / kRAW_MULTIPLIER) >= (x_diff + y_diff));
 }
 
 /* 
@@ -382,10 +398,19 @@ bool MapThing::setDirection(Direction new_direction)
  */
 void MapThing::tileMoveFinish()
 {
-// TODO: Fix
-  //if(tile_previous != NULL) // TODO: Fix
-  //  tile_previous->unsetThing();
-  //tile_previous = NULL;
+  for(uint16_t i = 0; i < frame_matrix.size(); i++)
+  {
+    for(uint16_t j = 0; j < frame_matrix[i].size(); j++)
+    {
+      if(frame_matrix[i][j] != NULL && 
+         frame_matrix[i][j]->getTilePrevious() != NULL)
+      {
+        frame_matrix[i][j]->getTilePrevious()
+                          ->unsetThing(frame_matrix[i][j]->getRenderDepth());
+        frame_matrix[i][j]->tileMoveFinish();
+      }
+    }
+  }
 }
 
 /* 
@@ -394,21 +419,51 @@ void MapThing::tileMoveFinish()
  *              the next tile. Sets the new main pointer and moves the current
  *              to the old spot.
  * 
- * Inputs: Tile* next_tile - the tile to move to
+ * Inputs: std::vector<std::vector<Tile*>> tile_set - the next set of frames
  * Output: bool - if the tile start was successfully started
  */
-// TODO: Also, need to revise this to increment the tile x/y when a move starts
-//       or there is any change to the coordinate location
-bool MapThing::tileMoveStart(Tile* next_tile)
+bool MapThing::tileMoveStart(std::vector<std::vector<Tile*>> tile_set)
 {
-// TODO: Fix
-//  if(next_tile != NULL)// && !next_tile->isThingSet()) // TODO:Fix
-//  {
-//    tile_previous = tile_main;
-//    tile_main = next_tile;
-//    //tile_main->setThing(this); // TODO: Fix
-//    return true;
-//  }
+  bool success = true;
+  TileSprite* test_frames = NULL;
+
+  /* Data prechecks -> to confirm equivalency */
+  if(tile_set.size() > 0 && frame_matrix.size() > 0 && 
+     tile_set.size() == frame_matrix.size() && 
+     tile_set.front().size() == frame_matrix.front().size())
+  {
+    /* Go through each frame and update */
+    for(uint16_t i = 0; i < frame_matrix.size(); i++)
+    {
+      for(uint16_t j = 0; j < frame_matrix[i].size(); j++)
+      {
+        if(frame_matrix[i][j] != NULL)
+        {
+          /* Get one test frame, for testing differential on move distance */
+          if(test_frames == NULL)
+            test_frames = frame_matrix[i][j];
+
+          success &= frame_matrix[i][j]->tileMoveStart(tile_set[i][j]);
+          success &= tile_set[i][j]->setThing(this, 
+                                          frame_matrix[i][j]->getRenderDepth());
+        }
+      }
+    }
+
+    /* If successful, update move coordinates of class */
+    if(success)
+    {
+      int32_t diff_x = test_frames->getTileMain()->getX() - 
+                       test_frames->getTilePrevious()->getX();
+      int32_t diff_y = test_frames->getTileMain()->getY() - 
+                       test_frames->getTilePrevious()->getY();
+
+      tile_x += diff_x;
+      tile_y += diff_y;
+    }
+
+    return success;
+  }
   return false;
 }
 
@@ -996,22 +1051,6 @@ MapThing* MapThing::getTarget()
   return target;
 }
 
-/* 
- * Description: Returns the tile that the thing is currently at. Used for all
- *              indication of where the thing is going and if someone talks to
- *              it while moving, etc.
- * 
- * Inputs: none
- * Output: Tile* - the tile pointer of the tile this thing resides at
- */
-// TODO: Remove -----------------------------------------------------------
-Tile* MapThing::getTile()
-{
-  Tile* null_tile = NULL;
-  return null_tile;
-}
-// ------------------------------------------------------------------------
-
 /* Returns the tile based coordinates for the top left of the thing */
 // TODO: Comment
 uint16_t MapThing::getTileX()
@@ -1123,6 +1162,13 @@ bool MapThing::isPassable()
 {
   return false;
 }
+  
+/* Is the rendering tiles set, for the frames */
+// TODO: Comment  
+bool MapThing::isTilesSet()
+{
+  return tiles_set;
+}
 
 /*
  * Description: Returns if the thing is visible for rendering.
@@ -1145,7 +1191,6 @@ bool MapThing::isVisible()
  *         int offset_y - the paint offset in the y direction
  * Output: bool - if anything was rendered
  */
-// TODO: Clean Up. Will keep but it's un-used. For rendering it as a whole.
 bool MapThing::render(SDL_Renderer* renderer, int offset_x, int offset_y)
 {
   bool rendered = false;
@@ -1154,25 +1199,25 @@ bool MapThing::render(SDL_Renderer* renderer, int offset_x, int offset_y)
   if(isVisible())
   {
     int base_x = x - offset_x;
-	int base_y = y - offset_y;
+	  int base_y = y - offset_y;
 	
-	for(uint32_t i = 0; i < frame_matrix.size(); i++)
-	{
-	  int render_x = base_x + width * i;
-	  
-	  for(uint32_t j = 0; j < frame_matrix[i].size(); j++)
+	  for(uint32_t i = 0; i < frame_matrix.size(); i++)
 	  {
-	    if(frame_matrix[i][j] != NULL)
-		{
-		  int render_y = base_y + height * j;
-		  frame_matrix[i][j]->render(renderer, render_x, render_y, 
-		                             width, height);
+	    int render_x = base_x + width * i;
+	  
+	    for(uint32_t j = 0; j < frame_matrix[i].size(); j++)
+	    {
+	      if(frame_matrix[i][j] != NULL)
+		    {
+		      int render_y = base_y + height * j;
+		      frame_matrix[i][j]->render(renderer, render_x, render_y, 
+		                                 width, height);
           rendered = true;
-		}
+		    }
       }
-	}
+	  }
   }
-  
+
   return rendered;
 }
   
@@ -1446,17 +1491,6 @@ void MapThing::setStartingLocation(uint16_t section_id, uint16_t x, uint16_t y)
   tile_y = y;
 }
 
-// TODO: Remove -----------------------------------------------------------
-bool MapThing::setStartingTile(uint16_t section_id, Tile* new_tile, 
-                                                    bool no_events)
-{
-  (void)section_id;
-  (void)new_tile;
-  (void)no_events;
-  return false;
-}
-// ------------------------------------------------------------------------
-
 /* Sets the set of tiles that the thing will be placed on. Needed after
  * defining a starting point.*/
 // TODO: Comment
@@ -1497,6 +1531,7 @@ bool MapThing::setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
       }
     }
 
+    tiles_set = success;
     return success;
   }
 
@@ -1570,17 +1605,11 @@ bool MapThing::setWidth(uint16_t new_width)
  */
 void MapThing::update(int cycle_time, Tile* next_tile)
 {
-  (void)next_tile;
-
-// TODO: Fix
-//  if(tile_main != NULL)
-//  {
-//    /* Move the thing */
-//    moveThing(cycle_time);
-//
-//    /* Animate the thing */
-//    animate(cycle_time);
-//  }
+  if(isTilesSet())
+  {
+    moveThing(cycle_time);
+    animate(cycle_time);
+  }
 }
  
 /*
@@ -1642,13 +1671,6 @@ void MapThing::unsetFrames(bool delete_frames)
   frame_matrix.clear();
 }
 
-// TODO: Remove -----------------------------------------------------------
-void MapThing::unsetStartingTile(bool no_events)
-{
-  (void)no_events;
-}
-// ------------------------------------------------------------------------
-
 // TODO: Comment
 void MapThing::unsetTiles(bool no_events)
 {
@@ -1659,4 +1681,6 @@ void MapThing::unsetTiles(bool no_events)
     for(uint16_t j = 0; j < frame_matrix[i].size(); j++)
       if(frame_matrix[i][j] != NULL)
         unsetTile(i, j, no_events);
+
+  tiles_set = false;
 }

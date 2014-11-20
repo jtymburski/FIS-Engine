@@ -33,8 +33,10 @@ MapItem::MapItem() : MapThing()
 
 MapItem::MapItem(Sprite* frames, uint16_t width, uint16_t height, 
                  std::string name, std::string description, int id)
-       : MapThing(frames, width, height, name, description, id)
+       : MapThing(width, height, name, description, id)
 {
+  // TODO: Load frame data in
+
   brighter = false;
   walkover = false;
   
