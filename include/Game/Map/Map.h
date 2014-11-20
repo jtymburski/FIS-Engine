@@ -59,11 +59,15 @@ private:
 
   /* Indication if the map has been loaded */
   bool loaded;
-
+  
   /* The menus and dialogs on top of the map */
   MapDialog map_dialog;
   // MapMenu map_menu;
 
+  /* The path to the loaded map file */
+  bool map_encrypted;
+  std::string map_path;
+  
   // /* The status bar on the map */
   // MapStatusBar map_status_bar; // TODO: Remove
 
@@ -203,6 +207,9 @@ public:
 
   /* Picks up the total number of the item */
   bool pickupItem(MapItem* item);
+  
+  /* Reloads the existing map */
+  bool reloadMap(SDL_Renderer* renderer);
   
   /* Renders the map */
   bool render(SDL_Renderer* renderer);

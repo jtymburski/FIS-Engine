@@ -40,9 +40,9 @@ protected:
   int id;
   std::string name;
   bool passable;
-  Tile* tile_main;
-  Tile* tile_previous;
   uint16_t tile_section;
+  uint16_t tile_x;
+  uint16_t tile_y;
   bool visible;
   uint16_t width;
   int x;
@@ -52,9 +52,6 @@ protected:
 
   /* The target for this thing. If set, it cannot be targetted by others */
   MapThing* target;
-  
-  /* The OLD sprite frame data */
-  Sprite* frames; // TODO: Remove
   
   /* The main sprite frame data - contains passability and render depth */
   std::vector<std::vector<TileSprite*>> frame_matrix;
@@ -188,6 +185,10 @@ public:
   /* Returns the central tile */
   Tile* getTile(); // TODO: Delete
   
+  /* Returns the tile based coordinates for the top left of the thing */
+  uint16_t getTileX();
+  uint16_t getTileY();
+  
   /* Returns the width of the thing */
   uint16_t getWidth();
 
@@ -213,8 +214,9 @@ public:
   /* Returns if the thing is visible / rendered on the screen */
   virtual bool isVisible();
   
-  /* Renders the Map Thing - TODO: REMOVE OLD RENDER */
+  /* Renders the Map Thing */ // TODO: Remove first one
   bool render(SDL_Renderer* renderer, int offset_x, int offset_y);
+  bool render(SDL_Renderer* renderer, Tile* tile, int offset_x, int offset_y);
   
   /* Resets the location back to default (0,0,0), relative to the map */
   virtual void resetLocation();

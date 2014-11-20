@@ -49,6 +49,9 @@ public:
   };
 
 private:
+  /* The active rendering engine */
+  SDL_Renderer* active_renderer;
+  
   /* The computed base path for resources in the application */
   std::string base_path;
   
@@ -147,22 +150,6 @@ private:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
-  /* The key up and down events to be handled by the class */
-  bool keyDownEvent(SDL_KeyboardEvent event);
-  void keyUpEvent(SDL_KeyboardEvent event);
-
-  /* Renders the title screen */
-  bool render(SDL_Renderer* renderer);
-  
-  /* Runs the test battle */
-  void runTestBattle();
-
-  /* Set the running configuration, from the options class */
-  bool setConfiguration(Options* running_config);
-
-  /* Updates the game state */
-  bool update(int cycle_time);
-
   /* Returns a pointer to an action by index or by ID */
   Action* getAction(const int32_t &index, const bool &by_id = true);
 
@@ -183,6 +170,22 @@ public:
 
   /* Returns a pointer to a person by index or by ID */
   Item* getItem(const int32_t &index, const bool &by_id = true);
+  
+  /* The key up and down events to be handled by the class */
+  bool keyDownEvent(SDL_KeyboardEvent event);
+  void keyUpEvent(SDL_KeyboardEvent event);
+
+  /* Renders the title screen */
+  bool render(SDL_Renderer* renderer);
+  
+  /* Runs the test battle */
+  void runTestBattle();
+
+  /* Set the running configuration, from the options class */
+  bool setConfiguration(Options* running_config);
+
+  /* Updates the game state */
+  bool update(int cycle_time);
 };
 
 #endif // GAME_H

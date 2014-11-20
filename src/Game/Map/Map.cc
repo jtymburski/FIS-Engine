@@ -43,7 +43,9 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   base_path = "";
   this->event_handler = event_handler;
   loaded = false;
+  map_encrypted = false;
   map_index = 0;
+  map_path = "";
   player = NULL;
   running = false;
   system_options = NULL;
@@ -1043,12 +1045,8 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
 
   success &= fh.stop();
 
-  /* If the map load failed, unload the map */
-  if(!success)
-  {
-    unloadMap();
-  }
-  else
+  /* If the map load was successful, proceed to clean-up */
+  if(success)
   {
     if(geography[map_index].size() > 0)
     {
@@ -1091,8 +1089,20 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
       if(geography.size() > section && geography[section].size() > range_x && 
          geography[section][range_x].size() > range_y)
       {
-        std::cout << "TODO: Load thing #" << things[i]->getID() 
-                  << " into tiles" << std::endl;
+        std::vector<std::vector<Tile*>> tile_set;
+        
+        /* Load the tiles that correspond to the thing */
+        for(uint16_t j = render_box.x; j < range_x; j++)
+        {
+          std::vector<Tile*> tile_col;
+          
+          for(uint16_t k = render_box.y; k < range_y; k++)
+            tile_col.push_back(geography[section][j][k]);
+          tile_set.push_back(tile_col);
+        }
+        
+        /* Set up the thing with the tiles */
+        success &= things[i]->setStartingTiles(tile_set, true);
       }
     }
 
@@ -1131,6 +1141,18 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
     }
     std::cout << "--" << std::endl;
   }
+  
+  /* Save file path, or unload if the load sequence failed*/
+  if(success)
+  {
+    map_path = file;
+    map_encrypted = encryption;
+  }
+  else
+  {
+    unloadMap();
+  }
+  
   loaded = success;
 
   return success;
@@ -1145,6 +1167,25 @@ bool Map::pickupItem(MapItem* item)
     item->setCount(0);
     
     return true;
+  }
+  
+  return false;
+}
+
+// TODO: Comment
+bool Map::reloadMap(SDL_Renderer* renderer)
+{
+  if(isLoaded())
+  {
+    /* Get the map file */
+    std::string path = map_path;
+    bool encrypted = map_encrypted;
+    
+    /* Unload the map */
+    unloadMap();
+    
+    /* Re-load the same map */
+    return loadMap(path, renderer, encrypted);
   }
   
   return false;
@@ -1169,59 +1210,106 @@ bool Map::render(SDL_Renderer* renderer)
     int y_start = viewport.getYStart();
     int y_end = viewport.getYEnd();
 
-    /* Render lower half of tile */
+    /* Render the tiles within the range of the viewport */
     for(uint16_t i = tile_x_start; i < tile_x_end; i++)
+    {
       for(uint16_t j = tile_y_start; j < tile_y_end; j++)
+      {
+        /* Lower tiles */
         geography[map_index][i][j]->renderLower(renderer, x_offset, y_offset);
-
-    /* Render Map Items */
-    for(uint16_t i = 0; i < items.size(); i++)
-    {
-      if(items[i]->getMapSection() == map_index && 
-         items[i]->getX() >= x_start && items[i]->getX() <= x_end && 
-         items[i]->getY() >= y_start && items[i]->getY() <= y_end)
-      {
-        items[i]->render(renderer, x_offset, y_offset);
-      }
-    }
-    
-    /* Render Map Things */
-    for(uint16_t i = 0; i < things.size(); i++)
-    {
-      if(things[i]->getMapSection() == map_index && 
-         things[i]->getX() >= x_start && things[i]->getX() <= x_end && 
-         things[i]->getY() >= y_start && things[i]->getY() <= y_end)
-      {
-        things[i]->render(renderer, x_offset, y_offset);
-      }
-    }
-
-    /* Render Map Persons (and NPCs) */
-    for(uint16_t i = 0; i < persons.size(); i++)
-    {
-      if(persons[i]->getMapSection() == map_index && 
-         persons[i]->getX() >= x_start && persons[i]->getX() <= x_end && 
-         persons[i]->getY() >= y_start && persons[i]->getY() <= y_end)
-      {
-        persons[i]->render(renderer, x_offset, y_offset);
-      }
-    }
-
-    /* Render Secondary Map Persons (and NPCs) */
-    for(uint16_t i = 0; i < persons.size(); i++)
-    {
-      if(persons[i]->getMapSection() == map_index && 
-         persons[i]->getX() >= x_start && persons[i]->getX() <= x_end && 
-         persons[i]->getY() >= y_start && persons[i]->getY() <= y_end)
-      {
-        persons[i]->renderSecondary(renderer, x_offset, y_offset);
-      }
-    }
-    
-    /* Render upper half of tile */
-    for(uint16_t i = tile_x_start; i < tile_x_end; i++)
-      for(uint16_t j = tile_y_start; j < tile_y_end; j++)
+        
+        /* Render things */
+        for(uint8_t index = 0; index < Helpers::getRenderDepth(); index++)
+        {
+          MapItem* render_item = NULL;
+          MapPerson* render_person = NULL;
+          MapThing* render_thing = NULL;
+          
+          geography[map_index][i][j]->getRenderThings(index, render_item,
+                                                      render_person, render_thing);
+          
+          /* Different indexes result in different rendering procedures */
+          if(index == 0)
+          {
+            if(render_item != NULL)
+              render_item->render(renderer, geography[map_index][i][j], 
+                                   x_offset, y_offset);
+            if(render_thing != NULL)
+              render_thing->render(renderer, geography[map_index][i][j], 
+                                   x_offset, y_offset);
+            if(render_person != NULL)
+              render_person->render(renderer, geography[map_index][i][j], 
+                                   x_offset, y_offset);
+          }
+          else
+          {
+            if(render_person != NULL)
+              render_person->render(renderer, geography[map_index][i][j], 
+                                   x_offset, y_offset);
+            if(render_thing != NULL)
+              render_thing->render(renderer, geography[map_index][i][j], 
+                                   x_offset, y_offset);
+          }
+        }
+        
+        /* Upper tiles */
         geography[map_index][i][j]->renderUpper(renderer, x_offset, y_offset);
+      }
+    }
+    
+//    /* Render lower half of tile */
+//    for(uint16_t i = tile_x_start; i < tile_x_end; i++)
+//      for(uint16_t j = tile_y_start; j < tile_y_end; j++)
+//        geography[map_index][i][j]->renderLower(renderer, x_offset, y_offset);
+
+//    /* Render Map Items */
+//    for(uint16_t i = 0; i < items.size(); i++)
+//    {
+//      if(items[i]->getMapSection() == map_index && 
+//         items[i]->getX() >= x_start && items[i]->getX() <= x_end && 
+//         items[i]->getY() >= y_start && items[i]->getY() <= y_end)
+//      {
+//        items[i]->render(renderer, x_offset, y_offset);
+//      }
+//    }
+
+//    /* Render Map Things */
+//    for(uint16_t i = 0; i < things.size(); i++)
+//    {
+//      if(things[i]->getMapSection() == map_index && 
+//         things[i]->getX() >= x_start && things[i]->getX() <= x_end && 
+//         things[i]->getY() >= y_start && things[i]->getY() <= y_end)
+//      {
+//        things[i]->render(renderer, x_offset, y_offset);
+//      }
+//    }
+
+//    /* Render Map Persons (and NPCs) */
+//    for(uint16_t i = 0; i < persons.size(); i++)
+//    {
+//      if(persons[i]->getMapSection() == map_index && 
+//         persons[i]->getX() >= x_start && persons[i]->getX() <= x_end && 
+//         persons[i]->getY() >= y_start && persons[i]->getY() <= y_end)
+//      {
+//        persons[i]->render(renderer, x_offset, y_offset);
+//      }
+//    }
+
+//    /* Render Secondary Map Persons (and NPCs) */
+//    for(uint16_t i = 0; i < persons.size(); i++)
+//    {
+//      if(persons[i]->getMapSection() == map_index && 
+//         persons[i]->getX() >= x_start && persons[i]->getX() <= x_end && 
+//         persons[i]->getY() >= y_start && persons[i]->getY() <= y_end)
+//      {
+//        persons[i]->renderSecondary(renderer, x_offset, y_offset);
+//      }
+//    }
+
+//    /* Render upper half of tile */
+//    for(uint16_t i = tile_x_start; i < tile_x_end; i++)
+//      for(uint16_t j = tile_y_start; j < tile_y_end; j++)
+//        geography[map_index][i][j]->renderUpper(renderer, x_offset, y_offset);
     
     /* Render the map dialogs / pop-ups */
     item_menu.render(renderer);
@@ -1367,6 +1455,8 @@ void Map::unloadMap()
   /* Clear the remaining and disable the loading */
   // clear();
   loaded = false;
+  map_encrypted = false;
+  map_path = "";
 }
 
 /* Updates the game state */

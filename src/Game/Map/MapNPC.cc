@@ -301,8 +301,8 @@ Direction MapNPC::getPredictedMoveRequest()
 {
   if(current != NULL)
   {
-    int delta_x = current->x - tile_main->getX();
-    int delta_y = current->y - tile_main->getY();
+    int delta_x = 0;//current->x - tile_main->getX(); // TODO: Fix
+    int delta_y = 0;//current->y - tile_main->getY();
     Direction direction = Direction::DIRECTIONLESS;
     
     /* If the npc needs to move on the X plane */
@@ -394,65 +394,66 @@ void MapNPC::update(int cycle_time, Tile* next_tile)
   /* Some initial parameters */
   Direction direction = Direction::DIRECTIONLESS;
 
-  /* Begin the check to handle each time the NPC is on a tile */
-  if(current != NULL && tile_main != NULL)
-  {
-    int delta_x = current->x - tile_main->getX();
-    int delta_y = current->y - tile_main->getY();
-    
-    /* If the npc needs to move on the X plane */
-    if(delta_x != 0)
-    {
-      if(delta_x < 0)
-        direction = Direction::WEST;
-      else
-        direction = Direction::EAST;
-    }
-    /* Else if the npc needs to move on the Y plane */
-    else if(delta_y != 0)
-    {
-      if(delta_y < 0)
-        direction = Direction::NORTH;
-      else
-        direction = Direction::SOUTH;
-    }
-    /* Otherwise, on tile if not moving so handle pauses or shifts */
-    else if(!isMoving())
-    {
-      if(current->delay > npc_delay)
-        npc_delay += cycle_time;
-      else
-      {
-        if(state == LOOPED)
-        {
-          current = current->next;
-          npc_delay = 0;
-        }
-        else if(state == BACKANDFORTH)
-        {
-          /* Check to see if the ends are reached */
-          if(moving_forward && current->next == head)
-            moving_forward = false;
-          else if(!moving_forward && current == head)
-            moving_forward = true;
-          
-          /* Move in the new / old direction */
-          if(moving_forward)
-            current = current->next;
-          else
-            current = current->previous;
-          npc_delay = 0;
-        }
-      }
-    }
-
-    /* Update the new direction */
-    if(getMoveRequest() != direction)
-    {
-      clearAllMovement();
-      addDirection(direction);
-    }
-  }
+// TODO: Fix
+//  /* Begin the check to handle each time the NPC is on a tile */
+//  if(current != NULL && tile_main != NULL)
+//  {
+//    int delta_x = current->x - tile_main->getX();
+//    int delta_y = current->y - tile_main->getY();
+//    
+//    /* If the npc needs to move on the X plane */
+//    if(delta_x != 0)
+//    {
+//      if(delta_x < 0)
+//        direction = Direction::WEST;
+//      else
+//        direction = Direction::EAST;
+//    }
+//    /* Else if the npc needs to move on the Y plane */
+//    else if(delta_y != 0)
+//    {
+//      if(delta_y < 0)
+//        direction = Direction::NORTH;
+//      else
+//        direction = Direction::SOUTH;
+//    }
+//    /* Otherwise, on tile if not moving so handle pauses or shifts */
+//    else if(!isMoving())
+//    {
+//      if(current->delay > npc_delay)
+//        npc_delay += cycle_time;
+//      else
+//      {
+//        if(state == LOOPED)
+//        {
+//          current = current->next;
+//          npc_delay = 0;
+//        }
+//        else if(state == BACKANDFORTH)
+//        {
+//          /* Check to see if the ends are reached */
+//          if(moving_forward && current->next == head)
+//            moving_forward = false;
+//          else if(!moving_forward && current == head)
+//            moving_forward = true;
+//          
+//          /* Move in the new / old direction */
+//          if(moving_forward)
+//            current = current->next;
+//          else
+//            current = current->previous;
+//          npc_delay = 0;
+//        }
+//      }
+//    }
+//
+//    /* Update the new direction */
+//    if(getMoveRequest() != direction)
+//    {
+//      clearAllMovement();
+//      addDirection(direction);
+//    }
+//  }
 
   MapPerson::update(cycle_time, next_tile);
 }

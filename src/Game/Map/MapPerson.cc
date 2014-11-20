@@ -150,12 +150,12 @@ bool MapPerson::animate(int cycle_time, bool reset, bool skip_head)
   //Sprite* frames = getFrames(); // TODO: Repair
  
   /* Check if an animation can occur */
-  if(frames != NULL)
+  if(true)//frames != NULL) // TODO: Fix
   {
     /* Reset back to head */
-    if(reset && !skip_head && !frames->isAtFirst())
+    if(reset && !skip_head)// && !frames->isAtFirst()) // TODO:Fix
     {
-      frames->setAtFirst();
+      //frames->setAtFirst(); // TODO: Fix
       if(active_secondary != NULL)
         active_secondary->setAtFirst();
 
@@ -164,13 +164,13 @@ bool MapPerson::animate(int cycle_time, bool reset, bool skip_head)
     
     if(reset)
     {
-      shift |= frames->update(0, skip_head);
+      //shift |= frames->update(0, skip_head); // TODO: Fix
       if(active_secondary != NULL)
         active_secondary->update(0, skip_head);
     }
     else
     {
-      if(frames->update(cycle_time, skip_head))
+      if(true)//frames->update(cycle_time, skip_head)) // TODO: Fix
       {
         if(active_secondary != NULL)
           active_secondary->shiftNext(skip_head);
@@ -296,7 +296,7 @@ void MapPerson::tileMoveFinish()
 {
   //if(tile_previous != NULL) // TODO: Fix for new matrix person
   //  tile_previous->unsetPerson(getID() != kPLAYER_ID);
-  tile_previous = NULL;
+  //tile_previous = NULL;
 }
 
 /* 
@@ -317,8 +317,8 @@ bool MapPerson::tileMoveStart(Tile* next_tile)
     steps++;
     
     /* Set the new main tile */
-    tile_previous = tile_main;
-    tile_main = next_tile;
+    //tile_previous = tile_main;
+    //tile_main = next_tile;
     // TODO: Fix for matrix map person
     //tile_main->setPerson(this, getID() != kPLAYER_ID);
     
@@ -675,7 +675,7 @@ void MapPerson::keyUpEvent(SDL_KeyboardEvent event)
 bool MapPerson::renderSecondary(SDL_Renderer* renderer, 
                                 int offset_x, int offset_y)
 {
-  if(isVisible() && frames != NULL && tile_main != NULL)
+  if(isVisible())// && frames != NULL && tile_main != NULL) // TODO: Fix
   {
     if(active_secondary != NULL)
     {
@@ -726,17 +726,17 @@ bool MapPerson::setStartingTile(uint16_t section_id, Tile* new_tile,
     unsetStartingTile(no_events);
   
     /* Set the new tile */
-    tile_main = new_tile;
-    this->x = tile_main->getPixelX();
+    //tile_main = new_tile; // TODO: Fix
+    //this->x = tile_main->getPixelX();
     this->x_raw = this->x * kRAW_MULTIPLIER;
-    this->y = tile_main->getPixelY();
+    //this->y = tile_main->getPixelY();
     this->y_raw = this->y * kRAW_MULTIPLIER;
     //tile_main->setPerson(this, no_events);
     tile_section = section_id;
     
     /* Store the starting tile */
     starting_section = section_id;
-    starting_tile = tile_main;
+    //starting_tile = tile_main; // TODO: Fix
     
     return true;
   }
@@ -872,8 +872,8 @@ void MapPerson::update(int cycle_time, Tile* next_tile)
       reset = !can_move;
       if(setDirection(getMoveRequest(), can_move) || !can_move)
       {
-        x = tile_main->getPixelX();
-        y = tile_main->getPixelY();
+        //x = tile_main->getPixelX(); // TODO: Fix
+        //y = tile_main->getPixelY();
         reset = true;
       }
       
@@ -884,11 +884,12 @@ void MapPerson::update(int cycle_time, Tile* next_tile)
     /* If there is no move request, stop movement */
     else
     {
-      if(tile_main != NULL)
-      {
-        x = tile_main->getPixelX();
-        y = tile_main->getPixelY();
-      }
+      // TODO: Fix
+      //if(tile_main != NULL)
+      //{
+      //  x = tile_main->getPixelX();
+      //  y = tile_main->getPixelY();
+      //}
 
       setDirection(Direction::DIRECTIONLESS);
       reset = true;
@@ -966,12 +967,12 @@ void MapPerson::unsetStartingTile(bool no_events)
   /* Unset the previous tile */
   //if(tile_previous != NULL) // TODO: Fix
   //  tile_previous->unsetPerson(no_events);
-  tile_previous = NULL;
+  //tile_previous = NULL;
   
   /* Unset the main tile */
   //if(tile_main != NULL) // TODO: Fix
   //  tile_main->unsetPerson(no_events);
-  tile_main = NULL;
+  //tile_main = NULL;
     
   /* Resets the coordinates */
   this->x = 0;

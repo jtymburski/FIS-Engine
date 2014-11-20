@@ -33,6 +33,7 @@ const uint32_t Game::kMONEY_ITEM_ID{0};
 Game::Game(Options* running_config)
 {
   /* Initalize class variables */
+  active_renderer = nullptr;
   base_path = "";
   game_battle    = nullptr;
   game_inventory = nullptr;
@@ -612,135 +613,6 @@ void Game::setupPlayerInventory()
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 
-/* The key down events to be handled by the class */
-bool Game::keyDownEvent(SDL_KeyboardEvent event)
-{
-  /* Exit the game, game has finished processing */
-  if(mode == BATTLE && event.keysym.sym == SDLK_ESCAPE)
-  {
-    return true;
-  }
-  /* TESTING section - probably remove at end */
-  /* Switch the view to the map */
-  else if(event.keysym.sym == SDLK_F1)
-  {
-    mode = MAP;
-
-    if (game_battle != nullptr)
-    {
-      delete game_battle;
-      game_battle = nullptr; 
-    }
-  }
-  /* Switch the view to the battle */
-  else if(event.keysym.sym == SDLK_F2)
-  {
-    if (game_battle == nullptr)
-      eventStartBattle();
-  }
-  /* Show item store dialog in map */
-  else if(event.keysym.sym == SDLK_5)
-  {
-    if (game_map != nullptr)
-    {
-      std::vector<Item*> items;
-      items.push_back(base_item_list[0]);
-      items.push_back(base_item_list[0]);
-      std::vector<uint32_t> counts;
-      counts.push_back(2);
-      counts.push_back(3);
-      std::vector<int32_t> cost_modifiers;
-      cost_modifiers.push_back(0);
-      cost_modifiers.push_back(10);
-      
-      game_map->initStore(ItemStore::BUY, items, counts, 
-                          cost_modifiers, "Is Ttly Kevin's Store", false);
-    }
-  }
-  /* Otherwise, send keys to the active view */
-  else
-  {
-    if(mode == MAP)
-      return game_map->keyDownEvent(event);
-    else if(mode == BATTLE)
-      return game_battle->keyDownEvent(event);
-  }
-  
-  return false;
-}
-
-/* The key up events to be handled by the class */
-void Game::keyUpEvent(SDL_KeyboardEvent event)
-{
-  if(mode == MAP)
-    game_map->keyUpEvent(event);
-}
-
-/* Renders the title screen */
-bool Game::render(SDL_Renderer* renderer)
-{
-  // TODO Create temporary list of items - Pull into file */
-  // if(base_item_list.empty())
-  // {
-  //   Item* item1 = new Item(5, "Sword of Power", 125, 
-  //                         new Frame("sprites/Map/_TEST/sword_AA_A00.png", renderer));
-  //   Item* item2 = new Item(7, "Frost Bubby", 5, 
-  //                          new Frame("sprites/Battle/Bubbies/frosty_t1.png", 
-  //                                    renderer));
-  //   Item* item3 = new Item(0, "Coins", 1, 
-  //                          new Frame("sprites/Map/_TEST/coins_AA_A00.png", renderer));
-    
-  //   base_item_list.push_back(item1);
-  //   base_item_list.push_back(item2);
-  //   base_item_list.push_back(item3);
-  // }
-  
-  /* Map initialization location */
-  if(!game_map->isLoaded())
-   game_map->loadMap(base_path + "maps/test_06", renderer);
-
-  if(mode == MAP)
-    return game_map->render(renderer);
-  
-  return true;
-}
-
-/* Set the running configuration, from the options class */
-bool Game::setConfiguration(Options* running_config)
-{
-  if(running_config != nullptr)
-  {
-    game_config = running_config;
-    base_path   = game_config->getBasePath();
-    
-    /* Set in secondary classes */
-    if(game_map != nullptr)
-      game_map->setConfiguration(running_config);
-
-    if (game_battle != nullptr)
-      game_battle->setConfiguration(running_config);
-
-    return true;
-  }
-  
-  return false;
-}
-
-/* Updates the game state. Returns true if the class is finished */
-bool Game::update(int32_t cycle_time)
-{
-  /* Poll System Events */
-  pollEvents();
-
-  if(mode == MAP && game_map != nullptr)
-    return game_map->update(cycle_time);
-
-  if(mode == BATTLE && game_battle != nullptr)
-    return game_battle->update(cycle_time);
-
-  return false;
-}
-
 /* Returns a pointer to a given action by index or by ID */
 Action* Game::getAction(const int32_t &index, const bool& by_id)
 {
@@ -858,4 +730,142 @@ Item* Game::getItem(const int32_t &index, const bool &by_id)
   }
 
   return nullptr;
+}
+
+/* The key down events to be handled by the class */
+bool Game::keyDownEvent(SDL_KeyboardEvent event)
+{
+  /* Exit the game, game has finished processing */
+  if(mode == BATTLE && event.keysym.sym == SDLK_ESCAPE)
+  {
+    return true;
+  }
+  /* TESTING section - probably remove at end */
+  /* Switch the view to the map */
+  else if(event.keysym.sym == SDLK_F1)
+  {
+    mode = MAP;
+
+    if (game_battle != nullptr)
+    {
+      delete game_battle;
+      game_battle = nullptr; 
+    }
+  }
+  /* Switch the view to the battle */
+  else if(event.keysym.sym == SDLK_F2)
+  {
+    if (game_battle == nullptr)
+      eventStartBattle();
+  }
+  else if(event.keysym.sym == SDLK_F5 && mode == MAP && game_map != nullptr)
+  {
+    game_map->reloadMap(active_renderer);
+  }
+  /* Show item store dialog in map */
+  else if(event.keysym.sym == SDLK_5)
+  {
+    if (game_map != nullptr)
+    {
+      std::vector<Item*> items;
+      items.push_back(base_item_list[0]);
+      items.push_back(base_item_list[0]);
+      std::vector<uint32_t> counts;
+      counts.push_back(2);
+      counts.push_back(3);
+      std::vector<int32_t> cost_modifiers;
+      cost_modifiers.push_back(0);
+      cost_modifiers.push_back(10);
+      
+      game_map->initStore(ItemStore::BUY, items, counts, 
+                          cost_modifiers, "Is Ttly Kevin's Store", false);
+    }
+  }
+  /* Otherwise, send keys to the active view */
+  else
+  {
+    if(mode == MAP)
+      return game_map->keyDownEvent(event);
+    else if(mode == BATTLE)
+      return game_battle->keyDownEvent(event);
+  }
+  
+  return false;
+}
+
+/* The key up events to be handled by the class */
+void Game::keyUpEvent(SDL_KeyboardEvent event)
+{
+  if(mode == MAP)
+    game_map->keyUpEvent(event);
+}
+
+/* Renders the title screen */
+bool Game::render(SDL_Renderer* renderer)
+{
+  // TODO Create temporary list of items - Pull into file */
+  // if(base_item_list.empty())
+  // {
+  //   Item* item1 = new Item(5, "Sword of Power", 125, 
+  //                         new Frame("sprites/Map/_TEST/sword_AA_A00.png", renderer));
+  //   Item* item2 = new Item(7, "Frost Bubby", 5, 
+  //                          new Frame("sprites/Battle/Bubbies/frosty_t1.png", 
+  //                                    renderer));
+  //   Item* item3 = new Item(0, "Coins", 1, 
+  //                          new Frame("sprites/Map/_TEST/coins_AA_A00.png", renderer));
+    
+  //   base_item_list.push_back(item1);
+  //   base_item_list.push_back(item2);
+  //   base_item_list.push_back(item3);
+  // }
+  
+  /* Make sure the active renderer is set up */
+  // TODO: Possibly revise. Change how the game handles maps and changing
+  if(active_renderer == NULL)
+    active_renderer = renderer;
+  
+  /* Map initialization location */
+  if(!game_map->isLoaded())
+   game_map->loadMap(base_path + "maps/test_06", renderer);
+
+  if(mode == MAP)
+    return game_map->render(renderer);
+  
+  return true;
+}
+
+/* Set the running configuration, from the options class */
+bool Game::setConfiguration(Options* running_config)
+{
+  if(running_config != nullptr)
+  {
+    game_config = running_config;
+    base_path   = game_config->getBasePath();
+    
+    /* Set in secondary classes */
+    if(game_map != nullptr)
+      game_map->setConfiguration(running_config);
+
+    if (game_battle != nullptr)
+      game_battle->setConfiguration(running_config);
+
+    return true;
+  }
+  
+  return false;
+}
+
+/* Updates the game state. Returns true if the class is finished */
+bool Game::update(int32_t cycle_time)
+{
+  /* Poll System Events */
+  pollEvents();
+
+  if(mode == MAP && game_map != nullptr)
+    return game_map->update(cycle_time);
+
+  if(mode == BATTLE && game_battle != nullptr)
+    return game_battle->update(cycle_time);
+
+  return false;
 }

@@ -124,7 +124,7 @@ public:
   std::vector<Sprite*> getLower() const;
   bool getLowerPassability(Direction dir) const;
   bool getLowerPassability(uint8_t index, Direction dir) const;
- 
+
   /* Returns the highest render level with applicable data */
   uint16_t getMaxRenderLevel() const;
 

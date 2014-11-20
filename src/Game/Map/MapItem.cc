@@ -181,21 +181,22 @@ bool MapItem::setStartingTile(uint16_t section_id, Tile* new_tile,
 
   if(new_tile != NULL)
   {
-    /* Unset the main tile */
-    //if(tile_main != NULL) // TODO: Fix
-    //  tile_main->unsetItem();
-    tile_main = NULL;
-  
-    /* Set the new tile */
-    tile_main = new_tile;
-    this->x = tile_main->getPixelX();
-    this->x_raw = this->x * kRAW_MULTIPLIER;
-    this->y = tile_main->getPixelY();
-    this->y_raw = this->y * kRAW_MULTIPLIER;
-    //tile_main->setItem(this); // TODO:Fix
-    tile_section = section_id;
-    
-    return true;
+// TODO: Fix
+//    /* Unset the main tile */
+//    //if(tile_main != NULL) // TODO: Fix
+//    //  tile_main->unsetItem();
+//    tile_main = NULL;
+//  
+//    /* Set the new tile */
+//    tile_main = new_tile;
+//    this->x = tile_main->getPixelX();
+//    this->x_raw = this->x * kRAW_MULTIPLIER;
+//    this->y = tile_main->getPixelY();
+//    this->y_raw = this->y * kRAW_MULTIPLIER;
+//    //tile_main->setItem(this); // TODO:Fix
+//    tile_section = section_id;
+//    
+//    return true;
   }
 
   return false;
@@ -217,35 +218,36 @@ void MapItem::setWalkover(bool walkover)
  */
 void MapItem::update(int cycle_time, Tile* next_tile)
 {
-  /* Update the brightness, to create the item pulse */
-  if(frames != NULL)
-  {
-    double brightness = frames->getBrightness();
-    
-    /* If brighter, increase brightness. */
-    if(brighter)
-    {
-      brightness += cycle_time / kDELTA_TIME_ONE_POINT;
-      
-      if(brightness > kMAX_BRIGHTNESS)
-      {
-        brightness = kMAX_BRIGHTNESS;
-        brighter = false;
-      }
-    }
-    /* Otherwise, dim the frames instead */
-    else
-    {
-      brightness -= cycle_time / kDELTA_TIME_ONE_POINT;
-      if(brightness < kMIN_BRIGHTNESS)
-      {
-        brightness = kMIN_BRIGHTNESS;
-        brighter = true;
-      }
-    }
-
-    frames->setBrightness(brightness);  
-  }
+// TODO: Fix
+//  /* Update the brightness, to create the item pulse */
+//  if(frames != NULL)
+//  {
+//    double brightness = frames->getBrightness();
+//    
+//    /* If brighter, increase brightness. */
+//    if(brighter)
+//    {
+//      brightness += cycle_time / kDELTA_TIME_ONE_POINT;
+//      
+//      if(brightness > kMAX_BRIGHTNESS)
+//      {
+//        brightness = kMAX_BRIGHTNESS;
+//        brighter = false;
+//      }
+//    }
+//    /* Otherwise, dim the frames instead */
+//    else
+//    {
+//      brightness -= cycle_time / kDELTA_TIME_ONE_POINT;
+//      if(brightness < kMIN_BRIGHTNESS)
+//      {
+//        brightness = kMIN_BRIGHTNESS;
+//        brighter = true;
+//      }
+//    }
+//
+//    frames->setBrightness(brightness);  
+//  }
   
   /* Finally update the thing */
   MapThing::update(cycle_time, next_tile);

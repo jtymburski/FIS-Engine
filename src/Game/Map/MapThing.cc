@@ -8,10 +8,6 @@
  *              MapWalkOver, MapSolid, etc. Also handles the basic setup for 
  *              name, description, id, sprite. No interaction is handled in 
  *              this class since its a generic parent.
- *
- * TODO: 
- *  1. Handle what to do with sprites in the frame matrix that are unused.
- *     Either, delete the sprite or just access the isFramesSet() and ignore.
  *****************************************************************************/
 #include "Game/Map/MapThing.h"
 
@@ -34,7 +30,6 @@ const int MapThing::kUNSET_ID = -1;
 MapThing::MapThing()
 {
   event_handler = NULL;
-  frames = NULL; // TODO: Delete
   MapThing::clear();
 }
 
@@ -220,20 +215,21 @@ bool MapThing::animate(int cycle_time, bool reset, bool skip_head)
   bool shift = false;
   
   /* Check if an animation can occur */
-  if(frames != NULL)
-  {
-    /* Reset back to head */
-    if(reset && !skip_head && !frames->isAtFirst())
-    {
-      frames->setAtFirst();
-      shift = true;
-    }
-    
-    if(reset)
-      shift |= frames->update(0, skip_head);
-    else
-      shift |= frames->update(cycle_time, skip_head);
-  }
+// TODO: Fix
+//  if(frames != NULL)
+//  {
+//    /* Reset back to head */
+//    if(reset && !skip_head && !frames->isAtFirst())
+//    {
+//      frames->setAtFirst();
+//      shift = true;
+//    }
+//    
+//    if(reset)
+//      shift |= frames->update(0, skip_head);
+//    else
+//      shift |= frames->update(cycle_time, skip_head);
+//  }
   
   return shift;
 }
@@ -249,25 +245,26 @@ bool MapThing::animate(int cycle_time, bool reset, bool skip_head)
  */
 bool MapThing::isAlmostOnTile(int cycle_time)
 {
-  if(tile_main != NULL)
-  {
-    int x_diff = tile_main->getPixelX();
-    int y_diff = tile_main->getPixelY();
-
-    /* X differential calculations to ensure positive number */
-    if(x_diff > x)
-      x_diff = x_diff - x;
-    else
-      x_diff = x - x_diff;
-      
-    /* Y differential calculations to ensure positive number */
-    if(y_diff > y)
-      y_diff = y_diff - y;
-    else
-      y_diff = y - y_diff;
-
-    return ((moveAmount(cycle_time) / kRAW_MULTIPLIER) >= (x_diff + y_diff));
-  }
+// TODO: Fix
+//  if(tile_main != NULL)
+//  {
+//    int x_diff = tile_main->getPixelX();
+//    int y_diff = tile_main->getPixelY();
+//
+//    /* X differential calculations to ensure positive number */
+//    if(x_diff > x)
+//      x_diff = x_diff - x;
+//    else
+//      x_diff = x - x_diff;
+//      
+//    /* Y differential calculations to ensure positive number */
+//    if(y_diff > y)
+//      y_diff = y_diff - y;
+//    else
+//      y_diff = y - y_diff;
+//
+//    return ((moveAmount(cycle_time) / kRAW_MULTIPLIER) >= (x_diff + y_diff));
+//  }
   
   return false;
 }
@@ -284,20 +281,21 @@ bool MapThing::isAlmostOnTile(int cycle_time)
  */
 bool MapThing::isMoveAllowed(Tile* next_tile)
 {
-  if(tile_main != NULL && next_tile != NULL && isMoveRequested())
-  {
-    Direction move_request = getMoveRequest();
-    bool thing_passable = true;
-
+// TODO: Fix
+//  if(tile_main != NULL && next_tile != NULL && isMoveRequested())
+//  {
+//    Direction move_request = getMoveRequest();
+//    bool thing_passable = true;
+//
     /* Determine if the thing is passable */
     // TODO: Fix. Check render level for multiple things based on tile. 
     // Possibly have to revise main tile below as well.
 //    if(next_tile->getThing() != NULL)
 //      thing_passable = next_tile->getThing()->isPassable();
 
-    return thing_passable && tile_main->getPassabilityExiting(move_request) && 
-           next_tile->getPassabilityEntering(move_request);
-  }
+//    return thing_passable && tile_main->getPassabilityExiting(move_request) && 
+//           next_tile->getPassabilityEntering(move_request);
+//  }
   return false;
 }
 
@@ -384,9 +382,10 @@ bool MapThing::setDirection(Direction new_direction)
  */
 void MapThing::tileMoveFinish()
 {
+// TODO: Fix
   //if(tile_previous != NULL) // TODO: Fix
   //  tile_previous->unsetThing();
-  tile_previous = NULL;
+  //tile_previous = NULL;
 }
 
 /* 
@@ -398,15 +397,18 @@ void MapThing::tileMoveFinish()
  * Inputs: Tile* next_tile - the tile to move to
  * Output: bool - if the tile start was successfully started
  */
+// TODO: Also, need to revise this to increment the tile x/y when a move starts
+//       or there is any change to the coordinate location
 bool MapThing::tileMoveStart(Tile* next_tile)
 {
-  if(next_tile != NULL)// && !next_tile->isThingSet()) // TODO:Fix
-  {
-    tile_previous = tile_main;
-    tile_main = next_tile;
-    //tile_main->setThing(this); // TODO: Fix
-    return true;
-  }
+// TODO: Fix
+//  if(next_tile != NULL)// && !next_tile->isThingSet()) // TODO:Fix
+//  {
+//    tile_previous = tile_main;
+//    tile_main = next_tile;
+//    //tile_main->setThing(this); // TODO: Fix
+//    return true;
+//  }
   return false;
 }
 
@@ -507,14 +509,6 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
   else if(identifier == "speed" && elements.size() == 1)
   {
     setSpeed(data.getDataInteger(&success));
-  }
-  /*------------------- OLD SPRITE DATA ---------------*/
-  else if(identifier == "sprite") // TODO: REMOVE - not needed
-  {
-    if(frames == NULL)
-      frames = new Sprite();
-    success &= frames->addFileInformation(data, file_index + 1, 
-                                          renderer, base_path);
   }
   /*--------------------- SPRITE DATA -----------------*/
   else if(identifier == "sprites")
@@ -684,10 +678,6 @@ std::string MapThing::classDescriptor()
  */
 void MapThing::clear()
 {
-  /* Reset tile parameters */
-  tile_main = NULL; // TODO: Delete
-  tile_previous = NULL; // TODO: Delete
-  
   /* Resets the class parameters */
   MapThing::clearAllMovement();
   setDescription("");
@@ -1014,10 +1004,25 @@ MapThing* MapThing::getTarget()
  * Inputs: none
  * Output: Tile* - the tile pointer of the tile this thing resides at
  */
-// TODO: Delete
+// TODO: Remove -----------------------------------------------------------
 Tile* MapThing::getTile()
 {
-  return tile_main;
+  Tile* null_tile = NULL;
+  return null_tile;
+}
+// ------------------------------------------------------------------------
+
+/* Returns the tile based coordinates for the top left of the thing */
+// TODO: Comment
+uint16_t MapThing::getTileX()
+{
+  return tile_x;
+}
+
+// TODO: Comment
+uint16_t MapThing::getTileY()
+{
+  return tile_y;
 }
 
 /* 
@@ -1140,7 +1145,7 @@ bool MapThing::isVisible()
  *         int offset_y - the paint offset in the y direction
  * Output: bool - if anything was rendered
  */
-// TODO: REMOVE. changing to render only an individual tile...maybe
+// TODO: Clean Up. Will keep but it's un-used. For rendering it as a whole.
 bool MapThing::render(SDL_Renderer* renderer, int offset_x, int offset_y)
 {
   bool rendered = false;
@@ -1168,15 +1173,34 @@ bool MapThing::render(SDL_Renderer* renderer, int offset_x, int offset_y)
 	}
   }
   
-  /* TODO: Remove - OLD RENDER CODE */
-  /*if(isVisible() && frames != NULL && tile_main != NULL)
+  return rendered;
+}
+  
+// TODO: Comment
+bool MapThing::render(SDL_Renderer* renderer, Tile* tile, 
+                      int offset_x, int offset_y)
+{
+  bool rendered = false;
+  uint16_t render_tile_x = tile_x - this->tile_x;
+  uint16_t render_tile_y = tile_y - this->tile_y;
+  
+  /* Initial checks input parameters */
+  if(tile != NULL)
   {
-    int render_x = x - offset_x;
-    int render_y = y - offset_y;
+    uint16_t render_tile_x = tile->getX() - this->tile_x;
+    uint16_t render_tile_y = tile->getY() - this->tile_y;
+    TileSprite* render_frame = getFrame(render_tile_x, render_tile_y);
     
-    frames->render(renderer, render_x, render_y, width, height);
-    return true;
-  }*/
+    if(render_frame != NULL && render_frame->getTileMain() == tile 
+                            && isVisible())
+    {
+      int render_x = x + render_tile_x * width - offset_x;
+      int render_y = y + render_tile_y * height - offset_y;
+      
+      rendered = render_frame->render(
+                                   renderer, render_x, render_y, width, height);
+    }
+  }
   
   return rendered;
 }
@@ -1190,6 +1214,8 @@ void MapThing::resetLocation()
   
   /* Clean up the point variables */
   tile_section = 0;
+  tile_x = 0;
+  tile_y = 0;
   this->x = 0;
   this->x_raw = 0;
   this->y = 0;
@@ -1416,44 +1442,20 @@ void MapThing::setStartingLocation(uint16_t section_id, uint16_t x, uint16_t y)
   this->y = y * getHeight();
   this->y_raw = this->y * kRAW_MULTIPLIER;
   tile_section = section_id;
+  tile_x = x;
+  tile_y = y;
 }
 
-/* 
- * Description: Sets the connected tile information for the map thing. This is
- *              the initial starting point and where the thing is initially
- *              placed. If this is unset, the thing will not move or paint.
- *
- * Inputs: uint16_t section_id - the map id that the tile is from
- *         Tile* new_tile - the tile to set the starting pointer to
- *         bool no_events - don't execute any events when set
- * Output: bool - status if the change was able to occur
- */
-// TODO: Remove
+// TODO: Remove -----------------------------------------------------------
 bool MapThing::setStartingTile(uint16_t section_id, Tile* new_tile, 
                                                     bool no_events)
 {
   (void)section_id;
   (void)new_tile;
   (void)no_events;
-//  if(new_tile != NULL)// && !new_tile->isThingSet()) // TODO:Fix
-//  {
-//    /* Unset the main tile */
-//    unsetStartingTile(no_events);
-//  
-//    /* Set the new tile */
-//    tile_main = new_tile;
-//    this->x = tile_main->getPixelX();
-//    this->x_raw = this->x * kRAW_MULTIPLIER;
-//    this->y = tile_main->getPixelY();
-//    this->y_raw = this->y * kRAW_MULTIPLIER;
-//    //tile_main->setThing(this); // TODO: Fix
-//    tile_section = section_id;
-//
-//    return true;
-//  }
-//
   return false;
 }
+// ------------------------------------------------------------------------
 
 /* Sets the set of tiles that the thing will be placed on. Needed after
  * defining a starting point.*/
@@ -1570,14 +1572,15 @@ void MapThing::update(int cycle_time, Tile* next_tile)
 {
   (void)next_tile;
 
-  if(tile_main != NULL)
-  {
-    /* Move the thing */
-    moveThing(cycle_time);
-
-    /* Animate the thing */
-    animate(cycle_time);
-  }
+// TODO: Fix
+//  if(tile_main != NULL)
+//  {
+//    /* Move the thing */
+//    moveThing(cycle_time);
+//
+//    /* Animate the thing */
+//    animate(cycle_time);
+//  }
 }
  
 /*
@@ -1639,29 +1642,12 @@ void MapThing::unsetFrames(bool delete_frames)
   frame_matrix.clear();
 }
 
-/*
- * Description: Unsets the starting tile location that is stored within the
- *              thing.
- *
- * Inputs: bool no_events - fire no events when unsetting (virtual for person)
- * Output: none
- */
-// TODO: Remove
+// TODO: Remove -----------------------------------------------------------
 void MapThing::unsetStartingTile(bool no_events)
 {
   (void)no_events;
-//  
-//  /* Unset the main tile */
-//  //if(tile_main != NULL) // TODO: Fix
-//  //  tile_main->unsetThing();
-//  tile_main = NULL;
-//  
-//  /* Resets the coordinates */
-//  this->x = 0;
-//  this->x_raw = 0;
-//  this->y = 0;
-//  this->y_raw = 0;
 }
+// ------------------------------------------------------------------------
 
 // TODO: Comment
 void MapThing::unsetTiles(bool no_events)
