@@ -121,8 +121,8 @@ const float    Battle::kDODGE_HIGHEST_RATE_PC       =   50.0;
 const float    Battle::kDODGE_PER_LEVEL_MODIFIER    =   2.50;
 
 const float    Battle::kDEFEND_MODIFIER             =   0.50;
-const float    Battle::kGUARD_MODIFIER              =   0.25;
-const float    Battle::kSHIELDED_MODIFIER            =   0.00;
+const float    Battle::kGUARD_MODIFIER              =   1.10;
+const float    Battle::kSHIELDED_MODIFIER           =   0.00;
 
 const int16_t Battle::kREGEN_RATE_ZERO_PC           =      0;
 const int16_t Battle::kREGEN_RATE_WEAK_PC           =      2; 
@@ -601,45 +601,54 @@ std::vector<BattleSkill> Battle::buildBattleSkills(const int32_t &p_index,
  * Inputs: float crit_factor - the already determined crit factor to use
  * Output: int32_t - the base damage of the current action
  */
-int32_t Battle::calcBaseDamage(const float &crit_factor)
+int32_t Battle::calcBaseDamage(const float &crit_factor, 
+    const DamageType &damage_type)
 {
   auto targ_attrs = temp_target_stats.at(pro_index);
 
-  int32_t base_user_pow = 0;
-  int32_t base_targ_def = 0;
-
-  int32_t phys_pow_val  = 0;
-  int32_t phys_def_val  = 0;
-  int32_t elm1_pow_val  = 0;
-  int32_t elm1_def_val  = 0;
-  int32_t elm2_pow_val  = 0;
-  int32_t elm2_def_val  = 0;
-  int32_t luck_pow_val  = 0;
-  int32_t luck_def_val  = 0;
+  int32_t base_user_pow = 0; /* Base user power value */
+  int32_t base_targ_def = 0; /* Base target defense value */
+  int32_t phys_pow_val  = 0; /* Physical towards attack */
+  int32_t phys_def_val  = 0; /* Physical towards defense */
+  int32_t elm1_pow_val  = 0; /* Primary elemental towards attacking */
+  int32_t elm1_def_val  = 0; /* Primary elemental towards defending */
+  int32_t elm2_pow_val  = 0; /* Secondary elemental towards defending */
+  int32_t elm2_def_val  = 0; /* Secondary elemental towards defending */
+  int32_t luck_pow_val  = 0; /* Luck value towards attacking */
+  int32_t luck_def_val  = 0; /* Luck value towards defending */
+  int32_t var_val       = 0; /* Determined variance value */
 
   calcIgnoreState();
   calcElementalMods();
 
   /* Always calculate physical power into the equation */
-  phys_pow_val = temp_user_stats.getStat(Attribute::PHAG);
-  phys_pow_val *= kOFF_PHYS_MODIFIER;
+  if (!getIgnoreFlag(IgnoreState::IGNORE_PHYS_ATK))
+  {
+    phys_pow_val = temp_user_stats.getStat(Attribute::PHAG);
+    phys_pow_val *= kOFF_PHYS_MODIFIER;
+  }
 
-  phys_def_val = targ_attrs.getStat(Attribute::PHFD);
-  phys_def_val *= kDEF_PHYS_MODIFIER;
+  if (!getIgnoreFlag(IgnoreState::IGNORE_PHYS_DEF))
+  {
+    phys_def_val = targ_attrs.getStat(Attribute::PHFD);
+    phys_def_val *= kDEF_PHYS_MODIFIER;
+  }
 
   /* Primary elemental affiliation bonuses */
   if (curr_skill->getPrimary() != Element::NONE &&
       curr_skill->getPrimary() != Element::PHYSICAL)
   {
-    if (curr_user->getPrimary() == curr_skill->getPrimary() ||
-        curr_user->getPrimary() == curr_skill->getSecondary())
+    if (!getIgnoreFlag(IgnoreState::IGNORE_PRIM_ATK) &&
+        (curr_user->getPrimary() == curr_skill->getPrimary() ||
+        curr_user->getPrimary() == curr_skill->getSecondary()))
     {
       elm1_pow_val  = temp_user_stats.getStat(prim_off);
       elm1_pow_val *= kOFF_PRIM_ELM_MATCH_MODIFIER;
     }
     
-    if (curr_target->getPrimary() == curr_skill->getPrimary() ||
-        curr_target->getPrimary() == curr_skill->getSecondary())
+    if (!getIgnoreFlag(IgnoreState::IGNORE_PRIM_DEF) &&
+        (curr_target->getPrimary() == curr_skill->getPrimary() ||
+        curr_target->getPrimary() == curr_skill->getSecondary()))
     {
       elm1_def_val  = targ_attrs.getStat(prim_def);
       elm1_def_val *= kDEF_PRIM_ELM_MATCH_MODIFIER;
@@ -647,8 +656,9 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
   }
  
   /* Secondary elemental affiliation bonuses */
-  if (curr_skill->getSecondary() != Element::NONE &&
-      curr_skill->getSecondary() != Element::PHYSICAL)
+  if (!getIgnoreFlag(IgnoreState::IGNORE_SECD_ATK) &&
+      (curr_skill->getSecondary() != Element::NONE &&
+      curr_skill->getSecondary() != Element::PHYSICAL))
   {
     if (curr_user->getSecondary() == curr_skill->getPrimary() ||
         curr_user->getSecondary() == curr_skill->getSecondary())
@@ -657,8 +667,9 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
       elm2_pow_val *= kOFF_SECD_ELM_MATCH_MODIFIER;
     }
 
-    if (curr_target->getSecondary() == curr_skill->getPrimary() ||
-        curr_target->getSecondary() == curr_skill->getSecondary())
+    if (!getIgnoreFlag(IgnoreState::IGNORE_SECD_DEF) &&
+        (curr_target->getSecondary() == curr_skill->getPrimary() ||
+        curr_target->getSecondary() == curr_skill->getSecondary()))
     {
       elm2_def_val  = targ_attrs.getStat(secd_def);
       elm2_def_val *= kDEF_SECD_ELM_MATCH_MODIFIER;
@@ -666,11 +677,17 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
   }
 
   /* Additional bonuses - luck power/defense values */
-  luck_pow_val  = temp_user_stats.getStat(Attribute::MANN);
-  luck_pow_val *= kMANNA_POW_MODIFIER;
+  if (!getIgnoreFlag(IgnoreState::IGNORE_LUCK_ATK))
+  {
+    luck_pow_val  = temp_user_stats.getStat(Attribute::MANN);
+    luck_pow_val *= kMANNA_POW_MODIFIER;
+  }
 
-  luck_def_val  = targ_attrs.getStat(Attribute::MANN);
-  luck_def_val *= kMANNA_DEF_MODIFIER;
+  if (!getIgnoreFlag(IgnoreState::IGNORE_LUCK_DEF))
+  {
+    luck_def_val  = targ_attrs.getStat(Attribute::MANN);
+    luck_def_val *= kMANNA_DEF_MODIFIER;
+  }
 
   /* Summation of base power / defense */
   base_user_pow  = phys_pow_val + elm1_pow_val + elm2_pow_val + luck_pow_val;
@@ -691,17 +708,11 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
 
   /* Addition of the variance of the action */
   auto base_var   = curr_action->getVariance();
-  int32_t var_val = 0;
 
   if (curr_action->actionFlag(ActionFlags::VARI_PC))
-  {
-    auto var_pc = static_cast<float>(base_var) / 100;
-    var_val   = var_pc * action_power;
-  }
+    var_val   = static_cast<float>(base_var) / 100 * action_power;
   else
-  {
     var_val = base_var;
-  }
 
   action_power = Helpers::randU(action_power - var_val, action_power + var_val);
 
@@ -719,21 +730,16 @@ int32_t Battle::calcBaseDamage(const float &crit_factor)
   if (curr_target->getBFlag(BState::SHIELDED))
     base_damage *= kSHIELDED_MODIFIER;
 
-  if (curr_target->getBFlag(BState::GUARDED))
+  /* For guarding users, they will take kGUARD_MODIFIER factor of their dmg */
+  if (damage_type == DamageType::GUARD)
+  {
+    std::cout << "Damage Type GUARD detected!" << std::endl;
     base_damage *= kGUARD_MODIFIER;
-
-  // TODO: [11-19-14] How to determine the damage taken by the Guard ? //
-  // else if (curr_target->getBFlag(BState::GUARDING))
-  //   base_damage *= (1 - kGUARD_MODIFIER);
-
-  /* For guardinng users, the person being guarded will take kGUARDING_MODIFIER
-   * portion of the damage, while the guard will take the remainder. */
-
-  /* For persons shielded by damage */
-
-  //SHIELED
+  }
 
   base_damage *= crit_factor;
+  base_damage = Helpers::setInRange(base_damage, kMINIMUM_DAMAGE, 
+                    kMAXIMUM_DAMAGE);
 
 #ifdef UDEBUG
   std::cout << "User Power: ----- " << base_user_pow << std::endl;
@@ -890,9 +896,6 @@ bool Battle::calcIgnoreState()
       auto IG_PRIM_DEF = IgnoreState::IGNORE_PRIM_DEF;
       auto IG_SECD_ATK = IgnoreState::IGNORE_SECD_ATK;
       auto IG_SECD_DEF = IgnoreState::IGNORE_SECD_DEF;
-      // TODO [08-12-14]: Luck ignore flags in action 
-      // auto IG_LUCK_ATK = IgnoreState::IGNORE_LUCK_ATK;
-      // auto IG_LUCK_DEF = IgnoreState::IGNORE_LUCK_DEF;
 
       if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
       {
@@ -902,9 +905,6 @@ bool Battle::calcIgnoreState()
         IG_PRIM_DEF = IgnoreState::IGNORE_PRIM_ATK;
         IG_SECD_ATK = IgnoreState::IGNORE_SECD_DEF;
         IG_SECD_DEF = IgnoreState::IGNORE_SECD_ATK;
-        // TODO [08-12-14]: Luck ignore flags in action 
-        // IG_LUCK_DEF = IgnoreState::IGNORE_LUCK_ATK;
-        // IG_LUCK_ATK = IgnoreState::IGNORE_LUCK_DEF;
       }
 
       if (curr_action->atkFlag(IgnoreFlags::PHYSICAL))
@@ -1608,7 +1608,8 @@ bool Battle::processAssignAction(std::vector<Person*> targets)
  * Inputs:
  * Output:
  */
-bool Battle::processDamageAction(std::vector<Person*> targets)
+bool Battle::processDamageAction(std::vector<Person*> targets,
+  std::vector<DamageType> damage_types)
 {
   auto can_process = true;
   auto done  = false;
@@ -1642,7 +1643,10 @@ bool Battle::processDamageAction(std::vector<Person*> targets)
         if (doesActionCrit())
           actual_crit_factor = calcCritFactor();
 
-        auto base_damage  = calcBaseDamage(actual_crit_factor);
+        std::cout << "Calculating base damage for pro index " << pro_index << std::endl;
+        auto base_damage = calcBaseDamage(actual_crit_factor,
+            damage_types.at(pro_index));
+        
         auto damage_mod   = curr_user->getDmgMod();
         auto total_damage = static_cast<int32_t>(base_damage * damage_mod);
 
@@ -1722,7 +1726,8 @@ bool Battle::processInflictAction(std::vector<Person*> targets)
  * Inputs: std::vector<Person*> - vector of targets for processing of curr Skill
  * Output: bool - whether processing to end (win cond.) after this skill
  */
-bool Battle::processSkill(std::vector<Person*> targets)
+bool Battle::processSkill(std::vector<Person*> targets,
+  std::vector<DamageType> damage_types)
 {
   auto done = false;
 
@@ -1780,7 +1785,7 @@ bool Battle::processSkill(std::vector<Person*> targets)
 
     if ((*it)->actionFlag(ActionFlags::DAMAGE))
     {
-      done = processDamageAction(targets);
+      done = processDamageAction(targets, damage_types);
     }
     else if ((*it)->actionFlag(ActionFlags::INFLICT))
     {
@@ -1846,7 +1851,8 @@ void Battle::processBuffer()
       {
         if (doesSkillHit(action_buffer->getTargets()))
         {
-          done = processSkill(action_buffer->getTargets());
+          done = processSkill(action_buffer->getTargets(), 
+                     action_buffer->getDamageTypes());
         }
         else if (getBattleMode() == BattleMode::TEXT)
         {
@@ -1884,13 +1890,14 @@ void Battle::processBuffer()
 
       bool good_guard = processGuard();
 
-      std::cout << "Good guard? " << good_guard << std::endl;
-
       if (good_guard)
       {
+        /* Update the buffer to swap out Guard <--> Guardee targets */
+        action_buffer->injectGuardTargets();
+
         if (getBattleMode() == BattleMode::TEXT)
         {
-          std::cout << "{GUARD} " << curr_user->getName() << " is now guarding "
+          std::cout << "{GUARD} " << curr_target->getGuard()->getName() << " is now guarding "
                     << curr_target->getName() << " from some damage.\n";
         }
       }
@@ -2187,11 +2194,12 @@ void Battle::updateAllySelection()
     /* If the action index has been assigned and targets have not been 
      * assigned yet (for that action index), find the scope of that action 
      * the user wishes to use and inject the valid targets into the menu */
-    if ((menu->getMenuFlag(MenuState::ACTION_SELECTED) || 
-         menu->getActionType() == ActionType::GUARD          ||
-         menu->getActionType() == ActionType::IMPLODE)       &&
-         !(menu->getActionType() == ActionType::DEFEND)        &&
-         !(menu->getActionType() == ActionType::PASS)          &&
+    if ((menu->getMenuFlag(MenuState::ACTION_SELECTED)   || 
+         menu->getActionType() == ActionType::GUARD      ||
+         menu->getActionType() == ActionType::IMPLODE)   &&
+         !(menu->getActionType() == ActionType::DEFEND)  &&
+         !(menu->getActionType() == ActionType::PASS)    &&
+         !(menu->getActionType() == ActionType::RUN)     &&
          !menu->getMenuFlag(MenuState::TARGETS_ASSIGNED))
     {
       auto scope = ActionScope::NO_SCOPE;
@@ -2936,7 +2944,8 @@ bool Battle::update(int32_t cycle_time)
   }
   else if (turn_state == TurnState::DESTRUCT)
   {
-    return true;
+    //TODO [11-19-14] EventHandlers - return state to map or wherever nicely
+    return false;
   }
   
   return false;

@@ -264,6 +264,17 @@ enum class DialogCategory
 };
 
 /*
+ * Description:
+ */
+enum class DamageType
+{
+  BASE,
+  ALTER,
+  GUARD,
+  ITEM
+};
+
+/*
  * Description: Handler for all direction related calls for movement, 
  *              passability, etc.
  */

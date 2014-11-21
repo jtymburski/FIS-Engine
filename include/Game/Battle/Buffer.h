@@ -44,6 +44,7 @@ struct BufferAction
 
   /* The vector of targets for the action */
   std::vector<Person*> targets;
+  std::vector<DamageType> damage_types;
 
   /* Enumerated type of buffer (SKILL or ITEM or NONE) */
   ActionType type;
@@ -114,6 +115,9 @@ public:
   /* Returns true if the next BufferAction is valid */
   bool isNextValid();
 
+  /* For every action which targets a guarded person -> swap in the guard */
+  void injectGuardTargets();
+
   /* Prints out the information of the Buffer */
   void print(const bool &simple = false);
 
@@ -140,6 +144,9 @@ public:
 
   /* Obtains the target vector for current element index */
   std::vector<Person*> getTargets();
+
+  /* Returns the corresponding damage types for target indexes */
+  std::vector<DamageType> getDamageTypes();
 
   /* Sets the next index of the Buffer if available */
   bool setNext();

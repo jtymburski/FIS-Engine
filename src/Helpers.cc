@@ -406,6 +406,98 @@ std::string Helpers::aiPersonalityToStr(const AIPersonality &ai_personality)
   return "";
 }
 
+/*
+ * Description: 
+ *
+ * Inputs: 
+ * Output: 
+ */
+std::string Helpers::ailmentToString(const Infliction &ail)
+{
+  if (ail == Infliction::POISON)
+    return "POISON";
+  else if (ail == Infliction::BURN)
+    return "BURN";
+  else if (ail == Infliction::SCALD)
+    return "SCALD";
+  else if (ail == Infliction::CHARR)
+    return "CHARR";
+  else if (ail == Infliction::BERSERK)
+    return "BERSERK";
+  else if (ail == Infliction::CONFUSE)
+    return "CONFUSE";
+  else if (ail == Infliction::SILENCE)
+    return "SILENCE";
+  else if (ail == Infliction::BUBBIFY)
+    return "BUBBIFY";
+  else if (ail == Infliction::DEATHTIMER)
+    return "DEATHTIMER";
+  else if (ail == Infliction::PARALYSIS)
+    return "PARALYSIS";
+  else if (ail == Infliction::BLINDNESS)
+    return "BLINDNESS";
+  else if (ail == Infliction::DREADSTRUCK)
+    return "DREADSTRUCK";
+  else if (ail == Infliction::DREAMSNARE)
+    return "DREAMSNARE";
+  else if (ail == Infliction::HELLBOUND)
+    return "HELLBOUND";
+  else if (ail == Infliction::BOND)
+    return "BOND";
+  else if (ail == Infliction::BONDED)
+    return "BONDED";
+  else if (ail == Infliction::ALLATKBUFF)
+    return "ALLATKBUFF";
+  else if (ail == Infliction::ALLDEFBUFF)
+    return "ALLDEFBUFF";
+  else if (ail == Infliction::PHYBUFF)
+    return "PHYBUFF";
+  else if (ail == Infliction::THRBUFF)
+    return "THRBUFF";
+  else if (ail == Infliction::POLBUFF)
+    return "POLBUFF";
+  else if (ail == Infliction::PRIBUFF)
+    return "PRIBUFF";
+  else if (ail == Infliction::CHGBUFF)
+    return "CHGBUFF";
+  else if (ail == Infliction::CYBBUFF)
+    return "CYBBUFF";
+  else if (ail == Infliction::NIHBUFF)
+    return "NIHBUFF";
+  else if (ail == Infliction::LIMBUFF)
+    return "LIMBUFF";
+  else if (ail == Infliction::UNBBUFF)
+    return "UNBBUFF";
+  else if (ail == Infliction::MOMBUFF)
+    return "MOMBUFF";
+  else if (ail == Infliction::VITBUFF)
+    return "VITBUFF";
+  else if (ail == Infliction::QDBUFF)
+    return "QDBUFF";
+  else if (ail == Infliction::ROOTBOUND)
+    return "ROOTBOUND";
+  else if (ail == Infliction::DOUBLECAST)
+    return "DOUBLECAST";
+  else if (ail == Infliction::TRIPLECAST)
+    return "TRIPLECAST";
+  else if (ail == Infliction::HALFCOST)
+    return "HALFCOST";
+  else if (ail == Infliction::REFLECT)
+    return "REFLECT";
+  else if (ail == Infliction::HIBERNATION)
+    return "HIBERNATION";
+  else if (ail == Infliction::CURSE)
+    return "CURSE";
+  else if (ail == Infliction::METATETHER)
+    return "METATETHER";
+  else if (ail == Infliction::STUBULATE)
+    return "STUBULATE";
+  else if (ail == Infliction::INVALID)
+    return "INVALID";
+
+  return "";
+}
+
 std::string Helpers::numToRoman(int value)
 {
   struct roman_values 

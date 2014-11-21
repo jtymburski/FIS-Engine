@@ -293,11 +293,11 @@ void Game::setupBattle()
   physical_skills->addSkill(physical_04, 1);
 
   // Test Attribute Sets
-  AttributeSet weak_stats   = AttributeSet(1, true, false);
+  AttributeSet weak_stats        = AttributeSet(1, true, false);
   AttributeSet not_as_weak_stats = AttributeSet(2, true, false);
-  AttributeSet normal_stats = AttributeSet(3, true, false);
-  AttributeSet medium_stats = AttributeSet(4, true, false);
-  AttributeSet top_stats    = AttributeSet(5, true, false);
+  AttributeSet normal_stats      = AttributeSet(3, true, false);
+  AttributeSet medium_stats      = AttributeSet(4, true, false);
+  AttributeSet top_stats         = AttributeSet(5, true, false);
 
   // Test Categories
   Category* human = new Category(200, "Human", "human", normal_stats, 
@@ -360,7 +360,8 @@ void Game::setupBattle()
   Person* frosty = new Person(310, "Frosty", human, bloodclaw_scion);
   frosty->addExp(1500);
 
-  // Person* cloud_dude = new Person(311, "Cloud Dude", human, bloodclaw_scion);
+  Person* cloud_dude = new Person(311, "Cloud Dude", human, bloodclaw_scion);
+  cloud_dude->addExp(2000);
   // Person* thruster_barrow = new Person(301, "Thruster Barrow", human, bloodclaw_scion);
   // Person* dragon = new Person(301, "Dragon", human, bloodclaw_scion);
   // Person* splurge = new Person(301, "Splurge", human, bloodclaw_scion);
@@ -372,9 +373,9 @@ void Game::setupBattle()
   frosty_module->setParent(frosty);
   frosty->setAI(frosty_module);
 
-  // AIModule* cloud_module = new AIModule();
-  // cloud_module->setParent(cloud_dude);
-  // cloud_dude->setAI(cloud_module);
+  AIModule* cloud_module = new AIModule();
+  cloud_module->setParent(cloud_dude);
+  cloud_dude->setAI(cloud_module);
 
   // AIModule* thruster_barrow_module = new AIModule();
   // thruster_barrow_module->setParent(thruster_barrow);
@@ -418,7 +419,7 @@ void Game::setupBattle()
   // friends->addMember(geoff);
 
   Party* enemies = new Party(402, frosty, PartyType::REGULAR_FOE, 10, foes_pouch);
-  // enemies->addMember(cloud_dude);
+  enemies->addMember(cloud_dude);
   // enemies->addMember(thruster_barrow);
   // enemies->addMember(dragon);
   // enemies->addMember(splurge);

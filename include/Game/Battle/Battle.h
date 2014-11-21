@@ -16,11 +16,7 @@
 * [08-01-14]: Battle front end
 * [11-06-14]: Elemental modifiers for defensive skills?
 * [11-06-14]: Crit factor calculation
-* [08-12-14]: Luck ignore flags in action
-* [03-01-14]: Fix auto win turns elapsed 
 * [03-01-14]: Weather updates
-* [11-02-14]: Defending reset update message.
-* [01-02-14]: Error in the guard operation
 * [11-05-14]: Run from the battle message
 * [03-16-14]: Ailment infliction message to battle front end
 * [08-24-14]: Ailment corner cases
@@ -280,7 +276,8 @@ private:
       std::vector<std::pair<Item*, uint16_t>> items);
 
   /* Calculates the base damage for the current action/target setup */
-  int32_t calcBaseDamage(const float &crit_factor);
+  int32_t calcBaseDamage(const float &crit_factor, 
+      const DamageType& base_damage);
 
   /* Calculates the modifiers to be used for curr skill elemental adv setup */
   void calcElementalMods();
@@ -349,7 +346,8 @@ private:
   bool processAssignAction(std::vector<Person*> targets);
 
   /* */
-  bool processDamageAction(std::vector<Person*> targets);
+  bool processDamageAction(std::vector<Person*> targets,
+    std::vector<DamageType> damage_types);
 
   /* */
   bool processRelieveAction(std::vector<Person*> targets);
@@ -358,7 +356,8 @@ private:
   bool processInflictAction(std::vector<Person*> targets);
 
   /* Processes an individual action from a user against targets */
-  bool processSkill(std::vector<Person*> targets);
+  bool processSkill(std::vector<Person*> targets, 
+      std::vector<DamageType> damage_types);
 
   /* Process the actions (Items & Skills) in the buffer */
   void processBuffer();

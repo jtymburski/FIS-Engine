@@ -54,7 +54,10 @@ bool Buffer::checkValid(BufferAction& elm)
   is_valid &= !(elm.user == nullptr);
 
   if (elm.type == ActionType::SKILL || elm.type == ActionType::ITEM)
+  {
     is_valid &= !elm.targets.empty();
+    is_valid &= (elm.targets.size() == elm.damage_types.size());
+  }
 
   is_valid &= elm.targets.size() <= kMAXIMUM_TARGETS;
 
@@ -186,6 +189,12 @@ bool Buffer::add(Person* const new_user, Skill* const new_skill_used,
   new_elm.item_used  = nullptr;
   new_elm.skill_used = new_skill_used;
   new_elm.targets    = targets;
+
+  std::vector<DamageType> damage_types;
+  for (auto it = begin(targets); it != end(targets); ++it)
+    damage_types.push_back(DamageType::BASE);
+
+  new_elm.damage_types = damage_types;
   new_elm.type       = ActionType::SKILL;
 
   auto add = checkValid(new_elm);
@@ -219,6 +228,13 @@ bool Buffer::add(Person* const new_user, Item* const new_item_used,
   new_elm.item_used  = new_item_used;
   new_elm.skill_used = nullptr;
   new_elm.targets    = targets;
+
+  std::vector<DamageType> damage_types;
+  for (auto it = begin(targets); it != end(targets); ++it)
+    damage_types.push_back(DamageType::BASE);
+
+  new_elm.damage_types = damage_types;
+
   new_elm.type       = ActionType::ITEM;
 
   return add(new_elm);
@@ -243,6 +259,12 @@ bool Buffer::add(Person* const user, ActionType const &buffer_type,
   new_elm.item_used  = nullptr;
   new_elm.skill_used = nullptr;
   new_elm.targets    = targets;
+
+  std::vector<DamageType> damage_types;
+  for (auto it = begin(targets); it != end(targets); ++it)
+    damage_types.push_back(DamageType::BASE);
+
+  new_elm.damage_types = damage_types;
   new_elm.type       = buffer_type;
 
   return add(new_elm);
@@ -316,6 +338,30 @@ bool Buffer::isNextValid()
     return checkValid(getIndex(index + 1));
 
   return false;
+}
+
+/*
+ * Description: Sort through every action in the buffer and wherever a guarded
+ *              person would be targeted, add in the guard in their place.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Buffer::injectGuardTargets()
+{
+  for (auto it = begin(action_buffer); it != end(action_buffer); ++it)
+  {
+    for (size_t i = 0; i < (*it).targets.size(); i++)
+    {
+      auto guard = (*it).targets.at(i)->getGuard();
+      
+      if (guard != nullptr)
+      {
+        (*it).targets.at(i) = guard;
+        (*it).damage_types.at(i) = DamageType::GUARD;
+      }
+    }
+  }
 }
 
 /*
@@ -524,10 +570,18 @@ Item* Buffer::getItem()
  */
 std::vector<Person*> Buffer::getTargets()
 {
-  if (checkValid(getIndex(index)))
-    return getIndex(index).targets;
+  return getIndex(index).targets;
+}
 
-  return {};
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output: 
+ */
+std::vector<DamageType> Buffer::getDamageTypes()
+{
+  return getIndex(index).damage_types;
 }
 
 /*
