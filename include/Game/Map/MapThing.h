@@ -107,7 +107,7 @@ protected:
   bool isAlmostOnTile(int cycle_time);
   
   /* Is move allowed, based on main tile and the next tile */
-  bool isMoveAllowed(Tile* next_tile);
+  bool isMoveAllowed(std::vector<std::vector<Tile*>> tile_set);
   
   /* Move the thing, based on the internal direction */
   int moveAmount(int cycle_time);
@@ -219,7 +219,7 @@ public:
   /* Returns if the thing is visible / rendered on the screen */
   virtual bool isVisible();
   
-  /* Renders the Map Thing */ // TODO: Remove first one
+  /* Renders the Map Thing */
   bool render(SDL_Renderer* renderer, int offset_x, int offset_y);
   bool render(SDL_Renderer* renderer, Tile* tile, int offset_x, int offset_y);
   
@@ -278,7 +278,7 @@ public:
   bool setWidth(uint16_t new_width);
 
   /* Updates the thing, called on the tick */
-  virtual void update(int cycle_time, Tile* next_tile);
+  virtual void update(int cycle_time, std::vector<std::vector<Tile*>> tile_set);
   
   /* Unsets the thing frames, in the class */
   void unsetFrame(uint32_t x, uint32_t y, bool delete_frames = true);

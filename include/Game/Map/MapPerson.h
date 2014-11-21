@@ -157,7 +157,7 @@ public:
   void setSurface(SurfaceClassifier surface);
  
   /* Updates the thing, based on the tick */
-  virtual void update(int cycle_time, Tile* next_tile);
+  virtual void update(int cycle_time, std::vector<std::vector<Tile*>> tile_set);
 
   /* Unsets a state, if it exists, to remove from the stack of states */
   void unsetState(SurfaceClassifier surface, Direction direction);

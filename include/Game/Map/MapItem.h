@@ -88,7 +88,7 @@ public:
   void setWalkover(bool walkover);
   
   /* Updates the thing, based on the tick */
-  void update(int cycle_time, Tile* next_tile);
+  void update(int cycle_time, std::vector<std::vector<Tile*>> tile_set);
 };
 
 #endif // MAPITEM_H

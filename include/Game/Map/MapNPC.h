@@ -96,7 +96,7 @@ public:
   void setNodeState(NodeState state);
 
   /* Updates the thing, based on the tick - reimplemented */
-  void update(int cycle_time, Tile* next_tile);
+  void update(int cycle_time, std::vector<std::vector<Tile*>> tile_set);
 };
 
 #endif // MAPNPC_H

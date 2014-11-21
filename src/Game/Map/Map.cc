@@ -1102,7 +1102,8 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
         }
         
         /* Set up the thing with the tiles */
-        success &= things[i]->setStartingTiles(tile_set, true);
+        if(!things[i]->setStartingTiles(tile_set, true))
+          things[i]->unsetTiles(true);
       }
     }
 
@@ -1203,7 +1204,7 @@ bool Map::render(SDL_Renderer* renderer)
     uint16_t tile_x_end = viewport.getXTileEnd();
     uint16_t tile_y_start = viewport.getYTileStart();
     uint16_t tile_y_end = viewport.getYTileEnd();
-    float x_offset = viewport.getX();
+    float x_offset = viewport.getX(); // TODO: Possible remove?
     int x_start = viewport.getXStart();
     int x_end = viewport.getXEnd();
     float y_offset = viewport.getY();
@@ -1462,6 +1463,8 @@ void Map::unloadMap()
 /* Updates the game state */
 bool Map::update(int cycle_time)
 {
+  std::vector<std::vector<Tile*>> tile_set;
+  
   /* Check on player interaction */
   if(player != NULL && player->getTarget() != NULL 
                     && !map_dialog.isConversationActive() 
@@ -1478,7 +1481,7 @@ bool Map::update(int cycle_time)
 
   /* Update map items */
   for(uint16_t i = 0; i < items.size(); i++)
-    items[i]->update(cycle_time, NULL);
+    items[i]->update(cycle_time, tile_set);
     
   /* Update persons for movement and animation */
   for(uint16_t i = 0; i < persons.size(); i++)
@@ -1519,13 +1522,13 @@ bool Map::update(int cycle_time)
       }
 
       /* Proceed to update the thing */
-      persons[i]->update(cycle_time, next_tile);
+      persons[i]->update(cycle_time, tile_set); // TODO: Fix
     }
   }
   
   /* Update map things */
   for(uint16_t i = 0; i < things.size(); i++)
-    things[i]->update(cycle_time, NULL);
+    things[i]->update(cycle_time, tile_set);
   
   /* Finally, update the viewport and dialogs */
   item_menu.update(cycle_time);

@@ -84,7 +84,14 @@ MapThing::~MapThing()
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 
-// TODO: Comment
+/*
+ * Description: Counts the number of valid frames stored within the thing. The
+ *              definition of valid frames is non-NULL and the each frame 
+ *              TileSprite has some frames set within it.
+ *
+ * Inputs: none
+ * Output: uint16_t - returns the count (unsigned)
+ */
 uint16_t MapThing::countValidFrames()
 {
   uint16_t count = 0;
@@ -194,8 +201,18 @@ void MapThing::growMatrix(uint32_t x, uint32_t y)
   }
 }
 
-/* This unsets the tile, at the given frame coordinate */
-// TODO: Comment
+/*
+ * Description: Unsets the tile corresponding to the matrix at the x and y
+ *              coordinate. However, since this is an private function, it does
+ *              not confirm that the X and Y are in the valid range. Must be 
+ *              checked or results are unknown. This will unset the thing from 
+ *              the tile corresponding to the frame and the tile from the frame.
+ *
+ * Inputs: uint32_t x - the x coordinate of the frame (horizontal)
+ *         uint32_t y - the y coordinate of the frame (vertical)
+ *         bool no_events - should events trigger with the change?
+ * Output: none
+ */
 void MapThing::unsetTile(uint32_t x, uint32_t y, bool no_events)
 {
   (void)no_events;
@@ -291,27 +308,39 @@ bool MapThing::isAlmostOnTile(int cycle_time)
  *              the move request inside the thing class to determine where to
  *              move.
  * 
- * Inputs: Tile* next_tile - the next tile that corresponds to the move request
- *                           direction.
+ * Inputs: std::vector<std::vector<Tile*>> tile_set - tile set to check against
+ *             frame matrix for moving into these tiles
  * Output: bool - returns if the move is allowed.
  */
-bool MapThing::isMoveAllowed(Tile* next_tile)
+bool MapThing::isMoveAllowed(std::vector<std::vector<Tile*>> tile_set)
 {
-// TODO: Fix
-//  if(tile_main != NULL && next_tile != NULL && isMoveRequested())
-//  {
-//    Direction move_request = getMoveRequest();
-//    bool thing_passable = true;
-//
-    /* Determine if the thing is passable */
-    // TODO: Fix. Check render level for multiple things based on tile. 
-    // Possibly have to revise main tile below as well.
-//    if(next_tile->getThing() != NULL)
-//      thing_passable = next_tile->getThing()->isPassable();
-
-//    return thing_passable && tile_main->getPassabilityExiting(move_request) && 
-//           next_tile->getPassabilityEntering(move_request);
-//  }
+  bool move_allowed = true;
+  
+  if(tile_set.size() > 0 && frame_matrix.size() > 0 && 
+     tile_set.size() == frame_matrix.size() && 
+     tile_set.front().size() == frame_matrix.front().size())
+  {
+    for(uint16_t i = 0; move_allowed && (i < frame_matrix.size()); i++)
+    {
+      bool found = false;
+      
+      for(uint16_t j = 0; !found && (j < frame_matrix[i].size()); j++)
+      {
+        if(frame_matrix[i][j] != NULL)
+        {
+          if(tile_set[i][j] == NULL || 
+             tile_set[i][j]->isThingSet(frame_matrix[i][j]->getRenderDepth()))
+          {
+            move_allowed = false;
+          }
+          found = true;
+        }
+      }
+    }
+    
+    return move_allowed;
+  }
+  
   return false;
 }
 
@@ -778,7 +807,15 @@ void MapThing::clearTarget()
   target = NULL;
 }
 
-// TODO: Comment
+/*
+ * Description: Takes the frame matrix, as it's been set up and removes any 
+ *              rows or columns at the end that have no valid frames set. A
+ *              frame is classified as valid if it's not NULL and has renderable
+ *              frames stored within it.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void MapThing::cleanMatrix()
 {
   std::vector<int> frame_depth;
@@ -840,7 +877,15 @@ void MapThing::cleanMatrix()
                             frame_matrix[i].end());
 }
 
-// TODO: Comment
+/*
+ * Description: Returns the bounding box for the entire object of the thing.
+ *              This bounding box is in Tile units, void of any tile width
+ *              or height considerations. 
+ *
+ * Inputs: none
+ * Output: SDL_Rect - rect definition of bounding box with top left x and y as
+ *                    well as width and height.
+ */
 SDL_Rect MapThing::getBoundingBox()
 {
   SDL_Rect rect;
@@ -856,7 +901,15 @@ SDL_Rect MapThing::getBoundingBox()
   return rect;
 }
 
-// TODO: Comment
+/*
+ * Description: Returns the bounding box for the entire object of the thing.
+ *              This bounding box is in pixel units, based on the tile width
+ *              and height. 
+ *
+ * Inputs: none
+ * Output: SDL_Rect - rect definition of bounding box with top left x and y as
+ *                    well as width and height.
+ */
 SDL_Rect MapThing::getBoundingPixels()
 {
   SDL_Rect rect;
@@ -1051,14 +1104,27 @@ MapThing* MapThing::getTarget()
   return target;
 }
 
-/* Returns the tile based coordinates for the top left of the thing */
-// TODO: Comment
+/* 
+ * Description: Returns the tile based X of the top left of the bounding box
+ *              the thing. If the object is moving, this coordinate will be
+ *              where the tile will be, as opposed to where it was. 
+ *
+ * Inputs: none
+ * Output: uint16_t - X tile coordinate
+ */
 uint16_t MapThing::getTileX()
 {
   return tile_x;
 }
 
-// TODO: Comment
+/* 
+ * Description: Returns the tile based Y of the top left of the bounding box
+ *              the thing. If the object is moving, this coordinate will be
+ *              where the tile will be, as opposed to where it was. 
+ *
+ * Inputs: none
+ * Output: uint16_t - Y tile coordinate
+ */
 uint16_t MapThing::getTileY()
 {
   return tile_y;
@@ -1162,9 +1228,14 @@ bool MapThing::isPassable()
 {
   return false;
 }
-  
-/* Is the rendering tiles set, for the frames */
-// TODO: Comment  
+
+/*
+ * Description: Returns if the tiles have been set, that associate to where the
+ *              thing is being rendered to.
+ *
+ * Inputs: none
+ * Output: bool - true if the tiles have been set
+ */
 bool MapThing::isTilesSet()
 {
   return tiles_set;
@@ -1181,15 +1252,16 @@ bool MapThing::isVisible()
   return visible;
 }
 
-/* 
- * Description: The render function for the thing. This takes the active state
- *              and renders it based on location and offset (from paint engine)
- *              and if it is set within the thing class.
- * 
- * Inputs: SDL_Renderer* renderer - the graphical rendering engine pointer
- *         int offset_x - the paint offset in the x direction
- *         int offset_y - the paint offset in the y direction
- * Output: bool - if anything was rendered
+/*
+ * Description: Render the entire thing object, at it's designated coordinate
+ *              and with the offset passed by the viewport. This does no 
+ *              rendering with rendering depths and just renders the object 
+ *              flat.
+ *
+ * Inputs: SDL_Renderer* renderer - the rendering engine
+ *         int offset_x - the X viewport offset
+ *         int offset_y - the Y viewport offset
+ * Output: bool - true if the object rendered
  */
 bool MapThing::render(SDL_Renderer* renderer, int offset_x, int offset_y)
 {
@@ -1220,20 +1292,28 @@ bool MapThing::render(SDL_Renderer* renderer, int offset_x, int offset_y)
 
   return rendered;
 }
-  
-// TODO: Comment
+
+/*
+ * Description: Render the single frame, located on the designated tile.
+ *              This frame will correspond to a given rendering depth.
+ *              The offset is passed in from the viewport.
+ *
+ * Inputs: SDL_Renderer* renderer - the rendering engine
+ *         Tile* tile - the tile to render the corresponding thing frame on
+ *         int offset_x - the X viewport offset
+ *         int offset_y - the Y viewport offset
+ * Output: bool - true if the object rendered
+ */
 bool MapThing::render(SDL_Renderer* renderer, Tile* tile, 
                       int offset_x, int offset_y)
 {
   bool rendered = false;
-  uint16_t render_tile_x = tile_x - this->tile_x;
-  uint16_t render_tile_y = tile_y - this->tile_y;
-  
+
   /* Initial checks input parameters */
   if(tile != NULL)
   {
-    uint16_t render_tile_x = tile->getX() - this->tile_x;
-    uint16_t render_tile_y = tile->getY() - this->tile_y;
+    uint16_t render_tile_x = tile->getX() - tile_x;
+    uint16_t render_tile_y = tile->getY() - tile_y;
     TileSprite* render_frame = getFrame(render_tile_x, render_tile_y);
     
     if(render_frame != NULL && render_frame->getTileMain() == tile 
@@ -1250,8 +1330,14 @@ bool MapThing::render(SDL_Renderer* renderer, Tile* tile,
   return rendered;
 }
 
-/* Unsets the starting point, relative to the map */
-// TODO: Comment
+/*
+ * Description: Resets the rendering location of the thing. This will also
+ *              remove all association of tiles and then cleans up the rendering
+ *              coordinate back to default (0).
+ *
+ * Inputs: none
+ * Output: none
+ */
 void MapThing::resetLocation()
 {
   /* Unset the tiles, prior to unseting the point */
@@ -1475,7 +1561,15 @@ void MapThing::setSpeed(uint16_t speed)
   this->speed = speed;
 }
 
-// TODO: Comment
+/*
+ * Description: Sets the starting location which needs the map section id and 
+ *              an x and y coordinate. 
+ *
+ * Inputs: uint16_t section_id - the map section id
+ *         uint16_t x - the x coordinate of the thing
+ *         uint16_t y - the y coordinate of the thing
+ * Output: none
+ */
 void MapThing::setStartingLocation(uint16_t section_id, uint16_t x, uint16_t y)
 {
   /* Unset the tiles, currently in use */
@@ -1491,9 +1585,16 @@ void MapThing::setStartingLocation(uint16_t section_id, uint16_t x, uint16_t y)
   tile_y = y;
 }
 
-/* Sets the set of tiles that the thing will be placed on. Needed after
- * defining a starting point.*/
-// TODO: Comment
+/* 
+ * Description: Sets the starting tiles, for rendering the thing. This tile
+ *              set needs to be equal to the size of the bounding box and 
+ *              each corresponding frame will be set to the tile. Will fail
+ *              if a thing is already set up in the corresponding spot.
+ *
+ * Inputs: std::vector<std::vector<Tile*>> tile_set - the tile matrix
+ *         bool no_events - if no events should occur from setting the thing
+ * Output: bool - true if the tiles are set
+ */
 bool MapThing::setStartingTiles(std::vector<std::vector<Tile*>> tile_set, 
                                 bool no_events)
 {
@@ -1600,11 +1701,13 @@ bool MapThing::setWidth(uint16_t new_width)
  *              sequencing or movement and such. Called on the tick.
  *
  * Inputs: int cycle_time - the ms time to update the movement/animation
- *         Tile* next_tile - the next tile that the thing is moving towards
+ *         std::vector<std::vector<Tile*>> tile_set - the next tiles to move to
  * Output: none 
  */
-void MapThing::update(int cycle_time, Tile* next_tile)
+void MapThing::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 {
+  (void)tile_set;
+  
   if(isTilesSet())
   {
     moveThing(cycle_time);
@@ -1671,7 +1774,14 @@ void MapThing::unsetFrames(bool delete_frames)
   frame_matrix.clear();
 }
 
-// TODO: Comment
+/*
+ * Description: Unsets the tiles from the thing. This will stop the rendering
+ *              process, since it doesn't have any corresponding tiles to render
+ *              to. However, the starting coordinate is untouched.
+ *
+ * Inputs: bool no_events - true if no events will trigger on removal from tile
+ * Output: none
+ */
 void MapThing::unsetTiles(bool no_events)
 {
   (void)no_events;

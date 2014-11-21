@@ -215,10 +215,10 @@ void MapItem::setWalkover(bool walkover)
  *              sequencing or movement and such. Called on the tick.
  *
  * Inputs: int cycle_time - the time elapsed between updates
- *         Tile* next_tile - the next tile to be travelled onto
+ *         std::vector<std::vector<Tile*>> tile_set - the next tiles to move to
  * Output: none 
  */
-void MapItem::update(int cycle_time, Tile* next_tile)
+void MapItem::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 {
 // TODO: Fix
 //  /* Update the brightness, to create the item pulse */
@@ -252,5 +252,5 @@ void MapItem::update(int cycle_time, Tile* next_tile)
 //  }
   
   /* Finally update the thing */
-  MapThing::update(cycle_time, next_tile);
+  MapThing::update(cycle_time, tile_set);
 }

@@ -389,7 +389,7 @@ void MapNPC::setNodeState(NodeState state)
     moving_forward = true;
 }
 
-void MapNPC::update(int cycle_time, Tile* next_tile)
+void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 {
   /* Some initial parameters */
   Direction direction = Direction::DIRECTIONLESS;
@@ -455,5 +455,5 @@ void MapNPC::update(int cycle_time, Tile* next_tile)
 //    }
 //  }
 
-  MapPerson::update(cycle_time, next_tile);
+  MapPerson::update(cycle_time, tile_set);
 }

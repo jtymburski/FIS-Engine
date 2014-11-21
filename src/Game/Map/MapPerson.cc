@@ -827,12 +827,13 @@ void MapPerson::setSurface(SurfaceClassifier surface)
  *              sequencing or movement and such. Called on the tick.
  *
  * Inputs: int cycle_time - the time elapsed between updates
- *         Tile* next_tile - the next tile to be travelled onto
+ *         std::vector<std::vector<Tile*>> tile_set - the next tiles to move to
  * Output: none 
  */
-void MapPerson::update(int cycle_time, Tile* next_tile)
+void MapPerson::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 {
-  bool can_move = isMoveAllowed(next_tile) && !getMovementPaused();
+  // TODO: Fix
+  bool can_move = false;//isMoveAllowed(next_tile) && !getMovementPaused();
   bool reset = false;
 
   /* Once a tile end has reached, cycle the movement direction */
