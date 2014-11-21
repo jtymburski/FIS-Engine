@@ -207,10 +207,6 @@ bool Battle::addAilment(Ailment* const new_ailment)
       std::cout << "Inflicting ailment: " << ail_name + " on " + vic_name 
                 << "\n";
     }
-    else if (getBattleMode() == BattleMode::GUI)
-    {
-      //TODO: Add ailment infliction message to battle front end [03-16-14]
-    }
   }
 
   return can_add;
@@ -339,11 +335,6 @@ bool Battle::bufferEnemyAction()
     /* Pay the required QTDR cost for the Skill */
     auto true_cost = curr_user->getTrueCost(curr_skill);
     curr_user->getCurr().alterStat(Attribute::QTDR, -true_cost);
-
-    if (getBattleMode() == BattleMode::GUI)
-    {
-      //TODO: Battle Front End [08-01-14]
-    }
   }
   else if (action_type == ActionType::ITEM)
   {
@@ -356,10 +347,6 @@ bool Battle::bufferEnemyAction()
       {
         std::cout << "Removing " << curr_item->getName() << " from "
                   << "inventory and implementing to buffer." << std::endl;
-      }
-      else if (buffered && getBattleMode() == BattleMode::GUI)
-      {
-        //TODO: Battle Front End [08-01-14]
       }
 
       /* Remove the item from the inventory, update module with current items */
@@ -447,12 +434,8 @@ bool Battle::bufferUserAction()
     {
       if (getBattleMode() == BattleMode::TEXT)
       {
-        std::cout << "Removing " << curr_item->getName() << " from "
+        std::cout << "{USING ITEM} " << curr_item->getName() << " from "
                   << "inventory and adding to buffer." << std::endl;
-      }
-      else if (getBattleMode() == BattleMode::GUI)
-      {
-        //TODO: Battle Front End [08-01-14]
       }
       
       friends->getInventory()->removeItemID(curr_item->getGameID());
@@ -1129,7 +1112,7 @@ void Battle::clearActionVariables()
  */
 bool Battle::checkPartyDeath(Party* const check_party)
 {
-  if (check_party->getLivingMembers().size() == 0)
+  if (check_party != nullptr && check_party->getLivingMembers().size() == 0)
     return true;
 
   return false;
@@ -1636,6 +1619,7 @@ bool Battle::processDamageAction(std::vector<Person*> targets,
       if (doesActionHit())
       {
         auto actual_crit_factor = 1.00;
+        auto curr_damage_type = damage_types.at(pro_index);
   
         calcElementalMods();
 
@@ -1643,10 +1627,7 @@ bool Battle::processDamageAction(std::vector<Person*> targets,
         if (doesActionCrit())
           actual_crit_factor = calcCritFactor();
 
-        std::cout << "Calculating base damage for pro index " << pro_index << std::endl;
-        auto base_damage = calcBaseDamage(actual_crit_factor,
-            damage_types.at(pro_index));
-        
+        auto base_damage = calcBaseDamage(actual_crit_factor, curr_damage_type);
         auto damage_mod   = curr_user->getDmgMod();
         auto total_damage = static_cast<int32_t>(base_damage * damage_mod);
 
@@ -1659,26 +1640,13 @@ bool Battle::processDamageAction(std::vector<Person*> targets,
                     << base_damage << " points of damage from " 
                     << curr_user->getName() << "." << std::endl;
         }
-
+        /* If doDmg returns true, the actor has died. Update guarding and other
+         * corner cases and check for party death. Else, an actor has not died
+         * but guard and defending flags, etc. may need to be recalculated. */
         if (curr_target->doDmg(total_damage))
-        {
-          /* If doDmg returns true, the actor has died -> check party death */
-          //TODO [08-01-14]: User has died message + battle front end msg
-          death = true;
-        }
+          done = updatePersonDeath(curr_damage_type);
         else
-        {
-          /* If doDMG returns false, the actor has not died. If the actor is
-           * defending, the defending flags will have to be updated */
           updateTargetDefense();
-        }
-
-        /* If an actor has died, update the buffer and check party deaths */
-        if (death)
-        {
-          action_buffer->removeAllByUser(curr_target);
-          done = updatePartyDeaths();
-        }
       }
       else 
       {
@@ -1837,11 +1805,15 @@ void Battle::processBuffer()
   do
   {
     auto can_process = true;
+    auto curr_targets = action_buffer->getTargets();
+    auto curr_damage_types = action_buffer->getDamageTypes();
+
     curr_action_type = action_buffer->getActionType();
     curr_user        = action_buffer->getUser();
 
     if (getBattleMode() == BattleMode::TEXT && curr_user != nullptr)
       std::cout << "\n{User} Processing: " << curr_user->getName() << std::endl;
+
 
     if (curr_action_type == ActionType::SKILL)
     {
@@ -1851,17 +1823,12 @@ void Battle::processBuffer()
       {
         if (doesSkillHit(action_buffer->getTargets()))
         {
-          done = processSkill(action_buffer->getTargets(), 
-                     action_buffer->getDamageTypes());
+          done = processSkill(curr_targets, curr_damage_types);
         }
         else if (getBattleMode() == BattleMode::TEXT)
         {
-          std::cout << "{Miss} The skill " << curr_skill->getName() 
+          std::cout << "{Miss} The skill " << curr_skill->getName()
                     << " misses!" << std::endl;
-        }
-        else if (getBattleMode() == BattleMode::GUI)
-        {
-
         }
       }
       else
@@ -1937,10 +1904,6 @@ void Battle::processBuffer()
         if (getBattleMode() == BattleMode::TEXT)
         {
           std::cout << "{Failed} The run attempt has failed!" << std::endl;
-        }
-        else if (getBattleMode() == BattleMode::GUI)
-        {
-          //TODO [11-05-14]: The run attempt failed message
         }
       }
     }
@@ -2078,10 +2041,6 @@ void Battle::selectUserActions()
       {
         menu->printMenuState();
       }
-      else if (getBattleMode() == BattleMode::GUI)
-      {
-        //TODO: Battle Front End [08-01-14]
-      }
     }
     else
     {
@@ -2162,12 +2121,15 @@ void Battle::upkeep()
   {
     /* Friends update */
     for (uint32_t i = 0; i < friends->getSize(); i++)
-      personalUpkeep(friends->getMember(i));
+      if (friends->getMember(i)->getBFlag(BState::ALIVE))
+        personalUpkeep(friends->getMember(i));
 
     /* Foes update */
     for (uint32_t i = 0; i < foes->getSize(); i++)
-      personalUpkeep(foes->getMember(i));
+      if (foes->getMember(i)->getBFlag(BState::ALIVE))
+        personalUpkeep(foes->getMember(i));
   }
+
   /* Personal upkeep state complete */
   setBattleFlag(CombatState::PHASE_DONE);
 }
@@ -2343,6 +2305,26 @@ bool Battle::updatePartyDeaths()
 }
 
 /*
+ * Description:
+ *
+ * Inputs: 
+ * Output: 
+ */
+bool Battle::updatePersonDeath(const DamageType &damage_type)
+{
+  /* Every action performed by the recently deceased must be removed */
+  action_buffer->removeAllByUser(curr_target);
+
+  /* If a guard dies, the remaining targets must revert back to the guardee */
+  if (damage_type == DamageType::GUARD)
+  {
+    action_buffer->rejectGuardTargets(curr_target);
+  }
+
+  return updatePartyDeaths();
+}
+
+/*
  * Description: Updates the state of a defending target. If they are a power
  *              defender, this means they are able to persist through further
  *              hits, but a non power defender may not.
@@ -2372,10 +2354,6 @@ bool Battle::updateTargetDefense()
         std::cout << "{BREAK DEFEND} " << curr_target->getName()
                   << " is no longer defending from damage.\n\n";
       }
-      else if (getBattleMode() == BattleMode::GUI)
-      {
-        //TODO: [11-14-14] Battle GUI defense breaking.  
-      }
     }
     else if (defending && curr_target->isPowerDefender())
     {
@@ -2384,9 +2362,31 @@ bool Battle::updateTargetDefense()
         std::cout << "{PERSIST DEFEND} " << curr_target->getName() 
                   << " continues to defend themselves from damage.\n\n";
       }
-      else if (getBattleMode() == BattleMode::GUI)
+    }
+
+    auto guarding = curr_target->getBFlag(BState::GUARDING);
+
+    if (guarding && !curr_target->isPowerGuarder())
+    {
+      action_buffer->rejectGuardTargets(curr_target);
+
+      if (getBattleMode() == BattleMode::TEXT)
       {
-        //TODO: [11-14-14] Battle GUI defense persisting.  
+        std::cout << "{BREAK GUARD} " << curr_target->getName() << " is no "
+                  << "longer protecting " 
+                  << curr_target->getGuardee()->getName() << " from damage\n";
+      }
+
+      curr_target->getGuardee()->resetGuard();
+      curr_target->resetGuardee();
+    }
+    else if (guarding && curr_target->isPowerGuarder())
+    {
+      if (getBattleMode() == BattleMode::TEXT)
+      {
+        std::cout << "{PERSIST GUARD " << curr_target->getName() << " continues"
+                  << " to protect " << curr_target->getGuardee()->getName()
+                  << " from damage" << std::endl;
       }
     }
   }

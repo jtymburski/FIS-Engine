@@ -388,8 +388,11 @@ std::vector<uint32_t> Party::getDeadMembers()
 
   auto index = 0;
   for (auto it = begin(members); it != end(members); ++it, index++)
+  {
+    std::cout << "checking: " << (*it)->getName() << "'s alive flag is: " << (*it)->getBFlag(BState::ALIVE) << std::endl;
     if (!(*it)->getBFlag(BState::ALIVE))
       dead_members.push_back(index);
+  }
 
   return dead_members;
 }
@@ -432,6 +435,7 @@ std::vector<uint32_t> Party::getLivingMembers()
     if ((*it)->getBFlag(BState::ALIVE))
       living_members.push_back(index);
 
+  std::cout << "living MEMBERS SIZE: " << living_members.size() << std::endl;
   return living_members;
 }
 

@@ -100,14 +100,14 @@ bool AIModuleTester::aiActionTypeTests(const uint32_t &num_times,
   
   std::cout << "Testing # of Action Type Choices" << std::endl;
   std::cout << "--------------------------------" << std::endl;
-  std::cout << "Skill Times: " << skill_times << std::endl;
-  std::cout << "Item Times:  " << item_times << std::endl;
-  std::cout << "Defend Times: " << defend_times << std::endl;
-  std::cout << "Guard Times: " << guard_times << std::endl;
-  std::cout << "Implode Time: " << implode_times << std::endl;
-  std::cout << "Run Times: " << run_times << std::endl;
-  std::cout << "Pass Times: " << pass_times << std::endl;
-  std::cout << "Discrepency: " << discrepency << std::endl;
+  std::cout << "Skill Times: "   << skill_times << std::endl;
+  std::cout << "Item Times:  "   << item_times << std::endl;
+  std::cout << "Defend Times: "  << defend_times << std::endl;
+  std::cout << "Guard Times: "   << guard_times << std::endl;
+  std::cout << "Implode Time: "  << implode_times << std::endl;
+  std::cout << "Run Times: "     << run_times << std::endl;
+  std::cout << "Pass Times: "    << pass_times << std::endl;
+  std::cout << "Discrepency: "   << discrepency << std::endl;
 
   return true;
 }

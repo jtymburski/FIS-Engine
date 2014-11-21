@@ -481,6 +481,32 @@ bool Buffer::removeAllByUser(Person* user)
 }
 
 /*
+ * Description:
+ *
+ * Inputs: 
+ * Output:
+ */
+void Buffer::rejectGuardTargets(Person* const guard)
+{
+  auto guardee = guard->getGuardee();
+
+  if (guardee != nullptr)
+  {
+    for (auto it = begin(action_buffer); it != end(action_buffer); ++it)
+    {
+      for (size_t i = 0; i < (*it).targets.size(); i++)
+      {
+        if ((*it).targets.at(i) == guard)
+        {
+          (*it).targets.at(i) = guardee;
+          (*it).damage_types.at(i) = DamageType::BASE;
+        }
+      }
+    }
+  }
+}
+
+/*
  * Description: Updates the buffer for a turn by decrementing the cooldown
  *              of each buffer and removing each elemenet with a cooldown of 0.
  *

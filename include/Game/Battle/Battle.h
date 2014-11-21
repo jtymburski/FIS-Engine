@@ -392,6 +392,9 @@ private:
   /* Updates the LOSS/VICTORY flags based on party deaths */
   bool updatePartyDeaths();
 
+  /* Resolving effects upon death of a single person -> checks party deaths */
+  bool updatePersonDeath(const DamageType &damage_type);
+
   /* Updates the current targets defense state */
   bool updateTargetDefense();
 

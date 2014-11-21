@@ -1136,7 +1136,7 @@ bool Person::resetDefend()
 
 /*
  * Description: Resets the guarding status of this person. Returns true if
- *              this person was guarding a person and now no longer is.
+ *              this person was being a person and now no longer is.
  *
  * Inputs: none
  * Output: bool - true if guarding state was set and no longer is

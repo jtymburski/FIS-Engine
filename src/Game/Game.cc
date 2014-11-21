@@ -69,6 +69,7 @@ Game::~Game()
     game_map = nullptr;
   }
 
+  //TODO: Delete player -> delete inventory instead.
   if(game_inventory != nullptr)
   {
     delete game_inventory;
@@ -304,6 +305,7 @@ void Game::setupBattle()
       top_stats, physical_skills);
   human->setDescription("A regular old joe from Earth.");
   human->setFlag(CategoryState::DEF_ENABLED, true);
+  human->setFlag(CategoryState::GRD_ENABLED, true);
   human->setFlag(CategoryState::E_SWORD, true);
 
   Category* bear = new Category(201, "Bear", "bear", normal_stats,
@@ -340,11 +342,13 @@ void Game::setupBattle()
   human->setQDRegenRate(RegenRate::NORMAL);
 
   // Test Persons
-  Person* malgidus = new Person(300, "Malgidus", human, tactical_samurai);
-  malgidus->addExp(1500);
+  base_person_list.push_back(new Person(300, "Malgidus", human,
+      tactical_samurai));
+  getPerson(300)->addExp(1500);
 
-  Person* arcadius = new Person(301, "Arcadius", bear, tactical_samurai);
-  arcadius->addExp(2100);
+  base_person_list.push_back(new Person(301, "Arcadius", bear, 
+    tactical_samurai));
+  getPerson(301)->addExp(2100);
 
   // Person* berran   = new Person(302, "Berran", bear, bloodclaw_scion);
   // Person* atkst    = new Person(303, "Atkst", human, bloodclaw_scion);
@@ -357,25 +361,27 @@ void Game::setupBattle()
 
   std::vector<BattleItem> items;
 
-  Person* frosty = new Person(310, "Frosty", human, bloodclaw_scion);
-  frosty->addExp(1500);
+  base_person_list.push_back(new Person(310, "Frosty", human, bloodclaw_scion));
+  getPerson(310)->addExp(1500);
 
-  Person* cloud_dude = new Person(311, "Cloud Dude", human, bloodclaw_scion);
-  cloud_dude->addExp(2000);
+  base_person_list.push_back(new Person(311, "Cloud Dude", human, bloodclaw_scion));
+  getPerson(311)->addExp(2000);
+  
   // Person* thruster_barrow = new Person(301, "Thruster Barrow", human, bloodclaw_scion);
   // Person* dragon = new Person(301, "Dragon", human, bloodclaw_scion);
+
   // Person* splurge = new Person(301, "Splurge", human, bloodclaw_scion);
   // Person* schwep = new Person(301, "Schwep", human, bloodclaw_scion);
   // Person* hamburger = new Person(301, "Hamburger", human, bloodclaw_scion);
   // Person* swiss_cheese = new Person(301, "Swiss Cheese", human, bloodclaw_scion);
 
   AIModule* frosty_module = new AIModule();
-  frosty_module->setParent(frosty);
-  frosty->setAI(frosty_module);
+  frosty_module->setParent(getPerson(310));
+  getPerson(310)->setAI(frosty_module);
 
   AIModule* cloud_module = new AIModule();
-  cloud_module->setParent(cloud_dude);
-  cloud_dude->setAI(cloud_module);
+  cloud_module->setParent(getPerson(311));
+  getPerson(311)->setAI(cloud_module);
 
   // AIModule* thruster_barrow_module = new AIModule();
   // thruster_barrow_module->setParent(thruster_barrow);
@@ -406,9 +412,9 @@ void Game::setupBattle()
   Inventory* foes_pouch = new Inventory(402, "Der Pouch");
 
   // Party Testing
-  Party* friends = new Party(401, malgidus, PartyType::SLEUTH, 10,
+  Party* friends = new Party(401, getPerson(300), PartyType::SLEUTH, 10,
       friends_pouch);
-  friends->addMember(arcadius);
+  friends->addMember(getPerson(301));
   // friends->addMember(berran);
   // friends->addMember(atkst);
   // friends->addMember(kevin);
@@ -418,8 +424,9 @@ void Game::setupBattle()
   // friends->addMember(gerald);
   // friends->addMember(geoff);
 
-  Party* enemies = new Party(402, frosty, PartyType::REGULAR_FOE, 10, foes_pouch);
-  enemies->addMember(cloud_dude);
+  Party* enemies = new Party(402, getPerson(310), PartyType::REGULAR_FOE, 
+      10, foes_pouch);
+  enemies->addMember(getPerson(311));
   // enemies->addMember(thruster_barrow);
   // enemies->addMember(dragon);
   // enemies->addMember(splurge);
@@ -758,6 +765,10 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
   {
     if (game_battle == nullptr)
       eventStartBattle();
+  }
+  else if (event.keysym.sym == SDLK_F3)
+  {
+
   }
   else if(event.keysym.sym == SDLK_F5 && mode == MAP && game_map != nullptr)
   {

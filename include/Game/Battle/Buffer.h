@@ -124,6 +124,9 @@ public:
   /* Attempts to remove a BufferAction at a given index */
   bool remove(const uint32_t &index);
 
+  /* Remove a guard's targets from buffer actions */
+  void rejectGuardTargets(Person* const guard);
+
   /* Removes all BufferActions which are of the given user type */
   bool removeAllByUser(Person* user);
 
