@@ -73,6 +73,10 @@ MapDialog::MapDialog(Options* running_config)
  * Description: The destructor function. Deletes all dynamic memory and cleans
  *              up the class.
  */
+// TODO: There's an issue with deletion where it seg faults. I think the
+// fault is when a delete gets called after SDL engine is shut down which
+// seg faults. We will need to make all frames in this deleted by game with
+// a pointer of sorts??
 MapDialog::~MapDialog()
 {
   renderOptions(NULL);

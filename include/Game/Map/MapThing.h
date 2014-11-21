@@ -116,6 +116,11 @@ protected:
   /* Sets the new direction that the class is moving in */
   bool setDirection(Direction new_direction);
 
+  /* Sets the frames in the passed in vector. This does not change anything
+   * related in the particular class */
+  bool setFrameData(XmlData data, int file_index, SDL_Renderer* renderer, 
+                    std::string base_path);
+
   /* Starts and stops tile move. Relies on underlying logic for occurance */
   virtual void tileMoveFinish();
   virtual bool tileMoveStart(std::vector<std::vector<Tile*>> tile_set);

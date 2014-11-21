@@ -59,6 +59,7 @@ SOURCES=src/Application.cc \
         src/Game/Map/MapState.cc \
         src/Game/Map/MapThing.cc \
         src/Game/Map/MapViewport.cc \
+				src/Game/Map/SpriteMatrix.cc \
         src/Game/Map/Tile.cc \
 				src/Game/Map/TileSprite.cc \
         src/Game/Player/Action.cc \
