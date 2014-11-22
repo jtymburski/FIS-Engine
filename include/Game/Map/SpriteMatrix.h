@@ -48,40 +48,46 @@ private:
   /* Grow the sprite matrix to the indicated size */
   void growMatrix(uint16_t x, uint16_t y);
 
+  /* Remove sprite from the matrix */
+  void removeSprite(uint16_t x, uint16_t y, bool delete_sprite = true);
+
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
   /* Adds the matrix information from the XML data classifier from file */
-  bool addFileInformation(XmlData data, int index, SDL_Renderer* renderer, 
+  bool addFileInformation(XmlData data, int file_index, SDL_Renderer* renderer, 
                           std::string base_path = "");
 
-  /* Returns the sprite at a given coordinate */
+  /* Returns the sprite at a given coordinate - unprotected */
   TileSprite* at(uint16_t x, uint16_t y);
 
   /* Shrinks the sprite matrix to the valid size and removes all null and
    * void pointers */
   void cleanMatrix();
 
-  /* Returns the height of the sprite matrix */
-  uint16_t getHeight() const;
- 
   /* Returns the stored sprite matrix */
   std::vector<std::vector<TileSprite*>> getMatrix() const;
   
-  /* Returns the width of the sprite matrix */
-  uint16_t getWidth() const;
+  /* Returns the sprite at a given coordinate - protected */
+  TileSprite* getSprite(uint16_t x, uint16_t y);
+
+  /* Returns the height of the sprite matrix */
+  uint16_t height() const;
 
   /* Rendering function, for the entire matrix */
   bool render(SDL_Renderer* renderer, int start_x, int start_y, 
-              int offset_x, int offset_y);
+              int width, int height);
+
+  /* Sets the rendering set corresponding to the matrix */
+  void setRenderMatrix(std::string render_str);
 
   /* Sets an individual sprite in the matrix */
   bool setSprite(TileSprite* sprite, uint16_t x, uint16_t y, 
                  bool delete_old = true);
 
   /* Sets the entire set of sprites in the matrix */
-  bool setSprites(std::vector<std::vector<TileSprite*>> sprites, 
+  void setSprites(std::vector<std::vector<TileSprite*>> sprites, 
                   bool delete_old = false);
 
   /* Sets all tiles for all entities in the sprite matrix */
@@ -95,6 +101,9 @@ public:
 
   /* Unsets all tiles for all entities in the sprite matrix */
   void unsetTiles();
+
+  /* Returns the width of the sprite matrix */
+  uint16_t width() const;
 
 /*============================================================================
  * OPERATOR FUNCTIONS

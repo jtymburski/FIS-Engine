@@ -16,9 +16,9 @@
 
 #include "EnumDb.h"
 #include "Game/EventHandler.h"
+#include "Game/Map/SpriteMatrix.h"
 #include "Game/Map/Tile.h"
 #include "Helpers.h"
-#include "TileSprite.h"
 #include "XmlData.h"
 
 class MapThing
@@ -57,7 +57,8 @@ protected:
   Event interact_event;
   
   /* The main sprite frame data - contains passability and render depth */
-  std::vector<std::vector<TileSprite*>> frame_matrix;
+  //std::vector<std::vector<TileSprite*>> frame_matrix;
+  SpriteMatrix sprite_set;
 
   /* Movement information */
   Direction movement;
@@ -83,15 +84,6 @@ protected:
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 private:
-  /* Counts the valid frames */
-  uint16_t countValidFrames();
-  
-  /* Get a valid frame from the matrix, if it exists (used for copying) */
-  TileSprite* getValidFrame();
-
-  /* Grow the frame matrix to the indicated size */
-  void growMatrix(uint32_t x, uint32_t y);
-
   /* This unsets the tile, at the given frame coordinate */
   virtual void unsetTile(uint32_t x, uint32_t y, bool no_events);
   
