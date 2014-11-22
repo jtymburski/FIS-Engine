@@ -1596,7 +1596,6 @@ bool Battle::processDamageAction(std::vector<Person*> targets,
 {
   auto can_process = true;
   auto done  = false;
-  auto death = false;
 
   for (auto jt = begin(targets); !done && jt != end(targets); ++jt, pro_index++)
   {
@@ -1614,7 +1613,6 @@ bool Battle::processDamageAction(std::vector<Person*> targets,
     
       /* Assign the target pointer to class variable */
       curr_target = *jt;
-      death = false;
         
       if (doesActionHit())
       {
@@ -1978,8 +1976,15 @@ void Battle::selectEnemyActions()
     /* Reset the AI Module for a new turn decision, assign data */
     curr_user->resetAI();
 
+    auto allies = getPersonsFromIndexes(getFriendsTargets());
+    auto foes   = getPersonsFromIndexes(getFoesTargets());
+
+    curr_module->setFriendTargets(allies);
+    curr_module->setFoeTargets(foes);
+
     auto items = friends->getInventory()->getBattleItems();
     curr_module->setItems(buildBattleItems(person_index, items));
+
     auto skills = curr_user->getUseableSkills();
     curr_module->setSkills(buildBattleSkills(person_index, skills));
     curr_module->calculateAction();

@@ -31,7 +31,7 @@ const uint32_t AIModule::kMAXIMUM_RECORD_SIZE{500};
 /* General AI Variance
  */
 const float AIModule::kGAI_VARIANCE{0.05};
-const float AIModule::kGAI_BASE_GUARD_FACTOR{0.10};
+const float AIModule::kGAI_BASE_GUARD_FACTOR{0.05};
 const float AIModule::kGAI_BASE_IMPLODE_FACTOR{0.25};
 const float AIModule::kGAI_BASE_DEFEND_FACTOR{0.10};
 const float AIModule::kGAI_BASE_RUN_FACTOR{0.001};
@@ -280,6 +280,7 @@ void AIModule::calculateActionTypeChances()
   /* First check if Skills or Items can be chosen */
   auto can_choose_skill = canSelectSkill();
   auto can_choose_item  = canSelectItem();
+  auto can_select_guard = canSelectGuard();
  
   /* Compute the factors for choosing each available action type
    * 
@@ -326,7 +327,7 @@ void AIModule::calculateActionTypeChances()
     act_typ_chances.push_back(std::make_pair(ActionType::ITEM, item_chance));
   }
 
-  if (Helpers::enumVectorSearch(ActionType::GUARD, valid_action_types))
+  if (can_select_guard)
   {
     guard_chance = kGAI_BASE_GUARD_FACTOR;
     act_typ_chances.push_back(std::make_pair(ActionType::GUARD, guard_chance));
@@ -405,6 +406,33 @@ bool AIModule::canSelectAction()
     return false;
 
   return true;
+}
+
+/*
+ * Description: 
+ *
+ * Inputs:
+ * Output:
+ */
+bool AIModule::canSelectGuard()
+{
+  auto can_guard = true;
+
+  can_guard &= (parent->getGuard() == nullptr);
+  can_guard &= Helpers::enumVectorSearch(ActionType::GUARD, valid_action_types);
+  
+  if (can_guard)
+  {
+    auto alive_person = false;
+    
+    for (auto it = begin(friend_targets); it != end(friend_targets); ++it)
+      alive_person &= (*it)->getBFlag(BState::ALIVE);  
+
+    if (!alive_person)
+      can_guard = false;
+  }
+
+  return can_guard;
 }
 
 /*

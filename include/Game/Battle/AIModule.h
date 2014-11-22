@@ -193,11 +193,14 @@ private:
   /* Evaluates and returns whether any action may take place */
   bool canSelectAction();
  
-  /* Evaluates and returns whether a Skill action is possible */
-  bool canSelectSkill();
+  /* Evaluates and returns whether an AI can select Guard */
+  bool canSelectGuard();
 
   /* Evaluates and returns whether an Item action is possible */
   bool canSelectItem();
+
+  /* Evaluates and returns whether a Skill action is possible */
+  bool canSelectSkill();
 
   /* Returns a float value between variance - base, variance + base */
   float calcFloatValVariance(const float &base_value);

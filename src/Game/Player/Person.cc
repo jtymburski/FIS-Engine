@@ -783,6 +783,7 @@ void Person::battleTurnPrep()
   setBFlag(BState::SELECTED_ACTION, false);
   setBFlag(BState::SELECTED_2ND_ACTION, false);
   setBFlag(BState::SELECTED_3RD_ACTION, false);
+  //setBFlag(BState::TWO_SKILLS, true);
 }
 
 /*
