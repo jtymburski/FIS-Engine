@@ -107,7 +107,6 @@ const float    Battle::kCRIT_MODIFIER               = 0.0008;
 const float    Battle::kCRIT_LVL_MODIFIER           =  0.012;
 const float    Battle::kCRIT_DEFENDING_MODIFIER     =   0.70;
 const float    Battle::kCRIT_GUARDED_MODIFIER       =   0.65;
-const float    Battle::kCRIT_SHIELDED_MODIFIER      =   0.50;
 
 const float    Battle::kBASE_RUN_CHANCE             =   0.25;
 const float    Battle::kUSER_RUN_MODIFIER           =   2.00;
@@ -853,8 +852,27 @@ void Battle::calcElementalMods()
  */
 float Battle::calcCritFactor()
 {
-  //TODO [11-06-14]: Crit factor calculation
-  return 1.00;
+  /* Base crit factor */
+  auto crit_factor = kOFF_CRIT_FACTOR;
+
+  /* Unbearability modifier */
+  auto unbr = curr_user->getTemp().getStat(Attribute::UNBR);
+
+  crit_factor += unbr * kCRIT_MODIFIER;
+
+  /* Level difference modifier */
+  std::vector<Person*> target_vec = {curr_target};
+  crit_factor += calcLevelDifference(target_vec) * kCRIT_LVL_MODIFIER;
+
+  if (curr_target->getBFlag(BState::DEFENDING))
+    crit_factor *= kCRIT_DEFENDING_MODIFIER;
+  if (curr_target->getBFlag(BState::GUARDED))
+    crit_factor *= kCRIT_GUARDED_MODIFIER;
+
+  /* Crits should be between 100 and 1000% always */
+  crit_factor = Helpers::setInRange(crit_factor, 1, 10);
+
+  return crit_factor;
 }
 
 /*
@@ -1223,8 +1241,6 @@ bool Battle::doesActionCrit()
       crit_chance *= kCRIT_DEFENDING_MODIFIER;
     if (curr_target->getBFlag(BState::GUARDED))
       crit_chance *= kCRIT_GUARDED_MODIFIER;
-    if (curr_target->getBFlag(BState::SHIELDED))
-      crit_chance *= kCRIT_SHIELDED_MODIFIER;
 
     if (crit_chance > 0)
     {
@@ -1621,8 +1637,9 @@ bool Battle::processDamageAction(std::vector<Person*> targets,
   
         calcElementalMods();
 
-        //TODO [11-13-14]: Fix action critical hits
-        if (doesActionCrit())
+        bool crit_happens = doesActionCrit();
+        
+        if (crit_happens)
           actual_crit_factor = calcCritFactor();
 
         auto base_damage = calcBaseDamage(actual_crit_factor, curr_damage_type);
@@ -1632,6 +1649,11 @@ bool Battle::processDamageAction(std::vector<Person*> targets,
         total_damage = Helpers::setInRange(total_damage, kMINIMUM_DAMAGE, 
                                            kMAXIMUM_DAMAGE);
         
+        if (crit_happens && getBattleMode() == BattleMode::TEXT)
+        {
+          std::cout << "{CRITICAL} - The strike is critical with a factor of "
+                    << actual_crit_factor << "!" << std::endl;
+        }
         if (getBattleMode() == BattleMode::TEXT && curr_target != nullptr)
         {
           std::cout << "{DAMAGE} " << curr_target->getName() << " receives "

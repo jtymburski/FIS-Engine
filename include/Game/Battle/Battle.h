@@ -223,7 +223,6 @@ private:
   static const float    kCRIT_LVL_MODIFIER;
   static const float    kCRIT_DEFENDING_MODIFIER;
   static const float    kCRIT_GUARDED_MODIFIER;
-  static const float    kCRIT_SHIELDED_MODIFIER;
 
   static const float    kDODGE_MODIFIER;
   static const float    kDODGE_HIGHEST_RATE_PC;
