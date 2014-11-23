@@ -68,16 +68,11 @@ bool Buffer::checkValid(BufferAction& elm)
   if (is_valid)
   {
     /* Assert the user of the action is in battle and is alive */
-    is_valid &= elm.user->getBFlag(BState::ALIVE);
     is_valid &= elm.user->getBFlag(BState::IN_BATTLE);
 
     /* Iterate through each target asserting they are alive and in battle */
     for (auto it = begin(elm.targets); it != end(elm.targets); ++it)
-    {
-
-      is_valid &= (*it)->getBFlag(BState::ALIVE);
       is_valid &= (*it)->getBFlag(BState::IN_BATTLE);
-    }
  
     if (elm.type == ActionType::SKILL)
     {
@@ -456,13 +451,10 @@ bool Buffer::remove(const uint32_t &index)
  * Description: Removes all the elements of the buffer of the given Person
  *
  * Inputs: user - the user to remove elements for
- * Output: bool - true if an element was found and removed
+ * Output: none
  */
-bool Buffer::removeAllByUser(Person* user)
+void Buffer::removeAllByUser(Person* user)
 {
-  if (user == nullptr)
-    return false;
-
   action_buffer.erase(std::remove_if(begin(action_buffer), 
                                   end(action_buffer),
                                   [&](BufferAction x) -> bool
@@ -476,8 +468,6 @@ bool Buffer::removeAllByUser(Person* user)
   /* Set the index of the last possible if the index ends out of bounds */
   if (action_buffer.size() > 0 && index > new_size - 1)
     index = new_size - 1;
-
-  return true;
 }
 
 /*

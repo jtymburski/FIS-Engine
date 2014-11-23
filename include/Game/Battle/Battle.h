@@ -14,10 +14,7 @@
 * [08-24-14]: Finish victory functionality
 * [08-24-14]: Finish battle lost functionality
 * [08-01-14]: Battle front end
-* [11-06-14]: Elemental modifiers for defensive skills?
-* [11-06-14]: Crit factor calculation
 * [03-01-14]: Weather updates
-* [11-05-14]: Run from the battle message
 * [03-16-14]: Ailment infliction message to battle front end
 * [08-24-14]: Ailment corner cases
 * [11-06-14]: Update the battle interface

@@ -287,11 +287,42 @@ void Game::setupBattle()
       damage_actions[3], 85, 25);
   physical_04->setPrimary(Element::PHYSICAL);
 
+  Skill* fire_01 = new Skill(110, "Fire Strike", ActionScope::ONE_ENEMY, 
+    damage_actions[4], 90, 3);
+  fire_01->setPrimary(Element::FIRE);
+
+  Skill* forest_01 = new Skill(111, "Earth Strike", ActionScope::ONE_ENEMY,
+    damage_actions[4], 91, 4);
+  forest_01->setPrimary(Element::FOREST);
+
+  Skill* ice_01 = new Skill(112, "Frosty Spray", ActionScope::TWO_ENEMIES, 
+    damage_actions[5], 99, 5);
+  ice_01->setPrimary(Element::ICE);
+
+  Skill* electric_01 = new Skill(113, "Shock", ActionScope::ALL_ENEMIES,
+    damage_actions[6], 99, 6);
+  electric_01->setPrimary(Element::ELECTRIC);
+
+  Skill* digital_01 = new Skill(114, "Compile", ActionScope::ONE_ENEMY,
+    damage_actions[6], 99, 6);
+  digital_01->setPrimary(Element::DIGITAL);
+
+  Skill* void_01 = new Skill(115, "Demi", ActionScope::ONE_ENEMY,
+    damage_actions[7], 99, 7);
+  void_01->setPrimary(Element::NIHIL);
+
   // Test Skill Sets
   SkillSet* physical_skills = new SkillSet(physical_01, 1);
   physical_skills->addSkill(physical_02, 1);
   physical_skills->addSkill(physical_03, 1);
   physical_skills->addSkill(physical_04, 1);
+
+  SkillSet* elemental_skills = new SkillSet(fire_01, 1);
+  elemental_skills->addSkill(forest_01, 1);
+  elemental_skills->addSkill(ice_01, 1);
+  elemental_skills->addSkill(electric_01, 1);
+  elemental_skills->addSkill(digital_01, 1);
+  elemental_skills->addSkill(void_01, 1);
 
   // Test Attribute Sets
   AttributeSet weak_stats        = AttributeSet(1, true, false);
@@ -299,6 +330,7 @@ void Game::setupBattle()
   AttributeSet normal_stats      = AttributeSet(3, true, false);
   AttributeSet medium_stats      = AttributeSet(4, true, false);
   AttributeSet top_stats         = AttributeSet(5, true, false);
+  AttributeSet boss_stats        = AttributeSet(6, true, false);
 
   // Test Categories
   Category* human = new Category(200, "Human", "human", normal_stats, 
@@ -316,7 +348,7 @@ void Game::setupBattle()
   bear->setFlag(CategoryState::E_CLAWS, true);
 
   Category* bloodclaw_scion = new Category(251, "Bloodclaw Scion", "scions", 
-      weak_stats, medium_stats, physical_skills);
+      weak_stats, boss_stats, elemental_skills);
   bloodclaw_scion->setDescription("A class of soldier excelling in physical combat.");
   bloodclaw_scion->setFlag(CategoryState::DEF_ENABLED, true);
   bloodclaw_scion->setFlag(CategoryState::POWER_DEFENDER, false);
@@ -325,7 +357,7 @@ void Game::setupBattle()
   bloodclaw_scion->setFlag(CategoryState::E_CLAWS, true);
 
   Category* tactical_samurai = new Category(252, "Tactical Samurai", "samurai",
-      not_as_weak_stats, medium_stats, physical_skills);
+      not_as_weak_stats, medium_stats, elemental_skills);
   tactical_samurai->setDescription("A class of swordsman like no other.");
   tactical_samurai->setFlag(CategoryState::DEF_ENABLED, true);
   tactical_samurai->setFlag(CategoryState::POWER_DEFENDER, true);
@@ -344,11 +376,14 @@ void Game::setupBattle()
   // Test Persons
   base_person_list.push_back(new Person(300, "Malgidus", human,
       tactical_samurai));
-  getPerson(300)->addExp(1500);
+  getPerson(300)->addExp(1500000);
 
   base_person_list.push_back(new Person(301, "Arcadius", bear, 
     tactical_samurai));
-  getPerson(301)->addExp(2100);
+  getPerson(301)->addExp(2100000);
+  getPerson(301)->setCurves(Element::FIRE, ElementCurve::B,
+                            Element::FOREST, ElementCurve::A, true);
+
 
   // Person* berran   = new Person(302, "Berran", bear, bloodclaw_scion);
   // Person* atkst    = new Person(303, "Atkst", human, bloodclaw_scion);
@@ -362,7 +397,9 @@ void Game::setupBattle()
   std::vector<BattleItem> items;
 
   base_person_list.push_back(new Person(310, "Frosty", human, bloodclaw_scion));
-  getPerson(310)->addExp(1500);
+  getPerson(310)->addExp(4000000);
+  getPerson(310)->setCurves(Element::ICE, ElementCurve::C,
+                            Element::PHYSICAL, ElementCurve::D, true);
 
   base_person_list.push_back(new Person(311, "Cloud Dude", human, bloodclaw_scion));
   getPerson(311)->addExp(2000);
@@ -426,7 +463,7 @@ void Game::setupBattle()
 
   Party* enemies = new Party(402, getPerson(310), PartyType::REGULAR_FOE, 
       10, foes_pouch);
-  enemies->addMember(getPerson(311));
+  // enemies->addMember(getPerson(311));
   // enemies->addMember(thruster_barrow);
   // enemies->addMember(dragon);
   // enemies->addMember(splurge);

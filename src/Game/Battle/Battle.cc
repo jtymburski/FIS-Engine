@@ -624,6 +624,7 @@ int32_t Battle::calcBaseDamage(const float &crit_factor,
         (curr_user->getPrimary() == curr_skill->getPrimary() ||
         curr_user->getPrimary() == curr_skill->getSecondary()))
     {
+      std::cout << "{Elements} -- Skill matches users prim elmmt!" << std::endl;
       elm1_pow_val  = temp_user_stats.getStat(prim_off);
       elm1_pow_val *= kOFF_PRIM_ELM_MATCH_MODIFIER;
     }
@@ -632,6 +633,7 @@ int32_t Battle::calcBaseDamage(const float &crit_factor,
         (curr_target->getPrimary() == curr_skill->getPrimary() ||
         curr_target->getPrimary() == curr_skill->getSecondary()))
     {
+      std::cout << "{Elements} -- Skill matches targets prim elmmt!" << std::endl;
       elm1_def_val  = targ_attrs.getStat(prim_def);
       elm1_def_val *= kDEF_PRIM_ELM_MATCH_MODIFIER;
     }
@@ -645,6 +647,7 @@ int32_t Battle::calcBaseDamage(const float &crit_factor,
     if (curr_user->getSecondary() == curr_skill->getPrimary() ||
         curr_user->getSecondary() == curr_skill->getSecondary())
     {
+      std::cout << "{Elements} -- Skill matches user's secd elmmt!" << std::endl;
       elm2_pow_val  = temp_user_stats.getStat(secd_off);
       elm2_pow_val *= kOFF_SECD_ELM_MATCH_MODIFIER;
     }
@@ -653,6 +656,7 @@ int32_t Battle::calcBaseDamage(const float &crit_factor,
         (curr_target->getSecondary() == curr_skill->getPrimary() ||
         curr_target->getSecondary() == curr_skill->getSecondary()))
     {
+      std::cout << "{Elements} -- Skill matches targets secd elmmt!" << std::endl;
       elm2_def_val  = targ_attrs.getStat(secd_def);
       elm2_def_val *= kDEF_SECD_ELM_MATCH_MODIFIER;
     }
@@ -723,13 +727,14 @@ int32_t Battle::calcBaseDamage(const float &crit_factor,
   base_damage = Helpers::setInRange(base_damage, kMINIMUM_DAMAGE, 
                     kMAXIMUM_DAMAGE);
 
-#ifdef UDEBUG
-  std::cout << "User Power: ----- " << base_user_pow << std::endl;
-  std::cout << "Action Power: --- " << action_power << std::endl;
-  std::cout << "Target Def: ----- " << base_targ_def << std::endl;
-  std::cout << "Crit Factor: ---- " << crit_factor <<std::endl;
-  std::cout << "Base Damage: ---- " << base_damage << std::endl <<std::endl;
-#endif
+  if (getBattleMode() == BattleMode::TEXT)
+  {
+    std::cout << "User Power: ----- " << base_user_pow << std::endl;
+    std::cout << "Action Power: --- " << action_power << std::endl;
+    std::cout << "Target Def: ----- " << base_targ_def << std::endl;
+    std::cout << "Crit Factor: ---- " << crit_factor <<std::endl;
+    std::cout << "Base Damage: ---- " << base_damage << std::endl <<std::endl;
+  }
 
   return base_damage;
 }
@@ -759,10 +764,6 @@ void Battle::calcElementalMods()
     secd_user_stat = secd_off;
     prim_targ_stat = prim_def;
     secd_targ_stat = secd_def;
-  }
-  else if (curr_skill->getFlag(SkillFlags::DEFENSIVE))
-  {
-    //TODO [11-06-14]: Elemental modifiers for defensive skills?
   }
 
   auto prim_user_mod = temp_user_stats.getStat(prim_user_stat);
@@ -807,32 +808,38 @@ void Battle::calcElementalMods()
     /* User is strong in primary elemental case */
     if (prim_weakness && !secd_weakness)
     {
+      std::cout << "{Elements} -- Prim Weakness" << std::endl;
       prim_user_mod *= kPRIM_ELM_ADV_MODIFIER;
     }
     /* User is strong in secondary elemental case */
     else if (!prim_weakness && secd_weakness)
     {
+      std::cout << "{Elements} -- Secondary Weakness" << std::endl;
       secd_user_mod *= kSECD_ELM_ADV_MODIFIER;
     }
     /* User is strong in both elemental cases */
     else if (prim_weakness && secd_weakness)
     {
+      std::cout << "{Elements} -- Double Weakness" << std::endl;
       prim_user_mod *= kDOUBLE_ELM_ADV_MODIFIER;
       secd_user_mod *= kDOUBLE_ELM_ADV_MODIFIER;
     }
     /* Opponent is strong in primary elemental case */
     else if (prim_strength && !secd_strength)
     {
+      std::cout << "{Elements} -- Prim Strength" << std::endl;
       prim_targ_mod *= kPRIM_ELM_ADV_MODIFIER;
     }
     /* Opponent is strong in secondary elemental case */
     else if (!prim_strength && secd_strength)
     {
+      std::cout << "{Elements} -- Secondary Strength" << std::endl;
       secd_targ_mod *= kSECD_ELM_ADV_MODIFIER;
     }
     /* Opponent is strong in both elemental cases */
     else if (prim_strength && secd_strength)
     {
+      std::cout << "{Elements} -- Double Strength" << std::endl;
       prim_targ_mod *= kDOUBLE_ELM_ADV_MODIFIER;
       secd_targ_mod *= kDOUBLE_ELM_ADV_MODIFIER;
    }
@@ -1610,7 +1617,8 @@ bool Battle::processAssignAction(std::vector<Person*> targets)
 bool Battle::processDamageAction(std::vector<Person*> targets,
   std::vector<DamageType> damage_types)
 {
-  auto can_process = true;
+  auto can_process  = true;
+  auto target_alive = true;
   auto done  = false;
 
   for (auto jt = begin(targets); !done && jt != end(targets); ++jt, pro_index++)
@@ -1620,7 +1628,10 @@ bool Battle::processDamageAction(std::vector<Person*> targets,
     
     /* Damage actions can only be processed against targets who are alive */
     if (can_process)
+    {
       can_process &= (*jt)->getBFlag(BState::ALIVE);
+      target_alive &= (*jt)->getBFlag(BState::ALIVE);
+    }
 
     if (can_process)
     {
@@ -1635,8 +1646,6 @@ bool Battle::processDamageAction(std::vector<Person*> targets,
         auto actual_crit_factor = 1.00;
         auto curr_damage_type = damage_types.at(pro_index);
   
-        calcElementalMods();
-
         bool crit_happens = doesActionCrit();
         
         if (crit_happens)
@@ -1651,8 +1660,7 @@ bool Battle::processDamageAction(std::vector<Person*> targets,
         
         if (crit_happens && getBattleMode() == BattleMode::TEXT)
         {
-          std::cout << "{CRITICAL} - The strike is critical with a factor of "
-                    << actual_crit_factor << "!" << std::endl;
+          std::cout << "{CRITICAL} - The strike is critical!" << std::endl;
         }
         if (getBattleMode() == BattleMode::TEXT && curr_target != nullptr)
         {
@@ -1673,6 +1681,18 @@ bool Battle::processDamageAction(std::vector<Person*> targets,
         if (getBattleMode() == BattleMode::TEXT)
           std::cout << "{MISS} The action has missed. " << std::endl;
       }
+    }
+    else if (!can_process && !target_alive)
+    {
+      if (getBattleMode() == BattleMode::TEXT)
+      {
+        std::cout << "{MISS} The action has no effect on a deceased target!"
+                  << std::endl;
+      }
+    }
+    else
+    {
+      std::cerr << "[ERROR] Error in battle processing" << std::endl;
     }
   }
 
@@ -1717,6 +1737,7 @@ bool Battle::processInflictAction(std::vector<Person*> targets)
 bool Battle::processSkill(std::vector<Person*> targets,
   std::vector<DamageType> damage_types)
 {
+  setBattleFlag(CombatState::PROCESSING_SKILL, true);
   auto done = false;
 
   if (getBattleMode() == BattleMode::TEXT)
@@ -1806,6 +1827,7 @@ bool Battle::processSkill(std::vector<Person*> targets,
     }
   }
 
+  setBattleFlag(CombatState::PROCESSING_SKILL, false);
   return done;
 }
 
@@ -1824,16 +1846,16 @@ void Battle::processBuffer()
 
   do
   {
-    auto can_process = true;
-    auto curr_targets = action_buffer->getTargets();
+    auto can_process       = true;
+    auto curr_targets      = action_buffer->getTargets();
     auto curr_damage_types = action_buffer->getDamageTypes();
+
 
     curr_action_type = action_buffer->getActionType();
     curr_user        = action_buffer->getUser();
 
     if (getBattleMode() == BattleMode::TEXT && curr_user != nullptr)
       std::cout << "\n{User} Processing: " << curr_user->getName() << std::endl;
-
 
     if (curr_action_type == ActionType::SKILL)
     {
@@ -1934,11 +1956,17 @@ void Battle::processBuffer()
     else
     {
       if (getBattleMode() == BattleMode::TEXT)
+      {
+        //action_buffer->print();
         std::cout << "[Error]: Attempting to process bad action!" << std::endl;
+      }
     }
 
     if (!can_process && getBattleMode() == BattleMode::TEXT)
+    {
+      action_buffer->print();
       std::cout << "[Error]: Couldn't process current action!" << std::endl;
+    }
   } while (!done && action_buffer->setNext());
 
   /* Process Action stae complete */
@@ -2339,6 +2367,12 @@ bool Battle::updatePartyDeaths()
  */
 bool Battle::updatePersonDeath(const DamageType &damage_type)
 {
+  if (getBattleMode() == BattleMode::TEXT)
+  {
+    std::cout << "{FALLEN} " << curr_target->getName() << " has fallen!"
+              << std::endl;
+  }
+
   /* Every action performed by the recently deceased must be removed */
   action_buffer->removeAllByUser(curr_target);
 

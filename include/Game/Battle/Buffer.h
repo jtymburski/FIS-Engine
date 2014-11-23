@@ -128,7 +128,7 @@ public:
   void rejectGuardTargets(Person* const guard);
 
   /* Removes all BufferActions which are of the given user type */
-  bool removeAllByUser(Person* user);
+  void removeAllByUser(Person* user);
 
   /* Updates the cooldown of each BufferAction element */
   void update(const bool &clear = false);
