@@ -34,16 +34,14 @@ const uint8_t MapPerson::kTOTAL_SURFACES   = 1;
  * Inputs: none
  */
 MapPerson::MapPerson() : MapThing()
-{
-  initializeStates();
-  active_secondary = NULL;
+{ 
   starting_section = 0;
-  starting_tile = NULL;
   steps = 0;
   
   /* Set the default setup for what the player is standing on and facing */
   surface = GROUND;
   direction = Direction::NORTH;
+  initializeStates();
 }
 
 /* 
@@ -61,15 +59,13 @@ MapPerson::MapPerson(uint16_t width, uint16_t height, std::string name,
                      std::string description, int id)
           : MapThing(width, height, name, description, id)
 {
-  initializeStates();
-  active_secondary = NULL;
   starting_section = 0;
-  starting_tile = NULL;
   steps = 0;
   
   /* Set the default setup for what the player is standing on and facing */
   surface = GROUND;
   direction = Direction::NORTH;
+  initializeStates();
 }
 
 /* 
@@ -77,13 +73,35 @@ MapPerson::MapPerson(uint16_t width, uint16_t height, std::string name,
  */
 MapPerson::~MapPerson()
 {
+  unsetMatrix();
   clear();
-  states.clear();
+  deleteStates();
 }
 
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
+
+/*
+ * Description: Deletes all created matrix states. Only called on class
+ *              destruction.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void MapPerson::deleteStates()
+{
+  for(uint16_t i = 0; i < states.size(); i++)
+  {
+    for(uint16_t j = 0; j < states[i].size(); j++)
+    {
+      delete states[i][j];
+      states[i][j] = NULL;
+    }
+  }
+
+  states.clear();
+}
 
 /* 
  * Description: Initializes the internal states for all possibilities, based
@@ -95,18 +113,19 @@ MapPerson::~MapPerson()
  */
 void MapPerson::initializeStates()
 {
-  states.clear();
-  states_secondary.clear();
+  deleteStates();
 
   for(uint8_t i = 0; i < kTOTAL_SURFACES; i++)
   {
-    std::vector<Sprite*> row;
+    std::vector<SpriteMatrix*> row;
 
     for(uint8_t j = 0; j < kTOTAL_DIRECTIONS; j++)
-      row.push_back(NULL);
-    //states.push_back(row); // TODO: Fix
-    states_secondary.push_back(row);
+      row.push_back(new SpriteMatrix());
+    states.push_back(row);
   }
+
+  /* Set the initial frames in the thing */
+  setMatrix(getState(surface, direction));
 }
 
 /*============================================================================
@@ -132,54 +151,6 @@ void MapPerson::addDirection(Direction direction)
   /* If it doesn't exist, push it onto the stack */
   if(!contains)
     movement_stack.push_back(direction);
-}
-
-/* 
- * Description: Animates the frames of the person, based on the animate offset
- *              of the person as well as calls to the sprite holder
- * 
- * Inputs: int cycle_time - the msec time between the last animate call
- *         bool reset - Resets the animation back to head. Used for either 
- *                      restarting animation or stopping it.
- *         bool skip_head - Skip the head of the list of frames
- * Output: bool - a status on the animate, if the frame sequence changed.
- */
-bool MapPerson::animate(int cycle_time, bool reset, bool skip_head)
-{
-  bool shift = false;
-  //Sprite* frames = getFrames(); // TODO: Repair
- 
-  /* Check if an animation can occur */
-  if(true)//frames != NULL) // TODO: Fix
-  {
-    /* Reset back to head */
-    if(reset && !skip_head)// && !frames->isAtFirst()) // TODO:Fix
-    {
-      //frames->setAtFirst(); // TODO: Fix
-      if(active_secondary != NULL)
-        active_secondary->setAtFirst();
-
-      shift = true;
-    }
-    
-    if(reset)
-    {
-      //shift |= frames->update(0, skip_head); // TODO: Fix
-      if(active_secondary != NULL)
-        active_secondary->update(0, skip_head);
-    }
-    else
-    {
-      if(true)//frames->update(cycle_time, skip_head)) // TODO: Fix
-      {
-        if(active_secondary != NULL)
-          active_secondary->shiftNext(skip_head);
-        shift = true;
-      }
-    }
-  }
-  
-  return shift;
 }
 
 /* 
@@ -270,10 +241,7 @@ bool MapPerson::setDirection(Direction direction, bool set_movement)
   if(surface_index >= 0 && dir_index >= 0)
   {
     if(changed && states[surface_index][dir_index] != NULL)
-    { // TODO: Repair
-      //MapThing::setFrames(states[surface_index][dir_index], false);
-      active_secondary = getStateSecondary(surface, direction);
-    }
+      setMatrix(states[surface_index][dir_index]);
 
     /* Finally set the in class direction */
     this->direction = direction;
@@ -294,9 +262,20 @@ bool MapPerson::setDirection(Direction direction, bool set_movement)
  */
 void MapPerson::tileMoveFinish()
 {
-  //if(tile_previous != NULL) // TODO: Fix for new matrix person
-  //  tile_previous->unsetPerson(getID() != kPLAYER_ID);
-  //tile_previous = NULL;
+  for(uint16_t i = 0; i < sprite_set->width(); i++)
+  {
+    for(uint16_t j = 0; j < sprite_set->height(); j++)
+    {
+      if(sprite_set->at(i, j) != NULL && 
+         sprite_set->at(i, j)->getTilePrevious() != NULL)
+      {
+        sprite_set->at(i, j)->getTilePrevious()
+                          ->unsetPerson(sprite_set->at(i, j)->getRenderDepth(), 
+                                        getID() != kPLAYER_ID);
+        sprite_set->at(i, j)->tileMoveFinish();
+      }
+    }
+  }
 }
 
 /* 
@@ -307,24 +286,47 @@ void MapPerson::tileMoveFinish()
  *              uses "Person" instead of "Thing" in tile.
  * 
  * Inputs: std::vector<std::vector<Tile*>> tile_set - the next set of frames
+ *         bool no_events - should events trigger on move?
  * Output: bool - if the tile start was successfully started
  */
-bool MapPerson::tileMoveStart(std::vector<std::vector<Tile*>> tile_set)
+bool MapPerson::tileMoveStart(std::vector<std::vector<Tile*>> tile_set, 
+                              bool no_events)
 {
-  //if(next_tile != NULL)// && !next_tile->isPersonSet()) // TODO: Fix
-  //{
-    /* Increment step counter. */
+  if(MapThing::tileMoveStart(tile_set, no_events))
+  {
     steps++;
-    
-    /* Set the new main tile */
-    //tile_previous = tile_main;
-    //tile_main = next_tile;
-    // TODO: Fix for matrix map person
-    //tile_main->setPerson(this, getID() != kPLAYER_ID);
-    
     return true;
-  //}
-  //return false;
+  }
+  return false;
+}
+
+/*
+ * Description: Unsets the tile corresponding to the matrix at the x and y
+ *              coordinate. However, since this is an private function, it does
+ *              not confirm that the X and Y are in the valid range. Must be 
+ *              checked or results are unknown. This will unset the thing from 
+ *              the tile corresponding to the frame and the tile from the frame.
+ *
+ * Inputs: uint32_t x - the x coordinate of the frame (horizontal)
+ *         uint32_t y - the y coordinate of the frame (vertical)
+ *         bool no_events - should events trigger with the change?
+ * Output: none
+ */
+void MapPerson::unsetTile(uint32_t x, uint32_t y, bool no_events)
+{
+  uint8_t render_depth = sprite_set->at(x, y)->getRenderDepth();
+
+  /* Remove from main tile, if applicable */
+  if(sprite_set->at(x, y)->isTileMainSet())
+    sprite_set->at(x, y)->getTileMain()->unsetPerson(render_depth, no_events);
+
+  /* Remove from previous tile, if applicable */
+  if(sprite_set->at(x, y)->isTilePreviousSet())
+    sprite_set->at(x, y)->getTilePrevious()->unsetPerson(render_depth, 
+                                                         no_events);
+
+  /* Clean up frame */
+  sprite_set->at(x, y)->resetTile();
 }
 
 /*============================================================================
@@ -345,6 +347,7 @@ bool MapPerson::tileMoveStart(std::vector<std::vector<Tile*>> tile_set)
  *         std::string base_path - the base path for resources
  * Output: bool - status if successful
  */
+//TODO: FIX
 bool MapPerson::addThingInformation(XmlData data, int file_index, 
                                     int section_index, SDL_Renderer* renderer, 
                                     std::string base_path)
@@ -384,32 +387,32 @@ bool MapPerson::addThingInformation(XmlData data, int file_index,
         /* Determine if it's the main sprite or the secondary top sprite */
         if(elements[2] == "spritebot") /* Main Lower Sprite */
         {
-          frames = getState(surface, direction);
-          if(frames == NULL)
-          {
-            frames = new Sprite();
-            if(!setState(surface, direction, frames))
-            {
-              delete frames;
-              frames = NULL;
-              success = false;
-            }
-          }
+          //frames = getState(surface, direction);
+          //if(frames == NULL)
+          //{
+          //  frames = new Sprite();
+          //  if(!setState(surface, direction, frames))
+          //  {
+          //    delete frames;
+          //    frames = NULL;
+          //    success = false;
+          //  }
+          //}
         }
-        else if(elements[2] == "spritetop") /* Sprite Upper Top */
-        {
-          frames_upper = getStateSecondary(surface, direction);
-          if(frames_upper == NULL)
-          {
-            frames_upper = new Sprite();
-            if(!setStateSecondary(surface, direction, frames_upper))
-            {
-              delete frames_upper;
-              frames_upper = NULL;
-              success = false;
-            }
-          }
-        }
+        //else if(elements[2] == "spritetop") /* Sprite Upper Top */
+        //{
+          //frames_upper = getStateSecondary(surface, direction);
+          //if(frames_upper == NULL)
+          //{
+            //frames_upper = new Sprite();
+            //if(!setStateSecondary(surface, direction, frames_upper))
+            //{
+              //delete frames_upper;
+              //frames_upper = NULL;
+              //success = false;
+            //}
+          //}
+        //}
         else if(elements[2] == "sprites") /* Combined sprite */
         {
           std::cout << elements[3] << std::endl;
@@ -461,17 +464,11 @@ std::string MapPerson::classDescriptor()
  */
 void MapPerson::clear()
 {
-  for(uint8_t i = 0; i < kTOTAL_SURFACES; i++)
-  {
-    for(uint8_t j = 0; j < kTOTAL_DIRECTIONS; j++)
-      unsetState(static_cast<SurfaceClassifier>(i), intToDir(j));
-  }
+  unsetStates();
   
   /* Clear direction and movement information */
-  active_secondary = NULL;
   direction = Direction::NORTH;
   clearAllMovement();
-  starting_tile = NULL;
   surface = GROUND;
 
   /* Clear the parent */
@@ -549,45 +546,21 @@ Direction MapPerson::getPredictedMoveRequest()
  *
  * Inputs: SurfaceClassifier surface - the surface that the person is on
  *         Direction direction - the direction moving in
- * Sprite* - the state sprite pointer, that defines the image pointer
+ * SpriteMatrix* - the state matrix pointer, that defines the sprite data
  */
-Sprite* MapPerson::getState(SurfaceClassifier surface, Direction direction)
+SpriteMatrix* MapPerson::getState(SurfaceClassifier surface, 
+                                  Direction direction)
 {
   int surface_index = static_cast<int>(surface);
   int dir_index = dirToInt(direction);
   
-  // TODO: Fix
-  //if(surface_index >= 0 && dir_index >= 0 &&
-  //   surface_index < static_cast<int>(states.size()) && 
-  //   dir_index < static_cast<int>(states[surface_index].size()))
-  //  return states[surface_index][dir_index];
+  if(surface_index >= 0 && dir_index >= 0 &&
+     surface_index < static_cast<int>(states.size()) && 
+     dir_index < static_cast<int>(states[surface_index].size()))
+    return states[surface_index][dir_index];
     
-  Sprite* null_sprite = NULL;
-  return null_sprite;
-}
-
-/*
- * Description: Returns the secondary sprite state that is connected with the 
- *              surface definition and the direction. Returns NULL if unset or
- *              invalid.
- *
- * Inputs: SurfaceClassifier surface - the surface that the person is on
- *         Direction direction - the direction moving in
- * Sprite* - the secondary state sprite pointer, that defines the image pointer
- */
-Sprite* MapPerson::getStateSecondary(SurfaceClassifier surface, 
-                                     Direction direction)
-{
-  int surface_index = static_cast<int>(surface);
-  int dir_index = dirToInt(direction);
-  
-  if(surface_index >= 0 && dir_index >= 0 && 
-     surface_index < static_cast<int>(states_secondary.size()) &&
-     dir_index < static_cast<int>(states_secondary[surface_index].size()))
-    return states_secondary[surface_index][dir_index];
-    
-  Sprite* null_sprite = NULL;
-  return null_sprite;
+  SpriteMatrix* null_matrix = NULL;
+  return null_matrix;
 }
 
 /* 
@@ -662,35 +635,6 @@ void MapPerson::keyUpEvent(SDL_KeyboardEvent event)
     removeDirection(Direction::WEST);
 }
 
-/* 
- * Description: The render secondary function for [erspm. This takes the 
- *              active secondary state and renders it based on location and 
- *              offset (from paint engine) and if it is set within the person 
- *              class.
- * 
- * Inputs: SDL_Renderer* renderer - the graphical rendering engine pointer
- *         int offset_x - the paint offset in the x direction
- *         int offset_y - the paint offset in the y direction
- * Output: bool - if the render succeeded
- */
-// TODO: Remove
-bool MapPerson::renderSecondary(SDL_Renderer* renderer, 
-                                int offset_x, int offset_y)
-{
-  if(isVisible())// && frames != NULL && tile_main != NULL) // TODO: Fix
-  {
-    if(active_secondary != NULL)
-    {
-      int render_x = x - offset_x;
-      int render_y = y - offset_y - width;
-      
-      active_secondary->render(renderer, render_x, render_y, width, height);
-      return true;
-    }
-  }
-  return false;
-}
-
 /*
  * Description: Resets the position of the person back to the initial starting
  *              point. This is the position that was set when the last 
@@ -701,8 +645,15 @@ bool MapPerson::renderSecondary(SDL_Renderer* renderer,
  */
 bool MapPerson::resetPosition()
 {
-  if(starting_tile != NULL)
-    return setStartingTile(starting_section, starting_tile, true);
+  std::vector<std::vector<Tile*>> set = starting_tiles;
+  if(starting_tiles.size() > 0)
+  {
+    setStartingLocation(starting_section, 
+                        set.front().front()->getX(), 
+                        set.front().front()->getY());
+    return setStartingTiles(set, true);
+  }
+
   return false;
 }
 
@@ -713,99 +664,86 @@ bool MapPerson::resetPosition()
  *              This replaces the generic mapthing call to allow for map 
  *              person in tile to be modified.
  *
- * Inputs: uint16_t section_id - the map id that the tile is from
- *         Tile* new_tile - the tile to set the starting pointer to
+ * Inputs: std::vector<std::vector<Tile*>> tile_set - set of tiles to start on
  *         bool no_events - don't execute any events when set
  * Output: bool - status if the change was able to occur
  */
-// TODO: Remove
-bool MapPerson::setStartingTile(uint16_t section_id, Tile* new_tile, 
-                                                     bool no_events)
+bool MapPerson::setStartingTiles(std::vector<std::vector<Tile*>> tile_set, 
+                                bool no_events)
 {
-  if(new_tile != NULL)// && !new_tile->isPersonSet()) // TODO: Fix
+  if(MapThing::setStartingTiles(tile_set, no_events))
   {
-    /* Unsets the old tile information */
-    unsetStartingTile(no_events);
-  
-    /* Set the new tile */
-    //tile_main = new_tile; // TODO: Fix
-    //this->x = tile_main->getPixelX();
-    this->x_raw = this->x * kRAW_MULTIPLIER;
-    //this->y = tile_main->getPixelY();
-    this->y_raw = this->y * kRAW_MULTIPLIER;
-    //tile_main->setPerson(this, no_events);
-    tile_section = section_id;
-    
-    /* Store the starting tile */
-    starting_section = section_id;
-    //starting_tile = tile_main; // TODO: Fix
-    
+    SpriteMatrix* matrix = getState(surface, direction);
+
+    for(uint8_t i = 0; i < kTOTAL_SURFACES; i++)
+    {
+      for(uint8_t j = 0; j < kTOTAL_DIRECTIONS; j++)
+      {
+        if(states[i][j] != NULL && states[i][j] != matrix)
+          states[i][j]->setTiles(tile_set);
+      }
+    }
+
+    starting_section = getMapSection();
+    starting_tiles = tile_set;
     return true;
   }
 
   return false;
 }
-
-/* 
- * Description: Sets a state within the class, based on the double set of 
- *              enumerators, for surface and direction. This will automatically
- *              unset a state that is currently in its place, if one does
- *              exist. 
- * 
- * Inputs: SurfaceClassifier surface - the surface classifier for the state
- *         Direction direction - the direction for the state
- *         Sprite* frames - the frame data to set the state at
- * Output: bool - if the call was successful
- */
-bool MapPerson::setState(SurfaceClassifier surface, 
-                         Direction direction, Sprite* frames)
-{
-  /* Only proceed with insertion if the sprite and state data is valid */
-  if(frames != NULL)
-  {
-    unsetState(surface, direction);
-    // TODO: Fix
-    //states[static_cast<int>(surface)][dirToInt(direction)] = frames;
-    
-    /* If the updated state is the active one, automatically set the printable
-     * sprite */
-    //if(this->surface == surface && this->direction == direction)
-    //  MapThing::setFrames(frames, false); // TODO: Repair
-    
-    return true;
-  }
-
-  return false;
-}
-
-/* 
- * Description: Sets a secondary state within the class, based on the double 
- *              set of enumerators, for surface and direction. This will
- *              automatically unset a state that is currently in its place, if 
- *              one does exist. 
- * 
- * Inputs: SurfaceClassifier surface - the surface classifier for the state
- *         Direction direction - the direction for the state
- *         Sprite* frames - the frame data to set the secondary state at
- * Output: bool - if the call was successful
- */
-bool MapPerson::setStateSecondary(SurfaceClassifier surface, 
-                                  Direction direction, Sprite* frames)
-{
-  /* Only proceed with insertion if the sprite and state data is valid */
-  if(frames != NULL)
-  {
-    unsetStateSecondary(surface, direction);
-    states_secondary[static_cast<int>(surface)][dirToInt(direction)] = frames;
-   
-    /* If the updated state is the active one, automatically set the printable
-     * sprite */
-    if(this->surface == surface && this->direction == direction)
-      active_secondary = frames;
  
+/*
+ * Description: Sets an individial tile sprite in a specific surface and 
+ *              direction with a given x and y coordinate.
+ *
+ * Inputs: TileSprite* frame - the rendering tile sprite to add
+ *         SurfaceClassifier surface - the surface the person is on
+ *         Direction direction - the direction the person is facing
+ *         uint32_t x - the x coordinate, relative to the top left of matrix
+ *         uint32_t y - the y coordinate, relative to the top left of matrix
+ *         bool delete_old - should old frame in its place be deleted?
+ * Output: bool - true if the set was successful
+ */
+bool MapPerson::setState(TileSprite* frame, SurfaceClassifier surface, 
+                         Direction direction, uint32_t x, uint32_t y, 
+                         bool delete_old)
+{
+  SpriteMatrix* matrix = getState(surface, direction);
+
+  /* Proceed to set up the frame */
+  if(matrix != NULL && frame != NULL)
+  {
+    unsetState(surface, direction, x, y, delete_old);
+    matrix->setSprite(frame, x, y, delete_old);
     return true;
   }
+  return false;
+}
 
+/*
+ * Description: Sets a set of tile sprites in a specific surface and 
+ *              direction.
+ *
+ * Inputs: TileSprite* frame - the rendering tile sprite to add
+ *         SurfaceClassifier surface - the surface the person is on
+ *         Direction direction - the direction the person is facing
+ *         bool delete_old - should old frame in its place be deleted?
+ * Output: bool - true if the set was successful
+ */
+bool MapPerson::setStates(std::vector<std::vector<TileSprite*>> frames,
+                          SurfaceClassifier surface, Direction direction,
+                          bool delete_old)
+{
+  /* Unset the existing frames */
+  unsetStates(surface, direction, delete_old);
+
+  /* Proceed to set up the frame set */
+  SpriteMatrix* matrix = getState(surface, direction);
+  if(matrix != NULL)
+  {
+    matrix->setSprites(frames, delete_old);
+    return true;
+  }
   return false;
 }
 
@@ -819,10 +757,7 @@ bool MapPerson::setStateSecondary(SurfaceClassifier surface,
 void MapPerson::setSurface(SurfaceClassifier surface)
 {
   this->surface = surface;
-
-  Sprite* current = getState(surface, direction);
-  //if(current != NULL)
-  //  MapThing::setFrames(current, false); // TODO: Repair
+  setMatrix(getState(surface, direction));
 }
 
 /*
@@ -835,8 +770,7 @@ void MapPerson::setSurface(SurfaceClassifier surface)
  */
 void MapPerson::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 {
-  // TODO: Fix
-  bool can_move = false;//isMoveAllowed(next_tile) && !getMovementPaused();
+  bool can_move = isMoveAllowed(tile_set) && !getMovementPaused();
   bool reset = false;
 
   /* Once a tile end has reached, cycle the movement direction */
@@ -847,10 +781,10 @@ void MapPerson::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
     /* If paused and there is a target, change direction to the target */
     if(getMovementPaused())
     {
-      if(getTarget())
-      { // TODO: Fix
-        int delta_x = 0;//getTile()->getX() - getTarget()->getTile()->getX();
-        int delta_y = 0;//getTile()->getY() - getTarget()->getTile()->getY();
+      if(getTarget() != NULL)
+      {
+        int delta_x = getTileX() - getTarget()->getTileX();
+        int delta_y = getTileY() - getTarget()->getTileY();
 
         if(delta_x < 0)
           setDirection(Direction::EAST, can_move);
@@ -875,110 +809,112 @@ void MapPerson::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
        * not allowed to move, recenter the thing */
       reset = !can_move;
       if(setDirection(getMoveRequest(), can_move) || !can_move)
-      {
-        //x = tile_main->getPixelX(); // TODO: Fix
-        //y = tile_main->getPixelY();
         reset = true;
-      }
       
       /* If it can move, initiate tile shifting */
-      //if(can_move) // TODO: Fix
-        //tileMoveStart(next_tile);
+      if(can_move)
+        tileMoveStart(tile_set);
     }
     /* If there is no move request, stop movement */
     else
     {
-      // TODO: Fix
-      //if(tile_main != NULL)
-      //{
-      //  x = tile_main->getPixelX();
-      //  y = tile_main->getPixelY();
-      //}
+      if(isTilesSet())
+      {
+        x = getTileX() * getWidth();
+        y = getTileY() * getHeight();
+      }
 
       setDirection(Direction::DIRECTIONLESS);
       reset = true;
     }
   }
 
-  /* Proceed to move the thing */
-  moveThing(cycle_time);
-
-  /* Only animate if the direction exists */
-  animate(cycle_time, reset, getMovement() != Direction::DIRECTIONLESS);
-}
-
-/* 
- * Description: Unsets the state in this class based on the two classifiers.
- *              This includes the appropriate delete functionality for the 
- *              stored pointers. Also, unsets the parent classifier, if 
- *              the current state data is being used.
- * 
- * Inputs: SurfaceClassifier surface - the surface classifier for the state
- *         Direction direction - the direction for the state
- * Output: none
- */
-void MapPerson::unsetState(SurfaceClassifier surface, 
-                           Direction direction)
-{
-  Sprite* state = getState(surface, direction);
-  if(state != NULL)
+  if(isTilesSet())
   {
-    delete state;
-    states[static_cast<int>(surface)][dirToInt(direction)] = NULL;
-    
-    /* Clear out the parent call if the direction or surface lines up */
-    if(this->surface == surface && this->direction == direction)
-      MapThing::unsetFrames(false);
-  }
-}
+    /* Proceed to move the thing */
+    moveThing(cycle_time);
 
-/* 
- * Description: Unsets the secondary state in this class based on the two
- *              classifiers. This includes the appropriate delete functionality
- *              for the stored pointers.
- * 
- * Inputs: SurfaceClassifier surface - the surface classifier for the state
- *         Direction direction - the direction for the state
- * Output: none
- */
-void MapPerson::unsetStateSecondary(SurfaceClassifier surface, 
-                                    Direction direction)
-{
-  Sprite* state = getStateSecondary(surface, direction);
-  if(state != NULL)
-  {
-    delete state;
-    states[static_cast<int>(surface)][dirToInt(direction)] = NULL;
-
-    /* Clear out the parent call if the direction or surface lines up */
-    if(this->surface == surface && this->direction == direction)
-      active_secondary = NULL;
+    /* Only animate if the direction exists */
+    animate(cycle_time, reset, getMovement() != Direction::DIRECTIONLESS);
   }
 }
 
 /*
- * Description: Unsets the starting tile location that is stored within the
- *              thing.
+ * Description: Unsets an individual tile sprite located on a given surface and
+ *              with a given direction, on a specific x and y coordinate.
+ *
+ * Inputs: SurfaceClassifier surface - the surface the sprite relates to
+ *         Direction direction - the direction the sprite relates to
+ *         uint32_t x - the x coordinate of the sprite
+ *         uint32_t y - the y coordinate of the sprite
+ *         bool delete_frames - true if the frames should be deleted from mem
+ * Output: none
+ */
+void MapPerson::unsetState(SurfaceClassifier surface, Direction direction, 
+                           uint32_t x, uint32_t y, bool delete_frames)
+{
+  SpriteMatrix* matrix = getState(surface, direction);
+  if(matrix != NULL)
+    matrix->unsetSprite(x, y, delete_frames);
+}
+
+/*
+ * Description: Unsets a set of tile sprites located on a given surface and
+ *              with a given direction.
+ *
+ * Inputs: SurfaceClassifier surface - the surface the sprite relates to
+ *         Direction direction - the direction the sprite relates to
+ *         bool delete_frames - true if the frames should be deleted from mem
+ * Output: none
+ */
+void MapPerson::unsetStates(SurfaceClassifier surface, Direction direction, 
+                            bool delete_frames)
+{
+  unsetTiles(true);
+
+  SpriteMatrix* matrix = getState(surface, direction);
+  if(matrix != NULL)
+    matrix->unsetSprites(delete_frames);
+}
+
+/*
+ * Description: Unsets all tile sprites on all surfaces and directions.
+ *
+ * Inputs: bool delete_frames - true if the frames should be deleted from mem
+ * Output: none
+ */
+void MapPerson::unsetStates(bool delete_frames)
+{
+  unsetTiles(true);
+
+  for(uint8_t i = 0; i < states.size(); i++)
+    for(uint8_t j = 0; j < states[i].size(); j++)
+      if(states[i][j] != NULL)
+        states[i][j]->unsetSprites(delete_frames);
+}
+
+/*
+ * Description: Unsets the tiles that are stored within the person class.
  *
  * Inputs: bool no_events - fire no events when unsetting
  * Output: none
  */
-void MapPerson::unsetStartingTile(bool no_events)
-{ 
-  /* Stop movement */
-  setDirection(Direction::DIRECTIONLESS);
-  
-  /* Unset the previous tile */
-  //if(tile_previous != NULL) // TODO: Fix
-  //  tile_previous->unsetPerson(no_events);
-  //tile_previous = NULL;
-  
-  /* Unset the main tile */
-  //if(tile_main != NULL) // TODO: Fix
-  //  tile_main->unsetPerson(no_events);
-  //tile_main = NULL;
-    
-  /* Resets the coordinates */
-  this->x = 0;
-  this->y = 0;
+void MapPerson::unsetTiles(bool no_events)
+{
+  /* First, unset the tiles */
+  MapThing::unsetTiles(no_events);
+  SpriteMatrix* matrix = getState(surface, direction);
+
+  for(uint8_t i = 0; i < kTOTAL_SURFACES; i++)
+  {
+    for(uint8_t j = 0; j < kTOTAL_DIRECTIONS; j++)
+    {
+      if(states[i][j] != NULL && states[i][j] != matrix)
+        states[i][j]->unsetTiles();
+    }
+  }
+
+  /* Reset stored tile location */
+  starting_section = 0;
+  starting_tiles.clear();
 }

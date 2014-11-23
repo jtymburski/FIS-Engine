@@ -91,7 +91,11 @@ public:
                   bool delete_old = false);
 
   /* Sets all tiles for all entities in the sprite matrix */
-  bool setTiles(std::vector<std::vector<Tile*>> tiles, bool fresh_start = true);
+  bool setTiles(std::vector<std::vector<Tile*>> tiles);
+
+  /* Handles tile move sequences - only the sprite side */
+  void tileMoveFinish(bool reverse_last = false);
+  bool tileMoveStart(std::vector<std::vector<Tile*>> tile_set);
 
   /* Unsets an individual sprite in the matrix */
   void unsetSprite(uint16_t x, uint16_t y, bool delete_sprite = true);

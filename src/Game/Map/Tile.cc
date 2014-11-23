@@ -1109,6 +1109,19 @@ bool Tile::setLowerPassability(uint8_t index, Direction dir, bool set_value)
   return false;
 }
 
+/* 
+ * Description: Sets the tile status. This allows of 3 possible states that 
+ *              the tile can be in. This affects the visibility and painting \
+ *              of the tile.
+ * 
+ * Inputs: TileStatus status - the new status to update the tile to
+ * Output: none
+ */
+void Tile::setStatus(TileStatus status)
+{
+  this->status = status;
+}
+
 /*
  * Description: Sets a person on the tile with the designated render level.
  *              This does not take into account if the tile is passable and
@@ -1121,7 +1134,7 @@ bool Tile::setLowerPassability(uint8_t index, Direction dir, bool set_value)
  *         bool no_events - if events should be triggered on set
  * Output: bool - if the person was successfully set.
  */
-bool Tile::setPerson(MapPerson* person, uint8_t render_level, bool no_events)
+bool Tile::setThing(MapPerson* person, uint8_t render_level, bool no_events)
 {
   if(person != NULL)
   {
@@ -1153,19 +1166,6 @@ bool Tile::setPerson(MapPerson* person, uint8_t render_level, bool no_events)
   return false;
 }
 
-/* 
- * Description: Sets the tile status. This allows of 3 possible states that 
- *              the tile can be in. This affects the visibility and painting \
- *              of the tile.
- * 
- * Inputs: TileStatus status - the new status to update the tile to
- * Output: none
- */
-void Tile::setStatus(TileStatus status)
-{
-  this->status = status;
-}
-
 /*
  * Description: Sets a thing on the tile with the designated render level.
  *              This does not take into account if the tile is passable and
@@ -1178,8 +1178,10 @@ void Tile::setStatus(TileStatus status)
  *         bool no_events - if events should be triggered on set
  * Output: bool - if the thing was successfully set.
  */
-bool Tile::setThing(MapThing* thing, uint8_t render_level)
+bool Tile::setThing(MapThing* thing, uint8_t render_level, bool no_events)
 {
+  (void)no_events;
+
   if(thing != NULL)
   {
     /* First, unset the existing thing */
@@ -1324,28 +1326,6 @@ void Tile::unsetEnhancer()
 }
 
 /*
- * Description: Unsets the item that matches the indicated item pointer from
- *              the stack. It will re-arrange to necessitate the removal.
- *
- * Inputs: MapItem* item - the item pointer to remove
- * Output: bool - true if the item was removed.
- */
-bool Tile::unsetItem(MapItem* item)
-{
-  for(uint16_t i = 0; i < items.size(); i++)
-  {
-    if(items[i] == item)
-    {
-      items[i] = NULL;
-      items.erase(items.begin()+i);
-      return true;
-    }
-  }
-
-  return false;
-}
-
-/*
  * Description: Unsets all items from the tile.
  *
  * Inputs: none
@@ -1393,37 +1373,6 @@ bool Tile::unsetLower(uint8_t index)
     lower_passability[index] = static_cast<uint8_t>(Direction::DIRECTIONLESS);
     return true;
   }
-  return false;
-}
-
-/*
- * Description: Unsets the person that matches the indicated person pointer from
- *              the stack. It will re-arrange to necessitate the removal.
- *
- * Inputs: MapPerson* person - the person pointer to remove
- *         bool no_events - if events should be triggered on removal
- * Output: bool - true if the person was removed.
- */
-bool Tile::unsetPerson(MapPerson* person, bool no_events)
-{
-  for(uint16_t i = 0; i < persons.size(); i++)
-  {
-    if(persons[i] == person)
-    {
-      /* Event is only applicable if it's a render level 0 on person */
-      if(i == 0 && !no_events)
-      {
-        /* Execute exit event, if applicable */
-        if(event_handler != NULL && 
-            exit_event.classification != EventClassifier::NOEVENT)
-          event_handler->executeEvent(exit_event, persons[i]);
-      }
-
-      persons[i] = NULL;
-      return true;
-    }
-  }
-
   return false;
 }
  
@@ -1486,14 +1435,73 @@ void Tile::unsetPersons(bool no_events)
 }
 
 /*
+ * Description: Unsets the item that matches the indicated item pointer from
+ *              the stack. It will re-arrange to necessitate the removal.
+ *
+ * Inputs: MapItem* item - the item pointer to remove
+ *         bool no_events - should events trigger on exit of item?
+ * Output: bool - true if the item was removed.
+ */
+bool Tile::unsetThing(MapItem* item, bool no_events)
+{
+  (void)no_events;
+
+  for(uint16_t i = 0; i < items.size(); i++)
+  {
+    if(items[i] == item)
+    {
+      items[i] = NULL;
+      items.erase(items.begin()+i);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/*
+ * Description: Unsets the person that matches the indicated person pointer from
+ *              the stack. It will re-arrange to necessitate the removal.
+ *
+ * Inputs: MapPerson* person - the person pointer to remove
+ *         bool no_events - if events should be triggered on removal
+ * Output: bool - true if the person was removed.
+ */
+bool Tile::unsetThing(MapPerson* person, bool no_events)
+{
+  for(uint16_t i = 0; i < persons.size(); i++)
+  {
+    if(persons[i] == person)
+    {
+      /* Event is only applicable if it's a render level 0 on person */
+      if(i == 0 && !no_events)
+      {
+        /* Execute exit event, if applicable */
+        if(event_handler != NULL && 
+            exit_event.classification != EventClassifier::NOEVENT)
+          event_handler->executeEvent(exit_event, persons[i]);
+      }
+
+      persons[i] = NULL;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/*
  * Description: Unsets the thing that matches the indicated thing pointer from
  *              the stack. It will re-arrange to necessitate the removal.
  *
  * Inputs: MapThing* thing - the thing pointer to remove
+ *         bool no_events - should events trigger on removal of thing?
  * Output: bool - true if the thing was removed.
  */
-bool Tile::unsetThing(MapThing* thing)
+bool Tile::unsetThing(MapThing* thing, bool no_events)
 {
+  (void)no_events;
+
   for(uint16_t i = 0; i < things.size(); i++)
   {
     if(things[i] == thing)

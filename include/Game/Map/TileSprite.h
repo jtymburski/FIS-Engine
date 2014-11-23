@@ -88,7 +88,7 @@ public:
   bool setTile(Tile* starting_tile);
 
   /* Starts and stops tile move. Relies on underlying logic for occurance */
-  void tileMoveFinish();
+  void tileMoveFinish(bool reverse_last = false);
   bool tileMoveStart(Tile* next_tile);
 
 /*============================================================================

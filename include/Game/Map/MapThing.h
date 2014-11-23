@@ -83,8 +83,6 @@ protected:
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 private:
-  /* This unsets the tile, at the given frame coordinate */
-  virtual void unsetTile(uint32_t x, uint32_t y, bool no_events);
   
 /*============================================================================
  * PROTECTED FUNCTIONS
@@ -116,10 +114,14 @@ protected:
 
   /* Starts and stops tile move. Relies on underlying logic for occurance */
   virtual void tileMoveFinish();
-  virtual bool tileMoveStart(std::vector<std::vector<Tile*>> tile_set);
+  virtual bool tileMoveStart(std::vector<std::vector<Tile*>> tile_set,
+                             bool no_events = true);
 
   /* Unsets the matrix in the class - no deletion occurs */
   void unsetMatrix();
+
+  /* This unsets the tile, at the given frame coordinate */
+  virtual void unsetTile(uint32_t x, uint32_t y, bool no_events);
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -267,7 +269,7 @@ public:
   /* Sets the set of tiles that the thing will be placed on. Needed after
    * defining a starting point.*/
   virtual bool setStartingTiles(std::vector<std::vector<Tile*>> tile_set, 
-                                bool no_events = false);
+                                bool no_events = true);
   
   /* Sets the target map thing, fails if there is already a target */
   bool setTarget(MapThing* target);

@@ -348,11 +348,13 @@ bool TileSprite::setTile(Tile* starting_tile)
  *              Tile and make any modifications to the corresponding stored
  *              sprite.
  *
- * Inputs: none
+ * Inputs: bool reverse_last - if the last move should be reversed
  * Output: none
  */
-void TileSprite::tileMoveFinish()
+void TileSprite::tileMoveFinish(bool reverse_last)
 {
+  if(reverse_last && tile_previous != NULL)
+    tile_main = tile_previous;
   tile_previous = NULL;
 }
 

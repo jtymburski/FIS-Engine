@@ -1365,13 +1365,14 @@ void Map::teleportThing(int id, int tile_x, int tile_y, int section_id)
       {
         if((*i)->getID() == id)
         {
-          if((*i)->setStartingTile(section, geography[section][x][y]))
-          {
-            //map_dialog.endConversation();
-            if(map_index != section)
-              setSectionIndex(section);
-            (*i)->clearAllMovement();
-          }
+          // TODO: Fix
+          //if((*i)->setStartingTile(section, geography[section][x][y]))
+          //{
+          //  //map_dialog.endConversation();
+          //  if(map_index != section)
+          //    setSectionIndex(section);
+          //  (*i)->clearAllMovement();
+          //}
         }
       }
     }

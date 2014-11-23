@@ -217,14 +217,16 @@ public:
   bool setLowerPassability(uint8_t index, Direction dir, bool set_value);
 
   /* Sets the stored MapPerson sprite pointer */
-  bool setPerson(MapPerson* person, uint8_t render_level, 
-                 bool no_events = false);
+  //bool setPerson(MapPerson* person, uint8_t render_level, 
+  //               bool no_events = false);
 
   /* Sets a new status for the tile */
   void setStatus(TileStatus status);
 
   /* Sets the thing sprite pointer, stored within the class */
-  bool setThing(MapThing* thing, uint8_t render_level);
+  bool setThing(MapPerson* person, uint8_t render_level, 
+                bool no_events = false);
+  bool setThing(MapThing* thing, uint8_t render_level, bool no_events = true);
   
   /* Sets the upper portion of the layer */
   bool setUpper(Sprite* upper);
@@ -247,7 +249,6 @@ public:
   void unsetEnhancer();
 
   /* Unsets the item(s) stored within the tile */
-  bool unsetItem(MapItem* item);
   void unsetItems();
 
   /* Unsets the lower layer */
@@ -255,12 +256,15 @@ public:
   bool unsetLower(uint8_t index);
 
   /* Unsets the stored person pointer(s) */
-  bool unsetPerson(MapPerson* person, bool no_events = false);
   bool unsetPerson(uint8_t render_level, bool no_events = false);
   void unsetPersons(bool no_events = false);
 
+  /* Generic removal of thing from Tile */
+  bool unsetThing(MapItem* item, bool no_events = true);
+  bool unsetThing(MapPerson* person, bool no_events = false);
+  bool unsetThing(MapThing* thing, bool no_events = true);
+  
   /* Unsets the stored thing pointer(s) */
-  bool unsetThing(MapThing* thing);
   bool unsetThing(uint8_t render_level);
   void unsetThings();
 

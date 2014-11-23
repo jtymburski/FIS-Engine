@@ -31,19 +31,16 @@ public:
 
 private:
   /* The direction of the player and the current movement direction */
-  Sprite* active_secondary; // TODO: Remove
   Direction direction;
   std::vector<Direction> movement_stack;
 
   /* The initial tile location to start movement on */
   uint16_t starting_section;
-  Tile* starting_tile;
+  std::vector<std::vector<Tile*>> starting_tiles;
 
   /* Set of all states for person. 1st index is surface (water, ground, etc)
    * and then 2nd index is direction facing */
   std::vector<std::vector<SpriteMatrix*>> states;
-  //std::vector< std::vector<Sprite*> > states;
-  std::vector< std::vector<Sprite*> > states_secondary; // TODO: Remove
 
   /* A counter of steps made on the map */
   uint32_t steps;
@@ -64,6 +61,9 @@ private:
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 private:
+  /* Deletes the states */
+  void deleteStates();
+
   /* Initializes the states stack to an empty set */
   void initializeStates();
 
@@ -73,9 +73,6 @@ private:
 protected:
   /* Add movement direction to the stack */
   void addDirection(Direction direction);
-
-  /* Animates the person, if it has multiple frames */
-  bool animate(int cycle_time, bool reset = false, bool skip_head = false);
 
   /* Direction enumerator to/from integer converters */
   int dirToInt(Direction dir);
@@ -89,7 +86,11 @@ protected:
   
   /* Starts and stops tile move. Relies on underlying logic for occurance */
   void tileMoveFinish();
-  bool tileMoveStart(std::vector<std::vector<Tile*>> tile_set);
+  bool tileMoveStart(std::vector<std::vector<Tile*>> tile_set, 
+                     bool no_events = false);
+
+  /* This unsets the tile, at the given frame coordinate */
+  virtual void unsetTile(uint32_t x, uint32_t y, bool no_events);
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -125,8 +126,7 @@ public:
   virtual Direction getPredictedMoveRequest();
   
   /* Returns the state at the defined surface and direction */
-  Sprite* getState(SurfaceClassifier surface, Direction direction);
-  Sprite* getStateSecondary(SurfaceClassifier surface, Direction direction);
+  SpriteMatrix* getState(SurfaceClassifier surface, Direction direction);
 
   /* Returns the surface that this person resides on */
   SurfaceClassifier getSurface();
@@ -139,20 +139,20 @@ public:
   void keyFlush();
   void keyUpEvent(SDL_KeyboardEvent event);
   
-  /* Renders the uppper half on the person */
-  bool renderSecondary(SDL_Renderer* renderer, int offset_x, int offset_y);
-  
   /* Resets the tile position */
   bool resetPosition();
   
   /* Set the tile to hook the map person to */
-  bool setStartingTile(uint16_t section_id, Tile* new_tile, 
-                                            bool no_events = false);
+  bool setStartingTiles(std::vector<std::vector<Tile*>> tile_set, 
+                        bool no_events = false);
 
   /* Sets a new state to add into the states list */
-  bool setState(SurfaceClassifier surface, Direction direction, Sprite* frames);
-  bool setStateSecondary(SurfaceClassifier surface, 
-                         Direction direction, Sprite* frames);
+  bool setState(TileSprite* frame, SurfaceClassifier surface, 
+                Direction direction, uint32_t x, uint32_t y, 
+                bool delete_old = true);
+  bool setStates(std::vector<std::vector<TileSprite*>> frames,
+                 SurfaceClassifier surface, Direction direction, 
+                 bool delete_old = true);
 
   /* Sets the surface that the person travels on */
   void setSurface(SurfaceClassifier surface);
@@ -161,11 +161,14 @@ public:
   virtual void update(int cycle_time, std::vector<std::vector<Tile*>> tile_set);
 
   /* Unsets a state, if it exists, to remove from the stack of states */
-  void unsetState(SurfaceClassifier surface, Direction direction);
-  void unsetStateSecondary(SurfaceClassifier surface, Direction direction);
+  void unsetState(SurfaceClassifier surface, Direction direction, uint32_t x, 
+                  uint32_t y, bool delete_frames = true);
+  void unsetStates(SurfaceClassifier surface, Direction direction, 
+                   bool delete_frames = true);
+  void unsetStates(bool delete_frames = true);
 
   /* Unsets the starting tile */
-  void unsetStartingTile(bool no_events = false);
+  void unsetTiles(bool no_events = false);
 };
 
 #endif // MAPPERSON_H

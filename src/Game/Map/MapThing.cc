@@ -86,35 +86,6 @@ MapThing::~MapThing()
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
-
-/*
- * Description: Unsets the tile corresponding to the matrix at the x and y
- *              coordinate. However, since this is an private function, it does
- *              not confirm that the X and Y are in the valid range. Must be 
- *              checked or results are unknown. This will unset the thing from 
- *              the tile corresponding to the frame and the tile from the frame.
- *
- * Inputs: uint32_t x - the x coordinate of the frame (horizontal)
- *         uint32_t y - the y coordinate of the frame (vertical)
- *         bool no_events - should events trigger with the change?
- * Output: none
- */
-void MapThing::unsetTile(uint32_t x, uint32_t y, bool no_events)
-{
-  (void)no_events;
-  uint8_t render_depth = sprite_set->at(x, y)->getRenderDepth();
-
-  /* Remove from main tile, if applicable */
-  if(sprite_set->at(x, y)->isTileMainSet())
-    sprite_set->at(x, y)->getTileMain()->unsetThing(render_depth);
-
-  /* Remove from previous tile, if applicable */
-  if(sprite_set->at(x, y)->isTilePreviousSet())
-    sprite_set->at(x, y)->getTilePrevious()->unsetThing(render_depth);
-
-  /* Clean up frame */
-  sprite_set->at(x, y)->resetTile();
-}
   
 /*============================================================================
  * PROTECTED FUNCTIONS
@@ -357,6 +328,13 @@ void MapThing::tileMoveFinish()
       }
     }
   }
+
+  /* Finalize render location */
+  x = tile_x * width;
+  x_raw = x * kRAW_MULTIPLIER;
+  y = tile_y * height;
+  y_raw = y * kRAW_MULTIPLIER;
+
 }
 
 /* 
@@ -366,11 +344,15 @@ void MapThing::tileMoveFinish()
  *              to the old spot.
  * 
  * Inputs: std::vector<std::vector<Tile*>> tile_set - the next set of frames
+ *         bool no_events - should events trigger on move?
  * Output: bool - if the tile start was successfully started
  */
-bool MapThing::tileMoveStart(std::vector<std::vector<Tile*>> tile_set)
+bool MapThing::tileMoveStart(std::vector<std::vector<Tile*>> tile_set, 
+                             bool no_events)
 {
   bool success = true;
+  uint16_t end_i = 0;
+  uint16_t end_j = 0;
   TileSprite* test_frames = NULL;
 
   /* Data prechecks -> to confirm equivalency */
@@ -379,9 +361,9 @@ bool MapThing::tileMoveStart(std::vector<std::vector<Tile*>> tile_set)
      tile_set.back().size() == sprite_set->height())
   {
     /* Go through each frame and update */
-    for(uint16_t i = 0; i < sprite_set->width(); i++)
+    for(uint16_t i = 0; success && (i < sprite_set->width()); i++)
     {
-      for(uint16_t j = 0; j < sprite_set->height(); j++)
+      for(uint16_t j = 0; success && (j < sprite_set->height()); j++)
       {
         if(sprite_set->at(i, j) != NULL)
         {
@@ -391,16 +373,40 @@ bool MapThing::tileMoveStart(std::vector<std::vector<Tile*>> tile_set)
 
           success &= sprite_set->at(i, j)->tileMoveStart(tile_set[i][j]);
           if(success)
-            success &= tile_set[i][j]->setThing(this, 
-                                        sprite_set->at(i, j)->getRenderDepth());
+            success &= tile_set[i][j]->setThing(
+                       this, sprite_set->at(i, j)->getRenderDepth(), no_events);
+
+          /* If unsuccessful, store how far it parsed */
           if(!success)
-            sprite_set->at(i, j)->resetTile();
+          {
+            sprite_set->at(i, j)->tileMoveFinish(true);
+            end_i = i;
+            end_j = j;
+          }
         }
       }
     }
 
-    /* If successful, update move coordinates of class */
-    if(success)
+    /* If unsuccessful, reverse course */
+    if(!success)
+    {
+      bool finished = false;
+      for(uint16_t i = 0; !finished && (i < sprite_set->width()); i++)
+      {
+        for(uint16_t j = 0; !finished && (j < sprite_set->height()); j++)
+        {
+          if(i == end_i && j == end_j)
+            finished = true;
+          else if(sprite_set->at(i, j) != NULL)
+          {
+            sprite_set->at(i, j)->tileMoveFinish(true);
+            tile_set[i][j]->unsetThing(sprite_set->at(i, j)->getRenderDepth());
+          }
+        }
+      }
+    }
+    /* Otherwise, if successful, update move coordinates of class */
+    else
     {
       int32_t diff_x = test_frames->getTileMain()->getX() - 
                        test_frames->getTilePrevious()->getX();
@@ -427,6 +433,35 @@ bool MapThing::tileMoveStart(std::vector<std::vector<Tile*>> tile_set)
 void MapThing::unsetMatrix()
 {
   sprite_set = NULL;
+}
+
+/*
+ * Description: Unsets the tile corresponding to the matrix at the x and y
+ *              coordinate. However, since this is an private function, it does
+ *              not confirm that the X and Y are in the valid range. Must be 
+ *              checked or results are unknown. This will unset the thing from 
+ *              the tile corresponding to the frame and the tile from the frame.
+ *
+ * Inputs: uint32_t x - the x coordinate of the frame (horizontal)
+ *         uint32_t y - the y coordinate of the frame (vertical)
+ *         bool no_events - should events trigger with the change?
+ * Output: none
+ */
+void MapThing::unsetTile(uint32_t x, uint32_t y, bool no_events)
+{
+  (void)no_events;
+  uint8_t render_depth = sprite_set->at(x, y)->getRenderDepth();
+
+  /* Remove from main tile, if applicable */
+  if(sprite_set->at(x, y)->isTileMainSet())
+    sprite_set->at(x, y)->getTileMain()->unsetThing(render_depth);
+
+  /* Remove from previous tile, if applicable */
+  if(sprite_set->at(x, y)->isTilePreviousSet())
+    sprite_set->at(x, y)->getTilePrevious()->unsetThing(render_depth);
+
+  /* Clean up frame */
+  sprite_set->at(x, y)->resetTile();
 }
 
 /*============================================================================
@@ -1326,7 +1361,7 @@ bool MapThing::setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
 
           success &= sprite_set->at(i, j)->setTile(tile_set[i][j]);
           if(success)
-            success &= tile_set[i][j]->setThing(this, render_depth);
+            success &= tile_set[i][j]->setThing(this, render_depth, no_events);
           if(!success)
             sprite_set->at(i, j)->resetTile();
         }
