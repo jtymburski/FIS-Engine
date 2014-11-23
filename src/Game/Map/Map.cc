@@ -1100,10 +1100,9 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
             tile_col.push_back(geography[section][j][k]);
           tile_set.push_back(tile_col);
         }
-        
+       
         /* Set up the thing with the tiles */
-        if(!things[i]->setStartingTiles(tile_set, true))
-          things[i]->unsetTiles(true);
+        things[i]->setStartingTiles(tile_set, true);
       }
     }
 
@@ -1225,31 +1224,33 @@ bool Map::render(SDL_Renderer* renderer)
           MapItem* render_item = NULL;
           MapPerson* render_person = NULL;
           MapThing* render_thing = NULL;
-          
-          geography[map_index][i][j]->getRenderThings(index, render_item,
-                                                      render_person, render_thing);
-          
-          /* Different indexes result in different rendering procedures */
-          if(index == 0)
+         
+          if(geography[map_index][i][j]->getRenderThings(index, render_item,
+                                                         render_person, 
+                                                         render_thing))
           {
-            if(render_item != NULL)
-              render_item->render(renderer, geography[map_index][i][j], 
-                                   x_offset, y_offset);
-            if(render_thing != NULL)
-              render_thing->render(renderer, geography[map_index][i][j], 
-                                   x_offset, y_offset);
-            if(render_person != NULL)
-              render_person->render(renderer, geography[map_index][i][j], 
-                                   x_offset, y_offset);
-          }
-          else
-          {
-            if(render_person != NULL)
-              render_person->render(renderer, geography[map_index][i][j], 
-                                   x_offset, y_offset);
-            if(render_thing != NULL)
-              render_thing->render(renderer, geography[map_index][i][j], 
-                                   x_offset, y_offset);
+            /* Different indexes result in different rendering procedures */
+            if(index == 0)
+            {
+              if(render_item != NULL)
+                render_item->render(renderer, geography[map_index][i][j], 
+                                    x_offset, y_offset);
+              if(render_thing != NULL)
+                render_thing->render(renderer, geography[map_index][i][j], 
+                                     x_offset, y_offset);
+              if(render_person != NULL)
+                render_person->render(renderer, geography[map_index][i][j], 
+                                      x_offset, y_offset);
+            }
+            else
+            {
+              if(render_person != NULL)
+                render_person->render(renderer, geography[map_index][i][j], 
+                                      x_offset, y_offset);
+              if(render_thing != NULL)
+                render_thing->render(renderer, geography[map_index][i][j], 
+                                     x_offset, y_offset);
+            }
           }
         }
         

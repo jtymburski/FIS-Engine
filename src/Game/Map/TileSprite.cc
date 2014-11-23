@@ -76,7 +76,7 @@ TileSprite::TileSprite(const TileSprite &source) : Sprite()
   resetPassability();
   resetTile();
   
-  copySelf(source);
+  copySelf(source, true);
 }
 
 /* 
@@ -103,23 +103,26 @@ TileSprite::~TileSprite()
  * Inputs: const Sprite &source - the reference sprite class
  * Output: none
  */
-void TileSprite::copySelf(const TileSprite &source)
+void TileSprite::copySelf(const TileSprite &source, bool only_sprite)
 {
   /* Copy base class information */
   Sprite::copySelf(source);
 
+  if(!only_sprite)
+  {
   /* Copy passability information - don't copy. Independent to each tile */
-  /*if(source.getPassability(Direction::NORTH))
-    setPassability(Direction::NORTH, true);
-  if(source.getPassability(Direction::SOUTH))
-    setPassability(Direction::SOUTH, true);
-  if(source.getPassability(Direction::EAST))
-    setPassability(Direction::EAST, true);
-  if(source.getPassability(Direction::WEST))
-    setPassability(Direction::WEST, true);*/
+    if(source.getPassability(Direction::NORTH))
+      setPassability(Direction::NORTH, true);
+    if(source.getPassability(Direction::SOUTH))
+      setPassability(Direction::SOUTH, true);
+    if(source.getPassability(Direction::EAST))
+      setPassability(Direction::EAST, true);
+    if(source.getPassability(Direction::WEST))
+      setPassability(Direction::WEST, true);
 
-  /* Copy render depth information - don't copy. Independent to each tile */
-  /*setRenderDepth(source.getRenderDepth());*/
+    /* Copy render depth information - don't copy. Independent to each tile */
+    setRenderDepth(source.getRenderDepth());
+  }
 }
 
 /*============================================================================
@@ -391,7 +394,7 @@ TileSprite& TileSprite::operator= (const TileSprite &source)
     return *this;
   
   /* Do the copy */
-  copySelf(source);
+  copySelf(source, false);
 
   /* Return the copied object */
   return *this;

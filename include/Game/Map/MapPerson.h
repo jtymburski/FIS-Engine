@@ -31,7 +31,7 @@ public:
 
 private:
   /* The direction of the player and the current movement direction */
-  Sprite* active_secondary;
+  Sprite* active_secondary; // TODO: Remove
   Direction direction;
   std::vector<Direction> movement_stack;
 
@@ -41,8 +41,9 @@ private:
 
   /* Set of all states for person. 1st index is surface (water, ground, etc)
    * and then 2nd index is direction facing */
-  std::vector< std::vector<Sprite*> > states;
-  std::vector< std::vector<Sprite*> > states_secondary;
+  std::vector<std::vector<SpriteMatrix*>> states;
+  //std::vector< std::vector<Sprite*> > states;
+  std::vector< std::vector<Sprite*> > states_secondary; // TODO: Remove
 
   /* A counter of steps made on the map */
   uint32_t steps;

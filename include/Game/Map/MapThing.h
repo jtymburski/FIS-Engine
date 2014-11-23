@@ -57,8 +57,7 @@ protected:
   Event interact_event;
   
   /* The main sprite frame data - contains passability and render depth */
-  //std::vector<std::vector<TileSprite*>> frame_matrix;
-  SpriteMatrix sprite_set;
+  SpriteMatrix* sprite_set;
 
   /* Movement information */
   Direction movement;
@@ -94,7 +93,10 @@ protected:
   /* Animates the thing, if it has multiple frames */
   virtual bool animate(int cycle_time, bool reset = false, 
                                        bool skip_head = false);
- 
+
+  /* Returns the rendering matrix */
+  SpriteMatrix* getMatrix();
+
   /* Is the thing almost centered on a tile (less than 1 pulse away) */
   bool isAlmostOnTile(int cycle_time);
   
@@ -108,14 +110,16 @@ protected:
   /* Sets the new direction that the class is moving in */
   bool setDirection(Direction new_direction);
 
-  /* Sets the frames in the passed in vector. This does not change anything
-   * related in the particular class */
-  bool setFrameData(XmlData data, int file_index, SDL_Renderer* renderer, 
-                    std::string base_path);
+  /* Sets the matrix in the class - this is used by children to utilize the
+   * printing of the thing */
+  bool setMatrix(SpriteMatrix* matrix);
 
   /* Starts and stops tile move. Relies on underlying logic for occurance */
   virtual void tileMoveFinish();
   virtual bool tileMoveStart(std::vector<std::vector<Tile*>> tile_set);
+
+  /* Unsets the matrix in the class - no deletion occurs */
+  void unsetMatrix();
 
 /*============================================================================
  * PUBLIC FUNCTIONS

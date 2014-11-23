@@ -104,7 +104,7 @@ void MapPerson::initializeStates()
 
     for(uint8_t j = 0; j < kTOTAL_DIRECTIONS; j++)
       row.push_back(NULL);
-    states.push_back(row);
+    //states.push_back(row); // TODO: Fix
     states_secondary.push_back(row);
   }
 }
@@ -556,10 +556,11 @@ Sprite* MapPerson::getState(SurfaceClassifier surface, Direction direction)
   int surface_index = static_cast<int>(surface);
   int dir_index = dirToInt(direction);
   
-  if(surface_index >= 0 && dir_index >= 0 &&
-     surface_index < static_cast<int>(states.size()) && 
-     dir_index < static_cast<int>(states[surface_index].size()))
-    return states[surface_index][dir_index];
+  // TODO: Fix
+  //if(surface_index >= 0 && dir_index >= 0 &&
+  //   surface_index < static_cast<int>(states.size()) && 
+  //   dir_index < static_cast<int>(states[surface_index].size()))
+  //  return states[surface_index][dir_index];
     
   Sprite* null_sprite = NULL;
   return null_sprite;
@@ -672,6 +673,7 @@ void MapPerson::keyUpEvent(SDL_KeyboardEvent event)
  *         int offset_y - the paint offset in the y direction
  * Output: bool - if the render succeeded
  */
+// TODO: Remove
 bool MapPerson::renderSecondary(SDL_Renderer* renderer, 
                                 int offset_x, int offset_y)
 {
@@ -762,7 +764,8 @@ bool MapPerson::setState(SurfaceClassifier surface,
   if(frames != NULL)
   {
     unsetState(surface, direction);
-    states[static_cast<int>(surface)][dirToInt(direction)] = frames;
+    // TODO: Fix
+    //states[static_cast<int>(surface)][dirToInt(direction)] = frames;
     
     /* If the updated state is the active one, automatically set the printable
      * sprite */

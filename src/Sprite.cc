@@ -10,8 +10,7 @@
  *              darkening, opacity, and color tuning.
  *
  * TODO:
- *   1. Add reverse function: 1(head)->2->3->4  -->  4(head)->3->2->1
- *   2. Sound added for particular sprite (category based)
+ *   1. Sound added for particular sprite (category based)
 *******************************************************************************/
 #include "Sprite.h"
 

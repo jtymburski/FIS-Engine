@@ -5,9 +5,11 @@
  * Description: This class handles the generic MapThing. It contains things on
  *              the map that don't fall under general scenary. It acts as the
  *              parent class to a sequence of others, for example, MapPerson,
- *              MapWalkOver, MapSolid, etc. Also handles the basic setup for 
+ *              MapWalkOver, etc. Also handles the basic setup for 
  *              name, description, id, sprite. No interaction is handled in 
  *              this class since its a generic parent.
+ * Notes: Any private or protected function do not ensure sprite_set is not
+ *        NULL or necessarily in range.
  *****************************************************************************/
 #include "Game/Map/MapThing.h"
 
@@ -30,6 +32,7 @@ const int MapThing::kUNSET_ID = -1;
 MapThing::MapThing()
 {
   event_handler = NULL;
+  sprite_set = NULL;
   MapThing::clear();
 }
 
@@ -99,18 +102,18 @@ MapThing::~MapThing()
 void MapThing::unsetTile(uint32_t x, uint32_t y, bool no_events)
 {
   (void)no_events;
-  uint8_t render_depth = sprite_set.at(x, y)->getRenderDepth();
+  uint8_t render_depth = sprite_set->at(x, y)->getRenderDepth();
 
   /* Remove from main tile, if applicable */
-  if(sprite_set.at(x, y)->isTileMainSet())
-    sprite_set.at(x, y)->getTileMain()->unsetThing(render_depth);
+  if(sprite_set->at(x, y)->isTileMainSet())
+    sprite_set->at(x, y)->getTileMain()->unsetThing(render_depth);
 
   /* Remove from previous tile, if applicable */
-  if(sprite_set.at(x, y)->isTilePreviousSet())
-    sprite_set.at(x, y)->getTilePrevious()->unsetThing(render_depth);
+  if(sprite_set->at(x, y)->isTilePreviousSet())
+    sprite_set->at(x, y)->getTilePrevious()->unsetThing(render_depth);
 
   /* Clean up frame */
-  sprite_set.at(x, y)->resetTile();
+  sprite_set->at(x, y)->resetTile();
 }
   
 /*============================================================================
@@ -132,28 +135,39 @@ bool MapThing::animate(int cycle_time, bool reset, bool skip_head)
   bool shift = false;
   
   /* Check if an animation can occur */
-  for(uint16_t i = 0; i < sprite_set.width(); i++)
+  for(uint16_t i = 0; i < sprite_set->width(); i++)
   {
-    for(uint16_t j = 0; j < sprite_set.height(); j++)
+    for(uint16_t j = 0; j < sprite_set->height(); j++)
     {
-      if(sprite_set.at(i, j) != NULL)
+      if(sprite_set->at(i, j) != NULL)
       {
         /* Reset back to head */
-        if(reset && !skip_head && !sprite_set.at(i, j)->isAtFirst())
+        if(reset && !skip_head && !sprite_set->at(i, j)->isAtFirst())
         {
-          sprite_set.at(i, j)->setAtFirst();
+          sprite_set->at(i, j)->setAtFirst();
           shift = true;
         }
     
         if(reset)
-          shift |= sprite_set.at(i, j)->update(0, skip_head);
+          shift |= sprite_set->at(i, j)->update(0, skip_head);
         else
-          shift |= sprite_set.at(i, j)->update(cycle_time, skip_head);
+          shift |= sprite_set->at(i, j)->update(cycle_time, skip_head);
       }
     }
   }
 
   return shift;
+}
+  
+/*
+ * Description: Returns the sprite matrix pointer. NULL if unset.
+ *
+ * Inputs: none
+ * Output: SpriteMatrix* - the sprite matrix pointer
+ */
+SpriteMatrix* MapThing::getMatrix()
+{
+  return sprite_set;
 }
 
 /* 
@@ -200,19 +214,19 @@ bool MapThing::isMoveAllowed(std::vector<std::vector<Tile*>> tile_set)
   bool move_allowed = true;
   
   if(tile_set.size() > 0 && 
-     tile_set.size() == sprite_set.width() && 
-     tile_set.front().size() == sprite_set.height())
+     tile_set.size() == sprite_set->width() && 
+     tile_set.front().size() == sprite_set->height())
   {
-    for(uint16_t i = 0; move_allowed && (i < sprite_set.width()); i++)
+    for(uint16_t i = 0; move_allowed && (i < sprite_set->width()); i++)
     {
       bool found = false;
       
-      for(uint16_t j = 0; !found && (j < sprite_set.height()); j++)
+      for(uint16_t j = 0; !found && (j < sprite_set->height()); j++)
       {
-        if(sprite_set.at(i, j) != NULL)
+        if(sprite_set->at(i, j) != NULL)
         {
           if(tile_set[i][j] == NULL || 
-             tile_set[i][j]->isThingSet(sprite_set.at(i, j)->getRenderDepth()))
+             tile_set[i][j]->isThingSet(sprite_set->at(i, j)->getRenderDepth()))
           {
             move_allowed = false;
           }
@@ -300,6 +314,26 @@ bool MapThing::setDirection(Direction new_direction)
   return changed;
 }
 
+/*
+ * Description: Sets the sprite matrix in the base thing class. Warning, this
+ *              does not delete existing memory. This is intended for use
+ *              by children classes that need to constantly switch the
+ *              matrix.
+ *
+ * Inputs: SpriteMatrix* matrix - the new matrix to use
+ * Output: bool - true if the matrix was set
+ */
+bool MapThing::setMatrix(SpriteMatrix* matrix)
+{
+  if(matrix != NULL)
+  {
+    unsetMatrix();
+    sprite_set = matrix;
+    return true;
+  }
+  return false;
+}
+
 /* 
  * Description: The tile move finish call. To be called after a move and it's
  *              determined that the thing is on the main tile (for the first
@@ -310,16 +344,16 @@ bool MapThing::setDirection(Direction new_direction)
  */
 void MapThing::tileMoveFinish()
 {
-  for(uint16_t i = 0; i < sprite_set.width(); i++)
+  for(uint16_t i = 0; i < sprite_set->width(); i++)
   {
-    for(uint16_t j = 0; j < sprite_set.height(); j++)
+    for(uint16_t j = 0; j < sprite_set->height(); j++)
     {
-      if(sprite_set.at(i, j) != NULL && 
-         sprite_set.at(i, j)->getTilePrevious() != NULL)
+      if(sprite_set->at(i, j) != NULL && 
+         sprite_set->at(i, j)->getTilePrevious() != NULL)
       {
-        sprite_set.at(i, j)->getTilePrevious()
-                           ->unsetThing(sprite_set.at(i, j)->getRenderDepth());
-        sprite_set.at(i, j)->tileMoveFinish();
+        sprite_set->at(i, j)->getTilePrevious()
+                           ->unsetThing(sprite_set->at(i, j)->getRenderDepth());
+        sprite_set->at(i, j)->tileMoveFinish();
       }
     }
   }
@@ -334,7 +368,6 @@ void MapThing::tileMoveFinish()
  * Inputs: std::vector<std::vector<Tile*>> tile_set - the next set of frames
  * Output: bool - if the tile start was successfully started
  */
-// TODO: Undo if fail??
 bool MapThing::tileMoveStart(std::vector<std::vector<Tile*>> tile_set)
 {
   bool success = true;
@@ -342,23 +375,26 @@ bool MapThing::tileMoveStart(std::vector<std::vector<Tile*>> tile_set)
 
   /* Data prechecks -> to confirm equivalency */
   if(tile_set.size() > 0 && 
-     tile_set.size() == sprite_set.width() && 
-     tile_set.back().size() == sprite_set.height())
+     tile_set.size() == sprite_set->width() && 
+     tile_set.back().size() == sprite_set->height())
   {
     /* Go through each frame and update */
-    for(uint16_t i = 0; i < sprite_set.width(); i++)
+    for(uint16_t i = 0; i < sprite_set->width(); i++)
     {
-      for(uint16_t j = 0; j < sprite_set.height(); j++)
+      for(uint16_t j = 0; j < sprite_set->height(); j++)
       {
-        if(sprite_set.at(i, j) != NULL)
+        if(sprite_set->at(i, j) != NULL)
         {
           /* Get one test frame, for testing differential on move distance */
           if(test_frames == NULL)
-            test_frames = sprite_set.at(i, j);
+            test_frames = sprite_set->at(i, j);
 
-          success &= sprite_set.at(i, j)->tileMoveStart(tile_set[i][j]);
-          success &= tile_set[i][j]->setThing(this, 
-                                        sprite_set.at(i, j)->getRenderDepth());
+          success &= sprite_set->at(i, j)->tileMoveStart(tile_set[i][j]);
+          if(success)
+            success &= tile_set[i][j]->setThing(this, 
+                                        sprite_set->at(i, j)->getRenderDepth());
+          if(!success)
+            sprite_set->at(i, j)->resetTile();
         }
       }
     }
@@ -378,6 +414,19 @@ bool MapThing::tileMoveStart(std::vector<std::vector<Tile*>> tile_set)
     return success;
   }
   return false;
+}
+
+/*
+ * Description: Unsets the matrix in the class. This removes it without
+ *              deleting. Only use if the matrix was set using the 
+ *              setMatrix() call.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void MapThing::unsetMatrix()
+{
+  sprite_set = NULL;
 }
 
 /*============================================================================
@@ -421,10 +470,8 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
   else if(identifier == "event")
   {
     if(event_handler != NULL)
-    {
       interact_event = event_handler->
               updateEvent(interact_event, data, file_index + 1, section_index);
-    }
     else
       success = false;
   }
@@ -436,7 +483,9 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
   /*----------------- RENDER MATRIX -----------------*/
   else if(identifier == "rendermatrix" && elements.size() == 1)
   {
-    sprite_set.setRenderMatrix(data.getDataString(&success));
+    if(sprite_set == NULL)
+      sprite_set = new SpriteMatrix();
+    sprite_set->setRenderMatrix(data.getDataString(&success));
   }
   /*--------------------- SPEED -----------------*/
   else if(identifier == "speed" && elements.size() == 1)
@@ -446,22 +495,20 @@ bool MapThing::addThingInformation(XmlData data, int file_index,
   /*--------------------- SPRITE DATA -----------------*/
   else if(identifier == "sprites")
   {
-    success &= sprite_set.addFileInformation(data, file_index + 1, renderer, 
-                                             base_path);
+    if(sprite_set == NULL)
+      sprite_set = new SpriteMatrix();
+    success &= sprite_set->addFileInformation(data, file_index + 1, renderer, 
+                                              base_path);
   }
   /*--------------------- STARTPOINT -----------------*/
   else if(identifier == "startpoint")
   {
     std::vector<std::string> points = Helpers::split(data.getDataString(), ',');
     if(points.size() == 2) /* There needs to be an x and y point */
-    {
       setStartingLocation(section_index, std::stoul(points[0]), 
                                          std::stoul(points[1]));
-    }
     else
-    {
       success = false;
-    }
   }
   /*--------------------- VISIBILITY -----------------*/
   else if(identifier == "visible")
@@ -549,7 +596,8 @@ void MapThing::clearTarget()
  */
 void MapThing::cleanMatrix()
 {
-  sprite_set.cleanMatrix();
+  if(sprite_set != NULL)
+    sprite_set->cleanMatrix();
 }
 
 /*
@@ -567,8 +615,16 @@ SDL_Rect MapThing::getBoundingBox()
 
   rect.x = x / width;
   rect.y = y / height;
-  rect.w = sprite_set.width();
-  rect.h = sprite_set.height();
+  if(sprite_set != NULL)
+  {
+    rect.w = sprite_set->width();
+    rect.h = sprite_set->height();
+  }
+  else
+  {
+    rect.w = 0;
+    rect.h = 0;
+  }
 
   return rect;
 }
@@ -588,8 +644,16 @@ SDL_Rect MapThing::getBoundingPixels()
 
   rect.x = x;
   rect.y = y;
-  rect.w = sprite_set.width() * width;
-  rect.h = sprite_set.height() * height;
+  if(sprite_set != NULL)
+  {
+    rect.w = sprite_set->width() * width;
+    rect.h = sprite_set->height() * height;
+  }
+  else
+  {
+    rect.w = 0;
+    rect.h = 0;
+  }
 
   return rect;
 }
@@ -629,7 +693,10 @@ Frame* MapThing::getDialogImage()
  */
 TileSprite* MapThing::getFrame(uint32_t x, uint32_t y)
 {
-  return sprite_set.getSprite(x, y);
+  TileSprite* found_sprite = NULL;
+  if(sprite_set != NULL)
+    found_sprite = sprite_set->getSprite(x, y);
+  return found_sprite;
 }
 
 /* 
@@ -645,7 +712,10 @@ TileSprite* MapThing::getFrame(uint32_t x, uint32_t y)
  */
 std::vector<std::vector<TileSprite*>> MapThing::getFrames()
 {
-  return sprite_set.getMatrix();
+  std::vector<std::vector<TileSprite*>> set;
+  if(sprite_set != NULL)
+    set = sprite_set->getMatrix();
+  return set;
 }
 
 /* 
@@ -926,9 +996,9 @@ bool MapThing::isVisible()
  */
 bool MapThing::render(SDL_Renderer* renderer, int offset_x, int offset_y)
 {
-  if(isVisible())
-    return sprite_set.render(renderer, x - offset_x, y - offset_y, 
-                             width, height);
+  if(sprite_set != NULL && isVisible())
+    return sprite_set->render(renderer, x - offset_x, y - offset_y, 
+                              width, height);
 
   return false;
 }
@@ -947,12 +1017,12 @@ bool MapThing::render(SDL_Renderer* renderer, int offset_x, int offset_y)
 bool MapThing::render(SDL_Renderer* renderer, Tile* tile, 
                       int offset_x, int offset_y)
 {
-  if(tile != NULL)
+  if(tile != NULL && sprite_set != NULL)
   {
     uint16_t render_tile_x = tile->getX() - tile_x;
     uint16_t render_tile_y = tile->getY() - tile_y;
-    TileSprite* render_frame = sprite_set.getSprite(render_tile_x, 
-                                                    render_tile_y);
+    TileSprite* render_frame = sprite_set->getSprite(render_tile_x, 
+                                                     render_tile_y);
    
     /* If frame is valid and visible, render */
     if(render_frame != NULL && render_frame->getTileMain() == tile 
@@ -1052,10 +1122,15 @@ void MapThing::setEventHandler(EventHandler* event_handler)
 bool MapThing::setFrame(TileSprite* frame, uint32_t x, uint32_t y, 
                         bool delete_old)
 {
+  /* Make sure the matrix class is initialized */
+  if(sprite_set == NULL)
+    sprite_set = new SpriteMatrix();
+
+  /* Proceed to set up the frame */
   if(frame != NULL)
   {
     unsetFrame(x, y, delete_old);
-    sprite_set.setSprite(frame, x, y, delete_old);
+    sprite_set->setSprite(frame, x, y, delete_old);
     return true;
   }
   return false;
@@ -1072,8 +1147,14 @@ bool MapThing::setFrame(TileSprite* frame, uint32_t x, uint32_t y,
 void MapThing::setFrames(std::vector<std::vector<TileSprite*>> frames, 
                          bool delete_old)
 {
+  /* Unset the existing frames */
   unsetFrames(delete_old);
-  sprite_set.setSprites(frames, delete_old);
+
+  if(sprite_set == NULL)
+    sprite_set = new SpriteMatrix();
+
+  /* Proceed to set up the frame set */
+  sprite_set->setSprites(frames, delete_old);
 }
 
 /*
@@ -1227,34 +1308,36 @@ bool MapThing::setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
 {
   bool success = true;
 
-  if(tile_set.size() > 0 && tile_set.size() == sprite_set.width() && 
-     tile_set.back().size() == sprite_set.height())
+  if(sprite_set != NULL && tile_set.size() > 0 && 
+     tile_set.size() == sprite_set->width() && 
+     tile_set.back().size() == sprite_set->height())
   {
     /* First, unset all tiles */
     unsetTiles(no_events);
 
     /* Attempt to set the new tiles */
-    for(uint32_t i = 0; success && (i < sprite_set.width()); i++)
+    for(uint32_t i = 0; success && (i < sprite_set->width()); i++)
     {
-      for(uint32_t j = 0; j < success && (j < sprite_set.height()); j++)
+      for(uint32_t j = 0; success && (j < sprite_set->height()); j++)
       {
-        if(sprite_set.at(i, j) != NULL)
+        if(sprite_set->at(i, j) != NULL)
         {
-          uint8_t render_depth = sprite_set.at(i, j)->getRenderDepth();
+          uint8_t render_depth = sprite_set->at(i, j)->getRenderDepth();
 
-          success &= sprite_set.at(i, j)->setTile(tile_set[i][j]);
+          success &= sprite_set->at(i, j)->setTile(tile_set[i][j]);
           if(success)
             success &= tile_set[i][j]->setThing(this, render_depth);
           if(!success)
-            sprite_set.at(i, j)->resetTile();
+            sprite_set->at(i, j)->resetTile();
         }
       }
     }
 
     /* If unsuccessful, unset all that were set */
-    unsetTiles(true);
-
-    tiles_set = success;
+    if(!success)
+      unsetTiles(true);
+    else
+      tiles_set = success;
     return success;
   }
   return false;
@@ -1347,10 +1430,10 @@ void MapThing::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
  */
 void MapThing::unsetFrame(uint32_t x, uint32_t y, bool delete_frames)
 {
-  if(sprite_set.getSprite(x, y) != NULL)
+  if(sprite_set != NULL && sprite_set->getSprite(x, y) != NULL)
   {
     unsetTile(x, y, true);
-    sprite_set.unsetSprite(x, y, delete_frames);
+    sprite_set->unsetSprite(x, y, delete_frames);
   }
 }
 
@@ -1363,7 +1446,8 @@ void MapThing::unsetFrame(uint32_t x, uint32_t y, bool delete_frames)
 void MapThing::unsetFrames(bool delete_frames)
 {
   unsetTiles(true);
-  sprite_set.unsetSprites(delete_frames);
+  if(sprite_set != NULL)
+    sprite_set->unsetSprites(delete_frames);
 }
 
 /*
@@ -1379,10 +1463,12 @@ void MapThing::unsetTiles(bool no_events)
   (void)no_events;
   
   /* Unset in each frame of the thing */
-  for(uint16_t i = 0; i < sprite_set.width(); i++)
-    for(uint16_t j = 0; j < sprite_set.height(); j++)
-      if(sprite_set.at(i, j) != NULL)
-        unsetTile(i, j, no_events);
-
+  if(sprite_set != NULL)
+  {
+    for(uint16_t i = 0; i < sprite_set->width(); i++)
+      for(uint16_t j = 0; j < sprite_set->height(); j++)
+        if(sprite_set->at(i, j) != NULL)
+          unsetTile(i, j, no_events);
+  }
   tiles_set = false;
 }

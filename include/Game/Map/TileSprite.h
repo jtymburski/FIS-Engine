@@ -47,7 +47,7 @@ private:
  *============================================================================*/
 private:
   /* Copy function, to be called by a copy or equal operator constructor */
-  void copySelf(const TileSprite &source);
+  void copySelf(const TileSprite &source, bool only_sprite);
 
 /*============================================================================
  * PUBLIC FUNCTIONS
