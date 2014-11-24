@@ -10,8 +10,6 @@
 #ifndef MAP_H
 #define MAP_H
 
-//#include <QDebug>
-// #include <QGLWidget>
 #include <vector>
 
 #include "FileHandler.h"
@@ -142,6 +140,9 @@ private:
 
   /* Returns a stack of map things that correspond to the ID stack */
   std::vector<MapThing*> getThingData(std::vector<int> thing_ids);
+
+  /* Returns a matrix of tiles that match the frames in the thing */
+  std::vector<std::vector<Tile*>> getTileMatrix(MapThing* thing);
 
   /* Initiates a section block of map. Triggered from the file data */
   bool initiateMapSection(uint16_t section_index, int width, int height);

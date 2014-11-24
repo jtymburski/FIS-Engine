@@ -403,6 +403,38 @@ std::vector<MapThing*> Map::getThingData(std::vector<int> thing_ids)
 
   return used_things;
 }
+  
+/* Returns a matrix of tiles that match the frames in the thing */
+// TODO: Comment
+std::vector<std::vector<Tile*>> Map::getTileMatrix(MapThing* thing)
+{
+  std::vector<std::vector<Tile*>> tile_set;
+
+  if(thing != NULL)
+  {
+    SDL_Rect render_box = thing->getBoundingBox();
+    uint16_t section = thing->getMapSection();
+    uint16_t range_x = render_box.x + render_box.w;
+    uint16_t range_y = render_box.y + render_box.h;
+
+    /* Confirm range is within valid parameters of map */
+    if(geography.size() > section && geography[section].size() > range_x && 
+       geography[section][range_x].size() > range_y)
+    {
+      /* Load the tiles that correspond to the thing */
+      for(uint16_t j = render_box.x; j < range_x; j++)
+      {
+        std::vector<Tile*> tile_col;
+          
+        for(uint16_t k = render_box.y; k < range_y; k++)
+          tile_col.push_back(geography[section][j][k]);
+        tile_set.push_back(tile_col);
+      }
+    }
+  }
+
+  return tile_set;
+}
 
 bool Map::initiateMapSection(uint16_t section_index, int width, int height)
 {
@@ -1081,28 +1113,28 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
       /* Clean the matrix - fixes up the rendering box */
       things[i]->cleanMatrix();
 
-      /* Get render box and ensure there is enough space on the geography */
-      SDL_Rect render_box = things[i]->getBoundingBox();
-      uint16_t section = things[i]->getMapSection();
-      uint16_t range_x = render_box.x + render_box.w;
-      uint16_t range_y = render_box.y + render_box.h;
-      if(geography.size() > section && geography[section].size() > range_x && 
-         geography[section][range_x].size() > range_y)
-      {
-        std::vector<std::vector<Tile*>> tile_set;
-        
-        /* Load the tiles that correspond to the thing */
-        for(uint16_t j = render_box.x; j < range_x; j++)
-        {
-          std::vector<Tile*> tile_col;
-          
-          for(uint16_t k = render_box.y; k < range_y; k++)
-            tile_col.push_back(geography[section][j][k]);
-          tile_set.push_back(tile_col);
-        }
-       
-        /* Set up the thing with the tiles */
+      /* Get the tile matrix to match the frames and set */
+      std::vector<std::vector<Tile*>> tile_set = getTileMatrix(things[i]);
+      if(tile_set.size() > 0)
         things[i]->setStartingTiles(tile_set, true);
+      else
+        things[i]->unsetFrames(true);
+    }
+
+    /* Person clean-up and tile set-up */
+    for(uint16_t i = 0; i < persons.size(); i++)
+    {
+      if(persons[i]->cleanMatrix())
+      {
+        std::vector<std::vector<Tile*>> tile_set = getTileMatrix(persons[i]);
+        if(tile_set.size() > 0)
+          persons[i]->setStartingTiles(tile_set, true);
+        else
+          persons[i]->unsetStates(true);
+      }
+      else
+      {
+        persons[i]->unsetStates(true);
       }
     }
 
@@ -1229,6 +1261,9 @@ bool Map::render(SDL_Renderer* renderer)
                                                          render_person, 
                                                          render_thing))
           {
+            //if(render_person != NULL)
+            //  std::cout << i << "," << j << " -- " << std::endl;
+
             /* Different indexes result in different rendering procedures */
             if(index == 0)
             {
@@ -1251,6 +1286,8 @@ bool Map::render(SDL_Renderer* renderer)
                 render_thing->render(renderer, geography[map_index][i][j], 
                                      x_offset, y_offset);
             }
+            //if(render_person != NULL)
+            //  std::cout << "--" << std::endl;
           }
         }
         

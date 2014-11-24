@@ -112,6 +112,14 @@ protected:
    * printing of the thing */
   bool setMatrix(SpriteMatrix* matrix);
 
+  /* Sets the tile of the selected with the corresponding frames */
+  virtual bool setTile(Tile* tile, TileSprite* frames, 
+                       bool no_events = true);
+  virtual bool setTileStart(Tile* tile, TileSprite* frames, 
+                            bool no_events = false);
+  virtual void setTileFinish(TileSprite* frames, bool reverse_last = false, 
+                             bool no_events = false);
+
   /* Starts and stops tile move. Relies on underlying logic for occurance */
   virtual void tileMoveFinish();
   virtual bool tileMoveStart(std::vector<std::vector<Tile*>> tile_set,
@@ -136,6 +144,10 @@ public:
   /* Returns the class descriptor, useful for casting */
   virtual std::string classDescriptor();
 
+  /* Shrink the frame matrix to the valid size and removes all null and void
+   * pointers.  */
+  virtual bool cleanMatrix();
+
   /* Clears the entire class data */
   virtual void clear();
    
@@ -145,10 +157,6 @@ public:
 
   /* Clears the target that the map thing is currently pointing at */
   void clearTarget();
-
-  /* Shrink the frame matrix to the valid size and removes all null and void
-   * pointers.  */
-  void cleanMatrix();
 
   /* Returns the bounding box of the thing */
   SDL_Rect getBoundingBox();

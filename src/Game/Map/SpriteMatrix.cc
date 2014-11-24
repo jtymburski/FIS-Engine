@@ -637,7 +637,7 @@ bool SpriteMatrix::setTiles(std::vector<std::vector<Tile*>> tiles)
   {
     /* Attempt to set the new tiles */
     for(uint32_t i = 0; success && (i < sprite_matrix.size()); i++)
-      for(uint32_t j = 0; j < success && (sprite_matrix[i].size()); j++)
+      for(uint32_t j = 0; success && (j < sprite_matrix[i].size()); j++)
         if(sprite_matrix[i][j] != NULL)
           success &= sprite_matrix[i][j]->setTile(tiles[i][j]);
 

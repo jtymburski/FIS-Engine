@@ -83,7 +83,15 @@ protected:
 
   /* Sets the direction that the person is travelling in */
   bool setDirection(Direction direction, bool set_movement = true);
-  
+   
+  /* Sets the tile of the selected with the corresponding frames */
+  virtual bool setTile(Tile* tile, TileSprite* frames, 
+                       bool no_events = true); 
+  virtual bool setTileStart(Tile* tile, TileSprite* frames, 
+                            bool no_events = false);
+  virtual void setTileFinish(TileSprite* frames, bool reverse_last = false, 
+                             bool no_events = false);
+
   /* Starts and stops tile move. Relies on underlying logic for occurance */
   void tileMoveFinish();
   bool tileMoveStart(std::vector<std::vector<Tile*>> tile_set, 
@@ -104,6 +112,10 @@ public:
 
   /* Returns the class descriptor, useful for casting */
   virtual std::string classDescriptor();
+  
+  /* Shrink the frame matrix to the valid size and removes all null and void
+   * pointers.  */
+  virtual bool cleanMatrix();
 
   /* Clears all information from the class (including deleting necessary
    * pointers) */

@@ -305,6 +305,75 @@ bool MapThing::setMatrix(SpriteMatrix* matrix)
   return false;
 }
 
+/*
+ * Description: Sets the tile in the sprite and sprite in the tile for the 
+ *              passed in objects. If it fails, it resets the pointers.
+ *
+ * Inputs: Tile* tile - the tile pointer to set the frame
+ *         TileSprite* frames - the sprite frames pointer to set in the tile
+ *         bool no_events - if events should trigger on the set
+ * Output: bool - true if the set was successful
+ */
+bool MapThing::setTile(Tile* tile, TileSprite* frames, bool no_events)
+{
+  (void)no_events;
+  uint8_t render_depth = frames->getRenderDepth();
+  bool success = true;
+
+  /* Attempt and set the tile */
+  success &= frames->setTile(tile);
+  if(success)
+    success &= tile->setThing(this, render_depth);
+  if(!success)
+    frames->resetTile();
+
+  return success;
+}
+ 
+/*
+ * Description: Sets the tile in the sprite and sprite in the tile for the 
+ *              passed in objects with regards to beginning a tile move. If it 
+ *              fails, it resets the pointers back to the original tile.
+ *
+ * Inputs: Tile* tile - the tile pointer to set the frame
+ *         TileSprite* frames - the sprite frames pointer to set in the tile
+ *         bool no_events - if events should trigger on the set
+ * Output: bool - true if the set was successful
+ */
+bool MapThing::setTileStart(Tile* tile, TileSprite* frames, bool no_events)
+{
+  (void)no_events;
+  bool success = true;
+
+  /* Attempt to set the new tile move */
+  success &= frames->tileMoveStart(tile);
+  if(success)
+    success &= tile->setThing(this, frames->getRenderDepth());
+  if(!success)
+    frames->tileMoveFinish(true);
+
+  return success;
+}
+
+/*
+ * Description: Sets the tile in the sprite and sprite in the tile for the 
+ *              passed in objects with regards to finishing a tile move.
+ *
+ * Inputs: TileSprite* frames - the sprite frames pointer to set in the tile
+ *         bool reverse_last - if the last start should be reversed
+ *         bool no_events - if events should trigger on the set
+ * Output: bool - true if the set was successful
+ */
+void MapThing::setTileFinish(TileSprite* frames, bool reverse_last, 
+                             bool no_events)
+{
+  if(reverse_last)
+    frames->getTileMain()->unsetThing(frames->getRenderDepth());
+  else
+    frames->getTilePrevious()->unsetThing(frames->getRenderDepth());
+  frames->tileMoveFinish(reverse_last);
+}
+
 /* 
  * Description: The tile move finish call. To be called after a move and it's
  *              determined that the thing is on the main tile (for the first
@@ -322,9 +391,7 @@ void MapThing::tileMoveFinish()
       if(sprite_set->at(i, j) != NULL && 
          sprite_set->at(i, j)->getTilePrevious() != NULL)
       {
-        sprite_set->at(i, j)->getTilePrevious()
-                           ->unsetThing(sprite_set->at(i, j)->getRenderDepth());
-        sprite_set->at(i, j)->tileMoveFinish();
+        setTileFinish(sprite_set->at(i, j), false, true);
       }
     }
   }
@@ -371,15 +438,13 @@ bool MapThing::tileMoveStart(std::vector<std::vector<Tile*>> tile_set,
           if(test_frames == NULL)
             test_frames = sprite_set->at(i, j);
 
-          success &= sprite_set->at(i, j)->tileMoveStart(tile_set[i][j]);
-          if(success)
-            success &= tile_set[i][j]->setThing(
-                       this, sprite_set->at(i, j)->getRenderDepth(), no_events);
+          /* Set the tile start */
+          success &= setTileStart(tile_set[i][j], sprite_set->at(i, j), 
+                                  no_events);
 
           /* If unsuccessful, store how far it parsed */
           if(!success)
           {
-            sprite_set->at(i, j)->tileMoveFinish(true);
             end_i = i;
             end_j = j;
           }
@@ -398,10 +463,7 @@ bool MapThing::tileMoveStart(std::vector<std::vector<Tile*>> tile_set,
           if(i == end_i && j == end_j)
             finished = true;
           else if(sprite_set->at(i, j) != NULL)
-          {
-            sprite_set->at(i, j)->tileMoveFinish(true);
-            tile_set[i][j]->unsetThing(sprite_set->at(i, j)->getRenderDepth());
-          }
+            setTileFinish(sprite_set->at(i, j), true, true);
         }
       }
     }
@@ -567,6 +629,22 @@ std::string MapThing::classDescriptor()
   return "MapThing";
 }
 
+/*
+ * Description: Takes the frame matrix, as it's been set up and removes any 
+ *              rows or columns at the end that have no valid frames set. A
+ *              frame is classified as valid if it's not NULL and has renderable
+ *              frames stored within it.
+ *
+ * Inputs: none
+ * Output: bool - true if clean validated frame data
+ */
+bool MapThing::cleanMatrix()
+{
+  if(sprite_set != NULL)
+    sprite_set->cleanMatrix();
+  return true;
+}
+
 /* 
  * Description: Clears out all information stored in the class
  * 
@@ -618,21 +696,6 @@ void MapThing::clearTarget()
   if(target != NULL)
     setMovementPaused(false);
   target = NULL;
-}
-
-/*
- * Description: Takes the frame matrix, as it's been set up and removes any 
- *              rows or columns at the end that have no valid frames set. A
- *              frame is classified as valid if it's not NULL and has renderable
- *              frames stored within it.
- *
- * Inputs: none
- * Output: none
- */
-void MapThing::cleanMatrix()
-{
-  if(sprite_set != NULL)
-    sprite_set->cleanMatrix();
 }
 
 /*
@@ -1058,7 +1121,7 @@ bool MapThing::render(SDL_Renderer* renderer, Tile* tile,
     uint16_t render_tile_y = tile->getY() - tile_y;
     TileSprite* render_frame = sprite_set->getSprite(render_tile_x, 
                                                      render_tile_y);
-   
+
     /* If frame is valid and visible, render */
     if(render_frame != NULL && render_frame->getTileMain() == tile 
                             && isVisible())
@@ -1356,15 +1419,7 @@ bool MapThing::setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
       for(uint32_t j = 0; success && (j < sprite_set->height()); j++)
       {
         if(sprite_set->at(i, j) != NULL)
-        {
-          uint8_t render_depth = sprite_set->at(i, j)->getRenderDepth();
-
-          success &= sprite_set->at(i, j)->setTile(tile_set[i][j]);
-          if(success)
-            success &= tile_set[i][j]->setThing(this, render_depth, no_events);
-          if(!success)
-            sprite_set->at(i, j)->resetTile();
-        }
+          success &= setTile(tile_set[i][j], sprite_set->at(i, j), no_events);
       }
     }
 

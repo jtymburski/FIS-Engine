@@ -250,6 +250,74 @@ bool MapPerson::setDirection(Direction direction, bool set_movement)
   return movement_changed;
 }
 
+/*
+ * Description: Sets the tile in the sprite and sprite in the tile for the 
+ *              passed in objects. If it fails, it resets the pointers.
+ *
+ * Inputs: Tile* tile - the tile pointer to set the frame
+ *         TileSprite* frames - the sprite frames pointer to set in the tile
+ *         bool no_events - if events should trigger on the set
+ * Output: bool - true if the set was successful
+ */
+bool MapPerson::setTile(Tile* tile, TileSprite* frames, bool no_events)
+{
+  uint8_t render_depth = frames->getRenderDepth();
+  bool success = true;
+
+  /* Attempt and set the tile */
+  success &= frames->setTile(tile);
+  if(success)
+    success &= tile->setPerson(this, render_depth, no_events);
+  if(!success)
+    frames->resetTile();
+
+  return success;
+}
+
+/*
+ * Description: Sets the tile in the sprite and sprite in the tile for the 
+ *              passed in objects with regards to beginning a tile move. If it 
+ *              fails, it resets the pointers back to the original tile.
+ *
+ * Inputs: Tile* tile - the tile pointer to set the frame
+ *         TileSprite* frames - the sprite frames pointer to set in the tile
+ *         bool no_events - if events should trigger on the set
+ * Output: bool - true if the set was successful
+ */
+bool MapPerson::setTileStart(Tile* tile, TileSprite* frames, bool no_events)
+{
+  (void)no_events;
+  bool success = true;
+
+  /* Attempt to set the new tile move */
+  success &= frames->tileMoveStart(tile);
+  if(success)
+    success &= tile->setPerson(this, frames->getRenderDepth(), no_events);
+  if(!success)
+    frames->tileMoveFinish(true);
+
+  return success;
+}
+
+/*
+ * Description: Sets the tile in the sprite and sprite in the tile for the 
+ *              passed in objects with regards to finishing a tile move.
+ *
+ * Inputs: TileSprite* frames - the sprite frames pointer to set in the tile
+ *         bool reverse_last - if the last start should be reversed
+ *         bool no_events - if events should trigger on the set
+ * Output: bool - true if the set was successful
+ */
+void MapPerson::setTileFinish(TileSprite* frames, bool reverse_last, 
+                             bool no_events)
+{
+  if(reverse_last)
+    frames->getTileMain()->unsetPerson(frames->getRenderDepth(), no_events);
+  else
+    frames->getTilePrevious()->unsetPerson(frames->getRenderDepth(), no_events);
+  frames->tileMoveFinish(reverse_last);
+}
+
 /* 
  * Description: The tile move finish call. To be called after a move and it's
  *              determined that the thing is on the main tile (for the first
@@ -356,89 +424,52 @@ bool MapPerson::addThingInformation(XmlData data, int file_index,
   bool success = true;
   
   /* Parse the identifier for setting the person information */
-  if(elements.size() >= 3)
+  /*--------------------- FRAMES -----------------*/
+  if(elements.size() >= 4 && elements[2] == "sprites")
   {
-    /*--------------------- FRAMES -----------------*/
-    if(elements[2] == "spritebot" || elements[2] == "spritetop" || 
-                                     elements[2] == "sprites")
-    {
-      /* Create the surface identifier */
-      SurfaceClassifier surface = GROUND;
-      if(elements[0] == "ground")
-        surface = GROUND;
+    /* Create the surface identifier */
+    SurfaceClassifier surface = GROUND;
+    if(elements[0] == "ground")
+      surface = GROUND;
       
-      /* Create the direction identifier */
-      Direction direction = Direction::DIRECTIONLESS;
-      if(elements[1] == "north")
-        direction = Direction::NORTH;
-      else if(elements[1] == "south")
-        direction = Direction::SOUTH;
-      else if(elements[1] == "east")
-        direction = Direction::EAST;
-      else if(elements[1] == "west")
-        direction = Direction::WEST;
+    /* Create the direction identifier */
+    Direction direction = Direction::DIRECTIONLESS;
+    if(elements[1] == "north")
+      direction = Direction::NORTH;
+    else if(elements[1] == "south")
+      direction = Direction::SOUTH;
+    else if(elements[1] == "east")
+      direction = Direction::EAST;
+    else if(elements[1] == "west")
+      direction = Direction::WEST;
 
-      /* Only proceed if the direction was a valid direction */
-      if(direction != Direction::DIRECTIONLESS)
+    /* Only proceed if the direction was a valid direction */
+    SpriteMatrix* matrix = getState(surface, direction);
+    if(matrix != NULL)
+      success &= matrix->addFileInformation(data, file_index + 3, 
+                                              renderer, base_path);
+    else
+      success = false;
+  }
+   /*----------------- RENDER MATRIX -----------------*/
+  else if(elements.size() == 1 && elements.front() == "rendermatrix")
+  {
+    for(uint8_t i = 0; i < states.size(); i++)
+    {
+      for(uint8_t j = 0; j < states[i].size(); j++)
       {
-        Sprite* frames = NULL;
-        Sprite* frames_upper = NULL;
-        
-        /* Determine if it's the main sprite or the secondary top sprite */
-        if(elements[2] == "spritebot") /* Main Lower Sprite */
-        {
-          //frames = getState(surface, direction);
-          //if(frames == NULL)
-          //{
-          //  frames = new Sprite();
-          //  if(!setState(surface, direction, frames))
-          //  {
-          //    delete frames;
-          //    frames = NULL;
-          //    success = false;
-          //  }
-          //}
-        }
-        //else if(elements[2] == "spritetop") /* Sprite Upper Top */
-        //{
-          //frames_upper = getStateSecondary(surface, direction);
-          //if(frames_upper == NULL)
-          //{
-            //frames_upper = new Sprite();
-            //if(!setStateSecondary(surface, direction, frames_upper))
-            //{
-              //delete frames_upper;
-              //frames_upper = NULL;
-              //success = false;
-            //}
-          //}
-        //}
-        else if(elements[2] == "sprites") /* Combined sprite */
-        {
-          std::cout << elements[3] << std::endl;
-          //Helpers::split();
-        }
-
-        /* Proceed with the add once valid frames are acquired. This will
-           add both the upper and lower frames for the person, if possible */
-        if(frames != NULL)
-          success &= frames->addFileInformation(data, file_index + 3, 
-                                                renderer, base_path);
-        if(frames_upper != NULL)
-          success &= frames_upper->addFileInformation(data, file_index + 3,
-                                                      renderer, base_path);
-      }
-      else
-      {
-        success = false;
+        states[i][j]->setRenderMatrix(data.getDataString(&success));
       }
     }
   }
-  
-  /* Proceed to parent */
-  return (success && MapThing::addThingInformation(data, file_index, 
-                                                   section_index, renderer, 
-                                                   base_path));
+  else
+  {
+    /* Proceed to parent */
+    success &= MapThing::addThingInformation(data, file_index, section_index, 
+                                             renderer, base_path);
+  }
+
+  return success;
 }
 
 /*
@@ -452,6 +483,44 @@ bool MapPerson::addThingInformation(XmlData data, int file_index,
 std::string MapPerson::classDescriptor()
 {
   return "MapPerson";
+}
+
+/*
+ * Description: Takes the frame matrix, as it's been set up and removes any 
+ *              rows or columns at the end that have no valid frames set. A
+ *              frame is classified as valid if it's not NULL and has renderable
+ *              frames stored within it.
+ *
+ * Inputs: none
+ * Output: bool - true if clean validated frame data
+ */
+bool MapPerson::cleanMatrix()
+{
+  bool equal_size = true;
+  uint16_t height = 0;
+  uint16_t width = 0;
+
+  for(uint8_t i = 0; i < states.size(); i++)
+  {
+    for(uint8_t j = 0; j < states[i].size(); j++)
+    {
+      states[i][j]->cleanMatrix();
+
+      /* Do some additional parsing to confirm data */
+      if(i == 0 && j == 0)
+      {
+        height = states[i][j]->height();
+        width = states[i][j]->width();
+      }
+      else if(states[i][j]->height() != height || 
+              states[i][j]->width() != width)
+      {
+        equal_size = false;
+      }
+    }
+  }
+
+  return equal_size;
 }
 
 /* 
@@ -676,13 +745,9 @@ bool MapPerson::setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
     SpriteMatrix* matrix = getState(surface, direction);
 
     for(uint8_t i = 0; i < kTOTAL_SURFACES; i++)
-    {
       for(uint8_t j = 0; j < kTOTAL_DIRECTIONS; j++)
-      {
         if(states[i][j] != NULL && states[i][j] != matrix)
           states[i][j]->setTiles(tile_set);
-      }
-    }
 
     starting_section = getMapSection();
     starting_tiles = tile_set;
