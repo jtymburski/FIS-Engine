@@ -109,9 +109,9 @@ bool Action::parse(const std::string &raw)
     if (sub_strings.at(4) != "")
       parseIgnoreFlags(ignore_def, sub_strings.at(4));
 
-    /* Parse Target attribute -- ALTER/ASSIGN/ABSORB keywords relate to it */
+    /* Parse Target attribute -- ALTER/ASSIGN keywords relate to it */
     if (actionFlag(ActionFlags::DAMAGE)  || actionFlag(ActionFlags::ALTER) || 
-        actionFlag(ActionFlags::ASSIGN) || actionFlag(ActionFlags::ABSORB))
+        actionFlag(ActionFlags::ASSIGN))
     {
       parseAttribute(sub_strings.at(5), true);
     }
@@ -165,9 +165,9 @@ bool Action::parse(const std::string &raw)
     if (actionFlag(ActionFlags::VARI_PC) && variance > kMAX_VARIANCE_PC)
       parseWarning("variance percent value higher than permitted", raw);
 
-    /* Parse USER attribute -- ALTER/ASSIGN/ABSORB keywords relate to it */
+    /* Parse USER attribute -- ALTER/ASSIGN keywords relate to it */
     if (actionFlag(ActionFlags::DAMAGE) || actionFlag(ActionFlags::ALTER) || 
-        actionFlag(ActionFlags::ASSIGN) || actionFlag(ActionFlags::ABSORB))
+        actionFlag(ActionFlags::ASSIGN))
     {
       parseAttribute(sub_strings.at(8), false);
     }

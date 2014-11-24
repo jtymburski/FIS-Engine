@@ -175,10 +175,6 @@ void Skill::flagSetup()
       if ((*it)->getUserAttribute() == Attribute::VITA && (*it)->getBase() > 0)
         setFlag(SkillFlags::HEALING);
     }
-    else if ((*it)->actionFlag(ActionFlags::ABSORB))
-    {
-      setFlag(SkillFlags::ABSORBING);
-    }
   }
 
   if (!getFlag(SkillFlags::OFFENSIVE) && !getFlag(SkillFlags::DEFENSIVE))

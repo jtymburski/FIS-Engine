@@ -160,7 +160,6 @@ enum class ActionFlags
   BASE_PC  = 1 << 6,  /* True if the base is a % value and not an abs one */
   VARI_PC  = 1 << 7,  /* True if the variance is a % value and not an abs one */
   VALID    = 1 << 8,  /* The validity of the action */
-  ABSORB   = 1 << 9   /* TODO: Fill In */
 };
 
 /* IgnoreFlags for storing which elemental atk/def stats are ignored */
