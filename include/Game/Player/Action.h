@@ -151,15 +151,16 @@ class AttributeSet;
 ENUM_FLAGS(ActionFlags)
 enum class ActionFlags
 {
-  DAMAGE   = 1 << 0, /* DAMAGE the VITA of the target */
-  ALTER    = 1 << 1, /* ALTER an attribute by a given value */
-  INFLICT  = 1 << 2, /* INFLICT a given ailment for a duration */
-  RELIEVE  = 1 << 3, /* RELIEVE a given ailment */
-  ASSIGN   = 1 << 4, /* ASSIGN an attribute to a given value */
-  REVIVE   = 1 << 5, /* REVIVE un-KOs target with base HP */
-  BASE_PC  = 1 << 6, /* True if the base is a % value and not an abs. one */
-  VARI_PC  = 1 << 7, /* True if the variance is a % value and not an abs. one */
-  VALID    = 1 << 8  /* The validity of the action */
+  DAMAGE   = 1 << 0,  /* DAMAGE the VITA of the target */
+  ALTER    = 1 << 1,  /* ALTER an attribute by a given value */
+  INFLICT  = 1 << 2,  /* INFLICT a given ailment for a duration */
+  RELIEVE  = 1 << 3,  /* RELIEVE a given ailment */
+  ASSIGN   = 1 << 4,  /* ASSIGN an attribute to a given value */
+  REVIVE   = 1 << 5,  /* REVIVE un-KOs target with base HP */
+  BASE_PC  = 1 << 6,  /* True if the base is a % value and not an abs one */
+  VARI_PC  = 1 << 7,  /* True if the variance is a % value and not an abs one */
+  VALID    = 1 << 8,  /* The validity of the action */
+  ABSORB   = 1 << 9   /* TODO: Fill In */
 };
 
 /* IgnoreFlags for storing which elemental atk/def stats are ignored */
