@@ -9,16 +9,16 @@
 *
 * TODO
 * ----
+* [03-01-14]: Weather updates
+* [08-01-14]: Battle front end
 * [08-24-14]: Finish battle run functionality
-* [11-06-14]: Update personal record run from battle count 
 * [08-24-14]: Finish victory functionality
 * [08-24-14]: Finish battle lost functionality
-* [08-01-14]: Battle front end
-* [03-01-14]: Weather updates
-* [03-16-14]: Ailment infliction message to battle front end
 * [08-24-14]: Ailment corner cases
 * [11-06-14]: Update the battle interface
 * [11-06-14]: Event handler finish signal (battle)?
+* [11-06-14]: Update personal record run from battle count 
+* [11-23-14]: Documentation
 *******************************************************************************/
 #ifndef BATTLE_H
 #define BATTLE_H
@@ -71,7 +71,7 @@ enum class IgnoreState
 enum class TurnMode
 {
   FRIENDS_FIRST,
-  ENEMIES_FIRST
+  ENEMIES_FIRST,
 };
 
 /* Enumerated values for turn state */
@@ -335,21 +335,27 @@ private:
   /* Determines the Regen % for a given enumerated regeneration rate */
   int16_t getRegenFactor(const RegenRate &regen_rate);
 
-  /* */
-  bool processAlterAction(std::vector<Person*> targets);
+  /* General processing action function */
+  bool processAction(std::vector<Person*> targets,
+      std::vector<DamageType> damage_types);
 
-  /* */
-  bool processAssignAction(std::vector<Person*> targets);
+  /* Processes an alteration action */
+  bool processAlterAction();
 
-  /* */
-  bool processDamageAction(std::vector<Person*> targets,
-    std::vector<DamageType> damage_types);
+  /* Processes an assigning action */
+  bool processAssignAction();
 
-  /* */
-  bool processRelieveAction(std::vector<Person*> targets);
+  /* Processes a damaging action */
+  bool processDamageAction(const DamageType &damage_type);
 
-  /* */
-  bool processInflictAction(std::vector<Person*> targets);
+  /* Processes a relieving action */
+  bool processRelieveAction();
+
+  /* Processes a reviving action */
+  bool processReviveAction();
+
+  /* Processes an inflicting action */
+  bool processInflictAction();
 
   /* Processes an individual action from a user against targets */
   bool processSkill(std::vector<Person*> targets, 

@@ -8,71 +8,16 @@
 *              is constructed from parsing a string from a file. Actions have
 *              unique IDs.
 *
-* Notes
-* -----
-*
-* [1]: The Action is parsed from a string with convention as follows:
-*
-* [ID],[DAMAGE/ALTER/INFLICT/RELIEVE/ASSIGN/REVIVE/ABSORB],[MIN].[MAX],
-* [IGNORE ATK ELEMENT 1].[IGNORE ATK ELEMENT 2]...,
-* [IGNORE DEF ELEMENT 1].[IGNORE DEF ELEMENT 2]...,
-* [TARGET'S ATTR/AILMENT],[AMOUNT/PC].[BASE],[AMOUNT/PC].[VARIANCE],
-* [USER'S ATTR],[CHANCE]
-*
-* Where:
-*   - ID - the unique ID that represents the action
-*   - ALTER/INFLICT/RELIEVE/ASSIGN/REVIVE/ABSORB keywords - see ActionFlags enum
-*   - MIN.MAX - the duration an inflicted ailment will persist
-*   - IGNORE ATK ELMENTs - a list of valid elements which when set, will not
-*                          include the action user's corresponding offensive
-*                          elemental statistics into battle calculations.
-*                         - can use ALL for all elements or ELEMENTAL for
-*                           everything non-physical
-*   - IGNORE DEF ELEMENTs - a list of valid elements which when set, will not
-*                           include the action target's corresponding defensive
-*                           elemental statistics into battle calculations.
-*                         - can use ALL for all elements or ELEMENTAL for
-*                           everything non-physical
-*   - TARGET'S ATTR/AILMENT - the affected attribute or ailment of the target
-*                             based on the key words.
-*   - BASE - the base power of the action (amount an attribute is affected)\
-*          - negative values will be used only when the ALTER key word is set
-*   - AMOUNT/PC - decides between utilizing base and variance as an amount 
-*                 (+ or -) value or as a factor (%) value
-*   - VARIANCE - the variance (even distribution) which base may change by
-*              - may be set to -1 for the highest possible variance
-*   - USER's ATTR - the affected attribute of the user based on ABSORB keyword
-*   - CHANCE - the chance of the action happening if the Skill used happens
-* -----
-*
-* [2]: Example actions and their intended effects:
-*
-* 1,ALTER,,,,THAG,PC.50,AMOUNT.15,,95
-* will alter Thermal Aggression of target by 50 +/- 15 with 95% ch. of occuring
-*
-* 1,ALTER,,PHYSICAL,PHYSICAL.THERMAL,VITA,AMOUNT.50,AMOUNT.10,,95
-* will damage target ignoring user's phys. atk and target's phys. and ther. def
-* at 50 +/- 15 points with 95% chance of occurence
-*
-* 1,INFLICT,2.7,,POISON,,,,75
-* will inflict poison lasting 2-7 turns with 75% chance of occuring
-*
-* 1,RELIEVE,,,,CURSE,,,100
-* will relieve curse 100% of the time
-*
-* 1,REVIVE,,,,VITA,PC.25,AMOUNT.50,,100
-* will revive a KO'd target with 25% +/- 15 VITA
-*
+* See .h file for detailed explanations.
 * See .h file for TODOs
 *******************************************************************************/
 #include "Game/Player/Action.h"
-#include "Game/Player/AttributeSet.h"
+#include "Game/Player/AttributeSet.h" /* Forward declaration in .h */
 
 /*=============================================================================
  * CONSTANTS - See implementation for details
  *============================================================================*/
 
-const bool     Action::kDEBUG_ENABLED   = true;
 const int32_t  Action::kDEFAULT_MIN     = 1;
 const int32_t  Action::kDEFAULT_MAX     = 2;
 const char     Action::kDELIMITER       = ',';
@@ -278,7 +223,7 @@ bool Action::parseAilment(const std::string &ailm)
   else if (ailm == "CHGBUFF")     ailment = Infliction::CHGBUFF;
   else if (ailm == "CYBBUFF")     ailment = Infliction::CYBBUFF;
   else if (ailm == "NIHBUFF")     ailment = Infliction::NIHBUFF;
-  // else if (ailm == "LIMBUFF")     ailment = Infliction::LIMBUFF;
+  else if (ailm == "LIMBUFF")     ailment = Infliction::LIMBUFF;
   else if (ailm == "UNBBUFF")     ailment = Infliction::UNBBUFF;
   else if (ailm == "MOMBUFF")     ailment = Infliction::MOMBUFF; 
   else if (ailm == "VITBUFF")     ailment = Infliction::VITBUFF; 
@@ -404,7 +349,7 @@ void Action::parseIgnoreFlags(IgnoreFlags& flag_set, const std::string &flags)
       flag_set |= IgnoreFlags::PHYSICAL | IgnoreFlags::THERMAL    | 
                   IgnoreFlags::POLAR    | IgnoreFlags::PRIMAL     |
                   IgnoreFlags::CHARGED  | IgnoreFlags::CYBERNETIC |
-                  IgnoreFlags::NIHIL;
+                  IgnoreFlags::NIHIL    | IgnoreFlags::LUCK;
     }
     if (s == "ELEMENTAL")
       flag_set &= ~IgnoreFlags::PHYSICAL;
@@ -422,6 +367,8 @@ void Action::parseIgnoreFlags(IgnoreFlags& flag_set, const std::string &flags)
       flag_set |= IgnoreFlags::CYBERNETIC;
     else if (s == "NIHIL")
       flag_set |= IgnoreFlags::NIHIL;
+    else if (s == "LUCK")
+      flag_set |= IgnoreFlags::LUCK;
   }
 
   if (static_cast<int>(ignore_atk) == 0)
@@ -440,8 +387,9 @@ void Action::parseIgnoreFlags(IgnoreFlags& flag_set, const std::string &flags)
  */
 void Action::parseWarning(const std::string &warning, const std::string &raw)
 {
-  if (kDEBUG_ENABLED)
+#ifdef UDEBUG
     std::cerr << "Action Error: " << warning << " on: " << raw << std::endl;
+#endif
 
   action_flags &= ~ActionFlags::VALID;
 }
@@ -503,7 +451,6 @@ void Action::print(const bool &print_action, const bool& print_ignore)
     std::cout << "RELIEVE: " << actionFlag(ActionFlags::RELIEVE) << std::endl;
     std::cout << "ASSIGN: "  << actionFlag(ActionFlags::ASSIGN)  << std::endl;
     std::cout << "REVIVE: "  << actionFlag(ActionFlags::REVIVE)  << std::endl;
-    std::cout << "ABSORB: "  << actionFlag(ActionFlags::ABSORB)  << std::endl;
     std::cout << "BASE_PC: " << actionFlag(ActionFlags::BASE_PC) << std::endl;
     std::cout << "VARI_PC: " << actionFlag(ActionFlags::VARI_PC) << std::endl;
     std::cout << "VALID: "   << actionFlag(ActionFlags::VALID)   << std::endl;

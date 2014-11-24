@@ -1578,123 +1578,129 @@ bool Battle::processGuard()
     good_guard &= curr_target->setGuard(curr_user);
   }
 
-
   return good_guard;
 }
 
 /*
- * Description: 
+ * Description:
  *
- * Inputs:
+ * Inputs: 
  * Output:
  */
-bool Battle::processAlterAction(std::vector<Person*> targets)
+bool Battle::processAction(std::vector<Person*> targets,
+    std::vector<DamageType> damage_types)
 {
-  //TODO
-  (void)targets;
-  return false;
-}
-
-/*
- * Description: 
- *
- * Inputs:
- * Output:
- */
-bool Battle::processAssignAction(std::vector<Person*> targets)
-{
-  //TODO
-  (void)targets;
-  return false;
-}
-
-/*
- * Description: 
- *
- * Inputs:
- * Output:
- */
-bool Battle::processDamageAction(std::vector<Person*> targets,
-  std::vector<DamageType> damage_types)
-{
-  auto can_process  = true;
+  auto done         = false;
   auto target_alive = true;
-  auto done  = false;
 
   for (auto jt = begin(targets); !done && jt != end(targets); ++jt, pro_index++)
   {
-    can_process &= (*jt) != nullptr;
-    can_process &= curr_user != nullptr;
-    
+    auto damage_type = damage_types.at(pro_index);
+
     /* Damage actions can only be processed against targets who are alive */
-    if (can_process)
-    {
-      can_process &= (*jt)->getBFlag(BState::ALIVE);
-      target_alive &= (*jt)->getBFlag(BState::ALIVE);
-    }
+    target_alive &= (*jt)->getBFlag(BState::ALIVE);
 
-    if (can_process)
-    {
-      if (getBattleMode() == BattleMode::TEXT)
-        std::cout << "{Target} Processing: " << (*jt)->getName() << std::endl;
+    if (getBattleMode() == BattleMode::TEXT)
+      std::cout << "{Target} Processing: " << (*jt)->getName() << std::endl;
     
-      /* Assign the target pointer to class variable */
-      curr_target = *jt;
-        
-      if (doesActionHit())
-      {
-        auto actual_crit_factor = 1.00;
-        auto curr_damage_type = damage_types.at(pro_index);
-  
-        bool crit_happens = doesActionCrit();
-        
-        if (crit_happens)
-          actual_crit_factor = calcCritFactor();
+    /* Assign the target pointer to class variable */
+    curr_target = *jt;
 
-        auto base_damage = calcBaseDamage(actual_crit_factor, curr_damage_type);
-        auto damage_mod   = curr_user->getDmgMod();
-        auto total_damage = static_cast<int32_t>(base_damage * damage_mod);
-
-        total_damage = Helpers::setInRange(total_damage, kMINIMUM_DAMAGE, 
-                                           kMAXIMUM_DAMAGE);
-        
-        if (crit_happens && getBattleMode() == BattleMode::TEXT)
-        {
-          std::cout << "{CRITICAL} - The strike is critical!" << std::endl;
-        }
-        if (getBattleMode() == BattleMode::TEXT && curr_target != nullptr)
-        {
-          std::cout << "{DAMAGE} " << curr_target->getName() << " receives "
-                    << base_damage << " points of damage from " 
-                    << curr_user->getName() << "." << std::endl;
-        }
-        /* If doDmg returns true, the actor has died. Update guarding and other
-         * corner cases and check for party death. Else, an actor has not died
-         * but guard and defending flags, etc. may need to be recalculated. */
-        if (curr_target->doDmg(total_damage))
-          done = updatePersonDeath(curr_damage_type);
-        else
-          updateTargetDefense();
-      }
-      else 
-      {
-        if (getBattleMode() == BattleMode::TEXT)
-          std::cout << "{MISS} The action has missed. " << std::endl;
-      }
+    if (doesActionHit())
+    {
+      if (curr_action->actionFlag(ActionFlags::DAMAGE))
+        done = processDamageAction(damage_type);
+      else if (curr_action->actionFlag(ActionFlags::ALTER))
+        done = processAlterAction();
+      else if (curr_action->actionFlag(ActionFlags::INFLICT))
+        done = processInflictAction();
+      else if (curr_action->actionFlag(ActionFlags::RELIEVE))
+        done = processRelieveAction();
+      else if (curr_action->actionFlag(ActionFlags::ASSIGN))
+        done = processAssignAction();
+      else if (curr_action->actionFlag(ActionFlags::REVIVE))
+        done = processReviveAction();
     }
-    else if (!can_process && !target_alive)
+    else if (!target_alive)
     {
       if (getBattleMode() == BattleMode::TEXT)
-      {
-        std::cout << "{MISS} The action has no effect on a deceased target!"
-                  << std::endl;
-      }
+        std::cout << "{Fizzle} The action has fizzled!" << std::endl;
     }
-    else
+    else if (getBattleMode() == BattleMode::TEXT)
     {
-      std::cerr << "[ERROR] Error in battle processing" << std::endl;
+      std::cout << "{MISS} The action has missed. " << std::endl;
     }
   }
+
+  return done;
+}
+
+/*
+ * Description: Processes an alteration keywoard action against a vector of 
+ *              targets also given a vector of corresponding DamageTypes
+ *
+ * Inputs: std::vector<Person*> - vector of targets in the form of Person ptrs
+ *         std::vector<DamageType> - vector of corresponding damage types
+ * Output: bool - true if a party death (vic. cond.) occured during operation
+ */
+bool Battle::processAlterAction()
+{
+  //TODO
+  return false;
+}
+
+/*
+ * Description: 
+ *
+ * Inputs:
+ * Output:
+ */
+bool Battle::processAssignAction()
+{
+  //TODO
+  return false;
+}
+
+/*
+ * Description: 
+ *
+ * Inputs:
+ * Output:
+ */
+bool Battle::processDamageAction(const DamageType &damage_type)
+{
+  auto actual_crit_factor = 1.00;
+  bool crit_happens = doesActionCrit();
+        
+  if (crit_happens)
+    actual_crit_factor = calcCritFactor();
+
+  auto base_damage = calcBaseDamage(actual_crit_factor, damage_type);
+  auto damage_mod   = curr_user->getDmgMod();
+  auto damage = static_cast<int32_t>(base_damage * damage_mod);
+
+  damage = Helpers::setInRange(damage, kMINIMUM_DAMAGE, kMAXIMUM_DAMAGE);
+        
+  if (crit_happens && getBattleMode() == BattleMode::TEXT)
+  {
+    std::cout << "{CRITICAL} - The strike is critical!" << std::endl;
+  }
+  if (getBattleMode() == BattleMode::TEXT && curr_target != nullptr)
+  {
+    std::cout << "{DAMAGE} " << curr_target->getName() << " receives "
+              << base_damage << " points of damage from " 
+              << curr_user->getName() << "." << std::endl;
+  }
+  
+  /* If doDmg returns true, the actor has died. Update guarding and other
+   * corner cases and check for party death. Else, an actor has not died
+   * but guard and defending flags, etc. may need to be recalculated. */
+  bool done = false;
+
+  if (curr_target->doDmg(damage))
+    done = updatePersonDeath(damage_type);
+  else
+    updateTargetDefense();
 
   /* Returns true if a party death occured during processing */
   return done;
@@ -1706,10 +1712,9 @@ bool Battle::processDamageAction(std::vector<Person*> targets,
  * Inputs:
  * Output:
  */
-bool Battle::processRelieveAction(std::vector<Person*> targets)
+bool Battle::processRelieveAction()
 {
   //TODO
-  (void)targets;
   return false;
 }
 
@@ -1719,10 +1724,21 @@ bool Battle::processRelieveAction(std::vector<Person*> targets)
  * Inputs:
  * Output:
  */
-bool Battle::processInflictAction(std::vector<Person*> targets)
+bool Battle::processReviveAction()
 {
   //TODO
-  (void)targets;
+  return false;
+}
+
+/*
+ * Description: 
+ *
+ * Inputs:
+ * Output:
+ */
+bool Battle::processInflictAction()
+{
+  //TODO
   return false;
 }
 
@@ -1791,40 +1807,9 @@ bool Battle::processSkill(std::vector<Person*> targets,
       secd_user_off *= kOFF_SECD_ELM_MODIFIER;
       secd_user_def *= kDEF_SECD_ELM_MODIFIER;
     }
-
-    if ((*it)->actionFlag(ActionFlags::DAMAGE))
-    {
-      done = processDamageAction(targets, damage_types);
-    }
-    else if ((*it)->actionFlag(ActionFlags::INFLICT))
-    {
-    // if infliction
-      // check for immunities
-        // if not immune, chance for infliction
-        // if successful, recalculate ailments
-        // if failed, output message
-    }
-    else if ((*it)->actionFlag(ActionFlags::RELIEVE))
-    {
-    // if relieving, if chance occurs,
-      // remove ailment if exists
-      // update ailments
-    }
-    else if ((*it)->actionFlag(ActionFlags::ASSIGN))
-    {
-    // stat changing? TBD
-      // find each stat to change
-      // find by amount or by factor
-        // incr. stats by amt. or factor
-    }
-    else if ((*it)->actionFlag(ActionFlags::REVIVE))
-    {
-
-    }
-    else if ((*it)->actionFlag(ActionFlags::ABSORB))
-    {
-
-    }
+    
+    /* Process the action -> calls separate functions */
+    done = processAction(targets, damage_types);
   }
 
   setBattleFlag(CombatState::PROCESSING_SKILL, false);
@@ -1849,7 +1834,6 @@ void Battle::processBuffer()
     auto can_process       = true;
     auto curr_targets      = action_buffer->getTargets();
     auto curr_damage_types = action_buffer->getDamageTypes();
-
 
     curr_action_type = action_buffer->getActionType();
     curr_user        = action_buffer->getUser();

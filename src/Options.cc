@@ -11,20 +11,22 @@
  *  - Some way to handle when SDL parameters are changed or anything of
  *    relevance so that the game gets the updated versions of all these
  *    parameters.
- *  - Add sound slider, for globa volume. Max 100%.
+ *  - Add sound slider, for global volume. Max 100%.
  *
  * Options to add:
  *  - Set the text display speed in MapDialog (for the character letters)
+ *  - [11-23-14] Battle option for alternative victory/loss conditions
+ *  - Covnert flags to ENUM_FLAGS set for easy addition later?
  ******************************************************************************/
 #include "Options.h"
 
 /* Constant Implementation - see header file for descriptions */
 const std::string Options::kFONTS[] = {"fonts/colab_light.otf", 
                                        "fonts/blanch_caps.otf"};
-const uint8_t Options::kNUM_FONTS = 2;
-const uint8_t Options::kNUM_RESOLUTIONS = 3;
-const uint16_t Options::kRESOLUTIONS_X[] = {1216, 1366, 1920};
-const uint16_t Options::kRESOLUTIONS_Y[] = {704, 768, 1080};
+const uint8_t  Options::kNUM_FONTS = 2;
+const uint8_t  Options::kNUM_RESOLUTIONS = 4;
+const uint16_t Options::kRESOLUTIONS_X[] = {1216, 1366, 1920, 2560};
+const uint16_t Options::kRESOLUTIONS_Y[] = {704, 768, 1080, 1080};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -74,7 +76,7 @@ void Options::setAllToDefault()
   setFont(0, true);
   setLinearFiltering(false);
   setScreenResolution(0);
-  setVsync(true);
+  setVsync(false);
 }
 
 void Options::setAilmentUpdateState(BattleOptions new_state)
@@ -137,6 +139,7 @@ void Options::setScreenResolution(uint8_t index)
   }
 }
 
+// Have you heard of der flags??
 void Options::setVsync(bool enabled)
 {
   vsync_enabled = enabled;
