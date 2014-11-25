@@ -109,11 +109,11 @@ bool Action::parse(const std::string &raw)
     if (sub_strings.at(4) != "")
       parseIgnoreFlags(ignore_def, sub_strings.at(4));
 
-    /* Parse Target attribute -- ALTER/ASSIGN keywords relate to it */
+    /* Parse User attribute -- ALTER/ASSIGN keywords relate to it */
     if (actionFlag(ActionFlags::DAMAGE)  || actionFlag(ActionFlags::ALTER) || 
         actionFlag(ActionFlags::ASSIGN))
     {
-      parseAttribute(sub_strings.at(5), true);
+      parseAttribute(sub_strings.at(5), false);
     }
 
     /* INFLICT and RELIEVE keywords relate to ailments */
@@ -165,11 +165,11 @@ bool Action::parse(const std::string &raw)
     if (actionFlag(ActionFlags::VARI_PC) && variance > kMAX_VARIANCE_PC)
       parseWarning("variance percent value higher than permitted", raw);
 
-    /* Parse USER attribute -- ALTER/ASSIGN keywords relate to it */
+    /* Parse TARGET attribute -- ALTER/ASSIGN keywords relate to it */
     if (actionFlag(ActionFlags::DAMAGE) || actionFlag(ActionFlags::ALTER) || 
         actionFlag(ActionFlags::ASSIGN))
     {
-      parseAttribute(sub_strings.at(8), false);
+      parseAttribute(sub_strings.at(8), true);
     }
 
     /* Parse the chance occuring of the action */
@@ -317,8 +317,9 @@ bool Action::parseAttribute(const std::string &attr_parse, const bool &target)
     return true;
   }
 
-  parseWarning("attempting to parse attribute", attr_parse);
-  return false;
+  //parseWarning("attempting to parse attribute", attr_parse);
+
+  return true;
 }
 
 void Action::parseChance(const float &parse_chance)

@@ -340,7 +340,7 @@ private:
       std::vector<DamageType> damage_types);
 
   /* Processes an alteration action */
-  bool processAlterAction();
+  bool processAlterAction(const DamageType &damage_type);
 
   /* Processes an assigning action */
   bool processAssignAction();

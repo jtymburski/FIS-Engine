@@ -20,15 +20,16 @@
 const uint8_t Helpers::kMAX_RENDER_DEPTH = 10;
 const uint16_t Helpers::kTILE_SIZE = 64;
 
+SDL_Texture* Helpers::white_mask = NULL;
+
 /*=============================================================================
  * RANDOM GENERATOR FUNCTIONS
  *============================================================================*/
 
 const unsigned int Helpers::seed_original = 
                     std::chrono::system_clock::now().time_since_epoch().count();
-SDL_Texture* Helpers::white_mask = NULL;
 
-std::mt19937 Helpers::rand_eng(seed_original);
+std::mt19937    Helpers::rand_eng(seed_original);
 std::mt19937_64 Helpers::rand_64_eng(seed_original);
 
 /*
@@ -166,10 +167,11 @@ int Helpers::rollXS(const int &x_sides, const int &s_times)
  *============================================================================*/
 
 /*
- * Description: 
+ * Description: Returns "an" for "apple" and "a" for "eulogy" and
+ *              "a" for "sword" etc.
  *
- * Inputs: 
- * Output: 
+ * Inputs: std::string - noun - noun to find a/an for
+ * Output: std::string - "a" or "an" where required 
  */
 std::string Helpers::a_An(const std::string &noun)
 {
@@ -210,10 +212,10 @@ std::string Helpers::a_An(const std::string &noun)
 }
 
 /*
- * Description: 
+ * Description: Flushes some whitespace (or whatever) into the console window.
  *
- * Inputs: 
- * Output: 
+ * Inputs: char c - character to put on each line, ex. ' '
+ * Output: none
  */
 void Helpers::flushConsole(const char &c)
 {
@@ -222,10 +224,10 @@ void Helpers::flushConsole(const char &c)
 }
 
 /*
- * Description: 
+ * Description: Determines vowel-ness. (See a_an fn)
  *
- * Inputs: 
- * Output: 
+ * Inputs: char c - char to see if it is a vowel
+ * Output: bool - true if the given char is a vowel
  */
 bool Helpers::isVowel(const char &c)
 {
@@ -234,10 +236,10 @@ bool Helpers::isVowel(const char &c)
 }
 
 /*
- * Description: 
+ * Description: Elemental string form of an enumerated element.
  *
- * Inputs: 
- * Output: 
+ * Inputs: Element - enumerated form of element.
+ * Output: std::string - string form of the element
  */
 std::string Helpers::elementToString(const Element &element)
 {
@@ -260,10 +262,10 @@ std::string Helpers::elementToString(const Element &element)
 }
 
 /*
- * Description: 
+ * Description: Convert enumerated cell type to string
  *
- * Inputs: 
- * Output: 
+ * Inputs: CellState - enumerated state of a cell in signature
+ * Output: std::string - string form of the given enumeration
  */
 std::string Helpers::cellToStr(const CellState &cell_state)
 {
@@ -282,10 +284,10 @@ std::string Helpers::cellToStr(const CellState &cell_state)
 }
 
 /*
- * Description: 
+ * Description: Returns string names of enumerated action types
  *
- * Inputs: 
- * Output: 
+ * Inputs: ActionType - enumerated action type to find string for
+ * Output: std::string - the string of the corresponding enumeration
  */
 std::string Helpers::actionTypeToStr(const ActionType &action_type)
 {
@@ -310,10 +312,10 @@ std::string Helpers::actionTypeToStr(const ActionType &action_type)
 }
 
 /*
- * Description: 
+ * Description: Returns the string form a given ActionScope enum
  *
- * Inputs: 
- * Output: 
+ * Inputs: ActionScope - enum of scope of actions for Skills
+ * Output: std::string - string corresponding to the ActionScope
  */
 std::string Helpers::actionScopeToStr(const ActionScope &action_scope)
 {
@@ -354,10 +356,10 @@ std::string Helpers::actionScopeToStr(const ActionScope &action_scope)
 }
 
 /*
- * Description: 
+ * Description: Returns the AI difficulty enum of an AI Module
  *
- * Inputs: 
- * Output: 
+ * Inputs: AIDifficulty - enumerated difficulty
+ * Output: std::string - corresponding string form of the enum
  */
 /* Convert enumerated AI Difficulty to String */
 std::string Helpers::aiDifficultyToStr(const AIDifficulty &ai_difficulty)
@@ -375,10 +377,10 @@ std::string Helpers::aiDifficultyToStr(const AIDifficulty &ai_difficulty)
 }
 
 /*
- * Description: 
+ * Description: Returns the string form of an AIPersonality enum.
  *
- * Inputs: 
- * Output: 
+ * Inputs: AIPersonality - the enumerated personality type of an AI
+ * Output: std::string - the corresponding string for the personality
  */
 std::string Helpers::aiPersonalityToStr(const AIPersonality &ai_personality)
 {
@@ -407,10 +409,10 @@ std::string Helpers::aiPersonalityToStr(const AIPersonality &ai_personality)
 }
 
 /*
- * Description: 
+ * Description: Returns the string form of an ailment (Infliction enum)
  *
- * Inputs: 
- * Output: 
+ * Inputs: Infliction - enumerated type of Infliction
+ * Output: std::string - the string of the enumeration
  */
 std::string Helpers::ailmentToString(const Infliction &ail)
 {
@@ -498,6 +500,12 @@ std::string Helpers::ailmentToString(const Infliction &ail)
   return "";
 }
 
+/*
+ * Description: Converts an integer to roman numeral form (ex. 6 -> VI)
+ *
+ * Inputs: int - the value of the integer to find roman numerals for
+ * Output: std::string - the compiled roman numeral form for the value
+ */
 std::string Helpers::numToRoman(int value)
 {
   struct roman_values 

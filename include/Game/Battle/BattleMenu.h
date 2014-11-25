@@ -78,7 +78,7 @@ private:
   Options* config;
 
   /* Potentially selected object pointers */
-  Skill* selected_skill;
+  BattleSkill selected_skill;
   Item*   selected_item;
 
   /* Set of BattleMenuState flags */
@@ -184,7 +184,7 @@ public:
   std::vector<BattleItem> getMenuItems();
 
   /* The currently selected Skill (if set) */
-  Skill* getSelectedSkill();
+  BattleSkill getSelectedSkill();
 
   /* The currently selected Item (if set) */
   Item* getSelectedItem();

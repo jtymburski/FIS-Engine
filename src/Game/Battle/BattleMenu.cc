@@ -34,7 +34,6 @@ BattleMenu::BattleMenu(Options* running_config)
     , action_type{ActionType::NONE}
     , action_scope{ActionScope::NO_SCOPE}
     , config{running_config}
-    , selected_skill{nullptr}
     , selected_item{nullptr}
     , flags{static_cast<MenuState>(0)}
     , window_status{WindowStatus::OFF}
@@ -486,10 +485,10 @@ void BattleMenu::keyDownSelect()
           layer_to_increment = 3;
         
           /* Grab the selected skill */
-          selected_skill = menu_skills.at(element_index).skill;
+          selected_skill = menu_skills.at(element_index);
 
           /* Decrease the current user's QD by the cost required */
-          auto true_cost = current_user->getTrueCost(selected_skill);
+          auto true_cost = current_user->getTrueCost(selected_skill.skill);
 
           if (true_cost <= current_user->getCurr().getStat("QTDR"))
           {
@@ -610,7 +609,6 @@ void BattleMenu::unsetAll(const bool &window_off)
   selected_targets.clear();
   menu_skills.clear();
 
-  selected_skill = nullptr;
   selected_item  = nullptr;
   current_user   = nullptr;
 
@@ -964,7 +962,7 @@ void BattleMenu::printMenuState()
               << " with name: ";
 
     if (action_type == ActionType::SKILL)
-      std::cout << selected_skill->getName();
+      std::cout << selected_skill.skill->getName();
     else if (action_type == ActionType::ITEM)
       std::cout << selected_item->getName();
     else
@@ -1067,7 +1065,7 @@ std::vector<BattleSkill> BattleMenu::getMenuSkills()
  * Inputs: none
  * Output: Skill* - pointer to the currently selected Skill object.
  */
-Skill* BattleMenu::getSelectedSkill()
+BattleSkill BattleMenu::getSelectedSkill()
 {
   return selected_skill;
 }

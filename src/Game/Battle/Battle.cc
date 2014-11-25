@@ -421,7 +421,7 @@ bool Battle::bufferUserAction()
   {
     //TODO: Buffering skill cooldowns [11-15-14]
 
-    curr_skill = menu->getSelectedSkill();
+    curr_skill = menu->getSelectedSkill().skill;
     buffered = action_buffer->add(curr_user, curr_skill, person_targets, 0);
   }
   else if (action_type == ActionType::ITEM)
@@ -549,22 +549,23 @@ std::vector<BattleSkill> Battle::buildBattleSkills(const int32_t &p_index,
     {
       auto targets = getValidTargets(p_index, (*it).skill->getScope());
       auto all_targets = getPersonsFromIndexes(targets);
+
       std::vector<Person*> friends_targets;
 
       std::vector<Person*> foes_targets;
       
       for (auto target: all_targets)
       {
-        if (friends->isInParty(target))
+        if (friends->isInParty(target)) 
           friends_targets.push_back(target);
         else
           foes_targets.push_back(target);
       }
 
       BattleSkill new_battle_skill;
-      new_battle_skill.skill           = (*it).skill;
-      new_battle_skill.all_targets     = all_targets;
-      new_battle_skill.ally_targets = friends_targets;
+      new_battle_skill.skill          = (*it).skill;
+      new_battle_skill.all_targets    = all_targets;
+      new_battle_skill.ally_targets   = friends_targets;
       new_battle_skill.foe_targets    = foes_targets;
 
       battle_skills.push_back(new_battle_skill);
@@ -718,10 +719,7 @@ int32_t Battle::calcBaseDamage(const float &crit_factor,
 
   /* For guarding users, they will take kGUARD_MODIFIER factor of their dmg */
   if (damage_type == DamageType::GUARD)
-  {
-    std::cout << "Damage Type GUARD detected!" << std::endl;
     base_damage *= kGUARD_MODIFIER;
-  }
 
   base_damage *= crit_factor;
   base_damage = Helpers::setInRange(base_damage, kMINIMUM_DAMAGE, 
@@ -1611,7 +1609,7 @@ bool Battle::processAction(std::vector<Person*> targets,
       if (curr_action->actionFlag(ActionFlags::DAMAGE))
         done = processDamageAction(damage_type);
       else if (curr_action->actionFlag(ActionFlags::ALTER))
-        done = processAlterAction();
+        done = processAlterAction(damage_type);
       else if (curr_action->actionFlag(ActionFlags::INFLICT))
         done = processInflictAction();
       else if (curr_action->actionFlag(ActionFlags::RELIEVE))
@@ -1643,10 +1641,75 @@ bool Battle::processAction(std::vector<Person*> targets,
  *         std::vector<DamageType> - vector of corresponding damage types
  * Output: bool - true if a party death (vic. cond.) occured during operation
  */
-bool Battle::processAlterAction()
+bool Battle::processAlterAction(const DamageType &damage_type)
 {
-  //TODO
-  return false;
+  auto user_attr = curr_action->getUserAttribute();
+  auto targ_attr = curr_action->getTargetAttribute();
+  auto base_pc   = curr_action->actionFlag(ActionFlags::BASE_PC);
+  auto vari_pc   = curr_action->actionFlag(ActionFlags::VARI_PC);
+
+  int32_t base      = curr_action->getBase();
+  int32_t vari      = curr_action->getVariance();
+  int32_t set_value = 0;
+  int32_t var_value = 0;
+  float one_pc      = 0.0;
+
+  auto death = false;
+  auto done  = false;
+
+  /* If the user's attribute is defined and the target's is not, 
+   * the alteration will be on the user's %/value up to their MAX attributes */
+  if (user_attr != Attribute::NONE && targ_attr == Attribute::NONE)
+  {
+    auto max_value = curr_user->getTemp().getStat(user_attr);
+    auto cur_value = curr_user->getCurr().getStat(user_attr);
+    
+    one_pc    = static_cast<float>(max_value) / 100;
+    (base_pc) ? (set_value = std::floor(static_cast<int32_t>(one_pc * base))) 
+              : (set_value = base);
+    (vari_pc) ? (var_value = std::floor(static_cast<int32_t>(one_pc * vari))) 
+              : (var_value = vari);
+
+    std::cout << "Base --- " << set_value << std::endl;
+    std::cout << "Vari BF: " << var_value << std::endl;
+    var_value = Helpers::randU(-var_value, var_value);
+    std::cout << "Vari AF: " << var_value << std::endl;
+    
+    auto alt_value = set_value + var_value;
+
+    /* The altered amount cannot be > the dif between max and current */
+    if (alt_value > 0 && (alt_value + cur_value) > max_value)
+      alt_value = max_value - cur_value;
+    /* The altered amount cannot be such that it would decrease a stat to neg */
+    else if (alt_value < 0 && alt_value > -cur_value)
+    {
+      alt_value = -cur_value;
+      death = true;
+    }
+    
+    curr_user->getCurr().alterStat(user_attr, alt_value);
+
+    std::cout << "{ALTER} " << curr_user->getName() << "'s " 
+              << AttributeSet::getName(user_attr) << " has been altered by "
+              << alt_value << "." << std::endl;
+  } 
+  /* If the target's attribute is defined amd the user's is not, the alteration
+   * will be on the target's %/value up to their MAX amount */
+  else if (user_attr == Attribute::NONE && targ_attr != Attribute::NONE)
+  {
+
+  }
+  /* If both the user and target's attributes are defined, the alteration will
+   * alter the target's value by a percentage of the user's defined stat */
+  else if (user_attr != Attribute::NONE && targ_attr != Attribute::NONE)
+  {
+
+  }
+
+  if (death)
+    done = updatePersonDeath(damage_type);
+
+  return done;
 }
 
 /*
@@ -1657,7 +1720,8 @@ bool Battle::processAlterAction()
  */
 bool Battle::processAssignAction()
 {
-  //TODO
+  
+
   return false;
 }
 
@@ -2207,7 +2271,7 @@ void Battle::updateAllySelection()
       std::vector<int32_t> targets;
 
       if (action_type == ActionType::SKILL)
-        scope = menu->getSelectedSkill()->getScope();
+        scope = menu->getSelectedSkill().skill->getScope();
       else if (action_type == ActionType::ITEM)
         scope = menu->getSelectedItem()->getUseSkill()->getScope();
       else if (action_type == ActionType::IMPLODE)
@@ -2221,8 +2285,10 @@ void Battle::updateAllySelection()
  
       if (action_type == ActionType::SKILL)
       {
-        auto battle_skill = menu->getMenuSkills().at(menu->getActionIndex());
-        targets = getIndexesOfPersons(battle_skill.all_targets);                 
+        auto selected_skill = menu->getSelectedSkill();
+
+        std::cout << "Skill Name! " << selected_skill.skill->getName() << std::endl;
+        targets = getIndexesOfPersons(selected_skill.all_targets);                 
       }
       else if (action_type == ActionType::ITEM)
       {
@@ -2302,7 +2368,9 @@ void Battle::updateEnemySelection()
       for (auto target : valid_targets)
       {
         if (target < 0)
+          { std::cout << "friendly target! " << std::endl;
           friends_persons.push_back(getPerson(target));
+        }
         else
           foes_persons.push_back(getPerson(target));
       }
@@ -3355,6 +3423,7 @@ std::vector<int32_t> Battle::getValidTargets(int32_t index,
 
   if (action_scope == ActionScope::USER)
   {
+    std::cout << "Finding valid targets for: " << index << std::endl;
     valid_targets.push_back(index);
   }
   else if (action_scope == ActionScope::ONE_TARGET  ||

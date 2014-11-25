@@ -1690,7 +1690,7 @@ SkillSet* Person::getUseableSkills()
     if ((*it).enabled)
     {
 
-      int32_t skill_cost = static_cast<int32_t>((*it).skill->getCost());
+      auto skill_cost = static_cast<int32_t>((*it).skill->getCost());
 
       /* Adjust for Half Cost of skills */
       if (getBFlag(BState::HALF_COST))
