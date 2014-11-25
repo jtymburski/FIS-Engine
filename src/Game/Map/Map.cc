@@ -406,13 +406,26 @@ std::vector<MapThing*> Map::getThingData(std::vector<int> thing_ids)
   
 /* Returns a matrix of tiles that match the frames in the thing */
 // TODO: Comment
-std::vector<std::vector<Tile*>> Map::getTileMatrix(MapThing* thing)
+std::vector<std::vector<Tile*>> Map::getTileMatrix(MapThing* thing, 
+                                                   Direction direction)
 {
   std::vector<std::vector<Tile*>> tile_set;
 
   if(thing != NULL)
   {
     SDL_Rect render_box = thing->getBoundingBox();
+
+    /* Check the direction to modify the range if needed */
+    if(direction == Direction::NORTH)
+      render_box.y--;
+    else if(direction == Direction::EAST)
+      render_box.x++;
+    else if(direction == Direction::SOUTH)
+      render_box.y++;
+    else if(direction == Direction::WEST)
+      render_box.x--;
+
+    /* Get the range variables */
     uint16_t section = thing->getMapSection();
     uint16_t range_x = render_box.x + render_box.w;
     uint16_t range_y = render_box.y + render_box.h;
@@ -1242,15 +1255,16 @@ bool Map::render(SDL_Renderer* renderer)
     int y_start = viewport.getYStart();
     int y_end = viewport.getYEnd();
 
-    /* Render the tiles within the range of the viewport */
+    /* Render the lower tiles within the range of the viewport */
+    for(uint16_t i = tile_x_start; i < tile_x_end; i++)
+      for(uint16_t j = tile_y_start; j < tile_y_end; j++)
+        geography[map_index][i][j]->renderLower(renderer, x_offset, y_offset);
+
+    /* Render the map things within the range of the viewport */
     for(uint16_t i = tile_x_start; i < tile_x_end; i++)
     {
       for(uint16_t j = tile_y_start; j < tile_y_end; j++)
       {
-        /* Lower tiles */
-        geography[map_index][i][j]->renderLower(renderer, x_offset, y_offset);
-        
-        /* Render things */
         for(uint8_t index = 0; index < Helpers::getRenderDepth(); index++)
         {
           MapItem* render_item = NULL;
@@ -1261,9 +1275,6 @@ bool Map::render(SDL_Renderer* renderer)
                                                          render_person, 
                                                          render_thing))
           {
-            //if(render_person != NULL)
-            //  std::cout << i << "," << j << " -- " << std::endl;
-
             /* Different indexes result in different rendering procedures */
             if(index == 0)
             {
@@ -1274,8 +1285,10 @@ bool Map::render(SDL_Renderer* renderer)
                 render_thing->render(renderer, geography[map_index][i][j], 
                                      x_offset, y_offset);
               if(render_person != NULL)
+              {
                 render_person->render(renderer, geography[map_index][i][j], 
                                       x_offset, y_offset);
+              }
             }
             else
             {
@@ -1286,69 +1299,15 @@ bool Map::render(SDL_Renderer* renderer)
                 render_thing->render(renderer, geography[map_index][i][j], 
                                      x_offset, y_offset);
             }
-            //if(render_person != NULL)
-            //  std::cout << "--" << std::endl;
           }
         }
-        
-        /* Upper tiles */
-        geography[map_index][i][j]->renderUpper(renderer, x_offset, y_offset);
       }
     }
-    
-//    /* Render lower half of tile */
-//    for(uint16_t i = tile_x_start; i < tile_x_end; i++)
-//      for(uint16_t j = tile_y_start; j < tile_y_end; j++)
-//        geography[map_index][i][j]->renderLower(renderer, x_offset, y_offset);
 
-//    /* Render Map Items */
-//    for(uint16_t i = 0; i < items.size(); i++)
-//    {
-//      if(items[i]->getMapSection() == map_index && 
-//         items[i]->getX() >= x_start && items[i]->getX() <= x_end && 
-//         items[i]->getY() >= y_start && items[i]->getY() <= y_end)
-//      {
-//        items[i]->render(renderer, x_offset, y_offset);
-//      }
-//    }
-
-//    /* Render Map Things */
-//    for(uint16_t i = 0; i < things.size(); i++)
-//    {
-//      if(things[i]->getMapSection() == map_index && 
-//         things[i]->getX() >= x_start && things[i]->getX() <= x_end && 
-//         things[i]->getY() >= y_start && things[i]->getY() <= y_end)
-//      {
-//        things[i]->render(renderer, x_offset, y_offset);
-//      }
-//    }
-
-//    /* Render Map Persons (and NPCs) */
-//    for(uint16_t i = 0; i < persons.size(); i++)
-//    {
-//      if(persons[i]->getMapSection() == map_index && 
-//         persons[i]->getX() >= x_start && persons[i]->getX() <= x_end && 
-//         persons[i]->getY() >= y_start && persons[i]->getY() <= y_end)
-//      {
-//        persons[i]->render(renderer, x_offset, y_offset);
-//      }
-//    }
-
-//    /* Render Secondary Map Persons (and NPCs) */
-//    for(uint16_t i = 0; i < persons.size(); i++)
-//    {
-//      if(persons[i]->getMapSection() == map_index && 
-//         persons[i]->getX() >= x_start && persons[i]->getX() <= x_end && 
-//         persons[i]->getY() >= y_start && persons[i]->getY() <= y_end)
-//      {
-//        persons[i]->renderSecondary(renderer, x_offset, y_offset);
-//      }
-//    }
-
-//    /* Render upper half of tile */
-//    for(uint16_t i = tile_x_start; i < tile_x_end; i++)
-//      for(uint16_t j = tile_y_start; j < tile_y_end; j++)
-//        geography[map_index][i][j]->renderUpper(renderer, x_offset, y_offset);
+    /* Render the upper tiles within the range of the viewport */
+    for(uint16_t i = tile_x_start; i < tile_x_end; i++)
+      for(uint16_t j = tile_y_start; j < tile_y_end; j++)    
+        geography[map_index][i][j]->renderUpper(renderer, x_offset, y_offset);
     
     /* Render the map dialogs / pop-ups */
     item_menu.render(renderer);
@@ -1529,39 +1488,41 @@ bool Map::update(int cycle_time)
     {
       Tile* next_tile = NULL;
 
-      if(persons[i]->getMapSection() == map_index)// && 
-         //persons[i]->getTile() != NULL) // TODO: Fix
+      if(persons[i]->getMapSection() == map_index && 
+         persons[i]->isTilesSet())
       {
-        uint16_t tile_x = 0;//persons[i]->getTile()->getX(); // TODO: Fix
-        uint16_t tile_y = 0;//persons[i]->getTile()->getY();
-
-        /* Based on the move request, provide the next tile in line using the
-         * current centered tile and move request */
-        switch(persons[i]->getPredictedMoveRequest())
-        {
-          case Direction::NORTH:
-            if(tile_y-- > 0)
-              next_tile = geography[map_index][tile_x][tile_y];
-            break;
-          case Direction::EAST:
-            if(++tile_x < geography[map_index].size())
-              next_tile = geography[map_index][tile_x][tile_y];
-            break;
-          case Direction::SOUTH:
-            if(++tile_y < geography[map_index][tile_x].size())
-              next_tile = geography[map_index][tile_x][tile_y];
-            break;
-          case Direction::WEST:
-            if(tile_x-- > 0)
-              next_tile = geography[map_index][tile_x][tile_y];
-            break;
-          case Direction::DIRECTIONLESS:
-            next_tile = NULL;
-        }
+        tile_set = getTileMatrix(persons[i], 
+                                 persons[i]->getPredictedMoveRequest());
+//        uint16_t tile_x = 0;//persons[i]->getTile()->getX(); // TODO: Fix
+//        uint16_t tile_y = 0;//persons[i]->getTile()->getY();
+//
+//        /* Based on the move request, provide the next tile in line using the
+//         * current centered tile and move request */
+//        switch(persons[i]->getPredictedMoveRequest())
+//        {
+//          case Direction::NORTH:
+//            if(tile_y-- > 0)
+//              next_tile = geography[map_index][tile_x][tile_y];
+//            break;
+//          case Direction::EAST:
+//            if(++tile_x < geography[map_index].size())
+//              next_tile = geography[map_index][tile_x][tile_y];
+//            break;
+//          case Direction::SOUTH:
+//            if(++tile_y < geography[map_index][tile_x].size())
+//              next_tile = geography[map_index][tile_x][tile_y];
+//            break;
+//          case Direction::WEST:
+//            if(tile_x-- > 0)
+//              next_tile = geography[map_index][tile_x][tile_y];
+//            break;
+//          case Direction::DIRECTIONLESS:
+//            next_tile = NULL;
+//        }
       }
 
       /* Proceed to update the thing */
-      persons[i]->update(cycle_time, tile_set); // TODO: Fix
+      persons[i]->update(cycle_time, tile_set);
     }
   }
   

@@ -76,7 +76,7 @@ void Options::setAllToDefault()
   setFont(0, true);
   setLinearFiltering(false);
   setScreenResolution(0);
-  setVsync(false);
+  setVsync(true);
 }
 
 void Options::setAilmentUpdateState(BattleOptions new_state)

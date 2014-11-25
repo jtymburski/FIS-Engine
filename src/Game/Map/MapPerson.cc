@@ -330,20 +330,15 @@ void MapPerson::setTileFinish(TileSprite* frames, bool reverse_last,
  */
 void MapPerson::tileMoveFinish()
 {
-  for(uint16_t i = 0; i < sprite_set->width(); i++)
-  {
-    for(uint16_t j = 0; j < sprite_set->height(); j++)
-    {
-      if(sprite_set->at(i, j) != NULL && 
-         sprite_set->at(i, j)->getTilePrevious() != NULL)
-      {
-        sprite_set->at(i, j)->getTilePrevious()
-                          ->unsetPerson(sprite_set->at(i, j)->getRenderDepth(), 
-                                        getID() != kPLAYER_ID);
-        sprite_set->at(i, j)->tileMoveFinish();
-      }
-    }
-  }
+  MapThing::tileMoveFinish();
+
+  /* Clean up other matrices */
+  SpriteMatrix* matrix = getState(surface, direction);
+
+  for(uint8_t i = 0; i < kTOTAL_SURFACES; i++)
+    for(uint8_t j = 0; j < kTOTAL_DIRECTIONS; j++)
+      if(states[i][j] != NULL && states[i][j] != matrix)
+        states[i][j]->tileMoveFinish();
 }
 
 /* 
@@ -362,6 +357,13 @@ bool MapPerson::tileMoveStart(std::vector<std::vector<Tile*>> tile_set,
 {
   if(MapThing::tileMoveStart(tile_set, no_events))
   {
+    SpriteMatrix* matrix = getState(surface, direction);
+
+    for(uint8_t i = 0; i < kTOTAL_SURFACES; i++)
+      for(uint8_t j = 0; j < kTOTAL_DIRECTIONS; j++)
+        if(states[i][j] != NULL && states[i][j] != matrix)
+          states[i][j]->tileMoveStart(tile_set);
+
     steps++;
     return true;
   }
@@ -837,6 +839,8 @@ void MapPerson::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 {
   bool can_move = isMoveAllowed(tile_set) && !getMovementPaused();
   bool reset = false;
+
+  //std::cout << tile_set.size() << std::endl;
 
   /* Once a tile end has reached, cycle the movement direction */
   if(isAlmostOnTile(cycle_time))
