@@ -64,8 +64,8 @@
 *   [2.2]: Alter Actions
 *     [2.2.1]: When altering by percentage, the percentage altered is the 
 *              user's percentage of MAX values, or target's percentage of
-*              MAX values. When both attributes are defined, the user's 
-*              percentage of MAX will be altered BY the target's percentage
+*              MAX values. When both attributes are defined, the targets's 
+*              percentage of MAX will be altered BY the user's percentage
 *              of MAX.
 *     200,ALTER,,,,VITA,AMOUNT.100,AMOUNT.10,,99
 *       - Restore 100 +/- 10 VITA with 99% chance
@@ -74,9 +74,11 @@
 *     202,ALTER,,,,VITA,PC.10,AMOUNT.20,VITA,95
 *       - Restores user's Vita by 10% +/- 20 of Target's VITA w/ 95% chance
 *     203,ALTER,,,,,PC.-12,AMOUNT.20,VITA,100
-*       - Alter's target's vitality by -12% +/- 20 with 100% chance
+*       - Alters target's vitality by -12% +/- 20 with 100% chance
 *     204,ALTER,,,,QTDR,PC.10,AMOUNT.20,THAG,96
-*       - Alter's user's QTDR by 10% +/- 20 of target's THAG with 96% chance
+*       - Alters targ's QTDR by 10% +/- 20 of user's THAG with 96% chance
+*     205,ALTER-FLIP,,,,QTDR,PC.10,AMOUNT.20,THAG,97
+*       - Alters user's QTDR by 10% +/- 20 of target's THAG with 97% chance
 *
 *   [2.3]: Assign Actions
 *     [2.3.1]: When assigning percentages, the percentage altered is the 
@@ -89,7 +91,9 @@
 *     301,ASSIGN,,,,VITA,AMOUNT.0,AMOUNT.0,,1
 *       - Assign the user's VITA to a value of 0 with 1% accuracy (death action)
 *     302,ASSIGN,,,,,PC.20,PC.5,QTDR,1
-*       - Assign a target's QTDR to a value of 50% of max +/- 
+*       - Assign a target's QTDR to a value of 50% of max +/-
+*     303,ASSIGN-FLIP,,,,VITA,PC.20,PC.5,QTDR,1
+*       - Assign the target's VITA to a value of 20% +/- 5% of the user's QTDR
 *
 *   [2.4]: Revive Actions
 *     [2.4.1]: The variance should NOT be greater than the base value.
@@ -151,15 +155,16 @@ class AttributeSet;
 ENUM_FLAGS(ActionFlags)
 enum class ActionFlags
 {
-  DAMAGE   = 1 << 0,  /* DAMAGE the VITA of the target */
-  ALTER    = 1 << 1,  /* ALTER an attribute by a given value */
-  INFLICT  = 1 << 2,  /* INFLICT a given ailment for a duration */
-  RELIEVE  = 1 << 3,  /* RELIEVE a given ailment */
-  ASSIGN   = 1 << 4,  /* ASSIGN an attribute to a given value */
-  REVIVE   = 1 << 5,  /* REVIVE un-KOs target with base HP */
-  BASE_PC  = 1 << 6,  /* True if the base is a % value and not an abs one */
-  VARI_PC  = 1 << 7,  /* True if the variance is a % value and not an abs one */
-  VALID    = 1 << 8,  /* The validity of the action */
+  DAMAGE    = 1 << 0,  /* DAMAGE the VITA of the target */
+  ALTER     = 1 << 1,  /* ALTER an attribute by a given value */
+  INFLICT   = 1 << 2,  /* INFLICT a given ailment for a duration */
+  RELIEVE   = 1 << 3,  /* RELIEVE a given ailment */
+  ASSIGN    = 1 << 4,  /* ASSIGN an attribute to a given value */
+  REVIVE    = 1 << 5,  /* REVIVE un-KOs target with base HP */
+  BASE_PC   = 1 << 6,  /* True if the base is a % value and not an abs one */
+  VARI_PC   = 1 << 7,  /* True if the variance is a % value and not an abs one */
+  FLIP_ATTR = 1 << 8,  /* Flip the user/target attributes for assign/alter? */
+  VALID     = 1 << 8,  /* The validity of the action */
 };
 
 /* IgnoreFlags for storing which elemental atk/def stats are ignored */

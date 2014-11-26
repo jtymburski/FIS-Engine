@@ -298,7 +298,7 @@ void Battle::battleWon()
   if (getBattleMode() == BattleMode::TEXT)
   {
     printPartyState();
-    std::cout << "Battle victorious! :-)" << std::endl;
+    std::cout << "Battle victorious! :-) " << StringDb::kVICTORY_STRING << std::endl;
   }
 
   setBattleFlag(CombatState::OUTCOME_DONE);
@@ -1105,10 +1105,12 @@ bool Battle::canIncrementIndex(Person* check_person)
  */
 void Battle::clearActionVariables()
 {
-  prim_off = Attribute::NONE;
-  prim_def = Attribute::NONE;
-  secd_off = Attribute::NONE;
-  secd_def = Attribute::NONE;
+  prim_off  = Attribute::NONE;
+  prim_def  = Attribute::NONE;
+  secd_off  = Attribute::NONE;
+  secd_def  = Attribute::NONE;
+  user_attr = Attribute::NONE;
+  targ_attr = Attribute::NONE;
 
   temp_user_stats     = AttributeSet();
   temp_user_max_stats = AttributeSet();
@@ -1606,16 +1608,52 @@ bool Battle::processAction(std::vector<Person*> targets,
 
     if (doesActionHit())
     {
-      if (curr_action->actionFlag(ActionFlags::DAMAGE))
+      if (curr_action->actionFlag(ActionFlags::ALTER) ||
+          curr_action->actionFlag(ActionFlags::ASSIGN))
+      {
+        auto action_target = curr_user;
+        auto factor_target = curr_user;
+
+        user_attr = curr_action->getUserAttribute();
+        targ_attr = curr_action->getTargetAttribute();
+
+        /* If the user's attribute is defined and the target's is not, the
+         * alteration will be on the user's %/value up to their MAX attrs*/
+        if (user_attr != Attribute::NONE && targ_attr == Attribute::NONE)
+          targ_attr  = user_attr;
+        /* If the target's attribute is defined and the user's is not, the
+         * alteration or assignment will be on the target's %/value up to their 
+         * MAX or CURR amount, respectively */
+        else if (user_attr == Attribute::NONE && targ_attr != Attribute::NONE)
+        {
+          action_target = curr_target;
+          factor_target = curr_target;
+          user_attr     = targ_attr;
+        }
+        /* If both the user and target's attributes are defined, the alteration
+         * will alter the target's value by a percentage of the user's stat */
+        else if (user_attr != Attribute::NONE && targ_attr != Attribute::NONE)
+          action_target = curr_target;
+        else
+          std::cerr << "[Error] - Critical error in Battle processing.\n";
+
+        if (curr_action->actionFlag(ActionFlags::FLIP_ATTR))
+        {
+          std::swap(action_target, factor_target);
+          std::swap(user_attr, targ_attr);
+        }
+
+        if (curr_action->actionFlag(ActionFlags::ALTER))
+          done = processAlterAction(damage_type, action_target, factor_target);
+        else
+          done = processAssignAction(damage_type, action_target, factor_target);
+      }
+      else if (curr_action->actionFlag(ActionFlags::DAMAGE))
         done = processDamageAction(damage_type);
-      else if (curr_action->actionFlag(ActionFlags::ALTER))
-        done = processAlterAction(damage_type);
       else if (curr_action->actionFlag(ActionFlags::INFLICT))
         done = processInflictAction();
       else if (curr_action->actionFlag(ActionFlags::RELIEVE))
         done = processRelieveAction();
-      else if (curr_action->actionFlag(ActionFlags::ASSIGN))
-        done = processAssignAction();
       else if (curr_action->actionFlag(ActionFlags::REVIVE))
         done = processReviveAction();
     }
@@ -1641,69 +1679,55 @@ bool Battle::processAction(std::vector<Person*> targets,
  *         std::vector<DamageType> - vector of corresponding damage types
  * Output: bool - true if a party death (vic. cond.) occured during operation
  */
-bool Battle::processAlterAction(const DamageType &damage_type)
-{
-  auto user_attr = curr_action->getUserAttribute();
-  auto targ_attr = curr_action->getTargetAttribute();
+bool Battle::processAlterAction(const DamageType &damage_type,
+    Person* action_target, Person* factor_target)
+{  
   auto base_pc   = curr_action->actionFlag(ActionFlags::BASE_PC);
   auto vari_pc   = curr_action->actionFlag(ActionFlags::VARI_PC);
 
   int32_t base      = curr_action->getBase();
   int32_t vari      = curr_action->getVariance();
+  int32_t cur_value = 0;
   int32_t set_value = 0;
   int32_t var_value = 0;
   float one_pc      = 0.0;
-
   auto death = false;
   auto done  = false;
 
-  /* If the user's attribute is defined and the target's is not, 
-   * the alteration will be on the user's %/value up to their MAX attributes */
-  if (user_attr != Attribute::NONE && targ_attr == Attribute::NONE)
+  auto max_value = factor_target->getTemp().getStat(targ_attr);
+  cur_value      = factor_target->getCurr().getStat(targ_attr);
+    
+  one_pc    = static_cast<float>(factor_target->getTemp().getStat(user_attr));
+  one_pc   /= 100;
+
+  set_value = (base_pc) ? (std::floor(static_cast<int32_t>(one_pc * base)))
+                        : (base);
+  var_value = (vari_pc) ? (std::floor(static_cast<int32_t>(one_pc * vari)))
+                        : (vari);
+
+  var_value = Helpers::randU(-var_value, var_value);
+  auto alt_value = set_value + var_value;
+
+  /* The altered amount cannot be > the dif between max and current */
+  if (alt_value > 0 && (alt_value + cur_value) > max_value)
   {
-    auto max_value = curr_user->getTemp().getStat(user_attr);
-    auto cur_value = curr_user->getCurr().getStat(user_attr);
-    
-    one_pc    = static_cast<float>(max_value) / 100;
-    (base_pc) ? (set_value = std::floor(static_cast<int32_t>(one_pc * base))) 
-              : (set_value = base);
-    (vari_pc) ? (var_value = std::floor(static_cast<int32_t>(one_pc * vari))) 
-              : (var_value = vari);
-
-    std::cout << "Base --- " << set_value << std::endl;
-    std::cout << "Vari BF: " << var_value << std::endl;
-    var_value = Helpers::randU(-var_value, var_value);
-    std::cout << "Vari AF: " << var_value << std::endl;
-    
-    auto alt_value = set_value + var_value;
-
-    /* The altered amount cannot be > the dif between max and current */
-    if (alt_value > 0 && (alt_value + cur_value) > max_value)
-      alt_value = max_value - cur_value;
-    /* The altered amount cannot be such that it would decrease a stat to neg */
-    else if (alt_value < 0 && alt_value > -cur_value)
-    {
-      alt_value = -cur_value;
-      death = true;
-    }
-    
-    curr_user->getCurr().alterStat(user_attr, alt_value);
-
-    std::cout << "{ALTER} " << curr_user->getName() << "'s " 
-              << AttributeSet::getName(user_attr) << " has been altered by "
-              << alt_value << "." << std::endl;
-  } 
-  /* If the target's attribute is defined amd the user's is not, the alteration
-   * will be on the target's %/value up to their MAX amount */
-  else if (user_attr == Attribute::NONE && targ_attr != Attribute::NONE)
-  {
-
+    alt_value = max_value - cur_value;
   }
-  /* If both the user and target's attributes are defined, the alteration will
-   * alter the target's value by a percentage of the user's defined stat */
-  else if (user_attr != Attribute::NONE && targ_attr != Attribute::NONE)
+  /* The altered amount cannot be such that it would decrease a stat to neg */
+  else if (alt_value < 0 && alt_value > -cur_value)
   {
+    alt_value = -cur_value;
+    death = true;
+  }
 
+  /* Actually perform the alteration */
+  action_target->getCurr().alterStat(targ_attr, alt_value);
+
+  if (getBattleMode() == BattleMode::TEXT)
+  {
+    std::cout << "{ALTER} " << action_target->getName() << "'s " 
+              << AttributeSet::getName(targ_attr) << " has been altered by "
+              << alt_value << "." << std::endl;
   }
 
   if (death)
@@ -1718,11 +1742,49 @@ bool Battle::processAlterAction(const DamageType &damage_type)
  * Inputs:
  * Output:
  */
-bool Battle::processAssignAction()
+bool Battle::processAssignAction(const DamageType &damage_type,
+    Person* action_target, Person* factor_target)
 {
-  
+  auto base_pc   = curr_action->actionFlag(ActionFlags::BASE_PC);
+  auto vari_pc   = curr_action->actionFlag(ActionFlags::VARI_PC);
 
-  return false;
+  int32_t base      = curr_action->getBase();
+  int32_t vari      = curr_action->getVariance();
+  int32_t set_value = 0;
+  int32_t var_value = 0;
+  float one_pc      = 0.0;
+  auto done  = false;
+
+  auto max_value = factor_target->getTemp().getStat(targ_attr);
+
+  one_pc    = static_cast<float>(factor_target->getCurr().getStat(user_attr));
+  one_pc   /= 100;
+
+  set_value = (base_pc) ? (std::floor(static_cast<int32_t>(one_pc * base)))
+                        : (base);
+  var_value = (vari_pc) ? (std::floor(static_cast<int32_t>(one_pc * vari)))
+                        : (vari);
+
+  set_value += Helpers::randU(-var_value, var_value);
+  set_value  = Helpers::setInRange(set_value, 0, max_value);
+
+  /* Actually perform the assignment operation */
+  if (base_pc)
+    action_target->getCurr().setStat(targ_attr, set_value);
+  else
+    action_target->getTemp().setStat(targ_attr, set_value);
+  
+  if (getBattleMode() == BattleMode::TEXT)
+  {
+    std::cout << "{ASSIGN} " << action_target->getName() << "'s " 
+              << AttributeSet::getName(targ_attr) << " has been assigned to "
+              << set_value << "." << std::endl;
+  }
+
+  if (set_value == 0)
+    done = updatePersonDeath(damage_type);
+
+  return done;
 }
 
 /*

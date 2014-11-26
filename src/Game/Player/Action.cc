@@ -257,13 +257,13 @@ bool Action::parseActionKeyword(const std::string &action_keyword)
 {
   if (action_keyword == "DAMAGE")
     action_flags |= ActionFlags::DAMAGE;
-  else if (action_keyword == "ALTER")
+  else if (action_keyword == "ALTER" || action_keyword == "ALTER-FLIP")
     action_flags |= ActionFlags::ALTER;
   else if (action_keyword == "INFLICT")
     action_flags |= ActionFlags::INFLICT;
   else if (action_keyword == "RELIEVE")
     action_flags |= ActionFlags::RELIEVE;
-  else if (action_keyword == "ASSIGN")
+  else if (action_keyword == "ASSIGN" || action_keyword == "ASSIGN-FLIP")
     action_flags |= ActionFlags::ASSIGN;
   else if (action_keyword == "REVIVE")
     action_flags |= ActionFlags::REVIVE;
@@ -272,6 +272,9 @@ bool Action::parseActionKeyword(const std::string &action_keyword)
     parseWarning("attempting to parse keyword", action_keyword);
     return false;
   }
+
+  if (action_keyword == "ALTER-FLIP" || action_keyword == "ASSIGN-FLIP")
+    action_flags |= ActionFlags::FLIP_ATTR;
 
   return true;
 }

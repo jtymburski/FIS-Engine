@@ -252,10 +252,10 @@ void Game::setupBattle()
   damage_actions.push_back(new Action("6,DAMAGE,,,,VITA,AMOUNT.75,AMOUNT.25,,95"));
   damage_actions.push_back(new Action("7,DAMAGE,,,,VITA,AMOUNT.90,AMOUNT.25,,95"));
   damage_actions.push_back(new Action("8,DAMAGE,,,,VITA,AMOUNT.100,AMOUNT.30,,95"));
-  damage_actions.push_back(new Action("9,DAMAGE,,,,VITA,AMOUNT.120,AMOUNT.35,,95"));
-  damage_actions.push_back(new Action("10,DAMAGE,,,,VITA,AMOUNT.150,AMOUNT.50,,95"));
-  damage_actions.push_back(new Action("11,DAMAGE,,,,VITA,AMOUNT.20,PC.1,,95"));
-  damage_actions.push_back(new Action("12,DAMAGE,,,,VITA,AMOUNT.40,PC.5,,95"));
+  damage_actions.push_back(new Action("9,DAMAGE,,,,VITA,AMOUNT.300,AMOUNT.35,,95"));
+  damage_actions.push_back(new Action("10,DAMAGE,,,,VITA,AMOUNT.400,AMOUNT.50,,95"));
+  damage_actions.push_back(new Action("11,DAMAGE,,,,VITA,AMOUNT.600,PC.1,,95"));
+  damage_actions.push_back(new Action("12,DAMAGE,,,,VITA,AMOUNT.800,PC.5,,95"));
   damage_actions.push_back(new Action("13,DAMAGE,,,,VITA,AMOUNT.60,PC.10,,95"));
   damage_actions.push_back(new Action("14,DAMAGE,,,,VITA,AMOUNT.75,PC.15,,95"));
   damage_actions.push_back(new Action("15,DAMAGE,,,,VITA,AMOUNT.100,PC.25,,95"));
@@ -268,39 +268,50 @@ void Game::setupBattle()
   damage_actions.push_back(new Action("23,DAMAGE,,,,VITA,PC.15,PC.25,,95"));
 
   std::vector<Action*> alter_actions;
-  // alter_actions.push_back(new Action(""));
   alter_actions.push_back(new Action("200,ALTER,,,,VITA,PC.10,AMOUNT.10,,99"));
   alter_actions.push_back(new Action("201,ALTER,,,,VITA,PC.25,AMOUNT.20,,99"));
-  alter_actions.push_back(new Action("202,ALTER,,,,VITA,PC.10,AMOUNT.20,VITA,95"));
+  alter_actions.push_back(new Action("202,ALTER,,,,VITA,PC.-10,AMOUNT.20,VITA,100"));
   alter_actions.push_back(new Action("203,ALTER,,,,,PC.-12,AMOUNT.20,VITA,100"));
   alter_actions.push_back(new Action("204,ALTER,,,,QTDR,PC.10,AMOUNT.20,THAG,96"));
+  alter_actions.push_back(new Action("204,ALTER-FLIP,,,,QTDR,PC.10,AMOUNT.20,THAG,96"));
+  alter_actions.push_back(new Action("205,ALTER-FLIP,,,,VITA,PC.10,AMOUNT.30,VITA,100"));
+
+  std::vector<Action*> assign_actions;
+  assign_actions.push_back(new Action("300,ASSIGN,,,,VITA,AMOUNT.1,AMOUNT.0,,100"));
+  assign_actions.push_back(new Action("301,ASSIGN,,,,VITA,AMOUNT.0,AMOUNT.0,,100"));
+  assign_actions.push_back(new Action("302,ASSIGN,,,,,PC.20,PC.5,VITA,1"));
+  assign_actions.push_back(new Action("303,ASSIGN-FLIP,,,,VITA,PC.20,PC.5,QTDR,1"));
 
   // for(auto it = begin(damage_actions); it != end(damage_actions); ++it)
   //   std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
 
-  for (auto it = begin(alter_actions); it != end(alter_actions); ++it)
-    std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
+  // for (auto it = begin(alter_actions); it != end(alter_actions); ++it)
+  //   std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
+
+  // for (auto it = begin (assign_actions); it != end(assign_actions); ++it)
+  //   std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
 
   // Test Skills
   Skill* physical_01 = new Skill(100, "Wee Strike", ActionScope::ONE_ENEMY, 
-      damage_actions[0], 95, 0);
+      damage_actions[3], 95, 25);
   physical_01->setPrimary(Element::PHYSICAL);
 
   Skill* physical_02 = new Skill(101, "Whelp", ActionScope::ONE_ENEMY, 
-      damage_actions[1],  95, 10);
+      damage_actions[4],  95, 32);
   physical_02->setPrimary(Element::PHYSICAL);
 
   Skill* physical_03 = new Skill(102, "Two Smackeroos", 
-      ActionScope::TWO_ENEMIES, damage_actions[2], 95, 10);
+      ActionScope::TWO_ENEMIES, damage_actions[6], 95, 100);
   physical_03->setPrimary(Element::PHYSICAL);
 
-  // Skill* physical_04 = new Skill(103, "Mass Smack", ActionScope::ALL_ENEMIES, 
-  //     damage_actions[3], 85, 25);
-  // physical_04->setPrimary(Element::PHYSICAL);
+  Skill* physical_04 = new Skill(103, "Mass Smack", ActionScope::ALL_ENEMIES, 
+      damage_actions[8], 85, 210); 
+  physical_04->setPrimary(Element::PHYSICAL);
 
-  Skill* fire_01 = new Skill(110, "Fire Strike", ActionScope::ONE_ENEMY, 
-    damage_actions[4], 90, 3);
+  Skill* fire_01 = new Skill(110, "Burninate The Countryside", ActionScope::ONE_ENEMY, 
+    damage_actions[10], 90, 200);
   fire_01->setPrimary(Element::FIRE);
+  fire_01->setSecondary(Element::PHYSICAL);
 
   // Skill* forest_01 = new Skill(111, "Earth Strike", ActionScope::ONE_ENEMY,
   //   damage_actions[4], 91, 4);
@@ -323,8 +334,18 @@ void Game::setupBattle()
   // void_01->setPrimary(Element::NIHIL);
 
   Skill* self_heal = new Skill(120, "Heal Self", ActionScope::USER,
-    alter_actions[0], 100, 15);
+    alter_actions[0], 100, 50);
+  self_heal->setPrimary(Element::FOREST);
   self_heal->setPrimary(Element::PHYSICAL);
+
+  Skill* ally_heal = new Skill(121, "Heal Ally", ActionScope::ONE_ALLY_NOT_USER,
+    alter_actions[0], 100, 50);
+  ally_heal->setPrimary(Element::FOREST);
+  ally_heal->setSecondary(Element::PHYSICAL);
+
+  // Skill* life_steal = new Skill(122, "Life Steal", ActionScope::ONE_ENEMY,
+  //   alter_actions[2], 100, 100);
+  // life_steal->addAction(alter_actions[6], true);
 
   // Test Skill Sets
   SkillSet* physical_skills = new SkillSet(physical_01, 1);
@@ -332,8 +353,11 @@ void Game::setupBattle()
   physical_skills->addSkill(physical_03, 1);
   // physical_skills->addSkill(physical_04, 1);
   physical_skills->addSkill(self_heal, 1);
+  physical_skills->addSkill(ally_heal, 10);
+  // physical_skills->addSkill(life_steal, 20);
 
   SkillSet* elemental_skills = new SkillSet(fire_01, 1);
+
   // elemental_skills->addSkill(forest_01, 1);
   // elemental_skills->addSkill(ice_01, 1);
   // elemental_skills->addSkill(electric_01, 1);
@@ -381,25 +405,26 @@ void Game::setupBattle()
   tactical_samurai->setFlag(CategoryState::E_SWORD, true);
   tactical_samurai->setFlag(CategoryState::E_CLAWS, false);
 
-  tactical_samurai->setVitaRegenRate(RegenRate::ZERO);
+  // tactical_samurai->setVitaRegenRate(RegenRate::ZERO);
 
-  bear->setVitaRegenRate(RegenRate::WEAK);
+  // bear->setVitaRegenRate(RegenRate::WEAK);
 
-  bloodclaw_scion->setVitaRegenRate(RegenRate::WEAK);
+  // bloodclaw_scion->setVitaRegenRate(RegenRate::WEAK);
 
   human->setQDRegenRate(RegenRate::NORMAL);
 
   // Test Persons
   base_person_list.push_back(new Person(300, "Malgidus", human,
       tactical_samurai));
-  getPerson(300)->addExp(1000);
+  getPerson(300)->addExp(80000);
+  getPerson(300)->setCurves(Element::DIGITAL, ElementCurve::C,
+                            Element::FOREST, ElementCurve::D, true);
 
   base_person_list.push_back(new Person(301, "Arcadius", bear, 
     tactical_samurai));
-  getPerson(301)->addExp(1000);
+  getPerson(301)->addExp(80000);
   getPerson(301)->setCurves(Element::FIRE, ElementCurve::B,
                             Element::FOREST, ElementCurve::A, true);
-
 
   // Person* berran   = new Person(302, "Berran", bear, bloodclaw_scion);
   // Person* atkst    = new Person(303, "Atkst", human, bloodclaw_scion);
@@ -413,12 +438,14 @@ void Game::setupBattle()
   std::vector<BattleItem> items;
 
   base_person_list.push_back(new Person(310, "Frosty", human, bloodclaw_scion));
-  getPerson(310)->addExp(1000);
+  getPerson(310)->addExp(50000);
   getPerson(310)->setCurves(Element::ICE, ElementCurve::C,
                             Element::PHYSICAL, ElementCurve::D, true);
 
   base_person_list.push_back(new Person(311, "Cloud Dude", human, bloodclaw_scion));
-  getPerson(311)->addExp(1000);
+  getPerson(311)->addExp(50000);
+  getPerson(311)->setCurves(Element::NIHIL, ElementCurve::A,
+                            Element::PHYSICAL, ElementCurve::B, true);
   
   // Person* thruster_barrow = new Person(301, "Thruster Barrow", human, bloodclaw_scion);
   // Person* dragon = new Person(301, "Dragon", human, bloodclaw_scion);

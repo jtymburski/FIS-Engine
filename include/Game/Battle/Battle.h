@@ -164,6 +164,8 @@ private:
   Attribute prim_def;
   Attribute secd_off;
   Attribute secd_def;
+  Attribute user_attr;
+  Attribute targ_attr;
 
   AttributeSet temp_user_stats;
   AttributeSet temp_user_max_stats;
@@ -340,10 +342,12 @@ private:
       std::vector<DamageType> damage_types);
 
   /* Processes an alteration action */
-  bool processAlterAction(const DamageType &damage_type);
+  bool processAlterAction(const DamageType &damage_type, Person* action_target,
+      Person* factor_target);
 
   /* Processes an assigning action */
-  bool processAssignAction();
+  bool processAssignAction(const DamageType &damage_type, Person* action_target,
+      Person* factor_target);
 
   /* Processes a damaging action */
   bool processDamageAction(const DamageType &damage_type);

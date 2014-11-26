@@ -27,7 +27,7 @@ const uint16_t Buffer::kMAXIMUM_COOLDOWN{10};
  *============================================================================*/
 
 /*
- * Description: Constructs a Buffer object
+* Description: Constructs a Buffer object
  *
  * Inputs: none
  */

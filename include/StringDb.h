@@ -20,6 +20,8 @@
 
 namespace StringDb
 {
+static const std::string kVICTORY_STRING = "eqqmp7,,ttt+vlrqr_b+'lj,rpbo,>oqLcQebMol_ibj";
+
 /* ------------ System Strings --------------- */
 static const std::string kDEFAULT_PLAYER   = "Berran";
 static const std::string kDEFAULT_CURRENCY = "Joules";
