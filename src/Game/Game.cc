@@ -269,7 +269,7 @@ void Game::setupBattle()
 
   std::vector<Action*> alter_actions;
   alter_actions.push_back(new Action("200,ALTER,,,,VITA,PC.10,AMOUNT.10,,99"));
-  alter_actions.push_back(new Action("201,ALTER,,,,VITA,PC.25,AMOUNT.20,,99"));
+  alter_actions.push_back(new Action("201,ALTER,,,,,PC.25,AMOUNT.20,VITA,99"));
   alter_actions.push_back(new Action("202,ALTER,,,,VITA,PC.-10,AMOUNT.20,VITA,100"));
   alter_actions.push_back(new Action("203,ALTER,,,,,PC.-12,AMOUNT.20,VITA,100"));
   alter_actions.push_back(new Action("204,ALTER,,,,QTDR,PC.10,AMOUNT.20,THAG,96"));
@@ -281,6 +281,7 @@ void Game::setupBattle()
   assign_actions.push_back(new Action("301,ASSIGN,,,,VITA,AMOUNT.0,AMOUNT.0,,100"));
   assign_actions.push_back(new Action("302,ASSIGN,,,,,PC.20,PC.5,VITA,1"));
   assign_actions.push_back(new Action("303,ASSIGN-FLIP,,,,VITA,PC.20,PC.5,QTDR,1"));
+  assign_actions.push_back(new Action("400,REVIVE,,,,,AMOUNT.50,AMOUNT.10,,80"));
 
   // for(auto it = begin(damage_actions); it != end(damage_actions); ++it)
   //   std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
@@ -339,9 +340,13 @@ void Game::setupBattle()
   self_heal->setPrimary(Element::PHYSICAL);
 
   Skill* ally_heal = new Skill(121, "Heal Ally", ActionScope::ONE_ALLY_NOT_USER,
-    alter_actions[0], 100, 50);
+    alter_actions[1], 100, 50);
   ally_heal->setPrimary(Element::FOREST);
   ally_heal->setSecondary(Element::PHYSICAL);
+
+  Skill* revive_ally = new Skill(122, "Revive Ally", ActionScope::ONE_ALLY_KO,
+    assign_actions[4], 100, 2);
+  revive_ally->setPrimary(Element::FOREST);
 
   // Skill* life_steal = new Skill(122, "Life Steal", ActionScope::ONE_ENEMY,
   //   alter_actions[2], 100, 100);
@@ -352,8 +357,9 @@ void Game::setupBattle()
   physical_skills->addSkill(physical_02, 1);
   physical_skills->addSkill(physical_03, 1);
   // physical_skills->addSkill(physical_04, 1);
-  physical_skills->addSkill(self_heal, 1);
-  physical_skills->addSkill(ally_heal, 10);
+  // physical_skills->addSkill(self_heal, 1);
+  // physical_skills->addSkill(ally_heal, 1);
+  physical_skills->addSkill(revive_ally, 1);
   // physical_skills->addSkill(life_steal, 20);
 
   SkillSet* elemental_skills = new SkillSet(fire_01, 1);
@@ -416,13 +422,13 @@ void Game::setupBattle()
   // Test Persons
   base_person_list.push_back(new Person(300, "Malgidus", human,
       tactical_samurai));
-  getPerson(300)->addExp(80000);
+  getPerson(300)->addExp(800);
   getPerson(300)->setCurves(Element::DIGITAL, ElementCurve::C,
                             Element::FOREST, ElementCurve::D, true);
 
   base_person_list.push_back(new Person(301, "Arcadius", bear, 
     tactical_samurai));
-  getPerson(301)->addExp(80000);
+  getPerson(301)->addExp(800);
   getPerson(301)->setCurves(Element::FIRE, ElementCurve::B,
                             Element::FOREST, ElementCurve::A, true);
 
@@ -438,12 +444,12 @@ void Game::setupBattle()
   std::vector<BattleItem> items;
 
   base_person_list.push_back(new Person(310, "Frosty", human, bloodclaw_scion));
-  getPerson(310)->addExp(50000);
+  getPerson(310)->addExp(2500);
   getPerson(310)->setCurves(Element::ICE, ElementCurve::C,
                             Element::PHYSICAL, ElementCurve::D, true);
 
   base_person_list.push_back(new Person(311, "Cloud Dude", human, bloodclaw_scion));
-  getPerson(311)->addExp(50000);
+  getPerson(311)->addExp(500);
   getPerson(311)->setCurves(Element::NIHIL, ElementCurve::A,
                             Element::PHYSICAL, ElementCurve::B, true);
   

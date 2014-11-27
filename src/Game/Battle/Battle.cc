@@ -1747,15 +1747,13 @@ bool Battle::processAssignAction(const DamageType &damage_type,
 {
   auto base_pc   = curr_action->actionFlag(ActionFlags::BASE_PC);
   auto vari_pc   = curr_action->actionFlag(ActionFlags::VARI_PC);
-
   int32_t base      = curr_action->getBase();
   int32_t vari      = curr_action->getVariance();
   int32_t set_value = 0;
   int32_t var_value = 0;
   float one_pc      = 0.0;
-  auto done  = false;
-
-  auto max_value = factor_target->getTemp().getStat(targ_attr);
+  auto done         = false;
+  auto max_value    = factor_target->getTemp().getStat(targ_attr);
 
   one_pc    = static_cast<float>(factor_target->getCurr().getStat(user_attr));
   one_pc   /= 100;
@@ -1852,7 +1850,25 @@ bool Battle::processRelieveAction()
  */
 bool Battle::processReviveAction()
 {
-  //TODO
+  auto one_pc = curr_target->getTemp().getStat(Attribute::VITA);
+  auto base_pc = curr_action->actionFlag(ActionFlags::BASE_PC);
+  auto vari_pc = curr_action->actionFlag(ActionFlags::VARI_PC);
+  int32_t base_val = 0;
+  int32_t vari_val = 0;
+
+  base_val = (base_pc) ? (one_pc * curr_action->getBase()) 
+                       : (curr_action->getBase());
+  vari_val = (vari_pc) ? (one_pc * curr_action->getVariance()) 
+                        : (curr_action->getVariance());
+
+  vari_val = Helpers::randU(-vari_val, +vari_val);
+
+  curr_target->getCurr().setStat(Attribute::VITA, base_val + vari_val);
+
+  if (curr_target->getCurr().getStat(Attribute::VITA) > 0)
+    curr_target->setBFlag(BState::ALIVE, true);
+
+  //TODO: All party target attacks should now hit the alive person.
   return false;
 }
 

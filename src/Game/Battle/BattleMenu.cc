@@ -482,8 +482,6 @@ void BattleMenu::keyDownSelect()
       {
         if (indexHasTargets())
         {
-          layer_to_increment = 3;
-        
           /* Grab the selected skill */
           selected_skill = menu_skills.at(element_index);
 
@@ -499,8 +497,14 @@ void BattleMenu::keyDownSelect()
                         << " by " << true_cost << "." << std::endl;
             }
  
+            layer_to_increment = 3;
             qtdr_cost_paid = true_cost;
             current_user->getCurr().alterStat(Attribute::QTDR, -true_cost);
+          }
+          else
+          {
+            if (config->getBattleMode() == BattleMode::TEXT)
+              std::cout << "Cannot afford that skill!" << std::endl;
           }
         }
         else if (config->getBattleMode() == BattleMode::TEXT)
