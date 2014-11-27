@@ -137,8 +137,8 @@ public:
   std::vector<MapPerson*> getPersons() const;
 
   /* Returns the tile x and y pixel count */
-  int getPixelX() const;
-  int getPixelY() const;
+  uint32_t getPixelX() const;
+  uint32_t getPixelY() const;
 
   /* Returns the render stack for applicable things based on level */
   bool getRenderThings(uint8_t render_level, MapItem*& item, 

@@ -527,7 +527,7 @@ std::vector<MapPerson*> Tile::getPersons() const
  * Inputs: none
  * Output: int - the X coordinate, in pixels
  */
-int Tile::getPixelX() const
+uint32_t Tile::getPixelX() const
 {
   return (x * width);
 }
@@ -539,7 +539,7 @@ int Tile::getPixelX() const
  * Inputs: none
  * Output: int - the Y coordinate, in pixels
  */
-int Tile::getPixelY() const
+uint32_t Tile::getPixelY() const
 {
   return (y * height);
 }
@@ -1237,6 +1237,7 @@ void Tile::setWidth(uint16_t width)
 void Tile::setX(uint16_t x)
 {
   this->x = x;
+  //std::cout << "Tile: " << x << std::endl;
 }
 
 /*

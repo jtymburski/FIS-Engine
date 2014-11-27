@@ -141,6 +141,22 @@ SpriteMatrix* MapThing::getMatrix()
   return sprite_set;
 }
 
+// TODO: Comment
+Tile* MapThing::getTileMain(uint32_t x, uint32_t y)
+{
+  if(tile_main.size() > x && tile_main[x].size() > y)
+    return tile_main[x][y];
+  return NULL;
+}
+
+// TODO: Comment  
+Tile* MapThing::getTilePrevious(uint32_t x, uint32_t y)
+{
+  if(tile_previous.size() > x && tile_previous[x].size() > y)
+    return tile_previous[x][y];
+  return NULL;
+}
+
 /* 
  * Description: Is the thing almost on the tile (less than 1 pulse away).
  *              This is used to check movement limits to allow the update
@@ -152,8 +168,8 @@ SpriteMatrix* MapThing::getMatrix()
  */
 bool MapThing::isAlmostOnTile(int cycle_time)
 {
-  int x_diff = tile_x * width;
-  int y_diff = tile_y * height;
+  uint32_t x_diff = tile_main.front().front()->getPixelX();
+  uint32_t y_diff = tile_main.front().front()->getPixelY();
 
   /* X differential calculations to ensure positive number */
   if(x_diff > x)
@@ -220,9 +236,9 @@ bool MapThing::isMoveAllowed(std::vector<std::vector<Tile*>> tile_set)
  * Inputs: int cycle_time - the time since the last update call
  * Output: int - the move amount in pixels x 10
  */
-int MapThing::moveAmount(int cycle_time)
+uint32_t MapThing::moveAmount(uint16_t cycle_time)
 {
-  int move_amount = cycle_time * speed * 0.125;
+  uint32_t move_amount = (cycle_time * speed) >> 3; // x 0.125
   //int move_amount = 2 * speed;
   if(move_amount > width)
     move_amount = width;
@@ -321,13 +337,13 @@ bool MapThing::setTile(Tile* tile, TileSprite* frames, bool no_events)
   bool success = true;
 
   /* Attempt and set the tile */
-  success &= frames->setTile(tile);
-  if(success)
+  if(tile != NULL)
+  {
     success &= tile->setThing(this, render_depth);
-  if(!success)
-    frames->resetTile();
+    return success;
+  }
 
-  return success;
+  return false;
 }
  
 /*
@@ -367,6 +383,8 @@ bool MapThing::setTileStart(Tile* tile, TileSprite* frames, bool no_events)
 void MapThing::setTileFinish(TileSprite* frames, bool reverse_last, 
                              bool no_events)
 {
+  (void)no_events;
+  
   if(reverse_last)
     frames->getTileMain()->unsetThing(frames->getRenderDepth());
   else
@@ -515,15 +533,11 @@ void MapThing::unsetTile(uint32_t x, uint32_t y, bool no_events)
   uint8_t render_depth = sprite_set->at(x, y)->getRenderDepth();
 
   /* Remove from main tile, if applicable */
-  if(sprite_set->at(x, y)->isTileMainSet())
-    sprite_set->at(x, y)->getTileMain()->unsetThing(render_depth);
+  tile_main[x][y]->unsetThing(render_depth);
 
   /* Remove from previous tile, if applicable */
-  if(sprite_set->at(x, y)->isTilePreviousSet())
-    sprite_set->at(x, y)->getTilePrevious()->unsetThing(render_depth);
-
-  /* Clean up frame */
-  sprite_set->at(x, y)->resetTile();
+  if(tile_previous.size() > 0)
+    tile_previous[x][y]->unsetThing(render_depth);
 }
 
 /*============================================================================
@@ -711,8 +725,8 @@ SDL_Rect MapThing::getBoundingBox()
 {
   SDL_Rect rect;
 
-  rect.x = x / width;
-  rect.y = y / height;
+  rect.x = getTileX();
+  rect.y = getTileY();
   if(sprite_set != NULL)
   {
     rect.w = sprite_set->width();
@@ -740,12 +754,12 @@ SDL_Rect MapThing::getBoundingPixels()
 {
   SDL_Rect rect;
 
-  rect.x = x;
-  rect.y = y;
+  rect.x = getX();
+  rect.y = getY();
   if(sprite_set != NULL)
   {
-    rect.w = sprite_set->width() * width;
-    rect.h = sprite_set->height() * height;
+    rect.w = sprite_set->width() * getWidth();
+    rect.h = sprite_set->height() * getHeight();
   }
   else
   {
@@ -824,7 +838,9 @@ std::vector<std::vector<TileSprite*>> MapThing::getFrames()
  */
 uint16_t MapThing::getHeight()
 {
-  return height;
+  if(tile_main.size() > 0)
+    return tile_main.front().front()->getHeight();
+  return 0;
 }
 
 /* 
@@ -944,7 +960,9 @@ MapThing* MapThing::getTarget()
  */
 uint16_t MapThing::getTileX()
 {
-  return tile_x;
+  if(tile_main.size() > 0)
+    return tile_main.front().front()->getX();
+  return x;
 }
 
 /* 
@@ -957,7 +975,9 @@ uint16_t MapThing::getTileX()
  */
 uint16_t MapThing::getTileY()
 {
-  return tile_y;
+  if(tile_main.size() > 0)
+    return tile_main.front().front()->getY();
+  return y;
 }
 
 /* 
@@ -968,7 +988,9 @@ uint16_t MapThing::getTileY()
  */
 uint16_t MapThing::getWidth()
 {
-  return width;
+  if(tile_main.size() > 0)
+    return tile_main.front().front()->getWidth();
+  return 0;
 }
 
 /* 
@@ -979,7 +1001,9 @@ uint16_t MapThing::getWidth()
  */
 int MapThing::getX()
 {
-  return x;
+  if(tile_main.size() > 0)
+    return x;
+  return 0;
 }
 
 /* 
@@ -990,7 +1014,9 @@ int MapThing::getX()
  */
 int MapThing::getY()
 {
-  return y;
+  if(tile_main.size() > 0)
+    return y;
+  return 0;
 }
 
 /*
@@ -1043,7 +1069,10 @@ bool MapThing::isMoving()
  */
 bool MapThing::isOnTile()
 {
-  return (x  == tile_x * getWidth()) && (y == tile_y * getHeight());
+  if(tile_main.size() > 0)
+    return (x  == tile_main.front().front()->getPixelX()) && 
+           (y == tile_main.front().front()->getPixelY());
+  return false;
 }
 
 /*
@@ -1067,7 +1096,7 @@ bool MapThing::isPassable()
  */
 bool MapThing::isTilesSet()
 {
-  return tiles_set;
+  return (tile_main.size() > 0);
 }
 
 /*
@@ -1115,19 +1144,19 @@ bool MapThing::render(SDL_Renderer* renderer, int offset_x, int offset_y)
 bool MapThing::render(SDL_Renderer* renderer, Tile* tile, 
                       int offset_x, int offset_y)
 {
-  if(tile != NULL && sprite_set != NULL)
+  if(isTilesSet() && tile != NULL)
   {
-    uint16_t render_tile_x = tile->getX() - tile_x;
-    uint16_t render_tile_y = tile->getY() - tile_y;
+    uint16_t render_tile_x = tile->getX() - tile_main.front().front()->getX();
+    uint16_t render_tile_y = tile->getY() - tile_main.front().front()->getY();
     TileSprite* render_frame = sprite_set->getSprite(render_tile_x, 
                                                      render_tile_y);
 
     /* If frame is valid and visible, render */
-    if(render_frame != NULL && render_frame->getTileMain() == tile 
+    if(render_frame != NULL && getTileMain(render_tile_x, render_tile_y) == tile 
                             && isVisible())
     {
-      int render_x = x + render_tile_x * width - offset_x;
-      int render_y = y + render_tile_y * height - offset_y;
+      int render_x = x + render_tile_x * tile->getWidth() - offset_x;
+      int render_y = y + render_tile_y * tile->getHeight() - offset_y;
       
       return render_frame->render(renderer, render_x, render_y, width, height);
     }
@@ -1146,13 +1175,13 @@ bool MapThing::render(SDL_Renderer* renderer, Tile* tile,
  */
 void MapThing::resetLocation()
 {
-  /* Unset the tiles, prior to unseting the point */
+  /* Unset the tiles, prior to unsetting the point */
   unsetTiles(true);
   
   /* Clean up the point variables */
   tile_section = 0;
-  tile_x = 0;
-  tile_y = 0;
+  //tile_x = 0;
+  //tile_y = 0;
   this->x = 0;
   this->x_raw = 0;
   this->y = 0;
@@ -1382,13 +1411,18 @@ void MapThing::setStartingLocation(uint16_t section_id, uint16_t x, uint16_t y)
   resetLocation();
 
   /* Set the new tile coordinate */
-  this->x = x * getWidth();
-  this->x_raw = this->x * kRAW_MULTIPLIER;
-  this->y = y * getHeight();
-  this->y_raw = this->y * kRAW_MULTIPLIER;
+  this->x = x;
+  this->x_raw = 0;
+  this->y = y;
+  this->y_raw = 0;
   tile_section = section_id;
-  tile_x = x;
-  tile_y = y;
+  //this->x = x * getWidth();
+  //this->x_raw = this->x * kRAW_MULTIPLIER;
+  //this->y = y * getHeight();
+  //this->y_raw = this->y * kRAW_MULTIPLIER;
+  //tile_section = section_id;
+  //tile_x = x;
+  //tile_y = y;
 }
 
 /* 
@@ -1405,13 +1439,15 @@ bool MapThing::setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
                                 bool no_events)
 {
   bool success = true;
-
+  
   if(sprite_set != NULL && tile_set.size() > 0 && 
      tile_set.size() == sprite_set->width() && 
      tile_set.back().size() == sprite_set->height())
   {
     /* First, unset all tiles */
     unsetTiles(no_events);
+    uint32_t end_x = 0;
+    uint32_t end_y = 0;
 
     /* Attempt to set the new tiles */
     for(uint32_t i = 0; success && (i < sprite_set->width()); i++)
@@ -1419,15 +1455,46 @@ bool MapThing::setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
       for(uint32_t j = 0; success && (j < sprite_set->height()); j++)
       {
         if(sprite_set->at(i, j) != NULL)
+        {
           success &= setTile(tile_set[i][j], sprite_set->at(i, j), no_events);
+          if(!success)
+          {
+            end_x = i;
+            end_y = j;
+          }
+        }
       }
     }
 
     /* If unsuccessful, unset all that were set */
     if(!success)
-      unsetTiles(true);
+    {
+      bool finished = false;
+      
+      for(uint32_t i = 0; !finished && (i < sprite_set->width()); i++)
+      {
+        for(uint32_t j = 0; !finished && (j < sprite_set->height()); j++)
+        {
+          if(sprite_set->at(i, j) != NULL)
+          {
+            if(i == end_x && j == end_y)
+              finished = true;
+            else
+              tile_set[i][j]->
+                             unsetThing(sprite_set->at(i, j)->getRenderDepth());
+          }
+        }
+      }
+    }
     else
-      tiles_set = success;
+    {
+      x = tile_set.front().front()->getPixelX();
+      x_raw = x * kRAW_MULTIPLIER;
+      y = tile_set.front().front()->getPixelY();
+      y_raw = y * kRAW_MULTIPLIER;
+      tile_main = tile_set;
+    }
+    
     return success;
   }
   return false;
@@ -1550,15 +1617,23 @@ void MapThing::unsetFrames(bool delete_frames)
  */
 void MapThing::unsetTiles(bool no_events)
 {
-  (void)no_events;
-  
   /* Unset in each frame of the thing */
-  if(sprite_set != NULL)
+  if(tile_main.size() > 0)
   {
+    /* Reset X and Y back to coordinates of top left tile */
+    x = tile_main.front().front()->getX();
+    x_raw = 0;
+    y = tile_main.front().front()->getY();
+    y_raw = 0;
+    
+    /* Loop through all the frames and unset each tile */
     for(uint16_t i = 0; i < sprite_set->width(); i++)
       for(uint16_t j = 0; j < sprite_set->height(); j++)
         if(sprite_set->at(i, j) != NULL)
           unsetTile(i, j, no_events);
   }
-  tiles_set = false;
+  
+  /* Clear all tiles */
+  tile_main.clear();
+  tile_previous.clear();
 }

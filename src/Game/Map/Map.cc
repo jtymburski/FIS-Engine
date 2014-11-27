@@ -1261,11 +1261,11 @@ bool Map::render(SDL_Renderer* renderer)
         geography[map_index][i][j]->renderLower(renderer, x_offset, y_offset);
 
     /* Render the map things within the range of the viewport */
-    for(uint16_t i = tile_x_start; i < tile_x_end; i++)
+    for(uint8_t index = 0; index < Helpers::getRenderDepth(); index++)
     {
-      for(uint16_t j = tile_y_start; j < tile_y_end; j++)
+      for(uint16_t i = tile_x_start; i < tile_x_end; i++)
       {
-        for(uint8_t index = 0; index < Helpers::getRenderDepth(); index++)
+        for(uint16_t j = tile_y_start; j < tile_y_end; j++)
         {
           MapItem* render_item = NULL;
           MapPerson* render_person = NULL;

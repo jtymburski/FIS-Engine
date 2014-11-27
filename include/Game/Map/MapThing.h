@@ -38,16 +38,16 @@ public:
 protected:
   /* The thing classification */
   std::string description;
-  uint16_t height;
+  uint16_t height; // TODO: Remove
   int id;
   std::string name;
   bool passable;
   bool visible;
-  uint16_t width;
-  int x;
-  int x_raw;
-  int y;
-  int y_raw;
+  uint16_t width; // TODO: Remove
+  uint32_t x;
+  uint32_t x_raw;
+  uint32_t y;
+  uint32_t y_raw;
 
   /* Painting information */
   Frame dialog_image;
@@ -68,10 +68,12 @@ protected:
   MapThing* target;
   
   /* Tile information */
+  std::vector<std::vector<Tile*>> tile_main;
+  std::vector<std::vector<Tile*>> tile_previous;
   uint16_t tile_section;
-  bool tiles_set;
-  uint16_t tile_x;
-  uint16_t tile_y;
+  bool tiles_set; // TODO: Remove
+  uint16_t tile_x; // TODO: Remove
+  uint16_t tile_y; // TODO: Remove
 
   /* -------------------------- Constants ------------------------- */
   const static uint16_t kDEFAULT_SPEED; /* The default thing speed */
@@ -95,6 +97,10 @@ protected:
   /* Returns the rendering matrix */
   SpriteMatrix* getMatrix();
 
+  /* Returns the appropriate tile. NULL if unset or beyond range */
+  Tile* getTileMain(uint32_t x, uint32_t y);
+  Tile* getTilePrevious(uint32_t x, uint32_t y);
+  
   /* Is the thing almost centered on a tile (less than 1 pulse away) */
   bool isAlmostOnTile(int cycle_time);
   
@@ -102,7 +108,7 @@ protected:
   bool isMoveAllowed(std::vector<std::vector<Tile*>> tile_set);
   
   /* Move the thing, based on the internal direction */
-  int moveAmount(int cycle_time);
+  uint32_t moveAmount(uint16_t cycle_time);
   void moveThing(int cycle_time);
 
   /* Sets the new direction that the class is moving in */
