@@ -270,11 +270,11 @@ void Game::setupBattle()
   std::vector<Action*> alter_actions;
   alter_actions.push_back(new Action("200,ALTER,,,,VITA,PC.10,AMOUNT.10,,99"));
   alter_actions.push_back(new Action("201,ALTER,,,,,PC.25,AMOUNT.20,VITA,99"));
-  alter_actions.push_back(new Action("202,ALTER,,,,VITA,PC.-10,AMOUNT.20,VITA,100"));
+  alter_actions.push_back(new Action("202,ALTER,,,,VITA,AMOUNT.-100,AMOUNT.20,VITA,100"));
   alter_actions.push_back(new Action("203,ALTER,,,,,PC.-12,AMOUNT.20,VITA,100"));
   alter_actions.push_back(new Action("204,ALTER,,,,QTDR,PC.10,AMOUNT.20,THAG,96"));
   alter_actions.push_back(new Action("204,ALTER-FLIP,,,,QTDR,PC.10,AMOUNT.20,THAG,96"));
-  alter_actions.push_back(new Action("205,ALTER-FLIP,,,,VITA,PC.10,AMOUNT.30,VITA,100"));
+  alter_actions.push_back(new Action("205,ALTER-FLIP,,,,VITA,AMOUNT.100,AMOUNT.30,VITA,100"));
 
   std::vector<Action*> assign_actions;
   assign_actions.push_back(new Action("300,ASSIGN,,,,VITA,AMOUNT.1,AMOUNT.0,,100"));
@@ -283,22 +283,22 @@ void Game::setupBattle()
   assign_actions.push_back(new Action("303,ASSIGN-FLIP,,,,VITA,PC.20,PC.5,QTDR,1"));
   assign_actions.push_back(new Action("400,REVIVE,,,,,AMOUNT.50,AMOUNT.10,,80"));
 
-  // for(auto it = begin(damage_actions); it != end(damage_actions); ++it)
-  //   std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
+  for(auto it = begin(damage_actions); it != end(damage_actions); ++it)
+    std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
 
-  // for (auto it = begin(alter_actions); it != end(alter_actions); ++it)
-  //   std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
+  for (auto it = begin(alter_actions); it != end(alter_actions); ++it)
+    std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
 
-  // for (auto it = begin (assign_actions); it != end(assign_actions); ++it)
-  //   std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
+  for (auto it = begin (assign_actions); it != end(assign_actions); ++it)
+    std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
 
   // Test Skills
   Skill* physical_01 = new Skill(100, "Wee Strike", ActionScope::ONE_ENEMY, 
-      damage_actions[3], 95, 25);
+      damage_actions[3], 95, 5);
   physical_01->setPrimary(Element::PHYSICAL);
 
   Skill* physical_02 = new Skill(101, "Whelp", ActionScope::ONE_ENEMY, 
-      damage_actions[4],  95, 32);
+      damage_actions[4],  95, 5);
   physical_02->setPrimary(Element::PHYSICAL);
 
   Skill* physical_03 = new Skill(102, "Two Smackeroos", 
@@ -306,11 +306,11 @@ void Game::setupBattle()
   physical_03->setPrimary(Element::PHYSICAL);
 
   Skill* physical_04 = new Skill(103, "Mass Smack", ActionScope::ALL_ENEMIES, 
-      damage_actions[8], 85, 210); 
+      damage_actions[8], 85, 5); 
   physical_04->setPrimary(Element::PHYSICAL);
 
   Skill* fire_01 = new Skill(110, "Burninate The Countryside", ActionScope::ONE_ENEMY, 
-    damage_actions[10], 90, 200);
+    damage_actions[10], 100, 5);
   fire_01->setPrimary(Element::FIRE);
   fire_01->setSecondary(Element::PHYSICAL);
 
@@ -335,32 +335,47 @@ void Game::setupBattle()
   // void_01->setPrimary(Element::NIHIL);
 
   Skill* self_heal = new Skill(120, "Heal Self", ActionScope::USER,
-    alter_actions[0], 100, 50);
+    alter_actions[0], 100, 5);
   self_heal->setPrimary(Element::FOREST);
   self_heal->setPrimary(Element::PHYSICAL);
 
   Skill* ally_heal = new Skill(121, "Heal Ally", ActionScope::ONE_ALLY_NOT_USER,
-    alter_actions[1], 100, 50);
+    alter_actions[1], 100, 5);
   ally_heal->setPrimary(Element::FOREST);
   ally_heal->setSecondary(Element::PHYSICAL);
 
-  Skill* revive_ally = new Skill(122, "Revive Ally", ActionScope::ONE_ALLY_KO,
-    assign_actions[4], 100, 2);
+  Skill* user_reduce_by_ally = new Skill(122, "Reduce User By Ally", ActionScope::USER,
+    alter_actions[2], 100, 5);
+  ally_heal->setPrimary(Element::PHYSICAL);
+
+  Skill* alter_qtdr_by_thag = new Skill(123, "Alter Qtdr By Thag", ActionScope::ONE_TARGET,
+    alter_actions[4], 100, 5);
+
+  Skill* alter_qtdr_by_thag_flip = new Skill(123, "Alter Qtdr By Thag - Flip", ActionScope::ONE_TARGET,
+    alter_actions[5], 100, 5);
+
+  Skill* revive_ally = new Skill(130, "Revive Ally", ActionScope::ONE_ALLY_KO,
+    assign_actions[4], 100, 5);
   revive_ally->setPrimary(Element::FOREST);
 
-  // Skill* life_steal = new Skill(122, "Life Steal", ActionScope::ONE_ENEMY,
-  //   alter_actions[2], 100, 100);
-  // life_steal->addAction(alter_actions[6], true);
+  Skill* life_steal = new Skill(131, "Life Steal", ActionScope::ONE_ENEMY,
+    alter_actions[2], 100, 5);
+  life_steal->addAction(alter_actions[6], true);
+  alter_actions[2]->print(true, true);
+  alter_actions[6]->print(true, true);
 
   // Test Skill Sets
   SkillSet* physical_skills = new SkillSet(physical_01, 1);
   physical_skills->addSkill(physical_02, 1);
   physical_skills->addSkill(physical_03, 1);
-  // physical_skills->addSkill(physical_04, 1);
-  // physical_skills->addSkill(self_heal, 1);
-  // physical_skills->addSkill(ally_heal, 1);
+  physical_skills->addSkill(user_reduce_by_ally, 1);
+  physical_skills->addSkill(alter_qtdr_by_thag, 1);
+  physical_skills->addSkill(alter_qtdr_by_thag_flip, 1);
+  physical_skills->addSkill(physical_04, 1);
+  physical_skills->addSkill(self_heal, 1);
+  physical_skills->addSkill(ally_heal, 1);
   physical_skills->addSkill(revive_ally, 1);
-  // physical_skills->addSkill(life_steal, 20);
+  physical_skills->addSkill(life_steal, 1);
 
   SkillSet* elemental_skills = new SkillSet(fire_01, 1);
 

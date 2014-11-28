@@ -310,14 +310,19 @@ void BattleMenu::keyDownCancel()
     }
     /* Hitting cancel on a GUARD action will reset the action_type */
     else if (action_type == ActionType::GUARD ||
-             action_type == ActionType::DEFEND)
+             action_type == ActionType::DEFEND ||
+             action_type == ActionType::PASS)
     {
       decrement_to_layer = 1;
     }
   }
   else if (layer_index == 4)
   {
-    decrement_to_layer = 3;
+    if (action_type == ActionType::DEFEND || action_type == ActionType::RUN ||
+        action_type == ActionType::PASS)
+      decrement_to_layer = 1;
+    else 
+      decrement_to_layer = 3;
   }
   
   if (decrement_to_layer != -1)

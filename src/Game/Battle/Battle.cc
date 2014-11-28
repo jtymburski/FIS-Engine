@@ -1639,8 +1639,12 @@ bool Battle::processAction(std::vector<Person*> targets,
 
         if (curr_action->actionFlag(ActionFlags::FLIP_ATTR))
         {
+          std::cout << "Flipping!" << std::endl;
           std::swap(action_target, factor_target);
           std::swap(user_attr, targ_attr);
+
+          std::cout << "Action Target:" << action_target->getName() << std::endl;
+          std::cout << "Factor Target: " << factor_target->getName() << std::endl;
         }
 
         if (curr_action->actionFlag(ActionFlags::ALTER))
@@ -1694,8 +1698,8 @@ bool Battle::processAlterAction(const DamageType &damage_type,
   auto death = false;
   auto done  = false;
 
-  auto max_value = factor_target->getTemp().getStat(targ_attr);
-  cur_value      = factor_target->getCurr().getStat(targ_attr);
+  auto max_value = action_target->getTemp().getStat(targ_attr);
+  cur_value      = action_target->getCurr().getStat(targ_attr);
     
   one_pc    = static_cast<float>(factor_target->getTemp().getStat(user_attr));
   one_pc   /= 100;
@@ -1714,7 +1718,7 @@ bool Battle::processAlterAction(const DamageType &damage_type,
     alt_value = max_value - cur_value;
   }
   /* The altered amount cannot be such that it would decrease a stat to neg */
-  else if (alt_value < 0 && alt_value > -cur_value)
+  else if (alt_value < 0 && alt_value < -cur_value)
   {
     alt_value = -cur_value;
     death = true;
@@ -1867,6 +1871,13 @@ bool Battle::processReviveAction()
 
   if (curr_target->getCurr().getStat(Attribute::VITA) > 0)
     curr_target->setBFlag(BState::ALIVE, true);
+
+  if (getBattleMode() == BattleMode::TEXT)
+  {
+    std::cout << "{REVIVE} " << curr_target->getName() << " has been brought "
+              << " back from KO with " 
+              << curr_target->getCurr().getStat(Attribute::VITA) << " VITA.\n";
+  }
 
   //TODO: All party target attacks should now hit the alive person.
   return false;

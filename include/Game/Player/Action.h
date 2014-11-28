@@ -68,17 +68,17 @@
 *              percentage of MAX will be altered BY the user's percentage
 *              of MAX.
 *     200,ALTER,,,,VITA,AMOUNT.100,AMOUNT.10,,99
-*       - Restore 100 +/- 10 VITA with 99% chance
-*     201,ALTER,,,,VITA,PC.25,AMOUNT.20,,99
-*       - Restores 25% +/- 20 VITA with 99% chance
+*       - Restore 100 +/- 10 VITA to USER with 99% chance
+*     201,ALTER,,,,,PC.25,AMOUNT.20,VITA,99
+*       - Restores 25% +/- 20 VITA to TARGET with 99% chance
 *     202,ALTER,,,,VITA,PC.10,AMOUNT.20,VITA,95
 *       - Restores user's Vita by 10% +/- 20 of Target's VITA w/ 95% chance
 *     203,ALTER,,,,,PC.-12,AMOUNT.20,VITA,100
 *       - Alters target's vitality by -12% +/- 20 with 100% chance
 *     204,ALTER,,,,QTDR,PC.10,AMOUNT.20,THAG,96
-*       - Alters targ's QTDR by 10% +/- 20 of user's THAG with 96% chance
+*       - Alters user's QTDR by 10% +/- 20 of target's THAG with 96% chance
 *     205,ALTER-FLIP,,,,QTDR,PC.10,AMOUNT.20,THAG,97
-*       - Alters user's QTDR by 10% +/- 20 of target's THAG with 97% chance
+*       - Alters target's QTDR by 10% +/- 20 of user's THAG with 97% chance
 *
 *   [2.3]: Assign Actions
 *     [2.3.1]: When assigning percentages, the percentage altered is the 
@@ -164,7 +164,7 @@ enum class ActionFlags
   BASE_PC   = 1 << 6,  /* True if the base is a % value and not an abs one */
   VARI_PC   = 1 << 7,  /* True if the variance is a % value and not an abs one */
   FLIP_ATTR = 1 << 8,  /* Flip the user/target attributes for assign/alter? */
-  VALID     = 1 << 8,  /* The validity of the action */
+  VALID     = 1 << 9,  /* The validity of the action */
 };
 
 /* IgnoreFlags for storing which elemental atk/def stats are ignored */
@@ -176,10 +176,10 @@ enum class IgnoreFlags
   POLAR      = 1 << 2,
   PRIMAL     = 1 << 3,
   CHARGED    = 1 << 4,
-  CYBERNETIC = 1 << 5,
   NIHIL      = 1 << 6,
   LUCK       = 1 << 7,
-  ARMOR      = 1 << 8  // TODO [11-23-14] - Cut through target's equipment
+  CYBERNETIC = 1 << 8,
+  ARMOR      = 1 << 9  // TODO [11-23-14] - Cut through target's equipment
 };
 
 class Action

@@ -457,7 +457,9 @@ void Action::print(const bool &print_action, const bool& print_ignore)
     std::cout << "REVIVE: "  << actionFlag(ActionFlags::REVIVE)  << std::endl;
     std::cout << "BASE_PC: " << actionFlag(ActionFlags::BASE_PC) << std::endl;
     std::cout << "VARI_PC: " << actionFlag(ActionFlags::VARI_PC) << std::endl;
-    std::cout << "VALID: "   << actionFlag(ActionFlags::VALID)   << std::endl;
+    std::cout << "FLIP_ATTR: " << actionFlag(ActionFlags::FLIP_ATTR);
+    std::cout << "\nVALID: "   << actionFlag(ActionFlags::VALID)   << std::endl;
+
   }
 
   if (print_ignore)

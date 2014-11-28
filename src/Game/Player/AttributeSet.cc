@@ -436,6 +436,8 @@ int32_t AttributeSet::getOffensiveIndex(const Element &stat)
     case(Element::FIRE):
       return getIndex(Attribute::THAG);
     case (Element::FOREST):
+      return getIndex(Attribute::PRAG);
+    case (Element::ICE):
       return getIndex(Attribute::POAG);
     case (Element::ELECTRIC):
       return getIndex(Attribute::CHAG);
@@ -469,6 +471,8 @@ int32_t AttributeSet::getDefensiveIndex(const Element &stat)
     case(Element::FIRE):
       return getIndex(Attribute::THFD);
     case (Element::FOREST):
+      return getIndex(Attribute::PRFD);
+    case (Element::ICE):
       return getIndex(Attribute::POFD);
     case (Element::ELECTRIC):
       return getIndex(Attribute::CHFD);
