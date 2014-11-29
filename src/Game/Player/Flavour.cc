@@ -23,7 +23,7 @@ const std::vector<float> Flavour::kTIER_MODIFIERS{0.0, 1.0, 1.25, 1.5};
 
 const std::vector<uint32_t> Flavour::kTIER_LEVELS{0, 1, 11, 21};
 
-const std::vector<float> Flavour::kTIER_MASSES{1.0, 1.0, 2.0, 4.0};
+const std::vector<uint32_t> Flavour::kTIER_MASSES{100, 100, 200, 400};
 
 const std::vector<float> Flavour::kTIER_VALUES{1.0, 4.0, 4.0, 4.0};
 
@@ -43,7 +43,7 @@ std::vector<Flavour*> Flavour::flavour_list{};
  */
 Flavour::Flavour()
   : base_stats{AttributeSet()}
-  , base_mass{0.0}
+  , base_mass{0}
   , base_value{0}
   , description{""}
   , game_id{kUNSET_ID}
@@ -65,7 +65,7 @@ Flavour::Flavour()
  *         skills - pointer to a set of skills the Flavour unlocks for a Person
  */
 Flavour::Flavour(const int &game_id, const std::string &flavour_name, 
-                 const AttributeSet &min_stats, const double &min_mass,
+                 const AttributeSet &min_stats, const uint32_t &min_mass,
                  const uint32_t &min_value, SkillSet* skills)
   : base_stats{min_stats}
   , base_mass{min_mass}
@@ -190,16 +190,16 @@ const int& Flavour::getGameID()
  * Inputs: tier - the tier of the Bubby to determine the mass of
  * Output: double - the mass of a Bubby of the given tier
  */
-double Flavour::getMass(const uint32_t &tier)
+uint32_t Flavour::getMass(const uint32_t &tier)
 {
-  double mass = base_mass;
+  auto temp_mass = base_mass;
 
   if (tier < kTIER_MASSES.size())
   {
-    for (auto it = kTIER_MASSES.begin(); it != kTIER_MASSES.end(); ++it)
-      mass *= (*it);
+    for (const auto& mass_val : kTIER_MASSES)
+      temp_mass += mass_val;
 
-    return mass;
+    return temp_mass;
   }
 
   return 0;

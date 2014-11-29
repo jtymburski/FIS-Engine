@@ -26,10 +26,10 @@ int32_t Item::id{0};
 
 /* Static Class Constants */
 const uint32_t Item::kMAX_DURABILITY{100000};
-const double   Item::kMAX_MASS{5000};
+const uint32_t Item::kMAX_MASS{500000};
 const uint32_t Item::kMAX_VALUE{100000000};
 const uint32_t Item::kMIN_DURABILITY{0};
-const double   Item::kMIN_MASS{-1000};
+const uint32_t Item::kMIN_MASS{0};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -83,7 +83,7 @@ Item::Item(Item* const source)
  *         mass - base mass for the Item
  */
 Item::Item(const int32_t &game_id, const std::string &name, 
-    const uint32_t &value, Frame* thumbnail, const double &mass, 
+    const uint32_t &value, Frame* thumbnail, const uint32_t &mass, 
     const uint32_t &dura)
       : game_id{game_id}
       , my_id{++id}
@@ -109,7 +109,7 @@ Item::Item(const int32_t &game_id, const std::string &name, Frame* thumbnail)
     , my_id{++id}
     , base_item{nullptr}
     , max_durability{0}
-    , mass{0.0}
+    , mass{0}
     , name{name}
     , thumbnail{thumbnail}
     , value{0}
@@ -260,7 +260,7 @@ AttributeSet Item::getStats()
  * Inputs: none
  * Output: double - the mass of the Item
  */
-double Item::getMass()
+uint32_t Item::getMass()
 {
   return mass;
 }
@@ -720,15 +720,15 @@ void Item::setOccasion(const ActionOccasion &new_occasion)
  * Inputs: new_mass - the new mass to be assigned
  * Output: bool - outcome of the assignment
  */
-bool Item::setMass(const double &new_mass)
+bool Item::setMass(uint32_t new_mass)
 {
-  if (new_mass >= kMIN_MASS && new_mass <= kMAX_MASS)
+  if (Helpers::isInRange(new_mass, kMIN_MASS, kMAX_MASS))
   {
     mass = new_mass;
-    
+
     return true;
   }
-  
+
   return false;
 }
 

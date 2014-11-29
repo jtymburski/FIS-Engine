@@ -92,7 +92,7 @@ public:
   AttributeSet getBaseStats();
 
   /* Returns the mass */
-  double getMass();
+  uint32_t getMass();
 
   /* Evaluates and returns a given EquipState flag */
   bool getEquipFlag(EquipState flags);

@@ -101,7 +101,7 @@ public:
   uint32_t getLevelNext();
 
   /* Returns the mass at the current tier (determined from Flavour */
-  double getMass();
+  uint32_t getMass();
 
   /* Calculates and returns the stats the Bubby will provide on a Signature */
   AttributeSet getStats();

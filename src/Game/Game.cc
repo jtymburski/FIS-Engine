@@ -547,40 +547,122 @@ void Game::setupBattle()
   //frosty->print(false, false, true, true);
 
   // Begin Time Test
-  //using namespace std::chrono;
+  // auto length = 2000;
 
-  //system_clock::time_point tp = system_clock::now();
-  //system_clock::duration dtn = tp.time_since_epoch();
-  //std::cout << "Starting clock: " << dtn.count() << std::endl;
+  // std::vector<std::vector<std::vector<uint64_t>>> values;
 
-  //std::vector<std::string> the_strings(1000000, " abcd ");
+  // for (auto k = 0; k < length; k++)
+  // {
+  //   std::vector<std::vector<uint64_t>> new_2d_vecs;
 
-  // for (auto &s : the_strings)
-  // s = Helpers::trim(s);
+  //   for (auto i = 0; i < length; i++)
+  //   {
+  //     std::vector<uint64_t> new_values;
+  //     for (auto j = 0; j < length; j++)
+  //     {
+  //       new_values.push_back(25000);
+  //     }
 
-  // Helpers Testing
-  // auto length =  10;
+  //     new_2d_vecs.push_back(new_values);
+  //   }
 
-  //std::vector<int> values(length, 0);
+  //   values.push_back(new_2d_vecs);
+  // }
 
-  //for (auto i = 0; i < length * 100; i++)
-  //{
-    //auto value = Helpers::randU32();
-    //std::cout << value << std::endl;
-    //values[value]++;
-  //}
-  //for (auto i = 0; i < length * 100000; i++)
-  //{
-    //auto value = Helpers::randU64();
-    //std::cout << value << std::endl;
-    //values[value]++;
-  //}
-  //std::cout << "DONE!" << std::endl;
+  // using namespace std::chrono;
 
-  //system_clock::time_point tp2 = system_clock::now();
-  //system_clock::duration dtn2 = tp2.time_since_epoch();
-  //std::cout << "Ending clock: " << dtn2.count() << std::endl;
-  //std::cout << "Periods elapsed: " << (dtn2.count() - dtn.count()) / 1000 << std::endl;
+  // system_clock::time_point tp = system_clock::now();
+  // system_clock::duration dtn = tp.time_since_epoch();
+  // std::cout << "Starting clock: " << dtn.count() << std::endl;
+  
+  // auto found = false;
+  // uint32_t i = 0;
+  // uint32_t j = 0;
+  // uint32_t k = 0;
+ 
+  // std::vector<long double> magic_numbers(1000000000, 100.7254);
+
+  // // 112 214 320 (Tad slower)
+  // while (!found && i < magic_numbers.size())
+  // {
+  //   magic_numbers[i] += 0.0500;
+  //   i++;
+  // }
+
+  // 91 989 398 (Slower)
+  // for (auto& e : magic_numbers)
+  // {
+  //   if (!found)
+  //   {
+  //     e += 0.0500;
+  //     i++;
+  //   }
+  // }
+
+  // Example 1: Duration: 2549672 cycles
+
+  // while (!found && k < values.size())
+  // {
+  //   i = 0;
+  //   while (!found && i < values.at(k).size())
+  //   {
+  //     j = 0;
+  //     while (!found && j < values.at(k).at(i).size())
+  //     {
+  //       if (values.at(i).at(i).at(j) == 25000)
+  //       {
+  //         values[k][i][j]++;
+  //       }
+  //       j++;
+  //     }
+  //     i++;
+  //   }
+  //   k++;
+  // }
+
+  // Example 2: 565 472 (5X Faster)
+  // for (auto &&cube : values)
+  // {
+  //   i = 0;
+  //   if (!found)
+  //   {
+  //     for (auto&& row : cube)
+  //     {
+  //       j = 0;
+  //       if (!found)
+  //       {
+  //         for (auto&& element: row)
+  //         {
+  //           if (!found && element == 25000)
+  //           {
+  //             element++;
+  //           }
+  //           j++;
+  //         }
+  //       }
+  //       i++;
+  //     }
+  //   }
+  //   k++;
+  // }
+
+  // for (int i = 0; !found && i < values.size(); i++)
+  // {
+  //   for (int j = 0; !found && j < values.at(i).size(); j++)
+  //   {
+  //     for (int k = 0; !found && k < values.at(i).at(j).size(); k++)
+  //     {
+  //       values[i][j][k]++;
+  //     }
+  //   }
+  // }
+
+  // std::cout << "DONE!" << std::endl;
+
+  // system_clock::time_point tp2 = system_clock::now();
+  // system_clock::duration dtn2 = tp2.time_since_epoch();
+  // std::cout << "Ending clock: " << dtn2.count() << std::endl;
+  // std::cout << "Periods elapsed: " << (dtn2.count() - dtn.count()) / 1000 << std::endl;
 
   // General Item Testing
   // Item* potion      = new Item(45, "Potion", 70, nullptr, 1.01);

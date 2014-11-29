@@ -295,6 +295,9 @@ private:
   /* Determines whether the current person has selected all actions */
   bool canIncrementIndex(Person* check_person);
 
+  /* Can the current target be inflicted with a new infliction of given type? */
+  bool canInflict(const Infliction &test_infliction);
+
   /* Asserts all AI modules are set for the enemy parties */
   bool checkAIModules();
 

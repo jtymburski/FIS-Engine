@@ -89,7 +89,7 @@ public:
 
   /* Base Item constructor - constructs an Item given a game ID and basics */
   Item(const int32_t &game_id, const std::string &name, const uint32_t &value,
-      Frame* thumbnail = nullptr, const double &mass = 0.0, 
+      Frame* thumbnail = nullptr, const uint32_t &mass = 0, 
       const uint32_t &dura = kMIN_DURABILITY);
 
   /* Key Item constructor */
@@ -132,7 +132,7 @@ protected:
   ItemTier item_tier;
 
   /* Mass of the Item */
-  double mass;
+  uint32_t mass;
 
   /* The name of the Item and an attached prefix (ex. Bottles) */
   std::string name;
@@ -162,10 +162,10 @@ protected:
   
   /* ------------ Constants --------------- */
   static const uint32_t kMAX_DURABILITY; /* Maximum durability */
-  static const double   kMAX_MASS;       /* Maximum mass of an Item */
+  static const uint32_t kMAX_MASS;       /* Maximum mass of an Item */
   static const uint32_t kMAX_VALUE;      /* Maximum value of an Item */
   static const uint32_t kMIN_DURABILITY; /* Minimum durability */
-  static const double   kMIN_MASS;       /* Minimum mass */
+  static const uint32_t kMIN_MASS;       /* Minimum mass */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -188,7 +188,7 @@ public:
   virtual AttributeSet getStats();
 
   /* Returns the mass of the Item */
-  virtual double getMass();
+  virtual uint32_t getMass();
 
   /* Returns the value of the Item */
   virtual uint32_t getValue();
@@ -288,7 +288,7 @@ public:
   void setOccasion(const ActionOccasion &new_occasion);
 
   /* Attempts to assign a new mass */
-  bool setMass(const double &new_mass);
+  bool setMass(uint32_t new_mass);
 
   /* Assigns a new icon image, returns true if the new image is not null */
   bool setThumbnail(Frame* new_thumbnail);

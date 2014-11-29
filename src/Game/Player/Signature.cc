@@ -26,7 +26,7 @@
  *
  * Inputs: 
  */
-Cell::Cell(const uint8 a, const uint8 b)
+Cell::Cell(uint16_t a, uint16_t  b)
     : bubby_ptr{nullptr}
     , state{CellState::OPEN}
     , link_tier{0}
@@ -69,9 +69,9 @@ Bubby* Cell::getBubby()
  * Description: Returns an 8-bit value for a link tier ~(Lv. 1 - 15)
  *
  * Inputs: none
- * Output: uint8 - unsigned value for link tier level of the curret cell
+ * Output: uint16_t - unsigned value for link tier level of the curret cell
  */
-uint8 Cell::getLinkTier()
+uint16_t Cell::getLinkTier()
 {
   return link_tier;
 }
@@ -91,9 +91,9 @@ CellState Cell::getState()
  * Description: Returns the x-dimensional width of the Cell object
  *
  * Inputs: none
- * Output: uint8 - the x-dimensional width (less than the max width)
+ * Output: uint16 - the x-dimensional width (less than the max width)
  */
-uint8 Cell::getX()
+uint16_t Cell::getX()
 {
   return x;
 }
@@ -102,9 +102,9 @@ uint8 Cell::getX()
  * Description: Retunrs the y-dimensional length of the Cell oject
  *
  * Inputs: none
- * Output: uint8 - the y-dimensional length (less than the max lenght)
+ * Output: uint16_t - the y-dimensional length (less than the max lenght)
  */
-uint8 Cell::getY()
+uint16_t Cell::getY()
 {
   return y;
 }
@@ -116,11 +116,11 @@ uint8 Cell::getY()
  *
  * Inputs: CellState - enumerated CellState of the Signature (open/closed)
  *         Bubby* - new pointer to a Bubby object for the Cell
- *         uint8 - new unsgned value for link tier Lvl at the current cell
+ *         uint16_t - new unsgned value for link tier Lvl at the current cell
  * Output: bool - true if the assigned state is a valid state
  */
-bool Cell::setState(const CellState new_state, Bubby* const new_bubby,
-    const uint8 new_link_tier)
+bool Cell::setState(CellState new_state, Bubby* new_bubby, 
+    uint16_t new_link_tier)
 {
   auto valid_state = false;
   auto valid_link_tier = new_link_tier;
@@ -169,11 +169,11 @@ bool Cell::setState(const CellState new_state, Bubby* const new_bubby,
  * CONSTANTS - See implementation for details
  *============================================================================*/
 
-const size_t Signature::kMIN_X  {1};
-const size_t Signature::kMIN_Y  {1};
-const size_t Signature::kMAX_X {10};
-const size_t Signature::kMAX_Y {10};
-const uint8 Signature::kMAX_LINK_TIER{15};
+const uint16_t Signature::kMIN_X  {1};
+const uint16_t Signature::kMIN_Y  {1};
+const uint16_t Signature::kMAX_X {10};
+const uint16_t Signature::kMAX_Y {10};
+const uint16_t Signature::kMAX_LINK_TIER{15};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -194,27 +194,23 @@ Signature::Signature()
  *              with a width size y by length size y and with random or 
  *              non-random closed cells.
  *
- * Inputs: size_t x - the width size to create the signature
- *         size_t y - the length size to create the signature
+ * Inputs: uint16_t x - the width size to create the signature
+ *         uint16_t y - the length size to create the signature
  *         bool random - whether to close random # of cells randomly
  */
-Signature::Signature(const size_t x, const size_t y, const bool random)
+Signature::Signature(uint16_t x, uint16_t y, bool random)
 {
   classSetup(true);
 
-  if (setSize(x, y))
+  if (setSize(x, y) && random)
   {
-    if (random)
-    {
-    	/* Random # closed cells */
-      auto cells = Helpers::randInt(static_cast<int>(x) * static_cast<int>(y));
+    /* Choose a random number of cells to close and close them randomly. */
+    auto num_cells = Helpers::randInt(static_cast<int>(x * y));
 
-      /* Randomly close that number of cells -- some may be repeats */
-      for (int i = 0; i < cells; i++)
-      {
-        close(static_cast<uint8>(Helpers::randInt(kMAX_X)), 
-            static_cast<uint8>(Helpers::randInt(kMAX_Y)));
-      }
+    for (int i = 0; i < num_cells; i++)
+    {
+      close(static_cast<uint16_t>(Helpers::randInt(x)), 
+            static_cast<uint16_t>(Helpers::randInt(y)));
     }
   }
   else
@@ -223,22 +219,22 @@ Signature::Signature(const size_t x, const size_t y, const bool random)
 
 /*
  * Description: Another general constructor for signature, creates a signature
- *               given a size_t x-width by size_t y-length and a vector of
- *               [x, y] uint8_t pairs for cell values to close.
+ *               given a uint16_t x-width by uint16_t y-length and a vector of
+ *               [x, y] uint16_t pairs for cell values to close.
  *
- * Inputs: size_t x - the width to create the signature.
- *         size_t y - the legnth to create the width
+ * Inputs: uint16_t x - the width to create the signature.
+ *         uint16_t y - the legnth to create the width
  *         std::vector<uint8Pair> closed_cells
  */
-Signature::Signature(const size_t x, const size_t y, 
-	                 std::vector<uint8Pair> closed_cells)
-  : flags(static_cast<SigState>(0))
+Signature::Signature(uint16_t x, uint16_t y, 
+    std::vector<uint16Pair> closed_cells)
+      : flags(static_cast<SigState>(0))
 {
   classSetup(true);
 
   if (setSize(x, y))
   {
-    for (auto closed : closed_cells)
+    for (auto& closed : closed_cells)
       if (isOpen(closed.first, closed.second))
         close(closed.first, closed.second);
   }
@@ -259,7 +255,7 @@ Signature::Signature(const size_t x, const size_t y,
  * Inputs: bool bubbable - true if the Signature can have bubbies assigned to it
  * Output: none
  */
- void Signature::classSetup(const bool bubbable)
+ void Signature::classSetup(bool bubbable)
  {
    flags = static_cast<SigState>(0);
 
@@ -275,11 +271,11 @@ Signature::Signature(const size_t x, const size_t y,
  *              objects) and creates new cells (default Cell:clear function)
  *              by a given size x by given size y)
  *
- * Inputs: size_t x - given width size to clear and rebuild cells for
- *         size_t y - gven legnth size to clear and rebuild cells for
+ * Inputs: uint16_t x - given width size to clear and rebuild cells for
+ *         uint16_t y - gven legnth size to clear and rebuild cells for
  * Output: bool - true if the function operated properly
  */
-bool Signature::clearAndBuild(const size_t x, const size_t y)
+bool Signature::clearAndBuild(uint16_t x, uint16_t y)
 {
   Helpers::setInRange(x, kMIN_X, kMAX_X);
   Helpers::setInRange(y, kMIN_Y, kMAX_Y);
@@ -287,10 +283,10 @@ bool Signature::clearAndBuild(const size_t x, const size_t y)
   cells.clear();
 
   CellRow new_row;
-  for (size_t i = 0; i < x; i++)
+  for (uint16_t i = 0; i < x; i++)
   {
-    for (size_t j = 0; j < y; j++)
-      new_row.push_back(Cell(static_cast<uint8>(i), static_cast<uint8>(j)));
+    for (uint16_t j = 0; j < y; j++)
+      new_row.push_back(Cell(static_cast<uint16_t>(i), static_cast<uint16_t>(j)));
 
     cells.push_back(new_row);
     new_row.clear();
@@ -307,26 +303,25 @@ bool Signature::clearAndBuild(const size_t x, const size_t y)
  *           and [0,3], given any of those coordinates, the top left-most 
  *           coordinate [0, 0] will be returned.
  *
- * Inputs: uint8 - x-coordinate of the ID of a Bubby to be checked
- *         uint8 - y-coordinate of the ID of a Bubby to be checked
+ * Inputs: uint16_t - x-coordinate of the ID of a Bubby to be checked
+ *         uint16_t - y-coordinate of the ID of a Bubby to be checked
  *
- * Output: uint8Pair - pair of uint8s of the matching top-left coordinate of
+ * Output: uint16Pair - pair of uint16_ts of the matching top-left coordinate of
  *                    the found Bubby or, [max + 1, max + 1] if invalid
  */
-uint8Pair Signature::getTopLeft(const uint8 a, const uint8 b)
+uint16Pair Signature::getTopLeft(uint16_t a, uint16_t b)
 {
-  auto cell_bubby = getBubby(a, b);
-
-  if (cell_bubby != nullptr)
+  if (getBubby(a, b) != nullptr)
   {
-    if (cell_bubby->getTier() == 1)
+    if (getBubby(a, b)->getTier() == 1)
       return std::make_pair(a, b);
 
-    for (auto it_r = begin(cells); it_r != end(cells); ++it_r)
-      for (auto it_e = begin(*it_r); it_e != end(*it_r); ++it_e)
-        if ((*it_e).getBubby() != nullptr)
-          if ((*it_e).getBubby()->getID() == cell_bubby->getID())
-            return std::make_pair((*it_e).getX(), (*it_e).getY());
+    auto id = getBubby(a, b)->getID();
+
+    for (auto& row : cells)
+      for (auto& e : row)
+        if (e.getBubby() != nullptr && e.getBubby()->getID() == id)
+          return std::make_pair(e.getX(), e.getY());
   }
 
   return std::make_pair(kMAX_X + 1, kMAX_Y + 1);
@@ -343,14 +338,13 @@ uint8Pair Signature::getTopLeft(const uint8 a, const uint8 b)
  * Inputs: uint32_t amount - the amount of experience to be added to each Bubby
  * Output: bool - true if all the Bubbies were able to have exp. added
  */
-bool Signature::addExp(const uint32_t amount)
+bool Signature::addExp(uint32_t amount)
 {
   auto bubbies = getBubbies();
   auto added   = true;
 
-  for (auto bubby : bubbies)
-    if (bubby != nullptr)
-      added &= bubby->addExperience(amount);
+  for (auto& bubby : bubbies)
+    added &= bubby!= nullptr && bubby->addExperience(amount);
 
   return added;
 }
@@ -360,29 +354,26 @@ bool Signature::addExp(const uint32_t amount)
  *              This function asserts that the given Cell is in the open state
  *              and that the Bubby ID does not currently match any other ID
  *
- * Inputs: uint8 a - given x-coordinate of Bubby to be attached
- *         uint8 b - given y-coordinate of Bubby to be attached
+ * Inputs: uint16_t a - given x-coordinate of Bubby to be attached
+ *         uint16_t b - given y-coordinate of Bubby to be attached
  *         new_bubby - the Bubby ptr to be attached at the current cell.
  * Output: bool - true if the attachment occurd successfully
  */
-bool Signature::attach(const uint8 a, const uint8 b, Bubby* new_bubby)
+bool Signature::attach(uint16_t a, uint16_t b, Bubby* new_bubby)
 {
   /* Assert the Signature can have Bubbies added to it */
-  auto can_attach = getFlag(SigState::BUBBABLE);
+  auto can_attach = new_bubby!= nullptr && getFlag(SigState::BUBBABLE);
 
   /* Assert all corresponding cells are open and the Bubby ID does not match */
-  if (can_attach && new_bubby != nullptr)
+  if (can_attach)
   {
-    uint8 tier = static_cast<uint8>(new_bubby->getTier());
-    can_attach &= isOpen(a, b, tier);
+    can_attach &= isOpen(a, b, new_bubby->getTier());
     can_attach &= !hasID(new_bubby->getID());
   }
-  else
-    can_attach = false;
 
   if (can_attach)
   {
-  	uint8 tier = static_cast<uint8>(new_bubby->getTier());
+  	auto tier = new_bubby->getTier();
 
     /* Determine and assign States to all required cells */
     for (auto i = a; i < a + tier; i++)
@@ -397,11 +388,11 @@ bool Signature::attach(const uint8 a, const uint8 b, Bubby* new_bubby)
  * Description: Attempts to close a given cell coordinate [a, b]. For a cell
  *              to be closed, the cell must first be in an Open State.
  *
- * Inputs: uint8 a - x coordinate for the Cell to be closed.
- *         uint8 b - y coordinate for the Cell to be closed.
+ * Inputs: uint16_t a - x coordinate for the Cell to be closed.
+ *         uint16_t b - y coordinate for the Cell to be closed.
  * Output: bool - true if the Cell was successfully closed
  */
-bool Signature::close(const uint8 a, const uint8 b)
+bool Signature::close(uint16_t a, uint16_t b)
 {
   if (isOpen(a, b))
   {
@@ -420,13 +411,12 @@ bool Signature::close(const uint8 a, const uint8 b)
  * Inputs: int id_check - the ID to check the Signature for.
  * Output: bool - true if the ID for a Bubbt was found on the Signature.
  */
-bool Signature::hasID(const int id_check)
+bool Signature::hasID(int32_t id)
 {
-  for (auto it_r = begin(cells); it_r != end(cells); ++it_r)
-    for (auto it_e = begin(*it_r); it_e != end(*it_r); ++it_e)
-      if ((*it_e).getBubby() != nullptr)
-        if ((*it_e).getBubby()->getID() == id_check)
-          return true;
+  for (auto& row : cells)
+    for (auto& element: row)
+      if (element.getBubby() != nullptr && element.getBubby()->getID() == id)
+        return true;
 
   return false;
 }
@@ -443,9 +433,9 @@ bool Signature::isEmpty()
 {
   auto empty = true;
 
-  for (auto it_r = begin(cells); it_r != end(cells); ++it_r)
-    for (auto it_e = begin(*it_r); it_e != end(*it_r); ++it_e)
-      empty &= !((*it_e).getState() == CellState::BUBBY);
+  for (auto& row : cells)
+    for (auto& element: row)
+      empty &= element.getState() == CellState::BUBBY;
 
   return empty;
 }
@@ -453,20 +443,20 @@ bool Signature::isEmpty()
 /*
  * Description: Determines whether a given cell coordinate [a, b] is open
  *
- * Inputs: uint8 - x-coordinate of cell to determine status of
- *         uint8 - y-coordinate of cell to determine status of
+ * Inputs: uint16_t - x-coordinate of cell to determine status of
+ *         uint16_t - y-coordinate of cell to determine status of
  * Output: bool - true if the given Signature cell is in an open state
  */
-bool Signature::isOpen(const uint8 a, const uint8 b, const uint8 tier)
+bool Signature::isOpen(uint16_t a, uint16_t b, uint16_t tier)
 {
   if (tier < 1)
     return false;
 
   auto is_open = true;
 
-  for (auto i = a; i < a + tier; i++)
-    for (auto j = b; j < b + tier; j++)
-      if (inRange(i, j))
+  for (auto& i = a; i < a + tier; i++)
+    for (auto& j = b; j < b + tier; j++)
+      if (isInRange(i, j))
         is_open &= (cells.at(i).at(j).getState() == CellState::OPEN);
 
   return is_open;
@@ -476,20 +466,13 @@ bool Signature::isOpen(const uint8 a, const uint8 b, const uint8 tier)
  * Description: Determines whether a given coordinate [a, b] is valid on the
  *              current signature.
  *
- * Inputs: uint8 a - x-coordinate to check for being in range.
- *         uint8 b - y-coordinate to check for being in range
+ * Inputs: uint16_t a - x-coordinate to check for being in range.
+ *         uint16_t b - y-coordinate to check for being in range
  * Output: bool - true if the coordinate [a, b] is in the valid range.
  */
-bool Signature::inRange(const uint8 a, const uint8 b)
+bool Signature::isInRange(uint16_t a, uint16_t b)
 {
-  if (a < cells.size())
-  {
-    if (cells.size() > 0)
-      if (b < cells.at(0).size())
-        return true;
-  }
-
-  return false;
+  return (a < cells.size() && cells.size() > 0 && b < cells.at(0).size());
 }
 
 /*
@@ -498,13 +481,13 @@ bool Signature::inRange(const uint8 a, const uint8 b)
  *              cell [a, b] is in a closed state. Locked or otherwise occupied
  *              cells cannot be opened.
  *
- * Inputs: uint8 a - x-coordinate of cell to be opened
- *         uint8 b - y-coordinate of cell to be opened
+ * Inputs: uint16_t a - x-coordinate of cell to be opened
+ *         uint16_t b - y-coordinate of cell to be opened
  * Output: bool - true if the cell can and has been opened
  */
-bool Signature::open(const uint8 a, const uint8 b)
+bool Signature::open(uint16_t a, uint16_t b)
 {
-  if (inRange(a, b) && cells.at(a).at(b).getState() == CellState::CLOSED)
+  if (isInRange(a, b) && cells.at(a).at(b).getState() == CellState::CLOSED)
   {
     cells[a][b].setState(CellState::OPEN);
 
@@ -521,7 +504,7 @@ bool Signature::open(const uint8 a, const uint8 b)
  * Inputs: const bool print_cells - whether to print out the signature state.
  * Output: none
  */
-void Signature::print(const bool print_cells)
+void Signature::print(bool print_cells)
 {
   std::cout << "--- Signature ---\n";
   std::cout << "Size: X: " << cells.size() << " Y: ";
@@ -577,22 +560,22 @@ void Signature::print(const bool print_cells)
  *              coordinate [a, b], and re-openes each cell that that Bubby was
  *              attached to
  *
- * Inputs: uint8 a - the x-coordinate to grab the Bubby for.
- *         uint8 b - the y-coordinate to grab the Bubby for
+ * Inputs: uint16_t a - the x-coordinate to grab the Bubby for.
+ *         uint16_t b - the y-coordinate to grab the Bubby for
  * Output: Bubby* - pointer to the Bubby to be grabbed from the signature.
  */
-Bubby* Signature::unattachBubby(const uint8 a, const uint8 b)
+Bubby* Signature::unattachBubby(uint16_t a, uint16_t b)
 {
   auto cell_bubby = getBubby(a, b);
 
   if (cell_bubby != nullptr)
   {
-    auto tier = static_cast<uint8>(cell_bubby->getTier());
+    auto tier     = cell_bubby->getTier();
     auto top_left = getTopLeft(a, b);
 
-    if (inRange(top_left.first, top_left.second))
-      for (auto i = top_left.first; i < top_left.first + tier; i++)
-        for (auto j = top_left.second; j < top_left.second + tier; j++)
+    if (isInRange(top_left.first, top_left.second))
+      for (auto& i = top_left.first; i < top_left.first + tier; i++)
+        for (auto& j = top_left.second; j < top_left.second + tier; j++)
           cells[i][j].setState(CellState::OPEN);
   }
   
@@ -616,13 +599,13 @@ AttributeSet Signature::getBonusStats()
 /*
  * Description: Returns the Bubby pointer at a given coordinate [a, b]
  *
- * Inputs: uint8 - x coordinate of the cell to grab the Bubby for.
- *         uint8 - y coordinate of the cell to grab the Bubby for
+ * Inputs: uint16_t - x coordinate of the cell to grab the Bubby for.
+ *         uint16_t - y coordinate of the cell to grab the Bubby for
  * Output: Bubby* - pointer to the Bubby at the coordinate [a, b], or nullptr
  */
-Bubby* Signature::getBubby(const uint8 a, const uint8 b)
+Bubby* Signature::getBubby(uint16_t a, uint16_t b)
 {
-  if (inRange(a, b))
+  if (isInRange(a, b))
     return cells.at(a).at(b).getBubby();
 
   return nullptr;
@@ -638,11 +621,24 @@ Bubby* Signature::getBubby(const uint8 a, const uint8 b)
 std::vector<Bubby*> Signature::getBubbies()
 {
   std::vector<Bubby*> bubby_vec;
+  std::vector<uint32_t> ids;
 
-  for (auto it_r = begin(cells); it_r != end(cells); ++it_r)
-    for (auto it_e = begin(*it_r); it_e != end(*it_r); ++it_e)
-      if ((*it_e).getState() == CellState::BUBBY)
-        bubby_vec.push_back((*it_e).getBubby());
+  for (auto& row : cells)
+  {
+    for (auto& element : row)
+    {
+      if (element.getBubby() != nullptr)
+      {
+        auto res = std::find(begin(ids), end(ids), element.getBubby()->getID());
+
+        if (res != end(ids))
+        {
+          bubby_vec.push_back(element.getBubby());
+          ids.push_back(element.getBubby()->getID());
+        }
+      }
+    }
+  }
 
   return bubby_vec;
 }
@@ -663,26 +659,16 @@ bool Signature::getFlag(SigState test_flag)
  *              flavour in the Signature.
  *
  * Inputs: Flavour* flavour_check - pointer to a given Flavour object.
- * Output: uint8 - the highest tiered Bubby of the given Flavour
+ * Output: uint16_t - the highest tiered Bubby of the given Flavour
  */
-uint8 Signature::getHighestTier(Flavour* flavour_check)
+uint16_t Signature::getHighestTier(Flavour* flavour_check)
 {
   auto tier = 0;
 
-  for (auto it_r = begin(cells); it_r != end(cells); ++it_r)
-  {
-    for (auto it_e = begin(*it_r); it_e != end(*it_r); ++it_e)
-    {
-      if ((*it_e).getBubby() != nullptr)
-      {
-        auto cell_bubby = (*it_e).getBubby();
-
-        if (cell_bubby->getType() == flavour_check &&
-        	cell_bubby->getTier() > static_cast<uint32_t>(tier))
-          tier = cell_bubby->getTier();
-      }
-    }
-  }
+  for (auto& row : cells)
+    for (auto& e: row)
+      if (e.getBubby() != nullptr && e.getBubby()->getType() == flavour_check)
+        tier = std::max(static_cast<uint32_t>(tier), e.getBubby()->getTier());
 
   return tier;
 }
@@ -694,14 +680,14 @@ uint8 Signature::getHighestTier(Flavour* flavour_check)
  * Inputs: none
  * Output: double - the calculated mass of the Signature
  */
-double Signature::getMass()
+uint32_t Signature::getMass()
 {
-  auto temp_mass = 0.0;
+  auto temp_mass = 0;
 
-  for (auto it_r = begin(cells); it_r != end(cells); ++it_r)
-    for (auto it_e = begin(*it_r); it_e != end(*it_r); ++it_e)
-      if ((*it_e).getBubby() != nullptr)
-        temp_mass += (*it_e).getBubby()->getMass();
+  for (auto& row : cells)
+    for (auto& element : row)
+      if (element.getBubby() != nullptr)
+        temp_mass += element.getBubby()->getMass();
 
   return temp_mass;
 }
@@ -732,19 +718,19 @@ std::vector<Flavour*> Signature::getUniqueFlavours()
   std::vector<Flavour*> flavour_list;
   std::vector<int> ids;
   
-  for (auto it_r = begin(cells); it_r != end(cells); ++it_r)
+  for (auto& row : cells)
   {
-    for (auto it_e = begin(*it_r); it_e != end(*it_r); ++it_e)
+    for (auto& element : row)
     {
-      if ((*it_e).getBubby() != nullptr)
+      if (element.getBubby() != nullptr)
       {
-        auto type = (*it_e).getBubby()->getType();
+        auto type = element.getBubby()->getType();
         auto result = std::find(begin(ids), end(ids), type->getGameID());
 
         if (result != end(ids))
         {
           flavour_list.push_back(type);
-          ids.push_back(type->getGameID());	
+          ids.push_back(type->getGameID());
         }
       }
     }
@@ -759,17 +745,17 @@ std::vector<Flavour*> Signature::getUniqueFlavours()
  *              an Equipment object with Bubbies attached to the Signature.
  *
  * Inputs: none
- * Output: uint32 - the total value of the Signature
+ * Output: uint32_t - the total value of the Signature
  * TODO: [08-23-14]: Should this function take into account value_modifier?
  */
-uint32 Signature::getValue()
+uint32_t Signature::getValue()
 {
-  uint32 temp_value = 0;
+  uint32_t temp_value = 0;
 
-  for (auto it_r = begin(cells); it_r != end(cells); ++it_r)
-    for (auto it_e = begin(*it_r); it_e != end(*it_r); ++it_e)
-      if ((*it_e).getBubby() != nullptr)
-        temp_value += (*it_e).getBubby()->getValue();
+  for (auto& row : cells)
+    for (auto& element : row)
+      if (element.getBubby() != nullptr)
+        temp_value += element.getBubby()->getValue();
     
   return temp_value;
 }
@@ -778,9 +764,9 @@ uint32 Signature::getValue()
  * Description: Returns the current x-width size of the signature.
  *
  * Inputs: none
- * Output: uint8 - the x-width of the current signature.
+ * Output: uint16_t - the x-width of the current signature.
  */
-uint8 Signature::getX() const 
+uint16_t Signature::getX() const 
 {
   return cells.size();
 }
@@ -789,9 +775,9 @@ uint8 Signature::getX() const
  * Description: Returns the current y-width size of the signature.
  *
  * Inputs: none none
- * Output: uint8 - the y-width of the current signature
+ * Output: uint16_t - the y-width of the current signature
  */
-uint8 Signature::getY() const 
+uint16_t Signature::getY() const 
 {
   if (getX() > 0)
     return cells.at(0).size();
@@ -817,7 +803,7 @@ void Signature::setConfig(const SigState new_config)
  *          bool set_value - the boolean value to assign teh flag to.
  * Output: none
  */
-void Signature::setFlag(const SigState flag, const bool set_value)
+void Signature::setFlag(const SigState flag, bool set_value)
 {
   (set_value) ? (flags |= flag) : (flags &= ~flag);
 }
@@ -827,14 +813,14 @@ void Signature::setFlag(const SigState flag, const bool set_value)
  *              to be resized, the new_x and new_y values must be within range
  *              and the Signature must be SIZEABLE (flag) and empty of Bubbies.
  *
- * Inputs: size_t new_x - the new x-coordinate of the new size of Signature
- *         size_t new_y - the new y-coordinate of the new size of Signature
+ * Inputs: uint16_t new_x - the new x-coordinate of the new size of Signature
+ *         uint16_t new_y - the new y-coordinate of the new size of Signature
  * Output: bool - true if the resizing happened successfully.
  */
-bool Signature::setSize(const size_t new_x, const size_t new_y)
+bool Signature::setSize(uint16_t new_x, uint16_t new_y)
 {
-  auto can_set  = Helpers::isInRange(new_x, kMIN_X, kMAX_X);
-  can_set &= Helpers::isInRange(new_y, kMIN_X, kMAX_X);
+  auto can_set = Helpers::isInRange(new_x, kMIN_X, kMAX_X) && 
+                 Helpers::isInRange(new_y, kMIN_X, kMAX_X);
  
   if (can_set && isEmpty() && getFlag(SigState::SIZEABLE))
     clearAndBuild(new_x, new_y);
@@ -850,9 +836,9 @@ bool Signature::setSize(const size_t new_x, const size_t new_y)
  * Description: Returns the static value for the largest x-coordinate
  *
  * Inputs: none
- * Output: size_t - the largest y-coordinate for a signature
+ * Output: uint16_t - the largest y-coordinate for a signature
  */
-constexpr size_t Signature::getMaxX() noexcept
+constexpr uint16_t Signature::getMaxX() noexcept
 {
   return kMAX_X;
 }
@@ -861,9 +847,9 @@ constexpr size_t Signature::getMaxX() noexcept
  * Description: Returns the static value for the largest y-coordinate
  *
  * Inputs: none
- * Output: size_t - the largest y-coordinate for a signature
+ * Output: uint16_t - the largest y-coordinate for a signature
  */
-constexpr size_t Signature::getMaxY() noexcept
+constexpr uint16_t Signature::getMaxY() noexcept
 {
   return kMAX_Y;
 }
@@ -872,9 +858,9 @@ constexpr size_t Signature::getMaxY() noexcept
  * Description: Returns the static value for the smallest x-coordinate
  *
  * Inputs: none
- * Output: size_t - smallest static value for the x-coordinate.
+ * Output: uint16_t - smallest static value for the x-coordinate.
  */
-constexpr size_t Signature::getMinX() noexcept
+constexpr uint16_t Signature::getMinX() noexcept
 {
   return kMIN_X;
 }
@@ -883,9 +869,9 @@ constexpr size_t Signature::getMinX() noexcept
  * Description: Returns the static value for the smallest y-coordinate.
  *
  * Inputs: none
- * Output: size_t - smallest static value for the y-coordinate
+ * Output: uint16_t - smallest static value for the y-coordinate
  */
-constexpr size_t Signature::getMinY() noexcept
+constexpr uint16_t Signature::getMinY() noexcept
 {
   return kMIN_Y;
 }
@@ -894,9 +880,9 @@ constexpr size_t Signature::getMinY() noexcept
  * Description: Returns the static value for the maximum level standard link.
  *
  * Inputs: none
- * Output: uint8 - largest static value for standard link tier
+ * Output: uint16_t - largest static value for standard link tier
  */
-constexpr uint8 Signature::getMaxLinkTier() noexcept
+constexpr uint16_t Signature::getMaxLinkTier() noexcept
 {
   return kMAX_LINK_TIER;
 }

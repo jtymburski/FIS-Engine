@@ -38,7 +38,7 @@ public:
 
   /* Constructs a normal Flavour object given a name and stats */
   Flavour(const int &game_id, const std::string &flavour_name, 
-          const AttributeSet &min_stats, const double &min_mass, 
+          const AttributeSet &min_stats, const uint32_t &min_mass, 
           const uint32_t &min_value, SkillSet* skills = nullptr);
 
 private:
@@ -46,7 +46,7 @@ private:
   AttributeSet base_stats;
 
   /* The base mass of the Bubby Flavour (mass at Tier 0) */
-  const double base_mass;
+  const uint32_t base_mass;
 
   /* Base value of the flavour */
   const uint32_t base_value;
@@ -72,7 +72,7 @@ private:
   /* ------------ Constants --------------- */
   static const std::vector<float>    kTIER_MODIFIERS;   /* Stat modifiers */
   static const std::vector<uint32_t> kTIER_LEVELS;      /* Levels at tier up */
-  static const std::vector<float>    kTIER_MASSES;      /* Mass modifiers */
+  static const std::vector<uint32_t> kTIER_MASSES;      /* Mass modifiers */
   static const std::vector<float>    kTIER_VALUES;      /* Value modifiers */
   static const uint32_t              kMAX_LVL;          /* Max lvl */
   static const int                   kUNSET_ID;         /* Def. ID value */
@@ -104,7 +104,7 @@ public:
   const int& getGameID();
 
   /* Returns the current mass of the Flavour at a given tier */
-  double getMass(const uint32_t &tier = 0);
+  uint32_t getMass(const uint32_t &tier = 0);
 
   /* Returns the string name of the Flavour */
   const std::string& getName();

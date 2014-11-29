@@ -269,7 +269,7 @@ uint32_t Bubby::getLevelNext()
  * Inputs: none
  * Output: double - mass at the current tier
  */
-double Bubby::getMass()
+uint32_t Bubby::getMass()
 {
   if (type != nullptr)
     return type->getMass(tier);

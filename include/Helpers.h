@@ -46,7 +46,7 @@ public:
  *============================================================================*/
 private:
   /* Mersenne Twister Engines */
-  static const unsigned int seed_original;
+  static const uint32_t seed_original;
   static std::mt19937 rand_eng;
   static std::mt19937_64 rand_64_eng;
   static SDL_Texture* white_mask; /* Brightness manipulator */

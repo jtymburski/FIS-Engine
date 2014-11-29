@@ -1891,8 +1891,13 @@ bool Battle::processReviveAction()
  */
 bool Battle::processInflictAction()
 {
-  //TODO
+  //TODOqz
   return false;
+}
+
+bool Battle::canInflict(const Infliction &test_infliction)
+{
+  
 }
 
 /*

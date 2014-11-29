@@ -17,8 +17,8 @@
 #include "Helpers.h"
 
 /* Constant Implementation - see header file for descriptions */
-const uint8_t Helpers::kMAX_RENDER_DEPTH = 10;
-const uint16_t Helpers::kTILE_SIZE = 64;
+const uint8_t  Helpers::kMAX_RENDER_DEPTH = 10;
+const uint16_t Helpers::kTILE_SIZE        = 64;
 
 SDL_Texture* Helpers::white_mask = NULL;
 
@@ -26,8 +26,9 @@ SDL_Texture* Helpers::white_mask = NULL;
  * RANDOM GENERATOR FUNCTIONS
  *============================================================================*/
 
-const unsigned int Helpers::seed_original = 
-                    std::chrono::system_clock::now().time_since_epoch().count();
+/* Seed the random number generators with high-precision */
+const uint32_t  Helpers::seed_original = 
+    std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
 std::mt19937    Helpers::rand_eng(seed_original);
 std::mt19937_64 Helpers::rand_64_eng(seed_original);
@@ -121,7 +122,7 @@ int Helpers::randU(const int &a, const int &b)
 }
 
 /*
- * Description: Generates a random 32-bit integer using std::mt1993 and returns
+ * Description: Generates a random 32-bit integer using std::mt19937 and returns
  *              the result.
  *
  * Inputs: none

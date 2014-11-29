@@ -153,7 +153,7 @@ AttributeSet Equipment::getBaseStats()
  * Inputs: none
  * Output: double - the total mass of the equipment
  */
-double Equipment::getMass()
+uint32_t Equipment::getMass()
 {
   /* If there a signature, add its mass to the base mass */
   if (equip_signature != nullptr)
