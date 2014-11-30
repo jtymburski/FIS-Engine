@@ -31,9 +31,9 @@ MapItem::MapItem() : MapThing()
   setCount(0);
 }
 
-MapItem::MapItem(Sprite* frames, uint16_t width, uint16_t height, 
-                 std::string name, std::string description, int id)
-       : MapThing(width, height, name, description, id)
+MapItem::MapItem(Sprite* frames, int id, std::string name, 
+                 std::string description)
+       : MapThing(id, name, description)
 {
   // TODO: Load frame data in
 

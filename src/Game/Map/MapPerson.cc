@@ -49,15 +49,12 @@ MapPerson::MapPerson() : MapThing()
  *              appropriate height and width (for the tile) and other info
  *              that may be required by the person.
  *
- * Inputs: uint16_t width - the width of the tile for the person
- *         uint16_t height - the height of the tile for the person
+ * Inputs: int id - a unique numerical identifier, for the person
  *         std::string name - a string name for the person
  *         std::string description - a description of the person
- *         int id - a unique numerical identifier, for the person
  */
-MapPerson::MapPerson(uint16_t width, uint16_t height, std::string name, 
-                     std::string description, int id)
-          : MapThing(width, height, name, description, id)
+MapPerson::MapPerson(int id, std::string name, std::string description)
+          : MapThing(id, name, description)
 {
   starting_section = 0;
   steps = 0;

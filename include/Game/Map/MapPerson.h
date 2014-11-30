@@ -19,8 +19,7 @@ class MapPerson : public MapThing
 public:
   /* Constructor functions */
   MapPerson();
-  MapPerson(uint16_t width, uint16_t height, std::string name = "", 
-            std::string description = "", int id = kUNSET_ID);
+  MapPerson(int id, std::string name = "", std::string description = "");
 
   /* Destructor function */
   virtual ~MapPerson();

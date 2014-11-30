@@ -14,7 +14,8 @@
 #include "Game/Map/MapThing.h"
 
 /* Constant Implementation - see header file for descriptions */
-const uint16_t MapThing::kDEFAULT_SPEED = 10;
+const uint16_t MapThing::kDEFAULT_SPEED = 8;
+const float MapThing::kMOVE_FACTOR = 4096.0;
 const int MapThing::kPLAYER_ID = 0;
 const uint8_t MapThing::kRAW_MULTIPLIER = 10;
 const int MapThing::kUNSET_ID = -1;
@@ -39,21 +40,16 @@ MapThing::MapThing()
 /* 
  * Description: Constructor for this class. Takes data to create the thing.
  *
- * Inputs: uint16_t width - the tile width of the thing
- *         uint16_t height - the tile height of the thing
+ * Inputs: int id - the ID of the thing
  *         std::string name - the name of the thing, default to ""
  *         std::string description - the description of the thing, default to ""
- *         int id - the ID of the thing, default to -1
  */
-MapThing::MapThing(uint16_t width, uint16_t height, std::string name, 
-                   std::string description, int id)
+MapThing::MapThing(int id, std::string name, std::string description)
         : MapThing()
 {
   setDescription(description);
-  setHeight(height);
   setID(id);
   setName(name);
-  setWidth(width);
 }
 
 /* 
@@ -61,16 +57,13 @@ MapThing::MapThing(uint16_t width, uint16_t height, std::string name,
  *              also includes the frame data.
  *
  * Inputs: std::vector<std::vector<TileSprite*>> - the frame matrix data
- *         uint16_t width - the tile width of the thing
- *         uint16_t height - the tile height of the thing
+ *         int id - the ID of the thing, default to -1
  *         std::string name - the name of the thing, default to ""
  *         std::string description - the description of the thing, default to ""
- *         int id - the ID of the thing, default to -1
  */
-MapThing::MapThing(std::vector<std::vector<TileSprite*>> frames, uint16_t width,
-                   uint16_t height, std::string name, std::string description,
-                   int id)
-        : MapThing(width, height, name, description, id)
+MapThing::MapThing(std::vector<std::vector<TileSprite*>> frames, int id,
+                   std::string name, std::string description)
+        : MapThing(id, name, description)
 {
   setFrames(frames, true);
 }
@@ -129,7 +122,65 @@ bool MapThing::animate(int cycle_time, bool reset, bool skip_head)
 
   return shift;
 }
-  
+ 
+/*
+ * Description: Returns the tile coordinate for the X direction with the 
+ *              addition of what percentage it has moved into the next tile.
+ *              For example, if the thing was moving west from tile #4 to
+ *              tile #3 and it was 1/4 way there, the returned value would
+ *              be 3.75.
+ *
+ * Inputs: none
+ * Output: float - the X location of the thing, in tile units.
+ */
+float MapThing::getFloatTileX()
+{
+  if(tile_prev.size() > 0)
+  {
+    Tile* top_left = tile_prev.front().front();
+
+    if(movement == Direction::EAST)
+      return (top_left->getX() + x);
+    else if(movement == Direction::WEST)
+      return (top_left->getX() - x);
+    return top_left->getX();
+  }
+  else if(tile_main.size() > 0)
+  {
+    return tile_main.front().front()->getX();
+  }
+  return 0.0;
+}
+
+/*
+ * Description: Returns the tile coordinate for the Y direction with the 
+ *              addition of what percentage it has moved into the next tile.
+ *              For example, if the thing was moving south from tile #6 to
+ *              tile #7 and it was 1/4 way there, the returned value would
+ *              be 6.25.
+ *
+ * Inputs: none
+ * Output: float - the Y location of the thing, in tile units.
+ */
+float MapThing::getFloatTileY()
+{
+  if(tile_prev.size() > 0)
+  {
+    Tile* top_left = tile_prev.front().front();
+
+    if(movement == Direction::SOUTH)
+      return (top_left->getY() + y);
+    else if(movement == Direction::NORTH)
+      return (top_left->getY() - y);
+    return top_left->getY();
+  }
+  else if(tile_main.size() > 0)
+  {
+    return tile_main.front().front()->getY();
+  }
+  return 0.0;
+}
+ 
 /*
  * Description: Returns the sprite matrix pointer. NULL if unset.
  *
@@ -141,7 +192,15 @@ SpriteMatrix* MapThing::getMatrix()
   return sprite_set;
 }
 
-// TODO: Comment
+/*
+ * Description: Returns the main rendering tile at the x and y coordinate.
+ *
+ * Inputs: uint32_t x - the x coordinate of the tile, with respect to the top 
+ *                      left of the matrix
+ *         uint32_t y - the y coordinate of the tile, with respect to the top 
+ *                      left of the matrix
+ * Output: Tile* - pointer to tile at the x,y. NULL if unset or out of range
+ */
 Tile* MapThing::getTileMain(uint32_t x, uint32_t y)
 {
   if(tile_main.size() > x && tile_main[x].size() > y)
@@ -149,11 +208,19 @@ Tile* MapThing::getTileMain(uint32_t x, uint32_t y)
   return NULL;
 }
 
-// TODO: Comment  
+/*
+ * Description: Returns the previous rendering tile at the x and y coordinate.
+ *
+ * Inputs: uint32_t x - the x coordinate of the tile, with respect to the top 
+ *                      left of the matrix
+ *         uint32_t y - the y coordinate of the tile, with respect to the top 
+ *                      left of the matrix
+ * Output: Tile* - pointer to tile at the x,y. NULL if unset or out of range
+ */
 Tile* MapThing::getTilePrevious(uint32_t x, uint32_t y)
 {
-  if(tile_previous.size() > x && tile_previous[x].size() > y)
-    return tile_previous[x][y];
+  if(tile_prev.size() > x && tile_prev[x].size() > y)
+    return tile_prev[x][y];
   return NULL;
 }
 
@@ -168,22 +235,10 @@ Tile* MapThing::getTilePrevious(uint32_t x, uint32_t y)
  */
 bool MapThing::isAlmostOnTile(int cycle_time)
 {
-  uint32_t x_diff = tile_main.front().front()->getPixelX();
-  uint32_t y_diff = tile_main.front().front()->getPixelY();
+  float x_diff = 1.0 - x;
+  float y_diff = 1.0 - y;
 
-  /* X differential calculations to ensure positive number */
-  if(x_diff > x)
-    x_diff = x_diff - x;
-  else
-    x_diff = x - x_diff;
-      
-  /* Y differential calculations to ensure positive number */
-  if(y_diff > y)
-    y_diff = y_diff - y;
-  else
-    y_diff = y - y_diff;
-
-  return ((moveAmount(cycle_time) / kRAW_MULTIPLIER) >= (x_diff + y_diff));
+  return (moveAmount(cycle_time) >= (x_diff + y_diff));
 }
 
 /* 
@@ -231,17 +286,16 @@ bool MapThing::isMoveAllowed(std::vector<std::vector<Tile*>> tile_set)
 /* 
  * Description: Calculates the move amount based on the cycle time and the 
  *              speed for how many pixels should be shifted. The calculation
- *              is based on 16ms for 2 pixel at speed 10.
+ *              is based on 16ms for 2 pixel at speed 8.
  * 
  * Inputs: int cycle_time - the time since the last update call
- * Output: int - the move amount in pixels x 10
+ * Output: float - the move amount in 0.0 to 1.0 of a pixel width
  */
-uint32_t MapThing::moveAmount(uint16_t cycle_time)
+float MapThing::moveAmount(uint16_t cycle_time)
 {
-  uint32_t move_amount = (cycle_time * speed) >> 3; // x 0.125
-  //int move_amount = 2 * speed;
-  if(move_amount > width)
-    move_amount = width;
+  float move_amount = (cycle_time * speed) / kMOVE_FACTOR;
+  if(move_amount > 1.0)
+    move_amount = 1.0;
   
   return move_amount;
 }
@@ -255,28 +309,12 @@ uint32_t MapThing::moveAmount(uint16_t cycle_time)
  */
 void MapThing::moveThing(int cycle_time)
 {
-  int move_amount = moveAmount(cycle_time);
+  float move_amount = moveAmount(cycle_time);
   
-  if(movement == Direction::EAST)
-  {
-    x_raw += move_amount;
-    x = x_raw / kRAW_MULTIPLIER;
-  }
-  else if(movement == Direction::WEST)
-  {
-    x_raw -= move_amount;
-    x = x_raw / kRAW_MULTIPLIER;
-  }
-  else if(movement == Direction::SOUTH)
-  {
-    y_raw += move_amount;
-    y = y_raw / kRAW_MULTIPLIER;
-  }
-  else if(movement == Direction::NORTH)
-  {
-    y_raw -= move_amount;
-    y = y_raw / kRAW_MULTIPLIER;
-  }
+  if(movement == Direction::EAST || movement == Direction::WEST)
+    x += move_amount;
+  else if(movement == Direction::NORTH || movement == Direction::SOUTH)
+    y += move_amount;
 }
 
 /* 
@@ -345,7 +383,28 @@ bool MapThing::setTile(Tile* tile, TileSprite* frames, bool no_events)
 
   return false;
 }
- 
+
+/*
+ * Description: Sets the tile in the sprite and sprite in the tile for the 
+ *              passed in objects with regards to finishing a tile move.
+ *
+ * Inputs: TileSprite* frames - the sprite frames pointer to set in the tile
+ *         bool reverse_last - if the last start should be reversed
+ *         bool no_events - if events should trigger on the set
+ * Output: bool - true if the set was successful
+ */
+void MapThing::setTileFinish(TileSprite* frames, bool reverse_last, 
+                             bool no_events)
+{
+  (void)no_events;
+  
+  if(reverse_last)
+    frames->getTileMain()->unsetThing(frames->getRenderDepth());
+  else
+    frames->getTilePrevious()->unsetThing(frames->getRenderDepth());
+  frames->tileMoveFinish(reverse_last);
+}
+
 /*
  * Description: Sets the tile in the sprite and sprite in the tile for the 
  *              passed in objects with regards to beginning a tile move. If it 
@@ -371,27 +430,6 @@ bool MapThing::setTileStart(Tile* tile, TileSprite* frames, bool no_events)
   return success;
 }
 
-/*
- * Description: Sets the tile in the sprite and sprite in the tile for the 
- *              passed in objects with regards to finishing a tile move.
- *
- * Inputs: TileSprite* frames - the sprite frames pointer to set in the tile
- *         bool reverse_last - if the last start should be reversed
- *         bool no_events - if events should trigger on the set
- * Output: bool - true if the set was successful
- */
-void MapThing::setTileFinish(TileSprite* frames, bool reverse_last, 
-                             bool no_events)
-{
-  (void)no_events;
-  
-  if(reverse_last)
-    frames->getTileMain()->unsetThing(frames->getRenderDepth());
-  else
-    frames->getTilePrevious()->unsetThing(frames->getRenderDepth());
-  frames->tileMoveFinish(reverse_last);
-}
-
 /* 
  * Description: The tile move finish call. To be called after a move and it's
  *              determined that the thing is on the main tile (for the first
@@ -414,12 +452,8 @@ void MapThing::tileMoveFinish()
     }
   }
 
-  /* Finalize render location */
-  x = tile_x * width;
-  x_raw = x * kRAW_MULTIPLIER;
-  y = tile_y * height;
-  y_raw = y * kRAW_MULTIPLIER;
-
+  /* Clear out previous tile set */
+  tile_prev.clear();
 }
 
 /* 
@@ -438,7 +472,6 @@ bool MapThing::tileMoveStart(std::vector<std::vector<Tile*>> tile_set,
   bool success = true;
   uint16_t end_i = 0;
   uint16_t end_j = 0;
-  TileSprite* test_frames = NULL;
 
   /* Data prechecks -> to confirm equivalency */
   if(tile_set.size() > 0 && 
@@ -452,10 +485,6 @@ bool MapThing::tileMoveStart(std::vector<std::vector<Tile*>> tile_set,
       {
         if(sprite_set->at(i, j) != NULL)
         {
-          /* Get one test frame, for testing differential on move distance */
-          if(test_frames == NULL)
-            test_frames = sprite_set->at(i, j);
-
           /* Set the tile start */
           success &= setTileStart(tile_set[i][j], sprite_set->at(i, j), 
                                   no_events);
@@ -470,8 +499,13 @@ bool MapThing::tileMoveStart(std::vector<std::vector<Tile*>> tile_set,
       }
     }
 
-    /* If unsuccessful, reverse course */
-    if(!success)
+    /* If successful, set tile set. Else, unsuccessful, reverse course */
+    if(success)
+    {
+      tile_prev = tile_main;
+      tile_main = tile_set;
+    }
+    else
     {
       bool finished = false;
       for(uint16_t i = 0; !finished && (i < sprite_set->width()); i++)
@@ -484,17 +518,6 @@ bool MapThing::tileMoveStart(std::vector<std::vector<Tile*>> tile_set,
             setTileFinish(sprite_set->at(i, j), true, true);
         }
       }
-    }
-    /* Otherwise, if successful, update move coordinates of class */
-    else
-    {
-      int32_t diff_x = test_frames->getTileMain()->getX() - 
-                       test_frames->getTilePrevious()->getX();
-      int32_t diff_y = test_frames->getTileMain()->getY() - 
-                       test_frames->getTilePrevious()->getY();
-
-      tile_x += diff_x;
-      tile_y += diff_y;
     }
 
     return success;
@@ -536,8 +559,8 @@ void MapThing::unsetTile(uint32_t x, uint32_t y, bool no_events)
   tile_main[x][y]->unsetThing(render_depth);
 
   /* Remove from previous tile, if applicable */
-  if(tile_previous.size() > 0)
-    tile_previous[x][y]->unsetThing(render_depth);
+  if(tile_prev.size() > 0)
+    tile_prev[x][y]->unsetThing(render_depth);
 }
 
 /*============================================================================
@@ -676,10 +699,7 @@ void MapThing::clear()
   setName("");
   setSpeed(kDEFAULT_SPEED);
   target = NULL;
-  
-  height = 1;
   visible = true;
-  width = 1;
   
   unsetFrames();
   resetLocation();
@@ -876,7 +896,9 @@ Event MapThing::getInteraction()
  */
 uint16_t MapThing::getMapSection()
 {
-  return tile_section;
+  if(tile_main.size() > 0)
+    return tile_section;
+  return starting_section;
 }
 
 /* 
@@ -937,6 +959,42 @@ uint16_t MapThing::getSpeed()
 {
   return speed;
 }
+ 
+/*
+ * Description: Returns the section of map the thing started in, as set by
+ *              setStartingLocation(*).
+ *
+ * Inputs: none
+ * Output: uint16_t - the starting section integer
+ */
+uint16_t MapThing::getStartingSection()
+{
+  return starting_section;
+}
+ 
+/*
+ * Description: Returns the x coordinate, in tile units, of where the thing
+ *              started, as set by setStartingLocation(*).
+ *
+ * Inputs: none
+ * Output: uint16_t - the start x integer
+ */
+uint16_t MapThing::getStartingX()
+{
+  return starting_x;
+}
+ 
+/*
+ * Description: Returns the y coordinate, in tile units, of where the thing
+ *              started, as set by setStartingLocation(*).
+ *
+ * Inputs: none
+ * Output: uint16_t - the start y integer
+ */
+uint16_t MapThing::getStartingY()
+{
+  return starting_y;
+}
 
 /*
  * Description: Returns the map thing target that this class is targetted at.
@@ -962,7 +1020,7 @@ uint16_t MapThing::getTileX()
 {
   if(tile_main.size() > 0)
     return tile_main.front().front()->getX();
-  return x;
+  return starting_x;
 }
 
 /* 
@@ -977,19 +1035,21 @@ uint16_t MapThing::getTileY()
 {
   if(tile_main.size() > 0)
     return tile_main.front().front()->getY();
-  return y;
+  return starting_y;
 }
 
 /* 
  * Description: Gets the width of the internal tile.
  *
  * Inputs: none
- * Output: int - the width, in pixels
+ * Output: uint16_t - the width, in pixels
  */
 uint16_t MapThing::getWidth()
 {
   if(tile_main.size() > 0)
+  {
     return tile_main.front().front()->getWidth();
+  }
   return 0;
 }
 
@@ -997,12 +1057,24 @@ uint16_t MapThing::getWidth()
  * Description: Returns the top left X coordinate of the thing
  * 
  * Inputs: none
- * Output: int - the X coordinate, in pixels, of the top left corner
+ * Output: uint32_t - the X coordinate, in pixels, of the top left corner
  */
-int MapThing::getX()
+uint32_t MapThing::getX()
 {
-  if(tile_main.size() > 0)
-    return x;
+  if(tile_prev.size() > 0)
+  {
+    Tile* top_left = tile_prev.front().front();
+
+    if(movement == Direction::EAST)
+      return (top_left->getX() + x) * top_left->getWidth();
+    else if(movement == Direction::WEST)
+      return (top_left->getX() - x) * top_left->getWidth();
+    return top_left->getPixelX();
+  }
+  else if(tile_main.size() > 0)
+  {
+    return tile_main.front().front()->getPixelX();
+  }
   return 0;
 }
 
@@ -1010,12 +1082,24 @@ int MapThing::getX()
  * Description: Returns the top left Y coordinate of the thing
  * 
  * Inputs: none
- * Output: int - the Y coordinate, in pixels, of the top left corner
+ * Output: uint32_t - the Y coordinate, in pixels, of the top left corner
  */
-int MapThing::getY()
+uint32_t MapThing::getY()
 {
-  if(tile_main.size() > 0)
-    return y;
+  if(tile_prev.size() > 0)
+  {
+    Tile* top_left = tile_prev.front().front();
+
+    if(movement == Direction::SOUTH)
+      return (top_left->getY() + y) * top_left->getHeight();
+    else if(movement == Direction::NORTH)
+      return (top_left->getY() - y) * top_left->getHeight();
+    return top_left->getPixelY();
+  }
+  else if(tile_main.size() > 0)
+  {
+    return tile_main.front().front()->getPixelY();
+  }
   return 0;
 }
 
@@ -1070,8 +1154,14 @@ bool MapThing::isMoving()
 bool MapThing::isOnTile()
 {
   if(tile_main.size() > 0)
-    return (x  == tile_main.front().front()->getPixelX()) && 
-           (y == tile_main.front().front()->getPixelY());
+  {
+    if(movement == Direction::NORTH || movement == Direction::SOUTH)
+      return (x == 1.0);
+    else if(movement == Direction::EAST || movement == Direction::WEST)
+      return (y == 1.0);
+    return (x == 0.0) && (y == 0.0);
+  }
+
   return false;
 }
 
@@ -1123,9 +1213,10 @@ bool MapThing::isVisible()
  */
 bool MapThing::render(SDL_Renderer* renderer, int offset_x, int offset_y)
 {
-  if(sprite_set != NULL && isVisible())
-    return sprite_set->render(renderer, x - offset_x, y - offset_y, 
-                              width, height);
+  if(isTilesSet() && isVisible())
+    return sprite_set->render(renderer, getX() - offset_x, getY() - offset_y, 
+                              tile_main.front().front()->getWidth(), 
+                              tile_main.front().front()->getHeight());
 
   return false;
 }
@@ -1133,7 +1224,7 @@ bool MapThing::render(SDL_Renderer* renderer, int offset_x, int offset_y)
 /*
  * Description: Render the single frame, located on the designated tile.
  *              This frame will correspond to a given rendering depth.
- *              The offset is passed in from the viewport.
+ *              The offset is passed in from the viewport (using the main tile).
  *
  * Inputs: SDL_Renderer* renderer - the rendering engine
  *         Tile* tile - the tile to render the corresponding thing frame on
@@ -1141,10 +1232,10 @@ bool MapThing::render(SDL_Renderer* renderer, int offset_x, int offset_y)
  *         int offset_y - the Y viewport offset
  * Output: bool - true if the object rendered
  */
-bool MapThing::render(SDL_Renderer* renderer, Tile* tile, 
-                      int offset_x, int offset_y)
+bool MapThing::renderMain(SDL_Renderer* renderer, Tile* tile, 
+                          int offset_x, int offset_y)
 {
-  if(isTilesSet() && tile != NULL)
+  if(isTilesSet() && tile != NULL && isVisible())
   {
     uint16_t render_tile_x = tile->getX() - tile_main.front().front()->getX();
     uint16_t render_tile_y = tile->getY() - tile_main.front().front()->getY();
@@ -1152,13 +1243,54 @@ bool MapThing::render(SDL_Renderer* renderer, Tile* tile,
                                                      render_tile_y);
 
     /* If frame is valid and visible, render */
-    if(render_frame != NULL && getTileMain(render_tile_x, render_tile_y) == tile 
-                            && isVisible())
+    if(render_frame != NULL && 
+       getTileMain(render_tile_x, render_tile_y) == tile)
     {
-      int render_x = x + render_tile_x * tile->getWidth() - offset_x;
-      int render_y = y + render_tile_y * tile->getHeight() - offset_y;
+      int render_x = (getFloatTileX() + render_tile_x) * tile->getWidth() 
+                   - offset_x;
+      int render_y = (getFloatTileY() + render_tile_y) * tile->getHeight() 
+                   - offset_y;
       
-      return render_frame->render(renderer, render_x, render_y, width, height);
+      return render_frame->render(renderer, render_x, render_y, 
+                                  tile->getWidth(), tile->getHeight());
+    }
+  }
+  
+  return false;
+}
+
+/*
+ * Description: Render the single frame, located on the designated tile.
+ *              This frame will correspond to a given rendering depth.
+ *              The offset is passed in from the viewport (using the prev tile).
+ *
+ * Inputs: SDL_Renderer* renderer - the rendering engine
+ *         Tile* tile - the tile to render the corresponding thing frame on
+ *         int offset_x - the X viewport offset
+ *         int offset_y - the Y viewport offset
+ * Output: bool - true if the object rendered
+ */
+bool MapThing::renderPrevious(SDL_Renderer* renderer, Tile* tile, 
+                              int offset_x, int offset_y)
+{
+  if(tile_prev.size() > 0 && tile != NULL && isVisible())
+  {
+    uint16_t render_tile_x = tile->getX() - tile_prev.front().front()->getX();
+    uint16_t render_tile_y = tile->getY() - tile_prev.front().front()->getY();
+    TileSprite* render_frame = sprite_set->getSprite(render_tile_x, 
+                                                     render_tile_y);
+
+    /* If frame is valid and visible, render */
+    if(render_frame != NULL && 
+       getTilePrevious(render_tile_x, render_tile_y) == tile)
+    {
+      int render_x = (getFloatTileX() + render_tile_x) * tile->getWidth() 
+                   - offset_x;
+      int render_y = (getFloatTileY() + render_tile_y) * tile->getHeight() 
+                   - offset_y;
+
+      return render_frame->render(renderer, render_x, render_y, 
+                                  tile->getWidth(), tile->getHeight());
     }
   }
   
@@ -1179,13 +1311,9 @@ void MapThing::resetLocation()
   unsetTiles(true);
   
   /* Clean up the point variables */
-  tile_section = 0;
-  //tile_x = 0;
-  //tile_y = 0;
-  this->x = 0;
-  this->x_raw = 0;
-  this->y = 0;
-  this->y_raw = 0;
+  starting_section = 0;
+  starting_x = 0;
+  starting_y = 0;
 }
 
 /* 
@@ -1282,27 +1410,6 @@ void MapThing::setFrames(std::vector<std::vector<TileSprite*>> frames,
 
   /* Proceed to set up the frame set */
   sprite_set->setSprites(frames, delete_old);
-}
-
-/*
- * Description: Sets the new tile height for the thing. This number must
- *              be greater than 0 and if it's not, the call will fail.
- *
- * Inputs: uint16_t new_height - the new height of the thing, in pixels
- * Output: bool - status if the height change was successful
- */
-bool MapThing::setHeight(uint16_t new_height)
-{
-  if(new_height > 0)
-  {
-    float height_tiles = y * 1.0 / height;
-    height = new_height;
-    y = height_tiles * height;
-    y_raw = y * kRAW_MULTIPLIER;
-    return true;
-  }
-
-  return false;
 }
 
 /*
@@ -1411,18 +1518,9 @@ void MapThing::setStartingLocation(uint16_t section_id, uint16_t x, uint16_t y)
   resetLocation();
 
   /* Set the new tile coordinate */
-  this->x = x;
-  this->x_raw = 0;
-  this->y = y;
-  this->y_raw = 0;
-  tile_section = section_id;
-  //this->x = x * getWidth();
-  //this->x_raw = this->x * kRAW_MULTIPLIER;
-  //this->y = y * getHeight();
-  //this->y_raw = this->y * kRAW_MULTIPLIER;
-  //tile_section = section_id;
-  //tile_x = x;
-  //tile_y = y;
+  starting_section = section_id;
+  starting_x = x;
+  starting_y = y;
 }
 
 /* 
@@ -1488,11 +1586,8 @@ bool MapThing::setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
     }
     else
     {
-      x = tile_set.front().front()->getPixelX();
-      x_raw = x * kRAW_MULTIPLIER;
-      y = tile_set.front().front()->getPixelY();
-      y_raw = y * kRAW_MULTIPLIER;
       tile_main = tile_set;
+      tile_section = starting_section;
     }
     
     return success;
@@ -1534,27 +1629,6 @@ bool MapThing::setTarget(MapThing* target)
 void MapThing::setVisibility(bool visible)
 {
   this->visible = visible;
-}
-
-/*
- * Description: Sets the new tile width for the thing. This number must
- *              be greater than 0 and if it's not, the call will fail.
- *
- * Inputs: uint16_t new_width - the new width of the thing, in pixels
- * Output: bool - status if the height change was successful
- */
-bool MapThing::setWidth(uint16_t new_width)
-{
-  if(new_width > 0)
-  {
-    float width_tiles = x * 1.0 / width;
-    width = new_width;
-    x = width_tiles * width;
-    x_raw = x * kRAW_MULTIPLIER;
-    return true;
-  }
-
-  return false;
 }
 
 /*
@@ -1621,10 +1695,8 @@ void MapThing::unsetTiles(bool no_events)
   if(tile_main.size() > 0)
   {
     /* Reset X and Y back to coordinates of top left tile */
-    x = tile_main.front().front()->getX();
-    x_raw = 0;
-    y = tile_main.front().front()->getY();
-    y_raw = 0;
+    x = 0.0;
+    y = 0.0;
     
     /* Loop through all the frames and unset each tile */
     for(uint16_t i = 0; i < sprite_set->width(); i++)
@@ -1635,5 +1707,6 @@ void MapThing::unsetTiles(bool no_events)
   
   /* Clear all tiles */
   tile_main.clear();
-  tile_previous.clear();
+  tile_prev.clear();
+  tile_section = 0;
 }

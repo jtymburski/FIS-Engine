@@ -26,8 +26,7 @@ class MapNPC : public MapPerson
 public:
   /* Constructor function */
   MapNPC();
-  MapNPC(uint16_t width, uint16_t height, std::string name = "", 
-         std::string description = "", int id = kUNSET_ID);
+  MapNPC(int id, std::string name = "", std::string description = "");
   
   /* Destructor function */
   virtual ~MapNPC();

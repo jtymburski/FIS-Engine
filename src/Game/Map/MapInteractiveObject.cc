@@ -33,10 +33,9 @@ MapInteractiveObject::MapInteractiveObject() : MapThing()
 }
 
 /* Constructor function */
-MapInteractiveObject::MapInteractiveObject(uint16_t width, uint16_t height, 
-                                           std::string name,
-                                           std::string description, int id)
-                    : MapThing(width, height, name, description, id)
+MapInteractiveObject::MapInteractiveObject(int id, std::string name,
+                                           std::string description)
+                    : MapThing(id, name, description)
 {
   action_initiator = NULL;
   node_current = NULL;

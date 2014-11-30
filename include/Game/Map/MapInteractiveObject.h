@@ -20,8 +20,8 @@ class MapInteractiveObject : public MapThing
 public:
   /* Constructor functions */
   MapInteractiveObject();
-  MapInteractiveObject(uint16_t width, uint16_t height, std::string name = "", 
-                       std::string description = "", int id = kUNSET_ID);
+  MapInteractiveObject(int id, std::string name = "", 
+                       std::string description = "");
 
   /* Destructor function */
   virtual ~MapInteractiveObject();

@@ -281,9 +281,9 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
     if(modified_thing == NULL)
     {
       if(identifier == "mapthing")
-        modified_thing = new MapThing(tile_width, tile_height);
+        modified_thing = new MapThing();
       else
-        modified_thing = new MapInteractiveObject(tile_width, tile_height);
+        modified_thing = new MapInteractiveObject();
       modified_thing->setEventHandler(event_handler);
       modified_thing->setID(id);
 
@@ -305,9 +305,9 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
     if(modified_thing == NULL)
     {
       if(identifier == "mapperson")
-        modified_thing = new MapPerson(tile_width, tile_height);
+        modified_thing = new MapPerson();
       else
-        modified_thing = new MapNPC(tile_width, tile_height);
+        modified_thing = new MapNPC();
       modified_thing->setEventHandler(event_handler);
       modified_thing->setID(id);
       
@@ -333,7 +333,7 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
     if(modified_thing == NULL)
     {
       /* Create the new thing */
-      modified_thing = new MapItem(NULL, tile_width, tile_height);
+      modified_thing = new MapItem();
       modified_thing->setEventHandler(event_handler);
       modified_thing->setID(id);
       
@@ -706,27 +706,6 @@ void Map::updateTileSize()
           geography[i][j][k]->setWidth(tile_width);
         }
         
-    /* Update map things */
-    for(uint16_t i = 0; i < things.size(); i++)
-    {
-      things[i]->setHeight(tile_height);
-      things[i]->setWidth(tile_width);
-    }
-    
-    /* Update map items */
-    for(uint16_t i = 0; i < items.size(); i++)
-    {
-      items[i]->setHeight(tile_height);
-      items[i]->setWidth(tile_width);
-    }
-    
-    /* Update map persons */
-    for(uint16_t i = 0; i < persons.size(); i++)
-    {
-      persons[i]->setHeight(tile_height);
-      persons[i]->setWidth(tile_width);
-    }
-    
     /* Update viewport */
     viewport.setTileSize(tile_width, tile_height);
   }
@@ -791,6 +770,9 @@ bool Map::initStore(ItemStore::StoreMode mode, std::vector<Item*> items,
                     std::vector<int32_t> cost_modifiers,
                     std::string name, bool show_empty)
 {
+  (void)show_empty;
+
+  //TODO: Fix
   bool status = item_menu.initDisplay(mode, items, counts, 
                                       cost_modifiers, name);//, show_empty);
   
@@ -1276,28 +1258,29 @@ bool Map::render(SDL_Renderer* renderer)
                                                          render_thing))
           {
             /* Different indexes result in different rendering procedures */
+            // TODO: Fix for new movement design
             if(index == 0)
             {
               if(render_item != NULL)
-                render_item->render(renderer, geography[map_index][i][j], 
-                                    x_offset, y_offset);
+                render_item->renderMain(renderer, geography[map_index][i][j], 
+                                        x_offset, y_offset);
               if(render_thing != NULL)
-                render_thing->render(renderer, geography[map_index][i][j], 
-                                     x_offset, y_offset);
+                render_thing->renderMain(renderer, geography[map_index][i][j], 
+                                         x_offset, y_offset);
               if(render_person != NULL)
               {
-                render_person->render(renderer, geography[map_index][i][j], 
-                                      x_offset, y_offset);
+                render_person->renderMain(renderer, geography[map_index][i][j], 
+                                          x_offset, y_offset);
               }
             }
             else
             {
               if(render_person != NULL)
-                render_person->render(renderer, geography[map_index][i][j], 
-                                      x_offset, y_offset);
+                render_person->renderMain(renderer, geography[map_index][i][j], 
+                                          x_offset, y_offset);
               if(render_thing != NULL)
-                render_thing->render(renderer, geography[map_index][i][j], 
-                                     x_offset, y_offset);
+                render_thing->renderMain(renderer, geography[map_index][i][j], 
+                                         x_offset, y_offset);
             }
           }
         }

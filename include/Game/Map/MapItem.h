@@ -16,9 +16,8 @@ class MapItem : public MapThing
 public:
   /* Constructor functions */
   MapItem();
-  MapItem(Sprite* frames, uint16_t width, uint16_t height, 
-          std::string name = "", std::string description = "", 
-          int id = kUNSET_ID);
+  MapItem(Sprite* frames, int id = kUNSET_ID, std::string name = "", 
+          std::string description = "");
 
   /* Destructor function */
   virtual ~MapItem();

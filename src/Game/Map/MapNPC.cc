@@ -4,7 +4,8 @@
  * Inheritance: MapPerson
  * Description: The MapNPC class, this covers all AI found on the map in game
  *
- * TODO: Reimplement the movement functions based on NPC scripts
+ * TODO: 1. Reimplement the movement functions based on NPC scripts
+ *       2. COMMENT
  ******************************************************************************/
 #include "Game/Map/MapNPC.h"
 
@@ -24,9 +25,8 @@ MapNPC::MapNPC() : MapPerson()
 }
 
 /* Another constructor function */
-MapNPC::MapNPC(uint16_t width, uint16_t height, std::string name, 
-               std::string description, int id)
-      : MapPerson(width, height, name, description, id)
+MapNPC::MapNPC(int id, std::string name, std::string description)
+      : MapPerson(id, name, description)
 {
   /* Clear the path pointers */
   current = NULL;
