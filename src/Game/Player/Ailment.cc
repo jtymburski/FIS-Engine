@@ -119,7 +119,7 @@ const double   Ailment::kBOND_STATS_PC       = 0.35;
  *         Person* ail_inflictor - the source of the Infliction
  *         uint16_t ail_min_turns - minimum duration of the ailment
  *         uint16_t ail_max_turns - maximum duration of the ailmen
- *         double 
+ *         double chance - ???
  * Output
  */
 Ailment::Ailment(Person* ail_victim, const Infliction &ail_type, 
@@ -128,6 +128,7 @@ Ailment::Ailment(Person* ail_victim, const Infliction &ail_type,
       : type{ail_type}
       , chance{ail_chance}
       , flag_set{static_cast<AilState>(0)}
+      , turns_occured{0}
       , inflictor{ail_inflictor}
       , victim{ail_victim}
 {
@@ -135,14 +136,13 @@ Ailment::Ailment(Person* ail_victim, const Infliction &ail_type,
   {
     chance          = 0;
     max_turns_left  = 0;
-    turns_occured   = 0;
     victim    = nullptr;
     inflictor = nullptr;
   }
   else
   {
     if (ail_victim != nullptr)
-      if (!checkImmunity(ail_victim))
+      //if (!checkImmunity(ail_victim))
         setFlag(AilState::VICTIM_SET, true);
 
     if (inflictor != nullptr)
@@ -150,6 +150,7 @@ Ailment::Ailment(Person* ail_victim, const Infliction &ail_type,
 
     setDuration(ail_min_turns, ail_max_turns, chance);
     setFlag(AilState::TO_UPDATE, true);
+    setFlag(AilState::TO_APPLY, true);
   }
 }
 
@@ -181,11 +182,11 @@ bool Ailment::apply()
     return false;
 
   /* Helper variables */
-  const uint16_t kHEALTH  = victim->getCurr().getStat(Attribute::VITA);
-  AttributeSet& stats     = victim->getCurr();
-  AttributeSet& max_stats = victim->getCurrMax();
-  SkillSet* skills        = victim->getCurrSkills();
-  uint16_t damage         = 0;
+  //auto  kHEALTH   = victim->getCurr().getStat(Attribute::VITA);
+  auto& stats     = victim->getCurr();
+  auto& max_stats = victim->getTemp();
+  auto  skills    = victim->getCurrSkills();
+  auto  damage    = 0;
 
   /* Poison: Ailed actor takes increasing hit to HP every turn
    * Constants: kPOISON_DMG_MAX -- maximum amount poison damage can do
@@ -197,17 +198,20 @@ bool Ailment::apply()
   {
     damage = kPOISON_DMG_MIN;
 
-    if (damage < (kPOISON_DMG_INIT * kHEALTH))
-      damage = kPOISON_DMG_INIT * kHEALTH;
+    //TODO: What was I thinking here?
+    //if (damage < (kPOISON_DMG_INIT * kHEALTH))
+    //  damage = kPOISON_DMG_INIT * kHEALTH;
 
     if (turns_occured > 0)
         for (int i = 0; i < turns_occured; i++)
           damage *= kPOISON_DMG_INCR;
 
-    if (damage > kPOISON_DMG_MAX)
+    if (static_cast<uint32_t>(damage) > kPOISON_DMG_MAX)
       damage = kPOISON_DMG_MAX;
 
-    victim->doDmg(damage);
+    damage = Helpers::setInRange(damage, 0, stats.getStat(Attribute::VITA));
+    std::cout << "Damage: " << damage << std::endl;
+    victim->doDmg(damage, DamageType::BASE);
   }
 
   /* Burn/Scald/Char - The three increasing levels of Burn
@@ -219,34 +223,34 @@ bool Ailment::apply()
    *           kBURN_DMG_INCR - % incr burn damage per additional lvl
    *           kBURN_DMG_INIT - % dmg incurred by level 1 burn
    */
-  else if (type == Infliction::BURN || type == Infliction::SCALD || 
-                                       type == Infliction::CHARR)
-  {
-    damage = kBURN_DMG_MIN;
-    uint32_t burn_damage = kHEALTH * kBURN_DMG_PC;
+//  else if (type == Infliction::BURN || type == Infliction::SCALD || 
+//                                       type == Infliction::CHARR)
+ // {
+    //damage = kBURN_DMG_MIN;
+   // uint32_t burn_damage = kHEALTH * kBURN_DMG_PC;
 
     /* Compute basic damage */
-    if (damage < burn_damage)
-      damage = burn_damage;
+    // if (damage < burn_damage)
+    //  damage = burn_damage;
 
     /* Increase the damage if the burn is level 2 or level 3 */
-    if (type == Infliction::SCALD)
-    {
-      uint32_t scald_damage = kHEALTH * (kBURN_DMG_PC + kBURN_DMG_INCR - 1);
-      if (damage < scald_damage)
-        damage = scald_damage;
-    }
-    else if (type == Infliction::CHARR)
-    {
-      uint32_t char_damage = kHEALTH * (kBURN_DMG_PC + (2 * kBURN_DMG_INCR) - 2);
-      if (damage < char_damage)
-        damage = char_damage;
-    }
-    if (damage > kBURN_DMG_MAX)
-      damage = kBURN_DMG_MAX;
+   // if (type == Infliction::SCALD)
+   // {
+//      uint32_t scald_damage = kHEALTH * (kBURN_DMG_PC + kBURN_DMG_INCR - 1);
+//      if (damage < scald_damage)
+ //       damage = scald_damage;
+  //  }
+ //   else if (type == Infliction::CHARR)
+//    {
+ //     uint32_t char_damage = kHEALTH * (kBURN_DMG_PC + (2 * kBURN_DMG_INCR) - 2);
+  //    if (damage < char_damage)
+   //     damage = char_damage;
+  //  }
+//    if (damage > kBURN_DMG_MAX)
+//      damage = kBURN_DMG_MAX;
 
-    victim->doDmg(damage);
-  }
+    //victim->doDmg(damage);
+//  }
 
   /* Berserk - Ailed actor physically attacks enemy target for extreme damage
    *           while receiving damage themselves. Hitback damage will take
@@ -523,9 +527,6 @@ bool Ailment::apply()
 
   }
 
-  /* Ailment update complete, emit signal */
-  //emit updated();
-
   return true;
 }
 
@@ -610,6 +611,12 @@ bool Ailment::checkImmunity(Person* new_victim)
  */
 bool Ailment::updateTurns()
 {
+  std::cout << "Turns occured: -- " << ++turns_occured << std::endl;
+  std::cout << "Min turns left: - " << min_turns_left << std::endl;
+  std::cout << "Max turns left: - " << max_turns_left << std::endl;
+  if (turns_occured < min_turns_left)
+    return false;
+
   /* If the ailment is finite, cure it based on chance */;
   if (max_turns_left <= kMAX_TURNS && chance != 0)
     if (Helpers::chanceHappens(floor(chance * 100), 100))
@@ -621,7 +628,10 @@ bool Ailment::updateTurns()
 
   /* If the ailment doesn't have one turn left, if it's finite, decrement it */
   if (max_turns_left <= kMAX_TURNS)
+  {
     max_turns_left--;
+    min_turns_left--;
+  }
 
   return false;
 }
@@ -961,6 +971,8 @@ void Ailment::setDuration(const uint16_t &min_turns, const uint16_t &max_turns,
   min_turns_left = std::min(min_turns, max_turns);
   max_turns_left = std::max(min_turns, max_turns);
 
+  //TODO: Turns occured?
+
   this->chance = chance;
 }
 
@@ -1047,23 +1059,28 @@ void Ailment::update()
   /* The ailment may not be updated */
   if (getFlag(AilState::TO_UPDATE))
   {
+    std::cout << "To update" << std::endl;
     /* Update the turn count and set the TOBECURED flag if neccessary */
-    bool cure_value = false;
-
-    if (!getFlag(AilState::INFINITE))
-      cure_value = updateTurns();
-
-    setFlag(AilState::TO_CURE, cure_value);
+    if (!getFlag(AilState::INFINITE) && updateTurns())
+    {
+      std::cout << "Curing prematurely?" << std::endl;
+      setFlag(AilState::TO_CURE);
+    }
 
     /* If the ailment is not to be cured, apply an effect (if there is one) */
-    if (!getFlag(AilState::TO_CURE))
+    if (!getFlag(AilState::TO_CURE) && getFlag(AilState::TO_APPLY))
     {
-      if (getFlag(AilState::TO_APPLY))
-        apply();
+      std::cout << "Calling dah apply" << std::endl;
+      apply();
+    }
+    else
+    {
+      std::cout << "Not calling apply." << std::endl;
     }
   }
+
   if (getFlag(AilState::TO_CURE))
-      unapply();
+    unapply();
 }
 
 /*

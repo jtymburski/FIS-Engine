@@ -415,7 +415,7 @@ std::string Helpers::aiPersonalityToStr(const AIPersonality &ai_personality)
  * Inputs: Infliction - enumerated type of Infliction
  * Output: std::string - the string of the enumeration
  */
-std::string Helpers::ailmentToString(const Infliction &ail)
+std::string Helpers::ailmentToStr(const Infliction &ail)
 {
   if (ail == Infliction::POISON)
     return "POISON";

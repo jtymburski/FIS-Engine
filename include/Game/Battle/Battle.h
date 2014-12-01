@@ -106,7 +106,7 @@ private:
   Buffer* action_buffer;
 
   /* Pairs of unique-ID vs. Ailment pointers for ailments */
-  std::vector<std::pair<uint32_t, Ailment*>> ailments;
+  std::vector<Ailment*> ailments;
 
   /* The current AI Module */
   AIModule* curr_module;
@@ -186,8 +186,8 @@ private:
   static const uint16_t kBATTLE_MENU_DELAY;
 
   /* ------------ Battle Modifiers (See Implementation) --------------- */
-  static const uint16_t kMAX_AILMENTS;
-  static const uint16_t kMAX_EACH_AILMENTS;
+  static const size_t kMAX_AILMENTS;
+  static const size_t kMAX_EACH_AILMENTS;
   static const uint16_t kMAXIMUM_DAMAGE;
   static const uint16_t kMINIMUM_DAMAGE;
 
@@ -249,7 +249,11 @@ private:
  *============================================================================*/
 private:
   /* Attempts to add an ailment to the vector of ailments */
-  bool addAilment(Ailment* const new_ailment);
+  bool addAilment(Infliction infliction_type, Person* inflictor,
+      uint16_t min_turns, uint16_t max_turns, int32_t chance);
+
+  /* Attempts to remove an ailment from the vector */
+  bool removeAilment(Ailment* remove_ailment);
 
   /* Called when the Battle has been lost */
   void battleLost();
@@ -296,7 +300,10 @@ private:
   bool canIncrementIndex(Person* check_person);
 
   /* Can the current target be inflicted with a new infliction of given type? */
-  bool canInflict(const Infliction &test_infliction);
+  bool canInflict(Infliction test_infliction);
+
+  /* Determines whether a person has an infliction already */
+  bool hasInfliction(Infliction type, Person* const check);
 
   /* Asserts all AI modules are set for the enemy parties */
   bool checkAIModules();

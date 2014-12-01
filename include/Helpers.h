@@ -112,7 +112,7 @@ public:
   static std::string aiPersonalityToStr(const AIPersonality &ai_personality);
 
   /* Return enumerated Ailment to String */
-  static std::string ailmentToString(const Infliction &ail);
+  static std::string ailmentToStr(const Infliction &ail);
 
   /* Get the string of a roman numeral from a value */
   static std::string numToRoman(int value);

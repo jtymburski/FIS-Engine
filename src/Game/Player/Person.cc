@@ -833,8 +833,9 @@ bool Person::createAI(const AIDifficulty &diff,
  * Inputs: amount - amount of damage to deal
  * Output: bool - true if the Person is now dead
  */
-bool Person::doDmg(const uint32_t &amount)
+bool Person::doDmg(const uint32_t &amount, DamageType damage_type)
 {
+  std::cout << "{DAMAGE} " << getName() << " of " << amount << " Damage." << std::endl;
   curr_stats.alterStat(Attribute::VITA, -amount);
   
   if (curr_stats.getStat(Attribute::VITA) <= 0)

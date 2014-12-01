@@ -303,7 +303,7 @@ public:
                 const AIPersonality &secd_personality);
 
   /* Shorthand function for dealing damage, returns true if the Person KO's */
-  bool doDmg(const uint32_t &amount);
+  bool doDmg(const uint32_t &amount, DamageType damage_type);
 
   /* Determines if the person is a power defender */
   bool isPowerDefender();

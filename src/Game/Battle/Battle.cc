@@ -72,8 +72,8 @@ const uint16_t Battle::kBATTLE_MENU_DELAY    = 400; /* Personal menu delay */
  * Defend Modifier (Base Damage Mod While Defending)
  * Guard Modifier (Base Damage Mod While Being Guarded)
  */
-const uint16_t Battle::kMAX_AILMENTS             =    50;
-const uint16_t Battle::kMAX_EACH_AILMENTS        =     5;
+const size_t Battle::kMAX_AILMENTS             =    50;
+const size_t Battle::kMAX_EACH_AILMENTS        =     5;
 const uint16_t Battle::kMINIMUM_DAMAGE           =     1;
 const uint16_t Battle::kMAXIMUM_DAMAGE           = 29999;
 
@@ -166,9 +166,8 @@ Battle::Battle(Options* running_config, Party* const friends, Party* const foes)
  */
 Battle::~Battle()
 {
-  for (auto it = begin(ailments); it != end(ailments); ++it)
-    if ((*it).second != nullptr)
-      delete (*it).second;
+  for (auto& ailment : ailments)
+    delete ailment;
   ailments.clear();
 
   if (menu != nullptr)
@@ -190,25 +189,61 @@ Battle::~Battle()
  * Inputs: Ailment* const new_ailment - pointer to a new ailment object.
  * Output: bool true if the ailment infliction was kosher
  */
-bool Battle::addAilment(Ailment* const new_ailment)
+bool Battle::addAilment(Infliction infliction_type, Person* inflictor,
+                        uint16_t min_turns, uint16_t max_turns, int32_t chance)
 {
-  auto can_add = ailments.size() < kMAX_AILMENTS;
-  auto person_ailments = getPersonAilments(new_ailment->getVictim()).size();
-  can_add &= person_ailments < kMAX_EACH_AILMENTS;
+  auto success     = false;
+  auto new_ailment = new Ailment(curr_target, infliction_type, inflictor,
+                         min_turns, max_turns, static_cast<float>(chance));
 
-  if (can_add)
+  if (new_ailment->getFlag(AilState::INFLICTOR_SET) && 
+      new_ailment->getFlag(AilState::VICTIM_SET))
   {
-    auto vic_name = new_ailment->getVictim()->getName();
-    auto ail_name = static_cast<int32_t>(new_ailment->getType());
+    ailments.push_back(new_ailment);
+    success = true;
+  }
+  else
+  {
+    delete new_ailment;
+    new_ailment = nullptr;
+    success     = false;
+  }
 
-    if (getBattleMode() == BattleMode::TEXT)
+  if (success && getBattleMode() == BattleMode::TEXT)
+  {
+    std::cout << "{INFLICTION} " << curr_target->getName() << " has been "
+              << "inflicted with " << Helpers::ailmentToStr(infliction_type)
+              << " lasting " << min_turns << " to " << max_turns << ".\n";
+  }
+
+  return success;
+}
+
+/*
+ * Description:
+ *
+ * Inputs: 
+ * Output:
+ */
+bool Battle::removeAilment(Ailment* remove_ailment)
+{
+  std::cout << "Removing an ailment!" << std::endl;
+  auto found = false;
+
+  for (auto& ailment : ailments)
+  {
+    if (ailment == remove_ailment)
     {
-      std::cout << "Inflicting ailment: " << ail_name + " on " + vic_name 
-                << "\n";
+      found = true;
+      delete ailment;
+      ailment = nullptr;
     }
   }
 
-  return can_add;
+  ailments.erase(std::remove(begin(ailments), end(ailments), nullptr), 
+      end(ailments));
+
+  return found;
 }
 
 /*
@@ -1503,12 +1538,31 @@ void Battle::orderActions()
  */
 void Battle::personalUpkeep(Person* const target)
 {
+  auto ailments = getPersonAilments(target);
+
+  for (auto& ailment : ailments)
+  {
+    if (ailment != nullptr && ailment->getFlag(AilState::TO_UPDATE))
+    {
+      std::cout << "Updating ailment!" << std::endl;
+      ailment->update();
+
+      /* If the target is dead, the ailment update must have killed them */
+      if (!target->getBFlag(BState::ALIVE))
+      {
+        /* The ailment should be destroyed if it removes on death */
+        if (ailment->getFlag(AilState::CURE_ON_DEATH))
+          ailment->setFlag(AilState::TO_CURE);
+      }
+    }
+
+    // if (ailment != nullptr && ailment->getFlag(AilState::TO_CURE))
+    //   removeAilment(ailment);
+  }
+  
   //TODO
   // clear flags for new turn (temp flags?)
-  // process ailments
-    // damage ailments
-    // flag setting ailments
-    // recalulate ailment factor
+  // recalulate ailment factor
 
   auto vita_regen = calcTurnRegen(target, Attribute::VITA);
   auto qtdr_regen = calcTurnRegen(target, Attribute::QTDR);
@@ -1825,7 +1879,7 @@ bool Battle::processDamageAction(const DamageType &damage_type)
    * but guard and defending flags, etc. may need to be recalculated. */
   bool done = false;
 
-  if (curr_target->doDmg(damage))
+  if (curr_target->doDmg(damage, DamageType::BASE))
     done = updatePersonDeath(damage_type);
   else
     updateTargetDefense();
@@ -1891,13 +1945,48 @@ bool Battle::processReviveAction()
  */
 bool Battle::processInflictAction()
 {
-  //TODOqz
+  if (canInflict(curr_action->getAilment()))
+  {
+    return addAilment(curr_action->getAilment(), curr_user, 
+        curr_action->getMin(), curr_action->getMax(), curr_action->getBase());
+  }
+
   return false;
 }
 
-bool Battle::canInflict(const Infliction &test_infliction)
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+bool Battle::canInflict(Infliction test_infliction)
 {
+  auto can_add = ailments.size() < kMAX_AILMENTS;
+  auto person_ailments = getPersonAilments(curr_target);
   
+  can_add &= (person_ailments.size() < kMAX_EACH_AILMENTS);
+
+  if (can_add)
+  {
+    return !hasInfliction(test_infliction, curr_target);
+  }
+
+  return false;
+}
+
+bool Battle::hasInfliction(Infliction type, Person* const check)
+{
+  bool has_infliction = false;
+
+  if (check == nullptr)
+    return false;
+
+  for (auto& ailment : ailments)
+    if (ailment->getType() == type && ailment->getVictim() == check)
+      has_infliction = true;
+
+  return has_infliction;
 }
 
 /*
@@ -3058,7 +3147,12 @@ void Battle::printPersonState(Person* const member,
               << member->getVitaPercent() << "%]\n" << "QTDR: " 
               << member->getCurr().getStat(1) << "/"
               << member->getTemp().getStat(1) << " [" << member->getQDPercent()
-              << "%]\n\n";
+              << "%]\nILLS:";
+    auto person_ailments = getPersonAilments(member);
+
+    for (auto& ailment : person_ailments)
+      std::cout << Helpers::ailmentToStr(ailment->getType()) << " ";
+    std::cout << "\n\n";
   }
 }
 
@@ -3267,10 +3361,9 @@ std::vector<Ailment*> Battle::getPersonAilments(Person* const target)
 {
   std::vector<Ailment*> person_ailments;
 
-  if (target != nullptr)
-    for (auto it = begin(ailments); it != end(ailments); ++it)
-      if ((*it).second->getVictim() == target)
-        person_ailments.push_back((*it).second);
+  for (auto& ailment : ailments)
+    if (ailment->getVictim() == target && target!= nullptr)
+      person_ailments.push_back(ailment);
 
   return person_ailments;
 }
