@@ -106,7 +106,8 @@ protected:
   bool isAlmostOnTile(int cycle_time);
   
   /* Is move allowed, based on main tile and the next tile */
-  bool isMoveAllowed(std::vector<std::vector<Tile*>> tile_set);
+  bool isMoveAllowed(std::vector<std::vector<Tile*>> tile_set, 
+                     Direction move_request);
   
   /* Move the thing, based on the internal direction */
   float moveAmount(uint16_t cycle_time);
@@ -122,10 +123,11 @@ protected:
   /* Sets the tile of the selected with the corresponding frames */
   virtual bool setTile(Tile* tile, TileSprite* frames, 
                        bool no_events = true);
-  virtual void setTileFinish(TileSprite* frames, bool reverse_last = false, 
-                             bool no_events = false); 
-  virtual bool setTileStart(Tile* tile, TileSprite* frames, 
-                            bool no_events = false);
+  virtual void setTileFinish(Tile* old_tile, Tile* new_tile, 
+                             uint8_t render_depth, bool reverse_last = false, 
+                             bool no_events = false);
+  virtual bool setTileStart(Tile* old_tile, Tile* new_tile, 
+                            uint8_t render_depth, bool no_events = false);
 
   /* Starts and stops tile move. Relies on underlying logic for occurance */
   virtual void tileMoveFinish();

@@ -35,10 +35,6 @@ private:
   /* Render depth - 'z' coordinate */
   uint8_t render_depth;
 
-  /* Tile pointers, for the connection of the sprite to the rendering tile */
-  Tile* tile_main;
-  Tile* tile_previous;
-  
   /* -------------------------- Constants ------------------------- */
   //const static uint8_t kMAX_RENDER_DEPTH; /* Max render depth */
 
@@ -64,33 +60,15 @@ public:
   bool getPassability(Direction dir) const;
   uint8_t getRenderDepth() const;
 
-  /* Returns the tiles, as stored in the class */
-  Tile* getTileMain() const;
-  Tile* getTilePrevious() const;
-  
-  /* Checks if tiles are set */
-  bool isTileMainSet() const;
-  bool isTilePreviousSet() const;
-  
   /* Resets the passability to default */
   void resetPassability();
 
-  /* Resets the tile that the sprite is rendering on */
-  void resetTile();
-  
   /* Sets the passability, for a particular direction */
   void setPassability(Direction dir, bool set_value);
 
   /* Sets the render depth. 0 is the base up to max */
   bool setRenderDepth(uint8_t depth);
  
-  /* Sets the starting tile. */
-  bool setTile(Tile* starting_tile);
-
-  /* Starts and stops tile move. Relies on underlying logic for occurance */
-  void tileMoveFinish(bool reverse_last = false);
-  bool tileMoveStart(Tile* next_tile);
-
 /*============================================================================
  * OPERATOR FUNCTIONS
  *===========================================================================*/

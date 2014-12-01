@@ -1136,7 +1136,7 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
     /* TODO: Testing - Remove */
     if(geography.size() > 0 && geography[0].size() > 3 
                             && geography[0][3].size() > 3)
-      geography[0][3][3]->setStatus(Tile::OFF);
+      geography[0][3][3]->setStatus(Tile::BLANKED);
       
     /* TODO: Remove - testing */
     std::cout << "--" << std::endl;

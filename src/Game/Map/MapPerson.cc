@@ -259,16 +259,33 @@ bool MapPerson::setDirection(Direction direction, bool set_movement)
 bool MapPerson::setTile(Tile* tile, TileSprite* frames, bool no_events)
 {
   uint8_t render_depth = frames->getRenderDepth();
-  bool success = true;
 
   /* Attempt and set the tile */
-  success &= frames->setTile(tile);
-  if(success)
-    success &= tile->setPerson(this, render_depth, no_events);
-  if(!success)
-    frames->resetTile();
+  if(tile != NULL)
+    return tile->setPerson(this, render_depth, no_events);
 
-  return success;
+  return false;
+}
+
+/*
+ * Description: Sets the tile in the sprite and sprite in the tile for the 
+ *              passed in objects with regards to finishing a tile move.
+ *
+ * Inputs: Tile* old_tile - the tile the object was on previously
+ *         Tile* new_tile - the tile the object is moving to
+ *         uint8_t render_depth - the depth the frame is rendered on this tile
+ *         bool reverse_last - if the last start should be reversed
+ *         bool no_events - if events should trigger on the set
+ * Output: bool - true if the set was successful
+ */
+void MapPerson::setTileFinish(Tile* old_tile, Tile* new_tile, 
+                             uint8_t render_depth, bool reverse_last, 
+                             bool no_events)
+{
+  if(reverse_last)
+    new_tile->unsetPerson(render_depth, no_events);
+  else
+    old_tile->unsetPerson(render_depth, no_events);
 }
 
 /*
@@ -276,66 +293,22 @@ bool MapPerson::setTile(Tile* tile, TileSprite* frames, bool no_events)
  *              passed in objects with regards to beginning a tile move. If it 
  *              fails, it resets the pointers back to the original tile.
  *
- * Inputs: Tile* tile - the tile pointer to set the frame
- *         TileSprite* frames - the sprite frames pointer to set in the tile
+ * Inputs: Tile* old_tile - the tile the object was on previously
+ *         Tile* new_tile - the tile the object is moving to
+ *         uint8_t render_depth - the depth the frame is rendered on this tile
  *         bool no_events - if events should trigger on the set
  * Output: bool - true if the set was successful
  */
-bool MapPerson::setTileStart(Tile* tile, TileSprite* frames, bool no_events)
+bool MapPerson::setTileStart(Tile* old_tile, Tile* new_tile, 
+                            uint8_t render_depth, bool no_events)
 {
-  (void)no_events;
-  bool success = true;
+  (void)old_tile;
 
-  /* Attempt to set the new tile move */
-  success &= frames->tileMoveStart(tile);
-  if(success)
-    success &= tile->setPerson(this, frames->getRenderDepth(), no_events);
-  if(!success)
-    frames->tileMoveFinish(true);
+  /* Attempt and set the tile */
+  if(new_tile != NULL)
+    return new_tile->setPerson(this, render_depth, no_events);
 
-  return success;
-}
-
-/*
- * Description: Sets the tile in the sprite and sprite in the tile for the 
- *              passed in objects with regards to finishing a tile move.
- *
- * Inputs: TileSprite* frames - the sprite frames pointer to set in the tile
- *         bool reverse_last - if the last start should be reversed
- *         bool no_events - if events should trigger on the set
- * Output: bool - true if the set was successful
- */
-void MapPerson::setTileFinish(TileSprite* frames, bool reverse_last, 
-                             bool no_events)
-{
-  if(reverse_last)
-    frames->getTileMain()->unsetPerson(frames->getRenderDepth(), no_events);
-  else
-    frames->getTilePrevious()->unsetPerson(frames->getRenderDepth(), no_events);
-  frames->tileMoveFinish(reverse_last);
-}
-
-/* 
- * Description: The tile move finish call. To be called after a move and it's
- *              determined that the thing is on the main tile (for the first
- *              time). Essentially just cleans up the previous tile pointer.
- *              This is reimplemented from MapThing since it uses "Person"
- *              instead of "Thing" in tile.
- * 
- * Inputs: none
- * Output: none
- */
-void MapPerson::tileMoveFinish()
-{
-  MapThing::tileMoveFinish();
-
-  /* Clean up other matrices */
-  SpriteMatrix* matrix = getState(surface, direction);
-
-  for(uint8_t i = 0; i < kTOTAL_SURFACES; i++)
-    for(uint8_t j = 0; j < kTOTAL_DIRECTIONS; j++)
-      if(states[i][j] != NULL && states[i][j] != matrix)
-        states[i][j]->tileMoveFinish();
+  return false;
 }
 
 /* 
@@ -354,13 +327,6 @@ bool MapPerson::tileMoveStart(std::vector<std::vector<Tile*>> tile_set,
 {
   if(MapThing::tileMoveStart(tile_set, no_events))
   {
-    SpriteMatrix* matrix = getState(surface, direction);
-
-    for(uint8_t i = 0; i < kTOTAL_SURFACES; i++)
-      for(uint8_t j = 0; j < kTOTAL_DIRECTIONS; j++)
-        if(states[i][j] != NULL && states[i][j] != matrix)
-          states[i][j]->tileMoveStart(tile_set);
-
     steps++;
     return true;
   }
@@ -384,16 +350,11 @@ void MapPerson::unsetTile(uint32_t x, uint32_t y, bool no_events)
   uint8_t render_depth = sprite_set->at(x, y)->getRenderDepth();
 
   /* Remove from main tile, if applicable */
-  if(sprite_set->at(x, y)->isTileMainSet())
-    sprite_set->at(x, y)->getTileMain()->unsetPerson(render_depth, no_events);
+  tile_main[x][y]->unsetPerson(render_depth, no_events);
 
   /* Remove from previous tile, if applicable */
-  if(sprite_set->at(x, y)->isTilePreviousSet())
-    sprite_set->at(x, y)->getTilePrevious()->unsetPerson(render_depth, 
-                                                         no_events);
-
-  /* Clean up frame */
-  sprite_set->at(x, y)->resetTile();
+  if(tile_prev.size() > 0)
+    tile_prev[x][y]->unsetPerson(render_depth, no_events);
 }
 
 /*============================================================================
@@ -414,7 +375,6 @@ void MapPerson::unsetTile(uint32_t x, uint32_t y, bool no_events)
  *         std::string base_path - the base path for resources
  * Output: bool - status if successful
  */
-//TODO: FIX
 bool MapPerson::addThingInformation(XmlData data, int file_index, 
                                     int section_index, SDL_Renderer* renderer, 
                                     std::string base_path)
@@ -711,51 +671,21 @@ void MapPerson::keyUpEvent(SDL_KeyboardEvent event)
  * Inputs: none
  * Output: bool - status if successful
  */
+// TODO: Fix
 bool MapPerson::resetPosition()
 {
-  std::vector<std::vector<Tile*>> set = starting_tiles;
-  if(starting_tiles.size() > 0)
-  {
-    setStartingLocation(starting_section, 
-                        set.front().front()->getX(), 
-                        set.front().front()->getY());
-    return setStartingTiles(set, true);
-  }
-
+//  std::vector<std::vector<Tile*>> set = starting_tiles;
+//  if(starting_tiles.size() > 0)
+//  {
+//    setStartingLocation(starting_section, 
+//                        set.front().front()->getX(), 
+//                        set.front().front()->getY());
+//    return setStartingTiles(set, true);
+//  }
+//
   return false;
 }
 
-/* 
- * Description: Sets the connected tile information for the map person. This is
- *              the initial starting point and where the person is initially
- *              placed. If this is unset, the person will not move or paint.
- *              This replaces the generic mapthing call to allow for map 
- *              person in tile to be modified.
- *
- * Inputs: std::vector<std::vector<Tile*>> tile_set - set of tiles to start on
- *         bool no_events - don't execute any events when set
- * Output: bool - status if the change was able to occur
- */
-bool MapPerson::setStartingTiles(std::vector<std::vector<Tile*>> tile_set, 
-                                bool no_events)
-{
-  if(MapThing::setStartingTiles(tile_set, no_events))
-  {
-    SpriteMatrix* matrix = getState(surface, direction);
-
-    for(uint8_t i = 0; i < kTOTAL_SURFACES; i++)
-      for(uint8_t j = 0; j < kTOTAL_DIRECTIONS; j++)
-        if(states[i][j] != NULL && states[i][j] != matrix)
-          states[i][j]->setTiles(tile_set);
-
-    starting_section = getMapSection();
-    starting_tiles = tile_set;
-    return true;
-  }
-
-  return false;
-}
- 
 /*
  * Description: Sets an individial tile sprite in a specific surface and 
  *              direction with a given x and y coordinate.
@@ -834,73 +764,75 @@ void MapPerson::setSurface(SurfaceClassifier surface)
  */
 void MapPerson::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 {
-  bool can_move = isMoveAllowed(tile_set) && !getMovementPaused();
-  bool reset = false;
-
-  //std::cout << tile_set.size() << std::endl;
-
-  /* Once a tile end has reached, cycle the movement direction */
-  if(isAlmostOnTile(cycle_time))
+  if(isTilesSet())
   {
-    tileMoveFinish();
+    bool reset = false;
     
-    /* If paused and there is a target, change direction to the target */
-    if(getMovementPaused())
+    if(isMoving())
     {
-      if(getTarget() != NULL)
+      /* If moving and almost on tile, finish move and check what to do next */
+      if(isAlmostOnTile(cycle_time))
       {
-        int delta_x = getTileX() - getTarget()->getTileX();
-        int delta_y = getTileY() - getTarget()->getTileY();
+        tileMoveFinish();
 
-        if(delta_x < 0)
-          setDirection(Direction::EAST, can_move);
-        else if(delta_x > 0)
-          setDirection(Direction::WEST, can_move);
-        else if(delta_y < 0)
-          setDirection(Direction::SOUTH, can_move);
-        else if(delta_y > 0)
-          setDirection(Direction::NORTH, can_move);
-      }
-      else
-      {
-        setDirection(Direction::DIRECTIONLESS);
-      }
+        if(getMovementPaused())
+        {
+          // TODO: Fix
+          if(getTarget() != NULL)
+          {
+            int delta_x = getTileX() - getTarget()->getTileX();
+            int delta_y = getTileY() - getTarget()->getTileY();
 
-      reset = true;
+            if(delta_x < 0)
+              setDirection(Direction::EAST, false);
+            else if(delta_x > 0)
+              setDirection(Direction::WEST, false);
+            else if(delta_y < 0)
+              setDirection(Direction::SOUTH, false);
+            else if(delta_y > 0)
+              setDirection(Direction::NORTH, false);
+          }
+          else
+          {
+            setDirection(Direction::DIRECTIONLESS);
+          }
+
+          reset = true;
+        }
+        else if(isMoveRequested())
+        {
+          bool can_move = isMoveAllowed(tile_set, getMoveRequest());
+
+          if(setDirection(getMoveRequest(), can_move) || !can_move)
+            reset = true;
+          if(can_move)
+            tileMoveStart(tile_set);
+        }
+        else
+        {
+          setDirection(Direction::DIRECTIONLESS);
+          reset = true;
+        }
+      }
     }
-    /* Update direction based on move request and if it should move */
+    /* Otherwise, if not moving and move is requested, start the new move */
     else if(isMoveRequested())
     {
-      /* Set the new direction and if the direction is changed, or it's
-       * not allowed to move, recenter the thing */
-      reset = !can_move;
+      bool can_move = isMoveAllowed(tile_set, getMoveRequest());
+
       if(setDirection(getMoveRequest(), can_move) || !can_move)
         reset = true;
-      
-      /* If it can move, initiate tile shifting */
       if(can_move)
         tileMoveStart(tile_set);
     }
-    /* If there is no move request, stop movement */
+    /* Otherwise, make sure animation is on default state */
     else
     {
-      if(isTilesSet())
-      {
-        x = getTileX() * getWidth();
-        y = getTileY() * getHeight();
-      }
-
-      setDirection(Direction::DIRECTIONLESS);
       reset = true;
     }
-  }
 
-  if(isTilesSet())
-  {
-    /* Proceed to move the thing */
+    /* Animate and move the person */
     moveThing(cycle_time);
-
-    /* Only animate if the direction exists */
     animate(cycle_time, reset, getMovement() != Direction::DIRECTIONLESS);
   }
 }
@@ -916,6 +848,7 @@ void MapPerson::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
  *         bool delete_frames - true if the frames should be deleted from mem
  * Output: none
  */
+// TODO: Remove from tile, if it's set
 void MapPerson::unsetState(SurfaceClassifier surface, Direction direction, 
                            uint32_t x, uint32_t y, bool delete_frames)
 {
@@ -957,30 +890,4 @@ void MapPerson::unsetStates(bool delete_frames)
     for(uint8_t j = 0; j < states[i].size(); j++)
       if(states[i][j] != NULL)
         states[i][j]->unsetSprites(delete_frames);
-}
-
-/*
- * Description: Unsets the tiles that are stored within the person class.
- *
- * Inputs: bool no_events - fire no events when unsetting
- * Output: none
- */
-void MapPerson::unsetTiles(bool no_events)
-{
-  /* First, unset the tiles */
-  MapThing::unsetTiles(no_events);
-  SpriteMatrix* matrix = getState(surface, direction);
-
-  for(uint8_t i = 0; i < kTOTAL_SURFACES; i++)
-  {
-    for(uint8_t j = 0; j < kTOTAL_DIRECTIONS; j++)
-    {
-      if(states[i][j] != NULL && states[i][j] != matrix)
-        states[i][j]->unsetTiles();
-    }
-  }
-
-  /* Reset stored tile location */
-  starting_section = 0;
-  starting_tiles.clear();
 }

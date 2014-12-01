@@ -26,7 +26,6 @@ TileSprite::TileSprite() : Sprite()
   render_depth = 0;
 
   resetPassability();
-  resetTile();
 }
 
 /* 
@@ -42,7 +41,6 @@ TileSprite::TileSprite(std::string path, SDL_Renderer* renderer)
   render_depth = 0;
 
   resetPassability();
-  resetTile();
 }
 
 /* 
@@ -60,7 +58,6 @@ TileSprite::TileSprite(std::string head_path, int num_frames,
   render_depth = 0;
 
   resetPassability();
-  resetTile();
 }
 
 /*
@@ -74,7 +71,6 @@ TileSprite::TileSprite(const TileSprite &source) : Sprite()
   render_depth = 0;
 
   resetPassability();
-  resetTile();
   
   copySelf(source, true);
 }
@@ -87,7 +83,6 @@ TileSprite::~TileSprite()
   render_depth = 0;
   
   resetPassability();
-  resetTile();
   
   Sprite::clear();
 }
@@ -215,52 +210,6 @@ uint8_t TileSprite::getRenderDepth() const
 }
 
 /* 
- * Description: Gets the primary tile, where the sprite is rendered.
- * Note: Do not delete the tile pointer; results would be unknown
- *
- * Inputs: none
- * Output: Tile* - the main tile object pointer
- */
-Tile* TileSprite::getTileMain() const
-{
-  return tile_main;
-}
-
-/* 
- * Description: Gets the previous tile, where the sprite was rendered.
- * Note: Do not delete the tile pointer; results would be unknown
- *
- * Inputs: none
- * Output: Tile* - the previous tile object pointer
- */
-Tile* TileSprite::getTilePrevious() const
-{
-  return tile_previous;
-}
-
-/*
- * Description: Returns if the main rendering tile is set in the sprite.
- *
- * Inputs: none;
- * Output: bool - true if the tile is set
- */
-bool TileSprite::isTileMainSet() const
-{
-  return (tile_main != NULL);
-}
-
-/*
- * Description: Returns if the previous rendering tile is set in the sprite.
- *
- * Inputs: none;
- * Output: bool - true if the tile is set
- */
-bool TileSprite::isTilePreviousSet() const
-{
-  return (tile_previous != NULL);
-}
-  
-/* 
  * Description: Resets the sprite passability back to default state. Default
  *              state is no passability in all directions.
  *
@@ -270,20 +219,6 @@ bool TileSprite::isTilePreviousSet() const
 void TileSprite::resetPassability()
 {
   setPassability(Direction::DIRECTIONLESS, true);
-}
-
-/* 
- * Description: Resets the tile pointers in this sprite. This does not reset
- *              the corresponding pointer in the tile but just clears the 
- *              reference from this individual sprite.
- *
- * Inputs: none
- * Output: none
- */
-void TileSprite::resetTile()
-{
-  tile_main = NULL;
-  tile_previous = NULL;
 }
 
 /* 
@@ -318,63 +253,6 @@ bool TileSprite::setRenderDepth(uint8_t depth)
     return true;
   }
 
-  return false;
-}
-
-/*
- * Description: Sets a new starting tile for rendering and passability handling.
- *              This will also unset any existing tiles, if set.
- *
- * Inputs: Tile* new_tile - the new tile to place the frame
- * Output: bool - true if the tile was set successfully.
- */
-bool TileSprite::setTile(Tile* starting_tile)
-{
-  if(starting_tile != NULL)
-  {
-    /* Reset the existing */
-    resetTile();
-    
-    /* Set the new */
-    tile_main = starting_tile;
-    return true;
-  }
-  return false;
-}
-
-/*
- * Description: Finishes a move on the tile. This just clears the previous
- *              pointer of the tile that the sprite was on. This does not call
- *              Tile and make any modifications to the corresponding stored
- *              sprite.
- *
- * Inputs: bool reverse_last - if the last move should be reversed
- * Output: none
- */
-void TileSprite::tileMoveFinish(bool reverse_last)
-{
-  if(reverse_last && tile_previous != NULL)
-    tile_main = tile_previous;
-  tile_previous = NULL;
-}
-
-/*
- * Description: Starts a move on the tile. This moves the new tile, if valid,
- *              to the main pointer and shifts the other to previous to begin
- *              the move process. This does not call Tile and make any 
- *              modifications to the corresponding stored sprite.
- *
- * Inputs: Tile* next_tile - the next tile that the sprite is moving to
- * Output: bool - status if the move was started
- */
-bool TileSprite::tileMoveStart(Tile* next_tile)
-{
-  if(next_tile != NULL)
-  {
-    tile_previous = tile_main;
-    tile_main = next_tile;
-    return true;
-  }
   return false;
 }
 

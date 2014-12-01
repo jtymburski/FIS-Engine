@@ -532,6 +532,7 @@ bool SpriteMatrix::render(SDL_Renderer* renderer, int x, int y,
  * Inputs: std::string render_str - the render data
  * Output: none
  */
+// TODO: Move into thing
 void SpriteMatrix::setRenderMatrix(std::string render_str)
 {
   /* Parse data */
@@ -618,109 +619,6 @@ void SpriteMatrix::setSprites(std::vector<std::vector<TileSprite*>> sprites,
   sprite_matrix = sprites;
 }
 
-/* 
- * Description: Sets the tiles that correspond to the rendering location for 
- *              the matrix. This tile set needs to be equal to the size of the 
- *              matrix and each corresponding sprite will be set to the tile.
- *              This does not set the matrix sprite in the Tile.
- *
- * Inputs: std::vector<std::vector<Tile*>> tile_set - the tile matrix
- * Output: bool - true if the tiles are set
- */
-bool SpriteMatrix::setTiles(std::vector<std::vector<Tile*>> tiles)
-{
-  bool success = true;
-  unsetTiles();
-
-  if(tiles.size() > 0 && tiles.size() == sprite_matrix.size() && 
-     tiles.back().size() == sprite_matrix.back().size())
-  {
-    /* Attempt to set the new tiles */
-    for(uint32_t i = 0; success && (i < sprite_matrix.size()); i++)
-      for(uint32_t j = 0; success && (j < sprite_matrix[i].size()); j++)
-        if(sprite_matrix[i][j] != NULL)
-          success &= sprite_matrix[i][j]->setTile(tiles[i][j]);
-
-    /* If unsuccessful, unset all */
-    if(!success)
-      unsetTiles();
-
-    return success;
-  }
-  return false;
-}
- 
-/*
- * Description: Finishes a move on the tile for the full set of sprites in the 
- *              matrix. This just clears the previous pointer of the tile that 
- *              the sprite was on. This does not call Tile and make any 
- *              modifications to the corresponding stored sprite.
- *
- * Inputs: bool reverse_last - if the last move should be reversed
- * Output: none
- */
-void SpriteMatrix::tileMoveFinish(bool reverse_last)
-{
-  for(uint16_t i = 0; i < width(); i++)
-    for(uint16_t j = 0; j < height(); j++)
-      at(i, j)->tileMoveFinish(reverse_last);
-}
-
-/*
- * Description: Starts a move on the tile for the full set of sprites in the 
- *              matrix. This moves the new tile, if valid, to the main pointer 
- *              and shifts the other to previous to begin the move process. 
- *              This does not call Tile and make any modifications to the 
- *              corresponding stored sprite.
- *
- * Inputs: Tile* next_tile - the next tile that the sprite is moving to
- * Output: bool - status if the move was started
- */
-bool SpriteMatrix::tileMoveStart(std::vector<std::vector<Tile*>> tile_set)
-{
-  bool success = true;
-  uint16_t end_i = 0;
-  uint16_t end_j = 0;
-
-  if(tile_set.size() > 0 && tile_set.size() == sprite_matrix.size() &&
-     tile_set.back().size() == sprite_matrix.back().size())
-  {
-    /* Go through and start the move on all tiles */
-    for(uint16_t i = 0; success && (i < width()); i++)
-    {
-      for(uint16_t j = 0; success && (j < height()); j++)
-      {
-        if(at(i, j) != NULL &&
-           !at(i, j)->tileMoveStart(tile_set[i][j]))
-        {
-          end_i = i;
-          end_j = j;
-          success = false;
-        }
-      }
-    }
-
-    /* If tile move failed, reverse course */
-    if(!success)
-    {
-      bool finished = false;
-      for(uint16_t i = 0; !finished && (i < width()); i++)
-      {
-        for(uint16_t j = 0; !finished && (j < height()); j++)
-        {
-          if(i == end_i && j == end_j)
-            finished = true;
-          else if(at(i, j) != NULL)
-            at(i, j)->tileMoveFinish(true);
-        }
-      }
-    }
-
-    return success;
-  }
-  return false;
-}
-
 /*
  * Description: Unsets an individual sprite at the x, y coordinate specified.
  *
@@ -751,22 +649,6 @@ void SpriteMatrix::unsetSprites(bool delete_sprites)
   }
 
   sprite_matrix.clear();
-}
-
-/*
- * Description: Unsets the tiles from each sprite in the matrix. This does not
- *              remove the corresponding sprite(s) from the Thing and that
- *              should be done prior to unsetting them here.
- *
- * Inputs: none
- * Output: none
- */
-void SpriteMatrix::unsetTiles()
-{
-  for(uint32_t i = 0; i < sprite_matrix.size(); i++)
-    for(uint32_t j = 0; j < sprite_matrix[i].size(); j++)
-      if(sprite_matrix[i][j] != NULL)
-        sprite_matrix[i][j]->resetTile();
 }
 
 /*

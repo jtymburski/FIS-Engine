@@ -34,8 +34,8 @@ private:
   std::vector<Direction> movement_stack;
 
   /* The initial tile location to start movement on */
-  uint16_t starting_section;
-  std::vector<std::vector<Tile*>> starting_tiles;
+  //uint16_t starting_section; // TODO: Fix?
+  //std::vector<std::vector<Tile*>> starting_tiles;
 
   /* Set of all states for person. 1st index is surface (water, ground, etc)
    * and then 2nd index is direction facing */
@@ -85,14 +85,14 @@ protected:
    
   /* Sets the tile of the selected with the corresponding frames */
   virtual bool setTile(Tile* tile, TileSprite* frames, 
-                       bool no_events = true); 
-  virtual bool setTileStart(Tile* tile, TileSprite* frames, 
-                            bool no_events = false);
-  virtual void setTileFinish(TileSprite* frames, bool reverse_last = false, 
+                       bool no_events = true);
+  virtual void setTileFinish(Tile* old_tile, Tile* new_tile, 
+                             uint8_t render_depth, bool reverse_last = false, 
                              bool no_events = false);
+  virtual bool setTileStart(Tile* old_tile, Tile* new_tile, 
+                            uint8_t render_depth, bool no_events = false);
 
-  /* Starts and stops tile move. Relies on underlying logic for occurance */
-  void tileMoveFinish();
+  /* Starts tile move. Relies on underlying logic for occurance */
   bool tileMoveStart(std::vector<std::vector<Tile*>> tile_set, 
                      bool no_events = false);
 
@@ -153,10 +153,6 @@ public:
   /* Resets the tile position */
   bool resetPosition();
   
-  /* Set the tile to hook the map person to */
-  bool setStartingTiles(std::vector<std::vector<Tile*>> tile_set, 
-                        bool no_events = false);
-
   /* Sets a new state to add into the states list */
   bool setState(TileSprite* frame, SurfaceClassifier surface, 
                 Direction direction, uint32_t x, uint32_t y, 
@@ -177,9 +173,6 @@ public:
   void unsetStates(SurfaceClassifier surface, Direction direction, 
                    bool delete_frames = true);
   void unsetStates(bool delete_frames = true);
-
-  /* Unsets the starting tile */
-  void unsetTiles(bool no_events = false);
 };
 
 #endif // MAPPERSON_H
