@@ -1134,7 +1134,7 @@ bool Tile::setPerson(MapPerson* person, uint8_t render_level, bool no_events)
       persons[render_level] = person;
 
       /* Execute enter event, if applicable */
-      if(!no_events && event_handler != NULL)
+      if(!no_events && render_level == 0 && event_handler != NULL)
       {
         /* Pickup the item, if applicable */
         for(uint16_t i = 0; i < items.size(); i++)
@@ -1468,19 +1468,13 @@ bool Tile::unsetPerson(uint8_t render_level, bool no_events)
  */
 void Tile::unsetPersons(bool no_events)
 {
-  if(persons.size() > 0)
+  /* Event is only applicable if it's a render level 0 on person */
+  if(persons.size() > 0 && persons.front() != NULL && !no_events)
   {
-    if(persons.front() != NULL)
-    {
-      /* Event is only applicable if it's a render level 0 on person */
-      if(!no_events)
-      {
-        /* Execute exit event, if applicable */
-        if(event_handler != NULL && 
-            exit_event.classification != EventClassifier::NOEVENT)
-          event_handler->executeEvent(exit_event, persons.front());
-      }
-    }
+    /* Execute exit event, if applicable */
+    if(event_handler != NULL && 
+       exit_event.classification != EventClassifier::NOEVENT)
+      event_handler->executeEvent(exit_event, persons.front());
   }
 
   persons.clear();

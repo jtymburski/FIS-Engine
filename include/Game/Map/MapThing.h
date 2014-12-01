@@ -108,7 +108,9 @@ protected:
   /* Is move allowed, based on main tile and the next tile */
   bool isMoveAllowed(std::vector<std::vector<Tile*>> tile_set, 
                      Direction move_request);
-  
+  virtual bool isTileMoveAllowed(Tile* previous, Tile* next, 
+                                 uint8_t render_depth, Direction move_request);
+
   /* Move the thing, based on the internal direction */
   float moveAmount(uint16_t cycle_time);
   void moveThing(int cycle_time);

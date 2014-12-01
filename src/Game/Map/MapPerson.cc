@@ -192,6 +192,39 @@ Direction MapPerson::intToDir(int dir_index)
   return Direction::DIRECTIONLESS;
 }
 
+// TODO: Comment and Fix
+bool MapPerson::isTileMoveAllowed(Tile* previous, Tile* next, uint8_t 
+                                  render_depth, Direction move_request)
+{
+  bool move_allowed = true;
+
+  /* If the next tile is NULL, move isn't allowed */
+  if(next == NULL)
+    move_allowed = false;
+
+  /* Check if the thing can move there */
+  if(move_allowed)
+  {
+    if(render_depth == 0)
+    {
+      if(!previous->getPassabilityExiting(move_request) ||
+         !next->getPassabilityEntering(move_request) || 
+         (next->isThingSet(render_depth) && 
+          !next->getThing(render_depth)->isPassable()))
+      {
+        move_allowed = false;
+      }
+    }
+    else if(next->getStatus() == Tile::OFF)// ||
+            //next->isThingSet(render_depth))
+    {
+      move_allowed = false;
+    }
+  }
+
+  return move_allowed;
+}
+
 /*
  * Description: Removes the direction from the direction stack, if it's
  *              currently on the stack. Used for movement of the person.

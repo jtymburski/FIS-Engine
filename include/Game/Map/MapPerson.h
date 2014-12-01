@@ -76,7 +76,11 @@ protected:
   /* Direction enumerator to/from integer converters */
   int dirToInt(Direction dir);
   Direction intToDir(int dir_index);
-
+  
+  /* Is move allowed, based on main tile and the next tile */
+  virtual bool isTileMoveAllowed(Tile* previous, Tile* next, uint8_t 
+                                 render_depth, Direction move_request);
+  
   /* Remove movement direction from the stack, if it exists */
   void removeDirection(Direction direction);
 

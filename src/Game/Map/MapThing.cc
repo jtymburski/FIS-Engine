@@ -277,32 +277,9 @@ bool MapThing::isMoveAllowed(std::vector<std::vector<Tile*>> tile_set,
       for(uint16_t j = 0; move_allowed && (j < sprite_set->height()); j++)
       {
         if(sprite_set->at(i, j) != NULL)
-        {
-          uint8_t render_depth = sprite_set->at(i, j)->getRenderDepth();
-
-          /* Precheck */
-          if(tile_set[i][j] == NULL)
-            move_allowed = false;
-
-          /* Rendering check */
-          if(move_allowed)
-          {
-            if(render_depth == 0)
-            {
-              if(!getTileMain(i, j)->getPassabilityExiting(move_request) || 
-                 !tile_set[i][j]->getPassabilityEntering(move_request) ||
-                 tile_set[i][j]->isThingSet(render_depth))
-              {
-                move_allowed = false;
-              } 
-            }
-            else if(tile_set[i][j]->getStatus() == Tile::OFF || 
-                    tile_set[i][j]->isThingSet(render_depth))
-            {
-              move_allowed = false;
-            }
-          }
-        }
+          move_allowed = isTileMoveAllowed(getTileMain(i, j), tile_set[i][j], 
+                                      sprite_set->at(i, j)->getRenderDepth(), 
+                                      move_request);
       }
     }
     
@@ -310,6 +287,38 @@ bool MapThing::isMoveAllowed(std::vector<std::vector<Tile*>> tile_set,
   }
   
   return false;
+}
+
+// TODO: Comment
+bool MapThing::isTileMoveAllowed(Tile* previous, Tile* next, uint8_t 
+                                 render_depth, Direction move_request)
+{
+  bool move_allowed = true;
+
+  /* If the next tile is NULL, move isn't allowed */
+  if(next == NULL)
+    move_allowed = false;
+
+  /* Check if the thing can move there */
+  if(move_allowed)
+  {
+    if(render_depth == 0)
+    {
+      if(!previous->getPassabilityExiting(move_request) ||
+         !next->getPassabilityEntering(move_request) ||
+         next->isThingSet(render_depth))
+      {
+        move_allowed = false;
+      }
+    }
+    else if(next->getStatus() == Tile::OFF ||
+            next->isThingSet(render_depth))
+    {
+      move_allowed = false;
+    }
+  }
+
+  return move_allowed;
 }
 
 /* 
@@ -487,7 +496,7 @@ void MapThing::tileMoveFinish()
       if(sprite_set->at(i, j) != NULL)
       {
         setTileFinish(tile_prev[i][j], tile_main[i][j], 
-                      sprite_set->at(i, j)->getRenderDepth(), false, true);
+                      sprite_set->at(i, j)->getRenderDepth(), false, false);
       }
     }
   }
@@ -1219,6 +1228,7 @@ bool MapThing::isOnTile()
  * Inputs: none
  * Output: bool - true if the thing can be walked onto
  */
+// TODO: Fix
 bool MapThing::isPassable()
 {
   return false;
