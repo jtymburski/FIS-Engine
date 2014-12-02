@@ -1469,6 +1469,8 @@ void MapThing::resetLocation()
   starting_section = 0;
   starting_x = 0;
   starting_y = 0;
+  x = 0.0;
+  y = 0.0;
 }
 
 /* 
