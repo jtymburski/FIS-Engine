@@ -362,6 +362,9 @@ private:
   /* Processes a damaging action */
   bool processDamageAction(const DamageType &damage_type);
 
+  /* Method for outsourcing an amount of dmg and type of damage to curr targ */
+  bool processDamageAmount(int32_t amount, DamageType damage_type);
+
   /* Processes a relieving action */
   bool processRelieveAction();
 

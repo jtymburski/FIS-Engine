@@ -271,7 +271,9 @@ enum class DamageType
   BASE,
   ALTER,
   GUARD,
-  ITEM
+  ITEM,
+  POISON,
+  BURN
 };
 
 /*

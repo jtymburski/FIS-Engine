@@ -227,7 +227,6 @@ bool Battle::addAilment(Infliction infliction_type, Person* inflictor,
  */
 bool Battle::removeAilment(Ailment* remove_ailment)
 {
-  std::cout << "Removing an ailment!" << std::endl;
   auto found = false;
 
   for (auto& ailment : ailments)
@@ -1538,14 +1537,21 @@ void Battle::orderActions()
  */
 void Battle::personalUpkeep(Person* const target)
 {
+  curr_target = target;
   auto ailments = getPersonAilments(target);
 
   for (auto& ailment : ailments)
   {
     if (ailment != nullptr && ailment->getFlag(AilState::TO_UPDATE))
     {
-      std::cout << "Updating ailment!" << std::endl;
       ailment->update();
+
+      if (ailment->getFlag(AilState::DEALS_DAMAGE))
+      {
+        auto damage_amount = ailment->getDamageAmount();
+        auto damage_type   = ailment->getDamageType();
+        processDamageAmount(damage_amount, damage_type);
+      }
 
       /* If the target is dead, the ailment update must have killed them */
       if (!target->getBFlag(BState::ALIVE))
@@ -1556,8 +1562,10 @@ void Battle::personalUpkeep(Person* const target)
       }
     }
 
-    // if (ailment != nullptr && ailment->getFlag(AilState::TO_CURE))
-    //   removeAilment(ailment);
+    if (ailment != nullptr && ailment->getFlag(AilState::TO_CURE))
+      removeAilment(ailment);
+
+    printPartyState();
   }
   
   //TODO
@@ -1867,25 +1875,40 @@ bool Battle::processDamageAction(const DamageType &damage_type)
   {
     std::cout << "{CRITICAL} - The strike is critical!" << std::endl;
   }
-  if (getBattleMode() == BattleMode::TEXT && curr_target != nullptr)
-  {
-    std::cout << "{DAMAGE} " << curr_target->getName() << " receives "
-              << base_damage << " points of damage from " 
-              << curr_user->getName() << "." << std::endl;
-  }
-  
+
+  return processDamageAmount(damage, DamageType::BASE);
+}
+
+/*
+ * Description: 
+ *
+ * Inputs:
+ * Output:
+ */
+bool Battle::processDamageAmount(int32_t amount, DamageType damage_type)
+{
+  auto party_death = false;
+
   /* If doDmg returns true, the actor has died. Update guarding and other
    * corner cases and check for party death. Else, an actor has not died
-   * but guard and defending flags, etc. may need to be recalculated. */
-  bool done = false;
+   * but guard and defending flags, etc. may need to be recalcuted */
+  auto death = curr_target->doDmg(amount, damage_type);
 
-  if (curr_target->doDmg(damage, DamageType::BASE))
-    done = updatePersonDeath(damage_type);
+  if (getBattleMode() == BattleMode::TEXT)
+  {
+    std::cout << "{DAMAGE} " << curr_target->getName() << " struck with " 
+              << amount << " damage.\n";
+
+    if (death)
+      std::cout << "{FALLEN} " << curr_target->getName() << " has fallen.\n\n";
+  }
+
+  if (death)
+    party_death = updatePersonDeath(damage_type);
   else
     updateTargetDefense();
 
-  /* Returns true if a party death occured during processing */
-  return done;
+  return party_death;
 }
 
 /*

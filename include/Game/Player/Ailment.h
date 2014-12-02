@@ -50,7 +50,8 @@ enum class AilState
   IMMUNITY      = 1 << 6,  /* Is the inflicted person immune to this ailment? */
   CURE_ON_DEATH = 1 << 7,  /* Does the ailment persist death? */
   VICTIM_SET    = 1 << 8,  /* Has the victim of the ailment been set? */
-  INFLICTOR_SET = 1 << 9   /* Has the inflictor of the ailment been set? */
+  INFLICTOR_SET = 1 << 9,
+  DEALS_DAMAGE  = 1 << 10  /* Has the inflictor of the ailment been set? */
 };
 
 class Ailment
@@ -72,6 +73,12 @@ private:
   /* Chance the status effect will wear off per turn (>1 = 100%, 0 = 0%) */
   double chance;
 
+  /* Amount of damage computed for the ailment update on this turn */
+  int32_t damage;
+
+  /* The type of damage computed for the ailment update for the turn */
+  DamageType damage_type;
+
   /* Set of flags for the current ailment */
   AilState flag_set;
 
@@ -89,8 +96,8 @@ private:
   /*------------------- Constants -----------------------*/
   static const uint16_t kMAX_TURNS; /* Maximum # turns ailments will last */
   static const uint16_t kMIN_TURNS; /* The minimum # turns ailments last */
-  static const uint32_t kPOISON_DMG_MAX; /* The max. daamge from Poison ailment */
-  static const uint32_t kPOISON_DMG_MIN; /* The min. damage from Poison ailment */
+  static const uint32_t kPOISON_DMG_MAX; /* The max. dmg from Poison ailment */
+  static const uint32_t kPOISON_DMG_MIN; /* The min. dmg from Poison ailment */
   static const double kPOISON_DMG_INCR; /* Additional % per turn for Poison */
   static const double kPOISON_DMG_INIT; /* Initial % per turn for Poison */
   static const uint32_t kBURN_DMG_MAX; /* The max. damage from Burn */
@@ -147,7 +154,6 @@ private:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
-
   /*  */
   void death();
 
@@ -162,6 +168,12 @@ public:
 
   /* Methods for printing all the information pertaining to the ailment */
   void print(const bool &simple = true, const bool &flags = false);
+
+  /* Returns the amount of damage computed for the ailment update */
+  int32_t getDamageAmount() const;
+
+  /* Returns the type of damage computed for the ailment update */
+  DamageType getDamageType() const;
 
   /* Evaluates an ailment flag or flags */
   bool getFlag(AilState flags);
