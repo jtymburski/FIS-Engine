@@ -1389,19 +1389,20 @@ bool MapThing::render(SDL_Renderer* renderer, int offset_x, int offset_y)
  *
  * Inputs: SDL_Renderer* renderer - the rendering engine
  *         Tile* tile - the tile to render the corresponding thing frame on
+ *         uint8_t render_depth - the render depth of the indicated frame
  *         int offset_x - the X viewport offset
  *         int offset_y - the Y viewport offset
  * Output: bool - true if the object rendered
  */
 bool MapThing::renderMain(SDL_Renderer* renderer, Tile* tile, 
-                          int offset_x, int offset_y)
+                          uint8_t render_depth, int offset_x, int offset_y)
 {
   if(isVisible())
   {
     TileSprite* render_frame = getFrameMain(tile);
 
     /* If frame is valid and visible, render */
-    if(render_frame != NULL) 
+    if(render_frame != NULL && render_frame->getRenderDepth() == render_depth) 
     {
       int render_x = (tile->getX() - tile_main.front().front()->getX() 
                       + getFloatTileX()) * tile->getWidth() - offset_x;
@@ -1423,19 +1424,20 @@ bool MapThing::renderMain(SDL_Renderer* renderer, Tile* tile,
  *
  * Inputs: SDL_Renderer* renderer - the rendering engine
  *         Tile* tile - the tile to render the corresponding thing frame on
+ *         uint8_t render_depth - the render depth of the indicated frame
  *         int offset_x - the X viewport offset
  *         int offset_y - the Y viewport offset
  * Output: bool - true if the object rendered
  */
 bool MapThing::renderPrevious(SDL_Renderer* renderer, Tile* tile, 
-                              int offset_x, int offset_y)
+                              uint8_t render_depth, int offset_x, int offset_y)
 {
   if(isVisible())
   {
     TileSprite* render_frame = getFramePrevious(tile);
 
     /* If frame is valid and visible, render */
-    if(render_frame != NULL) 
+    if(render_frame != NULL && render_frame->getRenderDepth() == render_depth) 
     {
       int render_x = (tile->getX() - tile_prev.front().front()->getX() 
                       + getFloatTileX()) * tile->getWidth() - offset_x;

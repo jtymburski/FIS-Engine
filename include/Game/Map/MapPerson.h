@@ -34,8 +34,7 @@ private:
   std::vector<Direction> movement_stack;
 
   /* The initial tile location to start movement on */
-  //uint16_t starting_section; // TODO: Fix?
-  //std::vector<std::vector<Tile*>> starting_tiles;
+  std::vector<std::vector<Tile*>> starting_tiles;
 
   /* Set of all states for person. 1st index is surface (water, ground, etc)
    * and then 2nd index is direction facing */
@@ -156,7 +155,12 @@ public:
   
   /* Resets the tile position */
   bool resetPosition();
-  
+   
+  /* Sets the set of tiles that the thing will be placed on. Needed after
+   * defining a starting point.*/
+  virtual bool setStartingTiles(std::vector<std::vector<Tile*>> tile_set, 
+                                bool no_events = true); 
+
   /* Sets a new state to add into the states list */
   bool setState(TileSprite* frame, SurfaceClassifier surface, 
                 Direction direction, uint32_t x, uint32_t y, 

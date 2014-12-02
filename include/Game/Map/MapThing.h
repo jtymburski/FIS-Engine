@@ -255,9 +255,9 @@ public:
   
   /* Renders the Map Thing */
   bool render(SDL_Renderer* renderer, int offset_x, int offset_y);
-  bool renderMain(SDL_Renderer* renderer, Tile* tile, 
+  bool renderMain(SDL_Renderer* renderer, Tile* tile, uint8_t render_depth,
                   int offset_x, int offset_y);
-  bool renderPrevious(SDL_Renderer* renderer, Tile* tile, 
+  bool renderPrevious(SDL_Renderer* renderer, Tile* tile, uint8_t render_depth,
                       int offset_x, int offset_y);
  
   /* Resets the location back to default (0,0,0), relative to the map */

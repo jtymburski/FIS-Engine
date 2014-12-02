@@ -144,6 +144,10 @@ private:
   /* Returns a matrix of tiles that match the frames in the thing */
   std::vector<std::vector<Tile*>> getTileMatrix(
                MapThing* thing, Direction direction = Direction::DIRECTIONLESS);
+  std::vector<std::vector<Tile*>> getTileMatrix(uint16_t section,
+                                                uint16_t x, uint16_t y, 
+                                                uint16_t width, 
+                                                uint16_t height);
 
   /* Initiates a section block of map. Triggered from the file data */
   bool initiateMapSection(uint16_t section_index, int width, int height);

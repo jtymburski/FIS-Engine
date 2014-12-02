@@ -456,7 +456,7 @@ bool MapPerson::addThingInformation(XmlData data, int file_index,
     SpriteMatrix* matrix = getState(surface, direction);
     if(matrix != NULL)
       success &= matrix->addFileInformation(data, file_index + 3, 
-                                              renderer, base_path);
+                                            renderer, base_path);
     else
       success = false;
   }
@@ -721,18 +721,32 @@ void MapPerson::keyUpEvent(SDL_KeyboardEvent event)
  * Inputs: none
  * Output: bool - status if successful
  */
-// TODO: Fix
 bool MapPerson::resetPosition()
 {
-//  std::vector<std::vector<Tile*>> set = starting_tiles;
-//  if(starting_tiles.size() > 0)
-//  {
-//    setStartingLocation(starting_section, 
-//                        set.front().front()->getX(), 
-//                        set.front().front()->getY());
-//    return setStartingTiles(set, true);
-//  }
-//
+  if(isTilesSet())
+    return setStartingTiles(starting_tiles, true);
+
+  return false;
+}
+/* 
+ * Description: Sets the starting tiles, for rendering the person. This tile
+ *              set needs to be equal to the size of the bounding box and 
+ *              each corresponding frame will be set to the tile. Will fail
+ *              if a thing is already set up in the corresponding spot.
+ *
+ * Inputs: std::vector<std::vector<Tile*>> tile_set - the tile matrix
+ *         bool no_events - if no events should occur from setting the thing
+ * Output: bool - true if the tiles are set
+ */
+bool MapPerson::setStartingTiles(std::vector<std::vector<Tile*>> tile_set, 
+                                bool no_events)
+{
+  if(MapThing::setStartingTiles(tile_set, no_events))
+  {
+    starting_tiles = tile_set;
+    return true;
+  }
+
   return false;
 }
 

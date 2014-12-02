@@ -425,24 +425,35 @@ std::vector<std::vector<Tile*>> Map::getTileMatrix(MapThing* thing,
     else if(direction == Direction::WEST)
       render_box.x--;
 
-    /* Get the range variables */
-    uint16_t section = thing->getMapSection();
-    uint16_t range_x = render_box.x + render_box.w;
-    uint16_t range_y = render_box.y + render_box.h;
+    return getTileMatrix(thing->getMapSection(), render_box.x, render_box.y, 
+                         render_box.w, render_box.h);
+  }
 
-    /* Confirm range is within valid parameters of map */
-    if(geography.size() > section && geography[section].size() > range_x && 
-       geography[section][range_x].size() > range_y)
+  return tile_set;
+}
+
+// TODO: Comment
+std::vector<std::vector<Tile*>> Map::getTileMatrix(uint16_t section, 
+                                                   uint16_t x, uint16_t y, 
+                                                   uint16_t width, 
+                                                   uint16_t height)
+{
+  std::vector<std::vector<Tile*>> tile_set;
+  uint16_t range_x = x + width;
+  uint16_t range_y = y + height;
+
+  /* Confirm range is within valid parameters of map */
+  if(geography.size() > section && geography[section].size() > range_x && 
+     geography[section][range_x].size() > range_y)
+  {
+    /* Load the tiles that correspond to the thing */
+    for(uint16_t i = x; i < range_x; i++)
     {
-      /* Load the tiles that correspond to the thing */
-      for(uint16_t j = render_box.x; j < range_x; j++)
-      {
-        std::vector<Tile*> tile_col;
+      std::vector<Tile*> tile_col;
           
-        for(uint16_t k = render_box.y; k < range_y; k++)
-          tile_col.push_back(geography[section][j][k]);
-        tile_set.push_back(tile_col);
-      }
+      for(uint16_t j = y; j < range_y; j++)
+        tile_col.push_back(geography[section][i][j]);
+      tile_set.push_back(tile_col);
     }
   }
 
@@ -837,9 +848,11 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
     item_menu.keyDownEvent(event);
   else if(event.keysym.sym == SDLK_p)
     map_dialog.setPaused(!map_dialog.isPaused());
-  else if(event.keysym.sym == SDLK_6)
+  else if(event.keysym.sym == SDLK_r)
+    player->resetPosition();
+  else if(event.keysym.sym == SDLK_6) // TODO: SEG
     map_dialog.initPickup(items[1]->getDialogImage(), 15, 2500);
-  else if(event.keysym.sym == SDLK_7)
+  else if(event.keysym.sym == SDLK_7) // TODO: SEG
     map_dialog.initPickup(items.front()->getDialogImage(), 5);
   else if(event.keysym.sym == SDLK_8)
     map_dialog.initNotification("Hello sunshine, what a glorious day and I'll keep writing forever and forever and forever and forever and forever and forever and forFU.", true, 0);
@@ -1263,24 +1276,24 @@ bool Map::render(SDL_Renderer* renderer)
             {
               if(render_item != NULL)
                 render_item->renderMain(renderer, geography[map_index][i][j], 
-                                        x_offset, y_offset);
+                                        index, x_offset, y_offset);
               if(render_thing != NULL)
                 render_thing->renderMain(renderer, geography[map_index][i][j], 
-                                         x_offset, y_offset);
+                                         index, x_offset, y_offset);
               if(render_person != NULL)
               {
                 render_person->renderMain(renderer, geography[map_index][i][j], 
-                                          x_offset, y_offset);
+                                          index, x_offset, y_offset);
               }
             }
             else
             {
               if(render_person != NULL)
                 render_person->renderMain(renderer, geography[map_index][i][j], 
-                                          x_offset, y_offset);
+                                          index, x_offset, y_offset);
               if(render_thing != NULL)
                 render_thing->renderMain(renderer, geography[map_index][i][j], 
-                                         x_offset, y_offset);
+                                         index, x_offset, y_offset);
             }
           }
         }

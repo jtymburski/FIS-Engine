@@ -970,7 +970,7 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
     game_map->reloadMap(active_renderer);
   }
   /* Show item store dialog in map */
-  else if(event.keysym.sym == SDLK_5)
+  else if(event.keysym.sym == SDLK_5) // TODO: SEG
   {
     if (game_map != nullptr)
     {
