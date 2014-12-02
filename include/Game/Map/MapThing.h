@@ -181,6 +181,8 @@ public:
 
   /* Returns the map frames that's defined */
   TileSprite* getFrame(uint32_t x, uint32_t y);
+  TileSprite* getFrameMain(Tile* tile);
+  TileSprite* getFramePrevious(Tile* tile);
   std::vector<std::vector<TileSprite*>> getFrames();
   
   /* Returns the height of the thing */
@@ -200,8 +202,16 @@ public:
   bool getMovementPaused();
   virtual Direction getMoveRequest();
 
+  /* Returns the move X/Y, as a float 0 to 1 with respect to width/height */
+  float getMoveX();
+  float getMoveY();
+
   /* Gets the things name */
   std::string getName();
+   
+  /* Returns the passability of the tile based on direction */
+  bool getPassabilityEntering(Tile* frame_tile, Direction dir);
+  bool getPassabilityExiting(Tile* frame_tile, Direction dir); 
   
   /* Returns the speed that the thing is moving at */
   uint16_t getSpeed();
@@ -236,9 +246,6 @@ public:
 
   /* Is the thing centered on a tile */
   bool isOnTile();
-
-  /* Is the thing passable - can you walk in it? */
-  virtual bool isPassable();
 
   /* Is the rendering tiles set, for the frames */
   bool isTilesSet();

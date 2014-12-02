@@ -106,7 +106,7 @@ public:
   bool interact(MapPerson* initiator);
 
   /* Reimplemented thing call - to if the interactive state can be walked on */
-  bool isPassable();
+  //bool isPassable(); TODO: Change to isTileMoveAllowed()
 
   /* Reset back to head state */
   void reset();

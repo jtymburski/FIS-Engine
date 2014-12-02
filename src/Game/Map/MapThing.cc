@@ -136,19 +136,9 @@ bool MapThing::animate(int cycle_time, bool reset, bool skip_head)
 float MapThing::getFloatTileX()
 {
   if(tile_prev.size() > 0)
-  {
-    Tile* top_left = tile_prev.front().front();
-
-    if(movement == Direction::EAST)
-      return (top_left->getX() + x);
-    else if(movement == Direction::WEST)
-      return (top_left->getX() - x);
-    return top_left->getX();
-  }
+    return tile_prev.front().front()->getX() + getMoveX();
   else if(tile_main.size() > 0)
-  {
     return tile_main.front().front()->getX();
-  }
   return 0.0;
 }
 
@@ -165,19 +155,9 @@ float MapThing::getFloatTileX()
 float MapThing::getFloatTileY()
 {
   if(tile_prev.size() > 0)
-  {
-    Tile* top_left = tile_prev.front().front();
-
-    if(movement == Direction::SOUTH)
-      return (top_left->getY() + y);
-    else if(movement == Direction::NORTH)
-      return (top_left->getY() - y);
-    return top_left->getY();
-  }
+    return tile_prev.front().front()->getY() + getMoveY();
   else if(tile_main.size() > 0)
-  {
     return tile_main.front().front()->getY();
-  }
   return 0.0;
 }
  
@@ -262,7 +242,6 @@ bool MapThing::isAlmostOnTile(int cycle_time)
  *             frame matrix for moving into these tiles
  * Output: bool - returns if the move is allowed.
  */
-// TODO: Fix - virtual for person -> with allowance for thing passability
 bool MapThing::isMoveAllowed(std::vector<std::vector<Tile*>> tile_set, 
                              Direction move_request)
 {
@@ -289,9 +268,20 @@ bool MapThing::isMoveAllowed(std::vector<std::vector<Tile*>> tile_set,
   return false;
 }
 
-// TODO: Comment
-bool MapThing::isTileMoveAllowed(Tile* previous, Tile* next, uint8_t 
-                                 render_depth, Direction move_request)
+/* 
+ * Description: Checks if a move is allowed from the current person main 
+ *              tile to the next tile that it is trying to move to. This
+ *              handles the individual calculations for a single tile; used
+ *              by the isMoveAllowed() function.
+ * 
+ * Inputs: Tile* previous - the tile moving from
+ *         Tile* next - the next tile moving to
+ *         uint8_t render_depth - the rendering depth, in the stack
+ *         Direction move_request - the direction moving
+ * Output: bool - returns if the move is allowed.
+ */
+bool MapThing::isTileMoveAllowed(Tile* previous, Tile* next, 
+                                 uint8_t render_depth, Direction move_request)
 {
   bool move_allowed = true;
 
@@ -887,6 +877,54 @@ TileSprite* MapThing::getFrame(uint32_t x, uint32_t y)
   return found_sprite;
 }
 
+/*
+ * Description: Returns the frame that corresponds to the main tile passed in.
+ *              The main tile is the tile the object is moving to, as opposed
+ *              to moving from. If it's not moving, it will be rendering on
+ *              the main tile.
+ *
+ * Inputs: Tile* tile - the tile to get the corresponding frame from
+ * Output: TileSprite* - tile sprite pointer, on said tile
+ */
+TileSprite* MapThing::getFrameMain(Tile* tile)
+{
+  TileSprite* selected = NULL;
+
+  if(isTilesSet() && tile != NULL)
+  {
+    uint16_t tile_x = tile->getX() - tile_main.front().front()->getX();
+    uint16_t tile_y = tile->getY() - tile_main.front().front()->getY();
+    if(getTileMain(tile_x, tile_y) == tile)
+      selected = sprite_set->getSprite(tile_x, tile_y);
+  }
+
+  return selected;
+}
+
+/*
+ * Description: Returns the frame that corresponds to the previous tile passed 
+ *              in. The previous tile is the tile the object is moving from, as 
+ *              opposed to moving to. The previous tile is only set if the 
+ *              object is moving.
+ *
+ * Inputs: Tile* tile - the tile to get the corresponding frame from
+ * Output: TileSprite* - tile sprite pointer, on said tile
+ */
+TileSprite* MapThing::getFramePrevious(Tile* tile)
+{
+  TileSprite* selected = NULL;
+
+  if(tile_prev.size() > 0 && tile != NULL)
+  {
+    uint16_t tile_x = tile->getX() - tile_prev.front().front()->getX();
+    uint16_t tile_y = tile->getY() - tile_prev.front().front()->getY();
+    if(getTilePrevious(tile_x, tile_y) == tile)
+      selected = sprite_set->getSprite(tile_x, tile_y);
+  }
+
+  return selected;
+}
+
 /* 
  * Description: Gets all the frame data for the thing, in vector form.
  *              Coordinates are with respect to the top left of the sprite and
@@ -994,6 +1032,42 @@ Direction MapThing::getMoveRequest()
   return Direction::DIRECTIONLESS;
 }
 
+/*
+ * Description: Returns the move X, as a float 0 to 1 with respect to the width.
+ *              This value will also reflect the moving direction (if EAST, the
+ *              number will be positive; otherwise, if WEST, it will be 
+ *              negative.
+ *
+ * Inputs: none
+ * Output: float - the float value of movement between tiles [-1 to +1]
+ */
+float MapThing::getMoveX()
+{
+  if(movement == Direction::EAST)
+    return x;
+  else if(movement == Direction::WEST)
+    return -x;
+  return 0.0;
+}
+
+/*
+ * Description: Returns the move Y, as a float 0 to 1 with respect to the 
+ *              height. This value will also reflect the moving direction (if 
+ *              SOUTH, thenumber will be positive; otherwise, if NORTH, it will 
+ *              be negative.
+ *
+ * Inputs: none
+ * Output: float - the float value of movement between tiles [-1 to +1]
+ */
+float MapThing::getMoveY()
+{
+  if(movement == Direction::SOUTH)
+    return y;
+  else if(movement == Direction::NORTH)
+    return -y;
+  return 0.0;
+}
+
 /* 
  * Description: Gets the things name.
  *
@@ -1003,6 +1077,49 @@ Direction MapThing::getMoveRequest()
 std::string MapThing::getName()
 {
   return name;
+}
+  
+/* 
+ * Description: Gets if the thing is passable entering from the given
+ *              direction and with the frame at the given tile.
+ * 
+ * Inputs: Tile* frame_tile - the tile which contains the relevant moving frame
+ *         Direction dir - the direction enumerated for passability
+ * Output: bool - status if the tile passability is possible.
+ */
+bool MapThing::getPassabilityEntering(Tile* frame_tile, Direction dir)
+{
+  if(dir == Direction::NORTH)
+    return getPassabilityExiting(frame_tile, Direction::SOUTH);
+  else if(dir == Direction::EAST)
+    return getPassabilityExiting(frame_tile, Direction::WEST);
+  else if(dir == Direction::SOUTH)
+    return getPassabilityExiting(frame_tile, Direction::NORTH);
+  else if(dir == Direction::WEST)
+    return getPassabilityExiting(frame_tile, Direction::EAST);
+  return getPassabilityExiting(frame_tile, dir);
+}
+
+/* 
+ * Description: Gets if the thing is passable exiting from the given
+ *              direction and with the frame at the given tile.
+ * 
+ * Inputs: Tile* frame_tile - the tile which contains the relevant moving frame
+ *         Direction dir - the direction enumerated for passability
+ * Output: bool - status if the tile passability is possible.
+ */
+bool MapThing::getPassabilityExiting(Tile* frame_tile, Direction dir)
+{
+  if(isVisible())
+  {
+    TileSprite* frame = getFrameMain(frame_tile);
+    if(frame != NULL)
+      return frame->getPassability(dir);
+
+    return false;
+  }
+
+  return true;
 }
 
 /* 
@@ -1222,19 +1339,6 @@ bool MapThing::isOnTile()
 }
 
 /*
- * Description: Returns if the thing is passable and can be walked through.
- *              Pertinent to movement on the map.
- *
- * Inputs: none
- * Output: bool - true if the thing can be walked onto
- */
-// TODO: Fix
-bool MapThing::isPassable()
-{
-  return false;
-}
-
-/*
  * Description: Returns if the tiles have been set, that associate to where the
  *              thing is being rendered to.
  *
@@ -1292,21 +1396,17 @@ bool MapThing::render(SDL_Renderer* renderer, int offset_x, int offset_y)
 bool MapThing::renderMain(SDL_Renderer* renderer, Tile* tile, 
                           int offset_x, int offset_y)
 {
-  if(isTilesSet() && tile != NULL && isVisible())
+  if(isVisible())
   {
-    uint16_t render_tile_x = tile->getX() - tile_main.front().front()->getX();
-    uint16_t render_tile_y = tile->getY() - tile_main.front().front()->getY();
-    TileSprite* render_frame = sprite_set->getSprite(render_tile_x, 
-                                                     render_tile_y);
+    TileSprite* render_frame = getFrameMain(tile);
 
     /* If frame is valid and visible, render */
-    if(render_frame != NULL && 
-       getTileMain(render_tile_x, render_tile_y) == tile)
+    if(render_frame != NULL) 
     {
-      int render_x = (getFloatTileX() + render_tile_x) * tile->getWidth() 
-                   - offset_x;
-      int render_y = (getFloatTileY() + render_tile_y) * tile->getHeight() 
-                   - offset_y;
+      int render_x = (tile->getX() - tile_main.front().front()->getX() 
+                      + getFloatTileX()) * tile->getWidth() - offset_x;
+      int render_y = (tile->getY() - tile_main.front().front()->getY() 
+                      + getFloatTileY()) * tile->getHeight() - offset_y;
       
       return render_frame->render(renderer, render_x, render_y, 
                                   tile->getWidth(), tile->getHeight());
@@ -1330,27 +1430,23 @@ bool MapThing::renderMain(SDL_Renderer* renderer, Tile* tile,
 bool MapThing::renderPrevious(SDL_Renderer* renderer, Tile* tile, 
                               int offset_x, int offset_y)
 {
-  if(tile_prev.size() > 0 && tile != NULL && isVisible())
+  if(isVisible())
   {
-    uint16_t render_tile_x = tile->getX() - tile_prev.front().front()->getX();
-    uint16_t render_tile_y = tile->getY() - tile_prev.front().front()->getY();
-    TileSprite* render_frame = sprite_set->getSprite(render_tile_x, 
-                                                     render_tile_y);
+    TileSprite* render_frame = getFramePrevious(tile);
 
     /* If frame is valid and visible, render */
-    if(render_frame != NULL && 
-       getTilePrevious(render_tile_x, render_tile_y) == tile)
+    if(render_frame != NULL) 
     {
-      int render_x = (getFloatTileX() + render_tile_x) * tile->getWidth() 
-                   - offset_x;
-      int render_y = (getFloatTileY() + render_tile_y) * tile->getHeight() 
-                   - offset_y;
-
+      int render_x = (tile->getX() - tile_prev.front().front()->getX() 
+                      + getFloatTileX()) * tile->getWidth() - offset_x;
+      int render_y = (tile->getY() - tile_prev.front().front()->getY() 
+                      + getFloatTileY()) * tile->getHeight() - offset_y;
+      
       return render_frame->render(renderer, render_x, render_y, 
                                   tile->getWidth(), tile->getHeight());
     }
   }
-  
+
   return false;
 }
 

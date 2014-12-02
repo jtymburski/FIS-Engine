@@ -192,9 +192,20 @@ Direction MapPerson::intToDir(int dir_index)
   return Direction::DIRECTIONLESS;
 }
 
-// TODO: Comment and Fix
-bool MapPerson::isTileMoveAllowed(Tile* previous, Tile* next, uint8_t 
-                                  render_depth, Direction move_request)
+/* 
+ * Description: Checks if a move is allowed from the current person main 
+ *              tile to the next tile that it is trying to move to. This
+ *              handles the individual calculations for a single tile; used
+ *              by the isMoveAllowed() function.
+ * 
+ * Inputs: Tile* previous - the tile moving from
+ *         Tile* next - the next tile moving to
+ *         uint8_t render_depth - the rendering depth, in the stack
+ *         Direction move_request - the direction moving
+ * Output: bool - returns if the move is allowed.
+ */
+bool MapPerson::isTileMoveAllowed(Tile* previous, Tile* next, 
+                                  uint8_t render_depth, Direction move_request)
 {
   bool move_allowed = true;
 
@@ -207,16 +218,22 @@ bool MapPerson::isTileMoveAllowed(Tile* previous, Tile* next, uint8_t
   {
     if(render_depth == 0)
     {
+      MapThing* prev_thing = previous->getThing(render_depth);
+      MapThing* next_thing = next->getThing(render_depth);
+
       if(!previous->getPassabilityExiting(move_request) ||
          !next->getPassabilityEntering(move_request) || 
-         (next->isThingSet(render_depth) && 
-          !next->getThing(render_depth)->isPassable()))
+         (prev_thing != NULL && 
+          !prev_thing->getPassabilityExiting(previous, move_request)) ||
+         (next_thing != NULL &&
+          !next_thing->getPassabilityEntering(next, move_request)) ||
+         next->isPersonSet(render_depth))
       {
         move_allowed = false;
       }
     }
-    else if(next->getStatus() == Tile::OFF)// ||
-            //next->isThingSet(render_depth))
+    else if(next->getStatus() == Tile::OFF ||
+            next->isPersonSet(render_depth))
     {
       move_allowed = false;
     }

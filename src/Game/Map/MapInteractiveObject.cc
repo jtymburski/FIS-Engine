@@ -499,12 +499,13 @@ bool MapInteractiveObject::interact(MapPerson* initiator)
   return status;
 }
 /* Reimplemented thing call - to if the interactive state can be walked on */
-bool MapInteractiveObject::isPassable()
-{
-  if(node_current != NULL)
-    return node_current->passable;
-  return true;
-}
+// TODO: Change to isTileMoveAllowed()
+//bool MapInteractiveObject::isPassable()
+//{
+//  if(node_current != NULL)
+//    return node_current->passable;
+//  return true;
+//}
 
 /* Reset back to head state */
 void MapInteractiveObject::reset()
