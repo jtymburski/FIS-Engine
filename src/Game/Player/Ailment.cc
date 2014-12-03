@@ -80,8 +80,8 @@ const double   Ailment::kPOISON_DMG_INCR     = 1.05;
 const double   Ailment::kPOISON_DMG_INIT     = 0.08;
 const uint32_t Ailment::kBURN_DMG_MAX        = 5000;
 const uint32_t Ailment::kBURN_DMG_MIN        =  100;
-const double   Ailment::kBURN_DMG_INCR       = 1.02;
-const double   Ailment::kBURN_DMG_PC         = 1.05;
+const double   Ailment::kBURN_DMG_INCR       = 1.50;
+const double   Ailment::kBURN_DMG_PC         = 0.05;
 const double   Ailment::kBERSERK_DMG_INCR    = 1.75;
 const double   Ailment::kBERSERK_HITBACK_PC  = 0.35;
 const uint32_t Ailment::kBUBBIFY_MAX_QD      =   10;
@@ -188,7 +188,7 @@ bool Ailment::apply()
   auto& stats           = victim->getCurr();
   auto& max_stats       = victim->getTemp();
   auto  skills          = victim->getCurrSkills();
-  std::cout << "Hello 1" << std::endl;
+
   /* Poison: Ailed actor takes increasing hit to HP every turn
    * Constants: kPOISON_DMG_MAX -- maximum amount poison damage can do
    *            kPOISON_DMG_MIN -- minimum amount poison damage can do
@@ -197,7 +197,6 @@ bool Ailment::apply()
    */
   if (type == Infliction::POISON)
   {
-      std::cout << "Hello 2" << std::endl;
     damage = kPOISON_DMG_MIN;
 
     if (damage < (kPOISON_DMG_INIT * kHEALTH))
@@ -213,7 +212,6 @@ bool Ailment::apply()
     damage = Helpers::setInRange(damage,damage,stats.getStat(Attribute::VITA));
     damage_type = DamageType::POISON;
     setFlag(AilState::DEALS_DAMAGE, true);
-      std::cout << "Hello 3" << std::endl;
   }
 
   /* Burn/Scald/Char - The three increasing levels of Burn
@@ -225,34 +223,25 @@ bool Ailment::apply()
    *           kBURN_DMG_INCR - % incr burn damage per additional lvl
    *           kBURN_DMG_INIT - % dmg incurred by level 1 burn
    */
-//  else if (type == Infliction::BURN || type == Infliction::SCALD || 
-//                                       type == Infliction::CHARR)
- // {
-    //damage = kBURN_DMG_MIN;
-   // uint32_t burn_damage = kHEALTH * kBURN_DMG_PC;
+  else if (type == Infliction::BURN || type == Infliction::SCALD || 
+           type == Infliction::CHARR)
+  {
+    damage = kBURN_DMG_MIN;
 
-    /* Compute basic damage */
-    // if (damage < burn_damage)
-    //  damage = burn_damage;
+    if (damage < (kBURN_DMG_INCR * kBURN_DMG_PC))
+      damage = kBURN_DMG_INCR * kBURN_DMG_PC;
 
-    /* Increase the damage if the burn is level 2 or level 3 */
-   // if (type == Infliction::SCALD)
-   // {
-//      uint32_t scald_damage = kHEALTH * (kBURN_DMG_PC + kBURN_DMG_INCR - 1);
-//      if (damage < scald_damage)
- //       damage = scald_damage;
-  //  }
- //   else if (type == Infliction::CHARR)
-//    {
- //     uint32_t char_damage = kHEALTH * (kBURN_DMG_PC + (2 * kBURN_DMG_INCR) - 2);
-  //    if (damage < char_damage)
-   //     damage = char_damage;
-  //  }
-//    if (damage > kBURN_DMG_MAX)
- //      damage = kBURN_DMG_MAX;
+    if (type == Infliction::SCALD)
+      damage *= kBURN_DMG_INCR;
+    if (type == Infliction::CHARR)
+      damage *= kBURN_DMG_INCR;
 
-//  }
-
+    damage = Helpers::setInRange(damage, kBURN_DMG_MIN, kBURN_DMG_MAX);
+    damage = Helpers::setInRange(damage,damage,stats.getStat(Attribute::VITA));
+    damage_type = DamageType::BURN;
+    setFlag(AilState::DEALS_DAMAGE, true);
+  }
+  
   /* Berserk - Ailed actor physically attacks enemy target for extreme damage
    *           while receiving damage themselves. Hitback damage will take
    *           place in Battle.

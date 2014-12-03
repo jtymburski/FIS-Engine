@@ -285,9 +285,10 @@ void Game::setupBattle()
 
   std::vector<Action*> inflict_actions;
   inflict_actions.push_back(new Action("500,INFLICT,2.7,,,POISON,AMOUNT.100,,VITA,90"));
+  inflict_actions.push_back(new Action("501,INFLICT,1.4,,,BURN,AMOUNT.100,,VITA,90"));
+  inflict_actions.push_back(new Action("502,INFLICT,2.6,,,SCALD,AMOUNT.100,,VITA,90"));
+  inflict_actions.push_back(new Action("503,INFLICT,4.8,,,CHARR,AMOUNT.100,,VITA,90"));
 
-  inflict_actions[0]->print(false, true);
-  
   // for(auto it = begin(damage_actions); it != end(damage_actions); ++it)
   //   std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
 
@@ -375,6 +376,15 @@ void Game::setupBattle()
   Skill* poison = new Skill(140, "Poison", ActionScope::ONE_TARGET,
     inflict_actions[0], 100, 10);
 
+  Skill* burn = new Skill(141, "Burn", ActionScope::ONE_TARGET,
+    inflict_actions[1], 100, 10);
+
+  Skill* scald = new Skill(142, "Scald", ActionScope::ONE_TARGET,
+    inflict_actions[2], 100, 10);
+
+  Skill* charr = new Skill(143, "Charr", ActionScope::ONE_TARGET,
+    inflict_actions[3], 100, 10);
+
   // Test Skill Sets
   SkillSet* physical_skills = new SkillSet(physical_01, 1);
   physical_skills->addSkill(physical_02, 1);
@@ -388,6 +398,9 @@ void Game::setupBattle()
   physical_skills->addSkill(revive_ally, 1);
   physical_skills->addSkill(life_steal, 1);
   physical_skills->addSkill(poison, 1);
+  physical_skills->addSkill(burn, 1);
+  physical_skills->addSkill(scald, 1);
+  physical_skills->addSkill(charr, 1);
 
   SkillSet* elemental_skills = new SkillSet(fire_01, 1);
 

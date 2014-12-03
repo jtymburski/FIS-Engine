@@ -332,7 +332,7 @@ void Battle::battleWon()
   if (getBattleMode() == BattleMode::TEXT)
   {
     printPartyState();
-    std::cout << "Battle victorious! :-) " << StringDb::kVICTORY_STRING << std::endl;
+    std::cout << "Battle victorious! :-) " << std::endl;
   }
 
   setBattleFlag(CombatState::OUTCOME_DONE);
@@ -1564,8 +1564,6 @@ void Battle::personalUpkeep(Person* const target)
 
     if (ailment != nullptr && ailment->getFlag(AilState::TO_CURE))
       removeAilment(ailment);
-
-    printPartyState();
   }
   
   //TODO
@@ -2439,6 +2437,8 @@ void Battle::upkeep()
         personalUpkeep(foes->getMember(i));
   }
 
+  printPartyState();
+
   /* Personal upkeep state complete */
   setBattleFlag(CombatState::PHASE_DONE);
 }
@@ -3170,7 +3170,7 @@ void Battle::printPersonState(Person* const member,
               << member->getVitaPercent() << "%]\n" << "QTDR: " 
               << member->getCurr().getStat(1) << "/"
               << member->getTemp().getStat(1) << " [" << member->getQDPercent()
-              << "%]\nILLS:";
+              << "%]\nILLS: ";
     auto person_ailments = getPersonAilments(member);
 
     for (auto& ailment : person_ailments)

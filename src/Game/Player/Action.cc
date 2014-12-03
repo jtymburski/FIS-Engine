@@ -440,6 +440,7 @@ void Action::print(const bool &print_action, const bool& print_ignore)
   std::cout << "=== Action: " << id << " === ";
   std::cout << "\nUser Attr: " << AttributeSet::getName(user_attribute);
   std::cout << "\nTarg Attr: " << AttributeSet::getName(target_attribute);
+  std::cout << "\nAttribute: " << Helpers::ailmentToStr(ailment);
   std::cout << "\nMin Duration: " << min_duration << std::endl;
   std::cout << "Max Duration: " << max_duration << std::endl;
   std::cout << "Base Change: "  << base         << std::endl;
@@ -459,7 +460,6 @@ void Action::print(const bool &print_action, const bool& print_ignore)
     std::cout << "VARI_PC: " << actionFlag(ActionFlags::VARI_PC) << std::endl;
     std::cout << "FLIP_ATTR: " << actionFlag(ActionFlags::FLIP_ATTR);
     std::cout << "\nVALID: "   << actionFlag(ActionFlags::VALID)   << std::endl;
-
   }
 
   if (print_ignore)

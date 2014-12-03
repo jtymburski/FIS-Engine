@@ -237,4 +237,5 @@ public:
   static constexpr uint16_t getMaxLinkTier() noexcept;
 };
 
+
 #endif //SIGNATURE_H
