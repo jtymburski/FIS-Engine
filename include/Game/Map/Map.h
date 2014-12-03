@@ -153,7 +153,7 @@ private:
   bool initiateMapSection(uint16_t section_index, int width, int height);
   
   /* Initiates a thing action, based on the action key being hit */
-  void initiateThingInteraction();
+  void initiateThingInteraction(MapThing* initiator);
  
   /* Parse coordinate info from file to give the designated tile coordinates
    * to update */

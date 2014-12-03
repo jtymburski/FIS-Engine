@@ -224,7 +224,17 @@ public:
   /* Returns the target that this thing is pointed at */
   MapThing* getTarget();
   
-  /* Returns the tile based coordinates for the top left of the thing */
+  /* Returns the tile height */
+  uint16_t getTileHeight();
+
+  /* Returns array of set tiles, with only the render depth valid (all others
+   * are null) */
+  std::vector<std::vector<Tile*>> getTileRender(uint8_t render_depth);
+
+  /* Returns tile width */
+  uint16_t getTileWidth();
+
+  /* Returns x/y of the top left, in tile units */
   uint16_t getTileX();
   uint16_t getTileY();
   

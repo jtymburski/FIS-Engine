@@ -225,11 +225,6 @@ bool MapThing::isAlmostOnTile(int cycle_time)
   }
 
   return false;
-
-  float x_diff = 1.0 - x;
-  float y_diff = 1.0 - y;
-
-  return (moveAmount(cycle_time) >= (x_diff + y_diff));
 }
 
 /* 
@@ -824,8 +819,8 @@ SDL_Rect MapThing::getBoundingPixels()
   rect.y = getY();
   if(sprite_set != NULL)
   {
-    rect.w = sprite_set->width() * getWidth();
-    rect.h = sprite_set->height() * getHeight();
+    rect.w = sprite_set->width() * getTileWidth();
+    rect.h = sprite_set->height() * getTileHeight();
   }
   else
   {
@@ -952,8 +947,8 @@ std::vector<std::vector<TileSprite*>> MapThing::getFrames()
  */
 uint16_t MapThing::getHeight()
 {
-  if(tile_main.size() > 0)
-    return tile_main.front().front()->getHeight();
+  if(sprite_set != NULL)
+    return sprite_set->height();
   return 0;
 }
 
@@ -1181,6 +1176,47 @@ MapThing* MapThing::getTarget()
   return target;
 }
 
+// TODO: Comment
+uint16_t MapThing::getTileHeight()
+{
+  if(tile_main.size() > 0)
+    return tile_main.front().front()->getHeight();
+  return 0;
+}
+
+/* Returns array of set tiles, with only the render depth valid (all others
+ * are null) */
+// TODO: Comment
+std::vector<std::vector<Tile*>> MapThing::getTileRender(uint8_t render_depth)
+{
+  std::vector<std::vector<Tile*>> tile_set;
+
+  if(isTilesSet())
+  {
+    tile_set = tile_main;
+  
+    for(uint16_t i = 0; i < tile_set.size(); i++)
+    {
+      for(uint16_t j = 0; j < tile_set[i].size(); j++)
+      {
+        if(sprite_set->at(i, j) == NULL || 
+           sprite_set->at(i, j)->getRenderDepth() != render_depth)
+          tile_set[i][j] = NULL;
+      }
+    }
+  }
+
+  return tile_set;
+}
+
+// TODO: Comment
+uint16_t MapThing::getTileWidth()
+{
+  if(tile_main.size() > 0)
+    return tile_main.front().front()->getWidth();
+  return 0;
+}
+
 /* 
  * Description: Returns the tile based X of the top left of the bounding box
  *              the thing. If the object is moving, this coordinate will be
@@ -1219,10 +1255,8 @@ uint16_t MapThing::getTileY()
  */
 uint16_t MapThing::getWidth()
 {
-  if(tile_main.size() > 0)
-  {
-    return tile_main.front().front()->getWidth();
-  }
+  if(sprite_set != NULL)
+    return sprite_set->width();
   return 0;
 }
 
@@ -1763,17 +1797,13 @@ bool MapThing::setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
  */
 bool MapThing::setTarget(MapThing* target)
 {
-  if((target != NULL && this->target == NULL) || target == NULL)
+  if(target != NULL && this->target == NULL)
   {
-    if(target == NULL)
-      clearTarget();
-    else
-      setMovementPaused(true);
-  
+    setMovementPaused(true);
     this->target = target;
     return true;
   }
-  
+
   return false;
 }
 

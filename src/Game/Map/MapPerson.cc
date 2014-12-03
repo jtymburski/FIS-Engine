@@ -830,69 +830,63 @@ void MapPerson::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 {
   if(isTilesSet())
   {
+    bool almost_there = false;
     bool reset = false;
-    
-    if(isMoving())
+     
+    /* If moving and almost on tile, finish move and check what to do next */
+    if(!isMoving() || (almost_there = isAlmostOnTile(cycle_time)))
     {
-      /* If moving and almost on tile, finish move and check what to do next */
-      if(isAlmostOnTile(cycle_time))
-      {
+      if(almost_there)
         tileMoveFinish();
 
-        if(getMovementPaused())
+      if(getMovementPaused())
+      {
+        if(getTarget() != NULL)
         {
-          // TODO: Fix
-          if(getTarget() != NULL)
-          {
-            int delta_x = getTileX() - getTarget()->getTileX();
-            int delta_y = getTileY() - getTarget()->getTileY();
+          int delta_x = getTarget()->getTileX() - getTileX();
+          int delta_y = getTarget()->getTileY() - getTileY();
 
-            if(delta_x < 0)
-              setDirection(Direction::EAST, false);
-            else if(delta_x > 0)
-              setDirection(Direction::WEST, false);
-            else if(delta_y < 0)
-              setDirection(Direction::SOUTH, false);
-            else if(delta_y > 0)
-              setDirection(Direction::NORTH, false);
-          }
-          else
-          {
-            setDirection(Direction::DIRECTIONLESS);
-          }
-
-          reset = true;
-        }
-        else if(isMoveRequested())
-        {
-          bool can_move = isMoveAllowed(tile_set, getMoveRequest());
-
-          if(setDirection(getMoveRequest(), can_move) || !can_move)
-            reset = true;
-          if(can_move)
-            tileMoveStart(tile_set);
+          // TODO: Revise for distance away
+          if(delta_x <= -getTarget()->getWidth())
+            setDirection(Direction::WEST, false);
+          else if(delta_y <= -getTarget()->getHeight())
+            setDirection(Direction::NORTH, false);
+          else if(delta_x >= getWidth())
+            setDirection(Direction::EAST, false);
+          else if(delta_y >= getHeight())
+            setDirection(Direction::SOUTH, false);
+          else if(delta_x < 0)
+            setDirection(Direction::WEST, false);
+          else if(delta_y < 0)
+            setDirection(Direction::NORTH, false);
+          else if(delta_x > 0)
+            setDirection(Direction::EAST, false);
+          else if(delta_y > 0)
+            setDirection(Direction::SOUTH, false);
         }
         else
         {
           setDirection(Direction::DIRECTIONLESS);
-          reset = true;
         }
-      }
-    }
-    /* Otherwise, if not moving and move is requested, start the new move */
-    else if(isMoveRequested())
-    {
-      bool can_move = isMoveAllowed(tile_set, getMoveRequest());
 
-      if(setDirection(getMoveRequest(), can_move) || !can_move)
         reset = true;
-      if(can_move)
-        tileMoveStart(tile_set);
-    }
-    /* Otherwise, make sure animation is on default state */
-    else
-    {
-      reset = true;
+      }
+      /* Otherwise, if move is requested, start the new move */
+      else if(isMoveRequested())
+      {
+        bool can_move = isMoveAllowed(tile_set, getMoveRequest());
+
+        if(setDirection(getMoveRequest(), can_move) || !can_move)
+          reset = true;
+        if(can_move)
+          tileMoveStart(tile_set);
+      }
+      /* Otherwise, make sure animation is on default state */
+      else
+      {
+        setDirection(Direction::DIRECTIONLESS);
+        reset = true;
+      }
     }
 
     /* Animate and move the person */

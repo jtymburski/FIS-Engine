@@ -494,10 +494,37 @@ bool Map::initiateMapSection(uint16_t section_index, int width, int height)
 }
 
 /* Initiates a thing action, based on the action key being hit */
-void Map::initiateThingInteraction()
+// TODO: Fix for generic things
+void Map::initiateThingInteraction(MapThing* initiator)
 {
-  if(player != NULL)
+  // FIND EACH AT 0. IF 0, check direction facing and tile adjacent for
+  // if it's 0. If not, proceed. If found, interact
+  std::vector<std::vector<Tile*>> tile_set = player->getTileRender(0);
+  for(uint16_t i = 0; i < tile_set.size(); i++)
   {
+    for(uint16_t j = 0; j < tile_set[i].size(); j++)
+      std::cout << tile_set[i][j] << " ";
+    std::cout << std::endl;
+  }
+
+  if(initiator != NULL)
+  {
+    std::vector<std::vector<Tile*>> thing_tiles = initiator->getTileRender(0);
+
+    /* Loop through the tile set, looking for valid tiles on the render lvl */
+    for(uint16_t i = 0; i < thing_tiles.size(); i++)
+    {
+      for(uint16_t j = 0; j < thing_tiles[i].size(); j++)
+      {
+        if(thing_tiles[i][j] != NULL)
+        {
+//TODO
+        }
+      }
+    }
+
+
+    // OLD
     bool interacted = false;
     bool out_of_range = false;
     uint16_t x = 0;//player->getTile()->getX(); // TODO: Fix
@@ -932,11 +959,18 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
   else if(map_dialog.isConversationActive())
     map_dialog.keyDownEvent(event);
   else if(event.keysym.sym == SDLK_SPACE)
-    initiateThingInteraction();
+    initiateThingInteraction(player);
   else if(event.keysym.sym == SDLK_z)
     zoom_out = true;
   else if(event.keysym.sym == SDLK_x)
     zoom_in = true;
+  else if(event.keysym.sym == SDLK_t)
+  {
+    if(persons[1]->getTarget() == NULL)
+      persons[1]->setTarget(player);
+    else
+      persons[1]->clearTarget();
+  }
   else if(player != NULL)
   {
     if((event.keysym.sym == SDLK_LSHIFT || event.keysym.sym == SDLK_RSHIFT) && 
