@@ -281,8 +281,8 @@ void MapViewport::update()
   /* Else if the locked on information is a map thing */
   else if(lock_on == THING)
   {
-    center_x = lock_on_thing->getX() + (lock_on_thing->getWidth() / 2.0);
-    center_y = lock_on_thing->getY() + (lock_on_thing->getHeight() / 2.0);
+    center_x = lock_on_thing->getCenterX();
+    center_y = lock_on_thing->getCenterY();
   }
   /* Else if the locked on information is a tile */
   else if(lock_on == TILE)

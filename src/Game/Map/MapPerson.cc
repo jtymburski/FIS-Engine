@@ -843,25 +843,21 @@ void MapPerson::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
       {
         if(getTarget() != NULL)
         {
-          int delta_x = getTarget()->getTileX() - getTileX();
-          int delta_y = getTarget()->getTileY() - getTileY();
+          int delta_x = getTarget()->getCenterX() - getCenterX();
+          int delta_y = getTarget()->getCenterY() - getCenterY();
 
-          // TODO: Revise for distance away
-          if(delta_x <= -getTarget()->getWidth())
+          /* Determine the absolute values of each variable */
+          int pos_x = delta_x < 0 ? 0 - delta_x : delta_x;
+          int pos_y = delta_y < 0 ? 0 - delta_y : delta_y;
+
+          /* Determine which direction to face */
+          if(delta_x < 0 && pos_x > pos_y)
             setDirection(Direction::WEST, false);
-          else if(delta_y <= -getTarget()->getHeight())
-            setDirection(Direction::NORTH, false);
-          else if(delta_x >= getWidth())
+          else if(delta_x >= 0 && pos_x > pos_y)
             setDirection(Direction::EAST, false);
-          else if(delta_y >= getHeight())
-            setDirection(Direction::SOUTH, false);
-          else if(delta_x < 0)
-            setDirection(Direction::WEST, false);
-          else if(delta_y < 0)
+          else if(delta_y < 0 && pos_y >= pos_x)
             setDirection(Direction::NORTH, false);
-          else if(delta_x > 0)
-            setDirection(Direction::EAST, false);
-          else if(delta_y > 0)
+          else if(delta_y >= 0 && pos_y >= pos_x)
             setDirection(Direction::SOUTH, false);
         }
         else

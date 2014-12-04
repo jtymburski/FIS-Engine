@@ -831,6 +831,19 @@ SDL_Rect MapThing::getBoundingPixels()
   return rect;
 }
 
+/* Returns center pixel of thing */
+// TODO: Comment
+uint32_t MapThing::getCenterX()
+{
+  return (getX() + (getWidth() * getTileWidth()) / 2.0);
+}
+
+// TODO: Comment
+uint32_t MapThing::getCenterY()
+{
+  return (getY() + (getHeight() * getTileHeight()) / 2.0);
+}
+
 /* 
  * Description: Gets the things description.
  * 

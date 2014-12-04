@@ -172,7 +172,11 @@ public:
   /* Returns the bounding box of the thing */
   SDL_Rect getBoundingBox();
   SDL_Rect getBoundingPixels();
-  
+ 
+  /* Returns center pixel of thing */
+  uint32_t getCenterX();
+  uint32_t getCenterY();
+
   /* Gets the things decription */
   std::string getDescription();
 

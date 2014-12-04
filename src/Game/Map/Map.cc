@@ -495,90 +495,86 @@ bool Map::initiateMapSection(uint16_t section_index, int width, int height)
 
 /* Initiates a thing action, based on the action key being hit */
 // TODO: Fix for generic things
-void Map::initiateThingInteraction(MapThing* initiator)
+void Map::initiateThingInteraction(MapPerson* initiator)
 {
   // FIND EACH AT 0. IF 0, check direction facing and tile adjacent for
   // if it's 0. If not, proceed. If found, interact
-  std::vector<std::vector<Tile*>> tile_set = player->getTileRender(0);
-  for(uint16_t i = 0; i < tile_set.size(); i++)
-  {
-    for(uint16_t j = 0; j < tile_set[i].size(); j++)
-      std::cout << tile_set[i][j] << " ";
-    std::cout << std::endl;
-  }
 
   if(initiator != NULL)
   {
     std::vector<std::vector<Tile*>> thing_tiles = initiator->getTileRender(0);
+    Direction direction = initiator->getDirection();
+    bool finished = false;
+    bool invalid = false;
+    int16_t starting_x = initiator->getTileX();
+    int16_t starting_y = initiator->getTileY();
 
-    /* Loop through the tile set, looking for valid tiles on the render lvl */
-    for(uint16_t i = 0; i < thing_tiles.size(); i++)
+    /* Things to look for */
+    std::vector<MapItem*> items_found;
+    MapPerson* person_found = NULL;
+    MapThing* thing_found = NULL;
+
+    /* Check direction for tile that needs to be determined */
+    if(direction == Direction::NORTH)
+      starting_y--;
+    else if(direction == Direction::EAST)
+      starting_x++;
+    else if(direction == Direction::SOUTH)
+      starting_y++;
+    else if(direction == Direction::WEST)
+      starting_x--;
+    else
+      invalid = true;
+
+    if(!invalid)
     {
-      for(uint16_t j = 0; j < thing_tiles[i].size(); j++)
+      /* Loop through the tile set, looking for valid tiles on the render lvl */
+      for(uint16_t i = 0; !finished && i < thing_tiles.size(); i++)
       {
-        if(thing_tiles[i][j] != NULL)
+        for(uint16_t j = 0; !finished && j < thing_tiles[i].size(); j++)
         {
-//TODO
+          /* If thing is not NULL, this is rendering depth 0 tile to check */
+          if(thing_tiles[i][j] != NULL)
+          {
+            /* Get the x and y of tile to check and confirm validity */
+            int16_t x = starting_x + i;
+            int16_t y = starting_y + j;
+
+            if(x >= 0 && y >= 0 && x < geography[map_index].size() && 
+               y < geography[map_index][x].size())
+            {
+              /* Check for person */
+              person_found = geography[map_index][x][y]->getPerson(0);
+              if(person_found != NULL)
+                finished = true;
+
+              /* Check for thing */
+              if(!finished && thing_found == NULL)
+                thing_found = geography[map_index][x][y]->getThing(0);
+
+              /* Check for item(s) */
+              if(!finished && items_found.size() == 0)
+                items_found = thing_tiles[i][j]->getItems();
+            }
+          }
         }
       }
-    }
 
-
-    // OLD
-    bool interacted = false;
-    bool out_of_range = false;
-    uint16_t x = 0;//player->getTile()->getX(); // TODO: Fix
-    uint16_t y = 0;//player->getTile()->getY();
-
-    /* Determine the direction and offset coordinate tile selection */
-    Direction direction = player->getDirection();
-    if(direction == Direction::NORTH)
-    {
-      if(y == 0)
-        out_of_range = true;
-      else
-        y--;
+      /* Interact with the object found (in the order listed below) */
+      if(person_found != NULL)
+      {
+        person_found->interact(initiator);
+      }
+      else if(thing_found != NULL)
+      {
+        thing_found->interact(initiator);
+      }
+      else if(items_found.size() > 0)
+      {
+        for(uint16_t i = 0; i < items_found.size(); i++)
+          event_handler->executePickup(items_found[i]);
+      }
     }
-    else if(direction == Direction::EAST)
-      x++;
-    else if(direction == Direction::SOUTH)
-      y++;
-    else if(direction == Direction::WEST)
-    {
-      if(x == 0)
-        out_of_range = true;
-      else
-        x--;
-    }
-    /* Throw X out of bounds if no direction */
-    else
-      out_of_range = true;
-
-    /* Aquire the thing, that's being pointed at and try to interact */
-    if(!out_of_range && x < geography[map_index].size() && 
-       y < geography[map_index][0].size())
-    { // TODO: Fix
-//      if(geography[map_index][x][y]->isPersonSet() &&
-//         geography[map_index][x][y]->getPerson()->getTile()->getX() == x &&
-//         geography[map_index][x][y]->getPerson()->getTile()->getY() == y)
-//      {
-//        geography[map_index][x][y]->getPerson()->interact(player);
-//        interacted = true;
-//      }
-//      else if(geography[map_index][x][y]->isThingSet())
-//      {
-//        geography[map_index][x][y]->getThing()->interact(player);
-//        interacted = true;
-//      }
-    }
-    
-    /* If there was no thing to interact with, proceed to try and pickup the
-     * tile item. */ // TODO: Fix item pick up with key
-    //if(!interacted && player->getTile()->getItem() != NULL && 
-    //   player->getTile()->getItem()->getCount() > 0 && event_handler != NULL)
-    //{
-    //  event_handler->executePickup(player->getTile()->getItem());
-    //}
   }
 }
 
@@ -843,6 +839,7 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
       map_index = 0;
       viewport.setMapSize(geography[map_index].size(), 
                           geography[map_index][0].size());
+      player = persons.front();
     }
   }
   else if(event.keysym.sym == SDLK_2)
@@ -852,6 +849,9 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
       map_index = 1;
       viewport.setMapSize(geography[map_index].size(), 
                           geography[map_index][0].size());
+      for(uint16_t i = 0; i < persons.size(); i++)
+        if(persons[i]->getID() == 24)
+          player = persons[i];
     }
   }
   else if(event.keysym.sym == SDLK_g)
@@ -1516,39 +1516,11 @@ bool Map::update(int cycle_time)
   {
     if(persons[i] != NULL)
     {
-      Tile* next_tile = NULL;
-
       if(persons[i]->getMapSection() == map_index && 
          persons[i]->isTilesSet())
       {
         tile_set = getTileMatrix(persons[i], 
                                  persons[i]->getPredictedMoveRequest());
-//        uint16_t tile_x = 0;//persons[i]->getTile()->getX(); // TODO: Fix
-//        uint16_t tile_y = 0;//persons[i]->getTile()->getY();
-//
-//        /* Based on the move request, provide the next tile in line using the
-//         * current centered tile and move request */
-//        switch(persons[i]->getPredictedMoveRequest())
-//        {
-//          case Direction::NORTH:
-//            if(tile_y-- > 0)
-//              next_tile = geography[map_index][tile_x][tile_y];
-//            break;
-//          case Direction::EAST:
-//            if(++tile_x < geography[map_index].size())
-//              next_tile = geography[map_index][tile_x][tile_y];
-//            break;
-//          case Direction::SOUTH:
-//            if(++tile_y < geography[map_index][tile_x].size())
-//              next_tile = geography[map_index][tile_x][tile_y];
-//            break;
-//          case Direction::WEST:
-//            if(tile_x-- > 0)
-//              next_tile = geography[map_index][tile_x][tile_y];
-//            break;
-//          case Direction::DIRECTIONLESS:
-//            next_tile = NULL;
-//        }
       }
 
       /* Proceed to update the thing */
