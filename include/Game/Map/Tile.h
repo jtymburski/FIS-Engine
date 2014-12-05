@@ -68,6 +68,7 @@ private:
   /* The things that are on the given tile - only used to store location */
   std::vector<MapItem*> items;
   std::vector<MapPerson*> persons;
+  std::vector<bool> persons_prev;
   std::vector<MapThing*> things;
 
   /* The upper information */
@@ -99,7 +100,7 @@ public:
                                         std::string index);
   bool addSprite(Sprite* frames, std::string classifier, std::string index);
 
-  /* Animates all sprites on tile (Including thing and walkover sprites) */
+  /* Animates all sprites on tile */
   void animate();
 
   /* Clears out data from the class */
@@ -179,6 +180,8 @@ public:
   bool isLowerSet() const;
 
   /* Returns if the map person thing is set */
+  bool isPersonMain(uint8_t render_level) const;
+  bool isPersonPrevious(uint8_t render_level) const;
   bool isPersonSet(uint8_t render_level) const;
   bool isPersonsSet() const;
 
@@ -188,7 +191,10 @@ public:
 
   /* Returns if the Upper Layer is set (ie. at least one) */
   bool isUpperSet() const;
-  
+ 
+  /* Starts the person move (shifts status to tile previous of person) */
+  bool personMoveStart(uint8_t render_level);
+
   /* Paints the active sprites in this tile using GL direct calls */
   bool renderLower(SDL_Renderer* renderer, int offset_x = 0, int offset_y = 0);
   bool renderUpper(SDL_Renderer* renderer, int offset_x = 0, int offset_y = 0);

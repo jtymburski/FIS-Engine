@@ -210,6 +210,9 @@ void MapItem::setWalkover(bool walkover)
   this->walkover = walkover;
 }
 
+// TODO: Going to need something to limit the number of frames to one (items
+// are to only be on one tile
+
 /*
  * Description: Updates the state of the item. This can include animation
  *              sequencing or movement and such. Called on the tick.

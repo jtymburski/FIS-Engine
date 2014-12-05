@@ -831,14 +831,23 @@ SDL_Rect MapThing::getBoundingPixels()
   return rect;
 }
 
-/* Returns center pixel of thing */
-// TODO: Comment
+/*
+ * Description: Returns the pixel location of the center X of the thing
+ *
+ * Inputs: none
+ * Output: uint32_t - pixel location output of X
+ */
 uint32_t MapThing::getCenterX()
 {
   return (getX() + (getWidth() * getTileWidth()) / 2.0);
 }
 
-// TODO: Comment
+/*
+ * Description: Returns the pixel location of the center Y of the thing
+ *
+ * Inputs: none
+ * Output: uint32_t - pixel location output of Y
+ */
 uint32_t MapThing::getCenterY()
 {
   return (getY() + (getHeight() * getTileHeight()) / 2.0);
@@ -1189,7 +1198,13 @@ MapThing* MapThing::getTarget()
   return target;
 }
 
-// TODO: Comment
+/*
+ * Description: Returns the tile height, of the tiles the thing is stored and
+ *              rendering on.
+ *
+ * Inputs: none
+ * Output: uint16_t - tile height
+ */
 uint16_t MapThing::getTileHeight()
 {
   if(tile_main.size() > 0)
@@ -1197,9 +1212,14 @@ uint16_t MapThing::getTileHeight()
   return 0;
 }
 
-/* Returns array of set tiles, with only the render depth valid (all others
- * are null) */
-// TODO: Comment
+/*
+ * Description: Returns the tiles the thing is stored on based on the render
+ *              depth. The matrix is the same size as the thing and the tiles
+ *              that don't match the rendering depth are NULL.
+ *
+ * Inputs: uint8_t render_depth - the rendering depth of the person frame(s)
+ * Output: std::vector<std::vector<Tile*>> - 2d matrix of tiles
+ */
 std::vector<std::vector<Tile*>> MapThing::getTileRender(uint8_t render_depth)
 {
   std::vector<std::vector<Tile*>> tile_set;
@@ -1222,7 +1242,13 @@ std::vector<std::vector<Tile*>> MapThing::getTileRender(uint8_t render_depth)
   return tile_set;
 }
 
-// TODO: Comment
+/*
+ * Description: Returns the tile width, of the tiles the thing is stored and
+ *              rendering on.
+ *
+ * Inputs: none
+ * Output: uint16_t - tile width
+ */
 uint16_t MapThing::getTileWidth()
 {
   if(tile_main.size() > 0)

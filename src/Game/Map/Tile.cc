@@ -85,9 +85,13 @@ bool Tile::growPersonStack(uint8_t render_level)
   if(render_level < Helpers::getRenderDepth())
   {
     MapPerson* null_person = NULL;
+    bool false_status = false;
 
+    /* Ensure array sizes */
     while(persons.size() <= render_level)
       persons.push_back(null_person);
+    while(persons_prev.size() <= render_level)
+      persons_prev.push_back(false_status);
 
     return true;
   }
@@ -781,6 +785,34 @@ bool Tile::isLowerSet() const
 }
 
 /*
+ * Description: Returns if the person at the indicated render level is the main
+ *              (moving to or on the tile). 
+ *
+ * Inputs: uint8_t render_level - the rendering level, based on the person frame
+ * Output: bool - is this person frame a main?
+ */
+bool Tile::isPersonMain(uint8_t render_level) const
+{
+  if(persons.size() > render_level && persons[render_level] != NULL)
+    return !persons_prev[render_level];
+  return false;
+}
+
+/*
+ * Description: Returns if the person at the indicated render level is the
+ *              previous (moving away from the tile). 
+ *
+ * Inputs: uint8_t render_level - the rendering level, based on the person frame
+ * Output: bool - is this person frame a previous?
+ */
+bool Tile::isPersonPrevious(uint8_t render_level) const
+{
+  if(persons.size() > render_level && persons[render_level] != NULL)
+    return persons_prev[render_level];
+  return false;
+}
+
+/*
  * Description: Returns if there is a person on the indicated render level.
  * 
  * Inputs: uint8_t render_level - the level of rendering on tile. 
@@ -839,6 +871,24 @@ bool Tile::isThingsSet() const
 bool Tile::isUpperSet() const
 {
   return (upper.size() > 0);
+}
+
+/*
+ * Description: Initiates the move process for the person. This triggers a 
+ *              status that the person at the render level is no longer the
+ *              main frame, but rather the previous.
+ *
+ * Inputs: uint8_t render_level - the rendering level of the thing
+ * Output: bool - status if set was successful
+ */
+bool Tile::personMoveStart(uint8_t render_level)
+{
+  if(persons.size() > render_level && persons[render_level] != NULL)
+  {
+    persons_prev[render_level] = true;
+    return true;
+  }
+  return false;
 }
 
 /* 
@@ -1132,6 +1182,7 @@ bool Tile::setPerson(MapPerson* person, uint8_t render_level, bool no_events)
     if(growPersonStack(render_level))
     {
       persons[render_level] = person;
+      persons_prev[render_level] = false;
 
       /* Execute enter event, if applicable */
       if(!no_events && render_level == 0 && event_handler != NULL)
@@ -1421,6 +1472,7 @@ bool Tile::unsetPerson(MapPerson* person, bool no_events)
       }
 
       persons[i] = NULL;
+      persons_prev[i] = false;
       return true;
     }
   }
@@ -1452,6 +1504,7 @@ bool Tile::unsetPerson(uint8_t render_level, bool no_events)
       }
 
       persons[render_level] = NULL;
+      persons_prev[render_level] = false;
       return true;
     }
   }
@@ -1478,6 +1531,7 @@ void Tile::unsetPersons(bool no_events)
   }
 
   persons.clear();
+  persons_prev.clear();
 }
 
 /*

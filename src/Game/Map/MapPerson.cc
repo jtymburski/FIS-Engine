@@ -352,11 +352,15 @@ void MapPerson::setTileFinish(Tile* old_tile, Tile* new_tile,
 bool MapPerson::setTileStart(Tile* old_tile, Tile* new_tile, 
                             uint8_t render_depth, bool no_events)
 {
-  (void)old_tile;
-
   /* Attempt and set the tile */
-  if(new_tile != NULL)
-    return new_tile->setPerson(this, render_depth, no_events);
+  if(new_tile != NULL && old_tile != NULL)
+  {
+    if(new_tile->setPerson(this, render_depth, no_events))
+    {
+      old_tile->personMoveStart(render_depth);
+      return true;
+    }
+  }
 
   return false;
 }

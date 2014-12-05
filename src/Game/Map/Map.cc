@@ -534,19 +534,25 @@ void Map::initiateThingInteraction(MapPerson* initiator)
         for(uint16_t j = 0; !finished && j < thing_tiles[i].size(); j++)
         {
           /* If thing is not NULL, this is rendering depth 0 tile to check */
-          if(thing_tiles[i][j] != NULL)
+          if(thing_tiles[i][j] != NULL && (starting_x + i) >= 0 
+                                       && (starting_y + j) >= 0)
           {
             /* Get the x and y of tile to check and confirm validity */
-            int16_t x = starting_x + i;
-            int16_t y = starting_y + j;
+            uint16_t x = starting_x + i;
+            uint16_t y = starting_y + j;
 
-            if(x >= 0 && y >= 0 && x < geography[map_index].size() && 
+            if(x < geography[map_index].size() && 
                y < geography[map_index][x].size())
             {
               /* Check for person */
               person_found = geography[map_index][x][y]->getPerson(0);
               if(person_found != NULL)
-                finished = true;
+              {
+                if(geography[map_index][x][y]->isPersonMain(0))
+                  finished = true;
+                else
+                  person_found = NULL;
+              }
 
               /* Check for thing */
               if(!finished && thing_found == NULL)
@@ -836,6 +842,7 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
   {
     if(geography.size() > 0)
     {
+      player->keyFlush();
       map_index = 0;
       viewport.setMapSize(geography[map_index].size(), 
                           geography[map_index][0].size());
@@ -846,6 +853,7 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
   {
     if(geography.size() > 1)
     {
+      player->keyFlush();
       map_index = 1;
       viewport.setMapSize(geography[map_index].size(), 
                           geography[map_index][0].size());
@@ -897,6 +905,11 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
     convo->text += "embodiment. Ok, maybe I'll just keep typing until I break ";
     convo->text += "the entire compiler.";
     convo->thing_id = 0;
+    Conversation convo2;
+    convo2.category = DialogCategory::TEXT;
+    convo2.action_event = blank_event;
+    convo2.text = "Pass the chips please.";
+    convo2.thing_id = 24;
     Conversation test1, test2, test3, test4, test5;
     test1.category = DialogCategory::TEXT;
     test1.action_event = blank_event;
@@ -922,7 +935,7 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
     test3.text += " these lines.";
     test3.text += test3.text;
     test3.text += test3.text;
-    test3.thing_id = 24;
+    test3.thing_id = 1003;
     test3.next.push_back(test2);
     test4.category = DialogCategory::TEXT;
     test4.action_event = blank_event;
@@ -945,7 +958,8 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
     test1.next.push_back(test4);
     test5.text = "Option 6";
     test1.next.push_back(test5);
-    convo->next.push_back(test1);
+    convo2.next.push_back(test1);
+    convo->next.push_back(convo2);
 
     /* Run the conversation and then delete */
     if(map_dialog.initConversation(convo, player))
@@ -1277,12 +1291,12 @@ bool Map::render(SDL_Renderer* renderer)
     uint16_t tile_x_end = viewport.getXTileEnd();
     uint16_t tile_y_start = viewport.getYTileStart();
     uint16_t tile_y_end = viewport.getYTileEnd();
-    float x_offset = viewport.getX(); // TODO: Possible remove?
-    int x_start = viewport.getXStart();
-    int x_end = viewport.getXEnd();
+    float x_offset = viewport.getX();
+    //int x_start = viewport.getXStart(); // TODO: Possible remove?
+    //int x_end = viewport.getXEnd();
     float y_offset = viewport.getY();
-    int y_start = viewport.getYStart();
-    int y_end = viewport.getYEnd();
+    //int y_start = viewport.getYStart();
+    //int y_end = viewport.getYEnd();
 
     /* Render the lower tiles within the range of the viewport */
     for(uint16_t i = tile_x_start; i < tile_x_end; i++)
@@ -1304,8 +1318,8 @@ bool Map::render(SDL_Renderer* renderer)
                                                          render_person, 
                                                          render_thing))
           {
-            /* Different indexes result in different rendering procedures */
-            // TODO: Fix for new movement design
+            /* Different indexes result in different rendering procedures
+             * If base index, render order is top item, thing, then person */
             if(index == 0)
             {
               if(render_item != NULL)
@@ -1316,15 +1330,29 @@ bool Map::render(SDL_Renderer* renderer)
                                          index, x_offset, y_offset);
               if(render_person != NULL)
               {
-                render_person->renderMain(renderer, geography[map_index][i][j], 
-                                          index, x_offset, y_offset);
+                if(render_person->getMovement() == Direction::EAST || 
+                   render_person->getMovement() == Direction::SOUTH)
+                  render_person->renderPrevious(renderer, 
+                          geography[map_index][i][j],index, x_offset, y_offset);
+                else
+                  render_person->renderMain(renderer, 
+                         geography[map_index][i][j], index, x_offset, y_offset);
               }
             }
+            /* Otherwise, render order is person, then thing */
             else
             {
               if(render_person != NULL)
-                render_person->renderMain(renderer, geography[map_index][i][j], 
-                                          index, x_offset, y_offset);
+              {
+                if(render_person->getMovement() == Direction::EAST || 
+                   render_person->getMovement() == Direction::SOUTH)
+                  render_person->renderPrevious(renderer, 
+                         geography[map_index][i][j], index, x_offset, y_offset);
+                else
+                  render_person->renderMain(renderer, 
+                         geography[map_index][i][j], index, x_offset, y_offset);
+              }
+
               if(render_thing != NULL)
                 render_thing->renderMain(renderer, geography[map_index][i][j], 
                                          index, x_offset, y_offset);
