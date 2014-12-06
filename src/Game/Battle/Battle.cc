@@ -281,6 +281,13 @@ bool Battle::removeAilment(Ailment* remove_ailment)
   {
     if (ailment == remove_ailment)
     {
+      if (getBattleMode() == BattleMode::TEXT)
+      {
+        std::cout << "{RELIVING} -- The ailment on " << curr_target->getName() 
+            << " called " << Helpers::ailmentToStr(remove_ailment->getType()) 
+            << " is being relieved." << std::endl;
+      }
+
       /* Some ailments will alter flags that need to be recalculated */
       success = reCalcAilmentFlags(curr_target, ailment);
 
@@ -1503,15 +1510,12 @@ bool Battle::doesCurrPersonRun()
 void Battle::generalUpkeep()
 {
   /* Print out the party state if either in UDEBUG or in TEXT battle mode */
-#ifdef UDEBUG
-  std::cout << "\n=============\n";
-  std::cout << "  TURN " << Helpers::numToRoman(turns_elapsed + 1)
-            << "\n=============" << std::endl;
-  printPartyState();
-#else 
-  if (battle_mode == BattleMode::TEXT)
-    printPartyState();
-#endif
+  if (getBattleMode() == BattleMode::TEXT)
+  {
+    std::cout << "\n=============\n";
+    std::cout << "  TURN " << Helpers::numToRoman(turns_elapsed + 1)
+              << "\n=============" << std::endl;
+  }
 
   //TODO: Weather updates [03-01-14]
 
@@ -2019,8 +2023,8 @@ bool Battle::processInflictAction()
 {
   if (canInflict(curr_action->getAilment()))
   {
-    return addAilment(curr_action->getAilment(), curr_user, 
-        curr_action->getMin(), curr_action->getMax(), curr_action->getBase());
+    addAilment(curr_action->getAilment(), curr_user, 
+      curr_action->getMin(), curr_action->getMax(), curr_action->getBase());
   }
 
   return false;

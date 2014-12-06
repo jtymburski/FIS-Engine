@@ -284,10 +284,10 @@ void Game::setupBattle()
   assign_actions.push_back(new Action("400,REVIVE,,,,,AMOUNT.50,AMOUNT.10,,80"));
 
   std::vector<Action*> inflict_actions;
-  inflict_actions.push_back(new Action("500,INFLICT,2.7,,,POISON,AMOUNT.100,,VITA,90"));
-  inflict_actions.push_back(new Action("501,INFLICT,1.4,,,BURN,AMOUNT.100,,VITA,90"));
-  inflict_actions.push_back(new Action("502,INFLICT,2.6,,,SCALD,AMOUNT.100,,VITA,90"));
-  inflict_actions.push_back(new Action("503,INFLICT,4.8,,,CHARR,AMOUNT.100,,VITA,90"));
+  inflict_actions.push_back(new Action("500,INFLICT,2.7,,,POISON,AMOUNT.60,,VITA,90"));
+  inflict_actions.push_back(new Action("501,INFLICT,1.4,,,BURN,AMOUNT.50,,VITA,90"));
+  inflict_actions.push_back(new Action("502,INFLICT,2.6,,,SCALD,AMOUNT.40,,VITA,90"));
+  inflict_actions.push_back(new Action("503,INFLICT,4.8,,,CHARR,AMOUNT.30,,VITA,90"));
 
   // for(auto it = begin(damage_actions); it != end(damage_actions); ++it)
   //   std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
@@ -319,7 +319,7 @@ void Game::setupBattle()
   physical_04->setPrimary(Element::PHYSICAL);
 
   Skill* fire_01 = new Skill(110, "Burninate The Countryside", ActionScope::ONE_ENEMY, 
-    damage_actions[10], 100, 5);
+    damage_actions[8], 100, 5);
   fire_01->setPrimary(Element::FIRE);
   fire_01->setSecondary(Element::PHYSICAL);
 
@@ -462,13 +462,13 @@ void Game::setupBattle()
   // Test Persons
   base_person_list.push_back(new Person(300, "Malgidus", human,
       tactical_samurai));
-  getPerson(300)->addExp(800);
+  getPerson(300)->addExp(2800);
   getPerson(300)->setCurves(Element::DIGITAL, ElementCurve::C,
                             Element::FOREST, ElementCurve::D, true);
 
   base_person_list.push_back(new Person(301, "Arcadius", bear, 
     tactical_samurai));
-  getPerson(301)->addExp(800);
+  getPerson(301)->addExp(2800);
   getPerson(301)->setCurves(Element::FIRE, ElementCurve::B,
                             Element::FOREST, ElementCurve::A, true);
 
@@ -565,6 +565,8 @@ void Game::setupBattle()
     friends->getMember(i)->battlePrep();
   for (uint32_t i = 0; i < enemies->getSize(); i++)
     enemies->getMember(i)->battlePrep();
+
+  getPerson(300)->print(false, false, true, true);
 
   game_battle = new Battle(game_config, friends, enemies);
 

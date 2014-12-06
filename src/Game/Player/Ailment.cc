@@ -76,7 +76,7 @@ const uint16_t Ailment::kMAX_TURNS           =   25;
 const uint16_t Ailment::kMIN_TURNS           =    1;
 const uint32_t Ailment::kPOISON_DMG_MAX      = 8000;
 const uint32_t Ailment::kPOISON_DMG_MIN      =   20;
-const double   Ailment::kPOISON_DMG_INCR     = 1.05;
+const double   Ailment::kPOISON_DMG_INCR     = 1.15;
 const double   Ailment::kPOISON_DMG_INIT     = 0.08;
 const uint32_t Ailment::kBURN_DMG_MAX        = 5000;
 const uint32_t Ailment::kBURN_DMG_MIN        =  100;
@@ -198,20 +198,25 @@ bool Ailment::apply()
    */
   if (type == Infliction::POISON)
   {
-    damage = kPOISON_DMG_MIN;
+    auto min_value = static_cast<int32_t>(kPOISON_DMG_MIN);
+    auto max_value = static_cast<int32_t>(kPOISON_DMG_MAX);
 
-    if (damage < (kPOISON_DMG_INIT * kHEALTH))
-      damage = kPOISON_DMG_INIT * kHEALTH;
+    if (min_value < (kPOISON_DMG_INIT * kHEALTH))
+      min_value = kPOISON_DMG_INIT * kHEALTH;
+
+    if (max_value > stats.getStat(Attribute::VITA))
+      max_value = stats.getStat(Attribute::VITA);
 
     if (turns_occured > 0)
     {
-      auto damage_amount = std::pow(static_cast<float>(damage), turns_occured);
+      auto damage_amount = min_value *
+          std::pow(static_cast<float>(kPOISON_DMG_INCR), turns_occured);
       damage = static_cast<int32_t>(std::floor(damage_amount));
     }
  
-    damage = Helpers::setInRange(damage, kPOISON_DMG_MIN, kPOISON_DMG_MAX);
-    damage = Helpers::setInRange(damage,damage,stats.getStat(Attribute::VITA));
+    damage = Helpers::setInRange(damage, min_value, max_value);
     damage_type = DamageType::POISON;
+
     setFlag(AilState::DEALS_DAMAGE, true);
   }
 
@@ -227,18 +232,22 @@ bool Ailment::apply()
   else if (type == Infliction::BURN || type == Infliction::SCALD || 
            type == Infliction::CHARR)
   {
-    damage = kBURN_DMG_MIN;
+    auto min_value = static_cast<int32_t>(kBURN_DMG_MIN);
+    auto max_value = static_cast<int32_t>(kBURN_DMG_MAX);
 
+    damage = min_value;
     if (damage < (kBURN_DMG_INCR * kBURN_DMG_PC))
       damage = kBURN_DMG_INCR * kBURN_DMG_PC;
+
+    if (max_value > stats.getStat(Attribute::VITA))
+      max_value = stats.getStat(Attribute::VITA);
 
     if (type == Infliction::SCALD)
       damage *= kBURN_DMG_INCR;
     if (type == Infliction::CHARR)
       damage *= kBURN_DMG_INCR;
 
-    damage = Helpers::setInRange(damage, kBURN_DMG_MIN, kBURN_DMG_MAX);
-    damage = Helpers::setInRange(damage,damage,stats.getStat(Attribute::VITA));
+    damage = Helpers::setInRange(damage, min_value, max_value);
     damage_type = DamageType::BURN;
     
     setFlag(AilState::DEALS_DAMAGE, true);
@@ -253,7 +262,7 @@ bool Ailment::apply()
   else if (type == Infliction::BERSERK)
   {
     /* On initial application, disable non physical skills and running */
-    victim->setBFlag(BState::SKL_ENABLED, false);
+    // victim->setBFlag(BState::SKL_ENABLED, false);
     victim->setBFlag(BState::ITM_ENABLED, false);
     victim->setBFlag(BState::RUN_ENABLED, false);
     victim->setDmgMod(2);
@@ -620,8 +629,15 @@ bool Ailment::updateTurns()
     return false;
 
   /* If the ailment is finite, cure it based on chance */;
-  if (chance != 0 && Helpers::chanceHappens(std::floor(chance * 100), 100))
+  if (chance != 0 && Helpers::chanceHappens(std::floor(chance), 100))
+  {
+    std::cout << "Chance happens!" << std::endl;
     max_turns_left = 1;
+  }
+  else
+  {
+    std::cout << "Nadda chance! " << std::endl;
+  }
 
   /* If the ailment currently has one turn left, it's cured! */
   if (max_turns_left == 1)
