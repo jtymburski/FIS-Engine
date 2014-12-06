@@ -318,6 +318,9 @@ public:
   /* Removes the equipment from a given slot */
   bool removeEquip(const EquipSlots &equip_slot);
 
+  // TODO
+  void resetActionFlags();
+
   /* Resets the AI module for a new turn */
   bool resetAI();
 

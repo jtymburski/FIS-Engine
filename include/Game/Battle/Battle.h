@@ -385,7 +385,10 @@ private:
   bool processGuard();
 
   /* Recalculates the ailments after they have been altered */
-  void recalculateAilments(Person* const target);
+  void reCalcAilments(Person* const target);
+
+  /* Recalculates the flags for a target person (based on ailments) */
+  bool reCalcAilmentFlags(Person* target, Ailment* ail);
 
   /* Calculates enemy actions and add them to the buffer */
   void selectEnemyActions();
@@ -498,7 +501,7 @@ public:
   uint32_t getScreenWidth();
 
   /* Evaluates and returns a vector of ailments for a given person */
-  std::vector<Ailment*> getPersonAilments(Person* const target);
+  std::vector<Ailment*> getPersonAilments(const Person* const target);
 
   /* Returns the value of the turns elapsed */
   uint32_t getTurnsElapsed();

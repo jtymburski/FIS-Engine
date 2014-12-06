@@ -225,15 +225,66 @@ bool Battle::addAilment(Infliction infliction_type, Person* inflictor,
  * Inputs: 
  * Output:
  */
+bool Battle::reCalcAilmentFlags(Person* target, Ailment* ail)
+{
+  if (target != nullptr &&  ail != nullptr && ail->getVictim() == target)
+  {
+    /* Unapply the ailment (by the default effect) set to be removed */
+    if (ail->getFlag(AilState::TO_UNAPPLY))
+      ail->unapply();
+
+    /* For all other ailments inflicted upon the given target, iterate through
+     * and recalculate the necessary flag and stats values */
+    auto person_ailments = getPersonAilments(target);
+    std::vector<std::tuple<Ailment*, bool>> reapply_values;
+
+    for (auto ill : person_ailments)
+    {
+      if (ill != ail)
+      {
+        auto new_tuple = std::make_tuple(ill, ill->toReapplyFlags());
+        reapply_values.push_back(new_tuple);
+      }
+    }
+
+    /* Find a base flag state */
+    target->resetActionFlags();
+
+    /* Reapply each ailment needed */
+    for (auto& ill_tuple : reapply_values)
+    {
+      if (std::get<0>(ill_tuple) != nullptr && std::get<1>(ill_tuple))
+      {
+        std::get<0>(ill_tuple)->setFlag(AilState::TO_APPLY);
+        std::get<0>(ill_tuple)->update(false);
+      }
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
+/*
+ * Description:
+ *
+ * Inputs: 
+ * Output:
+ */
 bool Battle::removeAilment(Ailment* remove_ailment)
 {
-  auto found = false;
+  auto found   = false;
+  auto success = false;
 
   for (auto& ailment : ailments)
   {
     if (ailment == remove_ailment)
     {
-      found = true;
+      /* Some ailments will alter flags that need to be recalculated */
+      success = reCalcAilmentFlags(curr_target, ailment);
+
+      found = true;\
       delete ailment;
       ailment = nullptr;
     }
@@ -242,7 +293,7 @@ bool Battle::removeAilment(Ailment* remove_ailment)
   ailments.erase(std::remove(begin(ailments), end(ailments), nullptr), 
       end(ailments));
 
-  return found;
+  return found && success;
 }
 
 /*
@@ -2235,7 +2286,7 @@ void Battle::processBuffer()
  * Inputs: Person* - person to recalculate ailment modification factors for 
  * Output: none
  */
-void Battle::recalculateAilments(Person* const target)
+void Battle::reCalcAilments(Person* const target)
 {
   (void)target; //TODO: [Warning]
   // find base stats of person
@@ -3380,11 +3431,11 @@ uint32_t Battle::getScreenWidth()
  * Inputs: Person* - person pointer to find all the ailment pointers for
  * Output: std::vector<Ailment*> - vector of ailments inflicting the Person
  */
-std::vector<Ailment*> Battle::getPersonAilments(Person* const target)
+std::vector<Ailment*> Battle::getPersonAilments(const Person* const target)
 {
   std::vector<Ailment*> person_ailments;
 
-  for (auto& ailment : ailments)
+  for (const auto& ailment : ailments)
     if (ailment->getVictim() == target && target!= nullptr)
       person_ailments.push_back(ailment);
 

@@ -45,13 +45,14 @@ enum class AilState
   TO_CURE       = 1 << 1,  /* The ailment is to be cured immediately */
   TO_UPDATE     = 1 << 2,  /* Ailment set to be updated on new turn */
   TO_APPLY      = 1 << 3,  /* Ailment effects set to be applied on new turn */
-  BUFF          = 1 << 4,  /* Is this ailment a favorable ailment? */
-  ADVERSE       = 1 << 5,  /* Is this ailment an adverse ailment? */
-  IMMUNITY      = 1 << 6,  /* Is the inflicted person immune to this ailment? */
-  CURE_ON_DEATH = 1 << 7,  /* Does the ailment persist death? */
-  VICTIM_SET    = 1 << 8,  /* Has the victim of the ailment been set? */
-  INFLICTOR_SET = 1 << 9,
-  DEALS_DAMAGE  = 1 << 10  /* Has the inflictor of the ailment been set? */
+  TO_UNAPPLY    = 1 << 4,  /* Ailment effects to be unapplied [after update()]*/
+  BUFF          = 1 << 5,  /* Is this ailment a favorable ailment? */
+  ADVERSE       = 1 << 6,  /* Is this ailment an adverse ailment? */
+  IMMUNITY      = 1 << 7,  /* Is the inflicted person immune to this ailment? */
+  CURE_ON_DEATH = 1 << 8,  /* Does the ailment persist death? */
+  VICTIM_SET    = 1 << 9,  /* Has the victim of the ailment been set? */
+  INFLICTOR_SET = 1 << 10,
+  DEALS_DAMAGE  = 1 << 11  /* Has the inflictor of the ailment been set? */
 };
 
 class Ailment
@@ -158,13 +159,16 @@ public:
   void death();
 
   /* Updates the ailment for upkeep condition */
-  void update();
+  void update(bool update_turns = true);
 
   /* Reset the ailment to default conditions */
   void reset();
 
   /* Undoes the effect (if exits) to the victim before curing */
   void unapply();
+  
+  /* Determines whether to reapply affect upon recalculation */
+  bool toReapplyFlags();
 
   /* Methods for printing all the information pertaining to the ailment */
   void print(const bool &simple = true, const bool &flags = false);
@@ -198,8 +202,8 @@ public:
   void setFlag(const AilState &flags, const bool &set_value = true);
 
   /* Public function to assign a new victom for the status ailment */
-  bool setNewVictim(Person* new_victim, Person* new_inflictor = nullptr,
-                    const bool &refresh_turns = false);
+  // bool setNewVictim(Person* new_victim, Person* new_inflictor = nullptr,
+  //                   const bool &refresh_turns = false);
 
 /*============================================================================
  * PUBLIC STATIC FUNCTIONS
@@ -207,6 +211,9 @@ public:
 public:
   /* Returns the maximum QD value for Skill useable by Bubbified person */
   static uint32_t getMaxBubbyQD();
+
+  /* Returns the hitback % for Berserk */
+  static double getBerserkHitbackPC();
 };
 
 #endif // AILMENT_H

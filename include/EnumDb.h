@@ -273,7 +273,8 @@ enum class DamageType
   GUARD,
   ITEM,
   POISON,
-  BURN
+  BURN,
+  BERSERK_HITBACK
 };
 
 /*

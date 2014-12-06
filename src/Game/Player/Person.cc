@@ -732,19 +732,6 @@ void Person::battlePrep()
   
   setBFlag(BState::IN_BATTLE, true);
   setBFlag(BState::ALIVE, true);
-  setBFlag(BState::ATK_ENABLED, true);
-  setBFlag(BState::SKL_ENABLED, true);
-  setBFlag(BState::ITM_ENABLED, false); //TODO: Temporarily disabled  [08-09-14]
-  setBFlag(BState::INS_ENABLED, false); //TODO: What enables inspect? [08-09-14]
-
-  setBFlag(BState::DEF_ENABLED, 
-           battle_class->getFlag(CategoryState::DEF_ENABLED));
-  setBFlag(BState::GRD_ENABLED, 
-           battle_class->getFlag(CategoryState::GRD_ENABLED)); 
-  setBFlag(BState::IMP_ENABLED,
-           battle_class->getFlag(CategoryState::IMP_ENABLED));
-  setBFlag(BState::RUN_ENABLED, true); 
-  setBFlag(BState::PAS_ENABLED, true);
 
   setBFlag(BState::SKIP_NEXT_TURN, false);
   setBFlag(BState::MISS_NEXT_TARGET, false);
@@ -766,9 +753,9 @@ void Person::battlePrep()
   setBFlag(BState::CAN_BE_CRIT, true);
   
   setBFlag(BState::DEFENDING, false);
-  setBFlag(BState::GUARDED, false);
-  setBFlag(BState::GUARDING, false);
-  setBFlag(BState::SHIELDED, false);
+  setBFlag(BState::GUARDED,   false);
+  setBFlag(BState::GUARDING,  false);
+  setBFlag(BState::SHIELDED,  false);
 }
 
 /*
@@ -1081,6 +1068,28 @@ bool Person::removeEquip(const EquipSlots &equip_slot)
   return removed;
 }
 
+/*
+ * Description: 
+ *
+ * Inputs:
+ * Output: 
+ */
+void Person::resetActionFlags()
+{
+  setBFlag(BState::ATK_ENABLED, true);
+  setBFlag(BState::SKL_ENABLED, true);
+  setBFlag(BState::ITM_ENABLED, false); //TODO: Temporarily disabled  [08-09-14]
+  setBFlag(BState::INS_ENABLED, false); //TODO: What enables inspect? [08-09-14]
+  setBFlag(BState::RUN_ENABLED, true); 
+  setBFlag(BState::PAS_ENABLED, true);
+
+  setBFlag(BState::DEF_ENABLED, 
+           battle_class->getFlag(CategoryState::DEF_ENABLED));
+  setBFlag(BState::GRD_ENABLED, 
+           battle_class->getFlag(CategoryState::GRD_ENABLED)); 
+  setBFlag(BState::IMP_ENABLED,
+           battle_class->getFlag(CategoryState::IMP_ENABLED));
+}
 
 /*
  * Description: 

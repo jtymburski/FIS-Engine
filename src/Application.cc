@@ -80,7 +80,7 @@ bool Application::changeMode(AppMode mode)
 void Application::handleEvents()
 {
   SDL_Event event;
-  
+
   while(SDL_PollEvent(&event) != 0)
   {
     /* If quit initialized, end the game loop */
@@ -97,7 +97,6 @@ void Application::handleEvents()
       if(press_event.keysym.sym == SDLK_F7)
       {
         SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
-
       }
       else if(press_event.keysym.sym == SDLK_F8)
       {

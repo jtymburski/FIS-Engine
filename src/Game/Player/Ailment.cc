@@ -151,8 +151,9 @@ Ailment::Ailment(Person* ail_victim, const Infliction &ail_type,
       setFlag(AilState::INFLICTOR_SET, true);
 
     setDuration(ail_min_turns, ail_max_turns, chance);
+
     setFlag(AilState::TO_UPDATE, true);
-    setFlag(AilState::TO_APPLY, true);
+    setFlag(AilState::TO_APPLY,  true);
   }
 }
 
@@ -239,6 +240,7 @@ bool Ailment::apply()
     damage = Helpers::setInRange(damage, kBURN_DMG_MIN, kBURN_DMG_MAX);
     damage = Helpers::setInRange(damage,damage,stats.getStat(Attribute::VITA));
     damage_type = DamageType::BURN;
+    
     setFlag(AilState::DEALS_DAMAGE, true);
   }
   
@@ -255,6 +257,8 @@ bool Ailment::apply()
     victim->setBFlag(BState::ITM_ENABLED, false);
     victim->setBFlag(BState::RUN_ENABLED, false);
     victim->setDmgMod(2);
+
+    setFlag(AilState::TO_APPLY, false);
   }
 
   /* Ailed actor cannot use skills if they require QD */
@@ -691,15 +695,10 @@ void Ailment::unapply()
   AttributeSet& stats = victim->getCurr();
   SkillSet*    skills = victim->getCurrSkills();
 
-  /* On removing Berserk, the person's abilities need to be re-enabled */
+  /* On removing Berserk, person's dmg_mod needs to be reset. Action flags are
+   * recomputed in the reCalcAilmentFlags() function in Battle */
   if (getType() == Infliction::BERSERK)
-  {
-    victim->setBFlag(BState::RUN_ENABLED, true);
-    victim->setBFlag(BState::SKL_ENABLED, true);
-    victim->setBFlag(BState::ITM_ENABLED, true);
-
     victim->setDmgMod(1);
-  }
 
   /* Silence - When silence is removed, skills need to be recalculated */
   else if (getType() == Infliction::SILENCE)
@@ -859,6 +858,24 @@ void Ailment::unapply()
 
 }
 
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output: 
+ */
+bool Ailment::toReapplyFlags()
+{
+
+  if (type == Infliction::BERSERK)
+  {
+    return true;
+  }
+
+  return false;
+}
+
 /*
  * Description: Prints all the info pertaining to Ailment by calling the other
  *              print functions
@@ -891,6 +908,7 @@ void Ailment::print(const bool &simple, const bool &flags)
     std::cout << "TO_CURE" << getFlag(AilState::TO_CURE) << "\n";
     std::cout << "TO_UPDATE" << getFlag(AilState::TO_UPDATE) << "\n";
     std::cout << "TO_APPLY" << getFlag(AilState::TO_APPLY) << "\n";
+    std::cout << "TO_UNAPPLY" << getFlag(AilState::TO_UNAPPLY) << "\n";
     std::cout << "BUFF" << getFlag(AilState::BUFF) << "\n";
     std::cout << "ADVERSE" << getFlag(AilState::ADVERSE) << "\n";
     std::cout << "IMMUNITY" << getFlag(AilState::IMMUNITY) << "\n";
@@ -1008,39 +1026,39 @@ void Ailment::setFlag(const AilState &flags, const bool &set_value)
  *         bool refresh_turns - Whether to reset the turn count
  * Output: Returns true if the new victim was set successfully.
  */
-bool Ailment::setNewVictim(Person* new_victim, Person* new_inflictor,
-                           const bool &refresh_turns)
-{
-  /* Boolean to do checks for assigning new victim */
-  bool can_assign = true;
+// bool Ailment::setNewVictim(Person* new_victim, Person* new_inflictor,
+//                            const bool &refresh_turns)
+// {
+//   /* Boolean to do checks for assigning new victim */
+//   bool can_assign = true;
 
-  /* Assert the new victim exists */
-  can_assign &= !(new_victim == nullptr);
+//   /* Assert the new victim exists */
+//   can_assign &= !(new_victim == nullptr);
 
-  if (can_assign)
-  {
-    /* The ailment cannot be assigned if the new victim is immune */
-    can_assign &= !checkImmunity(new_victim);
-    can_assign &=  getFlag(AilState::VICTIM_SET);
-  }
+//   if (can_assign)
+//   {
+//     /* The ailment cannot be assigned if the new victim is immune */
+//     can_assign &= !checkImmunity(new_victim);
+//     can_assign &=  getFlag(AilState::VICTIM_SET);
+//   }
 
-  if (can_assign)
-  {
-    /* Reset the turns the ailment has occured */
-    if (refresh_turns)
-    {
-      max_turns_left += turns_occured;
-      turns_occured = 0;
-    }
+//   if (can_assign)
+//   {
+//     /* Reset the turns the ailment has occured */
+//     if (refresh_turns)
+//     {
+//       max_turns_left += turns_occured;
+//       turns_occured = 0;
+//     }
 
-    setFlag(AilState::TO_APPLY);
-    setVictim(new_victim);
-    setInflictor(new_inflictor);
-    update();
-  }
+//     setFlag(AilState::TO_APPLY);
+//     setVictim(new_victim);
+//     setInflictor(new_inflictor);
+//     update();
+//   }
 
-  return can_assign;
-}
+//   return can_assign;
+// }
 
 /*
  * Description: Slot to catch an ailment which caused death, handles flag work
@@ -1066,13 +1084,14 @@ void Ailment::death()
  * Inputs: none
  * Output: none
  */
-void Ailment::update()
+void Ailment::update(bool update_turns)
 {
   /* The ailment may not be updated */
   if (getFlag(AilState::TO_UPDATE))
   {
-    /* Update the turn count and set the TOBECURED flag if neccessary */
-    if (!getFlag(AilState::INFINITE) && updateTurns())
+    /* Update the turn count and set the TOBECURED flag if neccessary, only
+     * update the turns if being called for (default - true) */
+    if (!getFlag(AilState::INFINITE) && update_turns && updateTurns())
       setFlag(AilState::TO_CURE);
 
     /* If the ailment is not to be cured, apply an effect (if there is one) */
@@ -1080,8 +1099,8 @@ void Ailment::update()
       apply();
   }
 
-  if (getFlag(AilState::TO_CURE))
-    unapply();
+  // if (getFlag(AilState::TO_CURE))
+  //   unapply();
 }
 
 /*
@@ -1110,4 +1129,15 @@ void Ailment::reset()
 uint32_t Ailment::getMaxBubbyQD()
 {
   return kBUBBIFY_MAX_QD;
+}
+
+/*
+ * Description:
+ *
+ * Inputs: 
+ * Output: 
+ */
+double Ailment::getBerserkHitbackPC()
+{
+  return kBERSERK_HITBACK_PC;
 }
