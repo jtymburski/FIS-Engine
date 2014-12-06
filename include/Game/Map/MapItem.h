@@ -16,7 +16,7 @@ class MapItem : public MapThing
 public:
   /* Constructor functions */
   MapItem();
-  MapItem(Sprite* frames, int id = kUNSET_ID, std::string name = "", 
+  MapItem(TileSprite* frames, int id = kUNSET_ID, std::string name = "", 
           std::string description = "");
 
   /* Destructor function */
@@ -44,7 +44,18 @@ private:
   const static float kMAX_BRIGHTNESS; /* The max brightness setting */
   const static float kMIN_BRIGHTNESS; /* The min brightness setting */
   const static int kUNSET_ID; /* The unset ID value */
-  
+ 
+/*============================================================================
+ * PROTECTED FUNCTIONS
+ *===========================================================================*/
+protected:
+  /* Sets the tile of the selected with the corresponding frames */
+  virtual bool setTile(Tile* tile, TileSprite* frames, 
+                       bool no_events = true);
+
+  /* This unsets the tile, at the given frame coordinate */
+  virtual void unsetTile(uint32_t x, uint32_t y, bool no_events);
+
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
@@ -60,7 +71,11 @@ public:
 
   /* Clears out the item construct, void of painting */
   void clear();
-  
+   
+  /* Shrink the frame matrix to the valid size (1x1) and removes all null and 
+   * void pointers.  */
+  virtual bool cleanMatrix();
+
   /* Returns the core (game representation) ID. -1 if unset */
   int getCoreID();
   
@@ -78,10 +93,17 @@ public:
   
   /* Sets the number of this item */
   void setCount(uint16_t count);
-  
+
+   /* Sets the state frames of the thing */
+  virtual bool setFrame(TileSprite* frame, uint32_t x, uint32_t y, 
+                        bool delete_old = true);
+  virtual void setFrames(std::vector<std::vector<TileSprite*>> frames, 
+                         bool delete_old = false);
+
   /* Set the tile to hook the map item to */
-  bool setStartingTile(uint16_t section_id, Tile* new_tile, 
-                                            bool no_events = false);
+  // TODO: Remove
+  //bool setStartingTile(uint16_t section_id, Tile* new_tile, 
+  //                                          bool no_events = false);
   
   /* Sets if the item is picked up by merely walking over it */
   void setWalkover(bool walkover);

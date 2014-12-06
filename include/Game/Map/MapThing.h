@@ -287,10 +287,10 @@ public:
   void setEventHandler(EventHandler* event_handler);
   
   /* Sets the state frames of the thing */
-  bool setFrame(TileSprite* frame, uint32_t x, uint32_t y, 
-                bool delete_old = true);
-  void setFrames(std::vector<std::vector<TileSprite*>> frames, 
-                 bool delete_old = false);
+  virtual bool setFrame(TileSprite* frame, uint32_t x, uint32_t y, 
+                        bool delete_old = true);
+  virtual void setFrames(std::vector<std::vector<TileSprite*>> frames, 
+                         bool delete_old = false);
   
   /* Sets the things ID */
   bool setID(int new_id);

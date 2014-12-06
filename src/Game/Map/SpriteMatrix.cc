@@ -9,7 +9,7 @@
 #include "Game/Map/SpriteMatrix.h"
 
 /* Constant Implementation - see header file for descriptions */
-//const uint8_t TileSprite::kMAX_RENDER_DEPTH = 10;
+const float SpriteMatrix::kBASE_FRAME_COUNT = 2.0;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -348,6 +348,12 @@ bool SpriteMatrix::addFileInformation(XmlData data, int file_index,
       index++;
     }
   }
+  /*----------------- PATH SPRITE -----------------*/
+  else if(elements.size() == 1 && elements.front() == "path")
+  {
+    sprite_matrix.front().front()->addFileInformation(data, file_index, 
+                                                      renderer, base_path);
+  }
   /*-----------------SPRITE DETAILS -----------------*/
   else if(elements.size() == 2 && elements.front() == "sprite")
   {
@@ -532,7 +538,7 @@ bool SpriteMatrix::render(SDL_Renderer* renderer, int x, int y,
  * Inputs: std::string render_str - the render data
  * Output: none
  */
-// TODO: Move into thing
+// TODO: Possibly move into thing?
 void SpriteMatrix::setRenderMatrix(std::string render_str)
 {
   /* Parse data */
@@ -617,6 +623,31 @@ void SpriteMatrix::setSprites(std::vector<std::vector<TileSprite*>> sprites,
 {
   unsetSprites(delete_old);
   sprite_matrix = sprites;
+}
+
+/*
+ * Description: Takes the animation speed and modifies it, based on the 
+ *              number of frames. This is only used for persons who have 
+ *              a base animation speed common across the class and modified 
+ *              for side animations (with different num of frames).
+ *
+ * Inputs: none
+ * Output: none
+ */
+void SpriteMatrix::tuneAnimationSpeed()
+{
+  if(sprite_matrix.size() > 0)
+  {
+    /* Determine animation speed and number of frames */
+    TileSprite* corner_sprite = sprite_matrix.front().front();
+    float rate = (corner_sprite->getSize() - 1) / kBASE_FRAME_COUNT;
+    uint16_t animation_time = corner_sprite->getAnimationTime() / rate;
+
+    /* Modify each sprite animation time */
+    for(uint16_t i = 0; i < sprite_matrix.size(); i++)
+      for(uint16_t j = 0; j < sprite_matrix[i].size(); j++)
+        sprite_matrix[i][j]->setAnimationTime(animation_time);
+  }
 }
 
 /*

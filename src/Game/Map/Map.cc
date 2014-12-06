@@ -985,6 +985,17 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
     else
       persons[1]->clearTarget();
   }
+  else if(event.keysym.sym == SDLK_y)
+  {
+    MapItem* item = NULL;
+    MapThing* thing = NULL;
+    MapPerson* person = NULL;
+    geography[0][7][8]->getRenderThings(0, item, person, thing);
+
+    std::cout << geography[0][7][8]->isItemsSet() << ","
+              << geography[0][8][8]->isItemsSet() << std::endl;
+    std::cout << item << " " << thing << " " << person << std::endl;
+  }
   else if(player != NULL)
   {
     if((event.keysym.sym == SDLK_LSHIFT || event.keysym.sym == SDLK_RSHIFT) && 
@@ -1191,6 +1202,21 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
       else
       {
         persons[i]->unsetStates(true);
+      }
+    }
+
+    /* Items clean-up and tile set-up */
+    for(uint16_t i = 0; i < items.size(); i++)
+    {
+      /* Clean the matrix - fixes up the rendering box */
+      if(items[i]->cleanMatrix())
+      {
+        /* Get the tile matrix to match the frames and set */
+        std::vector<std::vector<Tile*>> tile_set = getTileMatrix(items[i]);
+        if(tile_set.size() > 0)
+          items[i]->setStartingTiles(tile_set, true);
+        else
+          items[i]->unsetFrames(true);
       }
     }
 
@@ -1542,16 +1568,14 @@ bool Map::update(int cycle_time)
   /* Update persons for movement and animation */
   for(uint16_t i = 0; i < persons.size(); i++)
   {
-    if(persons[i] != NULL)
+    if(persons[i] != NULL && persons[i]->getMapSection() == map_index &&
+       persons[i]->isTilesSet())
     {
-      if(persons[i]->getMapSection() == map_index && 
-         persons[i]->isTilesSet())
-      {
+      if(persons[i]->isMoving() || persons[i]->isMoveRequested())
         tile_set = getTileMatrix(persons[i], 
                                  persons[i]->getPredictedMoveRequest());
-      }
 
-      /* Proceed to update the thing */
+      /* Proceed to update the person */
       persons[i]->update(cycle_time, tile_set);
     }
   }

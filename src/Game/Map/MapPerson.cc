@@ -7,7 +7,11 @@
  *              in multiple directions and on multiple surfaces. At present, 
  *              it allows for the 4 directions (N,S,E,W) all on one surface
  *              (Ground). Future expansion is available for other surfaces
- *              such as water, flying, etc.
+ *              such as water, flying, etc. The animation speed of the sprites
+ *              is based on 2 frames of moving (3 total). During the 
+ *              cleanMatrix() phase, the animation speed is modified to
+ *              match the number of frames. For example, if left has 4 frames,
+ *              the animation speed will be halved.
  *
  * TODO: Glitch - when running up and then reverse part way through tile, 
  *                the guy floats for a tiny period of time [2014-07-25]
@@ -518,6 +522,7 @@ bool MapPerson::cleanMatrix()
     for(uint8_t j = 0; j < states[i].size(); j++)
     {
       states[i][j]->cleanMatrix();
+      states[i][j]->tuneAnimationSpeed();
 
       /* Do some additional parsing to confirm data */
       if(i == 0 && j == 0)

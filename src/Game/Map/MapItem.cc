@@ -31,12 +31,11 @@ MapItem::MapItem() : MapThing()
   setCount(0);
 }
 
-MapItem::MapItem(Sprite* frames, int id, std::string name, 
+MapItem::MapItem(TileSprite* frames, int id, std::string name, 
                  std::string description)
        : MapThing(id, name, description)
 {
-  // TODO: Load frame data in
-
+  setFrame(frames, 0, 0);
   brighter = false;
   walkover = false;
   
@@ -48,6 +47,30 @@ MapItem::MapItem(Sprite* frames, int id, std::string name,
 MapItem::~MapItem()
 {
   clear();
+}
+
+/*============================================================================
+ * PROTECTED FUNCTIONS
+ *===========================================================================*/
+
+// TODO: Comment
+bool MapItem::setTile(Tile* tile, TileSprite* frames, bool no_events)
+{
+  (void)no_events;
+  (void)frames;
+
+  /* Attempt and set the tile */
+  if(tile != NULL)
+    return tile->addItem(this);
+  return false;
+}
+
+// TODO: Comment
+void MapItem::unsetTile(uint32_t x, uint32_t y, bool no_events)
+{
+  (void)no_events;
+
+  tile_main[x][y]->unsetItem(this);
 }
 
 /*============================================================================
@@ -75,10 +98,24 @@ bool MapItem::addThingInformation(XmlData data, int file_index,
   std::vector<std::string> elements = data.getTailElements(file_index);
   std::string identifier = data.getElement(file_index);
   bool success = true;
-  
+
   /* Parse the identifier for setting the item information */
+  /*--------------------- SPRITE DATA -----------------*/
+  if(identifier == "sprites")
+  {
+    success &= MapThing::addThingInformation(data, file_index, section_index, 
+                                             renderer, base_path);
+    if(success)
+    {
+      if(sprite_set->height() != 1 || sprite_set->width() != 1)
+      {
+        sprite_set->unsetSprites(true);
+        success = false;
+      }
+    }
+  }
   /*--------------------- CORE ID --------------------*/
-  if(identifier == "core_id" && elements.size() == 1)
+  else if(identifier == "core_id" && elements.size() == 1)
   {
     int id = data.getDataInteger(&success);
     if(success)
@@ -98,11 +135,14 @@ bool MapItem::addThingInformation(XmlData data, int file_index,
     if(success)
       setWalkover(walkover);
   }
-
   /* Proceed to parent */
-  return (success && MapThing::addThingInformation(data, file_index, 
-                                                   section_index, renderer, 
-                                                   base_path));
+  else
+  {
+    success &= MapThing::addThingInformation(data, file_index, section_index, 
+                                             renderer, base_path);
+  }
+
+  return success;
 }
 
 /* Returns the class descriptor, useful for casting */
@@ -120,6 +160,23 @@ void MapItem::clear()
   
   /* Clear out parent */
   MapThing::clear();
+}
+
+// TODO: Comment
+bool MapItem::cleanMatrix()
+{
+  bool success = MapThing::cleanMatrix();
+
+  if(success)
+  {
+    if(sprite_set->width() != 1 || sprite_set->height() != 1)
+    {
+      success = false;
+      sprite_set->unsetSprites();
+    }
+  }
+
+  return success;
 }
 
 /* Returns the core (game representation) ID. -1 if unset */
@@ -163,6 +220,23 @@ void MapItem::setCount(uint16_t count)
   this->count = count;
 }
 
+// TODO: Comment
+bool MapItem::setFrame(TileSprite* frame, uint32_t x, uint32_t y, 
+                       bool delete_old)
+{
+  if(x == 0 && y == 0)
+    return MapThing::setFrame(frame, x, y, delete_old);
+  return false;
+}
+
+// TODO: Comment
+void MapItem::setFrames(std::vector<std::vector<TileSprite*>> frames, 
+                         bool delete_old)
+{
+  if(frames.size() == 1 && frames.front().size() == 1)
+    MapThing::setFrames(frames, delete_old);
+}
+
 /* 
  * Description: Sets the connected tile information for the map item. This is
  *              the initial starting point and where the item is initially
@@ -175,14 +249,15 @@ void MapItem::setCount(uint16_t count)
  *         bool no_events - don't execute any events when set
  * Output: bool - status if the change was able to occur
  */
-bool MapItem::setStartingTile(uint16_t section_id, Tile* new_tile, 
-                                                   bool no_events)
-{
-  /* Unused variable - used in virtual call for Person */
-  (void)no_events;
-
-  if(new_tile != NULL)
-  {
+// TODO: Remove
+//bool MapItem::setStartingTile(uint16_t section_id, Tile* new_tile, 
+//                                                   bool no_events)
+//{
+//  /* Unused variable - used in virtual call for Person */
+//  (void)no_events;
+//
+//  if(new_tile != NULL)
+//  {
 // TODO: Fix
 //    /* Unset the main tile */
 //    //if(tile_main != NULL) // TODO: Fix
@@ -199,19 +274,16 @@ bool MapItem::setStartingTile(uint16_t section_id, Tile* new_tile,
 //    tile_section = section_id;
 //    
 //    return true;
-  }
-
-  return false;
-}
+//  }
+//
+//  return false;
+//}
 
 /* Sets if the item is picked up by merely walking over it */
 void MapItem::setWalkover(bool walkover)
 {
   this->walkover = walkover;
 }
-
-// TODO: Going to need something to limit the number of frames to one (items
-// are to only be on one tile
 
 /*
  * Description: Updates the state of the item. This can include animation
@@ -223,37 +295,36 @@ void MapItem::setWalkover(bool walkover)
  */
 void MapItem::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 {
-// TODO: Fix
-//  /* Update the brightness, to create the item pulse */
-//  if(frames != NULL)
-//  {
-//    double brightness = frames->getBrightness();
-//    
-//    /* If brighter, increase brightness. */
-//    if(brighter)
-//    {
-//      brightness += cycle_time / kDELTA_TIME_ONE_POINT;
-//      
-//      if(brightness > kMAX_BRIGHTNESS)
-//      {
-//        brightness = kMAX_BRIGHTNESS;
-//        brighter = false;
-//      }
-//    }
-//    /* Otherwise, dim the frames instead */
-//    else
-//    {
-//      brightness -= cycle_time / kDELTA_TIME_ONE_POINT;
-//      if(brightness < kMIN_BRIGHTNESS)
-//      {
-//        brightness = kMIN_BRIGHTNESS;
-//        brighter = true;
-//      }
-//    }
-//
-//    frames->setBrightness(brightness);  
-//  }
-  
-  /* Finally update the thing */
-  MapThing::update(cycle_time, tile_set);
+  if(isTilesSet())
+  {
+    double brightness = sprite_set->at(0, 0)->getBrightness();
+
+    /* If brighter, increase brightness. */
+    if(brighter)
+    {
+      brightness += cycle_time / kDELTA_TIME_ONE_POINT;
+      
+      if(brightness > kMAX_BRIGHTNESS)
+      {
+        brightness = kMAX_BRIGHTNESS;
+        brighter = false;
+      }
+    }
+    /* Otherwise, dim the frames instead */
+    else
+    {
+      brightness -= cycle_time / kDELTA_TIME_ONE_POINT;
+      if(brightness < kMIN_BRIGHTNESS)
+      {
+        brightness = kMIN_BRIGHTNESS;
+        brighter = true;
+      }
+    }
+
+    /* Update the brightness */
+    sprite_set->at(0, 0)->setBrightness(brightness);
+
+    /* Finally update the thing */
+    MapThing::update(cycle_time, tile_set);
+  }
 }

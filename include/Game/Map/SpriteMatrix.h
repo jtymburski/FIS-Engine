@@ -29,7 +29,7 @@ private:
   std::vector<std::vector<TileSprite*>> sprite_matrix;
 
   /* -------------------------- Constants ------------------------- */
-  //const static uint8_t kMAX_RENDER_DEPTH; /* Max render depth */
+  const static float kBASE_FRAME_COUNT; /* Base num frames for tuning anim */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -89,6 +89,10 @@ public:
   /* Sets the entire set of sprites in the matrix */
   void setSprites(std::vector<std::vector<TileSprite*>> sprites, 
                   bool delete_old = false);
+
+  /* Tunes animation speed based on speed which is based on movement of 2
+   * frames (total of 3) */
+  void tuneAnimationSpeed();
 
   /* Unsets an individual sprite in the matrix */
   void unsetSprite(uint16_t x, uint16_t y, bool delete_sprite = true);
