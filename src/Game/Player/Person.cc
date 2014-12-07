@@ -1712,7 +1712,7 @@ SkillSet* Person::getUseableSkills()
           skill_cost /= 2;
 
       /* If the adjusted QD cost is 0, assert that ATK is enabled */
-      if (skill_cost == 0)
+      if (skill_cost == 0 || (*it).skill->isBerserkSkill())
         add_skill &= getBFlag(BState::ATK_ENABLED);
       /* If the adjusted QD cost is > 0, asert that SKL is enabled */
       else

@@ -78,7 +78,7 @@ bool Buffer::checkValid(BufferAction& elm)
     {
       /* Action skill must not be null and skill use must be enabled */
       is_valid &= !(elm.skill_used == nullptr);
-      is_valid &= elm.user->getBFlag(BState::SKL_ENABLED);
+      //is_valid &= elm.user->getBFlag(BState::SKL_ENABLED);
     }
     else if (elm.type == ActionType::ITEM)
     {
@@ -200,6 +200,12 @@ bool Buffer::add(Person* const new_user, Skill* const new_skill_used,
 
     return true;
   }
+
+  std::cout << "[ERRORORO!!!] " << std::endl;
+  std::cout << new_user->getName() << std::endl;
+  std::cout << new_skill_used->getName() << std::endl;
+  std::cout << targets.size() << std::endl;
+
 
   return false;
 }
@@ -463,6 +469,7 @@ void Buffer::removeAllByUser(Person* user)
                                   }),
                                   end(action_buffer));
 
+
   auto new_size = action_buffer.size();
 
   /* Set the index of the last possible if the index ends out of bounds */
@@ -481,19 +488,13 @@ void Buffer::rejectGuardTargets(Person* const guard)
   auto guardee = guard->getGuardee();
 
   if (guardee != nullptr)
-  {
-    for (auto it = begin(action_buffer); it != end(action_buffer); ++it)
-    {
-      for (size_t i = 0; i < (*it).targets.size(); i++)
-      {
-        if ((*it).targets.at(i) == guard)
+    for (auto& action : action_buffer)
+      for (size_t i = 0; i < action.targets.size(); i++)
+        if (action.targets.at(i) == guard)
         {
-          (*it).targets.at(i) = guardee;
-          (*it).damage_types.at(i) = DamageType::BASE;
+          action.targets[i] = guard;
+          action.damage_types[i] = DamageType::BASE;
         }
-      }
-    }
-  }
 }
 
 /*

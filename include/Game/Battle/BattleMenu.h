@@ -91,9 +91,10 @@ private:
   Person* current_user;
 
   /* Menu indexes */
-  int32_t person_index;
-  int32_t layer_index;
-  int32_t element_index;
+  uint16_t num_allies;
+  int32_t  person_index;
+  int32_t  layer_index;
+  int32_t  element_index;
 
   /* ------------ Constants --------------- */
 
@@ -194,6 +195,9 @@ public:
 
   /* Assigns the scope of the skill when a skill has been chosen */
   void setActionScope(const ActionScope &new_action_scope);
+
+  /* Assigns the number of allies the curr person has (1 == self) */
+  void setNumAllies(uint16_t num_allies);
 
   /* Assigns the vector of BattleSkills to choose from */
   bool setSelectableSkills(std::vector<BattleSkill> new_menu_skills);

@@ -216,4 +216,4 @@ public:
   static double getBerserkHitbackPC();
 };
 
-#endif // AILMENT_H
+#endif

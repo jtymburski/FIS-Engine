@@ -152,6 +152,7 @@ void Skill::flagSetup()
 
     else if ((*it)->actionFlag(ActionFlags::DAMAGE))
     {
+      std::cout << "Setting damag flag " << std::endl;
       setFlag(SkillFlags::OFFENSIVE);
       setFlag(SkillFlags::DAMAGING);
     }
@@ -236,6 +237,29 @@ bool Skill::addActions(const std::vector<Action*> &new_actions)
   }
 
   return valid;
+}
+
+/*
+ * Description: 
+ *
+ * Inputs: 
+ * Output: 
+ */
+bool Skill::isBerserkSkill()
+{
+  auto has_bad_effect = true;
+
+  has_bad_effect &= getFlag(SkillFlags::ALTERING);
+  has_bad_effect &= getFlag(SkillFlags::HEALING);
+  has_bad_effect &= getFlag(SkillFlags::INFLICTING);
+  has_bad_effect &= getFlag(SkillFlags::RELIEVING);
+  has_bad_effect &= getFlag(SkillFlags::REVIVING);
+  has_bad_effect &= getFlag(SkillFlags::ASSIGNING);
+
+  if (has_bad_effect)
+    return false;
+
+  return getFlag(SkillFlags::DAMAGING);
 }
 
 /*

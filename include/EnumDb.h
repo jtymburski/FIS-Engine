@@ -274,7 +274,7 @@ enum class DamageType
   ITEM,
   POISON,
   BURN,
-  BERSERK_HITBACK
+  HITBACK
 };
 
 /*

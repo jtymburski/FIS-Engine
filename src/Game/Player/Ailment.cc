@@ -262,9 +262,12 @@ bool Ailment::apply()
   else if (type == Infliction::BERSERK)
   {
     /* On initial application, disable non physical skills and running */
-    // victim->setBFlag(BState::SKL_ENABLED, false);
+    victim->setBFlag(BState::SKL_ENABLED, false);
+    victim->setBFlag(BState::DEF_ENABLED, false);
+    victim->setBFlag(BState::GRD_ENABLED, false);
     victim->setBFlag(BState::ITM_ENABLED, false);
     victim->setBFlag(BState::RUN_ENABLED, false);
+    victim->setBFlag(BState::PAS_ENABLED, false);
     victim->setDmgMod(2);
 
     setFlag(AilState::TO_APPLY, false);
@@ -614,30 +617,18 @@ bool Ailment::checkImmunity(Person* new_victim)
  */
 bool Ailment::updateTurns()
 {
-  std::cout << "Turns occured: -- " << ++turns_occured << std::endl;
-
   /* If the ailment doesn't have one turn left, if it's finite, decrement it */
   if (max_turns_left <= kMAX_TURNS && max_turns_left > 1)
     --max_turns_left;
   if (min_turns_left > 0)
     --min_turns_left;
 
-  std::cout << "Min turns left: - " << min_turns_left << std::endl;
-  std::cout << "Max turns left: - " << max_turns_left << std::endl;
-
   if (turns_occured <= min_turns_left)
     return false;
 
   /* If the ailment is finite, cure it based on chance */;
   if (chance != 0 && Helpers::chanceHappens(std::floor(chance), 100))
-  {
-    std::cout << "Chance happens!" << std::endl;
     max_turns_left = 1;
-  }
-  else
-  {
-    std::cout << "Nadda chance! " << std::endl;
-  }
 
   /* If the ailment currently has one turn left, it's cured! */
   if (max_turns_left == 1)

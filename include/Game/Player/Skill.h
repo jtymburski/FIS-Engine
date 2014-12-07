@@ -41,7 +41,6 @@ enum class SkillFlags
   RELIEVING  = 1 << 7, /* Does this skill contain a RELIEVING effect? */
   REVIVING   = 1 << 8, /* Does this skill contain a REVIVING effect? */
   ASSIGNING  = 1 << 9, /* Doe sthis skill contain an ASSIGNING effect? */
-  ABSORBING  = 1 << 10, /* Does this skill contain an ABSORBING effect? */
   VALID      = 1 << 11  /* Is this a valid skill? */
 };
 
@@ -143,6 +142,9 @@ public:
 
   /* Attempts to add a vector of effects to the Skill */
   bool addActions(const std::vector<Action*> &new_actions);
+
+  /* Determines if a Skill is able to be used with Berserk */
+  bool isBerserkSkill();
 
   /* Determines if the Skill is valid */
   bool isValid();

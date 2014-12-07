@@ -288,6 +288,7 @@ void Game::setupBattle()
   inflict_actions.push_back(new Action("501,INFLICT,1.4,,,BURN,AMOUNT.50,,VITA,90"));
   inflict_actions.push_back(new Action("502,INFLICT,2.6,,,SCALD,AMOUNT.40,,VITA,90"));
   inflict_actions.push_back(new Action("503,INFLICT,4.8,,,CHARR,AMOUNT.30,,VITA,90"));
+  inflict_actions.push_back(new Action("504,INFLICT,4.4,,,BERSERK,AMOUNT.0,,VITA,95"));
 
   // for(auto it = begin(damage_actions); it != end(damage_actions); ++it)
   //   std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
@@ -303,20 +304,20 @@ void Game::setupBattle()
 
   // Test Skills
   Skill* physical_01 = new Skill(100, "Wee Strike", ActionScope::ONE_ENEMY, 
-      damage_actions[3], 95, 5);
+      damage_actions[3], 95, 0);
   physical_01->setPrimary(Element::PHYSICAL);
 
-  Skill* physical_02 = new Skill(101, "Whelp", ActionScope::ONE_ENEMY, 
-      damage_actions[4],  95, 5);
-  physical_02->setPrimary(Element::PHYSICAL);
+  // Skill* physical_02 = new Skill(101, "Whelp", ActionScope::ONE_ENEMY, 
+  //     damage_actions[4],  95, 5);
+  // physical_02->setPrimary(Element::PHYSICAL);
 
-  Skill* physical_03 = new Skill(102, "Two Smackeroos", 
-      ActionScope::TWO_ENEMIES, damage_actions[6], 95, 100);
-  physical_03->setPrimary(Element::PHYSICAL);
+  // Skill* physical_03 = new Skill(102, "Two Smackeroos", 
+  //     ActionScope::TWO_ENEMIES, damage_actions[6], 95, 100);
+  // physical_03->setPrimary(Element::PHYSICAL);
 
-  Skill* physical_04 = new Skill(103, "Mass Smack", ActionScope::ALL_ENEMIES, 
-      damage_actions[8], 85, 5); 
-  physical_04->setPrimary(Element::PHYSICAL);
+  // Skill* physical_04 = new Skill(103, "Mass Smack", ActionScope::ALL_ENEMIES, 
+  //     damage_actions[8], 85, 5); 
+  // physical_04->setPrimary(Element::PHYSICAL);
 
   Skill* fire_01 = new Skill(110, "Burninate The Countryside", ActionScope::ONE_ENEMY, 
     damage_actions[8], 100, 5);
@@ -385,14 +386,17 @@ void Game::setupBattle()
   Skill* charr = new Skill(143, "Charr", ActionScope::ONE_TARGET,
     inflict_actions[3], 100, 10);
 
+  Skill* berserk = new Skill(144, "Berserker", ActionScope::ONE_TARGET,
+    inflict_actions[4], 100, 10);
+
   // Test Skill Sets
   SkillSet* physical_skills = new SkillSet(physical_01, 1);
-  physical_skills->addSkill(physical_02, 1);
-  physical_skills->addSkill(physical_03, 1);
+  // physical_skills->addSkill(physical_02, 1);
+  // physical_skills->addSkill(physical_03, 1);
   physical_skills->addSkill(user_reduce_by_ally, 1);
   physical_skills->addSkill(alter_qtdr_by_thag, 1);
   physical_skills->addSkill(alter_qtdr_by_thag_flip, 1);
-  physical_skills->addSkill(physical_04, 1);
+  // physical_skills->addSkill(physical_04, 1);
   physical_skills->addSkill(self_heal, 1);
   physical_skills->addSkill(ally_heal, 1);
   physical_skills->addSkill(revive_ally, 1);
@@ -401,6 +405,7 @@ void Game::setupBattle()
   physical_skills->addSkill(burn, 1);
   physical_skills->addSkill(scald, 1);
   physical_skills->addSkill(charr, 1);
+  physical_skills->addSkill(berserk, 1);
 
   SkillSet* elemental_skills = new SkillSet(fire_01, 1);
 
@@ -566,7 +571,7 @@ void Game::setupBattle()
   for (uint32_t i = 0; i < enemies->getSize(); i++)
     enemies->getMember(i)->battlePrep();
 
-  getPerson(300)->print(false, false, true, true);
+  //getPerson(300)->print(false, false, true, true);
 
   game_battle = new Battle(game_config, friends, enemies);
 

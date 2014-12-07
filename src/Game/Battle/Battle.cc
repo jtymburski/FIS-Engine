@@ -1929,7 +1929,19 @@ bool Battle::processDamageAction(const DamageType &damage_type)
     std::cout << "{CRITICAL} - The strike is critical!" << std::endl;
   }
 
-  return processDamageAmount(damage, DamageType::BASE);
+  auto done = processDamageAmount(damage, DamageType::BASE);
+  
+  if (hasInfliction(Infliction::BERSERK, curr_user))
+  {
+    auto hitback = base_damage * Ailment::getBerserkHitbackPC();
+    std::swap(curr_user, curr_target);
+    done &= processDamageAmount(hitback, DamageType::HITBACK);
+    std::swap(curr_user, curr_target);
+
+  }
+
+
+  return done;
 }
 
 /*
@@ -1947,10 +1959,16 @@ bool Battle::processDamageAmount(int32_t amount, DamageType damage_type)
    * but guard and defending flags, etc. may need to be recalcuted */
   auto death = curr_target->doDmg(amount, damage_type);
 
+  auto str_dmg = "";
+  if (damage_type == DamageType::BASE)
+    str_dmg = "Damage";
+  else if (damage_type == DamageType::HITBACK)
+    str_dmg = "Hitback";
+
   if (getBattleMode() == BattleMode::TEXT)
   {
-    std::cout << "{DAMAGE} " << curr_target->getName() << " struck with " 
-              << amount << " damage.\n";
+    std::cout << "{" << str_dmg << "}" << curr_target->getName() 
+        << " struck with " << amount << " damage.\n";
 
     if (death)
       std::cout << "{FALLEN} " << curr_target->getName() << " has fallen.\n\n";
@@ -2172,7 +2190,20 @@ void Battle::processBuffer()
       {
         if (doesSkillHit(action_buffer->getTargets()))
         {
-          done = processSkill(curr_targets, curr_damage_types);
+          if (hasInfliction(Infliction::BERSERK, curr_user) && 
+              curr_skill->isBerserkSkill())
+          {
+            done = processSkill(curr_targets, curr_damage_types);
+          }
+          else if (hasInfliction(Infliction::BERSERK, curr_user))
+          {
+            if (getBattleMode() == BattleMode::TEXT)
+              std::cout << "{Fizzle} The skill fizzles!" << std::endl;
+          }
+          else
+          {
+            done = processSkill(curr_targets, curr_damage_types);
+          }
         }
         else if (getBattleMode() == BattleMode::TEXT)
         {
@@ -2387,22 +2418,21 @@ void Battle::selectUserActions()
 
     if (curr_user != nullptr)
     {
+      /* Construct useable battle skills or useable battle item structures */
+      auto skills = curr_user->getUseableSkills();
+      auto items  = friends->getInventory()->getBattleItems();
+
+      auto battle_skills = buildBattleSkills(person_index, skills);
+      auto battle_items  = buildBattleItems(person_index, items);
+
       /* Reload the menu information for the next person */
       menu->reset(curr_user, person_index);
-      
-      auto skills = curr_user->getUseableSkills();
-      menu->setSelectableSkills(buildBattleSkills(person_index, skills));
-
-      if (friends->getInventory() != nullptr)
-      {
-        auto items = friends->getInventory()->getBattleItems();
-        menu->setSelectableItems(buildBattleItems(person_index, items));
-      }
+      menu->setNumAllies(friends->getLivingMembers().size());
+      menu->setSelectableSkills(battle_skills);
+      menu->setSelectableItems(battle_items);
     
       if (getBattleMode() == BattleMode::TEXT)
-      {
         menu->printMenuState();
-      }
     }
     else
     {
@@ -2499,9 +2529,9 @@ void Battle::upkeep()
 }
 
 /*
- * Description: 1`
+ * Description:
  *
- * Inputs:!
+ * Inputs:
  * Output: 
  */
 void Battle::updateAllySelection()
@@ -3811,7 +3841,6 @@ uint32_t Battle::getBattleMenuDelay()
 {
   return kBATTLE_MENU_DELAY;
 }
-
 
 uint32_t Battle::getMaxAilments()
 {

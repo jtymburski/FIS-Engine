@@ -38,6 +38,7 @@ BattleMenu::BattleMenu(Options* running_config)
     , flags{static_cast<MenuState>(0)}
     , window_status{WindowStatus::OFF}
     , current_user{nullptr}
+    , num_allies{0}
     , person_index{0}
     , layer_index{0}
     , element_index{-1}
@@ -466,7 +467,15 @@ void BattleMenu::keyDownSelect()
     /* If the selected action is GUARD, increment directly to target layer */
     else if (action_type == ActionType::GUARD)
     {
-      layer_to_increment = 3;
+      if (num_allies > 1)
+        layer_to_increment = 3;
+      else
+      {
+        action_type = ActionType::NONE;
+
+        if (config->getBattleMode() == BattleMode::TEXT)
+          std::cout << "No allies to guard!" << std::endl;
+      }
     }
     
     /* DEFEND, RUN, PASS actions require no other menus -> done */
@@ -733,6 +742,7 @@ void BattleMenu::reset(Person* const new_user, const uint32_t &new_person_index)
 {
   unsetAll();
 
+  num_allies = 0;
   current_user = new_user;
   person_index = new_person_index;
 
@@ -1122,6 +1132,19 @@ WindowStatus BattleMenu::getWindowStatus()
 void BattleMenu::setActionScope(const ActionScope &new_action_scope)
 {
   action_scope = new_action_scope;
+}
+
+/*
+ * Description: Assigns a number of allies the current person will have for
+ *              selection.
+ *
+ * Inputs: uint16_t - a new number of allies to assign
+ * Output: none
+ */
+void BattleMenu::setNumAllies(uint16_t new_num_allies)
+{
+  std::cout << "Setting numba allies: " << new_num_allies << std::endl;
+  num_allies = new_num_allies;
 }
 
 /*

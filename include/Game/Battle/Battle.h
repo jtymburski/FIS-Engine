@@ -186,8 +186,8 @@ private:
   static const uint16_t kBATTLE_MENU_DELAY;
 
   /* ------------ Battle Modifiers (See Implementation) --------------- */
-  static const size_t kMAX_AILMENTS;
-  static const size_t kMAX_EACH_AILMENTS;
+  static const size_t   kMAX_AILMENTS;
+  static const size_t   kMAX_EACH_AILMENTS;
   static const uint16_t kMAXIMUM_DAMAGE;
   static const uint16_t kMINIMUM_DAMAGE;
 
