@@ -469,10 +469,10 @@ bool MapThing::setTileStart(Tile* old_tile, Tile* new_tile,
  *              determined that the thing is on the main tile (for the first
  *              time). Essentially just cleans up the previous tile pointer.
  * 
- * Inputs: none
+ * Inputs: bool no_events - should events trigger on move finish
  * Output: none
  */
-void MapThing::tileMoveFinish()
+void MapThing::tileMoveFinish(bool no_events)
 {
   for(uint16_t i = 0; i < sprite_set->width(); i++)
   {
@@ -481,7 +481,7 @@ void MapThing::tileMoveFinish()
       if(sprite_set->at(i, j) != NULL)
       {
         setTileFinish(tile_prev[i][j], tile_main[i][j], 
-                      sprite_set->at(i, j)->getRenderDepth(), false, false);
+                      sprite_set->at(i, j)->getRenderDepth(), false, no_events);
       }
     }
   }
@@ -1808,8 +1808,7 @@ bool MapThing::setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
             if(i == end_x && j == end_y)
               finished = true;
             else
-              tile_set[i][j]->
-                             unsetThing(sprite_set->at(i, j)->getRenderDepth());
+              unsetTile(i, j, true);
           }
         }
       }

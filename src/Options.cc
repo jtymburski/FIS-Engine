@@ -73,10 +73,19 @@ void Options::setAllToDefault()
   setBattleHudState(BattleOptions::FOREST_WALK);
   setBattleMode(BattleMode::TEXT);
 
+  /* Map Options */
+  setAutoRun(false);
+
+  /* Rendering Options */
   setFont(0, true);
   setLinearFiltering(false);
   setScreenResolution(0);
   setVsync(true);
+}
+
+void Options::setAutoRun(bool auto_run)
+{
+  this->auto_run = auto_run;
 }
 
 void Options::setAilmentUpdateState(BattleOptions new_state)
@@ -202,6 +211,12 @@ uint16_t Options::getScreenHeight()
 uint16_t Options::getScreenWidth()
 {
   return kRESOLUTIONS_X[resolution_x];
+}
+
+/* Returns if the player is instructed to always run */
+bool Options::isAutoRun()
+{
+  return auto_run;
 }
 
 /* Returns if linear filtering mode is enabled */

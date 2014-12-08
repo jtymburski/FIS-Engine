@@ -573,9 +573,19 @@ void MapDialog::setupNotification(SDL_Renderer* renderer)
 void MapDialog::setupPickup(SDL_Renderer* renderer, bool update)
 {
   Notification pickup = pickup_queue.front();
-  int render_height = img_pick_t.getHeight() + pickup.thing_image->getHeight() 
+  
+  /* Do some checking on height and width, before rendering */
+  uint16_t frame_width = pickup.thing_image->getWidth();
+  if(frame_width < Helpers::getTileSize())
+    frame_width = Helpers::getTileSize();
+  uint16_t frame_height = pickup.thing_image->getHeight();
+  if(frame_height < Helpers::getTileSize())
+    frame_height = Helpers::getTileSize();
+
+  /* Determine render height and width */
+  int render_height = img_pick_t.getHeight() + frame_height 
                                              + img_pick_b.getHeight();
-  int render_width = img_pick_t.getWidth() * 2 + pickup.thing_image->getWidth()
+  int render_width = img_pick_t.getWidth() * 2 + frame_width
                                                + kPICKUP_TEXT_MARGIN;
 
   /* Set up the text information */
@@ -634,10 +644,11 @@ void MapDialog::setupPickup(SDL_Renderer* renderer, bool update)
   /* Render dialog image */
   x_index = img_pick_t.getWidth();
   y_index = img_pick_t.getHeight();
-  pickup.thing_image->render(renderer, x_index, y_index);
+  pickup.thing_image->render(renderer, x_index, y_index, 
+                             frame_width, frame_height);
   
   /* Render text to indicate amount of pickup */
-  x_index += pickup.thing_image->getWidth() + kPICKUP_TEXT_MARGIN;
+  x_index += frame_width + kPICKUP_TEXT_MARGIN;
   y_index = (render_height - pickup_txt.getHeight()) / 2;
   pickup_txt.render(renderer, x_index, y_index);
   

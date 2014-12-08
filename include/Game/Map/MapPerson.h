@@ -33,6 +33,9 @@ private:
   Direction direction;
   std::vector<Direction> movement_stack;
 
+  /* Is the person running? */
+  bool running;
+
   /* The initial tile location to start movement on */
   std::vector<std::vector<Tile*>> starting_tiles;
 
@@ -79,7 +82,10 @@ protected:
   /* Is move allowed, based on main tile and the next tile */
   virtual bool isTileMoveAllowed(Tile* previous, Tile* next, uint8_t 
                                  render_depth, Direction move_request);
-  
+
+  /* Determine the move amount of the person */
+  float moveAmount(uint16_t cycle_time);
+
   /* Remove movement direction from the stack, if it exists */
   void removeDirection(Direction direction);
 
@@ -147,7 +153,10 @@ public:
   
   /* Determines if there is an active move request (virtual reimplemented) */
   bool isMoveRequested();
-  
+ 
+  /* Determines if the person is running */
+  bool isRunning();
+
   /* Key Down/Flush/Up events handled */
   void keyDownEvent(SDL_KeyboardEvent event);
   void keyFlush();
@@ -155,7 +164,10 @@ public:
   
   /* Resets the tile position */
   bool resetPosition();
-   
+  
+  /* Sets if the person is running */
+  void setRunning(bool running);
+
   /* Sets the set of tiles that the thing will be placed on. Needed after
    * defining a starting point.*/
   virtual bool setStartingTiles(std::vector<std::vector<Tile*>> tile_set, 

@@ -112,7 +112,7 @@ protected:
                                  uint8_t render_depth, Direction move_request);
 
   /* Move the thing, based on the internal direction */
-  float moveAmount(uint16_t cycle_time);
+  virtual float moveAmount(uint16_t cycle_time);
   void moveThing(int cycle_time);
 
   /* Sets the new direction that the class is moving in */
@@ -132,7 +132,7 @@ protected:
                             uint8_t render_depth, bool no_events = false);
 
   /* Starts and stops tile move. Relies on underlying logic for occurance */
-  virtual void tileMoveFinish();
+  virtual void tileMoveFinish(bool no_events = true);
   virtual bool tileMoveStart(std::vector<std::vector<Tile*>> tile_set,
                              bool no_events = true);
 

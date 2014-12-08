@@ -38,7 +38,8 @@ const uint8_t MapPerson::kTOTAL_SURFACES   = 1;
  * Inputs: none
  */
 MapPerson::MapPerson() : MapThing()
-{ 
+{
+  running = false;
   starting_section = 0;
   steps = 0;
   
@@ -60,6 +61,7 @@ MapPerson::MapPerson() : MapThing()
 MapPerson::MapPerson(int id, std::string name, std::string description)
           : MapThing(id, name, description)
 {
+  running = false;
   starting_section = 0;
   steps = 0;
   
@@ -244,6 +246,30 @@ bool MapPerson::isTileMoveAllowed(Tile* previous, Tile* next,
   }
 
   return move_allowed;
+}
+
+/* 
+ * Description: Calculates the move amount based on the cycle time and the 
+ *              speed for how many pixels should be shifted. The calculation
+ *              is based on 16ms for 2 pixel at speed 8. This is virtual from
+ *              thing and adds on the check for running.
+ * 
+ * Inputs: int cycle_time - the time since the last update call
+ * Output: float - the move amount in 0.0 to 1.0 of a pixel width
+ */
+float MapPerson::moveAmount(uint16_t cycle_time)
+{
+  float move_amount = 0.0;
+  if(running)
+    move_amount = (cycle_time * speed * 2) / kMOVE_FACTOR;
+  else
+    move_amount = (cycle_time * speed) / kMOVE_FACTOR;
+
+  /* Check to make sure it maxes out at one tile */
+  if(move_amount > 1.0)
+    move_amount = 1.0;
+  
+  return move_amount;
 }
 
 /*
@@ -556,6 +582,7 @@ void MapPerson::clear()
   /* Clear direction and movement information */
   direction = Direction::NORTH;
   clearAllMovement();
+  running = false;
   surface = GROUND;
 
   /* Clear the parent */
@@ -675,6 +702,18 @@ bool MapPerson::isMoveRequested()
 }
 
 /*
+ * Description: Returns if the person is running (moving at twice set speed) or
+ *              not.
+ *
+ * Inputs: none
+ * Output: bool - is the person running?
+ */
+bool MapPerson::isRunning()
+{
+  return running;
+}
+
+/*
  * Description: The key press event in the window through the SDL system.
  *
  * Inputs: SDL_KeyboardEvent event - the the event triggered on the SDL engine
@@ -733,10 +772,33 @@ void MapPerson::keyUpEvent(SDL_KeyboardEvent event)
 bool MapPerson::resetPosition()
 {
   if(isTilesSet())
+  {
+    /* Reset movement */
+    keyFlush();
+    if(isMoving())
+      tileMoveFinish();
+    setDirection(Direction::DIRECTIONLESS);
+    animate(0, true);
+
+    /* Finally, set the new tiles */
     return setStartingTiles(starting_tiles, true);
+  }
 
   return false;
 }
+
+/*
+ * Description: Sets the person to either running or not. Running is defined
+ *              as twice the normal speed.
+ *
+ * Inputs: bool running - true if the person is running.
+ * Output: none
+ */
+void MapPerson::setRunning(bool running)
+{
+  this->running = running;
+}
+
 /* 
  * Description: Sets the starting tiles, for rendering the person. This tile
  *              set needs to be equal to the size of the bounding box and 
@@ -846,7 +908,7 @@ void MapPerson::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
     if(!isMoving() || (almost_there = isAlmostOnTile(cycle_time)))
     {
       if(almost_there)
-        tileMoveFinish();
+        tileMoveFinish(getID() != kPLAYER_ID);
 
       if(getMovementPaused())
       {
@@ -884,7 +946,7 @@ void MapPerson::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
         if(setDirection(getMoveRequest(), can_move) || !can_move)
           reset = true;
         if(can_move)
-          tileMoveStart(tile_set);
+          tileMoveStart(tile_set, getID() != kPLAYER_ID);
       }
       /* Otherwise, make sure animation is on default state */
       else
@@ -911,13 +973,16 @@ void MapPerson::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
  *         bool delete_frames - true if the frames should be deleted from mem
  * Output: none
  */
-// TODO: Remove from tile, if it's set
 void MapPerson::unsetState(SurfaceClassifier surface, Direction direction, 
                            uint32_t x, uint32_t y, bool delete_frames)
 {
   SpriteMatrix* matrix = getState(surface, direction);
   if(matrix != NULL)
+  {
     matrix->unsetSprite(x, y, delete_frames);
+    if(isTilesSet())
+      unsetTile(x, y, true);
+  }
 }
 
 /*

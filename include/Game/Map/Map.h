@@ -73,7 +73,6 @@ private:
   std::vector<MapItem*> items;
   std::vector<MapPerson*> persons;
   MapPerson* player; /* The actively controlled player */
-  bool running;
   std::vector<MapThing*> things;
 
   // /* The sectors on the map (for rooms, caves, houses etc) */

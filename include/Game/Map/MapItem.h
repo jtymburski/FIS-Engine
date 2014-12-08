@@ -30,11 +30,8 @@ private:
   int core_id;
   
   /* The number of items available */
-  uint16_t count;
+  uint32_t count;
 
-  /* States if the map item can be seen */
-  //bool visible;
-  
   /* States if the map item is picked up by walking over it */
   bool walkover;
   
@@ -43,7 +40,6 @@ private:
   const static float kDELTA_TIME_ONE_POINT; /* otal time for 1.0 change */
   const static float kMAX_BRIGHTNESS; /* The max brightness setting */
   const static float kMIN_BRIGHTNESS; /* The min brightness setting */
-  const static int kUNSET_ID; /* The unset ID value */
  
 /*============================================================================
  * PROTECTED FUNCTIONS
@@ -69,18 +65,18 @@ public:
   /* Returns the class descriptor, useful for casting */
   virtual std::string classDescriptor();
 
-  /* Clears out the item construct, void of painting */
-  void clear();
-   
   /* Shrink the frame matrix to the valid size (1x1) and removes all null and 
    * void pointers.  */
   virtual bool cleanMatrix();
+
+  /* Clears out the item construct, void of painting */
+  void clear();
 
   /* Returns the core (game representation) ID. -1 if unset */
   int getCoreID();
   
   /* Returns the count of how many of these items are available */
-  uint16_t getCount();
+  uint32_t getCount();
   
   /* Returns if the Map Item can be seen */
   bool isVisible();
@@ -92,7 +88,7 @@ public:
   void setCoreID(int id);
   
   /* Sets the number of this item */
-  void setCount(uint16_t count);
+  void setCount(uint32_t count);
 
    /* Sets the state frames of the thing */
   virtual bool setFrame(TileSprite* frame, uint32_t x, uint32_t y, 
@@ -100,11 +96,6 @@ public:
   virtual void setFrames(std::vector<std::vector<TileSprite*>> frames, 
                          bool delete_old = false);
 
-  /* Set the tile to hook the map item to */
-  // TODO: Remove
-  //bool setStartingTile(uint16_t section_id, Tile* new_tile, 
-  //                                          bool no_events = false);
-  
   /* Sets if the item is picked up by merely walking over it */
   void setWalkover(bool walkover);
   

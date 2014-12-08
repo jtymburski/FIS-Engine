@@ -45,6 +45,9 @@ private:
   /* Amount of information to display during ailment updates */
   BattleOptions ailment_update_state;
 
+  /* Auto run, in the map */
+  bool auto_run;
+
   /* The base string path for accessing file information */
   std::string base_path;
   
@@ -103,6 +106,9 @@ private:
   /* Assign a new ailment update state to BattleOptions */
   void setAilmentUpdateState(BattleOptions new_state);
 
+  /* Assigns if the player is to always run on the map */
+  void setAutoRun(bool auto_run);
+
   /* Assign a new hud update state to BattleOptions */
   void setBattleHudState(BattleOptions new_state);
 
@@ -146,6 +152,9 @@ public:
   /* Returns the screen dimensions to be painted */
   uint16_t getScreenHeight();
   uint16_t getScreenWidth();  
+
+  /* Is the player instructed to always run? */
+  bool isAutoRun();
 
   /* Returns if linear filtering mode is enabled */
   bool isLinearFilteringEnabled();

@@ -47,7 +47,6 @@ Map::Map(Options* running_config, EventHandler* event_handler)
   map_index = 0;
   map_path = "";
   player = NULL;
-  running = false;
   system_options = NULL;
   
   /* Configure the width / height of tiles and sets default zooming */
@@ -313,7 +312,11 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
       
       /* If the ID is the player ID, tie to the player */
       if(id == kPLAYER_ID)
+      {
         player = static_cast<MapPerson*>(modified_thing);
+        if(system_options != NULL && system_options->isAutoRun())
+          player->setRunning(true);
+      }
       
       /* Append the new one */
       persons.push_back(static_cast<MapPerson*>(modified_thing));
@@ -577,8 +580,16 @@ void Map::initiateThingInteraction(MapPerson* initiator)
       }
       else if(items_found.size() > 0)
       {
-        for(uint16_t i = 0; i < items_found.size(); i++)
-          event_handler->executePickup(items_found[i]);
+        bool found = false;
+
+        for(uint16_t i = 0; !found && (i < items_found.size()); i++)
+        {
+          if(!items_found[i]->isWalkover() && items_found[i]->getCount() > 0)
+          {
+            event_handler->executePickup(items_found[i]);
+            found = true;
+          }
+        }
       }
     }
   }
@@ -788,6 +799,10 @@ bool Map::initConversation(Conversation* convo, MapThing* source)
     if(source != NULL)
       source->setTarget(player);
 
+    /* Clear running status */
+    if(system_options != NULL && !system_options->isAutoRun())
+      player->setRunning(false);
+
     return true;
   }
 
@@ -884,10 +899,13 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
   else if(event.keysym.sym == SDLK_p)
     map_dialog.setPaused(!map_dialog.isPaused());
   else if(event.keysym.sym == SDLK_r)
+  {
+    player->keyFlush();
     player->resetPosition();
-  else if(event.keysym.sym == SDLK_6) // TODO: SEG
+  }
+  else if(event.keysym.sym == SDLK_6)
     map_dialog.initPickup(items[1]->getDialogImage(), 15, 2500);
-  else if(event.keysym.sym == SDLK_7) // TODO: SEG
+  else if(event.keysym.sym == SDLK_7)
     map_dialog.initPickup(items.front()->getDialogImage(), 5);
   else if(event.keysym.sym == SDLK_8)
     map_dialog.initNotification("Hello sunshine, what a glorious day and I'll keep writing forever and forever and forever and forever and forever and forever and forFU.", true, 0);
@@ -998,12 +1016,8 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
   }
   else if(player != NULL)
   {
-    if((event.keysym.sym == SDLK_LSHIFT || event.keysym.sym == SDLK_RSHIFT) && 
-       !running)
-    {
-      running = true;
-      player->setSpeed(player->getSpeed() * 2);
-    }
+    if(event.keysym.sym == SDLK_LSHIFT || event.keysym.sym == SDLK_RSHIFT)
+      player->setRunning(true);
     else if(event.keysym.sym == SDLK_3)
     {
       viewport.lockOn(player);
@@ -1029,11 +1043,8 @@ void Map::keyUpEvent(SDL_KeyboardEvent event)
   else if(player != NULL)
   {
     if((event.keysym.sym == SDLK_LSHIFT || event.keysym.sym == SDLK_RSHIFT) && 
-       running)
-    {
-      running = false;
-      player->setSpeed(player->getSpeed() / 2);
-    }
+       system_options != NULL && !system_options->isAutoRun())
+      player->setRunning(false);
     else
       player->keyUpEvent(event);
   }
@@ -1326,8 +1337,31 @@ bool Map::render(SDL_Renderer* renderer)
 
     /* Render the lower tiles within the range of the viewport */
     for(uint16_t i = tile_x_start; i < tile_x_end; i++)
+    {
       for(uint16_t j = tile_y_start; j < tile_y_end; j++)
-        geography[map_index][i][j]->renderLower(renderer, x_offset, y_offset);
+      {
+        Tile* ref_tile = geography[map_index][i][j];
+        
+        /* Lower sprites */
+        ref_tile->renderLower(renderer, x_offset, y_offset);
+
+        /* Map Items, if relevant */
+        if(ref_tile->isItemsSet())
+        {
+          std::vector<MapItem*> item_set = ref_tile->getItems();
+          bool found = false;
+
+          for(uint16_t i = 0; !found && (i < item_set.size()); i++)
+          {
+            if(item_set[i]->getCount() > 0)
+            {
+              item_set[i]->render(renderer, x_offset, y_offset);
+              found = true;
+            }
+          }
+        }
+      }
+    }
 
     /* Render the map things within the range of the viewport */
     for(uint8_t index = 0; index < Helpers::getRenderDepth(); index++)
@@ -1339,7 +1373,7 @@ bool Map::render(SDL_Renderer* renderer)
           MapItem* render_item = NULL;
           MapPerson* render_person = NULL;
           MapThing* render_thing = NULL;
-         
+          // TODO: FIX AND REMOVE ITEM GRAB
           if(geography[map_index][i][j]->getRenderThings(index, render_item,
                                                          render_person, 
                                                          render_thing))
@@ -1348,9 +1382,9 @@ bool Map::render(SDL_Renderer* renderer)
              * If base index, render order is top item, thing, then person */
             if(index == 0)
             {
-              if(render_item != NULL)
-                render_item->renderMain(renderer, geography[map_index][i][j], 
-                                        index, x_offset, y_offset);
+              //if(render_item != NULL)
+              //  render_item->renderMain(renderer, geography[map_index][i][j], 
+              //                          index, x_offset, y_offset);
               if(render_thing != NULL)
                 render_thing->renderMain(renderer, geography[map_index][i][j], 
                                          index, x_offset, y_offset);
@@ -1359,7 +1393,7 @@ bool Map::render(SDL_Renderer* renderer)
                 if(render_person->getMovement() == Direction::EAST || 
                    render_person->getMovement() == Direction::SOUTH)
                   render_person->renderPrevious(renderer, 
-                          geography[map_index][i][j],index, x_offset, y_offset);
+                         geography[map_index][i][j], index, x_offset, y_offset);
                 else
                   render_person->renderMain(renderer, 
                          geography[map_index][i][j], index, x_offset, y_offset);
@@ -1465,11 +1499,7 @@ void Map::unfocus()
   if(player != NULL)
   {
     player->keyFlush();
-    
-    /* If player was running, reset it */
-    if(running)
-      player->setSpeed(player->getSpeed() / 2);
-    running = false;
+    player->setRunning(false);
   } 
 }
 

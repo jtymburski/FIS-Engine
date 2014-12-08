@@ -13,24 +13,35 @@ const uint8_t MapItem::kDEFAULT_COUNT = 1;
 const float MapItem::kDELTA_TIME_ONE_POINT = 3000.0;
 const float MapItem::kMAX_BRIGHTNESS = 1.2;
 const float MapItem::kMIN_BRIGHTNESS = 1.0;
-const int MapItem::kUNSET_ID = -1;
 
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
 
-/* Constructor function */
+/* 
+ * Description: Constructor for this class. Sets up an empty item with no
+ *              data.
+ *
+ * Inputs: none
+ */
 MapItem::MapItem() : MapThing()
 {
   brighter = false;
   core_id = kUNSET_ID;
-  visible = true;
   walkover = false;
   
   /* Set the count to 0 since the map item is not configured */
   setCount(0);
 }
 
+/* 
+ * Description: Constructor for this class. Takes data to create the item.
+ *
+ * Inputs: TileSprite* frames - the frame pointer to render on map
+ *         int id - the ID of the thing
+ *         std::string name - the name of the thing, default to ""
+ *         std::string description - the description of the thing, default to ""
+ */
 MapItem::MapItem(TileSprite* frames, int id, std::string name, 
                  std::string description)
        : MapThing(id, name, description)
@@ -43,7 +54,9 @@ MapItem::MapItem(TileSprite* frames, int id, std::string name,
   setCount(kDEFAULT_COUNT);
 }
 
-/* Destructor function */
+/* 
+ * Description: Destructor function 
+ */
 MapItem::~MapItem()
 {
   clear();
@@ -53,7 +66,15 @@ MapItem::~MapItem()
  * PROTECTED FUNCTIONS
  *===========================================================================*/
 
-// TODO: Comment
+/*
+ * Description: Sets the tile with the given object and frames and allows for
+ *              event triggers to be controlled (relevant for MapPerson only).
+ *
+ * Inputs: Tile* tile - the tile pointer to set the frame
+ *         TileSprite* frames - the frames pointer to set in the tile
+ *         bool no_events - if events should trigger on the set
+ * Output: bool - true if the set was successful
+ */
 bool MapItem::setTile(Tile* tile, TileSprite* frames, bool no_events)
 {
   (void)no_events;
@@ -65,7 +86,18 @@ bool MapItem::setTile(Tile* tile, TileSprite* frames, bool no_events)
   return false;
 }
 
-// TODO: Comment
+/*
+ * Description: Unsets the tile corresponding to the matrix at the x and y
+ *              coordinate. However, since this is an private function, it does
+ *              not confirm that the X and Y are in the valid range. Must be 
+ *              checked or results are unknown. This will unset the thing from 
+ *              the tile corresponding to the frame and the tile from the frame.
+ *
+ * Inputs: uint32_t x - the x coordinate of the frame (horizontal)
+ *         uint32_t y - the y coordinate of the frame (vertical)
+ *         bool no_events - should events trigger with the change?
+ * Output: none
+ */
 void MapItem::unsetTile(uint32_t x, uint32_t y, bool no_events)
 {
   (void)no_events;
@@ -145,24 +177,31 @@ bool MapItem::addThingInformation(XmlData data, int file_index,
   return success;
 }
 
-/* Returns the class descriptor, useful for casting */
+/*
+ * Description: This is the class descriptor. Primarily used for encapsulation
+ *              to determine which class to cast it to for specific parameters.
+ *              This is the virtual re-do of the parent class function.
+ *
+ * Inputs: none
+ * Output: std::string - the string descriptor, it will be the same as the class
+ *                       name. For example, "MapThing", "MapPerson", etc.
+ */
 std::string MapItem::classDescriptor()
 {
   return "MapItem";
 }
 
-/* Clears out the item construct, void of painting */
-void MapItem::clear()
-{
-  /* Clear out the item variables */
-  setCount(0);
-  setWalkover(false);
-  
-  /* Clear out parent */
-  MapThing::clear();
-}
-
-// TODO: Comment
+/*
+ * Description: Takes the frame matrix, as it's been set up and removes any 
+ *              rows or columns at the end that have no valid frames set. A
+ *              frame is classified as valid if it's not NULL and has renderable
+ *              frames stored within it. This controls the virtual equivalent
+ *              in MapThing and also adds the additional check of only
+ *              one frame is allowed in the item.
+ *
+ * Inputs: none
+ * Output: bool - true if clean validated frame data
+ */
 bool MapItem::cleanMatrix()
 {
   bool success = MapThing::cleanMatrix();
@@ -179,19 +218,55 @@ bool MapItem::cleanMatrix()
   return success;
 }
 
-/* Returns the core (game representation) ID. -1 if unset */
+/* 
+ * Description: Clears out all information stored in the item class. This 
+ *              overwrites the thing function for extra functionality.
+ * 
+ * Inputs: none
+ * Output: none
+ */
+void MapItem::clear()
+{
+  /* Clear out the item variables */
+  setCount(0);
+  setWalkover(false);
+  core_id = kUNSET_ID;
+
+  /* Clear out parent */
+  MapThing::clear();
+}
+
+/*
+ * Description: Returns the core ID for the item. This is the ID that matches
+ *              the player class (used for coordination on pickup and item
+ *              giving.
+ *
+ * Inputs: none
+ * Output: int - the integer ID. Less than 0 is unset.
+ */
 int MapItem::getCoreID()
 {
   return core_id;
 }
 
-/* Returns the count of how many of these items are available */
-uint16_t MapItem::getCount()
+/*
+ * Description: Returns the number of items in the MapItem stack.
+ *
+ * Inputs: none
+ * Output: uint32_t - unsigned integer to represent count
+ */
+uint32_t MapItem::getCount()
 {
   return count;
 }
 
-/* Returns if the Map Item can be seen */
+/*
+ * Description: Returns if the thing is visible for rendering. Note that the
+ *              item will not be visible unless the count is greater than 0.
+ *
+ * Inputs: none
+ * Output: bool - visibility status
+ */
 bool MapItem::isVisible()
 {
   if(count > 0)
@@ -199,13 +274,27 @@ bool MapItem::isVisible()
   return false;
 }
   
-/* Returns if the item is picked up merely by walking over it */
+/*
+ * Description: Returns if the item is walkover (picked up when the person
+ *              enters the tile) or not (picked up only when the person is on
+ *              the tile and the action tile is selected).
+ *
+ * Inputs: none
+ * Output: bool - true if the item is a walkover
+ */
 bool MapItem::isWalkover()
 {
   return walkover;
 }
 
-/* Sets the core (game representation) ID. If invalid, sets to -1 */
+/*
+ * Description: Sets the core ID for the item. This is the ID that matches
+ *              the player class (used for coordination on pickup and item
+ *              giving.
+ *
+ * Inputs: int id - the new ID. Invalid if below 0.
+ * Output: none
+ */
 void MapItem::setCoreID(int id)
 {
   if(id >= 0)
@@ -214,13 +303,32 @@ void MapItem::setCoreID(int id)
     core_id = kUNSET_ID;
 }
 
-/* Sets the number of this item */
-void MapItem::setCount(uint16_t count)
+/*
+ * Description: Sets the number of items in the MapItem stack.
+ *
+ * Inputs: uint32_t count - unsigned integer for number of items
+ * Output: none
+ */
+void MapItem::setCount(uint32_t count)
 {
   this->count = count;
 }
 
-// TODO: Comment
+/*
+ * Description: Sets a single frame sequence in the matrix of the rendering
+ *              item. This takes over control of MapThing function. If the 
+ *              x and y aren't 0 (as only one frame is allowed in item), 
+ *              the call fails.
+ *
+ * Inputs: TileSprite* frame - the new frame to insert into the Map Thing
+ *                             matrix. Must actually have a sprite set.
+ *         uint32_t x - the x coordinate, relative to the top left of the 
+ *                      Map Thing render matrix.
+ *         uint32_t y - the y coordinate, relative to the top left of the
+ *                      Map Thing render matrix.
+ *         bool unset_old - delete the old frames from memory?
+ * Output: bool - returns if the new frame was set successfully
+ */
 bool MapItem::setFrame(TileSprite* frame, uint32_t x, uint32_t y, 
                        bool delete_old)
 {
@@ -229,7 +337,16 @@ bool MapItem::setFrame(TileSprite* frame, uint32_t x, uint32_t y,
   return false;
 }
 
-// TODO: Comment
+/*
+ * Description: Sets the frames that defines the item. This takes over control
+ *              of the MapThing function. If the size of array isn't 1x1 (as
+ *              only one frame is allowed in item), the call fails.
+ *
+ * Inputs: std::vector<std::vector<TileSprite*>> frames - the new matrix of 
+ *             frames to define to insert into the thing
+ *         bool delete_old - delete the old frames from memory?
+ * Output: none
+ */
 void MapItem::setFrames(std::vector<std::vector<TileSprite*>> frames, 
                          bool delete_old)
 {
@@ -237,49 +354,14 @@ void MapItem::setFrames(std::vector<std::vector<TileSprite*>> frames,
     MapThing::setFrames(frames, delete_old);
 }
 
-/* 
- * Description: Sets the connected tile information for the map item. This is
- *              the initial starting point and where the item is initially
- *              placed. If this is unset, the item will not move or paint.
- *              This replaces the generic mapthing call to allow for map 
- *              person in tile to be modified.
+/*
+ * Description: Sets if the item is walkover (picked up when the person
+ *              enters the tile) or not (picked up only when the person is on
+ *              the tile and the action tile is selected).
  *
- * Inputs: uint16_t section_id - the map id that the tile is from
- *         Tile* new_tile - the tile to set the starting pointer to
- *         bool no_events - don't execute any events when set
- * Output: bool - status if the change was able to occur
+ * Inputs: bool walkover - true if the item is a walkover
+ * Output: none
  */
-// TODO: Remove
-//bool MapItem::setStartingTile(uint16_t section_id, Tile* new_tile, 
-//                                                   bool no_events)
-//{
-//  /* Unused variable - used in virtual call for Person */
-//  (void)no_events;
-//
-//  if(new_tile != NULL)
-//  {
-// TODO: Fix
-//    /* Unset the main tile */
-//    //if(tile_main != NULL) // TODO: Fix
-//    //  tile_main->unsetItem();
-//    tile_main = NULL;
-//  
-//    /* Set the new tile */
-//    tile_main = new_tile;
-//    this->x = tile_main->getPixelX();
-//    this->x_raw = this->x * kRAW_MULTIPLIER;
-//    this->y = tile_main->getPixelY();
-//    this->y_raw = this->y * kRAW_MULTIPLIER;
-//    //tile_main->setItem(this); // TODO:Fix
-//    tile_section = section_id;
-//    
-//    return true;
-//  }
-//
-//  return false;
-//}
-
-/* Sets if the item is picked up by merely walking over it */
 void MapItem::setWalkover(bool walkover)
 {
   this->walkover = walkover;
