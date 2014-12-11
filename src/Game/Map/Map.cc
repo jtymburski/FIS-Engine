@@ -427,7 +427,6 @@ std::vector<std::vector<Tile*>> Map::getTileMatrix(MapThing* thing,
       render_box.y++;
     else if(direction == Direction::WEST)
       render_box.x--;
-
     return getTileMatrix(thing->getMapSection(), render_box.x, render_box.y, 
                          render_box.w, render_box.h);
   }
@@ -442,19 +441,19 @@ std::vector<std::vector<Tile*>> Map::getTileMatrix(uint16_t section,
                                                    uint16_t height)
 {
   std::vector<std::vector<Tile*>> tile_set;
-  uint16_t range_x = x + width;
-  uint16_t range_y = y + height;
+  uint16_t range_x = x + width - 1;
+  uint16_t range_y = y + height - 1;
 
   /* Confirm range is within valid parameters of map */
   if(geography.size() > section && geography[section].size() > range_x && 
      geography[section][range_x].size() > range_y)
   {
     /* Load the tiles that correspond to the thing */
-    for(uint16_t i = x; i < range_x; i++)
+    for(uint16_t i = x; i <= range_x; i++)
     {
       std::vector<Tile*> tile_col;
           
-      for(uint16_t j = y; j < range_y; j++)
+      for(uint16_t j = y; j <= range_y; j++)
         tile_col.push_back(geography[section][i][j]);
       tile_set.push_back(tile_col);
     }

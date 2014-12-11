@@ -181,7 +181,7 @@ void MapInteractiveObject::setParentFrames()
     /* Determine if this is a transition sequence or a state sequence */
     if(node_current->state != NULL)
     {
-      node_current->state->getSprite()->setAtFirst();
+      //node_current->state->getSprite()->setAtFirst();
       //setFrames(node_current->state->getSprite(), false); // TODO: Repair
       //animate(0, true, false); // TODO: Remove?
     }
@@ -353,9 +353,10 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
           /*--------------------- SPRITE INFO -----------------*/
           if(elements[2] == "sprite")
           {
-            success &= modified_node->state->getSprite()->
-                            addFileInformation(data, file_index + 3, 
-                                               renderer, base_path);
+            // TODO: Fix
+            //success &= modified_node->state->getSprite()->
+            //                addFileInformation(data, file_index + 3, 
+            //                                   renderer, base_path);
           }
           /*--------------------- INTERACTION -----------------*/
           else if(elements[2] == "interaction")
@@ -540,7 +541,7 @@ void MapInteractiveObject::setInactiveTime(int time)
 
 bool MapInteractiveObject::setState(MapState* state, bool passable)
 {
-  if(state != NULL && state->getSprite() != NULL)
+  if(state != NULL)// && state->getSprite() != NULL) // TODO: Fix
   {
     StateNode* node = new StateNode;
 

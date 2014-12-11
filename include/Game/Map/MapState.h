@@ -9,7 +9,7 @@
 #define MAPSTATE_H
 
 #include "Game/EventHandler.h"
-#include "Sprite.h"
+#include "Game/Map/SpriteMatrix.h"
 
 class MapState
 {
@@ -30,6 +30,7 @@ public:
 private:
   /* The information that defines the animation image data for the sprite */
   Sprite* animation;
+  SpriteMatrix* sprite_set;
 
   /* Stores the interaction state for changing state */
   InteractionState interaction;
@@ -66,10 +67,15 @@ public:
   
   /* Returns what interaction would initiate this */
   InteractionState getInteraction();
-  
+ 
+  /* Returns the matrix stored in the state for control/usage */
+  SpriteMatrix* getMatrix();
+
   /* Returns the sprite stored in the state for control/usage */
-  Sprite* getSprite();
-  
+  // TODO: Remove
+  //Sprite* getSprite();
+  TileSprite* getSprite(uint16_t x, uint16_t y);
+
   /* Returns the use and walkover events */
   Event getUseEvent();
   Event getWalkoverEvent();
@@ -86,9 +92,13 @@ public:
   /* Sets how this state gets interacted with */
   bool setInteraction(InteractionState interaction);
   bool setInteraction(std::string interaction);
-  
+
+  /* Sets the matrix stored in the state */
+  bool setMatrix(SpriteMatrix* matrix);
+
   /* Sets the sprite internally to the state */
-  bool setSprite(Sprite* animation);
+  bool setSprite(TileSprite* frames, uint16_t x, uint16_t y, 
+                 bool delete_old = true);
 
   /* Sets the use event */
   bool setUseEvent(Event use_event);
@@ -102,8 +112,12 @@ public:
   bool triggerUseEvent(MapPerson* initiator);
   bool triggerWalkoverEvent(MapPerson* initiator);
 
+  /* Unsets the matrix internally from the state */
+  void unsetMatrix();
+
   /* Unsets the sprite internally to the state */
-  void unsetSprite();
+  // TODO: Remove
+  //void unsetSprite();
 };
 
 /*

@@ -505,6 +505,10 @@ bool MapPerson::addThingInformation(XmlData data, int file_index,
       }
     }
   }
+  else if(data.getElement(file_index) == "sprites")
+  {
+    success = false;
+  }
   else
   {
     /* Proceed to parent */

@@ -16,20 +16,22 @@
 
 MapState::MapState()
 {
-  animation = NULL;
+  animation = NULL; // TODO: Remove
   event_handler = NULL;
   setEventHandler(NULL);
   interaction = NOINTERACTION;
+  sprite_set = NULL;
 }
 
 MapState::MapState(Sprite* animation, EventHandler* event_handler)
 {
-  this->animation = NULL;
+  this->animation = NULL; // TODO: Remove
   this->event_handler = NULL;
   interaction = NOINTERACTION;
+  sprite_set = NULL;
 
   /* Set the relevant data */
-  setSprite(animation);
+  //setSprite(animation); // TODO: Fix?
   setEventHandler(event_handler);
 }
 
@@ -64,7 +66,7 @@ MapState::InteractionState MapState::getInteraction(std::string interaction)
 void MapState::clear()
 {
   clearEvents();
-  unsetSprite();
+  unsetMatrix();
 }
 
 /*
@@ -107,11 +109,24 @@ MapState::InteractionState MapState::getInteraction()
 {
   return interaction;
 }
-  
-/* Returns the sprite stored in the state for control/usage */
-Sprite* MapState::getSprite()
+ 
+// TODO: Comment
+SpriteMatrix* MapState::getMatrix()
 {
-  return animation;
+  return sprite_set;
+}
+
+/* Returns the sprite stored in the state for control/usage */
+// TODO: Remove
+//Sprite* MapState::getSprite()
+//{
+//  return animation;
+//}
+
+// TODO: Comment
+TileSprite* MapState::getSprite(uint16_t x, uint16_t y)
+{
+  // TODO: Implementation
 }
 
 /* Returns the use event */
@@ -210,15 +225,24 @@ bool MapState::setInteraction(std::string interaction)
 
   return false;
 }
-  
-bool MapState::setSprite(Sprite* animation)
+
+// TODO: Comment
+bool MapState::setMatrix(SpriteMatrix* matrix)
 {
-  if(animation != NULL)
-  {
-    unsetSprite();
-    this->animation = animation;
-    return true;
-  }
+  // TODO: Implementation
+}
+
+// TODO: Comment
+bool MapState::setSprite(TileSprite* frames, uint16_t x, uint16_t y, 
+                         bool delete_old)
+{
+  // TODO: Implementation
+//  if(animation != NULL)
+//  {
+//    //unsetSprite();
+//    this->animation = animation;
+//    return true;
+//  }
   return false;
 }
 
@@ -316,8 +340,17 @@ bool MapState::triggerWalkoverEvent(MapPerson* initiator)
   return false;
 }
 
-void MapState::unsetSprite()
+// TODO: Comment
+void MapState::unsetMatrix()
 {
-  delete animation;
-  animation = NULL;
+  if(sprite_set != NULL)
+    delete sprite_set;
+  sprite_set = NULL;
 }
+
+// TODO: Remove
+//void MapState::unsetSprite()
+//{
+//  delete animation;
+//  animation = NULL;
+//}
