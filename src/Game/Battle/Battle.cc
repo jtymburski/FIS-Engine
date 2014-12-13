@@ -2431,7 +2431,7 @@ void Battle::selectUserActions()
       menu->setSelectableSkills(battle_skills);
       menu->setSelectableItems(battle_items);
     
-      if (getBattleMode() == BattleMode::TEXT)
+      if (getBattleMode() == BattleMode::TEXT && hasInfliction(Infliction::CONFUSE, curr_user))
         menu->printMenuState();
     }
     else
@@ -2536,12 +2536,17 @@ void Battle::upkeep()
  */
 void Battle::updateAllySelection()
 {
+  auto is_confused = hasInfliction(Infliction::CONFUSE, curr_user);
+
   if (menu->getMenuFlag(MenuState::SELECTION_VERIFIED))
   {
     selectUserActions();
   }
   else
   {
+    if (is_confused)
+      menu->selectRandomAction();
+
     auto action_type = ActionType::NONE;
      
     if (menu->isActionTypeSelected())
@@ -2579,7 +2584,11 @@ void Battle::updateAllySelection()
         auto selected_skill = menu->getSelectedSkill();
 
         std::cout << "Skill Name! " << selected_skill.skill->getName() << std::endl;
-        targets = getIndexesOfPersons(selected_skill.all_targets);                 
+
+        // if (is_confused)
+        //   targets = menu->getRandomTargets();
+        // else
+          targets = getIndexesOfPersons(selected_skill.all_targets);                 
       }
       else if (action_type == ActionType::ITEM)
       {

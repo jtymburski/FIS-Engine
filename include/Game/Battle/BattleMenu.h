@@ -142,6 +142,12 @@ public:
   /* Returns whether the current action index has valid targets */
   bool indexHasTargets();
 
+  /* Key press evnet for menu operation */
+  bool keyDownEvent(SDL_KeyboardEvent event);
+
+  /* Selects a random action (Skill) with a random target, or PASS if failed */
+  void selectRandomAction();
+
   /* Resets the menu data to be used for a new Person */
   void reset(Person* const new_user, const uint32_t &new_person_index);
 
@@ -159,9 +165,6 @@ public:
 
   /* Layer 0 printing of actions to choose from */
   void printValidActions();
-
-  /* Key press evnet for menu operation */
-  bool keyDownEvent(SDL_KeyboardEvent event);
 
   /* Obtains the selected enumerated ActionType */
   ActionType getActionType();
@@ -183,6 +186,9 @@ public:
 
   /* Returns the current selectable items on the menu */
   std::vector<BattleItem> getMenuItems();
+
+  /* Returns a vector of random targets */
+  std::vector<int32_t> getRandomTargets();
 
   /* The currently selected Skill (if set) */
   BattleSkill getSelectedSkill();

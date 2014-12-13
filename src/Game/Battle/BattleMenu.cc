@@ -753,6 +753,17 @@ void BattleMenu::reset(Person* const new_user, const uint32_t &new_person_index)
 }
 
 /*
+ * Description: 
+ *
+ * Inputs:
+ * Output: 
+ */
+void BattleMenu::selectRandomAction()
+{
+  //TODO: select a random skill
+}
+
+/*
  * Description: Prints out the valid actions types for the non-GUI battle.
  *
  * Inputs: none
