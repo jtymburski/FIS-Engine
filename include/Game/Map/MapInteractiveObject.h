@@ -61,9 +61,6 @@ private:
   /* Deletes all memory stored within the given node */
   bool clearNode(int id);
 
-  /* Returns the head state */
-  StateNode* getHeadNode();
-
   /* Returns the node based on the id, NULL if doeesn't exist */
   StateNode* getNode(int id);
 
@@ -94,7 +91,11 @@ public:
 
   /* Returns the class descriptor, useful for casting */
   virtual std::string classDescriptor();
-
+  
+  /* Shrink the frame matrix to the valid size and removes all null and void
+   * pointers.  */
+  virtual bool cleanMatrix();
+  
   /* Clears all information from the class (including deleting necessary
    * pointers) */
   virtual void clear();
@@ -102,11 +103,15 @@ public:
   /* Returns the inactive time before returning down the state path */
   int getInactiveTime();
 
+  /* Returns the state, corresponding to the parameters listed */
+  StateNode* getStateCurrent();
+  StateNode* getStateHead();
+
   /* Interact with the thing (use key) */
   bool interact(MapPerson* initiator);
 
   /* Reimplemented thing call - to if the interactive state can be walked on */
-  //bool isPassable(); TODO: Change to isTileMoveAllowed()
+  //bool isPassable(); // TODO: Remove
 
   /* Reset back to head state */
   void reset();
@@ -120,8 +125,8 @@ public:
   //                                          bool no_events = false);
   
   /* Sets the states, to be painted and used */
-  bool setState(MapState* state, bool passable = false);
-  bool setState(Sprite* transition, bool passable = false);
+  bool setState(MapState* state);
+  bool setState(SpriteMatrix* transition);
 
   /* Updates the thing, based on the tick */
   virtual void update(int cycle_time, Tile* next_tile);

@@ -13,6 +13,8 @@
  ******************************************************************************/
 #include "Game/Map/MapInteractiveObject.h"
 
+// TODO: Comment All
+
 /* Constant Implementation - see header file for descriptions */
 const short MapInteractiveObject::kRETURN_TIME_UNUSED = -1;
 
@@ -49,6 +51,7 @@ MapInteractiveObject::MapInteractiveObject(int id, std::string name,
 /* Destructor function */
 MapInteractiveObject::~MapInteractiveObject()
 {
+  unsetMatrix();
   clear();
 }
 
@@ -114,12 +117,6 @@ bool MapInteractiveObject::clearNode(int id)
   return false;
 }
 
-/* Returns the head state */
-StateNode* MapInteractiveObject::getHeadNode()
-{
-  return node_head;
-}
-
 /* Returns the node based on the id, NULL if doesn't exist */
 StateNode* MapInteractiveObject::getNode(int id)
 {
@@ -181,28 +178,27 @@ void MapInteractiveObject::setParentFrames()
     /* Determine if this is a transition sequence or a state sequence */
     if(node_current->state != NULL)
     {
-      //node_current->state->getSprite()->setAtFirst();
-      //setFrames(node_current->state->getSprite(), false); // TODO: Repair
-      //animate(0, true, false); // TODO: Remove?
+      node_current->state->getMatrix()->setAtFirst();
+      setMatrix(node_current->state->getMatrix());
+      animate(0, true, false);
     }
     else if(node_current->transition != NULL)
     {
-      Sprite* transition = node_current->transition;
       node_current->transition->setAtFirst();
-      transition->setDirectionForward();
-      //MapThing::setFrames(transition, false); // TODO: Repair
-      //animate(0, true, false); // TODO: Remove?
+      node_current->transition->setDirectionForward();
+      setMatrix(node_current->transition);
+      animate(0, true, false);
 
       /* Treat the sprite sequence according to the order, if it's in reverse
        * or not */
       if(shifting_forward)
       {
-        transition->setDirectionForward();
+        node_current->transition->setDirectionForward();
       }
       else
       {
-        transition->setDirectionReverse();
-        transition->shiftNext();
+        node_current->transition->setDirectionReverse();
+        node_current->transition->shiftNext();
       }
     }
   }
@@ -310,145 +306,173 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
   std::string identifier = data.getElement(file_index);
   bool success = true;
 
+  /* Ensure there is at least one valid node */
+  if(node_head == NULL)
+  {
+    appendEmptyNode();
+    node_head->state = new MapState();
+    node_head->state->setMatrix(new SpriteMatrix());
+    setParentFrames();
+  }
+
   /* Parse the identifier for setting the IO information */
+  /*--------------- INACTIVITY TIME -----------------*/
   if(identifier == "inactive" && elements.size() == 1)
   {
     setInactiveTime(data.getDataInteger(&success));
   }
-  else if(identifier == "states" && elements.size() > 1)
+  /*----------------- RENDER MATRIX -----------------*/
+  else if(elements.size() == 1 && elements.front() == "rendermatrix")
+  {
+    StateNode* node = node_head;
+    while(node != NULL)
+    {
+      /* Set the render matrix */
+      if(node->state != NULL && node->state->getMatrix() != NULL)
+        node->state->getMatrix()->setRenderMatrix(data.getDataString(&success));
+      else if(node->transition != NULL)
+        node->transition->setRenderMatrix(data.getDataString(&success));
+
+      /* Bump the node */
+      node = node->next;
+    }
+  }
+  /*--------------- STATES FOR MIO -----------------*/
+  else if(identifier == "states" && elements.size() > 2 && 
+          (elements[1] == "state" || elements[1] == "transition") && 
+          data.getKey(file_index + 1) == "id")
   {
     int index = std::stoi(data.getKeyValue(file_index + 1));
     int length = getNodeLength();
 
-    /* Only proceed if the index is legitimate */
-    if((elements[1] == "state" || elements[1] == "transition") && index >= 0)
+    /* Fill up the node length to suffice for the given index */
+    while(length <= index)
     {
-      /* Fill up the node length to suffice for the given index */
-      while(length <= index)
+      appendEmptyNode();
+      length++;
+    }
+
+    /* Proceed to determine if it was changed */
+    StateNode* modified_node = getNode(index);
+    if(modified_node != NULL)
+    {
+      /* Get the render matrix of the head node */
+      std::string render_matrix = "";
+      if(node_head->state != NULL)
+        render_matrix = node_head->state->getMatrix()->getRenderMatrix();
+      else
+        render_matrix = node_head->transition->getRenderMatrix();
+
+      /* Clear the node if it has the wrong data in it */
+      if((elements[1] == "state" && modified_node->transition != NULL) || 
+         (elements[1] == "transition" && modified_node->state != NULL))
+        clearNode(index);
+
+      /* Move forward with updating the given state/transiton sequence */
+      if(elements[1] == "state")
       {
-        appendEmptyNode();
-        length++;
+        /* Make the state if it doesn't exist */
+        if(modified_node->state == NULL)
+        {
+          modified_node->state = new MapState(event_handler);
+          modified_node->state->getMatrix()->setRenderMatrix(render_matrix);
+          if(modified_node == node_current)
+            setParentFrames();
+        }
+
+        /* Update the state */
+        success &= modified_node->state->addFileInformation(data, 
+                            file_index + 2, section_index, renderer, base_path);
       }
-
-      /* Proceed to determine if it was changed */
-      StateNode* modified_node = getNode(index);
-      if(modified_node != NULL)
+      /*--------------------- TRANSITION FRAMES -----------------*/
+      else if(elements[1] == "transition")
       {
-        /* Clear the node if it has the wrong data in it */
-        if((elements[1] == "state" && modified_node->transition != NULL) || 
-           (elements[1] == "transition" && modified_node->state != NULL))
-          clearNode(index);
-
-        /* Move forward with updating the given state/transiton sequence */
-        if(elements[1] == "state" && elements.size() > 2)
+        /* Make the transition if it doesn't exist */
+        if(modified_node->transition == NULL)
         {
-          /* Make the state if it doesn't exist */
-          if(modified_node->state == NULL)
-          {
-            modified_node->state = new MapState(new Sprite(), event_handler);
-            if(modified_node == node_current)
-              setParentFrames();
-          }
-
-          /*--------------------- SPRITE INFO -----------------*/
-          if(elements[2] == "sprite")
-          {
-            // TODO: Fix
-            //success &= modified_node->state->getSprite()->
-            //                addFileInformation(data, file_index + 3, 
-            //                                   renderer, base_path);
-          }
-          /*--------------------- INTERACTION -----------------*/
-          else if(elements[2] == "interaction")
-          {
-            success &= modified_node->state->setInteraction(
-                                                  data.getDataString(&success));
-          }
-          /*------------------ ENTER EVENT -----------------*/
-          else if(elements[2] == "enterevent")
-          {
-            if(event_handler != NULL)
-            {
-              Event event = event_handler->updateEvent(
-                                 modified_node->state->getEnterEvent(), data, 
-                                 file_index + 3, section_index);
-              modified_node->state->setEnterEvent(event);
-            }
-          }
-          /*------------------ EXIT EVENT -----------------*/
-          else if(elements[2] == "exitevent")
-          {
-            if(event_handler != NULL)
-            {
-              Event event = event_handler->updateEvent(
-                              modified_node->state->getExitEvent(), data, 
-                              file_index + 3, section_index);
-              modified_node->state->setExitEvent(event);
-            }
-          }
-          /*------------------ USE EVENT -----------------*/
-          else if(elements[2] == "useevent")
-          {
-            if(event_handler != NULL)
-            {
-              Event event = event_handler->updateEvent(
-                              modified_node->state->getUseEvent(), data, 
-                              file_index + 3, section_index);
-              modified_node->state->setUseEvent(event);
-            }
-          }
-          /*---------------- WALKOVER EVENT -----------------*/
-          else if(elements[2] == "walkoverevent")
-          {
-            if(event_handler != NULL)
-            {
-              Event event = event_handler->updateEvent(
-                              modified_node->state->getWalkoverEvent(), data, 
-                              file_index + 3, section_index);
-              modified_node->state->setWalkoverEvent(event);
-            }
-          }
-        }
-        /*--------------------- TRANSITION FRAMES -----------------*/
-        else if(elements[1] == "transition" && elements.size() > 2)
-        {
-          /* Make the transition if it doesn't exist */
-          if(modified_node->transition == NULL)
-          {
-            modified_node->transition = new Sprite();
-            if(modified_node == node_current)
-              setParentFrames();
-          }
-          
-          /* If transition frames, parse the given sprite data */
-          if(elements[2] == "sprite")
-          {
-            success &= modified_node->transition->
-                            addFileInformation(data, file_index + 3, 
-                                               renderer, base_path);
-          }
+          modified_node->transition = new SpriteMatrix();
+          modified_node->transition->setRenderMatrix(render_matrix);
+          if(modified_node == node_current)
+            setParentFrames();
         }
 
-        /*--------------------- PASSABILITY -----------------*/
-        if(elements.size() > 2 && elements[2] == "passable")
-        {
-          bool passable = data.getDataBool(&success);
-          if(success)
-            modified_node->passable = passable;
-        }
+        /* Update the transition */
+        success &= modified_node->transition->addFileInformation(data, 
+                                           file_index + 3, renderer, base_path);
       }
     }
   }
+  else
+  {
+    /* Proceed to parent */
+    success &= MapThing::addThingInformation(data, file_index, 
+                                             section_index, renderer, 
+                                             base_path);
+  }
 
-  return (success && MapThing::addThingInformation(data, file_index, 
-                                                   section_index, renderer, 
-                                                   base_path));
+  return success;
 }
 
 /* Returns the class descriptor, useful for casting */
 std::string MapInteractiveObject::classDescriptor()
 {
   return "MapInteractiveObject";
+}
+
+/*
+ * Description: Takes the frame matrix, as it's been set up and removes any 
+ *              rows or columns at the end that have no valid frames set. A
+ *              frame is classified as valid if it's not NULL and has renderable
+ *              frames stored within it.
+ *
+ * Inputs: none
+ * Output: bool - true if clean validated frame data
+ */
+// TODO: Implementation - where I am right now
+bool MapInteractiveObject::cleanMatrix()
+{
+  bool equal_size = true;
+  uint16_t height = 0;
+  uint16_t width = 0;
+  StateNode* node = node_head;
+  
+  std::cout << "Node Head: " << node_head->state->getMatrix()->getRenderMatrix() << std::endl;
+  /* Parse through each node and check/clean the data involved */
+  while(node != NULL)
+  {
+    std::cout << "Addr: " << node << std::endl;
+    if(node->state != NULL && node->state->getMatrix() != NULL)
+      std::cout << " : " << node->state->getMatrix()->width() << "," 
+                << node->state->getMatrix()->height() << std::endl;
+    else if(node->transition != NULL)
+      std::cout << " > " << node->transition->width() << "," 
+                << node->transition->height() << std::endl;
+
+    node = node->next;
+  }
+
+//  for(uint8_t i = 0; i < states.size(); i++)
+//  {
+//    for(uint8_t j = 0; j < states[i].size(); j++)
+//    {
+//      states[i][j]->cleanMatrix();
+//      states[i][j]->tuneAnimationSpeed();
+//
+//      /* Do some additional parsing to confirm data */
+//      if(i == 0 && j == 0)
+//      {
+//        height = states[i][j]->height();
+//        width = states[i][j]->width();
+//      }
+//      else if(states[i][j]->height() != height || 
+//              states[i][j]->width() != width)
+//      {
+//        equal_size = false;
+//      }
+//    }
+//  }
+
+  return equal_size;
 }
 
 /* Clears all information from the class (including deleting necessary
@@ -473,6 +497,18 @@ void MapInteractiveObject::clear()
 int MapInteractiveObject::getInactiveTime()
 {
   return time_return;
+}
+ 
+// TODO: Comment
+StateNode* MapInteractiveObject::getStateCurrent()
+{
+  return node_current;
+}
+ 
+// TODO: Comment
+StateNode* MapInteractiveObject::getStateHead()
+{
+  return node_head;
 }
 
 /* Interact with the thing (use key) */
@@ -500,7 +536,7 @@ bool MapInteractiveObject::interact(MapPerson* initiator)
   return status;
 }
 /* Reimplemented thing call - to if the interactive state can be walked on */
-// TODO: Change to isTileMoveAllowed()
+// TODO: Remove
 //bool MapInteractiveObject::isPassable()
 //{
 //  if(node_current != NULL)
@@ -539,16 +575,15 @@ void MapInteractiveObject::setInactiveTime(int time)
 //  return false;
 //}
 
-bool MapInteractiveObject::setState(MapState* state, bool passable)
+bool MapInteractiveObject::setState(MapState* state)
 {
-  if(state != NULL)// && state->getSprite() != NULL) // TODO: Fix
+  if(state != NULL && state->getMatrix() != NULL)
   {
     StateNode* node = new StateNode;
 
     /* Set the state parameters */
     node->state = state;
     node->transition = NULL;
-    node->passable = passable;
     node->previous = NULL;
     node->next = NULL;
 
@@ -561,9 +596,9 @@ bool MapInteractiveObject::setState(MapState* state, bool passable)
   return false;
 }
 
-bool MapInteractiveObject::setState(Sprite* transition, bool passable)
+bool MapInteractiveObject::setState(SpriteMatrix* transition)
 {
-  if(transition != 0)
+  if(transition != NULL)
   {
     StateNode* node = new StateNode;
 
@@ -584,6 +619,7 @@ bool MapInteractiveObject::setState(Sprite* transition, bool passable)
 }
 
 /* Updates the thing, based on the tick */
+// TODO: Fix all
 void MapInteractiveObject::update(int cycle_time, Tile* next_tile)
 {
   (void)next_tile;
@@ -594,28 +630,28 @@ void MapInteractiveObject::update(int cycle_time, Tile* next_tile)
   /* Only proceed if frames are changed and a transitional sequence  */
   if(frames_changed && node_current != NULL && node_current->transition != NULL)
   {
-    if(node_current->transition->isDirectionForward() && 
-       node_current->transition->isAtFirst())
-    {
+    //if(node_current->transition->isDirectionForward() && 
+    //   node_current->transition->isAtFirst())
+    //{
       /* Try and shift to the next state. If fails, re-animate transition */
       if(!shiftNext())
       {
-        node_current->transition->setDirectionReverse();
+        //node_current->transition->setDirectionReverse();
         shifting_forward = false;
         time_elapsed = 0;
       }
-    }
-    else if(!node_current->transition->isDirectionForward() && 
-            node_current->transition->isAtEnd())
-    {
+    //}
+    //else if(!node_current->transition->isDirectionForward() && 
+    //        node_current->transition->isAtEnd())
+    //{
       /* Try and shift to the previous state. If fails, re-animate transition */
       if(!shiftPrevious())
       {
-        node_current->transition->setDirectionForward();
+        //node_current->transition->setDirectionForward();
         shifting_forward = true;
         time_elapsed = 0;
       }
-    }
+    //}
   }
   
   /* Do the walk on / walk off animation for the state */

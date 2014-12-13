@@ -7,6 +7,8 @@
  *****************************************************************************/
 #include "Game/Map/MapState.h"
 
+// TODO: Comment entire class functions!!
+
 /* Constant Implementation - see header file for descriptions */
 //const float MapState::kMAX_OPACITY = 1.0;
 
@@ -14,24 +16,13 @@
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
 
-MapState::MapState()
+MapState::MapState(EventHandler* event_handler)
 {
-  animation = NULL; // TODO: Remove
-  event_handler = NULL;
-  setEventHandler(NULL);
-  interaction = NOINTERACTION;
-  sprite_set = NULL;
-}
-
-MapState::MapState(Sprite* animation, EventHandler* event_handler)
-{
-  this->animation = NULL; // TODO: Remove
   this->event_handler = NULL;
   interaction = NOINTERACTION;
-  sprite_set = NULL;
+  sprite_set = new SpriteMatrix();
 
   /* Set the relevant data */
-  //setSprite(animation); // TODO: Fix?
   setEventHandler(event_handler);
 }
 
@@ -61,6 +52,100 @@ MapState::InteractionState MapState::getInteraction(std::string interaction)
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
+
+/*
+ * Description: Add the file data information, based on the xml data pointer
+ *              retrieved from the file handler during an XML read. The internal
+ *              elements get offset based on the given index. 
+ *
+ * Inputs: XmlData data - the xml data storage class
+ *         int file_index - the element offset index to the sprite data
+ *         int section_index - the map section index of the thing
+ *         SDL_Renderer* renderer - the rendering engine to add the info
+ *         std::string base_path - the base path for resources
+ * Output: bool - true if the add was successful
+ */
+bool MapState::addFileInformation(XmlData data, int file_index, 
+                                  int section_index, SDL_Renderer* renderer, 
+                                  std::string base_path)
+{
+  bool success = true;
+  std::vector<std::string> elements = data.getTailElements(file_index);
+  std::string identifier = data.getElement(file_index);
+
+  /*--------------------- SPRITE INFO -----------------*/
+  if(identifier == "sprites")
+  {
+    if(sprite_set == NULL)
+      sprite_set = new SpriteMatrix();
+
+    success &= sprite_set->addFileInformation(data, file_index + 1, 
+                                              renderer, base_path);
+  }
+  /*--------------------- INTERACTION -----------------*/
+  else if(identifier == "interaction")
+  {
+    success &= setInteraction(data.getDataString(&success));
+  }
+  /*------------------ ENTER EVENT -----------------*/
+  else if(identifier == "enterevent")
+  {
+    if(event_handler != NULL)
+    {
+      Event event = event_handler->updateEvent(getEnterEvent(), data, 
+                                               file_index + 1, section_index);
+      success &= setEnterEvent(event);
+    }
+    else
+    {
+      success = false;
+    }
+  }
+  /*------------------ EXIT EVENT -----------------*/
+  else if(identifier == "exitevent")
+  {
+    if(event_handler != NULL)
+    {
+      Event event = event_handler->updateEvent(getExitEvent(), data, 
+                                               file_index + 1, section_index);
+      success &= setExitEvent(event);
+    }
+    else
+    {
+      success = false;
+    }
+  }
+  /*------------------ USE EVENT -----------------*/
+  else if(identifier == "useevent")
+  {
+    if(event_handler != NULL)
+    {
+      Event event = event_handler->updateEvent(getUseEvent(), data, 
+                                               file_index + 1, section_index);
+      success &= setUseEvent(event);
+    }
+    else
+    {
+      success = false;
+    }
+  }
+  /*---------------- WALKOVER EVENT -----------------*/
+  else if(identifier == "walkoverevent")
+  {
+    if(event_handler != NULL)
+    {
+      Event event = event_handler->updateEvent(getWalkoverEvent(), data, 
+                                               file_index + 1, section_index);
+      success &= setWalkoverEvent(event);
+    }
+    else
+    {
+      success = false;
+    }
+  }
+
+  return success;
+}
 
 /* Clear out the state definition */
 void MapState::clear()
@@ -116,17 +201,14 @@ SpriteMatrix* MapState::getMatrix()
   return sprite_set;
 }
 
-/* Returns the sprite stored in the state for control/usage */
-// TODO: Remove
-//Sprite* MapState::getSprite()
-//{
-//  return animation;
-//}
-
 // TODO: Comment
 TileSprite* MapState::getSprite(uint16_t x, uint16_t y)
 {
-  // TODO: Implementation
+  TileSprite* null_sprite = NULL;
+
+  if(sprite_set != NULL)
+    return sprite_set->at(x, y);
+  return null_sprite;
 }
 
 /* Returns the use event */
@@ -229,21 +311,26 @@ bool MapState::setInteraction(std::string interaction)
 // TODO: Comment
 bool MapState::setMatrix(SpriteMatrix* matrix)
 {
-  // TODO: Implementation
+  if(matrix != NULL)
+  {
+    unsetMatrix();
+    sprite_set = matrix;
+    return true;
+  }
+
+  return false;
 }
 
 // TODO: Comment
 bool MapState::setSprite(TileSprite* frames, uint16_t x, uint16_t y, 
                          bool delete_old)
 {
-  // TODO: Implementation
-//  if(animation != NULL)
-//  {
-//    //unsetSprite();
-//    this->animation = animation;
-//    return true;
-//  }
-  return false;
+  /* Make the matrix, if it doesn't exist */
+  if(sprite_set == NULL)
+    sprite_set = new SpriteMatrix();
+
+  /* Add the frame */
+  return sprite_set->setSprite(frames, x, y, delete_old);
 }
 
 /*
@@ -347,10 +434,3 @@ void MapState::unsetMatrix()
     delete sprite_set;
   sprite_set = NULL;
 }
-
-// TODO: Remove
-//void MapState::unsetSprite()
-//{
-//  delete animation;
-//  animation = NULL;
-//}

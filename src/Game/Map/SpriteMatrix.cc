@@ -225,8 +225,7 @@ void SpriteMatrix::removeSprite(uint16_t x, uint16_t y, bool delete_sprite)
 /*
  * Description: Add the file data information, based on the xml data pointer
  *              retrieved from the file handler during an XML read. The internal
- *              elements get offset based on the given index. Passes along
- *              to parent if no elements are found within child.
+ *              elements get offset based on the given index.
  *
  * Inputs: XmlData data - the xml data storage class
  *         int index - the element offset index to the sprite data
@@ -460,6 +459,44 @@ std::vector<std::vector<TileSprite*>> SpriteMatrix::getMatrix() const
 }
 
 /*
+ * Description: Returns the render matrix of the frames in the matrix, as a 
+ *              single string. The 'y' direction is separated by '.' and the
+ *              'x' direction is separated by ','.
+ *              For example: "2,2.0,0" is 2 2 based on map rendering
+ *                                        0 0
+ *
+ * Inputs: none
+ * Output: std::string - the linear render matrix, delimited
+ */
+std::string SpriteMatrix::getRenderMatrix()
+{
+  std::string linear_matrix;
+
+  /* Parse the entire matrix of sprites */
+  for(uint16_t i = 0; i < sprite_matrix.front().size(); i++)
+  {
+    /* Row delimiter */
+    if(i != 0)
+      linear_matrix += ".";
+
+    for(uint16_t j = 0; j < sprite_matrix.size(); j++)
+    {
+      /* Column delimiter */
+      if(j != 0)
+        linear_matrix += ",";
+
+      /* Find the render value */
+      if(sprite_matrix[j][i] != NULL)
+        linear_matrix += std::to_string(sprite_matrix[j][i]->getRenderDepth());
+      else
+        linear_matrix += "-1";
+    }
+  }
+
+  return linear_matrix;
+}
+
+/*
  * Description: Returns the sprite in the matrix at the given X and Y
  *              coordinate. Returns NULL if out of range or no sprite set
  *              there.
@@ -526,6 +563,62 @@ bool SpriteMatrix::render(SDL_Renderer* renderer, int x, int y,
 	}
 
   return rendered;
+}
+  
+/*
+ * Description: Sets all sprites in the matrix to the head frame in the stack.
+ *
+ * Inputs: none
+ * Output: bool - was it successful?
+ */
+bool SpriteMatrix::setAtFirst()
+{
+  bool success = true;
+
+  for(uint16_t i = 0; i < sprite_matrix.size(); i++)
+    for(uint16_t j = 0; j < sprite_matrix[i].size(); j++)
+      if(sprite_matrix[i][j] != NULL)
+        success &= sprite_matrix[i][j]->setAtFirst();
+  
+  return success;
+}
+
+/*
+ * Description: Sets all sprites in the matrix to parse the frames in the stack
+ *              in the forward direction.
+ *
+ * Inputs: none
+ * Output: bool - was it successful?
+ */
+bool SpriteMatrix::setDirectionForward()
+{
+  bool success = true;
+
+  for(uint16_t i = 0; i < sprite_matrix.size(); i++)
+    for(uint16_t j = 0; j < sprite_matrix[i].size(); j++)
+      if(sprite_matrix[i][j] != NULL)
+        success &= sprite_matrix[i][j]->setDirectionForward();
+  
+  return success;
+}
+
+/*
+ * Description: Sets all sprites in the matrix to parse the frames in the stack
+ *              in the reverse direction.
+ *
+ * Inputs: none
+ * Output: bool - was it successful?
+ */
+bool SpriteMatrix::setDirectionReverse()
+{
+  bool success = true;
+
+  for(uint16_t i = 0; i < sprite_matrix.size(); i++)
+    for(uint16_t j = 0; j < sprite_matrix[i].size(); j++)
+      if(sprite_matrix[i][j] != NULL)
+        success &= sprite_matrix[i][j]->setDirectionReverse();
+  
+  return success;
 }
 
 /*
@@ -623,6 +716,25 @@ void SpriteMatrix::setSprites(std::vector<std::vector<TileSprite*>> sprites,
 {
   unsetSprites(delete_old);
   sprite_matrix = sprites;
+}
+
+/*
+ * Description: Sets all sprites in the matrix to go to the next frame in the
+ *              stack.
+ *
+ * Inputs: bool skip_head - should the head of the stack be skipped?
+ * Output: bool - was it successful?
+ */
+bool SpriteMatrix::shiftNext(bool skip_head)
+{
+  bool success = true;
+
+  for(uint16_t i = 0; i < sprite_matrix.size(); i++)
+    for(uint16_t j = 0; j < sprite_matrix[i].size(); j++)
+      if(sprite_matrix[i][j] != NULL)
+        success &= sprite_matrix[i][j]->shiftNext(skip_head);
+  
+  return success;
 }
 
 /*

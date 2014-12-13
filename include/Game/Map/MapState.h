@@ -15,8 +15,7 @@ class MapState
 {
 public:
   /* Constructor functions */
-  MapState();
-  MapState(Sprite* animation, EventHandler* event_handler = NULL);
+  MapState(EventHandler* event_handler = NULL);
 
   /* Destructor function */
   ~MapState();
@@ -29,7 +28,6 @@ public:
 
 private:
   /* The information that defines the animation image data for the sprite */
-  Sprite* animation;
   SpriteMatrix* sprite_set;
 
   /* Stores the interaction state for changing state */
@@ -57,6 +55,10 @@ private:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Adds the matrix information from the XML data classifier from file */
+  bool addFileInformation(XmlData data, int file_index, int section_index, 
+                          SDL_Renderer* renderer, std::string base_path = "");
+
   /* Clear out the state definition and data from the class */
   void clear();
   bool clearEvents();
@@ -72,8 +74,6 @@ public:
   SpriteMatrix* getMatrix();
 
   /* Returns the sprite stored in the state for control/usage */
-  // TODO: Remove
-  //Sprite* getSprite();
   TileSprite* getSprite(uint16_t x, uint16_t y);
 
   /* Returns the use and walkover events */
@@ -114,10 +114,6 @@ public:
 
   /* Unsets the matrix internally from the state */
   void unsetMatrix();
-
-  /* Unsets the sprite internally to the state */
-  // TODO: Remove
-  //void unsetSprite();
 };
 
 /*
@@ -127,7 +123,7 @@ public:
 struct StateNode
 {
   MapState* state;
-  Sprite* transition;
+  SpriteMatrix* transition;
   bool passable;
 
   StateNode* previous;
