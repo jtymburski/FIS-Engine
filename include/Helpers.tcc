@@ -232,6 +232,50 @@ struct value_less
  *============================================================================*/
 
 /*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+template<typename T, typename S>
+static std::vector<T> getRandElements(std::vector<T> elements, S num_elements)
+{
+  std::vector<T> rand_elements;
+
+  if (elements.size() >= num_elements && num_elements > 0)
+  {
+    for (S i = num_elements; i > 0; i--)
+    {
+      std::cout << "Getting a random element!" << std::endl;
+      auto rand_elm = randU(0, elements.size() - 1);
+      std::cout << "Rand element: " << rand_elm << std::endl;
+      rand_elements.push_back(elements.at(rand_elm));
+      elements.erase(begin(elements) + rand_elm);
+    }
+  }
+
+  return rand_elements;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+template<typename It>
+static It getRandIt(It start, It end)
+{
+  if (std::distance(start, end) > 0)
+  {
+    std::uniform_int_distribution<> distribution(std::distance(start, end) - 1);
+    std::advance(start, distribution(rand_eng));
+  }
+
+  return start;
+}
+
+/*
  * Description: Enum Vector Search : Searches for a given enumerated value in a
  *              given vector of the same enumerated type. Outputs true if found
  *

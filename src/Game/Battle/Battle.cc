@@ -501,6 +501,10 @@ bool Battle::bufferUserAction()
   auto action_targets = menu->getActionTargets();
 
   curr_user     = getPerson(person_index);
+  auto is_confused = hasInfliction(Infliction::CONFUSE, curr_user);
+
+  if (is_confused)
+   action_targets = menu->getRandomTargets();
 
   /* Build the vector Person ptrs from the target index vector */
   std::vector<Person*> person_targets;
@@ -2544,8 +2548,24 @@ void Battle::updateAllySelection()
   }
   else
   {
-    if (is_confused)
-      menu->selectRandomAction();
+    if (is_confused && !menu->getMenuFlag(MenuState::ACTION_SELECTED))
+    {
+      bool valid = false;
+
+      while (!valid)
+      {
+        menu->selectRandomAction();
+        auto check_scope = menu->getSelectedSkill().skill->getScope();
+        auto check_targets = getValidTargets(person_index, check_scope);
+
+        std::cout << "bitch " << std::endl; 
+        
+        if (check_targets.size() > 0)
+          valid = true;
+      }
+    }
+    else if (is_confused && menu->getMenuFlag(MenuState::TARGETS_ASSIGNED))
+      menu->setMenuFlag(MenuState::SELECTION_VERIFIED);
 
     auto action_type = ActionType::NONE;
      
@@ -2585,10 +2605,7 @@ void Battle::updateAllySelection()
 
         std::cout << "Skill Name! " << selected_skill.skill->getName() << std::endl;
 
-        // if (is_confused)
-        //   targets = menu->getRandomTargets();
-        // else
-          targets = getIndexesOfPersons(selected_skill.all_targets);                 
+        targets = getIndexesOfPersons(selected_skill.all_targets);                 
       }
       else if (action_type == ActionType::ITEM)
       {

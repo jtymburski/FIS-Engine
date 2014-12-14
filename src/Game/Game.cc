@@ -290,6 +290,7 @@ void Game::setupBattle()
   inflict_actions.push_back(new Action("502,INFLICT,2.6,,,SCALD,AMOUNT.40,,VITA,90"));
   inflict_actions.push_back(new Action("503,INFLICT,4.8,,,CHARR,AMOUNT.30,,VITA,90"));
   inflict_actions.push_back(new Action("504,INFLICT,4.4,,,BERSERK,AMOUNT.0,,VITA,95"));
+  inflict_actions.push_back(new Action("505,INFLICT,20.24,,,CONFUSE,AMOUNT.5,,VITA,99"));
 
   // for(auto it = begin(damage_actions); it != end(damage_actions); ++it)
   //   std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
@@ -390,6 +391,9 @@ void Game::setupBattle()
   Skill* berserk = new Skill(144, "Berserker", ActionScope::ONE_TARGET,
     inflict_actions[4], 100, 10);
 
+  Skill* confuse = new Skill(145, "Befuddle", ActionScope::ONE_ALLY,
+    inflict_actions[5], 100, 10);
+
   // Test Skill Sets
   SkillSet* physical_skills = new SkillSet(physical_01, 1);
   // physical_skills->addSkill(physical_02, 1);
@@ -407,6 +411,7 @@ void Game::setupBattle()
   physical_skills->addSkill(scald, 1);
   physical_skills->addSkill(charr, 1);
   physical_skills->addSkill(berserk, 1);
+  physical_skills->addSkill(confuse, 1);
 
   SkillSet* elemental_skills = new SkillSet(fire_01, 1);
 

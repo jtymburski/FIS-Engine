@@ -240,10 +240,11 @@ bool Skill::addActions(const std::vector<Action*> &new_actions)
 }
 
 /*
- * Description: 
+ * Description: Determines the validity of a skill used for person while
+ *              Berserked.
  *
- * Inputs: 
- * Output: 
+ * Inputs: none
+ * Output: bool - true if the skill is valid for a Berserked person
  */
 bool Skill::isBerserkSkill()
 {

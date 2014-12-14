@@ -760,7 +760,15 @@ void BattleMenu::reset(Person* const new_user, const uint32_t &new_person_index)
  */
 void BattleMenu::selectRandomAction()
 {
-  //TODO: select a random skill
+  if (menu_skills.size() > 0)
+  {
+    auto rand_elm = Helpers::randU(0, menu_skills.size() - 1);
+    std::cout << "asfasdfs" << std::endl;
+    selected_skill = menu_skills.at(rand_elm);
+
+    action_type = ActionType::SKILL;
+    setMenuFlag(MenuState::ACTION_SELECTED, true);
+  }
 }
 
 /*
@@ -1120,6 +1128,61 @@ Item* BattleMenu::getSelectedItem()
 std::vector<BattleItem> BattleMenu::getMenuItems()
 {
   return menu_items;
+}
+
+/*
+ * Description: Compiles randomized targets for the selected skill. (ex., for
+ *              attacking while confused)
+ *
+ * Inputs: none
+ * Output: std::vector<int32_t> - vector of targets
+ */
+std::vector<int32_t> BattleMenu::getRandomTargets()
+{
+  std::cout << "Valid targets size:" << valid_targets.size() << std::endl;
+  std::vector<int32_t> random_targets;
+
+  if (action_scope == ActionScope::USER ||
+      action_scope == ActionScope::ALL_ENEMIES ||
+      action_scope == ActionScope::ALL_ALLIES ||
+      action_scope == ActionScope::ALL_ALLIES_KO ||
+      action_scope == ActionScope::ALL_TARGETS ||
+      action_scope == ActionScope::ALL_NOT_USER)
+  {
+    random_targets = valid_targets;
+  }
+  else if (action_scope == ActionScope::ONE_TARGET ||
+           action_scope == ActionScope::ONE_ENEMY ||
+           action_scope == ActionScope::ONE_ALLY ||
+           action_scope == ActionScope::ONE_ALLY_NOT_USER ||
+           action_scope == ActionScope::ONE_ALLY_KO ||
+           action_scope == ActionScope::NOT_USER)
+  {
+    random_targets = Helpers::getRandElements(valid_targets, 1);
+  }
+  else if (action_scope == ActionScope::TWO_ENEMIES ||
+           action_scope == ActionScope::TWO_ALLIES)
+  {
+    random_targets = Helpers::getRandElements(valid_targets, 2);
+  }
+  else if (action_scope == ActionScope::ONE_PARTY)
+  {
+    if (Helpers::flipCoin())
+    {
+      for (const auto& target : valid_targets)
+        if (target > 0)
+          random_targets.push_back(target);
+    }
+    else
+    {
+      for (const auto& target : valid_targets)
+        if (target < 0)
+          random_targets.push_back(target);
+    }
+  }
+
+  std::cout << "Random targets size: " << random_targets.size() << std::endl;
+  return random_targets;
 }
 
 /*

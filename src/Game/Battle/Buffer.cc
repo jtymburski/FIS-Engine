@@ -201,7 +201,7 @@ bool Buffer::add(Person* const new_user, Skill* const new_skill_used,
     return true;
   }
 
-  std::cout << "[ERRORORO!!!] " << std::endl;
+  std::cout << "[Adding Invalid Action] " << std::endl;
   std::cout << new_user->getName() << std::endl;
   std::cout << new_skill_used->getName() << std::endl;
   std::cout << targets.size() << std::endl;
