@@ -753,17 +753,18 @@ void BattleMenu::reset(Person* const new_user, const uint32_t &new_person_index)
 }
 
 /*
- * Description: 
+ * Description: Selects a random action among the list of available menu.
+ *              This function is used in lieu of the menu for ailments
+ *              such as 
  *
- * Inputs:
- * Output: 
+ * Inputs: none
+ * Output: none
  */
 void BattleMenu::selectRandomAction()
 {
   if (menu_skills.size() > 0)
   {
     auto rand_elm = Helpers::randU(0, menu_skills.size() - 1);
-    std::cout << "asfasdfs" << std::endl;
     selected_skill = menu_skills.at(rand_elm);
 
     action_type = ActionType::SKILL;
@@ -1181,7 +1182,6 @@ std::vector<int32_t> BattleMenu::getRandomTargets()
     }
   }
 
-  std::cout << "Random targets size: " << random_targets.size() << std::endl;
   return random_targets;
 }
 
@@ -1217,7 +1217,6 @@ void BattleMenu::setActionScope(const ActionScope &new_action_scope)
  */
 void BattleMenu::setNumAllies(uint16_t new_num_allies)
 {
-  std::cout << "Setting numba allies: " << new_num_allies << std::endl;
   num_allies = new_num_allies;
 }
 

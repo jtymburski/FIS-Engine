@@ -290,7 +290,7 @@ void Game::setupBattle()
   inflict_actions.push_back(new Action("502,INFLICT,2.6,,,SCALD,AMOUNT.40,,VITA,90"));
   inflict_actions.push_back(new Action("503,INFLICT,4.8,,,CHARR,AMOUNT.30,,VITA,90"));
   inflict_actions.push_back(new Action("504,INFLICT,4.4,,,BERSERK,AMOUNT.0,,VITA,95"));
-  inflict_actions.push_back(new Action("505,INFLICT,20.24,,,CONFUSE,AMOUNT.5,,VITA,99"));
+  inflict_actions.push_back(new Action("505,INFLICT,2.3,,,CONFUSE,AMOUNT.50,,VITA,99"));
 
   // for(auto it = begin(damage_actions); it != end(damage_actions); ++it)
   //   std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;

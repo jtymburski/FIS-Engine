@@ -1596,16 +1596,16 @@ void Battle::orderActions()
  */
 void Battle::personalUpkeep(Person* const target)
 {
-  curr_target = target;
+  curr_target   = target;
   auto ailments = getPersonAilments(target);
 
   for (auto& ailment : ailments)
   {
     if (ailment != nullptr && ailment->getFlag(AilState::TO_UPDATE))
     {
-      ailment->update();
+      ailment->update(true);
 
-      if (ailment->getFlag(AilState::DEALS_DAMAGE))
+      if (ailment->getFlag(AilState::DEALS_DAMAGE) && target->getBFlag(BState::ALIVE))
       {
         auto damage_amount = ailment->getDamageAmount();
         auto damage_type   = ailment->getDamageType();
@@ -2533,10 +2533,11 @@ void Battle::upkeep()
 }
 
 /*
- * Description:
+ * Description: Sub-function for update which holds data related to updating
+ *              the battle during the ally selection phase.
  *
- * Inputs:
- * Output: 
+ * Inputs: none
+ * Output: none
  */
 void Battle::updateAllySelection()
 {
@@ -2750,6 +2751,11 @@ bool Battle::updatePersonDeath(const DamageType &damage_type)
   {
     action_buffer->rejectGuardTargets(curr_target);
   }
+
+  /* Remove ailments which are cured upon death */
+  for (auto& ailment : ailments)
+    if (ailment->getVictim() == curr_target)
+      removeAilment(ailment);
 
   return updatePartyDeaths();
 }

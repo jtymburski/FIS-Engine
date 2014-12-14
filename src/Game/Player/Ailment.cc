@@ -617,11 +617,15 @@ bool Ailment::checkImmunity(Person* new_victim)
  */
 bool Ailment::updateTurns()
 {
+  turns_occured++;
+  
   /* If the ailment doesn't have one turn left, if it's finite, decrement it */
   if (max_turns_left <= kMAX_TURNS && max_turns_left > 1)
     --max_turns_left;
   if (min_turns_left > 0)
     --min_turns_left;
+
+  std::cout << "Update turns: " << max_turns_left << " " << min_turns_left << std::endl;
 
   if (turns_occured <= min_turns_left)
     return false;

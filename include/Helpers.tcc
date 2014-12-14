@@ -232,10 +232,14 @@ struct value_less
  *============================================================================*/
 
 /*
- * Description:
+ * Description: Obtains a random number of elements from a vector of T and
+ *              returns the elements in vector form. This function
+ *              will return an empty vector unless the size of the vector
+ *              is sufficient to match S, where S > 0.
  *
- * Inputs:
- * Output:
+ * Inputs: std::vector<T> elements - vector to find random elements for
+ *         S num_elements - the number of elements to find
+ * Output: std::vector<T> - the calculated random elements.
  */
 template<typename T, typename S>
 static std::vector<T> getRandElements(std::vector<T> elements, S num_elements)
@@ -246,33 +250,13 @@ static std::vector<T> getRandElements(std::vector<T> elements, S num_elements)
   {
     for (S i = num_elements; i > 0; i--)
     {
-      std::cout << "Getting a random element!" << std::endl;
       auto rand_elm = randU(0, elements.size() - 1);
-      std::cout << "Rand element: " << rand_elm << std::endl;
       rand_elements.push_back(elements.at(rand_elm));
       elements.erase(begin(elements) + rand_elm);
     }
   }
 
   return rand_elements;
-}
-
-/*
- * Description:
- *
- * Inputs:
- * Output:
- */
-template<typename It>
-static It getRandIt(It start, It end)
-{
-  if (std::distance(start, end) > 0)
-  {
-    std::uniform_int_distribution<> distribution(std::distance(start, end) - 1);
-    std::advance(start, distribution(rand_eng));
-  }
-
-  return start;
 }
 
 /*
