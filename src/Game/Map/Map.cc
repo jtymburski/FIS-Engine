@@ -1188,14 +1188,19 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
     for(uint16_t i = 0; i < things.size(); i++)
     {
       /* Clean the matrix - fixes up the rendering box */
-      things[i]->cleanMatrix();
-
-      /* Get the tile matrix to match the frames and set */
-      std::vector<std::vector<Tile*>> tile_set = getTileMatrix(things[i]);
-      if(tile_set.size() > 0)
-        things[i]->setStartingTiles(tile_set, true);
+      if(things[i]->cleanMatrix())
+      {
+        /* Get the tile matrix to match the frames and set */
+        std::vector<std::vector<Tile*>> tile_set = getTileMatrix(things[i]);
+        if(tile_set.size() > 0)
+          things[i]->setStartingTiles(tile_set, true);
+        else
+          things[i]->unsetFrames(true);
+      }
       else
+      {
         things[i]->unsetFrames(true);
+      }
     }
 
     /* Person clean-up and tile set-up */
@@ -1359,6 +1364,8 @@ bool Map::render(SDL_Renderer* renderer)
             }
           }
         }
+
+        // TODO: Add render base 0 to here as well
       }
     }
 

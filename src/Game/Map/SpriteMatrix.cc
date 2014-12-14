@@ -472,24 +472,28 @@ std::string SpriteMatrix::getRenderMatrix()
 {
   std::string linear_matrix;
 
-  /* Parse the entire matrix of sprites */
-  for(uint16_t i = 0; i < sprite_matrix.front().size(); i++)
+  if(sprite_matrix.size() > 0)
   {
-    /* Row delimiter */
-    if(i != 0)
-      linear_matrix += ".";
-
-    for(uint16_t j = 0; j < sprite_matrix.size(); j++)
+    /* Parse the entire matrix of sprites */
+    for(uint16_t i = 0; i < sprite_matrix.front().size(); i++)
     {
-      /* Column delimiter */
-      if(j != 0)
-        linear_matrix += ",";
+      /* Row delimiter */
+      if(i != 0)
+        linear_matrix += ".";
 
-      /* Find the render value */
-      if(sprite_matrix[j][i] != NULL)
-        linear_matrix += std::to_string(sprite_matrix[j][i]->getRenderDepth());
-      else
-        linear_matrix += "-1";
+      for(uint16_t j = 0; j < sprite_matrix.size(); j++)
+      {
+        /* Column delimiter */
+        if(j != 0)
+          linear_matrix += ",";
+
+        /* Find the render value */
+        if(sprite_matrix[j][i] != NULL)
+          linear_matrix += 
+                          std::to_string(sprite_matrix[j][i]->getRenderDepth());
+        else
+          linear_matrix += "-1";
+      }
     }
   }
 
@@ -526,6 +530,66 @@ uint16_t SpriteMatrix::height() const
   if(sprite_matrix.size() > 0)
     return sprite_matrix.back().size();
   return 0;
+}
+  
+/*
+ * Description: Checks if the matrix set of sprites is at the tail of the frame
+ *              stack.
+ *
+ * Inputs: none
+ * Output: bool - is the sprite matrix at the end
+ */
+bool SpriteMatrix::isAtEnd()
+{
+  TileSprite* sprite = getValidSprite();
+  if(sprite != NULL)
+    return sprite->isAtEnd();
+  return false;
+}
+
+/*
+ * Description: Checks if the matrix set of sprites is at the front of the 
+ *              frame stack.
+ *
+ * Inputs: none
+ * Output: bool - is the sprite matrix at the front
+ */
+bool SpriteMatrix::isAtFirst()
+{
+  TileSprite* sprite = getValidSprite();
+  if(sprite != NULL)
+    return sprite->isAtFirst();
+  return false;
+}
+
+/*
+ * Description: Returns if the parsing direction through the frame sequence in
+ *              the matrix is forward.
+ *
+ * Inputs: none
+ * Output: bool - true if the parsing direction is forward
+ */
+bool SpriteMatrix::isDirectionForward()
+{
+  TileSprite* sprite = getValidSprite();
+  if(sprite != NULL)
+    return sprite->isDirectionForward();
+  return false;
+}
+
+/*
+ * Description: Returns if the parsing direction through the frame sequence in
+ *              the matrix is reverse.
+ *
+ * Inputs: none
+ * Output: bool - true if the parsing direction is reverse
+ */
+bool SpriteMatrix::isDirectionReverse()
+{
+  TileSprite* sprite = getValidSprite();
+  if(sprite != NULL)
+    return !sprite->isDirectionForward();
+  return false;
 }
 
 /*

@@ -110,32 +110,25 @@ public:
   /* Interact with the thing (use key) */
   bool interact(MapPerson* initiator);
 
-  /* Reimplemented thing call - to if the interactive state can be walked on */
-  //bool isPassable(); // TODO: Remove
-
   /* Reset back to head state */
   void reset();
 
   /* Sets the inactive time before returning down the state path (ms) */
   void setInactiveTime(int time);
   
-  /* Set the tile to hook the map interactive object to */
-  // TODO: Remove
-  //bool setStartingTile(uint16_t section_id, Tile* new_tile, 
-  //                                          bool no_events = false);
-  
   /* Sets the states, to be painted and used */
   bool setState(MapState* state);
   bool setState(SpriteMatrix* transition);
-
+  
+  /* Triggers walk on / walk off events on the thing */
+  void triggerWalkOff(MapPerson* trigger);
+  void triggerWalkOn(MapPerson* trigger);
+  
   /* Updates the thing, based on the tick */
-  virtual void update(int cycle_time, Tile* next_tile);
+  virtual void update(int cycle_time, std::vector<std::vector<Tile*>> tile_set);
 
   /* Unsets all states - this handles deletion */
-  void unsetStates();
-  
-  /* Unsets the starting tile */ // TODO: Remove
-  //void unsetStartingTile(bool no_events = false);
+  void unsetFrames(bool delete_frames = true);
 };
 
 #endif // MAPINTERACTIVEOBJECT_H

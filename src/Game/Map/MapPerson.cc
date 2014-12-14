@@ -363,9 +363,21 @@ void MapPerson::setTileFinish(Tile* old_tile, Tile* new_tile,
                              bool no_events)
 {
   if(reverse_last)
+  {
     new_tile->unsetPerson(render_depth, no_events);
+
+    /* Special events if person and thing is set on tile at render level 0 */
+    if(getID() == kPLAYER_ID && render_depth == 0 && new_tile->getThing(0))
+      new_tile->getThing(0)->triggerWalkOff(this);
+  }
   else
+  {
     old_tile->unsetPerson(render_depth, no_events);
+
+    /* Special events if person and thing is set on tile at render level 0 */
+    if(getID() == kPLAYER_ID && render_depth == 0 && old_tile->getThing(0))
+      old_tile->getThing(0)->triggerWalkOff(this);
+  }
 }
 
 /*
@@ -388,6 +400,11 @@ bool MapPerson::setTileStart(Tile* old_tile, Tile* new_tile,
     if(new_tile->setPerson(this, render_depth, no_events))
     {
       old_tile->personMoveStart(render_depth);
+
+      /* Special events if person and thing is set on tile at render level 0 */
+      if(getID() == kPLAYER_ID && render_depth == 0 && new_tile->getThing(0))
+        new_tile->getThing(0)->triggerWalkOn(this);
+
       return true;
     }
   }

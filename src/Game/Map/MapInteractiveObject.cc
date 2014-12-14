@@ -10,6 +10,9 @@
  *
  * TODO:
  * 1. Locked status of MIO??
+ * 2. Possibly optimize the walkon/walkoff in update. Seems inefficient to
+ *    constantly check when it could be triggered by a walk on/walk off event
+ *    (Possibly built into the thing itself?)
  ******************************************************************************/
 #include "Game/Map/MapInteractiveObject.h"
 
@@ -436,41 +439,37 @@ bool MapInteractiveObject::cleanMatrix()
   uint16_t width = 0;
   StateNode* node = node_head;
   
-  std::cout << "Node Head: " << node_head->state->getMatrix()->getRenderMatrix() << std::endl;
   /* Parse through each node and check/clean the data involved */
   while(node != NULL)
   {
-    std::cout << "Addr: " << node << std::endl;
-    if(node->state != NULL && node->state->getMatrix() != NULL)
-      std::cout << " : " << node->state->getMatrix()->width() << "," 
-                << node->state->getMatrix()->height() << std::endl;
-    else if(node->transition != NULL)
-      std::cout << " > " << node->transition->width() << "," 
-                << node->transition->height() << std::endl;
+    SpriteMatrix* matrix = NULL;
 
+    /* Get the matrix corresponding to the node */
+    if(node->state != NULL)
+      matrix = node->state->getMatrix();
+    else
+      matrix = node->transition;
+
+    if(matrix != NULL)
+    {
+      /* Clean the matrix */
+      matrix->cleanMatrix();
+
+      /* Get the first state width and height */
+      if(height == 0 || width == 0)
+      {
+        height = matrix->height();
+        width = matrix->width();
+      }
+      else if(height != matrix->height() || width != matrix->width())
+      {
+        equal_size = false;
+      }
+    }
+
+    /* Shift to the next */
     node = node->next;
   }
-
-//  for(uint8_t i = 0; i < states.size(); i++)
-//  {
-//    for(uint8_t j = 0; j < states[i].size(); j++)
-//    {
-//      states[i][j]->cleanMatrix();
-//      states[i][j]->tuneAnimationSpeed();
-//
-//      /* Do some additional parsing to confirm data */
-//      if(i == 0 && j == 0)
-//      {
-//        height = states[i][j]->height();
-//        width = states[i][j]->width();
-//      }
-//      else if(states[i][j]->height() != height || 
-//              states[i][j]->width() != width)
-//      {
-//        equal_size = false;
-//      }
-//    }
-//  }
 
   return equal_size;
 }
@@ -487,7 +486,7 @@ void MapInteractiveObject::clear()
   time_return = kRETURN_TIME_UNUSED;
   
   /* Clear states */
-  unsetStates();
+  unsetFrames();
 
   /* Parent cleanup */
   MapThing::clear();
@@ -528,21 +527,13 @@ bool MapInteractiveObject::interact(MapPerson* initiator)
     /* Proceed to execute a use event, if it exists */
     if(node_current->state->getInteraction() == MapState::USE)
       status |= shift();
-  }
 
-  if(status)
+    /* Reset the time elapsed */
     time_elapsed = 0;
+  }
 
   return status;
 }
-/* Reimplemented thing call - to if the interactive state can be walked on */
-// TODO: Remove
-//bool MapInteractiveObject::isPassable()
-//{
-//  if(node_current != NULL)
-//    return node_current->passable;
-//  return true;
-//}
 
 /* Reset back to head state */
 void MapInteractiveObject::reset()
@@ -562,18 +553,6 @@ void MapInteractiveObject::setInactiveTime(int time)
 
   time_elapsed = 0;
 }
-
-// TODO: Remove
-//bool MapInteractiveObject::setStartingTile(uint16_t section_id, Tile* new_tile, 
-//                                           bool no_events)
-//{
-//  if(MapThing::setStartingTile(section_id, new_tile, no_events))
-//  {
-//    person_on = NULL;
-//    return true;
-//  }
-//  return false;
-//}
 
 bool MapInteractiveObject::setState(MapState* state)
 {
@@ -618,89 +597,99 @@ bool MapInteractiveObject::setState(SpriteMatrix* transition)
   return false;
 }
 
+/* Triggers walk on / walk off events on the thing */
+// TODO: Comment
+void MapInteractiveObject::triggerWalkOff(MapPerson* trigger)
+{
+  if(trigger != NULL && person_on == trigger)
+  {
+    /* Trigger walk off interaction */
+    if(node_current != NULL && node_current->state != NULL && 
+       node_current->state->getInteraction() == MapState::WALKOFF)
+      shift();
+
+    person_on = NULL;
+  }
+}
+
+// TODO: Comment
+void MapInteractiveObject::triggerWalkOn(MapPerson* trigger)
+{
+  if(trigger != NULL && person_on == NULL)
+  {
+    person_on = trigger;
+
+    if(node_current != NULL && node_current->state != NULL)
+    {
+      /* Trigger walkover event, if valid */
+      node_current->state->triggerWalkoverEvent(person_on);
+
+      /* Trigger walk on interaction */
+      if(node_current->state->getInteraction() == MapState::WALKON)
+        shift();
+    }
+  }
+}
+
 /* Updates the thing, based on the tick */
 // TODO: Fix all
-void MapInteractiveObject::update(int cycle_time, Tile* next_tile)
+void MapInteractiveObject::update(int cycle_time, 
+                                  std::vector<std::vector<Tile*>> tile_set)
 {
-  (void)next_tile;
+  (void)tile_set;
 
-  /* Animate the frames and determine if the frame has changed */
-  bool frames_changed = animate(cycle_time, false, false);
+  if(isTilesSet())
+  {
+    /* Animate the frames and determine if the frame has changed */
+    bool frames_changed = animate(cycle_time, false, false);
 
-  /* Only proceed if frames are changed and a transitional sequence  */
-  if(frames_changed && node_current != NULL && node_current->transition != NULL)
-  {
-    //if(node_current->transition->isDirectionForward() && 
-    //   node_current->transition->isAtFirst())
-    //{
-      /* Try and shift to the next state. If fails, re-animate transition */
-      if(!shiftNext())
-      {
-        //node_current->transition->setDirectionReverse();
-        shifting_forward = false;
-        time_elapsed = 0;
-      }
-    //}
-    //else if(!node_current->transition->isDirectionForward() && 
-    //        node_current->transition->isAtEnd())
-    //{
-      /* Try and shift to the previous state. If fails, re-animate transition */
-      if(!shiftPrevious())
-      {
-        //node_current->transition->setDirectionForward();
-        shifting_forward = true;
-        time_elapsed = 0;
-      }
-    //}
-  }
-  
-  /* Do the walk on / walk off animation for the state */
-  Tile* location = NULL;//getTile(); // TODO: Fix
-  if(location != NULL)
-  { // TODO: Fix
-//    if(person_on == NULL && location->isPersonSet() && 
-//       location->getPerson()->getID() == kPLAYER_ID)
-//    {
-//      person_on = location->getPerson();
-//
-//      if(node_current != NULL && node_current->state != NULL)
-//      {
-//        /* Trigger walkover event, if valid */
-//        node_current->state->triggerWalkoverEvent(person_on);
-//
-//        /* Trigger walk on interaction */
-//        if(node_current->state->getInteraction() == MapState::WALKON)
-//          shift();
-//      }
-//    }
-//    else if(person_on != NULL && !location->isPersonSet())
-//    {
-//      /* Trigger walk off interaction */
-//      if(node_current != NULL && node_current->state != NULL && 
-//         node_current->state->getInteraction() == MapState::WALKOFF)
-//        shift();
-//
-//      person_on = NULL;
-//    }
-  }
-  
-  /* Determine if the cycle time has passed on activity response */
-  if(time_return != kRETURN_TIME_UNUSED && node_current != node_head)
-  {
-    time_elapsed += cycle_time;
-    if(time_elapsed > time_return)
+    /* Only proceed if frames are changed and a transitional sequence  */
+    if(frames_changed && node_current != NULL && 
+       node_current->transition != NULL)
     {
-      shifting_forward = false;
-      shiftPrevious();
+      if(node_current->transition->isDirectionForward() && 
+         node_current->transition->isAtFirst())
+      {
+        /* Try and shift to the next state. If fails, re-animate transition */
+        if(!shiftNext())
+        {
+          node_current->transition->setDirectionReverse();
+          shifting_forward = false;
+          time_elapsed = 0;
+        }
+      }
+      else if(!node_current->transition->isDirectionForward() && 
+              node_current->transition->isAtEnd())
+      {
+        /* Try and shift to the previous state. If fails, re-animate 
+         * transition */
+        if(!shiftPrevious())
+        {
+          node_current->transition->setDirectionForward();
+          shifting_forward = true;
+          time_elapsed = 0;
+        }
+      }
+    }
+  
+    /* Determine if the cycle time has passed on activity response */
+    if(time_return != kRETURN_TIME_UNUSED && node_current != node_head)
+    {
+      time_elapsed += cycle_time;
+      if(time_elapsed > time_return)
+      {
+        shifting_forward = false;
+        shiftPrevious();
+      }
     }
   }
 }
 
 /* Unsets the tied state - this handles deletion */
-void MapInteractiveObject::unsetStates()
+void MapInteractiveObject::unsetFrames(bool delete_frames)
 {
   StateNode* node = node_head;
-  unsetFrames(false);
+  unsetMatrix();
   
   /* Proceed to delete all nodes */
   while(node != NULL)
@@ -709,28 +698,17 @@ void MapInteractiveObject::unsetStates()
     node = node->next;
     
     /* Proceed to delete all relevant data */
-    if(temp_node->state != NULL)
-      delete temp_node->state;
-    else if(temp_node->transition != NULL)
-      delete temp_node->transition;
-    delete temp_node;
+    if(delete_frames)
+    {
+      if(temp_node->state != NULL)
+        delete temp_node->state;
+      else if(temp_node->transition != NULL)
+        delete temp_node->transition;
+      delete temp_node;
+    }
   }
 
   /* Clear the class data */
   node_current = NULL;
   node_head = NULL;
 }
-
-/*
- * Description: Unsets the starting tile location that is stored within the
- *              thing.
- *
- * Inputs: bool no_events - fire no events when unsetting
- * Output: none
- */
-// TODO: Remove
-//void MapInteractiveObject::unsetStartingTile(bool no_events)
-//{ 
-//  MapThing::unsetStartingTile(no_events);
-//  person_on = NULL;
-//}

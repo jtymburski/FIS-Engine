@@ -222,6 +222,59 @@ Event MapState::getWalkoverEvent()
 {
   return walkover_event;
 }
+  
+/* Check if events are set */
+// TODO: Comment
+bool MapState::isEnterEventSet()
+{
+  if(event_handler != NULL && 
+     enter_event.classification != EventClassifier::NOEVENT)
+  {
+    return true;
+  }
+  return false;
+}
+ 
+// TODO: Comment
+bool MapState::isExitEventSet()
+{
+  if(event_handler != NULL && 
+     exit_event.classification != EventClassifier::NOEVENT)
+  {
+    return true;
+  }
+  return false;
+}
+
+// TODO: Comment
+bool MapState::isUseEventSet()
+{
+  if(event_handler != NULL && 
+     use_event.classification != EventClassifier::NOEVENT)
+  {
+    return true;
+  }
+  return false;
+}
+
+// TODO: Comment
+bool MapState::isWalkInteraction()
+{
+  if(interaction == WALKON || interaction == WALKOFF || isWalkoverEventSet())
+    return true;
+  return false;
+}
+
+// TODO: Comment
+bool MapState::isWalkoverEventSet()
+{
+  if(event_handler != NULL && 
+     walkover_event.classification != EventClassifier::NOEVENT)
+  {
+    return true;
+  }
+  return false;
+}
 
 /*
  * Description: Sets the enter event. This goes off when the interactive object

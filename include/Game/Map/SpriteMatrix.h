@@ -78,6 +78,15 @@ public:
   /* Returns the height of the sprite matrix */
   uint16_t height() const;
 
+  /* Determines where the reference pointer is in the sprite */
+  bool isAtEnd();
+  bool isAtFirst();
+
+  /* Determines which shifting direction the layer of sprites in the matrix
+   * is utilizing */
+  bool isDirectionForward();
+  bool isDirectionReverse();
+
   /* Rendering function, for the entire matrix */
   bool render(SDL_Renderer* renderer, int start_x, int start_y, 
               int width, int height);

@@ -322,12 +322,16 @@ public:
   /* Sets the visibility of the rendering thing */
   void setVisibility(bool visible);
   
+  /* Triggers walk on / walk off events on the thing */
+  virtual void triggerWalkOff(MapPerson* trigger);
+  virtual void triggerWalkOn(MapPerson* trigger);
+  
   /* Updates the thing, called on the tick */
   virtual void update(int cycle_time, std::vector<std::vector<Tile*>> tile_set);
   
   /* Unsets the thing frames, in the class */
   void unsetFrame(uint32_t x, uint32_t y, bool delete_frames = true);
-  void unsetFrames(bool delete_frames = true);
+  virtual void unsetFrames(bool delete_frames = true);
   
   /* Unset the rendering tiles in the class */
   virtual void unsetTiles(bool no_events = false); 

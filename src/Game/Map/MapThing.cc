@@ -1857,6 +1857,30 @@ void MapThing::setVisibility(bool visible)
 }
 
 /*
+ * Description: Triggers on the walk off of the passed in person pointer. This
+ *              does nothing in the MapThing (virtual -> used elsewhere)
+ *
+ * Inputs: MapPerson* trigger - the triggering person pointer
+ * Output: none
+ */
+void MapThing::triggerWalkOff(MapPerson* trigger)
+{
+  (void) trigger;
+}
+
+/*
+ * Description: Triggers on the walk on of the passed in person pointer. This
+ *              does nothing in the MapThing (virtual -> used elsewhere)
+ *
+ * Inputs: MapPerson* trigger - the triggering person pointer
+ * Output: none
+ */
+void MapThing::triggerWalkOn(MapPerson* trigger)
+{
+  (void) trigger;
+}
+
+/*
  * Description: Updates the frames of the thing. This can include animation
  *              sequencing or movement and such. Called on the tick.
  *

@@ -79,7 +79,14 @@ public:
   /* Returns the use and walkover events */
   Event getUseEvent();
   Event getWalkoverEvent();
-  
+ 
+  /* Check if events or interactions are set */
+  bool isEnterEventSet();
+  bool isExitEventSet();
+  bool isUseEventSet();
+  bool isWalkInteraction();
+  bool isWalkoverEventSet();
+
   /* Sets the enter event */
   bool setEnterEvent(Event enter_event);
 
