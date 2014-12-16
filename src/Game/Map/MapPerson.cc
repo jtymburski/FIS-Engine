@@ -367,15 +367,15 @@ void MapPerson::setTileFinish(Tile* old_tile, Tile* new_tile,
     new_tile->unsetPerson(render_depth, no_events);
 
     /* Special events if person and thing is set on tile at render level 0 */
-    if(getID() == kPLAYER_ID && render_depth == 0 && new_tile->getThing(0))
+    if(getID() == kPLAYER_ID && render_depth == 0 && new_tile->isThingSet(0))
       new_tile->getThing(0)->triggerWalkOff(this);
   }
   else
   {
     old_tile->unsetPerson(render_depth, no_events);
-
+	
     /* Special events if person and thing is set on tile at render level 0 */
-    if(getID() == kPLAYER_ID && render_depth == 0 && old_tile->getThing(0))
+    if(getID() == kPLAYER_ID && render_depth == 0 && old_tile->isThingSet(0))
       old_tile->getThing(0)->triggerWalkOff(this);
   }
 }
@@ -402,7 +402,7 @@ bool MapPerson::setTileStart(Tile* old_tile, Tile* new_tile,
       old_tile->personMoveStart(render_depth);
 
       /* Special events if person and thing is set on tile at render level 0 */
-      if(getID() == kPLAYER_ID && render_depth == 0 && new_tile->getThing(0))
+      if(getID() == kPLAYER_ID && render_depth == 0 && new_tile->isThingSet(0))
         new_tile->getThing(0)->triggerWalkOn(this);
 
       return true;
@@ -452,10 +452,18 @@ void MapPerson::unsetTile(uint32_t x, uint32_t y, bool no_events)
 
   /* Remove from main tile, if applicable */
   tile_main[x][y]->unsetPerson(render_depth, no_events);
-
+  if(getID() == kPLAYER_ID && render_depth == 0 && 
+     tile_main[x][y]->isThingSet(0))
+    tile_main[x][y]->getThing(0)->triggerWalkOff(this);
+	
   /* Remove from previous tile, if applicable */
   if(tile_prev.size() > 0)
+  {
     tile_prev[x][y]->unsetPerson(render_depth, no_events);
+	if(getID() == kPLAYER_ID && render_depth == 0 && 
+       tile_prev[x][y]->isThingSet(0))
+      tile_prev[x][y]->getThing(0)->triggerWalkOff(this);
+  }
 }
 
 /*============================================================================
@@ -794,15 +802,8 @@ bool MapPerson::resetPosition()
 {
   if(isTilesSet())
   {
-    /* Reset movement */
-    //keyFlush();
-    //if(isMoving())
-    //  tileMoveFinish();
-    //setDirection(Direction::DIRECTIONLESS);
-    //animate(0, true);
-
-    /* Finally, set the new tiles */
-    return setStartingTiles(starting_tiles, true);
+    /* Set the new tiles to the starting tiles */
+    return setStartingTiles(starting_tiles, getStartingSection(), true);
   }
 
   return false;
@@ -935,12 +936,8 @@ void MapPerson::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 
       if(getMovementPaused())
       {
-        if(id == 0)
-          std::cout << "1" << std::endl;
         if(getTarget() != NULL)
         {
-          if(id == 0)
-            std::cout << "2" << std::endl;
           int delta_x = getTarget()->getCenterX() - getCenterX();
           int delta_y = getTarget()->getCenterY() - getCenterY();
 

@@ -1281,7 +1281,6 @@ void Tile::setWidth(uint16_t width)
 void Tile::setX(uint16_t x)
 {
   this->x = x;
-  //std::cout << "Tile: " << x << std::endl;
 }
 
 /*

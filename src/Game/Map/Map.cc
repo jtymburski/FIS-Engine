@@ -852,7 +852,29 @@ bool Map::isLoaded()
 /* The key up and down events to be handled by the class */
 bool Map::keyDownEvent(SDL_KeyboardEvent event)
 {
-  if(event.keysym.sym == SDLK_1)
+  /* Exit the map, map has finished processing */
+  if(event.keysym.sym == SDLK_ESCAPE)
+  {
+    if(item_menu.isActive())
+      item_menu.close();
+    else
+    {
+      unfocus();
+      return true;
+    }
+  }
+  /* If item menu is active, send keys there */
+  else if(item_menu.isActive())
+    item_menu.keyDownEvent(event);
+  /* If conversation is active, send keys there */
+  else if(map_dialog.isConversationActive())
+    map_dialog.keyDownEvent(event);
+  /* Interact initiation from player */
+  else if(event.keysym.sym == SDLK_SPACE)
+    initiateThingInteraction(player);
+  /* ---- START TEST CODE ---- */
+  /* Test: Change index to section 0 (main) and connected to player */
+  else if(event.keysym.sym == SDLK_1)
   {
     if(geography.size() > 0)
     {
@@ -863,6 +885,7 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
       player = persons.front();
     }
   }
+  /* Test: Change index to section 1 (room) and connected to other character */
   else if(event.keysym.sym == SDLK_2)
   {
     if(geography.size() > 1)
@@ -876,40 +899,35 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
           player = persons[i];
     }
   }
+  /* Test: trigger grey scale */
   else if(event.keysym.sym == SDLK_g)
   {
     bool enable = !tile_sprites[0]->isGreyScale();
     for(auto i = tile_sprites.begin(); i != tile_sprites.end(); i++)
       (*i)->useGreyScale(enable);
   }
-  /* Exit the map, map has finished processing */
-  else if(event.keysym.sym == SDLK_ESCAPE)
-  {
-    if(item_menu.isActive())
-      item_menu.close();
-    else
-    {
-      unfocus();
-      return true;
-    }
-  }
-  else if(item_menu.isActive())
-    item_menu.keyDownEvent(event);
+  /* Test: Pause dialog */
   else if(event.keysym.sym == SDLK_p)
     map_dialog.setPaused(!map_dialog.isPaused());
+  /* Test: Reset player location */
   else if(event.keysym.sym == SDLK_r)
   {
-    player->keyFlush();
     player->resetPosition();
+	setSectionIndex(player->getStartingSection());
   }
+  /* Test: Pick up test. Time limit */
   else if(event.keysym.sym == SDLK_6)
     map_dialog.initPickup(items[1]->getDialogImage(), 15, 2500);
+  /* Test: Pick up test. No time limit */
   else if(event.keysym.sym == SDLK_7)
     map_dialog.initPickup(items.front()->getDialogImage(), 5);
+  /* Test: single line chop off notification */
   else if(event.keysym.sym == SDLK_8)
     map_dialog.initNotification("Hello sunshine, what a glorious day and I'll keep writing forever and forever and forever and forever and forever and forever and forFU.", true, 0);
+  /* Test: multi line notification */
   else if(event.keysym.sym == SDLK_9)
     map_dialog.initNotification("Hello sunshine, what a glorious day and I'll keep writing forever and forever and forever and forever and forever and forever and forFU.");
+  /* Test: full conversation */
   else if(event.keysym.sym == SDLK_0)
   {
     Event blank_event = event_handler->createBlankEvent();
@@ -987,14 +1005,13 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
 
     delete convo;
   }
-  else if(map_dialog.isConversationActive())
-    map_dialog.keyDownEvent(event);
-  else if(event.keysym.sym == SDLK_SPACE)
-    initiateThingInteraction(player);
+  /* Test: Zoom back out */
   else if(event.keysym.sym == SDLK_z)
     zoom_out = true;
+  /* Test: Zoom back in */
   else if(event.keysym.sym == SDLK_x)
     zoom_in = true;
+  /* Test: Get persons at index 1 to target player */
   else if(event.keysym.sym == SDLK_t)
   {
     if(persons[1]->getTarget() == NULL)
@@ -1002,16 +1019,24 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
     else
       persons[1]->clearTarget();
   }
-  else if(event.keysym.sym == SDLK_y)
+  /* Test: Location of player */
+  else if(event.keysym.sym == SDLK_l)
   {
-    MapThing* thing = NULL;
-    MapPerson* person = NULL;
-    geography[0][7][8]->getRenderThings(0, person, thing);
-
-    std::cout << geography[0][7][8]->isItemsSet() << ","
-              << geography[0][8][8]->isItemsSet() << std::endl;
-    std::cout << thing << " " << person << std::endl;
+    if(player != NULL)
+	{
+	  SDL_Rect bbox = player->getBoundingBox();
+	  SDL_Rect bpixel = player->getBoundingPixels();
+	  
+	  std::cout << "----" << std::endl;
+	  std::cout << "Location X: " << bbox.x << " - " << bpixel.x << std::endl;
+	  std::cout << "Location Y: " << bbox.y << " - " << bpixel.y << std::endl;
+	  std::cout << "Width: " << bbox.w << " - " << bpixel.w << std::endl;
+	  std::cout << "Height: " << bbox.h << " - " << bpixel.h << std::endl;
+	  std::cout << "----" << std::endl;
+	}
   }
+  /* ---- END TEST CODE ---- */
+  /* Otherwise, send keys to player for control */
   else if(player != NULL)
   {
     if(event.keysym.sym == SDLK_LSHIFT || event.keysym.sym == SDLK_RSHIFT)
@@ -1236,41 +1261,6 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
           items[i]->unsetFrames(true);
       }
     }
-
-    /* TODO: Testing - Remove */
-    if(geography.size() > 0 && geography[0].size() > 3 
-                            && geography[0][3].size() > 3)
-      geography[0][3][3]->setStatus(Tile::BLANKED);
-      
-    /* TODO: Remove - testing */
-    std::cout << "--" << std::endl;
-    if(things.size() > 0)
-    {
-      std::vector<std::vector<TileSprite*>> set = things.front()->getFrames();
-      for(uint32_t i = 0; i < set.size(); i++)
-        for(uint32_t j = 0; j < set[i].size(); j++)
-          if(set[i][j] != NULL)
-            std::cout << i << "," << j << ": " 
-                      << set[i][j]->getPassability(Direction::NORTH) << " " 
-                      << set[i][j]->getPassability(Direction::EAST) << " " 
-                      << set[i][j]->getPassability(Direction::SOUTH) << " " 
-                      << set[i][j]->getPassability(Direction::WEST) << " "
-                      << (int)set[i][j]->getRenderDepth() << std::endl;
-                
-      std::cout << "Bounding Box: " 
-                << things.front()->getBoundingBox().x << " "
-                << things.front()->getBoundingBox().y << " "
-                << things.front()->getBoundingBox().w << " "
-                << things.front()->getBoundingBox().h << std::endl;
-      std::cout << "Bounding Box in Pixels: " 
-                << things.front()->getBoundingPixels().x << " "
-                << things.front()->getBoundingPixels().y << " "
-                << things.front()->getBoundingPixels().w << " "
-                << things.front()->getBoundingPixels().h << std::endl;
-      std::cout << "Coord: " << things.front()->getX() << "," 
-                             << things.front()->getY() << std::endl;
-    }
-    std::cout << "--" << std::endl;
   }
   
   /* Save file path, or unload if the load sequence failed*/
@@ -1484,25 +1474,14 @@ void Map::teleportThing(int id, int tile_x, int tile_y, int section_id)
       {
         if((*i)->getID() == id)
         {
-          std::cout << "Oiy" << std::endl;
           std::vector<std::vector<Tile*>> matrix = 
               getTileMatrix(section, x, y, (*i)->getWidth(), (*i)->getHeight());
 
           if((*i)->setStartingTiles(matrix, section))
           {
-            //map_dialog.endConversation();
             if(map_index != section)
               setSectionIndex(section);
-            //(*i)->clearAllMovement();
           }
-          // TODO: Fix
-          //if((*i)->setStartingTile(section, geography[section][x][y]))
-          //{
-          //  //map_dialog.endConversation();
-          //  if(map_index != section)
-          //    setSectionIndex(section);
-          //  (*i)->clearAllMovement();
-          //}
         }
       }
     }

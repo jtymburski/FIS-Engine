@@ -25,7 +25,12 @@ const short MapInteractiveObject::kRETURN_TIME_UNUSED = -1;
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
 
-/* Constructor function */
+/*
+ * Description: Base constructor function. No parameters. Initializes all 
+ *              parameters blank.
+ *
+ * Inputs: none
+ */
 MapInteractiveObject::MapInteractiveObject() : MapThing()
 {
   action_initiator = NULL;
@@ -37,7 +42,14 @@ MapInteractiveObject::MapInteractiveObject() : MapThing()
   time_return = kRETURN_TIME_UNUSED;
 }
 
-/* Constructor function */
+/* 
+ * Description: ID based constructor function. Sets up an interactive object 
+ *              with the base introduction parameters. 
+ *
+ * Inputs: int id - the id of the MIO
+ *         std::string name - the name of the MIO
+ *         std::string description - the description of the MIO
+ */
 MapInteractiveObject::MapInteractiveObject(int id, std::string name,
                                            std::string description)
                     : MapThing(id, name, description)
@@ -51,7 +63,9 @@ MapInteractiveObject::MapInteractiveObject(int id, std::string name,
   time_return = kRETURN_TIME_UNUSED;
 }
 
-/* Destructor function */
+/*
+ * Description: Destructor function
+ */
 MapInteractiveObject::~MapInteractiveObject()
 {
   unsetMatrix();
@@ -61,8 +75,13 @@ MapInteractiveObject::~MapInteractiveObject()
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
-   
-/* Appends an empty node to the tail of the sequence list */
+
+/*
+ * Description: Appends an empty node onto the back of the stack of states.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void MapInteractiveObject::appendEmptyNode()
 {
   StateNode* node = new StateNode;
@@ -78,7 +97,12 @@ void MapInteractiveObject::appendEmptyNode()
   appendNode(node);
 }
 
-/* Appends the node to the tail of the sequence list */
+/*
+ * Description: Appends a node passed in to the end of the list of states
+ *
+ * Inputs: StateNode* node - node pointer to append
+ * Output: none
+ */
 void MapInteractiveObject::appendNode(StateNode* node)
 {
   StateNode* tail_node = getTailNode();
@@ -95,8 +119,14 @@ void MapInteractiveObject::appendNode(StateNode* node)
   else
     tail_node->next = node;
 }
-  
-/* Deletes all memory stored within the given node */
+
+/*
+ * Description: Removes a node at a given ID and clears the memory for said
+ *              node, which represents a state in the stack.
+ *
+ * Inputs: int id - id corresponding to a state in the stack
+ * Output: bool - true if the node was successfully cleared
+ */
 bool MapInteractiveObject::clearNode(int id)
 {
   StateNode* node_to_clear = getNode(id);
@@ -120,7 +150,12 @@ bool MapInteractiveObject::clearNode(int id)
   return false;
 }
 
-/* Returns the node based on the id, NULL if doesn't exist */
+/*
+ * Description: Returns the node based on the ID. NULL if doesn't exist.
+ *
+ * Inputs: int id - id corresponding to a state in the stack
+ * Output: StateNode* - pointer to the node at the ID. NULL if none
+ */
 StateNode* MapInteractiveObject::getNode(int id)
 {
   StateNode* selected = NULL;
@@ -139,7 +174,12 @@ StateNode* MapInteractiveObject::getNode(int id)
   return selected;
 }
 
-/* Returns the length of the node sequence */
+/*
+ * Description: Returns the length of the stack of states, as part of the MIO.
+ *
+ * Inputs: none
+ * Output: int - integer representing the number of states
+ */
 int MapInteractiveObject::getNodeLength()
 {
   StateNode* parser = node_head;
@@ -154,8 +194,13 @@ int MapInteractiveObject::getNodeLength()
 
   return length;
 }
-  
-/* Returns the tail state */
+
+/*
+ * Description: Returns the state node at the tail of the stack (last ID)
+ * 
+ * Inputs: none
+ * Output: StateNode* - the node pointer for the tail state
+ */
 StateNode* MapInteractiveObject::getTailNode()
 {
   StateNode* tail = node_head;
@@ -171,8 +216,14 @@ StateNode* MapInteractiveObject::getTailNode()
   return tail;
 }
 
-/* Sets the current sequence of the node to the parent frames and resets the
- * pointers, where applicable */
+/*
+ * Description: Handles the connection to the parent class (thing matrix) and
+ *              connecting it to the correct state, based on the current ptr.
+ *              It will also set the animation back to the main frames.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void MapInteractiveObject::setParentFrames()
 {
   /* Only proceed if the current node is non-NULL */
@@ -206,7 +257,15 @@ void MapInteractiveObject::setParentFrames()
     }
   }
 }
- 
+
+/*
+ * Description: Shifts the current state node to the next one, based on the 
+ *              direction designated in the class. Passes the call to
+ *              shiftNext() or shiftPrevious(), as applicable.
+ *
+ * Inputs: none
+ * Output: bool - true if the shift was successful
+ */
 bool MapInteractiveObject::shift()
 {
   bool status = false;
@@ -236,7 +295,14 @@ bool MapInteractiveObject::shift()
   return status;
 }
 
-/* Shift the node sequence to next or previous */
+/*
+ * Description: Shifts to the next state in the linear linked list. This shifts
+ *              to a node with a greater ID (right). This also handles event
+ *              triggers and animations.
+ *
+ * Inputs: none
+ * Output: bool - true if the state has been shifted
+ */
 bool MapInteractiveObject::shiftNext()
 {
   if(node_current != NULL && node_current->next != NULL)
@@ -260,6 +326,14 @@ bool MapInteractiveObject::shiftNext()
   return false;
 }
 
+/*
+ * Description: Shifts to the previous state in the linear linked list. This 
+ *              shifts to a node with a lesser ID (left). This also handles 
+ *              event triggers and animations.
+ *
+ * Inputs: none
+ * Output: bool - true if the state has been shifted
+ */
 bool MapInteractiveObject::shiftPrevious()
 {
   if(node_current != NULL && node_current->previous != NULL)
@@ -416,7 +490,14 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
   return success;
 }
 
-/* Returns the class descriptor, useful for casting */
+/*
+ * Description: This is the class descriptor. Primarily used for encapsulation
+ *              to determine which class to cast it to for specific parameters.
+ *
+ * Inputs: none
+ * Output: std::string - the string descriptor, it will be the same as the class
+ *                       name. For example, "MapThing", "MapPerson", etc.
+ */
 std::string MapInteractiveObject::classDescriptor()
 {
   return "MapInteractiveObject";
@@ -431,7 +512,6 @@ std::string MapInteractiveObject::classDescriptor()
  * Inputs: none
  * Output: bool - true if clean validated frame data
  */
-// TODO: Implementation - where I am right now
 bool MapInteractiveObject::cleanMatrix()
 {
   bool equal_size = true;
@@ -474,8 +554,12 @@ bool MapInteractiveObject::cleanMatrix()
   return equal_size;
 }
 
-/* Clears all information from the class (including deleting necessary
- * pointers) */
+/*
+ * Description: Clears all variables in the MIO, back to blank default state.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void MapInteractiveObject::clear()
 {
   /* Clears action initiator pointer */
@@ -491,26 +575,49 @@ void MapInteractiveObject::clear()
   /* Parent cleanup */
   MapThing::clear();
 }
-  
-/* Returns the inactive time before returning down the state path */
+
+/*
+ * Description: Returns the inactive time before returning back down the state
+ *              path.
+ *
+ * Inputs: none
+ * Output: int - the integer inactive time. -1 if inactive time not used
+ */
 int MapInteractiveObject::getInactiveTime()
 {
   return time_return;
 }
- 
-// TODO: Comment
+
+/*
+ * Description: Returns the current state node.
+ *
+ * Inputs: none
+ * Output: StateNode* - state node pointer. DO NOT DELETE. NULL if unset
+ */
 StateNode* MapInteractiveObject::getStateCurrent()
 {
   return node_current;
 }
- 
-// TODO: Comment
+
+/*
+ * Description: Returns the head state node.
+ *
+ * Inputs: none
+ * Output: StateNode* - state node pointer. DO NOT DELETE. NULL if unset
+ */
 StateNode* MapInteractiveObject::getStateHead()
 {
   return node_head;
 }
 
-/* Interact with the thing (use key) */
+/*
+ * Description: The generic interact call. This is what fires when a player
+ *              presses a use key and then this searches for if an event is
+ *              available and starts it.
+ *
+ * Inputs: MapPerson* initiator - the pointer to the person that initiated it
+ * Output: bool - if the call can occur (Event handler needs to be set)
+ */
 bool MapInteractiveObject::interact(MapPerson* initiator)
 {
   bool status = false;
@@ -535,15 +642,26 @@ bool MapInteractiveObject::interact(MapPerson* initiator)
   return status;
 }
 
-/* Reset back to head state */
+/*
+ * Description: Resets the MIO back to the head state.
+ * 
+ * Inputs: none
+ * Output: none
+ */
 void MapInteractiveObject::reset()
 {
   node_current = node_head;
   shifting_forward = true;
   setParentFrames();
 }
-  
-/* Sets the inactive time before returning down the state path (ms) */
+
+/*
+ * Description: Sets the inactive time before the node sequence begins reverting
+ *              to prior states.
+ *
+ * Inputs: int time - the time in ms before returning down the state stack.
+ * Output: none
+ */
 void MapInteractiveObject::setInactiveTime(int time)
 {
   if(time <= 0)
@@ -554,6 +672,12 @@ void MapInteractiveObject::setInactiveTime(int time)
   time_elapsed = 0;
 }
 
+/*
+ * Description: Sets the passed in main state at the tail end of the MIO stack.
+ *
+ * Inputs: MapState* state - new state to append to the stack
+ * Output: bool - true if the node was added
+ */
 bool MapInteractiveObject::setState(MapState* state)
 {
   if(state != NULL && state->getMatrix() != NULL)
@@ -575,6 +699,13 @@ bool MapInteractiveObject::setState(MapState* state)
   return false;
 }
 
+/*
+ * Description: Sets the passed in transition state at the tail end of the MIO 
+ *              stack.
+ *
+ * Inputs: MapState* state - new transition state to append to the stack
+ * Output: bool - true if the node was added
+ */
 bool MapInteractiveObject::setState(SpriteMatrix* transition)
 {
   if(transition != NULL)
@@ -597,8 +728,13 @@ bool MapInteractiveObject::setState(SpriteMatrix* transition)
   return false;
 }
 
-/* Triggers walk on / walk off events on the thing */
-// TODO: Comment
+/*
+ * Description: Triggers the walk off event for the passed of person. Pertinent
+ *              for triggering events. Handled by the movement of thing.
+ *
+ * Inputs: MapPerson* trigger - the triggering person pointer
+ * Output: none
+ */
 void MapInteractiveObject::triggerWalkOff(MapPerson* trigger)
 {
   if(trigger != NULL && person_on == trigger)
@@ -612,7 +748,13 @@ void MapInteractiveObject::triggerWalkOff(MapPerson* trigger)
   }
 }
 
-// TODO: Comment
+/*
+ * Description: Triggers the walk on event for the passed of person. Pertinent
+ *              for triggering events. Handled by the movement of thing.
+ *
+ * Inputs: MapPerson* trigger - the triggering person pointer
+ * Output: none
+ */
 void MapInteractiveObject::triggerWalkOn(MapPerson* trigger)
 {
   if(trigger != NULL && person_on == NULL)
@@ -631,8 +773,14 @@ void MapInteractiveObject::triggerWalkOn(MapPerson* trigger)
   }
 }
 
-/* Updates the thing, based on the tick */
-// TODO: Fix all
+/*
+ * Description: Updates the frames of the MIO. This can include animation
+ *              sequencing or movement and such. Called on the tick.
+ *
+ * Inputs: int cycle_time - the ms time to update the movement/animation
+ *         std::vector<std::vector<Tile*>> tile_set - the next tiles to move to
+ * Output: none 
+ */
 void MapInteractiveObject::update(int cycle_time, 
                                   std::vector<std::vector<Tile*>> tile_set)
 {
@@ -685,7 +833,13 @@ void MapInteractiveObject::update(int cycle_time,
   }
 }
 
-/* Unsets the tied state - this handles deletion */
+/*
+ * Description: Unsets the frames that are embedded in all state nodes in the
+ *              MIO.
+ *
+ * Inputs: bool delete_state - should the old frames be deleted?
+ * Output: none 
+ */
 void MapInteractiveObject::unsetFrames(bool delete_frames)
 {
   StateNode* node = node_head;

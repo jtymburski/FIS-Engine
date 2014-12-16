@@ -1355,7 +1355,7 @@ uint32_t MapThing::getY()
  *              available and starts it.
  *
  * Inputs: MapPerson* initiator - the pointer to the person that initiated it
- * Output: bool - if the call can occur (Event handler needs to be set
+ * Output: bool - if the call can occur (Event handler needs to be set)
  */
 bool MapThing::interact(MapPerson* initiator)
 {
