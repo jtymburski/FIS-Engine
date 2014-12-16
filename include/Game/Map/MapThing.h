@@ -314,7 +314,7 @@ public:
   /* Sets the set of tiles that the thing will be placed on. Needed after
    * defining a starting point.*/
   virtual bool setStartingTiles(std::vector<std::vector<Tile*>> tile_set, 
-                                bool no_events = true);
+                                uint16_t section, bool no_events = true);
   
   /* Sets the target map thing, fails if there is already a target */
   bool setTarget(MapThing* target);

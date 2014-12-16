@@ -555,24 +555,17 @@ uint32_t Tile::getPixelY() const
  *              level. 
  *
  * Inputs: uint8_t render_level - the render depth indicator
- *         MapItem*& item - ref of item pointer to place render object
  *         MapPerson*& person - ref of person pointer to place render object
  *         MapThing*& thing - ref of thing pointer to place render object
  * Output: status if the objects are valid for rendering
  */
-bool Tile::getRenderThings(uint8_t render_level, MapItem*& item, 
-                           MapPerson*& person, MapThing*& thing) const
+bool Tile::getRenderThings(uint8_t render_level, MapPerson*& person, 
+                           MapThing*& thing) const
 {
   bool valid_pointer = false;
 
   if(status == ACTIVE && render_level < Helpers::getRenderDepth())
   {
-    if(render_level == 0 && items.size() > 0)
-    {
-      item = items.front();
-      valid_pointer = true;
-    }
-
     if(persons.size() > render_level && persons[render_level] != NULL)
     {
       person = persons[render_level];

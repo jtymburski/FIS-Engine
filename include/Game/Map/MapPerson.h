@@ -171,7 +171,7 @@ public:
   /* Sets the set of tiles that the thing will be placed on. Needed after
    * defining a starting point.*/
   virtual bool setStartingTiles(std::vector<std::vector<Tile*>> tile_set, 
-                                bool no_events = true); 
+                                uint16_t section, bool no_events = true); 
 
   /* Sets a new state to add into the states list */
   bool setState(TileSprite* frame, SurfaceClassifier surface, 
@@ -193,6 +193,9 @@ public:
   void unsetStates(SurfaceClassifier surface, Direction direction, 
                    bool delete_frames = true);
   void unsetStates(bool delete_frames = true);
+
+  /* Unset the rendering tiles in the class */
+  virtual void unsetTiles(bool no_events = false); 
 };
 
 #endif // MAPPERSON_H

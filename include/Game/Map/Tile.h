@@ -142,8 +142,8 @@ public:
   uint32_t getPixelY() const;
 
   /* Returns the render stack for applicable things based on level */
-  bool getRenderThings(uint8_t render_level, MapItem*& item, 
-                       MapPerson*& person, MapThing*& thing) const;
+  bool getRenderThings(uint8_t render_level, MapPerson*& person, 
+                       MapThing*& thing) const;
 
   /* Returns the tile status */
   TileStatus getStatus() const;

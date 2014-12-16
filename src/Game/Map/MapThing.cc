@@ -1760,11 +1760,12 @@ void MapThing::setStartingLocation(uint16_t section_id, uint16_t x, uint16_t y)
  *              if a thing is already set up in the corresponding spot.
  *
  * Inputs: std::vector<std::vector<Tile*>> tile_set - the tile matrix
+ *         uint16_t section - map section corresponding to tiles
  *         bool no_events - if no events should occur from setting the thing
  * Output: bool - true if the tiles are set
  */
 bool MapThing::setStartingTiles(std::vector<std::vector<Tile*>> tile_set, 
-                                bool no_events)
+                                uint16_t section, bool no_events)
 {
   bool success = true;
   
@@ -1816,7 +1817,7 @@ bool MapThing::setStartingTiles(std::vector<std::vector<Tile*>> tile_set,
     else
     {
       tile_main = tile_set;
-      tile_section = starting_section;
+      tile_section = section;
     }
     
     return success;
@@ -1941,8 +1942,14 @@ void MapThing::unsetFrames(bool delete_frames)
 void MapThing::unsetTiles(bool no_events)
 {
   /* Unset in each frame of the thing */
-  if(tile_main.size() > 0)
+  if(isTilesSet())
   {
+    /* Reset movement and animation */
+    if(isMoving())
+      tileMoveFinish();
+    setDirection(Direction::DIRECTIONLESS);
+    animate(0, true);
+
     /* Reset X and Y back to coordinates of top left tile */
     x = 0.0;
     y = 0.0;

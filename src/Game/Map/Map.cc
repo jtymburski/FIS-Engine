@@ -1004,14 +1004,13 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
   }
   else if(event.keysym.sym == SDLK_y)
   {
-    MapItem* item = NULL;
     MapThing* thing = NULL;
     MapPerson* person = NULL;
-    geography[0][7][8]->getRenderThings(0, item, person, thing);
+    geography[0][7][8]->getRenderThings(0, person, thing);
 
     std::cout << geography[0][7][8]->isItemsSet() << ","
               << geography[0][8][8]->isItemsSet() << std::endl;
-    std::cout << item << " " << thing << " " << person << std::endl;
+    std::cout << thing << " " << person << std::endl;
   }
   else if(player != NULL)
   {
@@ -1193,7 +1192,8 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
         /* Get the tile matrix to match the frames and set */
         std::vector<std::vector<Tile*>> tile_set = getTileMatrix(things[i]);
         if(tile_set.size() > 0)
-          things[i]->setStartingTiles(tile_set, true);
+          things[i]->setStartingTiles(tile_set, 
+                                      things[i]->getStartingSection(), true);
         else
           things[i]->unsetFrames(true);
       }
@@ -1210,7 +1210,8 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
       {
         std::vector<std::vector<Tile*>> tile_set = getTileMatrix(persons[i]);
         if(tile_set.size() > 0)
-          persons[i]->setStartingTiles(tile_set, true);
+          persons[i]->setStartingTiles(tile_set, 
+                                       persons[i]->getStartingSection(), true);
         else
           persons[i]->unsetStates(true);
       }
@@ -1229,7 +1230,8 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
         /* Get the tile matrix to match the frames and set */
         std::vector<std::vector<Tile*>> tile_set = getTileMatrix(items[i]);
         if(tile_set.size() > 0)
-          items[i]->setStartingTiles(tile_set, true);
+          items[i]->setStartingTiles(tile_set, items[i]->getStartingSection(), 
+                                     true);
         else
           items[i]->unsetFrames(true);
       }
@@ -1365,7 +1367,11 @@ bool Map::render(SDL_Renderer* renderer)
           }
         }
 
-        // TODO: Add render base 0 to here as well
+        /* Base map thing, if relevant */
+        MapThing* render_thing = geography[map_index][i][j]->getThing(0);
+        if(render_thing != NULL)
+          render_thing->renderMain(renderer, geography[map_index][i][j], 0, 
+                                   x_offset, y_offset);
       }
     }
 
@@ -1376,24 +1382,17 @@ bool Map::render(SDL_Renderer* renderer)
       {
         for(uint16_t j = tile_y_start; j < tile_y_end; j++)
         {
-          MapItem* render_item = NULL;
           MapPerson* render_person = NULL;
           MapThing* render_thing = NULL;
-          // TODO: FIX AND REMOVE ITEM GRAB
-          if(geography[map_index][i][j]->getRenderThings(index, render_item,
-                                                         render_person, 
+
+          /* Acquire render things and continue forward if some are not null */
+          if(geography[map_index][i][j]->getRenderThings(index, render_person, 
                                                          render_thing))
           {
             /* Different indexes result in different rendering procedures
              * If base index, render order is top item, thing, then person */
             if(index == 0)
             {
-              //if(render_item != NULL)
-              //  render_item->renderMain(renderer, geography[map_index][i][j], 
-              //                          index, x_offset, y_offset);
-              if(render_thing != NULL)
-                render_thing->renderMain(renderer, geography[map_index][i][j], 
-                                         index, x_offset, y_offset);
               if(render_person != NULL)
               {
                 if(render_person->getMovement() == Direction::EAST || 
@@ -1485,6 +1484,17 @@ void Map::teleportThing(int id, int tile_x, int tile_y, int section_id)
       {
         if((*i)->getID() == id)
         {
+          std::cout << "Oiy" << std::endl;
+          std::vector<std::vector<Tile*>> matrix = 
+              getTileMatrix(section, x, y, (*i)->getWidth(), (*i)->getHeight());
+
+          if((*i)->setStartingTiles(matrix, section))
+          {
+            //map_dialog.endConversation();
+            if(map_index != section)
+              setSectionIndex(section);
+            //(*i)->clearAllMovement();
+          }
           // TODO: Fix
           //if((*i)->setStartingTile(section, geography[section][x][y]))
           //{

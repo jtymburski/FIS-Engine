@@ -795,11 +795,11 @@ bool MapPerson::resetPosition()
   if(isTilesSet())
   {
     /* Reset movement */
-    keyFlush();
-    if(isMoving())
-      tileMoveFinish();
-    setDirection(Direction::DIRECTIONLESS);
-    animate(0, true);
+    //keyFlush();
+    //if(isMoving())
+    //  tileMoveFinish();
+    //setDirection(Direction::DIRECTIONLESS);
+    //animate(0, true);
 
     /* Finally, set the new tiles */
     return setStartingTiles(starting_tiles, true);
@@ -827,15 +827,17 @@ void MapPerson::setRunning(bool running)
  *              if a thing is already set up in the corresponding spot.
  *
  * Inputs: std::vector<std::vector<Tile*>> tile_set - the tile matrix
+ *         uint16_t section - the map section corresponding to the tile set
  *         bool no_events - if no events should occur from setting the thing
  * Output: bool - true if the tiles are set
  */
 bool MapPerson::setStartingTiles(std::vector<std::vector<Tile*>> tile_set, 
-                                bool no_events)
+                                uint16_t section, bool no_events)
 {
-  if(MapThing::setStartingTiles(tile_set, no_events))
+  if(MapThing::setStartingTiles(tile_set, section, no_events))
   {
-    starting_tiles = tile_set;
+    if(starting_tiles.size() == 0)
+      starting_tiles = tile_set;
     return true;
   }
 
@@ -933,8 +935,12 @@ void MapPerson::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 
       if(getMovementPaused())
       {
+        if(id == 0)
+          std::cout << "1" << std::endl;
         if(getTarget() != NULL)
         {
+          if(id == 0)
+            std::cout << "2" << std::endl;
           int delta_x = getTarget()->getCenterX() - getCenterX();
           int delta_y = getTarget()->getCenterY() - getCenterY();
 
@@ -1039,4 +1045,24 @@ void MapPerson::unsetStates(bool delete_frames)
     for(uint8_t j = 0; j < states[i].size(); j++)
       if(states[i][j] != NULL)
         states[i][j]->unsetSprites(delete_frames);
+}
+
+/*
+ * Description: Unsets the tiles from the thing. This will stop the rendering
+ *              process, since it doesn't have any corresponding tiles to render
+ *              to. However, the starting coordinate is untouched.
+ *
+ * Inputs: bool no_events - true if no events will trigger on removal from tile
+ * Output: none
+ */
+void MapPerson::unsetTiles(bool no_events)
+{
+  /* Unset in each frame of the thing */
+  if(isTilesSet())
+  {
+    /* Reset movement and animation */
+    keyFlush();
+
+    MapThing::unsetTiles(no_events);
+  }
 }
