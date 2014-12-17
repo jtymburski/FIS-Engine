@@ -19,6 +19,7 @@
 
 #include "Game/Battle/AIModuleTester.h"
 #include "Game/Battle/Battle.h"
+#include "Game/Battle/BattleDisplay.h"
 #include "Game/EventHandler.h"
 #include "Game/Map/Map.h"
 #include "Game/Player/Player.h"
@@ -60,7 +61,8 @@ private:
   
   /* A current battle pointer */
   Battle* game_battle;
-  
+  BattleDisplay* battle_display;
+
   /* The configuration for the display of the game */
   Options* game_config;
 

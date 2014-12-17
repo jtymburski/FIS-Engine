@@ -35,6 +35,7 @@ Game::Game(Options* running_config)
   /* Initalize class variables */
   active_renderer = nullptr;
   base_path = "";
+  battle_display = nullptr;
   game_battle    = nullptr;
   game_inventory = nullptr;
   game_config    = nullptr;
@@ -1060,13 +1061,28 @@ bool Game::render(SDL_Renderer* renderer)
   // TODO: Possibly revise. Change how the game handles maps and changing
   if(active_renderer == NULL)
     active_renderer = renderer;
-  
+ 
+  /* Battle Display initialization */
+  if(battle_display == nullptr)
+  {
+    /* Sprites */
+    Sprite* background = new Sprite(
+           base_path + "sprites/Battle/Backdrop/battlebg", 7, ".png", renderer);
+    background->setAnimationTime(5000);
+
+    /* Display */
+    battle_display = new BattleDisplay(game_config);
+    battle_display->setBackground(background);
+  }
+
   /* Map initialization location */
   if(!game_map->isLoaded())
    game_map->loadMap(base_path + "maps/test_06", renderer);
 
   if(mode == MAP)
     return game_map->render(renderer);
+  else if(mode == BATTLE)
+    return battle_display->render(renderer);
   
   return true;
 }
@@ -1083,8 +1099,11 @@ bool Game::setConfiguration(Options* running_config)
     if(game_map != nullptr)
       game_map->setConfiguration(running_config);
 
+    /* Battle configuration setup */
     if (game_battle != nullptr)
       game_battle->setConfiguration(running_config);
+    if(battle_display != nullptr)
+      battle_display->setConfiguration(running_config);
 
     return true;
   }
@@ -1101,8 +1120,17 @@ bool Game::update(int32_t cycle_time)
   if(mode == MAP && game_map != nullptr)
     return game_map->update(cycle_time);
 
-  if(mode == BATTLE && game_battle != nullptr)
-    return game_battle->update(cycle_time);
+  if(mode == BATTLE)
+  {
+    bool success = true;
+
+    if(game_battle != nullptr)
+      success &= game_battle->update(cycle_time);
+    if(battle_display != nullptr)
+      success &= battle_display->update(cycle_time);
+
+    return success;
+  }
 
   return false;
 }
