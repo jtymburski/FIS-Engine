@@ -152,7 +152,6 @@ void Skill::flagSetup()
 
     else if ((*it)->actionFlag(ActionFlags::DAMAGE))
     {
-      std::cout << "Setting damag flag " << std::endl;
       setFlag(SkillFlags::OFFENSIVE);
       setFlag(SkillFlags::DAMAGING);
     }

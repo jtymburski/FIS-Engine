@@ -246,7 +246,8 @@ static std::vector<T> getRandElements(std::vector<T> elements, S num_elements)
 {
   std::vector<T> rand_elements;
 
-  if (elements.size() >= num_elements && num_elements > 0)
+  if (elements.size() >= static_cast<uint64_t>(num_elements) && 
+      num_elements > 0)
   {
     for (S i = num_elements; i > 0; i--)
     {

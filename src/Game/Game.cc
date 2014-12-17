@@ -301,8 +301,8 @@ void Game::setupBattle()
   // for (auto it = begin (assign_actions); it != end(assign_actions); ++it)
   //   std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
 
-  for (auto& inflict_action : inflict_actions)
-    std::cout << inflict_action->actionFlag(ActionFlags::VALID) << std::endl;
+  // for (auto& inflict_action : inflict_actions)
+  //   std::cout << inflict_action->actionFlag(ActionFlags::VALID) << std::endl;
 
   // Test Skills
   Skill* physical_01 = new Skill(100, "Wee Strike", ActionScope::ONE_ENEMY, 

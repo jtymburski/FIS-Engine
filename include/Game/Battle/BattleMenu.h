@@ -96,8 +96,6 @@ private:
   int32_t  layer_index;
   int32_t  element_index;
 
-  /* ------------ Constants --------------- */
-
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
@@ -119,9 +117,6 @@ private:
   void keyDownDecrement();
   void keyDownIncrement();
   void keyDownSelect();
-
-  /* Compiles and returns a vector of valid actions for the current user */
-  std::vector<ActionType> getValidActions();
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
@@ -175,6 +170,15 @@ public:
   /* Obtains user selected targets for the action from the Menu */
   std::vector<int32_t> getActionTargets();
 
+  /* Get a pointer to the current person */
+  Person* getCurrentUser();
+
+  /* Get the element index (ex. index of skill selection */
+  int32_t getElementIndex();
+
+  /* Obtain the layer index of the menu */
+  int32_t getLayerIndex();
+
   /* Finds the maximum index for the current layer */
   int32_t getMaxIndex();
 
@@ -187,14 +191,23 @@ public:
   /* Returns the current selectable items on the menu */
   std::vector<BattleItem> getMenuItems();
 
+  /* Return the index of the person assigned to the menu */
+  int32_t getPersonIndex();
+
   /* Returns a vector of random targets */
   std::vector<int32_t> getRandomTargets();
+
+  /* Obtain the true QD cost paid by a user (to return the right amount) */
+  int32_t getQtdrCostPaid();
 
   /* The currently selected Skill (if set) */
   BattleSkill getSelectedSkill();
 
   /* The currently selected Item (if set) */
   Item* getSelectedItem();
+
+  /* Returns a vector of action types the user may use */
+  std::vector<ActionType> getValidActionTypes();
 
   /* Returns the window status of the BattleMenu */
   WindowStatus getWindowStatus();

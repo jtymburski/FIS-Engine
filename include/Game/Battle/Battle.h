@@ -479,6 +479,9 @@ public:
   /* Returns the assigned Battle display mode */
   BattleMode getBattleMode();
 
+  /* Returns a pointer to the BattleMenu */
+  BattleMenu* getBattleMenu();
+
   /* Return the value of a given CombatState flag */
   bool getBattleFlag(const CombatState &test_flag);
 

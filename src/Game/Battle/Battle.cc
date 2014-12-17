@@ -730,7 +730,7 @@ int32_t Battle::calcBaseDamage(const float &crit_factor,
         (curr_target->getPrimary() == curr_skill->getPrimary() ||
         curr_target->getPrimary() == curr_skill->getSecondary()))
     {
-      std::cout << "{Elements} -- Skill matches targets prim elmmt!" << std::endl;
+      std::cout <<"{Elements} -- Skill matches targets prim elmmt!"<< std::endl;
       elm1_def_val  = targ_attrs.getStat(prim_def);
       elm1_def_val *= kDEF_PRIM_ELM_MATCH_MODIFIER;
     }
@@ -744,7 +744,7 @@ int32_t Battle::calcBaseDamage(const float &crit_factor,
     if (curr_user->getSecondary() == curr_skill->getPrimary() ||
         curr_user->getSecondary() == curr_skill->getSecondary())
     {
-      std::cout << "{Elements} -- Skill matches user's secd elmmt!" << std::endl;
+      std::cout << "{Elements} -- Skill matches user's secd elmmt!"<< std::endl;
       elm2_pow_val  = temp_user_stats.getStat(secd_off);
       elm2_pow_val *= kOFF_SECD_ELM_MATCH_MODIFIER;
     }
@@ -753,7 +753,7 @@ int32_t Battle::calcBaseDamage(const float &crit_factor,
         (curr_target->getSecondary() == curr_skill->getPrimary() ||
         curr_target->getSecondary() == curr_skill->getSecondary()))
     {
-      std::cout << "{Elements} -- Skill matches targets secd elmmt!" << std::endl;
+      std::cout <<"{Elements} -- Skill matches targets secd elmmt!"<< std::endl;
       elm2_def_val  = targ_attrs.getStat(secd_def);
       elm2_def_val *= kDEF_SECD_ELM_MATCH_MODIFIER;
     }
@@ -1605,7 +1605,8 @@ void Battle::personalUpkeep(Person* const target)
     {
       ailment->update(true);
 
-      if (ailment->getFlag(AilState::DEALS_DAMAGE) && target->getBFlag(BState::ALIVE))
+      if (ailment->getFlag(AilState::DEALS_DAMAGE) && 
+          target->getBFlag(BState::ALIVE))
       {
         auto damage_amount = ailment->getDamageAmount();
         auto damage_type   = ailment->getDamageType();
@@ -1762,8 +1763,8 @@ bool Battle::processAction(std::vector<Person*> targets,
           std::swap(action_target, factor_target);
           std::swap(user_attr, targ_attr);
 
-          std::cout << "Action Target:" << action_target->getName() << std::endl;
-          std::cout << "Factor Target: " << factor_target->getName() << std::endl;
+          std::cout << "Action Target:" << action_target->getName()<< std::endl;
+          std::cout << "Factor Target: " <<factor_target->getName()<< std::endl;
         }
 
         if (curr_action->actionFlag(ActionFlags::ALTER))
@@ -2248,8 +2249,9 @@ void Battle::processBuffer()
 
         if (getBattleMode() == BattleMode::TEXT)
         {
-          std::cout << "{GUARD} " << curr_target->getGuard()->getName() << " is now guarding "
-                    << curr_target->getName() << " from some damage.\n";
+          std::cout << "{GUARD} " << curr_target->getGuard()->getName() 
+                    << " is now guarding " << curr_target->getName() 
+                    << " from some damage.\n";
         }
       }
       else
@@ -2435,8 +2437,11 @@ void Battle::selectUserActions()
       menu->setSelectableSkills(battle_skills);
       menu->setSelectableItems(battle_items);
     
-      if (getBattleMode() == BattleMode::TEXT && hasInfliction(Infliction::CONFUSE, curr_user))
+      if (getBattleMode() == BattleMode::TEXT && 
+          hasInfliction(Infliction::CONFUSE, curr_user))
+      {
         menu->printMenuState();
+      }
     }
     else
     {
@@ -2604,7 +2609,7 @@ void Battle::updateAllySelection()
       {
         auto selected_skill = menu->getSelectedSkill();
 
-        std::cout << "Skill Name! " << selected_skill.skill->getName() << std::endl;
+        std::cout << "Skill Nameb"<<selected_skill.skill->getName()<<std::endl;
 
         targets = getIndexesOfPersons(selected_skill.all_targets);                 
       }
@@ -3401,6 +3406,17 @@ bool Battle::update(int32_t cycle_time)
 BattleOptions Battle::getAilmentUpdateMode()
 {
   return ailment_update_mode;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+BattleMenu* Battle::getBattleMenu()
+{
+  return menu;
 }
 
 /*

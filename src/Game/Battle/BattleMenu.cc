@@ -1054,6 +1054,39 @@ std::vector<int32_t> BattleMenu::getActionTargets()
 }
 
 /*
+ * Description: 
+ *
+ * Inputs: 
+ * Output: 
+ */
+Person* BattleMenu::getCurrentUser()
+{
+  return current_user;
+}
+
+/*
+ * Description: 
+ *
+ * Inputs: 
+ * Output: 
+ */
+int32_t BattleMenu::getElementIndex()
+{
+  return element_index;
+}
+
+/*
+ * Description: 
+ *
+ * Inputs: 
+ * Output: 
+ */
+int32_t BattleMenu::getLayerIndex()
+{
+  return layer_index;
+}
+
+/*
  * Description: Returns the current value for maximum selection index based
  *              on the layering of hte menu.
  *
@@ -1132,6 +1165,17 @@ std::vector<BattleItem> BattleMenu::getMenuItems()
 }
 
 /*
+ * Description: Returns the vector of BattleMenu objects.
+ *
+ * Inputs: none
+ * Output: std::vector<BattleItem> - the vector of Battle item objects.
+ */
+int32_t BattleMenu::getPersonIndex()
+{
+  return person_index;
+}
+
+/*
  * Description: Compiles randomized targets for the selected skill. (ex., for
  *              attacking while confused)
  *
@@ -1140,7 +1184,6 @@ std::vector<BattleItem> BattleMenu::getMenuItems()
  */
 std::vector<int32_t> BattleMenu::getRandomTargets()
 {
-  std::cout << "Valid targets size:" << valid_targets.size() << std::endl;
   std::vector<int32_t> random_targets;
 
   if (action_scope == ActionScope::USER ||
@@ -1183,6 +1226,22 @@ std::vector<int32_t> BattleMenu::getRandomTargets()
   }
 
   return random_targets;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output: 
+ */
+int32_t BattleMenu::getQtdrCostPaid()
+{
+  return qtdr_cost_paid;
+}
+
+std::vector<ActionType> BattleMenu::getValidActionTypes()
+{
+  return current_user->getValidActions();
 }
 
 /*
