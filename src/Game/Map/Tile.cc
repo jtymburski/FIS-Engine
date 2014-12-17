@@ -85,13 +85,12 @@ bool Tile::growPersonStack(uint8_t render_level)
   if(render_level < Helpers::getRenderDepth())
   {
     MapPerson* null_person = NULL;
-    bool false_status = false;
 
     /* Ensure array sizes */
-    while(persons.size() <= render_level)
-      persons.push_back(null_person);
+    while(persons_main.size() <= render_level)
+      persons_main.push_back(null_person);
     while(persons_prev.size() <= render_level)
-      persons_prev.push_back(false_status);
+      persons_prev.push_back(null_person);
 
     return true;
   }
@@ -442,10 +441,10 @@ uint16_t Tile::getMaxRenderLevel() const
 {
   uint16_t depth = 0;
 
-  if(things.size() > persons.size())
+  if(things.size() > persons_main.size())
     depth = things.size();
   else
-    depth = persons.size();
+    depth = persons_main.size();
 
   if(depth == 0 && items.size() > 0)
     depth = 1;
@@ -492,36 +491,82 @@ bool Tile::getPassabilityExiting(Direction dir) const
   }
   return false;
 }
-  
+
 /*
  * Description: Returns the person stored on this tile at the indicated render
- *              level. 
+ *              level as a main or previous (first non-null one). 
  *
  * Inputs: uint8_t render_level - integer of the render level on tile
  * Output: MapPerson* - person pointer on tile. NULL if none set
  */
 MapPerson* Tile::getPerson(uint8_t render_level) const
 {
+  MapPerson* selected_person = getPersonMain(render_level);
+  if(selected_person == NULL)
+    selected_person = getPersonPrev(render_level);
+  return selected_person;
+}
+
+/*
+ * Description: Returns the person stored on this tile at the indicated render
+ *              level as a main (moving to or not moving). 
+ *
+ * Inputs: uint8_t render_level - integer of the render level on tile
+ * Output: MapPerson* - person pointer on tile. NULL if none set
+ */
+MapPerson* Tile::getPersonMain(uint8_t render_level) const
+{
   MapPerson* selected_person = NULL;
 
-  if(persons.size() > render_level)
-    selected_person = persons[render_level];
+  if(persons_main.size() > render_level)
+    selected_person = persons_main[render_level];
+
+  return selected_person;
+}
+
+/*
+ * Description: Returns the person stored on this tile at the indicated render
+ *              level as a previous (moving from). 
+ *
+ * Inputs: uint8_t render_level - integer of the render level on tile
+ * Output: MapPerson* - person pointer on tile. NULL if none set
+ */
+MapPerson* Tile::getPersonPrev(uint8_t render_level) const
+{
+  MapPerson* selected_person = NULL;
+
+  if(persons_prev.size() > render_level)
+    selected_person = persons_prev[render_level];
 
   return selected_person;
 }
 
 /*
  * Description: Returns all persons stored on the tile. This is ordered based
- *              on render level. I.e., index 4 will correspond to render level
- *              4. If the render level is not set in the vector, it is NULL
- *              and not used.
+ *              on render level (moving to or not moving). I.e., index 4 will 
+ *              correspond to render level 4. If the render level is not set in 
+ *              the vector, it is NULL and not used.
  *
  * Inputs: none
- * Output: std::vector<MapPerson*> - stack of persons stored in tile
+ * Output: std::vector<MapPerson*> - stack of main persons stored in tile
  */
-std::vector<MapPerson*> Tile::getPersons() const
+std::vector<MapPerson*> Tile::getPersonsMain() const
 {
-  return persons;
+  return persons_main;
+}
+
+/*
+ * Description: Returns all persons stored on the tile. This is ordered based
+ *              on render level (moving from). I.e., index 4 will correspond to 
+ *              render level 4. If the render level is not set in the vector, 
+ *              it is NULL and not used.
+ *
+ * Inputs: none
+ * Output: std::vector<MapPerson*> - stack of previous persons stored in tile
+ */
+std::vector<MapPerson*> Tile::getPersonsPrev() const
+{
+  return persons_prev;
 }
 
 /* 
@@ -566,12 +611,23 @@ bool Tile::getRenderThings(uint8_t render_level, MapPerson*& person,
 
   if(status == ACTIVE && render_level < Helpers::getRenderDepth())
   {
-    if(persons.size() > render_level && persons[render_level] != NULL)
+    /* Only parse persons if there is valid area */
+    if(persons_main.size() > render_level)
     {
-      person = persons[render_level];
-      valid_pointer = true;
+      /* If main is not NULL, send it. Otherwise, send previous */
+      if(persons_main[render_level] != NULL)
+      {
+        person = persons_main[render_level];
+        valid_pointer = true;
+      }
+      else if(persons_prev[render_level] != NULL)
+      {
+        person = persons_prev[render_level];
+        valid_pointer = true;
+      }
     }
 
+    /* Check for valid things */
     if(things.size() > render_level && things[render_level] != NULL)
     {
       thing = things[render_level];
@@ -593,7 +649,7 @@ Tile::TileStatus Tile::getStatus() const
 {
   return status;
 }
-  
+
 /*
  * Description: Returns the thing stored on this tile at the indicated render
  *              level. 
@@ -778,31 +834,29 @@ bool Tile::isLowerSet() const
 }
 
 /*
- * Description: Returns if the person at the indicated render level is the main
- *              (moving to or on the tile). 
+ * Description: Returns if the person at the indicated render level is set for
+ *              the main (moving to or on the tile). 
  *
  * Inputs: uint8_t render_level - the rendering level, based on the person frame
- * Output: bool - is this person frame a main?
+ * Output: bool - is this person main frame set?
  */
 bool Tile::isPersonMain(uint8_t render_level) const
 {
-  if(persons.size() > render_level && persons[render_level] != NULL)
-    return !persons_prev[render_level];
-  return false;
+  return (persons_main.size() > render_level && 
+          persons_main[render_level] != NULL);
 }
 
 /*
- * Description: Returns if the person at the indicated render level is the
- *              previous (moving away from the tile). 
+ * Description: Returns if the person at the indicated render level is set for
+ *              the previous (moving from the tile). 
  *
  * Inputs: uint8_t render_level - the rendering level, based on the person frame
- * Output: bool - is this person frame a previous?
+ * Output: bool - is this person previous frame set?
  */
 bool Tile::isPersonPrevious(uint8_t render_level) const
 {
-  if(persons.size() > render_level && persons[render_level] != NULL)
-    return persons_prev[render_level];
-  return false;
+  return (persons_prev.size() > render_level && 
+          persons_prev[render_level] != NULL);
 }
 
 /*
@@ -813,7 +867,7 @@ bool Tile::isPersonPrevious(uint8_t render_level) const
  */
 bool Tile::isPersonSet(uint8_t render_level) const
 {
-  return (persons.size() > render_level && persons[render_level] != NULL);
+  return (isPersonMain(render_level) || isPersonPrevious(render_level));
 }
 
 /*
@@ -824,8 +878,8 @@ bool Tile::isPersonSet(uint8_t render_level) const
  */
 bool Tile::isPersonsSet() const
 {
-  for(uint16_t i = 0; i < persons.size(); i++)
-    if(persons[i] != NULL)
+  for(uint16_t i = 0; i < persons_main.size(); i++)
+    if(persons_main[i] != NULL)
       return true;
   return false;
 }
@@ -867,18 +921,58 @@ bool Tile::isUpperSet() const
 }
 
 /*
- * Description: Initiates the move process for the person. This triggers a 
- *              status that the person at the render level is no longer the
- *              main frame, but rather the previous.
+ * Description: Finishes the move process for the person. This triggers the
+ *              previous pointer to be set back to NULL, as the person has left
+ *              the tile.
+ *
+ * Inputs: uint8_t render_level - the rendering level of the thing
+ *         bool no_events - should events not trigger on tile exit?
+ *         bool reverse_last - reverse last person move start command
+ * Output: bool - status if move finish was successful
+ */
+bool Tile::personMoveFinish(uint8_t render_level, bool no_events, 
+                            bool reverse_last)
+{
+  if(persons_prev.size() > render_level && persons_prev[render_level] != NULL)
+  {
+    /* If reverse last, put it back as main */
+    if(reverse_last)
+    {
+      persons_main[render_level] = persons_prev[render_level];
+    }
+    else
+    {
+      /* Event is only applicable if it's a render level 0 on person */
+      if(render_level == 0 && !no_events)
+      {
+        /* Execute exit event, if applicable */
+        if(event_handler != NULL && 
+           exit_event.classification != EventClassifier::NOEVENT)
+          event_handler->executeEvent(exit_event, persons_prev[render_level]);
+      }
+    }
+
+    persons_prev[render_level] = NULL;
+    return true;
+  }
+  return false;
+}
+
+/*
+ * Description: Initiates the move process for the person. This triggers the
+ *              previous pointer being set to the main and the main back to 
+ *              NULL, which effectively means the person is leaving.
  *
  * Inputs: uint8_t render_level - the rendering level of the thing
  * Output: bool - status if set was successful
  */
 bool Tile::personMoveStart(uint8_t render_level)
 {
-  if(persons.size() > render_level && persons[render_level] != NULL)
+  if(persons_main.size() > render_level && persons_main[render_level] != NULL 
+                                        && persons_prev[render_level] == NULL)
   {
-    persons_prev[render_level] = true;
+    persons_prev[render_level] = persons_main[render_level];
+    persons_main[render_level] = NULL;
     return true;
   }
   return false;
@@ -1174,8 +1268,7 @@ bool Tile::setPerson(MapPerson* person, uint8_t render_level, bool no_events)
     /* Set the new person */
     if(growPersonStack(render_level))
     {
-      persons[render_level] = person;
-      persons_prev[render_level] = false;
+      persons_main[render_level] = person;
 
       /* Execute enter event, if applicable */
       if(!no_events && render_level == 0 && event_handler != NULL)
@@ -1450,25 +1543,9 @@ bool Tile::unsetLower(uint8_t index)
  */
 bool Tile::unsetPerson(MapPerson* person, bool no_events)
 {
-  for(uint16_t i = 0; i < persons.size(); i++)
-  {
-    if(persons[i] == person)
-    {
-      /* Event is only applicable if it's a render level 0 on person */
-      if(i == 0 && !no_events)
-      {
-        /* Execute exit event, if applicable */
-        if(event_handler != NULL && 
-            exit_event.classification != EventClassifier::NOEVENT)
-          event_handler->executeEvent(exit_event, persons[i]);
-      }
-
-      persons[i] = NULL;
-      persons_prev[i] = false;
-      return true;
-    }
-  }
-
+  for(uint16_t i = 0; i < persons_main.size(); i++)
+    if(persons_main[i] == person)
+      return unsetPerson(i, no_events);
   return false;
 }
  
@@ -1482,9 +1559,11 @@ bool Tile::unsetPerson(MapPerson* person, bool no_events)
  */
 bool Tile::unsetPerson(uint8_t render_level, bool no_events)
 {
-  if(persons.size() > render_level)
+  if(persons_main.size() > render_level)
   {
-    if(persons[render_level] != NULL)
+    /* Finish the move, if applicable */
+    if(!personMoveFinish(render_level, no_events) && 
+       persons_main[render_level] != NULL)
     {
       /* Event is only applicable if it's a render level 0 on person */
       if(render_level == 0 && !no_events)
@@ -1492,13 +1571,13 @@ bool Tile::unsetPerson(uint8_t render_level, bool no_events)
         /* Execute exit event, if applicable */
         if(event_handler != NULL && 
             exit_event.classification != EventClassifier::NOEVENT)
-          event_handler->executeEvent(exit_event, persons[render_level]);
+          event_handler->executeEvent(exit_event, persons_main[render_level]);
       }
-
-      persons[render_level] = NULL;
-      persons_prev[render_level] = false;
-      return true;
     }
+
+    persons_main[render_level] = NULL;
+    persons_prev[render_level] = NULL;
+    return true;
   }
 
   return false;
@@ -1513,16 +1592,13 @@ bool Tile::unsetPerson(uint8_t render_level, bool no_events)
  */
 void Tile::unsetPersons(bool no_events)
 {
-  /* Event is only applicable if it's a render level 0 on person */
-  if(persons.size() > 0 && persons.front() != NULL && !no_events)
-  {
-    /* Execute exit event, if applicable */
-    if(event_handler != NULL && 
-       exit_event.classification != EventClassifier::NOEVENT)
-      event_handler->executeEvent(exit_event, persons.front());
-  }
+  uint8_t event_render_level = 0;
 
-  persons.clear();
+  /* Event is only applicable if it's a render level 0 on person */
+  if(persons_main.size() > event_render_level)
+    unsetPerson(event_render_level, no_events);
+
+  persons_main.clear();
   persons_prev.clear();
 }
 

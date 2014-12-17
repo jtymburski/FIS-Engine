@@ -233,13 +233,15 @@ bool MapPerson::isTileMoveAllowed(Tile* previous, Tile* next,
           !prev_thing->getPassabilityExiting(previous, move_request)) ||
          (next_thing != NULL &&
           !next_thing->getPassabilityEntering(next, move_request)) ||
-         next->isPersonSet(render_depth))
+         (next->isPersonSet(render_depth) &&
+          next->getPerson(render_depth) != this))
       {
         move_allowed = false;
       }
     }
     else if(next->getStatus() == Tile::OFF ||
-            next->isPersonSet(render_depth))
+            (next->isPersonSet(render_depth) && 
+             next->getPerson(render_depth) != this))
     {
       move_allowed = false;
     }
@@ -364,6 +366,7 @@ void MapPerson::setTileFinish(Tile* old_tile, Tile* new_tile,
 {
   if(reverse_last)
   {
+    old_tile->personMoveFinish(render_depth, no_events, reverse_last);
     new_tile->unsetPerson(render_depth, no_events);
 
     /* Special events if person and thing is set on tile at render level 0 */
@@ -372,7 +375,7 @@ void MapPerson::setTileFinish(Tile* old_tile, Tile* new_tile,
   }
   else
   {
-    old_tile->unsetPerson(render_depth, no_events);
+    old_tile->personMoveFinish(render_depth, no_events);
 	
     /* Special events if person and thing is set on tile at render level 0 */
     if(getID() == kPLAYER_ID && render_depth == 0 && old_tile->isThingSet(0))

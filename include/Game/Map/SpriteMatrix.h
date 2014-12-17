@@ -41,6 +41,12 @@ private:
   /* Counts the valid sprites */
   uint16_t countValidSprites();
 
+  /* Modify the matrix of paths based on adjustments (needed for multi tile
+   * width things */
+  std::vector<std::vector<std::string>> flipArray(
+                                 std::vector<std::vector<std::string>> original,
+                                 std::vector<std::string> adjustments);
+
   /* Gets a valid sprite from the frame matrix. If one doesn't exist, one is
    * made */
   TileSprite* getValidSprite();

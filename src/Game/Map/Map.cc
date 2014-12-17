@@ -547,14 +547,9 @@ void Map::initiateThingInteraction(MapPerson* initiator)
                y < geography[map_index][x].size())
             {
               /* Check for person */
-              person_found = geography[map_index][x][y]->getPerson(0);
+              person_found = geography[map_index][x][y]->getPersonMain(0);
               if(person_found != NULL)
-              {
-                if(geography[map_index][x][y]->isPersonMain(0))
-                  finished = true;
-                else
-                  person_found = NULL;
-              }
+                finished = true;
 
               /* Check for thing */
               if(!finished && thing_found == NULL)
@@ -879,10 +874,10 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
     if(geography.size() > 0)
     {
       player->keyFlush();
-      map_index = 0;
       viewport.setMapSize(geography[map_index].size(), 
                           geography[map_index][0].size());
       player = persons.front();
+      setSectionIndex(player->getMapSection());
     }
   }
   /* Test: Change index to section 1 (room) and connected to other character */
@@ -891,12 +886,18 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
     if(geography.size() > 1)
     {
       player->keyFlush();
-      map_index = 1;
       viewport.setMapSize(geography[map_index].size(), 
                           geography[map_index][0].size());
       for(uint16_t i = 0; i < persons.size(); i++)
+      {
         if(persons[i]->getID() == 24)
+        {
           player = persons[i];
+          setSectionIndex(player->getMapSection());
+        }
+      }
+      viewport.setMapSize(geography[map_index].size(), 
+                          geography[map_index][0].size());
     }
   }
   /* Test: trigger grey scale */
@@ -913,7 +914,7 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
   else if(event.keysym.sym == SDLK_r)
   {
     player->resetPosition();
-	setSectionIndex(player->getStartingSection());
+	  setSectionIndex(player->getStartingSection());
   }
   /* Test: Pick up test. Time limit */
   else if(event.keysym.sym == SDLK_6)

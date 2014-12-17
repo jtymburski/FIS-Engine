@@ -739,7 +739,7 @@ std::vector<std::vector<std::string>> Helpers::frameSeparator(
       }
     }
   }
- 
+
   /* Create a linear list of all paths generated from the single path */
   uint32_t j = 0;
   uint32_t range1 = 0;
@@ -789,15 +789,15 @@ std::vector<std::vector<std::string>> Helpers::frameSeparator(
       }
     }
   }
-  
+
   /* Sort the linear list into a 2D array */
   std::vector<std::vector<std::string>> set;
   if(range1 > 0 && range2 > 0)
   {
-    for(uint32_t i = 0; i < range2; i++)
+    for(uint32_t i = 0; i < range1; i++)
     {
       std::vector<std::string> set_row;
-      for(uint32_t j = 0; j < range1; j++)
+      for(uint32_t j = 0; j < range2; j++)
         set_row.push_back(linear_set[i+range1*j]);
       set.push_back(set_row);
     }

@@ -121,10 +121,11 @@ public:
 
   /* Sets the frame texture */
   bool setTexture(std::string path, SDL_Renderer* renderer, 
-                  uint16_t angle = 0, bool enable_greyscale = true);
+                  uint16_t angle = 0, bool no_warnings = false,
+                  bool enable_greyscale = true);
   bool setTexture(std::string path, std::vector<std::string> adjustments, 
                   SDL_Renderer* renderer, uint16_t angle = 0, 
-                  bool enable_greyscale = true);
+                  bool no_warnings = false, bool enable_greyscale = true);
   bool setTexture(SDL_Texture* texture);
 
   /* Unsets the texture, if one is set */

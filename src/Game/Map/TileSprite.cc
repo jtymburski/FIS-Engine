@@ -138,7 +138,7 @@ void TileSprite::copySelf(const TileSprite &source, bool only_sprite)
  */
 bool TileSprite::addFileInformation(XmlData data, int index, 
                                     SDL_Renderer* renderer, 
-                                    std::string base_path)
+                                    std::string base_path, bool no_warnings)
 {
   std::string element = data.getElement(index);
   bool success = true;
@@ -149,7 +149,8 @@ bool TileSprite::addFileInformation(XmlData data, int index,
   else if(element == "renderdepth" && data.getDataInteger() >= 0)
     setRenderDepth(data.getDataInteger());
   else
-    success &= Sprite::addFileInformation(data, index, renderer, base_path);
+    success &= Sprite::addFileInformation(data, index, renderer, base_path, 
+                                          no_warnings);
 
   return success;
 }

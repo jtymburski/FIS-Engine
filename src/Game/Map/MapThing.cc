@@ -512,23 +512,51 @@ bool MapThing::tileMoveStart(std::vector<std::vector<Tile*>> tile_set,
      tile_set.size() == sprite_set->width() && 
      tile_set.back().size() == sprite_set->height())
   {
-    /* Go through each frame and update */
-    for(uint16_t i = 0; success && (i < sprite_set->width()); i++)
+    /* If moving north or west, parse top down. Otherwise, parse up */
+    if(movement == Direction::NORTH || movement == Direction::WEST)
     {
-      for(uint16_t j = 0; success && (j < sprite_set->height()); j++)
+      /* Go through each frame and update */
+      for(uint16_t i = 0; success && (i < sprite_set->width()); i++)
       {
-        if(sprite_set->at(i, j) != NULL)
+        for(uint16_t j = 0; success && (j < sprite_set->height()); j++)
         {
-          /* Set the tile start */
-          success &= setTileStart(tile_main[i][j], tile_set[i][j], 
-                                  sprite_set->at(i, j)->getRenderDepth(), 
-                                  no_events);
-
-          /* If unsuccessful, store how far it parsed */
-          if(!success)
+          if(sprite_set->at(i, j) != NULL)
           {
-            end_i = i;
-            end_j = j;
+            /* Set the tile start */
+            success &= setTileStart(tile_main[i][j], tile_set[i][j], 
+                                    sprite_set->at(i, j)->getRenderDepth(), 
+                                    no_events);
+
+            /* If unsuccessful, store how far it parsed */
+            if(!success)
+            {
+              end_i = i;
+              end_j = j;
+            }
+          }
+        }
+      }
+    }
+    else
+    {
+      /* Go through each frame and update */
+      for(int16_t i = sprite_set->width() - 1; success && (i >= 0); i--)
+      {
+        for(int16_t j = sprite_set->height() - 1; success && (j >= 0); j--)
+        {
+          if(sprite_set->at(i, j) != NULL)
+          {
+            /* Set the tile start */
+            success &= setTileStart(tile_main[i][j], tile_set[i][j], 
+                                    sprite_set->at(i, j)->getRenderDepth(), 
+                                    no_events);
+
+            /* If unsuccessful, store how far it parsed */
+            if(!success)
+            {
+              end_i = i;
+              end_j = j;
+            }
           }
         }
       }
@@ -543,15 +571,34 @@ bool MapThing::tileMoveStart(std::vector<std::vector<Tile*>> tile_set,
     else
     {
       bool finished = false;
-      for(uint16_t i = 0; !finished && (i < sprite_set->width()); i++)
+
+      /* If moving north or west, parse top down. Otherwise, parse up */
+      if(movement == Direction::NORTH || movement == Direction::WEST)
       {
-        for(uint16_t j = 0; !finished && (j < sprite_set->height()); j++)
+        for(uint16_t i = 0; !finished && (i < sprite_set->width()); i++)
         {
-          if(i == end_i && j == end_j)
-            finished = true;
-          else if(sprite_set->at(i, j) != NULL)
-            setTileFinish(tile_main[i][j], tile_set[i][j], 
-                          sprite_set->at(i, j)->getRenderDepth(), true, true);
+          for(uint16_t j = 0; !finished && (j < sprite_set->height()); j++)
+          {
+            if(i == end_i && j == end_j)
+              finished = true;
+            else if(sprite_set->at(i, j) != NULL)
+              setTileFinish(tile_main[i][j], tile_set[i][j], 
+                            sprite_set->at(i, j)->getRenderDepth(), true, true);
+          }
+        }
+      }
+      else
+      {
+        for(int16_t i = sprite_set->width() - 1; !finished && (i >= 0); i++)
+        {
+          for(int16_t j = sprite_set->height() - 1; !finished && (j >= 0); j++)
+          {
+            if(i == end_i && j == end_j)
+              finished = true;
+            else if(sprite_set->at(i, j) != NULL)
+              setTileFinish(tile_main[i][j], tile_set[i][j], 
+                            sprite_set->at(i, j)->getRenderDepth(), true, true);
+          }
         }
       }
     }

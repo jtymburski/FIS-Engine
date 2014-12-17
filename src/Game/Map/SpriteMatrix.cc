@@ -102,6 +102,72 @@ uint16_t SpriteMatrix::countValidSprites()
   return count;
 }
 
+/*
+ * Description: Flips the string matrix of paths, based on the adjustment value.
+ *              This takes in a horizontal flip (HF or hf), which flips all the 
+ *              paths on the X direction over the middle or a vertical flip (VF 
+ *              or vf), which flips all the paths on the Y direction over the 
+ *              middle.
+ *
+ * Inputs: std::vector<std::vector<std::string>> original - the original 2D 
+ *             matrix of paths.
+ *         std::vector<std::string> adjustments - adjustment codes for flipping
+ * Output: std::vector<std::vector<std::string>> - returned flipped array
+ */
+std::vector<std::vector<std::string>> SpriteMatrix::flipArray(
+                                 std::vector<std::vector<std::string>> original,
+                                 std::vector<std::string> adjustments)
+{
+  /* Determine the length and width */
+  uint16_t size_x = original.size();
+  uint16_t size_y = 0;
+  if(size_x > 0)
+    size_y = original.front().size();
+
+  /* Only proceed if size(s) are valid */
+  if(size_x > 1 || size_y > 1)
+  {
+    /* Parse all adjustments */
+    for(uint16_t i = 0; i < adjustments.size(); i++)
+    {
+      /* Vertical flip of paths */
+      if((adjustments[i] == "vf" || adjustments[i] == "VF") && size_y > 1)
+      {
+        uint16_t distance = size_y / 2;
+
+        /* Parse through all the x values and flip columns */
+        for(uint16_t j = 0; j < size_x; j++)
+        {
+          for(uint16_t k = 0; k < distance; k++)
+          {
+            std::string temp = original[j][k];
+            original[j][k] = original[j][size_y - k - 1];
+            original[j][size_y - k - 1] = temp;
+          }
+        }
+      }
+      /* Horizontal flip of paths */
+      else if((adjustments[i] == "hf" || adjustments[i] == "HF") && size_x > 1)
+      {
+        uint16_t distance = size_x / 2;
+
+        /* Parse through all the y values and flip rows */
+        for(uint16_t j = 0; j < size_y; j++)
+        {
+          for(uint16_t k = 0; k < distance; k++)
+          {
+            std::string temp = original[k][j];
+            original[k][j] = original[size_x - k - 1][j];
+            original[size_x - k - 1][j] = temp;
+          }
+        }
+      }
+    }
+  }
+
+  return original;
+}
+
 /* 
  * Description: Finds a valid TileSprite in the matrix of sprites, stored
  *              within the matrix. If there are no sprites set, it will create
@@ -239,12 +305,13 @@ bool SpriteMatrix::addFileInformation(XmlData data, int file_index,
 {
   bool success = true;
   std::vector<std::string> elements = data.getTailElements(file_index);
-  std::vector<std::string> base_element = Helpers::split(elements.back(), '_');
+  std::vector<std::string> base_tag = Helpers::split(elements.back(), '_');
+  std::vector<std::string> front_tag = Helpers::split(elements.front(), '_');
   TileSprite* valid_sprite = getValidSprite();
 
   /* Only proceed if there are elements within the sprites element */
   /*--------------------- MATRIX SPRITE -----------------*/
-  if(elements.size() == 2 && elements.front() == "multiple" && 
+  if(elements.size() == 2 && front_tag.front() == "multiple" && 
                              data.getKey(file_index) == "range")
   {
     uint32_t x_max = 0;
@@ -255,7 +322,7 @@ bool SpriteMatrix::addFileInformation(XmlData data, int file_index,
                                          x_min, x_max, y_min, y_max);
 
     /* Check what the element inside the multiple encapsulator is */
-    if(good_data && base_element.front() == "path")
+    if(good_data && base_tag.front() == "path")
     {
       std::vector<std::vector<std::string>> str_matrix = 
                          Helpers::frameSeparator(data.getDataString(&success));
@@ -266,6 +333,9 @@ bool SpriteMatrix::addFileInformation(XmlData data, int file_index,
       if((y_max - y_min) >= str_matrix.front().size())
         y_max = str_matrix.front().size() + y_min - 1;
       growMatrix(x_max, y_max);
+
+      if(front_tag.size() > 1)
+        str_matrix = flipArray(str_matrix, front_tag);
 
       /* Go through and set the frames in all relevant sprites */
       for(uint32_t i = x_min; i <= x_max; i++)
@@ -278,11 +348,15 @@ bool SpriteMatrix::addFileInformation(XmlData data, int file_index,
             sprite_matrix[i][j]->removeAll();
           data.addDataOfType(str_matrix[i-x_min][j-y_min]);
           sprite_matrix[i][j]->addFileInformation(data, file_index + 1, 
-                                                  renderer, base_path);
+                                                  renderer, base_path, true);
+          
+          /* Execute image adjustments, if they exist on the front tag */
+          if(front_tag.size() > 1)
+            sprite_matrix[i][j]->execImageAdjustments(front_tag);
         }
       }
     }
-    else if(good_data && base_element.front() == "passability")
+    else if(good_data && base_tag.front() == "passability")
     {
       /* Ensure the range is within the range of existing sprites */
       growMatrix(x_max, y_max);
@@ -328,7 +402,7 @@ bool SpriteMatrix::addFileInformation(XmlData data, int file_index,
             setSprite(new TileSprite(*valid_sprite), i, j);
 
           /* Check if it's a path or passability and set the info */
-          if(base_element.front() == "path")
+          if(base_tag.front() == "path")
           {
             if(sprite_matrix[i][j]->isFramesSet())
               sprite_matrix[i][j]->removeAll();
@@ -336,7 +410,7 @@ bool SpriteMatrix::addFileInformation(XmlData data, int file_index,
             sprite_matrix[i][j]->addFileInformation(
                                     data, file_index + 2, renderer, base_path);
           }
-          else if(base_element.front() == "passability")
+          else if(base_tag.front() == "passability")
           {
             sprite_matrix[i][j]->resetPassability();
             sprite_matrix[i][j]->addPassability(data.getDataString()); 
@@ -347,8 +421,8 @@ bool SpriteMatrix::addFileInformation(XmlData data, int file_index,
       index++;
     }
   }
-  /*----------------- PATH SPRITE -----------------*/
-  else if(elements.size() == 1 && elements.front() == "path")
+  /*----------------- PATH SPRITE -----------------*/ 
+  else if(elements.size() == 1 && base_tag.front() == "path")
   {
     sprite_matrix.front().front()->addFileInformation(data, file_index, 
                                                       renderer, base_path);

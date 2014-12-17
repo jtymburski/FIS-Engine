@@ -51,7 +51,7 @@ private:
 public:
   /* Adds sprite information from the XML data classifier from the file */
   bool addFileInformation(XmlData data, int index, SDL_Renderer* renderer, 
-                          std::string base_path = "");
+                          std::string base_path = "", bool no_warnings = false);
 
   /* Call to add passability, as extracted from file data */
   void addPassability(std::string data);

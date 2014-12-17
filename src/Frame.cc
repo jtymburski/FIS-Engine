@@ -418,11 +418,12 @@ bool Frame::setPrevious(Frame* previous)
  * Inputs: std::string path - the path to the image
  *         SDL_Renderer* renderer - the renderer to associate the texture with
  *         uint16_t angle - the angle to texture rotate (only works for mod 90)
+ *         bool no_warnings - should warnings not fire? default false.
  *         bool enable_greyscale - should a greyscale texture be created?
  * Output: bool - the success of loading the texture
  */
-bool Frame::setTexture(std::string path, SDL_Renderer* renderer, 
-                       uint16_t angle, bool enable_greyscale)
+bool Frame::setTexture(std::string path, SDL_Renderer* renderer, uint16_t angle, 
+                       bool no_warnings, bool enable_greyscale)
 {
   bool success = true;
 
@@ -525,16 +526,18 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer,
   else if(loaded_surface != NULL)
   {
     SDL_FreeSurface(loaded_surface);
-    std::cerr << "[WARNING] Renderer required to set texture in frame for \""
-              << path.c_str() << "\"" << std::endl;;
+    if(!no_warnings)
+      std::cerr << "[WARNING] Renderer required to set texture in frame for \""
+                << path.c_str() << "\"" << std::endl;;
     success = false;
   }
   /* If the surface is unset, notify the terminal with the failed surface */
   else
   {
     /* Otherwise, return failed success */
-    std::cerr << "[WARNING] Unable to load image \"" << path 
-              << "\". SDL_image error: " << IMG_GetError() << std::endl;
+    if(!no_warnings)
+      std::cerr << "[WARNING] Unable to load image \"" << path 
+                << "\". SDL_image error: " << IMG_GetError() << std::endl;
     success = false;
   }
  
@@ -552,17 +555,19 @@ bool Frame::setTexture(std::string path, SDL_Renderer* renderer,
  *         std::vector<std::string> adjustments - adjustment flip stack
  *         SDL_Renderer* renderer - the renderer to associate the texture with
  *         uint16_t angle - the angle to texture rotate (only works for mod 90)
+ *         bool no_warnings - should warnings not fire? default false.
  *         bool enable_greyscale - should a greyscale texture be created?
  * Output: bool - the success of loading the texture
  */
 bool Frame::setTexture(std::string path, std::vector<std::string> adjustments, 
                                          SDL_Renderer* renderer, uint16_t angle,
+                                         bool no_warnings, 
                                          bool enable_greyscale)
 {
   bool success = true;
 
   success &= execImageAdjustments(adjustments);
-  success &= setTexture(path, renderer, angle, enable_greyscale);
+  success &= setTexture(path, renderer, angle, no_warnings, enable_greyscale);
   
   return success;
 }

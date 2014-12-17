@@ -67,8 +67,10 @@ private:
 
   /* The things that are on the given tile - only used to store location */
   std::vector<MapItem*> items;
-  std::vector<MapPerson*> persons;
-  std::vector<bool> persons_prev;
+  //std::vector<MapPerson*> persons; // TODO: Remove
+  std::vector<MapPerson*> persons_main;
+  std::vector<MapPerson*> persons_prev;
+  //std::vector<bool> persons_prev; // TODO: Remove
   std::vector<MapThing*> things;
 
   /* The upper information */
@@ -133,9 +135,12 @@ public:
   bool getPassabilityEntering(Direction dir) const;
   bool getPassabilityExiting(Direction dir) const;
   
-  /* Returns the person pointer in the tile */
+  /* Returns the person pointer in the tile (main or previous) */
   MapPerson* getPerson(uint8_t render_level) const;
-  std::vector<MapPerson*> getPersons() const;
+  MapPerson* getPersonMain(uint8_t render_level) const;
+  MapPerson* getPersonPrev(uint8_t render_level) const;
+  std::vector<MapPerson*> getPersonsMain() const;
+  std::vector<MapPerson*> getPersonsPrev() const;
 
   /* Returns the tile x and y pixel count */
   uint32_t getPixelX() const;
@@ -192,7 +197,9 @@ public:
   /* Returns if the Upper Layer is set (ie. at least one) */
   bool isUpperSet() const;
  
-  /* Starts the person move (shifts status to tile previous of person) */
+  /* Starts and finishes the person move (shifts the pointer to previous) */
+  bool personMoveFinish(uint8_t render_level, bool no_events = false, 
+                        bool reverse_last = false);
   bool personMoveStart(uint8_t render_level);
 
   /* Paints the active sprites in this tile using GL direct calls */
