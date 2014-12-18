@@ -22,7 +22,7 @@
 
 /* Constant Implementation - see header file for descriptions */
 const std::string Options::kFONTS[] = {"fonts/colab_light.otf", 
-                                       "fonts/blanch_caps.otf"};
+                                       "fonts/crimes.ttf"};
 const uint8_t  Options::kNUM_FONTS = 2;
 const uint8_t  Options::kNUM_RESOLUTIONS = 4;
 const uint16_t Options::kRESOLUTIONS_X[] = {1216, 1366, 1920, 2560};
@@ -79,7 +79,7 @@ void Options::setAllToDefault()
   /* Rendering Options */
   setFont(0, true);
   setLinearFiltering(false);
-  setScreenResolution(0);
+  setScreenResolution(1);
   setVsync(true);
 }
 

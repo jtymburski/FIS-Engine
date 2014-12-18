@@ -890,13 +890,16 @@ void SpriteMatrix::tuneAnimationSpeed()
   {
     /* Determine animation speed and number of frames */
     TileSprite* corner_sprite = sprite_matrix.front().front();
+    if(corner_sprite == NULL)
+      corner_sprite = getValidSprite();
     float rate = (corner_sprite->getSize() - 1) / kBASE_FRAME_COUNT;
     uint16_t animation_time = corner_sprite->getAnimationTime() / rate;
 
     /* Modify each sprite animation time */
     for(uint16_t i = 0; i < sprite_matrix.size(); i++)
       for(uint16_t j = 0; j < sprite_matrix[i].size(); j++)
-        sprite_matrix[i][j]->setAnimationTime(animation_time);
+        if(sprite_matrix[i][j] != NULL)
+          sprite_matrix[i][j]->setAnimationTime(animation_time);
   }
 }
 

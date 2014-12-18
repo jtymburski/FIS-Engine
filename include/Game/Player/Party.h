@@ -150,6 +150,9 @@ public:
   /* Returns the string name a party member at a given index, if valid */
   std::string getMemberName(const uint8_t &index);
 
+  /* Get all members */
+  std::vector<Person*> getMembers();
+
   /* Returns the enumerated type of the Party */
   PartyType getPartyType();
 

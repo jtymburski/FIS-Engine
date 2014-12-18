@@ -314,11 +314,10 @@ bool Frame::render(SDL_Renderer* renderer, int x, int y, int w, int h)
     rect.w = width;
 
     /* Use parameter height and width if both are viable */
-    if(h > 0 && w > 0)
-    {
+    if(h > 0)
       rect.h = h;
+    if(w > 0)
       rect.w = w;
-    }
     
     /* Render and return status */
     return (SDL_RenderCopyEx(renderer, getTextureActive(), NULL, 

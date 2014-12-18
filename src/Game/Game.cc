@@ -581,6 +581,8 @@ void Game::setupBattle()
   //getPerson(300)->print(false, false, true, true);
 
   game_battle = new Battle(game_config, friends, enemies);
+  battle_display = new BattleDisplay(game_config);
+  battle_display->setBattle(game_battle);
 
   //malgidus->print(false, false, true, true);
   //frosty->print(false, false, true, true);
@@ -1062,17 +1064,40 @@ bool Game::render(SDL_Renderer* renderer)
   if(active_renderer == NULL)
     active_renderer = renderer;
  
-  /* Battle Display initialization */
-  if(battle_display == nullptr)
+  /* Battle visual display initialization */
+  if(battle_display != nullptr && battle_display->getBackground() == nullptr)
   {
     /* Sprites */
     Sprite* background = new Sprite(
-           base_path + "sprites/Battle/Backdrop/battlebg", 7, ".png", renderer);
-    background->setAnimationTime(5000);
+           base_path + "sprites/Battle/Backdrop/battlebg", 8, ".png", renderer);
+    background->setDirectionReverse();
+    background->shiftNext();
+    background->setAnimationTime(2500);
+    
+    Sprite* midlay = new Sprite(
+                base_path + "sprites/Battle/Midlays/rain", 6, ".png", renderer);
+    midlay->setAnimationTime(64);
+    midlay->setOpacity(64);
+
+    Sprite* midlay2 = new Sprite(
+                     base_path + "sprites/Map/Lays/fog_underlay.png", renderer);
+    midlay2->setColorRed(150);
+    midlay2->setColorGreen(150);
 
     /* Display */
-    battle_display = new BattleDisplay(game_config);
     battle_display->setBackground(background);
+    battle_display->setMidlay(midlay2);
+    battle_display->addMidlay(midlay);
+    battle_display->setBattleBar(new Frame(
+                           base_path + "sprites/Overlay/battle.png", renderer));
+
+    /* Set the character sprites */
+    getPerson(310)->setSprites(nullptr, new Frame(
+              base_path + "sprites/Battle/Battle_Persons/bsian.png", renderer));
+    getPerson(300)->setSprites(new Frame(
+         base_path + "sprites/Battle/Backs/manbear1_brown_grey.png", renderer));
+    getPerson(301)->setSprites(new Frame(
+                   base_path + "sprites/Battle/Backs/arcadius0.png", renderer));
   }
 
   /* Map initialization location */

@@ -504,6 +504,17 @@ std::string Party::getMemberName(const uint8_t &index)
 
   return "";
 }
+  
+/*
+ * Description: Returns the stack of all persons within the party.
+ *
+ * Inputs: none
+ * Output: std::vector<Person*> - stack of persons
+ */
+std::vector<Person*> Party::getMembers()
+{
+  return members;
+}
 
 /*
  * Description: Returns the enumerated PartyType of the Party (ex. sleuth,
