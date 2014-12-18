@@ -653,28 +653,340 @@ bool Frame::useGreyScale(bool enable)
 }
 
 /*=============================================================================
+ * PRIVATE STATIC FUNCTIONS
+ *============================================================================*/
+ 
+/*
+ * Description: This draws a single horizontal line in SDL. It utilizes the
+ *              SDL_RenderFillRect call since the drawLine with opacity leaves
+ *              one double rendered pixel at the end.
+ *
+ * Inputs: int32_t x1 - one x coordinate
+ *         int32_t x2 - the other x coordinate
+ *         int32_t y - the y coordinate
+ *         SDL_Renderer* renderer - the rendering pointer
+ * Output: none
+ */
+void Frame::drawLine(int32_t x1, int32_t x2, int32_t y, 
+                     SDL_Renderer* renderer)
+{
+  SDL_Rect rect;
+  rect.x = x1;
+  rect.y = y;
+  rect.w = x2 - x1;
+  rect.h = 1;
+
+  SDL_RenderFillRect(renderer, &rect);
+}
+
+/*
+ * Description: This renders an entire triangle but it requires that the bottom
+ *              half of the triangle is horizontally flat (y2 and y3)
+ *
+ * Inputs: uint16_t x1 - first x coordinate
+ *         uint16_t x2 - second x coordinate
+ *         uint16_t x3 - third x coordinate
+ *         uint16_t y1 - y coordinate for first x
+ *         uint16_t y23 - y coordinate for second and third x
+ *         SDL_Renderer* renderer - the rendering pointer
+ *         bool aliasing - should aliasing be applied on edges?
+ *         bool flat_side - should the flat side be aliased?
+ * Output: none
+ */
+void Frame::renderBottomFlatTriangle(uint16_t x1, uint16_t x2, uint16_t x3, 
+                                     uint16_t y1, uint16_t y23, 
+                                     SDL_Renderer* renderer, bool aliasing,
+                                     bool flat_side)
+{
+  /* Flip the x coordinates for the same y, to ensure positive */
+  if(x2 > x3)
+  {
+    uint16_t temp_x = x2;
+    x2 = x3;
+    x3 = temp_x;
+  }
+
+  /* Get setup variables */
+  float left_x = x1;
+  float right_x = x1;
+  float slope1 = (x2 - left_x) / (y23 - y1);
+  float slope2 = (x3 - left_x) / (y23 - y1);
+      
+  /* Get alpha */
+  uint8_t alpha = 255;
+  uint8_t red = 255;
+  uint8_t green = 255;
+  uint8_t blue = 255;
+  SDL_GetRenderDrawColor(renderer, &red, &green, &blue, &alpha);
+  uint8_t half_alpha = alpha / 2;
+  uint8_t quarter_alpha = half_alpha / 2;
+
+  /* Draw the lines to display the triangle (only horizontal) */
+  for(uint16_t y = y1; y <= y23; y++)
+  {
+    /* If aliasing, add pixel at half opacity at end */
+    if(aliasing)
+    {
+      float diff_x = right_x - left_x;
+
+      /* First, render the quarter alpha version pixel */
+      SDL_SetRenderDrawColor(renderer, red, green, blue, quarter_alpha);
+      if(diff_x >= -2 && diff_x <= 2)
+      {
+        Frame::drawLine((int)left_x, (int)right_x, y, renderer);
+      }
+      else
+      {
+        SDL_RenderDrawPoint(renderer, (int)left_x, y);
+        SDL_RenderDrawPoint(renderer, (int)right_x - 1, y);
+        if(!flat_side || y != y23)
+          SDL_SetRenderDrawColor(renderer, red, green, blue, half_alpha);
+
+        /* Next, render the half alpha pixel */
+        if((diff_x >= -4 && diff_x <= 4) || (flat_side && y >= (y23 - 1)))
+        {
+          Frame::drawLine((int)left_x + 1, (int)right_x - 1, y, renderer);
+        }
+        else
+        {
+          SDL_RenderDrawPoint(renderer, (int)left_x + 1, y);
+          SDL_RenderDrawPoint(renderer, (int)right_x - 2, y);
+
+          /* Finally, render the full alpha central version */
+          SDL_SetRenderDrawColor(renderer, red, green, blue, alpha);
+          Frame::drawLine((int)left_x + 2, (int)right_x - 2, y, renderer);
+        }
+      }
+    }
+    /* Otherwise just draw full line */
+    else
+    {
+      Frame::drawLine((int)left_x, (int)right_x, y, renderer);
+    }
+
+    /* Increment to next */
+    left_x += slope1;
+    right_x += slope2;
+  }
+
+  /* Reset color back to default */
+  SDL_SetRenderDrawColor(renderer, red, green, blue, alpha);
+}
+
+/*
+ * Description: This renders an entire triangle but it requires that the top
+ *              half of the triangle is horizontally flat (y1 and y2)
+ *
+ * Inputs: uint16_t x1 - first x coordinate
+ *         uint16_t x2 - second x coordinate
+ *         uint16_t x3 - third x coordinate
+ *         uint16_t y12 - y coordinate for first and second x
+ *         uint16_t y3 - y coordinate for third x
+ *         SDL_Renderer* renderer - the rendering pointer
+ *         bool aliasing - should aliasing be applied on edges?
+ *         bool flat_side - should the flat side be aliased?
+ * Output: none
+ */
+void Frame::renderTopFlatTriangle(uint16_t x1, uint16_t x2, uint16_t x3, 
+                                  uint16_t y12, uint16_t y3, 
+                                  SDL_Renderer* renderer, bool aliasing,
+                                  bool flat_side)
+{
+  /* Flip the x coordinates for the same y, to ensure positive */
+  if(x1 > x2)
+  {
+    uint16_t temp_x = x1;
+    x1 = x2;
+    x2 = temp_x;
+  }
+
+  float left_x = x3;
+  float right_x = x3;
+  float slope1 = (left_x - x1) / (y3 - y12);
+  float slope2 = (left_x - x2) / (y3 - y12);
+
+  /* Get alpha */
+  uint8_t alpha = 255;
+  uint8_t red = 255;
+  uint8_t green = 255;
+  uint8_t blue = 255;
+  SDL_GetRenderDrawColor(renderer, &red, &green, &blue, &alpha);
+  uint8_t half_alpha = alpha / 2;
+  uint8_t quarter_alpha = half_alpha / 2;
+  
+  /* Draw the lines to display the triangle (only horizontal) */
+  for(uint16_t y = y3; y >= y12; y--)
+  {
+    /* If aliasing, add pixel at half opacity at end */
+    if(aliasing)
+    {
+      float diff_x = right_x - left_x;
+
+      /* First, render the quarter alpha version pixel */
+      SDL_SetRenderDrawColor(renderer, red, green, blue, quarter_alpha);
+      if(diff_x >= -2 && diff_x <= 2)
+      {
+        Frame::drawLine((int)left_x, (int)right_x, y, renderer);
+      }
+      else
+      {
+        SDL_RenderDrawPoint(renderer, (int)left_x, y);
+        SDL_RenderDrawPoint(renderer, (int)right_x - 1, y);
+        if(!flat_side || y != y12)
+          SDL_SetRenderDrawColor(renderer, red, green, blue, half_alpha);
+
+        /* Next, render the half alpha pixel */
+        if((diff_x >= -4 && diff_x <= 4) || (flat_side && y <= (y12 + 1)))
+        {
+          Frame::drawLine((int)left_x + 1, (int)right_x - 1, y, renderer);
+        }
+        else
+        {
+          SDL_RenderDrawPoint(renderer, (int)left_x + 1, y);
+          SDL_RenderDrawPoint(renderer, (int)right_x - 2, y);
+
+          /* Finally, render the full alpha central version */
+          SDL_SetRenderDrawColor(renderer, red, green, blue, alpha);
+          Frame::drawLine((int)left_x + 2, (int)right_x - 2, y, renderer);
+        }
+      }
+    }
+    /* Otherwise just draw full line */
+    else
+    {
+      Frame::drawLine((int)left_x, (int)right_x, y, renderer);
+    }
+
+    left_x -= slope1;
+    right_x -= slope2;
+  }
+}
+
+/*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
 
-/* Creates a right hand triangle, given the parameters and a renderer */
+/*
+ * Description: Creates a right hand triangle, given the input parameters. The
+ *              default right hand triangle with have its flat edges on the left
+ *              and bottom sides. Reverse will put one of the flat edges
+ *              on the right instead of left.
+ *
+ * Inputs: uint32_t x - the x coordinate for the top left
+ *         uint32_t y - the y coordinate for the top left
+ *         uint16_t height - the height/width of the unilateral triangle
+ *         SDL_Renderer* renderer - the rendering engine pointer
+ *         bool reverse - reverse the triangle?
+ * Output: bool - was the triangle rendered?
+ */
 bool Frame::renderRHTriangle(uint32_t x, uint32_t y, uint16_t height, 
                              SDL_Renderer* renderer, bool reverse)
 {
-  bool success = true;
-
-  for(uint16_t i = 0; i < height; i++)
+  if(reverse)
   {
-    SDL_Rect rect;
-    if(reverse)
-      rect.x = x - i;
-    else
-      rect.x = x;
-    rect.y = y + i;
-    rect.w = i;
-    rect.h = 1;
-
-    SDL_RenderFillRect(renderer, &rect);
+    return Frame::renderTriangle(x, y, x, y + height - 1, x - height, y + 
+                                 height - 1, renderer);
   }
+  return renderTriangle(x, y, x, y + height - 1, x + height, y + height - 1, 
+                        renderer);
+}
 
-  return success;
+/*
+ * Description: Renders a filled triangle, given 3 vectors and a rendering 
+ *              engine. Aliasing can be enabled on all edges. Utilizes private
+ *              static functions for top and bottom half of triangle.
+ *
+ * Inputs: uint16_t x1 - the first x coordinate
+ *         uint16_t y1 - the first y coordinate
+ *         uint16_t x2 - the second x coordinate
+ *         uint16_t y2 - the second y coordinate
+ *         uint16_t x3 - the third x coordinate
+ *         uint16_t y3 - the third y coordinate
+ *         SDL_Renderer* renderer - the rendering engine pointer
+ *         bool aliasing - should aliasing be used on the edges?
+ * Output: bool - was the triangle rendered?
+ */
+bool Frame::renderTriangle(uint16_t x1, uint16_t y1, uint16_t x2, 
+                           uint16_t y2, uint16_t x3, uint16_t y3, 
+                           SDL_Renderer* renderer, bool aliasing)
+{
+  /* Only attempt to paint the triangle if renderer is valid */
+  if(renderer != NULL)
+  {
+    bool success = true;
+    int32_t x12_diff = x2 - x1;
+    int32_t y12_diff = y2 - y1;
+    int32_t x13_diff = x3 - x1;
+    int32_t y13_diff = y3 - y1;
+
+    /* Check if the triangle is a valid triangle */
+    if((x1 == x2 && y1 == y2) || (x1 == x3 && y1 == y3) || 
+       (x2 == x3 && y2 == y3) || (y12_diff == 0 && y12_diff == y13_diff) || 
+       (y12_diff != 0 && y13_diff != 0 && 
+        ((float)x12_diff / y12_diff) == ((float)x13_diff / y13_diff)))
+    {
+      success = false;
+    }
+
+    /* Attempt to render the triangle */
+    if(success)
+    {
+      uint16_t temp_x;
+      uint16_t temp_y;
+
+      /* Get alpha */
+      uint8_t alpha = 255;
+      SDL_GetRenderDrawColor(renderer, NULL, NULL, NULL, &alpha);
+
+      /* Sort the vertices ascending by y */
+      if(y2 < y1)
+      {
+        temp_x = x1;
+        temp_y = y1;
+        x1 = x2;
+        y1 = y2;
+        x2 = temp_x;
+        y2 = temp_y;
+      }
+      if(y3 < y2)
+      {
+        temp_x = x2;
+        temp_y = y2;
+        x2 = x3;
+        y2 = y3;
+        x3 = temp_x;
+        y3 = temp_y;
+
+        if(y2 < y1)
+        {
+          temp_x = x1;
+          temp_y = y1;
+          x1 = x2;
+          y1 = y2;
+          x2 = temp_x;
+          y2 = temp_y;
+        }
+      }
+
+      /* Check for arbitrary case of flat bottom */
+      if(y2 == y3)
+      {
+        renderBottomFlatTriangle(x1, x2, x3, y1, y3, renderer, aliasing, true);
+      }
+      /* Check for arbitrary case of flat top */
+      else if(y1 == y2)
+      {
+        renderTopFlatTriangle(x1, x2, x3, y1, y3, renderer, aliasing, true);
+      }
+      else
+      {
+        uint16_t x4 = (x1 + ((float)y2 - y1) / (float)(y3 - y1) * (x3 - x1));
+        renderBottomFlatTriangle(x1, x2, x4, y1, y2, renderer, aliasing);
+        renderTopFlatTriangle(x2, x4, x3, y2 + 1, y3, renderer, aliasing);
+      }
+    }
+
+    return success;
+  }
+  return false;
 }

@@ -354,7 +354,11 @@ bool Application::run()
       /* Font testing - TODO: Remove */
       text2.render(renderer, 48, 48);
       text1.render(renderer, 50, 50);
-      
+     
+      /* Triangle testing - TODO: Remove */
+      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+      Frame::renderTriangle(50, 50, 100, 75, 75, 100, renderer, true);
+
       /* Update screen */
       SDL_RenderPresent(renderer);
       count++;

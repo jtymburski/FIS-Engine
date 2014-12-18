@@ -999,7 +999,7 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
     game_map->reloadMap(active_renderer);
   }
   /* Show item store dialog in map */
-  else if(event.keysym.sym == SDLK_5) // TODO: SEG
+  else if(event.keysym.sym == SDLK_5)
   {
     if (game_map != nullptr)
     {
@@ -1012,9 +1012,9 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
       std::vector<int32_t> cost_modifiers;
       cost_modifiers.push_back(0);
       cost_modifiers.push_back(10);
-      
+
       game_map->initStore(ItemStore::BUY, items, counts, 
-                          cost_modifiers, "Is Ttly Kevin's Store", false);
+                          cost_modifiers, "Kevin's Store", false);
     }
   }
   /* Otherwise, send keys to the active view */

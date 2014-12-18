@@ -79,7 +79,7 @@ void Options::setAllToDefault()
   /* Rendering Options */
   setFont(0, true);
   setLinearFiltering(false);
-  setScreenResolution(1);
+  setScreenResolution(0);
   setVsync(true);
 }
 

@@ -334,98 +334,94 @@ bool ItemStore::initDisplay(StoreMode mode, std::vector<Item*> items,
                             std::vector<int32_t> cost_modifiers, 
                             std::string name)
 {
-  (void)mode; //TODO: WARNING
-  (void)items; //TODO: WARNING
-  (void)counts; //TODO: WARNING
   (void)cost_modifiers; //TODO: WARNING
-  (void)name; //TODO: WARNING
-  // bool success = false;
+  bool success = false;
   
-  // /* Only proceed if the store is not being used */
-  // if(store_status == WindowStatus::OFF)
-  // {
-    // bool show_empty = (mode == BUY);
-    // inventory_active = new Inventory(0);
-    // inventory_active->setFlag(InvState::SHOP_STORAGE);
+  /* Only proceed if the store is not being used */
+  if(store_status == WindowStatus::OFF)
+  {
+    bool show_empty = (mode == BUY);
+    inventory_active = new Inventory(0);
+    inventory_active->setFlag(InvState::SHOP_STORAGE);
     
-    // /* Clear the current store stack */
-    // store_stack.clear();
+    /* Clear the current store stack */
+    //store_stack.clear();
     
-    // /* Run through all items */
-    // for(uint32_t i = 0; i < items.size(); i++)
-    // {
-      // /* Only proceed if the counts is large enough and if it should be shown
-       // * based on empty qualifications (depending on show_empty) variable */
-      // if(items[i] != NULL && counts.size() > i && 
-         // ((!show_empty && counts[i] > 0) || show_empty))
-      // {
-        // /* Check if the inventory has room */
-        // if(inventory_active->hasRoom(items[i], counts[i]) >= counts[i])
-        // {
-          // /* Add and deal with left over data */
-          // AddStatus status = inventory_active->add(items[i], counts[i]);
-          // if(status == AddStatus::GOOD_DELETE)
-          // {
+    /* Run through all items */
+    for(uint32_t i = 0; i < items.size(); i++)
+    {
+      /* Only proceed if the counts is large enough and if it should be shown
+       * based on empty qualifications (depending on show_empty) variable */
+      if(items[i] != NULL && counts.size() > i && 
+         ((!show_empty && counts[i] > 0) || show_empty))
+      {
+        /* Check if the inventory has room */
+        if(inventory_active->hasRoom(items[i], counts[i]) >= counts[i])
+        {
+          /* Add and deal with left over data */
+          AddStatus status = inventory_active->add(items[i], counts[i]);
+          if(status == AddStatus::GOOD_DELETE)
+          {
           
-          // }
-          // else if(status == AddStatus::GOOD_KEEP)
-          // {
+          }
+          else if(status == AddStatus::GOOD_KEEP)
+          {
           
-          // }
-        // }
+          }
+        }
         
-        // /* Create the initial display item */
-        // ItemDisplay new_item;
-        // new_item.item = items[i];
-        // new_item.count = counts[i];
-        // new_item.cost = items[i]->getValue();
-        // new_item.category = ItemFlags::NO_CATEGORY;
+        /* Create the initial display item */
+//        ItemDisplay new_item;
+//        new_item.item = items[i];
+//        new_item.count = counts[i];
+//        new_item.cost = items[i]->getValue();
+//        new_item.category = ItemFlags::NO_CATEGORY;
         
-        // /* Modify the cost, if applicable */
-        // int32_t cost_signed = new_item.cost;
-        // if(cost_modifiers.size() > i && (cost_modifiers[i] * -1) <= cost_signed)
-          // new_item.cost += cost_modifiers[i];
-        // else if(cost_modifiers.size() == 1 && 
-                // (cost_modifiers[0] * -1) <= cost_signed)
-          // new_item.cost += cost_modifiers[0];
+        /* Modify the cost, if applicable */
+//        int32_t cost_signed = new_item.cost;
+//        if(cost_modifiers.size() > i && (cost_modifiers[i] * -1) <= cost_signed)
+//          new_item.cost += cost_modifiers[i];
+//        else if(cost_modifiers.size() == 1 && 
+//                (cost_modifiers[0] * -1) <= cost_signed)
+//          new_item.cost += cost_modifiers[0];
           
-        // /* Modify the item category, if applicable */
-        // if(items[i]->getFlag(ItemFlags::EQUIPMENT))
-          // new_item.category = ItemFlags::EQUIPMENT;
-        // else if(items[i]->getFlag(ItemFlags::BUBBY))
-          // new_item.category = ItemFlags::BUBBY;
-        // else if(items[i]->getFlag(ItemFlags::KEY_ITEM))
-          // new_item.category = ItemFlags::KEY_ITEM;
-        // else if(items[i]->getFlag(ItemFlags::MONEY))
-          // new_item.category = ItemFlags::MONEY;
-        // else if(!items[i]->getFlag(ItemFlags::NO_CATEGORY))
-          // new_item.category = ItemFlags::CONSUMED;
+        /* Modify the item category, if applicable */
+//        if(items[i]->getFlag(ItemFlags::EQUIPMENT))
+//          new_item.category = ItemFlags::EQUIPMENT;
+//        else if(items[i]->getFlag(ItemFlags::BUBBY))
+//          new_item.category = ItemFlags::BUBBY;
+//        else if(items[i]->getFlag(ItemFlags::KEY_ITEM))
+//          new_item.category = ItemFlags::KEY_ITEM;
+//        else if(items[i]->getFlag(ItemFlags::MONEY))
+//          new_item.category = ItemFlags::MONEY;
+//        else if(!items[i]->getFlag(ItemFlags::NO_CATEGORY))
+//          new_item.category = ItemFlags::CONSUMED;
         
-        // /* Push it onto the stack */
-        // if(new_item.category != ItemFlags::KEY_ITEM)
-          // store_stack.push_back(new_item);
-      // }
-    // }
+        /* Push it onto the stack */
+//        if(new_item.category != ItemFlags::KEY_ITEM)
+//          store_stack.push_back(new_item);
+      }
+    }
     
-    // /* Final setup of configuration variables */
-    // frame_setup = true;
-    // store_mode = mode;
-    // store_title = name;
+    /* Final setup of configuration variables */
+    frame_setup = true;
+    store_mode = mode;
+    store_title = name;
     
-    // success = true;
-  // }
+    success = true;
+  }
   
   /* Do clean-up on all items not set to NULL (and used) */
-  //for(auto item : items)
-  //{
-    //if(item != NULL)
-    //  delete item;
-
-    // item = NULL; //WARNING [REMOVE WHEN USING DELETE]
-  //}
+//  for(auto item : items)
+//  {
+//    if(item != NULL)
+//      delete item;
+//
+//    item = NULL; //WARNING [REMOVE WHEN USING DELETE]
+//  }
   
-  // return success;
-  return true; //WARNING
+  return success;
+  //return true; //WARNING
 }
 
 /* Returns if the item store is currently active */

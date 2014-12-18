@@ -135,12 +135,37 @@ public:
   bool useGreyScale(bool enable);
 
 /*=============================================================================
+ * PRIVATE STATIC FUNCTIONS
+ *============================================================================*/
+private:
+  /* Draws a line. This is needed because of SDL draw line glitch */
+  static void drawLine(int32_t x1, int32_t x2, int32_t y, 
+                       SDL_Renderer* renderer);
+  
+  /* Render bottom flat triangle - handled by renderTriangle() */
+  static void renderBottomFlatTriangle(uint16_t x1, uint16_t x2, uint16_t x3, 
+                                       uint16_t y1, uint16_t y23, 
+                                       SDL_Renderer* renderer, bool aliasing,
+                                       bool flat_side = false);
+
+  /* Render top flat triangle - handled by renderTriangle() */
+  static void renderTopFlatTriangle(uint16_t x1, uint16_t x2, uint16_t x3, 
+                                    uint16_t y12, uint16_t y3, 
+                                    SDL_Renderer* renderer, bool aliasing,
+                                    bool flat_side = false);
+
+/*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
 public:
   /* Creates a right hand triangle, given the parameters and a renderer */
   static bool renderRHTriangle(uint32_t x, uint32_t y, uint16_t height, 
                                SDL_Renderer* renderer, bool reverse = false);
+
+  /* Creates a triangle, given the parameters and a renderer */
+  static bool renderTriangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, 
+                             uint16_t x3, uint16_t y3, SDL_Renderer* renderer,
+                             bool aliasing = false);
 };
 
 #endif // FRAME_H
