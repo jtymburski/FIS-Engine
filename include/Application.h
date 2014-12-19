@@ -65,7 +65,7 @@ private:
   /* Update handling variables */
   uint8_t update_rate;
   uint8_t update_sync;
-  
+
   /* The window to be displayed when the application is started */
   SDL_Window* window;
   

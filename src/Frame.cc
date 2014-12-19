@@ -865,6 +865,161 @@ void Frame::renderTopFlatTriangle(uint16_t x1, uint16_t x2, uint16_t x3,
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
+   
+/*
+ * Description: Renders a shifted rectangle bar. This allows for a slope to be
+ *              defined for the left and right side which creates a symmetrical
+ *              parrallelogram.
+ *
+ * Inputs: uint16_t x - the x coordinate of the top left corner of the bar
+ *         uint16_t y - the y coordinate of the top left corner of the bar
+ *         uint16_t length - distance horizontally of the bar
+ *         uint16_t height - height of the bar
+ *         float slope - the slope of the left and right sides
+ *         SDL_Renderer* renderer - the rendering graphical engine
+ * Output: bool - did the object render?
+ */
+bool Frame::renderBar(uint16_t x, uint16_t y, uint16_t length, 
+                      uint16_t height, float slope, SDL_Renderer* renderer)
+{
+  /* Prechecks */
+  if(renderer != NULL && length > 0 && height > 0)
+  {
+    for(uint16_t i = 0; i < height; i++)
+    {
+      uint16_t modified_x = x - i * slope;
+      Frame::drawLine(modified_x, modified_x + length, y, renderer);
+      y++;
+    }
+    return true;
+  }
+  return false;
+}
+
+/*
+ * Description: Renders a circle, with center x and y and radius. The option can
+ *              be selected for a filled vs. a non-filled circle.
+ *
+ * Inputs: uint16_t center_x - the center x coordinate of circle
+ *         uint16_t center_y - the center y coordinate of the circle
+ *         uint16_t radius - the radius of the circle
+ *         SDL_Renderer* renderer - the rendering graphical engine
+ *         bool filled - should the circle be filled?
+ * Output: bool - was the circle rendered?
+ */
+bool Frame::renderCircle(uint16_t center_x, uint16_t center_y, uint16_t radius, 
+                         SDL_Renderer* renderer, bool filled)
+{
+  /* Prechecks */
+  if(renderer != NULL && radius > 0)
+  {
+    /* Variable setup */
+    int progress = 1 - radius;
+    int step_x = 1;
+    int step_y = -2 * radius;
+    int top_left_y = center_y - radius;
+    int x = 0;
+    int y = radius;
+    std::vector<bool> y_levels;
+
+    /* Set up the vertical y levels to the height of the circle */
+    y_levels.push_back(false);
+    for(uint16_t i = 0; i < radius; i++)
+    {
+      y_levels.push_back(false);
+      y_levels.push_back(false);
+    }
+
+    /* Render the farthest points (not part of the algorithm) */
+    SDL_RenderDrawPoint(renderer, center_x, center_y + radius);
+    SDL_RenderDrawPoint(renderer, center_x, center_y - radius);
+    if(filled)
+    {
+      Frame::drawLine(center_x - radius, center_x + radius, center_y, renderer);
+    }
+    else
+    {
+      SDL_RenderDrawPoint(renderer, center_x + radius, center_y);
+      SDL_RenderDrawPoint(renderer, center_x - radius, center_y);
+    }
+
+    /* Render through the guts of the circle */
+    while(x < y)
+    {
+      bool y_changed = false;
+
+      if(progress >= 0)
+      {
+        y--;
+        step_y += 2;
+        progress += step_y;
+
+        y_changed = true;
+      }
+
+      x++;
+      step_x += 2;
+      progress += step_x;
+
+      /* Render the arc */
+      if(filled)
+      {
+        /* Get calculation values for top/bottom half */
+        if(y_changed)
+        {
+          /* Calculate the line(s) */
+          int y1 = center_y + y;
+          int y2 = center_y - y;
+          uint16_t delta_y1 = y1 - top_left_y;
+          uint16_t delta_y2 = y2 - top_left_y;
+        
+          /* Only render the line if it hasn't been rendered */
+          if(!y_levels[delta_y1])
+          {
+            Frame::drawLine(center_x - x, center_x + x, y1, renderer);
+            y_levels[delta_y1] = true;
+          }
+          if(!y_levels[delta_y2])
+          {
+            Frame::drawLine(center_x - x, center_x + x, y2, renderer);
+            y_levels[delta_y2] = true;
+          }
+        }
+
+        /* Get calculation values for middle half line(s) */
+        int y1 = center_y + x;
+        int y2 = center_y - x;
+        uint16_t delta_y1 = y1 - top_left_y;
+        uint16_t delta_y2 = y2 - top_left_y;
+
+        /* Only render the line if it hasn't been rendered */
+        if(!y_levels[delta_y1])
+        {
+          Frame::drawLine(center_x - y, center_x + y, center_y + x, renderer);
+          y_levels[delta_y1] = true;
+        }
+        if(!y_levels[delta_y2])
+        {
+          Frame::drawLine(center_x - y, center_x + y, center_y - x, renderer);
+          y_levels[delta_y2] = true;
+        }
+      }
+      else
+      {
+        SDL_RenderDrawPoint(renderer, center_x + x, center_y + y);
+        SDL_RenderDrawPoint(renderer, center_x - x, center_y + y);
+        SDL_RenderDrawPoint(renderer, center_x + x, center_y - y);
+        SDL_RenderDrawPoint(renderer, center_x - x, center_y - y);
+        SDL_RenderDrawPoint(renderer, center_x + y, center_y + x);
+        SDL_RenderDrawPoint(renderer, center_x - y, center_y + x);
+        SDL_RenderDrawPoint(renderer, center_x + y, center_y - x);
+        SDL_RenderDrawPoint(renderer, center_x - y, center_y - x);
+      }
+    }
+    return true;
+  }
+  return false;
+}
 
 /*
  * Description: Creates a right hand triangle, given the input parameters. The

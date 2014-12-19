@@ -15,10 +15,18 @@
 
 /* Constant Implementation - see header file for descriptions */
 const uint16_t BattleDisplay::kBAR_OFFSET = 88;
+const uint8_t BattleDisplay::kINFO_BORDER = 2;
+const uint8_t BattleDisplay::kINFO_GREY = 200;
+const uint16_t BattleDisplay::kINFO_H = 50;
+const uint8_t BattleDisplay::kINFO_OPACITY = 166;
+const uint8_t BattleDisplay::kINFO_TRIANGLE = 6;
+const uint16_t BattleDisplay::kINFO_W = 180;
+const uint16_t BattleDisplay::kFOES_BAR = 12;
 const uint16_t BattleDisplay::kFOES_OFFSET = 94;
 const uint16_t BattleDisplay::kFRIENDS_OFFSET = 328;
 const uint8_t BattleDisplay::kMAX_LAYERS = 10;
-const uint16_t BattleDisplay::kPERSON_OVERLAP = 56;
+const uint16_t BattleDisplay::kPERSON_SPREAD = 200;
+const uint16_t BattleDisplay::kPERSON_WIDTH = 256;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -37,6 +45,9 @@ BattleDisplay::BattleDisplay(Options* running_config)
   bar_offset = 0;
   battle = NULL;
   battle_bar = NULL;
+  enemy_bar = NULL;
+  font_header = NULL;
+  font_subheader = NULL;
   offset = 0; // TODO: Delete
   offset_2 = 0; // TODO: Delete
   system_options = NULL;
@@ -50,12 +61,180 @@ BattleDisplay::BattleDisplay(Options* running_config)
  */
 BattleDisplay::~BattleDisplay()
 {
+  deleteFonts();
   clear();
 }
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
+
+// TODO: Comment
+Frame* BattleDisplay::createBattleInfoBar(SDL_Renderer* renderer)
+{
+  // TODO: Make const
+  uint16_t width = kINFO_W;
+  uint16_t height = kINFO_H;
+  uint8_t black_opacity = kINFO_OPACITY;
+  uint8_t triangle_width = kINFO_TRIANGLE;
+  uint8_t border = kINFO_BORDER;
+  uint8_t grey_color = kINFO_GREY;
+
+  /* Create rendering texture */
+  Frame* rendered_frame = new Frame();
+  SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                                           SDL_TEXTUREACCESS_TARGET, 
+                                           width, height);
+  SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+  SDL_SetRenderTarget(renderer, texture);
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+  SDL_RenderClear(renderer);
+
+  /* Draw center rectangle */
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, black_opacity);
+  SDL_Rect rect;
+  rect.x = border + triangle_width - 1;
+  rect.y = border - 1;
+  rect.w = width - triangle_width * 2 - border;
+  rect.h = height - border;
+  SDL_RenderFillRect(renderer, &rect);
+
+  /* Draw top right triangle */
+  uint16_t x_top = rect.x + rect.w;
+  uint16_t y_top = rect.y;
+  Frame::renderTriangle(x_top, y_top, x_top, y_top + triangle_width, 
+                        x_top + triangle_width, y_top + triangle_width, 
+                        renderer);
+
+  /* Draw right rectangle */
+  SDL_Rect rect2;
+  rect2.x = rect.x + rect.w;
+  rect2.y = y_top + triangle_width + 1;
+  rect2.w = triangle_width;
+  rect2.h = rect.h - triangle_width * 2 - border;
+  SDL_RenderFillRect(renderer, &rect2);
+
+  /* Draw right bottom triangle */
+  y_top = rect2.y + rect2.h;
+  Frame::renderTriangle(x_top, y_top, x_top + triangle_width, y_top, x_top, 
+                        y_top + triangle_width, renderer);
+
+  /* Draw left top triangle */
+  x_top = rect.x;
+  y_top = rect.y;
+  Frame::renderTriangle(x_top, y_top, x_top, y_top + triangle_width, 
+                        x_top - triangle_width, y_top + triangle_width, 
+                        renderer);
+
+  /* Draw left rectangle */
+  rect2.x = x_top - triangle_width;
+  SDL_RenderFillRect(renderer, &rect2);
+
+  /* Draw left bottom triangle */
+  y_top = rect2.y + rect2.h;
+  Frame::renderTriangle(x_top, y_top, x_top - triangle_width, y_top, x_top, 
+                        y_top + triangle_width, renderer);
+
+  /* First single pixel border */
+  SDL_SetRenderDrawColor(renderer, grey_color, grey_color, grey_color, 255);
+  SDL_Point points[9];
+  points[0].x = rect.x;
+  points[0].y = rect.y;
+  points[1].x = points[0].x + rect.w - 1;
+  points[1].y = points[0].y;
+  points[2].x = points[1].x + triangle_width;
+  points[2].y = points[1].y + triangle_width;
+  points[3].x = points[2].x;
+  points[3].y = points[2].y + rect2.h + 1;
+  points[4].x = points[3].x - triangle_width;
+  points[4].y = points[3].y + triangle_width;
+  points[5].x = points[4].x - rect.w + 1;
+  points[5].y = points[4].y;
+  points[6].x = points[5].x - triangle_width;
+  points[6].y = points[5].y - triangle_width;
+  points[7].x = points[6].x;
+  points[7].y = points[6].y - rect2.h - 1;
+  points[8].x = points[7].x + triangle_width;
+  points[8].y = points[7].y - triangle_width;
+  SDL_RenderDrawLines(renderer, points, 9);
+
+  /* Second single pixel border */
+  points[0].y -= 1;
+  points[1].y -= 1;
+  points[2].x += 1;
+  points[3].x += 1;
+  points[4].y += 1;
+  points[5].y += 1;
+  points[6].x -= 1;
+  points[7].x -= 1;
+  points[8].y -= 1;
+  SDL_RenderDrawLines(renderer, points, 9);
+
+  /* Finalize the frame */
+  SDL_SetRenderTarget(renderer, NULL);
+  rendered_frame->setTexture(texture);
+  return rendered_frame;
+}
+
+/*
+ * Description: Attempts to create the main font and the title font that is used
+ *              throughout dialog representation. This is acquired from the
+ *              configuration of the application. If successful, set the new
+ *              fonts.
+ *
+ * Inputs: none
+ * Output: bool - status if creation was successful
+ */
+bool BattleDisplay::createFonts()
+{
+  bool success = false;
+
+  if(system_options != NULL)
+  {
+    /* Try and create the new fonts */
+    TTF_Font* subheader_font = Text::createFont(system_options->getBasePath() + 
+                                                system_options->getFont(), 13);
+    TTF_Font* header_font = Text::createFont(system_options->getBasePath() + 
+                                             system_options->getFont(), 
+                                             16, TTF_STYLE_BOLD);
+
+    /* If successful, insert the new fonts. Otherwise, delete if any were
+     * created */
+    if(subheader_font != NULL && header_font != NULL)
+    {
+      deleteFonts();
+      font_header = header_font;
+      font_subheader = subheader_font;
+      success = true;
+    }
+    else
+    {
+      TTF_CloseFont(header_font);
+      header_font = NULL;
+
+      TTF_CloseFont(subheader_font);
+      subheader_font = NULL;
+    }
+  }
+
+  return success;
+}
+
+/*
+ * Description: Delete the rendering fonts stored in the class. Do not try and
+ *              render again since it will try to use the NULL fonts and fail.
+ *
+ * Inputs: none
+ * Ouptut: none
+ */
+void BattleDisplay::deleteFonts()
+{
+  TTF_CloseFont(font_header);
+  font_header = NULL;
+
+  TTF_CloseFont(font_subheader);
+  font_subheader = NULL;
+}
 
 // TODO: Comment
 std::vector<Person*> BattleDisplay::getFoes()
@@ -144,6 +323,8 @@ bool BattleDisplay::renderBar(SDL_Renderer* renderer, uint16_t screen_width,
                                   screen_height - kBAR_OFFSET - bar_offset,
                                   screen_width);
 
+    // TODO: Implementation - the actual battle information
+
     return success;
   }
 
@@ -173,13 +354,89 @@ bool BattleDisplay::renderFoes(SDL_Renderer* renderer, uint16_t screen_width)
         index = i;
 
       /* Render the frame */
-      int width = frame_list[i]->getWidth();
-      success &= frame_list[i]->render(renderer, 
-                       screen_width - (width - kPERSON_OVERLAP) * index - width, 
-                       kFOES_OFFSET);
+      success &= frame_list[i]->render(renderer, screen_width - 
+                        kPERSON_WIDTH - (index) * kPERSON_SPREAD, kFOES_OFFSET);
     }
   }
   
+  return success;
+}
+
+// TODO: Comment
+bool BattleDisplay::renderFoesBars(SDL_Renderer* renderer, 
+                                   uint16_t screen_width)
+{
+  std::vector<Person*> foes_list = getFoes();
+  bool success = true;
+
+  /* Render the box */
+  uint16_t bar_width = enemy_bar->getWidth();
+  uint16_t bar_height = enemy_bar->getHeight();
+  uint16_t y = kFOES_OFFSET - kFOES_BAR - bar_height;
+  uint8_t index = 0;
+  for(uint8_t i = 0; i < foes_list.size(); i++)
+  {
+    if(foes_list[i] != NULL)
+    {
+      /* Modify index for 1 and 2 flip around */
+      if(i == 0)
+        index = 1;
+      else if(i == 1)
+        index = 0;
+      else
+        index = i;
+      
+      /* Render the frame */
+      uint16_t x = screen_width - kPERSON_WIDTH - (index) * kPERSON_SPREAD;
+      success &= enemy_bar->render(renderer, x, y);
+
+      /* Render the health bar */
+      uint16_t b_width = 126; // TODO: Const
+      uint16_t bt_width = 5; // TODO: Const
+      uint16_t b_height = 10; // TODO: Const
+      uint16_t bar_x = x + bar_width / 2 - b_width / 2;
+      uint16_t bar_y = y + bar_height / 2 - b_height / 2 + 2;
+      SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+      Frame::renderBar(bar_x, bar_y,
+                    (b_width + bt_width) * foes_list[i]->getVitaPercent() / 100, 
+                    b_height, (float)bt_width / b_height, renderer);
+
+      // TODO: Clean up. Put in own class rendered to frame
+      /* Render the health bar border */
+      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+      SDL_Point border[5];
+      border[0].x = bar_x;
+      border[0].y = bar_y;
+      border[1].x = border[0].x + b_width + bt_width;
+      border[1].y = border[0].y;
+      border[2].x = border[1].x - bt_width;
+      border[2].y = border[1].y + b_height;
+      border[3].x = border[2].x - b_width - bt_width;
+      border[3].y = border[2].y;
+      border[4].x = border[0].x;
+      border[4].y = border[0].y;
+      SDL_RenderDrawLines(renderer, border, 5);
+
+      /* Render the enemy bar text */
+      SDL_Color color = {255, 255, 255, 255};
+      Text* t = new Text(font_header);
+      t->setText(renderer, foes_list[i]->getName(), color);
+      uint16_t diff_x = (bar_width - t->getWidth()) / 2;
+      uint16_t diff_y = ((bar_y - y) - t->getHeight()) / 2;
+      t->render(renderer, x + diff_x, y + diff_y);
+      delete t;
+
+      t = new Text(font_subheader);
+      t->setText(renderer, "Level " + std::to_string(foes_list[i]->getLevel()), 
+                 color);
+      t->render(renderer, 0, 0);
+      diff_x = (bar_width - t->getWidth()) / 2;
+      diff_y = (bar_height - (bar_y - y) - b_height - t->getHeight()) / 2;
+      t->render(renderer, x + diff_x, bar_y + b_height + diff_y);
+      delete t;
+    }
+  }
+
   return success;
 }
 
@@ -207,9 +464,7 @@ bool BattleDisplay::renderFriends(SDL_Renderer* renderer,
         index = i;
 
       /* Render the frame */
-      int width = frame_list[i]->getWidth();
-      success &= frame_list[i]->render(renderer, 
-                                       (width - kPERSON_OVERLAP) * index, 
+      success &= frame_list[i]->render(renderer, index * kPERSON_SPREAD, 
                                        screen_height - kFRIENDS_OFFSET);
     }
   }
@@ -291,6 +546,11 @@ void BattleDisplay::clear()
 {
   /* Clears variables */
   system_options = NULL;
+
+  /* Deletes internal pointers, if set */
+  if(enemy_bar != NULL)
+    delete enemy_bar;
+  enemy_bar = NULL;
 
   /* Unsets the flat rendering sprites */
   unsetBackground();
@@ -399,7 +659,10 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
     /* Render player team */
     success &= renderFriends(renderer, height);
 
-    // TODO: Render enemy health bars
+    /* Render enemy info bars */
+    if(enemy_bar == NULL)
+      enemy_bar = createBattleInfoBar(renderer);
+    success &= renderFoesBars(renderer, width);
 
     /* Render battle bar (on bottom) */
     renderBar(renderer, width, height);
@@ -457,6 +720,8 @@ bool BattleDisplay::setConfiguration(Options* running_config)
   if(running_config != NULL)
   {
     system_options = running_config;
+    createFonts();
+
     return true;
   }
   

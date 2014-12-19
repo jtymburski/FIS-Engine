@@ -158,6 +158,15 @@ private:
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Creates a bar, given the parameters and a renderer */
+  static bool renderBar(uint16_t x, uint16_t y, uint16_t length, 
+                        uint16_t height, float slope, SDL_Renderer* renderer);
+
+  /* Creates a circle, given the parameters and a renderer */
+  static bool renderCircle(uint16_t center_x, uint16_t center_y, 
+                           uint16_t radius, SDL_Renderer* renderer, 
+                           bool filled = true);
+
   /* Creates a right hand triangle, given the parameters and a renderer */
   static bool renderRHTriangle(uint32_t x, uint32_t y, uint16_t height, 
                                SDL_Renderer* renderer, bool reverse = false);

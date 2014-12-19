@@ -273,8 +273,8 @@ void TitleScreen::setMusic()
 {
   /* Sound setup */
   background_music.setMusicFile(base_path + 
-                                "sound/ambience/background_menu_sound.wav");
-  background_music.setPlayForever();
+                                "sound/4.mp3");
+  //background_music.setPlayForever();
   menu_click_sound.setChannel(SoundChannels::MENUS);
   menu_click_sound.setSoundFile(base_path + "sound/functional/menu_click.wav");
 }
