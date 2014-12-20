@@ -72,11 +72,11 @@ const uint16_t Battle::kBATTLE_MENU_DELAY    = 400; /* Personal menu delay */
  * Defend Modifier (Base Damage Mod While Defending)
  * Guard Modifier (Base Damage Mod While Being Guarded)
  */
-const size_t Battle::kMAX_AILMENTS             =    50;
-const size_t Battle::kMAX_EACH_AILMENTS        =     5;
-const uint16_t Battle::kMINIMUM_DAMAGE           =     1;
-const uint16_t Battle::kMAXIMUM_DAMAGE           = 29999;
-
+const size_t   Battle::kMAX_AILMENTS                =    50;
+const size_t   Battle::kMAX_EACH_AILMENTS           =     5;
+const uint16_t Battle::kMINIMUM_DAMAGE              =     1;
+const uint16_t Battle::kMAXIMUM_DAMAGE              = 29999;
+ 
 const float    Battle::kOFF_PHYS_MODIFIER           = 1.00;
 const float    Battle::kDEF_PHYS_MODIFIER           = 1.10;
 const float    Battle::kOFF_PRIM_ELM_MATCH_MODIFIER = 1.05;
@@ -103,8 +103,8 @@ const float    Battle::kTARG_DEF_MODIFIER           =  2.90;
 
 const float    Battle::kBASE_CRIT_CHANCE            =   0.10;
 const float    Battle::kOFF_CRIT_FACTOR             =   1.25;
-const float    Battle::kCRIT_MODIFIER               = 0.0008;
-const float    Battle::kCRIT_LVL_MODIFIER           =  0.012;
+const float    Battle::kCRIT_MODIFIER               =   0.0008;
+const float    Battle::kCRIT_LVL_MODIFIER           =   0.012;
 const float    Battle::kCRIT_DEFENDING_MODIFIER     =   0.70;
 const float    Battle::kCRIT_GUARDED_MODIFIER       =   0.65;
 
@@ -113,7 +113,7 @@ const float    Battle::kUSER_RUN_MODIFIER           =   2.00;
 const float    Battle::kALLY_RUN_MODIFIER           =   1.00;
 const float    Battle::kENEMY_RUN_MODIFIER          =   1.00;
 const float    Battle::kRUN_PC_PER_POINT            =   0.003;
-const int16_t  Battle::kRUN_PC_EXP_PENALTY          =      5;
+const int16_t  Battle::kRUN_PC_EXP_PENALTY          =   5;
 
 const float    Battle::kDODGE_MODIFIER              =   0.10;
 const float    Battle::kDODGE_HIGHEST_RATE_PC       =   50.0;
@@ -123,11 +123,11 @@ const float    Battle::kDEFEND_MODIFIER             =   0.50;
 const float    Battle::kGUARD_MODIFIER              =   1.10;
 const float    Battle::kSHIELDED_MODIFIER           =   0.00;
 
-const int16_t Battle::kREGEN_RATE_ZERO_PC           =      0;
-const int16_t Battle::kREGEN_RATE_WEAK_PC           =      2; 
-const int16_t Battle::kREGEN_RATE_NORMAL_PC         =      4;
-const int16_t Battle::kREGEN_RATE_STRONG_PC         =      6;
-const int16_t Battle::kREGEN_RATE_GRAND_PC          =      8;
+const int16_t  Battle::kREGEN_RATE_ZERO_PC           =      0;
+const int16_t  Battle::kREGEN_RATE_WEAK_PC           =      2; 
+const int16_t  Battle::kREGEN_RATE_NORMAL_PC         =      4;
+const int16_t  Battle::kREGEN_RATE_STRONG_PC         =      6;
+const int16_t  Battle::kREGEN_RATE_GRAND_PC          =      8;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS

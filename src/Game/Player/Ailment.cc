@@ -450,9 +450,6 @@ bool Ailment::apply()
     {
       stats.setStat(Attribute::LIMB, stats.getStat(Attribute::LIMB) *
                                       kLIMBUFF_PC);
-    }
-    else if (type == Infliction::MOMBUFF)
-    {
       stats.setStat(Attribute::MMNT, stats.getStat(Attribute::MMNT) * 
                                       kELMBUFF_PC);
     }
@@ -592,7 +589,6 @@ bool Ailment::checkImmunity(Person* new_victim)
       type == Infliction::NIHBUFF    ||
       type == Infliction::LIMBUFF    ||
       type == Infliction::UNBBUFF    ||
-      type == Infliction::MOMBUFF    ||
       type == Infliction::VITBUFF    ||
       type == Infliction::QDBUFF)
   return false;
@@ -825,9 +821,6 @@ void Ailment::unapply()
   {
     stats.setStat(Attribute::LIMB, stats.getStat(Attribute::LIMB) /
                                     kLIMBUFF_PC);
-  }
-  else if (type == Infliction::MOMBUFF)
-  {
     stats.setStat(Attribute::MMNT, stats.getStat(Attribute::MMNT) / 
                                     kELMBUFF_PC);
   }

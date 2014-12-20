@@ -471,8 +471,6 @@ std::string Helpers::ailmentToStr(const Infliction &ail)
     return "LIMBUFF";
   else if (ail == Infliction::UNBBUFF)
     return "UNBBUFF";
-  else if (ail == Infliction::MOMBUFF)
-    return "MOMBUFF";
   else if (ail == Infliction::VITBUFF)
     return "VITBUFF";
   else if (ail == Infliction::QDBUFF)

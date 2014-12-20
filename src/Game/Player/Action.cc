@@ -225,7 +225,6 @@ bool Action::parseAilment(const std::string &ailm)
   else if (ailm == "NIHBUFF")     ailment = Infliction::NIHBUFF;
   else if (ailm == "LIMBUFF")     ailment = Infliction::LIMBUFF;
   else if (ailm == "UNBBUFF")     ailment = Infliction::UNBBUFF;
-  else if (ailm == "MOMBUFF")     ailment = Infliction::MOMBUFF; 
   else if (ailm == "VITBUFF")     ailment = Infliction::VITBUFF; 
   else if (ailm == "QDBUFF")      ailment = Infliction::QDBUFF;
   else if (ailm == "ROOTBOUND")   ailment = Infliction::ROOTBOUND;
