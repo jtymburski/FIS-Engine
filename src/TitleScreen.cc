@@ -243,25 +243,22 @@ bool TitleScreen::render(SDL_Renderer* renderer)
     background.render(renderer);
 #else
     /* Render the background */
-    background.render(renderer, -729, -416);
-    background6.render(renderer, -729, -416);
-    background2.render(renderer, -729, -416);
+    background.render(renderer, 0, 0);
+    background6.render(renderer, -220, -48);
+    background2.render(renderer, 153, 314);
 
-    /* Waldo show */
+    /* Waldo show - TODO: Only certain hours? */
     if(true)
     {
-      background7.render(renderer, -729, -416);
+      background7.render(renderer, 153, 314);
     }
 
     /* Render atmmosphere */
-    background3.render(renderer, -729, -416);
+    background3.render(renderer, 153, 314);
     
     /* The flash and bangs */
-    if(true)
-    {
-      background4.render(renderer, -729, -416);
-      background5.render(renderer, -729, -416);
-    }
+    background4.render(renderer, 153, 314);
+    background5.render(renderer, 153, 314);
 
     /* Render title */
     title.render(renderer, 50, 50);
@@ -293,7 +290,8 @@ bool TitleScreen::setBackground(std::string path, SDL_Renderer* renderer)
                          renderer);
   background2.insertFirst(base_path + "sprites/Title/title-dynaton.png", renderer);
   background3.insertFirst(base_path + "sprites/Title/title-dynatonatmosphere.png", renderer);
-  background3.setOpacity(128);
+  background3.setOpacity(196);
+  background3.setColorBalance(255, 170, 170);
   background4.insertFirst(base_path + "sprites/Title/title-dynatonbooms1.png", renderer);
   background4.setOpacity(0);
   background5.insertFirst(base_path + "sprites/Title/title-dynatonbooms2.png", renderer);
@@ -339,7 +337,7 @@ bool TitleScreen::update(int cycle_time)
   /* Rotation testing */
   //rotate1 += 0.03125;//0.0625;//0.001;
   rotate2 += 0.03125;
-  rotate3 += 0.01;
+  rotate3 += 0.05;
   rotate6 -= 0.075;
 
   //background.setRotation(rotate1);
@@ -351,16 +349,16 @@ bool TitleScreen::update(int cycle_time)
   background7.setRotation(rotate2);
 
   /* Poof Number 1 */
-  if(delay < 30000)
+  if(delay < 5000)
     delay += cycle_time;
-  else if(delay < 40000)
+  else if(delay < 10000)
   {
-    delay = 40000;
+    delay = 10000;
     background4.setOpacity(255);
   }
-  if(delay == 40000)
+  if(delay == 10000)
   {
-    background4.setBrightness(background4.getBrightness() - 0.0625);
+    background4.setBrightness(background4.getBrightness() - 0.03125);
 
     if(background4.getBrightness() == 0.0)
     {
@@ -378,16 +376,16 @@ bool TitleScreen::update(int cycle_time)
   }
 
   /* Poof Number 2 */
-  if(delay2 < 56789)
+  if(delay2 < 7500)
     delay2 += cycle_time;
-  else if(delay2 < 60000)
+  else if(delay2 < 10000)
   {
-    delay2 = 60000;
+    delay2 = 10000;
     background5.setOpacity(255);
   }
-  if(delay2 == 60000)
+  if(delay2 == 10000)
   {
-    background5.setBrightness(background4.getBrightness() - 0.0625);
+    background5.setBrightness(background5.getBrightness() - 0.03125);
 
     if(background5.getBrightness() == 0.0)
     {
@@ -403,6 +401,12 @@ bool TitleScreen::update(int cycle_time)
       }
     }
   }
+
+  /* Brightness (flicker) concept */
+  //if(Helpers::randInt(10) < 2)
+  //  background.setBrightness(background.getBrightness() - 0.01);
+  //if(background.getBrightness() < 0.6)
+  //  background.setBrightness(1.0);
 
   /* If the down key is pressed and not up */
   if(nav_down && !nav_up)
