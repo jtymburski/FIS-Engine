@@ -37,7 +37,15 @@ TitleScreen::TitleScreen(Options* running_config)
   nav_up = false;
   render_index = 0;
   system_options = NULL;
-  
+ 
+  // TODO: TESTING - FIX
+  rotate1 = 0;
+  rotate2 = 0;
+  rotate3 = 0;
+  rotate6 = 0;
+  delay = 0;
+  delay2 = 0;
+
   /* Set up the configuration, if applicable */
   setConfiguration(running_config);
 }
@@ -229,10 +237,36 @@ bool TitleScreen::render(SDL_Renderer* renderer)
      * once the first time */
     if(font == NULL)
       setMenu(renderer);
-    
+
+#ifdef TITLE_SKIP
     /* Render the background */
-    SDL_RenderCopy(renderer, background.getTextureActive(), NULL, NULL);
+    background.render(renderer);
+#else
+    /* Render the background */
+    background.render(renderer, -729, -416);
+    background6.render(renderer, -729, -416);
+    background2.render(renderer, -729, -416);
+
+    /* Waldo show */
+    if(true)
+    {
+      background7.render(renderer, -729, -416);
+    }
+
+    /* Render atmmosphere */
+    background3.render(renderer, -729, -416);
     
+    /* The flash and bangs */
+    if(true)
+    {
+      background4.render(renderer, -729, -416);
+      background5.render(renderer, -729, -416);
+    }
+
+    /* Render title */
+    title.render(renderer, 50, 50);
+
+#endif
     /* Paint the selected options on the screen */
     for(uint8_t i = 0; i < selected_options.size(); i++)
     {
@@ -252,7 +286,24 @@ bool TitleScreen::render(SDL_Renderer* renderer)
 
 bool TitleScreen::setBackground(std::string path, SDL_Renderer* renderer)
 {
-  return background.setTexture(base_path + path, renderer);
+#ifdef TITLE_SKIP
+  return background.insertFirst(base_path + path, renderer);
+#else
+  background.insertFirst(base_path + "sprites/Title/title-backdrop.png", 
+                         renderer);
+  background2.insertFirst(base_path + "sprites/Title/title-dynaton.png", renderer);
+  background3.insertFirst(base_path + "sprites/Title/title-dynatonatmosphere.png", renderer);
+  background3.setOpacity(128);
+  background4.insertFirst(base_path + "sprites/Title/title-dynatonbooms1.png", renderer);
+  background4.setOpacity(0);
+  background5.insertFirst(base_path + "sprites/Title/title-dynatonbooms2.png", renderer);
+  background5.setOpacity(0);
+  background6.insertFirst(base_path + "sprites/Title/title-moon.png", renderer);
+  background7.insertFirst(base_path + "sprites/Title/title-waldo.png", renderer);
+  title.setTexture(base_path + "sprites/Title/title.png", renderer);
+
+  return true;
+#endif
 }
 
 /* Sets the running configuration, from the options class */
@@ -284,7 +335,75 @@ bool TitleScreen::update(int cycle_time)
 {
   /* Increment the nav time */
   nav_time += cycle_time;
-  
+ 
+  /* Rotation testing */
+  //rotate1 += 0.03125;//0.0625;//0.001;
+  rotate2 += 0.03125;
+  rotate3 += 0.01;
+  rotate6 -= 0.075;
+
+  //background.setRotation(rotate1);
+  background2.setRotation(rotate2);
+  background3.setRotation(rotate3);
+  background4.setRotation(rotate2);
+  background5.setRotation(rotate2);
+  background6.setRotation(rotate6);
+  background7.setRotation(rotate2);
+
+  /* Poof Number 1 */
+  if(delay < 30000)
+    delay += cycle_time;
+  else if(delay < 40000)
+  {
+    delay = 40000;
+    background4.setOpacity(255);
+  }
+  if(delay == 40000)
+  {
+    background4.setBrightness(background4.getBrightness() - 0.0625);
+
+    if(background4.getBrightness() == 0.0)
+    {
+      uint8_t opacity = background4.getOpacity();
+
+      if(opacity >= 2)
+        background4.setOpacity(opacity - 2);
+      else
+      {
+        background4.setBrightness(1.0);
+        background4.setOpacity(0);
+        delay = 0;
+      }
+    }
+  }
+
+  /* Poof Number 2 */
+  if(delay2 < 56789)
+    delay2 += cycle_time;
+  else if(delay2 < 60000)
+  {
+    delay2 = 60000;
+    background5.setOpacity(255);
+  }
+  if(delay2 == 60000)
+  {
+    background5.setBrightness(background4.getBrightness() - 0.0625);
+
+    if(background5.getBrightness() == 0.0)
+    {
+      uint8_t opacity = background5.getOpacity();
+
+      if(opacity >= 2)
+        background5.setOpacity(opacity - 2);
+      else
+      {
+        background5.setBrightness(1.0);
+        background5.setOpacity(0);
+        delay2 = 0;
+      }
+    }
+  }
+
   /* If the down key is pressed and not up */
   if(nav_down && !nav_up)
   {

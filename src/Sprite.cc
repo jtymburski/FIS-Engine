@@ -48,7 +48,7 @@ Sprite::Sprite()
   head = NULL;
   id = 0;
   opacity = kDEFAULT_OPACITY;
-  rotation_angle = 0;
+  rotation_angle = 0.0;
   size = 0;
   sequence = FORWARD;
   texture = NULL;
@@ -436,9 +436,9 @@ int Sprite::getPosition()
  * Description: Returns the rotation angle for rendering the texture, in degrees
  *
  * Inputs: none
- * Output: int - the angle, in degrees
+ * Output: float - the angle, in degrees
  */
-int Sprite::getRotation() const
+float Sprite::getRotation() const
 {
   return rotation_angle;
 }
@@ -878,7 +878,7 @@ bool Sprite::render(SDL_Renderer* renderer, int x, int y, int w, int h)
 
     /* Render and return status */
     return (SDL_RenderCopyEx(renderer, texture, NULL, &rect, 
-                            static_cast<double>(rotation_angle), NULL, 
+                            rotation_angle, NULL, 
                             SDL_FLIP_NONE) == 0);
   }
   
@@ -1064,6 +1064,18 @@ void Sprite::setOpacity(uint8_t opacity)
 {
   this->opacity = opacity;
   SDL_SetTextureAlphaMod(texture, opacity);
+}
+
+/*
+ * Description: Sets the rotation that the frames will be rendered at around
+ *              the center point
+ *
+ * Inputs: float angle - angle in degrees and float to rotate the frames to
+ * Output: none
+ */
+void Sprite::setRotation(float angle)
+{
+  rotation_angle = angle;
 }
 
 /*

@@ -77,7 +77,7 @@ private:
   uint8_t opacity;
   
   /* The rotation angle for rendering */
-  int rotation_angle;
+  float rotation_angle;
   
   /* The number of frames */
   int size;
@@ -159,7 +159,7 @@ public:
   int getPosition();
 
   /* Returns the rotation angle for rendering */
-  int getRotation() const;
+  float getRotation() const;
   
   /* Returns the size of the sequence */
   int getSize() const;
@@ -249,6 +249,7 @@ public:
   void setOpacity(uint8_t opacity);
   
   /* Sets the rotation for all frames to be rendered at */
+  void setRotation(float angle);
   void setRotation(int angle);
   
   /* Shifts to the given position in the sequence */

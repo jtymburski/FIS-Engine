@@ -582,7 +582,7 @@ void Game::setupBattle()
 
   game_battle = new Battle(game_config, friends, enemies);
   battle_display = new BattleDisplay(game_config);
-  battle_display->setBattle(game_battle);
+  battle_display->setBattle(game_battle, active_renderer);
 
   //malgidus->print(false, false, true, true);
   //frosty->print(false, false, true, true);

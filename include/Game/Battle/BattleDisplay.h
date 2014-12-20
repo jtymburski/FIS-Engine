@@ -49,11 +49,15 @@ private:
   Frame* battle_bar;
 
   /* The rendering enemy info bar */
-  Frame* enemy_bar;
+  Frame* foes_backdrop;
+  std::vector<Frame*> foes_info;
 
   /* Rendering fonts */
   TTF_Font* font_header;
   TTF_Font* font_subheader;
+
+  /* The rendering friend info bar */
+  std::vector<Frame*> friends_info;
 
   /* Mid scene overlays */
   std::vector<Sprite*> midlays; // TODO: Make overlay class when created
@@ -65,16 +69,30 @@ private:
   Options* system_options;
 
   /* ------------ Constants --------------- */
-  const static uint16_t kBAR_OFFSET; /* Offset of bar off bottom */
+  const static uint8_t kALLY_HEALTH_H; /* Ally health bar height */
+  const static uint8_t kALLY_HEALTH_TRIANGLE; /* Ally health triangle width */
+  const static uint8_t kALLY_HEALTH_W; /* Ally health bar width */
+  const static uint16_t kALLY_HEIGHT; /* Ally display section height */
+  const static uint8_t kALLY_QD_H; /* Ally qd bar height */
+  const static uint8_t kALLY_QD_OFFSET; /* Ally qd bar offset off health */
+  const static uint8_t kALLY_QD_TRIANGLE; /* Ally qd triangle width */
+  const static uint8_t kALLY_QD_W; /* Ally qd bar width */
+  const static uint8_t kCOLOR_BASE; /* Base of color for shifting bars */
+  const static uint16_t kBIGBAR_OFFSET; /* Offset of bar off bottom */
   const static uint8_t kINFO_BORDER; /* Border width on enemy info bar */
   const static uint8_t kINFO_GREY; /* Grey value for border bar */
   const static uint16_t kINFO_H; /* Height of enemy info bar */
   const static uint8_t kINFO_OPACITY; /* Opacity of black background in info */
   const static uint8_t kINFO_TRIANGLE; /* Height of triangle in info corner */
   const static uint16_t kINFO_W; /* Width of enemy info bar */
-  const static uint16_t kFOES_BAR; /* Offset of bar above foes */
+  const static uint8_t kFOE_BAR_H; /* Height of health bar for foes */
+  const static uint8_t kFOE_BAR_OFFSET; /* Offset of foe health off center */
+  const static uint8_t kFOE_BAR_TRIANGLE; /* Width of foe health triangle */
+  const static uint16_t kFOE_BAR_W; /* Width of rect in foe health bar */
+  const static uint16_t kFOES_BAR_GAP; /* Offset of bar above foes */
   const static uint16_t kFOES_OFFSET; /* Offset of foes from top */
   const static uint16_t kFRIENDS_OFFSET; /* Offset of friends from bottom */
+  const static uint8_t kMAX_CHARS; /* Max number of foes in battle */
   const static uint8_t kMAX_LAYERS; /* Max number of layers that can be set */
   const static uint16_t kPERSON_SPREAD; /* Rendering overlay of persons */
   const static uint16_t kPERSON_WIDTH; /* Width of persons on battle */
@@ -83,11 +101,18 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
-  /* Creates the enemy battle info bar */
-  Frame* createBattleInfoBar(SDL_Renderer* renderer);
-  
+  /* Generates info and frames for foes in battle */
+  void createFoeBackdrop(SDL_Renderer* renderer);
+  bool createFoeInfo(Person* foe, uint8_t index, SDL_Renderer* renderer);
+
   /* Creates the rendering fonts, based on the system options font path */
   bool createFonts();
+
+  /* Generates info for friends in battle */
+  bool createFriendInfo(Person* ally, uint8_t index, SDL_Renderer* renderer);
+
+  /* Clears all enemy info frames */
+  void deleteBattleInfo();
 
   /* Deletes the rendering fonts, if they've been created */
   void deleteFonts();
@@ -108,10 +133,11 @@ private:
 
   /* Renders the foes */
   bool renderFoes(SDL_Renderer* renderer, uint16_t screen_width);
-  bool renderFoesBars(SDL_Renderer* renderer, uint16_t screen_width);
+  bool renderFoesInfo(SDL_Renderer* renderer, uint16_t screen_width);
 
   /* Renders the friends */
   bool renderFriends(SDL_Renderer* renderer, uint16_t screen_height);
+  bool renderFriendsInfo(SDL_Renderer* renderer, uint16_t screen_height);
 
   /* Trims the midlay vector of NULL sprite pointers */
   void trimMidlays();
@@ -163,7 +189,7 @@ public:
   bool setBackground(Sprite* background);
 
   /* Sets the battle connected to the display */
-  bool setBattle(Battle* battle);
+  bool setBattle(Battle* battle, SDL_Renderer* renderer);
 
   /* Sets the rendering battle bar */
   bool setBattleBar(Frame* bar);

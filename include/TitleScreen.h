@@ -12,10 +12,10 @@
 #include <string>
 #include <vector>
 
-#include "Frame.h"
 #include "Music.h"
 #include "Options.h"
 #include "Sound.h"
+#include "Sprite.h"
 #include "Text.h"
 
 class TitleScreen
@@ -39,7 +39,19 @@ private:
   MenuItems action;
   
   /* The background frame to render */
-  Frame background;
+  Sprite background; // TODO: Fix - base
+  float rotate1;
+  Sprite background2; // TODO: Remove - temporary - planet
+  float rotate2;
+  Sprite background3; // TODO: Remove - temporary - planet shroud
+  float rotate3;
+  Sprite background4; // TODO: Remove - temporary - booms 1
+  Sprite background5; // TODO: Remove - temporary - booms 2
+  Sprite background6; // TODO: Remove - temporary - moon
+  float rotate6;
+  Sprite background7; // TODO: Remove - temporary - waldo
+  uint16_t delay; // TODO: Remove or fix - for displaying poofs
+  uint16_t delay2; // TODO: Remove or fix - for displaying poofs
   
   /* Background music during title screen */
   Music background_music;
@@ -63,7 +75,10 @@ private:
 
   /* The render index of the top left of the title screen options */
   int render_index;
-  
+ 
+  /* Title in corner */
+  Frame title;
+
   /* The options at the first menu level */
   std::vector<Text*> selected_options;
   std::vector<Text*> unselected_options;

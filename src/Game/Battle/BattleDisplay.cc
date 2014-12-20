@@ -14,16 +14,30 @@
 #include "Game/Battle/BattleDisplay.h"
 
 /* Constant Implementation - see header file for descriptions */
-const uint16_t BattleDisplay::kBAR_OFFSET = 88;
+const uint8_t BattleDisplay::kALLY_HEALTH_H = 18;
+const uint8_t BattleDisplay::kALLY_HEALTH_TRIANGLE = 9;
+const uint8_t BattleDisplay::kALLY_HEALTH_W = 132;
+const uint16_t BattleDisplay::kALLY_HEIGHT = 70;
+const uint8_t BattleDisplay::kALLY_QD_H = 12;
+const uint8_t BattleDisplay::kALLY_QD_OFFSET = 3;
+const uint8_t BattleDisplay::kALLY_QD_TRIANGLE = 6;
+const uint8_t BattleDisplay::kALLY_QD_W = 94;
+const uint16_t BattleDisplay::kBIGBAR_OFFSET = 88;
+const uint8_t BattleDisplay::kCOLOR_BASE = 150;
 const uint8_t BattleDisplay::kINFO_BORDER = 2;
 const uint8_t BattleDisplay::kINFO_GREY = 200;
 const uint16_t BattleDisplay::kINFO_H = 50;
 const uint8_t BattleDisplay::kINFO_OPACITY = 166;
 const uint8_t BattleDisplay::kINFO_TRIANGLE = 6;
 const uint16_t BattleDisplay::kINFO_W = 180;
-const uint16_t BattleDisplay::kFOES_BAR = 12;
+const uint8_t BattleDisplay::kFOE_BAR_H = 8;
+const uint8_t BattleDisplay::kFOE_BAR_OFFSET = 2;
+const uint8_t BattleDisplay::kFOE_BAR_TRIANGLE = 5;
+const uint16_t BattleDisplay::kFOE_BAR_W = 126;
+const uint16_t BattleDisplay::kFOES_BAR_GAP = 12;
 const uint16_t BattleDisplay::kFOES_OFFSET = 94;
 const uint16_t BattleDisplay::kFRIENDS_OFFSET = 328;
+const uint8_t BattleDisplay::kMAX_CHARS = 5;
 const uint8_t BattleDisplay::kMAX_LAYERS = 10;
 const uint16_t BattleDisplay::kPERSON_SPREAD = 200;
 const uint16_t BattleDisplay::kPERSON_WIDTH = 256;
@@ -45,7 +59,7 @@ BattleDisplay::BattleDisplay(Options* running_config)
   bar_offset = 0;
   battle = NULL;
   battle_bar = NULL;
-  enemy_bar = NULL;
+  foes_backdrop = NULL;
   font_header = NULL;
   font_subheader = NULL;
   offset = 0; // TODO: Delete
@@ -70,9 +84,9 @@ BattleDisplay::~BattleDisplay()
  *============================================================================*/
 
 // TODO: Comment
-Frame* BattleDisplay::createBattleInfoBar(SDL_Renderer* renderer)
+void BattleDisplay::createFoeBackdrop(SDL_Renderer* renderer)
 {
-  // TODO: Make const
+  /* Sizing variables */
   uint16_t width = kINFO_W;
   uint16_t height = kINFO_H;
   uint8_t black_opacity = kINFO_OPACITY;
@@ -173,7 +187,82 @@ Frame* BattleDisplay::createBattleInfoBar(SDL_Renderer* renderer)
   /* Finalize the frame */
   SDL_SetRenderTarget(renderer, NULL);
   rendered_frame->setTexture(texture);
-  return rendered_frame;
+  foes_backdrop = rendered_frame;
+}
+
+// TODO: Comment
+bool BattleDisplay::createFoeInfo(Person* foe, uint8_t index, 
+                                  SDL_Renderer* renderer)
+{
+  /* Sizing variables */
+  uint16_t bar_width = kFOE_BAR_W;
+  uint8_t bar_triangle_width = kFOE_BAR_TRIANGLE;
+  uint8_t bar_height = kFOE_BAR_H;
+  uint8_t bar_offset = kFOE_BAR_OFFSET;
+
+  /* Only can be added if within proper battle range */
+  if(index < kMAX_CHARS)
+  {
+    /* Wipe out the existing data, if rendered */
+    if(foes_info.size() > index && foes_info[index] != NULL)
+    {
+      delete foes_info[index];
+      foes_info[index] = NULL;
+    }
+
+    /* Create rendering texture */
+    SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                                             SDL_TEXTUREACCESS_TARGET, 
+                                             kINFO_W, kINFO_H);
+    SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderTarget(renderer, texture);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_RenderClear(renderer);
+
+    /* Render the health bar border */
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_Point border[5];
+    border[0].x = (kINFO_W - bar_width) / 2;
+    border[0].y = (kINFO_H - bar_height) / 2 + bar_offset;
+    border[1].x = border[0].x + bar_width + bar_triangle_width;
+    border[1].y = border[0].y;
+    border[2].x = border[1].x - bar_triangle_width;
+    border[2].y = border[1].y + bar_height;
+    border[3].x = border[2].x - bar_width - bar_triangle_width;
+    border[3].y = border[2].y;
+    border[4].x = border[0].x;
+    border[4].y = border[0].y;
+    SDL_RenderDrawLines(renderer, border, 5);
+
+    /* Render the enemy name */
+    SDL_Color color = {255, 255, 255, 255};
+    Text* t = new Text(font_header);
+    t->setText(renderer, foe->getName(), color);
+    t->render(renderer, (kINFO_W - t->getWidth()) / 2, 
+                        (border[0].y - t->getHeight()) / 2);
+    delete t;
+
+    /* Render the enemy level */
+    t = new Text(font_subheader);
+    t->setText(renderer, "Level " + std::to_string(foe->getLevel()), color);
+    t->render(renderer, (kINFO_W - t->getWidth()) / 2, 
+              border[0].y + bar_height + 
+              (kINFO_H - border[0].y - bar_height - t->getHeight()) / 2);
+    delete t;
+
+    /* Set the new frame */
+    Frame* null_frame = NULL;
+    while(foes_info.size() <= index)
+      foes_info.push_back(null_frame);
+    foes_info[index] = new Frame();
+    foes_info[index]->setTexture(texture);
+
+    /* Clear render connection */
+    SDL_SetRenderTarget(renderer, NULL);
+
+    return true;
+  }
+  return false;
 }
 
 /*
@@ -193,7 +282,8 @@ bool BattleDisplay::createFonts()
   {
     /* Try and create the new fonts */
     TTF_Font* subheader_font = Text::createFont(system_options->getBasePath() + 
-                                                system_options->getFont(), 13);
+                                                system_options->getFont(), 13,
+                                                TTF_STYLE_BOLD);
     TTF_Font* header_font = Text::createFont(system_options->getBasePath() + 
                                              system_options->getFont(), 
                                              16, TTF_STYLE_BOLD);
@@ -218,6 +308,120 @@ bool BattleDisplay::createFonts()
   }
 
   return success;
+}
+
+/* Generates info for friends in battle */
+// TODO: Comment
+bool BattleDisplay::createFriendInfo(Person* ally, uint8_t index, 
+                                     SDL_Renderer* renderer)
+{
+  /* Sizing variables */
+  uint8_t health_height = kALLY_HEALTH_H;
+  uint8_t health_triangle = kALLY_HEALTH_TRIANGLE;
+  uint8_t health_width = kALLY_HEALTH_W;
+  uint16_t height = kALLY_HEIGHT;
+  uint8_t qd_height = kALLY_QD_H;
+  uint8_t qd_offset = kALLY_QD_OFFSET;
+  uint8_t qd_triangle = kALLY_QD_TRIANGLE;
+  uint8_t qd_width = kALLY_QD_W;
+  uint16_t width = kINFO_W;
+
+  /* Only can be added if within proper battle range */
+  if(index < kMAX_CHARS)
+  {
+    /* Wipe out the existing data, if rendered */
+    if(friends_info.size() > index && friends_info[index] != NULL)
+    {
+      delete friends_info[index];
+      friends_info[index] = NULL;
+    }
+
+    /* Create rendering texture */
+    SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                                             SDL_TEXTUREACCESS_TARGET, 
+                                             width, height);
+    SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderTarget(renderer, texture);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_RenderClear(renderer);
+    
+    /* Render background of health Bar */
+//    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+//    uint8_t qd_x = border[0].x + health_width - qd_offset - 
+//                   qd_triangle - qd_width;
+//    uint8_t qd_y = border[0].y + health_height - (qd_height / 2);
+//    Frame::renderBar(qd_x, qd_y, qd_width + qd_triangle, qd_height, 
+//                    (float)qd_triangle / qd_height, renderer);
+    
+    /* Render the health bar border */
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_Point border[5];
+    border[0].x = (width - health_width) / 2;
+    border[0].y = (height - health_height) / 2;
+    border[1].x = border[0].x + health_width + health_triangle;
+    border[1].y = border[0].y;
+    border[2].x = border[1].x - health_triangle;
+    border[2].y = border[1].y + health_height;
+    border[3].x = border[2].x - health_width - health_triangle;
+    border[3].y = border[2].y;
+    border[4].x = border[0].x;
+    border[4].y = border[0].y;
+    SDL_RenderDrawLines(renderer, border, 5);
+
+    /* Render background of QD Bar */
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    uint8_t qd_x = border[0].x + health_width - qd_offset - 
+                   qd_triangle - qd_width;
+    uint8_t qd_y = border[0].y + health_height - (qd_height / 2);
+    Frame::renderBar(qd_x, qd_y, qd_width + qd_triangle, qd_height, 
+                    (float)qd_triangle / qd_height, renderer);
+
+    /* Render the ally name */
+    SDL_Color color = {255, 255, 255, 255};
+    Text* t = new Text(font_header);
+    t->setText(renderer, ally->getName(), color);
+    t->render(renderer, (width - t->getWidth()) / 2, 
+              (border[0].y - t->getHeight()) / 2);
+    delete t;
+
+    /* Render the ally level */
+    t = new Text(font_subheader);
+    t->setText(renderer, "Level " + std::to_string(ally->getLevel()), color);
+    t->render(renderer, (width - t->getWidth()) / 2, 
+              border[0].y + health_height + qd_height / 2 + 
+              (height - border[0].y - health_height - qd_height / 2 - 
+               t->getHeight()) / 2);
+    delete t;
+
+    /* Set the new frame */
+    Frame* null_frame = NULL;
+    while(friends_info.size() <= index)
+      friends_info.push_back(null_frame);
+    friends_info[index] = new Frame();
+    friends_info[index]->setTexture(texture);
+
+    /* Clear render connection */
+    SDL_SetRenderTarget(renderer, NULL);
+
+    return true;
+  }
+  return false;
+}
+
+// TODO: Comment
+void BattleDisplay::deleteBattleInfo()
+{
+  /* Foes bar info */
+  for(uint16_t i = 0; i < foes_info.size(); i++)
+    if(foes_info[i] != NULL)
+      delete foes_info[i];
+  foes_info.clear();
+
+  /* Friends bar info */
+  for(uint16_t i = 0; i < friends_info.size(); i++)
+    if(friends_info[i] != NULL)
+      delete friends_info[i];
+  friends_info.clear();
 }
 
 /*
@@ -320,7 +524,7 @@ bool BattleDisplay::renderBar(SDL_Renderer* renderer, uint16_t screen_width,
   if(battle_bar != NULL)
   {
     success &= battle_bar->render(renderer, 0, 
-                                  screen_height - kBAR_OFFSET - bar_offset,
+                                  screen_height - kBIGBAR_OFFSET - bar_offset,
                                   screen_width);
 
     // TODO: Implementation - the actual battle information
@@ -363,20 +567,18 @@ bool BattleDisplay::renderFoes(SDL_Renderer* renderer, uint16_t screen_width)
 }
 
 // TODO: Comment
-bool BattleDisplay::renderFoesBars(SDL_Renderer* renderer, 
+bool BattleDisplay::renderFoesInfo(SDL_Renderer* renderer, 
                                    uint16_t screen_width)
 {
   std::vector<Person*> foes_list = getFoes();
   bool success = true;
 
   /* Render the box */
-  uint16_t bar_width = enemy_bar->getWidth();
-  uint16_t bar_height = enemy_bar->getHeight();
-  uint16_t y = kFOES_OFFSET - kFOES_BAR - bar_height;
+  uint16_t y = kFOES_OFFSET - kFOES_BAR_GAP - foes_backdrop->getHeight();
   uint8_t index = 0;
   for(uint8_t i = 0; i < foes_list.size(); i++)
   {
-    if(foes_list[i] != NULL)
+    if(foes_list[i] != NULL && foes_info.size() > i && foes_info[i] != NULL)
     {
       /* Modify index for 1 and 2 flip around */
       if(i == 0)
@@ -388,52 +590,24 @@ bool BattleDisplay::renderFoesBars(SDL_Renderer* renderer,
       
       /* Render the frame */
       uint16_t x = screen_width - kPERSON_WIDTH - (index) * kPERSON_SPREAD;
-      success &= enemy_bar->render(renderer, x, y);
+      success &= foes_backdrop->render(renderer, x, y);
 
       /* Render the health bar */
-      uint16_t b_width = 126; // TODO: Const
-      uint16_t bt_width = 5; // TODO: Const
-      uint16_t b_height = 10; // TODO: Const
-      uint16_t bar_x = x + bar_width / 2 - b_width / 2;
-      uint16_t bar_y = y + bar_height / 2 - b_height / 2 + 2;
-      SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-      Frame::renderBar(bar_x, bar_y,
-                    (b_width + bt_width) * foes_list[i]->getVitaPercent() / 100, 
-                    b_height, (float)bt_width / b_height, renderer);
+      float health_percent = foes_list[i]->getVitaPercent() / 100.0;
+      if(health_percent >= 0.5)
+        SDL_SetRenderDrawColor(renderer, kCOLOR_BASE * ((1-health_percent) * 2), 
+                               kCOLOR_BASE, 0, 255);
+      else
+        SDL_SetRenderDrawColor(renderer, kCOLOR_BASE, 
+                               kCOLOR_BASE * health_percent * 2, 0, 255);
+      Frame::renderBar(x + (kINFO_W - kFOE_BAR_W) / 2 + 1, 
+                       y + (kINFO_H - kFOE_BAR_H) / 2 + kFOE_BAR_OFFSET,
+                       (kFOE_BAR_W + kFOE_BAR_TRIANGLE) * health_percent, 
+                       kFOE_BAR_H, 
+                       (float)kFOE_BAR_TRIANGLE / kFOE_BAR_H, renderer);
 
-      // TODO: Clean up. Put in own class rendered to frame
-      /* Render the health bar border */
-      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-      SDL_Point border[5];
-      border[0].x = bar_x;
-      border[0].y = bar_y;
-      border[1].x = border[0].x + b_width + bt_width;
-      border[1].y = border[0].y;
-      border[2].x = border[1].x - bt_width;
-      border[2].y = border[1].y + b_height;
-      border[3].x = border[2].x - b_width - bt_width;
-      border[3].y = border[2].y;
-      border[4].x = border[0].x;
-      border[4].y = border[0].y;
-      SDL_RenderDrawLines(renderer, border, 5);
-
-      /* Render the enemy bar text */
-      SDL_Color color = {255, 255, 255, 255};
-      Text* t = new Text(font_header);
-      t->setText(renderer, foes_list[i]->getName(), color);
-      uint16_t diff_x = (bar_width - t->getWidth()) / 2;
-      uint16_t diff_y = ((bar_y - y) - t->getHeight()) / 2;
-      t->render(renderer, x + diff_x, y + diff_y);
-      delete t;
-
-      t = new Text(font_subheader);
-      t->setText(renderer, "Level " + std::to_string(foes_list[i]->getLevel()), 
-                 color);
-      t->render(renderer, 0, 0);
-      diff_x = (bar_width - t->getWidth()) / 2;
-      diff_y = (bar_height - (bar_y - y) - b_height - t->getHeight()) / 2;
-      t->render(renderer, x + diff_x, bar_y + b_height + diff_y);
-      delete t;
+      /* Render foe info */
+      foes_info[i]->render(renderer, x, y);
     }
   }
 
@@ -469,6 +643,96 @@ bool BattleDisplay::renderFriends(SDL_Renderer* renderer,
     }
   }
   
+  return success;
+}
+
+// TODO: Comment
+bool BattleDisplay::renderFriendsInfo(SDL_Renderer* renderer, 
+                                      uint16_t screen_height)
+{
+  /* Get people */
+  std::vector<Person*> friends_list = getFriends();
+  bool success = true;
+
+  /* Render the box */
+  uint16_t y = screen_height - kALLY_HEIGHT;
+  uint8_t index = 0;
+  for(uint8_t i = 0; i < friends_list.size(); i++)
+  {
+    if(friends_list[i] != NULL && friends_info.size() > i && 
+       friends_info[i] != NULL)
+    {
+      /* Modify index for 1 and 2 flip around */
+      if(i == 0)
+        index = 1;
+      else if(i == 1)
+        index = 0;
+      else
+        index = i;
+
+      /* Render the frame */
+      uint16_t x = (index * kPERSON_SPREAD) + (kPERSON_WIDTH - kINFO_W) / 2;
+
+      /* Render the health bar */
+      float health_percent = friends_list[i]->getVitaPercent() / 100.0;
+      if(health_percent >= 0.5)
+        SDL_SetRenderDrawColor(renderer, kCOLOR_BASE * ((1-health_percent) * 2), 
+                               kCOLOR_BASE, 0, 255);
+      else
+        SDL_SetRenderDrawColor(renderer, kCOLOR_BASE, 
+                               kCOLOR_BASE * health_percent * 2, 0, 255);
+      uint16_t health_x = x + (kINFO_W - kALLY_HEALTH_W) / 2;
+      uint16_t health_y = y + (kALLY_HEIGHT - kALLY_HEALTH_H) / 2;
+      Frame::renderBar(health_x, health_y, 
+                       (kALLY_HEALTH_W + kALLY_HEALTH_TRIANGLE) * 
+                        health_percent, kALLY_HEALTH_H, 
+                       (float)kALLY_HEALTH_TRIANGLE / kALLY_HEALTH_H, renderer);
+
+      /* Render friends info */
+      friends_info[i]->render(renderer, x, y);
+    
+      /* Render the qd bar */
+      float qd_percent = friends_list[i]->getQDPercent() / 100.0;
+      SDL_SetRenderDrawColor(renderer, 58, 170, 198, 255);
+      uint16_t qd_x = health_x + kALLY_HEALTH_W - kALLY_QD_OFFSET -  
+                      kALLY_QD_TRIANGLE - kALLY_QD_W;
+      uint16_t qd_y = health_y + kALLY_HEALTH_H - (kALLY_QD_H / 2);
+      Frame::renderBar(qd_x, qd_y, 
+                      (kALLY_QD_W + kALLY_QD_TRIANGLE) * qd_percent, kALLY_QD_H, 
+                      (float)kALLY_QD_TRIANGLE / kALLY_QD_H, renderer);
+
+      /* Render the qd bar border */
+      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+      SDL_Point border[5];
+      border[0].x = qd_x;
+      border[0].y = qd_y;
+      border[1].x = border[0].x + kALLY_QD_W + kALLY_QD_TRIANGLE;
+      border[1].y = border[0].y;
+      border[2].x = border[1].x - kALLY_QD_TRIANGLE;
+      border[2].y = border[1].y + kALLY_QD_H;
+      border[3].x = border[2].x - kALLY_QD_W - kALLY_QD_TRIANGLE;
+      border[3].y = border[2].y;
+      border[4].x = border[0].x;
+      border[4].y = border[0].y;
+      SDL_RenderDrawLines(renderer, border, 5);
+
+      // QTDR
+
+      /* Health Text Amount */
+      AttributeSet set = friends_list[i]->getCurr();
+      SDL_Color color = {255, 255, 255, 255};
+      Text* t = new Text(font_subheader);
+      t->setText(renderer, std::to_string(set.getStat("VITA")), color);
+      t->render(renderer, health_x + (kALLY_HEALTH_W - t->getWidth()) / 2,  
+                health_y);
+
+      /* QD Text Amount */
+      t->setText(renderer, std::to_string(set.getStat("QTDR")), color);
+      t->render(renderer, qd_x + (kALLY_QD_W - t->getWidth()) / 2, qd_y);
+      delete t;
+    }
+  }
+
   return success;
 }
 
@@ -547,17 +811,17 @@ void BattleDisplay::clear()
   /* Clears variables */
   system_options = NULL;
 
-  /* Deletes internal pointers, if set */
-  if(enemy_bar != NULL)
-    delete enemy_bar;
-  enemy_bar = NULL;
-
   /* Unsets the flat rendering sprites */
   unsetBackground();
   unsetBattle();
   unsetBattleBar();
   unsetMidlays();
   unsetOverlays();
+
+  /* Deletes internal pointers, if set */
+  if(foes_backdrop != NULL)
+    delete foes_backdrop;
+  foes_backdrop = NULL;
 }
 
 /* Get the background */
@@ -658,14 +922,15 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
 
     /* Render player team */
     success &= renderFriends(renderer, height);
-
-    /* Render enemy info bars */
-    if(enemy_bar == NULL)
-      enemy_bar = createBattleInfoBar(renderer);
-    success &= renderFoesBars(renderer, width);
+    
+    /* Render enemy information */
+    success &= renderFoesInfo(renderer, width);
 
     /* Render battle bar (on bottom) */
     renderBar(renderer, width, height);
+
+    /* Render friend information */
+    success &= renderFriendsInfo(renderer, height);
 
     // TODO: Render extra battle flair
 
@@ -691,16 +956,36 @@ bool BattleDisplay::setBackground(Sprite* background)
 
 /* Sets the battle connected to the display */
 // TODO: Comment
-bool BattleDisplay::setBattle(Battle* battle)
+bool BattleDisplay::setBattle(Battle* battle, SDL_Renderer* renderer)
 {
-  if(battle != NULL)
+  bool success = true;
+
+  if(battle != NULL && renderer != NULL && system_options != NULL)
   {
     this->battle = battle;
-    return true;
+
+    /* Generate foes bar if it doesn't exist */
+    if(foes_backdrop == NULL)
+      createFoeBackdrop(renderer);
+
+    /* Generate foes info */
+    std::vector<Person*> foes_list = getFoes();
+    for(uint8_t i = 0; i < foes_list.size(); i++)
+      if(foes_list[i] != NULL)
+        success &= createFoeInfo(foes_list[i], i, renderer);
+   
+    /* Generate friends info */
+    std::vector<Person*> friends_list = getFriends();
+    for(uint8_t i = 0; i < friends_list.size(); i++)
+      if(friends_list[i] != NULL)
+        success &= createFriendInfo(friends_list[i], i, renderer);
+
+    return success;
   }
+
   return false;
 }
-  
+
 /* Sets the rendering battle bar */
 // TODO: Comment
 bool BattleDisplay::setBattleBar(Frame* bar)
@@ -769,6 +1054,10 @@ void BattleDisplay::unsetBackground()
 // TODO: Comment
 void BattleDisplay::unsetBattle()
 {
+  /* Clean up of class set information */
+  if(battle != NULL)
+    deleteBattleInfo();
+
   battle = NULL;
 }
   
