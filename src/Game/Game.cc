@@ -385,14 +385,14 @@ void Game::setupBattle()
   alter_actions[2]->print(true, true);
   alter_actions[6]->print(true, true);
 
-  Skill* poison = new Skill(140, "Poison", ActionScope::ONE_TARGET,
-    inflict_actions[0], 100, 10);
+  // Skill* poison = new Skill(140, "Poison", ActionScope::ONE_TARGET,
+  //   inflict_actions[0], 100, 10);
 
-  Skill* burn = new Skill(141, "Burn", ActionScope::ONE_TARGET,
-    inflict_actions[1], 100, 10);
+  // Skill* burn = new Skill(141, "Burn", ActionScope::ONE_TARGET,
+  //   inflict_actions[1], 100, 10);
 
-  Skill* scald = new Skill(142, "Scald", ActionScope::ONE_TARGET,
-    inflict_actions[2], 100, 10);
+  // Skill* scald = new Skill(142, "Scald", ActionScope::ONE_TARGET,
+  //   inflict_actions[2], 100, 10);
 
   Skill* charr = new Skill(143, "Charr", ActionScope::ONE_TARGET,
     inflict_actions[3], 100, 10);

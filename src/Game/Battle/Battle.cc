@@ -2753,14 +2753,17 @@ bool Battle::updatePersonDeath(const DamageType &damage_type)
 
   /* If a guard dies, the remaining targets must revert back to the guardee */
   if (damage_type == DamageType::GUARD)
-  {
     action_buffer->rejectGuardTargets(curr_target);
-  }
 
   /* Remove ailments which are cured upon death */
   for (auto& ailment : ailments)
     if (ailment->getVictim() == curr_target)
       removeAilment(ailment);
+
+  /* Enable all skills corner case (silence cure on death) */
+  auto skills =  curr_target->getCurrSkills();
+  for (size_t i = 0; i < skills->getSize(); i++)
+    skills->setState(i, true);
 
   return updatePartyDeaths();
 }
@@ -3289,9 +3292,9 @@ void Battle::printPersonState(Person* const member,
               << " [ Lv. " << member->getLevel() << " ] << \n" 
               << "VITA: " << member->getCurr().getStat(0) << "/" 
               << member->getTemp().getStat(0) << " [" 
-              << member->getVitaPercent() << "%]\n" << "QTDR: " 
+              << std::floor(member->getVitaPercent() * 100) << "%]\n" << "QTDR: " 
               << member->getCurr().getStat(1) << "/"
-              << member->getTemp().getStat(1) << " [" << member->getQDPercent()
+              << member->getTemp().getStat(1) << " [" << std::floor(member->getQDPercent() * 100)
               << "%]\nILLS: ";
     auto person_ailments = getPersonAilments(member);
 

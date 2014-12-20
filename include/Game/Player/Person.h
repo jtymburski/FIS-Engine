@@ -338,10 +338,10 @@ public:
   AIModule* getAI();
 
   /* Returns the real % QD value of the maximum QD */
-  uint16_t getQDPercent();
+  float getQDPercent();
 
   /* Returns the real % VITA value of the maximum VITA */
-  uint16_t getVitaPercent();
+  float getVitaPercent();
 
   /* Find the true cost for a Skill to the Person's QD */
   int16_t getTrueCost(Skill* test_skill);
