@@ -1145,6 +1145,82 @@ bool Game::render(SDL_Renderer* renderer)
         base_path + "sprites/Battle/Backs/sarkova0.png", renderer));
     getPerson(304)->setSprites(new Frame(
         base_path + "sprites/Battle/Backs/subleezer0.png", renderer));
+
+    /* Set the ailments */
+    battle_display->setAilment(Infliction::POISON, 
+        base_path + "sprites/Battle/Ailments/Poison_AA_A00.png", renderer);
+    battle_display->setAilment(Infliction::BURN, 
+        base_path + "sprites/Battle/Ailments/Burn01_AA_A00.png", renderer);
+    battle_display->setAilment(Infliction::SCALD, 
+        base_path + "sprites/Battle/Ailments/Burn02_AA_A00.png", renderer);
+    battle_display->setAilment(Infliction::CHARR, 
+        base_path + "sprites/Battle/Ailments/Burn03_AA_A00.png", renderer);
+    battle_display->setAilment(Infliction::BERSERK, 
+        base_path + "sprites/Battle/Ailments/Berserk_AA_A00.png", renderer);
+    battle_display->setAilment(Infliction::CONFUSE, 
+        base_path + "sprites/Battle/Ailments/Confused_AA_A00.png", renderer);
+    battle_display->setAilment(Infliction::SILENCE, 
+        base_path + "sprites/Battle/Ailments/Silence_AA_A00.png", renderer);
+    battle_display->setAilment(Infliction::BUBBIFY, 
+        base_path + "sprites/Battle/Ailments/Bubbified_AA_A00.png", renderer);
+    battle_display->setAilment(Infliction::DEATHTIMER, 
+        base_path + "sprites/Battle/Ailments/DeathTimer_AA_A00.png", renderer);
+    battle_display->setAilment(Infliction::PARALYSIS, 
+        base_path + "sprites/Battle/Ailments/Paralysis_AA_A00.png", renderer);
+    battle_display->setAilment(Infliction::BLINDNESS, 
+        base_path + "sprites/Battle/Ailments/Blind_AA_A00.png", renderer);
+    battle_display->setAilment(Infliction::DREADSTRUCK, 
+        base_path + "sprites/Battle/Ailments/DreadStruck_AA_A00.png", renderer);
+    battle_display->setAilment(Infliction::DREAMSNARE, 
+        base_path + "sprites/Battle/Ailments/DreamSnare_AA_A00.png", renderer);
+    battle_display->setAilment(Infliction::HELLBOUND, 
+        base_path + "sprites/Battle/Ailments/HellBound_AA_A00.png", renderer);
+    battle_display->setAilment(Infliction::BOND, 
+        base_path + "sprites/Battle/Ailments/Bond02_AA_A00.png", renderer);
+    battle_display->setAilment(Infliction::BONDED, 
+        base_path + "sprites/Battle/Ailments/Bond01_AA_A00.png", renderer);
+    battle_display->setAilment(Infliction::ALLATKBUFF, 
+        base_path + "sprites/Battle/Ailments/_placeholder.png", renderer);
+    battle_display->setAilment(Infliction::ALLDEFBUFF, 
+        base_path + "sprites/Battle/Ailments/_placeholder.png", renderer);
+    battle_display->setAilment(Infliction::PHYBUFF, 
+        base_path + "sprites/Battle/Ailments/_placeholder.png", renderer);
+    battle_display->setAilment(Infliction::THRBUFF, 
+        base_path + "sprites/Battle/Ailments/_placeholder.png", renderer);
+    battle_display->setAilment(Infliction::POLBUFF, 
+        base_path + "sprites/Battle/Ailments/_placeholder.png", renderer);
+    battle_display->setAilment(Infliction::PRIBUFF, 
+        base_path + "sprites/Battle/Ailments/_placeholder.png", renderer);
+    battle_display->setAilment(Infliction::CHGBUFF, 
+        base_path + "sprites/Battle/Ailments/_placeholder.png", renderer);
+    battle_display->setAilment(Infliction::CYBBUFF, 
+        base_path + "sprites/Battle/Ailments/_placeholder.png", renderer);
+    battle_display->setAilment(Infliction::NIHBUFF, 
+        base_path + "sprites/Battle/Ailments/_placeholder.png", renderer);
+    battle_display->setAilment(Infliction::LIMBUFF, 
+        base_path + "sprites/Battle/Ailments/_placeholder.png", renderer);
+    battle_display->setAilment(Infliction::UNBBUFF, 
+        base_path + "sprites/Battle/Ailments/_placeholder.png", renderer);
+    battle_display->setAilment(Infliction::VITBUFF, 
+        base_path + "sprites/Battle/Ailments/_placeholder.png", renderer);
+    battle_display->setAilment(Infliction::QDBUFF, 
+        base_path + "sprites/Battle/Ailments/_placeholder.png", renderer);
+    battle_display->setAilment(Infliction::ROOTBOUND, 
+        base_path + "sprites/Battle/Ailments/RootBound_AA_A00.png", renderer);
+    battle_display->setAilment(Infliction::DOUBLECAST, 
+        base_path + "sprites/Battle/Ailments/DoubleCast_AA_A00.png", renderer);
+    battle_display->setAilment(Infliction::TRIPLECAST, 
+        base_path + "sprites/Battle/Ailments/TripleCast_AA_A00.png", renderer);
+    battle_display->setAilment(Infliction::HALFCOST, 
+        base_path + "sprites/Battle/Ailments/HalfCost_AA_A00.png", renderer);
+    battle_display->setAilment(Infliction::REFLECT, 
+        base_path + "sprites/Battle/Ailments/Reflect_AA_A00.png", renderer);
+    battle_display->setAilment(Infliction::HIBERNATION, 
+        base_path + "sprites/Battle/Ailments/Hibernation_AA_A00.png", renderer);
+    battle_display->setAilment(Infliction::CURSE, 
+        base_path + "sprites/Battle/Ailments/Curse_AA_A00.png", renderer);
+    battle_display->setAilment(Infliction::METATETHER, 
+        base_path + "sprites/Battle/Ailments/MetaTether_AA_A00.png", renderer);
   }
 
   /* Map initialization location */

@@ -36,6 +36,9 @@ private:
   uint16_t offset;
   uint16_t offset_2;
 
+  /* Ailment frames */
+  std::vector<Frame> ailments;
+
   /* Background sprite */
   Sprite* background;
   
@@ -168,6 +171,9 @@ public:
   /* Clears the class data */
   void clear();
 
+  /* Returns the ailment frame */
+  Frame getAilment(Infliction ailment);
+
   /* Get the background */
   Sprite* getBackground();
 
@@ -184,6 +190,9 @@ public:
 
   /* Renders the battle display */
   bool render(SDL_Renderer* renderer);
+
+  /* Sets the ailment sprite */
+  bool setAilment(Infliction ailment, std::string path, SDL_Renderer* renderer);
 
   /* Sets the background sprite */
   bool setBackground(Sprite* background);

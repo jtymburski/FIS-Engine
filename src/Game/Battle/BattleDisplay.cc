@@ -68,6 +68,11 @@ BattleDisplay::BattleDisplay(Options* running_config)
 
   /* Set up variables */
   setConfiguration(running_config);
+
+  /* Grow the ailment frame vector to size */
+  Frame frame;
+  while(ailments.size() < static_cast<uint64_t>(Infliction::INVALID))
+    ailments.push_back(frame);
 }
 
 /*
@@ -592,18 +597,28 @@ bool BattleDisplay::renderFoesInfo(SDL_Renderer* renderer,
       uint16_t x = screen_width - kPERSON_WIDTH - (index) * kPERSON_SPREAD;
       success &= foes_backdrop->render(renderer, x, y);
 
-      /* Render the health bar */
-      float health_percent = foes_list[i]->getVitaPercent() / 100.0;
+      /* Calculate health bar amount and color */
+      float health_percent = foes_list[i]->getVitaPercent();
+      health_percent = health_percent > 1.0 ? 1.0 : health_percent;
       if(health_percent >= 0.5)
         SDL_SetRenderDrawColor(renderer, kCOLOR_BASE * ((1-health_percent) * 2), 
                                kCOLOR_BASE, 0, 255);
       else
         SDL_SetRenderDrawColor(renderer, kCOLOR_BASE, 
                                kCOLOR_BASE * health_percent * 2, 0, 255);
+
+      /* Calculate health bar render amount */
+      int health_amount = (kFOE_BAR_W + kFOE_BAR_TRIANGLE) * health_percent;
+      if(health_amount == 0 && health_percent > 0.0)
+        health_amount = 1;
+      else if(health_amount == (kFOE_BAR_W + kFOE_BAR_TRIANGLE) && 
+              health_percent < 1.0)
+        health_amount--;
+
+      /* Render health bar */
       Frame::renderBar(x + (kINFO_W - kFOE_BAR_W) / 2 + 1, 
                        y + (kINFO_H - kFOE_BAR_H) / 2 + kFOE_BAR_OFFSET,
-                       (kFOE_BAR_W + kFOE_BAR_TRIANGLE) * health_percent, 
-                       kFOE_BAR_H, 
+                       health_amount, kFOE_BAR_H, 
                        (float)kFOE_BAR_TRIANGLE / kFOE_BAR_H, renderer);
 
       /* Render foe info */
@@ -673,8 +688,9 @@ bool BattleDisplay::renderFriendsInfo(SDL_Renderer* renderer,
       /* Render the frame */
       uint16_t x = (index * kPERSON_SPREAD) + (kPERSON_WIDTH - kINFO_W) / 2;
 
-      /* Render the health bar */
-      float health_percent = friends_list[i]->getVitaPercent() / 100.0;
+      /* Calculate health bar amount and color */
+      float health_percent = friends_list[i]->getVitaPercent();
+      health_percent = health_percent > 1.0 ? 1.0 : health_percent;
       if(health_percent >= 0.5)
         SDL_SetRenderDrawColor(renderer, kCOLOR_BASE * ((1-health_percent) * 2), 
                                kCOLOR_BASE, 0, 255);
@@ -683,22 +699,40 @@ bool BattleDisplay::renderFriendsInfo(SDL_Renderer* renderer,
                                kCOLOR_BASE * health_percent * 2, 0, 255);
       uint16_t health_x = x + (kINFO_W - kALLY_HEALTH_W) / 2;
       uint16_t health_y = y + (kALLY_HEIGHT - kALLY_HEALTH_H) / 2;
-      Frame::renderBar(health_x, health_y, 
-                       (kALLY_HEALTH_W + kALLY_HEALTH_TRIANGLE) * 
-                        health_percent, kALLY_HEALTH_H, 
+
+      /* Calculate health bar render amount */
+      int health_amount = (kALLY_HEALTH_W + kALLY_HEALTH_TRIANGLE) * 
+                          health_percent;
+      if(health_amount == 0 && health_percent > 0.0)
+        health_amount = 1;
+      else if(health_amount == (kALLY_HEALTH_W + kALLY_HEALTH_TRIANGLE) && 
+              health_percent < 1.0)
+        health_amount--;
+
+      /* Render health bar */
+      Frame::renderBar(health_x, health_y, health_amount, kALLY_HEALTH_H, 
                        (float)kALLY_HEALTH_TRIANGLE / kALLY_HEALTH_H, renderer);
 
       /* Render friends info */
       friends_info[i]->render(renderer, x, y);
     
-      /* Render the qd bar */
-      float qd_percent = friends_list[i]->getQDPercent() / 100.0;
+      /* Calculate qd bar amount and color */
+      float qd_percent = friends_list[i]->getQDPercent();
       SDL_SetRenderDrawColor(renderer, 58, 170, 198, 255);
       uint16_t qd_x = health_x + kALLY_HEALTH_W - kALLY_QD_OFFSET -  
                       kALLY_QD_TRIANGLE - kALLY_QD_W;
       uint16_t qd_y = health_y + kALLY_HEALTH_H - (kALLY_QD_H / 2);
-      Frame::renderBar(qd_x, qd_y, 
-                      (kALLY_QD_W + kALLY_QD_TRIANGLE) * qd_percent, kALLY_QD_H, 
+
+      /* Calculate qd bar render amount */
+      int qd_amount = (kALLY_QD_W + kALLY_QD_TRIANGLE) * qd_percent;
+      if(qd_amount == 0 && qd_percent > 0.0)
+        qd_amount = 1;
+      else if(qd_amount == (kALLY_QD_W + kALLY_QD_TRIANGLE) && 
+              qd_percent < 1.0)
+        qd_amount--;
+
+      /* Render the qd bar */
+      Frame::renderBar(qd_x, qd_y, qd_amount, kALLY_QD_H, 
                       (float)kALLY_QD_TRIANGLE / kALLY_QD_H, renderer);
 
       /* Render the qd bar border */
@@ -824,6 +858,12 @@ void BattleDisplay::clear()
   foes_backdrop = NULL;
 }
 
+// TODO: Comment
+Frame BattleDisplay::getAilment(Infliction ailment)
+{
+  return ailments[static_cast<uint64_t>(ailment)];
+}
+
 /* Get the background */
 // TODO: Comment
 Sprite* BattleDisplay::getBackground()
@@ -938,6 +978,14 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
   }
 
   return false;
+}
+
+/* Sets the ailment sprite */
+// TODO: Comment
+bool BattleDisplay::setAilment(Infliction ailment, std::string path, 
+                               SDL_Renderer* renderer)
+{
+  return ailments[static_cast<uint64_t>(ailment)].setTexture(path, renderer);
 }
 
 /* Sets the background sprite */
