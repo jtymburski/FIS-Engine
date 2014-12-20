@@ -1545,7 +1545,7 @@ float Person::getQDPercent()
   auto curr_qd = getCurr().getStat(Attribute::QTDR);
   auto max_qd  = getTemp().getStat(Attribute::QTDR);
 
-  return (max_qd != 0) ? (curr_qd / max_qd) : (0);
+  return (max_qd != 0) ? (static_cast<float>(curr_qd) / max_qd) : (0);
 }
 
 /*
@@ -1559,7 +1559,7 @@ float Person::getVitaPercent()
   auto curr_vita = getCurr().getStat(Attribute::VITA);
   auto max_vita  = getTemp().getStat(Attribute::VITA);
   
-  return (max_vita != 0) ? (curr_vita / max_vita) : (0);
+  return (max_vita != 0) ? (static_cast<float>(curr_vita) / max_vita) : (0);
 }
 
 

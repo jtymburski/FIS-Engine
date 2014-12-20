@@ -298,7 +298,7 @@ void Game::setupBattle()
   inflict_actions.push_back(new Action("503,INFLICT,4.8,,,CHARR,AMOUNT.30,,VITA,90"));
   inflict_actions.push_back(new Action("504,INFLICT,4.4,,,BERSERK,AMOUNT.0,,VITA,95"));
   inflict_actions.push_back(new Action("505,INFLICT,2.3,,,CONFUSE,AMOUNT.50,,VITA,99"));
-  inflict_actions.push_back(new Action("506,INFLICT,3.6,,,SILENCE,AMOUNT.60,,VITA,99"));
+  inflict_actions.push_back(new Action("506,INFLICT,2.3,,,SILENCE,AMOUNT.60,,VITA,99"));
   // inflict_actions.push_back(new Action("507,INFLICT,4.8,,,BUBBIFY,AMOUNT.70,,VITA,99"));
 
   for(auto it = begin(damage_actions); it != end(damage_actions); ++it)

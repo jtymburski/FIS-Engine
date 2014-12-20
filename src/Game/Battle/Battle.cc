@@ -229,9 +229,15 @@ bool Battle::reCalcAilmentFlags(Person* target, Ailment* ail)
 {
   if (target != nullptr &&  ail != nullptr && ail->getVictim() == target)
   {
+    if (ail->getType() == Infliction::SILENCE)
+      std::cout << "ATTEMPTING TO UNAPPLYING SILENCE" << std::endl;
+
     /* Unapply the ailment (by the default effect) set to be removed */
     if (ail->getFlag(AilState::TO_UNAPPLY))
+    {
+      std::cout << "UNAPPLYING AN AILMENT" << std::endl;
       ail->unapply();
+    }
 
     /* For all other ailments inflicted upon the given target, iterate through
      * and recalculate the necessary flag and stats values */
