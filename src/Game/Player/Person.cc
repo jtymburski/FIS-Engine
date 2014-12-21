@@ -177,8 +177,6 @@ void Person::loadDefaults()
   
   first_person = nullptr;
   third_person = nullptr;
-  fp_bubbified_sprite = nullptr;
-  tp_bubbified_sprite = nullptr;
 }
 
 /*
@@ -262,8 +260,6 @@ void Person::setupClass()
 
     first_person = base_person->first_person;
     third_person = base_person->third_person;
-    fp_bubbified_sprite = base_person->fp_bubbified_sprite;
-    tp_bubbified_sprite = base_person->tp_bubbified_sprite;
   }
 }
 
@@ -919,8 +915,6 @@ void Person::print(const bool &simple, const bool &equips,
     std::cout << "To Next Lvl: " << findExpPerPC() << "\n";
     std::cout << "First Person? " << (first_person != nullptr) << "\n";
     std::cout << "Third Person? " << (third_person != nullptr) << "\n";
-    std::cout << "Fp Bubbified? " << (fp_bubbified_sprite != nullptr) << "\n";
-    std::cout << "Tp Bubbified? " << (tp_bubbified_sprite != nullptr) << "\n";
     std::cout << "VITA Regn: " << Helpers::regenRateToStr(getVitaRegenRate());
     std::cout << "\nQTDR Regn: " << Helpers::regenRateToStr(getQDRegenRate());
     std::cout << "\n\n";
@@ -1715,11 +1709,6 @@ SkillSet* Person::getUseableSkills()
 
       add_skill &= (skill_cost <= temp_max_stats.getStat(Attribute::QTDR));
 
-      /* Adjust for maximum allowable QD cost for being Bubbified */
-      if (getBFlag(BState::IS_BUBBY))
-        //TODO: Ailment::getMaxBubbyQD value [04-18-14]
-        add_skill &= (*it).skill->getCost() > 5;
-
       /* If the skill can still be added, push it to the useable elements */
       if (add_skill)
         useable_skills.push_back(*it);
@@ -2042,17 +2031,12 @@ bool Person::setLoot(const uint32_t &new_credit_drop,
  *
  * Inputs: new_fp - pointer to a first person sprite
  *         new_tp - pointer to a third person sprite
- *         new_fp_bubby - pointer to a first person Bubbified sprite
- *         new_tp_bubby - pointer to a third person Bubbified sprite
  * Output: none
  */
-void Person::setSprites(Frame* const new_fp, Frame* const new_tp,
-                        Frame* const new_fp_bubby, Frame* const new_tp_bubby)
+void Person::setSprites(Frame* const new_fp, Frame* const new_tp)
 {
   first_person = new_fp;
   third_person = new_tp;
-  fp_bubbified_sprite = new_fp_bubby;
-  tp_bubbified_sprite = new_tp_bubby;
 }
 
 /*=============================================================================

@@ -300,6 +300,19 @@ void Game::setupBattle()
   inflict_actions.push_back(new Action("505,INFLICT,2.3,,,CONFUSE,AMOUNT.50,,VITA,99"));
   inflict_actions.push_back(new Action("506,INFLICT,2.3,,,SILENCE,AMOUNT.60,,VITA,99"));
   inflict_actions.push_back(new Action("507,INFLICT,4.8,,,BUBBIFY,AMOUNT.70,,VITA,99"));
+  inflict_actions.push_back(new Action("508,INFLICT,2.5,,,ALLATKBUFF,AMOUNT.0,,VITA,99"));
+  inflict_actions.push_back(new Action("509,INFLICT,2.5,,,ALLDEFBUFF,AMOUNT.0,,VITA,99"));
+  inflict_actions.push_back(new Action("510,INFLICT,2.5,,,PHYBUFF,AMOUNT.0,,VITA,99"));
+  inflict_actions.push_back(new Action("511,INFLICT,2.5,,,THRBUFF,AMOUNT.0,,VITA,99"));
+  inflict_actions.push_back(new Action("512,INFLICT,2.5,,,POLBUFF,AMOUNT.0,,VITA,99"));
+  inflict_actions.push_back(new Action("513,INFLICT,2.5,,,PRIBUFF,AMOUNT.0,,VITA,99"));
+  inflict_actions.push_back(new Action("514,INFLICT,2.5,,,CHGBUFF,AMOUNT.0,,VITA,99"));
+  inflict_actions.push_back(new Action("515,INFLICT,2.5,,,CYBBUFF,AMOUNT.0,,VITA,99")); 
+  inflict_actions.push_back(new Action("516,INFLICT,2.5,,,NIHBUFF,AMOUNT.0,,VITA,99"));
+  inflict_actions.push_back(new Action("517,INFLICT,2.5,,,LIMBUFF,AMOUNT.0,,VITA,99"));
+  inflict_actions.push_back(new Action("518,INFLICT,2.5,,,UNBBUFF,AMOUNT.0,,VITA,99"));
+  inflict_actions.push_back(new Action("519,INFLICT,2.5,,,VITBUFF,AMOUNT.0,,VITA,99"));
+  inflict_actions.push_back(new Action("520,INFLICT,2.5,,,QDBUFF,AMOUNT.0,,VITA,99"));
 
   for(auto it = begin(damage_actions); it != end(damage_actions); ++it)
     std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
@@ -409,6 +422,15 @@ void Game::setupBattle()
   Skill* bubbinate = new Skill(147, "Bubbinate", ActionScope::ONE_TARGET,
     inflict_actions[7], 100, 10);
 
+  Skill* all_atk_buff = new Skill(148, "All Atk Buff", ActionScope::ONE_ALLY,
+    inflict_actions[8], 100, 10);
+
+  Skill* all_def_buff = new Skill(149, "All Def Buff", ActionScope::ONE_ALLY,
+    inflict_actions[9], 100, 10);
+
+  Skill* thermal_buff = new Skill(150, "Thermal Buff", ActionScope::ONE_ALLY,
+    inflict_actions[11], 100, 10);
+
   // Test Skill Sets
   SkillSet* physical_skills = new SkillSet(physical_01, 1);
   physical_skills->addSkill(physical_02, 1);
@@ -429,6 +451,9 @@ void Game::setupBattle()
   physical_skills->addSkill(confuse, 1);
   physical_skills->addSkill(silence, 1);
   physical_skills->addSkill(bubbinate, 1);
+  physical_skills->addSkill(all_atk_buff, 1);
+  physical_skills->addSkill(all_def_buff, 1);
+  physical_skills->addSkill(thermal_buff, 1);
 
   SkillSet* elemental_skills = new SkillSet(fire_01, 1);
 

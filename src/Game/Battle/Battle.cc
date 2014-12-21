@@ -193,6 +193,9 @@ Battle::~Battle()
 bool Battle::addAilment(Infliction infliction_type, Person* inflictor,
                         uint16_t min_turns, uint16_t max_turns, int32_t chance)
 {
+  curr_target->getCurr().print(false);
+  curr_target->getTemp().print(false);
+
   auto success     = false;
   auto new_ailment = new Ailment(curr_target, infliction_type, inflictor,
                          min_turns, max_turns, static_cast<float>(chance));
@@ -201,6 +204,10 @@ bool Battle::addAilment(Infliction infliction_type, Person* inflictor,
       new_ailment->getFlag(AilState::VICTIM_SET))
   {
     ailments.push_back(new_ailment);
+
+    if (new_ailment->getFlag(AilState::TO_APPLY))
+      new_ailment->apply();
+    
     success = true;
   }
   else
@@ -209,6 +216,9 @@ bool Battle::addAilment(Infliction infliction_type, Person* inflictor,
     new_ailment = nullptr;
     success     = false;
   }
+
+  curr_target->getCurr().print(false);
+  curr_target->getTemp().print(false);
 
   if (success && getBattleMode() == BattleMode::TEXT)
   {
@@ -2051,9 +2061,12 @@ bool Battle::processInflictAction()
   {
     /* If a person is about to be bubbified, their current ailments must be
      * removed */
-    for (auto ill : ailments)
-      if (ill->getVictim() == curr_target)
-        removeAilment(ill);
+    if (curr_action->getAilment() == Infliction::BUBBIFY)
+    {
+      for (auto ill : ailments)
+        if (ill->getVictim() == curr_target)
+          removeAilment(ill);
+    }
 
     addAilment(curr_action->getAilment(), curr_user, 
       curr_action->getMin(), curr_action->getMax(), curr_action->getBase());
@@ -2354,11 +2367,15 @@ void Battle::reCalcAilments(Person* const target)
 {
   (void)target; //TODO: [Warning]
 
-  auto base_max_stats = target->getCurrMax();
-  auto base_stats     = target->getCurr();
+  auto temp_vita = target->getCurr().getStat(0);
+  auto temp_qtdr = target->getCurr().getStat(1);
 
+  auto base_max_stats = target->getCurrMax();
+
+  target->setCurr(base_max_stats);
+  target->getCurr().setStat(0, temp_vita);
+  target->getCurr().setStat(1, temp_qtdr);
   target->setTemp(base_max_stats);
-  target->setCurr(base_stats);
 
   auto ills = getPersonAilments(target);
 

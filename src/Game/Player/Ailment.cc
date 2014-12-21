@@ -88,9 +88,9 @@ const double   Ailment::kPARALYSIS_PC        = 0.70;
 const double   Ailment::kBLIND_PC            = 0.50;
 const double   Ailment::kDREADSTRUCK_PC      = 0.75;
 const double   Ailment::kDREAMSNARE_PC       = 0.50;
-const double   Ailment::kALLBUFF_PC          = 1.05;
+const double   Ailment::kALLBUFF_PC          = 1.20;
 const double   Ailment::kPHYSBUFF_PC         = 1.08;
-const double   Ailment::kELMBUFF_PC          = 1.07;
+const double   Ailment::kELMBUFF_PC          = 1.15;
 const double   Ailment::kLIMBUFF_PC          = 1.10;
 const double   Ailment::kUNBBUFF_PC          = 1.05;
 const double   Ailment::kMOMBUFF_PC          = 1.01;
@@ -372,6 +372,7 @@ bool Ailment::apply()
   else if (getType() == Infliction::ALLATKBUFF)
   {
     setFlag(AilState::BUFF, true);
+    setFlag(AilState::TO_APPLY, false);
 
     for (uint32_t i = 2; i < stats.getSize(); i++)
       if (i % 2 == 0 && i < 16)
@@ -382,6 +383,7 @@ bool Ailment::apply()
   else if (getType() == Infliction::ALLDEFBUFF)
   {
     setFlag(AilState::BUFF, true);
+    setFlag(AilState::TO_APPLY, false);
     
     for (uint32_t i = 2; i < stats.getSize(); i++)
       if (i % 2 != 0 && i < 16)
@@ -391,64 +393,75 @@ bool Ailment::apply()
   else if (getType() == Infliction::PHYBUFF)
   {
     setFlag(AilState::BUFF, true);
+    setFlag(AilState::TO_APPLY, false);
     stats.setStat(2, stats.getStat(2) * kPHYSBUFF_PC);
     stats.setStat(3, stats.getStat(3) * kPHYSBUFF_PC);
   }
   else if (type == Infliction::THRBUFF)
   {
     setFlag(AilState::BUFF, true);
+    setFlag(AilState::TO_APPLY, false);
     stats.setStat(4, stats.getStat(4) * kELMBUFF_PC);
     stats.setStat(5, stats.getStat(5) * kELMBUFF_PC);
   }
   else if (type == Infliction::PRIBUFF)
   {
     setFlag(AilState::BUFF, true);
+    setFlag(AilState::TO_APPLY, false);
     stats.setStat(6, stats.getStat(6) * kELMBUFF_PC);
     stats.setStat(7, stats.getStat(7) * kELMBUFF_PC);
   }
   else if (type == Infliction::POLBUFF)
   {
     setFlag(AilState::BUFF, true);
+    setFlag(AilState::TO_APPLY, false);
     stats.setStat(8, stats.getStat(8) * kELMBUFF_PC);
     stats.setStat(9, stats.getStat(9) * kELMBUFF_PC);
   }
   else if (type == Infliction::CHGBUFF)
   {
     setFlag(AilState::BUFF, true);
+    setFlag(AilState::TO_APPLY, false);
     stats.setStat(10, stats.getStat(10) * kELMBUFF_PC);
     stats.setStat(11, stats.getStat(11) * kELMBUFF_PC);
   }
   else if (type == Infliction::CYBBUFF)
   {
     setFlag(AilState::BUFF, true);
+    setFlag(AilState::TO_APPLY, false);
     stats.setStat(12, stats.getStat(12) * kELMBUFF_PC);
     stats.setStat(13, stats.getStat(13) * kELMBUFF_PC);
   }
   else if (type == Infliction::NIHBUFF)
   {
     setFlag(AilState::BUFF, true);
+    setFlag(AilState::TO_APPLY, false);
     stats.setStat(14, stats.getStat(14) * kELMBUFF_PC);
     stats.setStat(15, stats.getStat(15) * kELMBUFF_PC);
   }
   else if (type == Infliction::UNBBUFF)
   {
     setFlag(AilState::BUFF, true);
+    setFlag(AilState::TO_APPLY, false);
     stats.setStat(18, stats.getStat(18) * kELMBUFF_PC);
   }
   else if (type == Infliction::LIMBUFF)
   {
     setFlag(AilState::BUFF, true);
+    setFlag(AilState::TO_APPLY, false);
     stats.setStat(17, stats.getStat(17) * kLIMBUFF_PC);
     stats.setStat(16, stats.getStat(16) * kLIMBUFF_PC);
   }
   else if (type == Infliction::VITBUFF)
   {
     setFlag(AilState::BUFF, true);
+    setFlag(AilState::TO_APPLY, false);
     max_stats.setStat(0, stats.getStat(0) * kVITBUFF_PC);
   }
   else if (type == Infliction::QDBUFF)
   {
     setFlag(AilState::BUFF, true);
+    setFlag(AilState::TO_APPLY, false);
     max_stats.setStat(1, stats.getStat(1) * kQDBUFF_PC);
   }
 
@@ -925,48 +938,6 @@ void Ailment::setFlag(const AilState &flags, const bool &set_value)
 {
   (set_value) ? (flag_set |= flags) : (flag_set &= ~flags);
 }
-
-/*
- * Description: Assigns a PersonState flag or flags to (a) given value(s)
- *
- * Inputs: Perosn* new_victim - Potential new victim of the status ailment.
- *         Person* new_inflictor -
- *         bool refresh_turns - Whether to reset the turn count
- * Output: Returns true if the new victim was set successfully.
- */
-// bool Ailment::setNewVictim(Person* new_victim, Person* new_inflictor,
-//                            const bool &refresh_turns)
-// {
-//   /* Boolean to do checks for assigning new victim */
-//   bool can_assign = true;
-
-//   /* Assert the new victim exists */
-//   can_assign &= !(new_victim == nullptr);
-
-//   if (can_assign)
-//   {
-//     /* The ailment cannot be assigned if the new victim is immune */
-//     can_assign &= !checkImmunity(new_victim);
-//     can_assign &=  getFlag(AilState::VICTIM_SET);
-//   }
-
-//   if (can_assign)
-//   {
-//     /* Reset the turns the ailment has occured */
-//     if (refresh_turns)
-//     {
-//       max_turns_left += turns_occured;
-//       turns_occured = 0;
-//     }
-
-//     setFlag(AilState::TO_APPLY);
-//     setVictim(new_victim);
-//     setInflictor(new_inflictor);
-//     update();
-//   }
-
-//   return can_assign;
-// }
 
 /*
  * Description: Update slot. This function will handle calling the

@@ -204,8 +204,6 @@ private:
   /* Frames for a Person */
   Frame* first_person;
   Frame* third_person;
-  Frame* fp_bubbified_sprite;
-  Frame* tp_bubbified_sprite;
 
   /* ------------ Static Private Members --------------- */
   static int id; /* Person unique ID counter */
@@ -498,9 +496,7 @@ public:
                const std::vector<uint32_t> &new_item_drops);
 
   /* Assigns the sprite pointers for the person */
-  void setSprites(Frame* const new_fp = nullptr, Frame* const new_tp = nullptr,
-                  Frame* const new_fp_bubby = nullptr, 
-                  Frame* const new_tp_bubby = nullptr);
+  void setSprites(Frame* const new_fp = nullptr, Frame* const new_tp = nullptr);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
