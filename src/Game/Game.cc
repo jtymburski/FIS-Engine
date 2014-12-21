@@ -344,7 +344,7 @@ void Game::setupBattle()
       damage_actions[8], 85, 5); 
   physical_04->setPrimary(Element::PHYSICAL);
 
-  Skill* fire_01 = new Skill(110, "Burninate The Countryside", ActionScope::ONE_ENEMY, 
+  Skill* fire_01 = new Skill(110, "Burninate The Countryside", ActionScope::ONE_PARTY, 
     damage_actions[8], 100, 5);
   fire_01->setPrimary(Element::FIRE);
   fire_01->setSecondary(Element::PHYSICAL);

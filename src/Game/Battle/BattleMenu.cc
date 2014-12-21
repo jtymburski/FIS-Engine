@@ -185,25 +185,26 @@ bool BattleMenu::addTarget(const int32_t &new_target)
  */
 bool BattleMenu::addPartyTargets(const int32_t &party_index)
 {
-  auto success = false;
-  auto original = valid_targets;
-  
-  for (auto it = begin(original); it != end(original); ++it)
-  {
+  selected_targets = getPartyTargets(party_index);
+
+  return true;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output: 
+ */
+std::vector<int32_t> BattleMenu::getPartyTargets(int32_t party_index)
+{
+  std::vector<int32_t> highlight_targets;
+
+  for (auto it = begin(valid_targets); it != end(valid_targets); ++it)
     if ((*it < 0 && party_index < 0) || (*it > 0 && party_index > 0))
-    {
-      auto jt = std::find(begin(valid_targets), end(valid_targets), *it);
-     
-      if (jt != end(valid_targets))
-        valid_targets.pop_back();
+      highlight_targets.push_back(*it);
 
-      selected_targets.push_back(*it);
-
-      success = true;
-    }
-  }
-
-  return success;
+  return highlight_targets;
 }
 
 /*
@@ -884,6 +885,113 @@ void BattleMenu::printTargets(const bool &print_selected)
   }
 }
 
+bool BattleMenu::isValidIndex(int32_t check_index)
+{
+  auto it = std::find(begin(valid_targets), end(valid_targets), check_index);
+  return it != end(valid_targets);
+}
+
+/*
+ * Description: 
+ *
+ * Inputs: none
+ * Output: none
+ */
+void BattleMenu::mostLeftIndex()
+{
+  if (person_index < 0)
+  {
+    if (isValidIndex(-5))
+      person_index = -5;
+    if (isValidIndex(-4))
+      person_index = -4;
+    if (isValidIndex(-3))
+      person_index = -3;
+    if (isValidIndex(-1))
+      person_index = -1;
+    if (isValidIndex(-2))
+      person_index = -2;
+  }
+  else
+  {
+    if (isValidIndex(2))
+     person_index = 2;
+    if (isValidIndex(1))
+      person_index = 1;
+    if (isValidIndex(3))
+      person_index = 3;
+    if (isValidIndex(4))
+      person_index = 4;
+    if (isValidIndex(5))
+      person_index = 5;
+  }
+
+  person_index = 0;
+}
+
+/*
+ * Description: 
+ *
+ * Inputs: none
+ * Output: none
+ */
+void BattleMenu::mostRightIndex()
+{
+  if (person_index < 0)
+  {
+    if (isValidIndex(-2))
+      person_index = -2;
+    else if (isValidIndex(-1))
+      person_index = -1;
+    else if (isValidIndex(-3))
+      person_index = -3;
+    else if (isValidIndex(-4))
+      person_index = -4;
+    else if (isValidIndex(-5))
+      person_index = -5;
+  }
+  else
+  {
+    if (isValidIndex(5))
+      person_index = 5;
+    else if (isValidIndex(4))
+      person_index = 4;
+    else if (isValidIndex(3))
+      person_index = 3;
+    else if (isValidIndex(1))
+      person_index = 1;
+    else if (isValidIndex(2))
+      person_index = 2;
+  }
+}
+
+/*
+ * Description: 
+ *
+ * Inputs: none
+ * Output: none
+ */
+void BattleMenu::swapPartyIndex()
+{
+  auto temp_index = person_index;
+
+  if (person_index < 0)
+  {
+    person_index = 1;
+    mostLeftIndex();
+  }
+  else if (person_index > 0)
+  {
+    person_index = -1;
+    mostRightIndex();
+  }
+
+  if (person_index == 0)
+    person_index = temp_index;
+
+  element_index = person_index;
+}
+
 /*
  * Description: Prints out the available items for the BattleMenu.
  *
@@ -925,13 +1033,14 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
 {
   auto change_index = false;
 
-  if (event.keysym.sym == SDLK_UP || event.keysym.sym == SDLK_DOWN)
+  if (event.keysym.sym == SDLK_UP || event.keysym.sym == SDLK_DOWN ||
+      event.keysym.sym == SDLK_LEFT || event.keysym.sym == SDLK_RIGHT)
   {
     change_index = true;
 
     if (action_type == ActionType::SKILL)
     {
-      if (action_scope == ActionScope::ONE_PARTY)
+      if (layer_index == 3 && action_scope == ActionScope::ONE_PARTY)
       {
         change_index = false;
 
@@ -948,10 +1057,20 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
 
   if (change_index)
   {
-    if (event.keysym.sym == SDLK_UP)
-      keyDownDecrement();
-    else if (event.keysym.sym == SDLK_DOWN)
-      keyDownIncrement();
+    if (event.keysym.sym == SDLK_UP || event.keysym.sym == SDLK_RIGHT)
+    {
+      if (layer_index == 3)
+        keyDownIncrement();
+      else
+        keyDownDecrement();
+    }
+    else if (event.keysym.sym == SDLK_DOWN || event.keysym.sym == SDLK_LEFT)
+    {
+      if (layer_index == 3)
+        keyDownDecrement();
+      else
+        keyDownIncrement();
+    }
   }
   else if (event.keysym.sym == SDLK_RETURN)
     keyDownSelect();
@@ -961,6 +1080,10 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
            static_cast<int>(event.keysym.sym) <= 'z')
   {
     keyDownAlpha(static_cast<int>(event.keysym.sym));
+  }
+  else
+  {
+    std::cout << "CANNOT CHANGE INDEX" << std::endl;
   }
 
   if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
@@ -1094,10 +1217,15 @@ std::vector<int32_t> BattleMenu::getHoverTargets()
         action_scope == ActionScope::ALL_ALLIES_KO || 
         action_scope == ActionScope::ALL_TARGETS   ||
         action_scope == ActionScope::ALL_NOT_USER  ||
-        i == element_index)
+        (i == element_index && action_scope != ActionScope::ONE_PARTY))
     {
       hover_targets.push_back(valid_targets[i]);
     }
+  }
+
+  if (action_scope == ActionScope::ONE_PARTY)
+  {
+    hover_targets = getPartyTargets(valid_targets.at(element_index));
   }
 
   return hover_targets;
@@ -1354,6 +1482,16 @@ bool BattleMenu::setSelectableItems(std::vector<BattleItem> new_menu_items)
 bool BattleMenu::setSelectableTargets(std::vector<int32_t> new_menu_targets)
 {
   valid_targets = new_menu_targets;
+
+  if (isValidIndex(1) && isValidIndex(2))
+    std::swap(valid_targets[0], valid_targets[1]);
+
+  if (isValidIndex(-1) && isValidIndex(-2))
+  {
+    auto neg_one = std::find(begin(valid_targets), end(valid_targets), -1);
+    auto neg_two = std::find(begin(valid_targets), end(valid_targets), -2);
+    std::iter_swap(neg_one, neg_two);
+  }
 
   return (!valid_targets.empty());
 }

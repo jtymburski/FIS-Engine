@@ -1731,6 +1731,7 @@ bool Battle::processGuard()
 bool Battle::processAction(std::vector<Person*> targets,
     std::vector<DamageType> damage_types)
 {
+  auto can_process  = false;
   auto done         = false;
   auto target_alive = true;
 
@@ -1738,8 +1739,13 @@ bool Battle::processAction(std::vector<Person*> targets,
   {
     auto damage_type = damage_types.at(pro_index);
 
-    /* Damage actions can only be processed against targets who are alive */
+    /* Non-revive actions can only be processed against targets who are alive */
     target_alive &= (*jt)->getBFlag(BState::ALIVE);
+
+    if (!target_alive && curr_action->actionFlag(ActionFlags::REVIVE))
+      can_process = true;
+    else if (target_alive && !curr_action->actionFlag(ActionFlags::REVIVE))
+      can_process = true;
 
     if (getBattleMode() == BattleMode::TEXT)
       std::cout << "{Target} Processing: " << (*jt)->getName() << std::endl;
@@ -1747,7 +1753,7 @@ bool Battle::processAction(std::vector<Person*> targets,
     /* Assign the target pointer to class variable */
     curr_target = *jt;
 
-    if (doesActionHit())
+    if (can_process && doesActionHit())
     {
       if (curr_action->actionFlag(ActionFlags::ALTER) ||
           curr_action->actionFlag(ActionFlags::ASSIGN))
@@ -1802,7 +1808,7 @@ bool Battle::processAction(std::vector<Person*> targets,
       else if (curr_action->actionFlag(ActionFlags::REVIVE))
         done = processReviveAction();
     }
-    else if (!target_alive)
+    else if (!can_process)
     {
       if (getBattleMode() == BattleMode::TEXT)
         std::cout << "{Fizzle} The action has fizzled!" << std::endl;

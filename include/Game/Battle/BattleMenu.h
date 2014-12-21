@@ -131,20 +131,29 @@ public:
   /* Returns the state of the current menu selection */
   bool isActionSelected();
 
-  /* Returns whether some index of the current selected type has targets */
-  bool someIndexHasTargets();
-
   /* Returns whether the current action index has valid targets */
   bool indexHasTargets();
 
   /* Key press evnet for menu operation */
   bool keyDownEvent(SDL_KeyboardEvent event);
 
-  /* Selects a random action (Skill) with a random target, or PASS if failed */
-  void selectRandomAction();
+  /* Sets to the next left index */
+  void nextLeftIndex();
 
-  /* Resets the menu data to be used for a new Person */
-  void reset(Person* const new_user, const uint32_t &new_person_index);
+  /* Sets to the next right index (if exists) */
+  void nextRightIndex();
+
+  /* Is the given index a valid index? */
+  bool isValidIndex(int32_t check_index);
+
+  /* Sets to the most left index */
+  void mostLeftIndex();
+
+  /* Sets to the most right index */
+  void mostRightIndex();
+
+  /* Swaps the party selection to the proper index */
+  void swapPartyIndex();
 
   /* Layer 2 printing of items to choose from */
   void printItems();
@@ -154,6 +163,21 @@ public:
 
   /* Layer 1 printing of skills to choose from */
   void printSkills();
+
+  /* Resets the menu data to be used for a new Person */
+  void reset(Person* const new_user, const uint32_t &new_person_index);
+
+  /* Selects a random action (Skill) with a random target, or PASS if failed */
+  void selectRandomAction();
+
+  /* Returns whether some index of the current selected type has targets */
+  bool someIndexHasTargets();
+
+  /* Traverse left */
+  bool traverseLeft(int32_t &curr_index);
+
+  /* Traverse right */
+  int32_t traverseRight(int32_t curr_index);
 
   /* Prints out the list of (selected and) valid targets to choose from */
   void printTargets(const bool &print_selected = false);
@@ -193,6 +217,9 @@ public:
 
   /* Returns the current selectable items on the menu */
   std::vector<BattleItem> getMenuItems();
+
+  /* Returns the vector of targets for the party */
+  std::vector<int32_t> getPartyTargets(int32_t party_index);
 
   /* Return the index of the person assigned to the menu */
   int32_t getPersonIndex();
