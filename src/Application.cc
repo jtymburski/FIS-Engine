@@ -259,11 +259,20 @@ bool Application::initialize()
     }
     else
     {
-      SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
       SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
       /* Create helper graphical portions */
       Helpers::createWhiteMask(renderer);
+      
+      SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
+      
+      /* Render logo */
+      Frame logo;
+      logo.setTexture(system_options->getBasePath() + "sprites/Title/logo.png", 
+                      renderer);
+      logo.render(renderer, 0, 0, system_options->getScreenWidth(), 
+                  system_options->getScreenHeight());
+      SDL_RenderPresent(renderer);
     }
   }
   

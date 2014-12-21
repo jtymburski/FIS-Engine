@@ -260,6 +260,9 @@ bool TitleScreen::render(SDL_Renderer* renderer)
     /* Render atmmosphere */
     background3.render(renderer, 153, 314);
 
+    /* Render atmmosphere */
+    background3.render(renderer, 153, 314);
+
     /* Render title */
     title.render(renderer, 50, 50);
 
