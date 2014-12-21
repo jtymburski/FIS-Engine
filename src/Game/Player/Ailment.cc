@@ -150,6 +150,7 @@ Ailment::Ailment(Person* ail_victim, const Infliction &ail_type,
 
     setDuration(ail_min_turns, ail_max_turns, chance);
 
+    setFlag(AilState::CURE_ON_DEATH, true);
     setFlag(AilState::TO_UPDATE, true);
     setFlag(AilState::TO_APPLY,  true);
   }
