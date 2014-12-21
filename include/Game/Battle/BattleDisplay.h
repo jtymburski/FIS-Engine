@@ -22,6 +22,18 @@
 #include "Sprite.h"
 #include "Text.h"
 
+/*
+ * Structure which handles the information required in battle for each given
+ * person. Used for controlling state, what's happening, etc.
+ */
+struct PersonState
+{
+  Sprite* fp;
+  Frame* info;
+  Person* self;
+  Sprite* tp;
+};
+
 class BattleDisplay
 {
 public:
@@ -39,6 +51,9 @@ private:
   /* Ailment frames */
   std::vector<Frame> ailments;
 
+  /* Animation control */
+  uint16_t animation_delay;
+
   /* Background sprite */
   Sprite* background;
   
@@ -53,20 +68,23 @@ private:
 
   /* The rendering enemy info bar */
   Frame* foes_backdrop;
-  std::vector<Frame*> foes_info;
+  std::vector<PersonState*> foes_state;
 
   /* Rendering fonts */
   TTF_Font* font_header;
   TTF_Font* font_subheader;
 
   /* The rendering friend info bar */
-  std::vector<Frame*> friends_info;
+  std::vector<PersonState*> friends_state;
 
   /* Mid scene overlays */
   std::vector<Sprite*> midlays; // TODO: Make overlay class when created
 
   /* Background overlays */
   std::vector<Sprite*> overlays; // TODO: Make overlay class when created
+
+  /* Rendering turn state */
+  TurnState rendering_state;
 
   /* The system options. Used for rendering, settings, etc */
   Options* system_options;
@@ -83,8 +101,13 @@ private:
   const static uint8_t kALLY_QD_OFFSET; /* Ally qd bar offset off health */
   const static uint8_t kALLY_QD_TRIANGLE; /* Ally qd triangle width */
   const static uint8_t kALLY_QD_W; /* Ally qd bar width */
+  const static uint16_t kANIMATION_PROCESS; /* Time to process actions */
   const static uint8_t kCOLOR_BASE; /* Base of color for shifting bars */
+  const static uint16_t kBIGBAR_CHOOSE; /* Additional offset for choice */
+  const static float kBIGBAR_L; /* The percentage of the left section */
+  const static float kBIGBAR_M; /* The percentage of the middle section */
   const static uint16_t kBIGBAR_OFFSET; /* Offset of bar off bottom */
+  const static float kBIGBAR_R; /* The percentage of the right section */
   const static uint8_t kINFO_BORDER; /* Border width on enemy info bar */
   const static uint8_t kINFO_GREY; /* Grey value for border bar */
   const static uint16_t kINFO_H; /* Height of enemy info bar */
@@ -100,6 +123,8 @@ private:
   const static uint16_t kFRIENDS_OFFSET; /* Offset of friends from bottom */
   const static uint8_t kMAX_CHARS; /* Max number of foes in battle */
   const static uint8_t kMAX_LAYERS; /* Max number of layers that can be set */
+  const static uint8_t kMENU_SEPARATOR_B; /* Separator gap off bottom */
+  const static uint8_t kMENU_SEPARATOR_T; /* Separator gap off top */ 
   const static uint16_t kPERSON_SPREAD; /* Rendering overlay of persons */
   const static uint16_t kPERSON_WIDTH; /* Width of persons on battle */
 
@@ -109,33 +134,32 @@ private:
 private:
   /* Generates info and frames for foes in battle */
   void createFoeBackdrop(SDL_Renderer* renderer);
-  bool createFoeInfo(Person* foe, uint8_t index, SDL_Renderer* renderer);
+  Frame* createFoeInfo(Person* foe, SDL_Renderer* renderer);
 
   /* Creates the rendering fonts, based on the system options font path */
   bool createFonts();
 
   /* Generates info for friends in battle */
-  bool createFriendInfo(Person* ally, uint8_t index, SDL_Renderer* renderer);
-
-  /* Clears all enemy info frames */
-  void deleteBattleInfo();
+  Frame* createFriendInfo(Person* ally, SDL_Renderer* renderer);
 
   /* Deletes the rendering fonts, if they've been created */
   void deleteFonts();
   
-  /* Get foes in battle */
-  std::vector<Person*> getFoes();
-  std::vector<Frame*> getFoesFrames();
+  /* Get foes party in battle */
   Party* getFoesParty();
+  PersonState* getFoesState(int32_t index);
 
   /* Get friends in battle */
-  std::vector<Person*> getFriends();
-  std::vector<Frame*> getFriendsFrames();
   Party* getFriendsParty();
+  PersonState* getFriendsState(int32_t index);
+
+  /* Returns modified index */
+  uint32_t getIndex(int32_t index);
 
   /* Renders the ailments for a given person at a given location */
   bool renderAilment(SDL_Renderer* renderer, Person* person, 
-                     uint16_t x, uint16_t y, bool foe = false);
+                     uint16_t x, uint16_t y, bool foe = false, 
+                     bool full_border = false);
 
   /* Renders the battle bar */
   bool renderBar(SDL_Renderer* renderer, uint16_t screen_width, 
@@ -146,8 +170,25 @@ private:
   bool renderFoesInfo(SDL_Renderer* renderer, uint16_t screen_width);
 
   /* Renders the friends */
+  bool renderFriendInfo(SDL_Renderer* renderer, PersonState* state,
+                        uint16_t screen_height, uint16_t x, uint16_t y,
+                        bool below = false);
   bool renderFriends(SDL_Renderer* renderer, uint16_t screen_height);
   bool renderFriendsInfo(SDL_Renderer* renderer, uint16_t screen_height);
+
+  /* Render menu at bottom of screen - for skill selecting */
+  bool renderMenu(SDL_Renderer* renderer, PersonState* state, 
+                  uint16_t screen_width, uint16_t screen_height);
+
+  /* Set person state */
+  bool setPersonState(Person* person, uint8_t index, SDL_Renderer* renderer, 
+                      bool foe = false);
+
+  /* Start battle - fires up the variables */
+  bool startBattle(SDL_Renderer* renderer);
+
+  /* Stop battle - cleans up */
+  void stopBattle();
 
   /* Trims the midlay vector of NULL sprite pointers */
   void trimMidlays();
@@ -194,6 +235,9 @@ public:
   /* Get the overlay(s) */
   Sprite* getOverlay(uint8_t index);
   std::vector<Sprite*> getOverlays();
+
+  /* Returns the rendering turn state - may be slightly varied with battle */
+  TurnState getRenderingState();
 
   /* Renders the battle display */
   bool render(SDL_Renderer* renderer);

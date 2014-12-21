@@ -942,10 +942,13 @@ bool Sprite::setBrightness(double brightness)
   }
   
   /* Update the class brightness */
-  this->brightness = brightness;
-  setColorMod();
-  texture_update = true;
-  
+  if(this->brightness != brightness)
+  {
+    this->brightness = brightness;
+    setColorMod();
+    texture_update = true;
+  }
+
   return in_limits;
 }
 

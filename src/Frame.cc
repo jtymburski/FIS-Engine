@@ -888,7 +888,10 @@ bool Frame::renderBar(uint16_t x, uint16_t y, uint16_t length,
     for(uint16_t i = 0; i < height; i++)
     {
       uint16_t modified_x = x - i * slope;
-      Frame::drawLine(modified_x, modified_x + length, y, renderer);
+      if(length == 1)
+        SDL_RenderDrawPoint(renderer, modified_x, y);
+      else
+        Frame::drawLine(modified_x, modified_x + length, y, renderer);
       y++;
     }
     return true;
