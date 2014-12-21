@@ -502,6 +502,8 @@ void BattleMenu::keyDownSelect()
           /* Decrease the current user's QD by the cost required */
           auto true_cost = current_user->getTrueCost(selected_skill.skill);
 
+          std::cout << "True Cost: " << true_cost << std::endl;
+
           if (true_cost <= current_user->getCurr().getStat("QTDR"))
           {
             if (config != nullptr && 

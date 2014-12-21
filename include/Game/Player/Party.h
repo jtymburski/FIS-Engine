@@ -35,7 +35,8 @@ enum class PartyState
   ITEM_USE_ENABLED   = 1 << 2,
   CAN_ADD_ITEMS      = 1 << 3,
   CAN_REMOVE_ITEMS   = 1 << 4,
-  ENCOUNTERS_ENABLED = 1 << 5
+  ENCOUNTERS_ENABLED = 1 << 5,
+  HAS_BOND           = 1 << 6
 };
 
 class Party

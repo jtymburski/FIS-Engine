@@ -47,7 +47,6 @@
  * kBURN_DMG_PC - factor of health by which to deal burn damage
  * kBERSERK_DMG_INCR - factor by which to increase damage of Berserked person
  * kBERSERK_HITBACK_PC - factor of health to deal self-damage of Berserked
- * kBUBBIFY_MAX_QD - the maximum QD a Person may have being bubbified
  * kBUBBIFY_STAT_MULR - factor applied to a person's stats during Bubbification
  * kPARALYSIS_PC - normal chance for paralaysis skipping of turn
  * kBLIND_PC - normal chance of missing attacks while blind
@@ -84,8 +83,7 @@ const double   Ailment::kBURN_DMG_INCR       = 1.50;
 const double   Ailment::kBURN_DMG_PC         = 0.05;
 const double   Ailment::kBERSERK_DMG_INCR    = 1.75;
 const double   Ailment::kBERSERK_HITBACK_PC  = 0.35;
-const uint32_t Ailment::kBUBBIFY_MAX_QD      =   10;
-const double   Ailment::kBUBBIFY_STAT_MULR   = 0.68;
+const double   Ailment::kBUBBIFY_STAT_MULR   = 0.75;
 const double   Ailment::kPARALYSIS_PC        = 0.70;
 const double   Ailment::kBLIND_PC            = 0.50;
 const double   Ailment::kDREADSTRUCK_PC      = 0.75;
@@ -271,6 +269,7 @@ bool Ailment::apply()
     victim->setDmgMod(2);
 
     setFlag(AilState::TO_APPLY, false);
+    setFlag(AilState::TO_UNAPPLY, true);
   }
 
   /* Ailed actor cannot use skills if they require QD */
@@ -281,32 +280,33 @@ bool Ailment::apply()
       if (skills->getElement(i).skill != nullptr)
         if (skills->getElement(i).skill->getCost() > 0)
           skills->setState(i, false);
+
+    setFlag(AilState::TO_APPLY, false);
+    setFlag(AilState::TO_UNAPPLY, true);
   }
 
   /* Bubbify - ailed actor is turned into a near-useless Bubby */
   else if (type == Infliction::BUBBIFY)
   {
-    /* Bubbies cannot be affected by buffs */
-    //TODO: Buffs need to be removed before Bubbification [01-25-13]
-
     /* Decrease the stats of the person by a factor of kBUBBIFY_STAT_MULR */
     for (uint32_t i = 0; i < stats.getSize(); i++)
-        stats.setStat(i, stats.getStat(i) * kBUBBIFY_STAT_MULR);
-
-    /* Disable skills which have a qd cost above kBUBBIFY_MAX_QD */
-    for (uint32_t i = 0; i < skills->getSize(); i++)
-      if (skills->getElement(i).skill != nullptr)
-        if (skills->getElement(i).skill->getCost() > kBUBBIFY_MAX_QD)
-          skills->setState(i, false);
+    {
+      stats.setStat(i, stats.getStat(i) * kBUBBIFY_STAT_MULR);
+      max_stats.setStat(i, stats.getStat(i) * kBUBBIFY_STAT_MULR);
+    }
 
     /* Flip the Battle State Bubby flag */
     victim->setBFlag(BState::IS_BUBBY, true);
+    setFlag(AilState::TO_APPLY, false);
+    setFlag(AilState::TO_UNAPPLY, true);
   }
 
   /* Death Timer - Ailed actor KOs upon reaching max_turns */
-  //else if (type == Infliction::DEATHTIMER)
-  //  if (turns_occured >= max_turns_left)
-  // TODO: Kill actor on death [01-26-13]
+  else if (type == Infliction::DEATHTIMER)
+  {
+    if (turns_occured >= max_turns_left)
+      setFlag(AilState::TO_KILL, true);
+  }
 
   /* Paralysis - Ailed actor has a kPARALYSIS_PC chance of skipping their turn,
    *             the effect persisting or a number of turns
@@ -368,101 +368,88 @@ bool Ailment::apply()
    *            kPHYSBUFF_PC - % to incr phys values
    *            kELMBUFF_PC  - % to incr elemental values
    */
-  if (getFlag(AilState::TO_APPLY) && getFlag(AilState::BUFF))
+  /* Remove the buffing effects from all attack stats */
+  else if (getType() == Infliction::ALLATKBUFF)
   {
-    if (type == Infliction::ALLATKBUFF)
-    {
-      for (uint32_t i = 0; i < stats.getSize(); i++)
-      {
-        //TODO
-        //QStringList split_stats = stats.getName(i).split("");
-        //if (split_stats.at(2) == "A" && split_stats.at(3) == "G")
-        //  stats.setStat(i, stats.getStat(i) * kALLBUFF_PC);
-      }
-      setFlag(AilState::TO_APPLY, false);
-    }
-    else if (type == Infliction::ALLDEFBUFF)
-    {
-      //TODO
-      //for (int i = 0; i < stats.getSize(); i++)
-      //{
-      //  QStringList split_stats = stats.getName(i).split("");
-      //  if (split_stats.at(2) == "F" && split_stats.at(3) == "D")
-      //    stats.setStat(i, stats.getStat(i) * kALLBUFF_PC);
-      //}
-      setFlag(AilState::TO_APPLY, false);
-    }
-    else if (type == Infliction::PHYBUFF)
-    {
-      stats.setStat(Attribute::PHAG, stats.getStat(Attribute::PHAG) * 
-                                      kPHYSBUFF_PC);
-      stats.setStat(Attribute::PHFD, stats.getStat(Attribute::PHFD) * 
-                                      kPHYSBUFF_PC);
-    }
-    else if (type == Infliction::THRBUFF)
-    {
-      stats.setStat(Attribute::THAG, stats.getStat(Attribute::THAG) *
-                                     kELMBUFF_PC);
-      stats.setStat(Attribute::THFD, stats.getStat(Attribute::THFD) * 
-                                     kELMBUFF_PC);
-    }
-    else if (type == Infliction::POLBUFF)
-    {
-      stats.setStat(Attribute::POAG, stats.getStat(Attribute::POAG) *
-                                      kELMBUFF_PC);
-      stats.setStat(Attribute::POFD, stats.getStat(Attribute::POFD) *
-                                      kELMBUFF_PC);
-    }
-    else if (type == Infliction::PRIBUFF)
-    {
-      stats.setStat(Attribute::PRAG, stats.getStat(Attribute::PRAG) *
-                                      kELMBUFF_PC);
-      stats.setStat(Attribute::PRAG, stats.getStat(Attribute::PRAG) *
-                                      kELMBUFF_PC);
-    }
-    else if (type == Infliction::CHGBUFF)
-    {
-      stats.setStat(Attribute::CHAG, stats.getStat(Attribute::CHAG) * 
-                                      kELMBUFF_PC);
-      stats.setStat(Attribute::CHFD, stats.getStat(Attribute::CHFD) *
-                                      kELMBUFF_PC);
-    }
-    else if (type == Infliction::CYBBUFF)
-    {
-      stats.setStat(Attribute::CYAG, stats.getStat(Attribute::CYAG) * 
-                                      kELMBUFF_PC);
-      stats.setStat(Attribute::CYFD, stats.getStat(Attribute::CYFD) *
-                                      kELMBUFF_PC);
-    }
-    else if (type == Infliction::NIHBUFF)
-    {
-      stats.setStat(Attribute::NIAG, stats.getStat(Attribute::NIAG) * 
-                                      kELMBUFF_PC);
-      stats.setStat(Attribute::NIFD, stats.getStat(Attribute::NIFD) *
-                                      kELMBUFF_PC);
-    }
-    else if (type == Infliction::UNBBUFF)
-    {
-      stats.setStat(Attribute::UNBR, stats.getStat(Attribute::UNBR) * 
-                                      kELMBUFF_PC);
-    }
-    else if (type == Infliction::LIMBUFF)
-    {
-      stats.setStat(Attribute::LIMB, stats.getStat(Attribute::LIMB) *
-                                      kLIMBUFF_PC);
-      stats.setStat(Attribute::MMNT, stats.getStat(Attribute::MMNT) * 
-                                      kELMBUFF_PC);
-    }
-    else if (type == Infliction::VITBUFF)
-    {
-      stats.setStat(Attribute::VITA, stats.getStat(Attribute::VITA) * 
-                                      kVITBUFF_PC);
-    }
-    else if (type == Infliction::QDBUFF)
-    {
-      stats.setStat(Attribute::QTDR, stats.getStat(Attribute::QTDR) *
-                                      kQDBUFF_PC);
-    }
+    setFlag(AilState::BUFF, true);
+
+    for (uint32_t i = 2; i < stats.getSize(); i++)
+      if (i % 2 == 0 && i < 16)
+        stats.setStat(i, stats.getStat(i) * kALLBUFF_PC);
+  }
+
+  /* Remove the buffing effect from all defense stats */
+  else if (getType() == Infliction::ALLDEFBUFF)
+  {
+    setFlag(AilState::BUFF, true);
+    
+    for (uint32_t i = 2; i < stats.getSize(); i++)
+      if (i % 2 != 0 && i < 16)
+        stats.setStat(i, stats.getStat(i) * kALLBUFF_PC);
+  }
+
+  else if (getType() == Infliction::PHYBUFF)
+  {
+    setFlag(AilState::BUFF, true);
+    stats.setStat(2, stats.getStat(2) * kPHYSBUFF_PC);
+    stats.setStat(3, stats.getStat(3) * kPHYSBUFF_PC);
+  }
+  else if (type == Infliction::THRBUFF)
+  {
+    setFlag(AilState::BUFF, true);
+    stats.setStat(4, stats.getStat(4) * kELMBUFF_PC);
+    stats.setStat(5, stats.getStat(5) * kELMBUFF_PC);
+  }
+  else if (type == Infliction::PRIBUFF)
+  {
+    setFlag(AilState::BUFF, true);
+    stats.setStat(6, stats.getStat(6) * kELMBUFF_PC);
+    stats.setStat(7, stats.getStat(7) * kELMBUFF_PC);
+  }
+  else if (type == Infliction::POLBUFF)
+  {
+    setFlag(AilState::BUFF, true);
+    stats.setStat(8, stats.getStat(8) * kELMBUFF_PC);
+    stats.setStat(9, stats.getStat(9) * kELMBUFF_PC);
+  }
+  else if (type == Infliction::CHGBUFF)
+  {
+    setFlag(AilState::BUFF, true);
+    stats.setStat(10, stats.getStat(10) * kELMBUFF_PC);
+    stats.setStat(11, stats.getStat(11) * kELMBUFF_PC);
+  }
+  else if (type == Infliction::CYBBUFF)
+  {
+    setFlag(AilState::BUFF, true);
+    stats.setStat(12, stats.getStat(12) * kELMBUFF_PC);
+    stats.setStat(13, stats.getStat(13) * kELMBUFF_PC);
+  }
+  else if (type == Infliction::NIHBUFF)
+  {
+    setFlag(AilState::BUFF, true);
+    stats.setStat(14, stats.getStat(14) * kELMBUFF_PC);
+    stats.setStat(15, stats.getStat(15) * kELMBUFF_PC);
+  }
+  else if (type == Infliction::UNBBUFF)
+  {
+    setFlag(AilState::BUFF, true);
+    stats.setStat(18, stats.getStat(18) * kELMBUFF_PC);
+  }
+  else if (type == Infliction::LIMBUFF)
+  {
+    setFlag(AilState::BUFF, true);
+    stats.setStat(17, stats.getStat(17) * kLIMBUFF_PC);
+    stats.setStat(16, stats.getStat(16) * kLIMBUFF_PC);
+  }
+  else if (type == Infliction::VITBUFF)
+  {
+    setFlag(AilState::BUFF, true);
+    max_stats.setStat(0, stats.getStat(0) * kVITBUFF_PC);
+  }
+  else if (type == Infliction::QDBUFF)
+  {
+    setFlag(AilState::BUFF, true);
+    max_stats.setStat(1, stats.getStat(1) * kQDBUFF_PC);
   }
 
   /* Rootbound - Ailed actor (if biological in nature) gains a % HP / turn
@@ -609,6 +596,19 @@ bool Ailment::checkImmunity(Person* new_victim)
  *              if the ailment will be cured after this update, false otherwise.
  *
  * Inputs: none
+ * Output: 
+ */
+// bool Ailment::getRemainingTurns()
+// {
+
+// }
+
+/*
+ * Description: Updates the turn counter on the status ailment based off
+ *              the random chance to cure each turn (if not zero). Returns true
+ *              if the ailment will be cured after this update, false otherwise.
+ *
+ * Inputs: none
  * Output: bool - true if the ailment is to be cured after the update of Fn.
  */
 bool Ailment::updateTurns()
@@ -699,8 +699,9 @@ bool Ailment::setVictim(Person* set_victim)
 void Ailment::unapply()
 {
   //TODO: Retain the defaults or previous settings of things? [01-26-14]
-  AttributeSet& stats = victim->getCurr();
-  SkillSet*    skills = victim->getCurrSkills();
+  auto& stats     = victim->getCurr();
+  auto& max_stats = victim->getTemp();
+  auto  skills    = victim->getCurrSkills();
 
   /* On removing Berserk, person's dmg_mod needs to be reset. Action flags are
    * recomputed in the reCalcAilmentFlags() function in Battle */
@@ -734,110 +735,14 @@ void Ailment::unapply()
      are removed as well) */
   else if (getType() == Infliction::BUBBIFY)
   {
-    //TODO: Remove buffs [01-26-14]
-    //emit removeBuffs(victim->getName());
-  }
-
-  /* Remove the buffing effects from all attack stats */
-  if (getType() == Infliction::ALLATKBUFF)
-  {
-    for (uint32_t i = 0; i < stats.getSize(); i++)
-    {
-      //TODO [01-26-14]
-      //QStringList split_stats = stats.getName(i).split("");
-      //if (split_stats.at(2) == "A" && split_stats.at(3) == "G")
-      //  stats.setStat(i, stats.getStat(i) / kALLBUFF_PC);
-    }
-  }
-
-  /* Remove the buffing effect from all defense stats */
-  else if (getType() == Infliction::ALLDEFBUFF)
-  {
-    //TODO [01-26-14]
-    //for (int i = 0; i < stats.getSize(); i++)
-    //{
-    //  QStringList split_stats = stats.getName(i).split("");
-    //  if (split_stats.at(2) == "F" && split_stats.at(3) == "D")
-     //   stats.setStat(i, stats.getStat(i) / kALLBUFF_PC);
-    //}
-  }
-
-  /* Remove the buffing effect from each stat */
-  else if (type == Infliction::PHYBUFF)
-  {
-    stats.setStat(Attribute::PHAG, stats.getStat(Attribute::PHAG) / 
-                                    kPHYSBUFF_PC);
-    stats.setStat(Attribute::PHFD, stats.getStat(Attribute::PHFD) / 
-                                    kPHYSBUFF_PC);
-  }
-  else if (type == Infliction::THRBUFF)
-  {
-    stats.setStat(Attribute::THAG, stats.getStat(Attribute::THAG) / 
-                                   kELMBUFF_PC);
-    stats.setStat(Attribute::THFD, stats.getStat(Attribute::THFD) / 
-                                   kELMBUFF_PC);
-  }
-  else if (type == Infliction::POLBUFF)
-  {
-    stats.setStat(Attribute::POAG, stats.getStat(Attribute::POAG) /
-                                    kELMBUFF_PC);
-    stats.setStat(Attribute::POFD, stats.getStat(Attribute::POFD) /
-                                    kELMBUFF_PC);
-  }
-  else if (type == Infliction::PRIBUFF)
-  {
-    stats.setStat(Attribute::PRAG, stats.getStat(Attribute::PRAG) /
-                                    kELMBUFF_PC);
-    stats.setStat(Attribute::PRAG, stats.getStat(Attribute::PRAG) /
-                                    kELMBUFF_PC);
-  }
-  else if (type == Infliction::CHGBUFF)
-  {
-    stats.setStat(Attribute::CHAG, stats.getStat(Attribute::CHAG) / 
-                                    kELMBUFF_PC);
-    stats.setStat(Attribute::CHFD, stats.getStat(Attribute::CHFD) /
-                                    kELMBUFF_PC);
-  }
-  else if (type == Infliction::CYBBUFF)
-  {
-    stats.setStat(Attribute::CYAG, stats.getStat(Attribute::CYAG) / 
-                                    kELMBUFF_PC);
-    stats.setStat(Attribute::CYFD, stats.getStat(Attribute::CYFD) /
-                                    kELMBUFF_PC);
-  }
-  else if (type == Infliction::NIHBUFF)
-  {
-    stats.setStat(Attribute::NIAG, stats.getStat(Attribute::NIAG) / 
-                                    kELMBUFF_PC);
-    stats.setStat(Attribute::NIFD, stats.getStat(Attribute::NIFD) /
-                                    kELMBUFF_PC);
-  }
-  else if (type == Infliction::UNBBUFF)
-  {
-    stats.setStat(Attribute::UNBR, stats.getStat(Attribute::UNBR) / 
-                                    kELMBUFF_PC);
-  }
-  else if (type == Infliction::LIMBUFF)
-  {
-    stats.setStat(Attribute::LIMB, stats.getStat(Attribute::LIMB) /
-                                    kLIMBUFF_PC);
-    stats.setStat(Attribute::MMNT, stats.getStat(Attribute::MMNT) / 
-                                    kELMBUFF_PC);
-  }
-  else if (type == Infliction::VITBUFF)
-  {
-    stats.setStat(Attribute::VITA, stats.getStat(Attribute::VITA) / 
-                                    kVITBUFF_PC);
-  }
-  else if (type == Infliction::QDBUFF)
-  {
-    stats.setStat(Attribute::QTDR, stats.getStat(Attribute::QTDR) /
-                                    kQDBUFF_PC);
+    victim->setBFlag(BState::IS_BUBBY, false);
   }
 
   /* Double Cast - on unapplication turn off the flag for DoubleCast */
   else if (getType() == Infliction::DOUBLECAST)
+  {
     victim->setBFlag(BState::TWO_SKILLS, false);
+  }
 
   /* Tripl Cast - on unapplication, turn off the flag for TripleCast */
   else if (getType() == Infliction::TRIPLECAST)
@@ -859,7 +764,6 @@ void Ailment::unapply()
   {
 
   }
-
 }
 
 
@@ -1065,20 +969,6 @@ void Ailment::setFlag(const AilState &flags, const bool &set_value)
 // }
 
 /*
- * Description: Slot to catch an ailment which caused death, handles flag work
- *              for ailment destruction.
- *
- * Inputs: none
- * Output: none
- */
-void Ailment::death()
-{
-  setFlag(AilState::TO_APPLY,  false);
-  setFlag(AilState::TO_UPDATE, false);
-  setFlag(AilState::TO_CURE, getFlag(AilState::CURE_ON_DEATH));
-}
-
-/*
  * Description: Update slot. This function will handle calling the
  *              apply function if the status ailment applies an effect (new or
  *              recurring) every turn, and also will handle calling the update
@@ -1102,9 +992,6 @@ void Ailment::update(bool update_turns)
     if (!getFlag(AilState::TO_CURE) && getFlag(AilState::TO_APPLY))
       apply();
   }
-
-  // if (getFlag(AilState::TO_CURE))
-  //   unapply();
 }
 
 /*
@@ -1122,18 +1009,6 @@ void Ailment::reset()
 /*============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
-
-/*
- * Description: Returns the maximum QD cost for a Skill useable by a Bubbified
- *              person.
- *
- * Inputs: none
- * Output: none
- */
-uint32_t Ailment::getMaxBubbyQD()
-{
-  return kBUBBIFY_MAX_QD;
-}
 
 /*
  * Description:

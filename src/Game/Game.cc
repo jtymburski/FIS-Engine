@@ -299,7 +299,7 @@ void Game::setupBattle()
   inflict_actions.push_back(new Action("504,INFLICT,4.4,,,BERSERK,AMOUNT.0,,VITA,95"));
   inflict_actions.push_back(new Action("505,INFLICT,2.3,,,CONFUSE,AMOUNT.50,,VITA,99"));
   inflict_actions.push_back(new Action("506,INFLICT,2.3,,,SILENCE,AMOUNT.60,,VITA,99"));
-  // inflict_actions.push_back(new Action("507,INFLICT,4.8,,,BUBBIFY,AMOUNT.70,,VITA,99"));
+  inflict_actions.push_back(new Action("507,INFLICT,4.8,,,BUBBIFY,AMOUNT.70,,VITA,99"));
 
   for(auto it = begin(damage_actions); it != end(damage_actions); ++it)
     std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
@@ -406,6 +406,9 @@ void Game::setupBattle()
   Skill* silence = new Skill(146, "Hush Hush", ActionScope::ONE_TARGET,
     inflict_actions[6], 100, 10);
 
+  Skill* bubbinate = new Skill(147, "Bubbinate", ActionScope::ONE_TARGET,
+    inflict_actions[7], 100, 10);
+
   // Test Skill Sets
   SkillSet* physical_skills = new SkillSet(physical_01, 1);
   physical_skills->addSkill(physical_02, 1);
@@ -425,6 +428,7 @@ void Game::setupBattle()
   physical_skills->addSkill(berserk, 1);
   physical_skills->addSkill(confuse, 1);
   physical_skills->addSkill(silence, 1);
+  physical_skills->addSkill(bubbinate, 1);
 
   SkillSet* elemental_skills = new SkillSet(fire_01, 1);
 
@@ -432,7 +436,10 @@ void Game::setupBattle()
   elemental_skills->addSkill(ice_01, 1);
   elemental_skills->addSkill(electric_01, 1);
   elemental_skills->addSkill(digital_01, 1);
-  elemental_skills->addSkill(void_01, 1);
+  elemental_skills->addSkill(void_01, 1);\
+
+  bubbified_skills = new SkillSet(physical_01, 1);
+  bubbified_skills->addSkill(physical_02, 2);
 
   // Test Attribute Sets
   AttributeSet weak_stats        = AttributeSet(1, true, false);
@@ -610,7 +617,7 @@ void Game::setupBattle()
 
   //getPerson(300)->print(false, false, true, true);
 
-  game_battle = new Battle(game_config, friends, enemies);
+  game_battle = new Battle(game_config, friends, enemies, bubbified_skills);
 
   if (battle_display == nullptr)
     battle_display = new BattleDisplay(game_config);

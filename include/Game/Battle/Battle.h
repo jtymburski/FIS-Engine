@@ -96,7 +96,7 @@ class Battle
 public:
   /* Constructs a party given two parties and configured options */
   Battle(Options* const running_config, Party* const friends, 
-         Party* const foes);
+         Party* const foes, SkillSet* const bubbified_skills);
 
   /* Annihilates a Battle object */
   ~Battle();
@@ -108,6 +108,9 @@ private:
   /* Pairs of unique-ID vs. Ailment pointers for ailments */
   std::vector<Ailment*> ailments;
 
+  /* The bubbified skill set */
+  SkillSet* bubbified_skills;
+  
   /* The current AI Module */
   AIModule* curr_module;
 

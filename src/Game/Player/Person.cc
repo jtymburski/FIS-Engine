@@ -1562,12 +1562,15 @@ float Person::getVitaPercent()
   return (max_vita != 0) ? (static_cast<float>(curr_vita) / max_vita) : (0);
 }
 
-
-
-/* Find the true cost for a Skill to the Person's QD */
+/*
+ * Description: 
+ *
+ * Inputs: 
+ * Output:
+ */
 int16_t Person::getTrueCost(Skill* test_skill)
 {
-  if (temp_skills != nullptr)
+  if (temp_skills != nullptr && !getBFlag(BState::IS_BUBBY))
   {
     auto elements = temp_skills->getElements(level);
 
@@ -1582,6 +1585,13 @@ int16_t Person::getTrueCost(Skill* test_skill)
       }
     }
   }
+  else if (getBFlag(BState::IS_BUBBY))
+  {
+    if (getBFlag(BState::HALF_COST))
+      return test_skill->getCost() / 2;
+
+    return test_skill->getCost();
+  }
 
   return AttributeSet::getMaxValue();
 }
@@ -1595,8 +1605,6 @@ int16_t Person::getTrueCost(Skill* test_skill)
  */
 Frame* Person::getFirstPerson()
 {
-  if (getBFlag(BState::IS_BUBBY))
-    return fp_bubbified_sprite;
   return first_person;
 }
 
@@ -1609,8 +1617,6 @@ Frame* Person::getFirstPerson()
  */
 Frame* Person::getThirdPerson()
 {
-  if (getBFlag(BState::IS_BUBBY))
-    return tp_bubbified_sprite;
   return third_person;
 }
 
@@ -1693,7 +1699,6 @@ SkillSet* Person::getUseableSkills()
   
     if ((*it).enabled)
     {
-
       auto skill_cost = static_cast<int32_t>((*it).skill->getCost());
 
       /* Adjust for Half Cost of skills */

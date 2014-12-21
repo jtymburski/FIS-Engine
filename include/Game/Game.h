@@ -92,6 +92,9 @@ private:
 
   /* List of all available items in the game */
   std::vector<Item*> base_item_list;
+
+  /* The bubbified skill set */
+  SkillSet* bubbified_skills;
   
   /* The maps in the game */
   // [09-07-14] TODO: Recommend Map*, std::string pair ?

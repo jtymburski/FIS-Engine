@@ -140,15 +140,16 @@ const int16_t  Battle::kREGEN_RATE_GRAND_PC          =      8;
  *         Party* const friends - pointer to friends party
  *         Party* const foes - pointer to foes party
  */
-Battle::Battle(Options* running_config, Party* const friends, Party* const foes)
-    : friends(friends)
-    , foes(foes)
+Battle::Battle(Options* running_config, Party* const friends, Party* const foes,
+    SkillSet* const bubbified_skills)
+      : bubbified_skills{bubbified_skills}
+      , friends{friends}
+      , foes{foes}
 {
   if (!checkAIModules())
-  {
-    std::cerr << "[Error] Crtical Error: AI Moudles for enemies bad!"
-              << std::endl;
-  }
+    std::cerr << "[Error] Crtical Error: AI Moudles for enemies bad!\n";
+  if (friends == nullptr || foes == nullptr || bubbified_skills == nullptr)
+    std::cerr << "[Error] Critical error: Invalid battle initialization!\n";
 
   setupClass();
   determineTurnMode();
@@ -229,15 +230,9 @@ bool Battle::reCalcAilmentFlags(Person* target, Ailment* ail)
 {
   if (target != nullptr &&  ail != nullptr && ail->getVictim() == target)
   {
-    if (ail->getType() == Infliction::SILENCE)
-      std::cout << "ATTEMPTING TO UNAPPLYING SILENCE" << std::endl;
-
     /* Unapply the ailment (by the default effect) set to be removed */
     if (ail->getFlag(AilState::TO_UNAPPLY))
-    {
-      std::cout << "UNAPPLYING AN AILMENT" << std::endl;
       ail->unapply();
-    }
 
     /* For all other ailments inflicted upon the given target, iterate through
      * and recalculate the necessary flag and stats values */
@@ -289,7 +284,7 @@ bool Battle::removeAilment(Ailment* remove_ailment)
     {
       if (getBattleMode() == BattleMode::TEXT)
       {
-        std::cout << "{RELIVING} -- The ailment on " << curr_target->getName() 
+        std::cout << "{RELIEVING} -- The ailment on " << curr_target->getName() 
             << " called " << Helpers::ailmentToStr(remove_ailment->getType()) 
             << " is being relieved." << std::endl;
       }
@@ -297,7 +292,7 @@ bool Battle::removeAilment(Ailment* remove_ailment)
       /* Some ailments will alter flags that need to be recalculated */
       success = reCalcAilmentFlags(curr_target, ailment);
 
-      found = true;\
+      found = true;
       delete ailment;
       ailment = nullptr;
     }
@@ -305,6 +300,8 @@ bool Battle::removeAilment(Ailment* remove_ailment)
 
   ailments.erase(std::remove(begin(ailments), end(ailments), nullptr), 
       end(ailments));
+
+  reCalcAilments(curr_target);
 
   return found && success;
 }
@@ -2052,8 +2049,22 @@ bool Battle::processInflictAction()
 {
   if (canInflict(curr_action->getAilment()))
   {
+    /* If a person is about to be bubbified, their current ailments must be
+     * removed */
+    for (auto ill : ailments)
+      if (ill->getVictim() == curr_target)
+        removeAilment(ill);
+
     addAilment(curr_action->getAilment(), curr_user, 
       curr_action->getMin(), curr_action->getMax(), curr_action->getBase());
+  }
+  else
+  {
+    if (getBattleMode() == BattleMode::TEXT)
+    {
+      std::cout << "{FAILED} " << curr_target->getName() << " cannot be "
+          << "inflicted with infliction." << std::endl;
+    }
   }
 
   return false;
@@ -2071,6 +2082,12 @@ bool Battle::canInflict(Infliction test_infliction)
   auto person_ailments = getPersonAilments(curr_target);
   
   can_add &= (person_ailments.size() < kMAX_EACH_AILMENTS);
+
+  //TODO: Instead of not being able to inflict, reset current ill? [12-20-14]
+  can_add &= !(hasInfliction(test_infliction, curr_target));
+
+  if (test_infliction != Infliction::BUBBIFY)
+    can_add &= !(curr_target->getBFlag(BState::IS_BUBBY));
 
   if (can_add)
   {
@@ -2134,13 +2151,13 @@ bool Battle::processSkill(std::vector<Person*> targets,
 
     /* Update the temporary copy of the User's current stats */
     temp_user_stats     = AttributeSet(curr_user->getCurr());
-    temp_user_max_stats = AttributeSet(curr_user->getCurrMax());
+    temp_user_max_stats = AttributeSet(curr_user->getTemp());
 
     /* Build vectors of curr and curr_max stas for each target */
     for (auto jt = begin(targets); jt != end(targets); ++jt)
     {
       temp_target_stats.push_back(AttributeSet((*jt)->getCurr()));
-      temp_target_max_stats.push_back(AttributeSet((*jt)->getCurrMax()));
+      temp_target_max_stats.push_back(AttributeSet((*jt)->getTemp()));
     }
  
     /* User ref. vars related to prim/secd skill attributes, -1 if Attr:NONE */
@@ -2336,7 +2353,19 @@ void Battle::processBuffer()
 void Battle::reCalcAilments(Person* const target)
 {
   (void)target; //TODO: [Warning]
-  // find base stats of person
+
+  auto base_max_stats = target->getCurrMax();
+  auto base_stats     = target->getCurr();
+
+  target->setTemp(base_max_stats);
+  target->setCurr(base_stats);
+
+  auto ills = getPersonAilments(target);
+
+  for (auto ill : ills)
+    if (ill->getFlag(AilState::BUFF))
+      ill->apply();
+
   // find all buff factors
   // OR find bubbify factor (bubbify == NO BUFFS)
   // disenstubulate factor
@@ -2386,7 +2415,13 @@ void Battle::selectEnemyActions()
     curr_module->setItems(buildBattleItems(person_index, items));
 
     auto skills = curr_user->getUseableSkills();
-    curr_module->setSkills(buildBattleSkills(person_index, skills));
+
+    auto battle_skills = buildBattleSkills(person_index, skills);
+    
+    if (hasInfliction(Infliction::BUBBIFY, curr_user))
+      battle_skills = buildBattleSkills(person_index, bubbified_skills);
+
+    curr_module->setSkills(battle_skills);
     curr_module->calculateAction();
   }
   else
@@ -2435,6 +2470,10 @@ void Battle::selectUserActions()
       auto items  = friends->getInventory()->getBattleItems();
 
       auto battle_skills = buildBattleSkills(person_index, skills);
+
+      if (hasInfliction(Infliction::BUBBIFY, curr_user))
+        battle_skills = buildBattleSkills(person_index, bubbified_skills);
+
       auto battle_items  = buildBattleItems(person_index, items);
 
       /* Reload the menu information for the next person */
@@ -2450,7 +2489,7 @@ void Battle::selectUserActions()
       }
     }
     else
-    {
+    { 
       std::cerr << "[Error]: Selection action for invalid person\n";
     }
   }
@@ -3865,7 +3904,7 @@ bool Battle::setConfiguration(Options* const new_config)
  *
  * Inputs: CombatState flag - flag to assign value to
  *         set_value - boolean value to assign to given flag
- * Output: none
+ * Output: noneproc
  */
 void Battle::setBattleFlag(CombatState flag, const bool &set_value)
 {
