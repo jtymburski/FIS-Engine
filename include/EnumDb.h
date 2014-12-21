@@ -274,7 +274,8 @@ enum class DamageType
   ITEM,
   POISON,
   BURN,
-  HITBACK
+  HITBACK,
+  DEATHTIMER
 };
 
 /*

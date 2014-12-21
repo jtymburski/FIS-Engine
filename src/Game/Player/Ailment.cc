@@ -304,7 +304,7 @@ bool Ailment::apply()
   /* Death Timer - Ailed actor KOs upon reaching max_turns */
   else if (type == Infliction::DEATHTIMER)
   {
-    if (turns_occured >= max_turns_left)
+    if (max_turns_left == 0)
       setFlag(AilState::TO_KILL, true);
   }
 
@@ -609,19 +609,6 @@ bool Ailment::checkImmunity(Person* new_victim)
  *              if the ailment will be cured after this update, false otherwise.
  *
  * Inputs: none
- * Output: 
- */
-// bool Ailment::getRemainingTurns()
-// {
-
-// }
-
-/*
- * Description: Updates the turn counter on the status ailment based off
- *              the random chance to cure each turn (if not zero). Returns true
- *              if the ailment will be cured after this update, false otherwise.
- *
- * Inputs: none
  * Output: bool - true if the ailment is to be cured after the update of Fn.
  */
 bool Ailment::updateTurns()
@@ -629,12 +616,10 @@ bool Ailment::updateTurns()
   turns_occured++;
   
   /* If the ailment doesn't have one turn left, if it's finite, decrement it */
-  if (max_turns_left <= kMAX_TURNS && max_turns_left > 1)
+  if (max_turns_left <= kMAX_TURNS && max_turns_left > 0)
     --max_turns_left;
   if (min_turns_left > 0)
     --min_turns_left;
-
-  std::cout << "Update turns: " << max_turns_left << " " << min_turns_left << std::endl;
 
   if (turns_occured <= min_turns_left)
     return false;
@@ -956,7 +941,8 @@ void Ailment::update(bool update_turns)
   {
     /* Update the turn count and set the TOBECURED flag if neccessary, only
      * update the turns if being called for (default - true) */
-    if (!getFlag(AilState::INFINITE) && update_turns && updateTurns())
+    if (!getFlag(AilState::INFINITE) && update_turns && updateTurns() &&
+        getType() != Infliction::DEATHTIMER)
       setFlag(AilState::TO_CURE);
 
     /* If the ailment is not to be cured, apply an effect (if there is one) */

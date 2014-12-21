@@ -313,18 +313,19 @@ void Game::setupBattle()
   inflict_actions.push_back(new Action("518,INFLICT,2.5,,,UNBBUFF,AMOUNT.0,,VITA,99"));
   inflict_actions.push_back(new Action("519,INFLICT,2.5,,,VITBUFF,AMOUNT.0,,VITA,99"));
   inflict_actions.push_back(new Action("520,INFLICT,2.5,,,QDBUFF,AMOUNT.0,,VITA,99"));
+  inflict_actions.push_back(new Action("521,INFLICT,5.5,,,DEATHTIMER,AMOUNT.0,,VITA,99"));
 
-  for(auto it = begin(damage_actions); it != end(damage_actions); ++it)
-    std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
+  // for(auto it = begin(damage_actions); it != end(damage_actions); ++it)
+  //   std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
 
-  for (auto it = begin(alter_actions); it != end(alter_actions); ++it)
-    std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
+  // for (auto it = begin(alter_actions); it != end(alter_actions); ++it)
+  //   std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
 
-  for (auto it = begin (assign_actions); it != end(assign_actions); ++it)
-    std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
+  // for (auto it = begin (assign_actions); it != end(assign_actions); ++it)
+  //   std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
 
-  for (auto& inflict_action : inflict_actions)
-    std::cout << inflict_action->actionFlag(ActionFlags::VALID) << std::endl;
+  // for (auto& inflict_action : inflict_actions)
+  //   std::cout << inflict_action->actionFlag(ActionFlags::VALID) << std::endl;
 
   // Test Skills
   Skill* physical_01 = new Skill(100, "Wee Strike", ActionScope::ONE_ENEMY, 
@@ -395,17 +396,15 @@ void Game::setupBattle()
   Skill* life_steal = new Skill(131, "Life Steal", ActionScope::ONE_ENEMY,
     alter_actions[2], 100, 5);
   life_steal->addAction(alter_actions[6], true);
-  alter_actions[2]->print(true, true);
-  alter_actions[6]->print(true, true);
 
-  // Skill* poison = new Skill(140, "Poison", ActionScope::ONE_TARGET,
-  //   inflict_actions[0], 100, 10);
+  Skill* poison = new Skill(140, "Poison", ActionScope::ONE_TARGET,
+    inflict_actions[0], 100, 10);
 
-  // Skill* burn = new Skill(141, "Burn", ActionScope::ONE_TARGET,
-  //   inflict_actions[1], 100, 10);
+  Skill* burn = new Skill(141, "Burn", ActionScope::ONE_TARGET,
+    inflict_actions[1], 100, 10);
 
-  // Skill* scald = new Skill(142, "Scald", ActionScope::ONE_TARGET,
-  //   inflict_actions[2], 100, 10);
+  Skill* scald = new Skill(142, "Scald", ActionScope::ONE_TARGET,
+    inflict_actions[2], 100, 10);
 
   Skill* charr = new Skill(143, "Charr", ActionScope::ONE_TARGET,
     inflict_actions[3], 100, 10);
@@ -431,6 +430,9 @@ void Game::setupBattle()
   Skill* thermal_buff = new Skill(150, "Thermal Buff", ActionScope::ONE_ALLY,
     inflict_actions[11], 100, 10);
 
+  Skill* deathtimer = new Skill(151, "Deathtimer", ActionScope::ONE_TARGET,
+    inflict_actions[21], 100, 10);
+
   // Test Skill Sets
   SkillSet* physical_skills = new SkillSet(physical_01, 1);
   physical_skills->addSkill(physical_02, 1);
@@ -443,9 +445,9 @@ void Game::setupBattle()
   physical_skills->addSkill(ally_heal, 1);
   physical_skills->addSkill(revive_ally, 1);
   physical_skills->addSkill(life_steal, 1);
-  // physical_skills->addSkill(poison, 1);
-  // physical_skills->addSkill(burn, 1);
-  // physical_skills->addSkill(scald, 1);
+  physical_skills->addSkill(poison, 1);
+  physical_skills->addSkill(burn, 1);
+  physical_skills->addSkill(scald, 1);
   physical_skills->addSkill(charr, 1);
   physical_skills->addSkill(berserk, 1);
   physical_skills->addSkill(confuse, 1);
@@ -454,6 +456,7 @@ void Game::setupBattle()
   physical_skills->addSkill(all_atk_buff, 1);
   physical_skills->addSkill(all_def_buff, 1);
   physical_skills->addSkill(thermal_buff, 1);
+  physical_skills->addSkill(deathtimer, 1);
 
   SkillSet* elemental_skills = new SkillSet(fire_01, 1);
 
@@ -1160,13 +1163,13 @@ bool Game::render(SDL_Renderer* renderer)
     getPerson(310)->setSprites(nullptr, new Frame(
               base_path + "sprites/Battle/Battle_Persons/bsian.png", renderer));
     getPerson(311)->setSprites(nullptr, new Frame(
-              base_path + "sprites/Battle/Battle_Persons/bsian.png", renderer));
+              base_path + "sprites/Battle/Battle_Persons/ballman.png", renderer));
     getPerson(312)->setSprites(nullptr, new Frame(
-              base_path + "sprites/Battle/Battle_Persons/bsian.png", renderer));
+              base_path + "sprites/Battle/Battle_Persons/forgemasternexus.png", renderer));
     getPerson(313)->setSprites(nullptr, new Frame(
-              base_path + "sprites/Battle/Battle_Persons/bsian.png", renderer));
+              base_path + "sprites/Battle/Battle_Persons/peltrance.png", renderer));
     getPerson(314)->setSprites(nullptr, new Frame(
-              base_path + "sprites/Battle/Battle_Persons/bsian.png", renderer));
+              base_path + "sprites/Battle/Battle_Persons/necross.png", renderer));
     getPerson(300)->setSprites(new Frame(
          base_path + "sprites/Battle/Backs/manbear1_brown_grey.png", renderer));
     getPerson(301)->setSprites(new Frame(

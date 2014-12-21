@@ -193,9 +193,6 @@ Battle::~Battle()
 bool Battle::addAilment(Infliction infliction_type, Person* inflictor,
                         uint16_t min_turns, uint16_t max_turns, int32_t chance)
 {
-  curr_target->getCurr().print(false);
-  curr_target->getTemp().print(false);
-
   auto success     = false;
   auto new_ailment = new Ailment(curr_target, infliction_type, inflictor,
                          min_turns, max_turns, static_cast<float>(chance));
@@ -207,7 +204,7 @@ bool Battle::addAilment(Infliction infliction_type, Person* inflictor,
 
     if (new_ailment->getFlag(AilState::TO_APPLY))
       new_ailment->apply();
-    
+
     success = true;
   }
   else
@@ -216,9 +213,6 @@ bool Battle::addAilment(Infliction infliction_type, Person* inflictor,
     new_ailment = nullptr;
     success     = false;
   }
-
-  curr_target->getCurr().print(false);
-  curr_target->getTemp().print(false);
 
   if (success && getBattleMode() == BattleMode::TEXT)
   {
@@ -1626,6 +1620,20 @@ void Battle::personalUpkeep(Person* const target)
         processDamageAmount(damage_amount, damage_type);
       }
 
+      if (ailment->getType() == Infliction::DEATHTIMER)
+      {
+        if (ailment->getFlag(AilState::TO_KILL))
+        {
+          processDamageAmount(target->getCurr().getStat(0),
+              DamageType::DEATHTIMER);
+        }
+        else if (getBattleMode() == BattleMode::TEXT)
+        {
+          std::cout << "{DEATHTIMER}" << ailment->getTurnsLeft() 
+                    << " turns until death." << std::endl;
+        }
+      }
+
       /* If the target is dead, the ailment update must have killed them */
       if (!target->getBFlag(BState::ALIVE))
       {
@@ -2365,8 +2373,6 @@ void Battle::processBuffer()
  */
 void Battle::reCalcAilments(Person* const target)
 {
-  (void)target; //TODO: [Warning]
-
   auto temp_vita = target->getCurr().getStat(0);
   auto temp_qtdr = target->getCurr().getStat(1);
 
@@ -2382,10 +2388,6 @@ void Battle::reCalcAilments(Person* const target)
   for (auto ill : ills)
     if (ill->getFlag(AilState::BUFF))
       ill->apply();
-
-  // find all buff factors
-  // OR find bubbify factor (bubbify == NO BUFFS)
-  // disenstubulate factor
 }
 
 /*
@@ -2753,9 +2755,7 @@ void Battle::updateEnemySelection()
       for (auto target : valid_targets)
       {
         if (target < 0)
-          { std::cout << "friendly target! " << std::endl;
           friends_persons.push_back(getPerson(target));
-        }
         else
           foes_persons.push_back(getPerson(target));
       }
