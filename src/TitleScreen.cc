@@ -257,10 +257,7 @@ bool TitleScreen::render(SDL_Renderer* renderer)
     background4.render(renderer, 153, 314);
     background5.render(renderer, 153, 314);
 	
-    /* Render atmmosphere */
-    background3.render(renderer, 153, 314);
-
-    /* Render atmmosphere */
+    /* Render atmosphere */
     background3.render(renderer, 153, 314);
 
     /* Render title */
@@ -289,6 +286,8 @@ bool TitleScreen::setBackground(std::string path, SDL_Renderer* renderer)
 #ifdef TITLE_SKIP
   return background.insertFirst(base_path + path, renderer);
 #else
+  (void)path;
+  
   background.insertFirst(base_path + "sprites/Title/title-backdrop.png", 
                          renderer);
   background2.insertFirst(base_path + "sprites/Title/title-dynaton.png", renderer);
