@@ -28,7 +28,7 @@ const uint16_t TitleScreen::kTEXT_MARGIN = 75;
 TitleScreen::TitleScreen(Options* running_config)
 {
   /* Initial parameter setup */
-  action = NONE;
+  action = NONE; 
   base_path = "";
   cursor_index = 0;
   font = NULL;
@@ -253,12 +253,12 @@ bool TitleScreen::render(SDL_Renderer* renderer)
       background7.render(renderer, 153, 314);
     }
 
-    /* Render atmmosphere */
-    background3.render(renderer, 153, 314);
-    
     /* The flash and bangs */
     background4.render(renderer, 153, 314);
     background5.render(renderer, 153, 314);
+	
+    /* Render atmmosphere */
+    background3.render(renderer, 153, 314);
 
     /* Render title */
     title.render(renderer, 50, 50);
@@ -289,13 +289,13 @@ bool TitleScreen::setBackground(std::string path, SDL_Renderer* renderer)
   background.insertFirst(base_path + "sprites/Title/title-backdrop.png", 
                          renderer);
   background2.insertFirst(base_path + "sprites/Title/title-dynaton.png", renderer);
-  background3.insertFirst(base_path + "sprites/Title/title-dynatonatmosphere.png", renderer);
-  background3.setOpacity(196);
-  background3.setColorBalance(255, 170, 170);
   background4.insertFirst(base_path + "sprites/Title/title-dynatonbooms1.png", renderer);
   background4.setOpacity(0);
   background5.insertFirst(base_path + "sprites/Title/title-dynatonbooms2.png", renderer);
   background5.setOpacity(0);
+  background3.insertFirst(base_path + "sprites/Title/title-dynatonatmosphere.png", renderer);
+  background3.setOpacity(196);
+  background3.setColorBalance(255, 170, 170);
   background6.insertFirst(base_path + "sprites/Title/title-moon.png", renderer);
   background7.insertFirst(base_path + "sprites/Title/title-waldo.png", renderer);
   title.setTexture(base_path + "sprites/Title/title.png", renderer);
