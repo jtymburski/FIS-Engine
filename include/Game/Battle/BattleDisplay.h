@@ -72,6 +72,9 @@ private:
   Options* system_options;
 
   /* ------------ Constants --------------- */
+  const static uint8_t kAILMENT_BORDER; /* Ailment border width */
+  const static uint8_t kAILMENT_GAP; /* Ailment gap between edges of space */
+  const static uint8_t kAILMENT_OPACITY; /* Ailment background opacity */
   const static uint8_t kALLY_HEALTH_H; /* Ally health bar height */
   const static uint8_t kALLY_HEALTH_TRIANGLE; /* Ally health triangle width */
   const static uint8_t kALLY_HEALTH_W; /* Ally health bar width */
@@ -130,6 +133,10 @@ private:
   std::vector<Frame*> getFriendsFrames();
   Party* getFriendsParty();
 
+  /* Renders the ailments for a given person at a given location */
+  bool renderAilment(SDL_Renderer* renderer, Person* person, 
+                     uint16_t x, uint16_t y, bool foe = false);
+
   /* Renders the battle bar */
   bool renderBar(SDL_Renderer* renderer, uint16_t screen_width, 
                                          uint16_t screen_height);
@@ -172,7 +179,7 @@ public:
   void clear();
 
   /* Returns the ailment frame */
-  Frame getAilment(Infliction ailment);
+  Frame* getAilment(Infliction ailment);
 
   /* Get the background */
   Sprite* getBackground();

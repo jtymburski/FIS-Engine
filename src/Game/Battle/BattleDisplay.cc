@@ -14,6 +14,9 @@
 #include "Game/Battle/BattleDisplay.h"
 
 /* Constant Implementation - see header file for descriptions */
+const uint8_t BattleDisplay::kAILMENT_BORDER = 1;
+const uint8_t BattleDisplay::kAILMENT_GAP = 2;
+const uint8_t BattleDisplay::kAILMENT_OPACITY = 128;
 const uint8_t BattleDisplay::kALLY_HEALTH_H = 18;
 const uint8_t BattleDisplay::kALLY_HEALTH_TRIANGLE = 9;
 const uint8_t BattleDisplay::kALLY_HEALTH_W = 132;
@@ -350,14 +353,6 @@ bool BattleDisplay::createFriendInfo(Person* ally, uint8_t index,
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
     SDL_RenderClear(renderer);
     
-    /* Render background of health Bar */
-//    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-//    uint8_t qd_x = border[0].x + health_width - qd_offset - 
-//                   qd_triangle - qd_width;
-//    uint8_t qd_y = border[0].y + health_height - (qd_height / 2);
-//    Frame::renderBar(qd_x, qd_y, qd_width + qd_triangle, qd_height, 
-//                    (float)qd_triangle / qd_height, renderer);
-    
     /* Render the health bar border */
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_Point border[5];
@@ -518,7 +513,61 @@ Party* BattleDisplay::getFriendsParty()
 {
   return battle->getFriends();
 }
-  
+   
+/* Renders the ailments for a given person at a given location */
+// TODO: Comment
+bool BattleDisplay::renderAilment(SDL_Renderer* renderer, Person* person, 
+                                  uint16_t x, uint16_t y, bool foe)
+{
+  /* Get ailment(s) and render holding box */
+  std::vector<Ailment*> ailments = battle->getPersonAilments(person);
+  if(ailments.size() > 0)
+  {
+    /* Sizing variables */
+    uint16_t gap = kAILMENT_GAP;
+    uint16_t border = kAILMENT_BORDER;
+
+    /* Render rectangle */
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, kAILMENT_OPACITY);
+    SDL_Rect rect;
+    rect.w = (this->ailments.front().getWidth() + gap * 2) * ailments.size() 
+             + border * 2;
+    rect.h = (this->ailments.front().getHeight() + gap * 2) + border;
+    rect.x = x - rect.w / 2;
+    rect.y = y - rect.h;
+    SDL_RenderFillRect(renderer, &rect);
+
+    /* Render rectangle border */
+    if(foe)
+      SDL_SetRenderDrawColor(renderer, kINFO_GREY, kINFO_GREY, kINFO_GREY, 255);
+    else
+      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_Point points[4];
+    points[0].x = rect.x;
+    points[0].y = rect.y + rect.h - 1;
+    points[1].x = rect.x;
+    points[1].y = rect.y;
+    points[2].x = rect.x + rect.w - 1;
+    points[2].y = rect.y;
+    points[3].x = points[2].x;
+    points[3].y = points[0].y;
+    SDL_RenderDrawLines(renderer, points, 4);
+
+    /* Render the ailments */
+    rect.x += border + gap;
+    rect.y += border + gap;
+    for(uint16_t j = 0; j < ailments.size(); j++)
+    {
+      Frame* f = getAilment(ailments[j]->getType());
+      f->render(renderer, rect.x, rect.y);
+      rect.x += f->getWidth() + gap * 2;
+    }
+
+    return true;
+  }
+  return false;
+}
+
 /* Renders the battle bar */
 // TODO: Comment
 bool BattleDisplay::renderBar(SDL_Renderer* renderer, uint16_t screen_width, 
@@ -623,6 +672,9 @@ bool BattleDisplay::renderFoesInfo(SDL_Renderer* renderer,
 
       /* Render foe info */
       foes_info[i]->render(renderer, x, y);
+
+      /* Render ailments */
+      renderAilment(renderer, foes_list[i], x + kINFO_W / 2, y, true);
     }
   }
 
@@ -750,8 +802,6 @@ bool BattleDisplay::renderFriendsInfo(SDL_Renderer* renderer,
       border[4].y = border[0].y;
       SDL_RenderDrawLines(renderer, border, 5);
 
-      // QTDR
-
       /* Health Text Amount */
       AttributeSet set = friends_list[i]->getCurr();
       SDL_Color color = {255, 255, 255, 255};
@@ -764,6 +814,10 @@ bool BattleDisplay::renderFriendsInfo(SDL_Renderer* renderer,
       t->setText(renderer, std::to_string(set.getStat("QTDR")), color);
       t->render(renderer, qd_x + (kALLY_QD_W - t->getWidth()) / 2, qd_y);
       delete t;
+      
+      /* Render ailments */
+      renderAilment(renderer, friends_list[i], x + kINFO_W / 2, 
+                    screen_height - kBIGBAR_OFFSET);
     }
   }
 
@@ -859,9 +913,9 @@ void BattleDisplay::clear()
 }
 
 // TODO: Comment
-Frame BattleDisplay::getAilment(Infliction ailment)
+Frame* BattleDisplay::getAilment(Infliction ailment)
 {
-  return ailments[static_cast<uint64_t>(ailment)];
+  return &ailments[static_cast<uint64_t>(ailment)];
 }
 
 /* Get the background */

@@ -281,7 +281,7 @@ bool Application::initialize()
   if(success)
   {
     /* Set the title screen background - TODO: Encapsulate in load?? */
-    title_screen.setBackground("pictures/univursatitle.png", renderer);
+    title_screen.setBackground("sprites/Title/old_title.png", renderer);
   }
   /* Uninitialize everything, if the init sequence failed */
   else if(!isInitialized())
