@@ -202,8 +202,10 @@ private:
   uint32_t total_exp;
 
   /* Frames for a Person */
-  Frame* first_person;
-  Frame* third_person;
+  Sprite* first_person;
+  Sprite* third_person;
+  //Frame* first_person;
+  //Frame* third_person;
 
   /* ------------ Static Private Members --------------- */
   static int id; /* Person unique ID counter */
@@ -435,10 +437,10 @@ public:
   uint32_t getTotalExp();
 
   /* Grabs the curr first person frame (based on BUBBIFIED flags) */
-  Frame* getFirstPerson();
+  Sprite* getFirstPerson();
 
   /* Grabs the curr third person frame (based on BUBBIFIED flags) */
-  Frame* getThirdPerson();
+  Sprite* getThirdPerson();
 
   /* Grabs the vector of item IDs the person can drop */
   std::vector<uint32_t> getItemDrops();
@@ -496,7 +498,7 @@ public:
                const std::vector<uint32_t> &new_item_drops);
 
   /* Assigns the sprite pointers for the person */
-  void setSprites(Frame* const new_fp = nullptr, Frame* const new_tp = nullptr);
+  void setSprites(Sprite* new_fp = nullptr, Sprite* new_tp = nullptr);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS

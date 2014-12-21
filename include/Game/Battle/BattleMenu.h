@@ -176,6 +176,9 @@ public:
   /* Get the element index (ex. index of skill selection */
   int32_t getElementIndex();
 
+  /* Get targets hovered over during the selection process */
+  std::vector<int32_t> getHoverTargets();
+
   /* Obtain the layer index of the menu */
   int32_t getLayerIndex();
 

@@ -258,6 +258,7 @@ void Person::setupClass()
     level = base_person->level;
     total_exp = base_person->total_exp;
 
+    /* Comes from base person, if not null */
     first_person = base_person->first_person;
     third_person = base_person->third_person;
   }
@@ -1595,10 +1596,12 @@ int16_t Person::getTrueCost(Skill* test_skill)
  *              IS_BUBBY BState flag)
  *
  * Inputs: none
- * Output: Frame* - pointer to the correct current first person sprite
+ * Output: Sprite* - pointer to the correct current first person sprite
  */
-Frame* Person::getFirstPerson()
+Sprite* Person::getFirstPerson()
 {
+  if(base_person != nullptr)
+    return base_person->first_person;
   return first_person;
 }
 
@@ -1607,10 +1610,12 @@ Frame* Person::getFirstPerson()
  *              IS_BUBBY BState flag)
  *
  * Inputs: none
- * Output: Frame* - pointer to the correct current third person sprite
+ * Output: Sprite* - pointer to the correct current third person sprite
  */
-Frame* Person::getThirdPerson()
+Sprite* Person::getThirdPerson()
 {
+  if(base_person != nullptr)
+    return base_person->third_person;
   return third_person;
 }
 
@@ -2033,9 +2038,14 @@ bool Person::setLoot(const uint32_t &new_credit_drop,
  *         new_tp - pointer to a third person sprite
  * Output: none
  */
-void Person::setSprites(Frame* const new_fp, Frame* const new_tp)
+void Person::setSprites(Sprite* new_fp, Sprite* new_tp)
 {
+  if(first_person != nullptr)
+    delete first_person;
   first_person = new_fp;
+
+  if(third_person != nullptr)
+    delete third_person;
   third_person = new_tp;
 }
 

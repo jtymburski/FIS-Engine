@@ -1076,6 +1076,32 @@ int32_t BattleMenu::getElementIndex()
 {
   return element_index;
 }
+  
+/* Get targets hovered over during the selection process */
+// TODO: Comment
+std::vector<int32_t> BattleMenu::getHoverTargets()
+{
+  std::vector<int32_t> hover_targets;
+
+  for(uint16_t i = 0; i < valid_targets.size(); i++)
+  {
+    /* If the index matches the element index or if the action scope is always
+     * highlighting, display an 'X' on it
+     * The following action scopes will always choose all selectable targets:
+     * ALL_ENEMIES, ALL_ALLIES, ALL_ALLIES_KO, ALL_TARGETS, ALL_NOT_USER */
+    if (action_scope == ActionScope::ALL_ALLIES    || 
+        action_scope == ActionScope::ALL_ENEMIES   ||
+        action_scope == ActionScope::ALL_ALLIES_KO || 
+        action_scope == ActionScope::ALL_TARGETS   ||
+        action_scope == ActionScope::ALL_NOT_USER  ||
+        i == element_index)
+    {
+      hover_targets.push_back(valid_targets[i]);
+    }
+  }
+
+  return hover_targets;
+}
 
 /*
  * Description: 
