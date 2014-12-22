@@ -314,6 +314,10 @@ void Game::setupBattle()
   inflict_actions.push_back(new Action("519,INFLICT,2.5,,,VITBUFF,AMOUNT.0,,VITA,99"));
   inflict_actions.push_back(new Action("520,INFLICT,2.5,,,QDBUFF,AMOUNT.0,,VITA,99"));
   inflict_actions.push_back(new Action("521,INFLICT,5.5,,,DEATHTIMER,AMOUNT.0,,VITA,99"));
+  inflict_actions.push_back(new Action("522,INFLICT,3.5,,,PARALYSIS,AMOUNT.30,,VITA,99"));
+  inflict_actions.push_back(new Action("523,INFLICT,2.5,,,BLINDNESS,AMOUNT.20,,VITA,99"));
+  inflict_actions.push_back(new Action("524,INFLICT,2.4,,,DREADSTRUCK,AMOUNT.25,,VITA,99"));
+  inflict_actions.push_back(new Action("525,INFLICT,2.6,,,DREAMSNARE,AMOUNT.25,,VITA,99"));
 
   // for(auto it = begin(damage_actions); it != end(damage_actions); ++it)
   //   std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
@@ -332,62 +336,62 @@ void Game::setupBattle()
       damage_actions[3], 95, 0);
   physical_01->setPrimary(Element::PHYSICAL);
 
-  Skill* physical_02 = new Skill(101, "Whelp", ActionScope::ONE_ENEMY, 
-      damage_actions[4],  95, 5);
-  physical_02->setPrimary(Element::PHYSICAL);
+  // Skill* physical_02 = new Skill(101, "Whelp", ActionScope::ONE_ENEMY, 
+  //     damage_actions[4],  95, 5);
+  // physical_02->setPrimary(Element::PHYSICAL);
 
-  Skill* physical_03 = new Skill(102, "Two Smackeroos", 
-      ActionScope::TWO_ENEMIES, damage_actions[6], 95, 100);
-  physical_03->setPrimary(Element::PHYSICAL);
+  // Skill* physical_03 = new Skill(102, "Two Smackeroos", 
+  //     ActionScope::TWO_ENEMIES, damage_actions[6], 95, 100);
+  // physical_03->setPrimary(Element::PHYSICAL);
 
-  Skill* physical_04 = new Skill(103, "Mass Smack", ActionScope::ALL_ENEMIES, 
-      damage_actions[8], 85, 5); 
-  physical_04->setPrimary(Element::PHYSICAL);
+  // Skill* physical_04 = new Skill(103, "Mass Smack", ActionScope::ALL_ENEMIES, 
+  //     damage_actions[8], 85, 5); 
+  // physical_04->setPrimary(Element::PHYSICAL);
 
   Skill* fire_01 = new Skill(110, "Burninate The Countryside", ActionScope::ONE_PARTY, 
     damage_actions[8], 100, 5);
   fire_01->setPrimary(Element::FIRE);
   fire_01->setSecondary(Element::PHYSICAL);
 
-  Skill* forest_01 = new Skill(111, "Earth Strike", ActionScope::ONE_ENEMY,
-    damage_actions[4], 91, 4);
-  forest_01->setPrimary(Element::FOREST);
+  // Skill* forest_01 = new Skill(111, "Earth Strike", ActionScope::ONE_ENEMY,
+  //   damage_actions[4], 91, 4);
+  // forest_01->setPrimary(Element::FOREST);
 
-  Skill* ice_01 = new Skill(112, "Frosty Spray", ActionScope::TWO_ENEMIES, 
-    damage_actions[5], 99, 5);
-  ice_01->setPrimary(Element::ICE);
+  // Skill* ice_01 = new Skill(112, "Frosty Spray", ActionScope::TWO_ENEMIES, 
+  //   damage_actions[5], 99, 5);
+  // ice_01->setPrimary(Element::ICE);
 
-  Skill* electric_01 = new Skill(113, "Shock", ActionScope::ALL_ENEMIES,
-    damage_actions[6], 99, 6);
-  electric_01->setPrimary(Element::ELECTRIC);
+  // Skill* electric_01 = new Skill(113, "Shock", ActionScope::ALL_ENEMIES,
+  //   damage_actions[6], 99, 6);
+  // electric_01->setPrimary(Element::ELECTRIC);
 
-  Skill* digital_01 = new Skill(114, "Compile", ActionScope::ONE_ENEMY,
-    damage_actions[6], 99, 6);
-  digital_01->setPrimary(Element::DIGITAL);
+  // Skill* digital_01 = new Skill(114, "Compile", ActionScope::ONE_ENEMY,
+  //   damage_actions[6], 99, 6);
+  // digital_01->setPrimary(Element::DIGITAL);
 
-  Skill* void_01 = new Skill(115, "Demi", ActionScope::ONE_ENEMY,
-    damage_actions[7], 99, 7);
-  void_01->setPrimary(Element::NIHIL);
+  // Skill* void_01 = new Skill(115, "Demi", ActionScope::ONE_ENEMY,
+  //   damage_actions[7], 99, 7);
+  // void_01->setPrimary(Element::NIHIL);
 
-  Skill* self_heal = new Skill(120, "Heal Self", ActionScope::USER,
-    alter_actions[0], 100, 5);
-  self_heal->setPrimary(Element::FOREST);
-  self_heal->setPrimary(Element::PHYSICAL);
+  // Skill* self_heal = new Skill(120, "Heal Self", ActionScope::USER,
+  //   alter_actions[0], 100, 5);
+  // self_heal->setPrimary(Element::FOREST);
+  // self_heal->setPrimary(Element::PHYSICAL);
 
   Skill* ally_heal = new Skill(121, "Heal Ally", ActionScope::ONE_ALLY_NOT_USER,
     alter_actions[1], 100, 5);
   ally_heal->setPrimary(Element::FOREST);
   ally_heal->setSecondary(Element::PHYSICAL);
 
-  Skill* user_reduce_by_ally = new Skill(122, "Reduce User By Ally", ActionScope::USER,
-    alter_actions[2], 100, 5);
-  ally_heal->setPrimary(Element::PHYSICAL);
+  // Skill* user_reduce_by_ally = new Skill(122, "Reduce User By Ally", ActionScope::USER,
+  //   alter_actions[2], 100, 5);
+  // ally_heal->setPrimary(Element::PHYSICAL);
 
-  Skill* alter_qtdr_by_thag = new Skill(123, "Alter Qtdr By Thag", ActionScope::ONE_TARGET,
-    alter_actions[4], 100, 5);
+  // Skill* alter_qtdr_by_thag = new Skill(123, "Alter Qtdr By Thag", ActionScope::ONE_TARGET,
+  //   alter_actions[4], 100, 5);
 
-  Skill* alter_qtdr_by_thag_flip = new Skill(123, "Alter Qtdr By Thag - Flip", ActionScope::ONE_TARGET,
-    alter_actions[5], 100, 5);
+  // Skill* alter_qtdr_by_thag_flip = new Skill(123, "Alter Qtdr By Thag - Flip", ActionScope::ONE_TARGET,
+  //   alter_actions[5], 100, 5);
 
   Skill* revive_ally = new Skill(130, "Revive Ally", ActionScope::ONE_ALLY_KO,
     assign_actions[4], 100, 5);
@@ -432,16 +436,25 @@ void Game::setupBattle()
 
   Skill* deathtimer = new Skill(151, "Deathtimer", ActionScope::ONE_TARGET,
     inflict_actions[21], 100, 10);
+  
+  Skill* blindness = new Skill(152, "Blindness", ActionScope::ONE_TARGET,
+    inflict_actions[22], 100, 10);
+
+  Skill* dreadstruck = new Skill(153, "Dreadstruck", ActionScope::ONE_TARGET,
+    inflict_actions[23], 100, 10);
+
+  Skill* dreamsnare = new Skill(154, "Dreamsnare", ActionScope::ONE_TARGET,
+    inflict_actions[24], 100, 10);
 
   // Test Skill Sets
   SkillSet* physical_skills = new SkillSet(physical_01, 1);
-  physical_skills->addSkill(physical_02, 1);
-  physical_skills->addSkill(physical_03, 1);
-  physical_skills->addSkill(user_reduce_by_ally, 1);
-  physical_skills->addSkill(alter_qtdr_by_thag, 1);
-  physical_skills->addSkill(alter_qtdr_by_thag_flip, 1);
-  physical_skills->addSkill(physical_04, 1);
-  physical_skills->addSkill(self_heal, 1);
+  // physical_skills->addSkill(physical_02, 1);
+  // physical_skills->addSkill(physical_03, 1);
+  // physical_skills->addSkill(user_reduce_by_ally, 1);
+  // physical_skills->addSkill(alter_qtdr_by_thag, 1);
+  // physical_skills->addSkill(alter_qtdr_by_thag_flip, 1);
+  // physical_skills->addSkill(physical_04, 1);
+  // physical_skills->addSkill(self_heal, 1);
   physical_skills->addSkill(ally_heal, 1);
   physical_skills->addSkill(revive_ally, 1);
   physical_skills->addSkill(life_steal, 1);
@@ -457,17 +470,20 @@ void Game::setupBattle()
   physical_skills->addSkill(all_def_buff, 1);
   physical_skills->addSkill(thermal_buff, 1);
   physical_skills->addSkill(deathtimer, 1);
+  physical_skills->addSkill(blindness, 1);
+  physical_skills->addSkill(dreadstruck, 1);
+  physical_skills->addSkill(dreamsnare, 1);
 
   SkillSet* elemental_skills = new SkillSet(fire_01, 1);
 
-  elemental_skills->addSkill(forest_01, 1);
-  elemental_skills->addSkill(ice_01, 1);
-  elemental_skills->addSkill(electric_01, 1);
-  elemental_skills->addSkill(digital_01, 1);
-  elemental_skills->addSkill(void_01, 1);\
+  // elemental_skills->addSkill(forest_01, 1);
+  // elemental_skills->addSkill(ice_01, 1);
+  // elemental_skills->addSkill(electric_01, 1);
+  // elemental_skills->addSkill(digital_01, 1);
+  // elemental_skills->addSkill(void_01, 1);
 
   bubbified_skills = new SkillSet(physical_01, 1);
-  bubbified_skills->addSkill(physical_02, 2);
+  // bubbified_skills->addSkill(physical_02, 2);
 
   // Test Attribute Sets
   AttributeSet weak_stats        = AttributeSet(1, true, false);

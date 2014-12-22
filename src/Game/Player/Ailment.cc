@@ -699,7 +699,7 @@ void Ailment::unapply()
 {
   //TODO: Retain the defaults or previous settings of things? [01-26-14]
   auto& stats     = victim->getCurr();
-  auto& max_stats = victim->getTemp();
+  //auto& max_stats = victim->getTemp();
   auto  skills    = victim->getCurrSkills();
 
   /* On removing Berserk, person's dmg_mod needs to be reset. Action flags are

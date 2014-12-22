@@ -1276,15 +1276,17 @@ void Battle::cleanUp()
     member->resetDefend();
     member->resetGuard();
     member->resetGuardee();
+    member->setBFlag(BState::SKIP_NEXT_TURN, false);
   }
 
   for (size_t i = 0; i < foes->getSize(); i++)
   {
     auto member = foes->getMember(i);
-//    member->resetAI();
+    member->resetAI();
     member->resetDefend();
     member->resetGuard();
     member->resetGuardee();
+    member->setBFlag(BState::SKIP_NEXT_TURN, false);
   }
 
   setBattleFlag(CombatState::PHASE_DONE, true);
@@ -1387,8 +1389,14 @@ bool Battle::doesSkillHit(std::vector<Person*> targets)
     can_hit &= curr_user->getBFlag(BState::SKL_ENABLED);
     can_hit &= !curr_user->getBFlag(BState::MISS_NEXT_TARGET);
 
+    if (curr_user->getBFlag(BState::MISS_NEXT_TARGET))
+      std::cout << "{BLIND} - Blind miss" << std::endl;
+
     if (can_hit)
     {
+      if (curr_user->getBFlag(BState::NEXT_ATK_NO_EFFECT))
+        std::cout << "{DREAMSNARE} - No effect" << std::endl;
+
       /* Obtain the base hit rate (in XX.X%) */
       auto hit_rate = curr_skill->getChance();
 
@@ -1755,6 +1763,9 @@ bool Battle::processAction(std::vector<Person*> targets,
 
     if (can_process && doesActionHit())
     {
+      curr_user->setBFlag(BState::MISS_NEXT_TARGET, false);
+      curr_user->setBFlag(BState::NEXT_ATK_NO_EFFECT, false);
+
       if (curr_action->actionFlag(ActionFlags::ALTER) ||
           curr_action->actionFlag(ActionFlags::ASSIGN))
       {
@@ -2570,9 +2581,19 @@ bool Battle::testPersonIndex(const int32_t &test_index)
 {
   auto test_person = getPerson(test_index);
 
-  if (test_person->getBFlag(BState::ALIVE) && 
-      !test_person->getBFlag(BState::SKIP_NEXT_TURN))
+  if (test_person->getBFlag(BState::ALIVE))
   {
+    if (test_person->getBFlag(BState::SKIP_NEXT_TURN))
+    {
+      if (getBattleMode() == BattleMode::TEXT)
+      {
+        std::cout << "{SKIP} " << test_person->getName() << " skips their turn"
+            << "." << std::endl;
+      }
+      
+      return false;
+    }
+
     return true;
   }
  
