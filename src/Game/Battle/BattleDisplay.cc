@@ -25,7 +25,7 @@ const uint8_t BattleDisplay::kALLY_QD_H = 12;
 const uint8_t BattleDisplay::kALLY_QD_OFFSET = 3;
 const uint8_t BattleDisplay::kALLY_QD_TRIANGLE = 6;
 const uint8_t BattleDisplay::kALLY_QD_W = 94;
-const uint16_t BattleDisplay::kANIMATION_PROCESS = 1000;
+const uint16_t BattleDisplay::kANIMATION_PROCESS = 2000;
 const uint16_t BattleDisplay::kBIGBAR_CHOOSE = 100;
 const float BattleDisplay::kBIGBAR_L = 0.2; 
 const float BattleDisplay::kBIGBAR_M = 0.3;
@@ -1393,12 +1393,12 @@ bool BattleDisplay::update(int cycle_time)
             if(friends_state[i] == choosing)
               friends_state[i]->fp->setBrightness(1.0);
             else
-              friends_state[i]->fp->setBrightness(0.0);
+              friends_state[i]->fp->setBrightness(0.15);
           }
         }
         for(uint16_t i = 0; i < foes_state.size(); i++)
           if(foes_state[i]->tp != NULL)
-            foes_state[i]->tp->setBrightness(0.0);
+            foes_state[i]->tp->setBrightness(0.15);
 
         bar_offset = kBIGBAR_CHOOSE;
       }
