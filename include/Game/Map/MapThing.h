@@ -38,7 +38,7 @@ protected:
   std::string description;
   int id;
   std::string name;
-  bool passable;
+  bool passable; // TODO: Remove?
   bool visible;
   float x;
   float y;
