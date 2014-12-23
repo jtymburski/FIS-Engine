@@ -105,7 +105,8 @@ private:
   const static uint8_t kCOLOR_BASE; /* Base of color for shifting bars */
   const static uint16_t kBIGBAR_CHOOSE; /* Additional offset for choice */
   const static float kBIGBAR_L; /* The percentage of the left section */
-  const static float kBIGBAR_M; /* The percentage of the middle section */
+  const static float kBIGBAR_M1; /* The percentage of the middle section */
+  const static float kBIGBAR_M2; /* The percentage of the second middle */
   const static uint16_t kBIGBAR_OFFSET; /* Offset of bar off bottom */
   const static float kBIGBAR_R; /* The percentage of the right section */
   const static uint8_t kINFO_BORDER; /* Border width on enemy info bar */
@@ -127,6 +128,8 @@ private:
   const static uint8_t kMENU_SEPARATOR_T; /* Separator gap off top */ 
   const static uint16_t kPERSON_SPREAD; /* Rendering overlay of persons */
   const static uint16_t kPERSON_WIDTH; /* Width of persons on battle */
+  const static uint8_t kTYPE_MARGIN; /* Margin around text options in type */
+  const static uint8_t kTYPE_SELECT; /* Margin to spread select around type */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS

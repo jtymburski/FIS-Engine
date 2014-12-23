@@ -28,7 +28,8 @@ const uint8_t BattleDisplay::kALLY_QD_W = 94;
 const uint16_t BattleDisplay::kANIMATION_PROCESS = 2000;
 const uint16_t BattleDisplay::kBIGBAR_CHOOSE = 100;
 const float BattleDisplay::kBIGBAR_L = 0.2; 
-const float BattleDisplay::kBIGBAR_M = 0.3;
+const float BattleDisplay::kBIGBAR_M1 = 0.1;
+const float BattleDisplay::kBIGBAR_M2 = 0.2;
 const uint16_t BattleDisplay::kBIGBAR_OFFSET = 88;
 const float BattleDisplay::kBIGBAR_R = 0.5;
 const uint8_t BattleDisplay::kCOLOR_BASE = 150;
@@ -51,6 +52,8 @@ const uint8_t BattleDisplay::kMENU_SEPARATOR_B = 8;
 const uint8_t BattleDisplay::kMENU_SEPARATOR_T = 12;
 const uint16_t BattleDisplay::kPERSON_SPREAD = 200;
 const uint16_t BattleDisplay::kPERSON_WIDTH = 256;
+const uint8_t BattleDisplay::kTYPE_MARGIN = 7;
+const uint8_t BattleDisplay::kTYPE_SELECT = 3;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -780,6 +783,62 @@ bool BattleDisplay::renderMenu(SDL_Renderer* renderer, PersonState* state,
   rect.w = 1;
   rect.h = screen_height - rect.y - kMENU_SEPARATOR_B;
   SDL_RenderFillRect(renderer, &rect);
+
+  /* Render the second separator */
+  uint16_t section2_w = screen_width * kBIGBAR_M1;
+  SDL_Rect rect2;
+  rect2.x = rect.x + section2_w;
+  rect2.y = rect.y;
+  rect2.w = 1;
+  rect2.h = rect.h;
+  SDL_RenderFillRect(renderer, &rect2);
+
+  /* Render the third separator */
+  uint16_t section3_w = screen_width * kBIGBAR_M2;
+  SDL_Rect rect3;
+  rect3.x = rect2.x + section3_w;
+  rect3.y = rect.y;
+  rect3.w = 1;
+  rect3.h = rect.h;
+  SDL_RenderFillRect(renderer, &rect3);
+
+  /* Get actions */
+  SDL_Color color = {255, 255, 255, 255};
+  int start_y = -1;
+  Text* t = new Text(font_header);
+  std::vector<ActionType> types = menu->getValidActionTypes();
+
+  /* Loop through all actions */
+  for(uint16_t i = 0; i < types.size(); i++)
+  {
+    /* Set the text */
+    std::string text_str = Helpers::actionTypeToStr(types[i]);
+    success &= t->setText(renderer, text_str, color);
+    if(start_y  == -1)
+      start_y = rect.y + (rect2.h - types.size() * 
+                (t->getHeight() + kTYPE_MARGIN*2)) / 2;
+
+    /* Calculate x and y location */
+    int text_x = rect.x + (section2_w - t->getWidth()) / 2;
+    int text_y = start_y + kTYPE_MARGIN * (i+1) + 
+                 (t->getHeight() + kTYPE_MARGIN) * i;
+
+    /* If selected, draw background box */
+    if((menu->getLayerIndex() == 1 && i == menu->getElementIndex()) || 
+       (menu->getLayerIndex() != 1 && types[i] == menu->getActionType()))
+    {
+      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 45);
+      SDL_Rect text_rect;
+      text_rect.x = text_x - kTYPE_SELECT;
+      text_rect.y = text_y - kTYPE_SELECT;
+      text_rect.w = t->getWidth() + kTYPE_SELECT * 2;
+      text_rect.h = t->getHeight() + kTYPE_SELECT * 2;
+      SDL_RenderFillRect(renderer, &text_rect);
+    }
+
+    /* Finally, render text */
+    success &= t->render(renderer, text_x, text_y);
+  }
 
   return success;
 }
