@@ -342,12 +342,13 @@ void BattleMenu::keyDownDecrement()
   /* Move to the last index if on the first index */
   if (element_index == 0)
   {
-    element_index = getMaxIndex();
-
-    if (action_type != ActionType::NONE && valid_targets.empty())
+    if(getLayerIndex() > 2)
     {
-      for (; !indexHasTargets() && element_index > 0; )
-        element_index--;
+      element_index = getMaxIndex();
+
+      if (action_type != ActionType::NONE && valid_targets.empty())
+        for (; !indexHasTargets() && element_index > 0; )
+          element_index--;
     }
   }
   else
@@ -395,7 +396,7 @@ void BattleMenu::keyDownIncrement()
     }
   }
   /* Otherwise, set to the top index */
-  else
+  else if(getLayerIndex() > 2)
   {
     element_index = 0;
 
@@ -1054,7 +1055,7 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
     if (layer_index == 4)
       change_index = false;
   }
-
+  
   if (change_index)
   {
     if (event.keysym.sym == SDLK_UP || event.keysym.sym == SDLK_RIGHT)

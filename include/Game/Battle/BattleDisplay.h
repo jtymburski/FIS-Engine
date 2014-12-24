@@ -77,6 +77,11 @@ private:
   /* The rendering friend info bar */
   std::vector<PersonState*> friends_state;
 
+  /* Rendering indexes */
+  uint16_t index_actions;
+  uint16_t index_layer;
+  uint16_t index_types;
+
   /* Mid scene overlays */
   std::vector<Sprite*> midlays; // TODO: Make overlay class when created
 
@@ -128,7 +133,9 @@ private:
   const static uint8_t kMENU_SEPARATOR_T; /* Separator gap off top */ 
   const static uint16_t kPERSON_SPREAD; /* Rendering overlay of persons */
   const static uint16_t kPERSON_WIDTH; /* Width of persons on battle */
+  const static uint8_t kSCROLL_R; /* Radius on scroll renders */
   const static uint8_t kTYPE_MARGIN; /* Margin around text options in type */
+  const static uint8_t kTYPE_MAX; /* Max number of action types to render */
   const static uint8_t kTYPE_SELECT; /* Margin to spread select around type */
 
 /*=============================================================================
@@ -158,6 +165,18 @@ private:
 
   /* Returns modified index */
   uint32_t getIndex(int32_t index);
+
+  /* Render the details on the hovered action */
+  bool renderActionSkill(SDL_Renderer* renderer, Skill* skill, uint16_t x, 
+                         uint16_t y, uint16_t width, uint16_t height);
+
+  /* Render the action skills */
+  bool renderActionSkills(SDL_Renderer* renderer, BattleMenu* menu, uint16_t x,
+                          uint16_t y, uint16_t width, uint16_t height);
+
+  /* Render the action categories */
+  bool renderActionTypes(SDL_Renderer* renderer, BattleMenu* menu, uint16_t x, 
+                         uint16_t y, uint16_t width, uint16_t height);
 
   /* Renders the ailments for a given person at a given location */
   bool renderAilment(SDL_Renderer* renderer, Person* person, 

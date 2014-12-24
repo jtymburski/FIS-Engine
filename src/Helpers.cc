@@ -293,21 +293,21 @@ std::string Helpers::cellToStr(const CellState &cell_state)
 std::string Helpers::actionTypeToStr(const ActionType &action_type)
 {
   if (action_type == ActionType::SKILL)
-    return "SKILL";
+    return "Skill";
   else if (action_type == ActionType::ITEM)
-    return "ITEM";
+    return "Item";
   else if (action_type == ActionType::DEFEND)
-    return "DEFEND";
+    return "Defend";
   else if (action_type == ActionType::GUARD)
-    return "GUARD";
+    return "Guard";
   else if (action_type == ActionType::IMPLODE)
-    return "IMPLODE";
+    return "Implode";
   else if (action_type == ActionType::RUN)
-    return "RUN";
+    return "Run";
   else if (action_type == ActionType::PASS)
-    return "PASS";
+    return "Pass";
   else if (action_type == ActionType::NONE)
-    return "NONE";
+    return "None";
 
   return "";
 }

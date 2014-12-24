@@ -353,9 +353,9 @@ void Game::setupBattle()
   fire_01->setPrimary(Element::FIRE);
   fire_01->setSecondary(Element::PHYSICAL);
 
-  // Skill* forest_01 = new Skill(111, "Earth Strike", ActionScope::ONE_ENEMY,
-  //   damage_actions[4], 91, 4);
-  // forest_01->setPrimary(Element::FOREST);
+  Skill* forest_01 = new Skill(111, "Earth Strike", ActionScope::ONE_ENEMY,
+                               damage_actions[4], 91, 4);
+  forest_01->setPrimary(Element::FOREST);
 
   // Skill* ice_01 = new Skill(112, "Frosty Spray", ActionScope::TWO_ENEMIES, 
   //   damage_actions[5], 99, 5);
@@ -476,7 +476,7 @@ void Game::setupBattle()
 
   SkillSet* elemental_skills = new SkillSet(fire_01, 1);
 
-  // elemental_skills->addSkill(forest_01, 1);
+  elemental_skills->addSkill(forest_01, 1);
   // elemental_skills->addSkill(ice_01, 1);
   // elemental_skills->addSkill(electric_01, 1);
   // elemental_skills->addSkill(digital_01, 1);
@@ -518,7 +518,7 @@ void Game::setupBattle()
   bloodclaw_scion->setFlag(CategoryState::E_CLAWS, true);
 
   Category* tactical_samurai = new Category(252, "Tactical Samurai", "samurai",
-      not_as_weak_stats, medium_stats, elemental_skills);
+      not_as_weak_stats, medium_stats, physical_skills);
   tactical_samurai->setDescription("A class of swordsman like no other.");
   tactical_samurai->setFlag(CategoryState::DEF_ENABLED, true);
   tactical_samurai->setFlag(CategoryState::POWER_DEFENDER, true);
@@ -553,12 +553,12 @@ void Game::setupBattle()
   getPerson(302)->setCurves(Element::FOREST, ElementCurve::A,
                             Element::ICE, ElementCurve::C, true);
 
-  base_person_list.push_back(new Person(303, "Atkst", human,
+  base_person_list.push_back(new Person(303, "Atkst", bloodclaw_scion,
     bloodclaw_scion));
   getPerson(303)->addExp(6000);
   getPerson(303)->setCurves(Element::FOREST, ElementCurve::A,
                             Element::ICE, ElementCurve::C, true);
-
+  
   base_person_list.push_back(new Person(304, "Kevin", bear,
     tactical_samurai));
   getPerson(304)->addExp(78000);

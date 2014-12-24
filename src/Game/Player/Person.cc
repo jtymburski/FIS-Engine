@@ -1075,7 +1075,7 @@ void Person::resetActionFlags()
 {
   setBFlag(BState::ATK_ENABLED, true);
   setBFlag(BState::SKL_ENABLED, true);
-  setBFlag(BState::ITM_ENABLED, false); //TODO: Temporarily disabled  [08-09-14]
+  setBFlag(BState::ITM_ENABLED, true); //TODO: Temporarily disabled  [08-09-14]
   setBFlag(BState::INS_ENABLED, false); //TODO: What enables inspect? [08-09-14]
   setBFlag(BState::RUN_ENABLED, true); 
   setBFlag(BState::PAS_ENABLED, true);
@@ -1743,7 +1743,7 @@ std::vector<ActionType> Person::getValidActions()
     
   if (getBFlag(BState::ITM_ENABLED))
     valid_action_types.push_back(ActionType::ITEM);
-
+  
   if (getBFlag(BState::DEF_ENABLED))
     valid_action_types.push_back(ActionType::DEFEND);
 

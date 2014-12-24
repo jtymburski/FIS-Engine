@@ -29,9 +29,9 @@ const uint16_t BattleDisplay::kANIMATION_PROCESS = 2000;
 const uint16_t BattleDisplay::kBIGBAR_CHOOSE = 100;
 const float BattleDisplay::kBIGBAR_L = 0.2; 
 const float BattleDisplay::kBIGBAR_M1 = 0.1;
-const float BattleDisplay::kBIGBAR_M2 = 0.2;
+const float BattleDisplay::kBIGBAR_M2 = 0.3;
 const uint16_t BattleDisplay::kBIGBAR_OFFSET = 88;
-const float BattleDisplay::kBIGBAR_R = 0.5;
+const float BattleDisplay::kBIGBAR_R = 0.4;
 const uint8_t BattleDisplay::kCOLOR_BASE = 150;
 const uint8_t BattleDisplay::kINFO_BORDER = 2;
 const uint8_t BattleDisplay::kINFO_GREY = 200;
@@ -52,7 +52,9 @@ const uint8_t BattleDisplay::kMENU_SEPARATOR_B = 8;
 const uint8_t BattleDisplay::kMENU_SEPARATOR_T = 12;
 const uint16_t BattleDisplay::kPERSON_SPREAD = 200;
 const uint16_t BattleDisplay::kPERSON_WIDTH = 256;
+const uint8_t BattleDisplay::kSCROLL_R = 3;
 const uint8_t BattleDisplay::kTYPE_MARGIN = 7;
+const uint8_t BattleDisplay::kTYPE_MAX = 5;
 const uint8_t BattleDisplay::kTYPE_SELECT = 3;
 
 /*=============================================================================
@@ -76,6 +78,9 @@ BattleDisplay::BattleDisplay(Options* running_config)
   foes_backdrop = NULL;
   font_header = NULL;
   font_subheader = NULL;
+  index_actions = 0;
+  index_layer = 0;
+  index_types = 0;
   offset = 0; // TODO: Delete
   offset_2 = 0; // TODO: Delete
   rendering_state = TurnState::DESTRUCT;
@@ -459,6 +464,230 @@ uint32_t BattleDisplay::getIndex(int32_t index)
 
   return returned;
 }
+   
+/* Render the details on the hovered action */
+bool BattleDisplay::renderActionSkill(SDL_Renderer* renderer, Skill* skill, 
+                                      uint16_t x, uint16_t y, uint16_t width, 
+                                      uint16_t height)
+{
+  bool success = true;
+
+  std::cout << "--" << std::endl;
+  std::cout << "Name: " << skill->getName() << std::endl;
+  std::cout << "Description: " << skill->getDescription() << std::endl;
+  std::cout << "Message: " << skill->getMessage() << std::endl;
+  std::cout << "Primary Element: " 
+            << Helpers::elementToString(skill->getPrimary()) << std::endl;
+  std::cout << "Secondary Element: " 
+            << Helpers::elementToString(skill->getSecondary()) << std::endl;
+  std::cout << "Targets: " << Helpers::actionScopeToStr(skill->getScope()) 
+            << std::endl;
+  std::cout << "Cost: " << skill->getCost() << std::endl;
+  std::cout << "Cooldown: " << skill->getCooldown() << std::endl;
+  std::cout << "Chance: " << skill->getChance() << std::endl;
+  std::cout << "Action Chance: " << skill->getEffect(0)->getChance() 
+            << std::endl;
+  std::cout << "Thumbnail: " << skill->getThumbnail() << std::endl;
+  std::cout << "Render Size: " << x << "," << y << ":" << width << "," 
+            << height << std::endl;
+  std::cout << "--" << std::endl;
+
+  return success;
+}
+
+/* Render the action skills */
+// TODO: Comment
+bool BattleDisplay::renderActionSkills(SDL_Renderer* renderer, BattleMenu* menu, 
+                                       uint16_t x, uint16_t y, uint16_t width, 
+                                       uint16_t height)
+{
+  /* Get skills */
+  SDL_Color color = {255, 255, 255, 255};
+  bool success = true;
+  std::vector<BattleSkill> skills = menu->getMenuSkills();
+  Text* t = new Text(font_header);
+  
+  /* Calculate the start y */
+  int start_y = 0;
+  t->setText(renderer, "Test", color);
+  if(skills.size() >= kTYPE_MAX)
+    start_y = y + kTYPE_MARGIN;
+  else
+    start_y = y + (height - skills.size() * 
+                   (t->getHeight() + kTYPE_MARGIN * 2)) / 2;
+  
+  /* Loop through all skills */
+  for(uint16_t i = 0; i < skills.size() && i < kTYPE_MAX; i++)
+  {
+    /* Set the text */
+    uint16_t index = i + index_actions;
+    std::string text_str = skills[index].skill->getName();
+    success &= t->setText(renderer, text_str, color);
+
+    /* Calculate x and y location */
+    int text_x = x + kTYPE_MARGIN * 2;
+    int text_y = start_y + kTYPE_MARGIN * (i + 1) + 
+                 (t->getHeight() + kTYPE_MARGIN) * i;
+
+    /* If selected, draw background box */
+    uint16_t x_qd_end = x + width - kTYPE_MARGIN * 6;
+    if(index == menu->getElementIndex())
+    {
+      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 45);
+      SDL_Rect text_rect;
+      text_rect.x = text_x - kTYPE_SELECT;
+      text_rect.y = text_y - kTYPE_SELECT;
+      text_rect.w = x_qd_end - text_rect.x + kTYPE_SELECT * 2;
+      text_rect.h = t->getHeight() + kTYPE_SELECT * 2;
+      SDL_RenderFillRect(renderer, &text_rect);
+    }
+
+    /* Render the text */
+    success &= t->render(renderer, text_x, text_y);
+
+    /* Render the QD */
+    success &= t->setText(renderer, 
+                 std::to_string(skills[index].skill->getCost()) + " qd", color);
+    success &= t->render(renderer, x_qd_end - t->getWidth(), text_y);
+
+
+    /* Render the scroll bar, if relevant */
+    if(skills.size() > kTYPE_MAX && (i == 0 || i == kTYPE_MAX - 1))
+    {
+      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
+      uint16_t center_x = x + width - kTYPE_MARGIN * 2;
+      uint16_t center_y = text_y + t->getHeight() / 2;
+
+      /* Top of scroll */
+      if(i == 0)
+      {
+        if(index_actions == 0)
+          success &= Frame::renderCircle(center_x - 1, center_y, kSCROLL_R, 
+                                         renderer);
+        else
+        {
+          center_y -= 1;
+          success &= Frame::renderTriangle(center_x, center_y - kSCROLL_R + 1,   
+                     center_x - kSCROLL_R, center_y + kSCROLL_R, 
+                     center_x + kSCROLL_R, center_y + kSCROLL_R, renderer);
+        }
+      }
+
+      /* Bottom of scroll */
+      if(i == kTYPE_MAX - 1)
+      {
+        uint16_t bottom_index = index_actions + kTYPE_MAX;
+        if(bottom_index == skills.size())
+          success &= Frame::renderCircle(center_x - 1, center_y, kSCROLL_R, 
+                                         renderer);
+        else
+        {
+          center_y += 1;
+          success &= Frame::renderTriangle(center_x, center_y + kSCROLL_R - 1, 
+                     center_x - kSCROLL_R, center_y - kSCROLL_R, 
+                     center_x + kSCROLL_R, center_y - kSCROLL_R, renderer);
+        }
+      }
+    }
+  }
+  delete t;
+
+  return success;
+}
+
+/* Render the action categories */
+// TODO: Comment
+bool BattleDisplay::renderActionTypes(SDL_Renderer* renderer, BattleMenu* menu, 
+                                      uint16_t x, uint16_t y, uint16_t width, 
+                                      uint16_t height)
+{
+  /* Get actions */
+  SDL_Color color = {255, 255, 255, 255};
+  bool success = true;
+  Text* t = new Text(font_header);
+  std::vector<ActionType> types = menu->getValidActionTypes();
+
+  /* Calculate the start y */
+  int start_y = 0;
+  t->setText(renderer, "Test", color);
+  if(types.size()>= kTYPE_MAX)
+    start_y = y + kTYPE_MARGIN;
+  else
+    start_y = y + (height - types.size() * 
+                   (t->getHeight() + kTYPE_MARGIN * 2)) / 2;
+
+  /* Loop through all actions */
+  for(uint16_t i = 0; i < types.size() && i < kTYPE_MAX; i++)
+  {
+    /* Set the text */
+    uint16_t index = i + index_types;
+    std::string text_str = Helpers::actionTypeToStr(types[index]);
+    success &= t->setText(renderer, text_str, color);
+
+    /* Calculate x and y location */
+    int text_x = x + kTYPE_MARGIN * 2;//+ (width - t->getWidth()) / 2;
+    int text_y = start_y + kTYPE_MARGIN * (i + 1) + 
+                 (t->getHeight() + kTYPE_MARGIN) * i;
+
+    /* If selected, draw background box */
+    if((menu->getLayerIndex() == 1 && index == menu->getElementIndex()) || 
+       (menu->getLayerIndex() != 1 && types[index] == menu->getActionType()))
+    {
+      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 45);
+      SDL_Rect text_rect;
+      text_rect.x = text_x - kTYPE_SELECT;
+      text_rect.y = text_y - kTYPE_SELECT;
+      text_rect.w = t->getWidth() + kTYPE_SELECT * 2;
+      text_rect.h = t->getHeight() + kTYPE_SELECT * 2;
+      SDL_RenderFillRect(renderer, &text_rect);
+    }
+
+    /* Render the text */
+    success &= t->render(renderer, text_x, text_y);
+
+    /* Render the scroll bar, if relevant */
+    if(types.size() > kTYPE_MAX && (i == 0 || i == kTYPE_MAX - 1))
+    {
+      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
+      uint16_t center_x = x + width - kTYPE_MARGIN * 2;
+      uint16_t center_y = text_y + t->getHeight() / 2;
+
+      /* Top of scroll */
+      if(i == 0)
+      {
+        if(index_types == 0)
+          success &= Frame::renderCircle(center_x - 1, center_y, kSCROLL_R, 
+                                         renderer);
+        else
+        {
+          center_y -= 1;
+          success &= Frame::renderTriangle(center_x, center_y - kSCROLL_R + 1,   
+                     center_x - kSCROLL_R, center_y + kSCROLL_R, 
+                     center_x + kSCROLL_R, center_y + kSCROLL_R, renderer);
+        }
+      }
+
+      /* Bottom of scroll */
+      if(i == kTYPE_MAX - 1)
+      {
+        uint16_t bottom_index = index_types + kTYPE_MAX;
+        if(bottom_index == types.size())
+          success &= Frame::renderCircle(center_x - 1, center_y, kSCROLL_R, 
+                                         renderer);
+        else
+        {
+          center_y += 1;
+          success &= Frame::renderTriangle(center_x, center_y + kSCROLL_R - 1, 
+                     center_x - kSCROLL_R, center_y - kSCROLL_R, 
+                     center_x + kSCROLL_R, center_y - kSCROLL_R, renderer);
+        }
+      }
+    }
+  }
+  delete t;
+
+  return success;
+}
 
 /* Renders the ailments for a given person at a given location */
 // TODO: Comment
@@ -767,6 +996,7 @@ bool BattleDisplay::renderMenu(SDL_Renderer* renderer, PersonState* state,
   /* Initial set-up variables */
   uint16_t bar_height = kBIGBAR_OFFSET + kBIGBAR_CHOOSE;
   BattleMenu* menu = battle->getBattleMenu();
+  int32_t layer_index = menu->getLayerIndex();
   uint16_t section1_w = screen_width * kBIGBAR_L;
   bool success = true;
   uint16_t x = (section1_w - kINFO_W) / 2;
@@ -793,51 +1023,36 @@ bool BattleDisplay::renderMenu(SDL_Renderer* renderer, PersonState* state,
   rect2.h = rect.h;
   SDL_RenderFillRect(renderer, &rect2);
 
-  /* Render the third separator */
-  uint16_t section3_w = screen_width * kBIGBAR_M2;
-  SDL_Rect rect3;
-  rect3.x = rect2.x + section3_w;
-  rect3.y = rect.y;
-  rect3.w = 1;
-  rect3.h = rect.h;
-  SDL_RenderFillRect(renderer, &rect3);
-
   /* Get actions */
-  SDL_Color color = {255, 255, 255, 255};
-  int start_y = -1;
-  Text* t = new Text(font_header);
-  std::vector<ActionType> types = menu->getValidActionTypes();
+  success &= renderActionTypes(renderer, menu, rect.x, 
+                               rect.y, section2_w, rect2.h);
 
-  /* Loop through all actions */
-  for(uint16_t i = 0; i < types.size(); i++)
+  /* Render the third section */
+  if(layer_index > 1)
   {
-    /* Set the text */
-    std::string text_str = Helpers::actionTypeToStr(types[i]);
-    success &= t->setText(renderer, text_str, color);
-    if(start_y  == -1)
-      start_y = rect.y + (rect2.h - types.size() * 
-                (t->getHeight() + kTYPE_MARGIN*2)) / 2;
+    /* Render the third separator */
+    uint16_t section3_w = screen_width * kBIGBAR_M2;
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
+    SDL_Rect rect3;
+    rect3.x = rect2.x + section3_w;
+    rect3.y = rect.y;
+    rect3.w = 1;
+    rect3.h = rect.h;
+    SDL_RenderFillRect(renderer, &rect3);
 
-    /* Calculate x and y location */
-    int text_x = rect.x + (section2_w - t->getWidth()) / 2;
-    int text_y = start_y + kTYPE_MARGIN * (i+1) + 
-                 (t->getHeight() + kTYPE_MARGIN) * i;
-
-    /* If selected, draw background box */
-    if((menu->getLayerIndex() == 1 && i == menu->getElementIndex()) || 
-       (menu->getLayerIndex() != 1 && types[i] == menu->getActionType()))
+    /* Render the actions/items, depending on category */
+    if(menu->getActionType() == ActionType::SKILL)
     {
-      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 45);
-      SDL_Rect text_rect;
-      text_rect.x = text_x - kTYPE_SELECT;
-      text_rect.y = text_y - kTYPE_SELECT;
-      text_rect.w = t->getWidth() + kTYPE_SELECT * 2;
-      text_rect.h = t->getHeight() + kTYPE_SELECT * 2;
-      SDL_RenderFillRect(renderer, &text_rect);
+      success &= renderActionSkills(renderer, menu, rect2.x, rect2.y, 
+                                    section3_w, rect3.h);
+      success &= renderActionSkill(renderer, 
+                   menu->getMenuSkills().at(menu->getElementIndex()).skill,
+                   rect3.x, rect3.y, screen_width * kBIGBAR_R, rect3.h);
     }
-
-    /* Finally, render text */
-    success &= t->render(renderer, text_x, text_y);
+    else
+    {
+      std::cout << "Render Items in 3rd section" << std::endl;
+    }
   }
 
   return success;
@@ -1439,16 +1654,41 @@ bool BattleDisplay::update(int cycle_time)
      *-----------------------------------------------------------------------*/
     else if(rendering_state == TurnState::SELECT_ACTION_ALLY)
     {
+      /* Resetting index */
+      if((index_layer == 3 || index_layer == 4) && 
+         menu->getLayerIndex() == 1)
+      {
+        index_actions = 0;
+        index_types = 0;
+      }
+
       /* -- CHOOSING SKILLS -- */
       if(menu->getLayerIndex() == 1 ||
          menu->getLayerIndex() == 2)
       {
+        /* Modify the indexes */
+        if(menu->getLayerIndex() == 1)
+        {
+          if(menu->getElementIndex() >= (index_types + kTYPE_MAX))
+            index_types++;
+          else if(menu->getElementIndex() < index_types)
+            index_types--;
+        }
+        if(menu->getLayerIndex() == 2)
+        {
+          if(menu->getElementIndex() >= (index_actions + kTYPE_MAX))
+            index_actions++;
+          else if(menu->getElementIndex() < index_actions)
+            index_actions--;
+        }
+
         /* Modify brightness for this state */
         PersonState* choosing = getFriendsState(menu->getPersonIndex() - 1);
         for(uint16_t i = 0; i < friends_state.size(); i++)
         {
           if(friends_state[i]->fp != NULL)
           {
+            /* Modify brightness */
             if(friends_state[i] == choosing)
               friends_state[i]->fp->setBrightness(1.0);
             else
@@ -1526,6 +1766,7 @@ bool BattleDisplay::update(int cycle_time)
         bar_offset = 0;
       }
       rendering_state = battle_state;
+      index_layer = menu->getLayerIndex();
     }
     /*-------------------------------------------------------------------------
      * SELECT_ACTION_ENEMY state
