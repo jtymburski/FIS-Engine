@@ -80,6 +80,7 @@ BattleDisplay::BattleDisplay(Options* running_config)
   font_subheader = NULL;
   index_actions = 0;
   index_layer = 0;
+  index_person = 0;
   index_types = 0;
   offset = 0; // TODO: Delete
   offset_2 = 0; // TODO: Delete
@@ -393,6 +394,110 @@ Frame* BattleDisplay::createFriendInfo(Person* ally, SDL_Renderer* renderer)
   return friend_info;
 }
 
+// TODO: Comment  
+SDL_Texture* BattleDisplay::createSkill(SDL_Renderer* renderer, Skill* skill, 
+                                        uint16_t width, uint16_t height)
+{
+  /* Create rendering texture */
+  SDL_Texture* texture = SDL_CreateTexture(renderer,
+                         SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 
+                         width, height);
+  SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+  SDL_SetRenderTarget(renderer, texture);
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+  SDL_RenderClear(renderer);
+  
+  /* TODO - IMPLEMENTATION */
+  std::cout << "--" << std::endl;
+  std::cout << "Render Specs: " << width << "," << height << std::endl;
+  std::cout << "Name: " << skill->getName() << std::endl;
+  std::cout << "Description: " << skill->getDescription() << std::endl;
+  std::cout << "Message: " << skill->getMessage() << std::endl;
+  std::cout << "Primary Element: " 
+            << Helpers::elementToString(skill->getPrimary()) << std::endl;
+  std::cout << "Secondary Element: " 
+            << Helpers::elementToString(skill->getSecondary()) << std::endl;
+  std::cout << "Targets: " << Helpers::actionScopeToStr(skill->getScope()) 
+            << std::endl;
+  std::cout << "Cost: " << skill->getCost() << std::endl;
+  std::cout << "Cooldown: " << skill->getCooldown() << std::endl;
+  std::cout << "Chance: " << skill->getChance() << std::endl;
+  std::cout << "Action Chance: " << skill->getEffect(0)->getChance() 
+            << std::endl;
+  std::cout << "Thumbnail: " << skill->getThumbnail() << std::endl;
+//  std::cout << "Render Size: " << x << "," << y << ":" << width << "," 
+//            << height << std::endl;
+  std::cout << "--" << std::endl;
+  
+  /* Return the new texture */
+  SDL_SetRenderTarget(renderer, NULL);
+  return texture;
+}
+
+/* Generates info for the skills of the selecting person in battle */
+// TODO: Comment
+bool BattleDisplay::createSkills(SDL_Renderer* renderer, BattleMenu* menu, 
+                                 uint16_t width_left, uint16_t width_right)
+{
+  SDL_Color color = {255, 255, 255, 255};
+  std::vector<BattleSkill> skills = menu->getMenuSkills();
+  bool success = true;
+  Text* t = new Text(font_header);
+  uint16_t text_height = 0;
+  uint16_t text_width = width_left - kTYPE_MARGIN * 8;
+  
+  /* Delete if skills are already rendered */
+  deleteSkills();
+
+  /* Loop through all skills */
+  for(uint16_t i = 0; i < skills.size(); i++)
+  {
+    /* Create new frame and access skill */
+    Skill* skill = skills[i].skill;
+    skill_names.push_back(new Frame());
+    skill_info.push_back(new Frame());
+    
+    /* Access the skill and render the information */
+    if(skill != NULL)
+    {
+      /* Set the text */
+      success &= t->setText(renderer, skill->getName(), color);
+      if(text_height == 0)
+        text_height = t->getHeight() + kTYPE_MARGIN * 2;
+      
+      /* Create rendering texture */
+      SDL_Texture* texture = SDL_CreateTexture(renderer,
+                             SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 
+                             text_width, text_height);
+      SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+      SDL_SetRenderTarget(renderer, texture);
+      SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+      SDL_RenderClear(renderer);
+      
+      /* Render the text */
+      success &= t->render(renderer, 0, kTYPE_MARGIN);
+      
+      /* Render the QD */
+      success &= t->setText(renderer, 
+                            std::to_string(skill->getCost()) + " qd", color);
+      success &= t->render(renderer, text_width - t->getWidth(), kTYPE_MARGIN);
+      
+      /* Set the new texture */
+      skill_names.back()->setTexture(texture);
+      SDL_SetRenderTarget(renderer, NULL);
+      
+      /* Create the detailed skill information for this skill */
+      skill_info.back()->setTexture(createSkill(renderer, skill, 
+                                        width_right - kTYPE_MARGIN * 2, 
+                                        kBIGBAR_OFFSET + kBIGBAR_CHOOSE - 
+                                        kMENU_SEPARATOR_T - kMENU_SEPARATOR_B));
+    }
+  }
+  delete t;
+
+  return success;
+}
+
 /*
  * Description: Delete the rendering fonts stored in the class. Do not try and
  *              render again since it will try to use the NULL fonts and fail.
@@ -407,6 +512,21 @@ void BattleDisplay::deleteFonts()
 
   TTF_CloseFont(font_subheader);
   font_subheader = NULL;
+}
+
+/* Deletes the rendering skills, for the menu */
+// TODO: Comment
+void BattleDisplay::deleteSkills()
+{
+  /* Deletes skill info frames */
+  for(uint16_t i = 0; i < skill_info.size(); i++)
+    delete skill_info[i];
+  skill_info.clear();
+  
+  /* Deletes skill name frames */
+  for(uint16_t i = 0; i < skill_names.size(); i++)
+    delete skill_names[i];
+  skill_names.clear();
 }
 
 /* Get foes in battle */
@@ -464,36 +584,6 @@ uint32_t BattleDisplay::getIndex(int32_t index)
 
   return returned;
 }
-   
-/* Render the details on the hovered action */
-bool BattleDisplay::renderActionSkill(SDL_Renderer* renderer, Skill* skill, 
-                                      uint16_t x, uint16_t y, uint16_t width, 
-                                      uint16_t height)
-{
-  bool success = true;
-
-  std::cout << "--" << std::endl;
-  std::cout << "Name: " << skill->getName() << std::endl;
-  std::cout << "Description: " << skill->getDescription() << std::endl;
-  std::cout << "Message: " << skill->getMessage() << std::endl;
-  std::cout << "Primary Element: " 
-            << Helpers::elementToString(skill->getPrimary()) << std::endl;
-  std::cout << "Secondary Element: " 
-            << Helpers::elementToString(skill->getSecondary()) << std::endl;
-  std::cout << "Targets: " << Helpers::actionScopeToStr(skill->getScope()) 
-            << std::endl;
-  std::cout << "Cost: " << skill->getCost() << std::endl;
-  std::cout << "Cooldown: " << skill->getCooldown() << std::endl;
-  std::cout << "Chance: " << skill->getChance() << std::endl;
-  std::cout << "Action Chance: " << skill->getEffect(0)->getChance() 
-            << std::endl;
-  std::cout << "Thumbnail: " << skill->getThumbnail() << std::endl;
-  std::cout << "Render Size: " << x << "," << y << ":" << width << "," 
-            << height << std::endl;
-  std::cout << "--" << std::endl;
-
-  return success;
-}
 
 /* Render the action skills */
 // TODO: Comment
@@ -501,62 +591,48 @@ bool BattleDisplay::renderActionSkills(SDL_Renderer* renderer, BattleMenu* menu,
                                        uint16_t x, uint16_t y, uint16_t width, 
                                        uint16_t height)
 {
-  /* Get skills */
-  SDL_Color color = {255, 255, 255, 255};
   bool success = true;
-  std::vector<BattleSkill> skills = menu->getMenuSkills();
-  Text* t = new Text(font_header);
   
-  /* Calculate the start y */
-  int start_y = 0;
-  t->setText(renderer, "Test", color);
-  if(skills.size() >= kTYPE_MAX)
-    start_y = y + kTYPE_MARGIN;
+  /* Calculate the start x and y */
+  int text_x = x + kTYPE_MARGIN * 2;
+  int text_y = 0;
+  if(skill_names.size() >= kTYPE_MAX)
+  {
+    text_y = y + kTYPE_MARGIN;
+  }
   else
-    start_y = y + (height - skills.size() * 
-                   (t->getHeight() + kTYPE_MARGIN * 2)) / 2;
+  {
+    for(uint16_t i = 0; i < skill_names.size(); i++)
+      text_y += skill_names[i]->getHeight();
+    text_y = (height - text_y) / 2;
+  }
   
   /* Loop through all skills */
-  for(uint16_t i = 0; i < skills.size() && i < kTYPE_MAX; i++)
+  for(uint16_t i = 0; i < skill_names.size() && i < kTYPE_MAX; i++)
   {
-    /* Set the text */
     uint16_t index = i + index_actions;
-    std::string text_str = skills[index].skill->getName();
-    success &= t->setText(renderer, text_str, color);
-
-    /* Calculate x and y location */
-    int text_x = x + kTYPE_MARGIN * 2;
-    int text_y = start_y + kTYPE_MARGIN * (i + 1) + 
-                 (t->getHeight() + kTYPE_MARGIN) * i;
 
     /* If selected, draw background box */
-    uint16_t x_qd_end = x + width - kTYPE_MARGIN * 6;
     if(index == menu->getElementIndex())
     {
       SDL_SetRenderDrawColor(renderer, 255, 255, 255, 45);
       SDL_Rect text_rect;
       text_rect.x = text_x - kTYPE_SELECT;
-      text_rect.y = text_y - kTYPE_SELECT;
-      text_rect.w = x_qd_end - text_rect.x + kTYPE_SELECT * 2;
-      text_rect.h = t->getHeight() + kTYPE_SELECT * 2;
+      text_rect.y = text_y;
+      text_rect.w = skill_names[index]->getWidth() + kTYPE_SELECT * 2;
+      text_rect.h = skill_names[index]->getHeight();
       SDL_RenderFillRect(renderer, &text_rect);
     }
 
     /* Render the text */
-    success &= t->render(renderer, text_x, text_y);
-
-    /* Render the QD */
-    success &= t->setText(renderer, 
-                 std::to_string(skills[index].skill->getCost()) + " qd", color);
-    success &= t->render(renderer, x_qd_end - t->getWidth(), text_y);
-
+    success &= skill_names[index]->render(renderer, text_x, text_y);
 
     /* Render the scroll bar, if relevant */
-    if(skills.size() > kTYPE_MAX && (i == 0 || i == kTYPE_MAX - 1))
+    if(skill_names.size() > kTYPE_MAX && (i == 0 || i == kTYPE_MAX - 1))
     {
       SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
       uint16_t center_x = x + width - kTYPE_MARGIN * 2;
-      uint16_t center_y = text_y + t->getHeight() / 2;
+      uint16_t center_y = text_y + skill_names[i]->getHeight() / 2;
 
       /* Top of scroll */
       if(i == 0)
@@ -577,7 +653,7 @@ bool BattleDisplay::renderActionSkills(SDL_Renderer* renderer, BattleMenu* menu,
       if(i == kTYPE_MAX - 1)
       {
         uint16_t bottom_index = index_actions + kTYPE_MAX;
-        if(bottom_index == skills.size())
+        if(bottom_index == skill_names.size())
           success &= Frame::renderCircle(center_x - 1, center_y, kSCROLL_R, 
                                          renderer);
         else
@@ -589,8 +665,10 @@ bool BattleDisplay::renderActionSkills(SDL_Renderer* renderer, BattleMenu* menu,
         }
       }
     }
+    
+    /* Increment height */
+    text_y += skill_names[index]->getHeight();
   }
-  delete t;
 
   return success;
 }
@@ -1045,9 +1123,9 @@ bool BattleDisplay::renderMenu(SDL_Renderer* renderer, PersonState* state,
     {
       success &= renderActionSkills(renderer, menu, rect2.x, rect2.y, 
                                     section3_w, rect3.h);
-      success &= renderActionSkill(renderer, 
-                   menu->getMenuSkills().at(menu->getElementIndex()).skill,
-                   rect3.x, rect3.y, screen_width * kBIGBAR_R, rect3.h);
+//      success &= renderActionSkill(renderer, 
+//                   menu->getMenuSkills().at(menu->getElementIndex()).skill,
+//                   rect3.x, rect3.y, screen_width * kBIGBAR_R, rect3.h);
     }
     else
     {
@@ -1281,9 +1359,19 @@ bool BattleDisplay::addOverlay(Sprite* overlay)
 void BattleDisplay::clear()
 {
   /* Clears variables */
+  animation_delay = 0;
+  bar_offset = 0;
+  index_actions = 0;
+  index_layer = 0;
+  index_person = 0;
+  index_types = 0;
+  offset = 0;
+  offset_2 = 0;
+  rendering_state = TurnState::DESTRUCT;
   system_options = NULL;
 
   /* Unsets the flat rendering sprites */
+  deleteSkills();
   unsetBackground();
   unsetBattle();
   unsetBattleBar();
@@ -1418,6 +1506,15 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
     if(rendering_state == TurnState::SELECT_ACTION_ALLY && 
        (menu->getLayerIndex() == 1 || menu->getLayerIndex() == 2))
     {
+      /* Checks the index of the rendering person for if the skills need to be
+       * updated */
+      if(index_person != menu->getPersonIndex())
+      {
+        createSkills(renderer, menu, width * kBIGBAR_M2, width * kBIGBAR_R);
+        index_person = menu->getPersonIndex();
+      }
+
+      /* Renders the menu */
       success &= renderMenu(renderer, 
                     getFriendsState(menu->getPersonIndex() - 1), width, height);
     }
@@ -1628,6 +1725,7 @@ bool BattleDisplay::update(int cycle_time)
     /* Update the turn state - TODO: Add delays and pretty animations */
     TurnState battle_state = battle->getTurnState();
     BattleMenu* menu = battle->getBattleMenu();
+
     /*-------------------------------------------------------------------------
      * BEGIN state
      *-----------------------------------------------------------------------*/
@@ -1653,7 +1751,7 @@ bool BattleDisplay::update(int cycle_time)
      * SELECT_ACTION_ALLY state
      *-----------------------------------------------------------------------*/
     else if(rendering_state == TurnState::SELECT_ACTION_ALLY)
-    {
+    { 
       /* Resetting index */
       if((index_layer == 3 || index_layer == 4) && 
          menu->getLayerIndex() == 1)

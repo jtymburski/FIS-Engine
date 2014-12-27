@@ -66,6 +66,9 @@ private:
   /* The rendering battle bar */
   Frame* battle_bar;
 
+  /* Element frames */
+  std::vector<Frame> elements;
+  
   /* The rendering enemy info bar */
   Frame* foes_backdrop;
   std::vector<PersonState*> foes_state;
@@ -80,6 +83,7 @@ private:
   /* Rendering indexes */
   uint16_t index_actions;
   uint16_t index_layer;
+  int32_t index_person;
   uint16_t index_types;
 
   /* Mid scene overlays */
@@ -91,8 +95,15 @@ private:
   /* Rendering turn state */
   TurnState rendering_state;
 
+  /* Skill information for rendering */
+  std::vector<Frame*> skill_info;
+  std::vector<Frame*> skill_names;
+
   /* The system options. Used for rendering, settings, etc */
   Options* system_options;
+  
+  /* Target frames */
+  std::vector<Frame> targets;
 
   /* ------------ Constants --------------- */
   const static uint8_t kAILMENT_BORDER; /* Ailment border width */
@@ -152,8 +163,17 @@ private:
   /* Generates info for friends in battle */
   Frame* createFriendInfo(Person* ally, SDL_Renderer* renderer);
 
+  /* Generates info for the skills of the selecting person in battle */
+  SDL_Texture* createSkill(SDL_Renderer* renderer, Skill* skill, 
+                           uint16_t width, uint16_t height);
+  bool createSkills(SDL_Renderer* renderer, BattleMenu* menu, 
+                    uint16_t width_left, uint16_t width_right);
+  
   /* Deletes the rendering fonts, if they've been created */
   void deleteFonts();
+  
+  /* Deletes the rendering skills, for the menu */
+  void deleteSkills();
   
   /* Get foes party in battle */
   Party* getFoesParty();
@@ -165,10 +185,6 @@ private:
 
   /* Returns modified index */
   uint32_t getIndex(int32_t index);
-
-  /* Render the details on the hovered action */
-  bool renderActionSkill(SDL_Renderer* renderer, Skill* skill, uint16_t x, 
-                         uint16_t y, uint16_t width, uint16_t height);
 
   /* Render the action skills */
   bool renderActionSkills(SDL_Renderer* renderer, BattleMenu* menu, uint16_t x,

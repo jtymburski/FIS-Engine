@@ -62,6 +62,9 @@ public:
   	    const std::vector<Action*> &effects, const float &chance,
         const uint32_t &cost = 0);
 
+  /* Destructor function */
+  ~Skill();
+  
 private:
   /* Pointer to the animation played by the Skill during Battle */
   Sprite* animation;
@@ -250,6 +253,9 @@ public:
 
   /* Assigns a new point value */
   bool setValue(const uint32_t &new_value);
+  
+  /* Unsets the thumbnail - deletes from memory */
+  void unsetThumbnail();
 };
 
 #endif //SKILL_H

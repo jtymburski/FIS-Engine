@@ -55,22 +55,22 @@ enum class ActionOccasion : std::uint8_t
  */
 enum class ActionScope : std::uint16_t
 { 
-  USER,
-  ONE_TARGET,
-  ONE_ENEMY,
-  TWO_ENEMIES,
-  ALL_ENEMIES,
-  ONE_ALLY,
-  ONE_ALLY_NOT_USER,
-  TWO_ALLIES,
-  ALL_ALLIES,
-  ONE_ALLY_KO,
-  ALL_ALLIES_KO,
-  ONE_PARTY,
-  ALL_TARGETS,
-  NOT_USER,
-  ALL_NOT_USER,
-  NO_SCOPE 
+  USER              = 0,
+  ONE_TARGET        = 1,
+  ONE_ENEMY         = 2,
+  TWO_ENEMIES       = 3,
+  ALL_ENEMIES       = 4,
+  ONE_ALLY          = 5,
+  ONE_ALLY_NOT_USER = 6,
+  TWO_ALLIES        = 7,
+  ALL_ALLIES        = 8,
+  ONE_ALLY_KO       = 9,
+  ALL_ALLIES_KO     = 10,
+  ONE_PARTY         = 11,
+  ALL_TARGETS       = 12,
+  NOT_USER          = 13,
+  ALL_NOT_USER      = 14,
+  NO_SCOPE          = 15 
 };
 
 /*

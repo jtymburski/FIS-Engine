@@ -123,6 +123,14 @@ Skill::Skill(const int &id, const std::string &name, const ActionScope &scope,
   flagSetup();
 }
 
+/*
+ * Description: Destructor function
+ */
+Skill::~Skill()
+{
+  unsetThumbnail();
+}
+
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
@@ -738,14 +746,19 @@ void Skill::setScope(const ActionScope &new_scope)
 }
 
 /*
- * Description: Assigns a new thumbnail to the Skill
+ * Description: Assigns a new thumbnail to the Skill. The class takes control
+ *              of the memory of the frame.
  *
  * Inputs: new_thumbnail - thumbnail to be assigned to the Skill
  * Output: none
  */
 void Skill::setThumbnail(Frame* new_thumbnail)
 {
-  thumbnail = new_thumbnail;
+  if(new_thumbnail != NULL)
+  {
+    unsetThumbnail();
+    thumbnail = new_thumbnail;
+  }
 }
 
 /*
@@ -764,4 +777,17 @@ bool Skill::setValue(const uint32_t &new_value)
   }
 
   return false;
+}
+
+/*
+ * Description: Unsets the thumbnail and deletes it from memory.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Skill::unsetThumbnail()
+{
+  if(thumbnail != NULL)
+    delete thumbnail;
+  thumbnail = NULL;
 }
