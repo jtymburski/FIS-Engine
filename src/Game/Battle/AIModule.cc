@@ -676,6 +676,8 @@ bool AIModule::selectRandomTargets()
 
       if (rand_bool)
         chosen_targets = friend_targets;
+
+      successful = true;
     }
   }
 
