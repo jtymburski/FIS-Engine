@@ -295,33 +295,38 @@ bool Skill::isValid()
  * Inputs: none
  * Output: none
  */
-void Skill::print()
+void Skill::print(bool flags)
 {
   std::cout << "--- Skill ----\n";
   std::cout << "Skill ID: " << id << std::endl;
-  std::cout << "Name: " << name << std::endl;
-  std::cout << "Animation set? " << !(animation == nullptr) << std::endl;
+  std::cout << "\nAction Scope: " << Helpers::actionScopeToStr(scope);
+  std::cout << "\nName: " << name << std::endl;
+  std::cout << "Animation: " << animation << std::endl;
   std::cout << "Chance: " << chance << std::endl;
   std::cout << "Cooldown: " << cooldown << std::endl; 
   std::cout << "Cost: " << cost << std::endl;
   std::cout << "Description: " << description << std::endl;
-
-  std::cout << "# Effects: " << effects.size() << std::endl;
-
-  std::cout << "Primary Element" << Helpers::elementToString(primary);
-  std::cout << "\nSecondary Element" << Helpers::elementToString(secondary);
-  std::cout << "\nSound effect set? " << !(sound_effect == nullptr);
-  std::cout << "\nAction scope: " << Helpers::actionScopeToStr(scope);
-  std::cout << "\nThumb Set? " << !(thumbnail == nullptr) << std::endl;
   std::cout << "Point Value: " << value << std::endl;
-  std::cout << "----" << std::endl;
-  std::cout << "ALTERING: " << getFlag(SkillFlags::ALTERING) << std::endl;
-  std::cout << "HEALING: " << getFlag(SkillFlags::HEALING) << std::endl;
-  std::cout << "INFLICTING: " << getFlag(SkillFlags::INFLICTING) << std::endl;
-  std::cout << "RELIEVING: " << getFlag(SkillFlags::RELIEVING) << std::endl;
-  std::cout << "REVIVING: " << getFlag(SkillFlags::REVIVING) << std::endl;
-  std::cout << "ASSIGNING: " << getFlag(SkillFlags::ASSIGNING) << std::endl;
-  std::cout << "VALID: " << getFlag(SkillFlags::VALID) << std::endl;
+  std::cout << "Primary Element " << Helpers::elementToString(primary);
+  std::cout << "\nSecondary Element " << Helpers::elementToString(secondary);
+  std::cout << "\nThumbnail: " << thumbnail << std::endl;
+  std::cout << "Effect Chances: " << std::endl;
+  std::cout << "\nSound effect set? " << sound_effect << std::endl;
+
+  for (const auto& effect : effects)
+    std::cout << "Action Chance: " << effect->getChance() << "\n";
+
+  if (flags)
+  {
+    std::cout << "ALTERING: " << getFlag(SkillFlags::ALTERING) << std::endl;
+    std::cout << "HEALING: " << getFlag(SkillFlags::HEALING) << std::endl;
+    std::cout << "INFLICTING: " << getFlag(SkillFlags::INFLICTING) << std::endl;
+    std::cout << "RELIEVING: " << getFlag(SkillFlags::RELIEVING) << std::endl;
+    std::cout << "REVIVING: " << getFlag(SkillFlags::REVIVING) << std::endl;
+    std::cout << "ASSIGNING: " << getFlag(SkillFlags::ASSIGNING) << std::endl;
+    std::cout << "VALID: " << getFlag(SkillFlags::VALID) << std::endl;
+  }
+  std::cout << "------" << std::endl;
 }
 
 /*
@@ -754,7 +759,7 @@ void Skill::setScope(const ActionScope &new_scope)
  */
 void Skill::setThumbnail(Frame* new_thumbnail)
 {
-  if(new_thumbnail != NULL)
+  if (new_thumbnail != nullptr)
   {
     unsetThumbnail();
     thumbnail = new_thumbnail;
@@ -787,7 +792,7 @@ bool Skill::setValue(const uint32_t &new_value)
  */
 void Skill::unsetThumbnail()
 {
-  if(thumbnail != NULL)
+  if( thumbnail != nullptr)
     delete thumbnail;
-  thumbnail = NULL;
+  thumbnail = nullptr;
 }

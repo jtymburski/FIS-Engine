@@ -410,21 +410,7 @@ SDL_Texture* BattleDisplay::createSkill(SDL_Renderer* renderer, Skill* skill,
   /* TODO - IMPLEMENTATION */
   std::cout << "--" << std::endl;
   std::cout << "Render Specs: " << width << "," << height << std::endl;
-  std::cout << "Name: " << skill->getName() << std::endl;
-  std::cout << "Description: " << skill->getDescription() << std::endl;
-  std::cout << "Message: " << skill->getMessage() << std::endl;
-  std::cout << "Primary Element: " 
-            << Helpers::elementToString(skill->getPrimary()) << std::endl;
-  std::cout << "Secondary Element: " 
-            << Helpers::elementToString(skill->getSecondary()) << std::endl;
-  std::cout << "Targets: " << Helpers::actionScopeToStr(skill->getScope()) 
-            << std::endl;
-  std::cout << "Cost: " << skill->getCost() << std::endl;
-  std::cout << "Cooldown: " << skill->getCooldown() << std::endl;
-  std::cout << "Chance: " << skill->getChance() << std::endl;
-  std::cout << "Action Chance: " << skill->getEffect(0)->getChance() 
-            << std::endl;
-  std::cout << "Thumbnail: " << skill->getThumbnail() << std::endl;
+  skill->print(false);
 //  std::cout << "Render Size: " << x << "," << y << ":" << width << "," 
 //            << height << std::endl;
   std::cout << "--" << std::endl;

@@ -153,7 +153,7 @@ public:
   bool isValid();
 
   /* Prints out the information about the current Skill state */
-  void print();
+  void print(bool flags);
 
   /* Attempts to remove an action from the vector of effects by index */
   bool removeAction(const uint32_t &index);
