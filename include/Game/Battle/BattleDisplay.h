@@ -77,6 +77,11 @@ private:
   TTF_Font* font_header;
   TTF_Font* font_subheader;
 
+  /* Rendering frames - in bar */
+  Frame frame_percent;
+  Frame frame_qd;
+  Frame frame_time;
+
   /* The rendering friend info bar */
   std::vector<PersonState*> friends_state;
 
@@ -94,6 +99,12 @@ private:
 
   /* Rendering turn state */
   TurnState rendering_state;
+  
+  /* Action scope frames */
+  std::vector<Frame> scopes;
+  
+  /* Show info regardless of state */
+  bool show_info;
 
   /* Skill information for rendering */
   std::vector<Frame*> skill_info;
@@ -101,9 +112,6 @@ private:
 
   /* The system options. Used for rendering, settings, etc */
   Options* system_options;
-  
-  /* Target frames */
-  std::vector<Frame> targets;
 
   /* ------------ Constants --------------- */
   const static uint8_t kAILMENT_BORDER; /* Ailment border width */
@@ -125,6 +133,7 @@ private:
   const static float kBIGBAR_M2; /* The percentage of the second middle */
   const static uint16_t kBIGBAR_OFFSET; /* Offset of bar off bottom */
   const static float kBIGBAR_R; /* The percentage of the right section */
+  const static uint16_t kBIGBAR_R_OFFSET; /* Offset off end for right section */
   const static uint8_t kINFO_BORDER; /* Border width on enemy info bar */
   const static uint8_t kINFO_GREY; /* Grey value for border bar */
   const static uint16_t kINFO_H; /* Height of enemy info bar */
@@ -145,6 +154,17 @@ private:
   const static uint16_t kPERSON_SPREAD; /* Rendering overlay of persons */
   const static uint16_t kPERSON_WIDTH; /* Width of persons on battle */
   const static uint8_t kSCROLL_R; /* Radius on scroll renders */
+  const static uint8_t kSKILL_BORDER; /* Border around edge and elements */
+  const static uint8_t kSKILL_BORDER_WIDTH; /* Width of border around element */
+  const static uint8_t kSKILL_DESC_GAP; /* Gap between name and description */
+  const static uint8_t kSKILL_DESC_LINES; /* Max number of description lines */
+  const static uint8_t kSKILL_DESC_SEP; /* Gap between lines in description */
+  const static uint8_t kSKILL_FRAME_S; /* Small frame size on skill info */
+  const static uint8_t kSKILL_FRAME_L; /* Large frame size on skill info */
+  const static uint8_t kSKILL_QD_GAP; /* Gap between top edge and QD icon */
+  const static uint8_t kSKILL_SEP; /* Separator between image and text */
+  const static uint8_t kSKILL_SUCCESS; /* Gap between success and cooldown */
+  const static uint8_t kSKILL_TIME_GAP; /* Gap between cooldown and bottom */
   const static uint8_t kTYPE_MARGIN; /* Margin around text options in type */
   const static uint8_t kTYPE_MAX; /* Max number of action types to render */
   const static uint8_t kTYPE_SELECT; /* Margin to spread select around type */
@@ -266,6 +286,9 @@ public:
   /* Gets the battle corresponding to the display */
   Battle* getBattle();
 
+  /* Returns the element frame */
+  Frame* getElement(Element element);
+
   /* Get the midlay(s) */
   Sprite* getMidlay(uint8_t index);
   std::vector<Sprite*> getMidlays();
@@ -277,10 +300,16 @@ public:
   /* Returns the rendering turn state - may be slightly varied with battle */
   TurnState getRenderingState();
 
+  /* Returns the action scope frame */
+  Frame* getScope(ActionScope scope);
+
+  /* Returns if the battle display is paused and control should be halted */
+  bool isPaused();
+
   /* Renders the battle display */
   bool render(SDL_Renderer* renderer);
 
-  /* Sets the ailment sprite */
+  /* Sets the ailment frame */
   bool setAilment(Infliction ailment, std::string path, SDL_Renderer* renderer);
 
   /* Sets the background sprite */
@@ -295,12 +324,26 @@ public:
   /* Sets the running configuration, from the options class */
   bool setConfiguration(Options* running_config);
 
+  /* Sets the element frame */
+  bool setElement(Element element, std::string path, SDL_Renderer* renderer);
+
+  /* Sets the rendering helper frames for display */
+  bool setFramePercent(std::string path, SDL_Renderer* renderer);
+  bool setFrameQD(std::string path, SDL_Renderer* renderer);
+  bool setFrameTime(std::string path, SDL_Renderer* renderer);
+
   /* Sets the midlay sprite - main one, removes all others */
   bool setMidlay(Sprite* midlay);
 
   /* Sets the overlay sprite - main one, removes all others */
   bool setOverlay(Sprite* overlay);
 
+  /* Sets the action scope frame */
+  bool setScope(ActionScope scope, std::string path, SDL_Renderer* renderer);
+  
+  /* Sets if info about player should be shown regardless of state */
+  void setShowInfo(bool show);
+  
   /* Unsets the background sprite */
   void unsetBackground();
 

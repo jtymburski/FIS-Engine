@@ -170,6 +170,10 @@ public:
                            uint16_t radius, SDL_Renderer* renderer, 
                            bool filled = true);
 
+  /* Creates a rectangle with multiple pixel border */
+  static bool renderRect(SDL_Rect rect, uint16_t border_width, 
+                         SDL_Renderer* renderer, bool reverse = false);
+
   /* Creates a right hand triangle, given the parameters and a renderer */
   static bool renderRHTriangle(uint32_t x, uint32_t y, uint16_t height, 
                                SDL_Renderer* renderer, bool reverse = false);

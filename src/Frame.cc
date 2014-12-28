@@ -1023,6 +1023,51 @@ bool Frame::renderCircle(uint16_t center_x, uint16_t center_y, uint16_t radius,
   }
   return false;
 }
+  
+/*
+ * Description: Creates a rectangle border with a customizable border width and
+ *              if the border should be calculated into the rect or away from
+ *              the rect.
+ *
+ * Inputs: SDL_Rect rect - the first pixel of the border rectangle
+ *         uint16_t border_width - the number of pixels wide for the border
+ *         SDL_Renderer* renderer - the graphical rendering engine
+ *         bool reverse - if the border should be calculated away from the rect
+ * Output: bool - true if successful
+ */
+bool Frame::renderRect(SDL_Rect rect, uint16_t border_width, 
+                       SDL_Renderer* renderer, bool reverse)
+{
+  if(renderer != NULL)
+  {
+    /* Render the multiple border rects */
+    while(border_width > 0 && rect.w >= 0 && rect.h >= 0)
+    {
+      SDL_RenderDrawRect(renderer, &rect);
+
+      if(reverse)
+      {
+        rect.x--;
+        rect.y--;
+        rect.w += 2;
+        rect.h += 2;
+      }
+      else
+      {
+        rect.x++;
+        rect.y++;
+        rect.w -= 2;
+        rect.h -= 2;
+      }
+
+      border_width--;
+    }
+
+    return true;
+  }
+
+  return false;
+}
 
 /*
  * Description: Creates a right hand triangle, given the input parameters. The

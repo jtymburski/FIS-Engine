@@ -335,6 +335,9 @@ void Game::setupBattle()
   Skill* physical_01 = new Skill(100, "Wee Strike", ActionScope::ONE_ENEMY, 
       damage_actions[3], 95, 0);
   physical_01->setPrimary(Element::PHYSICAL);
+  physical_01->setThumbnail(new Frame( // TODO for rest
+                 "sprites/Battle/Skills/_sample_skill_2.png", active_renderer));
+  physical_01->setDescription("Lor em ips um do lor sit amet, mel omnis nomin ati an, atom orum facil isis in pri, adipi scing argum entum in pri. Duo ei tempor dicunt sanctus, per ut hinc oporteat conceptam. Iisque euismod albucius vel ut, duo ea singulis eleifend. Veri offendit vim ut, at pri tale adolescens, putant veritus sea no. Atqui blandit assentior ne eam. Et rebum deserunt pericula eum.");
 
   // Skill* physical_02 = new Skill(101, "Whelp", ActionScope::ONE_ENEMY, 
   //     damage_actions[4],  95, 5);
@@ -790,6 +793,62 @@ void Game::setupBattle()
         base_path + "sprites/Battle/Ailments/Curse_AA_A00.png", renderer);
     battle_display->setAilment(Infliction::METATETHER, 
         base_path + "sprites/Battle/Ailments/MetaTether_AA_A00.png", renderer);
+
+    /* Set the elements */
+    battle_display->setElement(Element::PHYSICAL, base_path + 
+            "sprites/Battle/Skills/Elements/_element_physical_2.png", renderer);
+    battle_display->setElement(Element::FIRE, base_path + 
+            "sprites/Battle/Skills/Elements/_element_fire_2.png", renderer);
+    battle_display->setElement(Element::ICE, base_path + 
+            "sprites/Battle/Skills/Elements/_element_physical_2.png", renderer);
+    battle_display->setElement(Element::FOREST, base_path + 
+            "sprites/Battle/Skills/Elements/_element_forest_2.png", renderer);
+    battle_display->setElement(Element::ELECTRIC, base_path + 
+            "sprites/Battle/Skills/Elements/_element_physical_2.png", renderer);
+    battle_display->setElement(Element::DIGITAL, base_path + 
+            "sprites/Battle/Skills/Elements/_element_physical_2.png", renderer);
+    battle_display->setElement(Element::NIHIL, base_path + 
+            "sprites/Battle/Skills/Elements/_element_physical_2.png", renderer);
+
+    /* Set the action scopes */
+    battle_display->setScope(ActionScope::USER, base_path + 
+          "sprites/Battle/Skills/Targets/_targets_user.png", renderer);
+    battle_display->setScope(ActionScope::ONE_TARGET, base_path + 
+          "sprites/Battle/Skills/Targets/_targets_one_target.png", renderer);
+    battle_display->setScope(ActionScope::ONE_ENEMY, base_path + 
+          "sprites/Battle/Skills/Targets/_targets_one_enemy.png", renderer);
+    battle_display->setScope(ActionScope::TWO_ENEMIES, base_path + 
+          "sprites/Battle/Skills/Targets/_targets_two_enemies.png", renderer);
+    battle_display->setScope(ActionScope::ALL_ENEMIES, base_path + 
+          "sprites/Battle/Skills/Targets/_targets_placeholder.png", renderer);
+    battle_display->setScope(ActionScope::ONE_ALLY, base_path + 
+          "sprites/Battle/Skills/Targets/_targets_placeholder.png", renderer);
+    battle_display->setScope(ActionScope::ONE_ALLY_NOT_USER, base_path + 
+          "sprites/Battle/Skills/Targets/_targets_placeholder.png", renderer);
+    battle_display->setScope(ActionScope::TWO_ALLIES, base_path + 
+          "sprites/Battle/Skills/Targets/_targets_two_allies.png", renderer);
+    battle_display->setScope(ActionScope::ALL_ALLIES, base_path + 
+          "sprites/Battle/Skills/Targets/_targets_placeholder.png", renderer);
+    battle_display->setScope(ActionScope::ONE_ALLY_KO, base_path + 
+          "sprites/Battle/Skills/Targets/_targets_one_ally_ko.png", renderer);
+    battle_display->setScope(ActionScope::ALL_ALLIES_KO, base_path + 
+          "sprites/Battle/Skills/Targets/_targets_all_allies_ko.png", renderer);
+    battle_display->setScope(ActionScope::ONE_PARTY, base_path + 
+          "sprites/Battle/Skills/Targets/_targets_party.png", renderer);
+    battle_display->setScope(ActionScope::ALL_TARGETS, base_path + 
+          "sprites/Battle/Skills/Targets/_targets_placeholder.png", renderer);
+    battle_display->setScope(ActionScope::NOT_USER, base_path + 
+          "sprites/Battle/Skills/Targets/_targets_placeholder.png", renderer); 
+    battle_display->setScope(ActionScope::ALL_NOT_USER, base_path + 
+          "sprites/Battle/Skills/Targets/_targets_placeholder.png", renderer);
+
+    /* Set up the extram frames */
+    battle_display->setFramePercent(base_path + 
+                  "sprites/Battle/Skills/Extras/_symbol_percent.png", renderer);
+    battle_display->setFrameQD(base_path + 
+                  "sprites/Battle/Skills/Extras/_symbol_qd.png", renderer);
+    battle_display->setFrameTime(base_path + 
+                  "sprites/Battle/Skills/Extras/_symbol_clock.png", renderer);
   }
 
   battle_display->setBattle(game_battle, active_renderer);
@@ -1227,6 +1286,11 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
                           cost_modifiers, "Kevin's Store", false);
     }
   }
+  else if(event.keysym.sym == SDLK_LCTRL)
+  {
+    if(battle_display != NULL)
+      battle_display->setShowInfo(true);
+  }
   /* Otherwise, send keys to the active view */
   else
   {
@@ -1234,7 +1298,8 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
       return game_map->keyDownEvent(event);
     else if(mode == BATTLE)
     {
-      if(battle_display->getRenderingState() == game_battle->getTurnState())
+      if(battle_display->getRenderingState() == game_battle->getTurnState() &&
+         !battle_display->isPaused())
         return game_battle->keyDownEvent(event);
     }
   }
@@ -1245,8 +1310,15 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
 /* The key up events to be handled by the class */
 void Game::keyUpEvent(SDL_KeyboardEvent event)
 {
-  if(mode == MAP)
+  if(event.keysym.sym == SDLK_LCTRL)
+  {
+    if(battle_display != NULL)
+      battle_display->setShowInfo(false);
+  }
+  else if(mode == MAP)
+  {
     game_map->keyUpEvent(event);
+  }
 }
 
 /* Renders the title screen */

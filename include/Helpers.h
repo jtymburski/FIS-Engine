@@ -94,6 +94,7 @@ public:
   static void flushConsole(const char &c = ' ');
 
   /* Converts an enumerated element to a String */
+  static uint16_t elementToInt(Element element);
   static std::string elementToString(const Element &element);
 
   /* Convert enumerated CellState to String */

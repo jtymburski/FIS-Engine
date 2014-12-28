@@ -237,6 +237,34 @@ bool Helpers::isVowel(const char &c)
 }
 
 /*
+ * Description: Elemental integer form of an enumerated element. Invalid element
+ *              will always return the number of valid elements.
+ *
+ * Inputs: Element element - enumerated form of element
+ * Output: uint16_t integer form of element
+ */
+uint16_t Helpers::elementToInt(Element element)
+{
+  if(element == Element::PHYSICAL)
+    return 0;
+  else if(element == Element::FIRE)
+    return 1;
+  else if(element == Element::FOREST)
+    return 2;
+  else if(element == Element::ICE)
+    return 3;
+  else if(element == Element::ELECTRIC)
+    return 4;
+  else if(element == Element::DIGITAL)
+    return 5;
+  else if(element == Element::NIHIL)
+    return 6;
+  else if(element == Element::NONE)
+    return 7;
+  return 0;
+}
+
+/*
  * Description: Elemental string form of an enumerated element.
  *
  * Inputs: Element - enumerated form of element.

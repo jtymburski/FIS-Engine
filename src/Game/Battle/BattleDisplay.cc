@@ -32,6 +32,7 @@ const float BattleDisplay::kBIGBAR_M1 = 0.1;
 const float BattleDisplay::kBIGBAR_M2 = 0.3;
 const uint16_t BattleDisplay::kBIGBAR_OFFSET = 88;
 const float BattleDisplay::kBIGBAR_R = 0.4;
+const uint16_t BattleDisplay::kBIGBAR_R_OFFSET = 25;
 const uint8_t BattleDisplay::kCOLOR_BASE = 150;
 const uint8_t BattleDisplay::kINFO_BORDER = 2;
 const uint8_t BattleDisplay::kINFO_GREY = 200;
@@ -53,6 +54,17 @@ const uint8_t BattleDisplay::kMENU_SEPARATOR_T = 12;
 const uint16_t BattleDisplay::kPERSON_SPREAD = 200;
 const uint16_t BattleDisplay::kPERSON_WIDTH = 256;
 const uint8_t BattleDisplay::kSCROLL_R = 3;
+const uint8_t BattleDisplay::kSKILL_BORDER = 10;
+const uint8_t BattleDisplay::kSKILL_BORDER_WIDTH = 1;
+const uint8_t BattleDisplay::kSKILL_DESC_GAP = 10;
+const uint8_t BattleDisplay::kSKILL_DESC_LINES = 4;
+const uint8_t BattleDisplay::kSKILL_DESC_SEP = 4;
+const uint8_t BattleDisplay::kSKILL_FRAME_S = 32;
+const uint8_t BattleDisplay::kSKILL_FRAME_L = 64;
+const uint8_t BattleDisplay::kSKILL_QD_GAP = 15; 
+const uint8_t BattleDisplay::kSKILL_SEP = 5;
+const uint8_t BattleDisplay::kSKILL_SUCCESS = 20;
+const uint8_t BattleDisplay::kSKILL_TIME_GAP = 18;
 const uint8_t BattleDisplay::kTYPE_MARGIN = 7;
 const uint8_t BattleDisplay::kTYPE_MAX = 5;
 const uint8_t BattleDisplay::kTYPE_SELECT = 3;
@@ -85,6 +97,7 @@ BattleDisplay::BattleDisplay(Options* running_config)
   offset = 0; // TODO: Delete
   offset_2 = 0; // TODO: Delete
   rendering_state = TurnState::DESTRUCT;
+  show_info = false;
   system_options = NULL;
 
   /* Set up variables */
@@ -94,6 +107,14 @@ BattleDisplay::BattleDisplay(Options* running_config)
   Frame frame;
   while(ailments.size() < static_cast<uint64_t>(Infliction::INVALID))
     ailments.push_back(frame);
+
+  /* Grow the element frame vector to size */
+  while(elements.size() < Helpers::elementToInt(Element::NONE))
+    elements.push_back(frame);
+
+  /* Grow the action scope frame vector to size */
+  while(scopes.size() < static_cast<uint64_t>(ActionScope::NO_SCOPE))
+    scopes.push_back(frame);
 }
 
 /*
@@ -406,14 +427,93 @@ SDL_Texture* BattleDisplay::createSkill(SDL_Renderer* renderer, Skill* skill,
   SDL_SetRenderTarget(renderer, texture);
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
   SDL_RenderClear(renderer);
-  
-  /* TODO - IMPLEMENTATION */
-  std::cout << "--" << std::endl;
-  std::cout << "Render Specs: " << width << "," << height << std::endl;
-  skill->print(false);
-//  std::cout << "Render Size: " << x << "," << y << ":" << width << "," 
-//            << height << std::endl;
-  std::cout << "--" << std::endl;
+ 
+  /* Render the skill box */
+  SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+  SDL_Rect rect_top;
+  rect_top.x = kSKILL_BORDER;
+  rect_top.y = kSKILL_BORDER;
+  rect_top.w = kSKILL_FRAME_L;
+  rect_top.h = kSKILL_FRAME_L;
+  if(skill->getThumbnail() != NULL)
+    skill->getThumbnail()->render(renderer, rect_top.x, rect_top.y);
+  Frame::renderRect(rect_top, kSKILL_BORDER_WIDTH, renderer, true);
+
+  /* Render the action scope */
+  Frame* scope_frame = getScope(skill->getScope());
+  SDL_Rect rect_bot;
+  rect_bot.x = kSKILL_BORDER;
+  rect_bot.h = kSKILL_FRAME_S;
+  rect_bot.y = height - kSKILL_BORDER - rect_bot.h;
+  rect_bot.w = kSKILL_FRAME_L;
+  if(scope_frame != NULL)
+    scope_frame->render(renderer, rect_bot.x, rect_bot.y);
+  Frame::renderRect(rect_bot, kSKILL_BORDER_WIDTH, renderer, true);
+
+  /* Render the primary element */
+  Frame* primary_frame = getElement(skill->getPrimary());
+  rect_bot.x += rect_bot.w + kSKILL_BORDER;
+  rect_bot.w = kSKILL_FRAME_S;
+  if(primary_frame != NULL)
+    primary_frame->render(renderer, rect_bot.x, rect_bot.y);
+  Frame::renderRect(rect_bot, kSKILL_BORDER_WIDTH, renderer, true);
+
+  /* Render the secondary element */
+  Frame* secondary_frame = getElement(skill->getSecondary());
+  rect_bot.x += rect_bot.w + kSKILL_BORDER;
+  if(secondary_frame != NULL)
+  {
+    secondary_frame->render(renderer, rect_bot.x, rect_bot.y);
+    Frame::renderRect(rect_bot, kSKILL_BORDER_WIDTH, renderer, true);
+  }
+
+  /* Render the cost */
+  SDL_Color color = {255, 255, 255, 255};
+  uint16_t qd_x = width - kSKILL_BORDER - frame_qd.getWidth();
+  uint16_t qd_y = kSKILL_QD_GAP;
+  frame_qd.render(renderer, qd_x, qd_y);
+  Text t1(font_header);
+  t1.setText(renderer, std::to_string(skill->getCost()), color);
+  qd_x -= t1.getWidth() + kSKILL_SEP;
+  t1.render(renderer, qd_x, qd_y - 1);
+
+  /* Render the name */
+  t1.setText(renderer, skill->getName(), color);
+  uint16_t text_x = rect_top.x + rect_top.w + kSKILL_BORDER;
+  uint16_t text_y = qd_y - 1;
+  t1.render(renderer, text_x, text_y);
+
+  /* Render the cooldown */
+  uint16_t time_x = width - kSKILL_BORDER - frame_time.getWidth();
+  uint16_t time_y = height - kSKILL_TIME_GAP - frame_time.getHeight();
+  frame_time.render(renderer, time_x, time_y);
+  t1.setText(renderer, std::to_string(skill->getCooldown()), color);
+  time_x -= t1.getWidth() + kSKILL_SEP;
+  t1.render(renderer, time_x, time_y - 1);
+
+  /* Render the chance of success */
+  time_x -= frame_percent.getWidth() + kSKILL_SUCCESS;
+  frame_percent.render(renderer, time_x, time_y);
+  t1.setText(renderer, std::to_string((int)skill->getChance()), color);
+  t1.render(renderer, time_x - t1.getWidth() - kSKILL_SEP, time_y - 1);
+
+  /* Render the description */
+  uint16_t line_width = width - text_x;
+  std::vector<std::string> desc_set = Text::splitLine(font_subheader, 
+                  skill->getDescription(), line_width);
+  Text t2(font_subheader);
+  text_y += t1.getHeight() + kSKILL_DESC_GAP;
+  for(uint16_t i = 0; i < desc_set.size() && i < kSKILL_DESC_LINES; i++)
+  {
+    if(i == (kSKILL_DESC_LINES - 1) && desc_set.size() > kSKILL_DESC_LINES)
+      t2.setText(renderer, Text::splitLine(font_subheader, 
+                           desc_set[i] + " " + desc_set[i+1], line_width, true
+                           ).front(), color);
+    else
+      t2.setText(renderer, desc_set[i], color);
+    t2.render(renderer, 
+              text_x, text_y + (t2.getHeight() + kSKILL_DESC_SEP) * i);
+  }
   
   /* Return the new texture */
   SDL_SetRenderTarget(renderer, NULL);
@@ -464,9 +564,11 @@ bool BattleDisplay::createSkills(SDL_Renderer* renderer, BattleMenu* menu,
       success &= t->render(renderer, 0, kTYPE_MARGIN);
       
       /* Render the QD */
-      success &= t->setText(renderer, 
-                            std::to_string(skill->getCost()) + " qd", color);
-      success &= t->render(renderer, text_width - t->getWidth(), kTYPE_MARGIN);
+      uint16_t qd_x = text_width - frame_qd.getWidth();
+      success &= frame_qd.render(renderer, qd_x, kTYPE_MARGIN + 1);
+      success &= t->setText(renderer, std::to_string(skill->getCost()), color);
+      success &= t->render(renderer, qd_x - t->getWidth() - kSKILL_SEP, 
+                           kTYPE_MARGIN);
       
       /* Set the new texture */
       skill_names.back()->setTexture(texture);
@@ -474,9 +576,9 @@ bool BattleDisplay::createSkills(SDL_Renderer* renderer, BattleMenu* menu,
       
       /* Create the detailed skill information for this skill */
       skill_info.back()->setTexture(createSkill(renderer, skill, 
-                                        width_right - kTYPE_MARGIN * 2, 
-                                        kBIGBAR_OFFSET + kBIGBAR_CHOOSE - 
-                                        kMENU_SEPARATOR_T - kMENU_SEPARATOR_B));
+                              width_right - kTYPE_MARGIN * 2 - kBIGBAR_R_OFFSET, 
+                              kBIGBAR_OFFSET + kBIGBAR_CHOOSE - 
+                              kMENU_SEPARATOR_T - kMENU_SEPARATOR_B));
     }
   }
   delete t;
@@ -590,7 +692,7 @@ bool BattleDisplay::renderActionSkills(SDL_Renderer* renderer, BattleMenu* menu,
   {
     for(uint16_t i = 0; i < skill_names.size(); i++)
       text_y += skill_names[i]->getHeight();
-    text_y = (height - text_y) / 2;
+    text_y = y + (height - text_y) / 2;
   }
   
   /* Loop through all skills */
@@ -1109,9 +1211,8 @@ bool BattleDisplay::renderMenu(SDL_Renderer* renderer, PersonState* state,
     {
       success &= renderActionSkills(renderer, menu, rect2.x, rect2.y, 
                                     section3_w, rect3.h);
-//      success &= renderActionSkill(renderer, 
-//                   menu->getMenuSkills().at(menu->getElementIndex()).skill,
-//                   rect3.x, rect3.y, screen_width * kBIGBAR_R, rect3.h);
+      success &= skill_info[menu->getElementIndex()]->
+                              render(renderer, rect3.x + kTYPE_MARGIN, rect3.y);
     }
     else
     {
@@ -1354,6 +1455,7 @@ void BattleDisplay::clear()
   offset = 0;
   offset_2 = 0;
   rendering_state = TurnState::DESTRUCT;
+  show_info = false;
   system_options = NULL;
 
   /* Unsets the flat rendering sprites */
@@ -1373,7 +1475,9 @@ void BattleDisplay::clear()
 // TODO: Comment
 Frame* BattleDisplay::getAilment(Infliction ailment)
 {
-  return &ailments[static_cast<uint64_t>(ailment)];
+  if(ailment != Infliction::INVALID)
+    return &ailments[static_cast<uint64_t>(ailment)];
+  return NULL;
 }
 
 /* Get the background */
@@ -1388,6 +1492,14 @@ Sprite* BattleDisplay::getBackground()
 Battle* BattleDisplay::getBattle()
 {
   return battle;
+}
+
+// TODO: Comment
+Frame* BattleDisplay::getElement(Element element)
+{
+  if(element != Element::NONE)
+    return &elements[Helpers::elementToInt(element)];
+  return NULL;
 }
 
 /* Get the midlay(s) */
@@ -1428,6 +1540,21 @@ std::vector<Sprite*> BattleDisplay::getOverlays()
 TurnState BattleDisplay::getRenderingState()
 {
   return rendering_state;
+}
+
+// TODO: Comment
+Frame* BattleDisplay::getScope(ActionScope scope)
+{
+  if(scope != ActionScope::NO_SCOPE)
+    return &scopes[static_cast<uint64_t>(scope)];
+  return NULL;
+}
+
+/* Returns if the battle display is paused and control should be halted */
+// TODO: Comment
+bool BattleDisplay::isPaused()
+{
+  return show_info;
 }
 
 /* Renders the battle display */
@@ -1490,7 +1617,8 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
     /* Render friend information */
     BattleMenu* menu = battle->getBattleMenu();
     if(rendering_state == TurnState::SELECT_ACTION_ALLY && 
-       (menu->getLayerIndex() == 1 || menu->getLayerIndex() == 2))
+       (menu->getLayerIndex() == 1 || menu->getLayerIndex() == 2) && 
+       !show_info)
     {
       /* Checks the index of the rendering person for if the skills need to be
        * updated */
@@ -1517,12 +1645,14 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
   return false;
 }
 
-/* Sets the ailment sprite */
+/* Sets the ailment frame */
 // TODO: Comment
 bool BattleDisplay::setAilment(Infliction ailment, std::string path, 
                                SDL_Renderer* renderer)
 {
-  return ailments[static_cast<uint64_t>(ailment)].setTexture(path, renderer);
+  if(ailment != Infliction::INVALID)
+    return ailments[static_cast<uint64_t>(ailment)].setTexture(path, renderer);
+  return NULL;
 }
 
 /* Sets the background sprite */
@@ -1589,6 +1719,35 @@ bool BattleDisplay::setConfiguration(Options* running_config)
   return false;
 }
 
+/* Sets the element frame */
+// TODO: Comment
+bool BattleDisplay::setElement(Element element, std::string path, 
+                               SDL_Renderer* renderer)
+{
+  if(element != Element::NONE)
+    return elements[Helpers::elementToInt(element)].setTexture(path, renderer);
+  return NULL;
+}
+
+/* Sets the rendering helper frames for display */
+// TODO: Comment
+bool BattleDisplay::setFramePercent(std::string path, SDL_Renderer* renderer)
+{
+  return frame_percent.setTexture(path, renderer);
+}
+
+// TODO: Comment
+bool BattleDisplay::setFrameQD(std::string path, SDL_Renderer* renderer)
+{
+  return frame_qd.setTexture(path, renderer);
+}
+
+// TODO: Comment
+bool BattleDisplay::setFrameTime(std::string path, SDL_Renderer* renderer)
+{
+  return frame_time.setTexture(path, renderer);
+}
+
 /* Sets the midlay sprite - main one, removes all others */
 // TODO: Comment
 bool BattleDisplay::setMidlay(Sprite* midlay)
@@ -1615,6 +1774,23 @@ bool BattleDisplay::setOverlay(Sprite* overlay)
   }
 
   return false;
+}
+
+/* Sets the action scope frame */
+// TODO: Comment
+bool BattleDisplay::setScope(ActionScope scope, std::string path, 
+                             SDL_Renderer* renderer)
+{
+  if(scope != ActionScope::NO_SCOPE)
+    return scopes[static_cast<uint64_t>(scope)].setTexture(path, renderer);
+  return NULL;
+}
+  
+/* Sets if info about player should be shown regardless of state */
+// TODO: Comment
+void BattleDisplay::setShowInfo(bool show)
+{
+  show_info = show;
 }
 
 /* Unsets the background sprite */
@@ -1746,8 +1922,21 @@ bool BattleDisplay::update(int cycle_time)
         index_types = 0;
       }
 
+      /* -- PAUSED: SHOW INFO -- */
+      if(show_info)
+      {
+        /* Make sure friends and foes are visible at final state */
+        for(uint16_t i = 0; i < friends_state.size(); i++)
+          if(friends_state[i]->fp != NULL)
+            friends_state[i]->fp->setBrightness(1.0);
+        for(uint16_t i = 0; i < foes_state.size(); i++)
+          if(foes_state[i]->tp != NULL)
+            foes_state[i]->tp->setBrightness(1.0);
+
+      bar_offset = 0;
+      }
       /* -- CHOOSING SKILLS -- */
-      if(menu->getLayerIndex() == 1 ||
+      else if(menu->getLayerIndex() == 1 ||
          menu->getLayerIndex() == 2)
       {
         /* Modify the indexes */
@@ -1861,9 +2050,9 @@ bool BattleDisplay::update(int cycle_time)
       for(uint16_t i = 0; i < friends_state.size(); i++)
         if(friends_state[i]->fp != NULL)
           friends_state[i]->fp->setBrightness(1.0);
-        for(uint16_t i = 0; i < foes_state.size(); i++)
-          if(foes_state[i]->tp != NULL)
-            foes_state[i]->tp->setBrightness(1.0);
+      for(uint16_t i = 0; i < foes_state.size(); i++)
+        if(foes_state[i]->tp != NULL)
+          foes_state[i]->tp->setBrightness(1.0);
 
       bar_offset = 0;
       rendering_state = battle_state;
