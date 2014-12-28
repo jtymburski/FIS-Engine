@@ -672,9 +672,32 @@ void Frame::drawLine(int32_t x1, int32_t x2, int32_t y,
 {
   SDL_Rect rect;
   rect.x = x1;
-  rect.y = y;
   rect.w = x2 - x1;
+  rect.y = y;
   rect.h = 1;
+
+  SDL_RenderFillRect(renderer, &rect);
+}
+
+/*
+ * Description: This draws a single vertical line in SDL. It utilizes the
+ *              SDL_RenderFillRect call since the drawLine with opacity leaves
+ *              one double rendered pixel at the end.
+ *
+ * Inputs: int32_t y1 - one y coordinate
+ *         int32_t y2 - the other y coordinate
+ *         int32_t x - the x coordinate
+ *         SDL_Renderer* renderer - the rendering pointer
+ * Output: none
+ */
+void Frame::drawLineY(int32_t y1, int32_t y2, int32_t x, 
+                     SDL_Renderer* renderer)
+{
+  SDL_Rect rect;
+  rect.y = y1;
+  rect.h = y2 - y1;
+  rect.x = x;
+  rect.w = 1;
 
   SDL_RenderFillRect(renderer, &rect);
 }
@@ -711,7 +734,7 @@ void Frame::renderBottomFlatTriangle(uint16_t x1, uint16_t x2, uint16_t x3,
   float right_x = x1;
   float slope1 = (x2 - left_x) / (y23 - y1);
   float slope2 = (x3 - left_x) / (y23 - y1);
-      
+
   /* Get alpha */
   uint8_t alpha = 255;
   uint8_t red = 255;
@@ -761,7 +784,10 @@ void Frame::renderBottomFlatTriangle(uint16_t x1, uint16_t x2, uint16_t x3,
     /* Otherwise just draw full line */
     else
     {
-      Frame::drawLine((int)left_x, (int)right_x, y, renderer);
+      if(y == y23)
+        Frame::drawLine(x2 - 1, x3, y23, renderer);
+      else
+        Frame::drawLine((int)left_x, (int)right_x, y, renderer);
     }
 
     /* Increment to next */
@@ -854,7 +880,10 @@ void Frame::renderTopFlatTriangle(uint16_t x1, uint16_t x2, uint16_t x3,
     /* Otherwise just draw full line */
     else
     {
-      Frame::drawLine((int)left_x, (int)right_x, y, renderer);
+      if(y == y12)
+        Frame::drawLine(x1 - 1, x2, y12, renderer);
+      else
+        Frame::drawLine((int)left_x, (int)right_x, y, renderer);
     }
 
     left_x -= slope1;
@@ -900,130 +929,199 @@ bool Frame::renderBar(uint16_t x, uint16_t y, uint16_t length,
 }
 
 /*
- * Description: Renders a circle, with center x and y and radius. The option can
- *              be selected for a filled vs. a non-filled circle.
+ * Description: Renders a circle border with a given center x and y pixel
+ *              and a radius. Color must be set prior to entering the call.
+ *              This circle is rasterized with horizontal lines.
  *
- * Inputs: uint16_t center_x - the center x coordinate of circle
- *         uint16_t center_y - the center y coordinate of the circle
- *         uint16_t radius - the radius of the circle
+ * Inputs: int center_x - the x location of the center pixel
+ *         int center_y - the y location of the center pixel
+ *         uint16_t radius - the radius in pixels of the circle
  *         SDL_Renderer* renderer - the rendering graphical engine
- *         bool filled - should the circle be filled?
- * Output: bool - was the circle rendered?
+ * Output: bool - did it render?
  */
-bool Frame::renderCircle(uint16_t center_x, uint16_t center_y, uint16_t radius, 
-                         SDL_Renderer* renderer, bool filled)
+bool Frame::renderCircle(int center_x, int center_y, uint16_t radius, 
+                         SDL_Renderer* renderer)
 {
-  /* Prechecks */
-  if(renderer != NULL && radius > 0)
+  if(renderer != NULL)
   {
-    /* Variable setup */
-    int progress = 1 - radius;
-    int step_x = 1;
-    int step_y = -2 * radius;
-    int top_left_y = center_y - radius;
-    int x = 0;
-    int y = radius;
-    std::vector<bool> y_levels;
+    int x0 = center_x;
+    int y0 = center_y;
+    int x = radius;
+    int y = 0;
+    int e = -radius;
 
-    /* Set up the vertical y levels to the height of the circle */
-    y_levels.push_back(false);
-    for(uint16_t i = 0; i < radius; i++)
+    /* Render end center points */
+    if(radius == 0)
     {
-      y_levels.push_back(false);
-      y_levels.push_back(false);
-    }
-
-    /* Render the farthest points (not part of the algorithm) */
-    SDL_RenderDrawPoint(renderer, center_x, center_y + radius);
-    SDL_RenderDrawPoint(renderer, center_x, center_y - radius);
-    if(filled)
-    {
-      Frame::drawLine(center_x - radius, center_x + radius, center_y, renderer);
+      SDL_RenderDrawPoint(renderer, x0, y0);
     }
     else
     {
-      SDL_RenderDrawPoint(renderer, center_x + radius, center_y);
-      SDL_RenderDrawPoint(renderer, center_x - radius, center_y);
+      SDL_RenderDrawPoint(renderer, x0 + radius, y0);
+      SDL_RenderDrawPoint(renderer, x0 - radius, y0);
+      SDL_RenderDrawPoint(renderer, x0, y0 + radius);
+      SDL_RenderDrawPoint(renderer, x0, y0 - radius);
     }
 
-    /* Render through the guts of the circle */
-    while(x < y)
+    /* Render remaining quadrants */
+    while(x >= y)
     {
-      bool y_changed = false;
-
-      if(progress >= 0)
+      if(x != 0 && y != 0)
       {
-        y--;
-        step_y += 2;
-        progress += step_y;
+        /* Bottom Right Quadrant */
+        int x1 = x + x0;
+        int x2 = y + x0;
+        int y1 = y + y0;
+        int y2 = x + y0;
+        SDL_RenderDrawPoint(renderer, x1, y1);
+        if(x1 != x2 || y1 != y2)
+          SDL_RenderDrawPoint(renderer, x2, y2);
 
-        y_changed = true;
+        /* Bottom Left Quadrant */
+        x1 = -x + x0;
+        x2 = -y + x0;
+        SDL_RenderDrawPoint(renderer, x1, y1);
+        if(x1 != x2 || y1 != y2)
+          SDL_RenderDrawPoint(renderer, x2, y2);
+
+        /* Top Left Quadrant */
+        y1 = -y + y0;
+        y2 = -x + y0;
+        SDL_RenderDrawPoint(renderer, x1, y1);
+        if(x1 != x2 || y1 != y2)
+          SDL_RenderDrawPoint(renderer, x2, y2);
+
+        /* Top Right Quadrant */
+        x1 = x + x0;
+        x2 = y + x0;
+        SDL_RenderDrawPoint(renderer, x1, y1);
+        if(x1 != x2 || y1 != y2)
+          SDL_RenderDrawPoint(renderer, x2, y2);
       }
 
-      x++;
-      step_x += 2;
-      progress += step_x;
-
-      /* Render the arc */
-      if(filled)
+      /* Increment the counter */
+      e += 2 * y + 1;
+      y++;
+      if(e >= 0)
       {
-        /* Get calculation values for top/bottom half */
-        if(y_changed)
-        {
-          /* Calculate the line(s) */
-          int y1 = center_y + y;
-          int y2 = center_y - y;
-          uint16_t delta_y1 = y1 - top_left_y;
-          uint16_t delta_y2 = y2 - top_left_y;
-        
-          /* Only render the line if it hasn't been rendered */
-          if(!y_levels[delta_y1])
-          {
-            Frame::drawLine(center_x - x, center_x + x, y1, renderer);
-            y_levels[delta_y1] = true;
-          }
-          if(!y_levels[delta_y2])
-          {
-            Frame::drawLine(center_x - x, center_x + x, y2, renderer);
-            y_levels[delta_y2] = true;
-          }
-        }
-
-        /* Get calculation values for middle half line(s) */
-        int y1 = center_y + x;
-        int y2 = center_y - x;
-        uint16_t delta_y1 = y1 - top_left_y;
-        uint16_t delta_y2 = y2 - top_left_y;
-
-        /* Only render the line if it hasn't been rendered */
-        if(!y_levels[delta_y1])
-        {
-          Frame::drawLine(center_x - y, center_x + y, center_y + x, renderer);
-          y_levels[delta_y1] = true;
-        }
-        if(!y_levels[delta_y2])
-        {
-          Frame::drawLine(center_x - y, center_x + y, center_y - x, renderer);
-          y_levels[delta_y2] = true;
-        }
-      }
-      else
-      {
-        SDL_RenderDrawPoint(renderer, center_x + x, center_y + y);
-        SDL_RenderDrawPoint(renderer, center_x - x, center_y + y);
-        SDL_RenderDrawPoint(renderer, center_x + x, center_y - y);
-        SDL_RenderDrawPoint(renderer, center_x - x, center_y - y);
-        SDL_RenderDrawPoint(renderer, center_x + y, center_y + x);
-        SDL_RenderDrawPoint(renderer, center_x - y, center_y + x);
-        SDL_RenderDrawPoint(renderer, center_x + y, center_y - x);
-        SDL_RenderDrawPoint(renderer, center_x - y, center_y - x);
+        e -= (2 * x - 1);
+        x--;
       }
     }
+
     return true;
   }
+
   return false;
 }
-  
+
+/*
+ * Description: Renders a circle filled with a given center x and y pixel
+ *              and a radius. Color must be set prior to entering the call.
+ *              This circle is rasterized with horizontal lines.
+ *
+ * Inputs: int center_x - the x location of the center pixel
+ *         int center_y - the y location of the center pixel
+ *         uint16_t radius - the radius in pixels of the circle
+ *         SDL_Renderer* renderer - the rendering graphical engine
+ * Output: bool - did it render?
+ */
+bool Frame::renderCircleFilled(int center_x, int center_y, uint16_t radius, 
+                               SDL_Renderer* renderer)
+{
+  if(renderer != NULL)
+  {
+    int x = radius;
+    int x0 = center_x;
+    bool x_changed = false;
+    int y = 0;
+    int y0 = center_y;
+    int delta = -radius;
+    
+    /* Render end center points */
+    SDL_RenderDrawPoint(renderer, x0, y0);
+    if(radius > 0)
+    {
+      Frame::drawLine(x0 + 1, x0 + radius + 1, y0, renderer); /* R */
+      Frame::drawLine(x0, x0 - radius, y0, renderer); /* L */
+      Frame::drawLineY(y0, y0 - radius, x0, renderer); /* T */
+      Frame::drawLineY(y0 + 1, y0 + radius + 1, x0, renderer); /* B */
+    }
+
+    /* Render remaining quadrants */
+    while(x >= y)
+    {
+      if(x != 0 && y != 0)
+      {
+        /* Bottom Right Quadrant */
+        int x1 = x + x0;
+        int x2 = y + x0;
+        int y1 = y + y0;
+        int y2 = x + y0;
+        Frame::drawLine(x0 + 1, x1 + 1, y1, renderer);
+        if(x1 != x2 || y1 != y2)
+        {
+          if(x_changed)
+            Frame::drawLine(x0 + 1, x2 + 1, y2, renderer);
+          else
+            SDL_RenderDrawPoint(renderer, x2, y2);
+        }
+
+        /* Bottom Left Quadrant */
+        x1 = -x + x0;
+        x2 = -y + x0;
+        Frame::drawLine(x1, x0, y1, renderer);
+        if(x1 != x2 || y1 != y2)
+        {
+          if(x_changed)
+            Frame::drawLine(x2, x0, y2, renderer);
+          else
+            SDL_RenderDrawPoint(renderer, x2, y2);
+        }
+
+        /* Top Left Quadrant */
+        y1 = -y + y0;
+        y2 = -x + y0;
+        Frame::drawLine(x1, x0, y1, renderer);
+        if(x1 != x2 || y1 != y2)
+        {
+          if(x_changed)
+            Frame::drawLine(x2, x0, y2, renderer);
+          else
+            SDL_RenderDrawPoint(renderer, x2, y2);
+        }
+
+        /* Top Right Quadrant */
+        x1 = x + x0;
+        x2 = y + x0;
+        Frame::drawLine(x0 + 1, x1 + 1, y1, renderer);
+        if(x1 != x2 || y1 != y2)
+        {
+          if(x_changed)
+            Frame::drawLine(x0 + 1, x2 + 1, y2, renderer);
+          else
+            SDL_RenderDrawPoint(renderer, x2, y2);
+        }
+      }
+
+      /* Increment the counter */
+      x_changed = false;
+      delta += 2 * y + 1;
+      y++;
+      if(delta >= 0)
+      {
+        delta -= (2 * x - 1);
+        x--;
+        x_changed = true;
+      }
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
 /*
  * Description: Creates a rectangle border with a customizable border width and
  *              if the border should be calculated into the rect or away from

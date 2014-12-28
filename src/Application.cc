@@ -364,14 +364,6 @@ bool Application::run()
       text2.render(renderer, 48, 48);
       text1.render(renderer, 50, 50);
      
-      /* Triangle testing - TODO: Remove */
-      //SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-      //Frame::renderTriangle(50, 50, 100, 75, 75, 100, renderer, true);
-
-      /* Circle testing - TODO: Remove */
-      //SDL_SetRenderDrawColor(renderer, 0, 0, 255, 128);
-      //Frame::renderCircle(400, 400, 49, renderer, true);
-
       /* Update screen */
       SDL_RenderPresent(renderer);
       count++;

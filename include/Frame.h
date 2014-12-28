@@ -144,7 +144,9 @@ private:
   /* Draws a line. This is needed because of SDL draw line glitch */
   static void drawLine(int32_t x1, int32_t x2, int32_t y, 
                        SDL_Renderer* renderer);
-  
+  static void drawLineY(int32_t y1, int32_t y2, int32_t x, 
+                        SDL_Renderer* renderer);
+
   /* Render bottom flat triangle - handled by renderTriangle() */
   static void renderBottomFlatTriangle(uint16_t x1, uint16_t x2, uint16_t x3, 
                                        uint16_t y1, uint16_t y23, 
@@ -165,10 +167,13 @@ public:
   static bool renderBar(uint16_t x, uint16_t y, uint16_t length, 
                         uint16_t height, float slope, SDL_Renderer* renderer);
 
-  /* Creates a circle, given the parameters and a renderer */
-  static bool renderCircle(uint16_t center_x, uint16_t center_y, 
-                           uint16_t radius, SDL_Renderer* renderer, 
-                           bool filled = true);
+  /* Creates a circle border, given the parameters and a renderer */
+  static bool renderCircle(int center_x, int center_y, uint16_t radius, 
+                           SDL_Renderer* renderer);
+
+  /* Creates a filled circle, given the parameters and a renderer */
+  static bool renderCircleFilled(int center_x, int center_y, uint16_t radius, 
+                                 SDL_Renderer* renderer);
 
   /* Creates a rectangle with multiple pixel border */
   static bool renderRect(SDL_Rect rect, uint16_t border_width, 

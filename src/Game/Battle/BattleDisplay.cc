@@ -53,7 +53,7 @@ const uint8_t BattleDisplay::kMENU_SEPARATOR_B = 8;
 const uint8_t BattleDisplay::kMENU_SEPARATOR_T = 12;
 const uint16_t BattleDisplay::kPERSON_SPREAD = 200;
 const uint16_t BattleDisplay::kPERSON_WIDTH = 256;
-const uint8_t BattleDisplay::kSCROLL_R = 3;
+const uint8_t BattleDisplay::kSCROLL_R = 2;
 const uint8_t BattleDisplay::kSKILL_BORDER = 10;
 const uint8_t BattleDisplay::kSKILL_BORDER_WIDTH = 1;
 const uint8_t BattleDisplay::kSKILL_DESC_GAP = 10;
@@ -726,8 +726,8 @@ bool BattleDisplay::renderActionSkills(SDL_Renderer* renderer, BattleMenu* menu,
       if(i == 0)
       {
         if(index_actions == 0)
-          success &= Frame::renderCircle(center_x - 1, center_y, kSCROLL_R, 
-                                         renderer);
+          success &= Frame::renderCircleFilled(center_x - 1, center_y, 
+                                               kSCROLL_R, renderer);
         else
         {
           center_y -= 1;
@@ -742,8 +742,8 @@ bool BattleDisplay::renderActionSkills(SDL_Renderer* renderer, BattleMenu* menu,
       {
         uint16_t bottom_index = index_actions + kTYPE_MAX;
         if(bottom_index == skill_names.size())
-          success &= Frame::renderCircle(center_x - 1, center_y, kSCROLL_R, 
-                                         renderer);
+          success &= Frame::renderCircleFilled(center_x - 1, center_y, 
+                                               kSCROLL_R, renderer);
         else
         {
           center_y += 1;
@@ -822,8 +822,8 @@ bool BattleDisplay::renderActionTypes(SDL_Renderer* renderer, BattleMenu* menu,
       if(i == 0)
       {
         if(index_types == 0)
-          success &= Frame::renderCircle(center_x - 1, center_y, kSCROLL_R, 
-                                         renderer);
+          success &= Frame::renderCircleFilled(center_x - 1, center_y, 
+                                               kSCROLL_R, renderer);
         else
         {
           center_y -= 1;
@@ -838,8 +838,8 @@ bool BattleDisplay::renderActionTypes(SDL_Renderer* renderer, BattleMenu* menu,
       {
         uint16_t bottom_index = index_types + kTYPE_MAX;
         if(bottom_index == types.size())
-          success &= Frame::renderCircle(center_x - 1, center_y, kSCROLL_R, 
-                                         renderer);
+          success &= Frame::renderCircleFilled(center_x - 1, center_y, 
+                                               kSCROLL_R, renderer);
         else
         {
           center_y += 1;
