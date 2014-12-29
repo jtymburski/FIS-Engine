@@ -352,9 +352,10 @@ void Game::setupBattle()
   // physical_04->setPrimary(Element::PHYSICAL);
 
   Skill* fire_01 = new Skill(110, "Burninate The Countryside", ActionScope::ONE_PARTY, 
-    damage_actions[8], 100, 5);
+    damage_actions[8], 0.75, 35);
   fire_01->setPrimary(Element::FIRE);
   fire_01->setSecondary(Element::PHYSICAL);
+  fire_01->setFlag(SkillFlags::OFFENSIVE);
 
   Skill* forest_01 = new Skill(111, "Earth Strike", ActionScope::ONE_ENEMY,
                                damage_actions[4], 91, 4);
@@ -449,6 +450,10 @@ void Game::setupBattle()
   Skill* dreamsnare = new Skill(154, "Dreamsnare", ActionScope::ONE_TARGET,
     inflict_actions[24], 100, 10);
 
+  Skill* life_all = new Skill(155, "Regen All", ActionScope::ONE_PARTY,
+    alter_actions[1], 0.99, 20);
+  life_all->setFlag(SkillFlags::DEFENSIVE, true);
+
   // Test Skill Sets
   SkillSet* physical_skills = new SkillSet(physical_01, 1);
   // physical_skills->addSkill(physical_02, 1);
@@ -480,6 +485,7 @@ void Game::setupBattle()
   SkillSet* elemental_skills = new SkillSet(fire_01, 1);
 
   elemental_skills->addSkill(forest_01, 1);
+  elemental_skills->addSkill(life_all, 1);
   // elemental_skills->addSkill(ice_01, 1);
   // elemental_skills->addSkill(electric_01, 1);
   // elemental_skills->addSkill(digital_01, 1);

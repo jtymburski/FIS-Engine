@@ -118,6 +118,9 @@ private:
   void keyDownIncrement();
   void keyDownSelect();
 
+  /* Returns the first target of a desired party (if exists) */
+  int32_t getPartyTargetIndex(bool opposite);
+
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/

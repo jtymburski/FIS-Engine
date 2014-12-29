@@ -131,7 +131,7 @@ bool BattleMenu::incrementLayer(const int32_t &new_layer_index)
   {
     setMenuFlag(MenuState::ACTION_SELECTED);
     layer_index = 3;
-    
+
     return true;
   }
 
@@ -611,6 +611,31 @@ void BattleMenu::keyDownSelect()
   if (layer_to_increment != -1)
     incrementLayer(layer_to_increment);
 }
+
+/*
+ * Description:
+ *
+ * Inputs: 
+ * Output: 
+ */
+int32_t BattleMenu::getPartyTargetIndex(bool opposite)
+{
+  if (opposite)
+  {
+    for (size_t index = 0; index < valid_targets.size(); index++)
+      if (valid_targets.at(index) < 0)
+        return index;
+  }
+  else
+  {
+    for (size_t index = 0; index < valid_targets.size(); index++)
+      if (valid_targets.at(index) > 0)
+        return index;
+  }
+
+  return 0;
+}
+
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -1493,6 +1518,23 @@ bool BattleMenu::setSelectableTargets(std::vector<int32_t> new_menu_targets)
     auto neg_two = std::find(begin(valid_targets), end(valid_targets), -2);
     std::iter_swap(neg_one, neg_two);
   }
+
+    if (selected_skill.skill != nullptr)
+    {
+      /* Default offensive skills to opposing party, vice versa for defensive */
+      if (selected_skill.skill->getFlag(SkillFlags::OFFENSIVE))
+        element_index = getPartyTargetIndex(true);
+      else
+        element_index = getPartyTargetIndex(false);
+    }
+
+    if (selected_item != nullptr)
+    {
+      if (selected_item->getUseSkill()->getFlag(SkillFlags::OFFENSIVE))
+        element_index = getPartyTargetIndex(true);
+      else
+        element_index = getPartyTargetIndex(false);
+    }
 
   return (!valid_targets.empty());
 }

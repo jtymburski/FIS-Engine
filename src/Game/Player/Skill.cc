@@ -152,17 +152,11 @@ void Skill::flagSetup()
       setFlag(SkillFlags::ALTERING);
 
       if ((*it)->getUserAttribute() == Attribute::VITA && (*it)->getBase() > 0)
-      {
         setFlag(SkillFlags::HEALING);
-        setFlag(SkillFlags::DEFENSIVE);
-      }
     }
 
     else if ((*it)->actionFlag(ActionFlags::DAMAGE))
-    {
-      setFlag(SkillFlags::OFFENSIVE);
       setFlag(SkillFlags::DAMAGING);
-    }
 
     else if ((*it)->actionFlag(ActionFlags::INFLICT))
       setFlag(SkillFlags::INFLICTING);
@@ -184,9 +178,6 @@ void Skill::flagSetup()
         setFlag(SkillFlags::HEALING);
     }
   }
-
-  if (!getFlag(SkillFlags::OFFENSIVE) && !getFlag(SkillFlags::DEFENSIVE))
-    setFlag(SkillFlags::NEUTRAL);
 
   setFlag(SkillFlags::VALID, this->isValid());
 }
