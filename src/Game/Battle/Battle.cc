@@ -2837,6 +2837,9 @@ bool Battle::updatePersonDeath(const DamageType &damage_type)
               << std::endl;
   }
 
+  /* Extra assert that the person has died */
+  curr_target->setBFlag(BState::ALIVE, false);
+
   /* Every action performed by the recently deceased must be removed */
   action_buffer->removeAllByUser(curr_target);
 
@@ -3257,8 +3260,8 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
       printPartyState();
     else if (event.keysym.sym == SDLK_PRINTSCREEN)
       printTurnState();
-    else if (event.keysym.sym == SDLK_HOME)
-      action_buffer->print(false);
+    // else if (event.keysym.sym == SDLK_HOME)
+    //   action_buffer->print(false);
     else if (event.keysym.sym == SDLK_END)
       action_buffer->print(true);
     else if (event.keysym.sym == SDLK_PAGEUP)

@@ -492,6 +492,7 @@ void Game::setupBattle()
 
   SkillSet* elemental_skills = new SkillSet(fire_01, 1);
 
+  elemental_skills->addSkill(physical_01, 1);
   elemental_skills->addSkill(forest_01, 1);
   elemental_skills->addSkill(life_all, 1);
   // elemental_skills->addSkill(ice_01, 1);
