@@ -835,6 +835,8 @@ bool Sprite::render(SDL_Renderer* renderer, int x, int y, int w, int h)
     /* Proceed to update the running texture if it's changed */
     if(texture_update || grey_scale_update)
     {
+      SDL_Texture* previous_renderer = SDL_GetRenderTarget(renderer);
+
       SDL_SetRenderTarget(renderer, texture);
       SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
       SDL_RenderClear(renderer);
@@ -859,7 +861,7 @@ bool Sprite::render(SDL_Renderer* renderer, int x, int y, int w, int h)
       }
       
       /* Release the renderer and end the update */
-      SDL_SetRenderTarget(renderer, NULL);
+      SDL_SetRenderTarget(renderer, previous_renderer);
       texture_update = false;
     }
   

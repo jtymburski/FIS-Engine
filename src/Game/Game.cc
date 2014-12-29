@@ -722,16 +722,22 @@ void Game::setupBattle()
           base_path + "sprites/Battle/Battle_Persons/peltrance.png", renderer));
     getPerson(314)->setSprites(nullptr, new Sprite(
             base_path + "sprites/Battle/Battle_Persons/necross.png", renderer));
-    getPerson(300)->setSprites(new Sprite(
-         base_path + "sprites/Battle/Backs/manbear1_brown_grey.png", renderer));
-    getPerson(301)->setSprites(new Sprite(
-        base_path + "sprites/Battle/Backs/arcadius0.png", renderer));
-    getPerson(302)->setSprites(new Sprite(
-        base_path + "sprites/Battle/Backs/player0.png", renderer));
-    getPerson(303)->setSprites(new Sprite(
-        base_path + "sprites/Battle/Backs/sarkova0.png", renderer));
-    getPerson(304)->setSprites(new Sprite(
-        base_path + "sprites/Battle/Backs/subleezer0.png", renderer));
+    getPerson(300)->setSprites(new Sprite(base_path + 
+        "sprites/Battle/Backs/manbear1_brown_grey.png", renderer), 
+        new Sprite(base_path + 
+        "sprites/Battle/Battle_Persons/manbear_brown_grey.png", renderer));
+    getPerson(301)->setSprites(new Sprite(base_path + 
+        "sprites/Battle/Backs/arcadius0.png", renderer), new Sprite(base_path + 
+        "sprites/Battle/Battle_Persons/arcadius.png", renderer));
+    getPerson(302)->setSprites(new Sprite(base_path + 
+        "sprites/Battle/Backs/player0.png", renderer), new Sprite(base_path + 
+        "sprites/Battle/Battle_Persons/player.png", renderer));
+    getPerson(303)->setSprites(new Sprite(base_path + 
+        "sprites/Battle/Backs/sarkova0.png", renderer), new Sprite(base_path + 
+        "sprites/Battle/Battle_Persons/sarkova.png", renderer));
+    getPerson(304)->setSprites(new Sprite(base_path + 
+        "sprites/Battle/Backs/subleezer0.png", renderer), new Sprite(base_path + 
+        "sprites/Battle/Battle_Persons/subleezer.png", renderer));
 
     /* Set the ailments */
     battle_display->setAilment(Infliction::POISON, 
@@ -827,35 +833,35 @@ void Game::setupBattle()
 
     /* Set the action scopes */
     battle_display->setScope(ActionScope::USER, base_path + 
-          "sprites/Battle/Skills/Targets/_targets_user.png", renderer);
+        "sprites/Battle/Skills/Targets/user_AA_A00.png", renderer);
     battle_display->setScope(ActionScope::ONE_TARGET, base_path + 
-          "sprites/Battle/Skills/Targets/_targets_one_target.png", renderer);
+        "sprites/Battle/Skills/Targets/single_AA_A00.png", renderer);
     battle_display->setScope(ActionScope::ONE_ENEMY, base_path + 
-          "sprites/Battle/Skills/Targets/_targets_one_enemy.png", renderer);
+        "sprites/Battle/Skills/Targets/singleenemy_AA_A00.png", renderer);
     battle_display->setScope(ActionScope::TWO_ENEMIES, base_path + 
-          "sprites/Battle/Skills/Targets/_targets_two_enemies.png", renderer);
+        "sprites/Battle/Skills/Targets/twoenemies_AA_A00.png", renderer);
     battle_display->setScope(ActionScope::ALL_ENEMIES, base_path + 
-          "sprites/Battle/Skills/Targets/_targets_placeholder.png", renderer);
+        "sprites/Battle/Skills/Targets/allenemies_AA_A00.png", renderer);
     battle_display->setScope(ActionScope::ONE_ALLY, base_path + 
-          "sprites/Battle/Skills/Targets/_targets_placeholder.png", renderer);
+        "sprites/Battle/Skills/Targets/singleally_AA_A00.png", renderer);
     battle_display->setScope(ActionScope::ONE_ALLY_NOT_USER, base_path + 
-          "sprites/Battle/Skills/Targets/_targets_placeholder.png", renderer);
+        "sprites/Battle/Skills/Targets/singlenotuserally_AA_A00.png", renderer);
     battle_display->setScope(ActionScope::TWO_ALLIES, base_path + 
-          "sprites/Battle/Skills/Targets/_targets_two_allies.png", renderer);
+        "sprites/Battle/Skills/Targets/twoallies_AA_A00.png", renderer);
     battle_display->setScope(ActionScope::ALL_ALLIES, base_path + 
-          "sprites/Battle/Skills/Targets/_targets_placeholder.png", renderer);
+        "sprites/Battle/Skills/Targets/allallies_AA_A00.png", renderer);
     battle_display->setScope(ActionScope::ONE_ALLY_KO, base_path + 
-          "sprites/Battle/Skills/Targets/_targets_one_ally_ko.png", renderer);
+        "sprites/Battle/Skills/Targets/singlekoedally_AA_A00.png", renderer);
     battle_display->setScope(ActionScope::ALL_ALLIES_KO, base_path + 
-          "sprites/Battle/Skills/Targets/_targets_all_allies_ko.png", renderer);
+        "sprites/Battle/Skills/Targets/allkoedallies_AA_A00.png", renderer);
     battle_display->setScope(ActionScope::ONE_PARTY, base_path + 
-          "sprites/Battle/Skills/Targets/_targets_party.png", renderer);
+        "sprites/Battle/Skills/Targets/singleparty_AA_A00.png", renderer);
     battle_display->setScope(ActionScope::ALL_TARGETS, base_path + 
-          "sprites/Battle/Skills/Targets/_targets_placeholder.png", renderer);
+        "sprites/Battle/Skills/Targets/all_AA_A00.png", renderer);
     battle_display->setScope(ActionScope::NOT_USER, base_path + 
-          "sprites/Battle/Skills/Targets/_targets_placeholder.png", renderer); 
+        "sprites/Battle/Skills/Targets/singlenotuser_AA_A00.png.png", renderer); 
     battle_display->setScope(ActionScope::ALL_NOT_USER, base_path + 
-          "sprites/Battle/Skills/Targets/_targets_placeholder.png", renderer);
+        "sprites/Battle/Skills/Targets/allnotuser_AA_A00.png", renderer);
 
     /* Set up the extram frames */
     battle_display->setFramePercent(base_path + 

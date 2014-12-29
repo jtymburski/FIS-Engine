@@ -129,6 +129,79 @@ BattleDisplay::~BattleDisplay()
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
+  
+/* Generates the action frame for the third person sprite */
+// TODO: Comment
+Frame* BattleDisplay::createActionFrame(Person* person, 
+                                        SDL_Renderer* renderer)
+{
+  uint16_t width = 359;
+  uint16_t height = 408;
+
+  /* Create main rendering texture */
+  Frame* rendered_frame = new Frame();
+  SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                                           SDL_TEXTUREACCESS_TARGET, 
+                                           width, height);
+  SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+
+  /* Create underlay rendering texture */
+  SDL_Texture* texture2 = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                                            SDL_TEXTUREACCESS_TARGET, 
+                                            width, height);
+  SDL_SetTextureBlendMode(texture2, SDL_BLENDMODE_BLEND);
+  SDL_SetRenderTarget(renderer, texture2);
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+  SDL_RenderClear(renderer); 
+  
+  /* Draw middle triangle */
+  SDL_SetRenderDrawColor(renderer, 201, 201, 201, 255);
+  Frame::renderTriangle(358, 10, 19, 287, 358, 397, renderer);
+  
+  /* Draw the inner triangle */
+  SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+  Frame::renderTriangle(358, 20, 39, 283, 358, 387, renderer);
+  
+  /* Render base to the main texture */
+  SDL_SetRenderTarget(renderer, texture);
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+  SDL_RenderClear(renderer);
+  SDL_SetTextureAlphaMod(texture2, 204);
+  SDL_RenderCopyEx(renderer, texture2, NULL, NULL, 0.0, NULL, SDL_FLIP_NONE);
+
+  /* Render top black border */
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+  for(uint16_t i = 0; i < 10; i++)
+    SDL_RenderDrawLine(renderer, 0, 291 + i, 358, 0 + i);
+  //SDL_RenderDrawLine(renderer, 0, 291, 358, 0);
+
+  /* Render the person */
+  Sprite* third_person = person->getThirdPerson();
+  if(third_person != NULL && third_person->isFramesSet())
+    third_person->render(renderer, person->getActionX(), person->getActionY(), 
+                         third_person->getCurrent()->getWidth() * 2, 
+                         third_person->getCurrent()->getHeight() * 2);
+
+  /* Try and chop out the base of the person */
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+  SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+  for(uint16_t i = 0; i < height - 291; i++)
+    SDL_RenderDrawLine(renderer, 0, 291 + i, 358, 407 + i);
+  SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
+  /* Render bottom black border */
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+  for(uint16_t i = 0; i < 10; i++)
+    SDL_RenderDrawLine(renderer, 8, 293 - i, 358, 407 - i);
+  //SDL_RenderDrawLine(renderer, 0, 291, 358, 407);
+
+  /* Finalize the frame */
+  rendered_frame->setTexture(texture);
+  SDL_RenderPresent(renderer);
+  SDL_SetRenderTarget(renderer, NULL);
+
+  return rendered_frame;
+}
 
 // TODO: Comment
 void BattleDisplay::createFoeBackdrop(SDL_Renderer* renderer)
@@ -448,7 +521,7 @@ SDL_Texture* BattleDisplay::createSkill(SDL_Renderer* renderer, Skill* skill,
   rect_bot.w = kSKILL_FRAME_L;
   if(scope_frame != NULL)
     scope_frame->render(renderer, rect_bot.x, rect_bot.y);
-  Frame::renderRect(rect_bot, kSKILL_BORDER_WIDTH, renderer, true);
+  //Frame::renderRect(rect_bot, kSKILL_BORDER_WIDTH, renderer, true);
 
   /* Render the primary element */
   Frame* primary_frame = getElement(skill->getPrimary());
@@ -1127,8 +1200,7 @@ bool BattleDisplay::renderFriends(SDL_Renderer* renderer,
   /* Render the friends */
   for(uint8_t i = 0; i < friends_state.size(); i++)
   {
-    if(friends_state[i]->fp != NULL)// && 
-//       friends_state[i]->self->getBFlag(BState::ALIVE))
+    if(friends_state[i]->fp != NULL)
     {
       success &= friends_state[i]->fp->render(renderer, i * kPERSON_SPREAD, 
                                               screen_height - kFRIENDS_OFFSET);
@@ -1230,6 +1302,7 @@ bool BattleDisplay::renderMenu(SDL_Renderer* renderer, PersonState* state,
 }
 
 /* Set person state */
+// TODO: Comment
 bool BattleDisplay::setPersonState(Person* person, uint8_t index, 
                                    SDL_Renderer* renderer, bool foe)
 {
@@ -1248,12 +1321,18 @@ bool BattleDisplay::setPersonState(Person* person, uint8_t index,
     state->self = person;
     state->fp = person->getFirstPerson();
     state->tp = person->getThirdPerson();
-    
+   
+    /* Set the third person action frame */
+    if(state->tp != NULL)
+      state->action = createActionFrame(state->self, renderer);
+
     /* Render the relevant info */
     if(foe)
       state->info = createFoeInfo(person, renderer);
     else
       state->info = createFriendInfo(person, renderer);
+
+    return true;
   }
 
   return false;
@@ -1287,6 +1366,7 @@ bool BattleDisplay::startBattle(SDL_Renderer* renderer)
            friends_state.size() < kMAX_CHARS) || friends_state.size() < 2)
     {
       PersonState* blank_state = new PersonState;
+      blank_state->action = NULL;
       blank_state->fp = NULL;
       blank_state->info = NULL;
       blank_state->self = NULL;
@@ -1313,6 +1393,7 @@ bool BattleDisplay::startBattle(SDL_Renderer* renderer)
            foes_state.size() < kMAX_CHARS) || foes_state.size() < 2)
     {
       PersonState* blank_state = new PersonState;
+      blank_state->action = NULL;
       blank_state->fp = NULL;
       blank_state->info = NULL;
       blank_state->self = NULL;
@@ -1351,6 +1432,11 @@ void BattleDisplay::stopBattle()
     friends_state[i]->self = NULL;
     friends_state[i]->tp = NULL;
 
+    /* Delete action frame */
+    if(friends_state[i]->action != NULL)
+      delete friends_state[i]->action;
+    friends_state[i]->action = NULL;
+
     /* Delete info */
     if(friends_state[i]->info != NULL)
       delete friends_state[i]->info;
@@ -1367,6 +1453,11 @@ void BattleDisplay::stopBattle()
     foes_state[i]->fp = NULL;
     foes_state[i]->self = NULL;
     foes_state[i]->tp = NULL;
+
+    /* Delete action frame */
+    if(foes_state[i]->action != NULL)
+      delete foes_state[i]->action;
+    foes_state[i]->action = NULL;
 
     /* Delete info */
     if(foes_state[i]->info != NULL)
@@ -1642,6 +1733,10 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
     {
       success &= renderFriendsInfo(renderer, height);
     }
+
+    if(friends_state[1] != NULL)
+      friends_state[1]->action->render(renderer, 
+                              width - friends_state[1]->action->getWidth(), 90);
 
     // TODO: Render extra battle flair
 

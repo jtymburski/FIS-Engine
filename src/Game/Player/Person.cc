@@ -35,6 +35,8 @@
 /*=============================================================================
  * CONSTANTS - See implementation for details
  *============================================================================*/
+const uint8_t  Person::kACTION_X = 28;
+const uint8_t  Person::kACTION_Y = 128;
 const size_t   Person::kNUM_LEVELS{127};     
 const size_t   Person::kNUM_EQUIP_SLOTS{5}; 
 const uint32_t Person::kMAX_CREDIT_DROP{1000000}; /* 1 million */
@@ -120,6 +122,9 @@ Person::~Person()
  */
 void Person::loadDefaults()
 {
+  action_x = kACTION_X;
+  action_y = kACTION_Y;
+
   ai_module = nullptr;
 
   guardee = nullptr;
@@ -206,6 +211,9 @@ void Person::setupClass()
   /* Setup the class as a copy of the Base Person */
   else
   {
+    action_x = base_person->action_x;
+    action_y = base_person->action_y;
+
     /* Deep copied AI Module */
     if (base_person->ai_module != nullptr)
     {
@@ -1163,6 +1171,29 @@ bool Person::resetGuardee()
   return good_reset;
 }
 
+/*
+ * Description: Returns the rendering action X offset in the swipe away in the
+ *              battle.
+ *
+ * Inputs: none
+ * Output: uint8_t - x offset
+ */
+uint8_t Person::getActionX()
+{
+  return action_x;
+}
+
+/*
+ * Description: Returns the rendering action Y offset in the swipe away in the
+ *              battle.
+ *
+ * Inputs: none
+ * Output: uint8_t - y offset
+ */
+uint8_t Person::getActionY()
+{
+  return action_y;
+}
 
 /*
  * Description: 
@@ -1760,6 +1791,20 @@ std::vector<ActionType> Person::getValidActions()
     valid_action_types.push_back(ActionType::PASS);
 
   return valid_action_types;
+}
+  
+/*
+ * Description: Sets the action x and y offset for the rendering person in the
+ *              battle action frame slide-away.
+ *
+ * Inputs: uint8_t action_x - the x direction offset
+ *         uint8_t action_y - the y direction offset
+ * Output: none
+ */
+void Person::setActionXY(uint8_t action_x, uint8_t action_y)
+{
+  this->action_x = action_x;
+  this->action_y = action_y;
 }
 
 /*

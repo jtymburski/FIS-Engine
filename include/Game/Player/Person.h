@@ -134,6 +134,10 @@ public:
   ~Person();
 
 private:
+  /* Action x and y render location */
+  uint8_t action_x;
+  uint8_t action_y;
+
   /* AI Module */
   AIModule* ai_module;
 
@@ -214,6 +218,8 @@ private:
   static std::vector<uint32_t> exp_table; /* Table of exp. values */
 
   /* ------------ Constants --------------- */
+  static const uint8_t  kACTION_X;        /* Action render X point */
+  static const uint8_t  kACTION_Y;        /* Action render Y point */
   static const size_t   kNUM_LEVELS;      /* Number of Levels for Persons */
   static const size_t   kNUM_EQUIP_SLOTS; /* Number of Equip Slots */
   static const uint32_t kMAX_CREDIT_DROP; /* Maximum credit award */
@@ -336,6 +342,10 @@ public:
   /* Clear the guarding status of this person */
   bool resetGuardee();
 
+  /* The action X and Y render location in battle */
+  uint8_t getActionX();
+  uint8_t getActionY();
+
   /* Returns a pointer to the AI module */
   AIModule* getAI();
 
@@ -456,6 +466,9 @@ public:
 
   /* Returns a vector of valid enumerated action types */
   std::vector<ActionType> getValidActions();
+
+  /* Sets the action x and y offset */
+  void setActionXY(uint8_t action_x, uint8_t action_y);
 
   /* Assigns a new AI Module for the person */
   void setAI(AIModule* const new_ai_module);

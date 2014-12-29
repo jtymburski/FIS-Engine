@@ -28,6 +28,7 @@
  */
 struct PersonState
 {
+  Frame* action;
   Sprite* fp;
   Frame* info;
   Person* self;
@@ -173,6 +174,9 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Generates the action frame for the third person sprite */
+  Frame* createActionFrame(Person* person, SDL_Renderer* renderer);
+
   /* Generates info and frames for foes in battle */
   void createFoeBackdrop(SDL_Renderer* renderer);
   Frame* createFoeInfo(Person* foe, SDL_Renderer* renderer);
