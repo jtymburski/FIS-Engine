@@ -1482,6 +1482,22 @@ void BattleMenu::setMenuFlag(MenuState flag, const bool &set_value)
 bool BattleMenu::setSelectableSkills(std::vector<BattleSkill> new_menu_skills)
 {
   menu_skills = new_menu_skills;
+  auto temp_index = element_index;
+  auto temp_layer = layer_index;
+  auto temp_action_type = action_type;
+
+  layer_index = 2;
+  action_type = ActionType::SKILL;
+
+  for (size_t index = 0; index < menu_skills.size(); index++)
+  {
+    element_index = index;
+    menu_skills[index].selectable = indexHasTargets();
+  }
+
+  element_index = temp_index;
+  layer_index   = temp_layer;
+  action_type   = temp_action_type;
 
   return !menu_skills.empty();
 }
@@ -1495,6 +1511,22 @@ bool BattleMenu::setSelectableSkills(std::vector<BattleSkill> new_menu_skills)
 bool BattleMenu::setSelectableItems(std::vector<BattleItem> new_menu_items)
 {
   menu_items = new_menu_items;
+  auto temp_index = element_index;
+  auto temp_layer = layer_index;
+  auto temp_action_type = action_type;
+
+  layer_index = 2;
+  action_type = ActionType::ITEM;
+
+  for (size_t index = 0; index < menu_items.size(); index++)
+  {
+    element_index = index;
+    menu_items[index].selectable = indexHasTargets();
+  }
+
+  element_index = temp_index;
+  layer_index   = temp_layer;
+  action_type   = temp_action_type;
 
   return !menu_items.empty();
 }

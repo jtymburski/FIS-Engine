@@ -43,6 +43,7 @@ class AIModule;
 struct BattleSkill
 {
   Skill* skill;
+  bool selectable;
 
   std::vector<Person*> all_targets;
   std::vector<Person*> ally_targets;
@@ -55,6 +56,7 @@ struct BattleItem
   Item* item;
   Skill* item_skill;
   uint32_t amount;
+  bool selectable;
 
   std::vector<Person*> all_targets;
   std::vector<Person*> ally_targets;

@@ -526,6 +526,7 @@ bool BattleDisplay::createSkills(SDL_Renderer* renderer, BattleMenu* menu,
                                  uint16_t width_left, uint16_t width_right)
 {
   SDL_Color color = {255, 255, 255, 255};
+  SDL_Color invalid_color = {255, 255, 255, 165};
   std::vector<BattleSkill> skills = menu->getMenuSkills();
   bool success = true;
   Text* t = new Text(font_header);
@@ -547,7 +548,11 @@ bool BattleDisplay::createSkills(SDL_Renderer* renderer, BattleMenu* menu,
     if(skill != NULL)
     {
       /* Set the text */
-      success &= t->setText(renderer, skill->getName(), color);
+      if(skills.at(i).selectable)
+        success &= t->setText(renderer, skill->getName(), color);
+      else
+        success &= t->setText(renderer, skill->getName(), invalid_color);
+
       if(text_height == 0)
         text_height = t->getHeight() + kTYPE_MARGIN * 2;
       

@@ -134,6 +134,9 @@ public:
   /* Returns the state of the current menu selection */
   bool isActionSelected();
 
+  /* Returns whether an index is selectable */
+  bool isIndexSelectable(uint16_t index);
+
   /* Returns whether the current action index has valid targets */
   bool indexHasTargets();
 
