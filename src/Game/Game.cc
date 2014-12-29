@@ -353,6 +353,8 @@ void Game::setupBattle()
 
   Skill* fire_01 = new Skill(110, "Burninate The Countryside", ActionScope::ONE_PARTY, 
     damage_actions[8], 0.75, 35);
+  fire_01->setThumbnail(new Frame("sprites/Battle/Skills/_sample_skill_1.png", 
+                                  active_renderer));
   fire_01->setPrimary(Element::FIRE);
   fire_01->setSecondary(Element::PHYSICAL);
   fire_01->setFlag(SkillFlags::OFFENSIVE);
@@ -407,21 +409,27 @@ void Game::setupBattle()
 
   Skill* poison = new Skill(140, "Poison", ActionScope::ONE_TARGET,
     inflict_actions[0], 100, 10);
+  poison->setPrimary(Element::FIRE);
 
   Skill* burn = new Skill(141, "Burn", ActionScope::ONE_TARGET,
     inflict_actions[1], 100, 10);
+  burn->setPrimary(Element::ICE);
 
   Skill* scald = new Skill(142, "Scald", ActionScope::ONE_TARGET,
     inflict_actions[2], 100, 10);
+  scald->setPrimary(Element::FOREST);
 
   Skill* charr = new Skill(143, "Charr", ActionScope::ONE_TARGET,
     inflict_actions[3], 100, 10);
+  charr->setPrimary(Element::ELECTRIC);
 
   Skill* berserk = new Skill(144, "Berserker", ActionScope::ONE_TARGET,
     inflict_actions[4], 100, 10);
+  berserk->setPrimary(Element::DIGITAL);
 
   Skill* confuse = new Skill(145, "Befuddle", ActionScope::ONE_ALLY,
     inflict_actions[5], 100, 10);
+  confuse->setPrimary(Element::NIHIL);
 
   Skill* silence = new Skill(146, "Hush Hush", ActionScope::ONE_TARGET,
     inflict_actions[6], 100, 10);
@@ -802,19 +810,19 @@ void Game::setupBattle()
 
     /* Set the elements */
     battle_display->setElement(Element::PHYSICAL, base_path + 
-            "sprites/Battle/Skills/Elements/_element_physical_2.png", renderer);
+            "sprites/Battle/Skills/Elements/Physical_AA_A00.png", renderer);
     battle_display->setElement(Element::FIRE, base_path + 
-            "sprites/Battle/Skills/Elements/_element_fire_2.png", renderer);
+            "sprites/Battle/Skills/Elements/Thermal_AA_A00.png", renderer);
     battle_display->setElement(Element::ICE, base_path + 
-            "sprites/Battle/Skills/Elements/_element_physical_2.png", renderer);
+            "sprites/Battle/Skills/Elements/Polar_AA_A00.png", renderer);
     battle_display->setElement(Element::FOREST, base_path + 
-            "sprites/Battle/Skills/Elements/_element_forest_2.png", renderer);
+            "sprites/Battle/Skills/Elements/Primal_AA_A00.png", renderer);
     battle_display->setElement(Element::ELECTRIC, base_path + 
-            "sprites/Battle/Skills/Elements/_element_physical_2.png", renderer);
+            "sprites/Battle/Skills/Elements/Charge_AA_A00.png", renderer);
     battle_display->setElement(Element::DIGITAL, base_path + 
-            "sprites/Battle/Skills/Elements/_element_physical_2.png", renderer);
+            "sprites/Battle/Skills/Elements/Cyber_AA_A00.png", renderer);
     battle_display->setElement(Element::NIHIL, base_path + 
-            "sprites/Battle/Skills/Elements/_element_physical_2.png", renderer);
+            "sprites/Battle/Skills/Elements/Nihil_AA_A00.png", renderer);
 
     /* Set the action scopes */
     battle_display->setScope(ActionScope::USER, base_path + 
@@ -850,11 +858,11 @@ void Game::setupBattle()
 
     /* Set up the extram frames */
     battle_display->setFramePercent(base_path + 
-                  "sprites/Battle/Skills/Extras/_symbol_percent.png", renderer);
+                  "sprites/Battle/Skills/Extras/Accuracy_AA_A00.png", renderer);
     battle_display->setFrameQD(base_path + 
-                  "sprites/Battle/Skills/Extras/_symbol_qd.png", renderer);
+                  "sprites/Battle/Skills/Extras/QDSymbol_AA_A00.png", renderer);
     battle_display->setFrameTime(base_path + 
-                  "sprites/Battle/Skills/Extras/_symbol_clock.png", renderer);
+                  "sprites/Battle/Skills/Extras/Cooldown_AA_A00.png", renderer);
   }
 
   battle_display->setBattle(game_battle, active_renderer);

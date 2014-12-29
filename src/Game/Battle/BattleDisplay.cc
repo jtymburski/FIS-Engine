@@ -456,7 +456,7 @@ SDL_Texture* BattleDisplay::createSkill(SDL_Renderer* renderer, Skill* skill,
   rect_bot.w = kSKILL_FRAME_S;
   if(primary_frame != NULL)
     primary_frame->render(renderer, rect_bot.x, rect_bot.y);
-  Frame::renderRect(rect_bot, kSKILL_BORDER_WIDTH, renderer, true);
+  //Frame::renderRect(rect_bot, kSKILL_BORDER_WIDTH, renderer, true);
 
   /* Render the secondary element */
   Frame* secondary_frame = getElement(skill->getSecondary());
@@ -464,7 +464,7 @@ SDL_Texture* BattleDisplay::createSkill(SDL_Renderer* renderer, Skill* skill,
   if(secondary_frame != NULL)
   {
     secondary_frame->render(renderer, rect_bot.x, rect_bot.y);
-    Frame::renderRect(rect_bot, kSKILL_BORDER_WIDTH, renderer, true);
+    //Frame::renderRect(rect_bot, kSKILL_BORDER_WIDTH, renderer, true);
   }
 
   /* Render the cost */
@@ -1122,7 +1122,8 @@ bool BattleDisplay::renderFriends(SDL_Renderer* renderer,
   /* Render the friends */
   for(uint8_t i = 0; i < friends_state.size(); i++)
   {
-    if(friends_state[i]->fp != NULL)
+    if(friends_state[i]->fp != NULL)// && 
+//       friends_state[i]->self->getBFlag(BState::ALIVE))
     {
       success &= friends_state[i]->fp->render(renderer, i * kPERSON_SPREAD, 
                                               screen_height - kFRIENDS_OFFSET);
@@ -2069,14 +2070,17 @@ bool BattleDisplay::update(int cycle_time)
      *-----------------------------------------------------------------------*/
     else if(rendering_state == TurnState::PROCESS_ACTIONS)
     {
-      if(rendering_state != battle_state)
+      rendering_state = battle_state;
+
+      /* Update deaths */
+      for(uint8_t i = 0; i < friends_state.size(); i++)
       {
-        animation_delay += cycle_time;
-        if(animation_delay > kANIMATION_PROCESS || 
-           battle_state == TurnState::DESTRUCT)
+        if(friends_state[i]->self != NULL)
         {
-          rendering_state = battle_state;
-          animation_delay = 0;
+          if(!friends_state[i]->self->getBFlag(BState::ALIVE))
+            friends_state[i]->fp->setOpacity(50);
+          else
+            friends_state[i]->fp->setOpacity(255);
         }
       }
     }
@@ -2085,7 +2089,18 @@ bool BattleDisplay::update(int cycle_time)
      *-----------------------------------------------------------------------*/
     else if(rendering_state == TurnState::CLEAN_UP)
     {
-      rendering_state = battle_state;
+      /* Delay in clean up */
+      if(rendering_state != battle_state)
+      {
+        animation_delay += cycle_time;
+        if(animation_delay > kANIMATION_PROCESS || 
+           battle_state == TurnState::DESTRUCT)
+        {
+          rendering_state = battle_state;
+          animation_delay = 0;
+
+        }
+      }
     }
     /*-------------------------------------------------------------------------
      * LOSS state

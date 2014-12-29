@@ -2374,7 +2374,7 @@ void Battle::processBuffer()
     }
   } while (!done && action_buffer->setNext());
 
-  /* Process Action stae complete */
+  /* Process Action stage complete */
   setBattleFlag(CombatState::PHASE_DONE);
 }
 
