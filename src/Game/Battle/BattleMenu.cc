@@ -1102,6 +1102,8 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
     keyDownSelect();
   else if (event.keysym.sym == SDLK_BACKSPACE)
     keyDownCancel();
+  else if (event.keysym.sym == SDLK_HOME)
+    printMenuState();
   else if (static_cast<int>(event.keysym.sym) >= 'a' &&
            static_cast<int>(event.keysym.sym) <= 'z')
   {
@@ -1112,15 +1114,13 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
     std::cout << "CANNOT CHANGE INDEX" << std::endl;
   }
 
-  if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
+  if (config->getBattleMode() == BattleMode::TEXT)
   {
     if (current_user != nullptr)
     {
       std::cout << "Selecting action for person index: " << person_index 
                 << " named: " << current_user->getName()  << std::endl;
     }
-
-    printMenuState();
 
     if (getMenuFlag(MenuState::SELECTION_VERIFIED))
       std::cout << "Selection has been verified!\n" << std::endl;

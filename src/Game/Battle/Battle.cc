@@ -3251,7 +3251,7 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
 #ifdef UDEBUG
   if (!getBattleFlag(CombatState::OUTCOME_DONE))
   {
-    Helpers::flushConsole();
+    //Helpers::flushConsole();
     
     if (event.keysym.sym == SDLK_PAUSE)
       printPartyState();
