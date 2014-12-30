@@ -164,7 +164,7 @@ enum class ActionFlags
   BASE_PC   = 1 << 6,  /* True if the base is a % value and not an abs one */
   VARI_PC   = 1 << 7,  /* True if the variance is a % value and not an abs one */
   FLIP_ATTR = 1 << 8,  /* Flip the user/target attributes for assign/alter? */
-  VALID     = 1 << 9,  /* The validity of the action */
+  VALID     = 1 << 9  /* The validity of the action */
 };
 
 /* IgnoreFlags for storing which elemental atk/def stats are ignored */
