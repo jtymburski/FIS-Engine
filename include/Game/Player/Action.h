@@ -162,7 +162,7 @@ enum class ActionFlags
   ASSIGN    = 1 << 4,  /* ASSIGN an attribute to a given value */
   REVIVE    = 1 << 5,  /* REVIVE un-KOs target with base HP */
   BASE_PC   = 1 << 6,  /* True if the base is a % value and not an abs one */
-  VARI_PC   = 1 << 7,  /* True if the variance is a % value and not an abs one */
+  VARI_PC   = 1 << 7,  /* True if variance is a % value and not an abs one */
   FLIP_ATTR = 1 << 8,  /* Flip the user/target attributes for assign/alter? */
   VALID     = 1 << 9  /* The validity of the action */
 };
@@ -300,6 +300,35 @@ public:
 
   /* Returns the variance of the Action */
   uint32_t getVariance() const;
+
+  /* The output string (to store in file) */
+  std::string outputString();
+
+  /* Sets an action flag */
+  void setActionFlag(ActionFlags set_flag, bool set);
+
+  /* Sets the ailment and duration */
+  void setAilment(Infliction ailment);
+  bool setAilmentDuration(int min, int max);
+
+  /* Sets the attributes */
+  void setAttributeTarget(Attribute target);
+  void setAttributeUser(Attribute user);
+
+  /* Sets the base value and variance (amount or pc in flag) to change 
+   * attribute by */
+  void setBaseValue(int32_t value, bool percent = false);
+  void setBaseVariance(uint32_t variance, bool percent = false);
+
+  /* Sets the chance of the action occuring */
+  bool setChance(float chance);
+
+  /* Sets the ID */
+  void setID(int32_t id);
+
+  /* Sets the ignore flags for attack and defense */
+  void setIgnoreAttack(IgnoreFlags flag, bool set);
+  void setIgnoreDefense(IgnoreFlags flag, bool set);
 };
 
 #endif //ACTION_H

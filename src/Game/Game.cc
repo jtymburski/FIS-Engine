@@ -725,7 +725,7 @@ void Game::setupBattle()
     getPerson(300)->setSprites(new Sprite(base_path + 
         "sprites/Battle/Backs/manbear1_brown_grey.png", renderer), 
         new Sprite(base_path + 
-        "sprites/Battle/Battle_Persons/manbear_brown_grey.png", renderer));
+        "sprites/Battle/Battle_Persons/myliria.png", renderer));
     getPerson(301)->setSprites(new Sprite(base_path + 
         "sprites/Battle/Backs/arcadius0.png", renderer), new Sprite(base_path + 
         "sprites/Battle/Battle_Persons/arcadius.png", renderer));

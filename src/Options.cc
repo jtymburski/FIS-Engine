@@ -202,7 +202,14 @@ std::string Options::getFont()
 {
   return kFONTS[font];
 }
-  
+ 
+std::string Options::getFont(uint8_t index)
+{
+  if(index < kNUM_FONTS)
+    return kFONTS[index];
+  return "";
+}
+
 uint16_t Options::getScreenHeight()
 {
   return kRESOLUTIONS_Y[resolution_y];

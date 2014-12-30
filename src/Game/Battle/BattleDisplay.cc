@@ -14,9 +14,23 @@
 #include "Game/Battle/BattleDisplay.h"
 
 /* Constant Implementation - see header file for descriptions */
+const uint16_t BattleDisplay::kACTION_BORDER = 10;
+const uint16_t BattleDisplay::kACTION_CENTER = 381;
+const uint16_t BattleDisplay::kACTION_COLOR_A = 175;
+const uint16_t BattleDisplay::kACTION_COLOR_G = 201;
+const uint16_t BattleDisplay::kACTION_COLOR_R = 175;
+const uint16_t BattleDisplay::kACTION_CORNER_X = 18;
+const uint16_t BattleDisplay::kACTION_CORNER_Y = 4;
+const uint16_t BattleDisplay::kACTION_H = 408;
+const uint16_t BattleDisplay::kACTION_TEXT_SHADOW = 3;
+const uint16_t BattleDisplay::kACTION_TEXT_X = 800;
+const uint16_t BattleDisplay::kACTION_W = 359;
+const uint16_t BattleDisplay::kACTION_Y = 291;
+
 const uint8_t BattleDisplay::kAILMENT_BORDER = 1;
 const uint8_t BattleDisplay::kAILMENT_GAP = 2;
 const uint8_t BattleDisplay::kAILMENT_OPACITY = 128;
+
 const uint8_t BattleDisplay::kALLY_HEALTH_H = 18;
 const uint8_t BattleDisplay::kALLY_HEALTH_TRIANGLE = 9;
 const uint8_t BattleDisplay::kALLY_HEALTH_W = 132;
@@ -25,7 +39,9 @@ const uint8_t BattleDisplay::kALLY_QD_H = 12;
 const uint8_t BattleDisplay::kALLY_QD_OFFSET = 3;
 const uint8_t BattleDisplay::kALLY_QD_TRIANGLE = 6;
 const uint8_t BattleDisplay::kALLY_QD_W = 94;
+
 const uint16_t BattleDisplay::kANIMATION_PROCESS = 2000;
+
 const uint16_t BattleDisplay::kBIGBAR_CHOOSE = 100;
 const float BattleDisplay::kBIGBAR_L = 0.2; 
 const float BattleDisplay::kBIGBAR_M1 = 0.1;
@@ -33,13 +49,16 @@ const float BattleDisplay::kBIGBAR_M2 = 0.3;
 const uint16_t BattleDisplay::kBIGBAR_OFFSET = 88;
 const float BattleDisplay::kBIGBAR_R = 0.4;
 const uint16_t BattleDisplay::kBIGBAR_R_OFFSET = 25;
+
 const uint8_t BattleDisplay::kCOLOR_BASE = 150;
+
 const uint8_t BattleDisplay::kINFO_BORDER = 2;
 const uint8_t BattleDisplay::kINFO_GREY = 200;
 const uint16_t BattleDisplay::kINFO_H = 50;
 const uint8_t BattleDisplay::kINFO_OPACITY = 166;
 const uint8_t BattleDisplay::kINFO_TRIANGLE = 6;
 const uint16_t BattleDisplay::kINFO_W = 180;
+
 const uint8_t BattleDisplay::kFOE_BAR_H = 8;
 const uint8_t BattleDisplay::kFOE_BAR_OFFSET = 2;
 const uint8_t BattleDisplay::kFOE_BAR_TRIANGLE = 5;
@@ -47,6 +66,7 @@ const uint16_t BattleDisplay::kFOE_BAR_W = 126;
 const uint16_t BattleDisplay::kFOES_BAR_GAP = 12;
 const uint16_t BattleDisplay::kFOES_OFFSET = 94;
 const uint16_t BattleDisplay::kFRIENDS_OFFSET = 328;
+
 const uint8_t BattleDisplay::kMAX_CHARS = 5;
 const uint8_t BattleDisplay::kMAX_LAYERS = 10;
 const uint8_t BattleDisplay::kMENU_SEPARATOR_B = 8;
@@ -54,6 +74,7 @@ const uint8_t BattleDisplay::kMENU_SEPARATOR_T = 12;
 const uint16_t BattleDisplay::kPERSON_SPREAD = 200;
 const uint16_t BattleDisplay::kPERSON_WIDTH = 256;
 const uint8_t BattleDisplay::kSCROLL_R = 2;
+
 const uint8_t BattleDisplay::kSKILL_BORDER = 10;
 const uint8_t BattleDisplay::kSKILL_BORDER_WIDTH = 1;
 const uint8_t BattleDisplay::kSKILL_DESC_GAP = 10;
@@ -65,6 +86,7 @@ const uint8_t BattleDisplay::kSKILL_QD_GAP = 15;
 const uint8_t BattleDisplay::kSKILL_SEP = 5;
 const uint8_t BattleDisplay::kSKILL_SUCCESS = 20;
 const uint8_t BattleDisplay::kSKILL_TIME_GAP = 18;
+
 const uint8_t BattleDisplay::kTYPE_MARGIN = 7;
 const uint8_t BattleDisplay::kTYPE_MAX = 5;
 const uint8_t BattleDisplay::kTYPE_SELECT = 3;
@@ -88,6 +110,7 @@ BattleDisplay::BattleDisplay(Options* running_config)
   battle = NULL;
   battle_bar = NULL;
   foes_backdrop = NULL;
+  font_action = NULL;
   font_header = NULL;
   font_subheader = NULL;
   index_actions = 0;
@@ -135,8 +158,19 @@ BattleDisplay::~BattleDisplay()
 Frame* BattleDisplay::createActionFrame(Person* person, 
                                         SDL_Renderer* renderer)
 {
-  uint16_t width = 359;
-  uint16_t height = 408;
+  uint16_t width = kACTION_W;
+  uint16_t height = kACTION_H;
+  uint16_t x1 = width;
+  uint16_t y1 = 0;
+  uint16_t x2 = 0;
+  uint16_t y2 = kACTION_Y;
+  uint16_t x3 = width;
+  uint16_t y3 = height;
+  uint16_t border = kACTION_BORDER;
+  uint16_t cx1 = kACTION_CORNER_X;
+  uint16_t cy1 = kACTION_CORNER_Y;
+  uint16_t cx2 = cx1 - cy1 * 2;
+  uint16_t cy2 = cy1 / 2;
 
   /* Create main rendering texture */
   Frame* rendered_frame = new Frame();
@@ -155,27 +189,31 @@ Frame* BattleDisplay::createActionFrame(Person* person,
   SDL_RenderClear(renderer); 
   
   /* Draw middle triangle */
-  SDL_SetRenderDrawColor(renderer, 201, 201, 201, 255);
-  Frame::renderTriangle(358, 10, 19, 287, 358, 397, renderer);
+  SDL_SetRenderDrawColor(renderer, kACTION_COLOR_G, kACTION_COLOR_G, 
+                         kACTION_COLOR_G, 255);
+  Frame::renderTriangle(x1, y1 + border, x2 + cx1, y2 - cy1, x3, y3 - border, 
+                        renderer);
   
   /* Draw the inner triangle */
   SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-  Frame::renderTriangle(358, 20, 39, 283, 358, 387, renderer);
+  Frame::renderTriangle(x1, y1 + border * 2, x2 + cx1 * 2, y2 - cy1 * 2, 
+                        x3, y3 - border * 2, renderer);
   
   /* Render base to the main texture */
   SDL_SetRenderTarget(renderer, texture);
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
   SDL_RenderClear(renderer);
-  SDL_SetTextureAlphaMod(texture2, 204);
+  SDL_SetTextureAlphaMod(texture2, kACTION_COLOR_A);
   SDL_RenderCopyEx(renderer, texture2, NULL, NULL, 0.0, NULL, SDL_FLIP_NONE);
+  SDL_DestroyTexture(texture2);
+  texture2 = NULL;
 
   /* Render top black border */
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-  for(uint16_t i = 0; i < 10; i++)
-    SDL_RenderDrawLine(renderer, 0, 291 + i, 358, 0 + i);
-  //SDL_RenderDrawLine(renderer, 0, 291, 358, 0);
+  for(uint16_t i = 0; i <= border; i++)
+    SDL_RenderDrawLine(renderer, x2, y2 + i, x1, y1 + i);
 
-  /* Render the person */
+  /* Render the person */ // TODO: Fix - in person
   Sprite* third_person = person->getThirdPerson();
   if(third_person != NULL && third_person->isFramesSet())
     third_person->render(renderer, person->getActionX(), person->getActionY(), 
@@ -185,15 +223,14 @@ Frame* BattleDisplay::createActionFrame(Person* person,
   /* Try and chop out the base of the person */
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
   SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
-  for(uint16_t i = 0; i < height - 291; i++)
-    SDL_RenderDrawLine(renderer, 0, 291 + i, 358, 407 + i);
+  for(uint16_t i = 0; i < height - y2; i++)
+    SDL_RenderDrawLine(renderer, x2, y2 + i, x3, y3 + i - border / 2);
   SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
   /* Render bottom black border */
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-  for(uint16_t i = 0; i < 10; i++)
-    SDL_RenderDrawLine(renderer, 8, 293 - i, 358, 407 - i);
-  //SDL_RenderDrawLine(renderer, 0, 291, 358, 407);
+  for(uint16_t i = 0; i <= border; i++)
+    SDL_RenderDrawLine(renderer, x2 + cx2, y2 + cy2 - i, x3, y3 - i); 
 
   /* Finalize the frame */
   rendered_frame->setTexture(texture);
@@ -385,24 +422,31 @@ bool BattleDisplay::createFonts()
   if(system_options != NULL)
   {
     /* Try and create the new fonts */
-    TTF_Font* subheader_font = Text::createFont(system_options->getBasePath() + 
-                                                system_options->getFont(), 13,
-                                                TTF_STYLE_BOLD);
+    TTF_Font* action_font = Text::createFont(system_options->getBasePath() + 
+                                             system_options->getFont(1),
+                                             60, TTF_STYLE_NORMAL);
     TTF_Font* header_font = Text::createFont(system_options->getBasePath() + 
                                              system_options->getFont(), 
                                              16, TTF_STYLE_BOLD);
+    TTF_Font* subheader_font = Text::createFont(system_options->getBasePath() + 
+                                                system_options->getFont(), 13,
+                                                TTF_STYLE_BOLD);
 
     /* If successful, insert the new fonts. Otherwise, delete if any were
      * created */
-    if(subheader_font != NULL && header_font != NULL)
+    if(action_font != NULL && header_font != NULL && subheader_font != NULL)
     {
       deleteFonts();
+      font_action = action_font;
       font_header = header_font;
       font_subheader = subheader_font;
       success = true;
     }
     else
     {
+      TTF_CloseFont(action_font);
+      action_font = NULL;
+
       TTF_CloseFont(header_font);
       header_font = NULL;
 
@@ -673,6 +717,9 @@ bool BattleDisplay::createSkills(SDL_Renderer* renderer, BattleMenu* menu,
  */
 void BattleDisplay::deleteFonts()
 {
+  TTF_CloseFont(font_action);
+  font_action = NULL;
+
   TTF_CloseFont(font_header);
   font_header = NULL;
 
@@ -1734,10 +1781,24 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
       success &= renderFriendsInfo(renderer, height);
     }
 
+    /* TODO: Remove - testing */
     if(friends_state[1] != NULL)
+    {
       friends_state[1]->action->render(renderer, 
-                              width - friends_state[1]->action->getWidth(), 90);
-
+                                   width - friends_state[1]->action->getWidth(), 
+                                   kACTION_CENTER - kACTION_Y);
+      Text t(font_action);
+      SDL_Color color = {0, 0, 0, 255};
+      t.setText(renderer, "Burninate The Countryside!", color);
+      int16_t text_x = kACTION_TEXT_X - t.getWidth();
+      int16_t text_y = kACTION_CENTER - t.getHeight() / 2 - 8;
+      t.render(renderer, text_x + kACTION_TEXT_SHADOW, 
+               text_y + kACTION_TEXT_SHADOW);
+      color = {kACTION_COLOR_R, 0, 0, 255};
+      t.setText(renderer, "Burninate The Countryside!", color);
+      t.render(renderer, text_x, text_y);
+    }
+    
     // TODO: Render extra battle flair
 
     return success;

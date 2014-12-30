@@ -148,6 +148,7 @@ public:
 
   /* Returns the path to the font to use throughout the application */
   std::string getFont();
+  std::string getFont(uint8_t index);
   
   /* Returns the screen dimensions to be painted */
   uint16_t getScreenHeight();

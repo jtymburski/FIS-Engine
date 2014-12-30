@@ -182,8 +182,7 @@ private:
   AttributeSet curr_max_stats;
   AttributeSet temp_max_stats;
 
-
-  /* Skill sets fro the Person */
+  /* Skill sets for the Person */
   SkillSet* base_skills;
   SkillSet* curr_skills;
   SkillSet* learned_skills;
@@ -210,8 +209,6 @@ private:
   /* Frames for a Person */
   Sprite* first_person;
   Sprite* third_person;
-  //Frame* first_person;
-  //Frame* third_person;
 
   /* ------------ Static Private Members --------------- */
   static int id; /* Person unique ID counter */

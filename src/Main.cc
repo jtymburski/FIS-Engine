@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  * Class Name: N/A - int main implementation
  * Date Created: November 17, 2013
@@ -8,7 +7,6 @@
  ******************************************************************************/
 #include "Application.h"
 #include "Helpers.h"
-#include "Game/Map/TileSprite.h"
 
 #include <unistd.h>
 

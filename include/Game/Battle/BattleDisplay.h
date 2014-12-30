@@ -75,6 +75,7 @@ private:
   std::vector<PersonState*> foes_state;
 
   /* Rendering fonts */
+  TTF_Font* font_action;
   TTF_Font* font_header;
   TTF_Font* font_subheader;
 
@@ -115,9 +116,23 @@ private:
   Options* system_options;
 
   /* ------------ Constants --------------- */
+  const static uint16_t kACTION_BORDER; /* Border width on action slideout */
+  const static uint16_t kACTION_CENTER; /* Center point to center triangle */
+  const static uint16_t kACTION_COLOR_A; /* Alpha for inner portion */
+  const static uint16_t kACTION_COLOR_G; /* Grey color on middle border */
+  const static uint16_t kACTION_COLOR_R; /* Red color for middle text */
+  const static uint16_t kACTION_CORNER_X; /* Corner offset on inner triangle */
+  const static uint16_t kACTION_CORNER_Y; /* Corner offset on inner triangle */
+  const static uint16_t kACTION_H; /* Height of action frame */
+  const static uint16_t kACTION_TEXT_SHADOW; /* Shadow offset of middle text */
+  const static uint16_t kACTION_TEXT_X; /* Right edge of middle text */
+  const static uint16_t kACTION_W; /* Width of action frame */
+  const static uint16_t kACTION_Y; /* Y location of peak of triangle */
+
   const static uint8_t kAILMENT_BORDER; /* Ailment border width */
   const static uint8_t kAILMENT_GAP; /* Ailment gap between edges of space */
   const static uint8_t kAILMENT_OPACITY; /* Ailment background opacity */
+  
   const static uint8_t kALLY_HEALTH_H; /* Ally health bar height */
   const static uint8_t kALLY_HEALTH_TRIANGLE; /* Ally health triangle width */
   const static uint8_t kALLY_HEALTH_W; /* Ally health bar width */
@@ -126,8 +141,9 @@ private:
   const static uint8_t kALLY_QD_OFFSET; /* Ally qd bar offset off health */
   const static uint8_t kALLY_QD_TRIANGLE; /* Ally qd triangle width */
   const static uint8_t kALLY_QD_W; /* Ally qd bar width */
+  
   const static uint16_t kANIMATION_PROCESS; /* Time to process actions */
-  const static uint8_t kCOLOR_BASE; /* Base of color for shifting bars */
+  
   const static uint16_t kBIGBAR_CHOOSE; /* Additional offset for choice */
   const static float kBIGBAR_L; /* The percentage of the left section */
   const static float kBIGBAR_M1; /* The percentage of the middle section */
@@ -135,12 +151,16 @@ private:
   const static uint16_t kBIGBAR_OFFSET; /* Offset of bar off bottom */
   const static float kBIGBAR_R; /* The percentage of the right section */
   const static uint16_t kBIGBAR_R_OFFSET; /* Offset off end for right section */
+  
+  const static uint8_t kCOLOR_BASE; /* Base of color for shifting bars */
+
   const static uint8_t kINFO_BORDER; /* Border width on enemy info bar */
   const static uint8_t kINFO_GREY; /* Grey value for border bar */
   const static uint16_t kINFO_H; /* Height of enemy info bar */
   const static uint8_t kINFO_OPACITY; /* Opacity of black background in info */
   const static uint8_t kINFO_TRIANGLE; /* Height of triangle in info corner */
   const static uint16_t kINFO_W; /* Width of enemy info bar */
+  
   const static uint8_t kFOE_BAR_H; /* Height of health bar for foes */
   const static uint8_t kFOE_BAR_OFFSET; /* Offset of foe health off center */
   const static uint8_t kFOE_BAR_TRIANGLE; /* Width of foe health triangle */
@@ -148,6 +168,7 @@ private:
   const static uint16_t kFOES_BAR_GAP; /* Offset of bar above foes */
   const static uint16_t kFOES_OFFSET; /* Offset of foes from top */
   const static uint16_t kFRIENDS_OFFSET; /* Offset of friends from bottom */
+  
   const static uint8_t kMAX_CHARS; /* Max number of foes in battle */
   const static uint8_t kMAX_LAYERS; /* Max number of layers that can be set */
   const static uint8_t kMENU_SEPARATOR_B; /* Separator gap off bottom */
@@ -155,6 +176,7 @@ private:
   const static uint16_t kPERSON_SPREAD; /* Rendering overlay of persons */
   const static uint16_t kPERSON_WIDTH; /* Width of persons on battle */
   const static uint8_t kSCROLL_R; /* Radius on scroll renders */
+  
   const static uint8_t kSKILL_BORDER; /* Border around edge and elements */
   const static uint8_t kSKILL_BORDER_WIDTH; /* Width of border around element */
   const static uint8_t kSKILL_DESC_GAP; /* Gap between name and description */
@@ -166,6 +188,7 @@ private:
   const static uint8_t kSKILL_SEP; /* Separator between image and text */
   const static uint8_t kSKILL_SUCCESS; /* Gap between success and cooldown */
   const static uint8_t kSKILL_TIME_GAP; /* Gap between cooldown and bottom */
+  
   const static uint8_t kTYPE_MARGIN; /* Margin around text options in type */
   const static uint8_t kTYPE_MAX; /* Max number of action types to render */
   const static uint8_t kTYPE_SELECT; /* Margin to spread select around type */

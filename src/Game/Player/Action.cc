@@ -73,6 +73,7 @@ Action::Action(const std::string &raw)
  * Inputs: raw - the raw string to be parsed into an action
  * Output: bool - the final validity of the Action
  */
+// TODO: We should probably make this XML??
 bool Action::parse(const std::string &raw)
 {
   action_flags |= ActionFlags::VALID;
@@ -612,4 +613,187 @@ int Action::getMax() const
 uint32_t Action::getVariance() const
 {
   return variance;
+}
+
+/*
+ * Description: Generates the output string that matches the file storage
+ *              of the action.
+ *
+ * Inputs: none
+ * Output: std::string - the output string
+ */
+std::string Action::outputString()
+{
+  // Helpers::ailmentToStr(Infliction::POISION)
+  // TODO: Implementation
+  return "";
+}
+
+/*
+ * Description: Sets an action flag to a true or false value
+ *
+ * Inputs: ActionFlags set_flag - the flag to set
+ *         bool set - true or false set value
+ * Output: none
+ */
+void Action::setActionFlag(ActionFlags set_flag, bool set)
+{
+  set ? (action_flags |= set_flag) : (action_flags &= ~set_flag);
+}
+
+/*
+ * Description: Sets the infliction ailment for the action
+ *
+ * Inputs: Infliction ailment - the infliction to set
+ * Output: none
+ */
+void Action::setAilment(Infliction ailment)
+{
+  this->ailment = ailment;
+}
+
+/*
+ * Description: Sets the ailment duration minimum and maximum ranges for turn
+ *              counts.
+ *
+ * Inputs: int min - the minimum number of turns
+ *         int max - the maximum number of turns
+ * Output: bool - true if its set. Min/Max greater than 0 and min >= max
+ */
+bool Action::setAilmentDuration(int min, int max)
+{
+  if(min > 0 && max > 0 && min >= max)
+  {
+    min_duration = min;
+    max_duration = max;
+    return true;
+  }
+  return false;
+}
+
+/* 
+ * Description: Sets the attribute that is affected of the target.
+ *
+ * Inputs: Attribute target - the attribute of the target
+ * Output: none
+ */
+void Action::setAttributeTarget(Attribute target)
+{
+  target_attribute = target;
+}
+
+/* 
+ * Description: Sets the attribute that is affected of the user.
+ *
+ * Inputs: Attribute user - the attribute of the user
+ * Output: none
+ */
+void Action::setAttributeUser(Attribute user)
+{
+  user_attribute = user;
+}
+
+/*
+ * Description: Sets the base value that is modified of the attribute. It can
+ *              be a percentage or a constant.
+ *
+ * Inputs: int32_t value - the modification value
+ *         bool percent - is the value a percentage?
+ * Output: none
+ */
+void Action::setBaseValue(int32_t value, bool percent)
+{
+  if(percent)
+  {
+    if(value > kMAX_BASE_PC)
+      base = kMAX_BASE_PC;
+    base = value;
+
+    setActionFlag(ActionFlags::BASE_PC, true);
+  }
+  else
+  {
+    base = value;
+    setActionFlag(ActionFlags::BASE_PC, false);
+  }
+}
+
+/*
+ * Description: Sets the base variance that modifies the base value based on 
+ *              random chance. It can be a percentage or a constant.
+ *
+ * Inputs: uint32_t variance - the variance amount
+ *         bool percent - is the value a percentage?
+ * Output: none
+ */
+void Action::setBaseVariance(uint32_t variance, bool percent)
+{
+  if(percent)
+  {
+    if(variance > kMAX_VARIANCE_PC)
+      this->variance = kMAX_VARIANCE_PC;
+    this->variance = variance;
+
+    setActionFlag(ActionFlags::VARI_PC, true);
+  }
+  else
+  {
+    this->variance = variance;
+    setActionFlag(ActionFlags::VARI_PC, false);
+  }
+}
+
+/*
+ * Description: Sets the chance the action is executed.
+ *
+ * Inputs: float chance - the percent chance of success
+ * Output: bool - true if percent chance is between 0 and max (100)
+ */
+bool Action::setChance(float chance)
+{
+  if(chance >= 0.0 && chance <= kMAX_BASE_PC)
+  {
+    this->chance = chance;
+    return true;
+  }
+  return false;
+}
+
+/*
+ * Description: Sets the ID of the action. If out of range, it's set to invalid
+ *              value.
+ *
+ * Inputs: int32_t id - the id value
+ * Output: none
+ */
+void Action::setID(int32_t id)
+{
+  if(id < 0)
+    this->id = kUNSET_ID;
+  else
+    this->id = id;
+}
+
+/*
+ * Description: Sets the ignore attack element flag (true or false)
+ *
+ * Inputs: IgnoreFlags flag - the flag to set
+ *         bool set - the value to set the flag to
+ * Output: none
+ */
+void Action::setIgnoreAttack(IgnoreFlags flag, bool set)
+{
+  set ? (ignore_atk |= flag) : (ignore_atk &= ~flag);
+}
+
+/*
+ * Description: Sets the ignore defense element flag (true or false)
+ *
+ * Inputs: IgnoreFlags flag - the flag to set
+ *         bool set - the value to set the flag to
+ * Output: none
+ */
+void Action::setIgnoreDefense(IgnoreFlags flag, bool set)
+{
+  set ? (ignore_def |= flag) : (ignore_def &= ~flag);
 }
