@@ -228,13 +228,13 @@ public:
  *============================================================================*/
 public:
   /* Methods for returning the possible sizes of a Signature */
-  static constexpr uint16_t getMaxX() noexcept;
-  static constexpr uint16_t getMaxY() noexcept;
-  static constexpr uint16_t getMinX() noexcept;
-  static constexpr uint16_t getMinY() noexcept;
+  static constexpr uint16_t getMaxX(); //noexcept;
+  static constexpr uint16_t getMaxY(); //noexcept;
+  static constexpr uint16_t getMinX(); //noexcept;
+  static constexpr uint16_t getMinY(); //noexcept;
 
   /* Methods for returning possible tiers of Links and E-Links */
-  static constexpr uint16_t getMaxLinkTier() noexcept;
+  static constexpr uint16_t getMaxLinkTier();
 };
 
 

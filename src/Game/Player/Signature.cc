@@ -838,7 +838,7 @@ bool Signature::setSize(uint16_t new_x, uint16_t new_y)
  * Inputs: none
  * Output: uint16_t - the largest y-coordinate for a signature
  */
-constexpr uint16_t Signature::getMaxX() noexcept
+constexpr uint16_t Signature::getMaxX()
 {
   return kMAX_X;
 }
@@ -849,7 +849,7 @@ constexpr uint16_t Signature::getMaxX() noexcept
  * Inputs: none
  * Output: uint16_t - the largest y-coordinate for a signature
  */
-constexpr uint16_t Signature::getMaxY() noexcept
+constexpr uint16_t Signature::getMaxY()
 {
   return kMAX_Y;
 }
@@ -860,7 +860,7 @@ constexpr uint16_t Signature::getMaxY() noexcept
  * Inputs: none
  * Output: uint16_t - smallest static value for the x-coordinate.
  */
-constexpr uint16_t Signature::getMinX() noexcept
+constexpr uint16_t Signature::getMinX()
 {
   return kMIN_X;
 }
@@ -871,7 +871,7 @@ constexpr uint16_t Signature::getMinX() noexcept
  * Inputs: none
  * Output: uint16_t - smallest static value for the y-coordinate
  */
-constexpr uint16_t Signature::getMinY() noexcept
+constexpr uint16_t Signature::getMinY()
 {
   return kMIN_Y;
 }
@@ -882,7 +882,7 @@ constexpr uint16_t Signature::getMinY() noexcept
  * Inputs: none
  * Output: uint16_t - largest static value for standard link tier
  */
-constexpr uint16_t Signature::getMaxLinkTier() noexcept
+constexpr uint16_t Signature::getMaxLinkTier()
 {
   return kMAX_LINK_TIER;
 }
