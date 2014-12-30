@@ -1185,13 +1185,13 @@ bool Battle::checkAIModules()
 bool Battle::canIncrementIndex(Person* check_person)
 {
   if ((check_person->getBFlag(BState::SELECTED_ACTION) && 
-      !check_person->getBFlag(BState::TWO_SKILLS) && 
-      !check_person->getBFlag(BState::THREE_SKILLS)) ||
+      !check_person->getAilFlag(PersonAilState::TWO_SKILLS) && 
+      !check_person->getAilFlag(PersonAilState::THREE_SKILLS)) ||
       (check_person->getBFlag(BState::SELECTED_2ND_ACTION) &&
-       check_person->getBFlag(BState::TWO_SKILLS) &&
-      !check_person->getBFlag(BState::THREE_SKILLS)) ||
+       check_person->getAilFlag(PersonAilState::TWO_SKILLS) &&
+      !check_person->getAilFlag(PersonAilState::THREE_SKILLS)) ||
       (check_person->getBFlag(BState::SELECTED_3RD_ACTION) &&
-       check_person->getBFlag(BState::THREE_SKILLS)))
+       check_person->getAilFlag(PersonAilState::THREE_SKILLS)))
   {
     return true;
   }
@@ -1276,7 +1276,7 @@ void Battle::cleanUp()
     member->resetDefend();
     member->resetGuard();
     member->resetGuardee();
-    member->setBFlag(BState::SKIP_NEXT_TURN, false);
+    member->setAilFlag(PersonAilState::SKIP_NEXT_TURN, false);
   }
 
   for (size_t i = 0; i < foes->getSize(); i++)
@@ -1286,7 +1286,7 @@ void Battle::cleanUp()
     member->resetDefend();
     member->resetGuard();
     member->resetGuardee();
-    member->setBFlag(BState::SKIP_NEXT_TURN, false);
+    member->setAilFlag(PersonAilState::SKIP_NEXT_TURN, false);
   }
 
   setBattleFlag(CombatState::PHASE_DONE, true);
@@ -1387,14 +1387,14 @@ bool Battle::doesSkillHit(std::vector<Person*> targets)
 
     can_hit &= curr_skill->isValid();
     can_hit &= curr_user->getBFlag(BState::SKL_ENABLED);
-    can_hit &= !curr_user->getBFlag(BState::MISS_NEXT_TARGET);
+    can_hit &= !curr_user->getAilFlag(PersonAilState::MISS_NEXT_TARGET);
 
-    if (curr_user->getBFlag(BState::MISS_NEXT_TARGET))
+    if (curr_user->getAilFlag(PersonAilState::MISS_NEXT_TARGET))
       std::cout << "{BLIND} - Blind miss" << std::endl;
 
     if (can_hit)
     {
-      if (curr_user->getBFlag(BState::NEXT_ATK_NO_EFFECT))
+      if (curr_user->getAilFlag(PersonAilState::NEXT_ATK_NO_EFFECT))
         std::cout << "{DREAMSNARE} - No effect" << std::endl;
 
       /* Obtain the base hit rate (in XX.X%) */
@@ -1763,8 +1763,8 @@ bool Battle::processAction(std::vector<Person*> targets,
 
     if (can_process && doesActionHit())
     {
-      curr_user->setBFlag(BState::MISS_NEXT_TARGET, false);
-      curr_user->setBFlag(BState::NEXT_ATK_NO_EFFECT, false);
+      curr_user->setAilFlag(PersonAilState::MISS_NEXT_TARGET, false);
+      curr_user->setAilFlag(PersonAilState::NEXT_ATK_NO_EFFECT, false);
 
       if (curr_action->actionFlag(ActionFlags::ALTER) ||
           curr_action->actionFlag(ActionFlags::ASSIGN))
@@ -2125,7 +2125,7 @@ bool Battle::canInflict(Infliction test_infliction)
   can_add &= !(hasInfliction(test_infliction, curr_target));
 
   if (test_infliction != Infliction::BUBBIFY)
-    can_add &= !(curr_target->getBFlag(BState::IS_BUBBY));
+    can_add &= !(curr_target->getAilFlag(PersonAilState::IS_BUBBY));
 
   if (can_add)
   {
@@ -2583,7 +2583,7 @@ bool Battle::testPersonIndex(const int32_t &test_index)
 
   if (test_person->getBFlag(BState::ALIVE))
   {
-    if (test_person->getBFlag(BState::SKIP_NEXT_TURN))
+    if (test_person->getAilFlag(PersonAilState::SKIP_NEXT_TURN))
     {
       if (getBattleMode() == BattleMode::TEXT)
       {

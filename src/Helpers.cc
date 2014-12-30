@@ -519,8 +519,8 @@ std::string Helpers::ailmentToStr(const Infliction &ail)
     return "CURSE";
   else if (ail == Infliction::METATETHER)
     return "METATETHER";
-  else if (ail == Infliction::STUBULATE)
-    return "STUBULATE";
+  else if (ail == Infliction::MODULATE)
+    return "MODULATE";
   else if (ail == Infliction::INVALID)
     return "INVALID";
 

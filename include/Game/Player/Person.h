@@ -63,6 +63,24 @@ struct BattleItem
   std::vector<Person*> foe_targets;
 };
 
+/* PersonAilState Flags - Flags which describe ailment related battle operations */
+ENUM_FLAGS(PersonAilState)
+enum class PersonAilState
+{
+  RANDOM_SELECTION   = 1 << 0, /* Does the person select randomly? */
+  SKIP_NEXT_TURN     = 1 << 1, /* Will the person skip their next turn? */
+  MISS_NEXT_TARGET   = 1 << 2, /* Will the person's next action miss? */
+  NEXT_ATK_NO_EFFECT = 1 << 3, /* Will the person's next atk have no effect? */
+  TWO_SKILLS         = 1 << 4, /* Can the person use two skills per turn? */
+  THREE_SKILLS       = 1 << 5, /* Can the person use three skills per turn? */
+  HALF_COST          = 1 << 6, /* Is person's skill cost halved? */
+  REFLECT            = 1 << 7, /* Will the person reflect elemental skills? */
+  BOND               = 1 << 8, /* Is the person under 'Bond'? */
+  BONDED             = 1 << 9, /* Person bonded to someone under 'Bond' ?*/
+  IS_BUBBY           = 1 << 10, /* Is the person 'Bubbified'? */
+  IS_MODULATED       = 1 << 11, /* */
+};
+
 /* BState Flags - Flags which describe only battle-related flags */
 ENUM_FLAGS(BState)
 enum class BState
@@ -78,27 +96,16 @@ enum class BState
   INS_ENABLED        = 1 << 8, /* Can the person use 'Inspect' ? */
   RUN_ENABLED        = 1 << 9, /* Can the person use 'Run'? */
   PAS_ENABLED        = 1 << 10, /* Can the person use 'Pass'? */
-  RANDOM_SELECTION   = 1 << 11, /* Does the person select randomly? */
-  SKIP_NEXT_TURN     = 1 << 12, /* Will the person skip their next turn? */
-  MISS_NEXT_TARGET   = 1 << 13, /* Will the person's next action miss? */
-  NEXT_ATK_NO_EFFECT = 1 << 14, /* Will the person's next atk have no effect? */
-  IS_BUBBY           = 1 << 15, /* Is the person 'Bubbified'? */
-  TWO_SKILLS         = 1 << 16, /* Can the person use two skills per turn? */
-  THREE_SKILLS       = 1 << 17, /* Can the person use three skills per turn? */
-  HALF_COST          = 1 << 18, /* Is person's skill cost halved? */
-  REFLECT            = 1 << 19, /* Will the person reflect elemental skills? */
-  BOND               = 1 << 20, /* Is the person under 'Bond'? */
-  BONDED             = 1 << 21, /* Person bonded to someone under 'Bond' ?*/
-  REVIVABLE          = 1 << 22, /* Can this person be revived if they are KO? */
-  SELECTED_ACTION    = 1 << 23, /* Has this person selected an action? */
-  SELECTED_2ND_ACTION = 1 << 24, /* Has this person selected a 2nd action? */
-  SELECTED_3RD_ACTION = 1 << 25, /* Has this person selected a 3rd action? */
-  CAN_CRIT            = 1 << 26, /* Can this person crit against a target? */
-  CAN_BE_CRIT         = 1 << 27, /* Can this person have crit's against them? */
-  DEFENDING           = 1 << 28, /* Is this person defending currently? */
-  GUARDED             = 1 << 29, /* Is this person being guarded? */
-  GUARDING            = 1 << 30, /* Is this person guarding? */
-  SHIELDED            = 1 << 31, /* Is this person shielded from damage? */
+  REVIVABLE          = 1 << 11, /* Can this person be revived if they are KO? */
+  SELECTED_ACTION    = 1 << 12, /* Has this person selected an action? */
+  SELECTED_2ND_ACTION = 1 << 13, /* Has this person selected a 2nd action? */
+  SELECTED_3RD_ACTION = 1 << 14, /* Has this person selected a 3rd action? */
+  CAN_CRIT            = 1 << 15, /* Can this person crit against a target? */
+  CAN_BE_CRIT         = 1 << 16, /* Can this person have crit's against them? */
+  DEFENDING           = 1 << 17, /* Is this person defending currently? */
+  GUARDED             = 1 << 18, /* Is this person being guarded? */
+  GUARDING            = 1 << 19, /* Is this person guarding? */
+  SHIELDED            = 1 << 20, /* Is this person shielded from damage? */
 };
 
 /* PState Flags - flags which have impacts outside of Battle */
@@ -153,6 +160,7 @@ private:
   /* Flags for the curent Battle State and Person State */
   BState battle_flags;
   PState person_flags;
+  PersonAilState ailment_flags;
 
   /* Record of the Person */ //TODO [12-21-13]
   //Record person_record;
@@ -182,6 +190,7 @@ private:
   AttributeSet curr_max_stats;
   AttributeSet temp_max_stats;
 
+  /* Skill sets fro the Person */
   /* Skill sets for the Person */
   SkillSet* base_skills;
   SkillSet* curr_skills;
@@ -361,6 +370,9 @@ public:
   /* Returns the my_id (unique) of the Person */
   int32_t getMyID();
 
+  /* Evaluates and returns the state of a given PersonAilState flag */
+  bool getAilFlag(const PersonAilState &ail_flag);
+
   /* Evaluates and returns the state of a given BState flag */
   bool getBFlag(const BState &test_flag);
 
@@ -470,10 +482,13 @@ public:
   /* Assigns a new AI Module for the person */
   void setAI(AIModule* const new_ai_module);
 
-  /* Evaluates and returns a given battle state flag */
+  /* Assigns a value to a given PersonAilState flag */
+  void setAilFlag(const PersonAilState &flag, const bool &set_value = true);
+
+  /* Assigns a value to a given BState flag */
   void setBFlag(const BState &flag, const bool &set_value = true);
 
-  /* Evaluates and returns a given person state flag */
+  /* Assigns a value to a given PState flag */
   void setPFlag(const PState &flag, const bool &set_value = true);
 
   /* Assigns curve modifiers for the person (change's level progression) */

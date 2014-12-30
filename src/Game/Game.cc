@@ -318,6 +318,7 @@ void Game::setupBattle()
   inflict_actions.push_back(new Action("523,INFLICT,2.5,,,BLINDNESS,AMOUNT.20,,VITA,99"));
   inflict_actions.push_back(new Action("524,INFLICT,2.4,,,DREADSTRUCK,AMOUNT.25,,VITA,99"));
   inflict_actions.push_back(new Action("525,INFLICT,2.6,,,DREAMSNARE,AMOUNT.25,,VITA,99"));
+  inflict_actions.push_back(new Action("526,INFLICT,4.8,,,MODULATE,AMOUNT.10,,VITA,99"));
 
   // for(auto it = begin(damage_actions); it != end(damage_actions); ++it)
   //   std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
@@ -328,8 +329,8 @@ void Game::setupBattle()
   // for (auto it = begin (assign_actions); it != end(assign_actions); ++it)
   //   std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
 
-  // for (auto& inflict_action : inflict_actions)
-  //   std::cout << inflict_action->actionFlag(ActionFlags::VALID) << std::endl;
+  for (auto& inflict_action : inflict_actions)
+    std::cout << inflict_action->actionFlag(ActionFlags::VALID) << std::endl;
 
   // Test Skills
   Skill* physical_01 = new Skill(100, "Wee Strike", ActionScope::ONE_ENEMY, 
@@ -352,7 +353,7 @@ void Game::setupBattle()
   // physical_04->setPrimary(Element::PHYSICAL);
 
   Skill* fire_01 = new Skill(110, "Burninate The Countryside", ActionScope::ONE_PARTY, 
-    damage_actions[8], 0.75, 35);
+    damage_actions[8], 85, 55);
   fire_01->setThumbnail(new Frame("sprites/Battle/Skills/_sample_skill_1.png", 
                                   active_renderer));
   fire_01->setPrimary(Element::FIRE);
@@ -448,18 +449,25 @@ void Game::setupBattle()
 
   Skill* deathtimer = new Skill(151, "Deathtimer", ActionScope::ONE_TARGET,
     inflict_actions[21], 100, 10);
-  
-  Skill* blindness = new Skill(152, "Blindness", ActionScope::ONE_TARGET,
-    inflict_actions[22], 100, 10);
 
-  Skill* dreadstruck = new Skill(153, "Dreadstruck", ActionScope::ONE_TARGET,
+  Skill* paralysis = new Skill(152, "Paralysis", ActionScope::ONE_ENEMY,
+    inflict_actions[22], 100, 10);
+  
+  Skill* blindness = new Skill(153, "Blindness", ActionScope::ONE_TARGET,
     inflict_actions[23], 100, 10);
 
-  Skill* dreamsnare = new Skill(154, "Dreamsnare", ActionScope::ONE_TARGET,
+  Skill* dreadstruck = new Skill(154, "Dreadstruck", ActionScope::ONE_TARGET,
     inflict_actions[24], 100, 10);
 
+  Skill* dreamsnare = new Skill(155, "Dreamsnare", ActionScope::ONE_TARGET,
+    inflict_actions[25], 100, 10);
+
+  Skill* modulate = new Skill(156, "Modulate", ActionScope::USER, 
+    inflict_actions[26], 100, 10);
+  modulate->setFlag(SkillFlags::DEFENSIVE, true);
+
   Skill* life_all = new Skill(155, "Regen All", ActionScope::ONE_PARTY,
-    alter_actions[1], 0.99, 20);
+    alter_actions[1], 94, 45);
   life_all->setFlag(SkillFlags::DEFENSIVE, true);
 
   // Test Skill Sets
@@ -494,7 +502,8 @@ void Game::setupBattle()
 
   elemental_skills->addSkill(physical_01, 1);
   elemental_skills->addSkill(forest_01, 1);
-  elemental_skills->addSkill(life_all, 1);
+  elemental_skills->addSkill(life_all, 10);
+  elemental_skills->addSkill(modulate, 15);
   // elemental_skills->addSkill(ice_01, 1);
   // elemental_skills->addSkill(electric_01, 1);
   // elemental_skills->addSkill(digital_01, 1);
@@ -544,12 +553,10 @@ void Game::setupBattle()
   tactical_samurai->setFlag(CategoryState::E_SWORD, true);
   tactical_samurai->setFlag(CategoryState::E_CLAWS, false);
 
-  // tactical_samurai->setVitaRegenRate(RegenRate::ZERO);
-
-  // bear->setVitaRegenRate(RegenRate::WEAK);
-
-  // bloodclaw_scion->setVitaRegenRate(RegenRate::WEAK);
-
+  Category* modulator = new Category(253, "Modulator", "modulator",
+    weak_stats, boss_stats, elemental_skills);
+  modulator->setVitaRegenRate(RegenRate::WEAK);
+  modulator->setQDRegenRate(RegenRate::NORMAL);
   human->setQDRegenRate(RegenRate::NORMAL);
 
   // Test Persons
@@ -567,19 +574,19 @@ void Game::setupBattle()
 
   base_person_list.push_back(new Person(302, "Berran", bear,
     tactical_samurai));
-  getPerson(302)->addExp(4000);
+  getPerson(302)->addExp(2800);
   getPerson(302)->setCurves(Element::FOREST, ElementCurve::A,
                             Element::ICE, ElementCurve::C, true);
 
-  base_person_list.push_back(new Person(303, "Atkst", bloodclaw_scion,
-    bloodclaw_scion));
-  getPerson(303)->addExp(6000);
+  base_person_list.push_back(new Person(303, "Atkst", bear,
+    modulator));
+  getPerson(303)->addExp(2800);
   getPerson(303)->setCurves(Element::FOREST, ElementCurve::A,
                             Element::ICE, ElementCurve::C, true);
   
   base_person_list.push_back(new Person(304, "Kevin", bear,
     tactical_samurai));
-  getPerson(304)->addExp(78000);
+  getPerson(304)->addExp(2800);
   getPerson(304)->setCurves(Element::FOREST, ElementCurve::A,
                             Element::ICE, ElementCurve::C, true);
 
@@ -591,24 +598,24 @@ void Game::setupBattle()
                             Element::PHYSICAL, ElementCurve::D, true);
 
   base_person_list.push_back(new Person(311, "Cloud Dude", human, bloodclaw_scion));
-  getPerson(311)->addExp(500);
+  getPerson(311)->addExp(2500);
   getPerson(311)->setCurves(Element::NIHIL, ElementCurve::A,
                             Element::PHYSICAL, ElementCurve::B, true);
 
   base_person_list.push_back(new Person(312, "Thruster Barrow", human, bloodclaw_scion));
-  getPerson(312)->addExp(1000);
+  getPerson(312)->addExp(2500);
   getPerson(312)->setCurves(Element::NIHIL, ElementCurve::A,
                             Element::PHYSICAL, ElementCurve::B, true);
 
 
   base_person_list.push_back(new Person(313, "Dragon", human, bloodclaw_scion));
-  getPerson(313)->addExp(1000);
+  getPerson(313)->addExp(2500);
   getPerson(313)->setCurves(Element::NIHIL, ElementCurve::A,
                             Element::PHYSICAL, ElementCurve::B, true);
 
 
   base_person_list.push_back(new Person(314, "Splurge", human, bloodclaw_scion));
-  getPerson(314)->addExp(9000);
+  getPerson(314)->addExp(2500);
   getPerson(314)->setCurves(Element::NIHIL, ElementCurve::A,
                             Element::PHYSICAL, ElementCurve::B, true);
 

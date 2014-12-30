@@ -393,7 +393,7 @@ enum class Infliction : std::uint64_t
   HIBERNATION = 34,
   CURSE = 35,
   METATETHER = 36,
-  STUBULATE = 37,
+  MODULATE = 37,
   INVALID = 38
 };
 

@@ -83,7 +83,19 @@ const double   Ailment::kBURN_DMG_INCR       = 1.50;
 const double   Ailment::kBURN_DMG_PC         = 0.05;
 const double   Ailment::kBERSERK_DMG_INCR    = 1.75;
 const double   Ailment::kBERSERK_HITBACK_PC  = 0.35;
-const double   Ailment::kBUBBIFY_STAT_MULR   = 0.75;
+
+const std::vector<double> Ailment::kBUBBIFY_STAT_MULT{0.25, 0.25, 0.6, 0.6,
+                                             0.4, 0.4, 0.4, 0.4,
+                                             0.4, 0.4, 0.4, 0.4,
+                                             0.4, 0.4, 0.4, 0.4,
+                                             0.4, 0.4, 0.4, 1};
+
+const std::vector<double> Ailment::kMODULATE_STAT_MULT{1.3, 1.4, 1.2, 1.2,
+                                              1.15, 1.15, 1.15, 1.15,
+                                              1.15, 1.15, 1.15, 1.15,
+                                              1.15, 1.15, 1.15, 1.15, 
+                                              1.05, 1.05, 1.05, 1.05};
+
 const double   Ailment::kPARALYSIS_PC        = 0.70;
 const double   Ailment::kBLIND_PC            = 0.50;
 const double   Ailment::kDREADSTRUCK_PC      = 0.75;
@@ -290,16 +302,26 @@ bool Ailment::apply()
   else if (type == Infliction::BUBBIFY)
   {
     /* Decrease the stats of the person by a factor of kBUBBIFY_STAT_MULR */
-    for (uint32_t i = 0; i < stats.getSize(); i++)
+    for (uint16_t i = 0; i < stats.getSize(); i++)
     {
-      stats.setStat(i, stats.getStat(i) * kBUBBIFY_STAT_MULR);
-      max_stats.setStat(i, stats.getStat(i) * kBUBBIFY_STAT_MULR);
+      stats.setStat(i, stats.getStat(i) * kBUBBIFY_STAT_MULT.at(i));
+      max_stats.setStat(i, max_stats.getStat(i) * kBUBBIFY_STAT_MULT.at(i));
     }
 
     /* Flip the Battle State Bubby flag */
-    victim->setBFlag(BState::IS_BUBBY, true);
+    victim->setAilFlag(PersonAilState::IS_BUBBY, true);
     setFlag(AilState::TO_APPLY, false);
     setFlag(AilState::TO_UNAPPLY, true);
+  }
+
+  /* Modulate */
+  else if (type == Infliction::MODULATE)
+  {
+    for (uint16_t i = 0; i < stats.getSize(); i++)
+    {
+      stats.setStat(i, stats.getStat(i) * kMODULATE_STAT_MULT.at(i));
+      max_stats.setStat(i, max_stats.getStat(i) * kMODULATE_STAT_MULT.at(i));
+    }
   }
 
   /* Death Timer - Ailed actor KOs upon reaching max_turns */
@@ -315,7 +337,7 @@ bool Ailment::apply()
   else if (type == Infliction::PARALYSIS)
   {
     if (Helpers::chanceHappens((kPARALYSIS_PC * 100), 100))
-      victim->setBFlag(BState::SKIP_NEXT_TURN, true);
+      victim->setAilFlag(PersonAilState::SKIP_NEXT_TURN, true);
   }
 
   /* Blindness - Ailed actor has a kBLIND_PC chance of missing targets
@@ -324,7 +346,7 @@ bool Ailment::apply()
   else if (type == Infliction::BLINDNESS)
   {
     if (Helpers::chanceHappens((kBLIND_PC * 100), 100))
-      victim->setBFlag(BState::MISS_NEXT_TARGET, false);
+      victim->setAilFlag(PersonAilState::MISS_NEXT_TARGET, false);
   }
 
   /* Dreadstruck - formerly "Stun": Ailed actor has an extreme chance of
@@ -334,7 +356,7 @@ bool Ailment::apply()
   else if (type == Infliction::DREADSTRUCK)
   {
     if (Helpers::chanceHappens((kDREADSTRUCK_PC), 100))
-      victim->setBFlag(BState::SKIP_NEXT_TURN, false);
+      victim->setAilFlag(PersonAilState::SKIP_NEXT_TURN, false);
   }
 
   /* Dreamsnare - Ailed actor's actions have a kDREAMSNARE_PC chance of being
@@ -344,7 +366,7 @@ bool Ailment::apply()
   else if (type == Infliction::DREAMSNARE)
   {
     if (Helpers::chanceHappens((kDREAMSNARE_PC * 100), 100))
-      victim->setBFlag(BState::NEXT_ATK_NO_EFFECT, true);
+      victim->setAilFlag(PersonAilState::NEXT_ATK_NO_EFFECT, true);
   }
 
   /* Bond & Bonded - Two actors are afflicted simultaneously. One person is
@@ -356,7 +378,7 @@ bool Ailment::apply()
    */
   else if (type == Infliction::BOND)
   {
-    victim->setBFlag(BState::BOND, true);
+    victim->setAilFlag(PersonAilState::BOND, true);
   }
   else if (type == Infliction::BONDED)
   {
@@ -476,15 +498,15 @@ bool Ailment::apply()
 
   /* Double Cast allows the user to use two skils per turn */
   else if (type == Infliction::DOUBLECAST)
-    victim->setBFlag(BState::TWO_SKILLS, true);
+    victim->setAilFlag(PersonAilState::TWO_SKILLS, true);
 
   /* Triple Cast allows the user to use three skills per turn */
   else if (type == Infliction::TRIPLECAST)
-    victim->setBFlag(BState::THREE_SKILLS, true);
+    victim->setAilFlag(PersonAilState::THREE_SKILLS, true);
 
   /* Half Cost - On application, the user's useable skill costs are halved */
   else if (type == Infliction::HALFCOST)
-    victim->setBFlag(BState::HALF_COST, true);
+    victim->setAilFlag(PersonAilState::HALF_COST, true);
 
   /* Hibernation - Gain a % health back per turn in exchange for skipping it,
    *               but the % gain grows
@@ -503,7 +525,7 @@ bool Ailment::apply()
 
   /* Reflect - turn on Person flag to show they reflect skills */
   else if (type == Infliction::REFLECT)
-    victim->setBFlag(BState::REFLECT, true);
+    victim->setAilFlag(PersonAilState::REFLECT, true);
 
   /* Metabolic Tether - Metabolic tether has a kMETABOLIC_PC chance for killing
    *   the inflicted, but also a kMETABOLIC_DMG percent that it will deal to
@@ -521,12 +543,12 @@ bool Ailment::apply()
     //    emit victimDeath(victim->getName(), EnumDb::METABOLIC_DMG);
   }
 
-  /* Stubulate - //TODO - PC chance or remove a # or remove a fraction of skills
-   *                      available to the user each turn
+  /* Modulate - Modulates a persons sprite and improves their stats by
+   *            some factor.
    *
-   * Constants:
+   * Constants: 
    */
-  else if (type == Infliction::STUBULATE)
+  else if (type == Infliction::MODULATE)
   {
 
   }
@@ -719,7 +741,7 @@ void Ailment::unapply()
    */
   else if (getType() == Infliction::BOND)
   {
-    victim->setBFlag(BState::BOND, false);
+    victim->setAilFlag(PersonAilState::BOND, false);
   }
 
   /* Bonded - on unapplication, the Persons' buffed stats are returned to normal
@@ -734,32 +756,33 @@ void Ailment::unapply()
      are removed as well) */
   else if (getType() == Infliction::BUBBIFY)
   {
-    victim->setBFlag(BState::IS_BUBBY, false);
+    victim->setAilFlag(PersonAilState::IS_BUBBY, false);
   }
 
   /* Double Cast - on unapplication turn off the flag for DoubleCast */
   else if (getType() == Infliction::DOUBLECAST)
   {
-    victim->setBFlag(BState::TWO_SKILLS, false);
+    victim->setAilFlag(PersonAilState::TWO_SKILLS, false);
   }
 
   /* Tripl Cast - on unapplication, turn off the flag for TripleCast */
   else if (getType() == Infliction::TRIPLECAST)
-    victim->setBFlag(BState::THREE_SKILLS, false);
+    victim->setAilFlag(PersonAilState::THREE_SKILLS, false);
 
   /* Half Cost - on unapplication, turn off the flag for HalfCost */
   else if (getType() == Infliction::HALFCOST)
-     victim->setBFlag(BState::HALF_COST, false);
+     victim->setAilFlag(PersonAilState::HALF_COST, false);
 
   /* Reflect - on unapplication, turn off the Person flag for reflect */
   else if (getType() == Infliction::REFLECT)
-    victim->setBFlag(BState::REFLECT, false);
+    victim->setAilFlag(PersonAilState::REFLECT, false);
 
-  /* Stubulate - //TODO: Unknown Effect [08-04-13]
+  /* Modulate - Certain classes may modulate themselves, converting their
+   *            sprite and increasing their stats by some factor.
    *
    * Constants:
    */
-  else if (type == Infliction::STUBULATE)
+  else if (type == Infliction::MODULATE)
   {
 
   }

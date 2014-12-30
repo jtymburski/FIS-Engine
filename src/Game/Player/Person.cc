@@ -130,8 +130,9 @@ void Person::loadDefaults()
   guardee = nullptr;
   guard   = nullptr;
 
-  battle_flags = static_cast<BState>(0);
-  person_flags = static_cast<PState>(0);
+  ailment_flags = static_cast<PersonAilState>(0);
+  battle_flags  = static_cast<BState>(0);
+  person_flags  = static_cast<PState>(0);
 
   setPFlag(PState::CAN_GAIN_EXP, true);
   setPFlag(PState::CAN_LEVEL_UP, true);
@@ -222,10 +223,11 @@ void Person::setupClass()
                                base_person->ai_module->getSecdPersonality());
     }
     
-    guardee      = base_person->guardee;
-    guard        = base_person->guard;
-    battle_flags = base_person->battle_flags;
-    person_flags = base_person->person_flags;
+    guardee       = base_person->guardee;
+    guard         = base_person->guard;
+    ailment_flags = base_person->ailment_flags;
+    battle_flags  = base_person->battle_flags;
+    person_flags  = base_person->person_flags;
     // TODO: Dynamic initialization of record? [10-25-14]
     //person_record = base-person->person_record;
     battle_class = base_person->battle_class;
@@ -734,35 +736,33 @@ void Person::battlePrep()
 {
   curr_stats = curr_max_stats;
   updateEquipStats();
-  
+
+  setAilFlag(PersonAilState::RANDOM_SELECTION, false);
+  setAilFlag(PersonAilState::SKIP_NEXT_TURN, false);
+  setAilFlag(PersonAilState::MISS_NEXT_TARGET, false);
+  setAilFlag(PersonAilState::NEXT_ATK_NO_EFFECT, false);
+  setAilFlag(PersonAilState::TWO_SKILLS, false);
+  setAilFlag(PersonAilState::THREE_SKILLS, false);
+  setAilFlag(PersonAilState::HALF_COST, false);
+  setAilFlag(PersonAilState::REFLECT, false);
+  setAilFlag(PersonAilState::BOND, false);
+  setAilFlag(PersonAilState::BONDED, false);
+  setAilFlag(PersonAilState::IS_BUBBY, false);
+  setAilFlag(PersonAilState::IS_MODULATED, false);
   setBFlag(BState::IN_BATTLE, true);
   setBFlag(BState::ALIVE, true);
-
-  setBFlag(BState::SKIP_NEXT_TURN, false);
-  setBFlag(BState::MISS_NEXT_TARGET, false);
-  setBFlag(BState::NEXT_ATK_NO_EFFECT, false);
-  setBFlag(BState::IS_BUBBY, false);
-  setBFlag(BState::TWO_SKILLS, false);
-  setBFlag(BState::THREE_SKILLS, false);
-  setBFlag(BState::HALF_COST, false);
-  setBFlag(BState::REFLECT, false);
-  setBFlag(BState::BOND, false);
-  setBFlag(BState::BONDED, false);
   setBFlag(BState::REVIVABLE, false);
   setBFlag(BState::SELECTED_ACTION, false);
   setBFlag(BState::SELECTED_2ND_ACTION, false);
   setBFlag(BState::SELECTED_3RD_ACTION, false);
-
-  resetActionFlags();
-
-  //TODO: [11-11-14] Critical hits based upon race/class or person dependant?
   setBFlag(BState::CAN_CRIT, true);
   setBFlag(BState::CAN_BE_CRIT, true);
-  
   setBFlag(BState::DEFENDING, false);
-  setBFlag(BState::GUARDED,   false);
-  setBFlag(BState::GUARDING,  false);
-  setBFlag(BState::SHIELDED,  false);
+  setBFlag(BState::GUARDED, false);
+  setBFlag(BState::GUARDING, false);
+  setBFlag(BState::SHIELDED, false);
+
+  resetActionFlags();
 }
 
 /*
@@ -982,18 +982,18 @@ void Person::print(const bool &simple, const bool &equips,
       std::cout << "IMP_ENABLED: " << getBFlag(BState::IMP_ENABLED) << "\n";
       std::cout << "RUN_ENABLED: " << getBFlag(BState::RUN_ENABLED) << "\n";
       std::cout << "PAS_ENABLED: " << getBFlag(BState::PAS_ENABLED) << "\n";
-      std::cout << "SKIP_NEXT_TURN: " << getBFlag(BState::SKIP_NEXT_TURN);
-      std::cout << "\nMISS_NEXT_TARGET: " << getBFlag(BState::MISS_NEXT_TARGET);
-      std::cout << "\nNEXT_ATK_NO_EFFECT: " 
-                << getBFlag(BState::NEXT_ATK_NO_EFFECT);
-      std::cout << "\nIS_BUBBY: " << getBFlag(BState::IS_BUBBY) << "\n";
-      std::cout << "TWO_SKILLS: " << getBFlag(BState::TWO_SKILLS) << "\n";
-      std::cout << "THREE_SKILLS: " << getBFlag(BState::THREE_SKILLS) << "\n";
-      std::cout << "HALF_COST: " << getBFlag(BState::HALF_COST) << "\n";
-      std::cout << "REFLECT: " << getBFlag(BState::REFLECT) << "\n";
-      std::cout << "BOND: " << getBFlag(BState::BOND) << "\n";
-      std::cout << "BONDED: " << getBFlag(BState::BONDED) << "\n";
-      std::cout << "REVIVABLE: " << getBFlag(BState::REVIVABLE);
+      // std::cout << "SKIP_NEXT_TURN: " << getBFlag(BState::SKIP_NEXT_TURN);
+      // std::cout << "\nMISS_NEXT_TARGET: " << getBFlag(BState::MISS_NEXT_TARGET);
+      // std::cout << "\nNEXT_ATK_NO_EFFECT: " 
+      //           << getBFlag(BState::NEXT_ATK_NO_EFFECT);
+      // std::cout << "\nIS_BUBBY: " << getBFlag(BState::IS_BUBBY) << "\n";
+      // std::cout << "TWO_SKILLS: " << getBFlag(BState::TWO_SKILLS) << "\n";
+      // std::cout << "THREE_SKILLS: " << getBFlag(BState::THREE_SKILLS) << "\n";
+      // std::cout << "HALF_COST: " << getBFlag(BState::HALF_COST) << "\n";
+      // std::cout << "REFLECT: " << getBFlag(BState::REFLECT) << "\n";
+      // std::cout << "BOND: " << getBFlag(BState::BOND) << "\n";
+      // std::cout << "BONDED: " << getBFlag(BState::BONDED) << "\n";
+      // std::cout << "REVIVABLE: " << getBFlag(BState::REVIVABLE);
       std::cout << "\nSELECTED_ACTION: " << getBFlag(BState::SELECTED_ACTION);
       std::cout << "\nSELECTED_2ND_ACTION: " 
                 << getBFlag(BState::SELECTED_2ND_ACTION);
@@ -1226,6 +1226,17 @@ int32_t Person::getGameID()
 int32_t Person::getMyID()
 {
   return my_id;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output: 
+ */
+bool Person::getAilFlag(const PersonAilState &test_flag)
+{
+  return static_cast<bool>((ailment_flags & test_flag) == test_flag);
 }
 
 /*
@@ -1596,7 +1607,7 @@ float Person::getVitaPercent()
  */
 int16_t Person::getTrueCost(Skill* test_skill)
 {
-  if (temp_skills != nullptr && !getBFlag(BState::IS_BUBBY))
+  if (temp_skills != nullptr && !getAilFlag(PersonAilState::IS_BUBBY))
   {
     auto elements = temp_skills->getElements(level);
 
@@ -1604,16 +1615,16 @@ int16_t Person::getTrueCost(Skill* test_skill)
     {
       if ((*it).skill == test_skill)
       {
-        if (getBFlag(BState::HALF_COST))
+        if (getAilFlag(PersonAilState::HALF_COST))
           return (*it).skill->getCost() / 2;
 
         return (*it).skill->getCost();
       }
     }
   }
-  else if (getBFlag(BState::IS_BUBBY))
+  else if (getAilFlag(PersonAilState::IS_BUBBY))
   {
-    if (getBFlag(BState::HALF_COST))
+    if (getAilFlag(PersonAilState::HALF_COST))
       return test_skill->getCost() / 2;
 
     return test_skill->getCost();
@@ -1732,7 +1743,7 @@ SkillSet* Person::getUseableSkills()
       auto skill_cost = static_cast<int32_t>((*it).skill->getCost());
 
       /* Adjust for Half Cost of skills */
-      if (getBFlag(BState::HALF_COST))
+      if (getAilFlag(PersonAilState::HALF_COST))
         if (skill_cost != 1)
           skill_cost /= 2;
 
@@ -1816,6 +1827,17 @@ void Person::setActionXY(uint8_t action_x, uint8_t action_y)
 void Person::setAI(AIModule* const new_ai_module)
 {
   ai_module = new_ai_module;
+}
+
+/*
+ * Description: 
+ *
+ * Inputs: 
+ * Output:
+ */
+void Person::setAilFlag(const PersonAilState &flag, const bool &set_value)
+{
+  (set_value) ? (ailment_flags |= flag) : (ailment_flags &= ~flag);
 }
 
 /*

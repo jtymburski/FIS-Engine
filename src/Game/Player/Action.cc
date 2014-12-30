@@ -236,7 +236,7 @@ bool Action::parseAilment(const std::string &ailm)
   else if (ailm == "HIBERNATION") ailment = Infliction::HIBERNATION;
   else if (ailm == "CURSE")       ailment = Infliction::CURSE;
   else if (ailm == "METATETHER")  ailment = Infliction::METATETHER;
-  else if (ailm == "STUBULATE")   ailment = Infliction::STUBULATE;
+  else if (ailm == "MODULATE")   ailment = Infliction::MODULATE;
 
   if (ailment != Infliction::INVALID)
     return true;

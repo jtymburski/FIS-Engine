@@ -109,7 +109,8 @@ private:
   static const double kBURN_DMG_PC; /* Additional % dmg causedby Burn */
   static const double kBERSERK_DMG_INCR; /* % incr in damage against target */
   static const double kBERSERK_HITBACK_PC; /* % hitback on victim */
-  static const double kBUBBIFY_STAT_MULR; /* % mod for stats while a Bubby */
+  static const std::vector<double> kBUBBIFY_STAT_MULT;
+  static const std::vector<double> kMODULATE_STAT_MULT;
   static const double kPARALYSIS_PC; /* % chance paralysis will skip turn */
   static const double kBLIND_PC; /* % chance Blind will miss attacks */
   static const double kDREADSTRUCK_PC; /* % Dreadstruck will miss attacks */
