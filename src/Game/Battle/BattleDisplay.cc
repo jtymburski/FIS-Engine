@@ -643,7 +643,7 @@ bool BattleDisplay::createSkills(SDL_Renderer* renderer, BattleMenu* menu,
                                  uint16_t width_left, uint16_t width_right)
 {
   SDL_Color color = {255, 255, 255, 255};
-  SDL_Color invalid_color = {255, 255, 255, 165};
+  SDL_Color invalid_color = {100, 100, 100, 255};
   std::vector<BattleSkill> skills = menu->getMenuSkills();
   bool success = true;
   Text* t = new Text(font_header);
@@ -686,9 +686,17 @@ bool BattleDisplay::createSkills(SDL_Renderer* renderer, BattleMenu* menu,
       success &= t->render(renderer, 0, kTYPE_MARGIN);
       
       /* Render the QD */
+      if(!skills.at(i).selectable)
+        frame_qd.setAlpha(128);
       uint16_t qd_x = text_width - frame_qd.getWidth();
       success &= frame_qd.render(renderer, qd_x, kTYPE_MARGIN + 1);
-      success &= t->setText(renderer, std::to_string(skill->getCost()), color);
+      frame_qd.setAlpha(255);
+      if(skills.at(i).selectable)
+        success &= t->setText(renderer, 
+                              std::to_string(skill->getCost()), color);
+      else
+        success &= t->setText(renderer, 
+                              std::to_string(skill->getCost()), invalid_color);
       success &= t->render(renderer, qd_x - t->getWidth() - kSKILL_SEP, 
                            kTYPE_MARGIN);
       

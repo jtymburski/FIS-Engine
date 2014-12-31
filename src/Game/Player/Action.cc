@@ -571,7 +571,7 @@ void Action::print(const bool &print_action, const bool& print_ignore)
  */
 bool Action::actionFlag(ActionFlags test_flag)
 {
-  return static_cast<bool>((action_flags & test_flag) == test_flag);
+  return ((action_flags & test_flag) == test_flag);
 }
 
 /*
@@ -583,7 +583,7 @@ bool Action::actionFlag(ActionFlags test_flag)
  */
 bool Action::atkFlag(IgnoreFlags test_flag)
 {
-  return static_cast<bool>((ignore_atk & test_flag) == test_flag);
+  return ((ignore_atk & test_flag) == test_flag);
 }
 
 /*
@@ -595,7 +595,7 @@ bool Action::atkFlag(IgnoreFlags test_flag)
  */
 bool Action::defFlag(IgnoreFlags test_flag)
 {
-  return static_cast<bool>((ignore_def & test_flag) == test_flag);
+  return ((ignore_def & test_flag) == test_flag);
 }
 
 /*
@@ -811,6 +811,12 @@ std::string Action::outputString()
 void Action::setActionFlag(ActionFlags set_flag, bool set)
 {
   set ? (action_flags |= set_flag) : (action_flags &= ~set_flag);
+
+  /* If it's a percent change, fix the value */
+  if(actionFlag(ActionFlags::BASE_PC))
+    setBaseValue(base, true);
+  if(actionFlag(ActionFlags::VARI_PC))
+    setBaseVariance(variance, true);
 }
 
 /*
