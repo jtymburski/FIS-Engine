@@ -128,6 +128,7 @@ Skill::Skill(const int &id, const std::string &name, const ActionScope &scope,
  */
 Skill::~Skill()
 {
+  unsetAnimation();
   unsetThumbnail();
 }
 
@@ -476,6 +477,17 @@ Element Skill::getPrimary()
 }
 
 /*
+ * Description: Returns the ActionScope (usage condition)
+ *
+ * Inputs: none
+ * Output: ActionScope - enumerated usage condition
+ */
+ActionScope Skill::getScope()
+{
+  return scope;
+}
+
+/*
  * Description: Returns the secondary elemental strength
  *
  * Inputs: none
@@ -495,17 +507,6 @@ Element Skill::getSecondary()
 Sound* Skill::getSoundEffect()
 {
   return sound_effect;
-}
-
-/*
- * Description: Returns the ActionScope (usage condition)
- *
- * Inputs: none
- * Output: ActionScope - enumerated usage condition
- */
-ActionScope Skill::getScope()
-{
-  return scope;
 }
 
 /*
@@ -531,16 +532,21 @@ uint32_t Skill::getValue()
 }
 
 /*
- * Description: Assigns a new animation to the Skill
+ * Description: Assigns a new animation to the Skill. This class takes control
+ *              of memory manipulation upon set.
  *
  * Inputs: Sprite* - pointer to the new animation
- * Output: bool - true if the new animation is nullptr
+ * Output: bool - true if the new animation is not nullptr
  */
 bool Skill::setAnimation(Sprite* new_animation)
 {
-  animation = new_animation;
-
-  return (animation != nullptr);
+  if(new_animation != nullptr)
+  {
+    unsetAnimation();
+    animation = new_animation;
+    return true;
+  }
+  return false;
 }
 
 /*
@@ -707,6 +713,17 @@ void Skill::setPrimary(const Element &new_element)
 }
 
 /*
+ * Description: Assigns a new ActionScope (conditions of usage)
+ *
+ * Inputs: new_scope - new enumerated scope of use for the Skill
+ * Output: none
+ */
+void Skill::setScope(const ActionScope &new_scope)
+{
+  scope = new_scope;
+}
+
+/*
  * Description: Assigns a new secondary element.
  *
  * Inputs: Element new_element - enumerated element to assign
@@ -728,17 +745,6 @@ bool Skill::setSoundEffect(Sound* new_sound_effect)
   sound_effect = new_sound_effect;
 
   return (sound_effect != nullptr);
-}
-
-/*
- * Description: Assigns a new ActionScope (conditions of usage)
- *
- * Inputs: new_scope - new enumerated scope of use for the Skill
- * Output: none
- */
-void Skill::setScope(const ActionScope &new_scope)
-{
-  scope = new_scope;
 }
 
 /*
@@ -775,6 +781,13 @@ bool Skill::setValue(const uint32_t &new_value)
   return false;
 }
 
+void Skill::unsetAnimation()
+{
+  if(animation != nullptr)
+    delete animation;
+  animation = nullptr;
+}
+
 /*
  * Description: Unsets the thumbnail and deletes it from memory.
  *
@@ -783,7 +796,7 @@ bool Skill::setValue(const uint32_t &new_value)
  */
 void Skill::unsetThumbnail()
 {
-  if( thumbnail != nullptr)
+  if(thumbnail != nullptr)
     delete thumbnail;
   thumbnail = nullptr;
 }

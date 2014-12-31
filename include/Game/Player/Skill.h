@@ -64,7 +64,7 @@ public:
 
   /* Destructor function */
   ~Skill();
-  
+
 private:
   /* Pointer to the animation played by the Skill during Battle */
   Sprite* animation;
@@ -99,14 +99,14 @@ private:
   /* Primary elemental strength of the Skill */
   Element primary;
 
+  /* Scope of use of the action (one enemey, one ally, etc.) */
+  ActionScope scope;
+
   /* Secondary elemental strength of the Skill */
   Element secondary;
 
   /* Pointer to the sound effect on use of the Skill */
   Sound* sound_effect;
-
-  /* Scope of use of the action (one enemey, one ally, etc.) */
-  ActionScope scope;
 
   /* Pointer to the thumbnail of the Skill */
   Frame* thumbnail;
@@ -194,11 +194,11 @@ public:
   /* Returns the primary element */
   Element getPrimary();
 
-  /* Returns the secondary element */
-  Element getSecondary();
-
   /* Returns the enumerated scope */
   ActionScope getScope();
+  
+  /* Returns the secondary element */
+  Element getSecondary();
 
   /* Returns the sound effect */
   Sound* getSoundEffect();
@@ -238,22 +238,25 @@ public:
 
   /* Assigns a new primary elemental strength */
   void setPrimary(const Element &new_element);
-
+  
+  /* Assigns a new action scope */
+  void setScope(const ActionScope &new_scope);
+  
   /* Assigns a new secondary elemental strength */
   void setSecondary(const Element &new_element);
 
   /* Assigns a new sound effect */
   bool setSoundEffect(Sound* new_sound_effect);
 
-  /* Assigns a new action scope */
-  void setScope(const ActionScope &new_scope);
-
   /* Assigns a new thumbnail */
   void setThumbnail(Frame* new_thumbnail);
 
   /* Assigns a new point value */
   bool setValue(const uint32_t &new_value);
-  
+ 
+  /* Unsets the animation - deletes from memory */
+  void unsetAnimation();
+
   /* Unsets the thumbnail - deletes from memory */
   void unsetThumbnail();
 };
