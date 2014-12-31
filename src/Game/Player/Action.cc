@@ -840,7 +840,7 @@ void Action::setAilment(Infliction ailment)
  */
 bool Action::setAilmentDuration(int min, int max)
 {
-  if(min > 0 && max > 0 && min >= max)
+  if(min > 0 && max > 0 && max >= min)
   {
     min_duration = min;
     max_duration = max;
@@ -885,14 +885,15 @@ void Action::setBaseValue(int32_t value, bool percent)
   {
     if(value > kMAX_BASE_PC)
       base = kMAX_BASE_PC;
-    base = value;
+    else
+      base = value;
 
-    setActionFlag(ActionFlags::BASE_PC, true);
+    action_flags |= ActionFlags::BASE_PC;
   }
   else
   {
     base = value;
-    setActionFlag(ActionFlags::BASE_PC, false);
+    action_flags &= ~ActionFlags::BASE_PC;
   }
 }
 
@@ -910,14 +911,15 @@ void Action::setBaseVariance(uint32_t variance, bool percent)
   {
     if(variance > kMAX_VARIANCE_PC)
       this->variance = kMAX_VARIANCE_PC;
-    this->variance = variance;
+    else
+      this->variance = variance;
 
-    setActionFlag(ActionFlags::VARI_PC, true);
+    action_flags |= ActionFlags::VARI_PC;
   }
   else
   {
     this->variance = variance;
-    setActionFlag(ActionFlags::VARI_PC, false);
+    action_flags &= ~ActionFlags::VARI_PC;
   }
 }
 
