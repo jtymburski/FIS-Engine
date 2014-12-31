@@ -238,6 +238,12 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Does the check against the indicated ignore flag */
+  bool atkDefFlag(IgnoreFlags test_flag, bool attack = true);
+
+  /* Returns the ignore flags in a period delimited list */
+  std::string ignoreToStr(bool attack = true);
+
   /* Main function for parsing the raw string */
   bool parse(const std::string &raw);
 

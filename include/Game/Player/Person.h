@@ -142,8 +142,8 @@ public:
 
 private:
   /* Action x and y render location */
-  uint8_t action_x;
-  uint8_t action_y;
+  int16_t action_x;
+  int16_t action_y;
 
   /* AI Module */
   AIModule* ai_module;
@@ -190,7 +190,6 @@ private:
   AttributeSet curr_max_stats;
   AttributeSet temp_max_stats;
 
-  /* Skill sets fro the Person */
   /* Skill sets for the Person */
   SkillSet* base_skills;
   SkillSet* curr_skills;
@@ -218,6 +217,7 @@ private:
   /* Frames for a Person */
   Sprite* first_person;
   Sprite* third_person;
+  Sprite* action_frames;
 
   /* ------------ Static Private Members --------------- */
   static int id; /* Person unique ID counter */
@@ -348,9 +348,12 @@ public:
   /* Clear the guarding status of this person */
   bool resetGuardee();
 
+  /* Returns the action frames */
+  Sprite* getActionFrames();
+
   /* The action X and Y render location in battle */
-  uint8_t getActionX();
-  uint8_t getActionY();
+  int16_t getActionX();
+  int16_t getActionY();
 
   /* Returns a pointer to the AI module */
   AIModule* getAI();
@@ -477,7 +480,7 @@ public:
   std::vector<ActionType> getValidActions();
 
   /* Sets the action x and y offset */
-  void setActionXY(uint8_t action_x, uint8_t action_y);
+  void setActionXY(int16_t action_x, int16_t action_y);
 
   /* Assigns a new AI Module for the person */
   void setAI(AIModule* const new_ai_module);
@@ -525,7 +528,8 @@ public:
                const std::vector<uint32_t> &new_item_drops);
 
   /* Assigns the sprite pointers for the person */
-  void setSprites(Sprite* new_fp = nullptr, Sprite* new_tp = nullptr);
+  void setSprites(Sprite* new_fp = nullptr, Sprite* new_tp = nullptr,
+                  Sprite* new_action = nullptr);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS

@@ -526,6 +526,57 @@ std::string Helpers::ailmentToStr(const Infliction &ail)
 
   return "";
 }
+  
+/*
+ * Description: Returns the enumerated Attribute to String.
+ *
+ * Inputs: Attribute attribute - the attribute to convert
+ * Output: std::string - the converted string
+ */
+std::string Helpers::attributeToStr(Attribute attribute)
+{
+  if(attribute == Attribute::VITA)
+    return "VITA";
+  else if(attribute == Attribute::QTDR)
+    return "QTDR";
+  else if(attribute == Attribute::PHAG)
+    return "PHAG";
+  else if(attribute == Attribute::PHFD)
+    return "PHFD";
+  else if(attribute == Attribute::THAG)
+    return "THAG";
+  else if(attribute == Attribute::THFD)
+    return "THFD";
+  else if(attribute == Attribute::PRAG)
+    return "PRAG";
+  else if(attribute == Attribute::PRFD)
+    return "PRFD";
+  else if(attribute == Attribute::POAG)
+    return "POAG";
+  else if(attribute == Attribute::POFD)
+    return "POFD";
+  else if(attribute == Attribute::CHAG)
+    return "CHAG";
+  else if(attribute == Attribute::CHFD)
+    return "CHFD";
+  else if(attribute == Attribute::CYAG)
+    return "CYAG";
+  else if(attribute == Attribute::CYFD)
+    return "CYFD";
+  else if(attribute == Attribute::NIAG)
+    return "NIAG";
+  else if(attribute == Attribute::NIFD)
+    return "NIFD";
+  else if(attribute == Attribute::MMNT)
+    return "MMNT";
+  else if(attribute == Attribute::LIMB)
+    return "LIMB";
+  else if(attribute == Attribute::UNBR)
+    return "UNBR";
+  else if(attribute == Attribute::MANN)
+    return "MANN";
+  return "";
+}
 
 /*
  * Description: Converts an integer to roman numeral form (ex. 6 -> VI)
@@ -665,7 +716,7 @@ Element Helpers::getWeakness(const Element& element)
 /*=============================================================================
  * GENERAL HELPER FUNCTIONS
  *============================================================================*/
-
+  
 /*
  * Description: Build an exponentially increasing table of values given a
  *              starting value, a maximum value, and the number of iterations
@@ -694,6 +745,35 @@ std::vector<uint32_t> Helpers::buildExpTable(const uint32_t &min,
   }
 
   return table;
+}
+
+/*
+ * Description: Combines a string and char together with toggle on before or
+ *              after. This was implemented since the compiler seems to take
+ *              a string literal plus a char and it becomes a char and does
+ *              undefined behavior.
+ *
+ * Inputs: std::string s - the string to combine
+ *         char c - the char to append or prepend
+ *         bool before - true if the char is attached before the string
+ * Output: std::string - the resulting string
+ */
+std::string Helpers::combine(std::string s, char c, bool before)
+{
+  std::string output = "";
+
+  /* If char is before, add */
+  if(before)
+    output += c;
+
+  /* Main string add */
+  output += s;
+
+  /* If char is after, add */
+  if(!before)
+    output += c;
+
+  return output;
 }
 
 /*

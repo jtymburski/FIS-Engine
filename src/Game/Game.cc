@@ -252,10 +252,10 @@ void Game::setupBattle()
 {
   // Test Actions
   std::vector<Action*> damage_actions;
-  damage_actions.push_back(new Action("1,DAMAGE,,,,VITA,AMOUNT.20,AMOUNT.5,,95"));
+  damage_actions.push_back(new Action("1,DAMAGE,,,,,AMOUNT.20,AMOUNT.5,,95"));
   damage_actions.push_back(new Action("2,DAMAGE,,,,VITA,AMOUNT.20,AMOUNT.5,,95"));
   damage_actions.push_back(new Action("3,DAMAGE,,,,VITA,AMOUNT.20,AMOUNT.5,,95"));
-  damage_actions.push_back(new Action("4,DAMAGE,,,,VITA,AMOUNT.20,AMOUNT.5,,95"));
+  damage_actions.push_back(new Action("4,DAMAGE,,,,,AMOUNT.20,AMOUNT.5,,95"));
   damage_actions.push_back(new Action("5,DAMAGE,,,,VITA,AMOUNT.60,AMOUNT.20,,95"));
   damage_actions.push_back(new Action("6,DAMAGE,,,,VITA,AMOUNT.75,AMOUNT.25,,95"));
   damage_actions.push_back(new Action("7,DAMAGE,,,,VITA,AMOUNT.90,AMOUNT.25,,95"));
@@ -292,7 +292,7 @@ void Game::setupBattle()
   assign_actions.push_back(new Action("400,REVIVE,,,,,AMOUNT.50,AMOUNT.10,,80"));
 
   std::vector<Action*> inflict_actions;
-  inflict_actions.push_back(new Action("500,INFLICT,2.7,,,POISON,AMOUNT.60,,VITA,90"));
+  inflict_actions.push_back(new Action("500,INFLICT,2.7,,,POISON,,,VITA,90"));
   inflict_actions.push_back(new Action("501,INFLICT,1.4,,,BURN,AMOUNT.50,,VITA,90"));
   inflict_actions.push_back(new Action("502,INFLICT,2.6,,,SCALD,AMOUNT.40,,VITA,90"));
   inflict_actions.push_back(new Action("503,INFLICT,4.8,,,CHARR,AMOUNT.30,,VITA,90"));
@@ -329,8 +329,8 @@ void Game::setupBattle()
   // for (auto it = begin (assign_actions); it != end(assign_actions); ++it)
   //   std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
 
-  for (auto& inflict_action : inflict_actions)
-    std::cout << inflict_action->actionFlag(ActionFlags::VALID) << std::endl;
+  //for (auto& inflict_action : inflict_actions)
+  //  std::cout << inflict_action->actionFlag(ActionFlags::VALID) << std::endl;
 
   // Test Skills
   Skill* physical_01 = new Skill(100, "Wee Strike", ActionScope::ONE_ENEMY, 
@@ -730,21 +730,25 @@ void Game::setupBattle()
     getPerson(314)->setSprites(nullptr, new Sprite(
             base_path + "sprites/Battle/Battle_Persons/necross.png", renderer));
     getPerson(300)->setSprites(new Sprite(base_path + 
-        "sprites/Battle/Backs/manbear1_brown_grey.png", renderer), 
-        new Sprite(base_path + 
-        "sprites/Battle/Battle_Persons/myliria.png", renderer));
+        "sprites/Battle/Backs/manbear1_brown_grey.png", renderer), nullptr, 
+        new Sprite(base_path + "sprites/Map/Dialog/manbear_brown_grey.png", 
+        renderer));
     getPerson(301)->setSprites(new Sprite(base_path + 
-        "sprites/Battle/Backs/arcadius0.png", renderer), new Sprite(base_path + 
-        "sprites/Battle/Battle_Persons/arcadius.png", renderer));
+        "sprites/Battle/Backs/arcadius0.png", renderer), nullptr, 
+        new Sprite(base_path + "sprites/Map/Dialog/arcadius.png", 
+        renderer));
     getPerson(302)->setSprites(new Sprite(base_path + 
-        "sprites/Battle/Backs/player0.png", renderer), new Sprite(base_path + 
-        "sprites/Battle/Battle_Persons/player.png", renderer));
+        "sprites/Battle/Backs/player0.png", renderer), nullptr, 
+        new Sprite(base_path + "sprites/Battle/Battle_Persons/player.png", 
+        renderer));
     getPerson(303)->setSprites(new Sprite(base_path + 
-        "sprites/Battle/Backs/sarkova0.png", renderer), new Sprite(base_path + 
-        "sprites/Battle/Battle_Persons/sarkova.png", renderer));
+        "sprites/Battle/Backs/sarkova0.png", renderer), nullptr, 
+        new Sprite(base_path + "sprites/Battle/Battle_Persons/sarkova.png", 
+        renderer));
     getPerson(304)->setSprites(new Sprite(base_path + 
-        "sprites/Battle/Backs/subleezer0.png", renderer), new Sprite(base_path + 
-        "sprites/Battle/Battle_Persons/subleezer.png", renderer));
+        "sprites/Battle/Backs/subleezer0.png", renderer), nullptr, 
+        new Sprite(base_path + "sprites/Battle/Battle_Persons/subleezer.png", 
+        renderer));
 
     /* Set the ailments */
     battle_display->setAilment(Infliction::POISON, 
@@ -866,7 +870,7 @@ void Game::setupBattle()
     battle_display->setScope(ActionScope::ALL_TARGETS, base_path + 
         "sprites/Battle/Skills/Targets/all_AA_A00.png", renderer);
     battle_display->setScope(ActionScope::NOT_USER, base_path + 
-        "sprites/Battle/Skills/Targets/singlenotuser_AA_A00.png.png", renderer); 
+        "sprites/Battle/Skills/Targets/singlenotuser_AA_A00.png", renderer); 
     battle_display->setScope(ActionScope::ALL_NOT_USER, base_path + 
         "sprites/Battle/Skills/Targets/allnotuser_AA_A00.png", renderer);
 

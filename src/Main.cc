@@ -62,7 +62,7 @@ int main(int argc, char** argv)
   char* directory = SDL_GetBasePath();
   std::string dir_string(directory);
   SDL_free(directory);
-  
+ 
   /* Initialize SDL libraries */
   bool success = initSDL();
   

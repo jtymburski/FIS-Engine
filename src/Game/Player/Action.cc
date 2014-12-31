@@ -64,6 +64,80 @@ Action::Action(const std::string &raw)
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
+   
+/* Does the check against the indicated ignore flag */
+bool Action::atkDefFlag(IgnoreFlags test_flag, bool attack)
+{
+  if(attack)
+    return atkFlag(test_flag);
+  return defFlag(test_flag);
+}
+
+/*
+ * Description: Converts the ignore flag bits to a period delimited 
+ *              string.
+ *
+ * Inputs: bool attack - true if attack flag. Else defense
+ * Output: std::string - output string
+ */
+std::string Action::ignoreToStr(bool attack)
+{
+  std::string output = "";
+  bool elemental = false;
+  bool all = false;
+
+  /* Space saving setters */
+  if(atkDefFlag(IgnoreFlags::THERMAL | IgnoreFlags::POLAR | 
+                IgnoreFlags::PRIMAL | IgnoreFlags::CHARGED | 
+                IgnoreFlags::NIHIL | IgnoreFlags::CYBERNETIC, attack))
+  {
+    if(atkDefFlag(IgnoreFlags::PHYSICAL | IgnoreFlags::LUCK, attack))
+               //IgnoreFlags::ARMOR))
+    {
+      output += Helpers::combine("ALL", kDELIMITER_2);
+      all = true;
+    }
+    else
+    {
+      output += Helpers::combine("ELEMENTAL", kDELIMITER_2);
+    }
+    elemental = true;
+  }
+
+  /* No need to check if all is set */
+  if(!all)
+  {
+    if(atkDefFlag(IgnoreFlags::PHYSICAL, attack))
+      output += Helpers::combine("PHYSICAL", kDELIMITER_2);
+    if(atkDefFlag(IgnoreFlags::LUCK, attack))
+      output += Helpers::combine("LUCK", kDELIMITER_2);
+    if(atkDefFlag(IgnoreFlags::ARMOR, attack))
+      output += Helpers::combine("ARMOR", kDELIMITER_2);
+
+    /* No need to check if elemental is set */
+    if(!elemental)
+    {
+      if(atkDefFlag(IgnoreFlags::THERMAL, attack))
+        output += Helpers::combine("THERMAL", kDELIMITER_2);
+      if(atkDefFlag(IgnoreFlags::POLAR, attack))
+        output += Helpers::combine("POLAR", kDELIMITER_2);
+      if(atkDefFlag(IgnoreFlags::PRIMAL, attack))
+        output += Helpers::combine("PRIMAL", kDELIMITER_2);
+      if(atkDefFlag(IgnoreFlags::CHARGED, attack))
+        output += Helpers::combine("CHARGED", kDELIMITER_2);
+      if(atkDefFlag(IgnoreFlags::NIHIL, attack))
+        output += Helpers::combine("NIHIL", kDELIMITER_2);
+      if(atkDefFlag(IgnoreFlags::CYBERNETIC, attack))
+        output += Helpers::combine("CYBERNETIC", kDELIMITER_2);
+    }
+  }
+
+  /* Remove the last ., if it exists */
+  if(output.size() > 0)
+    output.pop_back();
+
+  return output;
+}
 
 /*
  * Description: Primary method for parsing the raw string. Divides the string up
@@ -73,7 +147,6 @@ Action::Action(const std::string &raw)
  * Inputs: raw - the raw string to be parsed into an action
  * Output: bool - the final validity of the Action
  */
-// TODO: We should probably make this XML??
 bool Action::parse(const std::string &raw)
 {
   action_flags |= ActionFlags::VALID;
@@ -176,7 +249,7 @@ bool Action::parse(const std::string &raw)
     /* Parse the chance occuring of the action */
     if (sub_strings.size() == 10 && sub_strings.at(9) != "")
     {
-      auto parse_chance = std::stoi(sub_strings.at(9));
+      auto parse_chance = std::stof(sub_strings.at(9));
       parseChance(parse_chance);
     }
     else
@@ -356,7 +429,10 @@ void Action::parseIgnoreFlags(IgnoreFlags& flag_set, const std::string &flags)
                   IgnoreFlags::NIHIL    | IgnoreFlags::LUCK;
     }
     if (s == "ELEMENTAL")
+    {
       flag_set &= ~IgnoreFlags::PHYSICAL;
+      flag_set &= ~IgnoreFlags::LUCK;
+    }
     else if (s == "PHYSICAL")
       flag_set |= IgnoreFlags::PHYSICAL;
     else if (s == "THERMAL")
@@ -624,8 +700,104 @@ uint32_t Action::getVariance() const
  */
 std::string Action::outputString()
 {
-  // Helpers::ailmentToStr(Infliction::POISION)
-  // TODO: Implementation
+  bool failed = false;
+  std::string output = "";
+
+  /* Pre-checks */
+  if(id >= 0)
+  {
+    /* Add the ID */
+    output += std::to_string(id) + kDELIMITER;
+
+    /* Add the action keyword */
+    if(actionFlag(ActionFlags::DAMAGE))
+      output += "DAMAGE";
+    else if(actionFlag(ActionFlags::ALTER))
+    {
+      output += "ALTER";
+      if(actionFlag(ActionFlags::FLIP_ATTR))
+        output += "-FLIP";
+    }
+    else if(actionFlag(ActionFlags::INFLICT))
+      output += "INFLICT";
+    else if(actionFlag(ActionFlags::RELIEVE))
+      output += "RELIEVE";
+    else if(actionFlag(ActionFlags::ASSIGN))
+    {
+      output += "ASSIGN";
+      if(actionFlag(ActionFlags::FLIP_ATTR))
+        output += "-FLIP";
+    }
+    else if(actionFlag(ActionFlags::REVIVE))
+      output += "REVIVE";
+    else
+      failed = true;
+    output += kDELIMITER;
+
+    /* If it's an INFLICT, add the min and max turn values */
+    if(actionFlag(ActionFlags::INFLICT))
+    {
+      output += std::to_string(getMin()) + kDELIMITER_2;
+      output += std::to_string(getMax());
+    }
+    output += kDELIMITER;
+
+    /* Loop through the attack elements that are protected from */
+    if(actionFlag(ActionFlags::DAMAGE))
+      output += ignoreToStr(true);
+    output += kDELIMITER;
+    if(actionFlag(ActionFlags::DAMAGE))
+      output += ignoreToStr(false);
+    output += kDELIMITER;
+
+    /* Check the user attribute / ailment */
+    if(actionFlag(ActionFlags::ASSIGN) || actionFlag(ActionFlags::ALTER))
+      output += Helpers::attributeToStr(user_attribute);
+    else if(actionFlag(ActionFlags::INFLICT) || 
+            actionFlag(ActionFlags::RELIEVE))
+    {
+      output += Helpers::ailmentToStr(ailment);
+    }
+    output += kDELIMITER;
+
+    /* Add the base damage / healing */
+    if(!(actionFlag(ActionFlags::INFLICT) || actionFlag(ActionFlags::RELIEVE)))
+    {
+      if(actionFlag(ActionFlags::BASE_PC))
+        output += "PC";
+      else
+        output += "AMOUNT";
+      output += kDELIMITER_2;
+
+      output += std::to_string(base);
+    }
+    output += kDELIMITER;
+
+    /* Add the variance to the base amount */
+    if(!(actionFlag(ActionFlags::INFLICT) || actionFlag(ActionFlags::RELIEVE)))
+    {
+      if(actionFlag(ActionFlags::VARI_PC))
+        output += "PC";
+      else
+        output += "AMOUNT";
+      output += kDELIMITER_2;
+
+      output += std::to_string(variance);
+    }
+    output += kDELIMITER;
+   
+    /* Check the target attribute / ailment */
+    if(actionFlag(ActionFlags::ASSIGN) || actionFlag(ActionFlags::ALTER))
+      output += Helpers::attributeToStr(target_attribute);
+    output += kDELIMITER;
+
+    /* Add the percent chance at the end */
+    output += std::to_string(chance);
+
+    /* Proceed to return output, if successful */
+    if(!failed)
+      return output;
+  }
   return "";
 }
 

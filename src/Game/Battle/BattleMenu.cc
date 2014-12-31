@@ -622,7 +622,7 @@ int32_t BattleMenu::getPartyTargetIndex(bool opposite)
 {
   if (opposite)
   {
-    for (size_t index = 0; index < valid_targets.size(); index++)
+    for (int16_t index = valid_targets.size() - 1; index >= 0; index--)
       if (valid_targets.at(index) < 0)
         return index;
   }
@@ -1070,10 +1070,12 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
       {
         change_index = false;
 
+        std::cout << element_index << std::endl;
         if (element_index == 0)
           element_index = getMaxIndex();
         else if (element_index == getMaxIndex())
           element_index = 0;
+        std::cout << element_index << ":" << getMaxIndex() << std::endl;
       }
     }
 

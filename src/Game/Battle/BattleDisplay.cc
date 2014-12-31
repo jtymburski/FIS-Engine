@@ -214,11 +214,11 @@ Frame* BattleDisplay::createActionFrame(Person* person,
     SDL_RenderDrawLine(renderer, x2, y2 + i, x1, y1 + i);
 
   /* Render the person */ // TODO: Fix - in person
-  Sprite* third_person = person->getThirdPerson();
-  if(third_person != NULL && third_person->isFramesSet())
-    third_person->render(renderer, person->getActionX(), person->getActionY(), 
-                         third_person->getCurrent()->getWidth() * 2, 
-                         third_person->getCurrent()->getHeight() * 2);
+  Sprite* action_frames = person->getActionFrames();
+  if(action_frames != NULL && action_frames->isFramesSet())
+    action_frames->render(renderer, person->getActionX(), person->getActionY(), 
+                          action_frames->getCurrent()->getWidth(), 
+                          action_frames->getCurrent()->getHeight());
 
   /* Try and chop out the base of the person */
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
@@ -1370,7 +1370,7 @@ bool BattleDisplay::setPersonState(Person* person, uint8_t index,
     state->tp = person->getThirdPerson();
    
     /* Set the third person action frame */
-    if(state->tp != NULL)
+    if(state->self != NULL)
       state->action = createActionFrame(state->self, renderer);
 
     /* Render the relevant info */
@@ -1782,9 +1782,10 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
     }
 
     /* TODO: Remove - testing */
-    if(friends_state[1] != NULL)
+    if(friends_state[0] != NULL)
     {
-      friends_state[1]->action->render(renderer, 
+      if(friends_state[0]->action != NULL)
+        friends_state[0]->action->render(renderer, 
                                    width - friends_state[1]->action->getWidth(), 
                                    kACTION_CENTER - kACTION_Y);
       Text t(font_action);

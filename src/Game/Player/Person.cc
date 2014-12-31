@@ -1,41 +1,40 @@
 /*******************************************************************************
-* Class Name: Person [Implementation]
-* Date Created: 
-* Inheritance: 
-* Description:
-*
-* Notes
-* -----
-*
-* [1]: AttributeSets outside of and during Battle:
-*
-* In & Out of Battle
-* -------------
-* base_stats - the level 1 stats of the Person calculated by battle_class + race
-* max_base_stats - the level max stats of the Person calc by battle_class + race
-* 
-* Out of Battle
-* -------------
-* curr_sats      - unused
-* curr_max_stats - normal stats between base and base max at the person's level
-* temp           - curr_max_stats + equipmemt
-*
-* In Battle
-* ---------
-* curr_stats     - displayed value of stats after Battle modifiers
-* curr_max_stats - possible reachable stat values after Battle modifiers
-* temp           - the normal value of stats before Batle modifiers
-*
-* See .h file for TODOs
-*******************************************************************************/
-
+ * Class Name: Person [Implementation]
+ * Date Created: 
+ * Inheritance: 
+ * Description:
+ *
+ * Notes
+ * -----
+ *
+ * [1]: AttributeSets outside of and during Battle:
+ *
+ * In & Out of Battle
+ * -------------
+ * base_stats - the level 1 stats of the Person calculated by battleclass + race
+ * max_base_stats - the level max stats of the Person calc by battleclass + race
+ * 
+ * Out of Battle
+ * -------------
+ * curr_sats      - unused
+ * curr_max_stats - normal stats between base and base max at the person's level
+ * temp           - curr_max_stats + equipmemt
+ *
+ * In Battle
+ * ---------
+ * curr_stats     - displayed value of stats after Battle modifiers
+ * curr_max_stats - possible reachable stat values after Battle modifiers
+ * temp           - the normal value of stats before Batle modifiers
+ *
+ * See .h file for TODOs
+ ******************************************************************************/
 #include "Game/Battle/AIModule.h"
 #include "Game/Player/Person.h"
 
 /*=============================================================================
  * CONSTANTS - See implementation for details
  *============================================================================*/
-const uint8_t  Person::kACTION_X = 28;
+const uint8_t  Person::kACTION_X = 60;
 const uint8_t  Person::kACTION_Y = 128;
 const size_t   Person::kNUM_LEVELS{127};     
 const size_t   Person::kNUM_EQUIP_SLOTS{5}; 
@@ -183,6 +182,7 @@ void Person::loadDefaults()
   
   first_person = nullptr;
   third_person = nullptr;
+  action_frames = nullptr;
 }
 
 /*
@@ -271,6 +271,7 @@ void Person::setupClass()
     /* Comes from base person, if not null */
     first_person = base_person->first_person;
     third_person = base_person->third_person;
+    action_frames = base_person->action_frames;
   }
 }
 
@@ -1172,13 +1173,25 @@ bool Person::resetGuardee()
 }
 
 /*
+ * Description: Returns the action frames for the person - for the rendering
+ *              swipe-away.
+ *
+ * Inputs: none
+ * Output: Sprite* - the sprite pointer
+ */
+Sprite* Person::getActionFrames()
+{
+  return action_frames;
+}
+
+/*
  * Description: Returns the rendering action X offset in the swipe away in the
  *              battle.
  *
  * Inputs: none
- * Output: uint8_t - x offset
+ * Output: int16_t - x offset
  */
-uint8_t Person::getActionX()
+int16_t Person::getActionX()
 {
   return action_x;
 }
@@ -1188,9 +1201,9 @@ uint8_t Person::getActionX()
  *              battle.
  *
  * Inputs: none
- * Output: uint8_t - y offset
+ * Output: int16_t - y offset
  */
-uint8_t Person::getActionY()
+int16_t Person::getActionY()
 {
   return action_y;
 }
@@ -1812,7 +1825,7 @@ std::vector<ActionType> Person::getValidActions()
  *         uint8_t action_y - the y direction offset
  * Output: none
  */
-void Person::setActionXY(uint8_t action_x, uint8_t action_y)
+void Person::setActionXY(int16_t action_x, int16_t action_y)
 {
   this->action_x = action_x;
   this->action_y = action_y;
@@ -2103,17 +2116,28 @@ bool Person::setLoot(const uint32_t &new_credit_drop,
  *
  * Inputs: new_fp - pointer to a first person sprite
  *         new_tp - pointer to a third person sprite
+ *         new_action - pointer to an action frame sprite
  * Output: none
  */
-void Person::setSprites(Sprite* new_fp, Sprite* new_tp)
+void Person::setSprites(Sprite* new_fp, Sprite* new_tp, Sprite* new_action)
 {
+  /* Set first person */
   if(first_person != nullptr)
-    delete first_person;
+    if(base_person == nullptr || base_person->first_person != first_person)
+      delete first_person;
   first_person = new_fp;
 
+  /* Set third person */
   if(third_person != nullptr)
-    delete third_person;
+    if(base_person == nullptr || base_person->third_person != third_person)
+      delete third_person;
   third_person = new_tp;
+
+  /* Set action frames */
+  if(action_frames != nullptr)
+    if(action_frames == nullptr || base_person->action_frames != action_frames)
+      delete action_frames;
+  action_frames = new_action;
 }
 
 /*=============================================================================

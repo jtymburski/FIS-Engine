@@ -115,6 +115,9 @@ public:
   /* Return enumerated Ailment to String */
   static std::string ailmentToStr(const Infliction &ail);
 
+  /* Returns the enumerated Attribute to String */
+  static std::string attributeToStr(Attribute attribute);
+
   /* Get the string of a roman numeral from a value */
   static std::string numToRoman(int value);
 
@@ -142,6 +145,9 @@ public:
    * iterations */
   static std::vector<uint32_t> buildExpTable(const uint32_t &min, 
       const uint32_t &max, const uint32_t &iter);
+   
+  /* Appends char and string together */
+  static std::string combine(std::string s, char c, bool before = false); 
   
   /* Splites the string into a grid based on the frame naming convention */
   static std::vector<std::vector<std::string>> frameSeparator(
