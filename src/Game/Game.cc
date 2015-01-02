@@ -484,6 +484,7 @@ void Game::setupBattle()
   physical_skills->addSkill(life_steal, 1);
   physical_skills->addSkill(poison, 1);
   physical_skills->addSkill(burn, 1);
+  physical_skills->addSkill(paralysis, 1);
   physical_skills->addSkill(scald, 1);
   physical_skills->addSkill(charr, 1);
   physical_skills->addSkill(berserk, 1);

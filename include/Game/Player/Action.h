@@ -103,18 +103,13 @@
 *       - Revive a target with 25% +/- 10 VITA with 90% efficiency
 *
 *   [2.5]: Inflict Actions
-*     [2.5.1]: To inflict the user, leave the target attribtue blank. To inflict
-*              the target, fill in the target attribute with VITA
-*     500,INFLICT,2.7,,POISON,,,,VITA,90
+*     500,INFLICT,2.7,,POISON,,,,,90
 *       - Inflict POISON lasting 2-7 turns on the target with 90% chance
 *     501,INFLICT,1.3,,BURN,,,,,100
 *       - Burn the target for 1-3 turns with 100% chance
 *
 *   [2.6]: Relieve Actions
-*     [2.6.1]: To relieve the user of an ailment [when also doing something
-*              else to the target], leave the target attribute blank. To relieve
-*              the target, fill in the target attribtue with VITA
-*     600,RELIEVE,,POISON,,,,VITA,100
+*     600,RELIEVE,,POISON,,,,,100
 *       - Relieve the target of poison with 100% chance
 * --------
 *

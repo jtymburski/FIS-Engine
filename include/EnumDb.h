@@ -18,7 +18,7 @@
 
 /*==============================================================================
  * GLOBAL ENUMS
- *============================================================================*/
+ *=======================================b=====================================*/
 
 /*
  * Description: Possible occasions for an action (scenarios where the action
@@ -155,33 +155,6 @@ enum class ActionType : std::uint8_t
 };
 
 /*
- * Description: ActorDeath - describes reasons for an actor becoming
- *              incapacitated.
- *
- * STANDARD_DMG - the actor was struck down by normal battle damage
- * POISON_DMG - the actor was struck down by incurred upkeep posion damage
- * BURN_DMG - the actor was struck down by incurred upkeep burn damage
- * BERSERK_HIT_BACK - the actor was struck by self berserk damage
- * METABOLIC_TETHER - the metabolic tether randomnly killed the ActorDeath
- * METABOLIC_DMG - the metabolic tether damage killed the actor
- * DEATH_COUNTDOWN - a death clock killed the actor
- * BOND_DEAD - the user was killed due to the effects of Bond/Bonded
- * UNKNOWN_DEATH - the actor was killed for unknown reasons.
- */
-enum class ActorDeath : std::uint16_t
-{ 
-  STANDARD_DMG,
-  POISON_DMG,
-  BURN_DMG,
-  BERSERK_HIT_BACK,
-  METABOLIC_TETHER,
-  METABOLIC_DMG,
-  DEATH_COUNTDOWN,
-  BOND,
-  UNKNOWN
-};
-
-/*
  * Description: The Attribute enumerations are representations of the
  *              statistics contained within Battle-related entities: Persons,
  *              Items, BubbyFlavours, Equipments, etc.
@@ -231,6 +204,52 @@ enum class Attribute : std::uint8_t
   UNBR = 18,
   MANN = 19,
   NONE = 20
+};
+
+enum class BattleEventType : std::uint8_t
+{
+  ITEM_USE = 1,
+  SKILL_USE = 2,
+  SKILL_USE_FIZZLE = 3,
+  SKILL_COOLDOWN = 4,
+  IMPLODE = 5,
+  INSPECT = 6,
+  ATTEMPT_RUN = 7,
+  SUCCEED_RUN = 8,
+  FAIL_RUN = 9,
+  MISS_TURN = 10,
+  PASS = 11,
+  SKILL_MISS = 12,
+  ACTION_MISS = 13,
+  BLIND_MISS = 14,
+  DREAMSNARE_MISS = 15,
+  FIZZLE = 16,
+  STANDARD_DAMAGE = 17,
+  CRITICAL_DAMAGE = 18,
+  POISON_DAMAGE = 19,
+  BURN_DAMAGE = 20,
+  HITBACK_DAMAGE = 21,
+  METABOLIC_KILL = 22,
+  METABOLIC_DAMAGE = 23,
+  DEATH_COUNTDOWN = 24,
+  BOND = 25,
+  BONDING = 26,
+  PERSIST_DEFEND = 27,
+  BREAK_DEFEND = 28,
+  PERSIST_GUARD = 29,
+  BREAK_GUARD = 30,
+  FAIL_GUARD = 31,
+  DEATH = 32,
+  INFLICTION = 33,
+  CURE_INFLICTION = 34,
+  ALTERATION = 35,
+  ASSIGNMENT = 36,
+  REVIVAL = 37,
+  HEAL_HEALTH = 38,
+  REGEN_HEALTH = 39,
+  HEAL_QD = 40,
+  REGEN_QD = 41,
+  NONE = 42
 };
 
 /*

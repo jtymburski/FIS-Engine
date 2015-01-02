@@ -9,6 +9,7 @@
 *
 * TODO
 * ----
+* [12-30-14]: Break up processing and performing of actions
 * [03-01-14]: Weather updates
 * [08-01-14]: Battle front end
 * [08-24-14]: Finish battle run functionality
@@ -32,26 +33,47 @@
 using std::begin;
 using std::end;
 
+struct BattleEvent
+{
+  BattleEventType type;
+
+  Action* action_use;
+  Item*  item_use;
+  Skill* skill_use;
+  Person* user;
+  std::vector<Person*> targets;
+  int32_t amount;
+  bool happens;
+
+  BattleEvent() : action_use{nullptr}, item_use{nullptr}, 
+      skill_use{nullptr}, user{nullptr} {}
+};
+
 /* CombatState enumerated flags */
 ENUM_FLAGS(CombatState)
 enum class CombatState
 {
-  CONFIGURED       = 1 << 0,
-  FLAGS_CONFIGURED = 1 << 1,
-  ACTION_DONE      = 1 << 2,
-  PHASE_DONE       = 1 << 3,
-  VICTORY          = 1 << 4,
-  LOSS             = 1 << 5,
-  ALLIES_RUN       = 1 << 6,
-  ENEMIES_RUN      = 1 << 7,
-  OUTCOME_DONE     = 1 << 8,
-  ERROR_STATE      = 1 << 9,
-  RANDOM_ENCOUNTER = 1 << 10,
-  MINI_BOSS        = 1 << 11,
-  BOSS             = 1 << 12,
-  FINAL_BOSS       = 1 << 13,
-  PROCESSING_SKILL = 1 << 14,
-  PROCESSING_ITEM  = 1 << 15
+  CONFIGURED         = 1 << 0,
+  FLAGS_CONFIGURED   = 1 << 1,
+  ACTION_DONE        = 1 << 2,
+  PHASE_DONE         = 1 << 3,
+  VICTORY            = 1 << 4,
+  LOSS               = 1 << 5,
+  ALLIES_RUN         = 1 << 6,
+  ENEMIES_RUN        = 1 << 7,
+  OUTCOME_DONE       = 1 << 8,
+  ERROR_STATE        = 1 << 9,
+  RANDOM_ENCOUNTER   = 1 << 10,
+  MINI_BOSS          = 1 << 11,
+  BOSS               = 1 << 12,
+  FINAL_BOSS         = 1 << 13,
+  PROCESSING_SKILL   = 1 << 14,
+  PROCESSING_ITEM    = 1 << 15,
+  READY_TO_RENDER    = 1 << 16,
+  RENDERING_COMPLETE = 1 << 17,
+  BEGIN_PROCESSING   = 1 << 18,
+  BEGIN_ACTION_PROCESSING = 1 << 19,
+  ACTION_PROCESSING_COMPLETE = 1 << 20
 };
 
 ENUM_FLAGS(IgnoreState)
@@ -178,8 +200,10 @@ private:
   Person* curr_user;
   Person* curr_target;
   Action* curr_action;
+  uint32_t curr_action_index;
   Skill*  curr_skill;
   Item*   curr_item;
+  std::vector<BattleEvent> curr_events;
 
   /* Current pocessing target index */
   uint32_t pro_index;
@@ -254,6 +278,9 @@ private:
   /* Attempts to add an ailment to the vector of ailments */
   bool addAilment(Infliction infliction_type, Person* inflictor,
       uint16_t min_turns, uint16_t max_turns, int32_t chance);
+  
+  /* Set the next action index, true if valid */
+  bool nextActionIndex();
 
   /* Attempts to remove an ailment from the vector */
   bool removeAilment(Ailment* remove_ailment);
@@ -347,11 +374,14 @@ private:
   /* Deals with character related upkeep */
   void personalUpkeep(Person* const target);
 
+  /* Process the events of the Battle */
+  void processBattleEvents();
+
   /* Determines the Regen % for a given enumerated regeneration rate */
   int16_t getRegenFactor(const RegenRate &regen_rate);
 
   /* General processing action function */
-  bool processAction(std::vector<Person*> targets,
+  bool processAction(BattleEvent action_event,
       std::vector<DamageType> damage_types);
 
   /* Processes an alteration action */
@@ -363,7 +393,7 @@ private:
       Person* factor_target);
 
   /* Processes a damaging action */
-  bool processDamageAction(const DamageType &damage_type);
+  bool processDamageAction(BattleEvent damage_event, const DamageType &damage_type);
 
   /* Method for outsourcing an amount of dmg and type of damage to curr targ */
   bool processDamageAmount(int32_t amount, DamageType damage_type);
@@ -468,6 +498,7 @@ public:
 
   /* Methods to print information about the Battle */
   void printAll(const bool &simple, const bool &flags, const bool &party);
+  void printEvents();
   void printPartyState();
   void printPersonState(Person* const member, const int32_t &person_index);
   void printInventory(Party* const target_party);

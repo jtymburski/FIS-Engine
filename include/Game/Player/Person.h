@@ -247,6 +247,9 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Begin processing the actions on the buffer */
+  void beginProcessActions();
+
   /* Loads the default values for the Person */
   void loadDefaults();
 
