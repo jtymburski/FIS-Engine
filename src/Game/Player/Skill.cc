@@ -51,8 +51,8 @@ Skill::Skill()
     , message{""}
     , primary{Element::NONE}
     , secondary{Element::NONE}
-    , sound_effect{nullptr}
     , scope{ActionScope::NO_SCOPE}
+    , sound_effect{nullptr}
     , thumbnail{nullptr}
     , value{0}
 {}

@@ -71,9 +71,10 @@ enum class CombatState
   PROCESSING_ITEM    = 1 << 15,
   READY_TO_RENDER    = 1 << 16,
   RENDERING_COMPLETE = 1 << 17,
-  BEGIN_PROCESSING   = 1 << 18,
-  BEGIN_ACTION_PROCESSING = 1 << 19,
-  ACTION_PROCESSING_COMPLETE = 1 << 20
+  PERFORMING_COMPLETE = 1 << 18,
+  BEGIN_PROCESSING   = 1 << 19,
+  BEGIN_ACTION_PROCESSING = 1 << 20,
+  ACTION_PROCESSING_COMPLETE = 1 << 21
 };
 
 ENUM_FLAGS(IgnoreState)
@@ -371,11 +372,14 @@ private:
   /* Orders the actions on the buffer by speed of the aggressor */
   void orderActions();
 
+  /* Perform the Battle events */
+  void performEvents();
+
   /* Deals with character related upkeep */
   void personalUpkeep(Person* const target);
 
   /* Process the events of the Battle */
-  void processBattleEvents();
+  void processBuffer();
 
   /* Determines the Regen % for a given enumerated regeneration rate */
   int16_t getRegenFactor(const RegenRate &regen_rate);
@@ -408,11 +412,8 @@ private:
   bool processInflictAction();
 
   /* Processes an individual action from a user against targets */
-  bool processSkill(std::vector<Person*> targets, 
+  void processSkill(std::vector<Person*> targets, 
       std::vector<DamageType> damage_types);
-
-  /* Process the actions (Items & Skills) in the buffer */
-  void processBuffer();
 
   /* Processes a guard action with curr_user and curr_target */
   bool processGuard();
