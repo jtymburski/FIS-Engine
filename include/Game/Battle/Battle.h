@@ -80,14 +80,15 @@ enum class CombatState
 ENUM_FLAGS(IgnoreState)
 enum class IgnoreState
 {
-  IGNORE_PHYS_ATK = 1 << 0,
-  IGNORE_PHYS_DEF = 1 << 1,
-  IGNORE_PRIM_ATK = 1 << 2,
-  IGNORE_PRIM_DEF = 1 << 3,
-  IGNORE_SECD_ATK = 1 << 4,
-  IGNORE_SECD_DEF = 1 << 5,
-  IGNORE_LUCK_ATK = 1 << 6,
-  IGNORE_LUCK_DEF = 1 << 7
+  IGNORE_PHYS_ATK  = 1 << 0,
+  IGNORE_PHYS_DEF  = 1 << 1,
+  IGNORE_PRIM_ATK  = 1 << 2,
+  IGNORE_PRIM_DEF  = 1 << 3,
+  IGNORE_SECD_ATK  = 1 << 4,
+  IGNORE_SECD_DEF  = 1 << 5,
+  IGNORE_LUCK_ATK  = 1 << 6,
+  IGNORE_LUCK_DEF  = 1 << 7,
+  IGNORE_EQUIPMENT = 1 << 8,
 };
 
 /* Enumerated values for turn mode */
@@ -204,7 +205,7 @@ private:
   uint32_t curr_action_index;
   Skill*  curr_skill;
   Item*   curr_item;
-  std::vector<BattleEvent> curr_events;
+  std::vector<BattleEvent*> curr_events;
 
   /* Current pocessing target index */
   uint32_t pro_index;
@@ -280,6 +281,14 @@ private:
   bool addAilment(Infliction infliction_type, Person* inflictor,
       uint16_t min_turns, uint16_t max_turns, int32_t chance);
   
+  void clearEvents();
+
+  /* Create a BattleEvent */
+  BattleEvent* createEvent(BattleEventType type, Person* user, Person* target);
+  BattleEvent* createEvent(BattleEventType type, Person* user,
+                   std::vector<Person*> targets);
+  BattleEvent* createEvent(BattleEventType type, Skill* skill_use,bool happens);
+
   /* Set the next action index, true if valid */
   bool nextActionIndex();
 
@@ -385,7 +394,7 @@ private:
   int16_t getRegenFactor(const RegenRate &regen_rate);
 
   /* General processing action function */
-  bool processAction(BattleEvent action_event,
+  bool processAction(BattleEvent* action_event,
       std::vector<DamageType> damage_types);
 
   /* Processes an alteration action */
@@ -397,7 +406,7 @@ private:
       Person* factor_target);
 
   /* Processes a damaging action */
-  bool processDamageAction(BattleEvent damage_event, const DamageType &damage_type);
+  bool processDamageAction(BattleEvent* damage_event, const DamageType &damage_type);
 
   /* Method for outsourcing an amount of dmg and type of damage to curr targ */
   bool processDamageAmount(int32_t amount, DamageType damage_type);

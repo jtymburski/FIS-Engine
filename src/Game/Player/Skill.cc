@@ -50,8 +50,8 @@ Skill::Skill()
     , id{kUNSET_ID}
     , message{""}
     , primary{Element::NONE}
-    , secondary{Element::NONE}
     , scope{ActionScope::NO_SCOPE}
+    , secondary{Element::NONE}
     , sound_effect{nullptr}
     , thumbnail{nullptr}
     , value{0}
