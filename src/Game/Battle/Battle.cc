@@ -227,10 +227,10 @@ bool Battle::addAilment(Infliction infliction_type, Person* inflictor,
 }
 
 /*
- * Description:
+ * Description: Clears and frees elements of the BattleEvent curr_events.
  *
- * Inputs: 
- * Output:
+ * Inputs: none
+ * Output: none
  */
 void Battle::clearEvents()
 {
@@ -245,10 +245,12 @@ void Battle::clearEvents()
 }
 
 /*
- * Description:
+ * Description: Creates a BattleEvent with a type, user and single target.
  *
- * Inputs: 
- * Output:
+ * Inputs: BattleEventType type - the type of BattleEvent
+ *         Person* user - the user of the BattleEvent
+ *         Person* target - single target of the BattleEvent.
+ * Output: BattleEvent* - pointer to the newly created event.
  */
 BattleEvent* Battle::createEvent(BattleEventType type, Person* user, 
     Person* target)
@@ -264,10 +266,12 @@ BattleEvent* Battle::createEvent(BattleEventType type, Person* user,
 }
 
 /*
- * Description:
+ * Description: Creates a BattleEvent with a type, user and vector of targets.
  *
- * Inputs: 
- * Output:
+ * Inputs: BattleEventType type - the type of BattleEvent
+ *         Person* user - the user of the BattleEvent
+ *         std::vector<Person*> targets - the targets for the new event.
+ * Output: BattleEvent* - pointer to the newly created event.
  */
 BattleEvent* Battle::createEvent(BattleEventType type, Person* user,
     std::vector<Person*> targets)
@@ -282,10 +286,13 @@ BattleEvent* Battle::createEvent(BattleEventType type, Person* user,
 }
 
 /*
- * Description:
+ * Description: Creates a BattleEvent with a type, Skill* and whether the skill
+ *              happens boolean value.
  *
- * Inputs: 
- * Output:
+ * Inputs: BattleEventType type - the type of BattleEvent to create
+ *         Skill* skill_use - the skill use occuring in the event
+ *         bool happens - true if the Skill is successfully used.
+ * Output: BattleEvent* - pointer to the recently created event.
  */
 BattleEvent* Battle::createEvent(BattleEventType type, Skill* skill_use,
     bool happens)
@@ -2056,7 +2063,6 @@ bool Battle::processAction(BattleEvent* battle_event,
         std::cout << "Factor Target: " << factor_target->getName()<< std::endl;
       }
 
-
       std::vector<Person*> target_vec{action_target};
       battle_event->targets = target_vec;
 
@@ -2228,27 +2234,33 @@ bool Battle::processDamageAction(BattleEvent* damage_event,
   bool crit_happens = doesActionCrit();
         
   if (crit_happens)
+  {
+    damage_event->type = BattleEventType::CRITICAL_DAMAGE;
     actual_crit_factor = calcCritFactor();
+  }
+  else
+    damage_event->type = BattleEventType::STANDARD_DAMAGE;
 
-  std::cout << "CALCULATING BASE DAMAGE " << std::endl;
   auto base_damage = calcBaseDamage(actual_crit_factor, damage_type);
-  auto damage_mod   = curr_user->getDmgMod();
+  auto damage_mod  = curr_user->getDmgMod();
   auto damage = static_cast<int32_t>(base_damage * damage_mod);
 
   damage = Helpers::setInRange(damage, kMINIMUM_DAMAGE, kMAXIMUM_DAMAGE);
         
   if (crit_happens && getBattleMode() == BattleMode::TEXT)
-  {
     std::cout << "{CRITICAL} - The strike is critical!" << std::endl;
-  }
 
-  damage_event->type    = BattleEventType::STANDARD_DAMAGE;
   damage_event->amount  = damage;
   curr_events.push_back(damage_event);
 
-  //TODO - Check for death event
-  // auto done = processDamageAmount(damage, DamageType::BASE);
-  
+  /* If the damage done exceeds the person's health, the damage dealt to them
+   * will kill them, so a death event will needed to be appended. */
+  if (curr_target->getCurr().getStat(Attribute::VITA) <= damage)
+  {
+    auto death = createEvent(BattleEventType::DEATH, nullptr, curr_target);
+    curr_events.push_back(death);
+  }
+
   if (hasInfliction(Infliction::BERSERK, curr_user))
   {
     auto hitback = base_damage * Ailment::getBerserkHitbackPC();
@@ -2259,8 +2271,11 @@ bool Battle::processDamageAction(BattleEvent* damage_event,
     hitback_event->amount = hitback;
     curr_events.push_back(hitback_event);
 
-    //TODO - Check for death event
-    // done &= processDamageAmount(hitback, DamageType::HITBACK);
+    if (curr_user->getCurr().getStat(Attribute::VITA) <= hitback)
+    {
+      auto death = createEvent(BattleEventType::DEATH, nullptr, curr_user);
+      curr_events.push_back(death);
+    }
   }
 
   return done;
@@ -2555,8 +2570,7 @@ void Battle::processSkill(std::vector<Person*> targets, std::vector<DamageType>
                         curr_user, curr_target);
       action->action_use = curr_action;
       action->skill_use  = curr_skill;
-        
-      std::cout << "!!! Processing action !!!" << std::endl;
+
       processAction(action, damage_types);   
     }
   }
@@ -2565,7 +2579,7 @@ void Battle::processSkill(std::vector<Person*> targets, std::vector<DamageType>
     setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
   }
 
-        curr_action_index++;
+  curr_action_index++;
 }
 
 /*
@@ -3574,7 +3588,7 @@ void Battle::printEvents()
         std::cout << "Target: " << target->getName() << std::endl;
 
     std::cout << "Amount: " << event->amount << std::endl;
-    std::cout << "Happens? " << event->happens << std::endl;
+    std::cout << "Happens? " << event->happens << std::endl << std::endl;
   }
 }
 
