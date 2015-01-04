@@ -122,6 +122,7 @@ BattleDisplay::BattleDisplay(Options* running_config)
   rendering_state = TurnState::DESTRUCT;
   show_info = false;
   system_options = NULL;
+  temp_sprite = NULL;
 
   /* Set up variables */
   setConfiguration(running_config);
@@ -1086,6 +1087,10 @@ bool BattleDisplay::renderFoes(SDL_Renderer* renderer, uint16_t screen_width)
     {
       success = foes_state[i]->tp->render(renderer, screen_width - 
                               kPERSON_WIDTH - i * kPERSON_SPREAD, kFOES_OFFSET);
+      
+      if(i == 1 && temp_sprite != NULL)
+        temp_sprite->render(renderer, 
+               screen_width - kPERSON_WIDTH - i * kPERSON_SPREAD, kFOES_OFFSET);
     }
   }
   
@@ -1854,6 +1859,14 @@ bool BattleDisplay::setBattle(Battle* battle, SDL_Renderer* renderer)
 
     this->battle = battle;
 
+    /* TODO: Temporary - battle testing */
+    temp_sprite = new Sprite(system_options->getBasePath() + 
+                    "sprites/Battle/Pleps/scaldplep_AA_A", 5, ".png", renderer);
+    for(uint16_t i = 0; i < 15; i++)
+      temp_sprite->insertTail(system_options->getBasePath() + 
+                              "sprites/blank.png", renderer);
+    temp_sprite->setAnimationTime(90);
+
     /* Start the battle */
     success &= startBattle(renderer);
 
@@ -2313,6 +2326,7 @@ bool BattleDisplay::update(int cycle_time)
       offset_2 -= 1216;
     //midlays.front()->setOpacity(midlays.front()->getOpacity() - 1);
   }
+  temp_sprite->update(cycle_time);
 
   return true;
 }
