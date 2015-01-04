@@ -251,7 +251,6 @@ enum class BattleEventType : std::uint8_t
   REGEN_HEALTH = 41,
   HEAL_QD = 42,
   REGEN_QD = 43,
-  START_DEFEND = 44,
   NONE = 45
 };
 
