@@ -46,7 +46,7 @@ struct BattleEvent
   bool happens;
 
   BattleEvent() : action_use{nullptr}, item_use{nullptr}, 
-      skill_use{nullptr}, user{nullptr} {}
+      skill_use{nullptr}, user{nullptr}, amount{0} {}
 };
 
 /* CombatState enumerated flags */
@@ -55,7 +55,7 @@ enum class CombatState
 {
   CONFIGURED         = 1 << 0,
   FLAGS_CONFIGURED   = 1 << 1,
-  ACTION_DONE        = 1 << 2,
+  ACTION_DONE        = 1 << 2, // Needed?
   PHASE_DONE         = 1 << 3,
   VICTORY            = 1 << 4,
   LOSS               = 1 << 5,

@@ -1698,6 +1698,20 @@ void Battle::orderActions()
 void Battle::performEvents()
 {
   std::cout << "---- Performing Events ----" << std::endl;
+  
+  for (auto &event : curr_events)
+  {
+    if (event->type == BattleEventType::BEGIN_DEFEND)
+    {
+      event->user->setBFlag(BState::DEFENDING, true);
+
+      if (getBattleMode() == BattleMode::TEXT)
+      {
+        std::cout << "{DEFEND} " << curr_user->getName() << " is now defending "
+                  << "themselves from damage." << std::endl;
+      }  
+    }
+  }
 }
 
 /*
@@ -1791,6 +1805,7 @@ void Battle::processBuffer()
 {
   std::cout << "--- Processing Battle Events ---" << std::endl;
   auto last_buffer_index = false;
+  
   setBattleFlag(CombatState::RENDERING_COMPLETE, false);
   
   /* Set the next buffer index of the processing has been completed for the
@@ -1827,15 +1842,6 @@ void Battle::processBuffer()
     {
       auto event = createEvent(BattleEventType::START_DEFEND,curr_user,nullptr);
       curr_events.push_back(event);
-
-      //  Current user is now defending themselves from damage actions 
-      // curr_user->setBFlag(BState::DEFENDING, true);
-
-      if (getBattleMode() == BattleMode::TEXT)
-      {
-        std::cout << "{DEFEND} " << curr_user->getName() << " is now defending "
-                  << "themselves from damage." << std::endl;
-      }
     }
     else if (curr_action_type == ActionType::GUARD)
     {
@@ -2474,80 +2480,81 @@ void Battle::processSkill(std::vector<Person*> targets, std::vector<DamageType>
           setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
         }
 
+        std::cout << "Setting curr action index: " << curr_action_index << std::endl;
         curr_action_index = 0;
       }
 
-      /* Else, process action index and increment the action index */
-        auto effects = curr_skill->getEffects();
+  /* Else, process action index and increment the action index */
+  auto effects = curr_skill->getEffects();
 
-        /* Grab the enumerated attribute types related to the elements of the Skill */
-        auto prim_stats = Helpers::elementToStats(curr_skill->getPrimary());
-        auto secd_stats = Helpers::elementToStats(curr_skill->getSecondary());
+  /* Grab the enumerated attribute types related to the elements of the Skill */
+  auto prim_stats = Helpers::elementToStats(curr_skill->getPrimary());
+  auto secd_stats = Helpers::elementToStats(curr_skill->getSecondary());
 
-        prim_off = prim_stats.first;
-        prim_def = prim_stats.second;
-        secd_off = secd_stats.first;
-        secd_def = secd_stats.second;
+  prim_off = prim_stats.first;
+  prim_def = prim_stats.second;
+  secd_off = secd_stats.first;
+  secd_def = secd_stats.second;
 
-        /* Update the temporary copy of the User's current stats */
-        temp_user_stats     = AttributeSet(curr_user->getCurr());
-        temp_user_max_stats = AttributeSet(curr_user->getTemp());
+  /* Update the temporary copy of the User's current stats */
+  temp_user_stats     = AttributeSet(curr_user->getCurr());
+  temp_user_max_stats = AttributeSet(curr_user->getTemp());
 
-        /* Build vectors of curr and curr_max stas for each target */
-        for (auto jt = begin(targets); jt != end(targets); ++jt)
-        {
-          temp_target_stats.push_back(AttributeSet((*jt)->getCurr()));
-          temp_target_max_stats.push_back(AttributeSet((*jt)->getTemp()));
-        }
+  /* Build vectors of curr and curr_max stas for each target */
+  for (auto jt = begin(targets); jt != end(targets); ++jt)
+  {
+    temp_target_stats.push_back(AttributeSet((*jt)->getCurr()));
+    temp_target_max_stats.push_back(AttributeSet((*jt)->getTemp()));
+  }
  
-        /* User ref. vars related to prim/secd skill attributes, -1 if Attr:NONE */
-        auto prim_user_off = temp_user_stats.getStat(prim_off);
-        auto prim_user_def = temp_user_stats.getStat(prim_def);
-        auto secd_user_off = temp_user_stats.getStat(secd_off);
-        auto secd_user_def = temp_user_stats.getStat(secd_def);
+  /* User ref. vars related to prim/secd skill attributes, -1 if Attr:NONE */
+  auto prim_user_off = temp_user_stats.getStat(prim_off);
+  auto prim_user_def = temp_user_stats.getStat(prim_def);
+  auto secd_user_off = temp_user_stats.getStat(secd_off);
+  auto secd_user_def = temp_user_stats.getStat(secd_def);
 
-        if (curr_user->getPrimary() == curr_skill->getPrimary())
-        {
-          prim_user_off *= kOFF_PRIM_ELM_MODIFIER;
-          prim_user_def *= kDEF_PRIM_ELM_MODIFIER;
-        }
-        else if (curr_user->getSecondary() == curr_skill->getSecondary())
-        {
-          secd_user_off *= kOFF_SECD_ELM_MODIFIER;
-          secd_user_def *= kDEF_SECD_ELM_MODIFIER;
-        }
+  if (curr_user->getPrimary() == curr_skill->getPrimary())
+  {
+    prim_user_off *= kOFF_PRIM_ELM_MODIFIER;
+    prim_user_def *= kDEF_PRIM_ELM_MODIFIER;
+  }
+  else if (curr_user->getSecondary() == curr_skill->getSecondary())
+  {
+    secd_user_off *= kOFF_SECD_ELM_MODIFIER;
+    secd_user_def *= kDEF_SECD_ELM_MODIFIER;
+  }
 
-        /* Assert the current action index is within effects range, then
-         * compute the outcome for the effect for every target, and prepare
-         * the outcomes for rendering */
-        if (curr_action_index < effects.size())
-        {
-          curr_action = effects.at(curr_action_index);
-
-          if (doesActionHit())
-          {
-            for (auto it = begin(targets); it != end(targets); ++it)
-            {
-              auto action = createEvent(BattleEventType::SKILL_USE,
-                              curr_user, targets);
-              action->skill_use = curr_skill;
-              
-              processAction(action, damage_types);
-            }          
-          }
-          else
-          {
-            auto action_miss = createEvent(BattleEventType::ACTION_MISS, 
-                                   curr_user, nullptr);
-            action_miss->happens = false;
-            action_miss->action_use = curr_action;
-            curr_events.push_back(action_miss);
-          }
-        }
-        else
-        {
-          setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
-        }
+  /* Assert the current action index is within effects range, then
+   * compute the outcome for the effect for every target, and prepare
+   * the outcomes for rendering */
+  if (curr_action_index < effects.size())
+  {
+    curr_action = effects.at(curr_action_index);
+    if (doesActionHit())
+    {
+      for (auto it = begin(targets); it != end(targets); ++it)
+      {
+        auto action = createEvent(BattleEventType::SKILL_USE,
+                        curr_user, targets);
+        action->skill_use = curr_skill;
+        
+        std::cout << "--- Processing action" << std::endl;
+        processAction(action, damage_types);
+      }          
+    }
+    else
+    {
+      auto action_miss = createEvent(BattleEventType::ACTION_MISS, 
+                             curr_user, nullptr);
+      action_miss->happens = false;
+      action_miss->action_use = curr_action;
+      curr_events.push_back(action_miss);
+    }
+  }
+  else
+  {
+    setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
+  }
 
         curr_action_index++;
 }
@@ -3291,8 +3298,6 @@ void Battle::setNextTurnState()
     {
       setTurnState(TurnState::PROCESS_ACTIONS);
       action_buffer->print(false);
-      setBattleFlag(CombatState::RENDERING_COMPLETE, false);
-      processBuffer();
     }
 
     /* After the actions are processed, Battle turn clean up occurs */
@@ -3436,12 +3441,11 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
       printPartyState();
     else if (event.keysym.sym == SDLK_PRINTSCREEN)
       printTurnState();
-    // else if (event.keysym.sym == SDLK_HOME)
-    //   action_buffer->print(false);
+    else if (event.keysym.sym == SDLK_HOME)
+      printAll(false, true, false);
     else if (event.keysym.sym == SDLK_END)
       action_buffer->print(true);
-    else if (event.keysym.sym == SDLK_PAGEUP)
-      printEvents();
+    // else if (event.keysym.sym == SDLK_PAGEUP)
     else if (event.keysym.sym == SDLK_DELETE)
       setBattleFlag(CombatState::RENDERING_COMPLETE, true);
     else if (event.keysym.sym == SDLK_PAGEDOWN)
@@ -3514,6 +3518,26 @@ void Battle::printAll(const bool &simple, const bool &flags, const bool &party)
       std::cout << "\nOUTCOME_DONE: " 
                 << getBattleFlag(CombatState::OUTCOME_DONE);
       std::cout << "\nERROR_STATE: " << getBattleFlag(CombatState::ERROR_STATE);
+      std::cout << "\nRANDOM_ENCOUNTER: " << getBattleFlag(CombatState::RANDOM_ENCOUNTER);
+      std::cout << "\nMINI_BOSS: " << getBattleFlag(CombatState::MINI_BOSS);
+      std::cout << "\nBOSS: " << getBattleFlag(CombatState::BOSS);
+      std::cout << "\nFINAL_BOSS: " << getBattleFlag(CombatState::FINAL_BOSS);
+      std::cout << "\nPROCESSING_SKILL: " 
+                << getBattleFlag(CombatState::PROCESSING_SKILL);
+      std::cout << "\nPROCESSING_ITEM: " 
+                << getBattleFlag(CombatState::PROCESSING_ITEM);
+      std::cout << "\nREADY_TO_RENDER: "
+                << getBattleFlag(CombatState::READY_TO_RENDER);
+      std::cout << "\nRENDERING_COMPLETE: " 
+                << getBattleFlag(CombatState::RENDERING_COMPLETE);
+      std::cout << "\nPERFORMING_COMPLETE: " 
+                << getBattleFlag(CombatState::PERFORMING_COMPLETE);
+      std::cout << "\nBEGIN_PROCESSING: " 
+                << getBattleFlag(CombatState::BEGIN_PROCESSING);
+      std::cout << "\nBEGIN ACTION PROCESSING: " 
+                << getBattleFlag(CombatState::BEGIN_ACTION_PROCESSING);
+      std::cout << "\nACTION PROCESSING COMPLETE: " 
+                << getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE);
       std::cout << "\n\n";
     }
 
@@ -3680,8 +3704,11 @@ bool Battle::update(int32_t cycle_time)
      * continue processing battle events */
     if (getBattleFlag(CombatState::RENDERING_COMPLETE))
     {
-      performEvents();
+      setBattleFlag(CombatState::RENDERING_COMPLETE, false);
+      if (curr_events.size() > 0)
+        performEvents();
       processBuffer();
+      printEvents();
     }
   }
   else if (turn_state == TurnState::RUNNING)
