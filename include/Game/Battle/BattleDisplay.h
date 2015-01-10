@@ -115,6 +115,9 @@ private:
   /* The system options. Used for rendering, settings, etc */
   Options* system_options;
 
+  /* TODO: Delete */
+  Sprite* temp_sprite;
+
   /* ------------ Constants --------------- */
   const static uint16_t kACTION_BORDER; /* Border width on action slideout */
   const static uint16_t kACTION_CENTER; /* Center point to center triangle */

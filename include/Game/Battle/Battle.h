@@ -46,7 +46,7 @@ struct BattleEvent
   bool happens;
 
   BattleEvent() : action_use{nullptr}, item_use{nullptr}, 
-      skill_use{nullptr}, user{nullptr} {}
+      skill_use{nullptr}, user{nullptr}, amount{0}, happens{0} {}
 };
 
 /* CombatState enumerated flags */
@@ -55,7 +55,7 @@ enum class CombatState
 {
   CONFIGURED         = 1 << 0,
   FLAGS_CONFIGURED   = 1 << 1,
-  ACTION_DONE        = 1 << 2,
+  ACTION_DONE        = 1 << 2, // Needed?
   PHASE_DONE         = 1 << 3,
   VICTORY            = 1 << 4,
   LOSS               = 1 << 5,
@@ -74,7 +74,8 @@ enum class CombatState
   PERFORMING_COMPLETE = 1 << 18,
   BEGIN_PROCESSING   = 1 << 19,
   BEGIN_ACTION_PROCESSING = 1 << 20,
-  ACTION_PROCESSING_COMPLETE = 1 << 21
+  ACTION_PROCESSING_COMPLETE = 1 << 21,
+  ALL_PROCESSING_COMPLETE = 1 << 22
 };
 
 ENUM_FLAGS(IgnoreState)
@@ -426,6 +427,8 @@ private:
 
   /* Processes a guard action with curr_user and curr_target */
   bool processGuard();
+
+  bool performGuard();
 
   /* Recalculates the ailments after they have been altered */
   void reCalcAilments(Person* const target);

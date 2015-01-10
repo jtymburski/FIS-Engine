@@ -278,11 +278,11 @@ void Game::setupBattle()
   std::vector<Action*> alter_actions;
   alter_actions.push_back(new Action("200,ALTER,,,,VITA,PC.10,AMOUNT.10,,99"));
   alter_actions.push_back(new Action("201,ALTER,,,,,PC.25,AMOUNT.20,VITA,99"));
-  alter_actions.push_back(new Action("202,ALTER,,,,VITA,AMOUNT.-100,AMOUNT.20,VITA,100"));
+  alter_actions.push_back(new Action("202,ALTER,,,,VITA,AMOUNT.-100,AMOUNT.20,VITA,99"));
   alter_actions.push_back(new Action("203,ALTER,,,,,PC.-12,AMOUNT.20,VITA,100"));
   alter_actions.push_back(new Action("204,ALTER,,,,QTDR,PC.10,AMOUNT.20,THAG,96"));
   alter_actions.push_back(new Action("204,ALTER-FLIP,,,,QTDR,PC.10,AMOUNT.20,THAG,96"));
-  alter_actions.push_back(new Action("205,ALTER-FLIP,,,,VITA,AMOUNT.100,AMOUNT.30,VITA,100"));
+  alter_actions.push_back(new Action("205,ALTER-FLIP,,,,VITA,AMOUNT.100,AMOUNT.30,VITA,99"));
 
   std::vector<Action*> assign_actions;
   assign_actions.push_back(new Action("300,ASSIGN,,,,VITA,AMOUNT.1,AMOUNT.0,,100"));
