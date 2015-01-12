@@ -17,7 +17,6 @@
 * ----
 * - Equip check for actual equipment classes once developed [01-24-14]
 *******************************************************************************/
-
 #ifndef CATEGORY_H
 #define CATEGORY_H
 
@@ -56,6 +55,9 @@ enum class CategoryState
 class Category
 {
 public:
+  /* Blank constructor */
+  Category();
+
   /* Creates an empty category with just a name */
   Category(const int32_t &my_id, const std::string &name);
 
@@ -82,7 +84,7 @@ private:
   /* Description, name, and denonym (ex. Bears) */
   std::string description;
   std::string denonym;
-	const std::string name;
+	std::string name;
 
   /* Regen rate for the category (default: NONE) */
   RegenRate qtdr_regen_rate;
@@ -100,6 +102,7 @@ private:
   /* ------------ Constants --------------- */
   static const std::vector<int> kMIN_VALUES;
   static const std::vector<int> kMAX_VALUES;
+  static const int32_t kUNSET_ID; /* The unset ID for the category ID */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -163,20 +166,26 @@ public:
   /* Returns a ref. to the top attr set */
   AttributeSet& getTopSet();
 
-  /* Assign a new enumerated quantum drive regeneration rate */
-  void setQDRegenRate(const RegenRate &new_regen_rate);
-
-  /* Assign a new enumerated vitality regeneration rate */
-  void setVitaRegenRate(const RegenRate &new_regen_rate);
+  /* Assigns a new denonym */
+  bool setDenonym(const std::string &new_denonym);
 
   /* Assigns a new description */
   bool setDescription(const std::string &new_description);
 
-  /* Assigns a new denonym */
-  bool setDenonym(const std::string &new_denonym);
-
   /* Assigns a given flag to a given value  */
   void setFlag(const CategoryState &flag, const bool &set_value = true);
+
+  /* Assigns the id for the category */
+  void setID(int32_t id);
+
+  /* Assigns the name for the category */
+  void setName(const std::string &name);
+
+  /* Assign a new enumerated quantum drive regeneration rate */
+  void setQDRegenRate(const RegenRate &new_regen_rate);
+  
+  /* Assign a new enumerated vitality regeneration rate */
+  void setVitaRegenRate(const RegenRate &new_regen_rate);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS

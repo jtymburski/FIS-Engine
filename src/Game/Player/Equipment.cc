@@ -19,6 +19,15 @@
  *============================================================================*/
 
 /*
+ * Description: The blank constructor.
+ *
+ * Inputs: none
+ */
+Equipment::Equipment() : Item()
+{
+}
+
+/*
  * Description: Creates a base equipment object.
  *
  * Inputs: game_id - the Game ID for the base item

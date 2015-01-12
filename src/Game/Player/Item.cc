@@ -30,10 +30,24 @@ const uint32_t Item::kMAX_MASS{500000};
 const uint32_t Item::kMAX_VALUE{100000000};
 const uint32_t Item::kMIN_DURABILITY{0};
 const uint32_t Item::kMIN_MASS{0};
+const int32_t Item::kUNSET_ID{-1};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
+
+/*
+ * Description: Constructs a blank item.
+ *
+ * Inputs: none
+ */
+Item::Item()
+    : game_id{kUNSET_ID}
+    , my_id{++id}
+    , base_item{nullptr}
+    , thumbnail{nullptr}
+{
+}
 
 /*
  * Description: Constructs an Item (technically a Bubby) given a Flavour object.
@@ -640,6 +654,20 @@ bool Item::setDurability(const uint32_t &new_durability)
 void Item::setFlag(ItemFlags flag, const bool &set_value)
 {
   (set_value) ? (flags |= flag) : (flags &= ~flag);
+}
+
+/*
+ * Description: Sets the game ID for the item.
+ *
+ * Inputs: int32_t id - the id to set
+ * Output: none
+ */
+void Item::setGameID(int32_t id)
+{
+  if(id < 0)
+    game_id = kUNSET_ID;
+  else
+    game_id = id;
 }
 
 /*

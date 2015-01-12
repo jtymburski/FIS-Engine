@@ -31,6 +31,9 @@
 class Bubby : public Item
 {
 public:
+  /* Blank constructor */
+  Bubby();
+  
   /* Constructs a Bubby object with a flavour at a certain tier */
   Bubby(Flavour* parent, const uint32_t &tier = 0);
 
@@ -52,7 +55,7 @@ private:
   uint32_t total_exp;
 
   /* Ptr to the type of Bubby */
-  Flavour* const type;
+  Flavour* type;
 
   /* ------------ Constants --------------- */
   static const uint32_t kMIN_EXP;         /* Starting experience value */

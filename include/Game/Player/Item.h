@@ -81,6 +81,9 @@ class Item
   friend Flavour;
   
 public:
+  /* Blank constructor */
+  Item();
+
   /* Constructs a T0-Bubby based on a flaour pointer */
   Item(Flavour* const source);
 
@@ -105,7 +108,7 @@ private:
 
 protected:
   /* Unique and non-unique IDs for the Item */
-  const int32_t game_id;
+  int32_t game_id;
   int32_t my_id;
 
   /* Pointer to the Base Item, null if the Item has changed in any way */
@@ -166,6 +169,7 @@ protected:
   static const uint32_t kMAX_VALUE;      /* Maximum value of an Item */
   static const uint32_t kMIN_DURABILITY; /* Minimum durability */
   static const uint32_t kMIN_MASS;       /* Minimum mass */
+  static const int32_t  kUNSET_ID;       /* The unset ID for the item */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -271,6 +275,9 @@ public:
 
   /* Assigns a given ItemFlags flag to a given value */
   void setFlag(ItemFlags flag, const bool &set_value = true);
+
+  /* Sets the game ID */
+  void setGameID(int32_t id);
 
   /* Assigns a new item tier for the item */
   void setItemTier(const ItemTier &new_item_tier);

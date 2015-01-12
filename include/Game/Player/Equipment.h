@@ -47,6 +47,9 @@ enum class EquipState
 class Equipment : public Item
 {
 public:
+  /* Blank constructor */
+  Equipment();
+
   /* Constructs a base equipment item */
   Equipment(const uint32_t &game_id, const std::string &name, 
   	        const uint32_t &value, const uint32_t &mass, const uint32_t &dura,

@@ -26,23 +26,37 @@ bool Category::attr_sets_built{false};
 AttributeSet Category::max_stats{AttributeSet()};
 AttributeSet Category::min_stats{AttributeSet()};
 
+/* Constants. See header for description */
 const std::vector<int> Category::kMIN_VALUES =
 {  50, 15,  7,  7,
     5,  3,  5,  3,
     5,  3,  5,  3,
     5,  3,  5,  3,
-    4,  4,  4,  0};
-  
+    4,  4,  4,  0}; 
 const std::vector<int> Category::kMAX_VALUES =
  { 50000, 5000, 7000, 7000,
     5500, 5500, 5500, 5500,
     5500, 5500, 5500, 5500,
     5500, 5500, 5500, 5500,
     2000, 2000, 2000,  200};
+const int32_t Category::kUNSET_ID = -1;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
+
+Category::Category()
+        : base_stats{AttributeSet()}
+        , top_stats{AttributeSet()}
+        , skill_set{nullptr}
+        , id{kUNSET_ID}
+{
+  if(!attr_sets_built)
+    buildAttrSets();
+
+  cleanUpStats();
+  classSetup();
+}
 
 /*
  * Description: Constructs a basic Category object given a string name
@@ -352,6 +366,18 @@ RegenRate Category::getQDRegenRate() const
 }
 
 /*
+ * Description: Returns the top attribute set (max level stats) for Persons
+ *              of this Category.
+ *
+ * Inputs: none
+ * Output: AttributeSet& - top attribute set values 
+ */
+AttributeSet& Category::getTopSet()
+{
+  return top_stats;
+}
+
+/*
  * Description: Returns the enumerated vitality regeneration rate.
  *
  * Inputs: none
@@ -360,6 +386,90 @@ RegenRate Category::getQDRegenRate() const
 RegenRate Category::getVitaRegenRate() const
 {
   return vita_regen_rate;
+}
+
+/*
+ * Description: Returns the SkillSet which persons of the Category are granted
+ *
+ * Inputs: none
+ * Output: SkillSet* - pointer to the SkillSet
+ */
+SkillSet* Category::getSkills()
+{
+  return skill_set;
+}
+
+/*
+ * Description: Assigns a new string denonym to the category
+ *
+ * Inputs: new_denonym - string denonym to be assigned
+ * Output: bool - true if the assignment is successful
+ */
+bool Category::setDenonym(const std::string &new_denonym)
+{
+  if (new_denonym.size() <= StringDb::kMAX_NAME)
+  {
+    denonym = new_denonym;
+
+    return true;
+  }
+
+  return false;
+}
+
+/*
+ * Description: Assigns a description to the Category
+ *
+ * Inputs: std::string new_description - the description for the Category
+ * Output: bool - whether the description is within size requirements
+ */
+bool Category::setDescription(const std::string &new_description)
+{
+  if (new_description.size() <= StringDb::kMAX_BRIEF_DESC)
+  {
+    description = new_description;
+
+    return true;
+  }
+
+  return false;
+}
+
+/*
+ * Description: Assigns a given CategoryState flag to a given value.
+ *
+ * Inputs: flags - the given flag to be assigned a value
+ *         set_value - the boolean value to assign to the flag
+ * Output: none
+ */
+void Category::setFlag(const CategoryState &flags, const bool &set_value)
+{
+  (set_value) ? (cat_flags |= flags) : (cat_flags &= ~flags);
+}
+
+/*
+ * Description: Assigns the ID for the category.
+ *
+ * Inputs: int32_t id - the new ID
+ * Output: none
+ */
+void Category::setID(int32_t id)
+{
+  if(id < 0)
+    this->id = kUNSET_ID;
+  else
+    this->id = id;
+}
+
+/*
+ * Description: Assigns a category name.
+ *
+ * Inputs: std::string name - the new name
+ * Output: none
+ */
+void Category::setName(const std::string &name)
+{
+  this->name = name;
 }
 
 /*
@@ -384,76 +494,6 @@ void Category::setVitaRegenRate(const RegenRate &new_regen_rate)
   vita_regen_rate = new_regen_rate;
 }
 
-/*
- * Description: Returns the SkillSet which persons of the Category are granted
- *
- * Inputs: none
- * Output: SkillSet* - pointer to the SkillSet
- */
-SkillSet* Category::getSkills()
-{
-  return skill_set;
-}
-
-/*
- * Description: Returns the top attribute set (max level stats) for Persons
- *              of this Category.
- *
- * Inputs: none
- * Output: AttributeSet& - top attribute set values 
- */
-AttributeSet& Category::getTopSet()
-{
-  return top_stats;
-}
-
-/*
- * Description: Assigns a description to the Category
- *
- * Inputs: std::string new_description - the description for the Category
- * Output: bool - whether the description is within size requirements
- */
-bool Category::setDescription(const std::string &new_description)
-{
-  if (new_description.size() <= StringDb::kMAX_BRIEF_DESC)
-  {
-    description = new_description;
-
-    return true;
-  }
-
-  return false;
-}
-
-/*
- * Description: Assigns a new string denonym to the category
- *
- * Inputs: new_denonym - string denonym to be assigned
- * Output: bool - true if the assignment is successful
- */
-bool Category::setDenonym(const std::string &new_denonym)
-{
-  if (new_denonym.size() <= StringDb::kMAX_NAME)
-  {
-    denonym = new_denonym;
-
-    return true;
-  }
-
-  return false;
-}
-
-/*
- * Description: Assigns a given CategoryState flag to a given value.
- *
- * Inputs: flags - the given flag to be assigned a value
- *         set_value - the boolean value to assign to the flag
- * Output: none
- */
-void Category::setFlag(const CategoryState &flags, const bool &set_value)
-{
-  (set_value) ? (cat_flags |= flags) : (cat_flags &= ~flags);
-}
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
