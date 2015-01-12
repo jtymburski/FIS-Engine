@@ -1,0 +1,3 @@
+Name - Sequence - Animation Time
+Paralysis Plep - 012101210 - 50
+Hibernation Plep - 01230123 - 100
