@@ -1861,23 +1861,19 @@ bool BattleDisplay::setBattle(Battle* battle, SDL_Renderer* renderer)
 
     /* TODO: Temporary - battle testing */
     temp_sprite = new Sprite(system_options->getBasePath() + 
-                    "sprites/Battle/Pleps/paralysisplep_AA_A", 3, ".png", renderer);
-	temp_sprite->insertTail(system_options->getBasePath() + 
-                              "sprites/Battle/Pleps/paralysisplep_AA_A01.png", renderer);
-	temp_sprite->insertTail(system_options->getBasePath() + 
-                              "sprites/Battle/Pleps/paralysisplep_AA_A00.png", renderer);
-	temp_sprite->insertTail(system_options->getBasePath() + 
-                              "sprites/Battle/Pleps/paralysisplep_AA_A01.png", renderer);
-	temp_sprite->insertTail(system_options->getBasePath() + 
-                              "sprites/Battle/Pleps/paralysisplep_AA_A02.png", renderer);
-	temp_sprite->insertTail(system_options->getBasePath() + 
-                              "sprites/Battle/Pleps/paralysisplep_AA_A01.png", renderer);
-	temp_sprite->insertTail(system_options->getBasePath() + 
-                              "sprites/Battle/Pleps/paralysisplep_AA_A00.png", renderer);
+                    "sprites/Battle/Pleps/hibernationplep_AA_A", 4, ".png", renderer);
+    temp_sprite->insertTail(system_options->getBasePath() + 
+                            "sprites/Battle/Pleps/hibernationplep_AA_A00.png", renderer);
+    temp_sprite->insertTail(system_options->getBasePath() + 
+                            "sprites/Battle/Pleps/hibernationplep_AA_A01.png", renderer);
+    temp_sprite->insertTail(system_options->getBasePath() + 
+                            "sprites/Battle/Pleps/hibernationplep_AA_A02.png", renderer);
+    temp_sprite->insertTail(system_options->getBasePath() + 
+                            "sprites/Battle/Pleps/hibernationplep_AA_A03.png", renderer);
     for(uint16_t i = 0; i < 5; i++)
       temp_sprite->insertTail(system_options->getBasePath() + 
                               "sprites/blank.png", renderer);
-    temp_sprite->setAnimationTime(50);
+    temp_sprite->setAnimationTime(180);
 
     /* Start the battle */
     success &= startBattle(renderer);
