@@ -1,19 +1,19 @@
 /*******************************************************************************
-* Class Name: AttributeSet [Declaration]
-* Date Created: November 16th, 2013
-* Inheritance: None
-* Description: AttributeSet is a container for all the statistics (variables)
-*              which are used by other classes to calculate the outcome of
-*              combat states.
-*
-* Notes
-* -----
-* [1]:
-*
-* TODO
-* ----
-* - Build more unique flavoured presets for Battle testing/generics [11-18-13]
-*******************************************************************************/
+ * Class Name: AttributeSet [Declaration]
+ * Date Created: November 16th, 2013
+ * Inheritance: None
+ * Description: AttributeSet is a container for all the statistics (variables)
+ *              which are used by other classes to calculate the outcome of
+ *              combat states.
+ *
+ * Notes
+ * -----
+ * [1]:
+ *
+ * TODO
+ * ----
+ * - Build more unique flavoured presets for Battle testing/generics [11-18-13]
+ ******************************************************************************/
 #ifndef ATTRIBUTESET_H
 #define ATTRIBUTESET_H
 

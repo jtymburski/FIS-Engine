@@ -49,6 +49,7 @@ const float Person::kMIN_DMG_MODI{ 0.01};
 const float Person::kMAX_DMG_MODI{10.00};
 const float Person::kMIN_EXP_MODI{ 0.10};
 const float Person::kMAX_EXP_MODI{10.00}; 
+const int32_t Person::kUNSET_ID = -1;
 
 /* Static ID counter */
 int Person::id{0};
@@ -65,6 +66,20 @@ const std::vector<float> Person::kSECD_MODS =
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
+
+/*
+ * Description: Constructs an empty person object.
+ *
+ * Inputs: none
+ */
+Person::Person()
+      : my_id{++id}
+      , base_person{nullptr}
+      , battle_class{nullptr}
+      , race_class{nullptr}
+{
+  setupClass();
+}
 
 /*
  * Description: Constructs a base person object given a unique ID, name,
@@ -151,7 +166,8 @@ void Person::loadDefaults()
   total_exp = kMIN_LVL_EXP;
 
   updateLevel();
-  updateBaseStats();
+  if(battle_class != nullptr && race_class != nullptr)
+    updateBaseStats();
 
   curr_stats     = base_stats;
   curr_max_stats = base_stats;
@@ -169,7 +185,8 @@ void Person::loadDefaults()
   learned_skills = nullptr;
   temp_skills    = nullptr;
 
-  updateBaseSkills();
+  if(battle_class != nullptr && race_class != nullptr)
+    updateBaseSkills();
 
   dmg_mod = 1.000;
   exp_mod = 1.000;
@@ -2027,6 +2044,20 @@ bool Person::setEquip(const EquipSlots &slot, Equipment* new_equip)
 }
 
 /*
+ * Description: Sets the game ID for the person.
+ *
+ * Inputs: int id - the game reference id
+ * Output: none
+ */
+void Person::setGameID(int id)
+{
+  if(id < 0)
+    game_id = kUNSET_ID;
+  else
+    game_id = id;
+}
+
+/*
  * Description: Assigns a new guard (person guarding this object)
  *
  * Inputs: Person* - the new guard for this person
@@ -2109,6 +2140,17 @@ bool Person::setLoot(const uint32_t &new_credit_drop,
   }
 
   return all_set;
+}
+
+/*
+ * Description: Sets the name of the person.
+ *
+ * Inputs: std::string name - the new name of the person
+ * Output: none
+ */
+void Person::setName(std::string name)
+{
+  this->name = name;
 }
 
 /*

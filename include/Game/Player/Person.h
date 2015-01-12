@@ -130,6 +130,9 @@ class Person
   friend class Ailment;
   
 public:
+  /* Empty constructor */
+  Person();
+
   /* Base Person object constructor */
   Person(const int32_t &game_id, const std::string &name, 
          Category* const battle_class, Category* const race_class);
@@ -235,11 +238,12 @@ private:
   static const uint32_t kMAX_LVL_EXP;     /* Exp to reach final level */
   static const uint32_t kMIN_EXP;         /* Minimum Exp possible */
   static const uint32_t kMIN_LVL_EXP;     /* Starting exp. */
-  static const float kMIN_DMG_MODI;       /* Min. Dmg modifier */
-  static const float kMAX_DMG_MODI;       /* Max. Dmg modifier */
-  static const float kMIN_EXP_MODI;       /* Min. experience modifier */
-  static const float kMAX_EXP_MODI;       /* Max. experience modifier */
- 
+  static const float    kMIN_DMG_MODI;    /* Min. Dmg modifier */
+  static const float    kMAX_DMG_MODI;    /* Max. Dmg modifier */
+  static const float    kMIN_EXP_MODI;    /* Min. experience modifier */
+  static const float    kMAX_EXP_MODI;    /* Max. experience modifier */
+  static const int32_t  kUNSET_ID;        /* The unset id of the person */
+
   static const std::vector<float> kPRIM_MODS; /* Primary elm curv modifiers */
   static const std::vector<float> kSECD_MODS; /* Secondary elm curv mods */
 
@@ -520,6 +524,9 @@ public:
   /* Attempts to assign a given equipment slot a given equipment pointer */
   bool setEquip(const EquipSlots &equip_slot, Equipment* new_equipment);
 
+  /* Assigns the game ID for the person */
+  void setGameID(int id);
+
   /* Assigns a new guard (person guarding this object) */
   bool setGuard(Person* const new_guard);
 
@@ -529,6 +536,9 @@ public:
   /* Attempts to assign a new loop set for the person */
   bool setLoot(const uint32_t &new_credit_drop, const uint32_t &new_exp_drop, 
                const std::vector<uint32_t> &new_item_drops);
+
+  /* Assigns the name of the person */
+  void setName(std::string name);
 
   /* Assigns the sprite pointers for the person */
   void setSprites(Sprite* new_fp = nullptr, Sprite* new_tp = nullptr,

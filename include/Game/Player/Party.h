@@ -42,6 +42,9 @@ enum class PartyState
 class Party
 {
 public:
+  /* The blank constructor */
+  Party();
+
   /* Constructs a Party given a main character and a type of Party */
   Party(const int32_t &my_id, Person* const main, const PartyType &type, 
         const uint8_t &max, Inventory* const inv = nullptr);
@@ -64,7 +67,7 @@ private:
   PartyType party_type;
  
   /* The ID of the party */
-  const int32_t id;
+  int32_t id;
 
   /* The inventory for the party */
   Inventory* pouch;
@@ -73,6 +76,7 @@ private:
   static const uint8_t kMAX_MEMBERS_BEARACKS;
   static const uint8_t kMAX_MEMBERS_SLEUTH;
   static const uint8_t kMAX_MEMBERS_FOES;
+  static const int32_t kUNSET_ID; /* The unset ID for the party */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -136,6 +140,9 @@ public:
   /* Evaluates and returns a given PartyState flag */
   bool getFlag(const PartyState &test_flag);
 
+  /* Returns the party ID */
+  int32_t getID();
+
   /* Returns the pointer to the current inventory of the Party */
   Inventory* getInventory();
 
@@ -163,17 +170,20 @@ public:
   /* Calculates and returns the total speed of the Party */
   int64_t getTotalSpeed();
 
-  /* Attempts to assign a new maximum size of the Party */
-  bool setMaxSize(const uint8_t &new_max_size);
+  /* Assigns a given PartyState flag a given value */
+  void setFlag(const PartyState &flag, const bool &set_value = true);
+
+  /* Assigns the party ID */
+  void setID(int id);
 
   /* Assigns a new inventory to the Party */
   bool setInventory(Inventory* const new_inventory);
 
   /* Attempts to assign a new primary member of the Party */
   bool setMainMember(const uint8_t &new_main);
-
-  /* Assigns a given PartyState flag a given value */
-  void setFlag(const PartyState &flag, const bool &set_value = true);
+  
+  /* Attempts to assign a new maximum size of the Party */
+  bool setMaxSize(const uint8_t &new_max_size);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS

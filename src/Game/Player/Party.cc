@@ -23,10 +23,22 @@
 const uint8_t Party::kMAX_MEMBERS_BEARACKS{50};
 const uint8_t Party::kMAX_MEMBERS_SLEUTH{10};
 const uint8_t Party::kMAX_MEMBERS_FOES{10};
+const int32_t Party::kUNSET_ID = -1;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
+
+/*
+ * Description: The blank constructor.
+ *
+ * Inputs: none
+ */
+Party::Party()
+     : id{kUNSET_ID}
+{
+  loadDefaults();
+}
 
 /*
  * Description: General party construction. Constructs a Party with a given
@@ -407,6 +419,17 @@ bool Party::getFlag(const PartyState &test_flag)
 }
 
 /*
+ * Description: Returns the ID for the party.
+ *
+ * Inputs: none
+ * Output: int32_t - the party id
+ */
+int32_t Party::getID()
+{
+  return id;
+}
+
+/*
  * Description: Returns the pointer to the current inventory object.
  *
  * Inputs: none
@@ -546,30 +569,29 @@ int64_t Party::getTotalSpeed()
 }
 
 /*
- * Description: Attempts to assign a new maximum size of the Party.
+ * Description: Assigns a given PartyState flag a given Boolean vale.
  *
- * Inputs: const uin8_t - new maximum size for the Party.
- * Output: bool - true if the maximum size was assigned succesfully
+ * Inputs: PartyState flag - flag to be assigned to a value.
+ *         const bool set_value - value to be assigned to the flag.
+ * Output: none
  */
-bool Party::setMaxSize(const uint8_t &new_max_size)
+void Party::setFlag(const PartyState &flag, const bool &set_value)
 {
-  auto limit = 0;
+  (set_value) ? (flags |= flag) : (flags &= ~flag);
+}
 
-  if (party_type == PartyType::SLEUTH)
-    limit = kMAX_MEMBERS_SLEUTH;
-  else if (party_type == PartyType::BEARACKS)
-    limit = kMAX_MEMBERS_BEARACKS;
+/*
+ * Description: Sets the party ID
+ *
+ * Inputs: int id - the id
+ * Output: none
+ */
+void Party::setID(int id)
+{
+  if(id < 0)
+    this->id = kUNSET_ID;
   else
-    limit = kMAX_MEMBERS_FOES;
-
-  if (new_max_size <= limit && members.size() <= new_max_size)
-  {
-    max_size = new_max_size;
-
-    return true;
-  }
-
-  return false;
+    this->id = id;
 }
 
 /*
@@ -611,15 +633,30 @@ bool Party::setMainMember(const uint8_t &new_main)
 }
 
 /*
- * Description: Assigns a given PartyState flag a given Boolean vale.
+ * Description: Attempts to assign a new maximum size of the Party.
  *
- * Inputs: PartyState flag - flag to be assigned to a value.
- *         const bool set_value - value to be assigned to the flag.
- * Output: none
+ * Inputs: const uin8_t - new maximum size for the Party.
+ * Output: bool - true if the maximum size was assigned succesfully
  */
-void Party::setFlag(const PartyState &flag, const bool &set_value)
+bool Party::setMaxSize(const uint8_t &new_max_size)
 {
-  (set_value) ? (flags |= flag) : (flags &= ~flag);
+  auto limit = 0;
+
+  if (party_type == PartyType::SLEUTH)
+    limit = kMAX_MEMBERS_SLEUTH;
+  else if (party_type == PartyType::BEARACKS)
+    limit = kMAX_MEMBERS_BEARACKS;
+  else
+    limit = kMAX_MEMBERS_FOES;
+
+  if (new_max_size <= limit && members.size() <= new_max_size)
+  {
+    max_size = new_max_size;
+
+    return true;
+  }
+
+  return false;
 }
 
 /*=============================================================================
