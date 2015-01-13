@@ -163,6 +163,38 @@ void Category::cleanUpStats()
   top_stats.cleanUp();
 }
 
+/*
+ * Description: The copy function that is called by any copying methods in the
+ *              class. Utilized by the copy constructor and the copy operator.
+ *
+ * Inputs: const Category &source - the reference category class
+ * Output: none
+ */
+void Category::copySelf(const Category &source)
+{
+  base_stats = source.base_stats;
+  top_stats = source.top_stats;
+
+  cat_flags = source.cat_flags;
+
+  description = source.description;
+  denonym = source.denonym;
+  name = source.name;
+
+  qtdr_regen_rate = source.qtdr_regen_rate;
+  vita_regen_rate = source.vita_regen_rate;
+
+  skill_set = source.skill_set;
+
+  id = source.id;
+  immunities = source.immunities;
+
+  /* Finalize the copy */
+  buildAttrSets();
+  cleanUpStats();
+  classSetup();
+}
+
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/

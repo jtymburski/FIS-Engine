@@ -91,7 +91,7 @@ private:
   RegenRate vita_regen_rate;
 
   /* Pointer to a SkillSet which the category unlocks */
-  SkillSet* const skill_set;
+  SkillSet* skill_set;
 
   /* ID of the Category */
   int32_t id;
@@ -116,6 +116,9 @@ private:
 
   /* Clean up the base and top stats */
   void cleanUpStats();
+
+  /* Copy function, to be called by a copy or equal operator constructor */
+  void copySelf(const Category &source);
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
