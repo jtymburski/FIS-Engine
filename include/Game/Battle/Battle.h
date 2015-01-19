@@ -26,28 +26,13 @@
 
 #include "Game/Battle/Buffer.h"
 #include "Game/Battle/BattleMenu.h"
+#include "Game/Battle/EventBuffer.h"
 #include "Game/Player/Ailment.h"
 #include "Game/Player/Party.h"
 #include "Options.h"
 
 using std::begin;
 using std::end;
-
-struct BattleEvent
-{
-  BattleEventType type;
-
-  Action* action_use;
-  Item*  item_use;
-  Skill* skill_use;
-  Person* user;
-  std::vector<Person*> targets;
-  int32_t amount;
-  bool happens;
-
-  BattleEvent() : action_use{nullptr}, item_use{nullptr}, 
-      skill_use{nullptr}, user{nullptr}, amount{0} {}
-};
 
 /* CombatState enumerated flags */
 ENUM_FLAGS(CombatState)
@@ -74,7 +59,8 @@ enum class CombatState
   PERFORMING_COMPLETE = 1 << 18,
   BEGIN_PROCESSING   = 1 << 19,
   BEGIN_ACTION_PROCESSING = 1 << 20,
-  ACTION_PROCESSING_COMPLETE = 1 << 21
+  ACTION_PROCESSING_COMPLETE = 1 << 21,
+  ALL_PROCESSING_COMPLETE = 1 << 22
 };
 
 ENUM_FLAGS(IgnoreState)
@@ -137,6 +123,9 @@ private:
   
   /* The current AI Module */
   AIModule* curr_module;
+
+  /* The buffer of events for the battle */
+  EventBuffer* event_buffer;
 
   /* The Battle Menu Bar */
   BattleMenu* menu;
@@ -205,7 +194,6 @@ private:
   uint32_t curr_action_index;
   Skill*  curr_skill;
   Item*   curr_item;
-  std::vector<BattleEvent*> curr_events;
 
   /* Current pocessing target index */
   uint32_t pro_index;
@@ -280,14 +268,6 @@ private:
   /* Attempts to add an ailment to the vector of ailments */
   bool addAilment(Infliction infliction_type, Person* inflictor,
       uint16_t min_turns, uint16_t max_turns, int32_t chance);
-  
-  void clearEvents();
-
-  /* Create a BattleEvent */
-  BattleEvent* createEvent(BattleEventType type, Person* user, Person* target);
-  BattleEvent* createEvent(BattleEventType type, Person* user,
-                   std::vector<Person*> targets);
-  BattleEvent* createEvent(BattleEventType type, Skill* skill_use,bool happens);
 
   /* Set the next action index, true if valid */
   bool nextActionIndex();
@@ -427,6 +407,8 @@ private:
   /* Processes a guard action with curr_user and curr_target */
   bool processGuard();
 
+  bool performGuard();
+
   /* Recalculates the ailments after they have been altered */
   void reCalcAilments(Person* const target);
 
@@ -508,7 +490,6 @@ public:
 
   /* Methods to print information about the Battle */
   void printAll(const bool &simple, const bool &flags, const bool &party);
-  void printEvents();
   void printPartyState();
   void printPersonState(Person* const member, const int32_t &person_index);
   void printInventory(Party* const target_party);

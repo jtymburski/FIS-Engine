@@ -206,7 +206,7 @@ enum class Attribute : std::uint8_t
   NONE = 20
 };
 
-enum class BattleEventType : std::uint8_t
+enum class EventType : std::uint8_t
 {
   ITEM_USE = 1,
   SKILL_USE = 2,
@@ -252,7 +252,8 @@ enum class BattleEventType : std::uint8_t
   HEAL_QD = 42,
   REGEN_QD = 43,
   START_DEFEND = 44,
-  NONE = 45
+  ACTION_BEGIN = 45,
+  NONE = 46
 };
 
 /*

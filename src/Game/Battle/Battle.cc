@@ -157,6 +157,7 @@ Battle::Battle(Options* running_config, Party* const friends, Party* const foes,
   setConfiguration(running_config);
 
   action_buffer = new Buffer();
+  event_buffer  = new EventBuffer();
   menu          = new BattleMenu(running_config);
 
   setBattleFlag(CombatState::PHASE_DONE, true);
@@ -179,7 +180,9 @@ Battle::~Battle()
     delete action_buffer;
   action_buffer = nullptr;
 
-  clearEvents();
+  if (event_buffer != nullptr)
+    delete event_buffer;
+  event_buffer = nullptr;
 }
 
 /*=============================================================================
@@ -227,77 +230,84 @@ bool Battle::addAilment(Infliction infliction_type, Person* inflictor,
 }
 
 /*
- * Description:
+ * Description: Clears and frees elements of the BattleEvent curr_events.
  *
- * Inputs: 
- * Output:
+ * Inputs: none
+ * Output: none
  */
-void Battle::clearEvents()
-{
-  std::cout << "---- Clear Events ----" << std::endl;
-  for (auto& event : curr_events)
-  {
-    delete event;
-    event = nullptr;
-  }
+// void Battle::clearEvents()
+// {
+//   std::cout << "--- Clear Events ---" << std::endl;
+//   for (auto& event : curr_events)
+//   {
+//     delete event;
+//     event = nullptr;
+//   }
 
-  curr_events.clear();
-}
+//   curr_events.clear();
+// }
 
 /*
- * Description:
+ * Description: Creates a BattleEvent with a type, user and single target.
  *
- * Inputs: 
- * Output:
+ * Inputs: EventType type - the type of BattleEvent
+ *         Person* user - the user of the BattleEvent
+ *         Person* target - single target of the BattleEvent.
+ * Output: BattleEvent* - pointer to the newly created event.
  */
-BattleEvent* Battle::createEvent(BattleEventType type, Person* user, 
-    Person* target)
-{
-  std::cout << "Creating event!" << std::endl;
-  BattleEvent* new_event = new BattleEvent();
-  new_event->type = type;
-  new_event->user = user;
-  std::vector<Person*> target_vector{target};
-  new_event->targets = target_vector;
+// BattleEvent* Battle::createEvent(EventType type, Person* user, 
+//     Person* target)
+// {
+//   std::cout << "Creating event!" << std::endl;
+//   BattleEvent* new_event = new BattleEvent();
+//   new_event->type = type;
+//   new_event->user = user;
+//   std::vector<Person*> target_vector{target};
+//   new_event->targets = target_vector;
 
-  return new_event;
-}
+//   return new_event;
+// }
 
 /*
- * Description:
+ * Description: Creates a BattleEvent with a type, user and vector of targets.
  *
- * Inputs: 
- * Output:
+ * Inputs: EventType type - the type of BattleEvent
+ *         Person* user - the user of the BattleEvent
+ *         std::vector<Person*> targets - the targets for the new event.
+ * Output: BattleEvent* - pointer to the newly created event.
  */
-BattleEvent* Battle::createEvent(BattleEventType type, Person* user,
-    std::vector<Person*> targets)
-{
-  std::cout << "Creating event!" << std::endl;
-  BattleEvent* new_event = new BattleEvent();
-  new_event->type = type;
-  new_event->user = user;
-  new_event->targets = targets;
+// BattleEvent* Battle::createEvent(EventType type, Person* user,
+//     std::vector<Person*> targets)
+// {
+//   std::cout << "Creating event!" << std::endl;
+//   BattleEvent* new_event = new BattleEvent();
+//   new_event->type = type;
+//   new_event->user = user;
+//   new_event->targets = targets;
 
-  return new_event;
-}
+//   return new_event;
+// }
 
 /*
- * Description:
+ * Description: Creates a BattleEvent with a type, Skill* and whether the skill
+ *              happens boolean value.
  *
- * Inputs: 
- * Output:
+ * Inputs: EventType type - the type of BattleEvent to create
+ *         Skill* skill_use - the skill use occuring in the event
+ *         bool happens - true if the Skill is successfully used.
+ * Output: BattleEvent* - pointer to the recently created event.
  */
-BattleEvent* Battle::createEvent(BattleEventType type, Skill* skill_use,
-    bool happens)
-{
-  std::cout << "Creating event!" << std::endl;
-  BattleEvent* new_event = new BattleEvent();
-  new_event->type = type;
-  new_event->skill_use = skill_use;
-  new_event->happens = happens;
+// BattleEvent* Battle::createEvent(EventType type, Skill* skill_use,
+//     bool happens)
+// {
+//   std::cout << "Creating event!" << std::endl;
+//   BattleEvent* new_event = new BattleEvent();
+//   new_event->type = type;
+//   new_event->skill_use = skill_use;
+//   new_event->happens = happens;
 
-  return new_event;
-}
+//   return new_event;
+// }
 
 /*
  * Description:
@@ -1469,19 +1479,18 @@ bool Battle::doesSkillHit(std::vector<Person*> targets)
 
     if (curr_user->getAilFlag(PersonAilState::MISS_NEXT_TARGET))
     {
-      auto miss = createEvent(BattleEventType::BLIND_MISS, curr_user, targets);
-      curr_events.push_back(miss);
-      std::cout << "{BLIND} - Blind miss" << std::endl;
+      event_buffer->createMissEvent(EventType::BLIND_MISS,
+          curr_user, targets);
+      // std::cout << "{BLIND} - Blind miss" << std::endl;
     }
 
     if (can_hit)
     {
       if (curr_user->getAilFlag(PersonAilState::NEXT_ATK_NO_EFFECT))
       {
-        auto miss = createEvent(BattleEventType::DREAMSNARE_MISS, curr_user,
-                        targets);
-        curr_events.push_back(miss);
-        std::cout << "{DREAMSNARE} - No effect" << std::endl;
+        event_buffer->createMissEvent(EventType::DREAMSNARE_MISS,
+            curr_user, targets);
+        // std::cout << "{DREAMSNARE} - No effect" << std::endl;
       }
 
       /* Obtain the base hit rate (in XX.X%) */
@@ -1526,6 +1535,7 @@ bool Battle::doesActionHit()
   can_process &= curr_target  != nullptr;
   can_process &= curr_action  != nullptr;
 
+
   if (can_process)
   {
     /* Run probabilities of the action occuring */
@@ -1534,6 +1544,7 @@ bool Battle::doesActionHit()
   }
   else
   {
+    std::cout << "Something ain't set right!" << std::endl;
     std::cerr << "[Warning] Cannot process action missing chances" << std::endl; 
   }
 
@@ -1698,20 +1709,20 @@ void Battle::orderActions()
 void Battle::performEvents()
 {
   std::cout << "---- Performing Events ----" << std::endl;
-  
-  for (auto &event : curr_events)
-  {
-    if (event->type == BattleEventType::BEGIN_DEFEND)
-    {
-      event->user->setBFlag(BState::DEFENDING, true);
+  //TODO - actually perform the events [01-11-14]  
+  // for (auto &event : curr_events)
+  // {
+  //   if (event->type == EventType::BEGIN_DEFEND)
+  //   {
+  //     event->user->setBFlag(BState::DEFENDING, true);
 
-      if (getBattleMode() == BattleMode::TEXT)
-      {
-        std::cout << "{DEFEND} " << curr_user->getName() << " is now defending "
-                  << "themselves from damage." << std::endl;
-      }  
-    }
-  }
+  //     if (getBattleMode() == BattleMode::TEXT)
+  //     {
+  //       std::cout << "{DEFEND} " << curr_user->getName() << " is now defending "
+  //                 << "themselves from damage." << std::endl;
+  //     }  
+  //   }
+  // }
 }
 
 /*
@@ -1804,53 +1815,46 @@ void Battle::personalUpkeep(Person* const target)
 void Battle::processBuffer()
 {
   std::cout << "--- Processing Battle Events ---" << std::endl;
-  auto last_buffer_index = false;
+  auto last_index = false;
   
-  setBattleFlag(CombatState::RENDERING_COMPLETE, false);
-  
-  /* Set the next buffer index of the processing has been completed for the
-   * previous action */
+  /* Update to the next action buffer index if action processing was completed
+     and set it to a bool to checkf or the last buffer index */
   if (getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
-    setBattleFlag(CombatState::BEGIN_PROCESSING, false);
-  if (getBattleFlag(CombatState::BEGIN_PROCESSING))
-    last_buffer_index &= !action_buffer->setNext();
-
-    /* Set begin processing flag, clear the events and start with a beginning
-     * event (ex. begin skill use event */
-    setBattleFlag(CombatState::BEGIN_PROCESSING, true);
-    clearEvents();
+  {
+    setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, false);
+        last_index &= !action_buffer->setNext();
+    //setBattleFlag(CombatState::BEGIN_PROCESSING, false);
+  }
    
-    auto curr_action_type = ActionType::NONE;
-    // auto can_process       = true;
-    auto curr_targets = action_buffer->getTargets();
-    auto damage_types = action_buffer->getDamageTypes();
-    curr_action_type  = action_buffer->getActionType();
-    curr_user         = action_buffer->getUser();
+  auto curr_action_type = ActionType::NONE;
+  auto curr_targets = action_buffer->getTargets();
+  auto damage_types = action_buffer->getDamageTypes();
+  curr_action_type  = action_buffer->getActionType();
+  curr_user         = action_buffer->getUser();
 
-    if (getBattleMode() == BattleMode::TEXT && curr_user != nullptr)
-      std::cout << "\n{User} Processing: " << curr_user->getName() << std::endl;
+  if (getBattleMode() == BattleMode::TEXT && curr_user != nullptr)
+    std::cout << "\n{User} Processing: " << curr_user->getName() << std::endl;
 
-    if (curr_action_type == ActionType::SKILL)
-    {
-      processSkill(curr_targets, damage_types);
-    }
-    else if (curr_action_type == ActionType::ITEM)
-    {
-      //TODO: Item processing
-    }
-    else if (curr_action_type == ActionType::DEFEND)
-    {
-      auto event = createEvent(BattleEventType::START_DEFEND,curr_user,nullptr);
-      curr_events.push_back(event);
-    }
-    else if (curr_action_type == ActionType::GUARD)
-    {
-      auto event = createEvent(BattleEventType::BEGIN_GUARD, curr_user,
-                       action_buffer->getTargets().at(0));
-      curr_events.push_back(event);
-
-      //TODO - Process guard after begin guard rendering
-      // bool good_guard = processGuard();
+  if (curr_action_type == ActionType::SKILL)
+  {
+    processSkill(curr_targets, damage_types);
+  }
+  else if (curr_action_type == ActionType::ITEM)
+  {
+    //TODO: Item processing
+  }
+  else if (curr_action_type == ActionType::DEFEND)
+  {
+    event_buffer->createDefendEvent(EventType::BEGIN_DEFEND, curr_user);
+    setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
+  }
+  else if (curr_action_type == ActionType::GUARD)
+  {
+    event_buffer->createGuardEvent(EventType::BEGIN_GUARD, curr_user,
+        action_buffer->getTargets().at(0));
+    
+    //TODO : Determine good guard before ??
+    // bool good_guard = processGuard();
 
       // if (good_guard)
       // {
@@ -1922,11 +1926,9 @@ void Battle::processBuffer()
     //   std::cout << "[Error]: Couldn't process current action!" << std::endl;
     // }
 
-  if (last_buffer_index && 
-      getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
-  {
+  /* Complete the processing of the last of events and move to clean up */
+  if (last_index && getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
     setBattleFlag(CombatState::PHASE_DONE, true);
-  }
 
   setBattleFlag(CombatState::READY_TO_RENDER, true);
 }
@@ -1982,6 +1984,11 @@ bool Battle::processGuard()
   return good_guard;
 }
 
+bool Battle::performGuard()
+{
+  return true; //TODO
+}
+
 /*
  * Description:
  *
@@ -1998,11 +2005,10 @@ bool Battle::processAction(BattleEvent* battle_event,
   }
 
   auto can_process  = false;
-  auto done         = false;
-  auto curr_action  = battle_event->skill_use->getEffects().at(curr_action_index);
-  auto curr_target  = battle_event->targets.at(0);
+  auto done         = false;  
   auto target_alive = curr_target->getBFlag(BState::ALIVE);
   auto damage_type  = damage_types.at(pro_index);
+  std::vector<Person*> target_vec{curr_target};
 
   /* Non-revive actions can only be processed against targets who are alive */
   if (!target_alive && curr_action->actionFlag(ActionFlags::REVIVE))
@@ -2010,10 +2016,18 @@ bool Battle::processAction(BattleEvent* battle_event,
   else if (target_alive && !curr_action->actionFlag(ActionFlags::REVIVE))
     can_process = true;
 
-  if (can_process && doesActionHit())
+  auto action_hits = false;
+
+  battle_event->happens = action_hits;
+
+  if (can_process)
+    action_hits = doesActionHit();
+
+  if (can_process && action_hits)
   {
-    curr_user->setAilFlag(PersonAilState::MISS_NEXT_TARGET, false);
-    curr_user->setAilFlag(PersonAilState::NEXT_ATK_NO_EFFECT, false);
+    //TODO -> move to perform action
+    //curr_user->setAilFlag(PersonAilState::MISS_NEXT_TARGET, false);
+    //curr_user->setAilFlag(PersonAilState::NEXT_ATK_NO_EFFECT, false);
 
     if (curr_action->actionFlag(ActionFlags::ALTER) ||
         curr_action->actionFlag(ActionFlags::ASSIGN))
@@ -2053,32 +2067,49 @@ bool Battle::processAction(BattleEvent* battle_event,
         std::cout << "Factor Target: " << factor_target->getName()<< std::endl;
       }
 
-      std::vector<Person*> target_vec{action_target};
-      battle_event->targets = target_vec;
-
       // if (curr_action->actionFlag(ActionFlags::ALTER))
       //   done = processAlterAction(damage_type, action_target, factor_target);
       // else
       //   done = processAssignAction(damage_type, action_target, factor_target);
       // }
-     if (curr_action->actionFlag(ActionFlags::DAMAGE))
-        done = processDamageAction(battle_event, damage_type);
+    }
+    else if (curr_action->actionFlag(ActionFlags::DAMAGE))
+    {
+      auto damage_event = 
+          event_buffer->createDamageEvent(EventType::STANDARD_DAMAGE, 
+          curr_target, 0);
+    
+      done = processDamageAction(damage_event, damage_type);
+    }
+
       // else if (curr_action->actionFlag(ActionFlags::INFLICT))
       //   done = processInflictAction();
       // else if (curr_action->actionFlag(ActionFlags::RELIEVE))
       //   done = processRelieveAction();
       // else if (curr_action->actionFlag(ActionFlags::REVIVE))
       //   done = processReviveAction();
-    }
-    else if (!can_process)
-    {
-      if (getBattleMode() == BattleMode::TEXT)
-        std::cout << "{Fizzle} The action has fizzled!" << std::endl;
-    }
-    else if (getBattleMode() == BattleMode::TEXT)
-    {
+  }
+  else if (!can_process)
+  {
+    auto fizzle = event_buffer->createFizzleEvent(EventType::FIZZLE, curr_user, 
+                      target_vec);
+    fizzle->action_use = curr_action;
+
+    setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
+
+    if (getBattleMode() == BattleMode::TEXT)
+      std::cout << "{Fizzle} The action has fizzled!" << std::endl;
+  }
+  else if (can_process && !action_hits)
+  {
+    auto miss = event_buffer->createMissEvent(EventType::ACTION_MISS, curr_user, 
+                    target_vec);
+    miss->action_use = curr_action;
+
+    setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
+
+    if (getBattleMode() == BattleMode::TEXT)
       std::cout << "{MISS} The action has missed. " << std::endl;
-    }
   }
 
   return done;
@@ -2212,38 +2243,38 @@ bool Battle::processDamageAction(BattleEvent* damage_event,
   bool crit_happens = doesActionCrit();
         
   if (crit_happens)
+  {
+    damage_event->type = EventType::CRITICAL_DAMAGE;
     actual_crit_factor = calcCritFactor();
+  }
+  else
+    damage_event->type = EventType::STANDARD_DAMAGE;
 
   auto base_damage = calcBaseDamage(actual_crit_factor, damage_type);
-  auto damage_mod   = curr_user->getDmgMod();
+  auto damage_mod  = curr_user->getDmgMod();
   auto damage = static_cast<int32_t>(base_damage * damage_mod);
 
   damage = Helpers::setInRange(damage, kMINIMUM_DAMAGE, kMAXIMUM_DAMAGE);
         
   if (crit_happens && getBattleMode() == BattleMode::TEXT)
-  {
     std::cout << "{CRITICAL} - The strike is critical!" << std::endl;
-  }
 
-  damage_event->type    = BattleEventType::STANDARD_DAMAGE;
-  damage_event->amount  = damage;
-  curr_events.push_back(damage_event);
+  damage_event->amount = damage;
 
-  //TODO - Check for death event
-  // auto done = processDamageAmount(damage, DamageType::BASE);
-  
+  /* If the damage done exceeds the person's health, the damage dealt to them
+   * will kill them, so a death event will needed to be appended. */
+  if (curr_target->getCurr().getStat(Attribute::VITA) <= damage)
+    event_buffer->createDeathEvent(EventType::DEATH, curr_user);
+
   if (hasInfliction(Infliction::BERSERK, curr_user))
   {
     auto hitback = base_damage * Ailment::getBerserkHitbackPC();
    
-    auto hitback_event = createEvent(BattleEventType::HITBACK_DAMAGE, nullptr, 
-                           curr_target);
-    hitback_event->happens = true;
-    hitback_event->amount = hitback;
-    curr_events.push_back(hitback_event);
+    event_buffer->createDamageEvent(EventType::HITBACK_DAMAGE, curr_user, 
+        hitback);
 
-    //TODO - Check for death event
-    // done &= processDamageAmount(hitback, DamageType::HITBACK);
+    if (curr_user->getCurr().getStat(Attribute::VITA) <= hitback)
+      event_buffer->createDeathEvent(EventType::DEATH, curr_user);
   }
 
   return done;
@@ -2420,69 +2451,67 @@ bool Battle::hasInfliction(Infliction type, Person* const check)
  * Output: bool - whether processing to end (win cond.) after this skill
  */
 void Battle::processSkill(std::vector<Person*> targets, std::vector<DamageType>
-  damage_types)
+     damage_types)
 {
-   if (getBattleMode() == BattleMode::TEXT)
-        std::cout << "{Skill} Processing: " << curr_skill->getName() << std::endl;
+  if (getBattleMode() == BattleMode::TEXT)
+    std::cout << "{Skill} Processing: " << curr_skill->getName() << std::endl;
 
-      curr_skill = action_buffer->getSkill();
+  curr_skill = action_buffer->getSkill();
 
-      /* If processing the first action, append begin skill use event */
-      if (!getBattleFlag(CombatState::BEGIN_ACTION_PROCESSING))
-      {
-        setBattleFlag(CombatState::BEGIN_ACTION_PROCESSING, true);
-        auto event = createEvent(BattleEventType::SKILL_USE, curr_skill, false);
-        event->user = curr_user;
-        event->targets = targets;
-        curr_events.push_back(event);
+  /* If processing the first action, append begin skill use event */
+  if (!getBattleFlag(CombatState::BEGIN_ACTION_PROCESSING))
+  {
+    setBattleFlag(CombatState::BEGIN_ACTION_PROCESSING, true);
+    
+    auto event = event_buffer->createSkillEvent(curr_skill, curr_user, targets, 
+                     false);
+    auto to_process_skill = true;
 
-        auto to_process_skill = true;
-        if (curr_skill->getCooldown() > 0)
-        {
-          event->type = BattleEventType::SKILL_COOLDOWN;
-          to_process_skill = false;
-        }
+    event->user    = curr_user;
+    event->targets = targets;
+    
+    if (curr_skill->getCooldown() > 0)
+    {
+      event->type = EventType::SKILL_COOLDOWN;
+      to_process_skill = false;
+    }
 
-        if (to_process_skill)
-        {
-          auto skill_hits = doesSkillHit(targets);
+    if (to_process_skill)
+    {
+      auto skill_hits = doesSkillHit(targets);
         
-          if (skill_hits)
-          {
-            event->happens = true;
+      if (skill_hits)
+      {
+        event->happens = true;
             
-            if (hasInfliction(Infliction::BERSERK, curr_user) &&
-                !curr_skill->isBerserkSkill())
-            {
-              auto fizzle = createEvent(BattleEventType::SKILL_USE_FIZZLE,
-                                curr_user, targets);
-              fizzle->skill_use = curr_skill;
-              curr_events.push_back(fizzle);
-
-              setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
-            }
-
-          }
-          else if (curr_events.size() < 1)
-          {
-            auto miss = createEvent(BattleEventType::SKILL_MISS, curr_user, 
-                            targets);
-            curr_events.push_back(miss);
-          }
-
-          /* If the skill misses, go to the next action processing after render */
-          if (!skill_hits)
-            setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
-
-        }
-        else
+        if (hasInfliction(Infliction::BERSERK, curr_user) &&
+            !curr_skill->isBerserkSkill())
         {
+          event_buffer->createFizzleEvent(EventType::SKILL_USE_FIZZLE,
+              curr_user, targets);
           setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
         }
-
-        std::cout << "Setting curr action index: " << curr_action_index << std::endl;
-        curr_action_index = 0;
       }
+      // Curr events size?
+      else if (event_buffer->getCurrentSize() < 1)
+      {
+        event_buffer->createMissEvent(EventType::SKILL_MISS, curr_user,
+            targets);
+      }
+
+      /* If the skill misses, go to the next action processing after render */
+      if (!skill_hits)
+        setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
+
+    }
+    else
+    {
+      setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
+    }
+
+    std::cout << "Setting curr action index: " << curr_action_index << std::endl;
+    curr_action_index = 0;
+  }
 
   /* Else, process action index and increment the action index */
   auto effects = curr_skill->getEffects();
@@ -2530,25 +2559,14 @@ void Battle::processSkill(std::vector<Person*> targets, std::vector<DamageType>
   if (curr_action_index < effects.size())
   {
     curr_action = effects.at(curr_action_index);
-    if (doesActionHit())
+
+    for (auto it = begin(targets); it != end(targets); ++it)
     {
-      for (auto it = begin(targets); it != end(targets); ++it)
-      {
-        auto action = createEvent(BattleEventType::SKILL_USE,
-                        curr_user, targets);
-        action->skill_use = curr_skill;
-        
-        std::cout << "--- Processing action" << std::endl;
-        processAction(action, damage_types);
-      }          
-    }
-    else
-    {
-      auto action_miss = createEvent(BattleEventType::ACTION_MISS, 
-                             curr_user, nullptr);
-      action_miss->happens = false;
-      action_miss->action_use = curr_action;
-      curr_events.push_back(action_miss);
+      curr_target = *it;
+      auto action_event = event_buffer->createActionEvent(curr_action, 
+          curr_skill, curr_user, curr_target, true);
+
+      processAction(action_event, damage_types);   
     }
   }
   else
@@ -2556,7 +2574,7 @@ void Battle::processSkill(std::vector<Person*> targets, std::vector<DamageType>
     setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
   }
 
-        curr_action_index++;
+  curr_action_index++;
 }
 
 /*
@@ -3548,23 +3566,6 @@ void Battle::printAll(const bool &simple, const bool &flags, const bool &party)
   std::cout << "==== / Battle ====\n\n";
 }
 
-void Battle::printEvents()
-{
-  for (const auto& event : curr_events)
-  {
-    std::cout << "Event Type: " << static_cast<int>(event->type) << std::endl;
-    std::cout << "Action Use: " << event->action_use << std::endl;
-    std::cout << "Skill Use: " << event->skill_use << std::endl;
-    std::cout << "User: " << event->user << std::endl;
-    
-    for (const auto& target : event->targets)
-      std::cout << "Target: " << target << std::endl;
-
-    std::cout << "Amount: " << event->amount << std::endl;
-    std::cout << "Happens? " << event->happens << std::endl;
-  }
-}
-
 /*
  * Description: Print out the etailed information for each person in friends
  *              and foes to the console.
@@ -3705,10 +3706,12 @@ bool Battle::update(int32_t cycle_time)
     if (getBattleFlag(CombatState::RENDERING_COMPLETE))
     {
       setBattleFlag(CombatState::RENDERING_COMPLETE, false);
-      if (curr_events.size() > 0)
-        performEvents();
+
       processBuffer();
-      printEvents();
+      event_buffer->print(true);
+      event_buffer->setCurrentIndex();
+      performEvents();
+      // clearEvents();
     }
   }
   else if (turn_state == TurnState::RUNNING)
