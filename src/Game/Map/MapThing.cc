@@ -32,6 +32,7 @@ const int MapThing::kUNSET_ID = -1;
  */
 MapThing::MapThing()
 {
+  base_thing = NULL;
   event_handler = NULL;
   sprite_set = NULL;
   MapThing::clear();
@@ -779,6 +780,7 @@ bool MapThing::cleanMatrix()
 void MapThing::clear()
 {
   /* Resets the class parameters */
+  base_thing = NULL;
   MapThing::clearAllMovement();
   setDescription("");
   setEventHandler(NULL);
@@ -818,6 +820,17 @@ void MapThing::clearTarget()
   if(target != NULL)
     setMovementPaused(false);
   target = NULL;
+}
+
+/*
+ * Description: Returns the base for the class. If null, this class is a base.
+ * 
+ * Inputs: none
+ * Output: MapThing* - the reference pointer for the base class. NULL if unset
+ */
+MapThing* MapThing::getBase()
+{
+  return base_thing;
 }
 
 /*
@@ -908,6 +921,8 @@ uint32_t MapThing::getCenterY()
  */
 std::string MapThing::getDescription()
 {
+  if(base_thing != NULL)
+    return base_thing->getDescription();
   return description;
 }
 
@@ -920,6 +935,8 @@ std::string MapThing::getDescription()
  */
 Frame* MapThing::getDialogImage()
 {
+  if(base_thing != NULL)
+    return base_thing->getDialogImage();
   return &dialog_image;
 }
 
@@ -936,8 +953,19 @@ Frame* MapThing::getDialogImage()
 TileSprite* MapThing::getFrame(uint32_t x, uint32_t y)
 {
   TileSprite* found_sprite = NULL;
-  if(sprite_set != NULL)
-    found_sprite = sprite_set->getSprite(x, y);
+
+  /* If base is valid, get sprite from it */
+  if(base_thing != NULL)
+  {
+    if(base_thing->sprite_set != NULL)
+      found_sprite = base_thing->sprite_set->getSprite(x, y);
+  }
+  else
+  {
+    if(sprite_set != NULL)
+      found_sprite = sprite_set->getSprite(x, y);
+  }
+  
   return found_sprite;
 }
 
@@ -956,10 +984,17 @@ TileSprite* MapThing::getFrameMain(Tile* tile)
 
   if(isTilesSet() && tile != NULL)
   {
+    /* Get tile data */
     uint16_t tile_x = tile->getX() - tile_main.front().front()->getX();
     uint16_t tile_y = tile->getY() - tile_main.front().front()->getY();
+
     if(getTileMain(tile_x, tile_y) == tile)
-      selected = sprite_set->getSprite(tile_x, tile_y);
+    {
+      if(base_thing != NULL)
+        selected = base_thing->sprite_set->getSprite(tile_x, tile_y);
+      else
+        selected = sprite_set->getSprite(tile_x, tile_y);
+    }
   }
 
   return selected;
@@ -980,10 +1015,17 @@ TileSprite* MapThing::getFramePrevious(Tile* tile)
 
   if(tile_prev.size() > 0 && tile != NULL)
   {
+    /* Get tile data */
     uint16_t tile_x = tile->getX() - tile_prev.front().front()->getX();
     uint16_t tile_y = tile->getY() - tile_prev.front().front()->getY();
+
     if(getTilePrevious(tile_x, tile_y) == tile)
-      selected = sprite_set->getSprite(tile_x, tile_y);
+    {
+      if(base_thing != NULL)
+        selected = base_thing->sprite_set->getSprite(tile_x, tile_y);
+      else
+        selected = sprite_set->getSprite(tile_x, tile_y);
+    }
   }
 
   return selected;
@@ -1003,8 +1045,18 @@ TileSprite* MapThing::getFramePrevious(Tile* tile)
 std::vector<std::vector<TileSprite*>> MapThing::getFrames()
 {
   std::vector<std::vector<TileSprite*>> set;
-  if(sprite_set != NULL)
-    set = sprite_set->getMatrix();
+
+  if(base_thing != NULL)
+  {
+    if(base_thing->sprite_set != NULL)
+      set = base_thing->sprite_set->getMatrix();
+  }
+  else
+  {
+    if(sprite_set != NULL)
+      set = sprite_set->getMatrix();
+  }
+
   return set;
 }
 
@@ -1016,8 +1068,16 @@ std::vector<std::vector<TileSprite*>> MapThing::getFrames()
  */
 uint16_t MapThing::getHeight()
 {
-  if(sprite_set != NULL)
-    return sprite_set->height();
+  if(base_thing != NULL)
+  {
+    if(base_thing->sprite_set != NULL)
+      return base_thing->sprite_set->height();
+  }
+  else
+  {
+    if(sprite_set != NULL)
+      return sprite_set->height();
+  }
   return 0;
 }
 
@@ -1042,6 +1102,8 @@ int MapThing::getID()
  */
 Event MapThing::getInteraction()
 {
+  if(base_thing != NULL)
+    return base_thing->getInteraction();
   return interact_event;
 }
 
@@ -1140,6 +1202,8 @@ float MapThing::getMoveY()
  */
 std::string MapThing::getName()
 {
+  if(base_thing != NULL)
+    return base_thing->getName();
   return name;
 }
   
@@ -1194,6 +1258,8 @@ bool MapThing::getPassabilityExiting(Tile* frame_tile, Direction dir)
  */
 uint16_t MapThing::getSpeed()
 {
+  if(base_thing != NULL)
+    return base_thing->getSpeed();
   return speed;
 }
  
@@ -1273,8 +1339,16 @@ std::vector<std::vector<Tile*>> MapThing::getTileRender(uint8_t render_depth)
 
   if(isTilesSet())
   {
+    /* Choose the sprite matrix before proceeding */
+    SpriteMatrix* sprite_set;
+    if(base_thing != NULL)
+      sprite_set = base_thing->sprite_set;
+    else
+      sprite_set = this->sprite_set;
+
     tile_set = tile_main;
   
+    /* Go through all tiles */
     for(uint16_t i = 0; i < tile_set.size(); i++)
     {
       for(uint16_t j = 0; j < tile_set[i].size(); j++)
@@ -1478,6 +1552,8 @@ bool MapThing::isTilesSet()
  */
 bool MapThing::isVisible()
 {
+  if(base_thing != NULL)
+    return base_thing->isVisible();
   return visible;
 }
 
@@ -1591,6 +1667,23 @@ void MapThing::resetLocation()
   starting_y = 0;
   x = 0.0;
   y = 0.0;
+}
+
+/*
+ * Description: Sets the base thing class. If set, the primary data will be set
+ *              from this with only location and movement handled by this class.
+ *
+ * Inputs: MapThing* base - the reference base class
+ * Output: bool - true if the base was set
+ */
+bool MapThing::setBase(MapThing* base)
+{
+  if(base != NULL && base_thing->classDescriptor() == "MapThing")
+  {
+    this->base_thing = base;
+    return true;
+  }
+  return false;
 }
 
 /* 

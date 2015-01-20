@@ -34,6 +34,9 @@ public:
   virtual ~MapThing();
 
 protected:
+  /* The base class */
+  MapThing* base_thing;
+  
   /* The thing classification */
   std::string description;
   int id;
@@ -169,6 +172,9 @@ public:
   /* Clears the target that the map thing is currently pointing at */
   void clearTarget();
 
+  /* Returns the base class */
+  MapThing* getBase();
+  
   /* Returns the bounding box of the thing */
   SDL_Rect getBoundingBox();
   SDL_Rect getBoundingPixels();
@@ -276,6 +282,9 @@ public:
  
   /* Resets the location back to default (0,0,0), relative to the map */
   virtual void resetLocation();
+
+  /* Sets the base class */
+  virtual bool setBase(MapThing* base); // TODO
 
   /* Sets the things description */
   void setDescription(std::string new_description);
