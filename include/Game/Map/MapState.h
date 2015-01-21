@@ -131,7 +131,6 @@ struct StateNode
 {
   MapState* state;
   SpriteMatrix* transition;
-  bool passable;
 
   StateNode* previous;
   StateNode* next;

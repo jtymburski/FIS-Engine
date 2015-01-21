@@ -89,7 +89,6 @@ void MapInteractiveObject::appendEmptyNode()
   /* Set the state parameters */
   node->state = NULL;
   node->transition = NULL;
-  node->passable = false;
   node->previous = NULL;
   node->next = NULL;
 
@@ -715,7 +714,6 @@ bool MapInteractiveObject::setState(SpriteMatrix* transition)
     /* Set the state parameters */
     node->state = NULL;
     node->transition = transition;
-    node->passable = passable;
     node->previous = NULL;
     node->next = NULL;
 

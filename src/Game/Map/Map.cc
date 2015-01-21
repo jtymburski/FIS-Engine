@@ -91,9 +91,9 @@ Map::~Map()
 bool Map::addSpriteData(XmlData data, std::string id, 
                         int file_index, SDL_Renderer* renderer)
 {
-  uint16_t access_id = 0;
+  int32_t access_id = 0;
   Sprite* access_sprite = NULL;
-  uint16_t copy_id = 0;
+  int32_t copy_id = 0;
   Sprite* copy_sprite = NULL;
   
   /* Get the ID information */
@@ -107,7 +107,7 @@ bool Map::addSpriteData(XmlData data, std::string id,
   }
 
   /* Only move forward if the access id is valid */
-  if(access_id > 0)
+  if(access_id >= 0 && access_id < 65535)
   {
     /* Search for the sprite in the existing stack */
     for(uint16_t i = 0; i < tile_sprites.size(); i++)
@@ -146,7 +146,7 @@ bool Map::addTileData(XmlData data, uint16_t section_index)
   /* Split based on the element information if it's for a path */
   if(element == "sprite_id" || element == "sprite_matrix")
   {
-    std::vector< std::vector<uint16_t> > id_matrix;
+    std::vector< std::vector<int32_t> > id_matrix;
     if(element == "sprite_id")
       id_matrix = splitIdString(data.getDataString());
     else
@@ -160,7 +160,7 @@ bool Map::addTileData(XmlData data, uint16_t section_index)
         Sprite* found_sprite = NULL;
         
         /* Try and find the id */
-        if(id_matrix[i][j] != 0)
+        if(id_matrix[i][j] >= 0)
         {
           for(uint32_t k = 0; k < tile_sprites.size(); k++)
           {
@@ -636,10 +636,10 @@ bool Map::setSectionIndex(uint16_t index)
 }
 
 /* Splits the ID into a vector of IDs */
-std::vector< std::vector<uint16_t> > Map::splitIdString(std::string id, 
-                                                        bool matrix)
+std::vector< std::vector<int32_t> > Map::splitIdString(std::string id, 
+                                                       bool matrix)
 {
-  std::vector< std::vector<uint16_t> > id_stack;
+  std::vector< std::vector<int32_t> > id_stack;
   std::vector<std::string> xy_split = Helpers::split(id, ',');
 
   /* Only proceed if the string isn't empty and a split occurred */
@@ -676,7 +676,7 @@ std::vector< std::vector<uint16_t> > Map::splitIdString(std::string id,
       for(uint16_t mult = multiplier_min; mult <= multiplier_max; mult++)
       {
         uint16_t addition = (id_max - id_min + 1) * mult;
-        std::vector<uint16_t> id_row;
+        std::vector<int32_t> id_row;
         
         for(uint16_t id_x = id_min; id_x <= id_max; id_x++)
           id_row.push_back(id_x + addition);
@@ -688,7 +688,7 @@ std::vector< std::vector<uint16_t> > Map::splitIdString(std::string id,
     {
       for(uint16_t i = 0; i < xy_split.size(); i++)
       {
-        std::vector<uint16_t> id_row;
+        std::vector<int32_t> id_row;
         
         std::vector<std::string> row_split = Helpers::split(xy_split[i], '.');
         for(uint16_t j = 0; j < row_split.size(); j++)
@@ -1102,7 +1102,9 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
       success &= read_success;
 
       /* Parse map data */
-      if(data.getElement(kFILE_GAME_TYPE) == "map")
+      // TODO: Change how ID is chosen for what map is read
+      if(data.getElement(kFILE_GAME_TYPE) == "map" && 
+         data.getKeyValue(kFILE_GAME_TYPE) == "0")
       {
         if(data.getElement(kFILE_SECTION_ID) == "sprite" &&
            !data.getKeyValue(kFILE_SECTION_ID).empty())

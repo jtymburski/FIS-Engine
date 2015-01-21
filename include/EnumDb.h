@@ -516,6 +516,19 @@ enum class SortObjects : std::uint32_t
   ITEMS, 
 };
 
+/*
+ * Description: Defines what the map thing base class is
+ */
+enum class ThingBase : std::uint8_t
+{
+  THING,
+  PERSON,
+  NPC,
+  INTERACTIVE,
+  ITEM,
+  ISBASE
+};
+
 /* The window display classifier to define how it's displayed:
  *  OFF - not showing
  *  SHOWING - rising from the bottom

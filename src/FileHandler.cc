@@ -1186,7 +1186,7 @@ XmlData FileHandler::readXmlData(bool* done, bool* success)
     }
     else
     {
-      failed = true;
+      failed = false;
       finished = true;
     }
   }

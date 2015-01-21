@@ -217,7 +217,7 @@ bool Sprite::addFileInformation(XmlData data, int index, SDL_Renderer* renderer,
 {
   std::string element = data.getElement(index);
   bool success = true;
-  
+
   /* Splits the element, for underlying categorization */
   std::vector<std::string> split_element = Helpers::split(element, '_');
 
@@ -261,7 +261,7 @@ bool Sprite::addFileInformation(XmlData data, int index, SDL_Renderer* renderer,
     setRotation(data.getDataInteger());
   else if(element == "sound") // TODO
     std::cout << "Sprite Sound: " << data.getDataString() << std::endl;
-  
+
   return success;
 }
 

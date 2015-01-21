@@ -35,13 +35,13 @@ public:
 
 protected:
   /* The base class */
-  MapThing* base_thing;
-  
+  MapThing* base;
+  ThingBase base_category;
+
   /* The thing classification */
   std::string description;
   int id;
   std::string name;
-  bool passable; // TODO: Remove?
   bool visible;
   float x;
   float y;
@@ -284,7 +284,7 @@ public:
   virtual void resetLocation();
 
   /* Sets the base class */
-  virtual bool setBase(MapThing* base); // TODO
+  bool setBase(MapThing* base);
 
   /* Sets the things description */
   void setDescription(std::string new_description);

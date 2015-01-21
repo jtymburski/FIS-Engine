@@ -164,8 +164,8 @@ private:
   bool setSectionIndex(uint16_t index);
   
   /* Splits the ID into a vector of IDs */
-  std::vector< std::vector<uint16_t> > splitIdString(std::string id, 
-                                                     bool matrix = false);
+  std::vector< std::vector<int32_t> > splitIdString(std::string id, 
+                                                    bool matrix = false);
 
   /* Updates the height and width, based on zoom factors */
   void updateTileSize();
