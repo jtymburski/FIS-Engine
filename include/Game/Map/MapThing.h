@@ -284,7 +284,7 @@ public:
   virtual void resetLocation();
 
   /* Sets the base class */
-  bool setBase(MapThing* base);
+  virtual bool setBase(MapThing* base);
 
   /* Sets the things description */
   void setDescription(std::string new_description);

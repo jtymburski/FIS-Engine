@@ -789,8 +789,12 @@ bool MapThing::cleanMatrix()
  */
 void MapThing::clear()
 {
+  /* Unset tiles before proceeding to any class parameters */
+  unsetTiles(true);
+
   /* Resets the class parameters */
   base = NULL;
+  base_category = ThingBase::ISBASE;
   MapThing::clearAllMovement();
   setDescription("");
   setEventHandler(NULL);
@@ -933,7 +937,9 @@ uint32_t MapThing::getCenterY()
  */
 std::string MapThing::getDescription()
 {
-  if(base != NULL)
+  if(description != "")
+    return description;
+  else if(base != NULL)
     return base->getDescription();
   return description;
 }
@@ -1184,7 +1190,9 @@ float MapThing::getMoveY()
  */
 std::string MapThing::getName()
 {
-  if(base != NULL)
+  if(name != "")
+    return name;
+  else if(base != NULL)
     return base->getName();
   return name;
 }
@@ -1661,16 +1669,25 @@ void MapThing::resetLocation()
  */
 bool MapThing::setBase(MapThing* base)
 {
-  if(base->classDescriptor() == "MapThing")
+  bool success = false;
+
+  if(classDescriptor() == "MapThing")
   {
-    this->base = base;
-    if(base != NULL)
+    if(base != NULL && base->classDescriptor() == "MapThing")
+    {
+      this->base = base;
       base_category = ThingBase::THING;
-    else
+      success = true;
+    }
+    else if(base == NULL)
+    {
+      this->base = NULL;
       base_category = ThingBase::ISBASE;
-    return true;
+      success = true;
+    }
   }
-  return false;
+
+  return success;
 }
 
 /* 
@@ -2022,10 +2039,9 @@ void MapThing::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
   (void)tile_set;
   
   if(isTilesSet())
-  {
     moveThing(cycle_time);
+  if(getMatrix() != NULL)
     animate(cycle_time);
-  }
 }
  
 /*

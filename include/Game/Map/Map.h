@@ -41,6 +41,12 @@ public:
   ~Map();
 
 private:
+  /* Base things */
+  std::vector<MapInteractiveObject*> base_ios;
+  std::vector<MapItem*> base_items;
+  std::vector<MapPerson*> base_persons;
+  std::vector<MapThing*> base_things;
+  
   /* The base system path to the resources */
   std::string base_path;
   
@@ -128,14 +134,25 @@ private:
   /* Adds tile data, as per data from the file */
   bool addTileData(XmlData data, uint16_t section_index);
 
-  // /* Adds a tile sprite, based on the path and some XMLData */
-  // bool addTileSprite(QString path, int x_diff, int y_diff, 
-                     // QList<QString> adjustments, int section_index, 
-                     // XmlData data);
-
   /* Adds thing data, as per data from the file */
+  bool addThingBaseData(XmlData data, int file_index, SDL_Renderer* renderer);
   bool addThingData(XmlData data, uint16_t section_index, 
-                                  SDL_Renderer* renderer);
+                    SDL_Renderer* renderer);
+
+  /* Returns the item, based on the ID */
+  MapItem* getItem(uint16_t id);
+  MapItem* getItemBase(uint16_t id);
+
+  /* Returns the interactive object, based on the ID */
+  MapInteractiveObject* getIOBase(uint16_t id);
+
+  /* Returns the person, based on the ID */
+  MapPerson* getPerson(uint16_t id);
+  MapPerson* getPersonBase(uint16_t id);
+
+  /* Returns the thing, based on the ID */
+  MapThing* getThing(uint16_t id);
+  MapThing* getThingBase(uint16_t id);
 
   /* Returns a stack of map things that correspond to the ID stack */
   std::vector<MapThing*> getThingData(std::vector<int> thing_ids);

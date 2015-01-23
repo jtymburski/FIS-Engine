@@ -257,59 +257,127 @@ bool Map::addTileData(XmlData data, uint16_t section_index)
   return false;
 }
 
-bool Map::addThingData(XmlData data, uint16_t section_index, 
-                                     SDL_Renderer* renderer)
+bool Map::addThingBaseData(XmlData data, int file_index, SDL_Renderer* renderer)
 {
-  std::string identifier = data.getElement(kFILE_CLASSIFIER);
-  uint16_t id = std::stoul(data.getKeyValue(kFILE_CLASSIFIER));
-  uint16_t index = 0;
+  std::string identifier = data.getElement(file_index);
+  uint16_t id = std::stoul(data.getKeyValue(file_index));
   MapThing* modified_thing = NULL;
+  bool new_thing = false;
 
   /* Identify which thing to be created */
-  if(identifier == "mapthing" || identifier == "mapio")
+  if(identifier == "mapthing")
   {
-    /* Search for the existing map object */
-    while(modified_thing == NULL && index < things.size())
-    {
-      if(things[index]->getID() == id)
-        modified_thing = things[index];
-      index++;
-    }
-
-    /* Create a new thing if one does not exist */
+    /* Create a new thing, if one doesn't exist */
+    modified_thing = getThingBase(id);
     if(modified_thing == NULL)
     {
-      if(identifier == "mapthing")
-        modified_thing = new MapThing();
-      else
-        modified_thing = new MapInteractiveObject();
-      modified_thing->setEventHandler(event_handler);
-      modified_thing->setID(id);
-
-      /* Append the new one */
-      things.push_back(modified_thing);
+      modified_thing = new MapThing();
+      new_thing = true;
+      base_things.push_back(modified_thing);
+    }
+  }
+  else if(identifier == "mapio")
+  {
+    /* Create a new map interactive object, if one doesn't exist */
+    modified_thing = getIOBase(id);
+    if(modified_thing == NULL)
+    {
+      modified_thing = new MapInteractiveObject();
+      new_thing = true;
+      base_ios.push_back(static_cast<MapInteractiveObject*>(modified_thing));
     }
   }
   else if(identifier == "mapperson" || identifier == "mapnpc")
   {
-    /* Search for the existing map object */
-    while(modified_thing == NULL && index < persons.size())
-    {
-      if(persons[index]->getID() == id)
-        modified_thing = persons[index];
-      index++;
-    }
-
-    /* Create a new person if one does not exist */
+    /* Create a new person, if one doesn't exist */
+    modified_thing = getPersonBase(id);
     if(modified_thing == NULL)
     {
       if(identifier == "mapperson")
         modified_thing = new MapPerson();
       else
         modified_thing = new MapNPC();
-      modified_thing->setEventHandler(event_handler);
-      modified_thing->setID(id);
-      
+      new_thing = true;
+      base_persons.push_back(static_cast<MapPerson*>(modified_thing));
+    }
+  }
+  else if(identifier == "mapitem")
+  {
+    /* Create a new item, if one doesn't exist */
+    modified_thing = getItemBase(id);
+    if(modified_thing == NULL)
+    {
+      modified_thing = new MapItem();
+      new_thing = true;
+      base_items.push_back(static_cast<MapItem*>(modified_thing));
+    }
+  }
+
+  /* If new, set the ID and event handler */
+  if(new_thing)
+  {
+    modified_thing->setEventHandler(event_handler);
+    modified_thing->setID(id);
+  }
+
+  /* Proceed to update the thing information from the XML data */
+  if(modified_thing != NULL)
+    return modified_thing->addThingInformation(data, file_index + 1, 0, 
+                                               renderer, base_path);
+  return false;
+}
+
+bool Map::addThingData(XmlData data, uint16_t section_index, 
+                       SDL_Renderer* renderer)
+{
+  int32_t base_id = -1;
+  std::string identifier = data.getElement(kFILE_CLASSIFIER);
+  uint16_t id = std::stoul(data.getKeyValue(kFILE_CLASSIFIER));
+  MapThing* modified_thing = NULL;
+  bool new_thing = false;
+  bool success = true;
+
+  /* Check if it's base */
+  if(data.getElement(kFILE_CLASSIFIER + 1) == "base")
+    base_id = data.getDataInteger();
+
+  /* Identify which thing to be created */
+  if(identifier == "mapthing" || identifier == "mapio")
+  {
+    /* Create a new thing, if one doesn't exist */
+    modified_thing = getThing(id);
+    if(modified_thing == NULL)
+    {
+      if(identifier == "mapthing")
+        modified_thing = new MapThing();
+      else
+        modified_thing = new MapInteractiveObject();
+      new_thing = true;
+      things.push_back(modified_thing);
+    }
+
+    /* Attempt to add base, if applicable */
+    if(base_id >= 0)
+    {
+      if(identifier == "mapthing")
+        success &= modified_thing->setBase(getThingBase(base_id));
+      else
+        success &= modified_thing->setBase(getIOBase(base_id));
+    }
+  }
+  else if(identifier == "mapperson" || identifier == "mapnpc")
+  {
+    /* Create a new person, if one doesn't exist */
+    modified_thing = getPerson(id);
+    if(modified_thing == NULL)
+    {
+      if(identifier == "mapperson")
+        modified_thing = new MapPerson();
+      else
+        modified_thing = new MapNPC();
+      new_thing = true;
+      persons.push_back(static_cast<MapPerson*>(modified_thing));
+
       /* If the ID is the player ID, tie to the player */
       if(id == kPLAYER_ID)
       {
@@ -317,43 +385,104 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
         if(system_options != NULL && system_options->isAutoRun())
           player->setRunning(true);
       }
-      
-      /* Append the new one */
-      persons.push_back(static_cast<MapPerson*>(modified_thing));
     }
+
+    /* Attempt to add base, if applicable */
+    if(base_id >= 0)
+      success &= modified_thing->setBase(getPersonBase(base_id));
   }
   else if(identifier == "mapitem")
   {
-    /* Search for the existing map object */
-    while(modified_thing == NULL && index < items.size())
-    {
-      if(items[index]->getID() == id)
-        modified_thing = items[index];
-      index++;
-    }
-    
-    /* If no item found, create one */
+    /* Create a new item, if one doesn't exist */
+    modified_thing = getItem(id);
     if(modified_thing == NULL)
     {
-      /* Create the new thing */
       modified_thing = new MapItem();
-      modified_thing->setEventHandler(event_handler);
-      modified_thing->setID(id);
-      
-      /* Append the new one */
+      new_thing = true;
       items.push_back(static_cast<MapItem*>(modified_thing));
     }
+
+    /* Attempt to add base, if applicable */
+    if(base_id >= 0)
+      success &= modified_thing->setBase(getItemBase(base_id));
+  }
+
+  /* If new, set the ID and event handler */
+  if(new_thing)
+  {
+    modified_thing->setEventHandler(event_handler);
+    modified_thing->setID(id);
   }
 
   /* Proceed to update the thing information from the XML data */
   if(modified_thing != NULL)
-    return modified_thing->addThingInformation(data, kFILE_CLASSIFIER + 1, 
-                                               section_index, renderer, 
-                                               base_path);
-
+    return (success && modified_thing->addThingInformation(
+                                      data, kFILE_CLASSIFIER + 1, section_index, 
+                                      renderer, base_path));
   return false;
 }
 
+/* Returns the item, based on the ID */
+MapItem* Map::getItem(uint16_t id)
+{
+  for(uint32_t i = 0; i < items.size(); i++)
+    if(items[i]->getID() == id)
+      return items[i];
+  return NULL;
+}
+
+MapItem* Map::getItemBase(uint16_t id)
+{
+  for(uint32_t i = 0; i < base_items.size(); i++)
+    if(base_items[i]->getID() == id)
+      return base_items[i];
+  return NULL;
+}
+
+/* Returns the interactive object, based on the ID */
+MapInteractiveObject* Map::getIOBase(uint16_t id)
+{
+  for(uint32_t i = 0; i < base_ios.size(); i++)
+    if(base_ios[i]->getID() == id)
+      return base_ios[i];
+  return NULL;
+}
+
+/* Returns the person, based on the ID */
+MapPerson* Map::getPerson(uint16_t id)
+{
+  for(uint32_t i = 0; i < persons.size(); i++)
+    if(persons[i]->getID() == id)
+      return persons[i];
+  return NULL;
+}
+
+MapPerson* Map::getPersonBase(uint16_t id)
+{
+  for(uint32_t i = 0; i < base_persons.size(); i++)
+    if(base_persons[i]->getID() == id)
+      return base_persons[i];
+  return NULL;
+}
+
+/* Returns the thing, based on the ID */
+MapThing* Map::getThing(uint16_t id)
+{
+  for(uint32_t i = 0; i < things.size(); i++)
+    if(things[i]->getID() == id)
+      return things[i];
+  return NULL;
+}
+
+MapThing* Map::getThingBase(uint16_t id)
+{
+  for(uint32_t i = 0; i < base_things.size(); i++)
+    if(base_things[i]->getID() == id)
+      return base_things[i];
+  return NULL;
+}
+
+// TODO: Revise to use the getters??
 std::vector<MapThing*> Map::getThingData(std::vector<int> thing_ids)
 {
   std::vector<MapThing*> used_things;
@@ -1112,6 +1241,16 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
           success &= addSpriteData(data, data.getKeyValue(kFILE_SECTION_ID), 
                                    kFILE_SECTION_ID + 1, renderer);
         }
+        else if((data.getElement(kFILE_SECTION_ID) == "mapthing" || 
+                 data.getElement(kFILE_SECTION_ID) == "mapperson" ||
+                 data.getElement(kFILE_SECTION_ID) == "mapnpc" ||
+                 data.getElement(kFILE_SECTION_ID) == "mapitem" || 
+                 data.getElement(kFILE_SECTION_ID) == "mapio") &&
+                data.getKey(kFILE_SECTION_ID) == "id" && 
+                !data.getKeyValue(kFILE_SECTION_ID).empty())
+        {
+          success &= addThingBaseData(data, kFILE_SECTION_ID, renderer);
+        }
         else
         {
           int temp_index = -1;
@@ -1211,11 +1350,27 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
     map_dialog.loadImagePickupTopBottom(
                            "sprites/Overlay/notification_corner.png", renderer);
 
+    /* Clean up base things */
+    for(uint16_t i = 0; i < base_things.size(); i++)
+      if(!base_things[i]->cleanMatrix())
+        base_things[i]->unsetFrames(true);
+    for(uint16_t i = 0; i < base_items.size(); i++)
+      if(!base_items[i]->cleanMatrix())
+        base_items[i]->unsetFrames(true);
+    for(uint16_t i = 0; i < base_persons.size(); i++)
+      if(!base_persons[i]->cleanMatrix())
+        base_persons[i]->unsetFrames(true);
+    for(uint16_t i = 0; i < base_ios.size(); i++)
+      if(!base_ios[i]->cleanMatrix())
+        base_ios[i]->unsetFrames(true);
+
     /* Thing clean-up and tile set-up */
     for(uint16_t i = 0; i < things.size(); i++)
     {
       /* Clean the matrix - fixes up the rendering box */
-      if(things[i]->cleanMatrix())
+      if((things[i]->getBase() != NULL && 
+          things[i]->getBase()->getFrames().size() > 0) || 
+         things[i]->cleanMatrix())
       {
         /* Get the tile matrix to match the frames and set */
         std::vector<std::vector<Tile*>> tile_set = getTileMatrix(things[i]);
@@ -1508,33 +1663,6 @@ void Map::unloadMap()
   tile_height = Helpers::getTileSize();
   tile_width = tile_height;
   
-  /* Delete the items */
-  for(uint16_t i = 0; i < items.size(); i++)
-  {
-    if(items[i] != NULL)
-      delete items[i];
-    items[i] = NULL;
-  }
-  items.clear();
-
-  /* Delete the persons */
-  for(uint16_t i = 0; i < persons.size(); i++)
-  {
-    if(persons[i] != NULL)
-      delete persons[i];
-    persons[i] = NULL;
-  }
-  persons.clear();
-  
-  /* Delete the things */
-  for(uint16_t i = 0; i < things.size(); i++)
-  {
-    if(things[i] != NULL)
-      delete things[i];
-    things[i] = NULL;
-  }
-  things.clear();
-  
   /* Delete all the tiles that have been set */
   for(uint16_t i = 0; i < geography.size(); i++)
   {
@@ -1555,10 +1683,66 @@ void Map::unloadMap()
   for(uint16_t i = 0; i < tile_sprites.size(); i++)
   {
     delete tile_sprites[i];
-    tile_sprites[i] = 0;
+    tile_sprites[i] = NULL;
   }
   tile_sprites.clear();
+
+   /* Delete the items */
+  for(uint16_t i = 0; i < items.size(); i++)
+  {
+    delete items[i];
+    items[i] = NULL;
+  }
+  items.clear();
+
+  /* Delete the persons */
+  for(uint16_t i = 0; i < persons.size(); i++)
+  {
+    delete persons[i];
+    persons[i] = NULL;
+  }
+  persons.clear();
   
+  /* Delete the things */
+  for(uint16_t i = 0; i < things.size(); i++)
+  {
+    delete things[i];
+    things[i] = NULL;
+  }
+  things.clear();
+
+  /* Delete the base items */
+  for(uint16_t i = 0; i < base_items.size(); i++)
+  {
+    delete base_items[i];
+    base_items[i] = NULL;
+  }
+  base_items.clear();
+  
+  /* Delete the base persons */
+  for(uint16_t i = 0; i < base_persons.size(); i++)
+  {
+    delete base_persons[i];
+    base_persons[i] = NULL;
+  }
+  base_persons.clear();
+
+  /* Delete the base interactive objects */
+  for(uint16_t i = 0; i < base_ios.size(); i++)
+  {
+    delete base_ios[i];
+    base_ios[i] = NULL;
+  }
+  base_ios.clear();
+
+  /* Delete the base things */
+  for(uint16_t i = 0; i < base_things.size(); i++)
+  {
+    delete base_things[i];
+    base_things[i] = NULL;
+  }
+  base_things.clear();
+
   /* Reset the viewport */
   viewport.setMapSize(0, 0);
   viewport.lockOn(0, 0);
@@ -1609,8 +1793,11 @@ bool Map::update(int cycle_time)
   }
   
   /* Update map things */
+  for(uint16_t i = 0; i < base_things.size(); i++)
+    base_things[i]->update(cycle_time, tile_set);
   for(uint16_t i = 0; i < things.size(); i++)
-    things[i]->update(cycle_time, tile_set);
+    if(things[i]->getBase() == NULL)
+      things[i]->update(cycle_time, tile_set);
   
   /* Finally, update the viewport and dialogs */
   item_menu.update(cycle_time);
