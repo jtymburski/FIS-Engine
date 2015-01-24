@@ -175,7 +175,7 @@ public:
 
   /* Shrink the frame matrix to the valid size and removes all null and void
    * pointers.  */
-  virtual bool cleanMatrix();
+  virtual bool cleanMatrix(bool first_call = true);
 
   /* Clears the entire class data */
   virtual void clear();

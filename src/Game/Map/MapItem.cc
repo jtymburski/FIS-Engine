@@ -199,12 +199,13 @@ std::string MapItem::classDescriptor()
  *              in MapThing and also adds the additional check of only
  *              one frame is allowed in the item.
  *
- * Inputs: none
+ * Inputs: bool first_call - is this the first call? default true
  * Output: bool - true if clean validated frame data
  */
-bool MapItem::cleanMatrix()
+bool MapItem::cleanMatrix(bool first_call)
 {
   bool success = MapThing::cleanMatrix();
+  (void)first_call;
 
   if(success)
   {
@@ -285,6 +286,36 @@ bool MapItem::isVisible()
 bool MapItem::isWalkover()
 {
   return walkover;
+}
+
+/*
+ * Description: Sets the base thing class. If set, the primary data will be set
+ *              from this with only location and movement handled by this class.
+ *
+ * Inputs: MapThing* base - the reference base class
+ * Output: bool - true if the base was set
+ */
+bool MapItem::setBase(MapThing* base)
+{
+  bool success = false;
+
+  if(classDescriptor() == "MapItem")
+  {
+    if(base != NULL && base->classDescriptor() == "MapItem")
+    {
+      this->base = base;
+      base_category = ThingBase::ITEM;
+      success = true;
+    }
+    else if(base == NULL)
+    {
+      this->base = NULL;
+      base_category = ThingBase::ISBASE;
+      success = true;
+    }
+  }
+
+  return success;
 }
 
 /*

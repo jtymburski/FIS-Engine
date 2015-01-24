@@ -263,9 +263,9 @@ float MapPerson::moveAmount(uint16_t cycle_time)
 {
   float move_amount = 0.0;
   if(running)
-    move_amount = (cycle_time * speed * 2) / kMOVE_FACTOR;
+    move_amount = (cycle_time * getSpeed() * 2) / kMOVE_FACTOR;
   else
-    move_amount = (cycle_time * speed) / kMOVE_FACTOR;
+    move_amount = (cycle_time * getSpeed()) / kMOVE_FACTOR;
 
   /* Check to make sure it maxes out at one tile */
   if(move_amount > 1.0)
@@ -315,12 +315,11 @@ bool MapPerson::setDirection(Direction direction, bool set_movement)
     MapThing::setDirection(Direction::DIRECTIONLESS);
 
   /* If it's a movement direction, rotate the fellow */
-  int surface_index = static_cast<int>(surface);
-  int dir_index = dirToInt(direction);
-  if(surface_index >= 0 && dir_index >= 0)
+  SpriteMatrix* state = getState(surface, direction);
+  if(state != NULL)
   {
-    if(changed && states[surface_index][dir_index] != NULL)
-      setMatrix(states[surface_index][dir_index]);
+    if(changed)
+      setMatrix(state);
 
     /* Finally set the in class direction */
     this->direction = direction;
@@ -566,10 +565,10 @@ std::string MapPerson::classDescriptor()
  *              frame is classified as valid if it's not NULL and has renderable
  *              frames stored within it.
  *
- * Inputs: none
+ * Inputs: bool first_call - is this the first call? default true
  * Output: bool - true if clean validated frame data
  */
-bool MapPerson::cleanMatrix()
+bool MapPerson::cleanMatrix(bool first_call)
 {
   bool equal_size = true;
   uint16_t height = 0;
@@ -580,7 +579,8 @@ bool MapPerson::cleanMatrix()
     for(uint8_t j = 0; j < states[i].size(); j++)
     {
       states[i][j]->cleanMatrix();
-      states[i][j]->tuneAnimationSpeed();
+      if(first_call)
+        states[i][j]->tuneAnimationSpeed();
 
       /* Do some additional parsing to confirm data */
       if(i == 0 && j == 0)
@@ -692,21 +692,35 @@ Direction MapPerson::getPredictedMoveRequest()
  *
  * Inputs: SurfaceClassifier surface - the surface that the person is on
  *         Direction direction - the direction moving in
+ *         bool include_base - include base in possible set to return
  * SpriteMatrix* - the state matrix pointer, that defines the sprite data
  */
 SpriteMatrix* MapPerson::getState(SurfaceClassifier surface, 
-                                  Direction direction)
+                                  Direction direction, bool include_base)
 {
   int surface_index = static_cast<int>(surface);
   int dir_index = dirToInt(direction);
-  
-  if(surface_index >= 0 && dir_index >= 0 &&
-     surface_index < static_cast<int>(states.size()) && 
-     dir_index < static_cast<int>(states[surface_index].size()))
-    return states[surface_index][dir_index];
-    
-  SpriteMatrix* null_matrix = NULL;
-  return null_matrix;
+ 
+  /* Check if it's a base and the frames from it should be used instead */
+  if(include_base && base != NULL && 
+     (base_category == ThingBase::PERSON || base_category == ThingBase::NPC))
+  {
+    MapPerson* ref_base = static_cast<MapPerson*>(base);
+
+    if(surface_index >= 0 && dir_index >= 0 &&
+       surface_index < static_cast<int>(ref_base->states.size()) &&
+       dir_index < static_cast<int>(ref_base->states[surface_index].size()))
+      return ref_base->states[surface_index][dir_index];
+  }
+  else
+  {
+    if(surface_index >= 0 && dir_index >= 0 &&
+       surface_index < static_cast<int>(states.size()) && 
+       dir_index < static_cast<int>(states[surface_index].size()))
+      return states[surface_index][dir_index];
+  }
+
+  return NULL;
 }
 
 /* 
@@ -813,6 +827,37 @@ bool MapPerson::resetPosition()
 }
 
 /*
+ * Description: Sets the base thing class. If set, the primary data will be set
+ *              from this with only location and movement handled by this class.
+ *
+ * Inputs: MapThing* base - the reference base class
+ * Output: bool - true if the base was set
+ */
+bool MapPerson::setBase(MapThing* base)
+{
+  bool success = false;
+
+  if(classDescriptor() == "MapPerson")
+  {
+    if(base != NULL && base->classDescriptor() == "MapPerson")
+    {
+      this->base = base;
+      base_category = ThingBase::PERSON;
+      setMatrix(getState(surface, direction));
+      success = true;
+    }
+    else if(base == NULL)
+    {
+      this->base = NULL;
+      base_category = ThingBase::ISBASE;
+      success = true;
+    }
+  }
+
+  return success;
+}
+
+/*
  * Description: Sets the person to either running or not. Running is defined
  *              as twice the normal speed.
  *
@@ -894,7 +939,7 @@ bool MapPerson::setStates(std::vector<std::vector<TileSprite*>> frames,
   unsetStates(surface, direction, delete_old);
 
   /* Proceed to set up the frame set */
-  SpriteMatrix* matrix = getState(surface, direction);
+  SpriteMatrix* matrix = getState(surface, direction, false);
   if(matrix != NULL)
   {
     matrix->setSprites(frames, delete_old);
@@ -1003,7 +1048,7 @@ void MapPerson::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 void MapPerson::unsetState(SurfaceClassifier surface, Direction direction, 
                            uint32_t x, uint32_t y, bool delete_frames)
 {
-  SpriteMatrix* matrix = getState(surface, direction);
+  SpriteMatrix* matrix = getState(surface, direction, false);
   if(matrix != NULL)
   {
     matrix->unsetSprite(x, y, delete_frames);
@@ -1026,7 +1071,7 @@ void MapPerson::unsetStates(SurfaceClassifier surface, Direction direction,
 {
   unsetTiles(true);
 
-  SpriteMatrix* matrix = getState(surface, direction);
+  SpriteMatrix* matrix = getState(surface, direction, false);
   if(matrix != NULL)
     matrix->unsetSprites(delete_frames);
 }

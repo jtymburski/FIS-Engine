@@ -5,7 +5,6 @@
  * Description: The MapNPC class, this covers all AI found on the map in game
  *
  * TODO: 1. Reimplement the movement functions based on NPC scripts
- *       2. COMMENT
  ******************************************************************************/
 #include "Game/Map/MapNPC.h"
 
@@ -13,18 +12,30 @@
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
 
-/* Constructor function */
+/*
+ * Description: Constructor for this class. Sets up an empty NPC with no data.
+ *
+ * Inputs: none
+ */
 MapNPC::MapNPC() : MapPerson()
 {
   /* Clear the path pointers */
   current = NULL;
   head = NULL;
   moving_forward = true;
+  nodes_delete = true;
   npc_delay = 0;
   state = LOOPED;
 }
 
-/* Another constructor function */
+/*
+ * Description: Constructor for this class. Takes basic data to start with a 
+ *              basic version of the NPC.
+ *
+ * Inputs: int id - the ID of the NPC
+ *         std::string name - the name of the NPC
+ *         std::string description - the description of the NPC
+ */
 MapNPC::MapNPC(int id, std::string name, std::string description)
       : MapPerson(id, name, description)
 {
@@ -36,7 +47,9 @@ MapNPC::MapNPC(int id, std::string name, std::string description)
   state = LOOPED;
 }
 
-/* Destructor function */
+/*
+ * Description: Destructor function
+ */
 MapNPC::~MapNPC()
 {
   clear();
@@ -46,7 +59,12 @@ MapNPC::~MapNPC()
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 
-/* Appends an empty node onto the back of the movement stack */
+/*
+ * Description: Appends an empty node onto the back of the movement stack.
+ *
+ * Inputs: none
+ * Output: none
+ */
 void MapNPC::appendEmptyNode()
 {
   /* Set up the node structure */
@@ -60,35 +78,62 @@ void MapNPC::appendEmptyNode()
     delete new_node;
 }
 
-/* Returns the node at the index */
+/*
+ * Description: Returns the node at the given index. NULL if out of range.
+ *
+ * Inputs: uint16_t index - the node index, offset from HEAD
+ * Output: Path* - the path structure at the node index
+ */
 Path* MapNPC::getNode(uint16_t index)
 {
   bool failed = false;
   Path* returned_node = NULL;
-  
-  if(head != NULL)
+ 
+  if(base != NULL && base_category == ThingBase::NPC)
   {
-    /* Loop through to find the node */
-    returned_node = head;
-    for(uint16_t i = 0; i < index; i++)
+    returned_node = static_cast<MapNPC*>(base)->getNode(index);
+  }
+  else
+  {
+    if(head != NULL)
     {
-      returned_node = returned_node->next;
-      if(returned_node == head)
-        failed = true;
+      /* Loop through to find the node */
+      returned_node = head;
+      for(uint16_t i = 0; i < index; i++)
+      {
+        returned_node = returned_node->next;
+        if(returned_node == head)
+          failed = true;
+      }
     }
   }
-  
+
   /* Execute the return sequence, if applicable */
   if(failed)
     returned_node = NULL;
   return returned_node;
 }
 
-/* Inserts a node, at the given index */
+/*
+ * Description: Inserts a node, at the given index. If inserted on a node where
+ *              one exists already, it pushes it back to index + 1.
+ *
+ * Inputs: uint16_t index - the node index, offset from HEAD
+ *         Path* node - the new path node struct to insert
+ * Output: bool - true if successful
+ */
 bool MapNPC::insertNode(uint16_t index, Path* node)
 {
   bool success = false;
-  
+ 
+  /* Initial checks to see if nodes are set by base class */
+  if(!nodes_delete)
+  {
+    head = NULL;
+    current = NULL;
+    nodes_delete = true;
+  }
+
   /* Only proceed if node is non-null */
   if(node != NULL)
   {
@@ -227,13 +272,25 @@ bool MapNPC::addThingInformation(XmlData data, int file_index,
   return success;
 }
 
-/* Returns the class descriptor, useful for casting */
+/*
+ * Description: This is the class descriptor. Primarily used for encapsulation
+ *              to determine which class to cast it to for specific parameters.
+ *
+ * Inputs: none
+ * Output: std::string - the string descriptor, it will be the same as the class
+ *                       name. For example, "MapThing", "MapPerson", etc.
+ */
 std::string MapNPC::classDescriptor()
 {
   return "MapNPC";
 }
 
-/* Clears out the NPC construct, void of painting */
+/* 
+ * Description: Clears out all information stored in the class
+ * 
+ * Inputs: none
+ * Output: none
+ */
 void MapNPC::clear()
 {
   /* Clear out all the nodes */
@@ -248,6 +305,18 @@ void MapNPC::clear()
   MapPerson::clear();
 }
 
+/*
+ * Description: Inserts a new node that is created with an x and y point and a
+ *              delay for pausing at the given index. If a node already exists
+ *              at the index, it pushes all other nodes back one.
+ *
+ * Inputs: uint16_t index - the node index, offset from HEAD
+ *         uint16_t x - the x tile location for the node
+ *         uint16_t y - the y tile location for the node
+ *         uint16_t delay - the time to pause on the node when reached (ms)
+ * Output: bool - true if the insertion was successful
+ */
+// TODO: Possibly make the node x and y an offset instead of absolute?
 bool MapNPC::insertNode(uint16_t index, uint16_t x, uint16_t y, uint16_t delay)
 {
   bool success = true;
@@ -268,37 +337,73 @@ bool MapNPC::insertNode(uint16_t index, uint16_t x, uint16_t y, uint16_t delay)
   return success;
 }
 
+/*
+ * Description: Inserts a new node that is created with an x and y point and a
+ *              delay for pausing at the tail of the node stack
+ *
+ * Inputs: uint16_t x - the x tile location for the node
+ *         uint16_t y - the y tile location for the node
+ *         uint16_t delay - the time to pause on the node when reached (ms)
+ * Output: bool - true if the insertion was successful
+ */
 bool MapNPC::insertNodeAtTail(uint16_t x, uint16_t y, uint16_t delay)
 {
   return insertNode(getPathLength(), x, y, delay);
 }
 
-/* Returns the node movement state - how it traverses */
+/*
+ * Description: Returns the current node state, which is an Enum.
+ *
+ * Inputs: none
+ * Output: MapNPC::NodeState - a node state enum
+ */
 MapNPC::NodeState MapNPC::getNodeState()
 {
+  if(base != NULL && base_category == ThingBase::NPC)
+    return static_cast<MapNPC*>(base)->state;
   return state;
 }
 
+/*
+ * Description: Returns the number of nodes in the node sequence of the NPC.
+ *
+ * Inputs: none
+ * Output: uint16_t - the number of nodes from HEAD to TAIL
+ */
 uint16_t MapNPC::getPathLength()
 {
   uint16_t size = 1;
   Path* temp_node = head;
-  
-  if(head == NULL)
-    size = 0;
+ 
+  /* Check if base is used or not */
+  if(base != NULL && base_category == ThingBase::NPC)
+  {
+    size = static_cast<MapNPC*>(base)->getPathLength();
+  }
   else
   {
-    while(temp_node->next != head)
+    if(head == NULL)
+      size = 0;
+    else
     {
-      temp_node = temp_node->next;
-      size++;
+      while(temp_node->next != head)
+      {
+        temp_node = temp_node->next;
+        size++;
+      }
     }
   }
   
   return size;
 }
 
-/* Returns the predicted move request in the class */
+/*
+ * Description: Returns the predicted move request for the class, based on the
+ *              next node in the sequence.
+ *
+ * Inputs: none
+ * Output: Direction - the direction the NPC will be pointing
+ */
 Direction MapNPC::getPredictedMoveRequest()
 {
   if(isTilesSet() && current != NULL)
@@ -330,44 +435,66 @@ Direction MapNPC::getPredictedMoveRequest()
   return getMoveRequest();
 }
   
-/* Path nodes removal handling */
+/*
+ * Description: Removes all nodes in the NPC sequence.
+ *
+ * Inputs: none
+ * Output: bool - true if successful
+ */
 bool MapNPC::removeAllNodes()
 {
-  while(removeNodeAtTail());
+  if(nodes_delete)
+    while(removeNodeAtTail());
+  else
+  {
+    head = NULL;
+    current = NULL;
+  }
+
   return true;
 }
 
+/*
+ * Description: Removes the node at the given index. If this has nodes after it,
+ *              those nodes are bumped up (index - 1).
+ *
+ * Inputs: uint16_t index - the index of the node to remove
+ * Output: bool - true if successful
+ */
 bool MapNPC::removeNode(uint16_t index)
 {
   uint16_t length = getPathLength();
   bool success = false;
   Path* temp_node = NULL;
 
-  if(index == 0 && length == 1)
+  if(nodes_delete)
   {
-    temp_node = head;
-    head = NULL;
-    current = NULL;
-    success = true;
-  }
-  else if(index < length)
-  {
-    /* Loop through to find the node to remove */
-    temp_node = head;
-    for(uint16_t i = 0; i < index; i++)
-      temp_node = temp_node->next;
+    if(index == 0 && length == 1)
+    {
+      temp_node = head;
+      head = NULL;
+      current = NULL;
+      success = true;
+    }
+    else if(index < length)
+    {
+      /* Loop through to find the node to remove */
+      temp_node = head;
+      for(uint16_t i = 0; i < index; i++)
+        temp_node = temp_node->next;
 
-    /* Reset the pointers around the path to delete */
-    temp_node->previous->next = temp_node->next;
-    temp_node->next->previous = temp_node->previous;
+      /* Reset the pointers around the path to delete */
+      temp_node->previous->next = temp_node->next;
+      temp_node->next->previous = temp_node->previous;
 
-    /* Fix the pointers if they need to be changed */
-    if(index == 0)
-      head = temp_node->next;
-    if(current == temp_node)
-      resetPosition();
+      /* Fix the pointers if they need to be changed */
+      if(index == 0)
+        head = temp_node->next;
+      if(current == temp_node)
+        resetPosition();
 
-    success = true;
+      success = true;
+    }
   }
   
   /* Finish by deleting the pointer */
@@ -377,12 +504,63 @@ bool MapNPC::removeNode(uint16_t index)
   return success;
 }
 
+/*
+ * Description: Removes the node at the tail of the node sequence.
+ *
+ * Inputs: none
+ * Output: bool - true if successful
+ */
 bool MapNPC::removeNodeAtTail()
 {
-  return removeNode(getPathLength() - 1);
+  if(head != NULL)
+    return removeNode(getPathLength() - 1);
+  return false;
 }
 
-/* Sets the node movement state - how it traverses */
+/*
+ * Description: Sets the base thing class. If set, the primary data will be set
+ *              from this with only location and movement handled by this class.
+ *
+ * Inputs: MapThing* base - the reference base class
+ * Output: bool - true if the base was set
+ */
+bool MapNPC::setBase(MapThing* base)
+{
+  bool success = false;
+
+  if(classDescriptor() == "MapNPC")
+  {
+    if(base != NULL && base->classDescriptor() == "MapNPC")
+    {
+      this->base = base;
+      base_category = ThingBase::NPC;
+      setMatrix(getState(getSurface(), getDirection()));
+      if(head == NULL)
+      {
+        head = static_cast<MapNPC*>(base)->head;
+        current = head;
+        nodes_delete = false;
+      }
+      success = true;
+    }
+    else if(base == NULL)
+    {
+      this->base = NULL;
+      base_category = ThingBase::ISBASE;
+      success = true;
+    }
+  }
+
+  return success;
+}
+
+/*
+ * Description: Sets the node state and how nodes are parsed with the controller
+ *              enum.
+ *
+ * Inputs: NodeState state - the new node state
+ * Output: none
+ */
 void MapNPC::setNodeState(NodeState state)
 {
   this->state = state;
@@ -391,6 +569,14 @@ void MapNPC::setNodeState(NodeState state)
     moving_forward = true;
 }
 
+/*
+ * Description: Updates the frames of the NPC. This can include animation
+ *              sequencing or movement and such. Called on the tick.
+ *
+ * Inputs: int cycle_time - the ms time to update the movement/animation
+ *         std::vector<std::vector<Tile*>> tile_set - the next tiles to move to
+ * Output: none 
+ */
 void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 {
   /* Some initial parameters */

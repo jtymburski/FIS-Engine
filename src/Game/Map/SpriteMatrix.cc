@@ -759,6 +759,8 @@ bool SpriteMatrix::render(uint16_t frame, SDL_Renderer* renderer, int x,
 
   /* Render the result */
   success &= render(renderer, x, y, width, height);
+
+  return success;
 }
 
 /*

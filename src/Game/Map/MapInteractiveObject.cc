@@ -16,8 +16,6 @@
  ******************************************************************************/
 #include "Game/Map/MapInteractiveObject.h"
 
-// TODO: Comment All
-
 /* Constant Implementation - see header file for descriptions */
 const short MapInteractiveObject::kRETURN_TIME_UNUSED = -1;
 
@@ -508,12 +506,13 @@ std::string MapInteractiveObject::classDescriptor()
  *              frame is classified as valid if it's not NULL and has renderable
  *              frames stored within it.
  *
- * Inputs: none
+ * Inputs: bool first_call - is this the first call? default true
  * Output: bool - true if clean validated frame data
  */
-bool MapInteractiveObject::cleanMatrix()
+bool MapInteractiveObject::cleanMatrix(bool first_call)
 {
   bool equal_size = true;
+  (void)first_call;
   uint16_t height = 0;
   uint16_t width = 0;
   StateNode* node = node_head;
@@ -652,6 +651,36 @@ void MapInteractiveObject::reset()
   node_current = node_head;
   shifting_forward = true;
   setParentFrames();
+}
+
+/*
+ * Description: Sets the base thing class. If set, the primary data will be set
+ *              from this with only location and movement handled by this class.
+ *
+ * Inputs: MapThing* base - the reference base class
+ * Output: bool - true if the base was set
+ */
+bool MapInteractiveObject::setBase(MapThing* base)
+{
+  bool success = false;
+
+  if(classDescriptor() == "MapInteractiveObject")
+  {
+    if(base != NULL && base->classDescriptor() == "MapInteractiveObject")
+    {
+      this->base = base;
+      base_category = ThingBase::THING;
+      success = true;
+    }
+    else if(base == NULL)
+    {
+      this->base = NULL;
+      base_category = ThingBase::ISBASE;
+      success = true;
+    }
+  }
+
+  return success;
 }
 
 /*

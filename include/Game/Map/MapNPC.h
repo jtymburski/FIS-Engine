@@ -41,6 +41,7 @@ private:
   Path* current;
   Path* head;
   bool moving_forward;
+  bool nodes_delete;
   int npc_delay;
   NodeState state;
 
@@ -90,7 +91,10 @@ public:
   bool removeAllNodes();
   bool removeNode(uint16_t index);
   bool removeNodeAtTail();
-
+  
+  /* Sets the base class */
+  virtual bool setBase(MapThing* base);
+  
   /* Sets the node movement state - how it traverses */
   void setNodeState(NodeState state);
 

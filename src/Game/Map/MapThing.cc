@@ -127,6 +127,8 @@ bool MapThing::animate(int cycle_time, bool reset, bool skip_head)
       base_control->time += cycle_time;
       if(base_control->time >= base_control->frame_time)
       {
+        base_control->time -= base_control->frame_time;
+
         /* Check direction of movement */
         if(base_control->forward)
         {
@@ -384,7 +386,7 @@ bool MapThing::isTileMoveAllowed(Tile* previous, Tile* next,
  */
 float MapThing::moveAmount(uint16_t cycle_time)
 {
-  float move_amount = (cycle_time * speed) / kMOVE_FACTOR;
+  float move_amount = (cycle_time * getSpeed()) / kMOVE_FACTOR;
   if(move_amount > 1.0)
     move_amount = 1.0;
   
@@ -838,11 +840,13 @@ std::string MapThing::classDescriptor()
  *              frame is classified as valid if it's not NULL and has renderable
  *              frames stored within it.
  *
- * Inputs: none
+ * Inputs: bool first_call - first time calling - true by default
  * Output: bool - true if clean validated frame data
  */
-bool MapThing::cleanMatrix()
+bool MapThing::cleanMatrix(bool first_call)
 {
+  (void)first_call;
+
   if(sprite_set != NULL)
   {
     unsetTiles(true);
@@ -1545,7 +1549,7 @@ bool MapThing::interact(MapPerson* initiator)
 {
   if(event_handler != NULL)
   {
-    event_handler->executeEvent(interact_event, initiator, this);
+    event_handler->executeEvent(getInteraction(), initiator, this);
     return true;
   }
 
@@ -1675,14 +1679,14 @@ bool MapThing::renderMain(SDL_Renderer* renderer, Tile* tile,
     if(render_frame != NULL && render_frame->getRenderDepth() == render_depth) 
     {
       /* Make sure the render sprite is on the right frame */
-      //if(base_category >= ThingBase::PERSON)
-      //  getMatrix()->shiftTo(base_control->curr_frame);
+      if(base_category >= ThingBase::PERSON)
+        getMatrix()->shiftTo(base_control->curr_frame);
 
       int render_x = (tile->getX() - tile_main.front().front()->getX() 
                       + getFloatTileX()) * tile->getWidth() - offset_x;
       int render_y = (tile->getY() - tile_main.front().front()->getY() 
                       + getFloatTileY()) * tile->getHeight() - offset_y;
-      
+       
       return render_frame->render(renderer, render_x, render_y, 
                                   tile->getWidth(), tile->getHeight());
     }
@@ -1714,8 +1718,8 @@ bool MapThing::renderPrevious(SDL_Renderer* renderer, Tile* tile,
     if(render_frame != NULL && render_frame->getRenderDepth() == render_depth) 
     {
       /* Make sure the render sprite is on the right frame */
-      //if(base_category >= ThingBase::PERSON)
-      //  getMatrix()->shiftTo(base_control->curr_frame);
+      if(base_category >= ThingBase::PERSON)
+        getMatrix()->shiftTo(base_control->curr_frame);
 
       int render_x = (tile->getX() - tile_prev.front().front()->getX() 
                       + getFloatTileX()) * tile->getWidth() - offset_x;

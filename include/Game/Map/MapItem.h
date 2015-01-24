@@ -67,7 +67,7 @@ public:
 
   /* Shrink the frame matrix to the valid size (1x1) and removes all null and 
    * void pointers.  */
-  virtual bool cleanMatrix();
+  virtual bool cleanMatrix(bool first_call = true);
 
   /* Clears out the item construct, void of painting */
   void clear();
@@ -83,6 +83,9 @@ public:
   
   /* Returns if the item is picked up merely by walking over it */
   bool isWalkover();
+   
+  /* Sets the base class */
+  virtual bool setBase(MapThing* base);
   
   /* Sets the core (game representation) ID. If invalid, sets to -1 */
   void setCoreID(int id);

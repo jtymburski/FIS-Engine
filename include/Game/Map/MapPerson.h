@@ -123,7 +123,7 @@ public:
   
   /* Shrink the frame matrix to the valid size and removes all null and void
    * pointers.  */
-  virtual bool cleanMatrix();
+  virtual bool cleanMatrix(bool first_call = true);
 
   /* Clears all information from the class (including deleting necessary
    * pointers) */
@@ -146,7 +146,8 @@ public:
   virtual Direction getPredictedMoveRequest();
   
   /* Returns the state at the defined surface and direction */
-  SpriteMatrix* getState(SurfaceClassifier surface, Direction direction);
+  SpriteMatrix* getState(SurfaceClassifier surface, Direction direction, 
+                         bool include_base = true);
 
   /* Returns the surface that this person resides on */
   SurfaceClassifier getSurface();
@@ -164,6 +165,9 @@ public:
   
   /* Resets the tile position */
   bool resetPosition();
+   
+  /* Sets the base class */
+  virtual bool setBase(MapThing* base);
   
   /* Sets if the person is running */
   void setRunning(bool running);

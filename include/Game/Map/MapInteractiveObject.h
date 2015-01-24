@@ -94,7 +94,7 @@ public:
   
   /* Shrink the frame matrix to the valid size and removes all null and void
    * pointers.  */
-  virtual bool cleanMatrix();
+  virtual bool cleanMatrix(bool first_call = true);
   
   /* Clears all information from the class (including deleting necessary
    * pointers) */
@@ -113,6 +113,9 @@ public:
   /* Reset back to head state */
   void reset();
 
+  /* Sets the base class */
+  virtual bool setBase(MapThing* base);
+  
   /* Sets the inactive time before returning down the state path (ms) */
   void setInactiveTime(int time);
   

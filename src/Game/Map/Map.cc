@@ -1389,7 +1389,9 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
     /* Person clean-up and tile set-up */
     for(uint16_t i = 0; i < persons.size(); i++)
     {
-      if(persons[i]->cleanMatrix())
+      if((persons[i]->getBase() != NULL && 
+          persons[i]->getBase()->cleanMatrix(false))  || 
+         persons[i]->cleanMatrix())
       {
         std::vector<std::vector<Tile*>> tile_set = getTileMatrix(persons[i]);
         if(tile_set.size() > 0)
@@ -1420,7 +1422,7 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
       }
     }
   }
-  
+ 
   /* Save file path, or unload if the load sequence failed*/
   if(success)
   {
