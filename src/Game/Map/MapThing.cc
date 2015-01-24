@@ -34,6 +34,7 @@ MapThing::MapThing()
 {
   base = NULL;
   base_category = ThingBase::ISBASE;
+  base_control = NULL;
 
   event_handler = NULL;
   sprite_set = NULL;
@@ -102,24 +103,84 @@ bool MapThing::animate(int cycle_time, bool reset, bool skip_head)
   bool shift = false;
   SpriteMatrix* sprite_set = getMatrix();
 
-  /* Check if an animation can occur */
-  for(uint16_t i = 0; i < sprite_set->width(); i++)
+  /* Check which animation controller to use - depending on the set base */
+  if(base_category >= ThingBase::PERSON)
   {
-    for(uint16_t j = 0; j < sprite_set->height(); j++)
+    /* Reset back to head */
+    if(reset && !skip_head && base_control->curr_frame != 0)
     {
-      if(sprite_set->at(i, j) != NULL)
+      base_control->curr_frame = 0;
+      base_control->time = 0;
+      shift = true;
+    }
+    /* Reset back to one before head */
+    else if(reset && skip_head && base_control->num_frames > 0)
+    {
+      base_control->curr_frame = 1;
+      base_control->time = 0;
+      shift = true;
+    }
+    /* If not reset, just update frames */
+    else if(!reset)
+    {
+      /* Increment the time. If greater than frame time, got to next frame */
+      base_control->time += cycle_time;
+      if(base_control->time >= base_control->frame_time)
       {
-        /* Reset back to head */
-        if(reset && !skip_head && !sprite_set->at(i, j)->isAtFirst())
+        /* Check direction of movement */
+        if(base_control->forward)
         {
-          sprite_set->at(i, j)->setAtFirst();
-          shift = true;
+          /* Increment */
+          base_control->curr_frame++;
+
+          /* Check to make sure the end limits haven't been reached */
+          if(base_control->curr_frame >= base_control->num_frames)
+          {
+            if(skip_head && base_control->num_frames > 1)
+              base_control->curr_frame = 1;
+            else
+              base_control->curr_frame = 0;
+          }
         }
-    
-        if(reset)
-          shift |= sprite_set->at(i, j)->update(0, skip_head);
         else
-          shift |= sprite_set->at(i, j)->update(cycle_time, skip_head);
+        {
+          /* Decrement */
+          if(base_control->curr_frame == 0)
+            base_control->curr_frame = base_control->num_frames - 1;
+          else
+            base_control->curr_frame--;
+
+          /* Check to make sure the end limits haven't been reached */
+          if(skip_head && base_control->curr_frame == 0 && 
+             base_control->num_frames > 0)
+            base_control->curr_frame = base_control->num_frames - 1;
+        }
+
+        shift = true;
+      }
+    }
+  }
+  else
+  {
+    /* Check if an animation can occur */
+    for(uint16_t i = 0; i < sprite_set->width(); i++)
+    {
+      for(uint16_t j = 0; j < sprite_set->height(); j++)
+      {
+        if(sprite_set->at(i, j) != NULL)
+        {
+          /* Reset back to head */
+          if(reset && !skip_head && !sprite_set->at(i, j)->isAtFirst())
+          {
+            sprite_set->at(i, j)->setAtFirst();
+            shift = true;
+          }
+    
+          if(reset)
+            shift |= sprite_set->at(i, j)->update(0, skip_head);
+          else
+            shift |= sprite_set->at(i, j)->update(cycle_time, skip_head);
+        }
       }
     }
   }
@@ -398,6 +459,16 @@ bool MapThing::setMatrix(SpriteMatrix* matrix)
   if(matrix != NULL)
   {
     sprite_set = matrix;
+
+    /* Set up the base control variable */
+    if(base_control == NULL)
+      base_control = new AnimationControl;
+    base_control->curr_frame = 0;
+    base_control->forward = matrix->isDirectionForward();
+    base_control->frame_time = matrix->getAnimationTime();
+    base_control->num_frames = matrix->getFrameCount();
+    base_control->time = 0;
+    
     return true;
   }
   return false;
@@ -776,6 +847,7 @@ bool MapThing::cleanMatrix()
   {
     unsetTiles(true);
     sprite_set->cleanMatrix();
+
     return true;
   }
   return false;
@@ -795,6 +867,9 @@ void MapThing::clear()
   /* Resets the class parameters */
   base = NULL;
   base_category = ThingBase::ISBASE;
+  if(base_control != NULL)
+    delete base_control;
+  base_control = NULL;
   MapThing::clearAllMovement();
   setDescription("");
   setEventHandler(NULL);
@@ -1562,9 +1637,17 @@ bool MapThing::isVisible()
 bool MapThing::render(SDL_Renderer* renderer, int offset_x, int offset_y)
 {
   if(isTilesSet() && isVisible())
-    return getMatrix()->render(renderer, getX() - offset_x, getY() - offset_y, 
-                               tile_main.front().front()->getWidth(), 
-                               tile_main.front().front()->getHeight());
+  {
+    if(base_category >= ThingBase::PERSON)
+      return getMatrix()->render(base_control->curr_frame, renderer,
+                                 getX() - offset_x, getY() - offset_y,
+                                 tile_main.front().front()->getWidth(),
+                                 tile_main.front().front()->getHeight());
+    else
+      return getMatrix()->render(renderer, getX() - offset_x, getY() - offset_y, 
+                                 tile_main.front().front()->getWidth(), 
+                                 tile_main.front().front()->getHeight());
+  }
 
   return false;
 }
@@ -1591,6 +1674,10 @@ bool MapThing::renderMain(SDL_Renderer* renderer, Tile* tile,
     /* If frame is valid and visible, render */
     if(render_frame != NULL && render_frame->getRenderDepth() == render_depth) 
     {
+      /* Make sure the render sprite is on the right frame */
+      //if(base_category >= ThingBase::PERSON)
+      //  getMatrix()->shiftTo(base_control->curr_frame);
+
       int render_x = (tile->getX() - tile_main.front().front()->getX() 
                       + getFloatTileX()) * tile->getWidth() - offset_x;
       int render_y = (tile->getY() - tile_main.front().front()->getY() 
@@ -1626,6 +1713,10 @@ bool MapThing::renderPrevious(SDL_Renderer* renderer, Tile* tile,
     /* If frame is valid and visible, render */
     if(render_frame != NULL && render_frame->getRenderDepth() == render_depth) 
     {
+      /* Make sure the render sprite is on the right frame */
+      //if(base_category >= ThingBase::PERSON)
+      //  getMatrix()->shiftTo(base_control->curr_frame);
+
       int render_x = (tile->getX() - tile_prev.front().front()->getX() 
                       + getFloatTileX()) * tile->getWidth() - offset_x;
       int render_y = (tile->getY() - tile_prev.front().front()->getY() 
@@ -2085,11 +2176,11 @@ void MapThing::unsetFrames(bool delete_frames)
  */
 void MapThing::unsetTiles(bool no_events)
 {
-  SpriteMatrix* sprite_set = getMatrix();
-
   /* Unset in each frame of the thing */
   if(isTilesSet())
   {
+    SpriteMatrix* sprite_set = getMatrix();
+
     /* Reset movement and animation */
     if(isMoving())
       tileMoveFinish();

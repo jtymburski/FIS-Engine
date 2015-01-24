@@ -521,12 +521,12 @@ enum class SortObjects : std::uint32_t
  */
 enum class ThingBase : std::uint8_t
 {
-  THING,
-  PERSON,
-  NPC,
-  INTERACTIVE,
-  ITEM,
-  ISBASE
+  ISBASE = 0,
+  THING = 1,
+  ITEM = 2,
+  PERSON = 3,
+  NPC = 4,
+  INTERACTIVE = 5
 };
 
 /* The window display classifier to define how it's displayed:

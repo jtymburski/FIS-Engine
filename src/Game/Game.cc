@@ -1384,8 +1384,8 @@ bool Game::render(SDL_Renderer* renderer)
  
   /* Map initialization location */
   if(!game_map->isLoaded())
-    game_map->loadMap(base_path + "maps/test_07", renderer);
-    //game_map->loadMap(base_path + "maps/test_06", renderer);
+    //game_map->loadMap(base_path + "maps/test_07", renderer);
+    game_map->loadMap(base_path + "maps/test_06", renderer);
     //game_map->loadMap(base_path + "maps/test01.usv", renderer);
 
   if(mode == MAP)

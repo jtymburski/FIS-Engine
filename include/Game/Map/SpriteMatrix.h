@@ -25,6 +25,9 @@ public:
   ~SpriteMatrix();
   
 private:
+  /* Past frame index */
+  uint16_t frame_index;
+
   /* Matrix of sprites */
   std::vector<std::vector<TileSprite*>> sprite_matrix;
 
@@ -72,9 +75,15 @@ public:
    * void pointers */
   void cleanMatrix();
 
+  /* Returns the animation time of the first valid sprite */
+  uint32_t getAnimationTime();
+
+  /* Returns the number of frames of the first valid sprite */
+  uint16_t getFrameCount();
+  
   /* Returns the stored sprite matrix */
   std::vector<std::vector<TileSprite*>> getMatrix() const;
- 
+
   /* Returns the render matrix for the stack, in a matrix format */
   std::string getRenderMatrix();
 
@@ -94,9 +103,11 @@ public:
   bool isDirectionReverse();
 
   /* Rendering function, for the entire matrix */
-  bool render(SDL_Renderer* renderer, int start_x, int start_y, 
+  bool render(SDL_Renderer* renderer, int x, int y, 
               int width, int height);
-  
+  bool render(uint16_t frame, SDL_Renderer* renderer, int x, int y, 
+              int width, int height);
+
   /* Sets all sprites in the matrix at the first frame */
   bool setAtFirst();
 
@@ -117,6 +128,9 @@ public:
 
   /* Shifts all the matrix frames to the next in the stack */
   bool shiftNext(bool skip_head = false);
+
+  /* Shifts to the given frame index */
+  bool shiftTo(uint16_t index);
 
   /* Tunes animation speed based on speed which is based on movement of 2
    * frames (total of 3) */

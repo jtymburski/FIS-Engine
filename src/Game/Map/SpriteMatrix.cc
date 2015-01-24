@@ -22,6 +22,7 @@ const float SpriteMatrix::kBASE_FRAME_COUNT = 2.0;
  */
 SpriteMatrix::SpriteMatrix()
 {
+  frame_index = 0;
 }
 
 /*
@@ -33,6 +34,7 @@ SpriteMatrix::SpriteMatrix()
  * Inputs: std::vector<std::vector<TileSprite*>> sprites - matrix of sprites
  */
 SpriteMatrix::SpriteMatrix(std::vector<std::vector<TileSprite*>> sprites)
+            : SpriteMatrix()
 {
   setSprites(sprites);
   cleanMatrix();
@@ -519,6 +521,36 @@ void SpriteMatrix::cleanMatrix()
       sprite_matrix[i].erase(sprite_matrix[i].begin() + new_height, 
                              sprite_matrix[i].end());
 }
+  
+/*
+ * Description: Returns the animation time of the first valid sprite in the
+ *              matrix.
+ *
+ * Inputs: none
+ * Output: uint32_t - the animation time, in ms
+ */
+uint32_t SpriteMatrix::getAnimationTime()
+{
+  TileSprite* sprite = getValidSprite();
+  if(sprite != NULL)
+    return sprite->getAnimationTime();
+  return 0;
+}
+
+/*
+ * Description: Returns the number of frames of the first valid sprite in the
+ *              matrix.
+ *
+ * Inputs: none
+ * Output: uint16_t - the number of frames
+ */
+uint16_t SpriteMatrix::getFrameCount()
+{
+  TileSprite* sprite = getValidSprite();
+  if(sprite != NULL)
+    return sprite->getSize();
+  return 0;
+}
 
 /*
  * Description: Returns the full sprite matrix, stored within the class.
@@ -702,7 +734,33 @@ bool SpriteMatrix::render(SDL_Renderer* renderer, int x, int y,
 
   return rendered;
 }
-  
+
+/*
+ * Description: Render the entire matrix, at the given X and Y (corresponding
+ *              to the top left) and with the width, height defined of the 
+ *              tile. This does no rendering with rendering depths and just 
+ *              renders the matrix flat. This renders at the given frame index.
+ *
+ * Inputs: uint16_t frame - the index of the frame to render
+ *         SDL_Renderer* renderer - the rendering engine
+ *         int x - the X coordinate of the top left
+ *         int y - the Y coordinate of the top left
+ *         int width - width of the tile to render
+ *         int height - height of the tile to render
+ * Output: bool - true if the matrix rendered
+ */
+bool SpriteMatrix::render(uint16_t frame, SDL_Renderer* renderer, int x, 
+                          int y, int width, int height)
+{
+  bool success = true;
+
+  /* First, make sure the matrix is on the right frame */
+  success &= shiftTo(frame);
+
+  /* Render the result */
+  success &= render(renderer, x, y, width, height);
+}
+
 /*
  * Description: Sets all sprites in the matrix to the head frame in the stack.
  *
@@ -872,6 +930,31 @@ bool SpriteMatrix::shiftNext(bool skip_head)
       if(sprite_matrix[i][j] != NULL)
         success &= sprite_matrix[i][j]->shiftNext(skip_head);
   
+  return success;
+}
+  
+/*
+ * Description: Shifts all frames in the matrix to the given frame index.
+ *              0 corresponds to head, 1 to next after head, etc.
+ *
+ * Inputs: uint16_t index - the number of frames off the head frame
+ * Output: bool - true if successful
+ */
+bool SpriteMatrix::shiftTo(uint16_t index)
+{
+  bool success = true;
+
+  /* Make sure the matrix is on the right frame */
+  if(frame_index != index)
+  {
+    frame_index = index;
+
+    for(uint16_t i = 0; i < sprite_matrix.size(); i++)
+      for(uint16_t j = 0; j < sprite_matrix[i].size(); j++)
+        if(sprite_matrix[i][j] != NULL)
+          success &= sprite_matrix[i][j]->shift(index);
+  }
+
   return success;
 }
 

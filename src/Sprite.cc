@@ -1163,7 +1163,7 @@ bool Sprite::shiftNext(bool skip_head)
   }
   return false;
 }
-
+  
 /* 
  * Description: Sets the direction that the linked list is navigated to
  *              opposite of what it was before. FORWARD -> REVERSE or

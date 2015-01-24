@@ -1662,22 +1662,6 @@ void Map::unloadMap()
   map_index = 0;
   tile_height = Helpers::getTileSize();
   tile_width = tile_height;
-  
-  /* Delete all the tiles that have been set */
-  for(uint16_t i = 0; i < geography.size(); i++)
-  {
-    for(uint16_t j = 0; j < geography[i].size(); j++)
-    {
-      for(uint16_t k = 0; k < geography[i][j].size(); k++)
-      {
-        delete geography[i][j][k];
-        geography[i][j][k] = NULL;
-      }
-      geography[i][j].clear();
-    }
-    geography[i].clear();
-  }
-  geography.clear();
 
   /* Deletes the sprite data stored */
   for(uint16_t i = 0; i < tile_sprites.size(); i++)
@@ -1742,6 +1726,22 @@ void Map::unloadMap()
     base_things[i] = NULL;
   }
   base_things.clear();
+
+  /* Delete all the tiles that have been set */
+  for(uint16_t i = 0; i < geography.size(); i++)
+  {
+    for(uint16_t j = 0; j < geography[i].size(); j++)
+    {
+      for(uint16_t k = 0; k < geography[i][j].size(); k++)
+      {
+        delete geography[i][j][k];
+        geography[i][j][k] = NULL;
+      }
+      geography[i][j].clear();
+    }
+    geography[i].clear();
+  }
+  geography.clear();
 
   /* Reset the viewport */
   viewport.setMapSize(0, 0);

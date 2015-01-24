@@ -21,6 +21,20 @@
 #include "Helpers.h"
 #include "XmlData.h"
 
+/*
+ * Structure which handles the animation based control when dealing with 
+ * base objects that don't allow using the standard update call of the
+ * sprite matrix.
+ */
+struct AnimationControl
+{
+  uint16_t curr_frame; /* The current frame that the sprite matrix is on */
+  bool forward;        /* Direction is forward for movement? */
+  uint16_t frame_time; /* The time (ms) per frame */
+  uint16_t num_frames; /* The max number of frames */
+  uint32_t time;       /* The time that has lapsed (ms) in between frames */
+};
+
 class MapThing
 {
 public:
@@ -37,6 +51,7 @@ protected:
   /* The base class */
   MapThing* base;
   ThingBase base_category;
+  AnimationControl* base_control;
 
   /* The thing classification */
   std::string description;
