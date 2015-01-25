@@ -76,9 +76,6 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
-  /* Method for storing and building AttributeSets from preset values */
-  void buildAsPreset(const size_t &level = 0);
-
   /* Basic setup for construction */
   void classSetup(const bool &personal, const bool &constant);
 
@@ -86,6 +83,9 @@ private:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Method for storing and building AttributeSets from preset values */
+  void buildAsPreset(const size_t &level = 0);
+
   /* Assert all values are within range--including size of values */
   void cleanUp();
 

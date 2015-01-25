@@ -155,21 +155,6 @@ AttributeSet::AttributeSet(const std::vector<int32_t> &new_values,
  *============================================================================*/
 
 /*
- * Description: Constructs an AttributeSet based on presets which are 
- *              pre-initialized and configured values of stats.
- *
- * Inputs: const size_t &level - const ref to which preset to use
- * Output: none
- */
-void AttributeSet::buildAsPreset(const size_t &level)
-{
-  if (level == 0 || level > kPRESETS.size())
-    values = std::vector<int>(kSHORT_NAMES.size(), kDEFAULT);
-  else
-    values = kPRESETS.at(level - 1);
-}
-
-/*
  * Description: Common function for constructors which deals with assigning
  *              the AttributeState flags for the object
  *
@@ -188,6 +173,21 @@ void AttributeSet::classSetup(const bool &personal, const bool &constant)
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
+
+/*
+ * Description: Constructs an AttributeSet based on presets which are 
+ *              pre-initialized and configured values of stats.
+ *
+ * Inputs: const size_t &level - const ref to which preset to use
+ * Output: none
+ */
+void AttributeSet::buildAsPreset(const size_t &level)
+{
+  if (level == 0 || level > kPRESETS.size())
+    values = std::vector<int>(kSHORT_NAMES.size(), kDEFAULT);
+  else
+    values = kPRESETS.at(level - 1);
+}
 
 /*
  * Description: Assigns all the values (statS) contained in the AttributeSet to
