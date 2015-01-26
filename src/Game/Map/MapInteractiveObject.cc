@@ -34,6 +34,7 @@ MapInteractiveObject::MapInteractiveObject() : MapThing()
   action_initiator = NULL;
   node_current = NULL;
   node_head = NULL;
+  nodes_delete = true;
   person_on = NULL;
   shifting_forward = true;
   time_elapsed = 0;
@@ -229,27 +230,32 @@ void MapInteractiveObject::setParentFrames()
     /* Determine if this is a transition sequence or a state sequence */
     if(node_current->state != NULL)
     {
-      node_current->state->getMatrix()->setAtFirst();
       setMatrix(node_current->state->getMatrix());
       animate(0, true, false);
     }
     else if(node_current->transition != NULL)
     {
-      node_current->transition->setAtFirst();
-      node_current->transition->setDirectionForward();
       setMatrix(node_current->transition);
+      if(base == NULL)
+        node_current->transition->setDirectionForward();
+      else
+        base_control->forward = true;
       animate(0, true, false);
-
+      
       /* Treat the sprite sequence according to the order, if it's in reverse
        * or not */
-      if(shifting_forward)
+      if(!shifting_forward)
       {
-        node_current->transition->setDirectionForward();
-      }
-      else
-      {
-        node_current->transition->setDirectionReverse();
-        node_current->transition->shiftNext();
+        if(base == NULL)
+        {
+          node_current->transition->setDirectionReverse();
+          node_current->transition->shiftNext();
+        }
+        else
+        {
+          base_control->forward = false;
+          base_control->curr_frame = base_control->num_frames - 1;
+        }
       }
     }
   }
@@ -288,7 +294,7 @@ bool MapInteractiveObject::shift()
     else
       status = true;
   }
-
+  
   return status;
 }
 
@@ -583,6 +589,8 @@ void MapInteractiveObject::clear()
  */
 int MapInteractiveObject::getInactiveTime()
 {
+  if(base != NULL)
+    return static_cast<MapInteractiveObject*>(base)->time_return;
   return time_return;
 }
 
@@ -631,7 +639,9 @@ bool MapInteractiveObject::interact(MapPerson* initiator)
 
     /* Proceed to execute a use event, if it exists */
     if(node_current->state->getInteraction() == MapState::USE)
+    {
       status |= shift();
+    }
 
     /* Reset the time elapsed */
     time_elapsed = 0;
@@ -669,7 +679,14 @@ bool MapInteractiveObject::setBase(MapThing* base)
     if(base != NULL && base->classDescriptor() == "MapInteractiveObject")
     {
       this->base = base;
-      base_category = ThingBase::THING;
+      base_category = ThingBase::INTERACTIVE;
+      if(node_head == NULL)
+      {
+        node_head = static_cast<MapInteractiveObject*>(base)->node_head;
+        node_current = node_head;
+        nodes_delete = false;
+      }
+      setParentFrames();
       success = true;
     }
     else if(base == NULL)
@@ -710,6 +727,14 @@ bool MapInteractiveObject::setState(MapState* state)
 {
   if(state != NULL && state->getMatrix() != NULL)
   {
+    /* Check to make sure the base nodes aren't being used */
+    if(!nodes_delete)
+    {
+      node_current = NULL;
+      node_head = NULL;
+      nodes_delete = true;
+    }
+
     StateNode* node = new StateNode;
 
     /* Set the state parameters */
@@ -738,6 +763,14 @@ bool MapInteractiveObject::setState(SpriteMatrix* transition)
 {
   if(transition != NULL)
   {
+    /* Check to make sure the base nodes aren't being used */
+    if(!nodes_delete)
+    {
+      node_current = NULL;
+      node_head = NULL;
+      nodes_delete = true;
+    }
+
     StateNode* node = new StateNode;
 
     /* Set the state parameters */
@@ -818,40 +851,76 @@ void MapInteractiveObject::update(int cycle_time,
     /* Animate the frames and determine if the frame has changed */
     bool frames_changed = animate(cycle_time, false, false);
 
-    /* Only proceed if frames are changed and a transitional sequence  */
-    if(frames_changed && node_current != NULL && 
-       node_current->transition != NULL)
+    /* Check if base is set or not */
+    if(base != NULL)
     {
-      if(node_current->transition->isDirectionForward() && 
-         node_current->transition->isAtFirst())
+      /* Only proceed if frames are changed and a transitional sequence */
+      if(frames_changed && node_current != NULL && 
+         node_current->transition != NULL)
       {
-        /* Try and shift to the next state. If fails, re-animate transition */
-        if(!shiftNext())
+        if(base_control->forward && 
+           base_control->curr_frame == 0)
         {
-          node_current->transition->setDirectionReverse();
-          shifting_forward = false;
-          time_elapsed = 0;
+          /* Try and shift to the next state. If fails, re-animate transition */
+          if(!shiftNext())
+          {
+            base_control->forward = false;
+            shifting_forward = false;
+            time_elapsed = 0;
+          }
+        }
+        else if(!base_control->forward && 
+                (base_control->curr_frame + 1) == base_control->num_frames)
+        {
+          /* Try and shift to the previous state. If fails, re-animate 
+           * transition */
+          if(!shiftPrevious())
+          {
+            base_control->forward = true;
+            shifting_forward = true;
+            time_elapsed = 0;
+          }
         }
       }
-      else if(!node_current->transition->isDirectionForward() && 
-              node_current->transition->isAtEnd())
+
+    }
+    else
+    {
+      /* Only proceed if frames are changed and a transitional sequence */
+      if(frames_changed && node_current != NULL && 
+         node_current->transition != NULL)
       {
-        /* Try and shift to the previous state. If fails, re-animate 
-         * transition */
-        if(!shiftPrevious())
+        if(node_current->transition->isDirectionForward() && 
+           node_current->transition->isAtFirst())
         {
-          node_current->transition->setDirectionForward();
-          shifting_forward = true;
-          time_elapsed = 0;
+          /* Try and shift to the next state. If fails, re-animate transition */
+          if(!shiftNext())
+          {
+            node_current->transition->setDirectionReverse();
+            shifting_forward = false;
+            time_elapsed = 0;
+          }
+        }
+        else if(!node_current->transition->isDirectionForward() && 
+                node_current->transition->isAtEnd())
+        {
+          /* Try and shift to the previous state. If fails, re-animate 
+           * transition */
+          if(!shiftPrevious())
+          {
+            node_current->transition->setDirectionForward();
+            shifting_forward = true;
+            time_elapsed = 0;
+          }
         }
       }
     }
   
     /* Determine if the cycle time has passed on activity response */
-    if(time_return != kRETURN_TIME_UNUSED && node_current != node_head)
+    if(getInactiveTime() != kRETURN_TIME_UNUSED && node_current != node_head)
     {
       time_elapsed += cycle_time;
-      if(time_elapsed > time_return)
+      if(time_elapsed > getInactiveTime())
       {
         shifting_forward = false;
         shiftPrevious();
@@ -879,7 +948,7 @@ void MapInteractiveObject::unsetFrames(bool delete_frames)
     node = node->next;
     
     /* Proceed to delete all relevant data */
-    if(delete_frames)
+    if(delete_frames && nodes_delete)
     {
       if(temp_node->state != NULL)
         delete temp_node->state;

@@ -1410,7 +1410,8 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
     for(uint16_t i = 0; i < items.size(); i++)
     {
       /* Clean the matrix - fixes up the rendering box */
-      if(items[i]->cleanMatrix())
+      if((items[i]->getBase() != NULL && 
+          items[i]->getBase()->cleanMatrix(false)) ||  items[i]->cleanMatrix())
       {
         /* Get the tile matrix to match the frames and set */
         std::vector<std::vector<Tile*>> tile_set = getTileMatrix(items[i]);
@@ -1776,6 +1777,8 @@ bool Map::update(int cycle_time)
     tile_sprites[i]->update(cycle_time);
 
   /* Update map items */
+  for(uint16_t i = 0; i < base_items.size(); i++)
+    base_items[i]->update(cycle_time, tile_set);
   for(uint16_t i = 0; i < items.size(); i++)
     items[i]->update(cycle_time, tile_set);
     
@@ -1796,9 +1799,11 @@ bool Map::update(int cycle_time)
   
   /* Update map things */
   for(uint16_t i = 0; i < base_things.size(); i++)
-    base_things[i]->update(cycle_time, tile_set);
+    if(base_things[i]->classDescriptor() == "MapThing")
+      base_things[i]->update(cycle_time, tile_set);
   for(uint16_t i = 0; i < things.size(); i++)
-    if(things[i]->getBase() == NULL)
+    if(things[i]->getBase() == NULL || 
+       things[i]->classDescriptor() != "MapThing")
       things[i]->update(cycle_time, tile_set);
   
   /* Finally, update the viewport and dialogs */

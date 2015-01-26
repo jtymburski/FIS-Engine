@@ -177,7 +177,7 @@ bool MapThing::animate(int cycle_time, bool reset, bool skip_head)
             sprite_set->at(i, j)->setAtFirst();
             shift = true;
           }
-    
+
           if(reset)
             shift |= sprite_set->at(i, j)->update(0, skip_head);
           else
@@ -470,6 +470,8 @@ bool MapThing::setMatrix(SpriteMatrix* matrix)
     base_control->frame_time = matrix->getAnimationTime();
     base_control->num_frames = matrix->getFrameCount();
     base_control->time = 0;
+    
+    matrix->shiftTo(base_control->curr_frame); 
     
     return true;
   }
@@ -1622,7 +1624,7 @@ bool MapThing::isVisible()
   bool visible = this->visible;
 
   if(base != NULL)
-    visible &= base->isVisible();
+    visible &= base->visible;
   
   return visible;
 }

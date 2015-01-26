@@ -247,6 +247,8 @@ void MapItem::clear()
  */
 int MapItem::getCoreID()
 {
+  if(base != NULL && base_category == ThingBase::ITEM)
+    return static_cast<MapItem*>(base)->core_id;
   return core_id;
 }
 
@@ -285,6 +287,8 @@ bool MapItem::isVisible()
  */
 bool MapItem::isWalkover()
 {
+  if(base != NULL && base_category == ThingBase::ITEM)
+    return static_cast<MapItem*>(base)->walkover;
   return walkover;
 }
 
@@ -408,34 +412,40 @@ void MapItem::setWalkover(bool walkover)
  */
 void MapItem::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 {
-  if(isTilesSet())
+  SpriteMatrix* sprite_set = getMatrix();
+
+  if(sprite_set != NULL)
   {
-    double brightness = sprite_set->at(0, 0)->getBrightness();
-
-    /* If brighter, increase brightness. */
-    if(brighter)
+    SpriteMatrix* sprite_set = getMatrix();
+    if(base == NULL)
     {
-      brightness += cycle_time / kDELTA_TIME_ONE_POINT;
+      double brightness = sprite_set->at(0, 0)->getBrightness();
+
+      /* If brighter, increase brightness. */
+      if(brighter)
+      {
+        brightness += cycle_time / kDELTA_TIME_ONE_POINT;
       
-      if(brightness > kMAX_BRIGHTNESS)
-      {
-        brightness = kMAX_BRIGHTNESS;
-        brighter = false;
+        if(brightness > kMAX_BRIGHTNESS)
+        {
+          brightness = kMAX_BRIGHTNESS;
+          brighter = false;
+        }
       }
-    }
-    /* Otherwise, dim the frames instead */
-    else
-    {
-      brightness -= cycle_time / kDELTA_TIME_ONE_POINT;
-      if(brightness < kMIN_BRIGHTNESS)
+      /* Otherwise, dim the frames instead */
+      else
       {
-        brightness = kMIN_BRIGHTNESS;
-        brighter = true;
+        brightness -= cycle_time / kDELTA_TIME_ONE_POINT;
+        if(brightness < kMIN_BRIGHTNESS)
+        {
+          brightness = kMIN_BRIGHTNESS;
+          brighter = true;
+        }
       }
-    }
 
-    /* Update the brightness */
-    sprite_set->at(0, 0)->setBrightness(brightness);
+      /* Update the brightness */
+      sprite_set->at(0, 0)->setBrightness(brightness);
+    }
 
     /* Finally update the thing */
     MapThing::update(cycle_time, tile_set);

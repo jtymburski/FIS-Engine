@@ -33,6 +33,7 @@ private:
   /* The nodes that indicate the available states and transitions */
   StateNode* node_current;
   StateNode* node_head;
+  bool nodes_delete;
 
   /* Indicator if a person is standing on the interactive object */
   MapPerson* person_on;
