@@ -908,7 +908,7 @@ void Map::updateTileSize()
 bool Map::initConversation(Conversation* convo, MapThing* source)
 {
   if(player != NULL && player->getTarget() == NULL 
-                    && map_dialog.initConversation(convo, player))
+                    && map_dialog.initConversation(convo, player, source))
   {
     /* Finalize conversation setup */
     std::vector<int> list = map_dialog.getConversationIDs();
@@ -1127,7 +1127,7 @@ bool Map::keyDownEvent(SDL_KeyboardEvent event)
     convo->next.push_back(convo2);
 
     /* Run the conversation and then delete */
-    if(map_dialog.initConversation(convo, player))
+    if(map_dialog.initConversation(convo, player, NULL))
     {
       std::vector<int> list = map_dialog.getConversationIDs();
       map_dialog.setConversationThings(getThingData(list));

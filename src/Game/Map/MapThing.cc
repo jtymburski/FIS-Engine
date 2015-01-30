@@ -1171,7 +1171,9 @@ int MapThing::getID()
  */
 Event MapThing::getInteraction()
 {
-  if(base != NULL)
+  if(interact_event.classification != EventClassifier::NOEVENT)
+    return interact_event;
+  else if(base != NULL)
     return base->getInteraction();
   return interact_event;
 }
@@ -1309,15 +1311,9 @@ bool MapThing::getPassabilityEntering(Tile* frame_tile, Direction dir)
  */
 bool MapThing::getPassabilityExiting(Tile* frame_tile, Direction dir)
 {
-  if(isVisible())
-  {
-    TileSprite* frame = getFrameMain(frame_tile);
-    if(frame != NULL)
-      return frame->getPassability(dir);
-
-    return false;
-  }
-
+  TileSprite* frame = getFrameMain(frame_tile);
+  if(frame != NULL)
+    return frame->getPassability(dir);
   return true;
 }
 

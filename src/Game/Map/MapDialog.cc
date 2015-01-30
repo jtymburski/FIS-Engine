@@ -167,6 +167,7 @@ void MapDialog::clearData()
   pickup_status = WindowStatus::OFF;
   pickup_time = 0;
   pickup_update = false;
+  source = NULL;
   system_options = NULL;
   target = NULL;
   text_index = 0.0;
@@ -271,10 +272,17 @@ MapThing* MapDialog::getThingReference(int id)
 {
   MapThing* thing_reference = NULL;
 
-  for(auto i = thing_data.begin(); i != thing_data.end(); i++)
+  if(id == -1)
   {
-    if((*i)->getID() == id)
-      thing_reference = *i;
+    thing_reference = source;
+  }
+  else if(id >= 0)
+  {
+    for(auto i = thing_data.begin(); i != thing_data.end(); i++)
+    {
+      if((*i)->getID() == id)
+        thing_reference = *i;
+    }
   }
 
   return thing_reference;
@@ -745,12 +753,14 @@ std::vector<int> MapDialog::getConversationIDs()
  *
  * Inputs: Conversation* dialog_info - a conversation pointer
  *         MapPerson* target - the person being targetted for the conversation
+ *         MapThing* source - the thing that initiated the event
  * Output: bool - status if conversation could be created.
  */
-bool MapDialog::initConversation(Conversation* dialog_info, MapPerson* target)
+bool MapDialog::initConversation(Conversation* dialog_info, MapPerson* target,
+                                 MapThing* source)
 {
   if(dialog_info != NULL)
-    return initConversation(*dialog_info, target);
+    return initConversation(*dialog_info, target, source);
   return false;
 }
 
@@ -765,13 +775,16 @@ bool MapDialog::initConversation(Conversation* dialog_info, MapPerson* target)
  *
  * Inputs: Conversation dialog_info - a conversation to display
  *         MapPerson* target - the person being targetted for the conversation
+ *         MapThing* source - the thing that initiated the event
  * Output: bool - status if conversation could be created.
  */
-bool MapDialog::initConversation(Conversation dialog_info, MapPerson* target)
+bool MapDialog::initConversation(Conversation dialog_info, MapPerson* target,
+                                 MapThing* source)
 {
   if(dialog_mode != CONVERSATION && target != NULL && isImagesSet())
   {
     setConversation(&dialog_info);
+    this->source = source;
     this->target = target;
     thing_active = NULL;
     thing_data.clear();

@@ -155,29 +155,29 @@ public:
   void executePickup(MapItem* item, bool walkover = false);
 
   /* Clears the event handling poll queue */
-  void pollClear(); // NEW
+  void pollClear();
   
   /* Poll a conversation event. Only true if this event is next on queue */
-  bool pollConversation(Conversation** convo, MapThing** source); // NEW
+  bool pollConversation(Conversation** convo, MapThing** source);
 
   /* Poll a give item event */
-  bool pollGiveItem(int* id, int* count); // NEW
+  bool pollGiveItem(int* id, int* count);
   
   /* It goes to the next event in the poll sequence. Returns true if there is
    * one */
-  bool pollEvent(); // NEW
+  bool pollEvent();
   
   /* Returns the current event type, to be polled by the management class */
-  EventClassifier pollEventType(); // NEW
+  EventClassifier pollEventType();
   
   /* Poll a notification event */
   bool pollNotification(std::string* notification);
   
   /* Poll a pickup item event */
-  bool pollPickupItem(MapItem** item, bool* walkover); // NEW
+  bool pollPickupItem(MapItem** item, bool* walkover);
   
   /* Poll a start battle event */
-  bool pollStartBattle(); // NEW
+  bool pollStartBattle();
   
   /* Poll a teleport thing event */
   bool pollTeleportThing(int* thing_id, int* x, int* y, int* section_id); // NEW

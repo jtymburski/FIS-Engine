@@ -115,10 +115,11 @@ private:
   Options* system_options;
   
   /* Used thing data for the current rendering application */
+  MapThing* source;
   MapPerson* target;
   MapThing* thing_active;
   std::vector<MapThing*> thing_data;
-  
+
   /* Text rendering pointers */
   float text_index;
   uint16_t text_index_max;
@@ -214,8 +215,10 @@ public:
   std::vector<int> getConversationIDs();
 
   /* Initializes a conversation with the two given people. */
-  bool initConversation(Conversation* dialog_info, MapPerson* target);
-  bool initConversation(Conversation dialog_info, MapPerson* target);
+  bool initConversation(Conversation* dialog_info, MapPerson* target, 
+                        MapThing* source);
+  bool initConversation(Conversation dialog_info, MapPerson* target, 
+                        MapThing* source);
 
   /* Initializes a notification, using a string to be printed */
   bool initNotification(std::string notification, bool single_line = false, 
