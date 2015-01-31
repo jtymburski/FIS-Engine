@@ -91,9 +91,9 @@ Map::~Map()
 bool Map::addSpriteData(XmlData data, std::string id, 
                         int file_index, SDL_Renderer* renderer)
 {
-  int32_t access_id = 0;
+  int32_t access_id = -1;
   Sprite* access_sprite = NULL;
-  int32_t copy_id = 0;
+  int32_t copy_id = -1;
   Sprite* copy_sprite = NULL;
   
   /* Get the ID information */

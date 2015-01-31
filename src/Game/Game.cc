@@ -41,7 +41,8 @@ Game::Game(Options* running_config)
   game_config    = nullptr;
   game_map       = nullptr;
   mode = DISABLED;
-  
+  test_map = "";
+
   /* Set game configuration */
   setConfiguration(running_config);
 
@@ -1384,9 +1385,15 @@ bool Game::render(SDL_Renderer* renderer)
  
   /* Map initialization location */
   if(!game_map->isLoaded())
-    game_map->loadMap(base_path + "maps/test_07", renderer);
-    //game_map->loadMap(base_path + "maps/test_06", renderer);
-    //game_map->loadMap(base_path + "maps/test01.usv", renderer);
+  {
+    if(test_map.empty())
+      game_map->loadMap(base_path + "maps/test_07", renderer);
+      //game_map->loadMap(base_path + "maps/test_06", renderer);
+      //game_map->loadMap(base_path + "maps/test01.usv", renderer);
+      //game_map->loadMap(base_path + "maps/test_output.ugv", renderer);
+    else
+      game_map->loadMap(test_map, renderer);
+  }
 
   if(mode == MAP)
     return game_map->render(renderer);
@@ -1418,6 +1425,12 @@ bool Game::setConfiguration(Options* running_config)
   }
   
   return false;
+}
+  
+/* Sets the test map to run instead of current default */
+void Game::setTestMap(std::string test_map)
+{
+  this->test_map = test_map;
 }
 
 /* Updates the game state. Returns true if the class is finished */

@@ -54,8 +54,10 @@ bool initSDL()
 
 int main(int argc, char** argv)
 {
-  (void)argc;
-  (void)argv;
+  /* See if there is a map to skip all proceedings for */
+  std::string init_map = "";
+  if(argc > 1)
+    init_map += argv[1];
 
   /* Get the base directory to the executable, which will be the location of
    * all applicable resources */
@@ -71,7 +73,7 @@ int main(int argc, char** argv)
     /* Create the application and start the run loop */
     Application* game_app = new Application(dir_string);
     if(game_app->initialize())
-      game_app->run();
+      game_app->run(init_map);
   
     /* Clean up the application, after the run loop is finished */
     game_app->uninitialize();

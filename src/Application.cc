@@ -308,7 +308,7 @@ bool Application::isInitialized()
 }
 
 /* Runs the application */
-bool Application::run()
+bool Application::run(std::string test_map)
 {
   uint32_t count = 1;
   uint32_t cycle_time = kUPDATE_RATE;
@@ -326,6 +326,13 @@ bool Application::run()
   
   if(isInitialized())
   {
+    /* If the test map isn't empty, jump straight to game map */
+    if(!test_map.empty())
+    {
+      game_handler.setTestMap(test_map);
+      changeMode(GAME);
+    }
+
     /* Main application loop */
     while(!quit)
     {

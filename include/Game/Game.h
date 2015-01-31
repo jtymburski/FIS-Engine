@@ -109,7 +109,10 @@ private:
 
   /* The mode that the game is currently running at */
   GameMode mode;
-  
+ 
+  /* Test map */
+  std::string test_map;
+
   /* A current victory screen pointer */
   //VictoryScreen* victory_screen;
 
@@ -188,6 +191,9 @@ public:
 
   /* Set the running configuration, from the options class */
   bool setConfiguration(Options* running_config);
+
+  /* Sets the test map to run instead of current default */
+  void setTestMap(std::string test_map);
 
   /* Updates the game state */
   bool update(int cycle_time);
