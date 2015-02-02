@@ -310,10 +310,12 @@ bool Battle::addAilment(Infliction infliction_type, Person* inflictor,
 // }
 
 /*
- * Description:
+ * Description: Recalculates ailment-related flags for a given target Person
+ *              assuming a given ailment is being applied.
  *
- * Inputs: 
- * Output:
+ * Inputs: Person* target - the target having an ailment unapplied
+ *         Ailment* ail   - the ailment being unapplied
+ * Output: bool - true if the ailment lags were being recalculated.
  */
 bool Battle::reCalcAilmentFlags(Person* target, Ailment* ail)
 {
@@ -357,10 +359,10 @@ bool Battle::reCalcAilmentFlags(Person* target, Ailment* ail)
 }
 
 /*
- * Description:
+ * Description: Removes a given ailment from the current target.
  *
- * Inputs: 
- * Output:
+ * Inputs: Ailment* remove_ailment - the ailment set to be removed
+ * Output: bool - true if the ailment was found and removed, false otherwise
  */
 bool Battle::removeAilment(Ailment* remove_ailment)
 {
@@ -930,8 +932,8 @@ int32_t Battle::calcBaseDamage(const float &crit_factor,
  *              action/person/target outcome processing. Damage is modified
  *              if the 
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Output: none
  */
 void Battle::calcElementalMods()
 {
@@ -1038,10 +1040,16 @@ void Battle::calcElementalMods()
 }
 
 /*
- * Description: Calculates the crit factor for the Battle. 
+ * Description: Calculates the crit factor of the upcoming operation of
+ *              curr_user vs. curr_target. As the distance between levels
+ *              of the two persons become greater, the crit factor will change.
+ *              As well, defendingand guarding and a person's UNBR stat will
+ *              affect the crti factor. The crit factor is a multiplacted value
+ *              applied to the base damage a target will receive in battle.
+ *                ex. 100 damage * crit_factor of 2 = 200 damage total
  *
- * Inputs:
- * Outputs:
+ * Inputs: none
+ * Output: none
  */
 float Battle::calcCritFactor()
 {
@@ -1313,7 +1321,6 @@ void Battle::clearActionVariables()
   curr_item   = nullptr;
 
   ignore_flags = static_cast<IgnoreState>(0);
-
   pro_index = 0;
 }
 
@@ -1534,7 +1541,6 @@ bool Battle::doesActionHit()
   can_process &= curr_user    != nullptr;
   can_process &= curr_target  != nullptr;
   can_process &= curr_action  != nullptr;
-
 
   if (can_process)
   {
@@ -2017,11 +2023,14 @@ bool Battle::processAction(BattleEvent* battle_event,
     can_process = true;
 
   auto action_hits = false;
-
   battle_event->happens = action_hits;
 
   if (can_process)
+  {
+    std::cout << "Action Hits: " << action_hits << std::endl;
     action_hits = doesActionHit();
+    std::cout << "Action Hits: " << action_hits << std::endl;
+  }
 
   if (can_process && action_hits)
   {
@@ -2181,10 +2190,14 @@ bool Battle::processAlterAction(const DamageType &damage_type,
 }
 
 /*
- * Description: 
+ * Description: Calculates the outcome of an "ASSIGN" type actions, one which
+ *              the stat of a user/target will be assigned to a certain value
+ *              or percentage of the user/target's stat.
  *
- * Inputs:
- * Output:
+ * Inputs: damage_type - incoming damage type (BASE/GUARD) etc.
+ *         action_target - the person who will have the assignment done on them.
+ *         factor_target - the person who by which the action target changes
+ * Output: bool - true if 
  */
 bool Battle::processAssignAction(const DamageType &damage_type,
     Person* action_target, Person* factor_target)
@@ -2223,6 +2236,8 @@ bool Battle::processAssignAction(const DamageType &damage_type,
               << set_value << "." << std::endl;
   }
 
+  //TODO - Move done to "perform action" phase? [02-01-15]
+  /* If the set value is 0? What if not setting VITA? //TODO [02-01-15] */
   if (set_value == 0)
     done = updatePersonDeath(damage_type);
 
@@ -2230,10 +2245,14 @@ bool Battle::processAssignAction(const DamageType &damage_type,
 }
 
 /*
- * Description: 
+ * Description: Calculates the outcome of a "DAMAGE" type action, one which
+ *              will use Battle's general damage formula to bash the two
+ *              skill powers together combined with the user and target's 
+ *              power values plus other factors.
  *
- * Inputs:
- * Output:
+ * Inputs: BattleEvent* damage_event - the incoming damage event
+ *         damage_type - incoming type of damage (BASE/GUARD)
+ * Output: //TODO
  */
 bool Battle::processDamageAction(BattleEvent* damage_event,
     const DamageType &damage_type)
@@ -3001,7 +3020,7 @@ void Battle::updateEnemySelection()
 }
 
 /*
- * Description:
+ * Description: Calls checkPartyDeath and assigns a LOSS or VICTORY condition
  *
  * Inputs: 
  * Output: bool - true if a party death has occured
@@ -3023,10 +3042,16 @@ bool Battle::updatePartyDeaths()
 }
 
 /*
- * Description:
+ * Description: Given an incoming type of damage, updates the curr target
+ *              as a recently fallen person, unsetting their alive flag, 
+ *              removing their actions from the Buffer, unsetting guard
+ *              changes to the Buffer, removing all ailments in the Battle
+ *              [TODO: Except cure on death? [02-01-15]]. 
  *
- * Inputs: 
- * Output: 
+ *              Also, calls updatePartyDeaths to check for a BattleVictory.
+ *
+ * Inputs: damage_type - type of incoming damage causing the death.
+ * Output: bool - outcome of updatePartyDeaths()
  */
 bool Battle::updatePersonDeath(const DamageType &damage_type)
 {
@@ -3064,8 +3089,8 @@ bool Battle::updatePersonDeath(const DamageType &damage_type)
  *              defender, this means they are able to persist through further
  *              hits, but a non power defender may not.
  *
- * Inputs: 
- * Output: 
+ * Inputs: none
+ * Output: bool - true if the target defense operation can be processed
  */
 bool Battle::updateTargetDefense()
 {
@@ -3519,7 +3544,6 @@ void Battle::printAll(const bool &simple, const bool &flags, const bool &party)
     std::cout << "\nScreen Width: " << screen_width;
     std::cout << "\nTime Elapsed: " << time_elapsed;
     std::cout << "\nTurns Elapsed: " << turns_elapsed;
-    //std::cout << "\n# Enemy Bars: " << enemy_bars.size();
     std::cout << "\n\n";
 
     if (flags)
@@ -3556,7 +3580,10 @@ void Battle::printAll(const bool &simple, const bool &flags, const bool &party)
                 << getBattleFlag(CombatState::BEGIN_ACTION_PROCESSING);
       std::cout << "\nACTION PROCESSING COMPLETE: " 
                 << getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE);
+      std::cout << "\nALL PROCESSING COMPLETE: "
+                << getBattleFlag(CombatState::ALL_PROCESSING_COMPLETE);
       std::cout << "\n\n";
+
     }
 
     if (party)
@@ -3593,7 +3620,7 @@ void Battle::printPartyState()
  *
  * Inputs: Person* - pointer to the member which to print out VITA/QTDR for
  *         int32_t - the person index of the person (only for display purposes)
- * Outputs: none
+ * Output: none
  */
 void Battle::printPersonState(Person* const member, 
                               const int32_t &person_index)
@@ -3636,10 +3663,10 @@ void Battle::printInventory(Party* const target_party)
 }
 
 /*
- * Description:
+ * Description: Prints out the turn state of the Battle.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: none
  */
 void Battle::printTurnState()
 {
@@ -3672,16 +3699,16 @@ void Battle::printTurnState()
 }
 
 /*
- * Description:
+ * Description: General update-tick call for Battle. Sends the update call
+ *              down to update ally selection, update enemy selection sections
+ *              in those states of battle.
  *
- * Inputs:
- * Output:
+ * Inputs: int32_t - the input cycle time of the battle.
+ * Output: bool - false while not done
  */
 bool Battle::update(int32_t cycle_time)
 {
   setTimeElapsed(cycle_time);
-
-  // GUIupdate(); //TODO [11-06-14] Update the battle interface
 
   if (getBattleFlag(CombatState::PHASE_DONE) && 
       !getBattleFlag(CombatState::OUTCOME_DONE))
@@ -3739,10 +3766,10 @@ BattleOptions Battle::getAilmentUpdateMode()
 }
 
 /*
- * Description:
+ * Description: Returns a pointer to the BattleMenu
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: BattleMenu* - pointer to the BattleMenu
  */
 BattleMenu* Battle::getBattleMenu()
 {
@@ -4159,7 +4186,7 @@ std::vector<int32_t> Battle::getValidTargets(int32_t index,
  *              to true.
  *
  * Inputs: Options* - pointer to running config to be assigned
- * Outputs: bool - true if the new configuration was asssigned
+ * Output: bool - true if the new configuration was asssigned
  */
 bool Battle::setConfiguration(Options* const new_config)
 {
@@ -4186,7 +4213,7 @@ bool Battle::setConfiguration(Options* const new_config)
  *
  * Inputs: CombatState flag - flag to assign value to
  *         set_value - boolean value to assign to given flag
- * Output: noneproc
+ * Output: none
  */
 void Battle::setBattleFlag(CombatState flag, const bool &set_value)
 {

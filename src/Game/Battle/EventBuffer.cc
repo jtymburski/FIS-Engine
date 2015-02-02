@@ -302,6 +302,29 @@ BattleEvent* EventBuffer::createFizzleEvent(EventType fizzle_type, Person* user,
 }
 
 /*
+ * Description: Destroys the last event, if it exists. If this action was
+ *              able to take place, this function will return true.
+ *
+ * Inputs: none
+ * Output: bool - true if the last event was able to be destroyed
+ */
+bool EventBuffer::destroyLastEvent()
+{
+  auto last_event = getLastEvent();
+
+  if (last_event != nullptr)
+  {
+    delete last_event;
+    last_event = nullptr;
+    events.pop_back();
+
+    return true;
+  }
+
+  return false;
+}
+
+/*
  * Description: Returns whether the EventBuffer is active
  *
  * Inputs: none
@@ -333,13 +356,14 @@ void EventBuffer::print(bool only_current)
  * Description: Print an event of the given index
  *
  * Inputs: none
- * Output: bool -true if the index was valid
+ * Output: bool - true if the index was valid
  */
 bool EventBuffer::printEvent(uint32_t index)
 {
   if (index < events.size())
   {
-    std::cout << "EventType: " << static_cast<int>(events.at(index)->type);
+    std::cout << "EventType: " << static_cast<int>(events.at(index)->type) <<
+                 " " << Helpers::eventToStr(events.at(index)->type);
 
     if (events.at(index)->action_use != nullptr)
       std::cout << "\nAction: " << events.at(index)->action_use;
@@ -354,8 +378,8 @@ bool EventBuffer::printEvent(uint32_t index)
     
     std::cout << "\nAmount: " << events.at(index)->amount;
     std::cout << "\nHappens? " << events.at(index)->happens << std::endl;
-    std::cout << "\nRendered?: " << events.at(index)->rendered << std::endl;
-    std::cout << "\nPerformed?: " << events.at(index)->performed << std::endl
+    std::cout << "Rendered?: " << events.at(index)->rendered << std::endl;
+    std::cout << "Performed?: " << events.at(index)->performed << std::endl
               << std::endl;
   
     return true;
@@ -364,6 +388,13 @@ bool EventBuffer::printEvent(uint32_t index)
   return false;
 }
 
+/*
+ * Description: The "current" size of the buffer, the distance between the
+ *              current index and the end of the buffer.
+ *
+ * Inputs: none
+ * Output: uint32_t - the "current" size of the Buffer.
+ */
 uint32_t EventBuffer::getCurrentSize()
 {
   if (getCurrentIndex() != -1)
@@ -371,7 +402,6 @@ uint32_t EventBuffer::getCurrentSize()
 
   return 0;
 }
-
 
 /*
  * Description: Returns a pointer to the BattleEvent at a given index.
@@ -383,6 +413,20 @@ BattleEvent* EventBuffer::getEvent(int32_t index)
 {
   if (static_cast<uint32_t>(index) < events.size())
     return events.at(index);
+
+  return nullptr;
+}
+
+/*
+ * Description: Returns a pointer to the last event on the event buffer.
+ *
+ * Inputs: none
+ * Output: BattleEvent* - pointer to the last event
+ */
+BattleEvent* EventBuffer::getLastEvent()
+{
+  if (events.size() > 0)
+    return events[events.size() - 1];
 
   return nullptr;
 }

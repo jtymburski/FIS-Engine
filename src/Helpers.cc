@@ -212,6 +212,104 @@ std::string Helpers::a_An(const std::string &noun)
   return a_an;
 }
 
+std::string Helpers::eventToStr(EventType event)
+{
+  if (event == EventType::ITEM_USE)
+    return "ITEM_USE";
+  if (event == EventType::SKILL_USE)
+    return "SKILL_USE";
+  if (event == EventType::SKILL_USE_FIZZLE)
+    return "SKILL_USE_FIZZLE";
+  if (event == EventType::SKILL_COOLDOWN)
+    return "SKILL_COOLDOWN";  
+  if (event == EventType::IMPLODE)
+    return "IMPLODE";
+  if (event == EventType::INSPECT)
+    return "INSPECT";
+  if (event == EventType::ATTEMPT_RUN)
+    return "ATTEMPT_RUN";
+  if (event == EventType::SUCCEED_RUN)
+    return "SUCCEED_RUN";
+  if (event == EventType::FAIL_RUN)
+    return "FAIL_RUN";
+  if (event == EventType::MISS_TURN)
+    return "MISS_TURN";
+  if (event == EventType::PASS)
+    return "PASS";
+  if (event == EventType::SKILL_MISS)
+    return "SKILL_MISS";
+  if (event == EventType::ACTION_MISS)
+    return "ACTION_MISS";
+  if (event == EventType::BLIND_MISS)
+    return "BLIND_MISS";
+  if (event == EventType::DREAMSNARE_MISS)
+    return "DREAMSNARE_MISS";
+  if (event == EventType::FIZZLE)
+    return "FIZZLE";
+  if (event == EventType::STANDARD_DAMAGE)
+    return "STANDARD_DAMAGE";
+  if (event == EventType::CRITICAL_DAMAGE)
+    return "CRITICAL_DAMAGE";
+  if (event == EventType::POISON_DAMAGE)
+    return "POISON_DAMAGE";
+  if (event == EventType::BURN_DAMAGE)
+    return "BURN_DAMAGE";
+  if (event == EventType::HITBACK_DAMAGE)
+    return "HITBACK_DAMAGE";
+  if (event == EventType::METABOLIC_KILL)
+    return "METABOLIC_KILL";
+  if (event == EventType::METABOLIC_DAMAGE)
+    return "METABOLIC_DAMAGE";
+  if (event == EventType::DEATH_COUNTDOWN)
+    return "DEATH_COUNTDOWN";
+  if (event == EventType::BOND)
+    return "BOND";
+  if (event == EventType::BONDING)
+    return "BONDING";
+  if (event == EventType::BEGIN_DEFEND)
+    return "BEGIN_DEFEND";
+  if (event == EventType::PERSIST_DEFEND)
+    return "PERSIST_DEFEND";
+  if (event == EventType::BREAK_GUARD)
+    return "BREAK_GUARD";
+  if (event == EventType::BEGIN_GUARD)
+    return "BEGIN_GUARD";
+  if (event == EventType::PERSIST_GUARD)
+    return "PERSIST_GUARD";
+  if (event == EventType::BREAK_GUARD)
+    return "BREAK_GUARD";
+  if (event == EventType::FAIL_GUARD)
+    return "FAIL_GUARD";
+  if (event == EventType::DEATH)
+    return "DEATH";
+  if (event == EventType::INFLICTION)
+    return "INFLICTION";
+  if (event == EventType::CURE_INFLICTION)
+    return "CURE_INFLICTION";
+  if (event == EventType::ALTERATION)
+    return "ALTERATION";
+  if (event == EventType::ASSIGNMENT)
+    return "ASSIGNMENT";
+  if (event == EventType::REVIVAL)
+    return "REVIVAL";
+  if (event == EventType::HEAL_HEALTH)
+    return "HEAL_HEATLH";
+  if (event == EventType::REGEN_HEALTH)
+    return "REGEN_HEALTH";
+  if (event == EventType::HEAL_QD)
+    return "HEAL_QD";
+  if (event == EventType::REGEN_QD)
+    return "REGEN_QD";
+  if (event == EventType::START_DEFEND)
+    return "START_DEFEND";
+  if (event == EventType::ACTION_BEGIN)
+    return "ACTION_BEGIN";
+  if (event == EventType::NONE)
+    return "NONE";
+
+  return "";
+}
+
 /*
  * Description: Flushes some whitespace (or whatever) into the console window.
  *

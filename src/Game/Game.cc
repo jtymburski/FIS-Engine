@@ -339,7 +339,7 @@ void Game::setupBattle()
   physical_01->setPrimary(Element::PHYSICAL);
   physical_01->setThumbnail(new Frame( // TODO for rest
                  "sprites/Battle/Skills/_sample_skill_2.png", active_renderer));
-  physical_01->setDescription("Lor em ips um do lor sit amet, mel omnis nomin ati an, atom orum facil isis in pri, adipi scing argum entum in pri. Duo ei tempor dicunt sanctus, per ut hinc oporteat conceptam. Iisque euismod albucius vel ut, duo ea singulis eleifend. Veri offendit vim ut, at pri tale adolescens, putant veritus sea no. Atqui blandit assentior ne eam. Et rebum deserunt pericula eum.");
+  physical_01->setDescription("Jordan is a weirdo... Lor em ips um do lor sit amet, mel omnis nomin ati an, atom orum facil isis in pri, adipi scing argum entum in pri. Duo ei tempor dicunt sanctus, per ut hinc oporteat conceptam. Iisque euismod albucius vel ut, duo ea singulis eleifend. Veri offendit vim ut, at pri tale adolescens, putant veritus sea no. Atqui blandit assentior ne eam. Et rebum deserunt pericula eum.");
 
   // Skill* physical_02 = new Skill(101, "Whelp", ActionScope::ONE_ENEMY, 
   //     damage_actions[4],  95, 5);
@@ -661,9 +661,9 @@ void Game::setupBattle()
   Party* friends = new Party(401, getPerson(300), PartyType::SLEUTH, 10,
       friends_pouch);
   friends->addMember(getPerson(301));
-  friends->addMember(getPerson(302));
-  friends->addMember(getPerson(303));
-  friends->addMember(getPerson(304));
+  // friends->addMember(getPerson(302));
+  // friends->addMember(getPerson(303));
+  // friends->addMember(getPerson(304));
   // friends->addMember(george);
   // friends->addMember(gregory);
   // friends->addMember(georgina);
@@ -673,9 +673,9 @@ void Game::setupBattle()
   Party* enemies = new Party(402, getPerson(310), PartyType::REGULAR_FOE, 
       10, foes_pouch);
   enemies->addMember(getPerson(311));
-  enemies->addMember(getPerson(312));
-  enemies->addMember(getPerson(313));
-  enemies->addMember(getPerson(314));
+  // enemies->addMember(getPerson(312));
+  // enemies->addMember(getPerson(313));
+  // enemies->addMember(getPerson(314));
   // enemies->addMember(schwep);
   // enemies->addMember(hamburger);
   // enemies->addMember(swiss_cheese);

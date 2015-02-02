@@ -110,6 +110,9 @@ public:
   /* Creates a Skill Use Fizzle event */
   BattleEvent* createFizzleEvent(EventType fizzle_type, Person* user,
       std::vector<Person*> targets);
+ 
+  /* Annihilates the last battle event straight into the void */
+  bool destroyLastEvent();
 
   /* Returns whether the EventBuffer is active */
   bool isActive();
@@ -131,6 +134,9 @@ public:
 
   /* Returns a pointer to the event at a given index */
   BattleEvent* getEvent(int32_t index);
+
+  /* Returns a pointer to the last BattleEvent of all time */
+  BattleEvent* getLastEvent();
 
   /* Sets the EventBuffer to active */
   void setActive();

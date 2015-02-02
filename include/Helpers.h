@@ -87,6 +87,9 @@ public:
   /* Decides between "a" or "an" */
   static std::string a_An(const std::string& noun);
 
+  /* Converts a given EventType to a string equivalent */
+  static std::string eventToStr(EventType event_type);
+
   /* Determines whether a given character is a vowel */
   static bool isVowel(const char &c);
 
