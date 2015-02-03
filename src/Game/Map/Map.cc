@@ -1207,6 +1207,7 @@ void Map::keyUpEvent(SDL_KeyboardEvent event)
 bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
 {
   bool done = false;
+  std::string map_id = "";
   bool read_success = true;
   bool success = true;
   FileHandler fh(file, false, true, encryption);
@@ -1230,10 +1231,14 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
       data = fh.readXmlData(&done, &read_success);
       success &= read_success;
 
+      /* Check the map ID, if this is the first call. TODO fix for future */
+      if(map_id == "" && data.getElement(kFILE_GAME_TYPE) == "map")
+        map_id = data.getKeyValue(kFILE_GAME_TYPE);
+
       /* Parse map data */
       // TODO: Change how ID is chosen for what map is read
       if(data.getElement(kFILE_GAME_TYPE) == "map" && 
-         data.getKeyValue(kFILE_GAME_TYPE) == "0")
+         data.getKeyValue(kFILE_GAME_TYPE) == map_id)
       {
         if(data.getElement(kFILE_SECTION_ID) == "sprite" &&
            !data.getKeyValue(kFILE_SECTION_ID).empty())
@@ -1266,6 +1271,7 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
           if(temp_index >= 0)
           {
             index = temp_index;
+            
             if(geography.size() > static_cast<uint16_t>(index) && 
                geography[index].size() > 0)
             {
