@@ -914,20 +914,20 @@ std::vector<std::vector<std::string>> Helpers::frameSeparator(
          range_split.front().front() >= 'A' &&
          range_split.front().front() <= 'Z' &&
          range_split.back().front() >= 'A' &&
-         range_split.back().front() <= 'Z' &&
-         range_split.front().front() <= range_split.back().front())
+         range_split.back().front() <= 'Z')// &&
+         //range_split.front().front() <= range_split.back().front())
       {
-        /* String contains a correct range (Eg A-B) */
-        if(range_split.front().front() < range_split.back().front())
+        /* String contains a range that's identical (Eg B-B) */
+        if(range_split.front().front() == range_split.back().front())
+        {
+          split_strings.push_back(range_split.front());
+        }
+        /* String contains a correct range (Eg A-B) or (B-A) */
+        else
         {
           split_strings.push_back(second_split.front());
           range_ids.push_back(split_strings.size() - 1);
           range_count++;
-        }
-        /* String contains a range that's identical (Eg B-B) */
-        else
-        {
-          split_strings.push_back(range_split.front());
         }
 
         for(uint32_t j = 1; j < second_split.size(); j++)
@@ -956,24 +956,31 @@ std::vector<std::vector<std::string>> Helpers::frameSeparator(
     {
       uint32_t base_elements = linear_set.size();
       std::vector<std::string> range_str = split(split_strings[i], '-');
-      uint32_t new_elements = range_str.back().front() - 
+      int32_t new_elements = range_str.back().front() - 
                               range_str.front().front();
+      uint32_t abs_elements = new_elements;
+      if(new_elements < 0)
+        abs_elements = 0 - new_elements;
 
       /* Store the number of elements in the appropriate variable */
       if(j == 0)
-        range1 = new_elements + 1;
+        range1 = abs_elements + 1;
       else
-        range2 = new_elements + 1;
+        range2 = abs_elements + 1;
 
       /* Duplicate enough elements for the new range */
-      for(uint32_t k = 0; k < new_elements; k++)
+      for(uint32_t k = 0; k < abs_elements; k++)
         for(uint32_t m = 0; m < base_elements; m++)
           linear_set.push_back(linear_set[m]);
 
       /* Now append the ranges for each on to the end */
       for(uint32_t k = 0; k < linear_set.size(); k++)
       {
-        char element = range_str.front().front() + (k / base_elements);
+        char element;
+        if(new_elements > 0)
+          element = range_str.front().front() + (k / base_elements);
+        else
+          element = range_str.front().front() - (k / base_elements);
         linear_set[k] += element;
       }
 

@@ -308,12 +308,11 @@ bool SpriteMatrix::addFileInformation(XmlData data, int file_index,
   bool success = true;
   std::vector<std::string> elements = data.getTailElements(file_index);
   std::vector<std::string> base_tag = Helpers::split(elements.back(), '_');
-  std::vector<std::string> front_tag = Helpers::split(elements.front(), '_');
   TileSprite* valid_sprite = getValidSprite();
 
   /* Only proceed if there are elements within the sprites element */
   /*--------------------- MATRIX SPRITE -----------------*/
-  if(elements.size() == 2 && front_tag.front() == "multiple" && 
+  if(elements.size() == 2 && elements.front() == "multiple" && 
                              data.getKey(file_index) == "range")
   {
     uint32_t x_max = 0;
@@ -336,9 +335,6 @@ bool SpriteMatrix::addFileInformation(XmlData data, int file_index,
         y_max = str_matrix.front().size() + y_min - 1;
       growMatrix(x_max, y_max);
 
-      if(front_tag.size() > 1)
-        str_matrix = flipArray(str_matrix, front_tag);
-
       /* Go through and set the frames in all relevant sprites */
       for(uint32_t i = x_min; i <= x_max; i++)
       {
@@ -351,10 +347,6 @@ bool SpriteMatrix::addFileInformation(XmlData data, int file_index,
           data.addDataOfType(str_matrix[i-x_min][j-y_min]);
           sprite_matrix[i][j]->addFileInformation(data, file_index + 1, 
                                                   renderer, base_path, true);
-          
-          /* Execute image adjustments, if they exist on the front tag */
-          if(front_tag.size() > 1)
-            sprite_matrix[i][j]->execImageAdjustments(front_tag);
         }
       }
     }
