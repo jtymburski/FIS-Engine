@@ -212,7 +212,9 @@ enum class EventType : std::uint8_t
   SKILL_USE = 2,
   SKILL_USE_FIZZLE = 3,
   SKILL_COOLDOWN = 4,
+  //TODO: Implode -- break down to damage/character removal?
   IMPLODE = 5,
+  //TODO: Inspect -- ???
   INSPECT = 6,
   ATTEMPT_RUN = 7,
   SUCCEED_RUN = 8,
@@ -251,9 +253,9 @@ enum class EventType : std::uint8_t
   REGEN_HEALTH = 41,
   HEAL_QD = 42,
   REGEN_QD = 43,
-  START_DEFEND = 44,
-  ACTION_BEGIN = 45,
-  NONE = 46
+  ACTION_BEGIN = 44,
+  PARTY_DEATH = 45,
+  NONE = 45
 };
 
 /*

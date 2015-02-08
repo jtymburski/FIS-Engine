@@ -144,12 +144,14 @@ BattleEvent* EventBuffer::createDamageEvent(EventType damage_type,
  * Inputs:
  * Output: 
  */
-BattleEvent* EventBuffer::createDeathEvent(EventType death_type, Person* target)
+BattleEvent* EventBuffer::createDeathEvent(EventType death_type, Person* target,
+     bool allies)
 {
   auto new_event = createNewEvent();
   new_event->type = death_type;
   std::vector<Person*> target_vec{target};
   new_event->targets = target_vec;
+  new_event->allies = allies;
   events.push_back(new_event);
 
   return new_event;
@@ -260,6 +262,27 @@ BattleEvent* EventBuffer::createActionEvent(Action* action_use,
 }
 
 /*
+ * Description: Creates a run event with a type (ATTMEPT/SUCCEED/FAIL) and
+ *              a bool whether the running action is taking place by an ally
+ *              or an enemy.
+ *
+ * Inputs: EventType run_type - whether the run is an ATTEMPT, SUCCEED, or FAIL
+ *         Person* user - pointer to the user of the running action
+ * Output: BattleEvent* - pointer to the recently created event.
+ */
+BattleEvent* EventBuffer::createRunEvent(EventType run_type, Person* user, 
+    bool allies)
+{
+  auto new_event = createNewEvent();
+  new_event->type = run_type;
+  new_event->user = user;
+  new_event->allies = allies;
+  events.push_back(new_event);
+
+  return new_event;
+}
+
+/*
  * Description: Creates and appends a skill use start event to list of events.
  *
  * Inputs: Skill* skill_use - the Skill being used.
@@ -343,6 +366,9 @@ bool EventBuffer::isActive()
  */
 void EventBuffer::print(bool only_current)
 {
+  std::cout << "==== Event Buffer ====\n";
+  std::cout << "Size: " << events.size() << " Index: " << curr_index <<  "\n";
+
   for (uint32_t i = 0; i < events.size(); i++)
   {
     if (only_current && !events.at(i)->rendered)
@@ -377,9 +403,10 @@ bool EventBuffer::printEvent(uint32_t index)
         std::cout << "\nTarget: " << target->getName();
     
     std::cout << "\nAmount: " << events.at(index)->amount;
-    std::cout << "\nHappens? " << events.at(index)->happens << std::endl;
-    std::cout << "Rendered?: " << events.at(index)->rendered << std::endl;
-    std::cout << "Performed?: " << events.at(index)->performed << std::endl
+    std::cout << "\nAllies?  " << events.at(index)->allies << std::endl;
+    std::cout << "Happens? " << events.at(index)->happens << std::endl;
+    std::cout << "Rendered?  " << events.at(index)->rendered << std::endl;
+    std::cout << "Performed? " << events.at(index)->performed << std::endl
               << std::endl;
   
     return true;
@@ -415,6 +442,17 @@ BattleEvent* EventBuffer::getEvent(int32_t index)
     return events.at(index);
 
   return nullptr;
+}
+
+/*
+ * Description:
+ *
+ * Inputs: 
+ * Output: 
+ */
+int32_t EventBuffer::getIndex()
+{
+  return curr_index;
 }
 
 /*

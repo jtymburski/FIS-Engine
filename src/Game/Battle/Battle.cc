@@ -610,6 +610,10 @@ bool Battle::bufferUserAction()
   if (action_type == ActionType::SKILL)
   {
     //TODO: Buffering skill cooldowns [11-15-14]
+    // - Need to add skill at the proper cooldown
+    // - Need to hide user/ally selection for the next x turns
+    // - Need to reduce the cooldown if cooldown in buffer > 0
+    // - Need to do the skill if cooldown in buffer == 0 
 
     curr_skill = menu->getSelectedSkill().skill;
     buffered = action_buffer->add(curr_user, curr_skill, person_targets, 0);
@@ -1715,20 +1719,156 @@ void Battle::orderActions()
 void Battle::performEvents()
 {
   std::cout << "---- Performing Events ----" << std::endl;
-  //TODO - actually perform the events [01-11-14]  
-  // for (auto &event : curr_events)
-  // {
-  //   if (event->type == EventType::BEGIN_DEFEND)
-  //   {
-  //     event->user->setBFlag(BState::DEFENDING, true);
+  //TODO - actually perform the events [01-11-14]
 
-  //     if (getBattleMode() == BattleMode::TEXT)
-  //     {
-  //       std::cout << "{DEFEND} " << curr_user->getName() << " is now defending "
-  //                 << "themselves from damage." << std::endl;
-  //     }  
-  //   }
-  // }
+  while (event_buffer->getCurrentEvent() != nullptr)
+  {
+    auto event = event_buffer->getCurrentEvent();
+    auto index = event_buffer->getIndex();
+    auto found_type = true;
+
+    if (event->type == EventType::IMPLODE)
+    {
+      //TODO [02-08-15]: Determine implode outcome
+    }
+    else if (event->type == EventType::INSPECT)
+    {
+      //TODO [02-08-15]: Determine inspect outcome
+    }
+    else if (event->type == EventType::SUCCEED_RUN)
+    {
+      /* In a succeed run event, the happens flag is used for "allies" */
+      if (event->allies)
+        setBattleFlag(CombatState::ALLIES_RUN, true);
+      else
+        setBattleFlag(CombatState::ENEMIES_RUN, true);
+
+      setBattleFlag(CombatState::PHASE_DONE, true);
+    }
+    else if (event->type == EventType::STANDARD_DAMAGE ||
+             event->type == EventType::CRITICAL_DAMAGE ||
+             event->type == EventType::POISON_DAMAGE   || 
+             event->type == EventType::BURN_DAMAGE     ||
+             event->type == EventType::HITBACK_DAMAGE  ||
+             event->type == EventType::METABOLIC_DAMAGE)
+    {
+      auto str_damage = "";
+
+      if (event->type == EventType::STANDARD_DAMAGE)
+        str_damage = "DAMAGE";
+      else if (event->type == EventType::CRITICAL_DAMAGE)
+        str_damage = "CRIT DMG";
+      else if (event->type == EventType::POISON_DAMAGE)
+        str_damage = "POISON DMG";
+      else if (event->type == EventType::BURN_DAMAGE)
+        str_damage = "BURN DMG";
+      else if (event->type == EventType::HITBACK_DAMAGE)
+        str_damage = "HITB DMG";
+      else if (event->type == EventType::METABOLIC_DAMAGE)
+        str_damage = "META DMG";
+
+      auto amount  = event->amount;
+      auto targets = event->targets;
+
+      if (targets.size() > 0)
+        targets.at(0)->doDmg(amount, DamageType::BASE);
+
+      if (getBattleMode() == BattleMode::TEXT)
+      {
+        std::cout << "{" << str_damage << "} " << curr_target->getName() 
+                  << " struck with " << amount << " damage.\n";
+      }
+    }
+    else if (event->type == EventType::METABOLIC_KILL)
+    {
+
+    }
+    else if (event->type == EventType::DEATH_COUNTDOWN)
+    {
+
+    }
+    else if (event->type == EventType::BOND)
+    {
+
+    }
+    else if (event->type == EventType::BONDING)
+    {
+ 
+    }
+    else if (event->type == EventType::BEGIN_DEFEND)
+    {
+      event->user->setBFlag(BState::DEFENDING, true);
+
+      if (getBattleMode() == BattleMode::TEXT)
+      {
+        std::cout << "{DEFEND} " << curr_user->getName() << " is now defending "
+                  << "themselves from damage." << std::endl;
+      }  
+    }
+    else if (event->type == EventType::BREAK_DEFEND)
+    {
+
+    }
+    else if (event->type == EventType::BEGIN_GUARD)
+    {
+
+    }
+    else if (event->type == EventType::BREAK_GUARD)
+    {
+
+    }
+    else if (event->type == EventType::DEATH)
+    {
+
+    }
+    else if (event->type == EventType::INFLICTION)
+    {
+
+    }
+    else if (event->type == EventType::CURE_INFLICTION)
+    {
+
+    }
+    else if (event->type == EventType::ALTERATION)
+    {
+
+    }
+    else if (event->type == EventType::ASSIGNMENT)
+    {
+
+    }
+    else if (event->type == EventType::REVIVAL)
+    {
+
+    }
+    else if (event->type == EventType::HEAL_HEALTH)
+    {
+
+    }
+    else if (event->type == EventType::REGEN_HEALTH)
+    {
+
+    }
+    else if (event->type == EventType::REGEN_QD)
+    {
+
+    }
+    else
+    {
+      found_type = false;
+    }
+
+    if (found_type)
+      event_buffer->setPerformed(index);
+
+    event_buffer->setNextIndex();
+  }
+
+  // Grab all the current (non-performed events which have been rendered)
+  // For each current event
+      // Find the type of the event
+      // Do the corresponding action for the type of the event and data
+         //  stored in the event (ex. STD DAMAGE -- 42 against 'x' person)
 }
 
 /*
@@ -1753,16 +1893,15 @@ void Battle::personalUpkeep(Person* const target)
           target->getBFlag(BState::ALIVE))
       {
         auto damage_amount = ailment->getDamageAmount();
-        auto damage_type   = ailment->getDamageType();
-        processDamageAmount(damage_amount, damage_type);
+       //TODO auto damage_type   = ailment->getDamageType();
+        processDamageAmount(damage_amount);
       }
 
       if (ailment->getType() == Infliction::DEATHTIMER)
       {
         if (ailment->getFlag(AilState::TO_KILL))
         {
-          processDamageAmount(target->getCurr().getStat(0),
-              DamageType::DEATHTIMER);
+          processDamageAmount(target->getCurr().getStat(0));
         }
         else if (getBattleMode() == BattleMode::TEXT)
         {
@@ -1891,27 +2030,19 @@ void Battle::processBuffer()
     }
     else if (curr_action_type == ActionType::RUN)
     {
-      // if (getBattleMode() == BattleMode::TEXT)
-      //   std::cout << "{RUNNING} Attempting to run." << std::endl;
+      if (getBattleMode() == BattleMode::TEXT)
+      {
+        std::cout << "{RUNNING} " << curr_user->getName() 
+                  << " is attempting to run." << std::endl;
+      }
 
-      // if (doesCurrPersonRun())
+      auto allies = friends->isInParty(curr_user);
+      event_buffer->createRunEvent(EventType::ATTEMPT_RUN, curr_user, allies);
       
-      //   done = true;
-
-      //   if (friends->isInParty(curr_user))
-      //     setBattleFlag(CombatState::ALLIES_RUN, true);
-      //   else
-      //     setBattleFlag(CombatState::ENEMIES_RUN, true);
-
-      //   setBattleFlag(CombatState::PHASE_DONE, true);
-      // }
-      // else
-      // {
-      //   if (getBattleMode() == BattleMode::TEXT)
-      //   {
-      //     std::cout << "{Failed} The run attempt has failed!" << std::endl;
-      //   }
-      // }
+      if (doesCurrPersonRun())
+        event_buffer->createRunEvent(EventType::SUCCEED_RUN, curr_user, allies);
+      else
+        event_buffer->createRunEvent(EventType::FAIL_RUN, curr_user, allies);
     }
     else if (curr_action_type == ActionType::PASS)
     {
@@ -2274,16 +2405,10 @@ bool Battle::processDamageAction(BattleEvent* damage_event,
   auto damage = static_cast<int32_t>(base_damage * damage_mod);
 
   damage = Helpers::setInRange(damage, kMINIMUM_DAMAGE, kMAXIMUM_DAMAGE);
-        
-  if (crit_happens && getBattleMode() == BattleMode::TEXT)
-    std::cout << "{CRITICAL} - The strike is critical!" << std::endl;
-
   damage_event->amount = damage;
 
-  /* If the damage done exceeds the person's health, the damage dealt to them
-   * will kill them, so a death event will needed to be appended. */
-  if (curr_target->getCurr().getStat(Attribute::VITA) <= damage)
-    event_buffer->createDeathEvent(EventType::DEATH, curr_user);
+  /* Send damage processing (death calculations to process damage amount fn) */
+  done = processDamageAmount(damage);
 
   if (hasInfliction(Infliction::BERSERK, curr_user))
   {
@@ -2292,47 +2417,56 @@ bool Battle::processDamageAction(BattleEvent* damage_event,
     event_buffer->createDamageEvent(EventType::HITBACK_DAMAGE, curr_user, 
         hitback);
 
-    if (curr_user->getCurr().getStat(Attribute::VITA) <= hitback)
-      event_buffer->createDeathEvent(EventType::DEATH, curr_user);
+    done = processDamageAmount(damage);
   }
 
   return done;
 }
 
 /*
- * Description: 
+ * Description: Method to pre-determine the outcome of performing an amount
+ *              of damage on the current target. This includes checking the
+ *              death of the person and death of the party of the person (i.e.
+ *              a victory/loss condition)
  *
- * Inputs:
- * Output:
+ * Inputs: int32_t amount - the amount of damage that will be done to the user
+ *         DamageType damage_type - type of damage being done
+ * Output: bool - true if a party death occured 
  */
-bool Battle::processDamageAmount(int32_t amount, DamageType damage_type)
+bool Battle::processDamageAmount(int32_t amount)
 {
-  auto party_death = false;
-
+  //TODO: So weird.
   /* If doDmg returns true, the actor has died. Update guarding and other
    * corner cases and check for party death. Else, an actor has not died
    * but guard and defending flags, etc. may need to be recalcuted */
-  auto death = curr_target->doDmg(amount, damage_type);
+  auto person_death = false;
+  auto party_death  = false;
+  auto ally_target  = friends->isInParty(curr_target);
 
-  auto str_dmg = "";
-  if (damage_type == DamageType::BASE)
-    str_dmg = "Damage";
-  else if (damage_type == DamageType::HITBACK)
-    str_dmg = "Hitback";
-
-  if (getBattleMode() == BattleMode::TEXT)
+  if (amount >= curr_target->getCurr().getStat(Attribute::VITA))
   {
-    std::cout << "{" << str_dmg << "}" << curr_target->getName() 
-        << " struck with " << amount << " damage.\n";
-
-    if (death)
-      std::cout << "{FALLEN} " << curr_target->getName() << " has fallen.\n\n";
+    person_death = true;
+    event_buffer->createDeathEvent(EventType::DEATH, curr_target, ally_target);
   }
 
-  if (death)
-    party_death = updatePersonDeath(damage_type);
-  else
-    updateTargetDefense();
+  /* The party of the target will be considered dead if they are the only
+   * living member of the party presently and are going to die */
+  if (person_death)
+  {
+    std::vector<uint32_t> living_members;
+
+    if (ally_target)
+      living_members = friends->getLivingMembers();
+    else
+      living_members = foes->getLivingMembers();
+    
+    if (living_members.size() == 1)
+    {
+      event_buffer->createDeathEvent(EventType::PARTY_DEATH, curr_target, 
+          ally_target);
+      party_death = true;
+    }
+  }
 
   return party_death;
 }
@@ -2360,6 +2494,7 @@ bool Battle::processReviveAction()
   auto one_pc = curr_target->getTemp().getStat(Attribute::VITA);
   auto base_pc = curr_action->actionFlag(ActionFlags::BASE_PC);
   auto vari_pc = curr_action->actionFlag(ActionFlags::VARI_PC);
+
   int32_t base_val = 0;
   int32_t vari_val = 0;
 
@@ -2951,10 +3086,12 @@ void Battle::updateAllySelection()
 }
 
 /*
- * Description: 
+ * Description: Sub-update function call for update tick processing during
+ *              enemy turn selection phase of the battle.
+ * 
  *
- * Inputs:
- * Output: 
+ * Inputs: none
+ * Output: none
  */
 void Battle::updateEnemySelection()
 {
@@ -3022,7 +3159,7 @@ void Battle::updateEnemySelection()
 /*
  * Description: Calls checkPartyDeath and assigns a LOSS or VICTORY condition
  *
- * Inputs: 
+ * Inputs: none
  * Output: bool - true if a party death has occured
  */
 bool Battle::updatePartyDeaths()
@@ -3720,6 +3857,7 @@ bool Battle::update(int32_t cycle_time)
    * the scope of the particular action type [if required] */
   else if (turn_state == TurnState::SELECT_ACTION_ALLY)
   {
+    menu->setWindowStatus(WindowStatus::ON);
     updateAllySelection();
   }
   else if (turn_state == TurnState::SELECT_ACTION_ENEMY)
@@ -3728,6 +3866,8 @@ bool Battle::update(int32_t cycle_time)
   }
   else if (turn_state == TurnState::PROCESS_ACTIONS)
   {
+    menu->setWindowStatus(WindowStatus::OFF);
+
     /* If rendering is complete -> perform events on the stack and then
      * continue processing battle events */
     if (getBattleFlag(CombatState::RENDERING_COMPLETE))
@@ -3738,7 +3878,12 @@ bool Battle::update(int32_t cycle_time)
       event_buffer->print(true);
       event_buffer->setCurrentIndex();
       performEvents();
-      // clearEvents();
+
+      setBattleFlag(CombatState::READY_TO_RENDER, false);
+
+      /* If all processing is complete, after performing -> move state */
+      if (getBattleFlag(CombatState::ALL_PROCESSING_COMPLETE))
+        setNextTurnState();
     }
   }
   else if (turn_state == TurnState::RUNNING)

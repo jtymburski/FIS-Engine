@@ -54,8 +54,8 @@ enum class CombatState
   FINAL_BOSS         = 1 << 13,
   PROCESSING_SKILL   = 1 << 14,
   PROCESSING_ITEM    = 1 << 15,
-  READY_TO_RENDER    = 1 << 16,
-  RENDERING_COMPLETE = 1 << 17,
+  READY_TO_RENDER    = 1 << 16,  /* Processing event state is ready to render */
+  RENDERING_COMPLETE = 1 << 17,  /* Current render cycle complete => perform */
   PERFORMING_COMPLETE = 1 << 18,
   BEGIN_PROCESSING   = 1 << 19,
   BEGIN_ACTION_PROCESSING = 1 << 20,
@@ -389,7 +389,7 @@ private:
   bool processDamageAction(BattleEvent* damage_event, const DamageType &damage_type);
 
   /* Method for outsourcing an amount of dmg and type of damage to curr targ */
-  bool processDamageAmount(int32_t amount, DamageType damage_type);
+  bool processDamageAmount(int32_t amount);
 
   /* Processes a relieving action */
   bool processRelieveAction();

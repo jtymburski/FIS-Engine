@@ -36,6 +36,7 @@ struct BattleEvent
   std::vector<Person*> targets;
   int32_t amount;
 
+  bool allies;
   bool happens;
   bool rendered;
   bool performed;
@@ -83,7 +84,8 @@ public:
       int32_t amount);
 
   /* Creates a death event and returns the constructd object */
-  BattleEvent* createDeathEvent(EventType death_type, Person* target);
+  BattleEvent* createDeathEvent(EventType death_type, Person* target, 
+      bool allies);
 
   /* Creates a defend (begin/persist/break) event and returns a pointer */
   BattleEvent* createDefendEvent(EventType defend_type, Person* user);
@@ -102,6 +104,9 @@ public:
   /* Creates an action event */
   BattleEvent* createActionEvent(Action* action_use, Skill* skill_use,
       Person* user, Person* target, bool happens);
+
+  /* Creates a run event */
+  BattleEvent* createRunEvent(EventType run_type, Person* user, bool allies);
 
   /* Creaes a Skill Use event with given information */
   BattleEvent* createSkillEvent(Skill* skill_use, Person* user,
@@ -134,6 +139,9 @@ public:
 
   /* Returns a pointer to the event at a given index */
   BattleEvent* getEvent(int32_t index);
+
+  /* Returns the assigned index value */
+  int32_t getIndex();
 
   /* Returns a pointer to the last BattleEvent of all time */
   BattleEvent* getLastEvent();

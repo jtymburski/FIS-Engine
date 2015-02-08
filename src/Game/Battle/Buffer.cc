@@ -372,7 +372,7 @@ void Buffer::injectGuardTargets()
  */
 void Buffer::print(const bool &simple)
 {
-  std::cout << " --- Buffer --- \n";
+  std::cout << "==== Action Buffer ====\n";
   std::cout << "Size: " << action_buffer.size() << " Index:" << index << "\n";
 
   if (!simple)

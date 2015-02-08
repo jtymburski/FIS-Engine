@@ -300,10 +300,10 @@ std::string Helpers::eventToStr(EventType event)
     return "HEAL_QD";
   if (event == EventType::REGEN_QD)
     return "REGEN_QD";
-  if (event == EventType::START_DEFEND)
-    return "START_DEFEND";
   if (event == EventType::ACTION_BEGIN)
     return "ACTION_BEGIN";
+  if (event == EventType::PARTY_DEATH)
+    return "PARTY_DEATH";
   if (event == EventType::NONE)
     return "NONE";
 

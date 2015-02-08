@@ -1585,3 +1585,18 @@ bool BattleMenu::setConfiguration(Options* new_config)
 
   return (config != nullptr);
 }
+
+/*
+ * Description: Assigns a new window status for the battle menu. This allows the
+ *              battle menu to turn to an inactive state during other modes
+ *              of battle than select action ally to prevent the game from
+ *              sending key down events when they are not needed
+ *
+ * Inputs: new_window_status - the new status for the window
+ * Output: none
+ */
+ void BattleMenu::setWindowStatus(WindowStatus new_window_status)
+{
+  window_status = new_window_status;
+}
+

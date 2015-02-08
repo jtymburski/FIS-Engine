@@ -265,6 +265,9 @@ public:
 
   /* Assigns a BattleMenuState flag a given value */
   void setMenuFlag(MenuState flags, const bool &set_value = true);
+
+  /* Set the window status for the Battle menu */
+  void setWindowStatus(WindowStatus new_window_status);
 };
 
 #endif //BATTLEMENU_H
