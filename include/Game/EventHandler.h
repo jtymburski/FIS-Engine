@@ -32,11 +32,11 @@ enum class EventClassifier
   NOEVENT        = 0,
   GIVEITEM       = 1,
   NOTIFICATION   = 2,
-  PICKUPITEM     = 3,
-  RUNBATTLE      = 4, 
-  RUNMAP         = 5,
-  TELEPORTTHING  = 6,
-  STARTCONVO     = 7
+  RUNBATTLE      = 3, 
+  RUNMAP         = 4,
+  TELEPORTTHING  = 5,
+  STARTCONVO     = 6,
+  PICKUPITEM     = 7  /* All categories here and lower are not from Editor. */
 };
 
 /* 
@@ -86,6 +86,15 @@ public:
   
   /* Test enumerator */
   //enum EventTestEnum { TEST1, TEST2, TEST3 };
+  
+  /* -------------------------- Constants ------------------------- */
+  const static uint8_t kGIVE_ITEM_COUNT; /* give item count index */
+  const static uint8_t kGIVE_ITEM_ID; /* Give item ID index */
+  const static uint8_t kMAP_ID; /* The map ID location for the run event */
+  const static uint8_t kTELEPORT_ID; /* Teleport thing ID index */
+  const static uint8_t kTELEPORT_SECTION; /* Teleport thing section index */
+  const static uint8_t kTELEPORT_X; /* Teleport thing X index */
+  const static uint8_t kTELEPORT_Y; /* Teleport thing Y index */
 
 private:
   /* Event queue of what has been executed thus far, since the last clean
@@ -94,14 +103,6 @@ private:
 
   /* The event queue index, for parsing the queue */
   uint16_t queue_index;
-  
-  /* -------------------------- Constants ------------------------- */
-  const static uint8_t kGIVE_ITEM_COUNT; /* give item count index */
-  const static uint8_t kGIVE_ITEM_ID; /* Give item ID index */
-  const static uint8_t kTELEPORT_ID; /* Teleport thing ID index */
-  const static uint8_t kTELEPORT_SECTION; /* Teleport thing section index */
-  const static uint8_t kTELEPORT_X; /* Teleport thing X index */
-  const static uint8_t kTELEPORT_Y; /* Teleport thing Y index */
   
 /*============================================================================
  * PRIVATE FUNCTIONS
@@ -140,7 +141,10 @@ public:
   
   /* Creates a start battle event */
   Event createStartBattleEvent();
-  
+ 
+  /* Create a start map event */
+  Event createStartMapEvent(int id = 0);
+
   /* Creates a teleport event */
   Event createTeleportEvent(int thing_id = 0, uint16_t tile_x = 0, 
                             uint16_t tile_y = 0, uint16_t section_id = 0);
@@ -178,7 +182,10 @@ public:
   
   /* Poll a start battle event */
   bool pollStartBattle();
-  
+ 
+  /* Poll a start map event */
+  bool pollStartMap(int* id);
+
   /* Poll a teleport thing event */
   bool pollTeleportThing(int* thing_id, int* x, int* y, int* section_id); // NEW
   

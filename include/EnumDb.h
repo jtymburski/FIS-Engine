@@ -18,7 +18,7 @@
 
 /*==============================================================================
  * GLOBAL ENUMS
- *=======================================b=====================================*/
+ *============================================================================*/
 
 /*
  * Description: Possible occasions for an action (scenarios where the action
@@ -285,7 +285,7 @@ enum class DialogCategory
 { 
   TEXT,
   NUMBERENTRY,
-  EXTENTRY 
+  TEXTENTRY 
 };
 
 /*

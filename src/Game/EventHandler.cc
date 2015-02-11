@@ -13,6 +13,7 @@
 /* Constant Implementation - see header file for descriptions */
 const uint8_t EventHandler::kGIVE_ITEM_COUNT = 1;
 const uint8_t EventHandler::kGIVE_ITEM_ID = 0;
+const uint8_t EventHandler::kMAP_ID = 0;
 const uint8_t EventHandler::kTELEPORT_ID = 0;
 const uint8_t EventHandler::kTELEPORT_SECTION = 3;
 const uint8_t EventHandler::kTELEPORT_X = 1;
@@ -150,6 +151,7 @@ Event EventHandler::createGiveItemEvent(int id, int count)
   return new_event;
 }
 
+/* Creates a notification event, that can fire and result in visible text */
 Event EventHandler::createNotificationEvent(std::string notification)
 {
   /* Create the event and identify */
@@ -175,6 +177,19 @@ Event EventHandler::createStartBattleEvent()
   new_event.classification = EventClassifier::RUNBATTLE;
 
   return new_event;
+}
+  
+/* Create a start map event */
+Event EventHandler::createStartMapEvent(int id)
+{
+  /* Create the event and identify */
+  Event new_event = createEventTemplate();
+  new_event.classification = EventClassifier::RUNMAP;
+
+  /* Fill in the event specific information */
+  new_event.ints.push_back(id);
+
+  return new_event; 
 }
 
 /* Creates a teleport event */
@@ -329,6 +344,19 @@ bool EventHandler::pollStartBattle()
     return true;
   return false;
 }
+  
+/* Poll a start map event */
+bool EventHandler::pollStartMap(int* id)
+{
+  if(pollEventType() == EventClassifier::RUNMAP && id != NULL && 
+     event_queue[queue_index].event.ints.size() == 1)
+  {
+    *id = event_queue[queue_index].event.ints[kMAP_ID];
+    return true;
+  }
+  
+  return false;
+}
 
 /* Poll a teleport thing event */
 bool EventHandler::pollTeleportThing(int* thing_id, int* x, int* y, 
@@ -382,6 +410,8 @@ Event EventHandler::EventHandler::updateEvent(Event event, XmlData data,
       event = createConversationEvent();
     else if(category == EventClassifier::TELEPORTTHING)
       event = createTeleportEvent();
+    else if(category == EventClassifier::RUNMAP)
+      event = createStartMapEvent();
   }
 
   /* Proceed to set up the event with the marked changes */
@@ -404,7 +434,10 @@ Event EventHandler::EventHandler::updateEvent(Event event, XmlData data,
   }
   else if(category == EventClassifier::RUNMAP)
   {
-    // TODO
+    /* Parse the event classifiers */
+    std::string element = data.getElement(file_index + 1);
+    if(element == "id")
+      event.ints.at(kMAP_ID) = data.getDataInteger();
   }
   else if(category == EventClassifier::STARTCONVO)
   {
