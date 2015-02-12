@@ -41,30 +41,6 @@ EventHandler::~EventHandler()
  * PRIVATE FUNCTIONS
  *===========================================================================*/
   
-/* Creates an empty conversation */
-Conversation EventHandler::createEmptyConversation()
-{
-  Conversation convo;
-  convo.text = "";
-  convo.thing_id = -1;
-  convo.category = DialogCategory::TEXT;
-  convo.action_event = createBlankEvent();
-  convo.next.clear();
-
-  return convo;
-}
-
-/* Creates the initial event template, clearing it */
-Event EventHandler::createEventTemplate()
-{
-  Event blank_event;
-  blank_event.classification = EventClassifier::NOEVENT;
-  blank_event.convo = NULL;
-  blank_event.ints.clear();
-
-  return blank_event;
-}
-  
 /* Returns the conversation at the given index */
 Conversation* EventHandler::getConversation(Conversation* reference, 
                                             std::vector<std::string> index_list)
@@ -472,4 +448,32 @@ Event EventHandler::EventHandler::updateEvent(Event event, XmlData data,
   }
 
   return event;
+}
+
+/*=============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
+
+/* Creates an empty conversation */
+Conversation EventHandler::createEmptyConversation()
+{
+  Conversation convo;
+  convo.text = "";
+  convo.thing_id = -1;
+  convo.category = DialogCategory::TEXT;
+  convo.action_event = EventHandler::createEventTemplate();
+  convo.next.clear();
+
+  return convo;
+}
+
+/* Creates the initial event template, clearing it */
+Event EventHandler::createEventTemplate()
+{
+  Event blank_event;
+  blank_event.classification = EventClassifier::NOEVENT;
+  blank_event.convo = NULL;
+  blank_event.ints.clear();
+
+  return blank_event;
 }

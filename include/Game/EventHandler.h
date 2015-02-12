@@ -108,12 +108,6 @@ private:
  * PRIVATE FUNCTIONS
  *===========================================================================*/
 private:
-  /* Creates an empty conversation */
-  Conversation createEmptyConversation();
-
-  /* Creates the initial event template, clearing it */
-  Event createEventTemplate();
-
   /* Returns the conversation at the given index */
   Conversation* getConversation(Conversation* reference, 
                                 std::vector<std::string> index_list);
@@ -192,6 +186,16 @@ public:
   /* Updates the event from the data in the file */
   Event updateEvent(Event event, XmlData data, int file_index, 
                                                int section_index);
+
+/*=============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
+public:
+  /* Creates an empty conversation */
+  static Conversation createEmptyConversation();
+
+  /* Creates the initial event template, clearing it */
+  static Event createEventTemplate();
 };
 
 #endif // EVENTHANDLER_H
