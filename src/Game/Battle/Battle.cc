@@ -1719,10 +1719,14 @@ void Battle::orderActions()
 void Battle::performEvents()
 {
   std::cout << "---- Performing Events ----" << std::endl;
-  //TODO - actually perform the events [01-11-14]
+  std::cout << "Index: " << event_buffer->getIndex();
 
-  while (event_buffer->getCurrentEvent() != nullptr)
+  //TODO - actually perform the events [01-11-14]
+  auto valid_next = true;
+
+  while (valid_next)
   {
+    std::cout << "Index: " << event_buffer->getIndex();
     auto event = event_buffer->getCurrentEvent();
     auto index = event_buffer->getIndex();
     auto found_type = true;
@@ -1770,6 +1774,7 @@ void Battle::performEvents()
       auto amount  = event->amount;
       auto targets = event->targets;
 
+      /* Do the actual damage to the person */
       if (targets.size() > 0)
         targets.at(0)->doDmg(amount, DamageType::BASE);
 
@@ -1801,21 +1806,37 @@ void Battle::performEvents()
 
       if (getBattleMode() == BattleMode::TEXT)
       {
-        std::cout << "{DEFEND} " << curr_user->getName() << " is now defending "
-                  << "themselves from damage." << std::endl;
+        std::cout << "{DEFEND} " << event->user->getName()
+                  << " is now defending themselves from damage." << std::endl;
       }  
     }
     else if (event->type == EventType::BREAK_DEFEND)
     {
-
+      event->user->setBFlag(BState::DEFENDING, false);
     }
     else if (event->type == EventType::BEGIN_GUARD)
     {
+      /* Update the buffer to swap out Guard <--> Guardee
+       * as targets for remaining actions to be processed & performed */
+      action_buffer->injectGuardTargets(event->user->getGuard(), event->user);
 
+      if (getBattleMode() == BattleMode::TEXT)
+      {
+        std::cout << "{GUARD} " << event->user->getGuard()->getName() 
+                  << " is now guarding " << event->user->getName() 
+                  << " from some damage.\n";
+      }
     }
     else if (event->type == EventType::BREAK_GUARD)
     {
+      action_buffer->rejectGuardTargets(event->user->getGuard());
 
+      if (getBattleMode() == BattleMode::TEXT)
+      {
+        std::cout << "{BREAK GUARD} " << event->user->getGuard()->getName()
+                  << " is no longer guarding " << event->user->getName()
+                  << " from some damage.\n";
+      }
     }
     else if (event->type == EventType::DEATH)
     {
@@ -1859,16 +1880,16 @@ void Battle::performEvents()
     }
 
     if (found_type)
+    {
+      std::cout << "Setting performed event on index: " 
+                << static_cast<int>(index) 
+               << std::endl;
       event_buffer->setPerformed(index);
+    }
 
-    event_buffer->setNextIndex();
+    std::cout << "Setting next index on event buffer." << std::endl;
+    valid_next = event_buffer->setNextIndex();
   }
-
-  // Grab all the current (non-performed events which have been rendered)
-  // For each current event
-      // Find the type of the event
-      // Do the corresponding action for the type of the event and data
-         //  stored in the event (ex. STD DAMAGE -- 42 against 'x' person)
 }
 
 /*
@@ -1967,7 +1988,7 @@ void Battle::processBuffer()
   if (getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
   {
     setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, false);
-        last_index &= !action_buffer->setNext();
+    last_index &= !action_buffer->setNext();
     //setBattleFlag(CombatState::BEGIN_PROCESSING, false);
   }
    
@@ -1995,73 +2016,45 @@ void Battle::processBuffer()
   }
   else if (curr_action_type == ActionType::GUARD)
   {
-    event_buffer->createGuardEvent(EventType::BEGIN_GUARD, curr_user,
-        action_buffer->getTargets().at(0));
-    
-    //TODO : Determine good guard before ??
-    // bool good_guard = processGuard();
+    bool good_guard = processGuard();
 
-      // if (good_guard)
-      // {
-      //   /* Update the buffer to swap out Guard <--> Guardee targets */
-      //   action_buffer->injectGuardTargets();
-
-      //   if (getBattleMode() == BattleMode::TEXT)
-      //   {
-      //     std::cout << "{GUARD} " << curr_target->getGuard()->getName() 
-      //               << " is now guarding " << curr_target->getName() 
-      //               << " from some damage.\n";
-      //   }
-      // }
-      // else
-      // {
-      //   if (getBattleMode() == BattleMode::TEXT)
-      //   {
-      //     std::cout << "{FAIL} " << curr_user->getName() << "'s attempt to "
-      //               << "guard " << curr_target->getName() << " has failed.\n";
-      //   }
-      // }
-
-      // Guard the appropriate target
-    }
-    else if (curr_action_type == ActionType::IMPLODE)
+    /* Create begin guard or fail guard events based on the guard processing */
+    if (good_guard)
     {
-      // Annihilate self in catastrophic hit against opponents!
-    }
-    else if (curr_action_type == ActionType::RUN)
-    {
-      if (getBattleMode() == BattleMode::TEXT)
-      {
-        std::cout << "{RUNNING} " << curr_user->getName() 
-                  << " is attempting to run." << std::endl;
-      }
-
-      auto allies = friends->isInParty(curr_user);
-      event_buffer->createRunEvent(EventType::ATTEMPT_RUN, curr_user, allies);
-      
-      if (doesCurrPersonRun())
-        event_buffer->createRunEvent(EventType::SUCCEED_RUN, curr_user, allies);
-      else
-        event_buffer->createRunEvent(EventType::FAIL_RUN, curr_user, allies);
-    }
-    else if (curr_action_type == ActionType::PASS)
-    {
-      // Pass the turn, do nothing!
+      event_buffer->createGuardEvent(EventType::BEGIN_GUARD, curr_user,
+          action_buffer->getTargets().at(0));
     }
     else
     {
-      // if (getBattleMode() == BattleMode::TEXT)
-      // {
-      //   //action_buffer->print();
-      //   std::cout << "[Error]: Attempting to process bad action!" << std::endl;
-      // }
+      event_buffer->createGuardEvent(EventType::FAIL_GUARD, curr_user,
+          action_buffer->getTargets().at(0));
     }
 
-    // if (!can_process && getBattleMode() == BattleMode::TEXT)
-    // {
-    //   action_buffer->print();
-    //   std::cout << "[Error]: Couldn't process current action!" << std::endl;
-    // }
+  }
+  else if (curr_action_type == ActionType::IMPLODE)
+  {
+    // Annihilate self in catastrophic hit against opponents!
+  }
+  else if (curr_action_type == ActionType::RUN)
+  {
+    if (getBattleMode() == BattleMode::TEXT)
+    {
+      std::cout << "{RUNNING} " << curr_user->getName() 
+                << " is attempting to run." << std::endl;
+    }
+
+    auto allies = friends->isInParty(curr_user);
+    event_buffer->createRunEvent(EventType::ATTEMPT_RUN, curr_user, allies);
+      
+    if (doesCurrPersonRun())
+      event_buffer->createRunEvent(EventType::SUCCEED_RUN, curr_user, allies);
+    else
+      event_buffer->createRunEvent(EventType::FAIL_RUN, curr_user, allies);
+  }
+  else if (curr_action_type == ActionType::PASS)
+  {
+    event_buffer->createPassEvent(curr_user);
+  }
 
   /* Complete the processing of the last of events and move to clean up */
   if (last_index && getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
@@ -2071,10 +2064,11 @@ void Battle::processBuffer()
 }
 
 /*
- * Description:
+ * Description: Determines the regeneration factor corresponding to an
+ *              enumerated regeneration rate.
  *
- * Inputs: 
- * Output: 
+ * Inputs: RegenRate - the enumerated rate of regeneration
+ * Output: int16_t - the corresponding factor of regeneration
  */
 int16_t Battle::getRegenFactor(const RegenRate &regen_rate)
 {
@@ -2090,17 +2084,15 @@ int16_t Battle::getRegenFactor(const RegenRate &regen_rate)
 }
 
 /*
- * Description: Attempts to assign a new guard/guardee pair for the curr_user/
- *              curr_target pair respectively, by first checking if a new 
- *              guard pair can be made and then assigning the proper pointers. 
- *
+ * Description: Checks to see whether a good guard pair can be made between the
+ *              current target and current user pointers and returns the result
+ *               
  * Inputs: none
- * Output: bool - return the outcome of the guard operation
+ * Output: bool - the correctness of a guard pair between cur user and cur targ
  */
 bool Battle::processGuard()
 {
   auto can_guard  = true;
-  auto good_guard = false;
 
   /* A guard/guardee combo can only be made if both the guard and guardee are
    * not being guarded by, or guarding any persons */
@@ -2111,26 +2103,41 @@ bool Battle::processGuard()
 
   /* If a guard ca be made, attempt to assign guardee and guarding persons.
    * This should assign the GUARDING/GUARDED flags properly */
-  if (can_guard)
-  {
-    good_guard  = true;
-    good_guard &= curr_user->setGuardee(curr_target);
-    good_guard &= curr_target->setGuard(curr_user);
-  }
-
-  return good_guard;
-}
-
-bool Battle::performGuard()
-{
-  return true; //TODO
+  return can_guard;
 }
 
 /*
- * Description:
+ * Description: Actually performs a guard pairing between the current user of
+ *              a given BattleEvent pointer and the target stored in the event.
+ *              Returns whether the guard pair was made successfully.
  *
- * Inputs: 
- * Output:
+ * Inputs: none
+ * Output: bool - whether the guarding was performed successfully
+ */
+bool Battle::performGuard(BattleEvent* guard_event)
+{
+  if (guard_event != nullptr && guard_event->type == EventType::BEGIN_GUARD)
+  {
+    auto guard      = guard_event->targets.at(0);
+    auto guardee    = guard_event->user;
+    auto good_guard = guard->setGuardee(guardee);
+    good_guard     &= guardee->setGuard(guard);
+
+    return good_guard;
+  }
+
+  return false;
+}
+
+/*
+ * Description: General process action function. Processes the outcome of one
+ *              action against all targets for that action, creating and
+ *              setting events as needed. Calls sub-functions for specific
+ *              action type outcome determinations.
+ *
+ * Inputs: BattleEvent* battle_event - pointer to the begin action event
+ *         damage_types - the type of damage corresponding for each target
+ * Output: bool - //TODO
  */
 bool Battle::processAction(BattleEvent* battle_event,
     std::vector<DamageType> damage_types)
@@ -2169,51 +2176,51 @@ bool Battle::processAction(BattleEvent* battle_event,
     //curr_user->setAilFlag(PersonAilState::MISS_NEXT_TARGET, false);
     //curr_user->setAilFlag(PersonAilState::NEXT_ATK_NO_EFFECT, false);
 
-    if (curr_action->actionFlag(ActionFlags::ALTER) ||
-        curr_action->actionFlag(ActionFlags::ASSIGN))
-    {
-      auto action_target = curr_user;
-      auto factor_target = curr_user;
+    // if (curr_action->actionFlag(ActionFlags::ALTER) ||
+    //     curr_action->actionFlag(ActionFlags::ASSIGN))
+    // {
+    //   auto action_target = curr_user;
+    //   auto factor_target = curr_user;
 
-      user_attr = curr_action->getUserAttribute();
-      targ_attr = curr_action->getTargetAttribute();
+    //   user_attr = curr_action->getUserAttribute();
+    //   targ_attr = curr_action->getTargetAttribute();
 
       /* If the user's attribute is defined and the target's is not, the
        * alteration will be on the user's %/value up to their MAX attrs*/
-      if (user_attr != Attribute::NONE && targ_attr == Attribute::NONE)
-          targ_attr  = user_attr;
+      // if (user_attr != Attribute::NONE && targ_attr == Attribute::NONE)
+      //     targ_attr  = user_attr;
       /* If the target's attribute is defined and the user's is not, the
        * alteration or assignment will be on the target's %/value up to their 
        * MAX or CURR amount, respectively */
-      else if (user_attr == Attribute::NONE && targ_attr != Attribute::NONE)
-      {
-        action_target = curr_target;
-        factor_target = curr_target;
-        user_attr     = targ_attr;
-      }
+      // else if (user_attr == Attribute::NONE && targ_attr != Attribute::NONE)
+      // {
+      //   action_target = curr_target;
+      //   factor_target = curr_target;
+      //   user_attr     = targ_attr;
+      // }
       /* If both the user and target's attributes are defined, the alteration
        * will alter the target's value by a percentage of the user's stat */
-      else if (user_attr != Attribute::NONE && targ_attr != Attribute::NONE)
-        action_target = curr_target;
-      else
-        std::cerr << "[Error] - Critical error in Battle processing.\n";
+      // else if (user_attr != Attribute::NONE && targ_attr != Attribute::NONE)
+      //   action_target = curr_target;
+      // else
+      //   std::cerr << "[Error] - Critical error in Battle processing.\n";
 
-      if (curr_action->actionFlag(ActionFlags::FLIP_ATTR))
-      {
-        std::cout << "Flipping!" << std::endl;
-        std::swap(action_target, factor_target);
-        std::swap(user_attr, targ_attr);
-        std::cout << "Action Target:" << action_target->getName()<< std::endl;
-        std::cout << "Factor Target: " << factor_target->getName()<< std::endl;
-      }
+      // if (curr_action->actionFlag(ActionFlags::FLIP_ATTR))
+      // {
+      //   std::cout << "Flipping!" << std::endl;
+      //   std::swap(action_target, factor_target);
+      //   std::swap(user_attr, targ_attr);
+      //   std::cout << "Action Target:" << action_target->getName()<< std::endl;
+      //   std::cout << "Factor Target: " << factor_target->getName()<< std::endl;
+      // }
 
       // if (curr_action->actionFlag(ActionFlags::ALTER))
       //   done = processAlterAction(damage_type, action_target, factor_target);
       // else
       //   done = processAssignAction(damage_type, action_target, factor_target);
       // }
-    }
-    else if (curr_action->actionFlag(ActionFlags::DAMAGE))
+     //}
+    /*TODO else*/ if (curr_action->actionFlag(ActionFlags::DAMAGE))
     {
       auto damage_event = 
           event_buffer->createDamageEvent(EventType::STANDARD_DAMAGE, 
@@ -2222,12 +2229,12 @@ bool Battle::processAction(BattleEvent* battle_event,
       done = processDamageAction(damage_event, damage_type);
     }
 
-      // else if (curr_action->actionFlag(ActionFlags::INFLICT))
-      //   done = processInflictAction();
-      // else if (curr_action->actionFlag(ActionFlags::RELIEVE))
-      //   done = processRelieveAction();
-      // else if (curr_action->actionFlag(ActionFlags::REVIVE))
-      //   done = processReviveAction();
+    // else if (curr_action->actionFlag(ActionFlags::INFLICT))
+    //   done = processInflictAction();
+    // else if (curr_action->actionFlag(ActionFlags::RELIEVE))
+    //   done = processRelieveAction();
+    // else if (curr_action->actionFlag(ActionFlags::REVIVE))
+    //   done = processReviveAction();
   }
   else if (!can_process)
   {
@@ -2383,7 +2390,7 @@ bool Battle::processAssignAction(const DamageType &damage_type,
  *
  * Inputs: BattleEvent* damage_event - the incoming damage event
  *         damage_type - incoming type of damage (BASE/GUARD)
- * Output: //TODO
+ * Output: bool - true if a party death occurs during processing
  */
 bool Battle::processDamageAction(BattleEvent* damage_event,
     const DamageType &damage_type)
@@ -2460,6 +2467,8 @@ bool Battle::processDamageAmount(int32_t amount)
     else
       living_members = foes->getLivingMembers();
     
+    /* If the living members of the current party are of size 1, this means that
+     * the last person in the party is about to die. Thus, party death occurs */
     if (living_members.size() == 1)
     {
       event_buffer->createDeathEvent(EventType::PARTY_DEATH, curr_target, 
@@ -2582,7 +2591,15 @@ bool Battle::canInflict(Infliction test_infliction)
   return false;
 }
 
-bool Battle::hasInfliction(Infliction type, Person* const check)
+/*
+ * Description: Determines and returns whether a given person has a given
+ *              Infliction type.
+ *
+ * Inputs: Infliction type - the type of infliction checked for
+ *         Person* check - the person to check
+ * Output: bool - true if the given person has the given infliction
+ */
+bool Battle::hasInfliction(Infliction type, Person* check)
 {
   bool has_infliction = false;
 
@@ -3228,6 +3245,7 @@ bool Battle::updatePersonDeath(const DamageType &damage_type)
  *
  * Inputs: none
  * Output: bool - true if the target defense operation can be processed
+ * //TODO --- Needs to be converted to process -> perform
  */
 bool Battle::updateTargetDefense()
 {
@@ -3620,14 +3638,21 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
     if (event.keysym.sym == SDLK_PAUSE)
       printPartyState();
     else if (event.keysym.sym == SDLK_PRINTSCREEN)
-      printTurnState();
+      printProcessingState(true);
     else if (event.keysym.sym == SDLK_HOME)
       printAll(false, true, false);
     else if (event.keysym.sym == SDLK_END)
       action_buffer->print(true);
     // else if (event.keysym.sym == SDLK_PAGEUP)
     else if (event.keysym.sym == SDLK_DELETE)
+    {
+      event_buffer->setRenderIndex();
+
+      while (event_buffer->setNextIndex())
+        event_buffer->setRendered(event_buffer->getCurrentIndex());
+
       setBattleFlag(CombatState::RENDERING_COMPLETE, true);
+    }
     else if (event.keysym.sym == SDLK_PAGEDOWN)
       printInventory(foes);
   }
@@ -3705,22 +3730,9 @@ void Battle::printAll(const bool &simple, const bool &flags, const bool &party)
                 << getBattleFlag(CombatState::PROCESSING_SKILL);
       std::cout << "\nPROCESSING_ITEM: " 
                 << getBattleFlag(CombatState::PROCESSING_ITEM);
-      std::cout << "\nREADY_TO_RENDER: "
-                << getBattleFlag(CombatState::READY_TO_RENDER);
-      std::cout << "\nRENDERING_COMPLETE: " 
-                << getBattleFlag(CombatState::RENDERING_COMPLETE);
-      std::cout << "\nPERFORMING_COMPLETE: " 
-                << getBattleFlag(CombatState::PERFORMING_COMPLETE);
-      std::cout << "\nBEGIN_PROCESSING: " 
-                << getBattleFlag(CombatState::BEGIN_PROCESSING);
-      std::cout << "\nBEGIN ACTION PROCESSING: " 
-                << getBattleFlag(CombatState::BEGIN_ACTION_PROCESSING);
-      std::cout << "\nACTION PROCESSING COMPLETE: " 
-                << getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE);
-      std::cout << "\nALL PROCESSING COMPLETE: "
-                << getBattleFlag(CombatState::ALL_PROCESSING_COMPLETE);
       std::cout << "\n\n";
 
+      /* For other processing flags, see print processing function */
     }
 
     if (party)
@@ -3778,6 +3790,32 @@ void Battle::printPersonState(Person* const member,
       std::cout << Helpers::ailmentToStr(ailment->getType()) << " ";
     std::cout << "\n\n";
   }
+}
+
+/*
+ * Description:
+ *
+ * Inputs
+ * Output: 
+ */
+void Battle::printProcessingState(bool simple)
+{
+  std::cout << "\n--- Processing State ---\n";
+  action_buffer->print(true);
+  event_buffer->print(simple);
+
+  std::cout << "\nRENDERING_COMPLETE: " 
+            << getBattleFlag(CombatState::RENDERING_COMPLETE);
+  std::cout << "\nPERFORMING_COMPLETE: " 
+            << getBattleFlag(CombatState::PERFORMING_COMPLETE);
+  std::cout << "\nBEGIN_PROCESSING: " 
+            << getBattleFlag(CombatState::BEGIN_PROCESSING);
+  std::cout << "\nBEGIN ACTION PROCESSING: " 
+            << getBattleFlag(CombatState::BEGIN_ACTION_PROCESSING);
+  std::cout << "\nACTION PROCESSING COMPLETE: " 
+            << getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE);
+  std::cout << "\nALL PROCESSING COMPLETE: "
+            << getBattleFlag(CombatState::ALL_PROCESSING_COMPLETE);
 }
 
 /*
@@ -3873,13 +3911,12 @@ bool Battle::update(int32_t cycle_time)
     if (getBattleFlag(CombatState::RENDERING_COMPLETE))
     {
       setBattleFlag(CombatState::RENDERING_COMPLETE, false);
+      setBattleFlag(CombatState::READY_TO_RENDER, false);
 
       processBuffer();
-      event_buffer->print(true);
+      event_buffer->print(false);
       event_buffer->setCurrentIndex();
       performEvents();
-
-      setBattleFlag(CombatState::READY_TO_RENDER, false);
 
       /* If all processing is complete, after performing -> move state */
       if (getBattleFlag(CombatState::ALL_PROCESSING_COMPLETE))

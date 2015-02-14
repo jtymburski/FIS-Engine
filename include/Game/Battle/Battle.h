@@ -323,7 +323,7 @@ private:
   bool canInflict(Infliction test_infliction);
 
   /* Determines whether a person has an infliction already */
-  bool hasInfliction(Infliction type, Person* const check);
+  bool hasInfliction(Infliction type, Person* check);
 
   /* Asserts all AI modules are set for the enemy parties */
   bool checkAIModules();
@@ -404,10 +404,11 @@ private:
   void processSkill(std::vector<Person*> targets, 
       std::vector<DamageType> damage_types);
 
-  /* Processes a guard action with curr_user and curr_target */
+  /* Checks to see whether a guard action can occur between user and target */
   bool processGuard();
 
-  bool performGuard();
+  /* Actually performs a guard action between cur user and target */
+  bool performGuard(BattleEvent* guard_event);
 
   /* Recalculates the ailments after they have been altered */
   void reCalcAilments(Person* const target);
@@ -492,6 +493,7 @@ public:
   void printAll(const bool &simple, const bool &flags, const bool &party);
   void printPartyState();
   void printPersonState(Person* const member, const int32_t &person_index);
+  void printProcessingState(bool simple = true);
   void printInventory(Party* const target_party);
   void printTurnState();
 

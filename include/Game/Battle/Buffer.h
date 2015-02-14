@@ -116,7 +116,7 @@ public:
   bool isNextValid();
 
   /* For every action which targets a guarded person -> swap in the guard */
-  void injectGuardTargets();
+  void injectGuardTargets(Person* guard, Person* guardee);
 
   /* Prints out the information of the Buffer */
   void print(const bool &simple = false);
@@ -125,7 +125,7 @@ public:
   bool remove(const uint32_t &index);
 
   /* Remove a guard's targets from buffer actions */
-  void rejectGuardTargets(Person* const guard);
+  void rejectGuardTargets(Person* guard);
 
   /* Removes all BufferActions which are of the given user type */
   void removeAllByUser(Person* user);

@@ -341,21 +341,21 @@ bool Buffer::isNextValid()
 }
 
 /*
- * Description: Sort through every action in the buffer and wherever a guarded
+ * Description: Sort through every action in the buffer and wherever the guardee
  *              person would be targeted, add in the guard in their place.
  *
  * Inputs: none
  * Output: none
  */
-void Buffer::injectGuardTargets()
+void Buffer::injectGuardTargets(Person* guard, Person* guardee)
 {
   for (auto it = begin(action_buffer); it != end(action_buffer); ++it)
   {
     for (size_t i = 0; i < (*it).targets.size(); i++)
     {
-      auto guard = (*it).targets.at(i)->getGuard();
+      auto person = (*it).targets.at(i)->getGuard();
       
-      if (guard != nullptr)
+      if (person == guardee)
       {
         (*it).targets.at(i) = guard;
         (*it).damage_types.at(i) = DamageType::GUARD;
@@ -482,18 +482,24 @@ void Buffer::removeAllByUser(Person* user)
  * Inputs: 
  * Output:
  */
-void Buffer::rejectGuardTargets(Person* const guard)
+void Buffer::rejectGuardTargets(Person* guard)
 {
   auto guardee = guard->getGuardee();
 
   if (guardee != nullptr)
+  {
     for (auto& action : action_buffer)
+    {
       for (size_t i = 0; i < action.targets.size(); i++)
+      {
         if (action.targets.at(i) == guard)
         {
           action.targets[i] = guard;
           action.damage_types[i] = DamageType::BASE;
         }
+      }
+    }
+  }
 }
 
 /*

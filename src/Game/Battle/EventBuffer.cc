@@ -117,6 +117,32 @@ void EventBuffer::clearRendered()
 }
 
 /*
+ * Description: Creates and appends an action use start event to list of events.
+ *
+ * Inputs: Action* action_use - pointer to the action being used
+ *         Skill* skill_use - the Skill being used.
+ *         User* user - the user of the skill
+ *         std::vector<Person*> targets - all targets of the skill
+ *         bool happens - true if the action is to miss, false if to miss
+ * Output: BattleEvent* - pointer to the recently created event
+ */
+BattleEvent* EventBuffer::createActionEvent(Action* action_use, 
+    Skill* skill_use, Person* user, Person* target, bool happens)
+{
+  auto new_event = createNewEvent();
+  new_event->type = EventType::ACTION_BEGIN;
+  new_event->action_use = action_use;
+  new_event->skill_use  = skill_use;
+  new_event->user       = user;
+  std::vector<Person*> target_vec{target};
+  new_event->targets = target_vec;
+  new_event->happens = happens;
+  events.push_back(new_event);
+  
+  return new_event;
+}
+
+/*
  * Description: Creates a new blank event 
  *
  * Inputs: EventType damage_type - the type of damage (standard/poison/etc.)
@@ -236,29 +262,16 @@ BattleEvent* EventBuffer::createNewEvent()
 }
 
 /*
- * Description: Creates and appends an action use start event to list of events.
+ * Description: Creates a pass event
  *
- * Inputs: Action* action_use - pointer to the action being used
- *         Skill* skill_use - the Skill being used.
- *         User* user - the user of the skill
- *         std::vector<Person*> targets - all targets of the skill
- *         bool happens - true if the action is to miss, false if to miss
- * Output: BattleEvent* - pointer to the recently created event
+ * Inputs: none
+ * Output: BattleEvent* - pointer to the recently created pass event.
  */
-BattleEvent* EventBuffer::createActionEvent(Action* action_use, 
-    Skill* skill_use, Person* user, Person* target, bool happens)
+BattleEvent* EventBuffer::createPassEvent(Person* user)
 {
-  auto new_event = createNewEvent();
-  new_event->type = EventType::ACTION_BEGIN;
-  new_event->action_use = action_use;
-  new_event->skill_use  = skill_use;
-  new_event->user       = user;
-  std::vector<Person*> target_vec{target};
-  new_event->targets = target_vec;
-  new_event->happens = happens;
-  events.push_back(new_event);
-  
-  return new_event;
+  auto new_event = new BattleEvent();
+  new_event->type = EventType::PASS;
+  new_event->user = user;
 }
 
 /*
@@ -478,7 +491,7 @@ BattleEvent* EventBuffer::getLastEvent()
  */
 BattleEvent* EventBuffer::getCurrentEvent()
 {
-  if (curr_index > 0 && static_cast<uint32_t>(curr_index) < events.size())
+  if (curr_index >= 0 && static_cast<uint32_t>(curr_index) < events.size())
     return events.at(curr_index);
 
   return nullptr;

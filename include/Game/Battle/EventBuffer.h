@@ -79,6 +79,10 @@ public:
   void clearCurrent();
   void clearRendered();
 
+  /* Creates an action event */
+  BattleEvent* createActionEvent(Action* action_use, Skill* skill_use,
+      Person* user, Person* target, bool happens);
+
   /* Creates a new blank event and returns the constructed event */
   BattleEvent* createDamageEvent(EventType damage_type, Person* target,
       int32_t amount);
@@ -101,9 +105,8 @@ public:
   /* Creates and returns an empty BattleEvent */
   BattleEvent* createNewEvent();
 
-  /* Creates an action event */
-  BattleEvent* createActionEvent(Action* action_use, Skill* skill_use,
-      Person* user, Person* target, bool happens);
+  /* Creates and returns a pass event */
+  BattleEvent* createPassEvent(Person* user);
 
   /* Creates a run event */
   BattleEvent* createRunEvent(EventType run_type, Person* user, bool allies);
