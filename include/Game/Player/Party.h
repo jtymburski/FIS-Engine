@@ -141,7 +141,7 @@ public:
   bool getFlag(const PartyState &test_flag);
 
   /* Returns the party ID */
-  int32_t getID();
+  int32_t getID() const;
 
   /* Returns the pointer to the current inventory of the Party */
   Inventory* getInventory();

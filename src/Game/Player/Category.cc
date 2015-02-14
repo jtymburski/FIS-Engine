@@ -359,7 +359,7 @@ bool Category::getFlag(const CategoryState &test_flag)
  * Inputs: none
  * Output: int32_t - the ID of the Category
  */
-int32_t Category::getID()
+int32_t Category::getID() const
 {
   return id;
 }
@@ -370,7 +370,7 @@ int32_t Category::getID()
  * Inputs: none
  * Output: std::string - name of the Category
  */
-std::string Category::getName()
+std::string Category::getName() const
 {
   return name;
 }

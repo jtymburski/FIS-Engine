@@ -149,10 +149,10 @@ public:
   bool getFlag(const CategoryState &test_flag);
 
   /* Returns th ID of the Category */
-  int32_t getID();
+  int32_t getID() const;
 
   /* Returns the string name */
-  std::string getName();
+  std::string getName() const;
 
   /* Returns a ref. to the base attr set */
   AttributeSet& getBaseSet();

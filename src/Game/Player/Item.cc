@@ -428,7 +428,7 @@ uint32_t Item::getDurability()
  * Inputs: none
  * Output: int32_t - the game_id of the Item
  */
-int32_t Item::getGameID()
+int32_t Item::getGameID() const
 {
   return game_id;
 }
@@ -494,7 +494,7 @@ uint32_t Item::getMaxDurability()
  * Inputs: none
  * Output: std::string - the string name of the Item
  */
-std::string Item::getName()
+std::string Item::getName() const
 {
   return name;
 }

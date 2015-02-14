@@ -1242,7 +1242,7 @@ AIModule* Person::getAI()
  * Inputs: none
  * Output: uint32_t - game ID of the Person
  */
-int32_t Person::getGameID()
+int32_t Person::getGameID() const
 {
   return game_id;
 }
@@ -1352,7 +1352,7 @@ Category* Person::getRace()
  * Inputs: none
  * Output: std::string - string name of the Person
  */
-std::string Person::getName()
+std::string Person::getName() const
 {
   return name;
 }

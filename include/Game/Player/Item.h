@@ -223,7 +223,7 @@ public:
   bool getFlag(ItemFlags test_flag);
 
   /* Returns the game_id (base item ID) of the object or kUNSET_ID */
-  int32_t getGameID();
+  int32_t getGameID() const;
 
   /* Returns the unique ID of the Item */
   int32_t getID();
@@ -238,7 +238,7 @@ public:
   uint32_t getMaxDurability();
 
   /* Returns the string name of the Item */
-  std::string getName();
+  std::string getName() const;
 
   /* Returns the prefix of the Item */
   std::string getPrefix();

@@ -375,7 +375,7 @@ public:
   int16_t getTrueCost(Skill* test_skill);
 
   /* Returns the game_id (not unique) of the Person */
-  int32_t getGameID();
+  int32_t getGameID() const;
 
   /* Returns the my_id (unique) of the Person */
   int32_t getMyID();
@@ -405,7 +405,7 @@ public:
   Category* getRace();
 
   /* Returns the string name */
-  std::string getName();
+  std::string getName() const;
 
   /* Returns the enumerated rank of the Person */
   Ranks getRank();

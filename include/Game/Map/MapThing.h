@@ -199,7 +199,7 @@ public:
   uint32_t getCenterY();
 
   /* Gets the things decription */
-  std::string getDescription();
+  std::string getDescription() const;
 
   /* Returns the dialog image data, so that it may be painted */
   Frame* getDialogImage();
@@ -214,10 +214,10 @@ public:
   uint16_t getHeight();
 
   /* Gets the things ID */
-  int getID();
+  int getID() const;
   
   /* Gets the interaction event for the thing */
-  Event getInteraction();
+  Event getInteraction() const;
 
   /* Returns the map section of the tile where this is painted */
   uint16_t getMapSection();
@@ -232,7 +232,7 @@ public:
   float getMoveY();
 
   /* Gets the things name */
-  std::string getName();
+  std::string getName() const;
    
   /* Returns the passability of the tile based on direction */
   bool getPassabilityEntering(Tile* frame_tile, Direction dir);
@@ -286,7 +286,7 @@ public:
   bool isTilesSet();
 
   /* Returns if the thing is visible / rendered on the screen */
-  virtual bool isVisible();
+  virtual bool isVisible() const;
   
   /* Renders the Map Thing */
   bool render(SDL_Renderer* renderer, int offset_x, int offset_y);

@@ -424,7 +424,7 @@ bool Party::getFlag(const PartyState &test_flag)
  * Inputs: none
  * Output: int32_t - the party id
  */
-int32_t Party::getID()
+int32_t Party::getID() const
 {
   return id;
 }

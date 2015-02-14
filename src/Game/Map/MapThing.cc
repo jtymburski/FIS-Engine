@@ -1016,7 +1016,7 @@ uint32_t MapThing::getCenterY()
  * Inputs: none
  * Output: std::string - the description for the thing, as a string
  */
-std::string MapThing::getDescription()
+std::string MapThing::getDescription() const
 {
   if(description != "")
     return description;
@@ -1157,7 +1157,7 @@ uint16_t MapThing::getHeight()
  * Inputs: none
  * Output: int - the ID for the thing, as an integer
  */
-int MapThing::getID()
+int MapThing::getID() const
 {
   return id;
 }
@@ -1169,7 +1169,7 @@ int MapThing::getID()
  * Inputs: none
  * Output: Event - the event fired
  */
-Event MapThing::getInteraction()
+Event MapThing::getInteraction() const
 {
   if(interact_event.classification != EventClassifier::NOEVENT)
     return interact_event;
@@ -1271,7 +1271,7 @@ float MapThing::getMoveY()
  * Inputs: none
  * Output: std::string - the name for the thing, as a string
  */
-std::string MapThing::getName()
+std::string MapThing::getName() const
 {
   if(name != "")
     return name;
@@ -1615,7 +1615,7 @@ bool MapThing::isTilesSet()
  * Inputs: none
  * Output: bool - visibility status
  */
-bool MapThing::isVisible()
+bool MapThing::isVisible() const
 {
   bool visible = this->visible;
 
