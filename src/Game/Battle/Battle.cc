@@ -230,86 +230,6 @@ bool Battle::addAilment(Infliction infliction_type, Person* inflictor,
 }
 
 /*
- * Description: Clears and frees elements of the BattleEvent curr_events.
- *
- * Inputs: none
- * Output: none
- */
-// void Battle::clearEvents()
-// {
-//   std::cout << "--- Clear Events ---" << std::endl;
-//   for (auto& event : curr_events)
-//   {
-//     delete event;
-//     event = nullptr;
-//   }
-
-//   curr_events.clear();
-// }
-
-/*
- * Description: Creates a BattleEvent with a type, user and single target.
- *
- * Inputs: EventType type - the type of BattleEvent
- *         Person* user - the user of the BattleEvent
- *         Person* target - single target of the BattleEvent.
- * Output: BattleEvent* - pointer to the newly created event.
- */
-// BattleEvent* Battle::createEvent(EventType type, Person* user, 
-//     Person* target)
-// {
-//   std::cout << "Creating event!" << std::endl;
-//   BattleEvent* new_event = new BattleEvent();
-//   new_event->type = type;
-//   new_event->user = user;
-//   std::vector<Person*> target_vector{target};
-//   new_event->targets = target_vector;
-
-//   return new_event;
-// }
-
-/*
- * Description: Creates a BattleEvent with a type, user and vector of targets.
- *
- * Inputs: EventType type - the type of BattleEvent
- *         Person* user - the user of the BattleEvent
- *         std::vector<Person*> targets - the targets for the new event.
- * Output: BattleEvent* - pointer to the newly created event.
- */
-// BattleEvent* Battle::createEvent(EventType type, Person* user,
-//     std::vector<Person*> targets)
-// {
-//   std::cout << "Creating event!" << std::endl;
-//   BattleEvent* new_event = new BattleEvent();
-//   new_event->type = type;
-//   new_event->user = user;
-//   new_event->targets = targets;
-
-//   return new_event;
-// }
-
-/*
- * Description: Creates a BattleEvent with a type, Skill* and whether the skill
- *              happens boolean value.
- *
- * Inputs: EventType type - the type of BattleEvent to create
- *         Skill* skill_use - the skill use occuring in the event
- *         bool happens - true if the Skill is successfully used.
- * Output: BattleEvent* - pointer to the recently created event.
- */
-// BattleEvent* Battle::createEvent(EventType type, Skill* skill_use,
-//     bool happens)
-// {
-//   std::cout << "Creating event!" << std::endl;
-//   BattleEvent* new_event = new BattleEvent();
-//   new_event->type = type;
-//   new_event->skill_use = skill_use;
-//   new_event->happens = happens;
-
-//   return new_event;
-// }
-
-/*
  * Description: Recalculates ailment-related flags for a given target Person
  *              assuming a given ailment is being applied.
  *
@@ -1719,17 +1639,13 @@ void Battle::orderActions()
 void Battle::performEvents()
 {
   std::cout << "---- Performing Events ----" << std::endl;
-  std::cout << "Index: " << event_buffer->getIndex();
-
-  //TODO - actually perform the events [01-11-14]
   auto valid_next = true;
 
   while (valid_next)
   {
-    std::cout << "Index: " << event_buffer->getIndex();
+    std::cout << "\nIndex: " << event_buffer->getIndex();
     auto event = event_buffer->getCurrentEvent();
     auto index = event_buffer->getIndex();
-    auto found_type = true;
 
     if (event->type == EventType::IMPLODE)
     {
@@ -1786,19 +1702,19 @@ void Battle::performEvents()
     }
     else if (event->type == EventType::METABOLIC_KILL)
     {
-
+      event->user->setBFlag(BState::ALIVE, false);
     }
     else if (event->type == EventType::DEATH_COUNTDOWN)
     {
-
+      //TODO [02-14-15] To hell with the death countdown
     }
     else if (event->type == EventType::BOND)
     {
-
+      //TODO [02-14-15] To Hell with this bond effect
     }
     else if (event->type == EventType::BONDING)
     {
- 
+      //TODO [02-14-15] To Hell with this bonding effect
     }
     else if (event->type == EventType::BEGIN_DEFEND)
     {
@@ -1840,54 +1756,51 @@ void Battle::performEvents()
     }
     else if (event->type == EventType::DEATH)
     {
-
+      event->user->setBFlag(BState::ALIVE, false);
     }
     else if (event->type == EventType::INFLICTION)
     {
-
+      //TODO [02-14-15] - Process inflict events
     }
     else if (event->type == EventType::CURE_INFLICTION)
     {
-
+      //TODO [02-14-15] - Process relieve events
     }
     else if (event->type == EventType::ALTERATION)
     {
-
+      //TODO [02-14-15] - Process alteration events
     }
     else if (event->type == EventType::ASSIGNMENT)
     {
-
+      //TODO [02-14-15] - Process assginment events
     }
     else if (event->type == EventType::REVIVAL)
     {
-
+      event->user->setBFlag(BState::ALIVE, true);
     }
     else if (event->type == EventType::HEAL_HEALTH)
     {
+      auto new_val = event->user->getCurr().getStat(Attribute::VITA) + 
+                     event->amount;
 
+      event->user->getCurr().setStat(Attribute::VITA, new_val);
     }
     else if (event->type == EventType::REGEN_HEALTH)
     {
+      auto new_val = event->user->getCurr().getStat(Attribute::VITA) + 
+                     event->amount;
 
+      event->user->getCurr().setStat(Attribute::VITA, new_val);
     }
     else if (event->type == EventType::REGEN_QD)
     {
+      auto new_val = event->user->getCurr().getStat(Attribute::QTDR) + 
+         event->amount;
 
-    }
-    else
-    {
-      found_type = false;
-    }
-
-    if (found_type)
-    {
-      std::cout << "Setting performed event on index: " 
-                << static_cast<int>(index) 
-               << std::endl;
-      event_buffer->setPerformed(index);
+      event->user->getCurr().setStat(Attribute::QTDR, new_val);
     }
 
-    std::cout << "Setting next index on event buffer." << std::endl;
+    event_buffer->setPerformed(index);
     valid_next = event_buffer->setNextIndex();
   }
 }
@@ -2139,6 +2052,7 @@ bool Battle::performGuard(BattleEvent* guard_event)
  *         damage_types - the type of damage corresponding for each target
  * Output: bool - //TODO
  */
+//TODO [02-14-15] - Fix processing of multiple target actions
 bool Battle::processAction(BattleEvent* battle_event,
     std::vector<DamageType> damage_types)
 {
@@ -3245,68 +3159,69 @@ bool Battle::updatePersonDeath(const DamageType &damage_type)
  *
  * Inputs: none
  * Output: bool - true if the target defense operation can be processed
- * //TODO --- Needs to be converted to process -> perform
+ * //TODO [02-14-15] Needs to be converted to process -> perform
  */
 bool Battle::updateTargetDefense()
 {
-  auto can_process = true;
+  // auto can_process = true;
 
-  can_process &= curr_target != nullptr;
-  can_process &= curr_user != nullptr;
+  // can_process &= curr_target != nullptr;
+  // can_process &= curr_user != nullptr;
 
-  if (can_process)
-  {
-    auto defending = curr_target->getBFlag(BState::DEFENDING);
+  // if (can_process)
+  // {
+  //   auto defending = curr_target->getBFlag(BState::DEFENDING);
 
-    /* If the person was defending, unless they'r pow. def., reset def status */
-    if (defending && !curr_target->isPowerDefender())
-    {
-      /* Reset the defense information in person class */
-      curr_target->resetDefend();
+  //   /* If the person was defending, unless they'r pow. def., reset def status */
+  //   if (defending && !curr_target->isPowerDefender())
+  //   {
+  //     /* Reset the defense information in person class */
+  //     curr_target->resetDefend();
 
-      if (getBattleMode() == BattleMode::TEXT)
-      {
-        std::cout << "{BREAK DEFEND} " << curr_target->getName()
-                  << " is no longer defending from damage.\n\n";
-      }
-    }
-    else if (defending && curr_target->isPowerDefender())
-    {
-      if (getBattleMode() == BattleMode::TEXT)
-      {
-        std::cout << "{PERSIST DEFEND} " << curr_target->getName() 
-                  << " continues to defend themselves from damage.\n\n";
-      }
-    }
+  //     if (getBattleMode() == BattleMode::TEXT)
+  //     {
+  //       std::cout << "{BREAK DEFEND} " << curr_target->getName()
+  //                 << " is no longer defending from damage.\n\n";
+  //     }
+  //   }
+  //   else if (defending && curr_target->isPowerDefender())
+  //   {
+  //     if (getBattleMode() == BattleMode::TEXT)
+  //     {
+  //       std::cout << "{PERSIST DEFEND} " << curr_target->getName() 
+  //                 << " continues to defend themselves from damage.\n\n";
+  //     }
+  //   }
 
-    auto guarding = curr_target->getBFlag(BState::GUARDING);
+  //   auto guarding = curr_target->getBFlag(BState::GUARDING);
 
-    if (guarding && !curr_target->isPowerGuarder())
-    {
-      action_buffer->rejectGuardTargets(curr_target);
+  //   if (guarding && !curr_target->isPowerGuarder())
+  //   {
+  //     action_buffer->rejectGuardTargets(curr_target);
 
-      if (getBattleMode() == BattleMode::TEXT)
-      {
-        std::cout << "{BREAK GUARD} " << curr_target->getName() << " is no "
-                  << "longer protecting " 
-                  << curr_target->getGuardee()->getName() << " from damage\n";
-      }
+  //     if (getBattleMode() == BattleMode::TEXT)
+  //     {
+  //       std::cout << "{BREAK GUARD} " << curr_target->getName() << " is no "
+  //                 << "longer protecting " 
+  //                 << curr_target->getGuardee()->getName() << " from damage\n";
+  //     }
 
-      curr_target->getGuardee()->resetGuard();
-      curr_target->resetGuardee();
-    }
-    else if (guarding && curr_target->isPowerGuarder())
-    {
-      if (getBattleMode() == BattleMode::TEXT)
-      {
-        std::cout << "{PERSIST GUARD " << curr_target->getName() << " continues"
-                  << " to protect " << curr_target->getGuardee()->getName()
-                  << " from damage" << std::endl;
-      }
-    }
-  }
+  //     curr_target->getGuardee()->resetGuard();
+  //     curr_target->resetGuardee();
+  //   }
+  //   else if (guarding && curr_target->isPowerGuarder())
+  //   {
+  //     if (getBattleMode() == BattleMode::TEXT)
+  //     {
+  //       std::cout << "{PERSIST GUARD " << curr_target->getName() << " continues"
+  //                 << " to protect " << curr_target->getGuardee()->getName()
+  //                 << " from damage" << std::endl;
+  //     }
+  //   }
+  // }
 
-  return can_process;
+  // return can_process;
+  return false;
 }
 
 /*

@@ -272,6 +272,8 @@ BattleEvent* EventBuffer::createPassEvent(Person* user)
   auto new_event = new BattleEvent();
   new_event->type = EventType::PASS;
   new_event->user = user;
+
+  return new_event;
 }
 
 /*
