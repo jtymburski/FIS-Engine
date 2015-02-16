@@ -143,8 +143,7 @@ public:
   Event createTeleportEvent(int thing_id = 0, uint16_t tile_x = 0, 
                             uint16_t tile_y = 0, uint16_t section_id = 0);
 
-  /* Deletes the given event. Just clears the relevant memory */
-  Event deleteEvent(Event event);
+
   
   /* Execute the given event - done through signal emits */
   void executeEvent(Event event, MapPerson* initiator, MapThing* source = NULL);
@@ -191,11 +190,17 @@ public:
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Copies a passed in event */
+  static Event copyEvent(Event source);
+
   /* Creates an empty conversation */
   static Conversation createEmptyConversation();
 
   /* Creates the initial event template, clearing it */
   static Event createEventTemplate();
+
+  /* Deletes the given event. Just clears the relevant memory */
+  static Event deleteEvent(Event event);
 };
 
 #endif // EVENTHANDLER_H

@@ -185,18 +185,6 @@ Event EventHandler::createTeleportEvent(int thing_id, uint16_t tile_x,
   return new_event;
 }
 
-/* Deletes the given event. Just clears the relevant memory 
- * Returns a blank event */
-Event EventHandler::deleteEvent(Event event)
-{
-  /* Delet the existing event, if relevant */
-  if(event.convo != NULL)
-    delete event.convo;
-  event.convo = NULL ;
-
-  return createBlankEvent();
-}
-
 /* Execute the given event - done through signal emits */
 void EventHandler::executeEvent(Event event, MapPerson* initiator, 
                                              MapThing* source)
@@ -453,6 +441,38 @@ Event EventHandler::EventHandler::updateEvent(Event event, XmlData data,
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
+  
+/*
+ * Description: Copies a past in event and returns the copied version as source.
+ *              Function that calls it is in charge of deleting conversation,
+ *              if that's been generated.
+ *
+ * Inputs: Event source - the event struct to copy
+ * Output: Event - the copied event
+ */
+Event EventHandler::copyEvent(Event source)
+{
+  /* Copy the event */
+  Event event;
+  event.classification = source.classification;
+  event.convo = source.convo;
+  event.ints = source.ints;
+  event.strings = source.strings;
+
+  /* If convo, do the proper copy */
+  if(event.classification == EventClassifier::STARTCONVO && 
+     source.convo != NULL)
+  {
+    event.convo = new Conversation;
+    event.convo->action_event = source.convo->action_event;
+    event.convo->category = source.convo->category;
+    event.convo->next = source.convo->next;
+    event.convo->text = source.convo->text;
+    event.convo->thing_id = source.convo->thing_id;
+  }
+
+  return event;
+}
 
 /* Creates an empty conversation */
 Conversation EventHandler::createEmptyConversation()
@@ -476,4 +496,16 @@ Event EventHandler::createEventTemplate()
   blank_event.ints.clear();
 
   return blank_event;
+}
+
+/* Deletes the given event. Just clears the relevant memory 
+ * Returns a blank event */
+Event EventHandler::deleteEvent(Event event)
+{
+  /* Delet the existing event, if relevant */
+  if(event.convo != NULL)
+    delete event.convo;
+  event.convo = NULL ;
+
+  return createEventTemplate();
 }
