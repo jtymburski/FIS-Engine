@@ -1643,7 +1643,7 @@ void Battle::performEvents()
 
   while (valid_next)
   {
-    std::cout << "\nIndex: " << event_buffer->getIndex();
+    std::cout << "Index: " << event_buffer->getIndex() << std::endl;;
     auto event = event_buffer->getCurrentEvent();
     auto index = event_buffer->getIndex();
 
@@ -1728,7 +1728,21 @@ void Battle::performEvents()
     }
     else if (event->type == EventType::BREAK_DEFEND)
     {
-      event->user->setBFlag(BState::DEFENDING, false);
+      event->user->resetDefend();
+
+      if (getBattleMode() == BattleMode::TEXT)
+      {
+        std::cout << "{BREAK DEFEND} " << curr_target->getName()
+                  << " is no longer defending from damage.\n\n";
+      }
+    }
+    else if (event->type == EventType::PERSIST_DEFEND)
+    {
+      if (getBattleMode() == BattleMode::TEXT)
+      {
+        std::cout << "{PERSIST DEFEND} " << curr_target->getName() 
+                  << " continues to defend themselves from damage.\n\n";
+      }
     }
     else if (event->type == EventType::BEGIN_GUARD)
     {
@@ -1743,9 +1757,21 @@ void Battle::performEvents()
                   << " from some damage.\n";
       }
     }
+    else if (event->type == EventType::PERSIST_GUARD)
+    {
+      if (getBattleMode() == BattleMode::TEXT)
+      {
+        std::cout << "{PERSIST GUARD " << curr_target->getName() << " continues"
+                  << " to protect " << curr_target->getGuardee()->getName()
+                  << " from damage" << std::endl;
+      }
+    }
     else if (event->type == EventType::BREAK_GUARD)
     {
       action_buffer->rejectGuardTargets(event->user->getGuard());
+
+      curr_target->getGuardee()->resetGuard();
+      curr_target->resetGuardee();
 
       if (getBattleMode() == BattleMode::TEXT)
       {
@@ -2156,8 +2182,6 @@ bool Battle::processAction(BattleEvent* battle_event,
                       target_vec);
     fizzle->action_use = curr_action;
 
-    setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
-
     if (getBattleMode() == BattleMode::TEXT)
       std::cout << "{Fizzle} The action has fizzled!" << std::endl;
   }
@@ -2166,8 +2190,6 @@ bool Battle::processAction(BattleEvent* battle_event,
     auto miss = event_buffer->createMissEvent(EventType::ACTION_MISS, curr_user, 
                     target_vec);
     miss->action_use = curr_action;
-
-    setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
 
     if (getBattleMode() == BattleMode::TEXT)
       std::cout << "{MISS} The action has missed. " << std::endl;
@@ -2330,6 +2352,7 @@ bool Battle::processDamageAction(BattleEvent* damage_event,
 
   /* Send damage processing (death calculations to process damage amount fn) */
   done = processDamageAmount(damage);
+  updateTargetDefense();
 
   if (hasInfliction(Infliction::BERSERK, curr_user))
   {
@@ -2574,7 +2597,6 @@ void Battle::processSkill(std::vector<Person*> targets, std::vector<DamageType>
         {
           event_buffer->createFizzleEvent(EventType::SKILL_USE_FIZZLE,
               curr_user, targets);
-          setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
         }
       }
       // Curr events size?
@@ -3159,69 +3181,40 @@ bool Battle::updatePersonDeath(const DamageType &damage_type)
  *
  * Inputs: none
  * Output: bool - true if the target defense operation can be processed
- * //TODO [02-14-15] Needs to be converted to process -> perform
  */
 bool Battle::updateTargetDefense()
 {
-  // auto can_process = true;
+  auto can_process = true;
 
-  // can_process &= curr_target != nullptr;
-  // can_process &= curr_user != nullptr;
+  can_process &= curr_target != nullptr;
+  can_process &= curr_user != nullptr;
 
-  // if (can_process)
-  // {
-  //   auto defending = curr_target->getBFlag(BState::DEFENDING);
+  if (can_process)
+  {
+    auto defending = curr_target->getBFlag(BState::DEFENDING);
 
-  //   /* If the person was defending, unless they'r pow. def., reset def status */
-  //   if (defending && !curr_target->isPowerDefender())
-  //   {
-  //     /* Reset the defense information in person class */
-  //     curr_target->resetDefend();
+    /* If the person was defending, unless they'r pow. def., reset def status */
+    if (defending && !curr_target->isPowerDefender())
+      event_buffer->createDefendEvent(EventType::BREAK_DEFEND, curr_target); 
+    else if (defending && curr_target->isPowerDefender())
+      event_buffer->createDefendEvent(EventType::PERSIST_DEFEND, curr_target);
 
-  //     if (getBattleMode() == BattleMode::TEXT)
-  //     {
-  //       std::cout << "{BREAK DEFEND} " << curr_target->getName()
-  //                 << " is no longer defending from damage.\n\n";
-  //     }
-  //   }
-  //   else if (defending && curr_target->isPowerDefender())
-  //   {
-  //     if (getBattleMode() == BattleMode::TEXT)
-  //     {
-  //       std::cout << "{PERSIST DEFEND} " << curr_target->getName() 
-  //                 << " continues to defend themselves from damage.\n\n";
-  //     }
-  //   }
+    auto guarding = curr_target->getBFlag(BState::GUARDING);
 
-  //   auto guarding = curr_target->getBFlag(BState::GUARDING);
+    /* If the person was guarding, unless they're pow. grd., reset grd status */
+    if (guarding && !curr_target->isPowerGuarder())
+    {
+      event_buffer->createGuardEvent(EventType::BREAK_GUARD, curr_user,
+          curr_target);
+    }
+    else if (guarding && curr_target->isPowerGuarder())
+    {
+      event_buffer->createGuardEvent(EventType::PERSIST_GUARD, curr_user,
+          curr_target);
+    }
+  }
 
-  //   if (guarding && !curr_target->isPowerGuarder())
-  //   {
-  //     action_buffer->rejectGuardTargets(curr_target);
-
-  //     if (getBattleMode() == BattleMode::TEXT)
-  //     {
-  //       std::cout << "{BREAK GUARD} " << curr_target->getName() << " is no "
-  //                 << "longer protecting " 
-  //                 << curr_target->getGuardee()->getName() << " from damage\n";
-  //     }
-
-  //     curr_target->getGuardee()->resetGuard();
-  //     curr_target->resetGuardee();
-  //   }
-  //   else if (guarding && curr_target->isPowerGuarder())
-  //   {
-  //     if (getBattleMode() == BattleMode::TEXT)
-  //     {
-  //       std::cout << "{PERSIST GUARD " << curr_target->getName() << " continues"
-  //                 << " to protect " << curr_target->getGuardee()->getName()
-  //                 << " from damage" << std::endl;
-  //     }
-  //   }
-  // }
-
-  // return can_process;
-  return false;
+  return can_process;
 }
 
 /*
