@@ -416,6 +416,9 @@ private:
   /* Recalculates the flags for a target person (based on ailments) */
   bool reCalcAilmentFlags(Person* target, Ailment* ail);
 
+  /* Reset miss/no effect flags for the given user */
+  void resetTurnFlags(Person* user);
+
   /* Calculates enemy actions and add them to the buffer */
   void selectEnemyActions();
 

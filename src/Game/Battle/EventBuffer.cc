@@ -247,6 +247,7 @@ BattleEvent* EventBuffer::createMissEvent(EventType miss_type, Person* user,
  */
 BattleEvent* EventBuffer::createNewEvent()
 {
+  std::cout << "!!! Creating New Events !!!" << std::endl;
   auto new_event = new BattleEvent();
   new_event->type       = EventType::NONE;
   new_event->action_use = nullptr;
@@ -626,6 +627,7 @@ bool EventBuffer::setRenderIndex()
     if (events.at(i)->rendered == false)
     {
       curr_index = i;
+      std::cout << "Returning rendered index: " << curr_index << std::endl;
 
       return true;
     }

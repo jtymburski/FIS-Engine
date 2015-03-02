@@ -1631,10 +1631,11 @@ void Battle::orderActions()
 }
 
 /*
- * Description:
+ * Description: This function performs the current events stored in the
+ *              event buffer. As in, the actual outcome of the events happens.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: none
  */
 void Battle::performEvents()
 {
@@ -1832,10 +1833,23 @@ void Battle::performEvents()
 }
 
 /*
+ * Description: Resets the miss next target and the next atk no effect flags for
+ *              the next turn/attack for a given Person pointer.
+ *
+ * Inputs: Person* - user to reset turn flags for.
+ * Output: none
+ */
+void Battle::resetTurnFlags(Person* user)
+{
+  user->setAilFlag(PersonAilState::MISS_NEXT_TARGET, false);
+  user->setAilFlag(PersonAilState::NEXT_ATK_NO_EFFECT, false);
+}
+
+/*
  * Description: Deals with personal-related upkeep (such as processing damaging
  *              ailments, stat recalculations), at the beginning of each turn.
  *
- * Inputs: Person* - target person to perform upkeep for
+ * Inputs: Person* - target perswon to perform upkeep for
  * Output: none
  */
 void Battle::personalUpkeep(Person* const target)
@@ -1919,18 +1933,23 @@ void Battle::personalUpkeep(Person* const target)
  */
 void Battle::processBuffer()
 {
-  std::cout << "--- Processing Battle Events ---" << std::endl;
+  std::cout << "--- Processing Buffer ---" << std::endl;
+
   auto last_index = false;
-  
-  /* Update to the next action buffer index if action processing was completed
-     and set it to a bool to checkf or the last buffer index */
-  if (getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
+
+  /* If Buffer index == 0, don't increment, else, increment */
+  if (getBattleFlag(CombatState::BEGIN_PROCESSING))
   {
-    setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, false);
-    last_index &= !action_buffer->setNext();
-    //setBattleFlag(CombatState::BEGIN_PROCESSING, false);
+    std::cout << "Last index before? " << last_index << std::endl;
+    last_index |= !action_buffer->setNext();
+    std::cout << "Last index after? " << last_index << std::endl;
+    action_buffer->print(false);
   }
-   
+  else
+  {
+    setBattleFlag(CombatState::BEGIN_PROCESSING, true);
+  }
+
   auto curr_action_type = ActionType::NONE;
   auto curr_targets = action_buffer->getTargets();
   auto damage_types = action_buffer->getDamageTypes();
@@ -1997,7 +2016,7 @@ void Battle::processBuffer()
 
   /* Complete the processing of the last of events and move to clean up */
   if (last_index && getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
-    setBattleFlag(CombatState::PHASE_DONE, true);
+    setBattleFlag(CombatState::ALL_PROCESSING_COMPLETE);
 
   setBattleFlag(CombatState::READY_TO_RENDER, true);
 }
@@ -2112,10 +2131,6 @@ bool Battle::processAction(BattleEvent* battle_event,
 
   if (can_process && action_hits)
   {
-    //TODO -> move to perform action
-    //curr_user->setAilFlag(PersonAilState::MISS_NEXT_TARGET, false);
-    //curr_user->setAilFlag(PersonAilState::NEXT_ATK_NO_EFFECT, false);
-
     // if (curr_action->actionFlag(ActionFlags::ALTER) ||
     //     curr_action->actionFlag(ActionFlags::ASSIGN))
     // {
@@ -2569,7 +2584,7 @@ void Battle::processSkill(std::vector<Person*> targets, std::vector<DamageType>
   /* If processing the first action, append begin skill use event */
   if (!getBattleFlag(CombatState::BEGIN_ACTION_PROCESSING))
   {
-    setBattleFlag(CombatState::BEGIN_ACTION_PROCESSING, true);
+   setBattleFlag(CombatState::BEGIN_ACTION_PROCESSING, true);
     
     auto event = event_buffer->createSkillEvent(curr_skill, curr_user, targets, 
                      false);
@@ -2609,7 +2624,6 @@ void Battle::processSkill(std::vector<Person*> targets, std::vector<DamageType>
       /* If the skill misses, go to the next action processing after render */
       if (!skill_hits)
         setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
-
     }
     else
     {
@@ -3555,9 +3569,10 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
     else if (event.keysym.sym == SDLK_DELETE)
     {
       event_buffer->setRenderIndex();
+      event_buffer->setRendered(event_buffer->getIndex());
 
       while (event_buffer->setNextIndex())
-        event_buffer->setRendered(event_buffer->getCurrentIndex());
+        event_buffer->setRendered(event_buffer->getIndex());
 
       setBattleFlag(CombatState::RENDERING_COMPLETE, true);
     }
@@ -3709,9 +3724,6 @@ void Battle::printPersonState(Person* const member,
 void Battle::printProcessingState(bool simple)
 {
   std::cout << "\n--- Processing State ---\n";
-  action_buffer->print(true);
-  event_buffer->print(simple);
-
   std::cout << "\nRENDERING_COMPLETE: " 
             << getBattleFlag(CombatState::RENDERING_COMPLETE);
   std::cout << "\nPERFORMING_COMPLETE: " 
@@ -3816,19 +3828,26 @@ bool Battle::update(int32_t cycle_time)
 
     /* If rendering is complete -> perform events on the stack and then
      * continue processing battle events */
-    if (getBattleFlag(CombatState::RENDERING_COMPLETE))
-    {
+    if (getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE) &&
+        getBattleFlag(CombatState::RENDERING_COMPLETE))
+    { 
       setBattleFlag(CombatState::RENDERING_COMPLETE, false);
       setBattleFlag(CombatState::READY_TO_RENDER, false);
+      setBattleFlag(CombatState::BEGIN_ACTION_PROCESSING, false);
+      setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, false);      
 
-      processBuffer();
-      event_buffer->print(false);
       event_buffer->setCurrentIndex();
       performEvents();
 
       /* If all processing is complete, after performing -> move state */
       if (getBattleFlag(CombatState::ALL_PROCESSING_COMPLETE))
-        setNextTurnState();
+        setBattleFlag(CombatState::PHASE_DONE, true);
+    }
+    else if (!getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
+    {
+      processBuffer();      
+      event_buffer->print(true);
+      event_buffer->setCurrentIndex();
     }
   }
   else if (turn_state == TurnState::RUNNING)
