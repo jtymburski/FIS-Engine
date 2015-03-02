@@ -1277,6 +1277,7 @@ void Battle::cleanUp()
 
   setBattleFlag(CombatState::BEGIN_PROCESSING, false);
   setBattleFlag(CombatState::BEGIN_ACTION_PROCESSING, false);
+  setBattleFlag(CombatState::ALL_PROCESSING_COMPLETE, false);
  
   /* Clean all action processing related variables */
   clearActionVariables();
@@ -1693,12 +1694,14 @@ void Battle::performEvents()
 
       /* Do the actual damage to the person */
       if (targets.size() > 0)
+      {
         targets.at(0)->doDmg(amount, DamageType::BASE);
 
-      if (getBattleMode() == BattleMode::TEXT)
-      {
-        std::cout << "{" << str_damage << "} " << curr_target->getName() 
-                  << " struck with " << amount << " damage.\n";
+        if (getBattleMode() == BattleMode::TEXT)
+        {
+          std::cout << "{" << str_damage << "} " << targets.at(0)->getName() 
+                    << " struck with " << amount << " damage.\n";
+        }
       }
     }
     else if (event->type == EventType::METABOLIC_KILL)
@@ -1783,7 +1786,7 @@ void Battle::performEvents()
     }
     else if (event->type == EventType::DEATH)
     {
-      event->user->setBFlag(BState::ALIVE, false);
+      event->targets.at(0)->setBFlag(BState::ALIVE, false);
     }
     else if (event->type == EventType::INFLICTION)
     {
