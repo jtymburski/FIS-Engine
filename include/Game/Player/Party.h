@@ -149,6 +149,9 @@ public:
   /* Returns a vector of the indexes of all non-KO'd party members */
   std::vector<uint32_t> getLivingMembers();
 
+  /* Returns a vector of pointers to the all living party members */
+  std::vector<Person*> getLivingMemberPtrs();
+
   /* Returns the current maximum size of the party */
   uint32_t getMaxSize();
 

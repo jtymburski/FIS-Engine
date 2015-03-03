@@ -445,7 +445,7 @@ Inventory* Party::getInventory()
  *              living members.
  *
  * Inputs: none
- * Output: std::vector <uint32_t> - living party member indexes.
+ * Output: std::vector<uint32_t> - living party member indexes.
  */
 std::vector<uint32_t> Party::getLivingMembers()
 {
@@ -457,6 +457,24 @@ std::vector<uint32_t> Party::getLivingMembers()
       living_members.push_back(index);
 
   return living_members;
+}
+
+/*
+ * Description: Returns a vector of person pointers for all persons in the
+ *              party who are presently alive.
+ *
+ * Inputs: none
+ * Output: std::vector<Person*> - living party memebr pointers
+ */
+std::vector<Person*> Party::getLivingMemberPtrs()
+{
+  std::vector<Person*> living_member_ptrs;
+
+  for (auto member : members)
+    if (member->getBFlag(BState::ALIVE))
+      living_member_ptrs.push_back(member);
+
+  return living_member_ptrs;
 }
 
 /*

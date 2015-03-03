@@ -1788,6 +1788,14 @@ void Battle::performEvents()
     {
       event->targets.at(0)->setBFlag(BState::ALIVE, false);
     }
+    else if (event->type == EventType::PARTY_DEATH)
+    {
+      /* If a party death occurs on the allies -> victory, else -> loss */
+      if (event->allies)
+        setBattleFlag(CombatState::LOSS, true);
+      else
+        setBattleFlag(CombatState::VICTORY, true);
+    }
     else if (event->type == EventType::INFLICTION)
     {
       //TODO [02-14-15] - Process inflict events
@@ -2415,16 +2423,21 @@ bool Battle::processDamageAmount(int32_t amount)
    * living member of the party presently and are going to die */
   if (person_death)
   {
-    std::vector<uint32_t> living_members;
+    std::vector<Person*>  living_members;
 
     if (ally_target)
-      living_members = friends->getLivingMembers();
+      living_members = friends->getLivingMemberPtrs();
     else
-      living_members = foes->getLivingMembers();
-    
-    /* If the living members of the current party are of size 1, this means that
-     * the last person in the party is about to die. Thus, party death occurs */
-    if (living_members.size() == 1)
+      living_members = foes->getLivingMemberPtrs();
+
+    /* True: If the Event buffer contains all event deaths with a curr target
+     * matching each living friend member, then a party death will occur. */
+    auto party_death = true;
+
+    for (const auto& member : living_members)
+      party_death &= event_buffer->hasPersonDeathEvent(member);
+
+    if (party_death)
     {
       event_buffer->createDeathEvent(EventType::PARTY_DEATH, curr_target, 
           ally_target);
@@ -3843,8 +3856,12 @@ bool Battle::update(int32_t cycle_time)
       performEvents();
 
       /* If all processing is complete, after performing -> move state */
-      if (getBattleFlag(CombatState::ALL_PROCESSING_COMPLETE))
+      if (getBattleFlag(CombatState::ALL_PROCESSING_COMPLETE) ||
+          getBattleFlag(CombatState::LOSS) || 
+          getBattleFlag(CombatState::VICTORY))
+      {
         setBattleFlag(CombatState::PHASE_DONE, true);
+      }
     }
     else if (!getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
     {

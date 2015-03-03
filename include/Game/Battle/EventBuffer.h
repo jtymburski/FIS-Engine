@@ -122,6 +122,9 @@ public:
   /* Annihilates the last battle event straight into the void */
   bool destroyLastEvent();
 
+  /* Checks and returns whether a give Person will die in the current evnets */
+  bool hasPersonDeathEvent(Person* target);
+
   /* Returns whether the EventBuffer is active */
   bool isActive();
 

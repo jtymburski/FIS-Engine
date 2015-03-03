@@ -364,6 +364,26 @@ bool EventBuffer::destroyLastEvent()
 }
 
 /*
+ * Description: Searches through all current (non-performed events) death events
+ *              and returns true if one of those death events has a target
+ *              matching the given Person* target.
+ *
+ * Inputs: Person* target - the target to check for a death event in curr events
+ * Output: bool - true if an event for that person exists.
+ */
+bool EventBuffer::hasPersonDeathEvent(Person* target)
+{
+  auto curr_index = getCurrentIndex();
+
+  for (uint32_t i = curr_index; i < events.size(); i++)
+    if (events.at(i)->targets.size() > 0)
+      if (events.at(i)->targets.at(0) == target)
+        return true;
+
+  return false;
+}
+
+/*
  * Description: Returns whether the EventBuffer is active
  *
  * Inputs: none
