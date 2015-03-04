@@ -398,8 +398,8 @@ bool SpriteMatrix::addFileInformation(XmlData data, int file_index,
           /* Check if it's a path or passability and set the info */
           if(base_tag.front() == "path")
           {
-            if(sprite_matrix[i][j]->isFramesSet())
-              sprite_matrix[i][j]->removeAll();
+            //if(sprite_matrix[i][j]->isFramesSet())
+            //  sprite_matrix[i][j]->removeAll();
 
             sprite_matrix[i][j]->addFileInformation(
                                     data, file_index + 2, renderer, base_path);
