@@ -322,7 +322,27 @@ BattleEvent* EventBuffer::createSkillEvent(Skill* skill_use, Person* user,
 }
 
 /*
- * Description: Creates and appens a skill fizzle event to the list of events.
+ * Description: Creates and appends a skip-type event to the list of events.
+ *
+ * Inputs: EventType skip_type - type of skip event
+ *         Person* user - the user of the Skill which fizzled.
+ *     
+ * Output: BattleEvent* - pointer to the recently created event
+ */
+BattleEvent* EventBuffer::createSkipEvent(EventType skip_type, Person* user,
+    Skill* skill_cooldown)
+{
+  auto new_event = createNewEvent();
+  new_event->type = skip_type;
+  new_event->user = user;
+  new_event->skill_use = skill_cooldown;
+  events.push_back(new_event);
+
+  return new_event;
+}
+
+/*
+ * Description: Creates and appends a skill fizzle event to the list of events.
  *
  * Inputs: Person* user - the user of the Skill which fizzled.
  *         std::vector<Person*> targets - the targets which fizzled

@@ -112,6 +112,9 @@ public:
   /* Clears all invalid buffer elements */
   void clearInvalid();
 
+  /* Checks if an element containing a Skill cooldown for given person exists */
+  Skill* hasCoolingSkill(Person* check_person);
+
   /* Returns true if the next BufferAction is valid */
   bool isNextValid();
 

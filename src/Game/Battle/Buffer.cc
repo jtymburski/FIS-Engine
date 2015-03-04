@@ -327,6 +327,23 @@ void Buffer::clearInvalid()
 }
 
 /*
+ * Description: Determines and returns true if the action buffer contains
+ *              an element matching a given Person* which is a skill neededing 
+ *              to be cooled down (thus the person skips their selection)
+ *
+ * Inputs:
+ * Output: bool - true if the buffer contains a cooling skill for person
+ */
+Skill* Buffer::hasCoolingSkill(Person* check_person)
+{
+  for (auto element : action_buffer)
+    if (element.user == check_person && element.cooldown > 0)
+      return element.skill_used;
+  
+  return nullptr;
+}
+
+/*
  * Description: Checks if the next element of the Buffer is valid. 
  *
  * Inputs: none

@@ -115,6 +115,10 @@ public:
   BattleEvent* createSkillEvent(Skill* skill_use, Person* user,
       std::vector<Person*> targets, bool happens);
 
+  /* Creates a skip type event */
+  BattleEvent* createSkipEvent(EventType skip_type, Person* user,
+      Skill* skill_cooldown);
+
   /* Creates a Skill Use Fizzle event */
   BattleEvent* createFizzleEvent(EventType fizzle_type, Person* user,
       std::vector<Person*> targets);

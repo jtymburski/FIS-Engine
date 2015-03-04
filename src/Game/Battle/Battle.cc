@@ -529,14 +529,9 @@ bool Battle::bufferUserAction()
   /* Push the actions on to the Buffer */
   if (action_type == ActionType::SKILL)
   {
-    //TODO: Buffering skill cooldowns [11-15-14]
-    // - Need to add skill at the proper cooldown
-    // - Need to hide user/ally selection for the next x turns
-    // - Need to reduce the cooldown if cooldown in buffer > 0
-    // - Need to do the skill if cooldown in buffer == 0 
-
     curr_skill = menu->getSelectedSkill().skill;
-    buffered = action_buffer->add(curr_user, curr_skill, person_targets, 0);
+    buffered = action_buffer->add(curr_user, curr_skill, person_targets,
+        menu->getSelectedSkill().skill->getCooldown());
   }
   else if (action_type == ActionType::ITEM)
   {
@@ -1649,6 +1644,23 @@ void Battle::performEvents()
     auto event = event_buffer->getCurrentEvent();
     auto index = event_buffer->getIndex();
 
+    if (event->type == EventType::SKILL_COOLDOWN)
+    {
+      if (getBattleMode() == BattleMode::TEXT)
+      {
+        std::cout << "{COOLDOWN} -- The skill " << event->skill_use->getName() 
+            << " being used by " << event->user->getName() << " will cooldown."
+            << std::endl;
+      }
+    }
+    else if (event->type == EventType::MISS_TURN)
+    {
+      if (getBattleMode() == BattleMode::TEXT)
+      {
+        std::cout << "{MISS TURN} -- The user " << event->user 
+            << " misses their turn!" << std::endl;
+      }
+    }
     if (event->type == EventType::IMPLODE)
     {
       //TODO [02-08-15]: Determine implode outcome
@@ -1878,7 +1890,7 @@ void Battle::personalUpkeep(Person* const target)
           target->getBFlag(BState::ALIVE))
       {
         auto damage_amount = ailment->getDamageAmount();
-       //TODO auto damage_type   = ailment->getDamageType();
+        //TODO auto damage_type   = ailment->getDamageType();
         processDamageAmount(damage_amount);
       }
 
@@ -2919,15 +2931,26 @@ bool Battle::testPersonIndex(const int32_t &test_index)
 
   if (test_person->getBFlag(BState::ALIVE))
   {
+    auto skill_cooldown = action_buffer->hasCoolingSkill(test_person);
+
     if (test_person->getAilFlag(PersonAilState::SKIP_NEXT_TURN))
     {
       if (getBattleMode() == BattleMode::TEXT)
       {
+        //TODO: Create skip next turn event, move this to perform events? [03-03-15]
         std::cout << "{SKIP} " << test_person->getName() << " skips their turn"
             << "." << std::endl;
       }
       
       return false;
+    }
+    else if (skill_cooldown != nullptr)
+    {
+      /* If the person has a skill cooldown in the buffer, add a skill cooldown
+       * event to the evnet buffer for performing. This person's turn selection
+       * will be skipped */
+      event_buffer->createSkipEvent(EventType::SKILL_COOLDOWN, test_person,
+          skill_cooldown);
     }
 
     return true;
@@ -3739,6 +3762,8 @@ void Battle::printPersonState(Person* const member,
  */
 void Battle::printProcessingState(bool simple)
 {
+  //TODO (Warning) [03-03-2015]
+  (void)simple;
   std::cout << "\n--- Processing State ---\n";
   std::cout << "\nRENDERING_COMPLETE: " 
             << getBattleFlag(CombatState::RENDERING_COMPLETE);
