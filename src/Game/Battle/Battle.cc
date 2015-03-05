@@ -2118,9 +2118,8 @@ bool Battle::performGuard(BattleEvent* guard_event)
  *
  * Inputs: BattleEvent* battle_event - pointer to the begin action event
  *         damage_types - the type of damage corresponding for each target
- * Output: bool - //TODO
+ * Output: bool - //TODO Do we need thsis bool? [03-04-15]
  */
-//TODO [02-14-15] - Fix processing of multiple target actions
 bool Battle::processAction(BattleEvent* battle_event,
     std::vector<DamageType> damage_types)
 {
@@ -2152,6 +2151,7 @@ bool Battle::processAction(BattleEvent* battle_event,
     std::cout << "Action Hits: " << action_hits << std::endl;
   }
 
+  //TODO - Action/Factor target for Alteration/Assignments [03-04-15]
   if (can_process && action_hits)
   {
     // if (curr_action->actionFlag(ActionFlags::ALTER) ||
@@ -2198,7 +2198,7 @@ bool Battle::processAction(BattleEvent* battle_event,
       //   done = processAssignAction(damage_type, action_target, factor_target);
       // }
      //}
-    /*TODO else*/ if (curr_action->actionFlag(ActionFlags::DAMAGE))
+    if (curr_action->actionFlag(ActionFlags::DAMAGE))
     {
       auto damage_event = 
           event_buffer->createDamageEvent(EventType::STANDARD_DAMAGE, 
@@ -2206,12 +2206,14 @@ bool Battle::processAction(BattleEvent* battle_event,
     
       done = processDamageAction(damage_event, damage_type);
     }
+    else if (curr_action->actionFlag(ActionFlags::INFLICT))
+    {
+      done = processInflictAction();      
+    }
 
-    // else if (curr_action->actionFlag(ActionFlags::INFLICT))
-    //   done = processInflictAction();
     // else if (curr_action->actionFlag(ActionFlags::RELIEVE))
     //   done = processRelieveAction();
-    // else if (curr_action->actionFlag(ActionFlags::REVIVE))
+    // else4 if (curr_action->actionFlag(ActionFlags::REVIVE))
     //   done = processReviveAction();
   }
   else if (!can_process)
@@ -2413,7 +2415,7 @@ bool Battle::processDamageAction(BattleEvent* damage_event,
  *
  * Inputs: int32_t amount - the amount of damage that will be done to the user
  *         DamageType damage_type - type of damage being done
- * Output: bool - true if a party death occured 
+ * Output: bool - true if a party death will occur
  */
 bool Battle::processDamageAmount(int32_t amount)
 {
@@ -2521,19 +2523,33 @@ bool Battle::processInflictAction()
   if (canInflict(curr_action->getAilment()))
   {
     /* If a person is about to be bubbified, their current ailments must be
-     * removed */
+     * removed -- thus event buffer needs to be populated with remove events */
     if (curr_action->getAilment() == Infliction::BUBBIFY)
     {
       for (auto ill : ailments)
+      {
         if (ill->getVictim() == curr_target)
-          removeAilment(ill);
+        {
+          event_buffer->createAilmentEvent(EventType::CURE_INFLICTION, 
+              curr_user, curr_target, ill);
+        }
+      }
     }
 
+    /* If or not if bubbified, create the infliction event */
+    //TODO - Create the ailment pointer here?
+    event_buffer->createAilmentEvent(EventType::INFLICTION, curr_user, 
+        curr_target, nullptr);
+
+    //TODO - Move and rework this to the perform section
     addAilment(curr_action->getAilment(), curr_user, 
       curr_action->getMin(), curr_action->getMax(), curr_action->getBase());
   }
   else
   {
+    /* If the person cannot be inflicted with the ailment, create an ailment
+     * fizzling event */
+    //TODO - Failed infliction types? Move to perform? [03-04-15]
     if (getBattleMode() == BattleMode::TEXT)
     {
       std::cout << "{FAILED} " << curr_target->getName() << " cannot be "
@@ -2642,7 +2658,7 @@ void Battle::processSkill(std::vector<Person*> targets, std::vector<DamageType>
               curr_user, targets);
         }
       }
-      // Curr events size?
+      /* If there exists 0 current actions, then the next event will be miss */
       else if (event_buffer->getCurrentSize() < 1)
       {
         event_buffer->createMissEvent(EventType::SKILL_MISS, curr_user,
@@ -2662,6 +2678,7 @@ void Battle::processSkill(std::vector<Person*> targets, std::vector<DamageType>
     curr_action_index = 0;
   }
 
+  //TODO - Wrap this in ! hit section ??? [03-04-15]
   /* Else, process action index and increment the action index */
   auto effects = curr_skill->getEffects();
 
@@ -2723,6 +2740,7 @@ void Battle::processSkill(std::vector<Person*> targets, std::vector<DamageType>
     setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
   }
 
+  /* Increment the current action index [for multiple action skills] */
   curr_action_index++;
 }
 
@@ -3744,8 +3762,10 @@ void Battle::printPersonState(Person* const member,
               << member->getTemp().getStat(0) << " [" 
               << std::floor(member->getVitaPercent() * 100) << "%]\n" << "QTDR: " 
               << member->getCurr().getStat(1) << "/"
-              << member->getTemp().getStat(1) << " [" << std::floor(member->getQDPercent() * 100)
+              << member->getTemp().getStat(1) << " [" 
+              << std::floor(member->getQDPercent() * 100)
               << "%]\nILLS: ";
+    
     auto person_ailments = getPersonAilments(member);
 
     for (auto& ailment : person_ailments)
@@ -3755,10 +3775,10 @@ void Battle::printPersonState(Person* const member,
 }
 
 /*
- * Description:
+ * Description: 
  *
- * Inputs
- * Output: 
+ * Inputs: 
+ * Output:
  */
 void Battle::printProcessingState(bool simple)
 {
@@ -3806,9 +3826,9 @@ void Battle::printInventory(Party* const target_party)
  */
 void Battle::printTurnState()
 {
-  std::cout << "Current battle state: ";
+  std::cout << "Currentattle state: ";
   if (turn_state == TurnState::BEGIN)
-    std::cout << "BEGIN";
+    std::cout << "BE bGIN";
   else if (turn_state == TurnState::GENERAL_UPKEEP) 
     std::cout << "GENERAL_UPKEEP";
   else if (turn_state == TurnState::UPKEEP)

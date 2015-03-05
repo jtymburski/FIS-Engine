@@ -20,6 +20,7 @@
 * [11-06-14]: Event handler finish signal (battle)?
 * [11-06-14]: Update personal record run from battle count 
 * [11-23-14]: Documentation
+* [03-04-15]: Fix battle loop bug? (Action processing flag?)
 *******************************************************************************/
 #ifndef BATTLE_H
 #define BATTLE_H

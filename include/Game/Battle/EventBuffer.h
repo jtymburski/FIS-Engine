@@ -20,6 +20,7 @@
 #include <algorithm>
 
 #include "EnumDb.h"
+#include "Game/Player/Ailment.h"
 #include "Game/Player/Item.h"
 #include "Game/Player/Skill.h"
 #include "Game/Player/Person.h"
@@ -29,6 +30,7 @@
 struct BattleEvent
 {
   EventType type;
+  Ailment* ailment_cure;
   Action* action_use;
   Item*  item_use;
   Skill* skill_use;
@@ -82,6 +84,10 @@ public:
   /* Creates an action event */
   BattleEvent* createActionEvent(Action* action_use, Skill* skill_use,
       Person* user, Person* target, bool happens);
+
+  /* Creates an ailment event (ex. Infliction or Relieving) */
+  BattleEvent* createAilmentEvent(EventType event_type, Person* user,
+      Person* target, Ailment* ailment_cure);
 
   /* Creates a new blank event and returns the constructed event */
   BattleEvent* createDamageEvent(EventType damage_type, Person* target,

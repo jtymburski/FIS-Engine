@@ -143,6 +143,29 @@ BattleEvent* EventBuffer::createActionEvent(Action* action_use,
 }
 
 /*
+ * Description:
+ *
+ * Inputs: EventType event_type - the type of ailment event
+ *         Person* user - pointer to the user of the Ailment action
+ *         Person* target - pointer to target being inflicted/relived of ailment
+ *         Ailment* cure_ailment - the ailment in question
+ * Output: BattleEvent* - pointer to the battle event.
+ */
+BattleEvent* EventBuffer::createAilmentEvent(EventType event_type, Person* user,
+    Person* target, Ailment* ailment_cure)
+{
+  auto new_event = createNewEvent();
+  new_event->type = event_type;
+  new_event->user = user;
+  std::vector<Person*> target_vec{target};
+  new_event->targets = target_vec;
+  new_event->ailment_cure = ailment_cure;
+  events.push_back(new_event);
+
+  return new_event;
+}
+
+/*
  * Description: Creates a new blank event 
  *
  * Inputs: EventType damage_type - the type of damage (standard/poison/etc.)
@@ -250,14 +273,15 @@ BattleEvent* EventBuffer::createNewEvent()
   std::cout << "!!! Creating New Events !!!" << std::endl;
   auto new_event = new BattleEvent();
   new_event->type       = EventType::NONE;
-  new_event->action_use = nullptr;
-  new_event->item_use   = nullptr;
-  new_event->skill_use  = nullptr;
-  new_event->user       = nullptr;
-  new_event->amount     = -1;
-  new_event->happens    = false;
-  new_event->rendered   = false;
-  new_event->performed  = false;
+  new_event->action_use   = nullptr;
+  new_event->ailment_cure = nullptr;
+  new_event->item_use     = nullptr;
+  new_event->skill_use    = nullptr;
+  new_event->user         = nullptr;
+  new_event->amount       = -1;
+  new_event->happens      = false;
+  new_event->rendered     = false;
+  new_event->performed    = false;
 
   return new_event;
 }
@@ -322,6 +346,25 @@ BattleEvent* EventBuffer::createSkillEvent(Skill* skill_use, Person* user,
 }
 
 /*
+ * Description: Creates and appends a skill fizzle event to the list of events.
+ *
+ * Inputs: Person* user - the user of the Skill which fizzled.
+ *         std::vector<Person*> targets - the targets which fizzled
+ * Output: BattleEvent* - pointer to the recently created event
+ */
+BattleEvent* EventBuffer::createFizzleEvent(EventType fizzle_type, Person* user,
+    std::vector<Person*> targets)
+{
+  auto new_event = createNewEvent();
+  new_event->type = fizzle_type;
+  new_event->user = user;
+  new_event->targets = targets; 
+  events.push_back(new_event);
+
+  return new_event;
+}
+
+/*
  * Description: Creates and appends a skip-type event to the list of events.
  *
  * Inputs: EventType skip_type - type of skip event
@@ -336,25 +379,6 @@ BattleEvent* EventBuffer::createSkipEvent(EventType skip_type, Person* user,
   new_event->type = skip_type;
   new_event->user = user;
   new_event->skill_use = skill_cooldown;
-  events.push_back(new_event);
-
-  return new_event;
-}
-
-/*
- * Description: Creates and appends a skill fizzle event to the list of events.
- *
- * Inputs: Person* user - the user of the Skill which fizzled.
- *         std::vector<Person*> targets - the targets which fizzled
- * Output: BattleEvent* - pointer to the recently created event
- */
-BattleEvent* EventBuffer::createFizzleEvent(EventType fizzle_type, Person* user,
-    std::vector<Person*> targets)
-{
-  auto new_event = createNewEvent();
-  new_event->type = fizzle_type;
-  new_event->user = user;
-  new_event->targets = targets; 
   events.push_back(new_event);
 
   return new_event;
