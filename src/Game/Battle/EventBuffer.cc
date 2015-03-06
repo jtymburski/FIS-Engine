@@ -148,18 +148,18 @@ BattleEvent* EventBuffer::createActionEvent(Action* action_use,
  * Inputs: EventType event_type - the type of ailment event
  *         Person* user - pointer to the user of the Ailment action
  *         Person* target - pointer to target being inflicted/relived of ailment
- *         Ailment* cure_ailment - the ailment in question
+ *         Action* action_use - the action use for the ailment
  * Output: BattleEvent* - pointer to the battle event.
  */
 BattleEvent* EventBuffer::createAilmentEvent(EventType event_type, Person* user,
-    Person* target, Ailment* ailment_cure)
+    Person* target, Action* action_use)
 {
   auto new_event = createNewEvent();
   new_event->type = event_type;
   new_event->user = user;
   std::vector<Person*> target_vec{target};
   new_event->targets = target_vec;
-  new_event->ailment_cure = ailment_cure;
+  new_event->action_use = action_use;
   events.push_back(new_event);
 
   return new_event;
@@ -274,7 +274,7 @@ BattleEvent* EventBuffer::createNewEvent()
   auto new_event = new BattleEvent();
   new_event->type       = EventType::NONE;
   new_event->action_use   = nullptr;
-  new_event->ailment_cure = nullptr;
+  // new_event->ailment_cure = nullptr;
   new_event->item_use     = nullptr;
   new_event->skill_use    = nullptr;
   new_event->user         = nullptr;

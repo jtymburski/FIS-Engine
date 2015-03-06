@@ -304,6 +304,8 @@ std::string Helpers::eventToStr(EventType event)
     return "ACTION_BEGIN";
   if (event == EventType::PARTY_DEATH)
     return "PARTY_DEATH";
+  if (event == EventType::INFLICTION_FIZZLE)
+    return "INFLICTION_FIZZLE";
   if (event == EventType::NONE)
     return "NONE";
 

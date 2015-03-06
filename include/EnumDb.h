@@ -255,6 +255,7 @@ enum class EventType : std::uint8_t
   REGEN_QD = 43,
   ACTION_BEGIN = 44,
   PARTY_DEATH = 45,
+  INFLICTION_FIZZLE = 46,
   NONE = 45
 };
 

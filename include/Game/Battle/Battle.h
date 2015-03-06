@@ -270,6 +270,9 @@ private:
   bool addAilment(Infliction infliction_type, Person* inflictor,
       uint16_t min_turns, uint16_t max_turns, int32_t chance);
 
+  /* Returns the most recently created ailmnent */
+  Ailment* getLastAilment();
+
   /* Set the next action index, true if valid */
   bool nextActionIndex();
 
@@ -497,7 +500,7 @@ public:
   void printAll(const bool &simple, const bool &flags, const bool &party);
   void printPartyState();
   void printPersonState(Person* const member, const int32_t &person_index);
-  void printProcessingState(bool simple = true);
+  void printProcessingState();
   void printInventory(Party* const target_party);
   void printTurnState();
 

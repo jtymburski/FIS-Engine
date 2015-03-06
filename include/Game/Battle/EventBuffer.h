@@ -30,7 +30,6 @@
 struct BattleEvent
 {
   EventType type;
-  Ailment* ailment_cure;
   Action* action_use;
   Item*  item_use;
   Skill* skill_use;
@@ -87,7 +86,7 @@ public:
 
   /* Creates an ailment event (ex. Infliction or Relieving) */
   BattleEvent* createAilmentEvent(EventType event_type, Person* user,
-      Person* target, Ailment* ailment_cure);
+      Person* target, Action* curr_action);
 
   /* Creates a new blank event and returns the constructed event */
   BattleEvent* createDamageEvent(EventType damage_type, Person* target,

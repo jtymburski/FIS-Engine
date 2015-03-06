@@ -225,6 +225,8 @@ bool Battle::addAilment(Infliction infliction_type, Person* inflictor,
               << "inflicted with " << Helpers::ailmentToStr(infliction_type)
               << " lasting " << min_turns << " to " << max_turns << ".\n";
   }
+  else if (getBattleMode() == BattleMode::TEXT)
+      std::cerr << "[Error] Invalid ailment creation" << std::endl;
 
   return success;
 }
@@ -276,6 +278,20 @@ bool Battle::reCalcAilmentFlags(Person* target, Ailment* ail)
   }
 
   return false;
+}
+
+/*
+ * Description: Returns the most recently created ailment pointer
+ *
+ * Inputs: none
+ * Output: Ailment* - pointer to the most recently created ailment
+ */
+Ailment* Battle::getLastAilment()
+{
+  if (ailments.size() > 0)
+    return ailments.at(ailments.size() - 1);
+
+  return nullptr;
 }
 
 /*
@@ -1810,11 +1826,14 @@ void Battle::performEvents()
     }
     else if (event->type == EventType::INFLICTION)
     {
-      //TODO [02-14-15] - Process inflict events
+      addAilment(event->action_use->getAilment(), curr_user, 
+          event->action_use->getMin(), event->action_use->getMax(),
+          event->action_use->getBase());
     }
     else if (event->type == EventType::CURE_INFLICTION)
     {
-      //TODO [02-14-15] - Process relieve events
+      //TODO - Do recalculation of ailments need their own processing/can they
+      // appended to the list of events already to be rendered/performed? [03-05-14]
     }
     else if (event->type == EventType::ALTERATION)
     {
@@ -2530,20 +2549,17 @@ bool Battle::processInflictAction()
       {
         if (ill->getVictim() == curr_target)
         {
+          // Add the ailment here?
           event_buffer->createAilmentEvent(EventType::CURE_INFLICTION, 
-              curr_user, curr_target, ill);
+              curr_user, curr_target, nullptr);
         }
       }
     }
 
     /* If or not if bubbified, create the infliction event */
-    //TODO - Create the ailment pointer here?
     event_buffer->createAilmentEvent(EventType::INFLICTION, curr_user, 
-        curr_target, nullptr);
-
-    //TODO - Move and rework this to the perform section
-    addAilment(curr_action->getAilment(), curr_user, 
-      curr_action->getMin(), curr_action->getMax(), curr_action->getBase());
+        curr_target, curr_action);
+    setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
   }
   else
   {
@@ -3617,7 +3633,7 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
     if (event.keysym.sym == SDLK_PAUSE)
       printPartyState();
     else if (event.keysym.sym == SDLK_PRINTSCREEN)
-      printProcessingState(true);
+      printProcessingState();
     else if (event.keysym.sym == SDLK_HOME)
       printAll(false, true, false);
     else if (event.keysym.sym == SDLK_END)
@@ -3775,15 +3791,14 @@ void Battle::printPersonState(Person* const member,
 }
 
 /*
- * Description: 
+ * Description: Print out information regarding the Processing, rendering,
+ *              performing loop of the battle at a given moment.
  *
- * Inputs: 
- * Output:
+ * Inputs: none
+ * Output: none
  */
-void Battle::printProcessingState(bool simple)
+void Battle::printProcessingState()
 {
-  //TODO (Warning) [03-03-2015]
-  (void)simple;
   std::cout << "\n--- Processing State ---\n";
   std::cout << "\nRENDERING_COMPLETE: " 
             << getBattleFlag(CombatState::RENDERING_COMPLETE);
