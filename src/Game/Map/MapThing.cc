@@ -1323,7 +1323,7 @@ bool MapThing::getPassabilityExiting(Tile* frame_tile, Direction dir)
  * Inputs: none
  * Output: uint16_t - the speed integer movement indicator
  */
-uint16_t MapThing::getSpeed()
+uint16_t MapThing::getSpeed() const
 {
   if(base != NULL)
     return base->getSpeed();

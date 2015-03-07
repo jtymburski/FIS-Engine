@@ -74,10 +74,6 @@ private:
 protected:
   /* Add movement direction to the stack */
   void addDirection(Direction direction);
-
-  /* Direction enumerator to/from integer converters */
-  int dirToInt(Direction dir);
-  Direction intToDir(int dir_index);
   
   /* Is move allowed, based on main tile and the next tile */
   virtual bool isTileMoveAllowed(Tile* previous, Tile* next, uint8_t 
@@ -199,7 +195,15 @@ public:
   void unsetStates(bool delete_frames = true);
 
   /* Unset the rendering tiles in the class */
-  virtual void unsetTiles(bool no_events = false); 
+  virtual void unsetTiles(bool no_events = false);
+
+/*============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *===========================================================================*/
+public:
+  /* Direction enumerator to/from integer converters */
+  static int dirToInt(Direction dir);
+  static Direction intToDir(int dir_index);
 };
 
 #endif // MAPPERSON_H

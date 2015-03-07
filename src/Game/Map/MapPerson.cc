@@ -157,48 +157,6 @@ void MapPerson::addDirection(Direction direction)
 }
 
 /* 
- * Description: Integer converter from Direction enumerator to ensure that 
- *              the compiler type doesn't affect the operation. This info
- *              is used within internal array operation
- * 
- * Inputs: Direction dir - the direction enumerator
- * Output: int - the converted integer from the enumerator
- */
-int MapPerson::dirToInt(Direction dir)
-{
-  if(dir == Direction::NORTH)
-    return kDIR_NORTH;
-  else if(dir == Direction::EAST)
-    return kDIR_EAST;
-  else if(dir == Direction::SOUTH)
-    return kDIR_SOUTH;
-  else if(dir == Direction::WEST)
-    return kDIR_WEST;
-  return kDIR_UNKNOWN;
-}
-
-/* 
- * Description: Direction enumerator converter from integer to ensure that 
- *              the compiler type doesn't affect the operation. This info
- *              is used within internal array operation
- * 
- * Inputs: int dir_index - the direction index, associated with the enum
- * Output: Direction - the direction enumerator, from the index
- */
-Direction MapPerson::intToDir(int dir_index)
-{
-  if(dir_index == kDIR_NORTH)
-    return Direction::NORTH;
-  else if(dir_index == kDIR_EAST)
-    return Direction::EAST;
-  else if(dir_index == kDIR_SOUTH)
-    return Direction::SOUTH;
-  else if(dir_index == kDIR_WEST)
-    return Direction::WEST;
-  return Direction::DIRECTIONLESS;
-}
-
-/* 
  * Description: Checks if a move is allowed from the current person main 
  *              tile to the next tile that it is trying to move to. This
  *              handles the individual calculations for a single tile; used
@@ -1110,4 +1068,50 @@ void MapPerson::unsetTiles(bool no_events)
 
     MapThing::unsetTiles(no_events);
   }
+}
+
+/*============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *===========================================================================*/
+
+/* 
+ * Description: Integer converter from Direction enumerator to ensure that 
+ *              the compiler type doesn't affect the operation. This info
+ *              is used within internal array operation
+ * 
+ * Inputs: Direction dir - the direction enumerator
+ * Output: int - the converted integer from the enumerator
+ */
+int MapPerson::dirToInt(Direction dir)
+{
+  if(dir == Direction::NORTH)
+    return kDIR_NORTH;
+  else if(dir == Direction::EAST)
+    return kDIR_EAST;
+  else if(dir == Direction::SOUTH)
+    return kDIR_SOUTH;
+  else if(dir == Direction::WEST)
+    return kDIR_WEST;
+  return kDIR_UNKNOWN;
+}
+
+/* 
+ * Description: Direction enumerator converter from integer to ensure that 
+ *              the compiler type doesn't affect the operation. This info
+ *              is used within internal array operation
+ * 
+ * Inputs: int dir_index - the direction index, associated with the enum
+ * Output: Direction - the direction enumerator, from the index
+ */
+Direction MapPerson::intToDir(int dir_index)
+{
+  if(dir_index == kDIR_NORTH)
+    return Direction::NORTH;
+  else if(dir_index == kDIR_EAST)
+    return Direction::EAST;
+  else if(dir_index == kDIR_SOUTH)
+    return Direction::SOUTH;
+  else if(dir_index == kDIR_WEST)
+    return Direction::WEST;
+  return Direction::DIRECTIONLESS;
 }

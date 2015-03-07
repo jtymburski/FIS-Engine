@@ -239,7 +239,7 @@ public:
   bool getPassabilityExiting(Tile* frame_tile, Direction dir); 
   
   /* Returns the speed that the thing is moving at */
-  uint16_t getSpeed();
+  uint16_t getSpeed() const;
  
   /* Returns the starting coordinates - as set by setStartingLocation() */
   uint16_t getStartingSection();
