@@ -321,6 +321,9 @@ void Game::setupBattle()
   inflict_actions.push_back(new Action("525,INFLICT,2.6,,,DREAMSNARE,AMOUNT.25,,VITA,99"));
   inflict_actions.push_back(new Action("526,INFLICT,4.8,,,MODULATE,AMOUNT.10,,VITA,99"));
 
+  std::vector<Action*> relieve_actions;
+  relieve_actions.push_back(new Action("600,RELIEVE,,,,POISON,,,VITA,100"));
+
   // for(auto it = begin(damage_actions); it != end(damage_actions); ++it)
   //   std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
 
@@ -332,8 +335,14 @@ void Game::setupBattle()
 
   //for (auto& inflict_action : inflict_actions)
   //  std::cout << inflict_action->actionFlag(ActionFlags::VALID) << std::endl;
+  
+  for (auto& relieve_action : relieve_actions)
+    std::cout << relieve_action->actionFlag(ActionFlags::VALID) << std::endl;
 
   // Test Skills
+  Skill* cure_poison = new Skill(600, "Cure Poison", ActionScope::ONE_TARGET,
+      relieve_actions[0], 95, 0);
+
   Skill* physical_01 = new Skill(100, "Wee Strike", ActionScope::ONE_ENEMY, 
       damage_actions[3], 95, 0);
   physical_01->setPrimary(Element::PHYSICAL);
@@ -473,6 +482,7 @@ void Game::setupBattle()
 
   // Test Skill Sets
   SkillSet* physical_skills = new SkillSet(physical_01, 1);
+  physical_skills->addSkill(cure_poison, 1);
   // physical_skills->addSkill(physical_02, 1);
   // physical_skills->addSkill(physical_03, 1);
   // physical_skills->addSkill(user_reduce_by_ally, 1);
@@ -483,7 +493,7 @@ void Game::setupBattle()
   // physical_skills->addSkill(ally_heal, 1);
   // physical_skills->addSkill(revive_ally, 1);
   // physical_skills->addSkill(life_steal, 1);
-  // physical_skills->addSkill(poison, 1);
+  physical_skills->addSkill(poison, 1);
   // physical_skills->addSkill(burn, 1);
   // physical_skills->addSkill(paralysis, 1);
   // physical_skills->addSkill(scald, 1);

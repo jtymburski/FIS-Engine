@@ -22,7 +22,6 @@ const uint16_t Battle::kGENERAL_UPKEEP_DELAY = 500; /* Time prior info bar */
 const uint16_t Battle::kBATTLE_MENU_DELAY    = 400; /* Personal menu delay */
 
 /* ------------ Battle Damage Calculation Modifiers ---------------
- *
  * Maximum Ailments (Total)
  * Maximum Each Ailments (Per Person)
  * Minimum Damage (Possible)
@@ -1832,8 +1831,7 @@ void Battle::performEvents()
     }
     else if (event->type == EventType::CURE_INFLICTION)
     {
-      //TODO - Do recalculation of ailments need their own processing/can they
-      // appended to the list of events already to be rendered/performed? [03-05-14]
+      removeAilment(event->ailment_use);
     }
     else if (event->type == EventType::ALTERATION)
     {
@@ -2227,11 +2225,12 @@ bool Battle::processAction(BattleEvent* battle_event,
     }
     else if (curr_action->actionFlag(ActionFlags::INFLICT))
     {
-      done = processInflictAction();      
+      done = processInflictAction();
     }
-
-    // else if (curr_action->actionFlag(ActionFlags::RELIEVE))
-    //   done = processRelieveAction();
+    else if (curr_action->actionFlag(ActionFlags::RELIEVE))
+    {
+      done = processRelieveAction();
+    }
     // else4 if (curr_action->actionFlag(ActionFlags::REVIVE))
     //   done = processReviveAction();
   }
@@ -2482,14 +2481,29 @@ bool Battle::processDamageAmount(int32_t amount)
 }
 
 /*
- * Description: 
+ * Description: General relieve processing function. Turns an action buffer
+ *              use of a relieve action into an event which can easily be
+ *              rendered and performed to relieve a type of ailment
+ *              from the given target (or targets)
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: bool //TODO ?? why
  */
 bool Battle::processRelieveAction()
 {
-  //TODO
+  if (canRelieve(curr_action->getAilment()))
+  {
+    for (auto ill : ailments)
+    {
+      if (ill->getVictim() == curr_target)
+      {
+        event_buffer->createAilmentEvent(EventType::CURE_INFLICTION, curr_user,
+            curr_target, curr_action, ill);
+      }
+    }
+
+  }
+
   return false;
 }
 
@@ -2551,14 +2565,14 @@ bool Battle::processInflictAction()
         {
           // Add the ailment here?
           event_buffer->createAilmentEvent(EventType::CURE_INFLICTION, 
-              curr_user, curr_target, nullptr);
+              curr_user, curr_target, curr_action, ill);
         }
       }
     }
 
     /* If or not if bubbified, create the infliction event */
     event_buffer->createAilmentEvent(EventType::INFLICTION, curr_user, 
-        curr_target, curr_action);
+        curr_target, curr_action, nullptr);
     setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
   }
   else
@@ -2601,6 +2615,25 @@ bool Battle::canInflict(Infliction test_infliction)
   }
 
   return false;
+}
+
+/*
+ * Description: Checks to see whether a given Ailment could legally be removed
+ *              from the given target in the present Battle state.
+ *
+ * Inputs: Ailment* test_ailment - the potential ailment to be removed
+ * Output: bool - true if the ailment could legally be removed
+ */
+bool Battle::canRelieve(Infliction test_infliction)
+{
+  auto person_ailments = getPersonAilments(curr_target);
+  auto can_cure = false;
+
+  for (auto person_ill : person_ailments)
+    if (person_ill->getType() == test_infliction)
+      can_cure |= person_ill->getFlag(AilState::CURABLE);
+ 
+  return can_cure;
 }
 
 /*

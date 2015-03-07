@@ -326,6 +326,9 @@ private:
   /* Can the current target be inflicted with a new infliction of given type? */
   bool canInflict(Infliction test_infliction);
 
+  /* Tests whether the given infliction type can be removed from target */
+  bool canRelieve(Infliction test_infliction);
+
   /* Determines whether a person has an infliction already */
   bool hasInfliction(Infliction type, Person* check);
 
