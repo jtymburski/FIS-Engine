@@ -201,6 +201,9 @@ bool Battle::addAilment(Infliction infliction_type, Person* inflictor,
   auto new_ailment = new Ailment(curr_target, infliction_type, inflictor,
                          min_turns, max_turns, static_cast<float>(chance));
 
+  /* Default: set the ailment to be curable */
+  // new_ailment->setFlag(AilState::CURABLE, true);
+
   if (new_ailment->getFlag(AilState::INFLICTOR_SET) && 
       new_ailment->getFlag(AilState::VICTIM_SET))
   {
@@ -1894,20 +1897,45 @@ void Battle::resetTurnFlags(Person* user)
  */
 void Battle::personalUpkeep(Person* const target)
 {
+  //TODO: Break Personal upkeep into Process-Render-Perform states
+  //    For each ailment (hold processing index?)
+  //      - Determine whether to be removed
+  //      - If to be removed -> add remove event
+  //      - Render remove event
+  //      - Perform remove event
+  //    Process/Perform/Render on VITA regen
+  //    Process/Perform/Render on QTDR regen
   curr_target   = target;
-  auto ailments = getPersonAilments(target);
 
-  for (auto& ailment : ailments)
+  if (!getBattleFlag(CombatState::BEGIN_AILMENT_UPKEEPS))
   {
+    pro_index = 0;
+    temp_ailments = getPersonAilments(target);
+  }
+
+  if (!getBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS) && 
+      pro_index < temp_ailments.size())
+  {
+    auto ailment = temp_ailments[pro_index];
+
     if (ailment != nullptr && ailment->getFlag(AilState::TO_UPDATE))
     {
       ailment->update(true);
-
+  
       if (ailment->getFlag(AilState::DEALS_DAMAGE) && 
           target->getBFlag(BState::ALIVE))
       {
         auto damage_amount = ailment->getDamageAmount();
-        //TODO auto damage_type   = ailment->getDamageType();
+        auto event_type   = EventType::STANDARD_DAMAGE;
+
+        if (ailment->getType() == Infliction::POISON)
+          event_type = EventType::POISON_DAMAGE;
+        else if (ailment->getType() == Infliction::BURN)
+          event_type = EventType::BURN_DAMAGE;
+        else if (ailment->getType() == Infliction::METATETHER)
+          event_type = EventType::METABOLIC_DAMAGE;
+
+        event_buffer->createDamageEvent(event_type, curr_target, damage_amount);
         processDamageAmount(damage_amount);
       }
 
@@ -1915,6 +1943,7 @@ void Battle::personalUpkeep(Person* const target)
       {
         if (ailment->getFlag(AilState::TO_KILL))
         {
+          //TODO: Create an actual death timer death here [03-07-15]
           processDamageAmount(target->getCurr().getStat(0));
         }
         else if (getBattleMode() == BattleMode::TEXT)
@@ -1934,31 +1963,40 @@ void Battle::personalUpkeep(Person* const target)
     }
 
     if (ailment != nullptr && ailment->getFlag(AilState::TO_CURE))
+    {
+      //TODO: Create a relieving event here. [03-07-15]
       removeAilment(ailment);
+    }
+
+    if (pro_index == temp_ailments.size() - 1)
+      setBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS, true);
   }
-  
-  //TODO
-  // clear flags for new turn (temp flags?)
-  // recalulate ailment factor
-
-  auto vita_regen = calcTurnRegen(target, Attribute::VITA);
-  auto qtdr_regen = calcTurnRegen(target, Attribute::QTDR);
-
-  if (getBattleMode() == BattleMode::TEXT)
+  else if (getBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS))
   {
-    if (vita_regen > 0) 
-    {
-      std::cout << "{REGEN} " << target->getName() << " has restored " 
-                << vita_regen << " VITA.\n";
-    }
-    if (qtdr_regen > 0)
-    {
-      std::cout << "{REGEN} " << target->getName() << " has regained "
-                << qtdr_regen << " QTDR.\n";
-    }
-  }
+    auto vita_regen = calcTurnRegen(target, Attribute::VITA);
+    auto qtdr_regen = calcTurnRegen(target, Attribute::QTDR);
 
-  target->battleTurnPrep();
+    //TODO [03-07-15]
+    // event_buffer->createRegenEvent();
+    // event_buffer->createRegenEvent();
+
+    //TODO - Move to perform [03-07-15]
+    if (getBattleMode() == BattleMode::TEXT)
+    {
+      if (vita_regen > 0) 
+      {
+        std::cout << "{REGEN} " << target->getName() << " has restored " 
+                  << vita_regen << " VITA.\n";
+      }
+      if (qtdr_regen > 0)
+      {
+        std::cout << "{REGEN} " << target->getName() << " has regained "
+                  << qtdr_regen << " QTDR.\n";
+      }
+    }
+
+    target->battleTurnPrep();
+  }
 }
 
 /*
@@ -2437,7 +2475,7 @@ bool Battle::processDamageAction(BattleEvent* damage_event,
  */
 bool Battle::processDamageAmount(int32_t amount)
 {
-  //TODO: So weird.
+  //TODO: The comments really need to be updated here. [03-07-15]
   /* If doDmg returns true, the actor has died. Update guarding and other
    * corner cases and check for party death. Else, an actor has not died
    * but guard and defending flags, etc. may need to be recalcuted */
@@ -2491,8 +2529,11 @@ bool Battle::processDamageAmount(int32_t amount)
  */
 bool Battle::processRelieveAction()
 {
+  std::cout << "Beginning relieve function" << std::endl;
+
   if (canRelieve(curr_action->getAilment()))
   {
+    std::cout << "Can be relieved of the given infliction" << std::endl;
     for (auto ill : ailments)
     {
       if (ill->getVictim() == curr_target)
@@ -2726,71 +2767,72 @@ void Battle::processSkill(std::vector<Person*> targets, std::vector<DamageType>
     std::cout << "Setting curr action index: " << curr_action_index << std::endl;
     curr_action_index = 0;
   }
-
-  //TODO - Wrap this in ! hit section ??? [03-04-15]
-  /* Else, process action index and increment the action index */
-  auto effects = curr_skill->getEffects();
-
-  /* Grab the enumerated attribute types related to the elements of the Skill */
-  auto prim_stats = Helpers::elementToStats(curr_skill->getPrimary());
-  auto secd_stats = Helpers::elementToStats(curr_skill->getSecondary());
-
-  prim_off = prim_stats.first;
-  prim_def = prim_stats.second;
-  secd_off = secd_stats.first;
-  secd_def = secd_stats.second;
-
-  /* Update the temporary copy of the User's current stats */
-  temp_user_stats     = AttributeSet(curr_user->getCurr());
-  temp_user_max_stats = AttributeSet(curr_user->getTemp());
-
-  /* Build vectors of curr and curr_max stas for each target */
-  for (auto jt = begin(targets); jt != end(targets); ++jt)
-  {
-    temp_target_stats.push_back(AttributeSet((*jt)->getCurr()));
-    temp_target_max_stats.push_back(AttributeSet((*jt)->getTemp()));
-  }
- 
-  /* User ref. vars related to prim/secd skill attributes, -1 if Attr:NONE */
-  auto prim_user_off = temp_user_stats.getStat(prim_off);
-  auto prim_user_def = temp_user_stats.getStat(prim_def);
-  auto secd_user_off = temp_user_stats.getStat(secd_off);
-  auto secd_user_def = temp_user_stats.getStat(secd_def);
-
-  if (curr_user->getPrimary() == curr_skill->getPrimary())
-  {
-    prim_user_off *= kOFF_PRIM_ELM_MODIFIER;
-    prim_user_def *= kDEF_PRIM_ELM_MODIFIER;
-  }
-  else if (curr_user->getSecondary() == curr_skill->getSecondary())
-  {
-    secd_user_off *= kOFF_SECD_ELM_MODIFIER;
-    secd_user_def *= kDEF_SECD_ELM_MODIFIER;
-  }
-
-  /* Assert the current action index is within effects range, then
-   * compute the outcome for the effect for every target, and prepare
-   * the outcomes for rendering */
-  if (curr_action_index < effects.size())
-  {
-    curr_action = effects.at(curr_action_index);
-
-    for (auto it = begin(targets); it != end(targets); ++it)
-    {
-      curr_target = *it;
-      auto action_event = event_buffer->createActionEvent(curr_action, 
-          curr_skill, curr_user, curr_target, true);
-
-      processAction(action_event, damage_types);   
-    }
-  }
   else
   {
-    setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
-  }
+    /* Else, process action index and increment the action index */
+    auto effects = curr_skill->getEffects();
 
-  /* Increment the current action index [for multiple action skills] */
-  curr_action_index++;
+    /* Grab the enumerated attribute types related to elements of the Skill */
+    auto prim_stats = Helpers::elementToStats(curr_skill->getPrimary());
+    auto secd_stats = Helpers::elementToStats(curr_skill->getSecondary());
+
+    prim_off = prim_stats.first;
+    prim_def = prim_stats.second;
+    secd_off = secd_stats.first;
+    secd_def = secd_stats.second;
+
+    /* Update the temporary copy of the User's current stats */
+    temp_user_stats     = AttributeSet(curr_user->getCurr());
+    temp_user_max_stats = AttributeSet(curr_user->getTemp());
+
+    /* Build vectors of curr and curr_max stas for each target */
+    for (auto jt = begin(targets); jt != end(targets); ++jt)
+    {
+      temp_target_stats.push_back(AttributeSet((*jt)->getCurr()));
+      temp_target_max_stats.push_back(AttributeSet((*jt)->getTemp()));
+    }
+ 
+    /* User ref. vars related to prim/secd skill attributes, -1 if Attr:NONE */
+    auto prim_user_off = temp_user_stats.getStat(prim_off);
+    auto prim_user_def = temp_user_stats.getStat(prim_def);
+    auto secd_user_off = temp_user_stats.getStat(secd_off);
+    auto secd_user_def = temp_user_stats.getStat(secd_def);
+
+    if (curr_user->getPrimary() == curr_skill->getPrimary())
+    {
+      prim_user_off *= kOFF_PRIM_ELM_MODIFIER;
+      prim_user_def *= kDEF_PRIM_ELM_MODIFIER;
+    }
+    else if (curr_user->getSecondary() == curr_skill->getSecondary())
+    {
+      secd_user_off *= kOFF_SECD_ELM_MODIFIER;
+      secd_user_def *= kDEF_SECD_ELM_MODIFIER;
+    }
+
+    /* Assert the current action index is within effects range, then
+     * compute the outcome for the effect for every target, and prepare
+     * the outcomes for rendering */
+    if (curr_action_index < effects.size())
+    {
+      curr_action = effects.at(curr_action_index);
+
+      for (auto it = begin(targets); it != end(targets); ++it)
+      {
+        curr_target = *it;
+        auto action_event = event_buffer->createActionEvent(curr_action, 
+            curr_skill, curr_user, curr_target, true);
+
+        processAction(action_event, damage_types);   
+      }
+    }
+    else
+    {
+      setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
+    }
+
+    /* Increment the current action index [for multiple action skills] */
+    curr_action_index++;
+  }
 }
 
 /*
@@ -3806,7 +3848,8 @@ void Battle::printPersonState(Person* const member,
   if (member != nullptr)
   {
     std::cout << "[" << person_index << "] - " << member->getName()
-              << " [ Lv. " << member->getLevel() << " ] << \n" 
+              << " [ Lv. " << member->getLevel() << " ] [Alive: "
+              << member->getBFlag(BState::ALIVE) << "] \n" 
               << "VITA: " << member->getCurr().getStat(0) << "/" 
               << member->getTemp().getStat(0) << " [" 
               << std::floor(member->getVitaPercent() * 100) << "%]\n" << "QTDR: " 

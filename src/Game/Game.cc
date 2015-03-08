@@ -293,7 +293,7 @@ void Game::setupBattle()
   assign_actions.push_back(new Action("400,REVIVE,,,,,AMOUNT.50,AMOUNT.10,,80"));
 
   std::vector<Action*> inflict_actions;
-  inflict_actions.push_back(new Action("500,INFLICT,2.7,,,POISON,,,VITA,90"));
+  inflict_actions.push_back(new Action("500,INFLICT,4.7,,,POISON,,,VITA,90"));
   inflict_actions.push_back(new Action("501,INFLICT,1.4,,,BURN,AMOUNT.50,,VITA,90"));
   inflict_actions.push_back(new Action("502,INFLICT,2.6,,,SCALD,AMOUNT.40,,VITA,90"));
   inflict_actions.push_back(new Action("503,INFLICT,4.8,,,CHARR,AMOUNT.30,,VITA,90"));

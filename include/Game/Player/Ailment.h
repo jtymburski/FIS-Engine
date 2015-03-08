@@ -42,18 +42,18 @@ enum class AilState
 {
   INFINITE      = 1 << 0,  /* Ailment does not alleviate by time? >kMAX_TURNS */
   CURABLE       = 1 << 1,  /* Ailment cannot be cured except by time? */
-  TO_CURE       = 1 << 1,  /* The ailment is to be cured immediately */
-  TO_UPDATE     = 1 << 2,  /* Ailment set to be updated on new turn */
-  TO_APPLY      = 1 << 3,  /* Ailment effects set to be applied on new turn */
-  TO_UNAPPLY    = 1 << 4,  /* Ailment effects to be unapplied [after update()]*/
-  TO_KILL       = 1 << 5,
-  BUFF          = 1 << 6,  /* Is this ailment a favorable ailment? */
-  ADVERSE       = 1 << 7,  /* Is this ailment an adverse ailment? */
-  IMMUNITY      = 1 << 8,  /* Is the inflicted person immune to this ailment? */
-  CURE_ON_DEATH = 1 << 9,  /* Does the ailment persist death? */
-  VICTIM_SET    = 1 << 10,  /* Has the victim of the ailment been set? */
-  INFLICTOR_SET = 1 << 11,
-  DEALS_DAMAGE  = 1 << 12  /* Has the inflictor of the ailment been set? */
+  TO_CURE       = 1 << 2,  /* The ailment is to be cured immediately */
+  TO_UPDATE     = 1 << 3,  /* Ailment set to be updated on new turn */
+  TO_APPLY      = 1 << 4,  /* Ailment effects set to be applied on new turn */
+  TO_UNAPPLY    = 1 << 5,  /* Ailment effects to be unapplied [after update()]*/
+  TO_KILL       = 1 << 6,
+  BUFF          = 1 << 7,  /* Is this ailment a favorable ailment? */
+  ADVERSE       = 1 << 8,  /* Is this ailment an adverse ailment? */
+  IMMUNITY      = 1 << 9,  /* Is the inflicted person immune to this ailment? */
+  CURE_ON_DEATH = 1 << 10,  /* Does the ailment persist death? */
+  VICTIM_SET    = 1 << 11,  /* Has the victim of the ailment been set? */
+  INFLICTOR_SET = 1 << 12,
+  DEALS_DAMAGE  = 1 << 13  /* Has the inflictor of the ailment been set? */
 };
 
 class Ailment

@@ -39,29 +39,31 @@ using std::end;
 ENUM_FLAGS(CombatState)
 enum class CombatState
 {
-  CONFIGURED         = 1 << 0,
-  FLAGS_CONFIGURED   = 1 << 1,
-  ACTION_DONE        = 1 << 2, // Needed?
-  PHASE_DONE         = 1 << 3,
-  VICTORY            = 1 << 4,
-  LOSS               = 1 << 5,
-  ALLIES_RUN         = 1 << 6,
-  ENEMIES_RUN        = 1 << 7,
-  OUTCOME_DONE       = 1 << 8,
-  ERROR_STATE        = 1 << 9,
-  RANDOM_ENCOUNTER   = 1 << 10,
-  MINI_BOSS          = 1 << 11,
-  BOSS               = 1 << 12,
-  FINAL_BOSS         = 1 << 13,
-  PROCESSING_SKILL   = 1 << 14,
-  PROCESSING_ITEM    = 1 << 15,
-  READY_TO_RENDER    = 1 << 16,  /* Processing event state is ready to render */
-  RENDERING_COMPLETE = 1 << 17,  /* Current render cycle complete => perform */
+  CONFIGURED          = 1 << 0,
+  FLAGS_CONFIGURED    = 1 << 1,
+  ACTION_DONE         = 1 << 2, // Needed?
+  PHASE_DONE          = 1 << 3,
+  VICTORY             = 1 << 4,
+  LOSS                = 1 << 5,
+  ALLIES_RUN          = 1 << 6,
+  ENEMIES_RUN         = 1 << 7,
+  OUTCOME_DONE        = 1 << 8,
+  ERROR_STATE         = 1 << 9,
+  RANDOM_ENCOUNTER    = 1 << 10,
+  MINI_BOSS           = 1 << 11,
+  BOSS                = 1 << 12,
+  FINAL_BOSS          = 1 << 13,
+  PROCESSING_SKILL    = 1 << 14,
+  PROCESSING_ITEM     = 1 << 15,
+  READY_TO_RENDER     = 1 << 16,  /* Processing event state is ready to render */
+  RENDERING_COMPLETE  = 1 << 17,  /* Current render cycle complete => perform */
   PERFORMING_COMPLETE = 1 << 18,
-  BEGIN_PROCESSING   = 1 << 19,
-  BEGIN_ACTION_PROCESSING = 1 << 20,
+  BEGIN_PROCESSING    = 1 << 19,
+  BEGIN_ACTION_PROCESSING    = 1 << 20,
   ACTION_PROCESSING_COMPLETE = 1 << 21,
-  ALL_PROCESSING_COMPLETE = 1 << 22
+  ALL_PROCESSING_COMPLETE    = 1 << 22,
+  BEGIN_AILMENT_UPKEEPS      = 1 << 23,
+  COMPLETE_AILMENT_UPKEEPS   = 1 << 24,
 };
 
 ENUM_FLAGS(IgnoreState)
@@ -116,8 +118,11 @@ private:
   /* The Item Buffer of the Battle */
   Buffer* action_buffer;
 
-  /* Pairs of unique-ID vs. Ailment pointers for ailments */
+  /* The normal vector of ailments */
   std::vector<Ailment*> ailments;
+
+  /* Temporary vector of ailments for update processing */
+  std::vector<Ailment*> temp_ailments;
 
   /* The bubbified skill set */
   SkillSet* bubbified_skills;
