@@ -294,12 +294,12 @@ std::string Helpers::eventToStr(EventType event)
     return "REVIVAL";
   if (event == EventType::HEAL_HEALTH)
     return "HEAL_HEATLH";
-  if (event == EventType::REGEN_HEALTH)
-    return "REGEN_HEALTH";
+  if (event == EventType::REGEN_VITA)
+    return "REGEN_VITA";
   if (event == EventType::HEAL_QD)
     return "HEAL_QD";
-  if (event == EventType::REGEN_QD)
-    return "REGEN_QD";
+  if (event == EventType::REGEN_QTDR)
+    return "REGEN_QTDR";
   if (event == EventType::ACTION_BEGIN)
     return "ACTION_BEGIN";
   if (event == EventType::PARTY_DEATH)

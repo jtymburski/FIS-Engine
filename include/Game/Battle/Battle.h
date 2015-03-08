@@ -62,8 +62,11 @@ enum class CombatState
   BEGIN_ACTION_PROCESSING    = 1 << 20,
   ACTION_PROCESSING_COMPLETE = 1 << 21,
   ALL_PROCESSING_COMPLETE    = 1 << 22,
-  BEGIN_AILMENT_UPKEEPS      = 1 << 23,
-  COMPLETE_AILMENT_UPKEEPS   = 1 << 24,
+  BEGIN_PERSON_UPKEEPS       = 1 << 23,
+  PERSON_UPKEEP_COMPLETE     = 1 << 24,
+  BEGIN_AILMENT_UPKEEPS      = 1 << 25,
+  COMPLETE_AILMENT_UPKEEPS   = 1 << 26,
+  ALL_UPKEEPS_COMPLETE       = 1 << 27
 };
 
 ENUM_FLAGS(IgnoreState)
@@ -203,6 +206,9 @@ private:
 
   /* Current pocessing target index */
   uint32_t pro_index;
+
+  /* Persons needing upkeep */
+  std::vector<Person*> upkeep_persons;
 
   /* ------------ Menu Constants --------------- */
   static const uint16_t kGENERAL_UPKEEP_DELAY;

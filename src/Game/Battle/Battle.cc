@@ -1286,11 +1286,18 @@ bool Battle::checkPartyDeath(Party* const check_party)
 void Battle::cleanUp()
 {
   action_buffer->clearAll();
+  upkeep_persons.clear();
+  temp_ailments.clear();
   person_index = 0;
 
   setBattleFlag(CombatState::BEGIN_PROCESSING, false);
   setBattleFlag(CombatState::BEGIN_ACTION_PROCESSING, false);
   setBattleFlag(CombatState::ALL_PROCESSING_COMPLETE, false);
+  setBattleFlag(CombatState::BEGIN_PERSON_UPKEEPS, false);
+  setBattleFlag(CombatState::PERSON_UPKEEP_COMPLETE, false);
+  setBattleFlag(CombatState::BEGIN_AILMENT_UPKEEPS, false);
+  setBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS, false);
+  setBattleFlag(CombatState::ALL_UPKEEPS_COMPLETE, false);
  
   /* Clean all action processing related variables */
   clearActionVariables();
@@ -1578,7 +1585,17 @@ void Battle::generalUpkeep()
               << "\n=============" << std::endl;
   }
 
+  for (uint32_t i = 0; i < friends->getSize(); i++)
+    if (friends->getMember(i)->getBFlag(BState::ALIVE))
+      upkeep_persons.push_back(friends->getMember(i));
+  for (uint32_t i = 0; i < foes->getSize(); i++)
+    if (foes->getMember(i)->getBFlag(BState::ALIVE))
+      upkeep_persons.push_back(foes->getMember(i));
+
   //TODO: Weather updates [03-01-14]
+
+  setBattleFlag(CombatState::READY_TO_RENDER, false);
+  setBattleFlag(CombatState::RENDERING_COMPLETE, false); 
 
   /* General upkeep phase complete */
   setBattleFlag(CombatState::PHASE_DONE);
@@ -1853,21 +1870,34 @@ void Battle::performEvents()
       auto new_val = event->user->getCurr().getStat(Attribute::VITA) + 
                      event->amount;
 
-      event->user->getCurr().setStat(Attribute::VITA, new_val);
+      event->targets.at(0)->getCurr().setStat(Attribute::VITA, new_val);
     }
-    else if (event->type == EventType::REGEN_HEALTH)
+    else if (event->type == EventType::REGEN_VITA)
     {
-      auto new_val = event->user->getCurr().getStat(Attribute::VITA) + 
+      auto new_val = event->targets.at(0)->getCurr().getStat(Attribute::VITA) + 
                      event->amount;
 
-      event->user->getCurr().setStat(Attribute::VITA, new_val);
+      event->targets.at(0)->getCurr().setStat(Attribute::VITA, new_val);
+
+      if (event->amount > 0) 
+      {
+        std::cout << "{REGEN} " << event->targets.at(0)->getName() 
+                  << " has restored " << event->amount << " VITA.\n";
     }
-    else if (event->type == EventType::REGEN_QD)
+
+    }
+    else if (event->type == EventType::REGEN_QTDR)
     {
-      auto new_val = event->user->getCurr().getStat(Attribute::QTDR) + 
+      auto new_val = event->targets.at(0)->getCurr().getStat(Attribute::QTDR) + 
          event->amount;
 
-      event->user->getCurr().setStat(Attribute::QTDR, new_val);
+      event->targets.at(0)->getCurr().setStat(Attribute::QTDR, new_val);
+
+      if (event-> amount > 0)
+      {
+        std::cout << "{REGEN} " << event->targets.at(0)->getName() 
+                  << " has regained " << event->amount << " QTDR.\n";
+      }
     }
 
     event_buffer->setPerformed(index);
@@ -1905,7 +1935,7 @@ void Battle::personalUpkeep(Person* const target)
   //      - Perform remove event
   //    Process/Perform/Render on VITA regen
   //    Process/Perform/Render on QTDR regen
-  curr_target   = target;
+  curr_target = target;
 
   if (!getBattleFlag(CombatState::BEGIN_AILMENT_UPKEEPS))
   {
@@ -1936,7 +1966,6 @@ void Battle::personalUpkeep(Person* const target)
           event_type = EventType::METABOLIC_DAMAGE;
 
         event_buffer->createDamageEvent(event_type, curr_target, damage_amount);
-        processDamageAmount(damage_amount);
       }
 
       if (ailment->getType() == Infliction::DEATHTIMER)
@@ -1964,8 +1993,8 @@ void Battle::personalUpkeep(Person* const target)
 
     if (ailment != nullptr && ailment->getFlag(AilState::TO_CURE))
     {
-      //TODO: Create a relieving event here. [03-07-15]
-      removeAilment(ailment);
+      event_buffer->createAilmentEvent(EventType::CURE_INFLICTION, nullptr,
+          target, nullptr, ailment);
     }
 
     if (pro_index == temp_ailments.size() - 1)
@@ -1976,27 +2005,13 @@ void Battle::personalUpkeep(Person* const target)
     auto vita_regen = calcTurnRegen(target, Attribute::VITA);
     auto qtdr_regen = calcTurnRegen(target, Attribute::QTDR);
 
-    //TODO [03-07-15]
-    // event_buffer->createRegenEvent();
-    // event_buffer->createRegenEvent();
-
-    //TODO - Move to perform [03-07-15]
-    if (getBattleMode() == BattleMode::TEXT)
-    {
-      if (vita_regen > 0) 
-      {
-        std::cout << "{REGEN} " << target->getName() << " has restored " 
-                  << vita_regen << " VITA.\n";
-      }
-      if (qtdr_regen > 0)
-      {
-        std::cout << "{REGEN} " << target->getName() << " has regained "
-                  << qtdr_regen << " QTDR.\n";
-      }
-    }
+    event_buffer->createDamageEvent(EventType::REGEN_VITA, target, -vita_regen);
+    event_buffer->createDamageEvent(EventType::REGEN_QTDR, target, -qtdr_regen);
 
     target->battleTurnPrep();
   }
+
+  setBattleFlag(CombatState::READY_TO_RENDER, true);
 }
 
 /*
@@ -2018,13 +2033,12 @@ void Battle::processBuffer()
   /* If Buffer index == 0, don't increment, else, increment */
   if (getBattleFlag(CombatState::BEGIN_PROCESSING))
   {
-    std::cout << "Last index before? " << last_index << std::endl;
     last_index |= !action_buffer->setNext();
-    std::cout << "Last index after? " << last_index << std::endl;
     action_buffer->print(false);
   }
   else
   {
+    curr_action_index = 0;
     setBattleFlag(CombatState::BEGIN_PROCESSING, true);
   }
 
@@ -3077,23 +3091,34 @@ bool Battle::testPersonIndex(const int32_t &test_index)
  */
 void Battle::upkeep()
 {
-  if (turns_elapsed > 0)
-  {
-    /* Friends update */
-    for (uint32_t i = 0; i < friends->getSize(); i++)
-      if (friends->getMember(i)->getBFlag(BState::ALIVE))
-        personalUpkeep(friends->getMember(i));
+  std::cout << "---- Upkeep Processing ---- " << std::endl;
 
-    /* Foes update */
-    for (uint32_t i = 0; i < foes->getSize(); i++)
-      if (foes->getMember(i)->getBFlag(BState::ALIVE))
-        personalUpkeep(foes->getMember(i));
+  if (!(getBattleFlag(CombatState::BEGIN_PERSON_UPKEEPS)))
+  {
+    setBattleFlag(CombatState::BEGIN_PERSON_UPKEEPS, true);
   }
 
-  printPartyState();
+  if (upkeep_persons.size() > 0)
+  {
+    /* If there is still people to upkeep, upkeep the first person */
+    personalUpkeep(upkeep_persons.at(0));
+    
+    /* If that prerson's upkeep is complete, reset the flags and erase them */
+    if (getBattleFlag(CombatState::PERSON_UPKEEP_COMPLETE))
+    {
+      setBattleFlag(CombatState::BEGIN_AILMENT_UPKEEPS, false);
+      setBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS, false);
+      setBattleFlag(CombatState::PERSON_UPKEEP_COMPLETE, false);
 
-  /* Personal upkeep state complete */
-  setBattleFlag(CombatState::PHASE_DONE);
+      upkeep_persons.erase(begin(upkeep_persons));
+    }
+  }
+ 
+  if (upkeep_persons.size() == 0)
+  {
+    setBattleFlag(CombatState::ALL_UPKEEPS_COMPLETE, true);
+    setBattleFlag(CombatState::PHASE_DONE, true);
+  }
 }
 
 /*
@@ -3503,9 +3528,12 @@ void Battle::setNextTurnState()
     else if (turn_state == TurnState::GENERAL_UPKEEP)
     {
       setTurnState(TurnState::UPKEEP);
-      upkeep();
-    }
 
+      if (turns_elapsed > 0)
+        upkeep();
+      else
+        setBattleFlag(CombatState::PHASE_DONE);
+    }
     /* After presonal upkeeps, the first turn order party selects actions */
     else if (turn_state == TurnState::UPKEEP)
     {
@@ -3722,6 +3750,7 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
       while (event_buffer->setNextIndex())
         event_buffer->setRendered(event_buffer->getIndex());
 
+      setBattleFlag(CombatState::READY_TO_RENDER, false);
       setBattleFlag(CombatState::RENDERING_COMPLETE, true);
     }
     else if (event.keysym.sym == SDLK_PAGEDOWN)
@@ -3876,8 +3905,13 @@ void Battle::printPersonState(Person* const member,
 void Battle::printProcessingState()
 {
   std::cout << "\n--- Processing State ---\n";
+  std::cout << "Processing Index: " << pro_index << std::endl;
+  std::cout << "Temp Ailments: " << temp_ailments.size() << std::endl;
+  std::cout << "Upkeep Persons: " << upkeep_persons.size() << std::endl;
   std::cout << "\nRENDERING_COMPLETE: " 
             << getBattleFlag(CombatState::RENDERING_COMPLETE);
+  std::cout << "\nREADY TO RENDER: "
+            << getBattleFlag(CombatState::READY_TO_RENDER);
   std::cout << "\nPERFORMING_COMPLETE: " 
             << getBattleFlag(CombatState::PERFORMING_COMPLETE);
   std::cout << "\nBEGIN_PROCESSING: " 
@@ -3888,6 +3922,16 @@ void Battle::printProcessingState()
             << getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE);
   std::cout << "\nALL PROCESSING COMPLETE: "
             << getBattleFlag(CombatState::ALL_PROCESSING_COMPLETE);
+  std::cout << "\nBEGIN PERSON UPKEEPS: "
+            << getBattleFlag(CombatState::BEGIN_PERSON_UPKEEPS);
+  std::cout << "\nPERSON UPKEEP COMPLETE: "
+            << getBattleFlag(CombatState::PERSON_UPKEEP_COMPLETE);
+  std::cout << "\nBEGIN AILMENT UPKEEPS: "
+            << getBattleFlag(CombatState::BEGIN_AILMENT_UPKEEPS);
+  std::cout << "\nCOMPLETE AILMENT UPKEEPS: "
+            << getBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS);
+  std::cout << "\nALL UPKEEPS COMPLETE: "
+            << getBattleFlag(CombatState::ALL_UPKEEPS_COMPLETE);
 }
 
 /*
@@ -3917,9 +3961,9 @@ void Battle::printInventory(Party* const target_party)
  */
 void Battle::printTurnState()
 {
-  std::cout << "Currentattle state: ";
+  std::cout << "Current Battle State: ";
   if (turn_state == TurnState::BEGIN)
-    std::cout << "BE bGIN";
+    std::cout << "BEGIN";
   else if (turn_state == TurnState::GENERAL_UPKEEP) 
     std::cout << "GENERAL_UPKEEP";
   else if (turn_state == TurnState::UPKEEP)
@@ -3962,6 +4006,15 @@ bool Battle::update(int32_t cycle_time)
   {
     setNextTurnState();
   }
+  else if (turn_state == TurnState::UPKEEP)
+  {
+    if (getBattleFlag(CombatState::RENDERING_COMPLETE))
+    {
+      upkeep();
+    }
+    else if (!getBattleFlag(CombatState::READY_TO_RENDER))
+      upkeep();
+  }
 
   /* During menu, if an action type has been chosen, inject valid targets for
    * the scope of the particular action type [if required] */
@@ -3999,7 +4052,7 @@ bool Battle::update(int32_t cycle_time)
         setBattleFlag(CombatState::PHASE_DONE, true);
       }
     }
-    else if (!getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
+    else if (!getBattleFlag(CombatState::READY_TO_RENDER))
     {
       processBuffer();      
       event_buffer->print(true);
