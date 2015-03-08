@@ -1941,10 +1941,13 @@ void Battle::personalUpkeep(Person* const target)
   {
     pro_index = 0;
     temp_ailments = getPersonAilments(target);
+
+    if (temp_ailments.size() == 0)
+      setBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS);
   }
 
-  if (!getBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS) && 
-      pro_index < temp_ailments.size())
+  if (!getBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS) 
+      && pro_index < temp_ailments.size())
   {
     auto ailment = temp_ailments[pro_index];
 
@@ -1999,6 +2002,9 @@ void Battle::personalUpkeep(Person* const target)
 
     if (pro_index == temp_ailments.size() - 1)
       setBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS, true);
+
+    /* Increment the ailment processing index */
+    pro_index++;
   }
   else if (getBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS))
   {
@@ -2009,6 +2015,7 @@ void Battle::personalUpkeep(Person* const target)
     event_buffer->createDamageEvent(EventType::REGEN_QTDR, target, -qtdr_regen);
 
     target->battleTurnPrep();
+    setBattleFlag(CombatState::PERSON_UPKEEP_COMPLETE);
   }
 
   setBattleFlag(CombatState::READY_TO_RENDER, true);
