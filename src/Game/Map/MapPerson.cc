@@ -651,7 +651,7 @@ Direction MapPerson::getPredictedMoveRequest()
  * Inputs: SurfaceClassifier surface - the surface that the person is on
  *         Direction direction - the direction moving in
  *         bool include_base - include base in possible set to return
- * SpriteMatrix* - the state matrix pointer, that defines the sprite data
+ * Output: SpriteMatrix* - the state matrix pointer, that defines the data
  */
 SpriteMatrix* MapPerson::getState(SurfaceClassifier surface, 
                                   Direction direction, bool include_base)

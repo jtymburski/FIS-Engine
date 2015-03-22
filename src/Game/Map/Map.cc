@@ -678,7 +678,12 @@ void Map::initiateThingInteraction(MapPerson* initiator)
               /* Check for person */
               person_found = geography[map_index][x][y]->getPersonMain(0);
               if(person_found != NULL)
-                finished = true;
+              {
+                if(person_found == initiator)
+                  person_found = NULL;
+                else
+                  finished = true;
+              }
 
               /* Check for thing */
               if(!finished && thing_found == NULL)
