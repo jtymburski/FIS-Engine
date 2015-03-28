@@ -350,9 +350,10 @@ void Game::setupBattle()
                  "sprites/Battle/Skills/_sample_skill_2.png", active_renderer));
   physical_01->setDescription("Jordan is a weirdo... Lor em ips um do lor sit amet, mel omnis nomin ati an, atom orum facil isis in pri, adipi scing argum entum in pri. Duo ei tempor dicunt sanctus, per ut hinc oporteat conceptam. Iisque euismod albucius vel ut, duo ea singulis eleifend. Veri offendit vim ut, at pri tale adolescens, putant veritus sea no. Atqui blandit assentior ne eam. Et rebum deserunt pericula eum.");
 
-  // Skill* physical_02 = new Skill(101, "Whelp", ActionScope::ONE_ENEMY, 
-  //     damage_actions[4],  95, 5);
-  // physical_02->setPrimary(Element::PHYSICAL);
+  Skill* physical_02 = new Skill(101, "Double Whelp", ActionScope::ONE_ENEMY, 
+      damage_actions[4],  95, 5);
+  //physical_02->addAction(damage_actions[5]);
+  physical_02->setPrimary(Element::PHYSICAL);
 
   // Skill* physical_03 = new Skill(102, "Two Smackeroos", 
   //     ActionScope::TWO_ENEMIES, damage_actions[6], 95, 100);
@@ -442,35 +443,35 @@ void Game::setupBattle()
     inflict_actions[5], 100, 10);
   confuse->setPrimary(Element::NIHIL);
 
-  Skill* silence = new Skill(146, "Hush Hush", ActionScope::ONE_TARGET,
-    inflict_actions[6], 100, 10);
+  // Skill* silence = new Skill(146, "Hush Hush", ActionScope::ONE_TARGET,
+  //   inflict_actions[6], 100, 10);
 
-  Skill* bubbinate = new Skill(147, "Bubbinate", ActionScope::ONE_TARGET,
-    inflict_actions[7], 100, 10);
+  // Skill* bubbinate = new Skill(147, "Bubbinate", ActionScope::ONE_TARGET,
+  //   inflict_actions[7], 100, 10);
 
-  Skill* all_atk_buff = new Skill(148, "All Atk Buff", ActionScope::ONE_ALLY,
-    inflict_actions[8], 100, 10);
+  // Skill* all_atk_buff = new Skill(148, "All Atk Buff", ActionScope::ONE_ALLY,
+  //   inflict_actions[8], 100, 10);
 
-  Skill* all_def_buff = new Skill(149, "All Def Buff", ActionScope::ONE_ALLY,
-    inflict_actions[9], 100, 10);
+  // Skill* all_def_buff = new Skill(149, "All Def Buff", ActionScope::ONE_ALLY,
+  //   inflict_actions[9], 100, 10);
 
-  Skill* thermal_buff = new Skill(150, "Thermal Buff", ActionScope::ONE_ALLY,
-    inflict_actions[11], 100, 10);
+  // Skill* thermal_buff = new Skill(150, "Thermal Buff", ActionScope::ONE_ALLY,
+  //   inflict_actions[11], 100, 10);
 
-  Skill* deathtimer = new Skill(151, "Deathtimer", ActionScope::ONE_TARGET,
-    inflict_actions[21], 100, 10);
+  // Skill* deathtimer = new Skill(151, "Deathtimer", ActionScope::ONE_TARGET,
+  //   inflict_actions[21], 100, 10);
 
-  Skill* paralysis = new Skill(152, "Paralysis", ActionScope::ONE_ENEMY,
-    inflict_actions[22], 100, 10);
+  // Skill* paralysis = new Skill(152, "Paralysis", ActionScope::ONE_ENEMY,
+  //   inflict_actions[22], 100, 10);
   
-  Skill* blindness = new Skill(153, "Blindness", ActionScope::ONE_TARGET,
-    inflict_actions[23], 100, 10);
+  // Skill* blindness = new Skill(153, "Blindness", ActionScope::ONE_TARGET,
+  //   inflict_actions[23], 100, 10);
 
-  Skill* dreadstruck = new Skill(154, "Dreadstruck", ActionScope::ONE_TARGET,
-    inflict_actions[24], 100, 10);
+  // Skill* dreadstruck = new Skill(154, "Dreadstruck", ActionScope::ONE_TARGET,
+  //   inflict_actions[24], 100, 10);
 
-  Skill* dreamsnare = new Skill(155, "Dreamsnare", ActionScope::ONE_TARGET,
-    inflict_actions[25], 100, 10);
+  // Skill* dreamsnare = new Skill(155, "Dreamsnare", ActionScope::ONE_TARGET,
+  //   inflict_actions[25], 100, 10);
 
   Skill* modulate = new Skill(156, "Modulate", ActionScope::USER, 
     inflict_actions[26], 100, 10);
@@ -483,7 +484,7 @@ void Game::setupBattle()
   // Test Skill Sets
   SkillSet* physical_skills = new SkillSet(physical_01, 1);
   physical_skills->addSkill(cure_poison, 1);
-  // physical_skills->addSkill(physical_02, 1);
+  physical_skills->addSkill(physical_02, 1);
   // physical_skills->addSkill(physical_03, 1);
   // physical_skills->addSkill(user_reduce_by_ally, 1);
   // physical_skills->addSkill(alter_qtdr_by_thag, 1);

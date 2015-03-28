@@ -268,6 +268,8 @@ std::string Helpers::eventToStr(EventType event)
     return "BONDING";
   if (event == EventType::BEGIN_DEFEND)
     return "BEGIN_DEFEND";
+  if (event == EventType::BREAK_DEFEND)
+    return "BREAK_DEFEND";
   if (event == EventType::PERSIST_DEFEND)
     return "PERSIST_DEFEND";
   if (event == EventType::BREAK_GUARD)
@@ -306,6 +308,8 @@ std::string Helpers::eventToStr(EventType event)
     return "PARTY_DEATH";
   if (event == EventType::INFLICTION_FIZZLE)
     return "INFLICTION_FIZZLE";
+  if (event == EventType::DEATHTIMER_DEATH)
+    return "DEATHTIMER_DEATH";
   if (event == EventType::NONE)
     return "NONE";
 

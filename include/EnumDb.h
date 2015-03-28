@@ -256,7 +256,8 @@ enum class EventType : std::uint8_t
   ACTION_BEGIN = 44,
   PARTY_DEATH = 45,
   INFLICTION_FIZZLE = 46,
-  NONE = 45
+  DEATHTIMER_DEATH = 47,
+  NONE = 48
 };
 
 /*

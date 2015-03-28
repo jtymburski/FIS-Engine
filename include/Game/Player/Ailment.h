@@ -53,7 +53,8 @@ enum class AilState
   CURE_ON_DEATH = 1 << 10,  /* Does the ailment persist death? */
   VICTIM_SET    = 1 << 11,  /* Has the victim of the ailment been set? */
   INFLICTOR_SET = 1 << 12,
-  DEALS_DAMAGE  = 1 << 13  /* Has the inflictor of the ailment been set? */
+  DEALS_DAMAGE  = 1 << 13,  /* Has the inflictor of the ailment been set? */
+  UPDATE_PROCESSED = 1 << 14 /* Has the update for this turn been processed? */
 };
 
 class Ailment

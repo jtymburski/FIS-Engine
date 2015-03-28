@@ -636,7 +636,8 @@ bool Buffer::setNext()
   {
     index++;
 
-    return true;
+    if (index < action_buffer.size() - 1)
+      return true;
   }
 
   return false;
