@@ -39,34 +39,34 @@ using std::end;
 ENUM_FLAGS(CombatState)
 enum class CombatState
 {
-  CONFIGURED          = 1 << 0,
-  FLAGS_CONFIGURED    = 1 << 1,
-  ACTION_DONE         = 1 << 2, // Needed?
-  PHASE_DONE          = 1 << 3,
-  VICTORY             = 1 << 4,
-  LOSS                = 1 << 5,
-  ALLIES_RUN          = 1 << 6,
-  ENEMIES_RUN         = 1 << 7,
-  OUTCOME_DONE        = 1 << 8,
-  ERROR_STATE         = 1 << 9,
-  RANDOM_ENCOUNTER    = 1 << 10,
-  MINI_BOSS           = 1 << 11,
-  BOSS                = 1 << 12,
-  FINAL_BOSS          = 1 << 13,
-  PROCESSING_SKILL    = 1 << 14,
-  PROCESSING_ITEM     = 1 << 15,
-  READY_TO_RENDER     = 1 << 16,  /* Processing event state is ready to render */
-  RENDERING_COMPLETE  = 1 << 17,  /* Current render cycle complete => perform */
-  PERFORMING_COMPLETE = 1 << 18,
-  BEGIN_PROCESSING    = 1 << 19,
-  BEGIN_ACTION_PROCESSING    = 1 << 20,
-  ACTION_PROCESSING_COMPLETE = 1 << 21,
-  ALL_PROCESSING_COMPLETE    = 1 << 22,
-  BEGIN_PERSON_UPKEEPS       = 1 << 23,
-  PERSON_UPKEEP_COMPLETE     = 1 << 24,
-  BEGIN_AILMENT_UPKEEPS      = 1 << 25,
-  COMPLETE_AILMENT_UPKEEPS   = 1 << 26,
-  ALL_UPKEEPS_COMPLETE       = 1 << 27
+  CONFIGURED                 = 1 << 0,
+  FLAGS_CONFIGURED           = 1 << 1,
+  ACTION_DONE                = 1 << 2, // Needed?
+  PHASE_DONE                 = 1 << 3,
+  VICTORY                    = 1 << 4,
+  LOSS                       = 1 << 5,
+  ALLIES_RUN                 = 1 << 6,
+  ENEMIES_RUN                = 1 << 7,
+  OUTCOME_DONE               = 1 << 8,
+  ERROR_STATE                = 1 << 9,
+  RANDOM_ENCOUNTER           = 1 << 10,
+  MINI_BOSS                  = 1 << 11,
+  BOSS                       = 1 << 12,
+  FINAL_BOSS                 = 1 << 13,
+  PROCESSING_SKILL           = 1 << 14,
+  PROCESSING_ITEM            = 1 << 15,
+  READY_TO_RENDER            = 1 << 16, /* Processing state done */
+  RENDERING_COMPLETE         = 1 << 17, /* Current render cycle complete */
+  PERFORMING_COMPLETE        = 1 << 18, //TODO: This flag necessary? 
+  BEGIN_PROCESSING           = 1 << 19, /* This processing loop has begun */
+  BEGIN_ACTION_PROCESSING    = 1 << 20, /* Current action processing begun */
+  ACTION_PROCESSING_COMPLETE = 1 << 21, /* Curr action processing loop done */
+  ALL_PROCESSING_COMPLETE    = 1 << 22, /* Entire processing complete */
+  BEGIN_PERSON_UPKEEPS       = 1 << 23, /* The upkeep phase has started */
+  PERSON_UPKEEP_COMPLETE     = 1 << 24, /* One person state complete */
+  BEGIN_AILMENT_UPKEEPS      = 1 << 25, /* Curr person ailment check stage */
+  COMPLETE_AILMENT_UPKEEPS   = 1 << 26, /* Curr person ailment check done  */
+  ALL_UPKEEPS_COMPLETE       = 1 << 27  /* Upkeep checking stage complete */
 };
 
 ENUM_FLAGS(IgnoreState)
@@ -197,17 +197,17 @@ private:
   std::vector<AttributeSet> temp_target_stats;
   std::vector<AttributeSet> temp_target_max_stats;
 
-  Person* curr_user;
-  Person* curr_target;
-  Action* curr_action;
+  Person*  curr_user;
+  Person*  curr_target;
+  Action*  curr_action;
   uint32_t curr_action_index;
-  Skill*  curr_skill;
-  Item*   curr_item;
+  Skill*   curr_skill;
+  Item*    curr_item;
 
   /* Current pocessing target index */
   uint32_t pro_index;
 
-  /* Persons needing upkeep */
+  /* Vector of persons needing upkeep */
   std::vector<Person*> upkeep_persons;
 
   /* ------------ Menu Constants --------------- */

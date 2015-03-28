@@ -1585,12 +1585,15 @@ void Battle::generalUpkeep()
               << "\n=============" << std::endl;
   }
 
+  std::cout << "Upkeep persons size: " << upkeep_persons.size() << std::endl;
   for (uint32_t i = 0; i < friends->getSize(); i++)
     if (friends->getMember(i)->getBFlag(BState::ALIVE))
       upkeep_persons.push_back(friends->getMember(i));
   for (uint32_t i = 0; i < foes->getSize(); i++)
     if (foes->getMember(i)->getBFlag(BState::ALIVE))
       upkeep_persons.push_back(foes->getMember(i));
+
+  std::cout << "Upkeep persons size: " << upkeep_persons.size() << std::endl;
 
   //TODO: Weather updates [03-01-14]
 
@@ -1670,12 +1673,13 @@ void Battle::orderActions()
  */
 void Battle::performEvents()
 {
-  std::cout << "---- Performing Events ----" << std::endl;
+  if (getBattleMode() == BattleMode::TEXT)
+    std::cout << "---- Performing Events ----" << std::endl;
+  
   auto valid_next = true;
 
   while (valid_next)
   {
-    std::cout << "Index: " << event_buffer->getIndex() << std::endl;;
     auto event = event_buffer->getCurrentEvent();
     auto index = event_buffer->getIndex();
 
@@ -1927,14 +1931,6 @@ void Battle::resetTurnFlags(Person* user)
  */
 void Battle::personalUpkeep(Person* const target)
 {
-  //TODO: Break Personal upkeep into Process-Render-Perform states
-  //    For each ailment (hold processing index?)
-  //      - Determine whether to be removed
-  //      - If to be removed -> add remove event
-  //      - Render remove event
-  //      - Perform remove event
-  //    Process/Perform/Render on VITA regen
-  //    Process/Perform/Render on QTDR regen
   curr_target = target;
 
   if (!getBattleFlag(CombatState::BEGIN_AILMENT_UPKEEPS))
@@ -2034,17 +2030,23 @@ void Battle::personalUpkeep(Person* const target)
 void Battle::processBuffer()
 {
   std::cout << "--- Processing Buffer ---" << std::endl;
-
-  auto last_index = false;
+  auto last_index       = false;
 
   /* If Buffer index == 0, don't increment, else, increment */
-  if (getBattleFlag(CombatState::BEGIN_PROCESSING))
+  std::cout << "Yellow!" << std::endl;
+  if (getBattleFlag(CombatState::BEGIN_PROCESSING) &&
+      getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
   {
+    std::cout << "Bellow!" << std::endl;
     last_index |= !action_buffer->setNext();
+    std::cout << "Last index? " << last_index << std::endl;
+    setBattleFlag(CombatState::BEGIN_ACTION_PROCESSING, false);
+    setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, false);
     action_buffer->print(false);
   }
-  else
+  else if (!getBattleFlag(CombatState::BEGIN_PROCESSING))
   {
+    std::cout << "Trellow!" << std::endl;
     curr_action_index = 0;
     setBattleFlag(CombatState::BEGIN_PROCESSING, true);
   }
@@ -2087,6 +2089,7 @@ void Battle::processBuffer()
           action_buffer->getTargets().at(0));
     }
 
+    setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
   }
   else if (curr_action_type == ActionType::IMPLODE)
   {
@@ -2107,15 +2110,22 @@ void Battle::processBuffer()
       event_buffer->createRunEvent(EventType::SUCCEED_RUN, curr_user, allies);
     else
       event_buffer->createRunEvent(EventType::FAIL_RUN, curr_user, allies);
+
+    setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
   }
   else if (curr_action_type == ActionType::PASS)
   {
     event_buffer->createPassEvent(curr_user);
+    setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
   }
 
   /* Complete the processing of the last of events and move to clean up */
-  if (last_index && getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
-    setBattleFlag(CombatState::ALL_PROCESSING_COMPLETE);
+  if (last_index & getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
+  {
+    std::cout << "!!!! --- -ALL PROCESSING COMPLETE !!!! ----" << std::endl;
+    setBattleFlag(CombatState::ALL_PROCESSING_COMPLETE, true);
+
+  }
 
   setBattleFlag(CombatState::READY_TO_RENDER, true);
 }
@@ -2222,9 +2232,7 @@ bool Battle::processAction(BattleEvent* battle_event,
 
   if (can_process)
   {
-    std::cout << "Action Hits: " << action_hits << std::endl;
     action_hits = doesActionHit();
-    std::cout << "Action Hits: " << action_hits << std::endl;
   }
 
   //TODO - Action/Factor target for Alteration/Assignments [03-04-15]
@@ -2284,6 +2292,7 @@ bool Battle::processAction(BattleEvent* battle_event,
     }
     else if (curr_action->actionFlag(ActionFlags::INFLICT))
     {
+      std::cout << "Processing inflict action" << std::endl;
       done = processInflictAction();
     }
     else if (curr_action->actionFlag(ActionFlags::RELIEVE))
@@ -2546,15 +2555,12 @@ bool Battle::processDamageAmount(int32_t amount)
  *              from the given target (or targets)
  *
  * Inputs: none
- * Output: bool //TODO ?? why
+ * Output: bool - true if a successful relieving event was added, false if fizz
  */
 bool Battle::processRelieveAction()
 {
-  std::cout << "Beginning relieve function" << std::endl;
-
   if (canRelieve(curr_action->getAilment()))
   {
-    std::cout << "Can be relieved of the given infliction" << std::endl;
     for (auto ill : ailments)
     {
       if (ill->getVictim() == curr_target)
@@ -2564,6 +2570,13 @@ bool Battle::processRelieveAction()
       }
     }
 
+    return true;
+  }
+  else
+  {
+    std::vector<Person*> targets{curr_target};
+    event_buffer->createFizzleEvent(EventType::INFLICTION_FIZZLE, curr_user,
+        targets);
   }
 
   return false;
@@ -2635,7 +2648,6 @@ bool Battle::processInflictAction()
     /* If or not if bubbified, create the infliction event */
     event_buffer->createAilmentEvent(EventType::INFLICTION, curr_user, 
         curr_target, curr_action, nullptr);
-    setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
   }
   else
   {
@@ -2734,16 +2746,22 @@ void Battle::processSkill(std::vector<Person*> targets, std::vector<DamageType>
   if (getBattleMode() == BattleMode::TEXT)
     std::cout << "{Skill} Processing: " << curr_skill->getName() << std::endl;
 
+  auto process_first_index = false;
+  auto process_action = false;
+
   curr_skill = action_buffer->getSkill();
 
   /* If processing the first action, append begin skill use event */
   if (!getBattleFlag(CombatState::BEGIN_ACTION_PROCESSING))
   {
-   setBattleFlag(CombatState::BEGIN_ACTION_PROCESSING, true);
+    std::cout << "Not begin, so sappending skill use!" << std::endl;
+    setBattleFlag(CombatState::BEGIN_ACTION_PROCESSING, true);
     
     auto event = event_buffer->createSkillEvent(curr_skill, curr_user, targets, 
                      false);
+
     auto to_process_skill = true;
+    process_first_index = true;
 
     event->user    = curr_user;
     event->targets = targets;
@@ -2788,7 +2806,12 @@ void Battle::processSkill(std::vector<Person*> targets, std::vector<DamageType>
     std::cout << "Setting curr action index: " << curr_action_index << std::endl;
     curr_action_index = 0;
   }
-  else
+  else 
+  {
+    process_action = true;
+  }
+
+  if (process_action || process_first_index)
   {
     /* Else, process action index and increment the action index */
     auto effects = curr_skill->getEffects();
@@ -2845,14 +2868,21 @@ void Battle::processSkill(std::vector<Person*> targets, std::vector<DamageType>
 
         processAction(action_event, damage_types);   
       }
+
+      //setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
     }
     else
     {
+      std::cout << "Reached maxed index" << std::endl;
       setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
     }
 
     /* Increment the current action index [for multiple action skills] */
     curr_action_index++;
+    std::cout << "Incremented!" << std::endl;
+
+    if (curr_action_index >= effects.size())
+      setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
   }
 }
 
@@ -3939,6 +3969,7 @@ void Battle::printProcessingState()
             << getBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS);
   std::cout << "\nALL UPKEEPS COMPLETE: "
             << getBattleFlag(CombatState::ALL_UPKEEPS_COMPLETE);
+  std::cout << std::endl;
 }
 
 /*
@@ -4017,10 +4048,14 @@ bool Battle::update(int32_t cycle_time)
   {
     if (getBattleFlag(CombatState::RENDERING_COMPLETE))
     {
+      setBattleFlag(CombatState::RENDERING_COMPLETE, false);
+
       upkeep();
     }
     else if (!getBattleFlag(CombatState::READY_TO_RENDER))
+    {
       upkeep();
+    }
   }
 
   /* During menu, if an action type has been chosen, inject valid targets for
@@ -4045,8 +4080,8 @@ bool Battle::update(int32_t cycle_time)
     { 
       setBattleFlag(CombatState::RENDERING_COMPLETE, false);
       setBattleFlag(CombatState::READY_TO_RENDER, false);
-      setBattleFlag(CombatState::BEGIN_ACTION_PROCESSING, false);
-      setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, false);      
+      // setBattleFlag(CombatState::BEGIN_ACTION_PROCESSING, false);
+      // setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, false);      
 
       event_buffer->setCurrentIndex();
       performEvents();
