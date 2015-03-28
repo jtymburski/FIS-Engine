@@ -845,9 +845,11 @@ void Ailment::print(const bool &simple, const bool &flags)
     std::cout << "CURE_ON_DEATH" << getFlag(AilState::CURE_ON_DEATH) << "\n";
     std::cout << "VICTIM_SET" << getFlag(AilState::VICTIM_SET) << "\n";
     std::cout << "INFLICTOR_SET" << getFlag(AilState::INFLICTOR_SET) << "\n";
-  }
+    std::cout << "DEALS DAMAGE" << getFlag(AilState::DEALS_DAMAGE) << "\n";
+    std::cout << "UPDATE PROCESSED" << getFlag(AilState::UPDATE_PROCESSED);
+  } 
 
-  std::cout << " -- /Ailment --- ";
+  std::cout << "\n -- /Ailment --- " << std::endl;
 }
 
 /*
@@ -960,6 +962,9 @@ void Ailment::setFlag(const AilState &flags, const bool &set_value)
  */
 void Ailment::update(bool update_turns)
 {
+  /* Regardless of update outcome, set the update processed flag */
+  setFlag(AilState::UPDATE_PROCESSED);
+
   /* The ailment may not be updated */
   if (getFlag(AilState::TO_UPDATE))
   {

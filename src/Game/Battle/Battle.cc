@@ -1296,6 +1296,8 @@ void Battle::cleanUp()
   setBattleFlag(CombatState::BEGIN_PERSON_UPKEEPS, false);
   setBattleFlag(CombatState::PERSON_UPKEEP_COMPLETE, false);
   setBattleFlag(CombatState::BEGIN_AILMENT_UPKEEPS, false);
+  // setBattleFlag(CombatState::CURRENT_AILMENT_STARTED, false);
+  setBattleFlag(CombatState::CURRENT_AILMENT_COMPLETE, false);
   setBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS, false);
   setBattleFlag(CombatState::ALL_UPKEEPS_COMPLETE, false);
  
@@ -1328,6 +1330,10 @@ void Battle::cleanUp()
     member->resetGuardee();
     member->setAilFlag(PersonAilState::SKIP_NEXT_TURN, false);
   }
+
+  /* Reset the update processed flag for all ailments at the end of the turn */
+  for (auto ailment : ailments)
+    ailment->setFlag(AilState::UPDATE_PROCESSED, false);
 
   setBattleFlag(CombatState::PHASE_DONE, true);
 }
@@ -1939,7 +1945,6 @@ void Battle::resetTurnFlags(Person* user)
 void Battle::personalUpkeep(Person* const target)
 {
   curr_target = target;
-  auto allies = friends->isInParty(curr_target);
 
   /* If ailment processing hasn't begun for this person, reset the processing
    * index and stash all the ailments they are inflicted with in a temp vec. */
@@ -1947,6 +1952,9 @@ void Battle::personalUpkeep(Person* const target)
   {
     pro_index = 0;
     temp_ailments = getPersonAilments(target);
+
+    setBattleFlag(CombatState::CURRENT_AILMENT_COMPLETE, false);
+    setBattleFlag(CombatState::BEGIN_AILMENT_UPKEEPS, true);
 
     if (temp_ailments.size() == 0)
       setBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS);
@@ -1958,75 +1966,17 @@ void Battle::personalUpkeep(Person* const target)
   if (!getBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS) 
       && pro_index < temp_ailments.size())
   {
-    if (getBattleMode() == BattleMode::TEXT)
-    {
-      std::cout << "--- Ailment Processing: "
-          << Helpers::ailmentToStr(temp_ailments[pro_index]->getType())
-          << " ---" << std::endl;
-    }
-
-    auto ailment = temp_ailments[pro_index];
-
-    if (ailment != nullptr && ailment->getFlag(AilState::TO_UPDATE))
-    {
-      ailment->update(true);
-  
-      if (ailment->getFlag(AilState::DEALS_DAMAGE) && 
-          target->getBFlag(BState::ALIVE))
-      {
-        auto damage_amount = ailment->getDamageAmount();
-        auto event_type   = EventType::STANDARD_DAMAGE;
-
-        if (ailment->getType() == Infliction::POISON)
-          event_type = EventType::POISON_DAMAGE;
-        else if (ailment->getType() == Infliction::BURN)
-          event_type = EventType::BURN_DAMAGE;
-        else if (ailment->getType() == Infliction::METATETHER)
-          event_type = EventType::METABOLIC_DAMAGE;
-
-        event_buffer->createDamageEvent(event_type, curr_target, damage_amount);
-      }
-
-      if (ailment->getType() == Infliction::DEATHTIMER)
-      {
-        /* Append a death timer death and check for a party death event */
-        if (ailment->getFlag(AilState::TO_KILL))
-        {
-          event_buffer->createDeathEvent(EventType::DEATHTIMER_DEATH, target,
-              allies);
-
-          processPersonDeath(allies);
-        }
-        /* Else, do a deathtimer countdown event */
-        else
-        {
-          event_buffer->createAilmentEvent(EventType::DEATH_COUNTDOWN, nullptr,
-              target, nullptr, ailment);
-        }
-      }
-
-      /* If the target is dead, the ailment update must have killed them */
-      if (!target->getBFlag(BState::ALIVE))
-      {
-        /* The ailment should be destroyed if it removes on death */
-        if (ailment->getFlag(AilState::CURE_ON_DEATH))
-          ailment->setFlag(AilState::TO_CURE);
-      }
-    }
-
-    /* If a person death occured or the ailmment update call cured the ailment
-     * create an event to cure the infliction */
-    if (ailment != nullptr && ailment->getFlag(AilState::TO_CURE))
-    {
-      event_buffer->createAilmentEvent(EventType::CURE_INFLICTION, nullptr,
-          target, nullptr, ailment);
-    }
-
-    if (pro_index == temp_ailments.size() - 1)
-      setBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS, true);
+    processAilment();
 
     /* Increment the ailment processing index */
-    pro_index++;
+    if (getBattleFlag(CombatState::CURRENT_AILMENT_COMPLETE))
+    {
+      setBattleFlag(CombatState::CURRENT_AILMENT_COMPLETE, false);
+      pro_index++;
+    }
+
+    if (pro_index >= temp_ailments.size())
+      setBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS);
   }
   else if (getBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS))
   {
@@ -2040,6 +1990,7 @@ void Battle::personalUpkeep(Person* const target)
     setBattleFlag(CombatState::PERSON_UPKEEP_COMPLETE);
   }
 
+  event_buffer->print(true); //TODO [03-28-15]
   setBattleFlag(CombatState::READY_TO_RENDER, true);
 }
 
@@ -2349,6 +2300,120 @@ bool Battle::processAction(BattleEvent* battle_event,
 
   return done;
 }
+
+/*
+ * Description: Processes the ailment stored on temp_ailments[pro_index].
+ *
+ * Inputs: none
+ * Output: bool - true if a party death occures during processing
+ */
+bool Battle::processAilment()
+{
+  /* The current ailment pointer being processed is the processing index of the
+   * temporary vector for the current person having their upkeep processed */
+  auto ail = temp_ailments[pro_index];
+
+  bool allies      = friends->isInParty(curr_target);
+  bool party_death = false;
+
+  if (ail != nullptr)
+  {
+    if (getBattleMode() == BattleMode::TEXT)
+    {
+      std::cout << "--- Ailment Proc: " << Helpers::ailmentToStr(ail->getType())
+          << " ---" << std::endl;
+    }
+
+    /* If the ailment has not yet been updated this turn, perform standard 
+     * updates (flag setting/turn incrementing && damages) */
+    if (!ail->getFlag(AilState::UPDATE_PROCESSED) && 
+      ail->getFlag(AilState::TO_UPDATE))
+    {
+      party_death = processAilmentUpdate(ail);
+    }
+    
+    /* If a party death didn't occur, continue processing on the flags that
+     * were set during ailment updates/other outcomes (deaths, etc.) */
+    if (!party_death && ail->getFlag(AilState::UPDATE_PROCESSED))
+    {
+      auto to_kill = ail->getFlag(AilState::TO_KILL);
+      auto to_cure = ail->getFlag(AilState::TO_CURE);
+
+      /* Process DeathTimer outcomes */
+      if (ail->getType() == Infliction::DEATHTIMER)
+      {
+        if (to_kill)
+        {
+          event_buffer->createDeathEvent(EventType::DEATHTIMER_DEATH, 
+              curr_target, allies);
+        }
+        else
+        {
+          event_buffer->createAilmentEvent(EventType::DEATH_COUNTDOWN, nullptr, 
+              curr_target, nullptr, ail);
+        }
+      }
+      else if (ail->getType() == Infliction::METATETHER && to_kill)
+      {
+        event_buffer->createDeathEvent(EventType::METABOLIC_KILL, curr_target, 
+            allies);
+      }
+
+      /* Check for party death */
+      if (to_kill)
+        party_death = processPersonDeath(allies);
+
+      /* Cure the ailment */
+      if (to_cure)
+      {
+        event_buffer->createAilmentEvent(EventType::CURE_INFLICTION, nullptr,
+            curr_target, nullptr, ail);
+      }
+    }
+  }
+
+  setBattleFlag(CombatState::CURRENT_AILMENT_COMPLETE);
+
+  return party_death;
+}
+
+/*
+ * Description: Processes the updating portion of the ailment from 
+ *              processAilment(). This includes creating and appending a damage
+ *              event to the buffer if the ailment deals damage on update
+ *
+ * Inputs: Ailment* ail - the ailment to perform updating for
+ * Output: bool - true if the damage from updateing causes party death
+ */
+bool Battle::processAilmentUpdate(Ailment* ail)
+{
+  /* Update the ailment with turn updating true (this sets the update 
+   * processed flag in the update call which is cleaned up in cleanUp() */
+  ail->update(true);
+
+  if (ail->getFlag(AilState::DEALS_DAMAGE) &&
+      curr_target->getBFlag(BState::ALIVE))
+  {
+    auto damage_amount = ail->getDamageAmount();
+    auto event_type   = EventType::STANDARD_DAMAGE;
+
+    if (ail->getType() == Infliction::POISON)
+      event_type = EventType::POISON_DAMAGE;
+    else if (ail->getType() == Infliction::BURN)
+      event_type = EventType::BURN_DAMAGE;
+    else if (ail->getType() == Infliction::METATETHER)
+      event_type = EventType::METABOLIC_DAMAGE;
+
+    /* Create an event for the amount of damage the ailment will inflict */
+    event_buffer->createDamageEvent(event_type, curr_target, damage_amount);
+        
+    /* Process death outcomes for the damage and return party death truth */
+     return processDamageAmount(damage_amount);
+   }
+
+   return false;
+}
+
 
 /*
  * Description: Processes an alteration keywoard action against a vector of 
@@ -3191,6 +3256,7 @@ void Battle::upkeep()
       setBattleFlag(CombatState::BEGIN_AILMENT_UPKEEPS, false);
       setBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS, false);
       setBattleFlag(CombatState::PERSON_UPKEEP_COMPLETE, false);
+      setBattleFlag(CombatState::CURRENT_AILMENT_COMPLETE, false);
 
       upkeep_persons.erase(begin(upkeep_persons));
     }
@@ -4014,6 +4080,10 @@ void Battle::printProcessingState()
             << getBattleFlag(CombatState::BEGIN_AILMENT_UPKEEPS);
   std::cout << "\nCOMPLETE AILMENT UPKEEPS: "
             << getBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS);
+  // std::cout << "\nCURRENT AILMENT STARTED: "
+  //           << getBattleFlag(CombatState::CURRENT_AILMENT_STARTED);
+  std::cout << "\nCURRENT AILMENT COMPLETE: "
+            << getBattleFlag(CombatState::CURRENT_AILMENT_COMPLETE);
   std::cout << "\nALL UPKEEPS COMPLETE: "
             << getBattleFlag(CombatState::ALL_UPKEEPS_COMPLETE);
   std::cout << std::endl;
@@ -4097,8 +4167,8 @@ bool Battle::update(int32_t cycle_time)
      * personal upkeeps to perform -> reset rendering flag and continue */
     if (getBattleFlag(CombatState::RENDERING_COMPLETE))
     {
+      performEvents();
       setBattleFlag(CombatState::RENDERING_COMPLETE, false);
-
       upkeep();
     }
     /* Continue processing upkeeps if they are not yet ready to render or there

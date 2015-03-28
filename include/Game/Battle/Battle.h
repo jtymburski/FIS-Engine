@@ -64,9 +64,11 @@ enum class CombatState
   ALL_PROCESSING_COMPLETE    = 1 << 22, /* Entire processing complete */
   BEGIN_PERSON_UPKEEPS       = 1 << 23, /* The upkeep phase has started */
   PERSON_UPKEEP_COMPLETE     = 1 << 24, /* One person state complete */
-  BEGIN_AILMENT_UPKEEPS      = 1 << 25, /* Curr person ailment check stage */
-  COMPLETE_AILMENT_UPKEEPS   = 1 << 26, /* Curr person ailment check done  */
-  ALL_UPKEEPS_COMPLETE       = 1 << 27  /* Upkeep checking stage complete */
+  BEGIN_AILMENT_UPKEEPS      = 1 << 25,
+  CURRENT_AILMENT_STARTED    = 1 << 26,
+  CURRENT_AILMENT_COMPLETE   = 1 << 27, /* Curr person ailment check stage */
+  COMPLETE_AILMENT_UPKEEPS   = 1 << 28, /* Curr person ailment check done  */
+  ALL_UPKEEPS_COMPLETE       = 1 << 29  /* Upkeep checking stage complete */
 };
 
 ENUM_FLAGS(IgnoreState)
@@ -394,6 +396,12 @@ private:
   /* General processing action function */
   bool processAction(BattleEvent* action_event,
       std::vector<DamageType> damage_types);
+  
+  /* Processing function for the current ailment */
+  bool processAilment();
+
+  /* Processes the updating portion of the ailment from processAilment() */
+  bool processAilmentUpdate(Ailment* ail);
 
   /* Processes an alteration action */
   bool processAlterAction(const DamageType &damage_type, Person* action_target,
