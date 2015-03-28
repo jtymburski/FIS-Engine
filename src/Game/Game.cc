@@ -352,7 +352,7 @@ void Game::setupBattle()
 
   Skill* physical_02 = new Skill(101, "Double Whelp", ActionScope::ONE_ENEMY, 
       damage_actions[4],  95, 5);
-  //physical_02->addAction(damage_actions[5]);
+  physical_02->addAction(damage_actions[5]);
   physical_02->setPrimary(Element::PHYSICAL);
 
   // Skill* physical_03 = new Skill(102, "Two Smackeroos", 
@@ -364,7 +364,7 @@ void Game::setupBattle()
   // physical_04->setPrimary(Element::PHYSICAL);
 
   Skill* fire_01 = new Skill(110, "Burninate The Countryside", ActionScope::ONE_PARTY, 
-    damage_actions[8], 85, 55);
+    damage_actions[11], 85, 55);
   fire_01->setThumbnail(new Frame("sprites/Battle/Skills/_sample_skill_1.png", 
                                   active_renderer));
   fire_01->setPrimary(Element::FIRE);
@@ -443,8 +443,8 @@ void Game::setupBattle()
     inflict_actions[5], 100, 10);
   confuse->setPrimary(Element::NIHIL);
 
-  // Skill* silence = new Skill(146, "Hush Hush", ActionScope::ONE_TARGET,
-  //   inflict_actions[6], 100, 10);
+  Skill* silence = new Skill(146, "Hush Hush", ActionScope::ONE_TARGET,
+    inflict_actions[6], 100, 10);
 
   // Skill* bubbinate = new Skill(147, "Bubbinate", ActionScope::ONE_TARGET,
   //   inflict_actions[7], 100, 10);
@@ -483,7 +483,7 @@ void Game::setupBattle()
 
   // Test Skill Sets
   SkillSet* physical_skills = new SkillSet(physical_01, 1);
-  physical_skills->addSkill(cure_poison, 1);
+  // physical_skills->addSkill(cure_poison, 1);
   physical_skills->addSkill(physical_02, 1);
   // physical_skills->addSkill(physical_03, 1);
   // physical_skills->addSkill(user_reduce_by_ally, 1);
@@ -494,14 +494,15 @@ void Game::setupBattle()
   // physical_skills->addSkill(ally_heal, 1);
   // physical_skills->addSkill(revive_ally, 1);
   // physical_skills->addSkill(life_steal, 1);
-  physical_skills->addSkill(poison, 1);
+  // physical_skills->addSkill(poison, 1);
   // physical_skills->addSkill(burn, 1);
   // physical_skills->addSkill(paralysis, 1);
   // physical_skills->addSkill(scald, 1);
   // physical_skills->addSkill(charr, 1);
   // physical_skills->addSkill(berserk, 1);
   // physical_skills->addSkill(confuse, 1);
-  // physical_skills->addSkill(silence, 1);
+  physical_skills->addSkill(silence, 1);
+  physical_skills->addSkill(fire_01, 1);
   // physical_skills->addSkill(bubbinate, 1);
   // physical_skills->addSkill(all_atk_buff, 1);
   // physical_skills->addSkill(all_def_buff, 1);

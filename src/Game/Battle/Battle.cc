@@ -202,7 +202,7 @@ bool Battle::addAilment(Infliction infliction_type, Person* inflictor,
                          min_turns, max_turns, static_cast<float>(chance));
 
   /* Default: set the ailment to be curable */
-  // new_ailment->setFlag(AilState::CURABLE, true);
+  new_ailment->setFlag(AilState::CURABLE, true);
 
   if (new_ailment->getFlag(AilState::INFLICTOR_SET) && 
       new_ailment->getFlag(AilState::VICTIM_SET))
@@ -2010,20 +2010,16 @@ void Battle::processBuffer()
   auto last_index       = false;
 
   /* If Buffer index == 0, don't increment, else, increment */
-  std::cout << "Yellow!" << std::endl;
   if (getBattleFlag(CombatState::BEGIN_PROCESSING) &&
       getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
   {
-    std::cout << "Bellow!" << std::endl;
     last_index |= !action_buffer->setNext();
-    std::cout << "Last index? " << last_index << std::endl;
     setBattleFlag(CombatState::BEGIN_ACTION_PROCESSING, false);
     setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, false);
     action_buffer->print(false);
   }
   else if (!getBattleFlag(CombatState::BEGIN_PROCESSING))
   {
-    std::cout << "Trellow!" << std::endl;
     curr_action_index = 0;
     setBattleFlag(CombatState::BEGIN_PROCESSING, true);
   }
@@ -2033,9 +2029,6 @@ void Battle::processBuffer()
   auto damage_types = action_buffer->getDamageTypes();
   curr_action_type  = action_buffer->getActionType();
   curr_user         = action_buffer->getUser();
-
-  if (getBattleMode() == BattleMode::TEXT && curr_user != nullptr)
-    std::cout << "\n{User} Processing: " << curr_user->getName() << std::endl;
 
   if (curr_action_type == ActionType::SKILL)
   {
@@ -2074,12 +2067,6 @@ void Battle::processBuffer()
   }
   else if (curr_action_type == ActionType::RUN)
   {
-    if (getBattleMode() == BattleMode::TEXT)
-    {
-      std::cout << "{RUNNING} " << curr_user->getName() 
-                << " is attempting to run." << std::endl;
-    }
-
     auto allies = friends->isInParty(curr_user);
     event_buffer->createRunEvent(EventType::ATTEMPT_RUN, curr_user, allies);
       
@@ -2098,11 +2085,7 @@ void Battle::processBuffer()
 
   /* Complete the processing of the last of events and move to clean up */
   if (last_index & getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
-  {
-    std::cout << "!!!! --- -ALL PROCESSING COMPLETE !!!! ----" << std::endl;
     setBattleFlag(CombatState::ALL_PROCESSING_COMPLETE, true);
-
-  }
 
   setBattleFlag(CombatState::READY_TO_RENDER, true);
 }
@@ -2186,12 +2169,6 @@ bool Battle::performGuard(BattleEvent* guard_event)
 bool Battle::processAction(BattleEvent* battle_event,
     std::vector<DamageType> damage_types)
 {
-  if (getBattleMode() == BattleMode::TEXT)
-  {
-    std::cout << "{Target} Processing: " 
-              << battle_event->targets.at(0)->getName() << std::endl;
-  }
-
   auto can_process  = false;
   auto done         = false;  
   auto target_alive = curr_target->getBFlag(BState::ALIVE);
@@ -2269,7 +2246,6 @@ bool Battle::processAction(BattleEvent* battle_event,
     }
     else if (curr_action->actionFlag(ActionFlags::INFLICT))
     {
-      std::cout << "Processing inflict action" << std::endl;
       done = processInflictAction();
     }
     else if (curr_action->actionFlag(ActionFlags::RELIEVE))
@@ -2284,18 +2260,12 @@ bool Battle::processAction(BattleEvent* battle_event,
     auto fizzle = event_buffer->createFizzleEvent(EventType::FIZZLE, curr_user, 
                       target_vec);
     fizzle->action_use = curr_action;
-
-    if (getBattleMode() == BattleMode::TEXT)
-      std::cout << "{Fizzle} The action has fizzled!" << std::endl;
   }
   else if (can_process && !action_hits)
   {
     auto miss = event_buffer->createMissEvent(EventType::ACTION_MISS, curr_user, 
                     target_vec);
     miss->action_use = curr_action;
-
-    if (getBattleMode() == BattleMode::TEXT)
-      std::cout << "{MISS} The action has missed. " << std::endl;
   }
 
   return done;
@@ -2854,14 +2824,14 @@ void Battle::processSkill(std::vector<Person*> targets, std::vector<DamageType>
   /* If processing the first action, append begin skill use event */
   if (!getBattleFlag(CombatState::BEGIN_ACTION_PROCESSING))
   {
-    std::cout << "Not begin, so sappending skill use!" << std::endl;
-    setBattleFlag(CombatState::BEGIN_ACTION_PROCESSING, true);
+    std::cout << "Not begin, so appending skill use!" << std::endl;
+    setBattleFlag(CombatState::BEGIN_ACTION_PROCESSING);
     
     auto event = event_buffer->createSkillEvent(curr_skill, curr_user, targets, 
                      false);
 
     auto to_process_skill = true;
-    process_first_index = true;
+    process_first_index   = true;
 
     event->user    = curr_user;
     event->targets = targets;
@@ -2968,8 +2938,6 @@ void Battle::processSkill(std::vector<Person*> targets, std::vector<DamageType>
 
         processAction(action_event, damage_types);   
       }
-
-      //setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
     }
     else
     {
@@ -3644,8 +3612,8 @@ void Battle::setNextTurnState()
     //TODO [11-0614]: Eventhandler battle finish signal?
   }
 
-  {
   if (getTurnState() != TurnState::DESTRUCT)
+  {
     /* If the Battle has been won, go to victory */
     if (getBattleFlag(CombatState::VICTORY))
     {
@@ -4167,8 +4135,8 @@ bool Battle::update(int32_t cycle_time)
      * personal upkeeps to perform -> reset rendering flag and continue */
     if (getBattleFlag(CombatState::RENDERING_COMPLETE))
     {
-      performEvents();
       setBattleFlag(CombatState::RENDERING_COMPLETE, false);
+      performEvents();
       upkeep();
     }
     /* Continue processing upkeeps if they are not yet ready to render or there
@@ -4196,26 +4164,30 @@ bool Battle::update(int32_t cycle_time)
 
     /* If rendering is complete -> perform events on the stack and then
      * continue processing battle events */
-    if (getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE) &&
-        getBattleFlag(CombatState::RENDERING_COMPLETE))
-    { 
+    if (getBattleFlag(CombatState::RENDERING_COMPLETE))
+    {
       setBattleFlag(CombatState::RENDERING_COMPLETE, false);
       setBattleFlag(CombatState::READY_TO_RENDER, false);      
 
-      event_buffer->setCurrentIndex();
-      performEvents();
-
       /* If all processing is complete, after performing -> move state */
-      if (getBattleFlag(CombatState::ALL_PROCESSING_COMPLETE) ||
-          getBattleFlag(CombatState::LOSS) || 
-          getBattleFlag(CombatState::VICTORY))
+      if (getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
       {
-        setBattleFlag(CombatState::PHASE_DONE, true);
+        auto phase_done = getBattleFlag(CombatState::ALL_PROCESSING_COMPLETE);
+        phase_done |= getBattleFlag(CombatState::LOSS);
+        phase_done |= getBattleFlag(CombatState::VICTORY);
+
+        setBattleFlag(CombatState::PHASE_DONE, phase_done);
+      }
+      
+      if (!getBattleFlag(CombatState::PHASE_DONE))
+      {
+        event_buffer->setCurrentIndex();
+        performEvents();
       }
     }
     else if (!getBattleFlag(CombatState::READY_TO_RENDER))
     {
-      processBuffer();      
+      processBuffer();
       event_buffer->print(true);
       event_buffer->setCurrentIndex();
     }
