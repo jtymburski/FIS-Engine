@@ -409,6 +409,9 @@ private:
   /* Method for outsourcing an amount of dmg and type of damage to curr targ */
   bool processDamageAmount(int32_t amount);
 
+  /* Processes the death of a recent person checking for party death */
+  bool processPersonDeath(bool ally_target);
+
   /* Processes a relieving action */
   bool processRelieveAction();
 
