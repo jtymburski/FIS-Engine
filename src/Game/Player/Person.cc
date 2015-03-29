@@ -754,6 +754,8 @@ void Person::battlePrep()
 {
   curr_stats = curr_max_stats;
   updateEquipStats();
+  updateSkills();
+  resetSkills();
 
   setAilFlag(PersonAilState::RANDOM_SELECTION, false);
   setAilFlag(PersonAilState::SKIP_NEXT_TURN, false);
@@ -1102,7 +1104,7 @@ void Person::resetActionFlags()
   setBFlag(BState::ATK_ENABLED, true);
   setBFlag(BState::SKL_ENABLED, true);
   setBFlag(BState::ITM_ENABLED, true); //TODO: Temporarily disabled  [08-09-14]
-  setBFlag(BState::INS_ENABLED, false); //TODO: What enables inspect? [08-09-14]
+  setBFlag(BState::INS_ENABLED, false);//TODO: What enables inspect? [08-09-14]
   setBFlag(BState::RUN_ENABLED, true); 
   setBFlag(BState::PAS_ENABLED, true);
 
@@ -1187,6 +1189,21 @@ bool Person::resetGuardee()
   setBFlag(BState::GUARDING, false);
 
   return good_reset;
+}
+
+/*
+ * Description: Resets the state of the users current skill set for proper
+ *              use in Battle. updateSkils() should be called prior.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Person::resetSkills()
+{
+  auto elements = curr_skills->getElements(level);
+
+  for (auto& element : elements)
+    element.silenced = false;
 }
 
 /*

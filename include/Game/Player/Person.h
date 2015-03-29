@@ -355,6 +355,9 @@ public:
   /* Clear the guarding status of this person */
   bool resetGuardee();
 
+  /* Resets the skills for use in battle */
+  void resetSkills();
+
   /* Returns the action frames */
   Sprite* getActionFrames();
 

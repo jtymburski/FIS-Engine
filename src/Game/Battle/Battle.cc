@@ -1858,6 +1858,8 @@ void Battle::performEvents()
     }
     else if (event->type == EventType::PARTY_DEATH)
     {
+      std::cout << "{PARTY DEATH} A party death has occured!" << std::endl;
+
       /* If a party death occurs on the allies -> victory, else -> loss */
       if (event->allies)
         setBattleFlag(CombatState::LOSS, true);
@@ -2824,13 +2826,14 @@ bool Battle::hasInfliction(Infliction type, Person* check)
 void Battle::processSkill(std::vector<Person*> targets, std::vector<DamageType>
      damage_types)
 {
+  /* Grab the current skill from the action buffer */
+  curr_skill = action_buffer->getSkill();
+
   if (getBattleMode() == BattleMode::TEXT)
     std::cout << "{Skill} Processing: " << curr_skill->getName() << std::endl;
 
   auto process_first_index = false;
   auto process_action = false;
-
-  curr_skill = action_buffer->getSkill();
 
   /* If processing the first action, append begin skill use event */
   if (!getBattleFlag(CombatState::BEGIN_ACTION_PROCESSING))
@@ -4181,22 +4184,31 @@ bool Battle::update(int32_t cycle_time)
     {
       setBattleFlag(CombatState::RENDERING_COMPLETE, false);
       setBattleFlag(CombatState::READY_TO_RENDER, false);      
-
-      /* If all processing is complete, after performing -> move state */
-      if (getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
-      {
-        auto phase_done = getBattleFlag(CombatState::ALL_PROCESSING_COMPLETE);
-        phase_done |= getBattleFlag(CombatState::LOSS);
-        phase_done |= getBattleFlag(CombatState::VICTORY);
-
-        setBattleFlag(CombatState::PHASE_DONE, phase_done);
-      }
       
       if (!getBattleFlag(CombatState::PHASE_DONE))
       {
         event_buffer->setCurrentIndex();
         performEvents();
       }
+      
+      /* If all processing is complete, after performing -> move state */
+      if (getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
+      {
+        auto phase_done = getBattleFlag(CombatState::ALL_PROCESSING_COMPLETE);
+
+        std::cout << "Phase done? " << phase_done << std::endl;
+
+        phase_done |= getBattleFlag(CombatState::LOSS);
+        phase_done |= getBattleFlag(CombatState::VICTORY);
+
+        std::cout << "Phase done? " << phase_done << std::endl;
+        setBattleFlag(CombatState::PHASE_DONE, phase_done);
+      }
+      else
+      {
+        std::cout << "Action processing not complete! " << std::endl;
+      }
+
     }
     else if (!getBattleFlag(CombatState::READY_TO_RENDER))
     {
