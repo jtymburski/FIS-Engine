@@ -34,6 +34,9 @@ struct SetElement
 
   /* Whether the skill is currently enabled or disabled */
   bool enabled;
+
+  /* Whether the skill is unusable because of silence */
+  bool silenced;
 };
 
 class SkillSet
@@ -121,6 +124,12 @@ public:
   /* Returns the enabled value at a given index */
   bool getEnabled(const uint32_t &index);
 
+  /* Returns the silenced value at a given index */
+  bool getSilenced(const uint32_t &index);
+  
+  /* Returns the useable value at a given index */
+  bool getUseable(const uint32_t &index);
+
   /* Returns the index of a given Skill ID (if found) */
   int32_t getIndexOfID(const uint32_t &id);
 
@@ -143,7 +152,10 @@ public:
   uint32_t getSize();
 
   /* Assigns an enabled state to a SetElement at a given index */
-  bool setState(const uint32_t &index, const bool &state = true);
+  bool setEnabled(const uint32_t &index, const bool &state = true);
+
+  /* Assigns a silenced state to a SetElement at a given index */
+  bool setSilenced(const uint32_t &index, const bool &state = true);
 
   /* Builds the vector of values for each skill index */
   std::vector<uint32_t> getValues();

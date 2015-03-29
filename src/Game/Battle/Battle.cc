@@ -167,6 +167,8 @@ Battle::Battle(Options* running_config, Party* const friends, Party* const foes,
  */
 Battle::~Battle()
 {
+  std::cout << "Destroying the Battle!" << std::endl;
+
   for (auto& ailment : ailments)
     delete ailment;
   ailments.clear();
@@ -407,6 +409,14 @@ void Battle::battleRun()
  */
 void Battle::battleWon()
 {
+  /* Cleanup the current Battle state -- revert Persons back to their
+   * original stats. This includes unapplying all ailments */
+  for (auto ailment : ailments)
+  {
+    std::cout << "Removing ailment on victory!" << std::endl;
+    removeAilment(ailment);
+  }
+
   //call victory
     // for each person on friends
       // increase exp by enemyTotalExp
@@ -2243,6 +2253,7 @@ bool Battle::processAction(BattleEvent* battle_event,
           curr_target, 0);
     
       done = processDamageAction(damage_event, damage_type);
+      setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
     }
     else if (curr_action->actionFlag(ActionFlags::INFLICT))
     {
@@ -2252,7 +2263,7 @@ bool Battle::processAction(BattleEvent* battle_event,
     {
       done = processRelieveAction();
     }
-    // else4 if (curr_action->actionFlag(ActionFlags::REVIVE))
+    // else if (curr_action->actionFlag(ActionFlags::REVIVE))
     //   done = processReviveAction();
   }
   else if (!can_process)
@@ -2824,7 +2835,6 @@ void Battle::processSkill(std::vector<Person*> targets, std::vector<DamageType>
   /* If processing the first action, append begin skill use event */
   if (!getBattleFlag(CombatState::BEGIN_ACTION_PROCESSING))
   {
-    std::cout << "Not begin, so appending skill use!" << std::endl;
     setBattleFlag(CombatState::BEGIN_ACTION_PROCESSING);
     
     auto event = event_buffer->createSkillEvent(curr_skill, curr_user, targets, 
@@ -2873,7 +2883,6 @@ void Battle::processSkill(std::vector<Person*> targets, std::vector<DamageType>
       setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
     }
 
-    std::cout << "Setting curr action index: " << curr_action_index << std::endl;
     curr_action_index = 0;
   }
   else 
@@ -3474,7 +3483,7 @@ bool Battle::updatePersonDeath(const DamageType &damage_type)
   /* Enable all skills corner case (silence cure on death) */
   auto skills =  curr_target->getCurrSkills();
   for (size_t i = 0; i < skills->getSize(); i++)
-    skills->setState(i, true);
+    skills->setSilenced(i, false);
 
   return updatePartyDeaths();
 }
@@ -3862,14 +3871,18 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
     // else if (event.keysym.sym == SDLK_PAGEUP)
     else if (event.keysym.sym == SDLK_DELETE)
     {
-      event_buffer->setRenderIndex();
-      event_buffer->setRendered(event_buffer->getIndex());
-
-      while (event_buffer->setNextIndex())
+      if (turn_state == TurnState::PROCESS_ACTIONS || 
+          turn_state == TurnState::UPKEEP)
+      {
+        event_buffer->setRenderIndex();
         event_buffer->setRendered(event_buffer->getIndex());
 
-      setBattleFlag(CombatState::READY_TO_RENDER, false);
-      setBattleFlag(CombatState::RENDERING_COMPLETE, true);
+        while (event_buffer->setNextIndex())
+          event_buffer->setRendered(event_buffer->getIndex());
+
+        setBattleFlag(CombatState::READY_TO_RENDER, false);
+        setBattleFlag(CombatState::RENDERING_COMPLETE, true);
+      }
     }
     else if (event.keysym.sym == SDLK_PAGEDOWN)
       printInventory(foes);

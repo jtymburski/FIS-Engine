@@ -292,7 +292,7 @@ bool Ailment::apply()
     for (uint32_t i = 0; i < skills->getSize(); i++)
       if (skills->getElement(i).skill != nullptr)
         if (skills->getElement(i).skill->getCost() > 0)
-          skills->setState(i, false);
+          skills->setSilenced(i, true);
 
     setFlag(AilState::TO_APPLY, false);
     setFlag(AilState::TO_UNAPPLY, true);
@@ -729,12 +729,12 @@ void Ailment::unapply()
   if (getType() == Infliction::BERSERK)
     victim->setDmgMod(1);
 
-  /* Silence - When silence is removed, skills need to be recalculated */
+  /* Silence - When silence is removed, skills need to have their booleans
+   * reassigned. (This is no longer the enabled flag, is own silenced one) */
   else if (getType() == Infliction::SILENCE)
   {
-    //TODO: Reasons for skills to still be disabled on unapplication of SILENCE?
     for (uint32_t i = 0; i < skills->getSize(); i++)
-      skills->setState(i, true);
+      skills->setSilenced(i, false);
   }
 
   /* Bond - on unapplication, the Person BOND flag is turned off

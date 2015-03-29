@@ -163,7 +163,8 @@ bool SkillSet::addSkill(Skill* skill, const uint32_t &req_level,
       else
         new_element.level_available = kMAX_UNLOCK_LEVEL;
 
-      new_element.enabled = enabled;
+      new_element.enabled  = enabled;
+      new_element.silenced = false;
 
       skill_elements.push_back(new_element);
 
@@ -280,6 +281,7 @@ void SkillSet::print(const bool &simple)
       std::cout << "Skill Name: " << element.skill->getName() << std::endl;
       std::cout << "Lev. Req. " << element.level_available << std::endl;
       std::cout << "Enabled? " << element.enabled << std::endl;
+      std::cout << "Silenced? " << element.silenced << std::endl;
     }
   }
 
@@ -519,6 +521,41 @@ bool SkillSet::getEnabled(const uint32_t &index)
 }
 
 /* 
+ * Description: Returns the silenced value at a given index.
+ *
+ * Inputs: index - index to find the enabled value for
+ * Output: bool - the silenced value at the given index
+ */
+bool SkillSet::getSilenced(const uint32_t &index)
+{
+  if (index < skill_elements.size())
+    return skill_elements.at(index).silenced;
+
+  return false;
+}
+
+/* 
+ * Description: Returns whether a SkillSet element is currently useable by
+ *              a person. This means the skill must both be enabled and not
+ *              be silenced.
+ *
+ * Inputs: index - index to find the useable truth value for
+ * Output: bool - true if the skill cane be used at this time
+ */
+bool SkillSet::getUseable(const uint32_t &index)
+{
+  auto useable = false;
+
+  if (index < skill_elements.size())
+  {
+    useable |= skill_elements.at(index).enabled;
+    useable &= !skill_elements.at(index).silenced;
+  }
+
+  return useable;
+}
+
+/* 
  * Description: Returns the string name at a given index
  *
  * Inputs: index - the index to find the name of the skill of
@@ -614,11 +651,31 @@ std::vector<uint32_t> SkillSet::getValues()
  *         bool - the enabled state (true -> enabled)
  * Output: bool - true if the index was valid and the state was set
  */
-bool SkillSet::setState(const uint32_t &index, const bool &state)
+bool SkillSet::setEnabled(const uint32_t &index, const bool &state)
 {
   if (index < skill_elements.size())
   {
     skill_elements[index].enabled = state;
+
+    return true;
+  }
+
+  return false;
+}
+
+/* 
+ * Description: Assigns a SetElement element at a given index to a given
+ *              silenced state (when silence is inflicted or relieved)
+ *
+ * Inputs: index - the index to assign the enabled state
+ *         bool - the enabled state (true -> enabled)
+ * Output: bool - true if the index was valid and the state was set
+ */
+bool SkillSet::setSilenced(const uint32_t &index, const bool &state)
+{
+  if (index < skill_elements.size())
+  {
+    skill_elements[index].silenced = state;
 
     return true;
   }

@@ -1768,7 +1768,7 @@ SkillSet* Person::getUseableSkills()
   {
     auto add_skill = true;
   
-    if ((*it).enabled)
+    if ((*it).enabled && !(*it).silenced)
     {
       auto skill_cost = static_cast<int32_t>((*it).skill->getCost());
 

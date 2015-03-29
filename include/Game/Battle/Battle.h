@@ -21,6 +21,12 @@
 * [11-06-14]: Update personal record run from battle count 
 * [11-23-14]: Documentation
 * [03-04-15]: Fix battle loop bug? (Action processing flag?)
+*
+* BUGS
+* ----
+* [03-29-15]: Party death when not actually rendered dead.
+* [03-29-15]: Silence seg fault?
+* [03-29-15]: Is battleWon() being called twice upon victory?
 *******************************************************************************/
 #ifndef BATTLE_H
 #define BATTLE_H
