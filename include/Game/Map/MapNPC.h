@@ -17,6 +17,7 @@ struct Path
   uint16_t x;
   uint16_t y;
   uint16_t delay;
+  bool xy_flip;
   Path* previous;
   Path* next;
 };
