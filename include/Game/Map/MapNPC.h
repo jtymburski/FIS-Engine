@@ -34,9 +34,16 @@ public:
 
   /* LOOPED - Goes from node 1->2->3->1->2...
    * BACKANDFORTH - Goes from node 1->2->3->2->1->2...
+   * RANDOMRANGE - Can move anywhere within the defined rect range (2 nodes)
+   * RANDOM - Can move anywhere within the map
    * LOCKED - Halts movement once the next node is reached */
-  enum NodeState{LOOPED, BACKANDFORTH, LOCKED};
-  
+  enum NodeState{LOOPED, BACKANDFORTH, RANDOMRANGE, RANDOM, LOCKED};
+ 
+  /* AVOIDPLAYER - if player comes near, the NPC will try and stay away
+   * TOPLAYER - if the player comes near, the NPC will try and reach it
+   * NOTRACK - maintains normal movement (path or random) */
+  enum TrackingState{AVOIDPLAYER, TOPLAYER, NOTRACK};
+
 private:
   /* The starting node of the NPCs Path */
   Path* current;
