@@ -557,6 +557,7 @@ void Game::setupBattle()
   // Test Categories
   Category* human = new Category(200, "Human", "human", normal_stats, 
       top_stats, physical_skills);
+  human->setVitaRegenRate(RegenRate::WEAK);
   human->setDescription("A regular old joe from Earth.");
   human->setFlag(CategoryState::DEF_ENABLED, true);
   human->setFlag(CategoryState::GRD_ENABLED, true);
@@ -564,6 +565,7 @@ void Game::setupBattle()
 
   Category* bear = new Category(201, "Bear", "bear", normal_stats,
     top_stats, physical_skills);
+  bear->setVitaRegenRate(RegenRate::WEAK);
   bear->setDescription("A sentient and intelligent bear!");
   bear->setFlag(CategoryState::DEF_ENABLED, true);
   bear->setFlag(CategoryState::GRD_ENABLED, true);
@@ -571,6 +573,7 @@ void Game::setupBattle()
 
   Category* bloodclaw_scion = new Category(251, "Bloodclaw Scion", "scions", 
       weak_stats, boss_stats, elemental_skills);
+  bloodclaw_scion->setVitaRegenRate(RegenRate::WEAK);
   bloodclaw_scion->setDescription("A class of soldier excelling in physical combat.");
   bloodclaw_scion->setFlag(CategoryState::DEF_ENABLED, true);
   bloodclaw_scion->setFlag(CategoryState::POWER_DEFENDER, false);
@@ -580,6 +583,7 @@ void Game::setupBattle()
 
   Category* tactical_samurai = new Category(252, "Tactical Samurai", "samurai",
       not_as_weak_stats, medium_stats, physical_skills);
+  tactical_samurai->setVitaRegenRate(RegenRate::WEAK);
   tactical_samurai->setDescription("A class of swordsman like no other.");
   tactical_samurai->setFlag(CategoryState::DEF_ENABLED, true);
   tactical_samurai->setFlag(CategoryState::POWER_DEFENDER, true);

@@ -123,10 +123,10 @@ const float    Battle::kGUARD_MODIFIER              =   1.10;
 const float    Battle::kSHIELDED_MODIFIER           =   0.00;
 
 const int16_t  Battle::kREGEN_RATE_ZERO_PC           =      0;
-const int16_t  Battle::kREGEN_RATE_WEAK_PC           =      2; 
-const int16_t  Battle::kREGEN_RATE_NORMAL_PC         =      4;
-const int16_t  Battle::kREGEN_RATE_STRONG_PC         =      6;
-const int16_t  Battle::kREGEN_RATE_GRAND_PC          =      8;
+const int16_t  Battle::kREGEN_RATE_WEAK_PC           =      3; 
+const int16_t  Battle::kREGEN_RATE_NORMAL_PC         =      5;
+const int16_t  Battle::kREGEN_RATE_STRONG_PC         =      7;
+const int16_t  Battle::kREGEN_RATE_GRAND_PC          =      9;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -1170,11 +1170,12 @@ int32_t Battle::calcTurnRegen(Person* const target, const Attribute& attr)
     auto alt_factor = getRegenFactor(target->getQDRegenRate());
 
     std::cout << "One PC: " << one_pc << std::endl;
-    std::cout << "Alt Factor: " << alt_factor << std::endl;
+
 
     if (attr == Attribute::VITA)
       alt_factor = getRegenFactor(target->getVitaRegenRate());
-
+    
+    std::cout << "Alt Factor: " << alt_factor << std::endl;
     regen_amt = one_pc * static_cast<float>(alt_factor);
     auto max_amt = target->getTemp().getStat(attr);
 
@@ -1184,7 +1185,7 @@ int32_t Battle::calcTurnRegen(Person* const target, const Attribute& attr)
     if (regen_amt >= max_amt)
       regen_amt = max_amt;
 
-    std::cout << "Regne amt: " << regen_amt << std::endl;
+    std::cout << "Regen amt: " << regen_amt << std::endl;
   }
   else
   {
@@ -1885,21 +1886,39 @@ void Battle::performEvents()
     }
     else if (event->type == EventType::ALTERATION)
     {
-      //TODO: Finish/clean up [04-03-15]
+      auto target_attr = event->action_use->getTargetAttribute();
+      auto amount = event->amount;
+
       /* Perform the alteration on the target */
-      event->targets.at(0)->getCurr().alterStat(
-          event->action_use->getTargetAttribute(), event->amount);
+      event->targets.at(0)->getCurr().alterStat(target_attr, amount);
 
       if (getBattleMode() == BattleMode::TEXT)
       {
-        // std::cout << "{ALTER} " << action_target->getName() << "'s " 
-        //     << AttributeSet::getName(targ_attr) << " has been altered by "
-        //     << alt_value << "." << std::endl;
+        std::cout << "{ALTER}" << event->targets.at(0)->getName() << "'s"
+            << AttributeSet::getName(target_attr) << " has been altered by "
+            << amount << "." << std::endl;
       }
     }
     else if (event->type == EventType::ASSIGNMENT)
     {
-      //TODO [02-14-15] - Process assginment events
+      /* Assign event takes the attribute of the action use of the event and
+       * assigns it the value of the event's amount */
+      auto assign_attr = event->action_use->getTargetAttribute();
+      auto amount      = event->amount;
+
+      //TODO: Why change temp/curr stats assignment?
+      //  if (base_pc)
+      // ction_target->getCurr().setStat(targ_attr, set_value);
+      // else
+      //   action_target->getTemp().setStat(targ_attr, set_value);
+      event->targets.at(0)->getCurr().setStat(assign_attr, amount);
+
+      if (getBattleMode() == BattleMode::TEXT)
+      {
+        std::cout << "{ASSIGN} " << event->targets.at(0)->getName() << "'s"
+            << AttributeSet::getName(assign_attr) << " has been altered by "
+            << amount << "." << std::endl;
+      }
     }
     else if (event->type == EventType::REVIVAL)
     {
@@ -1909,12 +1928,13 @@ void Battle::performEvents()
       event->targets.at(0)->setBFlag(BState::ALIVE, true);
       curr_target->getCurr().setStat(Attribute::VITA, event->amount);
 
-    if (getBattleMode() == BattleMode::TEXT)
-    {
-      std::cout << "{REVIVE} " << curr_target->getName() << " has been brought "
-                << " back from KO with " 
-                << curr_target->getCurr().getStat(Attribute::VITA) <<" VITA.\n";
-    }
+      if (getBattleMode() == BattleMode::TEXT)
+      {
+        std::cout << "{REVIVE} " << event->targets.at(0)->getName()
+                  << " has been brought back from KO with " 
+                  << curr_target->getCurr().getStat(Attribute::VITA)
+                  <<" VITA.\n";
+      }
     }
     else if (event->type == EventType::HEAL_HEALTH)
     {
@@ -2213,7 +2233,7 @@ bool Battle::performGuard(BattleEvent* guard_event)
  *
  * Inputs: BattleEvent* battle_event - pointer to the begin action event
  *         damage_types - the type of damage corresponding for each target
- * Output: bool - //TODO Do we need thsis bool? [03-04-15]
+ * Output: bool - true if a party death has occured
  */
 bool Battle::processAction(BattleEvent* battle_event,
     std::vector<DamageType> damage_types)
@@ -2238,61 +2258,71 @@ bool Battle::processAction(BattleEvent* battle_event,
     action_hits = doesActionHit();
   }
 
-  //TODO - Action/Factor target for Alteration/Assignments [03-04-15]
+  /* Action/Factor targets for Alteration/Assignment */
   if (can_process && action_hits)
   {
-    // if (curr_action->actionFlag(ActionFlags::ALTER) ||
-    //     curr_action->actionFlag(ActionFlags::ASSIGN))
-    // {
-    //   auto action_target = curr_user;
-    //   auto factor_target = curr_user;
+    if (curr_action->actionFlag(ActionFlags::ALTER) ||
+        curr_action->actionFlag(ActionFlags::ASSIGN))
+    {
+      auto action_target = curr_user;
+      auto factor_target = curr_user;
 
-    //   user_attr = curr_action->getUserAttribute();
-    //   targ_attr = curr_action->getTargetAttribute();
+      user_attr = curr_action->getUserAttribute();
+      targ_attr = curr_action->getTargetAttribute();
 
       /* If the user's attribute is defined and the target's is not, the
        * alteration will be on the user's %/value up to their MAX attrs*/
-      // if (user_attr != Attribute::NONE && targ_attr == Attribute::NONE)
-      //     targ_attr  = user_attr;
+      if (user_attr != Attribute::NONE && targ_attr == Attribute::NONE)
+          targ_attr  = user_attr;
       /* If the target's attribute is defined and the user's is not, the
        * alteration or assignment will be on the target's %/value up to their 
        * MAX or CURR amount, respectively */
-      // else if (user_attr == Attribute::NONE && targ_attr != Attribute::NONE)
-      // {
-      //   action_target = curr_target;
-      //   factor_target = curr_target;
-      //   user_attr     = targ_attr;
-      // }
+      else if (user_attr == Attribute::NONE && targ_attr != Attribute::NONE)
+      {
+        action_target = curr_target;
+        factor_target = curr_target;
+        user_attr     = targ_attr;
+      }
       /* If both the user and target's attributes are defined, the alteration
        * will alter the target's value by a percentage of the user's stat */
-      // else if (user_attr != Attribute::NONE && targ_attr != Attribute::NONE)
-      //   action_target = curr_target;
-      // else
-      //   std::cerr << "[Error] - Critical error in Battle processing.\n";
+      else if (user_attr != Attribute::NONE && targ_attr != Attribute::NONE)
+        action_target = curr_target;
+      else
+        std::cerr << "[Error] - Critical error in Battle processing.\n";
 
-      // if (curr_action->actionFlag(ActionFlags::FLIP_ATTR))
-      // {
-      //   std::cout << "Flipping!" << std::endl;
-      //   std::swap(action_target, factor_target);
-      //   std::swap(user_attr, targ_attr);
-      //   std::cout << "Action Target:" << action_target->getName()<< std::endl;
-      //   std::cout << "Factor Target: " << factor_target->getName()<< std::endl;
-      // }
+      if (curr_action->actionFlag(ActionFlags::FLIP_ATTR))
+      {
+        std::cout << "Flipping!" << std::endl;
+        std::swap(action_target, factor_target);
+        std::swap(user_attr, targ_attr);
+        std::cout << "Action Target:" << action_target->getName()<< std::endl;
+        std::cout << "Factor Target: " << factor_target->getName()<< std::endl;
+      }
 
-      // if (curr_action->actionFlag(ActionFlags::ALTER))
-      //   done = processAlterAction(damage_type, action_target, factor_target);
-      // else
-      //   done = processAssignAction(damage_type, action_target, factor_target);
-      // }
-     //}
-    if (curr_action->actionFlag(ActionFlags::DAMAGE))
+      if (curr_action->actionFlag(ActionFlags::ALTER))
+      {
+        auto alter_event = event_buffer->createAlterEvent(curr_action,
+            action_target, 0);
+
+        done = processAlterAction(alter_event, damage_type, action_target,
+            factor_target);
+      }
+      else
+      {
+        auto assign_event = event_buffer->createAssignEvent(curr_action, 
+            action_target, 0);
+
+        done = processAssignAction(assign_event, damage_type, action_target,
+            factor_target);
+      }
+    }
+    else if (curr_action->actionFlag(ActionFlags::DAMAGE))
     {
       auto damage_event = 
           event_buffer->createDamageEvent(EventType::STANDARD_DAMAGE, 
           curr_target, 0);
     
       done = processDamageAction(damage_event, damage_type);
-      // TODO setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
     }
     else if (curr_action->actionFlag(ActionFlags::INFLICT))
     {
@@ -2302,8 +2332,11 @@ bool Battle::processAction(BattleEvent* battle_event,
     {
       done = processRelieveAction();
     }
-    // else if (curr_action->actionFlag(ActionFlags::REVIVE))
-    //   done = processReviveAction();
+    else if (curr_action->actionFlag(ActionFlags::REVIVE))
+    {
+      auto revive_event = event_buffer->createReviveEvent(curr_target, 0);
+      done = processReviveAction(revive_event);
+    }
   }
   else if (!can_process)
   {
@@ -2439,25 +2472,27 @@ bool Battle::processAilmentUpdate(Ailment* ail)
  * Description: Processes an alteration keywoard action against a vector of 
  *              targets also given a vector of corresponding DamageTypes
  *
- * Inputs: std::vector<Person*> - vector of targets in the form of Person ptrs
+ * Inputs: BattleEvent* alter_event - pointer to the altering event
  *         std::vector<DamageType> - vector of corresponding damage types
+ *         Person* action_target - actual target of the alteration
+ *         Person* factor_target - factor person for value calculation
+ *
  * Output: bool - true if a party death (vic. cond.) occured during operation
- * //TODO - Convert to Process/Perform/Render [04-03-15]
  */
-bool Battle::processAlterAction(const DamageType &damage_type,
-    Person* action_target, Person* factor_target)
-{  
-  auto base_pc   = curr_action->actionFlag(ActionFlags::BASE_PC);
-  auto vari_pc   = curr_action->actionFlag(ActionFlags::VARI_PC);
+bool Battle::processAlterAction(BattleEvent* alter_event, 
+    const DamageType &damage_type, Person* action_target, Person* factor_target)
+{
+  auto ally_target = friends->isInParty(curr_target);
+  auto base_pc  = curr_action->actionFlag(ActionFlags::BASE_PC);
+  auto vari_pc  = curr_action->actionFlag(ActionFlags::VARI_PC);
+  int32_t base  = curr_action->getBase();
+  int32_t vari  = curr_action->getVariance();
 
-  int32_t base      = curr_action->getBase();
-  int32_t vari      = curr_action->getVariance();
   int32_t cur_value = 0;
   int32_t set_value = 0;
   int32_t var_value = 0;
   float one_pc      = 0.0;
-  auto death = false;
-  auto done  = false;
+  auto party_death = false;
 
   auto max_value = action_target->getTemp().getStat(targ_attr);
   cur_value      = action_target->getCurr().getStat(targ_attr);
@@ -2485,15 +2520,20 @@ bool Battle::processAlterAction(const DamageType &damage_type,
     alt_value = -cur_value;
 
     /* If the altered attribute is VITA, a death will occur here */
-    //TODO
-      death = true;
+    if (targ_attr == Attribute::VITA)
+    {
+      event_buffer->createDeathEvent(EventType::DEATH, curr_target,
+          ally_target);
+
+      party_death = processPersonDeath(ally_target);
+    }
   }
 
-  //TODO
-  if (death)
-    done = updatePersonDeath(damage_type);
+  /* Assign the alteration amount to the alter event */
+  alter_event->amount  = alt_value;
+  alter_event->happens = true;
 
-  return done;
+  return party_death;
 }
 
 /*
@@ -2501,27 +2541,29 @@ bool Battle::processAlterAction(const DamageType &damage_type,
  *              the stat of a user/target will be assigned to a certain value
  *              or percentage of the user/target's stat.
  *
- * Inputs: damage_type - incoming damage type (BASE/GUARD) etc.
+ * Inputs: BattleEvent* - the pointer to the assignment event
+ *         damage_type - incoming damage type (BASE/GUARD) etc.
  *         action_target - the person who will have the assignment done on them.
  *         factor_target - the person who by which the action target changes
- * Output: bool - true if 
- * //TODO - Convert to Process/Perform/Render - [04-03-15]
+ * Output: bool - true if a party death occurs
  */
-bool Battle::processAssignAction(const DamageType &damage_type,
+bool Battle::processAssignAction(BattleEvent* assign_event, 
+    const DamageType &damage_type,
     Person* action_target, Person* factor_target)
 {
-  auto base_pc   = curr_action->actionFlag(ActionFlags::BASE_PC);
-  auto vari_pc   = curr_action->actionFlag(ActionFlags::VARI_PC);
+  auto ally_target  = friends->isInParty(action_target);
+  auto base_pc      = curr_action->actionFlag(ActionFlags::BASE_PC);
+  auto vari_pc      = curr_action->actionFlag(ActionFlags::VARI_PC);
   int32_t base      = curr_action->getBase();
   int32_t vari      = curr_action->getVariance();
   int32_t set_value = 0;
   int32_t var_value = 0;
   float one_pc      = 0.0;
-  auto done         = false;
+  auto party_death  = false;
   auto max_value    = factor_target->getTemp().getStat(targ_attr);
 
-  one_pc    = static_cast<float>(factor_target->getCurr().getStat(user_attr));
-  one_pc   /= 100;
+  one_pc  = static_cast<float>(factor_target->getCurr().getStat(user_attr));
+  one_pc /= 100;
 
   set_value = (base_pc) ? (std::floor(static_cast<int32_t>(one_pc * base)))
                         : (base);
@@ -2531,25 +2573,19 @@ bool Battle::processAssignAction(const DamageType &damage_type,
   set_value += Helpers::randU(-var_value, var_value);
   set_value  = Helpers::setInRange(set_value, 0, max_value);
 
-  /* Actually perform the assignment operation */
-  if (base_pc)
-    action_target->getCurr().setStat(targ_attr, set_value);
-  else
-    action_target->getTemp().setStat(targ_attr, set_value);
-  
-  if (getBattleMode() == BattleMode::TEXT)
-  {
-    std::cout << "{ASSIGN} " << action_target->getName() << "'s " 
-              << AttributeSet::getName(targ_attr) << " has been assigned to "
-              << set_value << "." << std::endl;
-  }
+  assign_event->amount = set_value;
+  assign_event->happens = true;
 
   //TODO - Move done to "perform action" phase? [02-01-15]
   /* If the set value is 0? What if not setting VITA? //TODO [02-01-15] */
   if (set_value == 0)
-    done = updatePersonDeath(damage_type);
+  {
+    event_buffer->createDeathEvent(EventType::DEATH, action_target, 
+        ally_target);
+    party_death = processPersonDeath(ally_target);
+  }
 
-  return done;
+  return party_death;
 }
 
 /*
@@ -2707,13 +2743,13 @@ bool Battle::processRelieveAction()
 /*
  * Description: Calculates the outcome of a revive action on the current target.
  *
- * Inputs: none
- * Output: bool - TODO
+ * Inputs: BattleEvent* - pointer to the revive event to work with
+ * Output: bool - true if a party death occurs (always false?)
  */
-bool Battle::processReviveAction()
+bool Battle::processReviveAction(BattleEvent* revive_event)
 {
   auto heal_value = 1;
-  auto one_pc = curr_target->getTemp().getStat(Attribute::VITA);
+  auto one_pc  = curr_target->getTemp().getStat(Attribute::VITA);
   auto base_pc = curr_action->actionFlag(ActionFlags::BASE_PC);
   auto vari_pc = curr_action->actionFlag(ActionFlags::VARI_PC);
 
@@ -2725,7 +2761,7 @@ bool Battle::processReviveAction()
   base_val = (base_pc) ? (one_pc * curr_action->getBase()) 
                        : (curr_action->getBase());
   vari_val = (vari_pc) ? (one_pc * curr_action->getVariance()) 
-                        : (curr_action->getVariance());
+                       : (curr_action->getVariance());
 
   vari_val = Helpers::randU(-vari_val, +vari_val);
 
@@ -2733,9 +2769,10 @@ bool Battle::processReviveAction()
   if ((base_val + vari_val) > heal_value)
     heal_value = base_val + vari_val;
 
-  auto new_event = event_buffer->createReviveEvent(curr_target, heal_value);
+  revive_event->amount  = heal_value;
+  revive_event->happens = true;
 
-  return new_event != nullptr;
+  return false;
 }
 
 /*

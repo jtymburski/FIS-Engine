@@ -409,15 +409,18 @@ private:
   bool processAilmentUpdate(Ailment* ail);
 
   /* Processes an alteration action */
-  bool processAlterAction(const DamageType &damage_type, Person* action_target,
+  bool processAlterAction(BattleEvent* alter_event, 
+      const DamageType &damage_type, Person* action_target,
       Person* factor_target);
 
   /* Processes an assigning action */
-  bool processAssignAction(const DamageType &damage_type, Person* action_target,
+  bool processAssignAction(BattleEvent* assign_event, 
+      const DamageType &damage_type, Person* action_target,
       Person* factor_target);
 
   /* Processes a damaging action */
-  bool processDamageAction(BattleEvent* damage_event, const DamageType &damage_type);
+  bool processDamageAction(BattleEvent* damage_event, 
+      const DamageType &damage_type);
 
   /* Method for outsourcing an amount of dmg and type of damage to curr targ */
   bool processDamageAmount(int32_t amount);
@@ -429,7 +432,7 @@ private:
   bool processRelieveAction();
 
   /* Processes a reviving action */
-  bool processReviveAction();
+  bool processReviveAction(BattleEvent* revive_event);
 
   /* Processes an inflicting action */
   bool processInflictAction();

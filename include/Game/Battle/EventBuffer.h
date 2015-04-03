@@ -93,6 +93,9 @@ public:
   BattleEvent* createAlterEvent(Action* alter_action, Person* target, 
       int32_t amount);
 
+  BattleEvent* createAssignEvent(Action* assign_action, Person* target,
+      int32_t amount);
+
   /* Creates a new blank event and returns the constructed event */
   BattleEvent* createDamageEvent(EventType damage_type, Person* target,
       int32_t amount);

@@ -173,7 +173,7 @@ BattleEvent* EventBuffer::createAilmentEvent(EventType event_type, Person* user,
  * Inputs: Action* alter_action - pointer to the alter action (for alter ATTR)
  *         Person* target - the target of the alteration
  *         int32_t amount - the amount to alter the target's ATTR by 
- * Output: BattleEvent* - 
+ * Output: BattleEvent* - pointer to recently created event
  */
 BattleEvent* EventBuffer::createAlterEvent(Action* alter_action, Person* target,
     int32_t amount)
@@ -182,6 +182,29 @@ BattleEvent* EventBuffer::createAlterEvent(Action* alter_action, Person* target,
   new_event->type = EventType::ALTERATION;
   std::vector<Person*> target_vec{target};
   new_event->targets = target_vec;
+  new_event->action_use = alter_action;
+  new_event->amount = amount;
+  events.push_back(new_event);
+
+  return new_event;
+}
+
+/*
+ * Description: Creates a new blank event 
+ *
+ * Inputs: Action* alter_action - pointer to the alter action (for alter ATTR)
+ *         Person* target - the target of the alteration
+ *         int32_t amount - the amount to alter the target's ATTR by 
+ * Output: BattleEvent* - pointer to recently created event
+ */
+BattleEvent* EventBuffer::createAssignEvent(Action* assign_action, 
+    Person* target, int32_t amount)
+{
+  auto new_event = createNewEvent();
+  new_event->type = EventType::ASSIGNMENT;
+  std::vector<Person*> target_vec{target};
+  new_event->targets = target_vec;
+  new_event->action_use = assign_action;
   new_event->amount = amount;
   events.push_back(new_event);
 
