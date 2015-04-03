@@ -340,7 +340,7 @@ public:
   /* Removes the equipment from a given slot */
   bool removeEquip(const EquipSlots &equip_slot);
 
-  // TODO
+  /* Resets the action flags to their standard states */
   void resetActionFlags();
 
   /* Resets the AI module for a new turn */

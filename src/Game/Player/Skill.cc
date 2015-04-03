@@ -310,7 +310,11 @@ void Skill::print(bool flags)
 
   if (flags)
   {
+    std::cout << "OFFENSIVE: " << getFlag(SkillFlags::OFFENSIVE) << std::endl;
+    std::cout << "DEFENSIVE: " << getFlag(SkillFlags::DEFENSIVE) << std::endl;
+    std::cout << "NEUTRAL: " << getFlag(SkillFlags::NEUTRAL) << std::endl;
     std::cout << "ALTERING: " << getFlag(SkillFlags::ALTERING) << std::endl;
+    std::cout << "DAMAGING: " << getFlag(SkillFlags::DAMAGING) << std::endl;
     std::cout << "HEALING: " << getFlag(SkillFlags::HEALING) << std::endl;
     std::cout << "INFLICTING: " << getFlag(SkillFlags::INFLICTING) << std::endl;
     std::cout << "RELIEVING: " << getFlag(SkillFlags::RELIEVING) << std::endl;

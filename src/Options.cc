@@ -24,9 +24,9 @@
 const std::string Options::kFONTS[] = {"fonts/colab_light.otf", 
                                        "fonts/crimes.ttf"};
 const uint8_t  Options::kNUM_FONTS = 2;
-const uint8_t  Options::kNUM_RESOLUTIONS = 4;
-const uint16_t Options::kRESOLUTIONS_X[] = {1216, 1366, 1920, 2560};
-const uint16_t Options::kRESOLUTIONS_Y[] = {704, 768, 1080, 1080};
+const uint8_t  Options::kNUM_RESOLUTIONS = 5;
+const uint16_t Options::kRESOLUTIONS_X[] = {1216, 1366, 1920, 2560, 3640};
+const uint16_t Options::kRESOLUTIONS_Y[] = {704, 768, 1080, 1080, 1080};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS

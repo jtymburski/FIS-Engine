@@ -89,6 +89,10 @@ public:
   BattleEvent* createAilmentEvent(EventType event_type, Person* user,
       Person* target, Action* curr_action, Ailment* ailment_use);
 
+  /* Creates an alteration event and returns it */
+  BattleEvent* createAlterEvent(Action* alter_action, Person* target, 
+      int32_t amount);
+
   /* Creates a new blank event and returns the constructed event */
   BattleEvent* createDamageEvent(EventType damage_type, Person* target,
       int32_t amount);
@@ -114,6 +118,9 @@ public:
   /* Creates and returns a pass event */
   BattleEvent* createPassEvent(Person* user);
 
+  /* Creates a revive event and returns it */
+  BattleEvent* createReviveEvent(Person* target, int32_t amount);
+
   /* Creates a run event */
   BattleEvent* createRunEvent(EventType run_type, Person* user, bool allies);
 
@@ -128,6 +135,10 @@ public:
   /* Creates a Skill Use Fizzle event */
   BattleEvent* createFizzleEvent(EventType fizzle_type, Person* user,
       std::vector<Person*> targets);
+
+  /* Creates a Fizzle event and returns it */
+  BattleEvent* createFizzleEvent(EventType fizzle_type, Person* user,
+      Person* target);
  
   /* Annihilates the last battle event straight into the void */
   bool destroyLastEvent();

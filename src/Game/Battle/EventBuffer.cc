@@ -170,6 +170,27 @@ BattleEvent* EventBuffer::createAilmentEvent(EventType event_type, Person* user,
 /*
  * Description: Creates a new blank event 
  *
+ * Inputs: Action* alter_action - pointer to the alter action (for alter ATTR)
+ *         Person* target - the target of the alteration
+ *         int32_t amount - the amount to alter the target's ATTR by 
+ * Output: BattleEvent* - 
+ */
+BattleEvent* EventBuffer::createAlterEvent(Action* alter_action, Person* target,
+    int32_t amount)
+{
+  auto new_event = createNewEvent();
+  new_event->type = EventType::ALTERATION;
+  std::vector<Person*> target_vec{target};
+  new_event->targets = target_vec;
+  new_event->amount = amount;
+  events.push_back(new_event);
+
+  return new_event;
+}
+
+/*
+ * Description: Creates a new blank event 
+ *
  * Inputs: EventType damage_type - the type of damage (standard/poison/etc.)
  *         Person* target - the target of the damage
  *         int32_t amount - the amount of the damage 
@@ -241,6 +262,7 @@ BattleEvent* EventBuffer::createGuardEvent(EventType guard_type, Person* user,
   new_event->user = user;
   std::vector<Person*> target_vec{target};
   new_event->targets = target_vec;
+  events.push_back(new_event);
 
   return new_event;
 }
@@ -303,6 +325,24 @@ BattleEvent* EventBuffer::createPassEvent(Person* user)
 }
 
 /*
+ * Description: Creates a revive event and returns that event.
+ *
+ * Inputs: Person* target - the target/person to be revived
+ *         int32_t amount - the amount of VITA to be restored on revival
+ * Output: BattleEvent* - pointer to the recently created revival event
+ */
+BattleEvent* EventBuffer::createReviveEvent(Person* target, int32_t amount)
+{
+  auto new_event = new BattleEvent();
+  std::vector<Person*> target_vec{target};
+  new_event->targets = target_vec;
+  new_event->amount  = amount;
+  events.push_back(new_event);
+
+  return new_event;
+}
+
+/*
  * Description: Creates a run event with a type (ATTMEPT/SUCCEED/FAIL) and
  *              a bool whether the running action is taking place by an ally
  *              or an enemy.
@@ -349,7 +389,8 @@ BattleEvent* EventBuffer::createSkillEvent(Skill* skill_use, Person* user,
 /*
  * Description: Creates and appends a skill fizzle event to the list of events.
  *
- * Inputs: Person* user - the user of the Skill which fizzled.
+ * Inputs: EventType fizzle_type - the type of fizzling taking place
+ *         Person* user - the user of the Skill which fizzled.
  *         std::vector<Person*> targets - the targets which fizzled
  * Output: BattleEvent* - pointer to the recently created event
  */
@@ -363,6 +404,22 @@ BattleEvent* EventBuffer::createFizzleEvent(EventType fizzle_type, Person* user,
   events.push_back(new_event);
 
   return new_event;
+}
+
+/*
+ * Description: Creates and appends a skill fizzle event to the list of events.
+ *
+ * Inputs: EventType fizzle_type - the type of fizzling taking place
+ *         Person* user - the user of the Skill which fizzled.
+ *         Person* target - the targets which fizzled
+ * Output: BattleEvent* - pointer to the recently created event
+ */
+BattleEvent* EventBuffer::createFizzleEvent(EventType fizzle_type, Person* user,
+    Person* target)
+{
+  std::vector<Person*> target_vec{target};
+
+  return createFizzleEvent(fizzle_type, user, target_vec);
 }
 
 /*

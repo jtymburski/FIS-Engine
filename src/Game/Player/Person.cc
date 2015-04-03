@@ -1094,16 +1094,17 @@ bool Person::removeEquip(const EquipSlots &equip_slot)
 }
 
 /*
- * Description: 
+ * Description: Resets the action flags (types of useable actions) to their 
+ *              standard states (defaults plus category defaults).
  *
- * Inputs:
- * Output: 
+ * Inputs: none
+ * Output: none
  */
 void Person::resetActionFlags()
 {
   setBFlag(BState::ATK_ENABLED, true);
   setBFlag(BState::SKL_ENABLED, true);
-  setBFlag(BState::ITM_ENABLED, true); //TODO: Temporarily disabled  [08-09-14]
+  setBFlag(BState::ITM_ENABLED, false); //TODO: Temporarily disabled  [08-09-14]
   setBFlag(BState::INS_ENABLED, false);//TODO: What enables inspect? [08-09-14]
   setBFlag(BState::RUN_ENABLED, true); 
   setBFlag(BState::PAS_ENABLED, true);

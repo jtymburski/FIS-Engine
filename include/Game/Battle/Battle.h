@@ -63,18 +63,17 @@ enum class CombatState
   PROCESSING_ITEM            = 1 << 15,
   READY_TO_RENDER            = 1 << 16, /* Processing state done */
   RENDERING_COMPLETE         = 1 << 17, /* Current render cycle complete */
-  PERFORMING_COMPLETE        = 1 << 18, //TODO: This flag necessary? 
-  BEGIN_PROCESSING           = 1 << 19, /* This processing loop has begun */
-  BEGIN_ACTION_PROCESSING    = 1 << 20, /* Current action processing begun */
-  ACTION_PROCESSING_COMPLETE = 1 << 21, /* Curr action processing loop done */
-  ALL_PROCESSING_COMPLETE    = 1 << 22, /* Entire processing complete */
-  BEGIN_PERSON_UPKEEPS       = 1 << 23, /* The upkeep phase has started */
-  PERSON_UPKEEP_COMPLETE     = 1 << 24, /* One person state complete */
-  BEGIN_AILMENT_UPKEEPS      = 1 << 25,
-  CURRENT_AILMENT_STARTED    = 1 << 26,
-  CURRENT_AILMENT_COMPLETE   = 1 << 27, /* Curr person ailment check stage */
-  COMPLETE_AILMENT_UPKEEPS   = 1 << 28, /* Curr person ailment check done  */
-  ALL_UPKEEPS_COMPLETE       = 1 << 29  /* Upkeep checking stage complete */
+  BEGIN_PROCESSING           = 1 << 18, /* This processing loop has begun */
+  BEGIN_ACTION_PROCESSING    = 1 << 19, /* Current action processing begun */
+  ACTION_PROCESSING_COMPLETE = 1 << 20, /* Curr action processing loop done */
+  ALL_PROCESSING_COMPLETE    = 1 << 21, /* Entire processing complete */
+  BEGIN_PERSON_UPKEEPS       = 1 << 22, /* The upkeep phase has started */
+  PERSON_UPKEEP_COMPLETE     = 1 << 23, /* One person state complete */
+  BEGIN_AILMENT_UPKEEPS      = 1 << 24,
+  CURRENT_AILMENT_STARTED    = 1 << 25,
+  CURRENT_AILMENT_COMPLETE   = 1 << 26, /* Curr person ailment check stage */
+  COMPLETE_AILMENT_UPKEEPS   = 1 << 27, /* Curr person ailment check done  */
+  ALL_UPKEEPS_COMPLETE       = 1 << 28  /* Upkeep checking stage complete */
 };
 
 ENUM_FLAGS(IgnoreState)

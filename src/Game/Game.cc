@@ -342,18 +342,25 @@ void Game::setupBattle()
   // Test Skills
   Skill* cure_poison = new Skill(600, "Cure Poison", ActionScope::ONE_TARGET,
       relieve_actions[0], 95, 0);
+  cure_poison->setPrimary(Element::PHYSICAL);
+  cure_poison->setThumbnail(new Frame("sprites/Battle/Skills/_sample_skill_2.png", active_renderer));
+  cure_poison->setDescription("Cures an inflicted person from poison!");
+  cure_poison->setFlag(SkillFlags::DEFENSIVE);
 
   Skill* physical_01 = new Skill(100, "Wee Strike", ActionScope::ONE_ENEMY, 
       damage_actions[3], 95, 0);
   physical_01->setPrimary(Element::PHYSICAL);
-  physical_01->setThumbnail(new Frame( // TODO for rest
-                 "sprites/Battle/Skills/_sample_skill_2.png", active_renderer));
+  physical_01->setThumbnail(new Frame("sprite3/Battle/Skills/_sample_skill_2.png", active_renderer));
   physical_01->setDescription("Jordan is a weirdo... Lor em ips um do lor sit amet, mel omnis nomin ati an, atom orum facil isis in pri, adipi scing argum entum in pri. Duo ei tempor dicunt sanctus, per ut hinc oporteat conceptam. Iisque euismod albucius vel ut, duo ea singulis eleifend. Veri offendit vim ut, at pri tale adolescens, putant veritus sea no. Atqui blandit assentior ne eam. Et rebum deserunt pericula eum.");
+  physical_01->setFlag(SkillFlags::OFFENSIVE);
 
-  Skill* physical_02 = new Skill(101, "Double Whelp", ActionScope::ONE_ENEMY, 
+  Skill* physical_02 = new Skill(101, "Triple Whelp", ActionScope::ONE_ENEMY, 
       damage_actions[4],  95, 5);
   physical_02->addAction(damage_actions[5]);
+  physical_02->addAction(damage_actions[6]);
   physical_02->setPrimary(Element::PHYSICAL);
+  physical_02->setFlag(SkillFlags::OFFENSIVE);
+  physical_02->print(true);
 
   // Skill* physical_03 = new Skill(102, "Two Smackeroos", 
   //     ActionScope::TWO_ENEMIES, damage_actions[6], 95, 100);
@@ -391,15 +398,16 @@ void Game::setupBattle()
   //   damage_actions[7], 99, 7);
   // void_01->setPrimary(Element::NIHIL);
 
-  // Skill* self_heal = new Skill(120, "Heal Self", ActionScope::USER,
-  //   alter_actions[0], 100, 5);
-  // self_heal->setPrimary(Element::FOREST);
-  // self_heal->setPrimary(Element::PHYSICAL);
+  Skill* self_heal = new Skill(120, "Heal Self", ActionScope::USER,
+    alter_actions[0], 100, 5);
+  self_heal->setPrimary(Element::FOREST);
+  self_heal->setPrimary(Element::PHYSICAL);
 
   Skill* ally_heal = new Skill(121, "Heal Ally", ActionScope::ONE_ALLY_NOT_USER,
     alter_actions[1], 100, 5);
   ally_heal->setPrimary(Element::FOREST);
   ally_heal->setSecondary(Element::PHYSICAL);
+  ally_heal->setFlag(SkillFlags::DEFENSIVE);
 
   // Skill* user_reduce_by_ally = new Skill(122, "Reduce User By Ally", ActionScope::USER,
   //   alter_actions[2], 100, 5);
@@ -414,36 +422,44 @@ void Game::setupBattle()
   Skill* revive_ally = new Skill(130, "Revive Ally", ActionScope::ONE_ALLY_KO,
     assign_actions[4], 100, 5);
   revive_ally->setPrimary(Element::FOREST);
+  revive_ally->setFlag(SkillFlags::DEFENSIVE);
 
   Skill* life_steal = new Skill(131, "Life Steal", ActionScope::ONE_ENEMY,
     alter_actions[2], 100, 5);
   life_steal->addAction(alter_actions[6], true);
+  life_steal->setFlag(SkillFlags::DEFENSIVE);
 
-  Skill* poison = new Skill(140, "Poison", ActionScope::ONE_TARGET,
+  Skill* poison = new Skill(140, "Inflict Poison", ActionScope::ONE_TARGET,
     inflict_actions[0], 100, 10);
-  poison->setPrimary(Element::FIRE);
+  poison->setPrimary(Element::FOREST);
+  poison->setFlag(SkillFlags::OFFENSIVE);
 
-  Skill* burn = new Skill(141, "Burn", ActionScope::ONE_TARGET,
+  Skill* burn = new Skill(141, "Inflict Burn", ActionScope::ONE_TARGET,
     inflict_actions[1], 100, 10);
   burn->setPrimary(Element::ICE);
+  burn->setFlag(SkillFlags::OFFENSIVE);
 
-  Skill* scald = new Skill(142, "Scald", ActionScope::ONE_TARGET,
+  Skill* scald = new Skill(142, "Inflict Scald", ActionScope::ONE_TARGET,
     inflict_actions[2], 100, 10);
   scald->setPrimary(Element::FOREST);
+  scald->setFlag(SkillFlags::OFFENSIVE);
 
-  Skill* charr = new Skill(143, "Charr", ActionScope::ONE_TARGET,
+  Skill* charr = new Skill(143, "Inflict Charr", ActionScope::ONE_TARGET,
     inflict_actions[3], 100, 10);
   charr->setPrimary(Element::ELECTRIC);
+  charr->setFlag(SkillFlags::OFFENSIVE);
 
-  Skill* berserk = new Skill(144, "Berserker", ActionScope::ONE_TARGET,
+  Skill* berserk = new Skill(144, "Inflict Berserker", ActionScope::ONE_TARGET,
     inflict_actions[4], 100, 10);
   berserk->setPrimary(Element::DIGITAL);
+  berserk->setFlag(SkillFlags::OFFENSIVE);
 
-  Skill* confuse = new Skill(145, "Befuddle", ActionScope::ONE_ALLY,
+  Skill* confuse = new Skill(145, "Inflict Befuddle", ActionScope::ONE_ALLY,
     inflict_actions[5], 100, 10);
   confuse->setPrimary(Element::NIHIL);
+  confuse->setFlag(SkillFlags::OFFENSIVE);
 
-  Skill* silence = new Skill(146, "Hush Hush", ActionScope::ONE_TARGET,
+  Skill* silence = new Skill(146, "Inflict Silence", ActionScope::ONE_TARGET,
     inflict_actions[6], 100, 10);
 
   // Skill* bubbinate = new Skill(147, "Bubbinate", ActionScope::ONE_TARGET,
@@ -476,21 +492,24 @@ void Game::setupBattle()
   Skill* modulate = new Skill(156, "Modulate", ActionScope::USER, 
     inflict_actions[26], 100, 10);
   modulate->setFlag(SkillFlags::DEFENSIVE, true);
+  modulate->setPrimary(Element::PHYSICAL);
 
   Skill* life_all = new Skill(155, "Regen All", ActionScope::ONE_PARTY,
     alter_actions[1], 94, 45);
   life_all->setFlag(SkillFlags::DEFENSIVE, true);
+  life_all->setPrimary(Element::PHYSICAL);
 
   // Test Skill Sets
   SkillSet* physical_skills = new SkillSet(physical_01, 1);
-  // physical_skills->addSkill(cure_poison, 1);
+  physical_skills->addSkill(cure_poison, 1);
   physical_skills->addSkill(physical_02, 1);
+
   // physical_skills->addSkill(physical_03, 1);
   // physical_skills->addSkill(user_reduce_by_ally, 1);
   // physical_skills->addSkill(alter_qtdr_by_thag, 1);
   // physical_skills->addSkill(alter_qtdr_by_thag_flip, 1);
   // physical_skills->addSkill(physical_04, 1);
-  // // physical_skills->addSkill(self_heal, 1);
+  // physical_skills->addSkill(self_heal, 1);
   // physical_skills->addSkill(ally_heal, 1);
   // physical_skills->addSkill(revive_ally, 1);
   // physical_skills->addSkill(life_steal, 1);
@@ -499,10 +518,8 @@ void Game::setupBattle()
   // physical_skills->addSkill(paralysis, 1);
   // physical_skills->addSkill(scald, 1);
   // physical_skills->addSkill(charr, 1);
-  // physical_skills->addSkill(berserk, 1);
+  physical_skills->addSkill(berserk, 1);
   // physical_skills->addSkill(confuse, 1);
-  physical_skills->addSkill(silence, 1);
-  physical_skills->addSkill(fire_01, 1);
   // physical_skills->addSkill(bubbinate, 1);
   // physical_skills->addSkill(all_atk_buff, 1);
   // physical_skills->addSkill(all_def_buff, 1);
@@ -511,6 +528,9 @@ void Game::setupBattle()
   // physical_skills->addSkill(blindness, 1);
   // physical_skills->addSkill(dreadstruck, 1);
   // physical_skills->addSkill(dreamsnare, 1);
+
+  physical_skills->addSkill(silence, 1);
+  physical_skills->addSkill(fire_01, 1);
 
   SkillSet* elemental_skills = new SkillSet(fire_01, 1);
 

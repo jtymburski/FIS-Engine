@@ -1169,22 +1169,29 @@ int32_t Battle::calcTurnRegen(Person* const target, const Attribute& attr)
     auto one_pc = static_cast<float>(target->getTemp().getStat(attr)) / 100.0;
     auto alt_factor = getRegenFactor(target->getQDRegenRate());
 
+    std::cout << "One PC: " << one_pc << std::endl;
+    std::cout << "Alt Factor: " << alt_factor << std::endl;
+
     if (attr == Attribute::VITA)
       alt_factor = getRegenFactor(target->getVitaRegenRate());
 
     regen_amt = one_pc * static_cast<float>(alt_factor);
     auto max_amt = target->getTemp().getStat(attr);
 
-    if (target->getCurr().getStat(attr) + regen_amt >= max_amt)
-      regen_amt = max_amt - target->getCurr().getStat(attr);
+    std::cout << "Regen Amt: " << regen_amt << std::endl;
+    std::cout << "Max Amt: " << max_amt << std::endl;
 
-    target->getCurr().alterStat(attr, regen_amt);
+    if (regen_amt >= max_amt)
+      regen_amt = max_amt;
+
+    std::cout << "Regne amt: " << regen_amt << std::endl;
   }
   else
   {
     std::cerr << "[Error] Bad turn regeneration calculation" << std::endl;
   }
 
+  std::cout << "Returning regen amt: " << regen_amt << std::endl;
   return regen_amt;
 }
 
@@ -1741,11 +1748,11 @@ void Battle::performEvents()
       auto str_damage = "";
 
       if (event->type == EventType::STANDARD_DAMAGE)
-        str_damage = "DAMAGE";
+        str_damage = "STRD DMG";
       else if (event->type == EventType::CRITICAL_DAMAGE)
         str_damage = "CRIT DMG";
       else if (event->type == EventType::POISON_DAMAGE)
-        str_damage = "POISON DMG";
+        str_damage = "POSN DMG";
       else if (event->type == EventType::BURN_DAMAGE)
         str_damage = "BURN DMG";
       else if (event->type == EventType::HITBACK_DAMAGE)
@@ -1878,7 +1885,17 @@ void Battle::performEvents()
     }
     else if (event->type == EventType::ALTERATION)
     {
-      //TODO [02-14-15] - Process alteration events
+      //TODO: Finish/clean up [04-03-15]
+      /* Perform the alteration on the target */
+      event->targets.at(0)->getCurr().alterStat(
+          event->action_use->getTargetAttribute(), event->amount);
+
+      if (getBattleMode() == BattleMode::TEXT)
+      {
+        // std::cout << "{ALTER} " << action_target->getName() << "'s " 
+        //     << AttributeSet::getName(targ_attr) << " has been altered by "
+        //     << alt_value << "." << std::endl;
+      }
     }
     else if (event->type == EventType::ASSIGNMENT)
     {
@@ -1886,7 +1903,18 @@ void Battle::performEvents()
     }
     else if (event->type == EventType::REVIVAL)
     {
-      event->user->setBFlag(BState::ALIVE, true);
+      /* A revive event contains a target to be revived (which needs their
+       * alive flag to be reset) and an amount of VITA to assign their curr
+       * VITA to */
+      event->targets.at(0)->setBFlag(BState::ALIVE, true);
+      curr_target->getCurr().setStat(Attribute::VITA, event->amount);
+
+    if (getBattleMode() == BattleMode::TEXT)
+    {
+      std::cout << "{REVIVE} " << curr_target->getName() << " has been brought "
+                << " back from KO with " 
+                << curr_target->getCurr().getStat(Attribute::VITA) <<" VITA.\n";
+    }
     }
     else if (event->type == EventType::HEAL_HEALTH)
     {
@@ -1911,12 +1939,14 @@ void Battle::performEvents()
     }
     else if (event->type == EventType::REGEN_QTDR)
     {
+      std::cout << "--- Calculating qtdr regen ----" << std::endl; 
       auto new_val = event->targets.at(0)->getCurr().getStat(Attribute::QTDR) + 
          event->amount;
+      std::cout << "new_val: " << new_val << std::endl;
 
       event->targets.at(0)->getCurr().setStat(Attribute::QTDR, new_val);
 
-      if (event-> amount > 0)
+      if (event->amount != 0)
       {
         std::cout << "{REGEN} " << event->targets.at(0)->getName() 
                   << " has regained " << event->amount << " QTDR.\n";
@@ -1995,15 +2025,18 @@ void Battle::personalUpkeep(Person* const target)
     auto vita_regen = calcTurnRegen(target, Attribute::VITA);
     auto qtdr_regen = calcTurnRegen(target, Attribute::QTDR);
 
+    std::cout << "Vita Regen: " << vita_regen << std::endl;
+    std::cout << "Qtdr Regen: " << qtdr_regen << std::endl;
+
     event_buffer->createDamageEvent(EventType::REGEN_VITA, target, -vita_regen);
     event_buffer->createDamageEvent(EventType::REGEN_QTDR, target, -qtdr_regen);
 
     target->battleTurnPrep();
     setBattleFlag(CombatState::PERSON_UPKEEP_COMPLETE);
   }
-
   event_buffer->print(true); //TODO [03-28-15]
   setBattleFlag(CombatState::READY_TO_RENDER, true);
+
 }
 
 /*
@@ -2027,7 +2060,10 @@ void Battle::processBuffer()
   {
     last_index |= !action_buffer->setNext();
     setBattleFlag(CombatState::BEGIN_ACTION_PROCESSING, false);
+
+    std::cout << "!!!! SETTING ACTION PROCESSING COMPLETE FALSE" << std::endl;
     setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, false);
+
     action_buffer->print(false);
   }
   else if (!getBattleFlag(CombatState::BEGIN_PROCESSING))
@@ -2096,9 +2132,10 @@ void Battle::processBuffer()
   }
 
   /* Complete the processing of the last of events and move to clean up */
-  if (last_index & getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
+  if (last_index && getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
     setBattleFlag(CombatState::ALL_PROCESSING_COMPLETE, true);
 
+  printProcessingState();
   setBattleFlag(CombatState::READY_TO_RENDER, true);
 }
 
@@ -2255,7 +2292,7 @@ bool Battle::processAction(BattleEvent* battle_event,
           curr_target, 0);
     
       done = processDamageAction(damage_event, damage_type);
-      setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
+      // TODO setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
     }
     else if (curr_action->actionFlag(ActionFlags::INFLICT))
     {
@@ -2405,6 +2442,7 @@ bool Battle::processAilmentUpdate(Ailment* ail)
  * Inputs: std::vector<Person*> - vector of targets in the form of Person ptrs
  *         std::vector<DamageType> - vector of corresponding damage types
  * Output: bool - true if a party death (vic. cond.) occured during operation
+ * //TODO - Convert to Process/Perform/Render [04-03-15]
  */
 bool Battle::processAlterAction(const DamageType &damage_type,
     Person* action_target, Person* factor_target)
@@ -2440,23 +2478,18 @@ bool Battle::processAlterAction(const DamageType &damage_type,
   {
     alt_value = max_value - cur_value;
   }
+
   /* The altered amount cannot be such that it would decrease a stat to neg */
   else if (alt_value < 0 && alt_value < -cur_value)
   {
     alt_value = -cur_value;
-    death = true;
+
+    /* If the altered attribute is VITA, a death will occur here */
+    //TODO
+      death = true;
   }
 
-  /* Actually perform the alteration */
-  action_target->getCurr().alterStat(targ_attr, alt_value);
-
-  if (getBattleMode() == BattleMode::TEXT)
-  {
-    std::cout << "{ALTER} " << action_target->getName() << "'s " 
-              << AttributeSet::getName(targ_attr) << " has been altered by "
-              << alt_value << "." << std::endl;
-  }
-
+  //TODO
   if (death)
     done = updatePersonDeath(damage_type);
 
@@ -2472,6 +2505,7 @@ bool Battle::processAlterAction(const DamageType &damage_type,
  *         action_target - the person who will have the assignment done on them.
  *         factor_target - the person who by which the action target changes
  * Output: bool - true if 
+ * //TODO - Convert to Process/Perform/Render - [04-03-15]
  */
 bool Battle::processAssignAction(const DamageType &damage_type,
     Person* action_target, Person* factor_target)
@@ -2642,6 +2676,9 @@ bool Battle::processPersonDeath(bool ally_target)
  */
 bool Battle::processRelieveAction()
 {
+  /* If the ailment attempting to be relieved is inflicted upon the current 
+   * target, loop through all existing ailments until the ailment is found
+   * and create a relieving event for that ailment */
   if (canRelieve(curr_action->getAilment()))
   {
     for (auto ill : ailments)
@@ -2655,6 +2692,8 @@ bool Battle::processRelieveAction()
 
     return true;
   }
+  /* If the target cannot be relieved of the given ailment, create an
+   * infliction fizzle event on the buffer */
   else
   {
     std::vector<Person*> targets{curr_target};
@@ -2666,17 +2705,20 @@ bool Battle::processRelieveAction()
 }
 
 /*
- * Description: 
+ * Description: Calculates the outcome of a revive action on the current target.
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: bool - TODO
  */
 bool Battle::processReviveAction()
 {
+  auto heal_value = 1;
   auto one_pc = curr_target->getTemp().getStat(Attribute::VITA);
   auto base_pc = curr_action->actionFlag(ActionFlags::BASE_PC);
   auto vari_pc = curr_action->actionFlag(ActionFlags::VARI_PC);
 
+  /* Calculate the amount of health to revive the person to based on
+   * base/variance values of the revive action */
   int32_t base_val = 0;
   int32_t vari_val = 0;
 
@@ -2687,27 +2729,23 @@ bool Battle::processReviveAction()
 
   vari_val = Helpers::randU(-vari_val, +vari_val);
 
-  curr_target->getCurr().setStat(Attribute::VITA, base_val + vari_val);
+  /* Append the revival event on to the buffer */
+  if ((base_val + vari_val) > heal_value)
+    heal_value = base_val + vari_val;
 
-  if (curr_target->getCurr().getStat(Attribute::VITA) > 0)
-    curr_target->setBFlag(BState::ALIVE, true);
+  auto new_event = event_buffer->createReviveEvent(curr_target, heal_value);
 
-  if (getBattleMode() == BattleMode::TEXT)
-  {
-    std::cout << "{REVIVE} " << curr_target->getName() << " has been brought "
-              << " back from KO with " 
-              << curr_target->getCurr().getStat(Attribute::VITA) << " VITA.\n";
-  }
-
-  //TODO: All party target attacks should now hit the alive person.
-  return false;
+  return new_event != nullptr;
 }
 
 /*
- * Description: 
+ * Description: Processes the outcome of an inflict action onto the event
+ *              buffer. This includes determining whether the curr target can
+ *              be inflicted with the action and the ailments which will be
+ *              reset/overwritten for said infliction to take p[lace]
  *
- * Inputs:
- * Output:
+ * Inputs: none
+ * Output: bool //TODO
  */
 bool Battle::processInflictAction()
 {
@@ -2734,9 +2772,10 @@ bool Battle::processInflictAction()
   }
   else
   {
+    event_buffer->createFizzleEvent(EventType::INFLICTION_FIZZLE, curr_user,
+      curr_target);
     /* If the person cannot be inflicted with the ailment, create an ailment
      * fizzling event */
-    //TODO - Failed infliction types? Move to perform? [03-04-15]
     if (getBattleMode() == BattleMode::TEXT)
     {
       std::cout << "{FAILED} " << curr_target->getName() << " cannot be "
@@ -2830,7 +2869,10 @@ void Battle::processSkill(std::vector<Person*> targets, std::vector<DamageType>
   curr_skill = action_buffer->getSkill();
 
   if (getBattleMode() == BattleMode::TEXT)
+  {
     std::cout << "{Skill} Processing: " << curr_skill->getName() << std::endl;
+    printPartyState();
+  }
 
   auto process_first_index = false;
   auto process_action = false;
@@ -3211,7 +3253,7 @@ void Battle::upkeep()
   if (getBattleMode() == BattleMode::TEXT)
     std::cout << "---- Upkeep Processing ---- " << std::endl;
 
-  printProcessingState();
+  //printProcessingState();
 
   if (!(getBattleFlag(CombatState::BEGIN_PERSON_UPKEEPS)))
   {
@@ -4046,8 +4088,6 @@ void Battle::printProcessingState()
             << getBattleFlag(CombatState::RENDERING_COMPLETE);
   std::cout << "\nREADY TO RENDER: "
             << getBattleFlag(CombatState::READY_TO_RENDER);
-  std::cout << "\nPERFORMING_COMPLETE: " 
-            << getBattleFlag(CombatState::PERFORMING_COMPLETE);
   std::cout << "\nBEGIN_PROCESSING: " 
             << getBattleFlag(CombatState::BEGIN_PROCESSING);
   std::cout << "\nBEGIN ACTION PROCESSING: " 
@@ -4062,10 +4102,6 @@ void Battle::printProcessingState()
             << getBattleFlag(CombatState::PERSON_UPKEEP_COMPLETE);
   std::cout << "\nBEGIN AILMENT UPKEEPS: "
             << getBattleFlag(CombatState::BEGIN_AILMENT_UPKEEPS);
-  std::cout << "\nCOMPLETE AILMENT UPKEEPS: "
-            << getBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS);
-  // std::cout << "\nCURRENT AILMENT STARTED: "
-  //           << getBattleFlag(CombatState::CURRENT_AILMENT_STARTED);
   std::cout << "\nCURRENT AILMENT COMPLETE: "
             << getBattleFlag(CombatState::CURRENT_AILMENT_COMPLETE);
   std::cout << "\nALL UPKEEPS COMPLETE: "
@@ -4190,7 +4226,7 @@ bool Battle::update(int32_t cycle_time)
         event_buffer->setCurrentIndex();
         performEvents();
       }
-      
+
       /* If all processing is complete, after performing -> move state */
       if (getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
       {

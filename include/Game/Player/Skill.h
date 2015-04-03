@@ -40,7 +40,7 @@ enum class SkillFlags
   INFLICTING = 1 << 6, /* Does this skill contain an INFLICTING effect? */
   RELIEVING  = 1 << 7, /* Does this skill contain a RELIEVING effect? */
   REVIVING   = 1 << 8, /* Does this skill contain a REVIVING effect? */
-  ASSIGNING  = 1 << 9, /* Doe sthis skill contain an ASSIGNING effect? */
+  ASSIGNING  = 1 << 9, /* Does this skill contain an ASSIGNING effect? */
   VALID      = 1 << 11  /* Is this a valid skill? */
 };
 
