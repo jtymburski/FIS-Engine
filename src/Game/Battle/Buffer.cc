@@ -560,6 +560,20 @@ ActionType Buffer::getActionType()
 }
 
 /*
+ * Description: Returns the cooldown of the current action buffer index
+ *
+ * Inputs: none 
+ * Output: int32_t - the cooldown of the current index
+ */
+int32_t Buffer::getCooldown()
+{
+  if (checkValid(getIndex(index)))
+    return getIndex(index).cooldown;
+
+  return 0;
+}
+
+/*
  * Description: Returns the pointer to the person of the current index's user.
  *
  * Inputs: none 

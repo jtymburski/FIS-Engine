@@ -270,6 +270,47 @@ BattleEvent* EventBuffer::createDefendEvent(EventType defend_type, Person* user)
 }
 
 /*
+ * Description: Creates an experience gaining event (gain/loss/bubby increase)
+ *
+ * Inputs: EventType exp_type - the type of exp gain/loss event
+ *         Person* target - the target of the experience event
+ *         int32_t amount - the amount of experience involved
+ * Output: BattleEvent* - pointer to the recently created experience event
+ */
+BattleEvent* EventBuffer::createExperienceEvent(EventType exp_type, 
+    Person* target, int32_t amount)
+{
+  auto new_event = createNewEvent();
+  new_event->type = exp_type;
+  std::vector<Person*> target_vec{target};
+  new_event->targets = target_vec;
+  new_event->amount = amount;
+  events.push_back(new_event);
+
+  return new_event;
+}
+
+/*
+ * Description: Creates an experience gaining event (gain/loss/bubby increase)
+ *
+ * Inputs: EventType exp_type - the type of exp gain/loss event
+ *         Bubby* target - the target of the experience event
+ *         int32_t amount - the amount of experience involved
+ * Output: BattleEvent* - pointer to the recently created experience event
+ */
+BattleEvent* EventBuffer::createExperienceEvent(EventType exp_type,
+    Bubby* target, int32_t amount)
+{
+  auto new_event = createNewEvent();
+  new_event->type      = exp_type;
+  new_event->bubby_use = target;
+  new_event->amount    = amount;
+  events.push_back(new_event);
+
+  return new_event;
+}
+
+/*
  * Description: Creates a new guard event and appends it to the list of events.
  *
  * Inputs: EventType guard_type - the type of guarding event
@@ -288,6 +329,25 @@ BattleEvent* EventBuffer::createGuardEvent(EventType guard_type, Person* user,
   events.push_back(new_event);
 
   return new_event;
+}
+
+/*
+ * Description: Creates an appends a create item event to the buffer.
+ *
+ * Inputs: Item* item_use - pointer to the item to be used
+ *         Person* user - the user of the item
+ *         Person* target - the target of the item
+ * Output: BattleEvent* - pointer to a battle event
+ */
+BattleEvent* EventBuffer::createItemEvent(Item* item_use, Person* user,
+    Person* target)
+{
+  auto new_event = createNewEvent();
+  new_event->item_use = item_use;
+  new_event->user = user;
+  std::vector<Person*> target_vec{target};
+  new_event->targets = target_vec;
+  events.push_back(new_event);
 }
 
 /*
@@ -320,6 +380,7 @@ BattleEvent* EventBuffer::createNewEvent()
   auto new_event = new BattleEvent();
   new_event->type       = EventType::NONE;
   new_event->action_use   = nullptr;
+  new_event->bubby_use    = nullptr;
   // new_event->ailment_cure = nullptr;
   new_event->item_use     = nullptr;
   new_event->skill_use    = nullptr;
@@ -554,6 +615,8 @@ bool EventBuffer::printEvent(uint32_t index)
 
     if (events.at(index)->action_use != nullptr)
       std::cout << "\nAction: " << events.at(index)->action_use;
+    if (events.at(index)->bubby_use != nullptr)
+      std::cout << "\nBubby: " << events.at(index)->bubby_use;
     if (events.at(index)->skill_use != nullptr)
       std::cout << "\nSkill: " << events.at(index)->skill_use->getName();
     if (events.at(index)->user != nullptr)

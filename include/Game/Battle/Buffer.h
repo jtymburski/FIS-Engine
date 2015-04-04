@@ -138,6 +138,9 @@ public:
 
   /* Returns the action type for the current index */
   ActionType getActionType();
+  
+  /* Returns the value for the cooldown at the current element index */
+  int32_t getCooldown();
 
   /* Obtains the Person ptr for the current element index */
   Person* getUser();

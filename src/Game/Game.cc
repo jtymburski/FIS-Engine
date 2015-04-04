@@ -372,6 +372,7 @@ void Game::setupBattle()
 
   Skill* fire_01 = new Skill(110, "Burninate The Countryside", ActionScope::ONE_PARTY, 
     damage_actions[11], 85, 55);
+  ///fire_01->setCooldown(1);
   fire_01->setThumbnail(new Frame("sprites/Battle/Skills/_sample_skill_1.png", 
                                   active_renderer));
   fire_01->setPrimary(Element::FIRE);
@@ -513,7 +514,7 @@ void Game::setupBattle()
   // physical_skills->addSkill(ally_heal, 1);
   // physical_skills->addSkill(revive_ally, 1);
   // physical_skills->addSkill(life_steal, 1);
-  // physical_skills->addSkill(poison, 1);
+  physical_skills->addSkill(poison, 1);
   // physical_skills->addSkill(burn, 1);
   // physical_skills->addSkill(paralysis, 1);
   // physical_skills->addSkill(scald, 1);
@@ -724,7 +725,8 @@ void Game::setupBattle()
 
   //getPerson(300)->print(false, false, true, true);
 
-  game_battle = new Battle(game_config, friends, enemies, bubbified_skills);
+  game_battle = new Battle(game_config, friends, enemies, bubbified_skills,
+      &event_handler);
 
   if(battle_display == nullptr)
   {
@@ -1483,7 +1485,12 @@ bool Game::update(int32_t cycle_time)
     bool success = true;
 
     if(game_battle != nullptr)
+    {
       success &= game_battle->update(cycle_time);
+
+      if (game_battle->getBattleFlag(CombatState::OUTCOME_PERFORMED))
+        mode = MAP;
+    }
     if(battle_display != nullptr)
       success &= battle_display->update(cycle_time);
 

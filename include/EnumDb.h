@@ -257,7 +257,14 @@ enum class EventType : std::uint8_t
   PARTY_DEATH = 45,
   INFLICTION_FIZZLE = 46,
   DEATHTIMER_DEATH = 47,
-  NONE = 48
+  EXP_GAIN = 48,
+  EXP_LOSS = 49,
+  LEVEL_UP = 50,
+  EQUIP_EXP_GAIN = 51,
+  BUBBY_LEVEL_UP = 52,
+  GAIN_ITEM = 52,
+  GAIN_MONEY = 53,
+  NONE = 54
 };
 
 /*

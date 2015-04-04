@@ -32,6 +32,7 @@ struct BattleEvent
   EventType type;
   Action* action_use;
   Ailment* ailment_use;
+  Bubby* bubby_use;
   Item*  item_use;
   Skill* skill_use;
   Person* user;
@@ -104,12 +105,23 @@ public:
   BattleEvent* createDeathEvent(EventType death_type, Person* target, 
       bool allies);
 
+  /* Creates an experience event */
+  BattleEvent* createExperienceEvent(EventType exp_type, Person* target,
+    int32_t amount);
+
+  /* Overridden experience function for Bubbies */
+  BattleEvent* createExperienceEvent(EventType exp_type, Bubby* target,
+      int32_t amount);
+
   /* Creates a defend (begin/persist/break) event and returns a pointer */
   BattleEvent* createDefendEvent(EventType defend_type, Person* user);
 
   /* Creates a guard event and returns a pointer to the event */
   BattleEvent* createGuardEvent(EventType guard_type, Person* user,
       Person* target);
+  
+  /* Creates an item event */
+  BattleEvent* createItemEvent(Item* item_use, Person* user, Person* target);
 
   /* Creates a miss event and returns a pointer */
   BattleEvent* createMissEvent(EventType miss_type, Person* user,

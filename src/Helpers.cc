@@ -310,6 +310,20 @@ std::string Helpers::eventToStr(EventType event)
     return "INFLICTION_FIZZLE";
   if (event == EventType::DEATHTIMER_DEATH)
     return "DEATHTIMER_DEATH";
+  if (event == EventType::EXP_GAIN)
+    return "EXP_GAIN";
+  if (event == EventType::EXP_LOSS)
+    return "EXP_LOSS";
+  if (event == EventType::LEVEL_UP)
+    return "LEVEL_UP";
+  if (event == EventType::EQUIP_EXP_GAIN)
+    return "EQUIP_EXP_GAIN";
+  if (event == EventType::BUBBY_LEVEL_UP)
+    return "BUBBY_LEVEL_UP";
+  if (event == EventType::GAIN_ITEM)
+    return "GAIN ITEM";
+  if (event == EventType::GAIN_MONEY)
+    return "GAIN MONEY";
   if (event == EventType::NONE)
     return "NONE";
 

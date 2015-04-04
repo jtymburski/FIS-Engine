@@ -1113,7 +1113,8 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
   }
   else
   {
-    std::cout << "CANNOT CHANGE INDEX" << std::endl;
+    if (config->getBattleMode() == BattleMode::TEXT)
+      std::cout << "CANNOT CHANGE INDEX" << std::endl;
   }
 
   if (config->getBattleMode() == BattleMode::TEXT)

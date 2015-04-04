@@ -9,22 +9,17 @@
 *
 * TODO
 * ----
-* [12-30-14]: Break up processing and performing of actions
 * [03-01-14]: Weather updates
-* [08-01-14]: Battle front end
 * [08-24-14]: Finish battle run functionality
 * [08-24-14]: Finish victory functionality
 * [08-24-14]: Finish battle lost functionality
 * [08-24-14]: Ailment corner cases
-* [11-06-14]: Update the battle interface
 * [11-06-14]: Event handler finish signal (battle)?
 * [11-06-14]: Update personal record run from battle count 
 * [11-23-14]: Documentation
-* [03-04-15]: Fix battle loop bug? (Action processing flag?)
 *
 * BUGS
 * ----
-* [03-29-15]: Party death when not actually rendered dead.
 * [03-29-15]: Silence seg fault?
 * [03-29-15]: Is battleWon() being called twice upon victory?
 *******************************************************************************/
@@ -36,6 +31,7 @@
 #include "Game/Battle/EventBuffer.h"
 #include "Game/Player/Ailment.h"
 #include "Game/Player/Party.h"
+#include "Game/EventHandler.h"
 #include "Options.h"
 
 using std::begin;
@@ -47,13 +43,13 @@ enum class CombatState
 {
   CONFIGURED                 = 1 << 0,
   FLAGS_CONFIGURED           = 1 << 1,
-  ACTION_DONE                = 1 << 2, // Needed?
-  PHASE_DONE                 = 1 << 3,
-  VICTORY                    = 1 << 4,
-  LOSS                       = 1 << 5,
-  ALLIES_RUN                 = 1 << 6,
-  ENEMIES_RUN                = 1 << 7,
-  OUTCOME_DONE               = 1 << 8,
+  PHASE_DONE                 = 1 << 2,
+  VICTORY                    = 1 << 3,
+  LOSS                       = 1 << 4,
+  ALLIES_RUN                 = 1 << 5,
+  ENEMIES_RUN                = 1 << 6,
+  OUTCOME_PROCESSED          = 1 << 7,
+  OUTCOME_PERFORMED          = 1 << 8,
   ERROR_STATE                = 1 << 9,
   RANDOM_ENCOUNTER           = 1 << 10,
   MINI_BOSS                  = 1 << 11,
@@ -119,7 +115,8 @@ class Battle
 public:
   /* Constructs a party given two parties and configured options */
   Battle(Options* const running_config, Party* const friends, 
-         Party* const foes, SkillSet* const bubbified_skills);
+         Party* const foes, SkillSet* const bubbified_skills, 
+         EventHandler* event_handler);
 
   /* Annihilates a Battle object */
   ~Battle();
@@ -142,6 +139,9 @@ private:
 
   /* The buffer of events for the battle */
   EventBuffer* event_buffer;
+
+  /* The EventHandler */
+  EventHandler* event_handler;
 
   /* The Battle Menu Bar */
   BattleMenu* menu;
@@ -326,6 +326,9 @@ private:
   /* Calculates the modifiers to be used for curr skill elemental adv setup */
   void calcElementalMods();
 
+  /* Calculates the amount of experience a person will gain for win of Battle */
+  int32_t calcExperience(Person* ally);
+
   /* Calculates the Crit Factor to be applied to the damage */
   float calcCritFactor();
   
@@ -389,6 +392,9 @@ private:
   /* Perform the Battle events */
   void performEvents();
 
+  /* Sub-function to perform damage events */
+  void performDamageEvent(BattleEvent* event);
+
   /* Deals with character related upkeep */
   void personalUpkeep(Person* const target);
 
@@ -409,7 +415,7 @@ private:
   bool processAilmentUpdate(Ailment* ail);
 
   /* Processes an alteration action */
-  bool processAlterAction(BattleEvent* alter_event, 
+  bool processAlterAction(BattleEvent* alter_event,
       const DamageType &damage_type, Person* action_target,
       Person* factor_target);
 
@@ -436,6 +442,10 @@ private:
 
   /* Processes an inflicting action */
   bool processInflictAction();
+
+  /* Processes an individual item from a user against targets */
+  void processItem(std::vector<Person*> targets, 
+      std::vector<DamageType> damage_types);
 
   /* Processes an individual action from a user against targets */
   void processSkill(std::vector<Person*> targets, 

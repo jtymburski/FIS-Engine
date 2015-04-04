@@ -138,12 +138,16 @@ const int16_t  Battle::kREGEN_RATE_GRAND_PC          =      9;
  * Inputs: Options* running_config - running config assignment
  *         Party* const friends - pointer to friends party
  *         Party* const foes - pointer to foes party
+ *         SkillSet* bubbified_skills - skills for a Bubbified person
+ *         EventHandler* event_handler - the event handler for hte Battle
  */
 Battle::Battle(Options* running_config, Party* const friends, Party* const foes,
-    SkillSet* const bubbified_skills)
+    SkillSet* const bubbified_skills, EventHandler* event_handler)
       : bubbified_skills{bubbified_skills}
+      , event_handler{event_handler}
       , friends{friends}
       , foes{foes}
+
 {
   if (!checkAIModules())
     std::cerr << "[Error] Crtical Error: AI Moudles for enemies bad!\n";
@@ -353,7 +357,7 @@ void Battle::battleLost()
     std::cout << "Battle lost! :-(\n";  
   }
 
-  setBattleFlag(CombatState::OUTCOME_DONE);
+  setBattleFlag(CombatState::OUTCOME_PROCESSED);
   setNextTurnState();
 
   //TODO: [11-14-14] Return to title after battle lost.
@@ -396,46 +400,69 @@ void Battle::battleRun()
       std::cout << "{ENEMIES RUN} The foes team has ran from Battle! :-/\n";
   }
 
-  setBattleFlag(CombatState::OUTCOME_DONE);
+  setBattleFlag(CombatState::OUTCOME_PROCESSED);
   setNextTurnState();
 }
 
 /*
- * Description: Called when the Battle has been won
+ * Description: Victory funcitonality for when the Battle is victorious
  *
  * Inputs: none
  * Output: none
- * //TODO: [08-24-14] Finish victory functions
  */
 void Battle::battleWon()
 {
-  /* Cleanup the current Battle state -- revert Persons back to their
-   * original stats. This includes unapplying all ailments */
-  for (auto ailment : ailments)
-  {
-    std::cout << "Removing ailment on victory!" << std::endl;
-    removeAilment(ailment);
-  }
-
-  //call victory
-    // for each person on friends
-      // increase exp by enemyTotalExp
-      // levelUp() --> show update info
-      // for each equipment
-        // for each bubby
-          // increase exp by enemyTotalExp
-          // levelUp() --> show update info
-   // process loot
-     // money
-     // items
-
   if (getBattleMode() == BattleMode::TEXT)
   {
     printPartyState();
-    std::cout << "Battle victorious! :-) " << std::endl;
+    std::cout << std::endl;
+    std::cout << "----------------------------" << std::endl;
+    std::cout << "===== BATTLE VICTORIOUS ====" << std::endl;
+    std::cout << "----------------------------" << std::endl;
   }
 
-  setBattleFlag(CombatState::OUTCOME_DONE);
+  /* Cleanup the current Battle state -- This includes unapplying ailments */
+  for (auto ailment : ailments)
+    removeAilment(ailment);
+
+  //TODO - the following code is temporary [04-03-15]
+  auto living_members = friends->getLivingMemberPtrs();
+
+  for (auto& member : living_members)
+  {
+    auto exp_to_add = calcExperience(member);
+    member->addExp(exp_to_add);
+
+    if (getBattleMode() == BattleMode::TEXT)
+    {
+      std::cout << "{EXP GAIN} -- " << member->getName() << "has gained " 
+          << exp_to_add << "." << std::endl;
+    }
+  }
+
+  //TODO [04-03-15]
+  // Update the personal record for each member, including battle counts
+  // and what battles they have won
+  // Future: Bestiary index
+  
+  // For each living member in friends
+  // Add experience to the member (event loop processing?)
+  // Find out if a level up occurs
+    // Find out how many level ups occur
+    // Append each as a level up event
+    // Find out differences in skill gains
+    // Append skill differences to a skill differences vector
+  // Show total skill difference with current skills at end
+  // For each equipment
+    // For each Bubby
+      // Add exp to the bubby -> will level up
+  // For the loot
+    // Find out what items will be received -> add to inventory
+      // Refuse gain of items?
+    // Findo out how much money will be received -> add to inventory
+
+  setBattleFlag(CombatState::OUTCOME_PROCESSED);
+  setBattleFlag(CombatState::OUTCOME_PERFORMED); //TODO [04-03-15]
   setNextTurnState();
 }
 
@@ -454,16 +481,19 @@ void Battle::battleWon()
 bool Battle::bufferEnemyAction()
 {
   auto buffered      = false;
-
-  curr_user = getPerson(person_index);
-
   auto action_type    = curr_module->getActionType();
   auto action_targets = curr_module->getChosenTargets();
 
+  /* Get the current user pointer from the processing person indexd */
+  curr_user = getPerson(person_index);
+
   if (action_type == ActionType::SKILL)
   {
+    /* Grab the current selected skill from the module and attempt to add it
+     * into the buffer. Store the cost paid for the skill */
     curr_skill = curr_module->getSelectedSkill();
-    buffered = action_buffer->add(curr_user, curr_skill, action_targets, 0);
+    buffered = action_buffer->add(curr_user, curr_skill, action_targets,
+        curr_skill->getCooldown());
 
     /* Pay the required QTDR cost for the Skill */
     auto true_cost = curr_user->getTrueCost(curr_skill);
@@ -471,8 +501,11 @@ bool Battle::bufferEnemyAction()
   }
   else if (action_type == ActionType::ITEM)
   {
+    /* Grab the current selected item from the module and attempt to add it
+     * into the buffer. */
     curr_item = curr_module->getSelectedItem();
-    buffered = action_buffer->add(curr_user, curr_item, action_targets, 0);
+    buffered = action_buffer->add(curr_user, curr_item, action_targets,
+      curr_item->getUseSkill()->getCooldown());
 
     if (buffered)
     {
@@ -497,6 +530,7 @@ bool Battle::bufferEnemyAction()
            action_type == ActionType::RUN     ||
            action_type == ActionType::PASS)
   {
+    /* Other action types add in to the buffer simply */
     buffered = action_buffer->add(curr_user, action_type, action_targets, 0);
   }
   else
@@ -506,6 +540,8 @@ bool Battle::bufferEnemyAction()
 
   if (buffered)
   {
+    /* Check which flag to update, depending on whether the person can 
+     * use multiple actions per turn or not */
     if (curr_user->getBFlag(BState::SELECTED_2ND_ACTION))
       curr_user->setBFlag(BState::SELECTED_3RD_ACTION);
     else if (curr_user->getBFlag(BState::SELECTED_ACTION))
@@ -513,6 +549,7 @@ bool Battle::bufferEnemyAction()
     else
       curr_user->setBFlag(BState::SELECTED_ACTION);
 
+    /* Find out whether to increment the processing person index */
     if (canIncrementIndex(curr_user))
       return setNextPersonIndex();
   }
@@ -1024,10 +1061,32 @@ float Battle::calcCritFactor()
 }
 
 /*
- * Description:
+ * Description: Calculates the amount of experience a given ally will receive
+ *              for defeating the foes.
  *
- * Inputs: 
- * Output: 
+ * Inputs: Person* ally - the ally to calculate the experience for
+ * Output: int32_t - the amount of experience the Person will earn
+ */
+int32_t Battle::calcExperience(Person* ally)
+{
+  int32_t exp = 0;
+
+  auto foes_members = foes->getMembers();
+
+  for (auto& foe : foes_members)
+    exp += foe->getExpDrop();
+
+  return static_cast<int32_t>(exp * ally->getExpMod());
+}
+
+/*
+ * Description: Determines the state of the ignore flags based 
+ *              on the current action/skill. These flags will exclude
+ *              certain attributes from being processed in the damage formula
+ *              for the purposes of damage reduction magicalness.
+ *
+ * Inputs: none
+ * Output: bool - true if the ignore state was successfully calculated
  */
 bool Battle::calcIgnoreState()
 {
@@ -1153,10 +1212,14 @@ int16_t Battle::calcLevelDifference(std::vector<Person*> targets)
 }
 
 /*
- * Description:
+ * Description: Calculates the turn regen rate for a given target for the given
+ *              attribute (VITALITY or QUANTUM DRIVE). This regen rate is based
+ *              on the combined rate of the given target's battle class and
+ *              race class and will equate to some % of their VITA/QTDR.
  *
- * Inputs:
- * Output: 
+ * Inputs: Person* target - the target to calculate the turn regen for
+ *         Attribtue attr - the attribute to calculate the regen value for
+ * Output: int32_t - the value of the turn regen rate 
  */
 int32_t Battle::calcTurnRegen(Person* const target, const Attribute& attr)
 {
@@ -1166,33 +1229,27 @@ int32_t Battle::calcTurnRegen(Person* const target, const Attribute& attr)
 
   if (can_process)
   {
+    /* Default QTDR, and find one pc value and the factor to apply */
     auto one_pc = static_cast<float>(target->getTemp().getStat(attr)) / 100.0;
     auto alt_factor = getRegenFactor(target->getQDRegenRate());
 
-    std::cout << "One PC: " << one_pc << std::endl;
-
-
+    /* Override QTDR if the Attribute to find is VITA */
     if (attr == Attribute::VITA)
       alt_factor = getRegenFactor(target->getVitaRegenRate());
     
-    std::cout << "Alt Factor: " << alt_factor << std::endl;
+    /* The regen amt is the alt_factor * 1 % of the given attribute, but
+     * the value cannot exceed the maximum value of the stat for attribute */
     regen_amt = one_pc * static_cast<float>(alt_factor);
-    auto max_amt = target->getTemp().getStat(attr);
-
-    std::cout << "Regen Amt: " << regen_amt << std::endl;
-    std::cout << "Max Amt: " << max_amt << std::endl;
-
-    if (regen_amt >= max_amt)
-      regen_amt = max_amt;
-
-    std::cout << "Regen amt: " << regen_amt << std::endl;
+    auto max_amt = target->getTemp().getStat(attr) - 
+                   target->getCurr().getStat(attr);
+    
+    regen_amt = (regen_amt >= max_amt) ? max_amt : regen_amt;
   }
   else
   {
     std::cerr << "[Error] Bad turn regeneration calculation" << std::endl;
   }
 
-  std::cout << "Returning regen amt: " << regen_amt << std::endl;
   return regen_amt;
 }
 
@@ -1519,7 +1576,6 @@ bool Battle::doesActionHit()
   }
   else
   {
-    std::cout << "Something ain't set right!" << std::endl;
     std::cerr << "[Warning] Cannot process action missing chances" << std::endl; 
   }
 
@@ -1663,7 +1719,8 @@ void Battle::loadBattleStateFlags()
   setBattleFlag(CombatState::VICTORY, false);
   setBattleFlag(CombatState::ALLIES_RUN, false);
   setBattleFlag(CombatState::ENEMIES_RUN, false);
-  setBattleFlag(CombatState::OUTCOME_DONE, false);
+  setBattleFlag(CombatState::OUTCOME_PROCESSED, false);
+  setBattleFlag(CombatState::OUTCOME_PERFORMED, false);
   setBattleFlag(CombatState::ERROR_STATE, false);
 }
 
@@ -1701,6 +1758,9 @@ void Battle::performEvents()
 
   while (valid_next)
   {
+    auto current_size = event_buffer->getCurrentSize();
+    std::cout << "Current size: " << current_size << std::endl;
+
     auto event = event_buffer->getCurrentEvent();
     auto index = event_buffer->getIndex();
 
@@ -1709,7 +1769,8 @@ void Battle::performEvents()
       if (getBattleMode() == BattleMode::TEXT)
       {
         std::cout << "{COOLDOWN} -- The skill " << event->skill_use->getName() 
-            << " being used by " << event->user->getName() << " will cooldown."
+            << " being used by " << event->user->getName() << " will cooldown "
+            << " from " << event->amount + 1 << " to " << event->amount << "."
             << std::endl;
       }
     }
@@ -1746,35 +1807,7 @@ void Battle::performEvents()
              event->type == EventType::HITBACK_DAMAGE  ||
              event->type == EventType::METABOLIC_DAMAGE)
     {
-      auto str_damage = "";
-
-      if (event->type == EventType::STANDARD_DAMAGE)
-        str_damage = "STRD DMG";
-      else if (event->type == EventType::CRITICAL_DAMAGE)
-        str_damage = "CRIT DMG";
-      else if (event->type == EventType::POISON_DAMAGE)
-        str_damage = "POSN DMG";
-      else if (event->type == EventType::BURN_DAMAGE)
-        str_damage = "BURN DMG";
-      else if (event->type == EventType::HITBACK_DAMAGE)
-        str_damage = "HITB DMG";
-      else if (event->type == EventType::METABOLIC_DAMAGE)
-        str_damage = "META DMG";
-
-      auto amount  = event->amount;
-      auto targets = event->targets;
-
-      /* Do the actual damage to the person */
-      if (targets.size() > 0)
-      {
-        targets.at(0)->doDmg(amount, DamageType::BASE);
-
-        if (getBattleMode() == BattleMode::TEXT)
-        {
-          std::cout << "{" << str_damage << "} " << targets.at(0)->getName() 
-                    << " struck with " << amount << " damage.\n";
-        }
-      }
+      performDamageEvent(event);
     }
     else if (event->type == EventType::METABOLIC_KILL)
     {
@@ -1933,7 +1966,7 @@ void Battle::performEvents()
         std::cout << "{REVIVE} " << event->targets.at(0)->getName()
                   << " has been brought back from KO with " 
                   << curr_target->getCurr().getStat(Attribute::VITA)
-                  <<" VITA.\n";
+                  <<" VITA." << std::endl;
       }
     }
     else if (event->type == EventType::HEAL_HEALTH)
@@ -1945,6 +1978,8 @@ void Battle::performEvents()
     }
     else if (event->type == EventType::REGEN_VITA)
     {
+      std::cout << "REGEN VITA HELLO!" << std::endl;
+
       auto new_val = event->targets.at(0)->getCurr().getStat(Attribute::VITA) + 
                      event->amount;
 
@@ -1953,34 +1988,75 @@ void Battle::performEvents()
       if (event->amount > 0) 
       {
         std::cout << "{REGEN} " << event->targets.at(0)->getName() 
-                  << " has restored " << event->amount << " VITA.\n";
-    }
+                  << " has restored " << event->amount << " VITA." << std::endl;
+      }
 
     }
     else if (event->type == EventType::REGEN_QTDR)
     {
-      std::cout << "--- Calculating qtdr regen ----" << std::endl; 
       auto new_val = event->targets.at(0)->getCurr().getStat(Attribute::QTDR) + 
          event->amount;
-      std::cout << "new_val: " << new_val << std::endl;
 
       event->targets.at(0)->getCurr().setStat(Attribute::QTDR, new_val);
 
       if (event->amount != 0)
       {
         std::cout << "{REGEN} " << event->targets.at(0)->getName() 
-                  << " has regained " << event->amount << " QTDR.\n";
+                  << " has regained " << event->amount << " QTDR." << std::endl;
       }
     }
     /* Deathtimer death -> the countdown has reached zero and the target will
      * instantly be killed */
     else if (event->type == EventType::DEATHTIMER_DEATH)
     {
-
+      event->targets.at(0)->getCurr().setStat(Attribute::VITA, 0);
+      event->targets.at(0)->setBFlag(BState::ALIVE, false);
     }
 
     event_buffer->setPerformed(index);
     valid_next = event_buffer->setNextIndex();
+  }
+}
+
+/*
+ * Description: Sub-function to hold performing of some damage type event.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Battle::performDamageEvent(BattleEvent* event)
+{
+  auto str_damage = "";
+  
+  if (getBattleMode() == BattleMode::TEXT)
+  {
+    if (event->type == EventType::STANDARD_DAMAGE)
+      str_damage = "STRD DMG";
+    else if (event->type == EventType::CRITICAL_DAMAGE)
+      str_damage = "CRIT DMG";
+    else if (event->type == EventType::POISON_DAMAGE)
+      str_damage = "POSN DMG";
+    else if (event->type == EventType::BURN_DAMAGE)
+      str_damage = "BURN DMG";
+    else if (event->type == EventType::HITBACK_DAMAGE)
+      str_damage = "HITB DMG";
+    else if (event->type == EventType::METABOLIC_DAMAGE)
+      str_damage = "META DMG";
+  }
+
+  auto amount  = event->amount;
+  auto targets = event->targets;
+
+  /* Do the actual damage to the person */
+  if (targets.size() > 0)
+  {
+    targets.at(0)->doDmg(amount, DamageType::BASE);
+
+    if (getBattleMode() == BattleMode::TEXT)
+    {
+      std::cout << "{" << str_damage << "} " << targets.at(0)->getName() 
+          << " struck with " << amount << " damage." << std::endl;
+    }
   }
 }
 
@@ -2042,21 +2118,20 @@ void Battle::personalUpkeep(Person* const target)
   }
   else if (getBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS))
   {
+    /* Calculate the turn regen values and append "negative" damage events
+     * (Regen events) to the event buffer, completing the upkeep of person */
     auto vita_regen = calcTurnRegen(target, Attribute::VITA);
     auto qtdr_regen = calcTurnRegen(target, Attribute::QTDR);
 
-    std::cout << "Vita Regen: " << vita_regen << std::endl;
-    std::cout << "Qtdr Regen: " << qtdr_regen << std::endl;
-
-    event_buffer->createDamageEvent(EventType::REGEN_VITA, target, -vita_regen);
-    event_buffer->createDamageEvent(EventType::REGEN_QTDR, target, -qtdr_regen);
+    event_buffer->createDamageEvent(EventType::REGEN_VITA, target, vita_regen);
+    event_buffer->createDamageEvent(EventType::REGEN_QTDR, target, qtdr_regen);
 
     target->battleTurnPrep();
     setBattleFlag(CombatState::PERSON_UPKEEP_COMPLETE);
   }
+
   event_buffer->print(true); //TODO [03-28-15]
   setBattleFlag(CombatState::READY_TO_RENDER, true);
-
 }
 
 /*
@@ -2071,8 +2146,10 @@ void Battle::personalUpkeep(Person* const target)
  */
 void Battle::processBuffer()
 {
-  std::cout << "--- Processing Buffer ---" << std::endl;
-  auto last_index       = false;
+  if (getBattleMode() == BattleMode::TEXT)
+    std::cout << "--- Processing Buffer ---" << std::endl;
+
+  auto last_index = false;
 
   /* If Buffer index == 0, don't increment, else, increment */
   if (getBattleFlag(CombatState::BEGIN_PROCESSING) &&
@@ -2080,18 +2157,19 @@ void Battle::processBuffer()
   {
     last_index |= !action_buffer->setNext();
     setBattleFlag(CombatState::BEGIN_ACTION_PROCESSING, false);
-
-    std::cout << "!!!! SETTING ACTION PROCESSING COMPLETE FALSE" << std::endl;
     setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, false);
-
     action_buffer->print(false);
   }
+  /* If begin processing has not been assigned (after checking for complete
+   * action processing, then the action index should be set to 0 and flag 
+   * set to show that processing has begun) */
   else if (!getBattleFlag(CombatState::BEGIN_PROCESSING))
   {
     curr_action_index = 0;
     setBattleFlag(CombatState::BEGIN_PROCESSING, true);
   }
 
+  auto cooldown     = action_buffer->getCooldown();
   auto curr_action_type = ActionType::NONE;
   auto curr_targets = action_buffer->getTargets();
   auto damage_types = action_buffer->getDamageTypes();
@@ -2100,11 +2178,16 @@ void Battle::processBuffer()
 
   if (curr_action_type == ActionType::SKILL)
   {
-    processSkill(curr_targets, damage_types);
+    /* Only process the skill if its cooldown is at zero, else a skill
+     * cooldown event will be created upon a testPersonIndex call. */
+    if (cooldown == 0)
+      processSkill(curr_targets, damage_types);
+    else
+      setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE);
   }
   else if (curr_action_type == ActionType::ITEM)
   {
-    //TODO: Item processing
+    processItem(curr_targets, damage_types);
   }
   else if (curr_action_type == ActionType::DEFEND)
   {
@@ -2562,9 +2645,11 @@ bool Battle::processAssignAction(BattleEvent* assign_event,
   auto party_death  = false;
   auto max_value    = factor_target->getTemp().getStat(targ_attr);
 
+  /* Find one percent of the given attribute */
   one_pc  = static_cast<float>(factor_target->getCurr().getStat(user_attr));
   one_pc /= 100;
 
+  /* Find percentages of base and variance values of the attributes */
   set_value = (base_pc) ? (std::floor(static_cast<int32_t>(one_pc * base)))
                         : (base);
   var_value = (vari_pc) ? (std::floor(static_cast<int32_t>(one_pc * vari)))
@@ -2576,12 +2661,12 @@ bool Battle::processAssignAction(BattleEvent* assign_event,
   assign_event->amount = set_value;
   assign_event->happens = true;
 
-  //TODO - Move done to "perform action" phase? [02-01-15]
   /* If the set value is 0? What if not setting VITA? //TODO [02-01-15] */
   if (set_value == 0)
   {
     event_buffer->createDeathEvent(EventType::DEATH, action_target, 
         ally_target);
+
     party_death = processPersonDeath(ally_target);
   }
 
@@ -2601,7 +2686,7 @@ bool Battle::processAssignAction(BattleEvent* assign_event,
 bool Battle::processDamageAction(BattleEvent* damage_event,
     const DamageType &damage_type)
 {
-  auto done = false; //TODO
+  auto party_death = false;
   auto actual_crit_factor = 1.00;
   bool crit_happens = doesActionCrit();
         
@@ -2621,7 +2706,7 @@ bool Battle::processDamageAction(BattleEvent* damage_event,
   damage_event->amount = damage;
 
   /* Send damage processing (death calculations to process damage amount fn) */
-  done = processDamageAmount(damage);
+  party_death = processDamageAmount(damage);
   updateTargetDefense();
 
   if (hasInfliction(Infliction::BERSERK, curr_user))
@@ -2631,10 +2716,10 @@ bool Battle::processDamageAction(BattleEvent* damage_event,
     event_buffer->createDamageEvent(EventType::HITBACK_DAMAGE, curr_user, 
         hitback);
 
-    done = processDamageAmount(damage);
+    party_death = processDamageAmount(damage);
   }
 
-  return done;
+  return party_death;
 }
 
 /*
@@ -2824,10 +2909,11 @@ bool Battle::processInflictAction()
 }
 
 /*
- * Description:
+ * Description: Determines whether a given infliction type can be newly
+ *              instantiated upon the current target.
  *
- * Inputs:
- * Output:
+ * Inputs: Infliction test_infliction - the infliction type to test
+ * Output: bool - true if the person can be inflicted with given infliction
  */
 bool Battle::canInflict(Infliction test_infliction)
 {
@@ -2839,6 +2925,7 @@ bool Battle::canInflict(Infliction test_infliction)
   //TODO: Instead of not being able to inflict, reset current ill? [12-20-14]
   can_add &= !(hasInfliction(test_infliction, curr_target));
 
+  /* A bubbified person cannot be inflicted with other inflictions */
   if (test_infliction != Infliction::BUBBIFY)
     can_add &= !(curr_target->getAilFlag(PersonAilState::IS_BUBBY));
 
@@ -2891,16 +2978,56 @@ bool Battle::hasInfliction(Infliction type, Person* check)
   return has_infliction;
 }
 
+ /*
+ * Description: Processes the current Item selected on the buffer for
+ *              each action in its using skill against a vector of targets
+ *              which were selected as targets of the item. 
+ *
+ * Inputs: std::vetor<Person*> targets - the targets for the item
+ *         std::vector<DamageType> damage_types - the damage types
+ * Output: none
+ */
+void Battle::processItem(std::vector<Person*> targets, 
+    std::vector<DamageType> damage_types)
+{
+  curr_item  = action_buffer->getItem();
+  curr_skill = curr_item->getUseSkill();
+
+  if (!getBattleFlag(CombatState::BEGIN_ACTION_PROCESSING))
+  {
+    setBattleFlag(CombatState::BEGIN_ACTION_PROCESSING);
+
+    auto event = event_buffer->createItemEvent(curr_item, curr_user, 
+        curr_target);
+
+
+    //TODO:
+    // - What situations of items on targets will fizzle?
+    // - Abstract out processing of actions with skill for commong
+    //   function(s) between skill and item?
+    // - Can items miss?
+    // - Should items deal a damage different than based on the regular 
+    //   damage formula? Standard damage except through armor?
+
+    
+
+  }
+
+
+
+
+}
+
 /*
- * Description: Processes the current Skill (or Item->Skill) action selected
+ * Description: Processes the current Skill action selected
  *              for each action in the Skill against a vector of targets which
  *              were selected as targets of the Skill
  *
  * Inputs: std::vector<Person*> - vector of targets for processing of curr Skill
- * Output: bool - whether processing to end (win cond.) after this skill
+ * Output: none
  */
-void Battle::processSkill(std::vector<Person*> targets, std::vector<DamageType>
-     damage_types)
+void Battle::processSkill(std::vector<Person*> targets,
+    std::vector<DamageType> damage_types)
 {
   /* Grab the current skill from the action buffer */
   curr_skill = action_buffer->getSkill();
@@ -2928,12 +3055,6 @@ void Battle::processSkill(std::vector<Person*> targets, std::vector<DamageType>
     event->user    = curr_user;
     event->targets = targets;
     
-    if (curr_skill->getCooldown() > 0)
-    {
-      event->type = EventType::SKILL_COOLDOWN;
-      to_process_skill = false;
-    }
-
     if (to_process_skill)
     {
       auto skill_hits = doesSkillHit(targets);
@@ -3118,7 +3239,6 @@ void Battle::selectEnemyActions()
     curr_module->setItems(buildBattleItems(person_index, items));
 
     auto skills = curr_user->getUseableSkills();
-
     auto battle_skills = buildBattleSkills(person_index, skills);
     
     if (hasInfliction(Infliction::BUBBIFY, curr_user))
@@ -3253,14 +3373,7 @@ bool Battle::testPersonIndex(const int32_t &test_index)
     auto skill_cooldown = action_buffer->hasCoolingSkill(test_person);
 
     if (test_person->getAilFlag(PersonAilState::SKIP_NEXT_TURN))
-    {
-      if (getBattleMode() == BattleMode::TEXT)
-      {
-        //TODO: Create skip next turn event, move this to perform events? [03-03-15]
-        std::cout << "{SKIP} " << test_person->getName() << " skips their turn"
-            << "." << std::endl;
-      }
-      
+    { 
       return false;
     }
     else if (skill_cooldown != nullptr)
@@ -3693,10 +3806,9 @@ void Battle::setNextTurnState()
 {
  /* Set the CURRENT_STATE to incomplete */
   setBattleFlag(CombatState::PHASE_DONE, false);
-  setBattleFlag(CombatState::ACTION_DONE, false);
 
   /* If the Battle victory/loss has been complete, go to Destruct */
-  if (getBattleFlag(CombatState::OUTCOME_DONE))
+  if (getBattleFlag(CombatState::OUTCOME_PROCESSED))
   {
     setTurnState(TurnState::DESTRUCT);
     menu->unsetAll(true);
@@ -3938,7 +4050,7 @@ void Battle::setTurnState(const TurnState &new_turn_state)
 bool Battle::keyDownEvent(SDL_KeyboardEvent event)
 {
 #ifdef UDEBUG
-  if (!getBattleFlag(CombatState::OUTCOME_DONE))
+  if (!getBattleFlag(CombatState::OUTCOME_PROCESSED))
   {
     //Helpers::flushConsole();
     
@@ -3973,7 +4085,8 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
     std::cout << "The battle is complete!" << std::endl;
 #endif
 
-  if (menu->getWindowStatus() == WindowStatus::ON)
+  if (turn_state == TurnState::SELECT_ACTION_ALLY &&
+      menu->getWindowStatus() == WindowStatus::ON)
   {
     return menu->keyDownEvent(event);
   }
@@ -4027,15 +4140,17 @@ void Battle::printAll(const bool &simple, const bool &flags, const bool &party)
       std::cout << "\nFLAGS_CONFIGURED: " 
                 << getBattleFlag(CombatState::FLAGS_CONFIGURED);
       std::cout << "\nPHASE_DONE: " << getBattleFlag(CombatState::PHASE_DONE);
-      std::cout << "\nACTION_DONE: " << getBattleFlag(CombatState::ACTION_DONE);
       std::cout << "\nVICTORY: " << getBattleFlag(CombatState::VICTORY);
       std::cout << "\nLOSS: " << getBattleFlag(CombatState::LOSS);
       std::cout << "\nALLIES_RUN: " << getBattleFlag(CombatState::ALLIES_RUN);
       std::cout << "\nENEMIES_RUN: " << getBattleFlag(CombatState::ENEMIES_RUN);
-      std::cout << "\nOUTCOME_DONE: " 
-                << getBattleFlag(CombatState::OUTCOME_DONE);
+      std::cout << "\nOUTCOME_PROCESSED: " 
+                << getBattleFlag(CombatState::OUTCOME_PROCESSED);
+      std::cout << "\nOUTCOME PERFORMED: "
+                << getBattleFlag(CombatState::OUTCOME_PERFORMED);
       std::cout << "\nERROR_STATE: " << getBattleFlag(CombatState::ERROR_STATE);
-      std::cout << "\nRANDOM_ENCOUNTER: " << getBattleFlag(CombatState::RANDOM_ENCOUNTER);
+      std::cout << "\nRANDOM_ENCOUNTER: " 
+                << getBattleFlag(CombatState::RANDOM_ENCOUNTER);
       std::cout << "\nMINI_BOSS: " << getBattleFlag(CombatState::MINI_BOSS);
       std::cout << "\nBOSS: " << getBattleFlag(CombatState::BOSS);
       std::cout << "\nFINAL_BOSS: " << getBattleFlag(CombatState::FINAL_BOSS);
@@ -4052,7 +4167,7 @@ void Battle::printAll(const bool &simple, const bool &flags, const bool &party)
       printPartyState();
   }
 
-  std::cout << "==== / Battle ====\n\n";
+  std::cout << "==== / Battle ====\n" << std::endl;
 }
 
 /*
@@ -4074,6 +4189,7 @@ void Battle::printPartyState()
   std::cout << "---- Foes ----\n";
   for (uint32_t i = 0; i < foes->getSize(); i++)
     printPersonState(foes->getMember(i), getIndexOfPerson(foes->getMember(i)));
+  std::cout << std::endl;
 }
 
 /*
@@ -4094,8 +4210,8 @@ void Battle::printPersonState(Person* const member,
               << member->getBFlag(BState::ALIVE) << "] \n" 
               << "VITA: " << member->getCurr().getStat(0) << "/" 
               << member->getTemp().getStat(0) << " [" 
-              << std::floor(member->getVitaPercent() * 100) << "%]\n" << "QTDR: " 
-              << member->getCurr().getStat(1) << "/"
+              << std::floor(member->getVitaPercent() * 100) << "%]\n" 
+              << "QTDR: " << member->getCurr().getStat(1) << "/"
               << member->getTemp().getStat(1) << " [" 
               << std::floor(member->getQDPercent() * 100)
               << "%]\nILLS: ";
@@ -4143,6 +4259,10 @@ void Battle::printProcessingState()
             << getBattleFlag(CombatState::CURRENT_AILMENT_COMPLETE);
   std::cout << "\nALL UPKEEPS COMPLETE: "
             << getBattleFlag(CombatState::ALL_UPKEEPS_COMPLETE);
+  std::cout << "\nOUTCOME PROCESSING: "
+            << getBattleFlag(CombatState::OUTCOME_PROCESSED);
+  std::cout << "\nOUTCOME PERFORMED: "
+            << getBattleFlag(CombatState::OUTCOME_PERFORMED);
   std::cout << std::endl;
 }
 
@@ -4214,7 +4334,7 @@ bool Battle::update(int32_t cycle_time)
   setTimeElapsed(cycle_time);
 
   if (getBattleFlag(CombatState::PHASE_DONE) && 
-      !getBattleFlag(CombatState::OUTCOME_DONE))
+      !getBattleFlag(CombatState::OUTCOME_PROCESSED))
   {
     setNextTurnState();
   }
@@ -4225,6 +4345,7 @@ bool Battle::update(int32_t cycle_time)
     if (getBattleFlag(CombatState::RENDERING_COMPLETE))
     {
       setBattleFlag(CombatState::RENDERING_COMPLETE, false);
+      event_buffer->setCurrentIndex();
       performEvents();
       upkeep();
     }
@@ -4267,19 +4388,19 @@ bool Battle::update(int32_t cycle_time)
       /* If all processing is complete, after performing -> move state */
       if (getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
       {
-        auto phase_done = getBattleFlag(CombatState::ALL_PROCESSING_COMPLETE);
-
-        std::cout << "Phase done? " << phase_done << std::endl;
+        auto phase_done = getBattleFlag(CombatState::ALL_PROCESSING_COMPLETE);  
 
         phase_done |= getBattleFlag(CombatState::LOSS);
         phase_done |= getBattleFlag(CombatState::VICTORY);
 
-        std::cout << "Phase done? " << phase_done << std::endl;
         setBattleFlag(CombatState::PHASE_DONE, phase_done);
       }
       else
       {
-        std::cout << "Action processing not complete! " << std::endl;
+        if (getBattleMode() == BattleMode::TEXT)
+        {
+          std::cout << "Action processing not complete! " << std::endl;
+        }
       }
 
     }
