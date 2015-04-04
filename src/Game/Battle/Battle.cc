@@ -2990,6 +2990,7 @@ bool Battle::hasInfliction(Infliction type, Person* check)
 void Battle::processItem(std::vector<Person*> targets, 
     std::vector<DamageType> damage_types)
 {
+  while (true){};//KEVIN SUX DIX
   curr_item  = action_buffer->getItem();
   curr_skill = curr_item->getUseSkill();
 
