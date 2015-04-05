@@ -1100,7 +1100,7 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
         keyDownIncrement();
     }
   }
-  else if (event.keysym.sym == SDLK_RETURN)
+  else if (event.keysym.sym == SDLK_SPACE)
     keyDownSelect();
   else if (event.keysym.sym == SDLK_BACKSPACE)
     keyDownCancel();
