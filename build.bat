@@ -13,7 +13,7 @@ if not exist bin mkdir bin
 :: "build-stderr.log"
 echo.
 echo --------------------- BUILD SEQUENCE ---------------------
-mingw32-make -j 2> build-stderr.log | tee build-stdout.log
+mingw32-make -j8 2> build-stderr.log | tee build-stdout.log
 echo ----------------------------------------------------------
 echo.
 echo -------------- ERROR/WARNING NOTIFICATIONS ---------------
