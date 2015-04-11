@@ -1,16 +1,22 @@
 /*******************************************************************************
-* Class Name: ClassName [Declaration]
-* Date Created: June 22, 2014
+* Class Name: KeyHandler [Declaration]
+* Date Created: April 9, 2015
 * Inheritance: None
-* Description: 
+* Description: KeyHandler manages the state of the Keyboard. It contains a 
+*              vector of keys which map an enumerated GameKey (or game function
+*              key) to physical SDL_Keycode key(s) and keeps track of which
+*              keeps are depressed and how long they have been depressed for.
 *
 * Notes
 * -----
 *
-* [1]:
+* [1]: The time for a key to be considered 'held' is set in a constant.
+* [2]: Whether multiple mapping are permitted is set in a constant.
 *
 * TODO
 * ----
+* [04-11-15]: Mapping of GameKey to multiple physical keys.
+* [04-11-15]: Convert game KeyDownEvents to grab the state of the keyboard
 *****************************************************************************/
 #ifndef KEYHANDLER_H
 #define KEYHANDLER_H
@@ -18,7 +24,7 @@
 #include <SDL2/SDL.h>
 #include <vector>
 
-#include "EnumDb.h"
+#include "EnumDB.h"
 #include "Helpers.h"
 
 /* Key Map Structure */
@@ -26,7 +32,7 @@ struct Key
 {
 public:
   /* Key constructor */
-  Key(GameKey new_key, SDL_Keycode new_keycode);
+  Key(GameKey new_key, SDL_Keycode new_keycode, bool enabled = true);
 
   /* The enumerated key value */
   GameKey game_key;
@@ -36,6 +42,9 @@ public:
 
   /* Whether that key is depressed */
   bool depressed;
+
+  /* Whether operation of that Key is currently enabled */
+  bool enabled;
 
   /* How long that key has been depressed for */
   int32_t time_depressed;
@@ -61,9 +70,11 @@ private:
   static const SDL_Keycode kMenuDefault;      /* Default menu open key */
   static const SDL_Keycode kActionDefault;    /* Default action key */
   static const SDL_Keycode kCancelDefault;    /* Default cancel/close key */
+  static const SDL_Keycode kRunDefault;       /* Default run key */
   static const SDL_Keycode kDebugDefault;     /* Default debug key */
 
   static const int32_t kMinHeldTime; /* Amount of time for key to be 'Held' */
+  static const bool    kMultipleMappings; /* Can GameKeys be multi-mapped? */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -84,6 +95,10 @@ public:
   bool isDepressed(GameKey game_key);
   bool isDepressed(SDL_Keycode keycode, bool* found);
 
+  /* Checks if a certain Key has an enabled use */
+  bool isEnabled(GameKey game_key);
+  bool isEnabled(SDL_Keycode keycode, bool* found);
+
   /* Checks to see if a given keycode has already been mapped */
   bool isKeycodeMapped(SDL_Keycode keycode);
 
@@ -100,23 +115,19 @@ public:
   Key& getKey(GameKey game_key);
   Key& getKey(SDL_Keycode keycode, bool* found);
 
-  /* Functions to assign a key's state to depressed */
-  void setDepressed(GameKey game_key);
-  bool setDepressed(SDL_Keycode keycode);
-
   /* Set Keys */
   bool setKey(GameKey game_key, SDL_Keycode new_keycode);
 
-  /* Functions to assign a key's state to unpressed */
-  void setUnpressed(GameKey game_key);
-  bool setUnpressed(SDL_Keycode keycode);
+  /* Sets a Key to be enabled/disabled */
+  void setEnabled(GameKey game_key, bool enabled = true);
+  bool setEnabled(SDL_Keycode keycode, bool enabled = true);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
 public:
-
-
+  /* Method to return min-held time constant */
+  static int32_t getMinHeldTime();
 };
 
 #endif //KEYHANDLER_H

@@ -391,6 +391,7 @@ enum class GameKey
   MENU,
   ACTION,
   CANCEL,
+  RUN,
   DEBUG,
   NONE
 };

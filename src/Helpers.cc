@@ -425,6 +425,8 @@ std::string Helpers::gameKeyToStr(const GameKey &game_key)
     return "Action";
   if (game_key == GameKey::CANCEL)
     return "Cancel";
+  if (game_key == GameKey::RUN)
+    return "Run";
   if (game_key == GameKey::DEBUG)
     return "Debug";
 

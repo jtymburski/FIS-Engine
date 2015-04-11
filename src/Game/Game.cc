@@ -952,101 +952,6 @@ void Game::setupBattle()
   //   values.push_back(new_2d_vecs);
   // }
 
-  // using namespace std::chrono;
-
-  // system_clock::time_point tp = system_clock::now();
-  // system_clock::duration dtn = tp.time_since_epoch();
-  // std::cout << "Starting clock: " << dtn.count() << std::endl;
-  
-  // auto found = false;
-  // uint32_t i = 0;
-  // uint32_t j = 0;
-  // uint32_t k = 0;
- 
-  // std::vector<long double> magic_numbers(1000000000, 100.7254);
-
-  // // 112 214 320 (Tad slower)
-  // while (!found && i < magic_numbers.size())
-  // {
-  //   magic_numbers[i] += 0.0500;
-  //   i++;
-  // }
-
-  // 91 989 398 (Slower)
-  // for (auto& e : magic_numbers)
-  // {
-  //   if (!found)
-  //   {
-  //     e += 0.0500;
-  //     i++;
-  //   }
-  // }
-
-  // Example 1: Duration: 2549672 cycles
-
-  // while (!found && k < values.size())
-  // {
-  //   i = 0;
-  //   while (!found && i < values.at(k).size())
-  //   {
-  //     j = 0;
-  //     while (!found && j < values.at(k).at(i).size())
-  //     {
-  //       if (values.at(i).at(i).at(j) == 25000)
-  //       {
-  //         values[k][i][j]++;
-  //       }
-  //       j++;
-  //     }
-  //     i++;
-  //   }
-  //   k++;
-  // }
-
-  // Example 2: 565 472 (5X Faster)
-  // for (auto &&cube : values)
-  // {
-  //   i = 0;
-  //   if (!found)
-  //   {
-  //     for (auto&& row : cube)
-  //     {
-  //       j = 0;
-  //       if (!found)
-  //       {
-  //         for (auto&& element: row)
-  //         {
-  //           if (!found && element == 25000)
-  //           {
-  //             element++;
-  //           }
-  //           j++;
-  //         }
-  //       }
-  //       i++;
-  //     }
-  //   }
-  //   k++;
-  // }
-
-  // for (int i = 0; !found && i < values.size(); i++)
-  // {
-  //   for (int j = 0; !found && j < values.at(i).size(); j++)
-  //   {
-  //     for (int k = 0; !found && k < values.at(i).at(j).size(); k++)
-  //     {
-  //       values[i][j][k]++;
-  //     }
-  //   }
-  // }
-
-  // std::cout << "DONE!" << std::endl;
-
-  // system_clock::time_point tp2 = system_clock::now();
-  // system_clock::duration dtn2 = tp2.time_since_epoch();
-  // std::cout << "Ending clock: " << dtn2.count() << std::endl;
-  // std::cout << "Periods elapsed: " << (dtn2.count() - dtn.count()) / 1000 << std::endl;
-
   // General Item Testing
   // Item* potion      = new Item(45, "Potion", 70, nullptr, 1.01);
   // potion->setFlag(ItemFlags::CONSUMED, true);
@@ -1309,15 +1214,6 @@ Item* Game::getItem(const int32_t &index, const bool &by_id)
 /* The key down events to be handled by the class */
 bool Game::keyDownEvent(SDL_KeyboardEvent event)
 {
-  // Testing
-  // - Grab the assosciated key.
-  // - Set depressed of the key that was pressed
-  bool found = false;
-  auto& key = event_handler.getKeyHandler().getKey(event.keysym.sym, &found);
-
-  if (found)
-    event_handler.getKeyHandler().setDepressed(key.game_key);
-
   /* Exit the game, game has finished processing */
   if(mode == BATTLE && event.keysym.sym == SDLK_ESCAPE)
   {
@@ -1392,14 +1288,6 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
 /* The key up events to be handled by the class */
 void Game::keyUpEvent(SDL_KeyboardEvent event)
 {
-  //Testing
-  // Change the Key Handler state
-  bool found = false;
-  auto& key = event_handler.getKeyHandler().getKey(event.keysym.sym, &found);
-
-  if (found)
-    event_handler.getKeyHandler().setUnpressed(key.game_key);
-
   if(event.keysym.sym == SDLK_LCTRL)
   {
     if(battle_display != NULL)
@@ -1501,7 +1389,7 @@ bool Game::update(int32_t cycle_time)
   event_handler.getKeyHandler().update(cycle_time);
 
   //Print out pressed/held keys
-  if (num_ticks % 10 == 0)
+  if (num_ticks % 20 == 0)
     event_handler.getKeyHandler().print(true, false);
 
   if(mode == MAP && game_map != nullptr)

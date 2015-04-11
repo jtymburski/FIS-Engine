@@ -2994,7 +2994,7 @@ bool Battle::hasInfliction(Infliction type, Person* check)
 void Battle::processItem(std::vector<Person*> targets, 
     std::vector<DamageType> damage_types)
 {
-  //TODO
+  //TODO [04-10-15]
   (void)targets;
   (void)damage_types;
 
@@ -3008,11 +3008,10 @@ void Battle::processItem(std::vector<Person*> targets,
     auto event = event_buffer->createItemEvent(curr_item, curr_user, 
         curr_target);
 
-    //TODO
+    //TODO [04-10-15]
     (void)event;
 
-
-    //TODO:
+    //TODO [04-10-15]
     // - What situations of items on targets will fizzle?
     // - Abstract out processing of actions with skill for commong
     //   function(s) between skill and item?
