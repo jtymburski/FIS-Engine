@@ -128,17 +128,18 @@ void Application::handleEvents()
       {
         //TODO: CTRL+ALT+DEL/Resolution Bug
         // Attempt to force rerender of textures here?
-        std::cout << "Gained focus" << std::endl;
-        
+
+        SDL_RestoreWindow(window);
       }
       else if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST)
       {
         std::cout << "Lost focus!" << std::endl;
-        SDL_Texture* pause_overlay = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1216, 704);
-        SDL_SetTextureBlendMode(pause_overlay, SDL_BLENDMODE_BLEND);
-        SDL_SetRenderTarget(renderer, pause_overlay);
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        SDL_RenderClear(renderer);
+
+        // SDL_Texture* pause_overlay = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1216, 704);
+        // SDL_SetTextureBlendMode(pause_overlay, SDL_BLENDMODE_BLEND);
+        // SDL_SetRenderTarget(renderer, pause_overlay);
+        // SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        // SDL_RenderClear(renderer);
       }
       else if (event.window.event == SDL_WINDOWEVENT_MOVED)
       {
