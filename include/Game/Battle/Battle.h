@@ -20,7 +20,8 @@
 *
 * BUGS
 * ----
-* [03-29-15]: Silence seg fault?
+* [03-29-15]: Intermittant seg fault -- near end of turn loop?
+*   - Possibly look at ailment inflictions/removals.
 * [03-29-15]: Is battleWon() being called twice upon victory?
 *******************************************************************************/
 #ifndef BATTLE_H
@@ -216,10 +217,6 @@ private:
 
   /* Vector of persons needing upkeep */
   std::vector<Person*> upkeep_persons;
-
-  /* ------------ Menu Constants --------------- */
-  static const uint16_t kGENERAL_UPKEEP_DELAY;
-  static const uint16_t kBATTLE_MENU_DELAY;
 
   /* ------------ Battle Modifiers (See Implementation) --------------- */
   static const size_t   kMAX_AILMENTS;

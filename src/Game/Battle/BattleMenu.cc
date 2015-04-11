@@ -1017,7 +1017,6 @@ void BattleMenu::swapPartyIndex()
 
   element_index = person_index;
 }
-
 /*
  * Description: Prints out the available items for the BattleMenu.
  *

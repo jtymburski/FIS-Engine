@@ -11,10 +11,21 @@
 #ifndef OPTIONS_H
 #define OPTIONS_H
 
+#include "EnumFlags.h"
 #include <iostream>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <string>
+
+ENUM_FLAGS(OptionState)
+enum class OptionState
+{
+  LINEAR_FILTERING  = 1 << 0,
+  VSYNC             = 1 << 1,
+  FULLSCREEN        = 1 << 2,
+  AUTO_RUN          = 1 << 3,
+  BATTLE_ANIMATIONS = 1 << 4
+};
 
 enum class BattleOptions
 {
@@ -46,7 +57,7 @@ private:
   BattleOptions ailment_update_state;
 
   /* Auto run, in the map */
-  bool auto_run;
+  //bool auto_run;
 
   /* The base string path for accessing file information */
   std::string base_path;
@@ -61,14 +72,17 @@ private:
   uint8_t font;
   
   /* If the linear filtering is enabled */
-  bool linear_filtering;
+  //bool linear_filtering;
+
+  /* Enum flags option state set */
+  OptionState flags;
   
   /* Resolution of the screen currently being used */
   uint8_t resolution_x;
   uint8_t resolution_y;
 
   /* Vertical refresh syncing enable */
-  bool vsync_enabled;
+  //bool vsync_enabled;
 
   /* Horizontal resolution options */
   //QVector<int> x_options; 
@@ -82,9 +96,6 @@ private:
   /* Secondary options menu */
   /* Notes: other options to be added as need (audio, animations, font size) */
   //QList<QString> secondary_Options;
-
-  /* Flag for battle animations */
-  //bool ANIMATIONS; 
 
   /*------------------- Constants -----------------------*/
   const static std::string kFONTS[]; /* A list of all the fonts available */
@@ -100,6 +111,9 @@ private:
   /* Copy all parameters from the other to the current if called */
   void copySelf(const Options &source);
 
+  /* Returns the value of a given OptionState flag */
+  bool getFlag(const OptionState &test_flag);
+
   /* Sets all parameters to default */
   void setAllToDefault();
 
@@ -107,7 +121,7 @@ private:
   void setAilmentUpdateState(BattleOptions new_state);
 
   /* Assigns if the player is to always run on the map */
-  void setAutoRun(bool auto_run);
+  //void setAutoRun(bool auto_run);
 
   /* Assign a new hud update state to BattleOptions */
   void setBattleHudState(BattleOptions new_state);
@@ -115,15 +129,18 @@ private:
   /* Assigns a new battle mode */
   void setBattleMode(BattleMode new_state);
 
+  /* Sets an option flag to a given state */
+  void setFlag(OptionState flags, bool set_value = true);
+
   /* Sets the chosen font */
   void setFont(uint8_t index, bool first_call = false);
   
   /* Sets if linear filtering should be enabled or not */
   void setLinearFiltering(bool linear_filtering);
-  
+
   /* Set the screen dimensions to be painted, based on the array index */
   void setScreenResolution(uint8_t index);
-
+  
   /* Enable or disable vertical refresh syncing */
   void setVsync(bool enabled);
 

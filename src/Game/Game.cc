@@ -32,6 +32,8 @@ const uint32_t Game::kMONEY_ITEM_ID{0};
 /* Constructor function */
 Game::Game(Options* running_config)
 {
+  num_ticks = 0;
+  
   /* Initalize class variables */
   active_renderer = nullptr;
   base_path = "";
@@ -360,7 +362,6 @@ void Game::setupBattle()
   physical_02->addAction(damage_actions[6]);
   physical_02->setPrimary(Element::PHYSICAL);
   physical_02->setFlag(SkillFlags::OFFENSIVE);
-  physical_02->print(true);
 
   // Skill* physical_03 = new Skill(102, "Two Smackeroos", 
   //     ActionScope::TWO_ENEMIES, damage_actions[6], 95, 100);
@@ -520,7 +521,7 @@ void Game::setupBattle()
   // physical_skills->addSkill(scald, 1);
   // physical_skills->addSkill(charr, 1);
   physical_skills->addSkill(berserk, 1);
-  // physical_skills->addSkill(confuse, 1);
+  physical_skills->addSkill(confuse, 1);
   // physical_skills->addSkill(bubbinate, 1);
   // physical_skills->addSkill(all_atk_buff, 1);
   // physical_skills->addSkill(all_def_buff, 1);
@@ -1308,6 +1309,15 @@ Item* Game::getItem(const int32_t &index, const bool &by_id)
 /* The key down events to be handled by the class */
 bool Game::keyDownEvent(SDL_KeyboardEvent event)
 {
+  // Testing
+  // - Grab the assosciated key.
+  // - Set depressed of the key that was pressed
+  bool found = false;
+  auto& key = event_handler.getKeyHandler().getKey(event.keysym.sym, &found);
+
+  if (found)
+    event_handler.getKeyHandler().setDepressed(key.game_key);
+
   /* Exit the game, game has finished processing */
   if(mode == BATTLE && event.keysym.sym == SDLK_ESCAPE)
   {
@@ -1319,7 +1329,7 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
   {
     mode = MAP;
 
-    if (game_battle != nullptr)
+    if(game_battle != nullptr)
     {
       delete game_battle;
       game_battle = nullptr; 
@@ -1382,6 +1392,14 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
 /* The key up events to be handled by the class */
 void Game::keyUpEvent(SDL_KeyboardEvent event)
 {
+  //Testing
+  // Change the Key Handler state
+  bool found = false;
+  auto& key = event_handler.getKeyHandler().getKey(event.keysym.sym, &found);
+
+  if (found)
+    event_handler.getKeyHandler().setUnpressed(key.game_key);
+
   if(event.keysym.sym == SDLK_LCTRL)
   {
     if(battle_display != NULL)
@@ -1464,7 +1482,7 @@ bool Game::setConfiguration(Options* running_config)
   
   return false;
 }
-  
+
 /* Sets the test map to run instead of current default */
 void Game::setTestMap(std::string test_map)
 {
@@ -1474,8 +1492,17 @@ void Game::setTestMap(std::string test_map)
 /* Updates the game state. Returns true if the class is finished */
 bool Game::update(int32_t cycle_time)
 {
+  num_ticks++;
+
   /* Poll System Events */
   pollEvents();
+
+  // /* Update the key handler */
+  event_handler.getKeyHandler().update(cycle_time);
+
+  //Print out pressed/held keys
+  if (num_ticks % 10 == 0)
+    event_handler.getKeyHandler().print(true, false);
 
   if(mode == MAP && game_map != nullptr)
     return game_map->update(cycle_time);

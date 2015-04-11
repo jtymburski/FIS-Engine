@@ -96,13 +96,6 @@ public:
   /* Flush the console with [blank] input */
   static void flushConsole(const char &c = ' ');
 
-  /* Converts an enumerated element to a String */
-  static uint16_t elementToInt(Element element);
-  static std::string elementToString(const Element &element);
-
-  /* Convert enumerated CellState to String */
-  static std::string cellToStr(const CellState &cell_state);
-
   /* Convert enumerated Action Type to String */
   static std::string actionTypeToStr(const ActionType &action_type);
 
@@ -120,6 +113,16 @@ public:
 
   /* Returns the enumerated Attribute to String */
   static std::string attributeToStr(Attribute attribute);
+
+  /* Convert enumerated CellState to String */
+  static std::string cellToStr(const CellState &cell_state);
+
+  /* Converts an enumerated element to a String */
+  static uint16_t elementToInt(Element element);
+  static std::string elementToString(const Element &element);
+
+  /* Converts an enumerated GameKey to a String */
+  static std::string gameKeyToStr(const GameKey &game_key);
 
   /* Get the string of a roman numeral from a value */
   static std::string numToRoman(int value);

@@ -348,6 +348,8 @@ BattleEvent* EventBuffer::createItemEvent(Item* item_use, Person* user,
   std::vector<Person*> target_vec{target};
   new_event->targets = target_vec;
   events.push_back(new_event);
+
+  return new_event;
 }
 
 /*

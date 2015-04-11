@@ -20,6 +20,7 @@ class MapThing;
 #include <string>
 #include <vector>
 
+#include "Game/KeyHandler.h"
 #include "EnumDb.h"
 #include "Helpers.h"
 #include "XmlData.h"
@@ -100,6 +101,9 @@ private:
   /* Event queue of what has been executed thus far, since the last clean
    * up cycle */
   std::vector<EventExecution> event_queue;
+
+  /* Handler for state of the keyboard */
+  KeyHandler key_handler;
 
   /* The event queue index, for parsing the queue */
   uint16_t queue_index;
@@ -185,6 +189,9 @@ public:
   /* Updates the event from the data in the file */
   Event updateEvent(Event event, XmlData data, int file_index, 
                                                int section_index);
+
+  /* Returns a reference to the Key Handler */
+  KeyHandler& getKeyHandler();
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS

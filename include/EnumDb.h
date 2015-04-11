@@ -8,12 +8,11 @@
 #ifndef ENUMDB_H
 #define ENUMDB_H
 
+//DEBUG MACRO
 #ifndef UDEBUG
   #define UDEBUG
 #endif
 
-//#include <boost/assign/list_of.hpp>
-//#include <boost/unordered_map.hpp>
 #include <cstdint>
 
 /*==============================================================================
@@ -380,6 +379,20 @@ enum class EquipSlots : std::uint8_t
   RARM = 2,
   BODY = 3,
   LEGS = 4
+};
+
+//TODO - Conventions
+enum class GameKey
+{
+  MOVE_LEFT,
+  MOVE_RIGHT,
+  MOVE_UP,
+  MOVE_DOWN,
+  MENU,
+  ACTION,
+  CANCEL,
+  DEBUG,
+  NONE
 };
 
 /*

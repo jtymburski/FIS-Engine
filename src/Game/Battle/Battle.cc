@@ -17,10 +17,6 @@
  * CONSTANTS
  *============================================================================*/
 
-/* ------------ Menu Constants --------------- */
-const uint16_t Battle::kGENERAL_UPKEEP_DELAY = 500; /* Time prior info bar */
-const uint16_t Battle::kBATTLE_MENU_DELAY    = 400; /* Personal menu delay */
-
 /* ------------ Battle Damage Calculation Modifiers ---------------
  * Maximum Ailments (Total)
  * Maximum Each Ailments (Per Person)
@@ -1758,11 +1754,13 @@ void Battle::performEvents()
 
   while (valid_next)
   {
-    auto current_size = event_buffer->getCurrentSize();
-    std::cout << "Current size: " << current_size << std::endl;
-
+    //auto current_size = event_buffer->getCurrentSize();
     auto event = event_buffer->getCurrentEvent();
     auto index = event_buffer->getIndex();
+
+    //TODO [04-04-15] Temporary code
+    std::cout << "Event Index: " << index << std::endl;
+    event_buffer->printEvent(index);
 
     if (event->type == EventType::SKILL_COOLDOWN)
     {
@@ -1978,8 +1976,6 @@ void Battle::performEvents()
     }
     else if (event->type == EventType::REGEN_VITA)
     {
-      std::cout << "REGEN VITA HELLO!" << std::endl;
-
       auto new_val = event->targets.at(0)->getCurr().getStat(Attribute::VITA) + 
                      event->amount;
 
@@ -2013,8 +2009,12 @@ void Battle::performEvents()
       event->targets.at(0)->setBFlag(BState::ALIVE, false);
     }
 
+    std::cout << std::endl;
+    std::cout << "Setting index: " << index << " as performed." << std::endl;
     event_buffer->setPerformed(index);
     valid_next = event_buffer->setNextIndex();
+    std::cout << "Next index valid?: " << valid_next << std::endl;
+    std::cout << std::endl;
   }
 }
 
@@ -2130,7 +2130,6 @@ void Battle::personalUpkeep(Person* const target)
     setBattleFlag(CombatState::PERSON_UPKEEP_COMPLETE);
   }
 
-  event_buffer->print(true); //TODO [03-28-15]
   setBattleFlag(CombatState::READY_TO_RENDER, true);
 }
 
@@ -2238,7 +2237,6 @@ void Battle::processBuffer()
   if (last_index && getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
     setBattleFlag(CombatState::ALL_PROCESSING_COMPLETE, true);
 
-  printProcessingState();
   setBattleFlag(CombatState::READY_TO_RENDER, true);
 }
 
@@ -2565,6 +2563,9 @@ bool Battle::processAilmentUpdate(Ailment* ail)
 bool Battle::processAlterAction(BattleEvent* alter_event, 
     const DamageType &damage_type, Person* action_target, Person* factor_target)
 {
+  //TODO
+  (void)damage_type;
+
   auto ally_target = friends->isInParty(curr_target);
   auto base_pc  = curr_action->actionFlag(ActionFlags::BASE_PC);
   auto vari_pc  = curr_action->actionFlag(ActionFlags::VARI_PC);
@@ -2575,7 +2576,7 @@ bool Battle::processAlterAction(BattleEvent* alter_event,
   int32_t set_value = 0;
   int32_t var_value = 0;
   float one_pc      = 0.0;
-  auto party_death = false;
+  auto party_death  = false;
 
   auto max_value = action_target->getTemp().getStat(targ_attr);
   cur_value      = action_target->getCurr().getStat(targ_attr);
@@ -2634,6 +2635,9 @@ bool Battle::processAssignAction(BattleEvent* assign_event,
     const DamageType &damage_type,
     Person* action_target, Person* factor_target)
 {
+  //TODO
+  (void)damage_type;
+
   auto ally_target  = friends->isInParty(action_target);
   auto base_pc      = curr_action->actionFlag(ActionFlags::BASE_PC);
   auto vari_pc      = curr_action->actionFlag(ActionFlags::VARI_PC);
@@ -2990,7 +2994,10 @@ bool Battle::hasInfliction(Infliction type, Person* check)
 void Battle::processItem(std::vector<Person*> targets, 
     std::vector<DamageType> damage_types)
 {
-  while (true){};//KEVIN SUX DIX
+  //TODO
+  (void)targets;
+  (void)damage_types;
+
   curr_item  = action_buffer->getItem();
   curr_skill = curr_item->getUseSkill();
 
@@ -3001,6 +3008,9 @@ void Battle::processItem(std::vector<Person*> targets,
     auto event = event_buffer->createItemEvent(curr_item, curr_user, 
         curr_target);
 
+    //TODO
+    (void)event;
+
 
     //TODO:
     // - What situations of items on targets will fizzle?
@@ -3009,14 +3019,7 @@ void Battle::processItem(std::vector<Person*> targets,
     // - Can items miss?
     // - Should items deal a damage different than based on the regular 
     //   damage formula? Standard damage except through armor?
-
-    
-
   }
-
-
-
-
 }
 
 /*
@@ -3033,14 +3036,16 @@ void Battle::processSkill(std::vector<Person*> targets,
   /* Grab the current skill from the action buffer */
   curr_skill = action_buffer->getSkill();
 
-  if (getBattleMode() == BattleMode::TEXT)
-  {
-    std::cout << "{Skill} Processing: " << curr_skill->getName() << std::endl;
-    printPartyState();
-  }
+  // if (getBattleMode() == BattleMode::TEXT)
+  // {
+  //   std::cout << "{Skill} Processing: " << curr_skill->getName() << std::endl;
+  //   printPartyState();
+  // }
 
   auto process_first_index = false;
-  auto process_action = false;
+  
+  //TODO
+  //auto process_action = false;
 
   /* If processing the first action, append begin skill use event */
   if (!getBattleFlag(CombatState::BEGIN_ACTION_PROCESSING))
@@ -3062,6 +3067,7 @@ void Battle::processSkill(std::vector<Person*> targets,
         
       if (skill_hits)
       {
+        //Add action variable setup code here? ////????
         event->happens = true;
             
         if (hasInfliction(Infliction::BERSERK, curr_user) &&
@@ -3091,10 +3097,10 @@ void Battle::processSkill(std::vector<Person*> targets,
   }
   else 
   {
-    process_action = true;
+    //process_action = true;
   }
 
-  if (process_action || process_first_index)
+  if (process_first_index)
   {
     /* Else, process action index and increment the action index */
     auto effects = curr_skill->getEffects();
@@ -3403,8 +3409,6 @@ void Battle::upkeep()
 {
   if (getBattleMode() == BattleMode::TEXT)
     std::cout << "---- Upkeep Processing ---- " << std::endl;
-
-  //printProcessingState();
 
   if (!(getBattleFlag(CombatState::BEGIN_PERSON_UPKEEPS)))
   {
@@ -4408,8 +4412,6 @@ bool Battle::update(int32_t cycle_time)
     else if (!getBattleFlag(CombatState::READY_TO_RENDER))
     {
       processBuffer();
-      event_buffer->print(true);
-      event_buffer->setCurrentIndex();
     }
   }
   else if (turn_state == TurnState::RUNNING)
@@ -4471,7 +4473,7 @@ bool Battle::getBattleFlag(const CombatState &test_flag)
 
 /*
  * Description: Return the value of a given IgnoreState flag
- *
+ *F
  * Inputs: IgnoreState - flag which to find the value for
  * Output: bool - boolean value of the given flag
  */
@@ -4901,99 +4903,4 @@ void Battle::setBattleFlag(CombatState flag, const bool &set_value)
 void Battle::setIgnoreFlag(IgnoreState flag, const bool &set_value)
 {
   (set_value) ? (ignore_flags |= flag) : (ignore_flags &= ~flag);
-}
-
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
-
-/* Public static gets for menu constant values */
-uint32_t Battle::getGenUpkeepDelay()
-{
-  return kGENERAL_UPKEEP_DELAY;
-}
-
-uint32_t Battle::getBattleMenuDelay()
-{
-  return kBATTLE_MENU_DELAY;
-}
-
-uint32_t Battle::getMaxAilments()
-{
-  return kMAX_AILMENTS;  
-}
-
-uint32_t Battle::getMaxEachAilments()
-{
-  return kMAX_EACH_AILMENTS;
-}
-
-uint32_t Battle::getMaxDamage()
-{
-  return kMAXIMUM_DAMAGE;
-}
-
-uint32_t Battle::getMinDamage()
-{
-  return kMINIMUM_DAMAGE;
-}
-
-float Battle::getOffPrimElmMod()
-{
-  return kOFF_PRIM_ELM_MODIFIER;
-}
-
-float Battle::getDefPrimElmMod()
-{
-  return kDEF_PRIM_ELM_MODIFIER;
-}
-
-float Battle::getOffSecdElmMod()
-{
-  return kOFF_SECD_ELM_MODIFIER;
-}
-
-float Battle::getDefSecdElmMod()
-{
-  return kDEF_SECD_ELM_MODIFIER;
-}
-
-float Battle::getDodgeMod()
-{
-  return kDODGE_MODIFIER;
-}
-
-float Battle::getDogePerLvlMod()
-{
-  return kDODGE_PER_LEVEL_MODIFIER;
-}
-
-float Battle::getPrimElmAdvMod()
-{
-  return kPRIM_ELM_ADV_MODIFIER;
-}
-
-float Battle::getPrimElmDisMod()
-{
-  return kPRIM_ELM_DIS_MODIFIER;
-}
-
-float Battle::getSecdElmAdvMod()
-{
-  return kSECD_ELM_ADV_MODIFIER;
-}
-
-float Battle::getSecdElmDisMod()
-{
-  return kSECD_ELM_DIS_MODIFIER;
-}
-
-float Battle::getDoubleElmAdvMod()
-{
-  return kDOUBLE_ELM_ADV_MODIFIER;
-}
-
-float Battle::getDoubleElmDisMod()
-{
-  return kDOUBLE_ELM_DIS_MODIFIER;
 }

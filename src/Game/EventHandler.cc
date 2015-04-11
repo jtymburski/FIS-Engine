@@ -438,6 +438,12 @@ Event EventHandler::EventHandler::updateEvent(Event event, XmlData data,
   return event;
 }
 
+//TODO: Conventions [04-10-15]
+KeyHandler& EventHandler::getKeyHandler()
+{
+  return key_handler;
+}
+
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/

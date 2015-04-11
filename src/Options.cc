@@ -25,8 +25,8 @@ const std::string Options::kFONTS[] = {"fonts/colab_light.otf",
                                        "fonts/crimes.ttf"};
 const uint8_t  Options::kNUM_FONTS = 2;
 const uint8_t  Options::kNUM_RESOLUTIONS = 5;
-const uint16_t Options::kRESOLUTIONS_X[] = {1216, 1366, 1920, 2560, 3640};
-const uint16_t Options::kRESOLUTIONS_Y[] = {704, 768, 1080, 1080, 1080};
+const uint16_t Options::kRESOLUTIONS_X[] = {1216, 1217, 1366, 1920, 2560};
+const uint16_t Options::kRESOLUTIONS_Y[] = {704, 705, 768, 1080, 1080};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -47,6 +47,7 @@ Options::Options(const Options &source)
 /* Destructor function */
 Options::~Options()
 {
+
 }
 
 /*=============================================================================
@@ -57,13 +58,13 @@ void Options::copySelf(const Options &source)
 {
   /* Battle Options */
   ailment_update_state = source.ailment_update_state;
-  battle_hud_state = source.ailment_update_state;
-  base_path = source.base_path;
-  battle_mode = source.battle_mode;
+  battle_hud_state     = source.ailment_update_state;
+  base_path            = source.base_path;
+  battle_mode          = source.battle_mode;
 
   resolution_x  = source.resolution_x;
   resolution_y  = source.resolution_y;
-  vsync_enabled = source.vsync_enabled;
+  flags = source.flags;
 }
 
 void Options::setAllToDefault()
@@ -73,20 +74,22 @@ void Options::setAllToDefault()
   setBattleHudState(BattleOptions::FOREST_WALK);
   setBattleMode(BattleMode::TEXT);
 
-  /* Map Options */
-  setAutoRun(false);
+  /* Flags */
+  setLinearFiltering(false);
+  setFlag(OptionState::VSYNC, true);
+  setFlag(OptionState::FULLSCREEN, false);
+  setFlag(OptionState::AUTO_RUN, false);
+  setFlag(OptionState::BATTLE_ANIMATIONS, true);
 
   /* Rendering Options */
   setFont(0, true);
-  setLinearFiltering(false);
   setScreenResolution(0);
-  setVsync(true);
 }
 
-void Options::setAutoRun(bool auto_run)
-{
-  this->auto_run = auto_run;
-}
+// void Options::setAutoRun(bool auto_run)
+// {
+//   this->auto_run = auto_run;
+// }
 
 void Options::setAilmentUpdateState(BattleOptions new_state)
 {
@@ -101,6 +104,11 @@ void Options::setBattleHudState(BattleOptions new_state)
 void Options::setBattleMode(BattleMode new_state)
 {
   battle_mode = new_state;
+}
+
+void Options::setFlag(OptionState flag, bool set_value)
+{
+  (set_value) ? (flags |= flag): (flags &= ~flag);
 }
 
 /* Sets the chosen font */
@@ -122,7 +130,7 @@ void Options::setFont(uint8_t index, bool first_call)
 
 void Options::setLinearFiltering(bool linear_filtering)
 {
-  this->linear_filtering = linear_filtering;
+  setFlag(OptionState::LINEAR_FILTERING, true);
   
   if(linear_filtering)
   {
@@ -139,6 +147,16 @@ void Options::setLinearFiltering(bool linear_filtering)
   }
 }
 
+// Have you heard of der flags??
+// void Options::setVsync(bool enabled)
+// {
+//   vsync_enabled = enabled;
+// }
+
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
+
 void Options::setScreenResolution(uint8_t index)
 {
   if(index < kNUM_RESOLUTIONS)
@@ -147,16 +165,6 @@ void Options::setScreenResolution(uint8_t index)
     resolution_y = index;
   }
 }
-
-// Have you heard of der flags??
-void Options::setVsync(bool enabled)
-{
-  vsync_enabled = enabled;
-}
-
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
 
 bool Options::confirmFontSetup()
 {
@@ -197,6 +205,12 @@ BattleMode Options::getBattleMode()
   return battle_mode;
 }
 
+// Get fn for OptionState flags
+bool Options::getFlag(const OptionState &test_flag)
+{
+  return static_cast<bool>((flags & test_flag) == test_flag);
+}
+
 /* Returns the path to the font to use throughout the application */
 std::string Options::getFont()
 {
@@ -223,18 +237,18 @@ uint16_t Options::getScreenWidth()
 /* Returns if the player is instructed to always run */
 bool Options::isAutoRun()
 {
-  return auto_run;
+  return getFlag(OptionState::AUTO_RUN);
 }
 
 /* Returns if linear filtering mode is enabled */
 bool Options::isLinearFilteringEnabled()
 {
-  return linear_filtering;
+  return getFlag(OptionState::LINEAR_FILTERING);
 }
   
 bool Options::isVsyncEnabled()
 {
-  return vsync_enabled;
+  return getFlag(OptionState::VSYNC);
 }
 
 /*=============================================================================

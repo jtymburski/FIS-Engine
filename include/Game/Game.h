@@ -116,6 +116,9 @@ private:
   /* A current victory screen pointer */
   //VictoryScreen* victory_screen;
 
+  /* Number of ticks since inception */
+  uint64_t num_ticks;
+
   /* ------------ Constants --------------- */
   static const uint32_t kMONEY_ITEM_ID;
 

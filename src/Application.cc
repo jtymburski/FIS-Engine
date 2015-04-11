@@ -18,7 +18,6 @@ const uint8_t Application::kUPDATE_RATE = 16;
  *============================================================================*/
 
 Application::Application(std::string base_path)
-
 {
   /* Initialize the variables */
   this->base_path = base_path;
@@ -122,6 +121,29 @@ void Application::handleEvents()
         title_screen.keyUpEvent(release_event);
       else if(mode == GAME)
         game_handler.keyUpEvent(release_event);
+    }
+    else if (event.type == SDL_WINDOWEVENT)
+    {
+      if (event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
+      {
+        //TODO: CTRL+ALT+DEL/Resolution Bug
+        // Attempt to force rerender of textures here?
+        std::cout << "Gained focus" << std::endl;
+        
+      }
+      else if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST)
+      {
+        std::cout << "Lost focus!" << std::endl;
+        SDL_Texture* pause_overlay = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1216, 704);
+        SDL_SetTextureBlendMode(pause_overlay, SDL_BLENDMODE_BLEND);
+        SDL_SetRenderTarget(renderer, pause_overlay);
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        SDL_RenderClear(renderer);
+      }
+      else if (event.window.event == SDL_WINDOWEVENT_MOVED)
+      {
+        std::cout << "Window moving!" << std::endl;
+      }
     }
   }
 }

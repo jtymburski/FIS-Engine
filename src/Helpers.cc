@@ -408,6 +408,29 @@ std::string Helpers::elementToString(const Element &element)
   return "";
 }
 
+//TODO - Comments
+std::string Helpers::gameKeyToStr(const GameKey &game_key)
+{
+  if (game_key == GameKey::MOVE_LEFT)
+    return "Left";
+  if (game_key == GameKey::MOVE_RIGHT)
+    return "Right";
+  if (game_key == GameKey::MOVE_UP)
+    return "Up";
+  if (game_key == GameKey::MOVE_DOWN)
+    return "Down";
+  if (game_key == GameKey::MENU)
+    return "Menu";
+  if (game_key == GameKey::ACTION)
+    return "Action";
+  if (game_key == GameKey::CANCEL)
+    return "Cancel";
+  if (game_key == GameKey::DEBUG)
+    return "Debug";
+
+  return "None";
+}
+
 /*
  * Description: Convert enumerated cell type to string
  *
