@@ -319,12 +319,13 @@ bool Application::initialize()
       }
 
     }
-#else //_WIN32_OPENGL
     else
     {
       /* If only one renderer exists, let SDL 'choose' */
       renderer = SDL_CreateRenderer(window, -1, flags);
     }
+#else // _WIN32_OPENGL
+    renderer = SDL_CreateRenderer(window, -1, flags);
 #endif
 
     if(renderer == NULL)

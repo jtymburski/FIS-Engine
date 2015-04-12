@@ -24,7 +24,7 @@
 #include <SDL2/SDL.h>
 #include <vector>
 
-#include "EnumDB.h"
+#include "EnumDb.h"
 #include "Helpers.h"
 
 /* Key Map Structure */

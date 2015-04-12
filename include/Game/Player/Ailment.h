@@ -32,7 +32,7 @@
 #define AILMENT_H
 
 #include "Game/Player/Person.h"
-#include "EnumDB.h"
+#include "EnumDb.h"
 #include "EnumFlags.h"
 #include "Helpers.h"
 
