@@ -833,7 +833,7 @@ void Ailment::print(const bool &simple, const bool &flags)
 
   if (flags)
   {
-    std::cout << "INFINITE: " << getFlag(AilState::INFINITE) << "\n";
+    std::cout << "LASTING: " << getFlag(AilState::LASTING) << "\n";
     std::cout << "CURABLE" << getFlag(AilState::CURABLE) << "\n";
     std::cout << "TO_CURE" << getFlag(AilState::TO_CURE) << "\n";
     std::cout << "TO_UPDATE" << getFlag(AilState::TO_UPDATE) << "\n";
@@ -928,7 +928,7 @@ Person* Ailment::getVictim()
 void Ailment::setDuration(const uint16_t &min_turns, const uint16_t &max_turns,
                           const double &chance)
 {
-  setFlag(AilState::INFINITE, (max_turns > kMAX_TURNS));
+  setFlag(AilState::LASTING, (max_turns > kMAX_TURNS));
 
   min_turns_left = std::min(min_turns, max_turns);
   max_turns_left = std::max(min_turns, max_turns);
@@ -970,7 +970,7 @@ void Ailment::update(bool update_turns)
   {
     /* Update the turn count and set the TOBECURED flag if neccessary, only
      * update the turns if being called for (default - true) */
-    if (!getFlag(AilState::INFINITE) && update_turns && updateTurns() &&
+    if (!getFlag(AilState::LASTING) && update_turns && updateTurns() &&
         getType() != Infliction::DEATHTIMER)
       setFlag(AilState::TO_CURE);
 

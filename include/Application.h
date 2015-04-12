@@ -23,6 +23,10 @@
 #include "Text.h"
 #include "TitleScreen.h"
 
+#ifdef _WIN32
+  #define _WIN32_OPENGL
+#endif
+
 class Application
 {
 public:

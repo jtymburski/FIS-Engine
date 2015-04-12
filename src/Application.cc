@@ -126,20 +126,15 @@ void Application::handleEvents()
     {
       if (event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
       {
-        //TODO: CTRL+ALT+DEL/Resolution Bug [04-10-15]
-        // Attempt to force rerender of textures here?
-        std::cout << "Gained focus!" << std::endl;
-        SDL_RestoreWindow(window);
+
       }
       else if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST)
       {
-        //TODO [04-11-15]
-        std::cout << "Lost focus!" << std::endl;
+
       }
       else if (event.window.event == SDL_WINDOWEVENT_MOVED)
       {
-        //TODO [04-11-15]
-        std::cout << "Window moving!" << std::endl;
+
       }
     }
   }
@@ -267,15 +262,86 @@ bool Application::initialize()
     uint32_t flags = SDL_RENDERER_ACCELERATED;
     if(system_options->isVsyncEnabled())
       flags |= SDL_RENDERER_PRESENTVSYNC;
+
+    auto renderer_index = -1;
+
+#ifdef _WIN32_OPENGL
+    /* Force OpenGL to be used as the rendering driver */
+    if (SDL_GetNumRenderDrivers() > 1)
+    {
+      std::string open_gl = "opengl";
+      auto renderer_0_info = new SDL_RendererInfo;
+      auto renderer_1_info = new SDL_RendererInfo;
+
+      auto error_index   = SDL_GetRenderDriverInfo(0, renderer_0_info);
+      auto error_2_index = SDL_GetRenderDriverInfo(1, renderer_1_info);
+
+      if (error_index > -1 && renderer_0_info != nullptr)
+      {
+        if (std::strcmp(open_gl.c_str(), renderer_0_info->name) == 0)
+          renderer_index = 0;
+      }
+      else
+      {
+        std::cerr << "[ERROR]: Error attempting to discern rendering drivers" 
+           << std::endl;
+      }
+      if (error_2_index > -1 && renderer_1_info != nullptr)
+      {
+        if (std::strcmp(open_gl.c_str(), renderer_1_info->name) == 0)
+          renderer_index = 1;
+      }
+      else
+      {
+        std::cerr << "[ERROR]: Error attempting to discern rendering drivers" 
+            << std::endl;
+      }
+
+      /* Create the renderer */
+      renderer = SDL_CreateRenderer(window, renderer_index, flags);
+
+      /* Attempt to override SDL Rendering Engine with OpenGL */
+      // SDL_SetHintWithPriority(SDL_HINT_RENDER_DRIVER, "opengl", 
+      //     SDL_HINT_OVERRIDE);
+
+      if (renderer != nullptr)
+      {
+        auto renderer_info = new SDL_RendererInfo;
+        SDL_GetRenderDriverInfo(0, renderer_info);
+        error_index = SDL_GetRendererInfo(renderer, renderer_info);
     
-    /* Create the renderer */
-    renderer = SDL_CreateRenderer(window, -1, flags);
+        if (error_index > -1 && renderer_info != nullptr)
+        {
+          std::cout << "Rendering Driver: " << renderer_info->name << std::endl;
+        }
+        else
+        {
+          std::cerr << "[ERROR] Unable to get rendering driver info." 
+            << std::endl;
+        }
+       
+        delete renderer_info;
+      }
+
+      delete renderer_0_info;
+      delete renderer_1_info;
+
+    }
+#else //_WIN32
+    else
+    {
+      /* If only one renderer exists, let SDL 'choose' */
+      renderer = SDL_CreateRenderer(window, -1, flags);
+    }
+#endif
+
     if(renderer == NULL)
     {
       std::cerr << "[ERROR] Renderer could not be created. SDL error: "
                 << SDL_GetError() << std::endl;
       success = false;
     }
+
     else
     {
       SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);

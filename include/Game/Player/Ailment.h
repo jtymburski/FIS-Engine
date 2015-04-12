@@ -31,21 +31,21 @@
 #ifndef AILMENT_H
 #define AILMENT_H
 
-#include "EnumDb.h"
+#include "Game/Player/Person.h"
+#include "EnumDB.h"
 #include "EnumFlags.h"
 #include "Helpers.h"
-#include "Game/Player/Person.h"
 
-/*------------------- Enumerated QFlags -----------------------*/
+/* Enumerated AilState Flags */
 ENUM_FLAGS(AilState)
 enum class AilState
 {
-  INFINITE      = 1 << 0,  /* Ailment does not alleviate by time? >kMAX_TURNS */
+  LASTING       = 1 << 0,  /* Ailment does not alleviate by time? kMAX_TURNS */
   CURABLE       = 1 << 1,  /* Ailment cannot be cured except by time? */
   TO_CURE       = 1 << 2,  /* The ailment is to be cured immediately */
   TO_UPDATE     = 1 << 3,  /* Ailment set to be updated on new turn */
   TO_APPLY      = 1 << 4,  /* Ailment effects set to be applied on new turn */
-  TO_UNAPPLY    = 1 << 5,  /* Ailment effects to be unapplied [after update()]*/
+  TO_UNAPPLY    = 1 << 5,  /* Ailment effects to be unapplied [after update]*/
   TO_KILL       = 1 << 6,
   BUFF          = 1 << 7,  /* Is this ailment a favorable ailment? */
   ADVERSE       = 1 << 8,  /* Is this ailment an adverse ailment? */
