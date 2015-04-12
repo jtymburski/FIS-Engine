@@ -263,52 +263,47 @@ bool Application::initialize()
     if(system_options->isVsyncEnabled())
       flags |= SDL_RENDERER_PRESENTVSYNC;
 
-    auto renderer_index = -1;
+    auto driver_index = -1;
 
 #ifdef _WIN32_OPENGL
-    /* Force OpenGL to be used as the rendering driver */
+    /* Force OpenGL to be used as the rendering driver if there are more than
+       one rendering drivers available */
     if (SDL_GetNumRenderDrivers() > 1)
     {
       std::string open_gl = "opengl";
-      auto renderer_0_info = new SDL_RendererInfo;
-      auto renderer_1_info = new SDL_RendererInfo;
 
-      auto error_index   = SDL_GetRenderDriverInfo(0, renderer_0_info);
-      auto error_2_index = SDL_GetRenderDriverInfo(1, renderer_1_info);
+      /* Loop through each driver, comparing its value to "opengl" */
+      for (int32_t i = 0; 
+           i < SDL_GetNumRenderDrivers() && driver_index == -1; 
+           i++)
+      {
+        auto renderer_info = new SDL_RendererInfo;
+        auto error_index = SDL_GetRenderDriverInfo(i, renderer_info);
 
-      if (error_index > -1 && renderer_0_info != nullptr)
-      {
-        if (std::strcmp(open_gl.c_str(), renderer_0_info->name) == 0)
-          renderer_index = 0;
-      }
-      else
-      {
-        std::cerr << "[ERROR]: Error attempting to discern rendering drivers" 
-           << std::endl;
-      }
-      if (error_2_index > -1 && renderer_1_info != nullptr)
-      {
-        if (std::strcmp(open_gl.c_str(), renderer_1_info->name) == 0)
-          renderer_index = 1;
-      }
-      else
-      {
-        std::cerr << "[ERROR]: Error attempting to discern rendering drivers" 
-            << std::endl;
+        if (error_index > -1 && renderer_info != nullptr)
+        {
+          std::cout << "Checking Driver: " << renderer_info->name << std::endl;
+          if (std::strcmp(open_gl.c_str(), renderer_info->name) == 0)
+            driver_index = i;
+        }
+        else
+        {
+          std::cerr << "[ERROR]: Error attempting to discern rendering driver" 
+              << std::endl;
+        }
+
+        delete renderer_info;
       }
 
       /* Create the renderer */
-      renderer = SDL_CreateRenderer(window, renderer_index, flags);
+      renderer = SDL_CreateRenderer(window, driver_index, flags);
 
-      /* Attempt to override SDL Rendering Engine with OpenGL */
-      // SDL_SetHintWithPriority(SDL_HINT_RENDER_DRIVER, "opengl", 
-      //     SDL_HINT_OVERRIDE);
-
+      /* Print out the chosen rendering driver info */
       if (renderer != nullptr)
       {
         auto renderer_info = new SDL_RendererInfo;
         SDL_GetRenderDriverInfo(0, renderer_info);
-        error_index = SDL_GetRendererInfo(renderer, renderer_info);
+        auto error_index = SDL_GetRendererInfo(renderer, renderer_info);
     
         if (error_index > -1 && renderer_info != nullptr)
         {
@@ -323,11 +318,8 @@ bool Application::initialize()
         delete renderer_info;
       }
 
-      delete renderer_0_info;
-      delete renderer_1_info;
-
     }
-#else //_WIN32
+#else //_WIN32_OPENGL
     else
     {
       /* If only one renderer exists, let SDL 'choose' */
