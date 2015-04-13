@@ -13,7 +13,10 @@
  ******************************************************************************/
 #include "Game/Battle/BattleDisplay.h"
 
-/* Constant Implementation - see header file for descriptions */
+/*=============================================================================
+ * CONSTANTS - See .h for descriptions
+ *============================================================================*/
+
 const uint16_t BattleDisplay::kACTION_BORDER = 10;
 const uint16_t BattleDisplay::kACTION_CENTER = 381;
 const uint16_t BattleDisplay::kACTION_COLOR_A = 175;

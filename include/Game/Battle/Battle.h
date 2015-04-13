@@ -45,19 +45,16 @@ enum class CombatState
   CONFIGURED                 = 1 << 0,
   FLAGS_CONFIGURED           = 1 << 1,
   PHASE_DONE                 = 1 << 2,
-  VICTORY                    = 1 << 3,
-  LOSS                       = 1 << 4,
-  ALLIES_RUN                 = 1 << 5,
-  ENEMIES_RUN                = 1 << 6,
+  VICTORY                    = 1 << 3, // Use OutcomeState enum
+  LOSS                       = 1 << 4, // Use OutcomeState enum
+  ALLIES_RUN                 = 1 << 5, // Use OutcomeState enum
+  ENEMIES_RUN                = 1 << 6,// Use outcomeState enum
   OUTCOME_PROCESSED          = 1 << 7,
   OUTCOME_PERFORMED          = 1 << 8,
-  ERROR_STATE                = 1 << 9,
-  RANDOM_ENCOUNTER           = 1 << 10,
-  MINI_BOSS                  = 1 << 11,
-  BOSS                       = 1 << 12,
-  FINAL_BOSS                 = 1 << 13,
-  PROCESSING_SKILL           = 1 << 14,
-  PROCESSING_ITEM            = 1 << 15,
+  RANDOM_ENCOUNTER           = 1 << 10, /* Is this just a regular Battle? */
+  MINI_BOSS                  = 1 << 11, /* Is this battle a forced boss? */
+  BOSS                       = 1 << 12, /* Is this battle a boss? */
+  FINAL_BOSS                 = 1 << 13, /* Is this battle the final one? */
   READY_TO_RENDER            = 1 << 16, /* Processing state done */
   RENDERING_COMPLETE         = 1 << 17, /* Current render cycle complete */
   BEGIN_PROCESSING           = 1 << 18, /* This processing loop has begun */
@@ -66,8 +63,8 @@ enum class CombatState
   ALL_PROCESSING_COMPLETE    = 1 << 21, /* Entire processing complete */
   BEGIN_PERSON_UPKEEPS       = 1 << 22, /* The upkeep phase has started */
   PERSON_UPKEEP_COMPLETE     = 1 << 23, /* One person state complete */
-  BEGIN_AILMENT_UPKEEPS      = 1 << 24,
-  CURRENT_AILMENT_STARTED    = 1 << 25,
+  BEGIN_AILMENT_UPKEEPS      = 1 << 24, /* Curr. person has begun ailment up */
+  CURRENT_AILMENT_STARTED    = 1 << 25, /* Curr. ailment processing begun */
   CURRENT_AILMENT_COMPLETE   = 1 << 26, /* Curr person ailment check stage */
   COMPLETE_AILMENT_UPKEEPS   = 1 << 27, /* Curr person ailment check done  */
   ALL_UPKEEPS_COMPLETE       = 1 << 28  /* Upkeep checking stage complete */
@@ -85,6 +82,24 @@ enum class IgnoreState
   IGNORE_LUCK_ATK  = 1 << 6,
   IGNORE_LUCK_DEF  = 1 << 7,
   IGNORE_EQUIPMENT = 1 << 8,
+};
+
+/* Description: Enumerated values for the Battle OutStatecomeState
+ *
+ * VICTORY - The allies have defeated all remaining foes
+ * DEFEAT  - The foes have defeated all allies, GAME OVER
+ * ALLIES_RUN - The allies have escaped the Battle
+ * ENEMIES_RUN - The enemies have escaped the Battle 'pyrric victory'
+ * RETURN  - The battle ends without any victory/loss -> return to Map state
+ */
+enum class OutcomeType
+{
+  VICTORY,
+  DEFEAT,
+  ALLIES_RUN,
+  ENEMIES_RUN,
+  RETURN,
+  NONE
 };
 
 /* Enumerated values for turn mode */
@@ -105,7 +120,7 @@ enum class TurnState
   ORDER_ACTIONS,        /* Determines order of skills */
   PROCESS_ACTIONS,      /* Determines outcomes of skills */
   CLEAN_UP,             /* Cleanup after turn, turn incr. etc. */
-  LOSS,                 /* Loss stage returns to title */
+  LOSS,                 /* LosStates stage returns to title */
   VICTORY,              /* Victory displays the victory screen */
   RUNNING,              /* Running condition */
   DESTRUCT              /* Battle should be destructed */
@@ -167,12 +182,11 @@ private:
   /* Running config */
   Options* config;
 
+  /* Enumerated outcome value for type of outcome */
+  OutcomeType outcome;
+
   /* Current index for action selection/outcomes */
   int32_t person_index;
-  
-  /* Dimensions of the screen */
-  uint8_t screen_height;
-  uint8_t screen_width;
 
   /* The index of the currently selected target */
   uint32_t target_index;
@@ -265,7 +279,6 @@ private:
   static const float    kALLY_RUN_MODIFIER;
   static const float    kENEMY_RUN_MODIFIER;
   static const float    kRUN_PC_PER_POINT;
-  static const int16_t  kRUN_PC_EXP_PENALTY;
 
   static const float    kDEFEND_MODIFIER;
   static const float    kGUARD_MODIFIER;
@@ -276,6 +289,11 @@ private:
   static const int16_t kREGEN_RATE_NORMAL_PC;
   static const int16_t kREGEN_RATE_STRONG_PC;
   static const int16_t kREGEN_RATE_GRAND_PC;
+
+  /* -------- Battle Outcome Constants (See Implementation) ----------- */
+  static const int16_t kALLY_KO_EXP_PC;
+  static const int16_t kENEMY_RUN_EXP_PC;
+  static const int16_t kRUN_PC_EXP_PENALTY;
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -514,6 +532,9 @@ private:
   /* Updates the Battle to the next state */
   void setNextTurnState();
 
+  /* Assigns a new value to the Outcome enumeration */
+  bool setOutcome(OutcomeType new_outcome);
+
   /* Assigns a new value to the elapsed time */
   void setTimeElapsed(const int32_t &new_value);
 
@@ -571,11 +592,8 @@ public:
   /* Returns the hud display mode currently set */
   BattleOptions getHudDisplayMode();
 
-  /* Returns the value of the screen height */
-  uint32_t getScreenHeight();
-
-  /* Returns the value of the screen width */
-  uint32_t getScreenWidth();
+  /* Obtains the outcome state enumeration */
+  OutcomeType getOutcome(); 
 
   /* Evaluates and returns a vector of ailments for a given person */
   std::vector<Ailment*> getPersonAilments(const Person* const target);

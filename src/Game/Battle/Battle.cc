@@ -108,7 +108,6 @@ const float    Battle::kUSER_RUN_MODIFIER           =   2.00;
 const float    Battle::kALLY_RUN_MODIFIER           =   1.00;
 const float    Battle::kENEMY_RUN_MODIFIER          =   1.00;
 const float    Battle::kRUN_PC_PER_POINT            =   0.003;
-const int16_t  Battle::kRUN_PC_EXP_PENALTY          =   5;
 
 const float    Battle::kDODGE_MODIFIER              =   0.10;
 const float    Battle::kDODGE_HIGHEST_RATE_PC       =   50.0;
@@ -123,6 +122,15 @@ const int16_t  Battle::kREGEN_RATE_WEAK_PC           =      3;
 const int16_t  Battle::kREGEN_RATE_NORMAL_PC         =      5;
 const int16_t  Battle::kREGEN_RATE_STRONG_PC         =      7;
 const int16_t  Battle::kREGEN_RATE_GRAND_PC          =      9;
+
+/* ------------ Battle Outcome Modifiers ---------------
+ * kENEMY_RUN_EXP_PC - %EXP to maintain on pyrric victory (enemies run)
+ * kRUN_PC_EXP_PENALTY - %EXP (MAX) penalty when the Allies run from Battle.
+ * kALLY_KO_EXP_PC - %EXP which KO member get for winning a Battle.
+ */
+const int16_t Battle::kALLY_KO_EXP_PC     = 50;
+const int16_t Battle::kENEMY_RUN_EXP_PC   = 25;
+const int16_t Battle::kRUN_PC_EXP_PENALTY =  5;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -163,7 +171,7 @@ Battle::Battle(Options* running_config, Party* const friends, Party* const foes,
 }
 
 /*
- * Description: Annihilates the Battle.
+ * Description: Annihilates the Battle
  */
 Battle::~Battle()
 {
@@ -190,12 +198,12 @@ Battle::~Battle()
  * PRIVATE FUNCTIONS
  *============================================================================*/
 
-/*
- * Description: Attempts to add an ailment to the vector of ailments
+
+/* Description: Attempts to add an ailment to the vector of ailments
  *
  * Inputs: Ailment* const new_ailment - pointer to a new ailment object.
  * Output: bool true if the ailment infliction was kosher
- */
+ */ 
 bool Battle::addAilment(Infliction infliction_type, Person* inflictor,
                         uint16_t min_turns, uint16_t max_turns, int32_t chance)
 {
@@ -213,7 +221,6 @@ bool Battle::addAilment(Infliction infliction_type, Person* inflictor,
 
     if (new_ailment->getFlag(AilState::TO_APPLY))
       new_ailment->apply();
-
     success = true;
   }
   else
@@ -1717,7 +1724,6 @@ void Battle::loadBattleStateFlags()
   setBattleFlag(CombatState::ENEMIES_RUN, false);
   setBattleFlag(CombatState::OUTCOME_PROCESSED, false);
   setBattleFlag(CombatState::OUTCOME_PERFORMED, false);
-  setBattleFlag(CombatState::ERROR_STATE, false);
 }
 
 /*
@@ -3351,8 +3357,6 @@ bool Battle::setupClass()
   flags = static_cast<CombatState>(0);
 
   person_index           = 0;
-  screen_height          = 0;
-  screen_width           = 0;
   time_elapsed           = 0;
   time_elapsed_this_turn = 0;
   turns_elapsed          = 0;
@@ -3937,6 +3941,19 @@ void Battle::setNextTurnState()
   }
 }
 
+//TODO [04-12-15] Conventions
+bool Battle::setOutcome(OutcomeType new_outcome)
+{
+  if (outcome == OutcomeType::NONE)
+  {
+    outcome = new_outcome;
+
+    return true;
+  }
+
+  return false;
+}
+
 /*
  * Description: Assigns the next person index. If In selection action enemy,
  *              finds the next person index which needs action selected. Same
@@ -4053,6 +4070,7 @@ void Battle::setTurnState(const TurnState &new_turn_state)
  */
 bool Battle::keyDownEvent(SDL_KeyboardEvent event)
 {
+  std::cout << "Checking KeyDown event!" << std::endl;
 #ifdef UDEBUG
   if (!getBattleFlag(CombatState::OUTCOME_PROCESSED))
   {
@@ -4132,8 +4150,6 @@ void Battle::printAll(const bool &simple, const bool &flags, const bool &party)
 
     std::cout << "Friends Size: " << friends->getSize();
     std::cout << "\nFoes Size: " << foes->getSize();
-    std::cout << "\nScreen Height: " << screen_height;
-    std::cout << "\nScreen Width: " << screen_width;
     std::cout << "\nTime Elapsed: " << time_elapsed;
     std::cout << "\nTurns Elapsed: " << turns_elapsed;
     std::cout << "\n\n";
@@ -4152,16 +4168,15 @@ void Battle::printAll(const bool &simple, const bool &flags, const bool &party)
                 << getBattleFlag(CombatState::OUTCOME_PROCESSED);
       std::cout << "\nOUTCOME PERFORMED: "
                 << getBattleFlag(CombatState::OUTCOME_PERFORMED);
-      std::cout << "\nERROR_STATE: " << getBattleFlag(CombatState::ERROR_STATE);
       std::cout << "\nRANDOM_ENCOUNTER: " 
                 << getBattleFlag(CombatState::RANDOM_ENCOUNTER);
       std::cout << "\nMINI_BOSS: " << getBattleFlag(CombatState::MINI_BOSS);
       std::cout << "\nBOSS: " << getBattleFlag(CombatState::BOSS);
       std::cout << "\nFINAL_BOSS: " << getBattleFlag(CombatState::FINAL_BOSS);
-      std::cout << "\nPROCESSING_SKILL: " 
-                << getBattleFlag(CombatState::PROCESSING_SKILL);
-      std::cout << "\nPROCESSING_ITEM: " 
-                << getBattleFlag(CombatState::PROCESSING_ITEM);
+      // std::cout << "\nPROCESSING_SKILL: " 
+      //           << getBattleFlag(CombatState::PROCESSING_SKILL);
+      // std::cout << "\nPROCESSING_ITEM: " 
+      //           << getBattleFlag(CombatState::PROCESSING_ITEM);
       std::cout << "\n\n";
 
       /* For other processing flags, see print processing function */
@@ -4514,26 +4529,10 @@ BattleOptions Battle::getHudDisplayMode()
   return hud_display_mode;
 }
 
-/*
- * Description: Returns the value of the screen height 
- *
- * Inputs: none
- * Output: uint32_t - the set height of the screen
- */
-uint32_t Battle::getScreenHeight()
+//TODO: Conventions [04-11-15]
+OutcomeType Battle::getOutcome()
 {
-  return screen_height;
-}
-
-/*
- * Description: Returns the value of the screen width.
- *
- * Inputs: none
- * Output: uint32_t - the set width of the screen
- */
-uint32_t Battle::getScreenWidth()
-{
-  return screen_width;
+  return outcome;
 }
 
 /*

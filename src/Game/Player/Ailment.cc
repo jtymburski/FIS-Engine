@@ -129,8 +129,7 @@ const double   Ailment::kBOND_STATS_PC       = 0.35;
  *         Person* ail_inflictor - the source of the Infliction
  *         uint16_t ail_min_turns - minimum duration of the ailment
  *         uint16_t ail_max_turns - maximum duration of the ailmen
- *         double chance - ???
- * Output
+ *         double chance - chance the ailment has to clear each turn
  */
 Ailment::Ailment(Person* ail_victim, const Infliction &ail_type, 
     Person* ail_inflictor, const uint16_t &ail_max_turns, 

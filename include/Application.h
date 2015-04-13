@@ -87,6 +87,10 @@ private:
   
   /* Goes through all available events that are currently on the stack */
   void handleEvents();
+
+  /* Log an Error */
+  void logError(std::ostream &os, const std::string &msg);
+  void logSDLError(std::ostream &os, const std::string &msg);
   
   /* Renders the current view and all relevant visual data */
   void render(uint32_t cycle_time);
