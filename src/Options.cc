@@ -240,6 +240,12 @@ bool Options::isAutoRun()
   return getFlag(OptionState::AUTO_RUN);
 }
 
+/* Returns if the game is full screen mode */
+bool Options::isFullScreen()
+{
+  return getFlag(OptionState::FULLSCREEN);
+}
+
 /* Returns if linear filtering mode is enabled */
 bool Options::isLinearFilteringEnabled()
 {

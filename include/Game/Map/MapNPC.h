@@ -45,14 +45,28 @@ public:
   enum TrackingState{AVOIDPLAYER, TOPLAYER, NOTRACK};
 
 private:
-  /* The starting node of the NPCs Path */
+  /* The starting and current node of the NPCs Path */
   Path* current;
   Path* head;
+  
+  /* Does the NPC force interaction if possible? */
+  bool forced_interaction;
+  
+  /* Is the NPC currently going forward or backward - used for BACKANDFORTH */
   bool moving_forward;
+  
+  /* The state of movement */
+  NodeState node_state;
+  
+  /* Should the nodes be deleted on destruction - relevant if base npc */
   bool nodes_delete;
+  
+  /* The active delay of the NPC on the node, if relevant */
   int npc_delay;
-  NodeState state;
-
+  
+  /* The state of tracking */
+  TrackingState tracking_state;
+  
 /*============================================================================
  * PRIVATE FUNCTIONS
  *===========================================================================*/
@@ -95,6 +109,12 @@ public:
   /* Returns the predicted move request in the class */
   Direction getPredictedMoveRequest();
   
+  /* Returns the tracking state - how the NPC reacts to others */
+  TrackingState getTrackingState();
+  
+  /* Returns if the NPC will force interaction */
+  bool isForcedInteraction();
+  
   /* Path nodes removal handling */
   bool removeAllNodes();
   bool removeNode(uint16_t index);
@@ -103,9 +123,15 @@ public:
   /* Sets the base class */
   virtual bool setBase(MapThing* base);
   
+  /* Sets the forced interaction of the npc */
+  void setForcedInteraction(bool forced);
+  
   /* Sets the node movement state - how it traverses */
   void setNodeState(NodeState state);
 
+  /* Sets the tracking state - how the NPC reacts */
+  void setTrackingState(TrackingState state);
+  
   /* Updates the thing, based on the tick - reimplemented */
   void update(int cycle_time, std::vector<std::vector<Tile*>> tile_set);
 };

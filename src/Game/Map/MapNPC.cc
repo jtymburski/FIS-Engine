@@ -22,10 +22,12 @@ MapNPC::MapNPC() : MapPerson()
   /* Clear the path pointers */
   current = NULL;
   head = NULL;
+  forced_interaction = false;
   moving_forward = true;
+  node_state = LOOPED;
   nodes_delete = true;
   npc_delay = 0;
-  state = LOOPED;
+  tracking_state = NOTRACK;
 }
 
 /*
@@ -42,9 +44,12 @@ MapNPC::MapNPC(int id, std::string name, std::string description)
   /* Clear the path pointers */
   current = NULL;
   head = NULL;
+  forced_interaction = false;
   moving_forward = true;
+  node_state = LOOPED;
+  nodes_delete = true;
   npc_delay = 0;
-  state = LOOPED;
+  tracking_state = NOTRACK;
 }
 
 /*
@@ -72,6 +77,9 @@ void MapNPC::appendEmptyNode()
   new_node->x = 0;
   new_node->y = 0;
   new_node->delay = 0;
+  new_node->xy_flip = false;
+  new_node->previous = NULL;
+  new_node->next = NULL;
   
   /* Append the node to the end of the list */
   if(!insertNode(getPathLength(), new_node))
@@ -217,6 +225,10 @@ bool MapNPC::addThingInformation(XmlData data, int file_index,
         setNodeState(MapNPC::BACKANDFORTH);
       else if(state == "locked")
         setNodeState(MapNPC::LOCKED);
+      else if(state == "randomrange")
+        setNodeState(MapNPC::RANDOMRANGE);
+      else if(state == "random")
+        setNodeState(MapNPC::RANDOM);
       else
         success = false;
     }
@@ -257,6 +269,35 @@ bool MapNPC::addThingInformation(XmlData data, int file_index,
         if(success)
           node->delay = delay;
       }
+      else if(elements[1] == "xyflip")
+      {
+        bool flip = data.getDataBool(&success);
+        if(success)
+          node->xy_flip = flip;
+      }
+    }
+    /*--------------------- TRACKING --------------------*/
+    else if(identifier == "tracking" && elements.size() == 1)
+    {
+      std::string state = data.getDataString(&success);
+      if(success)
+      {
+        if(state == "none")
+          setTrackingState(MapNPC::NOTRACK);
+        else if(state == "toplayer")
+          setTrackingState(MapNPC::TOPLAYER);
+        else if(state == "avoidplayer")
+          setTrackingState(MapNPC::AVOIDPLAYER);
+        else
+          success = false;
+      }
+    }
+    /*----------------- FORCED INTERACTION --------------------*/
+    else if(identifier == "forcedinteraction" && elements.size() == 1)
+    {
+      bool interact = data.getDataBool(&success);
+      if(success)
+        setForcedInteraction(interact);
     }
     else
     {
@@ -316,7 +357,6 @@ void MapNPC::clear()
  *         uint16_t delay - the time to pause on the node when reached (ms)
  * Output: bool - true if the insertion was successful
  */
-// TODO: Possibly make the node x and y an offset instead of absolute?
 bool MapNPC::insertNode(uint16_t index, uint16_t x, uint16_t y, uint16_t delay)
 {
   bool success = true;
@@ -359,9 +399,9 @@ bool MapNPC::insertNodeAtTail(uint16_t x, uint16_t y, uint16_t delay)
  */
 MapNPC::NodeState MapNPC::getNodeState()
 {
-  if(base != NULL && base_category == ThingBase::NPC)
-    return static_cast<MapNPC*>(base)->state;
-  return state;
+  if(base != NULL && base_category == ThingBase::NPC && !nodes_delete)
+    return static_cast<MapNPC*>(base)->node_state;
+  return node_state;
 }
 
 /*
@@ -434,7 +474,35 @@ Direction MapNPC::getPredictedMoveRequest()
   
   return getMoveRequest();
 }
-  
+
+/*
+ * Description: Returns the tracking state. This defines how the NPC reacts to
+ *              the player as it nears the NPC.
+ *
+ * Inputs: none
+ * Output: MapNPC::TrackingState - the tracking state enum
+ */
+MapNPC::TrackingState MapNPC::getTrackingState()
+{
+  if(base != NULL && base_category == ThingBase::NPC && !nodes_delete)
+    return static_cast<MapNPC*>(base)->tracking_state;
+  return tracking_state;
+}
+
+/*
+ * Description: Returns if the NPC will force interaction upon the player if it
+ *              moves within the vicinity of the NPC.
+ *
+ * Inputs: none
+ * Output: bool - true if the NPC will force interaction
+ */
+bool MapNPC::isForcedInteraction()
+{
+  if(base != NULL && base_category == ThingBase::NPC && !nodes_delete)
+    return static_cast<MapNPC*>(base)->forced_interaction;
+  return forced_interaction;
+}
+
 /*
  * Description: Removes all nodes in the NPC sequence.
  *
@@ -555,6 +623,18 @@ bool MapNPC::setBase(MapThing* base)
 }
 
 /*
+ * Description: Sets if the NPC will force interaction on a player if it moves
+ *              within the vicinity.
+ *
+ * Inputs: bool forced - true if the NPC should force interaction
+ * Output: none
+ */
+void MapNPC::setForcedInteraction(bool forced)
+{
+  forced_interaction = forced;
+}
+
+/*
  * Description: Sets the node state and how nodes are parsed with the controller
  *              enum.
  *
@@ -563,10 +643,22 @@ bool MapNPC::setBase(MapThing* base)
  */
 void MapNPC::setNodeState(NodeState state)
 {
-  this->state = state;
+  node_state = state;
   
   if(state == BACKANDFORTH)
     moving_forward = true;
+}
+
+/*
+ * Description: Sets the tracking state of the NPC and how it reacts as a player
+ *              comes in the vicinity, based on a set range.
+ *
+ * Inputs: TrackingState state - the tracking state that the NPC should execute
+ * Output: none
+ */
+void MapNPC::setTrackingState(TrackingState state)
+{
+  tracking_state = state;
 }
 
 /*
@@ -577,6 +669,7 @@ void MapNPC::setNodeState(NodeState state)
  *         std::vector<std::vector<Tile*>> tile_set - the next tiles to move to
  * Output: none 
  */
+// TODO: Add forced interaction, tracking state, and additional movement nodes
 void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 {
   /* Some initial parameters */
@@ -611,12 +704,12 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
         npc_delay += cycle_time;
       else
       {
-        if(state == LOOPED)
+        if(node_state == LOOPED)
         {
           current = current->next;
           npc_delay = 0;
         }
-        else if(state == BACKANDFORTH)
+        else if(node_state == BACKANDFORTH)
         {
           /* Check to see if the ends are reached */
           if(moving_forward && current->next == head)

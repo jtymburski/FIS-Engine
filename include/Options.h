@@ -174,6 +174,9 @@ public:
   /* Is the player instructed to always run? */
   bool isAutoRun();
 
+  /* Returns if the game is full screen mode */
+  bool isFullScreen();
+  
   /* Returns if linear filtering mode is enabled */
   bool isLinearFilteringEnabled();
   

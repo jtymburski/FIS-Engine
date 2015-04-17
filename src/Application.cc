@@ -270,11 +270,14 @@ bool Application::initialize()
   if(success)
   {
     /* Create window for display */
+    uint32_t flags = SDL_WINDOW_SHOWN;
+    if(system_options->isFullScreen())
+      flags |= SDL_WINDOW_FULLSCREEN;
     window = SDL_CreateWindow("Univursa", SDL_WINDOWPOS_CENTERED, 
                               SDL_WINDOWPOS_CENTERED, 
                               system_options->getScreenWidth(), 
                               system_options->getScreenHeight(), 
-                              SDL_WINDOW_SHOWN);// | SDL_WINDOW_FULLSCREEN);
+                              flags);
     if(window == NULL)
     {
       logSDLError(std::cerr, "Window could not be created.");
