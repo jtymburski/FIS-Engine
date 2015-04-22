@@ -157,14 +157,15 @@ void TitleScreen::unsetMenu()
 void TitleScreen::enableView(bool enable)
 {
   /* Enables all relevant control for the view */
+  // TODO: Temporarily make music permanent
   if(enable)
   {
-    background_music.play();
+    //background_music.play();
   }
   /* Disables all relevant control for the view */
   else
   {
-    background_music.stop();
+    //background_music.stop();
   }
 }
  
@@ -324,8 +325,9 @@ void TitleScreen::setMusic()
 {
   /* Sound setup */
   background_music.setMusicFile(base_path + 
-                                "sound/4.mp3");
+                                "sound/3.mp3");
   //background_music.setPlayForever();
+  background_music.play();
   menu_click_sound.setChannel(SoundChannels::MENUS);
   menu_click_sound.setSoundFile(base_path + "sound/functional/menu_click.wav");
 }

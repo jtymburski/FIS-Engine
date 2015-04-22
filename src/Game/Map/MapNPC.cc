@@ -20,14 +20,22 @@
 MapNPC::MapNPC() : MapPerson()
 {
   /* Clear the path pointers */
-  current = NULL;
-  head = NULL;
   forced_interaction = false;
   moving_forward = true;
+  node_current = NULL;
+  node_head = NULL;
   node_state = LOOPED;
   nodes_delete = true;
   npc_delay = 0;
   tracking_state = NOTRACK;
+  
+  /* Set the path random node to blank state */
+  node_random.x = 0;
+  node_random.y = 0;
+  node_random.delay = 0;
+  node_random.xy_flip = false;
+  node_random.previous = NULL;
+  node_random.next = NULL;
 }
 
 /*
@@ -42,14 +50,22 @@ MapNPC::MapNPC(int id, std::string name, std::string description)
       : MapPerson(id, name, description)
 {
   /* Clear the path pointers */
-  current = NULL;
-  head = NULL;
   forced_interaction = false;
   moving_forward = true;
+  node_current = NULL;
+  node_head = NULL;
   node_state = LOOPED;
   nodes_delete = true;
   npc_delay = 0;
   tracking_state = NOTRACK;
+
+  /* Set the path random node to blank state */
+  node_random.x = 0;
+  node_random.y = 0;
+  node_random.delay = 0;
+  node_random.xy_flip = false;
+  node_random.previous = NULL;
+  node_random.next = NULL;
 }
 
 /*
@@ -97,20 +113,20 @@ Path* MapNPC::getNode(uint16_t index)
   bool failed = false;
   Path* returned_node = NULL;
  
-  if(base != NULL && base_category == ThingBase::NPC)
+  if(base != NULL && base_category == ThingBase::NPC && !nodes_delete)
   {
     returned_node = static_cast<MapNPC*>(base)->getNode(index);
   }
   else
   {
-    if(head != NULL)
+    if(node_head != NULL)
     {
       /* Loop through to find the node */
-      returned_node = head;
+      returned_node = node_head;
       for(uint16_t i = 0; i < index; i++)
       {
         returned_node = returned_node->next;
-        if(returned_node == head)
+        if(returned_node == node_head)
           failed = true;
       }
     }
@@ -133,31 +149,31 @@ Path* MapNPC::getNode(uint16_t index)
 bool MapNPC::insertNode(uint16_t index, Path* node)
 {
   bool success = false;
- 
-  /* Initial checks to see if nodes are set by base class */
-  if(!nodes_delete)
-  {
-    head = NULL;
-    current = NULL;
-    nodes_delete = true;
-  }
 
   /* Only proceed if node is non-null */
   if(node != NULL)
   {
+    /* Initial checks to see if nodes are set by base class */
+    if(!nodes_delete)
+    {
+      node_head = NULL;
+      node_current = NULL;
+      nodes_delete = true;
+    }
+  
     /* If the head is 0 and the index is 0, drop it in the first slot */
-    if(head == NULL && index == 0)
+    if(node_head == NULL && index == 0)
     {
       node->previous = node;
       node->next = node;
-      head = node;
+      node_head = node;
       success = true;
     }
     /* If it's at the end of the 
      * Otherwise, drop it behind the first, if the index is in range */
     else if(index <= getPathLength())
     {
-      Path* temp_node = head;
+      Path* temp_node = node_head;
       success = true;
 
       /* Loop through to find the insertion point */
@@ -172,13 +188,22 @@ bool MapNPC::insertNode(uint16_t index, Path* node)
       
       /* If the index is at 0, reset the head */
       if(index == 0)
-        head = node;
+        node_head = node;
     }
     
     /* If successful, reset the current node ptr of the class */
     if(success)
     {
-      current = head;
+      if(node_state == NodeState::LOOPED || 
+         node_state == NodeState::BACKANDFORTH)
+      {
+        node_current = node_head;
+      }
+      else if(node_state == NodeState::RANDOM ||
+              node_state == NodeState::RANDOMRANGE)
+      {
+        node_current = &node_random;
+      }
       resetPosition();
     }
   }
@@ -211,6 +236,7 @@ bool MapNPC::addThingInformation(XmlData data, int file_index,
   std::vector<std::string> elements = data.getTailElements(file_index);
   std::string identifier = data.getElement(file_index);
   bool success = true;
+  std::cout << "Count: " << elements.size() << std::endl;
   
   /* Parse the identifier for setting the person information */
   /*--------------------- NODESTATE --------------------*/
@@ -250,6 +276,7 @@ bool MapNPC::addThingInformation(XmlData data, int file_index,
     Path* node = getNode(index);
     if(node != NULL)
     {
+      std::cout << "Node: " << success << std::endl;
       /* Parse the node identity */
       if(elements[1] == "x")
       {
@@ -275,40 +302,43 @@ bool MapNPC::addThingInformation(XmlData data, int file_index,
         if(success)
           node->xy_flip = flip;
       }
-    }
-    /*--------------------- TRACKING --------------------*/
-    else if(identifier == "tracking" && elements.size() == 1)
-    {
-      std::string state = data.getDataString(&success);
-      if(success)
-      {
-        if(state == "none")
-          setTrackingState(MapNPC::NOTRACK);
-        else if(state == "toplayer")
-          setTrackingState(MapNPC::TOPLAYER);
-        else if(state == "avoidplayer")
-          setTrackingState(MapNPC::AVOIDPLAYER);
-        else
-          success = false;
-      }
-    }
-    /*----------------- FORCED INTERACTION --------------------*/
-    else if(identifier == "forcedinteraction" && elements.size() == 1)
-    {
-      bool interact = data.getDataBool(&success);
-      if(success)
-        setForcedInteraction(interact);
+      std::cout << "Node End: " << success << std::endl;
     }
     else
     {
       success = false;
     }
   }
+  /*--------------------- TRACKING --------------------*/
+  else if(identifier == "tracking" && elements.size() == 1)
+  {
+    std::string state = data.getDataString(&success);
+    if(success)
+    {
+      if(state == "none")
+        setTrackingState(MapNPC::NOTRACK);
+      else if(state == "toplayer")
+        setTrackingState(MapNPC::TOPLAYER);
+      else if(state == "avoidplayer")
+        setTrackingState(MapNPC::AVOIDPLAYER);
+      else
+        success = false;
+    }
+  }
+  /*----------------- FORCED INTERACTION --------------------*/
+  else if(identifier == "forcedinteraction" && elements.size() == 1)
+  {
+    bool interact = data.getDataBool(&success);
+    if(success)
+      setForcedInteraction(interact);
+  }
   else
   {
     success &= MapPerson::addThingInformation(data, file_index, section_index, 
                                               renderer, base_path); 
   }
+  
+  std::cout << identifier << "," << (int)success << std::endl;
   
   return success;
 }
@@ -336,8 +366,8 @@ void MapNPC::clear()
 {
   /* Clear out all the nodes */
   removeAllNodes();
-  head = NULL;
-  current = NULL;
+  node_head = NULL;
+  node_current = NULL;
 
   /* Clear out other variables */
   npc_delay = 0;
@@ -366,14 +396,14 @@ bool MapNPC::insertNode(uint16_t index, uint16_t x, uint16_t y, uint16_t delay)
   new_node->x = x;
   new_node->y = y;
   new_node->delay = delay;
-  
+
   /* Attempt to insert the node */
   if(!insertNode(index, new_node))
   {
     delete new_node;
     success = false;
   }
-  
+
   return success;
 }
 
@@ -413,7 +443,7 @@ MapNPC::NodeState MapNPC::getNodeState()
 uint16_t MapNPC::getPathLength()
 {
   uint16_t size = 1;
-  Path* temp_node = head;
+  Path* temp_node = node_head;
  
   /* Check if base is used or not */
   if(base != NULL && base_category == ThingBase::NPC)
@@ -422,11 +452,11 @@ uint16_t MapNPC::getPathLength()
   }
   else
   {
-    if(head == NULL)
+    if(node_head == NULL)
       size = 0;
     else
     {
-      while(temp_node->next != head)
+      while(temp_node->next != node_head)
       {
         temp_node = temp_node->next;
         size++;
@@ -446,10 +476,10 @@ uint16_t MapNPC::getPathLength()
  */
 Direction MapNPC::getPredictedMoveRequest()
 {
-  if(isTilesSet() && current != NULL)
+  if(isTilesSet() && node_current != NULL)
   {
-    int delta_x = current->x - tile_main.front().front()->getX();
-    int delta_y = current->y - tile_main.front().front()->getY();
+    int delta_x = node_current->x - tile_main.front().front()->getX();
+    int delta_y = node_current->y - tile_main.front().front()->getY();
     Direction direction = Direction::DIRECTIONLESS;
     
     /* If the npc needs to move on the X plane */
@@ -515,8 +545,8 @@ bool MapNPC::removeAllNodes()
     while(removeNodeAtTail());
   else
   {
-    head = NULL;
-    current = NULL;
+    node_head = NULL;
+    node_current = NULL;
   }
 
   return true;
@@ -539,15 +569,15 @@ bool MapNPC::removeNode(uint16_t index)
   {
     if(index == 0 && length == 1)
     {
-      temp_node = head;
-      head = NULL;
-      current = NULL;
+      temp_node = node_head;
+      node_head = NULL;
+      node_current = NULL;
       success = true;
     }
     else if(index < length)
     {
       /* Loop through to find the node to remove */
-      temp_node = head;
+      temp_node = node_head;
       for(uint16_t i = 0; i < index; i++)
         temp_node = temp_node->next;
 
@@ -557,8 +587,8 @@ bool MapNPC::removeNode(uint16_t index)
 
       /* Fix the pointers if they need to be changed */
       if(index == 0)
-        head = temp_node->next;
-      if(current == temp_node)
+        node_head = temp_node->next;
+      if(node_current == temp_node)
         resetPosition();
 
       success = true;
@@ -580,7 +610,7 @@ bool MapNPC::removeNode(uint16_t index)
  */
 bool MapNPC::removeNodeAtTail()
 {
-  if(head != NULL)
+  if(node_head != NULL)
     return removeNode(getPathLength() - 1);
   return false;
 }
@@ -603,10 +633,19 @@ bool MapNPC::setBase(MapThing* base)
       this->base = base;
       base_category = ThingBase::NPC;
       setMatrix(getState(getSurface(), getDirection()));
-      if(head == NULL)
+      if(node_head == NULL)
       {
-        head = static_cast<MapNPC*>(base)->head;
-        current = head;
+        node_head = static_cast<MapNPC*>(base)->node_head;
+        if(node_state == NodeState::LOOPED || 
+           node_state == NodeState::BACKANDFORTH)
+        {
+          node_current = node_head;
+        }
+        else if(node_state == NodeState::RANDOM ||
+                node_state == NodeState::RANDOMRANGE)
+        {
+          node_current = &node_random;
+        }
         nodes_delete = false;
       }
       success = true;
@@ -645,8 +684,40 @@ void MapNPC::setNodeState(NodeState state)
 {
   node_state = state;
   
+  /* Set starting moving direction */
   if(state == BACKANDFORTH)
     moving_forward = true;
+  
+  /* Fix the current node state */
+  if(node_state == NodeState::LOOPED || 
+     node_state == NodeState::BACKANDFORTH)
+  {
+    node_current = node_head;
+  }
+  else if(node_state == NodeState::RANDOM ||
+          node_state == NodeState::RANDOMRANGE)
+  {
+    node_current = &node_random;
+  }
+}
+
+/*
+ * Description: Sets the starting location which needs the map section id and 
+ *              an x and y coordinate. Virtually called before sending to thing
+ *              to set the random starting location.
+ *
+ * Inputs: uint16_t section_id - the map section id
+ *         uint16_t x - the x coordinate of the thing
+ *         uint16_t y - the y coordinate of the thing
+ * Output: none
+ */
+void MapNPC::setStartingLocation(uint16_t section_id, uint16_t x, uint16_t y)
+{
+  node_random.x = x;
+  node_random.y = y;
+
+  /* Set to parent */
+  MapThing::setStartingLocation(section_id, x, y);
 }
 
 /*
@@ -676,10 +747,10 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
   Direction direction = Direction::DIRECTIONLESS;
 
   /* Begin the check to handle each time the NPC is on a tile */
-  if(isTilesSet() && current != NULL)
+  if(isTilesSet() && node_current != NULL)
   {
-    int delta_x = current->x - tile_main.front().front()->getX();
-    int delta_y = current->y - tile_main.front().front()->getY();
+    int delta_x = node_current->x - tile_main.front().front()->getX();
+    int delta_y = node_current->y - tile_main.front().front()->getY();
     
     /* If the npc needs to move on the X plane */
     if(delta_x != 0)
@@ -700,28 +771,28 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
     /* Otherwise, on tile if not moving so handle pauses or shifts */
     else if(!isMoving())
     {
-      if(current->delay > npc_delay)
+      if(node_current->delay > npc_delay)
         npc_delay += cycle_time;
       else
       {
         if(node_state == LOOPED)
         {
-          current = current->next;
+          node_current = node_current->next;
           npc_delay = 0;
         }
         else if(node_state == BACKANDFORTH)
         {
           /* Check to see if the ends are reached */
-          if(moving_forward && current->next == head)
+          if(moving_forward && node_current->next == node_head)
             moving_forward = false;
-          else if(!moving_forward && current == head)
+          else if(!moving_forward && node_current == node_head)
             moving_forward = true;
           
           /* Move in the new / old direction */
           if(moving_forward)
-            current = current->next;
+            node_current = node_current->next;
           else
-            current = current->previous;
+            node_current = node_current->previous;
           npc_delay = 0;
         }
       }

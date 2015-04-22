@@ -45,15 +45,16 @@ public:
   enum TrackingState{AVOIDPLAYER, TOPLAYER, NOTRACK};
 
 private:
-  /* The starting and current node of the NPCs Path */
-  Path* current;
-  Path* head;
-  
   /* Does the NPC force interaction if possible? */
   bool forced_interaction;
   
   /* Is the NPC currently going forward or backward - used for BACKANDFORTH */
   bool moving_forward;
+  
+  /* The nodes for control */
+  Path* node_current;
+  Path* node_head;
+  Path node_random;
   
   /* The state of movement */
   NodeState node_state;
@@ -128,6 +129,9 @@ public:
   
   /* Sets the node movement state - how it traverses */
   void setNodeState(NodeState state);
+  
+  /* Sets the starting x and y coordinate */
+  void setStartingLocation(uint16_t section_id, uint16_t x, uint16_t y);
 
   /* Sets the tracking state - how the NPC reacts */
   void setTrackingState(TrackingState state);

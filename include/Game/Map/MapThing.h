@@ -333,7 +333,7 @@ public:
   void setSpeed(uint16_t speed);
   
   /* Sets the starting x and y coordinate */
-  void setStartingLocation(uint16_t section_id, uint16_t x, uint16_t y);
+  virtual void setStartingLocation(uint16_t section_id, uint16_t x, uint16_t y);
 
   /* Sets the set of tiles that the thing will be placed on. Needed after
    * defining a starting point.*/
