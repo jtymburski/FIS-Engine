@@ -8,6 +8,10 @@
  ******************************************************************************/
 #include "Game/Map/MapNPC.h"
 
+/* Constant Implementation - see header file for descriptions */
+const uint16_t MapNPC::kMAX_DELAY = 2000;
+const uint16_t MapNPC::kMAX_RANGE = 10;
+
 /*============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *===========================================================================*/
@@ -100,6 +104,32 @@ void MapNPC::appendEmptyNode()
   /* Append the node to the end of the list */
   if(!insertNode(getPathLength(), new_node))
     delete new_node;
+}
+
+/*
+ * Description: Returns if the xy directional movement between nodes is flipped.
+ *              If false, the order is x, then y. Otherwise, the order is
+ *              reversed (y then x). This works with the current target node and
+ *              the node it was previously at.
+ *
+ * Inputs: none
+ * Output: bool - true if order is y then x. false if order is x then y.
+ */
+bool MapNPC::getXYFlip()
+{
+  if(node_state == LOOPED)
+    return node_current->previous->xy_flip;
+  else if(node_state == RANDOMRANGE || node_state == RANDOM)
+    return node_current->xy_flip;
+  else if(node_state == BACKANDFORTH)
+  {
+    if(moving_forward)
+      return node_current->previous->xy_flip;
+    else
+      return !node_current->xy_flip;
+  }
+
+  return false;
 }
 
 /*
@@ -211,6 +241,76 @@ bool MapNPC::insertNode(uint16_t index, Path* node)
   return success;
 }
 
+/*
+ * Description: Takes the current random path node and re-randomizes the x, y,
+ *              delay, and flip parameters for random NPC movement. This is
+ *              called each time the node is reached or movement is prevented
+ *              by permanent object.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void MapNPC::randomizeNode()
+{
+  /* X calc */
+  int delta_x = Helpers::randU(-kMAX_RANGE, kMAX_RANGE);
+  if(delta_x + node_random.x >= 0)
+    node_random.x += delta_x;
+  else
+    node_random.x = 0;
+  
+  /* Y calc */
+  int delta_y = Helpers::randU(-kMAX_RANGE, kMAX_RANGE);
+  if(delta_y + node_random.y >= 0)
+    node_random.y += delta_y;
+  else
+    node_random.y = 0;
+  
+  /* Delay calc */
+  int delay = Helpers::randU(0, kMAX_DELAY); // -kMAX_DELAY, kMAX_DELAY);
+  if(delay > 0)
+    node_random.delay = delay;
+  else
+    node_random.delay = 0;
+  
+  /* Flip calc */
+  node_random.xy_flip = Helpers::flipCoin();
+  
+  /* Validate range if it's a randomrange move */
+  if(node_state == RANDOMRANGE)
+  {
+    /* Determine x and y range first */
+    int x1 = node_head->x;
+    int y1 = node_head->y;
+    int x2 = node_head->next->x;
+    int y2 = node_head->next->y;
+    
+    /* Order properly */
+    if(x1 > x2)
+    {
+      int temp_x = x1;
+      x1 = x2;
+      x2 = temp_x;
+    }
+    if(y1 > y2)
+    {
+      int temp_y = y1;
+      y1 = y2;
+      y2 = temp_y;
+    }
+    
+    /* Ensure within range */
+    if(node_random.x < x1)
+      node_random.x = x1;
+    if(node_random.x > x2)
+      node_random.x = x2;
+    if(node_random.y < y1)
+      node_random.y = y1;
+    if(node_random.y > y2)
+      node_random.y = y2;
+  }
+}
+
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
@@ -236,7 +336,6 @@ bool MapNPC::addThingInformation(XmlData data, int file_index,
   std::vector<std::string> elements = data.getTailElements(file_index);
   std::string identifier = data.getElement(file_index);
   bool success = true;
-  std::cout << "Count: " << elements.size() << std::endl;
   
   /* Parse the identifier for setting the person information */
   /*--------------------- NODESTATE --------------------*/
@@ -276,7 +375,6 @@ bool MapNPC::addThingInformation(XmlData data, int file_index,
     Path* node = getNode(index);
     if(node != NULL)
     {
-      std::cout << "Node: " << success << std::endl;
       /* Parse the node identity */
       if(elements[1] == "x")
       {
@@ -302,7 +400,6 @@ bool MapNPC::addThingInformation(XmlData data, int file_index,
         if(success)
           node->xy_flip = flip;
       }
-      std::cout << "Node End: " << success << std::endl;
     }
     else
     {
@@ -337,8 +434,6 @@ bool MapNPC::addThingInformation(XmlData data, int file_index,
     success &= MapPerson::addThingInformation(data, file_index, section_index, 
                                               renderer, base_path); 
   }
-  
-  std::cout << identifier << "," << (int)success << std::endl;
   
   return success;
 }
@@ -446,7 +541,7 @@ uint16_t MapNPC::getPathLength()
   Path* temp_node = node_head;
  
   /* Check if base is used or not */
-  if(base != NULL && base_category == ThingBase::NPC)
+  if(base != NULL && base_category == ThingBase::NPC && !nodes_delete)
   {
     size = static_cast<MapNPC*>(base)->getPathLength();
   }
@@ -481,9 +576,10 @@ Direction MapNPC::getPredictedMoveRequest()
     int delta_x = node_current->x - tile_main.front().front()->getX();
     int delta_y = node_current->y - tile_main.front().front()->getY();
     Direction direction = Direction::DIRECTIONLESS;
-    
+    bool xy_flip = getXYFlip();
+
     /* If the npc needs to move on the X plane */
-    if(delta_x != 0)
+    if(delta_x != 0 && (!xy_flip || (xy_flip && delta_y == 0)))
     {
       if(delta_x < 0)
         direction = Direction::WEST;
@@ -628,6 +724,7 @@ bool MapNPC::setBase(MapThing* base)
 
   if(classDescriptor() == "MapNPC")
   {
+    /* Set the base with the new ptr */
     if(base != NULL && base->classDescriptor() == "MapNPC")
     {
       this->base = base;
@@ -650,6 +747,7 @@ bool MapNPC::setBase(MapThing* base)
       }
       success = true;
     }
+    /* Clear out the old base and make this class a base class */
     else if(base == NULL)
     {
       this->base = NULL;
@@ -740,36 +838,18 @@ void MapNPC::setTrackingState(TrackingState state)
  *         std::vector<std::vector<Tile*>> tile_set - the next tiles to move to
  * Output: none 
  */
-// TODO: Add forced interaction, tracking state, and additional movement nodes
+// TODO: Add forced interaction, tracking state
 void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
 {
-  /* Some initial parameters */
-  Direction direction = Direction::DIRECTIONLESS;
-
   /* Begin the check to handle each time the NPC is on a tile */
   if(isTilesSet() && node_current != NULL)
   {
-    int delta_x = node_current->x - tile_main.front().front()->getX();
-    int delta_y = node_current->y - tile_main.front().front()->getY();
-    
-    /* If the npc needs to move on the X plane */
-    if(delta_x != 0)
-    {
-      if(delta_x < 0)
-        direction = Direction::WEST;
-      else
-        direction = Direction::EAST;
-    }
-    /* Else if the npc needs to move on the Y plane */
-    else if(delta_y != 0)
-    {
-      if(delta_y < 0)
-        direction = Direction::NORTH;
-      else
-        direction = Direction::SOUTH;
-    }
-    /* Otherwise, on tile if not moving so handle pauses or shifts */
-    else if(!isMoving())
+    /* Initial parameters */
+    Direction direction = getPredictedMoveRequest();
+
+    /* On tile if not moving so handle pauses or shifts */
+    if(!isMoving() && (direction == Direction::DIRECTIONLESS || 
+       node_state == RANDOM || node_state == RANDOMRANGE))
     {
       if(node_current->delay > npc_delay)
         npc_delay += cycle_time;
@@ -778,7 +858,6 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
         if(node_state == LOOPED)
         {
           node_current = node_current->next;
-          npc_delay = 0;
         }
         else if(node_state == BACKANDFORTH)
         {
@@ -793,9 +872,26 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
             node_current = node_current->next;
           else
             node_current = node_current->previous;
-          npc_delay = 0;
         }
+        else if(node_state == RANDOM || 
+                (node_state == RANDOMRANGE && node_head != NULL))
+        {
+          /* If direction is not directionless, reset random tile location */
+          if(direction != Direction::DIRECTIONLESS)
+          {
+            node_random.x = tile_main.front().front()->getX();
+            node_random.y = tile_main.front().front()->getY();
+          }
+          
+          /* Randomize a new location */
+          randomizeNode();
+        }
+        npc_delay = 0;
       }
+    }
+    else
+    {
+      npc_delay = 0;
     }
 
     /* Update the new direction */
@@ -807,4 +903,52 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
   }
 
   MapPerson::update(cycle_time, tile_set);
+}
+
+/*=============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
+
+/*
+ * Description: Returns the node state converted into a string.
+ *
+ * Inputs: NodeState state - the state of the node to convert
+ * Output: std::string - the converted string
+ */
+std::string MapNPC::getNodeString(NodeState state)
+{
+  std::string node = "";
+  
+  if(state == LOOPED)
+    node = "looped";
+  else if(state == BACKANDFORTH)
+    node = "backandforth";
+  else if(state == RANDOMRANGE)
+    node = "randomrange";
+  else if(state == RANDOM)
+    node = "random";
+  else if(state == LOCKED)
+    node = "locked";
+  
+  return node;
+}
+
+/*
+ * Description: Returns the tracking state converted into a string.
+ *
+ * Inputs: NodeState state - the tracking state of the npc to convert
+ * Output: std::string - the converted string
+ */
+std::string MapNPC::getTrackingString(TrackingState state)
+{
+  std::string node = "";
+  
+  if(state == NOTRACK)
+    node = "none";
+  else if(state == TOPLAYER)
+    node = "toplayer";
+  else if(state == AVOIDPLAYER)
+    node = "avoidplayer";
+
+  return node;
 }

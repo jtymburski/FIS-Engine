@@ -43,7 +43,11 @@ public:
    * TOPLAYER - if the player comes near, the NPC will try and reach it
    * NOTRACK - maintains normal movement (path or random) */
   enum TrackingState{AVOIDPLAYER, TOPLAYER, NOTRACK};
-
+  
+  /* -------------------------- Constants ------------------------- */
+  const static uint16_t kMAX_DELAY; /* The max delay for random delay calcs */
+  const static uint16_t kMAX_RANGE; /* THe max range for random x,y move */
+  
 private:
   /* Does the NPC force interaction if possible? */
   bool forced_interaction;
@@ -75,11 +79,17 @@ private:
   /* Appends an empty node onto the back of the movement stack */
   void appendEmptyNode();
   
+  /* Returns if the XY movement is flipped for the direction to move */
+  bool getXYFlip();
+  
   /* Returns the node pointer at the index */
   Path* getNode(uint16_t index);
   
   /* Inserts a node, at the given index */
   bool insertNode(uint16_t index, Path* node);
+  
+  /* Takes the path node and randomizes the x, y, delay, and flip */
+  void randomizeNode();
   
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -138,6 +148,16 @@ public:
   
   /* Updates the thing, based on the tick - reimplemented */
   void update(int cycle_time, std::vector<std::vector<Tile*>> tile_set);
+  
+/*=============================================================================
+ * PUBLIC STATIC FUNCTIONS
+ *============================================================================*/
+public:
+  /* Returns the node state string */
+  static std::string getNodeString(NodeState state);
+  
+  /* Returns the tracking state string */
+  static std::string getTrackingString(TrackingState state);
 };
 
 #endif // MAPNPC_H
