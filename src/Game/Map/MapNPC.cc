@@ -23,23 +23,7 @@ const uint16_t MapNPC::kMAX_RANGE = 10;
  */
 MapNPC::MapNPC() : MapPerson()
 {
-  /* Clear the path pointers */
-  forced_interaction = false;
-  moving_forward = true;
-  node_current = NULL;
-  node_head = NULL;
-  node_state = LOOPED;
-  nodes_delete = true;
-  npc_delay = 0;
-  tracking_state = NOTRACK;
-  
-  /* Set the path random node to blank state */
-  node_random.x = 0;
-  node_random.y = 0;
-  node_random.delay = 0;
-  node_random.xy_flip = false;
-  node_random.previous = NULL;
-  node_random.next = NULL;
+  initializeClass();
 }
 
 /*
@@ -53,23 +37,7 @@ MapNPC::MapNPC() : MapPerson()
 MapNPC::MapNPC(int id, std::string name, std::string description)
       : MapPerson(id, name, description)
 {
-  /* Clear the path pointers */
-  forced_interaction = false;
-  moving_forward = true;
-  node_current = NULL;
-  node_head = NULL;
-  node_state = LOOPED;
-  nodes_delete = true;
-  npc_delay = 0;
-  tracking_state = NOTRACK;
-
-  /* Set the path random node to blank state */
-  node_random.x = 0;
-  node_random.y = 0;
-  node_random.delay = 0;
-  node_random.xy_flip = false;
-  node_random.previous = NULL;
-  node_random.next = NULL;
+  initializeClass();
 }
 
 /*
@@ -166,6 +134,33 @@ Path* MapNPC::getNode(uint16_t index)
   if(failed)
     returned_node = NULL;
   return returned_node;
+}
+  
+/*
+ * Description: Initializes the class. Only called on initial construction.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void MapNPC::initializeClass()
+{
+  /* Clear the path pointers */
+  forced_interaction = false;
+  moving_forward = true;
+  node_current = NULL;
+  node_head = NULL;
+  node_state = LOOPED;
+  nodes_delete = true;
+  npc_delay = 0;
+  tracking_state = NOTRACK;
+  
+  /* Set the path random node to blank state */
+  node_random.x = 0;
+  node_random.y = 0;
+  node_random.delay = 0;
+  node_random.xy_flip = false;
+  node_random.previous = NULL;
+  node_random.next = NULL;
 }
 
 /*

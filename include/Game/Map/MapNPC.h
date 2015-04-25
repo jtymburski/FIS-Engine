@@ -84,7 +84,10 @@ private:
   
   /* Returns the node pointer at the index */
   Path* getNode(uint16_t index);
-  
+ 
+  /* Initializes class - called on first construction */
+  void initializeClass();
+
   /* Inserts a node, at the given index */
   bool insertNode(uint16_t index, Path* node);
   

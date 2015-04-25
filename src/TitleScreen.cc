@@ -327,7 +327,7 @@ void TitleScreen::setMusic()
   background_music.setMusicFile(base_path + 
                                 "sound/3.mp3");
   //background_music.setPlayForever();
-  //background_music.play(); // TODO: RESTORE
+  background_music.play(); 
   menu_click_sound.setChannel(SoundChannels::MENUS);
   menu_click_sound.setSoundFile(base_path + "sound/functional/menu_click.wav");
 }
