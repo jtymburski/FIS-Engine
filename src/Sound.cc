@@ -81,13 +81,33 @@ void Sound::crossFade(int channel)
   /* If successful, begin to transition the passed in function out */
   if(success)
   {
-    if(fade_time > 0)
-      Mix_FadeOutChannel(channel, fade_time);
-    else
+    if(Mix_FadingChannel(channel) == MIX_FADING_IN)
       Mix_HaltChannel(channel);
+    else if(Mix_FadingChannel(channel) == MIX_NO_FADING)
+    {
+      if(fade_time > 0)
+        Mix_FadeOutChannel(channel, fade_time);
+      else
+        Mix_HaltChannel(channel);
+    }
   }
 }
-  
+
+/*
+ * Description: This function handles a rudimentary cross-fading between two
+ *              channels. This takes a channel and tries to play this sound
+ *              first and if successful, begins to stop the given channel. 
+ *              This uses the fade time from the new class fading in to fade out
+ *              the other class.
+ *
+ * Inputs: SoundChannels channel - the channel, used for sound mixing
+ * Output: none
+ */ 
+void Sound::crossFade(SoundChannels channel)
+{
+  crossFade(static_cast<int>(channel));
+}
+
 /*
  * Description: Returns the channel that the sound file is currently playing on.
  *              This will be the UNASSIGNED mode if it's unset.
@@ -279,6 +299,7 @@ bool Sound::setSoundFile(std::string path)
   /* Attempt and load the file */
   if(!path.empty())
   {
+    /* First, try wav loader */
     Mix_Chunk* sound = Mix_LoadWAV(path.c_str());
 
     /* Determine if the setting of the sound was valid */

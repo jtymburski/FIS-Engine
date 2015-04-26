@@ -71,7 +71,8 @@ private:
 public:
   /* Cross fade the given channel out with the current class in */
   void crossFade(int channel);
-  
+  void crossFade(SoundChannels channel);
+
   /* Returns the channel that the music is playing on. Useful for calling mix
    * calls to get feedback on the sound */
   SoundChannels getChannel();

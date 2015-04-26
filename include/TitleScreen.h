@@ -55,9 +55,10 @@ private:
   uint16_t delay; // TODO: Remove or fix - for displaying poofs
   uint16_t delay2; // TODO: Remove or fix - for displaying poofs
   
-  /* Background music during title screen */
-  Music background_music;
-  
+  /* Background music during title screen (and game music) */
+  Sound background_music;
+  Sound game_music; // TODO: Temporary
+
   /* The base path, for all rendering */
   std::string base_path;
   
