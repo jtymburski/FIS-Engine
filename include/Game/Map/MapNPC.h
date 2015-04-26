@@ -59,7 +59,8 @@ private:
   Path* node_current;
   Path* node_head;
   Path node_random;
-  
+  Path node_start;
+
   /* The state of movement */
   NodeState node_state;
   
@@ -68,7 +69,10 @@ private:
   
   /* The active delay of the NPC on the node, if relevant */
   int npc_delay;
-  
+ 
+  /* Is this the first run of the path move? */
+  bool starting;
+
   /* The state of tracking */
   TrackingState tracking_state;
   

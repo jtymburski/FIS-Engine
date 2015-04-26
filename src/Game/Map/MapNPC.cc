@@ -85,16 +85,23 @@ void MapNPC::appendEmptyNode()
  */
 bool MapNPC::getXYFlip()
 {
-  if(node_state == LOOPED)
-    return node_current->previous->xy_flip;
-  else if(node_state == RANDOMRANGE || node_state == RANDOM)
-    return node_current->xy_flip;
-  else if(node_state == BACKANDFORTH)
+  if(starting)
   {
-    if(moving_forward)
+    return node_start.xy_flip;
+  }
+  else
+  {
+    if(node_state == LOOPED)
       return node_current->previous->xy_flip;
-    else
-      return !node_current->xy_flip;
+    else if(node_state == RANDOMRANGE || node_state == RANDOM)
+      return node_current->xy_flip;
+    else if(node_state == BACKANDFORTH)
+    {
+      if(moving_forward)
+        return node_current->previous->xy_flip;
+      else
+        return !node_current->xy_flip;
+    }
   }
 
   return false;
@@ -147,11 +154,12 @@ void MapNPC::initializeClass()
   /* Clear the path pointers */
   forced_interaction = false;
   moving_forward = true;
-  node_current = NULL;
+  node_current = &node_start;
   node_head = NULL;
   node_state = LOOPED;
   nodes_delete = true;
   npc_delay = 0;
+  starting = true;
   tracking_state = NOTRACK;
   
   /* Set the path random node to blank state */
@@ -161,6 +169,14 @@ void MapNPC::initializeClass()
   node_random.xy_flip = false;
   node_random.previous = NULL;
   node_random.next = NULL;
+
+  /* Blank out start node */
+  node_start.x = 0;
+  node_start.y = 0;
+  node_start.delay = 0;
+  node_start.xy_flip = false;
+  node_start.previous = NULL;
+  node_start.next = NULL;
 }
 
 /*
@@ -182,7 +198,6 @@ bool MapNPC::insertNode(uint16_t index, Path* node)
     if(!nodes_delete)
     {
       node_head = NULL;
-      node_current = NULL;
       nodes_delete = true;
     }
   
@@ -219,17 +234,9 @@ bool MapNPC::insertNode(uint16_t index, Path* node)
     /* If successful, reset the current node ptr of the class */
     if(success)
     {
-      if(node_state == NodeState::LOOPED || 
-         node_state == NodeState::BACKANDFORTH)
-      {
-        node_current = node_head;
-      }
-      else if(node_state == NodeState::RANDOM ||
-              node_state == NodeState::RANDOMRANGE)
-      {
-        node_current = &node_random;
-      }
       resetPosition();
+      node_current = &node_start;
+      npc_delay = 0;
     }
   }
 
@@ -399,6 +406,23 @@ bool MapNPC::addThingInformation(XmlData data, int file_index,
     else
     {
       success = false;
+    }
+  }
+  /*--------------------- START NODE --------------------*/
+  else if(identifier == "startnode" && elements.size() == 2)
+  {
+    /* Parse the node identity */
+    if(elements.back() == "delay")
+    {
+      uint16_t delay = data.getDataInteger(&success);
+      if(success)
+        node_start.delay = delay;
+    }
+    else if(elements.back() == "xyflip")
+    {
+      bool flip = data.getDataBool(&success);
+      if(success)
+        node_start.xy_flip = flip;
     }
   }
   /*--------------------- TRACKING --------------------*/
@@ -679,8 +703,6 @@ bool MapNPC::removeNode(uint16_t index)
       /* Fix the pointers if they need to be changed */
       if(index == 0)
         node_head = temp_node->next;
-      if(node_current == temp_node)
-        resetPosition();
 
       success = true;
     }
@@ -728,17 +750,9 @@ bool MapNPC::setBase(MapThing* base)
       if(node_head == NULL)
       {
         node_head = static_cast<MapNPC*>(base)->node_head;
-        if(node_state == NodeState::LOOPED || 
-           node_state == NodeState::BACKANDFORTH)
-        {
-          node_current = node_head;
-        }
-        else if(node_state == NodeState::RANDOM ||
-                node_state == NodeState::RANDOMRANGE)
-        {
-          node_current = &node_random;
-        }
         nodes_delete = false;
+        node_current = &node_start;
+        npc_delay = 0;
       }
       success = true;
     }
@@ -782,16 +796,16 @@ void MapNPC::setNodeState(NodeState state)
     moving_forward = true;
   
   /* Fix the current node state */
-  if(node_state == NodeState::LOOPED || 
-     node_state == NodeState::BACKANDFORTH)
-  {
-    node_current = node_head;
-  }
-  else if(node_state == NodeState::RANDOM ||
-          node_state == NodeState::RANDOMRANGE)
-  {
-    node_current = &node_random;
-  }
+//  if(node_state == NodeState::LOOPED || 
+//     node_state == NodeState::BACKANDFORTH)
+//  {
+//    node_current = node_head;
+//  }
+//  else if(node_state == NodeState::RANDOM ||
+//          node_state == NodeState::RANDOMRANGE)
+//  {
+//    node_current = &node_random;
+//  }
 }
 
 /*
@@ -808,6 +822,9 @@ void MapNPC::setStartingLocation(uint16_t section_id, uint16_t x, uint16_t y)
 {
   node_random.x = x;
   node_random.y = y;
+
+  node_start.x = x;
+  node_start.y = y;
 
   /* Set to parent */
   MapThing::setStartingLocation(section_id, x, y);
@@ -839,54 +856,105 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
   /* Begin the check to handle each time the NPC is on a tile */
   if(isTilesSet() && node_current != NULL)
   {
-    /* Initial parameters */
     Direction direction = getPredictedMoveRequest();
 
-    /* On tile if not moving so handle pauses or shifts */
-    if(!isMoving() && (direction == Direction::DIRECTIONLESS || 
-       node_state == RANDOM || node_state == RANDOMRANGE))
+    /* If starting sequence, operate on different parameters */
+    if(starting)
     {
-      if(node_current->delay > npc_delay)
-        npc_delay += cycle_time;
-      else
+      if(!isMoving())
       {
-        if(node_state == LOOPED)
+        /* If reached node and done movement again, kill starting */
+        if(node_current != &node_start && 
+           node_current->x == tile_main.front().front()->getX() &&
+           node_current->y == tile_main.front().front()->getY())
         {
-          node_current = node_current->next;
-        }
-        else if(node_state == BACKANDFORTH)
-        {
-          /* Check to see if the ends are reached */
-          if(moving_forward && node_current->next == node_head)
-            moving_forward = false;
-          else if(!moving_forward && node_current == node_head)
-            moving_forward = true;
-          
-          /* Move in the new / old direction */
-          if(moving_forward)
-            node_current = node_current->next;
-          else
-            node_current = node_current->previous;
-        }
-        else if(node_state == RANDOM || 
-                (node_state == RANDOMRANGE && node_head != NULL))
-        {
-          /* If direction is not directionless, reset random tile location */
-          if(direction != Direction::DIRECTIONLESS)
+          if(node_state == RANDOMRANGE)
           {
-            node_random.x = tile_main.front().front()->getX();
-            node_random.y = tile_main.front().front()->getY();
+            node_current = &node_random;
+            node_random.x = node_head->x;
+            node_random.y = node_head->y;
           }
-          
-          /* Randomize a new location */
-          randomizeNode();
+          starting = false;
         }
-        npc_delay = 0;
+        else if(node_current == &node_start)
+        {
+        /* Delay first */
+          if(node_start.delay > npc_delay)
+          {
+            npc_delay += cycle_time;
+          }
+          /* Then updates current node */
+          else
+          {
+            if(node_state == LOOPED || node_state == BACKANDFORTH || 
+               node_state == RANDOMRANGE)
+            {
+              node_current = node_head;
+            }
+            else if(node_state == RANDOM)
+            {
+              node_current = &node_random;
+              starting = false;
+            }
+            else
+            {
+              node_current = node_head;
+              starting = false;
+            }
+
+            npc_delay = 0;
+          }
+        }
       }
     }
     else
     {
-      npc_delay = 0;
+      /* On tile if not moving so handle pauses or shifts */
+      if(!isMoving() && (direction == Direction::DIRECTIONLESS || 
+         node_state == RANDOM || node_state == RANDOMRANGE))
+      {
+        if(node_current->delay > npc_delay)
+          npc_delay += cycle_time;
+        else
+        {
+          if(node_state == LOOPED)
+          {
+            node_current = node_current->next;
+          }
+          else if(node_state == BACKANDFORTH)
+          {
+            /* Check to see if the ends are reached */
+            if(moving_forward && node_current->next == node_head)
+              moving_forward = false;
+            else if(!moving_forward && node_current == node_head)
+              moving_forward = true;
+          
+            /* Move in the new / old direction */
+            if(moving_forward)
+              node_current = node_current->next;
+            else
+              node_current = node_current->previous;
+          }
+          else if(node_state == RANDOM || 
+                  (node_state == RANDOMRANGE && node_head != NULL))
+          {
+            /* If direction is not directionless, reset random tile location */
+            if(direction != Direction::DIRECTIONLESS)
+            {
+              node_random.x = tile_main.front().front()->getX();
+              node_random.y = tile_main.front().front()->getY();
+            }
+          
+            /* Randomize a new location */
+            randomizeNode();
+          }
+          npc_delay = 0;
+        }
+      }
+      else
+      {
+        npc_delay = 0;
+      }
     }
 
     /* Update the new direction */
