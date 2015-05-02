@@ -230,14 +230,20 @@ bool Battle::addAilment(Infliction infliction_type, Person* inflictor,
     success     = false;
   }
 
-  if (success && getBattleMode() == BattleMode::TEXT)
+  if (success)
   {
+    #ifdef UDEBUG
     std::cout << "{INFLICTION} " << curr_target->getName() << " has been "
               << "inflicted with " << Helpers::ailmentToStr(infliction_type)
               << " lasting " << min_turns << " to " << max_turns << ".\n";
+    #endif
   }
-  else if (getBattleMode() == BattleMode::TEXT)
+  else
+  {
+    #ifdef UDEBUG
       std::cerr << "[Error] Invalid ailment creation" << std::endl;
+    #endif
+  }
 
   return success;
 }
@@ -320,12 +326,11 @@ bool Battle::removeAilment(Ailment* remove_ailment)
   {
     if (ailment == remove_ailment)
     {
-      if (getBattleMode() == BattleMode::TEXT)
-      {
+      #ifdef UDEBUG
         std::cout << "{RELIEVING} -- The ailment on " << curr_target->getName() 
             << " called " << Helpers::ailmentToStr(remove_ailment->getType()) 
             << " is being relieved." << std::endl;
-      }
+      #endif
 
       /* Some ailments will alter flags that need to be recalculated */
       success = reCalcAilmentFlags(curr_target, ailment);
@@ -354,11 +359,10 @@ bool Battle::removeAilment(Ailment* remove_ailment)
  */
 void Battle::battleLost()
 {
-  if (getBattleMode() == BattleMode::TEXT)
-  {
+  #ifdef UDEBUG
     printPartyState();
-    std::cout << "Battle lost! :-(\n";  
-  }
+    std::cout << "Battle lost! :-(\n";
+  #endif
 
   setBattleFlag(CombatState::OUTCOME_PROCESSED);
   setNextTurnState();
@@ -383,24 +387,25 @@ void Battle::battleRun()
      * experience to the next level */
     for (uint32_t i = 0; i < friends->getSize(); i++)
     {
-      if (getBattleMode() == BattleMode::TEXT)
-      {
+      #ifdef UDEBUG
         std::cout << friends->getMember(i)->getName() << " has lost " 
                   << kRUN_PC_EXP_PENALTY << "% EXP towards next level.\n";
-      }
+      #endif
 
       friends->getMember(i)->loseExpPercent(kRUN_PC_EXP_PENALTY);
       // TODO [11-06-14] Update personal record run from battle count
     }
 
-  if (getBattleMode() == BattleMode::TEXT)
+  #ifdef UDEBUG
     std::cout << "\n{ALLIES RUN} The allied team has ran from Battle! :-/\n";
+  #endif
 
   }
   else if (getBattleFlag(CombatState::ENEMIES_RUN))
   {
-    if (getBattleMode() == BattleMode::TEXT)
+    #ifdef UDEBUG
       std::cout << "{ENEMIES RUN} The foes team has ran from Battle! :-/\n";
+    #endif
   }
 
   setBattleFlag(CombatState::OUTCOME_PROCESSED);
@@ -415,14 +420,13 @@ void Battle::battleRun()
  */
 void Battle::battleWon()
 {
-  if (getBattleMode() == BattleMode::TEXT)
-  {
+  #ifdef UDEBUG
     printPartyState();
     std::cout << std::endl;
     std::cout << "----------------------------" << std::endl;
     std::cout << "===== BATTLE VICTORIOUS ====" << std::endl;
     std::cout << "----------------------------" << std::endl;
-  }
+  #endif
 
   /* Cleanup the current Battle state -- This includes unapplying ailments */
   for (auto ailment : ailments)
@@ -436,11 +440,10 @@ void Battle::battleWon()
     auto exp_to_add = calcExperience(member);
     member->addExp(exp_to_add);
 
-    if (getBattleMode() == BattleMode::TEXT)
-    {
+    #ifdef UDEBUG
       std::cout << "{EXP GAIN} -- " << member->getName() << "has gained " 
           << exp_to_add << "." << std::endl;
-    }
+    #endif
   }
 
   //TODO [04-03-15]
@@ -512,11 +515,10 @@ bool Battle::bufferEnemyAction()
 
     if (buffered)
     {
-      if (getBattleMode() == BattleMode::TEXT)
-      {
+      #ifdef UDEBUG
         std::cout << "Removing " << curr_item->getName() << " from "
                   << "inventory and implementing to buffer." << std::endl;
-      }
+      #endif
 
       /* Remove the item from the inventory, update module with current items */
       foes->getInventory()->removeItemID(curr_item->getGameID());
@@ -608,11 +610,10 @@ bool Battle::bufferUserAction()
 
     if (buffered)
     {
-      if (getBattleMode() == BattleMode::TEXT)
-      {
+      #ifdef UDEBUG
         std::cout << "{USING ITEM} " << curr_item->getName() << " from "
                   << "inventory and adding to buffer." << std::endl;
-      }
+      #endif
       
       friends->getInventory()->removeItemID(curr_item->getGameID());
 
@@ -902,14 +903,13 @@ int32_t Battle::calcBaseDamage(const float &crit_factor,
   base_damage = Helpers::setInRange(base_damage, kMINIMUM_DAMAGE, 
                     kMAXIMUM_DAMAGE);
 
-  if (getBattleMode() == BattleMode::TEXT)
-  {
+  #ifdef UDEBUG
     std::cout << "User Power: ----- " << base_user_pow << std::endl;
     std::cout << "Action Power: --- " << action_power << std::endl;
     std::cout << "Target Def: ----- " << base_targ_def << std::endl;
     std::cout << "Crit Factor: ---- " << crit_factor <<std::endl;
     std::cout << "Base Damage: ---- " << base_damage << std::endl <<std::endl;
-  }
+  #endif
 
   return base_damage;
 }
@@ -1661,12 +1661,11 @@ bool Battle::doesCurrPersonRun()
 void Battle::generalUpkeep()
 {
   /* Print out the party state if either in UDEBUG or in TEXT battle mode */
-  if (getBattleMode() == BattleMode::TEXT)
-  {
+  #ifdef UDEBUG
     std::cout << "\n=============\n";
     std::cout << "  TURN " << Helpers::numToRoman(turns_elapsed + 1)
               << "\n=============" << std::endl;
-  }
+  #endif
 
   for (uint32_t i = 0; i < friends->getSize(); i++)
     if (friends->getMember(i)->getBFlag(BState::ALIVE))
@@ -1753,8 +1752,9 @@ void Battle::orderActions()
  */
 void Battle::performEvents()
 {
-  if (getBattleMode() == BattleMode::TEXT)
+  #ifdef UDEBUG
     std::cout << "---- Performing Events ----" << std::endl;
+  #endif
   
   auto valid_next = true;
 
@@ -1765,26 +1765,23 @@ void Battle::performEvents()
     auto index = event_buffer->getIndex();
 
     //TODO [04-04-15] Temporary code
-    std::cout << "Event Index: " << index << std::endl;
     event_buffer->printEvent(index);
 
     if (event->type == EventType::SKILL_COOLDOWN)
     {
-      if (getBattleMode() == BattleMode::TEXT)
-      {
+      #ifdef UDEBUG
         std::cout << "{COOLDOWN} -- The skill " << event->skill_use->getName() 
             << " being used by " << event->user->getName() << " will cooldown "
             << " from " << event->amount + 1 << " to " << event->amount << "."
             << std::endl;
-      }
+      #endif
     }
     else if (event->type == EventType::MISS_TURN)
     {
-      if (getBattleMode() == BattleMode::TEXT)
-      {
+      #ifdef UDEBUG
         std::cout << "{MISS TURN} -- The user " << event->user 
             << " misses their turn!" << std::endl;
-      }
+      #endif
     }
     if (event->type == EventType::IMPLODE)
     {
@@ -1819,11 +1816,10 @@ void Battle::performEvents()
     }
     else if (event->type == EventType::DEATH_COUNTDOWN)
     {
-      if (getBattleMode() == BattleMode::TEXT)
-      {
+      #ifdef UDEBUG
         std::cout << "{DEATHTIMER} " << event->ailment_use->getTurnsLeft()
             << " turns until death! " << std::endl;
-      }
+      #endif
     }
     else if (event->type == EventType::BOND)
     {
@@ -1837,29 +1833,26 @@ void Battle::performEvents()
     {
       event->user->setBFlag(BState::DEFENDING, true);
 
-      if (getBattleMode() == BattleMode::TEXT)
-      {
+      #ifdef UDEBUG
         std::cout << "{DEFEND} " << event->user->getName()
                   << " is now defending themselves from damage." << std::endl;
-      }  
+      #endif
     }
     else if (event->type == EventType::BREAK_DEFEND)
     {
       event->user->resetDefend();
 
-      if (getBattleMode() == BattleMode::TEXT)
-      {
+      #ifdef UDEBUG
         std::cout << "{BREAK DEFEND} " << curr_target->getName()
                   << " is no longer defending from damage.\n\n";
-      }
+      #endif
     }
     else if (event->type == EventType::PERSIST_DEFEND)
     {
-      if (getBattleMode() == BattleMode::TEXT)
-      {
+      #ifdef UDEBUG
         std::cout << "{PERSIST DEFEND} " << curr_target->getName() 
                   << " continues to defend themselves from damage.\n\n";
-      }
+      #endif
     }
     else if (event->type == EventType::BEGIN_GUARD)
     {
@@ -1867,21 +1860,19 @@ void Battle::performEvents()
        * as targets for remaining actions to be processed & performed */
       action_buffer->injectGuardTargets(event->user->getGuard(), event->user);
 
-      if (getBattleMode() == BattleMode::TEXT)
-      {
+      #ifdef UDEBUG
         std::cout << "{GUARD} " << event->user->getGuard()->getName() 
                   << " is now guarding " << event->user->getName() 
                   << " from some damage.\n";
-      }
+      #endif
     }
     else if (event->type == EventType::PERSIST_GUARD)
     {
-      if (getBattleMode() == BattleMode::TEXT)
-      {
+      #ifdef UDEBUG
         std::cout << "{PERSIST GUARD " << curr_target->getName() << " continues"
                   << " to protect " << curr_target->getGuardee()->getName()
                   << " from damage" << std::endl;
-      }
+      #endif
     }
     else if (event->type == EventType::BREAK_GUARD)
     {
@@ -1890,12 +1881,11 @@ void Battle::performEvents()
       curr_target->getGuardee()->resetGuard();
       curr_target->resetGuardee();
 
-      if (getBattleMode() == BattleMode::TEXT)
-      {
+      #ifdef UDEBUG
         std::cout << "{BREAK GUARD} " << event->user->getGuard()->getName()
                   << " is no longer guarding " << event->user->getName()
                   << " from some damage.\n";
-      }
+      #endif
     }
     else if (event->type == EventType::DEATH)
     {
@@ -1929,12 +1919,11 @@ void Battle::performEvents()
       /* Perform the alteration on the target */
       event->targets.at(0)->getCurr().alterStat(target_attr, amount);
 
-      if (getBattleMode() == BattleMode::TEXT)
-      {
+      #ifdef UDEBUG
         std::cout << "{ALTER}" << event->targets.at(0)->getName() << "'s"
             << AttributeSet::getName(target_attr) << " has been altered by "
             << amount << "." << std::endl;
-      }
+      #endif
     }
     else if (event->type == EventType::ASSIGNMENT)
     {
@@ -1950,12 +1939,12 @@ void Battle::performEvents()
       //   action_target->getTemp().setStat(targ_attr, set_value);
       event->targets.at(0)->getCurr().setStat(assign_attr, amount);
 
-      if (getBattleMode() == BattleMode::TEXT)
-      {
+      #ifdef UDEBUG
         std::cout << "{ASSIGN} " << event->targets.at(0)->getName() << "'s"
             << AttributeSet::getName(assign_attr) << " has been altered by "
             << amount << "." << std::endl;
-      }
+      #endif
+      
     }
     else if (event->type == EventType::REVIVAL)
     {
@@ -1965,13 +1954,12 @@ void Battle::performEvents()
       event->targets.at(0)->setBFlag(BState::ALIVE, true);
       curr_target->getCurr().setStat(Attribute::VITA, event->amount);
 
-      if (getBattleMode() == BattleMode::TEXT)
-      {
+      #ifdef UDEBUG
         std::cout << "{REVIVE} " << event->targets.at(0)->getName()
                   << " has been brought back from KO with " 
                   << curr_target->getCurr().getStat(Attribute::VITA)
                   <<" VITA." << std::endl;
-      }
+      #endif
     }
     else if (event->type == EventType::HEAL_HEALTH)
     {
@@ -2034,8 +2022,7 @@ void Battle::performDamageEvent(BattleEvent* event)
 {
   auto str_damage = "";
   
-  if (getBattleMode() == BattleMode::TEXT)
-  {
+  #ifdef UDEBUG
     if (event->type == EventType::STANDARD_DAMAGE)
       str_damage = "STRD DMG";
     else if (event->type == EventType::CRITICAL_DAMAGE)
@@ -2048,7 +2035,7 @@ void Battle::performDamageEvent(BattleEvent* event)
       str_damage = "HITB DMG";
     else if (event->type == EventType::METABOLIC_DAMAGE)
       str_damage = "META DMG";
-  }
+  #endif
 
   auto amount  = event->amount;
   auto targets = event->targets;
@@ -2058,11 +2045,10 @@ void Battle::performDamageEvent(BattleEvent* event)
   {
     targets.at(0)->doDmg(amount, DamageType::BASE);
 
-    if (getBattleMode() == BattleMode::TEXT)
-    {
+    #ifdef UDEBUG
       std::cout << "{" << str_damage << "} " << targets.at(0)->getName() 
           << " struck with " << amount << " damage." << std::endl;
-    }
+    #endif
   }
 }
 
@@ -2151,8 +2137,9 @@ void Battle::personalUpkeep(Person* const target)
  */
 void Battle::processBuffer()
 {
-  if (getBattleMode() == BattleMode::TEXT)
+  #ifdef UDEBUG
     std::cout << "--- Processing Buffer ---" << std::endl;
+  #endif
 
   auto last_index = false;
 
@@ -2458,11 +2445,10 @@ bool Battle::processAilment()
 
   if (ail != nullptr)
   {
-    if (getBattleMode() == BattleMode::TEXT)
-    {
-      std::cout << "--- Ailment Proc: " << Helpers::ailmentToStr(ail->getType())
-          << " ---" << std::endl;
-    }
+#ifdef UDEBUG
+    std::cout << "--- Ailment Proc: " << Helpers::ailmentToStr(ail->getType())
+        << " ---" << std::endl;
+#endif
 
     /* If the ailment has not yet been updated this turn, perform standard 
      * updates (flag setting/turn incrementing && damages) */
@@ -2906,13 +2892,13 @@ bool Battle::processInflictAction()
   {
     event_buffer->createFizzleEvent(EventType::INFLICTION_FIZZLE, curr_user,
       curr_target);
+
     /* If the person cannot be inflicted with the ailment, create an ailment
      * fizzling event */
-    if (getBattleMode() == BattleMode::TEXT)
-    {
+    #ifdef UDEBUG
       std::cout << "{FAILED} " << curr_target->getName() << " cannot be "
           << "inflicted with infliction." << std::endl;
-    }
+    #endif
   }
 
   return false;
@@ -3041,11 +3027,10 @@ void Battle::processSkill(std::vector<Person*> targets,
   /* Grab the current skill from the action buffer */
   curr_skill = action_buffer->getSkill();
 
-  // if (getBattleMode() == BattleMode::TEXT)
-  // {
-  //   std::cout << "{Skill} Processing: " << curr_skill->getName() << std::endl;
-  //   printPartyState();
-  // }
+  #ifdef UDEBUG
+     std::cout << "{Skill} Processing: " << curr_skill->getName() << std::endl;
+     printPartyState();
+  #endif
 
   auto process_first_index = false;
   
@@ -3317,11 +3302,10 @@ void Battle::selectUserActions()
       menu->setSelectableSkills(battle_skills);
       menu->setSelectableItems(battle_items);
     
-      if (getBattleMode() == BattleMode::TEXT && 
-          hasInfliction(Infliction::CONFUSE, curr_user))
-      {
-        menu->printMenuState();
-      }
+      #ifdef UDEBUG
+        if (hasInfliction(Infliction::CONFUSE, curr_user))
+          menu->printMenuState();
+      #endif
     }
     else
     { 
@@ -3349,8 +3333,6 @@ bool Battle::setupClass()
   menu          = nullptr;
 
   ailment_update_mode = BattleOptions::FOREST_WALK;
-  hud_display_mode    = BattleOptions::FOREST_WALK;
-  battle_mode         = BattleMode::TEXT;
   turn_mode           = TurnMode::FRIENDS_FIRST;
   turn_state = TurnState::BEGIN;
 
@@ -3410,8 +3392,9 @@ bool Battle::testPersonIndex(const int32_t &test_index)
  */
 void Battle::upkeep()
 {
-  if (getBattleMode() == BattleMode::TEXT)
+  #ifdef UDEBUG
     std::cout << "---- Upkeep Processing ---- " << std::endl;
+  #endif
 
   if (!(getBattleFlag(CombatState::BEGIN_PERSON_UPKEEPS)))
   {
@@ -3420,11 +3403,10 @@ void Battle::upkeep()
 
   if (upkeep_persons.size() > 0)
   {
-    if (getBattleMode() == BattleMode::TEXT)
-    {
+    #ifdef UDEBUG
       std::cout << "--- Personal Upkeep: " << upkeep_persons.at(0)->getName() 
                 << std::endl;
-    }
+    #endif
 
     /* If there is still people to upkeep, upkeep the first person */
     personalUpkeep(upkeep_persons.at(0));
@@ -3513,11 +3495,10 @@ void Battle::updateAllySelection()
       else if (action_type == ActionType::IMPLODE)
         scope = ActionScope::USER;
 
-      if (getBattleMode() == BattleMode::TEXT)
-      {
+      #ifdef UDEBUG
         std::cout << "Finding selectable targets for action with scope: "
                   << Helpers::actionScopeToStr(scope) << std::endl;
-      }
+      #endif
  
       if (action_type == ActionType::SKILL)
       {
@@ -3538,11 +3519,10 @@ void Battle::updateAllySelection()
 
       if (!menu->setSelectableTargets(targets))
       {
-        if (getBattleMode() == BattleMode::TEXT)
-        {
+        #ifdef UDEBUG
           std::cout << "No selectable targets found! Select another action"
                     << " index!" << std::endl;
-        }
+        #endif
       }      
       else
       {
@@ -3594,11 +3574,10 @@ void Battle::updateEnemySelection()
         scope = ActionScope::ONE_ALLY_NOT_USER;
       }
 
-      if (getBattleMode() == BattleMode::TEXT)
-      {
+      #ifdef UDEBUG
         std::cout << "Finding selectable targets for enemy action w/ scope: "
                   << Helpers::actionScopeToStr(scope) << std::endl;
-      }
+      #endif
 
       auto valid_targets = getValidTargets(person_index, scope);
       std::vector<Person*> friends_persons;
@@ -3662,11 +3641,10 @@ bool Battle::updatePartyDeaths()
  */
 bool Battle::updatePersonDeath(const DamageType &damage_type)
 {
-  if (getBattleMode() == BattleMode::TEXT)
-  {
+  #ifdef UDEBUG
     std::cout << "{FALLEN} " << curr_target->getName() << " has fallen!"
               << std::endl;
-  }
+  #endif
 
   /* Extra assert that the person has died */
   curr_target->setBFlag(BState::ALIVE, false);
@@ -3746,17 +3724,6 @@ void Battle::setAilmentUpdateMode(const BattleOptions &new_value)
 }
 
 /*
- * Description: Assigns a new value to the battle output mode
- *
- * Inputs: BattleMode - new enumerated BattleMode (TEXT/GUI)
- * Output: none
- */
-void Battle::setBattleMode(const BattleMode &new_value)
-{
-  battle_mode = new_value;
-}
-
-/*
  * Description: Assigns the friends party of the Battle
  *
  * Inputs: Party* - pointer to friends party
@@ -3790,17 +3757,6 @@ bool Battle::setFoes(Party* const new_foes)
   }
 
   return false;
-}
-
-/*
- * Description: Assigns a new value to the hud display mode
- *
- * Inputs: BattleOptions - enumerated BattleOptions for hud display mode
- * Output: non
- */
-void Battle::setHudDisplayMode(const BattleOptions &new_value)
-{
-  hud_display_mode = new_value;
 }
 
 /*
@@ -4070,7 +4026,6 @@ void Battle::setTurnState(const TurnState &new_turn_state)
  */
 bool Battle::keyDownEvent(SDL_KeyboardEvent event)
 {
-  std::cout << "Checking KeyDown event!" << std::endl;
 #ifdef UDEBUG
   if (!getBattleFlag(CombatState::OUTCOME_PROCESSED))
   {
@@ -4140,13 +4095,6 @@ void Battle::printAll(const bool &simple, const bool &flags, const bool &party)
       std::cout << "Ailment update mode: BEARLY_DIFFICULT\n";
     else if (ailment_update_mode == BattleOptions::GRIZZLY)
       std::cout << "Ailment update mode: GRIZZLY\n";
-
-    if (hud_display_mode == BattleOptions::FOREST_WALK)
-      std::cout << "Hud display mode: FOREST_WALK\n";
-    else if (hud_display_mode == BattleOptions::BEARLY_DIFFICULT)
-      std::cout << "Hud display mode: BEARLY_DIFFICULT\n";
-    else if (hud_display_mode == BattleOptions::GRIZZLY)
-      std::cout << "Hud display mode: GRIZZLY\n";
 
     std::cout << "Friends Size: " << friends->getSize();
     std::cout << "\nFoes Size: " << foes->getSize();
@@ -4414,14 +4362,6 @@ bool Battle::update(int32_t cycle_time)
 
         setBattleFlag(CombatState::PHASE_DONE, phase_done);
       }
-      else
-      {
-        if (getBattleMode() == BattleMode::TEXT)
-        {
-          std::cout << "Action processing not complete! " << std::endl;
-        }
-      }
-
     }
     else if (!getBattleFlag(CombatState::READY_TO_RENDER))
     {
@@ -4461,17 +4401,6 @@ BattleOptions Battle::getAilmentUpdateMode()
 BattleMenu* Battle::getBattleMenu()
 {
   return menu;
-}
-
-/*
- * Description: Returns the assigned Battle display mode
- *
- * Inputs: none
- * Output: BattleMode - enumerated mode of Battle (TEXT/GUI)
- */
-BattleMode Battle::getBattleMode()
-{
-  return battle_mode;
 }
 
 /*
@@ -4516,17 +4445,6 @@ Party* Battle::getFriends()
 Party* Battle::getFoes()
 {
   return foes;
-}
-
-/*
- * Description: Returns the hud display mode currently set
- *
- * Inputs: none
- * Output: BattleOptions - enumerated Battle options set by running config
- */
-BattleOptions Battle::getHudDisplayMode()
-{
-  return hud_display_mode;
 }
 
 //TODO: Conventions [04-11-15]
@@ -4869,8 +4787,6 @@ bool Battle::setConfiguration(Options* const new_config)
       menu->setConfiguration(new_config);
 
     setAilmentUpdateMode(config->getAilmentUpdateState());
-    setHudDisplayMode(config->getBattleHudState());
-    setBattleMode(config->getBattleMode());
 
     setBattleFlag(CombatState::CONFIGURED, true);
     return true;

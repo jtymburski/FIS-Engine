@@ -139,35 +139,7 @@ void Application::handleEvents()
     }
   }
 }
-
-/*
- * Description:
- *
- * Inputs:
- * Output:
- */
-void Application::logSDLError(std::ostream &os, const std::string &msg)
-{
-  os << "[SDL Error] " << msg << SDL_GetError() << std::endl;
-}
-
-/*
- * Description:
- *
- * Inputs:
- * Output:
- */
-void Application::logError(std::ostream &os, const std::string &msg)
-{
-  os << msg << "[Error] " << msg << std::endl;
-}
-
-/*
- * Description:
- *
- * Inputs:
- * Output:
- */
+  
 void Application::render(uint32_t cycle_time)
 {
   /* Handle the individual action items, depending on whats running */
@@ -280,7 +252,8 @@ bool Application::initialize()
                               flags);
     if(window == NULL)
     {
-      logSDLError(std::cerr, "Window could not be created.");
+      std::cerr << "[ERROR] Window could not be created. SDL error: " 
+                << SDL_GetError() << std::endl;
       success = false;
     }
   }
@@ -312,12 +285,14 @@ bool Application::initialize()
 
         if (error_index > -1 && renderer_info != nullptr)
         {
+          std::cout << "Checking Driver: " << renderer_info->name << std::endl;
           if (std::strcmp(open_gl.c_str(), renderer_info->name) == 0)
             driver_index = i;
         }
         else
         {
-          logSDLError(std::cerr, "Could not discern rendering driver.");
+          std::cerr << "[ERROR]: Error attempting to discern ren. driver" 
+              << std::endl;
         }
 
         delete renderer_info;
@@ -331,14 +306,21 @@ bool Application::initialize()
       {
         auto renderer_info = new SDL_RendererInfo;
         SDL_GetRenderDriverInfo(0, renderer_info);
-
         auto error_index = SDL_GetRendererInfo(renderer, renderer_info);
     
-        if (!(error_index > -1 && renderer_info != nullptr))
-          logSDLError(std::cerr, "Unable to get rendering driver info.");
-
+        if (error_index > -1 && renderer_info != nullptr)
+        {
+          std::cout << "Rendering Driver: " << renderer_info->name << std::endl;
+        }
+        else
+        {
+          std::cerr << "[ERROR] Unable to get rendering driver info." 
+            << std::endl;
+        }
+       
         delete renderer_info;
       }
+
     }
     else
     {
@@ -351,7 +333,8 @@ bool Application::initialize()
 
     if(renderer == NULL)
     {
-      logSDLError(std::cerr, "Cannot create renderer");
+      std::cerr << "[ERROR] Renderer could not be created. SDL error: "
+                << SDL_GetError() << std::endl;
       success = false;
     }
 
@@ -377,21 +360,24 @@ bool Application::initialize()
   /* Test the font engine */
   if(!system_options->confirmFontSetup())
   {
-    logError(std::cerr, "Could not create font. Either library issue or"
-        " invalid/missing font files.");
+    std::cerr << "[ERROR] Could not create font. This is either a library "
+              << "issue or the font files are missing or invalid." 
+              << std::endl;
     success = false;
   }
   
   /* If successful, confirm the initialization */
   initialized = true;
-
-  /* Set the title screen background - TODO: Encapsulate in load??
-   * or uninitialize everything, if the init sequence failed 
-   */
   if(success)
+  {
+    /* Set the title screen background - TODO: Encapsulate in load?? */
     title_screen.setBackground("sprites/Title/old_title.png", renderer);
+  }
+  /* Uninitialize everything, if the init sequence failed */
   else if(!isInitialized())
+  {
     uninitialize();
+  }
   
 	return success;
 }

@@ -165,12 +165,6 @@ private:
   /* Enumerated battle options for ailment updates */
   BattleOptions ailment_update_mode;
 
-  /* Enumerated battle options for hud display mode */
-  BattleOptions hud_display_mode;
-
-  /* Enumerated battle mode for Battle output type */
-  BattleMode battle_mode;
-
   /* CombatState flag set */
   CombatState flags;
   IgnoreState ignore_flags;
@@ -514,17 +508,11 @@ private:
   /* Assigns a new value to the ailment update mode */
   void setAilmentUpdateMode(const BattleOptions &new_value);
 
-  /* Assigns a new value to the battle output mode */
-  void setBattleMode(const BattleMode &new_value);
-
   /* Assigns the friends party of the Battle */
   bool setFriends(Party* const new_friends);
 
   /* Assigns the foes party of the Battle */
   bool setFoes(Party* const new_foes);
-
-  /* Assigns a new value to the hud display mode */
-  void setHudDisplayMode(const BattleOptions &new_value);
   
   /* Updates the person selection index to the next valid one */
   bool setNextPersonIndex();
@@ -571,9 +559,6 @@ public:
   /* Returns the ailment update mode currently set */
   BattleOptions getAilmentUpdateMode();
 
-  /* Returns the assigned Battle display mode */
-  BattleMode getBattleMode();
-
   /* Returns a pointer to the BattleMenu */
   BattleMenu* getBattleMenu();
 
@@ -588,9 +573,6 @@ public:
 
   /* Returns the foes pointer of the Battle */
   Party* getFoes();
-
-  /* Returns the hud display mode currently set */
-  BattleOptions getHudDisplayMode();
 
   /* Obtains the outcome state enumeration */
   OutcomeType getOutcome(); 

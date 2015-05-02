@@ -16,7 +16,6 @@
  * Options to add:
  *  - Set the text display speed in MapDialog (for the character letters)
  *  - [11-23-14] Battle option for alternative victory/loss conditions
- *  - Covnert flags to ENUM_FLAGS set for easy addition later?
  ******************************************************************************/
 #include "Options.h"
 
@@ -60,7 +59,6 @@ void Options::copySelf(const Options &source)
   ailment_update_state = source.ailment_update_state;
   battle_hud_state     = source.ailment_update_state;
   base_path            = source.base_path;
-  battle_mode          = source.battle_mode;
 
   resolution_x  = source.resolution_x;
   resolution_y  = source.resolution_y;
@@ -71,8 +69,6 @@ void Options::setAllToDefault()
 {
   /* Battle Options */
   setAilmentUpdateState(BattleOptions::FOREST_WALK);
-  setBattleHudState(BattleOptions::FOREST_WALK);
-  setBattleMode(BattleMode::TEXT);
 
   /* Flags */
   setLinearFiltering(false);
@@ -80,6 +76,7 @@ void Options::setAllToDefault()
   setFlag(OptionState::FULLSCREEN, false);
   setFlag(OptionState::AUTO_RUN, false);
   setFlag(OptionState::BATTLE_ANIMATIONS, true);
+  setFlag(OptionState::GUI_ENABLED, true);
 
   /* Rendering Options */
   setFont(0, true);
@@ -94,16 +91,6 @@ void Options::setAllToDefault()
 void Options::setAilmentUpdateState(BattleOptions new_state)
 {
   ailment_update_state = new_state;
-}
-
-void Options::setBattleHudState(BattleOptions new_state)
-{
-  battle_hud_state = new_state;
-}
-
-void Options::setBattleMode(BattleMode new_state)
-{
-  battle_mode = new_state;
 }
 
 void Options::setFlag(OptionState flag, bool set_value)
@@ -193,16 +180,6 @@ BattleOptions Options::getAilmentUpdateState()
 std::string Options::getBasePath()
 {
   return base_path;
-}
-
-BattleOptions Options::getBattleHudState()
-{
-  return battle_hud_state;
-}
-
-BattleMode Options::getBattleMode()
-{
-  return battle_mode;
 }
 
 // Get fn for OptionState flags

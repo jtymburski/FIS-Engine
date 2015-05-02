@@ -24,7 +24,8 @@ enum class OptionState
   VSYNC             = 1 << 1,
   FULLSCREEN        = 1 << 2,
   AUTO_RUN          = 1 << 3,
-  BATTLE_ANIMATIONS = 1 << 4
+  BATTLE_ANIMATIONS = 1 << 4,
+  GUI_ENABLED       = 1 << 5
 };
 
 enum class BattleOptions
@@ -32,12 +33,6 @@ enum class BattleOptions
   FOREST_WALK,
   BEARLY_DIFFICULT,
   GRIZZLY
-};
-
-enum class BattleMode
-{
-  TEXT,
-  GUI
 };
 
 class Options
@@ -64,9 +59,6 @@ private:
   
   /* Amount of information to display on the Battle HUD */
   BattleOptions battle_hud_state;
-
-  /* Output mode the Battle is operating in */
-  BattleMode battle_mode;
 
   /* The index for the selected font */
   uint8_t font;
@@ -123,12 +115,6 @@ private:
   /* Assigns if the player is to always run on the map */
   //void setAutoRun(bool auto_run);
 
-  /* Assign a new hud update state to BattleOptions */
-  void setBattleHudState(BattleOptions new_state);
-
-  /* Assigns a new battle mode */
-  void setBattleMode(BattleMode new_state);
-
   /* Sets an option flag to a given state */
   void setFlag(OptionState flags, bool set_value = true);
 
@@ -156,12 +142,6 @@ public:
 
   /* Returns the program configured base path, used for pathing throughout */
   std::string getBasePath();
-  
-  /* Returns the current state of battle hud display */
-  BattleOptions getBattleHudState();
-
-  /* Returns the current state of Battle update mode */
-  BattleMode getBattleMode();
 
   /* Returns the path to the font to use throughout the application */
   std::string getFont();

@@ -79,11 +79,10 @@ bool BattleMenu::decrementLayer(const int32_t &new_layer_index)
   {
     if (qtdr_cost_paid != 0)
     {
-      if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
-      {
+      #ifdef UDEBUG
         std::cout << "Replacing " << qtdr_cost_paid << " QD paid for action." 
                   << std::endl;
-      }
+      #endif
       
       current_user->getCurr().alterStat("QTDR", qtdr_cost_paid);
       qtdr_cost_paid = 0;
@@ -423,12 +422,11 @@ void BattleMenu::keyDownSelect()
     if (static_cast<uint32_t>(element_index) < valid_actions.size())
       action_type = valid_actions.at(element_index);
 
-    if (config->getBattleMode() == BattleMode::TEXT)
-    {
-      std::cout << "Attempting selection of current action type: " 
+    #ifdef UDEBUG
+      std::cout << "Attempting selection of current action t+pe: " 
                 << Helpers::actionTypeToStr(action_type)
                 << std::endl;
-    }
+    #endif
 
     /* Assert there are skills if the chosen action type is SKILL */
     if (action_type == ActionType::SKILL)
@@ -440,11 +438,10 @@ void BattleMenu::keyDownSelect()
       {
         action_type = ActionType::NONE;
 
-        if (config->getBattleMode() == BattleMode::TEXT) 
-        {
+        #ifdef UDEBUG
           std::cout << "No valid skills available, please select another action" 
                     << std::endl;            
-        }         
+        #endif
       }
     }
 
@@ -458,11 +455,10 @@ void BattleMenu::keyDownSelect()
       {
         action_type = ActionType::NONE;
 
-        if (config != nullptr && config->getBattleMode() == BattleMode::TEXT)
-        {
+        #ifdef UDEBUG
           std::cout << "No items available please select another action!"
                       << std::endl;
-        }
+        #endif
       }
     }
 
@@ -475,8 +471,9 @@ void BattleMenu::keyDownSelect()
       {
         action_type = ActionType::NONE;
 
-        if (config->getBattleMode() == BattleMode::TEXT)
+        #ifdef UDEBUG
           std::cout << "No allies to guard!" << std::endl;
+        #endif
       }
     }
     
@@ -508,31 +505,25 @@ void BattleMenu::keyDownSelect()
 
           if (true_cost <= current_user->getCurr().getStat("QTDR"))
           {
-            if (config != nullptr && 
-                config->getBattleMode() == BattleMode::TEXT)
-            {
+            #ifdef UDEBUG
               std::cout << "Decreasing " << current_user->getName() << "s QTDR"
                         << " by " << true_cost << "." << std::endl;
-            }
- 
+            #endif
+
             layer_to_increment = 3;
             qtdr_cost_paid = true_cost;
             current_user->getCurr().alterStat(Attribute::QTDR, -true_cost);
           }
           else
           {
-            if (config->getBattleMode() == BattleMode::TEXT)
+            #ifdef UDEBUG
               std::cout << "Cannot afford that skill!" << std::endl;
+            #endif
           }
         }
-        else if (config->getBattleMode() == BattleMode::TEXT)
-        {
+        #ifdef UDEBUG
           std::cout << "Selected skill index has invalid targets" << std::endl;
-        }
-        else if (config->getBattleMode() == BattleMode::GUI)
-        {
-          //TODO: Error selection of invalid index. 
-        }
+        #endif
       }
     }
     else if (action_type == ActionType::ITEM)
@@ -1112,12 +1103,12 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
   }
   else
   {
-    if (config->getBattleMode() == BattleMode::TEXT)
+    #ifdef UDEBUG
       std::cout << "CANNOT CHANGE INDEX" << std::endl;
+    #endif
   }
 
-  if (config->getBattleMode() == BattleMode::TEXT)
-  {
+  #ifdef UDEBUG
     if (current_user != nullptr)
     {
       std::cout << "Selecting action for person index: " << person_index 
@@ -1126,7 +1117,7 @@ bool BattleMenu::keyDownEvent(SDL_KeyboardEvent event)
 
     if (getMenuFlag(MenuState::SELECTION_VERIFIED))
       std::cout << "Selection has been verified!\n" << std::endl;
-  }
+  #endif
 
   return false;
 }
