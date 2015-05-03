@@ -837,8 +837,11 @@ bool EventBuffer::setRenderIndex()
     if (events.at(i)->rendered == false)
     {
       curr_index = i;
-      std::cout << "Returning rendered index: " << curr_index << std::endl;
 
+#ifdef UDEBUG
+      std::cout << "Returning rendered index: " << curr_index << std::endl;
+#endif
+      
       return true;
     }
   }

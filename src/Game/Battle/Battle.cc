@@ -2141,16 +2141,17 @@ void Battle::processBuffer()
     std::cout << "--- Processing Buffer ---" << std::endl;
   #endif
 
-  auto last_index = false;
-
   /* If Buffer index == 0, don't increment, else, increment */
   if (getBattleFlag(CombatState::BEGIN_PROCESSING) &&
       getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
   {
-    last_index |= !action_buffer->setNext();
+    setBattleFlag(CombatState::LAST_INDEX, false);
+
+    if (!action_buffer->setNext())
+      setBattleFlag(CombatState::LAST_INDEX, true);
+
     setBattleFlag(CombatState::BEGIN_ACTION_PROCESSING, false);
     setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, false);
-    action_buffer->print(false);
   }
   /* If begin processing has not been assigned (after checking for complete
    * action processing, then the action index should be set to 0 and flag 
@@ -2225,10 +2226,13 @@ void Battle::processBuffer()
     event_buffer->createPassEvent(curr_user);
     setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
   }
-
+  
   /* Complete the processing of the last of events and move to clean up */
-  if (last_index && getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
+  if (getBattleFlag(CombatState::LAST_INDEX) && 
+      getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
+  {
     setBattleFlag(CombatState::ALL_PROCESSING_COMPLETE, true);
+  }
 
   setBattleFlag(CombatState::READY_TO_RENDER, true);
 }
@@ -3035,7 +3039,7 @@ void Battle::processSkill(std::vector<Person*> targets,
   auto process_first_index = false;
   
   //TODO
-  //auto process_action = false;
+  auto process_action = false;
 
   /* If processing the first action, append begin skill use event */
   if (!getBattleFlag(CombatState::BEGIN_ACTION_PROCESSING))
@@ -3083,14 +3087,15 @@ void Battle::processSkill(std::vector<Person*> targets,
       setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
     }
 
+    std::cout << "Setting current action index to zero" << std::endl;
     curr_action_index = 0;
   }
   else 
   {
-    //process_action = true;
+    process_action = true;
   }
 
-  if (process_first_index)
+  if (process_first_index || process_action)
   {
     /* Else, process action index and increment the action index */
     auto effects = curr_skill->getEffects();
@@ -3156,10 +3161,13 @@ void Battle::processSkill(std::vector<Person*> targets,
 
     /* Increment the current action index [for multiple action skills] */
     curr_action_index++;
-    std::cout << "Incremented!" << std::endl;
+    std::cout << "Incrementing action index: " << curr_action_index - 1 << " to " << curr_action_index << std::endl;
 
-    if (curr_action_index >= effects.size())
+    if (effects.size() <= curr_action_index)
+    {
+      std::cout << "Setting action processing complete!" << std::endl;
       setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
+    }
   }
 }
 
@@ -4026,7 +4034,7 @@ void Battle::setTurnState(const TurnState &new_turn_state)
  */
 bool Battle::keyDownEvent(SDL_KeyboardEvent event)
 {
-#ifdef UDEBUG
+// #ifdef UDEBUG
   if (!getBattleFlag(CombatState::OUTCOME_PROCESSED))
   {
     //Helpers::flushConsole();
@@ -4053,6 +4061,8 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
 
         setBattleFlag(CombatState::READY_TO_RENDER, false);
         setBattleFlag(CombatState::RENDERING_COMPLETE, true);
+
+        printProcessingState();
       }
     }
     else if (event.keysym.sym == SDLK_PAGEDOWN)
@@ -4060,7 +4070,7 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
   }
   else
     std::cout << "The battle is complete!" << std::endl;
-#endif
+// #endif
 
   if (turn_state == TurnState::SELECT_ACTION_ALLY &&
       menu->getWindowStatus() == WindowStatus::ON)
@@ -4214,6 +4224,8 @@ void Battle::printProcessingState()
             << getBattleFlag(CombatState::BEGIN_ACTION_PROCESSING);
   std::cout << "\nACTION PROCESSING COMPLETE: " 
             << getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE);
+  std::cout << "\nLAST INDEX: " 
+            << getBattleFlag(CombatState::LAST_INDEX);
   std::cout << "\nALL PROCESSING COMPLETE: "
             << getBattleFlag(CombatState::ALL_PROCESSING_COMPLETE);
   std::cout << "\nBEGIN PERSON UPKEEPS: "

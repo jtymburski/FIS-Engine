@@ -21,6 +21,7 @@
 * BUGS
 * ----
 * [03-29-15]: Intermittant seg fault -- near end of turn loop?
+* !!! POTENTIALY FIXED MAY 3/2015
 *   - Possibly look at ailment inflictions/removals.
 * [03-29-15]: Is battleWon() being called twice upon victory?
 *******************************************************************************/
@@ -60,14 +61,15 @@ enum class CombatState
   BEGIN_PROCESSING           = 1 << 18, /* This processing loop has begun */
   BEGIN_ACTION_PROCESSING    = 1 << 19, /* Current action processing begun */
   ACTION_PROCESSING_COMPLETE = 1 << 20, /* Curr action processing loop done */
-  ALL_PROCESSING_COMPLETE    = 1 << 21, /* Entire processing complete */
-  BEGIN_PERSON_UPKEEPS       = 1 << 22, /* The upkeep phase has started */
-  PERSON_UPKEEP_COMPLETE     = 1 << 23, /* One person state complete */
-  BEGIN_AILMENT_UPKEEPS      = 1 << 24, /* Curr. person has begun ailment up */
-  CURRENT_AILMENT_STARTED    = 1 << 25, /* Curr. ailment processing begun */
-  CURRENT_AILMENT_COMPLETE   = 1 << 26, /* Curr person ailment check stage */
-  COMPLETE_AILMENT_UPKEEPS   = 1 << 27, /* Curr person ailment check done  */
-  ALL_UPKEEPS_COMPLETE       = 1 << 28  /* Upkeep checking stage complete */
+  LAST_INDEX                 = 1 << 21,
+  ALL_PROCESSING_COMPLETE    = 1 << 22, /* Entire processing complete */
+  BEGIN_PERSON_UPKEEPS       = 1 << 23, /* The upkeep phase has started */
+  PERSON_UPKEEP_COMPLETE     = 1 << 24, /* One person state complete */
+  BEGIN_AILMENT_UPKEEPS      = 1 << 25, /* Curr. person has begun ailment up */
+  CURRENT_AILMENT_STARTED    = 1 << 26, /* Curr. ailment processing begun */
+  CURRENT_AILMENT_COMPLETE   = 1 << 27, /* Curr person ailment check stage */
+  COMPLETE_AILMENT_UPKEEPS   = 1 << 28, /* Curr person ailment check done  */
+  ALL_UPKEEPS_COMPLETE       = 1 << 29  /* Upkeep checking stage complete */
 };
 
 ENUM_FLAGS(IgnoreState)
