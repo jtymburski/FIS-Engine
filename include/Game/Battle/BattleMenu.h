@@ -40,9 +40,10 @@ ENUM_FLAGS(MenuState)
 enum class MenuState
 {
   ACTION_SELECTED    = 1 << 0,
-  TARGETS_ASSIGNED   = 1 << 1,
-  SCOPE_ASSIGNED     = 1 << 2,
-  SELECTION_VERIFIED = 1 << 3
+  SKILL_SELECTED     = 1 << 1,
+  TARGETS_ASSIGNED   = 1 << 2,
+  SCOPE_ASSIGNED     = 1 << 3,
+  SELECTION_VERIFIED = 1 << 4
 };
 
 class BattleMenu

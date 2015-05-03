@@ -373,7 +373,7 @@ void Game::setupBattle()
 
   Skill* fire_01 = new Skill(110, "Burninate The Countryside", ActionScope::ONE_PARTY, 
     damage_actions[11], 85, 55);
-  ///fire_01->setCooldown(1);
+  fire_01->setCooldown(1);
   fire_01->setThumbnail(new Frame("sprites/Battle/Skills/_sample_skill_1.png", 
                                   active_renderer));
   fire_01->setPrimary(Element::FIRE);

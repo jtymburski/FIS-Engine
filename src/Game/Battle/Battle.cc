@@ -1858,13 +1858,24 @@ void Battle::performEvents()
     {
       /* Update the buffer to swap out Guard <--> Guardee
        * as targets for remaining actions to be processed & performed */
-      action_buffer->injectGuardTargets(event->user->getGuard(), event->user);
+      auto success = performGuard(event);
 
-      #ifdef UDEBUG
+      if (success)
+      {
+        action_buffer->injectGuardTargets(event->user->getGuard(), event->user);
+
+#ifdef UDEBUG
         std::cout << "{GUARD} " << event->user->getGuard()->getName() 
                   << " is now guarding " << event->user->getName() 
                   << " from some damage.\n";
-      #endif
+#endif
+      }
+      else
+      {
+#ifdef UDEBUG
+        std::cerr << "[ERROR] Guard pair not made successfully" << std::endl;
+#endif
+      }
     }
     else if (event->type == EventType::PERSIST_GUARD)
     {
@@ -2138,7 +2149,11 @@ void Battle::personalUpkeep(Person* const target)
 void Battle::processBuffer()
 {
   #ifdef UDEBUG
-    std::cout << "--- Processing Buffer ---" << std::endl;
+    std::cout << "--- Processing Buffer ---" << std::endl << "Beg Proc: " 
+              << getBattleFlag(CombatState::BEGIN_PROCESSING) << std::endl
+              << "Act Proc Comp: " 
+              << getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE) 
+              << std::endl;
   #endif
 
   /* If Buffer index == 0, don't increment, else, increment */
@@ -2189,6 +2204,7 @@ void Battle::processBuffer()
   }
   else if (curr_action_type == ActionType::GUARD)
   {
+    curr_target = curr_targets.at(0);
     bool good_guard = processGuard();
 
     /* Create begin guard or fail guard events based on the guard processing */
@@ -2268,15 +2284,27 @@ bool Battle::processGuard()
 {
   auto can_guard  = true;
 
+  if (curr_target == nullptr || curr_user == nullptr)
+  {
+
+#ifdef UDEBUG
+    std::cerr << "[Error] Curr target/user is null for guard processing" 
+        << std::endl;
+#endif
+
+    can_guard = false;
+  }
+
   /* A guard/guardee combo can only be made if both the guard and guardee are
    * not being guarded by, or guarding any persons */
-  can_guard &= curr_target->getGuard() == nullptr;
-  can_guard &= curr_target->getGuardee() == nullptr;
-  can_guard &= curr_user->getGuard() == nullptr;
-  can_guard &= curr_user->getGuardee() == nullptr;
+  if (can_guard)
+  {
+    can_guard &= curr_target->getGuard()   == nullptr;
+    can_guard &= curr_target->getGuardee() == nullptr;
+    can_guard &= curr_user->getGuard()     == nullptr;
+    can_guard &= curr_user->getGuardee()   == nullptr;
+  }
 
-  /* If a guard ca be made, attempt to assign guardee and guarding persons.
-   * This should assign the GUARDING/GUARDED flags properly */
   return can_guard;
 }
 
@@ -2290,6 +2318,8 @@ bool Battle::processGuard()
  */
 bool Battle::performGuard(BattleEvent* guard_event)
 {
+  /* If a guard ca be made, attempt to assign guardee and guarding persons.
+   * This should assign the GUARDING/GUARDED flags properly */
   if (guard_event != nullptr && guard_event->type == EventType::BEGIN_GUARD)
   {
     auto guard      = guard_event->targets.at(0);
@@ -3370,7 +3400,9 @@ bool Battle::testPersonIndex(const int32_t &test_index)
 
   if (test_person->getBFlag(BState::ALIVE))
   {
+    std::cout << "Testing cool down on " << test_index << std::endl;
     auto skill_cooldown = action_buffer->hasCoolingSkill(test_person);
+    std::cout << "Has skill cool down? " << skill_cooldown << std::endl;
 
     if (test_person->getAilFlag(PersonAilState::SKIP_NEXT_TURN))
     { 
@@ -3512,7 +3544,10 @@ void Battle::updateAllySelection()
       {
         auto selected_skill = menu->getSelectedSkill();
 
-        std::cout << "Skill Nameb"<<selected_skill.skill->getName()<<std::endl;
+#ifdef UDEBUG
+        std::cout << "Selected Skill Name: " << 
+            selected_skill.skill->getName() <<std::endl;
+#endif
 
         targets = getIndexesOfPersons(selected_skill.all_targets);                 
       }
@@ -3522,7 +3557,8 @@ void Battle::updateAllySelection()
       }
       else if (action_type == ActionType::GUARD)
       {
-         targets = getValidTargets(person_index, ActionScope::ONE_ALLY_NOT_USER);
+         targets = getValidTargets(person_index,
+             ActionScope::ONE_ALLY_NOT_USER);
       }
 
       if (!menu->setSelectableTargets(targets))

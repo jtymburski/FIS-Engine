@@ -88,6 +88,7 @@ bool BattleMenu::decrementLayer(const int32_t &new_layer_index)
       qtdr_cost_paid = 0;
     }
 
+    setMenuFlag(MenuState::SKILL_SELECTED, false);
     setMenuFlag(MenuState::ACTION_SELECTED, false);
 
     action_scope  = ActionScope::NO_SCOPE;
@@ -128,7 +129,9 @@ bool BattleMenu::incrementLayer(const int32_t &new_layer_index)
 
   else if (new_layer_index == 3)
   {
-    setMenuFlag(MenuState::ACTION_SELECTED);
+    setMenuFlag(MenuState::SKILL_SELECTED, true);
+    setMenuFlag(MenuState::ACTION_SELECTED, true);
+
     layer_index = 3;
 
     return true;
@@ -136,7 +139,8 @@ bool BattleMenu::incrementLayer(const int32_t &new_layer_index)
 
   else if (new_layer_index == 4)
   {
-    setMenuFlag(MenuState::ACTION_SELECTED);
+    setMenuFlag(MenuState::SKILL_SELECTED, true);
+    setMenuFlag(MenuState::ACTION_SELECTED, true);
     layer_index = 4;
 
     return true;
@@ -497,6 +501,7 @@ void BattleMenu::keyDownSelect()
         {
           /* Grab the selected skill */
           selected_skill = menu_skills.at(element_index);
+          setMenuFlag(MenuState::SKILL_SELECTED, true);
 
           /* Decrease the current user's QD by the cost required */
           auto true_cost = current_user->getTrueCost(selected_skill.skill);
@@ -786,6 +791,7 @@ void BattleMenu::selectRandomAction()
   {
     auto rand_elm = Helpers::randU(0, menu_skills.size() - 1);
     selected_skill = menu_skills.at(rand_elm);
+    setMenuFlag(MenuState::SKILL_SELECTED, true);
 
     action_type = ActionType::SKILL;
     setMenuFlag(MenuState::ACTION_SELECTED, true);
@@ -1144,8 +1150,11 @@ void BattleMenu::printMenuState()
     std::cout << "Action Type: " << Helpers::actionTypeToStr(action_type)
               << " with name: ";
 
-    if (action_type == ActionType::SKILL)
+    if (action_type == ActionType::SKILL && 
+        getMenuFlag(MenuState::SKILL_SELECTED))
+    {
       std::cout << selected_skill.skill->getName();
+    }
     else if (action_type == ActionType::ITEM)
       std::cout << selected_item->getName();
     else
@@ -1544,7 +1553,9 @@ bool BattleMenu::setSelectableTargets(std::vector<int32_t> new_menu_targets)
     std::iter_swap(neg_one, neg_two);
   }
 
-    if (selected_skill.skill != nullptr)
+    if (action_type == ActionType::SKILL && 
+        getMenuFlag(MenuState::SKILL_SELECTED) && 
+        selected_skill.skill != nullptr)
     {
       /* Default offensive skills to opposing party, vice versa for defensive */
       if (selected_skill.skill->getFlag(SkillFlags::OFFENSIVE))
@@ -1552,8 +1563,12 @@ bool BattleMenu::setSelectableTargets(std::vector<int32_t> new_menu_targets)
       else
         element_index = getPartyTargetIndex(false);
     }
+    else
+    {
 
-    if (selected_item != nullptr)
+    }
+
+    if (action_type == ActionType::ITEM && selected_item != nullptr)
     {
       if (selected_item->getUseSkill()->getFlag(SkillFlags::OFFENSIVE))
         element_index = getPartyTargetIndex(true);
