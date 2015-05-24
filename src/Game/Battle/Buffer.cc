@@ -337,7 +337,7 @@ void Buffer::clearInvalid()
 Skill* Buffer::hasCoolingSkill(Person* check_person)
 {
   for (auto element : action_buffer)
-    if (element.user == check_person && element.cooldown > 0)
+    if (element.user == check_person) //&& element.cooldown >= 0)
       return element.skill_used;
   
   return nullptr;

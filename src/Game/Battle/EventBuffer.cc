@@ -212,6 +212,29 @@ BattleEvent* EventBuffer::createAssignEvent(Action* assign_action,
 }
 
 /*
+ * Description: Creates and appends a skill cooldown type event to the list.
+ *
+ * Inputs: Person* user - the user of the Skill cooldown
+ *         Skill* skill_cooldown - pointer to the Skill that is cooling down
+ *         int32_t cooldown - the current cooldown amount
+ *     
+ * Output: BattleEvent* - pointer to the recently created event
+ */
+BattleEvent* EventBuffer::createCooldownEvent(Person* user, 
+    Skill* skill_cooldown, int32_t cooldown)
+{
+  auto new_event = createNewEvent();
+
+  new_event->type = EventType::SKILL_COOLDOWN;
+  new_event->user      = user;
+  new_event->skill_use = skill_cooldown;
+  new_event->amount  = cooldown;
+  events.push_back(new_event);
+
+  return new_event;
+}
+
+/*
  * Description: Creates a new blank event 
  *
  * Inputs: EventType damage_type - the type of damage (standard/poison/etc.)
@@ -520,6 +543,7 @@ BattleEvent* EventBuffer::createSkipEvent(EventType skip_type, Person* user,
     Skill* skill_cooldown)
 {
   auto new_event = createNewEvent();
+
   new_event->type = skip_type;
   new_event->user = user;
   new_event->skill_use = skill_cooldown;

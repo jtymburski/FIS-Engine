@@ -2186,12 +2186,17 @@ void Battle::processBuffer()
 
   if (curr_action_type == ActionType::SKILL)
   {
-    /* Only process the skill if its cooldown is at zero, else a skill
-     * cooldown event will be created upon a testPersonIndex call. */
+    /* Only process the skill if its cooldown is at zero, else: create a skill
+     * cooldown event to cool the skill processing down */
     if (cooldown == 0)
+    {
       processSkill(curr_targets, damage_types);
+    }
     else
+    {
+      event_buffer->createCooldownEvent(curr_user, curr_skill, cooldown); 
       setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE);
+    }
   }
   else if (curr_action_type == ActionType::ITEM)
   {
@@ -3389,7 +3394,7 @@ bool Battle::setupClass()
 /*
  * Description: Tests whether a person index is valid. If the person index is
  *              an invalid person, if the person is alive and if the person
- *              is no set to skip their next turn, this function returns true.
+ *              is not set to skip their next turn, this function returns true.
  *
  * Inputs: int32_t - the person index to test if it is valid for action sel.
  * Output: bool - the validity of the person index for action selection
@@ -3411,7 +3416,7 @@ bool Battle::testPersonIndex(const int32_t &test_index)
     else if (skill_cooldown != nullptr)
     {
       /* If the person has a skill cooldown in the buffer, add a skill cooldown
-       * event to the evnet buffer for performing. This person's turn selection
+       * event to the event buffer for performing. This person's turn selection
        * will be skipped */
       event_buffer->createSkipEvent(EventType::SKILL_COOLDOWN, test_person,
           skill_cooldown);

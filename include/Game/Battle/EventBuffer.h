@@ -94,8 +94,13 @@ public:
   BattleEvent* createAlterEvent(Action* alter_action, Person* target, 
       int32_t amount);
 
+  /* Creates an assign action event */
   BattleEvent* createAssignEvent(Action* assign_action, Person* target,
       int32_t amount);
+
+  /* Skill cooldown event with the skill pointer and the # turns remaining */
+  BattleEvent* createCooldownEvent(Person* user, Skill* skill_cooldown, 
+      int32_t cooldown);
 
   /* Creates a new blank event and returns the constructed event */
   BattleEvent* createDamageEvent(EventType damage_type, Person* target,
