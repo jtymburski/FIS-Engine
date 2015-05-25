@@ -73,6 +73,7 @@ FileHandler::FileHandler()
 {
   /* Preps the variables */
   available = false;
+  element_count = 0;
   encryption_enabled = false;
   file_date = "";
   file_name = "";
@@ -133,6 +134,7 @@ void FileHandler::cleanUp()
   xml_document = NULL;
 
   xml_node = NULL;
+  element_count = 0;
 }
 
 /* 
@@ -174,6 +176,32 @@ bool FileHandler::decryptData(uint32_t* data)
 
   std::cerr << "[ERROR] File block decryption failed on null data" << std::endl;
   return false;
+}
+
+/*
+ * Description: Determines the count for reading an XML data file and returns
+ *              the number of base elements - used for loading calculations.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void FileHandler::determineCount()
+{
+  int total = 0;
+  bool done = false;
+  
+  /* Loop through elements */
+  while(!done)
+  {
+    total++;
+    readXmlData(&done);
+  }
+
+  /* Return to root xml element */
+  xmlToHead();
+  
+  /* Set the total */
+  element_count = total;
 }
 
 /* 
@@ -980,7 +1008,10 @@ bool FileHandler::xmlReadStart()
     /* Attempt to parse the document and then set the pointer to the head */
     success &= !xml_document->Parse(data.c_str());
     if(success)
+    {
       file_date = xmlToHead();
+      determineCount();
+    }
     
     return success;
   }
@@ -1022,6 +1053,19 @@ bool FileHandler::xmlWriteEnd()
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
+
+/*
+ * Description: Returns the total number of xml elements that can be read. This
+ *              returns the control back to the top of the file when it's
+ *              finished. Will be 0 if write or if reading regular file
+ *
+ * Inputs: none
+ * Output: int - the total number of xml elements
+ */
+int FileHandler::getCount()
+{
+  return element_count;
+}
 
 /* 
  * Description: Returns the date stored in this class. It's in string format,
@@ -1390,7 +1434,7 @@ bool FileHandler::stop(bool failed)
 {
   bool success = true;
 
-  // /* Handle ending of XML file if file in write and XML */
+  /* Handle ending of XML file if file in write and XML */
   if(file_write && file_type == XML)
     xmlWriteEnd();
 

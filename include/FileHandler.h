@@ -80,6 +80,9 @@ private:
   /* Flag for if the class is available for usage */
   bool available;
 
+  /* Element count - lines for regular, final elements for XML */
+  int element_count;
+  
   /* Set if the encryption system is enabled */
   bool encryption_enabled;
 
@@ -124,6 +127,9 @@ private:
   /* Decrypt raw data in an array of ints */
   bool decryptData(uint32_t* data);
 
+  /* Determines element XML count */
+  void determineCount();
+  
   /* Decrypt line of data */
   std::string decryptLine(std::string line, bool* success = 0);
 
@@ -186,6 +192,9 @@ private:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Returns a count of the number of elements */
+  int getCount();
+
   /* Returns the date that was acquired/set */
   std::string getDate();
 
