@@ -35,6 +35,9 @@ struct BufferAction
   /* The number of turns to remain in the buffer */
   uint32_t cooldown;
 
+  /* The turn # the buffer element was added */
+  uint32_t initial_turn;
+
   /* Pointer to the user of the action */
   Person* user;
 
@@ -94,14 +97,17 @@ private:
 public:
   /* Creates and adds a new Skill BufferAction element given params */
   bool add(Person* const user, Skill* const skill_used, 
-           std::vector<Person*> targets, const uint32_t &cooldown = 0);
+      std::vector<Person*> targets, const uint32_t &cooldown = 0,
+      const uint32_t &initial_turn = 0);
 
   /* Creates and adds a new Item BufferAction element given params */
   bool add(Person* const user, Item* const item_used, 
-           std::vector<Person*> targets, const uint32_t &cooldown = 0);
+      std::vector<Person*> targets, const uint32_t &cooldown = 0,
+      const uint32_t &initial_turn = 0);
 
   bool add(Person* const user, ActionType const &buffer_type,
-           std::vector<Person*> targets, const uint32_t &cooldown = 0);
+      std::vector<Person*> targets, const uint32_t &cooldown = 0,
+      const uint32_t &initial_turn = 0);
 
   /* Adds a given BufferAction element to the vector */
   bool add(BufferAction &action);
@@ -150,6 +156,9 @@ public:
 
   /* Obtains the Item ptr for the current element index */
   Item* getItem();
+
+  /* Returns the initial turn assigned to the current element index */
+  int32_t getInitialTurn();
 
   /* Obtains the target vector for current element index */
   std::vector<Person*> getTargets();

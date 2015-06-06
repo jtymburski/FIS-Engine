@@ -551,7 +551,7 @@ public:
   void printAll(const bool &simple, const bool &flags, const bool &party);
   void printPartyState();
   void printPersonState(Person* const member, const int32_t &person_index);
-  void printProcessingState();
+  void printProcessingState(bool basic = false);
   void printInventory(Party* const target_party);
   void printTurnState();
 

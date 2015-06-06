@@ -499,7 +499,7 @@ bool Battle::bufferEnemyAction()
      * into the buffer. Store the cost paid for the skill */
     curr_skill = curr_module->getSelectedSkill();
     buffered = action_buffer->add(curr_user, curr_skill, action_targets,
-        curr_skill->getCooldown());
+        curr_skill->getCooldown(), turns_elapsed);
 
     /* Pay the required QTDR cost for the Skill */
     auto true_cost = curr_user->getTrueCost(curr_skill);
@@ -511,7 +511,7 @@ bool Battle::bufferEnemyAction()
      * into the buffer. */
     curr_item = curr_module->getSelectedItem();
     buffered = action_buffer->add(curr_user, curr_item, action_targets,
-      curr_item->getUseSkill()->getCooldown());
+      curr_item->getUseSkill()->getCooldown(), turns_elapsed);
 
     if (buffered)
     {
@@ -536,7 +536,8 @@ bool Battle::bufferEnemyAction()
            action_type == ActionType::PASS)
   {
     /* Other action types add in to the buffer simply */
-    buffered = action_buffer->add(curr_user, action_type, action_targets, 0);
+    buffered = action_buffer->add(curr_user, action_type, action_targets, 0,
+                   turns_elapsed);
   }
   else
   {
@@ -601,12 +602,13 @@ bool Battle::bufferUserAction()
   {
     curr_skill = menu->getSelectedSkill().skill;
     buffered = action_buffer->add(curr_user, curr_skill, person_targets,
-        menu->getSelectedSkill().skill->getCooldown());
+        menu->getSelectedSkill().skill->getCooldown(), turns_elapsed);
   }
   else if (action_type == ActionType::ITEM)
   {
     curr_item = menu->getSelectedItem();
-    buffered = action_buffer->add(curr_user, curr_item, person_targets, 0);
+    buffered = action_buffer->add(curr_user, curr_item, person_targets, 0,
+                   turns_elapsed);
 
     if (buffered)
     {
@@ -627,7 +629,8 @@ bool Battle::bufferUserAction()
            action_type == ActionType::RUN     ||
            action_type == ActionType::PASS)
   {
-    buffered = action_buffer->add(curr_user, action_type, person_targets, 0);
+    buffered = action_buffer->add(curr_user, action_type, person_targets, 0,
+                   turns_elapsed);
   }
   else
   {
@@ -1329,6 +1332,7 @@ void Battle::clearActionVariables()
   temp_target_stats.clear();
   temp_target_max_stats.clear();
 
+  curr_module = nullptr;
   curr_user   = nullptr;
   curr_target = nullptr;
   curr_action = nullptr;
@@ -1772,7 +1776,7 @@ void Battle::performEvents()
       #ifdef UDEBUG
         std::cout << "{COOLDOWN} -- The skill " << event->skill_use->getName() 
             << " being used by " << event->user->getName() << " will cooldown "
-            << " from " << event->amount + 1 << " to " << event->amount << "."
+            << " from " << event->amount << " to " << event->amount - 1 << "."
             << std::endl;
       #endif
     }
@@ -2173,16 +2177,20 @@ void Battle::processBuffer()
    * set to show that processing has begun) */
   else if (!getBattleFlag(CombatState::BEGIN_PROCESSING))
   {
+    /* Clear action variables to ensure a clean slate for processing */
+    clearActionVariables();
+
     curr_action_index = 0;
     setBattleFlag(CombatState::BEGIN_PROCESSING, true);
   }
 
-  auto cooldown     = action_buffer->getCooldown();
   auto curr_action_type = ActionType::NONE;
   auto curr_targets = action_buffer->getTargets();
   auto damage_types = action_buffer->getDamageTypes();
+  auto cooldown     = action_buffer->getCooldown();
   curr_action_type  = action_buffer->getActionType();
   curr_user         = action_buffer->getUser();
+  curr_skill        = action_buffer->getSkill();
 
   if (curr_action_type == ActionType::SKILL)
   {
@@ -3415,6 +3423,9 @@ bool Battle::testPersonIndex(const int32_t &test_index)
     }
     else if (skill_cooldown != nullptr)
     {
+      std::cout << "~~~ Creating skill cooldown event on Skill: " 
+          << skill_cooldown->getName() << std::endl;
+
       /* If the person has a skill cooldown in the buffer, add a skill cooldown
        * event to the event buffer for performing. This person's turn selection
        * will be skipped */
@@ -4083,11 +4094,13 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
     if (event.keysym.sym == SDLK_PAUSE)
       printPartyState();
     else if (event.keysym.sym == SDLK_PRINTSCREEN)
-      printProcessingState();
+      printProcessingState(false);
+    else if (event.keysym.sym == SDLK_INSERT)
+      printProcessingState(true);
     else if (event.keysym.sym == SDLK_HOME)
-      printAll(false, true, false);
+      action_buffer->print(false);
     else if (event.keysym.sym == SDLK_END)
-      action_buffer->print(true);
+      printAll(false, true, false);
     // else if (event.keysym.sym == SDLK_PAGEUP)
     else if (event.keysym.sym == SDLK_DELETE)
     {
@@ -4249,41 +4262,62 @@ void Battle::printPersonState(Person* const member,
  * Inputs: none
  * Output: none
  */
-void Battle::printProcessingState()
+void Battle::printProcessingState(bool basic)
 {
-  std::cout << "\n--- Processing State ---\n";
-  std::cout << "Processing Index: " << pro_index << std::endl;
-  std::cout << "Temp Ailments: " << temp_ailments.size() << std::endl;
-  std::cout << "Upkeep Persons: " << upkeep_persons.size() << std::endl;
-  std::cout << "\nRENDERING_COMPLETE: " 
-            << getBattleFlag(CombatState::RENDERING_COMPLETE);
-  std::cout << "\nREADY TO RENDER: "
-            << getBattleFlag(CombatState::READY_TO_RENDER);
-  std::cout << "\nBEGIN_PROCESSING: " 
-            << getBattleFlag(CombatState::BEGIN_PROCESSING);
-  std::cout << "\nBEGIN ACTION PROCESSING: " 
-            << getBattleFlag(CombatState::BEGIN_ACTION_PROCESSING);
-  std::cout << "\nACTION PROCESSING COMPLETE: " 
-            << getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE);
-  std::cout << "\nLAST INDEX: " 
-            << getBattleFlag(CombatState::LAST_INDEX);
-  std::cout << "\nALL PROCESSING COMPLETE: "
-            << getBattleFlag(CombatState::ALL_PROCESSING_COMPLETE);
-  std::cout << "\nBEGIN PERSON UPKEEPS: "
-            << getBattleFlag(CombatState::BEGIN_PERSON_UPKEEPS);
-  std::cout << "\nPERSON UPKEEP COMPLETE: "
-            << getBattleFlag(CombatState::PERSON_UPKEEP_COMPLETE);
-  std::cout << "\nBEGIN AILMENT UPKEEPS: "
-            << getBattleFlag(CombatState::BEGIN_AILMENT_UPKEEPS);
-  std::cout << "\nCURRENT AILMENT COMPLETE: "
-            << getBattleFlag(CombatState::CURRENT_AILMENT_COMPLETE);
-  std::cout << "\nALL UPKEEPS COMPLETE: "
-            << getBattleFlag(CombatState::ALL_UPKEEPS_COMPLETE);
-  std::cout << "\nOUTCOME PROCESSING: "
-            << getBattleFlag(CombatState::OUTCOME_PROCESSED);
-  std::cout << "\nOUTCOME PERFORMED: "
-            << getBattleFlag(CombatState::OUTCOME_PERFORMED);
-  std::cout << std::endl;
+  if (basic)
+  {
+    std::cout << "\n--- Procesing State ---";
+
+    if (curr_skill != nullptr)
+      std::cout << "\nCurr Skill: " << curr_skill->getName();
+
+    if (curr_item != nullptr)
+      std::cout << "\nCurr Item: " << curr_item->getName();
+
+    if (curr_user != nullptr)
+      std::cout << "\nCurr User: " << curr_user->getName();
+
+    if (curr_target != nullptr)
+      std::cout << "\nCurr Target: " << curr_target->getName();
+
+    std::cout << "\nCurr Action Index: " << curr_action_index << std::endl;
+  }
+  else
+  {
+    std::cout << "\n--- Processing State ---\n";
+    std::cout << "Processing Index: " << pro_index << std::endl;
+    std::cout << "Temp Ailments: " << temp_ailments.size() << std::endl;
+    std::cout << "Upkeep Persons: " << upkeep_persons.size() << std::endl;
+    std::cout << "\nRENDERING_COMPLETE: " 
+              << getBattleFlag(CombatState::RENDERING_COMPLETE);
+    std::cout << "\nREADY TO RENDER: "
+              << getBattleFlag(CombatState::READY_TO_RENDER);
+    std::cout << "\nBEGIN_PROCESSING: " 
+              << getBattleFlag(CombatState::BEGIN_PROCESSING);
+    std::cout << "\nBEGIN ACTION PROCESSING: " 
+              << getBattleFlag(CombatState::BEGIN_ACTION_PROCESSING);
+    std::cout << "\nACTION PROCESSING COMPLETE: " 
+              << getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE);
+    std::cout << "\nLAST INDEX: " 
+              << getBattleFlag(CombatState::LAST_INDEX);
+    std::cout << "\nALL PROCESSING COMPLETE: "
+              << getBattleFlag(CombatState::ALL_PROCESSING_COMPLETE);
+    std::cout << "\nBEGIN PERSON UPKEEPS: "
+              << getBattleFlag(CombatState::BEGIN_PERSON_UPKEEPS);
+    std::cout << "\nPERSON UPKEEP COMPLETE: "
+              << getBattleFlag(CombatState::PERSON_UPKEEP_COMPLETE);
+    std::cout << "\nBEGIN AILMENT UPKEEPS: "
+              << getBattleFlag(CombatState::BEGIN_AILMENT_UPKEEPS);
+    std::cout << "\nCURRENT AILMENT COMPLETE: "
+              << getBattleFlag(CombatState::CURRENT_AILMENT_COMPLETE);
+    std::cout << "\nALL UPKEEPS COMPLETE: "
+              << getBattleFlag(CombatState::ALL_UPKEEPS_COMPLETE);
+    std::cout << "\nOUTCOME PROCESSING: "
+              << getBattleFlag(CombatState::OUTCOME_PROCESSED);
+    std::cout << "\nOUTCOME PERFORMED: "
+              << getBattleFlag(CombatState::OUTCOME_PERFORMED);
+    std::cout << std::endl;
+  }
 }
 
 /*

@@ -174,15 +174,17 @@ std::vector<BufferAction> Buffer::sort(std::vector<BufferAction> actions,
  * Output: bool - true if the addition takes places successfully
  */
 bool Buffer::add(Person* const new_user, Skill* const new_skill_used, 
-                 std::vector<Person*> targets, const uint32_t &cooldown)
+    std::vector<Person*> targets, const uint32_t &cooldown, 
+    const uint32_t &initial_turn)
 {
   BufferAction new_elm;
 
-  new_elm.cooldown   = cooldown;
-  new_elm.user       = new_user;
-  new_elm.item_used  = nullptr;
-  new_elm.skill_used = new_skill_used;
-  new_elm.targets    = targets;
+  new_elm.cooldown     = cooldown;
+  new_elm.initial_turn = initial_turn;
+  new_elm.user         = new_user;
+  new_elm.item_used    = nullptr;
+  new_elm.skill_used   = new_skill_used;
+  new_elm.targets      = targets;
 
   std::vector<DamageType> damage_types;
   for (auto it = begin(targets); it != end(targets); ++it)
@@ -205,7 +207,6 @@ bool Buffer::add(Person* const new_user, Skill* const new_skill_used,
   std::cout << new_skill_used->getName() << std::endl;
   std::cout << targets.size() << std::endl;
 
-
   return false;
 }
 
@@ -219,15 +220,17 @@ bool Buffer::add(Person* const new_user, Skill* const new_skill_used,
  * Output: bool - true if the addition takes places successfully
  */
 bool Buffer::add(Person* const new_user, Item* const new_item_used, 
-                 std::vector<Person*> targets, const uint32_t &cooldown)
+    std::vector<Person*> targets, const uint32_t &cooldown,
+    const uint32_t &initial_turn)
 { 
   BufferAction new_elm;
 
-  new_elm.cooldown   = cooldown;
-  new_elm.user       = new_user;
-  new_elm.item_used  = new_item_used;
-  new_elm.skill_used = nullptr;
-  new_elm.targets    = targets;
+  new_elm.cooldown     = cooldown;
+  new_elm.initial_turn = initial_turn;
+  new_elm.user         = new_user;
+  new_elm.item_used    = new_item_used;
+  new_elm.skill_used   = nullptr;
+  new_elm.targets      = targets;
 
   std::vector<DamageType> damage_types;
   for (auto it = begin(targets); it != end(targets); ++it)
@@ -250,15 +253,17 @@ bool Buffer::add(Person* const new_user, Item* const new_item_used,
  * Output: 
  */
 bool Buffer::add(Person* const user, ActionType const &buffer_type,
-                 std::vector<Person*> targets, const uint32_t &cooldown)
+    std::vector<Person*> targets, const uint32_t &cooldown,
+    const uint32_t &initial_turn)
 {
   BufferAction new_elm;
 
-  new_elm.cooldown   = cooldown;
-  new_elm.user       = user;
-  new_elm.item_used  = nullptr;
-  new_elm.skill_used = nullptr;
-  new_elm.targets    = targets;
+  new_elm.cooldown     = cooldown;
+  new_elm.initial_turn = initial_turn;
+  new_elm.user         = user;
+  new_elm.item_used    = nullptr;
+  new_elm.skill_used   = nullptr;
+  new_elm.targets      = targets;
 
   std::vector<DamageType> damage_types;
   for (auto it = begin(targets); it != end(targets); ++it)
@@ -446,6 +451,7 @@ void Buffer::print(const bool &simple)
           std::cout << "Target is nullptr\n";
       }
 
+      std::cout << "Initial Turn: " << (*it).initial_turn << std::endl;
       std::cout << "Valid: " << (*it).valid << std::endl << std::endl;
     }
   }
@@ -560,17 +566,18 @@ ActionType Buffer::getActionType()
 }
 
 /*
- * Description: Returns the cooldown of the current action buffer index
+ * Description: Returns the cooldown of the current action buffer index if the
+ *              index is valid, else returns -1
  *
  * Inputs: none 
- * Output: int32_t - the cooldown of the current index
+ * Output: int32_t - the cooldown of the current index, or -1 if invalid
  */
 int32_t Buffer::getCooldown()
 {
   if (checkValid(getIndex(index)))
     return getIndex(index).cooldown;
 
-  return 0;
+  return -1;
 }
 
 /*
@@ -613,6 +620,21 @@ Item* Buffer::getItem()
     return getIndex(index).item_used;
 
   return nullptr;
+}
+
+/*
+ * Description: Returns the assigned initial turn for the current element index
+ *              if the index is valid, else returns -1.
+ *
+ * Inputs: none
+ * Output: int32_t - the initial turn of current element or -1 if invalid index
+ */
+int32_t Buffer::getInitialTurn()
+{
+  if (checkValid(getIndex(index)))
+    return getIndex(index).initial_turn;
+
+  return -1;
 }
 
 /*
