@@ -92,8 +92,18 @@ void Application::handleEvents()
     {
       SDL_KeyboardEvent press_event = event.key;
       
+      if (press_event.keysym.sym == SDLK_F3)
+      {
+        system_options->setAudioLevel(0);
+        system_options->setMusicLevel(0);
+      }
+      else if (press_event.keysym.sym == SDLK_F4)
+      {
+        system_options->setAudioLevel(80);
+        system_options->setMusicLevel(80);
+      }
       /* Send the key to the relevant view */
-      if(press_event.keysym.sym == SDLK_F7)
+      else if(press_event.keysym.sym == SDLK_F7)
       {
         SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
       }

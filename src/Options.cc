@@ -70,6 +70,9 @@ void Options::setAllToDefault()
   /* Battle Options */
   setAilmentUpdateState(BattleOptions::FOREST_WALK);
 
+  audio_level = 80;
+  music_level = 80;
+
   /* Flags */
   setLinearFiltering(false);
   setFlag(OptionState::VSYNC, true);
@@ -77,6 +80,7 @@ void Options::setAllToDefault()
   setFlag(OptionState::AUTO_RUN, false);
   setFlag(OptionState::BATTLE_ANIMATIONS, true);
   setFlag(OptionState::GUI_ENABLED, true);
+  setFlag(OptionState::AUDIO_ENABLED, true);
 
   /* Rendering Options */
   setFont(0, true);
@@ -91,6 +95,30 @@ void Options::setAllToDefault()
 void Options::setAilmentUpdateState(BattleOptions new_state)
 {
   ailment_update_state = new_state;
+}
+
+bool Options::setAudioLevel(int32_t new_level)
+{
+  if (new_level <= 128 && new_level >= 0)
+  {
+    audio_level = new_level;
+
+    return true;
+  }
+
+  return false;
+}
+
+bool Options::setMusicLevel(int32_t new_level)
+{
+  if (new_level <= 128 && new_level >= 0)
+  {
+    music_level = new_level;
+
+    return true;
+  }
+
+  return false;
 }
 
 void Options::setFlag(OptionState flag, bool set_value)
@@ -134,16 +162,6 @@ void Options::setLinearFiltering(bool linear_filtering)
   }
 }
 
-// Have you heard of der flags??
-// void Options::setVsync(bool enabled)
-// {
-//   vsync_enabled = enabled;
-// }
-
-/*=============================================================================
- * PUBLIC FUNCTIONS
- *============================================================================*/
-
 void Options::setScreenResolution(uint8_t index)
 {
   if(index < kNUM_RESOLUTIONS)
@@ -151,6 +169,48 @@ void Options::setScreenResolution(uint8_t index)
     resolution_x = index;
     resolution_y = index;
   }
+}
+
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
+
+/* Returns if the player is instructed to always run */
+bool Options::isAutoRun()
+{
+  return getFlag(OptionState::AUTO_RUN);
+}
+
+/* Returns if the game is full screen mode */
+bool Options::isFullScreen()
+{
+  return getFlag(OptionState::FULLSCREEN);
+}
+
+/* Returns if linear filtering mode is enabled */
+bool Options::isLinearFilteringEnabled()
+{
+  return getFlag(OptionState::LINEAR_FILTERING);
+}
+
+bool Options::isAudioEnabled()
+{
+  return getFlag(OptionState::AUDIO_ENABLED);
+}
+  
+bool Options::isVsyncEnabled()
+{
+  return getFlag(OptionState::VSYNC);
+}
+
+int32_t Options::getAudioLevel()
+{
+  return audio_level;
+}
+
+int32_t Options::getMusicLevel()
+{
+  return music_level;
 }
 
 bool Options::confirmFontSetup()
@@ -211,28 +271,7 @@ uint16_t Options::getScreenWidth()
   return kRESOLUTIONS_X[resolution_x];
 }
 
-/* Returns if the player is instructed to always run */
-bool Options::isAutoRun()
-{
-  return getFlag(OptionState::AUTO_RUN);
-}
 
-/* Returns if the game is full screen mode */
-bool Options::isFullScreen()
-{
-  return getFlag(OptionState::FULLSCREEN);
-}
-
-/* Returns if linear filtering mode is enabled */
-bool Options::isLinearFilteringEnabled()
-{
-  return getFlag(OptionState::LINEAR_FILTERING);
-}
-  
-bool Options::isVsyncEnabled()
-{
-  return getFlag(OptionState::VSYNC);
-}
 
 /*=============================================================================
  * OPERATOR FUNCTIONS

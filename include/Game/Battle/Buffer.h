@@ -113,7 +113,7 @@ public:
   bool add(BufferAction &action);
 
   /* Clears all BufferAction elements from the Buffer */
-  void clearAll();
+  void clearAll(int32_t this_turn_only = -1);
 
   /* Clears all invalid buffer elements */
   void clearInvalid();

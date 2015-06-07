@@ -1237,10 +1237,6 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
     if (game_battle == nullptr)
       eventStartBattle();
   }
-  else if (event.keysym.sym == SDLK_F3)
-  {
-
-  }
   else if(event.keysym.sym == SDLK_F5 && mode == MAP && game_map != nullptr)
   {
     game_map->reloadMap(active_renderer);

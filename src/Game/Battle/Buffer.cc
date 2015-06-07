@@ -302,14 +302,30 @@ bool Buffer::add(BufferAction &action)
 }
 
 /*
- * Description: Clears all the elements of e Buffer
+ * Description: Clears all the elements of the buffer, or only those of a given
+ *              instantiated turn number. For this fn to clear all elemetns the
+ *              given turn number must be -1.
  *
- * Inputs: none
+ * Inputs: int32_t this_turn_only - the initial turn # to del elements, or -1
  * Output: none
  */
-void Buffer::clearAll()
+void Buffer::clearAll(int32_t this_turn_only)
 {
-  action_buffer.clear();
+  if (this_turn_only == -1)
+  {
+    action_buffer.clear();
+  }
+  else
+  {
+    std::vector<BufferAction> temp;
+
+    for (const auto &elm : action_buffer)
+      if (elm.initial_turn != static_cast<uint32_t>(this_turn_only))
+        temp.push_back(elm);
+    
+    action_buffer = temp;
+  }
+
   index = 0;
 }
 
@@ -540,13 +556,19 @@ void Buffer::update(const bool &clear)
     clearAll();
   else
   {
+    std::vector<BufferAction> temp;
+
     for (uint32_t i = 0; i < action_buffer.size(); i++)
     {
-      decrementCooldown(i);
-
-      if (getIndex(i).cooldown == 0)
-        remove(i);
+      if (!(getIndex(i).cooldown == 0))
+      {
+        decrementCooldown(i);
+        temp.push_back(getIndex(i));
+      }
     }
+
+    action_buffer = temp;
+    index = 0;
   }
 }
 

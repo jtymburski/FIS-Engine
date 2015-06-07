@@ -299,6 +299,9 @@ private:
   bool addAilment(Infliction infliction_type, Person* inflictor,
       uint16_t min_turns, uint16_t max_turns, int32_t chance);
 
+  /* Determines if there is any member of a party needing selection */
+  bool anyUserSelection(bool friends = true);
+
   /* Returns the most recently created ailmnent */
   Ailment* getLastAilment();
 

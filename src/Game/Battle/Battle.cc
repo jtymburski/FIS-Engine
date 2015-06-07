@@ -1367,7 +1367,9 @@ bool Battle::checkPartyDeath(Party* const check_party)
  */
 void Battle::cleanUp()
 {
-  action_buffer->clearAll();
+  action_buffer->update(false);
+  action_buffer->print(false);
+
   upkeep_persons.clear();
   temp_ailments.clear();
   person_index = 0;
@@ -1389,7 +1391,6 @@ void Battle::cleanUp()
   /* Increment the turn counter */
   turns_elapsed++;
 
-  action_buffer->update();
   menu->unsetAll();
   curr_module = nullptr;
 
@@ -3311,7 +3312,9 @@ void Battle::selectEnemyActions()
  */
 void Battle::selectUserActions()
 {
-  auto update_menu = false;
+  std::cout << "Select user actions!!" << std::endl;
+  std::cout << "Person index: " << person_index << std::endl;
+  auto update_menu         = false;
 
   /* If an action has been selected for a valid person index, grab the info.
       and load it into the buffer */
@@ -3413,30 +3416,38 @@ bool Battle::testPersonIndex(const int32_t &test_index)
 
   if (test_person->getBFlag(BState::ALIVE))
   {
-    std::cout << "Testing cool down on " << test_index << std::endl;
     auto skill_cooldown = action_buffer->hasCoolingSkill(test_person);
-    std::cout << "Has skill cool down? " << skill_cooldown << std::endl;
 
     if (test_person->getAilFlag(PersonAilState::SKIP_NEXT_TURN))
-    { 
       return false;
-    }
     else if (skill_cooldown != nullptr)
-    {
-      std::cout << "~~~ Creating skill cooldown event on Skill: " 
-          << skill_cooldown->getName() << std::endl;
-
-      /* If the person has a skill cooldown in the buffer, add a skill cooldown
-       * event to the event buffer for performing. This person's turn selection
-       * will be skipped */
-      event_buffer->createSkipEvent(EventType::SKILL_COOLDOWN, test_person,
-          skill_cooldown);
-    }
+      return false;
 
     return true;
   }
  
   return false;
+}
+
+//TODO: Comment
+bool Battle::anyUserSelection(bool friends)
+{
+  auto any_user_selectable = false;
+  auto temp_person_index   = person_index;
+
+  if (friends)
+  {
+    any_user_selectable |= testPersonIndex(1);
+    any_user_selectable |= setNextPersonIndex();
+  }
+  else
+  {
+    any_user_selectable |= testPersonIndex(-1);
+    any_user_selectable |= setNextPersonIndex();
+  }
+  
+  person_index = temp_person_index;
+  return any_user_selectable;
 }
 
 /*
@@ -3885,16 +3896,22 @@ void Battle::setNextTurnState()
       if (turn_mode == TurnMode::FRIENDS_FIRST)
       {
         setTurnState(TurnState::SELECT_ACTION_ALLY);
-
         person_index = 1;
-        selectUserActions();
+
+        if (anyUserSelection(true))
+          selectUserActions();
+        else
+          setBattleFlag(CombatState::PHASE_DONE);
       }
       else if (turn_mode == TurnMode::ENEMIES_FIRST)
       {
         setTurnState(TurnState::SELECT_ACTION_ENEMY);
-
         person_index = -1;
-        selectEnemyActions();
+
+        if (anyUserSelection(false))
+          selectEnemyActions();
+        else
+          setBattleFlag(CombatState::PHASE_DONE);
       }
     }
 
@@ -3905,9 +3922,12 @@ void Battle::setNextTurnState()
       if (turn_mode == TurnMode::FRIENDS_FIRST)
       {
         setTurnState(TurnState::SELECT_ACTION_ENEMY);
-
         person_index = -1;
-        selectEnemyActions();
+
+        if (anyUserSelection(false))
+          selectEnemyActions();
+        else
+          setBattleFlag(CombatState::PHASE_DONE);
       }
       else if (turn_mode == TurnMode::ENEMIES_FIRST)
       {
@@ -3928,9 +3948,12 @@ void Battle::setNextTurnState()
       else if (turn_mode == TurnMode::ENEMIES_FIRST)
       {
         setTurnState(TurnState::SELECT_ACTION_ALLY);
-        
         person_index = 1;
-        selectUserActions();
+    
+        if (anyUserSelection(true))
+          selectUserActions();
+        else
+          setBattleFlag(CombatState::PHASE_DONE);
       }
     }
 

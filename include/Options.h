@@ -25,7 +25,8 @@ enum class OptionState
   FULLSCREEN        = 1 << 2,
   AUTO_RUN          = 1 << 3,
   BATTLE_ANIMATIONS = 1 << 4,
-  GUI_ENABLED       = 1 << 5
+  GUI_ENABLED       = 1 << 5,
+  AUDIO_ENABLED     = 1 << 6
 };
 
 enum class BattleOptions
@@ -50,6 +51,10 @@ public:
 private:
   /* Amount of information to display during ailment updates */
   BattleOptions ailment_update_state;
+
+  /* Sound levels */
+  int32_t audio_level;
+  int32_t music_level;
 
   /* Auto run, in the map */
   //bool auto_run;
@@ -103,9 +108,6 @@ private:
   /* Copy all parameters from the other to the current if called */
   void copySelf(const Options &source);
 
-  /* Returns the value of a given OptionState flag */
-  bool getFlag(const OptionState &test_flag);
-
   /* Sets all parameters to default */
   void setAllToDefault();
 
@@ -114,9 +116,6 @@ private:
 
   /* Assigns if the player is to always run on the map */
   //void setAutoRun(bool auto_run);
-
-  /* Sets an option flag to a given state */
-  void setFlag(OptionState flags, bool set_value = true);
 
   /* Sets the chosen font */
   void setFont(uint8_t index, bool first_call = false);
@@ -137,6 +136,28 @@ public:
   /* Function to confirm the setup of the font */
   bool confirmFontSetup();
 
+  /* Is the player instructed to always run? */
+  bool isAutoRun();
+
+  /* Returns if the game is full screen mode */
+  bool isFullScreen();
+  
+  /* Returns if linear filtering mode is enabled */
+  bool isLinearFilteringEnabled();
+  
+  /* Returns true if the sound is enabled */
+  bool isAudioEnabled();
+
+  /* Returns if vertical refresh syncing is enabled */
+  bool isVsyncEnabled();
+
+  /* Sound/Audio getters */
+  int32_t getAudioLevel();
+  int32_t getMusicLevel();
+
+  /* Returns the value of a given OptionState flag */
+  bool getFlag(const OptionState &test_flag);
+
   /* Returns the current state of ailment updates */
   BattleOptions getAilmentUpdateState();
 
@@ -149,19 +170,16 @@ public:
   
   /* Returns the screen dimensions to be painted */
   uint16_t getScreenHeight();
-  uint16_t getScreenWidth();  
+  uint16_t getScreenWidth(); 
 
-  /* Is the player instructed to always run? */
-  bool isAutoRun();
+  /* Audio setter */
+  bool setAudioLevel(int32_t new_level);
 
-  /* Returns if the game is full screen mode */
-  bool isFullScreen();
-  
-  /* Returns if linear filtering mode is enabled */
-  bool isLinearFilteringEnabled();
-  
-  /* Returns if vertical refresh syncing is enabled */
-  bool isVsyncEnabled();
+  /* Sound setter */
+  bool setMusicLevel(int32_t new_level);
+
+  /* Sets an option flag to a given state */
+  void setFlag(OptionState flags, bool set_value = true); 
 
 /*============================================================================
  * OPERATOR FUNCTIONS

@@ -69,7 +69,8 @@ void TitleScreen::decrementSelected()
     cursor_index = kNUM_MENU_ITEMS;
   cursor_index--;
   
-  menu_click_sound.play();
+  if (system_options->isAudioEnabled())
+    menu_click_sound.play();
 }
   
 /* Increments the selected option */
@@ -78,8 +79,9 @@ void TitleScreen::incrementSelected()
   cursor_index++;
   if(cursor_index == kNUM_MENU_ITEMS)
     cursor_index = 0;
-    
-  menu_click_sound.play();
+  
+  if (system_options->isAudioEnabled())
+    menu_click_sound.play();
 }
   
 /* Sets the selected item. This gets polled by another class */
@@ -209,7 +211,9 @@ void TitleScreen::keyDownEvent(SDL_KeyboardEvent event)
       if(cursor_index != (kNUM_MENU_ITEMS - 1))
       {
         cursor_index = kNUM_MENU_ITEMS - 1;
-        menu_click_sound.play();
+
+        if (system_options->isAudioEnabled())
+          menu_click_sound.play();
       }
     }
   }
@@ -331,14 +335,18 @@ void TitleScreen::setMusic()
                                 "sound/unlicensed/ag_theme.ogg");
   background_music.setLoopForever();
   background_music.setFadeTime(2000);
+  background_music.setVolume(system_options->getMusicLevel());
   
+
   game_music.setChannel(SoundChannels::MUSIC2);
   game_music.setSoundFile(base_path + "sound/3.ogg");
   game_music.setFadeTime(2000);
   game_music.setLoopForever();
+  game_music.setVolume(system_options->getMusicLevel());
   
   menu_click_sound.setChannel(SoundChannels::MENUS);
   menu_click_sound.setSoundFile(base_path + "sound/functional/menu_click.wav");
+  menu_click_sound.setVolume(system_options->getAudioLevel());
 }
 
 /* Updates the title screen. Necessary for visual updates */
@@ -444,6 +452,13 @@ bool TitleScreen::update(int cycle_time)
   {
     nav_time = 0;
   }
+
+  /* Update audio levels */
+  if (system_options->getMusicLevel() != background_music.getVolume())
+    background_music.setVolume(system_options->getMusicLevel());
+  if (system_options->getMusicLevel() != game_music.getVolume())
+    game_music.setVolume(system_options->getMusicLevel());
+
   
   return (action != NONE);
 }

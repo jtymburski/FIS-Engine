@@ -1155,26 +1155,31 @@ bool BattleDisplay::renderFoesInfo(SDL_Renderer* renderer,
 
 // TODO: Comment
 bool BattleDisplay::renderFriendInfo(SDL_Renderer* renderer, PersonState* state,
-                                     uint16_t screen_height, uint16_t x, 
-                                     uint16_t y, bool below)
+    uint16_t screen_height, uint16_t x, uint16_t y, bool below)
 {
+  if (state == nullptr)
+    std::cout << "THE STATE IS ALL TEH NULL! NO NULL STATES" << std::endl;
+
   bool success = true;
 
   /* Calculate health bar amount and color */
   float health_percent = state->self->getVitaPercent();
   health_percent = health_percent > 1.0 ? 1.0 : health_percent;
+
   if(health_percent >= 0.5)
-    SDL_SetRenderDrawColor(renderer, kCOLOR_BASE * ((1-health_percent) * 2), 
+    SDL_SetRenderDrawColor(renderer, kCOLOR_BASE * ((1 - health_percent) * 2), 
                            kCOLOR_BASE, 0, 255);
   else
     SDL_SetRenderDrawColor(renderer, kCOLOR_BASE, 
                            kCOLOR_BASE * health_percent * 2, 0, 255);
+
   uint16_t health_x = x + (kINFO_W - kALLY_HEALTH_W) / 2;
   uint16_t health_y = y + (kALLY_HEIGHT - kALLY_HEALTH_H) / 2;
 
   /* Calculate health bar render amount */
   int health_amount = (kALLY_HEALTH_W + kALLY_HEALTH_TRIANGLE - 1) * 
                       health_percent;
+
   if(health_amount == 0 && health_percent > 0.0)
     health_amount = 1;
   else if(health_amount == (kALLY_HEALTH_W + kALLY_HEALTH_TRIANGLE) && 
@@ -1308,7 +1313,7 @@ bool BattleDisplay::renderMenu(SDL_Renderer* renderer, PersonState* state,
   bool success = true;
   uint16_t x = (section1_w - kINFO_W) / 2;
   uint16_t y = screen_height - bar_height + (bar_height - kALLY_HEIGHT) / 2;
-
+  
   /* Render the selecting person info */
   success &= renderFriendInfo(renderer, state, screen_height, x, y, true);
 
@@ -1729,7 +1734,7 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
   if(system_options != NULL)
   {
     height = system_options->getScreenHeight();
-    width = system_options->getScreenWidth();
+    width  = system_options->getScreenWidth();
   }
 
   if(battle != NULL && rendering_state != TurnState::DESTRUCT)
@@ -1776,9 +1781,16 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
 
     /* Render friend information */
     BattleMenu* menu = battle->getBattleMenu();
-    if(rendering_state == TurnState::SELECT_ACTION_ALLY && 
-       (menu->getLayerIndex() == 1 || menu->getLayerIndex() == 2) && 
-       !show_info)
+
+    /* Determine whether the menu should be rendered */
+    auto to_render_menu = true;
+
+    to_render_menu &= (rendering_state == TurnState::SELECT_ACTION_ALLY);
+    to_render_menu &= !battle->getBattleFlag(CombatState::PHASE_DONE);
+    to_render_menu &= menu->getLayerIndex() == 1 || menu->getLayerIndex() == 2;
+    to_render_menu &= !show_info;
+ 
+    if (to_render_menu)
     {
       /* Checks the index of the rendering person for if the skills need to be
        * updated */
