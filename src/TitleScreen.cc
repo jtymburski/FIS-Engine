@@ -453,13 +453,6 @@ bool TitleScreen::update(int cycle_time)
     nav_time = 0;
   }
 
-  /* Update audio levels */
-  if (system_options->getMusicLevel() != background_music.getVolume())
-    background_music.setVolume(system_options->getMusicLevel());
-  if (system_options->getMusicLevel() != game_music.getVolume())
-    game_music.setVolume(system_options->getMusicLevel());
-
-  
   return (action != NONE);
 }
  

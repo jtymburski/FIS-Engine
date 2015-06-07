@@ -94,13 +94,15 @@ void Application::handleEvents()
       
       if (press_event.keysym.sym == SDLK_F3)
       {
-        system_options->setAudioLevel(0);
-        system_options->setMusicLevel(0);
+        Mix_Volume(-1, 0);
+        // system_options->setAudioLevel(0);
+        // system_options->setMusicLevel(0);
       }
       else if (press_event.keysym.sym == SDLK_F4)
       {
-        system_options->setAudioLevel(80);
-        system_options->setMusicLevel(80);
+        Mix_Volume(-1, 80);
+        // system_options->setAudioLevel(80);
+        // system_options->setMusicLevel(80);
       }
       /* Send the key to the relevant view */
       else if(press_event.keysym.sym == SDLK_F7)
