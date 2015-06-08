@@ -1376,11 +1376,13 @@ void Battle::cleanUp()
 
   setBattleFlag(CombatState::BEGIN_PROCESSING, false);
   setBattleFlag(CombatState::BEGIN_ACTION_PROCESSING, false);
+  setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, false);
+  setBattleFlag(CombatState::LAST_INDEX, false);
   setBattleFlag(CombatState::ALL_PROCESSING_COMPLETE, false);
   setBattleFlag(CombatState::BEGIN_PERSON_UPKEEPS, false);
   setBattleFlag(CombatState::PERSON_UPKEEP_COMPLETE, false);
   setBattleFlag(CombatState::BEGIN_AILMENT_UPKEEPS, false);
-  // setBattleFlag(CombatState::CURRENT_AILMENT_STARTED, false);
+  setBattleFlag(CombatState::CURRENT_AILMENT_STARTED, false);
   setBattleFlag(CombatState::CURRENT_AILMENT_COMPLETE, false);
   setBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS, false);
   setBattleFlag(CombatState::ALL_UPKEEPS_COMPLETE, false);
@@ -1761,7 +1763,13 @@ void Battle::performEvents()
     std::cout << "---- Performing Events ----" << std::endl;
   #endif
   
+  /* Assert there is at least one index of events to perform */
   auto valid_next = true;
+  valid_next &= event_buffer->getCurrentSize() > 0;
+
+  /* Assert the current event exists and has not been performed already */
+  if (valid_next)
+    valid_next &= !event_buffer->getCurrentEvent()->performed;
 
   while (valid_next)
   {
@@ -1991,11 +1999,13 @@ void Battle::performEvents()
 
       event->targets.at(0)->getCurr().setStat(Attribute::VITA, new_val);
 
+#ifdef UDEBUG
       if (event->amount > 0) 
       {
         std::cout << "{REGEN} " << event->targets.at(0)->getName() 
                   << " has restored " << event->amount << " VITA." << std::endl;
       }
+#endif
 
     }
     else if (event->type == EventType::REGEN_QTDR)
@@ -2005,11 +2015,13 @@ void Battle::performEvents()
 
       event->targets.at(0)->getCurr().setStat(Attribute::QTDR, new_val);
 
+#ifdef UDEBUG
       if (event->amount != 0)
       {
         std::cout << "{REGEN} " << event->targets.at(0)->getName() 
                   << " has regained " << event->amount << " QTDR." << std::endl;
       }
+#endif
     }
     /* Deathtimer death -> the countdown has reached zero and the target will
      * instantly be killed */
@@ -2019,12 +2031,8 @@ void Battle::performEvents()
       event->targets.at(0)->setBFlag(BState::ALIVE, false);
     }
 
-    std::cout << std::endl;
-    std::cout << "Setting index: " << index << " as performed." << std::endl;
     event_buffer->setPerformed(index);
     valid_next = event_buffer->setNextIndex();
-    std::cout << "Next index valid?: " << valid_next << std::endl;
-    std::cout << std::endl;
   }
 }
 
@@ -2036,11 +2044,11 @@ void Battle::performEvents()
  */
 void Battle::performDamageEvent(BattleEvent* event)
 {
-  auto str_damage = "";
-  
   #ifdef UDEBUG
+    auto str_damage = "";
+  
     if (event->type == EventType::STANDARD_DAMAGE)
-      str_damage = "STRD DMG";
+      str_damage = "STND DMG";
     else if (event->type == EventType::CRITICAL_DAMAGE)
       str_damage = "CRIT DMG";
     else if (event->type == EventType::POISON_DAMAGE)

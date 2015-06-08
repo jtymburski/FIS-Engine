@@ -20,9 +20,7 @@
 *
 * BUGS
 * ----
-* [03-29-15]: Intermittant seg fault -- near end of turn loop?
-* !!! POTENTIALY FIXED MAY 3/2015
-*   - Possibly look at ailment inflictions/removals.
+* [06-07-15]: Turn N > 0 not iterating through all ze actions. Why?
 * [03-29-15]: Is battleWon() being called twice upon victory?
 *******************************************************************************/
 #ifndef BATTLE_H
@@ -49,7 +47,7 @@ enum class CombatState
   VICTORY                    = 1 << 3, // Use OutcomeState enum
   LOSS                       = 1 << 4, // Use OutcomeState enum
   ALLIES_RUN                 = 1 << 5, // Use OutcomeState enum
-  ENEMIES_RUN                = 1 << 6,// Use outcomeState enum
+  ENEMIES_RUN                = 1 << 6,// Usef outcomeState enum
   OUTCOME_PROCESSED          = 1 << 7,
   OUTCOME_PERFORMED          = 1 << 8,
   RANDOM_ENCOUNTER           = 1 << 10, /* Is this just a regular Battle? */
