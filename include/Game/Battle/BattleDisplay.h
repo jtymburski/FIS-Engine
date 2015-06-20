@@ -35,6 +35,28 @@ struct PersonState
   Sprite* tp;
 };
 
+/*
+ * Structure which describes on screen text elements that are currently
+ * rendering
+ */
+struct RenderText
+{
+  SDL_Color color;
+  SDL_Color shadow_color;
+
+  int32_t remaining_time;
+  int16_t x;
+  int16_t y;
+  int16_t shadow_x;
+  int16_t shadow_y;
+  int16_t x_velocity;
+  int16_t y_velocity;
+  int32_t fade_in_time;
+  int16_t fade_in_speed;
+  int32_t fade_out_time;
+  int16_t fade_out_speed;
+};
+
 class BattleDisplay
 {
 public:
@@ -67,6 +89,9 @@ private:
   /* The rendering battle bar */
   Frame* battle_bar;
 
+  /* The current event being rendered/worked on */
+  BattleEvent* curr_event;
+
   /* Element frames */
   std::vector<Frame> elements;
   
@@ -98,6 +123,9 @@ private:
 
   /* Background overlays */
   std::vector<Sprite*> overlays; // TODO: Make overlay class when created
+
+  /* Vector of renderable text elements */
+  std::vector<RenderText*> render_texts;
 
   /* Rendering turn state */
   TurnState rendering_state;
@@ -196,6 +224,13 @@ private:
   const static uint8_t kTYPE_MAX; /* Max number of action types to render */
   const static uint8_t kTYPE_SELECT; /* Margin to spread select around type */
 
+  /* ---- Color Constants ---- */
+  const static SDL_Color kSTRD_DMG_COLOR;
+  const static SDL_Color kCRIT_DMG_COLOR;
+  const static SDL_Color kPOIS_DMG_COLOR;
+  const static SDL_Color kHEAL_DMG_COLOR;
+  const static SDL_Color kBURN_DMG_COLOR;
+
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
@@ -238,7 +273,13 @@ private:
 
   /* Render the action skills */
   bool renderActionSkills(SDL_Renderer* renderer, BattleMenu* menu, uint16_t x,
-                          uint16_t y, uint16_t width, uint16_t height);
+      uint16_t y, uint16_t width, uint16_t height);
+
+  /* Render the action text */
+  bool renderActionText(SDL_Renderer* renderer, std::string action_name);
+
+  /* Render the damage value */
+  bool renderDamageValue(SDL_Renderer* renderer, uint64_t amount);
 
   /* Render the action categories */
   bool renderActionTypes(SDL_Renderer* renderer, BattleMenu* menu, uint16_t x, 
@@ -390,6 +431,10 @@ public:
   /* Unsets the overlay sprite(s) */
   void unsetOverlay(uint8_t index);
   void unsetOverlays();
+
+  /* Unsets the render text elements */
+  void unsetRenderText(uint32_t index);
+  void unsetRenderTexts();
 
   /* Updates the battle display */
   bool update(int cycle_time);

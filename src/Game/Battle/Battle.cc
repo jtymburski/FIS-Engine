@@ -4553,6 +4553,16 @@ Party* Battle::getFriends()
 {
   return friends;
 } 
+/*
+ * Description: Returns the event buffer pointer
+ *
+ * Inputs: none
+ * Output: EventBuffer* - pointer to the event buffer
+ */
+EventBuffer* Battle::getEventBuffer()
+{
+  return event_buffer;
+}
 
 /*
  * Description: Returns the foes pointer of the Battle

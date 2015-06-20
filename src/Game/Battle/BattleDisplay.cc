@@ -94,6 +94,12 @@ const uint8_t BattleDisplay::kTYPE_MARGIN = 7;
 const uint8_t BattleDisplay::kTYPE_MAX = 5;
 const uint8_t BattleDisplay::kTYPE_SELECT = 3;
 
+/* ---- Color Constants ---- */
+const SDL_Color BattleDisplay::kSTRD_DMG_COLOR = {250,  250, 250, 255};
+const SDL_Color BattleDisplay::kCRIT_DMG_COLOR = {255,  255,   0, 255};
+const SDL_Color BattleDisplay::kPOIS_DMG_COLOR = { 51,  102,   0, 255};
+const SDL_Color BattleDisplay::kBURN_DMG_COLOR = {172,    0,   0, 255};
+
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
@@ -112,6 +118,7 @@ BattleDisplay::BattleDisplay(Options* running_config)
   bar_offset = 0;
   battle = NULL;
   battle_bar = NULL;
+  curr_event = nullptr;
   foes_backdrop = NULL;
   font_action = NULL;
   font_header = NULL;
@@ -898,6 +905,67 @@ bool BattleDisplay::renderActionSkills(SDL_Renderer* renderer, BattleMenu* menu,
   return success;
 }
 
+//TODO: Comment
+bool BattleDisplay::renderActionText(SDL_Renderer* renderer, 
+    std::string action_name)
+{
+  bool success = true;
+  Text t(font_action);
+  SDL_Color color = {0, 0, 0, 255};
+
+  t.setText(renderer, action_name, color);
+  int16_t text_x = kACTION_TEXT_X - t.getWidth();
+  int16_t text_y = kACTION_CENTER - t.getHeight() / 2 - 8;
+  t.render(renderer, text_x + kACTION_TEXT_SHADOW, 
+           text_y + kACTION_TEXT_SHADOW);
+  
+  color = {kACTION_COLOR_R, 0, 0, 255};
+  t.setText(renderer, action_name, color);
+  t.render(renderer, text_x, text_y);
+
+  return success;
+}
+
+//TODO: Comment
+bool BattleDisplay::renderDamageValue(SDL_Renderer* renderer, uint64_t amount)
+{
+  auto success = true;
+
+  /* Determine the color of text to use for displaying according to the
+   * appropriate damage type (based on the type of event being processed ) */
+  SDL_Color color = {255, 255, 255, 255};
+
+  if (curr_event->type == EventType::STANDARD_DAMAGE)
+    color = kSTRD_DMG_COLOR;
+  else if (curr_event->type == EventType::CRITICAL_DAMAGE)
+    color = kCRIT_DMG_COLOR;
+  else if (curr_event->type == EventType::POISON_DAMAGE)
+    color = kPOIS_DMG_COLOR;
+  else if (curr_event->type == EventType::BURN_DAMAGE)
+    color = kBURN_DMG_COLOR;
+  else
+    success = false;
+
+  if (success)
+  {
+    /* Render text of the damage value */
+    Text t(font_action);
+    t.setText(renderer, std::to_string(amount), color);
+ 
+    //TODO: - Determine the location of the actor to render the damage on [06-20-15]
+    int16_t text_x = kACTION_TEXT_X - t.getWidth();
+    int16_t text_y = kACTION_TEXT_X - t.getHeight() / 2 - 8;
+
+    t.render(renderer, text_x + kACTION_TEXT_SHADOW, text_y + 
+        kACTION_TEXT_SHADOW);
+    t.render(renderer, text_x, text_y);
+    color = {255, 255, 255, 125};
+    t.render(renderer, text_x, text_y);
+  }
+
+  return success;
+}
+
 /* Render the action categories */
 // TODO: Comment
 bool BattleDisplay::renderActionTypes(SDL_Renderer* renderer, BattleMenu* menu, 
@@ -1435,10 +1503,10 @@ bool BattleDisplay::startBattle(SDL_Renderer* renderer)
     {
       PersonState* blank_state = new PersonState;
       blank_state->action = NULL;
-      blank_state->fp = NULL;
-      blank_state->info = NULL;
-      blank_state->self = NULL;
-      blank_state->tp = NULL;
+      blank_state->fp     = NULL;
+      blank_state->info   = NULL;
+      blank_state->self   = NULL;
+      blank_state->tp     = NULL;
 
       friends_state.push_back(blank_state);    
     }
@@ -1630,6 +1698,7 @@ void BattleDisplay::clear()
   unsetBattleBar();
   unsetMidlays();
   unsetOverlays();
+  unsetRenderTexts();
 
   /* Deletes internal pointers, if set */
   if(foes_backdrop != NULL)
@@ -1813,19 +1882,12 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
     if(friends_state[0] != NULL)
     {
       if(friends_state[0]->action != NULL)
+      {
         friends_state[0]->action->render(renderer, 
                                    width - friends_state[1]->action->getWidth(), 
                                    kACTION_CENTER - kACTION_Y);
-      Text t(font_action);
-      SDL_Color color = {0, 0, 0, 255};
-      t.setText(renderer, "Burninate The Countryside!", color);
-      int16_t text_x = kACTION_TEXT_X - t.getWidth();
-      int16_t text_y = kACTION_CENTER - t.getHeight() / 2 - 8;
-      t.render(renderer, text_x + kACTION_TEXT_SHADOW, 
-               text_y + kACTION_TEXT_SHADOW);
-      color = {kACTION_COLOR_R, 0, 0, 255};
-      t.setText(renderer, "Burninate The Countryside!", color);
-      t.render(renderer, text_x, text_y);
+      }
+      renderActionText(renderer, "Burninating Da People!");
     }
     
     // TODO: Render extra battle flair
@@ -2072,6 +2134,22 @@ void BattleDisplay::unsetOverlays()
   overlays.clear();
 }
 
+void BattleDisplay::unsetRenderText(uint32_t index)
+{
+  if(render_texts.size() > index && render_texts[index] != nullptr)
+  {
+    delete render_texts[index];
+    overlays[index] = nullptr;
+  }
+}
+
+void BattleDisplay::unsetRenderTexts()
+{
+  for(uint32_t i = 0; i < render_texts.size(); i++)
+    unsetRenderText(i);
+  render_texts.clear();
+}
+
 /* Updates the battle display */
 // TODO: Comment
 bool BattleDisplay::update(int cycle_time)
@@ -2094,6 +2172,8 @@ bool BattleDisplay::update(int cycle_time)
     /* Update the turn state - TODO: Add delays and pretty animations */
     TurnState battle_state = battle->getTurnState();
     BattleMenu* menu = battle->getBattleMenu();
+
+    /* Update the render text elements */
 
     /*-------------------------------------------------------------------------
      * BEGIN state
@@ -2277,6 +2357,32 @@ bool BattleDisplay::update(int cycle_time)
     else if(rendering_state == TurnState::PROCESS_ACTIONS)
     {
       rendering_state = battle_state;
+      EventBuffer* event_buffer = battle->getEventBuffer();
+      auto done = false;
+
+      /* If ready to render flag is true, there are events which need to be 
+       * rendered on the Event Buffer */
+      if(battle->getBattleFlag(CombatState::READY_TO_RENDER))
+        done |= event_buffer->setRenderIndex();
+
+      /* If there was not an unrendered index to set for the EventBuffer, the
+       * rendering of processed actions ins complete -> set rendering complete
+       * flag for Battle to continue processing or set next turn state */
+      if (done)
+      {
+        battle->setBattleFlag(CombatState::RENDERING_COMPLETE, true);
+      }
+      /* If there was an unrendered index in the EventBuffer, grab the first
+       * unrendered index and continue or finish to do work on it */
+      else
+      {
+        curr_event = event_buffer->getEvent(event_buffer->getIndex());
+
+        if (curr_event != nullptr)
+        {
+
+        }
+      }
 
       /* Update deaths */
       for(uint8_t i = 0; i < friends_state.size(); i++)

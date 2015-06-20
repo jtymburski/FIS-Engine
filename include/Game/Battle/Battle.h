@@ -571,6 +571,9 @@ public:
   /* Return the value of a given IgnoreState flag */
   bool getIgnoreFlag(const IgnoreState &test_flag);
 
+  /* Return the pointer to the event buffer */
+  EventBuffer* getEventBuffer();
+
   /* Returns the friends pointer of the Battle */
   Party* getFriends();
 
