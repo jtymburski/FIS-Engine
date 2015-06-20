@@ -545,6 +545,12 @@ private:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  /* Evaluates whether a given Person ptr is a member of the allies party */
+  bool isAlly(Person* check_person);
+
+  /* Evaluates whether a given Person ptr is a member of the foes party */
+  bool isFoe(Person* check_person);
+
   /* Processing key down events for the Battle */
   bool keyDownEvent(SDL_KeyboardEvent event);
 

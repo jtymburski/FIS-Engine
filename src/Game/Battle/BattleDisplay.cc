@@ -129,6 +129,7 @@ BattleDisplay::BattleDisplay(Options* running_config)
   index_types = 0;
   offset = 0; // TODO: Delete
   offset_2 = 0; // TODO: Delete
+  renderer = nullptr;
   rendering_state = TurnState::DESTRUCT;
   show_info = false;
   system_options = NULL;
@@ -817,6 +818,37 @@ uint32_t BattleDisplay::getIndex(int32_t index)
   return returned;
 }
 
+//TODO: Comment
+int16_t BattleDisplay::getPersonX(Person* check_person)
+{
+  auto screen_width = system_options->getScreenWidth();
+
+  for (uint32_t i = 0; i < foes_state.size(); i++)
+    if (check_person == foes_state.at(i)->self)
+      return screen_width - kPERSON_WIDTH - i * kPERSON_SPREAD;
+
+  for (uint32_t i = 0; i < friends_state.size(); i++)
+    if (check_person == friends_state.at(i)->self)
+      return i * kPERSON_SPREAD;
+
+  return -1;
+}
+
+//TODO: Comment
+int16_t BattleDisplay::getPersonY(Person* check_person)
+{
+  for (uint32_t i = 0; i < foes_state.size(); i++)
+    if (check_person == foes_state.at(i)->self)
+      return kFOES_OFFSET;
+
+  for (uint32_t i = 0; i < friends_state.size(); i++)
+    if (check_person == friends_state.at(i)->self)
+      return system_options->getScreenHeight() - kFRIENDS_OFFSET;
+
+  return -1;
+}
+
+
 /* Render the action skills */
 // TODO: Comment
 bool BattleDisplay::renderActionSkills(SDL_Renderer* renderer, BattleMenu* menu, 
@@ -906,28 +938,35 @@ bool BattleDisplay::renderActionSkills(SDL_Renderer* renderer, BattleMenu* menu,
 }
 
 //TODO: Comment
-bool BattleDisplay::renderActionText(SDL_Renderer* renderer, 
-    std::string action_name)
+bool BattleDisplay::renderActionText(std::string action_name)
 {
   bool success = true;
-  Text t(font_action);
+  RenderText* action_text = new RenderText();
   SDL_Color color = {0, 0, 0, 255};
 
+  action_text->color = color;
+  action_text->shadow_color = {kACTION_COLOR_R, 0, 0, 255};
+  action_text->font = font_action;
+  action_text->text = action_name;
+
+  std::cout << "ACTION TEXT: " << action_name << std::endl;
+  action_text->shadow = true;
+  action_text->remaining_time = 2000;
+ 
+  Text t(font_action);
   t.setText(renderer, action_name, color);
-  int16_t text_x = kACTION_TEXT_X - t.getWidth();
-  int16_t text_y = kACTION_CENTER - t.getHeight() / 2 - 8;
-  t.render(renderer, text_x + kACTION_TEXT_SHADOW, 
-           text_y + kACTION_TEXT_SHADOW);
-  
-  color = {kACTION_COLOR_R, 0, 0, 255};
-  t.setText(renderer, action_name, color);
-  t.render(renderer, text_x, text_y);
+
+  action_text->text_x = kACTION_TEXT_X - t.getWidth();
+  action_text->text_y = kACTION_CENTER - t.getHeight() / 2 - 8;
+  action_text->shadow_x = action_text->text_x + kACTION_TEXT_SHADOW;
+  action_text->shadow_y = action_text->text_y + kACTION_TEXT_SHADOW;
+  render_texts.push_back(action_text);
 
   return success;
 }
 
 //TODO: Comment
-bool BattleDisplay::renderDamageValue(SDL_Renderer* renderer, uint64_t amount)
+bool BattleDisplay::renderDamageValue(uint64_t amount)
 {
   auto success = true;
 
@@ -948,19 +987,18 @@ bool BattleDisplay::renderDamageValue(SDL_Renderer* renderer, uint64_t amount)
 
   if (success)
   {
-    /* Render text of the damage value */
-    Text t(font_action);
-    t.setText(renderer, std::to_string(amount), color);
- 
-    //TODO: - Determine the location of the actor to render the damage on [06-20-15]
-    int16_t text_x = kACTION_TEXT_X - t.getWidth();
-    int16_t text_y = kACTION_TEXT_X - t.getHeight() / 2 - 8;
-
-    t.render(renderer, text_x + kACTION_TEXT_SHADOW, text_y + 
-        kACTION_TEXT_SHADOW);
-    t.render(renderer, text_x, text_y);
-    color = {255, 255, 255, 125};
-    t.render(renderer, text_x, text_y);
+    RenderText* damage_text = new RenderText();
+     
+    //TODO - Build text to find center y points, etc.
+    /* Build parameters for the damage text, add to render text elements */
+    damage_text->color = color;
+    damage_text->font  = font_action;
+    damage_text->text  = std::to_string(amount);
+    damage_text->remaining_time = 2000;
+    damage_text->shadow = false;
+    damage_text->text_x = getPersonX(curr_event->targets.at(0));
+    damage_text->text_y = getPersonY(curr_event->targets.at(0));
+    render_texts.push_back(damage_text);
   }
 
   return success;
@@ -1151,17 +1189,13 @@ bool BattleDisplay::renderFoes(SDL_Renderer* renderer, uint16_t screen_width)
 {
   bool success = false;
 
-  /* Render the foes */
-  for(int8_t i = foes_state.size() - 1; i >= 0; i--)
+  for(const auto& foe_state : foes_state)
   {
-    if(foes_state[i]->tp != NULL)
+    if(foe_state->tp != nullptr)
     {
-      success = foes_state[i]->tp->render(renderer, screen_width - 
-                              kPERSON_WIDTH - i * kPERSON_SPREAD, kFOES_OFFSET);
-      
-      if(i == 1 && temp_sprite != NULL)
-        temp_sprite->render(renderer, 
-               screen_width - kPERSON_WIDTH - i * kPERSON_SPREAD, kFOES_OFFSET);
+      auto foe = foe_state->self;
+      success &= foe_state->tp->render(renderer, getPersonX(foe), 
+                                                 getPersonY(foe));
     }
   }
   
@@ -1334,12 +1368,13 @@ bool BattleDisplay::renderFriends(SDL_Renderer* renderer,
   bool success = true;
 
   /* Render the friends */
-  for(uint8_t i = 0; i < friends_state.size(); i++)
+  for(const auto &ally_state : friends_state)
   {
-    if(friends_state[i]->fp != NULL)
+    if(ally_state->fp != nullptr)
     {
-      success &= friends_state[i]->fp->render(renderer, i * kPERSON_SPREAD, 
-                                              screen_height - kFRIENDS_OFFSET);
+      auto ally = ally_state->self;
+      success &= ally_state->fp->render(renderer, getPersonX(ally), 
+                                                  getPersonY(ally));
     }
   }
   
@@ -1795,6 +1830,8 @@ bool BattleDisplay::isPaused()
 // TODO: Comment
 bool BattleDisplay::render(SDL_Renderer* renderer)
 {
+  this->renderer = renderer;
+
   uint16_t height = 0;
   bool success = true;
   uint16_t width = 0;
@@ -1878,17 +1915,31 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
       success &= renderFriendsInfo(renderer, height);
     }
 
-    /* TODO: Remove - testing */
-    if(friends_state[0] != NULL)
+    for (const auto& text_element : render_texts)
     {
-      if(friends_state[0]->action != NULL)
-      {
-        friends_state[0]->action->render(renderer, 
-                                   width - friends_state[1]->action->getWidth(), 
-                                   kACTION_CENTER - kACTION_Y);
-      }
-      renderActionText(renderer, "Burninating Da People!");
+    //TODO: Update fade in/fade out/velocity etc.
+    Text t(text_element->font);
+    t.setText(renderer, text_element->text, text_element->color);
+    t.render(renderer, text_element->text_x, text_element->text_y);
+
+    if (text_element->shadow)
+    {
+      t.setText(renderer, text_element->text, text_element->shadow_color);
+      t.render(renderer, text_element->shadow_x, text_element->shadow_y);
     }
+    }
+
+    /* TODO: Remove - testing */
+    // if(friends_state[0] != NULL)
+    // {
+    //   if(friends_state[0]->action != NULL)
+    //   {
+    //     friends_state[0]->action->render(renderer, 
+    //                                width - friends_state[1]->action->getWidth(), 
+    //                                kACTION_CENTER - kACTION_Y);
+    //   }
+    //   renderActionText(renderer, "Burninating Da People!");
+    // }
     
     // TODO: Render extra battle flair
 
@@ -2174,6 +2225,35 @@ bool BattleDisplay::update(int cycle_time)
     BattleMenu* menu = battle->getBattleMenu();
 
     /* Update the render text elements */
+    for (auto &text_element : render_texts)
+    {
+      if (text_element != nullptr && text_element->font != nullptr)
+      {
+        text_element->remaining_time -= cycle_time;
+      }
+    }
+
+    /* Clear render texts with negative time remaining */
+    std::vector<RenderText*> temp_render_texts;
+
+    for (auto &elm: render_texts)
+    {
+      if (elm->remaining_time < 0)
+      {
+        delete elm;
+        elm = nullptr;
+      }
+      else
+        temp_render_texts.push_back(elm);
+    }
+
+    render_texts = temp_render_texts;
+
+    // render_texts.erase(std::remove_if(begin(render_texts), end(render_texts), 
+    //     [&](const RenderText* render_text) -> bool 
+    //     { 
+    //       return render_text->remaining_time < 0;
+    //     }), end(render_texts));
 
     /*-------------------------------------------------------------------------
      * BEGIN state
@@ -2356,20 +2436,23 @@ bool BattleDisplay::update(int cycle_time)
      *-----------------------------------------------------------------------*/
     else if(rendering_state == TurnState::PROCESS_ACTIONS)
     {
+      std::cout << "Rendering State:: PROCESS ACTIONS" << std::endl;
       rendering_state = battle_state;
-      EventBuffer* event_buffer = battle->getEventBuffer();
-      auto done = false;
+      auto event_buffer = battle->getEventBuffer();
+      auto found = false;
 
       /* If ready to render flag is true, there are events which need to be 
        * rendered on the Event Buffer */
       if(battle->getBattleFlag(CombatState::READY_TO_RENDER))
-        done |= event_buffer->setRenderIndex();
+        found |= event_buffer->setRenderIndex();
 
       /* If there was not an unrendered index to set for the EventBuffer, the
        * rendering of processed actions ins complete -> set rendering complete
        * flag for Battle to continue processing or set next turn state */
-      if (done)
+      if (!found)
       {
+        std::cout << "! --- Setting rendering complete ---- !" << std::endl;
+        battle->setBattleFlag(CombatState::READY_TO_RENDER, false);
         battle->setBattleFlag(CombatState::RENDERING_COMPLETE, true);
       }
       /* If there was an unrendered index in the EventBuffer, grab the first
@@ -2378,9 +2461,22 @@ bool BattleDisplay::update(int cycle_time)
       {
         curr_event = event_buffer->getEvent(event_buffer->getIndex());
 
-        if (curr_event != nullptr)
+        if(curr_event != nullptr)
         {
+          std::cout << "Curr Event Rendering: " << Helpers::eventToStr(curr_event->type) << std::endl;
+          //TODO - CHeck skill for nullptr, remove renderers ?
+          if (curr_event->type == EventType::SKILL_USE)
+          {
+            renderActionText(curr_event->skill_use->getName());
+          }
+          else if (curr_event->type == EventType::STANDARD_DAMAGE)
+          {
+            auto damage = curr_event->amount;
+            renderDamageValue(damage);
+          }
 
+          // TODO set event to rendered
+          event_buffer->setRendered(event_buffer->getIndex());
         }
       }
 

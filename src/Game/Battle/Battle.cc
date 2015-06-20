@@ -4109,6 +4109,40 @@ void Battle::setTurnState(const TurnState &new_turn_state)
  *============================================================================*/
 
 /*
+ * Description: Evaluates and returns whether a given Person ptr is an ally.
+ *
+ * Inputs: Person* - pointer to Person to check allied-ness for
+ * Output: bool - true if the given Person pointer is a member of allies party
+ */
+bool Battle::isAlly(Person* check_person)
+{
+  auto allies = friends->getMembers();
+
+  for (const auto& elm : allies)
+    if (elm == check_person)
+      return true;
+
+  return false;
+}
+
+/*
+ * Description: Evaluates and returns whether a given Person ptr is a foe.
+ *
+ * Inputs: Person* - pointer to Person to check foe-ness for
+ * Output: bool - true if the given Person pointer is a member of foes party
+ */
+bool Battle::isFoe(Person* check_person)
+{
+  auto enemies = foes->getMembers();
+
+  for (const auto& elm : enemies)
+    if (elm == check_person)
+      return true;
+
+  return false;
+}
+
+/*
  * Description: Process key down events for user selection of actions/outcome
  *              of battle.
  *
@@ -4138,14 +4172,14 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
       if (turn_state == TurnState::PROCESS_ACTIONS || 
           turn_state == TurnState::UPKEEP)
       {
-        event_buffer->setRenderIndex();
-        event_buffer->setRendered(event_buffer->getIndex());
+        //event_buffer->setRenderIndex();
+        //event_buffer->setRendered(event_buffer->getIndex());
 
-        while (event_buffer->setNextIndex())
-          event_buffer->setRendered(event_buffer->getIndex());
+        //while (event_buffer->setNextIndex())
+        //  event_buffer->setRendered(event_buffer->getIndex());
 
-        setBattleFlag(CombatState::READY_TO_RENDER, false);
-        setBattleFlag(CombatState::RENDERING_COMPLETE, true);
+        //setBattleFlag(CombatState::READY_TO_RENDER, true);
+        //setBattleFlag(CombatState::RENDERING_COMPLETE, true);
 
         printProcessingState();
       }

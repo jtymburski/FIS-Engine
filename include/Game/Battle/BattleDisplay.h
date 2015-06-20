@@ -22,6 +22,9 @@
 #include "Sprite.h"
 #include "Text.h"
 
+using std::begin;
+using std::end;
+
 /*
  * Structure which handles the information required in battle for each given
  * person. Used for controlling state, what's happening, etc.
@@ -43,10 +46,12 @@ struct RenderText
 {
   SDL_Color color;
   SDL_Color shadow_color;
-
+  TTF_Font* font;
+  std::string text;
+  bool shadow;
   int32_t remaining_time;
-  int16_t x;
-  int16_t y;
+  int16_t text_x;
+  int16_t text_y;
   int16_t shadow_x;
   int16_t shadow_y;
   int16_t x_velocity;
@@ -127,12 +132,14 @@ private:
   /* Vector of renderable text elements */
   std::vector<RenderText*> render_texts;
 
+  SDL_Renderer* renderer;
+
   /* Rendering turn state */
   TurnState rendering_state;
   
   /* Action scope frames */
   std::vector<Frame> scopes;
-  
+
   /* Show info regardless of state */
   bool show_info;
 
@@ -271,15 +278,19 @@ private:
   /* Returns modified index */
   uint32_t getIndex(int32_t index);
 
+  /* Find the X/Y coordinates of person rendering */
+  int16_t getPersonX(Person* check_person);
+  int16_t getPersonY(Person* check_person);
+
   /* Render the action skills */
   bool renderActionSkills(SDL_Renderer* renderer, BattleMenu* menu, uint16_t x,
       uint16_t y, uint16_t width, uint16_t height);
 
   /* Render the action text */
-  bool renderActionText(SDL_Renderer* renderer, std::string action_name);
+  bool renderActionText(std::string action_name);
 
   /* Render the damage value */
-  bool renderDamageValue(SDL_Renderer* renderer, uint64_t amount);
+  bool renderDamageValue(uint64_t amount);
 
   /* Render the action categories */
   bool renderActionTypes(SDL_Renderer* renderer, BattleMenu* menu, uint16_t x, 
