@@ -1334,15 +1334,6 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
   /* If the map load was successful, proceed to clean-up */
   if(success)
   {
-    if(geography[map_index].size() > 0)
-    {
-      viewport.setMapSize(geography[map_index].size(), 
-                          geography[map_index][0].size());
-
-      if(player != NULL)
-        viewport.lockOn(player);
-    }
-    
     /* Load the item menu sprites - TODO: In file? */
     item_menu.loadImageBackend("sprites/Overlay/item_store_left.png", 
                                "sprites/Overlay/item_store_right.png", 
@@ -1432,6 +1423,18 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
         else
           items[i]->unsetFrames(true);
       }
+    }
+    
+    /* Modify the map index */
+    if(player != NULL)
+      map_index = player->getStartingSection();
+    if(geography[map_index].size() > 0)
+    {
+      viewport.setMapSize(geography[map_index].size(), 
+                          geography[map_index][0].size());
+
+      if(player != NULL)
+        viewport.lockOn(player);
     }
   }
  
