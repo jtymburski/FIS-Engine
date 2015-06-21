@@ -747,6 +747,7 @@ bool MapNPC::setBase(MapThing* base)
       this->base = base;
       base_category = ThingBase::NPC;
       setMatrix(getState(getSurface(), getDirection()));
+      setSpeed(base->getSpeed());
       if(node_head == NULL)
       {
         node_head = static_cast<MapNPC*>(base)->node_head;

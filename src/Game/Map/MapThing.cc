@@ -1326,7 +1326,11 @@ bool MapThing::getPassabilityExiting(Tile* frame_tile, Direction dir)
 uint16_t MapThing::getSpeed() const
 {
   if(base != NULL)
+  {
+    if(speed != base->getSpeed())
+      return speed;
     return base->getSpeed();
+  }
   return speed;
 }
  
@@ -1770,6 +1774,7 @@ bool MapThing::setBase(MapThing* base)
     {
       this->base = base;
       base_category = ThingBase::THING;
+      //setSpeed(base->getSpeed());
       success = true;
     }
     else if(base == NULL)

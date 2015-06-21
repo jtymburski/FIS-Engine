@@ -802,6 +802,7 @@ bool MapPerson::setBase(MapThing* base)
       this->base = base;
       base_category = ThingBase::PERSON;
       setMatrix(getState(surface, direction));
+      setSpeed(base->getSpeed());
       success = true;
     }
     else if(base == NULL)
