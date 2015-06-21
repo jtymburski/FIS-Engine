@@ -72,6 +72,8 @@ public:
   ~BattleDisplay();
 
 private:
+  int32_t processing_delay;
+
   // TODO: Delete
   uint16_t offset;
   uint16_t offset_2;
@@ -290,7 +292,10 @@ private:
   bool renderActionText(std::string action_name);
 
   /* Render the damage value */
-  bool renderDamageValue(uint64_t amount);
+  bool renderDamageValue(uint64_t amount, bool miss = false);
+
+  /* Render Skill fizzling text */
+  bool renderFizzleText();
 
   /* Render the action categories */
   bool renderActionTypes(SDL_Renderer* renderer, BattleMenu* menu, uint16_t x, 
@@ -306,14 +311,14 @@ private:
                                          uint16_t screen_height);
 
   /* Renders the foes */
-  bool renderFoes(SDL_Renderer* renderer, uint16_t screen_width);
+  bool renderFoes(SDL_Renderer* renderer);
   bool renderFoesInfo(SDL_Renderer* renderer, uint16_t screen_width);
 
   /* Renders the friends */
   bool renderFriendInfo(SDL_Renderer* renderer, PersonState* state,
                         uint16_t screen_height, uint16_t x, uint16_t y,
                         bool below = false);
-  bool renderFriends(SDL_Renderer* renderer, uint16_t screen_height);
+  bool renderFriends(SDL_Renderer* renderer);
   bool renderFriendsInfo(SDL_Renderer* renderer, uint16_t screen_height);
 
   /* Render menu at bottom of screen - for skill selecting */
@@ -445,7 +450,7 @@ public:
 
   /* Unsets the render text elements */
   void unsetRenderText(uint32_t index);
-  void unsetRenderTexts();
+  void unsetRenderTexts(bool only_timed_out = false);
 
   /* Updates the battle display */
   bool update(int cycle_time);

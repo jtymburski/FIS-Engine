@@ -113,6 +113,7 @@ const SDL_Color BattleDisplay::kBURN_DMG_COLOR = {172,    0,   0, 255};
 BattleDisplay::BattleDisplay(Options* running_config)
 {
   /* Blank out variables */
+  processing_delay = 0;
   animation_delay = 0;
   background = NULL;
   bar_offset = 0;
@@ -948,13 +949,11 @@ bool BattleDisplay::renderActionText(std::string action_name)
   action_text->shadow_color = {kACTION_COLOR_R, 0, 0, 255};
   action_text->font = font_action;
   action_text->text = action_name;
-
-  std::cout << "ACTION TEXT: " << action_name << std::endl;
   action_text->shadow = true;
-  action_text->remaining_time = 2000;
+  action_text->remaining_time = 1000;
  
   Text t(font_action);
-  t.setText(renderer, action_name, color);
+  t.setText(renderer, action_text->text, color);
 
   action_text->text_x = kACTION_TEXT_X - t.getWidth();
   action_text->text_y = kACTION_CENTER - t.getHeight() / 2 - 8;
@@ -966,7 +965,33 @@ bool BattleDisplay::renderActionText(std::string action_name)
 }
 
 //TODO: Comment
-bool BattleDisplay::renderDamageValue(uint64_t amount)
+bool BattleDisplay::renderFizzleText()
+{
+  bool success = true;
+  RenderText* action_text = new RenderText();
+  SDL_Color color = {125, 125, 0, 255};
+
+  action_text->color = color;
+  action_text->shadow_color = {80, 125, 0, 255};
+  action_text->font = font_action;
+  action_text->text = "Fizzle!";
+  action_text->shadow = true;
+  action_text->remaining_time = 2000;
+
+  Text t(font_action);
+  t.setText(renderer, action_text->text, color);
+
+  action_text->text_x = kACTION_TEXT_X - t.getWidth();
+  action_text->text_y = kACTION_CENTER - t.getHeight() / 2 - 8;
+  action_text->shadow_x = action_text->text_x + kACTION_TEXT_SHADOW;
+  action_text->shadow_y = action_text->text_y + kACTION_TEXT_SHADOW;
+  render_texts.push_back(action_text);
+
+  return success;
+}
+
+//TODO: Comment
+bool BattleDisplay::renderDamageValue(uint64_t amount, bool miss)
 {
   auto success = true;
 
@@ -992,9 +1017,14 @@ bool BattleDisplay::renderDamageValue(uint64_t amount)
     //TODO - Build text to find center y points, etc.
     /* Build parameters for the damage text, add to render text elements */
     damage_text->color = color;
-    damage_text->font  = font_action;
-    damage_text->text  = std::to_string(amount);
-    damage_text->remaining_time = 2000;
+    damage_text->font  = font_subheader;
+
+    if (miss)
+      damage_text->text = "Miss";
+    else 
+      damage_text->text  = std::to_string(amount);
+
+    damage_text->remaining_time = 700;
     damage_text->shadow = false;
     damage_text->text_x = getPersonX(curr_event->targets.at(0));
     damage_text->text_y = getPersonY(curr_event->targets.at(0));
@@ -1185,7 +1215,7 @@ bool BattleDisplay::renderBar(SDL_Renderer* renderer, uint16_t screen_width,
 
 /* Renders the foes */
 // TODO: Comment
-bool BattleDisplay::renderFoes(SDL_Renderer* renderer, uint16_t screen_width)
+bool BattleDisplay::renderFoes(SDL_Renderer* renderer)
 {
   bool success = false;
 
@@ -1362,8 +1392,7 @@ bool BattleDisplay::renderFriendInfo(SDL_Renderer* renderer, PersonState* state,
 
 /* Renders the friends */
 // TODO: Comment
-bool BattleDisplay::renderFriends(SDL_Renderer* renderer, 
-                                  uint16_t screen_height)
+bool BattleDisplay::renderFriends(SDL_Renderer* renderer)
 {
   bool success = true;
 
@@ -1854,7 +1883,7 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
       success &= overlays[i]->render(renderer, 0, 0, width, height);
 
     /* Render enemies */
-    success &= renderFoes(renderer, width);
+    success &= renderFoes(renderer);
 
     /* Render midlays (between enemies and players */
     for(uint8_t i = 0; i < midlays.size(); i++)
@@ -1877,7 +1906,7 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
     }
 
     /* Render player team */
-    success &= renderFriends(renderer, height);
+    success &= renderFriends(renderer);
     
     /* Render enemy information */
     success &= renderFoesInfo(renderer, width);
@@ -2185,6 +2214,7 @@ void BattleDisplay::unsetOverlays()
   overlays.clear();
 }
 
+//TODO: Comment
 void BattleDisplay::unsetRenderText(uint32_t index)
 {
   if(render_texts.size() > index && render_texts[index] != nullptr)
@@ -2194,10 +2224,12 @@ void BattleDisplay::unsetRenderText(uint32_t index)
   }
 }
 
-void BattleDisplay::unsetRenderTexts()
+//TODO: Comment
+void BattleDisplay::unsetRenderTexts(bool only_timed_out)
 {
   for(uint32_t i = 0; i < render_texts.size(); i++)
-    unsetRenderText(i);
+      unsetRenderText(i);
+  
   render_texts.clear();
 }
 
@@ -2206,54 +2238,45 @@ void BattleDisplay::unsetRenderTexts()
 bool BattleDisplay::update(int cycle_time)
 {
   /* Only proceed if there is a set battle */
-  if(battle != NULL && rendering_state != TurnState::DESTRUCT)
+  if (battle != nullptr && rendering_state != TurnState::DESTRUCT)
   {
     /* Update the background */
-    if(background != NULL)
+    if (background != nullptr)
       background->update(cycle_time);
 
     /* Update the midlays */
-    for(uint8_t i = 0; i < midlays.size(); i++)
-      midlays[i]->update(cycle_time);
+    for (auto& midlay : midlays)
+      midlay->update(cycle_time);
 
-    /* Update the overlays */
-    for(uint8_t i = 0; i < overlays.size(); i++)
-      overlays[i]->update(cycle_time);
+    for (auto& overlay : overlays)
+      overlay->update(cycle_time);
 
     /* Update the turn state - TODO: Add delays and pretty animations */
-    TurnState battle_state = battle->getTurnState();
-    BattleMenu* menu = battle->getBattleMenu();
+    auto battle_state = battle->getTurnState();
+    auto menu         = battle->getBattleMenu();
+    auto event_buffer = battle->getEventBuffer();
 
     /* Update the render text elements */
     for (auto &text_element : render_texts)
-    {
       if (text_element != nullptr && text_element->font != nullptr)
-      {
         text_element->remaining_time -= cycle_time;
-      }
-    }
 
     /* Clear render texts with negative time remaining */
     std::vector<RenderText*> temp_render_texts;
-
-    for (auto &elm: render_texts)
+ 
+    for (auto& render_text : render_texts)
     {
-      if (elm->remaining_time < 0)
-      {
-        delete elm;
-        elm = nullptr;
-      }
+      if (render_text->remaining_time > 0)
+        temp_render_texts.push_back(render_text);
       else
-        temp_render_texts.push_back(elm);
+      {
+        delete render_text;
+        render_text = nullptr;
+      }
     }
-
+ 
+    render_texts.clear();
     render_texts = temp_render_texts;
-
-    // render_texts.erase(std::remove_if(begin(render_texts), end(render_texts), 
-    //     [&](const RenderText* render_text) -> bool 
-    //     { 
-    //       return render_text->remaining_time < 0;
-    //     }), end(render_texts));
 
     /*-------------------------------------------------------------------------
      * BEGIN state
@@ -2405,6 +2428,7 @@ bool BattleDisplay::update(int cycle_time)
 
         bar_offset = 0;
       }
+
       rendering_state = battle_state;
       index_layer = menu->getLayerIndex();
     }
@@ -2436,47 +2460,179 @@ bool BattleDisplay::update(int cycle_time)
      *-----------------------------------------------------------------------*/
     else if(rendering_state == TurnState::PROCESS_ACTIONS)
     {
+      if (rendering_state != battle_state)
+      {
+        std::cout << "Initial processing delay!" << std::endl;
+        processing_delay = 1000;
+      }
+
       std::cout << "Rendering State:: PROCESS ACTIONS" << std::endl;
-      rendering_state = battle_state;
-      auto event_buffer = battle->getEventBuffer();
-      auto found = false;
+      auto rendering = false;
+      auto delay     = false;
+
+      if (processing_delay > 0)
+      {
+        std::cout << "Decrementing processing delay" << std::endl;
+        processing_delay -= cycle_time;
+        delay = true;
+
+        if (processing_delay <= 0)
+        {
+          // TODO set event to rendered
+          std::cout << "Setting index: " << event_buffer->getIndex() 
+                    << " to be rendered!" << std::endl;
+          event_buffer->setRendered(event_buffer->getIndex());
+
+          auto more_rendering = true;
+          more_rendering &= event_buffer->setRenderIndex();
+
+          /* If there was not an unrendered index to set for the EventBuffer,
+           * the rendering of processed actions ins complete -> set rendering 
+           * complete flag for Battle to continue processing or set next turn 
+           * state */
+          if (!more_rendering)
+          {
+            std::cout << "! --- Setting rendering complete ---- !" << std::endl;
+            battle->setBattleFlag(CombatState::RENDERING_COMPLETE, true);
+          }
+        }
+      }
 
       /* If ready to render flag is true, there are events which need to be 
        * rendered on the Event Buffer */
-      if(battle->getBattleFlag(CombatState::READY_TO_RENDER))
-        found |= event_buffer->setRenderIndex();
-
-      /* If there was not an unrendered index to set for the EventBuffer, the
-       * rendering of processed actions ins complete -> set rendering complete
-       * flag for Battle to continue processing or set next turn state */
-      if (!found)
+      if (battle->getBattleFlag(CombatState::READY_TO_RENDER) &&
+          !battle->getBattleFlag(CombatState::RENDERING_COMPLETE) &&
+          !delay)
       {
-        std::cout << "! --- Setting rendering complete ---- !" << std::endl;
-        battle->setBattleFlag(CombatState::READY_TO_RENDER, false);
-        battle->setBattleFlag(CombatState::RENDERING_COMPLETE, true);
+        std::cout << "Setting rendered index" << std::endl;
+        rendering |= event_buffer->setRenderIndex();
       }
+
       /* If there was an unrendered index in the EventBuffer, grab the first
        * unrendered index and continue or finish to do work on it */
-      else
+      if (rendering)
       {
         curr_event = event_buffer->getEvent(event_buffer->getIndex());
 
+        std::cout << "Installing processing delay" << std::endl;
+
         if(curr_event != nullptr)
         {
-          std::cout << "Curr Event Rendering: " << Helpers::eventToStr(curr_event->type) << std::endl;
-          //TODO - CHeck skill for nullptr, remove renderers ?
+          //TODO - Check skill for nullptr, remove renderers ?
           if (curr_event->type == EventType::SKILL_USE)
           {
             renderActionText(curr_event->skill_use->getName());
+            processing_delay = 1100;
           }
-          else if (curr_event->type == EventType::STANDARD_DAMAGE)
+          else if (curr_event->type == EventType::SKILL_USE_FIZZLE)
           {
-            auto damage = curr_event->amount;
-            renderDamageValue(damage);
+            //TODO: Fizzling text? [06-21-15]
+            renderFizzleText();
+          }
+          else if (curr_event->type == EventType::SKILL_COOLDOWN)
+          {
+            //TODO: Skill cooldown stuff? [06-21-15]
+            renderActionText("Skill Cooldown!");
+                       processing_delay = 1100;
+          }
+          else if (curr_event->type == EventType::ATTEMPT_RUN)
+          {
+            //TODO: Running text? [06-21-15]
+            renderActionText("Attempting to Run!");
+                       processing_delay = 1100;
+          }
+          else if (curr_event->type == EventType::SUCCEED_RUN)
+          {
+            renderActionText("Running!");
+                       processing_delay = 1100;
+          }
+          else if (curr_event->type == EventType::FAIL_RUN)
+          {
+            renderActionText("Failed to Run!");
+                       processing_delay = 1100;
+          }
+          else if (curr_event->type == EventType::MISS_TURN)
+          {
+            renderActionText("Missing turn!");
+                       processing_delay = 1100;
+          }
+          else if (curr_event->type == EventType::PASS)
+          {
+            renderActionText("Pass!");
+            processing_delay = 1100;
+          }
+          else if (curr_event->type == EventType::SKILL_MISS)
+          {
+            renderActionText("Miss!");
+            processing_delay = 1100;
+          }
+          else if (curr_event->type == EventType::ACTION_MISS)
+          {
+            renderDamageValue(0, true);
+            processing_delay = 1100;
+          }
+          else if (curr_event->type == EventType::BLIND_MISS)
+          {
+            //TODO
+          }
+          else if (curr_event->type == EventType::DREAMSNARE_MISS)
+          {
+            //TODO
+          }
+          else if (curr_event->type == EventType::FIZZLE)
+          {
+            //TODO
+          }
+          else if (curr_event->type == EventType::METABOLIC_KILL)
+          {
+            //TODO
+          }
+          else if (curr_event->type == EventType::DEATH_COUNTDOWN)
+          {
+            //TODO
+          }
+          else if (curr_event->type == EventType::BOND)
+          {
+            //TODO
+          }
+          else if (curr_event->type == EventType::BONDING)
+          {
+            //TODO
+          }
+          else if (curr_event->type == EventType::BEGIN_DEFEND)
+          {
+            renderActionText("Defending!");
+                       processing_delay = 1100;
+          }
+          else if (curr_event->type == EventType::PERSIST_DEFEND)
+          {
+            renderActionText("Still Defending!");
+                       processing_delay = 1100;
+          }
+          else if (curr_event->type == EventType::BREAK_DEFEND)
+          {
+            renderActionText("Not Defending!");
+                       processing_delay = 1100;
+          }
+          else if (curr_event->type == EventType::BEGIN_GUARD)
+          {
+
           }
 
-          // TODO set event to rendered
-          event_buffer->setRendered(event_buffer->getIndex());
+          else if (curr_event->type == EventType::STANDARD_DAMAGE ||
+                   curr_event->type == EventType::CRITICAL_DAMAGE ||
+                   curr_event->type == EventType::POISON_DAMAGE   ||
+                   curr_event->type == EventType::BURN_DAMAGE     ||
+                   curr_event->type == EventType::HITBACK_DAMAGE  ||
+                   curr_event->type == EventType::METABOLIC_DAMAGE)
+          {
+            renderDamageValue(curr_event->amount, false);
+            processing_delay = 100;
+          }
+          else
+          {
+            processing_delay = 1000;
+          }
         }
       }
 
@@ -2491,6 +2647,8 @@ bool BattleDisplay::update(int cycle_time)
             friends_state[i]->fp->setOpacity(255);
         }
       }
+
+      rendering_state = battle_state;
     }
     /*-------------------------------------------------------------------------
      * CLEAN_UP state

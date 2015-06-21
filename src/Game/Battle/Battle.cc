@@ -4181,7 +4181,7 @@ bool Battle::keyDownEvent(SDL_KeyboardEvent event)
         //setBattleFlag(CombatState::READY_TO_RENDER, true);
         //setBattleFlag(CombatState::RENDERING_COMPLETE, true);
 
-        printProcessingState();
+        event_buffer->print(false);
       }
     }
     else if (event.keysym.sym == SDLK_PAGEDOWN)
