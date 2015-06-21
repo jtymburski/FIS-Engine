@@ -48,18 +48,18 @@ struct RenderText
   SDL_Color shadow_color;
   TTF_Font* font;
   std::string text;
-  bool shadow;
   int32_t remaining_time;
+  int32_t elapsed_time;
   int16_t text_x;
   int16_t text_y;
   int16_t shadow_x;
   int16_t shadow_y;
-  int16_t x_velocity;
-  int16_t y_velocity;
+  int16_t velocity_x;
+  int16_t velocity_y;
   int32_t fade_in_time;
-  int16_t fade_in_speed;
   int32_t fade_out_time;
-  int16_t fade_out_speed;
+  int32_t curr_alpha;
+  int32_t curr_shadow_alpha;
 };
 
 class BattleDisplay
@@ -110,6 +110,7 @@ private:
   TTF_Font* font_action;
   TTF_Font* font_header;
   TTF_Font* font_subheader;
+  TTF_Font* font_damage;
 
   /* Rendering frames - in bar */
   Frame frame_percent;
@@ -454,6 +455,7 @@ public:
 
   /* Updates the battle display */
   bool update(int cycle_time);
+  bool updateTextElements(int cycle_time);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS

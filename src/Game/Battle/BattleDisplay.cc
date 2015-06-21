@@ -442,17 +442,22 @@ bool BattleDisplay::createFonts()
                                              system_options->getFont(), 
                                              16, TTF_STYLE_BOLD);
     TTF_Font* subheader_font = Text::createFont(system_options->getBasePath() + 
-                                                system_options->getFont(), 13,
-                                                TTF_STYLE_BOLD);
+                                                system_options->getFont(), 
+                                                13, TTF_STYLE_BOLD);
+    TTF_Font* damage_font = Text::createFont(system_options->getBasePath() +
+                                              system_options->getFont(1),
+                                              55, TTF_STYLE_NORMAL);
 
     /* If successful, insert the new fonts. Otherwise, delete if any were
      * created */
-    if(action_font != NULL && header_font != NULL && subheader_font != NULL)
+    if (action_font != nullptr && header_font != nullptr &&
+        subheader_font != nullptr && damage_font != nullptr)
     {
       deleteFonts();
-      font_action = action_font;
-      font_header = header_font;
+      font_action    = action_font;
+      font_header    = header_font;
       font_subheader = subheader_font;
+      font_damage    = damage_font;
       success = true;
     }
     else
@@ -465,6 +470,9 @@ bool BattleDisplay::createFonts()
 
       TTF_CloseFont(subheader_font);
       subheader_font = NULL;
+
+      TTF_CloseFont(damage_font);
+      damage_font = nullptr;
     }
   }
 
@@ -739,13 +747,16 @@ bool BattleDisplay::createSkills(SDL_Renderer* renderer, BattleMenu* menu,
 void BattleDisplay::deleteFonts()
 {
   TTF_CloseFont(font_action);
-  font_action = NULL;
+  font_action = nullptr;
 
   TTF_CloseFont(font_header);
-  font_header = NULL;
+  font_header = nullptr;
 
   TTF_CloseFont(font_subheader);
-  font_subheader = NULL;
+  font_subheader = nullptr;
+
+  TTF_CloseFont(font_damage);
+  font_damage = nullptr;
 }
 
 /* Deletes the rendering skills, for the menu */
@@ -943,13 +954,12 @@ bool BattleDisplay::renderActionText(std::string action_name)
 {
   bool success = true;
   RenderText* action_text = new RenderText();
-  SDL_Color color = {0, 0, 0, 255};
+  SDL_Color color = {255, 0, 0, 255};
 
   action_text->color = color;
   action_text->shadow_color = {kACTION_COLOR_R, 0, 0, 255};
   action_text->font = font_action;
   action_text->text = action_name;
-  action_text->shadow = true;
   action_text->remaining_time = 1000;
  
   Text t(font_action);
@@ -975,7 +985,6 @@ bool BattleDisplay::renderFizzleText()
   action_text->shadow_color = {80, 125, 0, 255};
   action_text->font = font_action;
   action_text->text = "Fizzle!";
-  action_text->shadow = true;
   action_text->remaining_time = 2000;
 
   Text t(font_action);
@@ -1013,21 +1022,27 @@ bool BattleDisplay::renderDamageValue(uint64_t amount, bool miss)
   if (success)
   {
     RenderText* damage_text = new RenderText();
-     
-    //TODO - Build text to find center y points, etc.
+
     /* Build parameters for the damage text, add to render text elements */
     damage_text->color = color;
-    damage_text->font  = font_subheader;
+    damage_text->font  = font_damage;
 
     if (miss)
       damage_text->text = "Miss";
     else 
       damage_text->text  = std::to_string(amount);
 
+    Text t(font_damage);
+    t.setText(renderer, damage_text->text, color);
+    
     damage_text->remaining_time = 700;
-    damage_text->shadow = false;
-    damage_text->text_x = getPersonX(curr_event->targets.at(0));
-    damage_text->text_y = getPersonY(curr_event->targets.at(0));
+    damage_text->text_x = getPersonX(curr_event->targets.at(0)) + kPERSON_WIDTH / 2 -  t.getWidth() / 2;
+    damage_text->text_y = getPersonY(curr_event->targets.at(0)) - t.getHeight() / 2 + 80 ;
+    damage_text->shadow_x = damage_text->text_x + kACTION_TEXT_SHADOW;
+    damage_text->shadow_y = damage_text->text_y + kACTION_TEXT_SHADOW;
+    damage_text->velocity_x = 2;
+    damage_text->velocity_y = -5;
+
     render_texts.push_back(damage_text);
   }
 
@@ -1946,30 +1961,20 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
 
     for (const auto& text_element : render_texts)
     {
-    //TODO: Update fade in/fade out/velocity etc.
-    Text t(text_element->font);
-    t.setText(renderer, text_element->text, text_element->color);
-    t.render(renderer, text_element->text_x, text_element->text_y);
+      //TODO: Update fade in/fade out/velocity etc.
+      Text t(text_element->font);
+      t.setText(renderer, text_element->text, text_element->color);
+      // t.setAlpha(text_element->curr_alpha);
+      t.render(renderer, text_element->text_x, text_element->text_y);
 
-    if (text_element->shadow)
-    {
-      t.setText(renderer, text_element->text, text_element->shadow_color);
-      t.render(renderer, text_element->shadow_x, text_element->shadow_y);
-    }
+      if (text_element->shadow_x != 0 || text_element->shadow_y != 0)
+      {
+        t.setText(renderer, text_element->text, text_element->shadow_color);
+        t.render(renderer, text_element->shadow_x, text_element->shadow_y);
+        // t.setAlpha(text_element->curr_shadow_alpha);
+      }
     }
 
-    /* TODO: Remove - testing */
-    // if(friends_state[0] != NULL)
-    // {
-    //   if(friends_state[0]->action != NULL)
-    //   {
-    //     friends_state[0]->action->render(renderer, 
-    //                                width - friends_state[1]->action->getWidth(), 
-    //                                kACTION_CENTER - kACTION_Y);
-    //   }
-    //   renderActionText(renderer, "Burninating Da People!");
-    // }
-    
     // TODO: Render extra battle flair
 
     return success;
@@ -2257,9 +2262,7 @@ bool BattleDisplay::update(int cycle_time)
     auto event_buffer = battle->getEventBuffer();
 
     /* Update the render text elements */
-    for (auto &text_element : render_texts)
-      if (text_element != nullptr && text_element->font != nullptr)
-        text_element->remaining_time -= cycle_time;
+    updateTextElements(cycle_time);
 
     /* Clear render texts with negative time remaining */
     std::vector<RenderText*> temp_render_texts;
@@ -2710,6 +2713,46 @@ bool BattleDisplay::update(int cycle_time)
     //midlays.front()->setOpacity(midlays.front()->getOpacity() - 1);
   }
   temp_sprite->update(cycle_time);
+
+  return true;
+}
+
+//TODO: Comment
+bool BattleDisplay::updateTextElements(int32_t cycle_time)
+{
+  for (auto &element : render_texts)
+  {
+    if (element != nullptr && element->font != nullptr)
+    {
+      /* Update the time for the text element */
+      element->remaining_time -= cycle_time;
+      element->elapsed_time   += cycle_time;
+    
+      /* Update the (X,Y) based on velocity */
+      element->text_x   += element->velocity_x;
+      element->text_y   += element->velocity_y;
+      element->shadow_x += element->shadow_x;
+      element->shadow_y += element->shadow_y;
+    
+      /* Calculate opacity based on fade in/out time */
+      // if (element->elapsed_time > element->fade_in_time && 
+      //     element->remaining_time < element->fade_out_time)
+      // {
+      //   auto time_per_alpha = element->fade_out_time / element->color.a;
+      //   element->curr_alpha = element->remaining_time / time_per_alpha;
+      // }
+      // else if (element->elapsed_time > element->fade_in_time)
+      // {
+      //   element->curr_alpha = element->color.a;
+      // }
+      // else
+      // {
+      //   auto time_per_alpha = element->fade_in_time / element->color.a;
+      //   element->curr_alpha = 255 - element->remaining_time / time_per_alpha; 
+      // }
+
+    }
+  }
 
   return true;
 }
