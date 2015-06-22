@@ -14,7 +14,7 @@
 
 /* Constant Implementation - see header file for descriptions */
 const uint8_t Tile::kLOWER_COUNT_MAX = 5;
-const uint8_t Tile::kMAX_ITEMS = 20;
+const uint8_t Tile::kMAX_ITEMS = 10;
 const uint8_t Tile::kUPPER_COUNT_MAX = 5;
 
 /*============================================================================
