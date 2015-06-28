@@ -124,6 +124,7 @@ BattleDisplay::BattleDisplay(Options* running_config)
   font_action = nullptr;
   font_header = nullptr;
   font_subheader = nullptr;
+  font_damage = nullptr;
   index_actions = 0;
   index_layer = 0;
   index_person = 0;
@@ -451,7 +452,7 @@ bool BattleDisplay::createFonts()
     /* If successful, insert the new fonts. Otherwise, delete if any were
      * created */
     if (action_font != nullptr && header_font != nullptr &&
-        subheader_font != nullptr && damage_font != nullptr)
+        subheader_font != nullptr)// && damage_font != nullptr)
     {
       deleteFonts();
       font_action    = action_font;
