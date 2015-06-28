@@ -37,6 +37,8 @@ RenderElement::RenderElement()
     , elapsed_time{0}
     , acceleration_x{0}
     , acceleration_y{0}
+    , delta_x{0}
+    , delta_y{0}
     , x{0}
     , y{0}
     , shadow_x{0}
@@ -87,7 +89,7 @@ bool RenderElement::hasShadow()
  */
 bool RenderElement::isTimedOut()
 {
-  return (remaining_time > 0);
+  return (remaining_time < 0);
 }
 
 /*
@@ -102,26 +104,45 @@ bool RenderElement::update(int cycle_time)
   remaining_time -= cycle_time;
   elapsed_time   += cycle_time;
 
+  std::cout << "Remaining Time: " << remaining_time << std::endl;
+
   /* Before updating coordinates, update the pixels/s from the pixels/s/s */
   velocity_x += acceleration_x;
   velocity_y += acceleration_y;
 
   /* Then, update the (X, Y) coordinates for the text and the shadow */
-  auto delta_x = 0;
-  auto delta_y = 0;
+  auto temp_delta_x = 0.0;
+  auto temp_delta_y = 0.0;
 
-  delta_x = static_cast<uint16_t>(std::floor(static_cast<float>(velocity_x) /
-                                   100.0f));
-  delta_y = static_cast<uint16_t>(std::floor(static_cast<float>(velocity_y) / 
-                                   100.0f));
+  temp_delta_x = static_cast<float>(velocity_x) / 100.0f;
+  temp_delta_y = static_cast<float>(velocity_y) / 100.0f;
 
-  x += delta_x;
-  y += delta_y;
-
-  if (shadow) 
+  if (delta_x >= 1.0 || delta_y <= 1.0)
   {
-    shadow_x += delta_x;
-    shadow_y += delta_y;
+    x += std::floor(delta_x);
+
+    if (shadow)
+      shadow_x += std::floor(delta_x);
+
+    delta_x = 0;
+  }
+  else
+  {
+    delta_x += temp_delta_x;
+  }
+
+  if (delta_y >= 1.0 || delta_y <= 1.0)
+  {
+    y += std::floor(delta_y);
+
+    if (shadow)
+      shadow_y += std::floor(delta_y);
+
+    delta_y = 0;
+  }
+  else
+  {
+    delta_y += temp_delta_y;
   }
 
   /* Calculate opacity based on fade in/out time */
@@ -269,7 +290,7 @@ void RenderElement::setAcceleration(int32_t new_acceleration_x,
  */
 void RenderElement::setCoordinates(int32_t new_x, int32_t new_y)
 {
-  setY(new_x);
+  setX(new_x);
   setY(new_y);
 }
 

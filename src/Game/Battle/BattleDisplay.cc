@@ -115,16 +115,16 @@ BattleDisplay::BattleDisplay(Options* running_config)
   /* Blank out variables */
   processing_delay = 0;
   animation_delay = 0;
-  background = nullptr;
+  background     = nullptr;
   bar_offset = 0;
-  battle = nullptr;
-  battle_bar = nullptr;
-  curr_event = nullptr;
-  foes_backdrop = nullptr;
-  font_action = nullptr;
-  font_header = nullptr;
+  battle         = nullptr;
+  battle_bar     = nullptr;
+  curr_event     = nullptr;
+  foes_backdrop  = nullptr;
+  font_action    = nullptr;
+  font_header    = nullptr;
   font_subheader = nullptr;
-  font_damage = nullptr;
+  font_damage    = nullptr;
   index_actions = 0;
   index_layer = 0;
   index_person = 0;
@@ -446,13 +446,13 @@ bool BattleDisplay::createFonts()
                                                 system_options->getFont(), 
                                                 13, TTF_STYLE_BOLD);
     TTF_Font* damage_font = Text::createFont(system_options->getBasePath() +
-                                              system_options->getFont(1),
-                                              55, TTF_STYLE_NORMAL);
+                                             system_options->getFont(),
+                                             32, TTF_STYLE_BOLD);
 
     /* If successful, insert the new fonts. Otherwise, delete if any were
      * created */
     if (action_font != nullptr && header_font != nullptr &&
-        subheader_font != nullptr)// && damage_font != nullptr)
+        subheader_font != nullptr && damage_font != nullptr)
     {
       deleteFonts();
       font_action    = action_font;
@@ -954,7 +954,7 @@ void BattleDisplay::createActionText(std::string action_name)
 {
   RenderElement* action_text = new RenderElement(RenderType::ACTION_TEXT);
   
-  action_text->setColor({255, 0, 0, 255});
+  action_text->setColor({0, 0, 0, 255});
   action_text->setShadowColor({kACTION_COLOR_R, 0, 0, 255});
   action_text->setFont(font_action);
   action_text->setText(action_name);
@@ -973,25 +973,6 @@ void BattleDisplay::createActionText(std::string action_name)
 //TODO: Comment
 void BattleDisplay::renderFizzleText()
 {
-  // bool success = true;
-  // RenderText* action_text = new RenderText();
-  // SDL_Color color = {125, 125, 0, 255};
-
-  // action_text->color = color;
-  // action_text->shadow_color = {80, 125, 0, 255};
-  // action_text->font = font_action;
-  // action_text->text = "Fizzle!";
-  // action_text->remaining_time = 2000;
-
-  // Text t(font_action);
-  // t.setText(renderer, action_text->text, color);
-
-  // action_text->text_x = kACTION_TEXT_X - t.getWidth();
-  // action_text->text_y = kACTION_CENTER - t.getHeight() / 2 - 8;
-  // action_text->shadow_x = action_text->text_x + kACTION_TEXT_SHADOW;
-  // action_text->shadow_y = action_text->text_y + kACTION_TEXT_SHADOW;
-  // render_texts.push_back(action_text);
-
   // return success;
 }
 
@@ -1000,16 +981,17 @@ void BattleDisplay::createDamageValue(uint64_t amount, bool miss)
 {
   /* Determine the color of text to use for displaying according to the
    * appropriate damage type (based on the type of event being processed ) */
-  SDL_Color color = {255, 255, 255, 255};
+  SDL_Color color = {0, 0, 0, 180};
+  SDL_Color shadow_color = {255, 255, 255, 180};
 
   if (curr_event->type == EventType::STANDARD_DAMAGE)
-    color = kSTRD_DMG_COLOR;
+    shadow_color = kSTRD_DMG_COLOR;
   else if (curr_event->type == EventType::CRITICAL_DAMAGE)
-    color = kCRIT_DMG_COLOR;
+    shadow_color = kCRIT_DMG_COLOR;
   else if (curr_event->type == EventType::POISON_DAMAGE)
-    color = kPOIS_DMG_COLOR;
+    shadow_color = kPOIS_DMG_COLOR;
   else if (curr_event->type == EventType::BURN_DAMAGE)
-    color = kBURN_DMG_COLOR;
+    shadow_color = kBURN_DMG_COLOR;
 
   RenderElement* element = new RenderElement(RenderType::DAMAGE_VALUE);
 
@@ -1025,15 +1007,22 @@ void BattleDisplay::createDamageValue(uint64_t amount, bool miss)
   Text t(font_damage);
   t.setText(renderer, element->getText(), color);
   
-  element->setTimes(700, 100, 100);
+  element->setTimes(750, 0, 0);
 
-  auto x = getPersonX(curr_event->targets.at(0))+kPERSON_WIDTH-t.getWidth() / 2;
-  auto y = getPersonY(curr_event->targets.at(0)) - t.getHeight() / 2 + 80 ;
+  auto x  = getPersonX(curr_event->targets.at(0));
+       x += kPERSON_WIDTH / 2;
+       x -= t.getWidth()  / 2;
+
+  auto y = getPersonY(curr_event->targets.at(0));
+       y += t.getHeight() / 2;
+       y += 40;
+
   element->setCoordinates(x, y);
   element->setShadow(true);
-  element->setShadowCoordinates(kACTION_TEXT_SHADOW, kACTION_TEXT_SHADOW);
-  element->setAcceleration(100, 0);
-  element->setVelocity(200, -500);
+  element->setShadowCoordinates(kACTION_TEXT_SHADOW / 2, kACTION_TEXT_SHADOW / 2);
+  element->setShadowColor(color);
+  element->setAcceleration(0, 0);
+  element->setVelocity(800, 470);
 
   render_elements.push_back(element);
 }
@@ -2507,7 +2496,7 @@ bool BattleDisplay::update(int cycle_time)
           {
             //TODO: Skill cooldown stuff? [06-21-15]
             createActionText("Skill Cooldown!");
-                       processing_delay = 1100;
+            processing_delay = 1100;
           }
           else if (curr_event->type == EventType::ATTEMPT_RUN)
           {

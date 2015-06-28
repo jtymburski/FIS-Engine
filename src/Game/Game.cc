@@ -356,10 +356,12 @@ void Game::setupBattle()
   physical_01->setDescription("Jordan is a weirdo... Lor em ips um do lor sit amet, mel omnis nomin ati an, atom orum facil isis in pri, adipi scing argum entum in pri. Duo ei tempor dicunt sanctus, per ut hinc oporteat conceptam. Iisque euismod albucius vel ut, duo ea singulis eleifend. Veri offendit vim ut, at pri tale adolescens, putant veritus sea no. Atqui blandit assentior ne eam. Et rebum deserunt pericula eum.");
   physical_01->setFlag(SkillFlags::OFFENSIVE);
 
-  Skill* physical_02 = new Skill(101, "Triple Whelp", ActionScope::ONE_ENEMY, 
+  Skill* physical_02 = new Skill(101, "Quintuple Whelp", ActionScope::ONE_ENEMY, 
       damage_actions[4],  95, 5);
   physical_02->addAction(damage_actions[5]);
   physical_02->addAction(damage_actions[6]);
+  physical_02->addAction(damage_actions[4]);
+  physical_02->addAction(damage_actions[3]);
   physical_02->setPrimary(Element::PHYSICAL);
   physical_02->setFlag(SkillFlags::OFFENSIVE);
 
@@ -373,7 +375,7 @@ void Game::setupBattle()
 
   Skill* fire_01 = new Skill(110, "Burninate The Countryside", ActionScope::ONE_PARTY, 
     damage_actions[11], 85, 55);
-  fire_01->setCooldown(1);
+  fire_01->setCooldown(0);
   fire_01->setThumbnail(new Frame("sprites/Battle/Skills/_sample_skill_1.png", 
                                   active_renderer));
   fire_01->setPrimary(Element::FIRE);
@@ -503,7 +505,7 @@ void Game::setupBattle()
 
   // Test Skill Sets
   SkillSet* physical_skills = new SkillSet(physical_01, 1);
-  physical_skills->addSkill(cure_poison, 1);
+  // physical_skills->addSkill(cure_poison, 1);
   physical_skills->addSkill(physical_02, 1);
 
   // physical_skills->addSkill(physical_03, 1);
@@ -520,8 +522,8 @@ void Game::setupBattle()
   // physical_skills->addSkill(paralysis, 1);
   // physical_skills->addSkill(scald, 1);
   // physical_skills->addSkill(charr, 1);
-  physical_skills->addSkill(berserk, 1);
-  physical_skills->addSkill(confuse, 1);
+  // physical_skills->addSkill(berserk, 1);
+  // physical_skills->addSkill(confuse, 1);
   // physical_skills->addSkill(bubbinate, 1);
   // physical_skills->addSkill(all_atk_buff, 1);
   // physical_skills->addSkill(all_def_buff, 1);
@@ -531,7 +533,7 @@ void Game::setupBattle()
   // physical_skills->addSkill(dreadstruck, 1);
   // physical_skills->addSkill(dreamsnare, 1);
 
-  physical_skills->addSkill(silence, 1);
+  // physical_skills->addSkill(silence, 1);
   physical_skills->addSkill(fire_01, 1);
 
   SkillSet* elemental_skills = new SkillSet(fire_01, 1);

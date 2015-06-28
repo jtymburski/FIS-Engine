@@ -62,6 +62,9 @@ private:
   int16_t acceleration_x;
   int16_t acceleration_y;
 
+  float delta_x;
+  float delta_y;
+
   /* Coordinates for rendering */
   int16_t x;
   int16_t y;
