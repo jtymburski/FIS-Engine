@@ -7,20 +7,18 @@
  * Notes
  * -----
  *
- * [1]:
+ * [1]: Velocity and Acceleration are in the magnitude of 1:00 pixels, where
+ *      as other positions are in the position of 1:1 pixels. This is to avoid
+ *      more floating point calculations than necessary.
  *
  * TODO
  * ----
  ******************************************************************************/
-
 #ifndef BATTLEDISPLAY_H
 #define BATTLEDISPLAY_H
 
 #include "Game/Battle/Battle.h"
-#include "Helpers.h"
-#include "Options.h"
-#include "Sprite.h"
-#include "Text.h"
+#include "Game/Battle/RenderElement.h"
 
 using std::begin;
 using std::end;
@@ -38,35 +36,11 @@ struct PersonState
   Sprite* tp;
 };
 
-/*
- * Structure which describes on screen text elements that are currently
- * rendering
- */
-struct RenderText
-{
-  SDL_Color color;
-  SDL_Color shadow_color;
-  TTF_Font* font;
-  std::string text;
-  int32_t remaining_time;
-  int32_t elapsed_time;
-  int16_t text_x;
-  int16_t text_y;
-  int16_t shadow_x;
-  int16_t shadow_y;
-  int16_t velocity_x;
-  int16_t velocity_y;
-  int32_t fade_in_time;
-  int32_t fade_out_time;
-  int32_t curr_alpha;
-  int32_t curr_shadow_alpha;
-};
-
 class BattleDisplay
 {
 public:
   /* Constructor function */
-  BattleDisplay(Options* running_config = NULL);
+  BattleDisplay(Options* running_config);
 
   /* Destructor function */
   ~BattleDisplay();
@@ -123,7 +97,7 @@ private:
   /* Rendering indexes */
   uint16_t index_actions;
   uint16_t index_layer;
-  int32_t index_person;
+  int32_t  index_person;
   uint16_t index_types;
 
   /* Mid scene overlays */
@@ -133,8 +107,9 @@ private:
   std::vector<Sprite*> overlays; // TODO: Make overlay class when created
 
   /* Vector of renderable text elements */
-  std::vector<RenderText*> render_texts;
+  std::vector<RenderElement*> render_elements;
 
+  /* Pointer to the current SDL Renderer */
   SDL_Renderer* renderer;
 
   /* Rendering turn state */
@@ -290,13 +265,13 @@ private:
       uint16_t y, uint16_t width, uint16_t height);
 
   /* Render the action text */
-  bool renderActionText(std::string action_name);
+  void createActionText(std::string action_name);
 
   /* Render the damage value */
-  bool renderDamageValue(uint64_t amount, bool miss = false);
+  void createDamageValue(uint64_t amount, bool miss = false);
 
   /* Render Skill fizzling text */
-  bool renderFizzleText();
+  void renderFizzleText();
 
   /* Render the action categories */
   bool renderActionTypes(SDL_Renderer* renderer, BattleMenu* menu, uint16_t x, 
@@ -324,7 +299,10 @@ private:
 
   /* Render menu at bottom of screen - for skill selecting */
   bool renderMenu(SDL_Renderer* renderer, PersonState* state, 
-                  uint16_t screen_width, uint16_t screen_height);
+      uint16_t screen_width, uint16_t screen_height);
+
+  void setStateBrightness(std::vector<PersonState*> states, bool fp, 
+      int32_t amount);
 
   /* Set person state */
   bool setPersonState(Person* person, uint8_t index, SDL_Renderer* renderer, 
@@ -442,20 +420,17 @@ public:
   void unsetBattleBar();
 
   /* Unsets the midlay sprite(s) */
-  void unsetMidlay(uint8_t index);
   void unsetMidlays();
 
   /* Unsets the overlay sprite(s) */
-  void unsetOverlay(uint8_t index);
   void unsetOverlays();
 
   /* Unsets the render text elements */
-  void unsetRenderText(uint32_t index);
-  void unsetRenderTexts(bool only_timed_out = false);
+  void unsetElements();
 
   /* Updates the battle display */
   bool update(int cycle_time);
-  bool updateTextElements(int cycle_time);
+  bool updateElements(int cycle_time);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS

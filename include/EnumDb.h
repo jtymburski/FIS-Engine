@@ -490,6 +490,13 @@ enum class PartyType : std::uint8_t
   FINAL_BOSS 
 };
 
+enum class PartyTarget : std::uint8_t
+{
+  NONE = 0,
+  FRIENDS = 1,
+  FOES = 2
+};
+
 /* 
  * Description: The ranks a Person may hold 
  */

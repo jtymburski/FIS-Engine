@@ -1,4 +1,4 @@
-/*******************************************************************************
+/******************************************************************************
  * Class Name: BattleDisplay [Implementation]
  * Date Created: December 16, 2014
  * Inheritance: None
@@ -115,15 +115,15 @@ BattleDisplay::BattleDisplay(Options* running_config)
   /* Blank out variables */
   processing_delay = 0;
   animation_delay = 0;
-  background = NULL;
+  background = nullptr;
   bar_offset = 0;
-  battle = NULL;
-  battle_bar = NULL;
+  battle = nullptr;
+  battle_bar = nullptr;
   curr_event = nullptr;
-  foes_backdrop = NULL;
-  font_action = NULL;
-  font_header = NULL;
-  font_subheader = NULL;
+  foes_backdrop = nullptr;
+  font_action = nullptr;
+  font_header = nullptr;
+  font_subheader = nullptr;
   index_actions = 0;
   index_layer = 0;
   index_person = 0;
@@ -133,8 +133,8 @@ BattleDisplay::BattleDisplay(Options* running_config)
   renderer = nullptr;
   rendering_state = TurnState::DESTRUCT;
   show_info = false;
-  system_options = NULL;
-  temp_sprite = NULL;
+  system_options = nullptr;
+  temp_sprite = nullptr;
 
   /* Set up variables */
   setConfiguration(running_config);
@@ -217,9 +217,9 @@ Frame* BattleDisplay::createActionFrame(Person* person,
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
   SDL_RenderClear(renderer);
   SDL_SetTextureAlphaMod(texture2, kACTION_COLOR_A);
-  SDL_RenderCopyEx(renderer, texture2, NULL, NULL, 0.0, NULL, SDL_FLIP_NONE);
+  SDL_RenderCopyEx(renderer, texture2, nullptr, nullptr, 0.0, nullptr, SDL_FLIP_NONE);
   SDL_DestroyTexture(texture2);
-  texture2 = NULL;
+  texture2 = nullptr;
 
   /* Render top black border */
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -228,7 +228,7 @@ Frame* BattleDisplay::createActionFrame(Person* person,
 
   /* Render the person */ // TODO: Fix - in person
   Sprite* action_frames = person->getActionFrames();
-  if(action_frames != NULL && action_frames->isFramesSet())
+  if(action_frames != nullptr && action_frames->isFramesSet())
     action_frames->render(renderer, person->getActionX(), person->getActionY(), 
                           action_frames->getCurrent()->getWidth(), 
                           action_frames->getCurrent()->getHeight());
@@ -248,7 +248,7 @@ Frame* BattleDisplay::createActionFrame(Person* person,
   /* Finalize the frame */
   rendered_frame->setTexture(texture);
   SDL_RenderPresent(renderer);
-  SDL_SetRenderTarget(renderer, NULL);
+  SDL_SetRenderTarget(renderer, nullptr);
 
   return rendered_frame;
 }
@@ -355,7 +355,7 @@ void BattleDisplay::createFoeBackdrop(SDL_Renderer* renderer)
   SDL_RenderDrawLines(renderer, points, 9);
 
   /* Finalize the frame */
-  SDL_SetRenderTarget(renderer, NULL);
+  SDL_SetRenderTarget(renderer, nullptr);
   rendered_frame->setTexture(texture);
   foes_backdrop = rendered_frame;
 }
@@ -414,7 +414,7 @@ Frame* BattleDisplay::createFoeInfo(Person* foe, SDL_Renderer* renderer)
   foe_info->setTexture(texture);
 
   /* Clear render connection */
-  SDL_SetRenderTarget(renderer, NULL);
+  SDL_SetRenderTarget(renderer, nullptr);
 
   return foe_info;
 }
@@ -432,7 +432,7 @@ bool BattleDisplay::createFonts()
 {
   bool success = false;
 
-  if(system_options != NULL)
+  if(system_options != nullptr)
   {
     /* Try and create the new fonts */
     TTF_Font* action_font = Text::createFont(system_options->getBasePath() + 
@@ -463,13 +463,13 @@ bool BattleDisplay::createFonts()
     else
     {
       TTF_CloseFont(action_font);
-      action_font = NULL;
+      action_font = nullptr;
 
       TTF_CloseFont(header_font);
-      header_font = NULL;
+      header_font = nullptr;
 
       TTF_CloseFont(subheader_font);
-      subheader_font = NULL;
+      subheader_font = nullptr;
 
       TTF_CloseFont(damage_font);
       damage_font = nullptr;
@@ -548,7 +548,7 @@ Frame* BattleDisplay::createFriendInfo(Person* ally, SDL_Renderer* renderer)
   friend_info->setTexture(texture);
 
   /* Clear render connection */
-  SDL_SetRenderTarget(renderer, NULL);
+  SDL_SetRenderTarget(renderer, nullptr);
 
   return friend_info;
 }
@@ -573,7 +573,7 @@ SDL_Texture* BattleDisplay::createSkill(SDL_Renderer* renderer, Skill* skill,
   rect_top.y = kSKILL_BORDER;
   rect_top.w = kSKILL_FRAME_L;
   rect_top.h = kSKILL_FRAME_L;
-  if(skill->getThumbnail() != NULL)
+  if(skill->getThumbnail() != nullptr)
     skill->getThumbnail()->render(renderer, rect_top.x, rect_top.y);
   Frame::renderRect(rect_top, kSKILL_BORDER_WIDTH, renderer, true);
 
@@ -584,7 +584,7 @@ SDL_Texture* BattleDisplay::createSkill(SDL_Renderer* renderer, Skill* skill,
   rect_bot.h = kSKILL_FRAME_S;
   rect_bot.y = height - kSKILL_BORDER - rect_bot.h;
   rect_bot.w = kSKILL_FRAME_L;
-  if(scope_frame != NULL)
+  if(scope_frame != nullptr)
     scope_frame->render(renderer, rect_bot.x, rect_bot.y);
   //Frame::renderRect(rect_bot, kSKILL_BORDER_WIDTH, renderer, true);
 
@@ -592,14 +592,14 @@ SDL_Texture* BattleDisplay::createSkill(SDL_Renderer* renderer, Skill* skill,
   Frame* primary_frame = getElement(skill->getPrimary());
   rect_bot.x += rect_bot.w + kSKILL_BORDER;
   rect_bot.w = kSKILL_FRAME_S;
-  if(primary_frame != NULL)
+  if(primary_frame != nullptr)
     primary_frame->render(renderer, rect_bot.x, rect_bot.y);
   //Frame::renderRect(rect_bot, kSKILL_BORDER_WIDTH, renderer, true);
 
   /* Render the secondary element */
   Frame* secondary_frame = getElement(skill->getSecondary());
   rect_bot.x += rect_bot.w + kSKILL_BORDER;
-  if(secondary_frame != NULL)
+  if(secondary_frame != nullptr)
   {
     secondary_frame->render(renderer, rect_bot.x, rect_bot.y);
     //Frame::renderRect(rect_bot, kSKILL_BORDER_WIDTH, renderer, true);
@@ -654,7 +654,7 @@ SDL_Texture* BattleDisplay::createSkill(SDL_Renderer* renderer, Skill* skill,
   }
   
   /* Return the new texture */
-  SDL_SetRenderTarget(renderer, NULL);
+  SDL_SetRenderTarget(renderer, nullptr);
   return texture;
 }
 
@@ -683,7 +683,7 @@ bool BattleDisplay::createSkills(SDL_Renderer* renderer, BattleMenu* menu,
     skill_info.push_back(new Frame());
     
     /* Access the skill and render the information */
-    if(skill != NULL)
+    if(skill != nullptr)
     {
       /* Set the text */
       if(skills.at(i).selectable)
@@ -723,7 +723,7 @@ bool BattleDisplay::createSkills(SDL_Renderer* renderer, BattleMenu* menu,
       
       /* Set the new texture */
       skill_names.back()->setTexture(texture);
-      SDL_SetRenderTarget(renderer, NULL);
+      SDL_SetRenderTarget(renderer, nullptr);
       
       /* Create the detailed skill information for this skill */
       skill_info.back()->setTexture(createSkill(renderer, skill, 
@@ -739,7 +739,7 @@ bool BattleDisplay::createSkills(SDL_Renderer* renderer, BattleMenu* menu,
 
 /*
  * Description: Delete the rendering fonts stored in the class. Do not try and
- *              render again since it will try to use the NULL fonts and fail.
+ *              render again since it will try to use the nullptr fonts and fail.
  *
  * Inputs: none
  * Ouptut: none
@@ -791,7 +791,7 @@ PersonState* BattleDisplay::getFoesState(int32_t index)
     if(foes_state.size() > ref)
       return foes_state[ref];
   }
-  return NULL;
+  return nullptr;
 }
 
 /* Get friends in battle */
@@ -811,7 +811,7 @@ PersonState* BattleDisplay::getFriendsState(int32_t index)
     if(friends_state.size() > ref)
       return friends_state[ref];
   }
-  return NULL;
+  return nullptr;
 }
   
 /* Returns modified index */
@@ -835,12 +835,12 @@ int16_t BattleDisplay::getPersonX(Person* check_person)
 {
   auto screen_width = system_options->getScreenWidth();
 
-  for (uint32_t i = 0; i < foes_state.size(); i++)
-    if (check_person == foes_state.at(i)->self)
+  for(uint32_t i = 0; i < foes_state.size(); i++)
+    if(check_person == foes_state.at(i)->self)
       return screen_width - kPERSON_WIDTH - i * kPERSON_SPREAD;
 
-  for (uint32_t i = 0; i < friends_state.size(); i++)
-    if (check_person == friends_state.at(i)->self)
+  for(uint32_t i = 0; i < friends_state.size(); i++)
+    if(check_person == friends_state.at(i)->self)
       return i * kPERSON_SPREAD;
 
   return -1;
@@ -849,17 +849,16 @@ int16_t BattleDisplay::getPersonX(Person* check_person)
 //TODO: Comment
 int16_t BattleDisplay::getPersonY(Person* check_person)
 {
-  for (uint32_t i = 0; i < foes_state.size(); i++)
-    if (check_person == foes_state.at(i)->self)
+  for(auto& foe : foes_state)
+    if(check_person == foe->self)
       return kFOES_OFFSET;
 
-  for (uint32_t i = 0; i < friends_state.size(); i++)
-    if (check_person == friends_state.at(i)->self)
+  for(auto& ally : friends_state)
+    if(check_person == ally->self)
       return system_options->getScreenHeight() - kFRIENDS_OFFSET;
 
   return -1;
 }
-
 
 /* Render the action skills */
 // TODO: Comment
@@ -921,7 +920,7 @@ bool BattleDisplay::renderActionSkills(SDL_Renderer* renderer, BattleMenu* menu,
           center_y -= 1;
           success &= Frame::renderTriangle(center_x, center_y - kSCROLL_R + 1,   
                      center_x - kSCROLL_R, center_y + kSCROLL_R, 
-                     center_x + kSCROLL_R, center_y + kSCROLL_R, renderer);
+                   center_x + kSCROLL_R, center_y + kSCROLL_R, renderer);
         }
       }
 
@@ -950,60 +949,54 @@ bool BattleDisplay::renderActionSkills(SDL_Renderer* renderer, BattleMenu* menu,
 }
 
 //TODO: Comment
-bool BattleDisplay::renderActionText(std::string action_name)
+void BattleDisplay::createActionText(std::string action_name)
 {
-  bool success = true;
-  RenderText* action_text = new RenderText();
-  SDL_Color color = {255, 0, 0, 255};
+  RenderElement* action_text = new RenderElement(RenderType::ACTION_TEXT);
+  
+  action_text->setColor({255, 0, 0, 255});
+  action_text->setShadowColor({kACTION_COLOR_R, 0, 0, 255});
+  action_text->setFont(font_action);
+  action_text->setText(action_name);
+  action_text->setTimes(1000, 100, 100);
 
-  action_text->color = color;
-  action_text->shadow_color = {kACTION_COLOR_R, 0, 0, 255};
-  action_text->font = font_action;
-  action_text->text = action_name;
-  action_text->remaining_time = 1000;
- 
   Text t(font_action);
-  t.setText(renderer, action_text->text, color);
+  t.setText(renderer, action_text->getText(), action_text->getColor());
 
-  action_text->text_x = kACTION_TEXT_X - t.getWidth();
-  action_text->text_y = kACTION_CENTER - t.getHeight() / 2 - 8;
-  action_text->shadow_x = action_text->text_x + kACTION_TEXT_SHADOW;
-  action_text->shadow_y = action_text->text_y + kACTION_TEXT_SHADOW;
-  render_texts.push_back(action_text);
-
-  return success;
+  action_text->setX(kACTION_TEXT_X - t.getWidth());
+  action_text->setY(kACTION_CENTER - t.getHeight() / 2 - 8);
+  action_text->setShadow();
+  action_text->setShadowCoordinates(kACTION_TEXT_SHADOW, kACTION_TEXT_SHADOW);
+  render_elements.push_back(action_text);
 }
 
 //TODO: Comment
-bool BattleDisplay::renderFizzleText()
+void BattleDisplay::renderFizzleText()
 {
-  bool success = true;
-  RenderText* action_text = new RenderText();
-  SDL_Color color = {125, 125, 0, 255};
+  // bool success = true;
+  // RenderText* action_text = new RenderText();
+  // SDL_Color color = {125, 125, 0, 255};
 
-  action_text->color = color;
-  action_text->shadow_color = {80, 125, 0, 255};
-  action_text->font = font_action;
-  action_text->text = "Fizzle!";
-  action_text->remaining_time = 2000;
+  // action_text->color = color;
+  // action_text->shadow_color = {80, 125, 0, 255};
+  // action_text->font = font_action;
+  // action_text->text = "Fizzle!";
+  // action_text->remaining_time = 2000;
 
-  Text t(font_action);
-  t.setText(renderer, action_text->text, color);
+  // Text t(font_action);
+  // t.setText(renderer, action_text->text, color);
 
-  action_text->text_x = kACTION_TEXT_X - t.getWidth();
-  action_text->text_y = kACTION_CENTER - t.getHeight() / 2 - 8;
-  action_text->shadow_x = action_text->text_x + kACTION_TEXT_SHADOW;
-  action_text->shadow_y = action_text->text_y + kACTION_TEXT_SHADOW;
-  render_texts.push_back(action_text);
+  // action_text->text_x = kACTION_TEXT_X - t.getWidth();
+  // action_text->text_y = kACTION_CENTER - t.getHeight() / 2 - 8;
+  // action_text->shadow_x = action_text->text_x + kACTION_TEXT_SHADOW;
+  // action_text->shadow_y = action_text->text_y + kACTION_TEXT_SHADOW;
+  // render_texts.push_back(action_text);
 
-  return success;
+  // return success;
 }
 
 //TODO: Comment
-bool BattleDisplay::renderDamageValue(uint64_t amount, bool miss)
+void BattleDisplay::createDamageValue(uint64_t amount, bool miss)
 {
-  auto success = true;
-
   /* Determine the color of text to use for displaying according to the
    * appropriate damage type (based on the type of event being processed ) */
   SDL_Color color = {255, 255, 255, 255};
@@ -1016,37 +1009,32 @@ bool BattleDisplay::renderDamageValue(uint64_t amount, bool miss)
     color = kPOIS_DMG_COLOR;
   else if (curr_event->type == EventType::BURN_DAMAGE)
     color = kBURN_DMG_COLOR;
-  else
-    success = false;
 
-  if (success)
-  {
-    RenderText* damage_text = new RenderText();
+  RenderElement* element = new RenderElement(RenderType::DAMAGE_VALUE);
 
-    /* Build parameters for the damage text, add to render text elements */
-    damage_text->color = color;
-    damage_text->font  = font_damage;
+  /* Build parameters for the damage text, add to render text elements */
+  element->setColor(color);
+  element->setFont(font_damage);
 
-    if (miss)
-      damage_text->text = "Miss";
-    else 
-      damage_text->text  = std::to_string(amount);
+  if (miss)
+    element->setText("Miss");
+  else 
+    element->setText(std::to_string(amount));
 
-    Text t(font_damage);
-    t.setText(renderer, damage_text->text, color);
-    
-    damage_text->remaining_time = 700;
-    damage_text->text_x = getPersonX(curr_event->targets.at(0)) + kPERSON_WIDTH / 2 -  t.getWidth() / 2;
-    damage_text->text_y = getPersonY(curr_event->targets.at(0)) - t.getHeight() / 2 + 80 ;
-    damage_text->shadow_x = damage_text->text_x + kACTION_TEXT_SHADOW;
-    damage_text->shadow_y = damage_text->text_y + kACTION_TEXT_SHADOW;
-    damage_text->velocity_x = 2;
-    damage_text->velocity_y = -5;
+  Text t(font_damage);
+  t.setText(renderer, element->getText(), color);
+  
+  element->setTimes(700, 100, 100);
 
-    render_texts.push_back(damage_text);
-  }
+  auto x = getPersonX(curr_event->targets.at(0))+kPERSON_WIDTH-t.getWidth() / 2;
+  auto y = getPersonY(curr_event->targets.at(0)) - t.getHeight() / 2 + 80 ;
+  element->setCoordinates(x, y);
+  element->setShadow(true);
+  element->setShadowCoordinates(kACTION_TEXT_SHADOW, kACTION_TEXT_SHADOW);
+  element->setAcceleration(100, 0);
+  element->setVelocity(200, -500);
 
-  return success;
+  render_elements.push_back(element);
 }
 
 /* Render the action categories */
@@ -1216,7 +1204,7 @@ bool BattleDisplay::renderBar(SDL_Renderer* renderer, uint16_t screen_width,
 {
   bool success = true;
 
-  if(battle_bar != NULL)
+  if(battle_bar != nullptr)
   {
     success &= battle_bar->render(renderer, 0, 
                                   screen_height - kBIGBAR_OFFSET - bar_offset,
@@ -1258,8 +1246,8 @@ bool BattleDisplay::renderFoesInfo(SDL_Renderer* renderer,
   uint16_t y = kFOES_OFFSET - kFOES_BAR_GAP - foes_backdrop->getHeight();
   for(uint8_t i = 0; i < foes_state.size(); i++)
   {
-    if(foes_state[i]->self != NULL && foes_state[i]->info != NULL && 
-       foes_state[i]->tp != NULL)
+    if(foes_state[i]->self != nullptr && foes_state[i]->info != nullptr && 
+       foes_state[i]->tp != nullptr)
     {
       /* Render the frame */
       uint16_t x = screen_width - kPERSON_WIDTH - i * kPERSON_SPREAD;
@@ -1305,7 +1293,7 @@ bool BattleDisplay::renderFriendInfo(SDL_Renderer* renderer, PersonState* state,
     uint16_t screen_height, uint16_t x, uint16_t y, bool below)
 {
   if (state == nullptr)
-    std::cout << "THE STATE IS ALL TEH NULL! NO NULL STATES" << std::endl;
+    std::cout << "THE STATE IS ALL TEH nullptr! NO nullptr STATES" << std::endl;
 
   bool success = true;
 
@@ -1435,8 +1423,8 @@ bool BattleDisplay::renderFriendsInfo(SDL_Renderer* renderer,
   uint16_t y = screen_height - kALLY_HEIGHT;
   for(uint8_t i = 0; i < friends_state.size(); i++)
   {
-    if(friends_state[i]->self != NULL && friends_state[i]->info != NULL && 
-       friends_state[i]->fp != NULL)
+    if(friends_state[i]->self != nullptr && friends_state[i]->info != nullptr && 
+       friends_state[i]->fp != nullptr)
     {
       /* Render the info */
       uint16_t x = (i * kPERSON_SPREAD) + (kPERSON_WIDTH - kINFO_W) / 2;
@@ -1521,7 +1509,7 @@ bool BattleDisplay::renderMenu(SDL_Renderer* renderer, PersonState* state,
 bool BattleDisplay::setPersonState(Person* person, uint8_t index, 
                                    SDL_Renderer* renderer, bool foe)
 {
-  PersonState* state = NULL;
+  PersonState* state = nullptr;
 
   /* Get the relevant state */
   if(foe)
@@ -1530,7 +1518,7 @@ bool BattleDisplay::setPersonState(Person* person, uint8_t index,
     state = friends_state[index];
 
   /* Proceed to fill up the state */
-  if(state != NULL)
+  if(state != nullptr)
   {
     /* Set the continuous access pointers */
     state->self = person;
@@ -1538,7 +1526,7 @@ bool BattleDisplay::setPersonState(Person* person, uint8_t index,
     state->tp = person->getThirdPerson();
    
     /* Set the third person action frame */
-    if(state->self != NULL)
+    if(state->self != nullptr)
       state->action = createActionFrame(state->self, renderer);
 
     /* Render the relevant info */
@@ -1560,13 +1548,13 @@ bool BattleDisplay::startBattle(SDL_Renderer* renderer)
   bool success = true;
  
   /* Generate foe backdrop bar if it doesn't exist */
-  if(foes_backdrop == NULL)
+  if(foes_backdrop == nullptr)
     createFoeBackdrop(renderer);
 
   /* Prechecks */
-  if(battle != NULL && battle_bar != NULL && background != NULL && 
-     font_header != NULL && font_subheader != NULL && system_options != NULL &&
-     battle->getFriends() != NULL && battle->getFoes() != NULL)
+  if(battle != nullptr && battle_bar != nullptr && background != nullptr && 
+     font_header != nullptr && font_subheader != nullptr && system_options != nullptr &&
+     battle->getFriends() != nullptr && battle->getFoes() != nullptr)
   {
     /* Stop battle if it's running */
     if(rendering_state != TurnState::DESTRUCT)
@@ -1581,11 +1569,11 @@ bool BattleDisplay::startBattle(SDL_Renderer* renderer)
            friends_state.size() < kMAX_CHARS) || friends_state.size() < 2)
     {
       PersonState* blank_state = new PersonState;
-      blank_state->action = NULL;
-      blank_state->fp     = NULL;
-      blank_state->info   = NULL;
-      blank_state->self   = NULL;
-      blank_state->tp     = NULL;
+      blank_state->action = nullptr;
+      blank_state->fp     = nullptr;
+      blank_state->info   = nullptr;
+      blank_state->self   = nullptr;
+      blank_state->tp     = nullptr;
 
       friends_state.push_back(blank_state);    
     }
@@ -1594,7 +1582,7 @@ bool BattleDisplay::startBattle(SDL_Renderer* renderer)
     uint8_t index = 0;
     for(uint8_t i = 0; i < friends.size() && i < kMAX_CHARS; i++)
     {
-      if(friends[i] != NULL)
+      if(friends[i] != nullptr)
       {
         /* Set person information */
         index = getIndex(i);
@@ -1608,11 +1596,11 @@ bool BattleDisplay::startBattle(SDL_Renderer* renderer)
            foes_state.size() < kMAX_CHARS) || foes_state.size() < 2)
     {
       PersonState* blank_state = new PersonState;
-      blank_state->action = NULL;
-      blank_state->fp = NULL;
-      blank_state->info = NULL;
-      blank_state->self = NULL;
-      blank_state->tp = NULL;
+      blank_state->action = nullptr;
+      blank_state->fp = nullptr;
+      blank_state->info = nullptr;
+      blank_state->self = nullptr;
+      blank_state->tp = nullptr;
 
       foes_state.push_back(blank_state);    
     }
@@ -1620,7 +1608,7 @@ bool BattleDisplay::startBattle(SDL_Renderer* renderer)
     /* Get foes information */
     for(uint8_t i = 0; i < foes.size(); i++)
     {
-      if(foes[i] != NULL)
+      if(foes[i] != nullptr)
       {
         /* Set person information */
         index = getIndex(i);
@@ -1643,19 +1631,19 @@ void BattleDisplay::stopBattle()
   /* Clear friend states */
   for(uint8_t i = 0; i < friends_state.size(); i++)
   {
-    friends_state[i]->fp = NULL;
-    friends_state[i]->self = NULL;
-    friends_state[i]->tp = NULL;
+    friends_state[i]->fp = nullptr;
+    friends_state[i]->self = nullptr;
+    friends_state[i]->tp = nullptr;
 
     /* Delete action frame */
-    if(friends_state[i]->action != NULL)
+    if(friends_state[i]->action != nullptr)
       delete friends_state[i]->action;
-    friends_state[i]->action = NULL;
+    friends_state[i]->action = nullptr;
 
     /* Delete info */
-    if(friends_state[i]->info != NULL)
+    if(friends_state[i]->info != nullptr)
       delete friends_state[i]->info;
-    friends_state[i]->info = NULL;
+    friends_state[i]->info = nullptr;
 
     /* Delete state */
     delete friends_state[i];
@@ -1665,19 +1653,19 @@ void BattleDisplay::stopBattle()
   /* Clear foe states */
   for(uint8_t i = 0; i < foes_state.size(); i++)
   {
-    foes_state[i]->fp = NULL;
-    foes_state[i]->self = NULL;
-    foes_state[i]->tp = NULL;
+    foes_state[i]->fp = nullptr;
+    foes_state[i]->self = nullptr;
+    foes_state[i]->tp = nullptr;
 
     /* Delete action frame */
-    if(foes_state[i]->action != NULL)
+    if(foes_state[i]->action != nullptr)
       delete foes_state[i]->action;
-    foes_state[i]->action = NULL;
+    foes_state[i]->action = nullptr;
 
     /* Delete info */
-    if(foes_state[i]->info != NULL)
+    if(foes_state[i]->info != nullptr)
       delete foes_state[i]->info;
-    foes_state[i]->info = NULL;
+    foes_state[i]->info = nullptr;
 
     /* Delete state */
     delete foes_state[i];
@@ -1685,7 +1673,7 @@ void BattleDisplay::stopBattle()
   foes_state.clear();
 }
 
-/* Trims the midlay vector of NULL sprite pointers */
+/* Trims the midlay vector of nullptr sprite pointers */
 // TODO: Comment
 void BattleDisplay::trimMidlays()
 {
@@ -1693,7 +1681,7 @@ void BattleDisplay::trimMidlays()
 
   /* Find all non-null sprites */
   for(uint8_t i = 0; i < midlays.size(); i++)
-    if(midlays[i] != NULL)
+    if(midlays[i] != nullptr)
       non_null.push_back(midlays[i]);
 
   /* If the vectors are different size, make the new one the non-null version */
@@ -1701,7 +1689,7 @@ void BattleDisplay::trimMidlays()
     midlays = non_null;
 }
 
-/* Trims the overlay vector of NULL sprite pointers */
+/* Trims the overlay vector of nullptr sprite pointers */
 // TODO: Comment
 void BattleDisplay::trimOverlays()
 {
@@ -1709,7 +1697,7 @@ void BattleDisplay::trimOverlays()
 
   /* Find all non-null sprites */
   for(uint8_t i = 0; i < overlays.size(); i++)
-    if(overlays[i] != NULL)
+    if(overlays[i] != nullptr)
       non_null.push_back(overlays[i]);
 
   /* If the vectors are different size, make the new one the non-null version */
@@ -1733,7 +1721,7 @@ void BattleDisplay::trimOverlays()
 // TODO: Comment
 bool BattleDisplay::addMidlay(Sprite* midlay)
 {
-  if(midlay != NULL && midlay->isFramesSet() && midlays.size() < kMAX_LAYERS)
+  if(midlay != nullptr && midlay->isFramesSet() && midlays.size() < kMAX_LAYERS)
   {
     midlays.push_back(midlay);
     return true;
@@ -1745,7 +1733,7 @@ bool BattleDisplay::addMidlay(Sprite* midlay)
 // TODO: Comment
 bool BattleDisplay::addOverlay(Sprite* overlay)
 {
-  if(overlay != NULL && overlay->isFramesSet() && overlays.size() < kMAX_LAYERS)
+  if(overlay != nullptr && overlay->isFramesSet() && overlays.size() < kMAX_LAYERS)
   {
     overlays.push_back(overlay);
     return true;
@@ -1768,7 +1756,7 @@ void BattleDisplay::clear()
   offset_2 = 0;
   rendering_state = TurnState::DESTRUCT;
   show_info = false;
-  system_options = NULL;
+  system_options = nullptr;
 
   /* Unsets the flat rendering sprites */
   deleteSkills();
@@ -1777,12 +1765,12 @@ void BattleDisplay::clear()
   unsetBattleBar();
   unsetMidlays();
   unsetOverlays();
-  unsetRenderTexts();
+  unsetElements();
 
   /* Deletes internal pointers, if set */
-  if(foes_backdrop != NULL)
+  if(foes_backdrop != nullptr)
     delete foes_backdrop;
-  foes_backdrop = NULL;
+  foes_backdrop = nullptr;
 }
 
 // TODO: Comment
@@ -1790,7 +1778,7 @@ Frame* BattleDisplay::getAilment(Infliction ailment)
 {
   if(ailment != Infliction::INVALID)
     return &ailments[static_cast<uint64_t>(ailment)];
-  return NULL;
+  return nullptr;
 }
 
 /* Get the background */
@@ -1812,7 +1800,7 @@ Frame* BattleDisplay::getElement(Element element)
 {
   if(element != Element::NONE)
     return &elements[Helpers::elementToInt(element)];
-  return NULL;
+  return nullptr;
 }
 
 /* Get the midlay(s) */
@@ -1822,7 +1810,7 @@ Sprite* BattleDisplay::getMidlay(uint8_t index)
   if(midlays.size() > index)
     return midlays[index];
 
-  Sprite* null_sprite = NULL;
+  Sprite* null_sprite = nullptr;
   return null_sprite;
 }
   
@@ -1839,7 +1827,7 @@ Sprite* BattleDisplay::getOverlay(uint8_t index)
   if(overlays.size() > index)
     return overlays[index];
 
-  Sprite* null_sprite = NULL;
+  Sprite* null_sprite = nullptr;
   return null_sprite;
 }
   
@@ -1860,7 +1848,7 @@ Frame* BattleDisplay::getScope(ActionScope scope)
 {
   if(scope != ActionScope::NO_SCOPE)
     return &scopes[static_cast<uint64_t>(scope)];
-  return NULL;
+  return nullptr;
 }
 
 /* Returns if the battle display is paused and control should be halted */
@@ -1881,16 +1869,16 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
   uint16_t width = 0;
 
   /* Check the options for screen height and width */
-  if(system_options != NULL)
+  if(system_options != nullptr)
   {
     height = system_options->getScreenHeight();
     width  = system_options->getScreenWidth();
   }
 
-  if(battle != NULL && rendering_state != TurnState::DESTRUCT)
+  if(battle != nullptr && rendering_state != TurnState::DESTRUCT)
   {
     /* Render background */
-    if(background != NULL)
+    if(background != nullptr)
       success &= background->render(renderer, 0, 0, width, height);
 
     /* Render overlays - over background modifiers */
@@ -1959,23 +1947,23 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
       success &= renderFriendsInfo(renderer, height);
     }
 
-    for (const auto& text_element : render_texts)
+    for (const auto& element : render_elements)
     {
-      //TODO: Update fade in/fade out/velocity etc.
-      Text t(text_element->font);
-      t.setText(renderer, text_element->text, text_element->color);
-      // t.setAlpha(text_element->curr_alpha);
-      t.render(renderer, text_element->text_x, text_element->text_y);
+      auto element_font = element->getFont();
 
-      if (text_element->shadow_x != 0 || text_element->shadow_y != 0)
+      if (element_font != nullptr)
       {
-        t.setText(renderer, text_element->text, text_element->shadow_color);
-        t.render(renderer, text_element->shadow_x, text_element->shadow_y);
-        // t.setAlpha(text_element->curr_shadow_alpha);
+        Text t(element->getFont());
+        t.setText(renderer, element->getText(), element->getColor());
+        t.render(renderer, element->getX(), element->getY());
+
+        if (element->hasShadow())
+        {
+          t.setText(renderer, element->getText(), element->getShadowColor());
+          t.render(renderer, element->getShadowX(), element->getShadowY());
+        }
       }
     }
-
-    // TODO: Render extra battle flair
 
     return success;
   }
@@ -1990,14 +1978,14 @@ bool BattleDisplay::setAilment(Infliction ailment, std::string path,
 {
   if(ailment != Infliction::INVALID)
     return ailments[static_cast<uint64_t>(ailment)].setTexture(path, renderer);
-  return NULL;
+  return nullptr;
 }
 
 /* Sets the background sprite */
 // TODO: Comment
 bool BattleDisplay::setBackground(Sprite* background)
 {
-  if(background != NULL && background->isFramesSet())
+  if(background != nullptr && background->isFramesSet())
   {
     unsetBackground();
     this->background = background;
@@ -2013,8 +2001,8 @@ bool BattleDisplay::setBattle(Battle* battle, SDL_Renderer* renderer)
 {
   bool success = true;
 
-  if(battle != NULL && renderer != NULL && system_options != NULL && 
-     battle->getBattleMenu() != NULL)
+  if(battle != nullptr && renderer != nullptr && system_options != nullptr && 
+     battle->getBattleMenu() != nullptr)
   {
     /* Unsets battle, if it's set up */
     unsetBattle();
@@ -2050,7 +2038,7 @@ bool BattleDisplay::setBattle(Battle* battle, SDL_Renderer* renderer)
 // TODO: Comment
 bool BattleDisplay::setBattleBar(Frame* bar)
 {
-  if(bar != NULL && bar->isTextureSet())
+  if(bar != nullptr && bar->isTextureSet())
   {
     battle_bar = bar;
     return true;
@@ -2062,7 +2050,7 @@ bool BattleDisplay::setBattleBar(Frame* bar)
 // TODO: Comment
 bool BattleDisplay::setConfiguration(Options* running_config)
 {
-  if(running_config != NULL)
+  if(running_config != nullptr)
   {
     system_options = running_config;
     createFonts();
@@ -2080,7 +2068,7 @@ bool BattleDisplay::setElement(Element element, std::string path,
 {
   if(element != Element::NONE)
     return elements[Helpers::elementToInt(element)].setTexture(path, renderer);
-  return NULL;
+  return nullptr;
 }
 
 /* Sets the rendering helper frames for display */
@@ -2106,7 +2094,7 @@ bool BattleDisplay::setFrameTime(std::string path, SDL_Renderer* renderer)
 // TODO: Comment
 bool BattleDisplay::setMidlay(Sprite* midlay)
 {
-  if(midlay != NULL && midlay->isFramesSet())
+  if(midlay != nullptr && midlay->isFramesSet())
   {
     unsetMidlays();
     midlays.push_back(midlay);
@@ -2120,7 +2108,7 @@ bool BattleDisplay::setMidlay(Sprite* midlay)
 // TODO: Comment
 bool BattleDisplay::setOverlay(Sprite* overlay)
 {
-  if(overlay != NULL && overlay->isFramesSet())
+  if(overlay != nullptr && overlay->isFramesSet())
   {
     unsetOverlays();
     overlays.push_back(overlay);
@@ -2137,7 +2125,7 @@ bool BattleDisplay::setScope(ActionScope scope, std::string path,
 {
   if(scope != ActionScope::NO_SCOPE)
     return scopes[static_cast<uint64_t>(scope)].setTexture(path, renderer);
-  return NULL;
+  return nullptr;
 }
   
 /* Sets if info about player should be shown regardless of state */
@@ -2151,9 +2139,9 @@ void BattleDisplay::setShowInfo(bool show)
 // TODO: Comment
 void BattleDisplay::unsetBackground()
 {
-  if(background != NULL)
+  if(background != nullptr)
     delete background;
-  background = NULL;
+  background = nullptr;
 }
 
 /* Unsets the battle connected to the display */
@@ -2161,82 +2149,64 @@ void BattleDisplay::unsetBackground()
 void BattleDisplay::unsetBattle()
 {
   /* Clean up of class set information */
-  if(battle != NULL)
+  if(battle != nullptr)
     stopBattle();
 
-  battle = NULL;
+  battle = nullptr;
   rendering_state = TurnState::DESTRUCT;
 }
   
 /* Unsets the rendering battle bar */
 void BattleDisplay::unsetBattleBar()
 {
-  if(battle_bar != NULL)
+  if(battle_bar != nullptr)
     delete battle_bar;
-  battle_bar = NULL;
+  battle_bar = nullptr;
 
   /* Clear rendering variables */
   bar_offset = 0;
 }
 
-/* Unsets the midlay sprite(s) */
-// TODO: Comment
-void BattleDisplay::unsetMidlay(uint8_t index)
-{
-  if(midlays.size() > index && midlays[index] != NULL)
-  {
-    delete midlays[index];
-    midlays[index] = NULL;
-    trimMidlays();
-  }
-}
 
 // TODO: Comment
 void BattleDisplay::unsetMidlays()
 {
-  for(uint8_t i = 0; i < midlays.size(); i++)
-    unsetMidlay(i);
-  midlays.clear();
-}
-
-/* Unsets the overlay sprite(s) */
-// TODO: Comment
-void BattleDisplay::unsetOverlay(uint8_t index)
-{
-  if(overlays.size() > index && overlays[index] != NULL)
+  for(auto& midlay : midlays)
   {
-    delete overlays[index];
-    overlays[index] = NULL;
-    trimOverlays();
+    if(midlay != nullptr)
+      delete midlay;
+    midlay = nullptr;
   }
+
+  midlays.clear();
 }
 
 // TODO: Comment
 void BattleDisplay::unsetOverlays()
 {
-  for(uint8_t i = 0; i < overlays.size(); i++)
-    unsetOverlay(i);
+  for(auto& overlay : overlays)
+  {
+    if(overlay != nullptr)
+      delete overlay;
+    overlay = nullptr;
+  }
+
   overlays.clear();
 }
 
 //TODO: Comment
-void BattleDisplay::unsetRenderText(uint32_t index)
+void BattleDisplay::unsetElements()
 {
-  if(render_texts.size() > index && render_texts[index] != nullptr)
+  for(auto& element : render_elements)
   {
-    delete render_texts[index];
-    overlays[index] = nullptr;
+    if(element != nullptr)
+      delete element;
+    element = nullptr;
   }
+
+  render_elements.clear();
 }
 
-//TODO: Comment
-void BattleDisplay::unsetRenderTexts(bool only_timed_out)
-{
-  for(uint32_t i = 0; i < render_texts.size(); i++)
-      unsetRenderText(i);
-  
-  render_texts.clear();
-}
 
 /* Updates the battle display */
 // TODO: Comment
@@ -2262,24 +2232,24 @@ bool BattleDisplay::update(int cycle_time)
     auto event_buffer = battle->getEventBuffer();
 
     /* Update the render text elements */
-    updateTextElements(cycle_time);
+    updateElements(cycle_time);
 
     /* Clear render texts with negative time remaining */
-    std::vector<RenderText*> temp_render_texts;
+    std::vector<RenderElement*> temp_elements;
  
-    for (auto& render_text : render_texts)
+    for (auto& element : render_elements)
     {
-      if (render_text->remaining_time > 0)
-        temp_render_texts.push_back(render_text);
+      if (!element->isTimedOut())
+        temp_elements.push_back(element);
       else
       {
-        delete render_text;
-        render_text = nullptr;
+        delete element;
+        element = nullptr;
       }
     }
  
-    render_texts.clear();
-    render_texts = temp_render_texts;
+    render_elements.clear();
+    render_elements = temp_elements;
 
     /*-------------------------------------------------------------------------
      * BEGIN state
@@ -2320,10 +2290,10 @@ bool BattleDisplay::update(int cycle_time)
       {
         /* Make sure friends and foes are visible at final state */
         for(uint16_t i = 0; i < friends_state.size(); i++)
-          if(friends_state[i]->fp != NULL)
+          if(friends_state[i]->fp != nullptr)
             friends_state[i]->fp->setBrightness(1.0);
         for(uint16_t i = 0; i < foes_state.size(); i++)
-          if(foes_state[i]->tp != NULL)
+          if(foes_state[i]->tp != nullptr)
             foes_state[i]->tp->setBrightness(1.0);
 
       bar_offset = 0;
@@ -2352,7 +2322,7 @@ bool BattleDisplay::update(int cycle_time)
         PersonState* choosing = getFriendsState(menu->getPersonIndex() - 1);
         for(uint16_t i = 0; i < friends_state.size(); i++)
         {
-          if(friends_state[i]->fp != NULL)
+          if(friends_state[i]->fp != nullptr)
           {
             /* Modify brightness */
             if(friends_state[i] == choosing)
@@ -2362,7 +2332,7 @@ bool BattleDisplay::update(int cycle_time)
           }
         }
         for(uint16_t i = 0; i < foes_state.size(); i++)
-          if(foes_state[i]->tp != NULL)
+          if(foes_state[i]->tp != nullptr)
             foes_state[i]->tp->setBrightness(0.15);
 
         bar_offset = kBIGBAR_CHOOSE;
@@ -2386,16 +2356,16 @@ bool BattleDisplay::update(int cycle_time)
 
         /* Modify brightness for this state */
         for(uint16_t i = 0; i < friends_state.size(); i++)
-          if(friends_state[i]->fp != NULL)
+          if(friends_state[i]->fp != nullptr)
             friends_state[i]->fp->setBrightness(0.25);
         for(uint16_t i = 0; i < friend_set.size(); i++)
-          if(friends_state[friend_set[i]]->fp != NULL)
+          if(friends_state[friend_set[i]]->fp != nullptr)
             friends_state[friend_set[i]]->fp->setBrightness(1.0);
         for(uint16_t i = 0; i < foes_state.size(); i++)
-          if(foes_state[i]->tp != NULL)
+          if(foes_state[i]->tp != nullptr)
             foes_state[i]->tp->setBrightness(0.25);
         for(uint16_t i = 0; i < foe_set.size(); i++)
-          if(foes_state[foe_set[i]]->tp != NULL)
+          if(foes_state[foe_set[i]]->tp != nullptr)
             foes_state[foe_set[i]]->tp->setBrightness(1.0);
 
         bar_offset = 0;
@@ -2417,16 +2387,16 @@ bool BattleDisplay::update(int cycle_time)
 
         /* Modify brightness for this state */
         for(uint16_t i = 0; i < friends_state.size(); i++)
-          if(friends_state[i]->fp != NULL)
+          if(friends_state[i]->fp != nullptr)
             friends_state[i]->fp->setBrightness(0.25);
         for(uint16_t i = 0; i < friend_set.size(); i++)
-          if(friends_state[friend_set[i]]->fp != NULL)
+          if(friends_state[friend_set[i]]->fp != nullptr)
             friends_state[friend_set[i]]->fp->setBrightness(1.0);
         for(uint16_t i = 0; i < foes_state.size(); i++)
-          if(foes_state[i]->tp != NULL)
+          if(foes_state[i]->tp != nullptr)
             foes_state[i]->tp->setBrightness(0.25);
         for(uint16_t i = 0; i < foe_set.size(); i++)
-          if(foes_state[foe_set[i]]->tp != NULL)
+          if(foes_state[foe_set[i]]->tp != nullptr)
             foes_state[foe_set[i]]->tp->setBrightness(1.0);
 
         bar_offset = 0;
@@ -2442,10 +2412,10 @@ bool BattleDisplay::update(int cycle_time)
     {
       /* Make sure friends and foes are visible at final state */
       for(uint16_t i = 0; i < friends_state.size(); i++)
-        if(friends_state[i]->fp != NULL)
+        if(friends_state[i]->fp != nullptr)
           friends_state[i]->fp->setBrightness(1.0);
       for(uint16_t i = 0; i < foes_state.size(); i++)
-        if(foes_state[i]->tp != NULL)
+        if(foes_state[i]->tp != nullptr)
           foes_state[i]->tp->setBrightness(1.0);
 
       bar_offset = 0;
@@ -2524,54 +2494,54 @@ bool BattleDisplay::update(int cycle_time)
           //TODO - Check skill for nullptr, remove renderers ?
           if (curr_event->type == EventType::SKILL_USE)
           {
-            renderActionText(curr_event->skill_use->getName());
+            createActionText(curr_event->skill_use->getName());
             processing_delay = 1100;
           }
           else if (curr_event->type == EventType::SKILL_USE_FIZZLE)
           {
             //TODO: Fizzling text? [06-21-15]
-            renderFizzleText();
+            // renderFizzleText();
           }
           else if (curr_event->type == EventType::SKILL_COOLDOWN)
           {
             //TODO: Skill cooldown stuff? [06-21-15]
-            renderActionText("Skill Cooldown!");
+            createActionText("Skill Cooldown!");
                        processing_delay = 1100;
           }
           else if (curr_event->type == EventType::ATTEMPT_RUN)
           {
             //TODO: Running text? [06-21-15]
-            renderActionText("Attempting to Run!");
+            createActionText("Attempting to Run!");
                        processing_delay = 1100;
           }
           else if (curr_event->type == EventType::SUCCEED_RUN)
           {
-            renderActionText("Running!");
+            createActionText("Running!");
                        processing_delay = 1100;
           }
           else if (curr_event->type == EventType::FAIL_RUN)
           {
-            renderActionText("Failed to Run!");
+            createActionText("Failed to Run!");
                        processing_delay = 1100;
           }
           else if (curr_event->type == EventType::MISS_TURN)
           {
-            renderActionText("Missing turn!");
+            createActionText("Missing turn!");
                        processing_delay = 1100;
           }
           else if (curr_event->type == EventType::PASS)
           {
-            renderActionText("Pass!");
+            createActionText("Pass!");
             processing_delay = 1100;
           }
           else if (curr_event->type == EventType::SKILL_MISS)
           {
-            renderActionText("Miss!");
+            createActionText("Miss!");
             processing_delay = 1100;
           }
           else if (curr_event->type == EventType::ACTION_MISS)
           {
-            renderDamageValue(0, true);
+            createDamageValue(0, true);
             processing_delay = 1100;
           }
           else if (curr_event->type == EventType::BLIND_MISS)
@@ -2604,17 +2574,17 @@ bool BattleDisplay::update(int cycle_time)
           }
           else if (curr_event->type == EventType::BEGIN_DEFEND)
           {
-            renderActionText("Defending!");
+            createActionText("Defending!");
                        processing_delay = 1100;
           }
           else if (curr_event->type == EventType::PERSIST_DEFEND)
           {
-            renderActionText("Still Defending!");
+            createActionText("Still Defending!");
                        processing_delay = 1100;
           }
           else if (curr_event->type == EventType::BREAK_DEFEND)
           {
-            renderActionText("Not Defending!");
+            createActionText("Not Defending!");
                        processing_delay = 1100;
           }
           else if (curr_event->type == EventType::BEGIN_GUARD)
@@ -2629,7 +2599,7 @@ bool BattleDisplay::update(int cycle_time)
                    curr_event->type == EventType::HITBACK_DAMAGE  ||
                    curr_event->type == EventType::METABOLIC_DAMAGE)
           {
-            renderDamageValue(curr_event->amount, false);
+            createDamageValue(curr_event->amount, false);
             processing_delay = 100;
           }
           else
@@ -2642,7 +2612,7 @@ bool BattleDisplay::update(int cycle_time)
       /* Update deaths */
       for(uint8_t i = 0; i < friends_state.size(); i++)
       {
-        if(friends_state[i]->self != NULL)
+        if(friends_state[i]->self != nullptr)
         {
           if(!friends_state[i]->self->getBFlag(BState::ALIVE))
             friends_state[i]->fp->setOpacity(50);
@@ -2718,49 +2688,17 @@ bool BattleDisplay::update(int cycle_time)
 }
 
 //TODO: Comment
-bool BattleDisplay::updateTextElements(int32_t cycle_time)
+bool BattleDisplay::updateElements(int32_t cycle_time)
 {
-  for (auto &element : render_texts)
-  {
-    if (element != nullptr && element->font != nullptr)
-    {
-      /* Update the time for the text element */
-      element->remaining_time -= cycle_time;
-      element->elapsed_time   += cycle_time;
-    
-      /* Update the (X,Y) based on velocity */
-      element->text_x   += element->velocity_x;
-      element->text_y   += element->velocity_y;
-      element->shadow_x += element->shadow_x;
-      element->shadow_y += element->shadow_y;
-    
-      /* Calculate opacity based on fade in/out time */
-      // if (element->elapsed_time > element->fade_in_time && 
-      //     element->remaining_time < element->fade_out_time)
-      // {
-      //   auto time_per_alpha = element->fade_out_time / element->color.a;
-      //   element->curr_alpha = element->remaining_time / time_per_alpha;
-      // }
-      // else if (element->elapsed_time > element->fade_in_time)
-      // {
-      //   element->curr_alpha = element->color.a;
-      // }
-      // else
-      // {
-      //   auto time_per_alpha = element->fade_in_time / element->color.a;
-      //   element->curr_alpha = 255 - element->remaining_time / time_per_alpha; 
-      // }
+  bool success = true;
 
-    }
-  }
+  for (auto &element : render_elements)
+    if (element != nullptr)
+      success &= element->update(cycle_time);
 
-  return true;
+  return success;
 }
 
- /*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
-
 /*=============================================================================
- * OPERATOR FUNCTIONS
+ * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
