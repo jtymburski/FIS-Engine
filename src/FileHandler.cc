@@ -1723,7 +1723,7 @@ bool FileHandler::fileDelete(std::string filename)
 bool FileHandler::fileExists(std::string filename)
 {
   std::ifstream test_file(filename.c_str());
-  return test_file;
+  return (bool)test_file;
 }
 
 /* 

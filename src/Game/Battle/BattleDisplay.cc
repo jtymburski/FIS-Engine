@@ -1968,7 +1968,7 @@ bool BattleDisplay::setAilment(Infliction ailment, std::string path,
 {
   if(ailment != Infliction::INVALID)
     return ailments[static_cast<uint64_t>(ailment)].setTexture(path, renderer);
-  return nullptr;
+  return false;
 }
 
 /* Sets the background sprite */
@@ -2058,7 +2058,7 @@ bool BattleDisplay::setElement(Element element, std::string path,
 {
   if(element != Element::NONE)
     return elements[Helpers::elementToInt(element)].setTexture(path, renderer);
-  return nullptr;
+  return false;
 }
 
 /* Sets the rendering helper frames for display */
@@ -2115,7 +2115,7 @@ bool BattleDisplay::setScope(ActionScope scope, std::string path,
 {
   if(scope != ActionScope::NO_SCOPE)
     return scopes[static_cast<uint64_t>(scope)].setTexture(path, renderer);
-  return nullptr;
+  return false;
 }
   
 /* Sets if info about player should be shown regardless of state */
