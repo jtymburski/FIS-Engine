@@ -1110,6 +1110,7 @@ void BattleDisplay::createDamageValue(Person* target, uint64_t amount,
   render_elements.push_back(element);
 }
 
+//TODO: Comment
 void BattleDisplay::createRegenValue(Person* target, uint64_t amount)
 {
   /* Determine the appropriate color to show (whether VITA/QD regen) */
@@ -1145,7 +1146,7 @@ void BattleDisplay::createRegenValue(Person* target, uint64_t amount)
   element->setShadowCoordinates(kACTION_TEXT_SHADOW - 2, 
       kACTION_TEXT_SHADOW - 1);
   element->setShadowColor(shadow_color);
-  element->setVelocity(0, -50);
+  element->setVelocity(0, -45);
   element->setAcceleration(0, -5);
 
   render_elements.push_back(element);
@@ -2409,8 +2410,11 @@ bool BattleDisplay::update(int cycle_time)
           if (curr_event->type == EventType::REGEN_VITA ||
               curr_event->type == EventType::REGEN_QTDR)
           {
-            createRegenValue(curr_event->targets.at(0), curr_event->amount);
-            processing_delay = 1000;
+            if (curr_event->amount > 0)
+            {
+              createRegenValue(curr_event->targets.at(0), curr_event->amount);
+              processing_delay = 1000;
+            }
           }
         }
       }

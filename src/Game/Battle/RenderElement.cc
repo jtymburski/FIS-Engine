@@ -144,21 +144,20 @@ bool RenderElement::update(int cycle_time)
   }
 
   /* Calculate opacity based on fade in/out time */
-      // if (element->elapsed_time > element->fade_in_time && 
-      //     element->remaining_time < element->fade_out_time)
-      // {
-      //   auto time_per_alpha = element->fade_out_time / element->color.a;
-      //   element->curr_alpha = element->remaining_time / time_per_alpha;
-      // }
-      // else if (element->elapsed_time > element->fade_in_time)
-      // {
-      //   element->curr_alpha = element->color.a;
-      // }
-      // else
-      // {
-      //   auto time_per_alpha = element->fade_in_time / element->color.a;
-      //   element->curr_alpha = 255 - element->remaining_time / time_per_alpha; 
-      // }
+  // if (elapsed_time > fade_in_time && remaining_time < fade_out_time)
+  // {
+  //   auto time_per_alpha = fade_out_time / color.a;
+  //   alpha = remaining_time / time_per_alpha;
+  // }
+  // else if (elapsed_time > fade_in_time)
+  // {
+  //   alpha = color.a;
+  // }
+  // else
+  // {
+  //   auto time_per_alpha = fade_in_time / color.a;
+  //   alpha = 255 - remaining_time / time_per_alpha;
+  // }
   
   return true;
 }
