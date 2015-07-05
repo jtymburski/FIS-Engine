@@ -23,6 +23,16 @@
 using std::begin;
 using std::end;
 
+/* RenderingState flags */
+ENUM_FLAGS(RenderState)
+enum class RenderState
+{
+  INITIAL_STATE_RENDERING_DELAY = 1 << 0, /* Init. delay upon ProcessActions */
+  SKILL_BEGIN_DELAY             = 1 << 1, /* Delay upon beginning action */
+  ACTION_BEGIN_DELAY            = 1 << 2,
+  POST_RENDERING_DELAY          = 1 << 3  /* Delay after end rendering */
+};
+
 /*
  * Structure which handles the information required in battle for each given
  * person. Used for controlling state, what's happening, etc.
@@ -72,6 +82,7 @@ private:
 
   /* The current event being rendered/worked on */
   BattleEvent* curr_event;
+  Action*      curr_action;
 
   /* Element frames */
   std::vector<Frame> elements;
@@ -113,6 +124,7 @@ private:
   SDL_Renderer* renderer;
 
   /* Rendering turn state */
+  RenderState  render_flags;
   TurnState rendering_state;
   
   /* Action scope frames */
@@ -215,6 +227,8 @@ private:
   const static SDL_Color kPOIS_DMG_COLOR;
   const static SDL_Color kHEAL_DMG_COLOR;
   const static SDL_Color kBURN_DMG_COLOR;
+  const static SDL_Color kVITA_REGEN_COLOR;
+  const static SDL_Color kQTDR_REGEN_COLOR;
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -244,14 +258,19 @@ private:
   
   /* Deletes the rendering skills, for the menu */
   void deleteSkills();
+
+  /* Handles delay processing */
+  bool handleDelayProcessing(int32_t cycle_time, bool change_state);
   
   /* Get foes party in battle */
   Party* getFoesParty();
   PersonState* getFoesState(int32_t index);
+  PersonState* getFoesState(Person* foes);
 
   /* Get friends in battle */
   Party* getFriendsParty();
   PersonState* getFriendsState(int32_t index);
+  PersonState* getFriendsState(Person* ally);
 
   /* Returns modified index */
   uint32_t getIndex(int32_t index);
@@ -259,6 +278,12 @@ private:
   /* Find the X/Y coordinates of person rendering */
   int16_t getPersonX(Person* check_person);
   int16_t getPersonY(Person* check_person);
+
+  /* Return the value of a rendering flag */
+  bool getRenderFlag(const RenderState &test_flag);
+
+  /* Assigns the value of a RenderState flag */
+  void setRenderFlag(RenderState flags, const bool &set_value = true);
 
   /* Render the action skills */
   bool renderActionSkills(SDL_Renderer* renderer, BattleMenu* menu, uint16_t x,
@@ -268,7 +293,8 @@ private:
   void createActionText(std::string action_name);
 
   /* Render the damage value */
-  void createDamageValue(uint64_t amount, bool miss = false);
+  void createDamageValue(Person* target, uint64_t amount, bool miss = false);
+  void createRegenValue(Person* target, uint64_t amount);
 
   /* Render Skill fizzling text */
   void renderFizzleText();

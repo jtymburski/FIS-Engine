@@ -1,4 +1,4 @@
-/*******************************************************************************
+/******************************************************************************
 * Class Name: /
 * Date Created: June 22, 2014
 * Inheritance: None
@@ -104,8 +104,6 @@ bool RenderElement::update(int cycle_time)
   remaining_time -= cycle_time;
   elapsed_time   += cycle_time;
 
-  std::cout << "Remaining Time: " << remaining_time << std::endl;
-
   /* Before updating coordinates, update the pixels/s from the pixels/s/s */
   velocity_x += acceleration_x;
   velocity_y += acceleration_y;
@@ -114,10 +112,10 @@ bool RenderElement::update(int cycle_time)
   auto temp_delta_x = 0.0;
   auto temp_delta_y = 0.0;
 
-  temp_delta_x = static_cast<float>(velocity_x) / 100.0f;
-  temp_delta_y = static_cast<float>(velocity_y) / 100.0f;
+  temp_delta_x += static_cast<float>(velocity_x) / 100.0f;
+  temp_delta_y += static_cast<float>(velocity_y) / 100.0f;
 
-  if (delta_x >= 1.0 || delta_y <= 1.0)
+  if (delta_x >= 1.0 || delta_x <= -1.0)
   {
     x += std::floor(delta_x);
 
@@ -131,7 +129,7 @@ bool RenderElement::update(int cycle_time)
     delta_x += temp_delta_x;
   }
 
-  if (delta_y >= 1.0 || delta_y <= 1.0)
+  if (delta_y >= 1.0 || delta_y <= -1.0)
   {
     y += std::floor(delta_y);
 

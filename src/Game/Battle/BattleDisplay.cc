@@ -26,7 +26,7 @@ const uint16_t BattleDisplay::kACTION_CORNER_X = 18;
 const uint16_t BattleDisplay::kACTION_CORNER_Y = 4;
 const uint16_t BattleDisplay::kACTION_H = 408;
 const uint16_t BattleDisplay::kACTION_TEXT_SHADOW = 3;
-const uint16_t BattleDisplay::kACTION_TEXT_X = 800;
+const uint16_t BattleDisplay::kACTION_TEXT_X = 100;
 const uint16_t BattleDisplay::kACTION_W = 359;
 const uint16_t BattleDisplay::kACTION_Y = 291;
 
@@ -95,10 +95,13 @@ const uint8_t BattleDisplay::kTYPE_MAX = 5;
 const uint8_t BattleDisplay::kTYPE_SELECT = 3;
 
 /* ---- Color Constants ---- */
-const SDL_Color BattleDisplay::kSTRD_DMG_COLOR = {250,  250, 250, 255};
+const SDL_Color BattleDisplay::kSTRD_DMG_COLOR = {225,  225,   225, 255};
 const SDL_Color BattleDisplay::kCRIT_DMG_COLOR = {255,  255,   0, 255};
 const SDL_Color BattleDisplay::kPOIS_DMG_COLOR = { 51,  102,   0, 255};
 const SDL_Color BattleDisplay::kBURN_DMG_COLOR = {172,    0,   0, 255};
+const SDL_Color BattleDisplay::kVITA_REGEN_COLOR = {0, 102, 51, 255};
+const SDL_Color BattleDisplay::kQTDR_REGEN_COLOR = {0, 128, 255, 255};
+
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -120,6 +123,7 @@ BattleDisplay::BattleDisplay(Options* running_config)
   battle         = nullptr;
   battle_bar     = nullptr;
   curr_event     = nullptr;
+  curr_action    = nullptr;
   foes_backdrop  = nullptr;
   font_action    = nullptr;
   font_header    = nullptr;
@@ -775,6 +779,50 @@ void BattleDisplay::deleteSkills()
   skill_names.clear();
 }
 
+// TODO: Comment
+bool BattleDisplay::handleDelayProcessing(int32_t cycle_time, bool change_state)
+{
+  auto event_buffer = battle->getEventBuffer();
+  auto delay = false;
+
+  if (change_state)
+  {
+    processing_delay = 1000;
+  }
+
+  if (processing_delay >= 0)
+  {
+    processing_delay -= cycle_time;
+    delay = true;
+  }
+
+  if (delay && processing_delay <= 0)
+  {
+    std::cout << "Setting event: " << event_buffer->getIndex() << " as rendered" << std::endl;
+    event_buffer->setRendered(event_buffer->getIndex());
+
+    auto more_rendering = true;
+    more_rendering &= event_buffer->setRenderIndex();
+
+    /* If there was not an unrendered index to set for the EventBuffer,
+     * the rendering of processed actions ins complete -> set rendering 
+     * complete flag for Battle to continue processing or set next turn 
+     * state */
+    if (getRenderFlag(RenderState::POST_RENDERING_DELAY) && !more_rendering)
+    {
+      setRenderFlag(RenderState::POST_RENDERING_DELAY, false);
+      battle->setBattleFlag(CombatState::RENDERING_COMPLETE, true);
+    }
+    else if (!more_rendering)
+    {
+      setRenderFlag(RenderState::POST_RENDERING_DELAY, true);
+      processing_delay = 100;
+    }
+  }
+
+  return delay;
+}
+
 /* Get foes in battle */
 // TODO: Comment
 Party* BattleDisplay::getFoesParty()
@@ -795,6 +843,16 @@ PersonState* BattleDisplay::getFoesState(int32_t index)
   return nullptr;
 }
 
+PersonState* BattleDisplay::getFoesState(Person* foe)
+{
+  if (foe != nullptr)
+    for (const auto& foe_state : foes_state)
+      if (foe == foe_state->self)
+        return foe_state;
+
+  return nullptr;
+}
+
 /* Get friends in battle */
 // TODO: Comment
 Party* BattleDisplay::getFriendsParty()
@@ -812,6 +870,16 @@ PersonState* BattleDisplay::getFriendsState(int32_t index)
     if(friends_state.size() > ref)
       return friends_state[ref];
   }
+  return nullptr;
+}
+
+PersonState* BattleDisplay::getFriendsState(Person* ally)
+{
+  if (ally != nullptr)
+    for (const auto& friend_state : friends_state)
+      if (ally == friend_state->self)
+        return friend_state;
+
   return nullptr;
 }
   
@@ -859,6 +927,18 @@ int16_t BattleDisplay::getPersonY(Person* check_person)
       return system_options->getScreenHeight() - kFRIENDS_OFFSET;
 
   return -1;
+}
+
+/* Return the value of a rendering flag */
+bool BattleDisplay::getRenderFlag(const RenderState &test_flag)
+{
+  return static_cast<bool>((render_flags & test_flag) == test_flag);
+}
+
+/* Assigns the value of a RenderState flag */
+void BattleDisplay::setRenderFlag(RenderState flags, const bool &set_value)
+{
+  (set_value) ? (render_flags |= flags) : (render_flags &= ~flags);
 }
 
 /* Render the action skills */
@@ -963,7 +1043,8 @@ void BattleDisplay::createActionText(std::string action_name)
   Text t(font_action);
   t.setText(renderer, action_text->getText(), action_text->getColor());
 
-  action_text->setX(kACTION_TEXT_X - t.getWidth());
+  auto x  = (system_options->getScreenWidth() - t.getWidth()) / 2;
+  action_text->setX(x);
   action_text->setY(kACTION_CENTER - t.getHeight() / 2 - 8);
   action_text->setShadow();
   action_text->setShadowCoordinates(kACTION_TEXT_SHADOW, kACTION_TEXT_SHADOW);
@@ -977,12 +1058,13 @@ void BattleDisplay::renderFizzleText()
 }
 
 //TODO: Comment
-void BattleDisplay::createDamageValue(uint64_t amount, bool miss)
+void BattleDisplay::createDamageValue(Person* target, uint64_t amount,
+    bool miss)
 {
   /* Determine the color of text to use for displaying according to the
    * appropriate damage type (based on the type of event being processed ) */
-  SDL_Color color = {0, 0, 0, 180};
-  SDL_Color shadow_color = {255, 255, 255, 180};
+  SDL_Color color = {0, 0, 0, 255};
+  SDL_Color shadow_color = {255, 255, 255, 255};
 
   if (curr_event->type == EventType::STANDARD_DAMAGE)
     shadow_color = kSTRD_DMG_COLOR;
@@ -1007,22 +1089,64 @@ void BattleDisplay::createDamageValue(uint64_t amount, bool miss)
   Text t(font_damage);
   t.setText(renderer, element->getText(), color);
   
-  element->setTimes(750, 0, 0);
+  element->setTimes(550, 0, 0);
 
-  auto x  = getPersonX(curr_event->targets.at(0));
+  auto x  = getPersonX(target);
        x += kPERSON_WIDTH / 2;
        x -= t.getWidth()  / 2;
 
-  auto y = getPersonY(curr_event->targets.at(0));
+  auto y = getPersonY(target);
        y += t.getHeight() / 2;
        y += 40;
 
   element->setCoordinates(x, y);
   element->setShadow(true);
-  element->setShadowCoordinates(kACTION_TEXT_SHADOW / 2, kACTION_TEXT_SHADOW / 2);
-  element->setShadowColor(color);
-  element->setAcceleration(0, 0);
-  element->setVelocity(800, 470);
+  element->setShadowCoordinates(kACTION_TEXT_SHADOW - 2, 
+      kACTION_TEXT_SHADOW - 1);
+  element->setShadowColor(shadow_color);
+  element->setAcceleration(5, -15);
+  element->setVelocity(-100, -180);
+
+  render_elements.push_back(element);
+}
+
+void BattleDisplay::createRegenValue(Person* target, uint64_t amount)
+{
+  /* Determine the appropriate color to show (whether VITA/QD regen) */
+  SDL_Color color = {0, 0, 0, 255};
+  SDL_Color shadow_color = {255, 255, 255, 255};
+
+  if (curr_event->type == EventType::REGEN_VITA)
+    shadow_color = kVITA_REGEN_COLOR;
+  else if (curr_event->type == EventType::REGEN_QTDR)
+    shadow_color = kQTDR_REGEN_COLOR;
+
+  RenderElement* element = new RenderElement(RenderType::DAMAGE_VALUE);
+
+  element->setColor(color);
+  element->setFont(font_damage);
+  element->setText(std::to_string(amount));
+
+  Text t(font_damage);
+  t.setText(renderer, element->getText(), color);
+
+  element->setTimes(550, 0, 0);
+
+  auto x  = getPersonX(target);
+       x += kPERSON_WIDTH / 2;
+       x -= t.getWidth()  / 2;
+
+  auto y = getPersonY(target);
+       y += t.getHeight() / 2;
+       y += 40;
+
+  element->setCoordinates(x, y);
+  element->setShadow(true);
+  element->setShadowCoordinates(kACTION_TEXT_SHADOW - 2, 
+      kACTION_TEXT_SHADOW - 1);
+  element->setShadowColor(shadow_color);
+  element->setVelocity(0, -50);
+  element->setAcceleration(0, -5);
 
   render_elements.push_back(element);
 }
@@ -2260,6 +2384,37 @@ bool BattleDisplay::update(int cycle_time)
      *-----------------------------------------------------------------------*/
     else if(rendering_state == TurnState::UPKEEP)
     {
+      auto rendering    = false;
+      auto change_state = false;
+
+      auto delay = handleDelayProcessing(cycle_time, change_state);
+
+      /* If ready to render flag is true, there are events which need to be 
+       * rendered on the Event Buffer */
+      if (battle->getBattleFlag(CombatState::READY_TO_RENDER) &&
+          !battle->getBattleFlag(CombatState::RENDERING_COMPLETE) &&
+          !delay)
+      {
+        rendering |= event_buffer->setRenderIndex();
+      }
+
+      if (rendering)
+      {
+        curr_event = event_buffer->getEvent(event_buffer->getIndex());
+
+        auto targets = curr_event->targets;
+
+        if(curr_event != nullptr && !curr_event->rendered)
+        {
+          if (curr_event->type == EventType::REGEN_VITA ||
+              curr_event->type == EventType::REGEN_QTDR)
+          {
+            createRegenValue(curr_event->targets.at(0), curr_event->amount);
+            processing_delay = 1000;
+          }
+        }
+      }
+
       rendering_state = battle_state;
     }
     /*-------------------------------------------------------------------------
@@ -2423,43 +2578,15 @@ bool BattleDisplay::update(int cycle_time)
      *-----------------------------------------------------------------------*/
     else if(rendering_state == TurnState::PROCESS_ACTIONS)
     {
+      auto rendering    = false;
+      auto change_state = false;
+
       if (rendering_state != battle_state)
-      {
-        std::cout << "Initial processing delay!" << std::endl;
-        processing_delay = 1000;
-      }
+        change_state = true;
 
-      std::cout << "Rendering State:: PROCESS ACTIONS" << std::endl;
-      auto rendering = false;
-      auto delay     = false;
-
-      if (processing_delay > 0)
-      {
-        std::cout << "Decrementing processing delay" << std::endl;
-        processing_delay -= cycle_time;
-        delay = true;
-
-        if (processing_delay <= 0)
-        {
-          // TODO set event to rendered
-          std::cout << "Setting index: " << event_buffer->getIndex() 
-                    << " to be rendered!" << std::endl;
-          event_buffer->setRendered(event_buffer->getIndex());
-
-          auto more_rendering = true;
-          more_rendering &= event_buffer->setRenderIndex();
-
-          /* If there was not an unrendered index to set for the EventBuffer,
-           * the rendering of processed actions ins complete -> set rendering 
-           * complete flag for Battle to continue processing or set next turn 
-           * state */
-          if (!more_rendering)
-          {
-            std::cout << "! --- Setting rendering complete ---- !" << std::endl;
-            battle->setBattleFlag(CombatState::RENDERING_COMPLETE, true);
-          }
-        }
-      }
+      std::cout << "PreProcessing Delay: " << processing_delay << std::endl;
+      auto delay = handleDelayProcessing(cycle_time, change_state);
+      std::cout << "PostProcessing Delay: " << processing_delay << std::endl;
 
       /* If ready to render flag is true, there are events which need to be 
        * rendered on the Event Buffer */
@@ -2467,7 +2594,6 @@ bool BattleDisplay::update(int cycle_time)
           !battle->getBattleFlag(CombatState::RENDERING_COMPLETE) &&
           !delay)
       {
-        std::cout << "Setting rendered index" << std::endl;
         rendering |= event_buffer->setRenderIndex();
       }
 
@@ -2477,15 +2603,24 @@ bool BattleDisplay::update(int cycle_time)
       {
         curr_event = event_buffer->getEvent(event_buffer->getIndex());
 
-        std::cout << "Installing processing delay" << std::endl;
+        auto targets = curr_event->targets;
 
-        if(curr_event != nullptr)
+        if(curr_event != nullptr && !curr_event->rendered)
         {
           //TODO - Check skill for nullptr, remove renderers ?
           if (curr_event->type == EventType::SKILL_USE)
           {
-            createActionText(curr_event->skill_use->getName());
-            processing_delay = 1100;
+            if (getRenderFlag(RenderState::SKILL_BEGIN_DELAY))
+            {
+              setRenderFlag(RenderState::SKILL_BEGIN_DELAY, false);
+              createActionText(curr_event->skill_use->getName());
+            }
+            else
+            {
+              setRenderFlag(RenderState::SKILL_BEGIN_DELAY, true);
+              processing_delay = 2000;
+            }
+
           }
           else if (curr_event->type == EventType::SKILL_USE_FIZZLE)
           {
@@ -2529,10 +2664,28 @@ bool BattleDisplay::update(int cycle_time)
             createActionText("Miss!");
             processing_delay = 1100;
           }
+          else if (curr_event->type == EventType::ACTION_BEGIN)
+          {
+            processing_delay = 50;
+            /* Input processing delay if the action has changed */
+            // if (curr_event->action_use != curr_action && 
+            //     curr_event->action_use != nullptr)
+            // {
+            //   curr_action      = curr_event->action_use;
+            //   processing_delay = 150;
+            // }
+            // else
+            // {
+            //   processing_delay = 50;
+            // }
+          }
           else if (curr_event->type == EventType::ACTION_MISS)
           {
-            createDamageValue(0, true);
-            processing_delay = 1100;
+            /* Create miss for each target */
+            for (auto target : targets)
+              createDamageValue(target, 0, true);
+
+            processing_delay = 50;
           }
           else if (curr_event->type == EventType::BLIND_MISS)
           {
@@ -2589,8 +2742,8 @@ bool BattleDisplay::update(int cycle_time)
                    curr_event->type == EventType::HITBACK_DAMAGE  ||
                    curr_event->type == EventType::METABOLIC_DAMAGE)
           {
-            createDamageValue(curr_event->amount, false);
-            processing_delay = 100;
+            createDamageValue(targets.at(0), curr_event->amount, false);
+            processing_delay = 50;
           }
           else
           {

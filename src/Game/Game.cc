@@ -356,12 +356,12 @@ void Game::setupBattle()
   physical_01->setDescription("Jordan is a weirdo... Lor em ips um do lor sit amet, mel omnis nomin ati an, atom orum facil isis in pri, adipi scing argum entum in pri. Duo ei tempor dicunt sanctus, per ut hinc oporteat conceptam. Iisque euismod albucius vel ut, duo ea singulis eleifend. Veri offendit vim ut, at pri tale adolescens, putant veritus sea no. Atqui blandit assentior ne eam. Et rebum deserunt pericula eum.");
   physical_01->setFlag(SkillFlags::OFFENSIVE);
 
-  Skill* physical_02 = new Skill(101, "Quintuple Whelp", ActionScope::ONE_ENEMY, 
+  Skill* physical_02 = new Skill(101, "Triple Whelp", ActionScope::ONE_ENEMY, 
       damage_actions[4],  95, 5);
   physical_02->addAction(damage_actions[5]);
   physical_02->addAction(damage_actions[6]);
-  physical_02->addAction(damage_actions[4]);
-  physical_02->addAction(damage_actions[3]);
+  // physical_02->addAction(damage_actions[4]);
+  // physical_02->addAction(damage_actions[3]);
   physical_02->setPrimary(Element::PHYSICAL);
   physical_02->setFlag(SkillFlags::OFFENSIVE);
 
@@ -433,10 +433,10 @@ void Game::setupBattle()
   life_steal->addAction(alter_actions[6], true);
   life_steal->setFlag(SkillFlags::DEFENSIVE);
 
-  Skill* poison = new Skill(140, "Inflict Poison", ActionScope::ONE_TARGET,
-    inflict_actions[0], 100, 10);
-  poison->setPrimary(Element::FOREST);
-  poison->setFlag(SkillFlags::OFFENSIVE);
+  // Skill* poison = new Skill(140, "Inflict Poison", ActionScope::ONE_TARGET,
+  //   inflict_actions[0], 100, 10);
+  // poison->setPrimary(Element::FOREST);
+  // poison->setFlag(SkillFlags::OFFENSIVE);
 
   Skill* burn = new Skill(141, "Inflict Burn", ActionScope::ONE_TARGET,
     inflict_actions[1], 100, 10);
@@ -517,7 +517,7 @@ void Game::setupBattle()
   // physical_skills->addSkill(ally_heal, 1);
   // physical_skills->addSkill(revive_ally, 1);
   // physical_skills->addSkill(life_steal, 1);
-  physical_skills->addSkill(poison, 1);
+  // physical_skills->addSkill(poison, 1);
   // physical_skills->addSkill(burn, 1);
   // physical_skills->addSkill(paralysis, 1);
   // physical_skills->addSkill(scald, 1);
@@ -738,10 +738,10 @@ void Game::setupBattle()
 
     /* Sprites */
     Sprite* background = new Sprite(
-           base_path + "sprites/Battle/Backdrop/battlebg", 8, ".png", renderer);
+           base_path + "sprites/Battle/Backdrop/battlebg", 1, ".png", renderer);
     background->setDirectionReverse();
     background->shiftNext();
-    background->setAnimationTime(2500);
+    //background->setAnimationTime(2500);
     
     Sprite* midlay = new Sprite(
                 base_path + "sprites/Battle/Midlays/rain", 6, ".png", renderer);

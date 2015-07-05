@@ -24,9 +24,9 @@
 
 enum class RenderType : std::uint16_t
 {
-  NONE        =  0, 
-  ACTION_TEXT =  1,
-  DAMAGE_VALUE = 2
+  NONE         =  0, 
+  ACTION_TEXT  =  1,
+  DAMAGE_VALUE =  2,
 };
 
 class RenderElement
