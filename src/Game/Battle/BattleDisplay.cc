@@ -95,13 +95,12 @@ const uint8_t BattleDisplay::kTYPE_MAX = 5;
 const uint8_t BattleDisplay::kTYPE_SELECT = 3;
 
 /* ---- Color Constants ---- */
-const SDL_Color BattleDisplay::kSTRD_DMG_COLOR = {225,  225,   225, 255};
-const SDL_Color BattleDisplay::kCRIT_DMG_COLOR = {255,  255,   0, 255};
-const SDL_Color BattleDisplay::kPOIS_DMG_COLOR = { 51,  102,   0, 255};
-const SDL_Color BattleDisplay::kBURN_DMG_COLOR = {172,    0,   0, 255};
-const SDL_Color BattleDisplay::kVITA_REGEN_COLOR = {0, 102, 51, 255};
-const SDL_Color BattleDisplay::kQTDR_REGEN_COLOR = {0, 128, 255, 255};
-
+const SDL_Color BattleDisplay::kSTRD_DMG_COLOR   = {225,  225, 225, 255};
+const SDL_Color BattleDisplay::kCRIT_DMG_COLOR   = {255,  255,   0, 255};
+const SDL_Color BattleDisplay::kPOIS_DMG_COLOR   = { 51,  102,   0, 255};
+const SDL_Color BattleDisplay::kBURN_DMG_COLOR   = {172,    0,   0, 255};
+const SDL_Color BattleDisplay::kVITA_REGEN_COLOR = { 50 , 205,  50, 255};
+const SDL_Color BattleDisplay::kQTDR_REGEN_COLOR = { 0,  128,  255, 255};
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
@@ -1038,7 +1037,7 @@ void BattleDisplay::createActionText(std::string action_name)
   action_text->setShadowColor({kACTION_COLOR_R, 0, 0, 255});
   action_text->setFont(font_action);
   action_text->setText(action_name);
-  action_text->setTimes(1000, 100, 100);
+  action_text->setTimes(900, 100, 100);
 
   Text t(font_action);
   t.setText(renderer, action_text->getText(), action_text->getColor());
@@ -1089,7 +1088,7 @@ void BattleDisplay::createDamageValue(Person* target, uint64_t amount,
   Text t(font_damage);
   t.setText(renderer, element->getText(), color);
   
-  element->setTimes(550, 0, 0);
+  element->setTimes(550, 50, 150);
 
   auto x  = getPersonX(target);
        x += kPERSON_WIDTH / 2;
@@ -1131,7 +1130,7 @@ void BattleDisplay::createRegenValue(Person* target, uint64_t amount)
   Text t(font_damage);
   t.setText(renderer, element->getText(), color);
 
-  element->setTimes(550, 0, 0);
+  element->setTimes(650, 150, 150);
 
   auto x  = getPersonX(target);
        x += kPERSON_WIDTH / 2;
@@ -2030,11 +2029,13 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
       {
         Text t(element->getFont());
         t.setText(renderer, element->getText(), element->getColor());
+        t.setAlpha(element->getAlpha());
         t.render(renderer, element->getX(), element->getY());
 
         if (element->hasShadow())
         {
           t.setText(renderer, element->getText(), element->getShadowColor());
+          t.setAlpha(element->getAlpha());
           t.render(renderer, element->getShadowX(), element->getShadowY());
         }
       }

@@ -143,22 +143,29 @@ bool RenderElement::update(int cycle_time)
     delta_y += temp_delta_y;
   }
 
-  /* Calculate opacity based on fade in/out time */
-  // if (elapsed_time > fade_in_time && remaining_time < fade_out_time)
-  // {
-  //   auto time_per_alpha = fade_out_time / color.a;
-  //   alpha = remaining_time / time_per_alpha;
-  // }
-  // else if (elapsed_time > fade_in_time)
-  // {
-  //   alpha = color.a;
-  // }
-  // else
-  // {
-  //   auto time_per_alpha = fade_in_time / color.a;
-  //   alpha = 255 - remaining_time / time_per_alpha;
-  // }
-  
+  if (elapsed_time >= fade_in_time && remaining_time >= fade_out_time)
+  {
+    alpha = color.a;
+  }
+  else if (elapsed_time < fade_in_time)
+  {
+    std::cout << "Color: A" << (int)color.a << std::endl;
+    double time_per_alpha = (double)fade_in_time / color.a;
+    alpha = std::floor(time_per_alpha * elapsed_time);
+  }
+  else if (remaining_time < fade_out_time)
+  {
+    double time_per_alpha = (double)fade_out_time / color.a;
+    auto time_diff = fade_out_time - remaining_time;
+    alpha = color.a - std::floor(time_per_alpha * time_diff);
+  }
+
+  shadow_alpha = alpha;
+
+  std::cout << "Remaining Time: " << remaining_time << std::endl;
+  std::cout << "Elapsed Time: "   << elapsed_time << std::endl;
+  std::cout << "Alpha: "          << alpha << std::endl;
+
   return true;
 }
 
