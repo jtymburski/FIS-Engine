@@ -117,6 +117,26 @@ public:
   
   /* Unset the sound file and frees the memory */
   void unsetSoundFile();
+
+/*=============================================================================
+ * PUBLIC FUNCTIONS
+ *============================================================================*/
+public:
+
+  static bool setMasterVolume(int new_volume);
+
+  static bool setMusicVolumes(int new_volume);
+
+  static bool setAudioVolumes(int new_volume);
+
+  static void pauseAllChannels();
+
+  static void pauseChannel(SoundChannels channel);
+
+  static void resumeAllChannels();
+
+  static void resumeChannel(SoundChannels channel);
+
 };
 
 #endif // SOUND_H

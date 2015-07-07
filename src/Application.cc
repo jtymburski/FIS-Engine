@@ -65,7 +65,8 @@ bool Application::changeMode(AppMode mode)
     if(this->mode == TITLESCREEN)
       title_screen.enableView(false);
     
-    this->mode = mode;
+    this->temp_mode = this->mode;
+    this->mode      = mode;
     
     /* Changes to execute on the views opening */
     if(this->mode == TITLESCREEN)
@@ -94,15 +95,28 @@ void Application::handleEvents()
       
       if (press_event.keysym.sym == SDLK_F3)
       {
-        Mix_Volume(-1, 0);
-        // system_options->setAudioLevel(0);
-        // system_options->setMusicLevel(0);
+        system_options->setAudioLevel(system_options->getAudioLevel() - 5);
+        system_options->setMusicLevel(system_options->getAudioLevel() - 5);
       }
       else if (press_event.keysym.sym == SDLK_F4)
       {
-        Mix_Volume(-1, 80);
-        // system_options->setAudioLevel(80);
-        // system_options->setMusicLevel(80);
+        system_options->setAudioLevel(system_options->getAudioLevel() + 5);
+        system_options->setMusicLevel(system_options->getAudioLevel() + 5);
+      }
+      else if (press_event.keysym.sym == SDLK_F5)
+      {
+        if (mode == PAUSED)
+        {
+          SDL_SetWindowBrightness(window, 1.0);
+          Sound::resumeAllChannels();
+          revertMode();
+        }
+        else
+        {
+          SDL_SetWindowBrightness(window, 0.9);
+          Sound::pauseAllChannels();
+          changeMode(PAUSED);
+        }
       }
       /* Send the key to the relevant view */
       else if(press_event.keysym.sym == SDLK_F7)
@@ -161,6 +175,15 @@ void Application::render(uint32_t cycle_time)
     game_handler.render(renderer);
   else if(mode == OPTIONS)
     cycle_time = cycle_time; // DO OPTIONS EXECUTION
+  else if (mode == PAUSED)
+    cycle_time = cycle_time;
+}
+
+bool Application::revertMode()
+{
+  changeMode(temp_mode);
+
+  return false;
 }
 
 /* Returns the latched cycle time */
@@ -321,14 +344,9 @@ bool Application::initialize()
         auto error_index = SDL_GetRendererInfo(renderer, renderer_info);
     
         if (error_index > -1 && renderer_info != nullptr)
-        {
           std::cout << "Rendering Driver: " << renderer_info->name << std::endl;
-        }
         else
-        {
-          std::cerr << "[ERROR] Unable to get rendering driver info." 
-            << std::endl;
-        }
+          std::cerr<<"[ERROR] Unable to get rendering driver info."<< std::endl;
        
         delete renderer_info;
       }
@@ -454,19 +472,27 @@ bool Application::run(std::string test_map)
         quit = true;
 
       /* Clear screen */
-      SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-      SDL_RenderClear(renderer);
+      if(mode != PAUSED)
+      {
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderClear(renderer);
+      }
       
       /* Render the application view */
       render(cycle_time);
 
-      /* Font testing - TODO: Remove */
-      text2.render(renderer, 48, 48);
-      text1.render(renderer, 50, 50);
+      // Font testing - TODO: Remove
+      // text2.render(renderer, 48, 48);
+      // text1.render(renderer, 50, 50);
      
       /* Update screen */
-      SDL_RenderPresent(renderer);
+      if (mode != PAUSED)
+        SDL_RenderPresent(renderer);
+
       count++;
+
+      Sound::setMusicVolumes(system_options->getMusicLevel());
+      Sound::setAudioVolumes(system_options->getAudioLevel());
       
       /* Delay if VSync is not enabled */
       if(!system_options->isVsyncEnabled())

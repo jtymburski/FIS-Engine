@@ -397,3 +397,61 @@ void Sound::unsetSoundFile()
     Mix_FreeChunk(raw_data);
   raw_data = NULL;
 }
+
+bool Sound::setMasterVolume(int new_volume)
+{
+  if(new_volume >= 0 && new_volume <= MIX_MAX_VOLUME)
+  {
+    Mix_Volume(-1, new_volume);
+
+    return true;
+  }
+
+  return false;
+}
+
+bool Sound::setMusicVolumes(int new_volume)
+{
+  if(new_volume >= 0 && new_volume <= MIX_MAX_VOLUME)
+  {
+    Mix_Volume(0, new_volume);
+    Mix_Volume(1, new_volume);
+
+    return true;
+  }
+
+  return false;
+}
+
+bool Sound::setAudioVolumes(int new_volume)
+{
+  if (new_volume >= 0 && new_volume <= MIX_MAX_VOLUME)
+  {
+    for(auto i = 2; i <= 8; i++)
+      Mix_Volume(i, new_volume);
+
+    return true;
+  }
+
+  return false;
+}
+
+void Sound::pauseAllChannels()
+{
+  Mix_Pause(-1);
+}
+
+void Sound::pauseChannel(SoundChannels channel)
+{
+  Mix_Pause(static_cast<int>(channel));
+}
+
+void Sound::resumeAllChannels()
+{
+  Mix_Resume(-1);
+}
+
+void resumeChannel(SoundChannels channel)
+{
+  Mix_Resume(static_cast<int>(channel));
+}

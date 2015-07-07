@@ -38,10 +38,14 @@ public:
 
   /* Enumerator: Application options to be selected */
   //enum MenuState{OFF,MAIN,CONTINUE,INOPTIONS,INEXIT,SECRET}; // OLD
-  enum AppMode{TITLESCREEN = 0,
-               GAME        = 1,
-               OPTIONS     = 2,
-               EXIT        = 3};
+  enum AppMode
+  {
+    TITLESCREEN = 0,
+    GAME        = 1,
+    OPTIONS     = 2,
+    PAUSED      = 3,
+    EXIT        = 4
+  };
 
 private:
   /* The base path, for accessing resources */
@@ -56,6 +60,7 @@ private:
   /* The current application that is running, under the head application
    * management */
   AppMode mode;
+  AppMode temp_mode;
   
   /* The renderer for handling all interactions with the window */
   SDL_Renderer* renderer;
@@ -94,6 +99,8 @@ private:
   
   /* Renders the current view and all relevant visual data */
   void render(uint32_t cycle_time);
+
+  bool revertMode();
 
   /* Update the cycle time and return the update time sequence */
   int updateCycleTime(int cycle_time);

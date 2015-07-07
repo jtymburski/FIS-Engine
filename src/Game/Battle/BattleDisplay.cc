@@ -1,4 +1,4 @@
-/******************************************************************************
+/*****************************************************************************
  * Class Name: BattleDisplay [Implementation]
  * Date Created: December 16, 2014
  * Inheritance: None
@@ -1788,46 +1788,6 @@ void BattleDisplay::stopBattle()
   foes_state.clear();
 }
 
-/* Trims the midlay vector of nullptr sprite pointers */
-// TODO: Comment
-void BattleDisplay::trimMidlays()
-{
-  std::vector<Sprite*> non_null;
-
-  /* Find all non-null sprites */
-  for(uint8_t i = 0; i < midlays.size(); i++)
-    if(midlays[i] != nullptr)
-      non_null.push_back(midlays[i]);
-
-  /* If the vectors are different size, make the new one the non-null version */
-  if(non_null.size() < midlays.size())
-    midlays = non_null;
-}
-
-/* Trims the overlay vector of nullptr sprite pointers */
-// TODO: Comment
-void BattleDisplay::trimOverlays()
-{
-  std::vector<Sprite*> non_null;
-
-  /* Find all non-null sprites */
-  for(uint8_t i = 0; i < overlays.size(); i++)
-    if(overlays[i] != nullptr)
-      non_null.push_back(overlays[i]);
-
-  /* If the vectors are different size, make the new one the non-null version */
-  if(non_null.size() < overlays.size())
-    overlays = non_null;
-}
-
-/*=============================================================================
- * VIRTUAL FUNCTIONS
- *============================================================================*/
-
-/*=============================================================================
- * PROTECTED FUNCTIONS
- *============================================================================*/
-
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
@@ -2282,7 +2242,6 @@ void BattleDisplay::unsetBattleBar()
   bar_offset = 0;
 }
 
-
 // TODO: Comment
 void BattleDisplay::unsetMidlays()
 {
@@ -2321,7 +2280,6 @@ void BattleDisplay::unsetElements()
 
   render_elements.clear();
 }
-
 
 /* Updates the battle display */
 // TODO: Comment
@@ -2414,6 +2372,10 @@ bool BattleDisplay::update(int cycle_time)
             {
               createRegenValue(curr_event->targets.at(0), curr_event->amount);
               processing_delay = 1000;
+            }
+            else
+            {
+              processing_delay = 30;
             }
           }
         }
@@ -2818,18 +2780,18 @@ bool BattleDisplay::update(int cycle_time)
     }
   }
 
-  // TODO: Delete
-  if(midlays.size() > 0)
-  {
-    offset += cycle_time / 8;
-    if(offset >= 1216)
-      offset -= 1216;
-    offset_2 += cycle_time / 4;
-    if(offset_2 >= 1216)
-      offset_2 -= 1216;
-    //midlays.front()->setOpacity(midlays.front()->getOpacity() - 1);
-  }
-  temp_sprite->update(cycle_time);
+  // // TODO: Delete
+  // if(midlays.size() > 0)
+  // {
+  //   offset += cycle_time / 8;
+  //   if(offset >= 1216)
+  //     offset -= 1216;
+  //   offset_2 += cycle_time / 4;
+  //   if(offset_2 >= 1216)
+  //     offset_2 -= 1216;
+  //   //midlays.front()->setOpacity(midlays.front()->getOpacity() - 1);
+  // }
+  // temp_sprite->update(cycle_time);
 
   return true;
 }

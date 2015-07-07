@@ -340,12 +340,6 @@ private:
   /* Stop battle - cleans up */
   void stopBattle();
 
-  /* Trims the midlay vector of NULL sprite pointers */
-  void trimMidlays();
-
-  /* Trims the overlay vector of NULL sprite pointers */
-  void trimOverlays();
-
 /*=============================================================================
  * VIRTUAL FUNCTIONS
  *============================================================================*/
