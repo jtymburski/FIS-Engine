@@ -1111,8 +1111,10 @@ void Person::resetActionFlags()
 
   setBFlag(BState::DEF_ENABLED, 
            battle_class->getFlag(CategoryState::DEF_ENABLED));
-  setBFlag(BState::GRD_ENABLED, 
-           battle_class->getFlag(CategoryState::GRD_ENABLED)); 
+  //TODO: Enable guard
+  setBFlag(BState::GRD_ENABLED, false);
+  // setBFlag(BState::GRD_ENABLED, 
+  //          battle_class->getFlag(CategoryState::GRD_ENABLED)); 
   setBFlag(BState::IMP_ENABLED,
            battle_class->getFlag(CategoryState::IMP_ENABLED));
 }

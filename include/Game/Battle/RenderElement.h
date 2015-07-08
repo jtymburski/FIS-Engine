@@ -24,9 +24,10 @@
 
 enum class RenderType : std::uint16_t
 {
-  NONE         =  0, 
-  ACTION_TEXT  =  1,
-  DAMAGE_VALUE =  2,
+  NONE           =  0, 
+  ACTION_TEXT    =  1,
+  DAMAGE_VALUE   =  2,
+  RGB_OVERLAY    =  3
 };
 
 class RenderElement
@@ -70,6 +71,8 @@ private:
   int16_t y;
   int16_t shadow_x;
   int16_t shadow_y;
+  int16_t size_x;
+  int16_t size_y;
   int16_t velocity_x;
   int16_t velocity_y;
   int32_t fade_in_time;
@@ -121,6 +124,8 @@ public:
   int32_t getY();
   int32_t getShadowX();
   int32_t getShadowY();
+  int32_t getSizeX();
+  int32_t getSizeY();
 
   /* Assigns new acceleration values */
   void setAcceleration(int32_t new_acceleration_x, int32_t new_acceleration_y);
@@ -139,8 +144,11 @@ public:
   /* Method to set the text to have a shadow */
   void setShadow(bool to_show = true);
 
+  /* Assign both 'x' and 'y' sizes for the RenderElement */
+  void setSizes(int32_t new_size_x, int32_t new_size_y);
+
   /* Assigns the time values for the RenderElement */
-  void setTimes(int32_t new_remaining_time, int32_t fade_in = 0, 
+  bool setTimes(int32_t new_remaining_time, int32_t fade_in = 0, 
       int32_t fade_out = 0);
 
   /* Assigns the string value for the text */
@@ -156,6 +164,10 @@ public:
   /* Shadow (for text renders) offset X,Y values */
   void setShadowX(int32_t new_shadow_x);
   void setShadowY(int32_t new_shadow_y);
+
+  /* Assign a new value for the sign of the Element (only some objects) */
+  void setSizeX(int32_t new_size_x);
+  void setSizeY(int32_t new_size_y);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS

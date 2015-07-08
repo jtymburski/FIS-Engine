@@ -1,4 +1,4 @@
-/******************************************************************************
+/*****************************************************************************
 * Class Name: /
 * Date Created: June 22, 2014
 * Inheritance: None
@@ -43,6 +43,8 @@ RenderElement::RenderElement()
     , y{0}
     , shadow_x{0}
     , shadow_y{0}
+    , size_x{0}
+    , size_y{0}
     , velocity_x{0}
     , velocity_y{0}
     , fade_in_time{0}
@@ -149,22 +151,18 @@ bool RenderElement::update(int cycle_time)
   }
   else if (elapsed_time < fade_in_time)
   {
-    std::cout << "Color: A" << (int)color.a << std::endl;
     double time_per_alpha = (double)fade_in_time / color.a;
-    alpha = std::floor(time_per_alpha * elapsed_time);
+    alpha = std::floor(elapsed_time / time_per_alpha);
   }
   else if (remaining_time < fade_out_time)
   {
-    double time_per_alpha = (double)fade_out_time / color.a;
-    auto time_diff = fade_out_time - remaining_time;
-    alpha = color.a - std::floor(time_per_alpha * time_diff);
+
+    double time_per_alpha = (double)fade_out_time / (double)color.a;
+    double time_diff = (double)fade_out_time - (double)remaining_time;
+    alpha = std::floor((double)color.a - (time_diff / time_per_alpha));
   }
 
   shadow_alpha = alpha;
-
-  std::cout << "Remaining Time: " << remaining_time << std::endl;
-  std::cout << "Elapsed Time: "   << elapsed_time << std::endl;
-  std::cout << "Alpha: "          << alpha << std::endl;
 
   return true;
 }
@@ -273,6 +271,16 @@ int32_t RenderElement::getShadowY()
   return shadow_y;
 }
 
+int32_t RenderElement::getSizeX()
+{
+  return size_x;
+}
+
+int32_t RenderElement::getSizeY()
+{
+  return size_y;
+}
+
 /*
  * Description:
  *
@@ -333,6 +341,12 @@ void RenderElement::setShadowColor(SDL_Color new_shadow_color)
   shadow_color = new_shadow_color;
 }
 
+void RenderElement::setSizes(int32_t new_size_x, int32_t new_size_y)
+{
+  size_x = new_size_x;
+  size_y = new_size_y;
+}
+
 /*
  * Description:
  *
@@ -361,12 +375,21 @@ void RenderElement::setShadow(bool to_show)
  * Inputs:
  * Output:
  */
-void RenderElement::setTimes(int32_t new_remaining_time, int32_t fade_in, 
+bool RenderElement::setTimes(int32_t new_remaining_time, int32_t fade_in, 
     int32_t fade_out)
 {
-  remaining_time = new_remaining_time;
-  fade_in_time   = fade_in;
-  fade_out_time  = fade_out;
+  if (fade_in + fade_out <= new_remaining_time &&
+      fade_in <= new_remaining_time &&
+      fade_out <= new_remaining_time)
+  {
+    remaining_time = new_remaining_time;
+    fade_in_time   = fade_in;
+    fade_out_time  = fade_out;
+
+    return true;
+  }
+
+  return false;
 }
 
 /*
@@ -434,6 +457,16 @@ void RenderElement::setShadowX(int32_t new_shadow_x)
 void RenderElement::setShadowY(int32_t new_shadow_y)
 {
   shadow_y = y + new_shadow_y;
+}
+
+void RenderElement::setSizeX(int32_t new_size_x)
+{
+  size_x = new_size_x;
+}
+
+void RenderElement::setSizeY(int32_t new_size_y)
+{
+  size_y = new_size_y;
 }
 
  /*=============================================================================

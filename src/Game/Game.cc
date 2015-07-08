@@ -1385,12 +1385,8 @@ bool Game::update(int32_t cycle_time)
   /* Poll System Events */
   pollEvents();
 
-  // /* Update the key handler */
+  /* Update the key handler */
   event_handler.getKeyHandler().update(cycle_time);
-
-  //Print out pressed/held keys //TODO: Remove
-  if (num_ticks % 20 == 0)
-    event_handler.getKeyHandler().print(true, false);
 
   if(mode == MAP && game_map != nullptr)
     return game_map->update(cycle_time);
@@ -1403,7 +1399,7 @@ bool Game::update(int32_t cycle_time)
     {
       success &= game_battle->update(cycle_time);
 
-      if (game_battle->getBattleFlag(CombatState::OUTCOME_PERFORMED))
+      if(game_battle->getBattleFlag(CombatState::OUTCOME_PERFORMED))
         mode = MAP;
     }
     if(battle_display != nullptr)

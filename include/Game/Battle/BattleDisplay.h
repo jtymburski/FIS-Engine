@@ -30,7 +30,10 @@ enum class RenderState
   INITIAL_STATE_RENDERING_DELAY = 1 << 0, /* Init. delay upon ProcessActions */
   SKILL_BEGIN_DELAY             = 1 << 1, /* Delay upon beginning action */
   ACTION_BEGIN_DELAY            = 1 << 2,
-  POST_RENDERING_DELAY          = 1 << 3  /* Delay after end rendering */
+  POST_RENDERING_DELAY          = 1 << 3, /* Delay after end rendering */
+  SCREEN_DIMMING                = 1 << 4,
+  SCREEN_DIM                    = 1 << 5,
+  TURN_TEXT_CREATED             = 1 << 6
 };
 
 /*
@@ -95,6 +98,7 @@ private:
   TTF_Font* font_action;
   TTF_Font* font_header;
   TTF_Font* font_subheader;
+  TTF_Font* font_turn;
   TTF_Font* font_damage;
 
   /* Rendering frames - in bar */

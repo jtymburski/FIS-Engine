@@ -3885,7 +3885,6 @@ void Battle::setNextTurnState()
     if (turn_state == TurnState::BEGIN)
     {
       setTurnState(TurnState::GENERAL_UPKEEP);
-      generalUpkeep();
     }
 
     /* After general upkeep, each personal upkeep takes place */
@@ -3983,7 +3982,6 @@ void Battle::setNextTurnState()
     else if (turn_state == TurnState::CLEAN_UP)
     {
       setTurnState(TurnState::GENERAL_UPKEEP);
-      generalUpkeep();
     }
   }
 }
@@ -4456,6 +4454,16 @@ bool Battle::update(int32_t cycle_time)
       !getBattleFlag(CombatState::OUTCOME_PROCESSED))
   {
     setNextTurnState();
+  }
+  else if (turn_state == TurnState::GENERAL_UPKEEP)
+  {
+    if (getBattleFlag(CombatState::RENDERING_COMPLETE))
+    {
+      setBattleFlag(CombatState::RENDERING_COMPLETE, false);
+
+      generalUpkeep();
+
+    }
   }
   else if (turn_state == TurnState::UPKEEP)
   {

@@ -127,6 +127,7 @@ BattleDisplay::BattleDisplay(Options* running_config)
   font_action    = nullptr;
   font_header    = nullptr;
   font_subheader = nullptr;
+  font_turn      = nullptr;
   font_damage    = nullptr;
   index_actions = 0;
   index_layer = 0;
@@ -139,6 +140,7 @@ BattleDisplay::BattleDisplay(Options* running_config)
   show_info = false;
   system_options = nullptr;
   temp_sprite = nullptr;
+  render_flags = static_cast<RenderState>(0);
 
   /* Set up variables */
   setConfiguration(running_config);
@@ -448,19 +450,23 @@ bool BattleDisplay::createFonts()
     TTF_Font* subheader_font = Text::createFont(system_options->getBasePath() + 
                                                 system_options->getFont(), 
                                                 13, TTF_STYLE_BOLD);
+    TTF_Font* turn_font = Text::createFont(system_options->getBasePath() +
+                              system_options->getFont(1), 80, TTF_STYLE_NORMAL);
     TTF_Font* damage_font = Text::createFont(system_options->getBasePath() +
                                              system_options->getFont(),
-                                             32, TTF_STYLE_BOLD);
+                                             30, TTF_STYLE_BOLD);
 
     /* If successful, insert the new fonts. Otherwise, delete if any were
      * created */
     if (action_font != nullptr && header_font != nullptr &&
-        subheader_font != nullptr && damage_font != nullptr)
+        subheader_font != nullptr && damage_font != nullptr &&
+        turn_font != nullptr)
     {
       deleteFonts();
       font_action    = action_font;
       font_header    = header_font;
       font_subheader = subheader_font;
+      font_turn      = turn_font;
       font_damage    = damage_font;
       success = true;
     }
@@ -474,6 +480,9 @@ bool BattleDisplay::createFonts()
 
       TTF_CloseFont(subheader_font);
       subheader_font = nullptr;
+
+      TTF_CloseFont(turn_font);
+      turn_font = nullptr;
 
       TTF_CloseFont(damage_font);
       damage_font = nullptr;
@@ -758,6 +767,9 @@ void BattleDisplay::deleteFonts()
 
   TTF_CloseFont(font_subheader);
   font_subheader = nullptr;
+
+  TTF_CloseFont(font_turn);
+  font_turn = nullptr;
 
   TTF_CloseFont(font_damage);
   font_damage = nullptr;
@@ -1088,7 +1100,7 @@ void BattleDisplay::createDamageValue(Person* target, uint64_t amount,
   Text t(font_damage);
   t.setText(renderer, element->getText(), color);
   
-  element->setTimes(550, 50, 150);
+  element->setTimes(600, 35, 150);
 
   auto x  = getPersonX(target);
        x += kPERSON_WIDTH / 2;
@@ -1103,6 +1115,8 @@ void BattleDisplay::createDamageValue(Person* target, uint64_t amount,
   element->setShadowCoordinates(kACTION_TEXT_SHADOW - 2, 
       kACTION_TEXT_SHADOW - 1);
   element->setShadowColor(shadow_color);
+
+  
   element->setAcceleration(5, -15);
   element->setVelocity(-100, -180);
 
@@ -1982,10 +1996,8 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
       }
     }
 
-    /* Render player team */
+    /* Render player & enemy team */
     success &= renderFriends(renderer);
-    
-    /* Render enemy information */
     success &= renderFoesInfo(renderer, width);
 
     /* Render battle bar (on bottom) */
@@ -2023,21 +2035,38 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
 
     for (const auto& element : render_elements)
     {
-      auto element_font = element->getFont();
-
-      if (element_font != nullptr)
+      if (element->getType() == RenderType::ACTION_TEXT ||
+          element->getType() == RenderType::DAMAGE_VALUE)
       {
-        Text t(element->getFont());
-        t.setText(renderer, element->getText(), element->getColor());
-        t.setAlpha(element->getAlpha());
-        t.render(renderer, element->getX(), element->getY());
+        auto element_font = element->getFont();
 
-        if (element->hasShadow())
+        if (element_font != nullptr)
         {
-          t.setText(renderer, element->getText(), element->getShadowColor());
+          Text t(element->getFont());
+          t.setText(renderer, element->getText(), element->getColor());
           t.setAlpha(element->getAlpha());
-          t.render(renderer, element->getShadowX(), element->getShadowY());
+          t.render(renderer, element->getX(), element->getY());
+
+          if (element->hasShadow())
+          {
+            t.setText(renderer, element->getText(), element->getShadowColor());
+            t.setAlpha(element->getAlpha());
+            t.render(renderer, element->getShadowX(), element->getShadowY());
+          }
         }
+      }
+      else if (element->getType() == RenderType::RGB_OVERLAY)
+      {
+        SDL_Color color = element->getColor();
+        SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 
+            element->getAlpha());
+
+        SDL_Rect rgb_overlay_rect;
+        rgb_overlay_rect.x = element->getX();
+        rgb_overlay_rect.y = element->getY();
+        rgb_overlay_rect.w = element->getSizeX();
+        rgb_overlay_rect.h = element->getSizeY();
+        SDL_RenderFillRect(renderer, &rgb_overlay_rect);
       }
     }
 
@@ -2337,6 +2366,79 @@ bool BattleDisplay::update(int cycle_time)
      *-----------------------------------------------------------------------*/
     else if(rendering_state == TurnState::GENERAL_UPKEEP)
     {
+      /* Upon general upkeep state, the screen needs to be dimmed and the text
+       * "Turn X: Decide Your Fate" displayed on the screen. This screen dim
+       * will use a RGB_Overlay RenderElement with fade-in and fade-out
+       */
+      if (getRenderFlag(RenderState::SCREEN_DIM) && 
+          !getRenderFlag(RenderState::TURN_TEXT_CREATED))
+      {
+        processing_delay = 3500;
+
+        SDL_Color shadow_color = {113, 198, 113, 255};
+        RenderElement* turn_text = new RenderElement(RenderType::ACTION_TEXT);
+        turn_text->setColor({0, 0, 0, 255});
+        turn_text->setShadowColor(shadow_color);
+        turn_text->setShadow();
+        turn_text->setTimes(1500, 300, 300);
+
+        auto turn_string = Helpers::numToRoman(battle->getTurnsElapsed() + 1);
+        
+        turn_string = "Turn " + turn_string + "  Decide Your Fate";
+        turn_text->setFont(font_turn);
+        turn_text->setText(turn_string);
+
+        Text t(font_turn); 
+        t.setText(renderer, turn_text->getText(), shadow_color);
+
+        auto text_x  = system_options->getScreenWidth() / 2;
+             text_x -= t.getWidth() / 2;
+        auto text_y  = system_options->getScreenHeight() / 2;
+             text_y -= t.getHeight() / 2;
+
+        turn_text->setCoordinates(text_x, text_y);
+        turn_text->setShadowCoordinates(kACTION_TEXT_SHADOW + 2, 
+                                        kACTION_TEXT_SHADOW + 2);
+
+        render_elements.push_back(turn_text);
+
+        setRenderFlag(RenderState::TURN_TEXT_CREATED, true);
+      }
+
+      /* If the screen is not currently dimming, append a new render elmt */
+      else if (!getRenderFlag(RenderState::SCREEN_DIMMING))
+      {
+        processing_delay = 750;
+
+        SDL_Color screen_dim_color = {0, 0, 0, 150};
+
+        RenderElement* dim_element = new RenderElement(RenderType::RGB_OVERLAY);
+        dim_element->setTimes(3000, 800, 800);
+        dim_element->setColor(screen_dim_color);
+        dim_element->setCoordinates(0, 0);
+        dim_element->setSizeX(system_options->getScreenWidth());
+        dim_element->setSizeY(system_options->getScreenHeight());
+
+        render_elements.push_back(dim_element);
+        
+        setRenderFlag(RenderState::SCREEN_DIMMING, true);
+      }
+      else
+      {
+        processing_delay -= cycle_time;
+
+        if (processing_delay <= 0 && 
+            !getRenderFlag(RenderState::TURN_TEXT_CREATED))
+        {
+          setRenderFlag(RenderState::SCREEN_DIM, true);
+        }
+        else if (processing_delay <= 0 && 
+            getRenderFlag(RenderState::TURN_TEXT_CREATED))
+        {
+          battle->setBattleFlag(CombatState::RENDERING_COMPLETE, true);
+        }
+      }
+
       rendering_state = battle_state;
     }
     /*-------------------------------------------------------------------------
@@ -2551,9 +2653,7 @@ bool BattleDisplay::update(int cycle_time)
       if (rendering_state != battle_state)
         change_state = true;
 
-      std::cout << "PreProcessing Delay: " << processing_delay << std::endl;
       auto delay = handleDelayProcessing(cycle_time, change_state);
-      std::cout << "PostProcessing Delay: " << processing_delay << std::endl;
 
       /* If ready to render flag is true, there are events which need to be 
        * rendered on the Event Buffer */
@@ -2750,6 +2850,8 @@ bool BattleDisplay::update(int cycle_time)
 
         }
       }
+
+      render_flags = static_cast<RenderState>(0);
     }
     /*-------------------------------------------------------------------------
      * LOSS state
