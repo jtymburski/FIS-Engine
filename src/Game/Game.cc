@@ -374,7 +374,8 @@ void Game::setupBattle()
   // physical_04->setPrimary(Element::PHYSICAL);
 
   Skill* fire_01 = new Skill(110, "Burninate The Countryside", ActionScope::ONE_PARTY, 
-    damage_actions[11], 85, 55);
+    damage_actions[4], 85, 55);
+  fire_01->addAction(damage_actions[5]);
   fire_01->setCooldown(0);
   fire_01->setThumbnail(new Frame("sprites/Battle/Skills/_sample_skill_1.png", 
                                   active_renderer));
@@ -634,17 +635,17 @@ void Game::setupBattle()
 
   std::vector<BattleItem> items;
 
-  base_person_list.push_back(new Person(310, "Frosty", human, bloodclaw_scion));
-  getPerson(310)->addExp(2500);
+  base_person_list.push_back(new Person(310, "Bsian Frosty", human, bloodclaw_scion));
+  getPerson(310)->addExp(2200);
   getPerson(310)->setCurves(Element::ICE, ElementCurve::C,
                             Element::PHYSICAL, ElementCurve::D, true);
 
-  base_person_list.push_back(new Person(311, "Cloud Dude", human, bloodclaw_scion));
-  getPerson(311)->addExp(2500);
+  base_person_list.push_back(new Person(311, "Bago Bago", human, bloodclaw_scion));
+  getPerson(311)->addExp(2200);
   getPerson(311)->setCurves(Element::NIHIL, ElementCurve::A,
                             Element::PHYSICAL, ElementCurve::B, true);
 
-  base_person_list.push_back(new Person(312, "Thruster Barrow", human, bloodclaw_scion));
+  base_person_list.push_back(new Person(312, "Raihan", human, bloodclaw_scion));
   getPerson(312)->addExp(2500);
   getPerson(312)->setCurves(Element::NIHIL, ElementCurve::A,
                             Element::PHYSICAL, ElementCurve::B, true);
@@ -713,6 +714,7 @@ void Game::setupBattle()
   Party* enemies = new Party(402, getPerson(310), PartyType::REGULAR_FOE, 
       10, foes_pouch);
   enemies->addMember(getPerson(311));
+  enemies->addMember(getPerson(312));
   // enemies->addMember(getPerson(312));
   // enemies->addMember(getPerson(313));
   // enemies->addMember(getPerson(314));
@@ -764,9 +766,9 @@ void Game::setupBattle()
     getPerson(310)->setSprites(nullptr, new Sprite(
               base_path + "sprites/Battle/Battle_Persons/bsian.png", renderer));
     getPerson(311)->setSprites(nullptr, new Sprite(
-            base_path + "sprites/Battle/Battle_Persons/ballman.png", renderer));
+            base_path + "sprites/Battle/Battle_Persons/auroraheavy.png", renderer));
     getPerson(312)->setSprites(nullptr, new Sprite(
-               base_path + "sprites/Battle/Battle_Persons/forgemasternexus.png", 
+               base_path + "sprites/Battle/Battle_Persons/raihan.png", 
                renderer));
     getPerson(313)->setSprites(nullptr, new Sprite(
           base_path + "sprites/Battle/Battle_Persons/peltrance.png", renderer));
@@ -1264,8 +1266,8 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
   }
   else if(event.keysym.sym == SDLK_LCTRL)
   {
-    if(battle_display != NULL)
-      battle_display->setShowInfo(true);
+    // if(battle_display != NULL)
+    //   battle_display->setRenderFlag(RenderState::SHOW_INFO);
   }
   /* Otherwise, send keys to the active view */
   else
@@ -1274,8 +1276,8 @@ bool Game::keyDownEvent(SDL_KeyboardEvent event)
       return game_map->keyDownEvent(event);
     else if(mode == BATTLE)
     {
-      if(battle_display->getRenderingState() == game_battle->getTurnState() &&
-         !battle_display->isPaused())
+      if(battle_display->getRenderingState() == game_battle->getTurnState())
+         // !battle_display->getRenderFlag(RenderState::SHOW_INFO))
         return game_battle->keyDownEvent(event);
     }
   }
@@ -1288,8 +1290,8 @@ void Game::keyUpEvent(SDL_KeyboardEvent event)
 {
   if(event.keysym.sym == SDLK_LCTRL)
   {
-    if(battle_display != NULL)
-      battle_display->setShowInfo(false);
+    // if(battle_display != NULL)
+    //   battle_display->setShowInfo(false);
   }
   else if(mode == MAP)
   {

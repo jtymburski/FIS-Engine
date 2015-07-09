@@ -33,7 +33,8 @@ enum class RenderState
   POST_RENDERING_DELAY          = 1 << 3, /* Delay after end rendering */
   SCREEN_DIMMING                = 1 << 4,
   SCREEN_DIM                    = 1 << 5,
-  TURN_TEXT_CREATED             = 1 << 6
+  TURN_TEXT_CREATED             = 1 << 6,
+  SHOW_INFO                     = 1 << 7
 };
 
 /*
@@ -133,9 +134,6 @@ private:
   
   /* Action scope frames */
   std::vector<Frame> scopes;
-
-  /* Show info regardless of state */
-  bool show_info;
 
   /* Skill information for rendering */
   std::vector<Frame*> skill_info;
@@ -238,6 +236,12 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Calculates the proper opacity for the sprite of a given Person */
+  uint8_t calcPersonOpacity(Person* test_person);
+
+  /* Calculate the proper brightness for the sprite of a given Person */
+  double calcPersonBrightness(Person* test_person);
+
   /* Generates the action frame for the third person sprite */
   Frame* createActionFrame(Person* person, SDL_Renderer* renderer);
 
@@ -393,9 +397,6 @@ public:
   /* Returns the action scope frame */
   Frame* getScope(ActionScope scope);
 
-  /* Returns if the battle display is paused and control should be halted */
-  bool isPaused();
-
   /* Renders the battle display */
   bool render(SDL_Renderer* renderer);
 
@@ -430,9 +431,6 @@ public:
 
   /* Sets the action scope frame */
   bool setScope(ActionScope scope, std::string path, SDL_Renderer* renderer);
-  
-  /* Sets if info about player should be shown regardless of state */
-  void setShowInfo(bool show);
   
   /* Unsets the background sprite */
   void unsetBackground();

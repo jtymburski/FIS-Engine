@@ -3344,9 +3344,20 @@ void Battle::selectUserActions()
   if (update_menu)
   {
     curr_user = getPerson(person_index);
-
+     
     if (curr_user != nullptr)
     {
+      /* Update the curr person as selecting, remove all others as selecting */
+      for (auto& ally : friends->getMembers())
+        if (ally != nullptr)
+          ally->setBFlag(BState::IS_SELECTING, false);
+
+      for (auto& foe : foes->getMembers())
+        if (foe != nullptr)
+          foe->setBFlag(BState::IS_SELECTING, false);
+
+      curr_user->setBFlag(BState::IS_SELECTING, true);
+
       /* Construct useable battle skills or useable battle item structures */
       auto skills = curr_user->getUseableSkills();
       auto items  = friends->getInventory()->getBattleItems();

@@ -772,6 +772,7 @@ void Person::battlePrep()
   setBFlag(BState::IN_BATTLE, true);
   setBFlag(BState::ALIVE, true);
   setBFlag(BState::REVIVABLE, false);
+  setBFlag(BState::IS_SELECTING, false);
   setBFlag(BState::SELECTED_ACTION, false);
   setBFlag(BState::SELECTED_2ND_ACTION, false);
   setBFlag(BState::SELECTED_3RD_ACTION, false);
@@ -1014,6 +1015,7 @@ void Person::print(const bool &simple, const bool &equips,
       // std::cout << "BOND: " << getBFlag(BState::BOND) << "\n";
       // std::cout << "BONDED: " << getBFlag(BState::BONDED) << "\n";
       // std::cout << "REVIVABLE: " << getBFlag(BState::REVIVABLE);
+      std::cout << "\nIS_SELECTING: " << getBFlag(BState::IS_SELECTING);
       std::cout << "\nSELECTED_ACTION: " << getBFlag(BState::SELECTED_ACTION);
       std::cout << "\nSELECTED_2ND_ACTION: " 
                 << getBFlag(BState::SELECTED_2ND_ACTION);

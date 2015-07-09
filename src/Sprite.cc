@@ -47,6 +47,7 @@ Sprite::Sprite()
   grey_scale_update = false;
   head = NULL;
   id = 0;
+  loops = 0;
   opacity = kDEFAULT_OPACITY;
   rotation_angle = 0.0;
   size = 0;
@@ -399,6 +400,17 @@ Frame* Sprite::getFirstFrame()
 uint16_t Sprite::getId() const
 {
   return id;
+}
+
+/*
+ * Description: Returns the number of loops the sprite has completed
+ *
+ * Inputs: none
+ * Output: uint32_t - an integer from 0 - 2^32 - 1 (32 bit unsigned integer)
+ */
+uint32_t Sprite::getLoops()
+{
+  return loops; 
 }
 
 /*
@@ -815,6 +827,17 @@ bool Sprite::removeTail()
   return remove(size-1);
 }
 
+/* 
+ * Description: Resets the number of loops for the Sprite to zero.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Sprite::resetLoops()
+{
+  loops = 0;
+}
+
 /* Render the texture to the given renderer with the given parameters */
 /*
  * Description: Renders the sprite data, utilizing a x and y coordinate, and a
@@ -1159,6 +1182,12 @@ bool Sprite::shiftNext(bool skip_head)
     if(old_current != current)
       texture_update = true;
     
+    /* Every time the next element is the head, increase loops, if size is 1,
+     * every step is a loop, if size is greater than one, every head touch is
+     * a loop. If head is skipped, no loops take place. */
+    if (current->getNext() == head)
+      loops++;
+
     return true;
   }
   return false;

@@ -73,6 +73,9 @@ private:
   /* The sprite ID, useful when keeping track of a large number of sprites */
   uint16_t id;
 
+  /* The number of loops the Sprite has gone through */
+  uint32_t loops;
+
   /* Sets the opacity of the rendered sprite */
   uint8_t opacity;
   
@@ -151,6 +154,9 @@ public:
  
   /* Returns the ID */
   uint16_t getId() const;
+
+  /* Get the number of loops the sprite has completed */
+  uint32_t getLoops();
   
   /* Returns the opacity that it is rendered at */
   uint8_t getOpacity() const;
@@ -216,6 +222,9 @@ public:
 
   /* Removes the last frame in the sequence */
   bool removeTail();
+
+  /* Reset the number of loops for the sprite */
+  void resetLoops();
 
   /* Render the texture to the given renderer with the given parameters */
   bool render(SDL_Renderer* renderer, int x = 0, int y = 0, 

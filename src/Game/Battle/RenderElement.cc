@@ -27,7 +27,8 @@
  * Inputs:
  */
 RenderElement::RenderElement()
-    : type{RenderType::DAMAGE_VALUE}
+    : plep{nullptr}
+    , type{RenderType::DAMAGE_VALUE}
     , color{0, 0, 0, 0}
     , shadow_color{0, 0, 0, 0}
     , font{nullptr}
@@ -194,6 +195,11 @@ TTF_Font* RenderElement::getFont()
   return font;
 }
 
+Sprite* RenderElement::getPlep()
+{
+  return plep;
+}
+
 /*
  * Description:
  *
@@ -304,6 +310,11 @@ void RenderElement::setCoordinates(int32_t new_x, int32_t new_y)
 {
   setX(new_x);
   setY(new_y);
+}
+
+void RenderElement::setPlep(Sprite* new_plep)
+{
+  plep = new_plep;
 }
 
 /*

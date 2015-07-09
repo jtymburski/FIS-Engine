@@ -166,7 +166,7 @@ bool BattleMenu::addTarget(const int32_t &new_target)
     selected_targets.push_back(*it);
     valid_targets.erase(it);
 
-    if (valid_targets.size() > 0)
+    if (valid_targets.size() > 0 && isValidIndex(0))
       element_index = 0;
     else
       element_index = -1;

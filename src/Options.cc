@@ -70,8 +70,8 @@ void Options::setAllToDefault()
   /* Battle Options */
   setAilmentUpdateState(BattleOptions::FOREST_WALK);
 
-  audio_level = 80;
-  music_level = 80;
+  audio_level = 50;
+  music_level = 50;
 
   /* Flags */
   setLinearFiltering(false);

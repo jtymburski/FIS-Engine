@@ -27,7 +27,8 @@ enum class RenderType : std::uint16_t
   NONE           =  0, 
   ACTION_TEXT    =  1,
   DAMAGE_VALUE   =  2,
-  RGB_OVERLAY    =  3
+  RGB_OVERLAY    =  3,
+  PLEP           =  4
 };
 
 class RenderElement
@@ -41,6 +42,9 @@ public:
   ~RenderElement() = default;
 
 private: 
+  /* Pointer to a Sprite (plep) */
+  Sprite* plep;
+
   /* Type of the Render */
   RenderType type;
 
@@ -113,6 +117,9 @@ public:
   /* Returns a pointer to the font of the render element */
   TTF_Font* getFont();
 
+  /* Returns a pointer to the Sprite Plep */
+  Sprite* getPlep();
+
   /* Returns the assigned string for the render element */
   std::string getText();
 
@@ -140,6 +147,9 @@ public:
 
   /* Sets the font of the text */
   void setFont(TTF_Font* new_font);
+
+  /* Assigns a new plep for the Element */
+  void setPlep(Sprite* new_plep);
 
   /* Method to set the text to have a shadow */
   void setShadow(bool to_show = true);

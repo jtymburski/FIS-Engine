@@ -97,15 +97,16 @@ enum class BState
   RUN_ENABLED        = 1 << 9, /* Can the person use 'Run'? */
   PAS_ENABLED        = 1 << 10, /* Can the person use 'Pass'? */
   REVIVABLE          = 1 << 11, /* Can this person be revived if they are KO? */
-  SELECTED_ACTION    = 1 << 12, /* Has this person selected an action? */
-  SELECTED_2ND_ACTION = 1 << 13, /* Has this person selected a 2nd action? */
-  SELECTED_3RD_ACTION = 1 << 14, /* Has this person selected a 3rd action? */
-  CAN_CRIT            = 1 << 15, /* Can this person crit against a target? */
-  CAN_BE_CRIT         = 1 << 16, /* Can this person have crit's against them? */
-  DEFENDING           = 1 << 17, /* Is this person defending currently? */
-  GUARDED             = 1 << 18, /* Is this person being guarded? */
-  GUARDING            = 1 << 19, /* Is this person guarding? */
-  SHIELDED            = 1 << 20, /* Is this person shielded from damage? */
+  IS_SELECTING       = 1 << 12, /* Is this person curr. selecting an action? */
+  SELECTED_ACTION    = 1 << 13, /* Has this person selected an action? */
+  SELECTED_2ND_ACTION = 1 << 14, /* Has this person selected a 2nd action? */
+  SELECTED_3RD_ACTION = 1 << 15, /* Has this person selected a 3rd action? */
+  CAN_CRIT            = 1 << 16, /* Can this person crit against a target? */
+  CAN_BE_CRIT         = 1 << 17, /* Can this person have crit's against them? */
+  DEFENDING           = 1 << 18, /* Is this person defending currently? */
+  GUARDED             = 1 << 19, /* Is this person being guarded? */
+  GUARDING            = 1 << 20, /* Is this person guarding? */
+  SHIELDED            = 1 << 21, /* Is this person shielded from damage? */
 };
 
 /* PState Flags - flags which have impacts outside of Battle */

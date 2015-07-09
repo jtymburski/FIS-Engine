@@ -137,7 +137,6 @@ BattleDisplay::BattleDisplay(Options* running_config)
   offset_2 = 0; // TODO: Delete
   renderer = nullptr;
   rendering_state = TurnState::DESTRUCT;
-  show_info = false;
   system_options = nullptr;
   temp_sprite = nullptr;
   render_flags = static_cast<RenderState>(0);
@@ -171,7 +170,58 @@ BattleDisplay::~BattleDisplay()
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
-  
+
+/* Calculates the proper opacity for the sprite of a given Person */
+uint8_t BattleDisplay::calcPersonOpacity(Person* test_person)
+{
+  if (!test_person->getBFlag(BState::ALIVE))
+    return 50;
+  else
+    return 255;
+}
+
+/* Calculate the proper brightness for the sprite of a given Person */
+double BattleDisplay::calcPersonBrightness(Person* test_person)
+{
+  auto layer_index   = battle->getBattleMenu()->getLayerIndex();
+  auto person_index  = battle->getIndexOfPerson(test_person);
+  auto brightness = 1.0;
+
+  if (rendering_state == TurnState::SELECT_ACTION_ALLY)
+  {
+    if (layer_index == 1 || layer_index == 2)
+    {
+      if(test_person->getBFlag(BState::IS_SELECTING))
+        brightness = 0.15;
+    }
+    else if (layer_index == 3 || layer_index == 4)
+    {
+      auto hover_targets = battle->getBattleMenu()->getHoverTargets();
+      auto h_it = std::find(begin(hover_targets), end(hover_targets), person_index);
+      bool is_hovered = (h_it != end(hover_targets));
+
+      auto selected = battle->getBattleMenu()->getActionTargets();
+      auto s_it = std::find(begin(selected), end(selected), person_index);
+      bool is_selected = (s_it != end(selected));
+
+      if (is_hovered || is_selected)
+        brightness = 1.0;
+      else
+        brightness = 0.25;
+
+      if (layer_index == 4)
+      {
+        if (!is_selected)
+          brightness = 0.25;
+        else
+          brightness = 1.0;
+      }
+    }
+  }
+
+  return brightness;
+}
+
 /* Generates the action frame for the third person sprite */
 // TODO: Comment
 Frame* BattleDisplay::createActionFrame(Person* person, 
@@ -1843,8 +1893,8 @@ void BattleDisplay::clear()
   offset = 0;
   offset_2 = 0;
   rendering_state = TurnState::DESTRUCT;
-  show_info = false;
   system_options = nullptr;
+  render_flags = static_cast<RenderState>(0);
 
   /* Unsets the flat rendering sprites */
   deleteSkills();
@@ -1939,13 +1989,6 @@ Frame* BattleDisplay::getScope(ActionScope scope)
   return nullptr;
 }
 
-/* Returns if the battle display is paused and control should be halted */
-// TODO: Comment
-bool BattleDisplay::isPaused()
-{
-  return show_info;
-}
-
 /* Renders the battle display */
 // TODO: Comment
 bool BattleDisplay::render(SDL_Renderer* renderer)
@@ -2012,7 +2055,7 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
     to_render_menu &= (rendering_state == TurnState::SELECT_ACTION_ALLY);
     to_render_menu &= !battle->getBattleFlag(CombatState::PHASE_DONE);
     to_render_menu &= menu->getLayerIndex() == 1 || menu->getLayerIndex() == 2;
-    to_render_menu &= !show_info;
+    to_render_menu &= !getRenderFlag(RenderState::SHOW_INFO);
  
     if (to_render_menu)
     {
@@ -2232,13 +2275,6 @@ bool BattleDisplay::setScope(ActionScope scope, std::string path,
     return scopes[static_cast<uint64_t>(scope)].setTexture(path, renderer);
   return false;
 }
-  
-/* Sets if info about player should be shown regardless of state */
-// TODO: Comment
-void BattleDisplay::setShowInfo(bool show)
-{
-  show_info = show;
-}
 
 /* Unsets the background sprite */
 // TODO: Comment
@@ -2383,7 +2419,7 @@ bool BattleDisplay::update(int cycle_time)
         turn_text->setTimes(1500, 300, 300);
 
         auto turn_string = Helpers::numToRoman(battle->getTurnsElapsed() + 1);
-        
+
         turn_string = "Turn " + turn_string + "  Decide Your Fate";
         turn_text->setFont(font_turn);
         turn_text->setText(turn_string);
@@ -2499,19 +2535,6 @@ bool BattleDisplay::update(int cycle_time)
         index_types = 0;
       }
 
-      /* -- PAUSED: SHOW INFO -- */
-      if(show_info)
-      {
-        /* Make sure friends and foes are visible at final state */
-        for(uint16_t i = 0; i < friends_state.size(); i++)
-          if(friends_state[i]->fp != nullptr)
-            friends_state[i]->fp->setBrightness(1.0);
-        for(uint16_t i = 0; i < foes_state.size(); i++)
-          if(foes_state[i]->tp != nullptr)
-            foes_state[i]->tp->setBrightness(1.0);
-
-      bar_offset = 0;
-      }
       /* -- CHOOSING SKILLS -- */
       else if(menu->getLayerIndex() == 1 ||
          menu->getLayerIndex() == 2)
@@ -2532,89 +2555,26 @@ bool BattleDisplay::update(int cycle_time)
             index_actions--;
         }
 
-        /* Modify brightness for this state */
-        PersonState* choosing = getFriendsState(menu->getPersonIndex() - 1);
-        for(uint16_t i = 0; i < friends_state.size(); i++)
-        {
-          if(friends_state[i]->fp != nullptr)
-          {
-            /* Modify brightness */
-            if(friends_state[i] == choosing)
-              friends_state[i]->fp->setBrightness(1.0);
-            else
-              friends_state[i]->fp->setBrightness(0.15);
-          }
-        }
-        for(uint16_t i = 0; i < foes_state.size(); i++)
-          if(foes_state[i]->tp != nullptr)
-            foes_state[i]->tp->setBrightness(0.15);
-
         bar_offset = kBIGBAR_CHOOSE;
       }
       /* -- CHOOSING TARGETS -- */
       else if(menu->getLayerIndex() == 3)
       {
-        /* Split hover targets by foe and ally */
-        std::vector<int32_t> hover_set = menu->getHoverTargets();
-        std::vector<int32_t> action_set = menu->getActionTargets();
-        hover_set.insert(hover_set.end(), action_set.begin(), action_set.end());
-        std::vector<uint32_t> foe_set;
-        std::vector<uint32_t> friend_set;
-        for(uint16_t i = 0; i < hover_set.size(); i++)
-        {
-          if(hover_set[i] < 0)
-            foe_set.push_back(getIndex(-1 - hover_set[i]));
-          else if(hover_set[i] > 0)
-            friend_set.push_back(getIndex(hover_set[i] - 1));
-        }
-
-        /* Modify brightness for this state */
-        for(uint16_t i = 0; i < friends_state.size(); i++)
-          if(friends_state[i]->fp != nullptr)
-            friends_state[i]->fp->setBrightness(0.25);
-        for(uint16_t i = 0; i < friend_set.size(); i++)
-          if(friends_state[friend_set[i]]->fp != nullptr)
-            friends_state[friend_set[i]]->fp->setBrightness(1.0);
-        for(uint16_t i = 0; i < foes_state.size(); i++)
-          if(foes_state[i]->tp != nullptr)
-            foes_state[i]->tp->setBrightness(0.25);
-        for(uint16_t i = 0; i < foe_set.size(); i++)
-          if(foes_state[foe_set[i]]->tp != nullptr)
-            foes_state[foe_set[i]]->tp->setBrightness(1.0);
-
         bar_offset = 0;
       }
       /* -- CONFIRM CHOICE -- */
       else
       {
-        /* Split hover targets by foe and ally */
-        std::vector<int32_t> action_set = menu->getActionTargets();
-        std::vector<uint32_t> foe_set;
-        std::vector<uint32_t> friend_set;
-        for(uint16_t i = 0; i < action_set.size(); i++)
-        {
-          if(action_set[i] < 0)
-            foe_set.push_back(getIndex(-1 - action_set[i]));
-          else if(action_set[i] > 0)
-            friend_set.push_back(getIndex(action_set[i] - 1));
-        }
-
-        /* Modify brightness for this state */
-        for(uint16_t i = 0; i < friends_state.size(); i++)
-          if(friends_state[i]->fp != nullptr)
-            friends_state[i]->fp->setBrightness(0.25);
-        for(uint16_t i = 0; i < friend_set.size(); i++)
-          if(friends_state[friend_set[i]]->fp != nullptr)
-            friends_state[friend_set[i]]->fp->setBrightness(1.0);
-        for(uint16_t i = 0; i < foes_state.size(); i++)
-          if(foes_state[i]->tp != nullptr)
-            foes_state[i]->tp->setBrightness(0.25);
-        for(uint16_t i = 0; i < foe_set.size(); i++)
-          if(foes_state[foe_set[i]]->tp != nullptr)
-            foes_state[foe_set[i]]->tp->setBrightness(1.0);
-
         bar_offset = 0;
       }
+
+      /* Update brightness/opacity */
+      for (auto& state : friends_state)
+        if (state->self != nullptr)
+          state->fp->setBrightness(calcPersonBrightness(state->self));
+      for (auto& state : foes_state)
+        if (state->self != nullptr)
+          state->tp->setBrightness(calcPersonBrightness(state->self));
 
       rendering_state = battle_state;
       index_layer = menu->getLayerIndex();
@@ -2624,14 +2584,6 @@ bool BattleDisplay::update(int cycle_time)
      *-----------------------------------------------------------------------*/
     else if(rendering_state == TurnState::SELECT_ACTION_ENEMY)
     {
-      /* Make sure friends and foes are visible at final state */
-      for(uint16_t i = 0; i < friends_state.size(); i++)
-        if(friends_state[i]->fp != nullptr)
-          friends_state[i]->fp->setBrightness(1.0);
-      for(uint16_t i = 0; i < foes_state.size(); i++)
-        if(foes_state[i]->tp != nullptr)
-          foes_state[i]->tp->setBrightness(1.0);
-
       bar_offset = 0;
       rendering_state = battle_state;
     }
@@ -2820,16 +2772,12 @@ bool BattleDisplay::update(int cycle_time)
       }
 
       /* Update deaths */
-      for(uint8_t i = 0; i < friends_state.size(); i++)
-      {
-        if(friends_state[i]->self != nullptr)
-        {
-          if(!friends_state[i]->self->getBFlag(BState::ALIVE))
-            friends_state[i]->fp->setOpacity(50);
-          else
-            friends_state[i]->fp->setOpacity(255);
-        }
-      }
+      for (auto& state : friends_state)
+        if (state->self != nullptr)
+          state->fp->setOpacity(calcPersonOpacity(state->self));
+      for (auto& state : foes_state)
+        if (state->self != nullptr)
+          state->tp->setOpacity(calcPersonOpacity(state->self));
 
       rendering_state = battle_state;
     }
@@ -2894,7 +2842,7 @@ bool BattleDisplay::update(int cycle_time)
   //     offset_2 -= 1216;
   //   //midlays.front()->setOpacity(midlays.front()->getOpacity() - 1);
   // }
-  // temp_sprite->update(cycle_time);
+  temp_sprite->update(cycle_time);
 
   return true;
 }
