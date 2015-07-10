@@ -88,7 +88,11 @@ float RenderElement::calcBrightness()
 
 uint8_t RenderElement::calcColorRed()
 {
-  auto pc_fade = (getAlpha() * 100) / color.a;
+  auto pc_fade = 0;
+
+  if (color.a != 0)
+    pc_fade = (getAlpha() * 100) / color.a;
+  
   float red_float = (pc_fade * color.r) / (float)100;
 
   return std::round(red_float);
@@ -96,7 +100,10 @@ uint8_t RenderElement::calcColorRed()
 
 uint8_t RenderElement::calcColorBlue()
 {
-  auto pc_fade = (getAlpha() * 100) / color.a;
+  auto pc_fade = 0;
+
+  if (color.a != 0)
+    pc_fade = (getAlpha() * 100) / color.a;
 
   float blue_float = (pc_fade * color.b) / (float)100;
   return std::round(blue_float);
@@ -104,7 +111,10 @@ uint8_t RenderElement::calcColorBlue()
 
 uint8_t RenderElement::calcColorGreen()
 {
-  auto pc_fade = (getAlpha() * 100) / color.a;
+  auto pc_fade = 0;
+
+  if (color.a != 0)
+    pc_fade = (getAlpha() * 100) / color.a;
 
   float green_float = (pc_fade * color.g) / (float)100;
   return std::round(green_float);

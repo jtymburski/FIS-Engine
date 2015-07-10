@@ -2465,7 +2465,7 @@ bool BattleDisplay::update(int cycle_time)
       {
         processing_delay = 3500;
 
-        SDL_Color shadow_color = {113, 198, 113, 255};
+        SDL_Color shadow_color = {110, 99, 135, 235};
         RenderElement* turn_text = new RenderElement(RenderType::ACTION_TEXT);
         turn_text->setColor({0, 0, 0, 255});
         turn_text->setShadowColor(shadow_color);
@@ -2474,7 +2474,7 @@ bool BattleDisplay::update(int cycle_time)
 
         auto turn_string = Helpers::numToRoman(battle->getTurnsElapsed() + 1);
 
-        turn_string = "Turn " + turn_string + "  Decide Your Fate";
+        turn_string = "Turn " + turn_string + "  Kevin is a Dweeb";
         turn_text->setFont(font_turn);
         turn_text->setText(turn_string);
 
@@ -2816,7 +2816,7 @@ bool BattleDisplay::update(int cycle_time)
                    curr_event->type == EventType::METABOLIC_DAMAGE)
           {
             createDamageValue(targets.at(0), curr_event->amount, false);
-            createSpriteFlash(targets.at(0), {255, 100, 100, 255}, 350);
+            createSpriteFlash(targets.at(0), {187, 10, 30, 200}, 150);
             processing_delay = 150;
           }
           else
