@@ -48,6 +48,7 @@ struct PersonState
   Frame* info;
   Person* self;
   Sprite* tp;
+  bool was_flashing;
 };
 
 class BattleDisplay
@@ -303,6 +304,8 @@ private:
   /* Render the damage value */
   void createDamageValue(Person* target, uint64_t amount, bool miss = false);
   void createRegenValue(Person* target, uint64_t amount);
+
+  void createSpriteFlash(Person* target, SDL_Color color, int32_t time);
 
   /* Render Skill fizzling text */
   void renderFizzleText();

@@ -56,6 +56,9 @@ private:
   double brightness;
   
   /* Color values to indicate the composition of the image */
+  uint8_t temp_red;
+  uint8_t temp_green;
+  uint8_t temp_blue;
   uint8_t color_red;
   uint8_t color_green;
   uint8_t color_blue;
@@ -72,6 +75,9 @@ private:
 
   /* The sprite ID, useful when keeping track of a large number of sprites */
   uint16_t id;
+
+  /* Set the sprite to signify it is flashing (revert color balance) */
+  bool flashing;
 
   /* The number of loops the Sprite has gone through */
   uint32_t loops;
@@ -169,6 +175,11 @@ public:
   
   /* Returns the size of the sequence */
   int getSize() const;
+
+  /* Gets the temporary color balance spectrum values */
+  uint8_t getTempColorBlue() const;
+  uint8_t getTempColorGreen() const;
+  uint8_t getTempColorRed() const;
   
   /* Inserts the image into the sprite sequence at the given position */
   Frame* insert(std::string path, SDL_Renderer* renderer, int position, 
@@ -208,6 +219,9 @@ public:
   /* Returns if the direction parsing the frames is forward */
   bool isDirectionForward() const;
 
+  /* Whether the sprite is flashing */
+  bool isFlashing() const;
+
   /* Check if there are set frames in the sprite */
   bool isFramesSet() const;
 
@@ -229,6 +243,9 @@ public:
   /* Render the texture to the given renderer with the given parameters */
   bool render(SDL_Renderer* renderer, int x = 0, int y = 0, 
                                       int w = 0, int h = 0);
+
+  /* Take the temp. stored color balance values and restore them */
+  void revertColorBalance();
 
   /* Sets the frame animation time (in ms) */
   void setAnimationTime(uint16_t time);
@@ -253,6 +270,9 @@ public:
 
   /* Sets the numerical identifier */
   void setId(uint16_t id);
+
+  /* Set whether the sprite is flashing */
+  void setFlashing(bool flashing);
   
   /* Sets the opacity rating */
   void setOpacity(uint8_t opacity);
@@ -260,7 +280,13 @@ public:
   /* Sets the rotation for all frames to be rendered at */
   void setRotation(float angle);
   void setRotation(int angle);
-  
+
+  /* Sets the temporary color balances for the sprite */
+  void setTempColorBalance(uint8_t temp_red, uint8_t new_green, uint8_t new_blue);
+  void setTempColorRed(uint8_t temp_red);
+  void setTempColorGreen(uint8_t temp_green);
+  void setTempColorBlue(uint8_t temp_blue);
+
   /* Shifts to the given position in the sequence */
   bool shift(int position);
 

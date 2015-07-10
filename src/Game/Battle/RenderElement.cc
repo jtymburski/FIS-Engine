@@ -27,7 +27,8 @@
  * Inputs:
  */
 RenderElement::RenderElement()
-    : plep{nullptr}
+    : render_sprite{nullptr}
+    , flasher{nullptr}
     , type{RenderType::DAMAGE_VALUE}
     , color{0, 0, 0, 0}
     , shadow_color{0, 0, 0, 0}
@@ -72,6 +73,45 @@ RenderElement::RenderElement(RenderType render_type)
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
+
+float RenderElement::calcBrightness()
+{
+  auto def_brightness = render_sprite->getBrightness() + 0.20;
+  auto pc_fade        = (getAlpha() * 100) / color.a;
+
+  float brightness  = def_brightness * 100;
+        brightness /= pc_fade;
+        brightness /= 100;
+
+  return brightness;
+}
+
+int8_t RenderElement::calcColorRed()
+{
+  auto pc_fade = (getAlpha() * 100) / color.a;
+  std::cout << "Percent FadE:" << pc_fade << std::endl;
+
+  float red_float = (pc_fade * color.r) / (float)100;
+  std::cout << "Red float:" << red_float << std::endl;
+  return std::round(red_float);
+}
+
+int8_t RenderElement::calcColorBlue()
+{
+  auto pc_fade = (getAlpha() * 100) / color.a;
+
+  float blue_float = (pc_fade * color.b) / (float)100;
+  return std::round(blue_float);
+}
+
+int8_t RenderElement::calcColorGreen()
+{
+  auto pc_fade = (getAlpha() * 100) / color.a;
+
+  float green_float = (pc_fade * color.g) / (float)100;
+  return std::round(green_float);
+}
+
 
 /*
  * Description:
@@ -195,9 +235,14 @@ TTF_Font* RenderElement::getFont()
   return font;
 }
 
-Sprite* RenderElement::getPlep()
+Person* RenderElement::getFlasher()
 {
-  return plep;
+  return flasher;
+}
+
+Sprite* RenderElement::getSprite()
+{
+  return render_sprite;
 }
 
 /*
@@ -312,9 +357,9 @@ void RenderElement::setCoordinates(int32_t new_x, int32_t new_y)
   setY(new_y);
 }
 
-void RenderElement::setPlep(Sprite* new_plep)
+void RenderElement::setSprite(Sprite* new_render_sprite)
 {
-  plep = new_plep;
+  render_sprite = new_render_sprite;
 }
 
 /*
@@ -367,6 +412,11 @@ void RenderElement::setSizes(int32_t new_size_x, int32_t new_size_y)
 void RenderElement::setFont(TTF_Font* new_font)
 {
   font = new_font;
+}
+
+void RenderElement::setFlasher(Person* new_flasher)
+{
+  flasher = new_flasher;
 }
 
 /*

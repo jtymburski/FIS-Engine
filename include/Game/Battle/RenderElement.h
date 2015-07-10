@@ -21,14 +21,16 @@
 #include "Text.h"
 #include "Sprite.h"
 #include "Helpers.h"
+#include "Game/Player/Person.h"
 
 enum class RenderType : std::uint16_t
 {
-  NONE           =  0, 
-  ACTION_TEXT    =  1,
-  DAMAGE_VALUE   =  2,
-  RGB_OVERLAY    =  3,
-  PLEP           =  4
+  NONE             =  0, 
+  ACTION_TEXT      =  1,
+  DAMAGE_VALUE     =  2,
+  RGB_OVERLAY      =  3,
+  RGB_SPRITE_FLASH =  4,
+  PLEP             =  5
 };
 
 class RenderElement
@@ -42,8 +44,11 @@ public:
   ~RenderElement() = default;
 
 private: 
-  /* Pointer to a Sprite (plep) */
-  Sprite* plep;
+  /* Pointer to a Sprite (plep) (or the sprite to be mixed with Color) */
+  Sprite* render_sprite;
+
+  /* Person to flash sprite for */
+  Person* flasher;
 
   /* Type of the Render */
   RenderType type;
@@ -95,8 +100,14 @@ private:
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
- *============================================================================*/
+ *========================================f====================================*/
 public:
+  /* Calculates current colour levels for sprite-overlay flashing */
+  float calcBrightness();
+  int8_t calcColorRed();
+  int8_t calcColorGreen();
+  int8_t calcColorBlue();
+
   /* Returns whether the element has a shadow */
   bool hasShadow();
 
@@ -117,8 +128,11 @@ public:
   /* Returns a pointer to the font of the render element */
   TTF_Font* getFont();
 
+  /* Obtains pointer to the person to be flashed */
+  Person* getFlasher();
+
   /* Returns a pointer to the Sprite Plep */
-  Sprite* getPlep();
+  Sprite* getSprite();
 
   /* Returns the assigned string for the render element */
   std::string getText();
@@ -148,8 +162,11 @@ public:
   /* Sets the font of the text */
   void setFont(TTF_Font* new_font);
 
+  /* Assign a person to the render element */
+  void setFlasher(Person* new_flasher);
+
   /* Assigns a new plep for the Element */
-  void setPlep(Sprite* new_plep);
+  void setSprite(Sprite* new_render_sprite);
 
   /* Method to set the text to have a shadow */
   void setShadow(bool to_show = true);

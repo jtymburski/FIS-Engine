@@ -1165,8 +1165,6 @@ void BattleDisplay::createDamageValue(Person* target, uint64_t amount,
   element->setShadowCoordinates(kACTION_TEXT_SHADOW - 2, 
       kACTION_TEXT_SHADOW - 1);
   element->setShadowColor(shadow_color);
-
-  
   element->setAcceleration(5, -15);
   element->setVelocity(-100, -180);
 
@@ -1213,6 +1211,31 @@ void BattleDisplay::createRegenValue(Person* target, uint64_t amount)
   element->setAcceleration(0, -5);
 
   render_elements.push_back(element);
+}
+
+
+void BattleDisplay::createSpriteFlash(Person* target, SDL_Color color, 
+    int32_t time)
+{
+  bool ally = battle->isAlly(target);
+
+  RenderElement* sprite_flash = new RenderElement(RenderType::RGB_SPRITE_FLASH);
+
+  Sprite* set_sprite;
+
+  if (ally)
+    set_sprite = getFriendsState(target)->fp;
+  else
+    set_sprite = getFoesState(target)->tp;
+
+  std::cout << "Set Sprite Null? " << (set_sprite == nullptr) << std::endl;
+
+  sprite_flash->setSprite(set_sprite);
+  sprite_flash->setFlasher(target);
+  sprite_flash->setColor(color);
+  sprite_flash->setTimes(1900, 500, 500);
+
+  render_elements.push_back(sprite_flash);
 }
 
 /* Render the action categories */
@@ -1405,6 +1428,13 @@ bool BattleDisplay::renderFoes(SDL_Renderer* renderer)
     if(foe_state->tp != nullptr)
     {
       auto foe = foe_state->self;
+
+      if (foe_state->was_flashing)
+      {
+        foe_state->tp->revertColorBalance();
+        foe_state->tp->setFlashing(false);
+        foe_state->was_flashing = false;
+      }
       success &= foe_state->tp->render(renderer, getPersonX(foe), 
                                                  getPersonY(foe));
     }
@@ -1583,6 +1613,14 @@ bool BattleDisplay::renderFriends(SDL_Renderer* renderer)
     if(ally_state->fp != nullptr)
     {
       auto ally = ally_state->self;
+
+      if (ally_state->was_flashing)
+      {
+        ally_state->fp->revertColorBalance();
+        ally_state->fp->setFlashing(false);
+        ally_state->was_flashing = false;
+      }
+
       success &= ally_state->fp->render(renderer, getPersonX(ally), 
                                                   getPersonY(ally));
     }
@@ -2382,6 +2420,20 @@ bool BattleDisplay::update(int cycle_time)
         temp_elements.push_back(element);
       else
       {
+        if (element->getType() == RenderType::RGB_SPRITE_FLASH)
+        {
+          bool ally = battle->isAlly(element->getFlasher());
+          PersonState* state;
+
+          if (ally)
+            state = getFriendsState(element->getFlasher());
+          else
+            state = getFoesState(element->getFlasher());
+
+          /* Assigns the state's 'was flashing' bool to true -> revert */
+          state->was_flashing = true;
+        }
+
         delete element;
         element = nullptr;
       }
@@ -2762,7 +2814,8 @@ bool BattleDisplay::update(int cycle_time)
                    curr_event->type == EventType::METABOLIC_DAMAGE)
           {
             createDamageValue(targets.at(0), curr_event->amount, false);
-            processing_delay = 50;
+            createSpriteFlash(targets.at(0), {255, 0, 0, 255}, 190);
+            processing_delay = 200;
           }
           else
           {
@@ -2790,12 +2843,12 @@ bool BattleDisplay::update(int cycle_time)
       if(rendering_state != battle_state)
       {
         animation_delay += cycle_time;
+
         if(animation_delay > kANIMATION_PROCESS || 
            battle_state == TurnState::DESTRUCT)
         {
           rendering_state = battle_state;
           animation_delay = 0;
-
         }
       }
 
@@ -2853,8 +2906,36 @@ bool BattleDisplay::updateElements(int32_t cycle_time)
   bool success = true;
 
   for (auto &element : render_elements)
+  {
     if (element != nullptr)
+    {
+      std::cout << "Alpha pre:" << element->getAlpha() << std::endl;;
       success &= element->update(cycle_time);
+      std::cout << "Alpha post:" << element->getAlpha() << std::endl;
+
+      if (element->getType() == RenderType::RGB_SPRITE_FLASH)
+      {
+        auto sprite = element->getSprite();
+
+        if (sprite != nullptr && !sprite->isFlashing())
+        {
+          sprite->setFlashing(true);
+        }
+        else if (sprite->isFlashing())
+        {
+          sprite->setTempColorBalance(sprite->getColorRed(), 
+              sprite->getColorGreen(), sprite->getColorBlue()); 
+          sprite->setColorBalance(element->calcColorRed(), 
+              element->calcColorGreen(), element->calcColorBlue());
+          //sprite->setBrightness(element->calcBrightness());
+        }
+
+        // std::cout << "Color Red:"    << element->calcColorRed() << std::endl;
+        // std::cout << "Color Blue: "  << element->calcColorBlue() << std::endl;
+        // std::cout << "Color Green: " << element->calcColorGreen() << std::endl;
+      }
+    }
+  }
 
   return success;
 }

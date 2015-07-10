@@ -41,8 +41,12 @@ Sprite::Sprite()
   color_red = kDEFAULT_COLOR;
   color_green = kDEFAULT_COLOR;
   color_blue = kDEFAULT_COLOR;
+  temp_red = kDEFAULT_COLOR;
+  temp_green = kDEFAULT_COLOR;
+  temp_blue = kDEFAULT_COLOR;
   current = NULL;
   elapsed_time = 0;
+  flashing = false;
   grey_scale_alpha = kDEFAULT_OPACITY;
   grey_scale_update = false;
   head = NULL;
@@ -466,6 +470,42 @@ int Sprite::getSize() const
   return size;
 }
 
+/*
+ * Description: Returns the color distribution evenness, according to the temp.
+ *              red RGB value. Rated from 0 to 255. (255 full saturation).
+ *
+ * Inputs: none
+ * Output: uint8_t - the rated temp. RGB value
+ */
+uint8_t Sprite::getTempColorRed() const
+{
+  return temp_red;
+}
+
+/*
+ * Description: Returns the color distribution evenness, according to the temp.
+ *              green RGB value. Rated from 0 to 255. (255 full saturation).
+ *
+ * Inputs: none
+ * Output: uint8_t - the rated temp. RGB value
+ */
+uint8_t Sprite::getTempColorGreen() const
+{
+  return temp_green;
+}
+
+/*
+ * Description: Returns the color distribution evenness, according to the temp.
+ *              blue RGB value. Rated from 0 to 255. (255 full saturation).
+ *
+ * Inputs: none
+ * Output: uint8_t - the rated temp RGB value
+ */
+uint8_t Sprite::getTempColorBlue() const
+{
+  return temp_blue;
+}
+
 /* 
  * Description: Inserts the image into the sprite sequence at the given 
  *              position based on the given string path.
@@ -721,6 +761,11 @@ bool Sprite::isDirectionForward() const
   return (sequence == FORWARD);
 }
 
+bool Sprite::isFlashing() const
+{
+  return flashing;
+}
+
 bool Sprite::isFramesSet() const
 {
   return (head != NULL);
@@ -911,6 +956,21 @@ bool Sprite::render(SDL_Renderer* renderer, int x, int y, int w, int h)
 }
 
 /*
+ * Description: Revers the normal color mod values to the values to the value
+ *              stored in the temporary color mod. variables.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Sprite::revertColorBalance()
+{
+  color_red = temp_red;
+  color_green = temp_green;
+  color_blue = temp_blue;
+  setColorMod();
+}
+
+/*
  * Description: Sets the animation time between frame changes. Gets called from
  *              the update call below for updating the frames in the sequence.
  *
@@ -1081,6 +1141,11 @@ void Sprite::setId(uint16_t id)
   this->id = id;
 }
 
+void Sprite::setFlashing(bool flashing)
+{
+  this->flashing = flashing;
+}
+
 /*
  * Description: Sets the sprite opacity. It utilizes an 8 bit unsigned number
  *              where is 0 is fully transparent and 255 is fully opaque.
@@ -1104,6 +1169,56 @@ void Sprite::setOpacity(uint8_t opacity)
 void Sprite::setRotation(float angle)
 {
   rotation_angle = angle;
+}
+
+/*
+ * Description: Stores the given RGB values as the temporary color balance
+ *              values, easily able to be reverted.
+ *
+ * Inputs: uint8_t temp_red - temporary red color 0-255 (255 full)
+ *         uint8_t temp_green - temporary green color 0-255 (255 full)
+ *         uint8_t temp_blue  - temporary blue color 0-255 (255 full)
+ * Output: none
+ */
+void Sprite::setTempColorBalance(uint8_t temp_red, uint8_t temp_green,
+    uint8_t temp_blue)
+{
+  setTempColorRed(temp_red);
+  setTempColorGreen(temp_green);
+  setTempColorBlue(temp_blue);
+}
+
+/*
+ * Description: Store the given value as the temporary color mask for red.
+ *
+ * Inputs: uint8_t temp_red - temporary red color 0-255 (255 full)
+ * Output: none
+ */
+void Sprite::setTempColorRed(uint8_t temp_red)
+{
+  this->temp_red   = temp_red;
+}
+
+/*
+ * Description: Store the given value as the temporary color mask for green
+ *
+ * Inputs: uint8_t temp_green - temporary green color 0-255 (255 full)
+ * Output: none
+ */
+void Sprite::setTempColorGreen(uint8_t temp_green)
+{
+  this->temp_green = temp_green;
+}
+
+/*
+ * Description: Store the given value as the temporary color mask for blue
+ *
+ * Inputs: uint8_t temp_blue - temporary blue color 0-255 (255 full)
+ * Output: none
+ */
+void Sprite::setTempColorBlue(uint8_t temp_blue)
+{
+  this->temp_blue  = temp_blue;  
 }
 
 /*
