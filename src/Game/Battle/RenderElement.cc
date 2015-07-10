@@ -86,17 +86,15 @@ float RenderElement::calcBrightness()
   return brightness;
 }
 
-int8_t RenderElement::calcColorRed()
+uint8_t RenderElement::calcColorRed()
 {
   auto pc_fade = (getAlpha() * 100) / color.a;
-  std::cout << "Percent FadE:" << pc_fade << std::endl;
-
   float red_float = (pc_fade * color.r) / (float)100;
-  std::cout << "Red float:" << red_float << std::endl;
+
   return std::round(red_float);
 }
 
-int8_t RenderElement::calcColorBlue()
+uint8_t RenderElement::calcColorBlue()
 {
   auto pc_fade = (getAlpha() * 100) / color.a;
 
@@ -104,7 +102,7 @@ int8_t RenderElement::calcColorBlue()
   return std::round(blue_float);
 }
 
-int8_t RenderElement::calcColorGreen()
+uint8_t RenderElement::calcColorGreen()
 {
   auto pc_fade = (getAlpha() * 100) / color.a;
 
@@ -192,12 +190,11 @@ bool RenderElement::update(int cycle_time)
   }
   else if (elapsed_time < fade_in_time)
   {
-    double time_per_alpha = (double)fade_in_time / color.a;
+    double time_per_alpha = (double)fade_in_time / (double)color.a;
     alpha = std::floor(elapsed_time / time_per_alpha);
   }
   else if (remaining_time < fade_out_time)
   {
-
     double time_per_alpha = (double)fade_out_time / (double)color.a;
     double time_diff = (double)fade_out_time - (double)remaining_time;
     alpha = std::floor((double)color.a - (time_diff / time_per_alpha));
@@ -225,7 +222,7 @@ SDL_Color RenderElement::getShadowColor()
  * Inputs:
  * Output:
  */
-int32_t RenderElement::getAlpha()
+uint8_t RenderElement::getAlpha()
 {
   return alpha;
 }
@@ -251,7 +248,7 @@ Sprite* RenderElement::getSprite()
  * Inputs:
  * Output:
  */
-int32_t RenderElement::getShadowAlpha()
+uint8_t RenderElement::getShadowAlpha()
 {
   return shadow_alpha;
 }

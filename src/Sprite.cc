@@ -1183,6 +1183,10 @@ void Sprite::setRotation(float angle)
 void Sprite::setTempColorBalance(uint8_t temp_red, uint8_t temp_green,
     uint8_t temp_blue)
 {
+  std::cout << "Setting temp color red: " << temp_red << std::endl;
+  std::cout << "Setting temp color green: " << temp_red << std::endl;
+  std::cout << "Setting temp color blue: " << temp_red << std::endl;
+
   setTempColorRed(temp_red);
   setTempColorGreen(temp_green);
   setTempColorBlue(temp_blue);

@@ -218,6 +218,10 @@ double BattleDisplay::calcPersonBrightness(Person* test_person)
       }
     }
   }
+  else
+  {
+    brightness = 1.0;
+  }
 
   return brightness;
 }
@@ -1228,12 +1232,10 @@ void BattleDisplay::createSpriteFlash(Person* target, SDL_Color color,
   else
     set_sprite = getFoesState(target)->tp;
 
-  std::cout << "Set Sprite Null? " << (set_sprite == nullptr) << std::endl;
-
   sprite_flash->setSprite(set_sprite);
   sprite_flash->setFlasher(target);
   sprite_flash->setColor(color);
-  sprite_flash->setTimes(1900, 500, 500);
+  sprite_flash->setTimes(time, time / 3, time /3);
 
   render_elements.push_back(sprite_flash);
 }
@@ -2622,10 +2624,10 @@ bool BattleDisplay::update(int cycle_time)
 
       /* Update brightness/opacity */
       for (auto& state : friends_state)
-        if (state->self != nullptr)
+        if (state->self != nullptr && state->fp != nullptr)
           state->fp->setBrightness(calcPersonBrightness(state->self));
       for (auto& state : foes_state)
-        if (state->self != nullptr)
+        if (state->self != nullptr && state->tp != nullptr)
           state->tp->setBrightness(calcPersonBrightness(state->self));
 
       rendering_state = battle_state;
@@ -2737,7 +2739,7 @@ bool BattleDisplay::update(int cycle_time)
           }
           else if (curr_event->type == EventType::ACTION_BEGIN)
           {
-            processing_delay = 50;
+            processing_delay = 300;
             /* Input processing delay if the action has changed */
             // if (curr_event->action_use != curr_action && 
             //     curr_event->action_use != nullptr)
@@ -2814,8 +2816,8 @@ bool BattleDisplay::update(int cycle_time)
                    curr_event->type == EventType::METABOLIC_DAMAGE)
           {
             createDamageValue(targets.at(0), curr_event->amount, false);
-            createSpriteFlash(targets.at(0), {255, 0, 0, 255}, 190);
-            processing_delay = 200;
+            createSpriteFlash(targets.at(0), {255, 100, 100, 255}, 350);
+            processing_delay = 150;
           }
           else
           {
@@ -2919,12 +2921,13 @@ bool BattleDisplay::updateElements(int32_t cycle_time)
 
         if (sprite != nullptr && !sprite->isFlashing())
         {
+          sprite->setTempColorBalance(sprite->getColorRed(), 
+              sprite->getColorGreen(), sprite->getColorBlue()); 
+
           sprite->setFlashing(true);
         }
         else if (sprite->isFlashing())
         {
-          sprite->setTempColorBalance(sprite->getColorRed(), 
-              sprite->getColorGreen(), sprite->getColorBlue()); 
           sprite->setColorBalance(element->calcColorRed(), 
               element->calcColorGreen(), element->calcColorBlue());
           //sprite->setBrightness(element->calcBrightness());

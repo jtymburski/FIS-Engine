@@ -88,8 +88,8 @@ private:
   int32_t fade_out_time;
 
   /* Current alpha value calculations */
-  int8_t alpha;
-  int8_t shadow_alpha;
+  uint8_t alpha;
+  uint8_t shadow_alpha;
 
   /* ------------ Constants --------------- */
 
@@ -104,9 +104,9 @@ private:
 public:
   /* Calculates current colour levels for sprite-overlay flashing */
   float calcBrightness();
-  int8_t calcColorRed();
-  int8_t calcColorGreen();
-  int8_t calcColorBlue();
+  uint8_t calcColorRed();
+  uint8_t calcColorGreen();
+  uint8_t calcColorBlue();
 
   /* Returns whether the element has a shadow */
   bool hasShadow();
@@ -118,8 +118,8 @@ public:
   bool update(int32_t cycle_time);
 
   /* Returns the alphs values for text and shadow text */
-  int32_t getAlpha();
-  int32_t getShadowAlpha();
+  uint8_t getAlpha();
+  uint8_t getShadowAlpha();
 
   /* Methods to return the colors */
   SDL_Color getColor();
