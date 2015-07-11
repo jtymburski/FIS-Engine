@@ -501,6 +501,9 @@ private:
 
   /* Updates the LOSS/VICTORY flags based on party deaths */
   bool updatePartyDeaths();
+  
+  /* Unsets the attacking flag for all allies & foes members */
+  void unsetActorsAttacking();
 
   /* Resolving effects upon death of a single person -> checks party deaths */
   bool updatePersonDeath(const DamageType &damage_type);
@@ -510,6 +513,8 @@ private:
 
   /* Assigns a new value to the ailment update mode */
   void setAilmentUpdateMode(const BattleOptions &new_value);
+
+  void setCurrUserAttacking();
 
   /* Assigns the friends party of the Battle */
   bool setFriends(Party* const new_friends);

@@ -1,4 +1,4 @@
-/*****************************************************************************
+/***************************************************************************
 * Class Name: /
 * Date Created: June 22, 2014
 * Inheritance: None
@@ -29,6 +29,7 @@
 RenderElement::RenderElement()
     : render_sprite{nullptr}
     , flasher{nullptr}
+    , status{RenderStatus::CONSTRUCTING}
     , type{RenderType::DAMAGE_VALUE}
     , color{0, 0, 0, 0}
     , shadow_color{0, 0, 0, 0}
@@ -60,10 +61,30 @@ RenderElement::RenderElement()
  *
  * Inputs:
  */
-RenderElement::RenderElement(RenderType render_type) 
+RenderElement::RenderElement(RenderType type, int32_t remaining_time,
+    int32_t fade_in_time, int32_t fade_out_time) 
     : RenderElement()
 {
-  type = render_type;
+  this->type = type;
+  
+  std::cout << "Setting times: remaining: " << remaining_time << " fade in: " << fade_in_time << " fade out: " << fade_out_time << std::endl;
+  bool success = setTimes(remaining_time, fade_in_time, fade_out_time);
+
+  if (success)
+  {
+    if (fade_in_time > 0)
+    {
+      std::cout << "Render element created: FADING IN!" << std::endl;
+      status = RenderStatus::FADING_IN;    
+    }
+
+    else if (fade_in_time == 0 && fade_out_time == remaining_time)
+      status = RenderStatus::FADING_OUT;
+    else
+      status = RenderStatus::DISPLAYING;
+  }
+  else
+    status = RenderStatus::TIMED_OUT;
 }
 
 /*=============================================================================
@@ -155,16 +176,21 @@ bool RenderElement::update(int cycle_time)
   remaining_time -= cycle_time;
   elapsed_time   += cycle_time;
 
+  if (elapsed_time >= fade_in_time)
+    status = RenderStatus::DISPLAYING;
+  if (remaining_time < fade_out_time)
+    status = RenderStatus::FADING_OUT;
+
   /* Before updating coordinates, update the pixels/s from the pixels/s/s */
-  velocity_x += acceleration_x;
-  velocity_y += acceleration_y;
+  // velocity_x += acceleration_x;
+  // velocity_y += acceleration_y;
 
   /* Then, update the (X, Y) coordinates for the text and the shadow */
   auto temp_delta_x = 0.0;
   auto temp_delta_y = 0.0;
 
-  temp_delta_x += static_cast<float>(velocity_x) / 100.0f;
-  temp_delta_y += static_cast<float>(velocity_y) / 100.0f;
+  temp_delta_x += static_cast<float>(velocity_x) * cycle_time / 100.0f;
+  temp_delta_y += static_cast<float>(velocity_y) * cycle_time / 100.0f;
 
   if (delta_x >= 1.0 || delta_x <= -1.0)
   {
@@ -194,24 +220,6 @@ bool RenderElement::update(int cycle_time)
     delta_y += temp_delta_y;
   }
 
-  if (elapsed_time >= fade_in_time && remaining_time >= fade_out_time)
-  {
-    alpha = color.a;
-  }
-  else if (elapsed_time < fade_in_time)
-  {
-    double time_per_alpha = (double)fade_in_time / (double)color.a;
-    alpha = std::floor(elapsed_time / time_per_alpha);
-  }
-  else if (remaining_time < fade_out_time)
-  {
-    double time_per_alpha = (double)fade_out_time / (double)color.a;
-    double time_diff = (double)fade_out_time - (double)remaining_time;
-    alpha = std::floor((double)color.a - (time_diff / time_per_alpha));
-  }
-
-  shadow_alpha = alpha;
-
   return true;
 }
 
@@ -223,6 +231,21 @@ SDL_Color RenderElement::getColor()
 SDL_Color RenderElement::getShadowColor()
 {
   return shadow_color;
+}
+
+int32_t RenderElement::getElapsedTime()
+{
+  return elapsed_time;
+}
+
+int32_t RenderElement::getFadeInTime()
+{
+  return fade_in_time;
+}
+
+int32_t RenderElement::getFadeOutTime()
+{
+  return fade_out_time;
 }
 
 
@@ -247,9 +270,19 @@ Person* RenderElement::getFlasher()
   return flasher;
 }
 
+int32_t RenderElement::getRemainingTime()
+{
+  return remaining_time;
+}
+
 Sprite* RenderElement::getSprite()
 {
   return render_sprite;
+}
+
+RenderStatus RenderElement::getStatus()
+{
+  return status;
 }
 
 /*
@@ -338,6 +371,13 @@ int32_t RenderElement::getSizeY()
 {
   return size_y;
 }
+
+void RenderElement::setAlpha(uint8_t new_alpha)
+{
+  alpha = new_alpha;
+  shadow_alpha = new_alpha;
+}
+
 
 /*
  * Description:

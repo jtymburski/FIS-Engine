@@ -782,6 +782,7 @@ void Person::battlePrep()
   setBFlag(BState::GUARDED, false);
   setBFlag(BState::GUARDING, false);
   setBFlag(BState::SHIELDED, false);
+  setBFlag(BState::IS_ATTACKING, false);
 
   resetActionFlags();
 }
@@ -1026,9 +1027,10 @@ void Person::print(const bool &simple, const bool &equips,
       std::cout << "\nDEFENDING: " << getBFlag(BState::DEFENDING);
       std::cout << "\nGUARDED: " << getBFlag(BState::GUARDED);
       std::cout << "\nGUARDING: " << getBFlag(BState::GUARDING);
-      std::cout << "\nSHIELDED: " << getBFlag(BState::SHIELDED) << "\n\n";
+      std::cout << "\nSHIELDED: " << getBFlag(BState::SHIELDED);
+      std::cout << "\nIS_ATTACKING: " << getBFlag(BState::IS_ATTACKING);
  
-      std::cout << "--- Person State Flags ---\n";
+      std::cout << "\n\n--- Person State Flags ---\n";
       std::cout << "SLEUTH: " << getPFlag(PState::SLEUTH) << "\n";
       std::cout << "BEARACKS: " << getPFlag(PState::BEARACKS) << "\n";
       std::cout << "MAIN: " << getPFlag(PState::MAIN) << "\n";

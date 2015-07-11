@@ -464,8 +464,8 @@ void Game::setupBattle()
   confuse->setPrimary(Element::NIHIL);
   confuse->setFlag(SkillFlags::OFFENSIVE);
 
-  Skill* silence = new Skill(146, "Inflict Silence", ActionScope::ONE_TARGET,
-    inflict_actions[6], 100, 10);
+  // Skill* silence = new Skill(146, "Inflict Silence", ActionScope::ONE_TARGET,
+  //   inflict_actions[6], 100, 10);
 
   // Skill* bubbinate = new Skill(147, "Bubbinate", ActionScope::ONE_TARGET,
   //   inflict_actions[7], 100, 10);

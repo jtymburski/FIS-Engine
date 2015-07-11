@@ -107,6 +107,7 @@ enum class BState
   GUARDED             = 1 << 19, /* Is this person being guarded? */
   GUARDING            = 1 << 20, /* Is this person guarding? */
   SHIELDED            = 1 << 21, /* Is this person shielded from damage? */
+  IS_ATTACKING        = 1 << 22 /* Is this person attacking? */
 };
 
 /* PState Flags - flags which have impacts outside of Battle */

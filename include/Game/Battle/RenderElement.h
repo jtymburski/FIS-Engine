@@ -33,12 +33,23 @@ enum class RenderType : std::uint16_t
   PLEP             =  5
 };
 
+enum class RenderStatus : std::uint16_t
+{
+  CONSTRUCTING = 1,
+  FADING_IN    = 2,
+  DISPLAYING   = 3,
+  FADING_OUT   = 4,
+  BOBBING      = 5,
+  TIMED_OUT    = 6
+};
+
 class RenderElement
 {
 public:
   /* Constructors for RenderElements */
   RenderElement();
-  RenderElement(RenderType render_type);
+  RenderElement(RenderType type, int32_t remaining_time = 0, 
+      int32_t fade_in_time = 0, int32_t fade_out_time = 0);
 
   /* Annihilates a render element */
   ~RenderElement() = default;
@@ -49,6 +60,9 @@ private:
 
   /* Person to flash sprite for */
   Person* flasher;
+
+  /* Enumerated status of the Render Element */
+  RenderStatus status;
 
   /* Type of the Render */
   RenderType type;
@@ -125,14 +139,25 @@ public:
   SDL_Color getColor();
   SDL_Color getShadowColor();
 
+  int32_t getElapsedTime();
+
+  int32_t getFadeInTime();
+
+  int32_t getFadeOutTime();
+
   /* Returns a pointer to the font of the render element */
   TTF_Font* getFont();
 
   /* Obtains pointer to the person to be flashed */
   Person* getFlasher();
 
+  int32_t getRemainingTime();
+
   /* Returns a pointer to the Sprite Plep */
   Sprite* getSprite();
+
+  /* Return the enumerated status for the render element */
+  RenderStatus getStatus();
 
   /* Returns the assigned string for the render element */
   std::string getText();
@@ -147,6 +172,8 @@ public:
   int32_t getShadowY();
   int32_t getSizeX();
   int32_t getSizeY();
+
+  void setAlpha(uint8_t new_alpha);
 
   /* Assigns new acceleration values */
   void setAcceleration(int32_t new_acceleration_x, int32_t new_acceleration_y);

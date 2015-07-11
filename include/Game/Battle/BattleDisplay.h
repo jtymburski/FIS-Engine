@@ -456,6 +456,8 @@ public:
   /* Updates the battle display */
   bool update(int cycle_time);
   bool updateElements(int cycle_time);
+  bool updateFriends(int cycle_time);
+  bool updateFoes(int cycle_time);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS

@@ -1097,13 +1097,12 @@ bool BattleDisplay::renderActionSkills(SDL_Renderer* renderer, BattleMenu* menu,
 //TODO: Comment
 void BattleDisplay::createActionText(std::string action_name)
 {
-  RenderElement* action_text = new RenderElement(RenderType::ACTION_TEXT);
+  RenderElement* action_text = new RenderElement(RenderType::ACTION_TEXT, 900, 100, 100);
   
   action_text->setColor({0, 0, 0, 255});
   action_text->setShadowColor({kACTION_COLOR_R, 0, 0, 255});
   action_text->setFont(font_action);
   action_text->setText(action_name);
-  action_text->setTimes(900, 100, 100);
 
   Text t(font_action);
   t.setText(renderer, action_text->getText(), action_text->getColor());
@@ -1128,7 +1127,7 @@ void BattleDisplay::createDamageValue(Person* target, uint64_t amount,
 {
   /* Determine the color of text to use for displaying according to the
    * appropriate damage type (based on the type of event being processed ) */
-  SDL_Color color = {0, 0, 0, 255};
+  SDL_Color color        = {  0,   0,   0, 255};
   SDL_Color shadow_color = {255, 255, 255, 255};
 
   if (curr_event->type == EventType::STANDARD_DAMAGE)
@@ -1140,7 +1139,8 @@ void BattleDisplay::createDamageValue(Person* target, uint64_t amount,
   else if (curr_event->type == EventType::BURN_DAMAGE)
     shadow_color = kBURN_DMG_COLOR;
 
-  RenderElement* element = new RenderElement(RenderType::DAMAGE_VALUE);
+  RenderElement* element = new RenderElement(RenderType::DAMAGE_VALUE, 
+                                             300, 100, 100);
 
   /* Build parameters for the damage text, add to render text elements */
   element->setColor(color);
@@ -1153,8 +1153,6 @@ void BattleDisplay::createDamageValue(Person* target, uint64_t amount,
 
   Text t(font_damage);
   t.setText(renderer, element->getText(), color);
-  
-  element->setTimes(600, 35, 150);
 
   auto x  = getPersonX(target);
        x += kPERSON_WIDTH / 2;
@@ -1169,8 +1167,8 @@ void BattleDisplay::createDamageValue(Person* target, uint64_t amount,
   element->setShadowCoordinates(kACTION_TEXT_SHADOW - 2, 
       kACTION_TEXT_SHADOW - 1);
   element->setShadowColor(shadow_color);
-  element->setAcceleration(5, -15);
-  element->setVelocity(-100, -180);
+  // element->setAcceleration(1, -3);
+  element->setVelocity(-10, -18);
 
   render_elements.push_back(element);
 }
@@ -1187,7 +1185,7 @@ void BattleDisplay::createRegenValue(Person* target, uint64_t amount)
   else if (curr_event->type == EventType::REGEN_QTDR)
     shadow_color = kQTDR_REGEN_COLOR;
 
-  RenderElement* element = new RenderElement(RenderType::DAMAGE_VALUE);
+  RenderElement* element = new RenderElement(RenderType::DAMAGE_VALUE, 650, 150, 150);
 
   element->setColor(color);
   element->setFont(font_damage);
@@ -1195,8 +1193,6 @@ void BattleDisplay::createRegenValue(Person* target, uint64_t amount)
 
   Text t(font_damage);
   t.setText(renderer, element->getText(), color);
-
-  element->setTimes(650, 150, 150);
 
   auto x  = getPersonX(target);
        x += kPERSON_WIDTH / 2;
@@ -1221,9 +1217,11 @@ void BattleDisplay::createRegenValue(Person* target, uint64_t amount)
 void BattleDisplay::createSpriteFlash(Person* target, SDL_Color color, 
     int32_t time)
 {
+  (void)time;//WARNING
   bool ally = battle->isAlly(target);
 
-  RenderElement* sprite_flash = new RenderElement(RenderType::RGB_SPRITE_FLASH);
+  RenderElement* sprite_flash = new RenderElement(RenderType::RGB_SPRITE_FLASH, 
+      400, 195, 195);
 
   Sprite* set_sprite;
 
@@ -1235,7 +1233,6 @@ void BattleDisplay::createSpriteFlash(Person* target, SDL_Color color,
   sprite_flash->setSprite(set_sprite);
   sprite_flash->setFlasher(target);
   sprite_flash->setColor(color);
-  sprite_flash->setTimes(time, time / 3, time /3);
 
   render_elements.push_back(sprite_flash);
 }
@@ -1431,12 +1428,6 @@ bool BattleDisplay::renderFoes(SDL_Renderer* renderer)
     {
       auto foe = foe_state->self;
 
-      if (foe_state->was_flashing)
-      {
-        foe_state->tp->revertColorBalance();
-        foe_state->tp->setFlashing(false);
-        foe_state->was_flashing = false;
-      }
       success &= foe_state->tp->render(renderer, getPersonX(foe), 
                                                  getPersonY(foe));
     }
@@ -1615,13 +1606,6 @@ bool BattleDisplay::renderFriends(SDL_Renderer* renderer)
     if(ally_state->fp != nullptr)
     {
       auto ally = ally_state->self;
-
-      if (ally_state->was_flashing)
-      {
-        ally_state->fp->revertColorBalance();
-        ally_state->fp->setFlashing(false);
-        ally_state->was_flashing = false;
-      }
 
       success &= ally_state->fp->render(renderer, getPersonX(ally), 
                                                   getPersonY(ally));
@@ -2118,6 +2102,8 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
 
     for (const auto& element : render_elements)
     {
+      // auto alpha = 255;
+
       if (element->getType() == RenderType::ACTION_TEXT ||
           element->getType() == RenderType::DAMAGE_VALUE)
       {
@@ -2401,7 +2387,7 @@ bool BattleDisplay::update(int cycle_time)
     /* Update the midlays */
     for (auto& midlay : midlays)
       midlay->update(cycle_time);
-
+    /* Update the overlays */
     for (auto& overlay : overlays)
       overlay->update(cycle_time);
 
@@ -2412,37 +2398,10 @@ bool BattleDisplay::update(int cycle_time)
 
     /* Update the render text elements */
     updateElements(cycle_time);
-
-    /* Clear render texts with negative time remaining */
-    std::vector<RenderElement*> temp_elements;
- 
-    for (auto& element : render_elements)
-    {
-      if (!element->isTimedOut())
-        temp_elements.push_back(element);
-      else
-      {
-        if (element->getType() == RenderType::RGB_SPRITE_FLASH)
-        {
-          bool ally = battle->isAlly(element->getFlasher());
-          PersonState* state;
-
-          if (ally)
-            state = getFriendsState(element->getFlasher());
-          else
-            state = getFoesState(element->getFlasher());
-
-          /* Assigns the state's 'was flashing' bool to true -> revert */
-          state->was_flashing = true;
-        }
-
-        delete element;
-        element = nullptr;
-      }
-    }
- 
-    render_elements.clear();
-    render_elements = temp_elements;
+    /* Update the friends states */
+    updateFriends(cycle_time);
+    /* Update the foes states */
+    updateFoes(cycle_time);
 
     /*-------------------------------------------------------------------------
      * BEGIN state
@@ -2465,16 +2424,17 @@ bool BattleDisplay::update(int cycle_time)
       {
         processing_delay = 3500;
 
-        SDL_Color shadow_color = {110, 99, 135, 235};
-        RenderElement* turn_text = new RenderElement(RenderType::ACTION_TEXT);
+        SDL_Color shadow_color = {194, 59, 34, 255};
+        RenderElement* turn_text = new RenderElement(RenderType::ACTION_TEXT,
+            1500, 500, 500);
+
         turn_text->setColor({0, 0, 0, 255});
         turn_text->setShadowColor(shadow_color);
         turn_text->setShadow();
-        turn_text->setTimes(1500, 300, 300);
 
         auto turn_string = Helpers::numToRoman(battle->getTurnsElapsed() + 1);
 
-        turn_string = "Turn " + turn_string + "  Kevin is a Dweeb";
+        turn_string = "Turn " + turn_string + "  Decide Your Fate";
         turn_text->setFont(font_turn);
         turn_text->setText(turn_string);
 
@@ -2500,10 +2460,11 @@ bool BattleDisplay::update(int cycle_time)
       {
         processing_delay = 750;
 
-        SDL_Color screen_dim_color = {0, 0, 0, 150};
+        SDL_Color screen_dim_color = {0, 0, 0, 185};
 
-        RenderElement* dim_element = new RenderElement(RenderType::RGB_OVERLAY);
-        dim_element->setTimes(3000, 800, 800);
+        RenderElement* dim_element = new RenderElement(RenderType::RGB_OVERLAY,
+            3000, 400, 400);
+
         dim_element->setColor(screen_dim_color);
         dim_element->setCoordinates(0, 0);
         dim_element->setSizeX(system_options->getScreenWidth());
@@ -2622,14 +2583,6 @@ bool BattleDisplay::update(int cycle_time)
         bar_offset = 0;
       }
 
-      /* Update brightness/opacity */
-      for (auto& state : friends_state)
-        if (state->self != nullptr && state->fp != nullptr)
-          state->fp->setBrightness(calcPersonBrightness(state->self));
-      for (auto& state : foes_state)
-        if (state->self != nullptr && state->tp != nullptr)
-          state->tp->setBrightness(calcPersonBrightness(state->self));
-
       rendering_state = battle_state;
       index_layer = menu->getLayerIndex();
     }
@@ -2739,7 +2692,7 @@ bool BattleDisplay::update(int cycle_time)
           }
           else if (curr_event->type == EventType::ACTION_BEGIN)
           {
-            processing_delay = 300;
+            processing_delay = 850;
             /* Input processing delay if the action has changed */
             // if (curr_event->action_use != curr_action && 
             //     curr_event->action_use != nullptr)
@@ -2758,7 +2711,7 @@ bool BattleDisplay::update(int cycle_time)
             for (auto target : targets)
               createDamageValue(target, 0, true);
 
-            processing_delay = 50;
+            processing_delay = 1050;
           }
           else if (curr_event->type == EventType::BLIND_MISS)
           {
@@ -2816,8 +2769,8 @@ bool BattleDisplay::update(int cycle_time)
                    curr_event->type == EventType::METABOLIC_DAMAGE)
           {
             createDamageValue(targets.at(0), curr_event->amount, false);
-            createSpriteFlash(targets.at(0), {187, 10, 30, 200}, 150);
-            processing_delay = 150;
+            createSpriteFlash(targets.at(0), {177, 10, 30, 190}, 250);
+            processing_delay = 1050;
           }
           else
           {
@@ -2825,14 +2778,6 @@ bool BattleDisplay::update(int cycle_time)
           }
         }
       }
-
-      /* Update deaths */
-      for (auto& state : friends_state)
-        if (state->self != nullptr)
-          state->fp->setOpacity(calcPersonOpacity(state->self));
-      for (auto& state : foes_state)
-        if (state->self != nullptr)
-          state->tp->setOpacity(calcPersonOpacity(state->self));
 
       rendering_state = battle_state;
     }
@@ -2911,9 +2856,7 @@ bool BattleDisplay::updateElements(int32_t cycle_time)
   {
     if (element != nullptr)
     {
-      std::cout << "Alpha pre:" << element->getAlpha() << std::endl;;
       success &= element->update(cycle_time);
-      std::cout << "Alpha post:" << element->getAlpha() << std::endl;
 
       if (element->getType() == RenderType::RGB_SPRITE_FLASH)
       {
@@ -2932,15 +2875,147 @@ bool BattleDisplay::updateElements(int32_t cycle_time)
               element->calcColorGreen(), element->calcColorBlue());
           //sprite->setBrightness(element->calcBrightness());
         }
+      }
 
-        // std::cout << "Color Red:"    << element->calcColorRed() << std::endl;
-        // std::cout << "Color Blue: "  << element->calcColorBlue() << std::endl;
-        // std::cout << "Color Green: " << element->calcColorGreen() << std::endl;
+   if (element->getStatus() == RenderStatus::FADING_IN)
+      {
+        if (element->getFadeInTime() != 0)
+        {
+          float alpha_diff = element->getColor().a * 1.0 / 
+                             element->getFadeInTime() * cycle_time;
+
+          alpha_diff = std::max(1.0, (double)alpha_diff);
+
+          if (element->getAlpha() + alpha_diff > element->getColor().a)
+            element->setAlpha(element->getColor().a);
+          else
+            element->setAlpha(element->getAlpha() + alpha_diff);
+
+        std::cout << "Fading in alpha: " << (int)element->getAlpha() << std::endl;
+        }
+      }
+      else if (element->getStatus() == RenderStatus::DISPLAYING)
+      {
+        std::cout << "Displaying!" << std::endl;
+        element->setAlpha(element->getColor().a);
+      }
+      else if (element->getStatus() == RenderStatus::FADING_OUT)
+      {
+        std::cout << "Fade Out Time: " << element->getFadeOutTime() << std::endl;
+        std::cout << "Cycle Time: " << cycle_time << std::endl;
+        std::cout << "Current Alpha: " << (int)element->getAlpha() << std::endl;
+        if (element->getFadeInTime() != 0)
+        {
+          float alpha_diff = element->getColor().a * 1.0 / 
+                             element->getFadeOutTime() * cycle_time;
+
+          std::cout << "Alpha Diff: " << alpha_diff << std::endl;
+
+          alpha_diff = std::max(1.0, (double)alpha_diff);
+
+          std::cout << "Maxed alpha diff: " << alpha_diff << std::endl;
+
+          if (alpha_diff > element->getAlpha())
+            element->setAlpha(0);
+          else if (element->getAlpha() - alpha_diff >= 0)
+            element->setAlpha(element->getAlpha() - alpha_diff);
+
+          std::cout << "Fading out alpha: " << (int)element->getAlpha() << std::endl;
+        }
       }
     }
   }
 
+  /* Clear render elements with negative time remaining */
+  std::vector<RenderElement*> temp_elements;
+ 
+  for (auto& element : render_elements)
+  {
+    if (element != nullptr)
+    {
+      /* If the elements is not timed out, just add it to the temp array,
+       * else, delete the element after performing any needed cleanup */
+      if (!element->isTimedOut())
+      {
+        temp_elements.push_back(element);
+      }
+      else
+      {
+        /* If the element to be deleted is an RGB Sprite flash, the states'
+         * 'was flashing' flag must be set to change the sprite's color
+         * balance back on the next cycle */
+        if (element->getType() == RenderType::RGB_SPRITE_FLASH)
+        {
+          bool ally = battle->isAlly(element->getFlasher());
+          PersonState* state;
+
+          if (ally)
+            state = getFriendsState(element->getFlasher());
+          else
+            state = getFoesState(element->getFlasher());
+
+          /* Assigns the state's 'was flashing' bool to true -> revert */
+          if (state != nullptr)
+            state->was_flashing = true;
+        }
+
+        delete element;
+        element = nullptr;
+      }
+    }
+  }
+ 
+  /* Clear and swap to the temp elements (now containing only non-timed out
+   * values) */
+  render_elements.clear();
+  render_elements = temp_elements;
+
+
   return success;
+}
+
+bool BattleDisplay::updateFriends(int cycle_time)
+{
+  (void)cycle_time;//WARNING
+  for (auto& state : friends_state)
+  {
+    if (state != nullptr && state->fp != nullptr && state->self != nullptr)
+    {
+      if (state->was_flashing)
+      {
+        state->fp->revertColorBalance();
+        state->fp->setFlashing(false);
+        state->was_flashing = false;
+      }
+
+      state->fp->setOpacity(calcPersonOpacity(state->self));
+      state->fp->setBrightness(calcPersonBrightness(state->self));
+    }
+  }
+
+  return false;
+}
+
+bool BattleDisplay::updateFoes(int cycle_time)
+{
+  (void)cycle_time;//WARNING
+  for (auto& state : foes_state)
+  {
+    if (state != nullptr && state->tp != nullptr && state->self != nullptr)
+    {
+      if (state->was_flashing)
+      {
+        state->tp->revertColorBalance();
+        state->tp->setFlashing(false);
+        state->was_flashing = false;
+      }
+
+      state->tp->setOpacity(calcPersonOpacity(state->self));
+      state->tp->setBrightness(calcPersonBrightness(state->self));
+    }
+  }
+
+  return false;
 }
 
 /*=============================================================================

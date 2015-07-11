@@ -2203,6 +2203,9 @@ void Battle::processBuffer()
 
   if (curr_action_type == ActionType::SKILL)
   {
+    /* Assign the current user as attacking, unset all others as attacking */
+    setCurrUserAttacking();
+
     /* Only process the skill if its cooldown is at zero, else: create a skill
      * cooldown event to cool the skill processing down */
     if (cooldown == 0)
@@ -3707,7 +3710,7 @@ bool Battle::updatePartyDeaths()
   {
     setBattleFlag(CombatState::LOSS, true);
     return true;
-  } 
+  }
   else if (checkPartyDeath(foes))
   {
     setBattleFlag(CombatState::VICTORY, true);
@@ -3715,6 +3718,22 @@ bool Battle::updatePartyDeaths()
   }
 
   return false;
+}
+
+/*
+ * Description:
+ *
+ * Inputs: 
+ * Output: 
+ */
+void Battle::unsetActorsAttacking()
+{
+  for (auto& ally : friends->getMembers())
+    if (ally != nullptr)
+      ally->setBFlag(BState::IS_ATTACKING, false);
+  for (auto& foe : foes->getMembers())
+    if (foe != nullptr)
+      foe->setBFlag(BState::IS_ATTACKING, false);
 }
 
 /*
@@ -3811,6 +3830,20 @@ bool Battle::updateTargetDefense()
 void Battle::setAilmentUpdateMode(const BattleOptions &new_value)
 {
   ailment_update_mode = new_value;
+}
+
+/*
+ * Description: 
+ *
+ * Inputs: 
+ * Output: 
+ */
+void Battle::setCurrUserAttacking()
+{
+  unsetActorsAttacking();
+
+  if (curr_user != nullptr)
+    curr_user->setBFlag(BState::IS_ATTACKING, false);
 }
 
 /*
@@ -4526,6 +4559,9 @@ bool Battle::update(int32_t cycle_time)
       /* If all processing is complete, after performing -> move state */
       if (getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
       {
+        /* Clear the last attacking actor */
+        unsetActorsAttacking();
+
         auto phase_done = getBattleFlag(CombatState::ALL_PROCESSING_COMPLETE);  
 
         phase_done |= getBattleFlag(CombatState::LOSS);
