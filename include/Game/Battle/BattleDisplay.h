@@ -27,7 +27,7 @@ using std::end;
 ENUM_FLAGS(RenderState)
 enum class RenderState
 {
-  INITIAL_STATE_RENDERING_DELAY = 1 << 0, /* Init. delay upon ProcessActions */
+  BEGIN_RENDERING  = 1 << 0, /* Init. delay upon ProcessActions */
   SKILL_BEGIN_DELAY             = 1 << 1, /* Delay upon beginning action */
   ACTION_BEGIN_DELAY            = 1 << 2,
   POST_RENDERING_DELAY          = 1 << 3, /* Delay after end rendering */
@@ -49,6 +49,8 @@ struct PersonState
   Person* self;
   Sprite* tp;
   bool was_flashing;
+  bool has_plep;
+  bool show_action_frame;
 };
 
 class BattleDisplay
@@ -256,6 +258,8 @@ private:
   /* Generates info for friends in battle */
   Frame* createFriendInfo(Person* ally, SDL_Renderer* renderer);
 
+  void createPlep(Person* target, Sprite* plep);
+
   /* Generates info for the skills of the selecting person in battle */
   SDL_Texture* createSkill(SDL_Renderer* renderer, Skill* skill, 
                            uint16_t width, uint16_t height);
@@ -288,8 +292,14 @@ private:
   int16_t getPersonX(Person* check_person);
   int16_t getPersonY(Person* check_person);
 
+  /* Get the actual sprite of a person from any person target */
+  Sprite* getPersonSprite(Person* target);
+
   /* Return the value of a rendering flag */
   bool getRenderFlag(const RenderState &test_flag);
+
+  /* Gett the state of a person from any target pointer */
+  PersonState* getState(Person* target);
 
   /* Assigns the value of a RenderState flag */
   void setRenderFlag(RenderState flags, const bool &set_value = true);
@@ -456,6 +466,7 @@ public:
   /* Updates the battle display */
   bool update(int cycle_time);
   bool updateElements(int cycle_time);
+  bool updateEvent();
   bool updateFriends(int cycle_time);
   bool updateFoes(int cycle_time);
 

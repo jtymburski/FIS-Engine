@@ -2203,9 +2203,6 @@ void Battle::processBuffer()
 
   if (curr_action_type == ActionType::SKILL)
   {
-    /* Assign the current user as attacking, unset all others as attacking */
-    setCurrUserAttacking();
-
     /* Only process the skill if its cooldown is at zero, else: create a skill
      * cooldown event to cool the skill processing down */
     if (cooldown == 0)
@@ -3838,12 +3835,12 @@ void Battle::setAilmentUpdateMode(const BattleOptions &new_value)
  * Inputs: 
  * Output: 
  */
-void Battle::setCurrUserAttacking()
+void Battle::setUserAttacking(Person* target)
 {
   unsetActorsAttacking();
 
-  if (curr_user != nullptr)
-    curr_user->setBFlag(BState::IS_ATTACKING, false);
+  if (target != nullptr)
+    target->setBFlag(BState::IS_ATTACKING, true);
 }
 
 /*

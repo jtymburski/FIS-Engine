@@ -27,7 +27,8 @@
  * Inputs:
  */
 RenderElement::RenderElement()
-    : render_sprite{nullptr}
+    : action_frame{nullptr}
+    , render_sprite{nullptr}
     , flasher{nullptr}
     , status{RenderStatus::CONSTRUCTING}
     , type{RenderType::DAMAGE_VALUE}
@@ -57,9 +58,15 @@ RenderElement::RenderElement()
 {}
 
 /*
- * Description:
+ * Description: Creates a render element with a type, remaining and fade in/out
+ *              times. Note that for the element to be valid the fade in and
+ *              out times must both not exceed or together not exceed the
+ *              lifetime of the behaviour.
  *
- * Inputs:
+ * Inputs: RenderType type - the type of render element to be created
+ *         int32_t remaining_time - the lifetime of the object
+ *         int32_t fade_in_time - time taken to fade in (default 0)
+ *         int32_t fade_out_time - the time taken to fade out
  */
 RenderElement::RenderElement(RenderType type, int32_t remaining_time,
     int32_t fade_in_time, int32_t fade_out_time) 
@@ -67,16 +74,12 @@ RenderElement::RenderElement(RenderType type, int32_t remaining_time,
 {
   this->type = type;
   
-  std::cout << "Setting times: remaining: " << remaining_time << " fade in: " << fade_in_time << " fade out: " << fade_out_time << std::endl;
   bool success = setTimes(remaining_time, fade_in_time, fade_out_time);
 
   if (success)
   {
     if (fade_in_time > 0)
-    {
-      std::cout << "Render element created: FADING IN!" << std::endl;
       status = RenderStatus::FADING_IN;    
-    }
 
     else if (fade_in_time == 0 && fade_out_time == remaining_time)
       status = RenderStatus::FADING_OUT;
@@ -94,18 +97,6 @@ RenderElement::RenderElement(RenderType type, int32_t remaining_time,
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
-
-float RenderElement::calcBrightness()
-{
-  auto def_brightness = render_sprite->getBrightness() + 0.20;
-  auto pc_fade        = (getAlpha() * 100) / color.a;
-
-  float brightness  = def_brightness * 100;
-        brightness /= pc_fade;
-        brightness /= 100;
-
-  return brightness;
-}
 
 uint8_t RenderElement::calcColorRed()
 {
@@ -248,6 +239,10 @@ int32_t RenderElement::getFadeOutTime()
   return fade_out_time;
 }
 
+Frame* RenderElement::getActionFrame()
+{
+  return action_frame;
+}
 
 /*
  * Description:
@@ -372,6 +367,11 @@ int32_t RenderElement::getSizeY()
   return size_y;
 }
 
+void RenderElement::setActionFrame(Frame* action_frame)
+{
+  this->action_frame = action_frame;
+}
+
 void RenderElement::setAlpha(uint8_t new_alpha)
 {
   alpha = new_alpha;
@@ -486,18 +486,21 @@ void RenderElement::setShadow(bool to_show)
 bool RenderElement::setTimes(int32_t new_remaining_time, int32_t fade_in, 
     int32_t fade_out)
 {
-  if (fade_in + fade_out <= new_remaining_time &&
-      fade_in <= new_remaining_time &&
-      fade_out <= new_remaining_time)
+  bool valid = new_remaining_time >= 0;
+  valid &= fade_in >= 0;
+  valid &= fade_out >= 0;
+  valid &= fade_in + fade_out <= new_remaining_time;
+  valid &= fade_in <= new_remaining_time;
+  valid &= fade_out <= new_remaining_time;
+
+  if (valid)
   {
     remaining_time = new_remaining_time;
     fade_in_time   = fade_in;
     fade_out_time  = fade_out;
-
-    return true;
   }
 
-  return false;
+  return valid;
 }
 
 /*
@@ -576,7 +579,3 @@ void RenderElement::setSizeY(int32_t new_size_y)
 {
   size_y = new_size_y;
 }
-
- /*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/

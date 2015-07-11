@@ -27,10 +27,11 @@ enum class RenderType : std::uint16_t
 {
   NONE             =  0, 
   ACTION_TEXT      =  1,
-  DAMAGE_VALUE     =  2,
-  RGB_OVERLAY      =  3,
-  RGB_SPRITE_FLASH =  4,
-  PLEP             =  5
+  ACTION_FRAME     =  2,
+  DAMAGE_VALUE     =  3,
+  RGB_OVERLAY      =  4,
+  RGB_SPRITE_FLASH =  5,
+  PLEP             =  6
 };
 
 enum class RenderStatus : std::uint16_t
@@ -55,6 +56,9 @@ public:
   ~RenderElement() = default;
 
 private: 
+  /* Pointer to a Frame */
+  Frame* action_frame;
+  
   /* Pointer to a Sprite (plep) (or the sprite to be mixed with Color) */
   Sprite* render_sprite;
 
@@ -117,7 +121,6 @@ private:
  *========================================f====================================*/
 public:
   /* Calculates current colour levels for sprite-overlay flashing */
-  float calcBrightness();
   uint8_t calcColorRed();
   uint8_t calcColorGreen();
   uint8_t calcColorBlue();
@@ -130,6 +133,9 @@ public:
 
   /* Updates the position and info of the render element */
   bool update(int32_t cycle_time);
+
+  /* Returns the pointer to the action frame */
+  Frame* getActionFrame();
 
   /* Returns the alphs values for text and shadow text */
   uint8_t getAlpha();
@@ -172,6 +178,8 @@ public:
   int32_t getShadowY();
   int32_t getSizeX();
   int32_t getSizeY();
+
+  void setActionFrame(Frame* action_frame);
 
   void setAlpha(uint8_t new_alpha);
 

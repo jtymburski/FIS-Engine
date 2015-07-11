@@ -26,7 +26,7 @@ const uint16_t BattleDisplay::kACTION_CORNER_X = 18;
 const uint16_t BattleDisplay::kACTION_CORNER_Y = 4;
 const uint16_t BattleDisplay::kACTION_H = 408;
 const uint16_t BattleDisplay::kACTION_TEXT_SHADOW = 3;
-const uint16_t BattleDisplay::kACTION_TEXT_X = 100;
+const uint16_t BattleDisplay::kACTION_TEXT_X = 800;
 const uint16_t BattleDisplay::kACTION_W = 359;
 const uint16_t BattleDisplay::kACTION_Y = 291;
 
@@ -287,7 +287,7 @@ Frame* BattleDisplay::createActionFrame(Person* person,
     SDL_RenderDrawLine(renderer, x2, y2 + i, x1, y1 + i);
 
   /* Render the person */ // TODO: Fix - in person
-  Sprite* action_frames = person->getActionFrames();
+  Sprite* action_frames = person->getThirdPerson();
   if(action_frames != nullptr && action_frames->isFramesSet())
     action_frames->render(renderer, person->getActionX(), person->getActionY(), 
                           action_frames->getCurrent()->getWidth(), 
@@ -847,45 +847,18 @@ void BattleDisplay::deleteSkills()
 // TODO: Comment
 bool BattleDisplay::handleDelayProcessing(int32_t cycle_time, bool change_state)
 {
-  auto event_buffer = battle->getEventBuffer();
-  auto delay = false;
-
   if (change_state)
-  {
     processing_delay = 1000;
-  }
 
   if (processing_delay >= 0)
   {
     processing_delay -= cycle_time;
-    delay = true;
+
+    if (processing_delay < 0)
+      processing_delay = 0;
   }
-
-  if (delay && processing_delay <= 0)
-  {
-    std::cout << "Setting event: " << event_buffer->getIndex() << " as rendered" << std::endl;
-    event_buffer->setRendered(event_buffer->getIndex());
-
-    auto more_rendering = true;
-    more_rendering &= event_buffer->setRenderIndex();
-
-    /* If there was not an unrendered index to set for the EventBuffer,
-     * the rendering of processed actions ins complete -> set rendering 
-     * complete flag for Battle to continue processing or set next turn 
-     * state */
-    if (getRenderFlag(RenderState::POST_RENDERING_DELAY) && !more_rendering)
-    {
-      setRenderFlag(RenderState::POST_RENDERING_DELAY, false);
-      battle->setBattleFlag(CombatState::RENDERING_COMPLETE, true);
-    }
-    else if (!more_rendering)
-    {
-      setRenderFlag(RenderState::POST_RENDERING_DELAY, true);
-      processing_delay = 100;
-    }
-  }
-
-  return delay;
+  
+  return processing_delay > 0;
 }
 
 /* Get foes in battle */
@@ -994,10 +967,39 @@ int16_t BattleDisplay::getPersonY(Person* check_person)
   return -1;
 }
 
+Sprite* BattleDisplay::getPersonSprite(Person* target)
+{
+  auto state = getState(target);
+
+  if (state != nullptr)
+  {
+    if (battle->isAlly(target))
+      return state->fp;
+    else
+      return state->tp;
+  }
+
+  return nullptr;
+}
+
 /* Return the value of a rendering flag */
 bool BattleDisplay::getRenderFlag(const RenderState &test_flag)
 {
   return static_cast<bool>((render_flags & test_flag) == test_flag);
+}
+
+/* Gett the state of a person from any target pointer */
+PersonState* BattleDisplay::getState(Person* target)
+{
+  if (target != nullptr)
+  {
+    if (battle->isAlly(target))
+      return getFriendsState(target);
+    else
+      return getFoesState(target);
+  }
+
+  return nullptr;
 }
 
 /* Assigns the value of a RenderState flag */
@@ -1107,7 +1109,8 @@ void BattleDisplay::createActionText(std::string action_name)
   Text t(font_action);
   t.setText(renderer, action_text->getText(), action_text->getColor());
 
-  auto x  = (system_options->getScreenWidth() - t.getWidth()) / 2;
+  auto x  = (kACTION_TEXT_X- t.getWidth());
+
   action_text->setX(x);
   action_text->setY(kACTION_CENTER - t.getHeight() / 2 - 8);
   action_text->setShadow();
@@ -1140,7 +1143,7 @@ void BattleDisplay::createDamageValue(Person* target, uint64_t amount,
     shadow_color = kBURN_DMG_COLOR;
 
   RenderElement* element = new RenderElement(RenderType::DAMAGE_VALUE, 
-                                             300, 100, 100);
+                                             450, 50, 100);
 
   /* Build parameters for the damage text, add to render text elements */
   element->setColor(color);
@@ -1177,7 +1180,7 @@ void BattleDisplay::createDamageValue(Person* target, uint64_t amount,
 void BattleDisplay::createRegenValue(Person* target, uint64_t amount)
 {
   /* Determine the appropriate color to show (whether VITA/QD regen) */
-  SDL_Color color = {0, 0, 0, 255};
+  SDL_Color color       =  {  0,   0,   0, 255};
   SDL_Color shadow_color = {255, 255, 255, 255};
 
   if (curr_event->type == EventType::REGEN_VITA)
@@ -1213,22 +1216,21 @@ void BattleDisplay::createRegenValue(Person* target, uint64_t amount)
   render_elements.push_back(element);
 }
 
+void BattleDisplay::createPlep(Person* target, Sprite* plep)
+{
+  (void)target;
+  (void)plep;
+}
 
 void BattleDisplay::createSpriteFlash(Person* target, SDL_Color color, 
     int32_t time)
 {
   (void)time;//WARNING
-  bool ally = battle->isAlly(target);
 
   RenderElement* sprite_flash = new RenderElement(RenderType::RGB_SPRITE_FLASH, 
       400, 195, 195);
 
-  Sprite* set_sprite;
-
-  if (ally)
-    set_sprite = getFriendsState(target)->fp;
-  else
-    set_sprite = getFoesState(target)->tp;
+  Sprite* set_sprite = getPersonSprite(target);
 
   sprite_flash->setSprite(set_sprite);
   sprite_flash->setFlasher(target);
@@ -1603,12 +1605,10 @@ bool BattleDisplay::renderFriends(SDL_Renderer* renderer)
   /* Render the friends */
   for(const auto &ally_state : friends_state)
   {
-    if(ally_state->fp != nullptr)
+    if(ally_state->fp != nullptr && ally_state->self != nullptr)
     {
-      auto ally = ally_state->self;
-
-      success &= ally_state->fp->render(renderer, getPersonX(ally), 
-                                                  getPersonY(ally));
+      success &= ally_state->fp->render(renderer, getPersonX(ally_state->self), 
+                                                  getPersonY(ally_state->self));
     }
   }
   
@@ -1736,6 +1736,10 @@ bool BattleDisplay::setPersonState(Person* person, uint8_t index,
       state->info = createFoeInfo(person, renderer);
     else
       state->info = createFriendInfo(person, renderer);
+
+    state->was_flashing = false;
+    state->has_plep = false;
+    state->show_action_frame = false;
 
     return true;
   }
@@ -2136,6 +2140,13 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
         rgb_overlay_rect.w = element->getSizeX();
         rgb_overlay_rect.h = element->getSizeY();
         SDL_RenderFillRect(renderer, &rgb_overlay_rect);
+      }
+      else if (element->getType() == RenderType::ACTION_FRAME)
+      {
+        auto action_frame = element->getActionFrame();
+
+        if (action_frame != nullptr)
+          action_frame->render(renderer, element->getX(), element->getY());
       }
     }
 
@@ -2606,181 +2617,220 @@ bool BattleDisplay::update(int cycle_time)
      *-----------------------------------------------------------------------*/
     else if(rendering_state == TurnState::PROCESS_ACTIONS)
     {
-      auto rendering    = false;
-      auto change_state = false;
-
-      if (rendering_state != battle_state)
-        change_state = true;
-
-      auto delay = handleDelayProcessing(cycle_time, change_state);
-
-      /* If ready to render flag is true, there are events which need to be 
-       * rendered on the Event Buffer */
-      if (battle->getBattleFlag(CombatState::READY_TO_RENDER) &&
-          !battle->getBattleFlag(CombatState::RENDERING_COMPLETE) &&
-          !delay)
-      {
-        rendering |= event_buffer->setRenderIndex();
-      }
-
-      /* If there was an unrendered index in the EventBuffer, grab the first
-       * unrendered index and continue or finish to do work on it */
-      if (rendering)
-      {
-        curr_event = event_buffer->getEvent(event_buffer->getIndex());
-
-        auto targets = curr_event->targets;
-
-        if(curr_event != nullptr && !curr_event->rendered)
-        {
-          //TODO - Check skill for nullptr, remove renderers ?
-          if (curr_event->type == EventType::SKILL_USE)
-          {
-            if (getRenderFlag(RenderState::SKILL_BEGIN_DELAY))
-            {
-              setRenderFlag(RenderState::SKILL_BEGIN_DELAY, false);
-              createActionText(curr_event->skill_use->getName());
-            }
-            else
-            {
-              setRenderFlag(RenderState::SKILL_BEGIN_DELAY, true);
-              processing_delay = 2000;
-            }
-
-          }
-          else if (curr_event->type == EventType::SKILL_USE_FIZZLE)
-          {
-            //TODO: Fizzling text? [06-21-15]
-            // renderFizzleText();
-          }
-          else if (curr_event->type == EventType::SKILL_COOLDOWN)
-          {
-            //TODO: Skill cooldown stuff? [06-21-15]
-            createActionText("Skill Cooldown!");
-            processing_delay = 1100;
-          }
-          else if (curr_event->type == EventType::ATTEMPT_RUN)
-          {
-            //TODO: Running text? [06-21-15]
-            createActionText("Attempting to Run!");
-                       processing_delay = 1100;
-          }
-          else if (curr_event->type == EventType::SUCCEED_RUN)
-          {
-            createActionText("Running!");
-                       processing_delay = 1100;
-          }
-          else if (curr_event->type == EventType::FAIL_RUN)
-          {
-            createActionText("Failed to Run!");
-                       processing_delay = 1100;
-          }
-          else if (curr_event->type == EventType::MISS_TURN)
-          {
-            createActionText("Missing turn!");
-                       processing_delay = 1100;
-          }
-          else if (curr_event->type == EventType::PASS)
-          {
-            createActionText("Pass!");
-            processing_delay = 1100;
-          }
-          else if (curr_event->type == EventType::SKILL_MISS)
-          {
-            createActionText("Miss!");
-            processing_delay = 1100;
-          }
-          else if (curr_event->type == EventType::ACTION_BEGIN)
-          {
-            processing_delay = 850;
-            /* Input processing delay if the action has changed */
-            // if (curr_event->action_use != curr_action && 
-            //     curr_event->action_use != nullptr)
-            // {
-            //   curr_action      = curr_event->action_use;
-            //   processing_delay = 150;
-            // }
-            // else
-            // {
-            //   processing_delay = 50;
-            // }
-          }
-          else if (curr_event->type == EventType::ACTION_MISS)
-          {
-            /* Create miss for each target */
-            for (auto target : targets)
-              createDamageValue(target, 0, true);
-
-            processing_delay = 1050;
-          }
-          else if (curr_event->type == EventType::BLIND_MISS)
-          {
-            //TODO
-          }
-          else if (curr_event->type == EventType::DREAMSNARE_MISS)
-          {
-            //TODO
-          }
-          else if (curr_event->type == EventType::FIZZLE)
-          {
-            //TODO
-          }
-          else if (curr_event->type == EventType::METABOLIC_KILL)
-          {
-            //TODO
-          }
-          else if (curr_event->type == EventType::DEATH_COUNTDOWN)
-          {
-            //TODO
-          }
-          else if (curr_event->type == EventType::BOND)
-          {
-            //TODO
-          }
-          else if (curr_event->type == EventType::BONDING)
-          {
-            //TODO
-          }
-          else if (curr_event->type == EventType::BEGIN_DEFEND)
-          {
-            createActionText("Defending!");
-                       processing_delay = 1100;
-          }
-          else if (curr_event->type == EventType::PERSIST_DEFEND)
-          {
-            createActionText("Still Defending!");
-                       processing_delay = 1100;
-          }
-          else if (curr_event->type == EventType::BREAK_DEFEND)
-          {
-            createActionText("Not Defending!");
-                       processing_delay = 1100;
-          }
-          else if (curr_event->type == EventType::BEGIN_GUARD)
-          {
-
-          }
-
-          else if (curr_event->type == EventType::STANDARD_DAMAGE ||
-                   curr_event->type == EventType::CRITICAL_DAMAGE ||
-                   curr_event->type == EventType::POISON_DAMAGE   ||
-                   curr_event->type == EventType::BURN_DAMAGE     ||
-                   curr_event->type == EventType::HITBACK_DAMAGE  ||
-                   curr_event->type == EventType::METABOLIC_DAMAGE)
-          {
-            createDamageValue(targets.at(0), curr_event->amount, false);
-            createSpriteFlash(targets.at(0), {177, 10, 30, 190}, 250);
-            processing_delay = 1050;
-          }
-          else
-          {
-            processing_delay = 1000;
-          }
-        }
-      }
-
       rendering_state = battle_state;
+      bool delay = false;
+
+      if (processing_delay > 0)
+      {
+        processing_delay -= cycle_time;
+
+        if (processing_delay > 0)
+          delay = true;
+      }
+
+      if (!getRenderFlag(RenderState::BEGIN_RENDERING))
+      {
+        setRenderFlag(RenderState::BEGIN_RENDERING, true);
+        processing_delay = 1000;
+      }
+      else if (!delay)
+      {
+        /* Render */
+        std::cout << "Render!" << std::endl;
+
+        bool more_rendering = battle->getEventBuffer()->setRenderIndex();
+
+        if (more_rendering)
+        {
+          curr_event = battle->getEventBuffer()->getCurrentEvent();
+
+          if (curr_event != nullptr)
+          {
+            updateEvent();
+            battle->getEventBuffer()->setRendered(battle->getEventBuffer()->getIndex());
+          }
+
+        }
+        else
+        {
+          battle->unsetActorsAttacking();
+          battle->setBattleFlag(CombatState::RENDERING_COMPLETE, true);
+          setRenderFlag(RenderState::BEGIN_RENDERING, false);
+        }
+
+      }
     }
+
+    //   auto delay = handleDelayProcessing(cycle_time, change_state);
+    //   std::cout << "Delay: " << delay << std::endl;
+
+    //   if (!event_buffer->setRenderIndex() && !delay)
+    //     battle->setBattleFlag(CombatState::RENDERING_COMPLETE);
+    //   else if (delay)
+    //     std::cout << "Delay" << std::endl;
+
+    //   /* If ready to render flag is true, there are events which need to be 
+    //    * rendered on the Event Buffer */
+    //   if (battle->getBattleFlag(CombatState::READY_TO_RENDER) &&
+    //       !battle->getBattleFlag(CombatState::RENDERING_COMPLETE) &&
+    //       !delay)
+    //   {
+    //     rendering |= event_buffer->setRenderIndex();
+    //   }
+
+    //   /* If there was an unrendered index in the EventBuffer, grab the first
+    //    * unrendered index and continue or finish to do work on it */
+    //   if (rendering)
+    //   {
+    //     curr_event = event_buffer->getEvent(event_buffer->getIndex());
+
+    //     auto targets = curr_event->targets;
+
+    //     if(curr_event != nullptr && !curr_event->rendered)
+    //     {
+    //       //TODO - Check skill for nullptr, remove renderers ?
+    //       if (curr_event->type == EventType::SKILL_USE)
+    //       {
+
+    //         // if (getRenderFlag(RenderState::SKILL_BEGIN_DELAY))
+    //         // {
+    //           std::cout << "Creating action text!" << std::endl;
+    //           setRenderFlag(RenderState::SKILL_BEGIN_DELAY, false);
+    //           createActionText(curr_event->skill_use->getName());
+    //           processing_delay = 3000;
+    //         // }
+    //         // else
+    //         // {
+    //         //   setRenderFlag(RenderState::SKILL_BEGIN_DELAY, true);
+    //         //   processing_delay = 3000;
+    //         // }
+    //       }
+    //       else if (curr_event->type == EventType::SKILL_USE_FIZZLE)
+    //       {
+    //         //TODO: Fizzling text? [06-21-15]
+    //         // renderFizzleText();
+    //       }
+    //       else if (curr_event->type == EventType::SKILL_COOLDOWN)
+    //       {
+    //         //TODO: Skill cooldown stuff? [06-21-15]
+    //         createActionText("Skill Cooldown!");
+    //         processing_delay = 1100;
+    //       }
+    //       else if (curr_event->type == EventType::ATTEMPT_RUN)
+    //       {
+    //         //TODO: Running text? [06-21-15]
+    //         createActionText("Attempting to Run!");
+    //                    processing_delay = 1100;
+    //       }
+    //       else if (curr_event->type == EventType::SUCCEED_RUN)
+    //       {
+    //         createActionText("Running!");
+    //                    processing_delay = 1100;
+    //       }
+    //       else if (curr_event->type == EventType::FAIL_RUN)
+    //       {
+    //         createActionText("Failed to Run!");
+    //                    processing_delay = 1100;
+    //       }
+    //       else if (curr_event->type == EventType::MISS_TURN)
+    //       {
+    //         createActionText("Missing turn!");
+    //                    processing_delay = 1100;
+    //       }
+    //       else if (curr_event->type == EventType::PASS)
+    //       {
+    //         createActionText("Pass!");
+    //         processing_delay = 1100;
+    //       }
+    //       else if (curr_event->type == EventType::SKILL_MISS)
+    //       {
+    //         createActionText("Miss!");
+    //         processing_delay = 1100;
+    //       }
+    //       else if (curr_event->type == EventType::ACTION_BEGIN)
+    //       {
+    //         processing_delay = 850;
+    //         /* Input processing delay if the action has changed */
+    //         // if (curr_event->action_use != curr_action && 
+    //         //     curr_event->action_use != nullptr)
+    //         // {
+    //         //   curr_action      = curr_event->action_use;
+    //         //   processing_delay = 150;
+    //         // }
+    //         // else
+    //         // {
+    //         //   processing_delay = 50;
+    //         // }
+    //       }
+    //       else if (curr_event->type == EventType::ACTION_MISS)
+    //       {
+    //         /* Create miss for each target */
+    //         for (auto target : targets)
+    //           createDamageValue(target, 0, true);
+
+    //         processing_delay = 1050;
+    //       }
+    //       else if (curr_event->type == EventType::BLIND_MISS)
+    //       {
+    //         //TODO
+    //       }
+    //       else if (curr_event->type == EventType::DREAMSNARE_MISS)
+    //       {
+    //         //TODO
+    //       }
+    //       else if (curr_event->type == EventType::FIZZLE)
+    //       {
+    //         //TODO
+    //       }
+    //       else if (curr_event->type == EventType::METABOLIC_KILL)
+    //       {
+    //         //TODO
+    //       }
+    //       else if (curr_event->type == EventType::DEATH_COUNTDOWN)
+    //       {
+    //         //TODO
+    //       }
+    //       else if (curr_event->type == EventType::BOND)
+    //       {
+    //         //TODO
+    //       }
+    //       else if (curr_event->type == EventType::BONDING)
+    //       {
+    //         //TODO
+    //       }
+    //       else if (curr_event->type == EventType::BEGIN_DEFEND)
+    //       {
+    //         createActionText("Defending!");
+    //                    processing_delay = 1100;
+    //       }
+    //       else if (curr_event->type == EventType::PERSIST_DEFEND)
+    //       {
+    //         createActionText("Still Defending!");
+    //                    processing_delay = 1100;
+    //       }
+    //       else if (curr_event->type == EventType::BREAK_DEFEND)
+    //       {
+    //         createActionText("Not Defending!");
+    //                    processing_delay = 1100;
+    //       }
+    //       else if (curr_event->type == EventType::BEGIN_GUARD)
+    //       {
+
+    //       }
+
+    //       else
+    //       {
+
+
+    //         processing_delay = 1000;
+    //       }
+
+    //       event_buffer->setRendered(event_buffer->getIndex());
+    //     }
+    //   }
+
+    //   rendering_state = battle_state;
+    // }
     /*-------------------------------------------------------------------------
      * CLEAN_UP state
      *-----------------------------------------------------------------------*/
@@ -2847,7 +2897,7 @@ bool BattleDisplay::update(int cycle_time)
   return true;
 }
 
-//TODO: Comment
+//TODO: Comments
 bool BattleDisplay::updateElements(int32_t cycle_time)
 {
   bool success = true;
@@ -2873,7 +2923,6 @@ bool BattleDisplay::updateElements(int32_t cycle_time)
         {
           sprite->setColorBalance(element->calcColorRed(), 
               element->calcColorGreen(), element->calcColorBlue());
-          //sprite->setBrightness(element->calcBrightness());
         }
       }
 
@@ -2891,36 +2940,36 @@ bool BattleDisplay::updateElements(int32_t cycle_time)
           else
             element->setAlpha(element->getAlpha() + alpha_diff);
 
-        std::cout << "Fading in alpha: " << (int)element->getAlpha() << std::endl;
+        // std::cout << "Fading in alpha: " << (int)element->getAlpha() << std::endl;
         }
       }
       else if (element->getStatus() == RenderStatus::DISPLAYING)
       {
-        std::cout << "Displaying!" << std::endl;
+        // std::cout << "Displaying!" << std::endl;
         element->setAlpha(element->getColor().a);
       }
       else if (element->getStatus() == RenderStatus::FADING_OUT)
       {
-        std::cout << "Fade Out Time: " << element->getFadeOutTime() << std::endl;
-        std::cout << "Cycle Time: " << cycle_time << std::endl;
-        std::cout << "Current Alpha: " << (int)element->getAlpha() << std::endl;
+        // std::cout << "Fade Out Time: " << element->getFadeOutTime() << std::endl;
+        // std::cout << "Cycle Time: " << cycle_time << std::endl;
+        // std::cout << "Current Alpha: " << (int)element->getAlpha() << std::endl;
         if (element->getFadeInTime() != 0)
         {
           float alpha_diff = element->getColor().a * 1.0 / 
                              element->getFadeOutTime() * cycle_time;
 
-          std::cout << "Alpha Diff: " << alpha_diff << std::endl;
+          // std::cout << "Alpha Diff: " << alpha_diff << std::endl;
 
           alpha_diff = std::max(1.0, (double)alpha_diff);
 
-          std::cout << "Maxed alpha diff: " << alpha_diff << std::endl;
+          // std::cout << "Maxed alpha diff: " << alpha_diff << std::endl;
 
           if (alpha_diff > element->getAlpha())
             element->setAlpha(0);
           else if (element->getAlpha() - alpha_diff >= 0)
             element->setAlpha(element->getAlpha() - alpha_diff);
 
-          std::cout << "Fading out alpha: " << (int)element->getAlpha() << std::endl;
+          // std::cout << "Fading out alpha: " << (int)element->getAlpha() << std::endl;
         }
       }
     }
@@ -2946,13 +2995,7 @@ bool BattleDisplay::updateElements(int32_t cycle_time)
          * balance back on the next cycle */
         if (element->getType() == RenderType::RGB_SPRITE_FLASH)
         {
-          bool ally = battle->isAlly(element->getFlasher());
-          PersonState* state;
-
-          if (ally)
-            state = getFriendsState(element->getFlasher());
-          else
-            state = getFoesState(element->getFlasher());
+          PersonState* state = getState(element->getFlasher());
 
           /* Assigns the state's 'was flashing' bool to true -> revert */
           if (state != nullptr)
@@ -2974,6 +3017,57 @@ bool BattleDisplay::updateElements(int32_t cycle_time)
   return success;
 }
 
+//TODO COMMENTS
+bool BattleDisplay::updateEvent()
+{
+  if (curr_event->type == EventType::SKILL_USE)
+  {
+    if (curr_event->skill_use != nullptr)
+      createActionText(curr_event->skill_use->getName());
+    if (curr_event->user != nullptr)
+    {
+      curr_event->user->setBFlag(BState::IS_ATTACKING, true);
+
+      auto state = getState(curr_event->user);
+
+      if (state != nullptr)
+      {
+        RenderElement* action_frame = new RenderElement(RenderType::ACTION_FRAME, 4000, 0, 0);
+        action_frame->setX(system_options->getScreenWidth() - state->action->getWidth());
+        action_frame->setY(kACTION_CENTER - kACTION_Y);
+        action_frame->setActionFrame(state->action);
+
+        render_elements.push_back(action_frame);
+      }
+
+    }
+
+    processing_delay = 2500;
+  }
+  else if (curr_event->type == EventType::ACTION_BEGIN)
+  {
+  }
+  else if (curr_event->type == EventType::STANDARD_DAMAGE ||
+           curr_event->type == EventType::CRITICAL_DAMAGE ||
+           curr_event->type == EventType::POISON_DAMAGE   ||
+           curr_event->type == EventType::BURN_DAMAGE     ||
+           curr_event->type == EventType::HITBACK_DAMAGE  ||
+           curr_event->type == EventType::METABOLIC_DAMAGE)
+ {
+   if (curr_event->targets.size() > 0 &&
+       curr_event->targets.at(0) != nullptr)
+   {
+     createDamageValue(curr_event->targets.at(0), curr_event->amount, false);
+     createSpriteFlash(curr_event->targets.at(0), {177, 10, 30, 190}, 250);
+   }
+
+    processing_delay = 1050;
+ }
+
+  return false;
+}
+
+//TODO COMMENTS
 bool BattleDisplay::updateFriends(int cycle_time)
 {
   (void)cycle_time;//WARNING
@@ -2990,12 +3084,25 @@ bool BattleDisplay::updateFriends(int cycle_time)
 
       state->fp->setOpacity(calcPersonOpacity(state->self));
       state->fp->setBrightness(calcPersonBrightness(state->self));
+      
+      /* Determine which sprite to use (Attacking/Normal) */
+      if (state->self->getBFlag(BState::IS_ATTACKING))
+      {
+        if (state->self->getActionFrames() != nullptr)
+          state->fp = state->self->getActionFrames();
+      }
+      else
+      {
+        state->fp = state->self->getFirstPerson();
+      }
     }
   }
 
   return false;
 }
 
+
+//TODO COMMENTS
 bool BattleDisplay::updateFoes(int cycle_time)
 {
   (void)cycle_time;//WARNING
@@ -3012,12 +3119,18 @@ bool BattleDisplay::updateFoes(int cycle_time)
 
       state->tp->setOpacity(calcPersonOpacity(state->self));
       state->tp->setBrightness(calcPersonBrightness(state->self));
+
+      if (state->self->getBFlag(BState::IS_ATTACKING))
+      {
+        if (state->self->getActionFrames() != nullptr)
+          state->tp = state->self->getActionFrames();
+      }
+      else
+      {
+        state->tp = state->self->getThirdPerson();
+      }
     }
   }
 
   return false;
 }
-
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/

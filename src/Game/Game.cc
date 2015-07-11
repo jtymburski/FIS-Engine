@@ -701,7 +701,7 @@ void Game::setupBattle()
   // Party Testing
   Party* friends = new Party(401, getPerson(300), PartyType::SLEUTH, 10,
       friends_pouch);
-  friends->addMember(getPerson(301));
+  // friends->addMember(getPerson(301));
   // friends->addMember(getPerson(302));
   // friends->addMember(getPerson(303));
   // friends->addMember(getPerson(304));
@@ -713,8 +713,8 @@ void Game::setupBattle()
 
   Party* enemies = new Party(402, getPerson(310), PartyType::REGULAR_FOE, 
       10, foes_pouch);
-  enemies->addMember(getPerson(311));
-  enemies->addMember(getPerson(312));
+  // enemies->addMember(getPerson(311));
+  // enemies->addMember(getPerson(312));
   // enemies->addMember(getPerson(312));
   // enemies->addMember(getPerson(313));
   // enemies->addMember(getPerson(314));
@@ -763,8 +763,10 @@ void Game::setupBattle()
                            base_path + "sprites/Overlay/battle.png", renderer));
 
     /* Set the character sprites */
-    getPerson(310)->setSprites(nullptr, new Sprite(
-              base_path + "sprites/Battle/Battle_Persons/bsian.png", renderer));
+    auto bsian_sprite_fp = new Sprite(base_path + "sprites/Battle/Backs/bsian0.png", renderer);
+    auto bsian_sprite_tp = new Sprite(base_path + "sprites/Battle/Battle_Persons/bsian.png", renderer);
+    getPerson(310)->setSprites(bsian_sprite_fp, bsian_sprite_tp);
+
     getPerson(311)->setSprites(nullptr, new Sprite(
             base_path + "sprites/Battle/Battle_Persons/auroraheavy.png", renderer));
     getPerson(312)->setSprites(nullptr, new Sprite(
@@ -774,18 +776,24 @@ void Game::setupBattle()
           base_path + "sprites/Battle/Battle_Persons/peltrance.png", renderer));
     getPerson(314)->setSprites(nullptr, new Sprite(
             base_path + "sprites/Battle/Battle_Persons/necross.png", renderer));
-    getPerson(300)->setSprites(new Sprite(base_path + 
-        "sprites/Battle/Backs/manbear1_brown_grey.png", renderer), nullptr, 
-        new Sprite(base_path + "sprites/Map/Dialog/manbear_brown_grey.png", 
-        renderer));
+    // getPerson(300)->setSprites(new Sprite(base_path + 
+    //     "sprites/Battle/Backs/manbear1_brown_grey.png", renderer), nullptr, 
+    //     new Sprite(base_path + "sprites/Map/Dialog/manbear_brown_grey.png", 
+    //     renderer));
     getPerson(301)->setSprites(new Sprite(base_path + 
         "sprites/Battle/Backs/arcadius0.png", renderer), nullptr, 
         new Sprite(base_path + "sprites/Map/Dialog/arcadius.png", 
         renderer));
-    getPerson(302)->setSprites(new Sprite(base_path + 
-        "sprites/Battle/Backs/player0.png", renderer), nullptr, 
-        new Sprite(base_path + "sprites/Battle/Battle_Persons/player.png", 
-        renderer));
+
+    auto player_sprite_fp = new Sprite(base_path + 
+        "sprites/Battle/Backs/player0.png", renderer);
+    auto player_sprite_tp = new Sprite(base_path +
+        "sprites/Battle/Battle_Persons/player.png", renderer);
+    auto player_sprite_af = new Sprite(base_path +
+        "sprites/Battle/Backs/player1.png", renderer);
+    getPerson(300)->setSprites(player_sprite_fp, player_sprite_tp, 
+        player_sprite_af);
+
     getPerson(303)->setSprites(new Sprite(base_path + 
         "sprites/Battle/Backs/sarkova0.png", renderer), nullptr, 
         new Sprite(base_path + "sprites/Battle/Battle_Persons/sarkova.png", 
