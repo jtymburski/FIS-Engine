@@ -6,7 +6,7 @@
 @echo off
 
 :: Create output directory if it doesn't exist
-if not exist bin mkdir bin
+:: if not exist bin mkdir bin
 
 :: Attempt to build the application,outputting result to terminal as well
 :: as output file "build-stdout.log" and the error/warning information to
