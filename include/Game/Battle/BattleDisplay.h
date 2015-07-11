@@ -187,6 +187,9 @@ private:
   
   const static uint8_t kCOLOR_BASE; /* Base of color for shifting bars */
 
+  const static uint16_t kDELAY_DAMAGE; /* Standard damage delay (ms) */
+  const static uint16_t kDELAY_SKILL;  /* Standard skill delay (ms) */
+
   const static uint8_t kINFO_BORDER; /* Border width on enemy info bar */
   const static uint8_t kINFO_GREY; /* Grey value for border bar */
   const static uint16_t kINFO_H; /* Height of enemy info bar */

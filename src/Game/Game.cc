@@ -326,6 +326,14 @@ void Game::setupBattle()
   std::vector<Action*> relieve_actions;
   relieve_actions.push_back(new Action("600,RELIEVE,,,,POISON,,,VITA,100"));
 
+
+  /* Set der pleps yo */
+  Sprite* damage_plep = new Sprite(base_path + "sprites/Battle/Pleps/basicplep_AA_A", 3, ".png", active_renderer);
+  damage_plep->insertTail(base_path + "sprites/Battle/Plep/basicplep_AA_A00.png", active_renderer);
+  damage_plep->insertTail(base_path + "sprites/Battle/Plep/basicplep_AA_A01.png", active_renderer);
+  damage_plep->insertTail(base_path + "sprites/Battle/Plep/basicplep_AA_A02.png", active_renderer);
+  damage_plep->setAnimationTime(75);
+
   // for(auto it = begin(damage_actions); it != end(damage_actions); ++it)
   //   std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
 
@@ -355,6 +363,7 @@ void Game::setupBattle()
   physical_01->setThumbnail(new Frame("sprite3/Battle/Skills/_sample_skill_2.png", active_renderer));
   physical_01->setDescription("Jordan is a weirdo... Lor em ips um do lor sit amet, mel omnis nomin ati an, atom orum facil isis in pri, adipi scing argum entum in pri. Duo ei tempor dicunt sanctus, per ut hinc oporteat conceptam. Iisque euismod albucius vel ut, duo ea singulis eleifend. Veri offendit vim ut, at pri tale adolescens, putant veritus sea no. Atqui blandit assentior ne eam. Et rebum deserunt pericula eum.");
   physical_01->setFlag(SkillFlags::OFFENSIVE);
+  physical_01->setAnimation(damage_plep);
 
   Skill* physical_02 = new Skill(101, "Triple Whelp", ActionScope::ONE_ENEMY, 
       damage_actions[4],  95, 5);
@@ -373,8 +382,9 @@ void Game::setupBattle()
   //     damage_actions[8], 85, 5); 
   // physical_04->setPrimary(Element::PHYSICAL);
 
-  Skill* fire_01 = new Skill(110, "Burninate The Countryside", ActionScope::ONE_PARTY, 
-    damage_actions[4], 85, 55);
+  Skill* fire_01 = new Skill(110, "Burninate The Countryside", 
+      ActionScope::ALL_ENEMIES, damage_actions[4], 85, 55);
+
   fire_01->addAction(damage_actions[5]);
   fire_01->setCooldown(0);
   fire_01->setThumbnail(new Frame("sprites/Battle/Skills/_sample_skill_1.png", 
@@ -694,7 +704,7 @@ void Game::setupBattle()
   // swiss_cheese_module->setParent(swiss_cheese);
   // swiss_cheese->setAI(swiss_cheese_module);
 
- // Inventory Testinggd
+  // Inventory Testing
   Inventory* friends_pouch = new Inventory(401, "Teh Pouch");
   Inventory* foes_pouch = new Inventory(402, "Der Pouch");
 
@@ -740,10 +750,16 @@ void Game::setupBattle()
 
     /* Sprites */
     Sprite* background = new Sprite(
-           base_path + "sprites/Battle/Backdrop/battlebg", 1, ".png", renderer);
-    background->setDirectionReverse();
+           base_path + "sprites/Battle/Backdrop/battlebg", 7, ".png", renderer);
+    // background->setDirectionReverse();
     background->shiftNext();
-    //background->setAnimationTime(2500);
+        background->shiftNext();
+            background->shiftNext();
+                background->shiftNext();
+                    background->shiftNext();
+                        background->shiftNext();
+
+    background->setAnimationTime(25000);
     
     Sprite* midlay = new Sprite(
                 base_path + "sprites/Battle/Midlays/rain", 6, ".png", renderer);
@@ -764,8 +780,9 @@ void Game::setupBattle()
 
     /* Set the character sprites */
     auto bsian_sprite_fp = new Sprite(base_path + "sprites/Battle/Backs/bsian0.png", renderer);
-    auto bsian_sprite_tp = new Sprite(base_path + "sprites/Battle/Battle_Persons/bsian.png", renderer);
-    getPerson(310)->setSprites(bsian_sprite_fp, bsian_sprite_tp);
+    auto bsian_sprite_tp = new Sprite(base_path + "sprites/Battle/Battle_Persons/splicegirl2.png", renderer);
+    auto bsian_sprite_ds = new Sprite(base_path + "sprites/Overlay/DialogChar/splicegirl2.png", renderer);
+    getPerson(310)->setSprites(bsian_sprite_fp, bsian_sprite_tp, bsian_sprite_ds, nullptr);
 
     getPerson(311)->setSprites(nullptr, new Sprite(
             base_path + "sprites/Battle/Battle_Persons/auroraheavy.png", renderer));
@@ -790,9 +807,11 @@ void Game::setupBattle()
     auto player_sprite_tp = new Sprite(base_path +
         "sprites/Battle/Battle_Persons/player.png", renderer);
     auto player_sprite_af = new Sprite(base_path +
+        "sprites/Overlay/DialogChar/player.png", renderer);
+    auto player_sprite_ds = new Sprite(base_path +
         "sprites/Battle/Backs/player1.png", renderer);
     getPerson(300)->setSprites(player_sprite_fp, player_sprite_tp, 
-        player_sprite_af);
+        player_sprite_af, player_sprite_ds);
 
     getPerson(303)->setSprites(new Sprite(base_path + 
         "sprites/Battle/Backs/sarkova0.png", renderer), nullptr, 

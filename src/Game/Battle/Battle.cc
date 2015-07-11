@@ -4585,6 +4585,11 @@ bool Battle::update(int32_t cycle_time)
   return false;
 }
 
+Skill* Battle::getCurrSkill()
+{
+  return curr_skill;
+}
+
 /*
  * Description: Returns the ailment update mode currently set
  *

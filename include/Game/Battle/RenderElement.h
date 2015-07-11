@@ -52,6 +52,9 @@ public:
   RenderElement(RenderType type, int32_t remaining_time = 0, 
       int32_t fade_in_time = 0, int32_t fade_out_time = 0);
 
+  /* Create a Plep */
+  RenderElement(Sprite* plep, int32_t x, int32_t y);
+
   /* Annihilates a render element */
   ~RenderElement() = default;
 

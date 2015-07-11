@@ -90,6 +90,17 @@ RenderElement::RenderElement(RenderType type, int32_t remaining_time,
     status = RenderStatus::TIMED_OUT;
 }
 
+RenderElement::RenderElement(Sprite* plep, int32_t x, int32_t y)
+  : RenderElement()
+{
+  type = RenderType::PLEP;
+  status = RenderStatus::DISPLAYING;
+
+  this->render_sprite = plep;
+  this->x = x;
+  this->y = y;
+}
+
 /*=============================================================================
  * PRIVATE FUNCTIONS
  *============================================================================*/
@@ -163,6 +174,15 @@ bool RenderElement::isTimedOut()
  */
 bool RenderElement::update(int cycle_time)
 {
+  if (type == RenderType::PLEP)
+  {
+    render_sprite->update(cycle_time);
+    std::cout << "Updating plep: " << render_sprite->getLoops() << std::endl;
+    if (render_sprite->getLoops() > 0)
+      status = RenderStatus::TIMED_OUT;
+  }
+  else
+  {
   /* Update the remaining time, put it into elapsed time */
   remaining_time -= cycle_time;
   elapsed_time   += cycle_time;
@@ -209,6 +229,7 @@ bool RenderElement::update(int cycle_time)
   else
   {
     delta_y += temp_delta_y;
+  }
   }
 
   return true;

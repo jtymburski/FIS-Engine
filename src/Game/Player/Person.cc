@@ -197,9 +197,10 @@ void Person::loadDefaults()
   credit_drop = 0;
   exp_drop = 0;
   
-  first_person = nullptr;
-  third_person = nullptr;
-  action_frames = nullptr;
+  action_sprite = nullptr;
+  first_person  = nullptr;
+  third_person  = nullptr;
+  dialog_sprite = nullptr;
 }
 
 /*
@@ -288,7 +289,7 @@ void Person::setupClass()
     /* Comes from base person, if not null */
     first_person = base_person->first_person;
     third_person = base_person->third_person;
-    action_frames = base_person->action_frames;
+    dialog_sprite = base_person->dialog_sprite;
   }
 }
 
@@ -329,12 +330,39 @@ void Person::unsetAll(const bool &clear)
     if (temp_skills != nullptr)
       delete temp_skills;
   }
+   
+  //TODO: Delete sprites?
+  //unsetSprites();
 
   ai_module      = nullptr;
   base_skills    = nullptr;
   curr_skills    = nullptr;
   learned_skills = nullptr;
   temp_skills    = nullptr;
+}
+
+void Person::unsetSprites()
+{
+  if(action_sprite != nullptr)
+    if(base_person == nullptr || base_person->action_sprite != action_sprite)
+      delete action_sprite;
+
+  if(first_person != nullptr)
+    if(base_person == nullptr || base_person->first_person != first_person)
+      delete first_person;
+
+  if(third_person != nullptr)
+    if(base_person == nullptr || base_person->third_person != third_person)
+      delete third_person;
+
+  if(dialog_sprite != nullptr)
+    if(dialog_sprite == nullptr || base_person->dialog_sprite != dialog_sprite)
+      delete dialog_sprite;
+
+  action_sprite = nullptr;
+  first_person  = nullptr;
+  third_person  = nullptr;
+  dialog_sprite = nullptr;
 }
 
 /*
@@ -1213,6 +1241,11 @@ void Person::resetSkills()
     element.silenced = false;
 }
 
+Sprite* Person::getActionSprite()
+{
+  return action_sprite;
+}
+
 /*
  * Description: Returns the action frames for the person - for the rendering
  *              swipe-away.
@@ -1220,9 +1253,9 @@ void Person::resetSkills()
  * Inputs: none
  * Output: Sprite* - the sprite pointer
  */
-Sprite* Person::getActionFrames()
+Sprite* Person::getDialogSprite()
 {
-  return action_frames;
+  return dialog_sprite;
 }
 
 /*
@@ -2185,25 +2218,17 @@ void Person::setName(std::string name)
  *         new_action - pointer to an action frame sprite
  * Output: none
  */
-void Person::setSprites(Sprite* new_fp, Sprite* new_tp, Sprite* new_action)
+void Person::setSprites(Sprite* new_fp, Sprite* new_tp, Sprite* new_dialog, 
+    Sprite* new_action)
 {
-  /* Set first person */
-  if(first_person != nullptr)
-    if(base_person == nullptr || base_person->first_person != first_person)
-      delete first_person;
-  first_person = new_fp;
+  /* Unset the current sprites */
+  unsetSprites();
 
-  /* Set third person */
-  if(third_person != nullptr)
-    if(base_person == nullptr || base_person->third_person != third_person)
-      delete third_person;
-  third_person = new_tp;
-
-  /* Set action frames */
-  if(action_frames != nullptr)
-    if(action_frames == nullptr || base_person->action_frames != action_frames)
-      delete action_frames;
-  action_frames = new_action;
+  /* Assign the new sprite pointers */
+  action_sprite = new_action;
+  first_person  = new_fp;
+  third_person  = new_tp;
+  dialog_sprite = new_dialog;
 }
 
 /*=============================================================================

@@ -568,6 +568,8 @@ public:
   /* Unsets the attacking flag for all allies & foes members */
   void unsetActorsAttacking();
 
+  Skill* getCurrSkill();
+
   /* Returns the ailment update mode currently set */
   BattleOptions getAilmentUpdateMode();
 

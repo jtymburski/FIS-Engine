@@ -220,9 +220,10 @@ private:
   uint32_t total_exp;
 
   /* Frames for a Person */
+  Sprite* action_sprite;
+  Sprite* dialog_sprite;
   Sprite* first_person;
   Sprite* third_person;
-  Sprite* action_frames;
 
   /* ------------ Static Private Members --------------- */
   static int id; /* Person unique ID counter */
@@ -264,6 +265,9 @@ private:
 
   /* Unsets all members of the class, bools to clear memory */
   void unsetAll(const bool &clear = false);
+
+  /* Unsets the sprites for the person */
+  void unsetSprites();
 
   /* Recalculates the Person's base and base_max stats based on categories */
   void updateBaseStats();
@@ -360,8 +364,11 @@ public:
   /* Resets the skills for use in battle */
   void resetSkills();
 
+  /* Returns a pointer to the action sprite */
+  Sprite* getActionSprite();
+
   /* Returns the action frames */
-  Sprite* getActionFrames();
+  Sprite* getDialogSprite();
 
   /* The action X and Y render location in battle */
   int16_t getActionX();
@@ -547,7 +554,7 @@ public:
 
   /* Assigns the sprite pointers for the person */
   void setSprites(Sprite* new_fp = nullptr, Sprite* new_tp = nullptr,
-                  Sprite* new_action = nullptr);
+      Sprite* new_dialog_sprite = nullptr, Sprite* new_action_sprite = nullptr);
 
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
