@@ -894,7 +894,7 @@ void Frame::renderTopFlatTriangle(uint16_t x1, uint16_t x2, uint16_t x3,
 /*=============================================================================
  * PUBLIC STATIC FUNCTIONS
  *============================================================================*/
-   
+
 /*
  * Description: Renders a shifted rectangle bar. This allows for a slope to be
  *              defined for the left and right side which creates a symmetrical

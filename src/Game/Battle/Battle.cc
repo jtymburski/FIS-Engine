@@ -97,7 +97,7 @@ const float    Battle::kUSER_POW_MODIFIER           =  3.00;
 const float    Battle::kTARG_DEF_MODIFIER           =  2.90;
 
 const float    Battle::kBASE_CRIT_CHANCE            =   0.10;
-const float    Battle::kOFF_CRIT_FACTOR             =   1.25;
+const float    Battle::kOFF_CRIT_FACTOR             =   1.45;
 const float    Battle::kCRIT_MODIFIER               =   0.0008;
 const float    Battle::kCRIT_LVL_MODIFIER           =   0.012;
 const float    Battle::kCRIT_DEFENDING_MODIFIER     =   0.70;

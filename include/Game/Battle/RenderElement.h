@@ -56,7 +56,7 @@ public:
   RenderElement(Sprite* plep, int32_t x, int32_t y);
 
   /* Annihilates a render element */
-  ~RenderElement() = default;
+  ~RenderElement();
 
 private: 
   /* Pointer to a Frame */

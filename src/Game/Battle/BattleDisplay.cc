@@ -1221,8 +1221,18 @@ void BattleDisplay::createRegenValue(Person* target, uint64_t amount)
 
 void BattleDisplay::createPlep(Person* target, Sprite* plep)
 {
-  RenderElement* plep_render = new RenderElement(plep, getPersonX(target), getPersonY(target));
-  render_elements.push_back(plep_render);
+  // Sprite* new_plep = new Sprite();
+  // *new_plep = *plep;
+
+  // new_plep->copyFrames(plep);
+
+  // new_plep->setAtFirst();
+  // new_plep->setSize(plep->getSize());
+
+  // std::cout << "New Plep Size: " << new_plep->getSize() << std::endl;
+   
+  // RenderElement* plep_render = new RenderElement(new_plep, getPersonX(target), getPersonY(target));
+  // render_elements.push_back(plep_render);
 }
 
 void BattleDisplay::createSpriteFlash(Person* target, SDL_Color color, 
@@ -2153,11 +2163,12 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
       }
     }
 
-    for (auto & element : render_elements)
+    for (auto& element : render_elements)
     {
       if (element->getType() == RenderType::PLEP)
       {
-        element->getSprite()->render(renderer, element->getX(), element->getY());
+        if (element->getSprite() != nullptr)
+          element->getSprite()->render(renderer, element->getX(), element->getY());
       }
     }
 
@@ -2816,7 +2827,7 @@ bool BattleDisplay::updateElements(int32_t cycle_time)
     }
   }
 
-  /* Clear render elements with negative time remaining */
+  /* Clear render elements which have timed out */
   std::vector<RenderElement*> temp_elements;
  
   for (auto& element : render_elements)

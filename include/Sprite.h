@@ -131,6 +131,8 @@ protected:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
+  // void copyFrames(Sprite* source);
+
   /* Adds sprite information from the XML data classifier from the file */
   bool addFileInformation(XmlData data, int index, SDL_Renderer* renderer, 
                           std::string base_path = "", bool no_warnings = false);
@@ -267,6 +269,9 @@ public:
 
   /* Asserts the direction is reverse for when accessing the linked list */
   bool setDirectionReverse();
+
+  void setHead(Frame* head);
+  void setSize(int new_size);
 
   /* Sets the numerical identifier */
   void setId(uint16_t id);

@@ -331,7 +331,6 @@ void Person::unsetAll(const bool &clear)
       delete temp_skills;
   }
    
-  //TODO: Delete sprites?
   //unsetSprites();
 
   ai_module      = nullptr;

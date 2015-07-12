@@ -326,14 +326,6 @@ void Game::setupBattle()
   std::vector<Action*> relieve_actions;
   relieve_actions.push_back(new Action("600,RELIEVE,,,,POISON,,,VITA,100"));
 
-
-  /* Set der pleps yo */
-  Sprite* damage_plep = new Sprite(base_path + "sprites/Battle/Pleps/basicplep_AA_A", 3, ".png", active_renderer);
-  damage_plep->insertTail(base_path + "sprites/Battle/Plep/basicplep_AA_A00.png", active_renderer);
-  damage_plep->insertTail(base_path + "sprites/Battle/Plep/basicplep_AA_A01.png", active_renderer);
-  damage_plep->insertTail(base_path + "sprites/Battle/Plep/basicplep_AA_A02.png", active_renderer);
-  damage_plep->setAnimationTime(75);
-
   // for(auto it = begin(damage_actions); it != end(damage_actions); ++it)
   //   std::cout << (*it)->actionFlag(ActionFlags::VALID) << std::endl;
 
@@ -350,12 +342,12 @@ void Game::setupBattle()
     std::cout << relieve_action->actionFlag(ActionFlags::VALID) << std::endl;
 
   // Test Skills
-  Skill* cure_poison = new Skill(600, "Cure Poison", ActionScope::ONE_TARGET,
-      relieve_actions[0], 95, 0);
-  cure_poison->setPrimary(Element::PHYSICAL);
-  cure_poison->setThumbnail(new Frame("sprites/Battle/Skills/_sample_skill_2.png", active_renderer));
-  cure_poison->setDescription("Cures an inflicted person from poison!");
-  cure_poison->setFlag(SkillFlags::DEFENSIVE);
+  // Skill* cure_poison = new Skill(600, "Cure Poison", ActionScope::ONE_TARGET,
+  //     relieve_actions[0], 95, 0);
+  // cure_poison->setPrimary(Element::PHYSICAL);
+  // cure_poison->setThumbnail(new Frame("sprites/Battle/Skills/_sample_skill_2.png", active_renderer));
+  // cure_poison->setDescription("Cures an inflicted person from poison!");
+  // cure_poison->setFlag(SkillFlags::DEFENSIVE);
 
   Skill* physical_01 = new Skill(100, "Wee Strike", ActionScope::ONE_ENEMY, 
       damage_actions[3], 95, 0);
@@ -363,7 +355,6 @@ void Game::setupBattle()
   physical_01->setThumbnail(new Frame("sprite3/Battle/Skills/_sample_skill_2.png", active_renderer));
   physical_01->setDescription("Jordan is a weirdo... Lor em ips um do lor sit amet, mel omnis nomin ati an, atom orum facil isis in pri, adipi scing argum entum in pri. Duo ei tempor dicunt sanctus, per ut hinc oporteat conceptam. Iisque euismod albucius vel ut, duo ea singulis eleifend. Veri offendit vim ut, at pri tale adolescens, putant veritus sea no. Atqui blandit assentior ne eam. Et rebum deserunt pericula eum.");
   physical_01->setFlag(SkillFlags::OFFENSIVE);
-  physical_01->setAnimation(damage_plep);
 
   Skill* physical_02 = new Skill(101, "Triple Whelp", ActionScope::ONE_ENEMY, 
       damage_actions[4],  95, 5);
@@ -766,14 +757,14 @@ void Game::setupBattle()
     midlay->setAnimationTime(64);
     midlay->setOpacity(64);
 
-    Sprite* midlay2 = new Sprite(
-                     base_path + "sprites/Map/Lays/fog_underlay.png", renderer);
-    midlay2->setColorRed(150);
-    midlay2->setColorGreen(150);
+    // Sprite* midlay2 = new Sprite(
+    //                  base_path + "sprites/Map/Lays/fog_underlay.png", renderer);
+    // midlay2->setColorRed(150);
+    // midlay2->setColorGreen(150);
 
     /* Display */
     battle_display->setBackground(background);
-    battle_display->setMidlay(midlay2);
+    // battle_display->setMidlay(midlay2);
     battle_display->addMidlay(midlay);
     battle_display->setBattleBar(new Frame(
                            base_path + "sprites/Overlay/battle.png", renderer));
@@ -797,10 +788,10 @@ void Game::setupBattle()
     //     "sprites/Battle/Backs/manbear1_brown_grey.png", renderer), nullptr, 
     //     new Sprite(base_path + "sprites/Map/Dialog/manbear_brown_grey.png", 
     //     renderer));
-    getPerson(301)->setSprites(new Sprite(base_path + 
-        "sprites/Battle/Backs/arcadius0.png", renderer), nullptr, 
-        new Sprite(base_path + "sprites/Map/Dialog/arcadius.png", 
-        renderer));
+    // getPerson(301)->setSprites(new Sprite(base_path + 
+    //     "sprites/Battle/Backs/arcadius0.png", renderer), nullptr, 
+    //     new Sprite(base_path + "sprites/Map/Dialog/arcadius.png", 
+    //     renderer));
 
     auto player_sprite_fp = new Sprite(base_path + 
         "sprites/Battle/Backs/player0.png", renderer);
@@ -821,6 +812,16 @@ void Game::setupBattle()
         "sprites/Battle/Backs/subleezer0.png", renderer), nullptr, 
         new Sprite(base_path + "sprites/Battle/Battle_Persons/subleezer.png", 
         renderer));
+
+
+    /* Set der pleps yo */
+    Sprite* damage_plep = new Sprite(base_path + "sprites/Battle/Pleps/basicplep_AA_A", 3, ".png", active_renderer);
+    // damage_plep->insertTail(base_path + "sprites/Battle/Pleps/basicplep_AA_A00.png", active_renderer);
+    // damage_plep->insertTail(base_path + "sprites/Battle/Pleps/basicplep_AA_A01.png", active_renderer);
+    // damage_plep->insertTail(base_path + "sprites/Battle/Pleps/basicplep_AA_A02.png", active_renderer);
+    damage_plep->setAnimationTime(115);
+    physical_01->setAnimation(damage_plep);
+
 
     /* Set the ailments */
     battle_display->setAilment(Infliction::POISON, 

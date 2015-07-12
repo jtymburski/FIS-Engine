@@ -34,7 +34,7 @@ public:
   Frame(std::string path, std::vector<std::string> adjustments, 
         SDL_Renderer* renderer, uint16_t angle = 0, Frame* previous = NULL, 
         Frame* next = NULL);
-  
+
   /* Destructor function */
   ~Frame();
   

@@ -190,7 +190,7 @@ void Sprite::copySelf(const Sprite &source)
   setBrightness(source.getBrightness());
   setColorBalance(source.getColorRed(), source.getColorGreen(), 
                                         source.getColorBlue());
-
+  
   if(source.isDirectionForward())
     setDirectionForward();
   else
@@ -199,6 +199,36 @@ void Sprite::copySelf(const Sprite &source)
   setOpacity(source.getOpacity());
   setRotation(source.getRotation());
   //setSound(); // TODO: Future?
+}
+
+// void Sprite::copyFrames(Sprite* source)
+// {
+//   Frame* previous = new Frame(*source->getCurrent());
+//   previous->setTexture(source->getCurrent()->getTexture());
+//   Frame* current  = nullptr;
+
+//   this->head = previous;
+//   source->shiftNext();
+
+//   for (int i = 1; i < source->getSize(); i++)
+//   {
+//     current = new Frame(*source->getCurrentAndShift());
+//     current->setTexture((source->getCurrent())->getTexture());
+
+//     if (i == 1)
+//       this->head->setNext(current);
+
+//     current->setPrevious(previous);
+//     previous->setNext(current);
+//     previous = current;
+//   }
+
+//   this->head->setPrevious(current);
+// }
+
+void Sprite::setSize(int new_size)
+{
+  this->size = new_size;
 }
 
 /*============================================================================

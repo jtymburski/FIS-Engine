@@ -93,12 +93,22 @@ RenderElement::RenderElement(RenderType type, int32_t remaining_time,
 RenderElement::RenderElement(Sprite* plep, int32_t x, int32_t y)
   : RenderElement()
 {
-  type = RenderType::PLEP;
+  setSprite(plep);
+
+  type   = RenderType::PLEP;
   status = RenderStatus::DISPLAYING;
 
-  this->render_sprite = plep;
   this->x = x;
   this->y = y;
+}
+
+RenderElement::~RenderElement()
+{
+  if (type == RenderType::PLEP)
+    if (render_sprite != nullptr)
+      delete render_sprite;
+
+  render_sprite = nullptr;
 }
 
 /*=============================================================================
@@ -163,7 +173,7 @@ bool RenderElement::hasShadow()
  */
 bool RenderElement::isTimedOut()
 {
-  return (remaining_time < 0);
+  return (status == RenderStatus::TIMED_OUT);
 }
 
 /*
@@ -174,62 +184,71 @@ bool RenderElement::isTimedOut()
  */
 bool RenderElement::update(int cycle_time)
 {
-  if (type == RenderType::PLEP)
-  {
-    render_sprite->update(cycle_time);
-    std::cout << "Updating plep: " << render_sprite->getLoops() << std::endl;
-    if (render_sprite->getLoops() > 0)
-      status = RenderStatus::TIMED_OUT;
-  }
-  else
-  {
   /* Update the remaining time, put it into elapsed time */
   remaining_time -= cycle_time;
   elapsed_time   += cycle_time;
 
-  if (elapsed_time >= fade_in_time)
-    status = RenderStatus::DISPLAYING;
-  if (remaining_time < fade_out_time)
-    status = RenderStatus::FADING_OUT;
-
-  /* Before updating coordinates, update the pixels/s from the pixels/s/s */
-  // velocity_x += acceleration_x;
-  // velocity_y += acceleration_y;
-
-  /* Then, update the (X, Y) coordinates for the text and the shadow */
-  auto temp_delta_x = 0.0;
-  auto temp_delta_y = 0.0;
-
-  temp_delta_x += static_cast<float>(velocity_x) * cycle_time / 100.0f;
-  temp_delta_y += static_cast<float>(velocity_y) * cycle_time / 100.0f;
-
-  if (delta_x >= 1.0 || delta_x <= -1.0)
+  if (type == RenderType::PLEP)
   {
-    x += std::floor(delta_x);
+    if (render_sprite != nullptr)
+    {
+      std::cout << "Updating plep! " << render_sprite->getLoops() << std::endl;
+      render_sprite->update(cycle_time);
 
-    if (shadow)
-      shadow_x += std::floor(delta_x);
-
-    delta_x = 0;
+      if (render_sprite->getLoops() > 0)
+        status = RenderStatus::TIMED_OUT;
+    }
   }
   else
   {
-    delta_x += temp_delta_x;
-  }
+    if (remaining_time <= 0)
+      status = RenderStatus::TIMED_OUT;
+    else
+    {
+      if (elapsed_time >= fade_in_time)
+        status = RenderStatus::DISPLAYING;
+      if (remaining_time < fade_out_time)
+        status = RenderStatus::FADING_OUT;
 
-  if (delta_y >= 1.0 || delta_y <= -1.0)
-  {
-    y += std::floor(delta_y);
+      /* Before updating coordinates, update the pixels/s from the pixels/s/s */
+      // velocity_x += acceleration_x;
+      // velocity_y += acceleration_y;
 
-    if (shadow)
-      shadow_y += std::floor(delta_y);
+      /* Then, update the (X, Y) coordinates for the text and the shadow */
+      auto temp_delta_x = 0.0;
+      auto temp_delta_y = 0.0;
 
-    delta_y = 0;
-  }
-  else
-  {
-    delta_y += temp_delta_y;
-  }
+      temp_delta_x += static_cast<float>(velocity_x) * cycle_time / 100.0f;
+      temp_delta_y += static_cast<float>(velocity_y) * cycle_time / 100.0f;
+
+      if (delta_x >= 1.0 || delta_x <= -1.0)
+      {
+        x += std::floor(delta_x);
+    
+        if (shadow)
+          shadow_x += std::floor(delta_x);
+
+        delta_x = 0;
+      }
+      else
+      {
+        delta_x += temp_delta_x;
+      }
+
+      if (delta_y >= 1.0 || delta_y <= -1.0)
+      {
+        y += std::floor(delta_y);
+
+        if (shadow)
+          shadow_y += std::floor(delta_y);
+
+        delta_y = 0;
+      }
+      else
+      {
+        delta_y += temp_delta_y;
+      }
+    }
   }
 
   return true;
@@ -427,6 +446,10 @@ void RenderElement::setCoordinates(int32_t new_x, int32_t new_y)
 
 void RenderElement::setSprite(Sprite* new_render_sprite)
 {
+  if (type == RenderType::PLEP)
+    if (render_sprite != nullptr)
+      delete render_sprite;
+
   render_sprite = new_render_sprite;
 }
 
