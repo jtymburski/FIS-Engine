@@ -1221,18 +1221,22 @@ void BattleDisplay::createRegenValue(Person* target, uint64_t amount)
 
 void BattleDisplay::createPlep(Person* target, Sprite* plep)
 {
-  // Sprite* new_plep = new Sprite();
-  // *new_plep = *plep;
+  Sprite* new_plep = new Sprite(true, plep->getSize());
+  new_plep->setAnimationTime(plep->getAnimationTime());
+  new_plep->setBrightness(plep->getBrightness());
+  new_plep->setColorBalance(plep->getColorRed(), plep->getColorGreen(), plep->getColorBlue());
 
-  // new_plep->copyFrames(plep);
+  if (plep->isDirectionForward())
+    new_plep->setDirectionForward();
+  else
+    new_plep->setDirectionForward();
 
-  // new_plep->setAtFirst();
-  // new_plep->setSize(plep->getSize());
-
-  // std::cout << "New Plep Size: " << new_plep->getSize() << std::endl;
+  new_plep->setRotation(plep->getRotation());
+  new_plep->setHead(plep->getFirstFrame());
+  new_plep->createTexture(renderer);
    
-  // RenderElement* plep_render = new RenderElement(new_plep, getPersonX(target), getPersonY(target));
-  // render_elements.push_back(plep_render);
+  RenderElement* plep_render = new RenderElement(new_plep, getPersonX(target), getPersonY(target));
+  render_elements.push_back(plep_render);
 }
 
 void BattleDisplay::createSpriteFlash(Person* target, SDL_Color color, 

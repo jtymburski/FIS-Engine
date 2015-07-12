@@ -53,6 +53,7 @@ Sprite::Sprite()
   id = 0;
   loops = 0;
   opacity = kDEFAULT_OPACITY;
+  plep = false;
   rotation_angle = 0.0;
   size = 0;
   sequence = FORWARD;
@@ -95,6 +96,17 @@ Sprite::Sprite(std::string head_path, int num_frames,
 Sprite::Sprite(const Sprite &source) : Sprite()
 {
   copySelf(source);
+}
+
+/*
+ * Description: 
+ *
+ * Inputs: 
+ */
+Sprite::Sprite(bool plep, int32_t size) : Sprite()
+{
+  this->plep = plep;
+  this->size = size;
 }
 
 /* 
@@ -168,7 +180,8 @@ void Sprite::setColorMod()
 void Sprite::clear()
 {
   /* Delete all class data */
-  removeAll();
+  if (!plep)
+    removeAll();
   SDL_DestroyTexture(texture);
   
   /* Reset variables back to blank */
@@ -199,36 +212,6 @@ void Sprite::copySelf(const Sprite &source)
   setOpacity(source.getOpacity());
   setRotation(source.getRotation());
   //setSound(); // TODO: Future?
-}
-
-// void Sprite::copyFrames(Sprite* source)
-// {
-//   Frame* previous = new Frame(*source->getCurrent());
-//   previous->setTexture(source->getCurrent()->getTexture());
-//   Frame* current  = nullptr;
-
-//   this->head = previous;
-//   source->shiftNext();
-
-//   for (int i = 1; i < source->getSize(); i++)
-//   {
-//     current = new Frame(*source->getCurrentAndShift());
-//     current->setTexture((source->getCurrent())->getTexture());
-
-//     if (i == 1)
-//       this->head->setNext(current);
-
-//     current->setPrevious(previous);
-//     previous->setNext(current);
-//     previous = current;
-//   }
-
-//   this->head->setPrevious(current);
-// }
-
-void Sprite::setSize(int new_size)
-{
-  this->size = new_size;
 }
 
 /*============================================================================
@@ -298,6 +281,18 @@ bool Sprite::addFileInformation(XmlData data, int index, SDL_Renderer* renderer,
     std::cout << "Sprite Sound: " << data.getDataString() << std::endl;
 
   return success;
+}
+
+void Sprite::createTexture(SDL_Renderer* renderer)
+{
+  if (head->isTextureSet() && texture == nullptr)
+  {
+    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+      SDL_TEXTUREACCESS_TARGET, head->getWidth(), head->getHeight());
+    SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+    setColorMod();
+    setOpacity(opacity);
+  }
 }
 
 /*
@@ -1157,6 +1152,13 @@ bool Sprite::setDirectionReverse()
 {
   sequence = REVERSE;
   return true;
+}
+
+void Sprite::setHead(Frame* head)
+{
+  this->head = head;
+
+  setAtFirst();
 }
 
 /*

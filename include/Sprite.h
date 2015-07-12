@@ -34,6 +34,9 @@ public:
 
   /* Copy constructor */
   Sprite(const Sprite &source);
+
+  /* Create a plep sprite */
+  Sprite(bool plep, int32_t size);
   
   /* Destructor function */
   ~Sprite();
@@ -84,6 +87,9 @@ private:
 
   /* Sets the opacity of the rendered sprite */
   uint8_t opacity;
+
+  /* Is this Sprite a plep? */
+  bool plep;
   
   /* The rotation angle for rendering */
   float rotation_angle;
@@ -131,12 +137,13 @@ protected:
  * PUBLIC FUNCTIONS
  *============================================================================*/
 public:
-  // void copyFrames(Sprite* source);
-
   /* Adds sprite information from the XML data classifier from the file */
   bool addFileInformation(XmlData data, int index, SDL_Renderer* renderer, 
                           std::string base_path = "", bool no_warnings = false);
  
+    /* Creates a texture for a sprite (for Pleps) */
+  void createTexture(SDL_Renderer* renderer);
+  
   /* Executes the necessary image adjustments, to all frames */
   bool execImageAdjustments(std::vector<std::string> adjustments);
 
@@ -270,8 +277,8 @@ public:
   /* Asserts the direction is reverse for when accessing the linked list */
   bool setDirectionReverse();
 
+  /* Assigns a head frame */
   void setHead(Frame* head);
-  void setSize(int new_size);
 
   /* Sets the numerical identifier */
   void setId(uint16_t id);

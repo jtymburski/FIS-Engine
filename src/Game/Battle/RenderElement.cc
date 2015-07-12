@@ -104,9 +104,9 @@ RenderElement::RenderElement(Sprite* plep, int32_t x, int32_t y)
 
 RenderElement::~RenderElement()
 {
-  if (type == RenderType::PLEP)
-    if (render_sprite != nullptr)
-      delete render_sprite;
+  // if (type == RenderType::PLEP)
+  //   if (render_sprite != nullptr)
+  //     delete render_sprite;
 
   render_sprite = nullptr;
 }
@@ -192,8 +192,8 @@ bool RenderElement::update(int cycle_time)
   {
     if (render_sprite != nullptr)
     {
-      std::cout << "Updating plep! " << render_sprite->getLoops() << std::endl;
       render_sprite->update(cycle_time);
+      std::cout << "Updating plep! " << render_sprite->getLoops() << std::endl;
 
       if (render_sprite->getLoops() > 0)
         status = RenderStatus::TIMED_OUT;
@@ -446,9 +446,9 @@ void RenderElement::setCoordinates(int32_t new_x, int32_t new_y)
 
 void RenderElement::setSprite(Sprite* new_render_sprite)
 {
-  if (type == RenderType::PLEP)
-    if (render_sprite != nullptr)
-      delete render_sprite;
+  // if (type == RenderType::PLEP)
+  //   if (render_sprite != nullptr)
+  //     delete render_sprite;
 
   render_sprite = new_render_sprite;
 }

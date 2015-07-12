@@ -11,7 +11,7 @@
 
 /* Constant Implementation - see header file for descriptions */
 const uint8_t Application::kUPDATE_CHANGE_LIMIT = 5;
-const uint8_t Application::kUPDATE_RATE = 16;
+const uint8_t Application::kUPDATE_RATE = 32;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS

@@ -819,7 +819,7 @@ void Game::setupBattle()
     // damage_plep->insertTail(base_path + "sprites/Battle/Pleps/basicplep_AA_A00.png", active_renderer);
     // damage_plep->insertTail(base_path + "sprites/Battle/Pleps/basicplep_AA_A01.png", active_renderer);
     // damage_plep->insertTail(base_path + "sprites/Battle/Pleps/basicplep_AA_A02.png", active_renderer);
-    damage_plep->setAnimationTime(115);
+    damage_plep->setAnimationTime(150);
     physical_01->setAnimation(damage_plep);
 
 
