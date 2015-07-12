@@ -1361,10 +1361,7 @@ bool Game::render(SDL_Renderer* renderer)
   if(!game_map->isLoaded())
   {
     if(test_map.empty())
-      game_map->loadMap(base_path + "maps/test_08.utv", renderer);
-      //game_map->loadMap(base_path + "maps/test_06", renderer);
-      //game_map->loadMap(base_path + "maps/test01.usv", renderer);
-      //game_map->loadMap(base_path + "maps/test_output.ugv", renderer);
+      game_map->loadMap(base_path + "maps/Univursa.ugv", renderer);
     else
       game_map->loadMap(test_map, renderer);
   }
