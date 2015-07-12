@@ -1138,8 +1138,7 @@ void BattleDisplay::createDamageText(Person* target, std::string text)
   t.setText(renderer, element->getText(), {0,0,0,255});
 
   auto x  = getPersonX(target);
-       x -= kPERSON_WIDTH / 2;
-       x += kPERSON_SPREAD;
+       x += kPERSON_WIDTH / 2;
        x -= t.getWidth() / 2;
 
   element->setX(x);
@@ -1177,8 +1176,7 @@ RenderElement* BattleDisplay::createDamageValue(Person* target, uint32_t amount)
   t.setText(renderer, element->getText(), color);
 
   auto x  = getPersonX(target);
-       x -= kPERSON_WIDTH / 2;
-       x += kPERSON_SPREAD;
+       x += kPERSON_WIDTH / 2;
        x -= t.getWidth() / 2;
 
   auto y = getPersonY(target);
@@ -2452,7 +2450,8 @@ bool BattleDisplay::update(int cycle_time)
     /* Update the turn state - TODO: Add delays and pretty animations */
     auto battle_state = battle->getTurnState();
     auto menu         = battle->getBattleMenu();
-    auto event_buffer = battle->getEventBuffer();
+    auto buffer       = battle->getEventBuffer();
+    bool delay        = false;
 
     /* Update the render text elements */
     updateElements(cycle_time);
@@ -2460,6 +2459,15 @@ bool BattleDisplay::update(int cycle_time)
     updateFriends(cycle_time);
     /* Update the foes states */
     updateFoes(cycle_time);
+    
+    /* Update event processing delays */
+    if(processing_delay > 0)
+    {
+      processing_delay -= cycle_time;
+
+      if (processing_delay > 0)
+        delay = true;
+    }
 
     /*-------------------------------------------------------------------------
      * BEGIN state
@@ -2484,7 +2492,7 @@ bool BattleDisplay::update(int cycle_time)
 
         SDL_Color shadow_color = {194, 59, 34, 255};
         RenderElement* turn_text = new RenderElement(RenderType::ACTION_TEXT,
-            1500, 500, 500);
+            1500, 500, 300);
 
         turn_text->setColor({0, 0, 0, 255});
         turn_text->setShadowColor(shadow_color);
@@ -2529,7 +2537,7 @@ bool BattleDisplay::update(int cycle_time)
         SDL_Color screen_dim_color = {0, 0, 0, 185};
 
         RenderElement* dim_element = new RenderElement(RenderType::RGB_OVERLAY,
-            3000, 400, 400);
+            2500, 400, 300);
 
         dim_element->setColor(screen_dim_color);
         dim_element->setCoordinates(0, 0);
@@ -2542,9 +2550,7 @@ bool BattleDisplay::update(int cycle_time)
       }
       else
       {
-        processing_delay -= cycle_time;
-
-        if (processing_delay <= 0 && 
+        if (!delay <= 0 && 
             !getRenderFlag(RenderState::TURN_TEXT_CREATED))
         {
           setRenderFlag(RenderState::SCREEN_DIM, true);
@@ -2563,45 +2569,31 @@ bool BattleDisplay::update(int cycle_time)
      *-----------------------------------------------------------------------*/
     else if(rendering_state == TurnState::UPKEEP)
     {
-      auto rendering    = false;
-      auto change_state = false;
+      rendering_state = battle_state;
 
-      auto delay = handleDelayProcessing(cycle_time, change_state);
-
-      /* If ready to render flag is true, there are events which need to be 
-       * rendered on the Event Buffer */
-      if (battle->getBattleFlag(CombatState::READY_TO_RENDER) &&
-          !battle->getBattleFlag(CombatState::RENDERING_COMPLETE) &&
-          !delay)
+      if(!getRenderFlag(RenderState::BEGIN_RENDERING))
       {
-        rendering |= event_buffer->setRenderIndex();
+        setRenderFlag(RenderState::BEGIN_RENDERING, true);
+        processing_delay = 750;
       }
-
-      if (rendering)
+      else if(!delay)
       {
-        curr_event = event_buffer->getEvent(event_buffer->getIndex());
-
-        auto targets = curr_event->targets;
-
-        if(curr_event != nullptr && !curr_event->rendered)
+        if(buffer->setRenderIndex())
         {
-          if (curr_event->type == EventType::REGEN_VITA ||
-              curr_event->type == EventType::REGEN_QTDR)
+          curr_event = buffer->getCurrentEvent();
+
+          if(curr_event != nullptr)
           {
-            if (curr_event->amount > 0)
-            {
-              createRegenValue(curr_event->targets.at(0), curr_event->amount);
-              processing_delay = 1000;
-            }
-            else
-            {
-              processing_delay = 30;
-            }
+            updateEvent();
+            buffer->setRendered(buffer->getIndex());
           }
         }
       }
-
-      rendering_state = battle_state;
+      else
+      {
+        battle->setBattleFlag(CombatState::RENDERING_COMPLETE, true);
+        setRenderFlag(RenderState::BEGIN_RENDERING, false);
+      }
     }
     /*-------------------------------------------------------------------------
      * SELECT_ACTION_ALLY state
@@ -2673,15 +2665,6 @@ bool BattleDisplay::update(int cycle_time)
     else if(rendering_state == TurnState::PROCESS_ACTIONS)
     {
       rendering_state = battle_state;
-      bool delay = false;
-
-      if (processing_delay > 0)
-      {
-        processing_delay -= cycle_time;
-
-        if (processing_delay > 0)
-          delay = true;
-      }
 
       if (!getRenderFlag(RenderState::BEGIN_RENDERING))
       {
@@ -2691,20 +2674,15 @@ bool BattleDisplay::update(int cycle_time)
       else if (!delay)
       {
         /* Render */
-        std::cout << "Render!" << std::endl;
-
-        bool more_rendering = battle->getEventBuffer()->setRenderIndex();
-
-        if (more_rendering)
+        if (buffer->setRenderIndex())
         {
-          curr_event = battle->getEventBuffer()->getCurrentEvent();
+          curr_event = buffer->getCurrentEvent();
 
           if (curr_event != nullptr)
           {
             updateEvent();
-            battle->getEventBuffer()->setRendered(battle->getEventBuffer()->getIndex());
+            buffer->setRendered(buffer->getIndex());
           }
-
         }
         else
         {
@@ -3000,6 +2978,16 @@ bool BattleDisplay::updateEvent()
     }
 
     processing_delay = kDELAY_DAMAGE;
+  }
+  else if (curr_event->type == EventType::REGEN_VITA ||
+           curr_event->type == EventType::REGEN_QTDR)
+  {
+    if (curr_event->amount > 0 && curr_event->targets.size() > 0 &&
+        curr_event->targets.at(0) != nullptr)
+    {
+      createRegenValue(curr_event->targets.at(0), curr_event->amount);
+      processing_delay = 750;
+    }
   }
 
   return false;

@@ -264,8 +264,8 @@ void Game::setupBattle()
   damage_actions.push_back(new Action("7,DAMAGE,,,,VITA,AMOUNT.90,AMOUNT.25,,95"));
   damage_actions.push_back(new Action("8,DAMAGE,,,,VITA,AMOUNT.100,AMOUNT.30,,95"));
   damage_actions.push_back(new Action("9,DAMAGE,,,,VITA,AMOUNT.300,AMOUNT.35,,95"));
-  damage_actions.push_back(new Action("10,DAMAGE,,,,VITA,AMOUNT.400,AMOUNT.50,,95"));
-  damage_actions.push_back(new Action("11,DAMAGE,,,,VITA,AMOUNT.600,PC.1,,95"));
+  damage_actions.push_back(new Action("10,DAMAGE,,,,VITA,AMOUNT.10000,AMOUNT.50,,95"));
+  damage_actions.push_back(new Action("11,DAMAGE,,,,VITA,AMOUNT.30000,PC.1,,95"));
   damage_actions.push_back(new Action("12,DAMAGE,,,,VITA,AMOUNT.800,PC.5,,95"));
   damage_actions.push_back(new Action("13,DAMAGE,,,,VITA,AMOUNT.60,PC.10,,95"));
   damage_actions.push_back(new Action("14,DAMAGE,,,,VITA,AMOUNT.75,PC.15,,95"));
@@ -601,7 +601,7 @@ void Game::setupBattle()
   // Test Persons
   base_person_list.push_back(new Person(300, "Malgidus", bear,
       tactical_samurai));
-  getPerson(300)->addExp(480000);
+  getPerson(300)->addExp(4800000);
   getPerson(300)->setCurves(Element::DIGITAL, ElementCurve::C,
                             Element::FOREST, ElementCurve::D, true);
 
@@ -625,14 +625,14 @@ void Game::setupBattle()
   
   base_person_list.push_back(new Person(304, "Kevin", bear,
     tactical_samurai));
-  getPerson(304)->addExp(2800);
+  getPerson(304)->addExp(2800000);
   getPerson(304)->setCurves(Element::FOREST, ElementCurve::A,
                             Element::ICE, ElementCurve::C, true);
 
   std::vector<BattleItem> items;
 
-  base_person_list.push_back(new Person(310, "Bsian Frosty", human, bloodclaw_scion));
-  getPerson(310)->addExp(150000);
+  base_person_list.push_back(new Person(310, "Fale", human, bloodclaw_scion));
+  getPerson(310)->addExp(1500000);
   getPerson(310)->setCurves(Element::ICE, ElementCurve::C,
                             Element::PHYSICAL, ElementCurve::D, true);
 
@@ -700,7 +700,7 @@ void Game::setupBattle()
   // friends->addMember(getPerson(301));
   // friends->addMember(getPerson(302));
   // friends->addMember(getPerson(303));
-  // friends->addMember(getPerson(304));
+  friends->addMember(getPerson(304));
   // friends->addMember(george);
   // friends->addMember(gregory);
   // friends->addMember(georgina);
@@ -766,8 +766,8 @@ void Game::setupBattle()
 
     /* Set the character sprites */
     auto bsian_sprite_fp = new Sprite(base_path + "sprites/Battle/Backs/bsian0.png", renderer);
-    auto bsian_sprite_tp = new Sprite(base_path + "sprites/Battle/Battle_Persons/splicegirl2.png", renderer);
-    auto bsian_sprite_ds = new Sprite(base_path + "sprites/Overlay/DialogChar/splicegirl2.png", renderer);
+    auto bsian_sprite_tp = new Sprite(base_path + "sprites/Battle/Battle_Persons/fale.png", renderer);
+    auto bsian_sprite_ds = new Sprite(base_path + "sprites/Overlay/DialogChar/necrosshoardmaster.png", renderer);
     getPerson(310)->setSprites(bsian_sprite_fp, bsian_sprite_tp, bsian_sprite_ds, nullptr);
 
     getPerson(311)->setSprites(nullptr, new Sprite(
@@ -779,6 +779,7 @@ void Game::setupBattle()
           base_path + "sprites/Battle/Battle_Persons/peltrance.png", renderer));
     getPerson(314)->setSprites(nullptr, new Sprite(
             base_path + "sprites/Battle/Battle_Persons/necross.png", renderer));
+
     // getPerson(300)->setSprites(new Sprite(base_path + 
     //     "sprites/Battle/Backs/manbear1_brown_grey.png", renderer), nullptr, 
     //     new Sprite(base_path + "sprites/Map/Dialog/manbear_brown_grey.png", 
@@ -799,21 +800,28 @@ void Game::setupBattle()
     getPerson(300)->setSprites(player_sprite_fp, player_sprite_tp, 
         player_sprite_af, player_sprite_ds);
 
+
+    getPerson(304)->setSprites(
+        new Sprite(base_path + "sprites/Battle/Backs/fembear1_black_yellow.png", renderer),
+        nullptr,
+        new Sprite(base_path + "sprites/Overlay/DialogChar/fembear_black_yellow.png", renderer),
+        new Sprite(base_path + "sprites/Battle/Backs/fembear_black_yellow.png", renderer));
+
     getPerson(303)->setSprites(new Sprite(base_path + 
         "sprites/Battle/Backs/sarkova0.png", renderer), nullptr, 
         new Sprite(base_path + "sprites/Battle/Battle_Persons/sarkova.png", 
         renderer));
-    getPerson(304)->setSprites(new Sprite(base_path + 
-        "sprites/Battle/Backs/subleezer0.png", renderer), nullptr, 
-        new Sprite(base_path + "sprites/Battle/Battle_Persons/subleezer.png", 
-        renderer));
 
+    // getPerson(304)->setSprites(new Sprite(base_path + 
+    //     "sprites/Battle/Backs/subleezer0.png", renderer), nullptr, 
+    //     new Sprite(base_path + "sprites/Battle/Battle_Persons/subleezer.png", 
+    //     renderer));
 
     /* Set der pleps yo */
     Sprite* damage_plep = new Sprite(base_path + "sprites/Battle/Pleps/basicplep_AA_A", 3, ".png", active_renderer);
     damage_plep->setAnimationTime(150);
     Sprite* burn_plep = new Sprite(base_path + "sprites/Battle/Pleps/burnplep_AA_A", 5, ".png", active_renderer);
-    burn_plep->setAnimationTime(200);
+    burn_plep->setAnimationTime(150);
     Sprite* sexy_plep = new Sprite(base_path + "sprites/Battle/Pleps/lowerplep_AA_A", 9, ".png", active_renderer);
     sexy_plep->setAnimationTime(150);
 
