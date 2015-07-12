@@ -194,8 +194,10 @@ double BattleDisplay::calcPersonBrightness(Person* test_person)
   {
     if (layer_index == 1 || layer_index == 2)
     {
+      brightness = 0.25;
+
       if(test_person->getBFlag(BState::IS_SELECTING))
-        brightness = 0.15;
+        brightness = 0.5;
     }
     else if (layer_index == 3 || layer_index == 4)
     {
@@ -1127,9 +1129,27 @@ void BattleDisplay::renderFizzleText()
   // return success;
 }
 
+void BattleDisplay::createDamageText(Person* target, std::string text)
+{
+  auto element = createDamageValue(target, 0);
+  element->setText(text);
+ 
+  Text t(font_damage);
+  t.setText(renderer, element->getText(), {0,0,0,255});
+
+  auto x  = getPersonX(target);
+       x -= kPERSON_WIDTH / 2;
+       x += kPERSON_SPREAD;
+       x -= t.getWidth() / 2;
+
+  element->setX(x);
+  element->setShadowX(kACTION_TEXT_SHADOW - 2);
+  element->setVelocity(0, -3);
+  element->setAcceleration(0, 0);
+}
+
 //TODO: Comment
-void BattleDisplay::createDamageValue(Person* target, uint64_t amount,
-    bool miss)
+RenderElement* BattleDisplay::createDamageValue(Person* target, uint32_t amount)
 {
   /* Determine the color of text to use for displaying according to the
    * appropriate damage type (based on the type of event being processed ) */
@@ -1151,22 +1171,19 @@ void BattleDisplay::createDamageValue(Person* target, uint64_t amount,
   /* Build parameters for the damage text, add to render text elements */
   element->setColor(color);
   element->setFont(font_damage);
-
-  if (miss)
-    element->setText("Miss");
-  else 
-    element->setText(std::to_string(amount));
+  element->setText(std::to_string(amount));
 
   Text t(font_damage);
   t.setText(renderer, element->getText(), color);
 
   auto x  = getPersonX(target);
-       x += kPERSON_WIDTH / 2;
-       x -= t.getWidth()  / 2;
+       x -= kPERSON_WIDTH / 2;
+       x += kPERSON_SPREAD;
+       x -= t.getWidth() / 2;
 
   auto y = getPersonY(target);
        y += t.getHeight() / 2;
-       y += 40;
+       y += system_options->getScreenHeight() / 13;
 
   element->setCoordinates(x, y);
   element->setShadow(true);
@@ -1177,6 +1194,8 @@ void BattleDisplay::createDamageValue(Person* target, uint64_t amount,
   element->setVelocity(-10, -18);
 
   render_elements.push_back(element);
+
+  return element;
 }
 
 //TODO: Comment
@@ -1219,12 +1238,13 @@ void BattleDisplay::createRegenValue(Person* target, uint64_t amount)
   render_elements.push_back(element);
 }
 
-void BattleDisplay::createPlep(Person* target, Sprite* plep)
+RenderElement* BattleDisplay::createPlep(Person* target, Sprite* plep)
 {
   Sprite* new_plep = new Sprite(true, plep->getSize());
   new_plep->setAnimationTime(plep->getAnimationTime());
   new_plep->setBrightness(plep->getBrightness());
-  new_plep->setColorBalance(plep->getColorRed(), plep->getColorGreen(), plep->getColorBlue());
+  new_plep->setColorBalance(plep->getColorRed(), plep->getColorGreen(), 
+      plep->getColorBlue());
 
   if (plep->isDirectionForward())
     new_plep->setDirectionForward();
@@ -1235,17 +1255,18 @@ void BattleDisplay::createPlep(Person* target, Sprite* plep)
   new_plep->setHead(plep->getFirstFrame());
   new_plep->createTexture(renderer);
    
-  RenderElement* plep_render = new RenderElement(new_plep, getPersonX(target), getPersonY(target));
+  RenderElement* plep_render = new RenderElement(new_plep, getPersonX(target), 
+      getPersonY(target), 1);
   render_elements.push_back(plep_render);
+
+  return plep_render;
 }
 
 void BattleDisplay::createSpriteFlash(Person* target, SDL_Color color, 
     int32_t time)
 {
-  (void)time;//WARNING
-
   RenderElement* sprite_flash = new RenderElement(RenderType::RGB_SPRITE_FLASH, 
-      400, 195, 195);
+      time, time * 3 / 7, time * 3 / 7);
 
   Sprite* set_sprite = getPersonSprite(target);
 
@@ -2884,8 +2905,6 @@ bool BattleDisplay::updateEvent()
     }
     if (curr_event->user != nullptr)
     {
-      curr_event->user->setBFlag(BState::IS_ATTACKING, true);
-
       auto state = getState(curr_event->user);
 
       if (state != nullptr)
@@ -2903,27 +2922,70 @@ bool BattleDisplay::updateEvent()
 
     processing_delay = kDELAY_SKILL;
   }
+  else if (curr_event->type == EventType::ACTION_BEGIN)
+  {
+    curr_event->user->setBFlag(BState::IS_ATTACKING, true);
+
+    if (battle->getCurrSkill() != nullptr && 
+        battle->getCurrSkill()->getAnimation() != nullptr)
+    {  
+      auto animation = battle->getCurrSkill()->getAnimation();
+      auto plep = createPlep(curr_event->targets.at(0), animation);
+
+      processing_delay  = animation->getAnimationTime() * plep->getNumLoops();
+      processing_delay += 150;
+    }
+  }
+  else if (curr_event->type == EventType::SKILL_COOLDOWN)
+  {
+    if (curr_event->user != nullptr)
+    {
+      createDamageText(curr_event->user, "Cooldown");
+      createSpriteFlash(curr_event->user, {0, 0, 255, 235}, 450);
+    }
+
+    processing_delay = 500;
+  }
+  else if (curr_event->type == EventType::BEGIN_DEFEND)
+  {
+    if (curr_event->user != nullptr)
+    {
+      createDamageText(curr_event->user, "Defending");
+      createSpriteFlash(curr_event->user, {255, 255, 255, 245}, 450);
+    }
+
+     processing_delay = 500;
+   }
+    else if (curr_event->type == EventType::BREAK_DEFEND)
+    {
+      if (curr_event->user != nullptr)
+      {
+        createDamageText(curr_event->user, "Break Defend");
+        createSpriteFlash(curr_event->user, {177, 177, 30, 190}, 450);
+      }
+
+      processing_delay = 300;
+    }
+  else if (curr_event->type == EventType::PERSIST_DEFEND)
+  {
+    if (curr_event->user != nullptr)
+    {
+      createDamageText(curr_event->user, "Defend Persists");
+      createSpriteFlash(curr_event->user, {255, 255, 255, 245}, 450);
+    }
+  }
+
   else if (curr_event->type == EventType::STANDARD_DAMAGE ||
            curr_event->type == EventType::CRITICAL_DAMAGE ||
            curr_event->type == EventType::POISON_DAMAGE   ||
            curr_event->type == EventType::BURN_DAMAGE     ||
            curr_event->type == EventType::HITBACK_DAMAGE  ||
            curr_event->type == EventType::METABOLIC_DAMAGE)
- {
-   if (curr_event->targets.size() > 0 &&
-       curr_event->targets.at(0) != nullptr)
-   {
-     createDamageValue(curr_event->targets.at(0), curr_event->amount, false);
-     createSpriteFlash(curr_event->targets.at(0), {177, 10, 30, 190}, 250);
-
-      // if (curr_event->skill_use != nullptr && curr_event->skill_use->getAnimation() != nullptr)
-      // {
-     if (battle->getCurrSkill() != nullptr && 
-         battle->getCurrSkill()->getAnimation() != nullptr)
-      {  
-          createPlep(curr_event->targets.at(0), 
-          battle->getCurrSkill()->getAnimation());
-      }
+  {
+    if (curr_event->targets.size() > 0 && curr_event->targets.at(0) != nullptr)
+    {
+     createDamageValue(curr_event->targets.at(0), curr_event->amount);
+     createSpriteFlash(curr_event->targets.at(0), {177, 10, 30, 190}, 450);
     }
 
     processing_delay = kDELAY_DAMAGE;
@@ -2934,7 +2996,7 @@ bool BattleDisplay::updateEvent()
     if (curr_event->targets.size() > 0 &&
         curr_event->targets.at(0) != nullptr)
     {
-      createDamageValue(curr_event->targets.at(0), 0, true);
+      createDamageText(curr_event->targets.at(0), "Miss");
     }
 
     processing_delay = kDELAY_DAMAGE;

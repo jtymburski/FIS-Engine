@@ -349,37 +349,29 @@ void Game::setupBattle()
   // cure_poison->setDescription("Cures an inflicted person from poison!");
   // cure_poison->setFlag(SkillFlags::DEFENSIVE);
 
-  Skill* physical_01 = new Skill(100, "Wee Strike", ActionScope::ONE_ENEMY, 
-      damage_actions[3], 95, 0);
+  Skill* physical_01 = new Skill(100, "Paw Strike", ActionScope::ONE_ENEMY, 
+      damage_actions[10], 95, 0);
+  physical_01->setThumbnail(new Frame(base_path + "sprites/Battle/Skills/_sample_skill_2.png", active_renderer));
+  physical_01->setDescription("A standard, physical hit against a single foe.");
   physical_01->setPrimary(Element::PHYSICAL);
-  physical_01->setThumbnail(new Frame("sprite3/Battle/Skills/_sample_skill_2.png", active_renderer));
-  physical_01->setDescription("Jordan is a weirdo... Lor em ips um do lor sit amet, mel omnis nomin ati an, atom orum facil isis in pri, adipi scing argum entum in pri. Duo ei tempor dicunt sanctus, per ut hinc oporteat conceptam. Iisque euismod albucius vel ut, duo ea singulis eleifend. Veri offendit vim ut, at pri tale adolescens, putant veritus sea no. Atqui blandit assentior ne eam. Et rebum deserunt pericula eum.");
   physical_01->setFlag(SkillFlags::OFFENSIVE);
 
-  Skill* physical_02 = new Skill(101, "Triple Whelp", ActionScope::ONE_ENEMY, 
-      damage_actions[4],  95, 5);
-  physical_02->addAction(damage_actions[5]);
-  physical_02->addAction(damage_actions[6]);
-  // physical_02->addAction(damage_actions[4]);
-  // physical_02->addAction(damage_actions[3]);
+  Skill* physical_02 = new Skill(101, "Firmament Alteration", ActionScope::TWO_ENEMIES, 
+      damage_actions[10],  95, 45);
+  physical_02->addAction(damage_actions[10]);
+  physical_02->setThumbnail(new Frame(base_path + "sprites/Battle/Skills/_sample_skill_2.png", active_renderer));
+  physical_02->setDescription("Swing your bear arms at your enemies not just one time, but two (2) times against not one, but two (2) enemies!");
   physical_02->setPrimary(Element::PHYSICAL);
   physical_02->setFlag(SkillFlags::OFFENSIVE);
 
-  // Skill* physical_03 = new Skill(102, "Two Smackeroos", 
-  //     ActionScope::TWO_ENEMIES, damage_actions[6], 95, 100);
-  // physical_03->setPrimary(Element::PHYSICAL);
+  Skill* physical_03 = new Skill(102, "Sexy Dance", ActionScope::ONE_TARGET, damage_actions[10], 95, 15);
+  physical_02->setPrimary(Element::PHYSICAL);
 
-  // Skill* physical_04 = new Skill(103, "Mass Smack", ActionScope::ALL_ENEMIES, 
-  //     damage_actions[8], 85, 5); 
-  // physical_04->setPrimary(Element::PHYSICAL);
 
-  Skill* fire_01 = new Skill(110, "Burninate The Countryside", 
-      ActionScope::ALL_ENEMIES, damage_actions[4], 85, 55);
-
-  fire_01->addAction(damage_actions[5]);
-  fire_01->setCooldown(0);
-  fire_01->setThumbnail(new Frame("sprites/Battle/Skills/_sample_skill_1.png", 
-                                  active_renderer));
+  Skill* fire_01 = new Skill(110, "Aura of Foot Odor", 
+      ActionScope::ALL_ENEMIES, damage_actions[11], 85, 25);
+  fire_01->setCooldown(1);
+  fire_01->setThumbnail(new Frame("sprites/Battle/Skills/_sample_skill_1.png", active_renderer));
   fire_01->setPrimary(Element::FIRE);
   fire_01->setSecondary(Element::PHYSICAL);
   fire_01->setFlag(SkillFlags::OFFENSIVE);
@@ -510,6 +502,9 @@ void Game::setupBattle()
   // physical_skills->addSkill(cure_poison, 1);
   physical_skills->addSkill(physical_02, 1);
 
+  SkillSet* physical_skills2 = new SkillSet(physical_01, 1);
+
+  // physical_skills->addSkill(physical_03, 1);
   // physical_skills->addSkill(physical_03, 1);
   // physical_skills->addSkill(user_reduce_by_ally, 1);
   // physical_skills->addSkill(alter_qtdr_by_thag, 1);
@@ -562,7 +557,7 @@ void Game::setupBattle()
 
   // Test Categories
   Category* human = new Category(200, "Human", "human", normal_stats, 
-      top_stats, physical_skills);
+      top_stats, physical_skills2);
   human->setVitaRegenRate(RegenRate::WEAK);
   human->setDescription("A regular old joe from Earth.");
   human->setFlag(CategoryState::DEF_ENABLED, true);
@@ -604,9 +599,9 @@ void Game::setupBattle()
   human->setQDRegenRate(RegenRate::NORMAL);
 
   // Test Persons
-  base_person_list.push_back(new Person(300, "Malgidus", human,
+  base_person_list.push_back(new Person(300, "Malgidus", bear,
       tactical_samurai));
-  getPerson(300)->addExp(2800);
+  getPerson(300)->addExp(480000);
   getPerson(300)->setCurves(Element::DIGITAL, ElementCurve::C,
                             Element::FOREST, ElementCurve::D, true);
 
@@ -637,7 +632,7 @@ void Game::setupBattle()
   std::vector<BattleItem> items;
 
   base_person_list.push_back(new Person(310, "Bsian Frosty", human, bloodclaw_scion));
-  getPerson(310)->addExp(2200);
+  getPerson(310)->addExp(150000);
   getPerson(310)->setCurves(Element::ICE, ElementCurve::C,
                             Element::PHYSICAL, ElementCurve::D, true);
 
@@ -744,13 +739,13 @@ void Game::setupBattle()
            base_path + "sprites/Battle/Backdrop/battlebg", 7, ".png", renderer);
     // background->setDirectionReverse();
     background->shiftNext();
-        background->shiftNext();
-            background->shiftNext();
-                background->shiftNext();
-                    background->shiftNext();
-                        background->shiftNext();
+    background->shiftNext();
+    background->shiftNext();
+    background->shiftNext();
+    background->shiftNext();
+    background->shiftNext();
 
-    background->setAnimationTime(25000);
+    background->setAnimationTime(31000);
     
     Sprite* midlay = new Sprite(
                 base_path + "sprites/Battle/Midlays/rain", 6, ".png", renderer);
@@ -816,11 +811,16 @@ void Game::setupBattle()
 
     /* Set der pleps yo */
     Sprite* damage_plep = new Sprite(base_path + "sprites/Battle/Pleps/basicplep_AA_A", 3, ".png", active_renderer);
-    // damage_plep->insertTail(base_path + "sprites/Battle/Pleps/basicplep_AA_A00.png", active_renderer);
-    // damage_plep->insertTail(base_path + "sprites/Battle/Pleps/basicplep_AA_A01.png", active_renderer);
-    // damage_plep->insertTail(base_path + "sprites/Battle/Pleps/basicplep_AA_A02.png", active_renderer);
     damage_plep->setAnimationTime(150);
+    Sprite* burn_plep = new Sprite(base_path + "sprites/Battle/Pleps/burnplep_AA_A", 5, ".png", active_renderer);
+    burn_plep->setAnimationTime(200);
+    Sprite* sexy_plep = new Sprite(base_path + "sprites/Battle/Pleps/lowerplep_AA_A", 9, ".png", active_renderer);
+    sexy_plep->setAnimationTime(150);
+
     physical_01->setAnimation(damage_plep);
+    physical_02->setAnimation(damage_plep);
+    fire_01->setAnimation(burn_plep);
+    physical_03->setAnimation(sexy_plep);
 
 
     /* Set the ailments */

@@ -261,7 +261,6 @@ private:
   /* Generates info for friends in battle */
   Frame* createFriendInfo(Person* ally, SDL_Renderer* renderer);
 
-  void createPlep(Person* target, Sprite* plep);
 
   /* Generates info for the skills of the selecting person in battle */
   SDL_Texture* createSkill(SDL_Renderer* renderer, Skill* skill, 
@@ -315,7 +314,9 @@ private:
   void createActionText(std::string action_name);
 
   /* Render the damage value */
-  void createDamageValue(Person* target, uint64_t amount, bool miss = false);
+  void createDamageText(Person* target, std::string text);
+  RenderElement* createDamageValue(Person* target, uint32_t amount);
+  RenderElement* createPlep(Person* target, Sprite* plep);
   void createRegenValue(Person* target, uint64_t amount);
 
   void createSpriteFlash(Person* target, SDL_Color color, int32_t time);

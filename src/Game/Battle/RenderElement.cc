@@ -90,8 +90,9 @@ RenderElement::RenderElement(RenderType type, int32_t remaining_time,
     status = RenderStatus::TIMED_OUT;
 }
 
-RenderElement::RenderElement(Sprite* plep, int32_t x, int32_t y)
-  : RenderElement()
+RenderElement::RenderElement(Sprite* plep, int32_t x, int32_t y,
+    int32_t num_loops)
+      : RenderElement()
 {
   setSprite(plep);
 
@@ -100,13 +101,14 @@ RenderElement::RenderElement(Sprite* plep, int32_t x, int32_t y)
 
   this->x = x;
   this->y = y;
+  this->num_loops = num_loops;
 }
 
 RenderElement::~RenderElement()
 {
-  // if (type == RenderType::PLEP)
-  //   if (render_sprite != nullptr)
-  //     delete render_sprite;
+  if (type == RenderType::PLEP)
+    if (render_sprite != nullptr)
+      delete render_sprite;
 
   render_sprite = nullptr;
 }
@@ -195,7 +197,7 @@ bool RenderElement::update(int cycle_time)
       render_sprite->update(cycle_time);
       std::cout << "Updating plep! " << render_sprite->getLoops() << std::endl;
 
-      if (render_sprite->getLoops() > 0)
+      if (render_sprite->getLoops() >= static_cast<uint16_t>(num_loops))
         status = RenderStatus::TIMED_OUT;
     }
   }
@@ -303,6 +305,11 @@ TTF_Font* RenderElement::getFont()
 Person* RenderElement::getFlasher()
 {
   return flasher;
+}
+
+int32_t RenderElement::getNumLoops()
+{
+  return num_loops;
 }
 
 int32_t RenderElement::getRemainingTime()
@@ -446,9 +453,9 @@ void RenderElement::setCoordinates(int32_t new_x, int32_t new_y)
 
 void RenderElement::setSprite(Sprite* new_render_sprite)
 {
-  // if (type == RenderType::PLEP)
-  //   if (render_sprite != nullptr)
-  //     delete render_sprite;
+  if (type == RenderType::PLEP)
+    if (render_sprite != nullptr)
+      delete render_sprite;
 
   render_sprite = new_render_sprite;
 }

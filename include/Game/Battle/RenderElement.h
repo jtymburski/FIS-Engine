@@ -53,7 +53,7 @@ public:
       int32_t fade_in_time = 0, int32_t fade_out_time = 0);
 
   /* Create a Plep */
-  RenderElement(Sprite* plep, int32_t x, int32_t y);
+  RenderElement(Sprite* plep, int32_t x, int32_t y, int32_t num_loops);
 
   /* Annihilates a render element */
   ~RenderElement();
@@ -88,6 +88,7 @@ private:
   /* Remaining time and elapsed time of rendering */
   int32_t remaining_time;
   int32_t elapsed_time;
+  int32_t num_loops;
 
   /* Acceleration of text parameters */
   int16_t acceleration_x;
@@ -159,6 +160,8 @@ public:
 
   /* Obtains pointer to the person to be flashed */
   Person* getFlasher();
+
+  int32_t getNumLoops();
 
   int32_t getRemainingTime();
 
