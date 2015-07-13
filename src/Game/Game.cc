@@ -369,16 +369,16 @@ void Game::setupBattle()
 
 
   Skill* fire_01 = new Skill(110, "Aura of Foot Odor", 
-      ActionScope::ALL_ENEMIES, damage_actions[11], 85, 25);
+      ActionScope::ONE_PARTY, damage_actions[11], 85, 25);
   fire_01->setCooldown(1);
   fire_01->setThumbnail(new Frame("sprites/Battle/Skills/_sample_skill_1.png", active_renderer));
   fire_01->setPrimary(Element::FIRE);
   fire_01->setSecondary(Element::PHYSICAL);
   fire_01->setFlag(SkillFlags::OFFENSIVE);
 
-  Skill* forest_01 = new Skill(111, "Earth Strike", ActionScope::ONE_ENEMY,
-                               damage_actions[4], 91, 4);
-  forest_01->setPrimary(Element::FOREST);
+  // Skill* forest_01 = new Skill(111, "Earth Strike", ActionScope::ONE_ENEMY,
+  //                              damage_actions[4], 91, 4);
+  // forest_01->setPrimary(Element::FOREST);
 
   // Skill* ice_01 = new Skill(112, "Frosty Spray", ActionScope::TWO_ENEMIES, 
   //   damage_actions[5], 99, 5);
@@ -396,16 +396,16 @@ void Game::setupBattle()
   //   damage_actions[7], 99, 7);
   // void_01->setPrimary(Element::NIHIL);
 
-  Skill* self_heal = new Skill(120, "Heal Self", ActionScope::USER,
-    alter_actions[0], 100, 5);
-  self_heal->setPrimary(Element::FOREST);
-  self_heal->setPrimary(Element::PHYSICAL);
+  // Skill* self_heal = new Skill(120, "Heal Self", ActionScope::USER,
+  //   alter_actions[0], 100, 5);
+  // self_heal->setPrimary(Element::FOREST);
+  // self_heal->setPrimary(Element::PHYSICAL);
 
-  Skill* ally_heal = new Skill(121, "Heal Ally", ActionScope::ONE_ALLY_NOT_USER,
-    alter_actions[1], 100, 5);
-  ally_heal->setPrimary(Element::FOREST);
-  ally_heal->setSecondary(Element::PHYSICAL);
-  ally_heal->setFlag(SkillFlags::DEFENSIVE);
+  // Skill* ally_heal = new Skill(121, "Heal Ally", ActionScope::ONE_ALLY_NOT_USER,
+  //   alter_actions[1], 100, 5);
+  // ally_heal->setPrimary(Element::FOREST);
+  // ally_heal->setSecondary(Element::PHYSICAL);
+  // ally_heal->setFlag(SkillFlags::DEFENSIVE);
 
   // Skill* user_reduce_by_ally = new Skill(122, "Reduce User By Ally", ActionScope::USER,
   //   alter_actions[2], 100, 5);
@@ -417,45 +417,45 @@ void Game::setupBattle()
   // Skill* alter_qtdr_by_thag_flip = new Skill(123, "Alter Qtdr By Thag - Flip", ActionScope::ONE_TARGET,
   //   alter_actions[5], 100, 5);
 
-  Skill* revive_ally = new Skill(130, "Revive Ally", ActionScope::ONE_ALLY_KO,
-    assign_actions[4], 100, 5);
-  revive_ally->setPrimary(Element::FOREST);
-  revive_ally->setFlag(SkillFlags::DEFENSIVE);
+  // Skill* revive_ally = new Skill(130, "Revive Ally", ActionScope::ONE_ALLY_KO,
+  //   assign_actions[4], 100, 5);
+  // revive_ally->setPrimary(Element::FOREST);
+  // revive_ally->setFlag(SkillFlags::DEFENSIVE);
 
-  Skill* life_steal = new Skill(131, "Life Steal", ActionScope::ONE_ENEMY,
-    alter_actions[2], 100, 5);
-  life_steal->addAction(alter_actions[6], true);
-  life_steal->setFlag(SkillFlags::DEFENSIVE);
+  // Skill* life_steal = new Skill(131, "Life Steal", ActionScope::ONE_ENEMY,
+  //   alter_actions[2], 100, 5);
+  // life_steal->addAction(alter_actions[6], true);
+  // life_steal->setFlag(SkillFlags::DEFENSIVE);
 
   // Skill* poison = new Skill(140, "Inflict Poison", ActionScope::ONE_TARGET,
   //   inflict_actions[0], 100, 10);
   // poison->setPrimary(Element::FOREST);
   // poison->setFlag(SkillFlags::OFFENSIVE);
 
-  Skill* burn = new Skill(141, "Inflict Burn", ActionScope::ONE_TARGET,
-    inflict_actions[1], 100, 10);
-  burn->setPrimary(Element::ICE);
-  burn->setFlag(SkillFlags::OFFENSIVE);
+  // Skill* burn = new Skill(141, "Inflict Burn", ActionScope::ONE_TARGET,
+  //   inflict_actions[1], 100, 10);
+  // burn->setPrimary(Element::ICE);
+  // burn->setFlag(SkillFlags::OFFENSIVE);
 
-  Skill* scald = new Skill(142, "Inflict Scald", ActionScope::ONE_TARGET,
-    inflict_actions[2], 100, 10);
-  scald->setPrimary(Element::FOREST);
-  scald->setFlag(SkillFlags::OFFENSIVE);
+  // Skill* scald = new Skill(142, "Inflict Scald", ActionScope::ONE_TARGET,
+  //   inflict_actions[2], 100, 10);
+  // scald->setPrimary(Element::FOREST);
+  // scald->setFlag(SkillFlags::OFFENSIVE);
 
-  Skill* charr = new Skill(143, "Inflict Charr", ActionScope::ONE_TARGET,
-    inflict_actions[3], 100, 10);
-  charr->setPrimary(Element::ELECTRIC);
-  charr->setFlag(SkillFlags::OFFENSIVE);
+  // Skill* charr = new Skill(143, "Inflict Charr", ActionScope::ONE_TARGET,
+  //   inflict_actions[3], 100, 10);
+  // charr->setPrimary(Element::ELECTRIC);
+  // charr->setFlag(SkillFlags::OFFENSIVE);
 
-  Skill* berserk = new Skill(144, "Inflict Berserker", ActionScope::ONE_TARGET,
-    inflict_actions[4], 100, 10);
-  berserk->setPrimary(Element::DIGITAL);
-  berserk->setFlag(SkillFlags::OFFENSIVE);
+  // Skill* berserk = new Skill(144, "Inflict Berserker", ActionScope::ONE_TARGET,
+  //   inflict_actions[4], 100, 10);
+  // berserk->setPrimary(Element::DIGITAL);
+  // berserk->setFlag(SkillFlags::OFFENSIVE);
 
-  Skill* confuse = new Skill(145, "Inflict Befuddle", ActionScope::ONE_ALLY,
-    inflict_actions[5], 100, 10);
-  confuse->setPrimary(Element::NIHIL);
-  confuse->setFlag(SkillFlags::OFFENSIVE);
+  // Skill* confuse = new Skill(145, "Inflict Befuddle", ActionScope::ONE_ALLY,
+  //   inflict_actions[5], 100, 10);
+  // confuse->setPrimary(Element::NIHIL);
+  // confuse->setFlag(SkillFlags::OFFENSIVE);
 
   // Skill* silence = new Skill(146, "Inflict Silence", ActionScope::ONE_TARGET,
   //   inflict_actions[6], 100, 10);
@@ -487,15 +487,15 @@ void Game::setupBattle()
   // Skill* dreamsnare = new Skill(155, "Dreamsnare", ActionScope::ONE_TARGET,
   //   inflict_actions[25], 100, 10);
 
-  Skill* modulate = new Skill(156, "Modulate", ActionScope::USER, 
-    inflict_actions[26], 100, 10);
-  modulate->setFlag(SkillFlags::DEFENSIVE, true);
-  modulate->setPrimary(Element::PHYSICAL);
+  // Skill* modulate = new Skill(156, "Modulate", ActionScope::USER, 
+  //   inflict_actions[26], 100, 10);
+  // modulate->setFlag(SkillFlags::DEFENSIVE, true);
+  // modulate->setPrimary(Element::PHYSICAL);
 
-  Skill* life_all = new Skill(155, "Regen All", ActionScope::ONE_PARTY,
-    alter_actions[1], 94, 45);
-  life_all->setFlag(SkillFlags::DEFENSIVE, true);
-  life_all->setPrimary(Element::PHYSICAL);
+  // Skill* life_all = new Skill(155, "Regen All", ActionScope::ONE_PARTY,
+  //   alter_actions[1], 94, 45);
+  // life_all->setFlag(SkillFlags::DEFENSIVE, true);
+  // life_all->setPrimary(Element::PHYSICAL);
 
   // Test Skill Sets
   SkillSet* physical_skills = new SkillSet(physical_01, 1);
@@ -605,23 +605,23 @@ void Game::setupBattle()
   getPerson(300)->setCurves(Element::DIGITAL, ElementCurve::C,
                             Element::FOREST, ElementCurve::D, true);
 
-  base_person_list.push_back(new Person(301, "Arcadius", bear, 
-    tactical_samurai));
-  getPerson(301)->addExp(2800);
-  getPerson(301)->setCurves(Element::FIRE, ElementCurve::B,
-                            Element::FOREST, ElementCurve::A, true);
+  // base_person_list.push_back(new Person(301, "Arcadius", bear, 
+  //   tactical_samurai));
+  // getPerson(301)->addExp(2800);
+  // getPerson(301)->setCurves(Element::FIRE, ElementCurve::B,
+  //                           Element::FOREST, ElementCurve::A, true);
 
-  base_person_list.push_back(new Person(302, "Berran", bear,
-    tactical_samurai));
-  getPerson(302)->addExp(2800);
-  getPerson(302)->setCurves(Element::FOREST, ElementCurve::A,
-                            Element::ICE, ElementCurve::C, true);
+  // base_person_list.push_back(new Person(302, "Berran", bear,
+  //   tactical_samurai));
+  // getPerson(302)->addExp(2800);
+  // getPerson(302)->setCurves(Element::FOREST, ElementCurve::A,
+  //                           Element::ICE, ElementCurve::C, true);
 
-  base_person_list.push_back(new Person(303, "Atkst", bear,
-    modulator));
-  getPerson(303)->addExp(2800);
-  getPerson(303)->setCurves(Element::FOREST, ElementCurve::A,
-                            Element::ICE, ElementCurve::C, true);
+  // base_person_list.push_back(new Person(303, "Atkst", bear,
+  //   modulator));
+  // getPerson(303)->addExp(2800);
+  // getPerson(303)->setCurves(Element::FOREST, ElementCurve::A,
+  //                           Element::ICE, ElementCurve::C, true);
   
   base_person_list.push_back(new Person(304, "Kevin", bear,
     tactical_samurai));
@@ -636,47 +636,47 @@ void Game::setupBattle()
   getPerson(310)->setCurves(Element::ICE, ElementCurve::C,
                             Element::PHYSICAL, ElementCurve::D, true);
 
-  base_person_list.push_back(new Person(311, "Bago Bago", human, bloodclaw_scion));
-  getPerson(311)->addExp(2200);
-  getPerson(311)->setCurves(Element::NIHIL, ElementCurve::A,
-                            Element::PHYSICAL, ElementCurve::B, true);
+  // base_person_list.push_back(new Person(311, "Bago Bago", human, bloodclaw_scion));
+  // getPerson(311)->addExp(2200);
+  // getPerson(311)->setCurves(Element::NIHIL, ElementCurve::A,
+  //                           Element::PHYSICAL, ElementCurve::B, true);
 
-  base_person_list.push_back(new Person(312, "Raihan", human, bloodclaw_scion));
-  getPerson(312)->addExp(2500);
-  getPerson(312)->setCurves(Element::NIHIL, ElementCurve::A,
-                            Element::PHYSICAL, ElementCurve::B, true);
-
-
-  base_person_list.push_back(new Person(313, "Dragon", human, bloodclaw_scion));
-  getPerson(313)->addExp(2500);
-  getPerson(313)->setCurves(Element::NIHIL, ElementCurve::A,
-                            Element::PHYSICAL, ElementCurve::B, true);
+  // base_person_list.push_back(new Person(312, "Raihan", human, bloodclaw_scion));
+  // getPerson(312)->addExp(2500);
+  // getPerson(312)->setCurves(Element::NIHIL, ElementCurve::A,
+  //                           Element::PHYSICAL, ElementCurve::B, true);
 
 
-  base_person_list.push_back(new Person(314, "Splurge", human, bloodclaw_scion));
-  getPerson(314)->addExp(2500);
-  getPerson(314)->setCurves(Element::NIHIL, ElementCurve::A,
-                            Element::PHYSICAL, ElementCurve::B, true);
+  // base_person_list.push_back(new Person(313, "Dragon", human, bloodclaw_scion));
+  // getPerson(313)->addExp(2500);
+  // getPerson(313)->setCurves(Element::NIHIL, ElementCurve::A,
+  //                           Element::PHYSICAL, ElementCurve::B, true);
+
+
+  // base_person_list.push_back(new Person(314, "Splurge", human, bloodclaw_scion));
+  // getPerson(314)->addExp(2500);
+  // getPerson(314)->setCurves(Element::NIHIL, ElementCurve::A,
+  //                           Element::PHYSICAL, ElementCurve::B, true);
 
   AIModule* frosty_module = new AIModule();
   frosty_module->setParent(getPerson(310));
   getPerson(310)->setAI(frosty_module);
 
-  AIModule* cloud_module = new AIModule();
-  cloud_module->setParent(getPerson(311));
-  getPerson(311)->setAI(cloud_module);
+  // AIModule* cloud_module = new AIModule();
+  // cloud_module->setParent(getPerson(311));
+  // getPerson(311)->setAI(cloud_module);
 
-  AIModule* thruster_barrow_module = new AIModule();
-  thruster_barrow_module->setParent(getPerson(312));
-  getPerson(312)->setAI(thruster_barrow_module);
+  // AIModule* thruster_barrow_module = new AIModule();
+  // thruster_barrow_module->setParent(getPerson(312));
+  // getPerson(312)->setAI(thruster_barrow_module);
 
-  AIModule* dragon_module = new AIModule();
-  dragon_module->setParent(getPerson(313));
-  getPerson(313)->setAI(dragon_module);
+  // AIModule* dragon_module = new AIModule();
+  // dragon_module->setParent(getPerson(313));
+  // getPerson(313)->setAI(dragon_module);
 
-  AIModule* splurge_module = new AIModule();
-  splurge_module->setParent(getPerson(314));
-  getPerson(314)->setAI(splurge_module);
+  // AIModule* splurge_module = new AIModule();
+  // splurge_module->setParent(getPerson(314));
+  // getPerson(314)->setAI(splurge_module);
 
   // AIModule* schwep_module = new AIModule();
   // schwep_module->setParent(schwep);
@@ -747,10 +747,10 @@ void Game::setupBattle()
 
     background->setAnimationTime(31000);
     
-    Sprite* midlay = new Sprite(
-                base_path + "sprites/Battle/Midlays/rain", 6, ".png", renderer);
-    midlay->setAnimationTime(64);
-    midlay->setOpacity(64);
+    // Sprite* midlay = new Sprite(
+    //             base_path + "sprites/Battle/Midlays/rain", 6, ".png", renderer);
+    // midlay->setAnimationTime(64);
+    // midlay->setOpacity(64);
 
     // Sprite* midlay2 = new Sprite(
     //                  base_path + "sprites/Map/Lays/fog_underlay.png", renderer);
@@ -760,25 +760,25 @@ void Game::setupBattle()
     /* Display */
     battle_display->setBackground(background);
     // battle_display->setMidlay(midlay2);
-    battle_display->addMidlay(midlay);
+    // battle_display->addMidlay(midlay);
     battle_display->setBattleBar(new Frame(
                            base_path + "sprites/Overlay/battle.png", renderer));
 
     /* Set the character sprites */
-    auto bsian_sprite_fp = new Sprite(base_path + "sprites/Battle/Backs/bsian0.png", renderer);
+    // auto bsian_sprite_fp = new Sprite(base_path + "sprites/Battle/Backs/bsian0.png", renderer);
     auto bsian_sprite_tp = new Sprite(base_path + "sprites/Battle/Battle_Persons/fale.png", renderer);
     auto bsian_sprite_ds = new Sprite(base_path + "sprites/Overlay/DialogChar/necrosshoardmaster.png", renderer);
-    getPerson(310)->setSprites(bsian_sprite_fp, bsian_sprite_tp, bsian_sprite_ds, nullptr);
+    getPerson(310)->setSprites(nullptr, bsian_sprite_tp, bsian_sprite_ds, nullptr);
 
-    getPerson(311)->setSprites(nullptr, new Sprite(
-            base_path + "sprites/Battle/Battle_Persons/auroraheavy.png", renderer));
-    getPerson(312)->setSprites(nullptr, new Sprite(
-               base_path + "sprites/Battle/Battle_Persons/raihan.png", 
-               renderer));
-    getPerson(313)->setSprites(nullptr, new Sprite(
-          base_path + "sprites/Battle/Battle_Persons/peltrance.png", renderer));
-    getPerson(314)->setSprites(nullptr, new Sprite(
-            base_path + "sprites/Battle/Battle_Persons/necross.png", renderer));
+    // getPerson(311)->setSprites(nullptr, new Sprite(
+    //         base_path + "sprites/Battle/Battle_Persons/auroraheavy.png", renderer));
+    // getPerson(312)->setSprites(nullptr, new Sprite(
+    //            base_path + "sprites/Battle/Battle_Persons/raihan.png", 
+    //            renderer));
+    // getPerson(313)->setSprites(nullptr, new Sprite(
+    //       base_path + "sprites/Battle/Battle_Persons/peltrance.png", renderer));
+    // getPerson(314)->setSprites(nullptr, new Sprite(
+    //         base_path + "sprites/Battle/Battle_Persons/necross.png", renderer));
 
     // getPerson(300)->setSprites(new Sprite(base_path + 
     //     "sprites/Battle/Backs/manbear1_brown_grey.png", renderer), nullptr, 
@@ -807,10 +807,10 @@ void Game::setupBattle()
         new Sprite(base_path + "sprites/Overlay/DialogChar/fembear_black_yellow.png", renderer),
         new Sprite(base_path + "sprites/Battle/Backs/fembear_black_yellow.png", renderer));
 
-    getPerson(303)->setSprites(new Sprite(base_path + 
-        "sprites/Battle/Backs/sarkova0.png", renderer), nullptr, 
-        new Sprite(base_path + "sprites/Battle/Battle_Persons/sarkova.png", 
-        renderer));
+    // getPerson(303)->setSprites(new Sprite(base_path + 
+    //     "sprites/Battle/Backs/sarkova0.png", renderer), nullptr, 
+    //     new Sprite(base_path + "sprites/Battle/Battle_Persons/sarkova.png", 
+    //     renderer));
 
     // getPerson(304)->setSprites(new Sprite(base_path + 
     //     "sprites/Battle/Backs/subleezer0.png", renderer), nullptr, 

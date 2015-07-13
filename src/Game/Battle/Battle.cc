@@ -629,6 +629,10 @@ bool Battle::bufferUserAction()
            action_type == ActionType::RUN     ||
            action_type == ActionType::PASS)
   {
+    if (person_targets.size() == 0)
+      std::cout << "OH EM GEE EMPTY TARGETS" << std::endl;
+    else
+      std::cout << "CAN YOU SEEM E HEEEY OOO" << std::endl;
     buffered = action_buffer->add(curr_user, action_type, person_targets, 0,
                    turns_elapsed);
   }
@@ -3322,6 +3326,7 @@ void Battle::selectUserActions()
 {
   std::cout << "Select user actions!!" << std::endl;
   std::cout << "Person index: " << person_index << std::endl;
+  
   auto update_menu         = false;
 
   /* If an action has been selected for a valid person index, grab the info.
@@ -3546,8 +3551,6 @@ void Battle::updateAllySelection()
         auto check_scope = menu->getSelectedSkill().skill->getScope();
         auto check_targets = getValidTargets(person_index, check_scope);
 
-        std::cout << "bitch " << std::endl; 
-        
         if (check_targets.size() > 0)
           valid = true;
       }
@@ -4529,7 +4532,9 @@ bool Battle::update(int32_t cycle_time)
    * the scope of the particular action type [if required] */
   else if (turn_state == TurnState::SELECT_ACTION_ALLY)
   {
-    menu->setWindowStatus(WindowStatus::ON);
+    if (menu != nullptr)
+      menu->setWindowStatus(WindowStatus::ON);
+    
     updateAllySelection();
   }
   else if (turn_state == TurnState::SELECT_ACTION_ENEMY)
@@ -4931,13 +4936,14 @@ std::vector<int32_t> Battle::getValidTargets(int32_t index,
 
   if (action_scope == ActionScope::USER)
   {
-    std::cout << "Finding valid targets for: " << index << std::endl;
     valid_targets.push_back(index);
   }
   else if (action_scope == ActionScope::ONE_TARGET  ||
            action_scope == ActionScope::ALL_TARGETS ||
            action_scope == ActionScope::ONE_PARTY)
   {
+    if (action_scope == ActionScope::ONE_PARTY)
+      std::cout << "===== FRESH CAKES =====" << std::endl;
     valid_targets = getAllTargets();
   }
   else if (action_scope == ActionScope::NOT_USER ||

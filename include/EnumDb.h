@@ -10,7 +10,7 @@
 
 //DEBUG MACRO
 #ifndef UDEBUG
-  #define UDEBUG
+ #define UDEBUG
 #endif
 
 #include <cstdint>
@@ -140,17 +140,17 @@ enum class AddStatus : std::uint8_t
  * PASS - the actor has chosen to pass their turn (inaction)
  * NULL_ACTION - no action has been yet chosen by the actor
  */
-enum class ActionType : std::uint8_t
+enum class ActionType : std::uint16_t
 { 
-  SKILL,
-  ITEM,
-  DEFEND,
-  GUARD,
-  IMPLODE,
-  INSPECT,
-  RUN,
-  PASS,
-  NONE 
+  SKILL   = 1,
+  ITEM    = 2,
+  DEFEND  = 3,
+  GUARD   = 4,
+  IMPLODE = 5,
+  INSPECT = 6,
+  RUN     = 7,
+  PASS    = 8,
+  NONE    = 0 
 };
 
 /*

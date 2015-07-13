@@ -139,8 +139,14 @@ bool BattleMenu::incrementLayer(const int32_t &new_layer_index)
 
   else if (new_layer_index == 4)
   {
+    // if (action_type == ActionType::DEFEND)
+    // {
+    //   setMenuFlag(MenuState::SELECTION_VERIFIED, true);
+    // }
+
     setMenuFlag(MenuState::SKILL_SELECTED, true);
     setMenuFlag(MenuState::ACTION_SELECTED, true);
+    
     layer_index = 4;
 
     return true;
@@ -505,8 +511,6 @@ void BattleMenu::keyDownSelect()
 
           /* Decrease the current user's QD by the cost required */
           auto true_cost = current_user->getTrueCost(selected_skill.skill);
-
-          std::cout << "True Cost: " << true_cost << std::endl;
 
           if (true_cost <= current_user->getCurr().getStat("QTDR"))
           {
@@ -1234,6 +1238,10 @@ std::vector<int32_t> BattleMenu::getHoverTargets()
 {
   std::vector<int32_t> hover_targets;
 
+  if (action_type == ActionType::SKILL ||
+      action_type == ActionType::GUARD ||
+      action_type == ActionType::ITEM)
+  {
   for(uint16_t i = 0; i < valid_targets.size(); i++)
   {
     /* If the index matches the element index or if the action scope is always
@@ -1253,7 +1261,9 @@ std::vector<int32_t> BattleMenu::getHoverTargets()
 
   if (action_scope == ActionScope::ONE_PARTY)
   {
-    hover_targets = getPartyTargets(valid_targets.at(element_index));
+    if (valid_targets.size() > element_index)
+      hover_targets = getPartyTargets(valid_targets.at(element_index));
+  }
   }
 
   return hover_targets;
