@@ -1353,12 +1353,23 @@ void Battle::clearActionVariables()
  * Inputs: Party* - party to check death for.
  * Output: bool - true if the size of the living members vector is zero
  */
-bool Battle::checkPartyDeath(Party* const check_party)
+bool Battle::checkPartyDeath(Party* const check_party, Person* target)
 {
-  if (check_party != nullptr && check_party->getLivingMembers().size() == 0)
-    return true;
+  auto party_death = false;
 
-  return false;
+  if (check_party != nullptr && target != nullptr)
+  {
+    auto living_members = check_party->getLivingMembers();
+
+    party_death = living_members.size() < 2;
+    
+    if (living_members.size() == 1)
+    {
+      party_death &= (check_party->getMember(living_members.at(0)) == target);
+    }
+  }
+  
+  return party_death;
 }
 
 /*
@@ -1390,6 +1401,7 @@ void Battle::cleanUp()
   setBattleFlag(CombatState::CURRENT_AILMENT_COMPLETE, false);
   setBattleFlag(CombatState::COMPLETE_AILMENT_UPKEEPS, false);
   setBattleFlag(CombatState::ALL_UPKEEPS_COMPLETE, false);
+  setBattleFlag(CombatState::RENDERING_COMPLETE, false);
  
   /* Clean all action processing related variables */
   clearActionVariables();
@@ -2150,6 +2162,7 @@ void Battle::personalUpkeep(Person* const target)
     setBattleFlag(CombatState::PERSON_UPKEEP_COMPLETE);
   }
 
+  std::cout << "Setting ready to render!" << std::endl;
   setBattleFlag(CombatState::READY_TO_RENDER, true);
 }
 
@@ -2204,6 +2217,11 @@ void Battle::processBuffer()
   curr_action_type  = action_buffer->getActionType();
   curr_user         = action_buffer->getUser();
   curr_skill        = action_buffer->getSkill();
+
+  /* Assert the current user is alive. If the current user is alive, the 
+   * processing of their action on the Buffer will be void */
+  if (curr_user != nullptr && curr_user->getBFlag(BState::ALIVE))
+  {
 
   if (curr_action_type == ActionType::SKILL)
   {
@@ -2268,6 +2286,9 @@ void Battle::processBuffer()
     event_buffer->createPassEvent(curr_user);
     setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE, true);
   }
+  }
+  else
+    setBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE);
   
   /* Complete the processing of the last of events and move to clean up */
   if (getBattleFlag(CombatState::LAST_INDEX) && 
@@ -2762,8 +2783,9 @@ bool Battle::processDamageAction(BattleEvent* damage_event,
   damage_event->amount = damage;
 
   /* Send damage processing (death calculations to process damage amount fn) */
+
   party_death = processDamageAmount(damage);
-  updateTargetDefense();
+  //updateTargetDefense();
 
   if (hasInfliction(Infliction::BERSERK, curr_user))
   {
@@ -2803,6 +2825,10 @@ bool Battle::processDamageAmount(int32_t amount)
   {
     event_buffer->createDeathEvent(EventType::DEATH, curr_target, ally_target);
     party_death = processPersonDeath(ally_target);
+  }
+  else
+  {
+    updateTargetDefense();
   }
 
   return party_death;
@@ -3704,17 +3730,22 @@ void Battle::updateEnemySelection()
  * Inputs: none
  * Output: bool - true if a party death has occured
  */
-bool Battle::updatePartyDeaths()
+bool Battle::updatePartyDeaths(Person* target)
 {
-  if (checkPartyDeath(friends))
+  if (target != nullptr)
   {
-    setBattleFlag(CombatState::LOSS, true);
-    return true;
-  }
-  else if (checkPartyDeath(foes))
-  {
-    setBattleFlag(CombatState::VICTORY, true);
-    return true;
+    if (checkPartyDeath(friends, target))
+    {
+      setBattleFlag(CombatState::LOSS, true);
+
+      return true;
+    }
+    else if (checkPartyDeath(foes, target))
+    {
+      setBattleFlag(CombatState::VICTORY, true);
+
+      return true;
+    }
   }
 
   return false;
@@ -3775,7 +3806,7 @@ bool Battle::updatePersonDeath(const DamageType &damage_type)
   for (size_t i = 0; i < skills->getSize(); i++)
     skills->setSilenced(i, false);
 
-  return updatePartyDeaths();
+  return updatePartyDeaths(curr_target);
 }
 
 /*
@@ -4515,6 +4546,7 @@ bool Battle::update(int32_t cycle_time)
      * personal upkeeps to perform -> reset rendering flag and continue */
     if (getBattleFlag(CombatState::RENDERING_COMPLETE))
     {
+      std::cout << "Rendering is complete!" << std::endl;
       setBattleFlag(CombatState::RENDERING_COMPLETE, false);
       event_buffer->setCurrentIndex();
       performEvents();
@@ -4942,8 +4974,6 @@ std::vector<int32_t> Battle::getValidTargets(int32_t index,
            action_scope == ActionScope::ALL_TARGETS ||
            action_scope == ActionScope::ONE_PARTY)
   {
-    if (action_scope == ActionScope::ONE_PARTY)
-      std::cout << "===== FRESH CAKES =====" << std::endl;
     valid_targets = getAllTargets();
   }
   else if (action_scope == ActionScope::NOT_USER ||

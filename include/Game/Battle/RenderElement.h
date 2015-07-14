@@ -23,7 +23,7 @@
 #include "Helpers.h"
 #include "Game/Player/Person.h"
 
-enum class RenderType : std::uint16_t
+enum class RenderType : std::uint32_t
 {
   NONE             =  0, 
   ACTION_TEXT      =  1,
@@ -34,7 +34,7 @@ enum class RenderType : std::uint16_t
   PLEP             =  6
 };
 
-enum class RenderStatus : std::uint16_t
+enum class RenderStatus : std::uint32_t
 {
   CONSTRUCTING = 1,
   FADING_IN    = 2,
@@ -91,21 +91,22 @@ private:
   int32_t num_loops;
 
   /* Acceleration of text parameters */
-  int16_t acceleration_x;
-  int16_t acceleration_y;
+  int32_t acceleration_x;
+  int32_t acceleration_y;
 
+  /* Change in X/Y which has not been rendered yet */
   float delta_x;
   float delta_y;
 
   /* Coordinates for rendering */
-  int16_t x;
-  int16_t y;
-  int16_t shadow_x;
-  int16_t shadow_y;
-  int16_t size_x;
-  int16_t size_y;
-  int16_t velocity_x;
-  int16_t velocity_y;
+  int32_t x;
+  int32_t y;
+  int32_t shadow_x;
+  int32_t shadow_y;
+  int32_t size_x;
+  int32_t size_y;
+  int32_t velocity_x;
+  int32_t velocity_y;
   int32_t fade_in_time;
   int32_t fade_out_time;
 

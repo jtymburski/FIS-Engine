@@ -372,7 +372,7 @@ private:
   void clearActionVariables();
 
   /* Returns enumeration of party death [None, Friends, Foes, Both] */
-  bool checkPartyDeath(Party* const check_party);
+  bool checkPartyDeath(Party* const check_party, Person* target);
 
   /* Cleanup before the end of a Battle turn */
   void cleanUp();
@@ -500,7 +500,7 @@ private:
   void updateEnemySelection();
 
   /* Updates the LOSS/VICTORY flags based on party deaths */
-  bool updatePartyDeaths();
+  bool updatePartyDeaths(Person* target);
 
   /* Resolving effects upon death of a single person -> checks party deaths */
   bool updatePersonDeath(const DamageType &damage_type);

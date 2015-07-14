@@ -1141,10 +1141,11 @@ void BattleDisplay::createDamageText(Person* target, std::string text)
        x += kPERSON_WIDTH / 2;
        x -= t.getWidth() / 2;
 
+  element->setTimes(550, 115, 115);
   element->setX(x);
   element->setShadowX(kACTION_TEXT_SHADOW - 2);
-  element->setVelocity(0, -3);
-  element->setAcceleration(0, 0);
+  element->setVelocity(0, -45);
+  element->setAcceleration(0, 8);
 }
 
 //TODO: Comment
@@ -1165,7 +1166,7 @@ RenderElement* BattleDisplay::createDamageValue(Person* target, uint32_t amount)
     shadow_color = kBURN_DMG_COLOR;
 
   RenderElement* element = new RenderElement(RenderType::DAMAGE_VALUE, 
-                                             450, 50, 100);
+                                             475, 65, 100);
 
   /* Build parameters for the damage text, add to render text elements */
   element->setColor(color);
@@ -1188,8 +1189,8 @@ RenderElement* BattleDisplay::createDamageValue(Person* target, uint32_t amount)
   element->setShadowCoordinates(kACTION_TEXT_SHADOW - 2, 
       kACTION_TEXT_SHADOW - 1);
   element->setShadowColor(shadow_color);
-  // element->setAcceleration(1, -3);
-  element->setVelocity(-10, -18);
+  element->setAcceleration(4, 0);
+  element->setVelocity(-15, -25);
 
   render_elements.push_back(element);
 
@@ -1230,8 +1231,8 @@ void BattleDisplay::createRegenValue(Person* target, uint64_t amount)
   element->setShadowCoordinates(kACTION_TEXT_SHADOW - 2, 
       kACTION_TEXT_SHADOW - 1);
   element->setShadowColor(shadow_color);
-  element->setVelocity(0, -45);
-  element->setAcceleration(0, -5);
+  element->setVelocity(0, -25);
+  element->setAcceleration(0, 4);
 
   render_elements.push_back(element);
 }
@@ -1261,10 +1262,11 @@ RenderElement* BattleDisplay::createPlep(Person* target, Sprite* plep)
 }
 
 void BattleDisplay::createSpriteFlash(Person* target, SDL_Color color, 
-    int32_t time)
+    int32_t flash_time)
 {
+  auto fade_time = std::floor(flash_time * 3.0 / 7.0);
   RenderElement* sprite_flash = new RenderElement(RenderType::RGB_SPRITE_FLASH, 
-      time, time * 3 / 7, time * 3 / 7);
+      flash_time, fade_time, fade_time);
 
   Sprite* set_sprite = getPersonSprite(target);
 
@@ -1531,9 +1533,6 @@ bool BattleDisplay::renderFoesInfo(SDL_Renderer* renderer,
 bool BattleDisplay::renderFriendInfo(SDL_Renderer* renderer, PersonState* state,
     uint16_t screen_height, uint16_t x, uint16_t y, bool below)
 {
-  if (state == nullptr)
-    std::cout << "THE STATE IS ALL TEH nullptr! NO nullptr STATES" << std::endl;
-
   bool success = true;
 
   /* Calculate health bar amount and color */
@@ -1726,16 +1725,13 @@ bool BattleDisplay::renderMenu(SDL_Renderer* renderer, PersonState* state,
     SDL_RenderFillRect(renderer, &rect3);
 
     /* Render the actions/items, depending on category */
+    //TODO: Render Items magically [07-13-15]
     if(menu->getActionType() == ActionType::SKILL)
     {
       success &= renderActionSkills(renderer, menu, rect2.x, rect2.y, 
                                     section3_w, rect3.h);
       success &= skill_info[menu->getElementIndex()]->
                               render(renderer, rect3.x + kTYPE_MARGIN, rect3.y);
-    }
-    else
-    {
-      std::cout << "Render Items in 3rd section" << std::endl;
     }
   }
 
@@ -2474,6 +2470,8 @@ bool BattleDisplay::update(int cycle_time)
      *-----------------------------------------------------------------------*/
     if(rendering_state == TurnState::BEGIN)
     {
+      setRenderFlag(RenderState::BEGIN_RENDERING, false);
+      
       rendering_state = battle_state;
     }
     /*-------------------------------------------------------------------------
@@ -2492,7 +2490,7 @@ bool BattleDisplay::update(int cycle_time)
 
         SDL_Color shadow_color = {194, 59, 34, 255};
         RenderElement* turn_text = new RenderElement(RenderType::ACTION_TEXT,
-            1500, 500, 300);
+            1300, 500, 300);
 
         turn_text->setColor({0, 0, 0, 255});
         turn_text->setShadowColor(shadow_color);
@@ -2537,7 +2535,7 @@ bool BattleDisplay::update(int cycle_time)
         SDL_Color screen_dim_color = {0, 0, 0, 185};
 
         RenderElement* dim_element = new RenderElement(RenderType::RGB_OVERLAY,
-            2500, 400, 300);
+            2000, 400, 300);
 
         dim_element->setColor(screen_dim_color);
         dim_element->setCoordinates(0, 0);
@@ -2578,6 +2576,7 @@ bool BattleDisplay::update(int cycle_time)
       }
       else if(!delay)
       {
+        std::cout << "Upkeep Events!" << std::endl;
         if(buffer->setRenderIndex())
         {
           curr_event = buffer->getCurrentEvent();
@@ -2805,7 +2804,6 @@ bool BattleDisplay::updateElements(int32_t cycle_time)
       }
       else if (element->getStatus() == RenderStatus::DISPLAYING)
       {
-        // std::cout << "Displaying!" << std::endl;
         element->setAlpha(element->getColor().a);
       }
       else if (element->getStatus() == RenderStatus::FADING_OUT)
@@ -2815,11 +2813,7 @@ bool BattleDisplay::updateElements(int32_t cycle_time)
           float alpha_diff = element->getColor().a * 1.0 / 
                              element->getFadeOutTime() * cycle_time;
 
-          // std::cout << "Alpha Diff: " << alpha_diff << std::endl;
-
           alpha_diff = std::max(1.0, (double)alpha_diff);
-
-          // std::cout << "Maxed alpha diff: " << alpha_diff << std::endl;
 
           if (alpha_diff > element->getAlpha())
             element->setAlpha(0);

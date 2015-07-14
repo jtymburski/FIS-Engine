@@ -70,7 +70,7 @@ RenderElement::RenderElement()
  */
 RenderElement::RenderElement(RenderType type, int32_t remaining_time,
     int32_t fade_in_time, int32_t fade_out_time) 
-    : RenderElement()
+      : RenderElement()
 {
   this->type = type;
   
@@ -155,7 +155,6 @@ uint8_t RenderElement::calcColorGreen()
   return std::round(green_float);
 }
 
-
 /*
  * Description:
  *
@@ -195,9 +194,8 @@ bool RenderElement::update(int cycle_time)
     if (render_sprite != nullptr)
     {
       render_sprite->update(cycle_time);
-      std::cout << "Updating plep! " << render_sprite->getLoops() << std::endl;
 
-      if (render_sprite->getLoops() >= static_cast<uint16_t>(num_loops))
+      if (render_sprite->getLoops() >= static_cast<uint32_t>(num_loops))
         status = RenderStatus::TIMED_OUT;
     }
   }
@@ -213,39 +211,41 @@ bool RenderElement::update(int cycle_time)
         status = RenderStatus::FADING_OUT;
 
       /* Before updating coordinates, update the pixels/s from the pixels/s/s */
-      // velocity_x += acceleration_x;
-      // velocity_y += acceleration_y;
+
+      velocity_x += std::round(((float)acceleration_x * cycle_time) / 100);
+      velocity_y += std::round(((float)acceleration_y * cycle_time) / 100);
 
       /* Then, update the (X, Y) coordinates for the text and the shadow */
-      auto temp_delta_x = 0.0;
-      auto temp_delta_y = 0.0;
+      auto temp_delta_x = ((float)velocity_x * cycle_time) / 100;
+      auto temp_delta_y = ((float)velocity_y * cycle_time) / 100;
 
-      temp_delta_x += static_cast<float>(velocity_x) * cycle_time / 100.0f;
-      temp_delta_y += static_cast<float>(velocity_y) * cycle_time / 100.0f;
-
-      if (delta_x >= 1.0 || delta_x <= -1.0)
+      /* If the delta has finally reached an X pixel distance, do an update */
+      if (std::abs(delta_x) >= 1.0)
       {
-        x += std::floor(delta_x);
-    
-        if (shadow)
-          shadow_x += std::floor(delta_x);
+        auto neg_delta_x = std::floor(delta_x);
+        delta_x -= neg_delta_x;
+        x       += neg_delta_x;
 
-        delta_x = 0;
+        if (shadow)
+          shadow_x += neg_delta_x;
       }
+      /* Else, grow the change in X by the temp value */
       else
       {
         delta_x += temp_delta_x;
       }
-
-      if (delta_y >= 1.0 || delta_y <= -1.0)
+      
+      /* If the delta has finally reached a Y pixel distance, do an update */
+      if (std::abs(delta_y) >= 1.0)
       {
-        y += std::floor(delta_y);
+        auto neg_delta_y = std::floor(delta_y);
+        delta_y -= neg_delta_y;
+        y       += neg_delta_y;
 
         if (shadow)
-          shadow_y += std::floor(delta_y);
-
-        delta_y = 0;
+          shadow_y += neg_delta_y;
       }
+      /* Else, grow the change in Y by the temp value. */
       else
       {
         delta_y += temp_delta_y;

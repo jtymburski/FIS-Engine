@@ -1261,7 +1261,7 @@ std::vector<int32_t> BattleMenu::getHoverTargets()
 
   if (action_scope == ActionScope::ONE_PARTY)
   {
-    if (valid_targets.size() > element_index)
+    if (valid_targets.size() > static_cast<size_t>(element_index))
       hover_targets = getPartyTargets(valid_targets.at(element_index));
   }
   }

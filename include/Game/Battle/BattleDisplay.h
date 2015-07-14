@@ -319,7 +319,7 @@ private:
   RenderElement* createPlep(Person* target, Sprite* plep);
   void createRegenValue(Person* target, uint64_t amount);
 
-  void createSpriteFlash(Person* target, SDL_Color color, int32_t time);
+  void createSpriteFlash(Person* target, SDL_Color color, int32_t flash_time);
 
   /* Render Skill fizzling text */
   void renderFizzleText();
