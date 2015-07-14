@@ -587,7 +587,7 @@ void MapInteractiveObject::clear()
  * Inputs: none
  * Output: int - the integer inactive time. -1 if inactive time not used
  */
-int MapInteractiveObject::getInactiveTime()
+int MapInteractiveObject::getInactiveTime() const
 {
   if(base != NULL)
     return static_cast<MapInteractiveObject*>(base)->time_return;

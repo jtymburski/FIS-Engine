@@ -102,7 +102,7 @@ public:
   virtual void clear();
 
   /* Returns the inactive time before returning down the state path */
-  int getInactiveTime();
+  int getInactiveTime() const;
 
   /* Returns the state, corresponding to the parameters listed */
   StateNode* getStateCurrent();
