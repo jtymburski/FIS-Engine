@@ -18,7 +18,7 @@
 
 /* Constant Implementation - see header file for descriptions */
 const uint8_t  Helpers::kMAX_RENDER_DEPTH = 10;
-const uint16_t Helpers::kTILE_SIZE        = 32;
+const uint16_t Helpers::kTILE_SIZE        = 64;
 
 SDL_Texture* Helpers::white_mask = NULL;
 
