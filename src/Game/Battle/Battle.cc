@@ -3544,10 +3544,7 @@ void Battle::upkeep()
   /* If there are no remaining upkeep persons, the personal upkeep phase is
    * complete -> reset flags so update() will set the next turn state */
   if (upkeep_persons.size() == 0)
-  {
     setBattleFlag(CombatState::ALL_UPKEEPS_COMPLETE, true);
-    setBattleFlag(CombatState::PHASE_DONE, true);
-  }
 }
 
 /*
@@ -4546,11 +4543,17 @@ bool Battle::update(int32_t cycle_time)
      * personal upkeeps to perform -> reset rendering flag and continue */
     if (getBattleFlag(CombatState::RENDERING_COMPLETE))
     {
-      std::cout << "Rendering is complete!" << std::endl;
-      setBattleFlag(CombatState::RENDERING_COMPLETE, false);
-      event_buffer->setCurrentIndex();
-      performEvents();
-      upkeep();
+        setBattleFlag(CombatState::RENDERING_COMPLETE, false);
+        setBattleFlag(CombatState::READY_TO_RENDER, false);
+
+        if (!getBattleFlag(CombatState::PHASE_DONE))
+        {
+          event_buffer->setCurrentIndex();
+          performEvents();
+        }
+
+        if (getBattleFlag(CombatState::ALL_UPKEEPS_COMPLETE))
+          setBattleFlag(CombatState::PHASE_DONE);
     }
     /* Continue processing upkeeps if they are not yet ready to render or there
      * if there is no rendering to take place */

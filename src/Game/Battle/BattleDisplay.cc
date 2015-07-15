@@ -2567,8 +2567,6 @@ bool BattleDisplay::update(int cycle_time)
      *-----------------------------------------------------------------------*/
     else if(rendering_state == TurnState::UPKEEP)
     {
-      rendering_state = battle_state;
-
       if(!getRenderFlag(RenderState::BEGIN_RENDERING))
       {
         setRenderFlag(RenderState::BEGIN_RENDERING, true);
@@ -2587,12 +2585,14 @@ bool BattleDisplay::update(int cycle_time)
             buffer->setRendered(buffer->getIndex());
           }
         }
-      }
       else
       {
         battle->setBattleFlag(CombatState::RENDERING_COMPLETE, true);
         setRenderFlag(RenderState::BEGIN_RENDERING, false);
       }
+    }
+
+      rendering_state = battle_state;
     }
     /*-------------------------------------------------------------------------
      * SELECT_ACTION_ALLY state

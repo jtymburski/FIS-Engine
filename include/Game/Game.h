@@ -143,7 +143,7 @@ private:
   
   /* Teleport thing event, based on ID and coordinates */
   void eventTeleportThing(int thing_id, int x, int y, int section_id);
-  
+
   /* Polls events running from the event handler. Triggered from other places
    * in the game */
   void pollEvents();
@@ -161,6 +161,8 @@ private:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
+  void pause();
+  
   /* Returns a pointer to an action by index or by ID */
   Action* getAction(const int32_t &index, const bool &by_id = true);
 
@@ -197,6 +199,8 @@ public:
 
   /* Sets the test map to run instead of current default */
   void setTestMap(std::string test_map);
+
+  void unpause();
 
   /* Updates the game state */
   bool update(int cycle_time);

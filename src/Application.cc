@@ -71,6 +71,11 @@ bool Application::changeMode(AppMode mode)
     /* Changes to execute on the views opening */
     if(this->mode == TITLESCREEN)
       title_screen.enableView(true);
+    
+    if (this->mode == PAUSED)
+      Sound::pauseAllChannels();
+    else
+      Sound::resumeAllChannels();
   }
     
   return allow;
@@ -88,6 +93,18 @@ void Application::handleEvents()
     {
       changeMode(EXIT);
     }
+    // PAUSE ON LOSS FOCUS (TOO WEIRD)
+    // else if (event.type == SDL_WINDOWEVENT && event.window.event == 
+    //     SDL_WINDOWEVENT_LEAVE)
+    // {
+    //   changeMode(PAUSED);
+    // }
+    // else if (event.type == SDL_WINDOWEVENT && event.window.event ==
+    //     SDL_WINDOWEVENT_ENTER)
+    // {
+    //   revertMode();
+    // }
+
     /* Otherwise, pass the key down events on to the active view */
     else if(event.type == SDL_KEYDOWN)
     {
@@ -103,18 +120,14 @@ void Application::handleEvents()
         system_options->setAudioLevel(system_options->getAudioLevel() + 5);
         system_options->setMusicLevel(system_options->getAudioLevel() + 5);
       }
-      else if (press_event.keysym.sym == SDLK_F5)
+      else if (press_event.keysym.sym == SDLK_4)
       {
         if (mode == PAUSED)
         {
-          SDL_SetWindowBrightness(window, 1.0);
-          Sound::resumeAllChannels();
           revertMode();
         }
         else
         {
-          SDL_SetWindowBrightness(window, 0.9);
-          Sound::pauseAllChannels();
           changeMode(PAUSED);
         }
       }
