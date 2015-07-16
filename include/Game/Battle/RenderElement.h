@@ -31,7 +31,8 @@ enum class RenderType : std::uint32_t
   DAMAGE_VALUE     =  3,
   RGB_OVERLAY      =  4,
   RGB_SPRITE_FLASH =  5,
-  PLEP             =  6
+  // RGB_SPRITE_DEATH =  6,
+  PLEP             =  7
 };
 
 enum class RenderStatus : std::uint32_t

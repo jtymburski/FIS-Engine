@@ -51,6 +51,7 @@ struct PersonState
   bool was_flashing;
   bool has_plep;
   bool show_action_frame;
+  bool dying;
 };
 
 class BattleDisplay
@@ -242,8 +243,7 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
-  /* Calculates the proper opacity for the sprite of a given Person */
-  uint8_t calcPersonOpacity(Person* test_person);
+
 
   /* Calculate the proper brightness for the sprite of a given Person */
   double calcPersonBrightness(Person* test_person);
@@ -251,12 +251,21 @@ private:
   /* Generates the action frame for the third person sprite */
   Frame* createActionFrame(Person* person, SDL_Renderer* renderer);
 
+  /* Render the damage value */
+  void createDamageText(Person* target, std::string text);
+  RenderElement* createDamageValue(Person* target, uint32_t amount);
+
+  void createDeath(Person* target);
+
   /* Generates info and frames for foes in battle */
   void createFoeBackdrop(SDL_Renderer* renderer);
   Frame* createFoeInfo(Person* foe, SDL_Renderer* renderer);
 
   /* Creates the rendering fonts, based on the system options font path */
   bool createFonts();
+
+  RenderElement* createPlep(Person* target, Sprite* plep);
+  void createRegenValue(Person* target, uint64_t amount);
 
   /* Generates info for friends in battle */
   Frame* createFriendInfo(Person* ally, SDL_Renderer* renderer);
@@ -312,12 +321,6 @@ private:
 
   /* Render the action text */
   void createActionText(std::string action_name);
-
-  /* Render the damage value */
-  void createDamageText(Person* target, std::string text);
-  RenderElement* createDamageValue(Person* target, uint32_t amount);
-  RenderElement* createPlep(Person* target, Sprite* plep);
-  void createRegenValue(Person* target, uint64_t amount);
 
   void createSpriteFlash(Person* target, SDL_Color color, int32_t flash_time);
 
@@ -469,6 +472,10 @@ public:
 
   /* Updates the battle display */
   bool update(int cycle_time);
+  
+  /* Calculates the proper opacity for the sprite of a given Person */
+  uint8_t updatePersonOpacity(Person* test_person, int32_t cycle_time);
+  
   bool updateElements(int cycle_time);
   bool updateEvent();
   bool updateFriends(int cycle_time);

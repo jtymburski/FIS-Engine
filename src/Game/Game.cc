@@ -265,7 +265,7 @@ void Game::setupBattle()
   damage_actions.push_back(new Action("8,DAMAGE,,,,VITA,AMOUNT.100,AMOUNT.30,,95"));
   damage_actions.push_back(new Action("9,DAMAGE,,,,VITA,AMOUNT.300,AMOUNT.35,,95"));
   damage_actions.push_back(new Action("10,DAMAGE,,,,VITA,AMOUNT.10000,AMOUNT.50,,95"));
-  damage_actions.push_back(new Action("11,DAMAGE,,,,VITA,AMOUNT.30000,PC.1,,95"));
+  damage_actions.push_back(new Action("11,DAMAGE,,,,VITA,AMOUNT.10000,PC.1,,95"));
   damage_actions.push_back(new Action("12,DAMAGE,,,,VITA,AMOUNT.800,PC.5,,95"));
   damage_actions.push_back(new Action("13,DAMAGE,,,,VITA,AMOUNT.60,PC.10,,95"));
   damage_actions.push_back(new Action("14,DAMAGE,,,,VITA,AMOUNT.75,PC.15,,95"));
@@ -554,6 +554,7 @@ void Game::setupBattle()
   AttributeSet medium_stats      = AttributeSet(4, true, false);
   AttributeSet top_stats         = AttributeSet(5, true, false);
   AttributeSet boss_stats        = AttributeSet(6, true, false);
+  AttributeSet boss_stats2       = AttributeSet(7, true, false);
 
   // Test Categories
   Category* human = new Category(200, "Human", "human", normal_stats, 
@@ -573,7 +574,7 @@ void Game::setupBattle()
   bear->setFlag(CategoryState::E_CLAWS, true);
 
   Category* bloodclaw_scion = new Category(251, "Bloodclaw Scion", "scions", 
-      weak_stats, boss_stats, elemental_skills);
+      boss_stats2, boss_stats, elemental_skills);
   bloodclaw_scion->setVitaRegenRate(RegenRate::WEAK);
   bloodclaw_scion->setDescription("A class of soldier excelling in physical combat.");
   bloodclaw_scion->setFlag(CategoryState::DEF_ENABLED, true);
@@ -632,7 +633,7 @@ void Game::setupBattle()
   std::vector<BattleItem> items;
 
   base_person_list.push_back(new Person(310, "Fale", human, bloodclaw_scion));
-  getPerson(310)->addExp(1500000);
+  getPerson(310)->addExp(15000000);
   getPerson(310)->setCurves(Element::ICE, ElementCurve::C,
                             Element::PHYSICAL, ElementCurve::D, true);
 

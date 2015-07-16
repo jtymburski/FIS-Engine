@@ -175,12 +175,35 @@ BattleDisplay::~BattleDisplay()
  *============================================================================*/
 
 /* Calculates the proper opacity for the sprite of a given Person */
-uint8_t BattleDisplay::calcPersonOpacity(Person* test_person)
+uint8_t BattleDisplay::updatePersonOpacity(Person* test_person, int32_t cycle_time)
 {
+  uint8_t opacity = 0;
+
   if (!test_person->getBFlag(BState::ALIVE))
-    return 50;
+  {
+    if (getState(test_person) != nullptr)
+      getState(test_person)->dying = false;
+
+    opacity = 50;
+  }
+  else if (getState(test_person) != nullptr && getState(test_person)->dying)
+  { 
+    auto alpha = getPersonSprite(test_person)->getOpacity();
+    float alpha_diff = alpha * 1.0 / 1000 * cycle_time;
+
+    alpha_diff = std::max(1.0, (double)alpha_diff);
+
+    if (alpha_diff > alpha)
+      opacity = 50;
+    else if (alpha - alpha_diff >= 50)
+      opacity = alpha- alpha_diff;
+  }
   else
-    return 255;
+  {
+    opacity = 255;
+  }
+  
+  return opacity;
 }
 
 /* Calculate the proper brightness for the sprite of a given Person */
@@ -1197,6 +1220,17 @@ RenderElement* BattleDisplay::createDamageValue(Person* target, uint32_t amount)
   return element;
 }
 
+// void BattleDisplay::createDeath(Person* target)
+// {
+//   RenderElement* element = new RenderElement(RenderType::RGB_SPRITE_DEATH, 
+//                                              1000, 0, 950);
+//   element->setColor({255, 0, 0, 255});
+//   element->setCoordinates(getPersonX(target), getPersonY(target));
+//   element->setSprite(getPersonSprite(target));
+//   element->setFlasher(target);
+//   render_elements.push_back(element);
+// }
+
 //TODO: Comment
 void BattleDisplay::createRegenValue(Person* target, uint64_t amount)
 {
@@ -1268,9 +1302,7 @@ void BattleDisplay::createSpriteFlash(Person* target, SDL_Color color,
   RenderElement* sprite_flash = new RenderElement(RenderType::RGB_SPRITE_FLASH, 
       flash_time, fade_time, fade_time);
 
-  Sprite* set_sprite = getPersonSprite(target);
-
-  sprite_flash->setSprite(set_sprite);
+  sprite_flash->setSprite(getPersonSprite(target));
   sprite_flash->setFlasher(target);
   sprite_flash->setColor(color);
 
@@ -1772,6 +1804,7 @@ bool BattleDisplay::setPersonState(Person* person, uint8_t index,
     state->was_flashing = false;
     state->has_plep = false;
     state->show_action_frame = false;
+    state->dying = false;
 
     return true;
   }
@@ -2973,6 +3006,13 @@ bool BattleDisplay::updateEvent()
 
     processing_delay = kDELAY_DAMAGE;
   }
+  else if (curr_event->type == EventType::DEATH)
+  {
+    if (curr_event->targets.size() > 0 && curr_event->targets.at(0) != nullptr)
+      if (getState(curr_event->targets.at(0)) != nullptr)
+        getState(curr_event->targets.at(0))->dying = true;
+    // createDeath(curr_event->targets.at(0));
+  }
   else if (curr_event->type == EventType::REGEN_VITA ||
            curr_event->type == EventType::REGEN_QTDR)
   {
@@ -2990,7 +3030,6 @@ bool BattleDisplay::updateEvent()
 //TODO COMMENTS
 bool BattleDisplay::updateFriends(int cycle_time)
 {
-  (void)cycle_time;//WARNING
   for (auto& state : friends_state)
   {
     if (state != nullptr && state->fp != nullptr && state->self != nullptr)
@@ -3002,7 +3041,7 @@ bool BattleDisplay::updateFriends(int cycle_time)
         state->was_flashing = false;
       }
 
-      state->fp->setOpacity(calcPersonOpacity(state->self));
+      state->fp->setOpacity(updatePersonOpacity(state->self, cycle_time));
       state->fp->setBrightness(calcPersonBrightness(state->self));
       
       /* Determine which sprite to use (Attacking/Normal) */
@@ -3025,7 +3064,6 @@ bool BattleDisplay::updateFriends(int cycle_time)
 //TODO COMMENTS
 bool BattleDisplay::updateFoes(int cycle_time)
 {
-  (void)cycle_time;//WARNING
   for (auto& state : foes_state)
   {
     if (state != nullptr && state->tp != nullptr && state->self != nullptr)
@@ -3037,7 +3075,7 @@ bool BattleDisplay::updateFoes(int cycle_time)
         state->was_flashing = false;
       }
 
-      state->tp->setOpacity(calcPersonOpacity(state->self));
+      state->tp->setOpacity(updatePersonOpacity(state->self, cycle_time));
       state->tp->setBrightness(calcPersonBrightness(state->self));
 
       //TODO: Action sprites for enemies? [07-11-15]
