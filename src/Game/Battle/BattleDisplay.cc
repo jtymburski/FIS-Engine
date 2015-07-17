@@ -79,6 +79,7 @@ const uint8_t BattleDisplay::kMENU_SEPARATOR_B = 8;
 const uint8_t BattleDisplay::kMENU_SEPARATOR_T = 12;
 const uint16_t BattleDisplay::kPERSON_SPREAD = 200;
 const uint16_t BattleDisplay::kPERSON_WIDTH = 256;
+const uint8_t BattleDisplay::kPERSON_KO_ALPHA = 50;
 const uint8_t BattleDisplay::kSCROLL_R = 2;
 
 const uint8_t BattleDisplay::kSKILL_BORDER = 10;
@@ -184,7 +185,7 @@ uint8_t BattleDisplay::updatePersonOpacity(Person* test_person, int32_t cycle_ti
     if (getState(test_person) != nullptr)
       getState(test_person)->dying = false;
 
-    opacity = 50;
+    opacity = kPERSON_KO_ALPHA;
   }
   else if (getState(test_person) != nullptr && getState(test_person)->dying)
   { 
@@ -1220,16 +1221,16 @@ RenderElement* BattleDisplay::createDamageValue(Person* target, uint32_t amount)
   return element;
 }
 
-// void BattleDisplay::createDeath(Person* target)
-// {
-//   RenderElement* element = new RenderElement(RenderType::RGB_SPRITE_DEATH, 
-//                                              1000, 0, 950);
-//   element->setColor({255, 0, 0, 255});
-//   element->setCoordinates(getPersonX(target), getPersonY(target));
-//   element->setSprite(getPersonSprite(target));
-//   element->setFlasher(target);
-//   render_elements.push_back(element);
-// }
+void BattleDisplay::createDeath(Person* target)
+{
+  RenderElement* element = new RenderElement(RenderType::RGB_SPRITE_DEATH, 
+                                             3000, 0, 2950);
+  element->setColor({255, 0, 0, 255});
+  element->setCoordinates(getPersonX(target), getPersonY(target));
+  element->setSprite(getPersonSprite(target));
+  element->setFlasher(target);
+  render_elements.push_back(element);
+}
 
 //TODO: Comment
 void BattleDisplay::createRegenValue(Person* target, uint64_t amount)
@@ -1674,8 +1675,12 @@ bool BattleDisplay::renderFriends(SDL_Renderer* renderer)
   {
     if(ally_state->fp != nullptr && ally_state->self != nullptr)
     {
-      success &= ally_state->fp->render(renderer, getPersonX(ally_state->self), 
-                                                  getPersonY(ally_state->self));
+      /* If the ally isn't dying, render them */
+      if (!ally_state->dying)
+      {
+        success &= ally_state->fp->render(renderer, 
+            getPersonX(ally_state->self), getPersonY(ally_state->self));
+      }
     }
   }
   
@@ -2136,6 +2141,30 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
     success &= renderFriends(renderer);
     success &= renderFoesInfo(renderer, width);
 
+    /* Render any death animations below the menu */
+    for (auto& element : render_elements)
+    {
+      if (element->getType() == RenderType::RGB_SPRITE_DEATH)
+      {
+        auto death_sprite = element->getSprite();
+        auto flasher = element->getFlasher();
+
+        if (death_sprite != nullptr && flasher != nullptr)
+        {
+          if (element->getAlpha() >= kPERSON_KO_ALPHA)
+            death_sprite->setOpacity(element->getAlpha());
+          else
+            death_sprite->setOpacity(kPERSON_KO_ALPHA);
+
+          death_sprite->setColorBalance(element->calcColorRed(), 
+              element->calcColorGreen(), element->calcColorBlue());
+
+          death_sprite->render(renderer, element->getX(), 
+              element->getY());
+        }
+      }
+    }
+
     /* Render battle bar (on bottom) */
     renderBar(renderer, width, height);
 
@@ -2220,7 +2249,10 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
       if (element->getType() == RenderType::PLEP)
       {
         if (element->getSprite() != nullptr)
-          element->getSprite()->render(renderer, element->getX(), element->getY());
+        {
+          element->getSprite()->render(renderer, element->getX(), 
+              element->getY());
+        }
       }
     }
 
@@ -2819,8 +2851,21 @@ bool BattleDisplay::updateElements(int32_t cycle_time)
               element->calcColorGreen(), element->calcColorBlue());
         }
       }
+      // else if (element->getType() == RenderType::RGB_SPRITE_DEATH)
+      // {
+      //   if (element->getSprite() != nullptr)
+      //   {
+      //     std::cout << "Element alpha: " << (int)element->getAlpha() << std::endl;
+      //     std::cout << "Sprite alpha: " << (int)element->getSprite()->getOpacity();
 
-   if (element->getStatus() == RenderStatus::FADING_IN)
+      //     if (element->getAlpha() >= kPERSON_KO_ALPHA)
+      //       element->getSprite()->setOpacity(element->getAlpha());
+      //     else
+      //       element->getSprite()->setOpacity(kPERSON_KO_ALPHA);
+      //   }
+      // }
+
+      if (element->getStatus() == RenderStatus::FADING_IN)
       {
         if (element->getFadeInTime() != 0)
         {
@@ -2841,8 +2886,9 @@ bool BattleDisplay::updateElements(int32_t cycle_time)
       }
       else if (element->getStatus() == RenderStatus::FADING_OUT)
       {
-        if (element->getFadeInTime() != 0)
+        if (element->getFadeOutTime() != 0)
         {
+          // std::cout <<  "Setting alpha!" << std::endl;
           float alpha_diff = element->getColor().a * 1.0 / 
                              element->getFadeOutTime() * cycle_time;
 
@@ -2993,7 +3039,7 @@ bool BattleDisplay::updateEvent()
      createSpriteFlash(curr_event->targets.at(0), {177, 10, 30, 190}, 450);
     }
 
-    processing_delay = kDELAY_DAMAGE;
+    processing_delay = kDELAY_DAMAGE + 100;
   }
   else if (curr_event->type == EventType::SKILL_MISS ||
       curr_event->type == EventType::ACTION_MISS)
@@ -3011,7 +3057,9 @@ bool BattleDisplay::updateEvent()
     if (curr_event->targets.size() > 0 && curr_event->targets.at(0) != nullptr)
       if (getState(curr_event->targets.at(0)) != nullptr)
         getState(curr_event->targets.at(0))->dying = true;
-    // createDeath(curr_event->targets.at(0));
+
+    createDeath(curr_event->targets.at(0));
+    processing_delay = 2500;
   }
   else if (curr_event->type == EventType::REGEN_VITA ||
            curr_event->type == EventType::REGEN_QTDR)

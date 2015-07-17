@@ -342,12 +342,12 @@ void Game::setupBattle()
     std::cout << relieve_action->actionFlag(ActionFlags::VALID) << std::endl;
 
   // Test Skills
-  // Skill* cure_poison = new Skill(600, "Cure Poison", ActionScope::ONE_TARGET,
-  //     relieve_actions[0], 95, 0);
-  // cure_poison->setPrimary(Element::PHYSICAL);
-  // cure_poison->setThumbnail(new Frame("sprites/Battle/Skills/_sample_skill_2.png", active_renderer));
-  // cure_poison->setDescription("Cures an inflicted person from poison!");
-  // cure_poison->setFlag(SkillFlags::DEFENSIVE);
+  Skill* cure_poison = new Skill(600, "Cure Poison", ActionScope::ONE_TARGET,
+      relieve_actions[0], 95, 0);
+  cure_poison->setPrimary(Element::PHYSICAL);
+  cure_poison->setThumbnail(new Frame("sprites/Battle/Skills/_sample_skill_2.png", active_renderer));
+  cure_poison->setDescription("Cures an inflicted person from poison!");
+  cure_poison->setFlag(SkillFlags::DEFENSIVE);
 
   Skill* physical_01 = new Skill(100, "Paw Strike", ActionScope::ONE_ENEMY, 
       damage_actions[10], 95, 0);
@@ -427,10 +427,10 @@ void Game::setupBattle()
   // life_steal->addAction(alter_actions[6], true);
   // life_steal->setFlag(SkillFlags::DEFENSIVE);
 
-  // Skill* poison = new Skill(140, "Inflict Poison", ActionScope::ONE_TARGET,
-  //   inflict_actions[0], 100, 10);
-  // poison->setPrimary(Element::FOREST);
-  // poison->setFlag(SkillFlags::OFFENSIVE);
+  Skill* poison = new Skill(140, "Inflict Poison", ActionScope::ONE_TARGET,
+    inflict_actions[0], 100, 10);
+  poison->setPrimary(Element::FOREST);
+  poison->setFlag(SkillFlags::OFFENSIVE);
 
   // Skill* burn = new Skill(141, "Inflict Burn", ActionScope::ONE_TARGET,
   //   inflict_actions[1], 100, 10);
@@ -501,6 +501,7 @@ void Game::setupBattle()
   SkillSet* physical_skills = new SkillSet(physical_01, 1);
   // physical_skills->addSkill(cure_poison, 1);
   physical_skills->addSkill(physical_02, 1);
+  physical_skills->addSkill(cure_poison, 1);
 
   SkillSet* physical_skills2 = new SkillSet(physical_01, 1);
 
@@ -514,7 +515,7 @@ void Game::setupBattle()
   // physical_skills->addSkill(ally_heal, 1);
   // physical_skills->addSkill(revive_ally, 1);
   // physical_skills->addSkill(life_steal, 1);
-  // physical_skills->addSkill(poison, 1);
+  physical_skills->addSkill(poison, 1);
   // physical_skills->addSkill(burn, 1);
   // physical_skills->addSkill(paralysis, 1);
   // physical_skills->addSkill(scald, 1);
@@ -629,11 +630,10 @@ void Game::setupBattle()
   getPerson(304)->addExp(2800000);
   getPerson(304)->setCurves(Element::FOREST, ElementCurve::A,
                             Element::ICE, ElementCurve::C, true);
-
   std::vector<BattleItem> items;
 
   base_person_list.push_back(new Person(310, "Fale", human, bloodclaw_scion));
-  getPerson(310)->addExp(15000000);
+  getPerson(310)->addExp(150000);
   getPerson(310)->setCurves(Element::ICE, ElementCurve::C,
                             Element::PHYSICAL, ElementCurve::D, true);
 

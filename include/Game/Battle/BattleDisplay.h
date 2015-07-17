@@ -48,6 +48,10 @@ struct PersonState
   Frame* info;
   Person* self;
   Sprite* tp;
+
+  uint32_t target_vita;
+  uint32_t target_qtdr;
+
   bool was_flashing;
   bool has_plep;
   bool show_action_frame;
@@ -212,6 +216,7 @@ private:
   const static uint8_t kMENU_SEPARATOR_T; /* Separator gap off top */ 
   const static uint16_t kPERSON_SPREAD; /* Rendering overlay of persons */
   const static uint16_t kPERSON_WIDTH; /* Width of persons on battle */
+  const static uint8_t kPERSON_KO_ALPHA; /* Opacity of a person at death */
   const static uint8_t kSCROLL_R; /* Radius on scroll renders */
   
   const static uint8_t kSKILL_BORDER; /* Border around edge and elements */
@@ -243,7 +248,8 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
-
+  /* Calculates and returns the difference between display and actual VITA */
+  int32_t calcVitaPCDifference();
 
   /* Calculate the proper brightness for the sprite of a given Person */
   double calcPersonBrightness(Person* test_person);
@@ -251,11 +257,20 @@ private:
   /* Generates the action frame for the third person sprite */
   Frame* createActionFrame(Person* person, SDL_Renderer* renderer);
 
-  /* Render the damage value */
+  /* Render the action text */
+  void createActionText(std::string action_name);
+
+  /* Create and append rendering for other non-numeral damage/related things */
   void createDamageText(Person* target, std::string text);
+
+  /* Create and append numerical damage values */
   RenderElement* createDamageValue(Person* target, uint32_t amount);
 
+  //TODO
   void createDeath(Person* target);
+
+  /* Creates a sprite flash overlaying a Person */
+  void createSpriteFlash(Person* target, SDL_Color color, int32_t flash_time);
 
   /* Generates info and frames for foes in battle */
   void createFoeBackdrop(SDL_Renderer* renderer);
@@ -286,43 +301,9 @@ private:
   /* Handles delay processing */
   bool handleDelayProcessing(int32_t cycle_time, bool change_state);
   
-  /* Get foes party in battle */
-  Party* getFoesParty();
-  PersonState* getFoesState(int32_t index);
-  PersonState* getFoesState(Person* foes);
-
-  /* Get friends in battle */
-  Party* getFriendsParty();
-  PersonState* getFriendsState(int32_t index);
-  PersonState* getFriendsState(Person* ally);
-
-  /* Returns modified index */
-  uint32_t getIndex(int32_t index);
-
-  /* Find the X/Y coordinates of person rendering */
-  int16_t getPersonX(Person* check_person);
-  int16_t getPersonY(Person* check_person);
-
-  /* Get the actual sprite of a person from any person target */
-  Sprite* getPersonSprite(Person* target);
-
-  /* Return the value of a rendering flag */
-  bool getRenderFlag(const RenderState &test_flag);
-
-  /* Gett the state of a person from any target pointer */
-  PersonState* getState(Person* target);
-
-  /* Assigns the value of a RenderState flag */
-  void setRenderFlag(RenderState flags, const bool &set_value = true);
-
   /* Render the action skills */
   bool renderActionSkills(SDL_Renderer* renderer, BattleMenu* menu, uint16_t x,
       uint16_t y, uint16_t width, uint16_t height);
-
-  /* Render the action text */
-  void createActionText(std::string action_name);
-
-  void createSpriteFlash(Person* target, SDL_Color color, int32_t flash_time);
 
   /* Render Skill fizzling text */
   void renderFizzleText();
@@ -355,28 +336,62 @@ private:
   bool renderMenu(SDL_Renderer* renderer, PersonState* state, 
       uint16_t screen_width, uint16_t screen_height);
 
-  void setStateBrightness(std::vector<PersonState*> states, bool fp, 
-      int32_t amount);
-
-  /* Set person state */
-  bool setPersonState(Person* person, uint8_t index, SDL_Renderer* renderer, 
-                      bool foe = false);
-
   /* Start battle - fires up the variables */
   bool startBattle(SDL_Renderer* renderer);
 
   /* Stop battle - cleans up */
   void stopBattle();
 
-/*=============================================================================
- * VIRTUAL FUNCTIONS
- *============================================================================*/
-public:
+  /* Calculates the proper opacity for the sprite of a given Person */
+  uint8_t updatePersonOpacity(Person* test_person, int32_t cycle_time);
+  
+  /* Updates the render elements */
+  bool updateElements(int cycle_time);
 
-/*=============================================================================
- * PROTECTED FUNCTIONS
- *============================================================================*/
-protected:
+  /* Updates the current event in the event buffer */
+  bool updateEvent();
+
+  /* Update the state of the allies */
+  bool updateFriends(int cycle_time);
+
+  /* Updates the state of the foes */
+  bool updateFoes(int cycle_time);
+
+  /* Get foes party in battle */
+  Party* getFoesParty();
+  PersonState* getFoesState(int32_t index);
+  PersonState* getFoesState(Person* foes);
+
+  /* Get friends in battle */
+  Party* getFriendsParty();
+  PersonState* getFriendsState(int32_t index);
+  PersonState* getFriendsState(Person* ally);
+
+  /* Returns modified index */
+  uint32_t getIndex(int32_t index);
+
+  /* Find the X/Y coordinates of person rendering */
+  int16_t getPersonX(Person* check_person);
+  int16_t getPersonY(Person* check_person);
+
+  /* Get the actual sprite of a person from any person target */
+  Sprite* getPersonSprite(Person* target);
+
+  /* Return the value of a rendering flag */
+  bool getRenderFlag(const RenderState &test_flag);
+
+  /* Gett the state of a person from any target pointer */
+  PersonState* getState(Person* target);
+
+  /* Assigns the value of a RenderState flag */
+  void setRenderFlag(RenderState flags, const bool &set_value = true);
+
+  void setStateBrightness(std::vector<PersonState*> states, bool fp, 
+      int32_t amount);
+
+  /* Set person state */
+  bool setPersonState(Person* person, uint8_t index, SDL_Renderer* renderer, 
+                      bool foe = false);
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
@@ -472,25 +487,6 @@ public:
 
   /* Updates the battle display */
   bool update(int cycle_time);
-  
-  /* Calculates the proper opacity for the sprite of a given Person */
-  uint8_t updatePersonOpacity(Person* test_person, int32_t cycle_time);
-  
-  bool updateElements(int cycle_time);
-  bool updateEvent();
-  bool updateFriends(int cycle_time);
-  bool updateFoes(int cycle_time);
-
-/*=============================================================================
- * PUBLIC STATIC FUNCTIONS
- *============================================================================*/
-public:
-
-/*============================================================================
- * OPERATOR FUNCTIONS
- *===========================================================================*/
-public:
-
 };
 
 #endif // BATTLEDISPLAY_H

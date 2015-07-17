@@ -304,6 +304,10 @@ public:
   /* Adds an amount of experience and may update the level */
   bool addExp(const uint32_t &amount, const bool &update = true);
 
+  /* Calculates the % of vitality/qtdr which a target value would be */
+  float calcVitaPercentAtVal(uint32_t target_value);
+  float calcQtdrPercentAtVal(uint32_t target_value);
+
   /* Return the (floored) % of exp. reached towards the next level */
   uint16_t findExpPercent();
 

@@ -81,7 +81,7 @@ RenderElement::RenderElement(RenderType type, int32_t remaining_time,
     if (fade_in_time > 0)
       status = RenderStatus::FADING_IN;    
 
-    else if (fade_in_time == 0 && fade_out_time == remaining_time)
+    else if (fade_in_time == 0 || fade_out_time == remaining_time)
       status = RenderStatus::FADING_OUT;
     else
       status = RenderStatus::DISPLAYING;
@@ -211,7 +211,6 @@ bool RenderElement::update(int cycle_time)
         status = RenderStatus::FADING_OUT;
 
       /* Before updating coordinates, update the pixels/s from the pixels/s/s */
-
       velocity_x += std::round(((float)acceleration_x * cycle_time) / 100);
       velocity_y += std::round(((float)acceleration_y * cycle_time) / 100);
 

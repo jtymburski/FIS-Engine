@@ -657,6 +657,22 @@ bool Person::addExp(const uint32_t &amount, const bool &update)
   return can_add;
 }
 
+float Person::calcVitaPercentAtVal(uint32_t target_value)
+{
+  auto target_vita = static_cast<int32_t>(target_value);
+  auto max_vita = getTemp().getStat(Attribute::VITA);
+
+  return (max_vita != 0) ? ((float)target_vita / (float)max_vita) : (0);
+}
+
+float Person::calcQtdrPercentAtVal(uint32_t target_value)
+{
+  auto target_qtdr = static_cast<int32_t>(target_value);
+  auto max_qtdr = getTemp().getStat(Attribute::QTDR);
+  
+  return (max_qtdr != 0) ? ((float)target_qtdr / (float)max_qtdr) : (0);
+}
+
 /*
  * Description: Calculate and determine the percentage of experience
  *              gained towards the next level. If the person is at max level,
@@ -1665,10 +1681,7 @@ uint32_t Person::getTotalExp()
  */
 float Person::getQDPercent()
 {
-  auto curr_qd = getCurr().getStat(Attribute::QTDR);
-  auto max_qd  = getTemp().getStat(Attribute::QTDR);
-
-  return (max_qd != 0) ? (static_cast<float>(curr_qd) / max_qd) : (0);
+  return calcQtdrPercentAtVal(getCurr().getStat(Attribute::QTDR));
 }
 
 /*
@@ -1679,10 +1692,7 @@ float Person::getQDPercent()
  */
 float Person::getVitaPercent()
 {
-  auto curr_vita = getCurr().getStat(Attribute::VITA);
-  auto max_vita  = getTemp().getStat(Attribute::VITA);
-  
-  return (max_vita != 0) ? (static_cast<float>(curr_vita) / max_vita) : (0);
+  return calcVitaPercentAtVal(getCurr().getStat(Attribute::VITA));
 }
 
 /*
