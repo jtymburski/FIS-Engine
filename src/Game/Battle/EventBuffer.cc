@@ -126,11 +126,12 @@ void EventBuffer::clearRendered()
  *         bool happens - true if the action is to miss, false if to miss
  * Output: BattleEvent* - pointer to the recently created event
  */
-BattleEvent* EventBuffer::createActionEvent(Action* action_use, 
-    Skill* skill_use, Person* user, Person* target, bool happens)
+BattleEvent* EventBuffer::createActionEvent(EventType action_event_type,
+    Action* action_use, Skill* skill_use, Person* user, Person* target, 
+    bool happens)
 {
   auto new_event = createNewEvent();
-  new_event->type = EventType::ACTION_BEGIN;
+  new_event->type = action_event_type;
   new_event->action_use = action_use;
   new_event->skill_use  = skill_use;
   new_event->user       = user;

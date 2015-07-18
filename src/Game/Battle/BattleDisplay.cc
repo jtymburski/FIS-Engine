@@ -142,7 +142,7 @@ BattleDisplay::BattleDisplay(Options* running_config)
   renderer = nullptr;
   rendering_state = TurnState::DESTRUCT;
   system_options = nullptr;
-  temp_sprite = nullptr;
+  // temp_sprite = nullptr;
   render_flags = static_cast<RenderState>(0);
 
   /* Set up variables */
@@ -2017,6 +2017,19 @@ Frame* BattleDisplay::getAilment(Infliction ailment)
   return nullptr;
 }
 
+Sprite* BattleDisplay::getAilmentPlep(Infliction ailment)
+{
+  if(ailment != Infliction::INVALID)
+  {
+    auto found = ailment_pleps.find(ailment);
+
+    if(found != end(ailment_pleps))
+      return found->second;
+  }
+
+  return nullptr;
+}
+
 /* Get the background */
 // TODO: Comment
 Sprite* BattleDisplay::getBackground()
@@ -2272,6 +2285,18 @@ bool BattleDisplay::setAilment(Infliction ailment, std::string path,
   return false;
 }
 
+bool BattleDisplay::setAilmentPlep(Infliction ailment, Sprite* plep)
+{
+  if(ailment != Infliction::INVALID && plep)
+  {
+    ailment_pleps.emplace(std::make_pair(ailment, plep));
+    
+    return true;
+  }
+
+  return false;
+}
+
 /* Sets the background sprite */
 // TODO: Comment
 bool BattleDisplay::setBackground(Sprite* background)
@@ -2299,22 +2324,6 @@ bool BattleDisplay::setBattle(Battle* battle, SDL_Renderer* renderer)
     unsetBattle();
 
     this->battle = battle;
-
-    /* TODO: Temporary - battle testing */
-    temp_sprite = new Sprite(system_options->getBasePath() + 
-                    "sprites/Battle/Pleps/hibernationplep_AA_A", 4, ".png", renderer);
-    temp_sprite->insertTail(system_options->getBasePath() + 
-                            "sprites/Battle/Pleps/hibernationplep_AA_A00.png", renderer);
-    temp_sprite->insertTail(system_options->getBasePath() + 
-                            "sprites/Battle/Pleps/hibernationplep_AA_A01.png", renderer);
-    temp_sprite->insertTail(system_options->getBasePath() + 
-                            "sprites/Battle/Pleps/hibernationplep_AA_A02.png", renderer);
-    temp_sprite->insertTail(system_options->getBasePath() + 
-                            "sprites/Battle/Pleps/hibernationplep_AA_A03.png", renderer);
-    for(uint16_t i = 0; i < 5; i++)
-      temp_sprite->insertTail(system_options->getBasePath() + 
-                              "sprites/blank.png", renderer);
-    temp_sprite->setAnimationTime(180);
 
     /* Start the battle */
     success &= startBattle(renderer);
@@ -2639,7 +2648,6 @@ bool BattleDisplay::update(int cycle_time)
       }
       else if(!delay)
       {
-        std::cout << "Upkeep Events!" << std::endl;
         if(buffer->setRenderIndex())
         {
           curr_event = buffer->getCurrentEvent();
@@ -2750,7 +2758,6 @@ bool BattleDisplay::update(int cycle_time)
         }
         else
         {
-          battle->unsetActorsAttacking();
           battle->setBattleFlag(CombatState::RENDERING_COMPLETE, true);
           setRenderFlag(RenderState::BEGIN_RENDERING, false);
         }
@@ -2818,7 +2825,7 @@ bool BattleDisplay::update(int cycle_time)
   //     offset_2 -= 1216;
   //   //midlays.front()->setOpacity(midlays.front()->getOpacity() - 1);
   // }
-  temp_sprite->update(cycle_time);
+  // temp_sprite->update(cycle_time);
 
   return true;
 }
@@ -2888,7 +2895,6 @@ bool BattleDisplay::updateElements(int32_t cycle_time)
       {
         if (element->getFadeOutTime() != 0)
         {
-          // std::cout <<  "Setting alpha!" << std::endl;
           float alpha_diff = element->getColor().a * 1.0 / 
                              element->getFadeOutTime() * cycle_time;
 
@@ -2973,11 +2979,11 @@ bool BattleDisplay::updateEvent()
 
     processing_delay = kDELAY_SKILL;
   }
-  else if (curr_event->type == EventType::ACTION_BEGIN)
+  else if(curr_event->type == EventType::ACTION_BEGIN)
   {
     curr_event->user->setBFlag(BState::IS_ATTACKING, true);
 
-    if (battle->getCurrSkill() != nullptr && 
+    if(battle->getCurrSkill() != nullptr && 
         battle->getCurrSkill()->getAnimation() != nullptr)
     {  
       auto animation = battle->getCurrSkill()->getAnimation();
@@ -2986,6 +2992,32 @@ bool BattleDisplay::updateEvent()
       processing_delay  = animation->getAnimationTime() * plep->getNumLoops();
       processing_delay += 150;
     }
+  }
+  else if(curr_event->type == EventType::INFLICTION)
+  {
+    if(curr_event->targets.size() > 0 && curr_event->targets.at(0) &&
+        curr_event->action_use)
+    {
+      auto plep = getAilmentPlep(curr_event->action_use->getAilment());
+
+      if(plep)
+        createPlep(curr_event->targets.at(0), plep);
+
+      createSpriteFlash(curr_event->targets.at(0), {0, 255, 255, 255}, 450);
+      processing_delay = 500;
+    }
+  }
+  else if(curr_event->type == EventType::CURE_INFLICTION)
+  {
+    if (curr_event->targets.size() > 0 && curr_event->targets.at(0))
+    {
+      createSpriteFlash(curr_event->targets.at(0), {255, 255, 255, 255}, 450);
+      processing_delay = 500;
+    }
+  }
+  else if(curr_event->type == EventType::ACTION_END)
+  {
+    processing_delay = 50;
   }
   else if (curr_event->type == EventType::SKILL_COOLDOWN)
   {
@@ -3028,7 +3060,6 @@ bool BattleDisplay::updateEvent()
 
   else if (curr_event->type == EventType::STANDARD_DAMAGE ||
            curr_event->type == EventType::CRITICAL_DAMAGE ||
-           curr_event->type == EventType::POISON_DAMAGE   ||
            curr_event->type == EventType::BURN_DAMAGE     ||
            curr_event->type == EventType::HITBACK_DAMAGE  ||
            curr_event->type == EventType::METABOLIC_DAMAGE)
@@ -3040,6 +3071,16 @@ bool BattleDisplay::updateEvent()
     }
 
     processing_delay = kDELAY_DAMAGE + 100;
+  }
+  else if(curr_event->type == EventType::POISON_DAMAGE)
+  {
+    if(curr_event->targets.size() > 0 && curr_event->targets.at(0) != nullptr)
+    {
+      createDamageValue(curr_event->targets.at(0), curr_event->amount);
+      createSpriteFlash(curr_event->targets.at(0), {10, 150, 150, 190}, 550);
+    }
+
+    processing_delay = kDELAY_DAMAGE + 250;
   }
   else if (curr_event->type == EventType::SKILL_MISS ||
       curr_event->type == EventType::ACTION_MISS)

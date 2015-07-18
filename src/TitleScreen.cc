@@ -339,7 +339,7 @@ void TitleScreen::setMusic()
   
 
   game_music.setChannel(SoundChannels::MUSIC2);
-  game_music.setSoundFile(base_path + "sound/3.ogg");
+  game_music.setSoundFile(base_path + "sound/unlicensed/space_cowboy.ogg");
   game_music.setFadeTime(2000);
   game_music.setLoopForever();
   game_music.setVolume(system_options->getMusicLevel());

@@ -17,6 +17,8 @@
 #ifndef BATTLEDISPLAY_H
 #define BATTLEDISPLAY_H
 
+#include <map>
+
 #include "Game/Battle/Battle.h"
 #include "Game/Battle/RenderElement.h"
 
@@ -76,6 +78,8 @@ private:
 
   /* Ailment frames */
   std::vector<Frame> ailments;
+
+  std::map<Infliction, Sprite*> ailment_pleps;
 
   /* Animation control */
   uint16_t animation_delay;
@@ -151,7 +155,7 @@ private:
   Options* system_options;
 
   /* TODO: Delete */
-  Sprite* temp_sprite;
+  // Sprite* temp_sprite;
 
   /* ------------ Constants --------------- */
   const static uint16_t kACTION_BORDER; /* Border width on action slideout */
@@ -409,6 +413,8 @@ public:
   /* Returns the ailment frame */
   Frame* getAilment(Infliction ailment);
 
+  Sprite* getAilmentPlep(Infliction ailment);
+
   /* Get the background */
   Sprite* getBackground();
 
@@ -437,6 +443,8 @@ public:
 
   /* Sets the ailment frame */
   bool setAilment(Infliction ailment, std::string path, SDL_Renderer* renderer);
+
+  bool setAilmentPlep(Infliction ailment, Sprite* plep);
 
   /* Sets the background sprite */
   bool setBackground(Sprite* background);

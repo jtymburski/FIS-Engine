@@ -83,8 +83,9 @@ public:
   void clearRendered();
 
   /* Creates an action event */
-  BattleEvent* createActionEvent(Action* action_use, Skill* skill_use,
-      Person* user, Person* target, bool happens);
+  BattleEvent* createActionEvent(EventType action_event_type,
+      Action* action_use, Skill* skill_use, Person* user, Person* target,
+      bool happens);
 
   /* Creates an ailment event (ex. Infliction or Relieving) */
   BattleEvent* createAilmentEvent(EventType event_type, Person* user,

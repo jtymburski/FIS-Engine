@@ -1805,6 +1805,15 @@ void Battle::performEvents()
             << std::endl;
       #endif
     }
+    else if (event->type == EventType::ACTION_BEGIN)
+    {
+      if(event->user)
+        setUserAttacking(event->user);
+    }
+    else if(event->type == EventType::ACTION_END)
+    {
+      unsetActorsAttacking();
+    }
     else if (event->type == EventType::MISS_TURN)
     {
       #ifdef UDEBUG
@@ -3229,10 +3238,13 @@ void Battle::processSkill(std::vector<Person*> targets,
       for (auto it = begin(targets); it != end(targets); ++it)
       {
         curr_target = *it;
-        auto action_event = event_buffer->createActionEvent(curr_action, 
-            curr_skill, curr_user, curr_target, true);
+        auto event = event_buffer->createActionEvent(EventType::ACTION_BEGIN, 
+            curr_action, curr_skill, curr_user, curr_target, true);
 
-        processAction(action_event, damage_types);   
+        processAction(event, damage_types);
+
+        event_buffer->createActionEvent(EventType::ACTION_END, curr_action, 
+            curr_skill, curr_user, curr_target, true);
       }
     }
     else
@@ -4596,9 +4608,6 @@ bool Battle::update(int32_t cycle_time)
       /* If all processing is complete, after performing -> move state */
       if (getBattleFlag(CombatState::ACTION_PROCESSING_COMPLETE))
       {
-        /* Clear the last attacking actor */
-        unsetActorsAttacking();
-
         auto phase_done = getBattleFlag(CombatState::ALL_PROCESSING_COMPLETE);  
 
         phase_done |= getBattleFlag(CombatState::LOSS);

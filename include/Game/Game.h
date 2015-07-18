@@ -126,6 +126,9 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
+  /* Builds the ailment frames */
+  void buildBattleDisplayFrames(SDL_Renderer* renderer);
+
   /* A give item event, based on an ID and count (triggered from stored event */
   bool eventGiveItem(int id, int count);
   
@@ -161,6 +164,7 @@ private:
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
+  /* Pauses der game in der Wald, ja ja ja */
   void pause();
   
   /* Returns a pointer to an action by index or by ID */

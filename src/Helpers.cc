@@ -324,6 +324,8 @@ std::string Helpers::eventToStr(EventType event)
     return "GAIN ITEM";
   if (event == EventType::GAIN_MONEY)
     return "GAIN MONEY";
+  if (event == EventType::ACTION_END)
+    return "ACTION END";
   if (event == EventType::NONE)
     return "NONE";
 

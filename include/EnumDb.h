@@ -263,7 +263,8 @@ enum class EventType : std::uint8_t
   BUBBY_LEVEL_UP = 52,
   GAIN_ITEM = 52,
   GAIN_MONEY = 53,
-  NONE = 54
+  ACTION_END = 54,
+  NONE = 55
 };
 
 /*
