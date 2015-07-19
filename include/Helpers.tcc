@@ -246,10 +246,10 @@ static std::vector<T> getRandElements(std::vector<T> elements, S num_elements)
 {
   std::vector<T> rand_elements;
 
-  if (elements.size() >= static_cast<uint64_t>(num_elements) && 
+  if(elements.size() >= static_cast<uint64_t>(num_elements) && 
       num_elements > 0)
   {
-    for (S i = num_elements; i > 0; i--)
+    for(S i = num_elements; i > 0; i--)
     {
       auto rand_elm = randU(0, elements.size() - 1);
       rand_elements.push_back(elements.at(rand_elm));
@@ -274,8 +274,8 @@ static bool enumVectorSearch(const T &enum_to_find,
 {
   auto found = false;
 
-  for (auto enum_index : enumerated_vector)
-    found |= (enum_index == enum_to_find);
+  for(auto enum_index : enumerated_vector)
+    found |=(enum_index == enum_to_find);
 
   return found;
 }
@@ -293,12 +293,12 @@ static bool normalize(T begin, T end)
 {
   auto sum = 0.0;
 
-  for (auto it = begin; it != end; ++it)
+  for(auto it = begin; it != end; ++it)
     sum += (*it);
 
   if (sum != 0)
   {
-    for (auto it = begin; it != end; ++it)
+    for(auto it = begin; it != end; ++it)
       (*it) /= sum;
 
     return true;
@@ -321,12 +321,12 @@ static bool normalizePair(T begin, T end)
 {
   auto sum = 0.0;
 
-  for (auto it = begin; it != end; ++it)
+  for(auto it = begin; it != end; ++it)
     sum += (*it).second;
 
   if (sum != 0)
   {
-    for (auto it = begin; it != end; ++it)
+    for(auto it = begin; it != end; ++it)
       (*it).second /= sum;
 
     return true;
@@ -352,7 +352,7 @@ static T selectNormalizedPair(const double &random, T begin, T end)
 {
   auto sum = 0.0;
 
-  if (random >= 0)
+  if(random >= 0)
   {
     auto current = begin;
     sum += (*current).second;
@@ -405,9 +405,9 @@ static T setInRange(T &value, const U &l_bound, const U &r_bound)
   auto min = std::min(l_bound, r_bound);
   auto max = std::max(l_bound, r_bound);
 
-  if (value < min)      
+  if(value < min)      
     return min;
-  else if (value > max)
+  else if(value > max)
     return max;
   
   return value;

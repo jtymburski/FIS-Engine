@@ -43,6 +43,7 @@ RenderElement::RenderElement()
     , acceleration_y{0}
     , delta_x{0}
     , delta_y{0}
+    , fade_rate{0}
     , x{0}
     , y{0}
     , shadow_x{0}
@@ -90,6 +91,11 @@ RenderElement::RenderElement(RenderType type, int32_t remaining_time,
     status = RenderStatus::TIMED_OUT;
 }
 
+/*
+ * Description: 
+ *
+ * Inputs: 
+ */
 RenderElement::RenderElement(Sprite* plep, int32_t x, int32_t y,
     int32_t num_loops)
       : RenderElement()
@@ -104,6 +110,39 @@ RenderElement::RenderElement(Sprite* plep, int32_t x, int32_t y,
   this->num_loops = num_loops;
 }
 
+/*
+ * Description: 
+ *
+ * Inputs: 
+ */
+RenderElement::RenderElement(Sprite* plep, int32_t x, int32_t y, 
+    int32_t alpha_low, int32_t alpha_high, float fade_rate)
+    : RenderElement()
+{
+  setSprite(plep);
+  type = RenderType::CYCLING_FADE;
+  status = RenderStatus::CYCLING;
+
+  this->x = x;
+  this->y = y;
+  this->alpha_low = alpha_low;
+  this->alpha_high = alpha_high;
+
+  /* Set the original sprite's opacity in to shadow alpha for storage */
+  if(plep)
+    shadow_alpha = plep->getOpacity();
+
+  if (fade_rate > 1.0 && fade_rate > 0)
+    this->fade_rate = 1.0;
+  else
+    this->fade_rate = fade_rate;
+}
+
+/*
+ * Description: 
+ *
+ * Inputs: 
+ */
 RenderElement::~RenderElement()
 {
   if (type == RenderType::PLEP)
@@ -189,6 +228,11 @@ bool RenderElement::update(int cycle_time)
   remaining_time -= cycle_time;
   elapsed_time   += cycle_time;
 
+  if (type == RenderType::CYCLING_FADE)
+  {
+    alpha = 255 * abs(sin(cycle_time * fade_rate));
+    alpha = Helpers::setInRange(alpha, alpha_low, alpha_high);
+  }
   if (type == RenderType::PLEP)
   {
     if (render_sprite != nullptr)
@@ -618,6 +662,11 @@ void RenderElement::setShadowX(int32_t new_shadow_x)
 void RenderElement::setShadowY(int32_t new_shadow_y)
 {
   shadow_y = y + new_shadow_y;
+}
+
+void RenderElement::setTimedOut()
+{
+  status = RenderStatus::TIMED_OUT;
 }
 
 void RenderElement::setSizeX(int32_t new_size_x)

@@ -23,16 +23,17 @@
 #include "Helpers.h"
 #include "Game/Player/Person.h"
 
-enum class RenderType : std::uint32_t
+enum class RenderType : std::uint8_t
 {
   NONE             =  0, 
   ACTION_TEXT      =  1,
   ACTION_FRAME     =  2,
-  DAMAGE_VALUE     =  3,
-  RGB_OVERLAY      =  4,
-  RGB_SPRITE_FLASH =  5,
-  RGB_SPRITE_DEATH =  6,
-  PLEP             =  7
+  CYCLING_FADE     =  3,
+  DAMAGE_VALUE     =  4,
+  RGB_OVERLAY      =  5,
+  RGB_SPRITE_FLASH =  6,
+  RGB_SPRITE_DEATH =  7,
+  PLEP             =  8
 };
 
 enum class RenderStatus : std::uint32_t
@@ -42,7 +43,8 @@ enum class RenderStatus : std::uint32_t
   DISPLAYING   = 3,
   FADING_OUT   = 4,
   BOBBING      = 5,
-  TIMED_OUT    = 6
+  CYCLING      = 6,
+  TIMED_OUT    = 7
 };
 
 class RenderElement
@@ -55,6 +57,10 @@ public:
 
   /* Create a Plep */
   RenderElement(Sprite* plep, int32_t x, int32_t y, int32_t num_loops);
+
+  /* Create a continuously fading object */
+  RenderElement(Sprite* plep, int32_t x, int32_t y, int32_t alpha_low, 
+      int32_t alpha_high, float fade_rate);
 
   /* Annihilates a render element */
   ~RenderElement();
@@ -86,6 +92,10 @@ private:
   /* Whether to show shadow or not */
   bool shadow;
 
+  /* Alpha low and high values */
+  uint8_t alpha_low;
+  uint8_t alpha_high;
+
   /* Remaining time and elapsed time of rendering */
   int32_t remaining_time;
   int32_t elapsed_time;
@@ -98,6 +108,9 @@ private:
   /* Change in X/Y which has not been rendered yet */
   float delta_x;
   float delta_y;
+
+  /* The rate of fading for a continuously fading object */
+  float fade_rate;
 
   /* Coordinates for rendering */
   int32_t x;
@@ -223,6 +236,8 @@ public:
 
   /* Assigns the string value for the text */
   void setText(std::string new_text);
+
+  void setTimedOut();
 
   /* Assigns new velocity values */
   void setVelocity(int32_t new_velocity_x, int32_t new_velocity_y);

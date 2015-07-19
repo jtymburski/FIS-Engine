@@ -54,6 +54,7 @@ const float BattleDisplay::kBIGBAR_R = 0.4;
 const uint16_t BattleDisplay::kBIGBAR_R_OFFSET = 25;
 
 const uint8_t BattleDisplay::kCOLOR_BASE = 150;
+const float BattleDisplay::kCYCLE_RATE = 0.003;
 
 const uint16_t BattleDisplay::kDELAY_DAMAGE = 650;
 const uint16_t BattleDisplay::kDELAY_SKILL  = 1500;
@@ -179,29 +180,74 @@ BattleDisplay::~BattleDisplay()
 uint8_t BattleDisplay::updatePersonOpacity(Person* test_person, int32_t cycle_time)
 {
   uint8_t opacity = 0;
+  auto state = getState(test_person);
 
-  if (!test_person->getBFlag(BState::ALIVE))
+  if(test_person && state)
   {
-    if (getState(test_person) != nullptr)
-      getState(test_person)->dying = false;
+    if(!test_person->getBFlag(BState::ALIVE))
+    {
+      if(state)
+        state->dying = false;
 
-    opacity = kPERSON_KO_ALPHA;
-  }
-  else if (getState(test_person) != nullptr && getState(test_person)->dying)
-  { 
-    auto alpha = getPersonSprite(test_person)->getOpacity();
-    float alpha_diff = alpha * 1.0 / 1000 * cycle_time;
+      opacity = kPERSON_KO_ALPHA;
+    }
+    else if(state && state->dying)
+    { 
+      auto alpha = getPersonSprite(test_person)->getOpacity();
+      float alpha_diff = alpha * 1.0 / 1000 * cycle_time;
 
-    alpha_diff = std::max(1.0, (double)alpha_diff);
+      alpha_diff = std::max(1.0, (double)alpha_diff);
 
-    if (alpha_diff > alpha)
-      opacity = 50;
-    else if (alpha - alpha_diff >= 50)
-      opacity = alpha- alpha_diff;
-  }
-  else
-  {
-    opacity = 255;
+      if(alpha_diff > alpha)
+        opacity = 50;
+      else if(alpha - alpha_diff >= 50)
+        opacity = alpha- alpha_diff;
+    }
+    else
+    {
+      opacity = 255;
+    }
+    
+    if (test_person->getBFlag(BState::IS_SELECTING))
+    {
+      auto sprite = getPersonSprite(test_person);
+      if(sprite)
+      {
+        /* If the person is selecting and not set cycling, set cycling */
+        if(!state->cycling)
+        {
+          state->temp_alpha = sprite->getOpacity();
+          state->cycling = true;
+        }
+        /* Else, if they are already cycling -> update opacity of sprite */
+        else
+        {
+          state->elapsed_time += cycle_time;
+
+          // std::cout << "X: " << (float)state->elapsed_time * kCYCLE_RATE << std::endl;
+          // std::cout << "Sin X: " << sin((float)state->elapsed_time * kCYCLE_RATE) << std::endl;
+          // std::cout << "255 Sin X: " << 255 * sin((float)state->elapsed_time * kCYCLE_RATE) << std::endl;
+          // std::cout << "Abs 255 Sin X: " << abs(255 * sin((float)state->elapsed_time * kCYCLE_RATE)) << std::endl;
+
+
+          uint8_t new_alpha = abs(100 * sin((float)state->elapsed_time * kCYCLE_RATE));
+
+          // std::cout << "Val: " << (int)new_alpha << std::endl;
+          opacity = new_alpha + 155;
+        }
+      }
+    }
+    else
+    {
+      /* If the person is not selecting and their state is set to cycling, 
+       * reload the original alpha into their sprite and unset cycling */
+      if(state->cycling)
+      {
+        // sprite->setOpacity(state->temp_alpha);
+        state->cycling = false;
+        state->elapsed_time = 0;
+      }
+    }
   }
   
   return opacity;
@@ -212,6 +258,7 @@ double BattleDisplay::calcPersonBrightness(Person* test_person)
 {
   auto layer_index   = battle->getBattleMenu()->getLayerIndex();
   auto person_index  = battle->getIndexOfPerson(test_person);
+  auto person_state  = getState(test_person);
   auto brightness = 1.0;
 
   if (rendering_state == TurnState::SELECT_ACTION_ALLY)
@@ -221,7 +268,11 @@ double BattleDisplay::calcPersonBrightness(Person* test_person)
       brightness = 0.25;
 
       if(test_person->getBFlag(BState::IS_SELECTING))
-        brightness = 0.5;
+      {
+        brightness = 0.3 * sin((float)person_state->elapsed_time * kCYCLE_RATE);
+        brightness = abs(brightness) + 0.7;
+      }
+
     }
     else if (layer_index == 3 || layer_index == 4)
     {
@@ -1805,10 +1856,15 @@ bool BattleDisplay::setPersonState(Person* person, uint8_t index,
       state->info = createFoeInfo(person, renderer);
     else
       state->info = createFriendInfo(person, renderer);
-
+    
+    state->elapsed_time = 0;
+    state->target_vita = 0;
+    state->target_qtdr = 0;
+    state->temp_alpha = 0;
     state->was_flashing = false;
     state->has_plep = false;
     state->show_action_frame = false;
+    state->cycling = false;
     state->dying = false;
 
     return true;
@@ -2176,6 +2232,10 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
               element->getY());
         }
       }
+      // else if(element->getType() == RenderType::CYCLING_FADE)
+      // {
+
+      // }
     }
 
     /* Render battle bar (on bottom) */
@@ -2858,20 +2918,14 @@ bool BattleDisplay::updateElements(int32_t cycle_time)
               element->calcColorGreen(), element->calcColorBlue());
         }
       }
-      // else if (element->getType() == RenderType::RGB_SPRITE_DEATH)
+      // else if(element->getType() == RenderType::CYCLING_FADE)
       // {
-      //   if (element->getSprite() != nullptr)
-      //   {
-      //     std::cout << "Element alpha: " << (int)element->getAlpha() << std::endl;
-      //     std::cout << "Sprite alpha: " << (int)element->getSprite()->getOpacity();
+      //   auto sprite = element->getSprite();
 
-      //     if (element->getAlpha() >= kPERSON_KO_ALPHA)
-      //       element->getSprite()->setOpacity(element->getAlpha());
-      //     else
-      //       element->getSprite()->setOpacity(kPERSON_KO_ALPHA);
-      //   }
+      //   if(sprite)
+      //     sprite->setOpacity(element->getOpacity());
       // }
-
+      
       if (element->getStatus() == RenderStatus::FADING_IN)
       {
         if (element->getFadeInTime() != 0)
@@ -2935,6 +2989,15 @@ bool BattleDisplay::updateElements(int32_t cycle_time)
           if (state != nullptr)
             state->was_flashing = true;
         }
+        /* If the element was a cycling fade, the object's opacity will be
+         * returned to its original alpha value */
+        // else if(element->getType() == RenderType::CYCLING_FADE)
+        // {
+        //   auto sprite = element->getSprite();
+
+        //   if(sprite)
+        //     sprite->setOpacity(element->getShadowAlpha());
+        // }
 
         delete element;
         element = nullptr;
@@ -3127,7 +3190,7 @@ bool BattleDisplay::updateFriends(int cycle_time)
 {
   for (auto& state : friends_state)
   {
-    if (state != nullptr && state->fp != nullptr && state->self != nullptr)
+    if (state && state->fp && state->self)
     {
       if (state->was_flashing)
       {

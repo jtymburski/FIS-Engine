@@ -51,13 +51,16 @@ struct PersonState
   Person* self;
   Sprite* tp;
 
+  int32_t elapsed_time;
   uint32_t target_vita;
   uint32_t target_qtdr;
+  uint8_t temp_alpha;
 
-  bool was_flashing;
+  bool cycling;
+  bool dying;
   bool has_plep;
   bool show_action_frame;
-  bool dying;
+  bool was_flashing;
 };
 
 class BattleDisplay
@@ -195,6 +198,7 @@ private:
   const static uint16_t kBIGBAR_R_OFFSET; /* Offset off end for right section */
   
   const static uint8_t kCOLOR_BASE; /* Base of color for shifting bars */
+  const static float kCYCLE_RATE; /* Rate of cycling for selecting persons */
 
   const static uint16_t kDELAY_DAMAGE; /* Standard damage delay (ms) */
   const static uint16_t kDELAY_SKILL;  /* Standard skill delay (ms) */
