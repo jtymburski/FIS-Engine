@@ -424,8 +424,8 @@ void Game::setupBattle()
   damage_actions.push_back(new Action("8,DAMAGE,,,,VITA,AMOUNT.100,AMOUNT.30,,95"));
   damage_actions.push_back(new Action("9,DAMAGE,,,,VITA,AMOUNT.300,AMOUNT.35,,95"));
   damage_actions.push_back(new Action("10,DAMAGE,,,,VITA,AMOUNT.500,AMOUNT.50,,95"));
-  damage_actions.push_back(new Action("11,DAMAGE,,,,VITA,AMOUNT.700,PC.1,,95"));
-  damage_actions.push_back(new Action("12,DAMAGE,,,,VITA,AMOUNT.900,PC.5,,95"));
+  damage_actions.push_back(new Action("11,DAMAGE,,,,VITA,AMOUNT.400,PC.1,,95"));
+  damage_actions.push_back(new Action("12,DAMAGE,,,,VITA,AMOUNT.1100,PC.5,,95"));
   damage_actions.push_back(new Action("13,DAMAGE,,,,VITA,AMOUNT.60,PC.10,,95"));
   damage_actions.push_back(new Action("14,DAMAGE,,,,VITA,AMOUNT.75,PC.15,,95"));
   damage_actions.push_back(new Action("15,DAMAGE,,,,VITA,AMOUNT.100,PC.25,,95"));
@@ -720,6 +720,7 @@ void Game::setupBattle()
   Category* human = new Category(200, "Human", "human", normal_stats, 
       top_stats, physical_skills2);
   human->setVitaRegenRate(RegenRate::WEAK);
+  human->setQDRegenRate(RegenRate::WEAK);
   human->setDescription("A regular old joe from Earth.");
   human->setFlag(CategoryState::DEF_ENABLED, true);
   human->setFlag(CategoryState::GRD_ENABLED, true);
@@ -727,7 +728,7 @@ void Game::setupBattle()
 
   Category* bear = new Category(201, "Bear", "bear", normal_stats,
     top_stats, physical_skills);
-  bear->setVitaRegenRate(RegenRate::WEAK);
+  bear->setQDRegenRate(RegenRate::WEAK);
   bear->setDescription("A sentient and intelligent bear!");
   bear->setFlag(CategoryState::DEF_ENABLED, true);
   bear->setFlag(CategoryState::GRD_ENABLED, true);

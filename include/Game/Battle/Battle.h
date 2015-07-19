@@ -543,6 +543,7 @@ public:
 
   /* Unsets the attacking flag for all allies & foes members */
   void unsetActorsAttacking();
+  void unsetActorsSelecting();
 
   Skill* getCurrSkill();
 

@@ -13,6 +13,11 @@
  *
  * TODO
  * ----
+ * 
+ * QUIRKS
+ * ------
+ * - Multi-targets action processing... how to show damage at the same time?
+ * - Death events... HP decrementing before death is taking place
  ******************************************************************************/
 #ifndef BATTLEDISPLAY_H
 #define BATTLEDISPLAY_H

@@ -59,6 +59,7 @@ private:
 
   /* The members who are currently in the Party */
   std::vector<Person*> members;
+  std::vector<Person*> reserve_members;
  
   /* The maximum size of the party */
   uint8_t max_size;
@@ -88,7 +89,7 @@ private:
 public:
   /* Attempts to add a person to the party */
   bool addMember(Person* const new_member);
- 
+
   /* Clears all members of the party except the primary member */
   bool clearParty();
 
@@ -98,6 +99,10 @@ public:
 
   /* Checks if a given person is in the party */
   bool isInParty(Person* const check_person);
+
+  /* Move a member between the Reserve and the Standard party */
+  bool moveMemberToReserve(Person* test_member);
+  bool moveReserveMember(Person* test_member);
 
   /* Prints out the state of the Party */
   void print(const bool &simple = false, const bool &flags = false);
@@ -140,6 +145,9 @@ public:
 
   /* Get all members */
   std::vector<Person*> getMembers();
+
+  /* Get the reserve members */
+  std::vector<Person*> getReserveMembers();
 
   /* Returns the enumerated type of the Party */
   PartyType getPartyType();

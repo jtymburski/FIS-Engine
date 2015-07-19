@@ -136,11 +136,7 @@ bool BattleMenu::incrementLayer(const int32_t &new_layer_index)
 
   else if (new_layer_index == 4)
   {
-    // if (action_type == ActionType::DEFEND)
-    // {
-    //   setMenuFlag(MenuState::SELECTION_VERIFIED, true);
-    // }
-
+    setMenuFlag(MenuState::SELECTION_VERIFIED, true);
     setMenuFlag(MenuState::SKILL_SELECTED, true);
     setMenuFlag(MenuState::ACTION_SELECTED, true);
     

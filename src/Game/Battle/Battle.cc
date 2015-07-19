@@ -118,10 +118,10 @@ const float    Battle::kGUARD_MODIFIER              =   1.10;
 const float    Battle::kSHIELDED_MODIFIER           =   0.00;
 
 const int16_t  Battle::kREGEN_RATE_ZERO_PC           =      0;
-const int16_t  Battle::kREGEN_RATE_WEAK_PC           =      3; 
-const int16_t  Battle::kREGEN_RATE_NORMAL_PC         =      5;
-const int16_t  Battle::kREGEN_RATE_STRONG_PC         =      7;
-const int16_t  Battle::kREGEN_RATE_GRAND_PC          =      9;
+const int16_t  Battle::kREGEN_RATE_WEAK_PC           =      1; 
+const int16_t  Battle::kREGEN_RATE_NORMAL_PC         =      2;
+const int16_t  Battle::kREGEN_RATE_STRONG_PC         =      3;
+const int16_t  Battle::kREGEN_RATE_GRAND_PC          =      4;
 
 /* ------------ Battle Outcome Modifiers ---------------
  * kENEMY_RUN_EXP_PC - %EXP to maintain on pyrric victory (enemies run)
@@ -3293,9 +3293,6 @@ void Battle::selectEnemyActions()
  */
 void Battle::selectUserActions()
 {
-  std::cout << "Select user actions!!" << std::endl;
-  std::cout << "Person index: " << person_index << std::endl;
-  
   auto update_menu         = false;
 
   /* If an action has been selected for a valid person index, grab the info.
@@ -3322,14 +3319,7 @@ void Battle::selectUserActions()
     if (curr_user != nullptr)
     {
       /* Update the curr person as selecting, remove all others as selecting */
-      for (auto& ally : friends->getMembers())
-        if (ally != nullptr)
-          ally->setBFlag(BState::IS_SELECTING, false);
-
-      for (auto& foe : foes->getMembers())
-        if (foe != nullptr)
-          foe->setBFlag(BState::IS_SELECTING, false);
-
+      unsetActorsSelecting();
       curr_user->setBFlag(BState::IS_SELECTING, true);
 
       /* Construct useable battle skills or useable battle item structures */
@@ -3362,6 +3352,7 @@ void Battle::selectUserActions()
   else 
   {
     /* Set the phase complete on the max person index */
+    unsetActorsSelecting();
     setBattleFlag(CombatState::PHASE_DONE);
   }
 }
@@ -3678,12 +3669,23 @@ bool Battle::updatePartyDeaths(Person* target)
 //TODO: Comment
 void Battle::unsetActorsAttacking()
 {
-  for (auto& ally : friends->getMembers())
-    if (ally != nullptr)
+  for(auto& ally : friends->getMembers())
+    if(ally)
       ally->setBFlag(BState::IS_ATTACKING, false);
-  for (auto& foe : foes->getMembers())
-    if (foe != nullptr)
+  for(auto& foe : foes->getMembers())
+    if(foe)
       foe->setBFlag(BState::IS_ATTACKING, false);
+}
+
+//TODO: Comment
+void Battle::unsetActorsSelecting()
+{
+  for(auto& ally : friends->getMembers())
+    if(ally)
+      ally->setBFlag(BState::IS_SELECTING, false);
+  for(auto& foe : foes->getMembers())
+    if(foe)
+      foe->setBFlag(BState::IS_SELECTING, false);
 }
 
 /*

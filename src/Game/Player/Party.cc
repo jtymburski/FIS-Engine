@@ -183,6 +183,58 @@ bool Party::isInParty(Person* const check_person)
 }
 
 /*
+ * Description:
+ *
+ * Inputs: 
+ * Output: 
+ */
+bool Party::moveMemberToReserve(Person* test_member)
+{
+  auto success = false;
+
+  if(test_member)
+  {
+    for(auto it = begin(members); it != end(members); ++it)
+    {
+      if((*it) == test_member)
+      {
+        members.erase(it);
+        reserve_members.push_back(test_member);
+        success = true;
+      }
+    }
+  }
+
+  return success;
+}
+
+/*
+ * Description:
+ *
+ * Inputs:
+ * Output:
+ */
+bool Party::moveReserveMember(Person* test_member)
+{
+  auto success = false;
+
+  if(test_member)
+  {
+    for(auto it = begin(reserve_members); it != end(members); ++it)
+    {
+      if((*it) == test_member)
+      {
+        reserve_members.erase(it);
+        members.push_back(test_member);
+        success = true;
+      }
+    }
+  }
+
+  return success;
+}
+
+/*
  * Description: Prints out the state of the Party.
  *
  * Inputs: const bool simple - whether to print out just simple info 
@@ -198,10 +250,15 @@ void Party::print(const bool &simple, const bool &flags)
 
   if(!simple)
   {
-    std::cout << "----------\n";
+    std::cout << "----- Members -----\n";
 
     for(const auto &member : members)
        std::cout << "Member: " << member->getName() << "\n";
+    std::cout << "----- Reserve Members -----\n";
+    for(const auto& member : reserve_members)
+      std::cout << "Reserve Member: " << member->getName() << "\n";
+
+    std::cout << "--------" << std::endl;
 
     std::cout << "Average Speed: " << getAverageSpeed() << "\n";
     std::cout << "Total Speed: " << getTotalSpeed() << "\n";
@@ -446,6 +503,17 @@ std::string Party::getMemberName(const uint8_t &index)
 std::vector<Person*> Party::getMembers()
 {
   return members;
+}
+
+/*
+ * Description:
+ *
+ * Inputs: 
+ * Output: 
+ */
+std::vector<Person*> Party::getReserveMembers()
+{
+  return reserve_members;
 }
 
 /*
