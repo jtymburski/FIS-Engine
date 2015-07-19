@@ -24,7 +24,7 @@ public:
    * WALKON - walk on by person to initiate interaction
    * WALKOFF - walk off by person to initiate interaction
    * USE - use key to initiate interaction */
-  enum InteractionState{NOINTERACTION, WALKON, WALKOFF, USE};
+  enum InteractionState{NOINTERACTION = 0, WALKON = 1, WALKOFF = 2, USE = 3};
 
 private:
   /* The information that defines the animation image data for the sprite */
