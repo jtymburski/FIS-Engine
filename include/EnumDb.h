@@ -13,6 +13,9 @@
  #define UDEBUG
 #endif
 
+// uncomment to disable assert()
+// #define NDEBUG
+
 #include <cstdint>
 
 /*==============================================================================

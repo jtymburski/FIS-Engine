@@ -19,11 +19,13 @@
 #define HELPERS_H
 
 #include <algorithm> /* std::min(), std::max() */
+#include <cassert>
 #include <cctype>
 #include <chrono>
 #include <functional>
 #include <iostream>
 #include <locale>
+#include <memory>
 #include <random>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>

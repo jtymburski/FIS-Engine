@@ -23,17 +23,14 @@
  *============================================================================*/
 
 /*
- * Description: BattleMenu general constructor. Constructs a new BattleMenu
- *              object with default settings given a pointer to the current
- *              options configuration.
+ * Description: BattleMenu general constructor. Constructs a new BattleMenu.
  *
- * Inputs: Options* running_config - pointer to a running config assignment.
+ * Inputs: none
  */
-BattleMenu::BattleMenu(Options* running_config)
+BattleMenu::BattleMenu()
     : qtdr_cost_paid{0}
     , action_type{ActionType::NONE}
     , action_scope{ActionScope::NO_SCOPE}
-    , config{running_config}
     , selected_item{nullptr}
     , flags{static_cast<MenuState>(0)}
     , window_status{WindowStatus::OFF}
@@ -1587,19 +1584,6 @@ bool BattleMenu::setSelectableTargets(std::vector<int32_t> new_menu_targets)
     }
 
   return (!valid_targets.empty());
-}
-
-/*
- * Description: Assigns a configuration to the BattleMenu.
- *
- * Inputs: Options* new_config - configuration for the BattleMenu
- * Output: bool - true if the config was not nullptr
- */
-bool BattleMenu::setConfiguration(Options* new_config)
-{
-  config = new_config;
-
-  return (config != nullptr);
 }
 
 /*

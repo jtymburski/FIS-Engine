@@ -139,13 +139,12 @@ const int16_t Battle::kRUN_PC_EXP_PENALTY =  5;
 /*
  * Description: Constructs a Battle, given a pointer to Options and two Parties.
  *
- * Inputs: Options* running_config - running config assignment
- *         Party* const friends - pointer to friends party
+ * Inputs: Party* const friends - pointer to friends party
  *         Party* const foes - pointer to foes party
  *         SkillSet* bubbified_skills - skills for a Bubbified person
  *         EventHandler* event_handler - the event handler for hte Battle
  */
-Battle::Battle(Options* running_config, Party* const friends, Party* const foes,
+Battle::Battle(Party* const friends, Party* const foes,
     SkillSet* const bubbified_skills, EventHandler* event_handler)
       : bubbified_skills{bubbified_skills}
       , event_handler{event_handler}
@@ -153,19 +152,18 @@ Battle::Battle(Options* running_config, Party* const friends, Party* const foes,
       , foes{foes}
 
 {
-  if (!checkAIModules())
-    std::cerr << "[Error] Crtical Error: AI Moudles for enemies bad!\n";
-  if (friends == nullptr || foes == nullptr || bubbified_skills == nullptr)
-    std::cerr << "[Error] Critical error: Invalid battle initialization!\n";
+  bool ai_check = checkAIModules();
+
+  assert(ai_check);
+  assert(friends != nullptr && foes != nullptr && bubbified_skills != nullptr);
 
   setupClass();
   determineTurnMode();
   loadBattleStateFlags();
-  setConfiguration(running_config);
 
   action_buffer = new Buffer();
   event_buffer  = new EventBuffer();
-  menu          = new BattleMenu(running_config);
+  menu          = new BattleMenu();
 
   setBattleFlag(CombatState::PHASE_DONE, true);
 }
@@ -381,7 +379,7 @@ void Battle::battleLost()
  */
 void Battle::battleRun()
 {
-  if (getBattleFlag(CombatState::ALLIES_RUN))
+  if (outcome == OutcomeType::ALLIES_RUN)
   {
     /* For each person on the friends team, incur a % penalty against the
      * experience to the next level */
@@ -401,7 +399,7 @@ void Battle::battleRun()
   #endif
 
   }
-  else if (getBattleFlag(CombatState::ENEMIES_RUN))
+  else if (outcome == OutcomeType::ENEMIES_RUN)
   {
     #ifdef UDEBUG
       std::cout << "{ENEMIES RUN} The foes team has ran from Battle! :-/\n";
@@ -769,8 +767,7 @@ std::vector<BattleSkill> Battle::buildBattleSkills(const int32_t &p_index,
  * Inputs: float crit_factor - the already determined crit factor to use
  * Output: int32_t - the base damage of the current action
  */
-int32_t Battle::calcBaseDamage(const float &crit_factor, 
-    const DamageType &damage_type)
+int32_t Battle::calcBaseDamage(const float &crit_factor)
 {
   auto targ_attrs = temp_target_stats.at(pro_index);
 
@@ -902,9 +899,10 @@ int32_t Battle::calcBaseDamage(const float &crit_factor,
   if (curr_target->getBFlag(BState::SHIELDED))
     base_damage *= kSHIELDED_MODIFIER;
 
+  //TODO: Guarding [07-19-15]
   /* For guarding users, they will take kGUARD_MODIFIER factor of their dmg */
-  if (damage_type == DamageType::GUARD)
-    base_damage *= kGUARD_MODIFIER;
+  // if (damage_type == DamageType::GUARD)
+  //   base_damage *= kGUARD_MODIFIER;
 
   base_damage *= crit_factor;
   base_damage = Helpers::setInRange(base_damage, kMINIMUM_DAMAGE, 
@@ -990,38 +988,32 @@ void Battle::calcElementalMods()
     /* User is strong in primary elemental case */
     if (prim_weakness && !secd_weakness)
     {
-      std::cout << "{Elements} -- Prim Weakness" << std::endl;
       prim_user_mod *= kPRIM_ELM_ADV_MODIFIER;
     }
     /* User is strong in secondary elemental case */
     else if (!prim_weakness && secd_weakness)
     {
-      std::cout << "{Elements} -- Secondary Weakness" << std::endl;
       secd_user_mod *= kSECD_ELM_ADV_MODIFIER;
     }
     /* User is strong in both elemental cases */
     else if (prim_weakness && secd_weakness)
     {
-      std::cout << "{Elements} -- Double Weakness" << std::endl;
       prim_user_mod *= kDOUBLE_ELM_ADV_MODIFIER;
       secd_user_mod *= kDOUBLE_ELM_ADV_MODIFIER;
     }
     /* Opponent is strong in primary elemental case */
     else if (prim_strength && !secd_strength)
     {
-      std::cout << "{Elements} -- Prim Strength" << std::endl;
       prim_targ_mod *= kPRIM_ELM_ADV_MODIFIER;
     }
     /* Opponent is strong in secondary elemental case */
     else if (!prim_strength && secd_strength)
     {
-      std::cout << "{Elements} -- Secondary Strength" << std::endl;
       secd_targ_mod *= kSECD_ELM_ADV_MODIFIER;
     }
     /* Opponent is strong in both elemental cases */
     else if (prim_strength && secd_strength)
     {
-      std::cout << "{Elements} -- Double Strength" << std::endl;
       prim_targ_mod *= kDOUBLE_ELM_ADV_MODIFIER;
       secd_targ_mod *= kDOUBLE_ELM_ADV_MODIFIER;
    }
@@ -1202,22 +1194,18 @@ bool Battle::calcIgnoreState()
  */
 int16_t Battle::calcLevelDifference(std::vector<Person*> targets)
 {
-  if (curr_user != nullptr)
+  if(curr_user)
   {
     auto total_lvl = 0;
 
-    for (uint16_t i = 0; i < targets.size(); i++)
-    {
-      if (targets.at(i) != nullptr)
-        total_lvl += targets.at(i)->getLevel();
-    }
-    
-    if (total_lvl != 0)
+    for(const auto &target : targets)
+      if(target)
+        total_lvl += target->getLevel();
+
+    if(total_lvl != 0)
       return curr_user->getLevel() - (total_lvl / targets.size());
   }
-  else
-    std::cerr << "[Error] Cannot compute level difference." << std::endl;
-
+  
   return 0;
 }
 
@@ -1621,8 +1609,7 @@ bool Battle::doesCurrPersonRun()
   auto run_happens    = false;
 
   /* First, determine if a run is possible */
-  can_run_happen &= !getBattleFlag(CombatState::BOSS);
-  can_run_happen &= !getBattleFlag(CombatState::FINAL_BOSS);
+  can_run_happen &= (foes->getPartyType() == PartyType::REGULAR_FOE);
   can_run_happen &= curr_user->getBFlag(BState::ALIVE);
   can_run_happen &= curr_user->getBFlag(BState::RUN_ENABLED);
   
@@ -1634,7 +1621,7 @@ bool Battle::doesCurrPersonRun()
      * momentum will decrease the chance of a successful run */
     std::vector<Person*> other_allies;
     Party* other_enemies;
-    double mmnt_points = 0;
+    double mmnt_p = 0;
 
     if (person_index < 0)
     {
@@ -1647,26 +1634,18 @@ bool Battle::doesCurrPersonRun()
       other_enemies = foes;
     }
 
-    mmnt_points += curr_user->getCurr().getStat(Attribute::MMNT) 
-                   * kUSER_RUN_MODIFIER;
+    mmnt_p +=curr_user->getCurr().getStat(Attribute::MMNT) * kUSER_RUN_MODIFIER;
   
     /* Add each other allies momentum by the factor of ally run modifier */
-    for (auto it = begin(other_allies); it != end(other_allies); ++it)
-      mmnt_points += (*it)->getCurr().getStat(Attribute::MMNT)
-                     * kALLY_RUN_MODIFIER;
+    for(const auto &ally : other_allies)
+      mmnt_p += ally->getCurr().getStat(Attribute::MMNT) * kALLY_RUN_MODIFIER;
 
     /* Add each enemies momentum by the factor of enemy run modifier */
-    for (size_t i = 0; i < other_enemies->getSize(); i++)
-    {
-      auto enemy_stats = other_enemies->getMember(i)->getCurr();
-      mmnt_points += enemy_stats.getStat(Attribute::MMNT) * kENEMY_RUN_MODIFIER;
-    }
+    mmnt_p += other_enemies->getTotalSpeed() * kENEMY_RUN_MODIFIER;
 
     /* Determine the percent change based on run mmnt pc modifier */
-    auto pc_change = kRUN_PC_PER_POINT * mmnt_points;
-    auto run_chance = static_cast<int32_t>((pc_change * 100) + 
-                                          (kBASE_RUN_CHANCE * 100));
-
+    auto pc_change = kRUN_PC_PER_POINT * mmnt_p;
+    auto run_chance = (int32_t)(pc_change * 100) + (kBASE_RUN_CHANCE * 100);
     run_happens = Helpers::chanceHappens(run_chance, 100);
   }
 
@@ -1718,32 +1697,7 @@ void Battle::generalUpkeep()
  */
 void Battle::loadBattleStateFlags()
 {
-  setBattleFlag(CombatState::RANDOM_ENCOUNTER, true);
-
-  if (foes->hasMiniBoss())
-  {
-    setBattleFlag(CombatState::RANDOM_ENCOUNTER, false);
-    setBattleFlag(CombatState::MINI_BOSS, true);
-  }
-  if (foes->hasBoss())
-  {
-    setBattleFlag(CombatState::RANDOM_ENCOUNTER, false);
-    setBattleFlag(CombatState::MINI_BOSS, false);
-    setBattleFlag(CombatState::BOSS, true);
-  }
-  if (foes->hasFinalBoss())
-  {
-    setBattleFlag(CombatState::RANDOM_ENCOUNTER, false);
-    setBattleFlag(CombatState::MINI_BOSS, false);
-    setBattleFlag(CombatState::BOSS, false);
-    setBattleFlag(CombatState::FINAL_BOSS, true);
-  }
-
   setBattleFlag(CombatState::PHASE_DONE, false);
-  setBattleFlag(CombatState::LOSS, false);
-  setBattleFlag(CombatState::VICTORY, false);
-  setBattleFlag(CombatState::ALLIES_RUN, false);
-  setBattleFlag(CombatState::ENEMIES_RUN, false);
   setBattleFlag(CombatState::OUTCOME_PROCESSED, false);
   setBattleFlag(CombatState::OUTCOME_PERFORMED, false);
 }
@@ -1833,9 +1787,9 @@ void Battle::performEvents()
     {
       /* In a succeed run event, the happens flag is used for "allies" */
       if (event->allies)
-        setBattleFlag(CombatState::ALLIES_RUN, true);
+        setOutcome(OutcomeType::ALLIES_RUN);
       else
-        setBattleFlag(CombatState::ENEMIES_RUN, true);
+        setOutcome(OutcomeType::ENEMIES_RUN);
 
       setBattleFlag(CombatState::PHASE_DONE, true);
     }
@@ -1939,6 +1893,11 @@ void Battle::performEvents()
     else if (event->type == EventType::DEATH)
     {
       event->targets.at(0)->setBFlag(BState::ALIVE, false);
+
+      /* Enable all skills corner case (silence cure on death) */
+      auto skills =  curr_target->getCurrSkills();
+      for (size_t i = 0; i < skills->getSize(); i++)
+        skills->setSilenced(i, false);
     }
     else if (event->type == EventType::PARTY_DEATH)
     {
@@ -1946,9 +1905,9 @@ void Battle::performEvents()
 
       /* If a party death occurs on the allies -> victory, else -> loss */
       if (event->allies)
-        setBattleFlag(CombatState::LOSS, true);
+        setOutcome(OutcomeType::DEFEAT);
       else
-        setBattleFlag(CombatState::VICTORY, true);
+        setOutcome(OutcomeType::VICTORY);
     }
     else if (event->type == EventType::INFLICTION)
     {
@@ -2092,7 +2051,7 @@ void Battle::performDamageEvent(BattleEvent* event)
   /* Do the actual damage to the person */
   if (targets.size() > 0)
   {
-    targets.at(0)->doDmg(amount, DamageType::BASE);
+    targets.at(0)->doDmg(amount);
 
     #ifdef UDEBUG
       std::cout << "{" << str_damage << "} " << targets.at(0)->getName() 
@@ -2221,7 +2180,6 @@ void Battle::processBuffer()
 
   auto curr_action_type = ActionType::NONE;
   auto curr_targets = action_buffer->getTargets();
-  auto damage_types = action_buffer->getDamageTypes();
   auto cooldown     = action_buffer->getCooldown();
   curr_action_type  = action_buffer->getActionType();
   curr_user         = action_buffer->getUser();
@@ -2238,7 +2196,7 @@ void Battle::processBuffer()
      * cooldown event to cool the skill processing down */
     if (cooldown == 0)
     {
-      processSkill(curr_targets, damage_types);
+      processSkill(curr_targets);
     }
     else
     {
@@ -2248,7 +2206,7 @@ void Battle::processBuffer()
   }
   else if (curr_action_type == ActionType::ITEM)
   {
-    processItem(curr_targets, damage_types);
+    processItem(curr_targets);
   }
   else if (curr_action_type == ActionType::DEFEND)
   {
@@ -2396,16 +2354,13 @@ bool Battle::performGuard(BattleEvent* guard_event)
  *              action type outcome determinations.
  *
  * Inputs: BattleEvent* battle_event - pointer to the begin action event
- *         damage_types - the type of damage corresponding for each target
  * Output: bool - true if a party death has occured
  */
-bool Battle::processAction(BattleEvent* battle_event,
-    std::vector<DamageType> damage_types)
+bool Battle::processAction(BattleEvent* battle_event)
 {
   auto can_process  = false;
   auto done         = false;  
   auto target_alive = curr_target->getBFlag(BState::ALIVE);
-  auto damage_type  = damage_types.at(pro_index);
   std::vector<Person*> target_vec{curr_target};
 
   /* Non-revive actions can only be processed against targets who are alive */
@@ -2468,16 +2423,14 @@ bool Battle::processAction(BattleEvent* battle_event,
         auto alter_event = event_buffer->createAlterEvent(curr_action,
             action_target, 0);
 
-        done = processAlterAction(alter_event, damage_type, action_target,
-            factor_target);
+        done = processAlterAction(alter_event, action_target, factor_target);
       }
       else
       {
         auto assign_event = event_buffer->createAssignEvent(curr_action, 
             action_target, 0);
 
-        done = processAssignAction(assign_event, damage_type, action_target,
-            factor_target);
+        done = processAssignAction(assign_event, action_target, factor_target);
       }
     }
     else if (curr_action->actionFlag(ActionFlags::DAMAGE))
@@ -2486,7 +2439,7 @@ bool Battle::processAction(BattleEvent* battle_event,
           event_buffer->createDamageEvent(EventType::STANDARD_DAMAGE, 
           curr_target, 0);
     
-      done = processDamageAction(damage_event, damage_type);
+      done = processDamageAction(damage_event);
     }
     else if (curr_action->actionFlag(ActionFlags::INFLICT))
     {
@@ -2636,18 +2589,14 @@ bool Battle::processAilmentUpdate(Ailment* ail)
  *              targets also given a vector of corresponding DamageTypes
  *
  * Inputs: BattleEvent* alter_event - pointer to the altering event
- *         std::vector<DamageType> - vector of corresponding damage types
  *         Person* action_target - actual target of the alteration
  *         Person* factor_target - factor person for value calculation
  *
  * Output: bool - true if a party death (vic. cond.) occured during operation
  */
 bool Battle::processAlterAction(BattleEvent* alter_event, 
-    const DamageType &damage_type, Person* action_target, Person* factor_target)
+    Person* action_target, Person* factor_target)
 {
-  //TODO
-  (void)damage_type;
-
   auto ally_target = friends->isInParty(curr_target);
   auto base_pc  = curr_action->actionFlag(ActionFlags::BASE_PC);
   auto vari_pc  = curr_action->actionFlag(ActionFlags::VARI_PC);
@@ -2708,18 +2657,13 @@ bool Battle::processAlterAction(BattleEvent* alter_event,
  *              or percentage of the user/target's stat.
  *
  * Inputs: BattleEvent* - the pointer to the assignment event
- *         damage_type - incoming damage type (BASE/GUARD) etc.
  *         action_target - the person who will have the assignment done on them.
  *         factor_target - the person who by which the action target changes
  * Output: bool - true if a party death occurs
  */
 bool Battle::processAssignAction(BattleEvent* assign_event, 
-    const DamageType &damage_type,
     Person* action_target, Person* factor_target)
 {
-  //TODO
-  (void)damage_type;
-
   auto ally_target  = friends->isInParty(action_target);
   auto base_pc      = curr_action->actionFlag(ActionFlags::BASE_PC);
   auto vari_pc      = curr_action->actionFlag(ActionFlags::VARI_PC);
@@ -2766,11 +2710,9 @@ bool Battle::processAssignAction(BattleEvent* assign_event,
  *              power values plus other factors.
  *
  * Inputs: BattleEvent* damage_event - the incoming damage event
- *         damage_type - incoming type of damage (BASE/GUARD)
  * Output: bool - true if a party death occurs during processing
  */
-bool Battle::processDamageAction(BattleEvent* damage_event,
-    const DamageType &damage_type)
+bool Battle::processDamageAction(BattleEvent* damage_event)
 {
   auto party_death = false;
   auto actual_crit_factor = 1.00;
@@ -2784,7 +2726,7 @@ bool Battle::processDamageAction(BattleEvent* damage_event,
   else
     damage_event->type = EventType::STANDARD_DAMAGE;
 
-  auto base_damage = calcBaseDamage(actual_crit_factor, damage_type);
+  auto base_damage = calcBaseDamage(actual_crit_factor);
   auto damage_mod  = curr_user->getDmgMod();
   auto damage = static_cast<int32_t>(base_damage * damage_mod);
 
@@ -2792,9 +2734,7 @@ bool Battle::processDamageAction(BattleEvent* damage_event,
   damage_event->amount = damage;
 
   /* Send damage processing (death calculations to process damage amount fn) */
-
   party_death = processDamageAmount(damage);
-  //updateTargetDefense();
 
   if (hasInfliction(Infliction::BERSERK, curr_user))
   {
@@ -2816,7 +2756,6 @@ bool Battle::processDamageAction(BattleEvent* damage_event,
  *              a victory/loss condition)
  *
  * Inputs: int32_t amount - the amount of damage that will be done to the user
- *         DamageType damage_type - type of damage being done
  * Output: bool - true if a party death will occur
  */
 bool Battle::processDamageAmount(int32_t amount)
@@ -2850,6 +2789,8 @@ bool Battle::processDamageAmount(int32_t amount)
  *
  * Inputs: Person* check_person - the person who will die
  * Output: bool - true if a party death occurs
+ * TODO: Remove ailments
+ * TODO: Guarding targets
  */
 bool Battle::processPersonDeath(bool ally_target)
 {
@@ -2972,7 +2913,6 @@ bool Battle::processInflictAction()
       {
         if (ill->getVictim() == curr_target)
         {
-          // Add the ailment here?
           event_buffer->createAilmentEvent(EventType::CURE_INFLICTION, 
               curr_user, curr_target, curr_action, ill);
         }
@@ -2985,15 +2925,10 @@ bool Battle::processInflictAction()
   }
   else
   {
-    event_buffer->createFizzleEvent(EventType::INFLICTION_FIZZLE, curr_user,
-      curr_target);
-
     /* If the person cannot be inflicted with the ailment, create an ailment
      * fizzling event */
-    #ifdef UDEBUG
-      std::cout << "{FAILED} " << curr_target->getName() << " cannot be "
-          << "inflicted with infliction." << std::endl;
-    #endif
+    event_buffer->createFizzleEvent(EventType::INFLICTION_FIZZLE, curr_user,
+      curr_target);
   }
 
   return false;
@@ -3075,15 +3010,12 @@ bool Battle::hasInfliction(Infliction type, Person* check)
  *              which were selected as targets of the item. 
  *
  * Inputs: std::vetor<Person*> targets - the targets for the item
- *         std::vector<DamageType> damage_types - the damage types
  * Output: none
  */
-void Battle::processItem(std::vector<Person*> targets, 
-    std::vector<DamageType> damage_types)
+void Battle::processItem(std::vector<Person*> targets)
 {
   //TODO [04-10-15]
   (void)targets;
-  (void)damage_types;
 
   curr_item  = action_buffer->getItem();
   curr_skill = curr_item->getUseSkill();
@@ -3116,8 +3048,7 @@ void Battle::processItem(std::vector<Person*> targets,
  * Inputs: std::vector<Person*> - vector of targets for processing of curr Skill
  * Output: none
  */
-void Battle::processSkill(std::vector<Person*> targets,
-    std::vector<DamageType> damage_types)
+void Battle::processSkill(std::vector<Person*> targets)
 {
   /* Grab the current skill from the action buffer */
   curr_skill = action_buffer->getSkill();
@@ -3241,7 +3172,7 @@ void Battle::processSkill(std::vector<Person*> targets,
         auto event = event_buffer->createActionEvent(EventType::ACTION_BEGIN, 
             curr_action, curr_skill, curr_user, curr_target, true);
 
-        processAction(event, damage_types);
+        processAction(event);
 
         event_buffer->createActionEvent(EventType::ACTION_END, curr_action, 
             curr_skill, curr_user, curr_target, true);
@@ -3445,15 +3376,12 @@ bool Battle::setupClass()
 {
   action_buffer = nullptr;
   curr_module   = nullptr;
-  config        = nullptr;
   menu          = nullptr;
-
   ailment_update_mode = BattleOptions::FOREST_WALK;
-  turn_mode           = TurnMode::FRIENDS_FIRST;
+  outcome = OutcomeType::NONE;
+  turn_mode = TurnMode::FRIENDS_FIRST;
   turn_state = TurnState::BEGIN;
-
   flags = static_cast<CombatState>(0);
-
   person_index           = 0;
   time_elapsed           = 0;
   time_elapsed_this_turn = 0;
@@ -3742,30 +3670,12 @@ void Battle::updateEnemySelection()
 bool Battle::updatePartyDeaths(Person* target)
 {
   if (target != nullptr)
-  {
-    if (checkPartyDeath(friends, target))
-    {
-      setBattleFlag(CombatState::LOSS, true);
-
-      return true;
-    }
-    else if (checkPartyDeath(foes, target))
-    {
-      setBattleFlag(CombatState::VICTORY, true);
-
-      return true;
-    }
-  }
+    return (checkPartyDeath(friends, target) || checkPartyDeath(foes, target));
 
   return false;
 }
 
-/*
- * Description:
- *
- * Inputs: 
- * Output: 
- */
+//TODO: Comment
 void Battle::unsetActorsAttacking()
 {
   for (auto& ally : friends->getMembers())
@@ -3774,48 +3684,6 @@ void Battle::unsetActorsAttacking()
   for (auto& foe : foes->getMembers())
     if (foe != nullptr)
       foe->setBFlag(BState::IS_ATTACKING, false);
-}
-
-/*
- * Description: Given an incoming type of damage, updates the curr target
- *              as a recently fallen person, unsetting their alive flag, 
- *              removing their actions from the Buffer, unsetting guard
- *              changes to the Buffer, removing all ailments in the Battle
- *              [TODO: Except cure on death? [02-01-15]]. 
- *
- *              Also, calls updatePartyDeaths to check for a BattleVictory.
- *
- * Inputs: damage_type - type of incoming damage causing the death.
- * Output: bool - outcome of updatePartyDeaths()
- */
-bool Battle::updatePersonDeath(const DamageType &damage_type)
-{
-  #ifdef UDEBUG
-    std::cout << "{FALLEN} " << curr_target->getName() << " has fallen!"
-              << std::endl;
-  #endif
-
-  /* Extra assert that the person has died */
-  curr_target->setBFlag(BState::ALIVE, false);
-
-  /* Every action performed by the recently deceased must be removed */
-  action_buffer->removeAllByUser(curr_target);
-
-  /* If a guard dies, the remaining targets must revert back to the guardee */
-  if (damage_type == DamageType::GUARD)
-    action_buffer->rejectGuardTargets(curr_target);
-
-  /* Remove ailments which are cured upon death */
-  for (auto& ailment : ailments)
-    if (ailment->getVictim() == curr_target)
-      removeAilment(ailment);
-
-  /* Enable all skills corner case (silence cure on death) */
-  auto skills =  curr_target->getCurrSkills();
-  for (size_t i = 0; i < skills->getSize(); i++)
-    skills->setSilenced(i, false);
-
-  return updatePartyDeaths(curr_target);
 }
 
 /*
@@ -3945,21 +3813,20 @@ void Battle::setNextTurnState()
   if (getTurnState() != TurnState::DESTRUCT)
   {
     /* If the Battle has been won, go to victory */
-    if (getBattleFlag(CombatState::VICTORY))
+    if (outcome == OutcomeType::VICTORY)
     {
       setTurnState(TurnState::VICTORY);
       battleWon();
     }
 
     /* If the Battle has been lost, GAME OVER */
-    if (getBattleFlag(CombatState::LOSS))
+    if (outcome == OutcomeType::DEFEAT)
     {
       setTurnState(TurnState::LOSS);
       battleLost();
     }
 
-    if (getBattleFlag(CombatState::ALLIES_RUN) || 
-        getBattleFlag(CombatState::ENEMIES_RUN))
+    if(outcome==OutcomeType::ALLIES_RUN || outcome==OutcomeType::ENEMIES_RUN)
     {
       setTurnState(TurnState::RUNNING);
       battleRun();
@@ -4315,27 +4182,11 @@ void Battle::printAll(const bool &simple, const bool &flags, const bool &party)
 
     if (flags)
     {
-      std::cout << "CONFIGURED: " << getBattleFlag(CombatState::CONFIGURED);
-      std::cout << "\nFLAGS_CONFIGURED: " 
-                << getBattleFlag(CombatState::FLAGS_CONFIGURED);
       std::cout << "\nPHASE_DONE: " << getBattleFlag(CombatState::PHASE_DONE);
-      std::cout << "\nVICTORY: " << getBattleFlag(CombatState::VICTORY);
-      std::cout << "\nLOSS: " << getBattleFlag(CombatState::LOSS);
-      std::cout << "\nALLIES_RUN: " << getBattleFlag(CombatState::ALLIES_RUN);
-      std::cout << "\nENEMIES_RUN: " << getBattleFlag(CombatState::ENEMIES_RUN);
       std::cout << "\nOUTCOME_PROCESSED: " 
                 << getBattleFlag(CombatState::OUTCOME_PROCESSED);
       std::cout << "\nOUTCOME PERFORMED: "
                 << getBattleFlag(CombatState::OUTCOME_PERFORMED);
-      std::cout << "\nRANDOM_ENCOUNTER: " 
-                << getBattleFlag(CombatState::RANDOM_ENCOUNTER);
-      std::cout << "\nMINI_BOSS: " << getBattleFlag(CombatState::MINI_BOSS);
-      std::cout << "\nBOSS: " << getBattleFlag(CombatState::BOSS);
-      std::cout << "\nFINAL_BOSS: " << getBattleFlag(CombatState::FINAL_BOSS);
-      // std::cout << "\nPROCESSING_SKILL: " 
-      //           << getBattleFlag(CombatState::PROCESSING_SKILL);
-      // std::cout << "\nPROCESSING_ITEM: " 
-      //           << getBattleFlag(CombatState::PROCESSING_ITEM);
       std::cout << "\n\n";
 
       /* For other processing flags, see print processing function */
@@ -4610,8 +4461,7 @@ bool Battle::update(int32_t cycle_time)
       {
         auto phase_done = getBattleFlag(CombatState::ALL_PROCESSING_COMPLETE);  
 
-        phase_done |= getBattleFlag(CombatState::LOSS);
-        phase_done |= getBattleFlag(CombatState::VICTORY);
+        phase_done |= (outcome != OutcomeType::NONE);
 
         setBattleFlag(CombatState::PHASE_DONE, phase_done);
       }
@@ -4932,13 +4782,9 @@ std::vector<int32_t> Battle::getIndexesOfPersons(std::vector<Person*> persons)
 {
   std::vector<int32_t> indexes;
 
-  for (auto it = begin(persons); it != end(persons); ++it)
-  {
-    auto p_index = getIndexOfPerson(*it);
-
-    if (p_index != 0)
-      indexes.push_back(p_index);
-  }
+  for(const auto &person : persons)
+    if (getIndexOfPerson(person) != 0)
+      indexes.push_back(getIndexOfPerson(person));
 
   return indexes;
 }
@@ -5033,33 +4879,6 @@ std::vector<int32_t> Battle::getValidTargets(int32_t index,
   }
   
   return valid_targets;
-}
-
-/*
- * Description: Assigns the running config. If the new config is not null, 
- *              will call functions to assign screen width, enumerated display
- *              modes based upon the option and turns the configured flag
- *              to true.
- *
- * Inputs: Options* - pointer to running config to be assigned
- * Output: bool - true if the new configuration was asssigned
- */
-bool Battle::setConfiguration(Options* const new_config)
-{
-  if (new_config != nullptr)
-  {
-    config = new_config;
-
-    if (menu != nullptr)
-      menu->setConfiguration(new_config);
-
-    setAilmentUpdateMode(config->getAilmentUpdateState());
-
-    setBattleFlag(CombatState::CONFIGURED, true);
-    return true;
-  }
-
-  return false;
 }
 
 /*

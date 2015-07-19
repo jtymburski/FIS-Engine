@@ -892,21 +892,11 @@ bool Person::createAI(const AIDifficulty &diff,
  * Inputs: amount - amount of damage to deal
  * Output: bool - true if the Person is now dead
  */
-bool Person::doDmg(const uint32_t &amount, DamageType damage_type)
+bool Person::doDmg(const uint32_t &amount)
 {
-  //TODO
-  (void)damage_type;
-
   curr_stats.alterStat(Attribute::VITA, -amount);
   
-  if (curr_stats.getStat(Attribute::VITA) <= 0)
-  {
-    setBFlag(BState::ALIVE, false);
-
-    return true;
-  }
-
-  return false;
+  return (curr_stats.getStat(Attribute::VITA) <= 0);
 }
 
 /*

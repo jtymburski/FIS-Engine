@@ -886,8 +886,7 @@ void Game::setupBattle()
 
   //getPerson(300)->print(false, false, true, true);
 
-  game_battle = new Battle(game_config, friends, enemies, bubbified_skills,
-      &event_handler);
+  game_battle = new Battle(friends, enemies, bubbified_skills, &event_handler);
 
   if(battle_display == nullptr)
   {
@@ -1425,8 +1424,6 @@ bool Game::setConfiguration(Options* running_config)
       game_map->setConfiguration(running_config);
 
     /* Battle configuration setup */
-    if (game_battle != nullptr)
-      game_battle->setConfiguration(running_config);
     if(battle_display != nullptr)
       battle_display->setConfiguration(running_config);
 

@@ -125,35 +125,6 @@ void Party::loadDefaults()
   setFlag(PartyState::ENCOUNTERS_ENABLED, true);
 }
 
-/*
- * Description:
- *
- * Inputs:
- * Output:
- * TODO: Do we need this function? [08-23-14]
- */
-/* Implements the battle use effect of a given item (by game_id) */
-void Party::battleUseItem(const uint32_t &game_id, const uint8_t &index)
-{
-  //TODO: Battle use Item function [01-18-14]
-  (void)game_id;//warning
-  (void)index;//warning
-}
-
-/*
- * Description:
- *
- * Inputs: 
- * Output: 
- */
-/* Implements the menu use effect of a given item (by game_id) */
-void Party::menuUseItem(const uint32_t &game_id, const uint8_t &index)
-{
-  //TODO: Menu use Item function [01-18-14]
-  (void)game_id;//warning
-  (void)index;//warning
-}
-
 /*=============================================================================
  * PUBLIC FUNCTIONS
  *============================================================================*/
@@ -166,17 +137,12 @@ void Party::menuUseItem(const uint32_t &game_id, const uint8_t &index)
  */
 bool Party::addMember(Person* const new_member)
 {
-  if (getFlag(PartyState::CAN_ADD_MEMBERS))
+  if(getFlag(PartyState::CAN_ADD_MEMBERS) && members.size() < max_size && 
+      new_member)
   {
-    if (members.size() < max_size)
-    {
-      if (new_member != nullptr)
-      {
-        members.push_back(new_member);
+    members.push_back(new_member);
 
-        return true;
-      }
-    }
+    return true;
   }
 
   return false;
@@ -186,62 +152,17 @@ bool Party::addMember(Person* const new_member)
  * Description: Clears all members of the party except for the primary leader.
  *
  * Inputs: none
- * Output: bool- true if the party was cleared succesfully.
+ * Output: bool - true if the party was cleared succesfully.
  */
 bool Party::clearParty()
 {
-  auto main_member = members.at(0);
+  if(members.at(0))
+  {
+    members.clear();
+    members.push_back(members.at(0));
 
-  members.clear();
-  members.push_back(main_member);
-
-  if (main_member != nullptr)
     return true;
-
-  return false;
-}
-
-/*
- * Description: Evaluates whether the current party contains a boss.
- *
- * Inputs: none
- * Output: bool - true if the current party contains a boss.
- */
-bool Party::hasBoss()
-{
-  for (auto it = begin(members); it != end(members); ++it)
-    if ((*it)->getPFlag(PState::BOSS))
-      return true;
-
-  return false;
-}
-
-/*
- * Description: Evaluates whether the current party contains a final boss.
- *
- * Inputs: none
- * Output: bool - true if the Party contains a final boss.
- */
-bool Party::hasFinalBoss()
-{
-  for (auto it = begin(members); it != end(members); ++it)
-    if ((*it)->getPFlag(PState::FINAL))
-      return true;
-
-  return false;
-}
-
-/*
- * Description: Evaluates whether the current party contains a mini-boss.
- *
- * Inputs: none
- * Output: bool - true if the party has a mini-boss.
- */
-bool Party::hasMiniBoss()
-{
-  for (auto it = begin(members); it != end(members); ++it)
-    if ((*it)->getPFlag(PState::MINI_BOSS))
-      return true;
+  }
 
   return false;
 }
@@ -254,8 +175,8 @@ bool Party::hasMiniBoss()
  */
 bool Party::isInParty(Person* const check_person)
 {
-  for (auto it = begin(members); it != end(members); ++it)
-    if ((*it) == check_person)
+  for(const auto &member : members)
+    if(member == check_person)
       return true;
 
   return false;
@@ -273,26 +194,22 @@ void Party::print(const bool &simple, const bool &flags)
   std::cout << "=== Party ===\n";
   std::cout << "# Members: " << members.size() << "\n";
   std::cout << "Max Size: " << (int)max_size << "\n";
-  std::cout << "Party State:[VOID]" << "\n";
   std::cout << "Pouch Assigned? " << (pouch != nullptr) << "\n";
 
-  if (!simple)
+  if(!simple)
   {
     std::cout << "----------\n";
-    for (auto member : members)
-      std::cout << "Member: " << member->getName() << "\n";
 
-  
+    for(const auto &member : members)
+       std::cout << "Member: " << member->getName() << "\n";
+
     std::cout << "Average Speed: " << getAverageSpeed() << "\n";
     std::cout << "Total Speed: " << getTotalSpeed() << "\n";
-    std::cout << "Has Boss?: " << hasBoss() << "\n";
-    std::cout << "Has Final Boss?: " << hasFinalBoss() << "\n";
-    std::cout << "Has Mini Boss?: " << hasMiniBoss() << "\n";
     std::cout << "# Dead Members: " << getDeadMembers().size() << "\n";
     std::cout << "# Living Members: " << getLivingMembers().size() << "\n\n";
   }
 
-  if (flags)
+  if(flags)
   {
     std::cout << "ADD: " << getFlag(PartyState::CAN_ADD_MEMBERS);
     std::cout << "\nREMOVE: " << getFlag(PartyState::CAN_REMOVE_MEMBERS);
@@ -312,7 +229,7 @@ void Party::print(const bool &simple, const bool &flags)
  */
 bool Party::removeMember(const uint8_t &index)
 {
-  if (index < members.size() && members.size() > 1)
+  if(index < members.size() && members.size() > 1)
   {
     members.erase(begin(members) + index);
 
@@ -330,12 +247,12 @@ bool Party::removeMember(const uint8_t &index)
  */
 bool Party::removeMember(const std::string &name)
 {
-  if (members.size() == 1)
+  if(members.size() == 1)
     return false;
 
-  for (auto it = begin(members); it != end(members); ++it)
+  for(auto it = begin(members); it != end(members); ++it)
   {
-    if ((*it)->getName() == name)
+    if((*it)->getName() == name)
     {
       members.erase(it);
 
@@ -344,25 +261,6 @@ bool Party::removeMember(const std::string &name)
   }
 
   return false;
-}
-
-/*
- * Description: Uses an itme (given by a game ID) on a given Index (of party
- *              members) of an enumerated ActionOccasion use type.
- *
- * Inputs: uint32_t - game ID of the Item to be used.
- *         uint8_t  - index of party member to have the item used on them
- * Output: bool - true if the item use was successful.
- * //TODO: Wtf with this function yo. [08-23-14]
- */
-bool Party::useItem(const uint32_t &game_id, const uint8_t &index, 
-                    const ActionOccasion &use_type)
-{
-  //TODO: Use item function [01-18-13]
-  (void)game_id;//warning
-  (void)index;//warning
-  (void)use_type;//warning
-  return true;//warning
 }
 
 /*
@@ -400,8 +298,8 @@ std::vector<uint32_t> Party::getDeadMembers()
 
   auto index = 0;
 
-  for (auto it = begin(members); it != end(members); ++it, index++)
-    if (!(*it)->getBFlag(BState::ALIVE))
+  for(auto it = begin(members); it != end(members); ++it, index++)
+    if(!(*it)->getBFlag(BState::ALIVE))
       dead_members.push_back(index);
 
   return dead_members;
@@ -452,8 +350,8 @@ std::vector<uint32_t> Party::getLivingMembers()
   std::vector<uint32_t> living_members;
 
   auto index = 0;
-  for (auto it = begin(members); it != end(members); ++it, index++)
-    if ((*it)->getBFlag(BState::ALIVE))
+  for(auto it = begin(members); it != end(members); ++it, index++)
+    if((*it)->getBFlag(BState::ALIVE))
       living_members.push_back(index);
 
   return living_members;
@@ -470,8 +368,8 @@ std::vector<Person*> Party::getLivingMemberPtrs()
 {
   std::vector<Person*> living_member_ptrs;
 
-  for (auto member : members)
-    if (member->getBFlag(BState::ALIVE))
+  for(const auto &member : members)
+    if(member->getBFlag(BState::ALIVE))
       living_member_ptrs.push_back(member);
 
   return living_member_ptrs;
@@ -497,7 +395,7 @@ uint32_t Party::getMaxSize()
  */
 Person* Party::getMember(const uint8_t &index)
 {
-  if (index < members.size())
+  if(index < members.size())
     return members.at(index);
 
   return nullptr;
@@ -516,17 +414,10 @@ std::vector<Person*> Party::findMembersExcept(Person* const member,
 {
   std::vector<Person*> temp_members;
 
-  for (auto it = begin(members); it != end(members); ++it)
-  {
-    if (*it != member)
-    {
-      /* Add the member if they are dead only if only_living is false */
-      if (only_living && (*it)->getBFlag(BState::ALIVE))
-        temp_members.push_back(*it);
-      else if (!only_living)
-        temp_members.push_back(*it);
-    }
-  }
+  for(const auto &person : members)
+    if(person == member)
+      if((only_living && person->getBFlag(BState::ALIVE)) || !only_living)
+        temp_members.push_back(person);
 
   return temp_members;
 }
@@ -540,7 +431,7 @@ std::vector<Person*> Party::findMembersExcept(Person* const member,
  */
 std::string Party::getMemberName(const uint8_t &index)
 {
-  if (index < members.size())
+  if(index < members.size())
     return members.at(index)->getName();
 
   return "";
@@ -579,9 +470,9 @@ PartyType Party::getPartyType()
 int64_t Party::getTotalSpeed()
 {
   int64_t total_speed{0};
-
-  for (auto it = begin(members); it != end(members); ++it)
-    total_speed += (*it)->getCurr().getStat(Attribute::MMNT);
+  
+  for(const auto &member : members)
+    total_speed += member->getCurr().getStat(Attribute::MMNT);
 
   return total_speed;
 }
@@ -620,13 +511,9 @@ void Party::setID(int id)
  */
 bool Party::setInventory(Inventory* const new_inventory)
 {
-  if (new_inventory != nullptr)
-  {
-    pouch = new_inventory;
-    return true;
-  }
+  pouch = new_inventory;
 
-  return false;
+  return (pouch != nullptr);
 }
 
 /*
@@ -637,7 +524,7 @@ bool Party::setInventory(Inventory* const new_inventory)
  */
 bool Party::setMainMember(const uint8_t &new_main)
 {
-  if (new_main != 0 && new_main < members.size())
+  if(new_main != 0 && new_main < members.size())
   {
     auto old_main = members.at(0);
 

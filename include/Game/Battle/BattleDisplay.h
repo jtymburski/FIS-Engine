@@ -36,7 +36,7 @@ enum class RenderState
   SCREEN_DIMMING                = 1 << 4,
   SCREEN_DIM                    = 1 << 5,
   TURN_TEXT_CREATED             = 1 << 6,
-  SHOW_INFO                     = 1 << 7
+  SHOW_INFO                     = 1 << 7,
 };
 
 /*

@@ -16,6 +16,7 @@
 
 #include <SDL2/SDL.h>
 #include <chrono>
+#include <memory>
 
 #include "Game/Battle/AIModuleTester.h"
 #include "Game/Battle/Battle.h"

@@ -13,10 +13,7 @@
 *
 * TODO
 * ----
-* - Menu use Item function [01-18-14]
-* - Battle use Item function [01-18-14]
 *******************************************************************************/
-
 #ifndef PARTY_H
 #define PARTY_H
 
@@ -57,6 +54,9 @@ private:
   /* Party flag set */
   PartyState flags;
 
+  /* The ID of the party */
+  int32_t id;
+
   /* The members who are currently in the Party */
   std::vector<Person*> members;
  
@@ -65,9 +65,6 @@ private:
 
   /* The type of the Party */
   PartyType party_type;
- 
-  /* The ID of the party */
-  int32_t id;
 
   /* The inventory for the party */
   Inventory* pouch;
@@ -82,15 +79,8 @@ private:
  * PRIVATE FUNCTIONS
  *============================================================================*/
 private:
-
   /* Loads the default settings for a Party */
   void loadDefaults();
-
-  /* Implements the battle use effect of a given item (by game_id) */
-  void battleUseItem(const uint32_t &game_id, const uint8_t &index);
-
-  /* Implements the menu use effect of a given item (by game_id) */
-  void menuUseItem(const uint32_t &game_id, const uint8_t &index);
 
 /*=============================================================================
  * PUBLIC FUNCTIONS
@@ -105,15 +95,6 @@ public:
   /* Returns all the persons in the party except a given user */
   std::vector<Person*> findMembersExcept(Person* const member, 
       const bool &only_living = false);
-  
-  /* Evaluates whether the current party contains a boss */
-  bool hasBoss();
-
-  /* Evaluates whether the current party contains a final boss */
-  bool hasFinalBoss();
-
-  /* Evaluates whether the current party contains a mini boss */
-  bool hasMiniBoss();
 
   /* Checks if a given person is in the party */
   bool isInParty(Person* const check_person);
@@ -126,10 +107,6 @@ public:
 
   /* Attempts to remove a member of the party by a given string name */
   bool removeMember(const std::string &name);
-
-  /* Uses an item (given by game_id) on a given member (index) of a use type */
-  bool useItem(const uint32_t &game_id, const uint8_t &index, 
-               const ActionOccasion &use_type);
 
   /* Calculates and returns the average speed of the Party */
   int32_t getAverageSpeed();

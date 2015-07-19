@@ -50,7 +50,7 @@ class BattleMenu
 {
 public:
   /* BattleMenu */
-  BattleMenu(Options* running_config);
+  BattleMenu();
 
 private:
   /* The QTDR cost paid for a selected action */
@@ -75,12 +75,9 @@ private:
   /* The scope of the action */
   ActionScope action_scope;
 
-  /* Currently assigned options */
-  Options* config;
-
   /* Potentially selected object pointers */
   BattleSkill selected_skill;
-  Item*   selected_item;
+  Item*       selected_item;
 
   /* Set of BattleMenuState flags */
   MenuState flags;
@@ -92,9 +89,9 @@ private:
   Person* current_user;
 
   /* Menu indexes */
-  uint16_t num_allies;
-  int32_t  person_index;
-  int32_t  layer_index;
+  uint16_t    num_allies;
+  int32_t   person_index;
+  int32_t    layer_index;
   int32_t  element_index;
 
 /*=============================================================================
@@ -260,9 +257,6 @@ public:
 
   /* Assigns valid targets for the menu */
   bool setSelectableTargets(std::vector<int32_t> valid_targets);
- 
-  /* Assigns the running configuration of the menu */
-  bool setConfiguration(Options* new_config);
 
   /* Assigns a BattleMenuState flag a given value */
   void setMenuFlag(MenuState flags, const bool &set_value = true);

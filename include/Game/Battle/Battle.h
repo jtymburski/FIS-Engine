@@ -41,33 +41,23 @@ using std::end;
 ENUM_FLAGS(CombatState)
 enum class CombatState
 {
-  CONFIGURED                 = 1 << 0,
-  FLAGS_CONFIGURED           = 1 << 1,
-  PHASE_DONE                 = 1 << 2,
-  VICTORY                    = 1 << 3, // Use OutcomeState enum
-  LOSS                       = 1 << 4, // Use OutcomeState enum
-  ALLIES_RUN                 = 1 << 5, // Use OutcomeState enum
-  ENEMIES_RUN                = 1 << 6,// Usef outcomeState enum
-  OUTCOME_PROCESSED          = 1 << 7,
-  OUTCOME_PERFORMED          = 1 << 8,
-  RANDOM_ENCOUNTER           = 1 << 10, /* Is this just a regular Battle? */
-  MINI_BOSS                  = 1 << 11, /* Is this battle a forced boss? */
-  BOSS                       = 1 << 12, /* Is this battle a boss? */
-  FINAL_BOSS                 = 1 << 13, /* Is this battle the final one? */
-  READY_TO_RENDER            = 1 << 16, /* Processing state done */
-  RENDERING_COMPLETE         = 1 << 17, /* Current render cycle complete */
-  BEGIN_PROCESSING           = 1 << 18, /* This processing loop has begun */
-  BEGIN_ACTION_PROCESSING    = 1 << 19, /* Current action processing begun */
-  ACTION_PROCESSING_COMPLETE = 1 << 20, /* Curr action processing loop done */
-  LAST_INDEX                 = 1 << 21,
-  ALL_PROCESSING_COMPLETE    = 1 << 22, /* Entire processing complete */
-  BEGIN_PERSON_UPKEEPS       = 1 << 23, /* The upkeep phase has started */
-  PERSON_UPKEEP_COMPLETE     = 1 << 24, /* One person state complete */
-  BEGIN_AILMENT_UPKEEPS      = 1 << 25, /* Curr. person has begun ailment up */
-  CURRENT_AILMENT_STARTED    = 1 << 26, /* Curr. ailment processing begun */
-  CURRENT_AILMENT_COMPLETE   = 1 << 27, /* Curr person ailment check stage */
-  COMPLETE_AILMENT_UPKEEPS   = 1 << 28, /* Curr person ailment check done  */
-  ALL_UPKEEPS_COMPLETE       = 1 << 29  /* Upkeep checking stage complete */
+  PHASE_DONE                 = 1 << 0,
+  OUTCOME_PROCESSED          = 1 << 1,
+  OUTCOME_PERFORMED          = 1 << 2,
+  READY_TO_RENDER            = 1 << 3, /* Processing state done */
+  RENDERING_COMPLETE         = 1 << 4, /* Current render cycle complete */
+  BEGIN_PROCESSING           = 1 << 5, /* This processing loop has begun */
+  BEGIN_ACTION_PROCESSING    = 1 << 6, /* Current action processing begun */
+  ACTION_PROCESSING_COMPLETE = 1 << 7, /* Curr action processing loop done */
+  LAST_INDEX                 = 1 << 8,
+  ALL_PROCESSING_COMPLETE    = 1 << 9, /* Entire processing complete */
+  BEGIN_PERSON_UPKEEPS       = 1 << 10, /* The upkeep phase has started */
+  PERSON_UPKEEP_COMPLETE     = 1 << 11, /* One person state complete */
+  BEGIN_AILMENT_UPKEEPS      = 1 << 12, /* Curr. person has begun ailment up */
+  CURRENT_AILMENT_STARTED    = 1 << 13, /* Curr. ailment processing begun */
+  CURRENT_AILMENT_COMPLETE   = 1 << 14, /* Curr person ailment check stage */
+  COMPLETE_AILMENT_UPKEEPS   = 1 << 15, /* Curr person ailment check done  */
+  ALL_UPKEEPS_COMPLETE       = 1 << 16  /* Upkeep checking stage complete */
 };
 
 ENUM_FLAGS(IgnoreState)
@@ -130,9 +120,8 @@ class Battle
 {
 public:
   /* Constructs a party given two parties and configured options */
-  Battle(Options* const running_config, Party* const friends, 
-         Party* const foes, SkillSet* const bubbified_skills, 
-         EventHandler* event_handler);
+  Battle(Party* const friends, Party* const foes,
+      SkillSet* const bubbified_skills, EventHandler* event_handler);
 
   /* Annihilates a Battle object */
   ~Battle();
@@ -172,9 +161,6 @@ private:
   /* Pointers to the battling parties */
   Party* friends;
   Party* foes;
-
-  /* Running config */
-  Options* config;
 
   /* Enumerated outcome value for type of outcome */
   OutcomeType outcome;
@@ -332,8 +318,7 @@ private:
       std::vector<std::pair<Item*, uint16_t>> items);
 
   /* Calculates the base damage for the current action/target setup */
-  int32_t calcBaseDamage(const float &crit_factor, 
-      const DamageType& base_damage);
+  int32_t calcBaseDamage(const float &crit_factor);
 
   /* Calculates the modifiers to be used for curr skill elemental adv setup */
   void calcElementalMods();
@@ -417,8 +402,7 @@ private:
   int16_t getRegenFactor(const RegenRate &regen_rate);
 
   /* General processing action function */
-  bool processAction(BattleEvent* action_event,
-      std::vector<DamageType> damage_types);
+  bool processAction(BattleEvent* action_event);
   
   /* Processing function for the current ailment */
   bool processAilment();
@@ -427,18 +411,15 @@ private:
   bool processAilmentUpdate(Ailment* ail);
 
   /* Processes an alteration action */
-  bool processAlterAction(BattleEvent* alter_event,
-      const DamageType &damage_type, Person* action_target,
+  bool processAlterAction(BattleEvent* alter_event, Person* action_target,
       Person* factor_target);
 
   /* Processes an assigning action */
-  bool processAssignAction(BattleEvent* assign_event, 
-      const DamageType &damage_type, Person* action_target,
+  bool processAssignAction(BattleEvent* assign_event, Person* action_target,
       Person* factor_target);
 
   /* Processes a damaging action */
-  bool processDamageAction(BattleEvent* damage_event, 
-      const DamageType &damage_type);
+  bool processDamageAction(BattleEvent* damage_event);
 
   /* Method for outsourcing an amount of dmg and type of damage to curr targ */
   bool processDamageAmount(int32_t amount);
@@ -456,12 +437,10 @@ private:
   bool processInflictAction();
 
   /* Processes an individual item from a user against targets */
-  void processItem(std::vector<Person*> targets, 
-      std::vector<DamageType> damage_types);
+  void processItem(std::vector<Person*> targets);
 
   /* Processes an individual action from a user against targets */
-  void processSkill(std::vector<Person*> targets, 
-      std::vector<DamageType> damage_types);
+  void processSkill(std::vector<Person*> targets);
 
   /* Checks to see whether a guard action can occur between user and target */
   bool processGuard();
@@ -501,9 +480,6 @@ private:
 
   /* Updates the LOSS/VICTORY flags based on party deaths */
   bool updatePartyDeaths(Person* target);
-
-  /* Resolving effects upon death of a single person -> checks party deaths */
-  bool updatePersonDeath(const DamageType &damage_type);
 
   /* Updates the current targets defense state */
   bool updateTargetDefense();
@@ -635,9 +611,6 @@ public:
 
   /* Obtains a vector of battle member indexes for a given user and scope */
   std::vector<int32_t> getValidTargets(int32_t index, ActionScope action_scope);
-
-  /* Assings the running config */
-  bool setConfiguration(Options* const config);
 
   /* Assign a value to a CombatState flag */
   void setBattleFlag(CombatState flags, const bool &set_value = true);

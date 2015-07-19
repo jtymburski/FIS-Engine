@@ -116,7 +116,7 @@ enum class PState
 {
   SLEUTH             = 1 << 0, /* Is this person in the main Sleuth? */
   BEARACKS           = 1 << 1, /* Is this person in the main Bearacks? */
-  MAIN               = 1 << 2, /* Is this person in main character? */
+  MAIN               = 1 << 2, /* Is this person the main character? */
   FINAL              = 1 << 3, /* Is this person a final boss? */
   BOSS               = 1 << 4, /* Is this person a boss? */
   MINI_BOSS          = 1 << 5, /* Is this person a mini boss? */
@@ -335,7 +335,7 @@ public:
                 const AIPersonality &secd_personality);
 
   /* Shorthand function for dealing damage, returns true if the Person KO's */
-  bool doDmg(const uint32_t &amount, DamageType damage_type);
+  bool doDmg(const uint32_t &amount);
 
   /* Determines if the person is a power defender */
   bool isPowerDefender();

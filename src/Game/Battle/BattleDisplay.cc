@@ -101,7 +101,7 @@ const uint8_t BattleDisplay::kTYPE_SELECT = 3;
 /* ---- Color Constants ---- */
 const SDL_Color BattleDisplay::kSTRD_DMG_COLOR   = {225,  225, 225, 255};
 const SDL_Color BattleDisplay::kCRIT_DMG_COLOR   = {255,  255,   0, 255};
-const SDL_Color BattleDisplay::kPOIS_DMG_COLOR   = { 51,  102,   0, 255};
+const SDL_Color BattleDisplay::kPOIS_DMG_COLOR   = {138,   43, 226, 255};
 const SDL_Color BattleDisplay::kBURN_DMG_COLOR   = {172,    0,   0, 255};
 const SDL_Color BattleDisplay::kVITA_REGEN_COLOR = { 50 , 205,  50, 255};
 const SDL_Color BattleDisplay::kQTDR_REGEN_COLOR = { 0,  128,  255, 255};
@@ -1224,7 +1224,7 @@ RenderElement* BattleDisplay::createDamageValue(Person* target, uint32_t amount)
 void BattleDisplay::createDeath(Person* target)
 {
   RenderElement* element = new RenderElement(RenderType::RGB_SPRITE_DEATH, 
-                                             3000, 0, 2950);
+                                             3000, 300, 2650);
   element->setColor({255, 0, 0, 255});
   element->setCoordinates(getPersonX(target), getPersonY(target));
   element->setSprite(getPersonSprite(target));
@@ -3007,6 +3007,12 @@ bool BattleDisplay::updateEvent()
       processing_delay = 500;
     }
   }
+  else if(curr_event->type == EventType::INFLICTION_FIZZLE)
+  {
+    createDamageText(curr_event->targets.at(0), "Fizzle");
+
+    processing_delay = 500;
+  }
   else if(curr_event->type == EventType::CURE_INFLICTION)
   {
     if (curr_event->targets.size() > 0 && curr_event->targets.at(0))
@@ -3100,7 +3106,7 @@ bool BattleDisplay::updateEvent()
         getState(curr_event->targets.at(0))->dying = true;
 
     createDeath(curr_event->targets.at(0));
-    processing_delay = 2500;
+    processing_delay = 3100;
   }
   else if (curr_event->type == EventType::REGEN_VITA ||
            curr_event->type == EventType::REGEN_QTDR)
