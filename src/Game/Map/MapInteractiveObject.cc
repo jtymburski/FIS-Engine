@@ -709,7 +709,7 @@ bool MapInteractiveObject::setBase(MapThing* base)
  */
 void MapInteractiveObject::setInactiveTime(int time)
 {
-  if(time <= 0)
+  if(time < 0)
     time_return = kRETURN_TIME_UNUSED;
   else
     time_return = time;

@@ -88,13 +88,13 @@ public:
   bool isWalkoverEventSet();
 
   /* Sets the enter event */
-  bool setEnterEvent(Event enter_event);
+  bool setEnterEvent(Event enter_event, bool delete_event = true);
 
   /* Sets the event handler - this call clears out all existing events */
   void setEventHandler(EventHandler* event_handler);
 
   /* Sets the exit event */
-  bool setExitEvent(Event exit_event);
+  bool setExitEvent(Event exit_event, bool delete_event = true);
 
   /* Sets how this state gets interacted with */
   bool setInteraction(InteractionState interaction);
@@ -108,10 +108,10 @@ public:
                  bool delete_old = true);
 
   /* Sets the use event */
-  bool setUseEvent(Event use_event);
+  bool setUseEvent(Event use_event, bool delete_event = true);
 
   /* Sets the walkover event */
-  bool setWalkoverEvent(Event walkover_event);
+  bool setWalkoverEvent(Event walkover_event, bool delete_event = true);
 
   /* The event triggers. Fire to start the event */
   bool triggerEnterEvent(MapPerson* initiator);

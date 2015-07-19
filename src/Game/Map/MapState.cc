@@ -107,7 +107,7 @@ bool MapState::addFileInformation(XmlData data, int file_index,
     {
       Event event = event_handler->updateEvent(getEnterEvent(), data, 
                                                file_index + 1, section_index);
-      success &= setEnterEvent(event);
+      success &= setEnterEvent(event, false);
     }
     else
     {
@@ -121,7 +121,7 @@ bool MapState::addFileInformation(XmlData data, int file_index,
     {
       Event event = event_handler->updateEvent(getExitEvent(), data, 
                                                file_index + 1, section_index);
-      success &= setExitEvent(event);
+      success &= setExitEvent(event, false);
     }
     else
     {
@@ -135,7 +135,7 @@ bool MapState::addFileInformation(XmlData data, int file_index,
     {
       Event event = event_handler->updateEvent(getUseEvent(), data, 
                                                file_index + 1, section_index);
-      success &= setUseEvent(event);
+      success &= setUseEvent(event, false);
     }
     else
     {
@@ -149,7 +149,7 @@ bool MapState::addFileInformation(XmlData data, int file_index,
     {
       Event event = event_handler->updateEvent(getWalkoverEvent(), data, 
                                                file_index + 1, section_index);
-      success &= setWalkoverEvent(event);
+      success &= setWalkoverEvent(event, false);
     }
     else
     {
@@ -364,14 +364,16 @@ bool MapState::isWalkoverEventSet()
  *              operation enters onto this state.
  *
  * Inputs: Event enter_event - the event to be executed
+ *         bool delete_event - delete the old event. Default to true
  * Output: bool - if the setting was able to occur
  */
-bool MapState::setEnterEvent(Event enter_event)
+bool MapState::setEnterEvent(Event enter_event, bool delete_event)
 {
   if(event_handler != NULL)
   {
     /* Delete the existing event and set the new event */
-    this->enter_event = event_handler->deleteEvent(this->enter_event);
+    if(delete_event)
+      this->enter_event = event_handler->deleteEvent(this->enter_event);
     this->enter_event = enter_event;
     return true;
   }
@@ -409,14 +411,16 @@ void MapState::setEventHandler(EventHandler* event_handler)
  *              operation exits this state.
  *
  * Inputs: Event exit_event - the event to be executed
+ *         bool delete_event - delete the old event. Default to true
  * Output: bool - status if the event could be set
  */
-bool MapState::setExitEvent(Event exit_event)
+bool MapState::setExitEvent(Event exit_event, bool delete_event)
 {
   if(event_handler != NULL)
   {
     /* Delet the existing event and set the new event */
-    this->exit_event = event_handler->deleteEvent(this->exit_event);
+    if(delete_event)
+      this->exit_event = event_handler->deleteEvent(this->exit_event);
     this->exit_event = exit_event;
     return true;
   }
@@ -502,14 +506,16 @@ bool MapState::setSprite(TileSprite* frames, uint16_t x, uint16_t y,
  *              have a corresponding next state/transition frames.
  *
  * Inputs: Event use_event - the event to be executed
+ *         bool delete_event - delete the old event. Default to true
  * Output: bool - if the setting was able to occur
  */
-bool MapState::setUseEvent(Event use_event)
+bool MapState::setUseEvent(Event use_event, bool delete_event)
 {
   if(event_handler != NULL)
   {
     /* Delete the existing event and set the new event */
-    this->use_event = event_handler->deleteEvent(this->use_event);
+    if(delete_event)
+      this->use_event = event_handler->deleteEvent(this->use_event);
     this->use_event = use_event;
     return true;
   }
@@ -522,14 +528,16 @@ bool MapState::setUseEvent(Event use_event)
  *              object is on this state and the person walks on it.
  *
  * Inputs: Event walkover_event - the event to be executed
+ *         bool delete_event - delete the old event. Default to true
  * Output: bool - if the setting was able to occur
  */
-bool MapState::setWalkoverEvent(Event walkover_event)
+bool MapState::setWalkoverEvent(Event walkover_event, bool delete_event)
 {
   if(event_handler != NULL)
   {
     /* Delete the existing event and set the new event */
-    this->walkover_event = event_handler->deleteEvent(this->walkover_event);
+    if(delete_event)
+      this->walkover_event = event_handler->deleteEvent(this->walkover_event);
     this->walkover_event = walkover_event;
     return true;
   }
