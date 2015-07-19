@@ -53,6 +53,10 @@ const uint16_t BattleDisplay::kBIGBAR_OFFSET = 88;
 const float BattleDisplay::kBIGBAR_R = 0.4;
 const uint16_t BattleDisplay::kBIGBAR_R_OFFSET = 25;
 
+const uint16_t BattleDisplay::kBOB_AMOUNT = 10;
+const float BattleDisplay::kBOB_RATE = 0.01;
+const uint32_t BattleDisplay::kBOB_TIME = 1000;
+
 const uint8_t BattleDisplay::kCOLOR_BASE = 150;
 const float BattleDisplay::kCYCLE_RATE = 0.003;
 
@@ -211,6 +215,7 @@ uint8_t BattleDisplay::updatePersonOpacity(Person* test_person, int32_t cycle_ti
     if (test_person->getBFlag(BState::IS_SELECTING))
     {
       auto sprite = getPersonSprite(test_person);
+
       if(sprite)
       {
         /* If the person is selecting and not set cycling, set cycling */
@@ -224,15 +229,8 @@ uint8_t BattleDisplay::updatePersonOpacity(Person* test_person, int32_t cycle_ti
         {
           state->elapsed_time += cycle_time;
 
-          // std::cout << "X: " << (float)state->elapsed_time * kCYCLE_RATE << std::endl;
-          // std::cout << "Sin X: " << sin((float)state->elapsed_time * kCYCLE_RATE) << std::endl;
-          // std::cout << "255 Sin X: " << 255 * sin((float)state->elapsed_time * kCYCLE_RATE) << std::endl;
-          // std::cout << "Abs 255 Sin X: " << abs(255 * sin((float)state->elapsed_time * kCYCLE_RATE)) << std::endl;
-
-
-          uint8_t new_alpha = abs(100 * sin((float)state->elapsed_time * kCYCLE_RATE));
-
-          // std::cout << "Val: " << (int)new_alpha << std::endl;
+          uint8_t new_alpha = abs(100 * sin((float)state->elapsed_time * 
+                                            kCYCLE_RATE));
           opacity = new_alpha + 155;
         }
       }
@@ -243,7 +241,7 @@ uint8_t BattleDisplay::updatePersonOpacity(Person* test_person, int32_t cycle_ti
        * reload the original alpha into their sprite and unset cycling */
       if(state->cycling)
       {
-        // sprite->setOpacity(state->temp_alpha);
+        opacity = state->temp_alpha;
         state->cycling = false;
         state->elapsed_time = 0;
       }
@@ -1552,8 +1550,15 @@ bool BattleDisplay::renderFoes(SDL_Renderer* renderer)
     {
       auto foe = foe_state->self;
 
-      success &= foe_state->tp->render(renderer, getPersonX(foe), 
-                                                 getPersonY(foe));
+      if(!foe_state->dying && !foe_state->bobbing)
+      {
+        success &= foe_state->tp->render(renderer, getPersonX(foe), 
+                                                   getPersonY(foe));
+      }
+      else if(!foe_state->dying && foe_state->bobbing)
+      {
+        success &= foe_state->tp->render(renderer, foe_state->x, foe_state->y);
+      }
     }
   }
   
@@ -1727,10 +1732,15 @@ bool BattleDisplay::renderFriends(SDL_Renderer* renderer)
     if(ally_state->fp != nullptr && ally_state->self != nullptr)
     {
       /* If the ally isn't dying, render them */
-      if (!ally_state->dying)
+      if (!ally_state->dying && !ally_state->bobbing)
       {
         success &= ally_state->fp->render(renderer, 
             getPersonX(ally_state->self), getPersonY(ally_state->self));
+      }
+      else if (ally_state->bobbing)
+      {
+        success &= ally_state->fp->render(renderer, ally_state->x, 
+            ally_state->y);
       }
     }
   }
@@ -1857,10 +1867,13 @@ bool BattleDisplay::setPersonState(Person* person, uint8_t index,
     else
       state->info = createFriendInfo(person, renderer);
     
+    state->x = 0;
+    state->y = 0;
     state->elapsed_time = 0;
     state->target_vita = 0;
     state->target_qtdr = 0;
     state->temp_alpha = 0;
+    state->bobbing = false;
     state->was_flashing = false;
     state->has_plep = false;
     state->show_action_frame = false;
@@ -2232,10 +2245,6 @@ bool BattleDisplay::render(SDL_Renderer* renderer)
               element->getY());
         }
       }
-      // else if(element->getType() == RenderType::CYCLING_FADE)
-      // {
-
-      // }
     }
 
     /* Render battle bar (on bottom) */
@@ -2918,13 +2927,6 @@ bool BattleDisplay::updateElements(int32_t cycle_time)
               element->calcColorGreen(), element->calcColorBlue());
         }
       }
-      // else if(element->getType() == RenderType::CYCLING_FADE)
-      // {
-      //   auto sprite = element->getSprite();
-
-      //   if(sprite)
-      //     sprite->setOpacity(element->getOpacity());
-      // }
       
       if (element->getStatus() == RenderStatus::FADING_IN)
       {
@@ -2989,15 +2991,6 @@ bool BattleDisplay::updateElements(int32_t cycle_time)
           if (state != nullptr)
             state->was_flashing = true;
         }
-        /* If the element was a cycling fade, the object's opacity will be
-         * returned to its original alpha value */
-        // else if(element->getType() == RenderType::CYCLING_FADE)
-        // {
-        //   auto sprite = element->getSprite();
-
-        //   if(sprite)
-        //     sprite->setOpacity(element->getShadowAlpha());
-        // }
 
         delete element;
         element = nullptr;
@@ -3041,6 +3034,21 @@ bool BattleDisplay::updateEvent()
     }
 
     processing_delay = kDELAY_SKILL;
+  }
+  else if(curr_event->type == EventType::PASS)
+  {
+    if(curr_event->user)
+    {
+      if(getState(curr_event->user))
+      {
+        getState(curr_event->user)->bobbing = true;
+        getState(curr_event->user)->elapsed_time = 0;
+        getState(curr_event->user)->x = getPersonX(curr_event->user);
+        getState(curr_event->user)->y = getPersonY(curr_event->user);
+      }
+    }
+
+    processing_delay = kBOB_TIME;
   }
   else if(curr_event->type == EventType::ACTION_BEGIN)
   {
@@ -3211,6 +3219,30 @@ bool BattleDisplay::updateFriends(int cycle_time)
       else
       {
         state->fp = state->self->getFirstPerson();
+      }
+
+      /* Update position if bobbing */
+      if(state->bobbing)
+      {
+        state->elapsed_time += cycle_time;
+
+        if(state->elapsed_time >= kBOB_TIME)
+        {
+          state->elapsed_time = 0;
+          state->bobbing = false;
+
+          state->x = 0;
+          state->y = 0;
+        }
+        else
+        {
+          state->x = getPersonX(state->self) + kBOB_AMOUNT * 
+                                sin(state->elapsed_time * kBOB_RATE);
+          state->y = getPersonY(state->self);
+          
+          std::cout << "State X: " << state->x << std::endl;
+          std::cout << "State Y: " << state->y << std::endl;
+        }
       }
     }
   }

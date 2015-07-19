@@ -56,11 +56,15 @@ struct PersonState
   Person* self;
   Sprite* tp;
 
-  int32_t elapsed_time;
+  int32_t x;
+  int32_t y;
+
+  uint32_t elapsed_time;
   uint32_t target_vita;
   uint32_t target_qtdr;
   uint8_t temp_alpha;
 
+  bool bobbing;
   bool cycling;
   bool dying;
   bool has_plep;
@@ -201,6 +205,10 @@ private:
   const static uint16_t kBIGBAR_OFFSET; /* Offset of bar off bottom */
   const static float kBIGBAR_R; /* The percentage of the right section */
   const static uint16_t kBIGBAR_R_OFFSET; /* Offset off end for right section */
+
+  const static uint16_t kBOB_AMOUNT; /* Amount of PX to 'bob the sprites */
+  const static float kBOB_RATE; /* Rate at which to bob the sprites */
+  const static uint32_t kBOB_TIME; /* Time to bob the sprites for */
   
   const static uint8_t kCOLOR_BASE; /* Base of color for shifting bars */
   const static float kCYCLE_RATE; /* Rate of cycling for selecting persons */

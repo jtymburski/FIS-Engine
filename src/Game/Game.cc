@@ -424,8 +424,8 @@ void Game::setupBattle()
   damage_actions.push_back(new Action("8,DAMAGE,,,,VITA,AMOUNT.100,AMOUNT.30,,95"));
   damage_actions.push_back(new Action("9,DAMAGE,,,,VITA,AMOUNT.300,AMOUNT.35,,95"));
   damage_actions.push_back(new Action("10,DAMAGE,,,,VITA,AMOUNT.500,AMOUNT.50,,95"));
-  damage_actions.push_back(new Action("11,DAMAGE,,,,VITA,AMOUNT.400,PC.1,,95"));
-  damage_actions.push_back(new Action("12,DAMAGE,,,,VITA,AMOUNT.1100,PC.5,,95"));
+  damage_actions.push_back(new Action("11,DAMAGE,,,,VITA,AMOUNT.40,PC.1,,95"));
+  damage_actions.push_back(new Action("12,DAMAGE,,,,VITA,AMOUNT.110,PC.5,,95"));
   damage_actions.push_back(new Action("13,DAMAGE,,,,VITA,AMOUNT.60,PC.10,,95"));
   damage_actions.push_back(new Action("14,DAMAGE,,,,VITA,AMOUNT.75,PC.15,,95"));
   damage_actions.push_back(new Action("15,DAMAGE,,,,VITA,AMOUNT.100,PC.25,,95"));
@@ -528,7 +528,7 @@ void Game::setupBattle()
 
 
   Skill* fire_01 = new Skill(110, "Aura of Foot Odor", 
-      ActionScope::ONE_PARTY, damage_actions[11], 85, 25);
+      ActionScope::ALL_ENEMIES, damage_actions[11], 85, 25);
   fire_01->setCooldown(1);
   fire_01->setThumbnail(new Frame("sprites/Battle/Skills/_sample_skill_1.png", active_renderer));
   fire_01->setPrimary(Element::FIRE);
@@ -763,7 +763,7 @@ void Game::setupBattle()
   // Test Persons
   base_person_list.push_back(new Person(300, "Malgidus", bear,
       tactical_samurai));
-  getPerson(300)->addExp(4800000);
+  getPerson(300)->addExp(100);
   getPerson(300)->setCurves(Element::DIGITAL, ElementCurve::C,
                             Element::FOREST, ElementCurve::D, true);
 
@@ -787,13 +787,13 @@ void Game::setupBattle()
   
   base_person_list.push_back(new Person(304, "Kevin", bear,
     tactical_samurai));
-  getPerson(304)->addExp(2800000);
+  getPerson(304)->addExp(100);
   getPerson(304)->setCurves(Element::FOREST, ElementCurve::A,
                             Element::ICE, ElementCurve::C, true);
   std::vector<BattleItem> items;
 
   base_person_list.push_back(new Person(310, "Fale", human, bloodclaw_scion));
-  getPerson(310)->addExp(150000);
+  getPerson(310)->addExp(100);
   getPerson(310)->setCurves(Element::ICE, ElementCurve::C,
                             Element::PHYSICAL, ElementCurve::D, true);
 
