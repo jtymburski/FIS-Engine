@@ -21,7 +21,7 @@
  * CONSTANTS
  *============================================================================*/
 const uint16_t Skill::kDEFAULT_VALUE     =      1;
-const size_t   Skill::kMAX_ACTIONS       =     10;
+const size_t   Skill::kMAX_ACTIONS       =   1000;
 const float    Skill::kMAX_CHANCE        =    100;
 const uint16_t Skill::kMAX_COOLDOWN      =     10;
 const uint32_t Skill::kMAX_COST          =   5000;

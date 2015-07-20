@@ -57,6 +57,10 @@ const uint16_t BattleDisplay::kBOB_AMOUNT = 10;
 const float BattleDisplay::kBOB_RATE = 0.01;
 const uint32_t BattleDisplay::kBOB_TIME = 1000;
 
+const uint16_t BattleDisplay::kRUN_AMOUNT{20};
+const float BattleDisplay::kRUN_RATE{0.03};
+const uint32_t BattleDisplay::kRUN_TIME{750};
+
 const uint8_t BattleDisplay::kCOLOR_BASE = 150;
 const float BattleDisplay::kCYCLE_RATE = 0.003;
 
@@ -1555,8 +1559,9 @@ bool BattleDisplay::renderFoes(SDL_Renderer* renderer)
         success &= foe_state->tp->render(renderer, getPersonX(foe), 
                                                    getPersonY(foe));
       }
-      else if(!foe_state->dying && foe_state->bobbing)
+      else if(!foe_state->dying && (foe_state->bobbing || foe_state->running))
       {
+        std::cout << "Rendering bobbin / runnin!" << std::endl;
         success &= foe_state->tp->render(renderer, foe_state->x, foe_state->y);
       }
     }
@@ -1873,6 +1878,7 @@ bool BattleDisplay::setPersonState(Person* person, uint8_t index,
     state->target_vita = 0;
     state->target_qtdr = 0;
     state->temp_alpha = 0;
+    state->running = false;
     state->bobbing = false;
     state->was_flashing = false;
     state->has_plep = false;
@@ -2713,7 +2719,7 @@ bool BattleDisplay::update(int cycle_time)
       if(!getRenderFlag(RenderState::BEGIN_RENDERING))
       {
         setRenderFlag(RenderState::BEGIN_RENDERING, true);
-        processing_delay = 750;
+        processing_delay = 350;
       }
       else if(!delay)
       {
@@ -2810,7 +2816,7 @@ bool BattleDisplay::update(int cycle_time)
       if (!getRenderFlag(RenderState::BEGIN_RENDERING))
       {
         setRenderFlag(RenderState::BEGIN_RENDERING, true);
-        processing_delay = 1000;
+        processing_delay = 500;
       }
       else if (!delay)
       {
@@ -3050,6 +3056,25 @@ bool BattleDisplay::updateEvent()
 
     processing_delay = kBOB_TIME;
   }
+  else if(curr_event->type == EventType::ATTEMPT_RUN)
+  {
+    if(curr_event->user)
+    {
+      if(getState(curr_event->user))
+      {
+        getState(curr_event->user)->running = true;
+        getState(curr_event->user)->elapsed_time = 0;
+        getState(curr_event->user)->x = getPersonX(curr_event->user);
+        getState(curr_event->user)->y = getPersonY(curr_event->user);
+      }
+    }
+
+    processing_delay = kRUN_TIME;
+  }
+  else if(curr_event->type == EventType::SUCCEED_RUN)
+  {
+
+  }
   else if(curr_event->type == EventType::ACTION_BEGIN)
   {
     curr_event->user->setBFlag(BState::IS_ATTACKING, true);
@@ -3058,10 +3083,9 @@ bool BattleDisplay::updateEvent()
         battle->getCurrSkill()->getAnimation() != nullptr)
     {  
       auto animation = battle->getCurrSkill()->getAnimation();
-      auto plep = createPlep(curr_event->targets.at(0), animation);
+      createPlep(curr_event->targets.at(0), animation);
 
-      processing_delay  = animation->getAnimationTime() * plep->getNumLoops();
-      processing_delay += 150;
+      processing_delay = animation->getAnimationTime();
     }
   }
   else if(curr_event->type == EventType::INFLICTION)
@@ -3075,21 +3099,21 @@ bool BattleDisplay::updateEvent()
         createPlep(curr_event->targets.at(0), plep);
 
       createSpriteFlash(curr_event->targets.at(0), {0, 255, 255, 255}, 450);
-      processing_delay = 500;
+      processing_delay = 400;
     }
   }
   else if(curr_event->type == EventType::INFLICTION_FIZZLE)
   {
     createDamageText(curr_event->targets.at(0), "Fizzle");
 
-    processing_delay = 500;
+    processing_delay = 400;
   }
   else if(curr_event->type == EventType::CURE_INFLICTION)
   {
     if (curr_event->targets.size() > 0 && curr_event->targets.at(0))
     {
       createSpriteFlash(curr_event->targets.at(0), {255, 255, 255, 255}, 450);
-      processing_delay = 500;
+      processing_delay = 400;
     }
   }
   else if(curr_event->type == EventType::ACTION_END)
@@ -3104,7 +3128,7 @@ bool BattleDisplay::updateEvent()
       createSpriteFlash(curr_event->user, {0, 0, 255, 235}, 450);
     }
 
-    processing_delay = 500;
+    processing_delay = 400;
   }
   else if (curr_event->type == EventType::BEGIN_DEFEND)
   {
@@ -3114,7 +3138,7 @@ bool BattleDisplay::updateEvent()
       createSpriteFlash(curr_event->user, {255, 255, 255, 245}, 450);
     }
 
-     processing_delay = 500;
+     processing_delay = 400;
    }
     else if (curr_event->type == EventType::BREAK_DEFEND)
     {
@@ -3147,7 +3171,7 @@ bool BattleDisplay::updateEvent()
      createSpriteFlash(curr_event->targets.at(0), {177, 10, 30, 190}, 450);
     }
 
-    processing_delay = kDELAY_DAMAGE + 100;
+    processing_delay = kDELAY_DAMAGE;
   }
   else if(curr_event->type == EventType::POISON_DAMAGE)
   {
@@ -3157,7 +3181,7 @@ bool BattleDisplay::updateEvent()
       createSpriteFlash(curr_event->targets.at(0), {10, 150, 150, 190}, 550);
     }
 
-    processing_delay = kDELAY_DAMAGE + 250;
+    processing_delay = kDELAY_DAMAGE;
   }
   else if (curr_event->type == EventType::SKILL_MISS ||
       curr_event->type == EventType::ACTION_MISS)
@@ -3230,7 +3254,6 @@ bool BattleDisplay::updateFriends(int cycle_time)
         {
           state->elapsed_time = 0;
           state->bobbing = false;
-
           state->x = 0;
           state->y = 0;
         }
@@ -3239,11 +3262,28 @@ bool BattleDisplay::updateFriends(int cycle_time)
           state->x = getPersonX(state->self) + kBOB_AMOUNT * 
                                 sin(state->elapsed_time * kBOB_RATE);
           state->y = getPersonY(state->self);
-          
-          std::cout << "State X: " << state->x << std::endl;
-          std::cout << "State Y: " << state->y << std::endl;
         }
       }
+      else if(state->running)
+      {
+        state->elapsed_time += cycle_time;
+
+        if(state->elapsed_time >= kRUN_TIME)
+        {
+          state->elapsed_time = 0;
+          state->running = false;
+          state->x = 0;
+          state->y = 0;
+        }
+        else
+        {
+          std::cout << " RUNNIN!" << std::endl; 
+          state->x = getPersonX(state->self) + kRUN_AMOUNT * 
+                                sin(state->elapsed_time * kRUN_RATE);
+          state->y = getPersonY(state->self);
+        }
+      }
+
     }
   }
 

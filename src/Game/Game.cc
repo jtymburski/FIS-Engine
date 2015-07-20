@@ -414,7 +414,7 @@ void Game::setupBattle()
 {
   // Test Actions
   std::vector<Action*> damage_actions;
-  damage_actions.push_back(new Action("1,DAMAGE,,,,,AMOUNT.20,AMOUNT.5,,95"));
+  damage_actions.push_back(new Action("1,DAMAGE,,,,,AMOUNT.1,AMOUNT.1,,95"));
   damage_actions.push_back(new Action("2,DAMAGE,,,,VITA,AMOUNT.20,AMOUNT.5,,95"));
   damage_actions.push_back(new Action("3,DAMAGE,,,,VITA,AMOUNT.20,AMOUNT.5,,95"));
   damage_actions.push_back(new Action("4,DAMAGE,,,,,AMOUNT.20,AMOUNT.5,,95"));
@@ -515,9 +515,14 @@ void Game::setupBattle()
   physical_01->setPrimary(Element::PHYSICAL);
   physical_01->setFlag(SkillFlags::OFFENSIVE);
 
-  Skill* physical_02 = new Skill(101, "Firmament Alteration", ActionScope::TWO_ENEMIES, 
-      damage_actions[10],  95, 45);
-  physical_02->addAction(damage_actions[10]);
+  Skill* physical_02 = new Skill(101, "Firmament Alteration", ActionScope::ONE_ENEMY, 
+      damage_actions[0],  95, 45);
+
+  for (int i = 0; i < 100; i++)
+    physical_02->addAction(damage_actions[0]);
+  
+
+  physical_02->addAction(damage_actions[0]);
   physical_02->setThumbnail(new Frame(base_path + "sprites/Battle/Skills/_sample_skill_2.png", active_renderer));
   physical_02->setDescription("Swing your bear arms at your enemies not just one time, but two (2) times against not one, but two (2) enemies!");
   physical_02->setPrimary(Element::PHYSICAL);
@@ -793,7 +798,7 @@ void Game::setupBattle()
   std::vector<BattleItem> items;
 
   base_person_list.push_back(new Person(310, "Fale", human, bloodclaw_scion));
-  getPerson(310)->addExp(100);
+  getPerson(310)->addExp(200);
   getPerson(310)->setCurves(Element::ICE, ElementCurve::C,
                             Element::PHYSICAL, ElementCurve::D, true);
 

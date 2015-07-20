@@ -64,6 +64,7 @@ struct PersonState
   uint32_t target_qtdr;
   uint8_t temp_alpha;
 
+  bool running;
   bool bobbing;
   bool cycling;
   bool dying;
@@ -209,6 +210,10 @@ private:
   const static uint16_t kBOB_AMOUNT; /* Amount of PX to 'bob the sprites */
   const static float kBOB_RATE; /* Rate at which to bob the sprites */
   const static uint32_t kBOB_TIME; /* Time to bob the sprites for */
+
+  const static uint16_t kRUN_AMOUNT;
+  const static float kRUN_RATE;
+  const static uint32_t kRUN_TIME;
   
   const static uint8_t kCOLOR_BASE; /* Base of color for shifting bars */
   const static float kCYCLE_RATE; /* Rate of cycling for selecting persons */
