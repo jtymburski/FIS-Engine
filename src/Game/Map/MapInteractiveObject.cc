@@ -312,7 +312,7 @@ bool MapInteractiveObject::shiftNext()
   {
     /* Fire exit event */
     if(node_current->state != NULL)
-      node_current->state->triggerExitEvent(action_initiator);
+      node_current->state->triggerExitEvent(action_initiator, this);
 
     /* Shift the pointer and update the frames */
     node_current = node_current->next;
@@ -321,7 +321,7 @@ bool MapInteractiveObject::shiftNext()
 
     /* Fire enter event */
     if(node_current->state != NULL)
-      node_current->state->triggerEnterEvent(action_initiator);
+      node_current->state->triggerEnterEvent(action_initiator, this);
 
     return true;
   }
@@ -343,7 +343,7 @@ bool MapInteractiveObject::shiftPrevious()
   {
     /* Fire exit event */
     if(node_current->state != NULL)
-      node_current->state->triggerExitEvent(action_initiator);
+      node_current->state->triggerExitEvent(action_initiator, this);
 
     node_current = node_current->previous;
     time_elapsed = 0;
@@ -351,7 +351,7 @@ bool MapInteractiveObject::shiftPrevious()
 
     /* Fire enter event */
     if(node_current->state != NULL)
-      node_current->state->triggerEnterEvent(action_initiator);
+      node_current->state->triggerEnterEvent(action_initiator, this);
 
     return true;
   }
@@ -635,7 +635,7 @@ bool MapInteractiveObject::interact(MapPerson* initiator)
     action_initiator = initiator;
 
     /* Fire the use event, if it exists */
-    status |= node_current->state->triggerUseEvent(initiator);
+    status |= node_current->state->triggerUseEvent(initiator, this);
 
     /* Proceed to execute a use event, if it exists */
     if(node_current->state->getInteraction() == MapState::USE)
@@ -824,7 +824,7 @@ void MapInteractiveObject::triggerWalkOn(MapPerson* trigger)
     if(node_current != NULL && node_current->state != NULL)
     {
       /* Trigger walkover event, if valid */
-      node_current->state->triggerWalkoverEvent(person_on);
+      node_current->state->triggerWalkoverEvent(person_on, this);
 
       /* Trigger walk on interaction */
       if(node_current->state->getInteraction() == MapState::WALKON)
@@ -917,7 +917,8 @@ void MapInteractiveObject::update(int cycle_time,
     }
   
     /* Determine if the cycle time has passed on activity response */
-    if(getInactiveTime() != kRETURN_TIME_UNUSED && node_current != node_head)
+    if(getInactiveTime() != kRETURN_TIME_UNUSED && node_current != node_head
+                                                && node_current->state != NULL)
     {
       time_elapsed += cycle_time;
       if(time_elapsed > getInactiveTime())

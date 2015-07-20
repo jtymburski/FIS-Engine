@@ -114,10 +114,10 @@ public:
   bool setWalkoverEvent(Event walkover_event, bool delete_event = true);
 
   /* The event triggers. Fire to start the event */
-  bool triggerEnterEvent(MapPerson* initiator);
-  bool triggerExitEvent(MapPerson* initiator);
-  bool triggerUseEvent(MapPerson* initiator);
-  bool triggerWalkoverEvent(MapPerson* initiator);
+  bool triggerEnterEvent(MapPerson* initiator, MapThing* source = NULL);
+  bool triggerExitEvent(MapPerson* initiator, MapThing* source = NULL);
+  bool triggerUseEvent(MapPerson* initiator, MapThing* source = NULL);
+  bool triggerWalkoverEvent(MapPerson* initiator, MapThing* source = NULL);
 
   /* Unsets the matrix internally from the state */
   void unsetMatrix();

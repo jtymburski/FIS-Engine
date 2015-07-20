@@ -549,15 +549,16 @@ bool MapState::setWalkoverEvent(Event walkover_event, bool delete_event)
  * Description: Triggers enter event for the state by initiating person pointer.
  *
  * Inputs: MapPerson* initiator - the initiating person for the event
+ *         MapThing* source - the source thing of the event. Default to NULL
  * Output: bool - true if the event is triggered
  */
-bool MapState::triggerEnterEvent(MapPerson* initiator)
+bool MapState::triggerEnterEvent(MapPerson* initiator, MapThing* source)
 {
   /* Only proceed with event if it's a valid event */
   if(event_handler != NULL &&
      enter_event.classification != EventClassifier::NOEVENT)
   {
-    event_handler->executeEvent(enter_event, initiator);
+    event_handler->executeEvent(enter_event, initiator, source);
     return true;
   }
 
@@ -568,15 +569,16 @@ bool MapState::triggerEnterEvent(MapPerson* initiator)
  * Description: Triggers exit event for the state by initiating person pointer.
  *
  * Inputs: MapPerson* initiator - the initiating person for the event
+ *         MapThing* source - the source thing of the event. Default to NULL
  * Output: bool - true if the event is triggered
  */
-bool MapState::triggerExitEvent(MapPerson* initiator)
+bool MapState::triggerExitEvent(MapPerson* initiator, MapThing* source)
 {
   /* Only proceed with event if it's a valid event */
   if(event_handler != NULL && 
      exit_event.classification != EventClassifier::NOEVENT)
   {
-    event_handler->executeEvent(exit_event, initiator);
+    event_handler->executeEvent(exit_event, initiator, source);
     return true;
   }
 
@@ -587,15 +589,16 @@ bool MapState::triggerExitEvent(MapPerson* initiator)
  * Description: Triggers use event for the state by initiating person pointer.
  *
  * Inputs: MapPerson* initiator - the initiating person for the event
+ *         MapThing* source - the source thing of the event. Default to NULL
  * Output: bool - true if the event is triggered
  */
-bool MapState::triggerUseEvent(MapPerson* initiator)
+bool MapState::triggerUseEvent(MapPerson* initiator, MapThing* source)
 {
   /* Only proceed with event if it's a valid event */
   if(event_handler != NULL && 
      use_event.classification != EventClassifier::NOEVENT)
   {
-    event_handler->executeEvent(use_event, initiator);
+    event_handler->executeEvent(use_event, initiator, source);
     return true;
   }
 
@@ -607,15 +610,16 @@ bool MapState::triggerUseEvent(MapPerson* initiator)
  *              pointer.
  *
  * Inputs: MapPerson* initiator - the initiating person for the event
+ *         MapThing* source - the source thing of the event. Default to NULL
  * Output: bool - true if the event is triggered
  */
-bool MapState::triggerWalkoverEvent(MapPerson* initiator)
+bool MapState::triggerWalkoverEvent(MapPerson* initiator, MapThing* source)
 {
   /* Only proceed with event if it's a valid event */
   if(event_handler != NULL && 
      walkover_event.classification != EventClassifier::NOEVENT)
   {
-    event_handler->executeEvent(walkover_event, initiator);
+    event_handler->executeEvent(walkover_event, initiator, source);
     return true;
   }
 
