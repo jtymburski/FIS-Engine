@@ -390,7 +390,7 @@ bool MapInteractiveObject::addThingInformation(XmlData data, int file_index,
   if(node_head == NULL)
   {
     appendEmptyNode();
-    node_head->state = new MapState();
+    node_head->state = new MapState(event_handler);
     node_head->state->setMatrix(new SpriteMatrix());
     setParentFrames();
   }

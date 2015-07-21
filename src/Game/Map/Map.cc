@@ -416,9 +416,13 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
 
   /* Proceed to update the thing information from the XML data */
   if(modified_thing != NULL)
-    return (success && modified_thing->addThingInformation(
+  {
+    success &= modified_thing->addThingInformation(
                                       data, kFILE_CLASSIFIER + 1, section_index, 
-                                      renderer, base_path));
+                                      renderer, base_path);
+    return success;
+  }
+
   return false;
 }
 
