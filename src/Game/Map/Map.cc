@@ -1789,7 +1789,7 @@ bool Map::update(int cycle_time)
     player->getTarget()->clearTarget();
     player->clearTarget();
   }
-  
+
   /* Update the sprite animation */
   for(uint16_t i = 0; i < tile_sprites.size(); i++)
     tile_sprites[i]->update(cycle_time);

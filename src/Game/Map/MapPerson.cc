@@ -359,13 +359,16 @@ bool MapPerson::setTileStart(Tile* old_tile, Tile* new_tile,
   /* Attempt and set the tile */
   if(new_tile != NULL && old_tile != NULL)
   {
-    if(new_tile->setPerson(this, render_depth, no_events))
+    bool is_same = false;
+    if(render_depth == 0)
+      is_same = (new_tile->getPerson(0) == this);
+    if(new_tile->setPerson(this, render_depth, no_events || is_same))
     {
       old_tile->personMoveStart(render_depth);
 
       /* Special events if person and thing is set on tile at render level 0 */
       if(getID() == kPLAYER_ID && render_depth == 0 && new_tile->isThingSet(0)
-                             && old_tile->getThing(0) != new_tile->getThing(0))
+                              && old_tile->getThing(0) != new_tile->getThing(0))
         new_tile->getThing(0)->triggerWalkOn(this);
 
       return true;
