@@ -1377,14 +1377,14 @@ bool Game::render(SDL_Renderer* renderer)
   if(base_item_list.empty())
   {
     Item* item1 = new Item(0, "Bubby Saber", 125, new Frame(
-        "sprites/Map/Tiles/Scenery/Interactables/Weapons/02_Uncommon/BubbySaber01_AA_A00.png", 
+        "sprites/Map/Tiles/00_Generic/Scenery/Interactables/Weapons/02_Uncommon/BubbySaber01_AA_A00.png", 
         renderer));
     Item* item2 = new Item(1, "Frost Bubby", 5, new Frame(
                            "sprites/Battle/Bubbies/frosty_t1.png", renderer));
     Item* item3 = new Item(2, "Coins", 1, new Frame(
                            "sprites/Map/_TEST/coins_AA_A00.png", renderer));
     Item* item4 = new Item(3, "Ravizer Sword", 250, new Frame(
-        "sprites/Map/Tiles/Scenery/Interactables/Weapons/03_Rare/RavizerSword07_AA_A00.png", 
+        "sprites/Map/Tiles/00_Generic/Scenery/Interactables/Weapons/03_Rare/RavizerSword07_AA_A00.png", 
         renderer));
     Item* item5 = new Item(4, "Blazing Bubby", 4, new Frame(
                             "sprites/Battle/Bubbies/blazing_t1.png", renderer));
