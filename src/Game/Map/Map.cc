@@ -342,28 +342,35 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
     base_id = data.getDataInteger();
 
   /* Identify which thing to be created */
-  if(identifier == "mapthing" || identifier == "mapio")
+  if(identifier == "mapthing")
   {
     /* Create a new thing, if one doesn't exist */
     modified_thing = getThing(id);
     if(modified_thing == NULL)
     {
-      if(identifier == "mapthing")
-        modified_thing = new MapThing();
-      else
-        modified_thing = new MapInteractiveObject();
+      modified_thing = new MapThing();
       new_thing = true;
       things.push_back(modified_thing);
     }
 
     /* Attempt to add base, if applicable */
     if(base_id >= 0)
+      success &= modified_thing->setBase(getThingBase(base_id));
+  }
+  else if(identifier == "mapio")
+  {
+    /* Create a new MIO, if one doesn't exist */
+    modified_thing = getIO(id);
+    if(modified_thing == NULL)
     {
-      if(identifier == "mapthing")
-        success &= modified_thing->setBase(getThingBase(base_id));
-      else
-        success &= modified_thing->setBase(getIOBase(base_id));
+      modified_thing = new MapInteractiveObject();
+      new_thing = true;
+      ios.push_back(static_cast<MapInteractiveObject*>(modified_thing));
     }
+
+    /* Attempt to add base, if applicable */
+    if(base_id >= 0)
+      success &= modified_thing->setBase(getIOBase(base_id));
   }
   else if(identifier == "mapperson" || identifier == "mapnpc")
   {
@@ -426,6 +433,24 @@ bool Map::addThingData(XmlData data, uint16_t section_index,
   return false;
 }
 
+/* Returns the interactive object, based on the ID */
+MapInteractiveObject* Map::getIO(uint16_t id)
+{
+  for(uint32_t i = 0; i < ios.size(); i++)
+    if(ios[i]->getID() == id)
+      return ios[i];
+  return NULL;
+}
+
+/* Returns the base interactive object, based on the ID */
+MapInteractiveObject* Map::getIOBase(uint16_t id)
+{
+  for(uint32_t i = 0; i < base_ios.size(); i++)
+    if(base_ios[i]->getID() == id)
+      return base_ios[i];
+  return NULL;
+}
+
 /* Returns the item, based on the ID */
 MapItem* Map::getItem(uint16_t id)
 {
@@ -435,20 +460,12 @@ MapItem* Map::getItem(uint16_t id)
   return NULL;
 }
 
+/* Returns the base item, based on the ID */
 MapItem* Map::getItemBase(uint16_t id)
 {
   for(uint32_t i = 0; i < base_items.size(); i++)
     if(base_items[i]->getID() == id)
       return base_items[i];
-  return NULL;
-}
-
-/* Returns the interactive object, based on the ID */
-MapInteractiveObject* Map::getIOBase(uint16_t id)
-{
-  for(uint32_t i = 0; i < base_ios.size(); i++)
-    if(base_ios[i]->getID() == id)
-      return base_ios[i];
   return NULL;
 }
 
@@ -461,6 +478,7 @@ MapPerson* Map::getPerson(uint16_t id)
   return NULL;
 }
 
+/* Returns the base person, based on the ID */
 MapPerson* Map::getPersonBase(uint16_t id)
 {
   for(uint32_t i = 0; i < base_persons.size(); i++)
@@ -478,6 +496,7 @@ MapThing* Map::getThing(uint16_t id)
   return NULL;
 }
 
+/* Returns the base thing, based on the ID */
 MapThing* Map::getThingBase(uint16_t id)
 {
   for(uint32_t i = 0; i < base_things.size(); i++)
@@ -486,7 +505,7 @@ MapThing* Map::getThingBase(uint16_t id)
   return NULL;
 }
 
-// TODO: Revise to use the getters??
+// TODO: Comment
 std::vector<MapThing*> Map::getThingData(std::vector<int> thing_ids)
 {
   std::vector<MapThing*> used_things;
@@ -497,43 +516,27 @@ std::vector<MapThing*> Map::getThingData(std::vector<int> thing_ids)
     /* Only continue if the ID is valid and >= 0 */
     if(*i >= 0)
     {
-      bool found = false;
+      MapThing* found_thing = NULL;
+      
+      /* Check if is thing */
+      found_thing = getThing(*i);
 
-      /* Loop through things */
-      for(auto j = things.begin(); j != things.end(); j++)
-      {
-        if(!found && *i == (*j)->getID())
-        {
-          used_things.push_back(*j);
-          found = true;
-        }
-      }
+      /* Otherwise, check if IO */
+      if(found_thing == NULL)
+        found_thing = getIO(*i);
 
-      /* Loop through persons */
-      if(!found)
-      {
-        for(auto j = persons.begin(); j != persons.end(); j++)
-        {
-          if(!found && *i == (*j)->getID())
-          {
-            used_things.push_back(static_cast<MapThing*>(*j));
-            found = true;
-          }
-        }
-      }
+      /* Otherwise, check person */
+      if(found_thing == NULL)
+        found_thing = getPerson(*i);
 
-      /* Loop through items */
-      if(!found)
-      {
-        for(auto j = items.begin(); j != items.end(); j++)
-        {
-          if(!found && *i == (*j)->getID())
-          {
-            used_things.push_back(static_cast<MapThing*>(*j));
-            found = true;
-          }
-        }
-      }
+      /* Otherwise, check if item */
+      if(found_thing == NULL)
+        found_thing = getItem(*i);
+
+      /* If found, append to stack */
+      if(found_thing != NULL)
+        used_things.push_back(found_thing);
+
     }
   }
 
@@ -646,6 +649,7 @@ void Map::initiateThingInteraction(MapPerson* initiator)
 
     /* Things to look for */
     std::vector<MapItem*> items_found;
+    MapInteractiveObject* io_found = NULL;
     MapPerson* person_found = NULL;
     MapThing* thing_found = NULL;
 
@@ -693,6 +697,10 @@ void Map::initiateThingInteraction(MapPerson* initiator)
               if(!finished && thing_found == NULL)
                 thing_found = geography[map_index][x][y]->getThing(0);
 
+              /* Check for IO */
+              if(!finished && io_found == NULL)
+                io_found = geography[map_index][x][y]->getIO(0);
+
               /* Check for item(s) */
               if(!finished && items_found.size() == 0)
                 items_found = thing_tiles[i][j]->getItems();
@@ -705,6 +713,10 @@ void Map::initiateThingInteraction(MapPerson* initiator)
       if(person_found != NULL)
       {
         person_found->interact(initiator);
+      }
+      else if(io_found != NULL)
+      {
+        io_found->interact(initiator);
       }
       else if(thing_found != NULL)
       {
@@ -1391,6 +1403,28 @@ bool Map::loadMap(std::string file, SDL_Renderer* renderer, bool encryption)
         things[i]->unsetFrames(true);
       }
     }
+    
+    /* IO clean-up and tile set-up */
+    for(uint16_t i = 0; i < ios.size(); i++)
+    {
+      /* Clean the matrix - fixes up the rendering box */
+      if((ios[i]->getBase() != NULL && 
+          ios[i]->getBase()->getFrames().size() > 0) || 
+         ios[i]->cleanMatrix())
+      {
+        /* Get the tile matrix to match the frames and set */
+        std::vector<std::vector<Tile*>> tile_set = getTileMatrix(ios[i]);
+        if(tile_set.size() > 0)
+          ios[i]->setStartingTiles(tile_set, 
+                                   ios[i]->getStartingSection(), true);
+        else
+          ios[i]->unsetFrames(true);
+      }
+      else
+      {
+        ios[i]->unsetFrames(true);
+      }
+    }
 
     /* Person clean-up and tile set-up */
     for(uint16_t i = 0; i < persons.size(); i++)
@@ -1541,6 +1575,11 @@ bool Map::render(SDL_Renderer* renderer)
         if(render_thing != NULL)
           render_thing->renderMain(renderer, geography[map_index][i][j], 0, 
                                    x_offset, y_offset);
+        /* Base map IO, if relevant */
+        MapInteractiveObject* render_io = geography[map_index][i][j]->getIO(0);
+        if(render_io != NULL)
+          render_io->renderMain(renderer, geography[map_index][i][j], 0, 
+                                x_offset, y_offset);
       }
     }
 
@@ -1551,12 +1590,14 @@ bool Map::render(SDL_Renderer* renderer)
       {
         for(uint16_t j = tile_y_start; j < tile_y_end; j++)
         {
+          MapInteractiveObject* render_io = NULL;
           MapPerson* render_person = NULL;
           MapThing* render_thing = NULL;
 
           /* Acquire render things and continue forward if some are not null */
           if(geography[map_index][i][j]->getRenderThings(index, render_person, 
-                                                         render_thing))
+                                                         render_thing, 
+                                                         render_io))
           {
             /* Different indexes result in different rendering procedures
              * If base index, render order is top item, thing, then person */
@@ -1590,6 +1631,10 @@ bool Map::render(SDL_Renderer* renderer)
               if(render_thing != NULL)
                 render_thing->renderMain(renderer, geography[map_index][i][j], 
                                          index, x_offset, y_offset);
+
+              if(render_io != NULL)
+                render_io->renderMain(renderer, geography[map_index][i][j],
+                                      index, x_offset, y_offset);
             }
           }
         }
@@ -1632,6 +1677,7 @@ bool Map::setConfiguration(Options* running_config)
 }
   
 // Possibly make the teleport add the ability of shifting map thing
+// TODO: REVISE FOR TELEPORT OF ANY THING
 void Map::teleportThing(int id, int tile_x, int tile_y, int section_id)
 {
   /* If the section id is below 0, then set to internal map index */
@@ -1707,7 +1753,15 @@ void Map::unloadMap()
     persons[i] = NULL;
   }
   persons.clear();
-  
+ 
+  /* Delete the IOs */
+  for(uint16_t i = 0; i < ios.size(); i++)
+  {
+    delete ios[i];
+    ios[i] = NULL;
+  }
+  ios.clear();
+
   /* Delete the things */
   for(uint16_t i = 0; i < things.size(); i++)
   {
@@ -1817,13 +1871,15 @@ bool Map::update(int cycle_time)
   
   /* Update map things */
   for(uint16_t i = 0; i < base_things.size(); i++)
-    if(base_things[i]->classDescriptor() == "MapThing")
-      base_things[i]->update(cycle_time, tile_set);
+    base_things[i]->update(cycle_time, tile_set);
   for(uint16_t i = 0; i < things.size(); i++)
-    if(things[i]->getBase() == NULL || 
-       things[i]->classDescriptor() != "MapThing")
+    if(things[i]->getBase() == NULL)
       things[i]->update(cycle_time, tile_set);
   
+  /* Update map interactive objects */
+  for(uint16_t i = 0; i < ios.size(); i++)
+    ios[i]->update(cycle_time, tile_set);
+
   /* Finally, update the viewport and dialogs */
   item_menu.update(cycle_time);
   map_dialog.update(cycle_time);

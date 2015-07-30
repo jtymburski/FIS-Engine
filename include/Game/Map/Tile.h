@@ -13,6 +13,7 @@
 #ifndef TILE_H
 #define TILE_H
 
+class MapInteractiveObject;
 class MapItem;
 class MapPerson;
 class MapThing;
@@ -66,11 +67,10 @@ private:
   std::vector<uint8_t> lower_passability;
 
   /* The things that are on the given tile - only used to store location */
+  std::vector<MapInteractiveObject*> ios;
   std::vector<MapItem*> items;
-  //std::vector<MapPerson*> persons; // TODO: Remove
   std::vector<MapPerson*> persons_main;
   std::vector<MapPerson*> persons_prev;
-  //std::vector<bool> persons_prev; // TODO: Remove
   std::vector<MapThing*> things;
 
   /* The upper information */
@@ -87,6 +87,7 @@ private:
 private:
   /* Grow the things and persons stack, to allow for the current render
    * level */
+  bool growIOStack(uint8_t render_level);
   bool growPersonStack(uint8_t render_level);
   bool growThingStack(uint8_t render_level);
 
@@ -118,7 +119,11 @@ public:
 
   /* Returns the stored height of the tile */
   uint16_t getHeight() const;
-  
+ 
+  /* Returns the map IO pointer for the interactive object */
+  MapInteractiveObject* getIO(uint8_t render_level) const;
+  std::vector<MapInteractiveObject*> getIOs() const;
+
   /* Returns the map thing pointer for the item object */
   uint16_t getItemCount() const;
   std::vector<MapItem*> getItems() const;
@@ -148,7 +153,7 @@ public:
 
   /* Returns the render stack for applicable things based on level */
   bool getRenderThings(uint8_t render_level, MapPerson*& person, 
-                       MapThing*& thing) const;
+                       MapThing*& thing, MapInteractiveObject*& io) const;
 
   /* Returns the tile status */
   TileStatus getStatus() const;
@@ -177,7 +182,11 @@ public:
 
   /* Returns if the Enhancer Layer is set */
   bool isEnhancerSet() const;
-  
+ 
+  /* Returns if the map interactive object is set */
+  bool isIOSet(uint8_t render_level) const;
+  bool isIOsSet() const;
+
   /* Returns if an item thing is set */
   bool isItemsSet() const;
   
@@ -225,6 +234,9 @@ public:
   /* Sets the new height for the tile (must be >= 0) */
   void setHeight(uint16_t height);
 
+  /* Sets the stored MapInteractiveObject sprite pointer */
+  bool setIO(MapInteractiveObject* io, uint8_t render_level);
+
   /* Sets the lower portion of the layer(s) and the passability */
   bool setLower(Sprite* lower);
   bool setLowerPassability(uint8_t index, Direction dir, bool set_value);
@@ -258,6 +270,11 @@ public:
 
   /* Unsets the enhancer layer */
   void unsetEnhancer();
+
+  /* Unset the stored interactive object pointer(s) */
+  bool unsetIO(MapInteractiveObject* io);
+  bool unsetIO(uint8_t render_level);
+  void unsetIOs();
 
   /* Unsets the item(s) stored within the tile */
   bool unsetItem(MapItem* item);

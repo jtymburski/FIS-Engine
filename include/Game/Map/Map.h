@@ -76,6 +76,7 @@ private:
   // MapStatusBar map_status_bar; // TODO: Remove
 
   // /* The players info on the map */
+  std::vector<MapInteractiveObject*> ios; // TODO
   std::vector<MapItem*> items;
   std::vector<MapPerson*> persons;
   MapPerson* player; /* The actively controlled player */
@@ -144,6 +145,7 @@ private:
   MapItem* getItemBase(uint16_t id);
 
   /* Returns the interactive object, based on the ID */
+  MapInteractiveObject* getIO(uint16_t id);
   MapInteractiveObject* getIOBase(uint16_t id);
 
   /* Returns the person, based on the ID */

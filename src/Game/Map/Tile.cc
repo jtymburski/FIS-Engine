@@ -73,6 +73,29 @@ Tile::~Tile()
  *===========================================================================*/
 
 /*
+ * Description: This increases the IO stack to allow for the indicated
+ *              render level to be set in the stack. This will not exceed
+ *              the max allowable by Helpers::getRenderDepth()
+ *
+ * Inputs: uint8_t render_level - the render level corresponding to the IO
+ * Output: bool - status if the indicated level can be set
+ */
+bool Tile::growIOStack(uint8_t render_level)
+{
+  if(render_level < Helpers::getRenderDepth())
+  {
+    MapInteractiveObject* null_io = NULL;
+
+    while(ios.size() <= render_level)
+      ios.push_back(null_io);
+
+    return true;
+  }
+
+  return false;
+}
+
+/*
  * Description: This increases the person stack to allow for the indicated
  *              render level to be set in the stack. This will not exceed
  *              the max allowable by Helpers::getRenderDepth()
@@ -161,7 +184,7 @@ bool Tile::addPassability(std::string data, std::string classifier,
   bool success = true;
   Direction new_direction = Direction::DIRECTIONLESS;
   std::vector<std::string> data_list = Helpers::split(data, ',');
-  
+
   /* Loop through each value of the data list to add */
   for(uint16_t i = 0; i < data_list.size(); i++)
   {
@@ -252,6 +275,7 @@ void Tile::clear(bool just_sprites)
   /* Clear sprite layer data */
   unsetBase();
   unsetEnhancer();
+  unsetIOs();
   unsetItems();
   unsetLower();
   unsetPersons(true);
@@ -348,6 +372,37 @@ uint16_t Tile::getHeight() const
 }
 
 /*
+ * Description: Returns the IO stored on this tile at the indicated render
+ *              level. 
+ * 
+ * Inputs: uint8_t render_level - integer of the render level on tile 
+ * Output: MapInteractiveObject* - IO reference stored. NULL if not set
+ */
+MapInteractiveObject* Tile::getIO(uint8_t render_level) const
+{
+  MapInteractiveObject* selected_io = NULL;
+
+  if(ios.size() > render_level)
+    selected_io = ios[render_level];
+
+  return selected_io;
+}
+
+/*
+ * Description: Returns all IOs stored on the tile. This is ordered based
+ *              on render level. I.e., index 4 will correspond to render level
+ *              4. If the render level is not set in the vector, it is NULL
+ *              and not used.
+ *
+ * Inputs: none
+ * Output: std::vector<MapInteractiveObject*> - stack of IOs stored in tile
+ */
+std::vector<MapInteractiveObject*> Tile::getIOs() const
+{
+  return ios;
+}
+
+/*
  * Description: Returns the number of items sitting on the tile.
  *
  * Inputs: none
@@ -441,11 +496,17 @@ uint16_t Tile::getMaxRenderLevel() const
 {
   uint16_t depth = 0;
 
+  /* Things v. Persons for depth */
   if(things.size() > persons_main.size())
     depth = things.size();
   else
     depth = persons_main.size();
 
+  /* IOs vs current depth */
+  if(ios.size() > depth)
+    depth = ios.size();
+
+  /* Empty check v. items */
   if(depth == 0 && items.size() > 0)
     depth = 1;
 
@@ -602,10 +663,11 @@ uint32_t Tile::getPixelY() const
  * Inputs: uint8_t render_level - the render depth indicator
  *         MapPerson*& person - ref of person pointer to place render object
  *         MapThing*& thing - ref of thing pointer to place render object
+ *         MapInteractiveObject*& io - ref of IO pointer to place render obj
  * Output: status if the objects are valid for rendering
  */
 bool Tile::getRenderThings(uint8_t render_level, MapPerson*& person, 
-                           MapThing*& thing) const
+                           MapThing*& thing, MapInteractiveObject*& io) const
 {
   bool valid_pointer = false;
 
@@ -631,6 +693,13 @@ bool Tile::getRenderThings(uint8_t render_level, MapPerson*& person,
     if(things.size() > render_level && things[render_level] != NULL)
     {
       thing = things[render_level];
+      valid_pointer = true;
+    }
+
+    /* Check for valid IOs */
+    if(ios.size() > render_level && ios[render_level] != NULL)
+    {
+      io = ios[render_level];
       valid_pointer = true;
     }
   }
@@ -809,6 +878,31 @@ bool Tile::isBaseSet() const
 bool Tile::isEnhancerSet() const
 {
   return (enhancer != NULL);
+}
+
+/*
+ * Description: Returns if there is a IO on the indicated render level.
+ * 
+ * Inputs: uint8_t render_level - the level of rendering on tile. 
+ * Output: bool - true if the IO is set on that render level
+ */
+bool Tile::isIOSet(uint8_t render_level) const
+{
+  return (ios.size() > render_level && ios[render_level] != NULL);
+}
+
+/*
+ * Description: Returns if at least one IO is on the tile.
+ *
+ * Inputs: none
+ * Output: bool - true if there is at least one IO on the tile.
+ */
+bool Tile::isIOsSet() const
+{
+  for(uint16_t i = 0; i < ios.size(); i++)
+    if(ios[i] != NULL)
+      return true;
+  return false;
 }
 
 /*
@@ -1194,6 +1288,35 @@ void Tile::setHeight(uint16_t height)
   this->height = height;
 }
 
+/*
+ * Description: Sets an IO on the tile with the designated render level.
+ *              This does not take into account if the tile is passable and
+ *              will set regardless. No events boolean allows for events to 
+ *              be used (or not). This will unset the IO if one already
+ *              exists in the same place.
+ *
+ * Inputs: MapInteractiveObject* io - the IO to set on the tile
+ *         uint8_t render_level - the render order for placing the IO
+ * Output: bool - if the IO was successfully set.
+ */
+bool Tile::setIO(MapInteractiveObject* io, uint8_t render_level)
+{
+  if(io != NULL)
+  {
+    /* First, unset the existing IO */
+    unsetIO(render_level);
+
+    /* Set the new IO */
+    if(growIOStack(render_level))
+    {
+      ios[render_level] = io;
+      return true;
+    }
+  }
+
+  return false;
+}
+
 /* 
  * Description: Sets the lower sprite stored within the tile. Only sets it if 
  *              the pointer is valid and the number of frames is greater than 
@@ -1311,8 +1434,7 @@ void Tile::setStatus(TileStatus status)
  *              exists in the same place.
  *
  * Inputs: MapThing* thing - the thing to set on the tile
- *         uint8_t render_level - the render order for placing the person
- *         bool no_events - if events should be triggered on set
+ *         uint8_t render_level - the render order for placing the thing
  * Output: bool - if the thing was successfully set.
  */
 bool Tile::setThing(MapThing* thing, uint8_t render_level)
@@ -1458,6 +1580,60 @@ void Tile::unsetBase()
 void Tile::unsetEnhancer()
 {
   enhancer = NULL;
+}
+
+/*
+ * Description: Unsets the IO that matches the indicated IO pointer from
+ *              the stack. It will re-arrange to necessitate the removal.
+ *
+ * Inputs: MapInteractiveObject* io - the IO pointer to remove
+ * Output: bool - true if the IO was removed.
+ */
+bool Tile::unsetIO(MapInteractiveObject* io)
+{
+  for(uint16_t i = 0; i < ios.size(); i++)
+  {
+    if(ios[i] == io)
+    {
+      ios[i] = NULL;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/*
+ * Description: Removes the IO at the indicated render level.
+ *
+ * Inputs: uint8_t render_level - the render depth indicator
+ *         bool no_events - if events should trigger upon removal
+ * Output: bool - if an IO was removed
+ */
+bool Tile::unsetIO(uint8_t render_level)
+{
+  if(ios.size() > render_level)
+  {
+    if(ios[render_level] != NULL)
+    {
+      ios[render_level] = NULL;
+      return true;
+    }
+  }
+
+  return false;
+
+}
+
+/*
+ * Description: Unsets all IOs from the tile.
+ *
+ * Inputs: none
+ * Output: none
+ */
+void Tile::unsetIOs()
+{
+  ios.clear();
 }
 
 /*
