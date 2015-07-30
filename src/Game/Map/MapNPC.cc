@@ -915,7 +915,10 @@ void MapNPC::update(int cycle_time, std::vector<std::vector<Tile*>> tile_set)
          node_state == RANDOM || node_state == RANDOMRANGE))
       {
         if(node_current->delay > npc_delay)
+        {
           npc_delay += cycle_time;
+          //clearAllMovement(); // Fixes one bug but causes heap of others
+        }
         else
         {
           if(node_state == LOOPED)
