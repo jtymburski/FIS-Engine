@@ -20,6 +20,7 @@
 //#include "SavedGame.h"
 #include "Sound.h"
 #include "Sprite.h"
+#include "TestBattle.h"
 #include "Text.h"
 #include "TitleScreen.h"
 
@@ -42,9 +43,10 @@ public:
   {
     TITLESCREEN = 0,
     GAME        = 1,
-    OPTIONS     = 2,
-    PAUSED      = 3,
-    EXIT        = 4
+    TESTBATTLE  = 2,
+    OPTIONS     = 3,
+    PAUSED      = 4,
+    EXIT        = 5
   };
 
 private:
@@ -67,6 +69,9 @@ private:
   
   /* All options available for the system */
   Options* system_options;
+
+  /* The test battle interface and handler */
+  TestBattle test_battle;
 
   /* The displayed title screen for the game */
   TitleScreen title_screen;

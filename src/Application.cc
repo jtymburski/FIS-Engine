@@ -32,6 +32,7 @@ Application::Application(std::string base_path)
   
   /* Set the title screen parameters */
   game_handler.setConfiguration(system_options);
+  test_battle.setConfiguration(system_options);
   title_screen.setConfiguration(system_options);
   
   /* Sets the current mode */
@@ -150,6 +151,12 @@ void Application::handleEvents()
         if(game_handler.keyDownEvent(press_event))
           changeMode(TITLESCREEN);
       }
+      else if(mode == TESTBATTLE)
+      {
+        /* If the key event returns true, exit the test battle view */
+        if(test_battle.keyDownEvent(press_event))
+          changeMode(TITLESCREEN);
+      }
     }
     else if(event.type == SDL_KEYUP)
     {
@@ -160,6 +167,8 @@ void Application::handleEvents()
         title_screen.keyUpEvent(release_event);
       else if(mode == GAME)
         game_handler.keyUpEvent(release_event);
+      else if(mode == TESTBATTLE)
+        test_battle.keyUpEvent(release_event);
     }
     else if (event.type == SDL_WINDOWEVENT)
     {
@@ -186,6 +195,8 @@ void Application::render(uint32_t cycle_time)
     title_screen.render(renderer);
   else if(mode == GAME)
     game_handler.render(renderer);
+  else if(mode == TESTBATTLE)
+    test_battle.render(renderer);
   else if(mode == OPTIONS)
     cycle_time = cycle_time; // DO OPTIONS EXECUTION
   else if (mode == PAUSED)
@@ -259,12 +270,20 @@ bool Application::updateViews(int cycle_time)
         changeMode(EXIT);
       else if(action_item == TitleScreen::GAME)
         changeMode(GAME);
+      else if(action_item == TitleScreen::BATTLE)
+        changeMode(TESTBATTLE);
     }
   }
   /* Otherwise, update the game and check if the game is finished */
   else if(mode == GAME)
   {
     if(game_handler.update(cycle_time))
+      changeMode(TITLESCREEN);
+  }
+  /* If test battle, update and check if it's finished */
+  else if(mode == TESTBATTLE)
+  {
+    if(test_battle.update(cycle_time))
       changeMode(TITLESCREEN);
   }
   /* If exit, return true to notify the running thread the application is 

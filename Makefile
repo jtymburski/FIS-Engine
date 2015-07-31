@@ -48,7 +48,7 @@ SOURCES=src/Application.cc \
         src/Game/Battle/AIModule.cc \
         src/Game/Battle/AIModuleTester.cc \
         src/Game/Battle/Battle.cc \
-		src/Game/Battle/BattleDisplay.cc \
+        src/Game/Battle/BattleDisplay.cc \
         src/Game/Battle/BattleMenu.cc \
         src/Game/Battle/Buffer.cc \
         src/Game/Battle/EventBuffer.cc \
@@ -63,9 +63,9 @@ SOURCES=src/Application.cc \
         src/Game/Map/MapState.cc \
         src/Game/Map/MapThing.cc \
         src/Game/Map/MapViewport.cc \
-		src/Game/Map/SpriteMatrix.cc \
+        src/Game/Map/SpriteMatrix.cc \
         src/Game/Map/Tile.cc \
-		src/Game/Map/TileSprite.cc \
+        src/Game/Map/TileSprite.cc \
         src/Game/Player/Action.cc \
         src/Game/Player/Ailment.cc \
         src/Game/Player/AttributeSet.cc \
@@ -88,6 +88,7 @@ SOURCES=src/Application.cc \
         src/Options.cc \
         src/Sound.cc \
         src/Sprite.cc \
+				src/TestBattle.cc \
         src/Text.cc \
         src/TinyXML.cc \
         src/TitleScreen.cc \

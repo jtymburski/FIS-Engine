@@ -18,7 +18,7 @@
 #include "Sprite.h"
 #include "Text.h"
 
-#define TITLE_SKIP
+//#define TITLE_SKIP
 
 class TitleScreen
 {
@@ -31,9 +31,10 @@ public:
 
   /* Enumerator: Application options to be selected */
   enum MenuItems{GAME    = 0,
-                 OPTIONS = 1,
-                 EXIT    = 2,
-                 NONE    = 3};
+                 BATTLE  = 1,
+                 OPTIONS = 2,
+                 EXIT    = 3,
+                 NONE    = 4};
 
 private:
   /* The menu item that has been initiated. Gets polled by a parent class for
