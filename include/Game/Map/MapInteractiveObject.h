@@ -81,6 +81,26 @@ private:
   bool shiftPrevious();
 
 /*============================================================================
+ * PROTECTED FUNCTIONS
+ *===========================================================================*/
+protected:
+  /* Is move allowed, based on main tile and the next tile */
+  virtual bool isTileMoveAllowed(Tile* previous, Tile* next, 
+                                 uint8_t render_depth, Direction move_request);
+
+  /* Sets the tile of the selected with the corresponding frames */
+  virtual bool setTile(Tile* tile, TileSprite* frames, 
+                       bool no_events = true);
+  virtual void setTileFinish(Tile* old_tile, Tile* new_tile, 
+                             uint8_t render_depth, bool reverse_last = false, 
+                             bool no_events = false);
+  virtual bool setTileStart(Tile* old_tile, Tile* new_tile, 
+                            uint8_t render_depth, bool no_events = false);
+
+  /* This unsets the tile, at the given frame coordinate */
+  virtual void unsetTile(uint32_t x, uint32_t y, bool no_events);
+
+/*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:

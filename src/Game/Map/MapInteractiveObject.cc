@@ -360,6 +360,148 @@ bool MapInteractiveObject::shiftPrevious()
 }
 
 /*============================================================================
+ * PROTECTED FUNCTIONS
+ *===========================================================================*/
+
+/* 
+ * Description: Checks if a move is allowed from the current IO main 
+ *              tile to the next tile that it is trying to move to. This
+ *              handles the individual calculations for a single tile; used
+ *              by the isMoveAllowed() function.
+ * 
+ * Inputs: Tile* previous - the tile moving from
+ *         Tile* next - the next tile moving to
+ *         uint8_t render_depth - the rendering depth, in the stack
+ *         Direction move_request - the direction moving
+ * Output: bool - returns if the move is allowed.
+ */
+bool MapInteractiveObject::isTileMoveAllowed(Tile* previous, Tile* next, 
+                                   uint8_t render_depth, Direction move_request)
+{
+  bool move_allowed = true;
+
+  /* If the next tile is NULL, move isn't allowed */
+  if(next == NULL)
+    move_allowed = false;
+
+  /* Check if the thing can move there */
+  if(move_allowed)
+  {
+    if(render_depth == 0)
+    {
+      if(!previous->getPassabilityExiting(move_request) ||
+         !next->getPassabilityEntering(move_request) ||
+         next->isIOSet(render_depth))
+      {
+        move_allowed = false;
+      }
+    }
+    else if(next->getStatus() == Tile::OFF ||
+            next->isIOSet(render_depth))
+    {
+      move_allowed = false;
+    }
+  }
+
+  return move_allowed;
+}
+
+/*
+ * Description: Sets the tile in the sprite and sprite in the tile for the 
+ *              passed in objects. If it fails, it resets the pointers.
+ *
+ * Inputs: Tile* tile - the tile pointer to set the frame
+ *         TileSprite* frames - the sprite frames pointer to set in the tile
+ *         bool no_events - if events should trigger on the set
+ * Output: bool - true if the set was successful
+ */
+bool MapInteractiveObject::setTile(Tile* tile, TileSprite* frames, 
+                                   bool no_events)
+{
+  (void)no_events;
+  uint8_t render_depth = frames->getRenderDepth();
+
+  /* Attempt and set the tile */
+  if(tile != NULL)
+    return tile->setIO(this, render_depth);
+
+  return false;
+}
+
+/*
+ * Description: Sets the tile in the sprite and sprite in the tile for the 
+ *              passed in objects with regards to finishing a tile move.
+ *
+ * Inputs: Tile* old_tile - the tile the object was on previously
+ *         Tile* new_tile - the tile the object is moving to
+ *         uint8_t render_depth - the depth the frame is rendered on this tile
+ *         bool reverse_last - if the last start should be reversed
+ *         bool no_events - if events should trigger on the set
+ * Output: bool - true if the set was successful
+ */
+void MapInteractiveObject::setTileFinish(Tile* old_tile, Tile* new_tile, 
+                                       uint8_t render_depth, bool reverse_last, 
+                                       bool no_events)
+{
+  (void)no_events;
+
+  if(reverse_last)
+    new_tile->unsetIO(render_depth);
+  else
+    old_tile->unsetIO(render_depth);
+}
+
+/*
+ * Description: Sets the tile in the sprite and sprite in the tile for the 
+ *              passed in objects with regards to beginning a tile move. If it 
+ *              fails, it resets the pointers back to the original tile.
+ *
+ * Inputs: Tile* old_tile - the tile the object was on previously
+ *         Tile* new_tile - the tile the object is moving to
+ *         uint8_t render_depth - the depth the frame is rendered on this tile
+ *         bool no_events - if events should trigger on the set
+ * Output: bool - true if the set was successful
+ */
+bool MapInteractiveObject::setTileStart(Tile* old_tile, Tile* new_tile, 
+                                        uint8_t render_depth, bool no_events)
+{
+  (void)no_events;
+  (void)old_tile;
+
+  /* Attempt and set the tile */
+  if(new_tile != NULL)
+    return new_tile->setIO(this, render_depth);
+
+  return false;
+}
+
+/*
+ * Description: Unsets the tile corresponding to the matrix at the x and y
+ *              coordinate. However, since this is an private function, it does
+ *              not confirm that the X and Y are in the valid range. Must be 
+ *              checked or results are unknown. This will unset the thing from 
+ *              the tile corresponding to the frame and the tile from the frame.
+ *
+ * Inputs: uint32_t x - the x coordinate of the frame (horizontal)
+ *         uint32_t y - the y coordinate of the frame (vertical)
+ *         bool no_events - should events trigger with the change?
+ * Output: none
+ */
+void MapInteractiveObject::unsetTile(uint32_t x, uint32_t y, bool no_events)
+{
+  (void)no_events;
+  SpriteMatrix* sprite_set = getMatrix();
+  uint8_t render_depth = sprite_set->at(x, y)->getRenderDepth();
+
+  /* Remove from main tile, if applicable */
+  tile_main[x][y]->unsetIO(render_depth);
+
+  /* Remove from previous tile, if applicable */
+  if(tile_prev.size() > 0)
+    tile_prev[x][y]->unsetIO(render_depth);
+}
+
+/*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 

@@ -338,12 +338,10 @@ Sprite* Tile::getBase() const
  */
 bool Tile::getBasePassability(Direction dir) const
 {
-  if(base != 0)
+  if(base != NULL)
   {
-    if(dir == Direction::DIRECTIONLESS)
-      return (base_passability == 
-                                static_cast<uint8_t>(Direction::DIRECTIONLESS));
-    return ((base_passability & static_cast<uint8_t>(dir)) > 0);
+    if(dir != Direction::DIRECTIONLESS)
+      return ((base_passability & static_cast<uint8_t>(dir)) > 0);
   }
 
   return false;
@@ -451,9 +449,6 @@ bool Tile::getLowerPassability(Direction dir) const
   if(dir == Direction::DIRECTIONLESS)
   {
     passability = false;
-
-    for(uint8_t i = 0; i < lower_passability.size(); i++)
-      passability |= getLowerPassability(i, dir);
   }
   else
   {
@@ -478,8 +473,7 @@ bool Tile::getLowerPassability(uint8_t index, Direction dir) const
   if(index < lower_passability.size() && lower[index] != NULL)
   {
     if(dir == Direction::DIRECTIONLESS)
-      return (lower_passability[index] == 
-                                static_cast<uint8_t>(Direction::DIRECTIONLESS));
+      return false;
     return ((lower_passability[index] & static_cast<uint8_t>(dir)) > 0);
   }
   return true;

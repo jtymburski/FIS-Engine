@@ -12,6 +12,7 @@
 #ifndef MAPPERSON_H
 #define MAPPERSON_H
 
+#include "Game/Map/MapInteractiveObject.h"
 #include "Game/Map/MapThing.h"
 
 class MapPerson : public MapThing
