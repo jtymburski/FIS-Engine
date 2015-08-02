@@ -14,12 +14,12 @@
 #include "Game/Battle/AIModuleTester.h"
 #include "Game/Battle/Battle.h"
 #include "Game/Battle/BattleDisplay.h"
-#include "Game/EventHandler.h"
-#include "Game/Map/Map.h"
+//#include "Game/EventHandler.h"
+//#include "Game/Map/Map.h"
 #include "Game/Player/Player.h"
-#include "Game/Player/Bubby.h"
+//#include "Game/Player/Bubby.h"
 //#include "Game/VictoryScreen.h"
-#include "Game/Player/Inventory.h" //TODO
+//#include "Game/Player/Inventory.h" //TODO
 #include "Options.h"
 
 class TestBattle
@@ -32,24 +32,41 @@ public:
   ~TestBattle();
 
   /* The game mode operator, for controlling the visible widget */
-  //enum GameMode 
+  //enum GameMode
   //{
-  //  DISABLED       = 0, 
-  //  MAP            = 1, 
-  //  BATTLE         = 2, 
-  //  VICTORY_SCREEN = 3 
+  //  DISABLED       = 0,
+  //  MAP            = 1,
+  //  BATTLE         = 2,
+  //  VICTORY_SCREEN = 3
   //};
 
 private:
+  /* Action sets */
+  std::vector<Action*> act_alt; /* Alter */
+  std::vector<Action*> act_asn; /* Assign */
+  std::vector<Action*> act_dmg; /* Damage */
+  std::vector<Action*> act_inf; /* Inflict */
+  std::vector<Action*> act_rlv; /* Relieve */
+
   /* The active rendering engine */
   //SDL_Renderer* active_renderer;
-  
+
   /* The computed base path for resources in the application */
   //std::string base_path;
-  
+
+  /* Classes */
+  Category* class_arcadius1;
+  Category* class_aurora_agent;
+  Category* class_aurora_heavy;
+  Category* class_aurora_drone;
+  Category* class_aurora_engg;
+  Category* class_player;
+  Category* class_reverdile;
+  Category* class_reverdling;
+
   /* Handles all events throughout the game. */
   //EventHandler event_handler;
-  
+
   /* A current battle pointer */
   //Battle* game_battle;
   //BattleDisplay* battle_display;
@@ -83,15 +100,34 @@ private:
 
   /* The bubbified skill set */
   //SkillSet* bubbified_skills;
-  
+
   /* The mode that the game is currently running at */
   //GameMode mode;
- 
+
   /* A current victory screen pointer */
   //VictoryScreen* victory_screen;
 
   /* Number of ticks since inception */
   //uint64_t num_ticks;
+
+  /* Races */
+  Category* race_aurora;
+  Category* race_bear;
+  Category* race_human;
+  Category* race_treefolk;
+
+  /* List of all skills and skillsets - just for management */
+  std::vector<Skill*> skills;
+  std::vector<SkillSet*> skillsets;
+
+  /* Attribute Sets */
+  AttributeSet stats_weak;
+  AttributeSet stats_not_as_weak;
+  AttributeSet stats_normal;
+  AttributeSet stats_medium;
+  AttributeSet stats_top;
+  AttributeSet stats_boss;
+  AttributeSet stats_boss2;
 
   /* ------------ Constants --------------- */
   //static const uint32_t kMONEY_ITEM_ID;
@@ -103,8 +139,28 @@ private:
   /* Builds the ailment frames */
   void buildBattleDisplayFrames(SDL_Renderer* renderer);
 
-  /* Set up the battle */
-  void setupBattle();
+  /* Main create call - first construction */
+  void create();
+
+  /* Create sub calls */
+  void createActions();
+  void createClasses();
+  void createRaces();
+  void createSkills();
+  void createSkillSets();
+
+  /* Delete sub calls */
+  void deleteActions();
+  void deleteClasses();
+  void deleteRaces();
+  void deleteSkills();
+  void deleteSkillSets();
+
+  /* Main destruction call - ending */
+  void destroy();
+
+  /* Start a battle with the selected parameters */
+  void initBattle();
 
 /*============================================================================
  * PUBLIC FUNCTIONS
@@ -131,7 +187,7 @@ public:
 
   /* Renders the title screen */
   bool render(SDL_Renderer* renderer);
-  
+
   /* Set the running configuration, from the options class */
   bool setConfiguration(Options* running_config);
 
