@@ -26,10 +26,23 @@ const bool   SkillSet::kENABLED_DEFAULT  =  true;
 const size_t SkillSet::kMAX_SKILLS       =   500;
 const size_t SkillSet::kMAX_UNLOCK_LEVEL =   127;
 const size_t SkillSet::kMIN_UNLOCK_LEVEL =     1;
+const int    SkillSet::kUNSET_ID         =    -1;
 
 /*=============================================================================
  * CONSTRUCTORS / DESTRUCTORS
  *============================================================================*/
+
+/* 
+ * Description: Default constructor. Default.
+ *
+ * Inputs: int new_id - starting ID. Defualt to 0.
+ */
+SkillSet::SkillSet(int new_id)
+{
+  id = kUNSET_ID;
+
+  setID(new_id);
+}
 
 /*
  * Description: Single Skill SkillSet constructor - constructs a SkillSet
@@ -38,7 +51,7 @@ const size_t SkillSet::kMIN_UNLOCK_LEVEL =     1;
  * Inputs: Skill* - pointer to the skill to add
  *         level  - the level the Skill will become available
  */
-SkillSet::SkillSet(Skill* skill, const uint32_t &level)
+SkillSet::SkillSet(Skill* skill, const uint32_t &level) : SkillSet()
 {
   addSkill(skill, level, kENABLED_DEFAULT);
 }
@@ -51,7 +64,7 @@ SkillSet::SkillSet(Skill* skill, const uint32_t &level)
  *         levels - vector of req. levels corresponding to the vector of skills
  */
 SkillSet::SkillSet(const std::vector<Skill*> &skills, 
-                   const std::vector<uint32_t> &levels)
+                   const std::vector<uint32_t> &levels) : SkillSet()
 {
   std::vector<bool> enabled_values(levels.size(), kENABLED_DEFAULT);
   addSkills(skills, levels, enabled_values);
@@ -555,6 +568,17 @@ bool SkillSet::getUseable(const uint32_t &index)
   return useable;
 }
 
+/*
+ * Description: Returns the ID of the Skill Set.
+ *
+ * Inputs: none
+ * Output: int - the ID of the Skill Set.
+ */
+int SkillSet::getID()
+{
+  return id;
+}
+
 /* 
  * Description: Returns the string name at a given index
  *
@@ -661,6 +685,20 @@ bool SkillSet::setEnabled(const uint32_t &index, const bool &state)
   }
 
   return false;
+}
+
+/*
+ * Description: Assigns a new id to the skill set.
+ *
+ * Inputs: int new_id - the ID to assign the skill set to
+ * Output: none
+ */
+void SkillSet::setID(const int &new_id)
+{
+  if(new_id > kUNSET_ID)
+    id = new_id;
+  else
+    id = kUNSET_ID;
 }
 
 /* 

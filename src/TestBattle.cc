@@ -13,6 +13,13 @@
 /* Constructor function */
 TestBattle::TestBattle(Options* running_config)
 {
+  base_path = "";
+  battle_display = new BattleDisplay(running_config);
+  battle_logic = NULL;
+  first_run = true;
+  game_config = NULL;
+
+  setConfiguration(running_config);
   create();
 }
 
@@ -27,7 +34,7 @@ TestBattle::~TestBattle()
  *============================================================================*/
 
 /* Builds the ailment frames */
-void TestBattle::buildBattleDisplayFrames(SDL_Renderer* renderer)
+void TestBattle::buildBattleDisplay(SDL_Renderer* renderer)
 {
 
 }
@@ -46,6 +53,8 @@ void TestBattle::create()
 
   /* Actions */
   createActions();
+  createSkills();
+  createSkillSets();
 }
 
 /* Create actions */
@@ -140,13 +149,32 @@ void TestBattle::createRaces()
 /* Create skills */
 void TestBattle::createSkills()
 {
+  /* Paw Strike */
+  Skill* paw_strike = new Skill(1020, "Paw Strike", ActionScope::ONE_ENEMY,
+                                act_dmg[10], 95, 0);
+  paw_strike->setDescription("A standard, physical hit against a single foe");
+  paw_strike->setPrimary(Element::PHYSICAL);
+  paw_strike->setFlag(SkillFlags::OFFENSIVE);
+  skills.push_back(paw_strike);
 
+  /* Maul */
+  Skill* maul = new Skill(1021, "Maul", ActionScope::ONE_ENEMY, 
+                          act_dmg[13], 95, 0);
+  maul->setDescription("A stronger, physical hit against a single foe");
+  maul->setPrimary(Element::PHYSICAL);
+  maul->setFlag(SkillFlags::OFFENSIVE);
+  skills.push_back(maul);
 }
 
 /* Create Skill Sets */
 void TestBattle::createSkillSets()
 {
-
+  /* Bear Skill Set */
+  SkillSet* set_bear = new SkillSet();
+  set_bear->setID(1020);
+  set_bear->addSkill(getSkill(1020), 1);
+  set_bear->addSkill(getSkill(1021), 5);
+  skillsets.push_back(set_bear);
 }
 
 /* Delete actions */
@@ -193,19 +221,51 @@ void TestBattle::deleteRaces()
 /* Delete skills */
 void TestBattle::deleteSkills()
 {
-
+  /* Delete entire set */
+  for(uint16_t i = 0; i < skills.size(); i++)
+    delete skills[i];
+  skills.clear();
 }
 
 /* Delete skill sets */
 void TestBattle::deleteSkillSets()
 {
-
+  /* Delete entire set */
+  for(uint16_t i = 0; i < skillsets.size(); i++)
+    delete skillsets[i];
+  skillsets.clear();
 }
 
 /* Main destruction call - ending */
 void TestBattle::destroy()
 {
+  deleteSkillSets();
+  deleteSkills();
   deleteActions();
+}
+  
+/* Get call for Skill by ID */
+Skill* TestBattle::getSkill(int id)
+{
+  Skill* found_skill = NULL;
+
+  for(uint16_t i = 0; i < skills.size(); i++)
+    if(skills[i]->getID() == id)
+      found_skill = skills[i];
+
+  return found_skill;
+}
+
+/* Get call for Skill Set by ID */
+SkillSet* TestBattle::getSkillSet(int id)
+{
+  SkillSet* found_set = NULL;
+
+  for(uint16_t i = 0; i < skillsets.size(); i++)
+    if(skillsets[i]->getID() == id)
+      found_set = skillsets[i];
+
+  return found_set;
 }
 
 /* Set up the battle */
@@ -238,13 +298,36 @@ void TestBattle::keyUpEvent(SDL_KeyboardEvent event)
 /* Renders the title screen */
 bool TestBattle::render(SDL_Renderer* renderer)
 {
+  if(renderer != NULL)
+  {
+    /* First run rendering */
+    if(first_run)
+    {
+      buildBattleDisplay(renderer);
+
+      first_run = false;
+    }
+  }
+
   return true;
 }
 
 /* Set the running configuration, from the options class */
 bool TestBattle::setConfiguration(Options* running_config)
 {
-  return true;
+  if(running_config != NULL)
+  {
+    game_config = running_config;
+    base_path   = game_config->getBasePath();
+    
+    /* Battle configuration setup */
+    if(battle_display != NULL)
+      battle_display->setConfiguration(running_config);
+
+    return true;
+  }
+  
+  return false;
 }
 
 /* Updates the game state */

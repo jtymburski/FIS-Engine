@@ -52,8 +52,12 @@ private:
   //SDL_Renderer* active_renderer;
 
   /* The computed base path for resources in the application */
-  //std::string base_path;
-
+  std::string base_path;
+  
+  /* A current battle pointer */
+  BattleDisplay* battle_display;
+  Battle* battle_logic;
+  
   /* Classes */
   Category* class_arcadius1;
   Category* class_aurora_agent;
@@ -67,12 +71,11 @@ private:
   /* Handles all events throughout the game. */
   //EventHandler event_handler;
 
-  /* A current battle pointer */
-  //Battle* game_battle;
-  //BattleDisplay* battle_display;
+  /* First run trigger */
+  bool first_run;
 
   /* The configuration for the display of the game */
-  //Options* game_config;
+  Options* game_config;
 
   /* The game starting inventory */
   //Inventory* game_inventory; //TODO: Make part of player?
@@ -137,7 +140,7 @@ private:
  *============================================================================*/
 private:
   /* Builds the ailment frames */
-  void buildBattleDisplayFrames(SDL_Renderer* renderer);
+  void buildBattleDisplay(SDL_Renderer* renderer);
 
   /* Main create call - first construction */
   void create();
@@ -158,6 +161,10 @@ private:
 
   /* Main destruction call - ending */
   void destroy();
+
+  /* Get calls */
+  Skill* getSkill(int id);
+  SkillSet* getSkillSet(int id);
 
   /* Start a battle with the selected parameters */
   void initBattle();

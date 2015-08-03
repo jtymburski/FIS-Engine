@@ -43,7 +43,7 @@ class SkillSet
 {
 public:
   /* Default constructor - default */
-  SkillSet() = default;
+  SkillSet(int new_id = 0);
 
   /* Single skill constructor */
   SkillSet(Skill* skill, const uint32_t &level);
@@ -56,6 +56,9 @@ public:
   ~SkillSet() = default;
 
 private:
+  /* The ID of the set */
+  int id;
+
   /* The vector of SetElements */
   std::vector<SetElement> skill_elements;
 
@@ -65,6 +68,7 @@ private:
   static const size_t kMAX_SKILLS;       /* Problems with adding mass skills */
   static const size_t kMIN_UNLOCK_LEVEL; /* Min. lvl a Skill can be unlocked */
   static const size_t kMAX_UNLOCK_LEVEL; /* Max. lvl a Skill can be unlocked */
+  static const int    kUNSET_ID;         /* ID for an unset Skill Set */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -129,6 +133,9 @@ public:
   
   /* Returns the useable value at a given index */
   bool getUseable(const uint32_t &index);
+  
+  /* Returns the ID of the Skill Set */
+  int getID(); // TODO
 
   /* Returns the index of a given Skill ID (if found) */
   int32_t getIndexOfID(const uint32_t &id);
@@ -153,6 +160,9 @@ public:
 
   /* Assigns an enabled state to a SetElement at a given index */
   bool setEnabled(const uint32_t &index, const bool &state = true);
+  
+  /* Assigns an ID to the Skill Set */
+  void setID(const int &new_id);
 
   /* Assigns a silenced state to a SetElement at a given index */
   bool setSilenced(const uint32_t &index, const bool &state = true);
