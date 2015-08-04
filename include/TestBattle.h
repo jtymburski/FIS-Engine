@@ -14,12 +14,7 @@
 #include "Game/Battle/AIModuleTester.h"
 #include "Game/Battle/Battle.h"
 #include "Game/Battle/BattleDisplay.h"
-//#include "Game/EventHandler.h"
-//#include "Game/Map/Map.h"
 #include "Game/Player/Player.h"
-//#include "Game/Player/Bubby.h"
-//#include "Game/VictoryScreen.h"
-//#include "Game/Player/Inventory.h" //TODO
 #include "Options.h"
 
 class TestBattle
@@ -31,14 +26,33 @@ public:
   /* Destructor function */
   ~TestBattle();
 
-  /* The game mode operator, for controlling the visible widget */
-  //enum GameMode
-  //{
-  //  DISABLED       = 0,
-  //  MAP            = 1,
-  //  BATTLE         = 2,
-  //  VICTORY_SCREEN = 3
-  //};
+  /* Enumerator: Test battle selection items */
+  enum MenuItems{AC          = 0,   /* Arcadius */
+                 AA          = 1,   /* Aurora Agent */
+                 AAx2        = 2,   /* Aurora Agent x 2 */
+                 AAx5        = 3,   /* Aurora Agent x 5 */
+                 AAnAH       = 4,   /* Aurora Agent and Heavy */
+                 AH          = 5,   /* Aurora Heavy */
+                 AEnAD       = 6,   /* Aurora Engineer and Drone */
+                 AEnADx4     = 7,   /* Aurora Engineer and Drone x 4 */
+                 AAnAHnADnAE = 8,   /* Aurora Agent, Engg, Heavy, and Drone */
+                 REnRG       = 9,   /* Reverdile and Reverdling */
+                 REnRGx2     = 10,  /* Reverdile and Reverdling x 2 */
+                 REnRGx4     = 11,  /* Reverdile and Reverdling x 4 */
+                 RG          = 12,  /* Reverdling */
+                 RGx2        = 13,  /* Reverdling x 2 */
+                 RGx5        = 14}; /* Reverdling x 5 */
+
+  /* Enumerator: Test mode for user input */
+  enum TestMode{SCENARIO    = 0,
+                FRIEND_LVL  = 1,
+                FOE_LVL     = 2,
+                TEST_BATTLE = 3,
+                NONE        = 4};
+
+  /* Enumerator: Person selection mode */
+  enum TestPerson{ARCADIUS, AURORAAGENT, AURORAHEAVY, AURORAENGG,
+                  AURORADRONE, REVERDILE, REVERDLING, PLAYER};
 
 private:
   /* Action sets */
@@ -48,16 +62,14 @@ private:
   std::vector<Action*> act_inf; /* Inflict */
   std::vector<Action*> act_rlv; /* Relieve */
 
-  /* The active rendering engine */
-  //SDL_Renderer* active_renderer;
-
   /* The computed base path for resources in the application */
   std::string base_path;
-  
+
   /* A current battle pointer */
   BattleDisplay* battle_display;
   Battle* battle_logic;
-  
+  bool battle_start;
+
   /* Classes */
   Category* class_arcadius1;
   Category* class_aurora_agent;
@@ -68,50 +80,34 @@ private:
   Category* class_reverdile;
   Category* class_reverdling;
 
-  /* Handles all events throughout the game. */
-  //EventHandler event_handler;
-
   /* First run trigger */
   bool first_run;
+
+  /* Font for rendering */
+  TTF_Font* font_normal;
 
   /* The configuration for the display of the game */
   Options* game_config;
 
-  /* The game starting inventory */
-  //Inventory* game_inventory; //TODO: Make part of player?
+  /* Levels */
+  uint8_t lvl_foe;
+  uint8_t lvl_friend;
 
-  /* List of all actions */
-  //std::vector<Action*> action_list;
+  /* Menu items */
+  uint8_t menu_index;
+  std::vector<Text*> menu_items;
+  std::vector<Text*> menu_items_sel;
 
-  /* List of all Battle Class categories */
-  //std::vector<Category*> battle_class_list;
+  /* The mode of the test battle interface */
+  TestMode mode;
 
-  /* List of all Race categories */
-  //std::vector<Category*> race_list;
+  /* Parties */
+  Party* party_foes;
+  Party* party_friends;
 
-  /* List of all flavours */
-  //std::vector<Flavour*> flavour_list;
-
-  /* List of all skills */
-  //std::vector<Skill*> skill_list;
-
-  /* List of all base persons */
-  //std::vector<Person*> base_person_list;
-
-  /* List of all available items in the game */
-  //std::vector<Item*> base_item_list;
-
-  /* The bubbified skill set */
-  //SkillSet* bubbified_skills;
-
-  /* The mode that the game is currently running at */
-  //GameMode mode;
-
-  /* A current victory screen pointer */
-  //VictoryScreen* victory_screen;
-
-  /* Number of ticks since inception */
-  //uint64_t num_ticks;
+  /* Inventories */
+  Inventory* pouch_foes;
+  Inventory* pouch_friends;
 
   /* Races */
   Category* race_aurora;
@@ -133,7 +129,11 @@ private:
   AttributeSet stats_boss2;
 
   /* ------------ Constants --------------- */
-  //static const uint32_t kMONEY_ITEM_ID;
+  const static uint8_t kLVL_MAX; /* Max level for person */
+  const static std::string kMENU_ITEMS[]; /* The stored menu items */
+  const static std::string kMENU_FOE; /* Foe preface text */
+  const static std::string kMENU_FRIEND; /* Friend preface text */
+  const static uint8_t kNUM_MENU_ITEMS; /* Number of menu items in screen */
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -148,6 +148,10 @@ private:
   /* Create sub calls */
   void createActions();
   void createClasses();
+  void createFonts();
+  void createMenu();
+  Person* createPerson(int id, TestPerson type, SDL_Renderer* renderer,
+                       uint8_t level = 1, bool include_ai = true);
   void createRaces();
   void createSkills();
   void createSkillSets();
@@ -155,6 +159,8 @@ private:
   /* Delete sub calls */
   void deleteActions();
   void deleteClasses();
+  void deleteFonts();
+  void deleteMenu();
   void deleteRaces();
   void deleteSkills();
   void deleteSkillSets();
@@ -162,32 +168,20 @@ private:
   /* Main destruction call - ending */
   void destroy();
 
+  /* Battle destruction */
+  void destroyBattle();
+
   /* Get calls */
   Skill* getSkill(int id);
   SkillSet* getSkillSet(int id);
 
   /* Start a battle with the selected parameters */
-  void initBattle();
+  void initBattle(SDL_Renderer* renderer);
 
 /*============================================================================
  * PUBLIC FUNCTIONS
  *===========================================================================*/
 public:
-  /* Returns a pointer to an action by index or by ID */
-  //Action* getAction(const int32_t &index, const bool &by_id = true);
-
-  /* Returns a pointer to a battle class by index or by ID */
-  //Category* getBattleClass(const int32_t &index, const bool &by_id = true);
-
-  /* Returns a pointer to a race category by index or by ID */
-  //Category* getCategory(const int32_t &index, const bool &by_id = true);
-
-  /* Returns a pointer to a flavour by index or by ID */
-  //Flavour* getFlavour(const int32_t &index, const bool &by_id = true);
-
-  /* Returns a pointer to a skill by index or by ID */
-  //Skill* getSkill(const int32_t &index, const bool &by_id = true);
-
   /* The key up and down events to be handled by the class */
   bool keyDownEvent(SDL_KeyboardEvent event);
   void keyUpEvent(SDL_KeyboardEvent event);
