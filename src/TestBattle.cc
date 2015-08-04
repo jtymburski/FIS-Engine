@@ -583,8 +583,11 @@ Person* TestBattle::createPerson(int id, TestPerson type,
     as = new Sprite(base_path + "sprites/Battle/Backs/player1.png", renderer);
   }
 
-  /* Common person logic */
+  /* Common person logic - why build a setExp(int) function when you
+   * can do this wonderful code =) */
+  new_person->loseExp(new_person->getExpAt(new_person->getLevel()));
   new_person->addExp(new_person->getExpAt(level));
+
   if(include_ai)
   {
     AIModule* ai_module = new AIModule();
