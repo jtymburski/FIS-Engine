@@ -238,6 +238,17 @@ void TestBattle::buildBattleDisplay(SDL_Renderer* renderer)
   battle_display->setBackground(background);
   battle_display->setBattleBar(new Frame(
                            base_path + "sprites/Overlay/battle.png", renderer));
+
+  /* Skill Images */
+  for(uint32_t i = 0; i < skills.size(); i++)
+  {
+    if(i % 2 == 0)
+      skills[i]->setThumbnail(new Frame(base_path + 
+                        "sprites/Battle/Skills/_sample_skill_1.png", renderer));
+    else
+      skills[i]->setThumbnail(new Frame(base_path + 
+                        "sprites/Battle/Skills/_sample_skill_2.png", renderer));
+  }
 }
 
 /* ------------------------------------------------------------------------- */
@@ -584,9 +595,8 @@ Person* TestBattle::createPerson(int id, TestPerson type,
     as = new Sprite(base_path + "sprites/Battle/Backs/player1.png", renderer);
   }
 
-  /* Common person logic - why build a setExp(int) function when you
-   * can do this wonderful code =) */
-  new_person->loseExp(new_person->getExpAt(new_person->getLevel()));
+  /* Common person logic */
+  new_person->loseExp(new_person->getTotalExp());
   new_person->addExp(new_person->getExpAt(level));
 
   if(include_ai)
@@ -1406,7 +1416,7 @@ bool TestBattle::keyDownEvent(SDL_KeyboardEvent event)
           lvl_foe--;
       }
     }
-    else if(event.keysym.sym == SDLK_RETURN)
+    else if(event.keysym.sym == SDLK_SPACE)
     {
       if(mode == SCENARIO)
       {
@@ -1499,7 +1509,7 @@ bool TestBattle::render(SDL_Renderer* renderer)
       {
         Text t(font_normal);
         t.setText(renderer, kMENU_FRIEND + std::to_string(lvl_friend),
-                  {255,255,255,255});
+                  {255, 255, 255, 255});
         t.render(renderer, 600, 40);
       }
 
@@ -1508,7 +1518,7 @@ bool TestBattle::render(SDL_Renderer* renderer)
       {
         Text t(font_normal);
         t.setText(renderer, kMENU_FOE + std::to_string(lvl_foe),
-                  {255,255,255,255});
+                  {255, 255, 255, 255});
         t.render(renderer, 600, 140);
       }
     }
@@ -1552,7 +1562,7 @@ bool TestBattle::update(int cycle_time)
   {
     battle_logic->update(cycle_time);
 
-    if(battle_logic->getBattleFlag(CombatState::OUTCOME_PERFORMED))
+    if(battle_logic->getTurnState() == TurnState::DESTRUCT)
     {
       mode = SCENARIO;
       destroyBattle();
