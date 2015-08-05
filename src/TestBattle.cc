@@ -740,6 +740,8 @@ void TestBattle::createSkills()
 
   /* Surge of Will */
   // TODO: HOW TO DO MULTI-TURN??
+  // You can't. I think it was supposed to be cooldown? Else it's another
+  // large scope change for no gain
   //Skill* surge_will = new Skill(201, "Surge of Will", ActionScope::ALL_ALLIES,
   //                              act_alt[0], 90, 25);
 
@@ -1324,10 +1326,10 @@ void TestBattle::initBattle(SDL_Renderer* renderer)
   }
 
   /* Battle Prep */
-  for (uint32_t i = 0; i < party_friends->getSize(); i++)
-    party_friends->getMember(i)->battlePrep();
-  for (uint32_t i = 0; i < party_foes->getSize(); i++)
-    party_foes->getMember(i)->battlePrep();
+  for(auto& member : party_friends->getMembers())
+    member->battlePrep();
+  for(auto& member : party_foes->getMembers())
+    member->battlePrep();
 
   /* Set up battle */
   battle_logic = new Battle(party_friends, party_foes, getSkillSet(1), NULL);
