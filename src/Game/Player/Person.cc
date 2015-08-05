@@ -507,7 +507,7 @@ void Person::updateStats()
   if (level == 1)
   {
     curr_stats     = base_stats;
-    curr_max_stats = base_max_stats;
+    curr_max_stats = base_stats;
   }
   else if (level == kNUM_LEVELS)
   {

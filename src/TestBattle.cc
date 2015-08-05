@@ -362,72 +362,73 @@ void TestBattle::createClasses()
   /* Arcadius LVL1 Class */
   class_arcadius1 = new Category(100, "Arcadius", "arcadius", stats_boss,
                                 stats_boss2, getSkillSet(100));
-  //class_arcadius1->setVitaRegenRate(RegenRate::WEAK);
-  //class_arcadius1->setQDRegenRate(RegenRate::WEAK);
-  class_arcadius1->setDescription("The one and only");
-  class_arcadius1->setFlag(CategoryState::DEF_ENABLED, true);
-  class_arcadius1->setFlag(CategoryState::GRD_ENABLED, true);
-  class_arcadius1->setFlag(CategoryState::E_CLAWS, true);
+  class_arcadius1->setVitaRegenRate(RegenRate::WEAK);
+  class_arcadius1->setQDRegenRate(RegenRate::WEAK);
+  class_arcadius1->setDescription("The one. The only.");
+  // class_arcadius1->setFlag(CategoryState::DEF_ENABLED, true);
+  // class_arcadius1->setFlag(CategoryState::GRD_ENABLED, true);
+  //class_arcadius1->setFlag(CategoryState::E_CLAWS, true);
 
   /* Aurora Agent Class */
   class_aurora_agent = new Category(120, "Agent", "agent", stats_normal,
                                     stats_top, getSkillSet(120));
-  class_aurora_agent->setVitaRegenRate(RegenRate::WEAK);
+  class_aurora_agent->setVitaRegenRate(RegenRate::ZERO);
   class_aurora_agent->setQDRegenRate(RegenRate::WEAK);
   class_aurora_agent->setDescription("A less than smart agent");
-  class_aurora_agent->setFlag(CategoryState::DEF_ENABLED, true);
-  class_aurora_agent->setFlag(CategoryState::GRD_ENABLED, true);
-  class_aurora_agent->setFlag(CategoryState::E_SWORD, true);
+  // class_aurora_agent->setFlag(CategoryState::DEF_ENABLED, true);
+  // class_aurora_agent->setFlag(CategoryState::GRD_ENABLED, true);
+  //class_aurora_agent->setFlag(CategoryState::E_SWORD, true);
 
   /* Aurora Heavy Classs */
   class_aurora_heavy = new Category(140, "Heavy", "heavy", stats_normal,
                                     stats_top, getSkillSet(140));
-  //class_aurora_heavy->setVitaRegenRate(RegenRate::WEAK);
+  class_aurora_heavy->setVitaRegenRate(RegenRate::ZERO);
   class_aurora_heavy->setQDRegenRate(RegenRate::WEAK);
   class_aurora_heavy->setDescription("He weighs more than your house");
-  class_aurora_heavy->setFlag(CategoryState::DEF_ENABLED, true);
-  class_aurora_heavy->setFlag(CategoryState::GRD_ENABLED, true);
-  class_aurora_heavy->setFlag(CategoryState::E_SWORD, true);
+  // class_aurora_heavy->setFlag(CategoryState::DEF_ENABLED, true);
+  // class_aurora_heavy->setFlag(CategoryState::GRD_ENABLED, true);
+  //class_aurora_heavy->setFlag(CategoryState::E_SWORD, true);
 
   /* Aurora Drone Class */
   class_aurora_drone = new Category(180, "Drone", "drone", stats_not_as_weak,
                                     stats_medium, getSkillSet(180));
-  class_aurora_drone->setVitaRegenRate(RegenRate::WEAK);
+  class_aurora_drone->setVitaRegenRate(RegenRate::ZERO);
   class_aurora_drone->setQDRegenRate(RegenRate::WEAK);
   class_aurora_drone->setDescription("Cannon fodder");
-  class_aurora_drone->setFlag(CategoryState::DEF_ENABLED, true);
-  class_aurora_drone->setFlag(CategoryState::GRD_ENABLED, true);
-  class_aurora_drone->setFlag(CategoryState::E_SWORD, true);
+  // class_aurora_drone->setFlag(CategoryState::DEF_ENABLED, true);
+  // class_aurora_drone->setFlag(CategoryState::GRD_ENABLED, true);
+  class_aurora_drone->setFlag(CategoryState::IMP_ENABLED, true);
+  //class_aurora_drone->setFlag(CategoryState::E_SWORD, true);
 
   /* Aurora Engineer Class */
   class_aurora_engg = new Category(160, "Engineer", "engineer", stats_normal,
                                    stats_top, getSkillSet(160));
-  class_aurora_engg->setVitaRegenRate(RegenRate::WEAK);
-  //class_aurora_engg->setQDRegenRate(RegenRate::WEAK);
+  class_aurora_engg->setVitaRegenRate(RegenRate::ZERO);
+  class_aurora_engg->setQDRegenRate(RegenRate::WEAK);
   class_aurora_engg->setDescription("An engineer and much smarter than you");
-  class_aurora_engg->setFlag(CategoryState::DEF_ENABLED, true);
-  class_aurora_engg->setFlag(CategoryState::GRD_ENABLED, true);
-  class_aurora_engg->setFlag(CategoryState::E_SWORD, true);
+  // class_aurora_engg->setFlag(CategoryState::DEF_ENABLED, true);
+  // class_aurora_engg->setFlag(CategoryState::GRD_ENABLED, true);
+  //class_aurora_engg->setFlag(CategoryState::E_SWORD, true);
 
   /* Player Class */
-  class_player = new Category(200, "Player", "player", stats_normal, stats_top,
+  class_player = new Category(200, "Bearanator", "player", stats_normal, stats_top,
                               getSkillSet(200));
-  //class_player->setVitaRegenRate(RegenRate::WEAK);
+  class_player->setVitaRegenRate(RegenRate::ZERO);
   class_player->setQDRegenRate(RegenRate::WEAK);
   class_player->setDescription("This is me and I am awesome");
-  class_player->setFlag(CategoryState::DEF_ENABLED, true);
-  class_player->setFlag(CategoryState::GRD_ENABLED, true);
-  class_player->setFlag(CategoryState::E_CLAWS, true);
+  // class_player->setFlag(CategoryState::DEF_ENABLED, true);
+  // class_player->setFlag(CategoryState::GRD_ENABLED, true);
+  //class_player->setFlag(CategoryState::E_CLAWS, true);
 
   /* Reverdile Class */
   class_reverdile = new Category(220, "Reverdile", "reverdile", stats_normal,
                                  stats_top, getSkillSet(220));
-  //class_reverdile->setVitaRegenRate(RegenRate::WEAK);
-  //class_reverdile->setQDRegenRate(RegenRate::WEAK);
+  class_reverdile->setVitaRegenRate(RegenRate::WEAK);
+  class_reverdile->setQDRegenRate(RegenRate::WEAK);
   class_reverdile->setDescription("What is the master of crap called");
-  class_reverdile->setFlag(CategoryState::DEF_ENABLED, true);
-  class_reverdile->setFlag(CategoryState::GRD_ENABLED, true);
-  class_reverdile->setFlag(CategoryState::E_CLAWS, true);
+  // class_reverdile->setFlag(CategoryState::DEF_ENABLED, true);
+  // class_reverdile->setFlag(CategoryState::GRD_ENABLED, true);
+  //class_reverdile->setFlag(CategoryState::E_CLAWS, true);
 
   /* Reverdling Class */
   class_reverdling = new Category(240, "Reverdling", "reverdling", stats_weak,
@@ -435,9 +436,9 @@ void TestBattle::createClasses()
   class_reverdling->setVitaRegenRate(RegenRate::WEAK);
   class_reverdling->setQDRegenRate(RegenRate::WEAK);
   class_reverdling->setDescription("He's about as useful as fried turd");
-  class_reverdling->setFlag(CategoryState::DEF_ENABLED, true);
-  class_reverdling->setFlag(CategoryState::GRD_ENABLED, true);
-  class_reverdling->setFlag(CategoryState::E_CLAWS, true);
+  // class_reverdling->setFlag(CategoryState::DEF_ENABLED, true);
+  // class_reverdling->setFlag(CategoryState::GRD_ENABLED, true);
+  //class_reverdling->setFlag(CategoryState::E_CLAWS, true);
 }
 
 /* ------------------------------------------------------------------------- */
@@ -540,7 +541,7 @@ Person* TestBattle::createPerson(int id, TestPerson type,
   }
   else if(type == AURORADRONE)
   {
-    new_person = new Person(id, "Drone", race_human, class_aurora_drone);
+    new_person = new Person(id, "Drone", race_aurora_drone, class_aurora_drone);
     new_person->setCurves(Element::ELECTRIC, ElementCurve::D,
                           Element::PHYSICAL, ElementCurve::D, true);
 
@@ -607,12 +608,19 @@ void TestBattle::createRaces()
   /* Aurora Race */
   race_aurora = new Category(1060, "Aurora", "aurora", stats_normal, stats_top,
                              getSkillSet(1060));
-  race_aurora->setVitaRegenRate(RegenRate::WEAK);
+  race_aurora->setVitaRegenRate(RegenRate::ZERO);
   race_aurora->setQDRegenRate(RegenRate::WEAK);
   race_aurora->setDescription("A class of intelligent bots");
-  race_aurora->setFlag(CategoryState::DEF_ENABLED, true);
-  race_aurora->setFlag(CategoryState::GRD_ENABLED, true);
-  race_aurora->setFlag(CategoryState::E_SWORD, true);
+  // race_aurora->setFlag(CategoryState::DEF_ENABLED, true);
+  // race_aurora->setFlag(CategoryState::GRD_ENABLED, true);
+  // race_aurora->setFlag(CategoryState::E_SWORD, true);
+
+  /* Aurora Drone Race - Possibly needed for immunity/smaller stats */
+  race_aurora_drone = new Category(1061, "Aurora Drone", "aurora drone",
+                                   stats_normal, stats_top, getSkillSet(101));
+  race_aurora_drone->setVitaRegenRate(RegenRate::ZERO);
+  race_aurora_drone->setQDRegenRate(RegenRate::WEAK);
+  race_aurora_drone->setDescription("Artificial artificialness");
 
   /* Bear Race */
   race_bear = new Category(1020, "Bear", "bear", stats_normal, stats_top,
@@ -620,28 +628,28 @@ void TestBattle::createRaces()
   //race_bear->setVitaRegenRate(RegenRate::WEAK);
   race_bear->setQDRegenRate(RegenRate::WEAK);
   race_bear->setDescription("A sentient and intelligent bear");
-  race_bear->setFlag(CategoryState::DEF_ENABLED, true);
-  race_bear->setFlag(CategoryState::GRD_ENABLED, true);
-  race_bear->setFlag(CategoryState::E_SWORD, true);
+  // race_bear->setFlag(CategoryState::DEF_ENABLED, true);
+  // race_bear->setFlag(CategoryState::GRD_ENABLED, true);
+  // race_bear->setFlag(CategoryState::E_SWORD, true);
 
   /* Human Race */
   race_human = new Category(1000, "Human", "human", stats_normal, stats_top,
                             getSkillSet(1000));
-  race_human->setVitaRegenRate(RegenRate::WEAK);
+  race_human->setVitaRegenRate(RegenRate::ZERO);
   race_human->setQDRegenRate(RegenRate::WEAK);
   race_human->setDescription("A regular old joe from Earth");
-  race_human->setFlag(CategoryState::DEF_ENABLED, true);
-  race_human->setFlag(CategoryState::GRD_ENABLED, true);
-  race_human->setFlag(CategoryState::E_SWORD, true);
+  // race_human->setFlag(CategoryState::DEF_ENABLED, true);
+  // race_human->setFlag(CategoryState::GRD_ENABLED, true);
+  // race_human->setFlag(CategoryState::E_SWORD, true);
 
   /* Treefolk Race */
   race_treefolk = new Category(1040, "Treefolk", "treefolk", stats_normal,
                                stats_top, getSkillSet(1040));
-  //race_treefolk->setVitaRegenRate(RegenRate::WEAK);
+  race_treefolk->setVitaRegenRate(RegenRate::WEAK);
   //race_treefolk->setQDRegenRate(RegenRate::WEAK);
   race_treefolk->setDescription("They have long roots into society");
-  race_treefolk->setFlag(CategoryState::DEF_ENABLED, true);
-  race_treefolk->setFlag(CategoryState::GRD_ENABLED, true);
+  // race_treefolk->setFlag(CategoryState::DEF_ENABLED, true);
+  // race_treefolk->setFlag(CategoryState::GRD_ENABLED, true);
   //race_treefolk->setFlag(CategoryState::E_SWORD, true);
 }
 
@@ -653,7 +661,7 @@ void TestBattle::createSkills()
   /* Light Push */
   Skill* light_push = new Skill(100, "Light Push", ActionScope::ONE_ENEMY,
                                 act_dmg[0], 95, 0);
-  light_push->setDescription("A weak, physical hit with huge cool down");
+  light_push->setDescription("A weak, physical hit with a long cool down");
   light_push->setPrimary(Element::PHYSICAL);
   light_push->setFlag(SkillFlags::OFFENSIVE);
   light_push->setCooldown(5);
@@ -672,7 +680,7 @@ void TestBattle::createSkills()
                                     ActionScope::ONE_ENEMY, act_dmg[4], 95, 15);
   prismatic_shot->addAction(act_dmg[4]);
   prismatic_shot->addAction(act_dmg[4]);
-  prismatic_shot->setDescription("A 3 strike electric hit against a foe");
+  prismatic_shot->setDescription("A triple strike electric hit against a foe");
   prismatic_shot->setPrimary(Element::ELECTRIC);
   prismatic_shot->setFlag(SkillFlags::OFFENSIVE);
   skills.push_back(prismatic_shot);
@@ -686,6 +694,7 @@ void TestBattle::createSkills()
   skills.push_back(rail_shot);
 
   /* Shatter Shot */
+  //TODO: Scope change
   Skill* shatter_shot = new Skill(141, "ShatterShot", ActionScope::ALL_ENEMIES,
                                   act_dmg[15], 95, 15);
   shatter_shot->addAction(act_dmg[22]);
@@ -721,6 +730,7 @@ void TestBattle::createSkills()
   skills.push_back(locked_shot);
 
   /* Detonate */
+  //TODO: Implement imploding
   Skill* detonate = new Skill(182, "Detonate", ActionScope::ALL_TARGETS,
                               act_dmg[8], 90, 15);
   detonate->addAction(act_alt[9]);
@@ -877,6 +887,10 @@ void TestBattle::createSkills()
 void TestBattle::createSkillSets()
 {
   /* ---- CLASSES ---- */
+
+  /* The {} Set */
+  SkillSet* set_empty = new SkillSet(101);
+  skillsets.push_back(set_empty);
 
   /* Arcadius Class */
   SkillSet* set_arcadius = new SkillSet(100);
@@ -1052,6 +1066,9 @@ void TestBattle::deleteRaces()
 {
   delete race_aurora;
   race_aurora = NULL;
+
+  delete race_aurora_drone;
+  race_aurora_drone = NULL;
 
   delete race_bear;
   race_bear = NULL;

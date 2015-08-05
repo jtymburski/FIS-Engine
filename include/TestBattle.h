@@ -110,6 +110,7 @@ private:
   Inventory* pouch_friends;
 
   /* Races */
+  Category* race_aurora_drone;
   Category* race_aurora;
   Category* race_bear;
   Category* race_human;
