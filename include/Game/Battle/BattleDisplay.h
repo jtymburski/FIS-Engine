@@ -430,7 +430,7 @@ public:
   bool addOverlay(Sprite* overlay);
 
   /* Clears the class data */
-  void clear();
+  void clear(bool battle_specific = false);
 
   /* Returns the ailment frame */
   Frame* getAilment(Infliction ailment);

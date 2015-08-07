@@ -1416,7 +1416,7 @@ bool TestBattle::keyDownEvent(SDL_KeyboardEvent event)
           lvl_foe--;
       }
     }
-    else if(event.keysym.sym == SDLK_SPACE)
+    else if(event.keysym.sym == SDLK_SPACE || event.keysym.sym == SDLK_RETURN)
     {
       if(mode == SCENARIO)
       {

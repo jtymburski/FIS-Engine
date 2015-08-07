@@ -203,7 +203,7 @@ void TitleScreen::keyDownEvent(SDL_KeyboardEvent event)
       decrementSelected();
       nav_up = true;
     }
-    else if(event.keysym.sym == SDLK_RETURN)
+    else if(event.keysym.sym == SDLK_RETURN || event.keysym.sym == SDLK_SPACE)
     {
       setAction();
     }

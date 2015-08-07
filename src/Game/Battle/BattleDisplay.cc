@@ -2054,7 +2054,7 @@ bool BattleDisplay::addOverlay(Sprite* overlay)
 
 /* Clears the class data */
 // TODO: Comment
-void BattleDisplay::clear()
+void BattleDisplay::clear(bool battle_specific)
 {
   /* Clears variables */
   animation_delay = 0;
@@ -2066,22 +2066,28 @@ void BattleDisplay::clear()
   offset = 0;
   offset_2 = 0;
   rendering_state = TurnState::DESTRUCT;
-  system_options = nullptr;
   render_flags = static_cast<RenderState>(0);
 
   /* Unsets the flat rendering sprites */
   deleteSkills();
-  unsetBackground();
-  unsetBattle();
-  unsetBattleBar();
-  unsetMidlays();
-  unsetOverlays();
-  unsetElements();
 
-  /* Deletes internal pointers, if set */
-  if(foes_backdrop != nullptr)
-    delete foes_backdrop;
-  foes_backdrop = nullptr;
+  /* All generic non battle specific data */
+  if(!battle_specific)
+  {
+    system_options = nullptr;
+    
+    unsetBattle();
+    unsetBackground();
+    unsetBattleBar();
+    unsetMidlays();
+    unsetOverlays();
+    unsetElements();
+
+    /* Deletes internal pointers, if set */
+    if(foes_backdrop != nullptr)
+      delete foes_backdrop;
+    foes_backdrop = nullptr;
+  }
 }
 
 // TODO: Comment
@@ -2522,6 +2528,7 @@ void BattleDisplay::unsetBattle()
 
   battle = nullptr;
   rendering_state = TurnState::DESTRUCT;
+  clear(true);
 }
   
 /* Unsets the rendering battle bar */
