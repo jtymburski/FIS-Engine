@@ -13,7 +13,7 @@ else
 	endif
 endif
 
-CFLAGS = -c -std=c++11 -Wall -Wextra
+CFLAGS = -c -std=c++1y -Wall -Wextra
 INCLUDES = -Iinclude
 
 # WINDOWS only?! Helps the cmd not appear when running the app separately.

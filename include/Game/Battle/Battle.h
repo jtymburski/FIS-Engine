@@ -2,7 +2,7 @@
 * Class Name: Battle [Declaration]
 * Date Created: February 23rd, 2014
 * Inheritance: None
-* Description: 
+* Description:
 *
 * Notes
 * -----
@@ -15,7 +15,7 @@
 * [08-24-14]: Finish battle lost functionality
 * [08-24-14]: Ailment corner cases
 * [11-06-14]: Event handler finish signal (battle)?
-* [11-06-14]: Update personal record run from battle count 
+* [11-06-14]: Update personal record run from battle count
 * [11-23-14]: Documentation
 *
 * BUGS
@@ -138,7 +138,7 @@ private:
 
   /* The bubbified skill set */
   SkillSet* bubbified_skills;
-  
+
   /* The current AI Module */
   AIModule* curr_module;
 
@@ -309,12 +309,12 @@ private:
 
   /* Attempt to add the current menu settings to the action buffer */
   bool bufferUserAction();
-  
+
   /* Builds the vector of structs for skills and assosciated targets */
-  std::vector<BattleSkill> buildBattleSkills(const int32_t &index, 
+  std::vector<BattleSkill> buildBattleSkills(const int32_t &index,
       SkillSet* skill_set);
 
-  std::vector<BattleItem> buildBattleItems(const int32_t &index, 
+  std::vector<BattleItem> buildBattleItems(const int32_t &index,
       std::vector<std::pair<Item*, uint16_t>> items);
 
   /* Calculates the base damage for the current action/target setup */
@@ -328,7 +328,7 @@ private:
 
   /* Calculates the Crit Factor to be applied to the damage */
   float calcCritFactor();
-  
+
   /* Calculate the current ignore state flags */
   bool calcIgnoreState();
 
@@ -403,7 +403,7 @@ private:
 
   /* General processing action function */
   bool processAction(BattleEvent* action_event);
-  
+
   /* Processing function for the current ailment */
   bool processAilment();
 
@@ -492,7 +492,7 @@ private:
 
   /* Assigns the foes party of the Battle */
   bool setFoes(Party* const new_foes);
-  
+
   /* Updates the person selection index to the next valid one */
   bool setNextPersonIndex();
 
@@ -569,7 +569,7 @@ public:
   Party* getFoes();
 
   /* Obtains the outcome state enumeration */
-  OutcomeType getOutcome(); 
+  OutcomeType getOutcome();
 
   /* Evaluates and returns a vector of ailments for a given person */
   std::vector<Ailment*> getPersonAilments(const Person* const target);
@@ -594,7 +594,7 @@ public:
 
   /* Obtains the list of friends target indexes */
   std::vector<int32_t> getFriendsTargets(const bool &ko = false);
-  
+
   /* Obtains the list of foes target indexes */
   std::vector<int32_t> getFoesTargets(const bool &ko = false);
 
