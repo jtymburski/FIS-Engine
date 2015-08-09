@@ -320,7 +320,8 @@ BattleEvent* EventBuffer::createExperienceEvent(EventType exp_type,
  * Output: BattleEvent* - pointer to the recently created experience event
  */
 BattleEvent* EventBuffer::createExperienceEvent(EventType exp_type,
-                                                Bubby* target, int32_t amount)
+       Bubby* target,\
+       int32_t amount)
 {
   auto new_event = createNewEvent();
   new_event->type = exp_type;
