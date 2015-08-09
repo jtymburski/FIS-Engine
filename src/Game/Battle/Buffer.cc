@@ -43,7 +43,7 @@ Buffer::Buffer() : index{0} {}
  * Inputs: elm - ref. to a BufferAction to check the validity of
  * Output: bool - the validity of the element
  */
-bool Buffer::checkValid(BufferAction &elm)
+bool Buffer::checkValid(BufferAction& elm)
 {
   auto is_valid = true;
 
@@ -105,7 +105,7 @@ bool Buffer::checkValid(BufferAction &elm)
  * Inputs: index - the index of the Buffer to cooldown.
  * Output: bool - true if the index was found and cooldown took place
  */
-bool Buffer::decrementCooldown(const uint32_t &index)
+bool Buffer::decrementCooldown(const uint32_t& index)
 {
   if(index < action_buffer.size())
   {
@@ -126,7 +126,7 @@ bool Buffer::decrementCooldown(const uint32_t &index)
  * Inputs: index - the index of the Buffer to grab
  * Output: BufferAction& - the reference at the given index
  */
-BufferAction &Buffer::getIndex(const uint32_t &index)
+BufferAction& Buffer::getIndex(const uint32_t& index)
 {
   if(index < action_buffer.size())
     return action_buffer.at(index);
@@ -186,9 +186,9 @@ std::vector<BufferAction> Buffer::sort(std::vector<BufferAction> actions,
  *         cooldown - The number of turns the action will take to perform
  * Output: bool - true if the addition takes places successfully
  */
-bool Buffer::add(Person *const new_user, Skill *const new_skill_used,
-                 std::vector<Person *> targets, const uint32_t &cooldown,
-                 const uint32_t &initial_turn)
+bool Buffer::add(Person* const new_user, Skill* const new_skill_used,
+                 std::vector<Person*> targets, const uint32_t& cooldown,
+                 const uint32_t& initial_turn)
 {
   BufferAction new_elm;
 
@@ -232,9 +232,9 @@ bool Buffer::add(Person *const new_user, Skill *const new_skill_used,
  *         cooldown - The number of turns the action will take to perform
  * Output: bool - true if the addition takes places successfully
  */
-bool Buffer::add(Person *const new_user, Item *const new_item_used,
-                 std::vector<Person *> targets, const uint32_t &cooldown,
-                 const uint32_t &initial_turn)
+bool Buffer::add(Person* const new_user, Item* const new_item_used,
+                 std::vector<Person*> targets, const uint32_t& cooldown,
+                 const uint32_t& initial_turn)
 {
   BufferAction new_elm;
 
@@ -265,9 +265,9 @@ bool Buffer::add(Person *const new_user, Item *const new_item_used,
  *
  * Output:
  */
-bool Buffer::add(Person *const user, ActionType const &buffer_type,
-                 std::vector<Person *> targets, const uint32_t &cooldown,
-                 const uint32_t &initial_turn)
+bool Buffer::add(Person* const user, ActionType const& buffer_type,
+                 std::vector<Person*> targets, const uint32_t& cooldown,
+                 const uint32_t& initial_turn)
 {
   BufferAction new_elm;
 
@@ -294,7 +294,7 @@ bool Buffer::add(Person *const user, ActionType const &buffer_type,
  * Inputs: action - the BufferAction to be added
  * Output: bool - true if the BufferAction was added successfully
  */
-bool Buffer::add(BufferAction &action)
+bool Buffer::add(BufferAction& action)
 {
   auto add = checkValid(action);
   add &= (action.cooldown <= kMAXIMUM_COOLDOWN);
@@ -332,7 +332,7 @@ void Buffer::clearAll(int32_t this_turn_only)
   {
     std::vector<BufferAction> temp;
 
-    for(const auto &elm : action_buffer)
+    for(const auto& elm : action_buffer)
       if(elm.initial_turn != static_cast<uint32_t>(this_turn_only))
         temp.push_back(elm);
 
@@ -368,7 +368,7 @@ void Buffer::clearInvalid()
  * Inputs:
  * Output: bool - true if the buffer contains a cooling skill for person
  */
-Skill *Buffer::hasCoolingSkill(Person *check_person)
+Skill* Buffer::hasCoolingSkill(Person* check_person)
 {
   for(auto element : action_buffer)
     if(element.user == check_person) //&& element.cooldown >= 0)
@@ -398,7 +398,7 @@ bool Buffer::isNextValid()
  * Inputs: none
  * Output: none
  */
-void Buffer::injectGuardTargets(Person *guard, Person *guardee)
+void Buffer::injectGuardTargets(Person* guard, Person* guardee)
 {
   for(auto it = begin(action_buffer); it != end(action_buffer); ++it)
   {
@@ -421,7 +421,7 @@ void Buffer::injectGuardTargets(Person *guard, Person *guardee)
  * Inputs: simple - if a simple version of the Buffer is to be printed
  * Output: none
  */
-void Buffer::print(const bool &simple)
+void Buffer::print(const bool& simple)
 {
   std::cout << "==== Action Buffer ====\n";
   std::cout << "Size: " << action_buffer.size() << " Index:" << index << "\n";
@@ -493,7 +493,7 @@ void Buffer::print(const bool &simple)
  * Inputs: index - the index of the Buffer to locate
  * Output: bool - true if the index was found and removed
  */
-bool Buffer::remove(const uint32_t &index)
+bool Buffer::remove(const uint32_t& index)
 {
   if(index < action_buffer.size())
   {
@@ -511,7 +511,7 @@ bool Buffer::remove(const uint32_t &index)
  * Inputs: user - the user to remove elements for
  * Output: none
  */
-void Buffer::removeAllByUser(Person *user)
+void Buffer::removeAllByUser(Person* user)
 {
   action_buffer.erase(std::remove_if(begin(action_buffer), end(action_buffer),
                                      [&](BufferAction x) -> bool
@@ -533,13 +533,13 @@ void Buffer::removeAllByUser(Person *user)
  * Inputs:
  * Output:
  */
-void Buffer::rejectGuardTargets(Person *guard)
+void Buffer::rejectGuardTargets(Person* guard)
 {
   auto guardee = guard->getGuardee();
 
   if(guardee != nullptr)
   {
-    for(auto &action : action_buffer)
+    for(auto& action : action_buffer)
     {
       for(size_t i = 0; i < action.targets.size(); i++)
       {
@@ -560,7 +560,7 @@ void Buffer::rejectGuardTargets(Person *guard)
  * Inputs: bool - true if the buffer is to be cleared entirely
  * Output: none
  */
-void Buffer::update(const bool &clear)
+void Buffer::update(const bool& clear)
 {
   clearInvalid();
 
@@ -620,7 +620,7 @@ int32_t Buffer::getCooldown()
  * Inputs: none
  * Output: Person* - ptr to the element at current index's user
  */
-Person *Buffer::getUser()
+Person* Buffer::getUser()
 {
   if(checkValid(getIndex(index)))
     return getIndex(index).user;
@@ -634,7 +634,7 @@ Person *Buffer::getUser()
  * Inputs: none
  * Output: Skill* - ptr to the current index's skill
  */
-Skill *Buffer::getSkill()
+Skill* Buffer::getSkill()
 {
   if(checkValid(getIndex(index)))
     return getIndex(index).skill_used;
@@ -648,7 +648,7 @@ Skill *Buffer::getSkill()
  * Inputs: none
  * Output: Item* - ptr to the current index's item
  */
-Item *Buffer::getItem()
+Item* Buffer::getItem()
 {
   if(checkValid(getIndex(index)))
     return getIndex(index).item_used;
@@ -677,7 +677,7 @@ int32_t Buffer::getInitialTurn()
  * Inputs: none
  * Output: std::vector<Person*> - returns the vector of targets for the Buffer
  */
-std::vector<Person *> Buffer::getTargets() { return getIndex(index).targets; }
+std::vector<Person*> Buffer::getTargets() { return getIndex(index).targets; }
 
 /*
  * Description:
