@@ -110,6 +110,7 @@ private:
   Inventory* pouch_friends;
 
   /* Races */
+  Category* race_arcadius;
   Category* race_aurora_drone;
   Category* race_aurora;
   Category* race_bear;
@@ -121,13 +122,47 @@ private:
   std::vector<SkillSet*> skillsets;
 
   /* Attribute Sets */
-  AttributeSet stats_weak;
-  AttributeSet stats_not_as_weak;
-  AttributeSet stats_normal;
-  AttributeSet stats_medium;
-  AttributeSet stats_top;
-  AttributeSet stats_boss;
-  AttributeSet stats_boss2;
+  AttributeSet stats_bear_min;
+  AttributeSet stats_bear_max;
+
+  AttributeSet stats_arcadius_race_min;
+  AttributeSet stats_arcadius_race_max;
+
+  AttributeSet stats_arcadius_cat_min;
+  AttributeSet stats_arcadius_cat_max;
+
+  AttributeSet stats_aurora_agent_min;
+  AttributeSet stats_aurora_agent_max;
+
+  AttributeSet stats_aurora_heavy_min;
+  AttributeSet stats_aurora_heavy_max;
+
+  AttributeSet stats_aurora_min;
+  AttributeSet stats_aurora_max;
+
+  AttributeSet stats_human_min;
+  AttributeSet stats_human_max;
+
+  AttributeSet stats_aurora_eng_min;
+  AttributeSet stats_aurora_eng_max;
+
+  AttributeSet stats_aurora_drone_cat_min;
+  AttributeSet stats_aurora_drone_cat_max;
+
+  AttributeSet stats_aurora_drone_race_min;
+  AttributeSet stats_aurora_drone_race_max;
+
+  AttributeSet stats_treefolk_min;
+  AttributeSet stats_treefolk_max;
+
+  AttributeSet stats_reverdling_min;
+  AttributeSet stats_reverdling_max;
+
+  AttributeSet stats_reverdile_min;
+  AttributeSet stats_reverdile_max;
+
+  AttributeSet stats_player_min;
+  AttributeSet stats_player_max;
 
   /* ------------ Constants --------------- */
   const static uint8_t kLVL_MAX; /* Max level for person */

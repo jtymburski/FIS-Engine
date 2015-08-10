@@ -8,22 +8,13 @@
 
 /* Constant Implementation - see header file for descriptions */
 const uint8_t TestBattle::kLVL_MAX = 127;
-const std::string TestBattle::kMENU_ITEMS[] = {"Arcadius",
-                                         "Aurora Agent",
-                                         "Aurora Agent x 2",
-                                         "Aurora Agent x 5",
-                                         "Aurora Agent, Heavy",
-                                         "Aurora Heavy",
-                                         "Aurora Engineer, Drone",
-                                         "Aurora Engineer, Drone x 4",
-                                         "Aurora Engineer, Agent, Heavy, Drone",
-                                         "Reverdile, Reverdling",
-                                         "Reverdile, Reverdling x 2",
-                                         "Reverdile, Reverdling x 4",
-                                         "Reverdling",
-                                         "Reverdling x 2",
-                                         "Reverdling x 5",
-                                         "Exit"};
+const std::string TestBattle::kMENU_ITEMS[] = {
+    "Arcadius", "Aurora Agent", "Aurora Agent x 2", "Aurora Agent x 5",
+    "Aurora Agent, Heavy", "Aurora Heavy", "Aurora Engineer, Drone",
+    "Aurora Engineer, Drone x 4", "Aurora Engineer, Agent, Heavy, Drone",
+    "Reverdile, Reverdling", "Reverdile, Reverdling x 2",
+    "Reverdile, Reverdling x 4", "Reverdling", "Reverdling x 2",
+    "Reverdling x 5", "Exit"};
 const std::string TestBattle::kMENU_FOE = "Enter Foe Level: ";
 const std::string TestBattle::kMENU_FRIEND = "Enter Friend Level: ";
 const uint8_t TestBattle::kNUM_MENU_ITEMS = 16;
@@ -78,176 +69,254 @@ void TestBattle::buildBattleDisplay(SDL_Renderer* renderer)
   /* Render fonts */
   for(uint8_t i = 0; i < menu_items.size(); i++)
   {
-    menu_items[i]->setText(renderer, kMENU_ITEMS[i], {255,255,255,255});
-    menu_items_sel[i]->setText(renderer, kMENU_ITEMS[i], {255,0,0,255});
+    menu_items[i]->setText(renderer, kMENU_ITEMS[i], {255, 255, 255, 255});
+    menu_items_sel[i]->setText(renderer, kMENU_ITEMS[i], {255, 0, 0, 255});
   }
 
   /* Set the ailments */
-  battle_display->setAilment(Infliction::POISON,
+  battle_display->setAilment(
+      Infliction::POISON,
       base_path + "sprites/Battle/Ailments/Poison_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::BURN,
-      base_path + "sprites/Battle/Ailments/Burn01_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::SCALD,
+  battle_display->setAilment(
+      Infliction::BURN, base_path + "sprites/Battle/Ailments/Burn01_AA_A00.png",
+      renderer);
+  battle_display->setAilment(
+      Infliction::SCALD,
       base_path + "sprites/Battle/Ailments/Burn02_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::CHARR,
+  battle_display->setAilment(
+      Infliction::CHARR,
       base_path + "sprites/Battle/Ailments/Burn03_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::BERSERK,
+  battle_display->setAilment(
+      Infliction::BERSERK,
       base_path + "sprites/Battle/Ailments/Berserk_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::CONFUSE,
+  battle_display->setAilment(
+      Infliction::CONFUSE,
       base_path + "sprites/Battle/Ailments/Confused_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::SILENCE,
+  battle_display->setAilment(
+      Infliction::SILENCE,
       base_path + "sprites/Battle/Ailments/Silence_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::BUBBIFY,
+  battle_display->setAilment(
+      Infliction::BUBBIFY,
       base_path + "sprites/Battle/Ailments/Bubbified_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::DEATHTIMER,
+  battle_display->setAilment(
+      Infliction::DEATHTIMER,
       base_path + "sprites/Battle/Ailments/DeathTimer_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::PARALYSIS,
+  battle_display->setAilment(
+      Infliction::PARALYSIS,
       base_path + "sprites/Battle/Ailments/Paralysis_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::BLINDNESS,
+  battle_display->setAilment(
+      Infliction::BLINDNESS,
       base_path + "sprites/Battle/Ailments/Blind_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::DREADSTRUCK,
+  battle_display->setAilment(
+      Infliction::DREADSTRUCK,
       base_path + "sprites/Battle/Ailments/DreadStruck_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::DREAMSNARE,
+  battle_display->setAilment(
+      Infliction::DREAMSNARE,
       base_path + "sprites/Battle/Ailments/DreamSnare_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::HELLBOUND,
+  battle_display->setAilment(
+      Infliction::HELLBOUND,
       base_path + "sprites/Battle/Ailments/HellBound_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::BOND,
-      base_path + "sprites/Battle/Ailments/Bond02_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::BONDED,
+  battle_display->setAilment(
+      Infliction::BOND, base_path + "sprites/Battle/Ailments/Bond02_AA_A00.png",
+      renderer);
+  battle_display->setAilment(
+      Infliction::BONDED,
       base_path + "sprites/Battle/Ailments/Bond01_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::ALLATKBUFF,
+  battle_display->setAilment(
+      Infliction::ALLATKBUFF,
       base_path + "sprites/Battle/Ailments/AllAtkBuff_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::ALLDEFBUFF,
+  battle_display->setAilment(
+      Infliction::ALLDEFBUFF,
       base_path + "sprites/Battle/Ailments/AllDefBuff_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::PHYBUFF,
+  battle_display->setAilment(
+      Infliction::PHYBUFF,
       base_path + "sprites/Battle/Ailments/PhyBuff_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::THRBUFF,
+  battle_display->setAilment(
+      Infliction::THRBUFF,
       base_path + "sprites/Battle/Ailments/ThrBuff_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::POLBUFF,
+  battle_display->setAilment(
+      Infliction::POLBUFF,
       base_path + "sprites/Battle/Ailments/PolBuff_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::PRIBUFF,
+  battle_display->setAilment(
+      Infliction::PRIBUFF,
       base_path + "sprites/Battle/Ailments/PriBuff_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::CHGBUFF,
+  battle_display->setAilment(
+      Infliction::CHGBUFF,
       base_path + "sprites/Battle/Ailments/ChgBuff_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::CYBBUFF,
+  battle_display->setAilment(
+      Infliction::CYBBUFF,
       base_path + "sprites/Battle/Ailments/CybBuff_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::NIHBUFF,
+  battle_display->setAilment(
+      Infliction::NIHBUFF,
       base_path + "sprites/Battle/Ailments/NihBuff_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::LIMBUFF,
+  battle_display->setAilment(
+      Infliction::LIMBUFF,
       base_path + "sprites/Battle/Ailments/LimBuff_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::UNBBUFF,
+  battle_display->setAilment(
+      Infliction::UNBBUFF,
       base_path + "sprites/Battle/Ailments/_placeholder.png", renderer);
-  battle_display->setAilment(Infliction::VITBUFF,
+  battle_display->setAilment(
+      Infliction::VITBUFF,
       base_path + "sprites/Battle/Ailments/VitBuff_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::QDBUFF,
+  battle_display->setAilment(
+      Infliction::QDBUFF,
       base_path + "sprites/Battle/Ailments/QDBuff_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::ROOTBOUND,
+  battle_display->setAilment(
+      Infliction::ROOTBOUND,
       base_path + "sprites/Battle/Ailments/RootBound_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::DOUBLECAST,
+  battle_display->setAilment(
+      Infliction::DOUBLECAST,
       base_path + "sprites/Battle/Ailments/DoubleCast_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::TRIPLECAST,
+  battle_display->setAilment(
+      Infliction::TRIPLECAST,
       base_path + "sprites/Battle/Ailments/TripleCast_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::HALFCOST,
+  battle_display->setAilment(
+      Infliction::HALFCOST,
       base_path + "sprites/Battle/Ailments/HalfCost_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::REFLECT,
+  battle_display->setAilment(
+      Infliction::REFLECT,
       base_path + "sprites/Battle/Ailments/Reflect_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::HIBERNATION,
+  battle_display->setAilment(
+      Infliction::HIBERNATION,
       base_path + "sprites/Battle/Ailments/Hibernation_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::CURSE,
-      base_path + "sprites/Battle/Ailments/Curse_AA_A00.png", renderer);
-  battle_display->setAilment(Infliction::METATETHER,
+  battle_display->setAilment(
+      Infliction::CURSE, base_path + "sprites/Battle/Ailments/Curse_AA_A00.png",
+      renderer);
+  battle_display->setAilment(
+      Infliction::METATETHER,
       base_path + "sprites/Battle/Ailments/MetaTether_AA_A00.png", renderer);
 
   /* Set the elements */
-  battle_display->setElement(Element::PHYSICAL, base_path +
-          "sprites/Battle/Skills/Elements/Physical_AA_A00.png", renderer);
-  battle_display->setElement(Element::FIRE, base_path +
-          "sprites/Battle/Skills/Elements/Thermal_AA_A00.png", renderer);
-  battle_display->setElement(Element::ICE, base_path +
-          "sprites/Battle/Skills/Elements/Polar_AA_A00.png", renderer);
-  battle_display->setElement(Element::FOREST, base_path +
-          "sprites/Battle/Skills/Elements/Primal_AA_A00.png", renderer);
-  battle_display->setElement(Element::ELECTRIC, base_path +
-          "sprites/Battle/Skills/Elements/Charge_AA_A00.png", renderer);
-  battle_display->setElement(Element::DIGITAL, base_path +
-          "sprites/Battle/Skills/Elements/Cyber_AA_A00.png", renderer);
-  battle_display->setElement(Element::NIHIL, base_path +
-          "sprites/Battle/Skills/Elements/Nihil_AA_A00.png", renderer);
+  battle_display->setElement(
+      Element::PHYSICAL,
+      base_path + "sprites/Battle/Skills/Elements/Physical_AA_A00.png",
+      renderer);
+  battle_display->setElement(
+      Element::FIRE,
+      base_path + "sprites/Battle/Skills/Elements/Thermal_AA_A00.png",
+      renderer);
+  battle_display->setElement(
+      Element::ICE,
+      base_path + "sprites/Battle/Skills/Elements/Polar_AA_A00.png", renderer);
+  battle_display->setElement(
+      Element::FOREST,
+      base_path + "sprites/Battle/Skills/Elements/Primal_AA_A00.png", renderer);
+  battle_display->setElement(
+      Element::ELECTRIC,
+      base_path + "sprites/Battle/Skills/Elements/Charge_AA_A00.png", renderer);
+  battle_display->setElement(
+      Element::DIGITAL,
+      base_path + "sprites/Battle/Skills/Elements/Cyber_AA_A00.png", renderer);
+  battle_display->setElement(
+      Element::NIHIL,
+      base_path + "sprites/Battle/Skills/Elements/Nihil_AA_A00.png", renderer);
 
   /* Set the action scopes */
-  battle_display->setScope(ActionScope::USER, base_path +
-      "sprites/Battle/Skills/Targets/user_AA_A00.png", renderer);
-  battle_display->setScope(ActionScope::ONE_TARGET, base_path +
-      "sprites/Battle/Skills/Targets/single_AA_A00.png", renderer);
-  battle_display->setScope(ActionScope::ONE_ENEMY, base_path +
-      "sprites/Battle/Skills/Targets/singleenemy_AA_A00.png", renderer);
-  battle_display->setScope(ActionScope::TWO_ENEMIES, base_path +
-      "sprites/Battle/Skills/Targets/twoenemies_AA_A00.png", renderer);
-  battle_display->setScope(ActionScope::ALL_ENEMIES, base_path +
-      "sprites/Battle/Skills/Targets/allenemies_AA_A00.png", renderer);
-  battle_display->setScope(ActionScope::ONE_ALLY, base_path +
-      "sprites/Battle/Skills/Targets/singleally_AA_A00.png", renderer);
-  battle_display->setScope(ActionScope::ONE_ALLY_NOT_USER, base_path +
-      "sprites/Battle/Skills/Targets/singlenotuserally_AA_A00.png", renderer);
-  battle_display->setScope(ActionScope::TWO_ALLIES, base_path +
-      "sprites/Battle/Skills/Targets/twoallies_AA_A00.png", renderer);
-  battle_display->setScope(ActionScope::ALL_ALLIES, base_path +
-      "sprites/Battle/Skills/Targets/allallies_AA_A00.png", renderer);
-  battle_display->setScope(ActionScope::ONE_ALLY_KO, base_path +
-      "sprites/Battle/Skills/Targets/singlekoedally_AA_A00.png", renderer);
-  battle_display->setScope(ActionScope::ALL_ALLIES_KO, base_path +
-      "sprites/Battle/Skills/Targets/allkoedallies_AA_A00.png", renderer);
-  battle_display->setScope(ActionScope::ONE_PARTY, base_path +
-      "sprites/Battle/Skills/Targets/singleparty_AA_A00.png", renderer);
-  battle_display->setScope(ActionScope::ALL_TARGETS, base_path +
-      "sprites/Battle/Skills/Targets/all_AA_A00.png", renderer);
-  battle_display->setScope(ActionScope::NOT_USER, base_path +
-      "sprites/Battle/Skills/Targets/singlenotuser_AA_A00.png", renderer);
-  battle_display->setScope(ActionScope::ALL_NOT_USER, base_path +
-      "sprites/Battle/Skills/Targets/allnotuser_AA_A00.png", renderer);
+  battle_display->setScope(
+      ActionScope::USER,
+      base_path + "sprites/Battle/Skills/Targets/user_AA_A00.png", renderer);
+  battle_display->setScope(
+      ActionScope::ONE_TARGET,
+      base_path + "sprites/Battle/Skills/Targets/single_AA_A00.png", renderer);
+  battle_display->setScope(
+      ActionScope::ONE_ENEMY,
+      base_path + "sprites/Battle/Skills/Targets/singleenemy_AA_A00.png",
+      renderer);
+  battle_display->setScope(
+      ActionScope::TWO_ENEMIES,
+      base_path + "sprites/Battle/Skills/Targets/twoenemies_AA_A00.png",
+      renderer);
+  battle_display->setScope(
+      ActionScope::ALL_ENEMIES,
+      base_path + "sprites/Battle/Skills/Targets/allenemies_AA_A00.png",
+      renderer);
+  battle_display->setScope(
+      ActionScope::ONE_ALLY,
+      base_path + "sprites/Battle/Skills/Targets/singleally_AA_A00.png",
+      renderer);
+  battle_display->setScope(
+      ActionScope::ONE_ALLY_NOT_USER,
+      base_path + "sprites/Battle/Skills/Targets/singlenotuserally_AA_A00.png",
+      renderer);
+  battle_display->setScope(
+      ActionScope::TWO_ALLIES,
+      base_path + "sprites/Battle/Skills/Targets/twoallies_AA_A00.png",
+      renderer);
+  battle_display->setScope(
+      ActionScope::ALL_ALLIES,
+      base_path + "sprites/Battle/Skills/Targets/allallies_AA_A00.png",
+      renderer);
+  battle_display->setScope(
+      ActionScope::ONE_ALLY_KO,
+      base_path + "sprites/Battle/Skills/Targets/singlekoedally_AA_A00.png",
+      renderer);
+  battle_display->setScope(
+      ActionScope::ALL_ALLIES_KO,
+      base_path + "sprites/Battle/Skills/Targets/allkoedallies_AA_A00.png",
+      renderer);
+  battle_display->setScope(
+      ActionScope::ONE_PARTY,
+      base_path + "sprites/Battle/Skills/Targets/singleparty_AA_A00.png",
+      renderer);
+  battle_display->setScope(
+      ActionScope::ALL_TARGETS,
+      base_path + "sprites/Battle/Skills/Targets/all_AA_A00.png", renderer);
+  battle_display->setScope(
+      ActionScope::NOT_USER,
+      base_path + "sprites/Battle/Skills/Targets/singlenotuser_AA_A00.png",
+      renderer);
+  battle_display->setScope(
+      ActionScope::ALL_NOT_USER,
+      base_path + "sprites/Battle/Skills/Targets/allnotuser_AA_A00.png",
+      renderer);
 
   /* Set up the extra frames */
-  battle_display->setFramePercent(base_path +
-                "sprites/Battle/Skills/Extras/Accuracy_AA_A00.png", renderer);
-  battle_display->setFrameQD(base_path +
-                "sprites/Battle/Skills/Extras/QDSymbol_AA_A00.png", renderer);
-  battle_display->setFrameTime(base_path +
-                "sprites/Battle/Skills/Extras/Cooldown_AA_A00.png", renderer);
+  battle_display->setFramePercent(
+      base_path + "sprites/Battle/Skills/Extras/Accuracy_AA_A00.png", renderer);
+  battle_display->setFrameQD(
+      base_path + "sprites/Battle/Skills/Extras/QDSymbol_AA_A00.png", renderer);
+  battle_display->setFrameTime(
+      base_path + "sprites/Battle/Skills/Extras/Cooldown_AA_A00.png", renderer);
 
   /* Set up the Ailment pleps */
   // TODO: Temporary
   auto poison = new Sprite(game_config->getBasePath() +
-              "sprites/Battle/Pleps/hibernationplep_AA_A", 4, ".png", renderer);
+                               "sprites/Battle/Pleps/hibernationplep_AA_A",
+                           4, ".png", renderer);
   poison->insertTail(game_config->getBasePath() +
-                   "sprites/Battle/Pleps/hibernationplep_AA_A00.png", renderer);
+                         "sprites/Battle/Pleps/hibernationplep_AA_A00.png",
+                     renderer);
   poison->insertTail(game_config->getBasePath() +
-                   "sprites/Battle/Pleps/hibernationplep_AA_A01.png", renderer);
+                         "sprites/Battle/Pleps/hibernationplep_AA_A01.png",
+                     renderer);
   poison->insertTail(game_config->getBasePath() +
-                   "sprites/Battle/Pleps/hibernationplep_AA_A02.png", renderer);
+                         "sprites/Battle/Pleps/hibernationplep_AA_A02.png",
+                     renderer);
   poison->insertTail(game_config->getBasePath() +
-                   "sprites/Battle/Pleps/hibernationplep_AA_A03.png", renderer);
+                         "sprites/Battle/Pleps/hibernationplep_AA_A03.png",
+                     renderer);
   for(uint16_t i = 0; i < 5; i++)
-    poison->insertTail(game_config->getBasePath() +
-                            "sprites/blank.png", renderer);
+    poison->insertTail(game_config->getBasePath() + "sprites/blank.png",
+                       renderer);
   poison->setAnimationTime(180);
   battle_display->setAilmentPlep(Infliction::POISON, poison);
 
   /* Background and bar */
   Sprite* background = new Sprite(
-                base_path + "sprites/Battle/Backdrop/battlebg00.png", renderer);
+      base_path + "sprites/Battle/Backdrop/battlebg00.png", renderer);
   battle_display->setBackground(background);
-  battle_display->setBattleBar(new Frame(
-                           base_path + "sprites/Overlay/battle.png", renderer));
+  battle_display->setBattleBar(
+      new Frame(base_path + "sprites/Overlay/battle.png", renderer));
 
   /* Skill Images */
   for(uint32_t i = 0; i < skills.size(); i++)
   {
     if(i % 2 == 0)
-      skills[i]->setThumbnail(new Frame(base_path + 
-                        "sprites/Battle/Skills/_sample_skill_1.png", renderer));
+      skills[i]->setThumbnail(new Frame(
+          base_path + "sprites/Battle/Skills/_sample_skill_1.png", renderer));
     else
-      skills[i]->setThumbnail(new Frame(base_path + 
-                        "sprites/Battle/Skills/_sample_skill_2.png", renderer));
+      skills[i]->setThumbnail(new Frame(
+          base_path + "sprites/Battle/Skills/_sample_skill_2.png", renderer));
   }
 }
 
@@ -256,14 +325,44 @@ void TestBattle::buildBattleDisplay(SDL_Renderer* renderer)
 /* ------------------------------------------------------------------------- */
 void TestBattle::create()
 {
-  /* Attribute Sets */
-  stats_weak        = AttributeSet(1, true, false);
-  stats_not_as_weak = AttributeSet(2, true, false);
-  stats_normal      = AttributeSet(3, true, false);
-  stats_medium      = AttributeSet(4, true, false);
-  stats_top         = AttributeSet(5, true, false);
-  stats_boss        = AttributeSet(6, true, false);
-  stats_boss2       = AttributeSet(7, true, false);
+  /* Attribute Sets
+    "VITA", "QTDR", "PHAG", "PHFD",
+    "THAG", "THFD", "POAG", "POFD",
+    "PIAG", "PIFD", "CHAG", "CHFD",
+    "CYAG", "CYFD", "NIAG", "NIFD",
+    "LIMB", "MMTM", "UNBR", "MANN"
+  */
+
+  stats_bear_min = AttributeSet(1, true, false);
+  stats_bear_max = AttributeSet(1, true, false);
+  stats_arcadius_race_min = AttributeSet(1, true, false);
+  stats_arcadius_race_max = AttributeSet(1, true, false);
+  stats_arcadius_cat_min = AttributeSet(1, true, false);
+  stats_arcadius_cat_max = AttributeSet(1, true, false);
+  stats_arcadius_race_min = AttributeSet(1, true, false);
+  stats_arcadius_race_max = AttributeSet(1, true, false);
+  stats_aurora_agent_min = AttributeSet(1, true, false);
+  stats_aurora_agent_max = AttributeSet(1, true, false);
+  stats_aurora_heavy_min = AttributeSet(1, true, false);
+  stats_aurora_heavy_max = AttributeSet(1, true, false);
+  stats_human_min = AttributeSet(1, true, false);
+  stats_human_max = AttributeSet(1, true, false);
+  stats_aurora_heavy_min = AttributeSet(1, true, false);
+  stats_aurora_heavy_max = AttributeSet(1, true, false);
+  stats_aurora_eng_min = AttributeSet(1, true, false);
+  stats_aurora_eng_max = AttributeSet(1, true, false);
+  stats_aurora_drone_cat_min = AttributeSet(1, true, false);
+  stats_aurora_drone_cat_max = AttributeSet(1, true, false);
+  stats_aurora_drone_race_min = AttributeSet(1, true, false);
+  stats_aurora_drone_race_max = AttributeSet(1, true, false);
+  stats_treefolk_min = AttributeSet(1, true, false);
+  stats_treefolk_max = AttributeSet(1, true, false);
+  stats_reverdling_min = AttributeSet(1, true, false);
+  stats_reverdling_max = AttributeSet(1, true, false);
+  stats_reverdile_min = AttributeSet(1, true, false);
+  stats_reverdile_max = AttributeSet(1, true, false);
+  stats_player_min = AttributeSet(1, true, false);
+  stats_player_max = AttributeSet(1, true, false);
 
   /* Actions */
   createActions();
@@ -285,12 +384,14 @@ void TestBattle::createActions()
   /* Alter Actions */
   act_alt.push_back(new Action("200,ALTER,,,,VITA,PC.10,AMOUNT.10,,99"));
   act_alt.push_back(new Action("201,ALTER,,,,,PC.25,AMOUNT.20,VITA,99"));
-  act_alt.push_back(new Action("202,ALTER,,,,VITA,AMOUNT.-100,AMOUNT.20,VITA,100"));
+  act_alt.push_back(
+      new Action("202,ALTER,,,,VITA,AMOUNT.-100,AMOUNT.20,VITA,100"));
   act_alt.push_back(new Action("203,ALTER,,,,,PC.-12,AMOUNT.20,VITA,100"));
   act_alt.push_back(new Action("204,ALTER,,,,QTDR,PC.10,AMOUNT.20,THAG,96"));
-  act_alt.push_back(new Action("205,ALTER-FLIP,,,,QTDR,PC.10,AMOUNT.20,THAG,96"));
   act_alt.push_back(
-            new Action("206,ALTER-FLIP,,,,VITA,AMOUNT.100,AMOUNT.30,VITA,100"));
+      new Action("205,ALTER-FLIP,,,,QTDR,PC.10,AMOUNT.20,THAG,96"));
+  act_alt.push_back(
+      new Action("206,ALTER-FLIP,,,,VITA,AMOUNT.100,AMOUNT.30,VITA,100"));
   act_alt.push_back(new Action("207,ALTER,,,,PHFD,AMOUNT.10,PC.5,,100"));
   act_alt.push_back(new Action("208,ALTER,,,,MMNT,AMOUNT.10,PC.5,,100"));
   act_alt.push_back(new Action("209,ALTER,,,,VITA,PC.-100,AMOUNT.0,,100"));
@@ -316,9 +417,9 @@ void TestBattle::createActions()
   act_dmg.push_back(new Action("8,DAMAGE,,,,VITA,AMOUNT.100,AMOUNT.30,,95"));
   act_dmg.push_back(new Action("9,DAMAGE,,,,VITA,AMOUNT.300,AMOUNT.35,,95"));
   act_dmg.push_back(new Action("10,DAMAGE,,,,VITA,AMOUNT.500,AMOUNT.50,,95"));
-  act_dmg.push_back(new Action("11,DAMAGE,,,,VITA,AMOUNT.40,PC.1,,95"));
-  act_dmg.push_back(new Action("12,DAMAGE,,,,VITA,AMOUNT.110,PC.5,,95"));
-  act_dmg.push_back(new Action("13,DAMAGE,,,,VITA,AMOUNT.60,PC.10,,95"));
+  act_dmg.push_back(new Action("11,DAMAGE,,,,VITA,AMOUNT.40,AMOUNT.1,,95"));
+  act_dmg.push_back(new Action("12,DAMAGE,,,,VITA,AMOUNT.110,AMOUNT.5,,95"));
+  act_dmg.push_back(new Action("13,DAMAGE,,,,VITA,AMOUNT.60,AMOUNT.10,,95"));
   act_dmg.push_back(new Action("14,DAMAGE,,,,VITA,AMOUNT.75,PC.15,,95"));
   act_dmg.push_back(new Action("15,DAMAGE,,,,VITA,AMOUNT.100,PC.25,,95"));
   act_dmg.push_back(new Action("16,DAMAGE,,,,VITA,AMOUNT.150,PC.30,,95"));
@@ -341,8 +442,10 @@ void TestBattle::createActions()
   act_inf.push_back(new Action("505,INFLICT,2.3,,,CONFUSE,AMOUNT.50,,VITA,99"));
   act_inf.push_back(new Action("506,INFLICT,2.3,,,SILENCE,AMOUNT.60,,VITA,99"));
   act_inf.push_back(new Action("507,INFLICT,4.8,,,BUBBIFY,AMOUNT.70,,VITA,99"));
-  act_inf.push_back(new Action("508,INFLICT,2.5,,,ALLATKBUFF,AMOUNT.0,,VITA,99"));
-  act_inf.push_back(new Action("509,INFLICT,2.5,,,ALLDEFBUFF,AMOUNT.0,,VITA,99"));
+  act_inf.push_back(
+      new Action("508,INFLICT,2.5,,,ALLATKBUFF,AMOUNT.0,,VITA,99"));
+  act_inf.push_back(
+      new Action("509,INFLICT,2.5,,,ALLDEFBUFF,AMOUNT.0,,VITA,99"));
   act_inf.push_back(new Action("510,INFLICT,2.5,,,PHYBUFF,AMOUNT.0,,VITA,99"));
   act_inf.push_back(new Action("511,INFLICT,2.5,,,THRBUFF,AMOUNT.0,,VITA,99"));
   act_inf.push_back(new Action("512,INFLICT,2.5,,,POLBUFF,AMOUNT.0,,VITA,99"));
@@ -354,12 +457,18 @@ void TestBattle::createActions()
   act_inf.push_back(new Action("518,INFLICT,2.5,,,UNBBUFF,AMOUNT.0,,VITA,99"));
   act_inf.push_back(new Action("519,INFLICT,2.5,,,VITBUFF,AMOUNT.0,,VITA,99"));
   act_inf.push_back(new Action("520,INFLICT,2.5,,,QDBUFF,AMOUNT.0,,VITA,99"));
-  act_inf.push_back(new Action("521,INFLICT,5.5,,,DEATHTIMER,AMOUNT.0,,VITA,99"));
-  act_inf.push_back(new Action("522,INFLICT,3.5,,,PARALYSIS,AMOUNT.30,,VITA,99"));
-  act_inf.push_back(new Action("523,INFLICT,2.5,,,BLINDNESS,AMOUNT.20,,VITA,99"));
-  act_inf.push_back(new Action("524,INFLICT,2.4,,,DREADSTRUCK,AMOUNT.25,,VITA,99"));
-  act_inf.push_back(new Action("525,INFLICT,2.6,,,DREAMSNARE,AMOUNT.25,,VITA,99"));
-  act_inf.push_back(new Action("526,INFLICT,4.8,,,MODULATE,AMOUNT.10,,VITA,99"));
+  act_inf.push_back(
+      new Action("521,INFLICT,5.5,,,DEATHTIMER,AMOUNT.0,,VITA,99"));
+  act_inf.push_back(
+      new Action("522,INFLICT,3.5,,,PARALYSIS,AMOUNT.30,,VITA,99"));
+  act_inf.push_back(
+      new Action("523,INFLICT,2.5,,,BLINDNESS,AMOUNT.20,,VITA,99"));
+  act_inf.push_back(
+      new Action("524,INFLICT,2.4,,,DREADSTRUCK,AMOUNT.25,,VITA,99"));
+  act_inf.push_back(
+      new Action("525,INFLICT,2.6,,,DREAMSNARE,AMOUNT.25,,VITA,99"));
+  act_inf.push_back(
+      new Action("526,INFLICT,4.8,,,MODULATE,AMOUNT.10,,VITA,99"));
 
   /* Relieve Actions */
   act_rlv.push_back(new Action("600,RELIEVE,,,,POISON,,,VITA,100"));
@@ -371,85 +480,92 @@ void TestBattle::createActions()
 void TestBattle::createClasses()
 {
   /* Arcadius LVL1 Class */
-  class_arcadius1 = new Category(100, "Arcadius", "arcadius", stats_boss,
-                                stats_boss2, getSkillSet(100));
+  class_arcadius1 =
+      new Category(100, "Arcadius", "arcadius", stats_arcadius_cat_min,
+                   stats_arcadius_cat_max, getSkillSet(100));
   class_arcadius1->setVitaRegenRate(RegenRate::WEAK);
   class_arcadius1->setQDRegenRate(RegenRate::WEAK);
   class_arcadius1->setDescription("The one. The only.");
   // class_arcadius1->setFlag(CategoryState::DEF_ENABLED, true);
   // class_arcadius1->setFlag(CategoryState::GRD_ENABLED, true);
-  //class_arcadius1->setFlag(CategoryState::E_CLAWS, true);
+  // class_arcadius1->setFlag(CategoryState::E_CLAWS, true);
 
   /* Aurora Agent Class */
-  class_aurora_agent = new Category(120, "Agent", "agent", stats_normal,
-                                    stats_top, getSkillSet(120));
+  class_aurora_agent =
+      new Category(120, "Agent", "agent", stats_aurora_agent_min,
+                   stats_aurora_agent_max, getSkillSet(120));
   class_aurora_agent->setVitaRegenRate(RegenRate::ZERO);
   class_aurora_agent->setQDRegenRate(RegenRate::WEAK);
   class_aurora_agent->setDescription("A less than smart agent");
   // class_aurora_agent->setFlag(CategoryState::DEF_ENABLED, true);
   // class_aurora_agent->setFlag(CategoryState::GRD_ENABLED, true);
-  //class_aurora_agent->setFlag(CategoryState::E_SWORD, true);
+  // class_aurora_agent->setFlag(CategoryState::E_SWORD, true);
 
   /* Aurora Heavy Classs */
-  class_aurora_heavy = new Category(140, "Heavy", "heavy", stats_normal,
-                                    stats_top, getSkillSet(140));
+  class_aurora_heavy =
+      new Category(140, "Heavy", "heavy", stats_aurora_heavy_min,
+                   stats_aurora_heavy_max, getSkillSet(140));
   class_aurora_heavy->setVitaRegenRate(RegenRate::ZERO);
   class_aurora_heavy->setQDRegenRate(RegenRate::WEAK);
   class_aurora_heavy->setDescription("He weighs more than your house");
   // class_aurora_heavy->setFlag(CategoryState::DEF_ENABLED, true);
   // class_aurora_heavy->setFlag(CategoryState::GRD_ENABLED, true);
-  //class_aurora_heavy->setFlag(CategoryState::E_SWORD, true);
+  // class_aurora_heavy->setFlag(CategoryState::E_SWORD, true);
 
   /* Aurora Drone Class */
-  class_aurora_drone = new Category(180, "Drone", "drone", stats_not_as_weak,
-                                    stats_medium, getSkillSet(180));
+  class_aurora_drone =
+      new Category(180, "Drone", "drone", stats_aurora_drone_cat_min,
+                   stats_aurora_drone_cat_max, getSkillSet(180));
   class_aurora_drone->setVitaRegenRate(RegenRate::ZERO);
   class_aurora_drone->setQDRegenRate(RegenRate::WEAK);
   class_aurora_drone->setDescription("Cannon fodder");
   // class_aurora_drone->setFlag(CategoryState::DEF_ENABLED, true);
   // class_aurora_drone->setFlag(CategoryState::GRD_ENABLED, true);
   class_aurora_drone->setFlag(CategoryState::IMP_ENABLED, true);
-  //class_aurora_drone->setFlag(CategoryState::E_SWORD, true);
+  // class_aurora_drone->setFlag(CategoryState::E_SWORD, true);
 
   /* Aurora Engineer Class */
-  class_aurora_engg = new Category(160, "Engineer", "engineer", stats_normal,
-                                   stats_top, getSkillSet(160));
+  class_aurora_engg =
+      new Category(160, "Engineer", "engineer", stats_aurora_eng_min,
+                   stats_aurora_eng_max, getSkillSet(160));
   class_aurora_engg->setVitaRegenRate(RegenRate::ZERO);
   class_aurora_engg->setQDRegenRate(RegenRate::WEAK);
   class_aurora_engg->setDescription("An engineer and much smarter than you");
   // class_aurora_engg->setFlag(CategoryState::DEF_ENABLED, true);
   // class_aurora_engg->setFlag(CategoryState::GRD_ENABLED, true);
-  //class_aurora_engg->setFlag(CategoryState::E_SWORD, true);
+  // class_aurora_engg->setFlag(CategoryState::E_SWORD, true);
 
   /* Player Class */
-  class_player = new Category(200, "Bearanator", "player", stats_normal, stats_top,
-                              getSkillSet(200));
+  class_player = new Category(200, "Bearanator", "player", stats_player_min,
+                              stats_player_max, getSkillSet(200));
   class_player->setVitaRegenRate(RegenRate::ZERO);
   class_player->setQDRegenRate(RegenRate::WEAK);
   class_player->setDescription("This is me and I am awesome");
   // class_player->setFlag(CategoryState::DEF_ENABLED, true);
   // class_player->setFlag(CategoryState::GRD_ENABLED, true);
-  //class_player->setFlag(CategoryState::E_CLAWS, true);
+  // class_player->setFlag(CategoryState::E_CLAWS, true);
 
   /* Reverdile Class */
-  class_reverdile = new Category(220, "Reverdile", "reverdile", stats_normal,
-                                 stats_top, getSkillSet(220));
+  class_reverdile =
+      new Category(220, "Reverdile", "reverdile", stats_reverdile_min,
+                   stats_reverdile_max, getSkillSet(220));
   class_reverdile->setVitaRegenRate(RegenRate::WEAK);
   class_reverdile->setQDRegenRate(RegenRate::WEAK);
   class_reverdile->setDescription("What is the master of crap called");
   // class_reverdile->setFlag(CategoryState::DEF_ENABLED, true);
   // class_reverdile->setFlag(CategoryState::GRD_ENABLED, true);
-  //class_reverdile->setFlag(CategoryState::E_CLAWS, true);
+  // class_reverdile->setFlag(CategoryState::E_CLAWS, true);
 
   /* Reverdling Class */
-  class_reverdling = new Category(240, "Reverdling", "reverdling", stats_weak,
-                                  stats_medium, getSkillSet(240));
+  class_reverdling =
+      new Category(240, "Reverdling", "reverdling", stats_reverdling_min,
+                   stats_reverdling_max, getSkillSet(240));
   class_reverdling->setVitaRegenRate(RegenRate::WEAK);
   class_reverdling->setQDRegenRate(RegenRate::WEAK);
   class_reverdling->setDescription("He's about as useful as fried turd");
   // class_reverdling->setFlag(CategoryState::DEF_ENABLED, true);
   // class_reverdling->setFlag(CategoryState::GRD_ENABLED, true);
-  //class_reverdling->setFlag(CategoryState::E_CLAWS, true);
+  // class_reverdling->setFlag(CategoryState::E_CLAWS, true);
 }
 
 /* ------------------------------------------------------------------------- */
@@ -460,9 +576,9 @@ void TestBattle::createFonts()
   if(game_config != NULL)
   {
     /* Try and create the new fonts */
-    TTF_Font* regular_font = Text::createFont(game_config->getBasePath() +
-                                              game_config->getFont(),
-                                              16, TTF_STYLE_BOLD);
+    TTF_Font* regular_font =
+        Text::createFont(game_config->getBasePath() + game_config->getFont(),
+                         16, TTF_STYLE_BOLD);
 
     /* If successful, insert the new fonts. Otherwise, delete */
     if(regular_font != NULL)
@@ -508,8 +624,8 @@ Person* TestBattle::createPerson(int id, TestPerson type,
   if(type == ARCADIUS)
   {
     new_person = new Person(id, "Arcadius", race_bear, class_arcadius1);
-    new_person->setCurves(Element::FOREST, ElementCurve::S,
-                          Element::PHYSICAL, ElementCurve::S, true);
+    new_person->setCurves(Element::FOREST, ElementCurve::S, Element::PHYSICAL,
+                          ElementCurve::S, true);
 
     tp = new Sprite(base_path + "sprites/Battle/Battle_Persons/arcadius.png",
                     renderer);
@@ -519,8 +635,8 @@ Person* TestBattle::createPerson(int id, TestPerson type,
   else if(type == AURORAAGENT)
   {
     new_person = new Person(id, "Agent", race_human, class_aurora_agent);
-    new_person->setCurves(Element::ELECTRIC, ElementCurve::C,
-                          Element::PHYSICAL, ElementCurve::C, true);
+    new_person->setCurves(Element::ELECTRIC, ElementCurve::C, Element::PHYSICAL,
+                          ElementCurve::C, true);
 
     tp = new Sprite(base_path + "sprites/Battle/Battle_Persons/auroraagent.png",
                     renderer);
@@ -530,8 +646,8 @@ Person* TestBattle::createPerson(int id, TestPerson type,
   else if(type == AURORAHEAVY)
   {
     new_person = new Person(id, "Heavy", race_human, class_aurora_heavy);
-    new_person->setCurves(Element::ELECTRIC, ElementCurve::A,
-                          Element::PHYSICAL, ElementCurve::A, true);
+    new_person->setCurves(Element::ELECTRIC, ElementCurve::A, Element::PHYSICAL,
+                          ElementCurve::A, true);
 
     tp = new Sprite(base_path + "sprites/Battle/Battle_Persons/auroraheavy.png",
                     renderer);
@@ -541,20 +657,20 @@ Person* TestBattle::createPerson(int id, TestPerson type,
   else if(type == AURORAENGG)
   {
     new_person = new Person(id, "Engineer", race_human, class_aurora_engg);
-    new_person->setCurves(Element::ELECTRIC, ElementCurve::B,
-                          Element::PHYSICAL, ElementCurve::B, true);
+    new_person->setCurves(Element::ELECTRIC, ElementCurve::B, Element::PHYSICAL,
+                          ElementCurve::B, true);
 
-    tp = new Sprite(
-              base_path + "sprites/Battle/Battle_Persons/auroraengineer.png",
-              renderer);
+    tp = new Sprite(base_path +
+                        "sprites/Battle/Battle_Persons/auroraengineer.png",
+                    renderer);
     ds = new Sprite(base_path + "sprites/Overlay/DialogChar/auroraengineer.png",
                     renderer);
   }
   else if(type == AURORADRONE)
   {
     new_person = new Person(id, "Drone", race_aurora_drone, class_aurora_drone);
-    new_person->setCurves(Element::ELECTRIC, ElementCurve::D,
-                          Element::PHYSICAL, ElementCurve::D, true);
+    new_person->setCurves(Element::ELECTRIC, ElementCurve::D, Element::PHYSICAL,
+                          ElementCurve::D, true);
 
     tp = new Sprite(base_path + "sprites/Battle/Battle_Persons/auroradrone.png",
                     renderer);
@@ -564,8 +680,8 @@ Person* TestBattle::createPerson(int id, TestPerson type,
   else if(type == REVERDILE)
   {
     new_person = new Person(id, "Reverdile", race_treefolk, class_reverdile);
-    new_person->setCurves(Element::FOREST, ElementCurve::C,
-                          Element::PHYSICAL, ElementCurve::C, true);
+    new_person->setCurves(Element::FOREST, ElementCurve::C, Element::PHYSICAL,
+                          ElementCurve::C, true);
 
     tp = new Sprite(base_path + "sprites/Battle/Battle_Persons/reverdile.png",
                     renderer);
@@ -575,8 +691,8 @@ Person* TestBattle::createPerson(int id, TestPerson type,
   else if(type == REVERDLING)
   {
     new_person = new Person(id, "Reverdling", race_treefolk, class_reverdling);
-    new_person->setCurves(Element::FOREST, ElementCurve::D,
-                          Element::PHYSICAL, ElementCurve::D, true);
+    new_person->setCurves(Element::FOREST, ElementCurve::D, Element::PHYSICAL,
+                          ElementCurve::D, true);
 
     tp = new Sprite(base_path + "sprites/Battle/Battle_Persons/reverdling.png",
                     renderer);
@@ -586,8 +702,8 @@ Person* TestBattle::createPerson(int id, TestPerson type,
   else if(type == PLAYER)
   {
     new_person = new Person(id, "Player", race_bear, class_player);
-    new_person->setCurves(Element::FOREST, ElementCurve::C,
-                          Element::PHYSICAL, ElementCurve::C, true);
+    new_person->setCurves(Element::FOREST, ElementCurve::C, Element::PHYSICAL,
+                          ElementCurve::C, true);
 
     fp = new Sprite(base_path + "sprites/Battle/Backs/player0.png", renderer);
     ds = new Sprite(base_path + "sprites/Overlay/DialogChar/player.png",
@@ -615,9 +731,16 @@ Person* TestBattle::createPerson(int id, TestPerson type,
 /* ------------------------------------------------------------------------- */
 void TestBattle::createRaces()
 {
-  /* Aurora Race */
-  race_aurora = new Category(1060, "Aurora", "aurora", stats_normal, stats_top,
-                             getSkillSet(1060));
+  /* Arcadius Race (He shouldn't have bear skills) */
+  race_arcadius = new Category(1060, "The Arcadius", "arcadius",
+                               stats_arcadius_race_min, stats_arcadius_race_max, getSkillSet(101));
+  race_arcadius->setDescription("Blah");
+  race_arcadius->setQDRegenRate(RegenRate::WEAK);
+  race_arcadius->setVitaRegenRate(RegenRate::WEAK);
+
+      /* Aurora Race */
+      race_aurora = new Category(1060, "Aurora", "aurora", stats_aurora_min,
+                                 stats_aurora_max, getSkillSet(1060));
   race_aurora->setVitaRegenRate(RegenRate::ZERO);
   race_aurora->setQDRegenRate(RegenRate::WEAK);
   race_aurora->setDescription("A class of intelligent bots");
@@ -627,15 +750,16 @@ void TestBattle::createRaces()
 
   /* Aurora Drone Race - Possibly needed for immunity/smaller stats */
   race_aurora_drone = new Category(1061, "Aurora Drone", "aurora drone",
-                                   stats_normal, stats_top, getSkillSet(101));
+                                   stats_aurora_drone_race_min,
+                                   stats_aurora_drone_race_max, getSkillSet(101));
   race_aurora_drone->setVitaRegenRate(RegenRate::ZERO);
   race_aurora_drone->setQDRegenRate(RegenRate::WEAK);
   race_aurora_drone->setDescription("Artificial artificialness");
 
   /* Bear Race */
-  race_bear = new Category(1020, "Bear", "bear", stats_normal, stats_top,
+  race_bear = new Category(1020, "Bear", "bear", stats_bear_min, stats_bear_max,
                            getSkillSet(1020));
-  //race_bear->setVitaRegenRate(RegenRate::WEAK);
+  // race_bear->setVitaRegenRate(RegenRate::WEAK);
   race_bear->setQDRegenRate(RegenRate::WEAK);
   race_bear->setDescription("A sentient and intelligent bear");
   // race_bear->setFlag(CategoryState::DEF_ENABLED, true);
@@ -643,8 +767,8 @@ void TestBattle::createRaces()
   // race_bear->setFlag(CategoryState::E_SWORD, true);
 
   /* Human Race */
-  race_human = new Category(1000, "Human", "human", stats_normal, stats_top,
-                            getSkillSet(1000));
+  race_human = new Category(1000, "Human", "human", stats_human_min,
+                            stats_human_max, getSkillSet(1000));
   race_human->setVitaRegenRate(RegenRate::ZERO);
   race_human->setQDRegenRate(RegenRate::WEAK);
   race_human->setDescription("A regular old joe from Earth");
@@ -653,14 +777,14 @@ void TestBattle::createRaces()
   // race_human->setFlag(CategoryState::E_SWORD, true);
 
   /* Treefolk Race */
-  race_treefolk = new Category(1040, "Treefolk", "treefolk", stats_normal,
-                               stats_top, getSkillSet(1040));
+  race_treefolk = new Category(1040, "Treefolk", "treefolk", stats_treefolk_min,
+                               stats_treefolk_max, getSkillSet(1040));
   race_treefolk->setVitaRegenRate(RegenRate::WEAK);
-  //race_treefolk->setQDRegenRate(RegenRate::WEAK);
+  // race_treefolk->setQDRegenRate(RegenRate::WEAK);
   race_treefolk->setDescription("They have long roots into society");
   // race_treefolk->setFlag(CategoryState::DEF_ENABLED, true);
   // race_treefolk->setFlag(CategoryState::GRD_ENABLED, true);
-  //race_treefolk->setFlag(CategoryState::E_SWORD, true);
+  // race_treefolk->setFlag(CategoryState::E_SWORD, true);
 }
 
 /* ------------------------------------------------------------------------- */
@@ -669,8 +793,8 @@ void TestBattle::createRaces()
 void TestBattle::createSkills()
 {
   /* Light Push */
-  Skill* light_push = new Skill(100, "Light Push", ActionScope::ONE_ENEMY,
-                                act_dmg[0], 95, 0);
+  Skill* light_push =
+      new Skill(100, "Light Push", ActionScope::ONE_ENEMY, act_dmg[0], 95, 0);
   light_push->setDescription("A weak, physical hit with a long cool down");
   light_push->setPrimary(Element::PHYSICAL);
   light_push->setFlag(SkillFlags::OFFENSIVE);
@@ -678,8 +802,8 @@ void TestBattle::createSkills()
   skills.push_back(light_push);
 
   /* Light Shot */
-  Skill* light_shot = new Skill(120, "Light Shot", ActionScope::ONE_ENEMY,
-                                act_dmg[5], 95, 0);
+  Skill* light_shot =
+      new Skill(120, "Light Shot", ActionScope::ONE_ENEMY, act_dmg[5], 95, 0);
   light_shot->setDescription("A standard, electric hit against a single foe");
   light_shot->setPrimary(Element::ELECTRIC);
   light_shot->setFlag(SkillFlags::OFFENSIVE);
@@ -696,15 +820,15 @@ void TestBattle::createSkills()
   skills.push_back(prismatic_shot);
 
   /* Rail Shot */
-  Skill* rail_shot = new Skill(140, "Rail Shot", ActionScope::ONE_ENEMY,
-                               act_dmg[14], 95, 0);
+  Skill* rail_shot =
+      new Skill(140, "Rail Shot", ActionScope::ONE_ENEMY, act_dmg[14], 95, 0);
   rail_shot->setDescription("A heavy damage electric hit against a foe");
   rail_shot->setPrimary(Element::ELECTRIC);
   rail_shot->setFlag(SkillFlags::OFFENSIVE);
   skills.push_back(rail_shot);
 
   /* Shatter Shot */
-  //TODO: Scope change
+  // TODO: Scope change
   Skill* shatter_shot = new Skill(141, "ShatterShot", ActionScope::ALL_ENEMIES,
                                   act_dmg[15], 95, 15);
   shatter_shot->addAction(act_dmg[22]);
@@ -714,9 +838,8 @@ void TestBattle::createSkills()
   skills.push_back(shatter_shot);
 
   /* Engineer Upgrade */
-  Skill* engg_upgrade = new Skill(160, "Upgrade",
-                                  ActionScope::ONE_ALLY_NOT_USER, act_alt[7],
-                                  100, 5);
+  Skill* engg_upgrade = new Skill(
+      160, "Upgrade", ActionScope::ONE_ALLY_NOT_USER, act_alt[7], 100, 5);
   engg_upgrade->addAction(act_alt[8]);
   engg_upgrade->setDescription("Team upgrade to ally for defense and speed");
   engg_upgrade->setPrimary(Element::ELECTRIC);
@@ -724,8 +847,8 @@ void TestBattle::createSkills()
   skills.push_back(engg_upgrade);
 
   /* Static Shot */
-  Skill* static_shot = new Skill(180, "Static Shot", ActionScope::ONE_ENEMY,
-                                 act_dmg[5], 95, 0);
+  Skill* static_shot =
+      new Skill(180, "Static Shot", ActionScope::ONE_ENEMY, act_dmg[5], 95, 0);
   static_shot->setDescription("An electric shot from drone against a foe");
   static_shot->setPrimary(Element::ELECTRIC);
   static_shot->setFlag(SkillFlags::OFFENSIVE);
@@ -740,9 +863,9 @@ void TestBattle::createSkills()
   skills.push_back(locked_shot);
 
   /* Detonate */
-  //TODO: Implement imploding
-  Skill* detonate = new Skill(182, "Detonate", ActionScope::ALL_TARGETS,
-                              act_dmg[8], 90, 15);
+  // TODO: Implement imploding
+  Skill* detonate =
+      new Skill(182, "Detonate", ActionScope::ALL_TARGETS, act_dmg[8], 90, 15);
   detonate->addAction(act_alt[9]);
   detonate->setDescription("Inflict massive damage on everyone while dying.");
   detonate->setPrimary(Element::ELECTRIC);
@@ -762,12 +885,13 @@ void TestBattle::createSkills()
   // TODO: HOW TO DO MULTI-TURN??
   // You can't. I think it was supposed to be cooldown? Else it's another
   // large scope change for no gain
-  //Skill* surge_will = new Skill(201, "Surge of Will", ActionScope::ALL_ALLIES,
+  // Skill* surge_will = new Skill(201, "Surge of Will",
+  // ActionScope::ALL_ALLIES,
   //                              act_alt[0], 90, 25);
 
   /* Canopy */
-  Skill* canopy = new Skill(220, "Canopy", ActionScope::ALL_ALLIES,
-                            act_alt[7], 90, 5);
+  Skill* canopy =
+      new Skill(220, "Canopy", ActionScope::ALL_ALLIES, act_alt[7], 90, 5);
   canopy->setDescription("Entire team DEF up.");
   canopy->setPrimary(Element::PHYSICAL);
   canopy->setFlag(SkillFlags::DEFENSIVE);
@@ -794,7 +918,7 @@ void TestBattle::createSkills()
                              act_inf[22], 90, 5);
   numbing->setDescription("Paralysis Inflict");
   numbing->setPrimary(Element::PHYSICAL);
-  //numbing->setFlag(SkillFlags::OFFENSIVE);
+  // numbing->setFlag(SkillFlags::OFFENSIVE);
   skills.push_back(numbing);
 
   /* Hypnotic Sting */
@@ -802,12 +926,12 @@ void TestBattle::createSkills()
                               act_inf[25], 90, 5);
   hypnotic->setDescription("Hypnotic Inflict");
   hypnotic->setPrimary(Element::PHYSICAL);
-  //hypnotic->setFlag(SkillFlags::OFFENSIVE);
+  // hypnotic->setFlag(SkillFlags::OFFENSIVE);
   skills.push_back(hypnotic);
 
   /* Toxic Sting */
-  Skill* toxic = new Skill(242, "Toxic Sting", ActionScope::ONE_ENEMY,
-                           act_inf[0], 90, 5);
+  Skill* toxic =
+      new Skill(242, "Toxic Sting", ActionScope::ONE_ENEMY, act_inf[0], 90, 5);
   toxic->setDescription("Poision Inflict");
   toxic->setPrimary(Element::PHYSICAL);
   toxic->setFlag(SkillFlags::OFFENSIVE);
@@ -818,12 +942,12 @@ void TestBattle::createSkills()
                                 act_inf[5], 90, 5);
   befuddling->setDescription("Confusion Inflict");
   befuddling->setPrimary(Element::PHYSICAL);
-  //befuddling->setFlag(SkillFlags::OFFENSIVE);
+  // befuddling->setFlag(SkillFlags::OFFENSIVE);
   skills.push_back(befuddling);
 
   /* Cunning */
-  Skill* cunning = new Skill(1000, "Cunning", ActionScope::USER,
-                             act_alt[7], 90, 5);
+  Skill* cunning =
+      new Skill(1000, "Cunning", ActionScope::USER, act_alt[7], 90, 5);
   cunning->addAction(act_alt[11]);
   cunning->setDescription("Self dodge and defense up");
   cunning->setPrimary(Element::PHYSICAL);
@@ -831,24 +955,24 @@ void TestBattle::createSkills()
   skills.push_back(cunning);
 
   /* Strike */
-  Skill* strike = new Skill(1001, "Strike", ActionScope::ONE_ENEMY,
-                            act_dmg[11], 90, 15);
+  Skill* strike =
+      new Skill(1001, "Strike", ActionScope::ONE_ENEMY, act_dmg[11], 90, 15);
   strike->setDescription("Physical strike against one foe");
   strike->setPrimary(Element::PHYSICAL);
   strike->setFlag(SkillFlags::OFFENSIVE);
   skills.push_back(strike);
 
   /* Paw Strike */
-  Skill* paw_strike = new Skill(1020, "Paw Strike", ActionScope::ONE_ENEMY,
-                                act_dmg[10], 95, 0);
+  Skill* paw_strike =
+      new Skill(1020, "Paw Strike", ActionScope::ONE_ENEMY, act_dmg[10], 95, 0);
   paw_strike->setDescription("A standard, physical hit against a single foe");
   paw_strike->setPrimary(Element::PHYSICAL);
   paw_strike->setFlag(SkillFlags::OFFENSIVE);
   skills.push_back(paw_strike);
 
   /* Maul */
-  Skill* maul = new Skill(1021, "Maul", ActionScope::ONE_ENEMY,
-                          act_dmg[13], 95, 10);
+  Skill* maul =
+      new Skill(1021, "Maul", ActionScope::ONE_ENEMY, act_dmg[13], 95, 10);
   maul->setDescription("A stronger, physical hit against a single foe");
   maul->setPrimary(Element::PHYSICAL);
   maul->setFlag(SkillFlags::OFFENSIVE);
@@ -856,26 +980,26 @@ void TestBattle::createSkills()
 
   /* Multi-Strike */
   Skill* multi_strike = new Skill(1022, "Multi-Strike", ActionScope::ONE_ENEMY,
-                                  act_dmg[24], 90, 15);
-  multi_strike->addAction(act_dmg[24]);
-  multi_strike->addAction(act_dmg[24]);
-  multi_strike->addAction(act_dmg[24]);
+                                  act_dmg[14], 90, 15);
+  multi_strike->addAction(act_dmg[14]);
+  multi_strike->addAction(act_dmg[14]);
+  multi_strike->addAction(act_dmg[14]);
   multi_strike->setDescription("A multi strike hit (4) against a foe");
   multi_strike->setPrimary(Element::PHYSICAL);
   multi_strike->setFlag(SkillFlags::OFFENSIVE);
   skills.push_back(multi_strike);
 
   /* Hibernate */
-  Skill* hibernate = new Skill(1023, "Hibernate", ActionScope::USER,
-                               act_alt[0], 100, 5);
+  Skill* hibernate =
+      new Skill(1023, "Hibernate", ActionScope::USER, act_alt[0], 100, 5);
   hibernate->setDescription("Heal self");
   hibernate->setPrimary(Element::PHYSICAL);
   hibernate->setFlag(SkillFlags::DEFENSIVE);
   skills.push_back(hibernate);
 
   /* Ensnare */
-  Skill* ensnare = new Skill(1040, "Ensnare", ActionScope::ONE_ENEMY,
-                             act_dmg[0], 80, 5);
+  Skill* ensnare =
+      new Skill(1040, "Ensnare", ActionScope::ONE_ENEMY, act_dmg[0], 80, 5);
   ensnare->addAction(act_alt[12]);
   ensnare->setDescription("Damage enemy and slow down");
   ensnare->setPrimary(Element::FOREST);
@@ -883,8 +1007,8 @@ void TestBattle::createSkills()
   skills.push_back(ensnare);
 
   /* Enrich */
-  Skill* enrich = new Skill(1041, "Enrich", ActionScope::USER,
-                            act_alt[0], 100, 5);
+  Skill* enrich =
+      new Skill(1041, "Enrich", ActionScope::USER, act_alt[0], 100, 5);
   enrich->setDescription("Small amount of heal to self");
   enrich->setPrimary(Element::FOREST);
   enrich->setFlag(SkillFlags::DEFENSIVE);
@@ -1074,6 +1198,9 @@ void TestBattle::deleteMenu()
 /* ------------------------------------------------------------------------- */
 void TestBattle::deleteRaces()
 {
+  delete race_arcadius;
+  race_arcadius = nullptr;
+
   delete race_aurora;
   race_aurora = NULL;
 
@@ -1461,10 +1588,7 @@ bool TestBattle::keyDownEvent(SDL_KeyboardEvent event)
 /* ------------------------------------------------------------------------- */
 /* The key up and down events to be handled by the class */
 /* ------------------------------------------------------------------------- */
-void TestBattle::keyUpEvent(SDL_KeyboardEvent event)
-{
-  (void)event;
-}
+void TestBattle::keyUpEvent(SDL_KeyboardEvent event) { (void)event; }
 
 /* ------------------------------------------------------------------------- */
 /* Renders the title screen */
@@ -1535,7 +1659,7 @@ bool TestBattle::setConfiguration(Options* running_config)
   if(running_config != NULL)
   {
     game_config = running_config;
-    base_path   = game_config->getBasePath();
+    base_path = game_config->getBasePath();
 
     /* Battle configuration setup */
     if(battle_display != NULL)

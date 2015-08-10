@@ -28,12 +28,18 @@
  *
  * Inputs: none
  */
-EventBuffer::EventBuffer() : active{false}, curr_index{-1} {}
+EventBuffer::EventBuffer()
+  : active{false}
+  , curr_index{-1}
+{}
 
 /*
  * Description: Annihilates the event buffer.
  */
-EventBuffer::~EventBuffer() { clearAll(); }
+EventBuffer::~EventBuffer()
+{
+  clearAll();
+}
 
 /*=============================================================================
  * PRIVATE FUNCTIONS
@@ -62,9 +68,9 @@ bool EventBuffer::isNullptr(BattleEvent* check_event)
  */
 void EventBuffer::clearAll()
 {
-  for(auto event : events)
+  for (auto event : events)
   {
-    if(event != nullptr)
+    if (event != nullptr)
       delete event;
     event = nullptr;
   }
@@ -80,14 +86,14 @@ void EventBuffer::clearAll()
  */
 void EventBuffer::clearCurrent()
 {
-  for(auto event : events)
+  for (auto event : events)
   {
-    if(event != nullptr && !event->rendered)
+    if (event != nullptr && !event->rendered)
       delete event;
     event = nullptr;
   }
 
-  // events.erase(std::remove_if(std::begin(events), std::end(events),
+  // events.erase(std::remove_if(std::begin(events), std::end(events), 
   //     isNullptr), std::end(events));
 }
 
@@ -99,14 +105,14 @@ void EventBuffer::clearCurrent()
  */
 void EventBuffer::clearRendered()
 {
-  for(auto event : events)
+  for (auto event : events)
   {
-    if(event != nullptr && event->rendered)
+    if (event != nullptr && event->rendered)
       delete event;
     event = nullptr;
   }
 
-  // events.erase(std::remove_if(std::begin(events), std::end(events),
+  // events.erase(std::remove_if(std::begin(events), std::end(events), 
   //     isNullptr), std::end(events));
 }
 
@@ -121,20 +127,19 @@ void EventBuffer::clearRendered()
  * Output: BattleEvent* - pointer to the recently created event
  */
 BattleEvent* EventBuffer::createActionEvent(EventType action_event_type,
-                                            Action* action_use,
-                                            Skill* skill_use, Person* user,
-                                            Person* target, bool happens)
+    Action* action_use, Skill* skill_use, Person* user, Person* target, 
+    bool happens)
 {
   auto new_event = createNewEvent();
   new_event->type = action_event_type;
   new_event->action_use = action_use;
-  new_event->skill_use = skill_use;
-  new_event->user = user;
+  new_event->skill_use  = skill_use;
+  new_event->user       = user;
   std::vector<Person*> target_vec{target};
   new_event->targets = target_vec;
   new_event->happens = happens;
   events.push_back(new_event);
-
+  
   return new_event;
 }
 
@@ -149,8 +154,7 @@ BattleEvent* EventBuffer::createActionEvent(EventType action_event_type,
  * Output: BattleEvent* - pointer to the battle event.
  */
 BattleEvent* EventBuffer::createAilmentEvent(EventType event_type, Person* user,
-                                             Person* target, Action* action_use,
-                                             Ailment* ailment_use)
+    Person* target, Action* action_use, Ailment* ailment_use)
 {
   auto new_event = createNewEvent();
   new_event->type = event_type;
@@ -165,15 +169,15 @@ BattleEvent* EventBuffer::createAilmentEvent(EventType event_type, Person* user,
 }
 
 /*
- * Description: Creates a new blank event
+ * Description: Creates a new blank event 
  *
  * Inputs: Action* alter_action - pointer to the alter action (for alter ATTR)
  *         Person* target - the target of the alteration
- *         int32_t amount - the amount to alter the target's ATTR by
+ *         int32_t amount - the amount to alter the target's ATTR by 
  * Output: BattleEvent* - pointer to recently created event
  */
 BattleEvent* EventBuffer::createAlterEvent(Action* alter_action, Person* target,
-                                           int32_t amount)
+    int32_t amount)
 {
   auto new_event = createNewEvent();
   new_event->type = EventType::ALTERATION;
@@ -187,15 +191,15 @@ BattleEvent* EventBuffer::createAlterEvent(Action* alter_action, Person* target,
 }
 
 /*
- * Description: Creates a new blank event
+ * Description: Creates a new blank event 
  *
  * Inputs: Action* alter_action - pointer to the alter action (for alter ATTR)
  *         Person* target - the target of the alteration
- *         int32_t amount - the amount to alter the target's ATTR by
+ *         int32_t amount - the amount to alter the target's ATTR by 
  * Output: BattleEvent* - pointer to recently created event
  */
-BattleEvent* EventBuffer::createAssignEvent(Action* assign_action,
-                                            Person* target, int32_t amount)
+BattleEvent* EventBuffer::createAssignEvent(Action* assign_action, 
+    Person* target, int32_t amount)
 {
   auto new_event = createNewEvent();
   new_event->type = EventType::ASSIGNMENT;
@@ -214,40 +218,39 @@ BattleEvent* EventBuffer::createAssignEvent(Action* assign_action,
  * Inputs: Person* user - the user of the Skill cooldown
  *         Skill* skill_cooldown - pointer to the Skill that is cooling down
  *         int32_t cooldown - the current cooldown amount
- *
+ *     
  * Output: BattleEvent* - pointer to the recently created event
  */
-BattleEvent* EventBuffer::createCooldownEvent(Person* user,
-                                              Skill* skill_cooldown,
-                                              int32_t cooldown)
+BattleEvent* EventBuffer::createCooldownEvent(Person* user, 
+    Skill* skill_cooldown, int32_t cooldown)
 {
   auto new_event = createNewEvent();
 
   new_event->type = EventType::SKILL_COOLDOWN;
-  new_event->user = user;
+  new_event->user      = user;
   new_event->skill_use = skill_cooldown;
-  new_event->amount = cooldown;
+  new_event->amount  = cooldown;
   events.push_back(new_event);
 
   return new_event;
 }
 
 /*
- * Description: Creates a new blank event
+ * Description: Creates a new blank event 
  *
  * Inputs: EventType damage_type - the type of damage (standard/poison/etc.)
  *         Person* target - the target of the damage
- *         int32_t amount - the amount of the damage
+ *         int32_t amount - the amount of the damage 
  * Output: BattleEvent* - pointer to the recently created event
  */
-BattleEvent* EventBuffer::createDamageEvent(EventType damage_type,
-                                            Person* target, int32_t amount)
+BattleEvent* EventBuffer::createDamageEvent(EventType damage_type, 
+    Person* target, int32_t amount)
 {
   auto new_event = createNewEvent();
   new_event->type = damage_type;
   std::vector<Person*> target_vec{target};
   new_event->targets = target_vec;
-  new_event->amount = amount;
+  new_event->amount  = amount;
   new_event->happens = true;
   events.push_back(new_event);
 
@@ -258,10 +261,10 @@ BattleEvent* EventBuffer::createDamageEvent(EventType damage_type,
  * Description:
  *
  * Inputs:
- * Output:
+ * Output: 
  */
 BattleEvent* EventBuffer::createDeathEvent(EventType death_type, Person* target,
-                                           bool allies)
+     bool allies)
 {
   auto new_event = createNewEvent();
   new_event->type = death_type;
@@ -298,8 +301,8 @@ BattleEvent* EventBuffer::createDefendEvent(EventType defend_type, Person* user)
  *         int32_t amount - the amount of experience involved
  * Output: BattleEvent* - pointer to the recently created experience event
  */
-BattleEvent* EventBuffer::createExperienceEvent(EventType exp_type,
-                                                Person* target, int32_t amount)
+BattleEvent* EventBuffer::createExperienceEvent(EventType exp_type, 
+    Person* target, int32_t amount)
 {
   auto new_event = createNewEvent();
   new_event->type = exp_type;
@@ -320,13 +323,12 @@ BattleEvent* EventBuffer::createExperienceEvent(EventType exp_type,
  * Output: BattleEvent* - pointer to the recently created experience event
  */
 BattleEvent* EventBuffer::createExperienceEvent(EventType exp_type,
-       Bubby* target,\
-       int32_t amount)
+    Bubby* target, int32_t amount)
 {
   auto new_event = createNewEvent();
-  new_event->type = exp_type;
+  new_event->type      = exp_type;
   new_event->bubby_use = target;
-  new_event->amount = amount;
+  new_event->amount    = amount;
   events.push_back(new_event);
 
   return new_event;
@@ -341,7 +343,7 @@ BattleEvent* EventBuffer::createExperienceEvent(EventType exp_type,
  * Output: BattleEvent* - pointer to the recently created defend event
  */
 BattleEvent* EventBuffer::createGuardEvent(EventType guard_type, Person* user,
-                                           Person* target)
+    Person* target)
 {
   auto new_event = createNewEvent();
   new_event->type = guard_type;
@@ -362,7 +364,7 @@ BattleEvent* EventBuffer::createGuardEvent(EventType guard_type, Person* user,
  * Output: BattleEvent* - pointer to a battle event
  */
 BattleEvent* EventBuffer::createItemEvent(Item* item_use, Person* user,
-                                          Person* target)
+    Person* target)
 {
   auto new_event = createNewEvent();
   new_event->item_use = item_use;
@@ -381,8 +383,8 @@ BattleEvent* EventBuffer::createItemEvent(Item* item_use, Person* user,
  *         std::vector<Person*> targets - targets of the Skill
  * Output: BattleEvent* - pointer to the recently created miss event
  */
-BattleEvent* EventBuffer::createMissEvent(EventType miss_type, Person* user,
-                                          std::vector<Person*> targets)
+BattleEvent* EventBuffer::createMissEvent(EventType miss_type, Person* user, 
+    std::vector<Person*> targets)
 {
   auto new_event = createNewEvent();
   new_event->type = miss_type;
@@ -394,7 +396,7 @@ BattleEvent* EventBuffer::createMissEvent(EventType miss_type, Person* user,
 }
 
 /*
- * Description: Creates a new blank event
+ * Description: Creates a new blank event 
  *
  * Inputs: none
  * Output: BattleEvent* - pointer to the recently created empty event
@@ -402,17 +404,17 @@ BattleEvent* EventBuffer::createMissEvent(EventType miss_type, Person* user,
 BattleEvent* EventBuffer::createNewEvent()
 {
   auto new_event = new BattleEvent();
-  new_event->type = EventType::NONE;
-  new_event->action_use = nullptr;
-  new_event->bubby_use = nullptr;
+  new_event->type       = EventType::NONE;
+  new_event->action_use   = nullptr;
+  new_event->bubby_use    = nullptr;
   // new_event->ailment_cure = nullptr;
-  new_event->item_use = nullptr;
-  new_event->skill_use = nullptr;
-  new_event->user = nullptr;
-  new_event->amount = -1;
-  new_event->happens = false;
-  new_event->rendered = false;
-  new_event->performed = false;
+  new_event->item_use     = nullptr;
+  new_event->skill_use    = nullptr;
+  new_event->user         = nullptr;
+  new_event->amount       = -1;
+  new_event->happens      = false;
+  new_event->rendered     = false;
+  new_event->performed    = false;
 
   return new_event;
 }
@@ -446,7 +448,7 @@ BattleEvent* EventBuffer::createReviveEvent(Person* target, int32_t amount)
   auto new_event = new BattleEvent();
   std::vector<Person*> target_vec{target};
   new_event->targets = target_vec;
-  new_event->amount = amount;
+  new_event->amount  = amount;
   events.push_back(new_event);
 
   return new_event;
@@ -461,8 +463,8 @@ BattleEvent* EventBuffer::createReviveEvent(Person* target, int32_t amount)
  *         Person* user - pointer to the user of the running action
  * Output: BattleEvent* - pointer to the recently created event.
  */
-BattleEvent* EventBuffer::createRunEvent(EventType run_type, Person* user,
-                                         bool allies)
+BattleEvent* EventBuffer::createRunEvent(EventType run_type, Person* user, 
+    bool allies)
 {
   auto new_event = createNewEvent();
   new_event->type = run_type;
@@ -482,16 +484,15 @@ BattleEvent* EventBuffer::createRunEvent(EventType run_type, Person* user,
  *         bool happens - true if the skill is to miss, false if to miss
  * Output: BattleEvent* - pointer to the recently created event
  */
-BattleEvent* EventBuffer::createSkillEvent(Skill* skill_use, Person* user,
-                                           std::vector<Person*> targets,
-                                           bool happens)
+BattleEvent* EventBuffer::createSkillEvent(Skill* skill_use, Person* user, 
+    std::vector<Person*> targets, bool happens)
 {
   auto new_event = createNewEvent();
-  new_event->type = EventType::SKILL_USE;
-  new_event->skill_use = skill_use;
-  new_event->user = user;
-  new_event->targets = targets;
-  new_event->happens = happens;
+  new_event->type       = EventType::SKILL_USE;
+  new_event->skill_use  = skill_use;
+  new_event->user       = user;
+  new_event->targets    = targets;
+  new_event->happens    = happens;
   events.push_back(new_event);
 
   return new_event;
@@ -506,12 +507,12 @@ BattleEvent* EventBuffer::createSkillEvent(Skill* skill_use, Person* user,
  * Output: BattleEvent* - pointer to the recently created event
  */
 BattleEvent* EventBuffer::createFizzleEvent(EventType fizzle_type, Person* user,
-                                            std::vector<Person*> targets)
+    std::vector<Person*> targets)
 {
   auto new_event = createNewEvent();
   new_event->type = fizzle_type;
   new_event->user = user;
-  new_event->targets = targets;
+  new_event->targets = targets; 
   events.push_back(new_event);
 
   return new_event;
@@ -526,7 +527,7 @@ BattleEvent* EventBuffer::createFizzleEvent(EventType fizzle_type, Person* user,
  * Output: BattleEvent* - pointer to the recently created event
  */
 BattleEvent* EventBuffer::createFizzleEvent(EventType fizzle_type, Person* user,
-                                            Person* target)
+    Person* target)
 {
   std::vector<Person*> target_vec{target};
 
@@ -538,11 +539,11 @@ BattleEvent* EventBuffer::createFizzleEvent(EventType fizzle_type, Person* user,
  *
  * Inputs: EventType skip_type - type of skip event
  *         Person* user - the user of the Skill which fizzled.
- *
+ *     
  * Output: BattleEvent* - pointer to the recently created event
  */
 BattleEvent* EventBuffer::createSkipEvent(EventType skip_type, Person* user,
-                                          Skill* skill_cooldown)
+    Skill* skill_cooldown)
 {
   auto new_event = createNewEvent();
 
@@ -565,7 +566,7 @@ bool EventBuffer::destroyLastEvent()
 {
   auto last_event = getLastEvent();
 
-  if(last_event != nullptr)
+  if (last_event != nullptr)
   {
     delete last_event;
     last_event = nullptr;
@@ -589,9 +590,9 @@ bool EventBuffer::hasPersonDeathEvent(Person* target)
 {
   auto curr_index = getCurrentIndex();
 
-  for(uint32_t i = curr_index; i < events.size(); i++)
-    if(events.at(i)->targets.size() > 0)
-      if(events.at(i)->targets.at(0) == target)
+  for (uint32_t i = curr_index; i < events.size(); i++)
+    if (events.at(i)->targets.size() > 0)
+      if (events.at(i)->targets.at(0) == target)
         return true;
 
   return false;
@@ -603,7 +604,10 @@ bool EventBuffer::hasPersonDeathEvent(Person* target)
  * Inputs: none
  * Output: bool - the active-ness of the EventBuffer
  */
-bool EventBuffer::isActive() { return active; }
+bool EventBuffer::isActive()
+{
+  return active;
+}
 
 /*
  * Description: Prints only curr
@@ -614,13 +618,13 @@ bool EventBuffer::isActive() { return active; }
 void EventBuffer::print(bool only_current)
 {
   std::cout << "==== Event Buffer ====\n";
-  std::cout << "Size: " << events.size() << " Index: " << curr_index << "\n";
+  std::cout << "Size: " << events.size() << " Index: " << curr_index <<  "\n";
 
-  for(uint32_t i = 0; i < events.size(); i++)
+  for (uint32_t i = 0; i < events.size(); i++)
   {
-    if(only_current && !events.at(i)->rendered)
+    if (only_current && !events.at(i)->rendered)
       printEvent(i);
-    else if(!only_current)
+    else if (!only_current)
       printEvent(i);
   }
 }
@@ -633,31 +637,31 @@ void EventBuffer::print(bool only_current)
  */
 bool EventBuffer::printEvent(uint32_t index)
 {
-  if(index < events.size())
+  if (index < events.size())
   {
-    std::cout << "EventType: " << static_cast<int>(events.at(index)->type)
-              << " " << Helpers::eventToStr(events.at(index)->type);
+    std::cout << "EventType: " << static_cast<int>(events.at(index)->type) <<
+                 " " << Helpers::eventToStr(events.at(index)->type);
 
-    if(events.at(index)->action_use != nullptr)
+    if (events.at(index)->action_use != nullptr)
       std::cout << "\nAction: " << events.at(index)->action_use;
-    if(events.at(index)->bubby_use != nullptr)
+    if (events.at(index)->bubby_use != nullptr)
       std::cout << "\nBubby: " << events.at(index)->bubby_use;
-    if(events.at(index)->skill_use != nullptr)
+    if (events.at(index)->skill_use != nullptr)
       std::cout << "\nSkill: " << events.at(index)->skill_use->getName();
-    if(events.at(index)->user != nullptr)
+    if (events.at(index)->user != nullptr)
       std::cout << "\nUser: " << events.at(index)->user->getName();
 
-    for(const auto& target : events.at(index)->targets)
-      if(target != nullptr)
+    for (const auto& target: events.at(index)->targets)
+      if (target != nullptr)
         std::cout << "\nTarget: " << target->getName();
-
+    
     std::cout << "\nAmount: " << events.at(index)->amount;
     std::cout << "\nAllies?  " << events.at(index)->allies << std::endl;
     std::cout << "Happens? " << events.at(index)->happens << std::endl;
     std::cout << "Rendered?  " << events.at(index)->rendered << std::endl;
     std::cout << "Performed? " << events.at(index)->performed << std::endl
               << std::endl;
-
+  
     return true;
   }
 
@@ -673,7 +677,7 @@ bool EventBuffer::printEvent(uint32_t index)
  */
 uint32_t EventBuffer::getCurrentSize()
 {
-  if(getCurrentIndex() != -1)
+  if (getCurrentIndex() != -1)
     return events.size() - getCurrentIndex();
 
   return 0;
@@ -687,7 +691,7 @@ uint32_t EventBuffer::getCurrentSize()
  */
 BattleEvent* EventBuffer::getEvent(int32_t index)
 {
-  if(static_cast<uint32_t>(index) < events.size())
+  if (static_cast<uint32_t>(index) < events.size())
     return events.at(index);
 
   return nullptr;
@@ -696,10 +700,13 @@ BattleEvent* EventBuffer::getEvent(int32_t index)
 /*
  * Description:
  *
- * Inputs:
- * Output:
+ * Inputs: 
+ * Output: 
  */
-int32_t EventBuffer::getIndex() { return curr_index; }
+int32_t EventBuffer::getIndex()
+{
+  return curr_index;
+}
 
 /*
  * Description: Returns a pointer to the last event on the event buffer.
@@ -709,7 +716,7 @@ int32_t EventBuffer::getIndex() { return curr_index; }
  */
 BattleEvent* EventBuffer::getLastEvent()
 {
-  if(events.size() > 0)
+  if (events.size() > 0)
     return events[events.size() - 1];
 
   return nullptr;
@@ -724,7 +731,7 @@ BattleEvent* EventBuffer::getLastEvent()
  */
 BattleEvent* EventBuffer::getCurrentEvent()
 {
-  if(curr_index >= 0 && static_cast<uint32_t>(curr_index) < events.size())
+  if (curr_index >= 0 && static_cast<uint32_t>(curr_index) < events.size())
     return events.at(curr_index);
 
   return nullptr;
@@ -739,8 +746,8 @@ BattleEvent* EventBuffer::getCurrentEvent()
  */
 int32_t EventBuffer::getCurrentIndex()
 {
-  for(uint32_t i = 0; i < events.size(); i++)
-    if(events.at(i)->performed == false)
+  for (uint32_t i = 0; i < events.size(); i++)
+    if (events.at(i)->performed == false)
       return i;
 
   return -1;
@@ -752,7 +759,10 @@ int32_t EventBuffer::getCurrentIndex()
  * Inputs: none
  * Output: none
  */
-void EventBuffer::setActive() { active = true; }
+void EventBuffer::setActive()
+{
+  active = true;
+}
 
 /*
  * Description: Assigns the current index of the buffer to the oldest
@@ -763,7 +773,7 @@ void EventBuffer::setActive() { active = true; }
  */
 bool EventBuffer::setCurrentIndex()
 {
-  if(getCurrentIndex() != -1)
+  if (getCurrentIndex() != -1)
   {
     curr_index = getCurrentIndex();
 
@@ -779,18 +789,21 @@ bool EventBuffer::setCurrentIndex()
  * Inputs: none
  * Output: none
  */
-void EventBuffer::setInactive() { active = false; }
+void EventBuffer::setInactive()
+{
+  active = false;
+}
 
 /*
- * Description: Assigns a new index for rendering/performing events on the
+ * Description: Assigns a new index for rendering/performing events on the 
  *              buffer.
  *
  * Inputs: int32_t new_index - assigns the current index of the buffer.
- * Output: bool
+ * Output: bool 
  */
 bool EventBuffer::setIndex(int32_t new_index)
 {
-  if(static_cast<uint32_t>(new_index) < events.size())
+  if (static_cast<uint32_t>(new_index) < events.size())
   {
     curr_index = new_index;
 
@@ -809,7 +822,7 @@ bool EventBuffer::setIndex(int32_t new_index)
  */
 bool EventBuffer::setNextIndex()
 {
-  if(static_cast<uint32_t>(curr_index) + 1 < events.size())
+  if (static_cast<uint32_t>(curr_index) + 1 < events.size())
   {
     curr_index++;
 
@@ -827,7 +840,7 @@ bool EventBuffer::setNextIndex()
  */
 bool EventBuffer::setPerformed(int32_t index)
 {
-  if(static_cast<uint32_t>(index) < events.size())
+  if (static_cast<uint32_t>(index) < events.size())
   {
     events.at(index)->performed = true;
 
@@ -838,7 +851,7 @@ bool EventBuffer::setPerformed(int32_t index)
 }
 
 /*
- * Description: Assigns the current index of the buffer to to the oldest
+ * Description: Assigns the current index of the buffer to to the oldest 
  *              non-rendered index.
  *
  * Inputs: none
@@ -846,16 +859,16 @@ bool EventBuffer::setPerformed(int32_t index)
  */
 bool EventBuffer::setRenderIndex()
 {
-  for(uint32_t i = 0; i < events.size(); i++)
+  for (uint32_t i = 0; i < events.size(); i++)
   {
-    if(events.at(i)->rendered == false)
+    if (events.at(i)->rendered == false)
     {
       curr_index = i;
 
 #ifdef UDEBUG
       std::cout << "Returning rendered index: " << curr_index << std::endl;
 #endif
-
+      
       return true;
     }
   }
@@ -871,7 +884,7 @@ bool EventBuffer::setRenderIndex()
  */
 bool EventBuffer::setRendered(int32_t index)
 {
-  if(static_cast<uint32_t>(index) < events.size())
+  if (static_cast<uint32_t>(index) < events.size())
   {
     events.at(index)->rendered = true;
 
