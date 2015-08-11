@@ -111,8 +111,7 @@ private:
 
   /* Races */
   Category* race_arcadius;
-  Category* race_aurora_drone;
-  Category* race_aurora;
+  Category* race_robot;
   Category* race_bear;
   Category* race_human;
   Category* race_treefolk;
@@ -137,20 +136,17 @@ private:
   AttributeSet stats_aurora_heavy_min;
   AttributeSet stats_aurora_heavy_max;
 
-  AttributeSet stats_aurora_min;
-  AttributeSet stats_aurora_max;
-
   AttributeSet stats_human_min;
   AttributeSet stats_human_max;
 
   AttributeSet stats_aurora_eng_min;
   AttributeSet stats_aurora_eng_max;
 
-  AttributeSet stats_aurora_drone_cat_min;
-  AttributeSet stats_aurora_drone_cat_max;
+  AttributeSet stats_aurora_drone_min;
+  AttributeSet stats_aurora_drone_max;
 
-  AttributeSet stats_aurora_drone_race_min;
-  AttributeSet stats_aurora_drone_race_max;
+  AttributeSet stats_robot_min;
+  AttributeSet stats_robot_max;
 
   AttributeSet stats_treefolk_min;
   AttributeSet stats_treefolk_max;

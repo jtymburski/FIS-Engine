@@ -29,7 +29,7 @@
 #include "Game/Player/Equipment.h"
 
 /* Category state flags - primarily for enabling battle features
- * and describing the types of equipment a member can equip 
+ * and describing the types of equipment a member can equip
  */
 ENUM_FLAGS(CategoryState)
 enum class CategoryState
@@ -62,8 +62,8 @@ public:
   Category(const int32_t &my_id, const std::string &name);
 
   /* Constructs a normal category with stat values and a SkillSet */
-  Category(const int32_t &my_id, const std::string &name, 
-           const std::string &denonym, const AttributeSet &base_stats, 
+  Category(const int32_t &my_id, const std::string &name,
+           const std::string &denonym, const AttributeSet &base_stats,
            const AttributeSet &max_stats, SkillSet* const skills = nullptr);
 
 private:
@@ -77,7 +77,7 @@ private:
   /* The categories minimum and maximum attributes */
   static AttributeSet max_stats;
   static AttributeSet min_stats;
- 
+
   /* Flags set for the current category */
   CategoryState cat_flags;
 
@@ -132,19 +132,19 @@ public:
 
   /* Checks if a person of this cat. is immune to a given infliction */
   bool isImmune(const Infliction &check_immunity);
- 
+
   /* Removes a given infliction from the list of immunities (if it exists) */
   bool removeImmunity(const Infliction &rem_immunity);
 
   /* Prints out the state of the object */
   void print(const bool &simple = false, const bool &flags = false);
- 
+
   /* Returns the string denonym */
   std::string getDenonym();
 
   /* Returns the string description */
   std::string getDescription();
-  
+
   /* Evaluates and returns a given CategoryState flag */
   bool getFlag(const CategoryState &test_flag);
 
@@ -186,7 +186,7 @@ public:
 
   /* Assign a new enumerated quantum drive regeneration rate */
   void setQDRegenRate(const RegenRate &new_regen_rate);
-  
+
   /* Assign a new enumerated vitality regeneration rate */
   void setVitaRegenRate(const RegenRate &new_regen_rate);
 
