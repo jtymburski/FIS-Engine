@@ -3306,6 +3306,7 @@ bool BattleDisplay::updateFoes(int cycle_time)
       state->tp->setBrightness(calcPersonBrightness(state->self));
 
       // TODO: Action sprites for enemies? [07-11-15]
+      // Update: Shake them instead of an action sprite.
       // if (state->self->getBFlag(BState::IS_ATTACKING))
       // {
       //   if (state->self->getActionSprite() != nullptr)

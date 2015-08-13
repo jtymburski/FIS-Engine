@@ -546,66 +546,58 @@ void TestBattle::create()
 void TestBattle::createActions()
 {
   /* Alter Actions */
-  act_alt.push_back(new Action("200,ALTER,,,,VITA,PC.10,AMOUNT.10,,99"));
-  act_alt.push_back(new Action("201,ALTER,,,,,PC.25,AMOUNT.20,VITA,99"));
-  act_alt.push_back(
-      new Action("202,ALTER,,,,VITA,AMOUNT.-100,AMOUNT.20,VITA,100"));
-  act_alt.push_back(new Action("203,ALTER,,,,,PC.-12,AMOUNT.20,VITA,100"));
-  act_alt.push_back(new Action("204,ALTER,,,,QTDR,PC.10,AMOUNT.20,THAG,96"));
-  act_alt.push_back(
-      new Action("205,ALTER-FLIP,,,,QTDR,PC.10,AMOUNT.20,THAG,96"));
-  act_alt.push_back(
-      new Action("206,ALTER-FLIP,,,,VITA,AMOUNT.100,AMOUNT.30,VITA,100"));
-  act_alt.push_back(new Action("207,ALTER,,,,PHFD,AMOUNT.10,PC.5,,100"));
-  act_alt.push_back(new Action("208,ALTER,,,,MMNT,AMOUNT.10,PC.5,,100"));
-  act_alt.push_back(new Action("209,ALTER,,,,VITA,PC.-100,AMOUNT.0,,100"));
-  act_alt.push_back(new Action("210,ALTER,,,,PHAG,AMOUNT.10,PC.5,,100"));
-  act_alt.push_back(new Action("211,ALTER,,,,LIMB,AMOUNT.10,PC.5,,100"));
-  act_alt.push_back(new Action("212,ALTER,,,,,AMOUNT.-10,PC.5,MMNT,100"));
 
-  /* Assign Actions */
-  act_asn.push_back(new Action("300,ASSIGN,,,,VITA,AMOUNT.1,AMOUNT.0,,100"));
-  act_asn.push_back(new Action("301,ASSIGN,,,,VITA,AMOUNT.0,AMOUNT.0,,100"));
-  act_asn.push_back(new Action("302,ASSIGN,,,,,PC.20,PC.5,VITA,1"));
-  act_asn.push_back(new Action("303,ASSIGN-FLIP,,,,VITA,PC.20,PC.5,QTDR,1"));
-  act_asn.push_back(new Action("400,REVIVE,,,,,AMOUNT.50,AMOUNT.10,,80"));
+  /* Enrich - healing */
+  act_alt.push_back(new Action("200,ALTER,,,,VITA,PC.20,AMOUNT.10,,100"));
+
+  /* Chlorophona - helaing */
+  act_alt.push_back(new Action("201,ALTER,,,,VITA,PC.15,AMOUNT.10,,100"));
 
   /* Damage actions */
-  act_dmg.push_back(new Action("1,DAMAGE,,,,,AMOUNT.1,AMOUNT.1,,95"));
-  act_dmg.push_back(new Action("2,DAMAGE,,,,VITA,AMOUNT.20,AMOUNT.5,,95"));
-  act_dmg.push_back(new Action("3,DAMAGE,,,,VITA,AMOUNT.20,AMOUNT.5,,95"));
-  act_dmg.push_back(new Action("4,DAMAGE,,,,,AMOUNT.20,AMOUNT.5,,95"));
-  act_dmg.push_back(new Action("5,DAMAGE,,,,VITA,AMOUNT.60,AMOUNT.20,,95"));
-  act_dmg.push_back(new Action("6,DAMAGE,,,,VITA,AMOUNT.75,AMOUNT.25,,95"));
-  act_dmg.push_back(new Action("7,DAMAGE,,,,VITA,AMOUNT.90,AMOUNT.25,,95"));
-  act_dmg.push_back(new Action("8,DAMAGE,,,,VITA,AMOUNT.100,AMOUNT.30,,95"));
-  act_dmg.push_back(new Action("9,DAMAGE,,,,VITA,AMOUNT.300,AMOUNT.35,,95"));
-  act_dmg.push_back(new Action("10,DAMAGE,,,,VITA,AMOUNT.500,AMOUNT.50,,95"));
-  act_dmg.push_back(new Action("11,DAMAGE,,,,VITA,AMOUNT.40,AMOUNT.1,,95"));
-  act_dmg.push_back(new Action("12,DAMAGE,,,,VITA,AMOUNT.110,AMOUNT.5,,95"));
-  act_dmg.push_back(new Action("13,DAMAGE,,,,VITA,AMOUNT.60,AMOUNT.10,,95"));
-  act_dmg.push_back(new Action("14,DAMAGE,,,,VITA,AMOUNT.75,PC.15,,95"));
-  act_dmg.push_back(new Action("15,DAMAGE,,,,VITA,AMOUNT.100,PC.25,,95"));
-  act_dmg.push_back(new Action("16,DAMAGE,,,,VITA,AMOUNT.150,PC.30,,95"));
-  act_dmg.push_back(new Action("17,DAMAGE,,,,VITA,PC.2,PC.1,,95"));
-  act_dmg.push_back(new Action("18,DAMAGE,,,,VITA,PC.5,PC.2,,95"));
-  act_dmg.push_back(new Action("19,DAMAGE,,,,VITA,PC.10,PC.5,,95"));
-  act_dmg.push_back(new Action("20,DAMAGE,,,,VITA,PC.10,PC.9,,95"));
-  act_dmg.push_back(new Action("22,DAMAGE,,,,VITA,PC.10,PC.20,,95"));
-  act_dmg.push_back(new Action("23,DAMAGE,,,,VITA,PC.15,PC.25,,95"));
-  act_dmg.push_back(new Action("24,DAMAGE,,,,VITA,AMOUNT.20,PC.1,,10"));
-  act_dmg.push_back(new Action("25,DAMAGE,,,,VITA,AMOUNT.500,AMOUNT.50,,100"));
-  act_dmg.push_back(new Action("26,DAMAGE,,,,VITA,AMOUNT.75,AMOUNT.25,,55"));
+
+  /* Light Push (~5000 Damage) */
+  act_dmg.push_back(
+      new Action("0,DAMAGE,,,,VITA,AMOUNT.4000,AMOUNT.200,,100"));
+
+  /* Prismatic Shot (~20 Damage / Hit) */
+  act_dmg.push_back(new Action("1,DAMAGE,,,,VITA,AMOUNT.20,AMOUNT.5,,100"));
+
+  /* Rail Shot (~35 Damage) */
+  act_dmg.push_back(new Action("2,DAMAGE,,,,VITA,AMOUNT.35,AMOUNT.5,,100"));
+
+  /* ShattersShot (~80 Damage) */
+  act_dmg.push_back(new Action("3,DAMAGE,,,,VITA,AMOUNT.80, AMOUNT.10,,100"));
+
+  /* Static Shot (drone nuisance) */
+  act_dmg.push_back(new Action("4,DAMAGE,,,,VITA,AMOUNT.15, AMOUNT.5,,100"));
+
+  /* Surge of Will */
+  act_dmg.push_back(new Action("5,DAMAGE,,,,VITA,AMOUNT.135,AMOUNT.35,,100"));
+
+  /* Strike (Humans) */
+  act_dmg.push_back(new Action("6,DAMAGE,,,,VITA,AMOUNT.30,AMOUNT.10,,100"));
+
+  /* Light Shot */
+  act_dmg.push_back(new Action("7,DAMAGE,,,,VITA,AMOUNT.22,AMOUNT.2,,100"));
+
+  /* Locked Shot */
+  act_dmg.push_back(new Action("8,DAMAGE,,,,VITA,AMOUNT.23,AMOUNT.2,,100"));
+
+  /* Paw Strike */
+  act_dmg.push_back(new Action("9,DAMAGE,,,,VITA.AMOUNT.35,AMOUNT.5,,100"));
+
+  /* Maul */
+  act_dmg.push_back(new Action("10,DAMAGE,,,,VITA,AMOUNT.55,AMOUNT.10,,100"));
+
+  /* Ensnare */
+  act_dmg.push_back(new Action("11,DAMAGE,,,,VITA,AMOUNT.35,AMOUNT.5,,100"));
 
   /* Inflict Actions */
   act_inf.push_back(new Action("500,INFLICT,4.7,,,POISON,,,VITA,90"));
-  act_inf.push_back(new Action("501,INFLICT,1.4,,,BURN,AMOUNT.50,,VITA,90"));
-  act_inf.push_back(new Action("502,INFLICT,2.6,,,SCALD,AMOUNT.40,,VITA,90"));
-  act_inf.push_back(new Action("503,INFLICT,4.8,,,CHARR,AMOUNT.30,,VITA,90"));
-  act_inf.push_back(new Action("504,INFLICT,4.4,,,BERSERK,AMOUNT.0,,VITA,95"));
+
   act_inf.push_back(new Action("505,INFLICT,2.3,,,CONFUSE,AMOUNT.50,,VITA,99"));
   act_inf.push_back(new Action("506,INFLICT,2.3,,,SILENCE,AMOUNT.60,,VITA,99"));
-  act_inf.push_back(new Action("507,INFLICT,4.8,,,BUBBIFY,AMOUNT.70,,VITA,99"));
+
   act_inf.push_back(
       new Action("508,INFLICT,2.5,,,ALLATKBUFF,AMOUNT.0,,VITA,99"));
   act_inf.push_back(
@@ -621,21 +613,15 @@ void TestBattle::createActions()
   act_inf.push_back(new Action("518,INFLICT,2.5,,,UNBBUFF,AMOUNT.0,,VITA,99"));
   act_inf.push_back(new Action("519,INFLICT,2.5,,,VITBUFF,AMOUNT.0,,VITA,99"));
   act_inf.push_back(new Action("520,INFLICT,2.5,,,QDBUFF,AMOUNT.0,,VITA,99"));
-  act_inf.push_back(
-      new Action("521,INFLICT,5.5,,,DEATHTIMER,AMOUNT.0,,VITA,99"));
+
   act_inf.push_back(
       new Action("522,INFLICT,3.5,,,PARALYSIS,AMOUNT.30,,VITA,99"));
-  act_inf.push_back(
-      new Action("523,INFLICT,2.5,,,BLINDNESS,AMOUNT.20,,VITA,99"));
-  act_inf.push_back(
-      new Action("524,INFLICT,2.4,,,DREADSTRUCK,AMOUNT.25,,VITA,99"));
-  act_inf.push_back(
-      new Action("525,INFLICT,2.6,,,DREAMSNARE,AMOUNT.25,,VITA,99"));
-  act_inf.push_back(
-      new Action("526,INFLICT,4.8,,,MODULATE,AMOUNT.10,,VITA,99"));
+
+  act_inf.push_back(new Action("527,INFLICT,2.2,,,HIBERNATION,,,VITA,97"));
+  act_inf.push_back(new Action("528,INFLICT,2.3,,,SLEEP,,,,VITA,100"));
 
   /* Relieve Actions */
-  act_rlv.push_back(new Action("600,RELIEVE,,,,POISON,,,VITA,100"));
+  act_rlv.push_back(new Action("600,RELIEVE,,,,POISON,,,VITA,85"));
 }
 
 /* ------------------------------------------------------------------------- */
@@ -949,7 +935,7 @@ void TestBattle::createSkills()
 {
   /* Light Push */
   Skill *light_push =
-      new Skill(100, "Light Push", ActionScope::ONE_ENEMY, act_dmg[24], 100, 0);
+      new Skill(100, "Light Push", ActionScope::ONE_ENEMY, act_dmg[0], 100, 0);
   light_push->setDescription("A weak, physical hit with a long cool down");
   light_push->setPrimary(Element::PHYSICAL);
   light_push->setFlag(SkillFlags::OFFENSIVE);
@@ -958,7 +944,7 @@ void TestBattle::createSkills()
 
   /* Light Shot */
   Skill *light_shot =
-      new Skill(120, "Light Shot", ActionScope::ONE_ENEMY, act_dmg[5], 95, 0);
+      new Skill(120, "Light Shot", ActionScope::ONE_ENEMY, act_dmg[7], 95, 0);
   light_shot->setDescription("A standard, electric hit against a single foe");
   light_shot->setPrimary(Element::ELECTRIC);
   light_shot->setFlag(SkillFlags::OFFENSIVE);
@@ -966,9 +952,9 @@ void TestBattle::createSkills()
 
   /* Prismatic Shot */
   Skill *prismatic_shot = new Skill(121, "Prismatic Shot",
-                                    ActionScope::ONE_ENEMY, act_dmg[4], 95, 15);
-  prismatic_shot->addAction(act_dmg[4]);
-  prismatic_shot->addAction(act_dmg[4]);
+                                    ActionScope::ONE_ENEMY, act_dmg[1], 95, 15);
+  prismatic_shot->addAction(act_dmg[1]);
+  prismatic_shot->addAction(act_dmg[1]);
   prismatic_shot->setDescription("A triple strike electric hit against a foe");
   prismatic_shot->setPrimary(Element::ELECTRIC);
   prismatic_shot->setFlag(SkillFlags::OFFENSIVE);
@@ -976,26 +962,26 @@ void TestBattle::createSkills()
 
   /* Rail Shot */
   Skill *rail_shot =
-      new Skill(140, "Rail Shot", ActionScope::ONE_ENEMY, act_dmg[14], 95, 0);
+      new Skill(140, "Rail Shot", ActionScope::ONE_ENEMY, act_dmg[2], 95, 0);
   rail_shot->setDescription("A heavy damage electric hit against a foe");
   rail_shot->setPrimary(Element::ELECTRIC);
   rail_shot->setFlag(SkillFlags::OFFENSIVE);
   skills.push_back(rail_shot);
 
   /* Shatter Shot */
-  // TODO: Scope change
   Skill *shatter_shot = new Skill(141, "ShatterShot", ActionScope::ALL_ENEMIES,
-                                  act_dmg[15], 95, 15);
+                                  act_dmg[3], 95, 15);
   shatter_shot->addAction(act_dmg[22]);
-  shatter_shot->setDescription("A heavy shatter shot with potential splash");
+  shatter_shot->setDescription("This description sucks.");
   shatter_shot->setPrimary(Element::ELECTRIC);
   shatter_shot->setFlag(SkillFlags::OFFENSIVE);
   skills.push_back(shatter_shot);
 
   /* Engineer Upgrade */
+  //TODO : Think about adding BattleSet to allow certain stats with mod effects
   Skill *engg_upgrade = new Skill(
-      160, "Upgrade", ActionScope::ONE_ALLY_NOT_USER, act_alt[7], 100, 5);
-  engg_upgrade->addAction(act_alt[8]);
+      160, "Upgrade", ActionScope::ONE_ALLY_NOT_USER, act_inf[4], 100, 5);
+  engg_upgrade->addAction(act_alt[12]);
   engg_upgrade->setDescription("Team upgrade to ally for defense and speed");
   engg_upgrade->setPrimary(Element::ELECTRIC);
   engg_upgrade->setFlag(SkillFlags::DEFENSIVE);
@@ -1003,7 +989,7 @@ void TestBattle::createSkills()
 
   /* Static Shot */
   Skill *static_shot =
-      new Skill(180, "Static Shot", ActionScope::ONE_ENEMY, act_dmg[5], 95, 0);
+      new Skill(180, "Static Shot", ActionScope::ONE_ENEMY, act_dmg[4], 95, 0);
   static_shot->setDescription("An electric shot from drone against a foe");
   static_shot->setPrimary(Element::ELECTRIC);
   static_shot->setFlag(SkillFlags::OFFENSIVE);
@@ -1019,18 +1005,11 @@ void TestBattle::createSkills()
 
   /* Detonate */
   // TODO: Implement imploding
-  Skill *detonate =
-      new Skill(182, "Detonate", ActionScope::ALL_TARGETS, act_dmg[8], 90, 15);
-  detonate->addAction(act_alt[9]);
-  detonate->setDescription("Inflict massive damage on everyone while dying.");
-  detonate->setPrimary(Element::ELECTRIC);
-  detonate->setFlag(SkillFlags::OFFENSIVE);
-  skills.push_back(detonate);
 
   /* Hidden Amplification */
   Skill *hidden_amp = new Skill(200, "Hidden Amplification", ActionScope::USER,
-                                act_alt[10], 90, 5);
-  hidden_amp->addAction(act_alt[7]);
+                                act_inf[3], 90, 5);
+  hidden_amp->addAction(act_inf[4]);
   hidden_amp->setDescription("Increase attack and defense of self");
   hidden_amp->setPrimary(Element::PHYSICAL);
   hidden_amp->setFlag(SkillFlags::DEFENSIVE);
@@ -1046,7 +1025,7 @@ void TestBattle::createSkills()
 
   /* Canopy */
   Skill *canopy =
-      new Skill(220, "Canopy", ActionScope::ALL_ALLIES, act_alt[7], 90, 5);
+      new Skill(220, "Canopy", ActionScope::ALL_ALLIES, act_inf[4], 90, 5);
   canopy->setDescription("Entire team DEF up.");
   canopy->setPrimary(Element::PHYSICAL);
   canopy->setFlag(SkillFlags::DEFENSIVE);
@@ -1054,7 +1033,7 @@ void TestBattle::createSkills()
 
   /* Updraft */
   Skill *updraft = new Skill(221, "Updraft", ActionScope::ONE_ALLY_NOT_USER,
-                             act_alt[8], 90, 10);
+                             act_inf[12], 90, 10);
   updraft->setDescription("Ally speed up");
   updraft->setPrimary(Element::PHYSICAL);
   updraft->setFlag(SkillFlags::DEFENSIVE);
@@ -1070,7 +1049,7 @@ void TestBattle::createSkills()
 
   /* Numbing Sting */
   Skill *numbing = new Skill(240, "Numbing Sting", ActionScope::ONE_ENEMY,
-                             act_inf[22], 90, 5);
+                             act_inf[16], 90, 5);
   numbing->setDescription("Paralysis Inflict");
   numbing->setPrimary(Element::PHYSICAL);
   // numbing->setFlag(SkillFlags::OFFENSIVE);
@@ -1078,7 +1057,7 @@ void TestBattle::createSkills()
 
   /* Hypnotic Sting */
   Skill *hypnotic = new Skill(241, "Hypnotic Sting", ActionScope::ONE_ENEMY,
-                              act_inf[25], 90, 5);
+                              act_inf[18], 90, 5);
   hypnotic->setDescription("Hypnotic Inflict");
   hypnotic->setPrimary(Element::PHYSICAL);
   // hypnotic->setFlag(SkillFlags::OFFENSIVE);
@@ -1094,7 +1073,7 @@ void TestBattle::createSkills()
 
   /* Befuddling Sting */
   Skill *befuddling = new Skill(243, "Befuddling Sting", ActionScope::ONE_ENEMY,
-                                act_inf[5], 90, 5);
+                                act_inf[1], 90, 5);
   befuddling->setDescription("Confusion Inflict");
   befuddling->setPrimary(Element::PHYSICAL);
   // befuddling->setFlag(SkillFlags::OFFENSIVE);
@@ -1102,8 +1081,8 @@ void TestBattle::createSkills()
 
   /* Cunning */
   Skill *cunning =
-      new Skill(1000, "Cunning", ActionScope::USER, act_alt[7], 90, 5);
-  cunning->addAction(act_alt[11]);
+      new Skill(1000, "Cunning", ActionScope::USER, act_inf[12], 90, 5);
+  cunning->addAction(act_inf[3]);
   cunning->setDescription("Self dodge and defense up");
   cunning->setPrimary(Element::PHYSICAL);
   cunning->setFlag(SkillFlags::DEFENSIVE);
@@ -1111,7 +1090,7 @@ void TestBattle::createSkills()
 
   /* Strike */
   Skill *strike =
-      new Skill(1001, "Strike", ActionScope::ONE_ENEMY, act_dmg[11], 90, 15);
+      new Skill(1001, "Strike", ActionScope::ONE_ENEMY, act_dmg[6], 90, 15);
   strike->setDescription("Physical strike against one foe");
   strike->setPrimary(Element::PHYSICAL);
   strike->setFlag(SkillFlags::OFFENSIVE);
@@ -1119,7 +1098,7 @@ void TestBattle::createSkills()
 
   /* Paw Strike */
   Skill *paw_strike =
-      new Skill(1020, "Paw Strike", ActionScope::ONE_ENEMY, act_dmg[10], 95, 0);
+      new Skill(1020, "Paw Strike", ActionScope::ONE_ENEMY, act_dmg[9], 95, 0);
   paw_strike->setDescription("A standard, physical hit against a single foe");
   paw_strike->setPrimary(Element::PHYSICAL);
   paw_strike->setFlag(SkillFlags::OFFENSIVE);
@@ -1127,7 +1106,7 @@ void TestBattle::createSkills()
 
   /* Maul */
   Skill *maul =
-      new Skill(1021, "Maul", ActionScope::ONE_ENEMY, act_dmg[13], 95, 10);
+      new Skill(1021, "Maul", ActionScope::ONE_ENEMY, act_dmg[10], 95, 10);
   maul->setDescription("A stronger, physical hit against a single foe");
   maul->setPrimary(Element::PHYSICAL);
   maul->setFlag(SkillFlags::OFFENSIVE);
@@ -1135,18 +1114,16 @@ void TestBattle::createSkills()
 
   /* Multi-Strike */
   Skill *multi_strike = new Skill(1022, "Multi-Strike", ActionScope::ONE_ENEMY,
-                                  act_dmg[14], 90, 15);
-  multi_strike->addAction(act_dmg[14]);
-  multi_strike->addAction(act_dmg[14]);
-  multi_strike->addAction(act_dmg[14]);
-  multi_strike->setDescription("A multi strike hit (4) against a foe");
+                                  act_dmg[9], 90, 15);
+  multi_strike->addAction(act_dmg[9]);
+  multi_strike->setDescription("What");
   multi_strike->setPrimary(Element::PHYSICAL);
   multi_strike->setFlag(SkillFlags::OFFENSIVE);
   skills.push_back(multi_strike);
 
   /* Hibernate */
   Skill *hibernate =
-      new Skill(1023, "Hibernate", ActionScope::USER, act_alt[0], 100, 5);
+      new Skill(1023, "Hibernate", ActionScope::USER, act_inf[17], 100, 5);
   hibernate->setDescription("Heal self");
   hibernate->setPrimary(Element::PHYSICAL);
   hibernate->setFlag(SkillFlags::DEFENSIVE);
@@ -1154,7 +1131,7 @@ void TestBattle::createSkills()
 
   /* Ensnare */
   Skill *ensnare =
-      new Skill(1040, "Ensnare", ActionScope::ONE_ENEMY, act_dmg[0], 80, 5);
+      new Skill(1040, "Ensnare", ActionScope::ONE_ENEMY, act_dmg[11], 80, 5);
   ensnare->addAction(act_alt[12]);
   ensnare->setDescription("Damage enemy and slow down");
   ensnare->setPrimary(Element::FOREST);
